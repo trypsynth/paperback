@@ -1,34 +1,24 @@
 #include "parser_registry.hpp"
 #include "text_parser.hpp"
 
-static std::vector<parser*>& parsers() {
-	static std::vector<parser*> list;
-	return list;
+const std::vector<parser*>& get_all_parsers() {
+	static std::vector<parser*> parsers = {
+		&text_par,
+	};
+	return parsers;
 }
 
-void parser_registry::register_parser(parser* p) {
-	if (p) parsers().push_back(p);
-}
-
-parser* parser_registry::find_by_extension(const wxString& extension) {
+parser* find_parser_by_extension(const wxString& extension) {
 	wxString normalized = extension.Lower();
-	for (parser* par : parsers())
+	for (parser* par : get_all_parsers())
 		for (const wxString ext : par->extensions())
 			if (ext.Lower() == normalized) return par;
 	return nullptr;
 }
 
-const std::vector<parser*>& parser_registry::all() {
-	return parsers();
-}
-
-void register_parsers() {
-	parser_registry::register_parser(&text_par);
-}
-
 wxString get_supported_wildcards() {
 	wxString result;
-	const auto& parsers = parser_registry::all();
+	const auto& parsers = get_all_parsers();
 	for (const parser* p : parsers) {
 		const wxString& name = p->name();
 		const std::vector<wxString>& exts = p->extensions();

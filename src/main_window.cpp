@@ -49,7 +49,7 @@ void main_window::on_open(wxCommandEvent& event) {
 	wxFileDialog dlg(this, "Select a document to read", "", "", get_supported_wildcards(), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 	if (dlg.ShowModal() == wxID_OK) {
 		wxString path = dlg.GetPath();
-		parser* par = parser_registry::find_by_extension(wxFileName(path).GetExt());
+		parser* par = find_parser_by_extension(wxFileName(path).GetExt());
 		if (!par) return;
 		wxMessageBox(par->name(), "Found", wxICON_INFORMATION);
 	}
