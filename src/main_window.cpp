@@ -1,6 +1,7 @@
 #include "constants.hpp"
 #include "main_window.hpp"
 #include "parser_registry.hpp"
+#include <wx/aboutdlg.h>
 #include <wx/filename.h>
 #include <wx/notebook.h>
 
@@ -60,5 +61,10 @@ void main_window::on_exit(wxCommandEvent& event) {
 }
 
 void main_window::on_about(wxCommandEvent& event) {
-	wxMessageBox(APP_NAME + " is copyright (c) 2025 by Quin Gillespie. All rights reserved.", "About " + APP_NAME, wxICON_INFORMATION);
+	wxAboutDialogInfo about_info;
+	about_info.SetName(APP_NAME);
+	about_info.SetVersion(APP_VERSION);
+	about_info.SetCopyright(APP_COPYRIGHT);
+	about_info.SetDescription("An accessible, cross-platform ebook and document reader.");
+	wxAboutBox(about_info);
 }
