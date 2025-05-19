@@ -11,7 +11,7 @@ public:
 		return exts;
 	}
 
-	std::unique_ptr<document> load(const wxString& path) const override {return nullptr;}
+	std::unique_ptr<document> load(const wxString& path) const override;
 };
 
 static text_parser text_par;

@@ -46,7 +46,10 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 
 void main_window::on_open(wxCommandEvent& event) {
 	wxFileDialog dlg(this, "Select a document to read", "", "", get_supported_wildcards(), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-	dlg.ShowModal();
+	if (dlg.ShowModal() == wxID_OK) {
+		wxString path = dlg.GetPath();
+		wxMessageBox("You selected:\n" + path, "File Selected", wxOK | wxICON_INFORMATION, this);
+	}
 }
 
 void main_window::on_exit(wxCommandEvent& event) {
