@@ -1,6 +1,7 @@
 #include "constants.hpp"
 #include "main_window.hpp"
 #include "parser_registry.hpp"
+#include <wx/filename.h>
 #include <wx/notebook.h>
 
 main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
@@ -48,7 +49,9 @@ void main_window::on_open(wxCommandEvent& event) {
 	wxFileDialog dlg(this, "Select a document to read", "", "", get_supported_wildcards(), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 	if (dlg.ShowModal() == wxID_OK) {
 		wxString path = dlg.GetPath();
-		wxMessageBox("You selected:\n" + path, "File Selected", wxOK | wxICON_INFORMATION, this);
+		parser* par = parser_registry::find_by_extension(wxFileName(path).GetExt());
+		if (!par) return;
+		wxMessageBox(par->name(), "Found", wxICON_INFORMATION);
 	}
 }
 
