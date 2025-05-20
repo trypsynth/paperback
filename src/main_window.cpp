@@ -65,6 +65,6 @@ void main_window::on_about(wxCommandEvent& event) {
 	about_info.SetName(APP_NAME);
 	about_info.SetVersion(APP_VERSION);
 	about_info.SetCopyright(APP_COPYRIGHT);
-	about_info.AddDeveloper("Quin Gillespie");
+	// about_info.SetWebSite("https://paperback.quinbox.xyz");
 	wxAboutBox(about_info);
 }
