@@ -1,6 +1,6 @@
 #include "app.hpp"
 #include "main_window.hpp"
-#include "parser_registry.hpp"
+#include "parser.hpp"
 
 bool app::OnInit() {
 	main_window* frame = new main_window();

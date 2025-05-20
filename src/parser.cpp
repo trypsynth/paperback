@@ -1,4 +1,4 @@
-#include "parser_registry.hpp"
+#include "parser.hpp"
 #include "text_parser.hpp"
 
 const std::vector<parser*>& get_all_parsers() {
@@ -24,9 +24,11 @@ wxString get_supported_wildcards() {
 		const std::vector<wxString>& exts = p->extensions();
 		if (exts.empty()) continue;
 		wxString ext_part;
-		for (size_t i = 0; i < exts.size(); ++i) {
-			ext_part += "*." + exts[i];
-			if (i + 1 < exts.size()) ext_part += ";";
+		bool first = true;
+		for (const wxString& ext : exts) {
+			if (!first) ext_part += ";";
+			ext_part += "*." + ext;
+			first = false;
 		}
 		result += name + " (" + ext_part + ")|" + ext_part + "|";
 	}

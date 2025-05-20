@@ -12,3 +12,7 @@ public:
 	virtual const std::vector<wxString>& extensions() const = 0;
 	virtual std::unique_ptr<document> load(const wxString& path) const = 0;
 };
+
+const std::vector<parser*>& get_all_parsers();
+parser* find_parser_by_extension(const wxString& extension);
+wxString get_supported_wildcards();

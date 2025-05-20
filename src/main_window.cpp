@@ -1,6 +1,6 @@
 #include "constants.hpp"
 #include "main_window.hpp"
-#include "parser_registry.hpp"
+#include "parser.hpp"
 #include <wx/aboutdlg.h>
 #include <wx/filename.h>
 #include <wx/notebook.h>
