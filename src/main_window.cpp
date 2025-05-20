@@ -65,6 +65,6 @@ void main_window::on_about(wxCommandEvent& event) {
 	about_info.SetName(APP_NAME);
 	about_info.SetVersion(APP_VERSION);
 	about_info.SetCopyright(APP_COPYRIGHT);
-	about_info.SetDescription("An accessible, cross-platform ebook and document reader.");
+	about_info.AddDeveloper("Quin Gillespie");
 	wxAboutBox(about_info);
 }
