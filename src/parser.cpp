@@ -21,7 +21,7 @@ wxString get_supported_wildcards() {
 	const auto& parsers = get_all_parsers();
 	for (const parser* p : parsers) {
 		const wxString& name = p->name();
-		const std::vector<wxString>& exts = p->extensions();
+		const auto& exts = p->extensions();
 		if (exts.empty()) continue;
 		wxString ext_part;
 		bool first = true;
