@@ -56,8 +56,8 @@ void main_window::on_open(wxCommandEvent& event) {
 		}
 		wxPanel* page = new wxPanel(notebook, wxID_ANY);
 		wxBoxSizer* page_sizer = new wxBoxSizer(wxVERTICAL);
-		wxTextCtrl* text = new wxTextCtrl(page, wxID_ANY, "Placeholder", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
-		page_sizer->Add(text, 1, wxEXPAND | wxALL, 5);
+		wxTextCtrl* content = new wxTextCtrl(page, wxID_ANY, "Placeholder", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_TAB | wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2);
+		page_sizer->Add(content, 1, wxEXPAND | wxALL, 5);
 		page->SetSizer(page_sizer);
 		wxString label = wxFileName(path).GetFullName();
 		notebook->AddPage(page, label, true);
