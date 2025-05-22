@@ -3,11 +3,10 @@
 #include "parser.hpp"
 #include <wx/aboutdlg.h>
 #include <wx/filename.h>
-#include <wx/notebook.h>
 
 main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	wxPanel* panel = new wxPanel(this);
-	wxNotebook* notebook = new wxNotebook(panel, wxID_ANY);
+	notebook = new wxNotebook(panel, wxID_ANY);
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	sizer->Add(notebook, 1, wxEXPAND | wxALL, 10);
 	panel->SetSizer(sizer);
@@ -51,8 +50,17 @@ void main_window::on_open(wxCommandEvent& event) {
 	if (dlg.ShowModal() == wxID_OK) {
 		wxString path = dlg.GetPath();
 		parser* par = find_parser_by_extension(wxFileName(path).GetExt());
-		if (!par) return;
-		wxMessageBox(par->name(), "Found", wxICON_INFORMATION);
+		if (!par) {
+			wxMessageBox("No suitable parser found for " + path, "Error", wxICON_ERROR);
+			return;
+		}
+		wxPanel* page = new wxPanel(notebook, wxID_ANY);
+		wxBoxSizer* page_sizer = new wxBoxSizer(wxVERTICAL);
+		wxTextCtrl* text = new wxTextCtrl(page, wxID_ANY, "Placeholder", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
+		page_sizer->Add(text, 1, wxEXPAND | wxALL, 5);
+		page->SetSizer(page_sizer);
+		wxString label = wxFileName(path).GetFullName();
+		notebook->AddPage(page, label, true);
 	}
 }
 
@@ -65,6 +73,6 @@ void main_window::on_about(wxCommandEvent& event) {
 	about_info.SetName(APP_NAME);
 	about_info.SetVersion(APP_VERSION);
 	about_info.SetCopyright(APP_COPYRIGHT);
-	// about_info.SetWebSite("https://paperback.quinbox.xyz");
+	about_info.SetWebSite(APP_WEBSITE);
 	wxAboutBox(about_info);
 }

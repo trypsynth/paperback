@@ -1,6 +1,7 @@
 #pragma once
 
 #include <wx/wx.h>
+#include <wx/notebook.h>
 
 enum {
 	ID_EXPORT = wxID_HIGHEST + 1,
@@ -16,6 +17,9 @@ enum {
 class main_window : public wxFrame {
 public:
 	main_window();
+
+private:
+	wxNotebook* notebook;
 	void on_open(wxCommandEvent& event);
 	void on_exit(wxCommandEvent& event);
 	void on_about(wxCommandEvent& event);
