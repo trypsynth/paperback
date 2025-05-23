@@ -5,13 +5,13 @@
 #include <wx/filename.h>
 
 main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
-	wxPanel* panel = new wxPanel(this);
+	auto* panel = new wxPanel(this);
 	notebook = new wxNotebook(panel, wxID_ANY);
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	auto* sizer = new wxBoxSizer(wxVERTICAL);
 	sizer->Add(notebook, 1, wxEXPAND | wxALL, 10);
 	panel->SetSizer(sizer);
-	wxMenuBar* menu_bar = new wxMenuBar();
-	wxMenu* doc_menu = new wxMenu();
+	auto* menu_bar = new wxMenuBar();
+	auto* doc_menu = new wxMenu();
 	doc_menu->Append(wxID_OPEN);
 	doc_menu->Append(wxID_CLOSE);
 	doc_menu->Append(wxID_CLOSE_ALL, "Close &All\tCtrl+Shift+W");
@@ -19,7 +19,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	doc_menu->Append(ID_EXPORT, "&Export...\tCtrl+E");
 	doc_menu->AppendSeparator();
 	doc_menu->Append(wxID_EXIT, "E&xit");
-	wxMenu* go_menu = new wxMenu();
+	auto* go_menu = new wxMenu();
 	go_menu->Append(wxID_FIND);
 	go_menu->Append(ID_FIND_NEXT, "Find Ne&xt\tF3");
 	go_menu->Append(ID_FIND_PREVIOUS, "Find P&revious\tShift+F3");
@@ -28,9 +28,9 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	go_menu->Append(ID_GO_TO_PERCENT, "Go to &Percent...\tCtrl+Shift+G");
 	go_menu->AppendSeparator();
 	go_menu->Append(ID_TABLE_OF_CONTENTS, "Table of contents\tCtrl+T");
-	wxMenu* tools_menu = new wxMenu();
+	auto* tools_menu = new wxMenu();
 	tools_menu->Append(ID_WORD_COUNT, "&Word count\tAlt+W");
-	wxMenu* help_menu = new wxMenu();
+	auto* help_menu = new wxMenu();
 	help_menu->Append(wxID_ABOUT, "About " + APP_NAME + "\tCtrl+F1");
 	help_menu->Append(wxID_HELP, "&Help\tF1");
 	help_menu->AppendSeparator();
@@ -56,7 +56,7 @@ void main_window::on_open(wxCommandEvent& event) {
 		}
 		wxPanel* page = new wxPanel(notebook, wxID_ANY);
 		wxBoxSizer* page_sizer = new wxBoxSizer(wxVERTICAL);
-		wxTextCtrl* content = new wxTextCtrl(page, wxID_ANY, "Placeholder", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_TAB | wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2);
+		wxTextCtrl* content = new wxTextCtrl(page, wxID_ANY, "Placeholder", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2);
 		page_sizer->Add(content, 1, wxEXPAND | wxALL, 5);
 		page->SetSizer(page_sizer);
 		wxString label = wxFileName(path).GetFullName();
