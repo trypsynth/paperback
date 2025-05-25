@@ -59,13 +59,17 @@ void main_window::on_open(wxCommandEvent& event) {
 		wxMessageBox("Failed to load the document: " + path, "Error", wxICON_ERROR);
 		return;
 	}
-	wxPanel* page = new wxPanel(notebook, wxID_ANY);
-	wxBoxSizer* page_sizer = new wxBoxSizer(wxVERTICAL);
-	wxTextCtrl* content = new wxTextCtrl(page, wxID_ANY, doc->text_content(), wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2);
+	auto* page = new wxPanel(notebook, wxID_ANY);
+	auto* page_sizer = new wxBoxSizer(wxVERTICAL);
+	auto* content = new wxTextCtrl(page, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2);
 	page_sizer->Add(content, 1, wxEXPAND | wxALL, 5);
 	page->SetSizer(page_sizer);
 	wxString label = wxFileName(path).GetFullName();
 	notebook->AddPage(page, label, true);
+	content->Freeze();
+	content->SetValue(doc->text_content());
+	content->Thaw();
+	content->SetFocus();
 }
 
 void main_window::on_exit(wxCommandEvent& event) {

@@ -6,7 +6,8 @@
 std::unique_ptr<document> text_parser::load(const wxString& path) const {
 	wxFileInputStream file_stream(path);
 	if (!file_stream.IsOk()) return nullptr;
-	wxTextInputStream text_stream(file_stream, "\n", wxConvAuto());
+	wxBufferedInputStream bs(file_stream);
+	wxTextInputStream text_stream(bs, "\n", wxConvAuto());
 	wxString content;
 	while (!file_stream.Eof()) content += text_stream.ReadLine() + "\n";
 	auto doc = std::make_unique<document>();
