@@ -47,21 +47,25 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 
 void main_window::on_open(wxCommandEvent& event) {
 	wxFileDialog dlg(this, "Select a document to read", "", "", get_supported_wildcards(), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-	if (dlg.ShowModal() == wxID_OK) {
-		wxString path = dlg.GetPath();
-		parser* par = find_parser_by_extension(wxFileName(path).GetExt());
-		if (!par) {
-			wxMessageBox("No suitable parser found for " + path, "Error", wxICON_ERROR);
-			return;
-		}
-		wxPanel* page = new wxPanel(notebook, wxID_ANY);
-		wxBoxSizer* page_sizer = new wxBoxSizer(wxVERTICAL);
-		wxTextCtrl* content = new wxTextCtrl(page, wxID_ANY, "Placeholder", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2);
-		page_sizer->Add(content, 1, wxEXPAND | wxALL, 5);
-		page->SetSizer(page_sizer);
-		wxString label = wxFileName(path).GetFullName();
-		notebook->AddPage(page, label, true);
+	if (dlg.ShowModal() != wxID_OK) return;
+	wxString path = dlg.GetPath();
+	parser* par = find_parser_by_extension(wxFileName(path).GetExt());
+	if (!par) {
+		wxMessageBox("No suitable parser found for " + path, "Error", wxICON_ERROR);
+		return;
 	}
+	std::unique_ptr<document> doc = par->load(path);
+	if (!doc) {
+		wxMessageBox("Failed to load the document: " + path, "Error", wxICON_ERROR);
+		return;
+	}
+	wxPanel* page = new wxPanel(notebook, wxID_ANY);
+	wxBoxSizer* page_sizer = new wxBoxSizer(wxVERTICAL);
+	wxTextCtrl* content = new wxTextCtrl(page, wxID_ANY, doc->text_content(), wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2);
+	page_sizer->Add(content, 1, wxEXPAND | wxALL, 5);
+	page->SetSizer(page_sizer);
+	wxString label = wxFileName(path).GetFullName();
+	notebook->AddPage(page, label, true);
 }
 
 void main_window::on_exit(wxCommandEvent& event) {
