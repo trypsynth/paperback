@@ -94,7 +94,7 @@ void epub_content_handler::ltrim(std::string& s) {
 
 epub::epub() :archive{0} {}
 
-bool epub::load(const char *fname) {
+bool epub::load(const std::string& fname) {
 	fp.open(fname, std::ios::binary);
 	return this->load();
 }

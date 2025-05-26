@@ -70,7 +70,7 @@ class epub {
 public:
 	epub();
 	~epub();
-	bool load(const char* fname);
+	bool load(const std::string& fname);
 	bool load();
 	int get_num_sections();
 	std::string get_section_text(epub_section& section);
