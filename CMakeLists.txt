@@ -3,10 +3,7 @@ project(paperback LANGUAGES CXX VERSION 0.1)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-if(NOT CMAKE_BUILD_TYPE)
-	set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
-endif()
+set(CMAKE_BUILD_TYPE Release)
 
 find_package(wxWidgets CONFIG REQUIRED)
 find_package(Poco REQUIRED COMPONENTS Foundation xml Zip)

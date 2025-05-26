@@ -192,4 +192,4 @@ std::string epub::get_section_text(epub_section& section) {
 	return data;
 }
 
-epub_section::epub_section(std::vector<std::string> *v) :lines{v} {}
+epub_section::epub_section(std::vector<std::string>* v) :lines{v} {}
