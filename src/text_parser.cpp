@@ -9,7 +9,8 @@ std::unique_ptr<document> text_parser::load(const wxString& path) const {
 	wxCharBuffer buffer(buffer_size);
 	wxString content;
 	while (!file_stream.Eof()) {
-		size_t bytes_read = file_stream.Read(buffer.data(), buffer_size);
+		file_stream.Read(buffer.data(), buffer_size);
+		size_t bytes_read = file_stream.LastRead();
 		if (bytes_read > 0) content.append(wxString::FromUTF8(buffer.data(), bytes_read));
 	}
 	auto doc = std::make_unique<document>();
