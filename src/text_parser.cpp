@@ -4,10 +4,10 @@
 #include <wx/wfstream.h>
 
 std::unique_ptr<document> text_parser::load(const wxString& path) const {
-	wxFileInputStream file_stream(path);
+	wxFFileInputStream file_stream(path);
 	if (!file_stream.IsOk()) return nullptr;
 	wxBufferedInputStream bs(file_stream);
-	wxTextInputStream text_stream(bs, "\n", wxConvAuto());
+	wxTextInputStream text_stream(bs);
 	wxString content;
 	while (!file_stream.Eof()) content += text_stream.ReadLine() + "\n";
 	auto doc = std::make_unique<document>();

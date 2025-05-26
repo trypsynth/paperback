@@ -1,0 +1,8 @@
+{
+	"name": "paperback",
+	"version": "0.1.0",
+	"dependencies": [
+		"poco",
+		"wxwidgets"
+	]
+}

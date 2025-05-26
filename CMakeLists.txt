@@ -1,19 +1,18 @@
-cmake_minimum_required(VERSION 4.0)
+cmake_minimum_required(VERSION 3.21) # Recommended for good vcpkg + manifest support
 project(paperback LANGUAGES CXX VERSION 0.1)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_BUILD_TYPE Release)
-if(MINGW)
-	set(CMAKE_CXX_FLAGS_RELEASE "-O2 -s")
+
+# Optional: set release build as default
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()
 
-set(wxBUILD_SHARED OFF)
-add_subdirectory(lib/wxWidgets)
+find_package(wxwidgets REQUIRED COMPONENTS core base)
 
 file(GLOB_RECURSE SRC_FILES src/*.cpp)
 add_executable(paperback WIN32 ${SRC_FILES})
-if(MINGW)
-	target_sources(paperback PRIVATE ${wxWidgets_SOURCE_DIR}/include/wx/msw/wx.rc)
-endif()
-target_link_libraries(paperback PRIVATE wx::core wx::base)
+
+# Link to the imported targets vcpkg provides
+target_link_libraries(paperback PRIVATE wx::core wx::base Poco::Foundation)
