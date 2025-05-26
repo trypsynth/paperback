@@ -21,6 +21,8 @@ public:
 private:
 	wxNotebook* notebook;
 	void on_open(wxCommandEvent& event);
+	void on_close(wxCommandEvent& event);
+	void on_close_all(wxCommandEvent& event);
 	void on_exit(wxCommandEvent& event);
 	void on_about(wxCommandEvent& event);
 };

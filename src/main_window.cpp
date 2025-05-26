@@ -41,6 +41,8 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	menu_bar->Append(help_menu, "&Help");
 	SetMenuBar(menu_bar);
 	Bind(wxEVT_MENU, &main_window::on_open, this, wxID_OPEN);
+	Bind(wxEVT_MENU, &main_window::on_close, this, wxID_CLOSE);
+	Bind(wxEVT_MENU, &main_window::on_close_all, this, wxID_CLOSE_ALL);
 	Bind(wxEVT_MENU, &main_window::on_exit, this, wxID_EXIT);
 	Bind(wxEVT_MENU, &main_window::on_about, this, wxID_ABOUT);
 }
@@ -70,6 +72,14 @@ void main_window::on_open(wxCommandEvent& event) {
 	content->SetValue(doc->text_content());
 	content->Thaw();
 	content->SetFocus();
+}
+
+void main_window::on_close(wxCommandEvent& event) {
+	notebook->DeletePage(notebook->GetSelection());
+}
+
+void main_window::on_close_all(wxCommandEvent& event) {
+	notebook->DeleteAllPages();
 }
 
 void main_window::on_exit(wxCommandEvent& event) {
