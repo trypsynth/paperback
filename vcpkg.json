@@ -2,7 +2,13 @@
 	"name": "paperback",
 	"version": "0.1.0",
 	"dependencies": [
-		"poco",
+		{
+			"name": "poco",
+			"features": [
+				"xml",
+				"zip"
+			]
+		},
 		"wxwidgets"
 	]
 }

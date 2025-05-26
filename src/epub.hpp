@@ -30,28 +30,28 @@ public:
 	epub_section& get_section() {return section;}
 
 protected:
-	void setDocumentLocator(const Locator* loc);
+	void setDocumentLocator(const Poco::XML::Locator* loc);
 	void startDocument();
 	void endDocument();
-	void startElement(const XMLString& uri, const XMLString& localName, const XMLString& qname, const Attributes& attributes);
-	void endElement(const XMLString& uri, const XMLString& localName, const XMLString& qname);
-	void characters(const XMLChar ch[], int start, int length);
-	void ignorableWhitespace(const XMLChar ch[], int start, int length);
-	void processingInstruction(const XMLString& target, const XMLString& data);
-	void startPrefixMapping(const XMLString& prefix, const XMLString& uri);
-	void endPrefixMapping(const XMLString& prefix);
-	void skippedEntity(const XMLString& name);
+	void startElement(const Poco::XML::XMLString& uri, const Poco::XML::XMLString& localName, const Poco::XML::XMLString& qname, const Poco::XML::Attributes& attributes);
+	void endElement(const Poco::XML::XMLString& uri, const Poco::XML::XMLString& localName, const Poco::XML::XMLString& qname);
+	void characters(const Poco::XML::XMLChar ch[], int start, int length);
+	void ignorableWhitespace(const Poco::XML::XMLChar ch[], int start, int length);
+	void processingInstruction(const Poco::XML::XMLString& target, const Poco::XML::XMLString& data);
+	void startPrefixMapping(const Poco::XML::XMLString& prefix, const Poco::XML::XMLString& uri);
+	void endPrefixMapping(const Poco::XML::XMLString& prefix);
+	void skippedEntity(const Poco::XML::XMLString& name);
 
 private:
 	epub_section &section;
-	const Locator* locator;
+	const Poco::XML::Locator* locator;
 	std::string line;
 	bool in_paragraph;
 	bool in_body;
 	unsigned int max_line_length;
 	void add_line(std::string line);
 	bool ignore_whitespace;
-	void ltrim(std::string &s);
+	void ltrim(std::string& s);
 };
 
 class parse_error : public std::exception {
@@ -79,7 +79,7 @@ public:
 private:
 	void parse_opf(std::string filename);
 	std::ifstream fp;
-	ZipArchive* archive;
+	Poco::Zip::ZipArchive* archive;
 	// Map of manifest ids to hrefs
 	std::map<std::string, std::string> manifest_items;
 	std::vector<std::string> spine_items;
