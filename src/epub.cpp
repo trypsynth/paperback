@@ -184,7 +184,10 @@ epub_section* epub::parse_section(unsigned int n, std::vector<std::string>* line
 
 std::string epub::get_section_text(epub_section& section) {
 	std::string data;
-	for (std::vector<std::string>::iterator it = section.lines->begin(); it != section.lines->end(); it++) data += *it + "\n";
+	for (std::vector<std::string>::iterator it = section.lines->begin(); it != section.lines->end(); it++) {
+		if (it->empty()) continue;
+		data += *it + "\n\n";
+	}
 	return data;
 }
 
