@@ -86,8 +86,7 @@ void epub_content_handler::ltrim(std::string& s) {
 	size_t i;
 	for (i = 0; i < s.length(); i++) {
 		std::string c(s.substr(i, 1));
-		if (c == "\n" || c == "\t" || c == " ") continue;
-		break;
+		if (c != "\n" && c != "\t" && c != " ") break;
 	}
 	s.erase(0, i);
 }
@@ -159,7 +158,7 @@ epub::~epub() {
 	if (archive) delete archive;
 }
 
-int epub::get_num_sections() {
+int epub::get_num_sections() const {
 	return spine_items.size();
 }
 
@@ -185,10 +184,7 @@ epub_section* epub::parse_section(unsigned int n, std::vector<std::string>* line
 
 std::string epub::get_section_text(epub_section& section) {
 	std::string data;
-	for (std::vector<std::string>::iterator it = section.lines->begin(); it != section.lines->end(); it++) {
-		data += *it;
-		data += "\n";
-	}
+	for (std::vector<std::string>::iterator it = section.lines->begin(); it != section.lines->end(); it++) data += *it + "\n";
 	return data;
 }
 
