@@ -13,8 +13,8 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	auto* menu_bar = new wxMenuBar();
 	auto* doc_menu = new wxMenu();
 	doc_menu->Append(wxID_OPEN);
-	doc_menu->Append(wxID_CLOSE);
-	doc_menu->Append(wxID_CLOSE_ALL, "Close &All\tCtrl+Shift+W");
+	doc_menu->Append(wxID_CLOSE, "Close\tCtrl+F4");
+	doc_menu->Append(wxID_CLOSE_ALL, "Close &All\tCtrl+Shift+F4");
 	doc_menu->AppendSeparator();
 	doc_menu->Append(ID_EXPORT, "&Export...\tCtrl+E");
 	doc_menu->AppendSeparator();
@@ -63,7 +63,7 @@ void main_window::on_open(wxCommandEvent& event) {
 	}
 	auto* page = new wxPanel(notebook, wxID_ANY);
 	auto* page_sizer = new wxBoxSizer(wxVERTICAL);
-	auto* content = new wxTextCtrl(page, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2);
+	auto* content = new wxTextCtrl(page, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxTE_DONTWRAP);
 	page_sizer->Add(content, 1, wxEXPAND | wxALL, 5);
 	page->SetSizer(page_sizer);
 	wxString label = wxFileName(path).GetFullName();
