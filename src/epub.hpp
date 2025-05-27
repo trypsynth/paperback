@@ -27,7 +27,7 @@ class epub_content_handler : public Poco::XML::ContentHandler {
 public:
 	epub_content_handler(epub_section& section);
 	void set_line_length(int length);
-	epub_section& get_section() {return section;}
+	epub_section& get_section() const {return section;}
 
 protected:
 	void setDocumentLocator(const Poco::XML::Locator* loc);

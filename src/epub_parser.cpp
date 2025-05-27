@@ -14,11 +14,12 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 		return nullptr;
 	}
 	wxString content;
-	std::vector<std::string> lines;
 	for (int i = 0; i < ep.get_num_sections(); i++) {
+		std::vector<std::string> lines;
 		epub_section* section = ep.parse_section(i, &lines);
 		content += ep.get_section_text(*section);
 	}
+	Beep(500, 500);
 	auto doc = std::make_unique<document>();
 	doc->set_text_content(content);
 	return doc;
