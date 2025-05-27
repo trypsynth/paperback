@@ -26,16 +26,15 @@ wxString get_supported_wildcards() {
 	for (const parser* p : parsers)
 		for (const wxString& ext : p->extensions())
 			all_exts.insert(ext);
-	if (!all_exts.empty()) {
-		wxString all_ext_part;
-		bool first = true;
-		for (const wxString& ext : all_exts) {
-			if (!first) all_ext_part += ";";
-			all_ext_part += "*." + ext;
-			first = false;
-		}
-		result += "All Supported Files (" + all_ext_part + ")|" + all_ext_part + "|";
+	if (all_exts.empty()) return "";
+	wxString all_ext_part;
+	bool first = true;
+	for (const wxString& ext : all_exts) {
+		if (!first) all_ext_part += ";";
+		all_ext_part += "*." + ext;
+		first = false;
 	}
+	result += "All Supported Files (" + all_ext_part + ")|" + all_ext_part + "|";
 	for (const parser* p : parsers) {
 		const wxString& name = p->name();
 		const auto& exts = p->extensions();
