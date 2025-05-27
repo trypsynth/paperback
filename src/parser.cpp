@@ -1,6 +1,7 @@
 #include "parser.hpp"
 #include "epub_parser.hpp"
 #include "text_parser.hpp"
+#include <set>
 
 const std::vector<parser*>& get_all_parsers() {
 	static std::vector<parser*> parsers = {
@@ -20,7 +21,21 @@ parser* find_parser_by_extension(const wxString& extension) {
 
 wxString get_supported_wildcards() {
 	wxString result;
+	std::set<wxString> all_exts;
 	const auto& parsers = get_all_parsers();
+	for (const parser* p : parsers)
+		for (const wxString& ext : p->extensions())
+			all_exts.insert(ext);
+	if (!all_exts.empty()) {
+		wxString all_ext_part;
+		bool first = true;
+		for (const wxString& ext : all_exts) {
+			if (!first) all_ext_part += ";";
+			all_ext_part += "*." + ext;
+			first = false;
+		}
+		result += "All Supported Files (" + all_ext_part + ")|" + all_ext_part + "|";
+	}
 	for (const parser* p : parsers) {
 		const wxString& name = p->name();
 		const auto& exts = p->extensions();

@@ -5,6 +5,7 @@
 		{
 			"name": "poco",
 			"features": [
+				"util",
 				"xml",
 				"zip"
 			]
