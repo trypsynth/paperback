@@ -1,8 +1,10 @@
 #include "parser.hpp"
+#include "epub_parser.hpp"
 #include "text_parser.hpp"
 
 const std::vector<parser*>& get_all_parsers() {
 	static std::vector<parser*> parsers = {
+		&epub_par,
 		&text_par,
 	};
 	return parsers;

@@ -1,4 +1,6 @@
 cmake_minimum_required(VERSION 3.21) # Recommended for good vcpkg + manifest support
+set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/external/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
+set(VCPKG_TARGET_TRIPLET "x64-windows-static" CACHE STRING "")
 project(paperback LANGUAGES CXX VERSION 0.1)
 
 set(CMAKE_CXX_STANDARD 20)

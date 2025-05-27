@@ -60,7 +60,9 @@ public:
 		message = std::string(msg);
 	}
 
-	const char* what() const noexcept {return message.c_str();}
+	const char* what() const noexcept {
+		return message.c_str();
+	}
 
 private:
 	std::string message;
