@@ -1,7 +1,6 @@
 #pragma once
 
 #include <wx/wx.h>
-#include <wx/spinctrl.h>
 
 class go_to_dialog : public wxDialog {
 public:
@@ -9,6 +8,6 @@ public:
 	int line_number() const;
 
 private:
-	wxSpinCtrl* spinner;
 	wxTextCtrl* textbox;
+	wxTextCtrl* input_ctrl;
 };

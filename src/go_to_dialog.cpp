@@ -1,18 +1,16 @@
 #include "go_to_dialog.hpp"
 
-go_to_dialog::go_to_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) :wxDialog{parent, wxID_ANY, "Go to line"}, textbox{text_ctrl} {
+go_to_dialog::go_to_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) :wxDialog{parent, wxID_ANY, "Go to"}, textbox{text_ctrl} {
 	wxBoxSizer* main_sizer = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer* line_sizer = new wxBoxSizer(wxHORIZONTAL);
-	auto* label = new wxStaticText(this, wxID_ANY, "Line number:");
-	spinner = new wxSpinCtrl(this, wxID_ANY);
+	auto* label = new wxStaticText(this, wxID_ANY, "Go to:");
+	input_ctrl = new wxTextCtrl(this, wxID_ANY);
 	line_sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
-	line_sizer->Add(spinner, 1, wxEXPAND);
-	spinner->SetRange(1, textbox->GetNumberOfLines());
+	line_sizer->Add(input_ctrl, 1, wxEXPAND);
 	long line;
 	textbox->PositionToXY(textbox->GetInsertionPoint(), 0, &line);
-	line++; // Account for PositionToXY being zero-based.
-	spinner->SetValue(line);
-	spinner->SetSelection(0, -1);
+	input_ctrl->SetValue(wxString::Format("%d", line + 1));
+	input_ctrl->SetSelection(-1, -1);
 	main_sizer->Add(line_sizer, 0, wxALL | wxEXPAND, 5);
 	wxBoxSizer* button_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* ok_btn = new wxButton(this, wxID_OK);
@@ -24,5 +22,18 @@ go_to_dialog::go_to_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) :wxDialog{pa
 }
 
 int go_to_dialog::line_number() const {
-	return spinner->GetValue();
+	wxString input = input_ctrl->GetValue().Trim(true).Trim(false);
+	if (input.EndsWith("%")) {
+		input.RemoveLast();
+		long percent;
+		if (input.ToLong(&percent) && percent >= 0 && percent <= 100) {
+			int total_lines = textbox->GetNumberOfLines();
+			int line = (percent * total_lines) / 100;
+			return std::max(1, line);
+		}
+	} else {
+		long line;
+		if (input.ToLong(&line) && line >= 1) return line;
+	}
+	return 1;
 }
