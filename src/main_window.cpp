@@ -119,7 +119,9 @@ void main_window::on_exit(wxCommandEvent& event) {
 void main_window::on_go_to_line(wxCommandEvent& event) {
 	auto* content = static_cast<wxTextCtrl*>(notebook->GetPage(notebook->GetSelection())->GetClientData());
 	go_to_line_dialog dlg(this, content);
-	dlg.ShowModal();
+	if (dlg.ShowModal() != wxID_OK) return;
+	long pos = content->XYToPosition(0, dlg.line_number() - 1);
+	content->SetInsertionPoint(pos);
 }
 
 void main_window::on_about(wxCommandEvent& event) {
