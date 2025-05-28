@@ -1,11 +1,10 @@
 #include "constants.hpp"
 #include "go_to_dialog.hpp"
-#include <iterator>
 #include "main_window.hpp"
 #include "parser.hpp"
-#include <sstream>
 #include <wx/aboutdlg.h>
 #include <wx/filename.h>
+#include <wx/tokenzr.h>
 
 main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	auto* panel = new wxPanel(this);
@@ -136,8 +135,12 @@ void main_window::on_go_to(wxCommandEvent& event) {
 
 void main_window::on_word_count(wxCommandEvent& event) {
 	auto* content = active_text_ctrl();
-	std::istringstream iss(std::string{content->GetValue().ToStdString()});
-	int count = std::distance(std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>{});
+	wxStringTokenizer tokenizer(content->GetValue(), " \t\r\n", wxTOKEN_STRTOK);
+	int count = 0;
+	while (tokenizer.HasMoreTokens()) {
+		tokenizer.GetNextToken();
+		++count;
+	}
 	wxMessageBox(wxString::Format("The document contains %d %s", count, count == 1 ? "word" : "words"), "Word count", wxICON_INFORMATION);
 }
 
