@@ -117,7 +117,8 @@ void main_window::on_exit(wxCommandEvent& event) {
 }
 
 void main_window::on_go_to_line(wxCommandEvent& event) {
-	go_to_line_dialog dlg(this, 1000);
+	auto* content = static_cast<wxTextCtrl*>(notebook->GetPage(notebook->GetSelection())->GetClientData());
+	go_to_line_dialog dlg(this, content);
 	dlg.ShowModal();
 }
 
