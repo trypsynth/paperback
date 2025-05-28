@@ -46,7 +46,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	Bind(wxEVT_MENU, &main_window::on_export, this, ID_EXPORT);
 	Bind(wxEVT_MENU, &main_window::on_exit, this, wxID_EXIT);
 	Bind(wxEVT_MENU, &main_window::on_about, this, wxID_ABOUT);
-	for (const int id : std::initializer_list<int>{wxID_CLOSE, wxID_CLOSE_ALL, ID_EXPORT})
+	for (const int id : doc_command_ids)
 		Bind(wxEVT_UPDATE_UI, &main_window::update_doc_commands, this, id);
 }
 
