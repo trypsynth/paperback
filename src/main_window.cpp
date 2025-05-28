@@ -43,6 +43,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	Bind(wxEVT_MENU, &main_window::on_open, this, wxID_OPEN);
 	Bind(wxEVT_MENU, &main_window::on_close, this, wxID_CLOSE);
 	Bind(wxEVT_MENU, &main_window::on_close_all, this, wxID_CLOSE_ALL);
+	Bind(wxEVT_MENU, &main_window::on_export, this, ID_EXPORT);
 	Bind(wxEVT_MENU, &main_window::on_exit, this, wxID_EXIT);
 	Bind(wxEVT_MENU, &main_window::on_about, this, wxID_ABOUT);
 }
@@ -80,6 +81,24 @@ void main_window::on_close(wxCommandEvent& event) {
 
 void main_window::on_close_all(wxCommandEvent& event) {
 	notebook->DeleteAllPages();
+}
+
+void main_window::on_export(wxCommandEvent& event) {
+	int page_index = notebook->GetSelection();
+	if (page_index == wxNOT_FOUND) {
+		wxMessageBox("No document is currently open.", "Error", wxICON_ERROR);
+		return;
+	}
+	wxWindow* page = notebook->GetPage(page_index);
+	wxFileDialog save_dialog(this, "Export Document", "", "", "Text files (*.txt)|*.txt|All files (*.*)|*.*", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+	if (save_dialog.ShowModal() != wxID_OK) return;
+	wxString file_path = save_dialog.GetPath();
+	wxFile file;
+	if (!file.Open(file_path, wxFile::write)) {
+		wxMessageBox("Failed to write to the selected file.", "Error", wxICON_ERROR);
+		return;
+	}
+	file.Close();
 }
 
 void main_window::on_exit(wxCommandEvent& event) {
