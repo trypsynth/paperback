@@ -72,6 +72,7 @@ void main_window::on_open(wxCommandEvent& event) {
 	auto* page = new wxPanel(notebook, wxID_ANY);
 	auto* page_sizer = new wxBoxSizer(wxVERTICAL);
 	auto* content = new wxTextCtrl(page, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxTE_DONTWRAP);
+	page->SetClientData(content);
 	page_sizer->Add(content, 1, wxEXPAND | wxALL, 5);
 	page->SetSizer(page_sizer);
 	wxString label = wxFileName(path).GetFullName();
@@ -95,11 +96,17 @@ void main_window::on_export(wxCommandEvent& event) {
 	wxFileDialog save_dialog(this, "Export Document", "", "", "Text files (*.txt)|*.txt|All files (*.*)|*.*", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 	if (save_dialog.ShowModal() != wxID_OK) return;
 	wxString file_path = save_dialog.GetPath();
+	auto* content = static_cast<wxTextCtrl*>(page->GetClientData());
+	if (!content) {
+		wxMessageBox("Failed to get edit control for active tab.", "Error", wxICON_ERROR);
+		return;
+	}
 	wxFile file;
 	if (!file.Open(file_path, wxFile::write)) {
 		wxMessageBox("Failed to write to the selected file.", "Error", wxICON_ERROR);
 		return;
 	}
+	file.Write(content->GetValue());
 	file.Close();
 }
 
