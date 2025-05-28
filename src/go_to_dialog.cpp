@@ -23,6 +23,8 @@ go_to_dialog::go_to_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) :wxDialog{pa
 
 int go_to_dialog::line_number() const {
 	wxString input = input_ctrl->GetValue().Trim(true).Trim(false);
+	long cur_line;
+	input_ctrl->PositionToXY(input_ctrl->GetInsertionPoint(), 0, &cur_line);
 	if (input.EndsWith("%")) {
 		input.RemoveLast();
 		long percent;
@@ -33,7 +35,7 @@ int go_to_dialog::line_number() const {
 		}
 	} else {
 		long line;
-		if (input.ToLong(&line) && line >= 1) return line;
+		if (input.ToLong(&line) && line >= 1 && line <= input_ctrl->GetNumberOfLines()) return line;
 	}
-	return 1;
+	return cur_line;
 }
