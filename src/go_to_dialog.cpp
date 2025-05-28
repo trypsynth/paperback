@@ -1,6 +1,6 @@
-#include "go_to_line_dialog.hpp"
+#include "go_to_dialog.hpp"
 
-go_to_line_dialog::go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) :wxDialog{parent, wxID_ANY, "Go to line"}, textbox{text_ctrl} {
+go_to_dialog::go_to_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) :wxDialog{parent, wxID_ANY, "Go to line"}, textbox{text_ctrl} {
 	wxBoxSizer* main_sizer = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer* line_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* label = new wxStaticText(this, wxID_ANY, "Line number:");
@@ -23,6 +23,6 @@ go_to_line_dialog::go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) :w
 	SetSizerAndFit(main_sizer);
 }
 
-int go_to_line_dialog::line_number() const {
+int go_to_dialog::line_number() const {
 	return spinner->GetValue();
 }

@@ -1,5 +1,5 @@
 #include "constants.hpp"
-#include "go_to_line_dialog.hpp"
+#include "go_to_dialog.hpp"
 #include "main_window.hpp"
 #include "parser.hpp"
 #include <wx/aboutdlg.h>
@@ -25,8 +25,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	go_menu->Append(ID_FIND_NEXT, "Find Ne&xt\tF3");
 	go_menu->Append(ID_FIND_PREVIOUS, "Find P&revious\tShift+F3");
 	go_menu->AppendSeparator();
-	go_menu->Append(ID_GO_TO_LINE, "&Go to Line...\tCtrl+G");
-	go_menu->Append(ID_GO_TO_PERCENT, "Go to &Percent...\tCtrl+Shift+G");
+	go_menu->Append(ID_GO_TO, "&Go to...\tCtrl+G");
 	go_menu->AppendSeparator();
 	go_menu->Append(ID_TABLE_OF_CONTENTS, "Table of contents\tCtrl+T");
 	auto* tools_menu = new wxMenu();
@@ -46,7 +45,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	Bind(wxEVT_MENU, &main_window::on_close_all, this, wxID_CLOSE_ALL);
 	Bind(wxEVT_MENU, &main_window::on_export, this, ID_EXPORT);
 	Bind(wxEVT_MENU, &main_window::on_exit, this, wxID_EXIT);
-	Bind(wxEVT_MENU, &main_window::on_go_to_line, this, ID_GO_TO_LINE);
+	Bind(wxEVT_MENU, &main_window::on_go_to, this, ID_GO_TO);
 	Bind(wxEVT_MENU, &main_window::on_about, this, wxID_ABOUT);
 	for (const int id : doc_command_ids)
 		Bind(wxEVT_UPDATE_UI, &main_window::update_doc_commands, this, id);
@@ -116,9 +115,9 @@ void main_window::on_exit(wxCommandEvent& event) {
 	Close(true);
 }
 
-void main_window::on_go_to_line(wxCommandEvent& event) {
+void main_window::on_go_to(wxCommandEvent& event) {
 	auto* content = static_cast<wxTextCtrl*>(notebook->GetPage(notebook->GetSelection())->GetClientData());
-	go_to_line_dialog dlg(this, content);
+	go_to_dialog dlg(this, content);
 	if (dlg.ShowModal() != wxID_OK) return;
 	long pos = content->XYToPosition(0, dlg.line_number() - 1);
 	content->SetInsertionPoint(pos);

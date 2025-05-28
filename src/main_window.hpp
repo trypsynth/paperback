@@ -7,8 +7,7 @@ enum {
 	ID_EXPORT = wxID_HIGHEST + 1,
 	ID_FIND_NEXT,
 	ID_FIND_PREVIOUS,
-	ID_GO_TO_LINE,
-	ID_GO_TO_PERCENT,
+	ID_GO_TO,
 	ID_TABLE_OF_CONTENTS,
 	ID_WORD_COUNT,
 	ID_CHECK_FOR_UPDATES,
@@ -21,8 +20,7 @@ constexpr int doc_command_ids[] = {
 	wxID_FIND,
 	ID_FIND_NEXT,
 	ID_FIND_PREVIOUS,
-	ID_GO_TO_LINE,
-	ID_GO_TO_PERCENT,
+	ID_GO_TO,
 	ID_TABLE_OF_CONTENTS,
 	ID_WORD_COUNT,
 };
@@ -39,6 +37,6 @@ private:
 	void on_close_all(wxCommandEvent& event);
 	void on_export(wxCommandEvent& event);
 	void on_exit(wxCommandEvent& event);
-	void on_go_to_line(wxCommandEvent& event);
+	void on_go_to(wxCommandEvent& event);
 	void on_about(wxCommandEvent& event);
 };
