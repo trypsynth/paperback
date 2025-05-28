@@ -11,7 +11,9 @@ go_to_line_dialog::go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) :w
 	vbox->Add(new wxStaticText(this, wxID_ANY, "Line number:"), 0, wxALL, 5);
 	vbox->Add(spinner, 0, wxALL | wxEXPAND, 5);
 	wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-	hbox->Add(new wxButton(this, wxID_OK), 0, wxALL, 5);
+	auto* ok_btn = new wxButton(this, wxID_OK);
+	ok_btn->SetDefault();
+	hbox->Add(ok_btn, 0, wxALL, 5);
 	hbox->Add(new wxButton(this, wxID_CANCEL), 0, wxALL, 5);
 	vbox->Add(hbox, 0, wxALIGN_CENTER);
 	SetSizerAndFit(vbox);
