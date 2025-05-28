@@ -20,6 +20,7 @@ public:
 
 private:
 	wxNotebook* notebook;
+	void update_doc_commands(wxUpdateUIEvent& e);
 	void on_open(wxCommandEvent& event);
 	void on_close(wxCommandEvent& event);
 	void on_close_all(wxCommandEvent& event);

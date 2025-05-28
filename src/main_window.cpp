@@ -46,6 +46,13 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	Bind(wxEVT_MENU, &main_window::on_export, this, ID_EXPORT);
 	Bind(wxEVT_MENU, &main_window::on_exit, this, wxID_EXIT);
 	Bind(wxEVT_MENU, &main_window::on_about, this, wxID_ABOUT);
+	for (const int id : std::initializer_list<int>{wxID_CLOSE, wxID_CLOSE_ALL, ID_EXPORT})
+		Bind(wxEVT_UPDATE_UI, &main_window::update_doc_commands, this, id);
+}
+
+void main_window::update_doc_commands(wxUpdateUIEvent& e) {
+	const bool has_doc = notebook->GetPageCount() > 0;
+	e.Enable(has_doc);
 }
 
 void main_window::on_open(wxCommandEvent& event) {
@@ -84,12 +91,7 @@ void main_window::on_close_all(wxCommandEvent& event) {
 }
 
 void main_window::on_export(wxCommandEvent& event) {
-	int page_index = notebook->GetSelection();
-	if (page_index == wxNOT_FOUND) {
-		wxMessageBox("No document is currently open.", "Error", wxICON_ERROR);
-		return;
-	}
-	wxWindow* page = notebook->GetPage(page_index);
+	wxWindow* page = notebook->GetPage(notebook->GetSelection());
 	wxFileDialog save_dialog(this, "Export Document", "", "", "Text files (*.txt)|*.txt|All files (*.*)|*.*", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 	if (save_dialog.ShowModal() != wxID_OK) return;
 	wxString file_path = save_dialog.GetPath();
