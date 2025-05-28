@@ -2,6 +2,7 @@
 #include "epub_parser.hpp"
 #include "text_parser.hpp"
 #include <set>
+#include <sstream>
 
 const std::vector<parser*>& get_all_parsers() {
 	static std::vector<parser*> parsers = {
@@ -20,33 +21,29 @@ parser* find_parser_by_extension(const wxString& extension) {
 }
 
 wxString get_supported_wildcards() {
-	wxString result;
 	std::set<wxString> all_exts;
 	const auto& parsers = get_all_parsers();
 	for (const parser* p : parsers)
-		for (const wxString& ext : p->extensions())
-			all_exts.insert(ext);
-	if (all_exts.empty()) return "";
-	wxString all_ext_part;
-	bool first = true;
-	for (const wxString& ext : all_exts) {
-		if (!first) all_ext_part += ";";
-		all_ext_part += "*." + ext;
-		first = false;
-	}
-	result += "All Supported Files (" + all_ext_part + ")|" + all_ext_part + "|";
-	for (const parser* p : parsers) {
-		const wxString& name = p->name();
-		const auto& exts = p->extensions();
-		if (exts.empty()) continue;
-		wxString ext_part;
+		all_exts.insert(p->extensions().begin(), p->extensions().end());
+	if (all_exts.empty()) return {};
+	auto join_extensions = [](const auto& exts) {
+		std::ostringstream oss;
 		bool first = true;
-		for (const wxString& ext : exts) {
-			if (!first) ext_part += ";";
-			ext_part += "*." + ext;
+		for (const auto& ext : exts) {
+			if (!first) oss << ";";
+			oss << "*." << std::string(ext.mb_str());
 			first = false;
 		}
-		result += name + " (" + ext_part + ")|" + ext_part + "|";
+		return wxString::FromUTF8(oss.str());
+	};
+	wxString result;
+	wxString all_ext_part = join_extensions(all_exts);
+	result += "All Supported Files (" + all_ext_part + ")|" + all_ext_part + "|";
+	for (const parser* p : parsers) {
+		const auto& exts = p->extensions();
+		if (exts.empty()) continue;
+		wxString ext_part = join_extensions(exts);
+		result += p->name() + " (" + ext_part + ")|" + ext_part + "|";
 	}
 	result += "All Files (*.*)|*.*";
 	return result;
