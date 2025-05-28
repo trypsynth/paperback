@@ -1,7 +1,9 @@
 #include "constants.hpp"
 #include "go_to_dialog.hpp"
+#include <iterator>
 #include "main_window.hpp"
 #include "parser.hpp"
+#include <sstream>
 #include <wx/aboutdlg.h>
 #include <wx/filename.h>
 
@@ -46,9 +48,14 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	Bind(wxEVT_MENU, &main_window::on_export, this, ID_EXPORT);
 	Bind(wxEVT_MENU, &main_window::on_exit, this, wxID_EXIT);
 	Bind(wxEVT_MENU, &main_window::on_go_to, this, ID_GO_TO);
+	Bind(wxEVT_MENU, &main_window::on_word_count, this, ID_WORD_COUNT);
 	Bind(wxEVT_MENU, &main_window::on_about, this, wxID_ABOUT);
 	for (const int id : doc_command_ids)
 		Bind(wxEVT_UPDATE_UI, &main_window::update_doc_commands, this, id);
+}
+
+wxTextCtrl* main_window::active_text_ctrl() {
+	return static_cast<wxTextCtrl*>(notebook->GetPage(notebook->GetSelection())->GetClientData());
 }
 
 void main_window::open_document(const wxString& path, std::unique_ptr<document> doc) {
@@ -101,7 +108,7 @@ void main_window::on_export(wxCommandEvent& event) {
 	wxFileDialog save_dialog(this, "Export Document", "", "", "Text files (*.txt)|*.txt|All files (*.*)|*.*", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 	if (save_dialog.ShowModal() != wxID_OK) return;
 	wxString file_path = save_dialog.GetPath();
-	auto* content = static_cast<wxTextCtrl*>(page->GetClientData());
+	auto* content = active_text_ctrl();
 	if (!content) {
 		wxMessageBox("Failed to get edit control for active tab.", "Error", wxICON_ERROR);
 		return;
@@ -120,11 +127,18 @@ void main_window::on_exit(wxCommandEvent& event) {
 }
 
 void main_window::on_go_to(wxCommandEvent& event) {
-	auto* content = static_cast<wxTextCtrl*>(notebook->GetPage(notebook->GetSelection())->GetClientData());
+	auto* content = active_text_ctrl();
 	go_to_dialog dlg(this, content);
 	if (dlg.ShowModal() != wxID_OK) return;
 	long pos = content->XYToPosition(0, dlg.line_number() - 1);
 	content->SetInsertionPoint(pos);
+}
+
+void main_window::on_word_count(wxCommandEvent& event) {
+	auto* content = active_text_ctrl();
+	std::istringstream iss(std::string{content->GetValue().ToStdString()});
+	int count = std::distance(std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>{});
+	wxMessageBox(wxString::Format("The document contains %d %s", count, count == 1 ? "word" : "words"), "Word count", wxICON_INFORMATION);
 }
 
 void main_window::on_about(wxCommandEvent& event) {

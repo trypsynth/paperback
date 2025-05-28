@@ -15,9 +15,8 @@ bool app::OnInit() {
 				std::unique_ptr<document> doc = par->load(path);
 				if (!doc)
 					wxMessageBox("Failed to load the document: " + path, "Error", wxICON_ERROR);
-				else {
+				else
 					frame->open_document(path, std::move(doc));
-				}
 			}
 		} else
 			wxMessageBox("File not found: " + path, "Error", wxICON_ERROR);

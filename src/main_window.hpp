@@ -29,6 +29,7 @@ constexpr int doc_command_ids[] = {
 class main_window : public wxFrame {
 public:
 	main_window();
+	wxTextCtrl* active_text_ctrl();
 	void open_document(const wxString& path, std::unique_ptr<document> doc);
 
 private:
@@ -40,5 +41,6 @@ private:
 	void on_export(wxCommandEvent& event);
 	void on_exit(wxCommandEvent& event);
 	void on_go_to(wxCommandEvent& event);
+	void on_word_count(wxCommandEvent& event);
 	void on_about(wxCommandEvent& event);
 };
