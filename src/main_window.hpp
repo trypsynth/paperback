@@ -1,5 +1,6 @@
 #pragma once
 
+#include "document.hpp"
 #include <wx/wx.h>
 #include <wx/notebook.h>
 
@@ -28,6 +29,7 @@ constexpr int doc_command_ids[] = {
 class main_window : public wxFrame {
 public:
 	main_window();
+	void open_document(const wxString& path, std::unique_ptr<document> doc);
 
 private:
 	wxNotebook* notebook;

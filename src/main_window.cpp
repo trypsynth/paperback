@@ -51,6 +51,21 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 		Bind(wxEVT_UPDATE_UI, &main_window::update_doc_commands, this, id);
 }
 
+void main_window::open_document(const wxString& path, std::unique_ptr<document> doc) {
+	auto* page = new wxPanel(notebook, wxID_ANY);
+	auto* page_sizer = new wxBoxSizer(wxVERTICAL);
+	auto* content = new wxTextCtrl(page, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxTE_DONTWRAP);
+	page->SetClientData(content);
+	page_sizer->Add(content, 1, wxEXPAND | wxALL, 5);
+	page->SetSizer(page_sizer);
+	wxString label = wxFileName(path).GetFullName();
+	notebook->AddPage(page, label, true);
+	content->Freeze();
+	content->SetValue(doc->text_content());
+	content->Thaw();
+	content->SetFocus();
+}
+
 void main_window::update_doc_commands(wxUpdateUIEvent& e) {
 	const bool has_doc = notebook->GetPageCount() > 0;
 	e.Enable(has_doc);
@@ -70,18 +85,7 @@ void main_window::on_open(wxCommandEvent& event) {
 		wxMessageBox("Failed to load the document: " + path, "Error", wxICON_ERROR);
 		return;
 	}
-	auto* page = new wxPanel(notebook, wxID_ANY);
-	auto* page_sizer = new wxBoxSizer(wxVERTICAL);
-	auto* content = new wxTextCtrl(page, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxTE_DONTWRAP);
-	page->SetClientData(content);
-	page_sizer->Add(content, 1, wxEXPAND | wxALL, 5);
-	page->SetSizer(page_sizer);
-	wxString label = wxFileName(path).GetFullName();
-	notebook->AddPage(page, label, true);
-	content->Freeze();
-	content->SetValue(doc->text_content());
-	content->Thaw();
-	content->SetFocus();
+	open_document(path, std::move(doc));
 }
 
 void main_window::on_close(wxCommandEvent& event) {
