@@ -35,7 +35,7 @@ int go_to_dialog::line_number() const {
 		}
 	} else {
 		long line;
-		if (input.ToLong(&line) && line >= 1 && line <= input_ctrl->GetNumberOfLines()) return line;
+		if (input.ToLong(&line) && line >= 1 && line <= textbox->GetNumberOfLines()) return line;
 	}
 	return cur_line;
 }
