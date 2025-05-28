@@ -33,11 +33,12 @@ public:
 
 private:
 	wxNotebook* notebook;
-	void update_doc_commands(wxUpdateUIEvent& e);
+	void update_doc_commands(wxUpdateUIEvent& event);
 	void on_open(wxCommandEvent& event);
 	void on_close(wxCommandEvent& event);
 	void on_close_all(wxCommandEvent& event);
 	void on_export(wxCommandEvent& event);
 	void on_exit(wxCommandEvent& event);
+	void on_go_to_line(wxCommandEvent& event);
 	void on_about(wxCommandEvent& event);
 };

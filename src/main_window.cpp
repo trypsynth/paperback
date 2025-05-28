@@ -1,4 +1,5 @@
 #include "constants.hpp"
+#include "go_to_line_dialog.hpp"
 #include "main_window.hpp"
 #include "parser.hpp"
 #include <wx/aboutdlg.h>
@@ -45,6 +46,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	Bind(wxEVT_MENU, &main_window::on_close_all, this, wxID_CLOSE_ALL);
 	Bind(wxEVT_MENU, &main_window::on_export, this, ID_EXPORT);
 	Bind(wxEVT_MENU, &main_window::on_exit, this, wxID_EXIT);
+	Bind(wxEVT_MENU, &main_window::on_go_to_line, this, ID_GO_TO_LINE);
 	Bind(wxEVT_MENU, &main_window::on_about, this, wxID_ABOUT);
 	for (const int id : doc_command_ids)
 		Bind(wxEVT_UPDATE_UI, &main_window::update_doc_commands, this, id);
@@ -112,6 +114,11 @@ void main_window::on_export(wxCommandEvent& event) {
 
 void main_window::on_exit(wxCommandEvent& event) {
 	Close(true);
+}
+
+void main_window::on_go_to_line(wxCommandEvent& event) {
+	go_to_line_dialog dlg(this, 1000);
+	dlg.ShowModal();
 }
 
 void main_window::on_about(wxCommandEvent& event) {
