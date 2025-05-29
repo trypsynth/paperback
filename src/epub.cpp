@@ -77,8 +77,6 @@ void epub_content_handler::skippedEntity(const Poco::XML::XMLString& name) {
 }
 
 void epub_content_handler::add_line(std::string line) {
-	size_t index = 0;
-	std::replace(line.begin(), line.end(), '\n', ' ');
 	if (max_line_length > 0) {
 		while (line.length() > max_line_length) {
 			section.lines.push_back(line.substr(0, max_line_length));
