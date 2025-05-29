@@ -1,4 +1,5 @@
 #include "epub.hpp"
+#include <unordered_map>
 
 epub_content_handler::epub_content_handler(epub_section& section) : locator{0}, in_paragraph{false}, in_body{false}, section{section}, max_line_length{0} {}
 
@@ -53,13 +54,17 @@ void epub_content_handler::startPrefixMapping(const Poco::XML::XMLString& prefix
 void epub_content_handler::endPrefixMapping(const Poco::XML::XMLString& prefix) {}
 
 void epub_content_handler::skippedEntity(const Poco::XML::XMLString& name) {
-	if (name == "rsquo") line += "’";
-	else if (name == "lsquo") line += "‘";
-	else if (name == "ldquo") line += "“";
-	else if (name == "ldquo") line += "”";
-	else if (name == "mdash") line += "—";
-	else if (name == "ndash") line += "–";
-	else if (name == "nbsp") line += " ";
+	static const std::unordered_map<std::string, std::string> entity_map = {
+		{"rsquo", "’"},
+		{"lsquo", "‘"},
+		{"ldquo", "“"},
+		{"rdquo", "”"},
+		{"mdash", "—"},
+		{"ndash", "–"},
+		{"nbsp", " "}
+	};
+	auto it = entity_map.find(name);
+	if (it != entity_map.end()) line += it->second;
 }
 
 void epub_content_handler::add_line(std::string line) {
@@ -72,23 +77,19 @@ void epub_content_handler::add_line(std::string line) {
 	}
 	if (max_line_length > 0) {
 		while (line.length() > max_line_length) {
-			section.lines->push_back(line.substr(0, max_line_length));
+			section.lines.push_back(line.substr(0, max_line_length));
 			line = line.substr(max_line_length);
 		}
 	}
-	section.lines->push_back(line);
+	section.lines.push_back(line);
 }
 
 void epub_content_handler::set_line_length(int n) {max_line_length = n;}
 
 void epub_content_handler::ltrim(std::string& s) {
-	if (s.empty()) return;
-	size_t i;
-	for (i = 0; i < s.length(); i++) {
-		std::string c(s.substr(i, 1));
-		if (c != "\n" && c != "\t" && c != " ") break;
-	}
-	s.erase(0, i);
+	s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char c) {
+		return !std::isspace(c);
+	}));
 }
 
 epub::epub() :archive{0} {}
@@ -162,7 +163,7 @@ int epub::get_num_sections() const {
 	return spine_items.size();
 }
 
-epub_section* epub::parse_section(unsigned int n, std::vector<std::string>* lines, unsigned int line_length) {
+epub_section epub::parse_section(unsigned int n, std::vector<std::string>* lines, unsigned int line_length) {
 	std::string id = spine_items[n];
 	std::map<std::string, std::string>::iterator it = manifest_items.find(id);
 	if (it == manifest_items.end()) throw parse_error{("Unknown id: " + id).c_str()};
@@ -172,9 +173,8 @@ epub_section* epub::parse_section(unsigned int n, std::vector<std::string>* line
 	Poco::Zip::ZipInputStream zis(fp, header->second, true);
 	Poco::XML::InputSource src(zis);
 	Poco::XML::SAXParser parser = Poco::XML::SAXParser();
-	epub_section* section;
-	section = new epub_section(lines);
-	epub_content_handler* handler = new epub_content_handler(*section);
+	epub_section section;
+	epub_content_handler* handler = new epub_content_handler(section);
 	handler->set_line_length(line_length);
 	parser.setContentHandler(handler);
 	parser.parse(&src);
@@ -184,11 +184,9 @@ epub_section* epub::parse_section(unsigned int n, std::vector<std::string>* line
 
 std::string epub::get_section_text(epub_section& section) {
 	std::string data;
-	for (std::vector<std::string>::iterator it = section.lines->begin(); it != section.lines->end(); it++) {
+	for (std::vector<std::string>::iterator it = section.lines.begin(); it != section.lines.end(); it++) {
 		if (it->empty()) continue;
 		data += *it + "\n\n";
 	}
 	return data;
 }
-
-epub_section::epub_section(std::vector<std::string>* v) :lines{v} {}
