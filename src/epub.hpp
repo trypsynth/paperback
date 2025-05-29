@@ -1,8 +1,6 @@
 #pragma once
 
 #include <fstream>
-#include <iostream>
-#include <memory>
 #include <Poco/SAX/ContentHandler.h>
 #include <stdexcept>
 #include <string>
@@ -18,7 +16,7 @@ class epub_content_handler : public Poco::XML::ContentHandler {
 public:
 	epub_content_handler(epub_section& section);
 	void set_line_length(int length);
-	epub_section& get_section() const {return section;}
+	const epub_section& get_section() const {return section;}
 
 protected:
 	void setDocumentLocator(const Poco::XML::Locator* loc) override;
@@ -60,7 +58,7 @@ public:
 	epub_section parse_section(unsigned int n, std::vector<std::string>* lines, unsigned int line_length = 0);
 
 private:
-	void parse_opf(std::string filename);
+	void parse_opf(const std::string& filename);
 	std::ifstream fp;
 	std::unique_ptr<Poco::Zip::ZipArchive> archive;
 	// Map of manifest ids to hrefs

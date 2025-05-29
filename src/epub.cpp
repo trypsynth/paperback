@@ -1,4 +1,5 @@
 #include "epub.hpp"
+#include <memory>
 #include <Poco/AutoPtr.h>
 #include <Poco/DOM/Document.h>
 #include <Poco/DOM/DOMParser.h>
@@ -9,7 +10,7 @@
 #include <Poco/Zip/ZipStream.h>
 #include <unordered_map>
 
-epub_content_handler::epub_content_handler(epub_section& section) : locator{0}, in_paragraph{false}, in_body{false}, section{section}, max_line_length{0} {}
+epub_content_handler::epub_content_handler(epub_section& section) :section{section}, locator{nullptr}, in_paragraph{false}, in_body{false}, max_line_length{0} {}
 
 void epub_content_handler::setDocumentLocator(const Poco::XML::Locator* loc) {locator = loc;}
 
@@ -77,12 +78,7 @@ void epub_content_handler::skippedEntity(const Poco::XML::XMLString& name) {
 
 void epub_content_handler::add_line(std::string line) {
 	size_t index = 0;
-	while (true) {
-		index = line.find("\n");
-		if (index == std::string::npos) break;
-		line.replace(index, 1, " ");
-		index++;
-	}
+	std::replace(line.begin(), line.end(), '\n', ' ');
 	if (max_line_length > 0) {
 		while (line.length() > max_line_length) {
 			section.lines.push_back(line.substr(0, max_line_length));
@@ -125,7 +121,7 @@ bool epub::load() {
 	return true;
 }
 
-void epub::parse_opf(std::string filename) {
+void epub::parse_opf(const std::string& filename) {
 	Poco::Zip::ZipArchive::FileHeaders::const_iterator header = archive->findHeader(filename);
 	if (header == archive->headerEnd()) throw parse_error{"No OPF file found"};
 	Poco::Zip::ZipInputStream zis(fp, header->second, true);

@@ -30,7 +30,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	go_menu->AppendSeparator();
 	go_menu->Append(ID_TABLE_OF_CONTENTS, "Table of contents\tCtrl+T");
 	auto* tools_menu = new wxMenu();
-	tools_menu->Append(ID_WORD_COUNT, "&Word count\tAlt+W");
+	tools_menu->Append(ID_WORD_COUNT, "&Word count\tCtrl+W");
 	auto* help_menu = new wxMenu();
 	help_menu->Append(wxID_ABOUT, "About " + APP_NAME + "\tCtrl+F1");
 	help_menu->Append(wxID_HELP, "&Help\tF1");
