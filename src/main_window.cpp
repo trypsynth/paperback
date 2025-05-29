@@ -128,8 +128,15 @@ void main_window::on_exit(wxCommandEvent& event) {
 }
 
 void main_window::on_find(wxCommandEvent& event) {
-	auto* dlg = new wxFindReplaceDialog(this, &find_data, "Find");
-	dlg->Show();
+	if (find_dialog) {
+		find_dialog->Raise();
+		return;
+	}
+	find_dialog = new wxFindReplaceDialog(this, &find_data, "Find");
+	find_dialog->Bind(wxEVT_FIND, &main_window::on_find_dialog, this);
+	find_dialog->Bind(wxEVT_FIND_NEXT, &main_window::on_find_dialog, this);
+	// find_dialog->Bind(wxEVT_FIND_CLOSE, &main_window::on_find_close, this);
+	find_dialog->Show();
 }
 
 void main_window::on_go_to(wxCommandEvent& event) {
@@ -158,4 +165,14 @@ void main_window::on_about(wxCommandEvent& event) {
 	about_info.SetCopyright(APP_COPYRIGHT);
 	about_info.SetWebSite(APP_WEBSITE);
 	wxAboutBox(about_info);
+}
+
+void main_window::on_find_dialog(wxFindDialogEvent& event) {
+	wxString text = event.GetFindString();
+	long flags = event.GetFlags();
+	if (event.GetEventType() == wxEVT_FIND) {
+		wxLogMessage("Find: %s", text);
+	} else if (event.GetEventType() == wxEVT_FIND_NEXT) {
+		wxLogMessage("Find next: %s", text);
+	}
 }

@@ -10,9 +10,16 @@
 #include <Poco/Zip/ZipStream.h>
 #include <unordered_map>
 
-epub_content_handler::epub_content_handler(epub_section& section) :section{section}, locator{nullptr}, in_paragraph{false}, in_body{false}, max_line_length{0} {}
+epub_content_handler::epub_content_handler(epub_section& section)
+	:section{section},
+	locator{nullptr},
+	in_paragraph{false},
+	in_body{false},
+	max_line_length{0} {}
 
-void epub_content_handler::setDocumentLocator(const Poco::XML::Locator* loc) {locator = loc;}
+void epub_content_handler::setDocumentLocator(const Poco::XML::Locator* loc) {
+	locator = loc;
+}
 
 void epub_content_handler::startDocument() {}
 
@@ -28,7 +35,8 @@ void epub_content_handler::startElement(const Poco::XML::XMLString& uri, const P
 		in_body = true;
 		ignore_whitespace = true;
 	}
-	if (localName == "p" || localName == "div") in_paragraph = true;
+	if (localName == "p" || localName == "div")
+		in_paragraph = true;
 }
 
 void epub_content_handler::endElement(const Poco::XML::XMLString& uri, const Poco::XML::XMLString& localName, const Poco::XML::XMLString& qname) {
@@ -86,7 +94,9 @@ void epub_content_handler::add_line(std::string line) {
 	section.lines.push_back(line);
 }
 
-void epub_content_handler::set_line_length(int n) {max_line_length = n;}
+void epub_content_handler::set_line_length(int n) {
+	max_line_length = n;
+}
 
 void epub_content_handler::ltrim(std::string& s) {
 	s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char c) {
@@ -102,15 +112,15 @@ bool epub::load(const std::string& fname) {
 bool epub::load() {
 	if (fp.fail()) return false;
 	archive = std::make_unique<Poco::Zip::ZipArchive>(fp);
-	Poco::Zip::ZipArchive::FileHeaders::const_iterator header = archive->findHeader("META-INF/container.xml");
+	auto header = archive->findHeader("META-INF/container.xml");
 	if (header == archive->headerEnd()) return false;
 	Poco::Zip::ZipInputStream zis(fp, header->second, true);
 	Poco::XML::InputSource src(zis);
 	Poco::XML::DOMParser parser;
-	Poco::AutoPtr<Poco::XML::Document> doc = parser.parse(&src);
+	auto doc = parser.parse(&src);
 	Poco::XML::NamespaceSupport nsmap;
 	nsmap.declarePrefix("container", "urn:oasis:names:tc:opendocument:xmlns:container");
-	Poco::XML::Node *node = doc->getNodeByPathNS("container:container/container:rootfiles/container:rootfile", nsmap);
+	auto*node = doc->getNodeByPathNS("container:container/container:rootfiles/container:rootfile", nsmap);
 	if (node == nullptr) return false;
 	std::string name = static_cast<Poco::XML::Element*>(node)->getAttribute("full-path");
 	// Load the OPF file
@@ -120,36 +130,36 @@ bool epub::load() {
 }
 
 void epub::parse_opf(const std::string& filename) {
-	Poco::Zip::ZipArchive::FileHeaders::const_iterator header = archive->findHeader(filename);
+	auto header = archive->findHeader(filename);
 	if (header == archive->headerEnd()) throw parse_error{"No OPF file found"};
 	Poco::Zip::ZipInputStream zis(fp, header->second, true);
 	Poco::XML::InputSource src(zis);
 	Poco::XML::DOMParser parser;
-	Poco::AutoPtr<Poco::XML::Document> doc = parser.parse(&src);
+	auto doc = parser.parse(&src);
 	Poco::XML::NamespaceSupport nsmap;
 	nsmap.declarePrefix("opf", "http://www.idpf.org/2007/opf");
-	Poco::XML::Node* manifest = doc->getNodeByPathNS("opf:package/opf:manifest", nsmap);
+	auto* manifest = doc->getNodeByPathNS("opf:package/opf:manifest", nsmap);
 	if (!manifest) throw parse_error{"No manifest"};
-	Poco::AutoPtr<Poco::XML::NodeList> children = manifest->childNodes();
+	auto children = manifest->childNodes();
 	unsigned int len = children->length();
 	for (unsigned int i = 0; i < len; i++) {
-		Poco::XML::Node* node = children->item(i);
+		auto* node = children->item(i);
 		if (node->nodeType() != Poco::XML::Node::ELEMENT_NODE) continue;
-		Poco::XML::Element* e = static_cast<Poco::XML::Element*>(node);
+		auto* e = static_cast<Poco::XML::Element*>(node);
 		std::string href = e->getAttribute("href");
 		Poco::Path filePath(opf_path);
 		filePath.append(href);
 		std::string id = e->getAttribute("id");
 		manifest_items.insert(std::make_pair(id, filePath.toString(Poco::Path::PATH_UNIX)));
 	}
-	Poco::XML::Node* spine = doc->getNodeByPathNS("opf:package/opf:spine", nsmap);
+	auto* spine = doc->getNodeByPathNS("opf:package/opf:spine", nsmap);
 	if (!spine) throw parse_error{"No spine"};
 	children = spine->childNodes();
 	len = children->length();
 	for (unsigned int i = 0; i < len; i++) {
-		Poco::XML::Node* node = children->item(i);
+		auto* node = children->item(i);
 		if (node->nodeType() != Poco::XML::Node::ELEMENT_NODE) continue;
-		Poco::XML::Element* element = static_cast<Poco::XML::Element*>(node);
+		auto* element = static_cast<Poco::XML::Element*>(node);
 		std::string idref = element->getAttribute("idref");
 		spine_items.push_back(idref);
 	}
@@ -161,14 +171,14 @@ int epub::get_num_sections() const {
 
 epub_section epub::parse_section(unsigned int n, std::vector<std::string>* lines, unsigned int line_length) {
 	std::string id = spine_items[n];
-	std::map<std::string, std::string>::iterator it = manifest_items.find(id);
+	auto it = manifest_items.find(id);
 	if (it == manifest_items.end()) throw parse_error{("Unknown id: " + id).c_str()};
 	std::string href = it->second;
-	Poco::Zip::ZipArchive::FileHeaders::const_iterator header = archive->findHeader(href);
+	auto header = archive->findHeader(href);
 	if (header == archive->headerEnd()) throw parse_error{("File not found: " + href).c_str()};
 	Poco::Zip::ZipInputStream zis(fp, header->second, true);
 	Poco::XML::InputSource src(zis);
-	Poco::XML::SAXParser parser = Poco::XML::SAXParser();
+	auto parser = Poco::XML::SAXParser();
 	epub_section section;
 	auto handler = std::make_unique<epub_content_handler>(section);
 	handler->set_line_length(line_length);
@@ -179,7 +189,7 @@ epub_section epub::parse_section(unsigned int n, std::vector<std::string>* lines
 
 std::string epub::get_section_text(epub_section& section) {
 	std::string data;
-	for (std::vector<std::string>::iterator it = section.lines.begin(); it != section.lines.end(); it++) {
+	for (auto it = section.lines.begin(); it != section.lines.end(); it++) {
 		if (it->empty()) continue;
 		data += *it + "\n\n";
 	}

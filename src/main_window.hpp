@@ -35,6 +35,7 @@ public:
 
 private:
 	wxNotebook* notebook;
+	wxFindReplaceDialog* find_dialog;
 	wxFindReplaceData find_data;
 
 	void update_doc_commands(wxUpdateUIEvent& event);
@@ -47,4 +48,5 @@ private:
 	void on_go_to(wxCommandEvent& event);
 	void on_word_count(wxCommandEvent& event);
 	void on_about(wxCommandEvent& event);
+	void on_find_dialog(wxFindDialogEvent& event);
 };
