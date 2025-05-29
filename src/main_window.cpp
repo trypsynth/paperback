@@ -3,6 +3,7 @@
 #include "main_window.hpp"
 #include "parser.hpp"
 #include <wx/aboutdlg.h>
+#include <wx/fdrepdlg.h>
 #include <wx/filename.h>
 #include <wx/tokenzr.h>
 
@@ -46,6 +47,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	Bind(wxEVT_MENU, &main_window::on_close_all, this, wxID_CLOSE_ALL);
 	Bind(wxEVT_MENU, &main_window::on_export, this, ID_EXPORT);
 	Bind(wxEVT_MENU, &main_window::on_exit, this, wxID_EXIT);
+	Bind(wxEVT_MENU, &main_window::on_find, this, wxID_FIND);
 	Bind(wxEVT_MENU, &main_window::on_go_to, this, ID_GO_TO);
 	Bind(wxEVT_MENU, &main_window::on_word_count, this, ID_WORD_COUNT);
 	Bind(wxEVT_MENU, &main_window::on_about, this, wxID_ABOUT);
@@ -123,6 +125,11 @@ void main_window::on_export(wxCommandEvent& event) {
 
 void main_window::on_exit(wxCommandEvent& event) {
 	Close(true);
+}
+
+void main_window::on_find(wxCommandEvent& event) {
+	auto* dlg = new wxFindReplaceDialog(this, &find_data, "Find");
+	dlg->Show();
 }
 
 void main_window::on_go_to(wxCommandEvent& event) {

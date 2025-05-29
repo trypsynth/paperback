@@ -1,8 +1,9 @@
 #pragma once
 
 #include "document.hpp"
-#include <wx/wx.h>
+#include <wx/fdrepdlg.h>
 #include <wx/notebook.h>
+#include <wx/wx.h>
 
 enum {
 	ID_EXPORT = wxID_HIGHEST + 1,
@@ -34,12 +35,15 @@ public:
 
 private:
 	wxNotebook* notebook;
+	wxFindReplaceData find_data;
+
 	void update_doc_commands(wxUpdateUIEvent& event);
 	void on_open(wxCommandEvent& event);
 	void on_close(wxCommandEvent& event);
 	void on_close_all(wxCommandEvent& event);
 	void on_export(wxCommandEvent& event);
 	void on_exit(wxCommandEvent& event);
+	void on_find(wxCommandEvent& event);
 	void on_go_to(wxCommandEvent& event);
 	void on_word_count(wxCommandEvent& event);
 	void on_about(wxCommandEvent& event);
