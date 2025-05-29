@@ -2,20 +2,13 @@
 
 #include <fstream>
 #include <iostream>
+#include <memory>
+#include <Poco/SAX/ContentHandler.h>
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include <Poco/AutoPtr.h>
-#include <Poco/DOM/Document.h>
-#include <Poco/DOM/DOMParser.h>
-#include <Poco/DOM/NamedNodeMap.h>
-#include <Poco/DOM/NodeList.h>
-#include <Poco/SAX/ContentHandler.h>
-#include <Poco/SAX/InputSource.h>
 #include <Poco/SAX/Locator.h>
-#include <Poco/SAX/SAXParser.h>
 #include <Poco/Zip/ZipArchive.h>
-#include <Poco/Zip/ZipStream.h>
 
 struct epub_section {
 	std::vector<std::string> lines;
@@ -59,8 +52,7 @@ public:
 
 class epub {
 public:
-	epub();
-	~epub();
+	~epub() = default;
 	bool load(const std::string& fname);
 	bool load();
 	int get_num_sections() const;
@@ -70,7 +62,7 @@ public:
 private:
 	void parse_opf(std::string filename);
 	std::ifstream fp;
-	Poco::Zip::ZipArchive* archive;
+	std::unique_ptr<Poco::Zip::ZipArchive> archive;
 	// Map of manifest ids to hrefs
 	std::map<std::string, std::string> manifest_items;
 	std::vector<std::string> spine_items;

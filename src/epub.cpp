@@ -1,4 +1,12 @@
 #include "epub.hpp"
+#include <Poco/AutoPtr.h>
+#include <Poco/DOM/Document.h>
+#include <Poco/DOM/DOMParser.h>
+#include <Poco/DOM/NamedNodeMap.h>
+#include <Poco/DOM/NodeList.h>
+#include <Poco/SAX/InputSource.h>
+#include <Poco/SAX/SAXParser.h>
+#include <Poco/Zip/ZipStream.h>
 #include <unordered_map>
 
 epub_content_handler::epub_content_handler(epub_section& section) : locator{0}, in_paragraph{false}, in_body{false}, section{section}, max_line_length{0} {}
@@ -92,8 +100,6 @@ void epub_content_handler::ltrim(std::string& s) {
 	}));
 }
 
-epub::epub() :archive{0} {}
-
 bool epub::load(const std::string& fname) {
 	fp.open(fname, std::ios::binary);
 	return this->load();
@@ -101,7 +107,7 @@ bool epub::load(const std::string& fname) {
 
 bool epub::load() {
 	if (fp.fail()) return false;
-	archive = new Poco::Zip::ZipArchive(fp);
+	archive = std::make_unique<Poco::Zip::ZipArchive>(fp);
 	Poco::Zip::ZipArchive::FileHeaders::const_iterator header = archive->findHeader("META-INF/container.xml");
 	if (header == archive->headerEnd()) return false;
 	Poco::Zip::ZipInputStream zis(fp, header->second, true);
@@ -155,10 +161,6 @@ void epub::parse_opf(std::string filename) {
 	}
 }
 
-epub::~epub() {
-	if (archive) delete archive;
-}
-
 int epub::get_num_sections() const {
 	return spine_items.size();
 }
@@ -174,11 +176,10 @@ epub_section epub::parse_section(unsigned int n, std::vector<std::string>* lines
 	Poco::XML::InputSource src(zis);
 	Poco::XML::SAXParser parser = Poco::XML::SAXParser();
 	epub_section section;
-	epub_content_handler* handler = new epub_content_handler(section);
+	auto handler = std::make_unique<epub_content_handler>(section);
 	handler->set_line_length(line_length);
-	parser.setContentHandler(handler);
+	parser.setContentHandler(handler.get());
 	parser.parse(&src);
-	delete handler;
 	return section;
 }
 
