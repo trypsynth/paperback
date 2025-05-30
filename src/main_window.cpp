@@ -136,20 +136,22 @@ void main_window::on_find(wxCommandEvent& event) {
 	}
 	find_dialog = new wxFindReplaceDialog(this, &find_data, "Find");
 	find_dialog->Bind(wxEVT_FIND, &main_window::on_find_dialog, this);
-	find_dialog->Bind(wxEVT_FIND_NEXT, &main_window::on_find_dialog, this);
-	// find_dialog->Bind(wxEVT_FIND_CLOSE, &main_window::on_find_close, this);
+	Bind(wxEVT_FIND_NEXT, &main_window::on_find_dialog, this);
+	Bind(wxEVT_FIND_CLOSE, &main_window::on_find_close, this);
 	find_dialog->Show();
 }
 
 void main_window::on_find_next(wxCommandEvent&) {
-	wxFindDialogEvent e(wxEVT_FIND_NEXT, find_dialog ? find_dialog->GetId() : wxID_ANY);
+	if (!find_dialog) return;
+	wxFindDialogEvent e(wxEVT_FIND_NEXT, find_dialog->GetId());
 	e.SetFindString(find_data.GetFindString());
 	e.SetFlags(find_data.GetFlags());
 	wxPostEvent(this, e);
 }
 
 void main_window::on_find_previous(wxCommandEvent&) {
-	wxFindDialogEvent e(wxEVT_FIND_NEXT, find_dialog ? find_dialog->GetId() : wxID_ANY);
+	if (!find_dialog) return;
+	wxFindDialogEvent e(wxEVT_FIND_NEXT, find_dialog->GetId());
 	e.SetFindString(find_data.GetFindString());
 	e.SetFlags(find_data.GetFlags() | wxFR_DOWN); // Reverse direction
 	wxPostEvent(this, e);
@@ -208,4 +210,9 @@ void main_window::on_find_dialog(wxFindDialogEvent& event) {
 	text_ctrl->SetFocus();
 	text_ctrl->SetSelection(found_pos, found_pos + query.Length());
 	text_ctrl->ShowPosition(found_pos);
+}
+
+void main_window::on_find_close(wxFindDialogEvent& event) {
+	find_dialog->Destroy();
+	find_dialog = nullptr;
 }
