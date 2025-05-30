@@ -131,8 +131,8 @@ void main_window::on_exit(wxCommandEvent& event) {
 
 void main_window::on_find(wxCommandEvent& event) {
 	if (find_dialog) {
-		find_dialog->Raise();
-		return;
+		find_dialog->Destroy();
+		find_dialog = nullptr;
 	}
 	find_data.SetFlags(wxFR_DOWN); // Make down the default direction.
 	find_dialog = new wxFindReplaceDialog(this, &find_data, "Find");
