@@ -154,7 +154,7 @@ void main_window::on_find_previous(wxCommandEvent&) {
 	if (!find_dialog) return;
 	wxFindDialogEvent e(wxEVT_FIND_NEXT, find_dialog->GetId());
 	e.SetFindString(find_data.GetFindString());
-	e.SetFlags(find_data.GetFlags() &~ wxFR_DOWN); // Reverse direction
+	e.SetFlags(find_data.GetFlags() & ~wxFR_DOWN); // Reverse direction.
 	wxPostEvent(this, e);
 }
 
@@ -187,13 +187,13 @@ void main_window::on_about(wxCommandEvent& event) {
 }
 
 void main_window::on_find_dialog(wxFindDialogEvent& event) {
-	wxTextCtrl* text_ctrl = active_text_ctrl();
+	auto* text_ctrl = active_text_ctrl();
 	if (!text_ctrl) return;
 	wxString query = event.GetFindString();
 	const long flags = event.GetFlags();
 	long sel_start, sel_end;
 	text_ctrl->GetSelection(&sel_start, &sel_end);
-	long start_pos = (flags & wxFR_DOWN) ? sel_end : sel_start;
+	const long start_pos = (flags & wxFR_DOWN) ? sel_end : sel_start;
 	wxString search_text = text_ctrl->GetValue();
 	long found_pos = wxNOT_FOUND;
 	if (!(flags & wxFR_MATCHCASE)) {

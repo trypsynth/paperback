@@ -8,6 +8,6 @@ public:
 	int line_number() const;
 
 private:
-	wxTextCtrl* textbox;
-	wxTextCtrl* input_ctrl;
+	wxTextCtrl* textbox = nullptr;
+	wxTextCtrl* input_ctrl = nullptr;
 };

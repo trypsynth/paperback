@@ -34,8 +34,8 @@ public:
 	void open_document(const wxString& path, std::unique_ptr<document> doc);
 
 private:
-	wxNotebook* notebook;
-	wxFindReplaceDialog* find_dialog;
+	wxNotebook* notebook = nullptr;
+	wxFindReplaceDialog* find_dialog = nullptr;
 	wxFindReplaceData find_data;
 
 	void update_doc_commands(wxUpdateUIEvent& event);
