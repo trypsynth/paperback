@@ -154,7 +154,7 @@ void main_window::on_find_previous(wxCommandEvent&) {
 	if (!find_dialog) return;
 	wxFindDialogEvent e(wxEVT_FIND_NEXT, find_dialog->GetId());
 	e.SetFindString(find_data.GetFindString());
-	e.SetFlags(find_data.GetFlags() |~ wxFR_DOWN); // Reverse direction
+	e.SetFlags(find_data.GetFlags() &~ wxFR_DOWN); // Reverse direction
 	wxPostEvent(this, e);
 }
 
