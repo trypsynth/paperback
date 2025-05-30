@@ -134,6 +134,7 @@ void main_window::on_find(wxCommandEvent& event) {
 		find_dialog->Raise();
 		return;
 	}
+	find_data.SetFlags(wxFR_DOWN); // Make down the default direction.
 	find_dialog = new wxFindReplaceDialog(this, &find_data, "Find");
 	find_dialog->Bind(wxEVT_FIND, &main_window::on_find_dialog, this);
 	Bind(wxEVT_FIND_NEXT, &main_window::on_find_dialog, this);
@@ -153,7 +154,7 @@ void main_window::on_find_previous(wxCommandEvent&) {
 	if (!find_dialog) return;
 	wxFindDialogEvent e(wxEVT_FIND_NEXT, find_dialog->GetId());
 	e.SetFindString(find_data.GetFindString());
-	e.SetFlags(find_data.GetFlags() | wxFR_DOWN); // Reverse direction
+	e.SetFlags(find_data.GetFlags() |~ wxFR_DOWN); // Reverse direction
 	wxPostEvent(this, e);
 }
 
@@ -190,7 +191,9 @@ void main_window::on_find_dialog(wxFindDialogEvent& event) {
 	if (!text_ctrl) return;
 	wxString query = event.GetFindString();
 	const long flags = event.GetFlags();
-	long start_pos = text_ctrl->GetInsertionPoint();
+	long sel_start, sel_end;
+	text_ctrl->GetSelection(&sel_start, &sel_end);
+	long start_pos = (flags & wxFR_DOWN) ? sel_end : sel_start;
 	wxString search_text = text_ctrl->GetValue();
 	long found_pos = wxNOT_FOUND;
 	if (!(flags & wxFR_MATCHCASE)) {

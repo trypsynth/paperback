@@ -81,7 +81,8 @@ void epub_content_handler::skippedEntity(const Poco::XML::XMLString& name) {
 		{"nbsp", " "}
 	};
 	auto it = entity_map.find(name);
-	if (it != entity_map.end()) line += it->second;
+	if (it != entity_map.end())
+		line += it->second;
 }
 
 void epub_content_handler::add_line(std::string line) {
