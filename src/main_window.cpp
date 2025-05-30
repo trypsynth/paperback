@@ -48,6 +48,8 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	Bind(wxEVT_MENU, &main_window::on_export, this, ID_EXPORT);
 	Bind(wxEVT_MENU, &main_window::on_exit, this, wxID_EXIT);
 	Bind(wxEVT_MENU, &main_window::on_find, this, wxID_FIND);
+	Bind(wxEVT_MENU, &main_window::on_find_next, this, ID_FIND_NEXT);
+	Bind(wxEVT_MENU, &main_window::on_find_previous, this, ID_FIND_PREVIOUS);
 	Bind(wxEVT_MENU, &main_window::on_go_to, this, ID_GO_TO);
 	Bind(wxEVT_MENU, &main_window::on_word_count, this, ID_WORD_COUNT);
 	Bind(wxEVT_MENU, &main_window::on_about, this, wxID_ABOUT);
@@ -139,6 +141,20 @@ void main_window::on_find(wxCommandEvent& event) {
 	find_dialog->Show();
 }
 
+void main_window::on_find_next(wxCommandEvent&) {
+	wxFindDialogEvent e(wxEVT_FIND_NEXT, find_dialog ? find_dialog->GetId() : wxID_ANY);
+	e.SetFindString(find_data.GetFindString());
+	e.SetFlags(find_data.GetFlags());
+	wxPostEvent(this, e);
+}
+
+void main_window::on_find_previous(wxCommandEvent&) {
+	wxFindDialogEvent e(wxEVT_FIND_NEXT, find_dialog ? find_dialog->GetId() : wxID_ANY);
+	e.SetFindString(find_data.GetFindString());
+	e.SetFlags(find_data.GetFlags() | wxFR_DOWN); // Reverse direction
+	wxPostEvent(this, e);
+}
+
 void main_window::on_go_to(wxCommandEvent& event) {
 	auto* content = active_text_ctrl();
 	go_to_dialog dlg(this, content);
@@ -168,11 +184,28 @@ void main_window::on_about(wxCommandEvent& event) {
 }
 
 void main_window::on_find_dialog(wxFindDialogEvent& event) {
-	wxString text = event.GetFindString();
-	long flags = event.GetFlags();
-	if (event.GetEventType() == wxEVT_FIND) {
-		wxLogMessage("Find: %s", text);
-	} else if (event.GetEventType() == wxEVT_FIND_NEXT) {
-		wxLogMessage("Find next: %s", text);
+	wxTextCtrl* text_ctrl = active_text_ctrl();
+	if (!text_ctrl) return;
+	wxString query = event.GetFindString();
+	const long flags = event.GetFlags();
+	long start_pos = text_ctrl->GetInsertionPoint();
+	wxString search_text = text_ctrl->GetValue();
+	long found_pos = wxNOT_FOUND;
+	if (!(flags & wxFR_MATCHCASE)) {
+		query.MakeLower();
+		search_text.MakeLower();
 	}
+	if (flags & wxFR_DOWN)
+		found_pos = search_text.find(query, start_pos);
+	else {
+		search_text = search_text.substr(0, start_pos);
+		found_pos = search_text.rfind(query);
+	}
+	if (found_pos == wxNOT_FOUND) {
+		wxMessageBox("Text not found.", "Find", wxICON_INFORMATION);
+		return;
+	}
+	text_ctrl->SetFocus();
+	text_ctrl->SetSelection(found_pos, found_pos + query.Length());
+	text_ctrl->ShowPosition(found_pos);
 }

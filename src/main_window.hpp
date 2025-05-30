@@ -45,6 +45,8 @@ private:
 	void on_export(wxCommandEvent& event);
 	void on_exit(wxCommandEvent& event);
 	void on_find(wxCommandEvent& event);
+	void on_find_next(wxCommandEvent& event);
+	void on_find_previous(wxCommandEvent& event);
 	void on_go_to(wxCommandEvent& event);
 	void on_word_count(wxCommandEvent& event);
 	void on_about(wxCommandEvent& event);
