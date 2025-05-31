@@ -1,12 +1,20 @@
 #include "app.hpp"
+#include "constants.hpp"
 #include "parser.hpp"
 #include <wx/filename.h>
 
 bool app::OnInit() {
+	config = std::make_unique<wxFileConfig>(APP_NAME, "Quinware", "config.ini", "", wxCONFIG_USE_LOCAL_FILE);
 	frame = new main_window();
 	if (argc > 1) parse_command_line();
 	frame->Show(true);
 	return true;
+}
+
+int app::OnExit() {
+	config->Write("Test", 1);
+	config->Flush();
+	return 0;
 }
 
 void app::parse_command_line() {

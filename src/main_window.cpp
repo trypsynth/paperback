@@ -131,8 +131,18 @@ void main_window::on_exit(wxCommandEvent& event) {
 
 void main_window::on_find(wxCommandEvent& event) {
 	if (find_dialog) {
-		find_dialog->Destroy();
-		find_dialog = nullptr;
+		// This horribleness is to focus the "Find what:" text field on dialog raise.
+		wxWindowList children = find_dialog->GetChildren();
+		int num_children = children.GetCount();
+		wxTextCtrl* tc = nullptr;
+		for(int i = 0; i < num_children; i++) {
+			if (children[i]->IsKindOf(CLASSINFO(wxTextCtrl))) {
+				tc = static_cast<wxTextCtrl*>(children[i]);
+				break;
+			}
+		}
+		find_dialog->Raise();
+		if (tc) tc->SetFocus();
 	}
 	find_data.SetFlags(wxFR_DOWN); // Make down the default direction.
 	find_dialog = new wxFindReplaceDialog(this, &find_data, "Find");
