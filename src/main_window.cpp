@@ -207,8 +207,18 @@ void main_window::on_find_dialog(wxFindDialogEvent& event) {
 		found_pos = search_text.rfind(query);
 	}
 	if (found_pos == wxNOT_FOUND) {
-		wxMessageBox("Text not found.", "Find", wxICON_INFORMATION);
-		return;
+		long wrap_start = (flags & wxFR_DOWN) ? 0 : text_ctrl->GetLastPosition();
+		wxString wrap_text = text_ctrl->GetValue();
+		if (!(flags & wxFR_MATCHCASE)) wrap_text.MakeLower();
+		if (flags & wxFR_DOWN)
+			found_pos = wrap_text.find(query, wrap_start);
+		else
+			found_pos = wrap_text.rfind(query);
+		if (found_pos == wxNOT_FOUND) {
+			wxMessageBox("Text not found.", "Find", wxICON_INFORMATION);
+			return;
+		}
+		wxMessageBox("No more results. Wrapping search.", "Find", wxICON_INFORMATION);
 	}
 	text_ctrl->SetFocus();
 	text_ctrl->SetSelection(found_pos, found_pos + query.Length());
