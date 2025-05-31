@@ -19,7 +19,9 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 		epub_section section = ep.parse_section(i, &lines);
 		content += wxString::FromUTF8(ep.get_section_text(section));
 	}
-	auto doc = std::make_unique<document>();
+	auto doc = std::make_unique<document>();\
+	doc->set_title(ep.title());
+	doc->set_author(ep.author());
 	doc->set_text_content(content);
 	return doc;
 }

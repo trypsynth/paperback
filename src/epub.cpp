@@ -122,7 +122,7 @@ bool epub::load(const std::string& fname) {
 	nsmap.declarePrefix("container", "urn:oasis:names:tc:opendocument:xmlns:container");
 	auto*node = doc->getNodeByPathNS("container:container/container:rootfiles/container:rootfile", nsmap);
 	if (node == nullptr) return false;
-	std::string name = static_cast<Poco::XML::Element*>(node)->getAttribute("full-path");
+	std::string name = static_cast<Element*>(node)->getAttribute("full-path");
 	// Load the OPF file
 	opf_path = Poco::Path(name, Poco::Path::PATH_UNIX).makeParent();
 	parse_opf(name);
@@ -138,6 +138,22 @@ void epub::parse_opf(const std::string& filename) {
 	auto doc = parser.parse(&src);
 	NamespaceSupport nsmap;
 	nsmap.declarePrefix("opf", "http://www.idpf.org/2007/opf");
+	nsmap.declarePrefix("dc", "http://purl.org/dc/elements/1.1/");
+	auto* metadata = doc->getNodeByPathNS("opf:package/opf:metadata", nsmap);
+	if (metadata) {
+		auto children = metadata->childNodes();
+		unsigned int len = children->length();
+		for (unsigned int i = 0; i < len; i++) {
+			auto* node = children->item(i);
+			if (node->nodeType() != Node::ELEMENT_NODE) continue;
+			auto* e = static_cast<Element*>(node);
+			std::string localName = e->localName();
+			if (localName == "title" && title_.empty())
+				title_ = e->innerText();
+			else if (localName == "creator" && author_.empty())
+				author_ = e->innerText();
+		}
+	}
 	auto* manifest = doc->getNodeByPathNS("opf:package/opf:manifest", nsmap);
 	if (!manifest) throw parse_error{"No manifest"};
 	auto children = manifest->childNodes();
