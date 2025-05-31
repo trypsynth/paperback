@@ -7,7 +7,8 @@
 struct toc_item {
 	wxString name;
 	std::vector<std::unique_ptr<toc_item>> children;
-	std::weak_ptr<toc_item> parent;
+	toc_item* parent;
+	int offset;
 };
 
 class document {
