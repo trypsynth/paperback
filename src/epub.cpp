@@ -10,6 +10,9 @@
 #include <Poco/Zip/ZipStream.h>
 #include <unordered_map>
 
+using namespace Poco::XML;
+using namespace Poco::Zip;
+
 epub_content_handler::epub_content_handler(epub_section& section)
 	:section{section},
 	locator{nullptr},
@@ -17,7 +20,7 @@ epub_content_handler::epub_content_handler(epub_section& section)
 	in_body{false},
 	max_line_length{0} {}
 
-void epub_content_handler::setDocumentLocator(const Poco::XML::Locator* loc) {
+void epub_content_handler::setDocumentLocator(const Locator* loc) {
 	locator = loc;
 }
 
@@ -30,7 +33,7 @@ void epub_content_handler::endDocument() {
 	}
 }
 
-void epub_content_handler::startElement(const Poco::XML::XMLString& uri, const Poco::XML::XMLString& localName, const Poco::XML::XMLString& qname, const Poco::XML::Attributes& attributes) {
+void epub_content_handler::startElement(const XMLString& uri, const XMLString& localName, const XMLString& qname, const Attributes& attributes) {
 	if (localName == "body") {
 		in_body = true;
 		ignore_whitespace = true;
@@ -39,7 +42,7 @@ void epub_content_handler::startElement(const Poco::XML::XMLString& uri, const P
 		in_paragraph = true;
 }
 
-void epub_content_handler::endElement(const Poco::XML::XMLString& uri, const Poco::XML::XMLString& localName, const Poco::XML::XMLString& qname) {
+void epub_content_handler::endElement(const XMLString& uri, const XMLString& localName, const XMLString& qname) {
 	if (localName == "p" || localName == "h1" || localName == "h2" || localName == "h3" || localName == "h4" || localName == "h5" || localName == "h6" || localName == "br" || localName == "div") {
 		add_line(line);
 		line = "";
@@ -48,7 +51,7 @@ void epub_content_handler::endElement(const Poco::XML::XMLString& uri, const Poc
 	in_paragraph = false;
 }
 
-void epub_content_handler::characters(const Poco::XML::XMLChar ch[], int start, int length) {
+void epub_content_handler::characters(const XMLChar ch[], int start, int length) {
 	if (!in_body) return;
 	std::string chars(ch + start, length);
 	if (ignore_whitespace) {
@@ -59,18 +62,18 @@ void epub_content_handler::characters(const Poco::XML::XMLChar ch[], int start, 
 	line += chars;
 }
 
-void epub_content_handler::ignorableWhitespace(const Poco::XML::XMLChar ch[], int start, int length) {
+void epub_content_handler::ignorableWhitespace(const XMLChar ch[], int start, int length) {
 	std::string chars(ch + start, length);
 	line += chars;
 }
 
-void epub_content_handler::processingInstruction(const Poco::XML::XMLString& target, const Poco::XML::XMLString& data) {}
+void epub_content_handler::processingInstruction(const XMLString& target, const XMLString& data) {}
 
-void epub_content_handler::startPrefixMapping(const Poco::XML::XMLString& prefix, const Poco::XML::XMLString& uri) {}
+void epub_content_handler::startPrefixMapping(const XMLString& prefix, const XMLString& uri) {}
 
-void epub_content_handler::endPrefixMapping(const Poco::XML::XMLString& prefix) {}
+void epub_content_handler::endPrefixMapping(const XMLString& prefix) {}
 
-void epub_content_handler::skippedEntity(const Poco::XML::XMLString& name) {
+void epub_content_handler::skippedEntity(const XMLString& name) {
 	static const std::unordered_map<std::string, std::string> entity_map = {
 		{"rsquo", "’"},
 		{"lsquo", "‘"},
@@ -108,14 +111,14 @@ void epub_content_handler::ltrim(std::string& s) {
 bool epub::load(const std::string& fname) {
 	fp.open(fname, std::ios::binary);
 	if (fp.fail()) return false;
-	archive = std::make_unique<Poco::Zip::ZipArchive>(fp);
+	archive = std::make_unique<ZipArchive>(fp);
 	auto header = archive->findHeader("META-INF/container.xml");
 	if (header == archive->headerEnd()) return false;
-	Poco::Zip::ZipInputStream zis(fp, header->second, true);
-	Poco::XML::InputSource src(zis);
-	Poco::XML::DOMParser parser;
+	ZipInputStream zis(fp, header->second, true);
+	InputSource src(zis);
+	DOMParser parser;
 	auto doc = parser.parse(&src);
-	Poco::XML::NamespaceSupport nsmap;
+	NamespaceSupport nsmap;
 	nsmap.declarePrefix("container", "urn:oasis:names:tc:opendocument:xmlns:container");
 	auto*node = doc->getNodeByPathNS("container:container/container:rootfiles/container:rootfile", nsmap);
 	if (node == nullptr) return false;
@@ -129,11 +132,11 @@ bool epub::load(const std::string& fname) {
 void epub::parse_opf(const std::string& filename) {
 	auto header = archive->findHeader(filename);
 	if (header == archive->headerEnd()) throw parse_error{"No OPF file found"};
-	Poco::Zip::ZipInputStream zis(fp, header->second, true);
-	Poco::XML::InputSource src(zis);
-	Poco::XML::DOMParser parser;
+	ZipInputStream zis(fp, header->second, true);
+	InputSource src(zis);
+	DOMParser parser;
 	auto doc = parser.parse(&src);
-	Poco::XML::NamespaceSupport nsmap;
+	NamespaceSupport nsmap;
 	nsmap.declarePrefix("opf", "http://www.idpf.org/2007/opf");
 	auto* manifest = doc->getNodeByPathNS("opf:package/opf:manifest", nsmap);
 	if (!manifest) throw parse_error{"No manifest"};
@@ -141,8 +144,8 @@ void epub::parse_opf(const std::string& filename) {
 	unsigned int len = children->length();
 	for (unsigned int i = 0; i < len; i++) {
 		auto* node = children->item(i);
-		if (node->nodeType() != Poco::XML::Node::ELEMENT_NODE) continue;
-		auto* e = static_cast<Poco::XML::Element*>(node);
+		if (node->nodeType() != Node::ELEMENT_NODE) continue;
+		auto* e = static_cast<Element*>(node);
 		std::string href = e->getAttribute("href");
 		Poco::Path filePath(opf_path);
 		filePath.append(href);
@@ -155,8 +158,8 @@ void epub::parse_opf(const std::string& filename) {
 	len = children->length();
 	for (unsigned int i = 0; i < len; i++) {
 		auto* node = children->item(i);
-		if (node->nodeType() != Poco::XML::Node::ELEMENT_NODE) continue;
-		auto* element = static_cast<Poco::XML::Element*>(node);
+		if (node->nodeType() != Node::ELEMENT_NODE) continue;
+		auto* element = static_cast<Element*>(node);
 		std::string idref = element->getAttribute("idref");
 		spine_items.push_back(idref);
 	}
@@ -173,9 +176,9 @@ epub_section epub::parse_section(unsigned int n, std::vector<std::string>* lines
 	std::string href = it->second;
 	auto header = archive->findHeader(href);
 	if (header == archive->headerEnd()) throw parse_error{("File not found: " + href).c_str()};
-	Poco::Zip::ZipInputStream zis(fp, header->second, true);
-	Poco::XML::InputSource src(zis);
-	auto parser = Poco::XML::SAXParser();
+	ZipInputStream zis(fp, header->second, true);
+	InputSource src(zis);
+	auto parser = SAXParser();
 	epub_section section;
 	auto handler = std::make_unique<epub_content_handler>(section);
 	handler->set_line_length(line_length);
