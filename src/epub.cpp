@@ -107,10 +107,6 @@ void epub_content_handler::ltrim(std::string& s) {
 
 bool epub::load(const std::string& fname) {
 	fp.open(fname, std::ios::binary);
-	return this->load();
-}
-
-bool epub::load() {
 	if (fp.fail()) return false;
 	archive = std::make_unique<Poco::Zip::ZipArchive>(fp);
 	auto header = archive->findHeader("META-INF/container.xml");

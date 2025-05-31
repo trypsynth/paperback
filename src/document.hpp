@@ -1,6 +1,14 @@
 #pragma once
 
+#include <memory>
+#include <vector>
 #include <wx/string.h>
+
+struct toc_item {
+	wxString name;
+	std::vector<std::unique_ptr<toc_item>> children;
+	std::weak_ptr<toc_item> parent;
+};
 
 class document {
 public:

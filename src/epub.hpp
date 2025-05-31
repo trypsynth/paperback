@@ -52,7 +52,6 @@ class epub {
 public:
 	~epub() = default;
 	bool load(const std::string& fname);
-	bool load();
 	int get_num_sections() const;
 	std::string get_section_text(epub_section& section);
 	epub_section parse_section(unsigned int n, std::vector<std::string>* lines, unsigned int line_length = 0);
