@@ -11,6 +11,10 @@ public:
 		return exts;
 	}
 
+	parser_flags flags() const override { 
+		return parser_flags::supports_sections | parser_flags::supports_toc;
+	}
+
 	std::unique_ptr<document> load(const wxString& path) const override;
 	int next_section_index() const;
 	int previous_section_index() const;

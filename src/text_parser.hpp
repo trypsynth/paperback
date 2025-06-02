@@ -11,6 +11,8 @@ public:
 		return exts;
 	}
 
+	parser_flags flags() const {return parser_flags::none;}
+
 	std::unique_ptr<document> load(const wxString& path) const override;
 };
 

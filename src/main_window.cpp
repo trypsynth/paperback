@@ -40,7 +40,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	help_menu->Append(wxID_HELP, "&Help\tF1");
 	help_menu->AppendSeparator();
 	help_menu->Append(ID_CHECK_FOR_UPDATES, "&Check for updates");
-	menu_bar->Append(file_menu, "&Document");
+	menu_bar->Append(file_menu, "&File");
 	menu_bar->Append(go_menu, "&Go");
 	menu_bar->Append(tools_menu, "&Tools");
 	menu_bar->Append(help_menu, "&Help");
@@ -54,6 +54,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	Bind(wxEVT_MENU, &main_window::on_find_next, this, ID_FIND_NEXT);
 	Bind(wxEVT_MENU, &main_window::on_find_previous, this, ID_FIND_PREVIOUS);
 	Bind(wxEVT_MENU, &main_window::on_go_to, this, ID_GO_TO);
+	Bind(wxEVT_MENU, &main_window::on_previous_section, this, ID_PREVIOUS_SECTION);
 	Bind(wxEVT_MENU, &main_window::on_word_count, this, ID_WORD_COUNT);
 	Bind(wxEVT_MENU, &main_window::on_about, this, wxID_ABOUT);
 	for (const int id : doc_command_ids)
@@ -177,6 +178,10 @@ void main_window::on_go_to(wxCommandEvent& event) {
 	if (dlg.ShowModal() != wxID_OK) return;
 	long pos = content->XYToPosition(0, dlg.line_number() - 1);
 	content->SetInsertionPoint(pos);
+}
+
+void main_window::on_previous_section(wxCommandEvent& event) {
+	wxMessageBox("It works!", "Test");
 }
 
 void main_window::on_word_count(wxCommandEvent& event) {
