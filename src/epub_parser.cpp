@@ -28,32 +28,31 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 	return doc;
 }
 
-inline int epub_parser::next_section_index() const {
-	if (cur_section + 1 < static_cast<int>(section_offsets.size()))
-		return ++cur_section;
+int epub_parser::next_section_index(size_t position) const {
+	for (size_t i = 0; i < section_offsets.size(); ++i)
+		if (section_offsets[i] > position)
+			return static_cast<int>(i);
 	return -1;
 }
 
-inline int epub_parser::previous_section_index() const {
-	if (cur_section > 0)
-		return --cur_section;
+int epub_parser::previous_section_index(size_t position) const {
+	for (int i = static_cast<int>(section_offsets.size()) - 1; i >= 0; --i)
+		if (section_offsets[i] < position)
+			return i;
 	return -1;
 }
 
-inline size_t epub_parser::current_offset() const {
-	if (cur_section < static_cast<int>(section_offsets.size()))
-		return section_offsets[cur_section];
-	return 0;
+int epub_parser::section_index(size_t position) const {
+	for (int i = static_cast<int>(section_offsets.size()) - 1; i >= 0; --i)
+		if (position >= section_offsets[i])
+			return i;
+	return -1;
 }
 
-inline size_t epub_parser::offset_for_section(int section_index) const {
-	if (section_index >= 0 && section_index < static_cast<int>(section_offsets.size()))
-		return section_offsets[section_index];
-	return 0;
-}
-
-inline int epub_parser::current_section_index() const {
-	return cur_section;
+size_t epub_parser::offset_for_section(int section_index) const {
+	if (section_index < 0 || section_index >= static_cast<int>(section_offsets.size()))
+		return 0;
+	return section_offsets[section_index];
 }
 
 size_t epub_parser::section_count() const {

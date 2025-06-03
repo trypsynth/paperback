@@ -22,11 +22,10 @@ inline parser_flags operator&(parser_flags a, parser_flags b) {
 class section_navigable {
 public:
 	virtual ~section_navigable() = default;
-	virtual int next_section_index() const = 0;
-	virtual int previous_section_index() const = 0;
-	virtual size_t current_offset() const = 0;
+	virtual int next_section_index(size_t position) const = 0;
+	virtual int previous_section_index(size_t position) const = 0;
 	virtual size_t offset_for_section(int section_index) const = 0;
-	virtual int current_section_index() const = 0;
+	virtual int section_index(size_t position) const = 0;
 	virtual size_t section_count() const = 0;
 };
 

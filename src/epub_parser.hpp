@@ -16,11 +16,10 @@ public:
 	}
 
 	std::unique_ptr<document> load(const wxString& path) const override;
-	int next_section_index() const override;
-	int previous_section_index() const override;
-	size_t current_offset() const override;
+	int next_section_index(size_t position) const override;
+	int previous_section_index(size_t position) const override;
+	int section_index(size_t position) const override;
 	size_t offset_for_section(int section_index) const override;
-	int current_section_index() const override;
 	size_t section_count() const override;
 
 private:

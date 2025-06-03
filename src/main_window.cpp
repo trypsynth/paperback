@@ -200,12 +200,13 @@ void main_window::on_previous_section(wxCommandEvent& event) {
 	parser* par = active_parser();
 	if (!par) return;
 	if (!par->has_flag(parser_flags::supports_sections)) {
-		speechSayA("No sections", 1);
+		speechSayA("Document has no sections", 1);
 		return;
 	}
 	auto nav = par->as_section_navigable();
 	if (!nav) return;
-	int prev_index = nav->previous_section_index();
+	size_t current_pos = active_text_ctrl()->GetInsertionPoint();
+	int prev_index = nav->previous_section_index(current_pos);
 	if (prev_index == -1) {
 		speechSayA("No previous section", 1);
 		return;
@@ -222,12 +223,13 @@ void main_window::on_next_section(wxCommandEvent& event) {
 	parser* par = active_parser();
 	if (!par) return;
 	if (!par->has_flag(parser_flags::supports_sections)) {
-		speechSayA("No sections", 1);
+		speechSayA("Document has no sections", 1);
 		return;
 	}
 	auto nav = par->as_section_navigable();
 	if (!nav) return;
-	int next_index = nav->next_section_index();
+	size_t current_pos = active_text_ctrl()->GetInsertionPoint();
+	int next_index = nav->next_section_index(current_pos);
 	if (next_index == -1) {
 		speechSayA("No next section", 1);
 		return;
