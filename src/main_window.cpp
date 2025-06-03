@@ -2,6 +2,7 @@
 #include "go_to_dialog.hpp"
 #include "main_window.hpp"
 #include "parser.hpp"
+#define UNIVERSAL_SPEECH_STATIC
 #include <UniversalSpeech.h>
 #include <wx/aboutdlg.h>
 #include <wx/fdrepdlg.h>
