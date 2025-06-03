@@ -40,7 +40,9 @@ struct user_data : public wxClientData {
 class main_window : public wxFrame {
 public:
 	main_window();
-	wxTextCtrl* active_text_ctrl();
+	user_data* active_user_data() const;
+	wxTextCtrl* active_text_ctrl() const;
+	parser* active_parser() const;
 	void open_document(const wxString& path, parser* par);
 
 private:

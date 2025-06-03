@@ -61,8 +61,17 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 		Bind(wxEVT_UPDATE_UI, &main_window::update_doc_commands, this, id);
 }
 
-wxTextCtrl* main_window::active_text_ctrl() {
-	return static_cast<wxTextCtrl*>(static_cast<user_data*>(notebook->GetPage(notebook->GetSelection())->GetClientObject())->textbox);
+user_data* main_window::active_user_data() const {
+	auto page = notebook->GetPage(notebook->GetSelection());
+	return static_cast<user_data*>(page->GetClientObject());
+}
+
+wxTextCtrl* main_window::active_text_ctrl() const {
+	return static_cast<wxTextCtrl*>(active_user_data()->textbox);
+}
+
+parser* main_window::active_parser() const {
+	return static_cast<parser*>(active_user_data()->par);
 }
 
 void main_window::open_document(const wxString& path, parser* par) {
@@ -184,7 +193,7 @@ void main_window::on_go_to(wxCommandEvent& event) {
 }
 
 void main_window::on_previous_section(wxCommandEvent& event) {
-	wxMessageBox("It works!", "Test");
+	
 }
 
 void main_window::on_word_count(wxCommandEvent& event) {
