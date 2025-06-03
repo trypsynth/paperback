@@ -33,8 +33,8 @@ constexpr int doc_command_ids[] = {
 
 // Each tab stores a pointer to one of these.
 struct user_data : public wxClientData {
-	wxTextCtrl* textbox;
-	parser* par;
+	wxTextCtrl* textbox = nullptr;
+	parser* par = nullptr;
 };
 
 class main_window : public wxFrame {
@@ -61,6 +61,7 @@ private:
 	void on_find_previous(wxCommandEvent& event);
 	void on_go_to(wxCommandEvent& event);
 	void on_previous_section(wxCommandEvent& event);
+	void on_next_section(wxCommandEvent& event);
 	void on_word_count(wxCommandEvent& event);
 	void on_about(wxCommandEvent& event);
 	void on_find_dialog(wxFindDialogEvent& event);

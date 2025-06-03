@@ -13,4 +13,11 @@ find_package(Poco REQUIRED COMPONENTS Foundation xml Zip)
 
 file(GLOB_RECURSE SRC_FILES src/*.cpp)
 add_executable(paperback WIN32 ${SRC_FILES})
-target_link_libraries(paperback PRIVATE wx::core wx::base Poco::Foundation Poco::XML Poco::Zip)
+target_link_directories(paperback PRIVATE "${CMAKE_SOURCE_DIR}/lib")
+target_link_libraries(paperback PRIVATE wx::core wx::base Poco::Foundation Poco::XML Poco::Zip UniversalSpeechStatic)
+target_include_directories(paperback PRIVATE "${CMAKE_SOURCE_DIR}/include")
+
+file(GLOB DLLS "${CMAKE_SOURCE_DIR}/bin/*.dll")
+foreach(DLL ${DLL_FILES})
+	add_custom_command(TARGET paperback POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different "${DLL}" "$<TARGET_FILE_DIR:paperback>")
+endforeach()

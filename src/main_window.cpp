@@ -2,6 +2,7 @@
 #include "go_to_dialog.hpp"
 #include "main_window.hpp"
 #include "parser.hpp"
+#include <UniversalSpeech.h>
 #include <wx/aboutdlg.h>
 #include <wx/fdrepdlg.h>
 #include <wx/filename.h>
@@ -55,6 +56,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	Bind(wxEVT_MENU, &main_window::on_find_previous, this, ID_FIND_PREVIOUS);
 	Bind(wxEVT_MENU, &main_window::on_go_to, this, ID_GO_TO);
 	Bind(wxEVT_MENU, &main_window::on_previous_section, this, ID_PREVIOUS_SECTION);
+	Bind(wxEVT_MENU, &main_window::on_next_section, this, ID_NEXT_SECTION);
 	Bind(wxEVT_MENU, &main_window::on_word_count, this, ID_WORD_COUNT);
 	Bind(wxEVT_MENU, &main_window::on_about, this, wxID_ABOUT);
 	for (const int id : doc_command_ids)
@@ -193,7 +195,21 @@ void main_window::on_go_to(wxCommandEvent& event) {
 }
 
 void main_window::on_previous_section(wxCommandEvent& event) {
-	
+	parser* par = active_parser();
+	if (!par) return;
+	if (!par->has_flag(parser_flags::supports_sections)) {
+		speechSayA("Document has no sections", 1);
+		return;
+	}
+}
+
+void main_window::on_next_section(wxCommandEvent& event) {
+	parser* par = active_parser();
+	if (!par) return;
+	if (!par->has_flag(parser_flags::supports_sections)) {
+		speechSayA("Document has no sections", 1);
+		return;
+	}
 }
 
 void main_window::on_word_count(wxCommandEvent& event) {
