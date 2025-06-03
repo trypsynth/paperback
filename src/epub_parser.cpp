@@ -51,3 +51,11 @@ inline size_t epub_parser::offset_for_section(int section_index) const {
 		return section_offsets[section_index];
 	return 0;
 }
+
+inline int epub_parser::current_section_index() const {
+	return cur_section;
+}
+
+size_t epub_parser::section_count() const {
+	return section_offsets.size();
+}

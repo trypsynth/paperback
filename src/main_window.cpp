@@ -199,18 +199,36 @@ void main_window::on_previous_section(wxCommandEvent& event) {
 	parser* par = active_parser();
 	if (!par) return;
 	if (!par->has_flag(parser_flags::supports_sections)) {
-		speechSayA("Document has no sections", 1);
+		speechSayA("No sections", 1);
 		return;
 	}
+	auto nav = par->as_section_navigable();
+	if (!nav) return;
+	int prev_index = nav->previous_section_index();
+	if (prev_index == -1) {
+		speechSayA("No previous section", 1);
+		return;
+	}
+	size_t offset = nav->offset_for_section(prev_index);
+	speechSayA(wxString::Format("Section %d", prev_index + 1), 1);
 }
 
 void main_window::on_next_section(wxCommandEvent& event) {
 	parser* par = active_parser();
 	if (!par) return;
 	if (!par->has_flag(parser_flags::supports_sections)) {
-		speechSayA("Document has no sections", 1);
+		speechSayA("No sections", 1);
 		return;
 	}
+	auto nav = par->as_section_navigable();
+	if (!nav) return;
+	int next_index = nav->next_section_index();
+	if (next_index == -1) {
+		speechSayA("No next section", 1);
+		return;
+	}
+	size_t offset = nav->offset_for_section(next_index);
+	speechSayA(wxString::Format("Section %d", next_index + 1), 1);
 }
 
 void main_window::on_word_count(wxCommandEvent& event) {

@@ -26,6 +26,8 @@ public:
 	virtual int previous_section_index() const = 0;
 	virtual size_t current_offset() const = 0;
 	virtual size_t offset_for_section(int section_index) const = 0;
+	virtual int current_section_index() const = 0;
+	virtual size_t section_count() const = 0;
 };
 
 class parser {
