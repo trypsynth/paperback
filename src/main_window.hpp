@@ -1,8 +1,6 @@
 #pragma once
 
-#include "document.hpp"
 #include "parser.hpp"
-#include <vector>
 #include <wx/fdrepdlg.h>
 #include <wx/notebook.h>
 #include <wx/wx.h>
@@ -36,20 +34,19 @@ constexpr int doc_command_ids[] = {
 // Each tab stores a pointer to one of these.
 struct user_data : public wxClientData {
 	wxTextCtrl* textbox;
-	parser* doc;
+	parser* par;
 };
 
 class main_window : public wxFrame {
 public:
 	main_window();
 	wxTextCtrl* active_text_ctrl();
-	void open_document(const wxString& path, std::unique_ptr<document> doc);
+	void open_document(const wxString& path, parser* par);
 
 private:
 	wxNotebook* notebook = nullptr;
 	wxFindReplaceDialog* find_dialog = nullptr;
 	wxFindReplaceData find_data;
-	std::vector<parser*> document_parsers;
 
 	void update_doc_commands(wxUpdateUIEvent& event);
 	void on_open(wxCommandEvent& event);

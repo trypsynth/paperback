@@ -19,10 +19,6 @@ inline parser_flags operator&(parser_flags a, parser_flags b) {
 	return static_cast<parser_flags>(static_cast<int>(a) & static_cast<int>(b));
 }
 
-inline bool has_flag(parser_flags flags, parser_flags flag) {
-	return (flags & flag) == flag;
-}
-
 class parser {
 public:
 	virtual ~parser() = default;
@@ -30,6 +26,10 @@ public:
 	virtual const std::vector<wxString>& extensions() const = 0;
 	virtual parser_flags flags() const = 0;
 	virtual std::unique_ptr<document> load(const wxString& path) const = 0;
+
+	bool has_flag(parser_flags flag) const {
+		return (flags() & flag) == flag;
+	}
 };
 
 const std::vector<parser*>& get_all_parsers();

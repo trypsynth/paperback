@@ -65,13 +65,18 @@ wxTextCtrl* main_window::active_text_ctrl() {
 	return static_cast<wxTextCtrl*>(static_cast<user_data*>(notebook->GetPage(notebook->GetSelection())->GetClientObject())->textbox);
 }
 
-void main_window::open_document(const wxString& path, std::unique_ptr<document> doc) {
+void main_window::open_document(const wxString& path, parser* par) {
+	std::unique_ptr<document> doc = par->load(path);
+	if (!doc) {
+		wxMessageBox("Failed to load document.", "Error", wxICON_ERROR);
+		return;
+	}
 	auto* page = new wxPanel(notebook, wxID_ANY);
 	auto* page_sizer = new wxBoxSizer(wxVERTICAL);
 	auto* content = new wxTextCtrl(page, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxTE_DONTWRAP);
 	auto* data = new user_data;
 	data->textbox = content;
-	data->doc = nullptr;
+	data->par = par;
 	page->SetClientObject(data);
 	page_sizer->Add(content, 1, wxEXPAND | wxALL, 5);
 	page->SetSizer(page_sizer);
@@ -97,12 +102,7 @@ void main_window::on_open(wxCommandEvent& event) {
 		wxMessageBox("No suitable parser found for " + path, "Error", wxICON_ERROR);
 		return;
 	}
-	std::unique_ptr<document> doc = par->load(path);
-	if (!doc) {
-		wxMessageBox("Failed to load the document: " + path, "Error", wxICON_ERROR);
-		return;
-	}
-	open_document(path, std::move(doc));
+	open_document(path, par);
 }
 
 void main_window::on_close(wxCommandEvent& event) {
