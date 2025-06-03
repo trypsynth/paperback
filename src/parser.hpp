@@ -19,6 +19,15 @@ inline parser_flags operator&(parser_flags a, parser_flags b) {
 	return static_cast<parser_flags>(static_cast<int>(a) & static_cast<int>(b));
 }
 
+class section_navigable {
+public:
+	virtual ~section_navigable() = default;
+	virtual int next_section_index() const = 0;
+	virtual int previous_section_index() const = 0;
+	virtual size_t current_offset() const = 0;
+	virtual size_t offset_for_section(int section_index) const = 0;
+};
+
 class parser {
 public:
 	virtual ~parser() = default;
@@ -29,6 +38,14 @@ public:
 
 	bool has_flag(parser_flags flag) const {
 		return (flags() & flag) == flag;
+	}
+
+	section_navigable* as_section_navigable() {
+		return dynamic_cast<section_navigable*>(this);
+	}
+
+	const section_navigable* as_section_navigable() const {
+		return dynamic_cast<const section_navigable*>(this);
 	}
 };
 

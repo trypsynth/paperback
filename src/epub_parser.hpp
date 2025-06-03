@@ -2,7 +2,7 @@
 
 #include "parser.hpp"
 
-class epub_parser : public parser {
+class epub_parser : public parser, public section_navigable {
 public:
 	wxString name() const override {return "Epub Books";}
 
@@ -16,10 +16,10 @@ public:
 	}
 
 	std::unique_ptr<document> load(const wxString& path) const override;
-	int next_section_index() const;
-	int previous_section_index() const;
-	size_t current_offset() const;
-	size_t offset_for_section(int section_index) const;
+	int next_section_index() const override;
+	int previous_section_index() const override;
+	size_t current_offset() const override;
+	size_t offset_for_section(int section_index) const override;
 
 private:
 	mutable std::vector<size_t> section_offsets;
