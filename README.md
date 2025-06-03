@@ -7,7 +7,7 @@ From an x64 Visual Studio Developer command prompt:
 ```
 mkdir build
 cd build
-cmake ..
+cmake .. -GNinja
 cmake --build . --config Release
 ```
 
