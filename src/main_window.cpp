@@ -212,7 +212,10 @@ void main_window::on_previous_section(wxCommandEvent& event) {
 	}
 	size_t offset = nav->offset_for_section(prev_index);
 	active_text_ctrl()->SetInsertionPoint(offset);
-	speechSayA(wxString::Format("Section %d", prev_index + 1), 1);
+	long line;
+	active_text_ctrl()->PositionToXY(active_text_ctrl()->GetInsertionPoint(), 0, &line);
+	wxString current_line = active_text_ctrl()->GetLineText(line);
+	speechSayA(current_line, 1);
 }
 
 void main_window::on_next_section(wxCommandEvent& event) {
@@ -231,7 +234,10 @@ void main_window::on_next_section(wxCommandEvent& event) {
 	}
 	size_t offset = nav->offset_for_section(next_index);
 	active_text_ctrl()->SetInsertionPoint(offset);
-	speechSayA(wxString::Format("Section %d", next_index + 1), 1);
+	long line;
+	active_text_ctrl()->PositionToXY(active_text_ctrl()->GetInsertionPoint(), 0, &line);
+	wxString current_line = active_text_ctrl()->GetLineText(line);
+	speechSayA(current_line, 1);
 }
 
 void main_window::on_word_count(wxCommandEvent& event) {
