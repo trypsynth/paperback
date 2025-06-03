@@ -210,6 +210,7 @@ void main_window::on_previous_section(wxCommandEvent& event) {
 		return;
 	}
 	size_t offset = nav->offset_for_section(prev_index);
+	active_text_ctrl()->SetInsertionPoint(offset);
 	speechSayA(wxString::Format("Section %d", prev_index + 1), 1);
 }
 
@@ -228,6 +229,7 @@ void main_window::on_next_section(wxCommandEvent& event) {
 		return;
 	}
 	size_t offset = nav->offset_for_section(next_index);
+	active_text_ctrl()->SetInsertionPoint(offset);
 	speechSayA(wxString::Format("Section %d", next_index + 1), 1);
 }
 
