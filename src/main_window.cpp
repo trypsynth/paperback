@@ -62,14 +62,17 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 }
 
 wxTextCtrl* main_window::active_text_ctrl() {
-	return static_cast<wxTextCtrl*>(notebook->GetPage(notebook->GetSelection())->GetClientData());
+	return static_cast<wxTextCtrl*>(static_cast<user_data*>(notebook->GetPage(notebook->GetSelection())->GetClientObject())->textbox);
 }
 
 void main_window::open_document(const wxString& path, std::unique_ptr<document> doc) {
 	auto* page = new wxPanel(notebook, wxID_ANY);
 	auto* page_sizer = new wxBoxSizer(wxVERTICAL);
 	auto* content = new wxTextCtrl(page, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxTE_DONTWRAP);
-	page->SetClientData(content);
+	auto* data = new user_data;
+	data->textbox = content;
+	data->doc = nullptr;
+	page->SetClientObject(data);
 	page_sizer->Add(content, 1, wxEXPAND | wxALL, 5);
 	page->SetSizer(page_sizer);
 	wxString label = wxFileName(path).GetFullName();
