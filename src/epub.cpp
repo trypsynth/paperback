@@ -1,4 +1,5 @@
 #include "epub.hpp"
+#include "html_to_text.hpp"
 #include <memory>
 #include <Poco/AutoPtr.h>
 #include <Poco/DOM/Document.h>
@@ -9,105 +10,9 @@
 #include <Poco/SAX/SAXParser.h>
 #include <Poco/String.h>
 #include <Poco/Zip/ZipStream.h>
-#include <unordered_map>
 
 using namespace Poco::XML;
 using namespace Poco::Zip;
-
-epub_content_handler::epub_content_handler(epub_section& section)
-	:section{section},
-	locator{nullptr},
-	in_paragraph{false},
-	in_body{false},
-	max_line_length{0} {}
-
-void epub_content_handler::setDocumentLocator(const Locator* loc) {
-	locator = loc;
-}
-
-void epub_content_handler::startDocument() {}
-
-void epub_content_handler::endDocument() {
-	if (!line.empty()) {
-		add_line(line);
-		line = "";
-	}
-}
-
-void epub_content_handler::startElement(const XMLString& uri, const XMLString& localName, const XMLString& qname, const Attributes& attributes) {
-	if (localName == "body") {
-		in_body = true;
-		ignore_whitespace = true;
-	}
-	if (localName == "p" || localName == "div")
-		in_paragraph = true;
-}
-
-void epub_content_handler::endElement(const XMLString& uri, const XMLString& localName, const XMLString& qname) {
-	if (localName == "p" || localName == "h1" || localName == "h2" || localName == "h3" || localName == "h4" || localName == "h5" || localName == "h6" || localName == "br" || localName == "div") {
-		add_line(line);
-		line = "";
-		ignore_whitespace = true;
-	}
-	in_paragraph = false;
-}
-
-void epub_content_handler::characters(const XMLChar ch[], int start, int length) {
-	if (!in_body) return;
-	std::string chars(ch + start, length);
-	if (ignore_whitespace) {
-		ltrim(chars);
-		if (chars.empty()) return;
-		ignore_whitespace = false;
-	}
-	line += chars;
-}
-
-void epub_content_handler::ignorableWhitespace(const XMLChar ch[], int start, int length) {
-	std::string chars(ch + start, length);
-	line += chars;
-}
-
-void epub_content_handler::processingInstruction(const XMLString& target, const XMLString& data) {}
-
-void epub_content_handler::startPrefixMapping(const XMLString& prefix, const XMLString& uri) {}
-
-void epub_content_handler::endPrefixMapping(const XMLString& prefix) {}
-
-void epub_content_handler::skippedEntity(const XMLString& name) {
-	static const std::unordered_map<std::string, std::string> entity_map = {
-		{"rsquo", "’"},
-		{"lsquo", "‘"},
-		{"ldquo", "“"},
-		{"rdquo", "”"},
-		{"mdash", "—"},
-		{"ndash", "–"},
-		{"nbsp", " "}
-	};
-	auto it = entity_map.find(name);
-	if (it != entity_map.end())
-		line += it->second;
-}
-
-void epub_content_handler::add_line(std::string line) {
-	if (max_line_length > 0) {
-		while (line.length() > max_line_length) {
-			section.lines.push_back(line.substr(0, max_line_length));
-			line = line.substr(max_line_length);
-		}
-	}
-	section.lines.push_back(line);
-}
-
-void epub_content_handler::set_line_length(int n) {
-	max_line_length = n;
-}
-
-void epub_content_handler::ltrim(std::string& s) {
-	s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char c) {
-		return !std::isspace(c);
-	}));
-}
 
 bool epub::load(const std::string& fname) {
 	fp.open(fname, std::ios::binary);
@@ -186,10 +91,10 @@ int epub::get_num_sections() const {
 	return spine_items.size();
 }
 
-epub_section epub::parse_section(unsigned int n, std::vector<std::string>* lines, unsigned int line_length) {
+epub_section epub::parse_section(unsigned int n, std::vector<std::string>* lines) {
 	std::string id = spine_items[n];
 	auto it = manifest_items.find(id);
-	if (it == manifest_items.end()) throw parse_error{("Unknown id: " + id).c_str()};
+	if (it == manifest_items.end()) throw parse_error("Unknown id: " + id);
 	std::string href = it->second;
 	auto header = archive->findHeader(href);
 	if (header == archive->headerEnd()) throw parse_error{("File not found: " + href).c_str()};
@@ -197,10 +102,10 @@ epub_section epub::parse_section(unsigned int n, std::vector<std::string>* lines
 	InputSource src(zis);
 	auto parser = SAXParser();
 	epub_section section;
-	auto handler = std::make_unique<epub_content_handler>(section);
-	handler->set_line_length(line_length);
+	auto handler = std::make_unique<html_to_text>();
 	parser.setContentHandler(handler.get());
 	parser.parse(&src);
+	section.lines = handler.get()->lines();
 	return section;
 }
 
