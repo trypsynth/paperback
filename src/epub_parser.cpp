@@ -16,8 +16,7 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 	wxString content;
 	section_offsets.clear();
 	for (int i = 0; i < ep.get_num_sections(); i++) {
-		std::vector<std::string> lines;
-		epub_section section = ep.parse_section(i, &lines);
+		epub_section section = ep.parse_section(i);
 		section_offsets.push_back(content.length());
 		content += wxString::FromUTF8(ep.get_section_text(section));
 	}

@@ -20,8 +20,8 @@ public:
 	~epub() = default;
 	bool load(const std::string& fname);
 	int get_num_sections() const;
+	epub_section parse_section(size_t n);
 	std::string get_section_text(epub_section& section);
-	epub_section parse_section(size_t n, std::vector<std::string>* lines);
 	const std::string& title() const{return title_;}
 	const std::string& author() const{return author_;}
 

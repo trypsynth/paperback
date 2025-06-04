@@ -92,7 +92,7 @@ int epub::get_num_sections() const {
 	return spine_items.size();
 }
 
-epub_section epub::parse_section(size_t n, std::vector<std::string>* lines) {
+epub_section epub::parse_section(size_t n) {
 	const auto id = spine_items[n];
 	auto it = manifest_items.find(id);
 	if (it == manifest_items.end()) throw parse_error("Unknown id: " + id);
