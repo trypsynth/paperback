@@ -95,7 +95,7 @@ void main_window::open_document(const wxString& path, parser* par) {
 	wxString label = wxFileName(path).GetFullName();
 	notebook->AddPage(page, label, true);
 	content->Freeze();
-	content->SetValue(doc->text_content());
+	content->SetValue(doc->text_content);
 	content->Thaw();
 	content->SetFocus();
 }

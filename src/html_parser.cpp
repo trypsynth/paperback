@@ -20,6 +20,6 @@ std::unique_ptr<document> html_parser::load(const wxString& path) const {
 	for (const auto& line : handler.lines())
 		oss << line << "\n";
 	auto doc = std::make_unique<document>();
-	doc->set_text_content(oss.str());
+	doc->text_content = oss.str();
 	return doc;
 }
