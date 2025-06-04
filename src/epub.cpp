@@ -7,6 +7,7 @@
 #include <Poco/DOM/NodeList.h>
 #include <Poco/SAX/InputSource.h>
 #include <Poco/SAX/SAXParser.h>
+#include <Poco/String.h>
 #include <Poco/Zip/ZipStream.h>
 #include <unordered_map>
 
@@ -205,9 +206,10 @@ epub_section epub::parse_section(unsigned int n, std::vector<std::string>* lines
 
 std::string epub::get_section_text(epub_section& section) {
 	std::string data;
-	for (auto it = section.lines.begin(); it != section.lines.end(); it++) {
-		if (it->empty()) continue;
-		data += *it + "\n\n";
+	for (auto& line : section.lines) {
+		line = Poco::trimInPlace(line);
+		if (line.empty()) continue;
+		data += line + "\n";
 	}
 	return data;
 }
