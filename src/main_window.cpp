@@ -38,6 +38,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	go_menu->Append(ID_NEXT_SECTION, "Next section\t]");
 	auto* tools_menu = new wxMenu();
 	tools_menu->Append(ID_WORD_COUNT, "&Word count\tCtrl+W");
+	tools_menu->Append(ID_DOC_INFO, "Document &info\tCtrl+I");
 	tools_menu->AppendSeparator();
 	tools_menu->Append(ID_TABLE_OF_CONTENTS, "Table of contents\tCtrl+T");
 	auto* help_menu = new wxMenu();
