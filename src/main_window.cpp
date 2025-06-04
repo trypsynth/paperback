@@ -258,6 +258,12 @@ void main_window::on_word_count(wxCommandEvent& event) {
 }
 
 void main_window::on_toc(wxCommandEvent& event) {
+	parser* par = active_parser();
+	if (!par) return;
+	if (!par->has_flag(parser_flags::supports_toc)) {
+		speechSayA("No table of contents", 1);
+		return;
+	}
 	toc_dialog dlg(this);
 	if (dlg.ShowModal() != wxID_OK) return;
 }
