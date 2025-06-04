@@ -11,6 +11,7 @@
 #include <Poco/String.h>
 #include <Poco/Zip/ZipStream.h>
 
+using namespace Poco;
 using namespace Poco::XML;
 using namespace Poco::Zip;
 
@@ -28,16 +29,16 @@ bool epub::load(const std::string& fname) {
 	nsmap.declarePrefix("container", "urn:oasis:names:tc:opendocument:xmlns:container");
 	auto*node = doc->getNodeByPathNS("container:container/container:rootfiles/container:rootfile", nsmap);
 	if (node == nullptr) return false;
-	std::string name = static_cast<Element*>(node)->getAttribute("full-path");
+	auto name = static_cast<Element*>(node)->getAttribute("full-path");
 	// Load the OPF file
-	opf_path = Poco::Path(name, Poco::Path::PATH_UNIX).makeParent();
+	opf_path = Path(name, Path::PATH_UNIX).makeParent();
 	parse_opf(name);
 	return true;
 }
 
 void epub::parse_opf(const std::string& filename) {
 	auto header = archive->findHeader(filename);
-	if (header == archive->headerEnd()) throw parse_error{"No OPF file found"};
+	if (header == archive->headerEnd()) throw parse_error("No OPF file found");
 	ZipInputStream zis(fp, header->second, true);
 	InputSource src(zis);
 	DOMParser parser;
@@ -48,12 +49,12 @@ void epub::parse_opf(const std::string& filename) {
 	auto* metadata = doc->getNodeByPathNS("opf:package/opf:metadata", nsmap);
 	if (metadata) {
 		auto children = metadata->childNodes();
-		unsigned int len = children->length();
-		for (unsigned int i = 0; i < len; i++) {
+		size_t len = children->length();
+		for (size_t i = 0; i < len; i++) {
 			auto* node = children->item(i);
 			if (node->nodeType() != Node::ELEMENT_NODE) continue;
 			auto* e = static_cast<Element*>(node);
-			std::string localName = e->localName();
+			auto localName = e->localName();
 			if (localName == "title" && title_.empty())
 				title_ = e->innerText();
 			else if (localName == "creator" && author_.empty())
@@ -61,28 +62,28 @@ void epub::parse_opf(const std::string& filename) {
 		}
 	}
 	auto* manifest = doc->getNodeByPathNS("opf:package/opf:manifest", nsmap);
-	if (!manifest) throw parse_error{"No manifest"};
+	if (!manifest) throw parse_error("No manifest");
 	auto children = manifest->childNodes();
-	unsigned int len = children->length();
-	for (unsigned int i = 0; i < len; i++) {
+	size_t len = children->length();
+	for (size_t i = 0; i < len; i++) {
 		auto* node = children->item(i);
 		if (node->nodeType() != Node::ELEMENT_NODE) continue;
 		auto* e = static_cast<Element*>(node);
-		std::string href = e->getAttribute("href");
-		Poco::Path filePath(opf_path);
+		const auto href = e->getAttribute("href");
+		Path filePath(opf_path);
 		filePath.append(href);
-		std::string id = e->getAttribute("id");
-		manifest_items.insert(std::make_pair(id, filePath.toString(Poco::Path::PATH_UNIX)));
+		const auto id = e->getAttribute("id");
+		manifest_items.insert(std::make_pair(id, filePath.toString(Path::PATH_UNIX)));
 	}
 	auto* spine = doc->getNodeByPathNS("opf:package/opf:spine", nsmap);
-	if (!spine) throw parse_error{"No spine"};
+	if (!spine) throw parse_error("No spine");
 	children = spine->childNodes();
 	len = children->length();
-	for (unsigned int i = 0; i < len; i++) {
+	for (size_t i = 0; i < len; i++) {
 		auto* node = children->item(i);
 		if (node->nodeType() != Node::ELEMENT_NODE) continue;
 		auto* element = static_cast<Element*>(node);
-		std::string idref = element->getAttribute("idref");
+		const auto idref = element->getAttribute("idref");
 		spine_items.push_back(idref);
 	}
 }
@@ -91,13 +92,13 @@ int epub::get_num_sections() const {
 	return spine_items.size();
 }
 
-epub_section epub::parse_section(unsigned int n, std::vector<std::string>* lines) {
-	std::string id = spine_items[n];
+epub_section epub::parse_section(size_t n, std::vector<std::string>* lines) {
+	const auto id = spine_items[n];
 	auto it = manifest_items.find(id);
 	if (it == manifest_items.end()) throw parse_error("Unknown id: " + id);
-	std::string href = it->second;
+	const auto href = it->second;
 	auto header = archive->findHeader(href);
-	if (header == archive->headerEnd()) throw parse_error{("File not found: " + href).c_str()};
+	if (header == archive->headerEnd()) throw parse_error("File not found: " + href);
 	ZipInputStream zis(fp, header->second, true);
 	InputSource src(zis);
 	auto parser = SAXParser();
@@ -112,7 +113,7 @@ epub_section epub::parse_section(unsigned int n, std::vector<std::string>* lines
 std::string epub::get_section_text(epub_section& section) {
 	std::string data;
 	for (auto& line : section.lines) {
-		line = Poco::trimInPlace(line);
+		line = trimInPlace(line);
 		if (line.empty()) continue;
 		data += line + "\n";
 	}
