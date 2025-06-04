@@ -2,6 +2,7 @@
 #include "go_to_dialog.hpp"
 #include "main_window.hpp"
 #include "parser.hpp"
+#include "toc_dialog.hpp"
 #define UNIVERSAL_SPEECH_STATIC
 #include <UniversalSpeech.h>
 #include <wx/aboutdlg.h>
@@ -61,6 +62,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	Bind(wxEVT_MENU, &main_window::on_previous_section, this, ID_PREVIOUS_SECTION);
 	Bind(wxEVT_MENU, &main_window::on_next_section, this, ID_NEXT_SECTION);
 	Bind(wxEVT_MENU, &main_window::on_word_count, this, ID_WORD_COUNT);
+	Bind(wxEVT_MENU, &main_window::on_toc, this, ID_TABLE_OF_CONTENTS);
 	Bind(wxEVT_MENU, &main_window::on_about, this, wxID_ABOUT);
 	for (const int id : doc_command_ids)
 		Bind(wxEVT_UPDATE_UI, &main_window::update_doc_commands, this, id);
@@ -253,6 +255,11 @@ void main_window::on_word_count(wxCommandEvent& event) {
 		++count;
 	}
 	wxMessageBox(wxString::Format("The document contains %d %s", count, count == 1 ? "word" : "words"), "Word count", wxICON_INFORMATION);
+}
+
+void main_window::on_toc(wxCommandEvent& event) {
+	toc_dialog dlg(this);
+	if (dlg.ShowModal() != wxID_OK) return;
 }
 
 void main_window::on_about(wxCommandEvent& event) {

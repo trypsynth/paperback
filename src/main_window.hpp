@@ -63,6 +63,7 @@ private:
 	void on_previous_section(wxCommandEvent& event);
 	void on_next_section(wxCommandEvent& event);
 	void on_word_count(wxCommandEvent& event);
+	void on_toc(wxCommandEvent& event);
 	void on_about(wxCommandEvent& event);
 	void on_find_dialog(wxFindDialogEvent& event);
 	void on_find_close(wxFindDialogEvent& event);
