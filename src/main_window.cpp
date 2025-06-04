@@ -286,6 +286,7 @@ void main_window::on_find_dialog(wxFindDialogEvent& event) {
 	text_ctrl->GetSelection(&sel_start, &sel_end);
 	const long start_pos = (flags & wxFR_DOWN) ? sel_end : sel_start;
 	wxString search_text = text_ctrl->GetValue();
+	wxString search_original = search_text;  // Save original for wrap-around
 	long found_pos = wxNOT_FOUND;
 	if (!(flags & wxFR_MATCHCASE)) {
 		query.MakeLower();
@@ -297,19 +298,20 @@ void main_window::on_find_dialog(wxFindDialogEvent& event) {
 		search_text = search_text.substr(0, start_pos);
 		found_pos = search_text.rfind(query);
 	}
+	bool wrapped = false;
 	if (found_pos == wxNOT_FOUND) {
-		long wrap_start = (flags & wxFR_DOWN) ? 0 : text_ctrl->GetLastPosition();
-		wxString wrap_text = text_ctrl->GetValue();
+		wxString wrap_text = search_original;
 		if (!(flags & wxFR_MATCHCASE)) wrap_text.MakeLower();
 		if (flags & wxFR_DOWN)
-			found_pos = wrap_text.find(query, wrap_start);
+			found_pos = wrap_text.find(query, 0);
 		else
 			found_pos = wrap_text.rfind(query);
 		if (found_pos == wxNOT_FOUND) {
-			wxMessageBox("Text not found.", "Find", wxICON_INFORMATION);
+			speechSayA("Not found.", 1);
 			return;
 		}
-		wxMessageBox("No more results. Wrapping search.", "Find", wxICON_INFORMATION);
+		speechSayA("No more results. Wrapping search.", 1);
+		wrapped = true;
 	}
 	text_ctrl->SetFocus();
 	text_ctrl->SetSelection(found_pos, found_pos + query.Length());
