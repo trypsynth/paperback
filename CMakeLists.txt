@@ -18,6 +18,6 @@ target_link_libraries(paperback PRIVATE psapi wx::core wx::base Poco::Foundation
 target_include_directories(paperback PRIVATE "${CMAKE_SOURCE_DIR}/include")
 
 file(GLOB DLLS "${CMAKE_SOURCE_DIR}/bin/*.dll")
-foreach(DLL ${DLL_FILES})
+foreach(DLL ${DLLS})
 	add_custom_command(TARGET paperback POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different "${DLL}" "$<TARGET_FILE_DIR:paperback>")
 endforeach()
