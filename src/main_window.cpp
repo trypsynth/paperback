@@ -21,7 +21,9 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	file_menu->Append(wxID_CLOSE, "Close\tCtrl+F4");
 	file_menu->Append(wxID_CLOSE_ALL, "Close &All\tCtrl+Shift+F4");
 	file_menu->AppendSeparator();
-	file_menu->Append(ID_EXPORT, "&Export...\tCtrl+E");
+	auto* export_menu = new wxMenu();
+	export_menu->Append(ID_EXPORT_PLAIN_TEXT, "Plain Text");
+	file_menu->AppendSubMenu(export_menu, "&Export as");
 	file_menu->AppendSeparator();
 	file_menu->Append(wxID_EXIT, "E&xit");
 	auto* go_menu = new wxMenu();
@@ -50,7 +52,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	Bind(wxEVT_MENU, &main_window::on_open, this, wxID_OPEN);
 	Bind(wxEVT_MENU, &main_window::on_close, this, wxID_CLOSE);
 	Bind(wxEVT_MENU, &main_window::on_close_all, this, wxID_CLOSE_ALL);
-	Bind(wxEVT_MENU, &main_window::on_export, this, ID_EXPORT);
+	Bind(wxEVT_MENU, &main_window::on_export_plain_text, this, ID_EXPORT_PLAIN_TEXT);
 	Bind(wxEVT_MENU, &main_window::on_exit, this, wxID_EXIT);
 	Bind(wxEVT_MENU, &main_window::on_find, this, wxID_FIND);
 	Bind(wxEVT_MENU, &main_window::on_find_next, this, ID_FIND_NEXT);
@@ -126,7 +128,7 @@ void main_window::on_close_all(wxCommandEvent& event) {
 	notebook->DeleteAllPages();
 }
 
-void main_window::on_export(wxCommandEvent& event) {
+void main_window::on_export_plain_text(wxCommandEvent& event) {
 	wxWindow* page = notebook->GetPage(notebook->GetSelection());
 	wxFileDialog save_dialog(this, "Export Document", "", "", "Text files (*.txt)|*.txt|All files (*.*)|*.*", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 	if (save_dialog.ShowModal() != wxID_OK) return;

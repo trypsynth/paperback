@@ -6,7 +6,7 @@
 #include <wx/wx.h>
 
 enum {
-	ID_EXPORT = wxID_HIGHEST + 1,
+	ID_EXPORT_PLAIN_TEXT = wxID_HIGHEST + 1,
 	ID_FIND_NEXT,
 	ID_FIND_PREVIOUS,
 	ID_GO_TO,
@@ -20,7 +20,7 @@ enum {
 constexpr int doc_command_ids[] = {
 	wxID_CLOSE,
 	wxID_CLOSE_ALL,
-	ID_EXPORT,
+	ID_EXPORT_PLAIN_TEXT,
 	wxID_FIND,
 	ID_FIND_NEXT,
 	ID_FIND_PREVIOUS,
@@ -54,7 +54,7 @@ private:
 	void on_open(wxCommandEvent& event);
 	void on_close(wxCommandEvent& event);
 	void on_close_all(wxCommandEvent& event);
-	void on_export(wxCommandEvent& event);
+	void on_export_plain_text(wxCommandEvent& event);
 	void on_exit(wxCommandEvent& event);
 	void on_find(wxCommandEvent& event);
 	void on_find_next(wxCommandEvent& event);
