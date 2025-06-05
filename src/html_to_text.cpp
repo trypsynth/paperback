@@ -1,5 +1,7 @@
+#include <cctype>
 #include "html_to_text.hpp"
 #include <Poco/String.h>
+#include <sstream>
 #include <unordered_map>
 
 using namespace Poco::XML;
@@ -45,6 +47,7 @@ void html_to_text::characters(const XMLChar ch[], int start, int length) {
 		if (chars.empty()) return;
 		ignore_whitespace = false;
 	}
+	if (in_paragraph) chars = collapse_whitespace(chars);
 	line += chars;
 }
 
@@ -75,5 +78,22 @@ void html_to_text::skippedEntity(const XMLString& name) {
 }
 
 inline void html_to_text::add_line(const std::string& line) {
-	lines_.push_back(line);
+	lines.push_back(line);
+}
+
+std::string html_to_text::collapse_whitespace(const std::string& input) {
+	std::ostringstream oss;
+	bool in_space = false;
+	for (char ch : input) {
+		if (std::isspace(static_cast<unsigned char>(ch))) {
+			if (!in_space) {
+				oss << ' ';
+				in_space = true;
+			}
+		} else {
+			oss << ch;
+			in_space = false;
+		}
+	}
+	return oss.str();
 }

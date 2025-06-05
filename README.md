@@ -6,6 +6,9 @@ Paperback is a light-weight, fast, and accessible ebook and document reader. It 
 * Supports many different document formats, with more being added all the time.
 * Simple tabbed interface allowing you to open many documents at once.
 * Fully accessible with screen readers.
+* Fully-featured find dialog, allowing you to quickly search your documents.
+* Ability to easily jump between epub sections with a single hotkey.
+* Allows you to go to a line or a percentage through your document with a simple dialog.
 * Allows passing a file on the command line for easy use with open with.
 
 ## Building:
@@ -21,4 +24,4 @@ cmake --build . --config Release
 This will produce a single binary called paperback.exe. It is entirely standalone and needs no dependencies.
 
 ## License
-This project is licensed under the MIT license. See the [LICENSE file](LICENSE) for more details.
+This project is licensed under the [MIT license](LICENSE).

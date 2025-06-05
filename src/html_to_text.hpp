@@ -8,7 +8,8 @@
 class html_to_text : public Poco::XML::ContentHandler {
 public:
 	html_to_text();
-	std::vector<std::string> lines() const {return lines_;}
+
+	std::vector<std::string> lines;
 
 protected:
 	void setDocumentLocator(const Poco::XML::Locator* loc) override;
@@ -25,10 +26,11 @@ protected:
 
 private:
 	const Poco::XML::Locator* locator;
-	std::vector<std::string> lines_;
 	std::string line;
 	bool in_paragraph;
 	bool in_body;
 	bool ignore_whitespace;
+
 	void add_line(const std::string& line);
+	std::string collapse_whitespace(const std::string& input);
 };

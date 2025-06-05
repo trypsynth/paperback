@@ -17,7 +17,7 @@ std::unique_ptr<document> html_parser::load(const wxString& path) const {
 	parser.setContentHandler(&handler);
 	parser.parse(&src);
 	std::ostringstream oss;
-	for (const auto& line : handler.lines())
+	for (const auto& line : handler.lines)
 		oss << line << "\n";
 	auto doc = std::make_unique<document>();
 	doc->text_content = oss.str();

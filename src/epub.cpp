@@ -106,7 +106,7 @@ epub_section epub::parse_section(size_t n) {
 	auto handler = std::make_unique<html_to_text>();
 	parser.setContentHandler(handler.get());
 	parser.parse(&src);
-	section.lines = handler.get()->lines();
+	section.lines = handler.get()->lines;
 	return section;
 }
 
