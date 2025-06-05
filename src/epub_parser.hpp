@@ -21,10 +21,6 @@ public:
 	int section_index(size_t position) const override;
 	size_t offset_for_section(int section_index) const override;
 	size_t section_count() const override;
-
-private:
-	mutable std::vector<size_t> section_offsets;
-	mutable int cur_section = 0;
 };
 
 static epub_parser epub_par;

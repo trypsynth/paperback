@@ -27,6 +27,17 @@ public:
 	virtual size_t offset_for_section(int section_index) const = 0;
 	virtual int section_index(size_t position) const = 0;
 	virtual size_t section_count() const = 0;
+
+protected:
+	mutable std::vector<size_t> section_offsets;
+	mutable int cur_section = 0;
+};
+
+class tocable {
+public:
+	virtual ~tocable() = default;
+	virtual int offset_for_toc_item(const toc_item& item) const = 0;
+	virtual int toc_item_count() const = 0;
 };
 
 class parser {
@@ -47,6 +58,14 @@ public:
 
 	const section_navigable* as_section_navigable() const {
 		return dynamic_cast<const section_navigable*>(this);
+	}
+
+	tocable* as_tocable() {
+		return dynamic_cast<tocable*>(this);
+	}
+
+	const tocable* as_tocable() const {
+		return dynamic_cast<const tocable*>(this);
 	}
 };
 
