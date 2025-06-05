@@ -299,10 +299,10 @@ void main_window::on_find_dialog(wxFindDialogEvent& event) {
 		search_text = search_text.substr(0, start_pos);
 		found_pos = search_text.rfind(query);
 	}
-	bool wrapped = false;
 	if (found_pos == wxNOT_FOUND) {
 		wxString wrap_text = search_original;
-		if (!(flags & wxFR_MATCHCASE)) wrap_text.MakeLower();
+		if (!(flags & wxFR_MATCHCASE))
+			wrap_text.MakeLower();
 		if (flags & wxFR_DOWN)
 			found_pos = wrap_text.find(query, 0);
 		else
@@ -312,7 +312,6 @@ void main_window::on_find_dialog(wxFindDialogEvent& event) {
 			return;
 		}
 		speechSayA("No more results. Wrapping search.", 1);
-		wrapped = true;
 	}
 	text_ctrl->SetFocus();
 	text_ctrl->SetSelection(found_pos, found_pos + query.Length());
