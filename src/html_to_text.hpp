@@ -25,11 +25,10 @@ protected:
 	void skippedEntity(const Poco::XML::XMLString& name) override;
 
 private:
-	const Poco::XML::Locator* locator;
+	const Poco::XML::Locator* locator = nullptr;
 	std::string line;
 	bool in_paragraph;
 	bool in_body;
-	bool ignore_whitespace;
 
 	void add_line(const std::string& line);
 	std::string collapse_whitespace(const std::string& input);

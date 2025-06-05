@@ -22,19 +22,14 @@ void html_to_text::endDocument() {
 }
 
 void html_to_text::startElement(const XMLString& uri, const XMLString& localName, const XMLString& qname, const Attributes& attributes) {
-	if (localName == "body") {
-		in_body = true;
-		ignore_whitespace = true;
-	}
-	if (localName == "p" || localName == "div")
-		in_paragraph = true;
+	if (localName == "body") in_body = true;
+	if (localName == "p" || localName == "div") in_paragraph = true;
 }
 
 void html_to_text::endElement(const XMLString& uri, const XMLString& localName, const XMLString& qname) {
 	if (localName == "p" || localName == "h1" || localName == "h2" || localName == "h3" || localName == "h4" || localName == "h5" || localName == "h6" || localName == "br" || localName == "div") {
 		add_line(line);
 		line = "";
-		ignore_whitespace = true;
 	}
 	in_paragraph = false;
 }
@@ -42,11 +37,8 @@ void html_to_text::endElement(const XMLString& uri, const XMLString& localName, 
 void html_to_text::characters(const XMLChar ch[], int start, int length) {
 	if (!in_body) return;
 	std::string chars(ch + start, length);
-	if (ignore_whitespace) {
-		chars = Poco::trimLeftInPlace(chars);
-		if (chars.empty()) return;
-		ignore_whitespace = false;
-	}
+	chars = Poco::trimLeftInPlace(chars);
+	if (chars.empty()) return;
 	if (in_paragraph) chars = collapse_whitespace(chars);
 	line += chars;
 }
