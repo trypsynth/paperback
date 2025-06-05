@@ -31,13 +31,13 @@ void html_to_text::endElement(const XMLString& uri, const XMLString& localName, 
 		add_line(line);
 		line = "";
 	}
-	in_paragraph = false;
+	if (localName == "p" || localName == "div") in_paragraph = false;
 }
 
 void html_to_text::characters(const XMLChar ch[], int start, int length) {
 	if (!in_body) return;
 	std::string chars(ch + start, length);
-	chars = Poco::trimLeftInPlace(chars);
+	// chars = Poco::trimLeftInPlace(chars);
 	if (chars.empty()) return;
 	if (in_paragraph) chars = collapse_whitespace(chars);
 	line += chars;
