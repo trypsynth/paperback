@@ -6,8 +6,8 @@
 
 struct toc_item {
 	wxString name;
+	wxString ref;
 	std::vector<std::unique_ptr<toc_item>> children;
-	toc_item* parent;
 	int offset;
 };
 

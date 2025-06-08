@@ -15,7 +15,7 @@ public:
 		return parser_flags::supports_toc;
 	}
 
-	std::unique_ptr<document> load(const wxString& path) const override;
+	std::unique_ptr<document> load(const wxString& path) override;
 };
 
 static html_parser html_par;

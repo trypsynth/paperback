@@ -8,7 +8,7 @@
 using namespace Poco;
 using namespace Poco::XML;
 
-std::unique_ptr<document> html_parser::load(const wxString& path) const {
+std::unique_ptr<document> html_parser::load(const wxString& path) {
 	try {
 		FileInputStream stream(path.ToStdString());
 		if (!stream.good()) return nullptr;
