@@ -48,6 +48,10 @@ parser* main_window::active_parser() const {
 	return static_cast<parser*>(active_user_data()->par);
 }
 
+document* main_window::active_document() const {
+	return static_cast<document*>(active_user_data()->doc);
+}
+
 void main_window::open_document(const wxString& path, parser* par) {
 	std::unique_ptr<document> doc = par->load(path);
 	if (!doc) {
@@ -60,6 +64,7 @@ void main_window::open_document(const wxString& path, parser* par) {
 	auto* data = new user_data;
 	data->textbox = content;
 	data->par = par;
+	data->doc = doc.get();
 	page->SetClientObject(data);
 	page_sizer->Add(content, 1, wxEXPAND | wxALL, 5);
 	page->SetSizer(page_sizer);
@@ -114,7 +119,7 @@ void main_window::update_doc_commands(wxUpdateUIEvent& e) {
 void main_window::update_title() {
 	if (notebook->GetPageCount() == 0) SetTitle(APP_NAME);
 	else {
-		wxString current_doc = notebook->GetPageText(notebook->GetSelection());
+		wxString current_doc = active_document()->title;
 		SetTitle(current_doc + " - " + APP_NAME);
 	}
 }
