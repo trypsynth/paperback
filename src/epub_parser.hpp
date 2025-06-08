@@ -48,6 +48,7 @@ private:
 	void parse_opf(const std::string& filename);
 	epub_section parse_section(size_t n);
 	std::string get_section_text(epub_section& section);
+	void reset();
 };
 
 static epub_parser epub_par;

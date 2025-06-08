@@ -52,6 +52,7 @@ private:
 
 	void create_menus();
 	void update_doc_commands(wxUpdateUIEvent& event);
+	void update_title();
 	void on_open(wxCommandEvent& event);
 	void on_close(wxCommandEvent& event);
 	void on_close_all(wxCommandEvent& event);
@@ -65,6 +66,7 @@ private:
 	void on_word_count(wxCommandEvent& event);
 	void on_toc(wxCommandEvent& event);
 	void on_about(wxCommandEvent& event);
+	void on_notebook_page_changed(wxBookCtrlEvent& event);
 	void on_find_dialog(wxFindDialogEvent& event);
 	void on_find_close(wxFindDialogEvent& event);
 };

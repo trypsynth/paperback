@@ -30,6 +30,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	Bind(wxEVT_MENU, &main_window::on_word_count, this, ID_WORD_COUNT);
 	Bind(wxEVT_MENU, &main_window::on_toc, this, ID_TABLE_OF_CONTENTS);
 	Bind(wxEVT_MENU, &main_window::on_about, this, wxID_ABOUT);
+	Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, &main_window::on_notebook_page_changed, this);
 	for (const int id : doc_command_ids)
 		Bind(wxEVT_UPDATE_UI, &main_window::update_doc_commands, this, id);
 }
@@ -64,6 +65,7 @@ void main_window::open_document(const wxString& path, parser* par) {
 	page->SetSizer(page_sizer);
 	wxString label = wxFileName(path).GetFullName();
 	notebook->AddPage(page, label, true);
+	update_title();
 	content->Freeze();
 	content->SetValue(doc->text_content);
 	content->Thaw();
@@ -109,6 +111,14 @@ void main_window::update_doc_commands(wxUpdateUIEvent& e) {
 	e.Enable(has_doc);
 }
 
+void main_window::update_title() {
+	if (notebook->GetPageCount() == 0) SetTitle(APP_NAME);
+	else {
+		wxString current_doc = notebook->GetPageText(notebook->GetSelection());
+		SetTitle(current_doc + " - " + APP_NAME);
+	}
+}
+
 void main_window::on_open(wxCommandEvent& event) {
 	wxFileDialog dlg(this, "Select a document to read", "", "", get_supported_wildcards(), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 	if (dlg.ShowModal() != wxID_OK) return;
@@ -124,10 +134,12 @@ void main_window::on_open(wxCommandEvent& event) {
 
 void main_window::on_close(wxCommandEvent& event) {
 	notebook->DeletePage(notebook->GetSelection());
+	update_title();
 }
 
 void main_window::on_close_all(wxCommandEvent& event) {
 	notebook->DeleteAllPages();
+	update_title();
 }
 
 void main_window::on_exit(wxCommandEvent& event) {
@@ -256,6 +268,11 @@ void main_window::on_about(wxCommandEvent& event) {
 	about_info.SetCopyright(APP_COPYRIGHT);
 	about_info.SetWebSite(APP_WEBSITE);
 	wxAboutBox(about_info);
+}
+
+void main_window::on_notebook_page_changed(wxBookCtrlEvent& event) {
+	update_title();
+	event.Skip();
 }
 
 void main_window::on_find_dialog(wxFindDialogEvent& event) {

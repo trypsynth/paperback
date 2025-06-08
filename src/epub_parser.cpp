@@ -19,6 +19,7 @@ using namespace Poco::XML;
 using namespace Poco::Zip;
 
 std::unique_ptr<document> epub_parser::load(const wxString& path) {
+	reset();
 	try {
 		fp.open(path.ToStdString(), std::ios::binary);
 		if (fp.fail()) return nullptr;
@@ -163,4 +164,15 @@ std::string epub_parser::get_section_text(epub_section& section) {
 		data += line + "\n";
 	}
 	return data;
+}
+
+void epub_parser::reset() {
+	if (fp.is_open()) fp.close();
+	archive.reset();
+	manifest_items.clear();
+	spine_items.clear();
+	opf_path.clear();
+	title.clear();
+	author.clear();
+	section_offsets.clear();
 }
