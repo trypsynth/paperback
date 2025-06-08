@@ -50,6 +50,7 @@ private:
 	wxFindReplaceDialog* find_dialog = nullptr;
 	wxFindReplaceData find_data;
 
+	void create_menus();
 	void update_doc_commands(wxUpdateUIEvent& event);
 	void on_open(wxCommandEvent& event);
 	void on_close(wxCommandEvent& event);
