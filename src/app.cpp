@@ -4,7 +4,10 @@
 #include <wx/filename.h>
 
 bool app::OnInit() {
-	config = std::make_unique<wxFileConfig>(APP_NAME, "Quinware", "config.ini", "", wxCONFIG_USE_LOCAL_FILE);
+	wxString config_path = wxGetCwd() + wxFileName::GetPathSeparator() + APP_NAME + ".ini";
+	config_ = new wxFileConfig(APP_NAME, "", config_path);
+	wxConfigBase::Set(config_);
+	load_default_config();
 	frame = new main_window();
 	if (argc > 1) parse_command_line();
 	frame->Show(true);
@@ -12,9 +15,11 @@ bool app::OnInit() {
 }
 
 int app::OnExit() {
-	config->Write("Test", 1);
-	config->Flush();
-	return 0;
+	if (config_) {
+		config_->Flush();
+		delete config_;
+	}
+	return wxApp::OnExit();
 }
 
 void app::parse_command_line() {
@@ -29,6 +34,12 @@ void app::parse_command_line() {
 		return;
 	}
 	frame->open_document(path, par);
+}
+
+void app::load_default_config() {
+	if (!config_->Exists("test"))
+		config_->Write("Test", 1);
+	config_->Flush();
 }
 
 wxIMPLEMENT_APP(app);
