@@ -49,7 +49,7 @@ parser* main_window::active_parser() const {
 }
 
 document* main_window::active_document() const {
-	return static_cast<document*>(active_user_data()->doc);
+	return active_user_data()->doc.get();
 }
 
 void main_window::open_document(const wxString& path, parser* par) {
@@ -64,7 +64,7 @@ void main_window::open_document(const wxString& path, parser* par) {
 	auto* data = new user_data;
 	data->textbox = content;
 	data->par = par;
-	data->doc = doc.get();
+	data->doc = std::move(doc);
 	page->SetClientObject(data);
 	page_sizer->Add(content, 1, wxEXPAND | wxALL, 5);
 	page->SetSizer(page_sizer);
@@ -72,7 +72,7 @@ void main_window::open_document(const wxString& path, parser* par) {
 	notebook->AddPage(page, label, true);
 	update_title();
 	content->Freeze();
-	content->SetValue(doc->text_content);
+	content->SetValue(active_document()->text_content);
 	content->Thaw();
 	content->SetFocus();
 }

@@ -36,7 +36,7 @@ constexpr int doc_command_ids[] = {
 struct user_data : public wxClientData {
 	wxTextCtrl* textbox = nullptr;
 	parser* par = nullptr;
-	document* doc = nullptr;
+	std::unique_ptr<document> doc;
 };
 
 class main_window : public wxFrame {
