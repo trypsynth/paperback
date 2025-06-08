@@ -37,9 +37,7 @@ void html_to_text::endElement(const XMLString& uri, const XMLString& localName, 
 void html_to_text::characters(const XMLChar ch[], int start, int length) {
 	if (!in_body) return;
 	std::string chars(ch + start, length);
-	// chars = Poco::trimLeftInPlace(chars);
 	if (chars.empty()) return;
-	if (in_paragraph) chars = collapse_whitespace(chars);
 	line += chars;
 }
 
@@ -70,7 +68,7 @@ void html_to_text::skippedEntity(const XMLString& name) {
 }
 
 inline void html_to_text::add_line(const std::string& line) {
-	lines.push_back(line);
+	lines.push_back(in_paragraph ? collapse_whitespace(line) : line);
 }
 
 std::string html_to_text::collapse_whitespace(const std::string& input) {
