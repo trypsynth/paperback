@@ -9,11 +9,11 @@ public:
 	bool OnInit() override;
 	int OnExit() override;
 	void parse_command_line();
-	wxFileConfig* config() {return config_;}
+	wxFileConfig* config() {return conf.get();}
 
 private:
 	main_window* frame = nullptr;
-	wxFileConfig* config_ = nullptr;
+	std::unique_ptr<wxFileConfig> conf;
 
 	void load_default_config();
 };

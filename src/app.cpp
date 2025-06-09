@@ -4,9 +4,9 @@
 #include <wx/filename.h>
 
 bool app::OnInit() {
-	wxString config_path = wxGetCwd() + wxFileName::GetPathSeparator() + APP_NAME + ".ini";
-	config_ = new wxFileConfig(APP_NAME, "", config_path);
-	wxConfigBase::Set(config_);
+	wxString confpath = wxGetCwd() + wxFileName::GetPathSeparator() + APP_NAME + ".ini";
+	conf = std::make_unique<wxFileConfig>(APP_NAME, "", confpath);
+	wxConfigBase::Set(conf.get());
 	load_default_config();
 	frame = new main_window();
 	if (argc > 1) parse_command_line();
@@ -15,10 +15,7 @@ bool app::OnInit() {
 }
 
 int app::OnExit() {
-	if (config_) {
-		config_->Flush();
-		delete config_;
-	}
+	if (conf) conf->Flush();
 	return wxApp::OnExit();
 }
 
@@ -37,9 +34,9 @@ void app::parse_command_line() {
 }
 
 void app::load_default_config() {
-	if (!config_->Exists("test"))
-		config_->Write("Test", 1);
-	config_->Flush();
+	if (!conf->Exists("test"))
+		conf->Write("Test", 1);
+	conf->Flush();
 }
 
 wxIMPLEMENT_APP(app);
