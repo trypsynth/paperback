@@ -1,35 +1,29 @@
 #pragma once
 
-#include <Poco/SAX/ContentHandler.h>
-#include <Poco/SAX/Locator.h>
+#include <lexbor/html/html.h>
 #include <string>
 #include <vector>
 
-class html_to_text : public Poco::XML::ContentHandler {
+class html_to_text {
 public:
 	html_to_text();
-
-	std::vector<std::string> lines;
-
-protected:
-	void setDocumentLocator(const Poco::XML::Locator* loc) override;
-	void startDocument() override;
-	void endDocument() override;
-	void startElement(const Poco::XML::XMLString& uri, const Poco::XML::XMLString& localName, const Poco::XML::XMLString& qname, const Poco::XML::Attributes& attributes) override;
-	void endElement(const Poco::XML::XMLString& uri, const Poco::XML::XMLString& localName, const Poco::XML::XMLString& qname) override;
-	void characters(const Poco::XML::XMLChar ch[], int start, int length) override;
-	void ignorableWhitespace(const Poco::XML::XMLChar ch[], int start, int length) override;
-	void processingInstruction(const Poco::XML::XMLString& target, const Poco::XML::XMLString& data) override;
-	void startPrefixMapping(const Poco::XML::XMLString& prefix, const Poco::XML::XMLString& uri) override;
-	void endPrefixMapping(const Poco::XML::XMLString& prefix) override;
-	void skippedEntity(const Poco::XML::XMLString& name) override;
+	~html_to_text();
+	bool convert(const std::string& html_content);
+	const std::vector<std::string>& get_lines() const {return lines;}
+	std::string get_text() const;
 
 private:
-	const Poco::XML::Locator* locator = nullptr;
-	std::string line;
-	bool in_paragraph;
+	std::vector<std::string> lines;
+	std::string current_line;
 	bool in_body;
+	bool in_paragraph;
+	lxb_html_document_t* doc;
 
+	void process_node(lxb_dom_node_t* node);
+	void process_text_node(lxb_dom_text_t* text_node);
+	void process_element_node(lxb_dom_element_t* element);
 	void add_line(const std::string& line);
 	std::string collapse_whitespace(const std::string& input);
+	bool is_block_element(const std::string& tag_name);
+	std::string get_tag_name(lxb_dom_element_t* element);
 };

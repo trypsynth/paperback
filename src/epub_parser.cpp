@@ -1,13 +1,13 @@
 #include "epub_parser.hpp"
 #include "html_to_text.hpp"
 #include <memory>
+#include <sstream>
 #include <Poco/AutoPtr.h>
 #include <Poco/DOM/Document.h>
 #include <Poco/DOM/DOMParser.h>
 #include <Poco/DOM/NamedNodeMap.h>
 #include <Poco/DOM/NodeList.h>
 #include <Poco/SAX/InputSource.h>
-#include <Poco/SAX/SAXParser.h>
 #include <Poco/String.h>
 #include <Poco/Zip/ZipStream.h>
 #include <wx/filename.h>
@@ -48,7 +48,7 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) {
 		section_offsets.push_back(content.length());
 		content += wxString::FromUTF8(get_section_text(section));
 	}
-	auto doc = std::make_unique<document>();\
+	auto doc = std::make_unique<document>();
 	doc->title = title;
 	doc->author = author;
 	doc->text_content = content;
@@ -146,13 +146,17 @@ epub_section epub_parser::parse_section(size_t n) {
 	auto header = archive->findHeader(href);
 	if (header == archive->headerEnd()) throw parse_error("File not found: " + href);
 	ZipInputStream zis(fp, header->second, true);
-	InputSource src(zis);
-	auto parser = SAXParser();
+	std::ostringstream html_buffer;
+	html_buffer << zis.rdbuf();
+	std::string html_content = html_buffer.str();
 	epub_section section;
-	auto handler = std::make_unique<html_to_text>();
-	parser.setContentHandler(handler.get());
-	parser.parse(&src);
-	section.lines = handler.get()->lines;
+	html_to_text converter;
+	if (converter.convert(html_content)) {
+		const auto& lines = converter.get_lines();
+		section.lines.assign(lines.begin(), lines.end());
+	} else {
+		section.lines.clear();
+	}
 	return section;
 }
 

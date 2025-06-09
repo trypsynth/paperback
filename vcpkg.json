@@ -2,6 +2,7 @@
 	"name": "paperback",
 	"version": "0.1.0",
 	"dependencies": [
+		"lexbor",
 		{
 			"name": "poco",
 			"features": [

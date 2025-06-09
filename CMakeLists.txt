@@ -10,6 +10,7 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 find_package(wxWidgets CONFIG REQUIRED)
 find_package(Poco REQUIRED COMPONENTS Foundation xml Zip)
+find_package(lexbor CONFIG REQUIRED)
 
 file(GLOB_RECURSE SRC_FILES src/*.cpp)
 add_executable(paperback WIN32 ${SRC_FILES})
