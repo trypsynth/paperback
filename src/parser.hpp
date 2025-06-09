@@ -36,8 +36,7 @@ protected:
 class tocable {
 public:
 	virtual ~tocable() = default;
-	virtual int offset_for_toc_item(const toc_item& item) const = 0;
-	virtual int toc_item_count() const = 0;
+	virtual size_t toc_item_count() const = 0;
 
 protected:
 	std::vector<toc_item*> toc_tree;

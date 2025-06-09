@@ -1,5 +1,4 @@
 #include "go_to_dialog.hpp"
-#include <wx/statline.h>
 
 go_to_dialog::go_to_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) :wxDialog{parent, wxID_ANY, "Go to"}, textbox{text_ctrl} {
 	wxBoxSizer* main_sizer = new wxBoxSizer(wxVERTICAL);
@@ -17,7 +16,6 @@ go_to_dialog::go_to_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) :wxDialog{pa
 	button_sizer->AddButton(new wxButton(this, wxID_CANCEL));
 	button_sizer->Realize();
 	main_sizer->Add(line_sizer, 0, wxALL | wxEXPAND, 5);
-	main_sizer->Add(new wxStaticLine(this), 0, wxEXPAND | wxLEFT | wxRIGHT, 10);
 	main_sizer->Add(button_sizer, 0, wxALIGN_RIGHT | wxALL, 10);
 	SetSizerAndFit(main_sizer);
 }
