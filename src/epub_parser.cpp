@@ -19,7 +19,12 @@ using namespace Poco::XML;
 using namespace Poco::Zip;
 
 std::unique_ptr<document> epub_parser::load(const wxString& path) {
-	reset();
+	std::ifstream fp;
+	std::unique_ptr<ZipArchive> archive;
+	std::map<std::string, std::string> manifest_items;
+	std::vector<std::string> spine_items;
+	Path opf_path;
+	std::string title, author;
 	try {
 		fp.open(path.ToStdString(), std::ios::binary);
 		if (fp.fail()) return nullptr;
@@ -36,57 +41,28 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) {
 		if (node == nullptr) return nullptr;
 		auto name = static_cast<Element*>(node)->getAttribute("full-path");
 		opf_path = Path(name, Path::PATH_UNIX).makeParent();
-		parse_opf(name);
+		parse_opf(name, fp, archive, manifest_items, spine_items, opf_path, title, author);
 	} catch (std::exception& e) {
 		wxMessageBox(e.what(), "Error parsing epub file", wxICON_ERROR);
 		return nullptr;
 	}
 	wxString content;
-	section_offsets.clear();
+	auto doc = std::make_unique<document>();
+	doc->section_offsets.clear(); // Store in document, not parser!
+	
 	for (int i = 0; i < spine_items.size(); i++) {
-		epub_section section = parse_section(i);
-		section_offsets.push_back(content.length());
+		epub_section section = parse_section(i, fp, archive, manifest_items, spine_items);
+		doc->section_offsets.push_back(content.length());
 		content += wxString::FromUTF8(get_section_text(section));
 	}
-	auto doc = std::make_unique<document>();
-	doc->title = title;
-	doc->author = author;
+	
+	doc->title = wxString::FromUTF8(title);
+	doc->author = wxString::FromUTF8(author);
 	doc->text_content = content;
 	return doc;
 }
 
-int epub_parser::next_section_index(size_t position) const {
-	for (size_t i = 0; i < section_offsets.size(); ++i)
-		if (section_offsets[i] > position)
-			return static_cast<int>(i);
-	return -1;
-}
-
-int epub_parser::previous_section_index(size_t position) const {
-	for (int i = static_cast<int>(section_offsets.size()) - 1; i >= 0; --i)
-		if (section_offsets[i] < position)
-			return i;
-	return -1;
-}
-
-int epub_parser::section_index(size_t position) const {
-	for (int i = static_cast<int>(section_offsets.size()) - 1; i >= 0; --i)
-		if (position >= section_offsets[i])
-			return i;
-	return -1;
-}
-
-size_t epub_parser::offset_for_section(int section_index) const {
-	if (section_index < 0 || section_index >= static_cast<int>(section_offsets.size()))
-		return 0;
-	return section_offsets[section_index];
-}
-
-size_t epub_parser::section_count() const {
-	return section_offsets.size();
-}
-
-void epub_parser::parse_opf(const std::string& filename) {
+void epub_parser::parse_opf(const std::string& filename, std::ifstream& fp, std::unique_ptr<Poco::Zip::ZipArchive>& archive, std::map<std::string, std::string>& manifest_items, std::vector<std::string>& spine_items, Poco::Path& opf_path, std::string& title, std::string& author) {
 	auto header = archive->findHeader(filename);
 	if (header == archive->headerEnd()) throw parse_error("No OPF file found");
 	ZipInputStream zis(fp, header->second, true);
@@ -138,7 +114,7 @@ void epub_parser::parse_opf(const std::string& filename) {
 	}
 }
 
-epub_section epub_parser::parse_section(size_t n) {
+epub_section epub_parser::parse_section(size_t n, std::ifstream& fp, std::unique_ptr<Poco::Zip::ZipArchive>& archive, const std::map<std::string, std::string>& manifest_items, const std::vector<std::string>& spine_items) {
 	const auto id = spine_items[n];
 	auto it = manifest_items.find(id);
 	if (it == manifest_items.end()) throw parse_error("Unknown id: " + id);
@@ -166,15 +142,4 @@ std::string epub_parser::get_section_text(epub_section& section) {
 		data += line + "\n";
 	}
 	return data;
-}
-
-void epub_parser::reset() {
-	if (fp.is_open()) fp.close();
-	archive.reset();
-	manifest_items.clear();
-	spine_items.clear();
-	opf_path.clear();
-	title.clear();
-	author.clear();
-	section_offsets.clear();
 }

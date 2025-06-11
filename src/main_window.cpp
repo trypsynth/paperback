@@ -205,15 +205,15 @@ void main_window::on_previous_section(wxCommandEvent& event) {
 		speechSayA("Document has no sections", 1);
 		return;
 	}
-	auto nav = par->as_section_navigable();
-	if (!nav) return;
+	auto* doc = active_document();
+	if (!doc) return;
 	size_t current_pos = active_text_ctrl()->GetInsertionPoint();
-	int prev_index = nav->previous_section_index(current_pos);
+	int prev_index = doc->previous_section_index(current_pos);
 	if (prev_index == -1) {
 		speechSayA("No previous section", 1);
 		return;
 	}
-	size_t offset = nav->offset_for_section(prev_index);
+	size_t offset = doc->offset_for_section(prev_index);
 	active_text_ctrl()->SetInsertionPoint(offset);
 	long line;
 	active_text_ctrl()->PositionToXY(active_text_ctrl()->GetInsertionPoint(), 0, &line);
@@ -228,15 +228,15 @@ void main_window::on_next_section(wxCommandEvent& event) {
 		speechSayA("Document has no sections", 1);
 		return;
 	}
-	auto nav = par->as_section_navigable();
-	if (!nav) return;
+	auto* doc = active_document();
+	if (!doc) return;
 	size_t current_pos = active_text_ctrl()->GetInsertionPoint();
-	int next_index = nav->next_section_index(current_pos);
+	int next_index = doc->next_section_index(current_pos);
 	if (next_index == -1) {
 		speechSayA("No next section", 1);
 		return;
 	}
-	size_t offset = nav->offset_for_section(next_index);
+	size_t offset = doc->offset_for_section(next_index);
 	active_text_ctrl()->SetInsertionPoint(offset);
 	long line;
 	active_text_ctrl()->PositionToXY(active_text_ctrl()->GetInsertionPoint(), 0, &line);

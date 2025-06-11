@@ -19,29 +19,6 @@ inline parser_flags operator&(parser_flags a, parser_flags b) {
 	return static_cast<parser_flags>(static_cast<int>(a) & static_cast<int>(b));
 }
 
-class section_navigable {
-public:
-	virtual ~section_navigable() = default;
-	virtual int next_section_index(size_t position) const = 0;
-	virtual int previous_section_index(size_t position) const = 0;
-	virtual size_t offset_for_section(int section_index) const = 0;
-	virtual int section_index(size_t position) const = 0;
-	virtual size_t section_count() const = 0;
-
-protected:
-	mutable std::vector<size_t> section_offsets;
-	mutable int cur_section = 0;
-};
-
-class tocable {
-public:
-	virtual ~tocable() = default;
-	virtual size_t toc_item_count() const = 0;
-
-protected:
-	std::vector<toc_item*> toc_tree;
-};
-
 class parser {
 public:
 	virtual ~parser() = default;
@@ -52,22 +29,6 @@ public:
 
 	bool has_flag(parser_flags flag) const {
 		return (flags() & flag) == flag;
-	}
-
-	section_navigable* as_section_navigable() {
-		return dynamic_cast<section_navigable*>(this);
-	}
-
-	const section_navigable* as_section_navigable() const {
-		return dynamic_cast<const section_navigable*>(this);
-	}
-
-	tocable* as_tocable() {
-		return dynamic_cast<tocable*>(this);
-	}
-
-	const tocable* as_tocable() const {
-		return dynamic_cast<const tocable*>(this);
 	}
 };
 
