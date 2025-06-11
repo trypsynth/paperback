@@ -21,7 +21,7 @@ cmake .. -GNinja
 cmake --build . --config Release
 ```
 
-This will produce a single binary called paperback.exe. It is entirely standalone and needs no dependencies.
+This will produce a single binary called paperback.exe. It is entirely standalone and needs no dependencies other than optionally nvdaControllerClient64.dll for speech output.
 
 ## License
 This project is licensed under the [MIT license](LICENSE).
