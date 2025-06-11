@@ -29,12 +29,12 @@ public:
 		return parser_flags::supports_sections | parser_flags::supports_toc;
 	}
 
-	std::unique_ptr<document> load(const wxString& path) override;
+	std::unique_ptr<document> load(const wxString& path) const override;
 
 private:
-	void parse_opf(const std::string& filename, std::ifstream& fp, std::unique_ptr<Poco::Zip::ZipArchive>& archive, std::map<std::string, std::string>& manifest_items, std::vector<std::string>& spine_items, Poco::Path& opf_path, std::string& title, std::string& author);
-	epub_section parse_section(size_t n, std::ifstream& fp, std::unique_ptr<Poco::Zip::ZipArchive>& archive, const std::map<std::string, std::string>& manifest_items, const std::vector<std::string>& spine_items);
-	std::string get_section_text(epub_section& section);
+	void parse_opf(const std::string& filename, std::ifstream& fp, std::unique_ptr<Poco::Zip::ZipArchive>& archive, std::map<std::string, std::string>& manifest_items, std::vector<std::string>& spine_items, Poco::Path& opf_path, std::string& title, std::string& author) const;
+	epub_section parse_section(size_t n, std::ifstream& fp, std::unique_ptr<Poco::Zip::ZipArchive>& archive, const std::map<std::string, std::string>& manifest_items, const std::vector<std::string>& spine_items) const;
+	std::string get_section_text(epub_section& section) const;
 };
 
 static epub_parser epub_par;

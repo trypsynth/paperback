@@ -13,7 +13,7 @@ public:
 
 	parser_flags flags() const {return parser_flags::none;}
 
-	std::unique_ptr<document> load(const wxString& path) override;
+	std::unique_ptr<document> load(const wxString& path) const override;
 };
 
 static html_parser html_par;

@@ -25,7 +25,7 @@ public:
 	virtual wxString name() const = 0;
 	virtual const std::vector<wxString>& extensions() const = 0;
 	virtual parser_flags flags() const = 0;
-	virtual std::unique_ptr<document> load(const wxString& path) = 0;
+	virtual std::unique_ptr<document> load(const wxString& path) const = 0;
 
 	bool has_flag(parser_flags flag) const {
 		return (flags() & flag) == flag;
