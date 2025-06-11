@@ -48,14 +48,12 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) {
 	}
 	wxString content;
 	auto doc = std::make_unique<document>();
-	doc->section_offsets.clear(); // Store in document, not parser!
-	
+	doc->section_offsets.clear();
 	for (int i = 0; i < spine_items.size(); i++) {
 		epub_section section = parse_section(i, fp, archive, manifest_items, spine_items);
 		doc->section_offsets.push_back(content.length());
 		content += wxString::FromUTF8(get_section_text(section));
 	}
-	
 	doc->title = wxString::FromUTF8(title);
 	doc->author = wxString::FromUTF8(author);
 	doc->text_content = content;
