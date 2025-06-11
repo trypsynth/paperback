@@ -7,7 +7,8 @@
 #include <wx/wx.h>
 
 enum {
-	ID_FIND_NEXT = wxID_HIGHEST + 1,
+	ID_EXPORT = wxID_HIGHEST + 1,
+	ID_FIND_NEXT,
 	ID_FIND_PREVIOUS,
 	ID_GO_TO,
 	ID_PREVIOUS_SECTION,
@@ -21,6 +22,7 @@ enum {
 constexpr int doc_command_ids[] = {
 	wxID_CLOSE,
 	wxID_CLOSE_ALL,
+	ID_EXPORT,
 	wxID_FIND,
 	ID_FIND_NEXT,
 	ID_FIND_PREVIOUS,
@@ -53,12 +55,12 @@ private:
 	wxFindReplaceDialog* find_dialog = nullptr;
 	wxFindReplaceData find_data;
 
-	void create_menus();
 	void update_doc_commands(wxUpdateUIEvent& event);
 	void update_title();
 	void on_open(wxCommandEvent& event);
 	void on_close(wxCommandEvent& event);
 	void on_close_all(wxCommandEvent& event);
+	void on_export(wxCommandEvent& event);
 	void on_exit(wxCommandEvent& event);
 	void on_find(wxCommandEvent& event);
 	void on_find_next(wxCommandEvent& event);

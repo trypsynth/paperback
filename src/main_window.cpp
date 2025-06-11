@@ -16,10 +16,43 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	auto* sizer = new wxBoxSizer(wxVERTICAL);
 	sizer->Add(notebook, 1, wxEXPAND | wxALL, 10);
 	panel->SetSizer(sizer);
-	create_menus();
+	auto* menu_bar = new wxMenuBar();
+	auto* file_menu = new wxMenu();
+	file_menu->Append(wxID_OPEN);
+	file_menu->Append(wxID_CLOSE, "Close\tCtrl+F4");
+	file_menu->Append(wxID_CLOSE_ALL, "Close &All\tCtrl+Shift+F4");
+	file_menu->AppendSeparator();
+	file_menu->Append(ID_EXPORT, "&Export...\tCtrl+E");
+	file_menu->AppendSeparator();
+	file_menu->Append(wxID_EXIT, "E&xit");
+	auto* go_menu = new wxMenu();
+	go_menu->Append(wxID_FIND);
+	go_menu->Append(ID_FIND_NEXT, "Find Ne&xt\tF3");
+	go_menu->Append(ID_FIND_PREVIOUS, "Find P&revious\tShift+F3");
+	go_menu->AppendSeparator();
+	go_menu->Append(ID_GO_TO, "&Go to...\tCtrl+G");
+	go_menu->AppendSeparator();
+	go_menu->Append(ID_PREVIOUS_SECTION, "Previous section\t[");
+	go_menu->Append(ID_NEXT_SECTION, "Next section\t]");
+	auto* tools_menu = new wxMenu();
+	tools_menu->Append(ID_WORD_COUNT, "&Word count\tCtrl+W");
+	tools_menu->Append(ID_DOC_INFO, "Document &info\tCtrl+I");
+	tools_menu->AppendSeparator();
+	tools_menu->Append(ID_TABLE_OF_CONTENTS, "Table of contents\tCtrl+T");
+	auto* help_menu = new wxMenu();
+	help_menu->Append(wxID_ABOUT, "About " + APP_NAME + "\tCtrl+F1");
+	help_menu->Append(wxID_HELP, "&Help\tF1");
+	help_menu->AppendSeparator();
+	help_menu->Append(ID_CHECK_FOR_UPDATES, "&Check for updates");
+	menu_bar->Append(file_menu, "&File");
+	menu_bar->Append(go_menu, "&Go");
+	menu_bar->Append(tools_menu, "&Tools");
+	menu_bar->Append(help_menu, "&Help");
+	SetMenuBar(menu_bar);
 	Bind(wxEVT_MENU, &main_window::on_open, this, wxID_OPEN);
 	Bind(wxEVT_MENU, &main_window::on_close, this, wxID_CLOSE);
 	Bind(wxEVT_MENU, &main_window::on_close_all, this, wxID_CLOSE_ALL);
+	Bind(wxEVT_MENU, &main_window::on_export, this, ID_EXPORT);
 	Bind(wxEVT_MENU, &main_window::on_exit, this, wxID_EXIT);
 	Bind(wxEVT_MENU, &main_window::on_find, this, wxID_FIND);
 	Bind(wxEVT_MENU, &main_window::on_find_next, this, ID_FIND_NEXT);
@@ -77,40 +110,6 @@ void main_window::open_document(const wxString& path, parser* par) {
 	content->SetFocus();
 }
 
-void main_window::create_menus() {
-	auto* menu_bar = new wxMenuBar();
-	auto* file_menu = new wxMenu();
-	file_menu->Append(wxID_OPEN);
-	file_menu->Append(wxID_CLOSE, "Close\tCtrl+F4");
-	file_menu->Append(wxID_CLOSE_ALL, "Close &All\tCtrl+Shift+F4");
-	file_menu->AppendSeparator();
-	file_menu->Append(wxID_EXIT, "E&xit");
-	auto* go_menu = new wxMenu();
-	go_menu->Append(wxID_FIND);
-	go_menu->Append(ID_FIND_NEXT, "Find Ne&xt\tF3");
-	go_menu->Append(ID_FIND_PREVIOUS, "Find P&revious\tShift+F3");
-	go_menu->AppendSeparator();
-	go_menu->Append(ID_GO_TO, "&Go to...\tCtrl+G");
-	go_menu->AppendSeparator();
-	go_menu->Append(ID_PREVIOUS_SECTION, "Previous section\t[");
-	go_menu->Append(ID_NEXT_SECTION, "Next section\t]");
-	auto* tools_menu = new wxMenu();
-	tools_menu->Append(ID_WORD_COUNT, "&Word count\tCtrl+W");
-	tools_menu->Append(ID_DOC_INFO, "Document &info\tCtrl+I");
-	tools_menu->AppendSeparator();
-	tools_menu->Append(ID_TABLE_OF_CONTENTS, "Table of contents\tCtrl+T");
-	auto* help_menu = new wxMenu();
-	help_menu->Append(wxID_ABOUT, "About " + APP_NAME + "\tCtrl+F1");
-	help_menu->Append(wxID_HELP, "&Help\tF1");
-	help_menu->AppendSeparator();
-	help_menu->Append(ID_CHECK_FOR_UPDATES, "&Check for updates");
-	menu_bar->Append(file_menu, "&File");
-	menu_bar->Append(go_menu, "&Go");
-	menu_bar->Append(tools_menu, "&Tools");
-	menu_bar->Append(help_menu, "&Help");
-	SetMenuBar(menu_bar);
-}
-
 void main_window::update_doc_commands(wxUpdateUIEvent& e) {
 	const bool has_doc = notebook->GetPageCount() > 0;
 	e.Enable(has_doc);
@@ -145,6 +144,24 @@ void main_window::on_close(wxCommandEvent& event) {
 void main_window::on_close_all(wxCommandEvent& event) {
 	notebook->DeleteAllPages();
 	update_title();
+}
+
+void main_window::on_export(wxCommandEvent& event) {
+	wxFileDialog save_dialog(this, "Export Document", "", active_document()->title + ".txt", "Text files (*.txt)|*.txt|All files (*.*)|*.*", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+	if (save_dialog.ShowModal() != wxID_OK) return;
+	wxString file_path = save_dialog.GetPath();
+	auto* content = active_text_ctrl();
+	if (!content) {
+		wxMessageBox("Failed to get edit control for active tab.", "Error", wxICON_ERROR);
+		return;
+	}
+	wxFile file;
+	if (!file.Open(file_path, wxFile::write)) {
+		wxMessageBox("Failed to write to the selected file.", "Error", wxICON_ERROR);
+		return;
+	}
+	file.Write(content->GetValue());
+	file.Close();
 }
 
 void main_window::on_exit(wxCommandEvent& event) {
