@@ -154,9 +154,7 @@ epub_section epub_parser::parse_section(size_t n) {
 	if (converter.convert(html_content)) {
 		const auto& lines = converter.get_lines();
 		section.lines.assign(lines.begin(), lines.end());
-	} else {
-		section.lines.clear();
-	}
+	} else section.lines.clear();
 	return section;
 }
 
