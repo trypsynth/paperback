@@ -1,8 +1,8 @@
 #include "go_to_dialog.hpp"
 
 go_to_dialog::go_to_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) :wxDialog{parent, wxID_ANY, "Go to"}, textbox{text_ctrl} {
-	wxBoxSizer* main_sizer = new wxBoxSizer(wxVERTICAL);
-	wxBoxSizer* line_sizer = new wxBoxSizer(wxHORIZONTAL);
+	auto* main_sizer = new wxBoxSizer(wxVERTICAL);
+	auto* line_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* label = new wxStaticText(this, wxID_ANY, "Go to:");
 	input_ctrl = new wxTextCtrl(this, wxID_ANY);
 	line_sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
@@ -11,7 +11,7 @@ go_to_dialog::go_to_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) :wxDialog{pa
 	textbox->PositionToXY(textbox->GetInsertionPoint(), 0, &line);
 	input_ctrl->SetValue(wxString::Format("%d", line + 1));
 	input_ctrl->SetSelection(-1, -1);
-	wxStdDialogButtonSizer* button_sizer = new wxStdDialogButtonSizer();
+	auto* button_sizer = new wxStdDialogButtonSizer();
 	button_sizer->AddButton(new wxButton(this, wxID_OK));
 	button_sizer->AddButton(new wxButton(this, wxID_CANCEL));
 	button_sizer->Realize();

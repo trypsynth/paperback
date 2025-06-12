@@ -25,7 +25,7 @@ void app::parse_command_line() {
 		wxMessageBox("File not found: " + path, "Error", wxICON_ERROR);
 		return;
 	}
-	parser* par = find_parser_by_extension(wxFileName(path).GetExt());
+	auto* par = find_parser_by_extension(wxFileName(path).GetExt());
 	if (!par) {
 		wxMessageBox("No suitable parser found for " + path, "Error", wxICON_ERROR);
 		return;
