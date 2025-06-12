@@ -93,10 +93,7 @@ std::string html_to_text::get_tag_name(lxb_dom_element_t* element) {
 }
 
 void html_to_text::add_line(const std::string& line) {
-	if (line.empty()) {
-		lines.push_back("");
-		return;
-	}
+	if (line.empty()) return;
 	std::string processed_line = in_paragraph ? collapse_whitespace(line) : line;
 	lines.push_back(processed_line);
 }
