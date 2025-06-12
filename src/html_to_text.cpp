@@ -1,8 +1,6 @@
 #include "html_to_text.hpp"
-#include <cctype>
 #include <sstream>
-#include <unordered_map>
-#include <unordered_set>
+#include "utils.hpp"
 
 html_to_text::html_to_text() :in_body{false}, in_paragraph{false}, doc{nullptr} {
 	doc = lxb_html_document_create();
@@ -96,21 +94,4 @@ void html_to_text::add_line(const std::string& line) {
 	if (line.empty()) return;
 	std::string processed_line = in_paragraph ? collapse_whitespace(line) : line;
 	lines.push_back(processed_line);
-}
-
-std::string html_to_text::collapse_whitespace(const std::string& input) {
-	std::ostringstream oss;
-	bool in_space = false;
-	for (char ch : input) {
-		if (std::isspace(static_cast<unsigned char>(ch))) {
-			if (!in_space) {
-				oss << ' ';
-				in_space = true;
-			}
-		} else {
-			oss << ch;
-			in_space = false;
-		}
-	}
-	return oss.str();
 }

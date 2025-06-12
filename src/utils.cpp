@@ -1,3 +1,5 @@
+#include <cctype>
+#include <sstream>
 #include "utils.hpp"
 
 long find_case_insensitive(const wxString& haystack, const wxString& needle, long start, bool forward) {
@@ -15,4 +17,21 @@ long find_case_insensitive(const wxString& haystack, const wxString& needle, lon
 			if (haystack_lower.Mid(i, needle_len) == needle_lower) return i;
 	}
 	return wxNOT_FOUND;
+}
+
+std::string collapse_whitespace(const std::string& input) {
+	std::ostringstream oss;
+	bool in_space = false;
+	for (char ch : input) {
+		if (std::isspace(static_cast<unsigned char>(ch))) {
+			if (!in_space) {
+				oss << ' ';
+				in_space = true;
+			}
+		} else {
+			oss << ch;
+			in_space = false;
+		}
+	}
+	return oss.str();
 }
