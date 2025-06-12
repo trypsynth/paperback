@@ -63,12 +63,4 @@ struct document {
 			return 0;
 		return section_offsets[section_index];
 	}
-
-	size_t section_count() const {
-		return section_offsets.size();
-	}
-
-	size_t toc_item_count() const {
-		return toc_items.size();
-	}
 };
