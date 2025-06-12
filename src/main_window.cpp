@@ -69,7 +69,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 }
 
 user_data* main_window::active_user_data() const {
-	auto page = notebook->GetPage(notebook->GetSelection());
+	auto* page = notebook->GetPage(notebook->GetSelection());
 	return static_cast<user_data*>(page->GetClientObject());
 }
 
@@ -116,7 +116,8 @@ void main_window::update_doc_commands(wxUpdateUIEvent& e) {
 }
 
 void main_window::update_title() {
-	if (notebook->GetPageCount() == 0) SetTitle(APP_NAME);
+	if (notebook->GetPageCount() == 0)
+		SetTitle(APP_NAME);
 	else {
 		wxString current_doc = active_document()->title;
 		SetTitle(current_doc + " - " + APP_NAME);
