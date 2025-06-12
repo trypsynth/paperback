@@ -43,7 +43,6 @@ struct user_data : public wxClientData {
 class main_window : public wxFrame {
 public:
 	main_window();
-	user_data* active_user_data() const;
 	wxTextCtrl* active_text_ctrl() const;
 	document* active_document() const;
 	void open_document(const wxString& path, parser* par);
@@ -53,6 +52,7 @@ private:
 	wxFindReplaceDialog* find_dialog = nullptr;
 	wxFindReplaceData find_data;
 
+	user_data* active_user_data() const;
 	void update_doc_commands(wxUpdateUIEvent& event);
 	void update_title();
 	void on_open(wxCommandEvent& event);

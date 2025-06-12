@@ -69,11 +69,6 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 		Bind(wxEVT_UPDATE_UI, &main_window::update_doc_commands, this, id);
 }
 
-user_data* main_window::active_user_data() const {
-	auto* page = notebook->GetPage(notebook->GetSelection());
-	return static_cast<user_data*>(page->GetClientObject());
-}
-
 wxTextCtrl* main_window::active_text_ctrl() const {
 	return static_cast<wxTextCtrl*>(active_user_data()->textbox);
 }
@@ -104,6 +99,11 @@ void main_window::open_document(const wxString& path, parser* par) {
 	content->SetValue(active_document()->text_content);
 	content->Thaw();
 	content->SetFocus();
+}
+
+user_data* main_window::active_user_data() const {
+	auto* page = notebook->GetPage(notebook->GetSelection());
+	return static_cast<user_data*>(page->GetClientObject());
 }
 
 void main_window::update_doc_commands(wxUpdateUIEvent& e) {
@@ -300,7 +300,7 @@ void main_window::on_find_dialog(wxFindDialogEvent& event) {
 	const long start_pos = (flags & wxFR_DOWN) ? sel_end : sel_start;
 	const wxString& search_text = text_ctrl->GetValue();
 	long found_pos = wxNOT_FOUND;
-	bool forward = (flags & wxFR_DOWN);
+	const bool forward = flags & wxFR_DOWN;
 	if (flags & wxFR_MATCHCASE) {
 		if (forward)
 			found_pos = search_text.find(query, start_pos);
