@@ -33,6 +33,7 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 		if (header == archive->headerEnd()) return nullptr;
 		ZipInputStream zis(fp, header->second, true);
 		InputSource src(zis);
+		fp.clear();
 		DOMParser parser;
 		auto doc = parser.parse(&src);
 		NamespaceSupport nsmap;
