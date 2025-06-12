@@ -8,7 +8,7 @@ std::unique_ptr<document> html_parser::load(const wxString& path) const {
 	if (!file_stream.IsOk()) return nullptr;
 	wxBufferedInputStream bs(file_stream);
 	wxTextInputStream text_stream(bs);
-	wxString content, line;
+	wxString content;
 	while (!bs.Eof()) content += text_stream.ReadLine() + "\n";
 	html_to_text converter;
 	if (!converter.convert(content.ToStdString())) return nullptr;
