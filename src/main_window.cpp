@@ -5,6 +5,7 @@
 #include "toc_dialog.hpp"
 #define UNIVERSAL_SPEECH_STATIC
 #include <UniversalSpeech.h>
+#include "utils.hpp"
 #include <wx/aboutdlg.h>
 #include <wx/fdrepdlg.h>
 #include <wx/filename.h>
@@ -297,32 +298,29 @@ void main_window::on_find_dialog(wxFindDialogEvent& event) {
 	long sel_start, sel_end;
 	text_ctrl->GetSelection(&sel_start, &sel_end);
 	const long start_pos = (flags & wxFR_DOWN) ? sel_end : sel_start;
-	wxString search_text = text_ctrl->GetValue();
-	wxString search_original = search_text;  // Save original for wrap-around
+	const wxString& search_text = text_ctrl->GetValue();
 	long found_pos = wxNOT_FOUND;
-	if (!(flags & wxFR_MATCHCASE)) {
-		query.MakeLower();
-		search_text.MakeLower();
-	}
-	if (flags & wxFR_DOWN)
-		found_pos = search_text.find(query, start_pos);
-	else {
-		search_text = search_text.substr(0, start_pos);
-		found_pos = search_text.rfind(query);
-	}
-	if (found_pos == wxNOT_FOUND) {
-		wxString wrap_text = search_original;
-		if (!(flags & wxFR_MATCHCASE))
-			wrap_text.MakeLower();
-		if (flags & wxFR_DOWN)
-			found_pos = wrap_text.find(query, 0);
+	bool forward = (flags & wxFR_DOWN);
+	if (flags & wxFR_MATCHCASE) {
+		if (forward)
+			found_pos = search_text.find(query, start_pos);
 		else
-			found_pos = wrap_text.rfind(query);
+			found_pos = search_text.substr(0, start_pos).rfind(query);
+	} else
+		found_pos = find_case_insensitive(search_text, query, start_pos, forward);
+	if (found_pos == wxNOT_FOUND) {
+		speechSayA("No more results. Wrapping search.", 1);
+		if (flags & wxFR_MATCHCASE) {
+			if (forward)
+				found_pos = search_text.find(query, 0);
+			else
+				found_pos = search_text.rfind(query);
+		} else
+			found_pos = find_case_insensitive(search_text, query, forward ? 0 : search_text.Length(), forward);
 		if (found_pos == wxNOT_FOUND) {
 			speechSayA("Not found.", 1);
 			return;
 		}
-		speechSayA("No more results. Wrapping search.", 1);
 	}
 	text_ctrl->SetFocus();
 	text_ctrl->SetSelection(found_pos, found_pos + query.Length());
