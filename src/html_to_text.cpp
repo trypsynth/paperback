@@ -2,7 +2,7 @@
 #include <sstream>
 #include "utils.hpp"
 
-html_to_text::html_to_text() :in_body{false}, in_paragraph{false}, doc{nullptr} {
+html_to_text::html_to_text() :in_body{false}, preserve_whitespace{false}, doc{nullptr} {
 	doc = lxb_html_document_create();
 	if (!doc) throw std::runtime_error("Failed to create Lexbor HTML document");
 }
@@ -15,7 +15,7 @@ bool html_to_text::convert(const std::string& html_content) {
 	lines.clear();
 	current_line.clear();
 	in_body = false;
-	in_paragraph = false;
+	preserve_whitespace = false;
 	lxb_status_t status = lxb_html_document_parse(doc, reinterpret_cast<const lxb_char_t*>(html_content.c_str()), html_content.length());
 	if (status != LXB_STATUS_OK) return false;
 	lxb_dom_node_t* node = lxb_dom_interface_node(doc);
@@ -60,14 +60,14 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 			add_line(current_line);
 			current_line.clear();
 		}
-		if (tag_name == "p" || tag_name == "div") in_paragraph = false;
+		if (tag_name == "pre") preserve_whitespace = false;
 	}
 }
 
 void html_to_text::process_element_node(lxb_dom_element_t* element) {
 	std::string tag_name = get_tag_name(element);
 	if (tag_name == "body") in_body = true;
-	else if (tag_name == "p" || tag_name == "div") in_paragraph = true;
+	if (tag_name == "pre") preserve_whitespace = true;
 	if (tag_name == "br") {
 		add_line(current_line);
 		current_line.clear();
@@ -80,7 +80,7 @@ void html_to_text::process_text_node(lxb_dom_text_t* text_node) {
 	const lxb_char_t* text_data = lxb_dom_node_text_content(lxb_dom_interface_node(text_node), &length);
 	if (text_data && length > 0) {
 		std::string text(reinterpret_cast<const char*>(text_data), length);
-		if (!text.empty()) current_line += text;
+		if (!text.empty()) current_line += preserve_whitespace ? text : collapse_whitespace(text);
 	}
 }
 
@@ -92,6 +92,5 @@ std::string html_to_text::get_tag_name(lxb_dom_element_t* element) {
 
 void html_to_text::add_line(const std::string& line) {
 	if (line.empty()) return;
-	std::string processed_line = in_paragraph ? collapse_whitespace(line) : line;
-	lines.push_back(processed_line);
+	lines.push_back(line);
 }

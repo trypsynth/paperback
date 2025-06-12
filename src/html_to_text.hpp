@@ -16,7 +16,7 @@ private:
 	std::vector<std::string> lines;
 	std::string current_line;
 	bool in_body;
-	bool in_paragraph;
+	bool preserve_whitespace;
 	lxb_html_document_t* doc;
 
 	void process_node(lxb_dom_node_t* node);
