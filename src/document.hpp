@@ -4,6 +4,20 @@
 #include <vector>
 #include <wx/string.h>
 
+enum class document_flags {
+	none = 0,
+	supports_sections = 1 << 0,
+	supports_toc = 1 << 1,
+};
+
+inline document_flags operator|(document_flags a, document_flags b) {
+	return static_cast<document_flags>(static_cast<int>(a) | static_cast<int>(b));
+}
+
+inline document_flags operator&(document_flags a, document_flags b) {
+	return static_cast<document_flags>(static_cast<int>(a) & static_cast<int>(b));
+}
+
 struct toc_item {
 	wxString name;
 	wxString ref;
@@ -15,8 +29,13 @@ struct document {
 	wxString title;
 	wxString author;
 	wxString text_content;
+	document_flags flags;
 	std::vector<size_t> section_offsets;
 	std::vector<std::unique_ptr<toc_item>> toc_items;
+
+	bool has_flag(document_flags flag) const {
+		return (flags & flag) == flag;
+	}
 
 	int next_section_index(size_t position) const {
 		for (size_t i = 0; i < section_offsets.size(); ++i)

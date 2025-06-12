@@ -37,7 +37,6 @@ constexpr int doc_command_ids[] = {
 // Each tab stores a pointer to one of these.
 struct user_data : public wxClientData {
 	wxTextCtrl* textbox = nullptr;
-	parser* par = nullptr;
 	std::unique_ptr<document> doc;
 };
 
@@ -46,7 +45,6 @@ public:
 	main_window();
 	user_data* active_user_data() const;
 	wxTextCtrl* active_text_ctrl() const;
-	parser* active_parser() const;
 	document* active_document() const;
 	void open_document(const wxString& path, parser* par);
 

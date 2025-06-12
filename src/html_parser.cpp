@@ -14,5 +14,6 @@ std::unique_ptr<document> html_parser::load(const wxString& path) const {
 	if (!converter.convert(content.ToStdString())) return nullptr;
 	auto doc = std::make_unique<document>();
 	doc->text_content = converter.get_text();
+	doc->flags = document_flags::supports_toc;
 	return doc;
 }

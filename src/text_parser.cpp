@@ -14,5 +14,6 @@ std::unique_ptr<document> text_parser::load(const wxString& path) const {
 	doc->title = wxFileName(path).GetName();
 	doc->author = "Unknown";
 	doc->text_content = content;
+	doc->flags = document_flags::none;
 	return doc;
 }

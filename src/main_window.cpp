@@ -77,10 +77,6 @@ wxTextCtrl* main_window::active_text_ctrl() const {
 	return static_cast<wxTextCtrl*>(active_user_data()->textbox);
 }
 
-parser* main_window::active_parser() const {
-	return static_cast<parser*>(active_user_data()->par);
-}
-
 document* main_window::active_document() const {
 	return active_user_data()->doc.get();
 }
@@ -96,7 +92,6 @@ void main_window::open_document(const wxString& path, parser* par) {
 	auto* content = new wxTextCtrl(page, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxTE_DONTWRAP);
 	auto* data = new user_data;
 	data->textbox = content;
-	data->par = par;
 	data->doc = std::move(doc);
 	page->SetClientObject(data);
 	page_sizer->Add(content, 1, wxEXPAND | wxALL, 5);
@@ -217,14 +212,12 @@ void main_window::on_go_to(wxCommandEvent& event) {
 }
 
 void main_window::on_previous_section(wxCommandEvent& event) {
-	parser* par = active_parser();
-	if (!par) return;
-	if (!par->has_flag(parser_flags::supports_sections)) {
+	auto* doc = active_document();
+	if (!doc) return;
+	if (!doc->has_flag(document_flags::supports_sections)) {
 		speechSayA("Document has no sections", 1);
 		return;
 	}
-	auto* doc = active_document();
-	if (!doc) return;
 	size_t current_pos = active_text_ctrl()->GetInsertionPoint();
 	int prev_index = doc->previous_section_index(current_pos);
 	if (prev_index == -1) {
@@ -240,14 +233,12 @@ void main_window::on_previous_section(wxCommandEvent& event) {
 }
 
 void main_window::on_next_section(wxCommandEvent& event) {
-	parser* par = active_parser();
-	if (!par) return;
-	if (!par->has_flag(parser_flags::supports_sections)) {
+	auto* doc = active_document();
+	if (!doc) return;
+	if (!doc->has_flag(document_flags::supports_sections)) {
 		speechSayA("Document has no sections", 1);
 		return;
 	}
-	auto* doc = active_document();
-	if (!doc) return;
 	size_t current_pos = active_text_ctrl()->GetInsertionPoint();
 	int next_index = doc->next_section_index(current_pos);
 	if (next_index == -1) {
@@ -274,9 +265,9 @@ void main_window::on_word_count(wxCommandEvent& event) {
 }
 
 void main_window::on_toc(wxCommandEvent& event) {
-	parser* par = active_parser();
-	if (!par) return;
-	if (!par->has_flag(parser_flags::supports_toc)) {
+	auto* doc = active_document();
+	if (!doc) return;
+	if (!doc->has_flag(document_flags::supports_toc)) {
 		speechSayA("No table of contents", 1);
 		return;
 	}

@@ -57,6 +57,7 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 	doc->title = wxString::FromUTF8(title);
 	doc->author = wxString::FromUTF8(author);
 	doc->text_content = content;
+	doc->flags = document_flags::supports_sections | document_flags::supports_toc;
 	return doc;
 }
 
