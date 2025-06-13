@@ -56,7 +56,7 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 	if (node->type == LXB_DOM_NODE_TYPE_ELEMENT) {
 		lxb_dom_element_t* element = lxb_dom_interface_element(node);
 		std::string tag_name = get_tag_name(element);
-		if (tag_name == "p" || tag_name == "div" || tag_name == "h1" || tag_name == "h2" || tag_name == "h3" || tag_name == "h4" || tag_name == "h5" || tag_name == "h6" || tag_name == "br") {
+		if (tag_name == "p" || tag_name == "div" || tag_name == "h1" || tag_name == "h2" || tag_name == "h3" || tag_name == "h4" || tag_name == "h5" || tag_name == "h6" || tag_name == "pre") {
 			add_line(current_line);
 			current_line.clear();
 		}
