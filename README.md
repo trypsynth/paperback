@@ -2,7 +2,7 @@
 Paperback is a light-weight, fast, and accessible ebook and document reader. It is written in C++ with wxWidgets for great cross-platform accessibility and to avoid bloat.
 
 ## Features:
-* Extremely fast and build with completely native code.
+* Extremely fast and built with completely native code.
 * Supports many different document formats, with more being added all the time.
 * Simple tabbed interface allowing you to open many documents at once.
 * Fully accessible with screen readers.
