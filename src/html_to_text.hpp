@@ -23,6 +23,6 @@ private:
 	void process_text_node(lxb_dom_text_t* text_node);
 	void process_element_node(lxb_dom_element_t* element);
 	void add_line(const std::string& line);
-	bool is_block_element(const std::string& tag_name);
+	bool is_block_element(const std::string& tag_name) const;
 	std::string get_tag_name(lxb_dom_element_t* element);
 };

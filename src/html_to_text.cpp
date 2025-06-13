@@ -56,7 +56,7 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 	if (node->type == LXB_DOM_NODE_TYPE_ELEMENT) {
 		lxb_dom_element_t* element = lxb_dom_interface_element(node);
 		std::string tag_name = get_tag_name(element);
-		if (tag_name == "p" || tag_name == "div" || tag_name == "h1" || tag_name == "h2" || tag_name == "h3" || tag_name == "h4" || tag_name == "h5" || tag_name == "h6" || tag_name == "pre") {
+		if (is_block_element(tag_name)) {
 			add_line(current_line);
 			current_line.clear();
 		}
@@ -84,13 +84,22 @@ void html_to_text::process_text_node(lxb_dom_text_t* text_node) {
 	}
 }
 
+void html_to_text::add_line(const std::string& line) {
+	if (line.empty()) return;
+	lines.push_back(line);
+}
+
+bool html_to_text::is_block_element(const std::string& tag_name) const {
+	switch (tag_name[0]) {
+		case 'd': return tag_name == "div";
+		case 'h': return tag_name == "h1" || tag_name == "h2" || tag_name == "h3" || tag_name == "h4" || tag_name == "h5" || tag_name == "h6";
+		case 'p': return tag_name == "p" || tag_name == "pre";
+		default: return false;
+	}
+}
+
 std::string html_to_text::get_tag_name(lxb_dom_element_t* element) {
 	const lxb_char_t* name = lxb_dom_element_qualified_name(element, nullptr);
 	if (!name) return "";
 	return std::string(reinterpret_cast<const char*>(name));
-}
-
-void html_to_text::add_line(const std::string& line) {
-	if (line.empty()) return;
-	lines.push_back(line);
 }
