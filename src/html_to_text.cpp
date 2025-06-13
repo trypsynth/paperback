@@ -38,9 +38,16 @@ std::string html_to_text::get_text() const {
 
 void html_to_text::process_node(lxb_dom_node_t* node) {
 	if (!node) return;
+	std::string tag_name;
 	switch (node->type) {
 		case LXB_DOM_NODE_TYPE_ELEMENT:
-			process_element_node(lxb_dom_interface_element(node));
+			tag_name = get_tag_name(lxb_dom_interface_element(node));
+			if (tag_name == "body") in_body = true;
+			if (tag_name == "pre") preserve_whitespace = true;
+			if (tag_name == "br") {
+				add_line(current_line);
+				current_line.clear();
+			}
 			break;
 		case LXB_DOM_NODE_TYPE_TEXT:
 			process_text_node(lxb_dom_interface_text(node));
@@ -55,22 +62,12 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 	}
 	if (node->type == LXB_DOM_NODE_TYPE_ELEMENT) {
 		lxb_dom_element_t* element = lxb_dom_interface_element(node);
-		std::string tag_name = get_tag_name(element);
+		tag_name = get_tag_name(element);
 		if (is_block_element(tag_name)) {
 			add_line(current_line);
 			current_line.clear();
 		}
 		if (tag_name == "pre") preserve_whitespace = false;
-	}
-}
-
-void html_to_text::process_element_node(lxb_dom_element_t* element) {
-	std::string tag_name = get_tag_name(element);
-	if (tag_name == "body") in_body = true;
-	if (tag_name == "pre") preserve_whitespace = true;
-	if (tag_name == "br") {
-		add_line(current_line);
-		current_line.clear();
 	}
 }
 
