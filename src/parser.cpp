@@ -16,7 +16,7 @@ const std::vector<parser*>& get_all_parsers() {
 
 parser* find_parser_by_extension(const wxString& extension) {
 	const wxString normalized = extension.Lower();
-	for (parser* par : get_all_parsers())
+	for (auto* par : get_all_parsers())
 		for (const auto& ext : par->extensions())
 			if (ext.Lower() == normalized) return par;
 	return nullptr;
