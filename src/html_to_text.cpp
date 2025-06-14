@@ -1,8 +1,9 @@
 #include "html_to_text.hpp"
+#include <ranges>
 #include <sstream>
 #include "utils.hpp"
 
-html_to_text::html_to_text() :in_body{false}, preserve_whitespace{false}, doc{nullptr} {
+html_to_text::html_to_text() {
 	doc = lxb_html_document_create();
 	if (!doc) throw std::runtime_error("Failed to create Lexbor HTML document");
 }
@@ -16,8 +17,7 @@ bool html_to_text::convert(const std::string& html_content) {
 	current_line.clear();
 	in_body = false;
 	preserve_whitespace = false;
-	lxb_status_t status = lxb_html_document_parse(doc, reinterpret_cast<const lxb_char_t*>(html_content.c_str()), html_content.length());
-	if (status != LXB_STATUS_OK) return false;
+	if (lxb_status_t status = lxb_html_document_parse(doc, reinterpret_cast<const lxb_char_t*>(html_content.c_str()), html_content.length()); status != LXB_STATUS_OK) return false;
 	lxb_dom_node_t* node = lxb_dom_interface_node(doc);
 	process_node(node);
 	if (!current_line.empty()) {
@@ -29,10 +29,10 @@ bool html_to_text::convert(const std::string& html_content) {
 
 std::string html_to_text::get_text() const {
 	std::ostringstream oss;
-	for (size_t i = 0; i < lines.size(); ++i) {
-		if (i > 0) oss << "\n";
-		oss << lines[i];
-	}
+	if (lines.empty()) return {};
+	oss << lines.front();
+	for (size_t i = 1; i < lines.size(); ++i)
+		oss << '\n' << lines[i];
 	return oss.str();
 }
 
@@ -55,11 +55,8 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 		default:
 			break;
 	}
-	lxb_dom_node_t* child = node->first_child;
-	while (child != nullptr) {
+	for (auto* child = node->first_child; child; child = child->next)
 		process_node(child);
-		child = child->next;
-	}
 	if (node->type == LXB_DOM_NODE_TYPE_ELEMENT) {
 		lxb_dom_element_t* element = lxb_dom_interface_element(node);
 		tag_name = get_tag_name(element);
@@ -74,7 +71,7 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 void html_to_text::process_text_node(lxb_dom_text_t* text_node) {
 	if (!in_body) return;
 	size_t length;
-	const lxb_char_t* text_data = lxb_dom_node_text_content(lxb_dom_interface_node(text_node), &length);
+	const auto* text_data = lxb_dom_node_text_content(lxb_dom_interface_node(text_node), &length);
 	if (text_data && length > 0) {
 		std::string text(reinterpret_cast<const char*>(text_data), length);
 		if (!text.empty()) current_line += preserve_whitespace ? text : collapse_whitespace(text);
@@ -86,7 +83,7 @@ void html_to_text::add_line(const std::string& line) {
 	lines.push_back(line);
 }
 
-bool html_to_text::is_block_element(const std::string& tag_name) const {
+bool html_to_text::is_block_element(std::string_view tag_name) const {
 	switch (tag_name[0]) {
 		case 'd': return tag_name == "div";
 		case 'h': return tag_name == "h1" || tag_name == "h2" || tag_name == "h3" || tag_name == "h4" || tag_name == "h5" || tag_name == "h6";
@@ -95,8 +92,8 @@ bool html_to_text::is_block_element(const std::string& tag_name) const {
 	}
 }
 
-std::string html_to_text::get_tag_name(lxb_dom_element_t* element) {
+std::string_view html_to_text::get_tag_name(lxb_dom_element_t* element) const {
 	const lxb_char_t* name = lxb_dom_element_qualified_name(element, nullptr);
-	if (!name) return "";
-	return std::string(reinterpret_cast<const char*>(name));
+	if (!name) return {};
+	return {reinterpret_cast<const char*>(name)};
 }

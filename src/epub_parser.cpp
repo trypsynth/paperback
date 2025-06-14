@@ -1,7 +1,6 @@
 #include "epub_parser.hpp"
 #include "html_to_text.hpp"
 #include <memory>
-#include <sstream>
 #include <Poco/AutoPtr.h>
 #include <Poco/DOM/Document.h>
 #include <Poco/DOM/DOMParser.h>
@@ -10,6 +9,7 @@
 #include <Poco/SAX/InputSource.h>
 #include <Poco/String.h>
 #include <Poco/Zip/ZipStream.h>
+#include <sstream>
 #include <wx/filename.h>
 #include <wx/msgdlg.h>
 #include <wx/wfstream.h>
@@ -62,7 +62,7 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 	return doc;
 }
 
-void epub_parser::parse_opf(const std::string& filename, std::ifstream& fp, std::unique_ptr<Poco::Zip::ZipArchive>& archive, std::map<std::string, std::string>& manifest_items, std::vector<std::string>& spine_items, Poco::Path& opf_path, std::string& title, std::string& author) const {
+void epub_parser::parse_opf(const std::string& filename, std::ifstream& fp, std::unique_ptr<ZipArchive>& archive, std::map<std::string, std::string>& manifest_items, std::vector<std::string>& spine_items, Path& opf_path, std::string& title, std::string& author) const {
 	auto header = archive->findHeader(filename);
 	if (header == archive->headerEnd()) throw parse_error("No OPF file found");
 	ZipInputStream zis(fp, header->second, true);
@@ -114,7 +114,7 @@ void epub_parser::parse_opf(const std::string& filename, std::ifstream& fp, std:
 	}
 }
 
-epub_section epub_parser::parse_section(size_t n, std::ifstream& fp, std::unique_ptr<Poco::Zip::ZipArchive>& archive, const std::map<std::string, std::string>& manifest_items, const std::vector<std::string>& spine_items) const {
+epub_section epub_parser::parse_section(size_t n, std::ifstream& fp, std::unique_ptr<ZipArchive>& archive, const std::map<std::string, std::string>& manifest_items, const std::vector<std::string>& spine_items) const {
 	const auto id = spine_items[n];
 	auto it = manifest_items.find(id);
 	if (it == manifest_items.end()) throw parse_error("Unknown id: " + id);
