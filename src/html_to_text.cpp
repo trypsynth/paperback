@@ -2,8 +2,7 @@
 #include <sstream>
 #include "utils.hpp"
 
-html_to_text::html_to_text() {
-	doc = lxb_html_document_create();
+html_to_text::html_to_text() :doc{lxb_html_document_create()} {
 	if (!doc) throw std::runtime_error("Failed to create Lexbor HTML document");
 }
 
@@ -27,20 +26,24 @@ bool html_to_text::convert(const std::string& html_content) {
 }
 
 std::string html_to_text::get_text() const {
-	std::ostringstream oss;
 	if (lines.empty()) return {};
-	oss << lines.front();
-	for (size_t i = 1; i < lines.size(); ++i)
-		oss << '\n' << lines[i];
-	return oss.str();
+	std::ostringstream oss;
+	for (const auto& line : lines)
+		oss << line << '\n';
+	std::string result = oss.str();
+	result.pop_back();
+	return result;
 }
 
 void html_to_text::process_node(lxb_dom_node_t* node) {
 	if (!node) return;
-	std::string tag_name;
+	std::string_view tag_name;
+	if (node->type == LXB_DOM_NODE_TYPE_ELEMENT) {
+		auto* element = lxb_dom_interface_element(node);
+		tag_name = get_tag_name(element);
+	}
 	switch (node->type) {
 		case LXB_DOM_NODE_TYPE_ELEMENT:
-			tag_name = get_tag_name(lxb_dom_interface_element(node));
 			if (tag_name == "body") in_body = true;
 			if (tag_name == "pre") preserve_whitespace = true;
 			if (tag_name == "br") {
@@ -57,8 +60,6 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 	for (auto* child = node->first_child; child; child = child->next)
 		process_node(child);
 	if (node->type == LXB_DOM_NODE_TYPE_ELEMENT) {
-		lxb_dom_element_t* element = lxb_dom_interface_element(node);
-		tag_name = get_tag_name(element);
 		if (is_block_element(tag_name)) {
 			add_line(current_line);
 			current_line.clear();
@@ -77,12 +78,12 @@ void html_to_text::process_text_node(lxb_dom_text_t* text_node) {
 	}
 }
 
-void html_to_text::add_line(const std::string& line) {
+void html_to_text::add_line(std::string_view line) {
 	if (line.empty()) return;
-	lines.push_back(line);
+	lines.emplace_back(line);
 }
 
-bool html_to_text::is_block_element(std::string_view tag_name) const {
+bool html_to_text::is_block_element(std::string_view tag_name) const noexcept {
 	switch (tag_name[0]) {
 		case 'd': return tag_name == "div";
 		case 'h': return tag_name == "h1" || tag_name == "h2" || tag_name == "h3" || tag_name == "h4" || tag_name == "h5" || tag_name == "h6";
@@ -91,7 +92,7 @@ bool html_to_text::is_block_element(std::string_view tag_name) const {
 	}
 }
 
-std::string_view html_to_text::get_tag_name(lxb_dom_element_t* element) const {
+std::string_view html_to_text::get_tag_name(lxb_dom_element_t* element) const noexcept {
 	const lxb_char_t* name = lxb_dom_element_qualified_name(element, nullptr);
 	if (!name) return {};
 	return {reinterpret_cast<const char*>(name)};
