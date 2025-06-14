@@ -5,7 +5,7 @@
 #include <set>
 #include <sstream>
 
-const std::vector<parser*>& get_all_parsers() {
+const std::vector<parser*>& get_all_parsers() noexcept {
 	static std::vector<parser*> parsers = {
 		&epub_par,
 		&html_par,
@@ -14,7 +14,7 @@ const std::vector<parser*>& get_all_parsers() {
 	return parsers;
 }
 
-parser* find_parser_by_extension(const wxString& extension) {
+parser* find_parser_by_extension(const wxString& extension) noexcept {
 	const wxString normalized = extension.Lower();
 	for (auto* par : get_all_parsers())
 		for (const auto& ext : par->extensions())
@@ -22,7 +22,7 @@ parser* find_parser_by_extension(const wxString& extension) {
 	return nullptr;
 }
 
-wxString get_supported_wildcards() {
+wxString get_supported_wildcards() noexcept {
 	std::set<wxString> all_exts;
 	const auto& parsers = get_all_parsers();
 	for (const parser* p : parsers)
