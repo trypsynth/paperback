@@ -50,20 +50,24 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	menu_bar->Append(tools_menu, "&Tools");
 	menu_bar->Append(help_menu, "&Help");
 	SetMenuBar(menu_bar);
-	Bind(wxEVT_MENU, &main_window::on_open, this, wxID_OPEN);
-	Bind(wxEVT_MENU, &main_window::on_close, this, wxID_CLOSE);
-	Bind(wxEVT_MENU, &main_window::on_close_all, this, wxID_CLOSE_ALL);
-	Bind(wxEVT_MENU, &main_window::on_export, this, ID_EXPORT);
-	Bind(wxEVT_MENU, &main_window::on_exit, this, wxID_EXIT);
-	Bind(wxEVT_MENU, &main_window::on_find, this, wxID_FIND);
-	Bind(wxEVT_MENU, &main_window::on_find_next, this, ID_FIND_NEXT);
-	Bind(wxEVT_MENU, &main_window::on_find_previous, this, ID_FIND_PREVIOUS);
-	Bind(wxEVT_MENU, &main_window::on_go_to, this, ID_GO_TO);
-	Bind(wxEVT_MENU, &main_window::on_previous_section, this, ID_PREVIOUS_SECTION);
-	Bind(wxEVT_MENU, &main_window::on_next_section, this, ID_NEXT_SECTION);
-	Bind(wxEVT_MENU, &main_window::on_word_count, this, ID_WORD_COUNT);
-	Bind(wxEVT_MENU, &main_window::on_toc, this, ID_TABLE_OF_CONTENTS);
-	Bind(wxEVT_MENU, &main_window::on_about, this, wxID_ABOUT);
+	const std::pair<int, void(main_window::*)(wxCommandEvent&)> menu_bindings[] = {
+		{wxID_OPEN, &main_window::on_open},
+		{wxID_CLOSE, &main_window::on_close},
+		{wxID_CLOSE_ALL, &main_window::on_close_all},
+		{ID_EXPORT, &main_window::on_export},
+		{wxID_EXIT, &main_window::on_exit},
+		{wxID_FIND, &main_window::on_find},
+		{ID_FIND_NEXT, &main_window::on_find_next},
+		{ID_FIND_PREVIOUS, &main_window::on_find_previous},
+		{ID_GO_TO, &main_window::on_go_to},
+		{ID_PREVIOUS_SECTION, &main_window::on_previous_section},
+		{ID_NEXT_SECTION, &main_window::on_next_section},
+		{ID_WORD_COUNT, &main_window::on_word_count},
+		{ID_TABLE_OF_CONTENTS, &main_window::on_toc},
+		{wxID_ABOUT, &main_window::on_about},
+	};
+	for (const auto& [id, handler] : menu_bindings)
+		Bind(wxEVT_MENU, handler, this, id);
 	Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, &main_window::on_notebook_page_changed, this);
 	for (const int id : doc_command_ids)
 		Bind(wxEVT_UPDATE_UI, &main_window::update_doc_commands, this, id);
@@ -114,10 +118,8 @@ void main_window::update_doc_commands(wxUpdateUIEvent& e) {
 void main_window::update_title() {
 	if (notebook->GetPageCount() == 0)
 		SetTitle(APP_NAME);
-	else {
-		wxString current_doc = active_document()->title;
-		SetTitle(current_doc + " - " + APP_NAME);
-	}
+	else
+		SetTitle(active_document()->title + " - " + APP_NAME);
 }
 
 void main_window::on_open(wxCommandEvent& event) {
@@ -188,7 +190,7 @@ void main_window::on_find(wxCommandEvent& event) {
 	find_dialog->Show();
 }
 
-void main_window::on_find_next(wxCommandEvent&) {
+void main_window::on_find_next(wxCommandEvent& event) {
 	if (!find_dialog) return;
 	wxFindDialogEvent e(wxEVT_FIND_NEXT, find_dialog->GetId());
 	e.SetFindString(find_data.GetFindString());
@@ -196,7 +198,7 @@ void main_window::on_find_next(wxCommandEvent&) {
 	wxPostEvent(this, e);
 }
 
-void main_window::on_find_previous(wxCommandEvent&) {
+void main_window::on_find_previous(wxCommandEvent& event) {
 	if (!find_dialog) return;
 	wxFindDialogEvent e(wxEVT_FIND_NEXT, find_dialog->GetId());
 	e.SetFindString(find_data.GetFindString());
@@ -301,21 +303,21 @@ void main_window::on_find_dialog(wxFindDialogEvent& event) {
 	const wxString& search_text = text_ctrl->GetValue();
 	long found_pos = wxNOT_FOUND;
 	const bool forward = flags & wxFR_DOWN;
-	if (flags & wxFR_MATCHCASE) {
+	if (flags & wxFR_MATCHCASE)
 		if (forward)
 			found_pos = search_text.find(query, start_pos);
 		else
 			found_pos = search_text.substr(0, start_pos).rfind(query);
-	} else
+	else
 		found_pos = find_case_insensitive(search_text, query, start_pos, forward);
 	if (found_pos == wxNOT_FOUND) {
 		speechSayA("No more results. Wrapping search.", 1);
-		if (flags & wxFR_MATCHCASE) {
+		if (flags & wxFR_MATCHCASE)
 			if (forward)
 				found_pos = search_text.find(query, 0);
 			else
 				found_pos = search_text.rfind(query);
-		} else
+		else
 			found_pos = find_case_insensitive(search_text, query, forward ? 0 : search_text.Length(), forward);
 		if (found_pos == wxNOT_FOUND) {
 			speechSayA("Not found.", 1);
