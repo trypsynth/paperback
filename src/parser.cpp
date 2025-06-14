@@ -14,7 +14,7 @@ const std::vector<parser*>& get_all_parsers() noexcept {
 	return parsers;
 }
 
-parser* find_parser_by_extension(const wxString& extension) noexcept {
+parser* find_parser_by_extension(const wxString& extension) {
 	const wxString normalized = extension.Lower();
 	for (auto* par : get_all_parsers())
 		for (const auto& ext : par->extensions())
@@ -22,7 +22,7 @@ parser* find_parser_by_extension(const wxString& extension) noexcept {
 	return nullptr;
 }
 
-wxString get_supported_wildcards() noexcept {
+wxString get_supported_wildcards() {
 	std::set<wxString> all_exts;
 	const auto& parsers = get_all_parsers();
 	for (const parser* p : parsers)

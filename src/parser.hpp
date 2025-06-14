@@ -14,5 +14,5 @@ public:
 };
 
 const std::vector<parser*>& get_all_parsers() noexcept;
-parser* find_parser_by_extension(const wxString& extension) noexcept;
-wxString get_supported_wildcards() noexcept;
+parser* find_parser_by_extension(const wxString& extension);
+wxString get_supported_wildcards();
