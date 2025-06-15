@@ -8,8 +8,8 @@ toc_dialog::toc_dialog(wxWindow* parent, const document* doc)
 	populate_tree(doc->toc_items, root);
 	tree->Expand(root);
 	auto* button_sizer = new wxStdDialogButtonSizer();
-	button_sizer->AddButton(new wxButton(this, wxID_OK));
-	button_sizer->AddButton(new wxButton(this, wxID_CANCEL));
+	for (int id : {wxID_OK, wxID_CANCEL})
+		button_sizer->AddButton(new wxButton(this, id));
 	button_sizer->Realize();
 	main_sizer->Add(tree, 1, wxEXPAND | wxALL, 10);
 	main_sizer->Add(button_sizer, 0, wxALIGN_RIGHT | wxALL, 10);
@@ -23,8 +23,7 @@ toc_dialog::toc_dialog(wxWindow* parent, const document* doc)
 
 void toc_dialog::populate_tree(const std::vector<std::unique_ptr<toc_item>>& items, const wxTreeItemId& parent) {
 	for (const auto& item : items) {
-		wxString display_text = item->name;
-		if (display_text.IsEmpty()) display_text = "Untitled";
+		wxString display_text = item->name.IsEmpty() ? wxString("Untitled") : item->name;
 		wxTreeItemId item_id = tree->AppendItem(parent, display_text);
 		tree->SetItemData(item_id, new toc_tree_item_data(item->offset));
 		if (!item->children.empty()) populate_tree(item->children, item_id);
@@ -32,7 +31,7 @@ void toc_dialog::populate_tree(const std::vector<std::unique_ptr<toc_item>>& ite
 }
 
 void toc_dialog::on_tree_selection_changed(wxTreeEvent& event) {
-	wxTreeItemId item = event.GetItem();
+	const wxTreeItemId item = event.GetItem();
 	if (!item.IsOk()) return;
 	auto* data = dynamic_cast<toc_tree_item_data*>(tree->GetItemData(item));
 	if (!data) return;
