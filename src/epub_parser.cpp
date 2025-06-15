@@ -197,7 +197,8 @@ void epub_parser::parse_epub3_nav(const std::string& nav_id, std::ifstream& fp, 
 	nsmap.declarePrefix("epub", "http://www.idpf.org/2007/ops");
 	auto nav_nodes = doc->getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "nav");
 	Element* toc_nav = nullptr;
-	for (size_t i = 0; i < nav_nodes->length(); i++) {
+	size_t len = nav_nodes->length();
+	for (size_t i = 0; i < len; i++) {
 		auto* nav = static_cast<Element*>(nav_nodes->item(i));
 		auto epub_type = nav->getAttributeNS("http://www.idpf.org/2007/ops", "type");
 		if (epub_type.empty()) epub_type = nav->getAttribute("epub:type");
