@@ -29,13 +29,13 @@ public:
 private:
 	void parse_opf(const std::string& filename, std::ifstream& fp, std::unique_ptr<Poco::Zip::ZipArchive>& archive, std::map<std::string, std::string>& manifest_items, std::vector<std::string>& spine_items, Poco::Path& opf_path, std::string& title, std::string& author, std::string& toc_ncx_id, std::string& nav_doc_id) const;
 	epub_section parse_section(size_t n, std::ifstream& fp, std::unique_ptr<Poco::Zip::ZipArchive>& archive, const std::map<std::string, std::string>& manifest_items, const std::vector<std::string>& spine_items) const;
-	std::string get_section_text(epub_section& section) const;
 	void parse_epub2_ncx(const std::string& ncx_id, std::ifstream& fp, std::unique_ptr<Poco::Zip::ZipArchive>& archive, const std::map<std::string, std::string>& manifest_items, const Poco::Path& opf_path, std::vector<std::unique_ptr<toc_item>>& toc_items, const std::map<std::string, std::string>& all_manifest_items, const std::vector<std::string>& spine_items, const std::vector<size_t>& section_offsets) const;
 	std::unique_ptr<toc_item> parse_ncx_nav_point(Poco::XML::Element* nav_point, const Poco::XML::NamespaceSupport& nsmap, const Poco::Path& opf_path, const std::map<std::string, std::string>& manifest_items, const std::vector<std::string>& spine_items, const std::vector<size_t>& section_offsets) const;
 	void parse_epub3_nav(const std::string& nav_id, std::ifstream& fp, std::unique_ptr<Poco::Zip::ZipArchive>& archive, const std::map<std::string, std::string>& manifest_items, const Poco::Path& opf_path, std::vector<std::unique_ptr<toc_item>>& toc_items, const std::map<std::string, std::string>& all_manifest_items, const std::vector<std::string>& spine_items, const std::vector<size_t>& section_offsets) const;
 	void parse_epub3_nav_list(Poco::XML::Element* ol_element, std::vector<std::unique_ptr<toc_item>>& toc_items, const Poco::Path& opf_path, const std::map<std::string, std::string>& manifest_items, const std::vector<std::string>& spine_items, const std::vector<size_t>& section_offsets) const;
 	std::unique_ptr<toc_item> parse_epub3_nav_item(Poco::XML::Element* li_element, const Poco::Path& opf_path, const std::map<std::string, std::string>& manifest_items, const std::vector<std::string>& spine_items, const std::vector<size_t>& section_offsets) const;
 	int calculate_offset_from_href(const std::string& href, const Poco::Path& opf_path, const std::map<std::string, std::string>& manifest_items, const std::vector<std::string>& spine_items, const std::vector<size_t>& section_offsets) const;
+	std::string get_section_text(epub_section& section) const noexcept;
 };
 
 static epub_parser epub_par;

@@ -51,8 +51,9 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 	wxString content;
 	auto document_ptr = std::make_unique<document>();
 	document_ptr->section_offsets.clear();
-	for (int i = 0; i < spine_items.size(); i++) {
-		epub_section section = parse_section(i, fp, archive, manifest_items, spine_items);
+	size_t index = 0;
+	for (const auto& id : spine_items) {
+		epub_section section = parse_section(index++, fp, archive, manifest_items, spine_items);
 		document_ptr->section_offsets.push_back(content.length());
 		content += wxString::FromUTF8(get_section_text(section));
 	}
@@ -96,7 +97,7 @@ void epub_parser::parse_opf(const std::string& filename, std::ifstream& fp, std:
 				author = e->innerText();
 		}
 	}
-	auto* manifest = doc->getNodeByPathNS("opf:package/opf:manifest", nsmap);
+	const auto* manifest = doc->getNodeByPathNS("opf:package/opf:manifest", nsmap);
 	if (!manifest) throw parse_error("No manifest");
 	auto children = manifest->childNodes();
 	size_t len = children->length();
@@ -110,7 +111,7 @@ void epub_parser::parse_opf(const std::string& filename, std::ifstream& fp, std:
 		const auto id = e->getAttribute("id");
 		const auto media_type = e->getAttribute("media-type");
 		const auto properties = e->getAttribute("properties");
-		manifest_items.insert(std::make_pair(id, filePath.toString(Path::PATH_UNIX)));
+		manifest_items.emplace(id, filePath.toString(Path::PATH_UNIX));
 		if (media_type == "application/x-dtbncx+xml") toc_ncx_id = id;
 		else if (properties.find("nav") != std::string::npos) nav_doc_id = id;
 	}
@@ -270,9 +271,9 @@ int epub_parser::calculate_offset_from_href(const std::string& href, const Path&
 	if (!file_path.empty()) full_path.append(file_path);
 	std::string resolved_path = full_path.toString(Path::PATH_UNIX);
 	std::string manifest_id;
-	for (const auto& pair : manifest_items) {
-		if (pair.second == resolved_path) {
-			manifest_id = pair.first;
+	for (const auto& [id, path] : manifest_items) {
+		if (path == resolved_path) {
+			manifest_id = id;
 			break;
 		}
 	}
@@ -310,7 +311,7 @@ epub_section epub_parser::parse_section(size_t n, std::ifstream& fp, std::unique
 	return section;
 }
 
-std::string epub_parser::get_section_text(epub_section& section) const {
+std::string epub_parser::get_section_text(epub_section& section) const noexcept {
 	std::string data;
 	for (auto& line : section.lines) {
 		line = trimInPlace(line);
