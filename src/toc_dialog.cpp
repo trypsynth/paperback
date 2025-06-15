@@ -3,17 +3,12 @@
 toc_dialog::toc_dialog(wxWindow* parent, const document* doc) 
 	: wxDialog(parent, wxID_ANY, "Table of Contents"), selected_offset(-1) {
 	auto* main_sizer = new wxBoxSizer(wxVERTICAL);
-	tree = new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition);
-	if (doc && !doc->toc_items.empty()) {
-		wxTreeItemId root = tree->AddRoot("Table of Contents");
-		populate_tree(doc->toc_items, root);
-		tree->Expand(root);
-		wxTreeItemIdValue cookie;
-		wxTreeItemId first_child = tree->GetFirstChild(root, cookie);
-		if (first_child.IsOk()) tree->SelectItem(first_child);
-	} else tree->AddRoot("No table of contents available");
+	tree = new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTR_HIDE_ROOT);
+	wxTreeItemId root = tree->AddRoot("Root");
+	populate_tree(doc->toc_items, root);
+	tree->Expand(root);
 	auto* button_sizer = new wxStdDialogButtonSizer();
-	button_sizer->AddButton(new wxButton(this, wxID_OK, "Go to Section"));
+	button_sizer->AddButton(new wxButton(this, wxID_OK));
 	button_sizer->AddButton(new wxButton(this, wxID_CANCEL));
 	button_sizer->Realize();
 	main_sizer->Add(tree, 1, wxEXPAND | wxALL, 10);
@@ -24,8 +19,6 @@ toc_dialog::toc_dialog(wxWindow* parent, const document* doc)
 	SetSizer(main_sizer);
 	SetSize(500, 400);
 	CentreOnParent();
-	if (doc && doc->toc_items.empty())
-		FindWindow(wxID_OK)->Enable(false);
 }
 
 void toc_dialog::populate_tree(const std::vector<std::unique_ptr<toc_item>>& items, const wxTreeItemId& parent) {
@@ -34,21 +27,16 @@ void toc_dialog::populate_tree(const std::vector<std::unique_ptr<toc_item>>& ite
 		if (display_text.IsEmpty()) display_text = "Untitled";
 		wxTreeItemId item_id = tree->AppendItem(parent, display_text);
 		tree->SetItemData(item_id, new toc_tree_item_data(item->offset));
-		if (!item->children.empty()) {
-			populate_tree(item->children, item_id);
-			tree->Expand(item_id);
-		}
+		if (!item->children.empty()) populate_tree(item->children, item_id);
 	}
 }
 
 void toc_dialog::on_tree_selection_changed(wxTreeEvent& event) {
 	wxTreeItemId item = event.GetItem();
-	if (item.IsOk()) {
-		auto* data = dynamic_cast<toc_tree_item_data*>(tree->GetItemData(item));
-		if (data) {
-			selected_offset = data->offset;
-		}
-	}
+	if (!item.IsOk()) return;
+	auto* data = dynamic_cast<toc_tree_item_data*>(tree->GetItemData(item));
+	if (!data) return;
+	selected_offset = data->offset;
 }
 
 void toc_dialog::on_tree_item_activated(wxTreeEvent& event) {
