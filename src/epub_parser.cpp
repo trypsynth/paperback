@@ -143,7 +143,7 @@ void epub_parser::parse_epub2_ncx(const std::string& ncx_id, std::ifstream& fp, 
 	auto doc = parser.parse(&src);
 	NamespaceSupport nsmap;
 	nsmap.declarePrefix("ncx", "http://www.daisy.org/z3986/2005/ncx/");
-	auto* nav_map = doc->getNodeByPathNS("ncx:ncx/ncx:nav_map", nsmap);
+	auto* nav_map = doc->getNodeByPathNS("ncx:ncx/ncx:navMap", nsmap);
 	if (!nav_map) return;
 	auto children = nav_map->childNodes();
 	size_t len = children->length();
@@ -160,7 +160,7 @@ void epub_parser::parse_epub2_ncx(const std::string& ncx_id, std::ifstream& fp, 
 
 std::unique_ptr<toc_item> epub_parser::parse_ncx_nav_point(Element* nav_point, const NamespaceSupport& nsmap, const Path& opf_path, const std::map<std::string, std::string>& manifest_items, const std::vector<std::string>& spine_items, const std::vector<size_t>& section_offsets) const {
 	auto item = std::make_unique<toc_item>();
-	auto* nav_label = nav_point->getNodeByPathNS("ncx:nav_label/ncx:text", nsmap);
+	auto* nav_label = nav_point->getNodeByPathNS("ncx:navLabel/ncx:text", nsmap);
 	if (nav_label) item->name = wxString::FromUTF8(nav_label->innerText());
 	auto* content = nav_point->getNodeByPathNS("ncx:content", nsmap);
 	if (content) {
