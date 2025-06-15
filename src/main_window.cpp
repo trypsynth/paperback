@@ -274,8 +274,22 @@ void main_window::on_toc(wxCommandEvent& event) {
 		speechSayA("No table of contents", 1);
 		return;
 	}
-	toc_dialog dlg(this);
+	if (doc->toc_items.empty()) {
+		speechSayA("Table of contents is empty", 1);
+		return;
+	}
+	toc_dialog dlg(this, doc);
 	if (dlg.ShowModal() != wxID_OK) return;
+	int offset = dlg.get_selected_offset();
+	if (offset < 0) return;
+	auto* text_ctrl = active_text_ctrl();
+	if (!text_ctrl) return;
+	long max_pos = text_ctrl->GetLastPosition();
+	if (offset > max_pos) offset = max_pos;
+	else if (offset < 0) offset = 0;
+	text_ctrl->SetInsertionPoint(offset);
+	text_ctrl->ShowPosition(offset);
+	text_ctrl->SetFocus();
 }
 
 void main_window::on_about(wxCommandEvent& event) {

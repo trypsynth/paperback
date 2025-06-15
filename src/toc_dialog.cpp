@@ -1,15 +1,61 @@
 #include "toc_dialog.hpp"
-#include <wx/treectrl.h>
 
-toc_dialog::toc_dialog(wxWindow* parent) :wxDialog(parent, wxID_ANY, "Table of Contents") {
+toc_dialog::toc_dialog(wxWindow* parent, const document* doc) 
+	: wxDialog(parent, wxID_ANY, "Table of Contents"), selected_offset(-1) {
 	auto* main_sizer = new wxBoxSizer(wxVERTICAL);
-	auto* tree = new wxTreeCtrl(this, wxID_ANY);
+	tree = new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition);
+	if (doc && !doc->toc_items.empty()) {
+		wxTreeItemId root = tree->AddRoot("Table of Contents");
+		populate_tree(doc->toc_items, root);
+		tree->Expand(root);
+		wxTreeItemIdValue cookie;
+		wxTreeItemId first_child = tree->GetFirstChild(root, cookie);
+		if (first_child.IsOk()) tree->SelectItem(first_child);
+	} else tree->AddRoot("No table of contents available");
 	auto* button_sizer = new wxStdDialogButtonSizer();
-	button_sizer->AddButton(new wxButton(this, wxID_OK));
+	button_sizer->AddButton(new wxButton(this, wxID_OK, "Go to Section"));
 	button_sizer->AddButton(new wxButton(this, wxID_CANCEL));
 	button_sizer->Realize();
 	main_sizer->Add(tree, 1, wxEXPAND | wxALL, 10);
 	main_sizer->Add(button_sizer, 0, wxALIGN_RIGHT | wxALL, 10);
+	Bind(wxEVT_TREE_SEL_CHANGED, &toc_dialog::on_tree_selection_changed, this);
+	Bind(wxEVT_TREE_ITEM_ACTIVATED, &toc_dialog::on_tree_item_activated, this, wxID_ANY);
+	Bind(wxEVT_BUTTON, &toc_dialog::on_ok, this, wxID_OK);
 	SetSizer(main_sizer);
+	SetSize(500, 400);
 	CentreOnParent();
+	if (doc && doc->toc_items.empty())
+		FindWindow(wxID_OK)->Enable(false);
+}
+
+void toc_dialog::populate_tree(const std::vector<std::unique_ptr<toc_item>>& items, const wxTreeItemId& parent) {
+	for (const auto& item : items) {
+		wxString display_text = item->name;
+		if (display_text.IsEmpty()) display_text = "Untitled";
+		wxTreeItemId item_id = tree->AppendItem(parent, display_text);
+		tree->SetItemData(item_id, new toc_tree_item_data(item->offset));
+		if (!item->children.empty()) {
+			populate_tree(item->children, item_id);
+			tree->Expand(item_id);
+		}
+	}
+}
+
+void toc_dialog::on_tree_selection_changed(wxTreeEvent& event) {
+	wxTreeItemId item = event.GetItem();
+	if (item.IsOk()) {
+		auto* data = dynamic_cast<toc_tree_item_data*>(tree->GetItemData(item));
+		if (data) {
+			selected_offset = data->offset;
+		}
+	}
+}
+
+void toc_dialog::on_tree_item_activated(wxTreeEvent& event) {
+	if (selected_offset >= 0) EndModal(wxID_OK);
+}
+
+void toc_dialog::on_ok(wxCommandEvent& event) {
+	if (selected_offset >= 0) EndModal(wxID_OK);
+	else wxMessageBox("Please select a section from the table of contents.", "No Selection", wxOK | wxICON_INFORMATION, this);
 }
