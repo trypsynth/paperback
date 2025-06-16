@@ -6,7 +6,6 @@ toc_dialog::toc_dialog(wxWindow* parent, const document* doc)
 	tree = new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTR_HIDE_ROOT);
 	wxTreeItemId root = tree->AddRoot("Root");
 	populate_tree(doc->toc_items, root);
-	tree->Expand(root);
 	auto* button_sizer = new wxStdDialogButtonSizer();
 	for (int id : {wxID_OK, wxID_CANCEL})
 		button_sizer->AddButton(new wxButton(this, id));
