@@ -14,7 +14,7 @@ public:
 	html_to_text(html_to_text&&) = default;
 	html_to_text& operator=(html_to_text&&) = default;
 	[[nodiscard]] bool convert(const std::string& html_content);
-	[[nodiscard]] const std::vector<std::string>& get_lines() const noexcept { return lines_; }
+	[[nodiscard]] const std::vector<std::string>& get_lines() const noexcept { return lines; }
 	[[nodiscard]] std::string get_text() const;
 	void clear() noexcept;
 
@@ -27,11 +27,11 @@ private:
 
 	using DocumentPtr = std::unique_ptr<lxb_html_document_t, DocumentDeleter>;
 
-	std::vector<std::string> lines_;
-	std::string current_line_;
-	bool in_body_ = false;
-	bool preserve_whitespace_ = false;
-	DocumentPtr doc_;
+	std::vector<std::string> lines;
+	std::string current_line;
+	bool in_body = false;
+	bool preserve_whitespace = false;
+	DocumentPtr doc;
 
 	void process_node(lxb_dom_node_t* node);
 	void process_text_node(lxb_dom_text_t* text_node);

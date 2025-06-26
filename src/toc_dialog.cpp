@@ -42,5 +42,8 @@ void toc_dialog::on_tree_item_activated(wxTreeEvent& event) {
 }
 
 void toc_dialog::on_ok(wxCommandEvent& event) {
-	selected_offset >= 0 ? EndModal(wxID_OK) : wxMessageBox("Please select a section from the table of contents.", "No Selection", wxOK | wxICON_INFORMATION, this);
+	if (selected_offset >= 0)
+		EndModal(wxID_OK);
+	else
+		wxMessageBox("Please select a section from the table of contents.", "No Selection", wxOK | wxICON_INFORMATION, this);
 }
