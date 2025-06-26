@@ -81,7 +81,7 @@ document* main_window::active_document() const {
 	return active_user_data()->doc.get();
 }
 
-void main_window::open_document(const wxString& path, parser* par) {
+void main_window::open_document(const wxString& path, const parser* par) {
 	std::unique_ptr<document> doc = par->load(path);
 	if (!doc) {
 		wxMessageBox("Failed to load document.", "Error", wxICON_ERROR);
@@ -126,7 +126,7 @@ void main_window::on_open(wxCommandEvent& event) {
 	wxFileDialog dlg(this, "Select a document to read", "", "", get_supported_wildcards(), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 	if (dlg.ShowModal() != wxID_OK) return;
 	wxString path = dlg.GetPath();
-	parser* par = find_parser_by_extension(wxFileName(path).GetExt());
+	const parser* par = find_parser_by_extension(wxFileName(path).GetExt());
 	if (!par) {
 		const bool open_as_txt = wxMessageBox("No suitable parser was found for " + path + ". Would you like to treat it as plain text?", "Warning", wxICON_WARNING | wxYES_NO) == wxYES;
 		if (!open_as_txt) return;

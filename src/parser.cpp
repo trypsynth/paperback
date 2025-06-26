@@ -1,22 +1,10 @@
 #include "parser.hpp"
-#include "epub_parser.hpp"
-#include "html_parser.hpp"
-#include "text_parser.hpp"
 #include <set>
 #include <sstream>
 
-const std::vector<parser*>& get_all_parsers() noexcept {
-	static std::vector<parser*> parsers = {
-		&epub_par,
-		&html_par,
-		&text_par,
-	};
-	return parsers;
-}
-
-parser* find_parser_by_extension(const wxString& extension) {
+const parser* find_parser_by_extension(const wxString& extension) noexcept {
 	const wxString normalized = extension.Lower();
-	for (auto* par : get_all_parsers())
+	for (auto* par : parser_registry::get_all())
 		for (const auto& ext : par->extensions())
 			if (ext.Lower() == normalized) return par;
 	return nullptr;
@@ -24,7 +12,7 @@ parser* find_parser_by_extension(const wxString& extension) {
 
 wxString get_supported_wildcards() {
 	std::set<wxString> all_exts;
-	const auto& parsers = get_all_parsers();
+	const auto& parsers = parser_registry::get_all();
 	for (const parser* p : parsers)
 		all_exts.insert(p->extensions().begin(), p->extensions().end());
 	if (all_exts.empty()) return {};

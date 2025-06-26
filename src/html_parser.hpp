@@ -5,11 +5,11 @@
 class html_parser : public parser {
 public:
 	wxString name() const override {return "HTML Documents";}
-	const std::vector<wxString>& extensions() const override {
-		static const std::vector<wxString> exts = {"htm", "html", "xhtml"};
+	std::span<const wxString> extensions() const override {
+		static const wxString exts[] = {"htm", "html", "xhtml"};
 		return exts;
 	}
 	std::unique_ptr<document> load(const wxString& path) const override;
 };
 
-static html_parser html_par;
+REGISTER_PARSER(html_parser)
