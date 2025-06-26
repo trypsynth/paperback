@@ -309,30 +309,19 @@ void main_window::on_notebook_page_changed(wxBookCtrlEvent& event) {
 void main_window::on_find_dialog(wxFindDialogEvent& event) {
 	auto* text_ctrl = active_text_ctrl();
 	if (!text_ctrl) return;
-	wxString query = event.GetFindString();
+	const wxString& full_text = text_ctrl->GetValue();
+	const wxString& query = event.GetFindString();
 	const long flags = event.GetFlags();
 	long sel_start, sel_end;
 	text_ctrl->GetSelection(&sel_start, &sel_end);
-	const long start_pos = (flags & wxFR_DOWN) ? sel_end : sel_start;
-	const wxString& search_text = text_ctrl->GetValue();
-	long found_pos = wxNOT_FOUND;
-	const bool forward = flags & wxFR_DOWN;
-	if (flags & wxFR_MATCHCASE)
-		if (forward)
-			found_pos = search_text.find(query, start_pos);
-		else
-			found_pos = search_text.substr(0, start_pos).rfind(query);
-	else
-		found_pos = find_case_insensitive(search_text, query, start_pos, forward);
+	bool forward = flags & wxFR_DOWN;
+	bool match_case = flags & wxFR_MATCHCASE;
+	long start_pos = forward ? sel_end : sel_start;
+	long found_pos = find_text(full_text, query, start_pos, forward, match_case);
 	if (found_pos == wxNOT_FOUND) {
 		speechSayA("No more results. Wrapping search.", 1);
-		if (flags & wxFR_MATCHCASE)
-			if (forward)
-				found_pos = search_text.find(query, 0);
-			else
-				found_pos = search_text.rfind(query);
-		else
-			found_pos = find_case_insensitive(search_text, query, forward ? 0 : search_text.Length(), forward);
+		start_pos = forward ? 0 : full_text.Length();
+		found_pos = find_text(full_text, query, start_pos, forward, match_case);
 		if (found_pos == wxNOT_FOUND) {
 			speechSayA("Not found.", 1);
 			return;

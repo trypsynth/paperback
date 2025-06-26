@@ -4,18 +4,28 @@
 #include "utils.hpp"
 
 long find_case_insensitive(const wxString& haystack, const wxString& needle, long start, bool forward) {
-	if (needle.empty()) return wxNOT_FOUND;
-	wxString needle_lower = needle.Lower();
-	const long haystack_len = haystack.Length();
-	const long needle_len = needle_lower.Length();
-	if (needle_len > haystack_len) return wxNOT_FOUND;
+	wxString needle_lc = needle.Lower();
+	const long hlen = haystack.Length();
+	const long nlen = needle_lc.Length();
+	if (nlen > hlen) return wxNOT_FOUND;
 	if (forward)
-		for (long i = start; i <= haystack_len - needle_len; ++i)
-			if (haystack.Mid(i, needle_len).Lower() == needle_lower) return i;
+		for (long i = start; i <= hlen - nlen; ++i)
+			if (haystack.SubString(i, i + nlen - 1).Lower() == needle_lc) return i;
 	else
-		for (long i = start - needle_len; i >= 0; --i)
-			if (haystack.Mid(i, needle_len).Lower() == needle_lower) return i;
+		for (long i = start - nlen; i >= 0; --i)
+			if (haystack.SubString(i, i + nlen - 1).Lower() == needle_lc) return i;
 	return wxNOT_FOUND;
+}
+
+long find_text(const wxString& haystack, const wxString& needle, long start, bool forward, bool match_case) {
+	if (needle.empty()) return wxNOT_FOUND;
+	if (match_case)
+		if (forward)
+			return haystack.find(needle, start);
+		else
+			return haystack.Left(start).rfind(needle);
+	else
+		return find_case_insensitive(haystack, needle, start, forward);
 }
 
 std::string collapse_whitespace(std::string_view input) {
