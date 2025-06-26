@@ -1,6 +1,6 @@
 #include "go_to_dialog.hpp"
 
-go_to_dialog::go_to_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : wxDialog{ parent, wxID_ANY, "Go to" }, textbox{ text_ctrl } {
+go_to_dialog::go_to_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : wxDialog(parent, wxID_ANY, "Go to"), textbox{text_ctrl} {
 	auto* main_sizer = new wxBoxSizer(wxVERTICAL);
 	auto* line_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* label = new wxStaticText(this, wxID_ANY, "Go to:");
