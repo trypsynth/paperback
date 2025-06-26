@@ -4,17 +4,9 @@
 #include "utils.hpp"
 
 long find_case_insensitive(const wxString& haystack, const wxString& needle, long start, bool forward) {
+	wxString haystack_lc = haystack.Lower();
 	wxString needle_lc = needle.Lower();
-	const long hlen = haystack.Length();
-	const long nlen = needle_lc.Length();
-	if (nlen > hlen) return wxNOT_FOUND;
-	if (forward)
-		for (long i = start; i <= hlen - nlen; ++i)
-			if (haystack.SubString(i, i + nlen - 1).Lower() == needle_lc) return i;
-	else
-		for (long i = start - nlen; i >= 0; --i)
-			if (haystack.SubString(i, i + nlen - 1).Lower() == needle_lc) return i;
-	return wxNOT_FOUND;
+	return forward ? haystack_lc.find(needle_lc, start) : haystack_lc.Left(start).rfind(needle_lc);
 }
 
 long find_text(const wxString& haystack, const wxString& needle, long start, bool forward, bool match_case) {
