@@ -1,0 +1,10 @@
+Checks: >
+  bugprone-*,modernize-*,performance-*,readability-*,portability-*
+WarningsAsErrors: '*'
+HeaderFilterRegex: 'src/.*'
+FormatStyle: file
+CheckOptions:
+  - key:             modernize-use-trailing-return-type.MinTypeNameLength
+    value:           '4'
+  - key:             readability-identifier-naming.VariableCase
+    value:           camelBack

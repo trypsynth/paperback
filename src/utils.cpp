@@ -1,12 +1,11 @@
+#include "utils.hpp"
 #include <cctype>
 #include <sstream>
 #include <string_view>
-#include "utils.hpp"
 
 long find_text(const wxString& haystack, const wxString& needle, long start, bool forward, bool match_case) {
 	if (needle.empty()) return wxNOT_FOUND;
-	if (match_case)
-		return forward ? haystack.find(needle, start) : haystack.Left(start).rfind(needle);
+	if (match_case) return forward ? haystack.find(needle, start) : haystack.Left(start).rfind(needle);
 	wxString haystack_lc = haystack.Lower();
 	wxString needle_lc = needle.Lower();
 	return forward ? haystack_lc.find(needle_lc, start) : haystack_lc.Left(start).rfind(needle_lc);

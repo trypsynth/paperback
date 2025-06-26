@@ -9,7 +9,7 @@ public:
 	bool OnInit() override;
 	int OnExit() override;
 	void parse_command_line();
-	wxFileConfig* config() {return conf.get();}
+	wxFileConfig* config() { return conf.get(); }
 
 private:
 	main_window* frame = nullptr;

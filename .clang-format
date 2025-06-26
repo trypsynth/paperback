@@ -1,0 +1,25 @@
+BasedOnStyle: LLVM
+IndentWidth: 4
+UseTab: ForIndentation
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortCaseLabelsOnASingleLine: true
+AlwaysBreakAfterReturnType: None
+BreakBeforeBraces: Attach
+ColumnLimit: 0
+AccessModifierOffset: -4
+IndentCaseLabels: false
+SpaceBeforeParens: ControlStatements
+Cpp11BracedListStyle: false
+SortIncludes: true
+TabWidth: 4
+PointerAlignment: Left
+BraceWrapping:
+  AfterControlStatement: false
+  AfterFunction: false
+  AfterEnum: false
+  AfterStruct: false
+  BeforeCatch: false
+  BeforeElse: false
+  IndentBraces: false

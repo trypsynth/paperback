@@ -1,12 +1,12 @@
 #pragma once
 
-#include <fstream>
-#include <map>
-#include <memory>
 #include "parser.hpp"
 #include <Poco/DOM/Element.h>
 #include <Poco/Path.h>
 #include <Poco/Zip/ZipArchive.h>
+#include <fstream>
+#include <map>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -24,7 +24,7 @@ class epub_parser : public parser {
 public:
 	wxString name() const override { return "Epub Books"; }
 	std::span<const wxString> extensions() const override {
-		static const wxString exts[] = {"epub"};
+		static const wxString exts[] = { "epub" };
 		return exts;
 	}
 	std::unique_ptr<document> load(const wxString& path) const override;
@@ -42,7 +42,7 @@ private:
 		std::string toc_ncx_id;
 		std::string nav_doc_id;
 
-		epub_context(std::ifstream& fs, std::unique_ptr<Poco::Zip::ZipArchive>& arch) :file_stream(fs), archive(arch) {}
+		epub_context(std::ifstream& fs, std::unique_ptr<Poco::Zip::ZipArchive>& arch) : file_stream(fs), archive(arch) {}
 	};
 
 	void parse_opf(const std::string& filename, epub_context& ctx) const;

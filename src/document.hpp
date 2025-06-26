@@ -33,34 +33,28 @@ struct document {
 	std::vector<size_t> section_offsets;
 	std::vector<std::unique_ptr<toc_item>> toc_items;
 
-	bool has_flag(document_flags flag) const {
-		return (flags & flag) == flag;
-	}
+	bool has_flag(document_flags flag) const { return (flags & flag) == flag; }
 
 	int next_section_index(size_t position) const {
 		for (size_t i = 0; i < section_offsets.size(); ++i)
-			if (section_offsets[i] > position)
-				return static_cast<int>(i);
+			if (section_offsets[i] > position) return static_cast<int>(i);
 		return -1;
 	}
 
 	int previous_section_index(size_t position) const {
 		for (int i = static_cast<int>(section_offsets.size()) - 1; i >= 0; --i)
-			if (section_offsets[i] < position)
-				return i;
+			if (section_offsets[i] < position) return i;
 		return -1;
 	}
 
 	int section_index(size_t position) const {
 		for (int i = static_cast<int>(section_offsets.size()) - 1; i >= 0; --i)
-			if (position >= section_offsets[i])
-				return i;
+			if (position >= section_offsets[i]) return i;
 		return -1;
 	}
 
 	size_t offset_for_section(int section_index) const {
-		if (section_index < 0 || section_index >= static_cast<int>(section_offsets.size()))
-			return 0;
+		if (section_index < 0 || section_index >= static_cast<int>(section_offsets.size())) return 0;
 		return section_offsets[section_index];
 	}
 };

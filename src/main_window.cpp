@@ -1,11 +1,11 @@
+#include "main_window.hpp"
 #include "constants.hpp"
 #include "go_to_dialog.hpp"
-#include "main_window.hpp"
 #include "parser.hpp"
 #include "toc_dialog.hpp"
 #define UNIVERSAL_SPEECH_STATIC
-#include <UniversalSpeech.h>
 #include "utils.hpp"
+#include <UniversalSpeech.h>
 #include <wx/aboutdlg.h>
 #include <wx/fdrepdlg.h>
 #include <wx/filename.h>
@@ -50,27 +50,25 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	menu_bar->Append(tools_menu, "&Tools");
 	menu_bar->Append(help_menu, "&Help");
 	SetMenuBar(menu_bar);
-	const std::pair<int, void(main_window::*)(wxCommandEvent&)> menu_bindings[] = {
-		{wxID_OPEN, &main_window::on_open},
-		{wxID_CLOSE, &main_window::on_close},
-		{wxID_CLOSE_ALL, &main_window::on_close_all},
-		{ID_EXPORT, &main_window::on_export},
-		{wxID_EXIT, &main_window::on_exit},
-		{wxID_FIND, &main_window::on_find},
-		{ID_FIND_NEXT, &main_window::on_find_next},
-		{ID_FIND_PREVIOUS, &main_window::on_find_previous},
-		{ID_GO_TO, &main_window::on_go_to},
-		{ID_PREVIOUS_SECTION, &main_window::on_previous_section},
-		{ID_NEXT_SECTION, &main_window::on_next_section},
-		{ID_WORD_COUNT, &main_window::on_word_count},
-		{ID_TABLE_OF_CONTENTS, &main_window::on_toc},
-		{wxID_ABOUT, &main_window::on_about},
+	const std::pair<int, void (main_window::*)(wxCommandEvent&)> menu_bindings[] = {
+		{ wxID_OPEN, &main_window::on_open },
+		{ wxID_CLOSE, &main_window::on_close },
+		{ wxID_CLOSE_ALL, &main_window::on_close_all },
+		{ ID_EXPORT, &main_window::on_export },
+		{ wxID_EXIT, &main_window::on_exit },
+		{ wxID_FIND, &main_window::on_find },
+		{ ID_FIND_NEXT, &main_window::on_find_next },
+		{ ID_FIND_PREVIOUS, &main_window::on_find_previous },
+		{ ID_GO_TO, &main_window::on_go_to },
+		{ ID_PREVIOUS_SECTION, &main_window::on_previous_section },
+		{ ID_NEXT_SECTION, &main_window::on_next_section },
+		{ ID_WORD_COUNT, &main_window::on_word_count },
+		{ ID_TABLE_OF_CONTENTS, &main_window::on_toc },
+		{ wxID_ABOUT, &main_window::on_about },
 	};
-	for (const auto& [id, handler] : menu_bindings)
-		Bind(wxEVT_MENU, handler, this, id);
+	for (const auto& [id, handler] : menu_bindings) Bind(wxEVT_MENU, handler, this, id);
 	Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, &main_window::on_notebook_page_changed, this);
-	for (const int id : doc_command_ids)
-		Bind(wxEVT_UPDATE_UI, &main_window::update_doc_commands, this, id);
+	for (const int id : doc_command_ids) Bind(wxEVT_UPDATE_UI, &main_window::update_doc_commands, this, id);
 }
 
 wxTextCtrl* main_window::active_text_ctrl() const {
@@ -173,7 +171,7 @@ void main_window::on_find(wxCommandEvent& event) {
 		wxWindowList children = find_dialog->GetChildren();
 		int num_children = children.GetCount();
 		wxTextCtrl* tc = nullptr;
-		for(int i = 0; i < num_children; i++) {
+		for (int i = 0; i < num_children; i++) {
 			if (children[i]->IsKindOf(CLASSINFO(wxTextCtrl))) {
 				tc = static_cast<wxTextCtrl*>(children[i]);
 				break;
@@ -285,8 +283,10 @@ void main_window::on_toc(wxCommandEvent& event) {
 	auto* text_ctrl = active_text_ctrl();
 	if (!text_ctrl) return;
 	long max_pos = text_ctrl->GetLastPosition();
-	if (offset > max_pos) offset = max_pos;
-	else if (offset < 0) offset = 0;
+	if (offset > max_pos)
+		offset = max_pos;
+	else if (offset < 0)
+		offset = 0;
 	text_ctrl->SetInsertionPoint(offset);
 	text_ctrl->ShowPosition(offset);
 	text_ctrl->SetFocus();

@@ -1,14 +1,14 @@
 #include "epub_parser.hpp"
 #include "html_to_text.hpp"
-#include <memory>
 #include <Poco/AutoPtr.h>
-#include <Poco/DOM/Document.h>
 #include <Poco/DOM/DOMParser.h>
+#include <Poco/DOM/Document.h>
 #include <Poco/DOM/NamedNodeMap.h>
 #include <Poco/DOM/NodeList.h>
 #include <Poco/SAX/InputSource.h>
 #include <Poco/String.h>
 #include <Poco/Zip/ZipStream.h>
+#include <memory>
 #include <sstream>
 #include <wx/filename.h>
 #include <wx/msgdlg.h>
@@ -30,7 +30,8 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 		if (header == archive->headerEnd()) return nullptr;
 		ZipInputStream zis(fp, header->second, true);
 		InputSource src(zis);
-		// If we don't call fp.clear() here, certain epubs (e.g. Bookshare) will fail to open, because the stream's error bit will be set. This seems like a bug in Poco to me, but I dunno man, I just work here.
+		// If we don't call fp.clear() here, certain epubs (e.g. Bookshare) will fail to open, because the stream's
+		// error bit will be set. This seems like a bug in Poco to me, but I dunno man, I just work here.
 		fp.clear();
 		DOMParser parser;
 		auto doc = parser.parse(&src);
@@ -80,7 +81,7 @@ void epub_parser::parse_opf(const std::string& filename, epub_context& ctx) cons
 			if (node->nodeType() != Node::ELEMENT_NODE) continue;
 			auto* element = static_cast<Element*>(node);
 			auto localName = element->localName();
-			if (localName == "title" && ctx.title.empty())	
+			if (localName == "title" && ctx.title.empty())
 				ctx.title = element->innerText();
 			else if (localName == "creator" && ctx.author.empty())
 				ctx.author = element->innerText();
@@ -201,8 +202,8 @@ std::unique_ptr<toc_item> epub_parser::parse_ncx_nav_point(Element* nav_point, c
 	return item;
 }
 
+auto it = ctx.manifest_items.find(nav_id);
 void epub_parser::parse_epub3_nav(const std::string& nav_id, const epub_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items) const {
-	auto it = ctx.manifest_items.find(nav_id);
 	if (it == ctx.manifest_items.end()) return;
 	const auto& nav_file = it->second;
 	auto header = ctx.archive->findHeader(nav_file);
@@ -225,8 +226,7 @@ void epub_parser::parse_epub3_nav(const std::string& nav_id, const epub_context&
 			break;
 		}
 	}
-	if (!toc_nav && nav_nodes->length() > 0)
-		toc_nav = static_cast<Element*>(nav_nodes->item(0));
+	if (!toc_nav && nav_nodes->length() > 0) toc_nav = static_cast<Element*>(nav_nodes->item(0));
 	if (toc_nav) {
 		auto ol_nodes = toc_nav->getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "ol");
 		if (ol_nodes->length() > 0) {
