@@ -202,8 +202,8 @@ std::unique_ptr<toc_item> epub_parser::parse_ncx_nav_point(Element* nav_point, c
 	return item;
 }
 
-auto it = ctx.manifest_items.find(nav_id);
 void epub_parser::parse_epub3_nav(const std::string& nav_id, const epub_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items) const {
+	auto it = ctx.manifest_items.find(nav_id);
 	if (it == ctx.manifest_items.end()) return;
 	const auto& nav_file = it->second;
 	auto header = ctx.archive->findHeader(nav_file);
