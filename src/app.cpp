@@ -30,8 +30,9 @@ void app::parse_command_line() {
 	}
 	auto* par = find_parser_by_extension(wxFileName(path).GetExt());
 	if (!par) {
-		wxMessageBox("No suitable parser found for " + path, "Error", wxICON_ERROR);
-		return;
+		const bool open_as_txt = wxMessageBox("No suitable parser was found for " + path + ". Would you like to treat it as plain text?", "Warning", wxICON_WARNING | wxYES_NO) == wxYES;
+		if (!open_as_txt) return;
+		par = find_parser_by_extension("txt");
 	}
 	frame->open_document(path, par);
 }
