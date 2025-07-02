@@ -1,10 +1,11 @@
 #include "toc_dialog.hpp"
 
-toc_dialog::toc_dialog(wxWindow* parent, const document* doc) : wxDialog(parent, wxID_ANY, "Table of Contents"), selected_offset{-1} {
+toc_dialog::toc_dialog(wxWindow* parent, const document* doc, int current_offset) : wxDialog(parent, wxID_ANY, "Table of Contents"), selected_offset{-1} {
 	auto* main_sizer = new wxBoxSizer(wxVERTICAL);
 	tree = new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTR_HIDE_ROOT);
 	wxTreeItemId root = tree->AddRoot("Root");
 	populate_tree(doc->toc_items, root);
+	if (current_offset != -1) find_and_select_item(root, current_offset);
 	auto* button_sizer = new wxStdDialogButtonSizer();
 	for (int id : { wxID_OK, wxID_CANCEL })
 		button_sizer->AddButton(new wxButton(this, id));
@@ -26,6 +27,20 @@ void toc_dialog::populate_tree(const std::vector<std::unique_ptr<toc_item>>& ite
 		tree->SetItemData(item_id, new toc_tree_item_data(item->offset));
 		if (!item->children.empty())
 			populate_tree(item->children, item_id);
+	}
+}
+
+void toc_dialog::find_and_select_item(const wxTreeItemId& parent, int offset) {
+	wxTreeItemIdValue cookie;
+	for (wxTreeItemId item_id = tree->GetFirstChild(parent, cookie); item_id.IsOk(); item_id = tree->GetNextChild(parent, cookie)) {
+		auto* data = dynamic_cast<toc_tree_item_data*>(tree->GetItemData(item_id));
+		if (data && data->offset == offset) {
+			tree->SelectItem(item_id);
+			tree->SetFocusedItem(item_id);
+			tree->EnsureVisible(item_id);
+			return;
+		}
+		if (tree->ItemHasChildren(item_id)) find_and_select_item(item_id, offset);
 	}
 }
 

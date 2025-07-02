@@ -276,7 +276,10 @@ void main_window::on_toc(wxCommandEvent& event) {
 		speechSayA("Table of contents is empty", 1);
 		return;
 	}
-	toc_dialog dlg(this, doc);
+	size_t current_pos = active_text_ctrl()->GetInsertionPoint();
+	int current_section_idx = doc->section_index(current_pos);
+	size_t current_offset = doc->offset_for_section(current_section_idx);
+	toc_dialog dlg(this, doc, current_offset);
 	if (dlg.ShowModal() != wxID_OK) return;
 	int offset = dlg.get_selected_offset();
 	if (offset < 0) return;
