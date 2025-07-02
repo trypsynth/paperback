@@ -67,6 +67,7 @@ private:
 	void on_previous_section(wxCommandEvent& event);
 	void on_next_section(wxCommandEvent& event);
 	void on_word_count(wxCommandEvent& event);
+	void on_doc_info(wxCommandEvent& event);
 	void on_toc(wxCommandEvent& event);
 	void on_about(wxCommandEvent& event);
 	void on_notebook_page_changed(wxBookCtrlEvent& event);

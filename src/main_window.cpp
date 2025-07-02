@@ -5,6 +5,7 @@
 #include "toc_dialog.hpp"
 #define UNIVERSAL_SPEECH_STATIC
 #include "utils.hpp"
+#include "document_info_dialog.hpp"
 #include <UniversalSpeech.h>
 #include <wx/aboutdlg.h>
 #include <wx/fdrepdlg.h>
@@ -63,6 +64,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	    {ID_PREVIOUS_SECTION, &main_window::on_previous_section},
 	    {ID_NEXT_SECTION, &main_window::on_next_section},
 	    {ID_WORD_COUNT, &main_window::on_word_count},
+	    {ID_DOC_INFO, &main_window::on_doc_info},
 	    {ID_TABLE_OF_CONTENTS, &main_window::on_toc},
 	    {wxID_ABOUT, &main_window::on_about},
 	};
@@ -265,6 +267,13 @@ void main_window::on_word_count(wxCommandEvent& event) {
 	wxMessageBox(wxString::Format("The document contains %d %s", count, count == 1 ? "word" : "words"), "Word count", wxICON_INFORMATION);
 }
 
+void main_window::on_doc_info(wxCommandEvent& event) {
+	auto* doc = active_document();
+	if (!doc) return;
+	document_info_dialog dlg(this, doc);
+	dlg.ShowModal();
+}
+
 void main_window::on_toc(wxCommandEvent& event) {
 	auto* doc = active_document();
 	if (!doc) return;
@@ -339,3 +348,4 @@ void main_window::on_find_close(wxFindDialogEvent& event) {
 	find_dialog->Destroy();
 	find_dialog = nullptr;
 }
+
