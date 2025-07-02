@@ -12,8 +12,10 @@ go_to_dialog::go_to_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : wxDialog(p
 	input_ctrl->SetValue(wxString::Format("%d", line + 1));
 	input_ctrl->SetSelection(-1, -1);
 	auto* button_sizer = new wxStdDialogButtonSizer();
-	button_sizer->AddButton(new wxButton(this, wxID_OK));
+	auto* ok_button = new wxButton(this, wxID_OK);
+	button_sizer->AddButton(ok_button);
 	button_sizer->AddButton(new wxButton(this, wxID_CANCEL));
+	ok_button->SetDefault();
 	button_sizer->Realize();
 	main_sizer->Add(line_sizer, 0, wxALL | wxEXPAND, 5);
 	main_sizer->Add(button_sizer, 0, wxALIGN_RIGHT | wxALL, 10);
