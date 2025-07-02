@@ -24,7 +24,7 @@ cmake --build . --config Release
 This will give you a single `paperback.exe` binary—completely standalone. No dependencies, unless you want speech output, in which case `nvdaControllerClient64.dll` is optional.
 
 ## Contributing
-Contributing is most certainly welcome! Whether it's in the form of an issue, puill request, discussion, or something else, I'll gladly take it! Thanks for your interest!
+Contributing is most certainly welcome! Whether it's in the form of an issue, pull request, discussion, or something else, I'll gladly take it! Thanks for your interest!
 
 If you're modifying the code, I ask that you generally adhere to my coding style (tabs for indents, stars attached to the type, not the variable name, braces on the same line, etc.). There's a .clang-format file included in the repository to help with this, although it's worth noting that it currently doesn't run as a pre-commit hook, so must be done manually.
 
