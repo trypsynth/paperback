@@ -5,17 +5,12 @@ project(paperback LANGUAGES CXX VERSION 0.1)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 find_package(wxWidgets CONFIG REQUIRED)
 find_package(Poco REQUIRED COMPONENTS Foundation xml Zip)
 set(LEXBOR_INCLUDE_DIR "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include")
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	set(LEXBOR_LIBRARY "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug/lib/lexbor_static.lib")
-else()
-	set(LEXBOR_LIBRARY "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib/lexbor_static.lib")
-endif()
+set(LEXBOR_LIBRARY "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/$<$<CONFIG:Debug>:debug/>lib/lexbor_static.lib")
 
 file(GLOB_RECURSE SRC_FILES src/*.cpp)
 add_executable(paperback WIN32 ${SRC_FILES})
