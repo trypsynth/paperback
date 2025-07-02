@@ -40,7 +40,8 @@ void toc_dialog::find_and_select_item(const wxTreeItemId& parent, int offset) {
 			tree->EnsureVisible(item_id);
 			return;
 		}
-		if (tree->ItemHasChildren(item_id)) find_and_select_item(item_id, offset);
+		if (tree->ItemHasChildren(item_id))
+			find_and_select_item(item_id, offset);
 	}
 }
 
@@ -53,7 +54,8 @@ void toc_dialog::on_tree_selection_changed(wxTreeEvent& event) {
 }
 
 void toc_dialog::on_tree_item_activated(wxTreeEvent& event) {
-	if (selected_offset >= 0) EndModal(wxID_OK);
+	if (selected_offset >= 0)
+		EndModal(wxID_OK);
 }
 
 void toc_dialog::on_ok(wxCommandEvent& event) {

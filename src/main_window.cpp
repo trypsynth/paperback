@@ -52,25 +52,27 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	menu_bar->Append(help_menu, "&Help");
 	SetMenuBar(menu_bar);
 	const std::pair<int, void (main_window::*)(wxCommandEvent&)> menu_bindings[] = {
-	    {wxID_OPEN, &main_window::on_open},
-	    {wxID_CLOSE, &main_window::on_close},
-	    {wxID_CLOSE_ALL, &main_window::on_close_all},
-	    {ID_EXPORT, &main_window::on_export},
-	    {wxID_EXIT, &main_window::on_exit},
-	    {wxID_FIND, &main_window::on_find},
-	    {ID_FIND_NEXT, &main_window::on_find_next},
-	    {ID_FIND_PREVIOUS, &main_window::on_find_previous},
-	    {ID_GO_TO, &main_window::on_go_to},
-	    {ID_PREVIOUS_SECTION, &main_window::on_previous_section},
-	    {ID_NEXT_SECTION, &main_window::on_next_section},
-	    {ID_WORD_COUNT, &main_window::on_word_count},
-	    {ID_DOC_INFO, &main_window::on_doc_info},
-	    {ID_TABLE_OF_CONTENTS, &main_window::on_toc},
-	    {wxID_ABOUT, &main_window::on_about},
+		{wxID_OPEN, &main_window::on_open},
+		{wxID_CLOSE, &main_window::on_close},
+		{wxID_CLOSE_ALL, &main_window::on_close_all},
+		{ID_EXPORT, &main_window::on_export},
+		{wxID_EXIT, &main_window::on_exit},
+		{wxID_FIND, &main_window::on_find},
+		{ID_FIND_NEXT, &main_window::on_find_next},
+		{ID_FIND_PREVIOUS, &main_window::on_find_previous},
+		{ID_GO_TO, &main_window::on_go_to},
+		{ID_PREVIOUS_SECTION, &main_window::on_previous_section},
+		{ID_NEXT_SECTION, &main_window::on_next_section},
+		{ID_WORD_COUNT, &main_window::on_word_count},
+		{ID_DOC_INFO, &main_window::on_doc_info},
+		{ID_TABLE_OF_CONTENTS, &main_window::on_toc},
+		{wxID_ABOUT, &main_window::on_about},
 	};
-	for (const auto& [id, handler] : menu_bindings) Bind(wxEVT_MENU, handler, this, id);
+	for (const auto& [id, handler] : menu_bindings)
+		Bind(wxEVT_MENU, handler, this, id);
 	Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, &main_window::on_notebook_page_changed, this);
-	for (const int id : doc_command_ids) Bind(wxEVT_UPDATE_UI, &main_window::update_doc_commands, this, id);
+	for (const int id : doc_command_ids)
+		Bind(wxEVT_UPDATE_UI, &main_window::update_doc_commands, this, id);
 }
 
 wxTextCtrl* main_window::active_text_ctrl() const {

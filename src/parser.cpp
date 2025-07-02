@@ -13,7 +13,8 @@ const parser* find_parser_by_extension(const wxString& extension) noexcept {
 wxString get_supported_wildcards() {
 	std::set<wxString> all_exts;
 	const auto& parsers = parser_registry::get_all();
-	for (const parser* p : parsers) all_exts.insert(p->extensions().begin(), p->extensions().end());
+	for (const parser* p : parsers)
+		all_exts.insert(p->extensions().begin(), p->extensions().end());
 	if (all_exts.empty()) return {};
 	auto join_extensions = [](const auto& exts) {
 		std::ostringstream oss;

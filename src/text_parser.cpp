@@ -9,7 +9,8 @@ std::unique_ptr<document> text_parser::load(const wxString& path) const {
 	wxBufferedInputStream bs(file_stream);
 	wxTextInputStream text_stream(bs);
 	wxString content;
-	while (!bs.Eof()) content += text_stream.ReadLine() + "\n";
+	while (!bs.Eof())
+		content += text_stream.ReadLine() + "\n";
 	auto doc = std::make_unique<document>();
 	doc->title = wxFileName(path).GetName();
 	doc->author = "Unknown";
