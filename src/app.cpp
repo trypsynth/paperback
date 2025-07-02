@@ -2,9 +2,12 @@
 #include "constants.hpp"
 #include "parser.hpp"
 #include <wx/filename.h>
+#include <wx/stdpaths.h>
 
 bool app::OnInit() {
-	wxString confpath = wxGetCwd() + wxFileName::GetPathSeparator() + APP_NAME + ".ini";
+	wxString exePath = wxStandardPaths::Get().GetExecutablePath();
+	wxString exeDir = wxFileName(exePath).GetPath();
+	wxString confpath = exeDir + wxFileName::GetPathSeparator() + APP_NAME + ".ini";
 	conf = std::make_unique<wxFileConfig>(APP_NAME, "", confpath);
 	wxConfigBase::Set(conf.get());
 	load_default_config();
