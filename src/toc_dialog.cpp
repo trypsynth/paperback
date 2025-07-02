@@ -7,7 +7,7 @@ toc_dialog::toc_dialog(wxWindow* parent, const document* doc, int current_offset
 	populate_tree(doc->toc_items, root);
 	if (current_offset != -1) find_and_select_item(root, current_offset);
 	auto* button_sizer = new wxStdDialogButtonSizer();
-	for (int id : { wxID_OK, wxID_CANCEL })
+	for (int id : {wxID_OK, wxID_CANCEL})
 		button_sizer->AddButton(new wxButton(this, id));
 	button_sizer->Realize();
 	main_sizer->Add(tree, 1, wxEXPAND | wxALL, 10);

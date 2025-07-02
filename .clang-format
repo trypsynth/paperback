@@ -11,7 +11,7 @@ ColumnLimit: 0
 AccessModifierOffset: -4
 IndentCaseLabels: false
 SpaceBeforeParens: ControlStatements
-Cpp11BracedListStyle: false
+Cpp11BracedListStyle: true
 SortIncludes: true
 TabWidth: 4
 PointerAlignment: Left

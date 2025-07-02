@@ -46,9 +46,12 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 	}
 	switch (node->type) {
 	case LXB_DOM_NODE_TYPE_ELEMENT:
-		if (tag_name == "body") in_body = true;
-		else if (tag_name == "pre") preserve_whitespace = true;
-		else if (tag_name == "br") finalize_current_line();
+		if (tag_name == "body")
+			in_body = true;
+		else if (tag_name == "pre")
+			preserve_whitespace = true;
+		else if (tag_name == "br")
+			finalize_current_line();
 		break;
 	case LXB_DOM_NODE_TYPE_TEXT: process_text_node(lxb_dom_interface_text(node)); break;
 	default: break;
@@ -65,9 +68,9 @@ void html_to_text::process_text_node(lxb_dom_text_t* text_node) {
 	size_t length;
 	const auto* text_data = lxb_dom_node_text_content(lxb_dom_interface_node(text_node), &length);
 	if (!text_data || length == 0) return;
-	const std::string_view text{ reinterpret_cast<const char*>(text_data), length };
+	const std::string_view text{reinterpret_cast<const char*>(text_data), length};
 	if (!text.empty())
-		preserve_whitespace ? current_line += text : current_line += collapse_whitespace(std::string{ text });
+		preserve_whitespace ? current_line += text : current_line += collapse_whitespace(std::string{text});
 }
 
 void html_to_text::add_line(std::string_view line) {
@@ -81,12 +84,12 @@ void html_to_text::finalize_current_line() {
 
 constexpr bool html_to_text::is_block_element(std::string_view tag_name) noexcept {
 	if (tag_name.empty()) return false;
-	constexpr std::array block_elements = { "div", "p", "pre", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "ul", "ol", "li", "section", "article", "header", "footer" };
+	constexpr std::array block_elements = {"div", "p", "pre", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "ul", "ol", "li", "section", "article", "header", "footer"};
 	return std::find(block_elements.begin(), block_elements.end(), tag_name) != block_elements.end();
 }
 
 std::string_view html_to_text::get_tag_name(lxb_dom_element_t* element) noexcept {
 	if (!element) return {};
 	const auto* name = lxb_dom_element_qualified_name(element, nullptr);
-	return name ? std::string_view{ reinterpret_cast<const char*>(name) } : std::string_view{};
+	return name ? std::string_view{reinterpret_cast<const char*>(name)} : std::string_view{};
 }

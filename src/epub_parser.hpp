@@ -24,7 +24,7 @@ class epub_parser : public parser {
 public:
 	wxString name() const override { return "Epub Books"; }
 	std::span<const wxString> extensions() const override {
-		static const wxString exts[] = { "epub" };
+		static const wxString exts[] = {"epub"};
 		return exts;
 	}
 	std::unique_ptr<document> load(const wxString& path) const override;

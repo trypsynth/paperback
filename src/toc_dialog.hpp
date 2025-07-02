@@ -6,17 +6,17 @@
 
 class toc_tree_item_data : public wxTreeItemData {
 public:
-	toc_tree_item_data(int offset_) : offset{ offset_ } {}
+	toc_tree_item_data(int offset_) : offset{offset_} {}
 
 	int offset;
 };
 
 class toc_dialog : public wxDialog {
-  public:
+public:
 	toc_dialog(wxWindow* parent, const document* doc, int current_offset = -1);
 	int get_selected_offset() const { return selected_offset; }
 
-  private:
+private:
 	wxTreeCtrl* tree;
 	int selected_offset;
 
