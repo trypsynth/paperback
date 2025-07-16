@@ -51,6 +51,8 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	menu_bar->Append(tools_menu, "&Tools");
 	menu_bar->Append(help_menu, "&Help");
 	SetMenuBar(menu_bar);
+	status_bar = CreateStatusBar(1);
+	status_bar->SetStatusText("Ready");
 	const std::pair<int, void (main_window::*)(wxCommandEvent&)> menu_bindings[] = {
 		{wxID_OPEN, &main_window::on_open},
 		{wxID_CLOSE, &main_window::on_close},
@@ -105,6 +107,9 @@ void main_window::open_document(const wxString& path, const parser* par) {
 	content->SetValue(active_document()->text_content);
 	content->Thaw();
 	content->SetFocus();
+	content->Bind(wxEVT_LEFT_UP, &main_window::on_text_cursor_changed, this);
+	content->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, this);
+	update_status_bar();
 }
 
 user_data* main_window::active_user_data() const {
@@ -124,6 +129,25 @@ void main_window::update_title() {
 		SetTitle(active_document()->title + " - " + APP_NAME);
 }
 
+void main_window::update_status_bar() {
+	if (notebook->GetPageCount() == 0) {
+		status_bar->SetStatusText("Ready");
+		return;
+	}
+	auto* text_ctrl = active_text_ctrl();
+	if (!text_ctrl) {
+		status_bar->SetStatusText("Ready");
+		return;
+	}
+	long current_pos = text_ctrl->GetInsertionPoint();
+	long line;
+	text_ctrl->PositionToXY(current_pos, 0, &line);
+	int total_lines = text_ctrl->GetNumberOfLines();
+	int current_line = line + 1;
+	int percentage = total_lines > 0 ? (current_line * 100) / total_lines : 0;
+	status_bar->SetStatusText(wxString::Format("Line %d of %d (%d%%)", current_line, total_lines, percentage));
+}
+
 void main_window::on_open(wxCommandEvent& event) {
 	wxFileDialog dlg(this, "Select a document to read", "", "", get_supported_wildcards(), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 	if (dlg.ShowModal() != wxID_OK) return;
@@ -140,11 +164,13 @@ void main_window::on_open(wxCommandEvent& event) {
 void main_window::on_close(wxCommandEvent& event) {
 	notebook->DeletePage(notebook->GetSelection());
 	update_title();
+	update_status_bar();
 }
 
 void main_window::on_close_all(wxCommandEvent& event) {
 	notebook->DeleteAllPages();
 	update_title();
+	update_status_bar();
 }
 
 void main_window::on_export(wxCommandEvent& event) {
@@ -214,6 +240,7 @@ void main_window::on_go_to(wxCommandEvent& event) {
 	if (dlg.ShowModal() != wxID_OK) return;
 	long pos = content->XYToPosition(0, dlg.line_number() - 1);
 	content->SetInsertionPoint(pos);
+	update_status_bar();
 }
 
 void main_window::on_previous_section(wxCommandEvent& event) {
@@ -235,6 +262,7 @@ void main_window::on_previous_section(wxCommandEvent& event) {
 	active_text_ctrl()->PositionToXY(active_text_ctrl()->GetInsertionPoint(), 0, &line);
 	wxString current_line = active_text_ctrl()->GetLineText(line);
 	speechSayA(current_line, 1);
+	update_status_bar();
 }
 
 void main_window::on_next_section(wxCommandEvent& event) {
@@ -256,6 +284,7 @@ void main_window::on_next_section(wxCommandEvent& event) {
 	active_text_ctrl()->PositionToXY(active_text_ctrl()->GetInsertionPoint(), 0, &line);
 	wxString current_line = active_text_ctrl()->GetLineText(line);
 	speechSayA(current_line, 1);
+	update_status_bar();
 }
 
 void main_window::on_word_count(wxCommandEvent& event) {
@@ -304,6 +333,7 @@ void main_window::on_toc(wxCommandEvent& event) {
 	text_ctrl->SetInsertionPoint(offset);
 	text_ctrl->ShowPosition(offset);
 	text_ctrl->SetFocus();
+	update_status_bar();
 }
 
 void main_window::on_about(wxCommandEvent& event) {
@@ -317,6 +347,7 @@ void main_window::on_about(wxCommandEvent& event) {
 
 void main_window::on_notebook_page_changed(wxBookCtrlEvent& event) {
 	update_title();
+	update_status_bar();
 	event.Skip();
 }
 
@@ -344,10 +375,16 @@ void main_window::on_find_dialog(wxFindDialogEvent& event) {
 	text_ctrl->SetFocus();
 	text_ctrl->SetSelection(found_pos, found_pos + query.Length());
 	text_ctrl->ShowPosition(found_pos);
+	update_status_bar();
 }
 
 void main_window::on_find_close(wxFindDialogEvent& event) {
 	find_dialog->Destroy();
 	find_dialog = nullptr;
+}
+
+void main_window::on_text_cursor_changed(wxEvent& event) {
+	update_status_bar();
+	event.Skip();
 }
 
