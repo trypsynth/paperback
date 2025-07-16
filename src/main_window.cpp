@@ -145,7 +145,7 @@ void main_window::update_status_bar() {
 	int total_lines = text_ctrl->GetNumberOfLines();
 	int current_line = line + 1;
 	int percentage = total_lines > 0 ? (current_line * 100) / total_lines : 0;
-	status_bar->SetStatusText(wxString::Format("Line %d of %d (%d%%)", current_line, total_lines, percentage));
+	status_bar->SetStatusText(wxString::Format("%d%%", percentage));
 }
 
 void main_window::on_open(wxCommandEvent& event) {
