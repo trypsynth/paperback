@@ -326,10 +326,7 @@ void main_window::on_toc(wxCommandEvent& event) {
 	auto* text_ctrl = active_text_ctrl();
 	if (!text_ctrl) return;
 	long max_pos = text_ctrl->GetLastPosition();
-	if (offset > max_pos)
-		offset = max_pos;
-	else if (offset < 0)
-		offset = 0;
+	offset = offset > max_pos ? max_pos : offset < 0 ? 0 : offset;
 	text_ctrl->SetInsertionPoint(offset);
 	text_ctrl->ShowPosition(offset);
 	text_ctrl->SetFocus();
@@ -347,6 +344,11 @@ void main_window::on_about(wxCommandEvent& event) {
 
 void main_window::on_notebook_page_changed(wxBookCtrlEvent& event) {
 	update_title();
+	update_status_bar();
+	event.Skip();
+}
+
+void main_window::on_text_cursor_changed(wxEvent& event) {
 	update_status_bar();
 	event.Skip();
 }
@@ -382,9 +384,3 @@ void main_window::on_find_close(wxFindDialogEvent& event) {
 	find_dialog->Destroy();
 	find_dialog = nullptr;
 }
-
-void main_window::on_text_cursor_changed(wxEvent& event) {
-	update_status_bar();
-	event.Skip();
-}
-
