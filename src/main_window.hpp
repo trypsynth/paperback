@@ -51,10 +51,12 @@ private:
 	wxNotebook* notebook = nullptr;
 	wxFindReplaceDialog* find_dialog = nullptr;
 	wxFindReplaceData find_data;
+	wxStatusBar* status_bar = nullptr;
 
 	user_data* active_user_data() const;
 	void update_doc_commands(wxUpdateUIEvent& event);
 	void update_title();
+	void update_status_bar();
 	void on_open(wxCommandEvent& event);
 	void on_close(wxCommandEvent& event);
 	void on_close_all(wxCommandEvent& event);
@@ -73,4 +75,5 @@ private:
 	void on_notebook_page_changed(wxBookCtrlEvent& event);
 	void on_find_dialog(wxFindDialogEvent& event);
 	void on_find_close(wxFindDialogEvent& event);
+	void on_text_cursor_changed(wxEvent& event);
 };
