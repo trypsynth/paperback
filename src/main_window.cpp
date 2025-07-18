@@ -12,6 +12,7 @@
 #include <wx/fdrepdlg.h>
 #include <wx/filename.h>
 #include <wx/tokenzr.h>
+#include <wx/timer.h>
 
 main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	auto* panel = new wxPanel(this);
@@ -77,6 +78,11 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	Bind(wxEVT_CLOSE_WINDOW, &main_window::on_close_window, this);
 	for (const int id : doc_command_ids)
 		Bind(wxEVT_UPDATE_UI, &main_window::update_doc_commands, this, id);
+	
+	// Initialize periodic position saving timer (30 seconds)
+	position_save_timer = new wxTimer(this);
+	Bind(wxEVT_TIMER, &main_window::on_position_save_timer, this, position_save_timer->GetId());
+	position_save_timer->Start(30000); // 30 seconds
 }
 
 wxTextCtrl* main_window::active_text_ctrl() const {
@@ -459,6 +465,18 @@ void main_window::on_close_window(wxCloseEvent& event) {
 		}
 	}
 	
+	// Stop the position save timer
+	if (position_save_timer) {
+		position_save_timer->Stop();
+		delete position_save_timer;
+		position_save_timer = nullptr;
+	}
+	
 	// Allow the window to close
 	event.Skip();
+}
+
+void main_window::on_position_save_timer(wxTimerEvent& event) {
+	// Periodically save the current tab position
+	save_current_tab_position();
 }

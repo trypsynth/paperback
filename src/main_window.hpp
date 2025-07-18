@@ -54,6 +54,7 @@ private:
 	wxFindReplaceDialog* find_dialog = nullptr;
 	wxFindReplaceData find_data;
 	wxStatusBar* status_bar = nullptr;
+	wxTimer* position_save_timer = nullptr;
 
 	user_data* active_user_data() const;
 	void update_doc_commands(wxUpdateUIEvent& event);
@@ -79,6 +80,7 @@ private:
 	void on_find_close(wxFindDialogEvent& event);
 	void on_text_cursor_changed(wxEvent& event);
 	void on_close_window(wxCloseEvent& event);
+	void on_position_save_timer(wxTimerEvent& event);
 	
 	// Position persistence helpers
 	void save_document_position(const wxString& path, long position);
