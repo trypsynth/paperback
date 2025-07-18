@@ -61,6 +61,7 @@ private:
 	wxMenu* create_go_menu();
 	wxMenu* create_tools_menu();
 	wxMenu* create_help_menu();
+	void bind_events();
 	user_data* active_user_data() const;
 	void update_doc_commands(wxUpdateUIEvent& event);
 	void update_title();

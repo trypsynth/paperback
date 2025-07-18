@@ -23,33 +23,8 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	create_menus();
 	status_bar = CreateStatusBar(1);
 	status_bar->SetStatusText("Ready");
-	const std::pair<int, void (main_window::*)(wxCommandEvent&)> menu_bindings[] = {
-		{wxID_OPEN, &main_window::on_open},
-		{wxID_CLOSE, &main_window::on_close},
-		{wxID_CLOSE_ALL, &main_window::on_close_all},
-		{ID_EXPORT, &main_window::on_export},
-		{wxID_EXIT, &main_window::on_exit},
-		{wxID_FIND, &main_window::on_find},
-		{ID_FIND_NEXT, &main_window::on_find_next},
-		{ID_FIND_PREVIOUS, &main_window::on_find_previous},
-		{ID_GO_TO, &main_window::on_go_to},
-		{ID_PREVIOUS_SECTION, &main_window::on_previous_section},
-		{ID_NEXT_SECTION, &main_window::on_next_section},
-		{ID_WORD_COUNT, &main_window::on_word_count},
-		{ID_DOC_INFO, &main_window::on_doc_info},
-		{ID_TABLE_OF_CONTENTS, &main_window::on_toc},
-		{wxID_ABOUT, &main_window::on_about},
-	};
-	for (const auto& [id, handler] : menu_bindings)
-		Bind(wxEVT_MENU, handler, this, id);
-	Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, &main_window::on_notebook_page_changed, this);
-	Bind(wxEVT_CLOSE_WINDOW, &main_window::on_close_window, this);
-	for (const int id : doc_command_ids)
-		Bind(wxEVT_UPDATE_UI, &main_window::update_doc_commands, this, id);
-	
-	// Initialize periodic position saving timer (30 seconds)
 	position_save_timer = new wxTimer(this);
-	Bind(wxEVT_TIMER, &main_window::on_position_save_timer, this, position_save_timer->GetId());
+	bind_events();
 	position_save_timer->Start(5000);
 }
 
@@ -150,6 +125,33 @@ wxMenu* main_window::create_help_menu() {
 	menu->AppendSeparator();
 	menu->Append(ID_CHECK_FOR_UPDATES, "&Check for updates");
 	return menu;
+}
+
+void main_window::bind_events() {
+	const std::pair<int, void (main_window::*)(wxCommandEvent&)> menu_bindings[] = {
+		{wxID_OPEN, &main_window::on_open},
+		{wxID_CLOSE, &main_window::on_close},
+		{wxID_CLOSE_ALL, &main_window::on_close_all},
+		{ID_EXPORT, &main_window::on_export},
+		{wxID_EXIT, &main_window::on_exit},
+		{wxID_FIND, &main_window::on_find},
+		{ID_FIND_NEXT, &main_window::on_find_next},
+		{ID_FIND_PREVIOUS, &main_window::on_find_previous},
+		{ID_GO_TO, &main_window::on_go_to},
+		{ID_PREVIOUS_SECTION, &main_window::on_previous_section},
+		{ID_NEXT_SECTION, &main_window::on_next_section},
+		{ID_WORD_COUNT, &main_window::on_word_count},
+		{ID_DOC_INFO, &main_window::on_doc_info},
+		{ID_TABLE_OF_CONTENTS, &main_window::on_toc},
+		{wxID_ABOUT, &main_window::on_about},
+	};
+	for (const auto& [id, handler] : menu_bindings)
+		Bind(wxEVT_MENU, handler, this, id);
+	Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, &main_window::on_notebook_page_changed, this);
+	Bind(wxEVT_CLOSE_WINDOW, &main_window::on_close_window, this);
+	for (const int id : doc_command_ids)
+		Bind(wxEVT_UPDATE_UI, &main_window::update_doc_commands, this, id);
+	Bind(wxEVT_TIMER, &main_window::on_position_save_timer, this, position_save_timer->GetId());
 }
 
 user_data* main_window::active_user_data() const {
