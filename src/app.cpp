@@ -3,6 +3,7 @@
 #include "parser.hpp"
 #include <wx/filename.h>
 #include <wx/stdpaths.h>
+#include <wx/config.h>
 
 bool app::OnInit() {
 	wxString exePath = wxStandardPaths::Get().GetExecutablePath();
@@ -18,6 +19,23 @@ bool app::OnInit() {
 }
 
 int app::OnExit() {
+	// Save positions for all open documents before exit
+	if (frame) {
+		wxNotebook* notebook = frame->get_notebook();
+		for (size_t i = 0; i < notebook->GetPageCount(); ++i) {
+			auto* page = notebook->GetPage(i);
+			auto* data = static_cast<user_data*>(page->GetClientObject());
+			if (data && data->textbox) {
+				long position = data->textbox->GetInsertionPoint();
+				wxConfigBase* config = wxConfigBase::Get();
+				if (config) {
+					config->SetPath("/DocumentPositions");
+					config->Write(data->file_path, position);
+				}
+			}
+		}
+	}
+	
 	if (conf) conf->Flush();
 	return wxApp::OnExit();
 }

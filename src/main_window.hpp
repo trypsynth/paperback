@@ -38,6 +38,7 @@ constexpr int doc_command_ids[] = {
 struct user_data : public wxClientData {
 	wxTextCtrl* textbox = nullptr;
 	std::unique_ptr<document> doc;
+	wxString file_path;
 };
 
 class main_window : public wxFrame {
@@ -46,6 +47,7 @@ public:
 	wxTextCtrl* active_text_ctrl() const;
 	document* active_document() const;
 	void open_document(const wxString& path, const parser* par);
+	wxNotebook* get_notebook() const { return notebook; }
 
 private:
 	wxNotebook* notebook = nullptr;
@@ -76,4 +78,10 @@ private:
 	void on_find_dialog(wxFindDialogEvent& event);
 	void on_find_close(wxFindDialogEvent& event);
 	void on_text_cursor_changed(wxEvent& event);
+	void on_close_window(wxCloseEvent& event);
+	
+	// Position persistence helpers
+	void save_document_position(const wxString& path, long position);
+	long load_document_position(const wxString& path);
+	void save_current_tab_position();
 };

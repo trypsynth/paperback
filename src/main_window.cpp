@@ -8,6 +8,7 @@
 #include "document_info_dialog.hpp"
 #include <UniversalSpeech.h>
 #include <wx/aboutdlg.h>
+#include <wx/config.h>
 #include <wx/fdrepdlg.h>
 #include <wx/filename.h>
 #include <wx/tokenzr.h>
@@ -73,6 +74,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	for (const auto& [id, handler] : menu_bindings)
 		Bind(wxEVT_MENU, handler, this, id);
 	Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, &main_window::on_notebook_page_changed, this);
+	Bind(wxEVT_CLOSE_WINDOW, &main_window::on_close_window, this);
 	for (const int id : doc_command_ids)
 		Bind(wxEVT_UPDATE_UI, &main_window::update_doc_commands, this, id);
 }
@@ -97,6 +99,7 @@ void main_window::open_document(const wxString& path, const parser* par) {
 	auto* data = new user_data;
 	data->textbox = content;
 	data->doc = std::move(doc);
+	data->file_path = path;
 	page->SetClientObject(data);
 	page_sizer->Add(content, 1, wxEXPAND | wxALL, 5);
 	page->SetSizer(page_sizer);
@@ -106,6 +109,17 @@ void main_window::open_document(const wxString& path, const parser* par) {
 	content->Freeze();
 	content->SetValue(active_document()->text_content);
 	content->Thaw();
+	
+	// Load and restore saved position
+	long saved_position = load_document_position(path);
+	if (saved_position > 0) {
+		long max_position = content->GetLastPosition();
+		if (saved_position <= max_position) {
+			content->SetInsertionPoint(saved_position);
+			content->ShowPosition(saved_position);
+		}
+	}
+	
 	content->SetFocus();
 	content->Bind(wxEVT_LEFT_UP, &main_window::on_text_cursor_changed, this);
 	content->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, this);
@@ -162,12 +176,23 @@ void main_window::on_open(wxCommandEvent& event) {
 }
 
 void main_window::on_close(wxCommandEvent& event) {
+	save_current_tab_position();
 	notebook->DeletePage(notebook->GetSelection());
 	update_title();
 	update_status_bar();
 }
 
 void main_window::on_close_all(wxCommandEvent& event) {
+	// Save positions for all tabs before closing
+	for (size_t i = 0; i < notebook->GetPageCount(); ++i) {
+		auto* page = notebook->GetPage(i);
+		auto* data = static_cast<user_data*>(page->GetClientObject());
+		if (data && data->textbox) {
+			long position = data->textbox->GetInsertionPoint();
+			save_document_position(data->file_path, position);
+		}
+	}
+	
 	notebook->DeleteAllPages();
 	update_title();
 	update_status_bar();
@@ -343,6 +368,17 @@ void main_window::on_about(wxCommandEvent& event) {
 }
 
 void main_window::on_notebook_page_changed(wxBookCtrlEvent& event) {
+	// Save position of the previously active tab
+	int old_selection = event.GetOldSelection();
+	if (old_selection >= 0) {
+		auto* page = notebook->GetPage(old_selection);
+		auto* data = static_cast<user_data*>(page->GetClientObject());
+		if (data && data->textbox) {
+			long position = data->textbox->GetInsertionPoint();
+			save_document_position(data->file_path, position);
+		}
+	}
+	
 	update_title();
 	update_status_bar();
 	event.Skip();
@@ -383,4 +419,46 @@ void main_window::on_find_dialog(wxFindDialogEvent& event) {
 void main_window::on_find_close(wxFindDialogEvent& event) {
 	find_dialog->Destroy();
 	find_dialog = nullptr;
+}
+
+void main_window::save_document_position(const wxString& path, long position) {
+	wxConfigBase* config = wxConfigBase::Get();
+	if (!config) return;
+	
+	config->SetPath("/DocumentPositions");
+	config->Write(path, position);
+	config->Flush();
+}
+
+long main_window::load_document_position(const wxString& path) {
+	wxConfigBase* config = wxConfigBase::Get();
+	if (!config) return 0;
+	
+	config->SetPath("/DocumentPositions");
+	return config->Read(path, 0L);
+}
+
+void main_window::save_current_tab_position() {
+	if (notebook->GetPageCount() == 0) return;
+	
+	auto* data = active_user_data();
+	if (!data || !data->textbox) return;
+	
+	long position = data->textbox->GetInsertionPoint();
+	save_document_position(data->file_path, position);
+}
+
+void main_window::on_close_window(wxCloseEvent& event) {
+	// Save positions for all open documents before closing
+	for (size_t i = 0; i < notebook->GetPageCount(); ++i) {
+		auto* page = notebook->GetPage(i);
+		auto* data = static_cast<user_data*>(page->GetClientObject());
+		if (data && data->textbox) {
+			long position = data->textbox->GetInsertionPoint();
+			save_document_position(data->file_path, position);
+		}
+	}
+	
+	// Allow the window to close
+	event.Skip();
 }
