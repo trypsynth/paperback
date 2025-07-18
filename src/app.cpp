@@ -29,7 +29,7 @@ int app::OnExit() {
 				long position = data->textbox->GetInsertionPoint();
 				wxConfigBase* config = wxConfigBase::Get();
 				if (config) {
-					config->SetPath("/DocumentPositions");
+					config->SetPath("/documents");
 					config->Write(data->file_path, position);
 				}
 			}

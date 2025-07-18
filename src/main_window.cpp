@@ -425,7 +425,7 @@ void main_window::save_document_position(const wxString& path, long position) {
 	wxConfigBase* config = wxConfigBase::Get();
 	if (!config) return;
 	
-	config->SetPath("/DocumentPositions");
+	config->SetPath("/documents");
 	config->Write(path, position);
 	config->Flush();
 }
@@ -434,7 +434,7 @@ long main_window::load_document_position(const wxString& path) {
 	wxConfigBase* config = wxConfigBase::Get();
 	if (!config) return 0;
 	
-	config->SetPath("/DocumentPositions");
+	config->SetPath("/documents");
 	return config->Read(path, 0L);
 }
 
