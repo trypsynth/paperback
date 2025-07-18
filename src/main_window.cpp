@@ -168,6 +168,29 @@ void main_window::update_status_bar() {
 	status_bar->SetStatusText(wxString::Format("%d%%", percentage));
 }
 
+void main_window::save_document_position(const wxString& path, long position) {
+	wxConfigBase* config = wxConfigBase::Get();
+	if (!config) return;
+	config->SetPath("/documents");
+	config->Write(path, position);
+	config->Flush();
+}
+
+long main_window::load_document_position(const wxString& path) {
+	wxConfigBase* config = wxConfigBase::Get();
+	if (!config) return 0;
+	config->SetPath("/documents");
+	return config->Read(path, 0L);
+}
+
+void main_window::save_current_tab_position() {
+	if (notebook->GetPageCount() == 0) return;
+	auto* data = active_user_data();
+	if (!data || !data->textbox) return;
+	long position = data->textbox->GetInsertionPoint();
+	save_document_position(data->file_path, position);
+}
+
 void main_window::on_open(wxCommandEvent& event) {
 	wxFileDialog dlg(this, "Select a document to read", "", "", get_supported_wildcards(), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 	if (dlg.ShowModal() != wxID_OK) return;
@@ -189,7 +212,6 @@ void main_window::on_close(wxCommandEvent& event) {
 }
 
 void main_window::on_close_all(wxCommandEvent& event) {
-	// Save positions for all tabs before closing
 	for (size_t i = 0; i < notebook->GetPageCount(); ++i) {
 		auto* page = notebook->GetPage(i);
 		auto* data = static_cast<user_data*>(page->GetClientObject());
@@ -198,7 +220,6 @@ void main_window::on_close_all(wxCommandEvent& event) {
 			save_document_position(data->file_path, position);
 		}
 	}
-	
 	notebook->DeleteAllPages();
 	update_title();
 	update_status_bar();
@@ -384,7 +405,6 @@ void main_window::on_notebook_page_changed(wxBookCtrlEvent& event) {
 			save_document_position(data->file_path, position);
 		}
 	}
-	
 	update_title();
 	update_status_bar();
 	event.Skip();
@@ -427,35 +447,7 @@ void main_window::on_find_close(wxFindDialogEvent& event) {
 	find_dialog = nullptr;
 }
 
-void main_window::save_document_position(const wxString& path, long position) {
-	wxConfigBase* config = wxConfigBase::Get();
-	if (!config) return;
-	
-	config->SetPath("/documents");
-	config->Write(path, position);
-	config->Flush();
-}
-
-long main_window::load_document_position(const wxString& path) {
-	wxConfigBase* config = wxConfigBase::Get();
-	if (!config) return 0;
-	
-	config->SetPath("/documents");
-	return config->Read(path, 0L);
-}
-
-void main_window::save_current_tab_position() {
-	if (notebook->GetPageCount() == 0) return;
-	
-	auto* data = active_user_data();
-	if (!data || !data->textbox) return;
-	
-	long position = data->textbox->GetInsertionPoint();
-	save_document_position(data->file_path, position);
-}
-
 void main_window::on_close_window(wxCloseEvent& event) {
-	// Save positions for all open documents before closing
 	for (size_t i = 0; i < notebook->GetPageCount(); ++i) {
 		auto* page = notebook->GetPage(i);
 		auto* data = static_cast<user_data*>(page->GetClientObject());
@@ -464,19 +456,14 @@ void main_window::on_close_window(wxCloseEvent& event) {
 			save_document_position(data->file_path, position);
 		}
 	}
-	
-	// Stop the position save timer
 	if (position_save_timer) {
 		position_save_timer->Stop();
 		delete position_save_timer;
 		position_save_timer = nullptr;
 	}
-	
-	// Allow the window to close
 	event.Skip();
 }
 
 void main_window::on_position_save_timer(wxTimerEvent& event) {
-	// Periodically save the current tab position
 	save_current_tab_position();
 }

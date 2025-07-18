@@ -19,9 +19,8 @@ bool app::OnInit() {
 }
 
 int app::OnExit() {
-	// Save positions for all open documents before exit
 	if (frame) {
-		wxNotebook* notebook = frame->get_notebook();
+		auto* notebook = frame->get_notebook();
 		for (size_t i = 0; i < notebook->GetPageCount(); ++i) {
 			auto* page = notebook->GetPage(i);
 			auto* data = static_cast<user_data*>(page->GetClientObject());
@@ -35,7 +34,6 @@ int app::OnExit() {
 			}
 		}
 	}
-	
 	if (conf) conf->Flush();
 	return wxApp::OnExit();
 }

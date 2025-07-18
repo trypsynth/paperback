@@ -60,6 +60,9 @@ private:
 	void update_doc_commands(wxUpdateUIEvent& event);
 	void update_title();
 	void update_status_bar();
+	void save_document_position(const wxString& path, long position);
+	long load_document_position(const wxString& path);
+	void save_current_tab_position();
 	void on_open(wxCommandEvent& event);
 	void on_close(wxCommandEvent& event);
 	void on_close_all(wxCommandEvent& event);
@@ -81,9 +84,4 @@ private:
 	void on_text_cursor_changed(wxEvent& event);
 	void on_close_window(wxCloseEvent& event);
 	void on_position_save_timer(wxTimerEvent& event);
-	
-	// Position persistence helpers
-	void save_document_position(const wxString& path, long position);
-	long load_document_position(const wxString& path);
-	void save_current_tab_position();
 };
