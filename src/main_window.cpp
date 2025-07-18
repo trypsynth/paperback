@@ -82,7 +82,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	// Initialize periodic position saving timer (30 seconds)
 	position_save_timer = new wxTimer(this);
 	Bind(wxEVT_TIMER, &main_window::on_position_save_timer, this, position_save_timer->GetId());
-	position_save_timer->Start(30000); // 30 seconds
+	position_save_timer->Start(5000);
 }
 
 wxTextCtrl* main_window::active_text_ctrl() const {
