@@ -20,39 +20,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	auto* sizer = new wxBoxSizer(wxVERTICAL);
 	sizer->Add(notebook, 1, wxEXPAND | wxALL, 10);
 	panel->SetSizer(sizer);
-	auto* menu_bar = new wxMenuBar();
-	auto* file_menu = new wxMenu();
-	file_menu->Append(wxID_OPEN);
-	file_menu->Append(wxID_CLOSE, "Close\tCtrl+F4");
-	file_menu->Append(wxID_CLOSE_ALL, "Close &All\tCtrl+Shift+F4");
-	file_menu->AppendSeparator();
-	file_menu->Append(ID_EXPORT, "&Export...\tCtrl+E");
-	file_menu->AppendSeparator();
-	file_menu->Append(wxID_EXIT, "E&xit");
-	auto* go_menu = new wxMenu();
-	go_menu->Append(wxID_FIND);
-	go_menu->Append(ID_FIND_NEXT, "Find Ne&xt\tF3");
-	go_menu->Append(ID_FIND_PREVIOUS, "Find P&revious\tShift+F3");
-	go_menu->AppendSeparator();
-	go_menu->Append(ID_GO_TO, "&Go to...\tCtrl+G");
-	go_menu->AppendSeparator();
-	go_menu->Append(ID_PREVIOUS_SECTION, "Previous section\t[");
-	go_menu->Append(ID_NEXT_SECTION, "Next section\t]");
-	auto* tools_menu = new wxMenu();
-	tools_menu->Append(ID_WORD_COUNT, "&Word count\tCtrl+W");
-	tools_menu->Append(ID_DOC_INFO, "Document &info\tCtrl+I");
-	tools_menu->AppendSeparator();
-	tools_menu->Append(ID_TABLE_OF_CONTENTS, "Table of contents\tCtrl+T");
-	auto* help_menu = new wxMenu();
-	help_menu->Append(wxID_ABOUT, "About " + APP_NAME + "\tCtrl+F1");
-	help_menu->Append(wxID_HELP, "&Help\tF1");
-	help_menu->AppendSeparator();
-	help_menu->Append(ID_CHECK_FOR_UPDATES, "&Check for updates");
-	menu_bar->Append(file_menu, "&File");
-	menu_bar->Append(go_menu, "&Go");
-	menu_bar->Append(tools_menu, "&Tools");
-	menu_bar->Append(help_menu, "&Help");
-	SetMenuBar(menu_bar);
+	create_menus();
 	status_bar = CreateStatusBar(1);
 	status_bar->SetStatusText("Ready");
 	const std::pair<int, void (main_window::*)(wxCommandEvent&)> menu_bindings[] = {
@@ -130,6 +98,58 @@ void main_window::open_document(const wxString& path, const parser* par) {
 	content->Bind(wxEVT_LEFT_UP, &main_window::on_text_cursor_changed, this);
 	content->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, this);
 	update_status_bar();
+}
+
+void main_window::create_menus() {
+	auto* menu_bar = new wxMenuBar();
+	menu_bar->Append(create_file_menu(), "&File");
+	menu_bar->Append(create_go_menu(), "&Go");
+	menu_bar->Append(create_tools_menu(), "&Tools");
+	menu_bar->Append(create_help_menu(), "&Help");
+	SetMenuBar(menu_bar);
+}
+
+wxMenu* main_window::create_file_menu() {
+	auto* menu = new wxMenu();
+	menu->Append(wxID_OPEN);
+	menu->Append(wxID_CLOSE, "Close\tCtrl+F4");
+	menu->Append(wxID_CLOSE_ALL, "Close &All\tCtrl+Shift+F4");
+	menu->AppendSeparator();
+	menu->Append(ID_EXPORT, "&Export...\tCtrl+E");
+	menu->AppendSeparator();
+	menu->Append(wxID_EXIT, "E&xit");
+	return menu;
+}
+
+wxMenu* main_window::create_go_menu() {
+	auto* menu = new wxMenu();
+	menu->Append(wxID_FIND);
+	menu->Append(ID_FIND_NEXT, "Find Ne&xt\tF3");
+	menu->Append(ID_FIND_PREVIOUS, "Find P&revious\tShift+F3");
+	menu->AppendSeparator();
+	menu->Append(ID_GO_TO, "&Go to...\tCtrl+G");
+	menu->AppendSeparator();
+	menu->Append(ID_PREVIOUS_SECTION, "Previous section\t[");
+	menu->Append(ID_NEXT_SECTION, "Next section\t]");
+	return menu;
+}
+
+wxMenu* main_window::create_tools_menu() {
+	auto* menu = new wxMenu();
+	menu->Append(ID_WORD_COUNT, "&Word count\tCtrl+W");
+	menu->Append(ID_DOC_INFO, "Document &info\tCtrl+I");
+	menu->AppendSeparator();
+	menu->Append(ID_TABLE_OF_CONTENTS, "Table of contents\tCtrl+T");
+	return menu;
+}
+
+wxMenu* main_window::create_help_menu() {
+	auto* menu = new wxMenu();
+	menu->Append(wxID_ABOUT, "About " + APP_NAME + "\tCtrl+F1");
+	menu->Append(wxID_HELP, "&Help\tF1");
+	menu->AppendSeparator();
+	menu->Append(ID_CHECK_FOR_UPDATES, "&Check for updates");
+	return menu;
 }
 
 user_data* main_window::active_user_data() const {

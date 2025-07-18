@@ -47,7 +47,7 @@ public:
 	wxTextCtrl* active_text_ctrl() const;
 	document* active_document() const;
 	void open_document(const wxString& path, const parser* par);
-	wxNotebook* get_notebook() const { return notebook; }
+	wxNotebook* get_notebook() const {return notebook;}
 
 private:
 	wxNotebook* notebook = nullptr;
@@ -56,6 +56,11 @@ private:
 	wxStatusBar* status_bar = nullptr;
 	wxTimer* position_save_timer = nullptr;
 
+	void create_menus();
+	wxMenu* create_file_menu();
+	wxMenu* create_go_menu();
+	wxMenu* create_tools_menu();
+	wxMenu* create_help_menu();
 	user_data* active_user_data() const;
 	void update_doc_commands(wxUpdateUIEvent& event);
 	void update_title();
