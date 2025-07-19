@@ -26,7 +26,7 @@ This process generates a standalone `paperback.exe` binary with no external depe
 ## Contributing
 Contributions are welcome! Whether through issues, pull requests, discussions, or other means, your interest is appreciated.
 
-When modifying the code, please adhere to the established coding style (tabs for indents, stars attached to the type, not the variable name, braces on the same line, etc.). A `.clang-format` file is included to assist with this, though it currently requires manual execution as it's not a pre-commit hook.
+When modifying the code, please adhere to the established coding style (tabs for indents, stars attached to the type, not the variable name, braces on the same line, etc.). A `.clang-format` file is included to assist with this. To format the code on Windows, simply run the fmt.bat script in the root of the repository.
 
 ## License
-This project is licensed under the [MIT license](LICENSE).
+This project is licensed under the [MIT license](LICENSE.md).
