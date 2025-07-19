@@ -47,7 +47,7 @@ public:
 	wxTextCtrl* active_text_ctrl() const;
 	document* active_document() const;
 	void open_document(const wxString& path, const parser* par);
-	wxNotebook* get_notebook() const {return notebook;}
+	wxNotebook* get_notebook() const { return notebook; }
 
 private:
 	wxNotebook* notebook = nullptr;

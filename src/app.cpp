@@ -1,9 +1,9 @@
 #include "app.hpp"
 #include "constants.hpp"
 #include "parser.hpp"
+#include <wx/config.h>
 #include <wx/filename.h>
 #include <wx/stdpaths.h>
-#include <wx/config.h>
 
 bool app::OnInit() {
 	wxString exePath = wxStandardPaths::Get().GetExecutablePath();

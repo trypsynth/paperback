@@ -4,15 +4,15 @@
 #include "parser.hpp"
 #include "toc_dialog.hpp"
 #define UNIVERSAL_SPEECH_STATIC
-#include "utils.hpp"
 #include "document_info_dialog.hpp"
+#include "utils.hpp"
 #include <UniversalSpeech.h>
 #include <wx/aboutdlg.h>
 #include <wx/config.h>
 #include <wx/fdrepdlg.h>
 #include <wx/filename.h>
-#include <wx/tokenzr.h>
 #include <wx/timer.h>
+#include <wx/tokenzr.h>
 
 main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	auto* panel = new wxPanel(this);
@@ -58,7 +58,7 @@ void main_window::open_document(const wxString& path, const parser* par) {
 	content->Freeze();
 	content->SetValue(active_document()->text_content);
 	content->Thaw();
-	
+
 	// Load and restore saved position
 	long saved_position = load_document_position(path);
 	if (saved_position > 0) {
@@ -68,7 +68,7 @@ void main_window::open_document(const wxString& path, const parser* par) {
 			content->ShowPosition(saved_position);
 		}
 	}
-	
+
 	content->SetFocus();
 	content->Bind(wxEVT_LEFT_UP, &main_window::on_text_cursor_changed, this);
 	content->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, this);
@@ -400,7 +400,8 @@ void main_window::on_toc(wxCommandEvent& event) {
 	auto* text_ctrl = active_text_ctrl();
 	if (!text_ctrl) return;
 	long max_pos = text_ctrl->GetLastPosition();
-	offset = offset > max_pos ? max_pos : offset < 0 ? 0 : offset;
+	offset = offset > max_pos ? max_pos : offset < 0 ? 0
+													 : offset;
 	text_ctrl->SetInsertionPoint(offset);
 	text_ctrl->ShowPosition(offset);
 	text_ctrl->SetFocus();
