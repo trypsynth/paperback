@@ -4,15 +4,15 @@
 #include "parser.hpp"
 #include "toc_dialog.hpp"
 #define UNIVERSAL_SPEECH_STATIC
-#include "utils.hpp"
 #include "document_info_dialog.hpp"
+#include "utils.hpp"
 #include <UniversalSpeech.h>
 #include <wx/aboutdlg.h>
 #include <wx/config.h>
 #include <wx/fdrepdlg.h>
 #include <wx/filename.h>
-#include <wx/tokenzr.h>
 #include <wx/timer.h>
+#include <wx/tokenzr.h>
 
 main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	auto* panel = new wxPanel(this);
@@ -58,7 +58,7 @@ void main_window::open_document(const wxString& path, const parser* par) {
 	content->Freeze();
 	content->SetValue(active_document()->text_content);
 	content->Thaw();
-	
+
 	// Load and restore saved position
 	long saved_position = load_document_position(path);
 	if (saved_position > 0) {
@@ -68,7 +68,7 @@ void main_window::open_document(const wxString& path, const parser* par) {
 			content->ShowPosition(saved_position);
 		}
 	}
-	
+
 	content->SetFocus();
 	content->Bind(wxEVT_LEFT_UP, &main_window::on_text_cursor_changed, this);
 	content->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, this);
@@ -129,21 +129,21 @@ wxMenu* main_window::create_help_menu() {
 
 void main_window::bind_events() {
 	const std::pair<int, void (main_window::*)(wxCommandEvent&)> menu_bindings[] = {
-		{wxID_OPEN, &main_window::on_open},
-		{wxID_CLOSE, &main_window::on_close},
-		{wxID_CLOSE_ALL, &main_window::on_close_all},
-		{ID_EXPORT, &main_window::on_export},
-		{wxID_EXIT, &main_window::on_exit},
-		{wxID_FIND, &main_window::on_find},
-		{ID_FIND_NEXT, &main_window::on_find_next},
-		{ID_FIND_PREVIOUS, &main_window::on_find_previous},
-		{ID_GO_TO, &main_window::on_go_to},
-		{ID_PREVIOUS_SECTION, &main_window::on_previous_section},
-		{ID_NEXT_SECTION, &main_window::on_next_section},
-		{ID_WORD_COUNT, &main_window::on_word_count},
-		{ID_DOC_INFO, &main_window::on_doc_info},
-		{ID_TABLE_OF_CONTENTS, &main_window::on_toc},
-		{wxID_ABOUT, &main_window::on_about},
+	    {wxID_OPEN, &main_window::on_open},
+	    {wxID_CLOSE, &main_window::on_close},
+	    {wxID_CLOSE_ALL, &main_window::on_close_all},
+	    {ID_EXPORT, &main_window::on_export},
+	    {wxID_EXIT, &main_window::on_exit},
+	    {wxID_FIND, &main_window::on_find},
+	    {ID_FIND_NEXT, &main_window::on_find_next},
+	    {ID_FIND_PREVIOUS, &main_window::on_find_previous},
+	    {ID_GO_TO, &main_window::on_go_to},
+	    {ID_PREVIOUS_SECTION, &main_window::on_previous_section},
+	    {ID_NEXT_SECTION, &main_window::on_next_section},
+	    {ID_WORD_COUNT, &main_window::on_word_count},
+	    {ID_DOC_INFO, &main_window::on_doc_info},
+	    {ID_TABLE_OF_CONTENTS, &main_window::on_toc},
+	    {wxID_ABOUT, &main_window::on_about},
 	};
 	for (const auto& [id, handler] : menu_bindings)
 		Bind(wxEVT_MENU, handler, this, id);
@@ -400,7 +400,8 @@ void main_window::on_toc(wxCommandEvent& event) {
 	auto* text_ctrl = active_text_ctrl();
 	if (!text_ctrl) return;
 	long max_pos = text_ctrl->GetLastPosition();
-	offset = offset > max_pos ? max_pos : offset < 0 ? 0 : offset;
+	offset = offset > max_pos ? max_pos : offset < 0 ? 0
+	                                                 : offset;
 	text_ctrl->SetInsertionPoint(offset);
 	text_ctrl->ShowPosition(offset);
 	text_ctrl->SetFocus();
@@ -470,6 +471,11 @@ void main_window::on_find_close(wxFindDialogEvent& event) {
 }
 
 void main_window::on_close_window(wxCloseEvent& event) {
+	if (position_save_timer) {
+		position_save_timer->Stop();
+		delete position_save_timer;
+		position_save_timer = nullptr;
+	}
 	for (size_t i = 0; i < notebook->GetPageCount(); ++i) {
 		auto* page = notebook->GetPage(i);
 		auto* data = static_cast<user_data*>(page->GetClientObject());
@@ -477,11 +483,6 @@ void main_window::on_close_window(wxCloseEvent& event) {
 			long position = data->textbox->GetInsertionPoint();
 			save_document_position(data->file_path, position);
 		}
-	}
-	if (position_save_timer) {
-		position_save_timer->Stop();
-		delete position_save_timer;
-		position_save_timer = nullptr;
 	}
 	event.Skip();
 }
