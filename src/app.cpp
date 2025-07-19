@@ -19,21 +19,6 @@ bool app::OnInit() {
 }
 
 int app::OnExit() {
-	if (frame) {
-		auto* notebook = frame->get_notebook();
-		for (size_t i = 0; i < notebook->GetPageCount(); ++i) {
-			auto* page = notebook->GetPage(i);
-			auto* data = static_cast<user_data*>(page->GetClientObject());
-			if (data && data->textbox) {
-				long position = data->textbox->GetInsertionPoint();
-				wxConfigBase* config = wxConfigBase::Get();
-				if (config) {
-					config->SetPath("/documents");
-					config->Write(data->file_path, position);
-				}
-			}
-		}
-	}
 	if (conf) conf->Flush();
 	return wxApp::OnExit();
 }
