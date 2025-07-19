@@ -1,6 +1,7 @@
 BasedOnStyle: LLVM
 IndentWidth: 4
-UseTab: ForIndentation
+UseTab: Always
+TabWidth: 4
 AllowShortIfStatementsOnASingleLine: true
 AllowShortLoopsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: Inline
@@ -13,8 +14,10 @@ IndentCaseLabels: false
 SpaceBeforeParens: ControlStatements
 Cpp11BracedListStyle: true
 SortIncludes: true
-TabWidth: 4
 PointerAlignment: Left
+AlignConsecutiveAssignments: None
+AlignConsecutiveDeclarations: None
+AlignOperands: DontAlign
 BraceWrapping:
   AfterControlStatement: false
   AfterFunction: false
