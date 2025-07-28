@@ -1,9 +1,9 @@
 {
-  "name": "universalspeech",
-  "version": "1.0.0",
-  "description": "UniversalSpeech library: make popular screen readers speak in your application ",
-  "homepage": "https://github.com/qtnc/UniversalSpeech",
-  "license": "MIT",
-  "supports": "windows",
-  "dependencies": []
+	"name": "universalspeech",
+	"version": "1.0.0",
+	"description": "UniversalSpeech library: make popular screen readers speak in your application ",
+	"homepage": "https://github.com/qtnc/UniversalSpeech",
+	"license": "MIT",
+	"supports": "windows",
+	"dependencies": []
 }
