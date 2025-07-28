@@ -10,6 +10,10 @@
 				"zip"
 			]
 		},
+		{
+			"name": "universalspeech",
+			"platform": "windows"
+		},
 		"wxwidgets"
 	],
 	"builtin-baseline": "8f54ef5453e7e76ff01e15988bf243e7247c5eb5"

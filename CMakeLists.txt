@@ -15,9 +15,8 @@ set(LEXBOR_LIBRARY "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/$<$<CONFIG:De
 
 file(GLOB_RECURSE SRC_FILES src/*.cpp)
 add_executable(paperback WIN32 ${SRC_FILES})
-target_link_directories(paperback PRIVATE "${CMAKE_SOURCE_DIR}/lib")
-target_link_libraries(paperback PRIVATE psapi wx::core wx::base Poco::Foundation Poco::XML Poco::Zip UniversalSpeechStatic ${LEXBOR_LIBRARY})
-target_include_directories(paperback PRIVATE "${CMAKE_SOURCE_DIR}/include" ${LEXBOR_INCLUDE_DIR})
+target_link_libraries(paperback PRIVATE psapi wx::core wx::base Poco::Foundation Poco::XML Poco::Zip ${LEXBOR_LIBRARY})
+target_include_directories(paperback PRIVATE ${LEXBOR_INCLUDE_DIR})
 target_compile_definitions(paperback PRIVATE LEXBOR_STATIC)
 
 file(GLOB DLLS "${CMAKE_SOURCE_DIR}/bin/*.dll")
