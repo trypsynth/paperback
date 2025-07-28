@@ -10,12 +10,13 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 find_package(wxWidgets CONFIG REQUIRED)
 find_package(Poco REQUIRED COMPONENTS Foundation xml Zip)
+find_package(universalspeech CONFIG REQUIRED)
 set(LEXBOR_INCLUDE_DIR "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include")
 set(LEXBOR_LIBRARY "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/$<$<CONFIG:Debug>:debug/>lib/lexbor_static.lib")
 
 file(GLOB_RECURSE SRC_FILES src/*.cpp)
 add_executable(paperback WIN32 ${SRC_FILES})
-target_link_libraries(paperback PRIVATE psapi wx::core wx::base Poco::Foundation Poco::XML Poco::Zip ${LEXBOR_LIBRARY})
+target_link_libraries(paperback PRIVATE psapi wx::core wx::base Poco::Foundation Poco::XML Poco::Zip universalspeech::universalspeech ${LEXBOR_LIBRARY})
 target_include_directories(paperback PRIVATE ${LEXBOR_INCLUDE_DIR})
 target_compile_definitions(paperback PRIVATE LEXBOR_STATIC)
 

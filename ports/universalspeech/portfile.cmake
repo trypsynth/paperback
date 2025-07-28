@@ -41,3 +41,10 @@ file(INSTALL "${SOURCE_PATH}/LICENSE.txt" DESTINATION ${CURRENT_PACKAGES_DIR}/sh
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share")
+
+# Create CMake config files
+configure_file(
+    "${CURRENT_PORT_DIR}/universalspeech-config.cmake.in"
+    "${CURRENT_PACKAGES_DIR}/share/${PORT}/universalspeech-config.cmake"
+    @ONLY
+)
