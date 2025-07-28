@@ -20,7 +20,7 @@ vcpkg_execute_build_process(
 	WORKING_DIRECTORY ${SOURCE_PATH}
 	LOGNAME build-rel
 )
-file(INSTALL "${SOURCE_PATH}/UniversalSpeechStatic.lib" DESTINATION ${CURRENT_PACKAGES_DIR}/lib)\
+file(INSTALL "${SOURCE_PATH}/UniversalSpeechStatic.lib" DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
 file(GLOB DLLS "${SOURCE_PATH}/bin-x64/*.dll")
 if(DLLS)
 	file(INSTALL ${DLLS} DESTINATION ${CURRENT_PACKAGES_DIR}/bin)

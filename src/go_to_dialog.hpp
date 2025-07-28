@@ -5,7 +5,7 @@
 class go_to_dialog : public wxDialog {
 public:
 	go_to_dialog(wxWindow* parent, wxTextCtrl* text_ctrl);
-	int line_number() const;
+	long get_position() const;
 
 private:
 	wxTextCtrl* textbox = nullptr;

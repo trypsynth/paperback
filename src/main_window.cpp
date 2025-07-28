@@ -306,7 +306,7 @@ void main_window::on_go_to(wxCommandEvent& event) {
 	auto* content = active_text_ctrl();
 	go_to_dialog dlg(this, content);
 	if (dlg.ShowModal() != wxID_OK) return;
-	long pos = content->XYToPosition(0, dlg.line_number() - 1);
+	long pos = dlg.get_position();
 	content->SetInsertionPoint(pos);
 	update_status_bar();
 }
