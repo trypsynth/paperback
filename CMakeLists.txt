@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 4.00)
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/vcpkg/bin/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
 set(VCPKG_MANIFEST_DIR "${CMAKE_SOURCE_DIR}/vcpkg")
-set(VCPKG_TARGET_TRIPLET "x64-windows-static" CACHE STRING "")
-project(paperback LANGUAGES CXX VERSION 0.1)
+set(VCPKG_TARGET_TRIPLET "x64-windows-static" CACHE STRING "Vcpkg triplet")
+project(paperback VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -14,12 +14,20 @@ find_package(Poco REQUIRED COMPONENTS Foundation xml Zip)
 find_package(universalspeech CONFIG REQUIRED)
 find_package(wxWidgets CONFIG REQUIRED)
 
-file(GLOB_RECURSE SRC_FILES src/*.cpp)
+file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS src/*.cpp)
 add_executable(paperback WIN32 ${SRC_FILES})
-target_link_libraries(paperback PRIVATE psapi wx::core wx::base Poco::Foundation Poco::XML Poco::Zip universalspeech::universalspeech lexbor::lexbor)
-target_include_directories(paperback PRIVATE ${LEXBOR_INCLUDE_DIR})
+target_link_libraries(paperback PRIVATE
+	lexbor::lexbor
+	Poco::Foundation
+	Poco::XML
+	Poco::Zip
+	psapi
+	universalspeech::universalspeech
+	wx::core
+	wx::base
+)
 
 file(GLOB DLLS "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin/*.dll")
-foreach(DLL ${DLLS})
+foreach(DLL IN LISTS DLLS)
 	add_custom_command(TARGET paperback POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different "${DLL}" "$<TARGET_FILE_DIR:paperback>")
 endforeach()
