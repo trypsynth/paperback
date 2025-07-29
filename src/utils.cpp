@@ -2,6 +2,7 @@
 #include <cctype>
 #include <sstream>
 #include <string_view>
+#include <wx/msgdlg.h>
 
 long find_text(const wxString& haystack, const wxString& needle, long start, bool forward, bool match_case) {
 	if (needle.empty()) return wxNOT_FOUND;
@@ -26,4 +27,8 @@ std::string collapse_whitespace(std::string_view input) {
 		}
 	}
 	return oss.str();
+}
+
+bool should_open_as_txt(const wxString& path) {
+	return wxMessageBox("No suitable parser was found for " + path + ". Would you like to treat it as plain text?", "Warning", wxICON_WARNING | wxYES_NO) == wxYES;
 }

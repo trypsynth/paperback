@@ -1,6 +1,7 @@
 #include "app.hpp"
 #include "constants.hpp"
 #include "parser.hpp"
+#include "utils.hpp"
 #include <wx/config.h>
 #include <wx/filename.h>
 #include <wx/stdpaths.h>
@@ -31,8 +32,7 @@ void app::parse_command_line() {
 	}
 	auto* par = find_parser_by_extension(wxFileName(path).GetExt());
 	if (!par) {
-		const bool open_as_txt = wxMessageBox("No suitable parser was found for " + path + ". Would you like to treat it as plain text?", "Warning", wxICON_WARNING | wxYES_NO) == wxYES;
-		if (!open_as_txt) return;
+		if (!should_open_as_txt(path)) return;
 		par = find_parser_by_extension("txt");
 	}
 	frame->open_document(path, par);
