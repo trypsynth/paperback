@@ -21,8 +21,7 @@ cmake .. -GNinja
 cmake --build . --config Release
 ```
 
-This process generates a standalone `paperback.exe` binary with no external dependencies, except for the optional `nvdaControllerClient64.dll` if speech output is desired. Dependencies are managed using vcpkg.
-
+This will generate a paperback.exe binary in your build directory, as well as all of the screen reader DLLs needed for fully functional speech output.
 ## Contributing
 Contributions are welcome! Whether through issues, pull requests, discussions, or other means, your interest is appreciated.
 
