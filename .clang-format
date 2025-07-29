@@ -1,4 +1,5 @@
 BasedOnStyle: LLVM
+Standard: c++20
 IndentWidth: 4
 UseTab: Always
 TabWidth: 4
