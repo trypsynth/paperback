@@ -1,5 +1,3 @@
 {
-  "overlay-ports": [
-    "./ports"
-  ]
+	"overlay-ports": ["./ports"]
 }
