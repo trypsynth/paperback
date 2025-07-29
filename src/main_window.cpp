@@ -408,8 +408,10 @@ void main_window::on_toc(wxCommandEvent& event) {
 	auto* text_ctrl = active_text_ctrl();
 	if (!text_ctrl) return;
 	long max_pos = text_ctrl->GetLastPosition();
-	offset = offset > max_pos ? max_pos : offset < 0 ? 0
-													 : offset;
+	if (offset > max_pos)
+		offset = max_pos;
+	else if (offset < 0)
+		offset = 0;
 	text_ctrl->SetInsertionPoint(offset);
 	text_ctrl->ShowPosition(offset);
 	text_ctrl->SetFocus();
