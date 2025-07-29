@@ -206,7 +206,7 @@ void main_window::update_status_bar() {
 	long current_pos = text_ctrl->GetInsertionPoint();
 	long total_chars = text_ctrl->GetLastPosition();
 	int percentage = total_chars > 0 ? (current_pos * 100) / total_chars : 0;
-	status_bar->SetStatusText(wxString::Format("%d%% (%ld/%ld)", percentage, current_pos, total_chars));
+	status_bar->SetStatusText(wxString::Format("%d%%", percentage));
 }
 
 void main_window::save_document_position(const wxString& path, long position) {

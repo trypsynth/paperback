@@ -11,6 +11,7 @@ go_to_dialog::go_to_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : wxDialog(p
 	textbox->PositionToXY(textbox->GetInsertionPoint(), 0, &line);
 	input_ctrl->SetValue(wxString::Format("%d", line + 1));
 	input_ctrl->SetSelection(-1, -1);
+	input_ctrl->Bind(wxEVT_KEY_DOWN, &go_to_dialog::on_key_down, this);
 	auto* button_sizer = new wxStdDialogButtonSizer();
 	auto* ok_button = new wxButton(this, wxID_OK);
 	button_sizer->AddButton(ok_button);
@@ -20,6 +21,37 @@ go_to_dialog::go_to_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : wxDialog(p
 	main_sizer->Add(line_sizer, 0, wxALL | wxEXPAND, 5);
 	main_sizer->Add(button_sizer, 0, wxALIGN_RIGHT | wxALL, 10);
 	SetSizerAndFit(main_sizer);
+}
+
+void go_to_dialog::on_key_down(wxKeyEvent& event) {
+	int key_code = event.GetKeyCode();
+	if (key_code == WXK_UP)
+		adjust_line_number(1);
+	else if (key_code == WXK_DOWN)
+		adjust_line_number(-1);
+	else
+		event.Skip();
+}
+
+void go_to_dialog::adjust_line_number(int delta) {
+	wxString current_value = input_ctrl->GetValue().Trim(true).Trim(false);
+	if (!current_value.EndsWith("%")) {
+		long current_line;
+		if (current_value.ToLong(&current_line)) {
+			long new_line = current_line + delta;
+			long max_line = get_max_line();
+			if (new_line < 1)
+				new_line = 1;
+			else if (new_line > max_line)
+				new_line = max_line;
+			input_ctrl->SetValue(wxString::Format("%ld", new_line));
+			input_ctrl->SetSelection(-1, -1); // Select all text
+		}
+	}
+}
+
+long go_to_dialog::get_max_line() const {
+	return textbox->GetNumberOfLines();
 }
 
 long go_to_dialog::get_position() const {
