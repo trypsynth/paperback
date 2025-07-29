@@ -31,3 +31,15 @@ file(GLOB DLLS "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin/*.dll")
 foreach(DLL IN LISTS DLLS)
 	add_custom_command(TARGET paperback POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different "${DLL}" "$<TARGET_FILE_DIR:paperback>")
 endforeach()
+
+find_program(PANDOC_EXECUTABLE pandoc)
+if(PANDOC_EXECUTABLE)
+	add_custom_command(
+		OUTPUT ${CMAKE_BINARY_DIR}/readme.html
+		COMMAND ${PANDOC_EXECUTABLE} ${CMAKE_SOURCE_DIR}/doc/index.md -o ${CMAKE_BINARY_DIR}/readme.html
+		DEPENDS ${CMAKE_SOURCE_DIR}/doc/index.md
+	)
+	add_custom_target(doc ALL DEPENDS ${CMAKE_BINARY_DIR}/readme.html)
+else()
+	message(WARNING "Pandoc not found. Documentation will not be generated.")
+endif()
