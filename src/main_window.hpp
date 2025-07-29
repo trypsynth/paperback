@@ -19,21 +19,6 @@ enum {
 	ID_CHECK_FOR_UPDATES,
 };
 
-constexpr int doc_command_ids[] = {
-	wxID_CLOSE,
-	wxID_CLOSE_ALL,
-	ID_EXPORT,
-	wxID_FIND,
-	ID_FIND_NEXT,
-	ID_FIND_PREVIOUS,
-	ID_GO_TO,
-	ID_PREVIOUS_SECTION,
-	ID_NEXT_SECTION,
-	ID_WORD_COUNT,
-	ID_DOC_INFO,
-	ID_TABLE_OF_CONTENTS,
-};
-
 // Each tab stores a pointer to one of these.
 struct user_data : public wxClientData {
 	wxTextCtrl* textbox = nullptr;
@@ -63,7 +48,7 @@ private:
 	wxMenu* create_help_menu();
 	void bind_events();
 	user_data* active_user_data() const;
-	void update_doc_commands(wxUpdateUIEvent& event);
+	void update_ui();
 	void update_title();
 	void update_status_bar();
 	void save_document_position(const wxString& path, long position);

@@ -70,6 +70,38 @@ void main_window::open_document(const wxString& path, const parser* par) {
 	content->Bind(wxEVT_LEFT_UP, &main_window::on_text_cursor_changed, this);
 	content->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, this);
 	update_status_bar();
+	update_ui();
+}
+
+void main_window::update_ui() {
+	const bool has_doc = notebook->GetPageCount() > 0;
+	auto enable = [this](int id, bool state) {
+		if (auto* item = GetMenuBar()->FindItem(id))
+			item->Enable(state);
+	};
+	const int doc_items[] = {
+		wxID_CLOSE,
+		wxID_CLOSE_ALL,
+		ID_EXPORT,
+		wxID_FIND,
+		ID_FIND_NEXT,
+		ID_FIND_PREVIOUS,
+		ID_GO_TO,
+		ID_WORD_COUNT,
+		ID_DOC_INFO};
+	for (int id : doc_items)
+		enable(id, has_doc);
+	if (!has_doc) {
+		enable(ID_PREVIOUS_SECTION, false);
+		enable(ID_NEXT_SECTION, false);
+		enable(ID_TABLE_OF_CONTENTS, false);
+		return;
+	}
+	document* doc = active_document();
+	if (!doc) return;
+	enable(ID_PREVIOUS_SECTION, doc->has_flag(document_flags::supports_sections));
+	enable(ID_NEXT_SECTION, doc->has_flag(document_flags::supports_sections));
+	enable(ID_TABLE_OF_CONTENTS, doc->has_flag(document_flags::supports_toc));
 }
 
 void main_window::create_menus() {
@@ -146,19 +178,12 @@ void main_window::bind_events() {
 		Bind(wxEVT_MENU, handler, this, id);
 	Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, &main_window::on_notebook_page_changed, this);
 	Bind(wxEVT_CLOSE_WINDOW, &main_window::on_close_window, this);
-	for (const int id : doc_command_ids)
-		Bind(wxEVT_UPDATE_UI, &main_window::update_doc_commands, this, id);
 	Bind(wxEVT_TIMER, &main_window::on_position_save_timer, this, position_save_timer->GetId());
 }
 
 user_data* main_window::active_user_data() const {
 	auto* page = notebook->GetPage(notebook->GetSelection());
 	return static_cast<user_data*>(page->GetClientObject());
-}
-
-void main_window::update_doc_commands(wxUpdateUIEvent& e) {
-	const bool has_doc = notebook->GetPageCount() > 0;
-	e.Enable(has_doc);
 }
 
 void main_window::update_title() {
@@ -225,6 +250,7 @@ void main_window::on_close(wxCommandEvent& event) {
 	notebook->DeletePage(notebook->GetSelection());
 	update_title();
 	update_status_bar();
+	update_ui();
 }
 
 void main_window::on_close_all(wxCommandEvent& event) {
@@ -239,6 +265,7 @@ void main_window::on_close_all(wxCommandEvent& event) {
 	notebook->DeleteAllPages();
 	update_title();
 	update_status_bar();
+	update_ui();
 }
 
 void main_window::on_export(wxCommandEvent& event) {
@@ -314,10 +341,6 @@ void main_window::on_go_to(wxCommandEvent& event) {
 void main_window::on_previous_section(wxCommandEvent& event) {
 	auto* doc = active_document();
 	if (!doc) return;
-	if (!doc->has_flag(document_flags::supports_sections)) {
-		speechSayA("Document has no sections", 1);
-		return;
-	}
 	size_t current_pos = active_text_ctrl()->GetInsertionPoint();
 	int prev_index = doc->previous_section_index(current_pos);
 	if (prev_index == -1) {
@@ -336,10 +359,6 @@ void main_window::on_previous_section(wxCommandEvent& event) {
 void main_window::on_next_section(wxCommandEvent& event) {
 	auto* doc = active_document();
 	if (!doc) return;
-	if (!doc->has_flag(document_flags::supports_sections)) {
-		speechSayA("Document has no sections", 1);
-		return;
-	}
 	size_t current_pos = active_text_ctrl()->GetInsertionPoint();
 	int next_index = doc->next_section_index(current_pos);
 	if (next_index == -1) {
@@ -376,10 +395,6 @@ void main_window::on_doc_info(wxCommandEvent& event) {
 void main_window::on_toc(wxCommandEvent& event) {
 	auto* doc = active_document();
 	if (!doc) return;
-	if (!doc->has_flag(document_flags::supports_toc)) {
-		speechSayA("No table of contents", 1);
-		return;
-	}
 	if (doc->toc_items.empty()) {
 		speechSayA("Table of contents is empty", 1);
 		return;
@@ -412,7 +427,6 @@ void main_window::on_about(wxCommandEvent& event) {
 }
 
 void main_window::on_notebook_page_changed(wxBookCtrlEvent& event) {
-	// Save position of the previously active tab
 	int old_selection = event.GetOldSelection();
 	if (old_selection >= 0) {
 		auto* page = notebook->GetPage(old_selection);
@@ -424,6 +438,7 @@ void main_window::on_notebook_page_changed(wxBookCtrlEvent& event) {
 	}
 	update_title();
 	update_status_bar();
+	update_ui();
 	event.Skip();
 }
 
