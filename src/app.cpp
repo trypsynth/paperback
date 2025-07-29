@@ -39,7 +39,6 @@ void app::parse_command_line() {
 }
 
 void app::load_default_config() {
-	if (!conf->Exists("test")) conf->Write("Test", 1);
 	conf->Flush();
 }
 

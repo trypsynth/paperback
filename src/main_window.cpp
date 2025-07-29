@@ -187,7 +187,7 @@ void main_window::update_status_bar() {
 void main_window::save_document_position(const wxString& path, long position) {
 	wxConfigBase* config = wxConfigBase::Get();
 	if (!config) return;
-	config->SetPath("/documents");
+	config->SetPath("/positions");
 	config->Write(path, position);
 	config->Flush();
 }
@@ -195,7 +195,7 @@ void main_window::save_document_position(const wxString& path, long position) {
 long main_window::load_document_position(const wxString& path) {
 	wxConfigBase* config = wxConfigBase::Get();
 	if (!config) return 0;
-	config->SetPath("/documents");
+	config->SetPath("/positions");
 	return config->Read(path, 0L);
 }
 
