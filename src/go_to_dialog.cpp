@@ -23,6 +23,23 @@ go_to_dialog::go_to_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : wxDialog(p
 	SetSizerAndFit(main_sizer);
 }
 
+long go_to_dialog::get_position() const {
+	wxString input = input_ctrl->GetValue().Trim(true).Trim(false);
+	if (input.EndsWith("%")) {
+		input.RemoveLast();
+		long percent;
+		if (input.ToLong(&percent) && percent >= 0 && percent <= 100) {
+			long total_chars = textbox->GetLastPosition();
+			return (percent * total_chars) / 100;
+		}
+	} else {
+		long line;
+		if (input.ToLong(&line) && line >= 1 && line <= textbox->GetNumberOfLines())
+			return textbox->XYToPosition(0, line - 1);
+	}
+	return textbox->GetInsertionPoint();
+}
+
 void go_to_dialog::on_key_down(wxKeyEvent& event) {
 	int key_code = event.GetKeyCode();
 	if (key_code == WXK_UP)
@@ -52,21 +69,4 @@ void go_to_dialog::adjust_line_number(int delta) {
 
 long go_to_dialog::get_max_line() const {
 	return textbox->GetNumberOfLines();
-}
-
-long go_to_dialog::get_position() const {
-	wxString input = input_ctrl->GetValue().Trim(true).Trim(false);
-	if (input.EndsWith("%")) {
-		input.RemoveLast();
-		long percent;
-		if (input.ToLong(&percent) && percent >= 0 && percent <= 100) {
-			long total_chars = textbox->GetLastPosition();
-			return (percent * total_chars) / 100;
-		}
-	} else {
-		long line;
-		if (input.ToLong(&line) && line >= 1 && line <= textbox->GetNumberOfLines())
-			return textbox->XYToPosition(0, line - 1);
-	}
-	return textbox->GetInsertionPoint();
 }

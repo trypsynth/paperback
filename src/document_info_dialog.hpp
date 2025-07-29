@@ -1,5 +1,4 @@
 #pragma once
-
 #include "document.hpp"
 #include <wx/wx.h>
 
