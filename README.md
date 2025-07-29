@@ -12,13 +12,13 @@ Paperback is a lightweight, fast, and accessible ebook and document reader built
 * Command-line file opening for 'Open With' integration.
 
 ## Building
-It's recommended to build from an x64 Visual Studio Developer Command Prompt to ensure all paths are correctly configured. Building from a standard Windows command prompt may lead to issues with `ld` for linking.
+It's recommended to build from an x64 Visual Studio Developer Command Prompt to ensure all paths are correctly configured.
 
-```sh
+```batch
 mkdir build
 cd build
 cmake .. -GNinja
-cmake --build . --config Release
+cmake --build .
 ```
 
 This will generate a paperback.exe binary in your build directory, as well as all of the screen reader DLLs needed for fully functional speech output.
