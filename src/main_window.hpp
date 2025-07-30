@@ -36,36 +36,24 @@ private:
 	wxMenu* create_tools_menu();
 	wxMenu* create_help_menu();
 	void bind_events();
-
-	// UI updates
 	void update_ui();
 	void update_title();
 	void update_status_bar();
-
-	// Event handlers - File menu
 	void on_open(wxCommandEvent& event);
 	void on_close(wxCommandEvent& event);
 	void on_close_all(wxCommandEvent& event);
 	void on_export(wxCommandEvent& event);
 	void on_exit(wxCommandEvent& event);
-
-	// Event handlers - Go menu
 	void on_find(wxCommandEvent& event);
 	void on_find_next(wxCommandEvent& event);
 	void on_find_previous(wxCommandEvent& event);
 	void on_go_to(wxCommandEvent& event);
 	void on_previous_section(wxCommandEvent& event);
 	void on_next_section(wxCommandEvent& event);
-
-	// Event handlers - Tools menu
 	void on_word_count(wxCommandEvent& event);
 	void on_doc_info(wxCommandEvent& event);
 	void on_toc(wxCommandEvent& event);
-
-	// Event handlers - Help menu
 	void on_about(wxCommandEvent& event);
-
-	// Event handlers - Other
 	void on_notebook_page_changed(wxBookCtrlEvent& event);
 	void on_find_dialog(wxFindDialogEvent& event);
 	void on_find_close(wxFindDialogEvent& event);
