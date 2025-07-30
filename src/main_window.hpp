@@ -1,9 +1,7 @@
 #pragma once
-
-#include "document.hpp"
-#include "parser.hpp"
+#include "document_manager.hpp"
+#include <memory>
 #include <wx/fdrepdlg.h>
-#include <wx/notebook.h>
 #include <wx/wx.h>
 
 enum {
@@ -19,27 +17,18 @@ enum {
 	ID_CHECK_FOR_UPDATES,
 };
 
-// Each tab stores a pointer to one of these.
-struct user_data : public wxClientData {
-	wxTextCtrl* textbox = nullptr;
-	std::unique_ptr<document> doc;
-	wxString file_path;
-};
-
 class main_window : public wxFrame {
 public:
 	main_window();
-	wxTextCtrl* active_text_ctrl() const;
-	document* active_document() const;
-	void open_document(const wxString& path, const parser* par);
-	wxNotebook* get_notebook() const { return notebook; }
+	document_manager* get_doc_manager() const { return doc_manager.get(); }
 
 private:
+	std::unique_ptr<document_manager> doc_manager;
 	wxNotebook* notebook = nullptr;
-	wxFindReplaceDialog* find_dialog = nullptr;
-	wxFindReplaceData find_data;
 	wxStatusBar* status_bar = nullptr;
 	wxTimer* position_save_timer = nullptr;
+	wxFindReplaceDialog* find_dialog = nullptr;
+	wxFindReplaceData find_data;
 
 	void create_menus();
 	wxMenu* create_file_menu();
@@ -47,28 +36,36 @@ private:
 	wxMenu* create_tools_menu();
 	wxMenu* create_help_menu();
 	void bind_events();
-	user_data* active_user_data() const;
+
+	// UI updates
 	void update_ui();
 	void update_title();
 	void update_status_bar();
-	void save_document_position(const wxString& path, long position);
-	long load_document_position(const wxString& path);
-	void save_current_tab_position();
+
+	// Event handlers - File menu
 	void on_open(wxCommandEvent& event);
 	void on_close(wxCommandEvent& event);
 	void on_close_all(wxCommandEvent& event);
 	void on_export(wxCommandEvent& event);
 	void on_exit(wxCommandEvent& event);
+
+	// Event handlers - Go menu
 	void on_find(wxCommandEvent& event);
 	void on_find_next(wxCommandEvent& event);
 	void on_find_previous(wxCommandEvent& event);
 	void on_go_to(wxCommandEvent& event);
 	void on_previous_section(wxCommandEvent& event);
 	void on_next_section(wxCommandEvent& event);
+
+	// Event handlers - Tools menu
 	void on_word_count(wxCommandEvent& event);
 	void on_doc_info(wxCommandEvent& event);
 	void on_toc(wxCommandEvent& event);
+
+	// Event handlers - Help menu
 	void on_about(wxCommandEvent& event);
+
+	// Event handlers - Other
 	void on_notebook_page_changed(wxBookCtrlEvent& event);
 	void on_find_dialog(wxFindDialogEvent& event);
 	void on_find_close(wxFindDialogEvent& event);

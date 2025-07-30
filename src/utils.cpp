@@ -2,6 +2,9 @@
 #include <cctype>
 #include <sstream>
 #include <string_view>
+#define WIN32_LEAN_AND_MEAN
+#define UNIVERSAL_SPEECH_STATIC
+#include <UniversalSpeech.h>
 #include <wx/msgdlg.h>
 
 long find_text(const wxString& haystack, const wxString& needle, long start, bool forward, bool match_case) {
@@ -31,4 +34,8 @@ std::string collapse_whitespace(std::string_view input) {
 
 bool should_open_as_txt(const wxString& path) {
 	return wxMessageBox("No suitable parser was found for " + path + ". Would you like to treat it as plain text?", "Warning", wxICON_WARNING | wxYES_NO) == wxYES;
+}
+
+void speak(const wxString& message) {
+	speechSayA(message, 1);
 }

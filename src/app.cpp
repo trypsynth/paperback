@@ -30,7 +30,7 @@ void app::parse_command_line() {
 		if (!should_open_as_txt(path)) return;
 		par = find_parser_by_extension("txt");
 	}
-	frame->open_document(path, par);
+	frame->get_doc_manager()->open_document(path, par);
 }
 
 wxIMPLEMENT_APP(app);

@@ -2,17 +2,10 @@
 #include "constants.hpp"
 #include "go_to_dialog.hpp"
 #include "parser.hpp"
-#include "toc_dialog.hpp"
-#define UNIVERSAL_SPEECH_STATIC
-#include "document_info_dialog.hpp"
 #include "utils.hpp"
-#include <UniversalSpeech.h>
 #include <wx/aboutdlg.h>
-#include <wx/config.h>
-#include <wx/fdrepdlg.h>
 #include <wx/filename.h>
 #include <wx/timer.h>
-#include <wx/tokenzr.h>
 
 main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	auto* panel = new wxPanel(this);
@@ -20,88 +13,14 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	auto* sizer = new wxBoxSizer(wxVERTICAL);
 	sizer->Add(notebook, 1, wxEXPAND | wxALL, 10);
 	panel->SetSizer(sizer);
+	doc_manager = std::make_unique<document_manager>(notebook);
 	create_menus();
 	status_bar = CreateStatusBar(1);
 	status_bar->SetStatusText("Ready");
 	position_save_timer = new wxTimer(this);
 	bind_events();
 	position_save_timer->Start(5000);
-}
-
-wxTextCtrl* main_window::active_text_ctrl() const {
-	return static_cast<wxTextCtrl*>(active_user_data()->textbox);
-}
-
-document* main_window::active_document() const {
-	return active_user_data()->doc.get();
-}
-
-void main_window::open_document(const wxString& path, const parser* par) {
-	std::unique_ptr<document> doc = par->load(path);
-	if (!doc) {
-		wxMessageBox("Failed to load document.", "Error", wxICON_ERROR);
-		return;
-	}
-	auto* page = new wxPanel(notebook, wxID_ANY);
-	auto* page_sizer = new wxBoxSizer(wxVERTICAL);
-	auto* content = new wxTextCtrl(page, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxTE_DONTWRAP);
-	auto* data = new user_data;
-	data->textbox = content;
-	data->doc = std::move(doc);
-	data->file_path = path;
-	page->SetClientObject(data);
-	page_sizer->Add(content, 1, wxEXPAND | wxALL, 5);
-	page->SetSizer(page_sizer);
-	wxString label = wxFileName(path).GetFullName();
-	notebook->AddPage(page, label, true);
-	update_title();
-	content->Freeze();
-	content->SetValue(active_document()->text_content);
-	content->Thaw();
-	long saved_position = load_document_position(path);
-	if (saved_position > 0) {
-		long max_position = content->GetLastPosition();
-		if (saved_position <= max_position) {
-			content->SetInsertionPoint(saved_position);
-			content->ShowPosition(saved_position);
-		}
-	}
-	content->SetFocus();
-	content->Bind(wxEVT_LEFT_UP, &main_window::on_text_cursor_changed, this);
-	content->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, this);
-	update_status_bar();
 	update_ui();
-}
-
-void main_window::update_ui() {
-	const bool has_doc = notebook->GetPageCount() > 0;
-	auto enable = [this](int id, bool state) {
-		if (auto* item = GetMenuBar()->FindItem(id))
-			item->Enable(state);
-	};
-	const int doc_items[] = {
-		wxID_CLOSE,
-		wxID_CLOSE_ALL,
-		ID_EXPORT,
-		wxID_FIND,
-		ID_FIND_NEXT,
-		ID_FIND_PREVIOUS,
-		ID_GO_TO,
-		ID_WORD_COUNT,
-		ID_DOC_INFO};
-	for (int id : doc_items)
-		enable(id, has_doc);
-	if (!has_doc) {
-		enable(ID_PREVIOUS_SECTION, false);
-		enable(ID_NEXT_SECTION, false);
-		enable(ID_TABLE_OF_CONTENTS, false);
-		return;
-	}
-	document* doc = active_document();
-	if (!doc) return;
-	enable(ID_PREVIOUS_SECTION, doc->has_flag(document_flags::supports_sections));
-	enable(ID_NEXT_SECTION, doc->has_flag(document_flags::supports_sections));
-	enable(ID_TABLE_OF_CONTENTS, doc->has_flag(document_flags::supports_toc));
 }
 
 void main_window::create_menus() {
@@ -181,55 +100,41 @@ void main_window::bind_events() {
 	Bind(wxEVT_TIMER, &main_window::on_position_save_timer, this, position_save_timer->GetId());
 }
 
-user_data* main_window::active_user_data() const {
-	auto* page = notebook->GetPage(notebook->GetSelection());
-	return static_cast<user_data*>(page->GetClientObject());
+void main_window::update_ui() {
+	const bool has_doc = doc_manager->has_documents();
+	auto enable = [this](int id, bool state) {
+		if (auto* item = GetMenuBar()->FindItem(id))
+			item->Enable(state);
+	};
+	const int doc_items[] = {
+		wxID_CLOSE,
+		wxID_CLOSE_ALL,
+		ID_EXPORT,
+		wxID_FIND,
+		ID_FIND_NEXT,
+		ID_FIND_PREVIOUS,
+		ID_GO_TO,
+		ID_WORD_COUNT,
+		ID_DOC_INFO};
+	for (int id : doc_items)
+		enable(id, has_doc);
+	if (!has_doc) {
+		enable(ID_PREVIOUS_SECTION, false);
+		enable(ID_NEXT_SECTION, false);
+		enable(ID_TABLE_OF_CONTENTS, false);
+		return;
+	}
+	enable(ID_PREVIOUS_SECTION, doc_manager->active_document_supports_sections());
+	enable(ID_NEXT_SECTION, doc_manager->active_document_supports_sections());
+	enable(ID_TABLE_OF_CONTENTS, doc_manager->active_document_supports_toc());
 }
 
 void main_window::update_title() {
-	if (notebook->GetPageCount() == 0)
-		SetTitle(APP_NAME);
-	else
-		SetTitle(active_document()->title + " - " + APP_NAME);
+	SetTitle(doc_manager->get_window_title(APP_NAME));
 }
 
 void main_window::update_status_bar() {
-	if (notebook->GetPageCount() == 0) {
-		status_bar->SetStatusText("Ready");
-		return;
-	}
-	auto* text_ctrl = active_text_ctrl();
-	if (!text_ctrl) {
-		status_bar->SetStatusText("Ready");
-		return;
-	}
-	long current_pos = text_ctrl->GetInsertionPoint();
-	long total_chars = text_ctrl->GetLastPosition();
-	int percentage = total_chars > 0 ? (current_pos * 100) / total_chars : 0;
-	status_bar->SetStatusText(wxString::Format("%d%%", percentage));
-}
-
-void main_window::save_document_position(const wxString& path, long position) {
-	wxConfigBase* config = wxConfigBase::Get();
-	if (!config) return;
-	config->SetPath("/positions");
-	config->Write(path, position);
-	config->Flush();
-}
-
-long main_window::load_document_position(const wxString& path) {
-	wxConfigBase* config = wxConfigBase::Get();
-	if (!config) return 0;
-	config->SetPath("/positions");
-	return config->Read(path, 0L);
-}
-
-void main_window::save_current_tab_position() {
-	if (notebook->GetPageCount() == 0) return;
-	auto* data = active_user_data();
-	if (!data || !data->textbox) return;
-	long position = data->textbox->GetInsertionPoint();
-	save_document_position(data->file_path, position);
+	status_bar->SetStatusText(doc_manager->get_status_text());
 }
 
 void main_window::on_open(wxCommandEvent& event) {
@@ -241,48 +146,40 @@ void main_window::on_open(wxCommandEvent& event) {
 		if (!should_open_as_txt(path)) return;
 		par = find_parser_by_extension("txt");
 	}
-	open_document(path, par);
+	if (doc_manager->open_document(path, par)) {
+		wxTextCtrl* text_ctrl = doc_manager->get_active_text_ctrl();
+		if (text_ctrl) {
+			text_ctrl->Bind(wxEVT_LEFT_UP, &main_window::on_text_cursor_changed, this);
+			text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, this);
+		}
+		update_title();
+		update_status_bar();
+		update_ui();
+	}
 }
 
 void main_window::on_close(wxCommandEvent& event) {
-	save_current_tab_position();
-	notebook->DeletePage(notebook->GetSelection());
+	doc_manager->close_document(doc_manager->get_active_tab_index());
 	update_title();
 	update_status_bar();
 	update_ui();
 }
 
 void main_window::on_close_all(wxCommandEvent& event) {
-	for (size_t i = 0; i < notebook->GetPageCount(); ++i) {
-		auto* page = notebook->GetPage(i);
-		auto* data = static_cast<user_data*>(page->GetClientObject());
-		if (data && data->textbox) {
-			long position = data->textbox->GetInsertionPoint();
-			save_document_position(data->file_path, position);
-		}
-	}
-	notebook->DeleteAllPages();
+	doc_manager->close_all_documents();
 	update_title();
 	update_status_bar();
 	update_ui();
 }
 
 void main_window::on_export(wxCommandEvent& event) {
-	wxFileDialog save_dialog(this, "Export Document", "", active_document()->title + ".txt", "Text files (*.txt)|*.txt|All files (*.*)|*.*", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+	document* doc = doc_manager->get_active_document();
+	if (!doc) return;
+	wxFileDialog save_dialog(this, "Export Document", "", doc->title + ".txt", "Text files (*.txt)|*.txt|All files (*.*)|*.*", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 	if (save_dialog.ShowModal() != wxID_OK) return;
 	wxString file_path = save_dialog.GetPath();
-	auto* content = active_text_ctrl();
-	if (!content) {
-		wxMessageBox("Failed to get edit control for active tab.", "Error", wxICON_ERROR);
-		return;
-	}
-	wxFile file;
-	if (!file.Open(file_path, wxFile::write)) {
-		wxMessageBox("Failed to write to the selected file.", "Error", wxICON_ERROR);
-		return;
-	}
-	file.Write(content->GetValue());
-	file.Close();
+	if (!doc_manager->export_document(doc_manager->get_active_tab_index(), file_path))
+		wxMessageBox("Failed to export document.", "Error", wxICON_ERROR);
 }
 
 void main_window::on_exit(wxCommandEvent& event) {
@@ -291,7 +188,7 @@ void main_window::on_exit(wxCommandEvent& event) {
 
 void main_window::on_find(wxCommandEvent& event) {
 	if (find_dialog) {
-		// This horribleness is to focus the "Find what:" text field on dialog raise.
+		// Focus the "Find what:" text field on dialog raise, if someone knows a better way to do this that would be great.
 		wxWindowList children = find_dialog->GetChildren();
 		int num_children = children.GetCount();
 		wxTextCtrl* tc = nullptr;
@@ -303,8 +200,9 @@ void main_window::on_find(wxCommandEvent& event) {
 		}
 		find_dialog->Raise();
 		if (tc) tc->SetFocus();
+		return;
 	}
-	find_data.SetFlags(wxFR_DOWN); // Make down the default direction.
+	find_data.SetFlags(wxFR_DOWN); // Make down the default direction
 	find_dialog = new wxFindReplaceDialog(this, &find_data, "Find");
 	find_dialog->Bind(wxEVT_FIND, &main_window::on_find_dialog, this);
 	Bind(wxEVT_FIND_NEXT, &main_window::on_find_dialog, this);
@@ -324,97 +222,41 @@ void main_window::on_find_previous(wxCommandEvent& event) {
 	if (!find_dialog) return;
 	wxFindDialogEvent e(wxEVT_FIND_NEXT, find_dialog->GetId());
 	e.SetFindString(find_data.GetFindString());
-	e.SetFlags(find_data.GetFlags() & ~wxFR_DOWN); // Reverse direction.
+	e.SetFlags(find_data.GetFlags() & ~wxFR_DOWN); // Reverse direction
 	wxPostEvent(this, e);
 }
 
 void main_window::on_go_to(wxCommandEvent& event) {
-	auto* content = active_text_ctrl();
-	go_to_dialog dlg(this, content);
+	wxTextCtrl* text_ctrl = doc_manager->get_active_text_ctrl();
+	if (!text_ctrl) return;
+	go_to_dialog dlg(this, text_ctrl);
 	if (dlg.ShowModal() != wxID_OK) return;
 	long pos = dlg.get_position();
-	content->SetInsertionPoint(pos);
+	doc_manager->go_to_position(pos);
 	update_status_bar();
 }
 
 void main_window::on_previous_section(wxCommandEvent& event) {
-	auto* doc = active_document();
-	if (!doc) return;
-	size_t current_pos = active_text_ctrl()->GetInsertionPoint();
-	int prev_index = doc->previous_section_index(current_pos);
-	if (prev_index == -1) {
-		speechSayA("No previous section", 1);
-		return;
-	}
-	size_t offset = doc->offset_for_section(prev_index);
-	active_text_ctrl()->SetInsertionPoint(offset);
-	long line;
-	active_text_ctrl()->PositionToXY(active_text_ctrl()->GetInsertionPoint(), 0, &line);
-	wxString current_line = active_text_ctrl()->GetLineText(line);
-	speechSayA(current_line, 1);
+	doc_manager->go_to_previous_section();
 	update_status_bar();
 }
 
 void main_window::on_next_section(wxCommandEvent& event) {
-	auto* doc = active_document();
-	if (!doc) return;
-	size_t current_pos = active_text_ctrl()->GetInsertionPoint();
-	int next_index = doc->next_section_index(current_pos);
-	if (next_index == -1) {
-		speechSayA("No next section", 1);
-		return;
-	}
-	size_t offset = doc->offset_for_section(next_index);
-	active_text_ctrl()->SetInsertionPoint(offset);
-	long line;
-	active_text_ctrl()->PositionToXY(active_text_ctrl()->GetInsertionPoint(), 0, &line);
-	wxString current_line = active_text_ctrl()->GetLineText(line);
-	speechSayA(current_line, 1);
+	doc_manager->go_to_next_section();
 	update_status_bar();
 }
 
 void main_window::on_word_count(wxCommandEvent& event) {
-	auto* content = active_text_ctrl();
-	wxStringTokenizer tokenizer(content->GetValue(), " \t\r\n", wxTOKEN_STRTOK);
-	int count = 0;
-	while (tokenizer.HasMoreTokens()) {
-		tokenizer.GetNextToken();
-		++count;
-	}
+	int count = doc_manager->get_word_count();
 	wxMessageBox(wxString::Format("The document contains %d %s", count, count == 1 ? "word" : "words"), "Word count", wxICON_INFORMATION);
 }
 
 void main_window::on_doc_info(wxCommandEvent& event) {
-	auto* doc = active_document();
-	if (!doc) return;
-	document_info_dialog dlg(this, doc);
-	dlg.ShowModal();
+	doc_manager->show_document_info(this);
 }
 
 void main_window::on_toc(wxCommandEvent& event) {
-	auto* doc = active_document();
-	if (!doc) return;
-	if (doc->toc_items.empty()) {
-		speechSayA("Table of contents is empty", 1);
-		return;
-	}
-	size_t current_pos = active_text_ctrl()->GetInsertionPoint();
-	int current_section_idx = doc->section_index(current_pos);
-	size_t current_offset = doc->offset_for_section(current_section_idx);
-	toc_dialog dlg(this, doc, current_offset);
-	if (dlg.ShowModal() != wxID_OK) return;
-	int offset = dlg.get_selected_offset();
-	if (offset < 0) return;
-	auto* text_ctrl = active_text_ctrl();
-	if (!text_ctrl) return;
-	long max_pos = text_ctrl->GetLastPosition();
-	if (offset > max_pos)
-		offset = max_pos;
-	else if (offset < 0)
-		offset = 0;
-	text_ctrl->SetInsertionPoint(offset);
-	text_ctrl->ShowPosition(offset);
-	text_ctrl->SetFocus();
+	doc_manager->show_table_of_contents(this);
 	update_status_bar();
 }
 
@@ -430,11 +272,10 @@ void main_window::on_about(wxCommandEvent& event) {
 void main_window::on_notebook_page_changed(wxBookCtrlEvent& event) {
 	int old_selection = event.GetOldSelection();
 	if (old_selection >= 0) {
-		auto* page = notebook->GetPage(old_selection);
-		auto* data = static_cast<user_data*>(page->GetClientObject());
-		if (data && data->textbox) {
-			long position = data->textbox->GetInsertionPoint();
-			save_document_position(data->file_path, position);
+		document_tab* tab = doc_manager->get_tab(old_selection);
+		if (tab && tab->text_ctrl) {
+			long position = tab->text_ctrl->GetInsertionPoint();
+			doc_manager->save_document_position(tab->file_path, position);
 		}
 	}
 	update_title();
@@ -443,15 +284,9 @@ void main_window::on_notebook_page_changed(wxBookCtrlEvent& event) {
 	event.Skip();
 }
 
-void main_window::on_text_cursor_changed(wxEvent& event) {
-	update_status_bar();
-	event.Skip();
-}
-
 void main_window::on_find_dialog(wxFindDialogEvent& event) {
-	auto* text_ctrl = active_text_ctrl();
+	wxTextCtrl* text_ctrl = doc_manager->get_active_text_ctrl();
 	if (!text_ctrl) return;
-	const wxString& full_text = text_ctrl->GetValue();
 	const wxString& query = event.GetFindString();
 	const long flags = event.GetFlags();
 	long sel_start, sel_end;
@@ -459,13 +294,13 @@ void main_window::on_find_dialog(wxFindDialogEvent& event) {
 	bool forward = flags & wxFR_DOWN;
 	bool match_case = flags & wxFR_MATCHCASE;
 	long start_pos = forward ? sel_end : sel_start;
-	long found_pos = find_text(full_text, query, start_pos, forward, match_case);
+	long found_pos = doc_manager->find_text(query, start_pos, forward, match_case);
 	if (found_pos == wxNOT_FOUND) {
-		speechSayA("No more results. Wrapping search.", 1);
-		start_pos = forward ? 0 : full_text.Length();
-		found_pos = find_text(full_text, query, start_pos, forward, match_case);
+		speak("No more results. Wrapping search.");
+		start_pos = forward ? 0 : text_ctrl->GetLastPosition();
+		found_pos = doc_manager->find_text(query, start_pos, forward, match_case);
 		if (found_pos == wxNOT_FOUND) {
-			speechSayA("Not found.", 1);
+			speak("Not found.");
 			return;
 		}
 	}
@@ -480,23 +315,21 @@ void main_window::on_find_close(wxFindDialogEvent& event) {
 	find_dialog = nullptr;
 }
 
+void main_window::on_text_cursor_changed(wxEvent& event) {
+	update_status_bar();
+	event.Skip();
+}
+
 void main_window::on_close_window(wxCloseEvent& event) {
 	if (position_save_timer) {
 		position_save_timer->Stop();
 		delete position_save_timer;
 		position_save_timer = nullptr;
 	}
-	for (size_t i = 0; i < notebook->GetPageCount(); ++i) {
-		auto* page = notebook->GetPage(i);
-		auto* data = static_cast<user_data*>(page->GetClientObject());
-		if (data && data->textbox) {
-			long position = data->textbox->GetInsertionPoint();
-			save_document_position(data->file_path, position);
-		}
-	}
+	doc_manager.reset();
 	event.Skip();
 }
 
 void main_window::on_position_save_timer(wxTimerEvent& event) {
-	save_current_tab_position();
+	doc_manager->save_current_tab_position();
 }
