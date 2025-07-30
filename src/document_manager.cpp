@@ -228,7 +228,7 @@ wxString document_manager::get_status_text() const {
 wxString document_manager::get_window_title(const wxString& app_name) const {
 	if (!has_documents()) return app_name;
 	document* doc = get_active_document();
-	return doc ? doc->title + " - " + app_name : app_name;
+	return doc ? app_name + " - " + doc->title: app_name;
 }
 
 long document_manager::find_text(const wxString& query, long start_pos, bool forward, bool match_case) const {
