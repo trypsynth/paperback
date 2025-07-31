@@ -146,16 +146,18 @@ void main_window::on_open(wxCommandEvent& event) {
 		if (!should_open_as_txt(path)) return;
 		par = find_parser_by_extension("txt");
 	}
-	if (doc_manager->open_document(path, par)) {
-		wxTextCtrl* text_ctrl = doc_manager->get_active_text_ctrl();
-		if (text_ctrl) {
-			text_ctrl->Bind(wxEVT_LEFT_UP, &main_window::on_text_cursor_changed, this);
-			text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, this);
-		}
-		update_title();
-		update_status_bar();
-		update_ui();
+	if (!doc_manager->open_document(path, par)) {
+		wxMessageBox("Failed to load document.", "Error", wxICON_ERROR);
+		return;
 	}
+	wxTextCtrl* text_ctrl = doc_manager->get_active_text_ctrl();
+	if (text_ctrl) {
+		text_ctrl->Bind(wxEVT_LEFT_UP, &main_window::on_text_cursor_changed, this);
+		text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, this);
+	}
+	update_title();
+	update_status_bar();
+	update_ui();
 }
 
 void main_window::on_close(wxCommandEvent& event) {

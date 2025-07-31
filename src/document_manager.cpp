@@ -15,10 +15,7 @@ document_manager::~document_manager() {
 
 bool document_manager::open_document(const wxString& path, const parser* par) {
 	std::unique_ptr<document> doc = par->load(path);
-	if (!doc) {
-		wxMessageBox("Failed to load document.", "Error", wxICON_ERROR);
-		return false;
-	}
+	if (!doc) return false;
 	auto* tab_data = new document_tab;
 	tab_data->doc = std::move(doc);
 	tab_data->file_path = path;
@@ -50,10 +47,7 @@ bool document_manager::export_document(int index, const wxString& export_path) {
 	document_tab* tab = get_tab(index);
 	if (!tab || !tab->text_ctrl) return false;
 	wxFile file;
-	if (!file.Open(export_path, wxFile::write)) {
-		wxMessageBox("Failed to write to the selected file.", "Error", wxICON_ERROR);
-		return false;
-	}
+	if (!file.Open(export_path, wxFile::write)) return false;
 	file.Write(tab->text_ctrl->GetValue());
 	file.Close();
 	return true;
@@ -228,7 +222,7 @@ wxString document_manager::get_status_text() const {
 wxString document_manager::get_window_title(const wxString& app_name) const {
 	if (!has_documents()) return app_name;
 	document* doc = get_active_document();
-	return doc ? app_name + " - " + doc->title: app_name;
+	return doc ? app_name + " - " + doc->title : app_name;
 }
 
 long document_manager::find_text(const wxString& query, long start_pos, bool forward, bool match_case) const {

@@ -7,7 +7,6 @@
 #include <wx/textctrl.h>
 #include <wx/wx.h>
 
-// Represents a single document tab with its associated data.
 struct document_tab : public wxClientData {
 	wxTextCtrl* text_ctrl = nullptr;
 	std::unique_ptr<document> doc;
@@ -15,7 +14,6 @@ struct document_tab : public wxClientData {
 	wxPanel* panel = nullptr;
 };
 
-// Manages all open documents and their associated UI components.
 class document_manager {
 public:
 	explicit document_manager(wxNotebook* notebook);

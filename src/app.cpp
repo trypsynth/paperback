@@ -30,7 +30,8 @@ void app::parse_command_line() {
 		if (!should_open_as_txt(path)) return;
 		par = find_parser_by_extension("txt");
 	}
-	frame->get_doc_manager()->open_document(path, par);
+	if (!frame->get_doc_manager()->open_document(path, par))
+		wxMessageBox("Failed to load document.", "Error", wxICON_ERROR);
 }
 
 wxIMPLEMENT_APP(app);
