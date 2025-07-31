@@ -1,5 +1,4 @@
 #pragma once
-
 #include "document.hpp"
 #include <memory>
 #include <span>
@@ -18,7 +17,6 @@ public:
 class parser_registry {
 public:
 	static void register_parser(const parser& p) { get_parsers().push_back(&p); }
-
 	static std::span<const parser* const> get_all() noexcept { return get_parsers(); }
 
 private:

@@ -1,5 +1,4 @@
 #pragma once
-
 #include <lexbor/html/html.h>
 #include <memory>
 #include <string>

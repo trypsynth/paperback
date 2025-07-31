@@ -1,5 +1,4 @@
 #pragma once
-
 #include "parser.hpp"
 
 class html_parser : public parser {

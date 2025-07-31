@@ -1,5 +1,4 @@
 #pragma once
-
 #include "parser.hpp"
 #include <Poco/DOM/Element.h>
 #include <Poco/Path.h>

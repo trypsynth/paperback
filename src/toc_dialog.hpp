@@ -1,5 +1,4 @@
 #pragma once
-
 #include "document.hpp"
 #include <wx/treectrl.h>
 #include <wx/wx.h>

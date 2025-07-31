@@ -1,5 +1,4 @@
 #pragma once
-
 #include <wx/string.h>
 
 inline const wxString APP_NAME = "Paperback";
