@@ -5,7 +5,6 @@
 #include "utils.hpp"
 #include <wx/config.h>
 #include <wx/filename.h>
-#include <wx/tokenzr.h>
 
 document_manager::document_manager(wxNotebook* notebook) : notebook_(notebook) {}
 
@@ -156,18 +155,6 @@ void document_manager::show_table_of_contents(wxWindow* parent) {
 		go_to_position(offset);
 		text_ctrl->SetFocus();
 	}
-}
-
-int document_manager::get_word_count() const {
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!text_ctrl) return 0;
-	wxStringTokenizer tokenizer(text_ctrl->GetValue(), " \t\r\n", wxTOKEN_STRTOK);
-	int count = 0;
-	while (tokenizer.HasMoreTokens()) {
-		tokenizer.GetNextToken();
-		++count;
-	}
-	return count;
 }
 
 void document_manager::show_document_info(wxWindow* parent) {

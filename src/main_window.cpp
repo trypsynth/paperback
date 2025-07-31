@@ -249,7 +249,7 @@ void main_window::on_next_section(wxCommandEvent& event) {
 }
 
 void main_window::on_word_count(wxCommandEvent& event) {
-	int count = doc_manager->get_word_count();
+	int count = get_word_count(doc_manager->get_active_text_ctrl()->GetValue());
 	wxMessageBox(wxString::Format("The document contains %d %s", count, count == 1 ? "word" : "words"), "Word count", wxICON_INFORMATION);
 }
 
