@@ -6,10 +6,10 @@ document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc
 	wxString info_text;
 	info_text << "Title: " << doc->title << "\n";
 	info_text << "Author: " << doc->author << "\n";
-	info_text << "Total number of characters: " << doc->get_char_count() << "\n";
-	info_text << "Total number of characters (excluding whitespace): " << doc->get_char_count_no_whitespace() << "\n";
-	info_text << "Total number of words: " << doc->get_word_count() << "\n";
-	info_text << "Total number of lines: " << doc->get_line_count() << "\n";
+	info_text << "Total number of words: " << doc->get_word_count() << ".\n";
+	info_text << "Total number of lines: " << doc->get_line_count() << ".\n";
+	info_text << "Total number of characters: " << doc->get_char_count() << ".\n";
+	info_text << "Total number of characters (excluding whitespace): " << doc->get_char_count_no_whitespace() << ".\n";
 	info_text_ctrl->SetValue(info_text);
 	main_sizer->Add(info_text_ctrl, 1, wxEXPAND | wxALL, 10);
 	auto* button_sizer = new wxStdDialogButtonSizer();
