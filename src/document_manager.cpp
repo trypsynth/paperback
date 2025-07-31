@@ -15,6 +15,7 @@ document_manager::~document_manager() {
 bool document_manager::open_document(const wxString& path, const parser* par) {
 	std::unique_ptr<document> doc = par->load(path);
 	if (!doc) return false;
+	doc->calculate_statistics();
 	auto* tab_data = new document_tab;
 	tab_data->doc = std::move(doc);
 	tab_data->file_path = path;
