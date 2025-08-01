@@ -51,5 +51,5 @@ set(PACKAGE_NAME "paperback.zip")
 set(PACKAGE_PATH "${CMAKE_BINARY_DIR}/${PACKAGE_NAME}")
 add_custom_command(
 	TARGET paperback POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E chdir "$<TARGET_FILE_DIR:paperback>" ${CMAKE_COMMAND} -E tar cfv ${PACKAGE_PATH} --format=zip "$<TARGET_FILE_NAME:paperback>" "${CMAKE_BINARY_DIR}/readme.html" COMMAND ${CMAKE_COMMAND} -E chdir "$<TARGET_FILE_DIR:paperback>" ${CMAKE_COMMAND} -E tar cfv ${PACKAGE_PATH} --format=zip "$<TARGET_FILE_NAME:paperback>" "${CMAKE_BINARY_DIR}/readme.html" ${LOCAL_DLLS}
+	COMMAND ${CMAKE_COMMAND} -E chdir "$<TARGET_FILE_DIR:paperback>" ${CMAKE_COMMAND} -E tar cf ${PACKAGE_PATH} --format=zip "$<TARGET_FILE_NAME:paperback>" "${CMAKE_BINARY_DIR}/readme.html" COMMAND ${CMAKE_COMMAND} -E chdir "$<TARGET_FILE_DIR:paperback>" ${CMAKE_COMMAND} -E tar cf ${PACKAGE_PATH} --format=zip "$<TARGET_FILE_NAME:paperback>" "${CMAKE_BINARY_DIR}/readme.html" ${LOCAL_DLLS}
 )
