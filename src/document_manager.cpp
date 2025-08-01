@@ -21,8 +21,7 @@ bool document_manager::open_document(const wxString& path, const parser* par) {
 	tab_data->file_path = path;
 	wxPanel* panel = create_tab_panel(tab_data->doc->text_content, tab_data);
 	tab_data->panel = panel;
-	wxString label = wxFileName(path).GetFullName();
-	notebook_->AddPage(panel, label, true);
+	notebook_->AddPage(panel, tab_data->doc->title, true);
 	restore_document_position(tab_data);
 	tab_data->text_ctrl->SetFocus();
 	return true;
