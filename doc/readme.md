@@ -1,6 +1,11 @@
 # Paperback
 Paperback is a lightweight, fast, and accessible ebook and document reader built with C++ and wxWidgets. It's designed for cross-platform compatibility, screen reader accessibility, and a bloat-free experience.
 
+## Supported filetypes:
+* Epub 2/3 books.
+* HTML documents.
+* Text documents.
+
 ## Hotkeys
 * Ctrl+O: open a document.
 * Ctrl+F4: close the currently focused document.
@@ -16,3 +21,4 @@ Paperback is a lightweight, fast, and accessible ebook and document reader built
 * Ctrl+I: bring up the document info dialog.
 * Ctrl+T: show the table of contents.
 * Ctrl+F1: show the about dialog.
+* F1: pop up this readme file in your default web browser.
