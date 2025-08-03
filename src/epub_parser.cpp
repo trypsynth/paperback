@@ -1,5 +1,6 @@
 #include "epub_parser.hpp"
 #include "html_to_text.hpp"
+#include "utils.hpp"
 #include <Poco/AutoPtr.h>
 #include <Poco/DOM/DOMParser.h>
 #include <Poco/DOM/Document.h>
@@ -8,7 +9,6 @@
 #include <Poco/SAX/InputSource.h>
 #include <Poco/String.h>
 #include <Poco/Zip/ZipStream.h>
-#include <Poco/URI.h>
 #include <memory>
 #include <sstream>
 #include <wx/filename.h>
@@ -18,35 +18,6 @@
 using namespace Poco;
 using namespace Poco::XML;
 using namespace Poco::Zip;
-
-std::string url_decode(const std::string& encoded) {
-	try {
-		std::string decoded;
-		URI::decode(encoded, decoded);
-		return decoded;
-	} catch (const Exception&) {
-		return encoded;
-	}
-}
-
-ZipArchive::FileHeaders::const_iterator find_file_in_archive(const std::string& filename, const std::unique_ptr<ZipArchive>& archive) {
-	auto header = archive->findHeader(filename);
-	if (header != archive->headerEnd()) return header;
-	std::string decoded = url_decode(filename);
-	if (decoded != filename) {
-		header = archive->findHeader(decoded);
-		if (header != archive->headerEnd()) return header;
-	}
-	std::string encoded;
-	try {
-		URI::encode(filename, "", encoded);
-		if (encoded != filename) {
-			header = archive->findHeader(encoded);
-			if (header != archive->headerEnd()) return header;
-		}
-	} catch (const Exception&) {}
-	return archive->headerEnd();
-}
 
 std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 	std::ifstream fp;

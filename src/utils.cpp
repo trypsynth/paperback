@@ -1,5 +1,7 @@
 #include "utils.hpp"
 #include <cctype>
+#include <Poco/Exception.h>
+#include <Poco/URI.h>
 #include <sstream>
 #define WIN32_LEAN_AND_MEAN
 #define UNIVERSAL_SPEECH_STATIC
@@ -38,4 +40,33 @@ bool should_open_as_txt(const wxString& path) {
 
 void speak(const wxString& message) {
 	speechSayA(message, 1);
+}
+
+std::string url_decode(const std::string& encoded) {
+	try {
+		std::string decoded;
+		Poco::URI::decode(encoded, decoded);
+		return decoded;
+	} catch (const Poco::Exception&) {
+		return encoded;
+	}
+}
+
+Poco::Zip::ZipArchive::FileHeaders::const_iterator find_file_in_archive(const std::string& filename, const std::unique_ptr<Poco::Zip::ZipArchive>& archive) {
+	auto header = archive->findHeader(filename);
+	if (header != archive->headerEnd()) return header;
+	std::string decoded = url_decode(filename);
+	if (decoded != filename) {
+		header = archive->findHeader(decoded);
+		if (header != archive->headerEnd()) return header;
+	}
+	std::string encoded;
+	try {
+		Poco::URI::encode(filename, "", encoded);
+		if (encoded != filename) {
+			header = archive->findHeader(encoded);
+			if (header != archive->headerEnd()) return header;
+		}
+	} catch (const Poco::Exception&) {}
+	return archive->headerEnd();
 }
