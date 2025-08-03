@@ -5,3 +5,4 @@ metadata:
 top-level-division: chapter
 toc-depth: 3
 number-sections: true
+shift-heading-level-by: -1
