@@ -1,0 +1,7 @@
+standalone: true
+toc: true
+metadata:
+  title: "Paperback Documentation"
+top-level-division: chapter
+toc-depth: 3
+number-sections: true

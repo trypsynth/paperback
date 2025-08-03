@@ -39,16 +39,8 @@ find_program(PANDOC_EXECUTABLE pandoc)
 if(PANDOC_EXECUTABLE)
 	add_custom_command(
 		OUTPUT ${CMAKE_BINARY_DIR}/readme.html
-		COMMAND ${PANDOC_EXECUTABLE}
-			--standalone
-			--toc
-			--metadata=title:"Paperback Documentation"
-			--top-level-division=chapter
-			--toc-depth=3
-			--number-sections
-			${CMAKE_SOURCE_DIR}/doc/readme.md
-			-o ${CMAKE_BINARY_DIR}/readme.html
-		DEPENDS ${CMAKE_SOURCE_DIR}/doc/readme.md
+		COMMAND ${PANDOC_EXECUTABLE} --defaults=${CMAKE_SOURCE_DIR}/doc/pandoc.yaml ${CMAKE_SOURCE_DIR}/doc/readme.md -o ${CMAKE_BINARY_DIR}/readme.html
+		DEPENDS ${CMAKE_SOURCE_DIR}/doc/readme.md ${CMAKE_SOURCE_DIR}/doc/pandoc.yaml
 	)
 	add_custom_target(doc ALL DEPENDS ${CMAKE_BINARY_DIR}/readme.html)
 else()
@@ -59,9 +51,5 @@ set(PACKAGE_NAME "paperback.zip")
 set(PACKAGE_PATH "${CMAKE_BINARY_DIR}/${PACKAGE_NAME}")
 add_custom_command(
 	TARGET paperback POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E chdir "$<TARGET_FILE_DIR:paperback>" 
-		${CMAKE_COMMAND} -E tar cf "${PACKAGE_PATH}" --format=zip 
-		"$<TARGET_FILE_NAME:paperback>" 
-		"${CMAKE_BINARY_DIR}/readme.html"
-		${LOCAL_DLLS}
+	COMMAND ${CMAKE_COMMAND} -E chdir "$<TARGET_FILE_DIR:paperback>" ${CMAKE_COMMAND} -E tar cf "${PACKAGE_PATH}" --format=zip "$<TARGET_FILE_NAME:paperback>" "${CMAKE_BINARY_DIR}/readme.html" ${LOCAL_DLLS}
 )
