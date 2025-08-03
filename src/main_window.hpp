@@ -54,6 +54,7 @@ private:
 	void on_doc_info(wxCommandEvent& event);
 	void on_toc(wxCommandEvent& event);
 	void on_about(wxCommandEvent& event);
+	void on_help(wxCommandEvent& event);
 	void on_notebook_page_changed(wxBookCtrlEvent& event);
 	void on_find_dialog(wxFindDialogEvent& event);
 	void on_find_close(wxFindDialogEvent& event);

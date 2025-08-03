@@ -5,6 +5,7 @@
 #include "utils.hpp"
 #include <wx/aboutdlg.h>
 #include <wx/filename.h>
+#include <wx/stdpaths.h>
 #include <wx/timer.h>
 
 main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
@@ -92,6 +93,7 @@ void main_window::bind_events() {
 		{ID_DOC_INFO, &main_window::on_doc_info},
 		{ID_TABLE_OF_CONTENTS, &main_window::on_toc},
 		{wxID_ABOUT, &main_window::on_about},
+		{wxID_HELP, &main_window::on_help},
 	};
 	for (const auto& [id, handler] : menu_bindings)
 		Bind(wxEVT_MENU, handler, this, id);
@@ -269,6 +271,17 @@ void main_window::on_about(wxCommandEvent& event) {
 	about_info.SetCopyright(APP_COPYRIGHT);
 	about_info.SetWebSite(APP_WEBSITE);
 	wxAboutBox(about_info);
+}
+
+void main_window::on_help(wxCommandEvent& event) {
+	wxString app_path = wxStandardPaths::Get().GetExecutablePath();
+	wxFileName exe_file(app_path);
+	wxString dir_path = exe_file.GetPath();
+	wxFileName readme_file(dir_path, "readme.html");
+	wxString full_path = readme_file.GetFullPath();
+	wxString url = "file://" + full_path;
+	if (!wxLaunchDefaultBrowser(url))
+		wxMessageBox("Failed to launch default browser.", "Error", wxICON_ERROR);
 }
 
 void main_window::on_notebook_page_changed(wxBookCtrlEvent& event) {
