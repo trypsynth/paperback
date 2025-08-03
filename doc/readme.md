@@ -1,9 +1,20 @@
 # Paperback - version 0.1
 ## Introduction
-Paperback is a lightweight, fast, and accessible ebook/document reader designed to make reading fun and seemless, regardless of the file format being used or the user's reading preferences.
+Paperback is a lightweight, fast, and accessible ebook/document reader designed to make reading fun and seamless, regardless of the file format being used or the user's reading preferences.
+
+## System Requirements
+Paperback currently runs on Windows 10/11. It's possible it runs on earlier versions of Windows too and/or can be built in such a way that it will, but this hasn't been tested yet. macOS support is planned for a future version.
+
+## Features:
+* Incredibly fast and standalone.
+* Simple tabbed interface, allowing you to open as many documents as you want at once.
+* Designed with screen reader users in mind.
+* Fast and efficient text finding throughout your entire document.
+* Ability to navigate through epub sections, with other navigation units planned.
+* Usable with the Windows open with dialog.
 
 ## Currently supported filetypes:
-Paperback supports many common file formats, with new ones being added all the time. The currently supported file types are:
+Paperback supports several common file formats, with more planned for future releases.
 
 * Epub 2/3 books.
 * HTML documents.
@@ -11,7 +22,6 @@ Paperback supports many common file formats, with new ones being added all the t
 
 ## Hotkeys
 Paperback's user interface was designed specifically with keyboard and screen reader users in mind. As such, every action has an associated hotkey. Below, you'll find a list of all of them, grouped by menu structure.
-
 ### File menu
 * Ctrl+O: open a document.
 * Ctrl+F4: close the currently focused document.
@@ -34,3 +44,7 @@ Paperback's user interface was designed specifically with keyboard and screen re
 ### About menu
 * Ctrl+F1: show the about dialog.
 * F1: pop up this readme file in your default web browser.
+
+## Changelog
+### Version 0.1
+* Initial release.
