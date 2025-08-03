@@ -139,7 +139,7 @@ void main_window::update_status_bar() {
 	status_bar->SetStatusText(doc_manager->get_status_text());
 }
 
-void main_window::on_open(wxCommandEvent& event) {
+void main_window::on_open(wxCommandEvent&) {
 	wxFileDialog dlg(this, "Select a document to read", "", "", get_supported_wildcards(), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 	if (dlg.ShowModal() != wxID_OK) return;
 	wxString path = dlg.GetPath();
@@ -162,21 +162,21 @@ void main_window::on_open(wxCommandEvent& event) {
 	update_ui();
 }
 
-void main_window::on_close(wxCommandEvent& event) {
+void main_window::on_close(wxCommandEvent&) {
 	doc_manager->close_document(doc_manager->get_active_tab_index());
 	update_title();
 	update_status_bar();
 	update_ui();
 }
 
-void main_window::on_close_all(wxCommandEvent& event) {
+void main_window::on_close_all(wxCommandEvent&) {
 	doc_manager->close_all_documents();
 	update_title();
 	update_status_bar();
 	update_ui();
 }
 
-void main_window::on_export(wxCommandEvent& event) {
+void main_window::on_export(wxCommandEvent&) {
 	document* doc = doc_manager->get_active_document();
 	if (!doc) return;
 	wxFileDialog save_dialog(this, "Export Document", "", doc->title + ".txt", "Text files (*.txt)|*.txt|All files (*.*)|*.*", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
@@ -186,11 +186,11 @@ void main_window::on_export(wxCommandEvent& event) {
 		wxMessageBox("Failed to export document.", "Error", wxICON_ERROR);
 }
 
-void main_window::on_exit(wxCommandEvent& event) {
+void main_window::on_exit(wxCommandEvent&) {
 	Close(true);
 }
 
-void main_window::on_find(wxCommandEvent& event) {
+void main_window::on_find(wxCommandEvent&) {
 	if (find_dialog) {
 		// Focus the "Find what:" text field on dialog raise, if someone knows a better way to do this that would be great.
 		wxWindowList children = find_dialog->GetChildren();
@@ -214,7 +214,7 @@ void main_window::on_find(wxCommandEvent& event) {
 	find_dialog->Show();
 }
 
-void main_window::on_find_next(wxCommandEvent& event) {
+void main_window::on_find_next(wxCommandEvent&) {
 	if (!find_dialog) return;
 	wxFindDialogEvent e(wxEVT_FIND_NEXT, find_dialog->GetId());
 	e.SetFindString(find_data.GetFindString());
@@ -222,7 +222,7 @@ void main_window::on_find_next(wxCommandEvent& event) {
 	wxPostEvent(this, e);
 }
 
-void main_window::on_find_previous(wxCommandEvent& event) {
+void main_window::on_find_previous(wxCommandEvent&) {
 	if (!find_dialog) return;
 	wxFindDialogEvent e(wxEVT_FIND_NEXT, find_dialog->GetId());
 	e.SetFindString(find_data.GetFindString());
@@ -230,7 +230,7 @@ void main_window::on_find_previous(wxCommandEvent& event) {
 	wxPostEvent(this, e);
 }
 
-void main_window::on_go_to(wxCommandEvent& event) {
+void main_window::on_go_to(wxCommandEvent&) {
 	wxTextCtrl* text_ctrl = doc_manager->get_active_text_ctrl();
 	if (!text_ctrl) return;
 	go_to_dialog dlg(this, text_ctrl);
@@ -240,31 +240,31 @@ void main_window::on_go_to(wxCommandEvent& event) {
 	update_status_bar();
 }
 
-void main_window::on_previous_section(wxCommandEvent& event) {
+void main_window::on_previous_section(wxCommandEvent&) {
 	doc_manager->go_to_previous_section();
 	update_status_bar();
 }
 
-void main_window::on_next_section(wxCommandEvent& event) {
+void main_window::on_next_section(wxCommandEvent&) {
 	doc_manager->go_to_next_section();
 	update_status_bar();
 }
 
-void main_window::on_word_count(wxCommandEvent& event) {
+void main_window::on_word_count(wxCommandEvent&) {
 	int count = doc_manager->get_active_document()->get_word_count();
 	wxMessageBox(wxString::Format("The document contains %d %s", count, count == 1 ? "word" : "words"), "Word count", wxICON_INFORMATION);
 }
 
-void main_window::on_doc_info(wxCommandEvent& event) {
+void main_window::on_doc_info(wxCommandEvent&) {
 	doc_manager->show_document_info(this);
 }
 
-void main_window::on_toc(wxCommandEvent& event) {
+void main_window::on_toc(wxCommandEvent&) {
 	doc_manager->show_table_of_contents(this);
 	update_status_bar();
 }
 
-void main_window::on_about(wxCommandEvent& event) {
+void main_window::on_about(wxCommandEvent&) {
 	wxAboutDialogInfo about_info;
 	about_info.SetName(APP_NAME);
 	about_info.SetVersion(APP_VERSION);
@@ -321,7 +321,7 @@ void main_window::on_find_dialog(wxFindDialogEvent& event) {
 	update_status_bar();
 }
 
-void main_window::on_find_close(wxFindDialogEvent& event) {
+void main_window::on_find_close(wxFindDialogEvent&) {
 	find_dialog->Destroy();
 	find_dialog = nullptr;
 }
@@ -341,6 +341,6 @@ void main_window::on_close_window(wxCloseEvent& event) {
 	event.Skip();
 }
 
-void main_window::on_position_save_timer(wxTimerEvent& event) {
+void main_window::on_position_save_timer(wxTimerEvent&) {
 	doc_manager->save_current_tab_position();
 }
