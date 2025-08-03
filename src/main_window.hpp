@@ -14,7 +14,6 @@ enum {
 	ID_WORD_COUNT,
 	ID_DOC_INFO,
 	ID_TABLE_OF_CONTENTS,
-	ID_CHECK_FOR_UPDATES,
 };
 
 class main_window : public wxFrame {

@@ -71,8 +71,6 @@ wxMenu* main_window::create_help_menu() {
 	auto* menu = new wxMenu();
 	menu->Append(wxID_ABOUT, "About " + APP_NAME + "\tCtrl+F1");
 	menu->Append(wxID_HELP, "&Help\tF1");
-	menu->AppendSeparator();
-	menu->Append(ID_CHECK_FOR_UPDATES, "&Check for updates");
 	return menu;
 }
 
