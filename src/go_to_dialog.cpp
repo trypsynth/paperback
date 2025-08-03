@@ -12,6 +12,7 @@ go_to_dialog::go_to_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : wxDialog(p
 	input_ctrl->SetValue(wxString::Format("%d", line + 1));
 	input_ctrl->SetSelection(-1, -1);
 	input_ctrl->Bind(wxEVT_KEY_DOWN, &go_to_dialog::on_key_down, this);
+	input_ctrl->Bind(wxEVT_CHAR, &go_to_dialog::on_char, this);
 	auto* button_sizer = new wxStdDialogButtonSizer();
 	auto* ok_button = new wxButton(this, wxID_OK);
 	button_sizer->AddButton(ok_button);
@@ -48,6 +49,21 @@ void go_to_dialog::on_key_down(wxKeyEvent& event) {
 		adjust_line_number(-1);
 	else
 		event.Skip();
+}
+
+void go_to_dialog::on_char(wxKeyEvent& event) {
+	int key = event.GetKeyCode();
+	if (key < WXK_SPACE || key == WXK_DELETE || key == WXK_BACK || key == WXK_LEFT || key == WXK_RIGHT || key == WXK_TAB) {
+		event.Skip();
+		return;
+	}
+	wxString current = input_ctrl->GetValue();
+	long from, to;
+	input_ctrl->GetSelection(&from, &to);
+	wxChar ch = static_cast<wxChar>(key);
+	if (wxIsdigit(ch)) event.Skip();
+	else if (ch == '%' && !current.Contains('%')) event.Skip(); // allow a single percent sign
+	else wxBell();
 }
 
 void go_to_dialog::adjust_line_number(int delta) {

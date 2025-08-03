@@ -11,6 +11,7 @@ private:
 	wxTextCtrl* input_ctrl = nullptr;
 
 	void on_key_down(wxKeyEvent& event);
+	void on_char(wxKeyEvent& event);
 	void adjust_line_number(int delta);
 	long get_max_line() const;
 };
