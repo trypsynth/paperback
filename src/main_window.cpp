@@ -273,13 +273,9 @@ void main_window::on_about(wxCommandEvent& event) {
 	wxAboutBox(about_info);
 }
 
-void main_window::on_help(wxCommandEvent& event) {
-	wxString app_path = wxStandardPaths::Get().GetExecutablePath();
-	wxFileName exe_file(app_path);
-	wxString dir_path = exe_file.GetPath();
-	wxFileName readme_file(dir_path, "readme.html");
-	wxString full_path = readme_file.GetFullPath();
-	wxString url = "file://" + full_path;
+void main_window::on_help(wxCommandEvent&) {
+	wxString path = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath();
+	wxString url = "file://" + wxFileName(path, "readme.html").GetFullPath();
 	if (!wxLaunchDefaultBrowser(url))
 		wxMessageBox("Failed to launch default browser.", "Error", wxICON_ERROR);
 }
