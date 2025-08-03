@@ -8,6 +8,7 @@ Paperback currently runs on Windows 10/11. It's possible it runs on earlier vers
 ## Features:
 * Incredibly fast and standalone.
 * Simple tabbed interface, allowing you to open as many documents as you want at once.
+* Saves your cursor position across every document you open.
 * Designed with screen reader users in mind.
 * Fast and efficient text finding throughout your entire document.
 * Ability to navigate through epub sections, with other navigation units planned.
