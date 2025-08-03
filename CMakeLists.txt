@@ -39,7 +39,7 @@ find_program(PANDOC_EXECUTABLE pandoc)
 if(PANDOC_EXECUTABLE)
 	add_custom_command(
 		OUTPUT ${CMAKE_BINARY_DIR}/readme.html
-		COMMAND ${PANDOC_EXECUTABLE} ${CMAKE_SOURCE_DIR}/doc/readme.md -o ${CMAKE_BINARY_DIR}/readme.html
+		COMMAND ${PANDOC_EXECUTABLE} --standalone --toc --metadata=title:"Paperback Documentation" ${CMAKE_SOURCE_DIR}/doc/readme.md -o ${CMAKE_BINARY_DIR}/readme.html
 		DEPENDS ${CMAKE_SOURCE_DIR}/doc/readme.md
 	)
 	add_custom_target(doc ALL DEPENDS ${CMAKE_BINARY_DIR}/readme.html)
