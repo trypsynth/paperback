@@ -8,6 +8,7 @@
 #include <Poco/SAX/InputSource.h>
 #include <Poco/String.h>
 #include <Poco/Zip/ZipStream.h>
+#include <Poco/URI.h>
 #include <memory>
 #include <sstream>
 #include <wx/filename.h>
@@ -17,6 +18,35 @@
 using namespace Poco;
 using namespace Poco::XML;
 using namespace Poco::Zip;
+
+std::string url_decode(const std::string& encoded) {
+	try {
+		std::string decoded;
+		URI::decode(encoded, decoded);
+		return decoded;
+	} catch (const Exception&) {
+		return encoded;
+	}
+}
+
+ZipArchive::FileHeaders::const_iterator find_file_in_archive(const std::string& filename, const std::unique_ptr<ZipArchive>& archive) {
+	auto header = archive->findHeader(filename);
+	if (header != archive->headerEnd()) return header;
+	std::string decoded = url_decode(filename);
+	if (decoded != filename) {
+		header = archive->findHeader(decoded);
+		if (header != archive->headerEnd()) return header;
+	}
+	std::string encoded;
+	try {
+		URI::encode(filename, "", encoded);
+		if (encoded != filename) {
+			header = archive->findHeader(encoded);
+			if (header != archive->headerEnd()) return header;
+		}
+	} catch (const Exception&) {}
+	return archive->headerEnd();
+}
 
 std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 	std::ifstream fp;
@@ -64,7 +94,7 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 }
 
 void epub_parser::parse_opf(const std::string& filename, epub_context& ctx) const {
-	auto header = ctx.archive->findHeader(filename);
+	auto header = find_file_in_archive(filename, ctx.archive);
 	if (header == ctx.archive->headerEnd()) throw parse_error("No OPF file found");
 	ZipInputStream zis(ctx.file_stream, header->second, true);
 	InputSource src(zis);
@@ -128,7 +158,7 @@ epub_section epub_parser::parse_section(size_t index, const epub_context& ctx) c
 	auto it = ctx.manifest_items.find(id);
 	if (it == ctx.manifest_items.end()) throw parse_error("Unknown spine item id: " + id);
 	const auto& href = it->second;
-	auto header = ctx.archive->findHeader(href);
+	auto header = find_file_in_archive(href, ctx.archive);
 	if (header == ctx.archive->headerEnd()) throw parse_error("File not found: " + href);
 	ZipInputStream zis(ctx.file_stream, header->second, true);
 	std::ostringstream html_buffer;
@@ -157,7 +187,7 @@ void epub_parser::parse_epub2_ncx(const std::string& ncx_id, const epub_context&
 	auto it = ctx.manifest_items.find(ncx_id);
 	if (it == ctx.manifest_items.end()) return;
 	const auto& ncx_file = it->second;
-	auto header = ctx.archive->findHeader(ncx_file);
+	auto header = find_file_in_archive(ncx_file, ctx.archive);
 	if (header == ctx.archive->headerEnd()) return;
 	ZipInputStream zis(ctx.file_stream, header->second, true);
 	InputSource src(zis);
@@ -206,7 +236,7 @@ void epub_parser::parse_epub3_nav(const std::string& nav_id, const epub_context&
 	auto it = ctx.manifest_items.find(nav_id);
 	if (it == ctx.manifest_items.end()) return;
 	const auto& nav_file = it->second;
-	auto header = ctx.archive->findHeader(nav_file);
+	auto header = find_file_in_archive(nav_file, ctx.archive);
 	if (header == ctx.archive->headerEnd()) return;
 	ZipInputStream zis(ctx.file_stream, header->second, true);
 	InputSource src(zis);
