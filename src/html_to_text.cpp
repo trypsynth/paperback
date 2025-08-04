@@ -51,7 +51,7 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 			in_body = true;
 		else if (tag_name == "pre")
 			preserve_whitespace = true;
-		else if (tag_name == "br")
+		else if (tag_name == "br" || tag_name == "li")
 			finalize_current_line();
 		break;
 	case LXB_DOM_NODE_TYPE_TEXT:
