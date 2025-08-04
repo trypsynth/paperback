@@ -64,7 +64,7 @@ void go_to_dialog::on_char(wxKeyEvent& event) {
 	if (wxIsdigit(ch))
 		event.Skip();
 	else if (ch == '%' && !current.Contains('%'))
-		event.Skip(); // allow a single percent sign
+		event.Skip();
 	else
 		wxBell();
 }
