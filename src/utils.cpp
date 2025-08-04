@@ -3,9 +3,11 @@
 #include <Poco/URI.h>
 #include <cctype>
 #include <sstream>
-#define WIN32_LEAN_AND_MEAN
-#define UNIVERSAL_SPEECH_STATIC
-#include <UniversalSpeech.h>
+#ifdef _WIN32
+	#define WIN32_LEAN_AND_MEAN
+	#define UNIVERSAL_SPEECH_STATIC
+	#include <UniversalSpeech.h>
+#endif
 #include <wx/msgdlg.h>
 
 long find_text(const wxString& haystack, const wxString& needle, long start, bool forward, bool match_case) {
@@ -51,7 +53,9 @@ bool should_open_as_txt(const wxString& path) {
 }
 
 void speak(const wxString& message) {
-	speechSayA(message, 1);
+	#ifdef _WIN32
+		speechSayA(message, 1);
+	#endif
 }
 
 std::string url_decode(const std::string& encoded) {
