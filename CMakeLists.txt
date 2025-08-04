@@ -18,6 +18,7 @@ if(MSVC)
 endif()
 
 find_package(lexbor CONFIG REQUIRED)
+find_package(unofficial-maddy CONFIG REQUIRED)
 find_package(Poco REQUIRED COMPONENTS Foundation XML Zip)
 if(WIN32)
 	find_package(universalspeech CONFIG REQUIRED)
@@ -35,6 +36,7 @@ target_link_libraries(paperback PRIVATE
 	Poco::Foundation
 	Poco::XML
 	Poco::Zip
+	unofficial::maddy::maddy
 	wx::core
 	wx::base
 )
