@@ -17,7 +17,9 @@ endif()
 
 find_package(lexbor CONFIG REQUIRED)
 find_package(Poco REQUIRED COMPONENTS Foundation XML Zip)
-find_package(universalspeech CONFIG REQUIRED)
+if(WIN32)
+	find_package(universalspeech CONFIG REQUIRED)
+endif()
 find_package(wxWidgets CONFIG REQUIRED)
 
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS src/*.cpp)
@@ -31,12 +33,11 @@ target_link_libraries(paperback PRIVATE
 	Poco::Foundation
 	Poco::XML
 	Poco::Zip
-	universalspeech::universalspeech
 	wx::core
 	wx::base
 )
 if(WIN32)
-	target_link_libraries(paperback PRIVATE psapi)
+	target_link_libraries(paperback PRIVATE psapi universalspeech::universalspeech)
 endif()
 
 if(WIN32)
