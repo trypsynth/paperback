@@ -4,9 +4,9 @@
 #include <cctype>
 #include <sstream>
 #ifdef _WIN32
-	#define WIN32_LEAN_AND_MEAN
-	#define UNIVERSAL_SPEECH_STATIC
-	#include <UniversalSpeech.h>
+#define WIN32_LEAN_AND_MEAN
+#define UNIVERSAL_SPEECH_STATIC
+#include <UniversalSpeech.h>
 #endif
 #include <wx/msgdlg.h>
 
@@ -53,9 +53,9 @@ bool should_open_as_txt(const wxString& path) {
 }
 
 void speak(const wxString& message) {
-	#ifdef _WIN32
-		speechSayA(message, 1);
-	#endif
+#ifdef _WIN32
+	speechSayA(message, 1);
+#endif
 }
 
 std::string url_decode(const std::string& encoded) {

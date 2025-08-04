@@ -1,9 +1,9 @@
 #include "markdown_parser.hpp"
 #include "html_to_text.hpp"
 #include <maddy/parser.h>
+#include <memory>
 #include <wx/txtstrm.h>
 #include <wx/wfstream.h>
-#include <memory>
 
 std::unique_ptr<document> markdown_parser::load(const wxString& path) const {
 	wxFileInputStream file_stream(path);
