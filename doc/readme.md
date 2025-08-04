@@ -47,5 +47,9 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * F1: pop up this readme file in your default web browser.
 
 ## Changelog
+### Version 0.2
+* Added markdown document support!
+* Fixed loading epubs with URL-encoded filenames in their manifests.
+
 ### Version 0.1
 * Initial release.
