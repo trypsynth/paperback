@@ -2,6 +2,7 @@
 #include "utils.hpp"
 #include <algorithm>
 #include <array>
+#include <cctype>
 #include <sstream>
 #include <stdexcept>
 #include <string_view>
@@ -16,14 +17,14 @@ bool html_to_text::convert(const std::string& html_content) {
 	if (status != LXB_STATUS_OK) return false;
 	if (auto* node = lxb_dom_interface_node(doc.get())) process_node(node);
 	finalize_current_line();
+	finalize_text();
 	return true;
 }
 
 std::string html_to_text::get_text() const {
 	if (lines.empty()) return {};
 	std::ostringstream oss;
-	for (const auto& line : lines)
-		oss << line << '\n';
+	for (const auto& line : lines) oss << line << '\n';
 	auto result = oss.str();
 	if (!result.empty()) result.pop_back(); // Remove trailing newline
 	return result;
@@ -53,8 +54,11 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 		else if (tag_name == "br")
 			finalize_current_line();
 		break;
-	case LXB_DOM_NODE_TYPE_TEXT: process_text_node(lxb_dom_interface_text(node)); break;
-	default: break;
+	case LXB_DOM_NODE_TYPE_TEXT:
+		process_text_node(lxb_dom_interface_text(node));
+		break;
+	default:
+		break;
 	}
 	for (auto* child = node->first_child; child; child = child->next) process_node(child);
 	if (is_element) {
@@ -69,12 +73,13 @@ void html_to_text::process_text_node(lxb_dom_text_t* text_node) {
 	const auto* text_data = lxb_dom_node_text_content(lxb_dom_interface_node(text_node), &length);
 	if (!text_data || length == 0) return;
 	const std::string_view text{reinterpret_cast<const char*>(text_data), length};
-	if (!text.empty())
-		preserve_whitespace ? current_line += text : current_line += collapse_whitespace(std::string{text});
+	if (!text.empty()) current_line += preserve_whitespace ? text : collapse_whitespace(text);
 }
 
 void html_to_text::add_line(std::string_view line) {
-	if (!line.empty()) lines.emplace_back(line);
+	std::string processed_line = collapse_whitespace(line);
+	processed_line = trim_string(processed_line);
+	if (!processed_line.empty()) lines.emplace_back(std::move(processed_line));
 }
 
 void html_to_text::finalize_current_line() {
@@ -82,9 +87,50 @@ void html_to_text::finalize_current_line() {
 	current_line.clear();
 }
 
+void html_to_text::finalize_text() {
+	std::vector<std::string> cleaned_lines;
+	for (auto& line : lines) {
+		line = collapse_whitespace(line);
+		line = trim_string(line);
+		if (!line.empty()) cleaned_lines.emplace_back(std::move(line));
+	}
+	lines = std::move(cleaned_lines);
+}
+
 constexpr bool html_to_text::is_block_element(std::string_view tag_name) noexcept {
 	if (tag_name.empty()) return false;
-	constexpr std::array block_elements = {"div", "p", "pre", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "ul", "ol", "li", "section", "article", "header", "footer"};
+	constexpr std::array block_elements = {
+		"div",
+		"p",
+		"pre",
+		"h1",
+		"h2",
+		"h3",
+		"h4",
+		"h5",
+		"h6",
+		"blockquote",
+		"ul",
+		"ol",
+		"li",
+		"section",
+		"article",
+		"header",
+		"footer",
+		"nav",
+		"aside",
+		"main",
+		"figure",
+		"figcaption",
+		"address",
+		"hr",
+		"table",
+		"thead",
+		"tbody",
+		"tfoot",
+		"tr",
+		"td",
+		"th"};
 	return std::find(block_elements.begin(), block_elements.end(), tag_name) != block_elements.end();
 }
 

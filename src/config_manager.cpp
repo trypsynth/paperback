@@ -21,7 +21,6 @@ void config_manager::flush() {
 }
 
 void config_manager::load_defaults() {
-	
 }
 
 wxString config_manager::get_config_path() const {

@@ -49,7 +49,10 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 		for (size_t i = 0; i < ctx.spine_items.size(); ++i) {
 			document_ptr->section_offsets.push_back(content.length());
 			auto section = parse_section(i, ctx);
-			content += wxString::FromUTF8(get_section_text(section));
+			for (const auto& line : section.lines) {
+				if (!content.empty()) content += "\n";
+				content += wxString::FromUTF8(line);
+			}
 		}
 		ctx.section_offsets = document_ptr->section_offsets;
 		document_ptr->title = wxString::FromUTF8(ctx.title);
@@ -300,13 +303,4 @@ int epub_parser::calculate_offset_from_href(const std::string& href, const epub_
 	size_t spine_index = std::distance(ctx.spine_items.begin(), it);
 	if (spine_index >= ctx.section_offsets.size()) return -1;
 	return static_cast<int>(ctx.section_offsets[spine_index]);
-}
-
-std::string epub_parser::get_section_text(epub_section& section) const noexcept {
-	std::string result;
-	for (auto& line : section.lines) {
-		line = trimInPlace(line);
-		if (!line.empty()) result += line + "\n";
-	}
-	return result;
 }

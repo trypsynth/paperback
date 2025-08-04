@@ -61,9 +61,12 @@ void go_to_dialog::on_char(wxKeyEvent& event) {
 	long from, to;
 	input_ctrl->GetSelection(&from, &to);
 	wxChar ch = static_cast<wxChar>(key);
-	if (wxIsdigit(ch)) event.Skip();
-	else if (ch == '%' && !current.Contains('%')) event.Skip(); // allow a single percent sign
-	else wxBell();
+	if (wxIsdigit(ch))
+		event.Skip();
+	else if (ch == '%' && !current.Contains('%'))
+		event.Skip(); // allow a single percent sign
+	else
+		wxBell();
 }
 
 void go_to_dialog::adjust_line_number(int delta) {

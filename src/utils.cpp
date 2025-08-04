@@ -1,7 +1,7 @@
 #include "utils.hpp"
-#include <cctype>
 #include <Poco/Exception.h>
 #include <Poco/URI.h>
+#include <cctype>
 #include <sstream>
 #define WIN32_LEAN_AND_MEAN
 #define UNIVERSAL_SPEECH_STATIC
@@ -31,6 +31,18 @@ std::string collapse_whitespace(std::string_view input) {
 		}
 	}
 	return result.str();
+}
+
+std::string trim_string(const std::string& str) {
+	auto start = str.begin();
+	auto end = str.end();
+	start = std::find_if(start, end, [](unsigned char ch) {
+		return !std::isspace(ch);
+	});
+	end = std::find_if(str.rbegin(), std::string::const_reverse_iterator(start), [](unsigned char ch) {
+			  return !std::isspace(ch);
+		  }).base();
+	return std::string(start, end);
 }
 
 bool should_open_as_txt(const wxString& path) {
@@ -67,6 +79,7 @@ Poco::Zip::ZipArchive::FileHeaders::const_iterator find_file_in_archive(const st
 			header = archive->findHeader(encoded);
 			if (header != archive->headerEnd()) return header;
 		}
-	} catch (const Poco::Exception&) {}
+	} catch (const Poco::Exception&) {
+	}
 	return archive->headerEnd();
 }
