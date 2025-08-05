@@ -1,6 +1,7 @@
 #include "epub_parser.hpp"
 #include "html_to_text.hpp"
 #include "utils.hpp"
+#include "xml_to_text.hpp"
 #include <Poco/AutoPtr.h>
 #include <Poco/DOM/DOMParser.h>
 #include <Poco/DOM/Document.h>
@@ -77,6 +78,13 @@ void epub_parser::parse_opf(const std::string& filename, epub_context& ctx) cons
 	NamespaceSupport nsmap;
 	nsmap.declarePrefix("opf", "http://www.idpf.org/2007/opf");
 	nsmap.declarePrefix("dc", "http://purl.org/dc/elements/1.1/");
+	auto* package = doc->getNodeByPathNS("opf:package", nsmap);
+	if (package) {
+		auto* element = static_cast<Element*>(package);
+		ctx.epub_version = element->getAttribute("version");
+		if (ctx.epub_version.empty())
+			ctx.epub_version = "2.0";
+	}
 	auto* metadata = doc->getNodeByPathNS("opf:package/opf:metadata", nsmap);
 	if (metadata) {
 		auto children = metadata->childNodes();
@@ -135,13 +143,21 @@ epub_section epub_parser::parse_section(size_t index, const epub_context& ctx) c
 	auto header = find_file_in_archive(href, ctx.archive);
 	if (header == ctx.archive->headerEnd()) throw parse_error("File not found: " + href);
 	ZipInputStream zis(ctx.file_stream, header->second, true);
-	std::ostringstream html_buffer;
-	html_buffer << zis.rdbuf();
+	std::ostringstream content_buffer;
+	content_buffer << zis.rdbuf();
 	epub_section section;
-	html_to_text converter;
-	if (converter.convert(html_buffer.str())) {
-		const auto& lines = converter.get_lines();
-		section.lines.assign(lines.begin(), lines.end());
+	if (ctx.is_epub3()) {
+		html_to_text converter;
+		if (converter.convert(content_buffer.str())) {
+			const auto& lines = converter.get_lines();
+			section.lines.assign(lines.begin(), lines.end());
+		}
+	} else {
+		xml_to_text converter;
+		if (converter.convert(content_buffer.str())) {
+			const auto& lines = converter.get_lines();
+			section.lines.assign(lines.begin(), lines.end());
+		}
 	}
 	return section;
 }

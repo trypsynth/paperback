@@ -40,8 +40,13 @@ private:
 		std::string author;
 		std::string toc_ncx_id;
 		std::string nav_doc_id;
+		std::string epub_version;
 
 		epub_context(std::ifstream& fs, std::unique_ptr<Poco::Zip::ZipArchive>& arch) : file_stream(fs), archive(arch) {}
+
+		bool is_epub3() const {
+			return epub_version.starts_with("3.");
+		}
 	};
 
 	void parse_opf(const std::string& filename, epub_context& ctx) const;
