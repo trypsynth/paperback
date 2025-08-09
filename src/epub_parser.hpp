@@ -37,7 +37,7 @@ private:
 	struct epub_context {
 		std::ifstream& file_stream;
 		std::unique_ptr<Poco::Zip::ZipArchive>& archive;
-		std::map<std::string, manifest_item> manifest_items;  // Changed from std::string to manifest_item
+		std::map<std::string, manifest_item> manifest_items;
 		std::vector<std::string> spine_items;
 		std::vector<size_t> section_offsets;
 		Poco::Path opf_path;
@@ -59,7 +59,7 @@ private:
 	void parse_epub3_nav_list(Poco::XML::Element* ol_element, std::vector<std::unique_ptr<toc_item>>& toc_items, const epub_context& ctx) const;
 	std::unique_ptr<toc_item> parse_epub3_nav_item(Poco::XML::Element* li_element, const epub_context& ctx) const;
 	int calculate_offset_from_href(const std::string& href, const epub_context& ctx) const;
-	bool is_html_content(const std::string& media_type) const;  // New helper method
+	bool is_html_content(const std::string& media_type) const;
 	std::string extract_zip_entry_content(const std::string& filename, const epub_context& ctx) const;
 };
 

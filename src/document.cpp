@@ -34,14 +34,16 @@ void document::calculate_statistics() const {
 		wxChar ch = text_content[i];
 		if (ch != ' ' && ch != '\t' && ch != '\r' && ch != '\n') ++stats.char_count_no_whitespace;
 	}
-	if (text_content.IsEmpty()) stats.line_count = 0;
+	if (text_content.IsEmpty())
+		stats.line_count = 0;
 	else {
 		stats.line_count = 1;
 		for (size_t i = 0; i < text_content.Length(); ++i) {
 			if (text_content[i] == '\n') ++stats.line_count;
 		}
 	}
-	if (text_content.IsEmpty()) stats.word_count = 0;
+	if (text_content.IsEmpty())
+		stats.word_count = 0;
 	else {
 		wxStringTokenizer tokenizer(text_content, " \t\r\n", wxTOKEN_STRTOK);
 		stats.word_count = 0;
