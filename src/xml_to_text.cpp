@@ -80,11 +80,7 @@ void xml_to_text::process_node(Node* node) {
 void xml_to_text::process_text_node(Text* text_node) {
 	if (!in_body || !text_node) return;
 	const auto text = text_node->data();
-	if (text.empty()) return;
-	if (preserve_whitespace)
-		current_line += text;
-	else
-		current_line += collapse_whitespace(text);
+	if (!text.empty()) current_line += preserve_whitespace ? text : collapse_whitespace(text);
 }
 
 void xml_to_text::add_line(std::string_view line) {
@@ -141,6 +137,7 @@ constexpr bool xml_to_text::is_block_element(std::string_view tag_name) noexcept
 		"tfoot",
 		"tr",
 		"td",
-		"th"};
+		"th"
+	};
 	return std::find(block_elements.begin(), block_elements.end(), tag_name) != block_elements.end();
 }
