@@ -78,13 +78,6 @@ void epub_parser::parse_opf(const std::string& filename, epub_context& ctx) cons
 	NamespaceSupport nsmap;
 	nsmap.declarePrefix("opf", "http://www.idpf.org/2007/opf");
 	nsmap.declarePrefix("dc", "http://purl.org/dc/elements/1.1/");
-	auto* package = doc->getNodeByPathNS("opf:package", nsmap);
-	if (package) {
-		auto* element = static_cast<Element*>(package);
-		ctx.epub_version = element->getAttribute("version");
-		if (ctx.epub_version.empty())
-			ctx.epub_version = "2.0";
-	}
 	auto* metadata = doc->getNodeByPathNS("opf:package/opf:metadata", nsmap);
 	if (metadata) {
 		auto children = metadata->childNodes();
