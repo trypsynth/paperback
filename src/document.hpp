@@ -35,19 +35,34 @@ struct document {
 	wxString title;
 	wxString author;
 	wxString text_content;
-	document_flags flags;
+	document_flags flags = document_flags::none;
 	std::vector<size_t> section_offsets;
 	std::vector<std::unique_ptr<toc_item>> toc_items;
 	mutable document_stats stats;
 
-	bool has_flag(document_flags flag) const;
+	inline bool has_flag(document_flags flag) const {
+		return (flags & flag) == flag;
+	}
+
+	inline int get_word_count() const {
+		return stats.word_count;
+	}
+
+	inline int get_line_count() const {
+		return stats.line_count;
+	}
+
+	inline int get_char_count() const {
+		return stats.char_count;
+	}
+
+	inline int get_char_count_no_whitespace() const {
+		return stats.char_count_no_whitespace;
+	}
+
 	int next_section_index(size_t position) const;
 	int previous_section_index(size_t position) const;
 	int section_index(size_t position) const;
 	size_t offset_for_section(int section_index) const;
 	void calculate_statistics() const;
-	int get_word_count() const;
-	int get_line_count() const;
-	int get_char_count() const;
-	int get_char_count_no_whitespace() const;
 };
