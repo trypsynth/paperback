@@ -14,6 +14,11 @@ struct epub_section {
 	std::vector<std::string> lines;
 };
 
+struct manifest_item {
+	std::string path;
+	std::string media_type;
+};
+
 class parse_error : public std::runtime_error {
 public:
 	using std::runtime_error::runtime_error;
@@ -32,7 +37,7 @@ private:
 	struct epub_context {
 		std::ifstream& file_stream;
 		std::unique_ptr<Poco::Zip::ZipArchive>& archive;
-		std::map<std::string, std::string> manifest_items;
+		std::map<std::string, manifest_item> manifest_items;  // Changed from std::string to manifest_item
 		std::vector<std::string> spine_items;
 		std::vector<size_t> section_offsets;
 		Poco::Path opf_path;
@@ -43,10 +48,6 @@ private:
 		std::string epub_version;
 
 		epub_context(std::ifstream& fs, std::unique_ptr<Poco::Zip::ZipArchive>& arch) : file_stream(fs), archive(arch) {}
-
-		bool is_epub3() const {
-			return epub_version.starts_with("3.");
-		}
 	};
 
 	void parse_opf(const std::string& filename, epub_context& ctx) const;
@@ -58,6 +59,7 @@ private:
 	void parse_epub3_nav_list(Poco::XML::Element* ol_element, std::vector<std::unique_ptr<toc_item>>& toc_items, const epub_context& ctx) const;
 	std::unique_ptr<toc_item> parse_epub3_nav_item(Poco::XML::Element* li_element, const epub_context& ctx) const;
 	int calculate_offset_from_href(const std::string& href, const epub_context& ctx) const;
+	bool is_html_content(const std::string& media_type) const;  // New helper method
 	std::string extract_zip_entry_content(const std::string& filename, const epub_context& ctx) const;
 };
 

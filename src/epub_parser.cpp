@@ -112,7 +112,10 @@ void epub_parser::parse_opf(const std::string& filename, epub_context& ctx) cons
 		const auto properties = element->getAttribute("properties");
 		Path filePath(ctx.opf_path);
 		filePath.append(href);
-		ctx.manifest_items.emplace(id, filePath.toString(Path::PATH_UNIX));
+		manifest_item item;
+		item.path = filePath.toString(Path::PATH_UNIX);
+		item.media_type = media_type;
+		ctx.manifest_items.emplace(id, std::move(item));
 		if (media_type == "application/x-dtbncx+xml")
 			ctx.toc_ncx_id = id;
 		else if (properties.find("nav") != std::string::npos)
@@ -139,14 +142,16 @@ epub_section epub_parser::parse_section(size_t index, const epub_context& ctx) c
 	const auto& id = ctx.spine_items[index];
 	auto it = ctx.manifest_items.find(id);
 	if (it == ctx.manifest_items.end()) throw parse_error("Unknown spine item id: " + id);
-	const auto& href = it->second;
+	const auto& manifest_item = it->second;
+	const auto& href = manifest_item.path;
+	const auto& media_type = manifest_item.media_type;
 	auto header = find_file_in_archive(href, ctx.archive);
 	if (header == ctx.archive->headerEnd()) throw parse_error("File not found: " + href);
 	ZipInputStream zis(ctx.file_stream, header->second, true);
 	std::ostringstream content_buffer;
 	content_buffer << zis.rdbuf();
 	epub_section section;
-	if (ctx.is_epub3()) {
+	if (is_html_content(media_type)) {
 		html_to_text converter;
 		if (converter.convert(content_buffer.str())) {
 			const auto& lines = converter.get_lines();
@@ -160,6 +165,10 @@ epub_section epub_parser::parse_section(size_t index, const epub_context& ctx) c
 		}
 	}
 	return section;
+}
+
+bool epub_parser::is_html_content(const std::string& media_type) const {
+	return media_type == "text/html";
 }
 
 void epub_parser::parse_toc(epub_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items) const {
@@ -176,7 +185,7 @@ void epub_parser::parse_toc(epub_context& ctx, std::vector<std::unique_ptr<toc_i
 void epub_parser::parse_epub2_ncx(const std::string& ncx_id, const epub_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items) const {
 	auto it = ctx.manifest_items.find(ncx_id);
 	if (it == ctx.manifest_items.end()) return;
-	const auto& ncx_file = it->second;
+	const auto& ncx_file = it->second.path;
 	auto header = find_file_in_archive(ncx_file, ctx.archive);
 	if (header == ctx.archive->headerEnd()) return;
 	ZipInputStream zis(ctx.file_stream, header->second, true);
@@ -225,7 +234,7 @@ std::unique_ptr<toc_item> epub_parser::parse_ncx_nav_point(Element* nav_point, c
 void epub_parser::parse_epub3_nav(const std::string& nav_id, const epub_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items) const {
 	auto it = ctx.manifest_items.find(nav_id);
 	if (it == ctx.manifest_items.end()) return;
-	const auto& nav_file = it->second;
+	const auto& nav_file = it->second.path;
 	auto header = find_file_in_archive(nav_file, ctx.archive);
 	if (header == ctx.archive->headerEnd()) return;
 	ZipInputStream zis(ctx.file_stream, header->second, true);
@@ -307,8 +316,8 @@ int epub_parser::calculate_offset_from_href(const std::string& href, const epub_
 	if (!file_path.empty()) full_path.append(file_path);
 	std::string resolved_path = full_path.toString(Path::PATH_UNIX);
 	std::string manifest_id;
-	for (const auto& [id, path] : ctx.manifest_items) {
-		if (path == resolved_path) {
+	for (const auto& [id, item] : ctx.manifest_items) {
+		if (item.path == resolved_path) {
 			manifest_id = id;
 			break;
 		}
