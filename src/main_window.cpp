@@ -189,43 +189,38 @@ void main_window::on_exit(wxCommandEvent&) {
 }
 
 void main_window::on_find(wxCommandEvent&) {
-	if (find_dialog) {
-		// Focus the "Find what:" text field on dialog raise, if someone knows a better way to do this that would be great.
-		wxWindowList children = find_dialog->GetChildren();
-		int num_children = children.GetCount();
-		wxTextCtrl* tc = nullptr;
-		for (int i = 0; i < num_children; i++) {
-			if (children[i]->IsKindOf(CLASSINFO(wxTextCtrl))) {
-				tc = static_cast<wxTextCtrl*>(children[i]);
-				break;
-			}
+	if (!find_dlg) find_dlg = new find_dialog(this);
+	// If there's selected text, use it as the initial search term.
+	wxTextCtrl* text_ctrl = doc_manager->get_active_text_ctrl();
+	if (text_ctrl) {
+		long start, end;
+		text_ctrl->GetSelection(&start, &end);
+		if (start != end) {
+			wxString selected = text_ctrl->GetStringSelection();
+			find_dlg->set_find_text(selected);
 		}
-		find_dialog->Raise();
-		if (tc) tc->SetFocus();
-		return;
 	}
-	find_data.SetFlags(wxFR_DOWN); // Make down the default direction
-	find_dialog = new wxFindReplaceDialog(this, &find_data, "Find");
-	find_dialog->Bind(wxEVT_FIND, &main_window::on_find_dialog, this);
-	Bind(wxEVT_FIND_NEXT, &main_window::on_find_dialog, this);
-	Bind(wxEVT_FIND_CLOSE, &main_window::on_find_close, this);
-	find_dialog->Show();
+	find_dlg->Show();
+	find_dlg->Raise();
+	find_dlg->focus_find_text();
 }
 
 void main_window::on_find_next(wxCommandEvent&) {
-	if (!find_dialog) return;
-	wxFindDialogEvent e(wxEVT_FIND_NEXT, find_dialog->GetId());
-	e.SetFindString(find_data.GetFindString());
-	e.SetFlags(find_data.GetFlags());
-	wxPostEvent(this, e);
+	if (find_dlg && find_dlg->IsShown())
+		do_find(true);
+	else {
+		wxCommandEvent evt{};
+		on_find(evt);
+	}
 }
 
 void main_window::on_find_previous(wxCommandEvent&) {
-	if (!find_dialog) return;
-	wxFindDialogEvent e(wxEVT_FIND_NEXT, find_dialog->GetId());
-	e.SetFindString(find_data.GetFindString());
-	e.SetFlags(find_data.GetFlags() & ~wxFR_DOWN); // Reverse direction
-	wxPostEvent(this, e);
+	if (find_dlg && find_dlg->IsShown())
+		do_find(false);
+	else {
+		wxCommandEvent evt{};
+		on_find(evt);
+	}
 }
 
 void main_window::on_go_to(wxCommandEvent&) {
@@ -293,15 +288,38 @@ void main_window::on_notebook_page_changed(wxBookCtrlEvent& event) {
 	event.Skip();
 }
 
-void main_window::on_find_dialog(wxFindDialogEvent& event) {
+void main_window::on_text_cursor_changed(wxEvent& event) {
+	update_status_bar();
+	event.Skip();
+}
+
+void main_window::on_close_window(wxCloseEvent& event) {
+	if (position_save_timer) {
+		position_save_timer->Stop();
+		delete position_save_timer;
+		position_save_timer = nullptr;
+	}
+	if (find_dlg) {
+		find_dlg->Destroy();
+		find_dlg = nullptr;
+	}
+	doc_manager.reset();
+	event.Skip();
+}
+
+void main_window::on_position_save_timer(wxTimerEvent&) {
+	doc_manager->save_current_tab_position();
+}
+
+void main_window::do_find(bool forward) {
+	if (!find_dlg) return;
 	wxTextCtrl* text_ctrl = doc_manager->get_active_text_ctrl();
 	if (!text_ctrl) return;
-	const wxString& query = event.GetFindString();
-	const long flags = event.GetFlags();
+	const wxString& query = find_dlg->get_find_text();
+	if (query.IsEmpty()) return;
+	bool match_case = find_dlg->get_match_case();
 	long sel_start, sel_end;
 	text_ctrl->GetSelection(&sel_start, &sel_end);
-	bool forward = flags & wxFR_DOWN;
-	bool match_case = flags & wxFR_MATCHCASE;
 	long start_pos = forward ? sel_end : sel_start;
 	long found_pos = doc_manager->find_text(query, start_pos, forward, match_case);
 	if (found_pos == wxNOT_FOUND) {
@@ -317,28 +335,4 @@ void main_window::on_find_dialog(wxFindDialogEvent& event) {
 	text_ctrl->SetSelection(found_pos, found_pos + query.Length());
 	text_ctrl->ShowPosition(found_pos);
 	update_status_bar();
-}
-
-void main_window::on_find_close(wxFindDialogEvent&) {
-	find_dialog->Destroy();
-	find_dialog = nullptr;
-}
-
-void main_window::on_text_cursor_changed(wxEvent& event) {
-	update_status_bar();
-	event.Skip();
-}
-
-void main_window::on_close_window(wxCloseEvent& event) {
-	if (position_save_timer) {
-		position_save_timer->Stop();
-		delete position_save_timer;
-		position_save_timer = nullptr;
-	}
-	doc_manager.reset();
-	event.Skip();
-}
-
-void main_window::on_position_save_timer(wxTimerEvent&) {
-	doc_manager->save_current_tab_position();
 }

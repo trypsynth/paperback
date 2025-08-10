@@ -1,20 +1,8 @@
 #pragma once
 #include "document_manager.hpp"
+#include "find_dialog.hpp"
 #include <memory>
-#include <wx/fdrepdlg.h>
 #include <wx/wx.h>
-
-enum {
-	ID_EXPORT = wxID_HIGHEST + 1,
-	ID_FIND_NEXT,
-	ID_FIND_PREVIOUS,
-	ID_GO_TO,
-	ID_PREVIOUS_SECTION,
-	ID_NEXT_SECTION,
-	ID_WORD_COUNT,
-	ID_DOC_INFO,
-	ID_TABLE_OF_CONTENTS,
-};
 
 class main_window : public wxFrame {
 public:
@@ -26,8 +14,7 @@ private:
 	wxNotebook* notebook = nullptr;
 	wxStatusBar* status_bar = nullptr;
 	wxTimer* position_save_timer = nullptr;
-	wxFindReplaceDialog* find_dialog = nullptr;
-	wxFindReplaceData find_data;
+	find_dialog* find_dlg = nullptr;
 
 	void create_menus();
 	wxMenu* create_file_menu();
@@ -55,9 +42,8 @@ private:
 	void on_about(wxCommandEvent&);
 	void on_help(wxCommandEvent&);
 	void on_notebook_page_changed(wxBookCtrlEvent& event);
-	void on_find_dialog(wxFindDialogEvent& event);
-	void on_find_close(wxFindDialogEvent&);
 	void on_text_cursor_changed(wxEvent& event);
 	void on_close_window(wxCloseEvent& event);
 	void on_position_save_timer(wxTimerEvent&);
+	void do_find(bool forward);
 };

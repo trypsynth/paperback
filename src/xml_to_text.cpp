@@ -137,7 +137,6 @@ constexpr bool xml_to_text::is_block_element(std::string_view tag_name) noexcept
 		"tfoot",
 		"tr",
 		"td",
-		"th"
-	};
+		"th"};
 	return std::find(block_elements.begin(), block_elements.end(), tag_name) != block_elements.end();
 }
