@@ -1,4 +1,4 @@
-# Paperback - version 0.1
+# Paperback - version 0.2
 ## Introduction
 Paperback is a lightweight, fast, and accessible ebook/document reader designed to make reading fun and seamless, regardless of the file format being used or the user's reading preferences.
 
@@ -19,6 +19,7 @@ Paperback supports several common file formats, with more planned for future rel
 
 * Epub 2/3 books.
 * HTML documents.
+* Markdown documents.
 * Text documents.
 
 ## Hotkeys
@@ -48,8 +49,9 @@ Paperback's user interface was designed specifically with keyboard and screen re
 
 ## Changelog
 ### Version 0.2
-* Added markdown document support!
-* Fixed loading epubs with URL-encoded filenames in their manifests.
+* Added markdown document support! [#22](https://github.com/trypsynth/paperback/issues/22).
+* Fixed loading epubs with URL-encoded filenames in their manifests. [#20](https://github.com/trypsynth/paperback/issues/20).
+* Fixed loading epub 3 books with XHTML embedded inside of them. [#35](https://github.com/trypsynth/paperback/issues/35).
 
 ### Version 0.1
 * Initial release.
