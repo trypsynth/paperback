@@ -43,7 +43,7 @@ public:
 	void save_all_tab_positions();
 	wxString get_status_text() const;
 	wxString get_window_title(const wxString& app_name) const;
-	long find_text(const wxString& query, long start_pos, bool forward, bool match_case) const;
+	long find_text(const wxString& query, long start_pos, bool forward, bool match_case, bool match_whole_word = false) const;
 
 private:
 	wxNotebook* notebook_;

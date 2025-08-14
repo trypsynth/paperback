@@ -318,14 +318,15 @@ void main_window::do_find(bool forward) {
 	const wxString& query = find_dlg->get_find_text();
 	if (query.IsEmpty()) return;
 	bool match_case = find_dlg->get_match_case();
+	bool match_whole_word = find_dlg->get_match_whole_word();
 	long sel_start, sel_end;
 	text_ctrl->GetSelection(&sel_start, &sel_end);
 	long start_pos = forward ? sel_end : sel_start;
-	long found_pos = doc_manager->find_text(query, start_pos, forward, match_case);
+	long found_pos = doc_manager->find_text(query, start_pos, forward, match_case, match_whole_word);
 	if (found_pos == wxNOT_FOUND) {
 		speak("No more results. Wrapping search.");
 		start_pos = forward ? 0 : text_ctrl->GetLastPosition();
-		found_pos = doc_manager->find_text(query, start_pos, forward, match_case);
+		found_pos = doc_manager->find_text(query, start_pos, forward, match_case, match_whole_word);
 		if (found_pos == wxNOT_FOUND) {
 			speak("Not found.");
 			return;

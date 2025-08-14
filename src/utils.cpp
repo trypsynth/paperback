@@ -10,12 +10,24 @@
 #endif
 #include <wx/msgdlg.h>
 
-long find_text(const wxString& haystack, const wxString& needle, long start, bool forward, bool match_case) {
+long find_text(const wxString& haystack, const wxString& needle, long start, bool forward, bool match_case, bool match_whole_word) {
 	if (needle.empty()) return wxNOT_FOUND;
-	if (match_case) return forward ? haystack.find(needle, start) : haystack.Left(start).rfind(needle);
-	const wxString haystack_lc = haystack.Lower();
-	const wxString needle_lc = needle.Lower();
-	return forward ? haystack_lc.find(needle_lc, start) : haystack_lc.Left(start).rfind(needle_lc);
+	const wxString& search_haystack = match_case ? haystack : haystack.Lower();
+	const wxString& search_needle = match_case ? needle : needle.Lower();
+	if (!match_whole_word)
+		return forward ? search_haystack.find(search_needle, start) : search_haystack.Left(start).rfind(search_needle);
+	long pos = start;
+	while (true) {
+		pos = forward ? search_haystack.find(search_needle, pos) : search_haystack.Left(pos).rfind(search_needle);
+		if (pos == wxNOT_FOUND) break;
+		bool word_start = (pos == 0) || !wxIsalnum(haystack[pos - 1]);
+		bool word_end = (pos + needle.length() >= haystack.length()) || !wxIsalnum(haystack[pos + needle.length()]);
+		if (word_start && word_end) return pos;
+		pos = forward ? pos + 1 : pos - 1;
+		if (forward && pos >= haystack.length()) break;
+		if (!forward && pos < 0) break;
+	}
+	return wxNOT_FOUND;
 }
 
 std::string collapse_whitespace(std::string_view input) {
