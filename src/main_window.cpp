@@ -9,9 +9,9 @@
 #include <wx/timer.h>
 
 main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
-	auto* panel = new wxPanel(this);
+	auto* const panel = new wxPanel(this);
 	notebook = new wxNotebook(panel, wxID_ANY);
-	auto* sizer = new wxBoxSizer(wxVERTICAL);
+	auto* const sizer = new wxBoxSizer(wxVERTICAL);
 	sizer->Add(notebook, 1, wxEXPAND | wxALL, 10);
 	panel->SetSizer(sizer);
 	doc_manager = std::make_unique<document_manager>(notebook);
@@ -25,7 +25,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 }
 
 void main_window::create_menus() {
-	auto* menu_bar = new wxMenuBar();
+	auto* const menu_bar = new wxMenuBar();
 	menu_bar->Append(create_file_menu(), "&File");
 	menu_bar->Append(create_go_menu(), "&Go");
 	menu_bar->Append(create_tools_menu(), "&Tools");
@@ -34,7 +34,7 @@ void main_window::create_menus() {
 }
 
 wxMenu* main_window::create_file_menu() {
-	auto* menu = new wxMenu();
+	auto* const menu = new wxMenu();
 	menu->Append(wxID_OPEN);
 	menu->Append(wxID_CLOSE, "Close\tCtrl+F4");
 	menu->Append(wxID_CLOSE_ALL, "Close &All\tCtrl+Shift+F4");
@@ -46,7 +46,7 @@ wxMenu* main_window::create_file_menu() {
 }
 
 wxMenu* main_window::create_go_menu() {
-	auto* menu = new wxMenu();
+	auto* const menu = new wxMenu();
 	menu->Append(wxID_FIND);
 	menu->Append(ID_FIND_NEXT, "Find Ne&xt\tF3");
 	menu->Append(ID_FIND_PREVIOUS, "Find P&revious\tShift+F3");
@@ -59,7 +59,7 @@ wxMenu* main_window::create_go_menu() {
 }
 
 wxMenu* main_window::create_tools_menu() {
-	auto* menu = new wxMenu();
+	auto* const menu = new wxMenu();
 	menu->Append(ID_WORD_COUNT, "&Word count\tCtrl+W");
 	menu->Append(ID_DOC_INFO, "Document &info\tCtrl+I");
 	menu->AppendSeparator();
@@ -68,14 +68,14 @@ wxMenu* main_window::create_tools_menu() {
 }
 
 wxMenu* main_window::create_help_menu() {
-	auto* menu = new wxMenu();
+	auto* const menu = new wxMenu();
 	menu->Append(wxID_ABOUT, "About " + APP_NAME + "\tCtrl+F1");
 	menu->Append(wxID_HELP, "&Help\tF1");
 	return menu;
 }
 
 void main_window::bind_events() {
-	const std::pair<int, void (main_window::*)(wxCommandEvent&)> menu_bindings[] = {
+	constexpr std::pair<int, void (main_window::*)(wxCommandEvent&)> menu_bindings[] = {
 		{wxID_OPEN, &main_window::on_open},
 		{wxID_CLOSE, &main_window::on_close},
 		{wxID_CLOSE_ALL, &main_window::on_close_all},
@@ -102,11 +102,11 @@ void main_window::bind_events() {
 
 void main_window::update_ui() {
 	const bool has_doc = doc_manager->has_documents();
-	auto enable = [this](int id, bool state) {
+	const auto enable = [this](const int id, const bool state) noexcept {
 		if (auto* item = GetMenuBar()->FindItem(id))
 			item->Enable(state);
 	};
-	const int doc_items[] = {
+	constexpr int doc_items[] = {
 		wxID_CLOSE,
 		wxID_CLOSE_ALL,
 		ID_EXPORT,
@@ -116,7 +116,7 @@ void main_window::update_ui() {
 		ID_GO_TO,
 		ID_WORD_COUNT,
 		ID_DOC_INFO};
-	for (int id : doc_items)
+	for (const auto id : doc_items)
 		enable(id, has_doc);
 	if (!has_doc) {
 		enable(ID_PREVIOUS_SECTION, false);
@@ -140,8 +140,8 @@ void main_window::update_status_bar() {
 void main_window::on_open(wxCommandEvent&) {
 	wxFileDialog dlg(this, "Select a document to read", "", "", get_supported_wildcards(), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 	if (dlg.ShowModal() != wxID_OK) return;
-	wxString path = dlg.GetPath();
-	const parser* par = find_parser_by_extension(wxFileName(path).GetExt());
+	const auto path = dlg.GetPath();
+	const auto* par = find_parser_by_extension(wxFileName(path).GetExt());
 	if (!par) {
 		if (!should_open_as_txt(path)) return;
 		par = find_parser_by_extension("txt");
@@ -150,7 +150,7 @@ void main_window::on_open(wxCommandEvent&) {
 		wxMessageBox("Failed to load document.", "Error", wxICON_ERROR);
 		return;
 	}
-	wxTextCtrl* text_ctrl = doc_manager->get_active_text_ctrl();
+	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
 	if (text_ctrl) {
 		text_ctrl->Bind(wxEVT_LEFT_UP, &main_window::on_text_cursor_changed, this);
 		text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, this);
@@ -175,11 +175,11 @@ void main_window::on_close_all(wxCommandEvent&) {
 }
 
 void main_window::on_export(wxCommandEvent&) {
-	document* doc = doc_manager->get_active_document();
+	auto* const doc = doc_manager->get_active_document();
 	if (!doc) return;
 	wxFileDialog save_dialog(this, "Export Document", "", doc->title + ".txt", "Text files (*.txt)|*.txt|All files (*.*)|*.*", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 	if (save_dialog.ShowModal() != wxID_OK) return;
-	wxString file_path = save_dialog.GetPath();
+	const auto file_path = save_dialog.GetPath();
 	if (!doc_manager->export_document(doc_manager->get_active_tab_index(), file_path))
 		wxMessageBox("Failed to export document.", "Error", wxICON_ERROR);
 }
@@ -191,12 +191,12 @@ void main_window::on_exit(wxCommandEvent&) {
 void main_window::on_find(wxCommandEvent&) {
 	if (!find_dlg) find_dlg = new find_dialog(this);
 	// If there's selected text, use it as the initial search term.
-	wxTextCtrl* text_ctrl = doc_manager->get_active_text_ctrl();
+	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
 	if (text_ctrl) {
 		long start, end;
 		text_ctrl->GetSelection(&start, &end);
 		if (start != end) {
-			wxString selected = text_ctrl->GetStringSelection();
+			const auto selected = text_ctrl->GetStringSelection();
 			find_dlg->set_find_text(selected);
 		}
 	}
@@ -224,11 +224,11 @@ void main_window::on_find_previous(wxCommandEvent&) {
 }
 
 void main_window::on_go_to(wxCommandEvent&) {
-	wxTextCtrl* text_ctrl = doc_manager->get_active_text_ctrl();
+	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
 	if (!text_ctrl) return;
 	go_to_dialog dlg(this, text_ctrl);
 	if (dlg.ShowModal() != wxID_OK) return;
-	long pos = dlg.get_position();
+	const auto pos = dlg.get_position();
 	doc_manager->go_to_position(pos);
 	update_status_bar();
 }
@@ -244,7 +244,7 @@ void main_window::on_next_section(wxCommandEvent&) {
 }
 
 void main_window::on_word_count(wxCommandEvent&) {
-	int count = doc_manager->get_active_document()->get_word_count();
+	const size_t count = doc_manager->get_active_document()->get_word_count();
 	wxMessageBox(wxString::Format("The document contains %d %s", count, count == 1 ? "word" : "words"), "Word count", wxICON_INFORMATION);
 }
 
@@ -267,18 +267,18 @@ void main_window::on_about(wxCommandEvent&) {
 }
 
 void main_window::on_help(wxCommandEvent&) {
-	wxString path = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath();
-	wxString url = "file://" + wxFileName(path, "readme.html").GetFullPath();
+	const auto path = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath();
+	const auto url = "file://" + wxFileName(path, "readme.html").GetFullPath();
 	if (!wxLaunchDefaultBrowser(url))
 		wxMessageBox("Failed to launch default browser.", "Error", wxICON_ERROR);
 }
 
 void main_window::on_notebook_page_changed(wxBookCtrlEvent& event) {
-	int old_selection = event.GetOldSelection();
+	const auto old_selection = event.GetOldSelection();
 	if (old_selection >= 0) {
-		document_tab* tab = doc_manager->get_tab(old_selection);
+		auto* const tab = doc_manager->get_tab(old_selection);
 		if (tab && tab->text_ctrl) {
-			long position = tab->text_ctrl->GetInsertionPoint();
+			const auto position = tab->text_ctrl->GetInsertionPoint();
 			doc_manager->save_document_position(tab->file_path, position);
 		}
 	}
@@ -313,9 +313,9 @@ void main_window::on_position_save_timer(wxTimerEvent&) {
 
 void main_window::do_find(bool forward) {
 	if (!find_dlg) return;
-	wxTextCtrl* text_ctrl = doc_manager->get_active_text_ctrl();
+	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
 	if (!text_ctrl) return;
-	const wxString& query = find_dlg->get_find_text();
+	const auto& query = find_dlg->get_find_text();
 	if (query.IsEmpty()) return;
 	find_options options = find_options::none;
 	if (forward) options |= find_options::forward;
@@ -324,12 +324,12 @@ void main_window::do_find(bool forward) {
 	if (find_dlg->get_use_regex()) options |= find_options::use_regex;
 	long sel_start, sel_end;
 	text_ctrl->GetSelection(&sel_start, &sel_end);
-	long start_pos = forward ? sel_end : sel_start;
+	const long start_pos = forward ? sel_end : sel_start;
 	long found_pos = doc_manager->find_text(query, start_pos, options);
 	if (found_pos == wxNOT_FOUND) {
 		speak("No more results. Wrapping search.");
-		start_pos = forward ? 0 : text_ctrl->GetLastPosition();
-		found_pos = doc_manager->find_text(query, start_pos, options);
+		const auto wrap_pos = forward ? 0 : text_ctrl->GetLastPosition();
+		found_pos = doc_manager->find_text(query, wrap_pos, options);
 		if (found_pos == wxNOT_FOUND) {
 			speak("Not found.");
 			return;

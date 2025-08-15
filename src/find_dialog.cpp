@@ -10,20 +10,20 @@ find_dialog::find_dialog(wxWindow* parent) : wxDialog(parent, wxID_ANY, "Find") 
 }
 
 void find_dialog::create_controls() {
-	auto* main_sizer = new wxBoxSizer(wxVERTICAL);
-	auto* find_sizer = new wxBoxSizer(wxHORIZONTAL);
-	auto* find_label = new wxStaticText(this, wxID_ANY, "Find &what:");
+	auto* const main_sizer = new wxBoxSizer(wxVERTICAL);
+	auto* const find_sizer = new wxBoxSizer(wxHORIZONTAL);
+	auto* const find_label = new wxStaticText(this, wxID_ANY, "Find &what:");
 	find_what_combo = new wxComboBox(this, wxID_ANY, "", wxDefaultPosition, wxSize(250, -1), 0, nullptr, wxTE_PROCESS_ENTER);
 	find_sizer->Add(find_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
 	find_sizer->Add(find_what_combo, 1, wxEXPAND);
-	auto* options_box = new wxStaticBoxSizer(wxVERTICAL, this, "Options");
+	auto* const options_box = new wxStaticBoxSizer(wxVERTICAL, this, "Options");
 	match_case_check = new wxCheckBox(this, wxID_ANY, "&Match case");
 	match_whole_word_check = new wxCheckBox(this, wxID_ANY, "Match &whole word");
 	use_regex_check = new wxCheckBox(this, wxID_ANY, "Use &regular expressions");
 	options_box->Add(match_case_check, 0, wxALL, 2);
 	options_box->Add(match_whole_word_check, 0, wxALL, 2);
 	options_box->Add(use_regex_check, 0, wxALL, 2);
-	auto* button_sizer = new wxBoxSizer(wxHORIZONTAL);
+	auto* const button_sizer = new wxBoxSizer(wxHORIZONTAL);
 	find_previous_btn = new wxButton(this, wxID_ANY, "Find &Previous");
 	find_next_btn = new wxButton(this, wxID_ANY, "Find &Next");
 	cancel_btn = new wxButton(this, wxID_CANCEL, "Cancel");
@@ -50,15 +50,15 @@ wxString find_dialog::get_find_text() const {
 	return find_what_combo->GetValue();
 }
 
-bool find_dialog::get_match_case() const {
+bool find_dialog::get_match_case() const noexcept {
 	return match_case_check->GetValue();
 }
 
-bool find_dialog::get_match_whole_word() const {
+bool find_dialog::get_match_whole_word() const noexcept {
 	return match_whole_word_check->GetValue();
 }
 
-bool find_dialog::get_use_regex() const {
+bool find_dialog::get_use_regex() const noexcept {
 	return use_regex_check->GetValue();
 }
 
@@ -69,7 +69,7 @@ void find_dialog::set_find_text(const wxString& text) {
 
 void find_dialog::add_to_history(const wxString& text) {
 	if (text.IsEmpty()) return;
-	int existing = find_what_combo->FindString(text);
+	const int existing = find_what_combo->FindString(text);
 	if (existing != wxNOT_FOUND)
 		find_what_combo->Delete(existing);
 	find_what_combo->Insert(text, 0);
@@ -84,7 +84,7 @@ void find_dialog::focus_find_text() {
 }
 
 void find_dialog::on_find_previous(wxCommandEvent& event) {
-	wxString text = get_find_text();
+	const wxString text = get_find_text();
 	if (!text.IsEmpty()) {
 		add_to_history(text);
 		wxCommandEvent find_event(wxEVT_COMMAND_MENU_SELECTED, ID_FIND_PREVIOUS);
@@ -93,7 +93,7 @@ void find_dialog::on_find_previous(wxCommandEvent& event) {
 }
 
 void find_dialog::on_find_next(wxCommandEvent& event) {
-	wxString text = get_find_text();
+	const wxString text = get_find_text();
 	if (!text.IsEmpty()) {
 		add_to_history(text);
 		wxCommandEvent find_event(wxEVT_COMMAND_MENU_SELECTED, ID_FIND_NEXT);

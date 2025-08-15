@@ -9,10 +9,10 @@
 #include <wx/wx.h>
 
 struct document_tab : public wxClientData {
-	wxTextCtrl* text_ctrl = nullptr;
+	wxTextCtrl* text_ctrl{nullptr};
 	std::unique_ptr<document> doc;
 	wxString file_path;
-	wxPanel* panel = nullptr;
+	wxPanel* panel{nullptr};
 };
 
 class document_manager {

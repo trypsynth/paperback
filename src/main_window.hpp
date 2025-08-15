@@ -7,14 +7,14 @@
 class main_window : public wxFrame {
 public:
 	main_window();
-	document_manager* get_doc_manager() const { return doc_manager.get(); }
+	document_manager* get_doc_manager() const noexcept { return doc_manager.get(); }
 
 private:
 	std::unique_ptr<document_manager> doc_manager;
-	wxNotebook* notebook = nullptr;
-	wxStatusBar* status_bar = nullptr;
-	wxTimer* position_save_timer = nullptr;
-	find_dialog* find_dlg = nullptr;
+	wxNotebook* notebook{nullptr};
+	wxStatusBar* status_bar{nullptr};
+	wxTimer* position_save_timer{nullptr};
+	find_dialog* find_dlg{nullptr};
 
 	void create_menus();
 	wxMenu* create_file_menu();

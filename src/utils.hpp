@@ -12,15 +12,19 @@ enum class find_options {
 	use_regex = 1 << 3
 };
 
-inline find_options operator|(find_options a, find_options b) {
+inline constexpr find_options operator|(find_options a, find_options b) noexcept {
 	return static_cast<find_options>(static_cast<int>(a) | static_cast<int>(b));
 }
 
-inline find_options operator&(find_options a, find_options b) {
+inline constexpr find_options operator&(find_options a, find_options b) noexcept {
 	return static_cast<find_options>(static_cast<int>(a) & static_cast<int>(b));
 }
 
-inline bool has_option(find_options options, find_options flag) {
+inline constexpr find_options& operator|=(find_options& a, find_options b) noexcept {
+	return a = a | b;
+}
+
+inline constexpr bool has_option(find_options options, find_options flag) noexcept {
 	return (options & flag) != find_options::none;
 }
 
