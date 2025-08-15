@@ -19,8 +19,10 @@ void find_dialog::create_controls() {
 	auto* options_box = new wxStaticBoxSizer(wxVERTICAL, this, "Options");
 	match_case_check = new wxCheckBox(this, wxID_ANY, "&Match case");
 	match_whole_word_check = new wxCheckBox(this, wxID_ANY, "Match &whole word");
+	use_regex_check = new wxCheckBox(this, wxID_ANY, "Use &regular expressions");
 	options_box->Add(match_case_check, 0, wxALL, 2);
 	options_box->Add(match_whole_word_check, 0, wxALL, 2);
+	options_box->Add(use_regex_check, 0, wxALL, 2);
 	auto* button_sizer = new wxBoxSizer(wxHORIZONTAL);
 	find_previous_btn = new wxButton(this, wxID_ANY, "Find &Previous");
 	find_next_btn = new wxButton(this, wxID_ANY, "Find &Next");
@@ -54,6 +56,10 @@ bool find_dialog::get_match_case() const {
 
 bool find_dialog::get_match_whole_word() const {
 	return match_whole_word_check->GetValue();
+}
+
+bool find_dialog::get_use_regex() const {
+	return use_regex_check->GetValue();
 }
 
 void find_dialog::set_find_text(const wxString& text) {

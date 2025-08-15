@@ -1,5 +1,6 @@
 #include "utils.hpp"
 #include <Poco/Exception.h>
+#include <Poco/RegularExpression.h>
 #include <Poco/URI.h>
 #include <cctype>
 #include <sstream>
@@ -10,8 +11,35 @@
 #endif
 #include <wx/msgdlg.h>
 
-long find_text(const wxString& haystack, const wxString& needle, long start, bool forward, bool match_case, bool match_whole_word) {
+long find_text(const wxString& haystack, const wxString& needle, long start, bool forward, bool match_case, bool match_whole_word, bool use_regex) {
 	if (needle.empty()) return wxNOT_FOUND;
+	if (use_regex) {
+		try {
+			std::string pattern = needle.ToStdString();
+			std::string text = haystack.ToStdString();
+			if (match_whole_word) pattern = "\\b" + pattern + "\\b";
+			int options = 0;
+			if (!match_case) options |= Poco::RegularExpression::RE_CASELESS;
+			Poco::RegularExpression regex(pattern, options);
+			Poco::RegularExpression::Match match;
+			if (forward)
+				if (regex.match(text, start, match))	
+					return match.offset;
+			else {
+				std::string search_text = text.substr(0, start);
+				long last_match = wxNOT_FOUND;
+				size_t pos = 0;
+				while (regex.match(search_text, pos, match)) {
+					last_match = match.offset;
+					pos = match.offset + 1;
+				}
+				return last_match;
+			}
+		} catch (const Poco::Exception&) {
+			return wxNOT_FOUND;
+		}
+		return wxNOT_FOUND;
+	}
 	const wxString& search_haystack = match_case ? haystack : haystack.Lower();
 	const wxString& search_needle = match_case ? needle : needle.Lower();
 	if (!match_whole_word)
