@@ -212,11 +212,11 @@ wxString document_manager::get_window_title(const wxString& app_name) const {
 	return doc ? app_name + " - " + doc->title : app_name;
 }
 
-long document_manager::find_text(const wxString& query, long start_pos, bool forward, bool match_case, bool match_whole_word, bool use_regex) const {
+long document_manager::find_text(const wxString& query, long start_pos, find_options options) const {
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (!text_ctrl) return wxNOT_FOUND;
 	const wxString& full_text = text_ctrl->GetValue();
-	return ::find_text(full_text, query, start_pos, forward, match_case, match_whole_word, use_regex);
+	return ::find_text(full_text, query, start_pos, options);
 }
 
 wxPanel* document_manager::create_tab_panel(const wxString& content, document_tab* tab_data) {

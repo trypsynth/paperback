@@ -11,8 +11,12 @@
 #endif
 #include <wx/msgdlg.h>
 
-long find_text(const wxString& haystack, const wxString& needle, long start, bool forward, bool match_case, bool match_whole_word, bool use_regex) {
+long find_text(const wxString& haystack, const wxString& needle, long start, find_options options) {
 	if (needle.empty()) return wxNOT_FOUND;
+	bool forward = has_option(options, find_options::forward);
+	bool match_case = has_option(options, find_options::match_case);
+	bool match_whole_word = has_option(options, find_options::match_whole_word);
+	bool use_regex = has_option(options, find_options::use_regex);
 	if (use_regex) {
 		try {
 			std::string pattern = needle.ToStdString();

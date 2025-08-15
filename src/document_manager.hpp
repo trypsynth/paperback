@@ -1,6 +1,7 @@
 #pragma once
 #include "document.hpp"
 #include "parser.hpp"
+#include "utils.hpp"
 #include <memory>
 #include <vector>
 #include <wx/notebook.h>
@@ -43,7 +44,7 @@ public:
 	void save_all_tab_positions();
 	wxString get_status_text() const;
 	wxString get_window_title(const wxString& app_name) const;
-	long find_text(const wxString& query, long start_pos, bool forward, bool match_case, bool match_whole_word = false, bool use_regex = false) const;
+	long find_text(const wxString& query, long start_pos, find_options options) const;
 
 private:
 	wxNotebook* notebook_;

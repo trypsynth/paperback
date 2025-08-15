@@ -4,7 +4,27 @@
 #include <string_view>
 #include <wx/string.h>
 
-long find_text(const wxString& haystack, const wxString& needle, long start, bool forward = true, bool match_case = false, bool match_whole_word = false, bool use_regex = false);
+enum class find_options {
+	none = 0,
+	forward = 1 << 0,
+	match_case = 1 << 1,
+	match_whole_word = 1 << 2,
+	use_regex = 1 << 3
+};
+
+inline find_options operator|(find_options a, find_options b) {
+	return static_cast<find_options>(static_cast<int>(a) | static_cast<int>(b));
+}
+
+inline find_options operator&(find_options a, find_options b) {
+	return static_cast<find_options>(static_cast<int>(a) & static_cast<int>(b));
+}
+
+inline bool has_option(find_options options, find_options flag) {
+	return (options & flag) != find_options::none;
+}
+
+long find_text(const wxString& haystack, const wxString& needle, long start, find_options options = find_options::forward);
 std::string collapse_whitespace(std::string_view input);
 std::string trim_string(const std::string& str);
 bool should_open_as_txt(const wxString& path);

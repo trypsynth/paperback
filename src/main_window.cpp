@@ -317,17 +317,19 @@ void main_window::do_find(bool forward) {
 	if (!text_ctrl) return;
 	const wxString& query = find_dlg->get_find_text();
 	if (query.IsEmpty()) return;
-	bool match_case = find_dlg->get_match_case();
-	bool match_whole_word = find_dlg->get_match_whole_word();
-	bool use_regex = find_dlg->get_use_regex();
+	find_options options = find_options::none;
+	if (forward) options |= find_options::forward;
+	if (find_dlg->get_match_case()) options |= find_options::match_case;
+	if (find_dlg->get_match_whole_word()) options |= find_options::match_whole_word;
+	if (find_dlg->get_use_regex()) options |= find_options::use_regex;
 	long sel_start, sel_end;
 	text_ctrl->GetSelection(&sel_start, &sel_end);
 	long start_pos = forward ? sel_end : sel_start;
-	long found_pos = doc_manager->find_text(query, start_pos, forward, match_case, match_whole_word, use_regex);
+	long found_pos = doc_manager->find_text(query, start_pos, options);
 	if (found_pos == wxNOT_FOUND) {
 		speak("No more results. Wrapping search.");
 		start_pos = forward ? 0 : text_ctrl->GetLastPosition();
-		found_pos = doc_manager->find_text(query, start_pos, forward, match_case, match_whole_word, use_regex);
+		found_pos = doc_manager->find_text(query, start_pos, options);
 		if (found_pos == wxNOT_FOUND) {
 			speak("Not found.");
 			return;
