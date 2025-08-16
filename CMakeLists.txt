@@ -18,6 +18,7 @@ if(MSVC)
 endif()
 
 find_package(lexbor CONFIG REQUIRED)
+find_package(libmupdf CONFIG REQUIRED)
 find_package(Poco REQUIRED COMPONENTS Foundation XML Zip)
 if(WIN32)
 	find_package(universalspeech CONFIG REQUIRED)
@@ -33,6 +34,7 @@ else()
 endif()
 target_link_libraries(paperback PRIVATE
 	lexbor::lexbor
+	libmupdf::libmupdf
 	Poco::Foundation
 	Poco::XML
 	Poco::Zip

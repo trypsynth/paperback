@@ -1,0 +1,45 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+find_dependency(freetype)
+find_dependency(JPEG)
+find_dependency(ZLIB)
+find_dependency(OpenJPEG)
+find_dependency(harfbuzz)
+
+find_library(JBIG2DEC_LIBRARY NAMES jbig2dec REQUIRED)
+find_library(GUMBO_LIBRARY NAMES gumbo REQUIRED)
+
+if(NOT TARGET libmupdf::libmupdf)
+	add_library(libmupdf::libmupdf STATIC IMPORTED)
+	find_library(LIBMUPDF_LIBRARY_RELEASE
+		NAMES libmupdf
+		PATHS "${CMAKE_CURRENT_LIST_DIR}/../../lib"
+		NO_DEFAULT_PATH
+	)
+	find_library(LIBMUPDF_LIBRARY_DEBUG
+		NAMES libmupdf libmupdf${CMAKE_DEBUG_POSTFIX}
+		PATHS "${CMAKE_CURRENT_LIST_DIR}/../../debug/lib"
+		NO_DEFAULT_PATH
+	)
+	set_target_properties(libmupdf::libmupdf PROPERTIES
+		IMPORTED_LOCATION_RELEASE "${LIBMUPDF_LIBRARY_RELEASE}"
+		IMPORTED_LOCATION_DEBUG "${LIBMUPDF_LIBRARY_DEBUG}"
+		INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/../../include"
+		IMPORTED_CONFIGURATIONS "RELEASE;DEBUG"
+	)
+	set_target_properties(libmupdf::libmupdf PROPERTIES
+		INTERFACE_LINK_LIBRARIES "freetype;JPEG::JPEG;ZLIB::ZLIB;openjp2;${JBIG2DEC_LIBRARY};harfbuzz::harfbuzz;${GUMBO_LIBRARY}"
+	)
+	target_compile_definitions(libmupdf::libmupdf INTERFACE 
+		SHARE_JPEG
+		FZ_ENABLE_JS=0
+		FZ_ENABLE_ICC=0
+		MEMENTO_MUPDF_HACKS
+		FZ_ENABLE_DOCX_OUTPUT=0
+		FZ_ENABLE_ODT_OUTPUT=0
+	)
+endif()
+
+check_required_components(libmupdf)

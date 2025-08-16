@@ -27,18 +27,18 @@ long find_text(const wxString& haystack, const wxString& needle, long start, fin
 			Poco::RegularExpression regex(pattern, options);
 			Poco::RegularExpression::Match match;
 			if (forward)
-				if (regex.match(text, start, match))	
+				if (regex.match(text, start, match))
 					return match.offset;
-			else {
-				const auto search_text = text.substr(0, start);
-				int last_match = wxNOT_FOUND;
-				size_t pos = 0;
-				while (regex.match(search_text, pos, match)) {
-					last_match = match.offset;
-					pos = match.offset + 1;
+				else {
+					const auto search_text = text.substr(0, start);
+					int last_match = wxNOT_FOUND;
+					size_t pos = 0;
+					while (regex.match(search_text, pos, match)) {
+						last_match = match.offset;
+						pos = match.offset + 1;
+					}
+					return last_match;
 				}
-				return last_match;
-			}
 		} catch (const Poco::Exception&) {
 			return wxNOT_FOUND;
 		}

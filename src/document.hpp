@@ -17,6 +17,10 @@ inline constexpr document_flags operator&(document_flags a, document_flags b) no
 	return static_cast<document_flags>(static_cast<int>(a) & static_cast<int>(b));
 }
 
+inline constexpr document_flags& operator|=(document_flags& a, document_flags b) noexcept {
+	return a = a | b;
+}
+
 struct toc_item {
 	wxString name;
 	wxString ref;
