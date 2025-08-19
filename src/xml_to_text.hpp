@@ -30,6 +30,5 @@ private:
 	void process_text_node(Poco::XML::Text* text_node);
 	void add_line(std::string_view line);
 	void finalize_current_line();
-	void finalize_text();
 	[[nodiscard]] static constexpr bool is_block_element(std::string_view tag_name) noexcept;
 };

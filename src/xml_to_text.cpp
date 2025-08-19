@@ -23,7 +23,6 @@ bool xml_to_text::convert(const std::string& xml_content) {
 		if (doc) {
 			process_node(doc);
 			finalize_current_line();
-			finalize_text();
 			return true;
 		}
 	} catch (const Poco::Exception&) {
@@ -84,24 +83,18 @@ void xml_to_text::process_text_node(Text* text_node) {
 }
 
 void xml_to_text::add_line(std::string_view line) {
-	std::string processed_line = collapse_whitespace(line);
-	processed_line = trim_string(processed_line);
+	std::string processed_line;
+	if (preserve_whitespace) processed_line = std::string(line);
+	else {
+		processed_line = collapse_whitespace(line);
+		processed_line = trim_string(processed_line);
+	}
 	if (!processed_line.empty()) lines.emplace_back(std::move(processed_line));
 }
 
 void xml_to_text::finalize_current_line() {
 	add_line(current_line);
 	current_line.clear();
-}
-
-void xml_to_text::finalize_text() {
-	std::vector<std::string> cleaned_lines;
-	for (auto& line : lines) {
-		line = collapse_whitespace(line);
-		line = trim_string(line);
-		if (!line.empty()) cleaned_lines.emplace_back(std::move(line));
-	}
-	lines = std::move(cleaned_lines);
 }
 
 constexpr bool xml_to_text::is_block_element(std::string_view tag_name) noexcept {
