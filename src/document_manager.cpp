@@ -1,7 +1,6 @@
 #include "document_manager.hpp"
 #include "constants.hpp"
-#include "document_info_dialog.hpp"
-#include "toc_dialog.hpp"
+#include "dialogs.hpp"
 #include "utils.hpp"
 #include <wx/config.h>
 #include <wx/filename.h>

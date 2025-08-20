@@ -1,6 +1,6 @@
 #pragma once
 #include "document_manager.hpp"
-#include "find_dialog.hpp"
+#include "dialogs.hpp"
 #include <memory>
 #include <wx/wx.h>
 

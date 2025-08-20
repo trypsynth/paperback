@@ -1,7 +1,6 @@
 #include "main_window.hpp"
 #include "constants.hpp"
-#include "go_to_dialog.hpp"
-#include "go_to_page_dialog.hpp"
+#include "dialogs.hpp"
 #include "parser.hpp"
 #include "utils.hpp"
 #include <wx/aboutdlg.h>
