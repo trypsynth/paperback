@@ -1,9 +1,13 @@
 #include "document_manager.hpp"
 #include "constants.hpp"
 #include "dialogs.hpp"
+#include "parser.hpp"
 #include "utils.hpp"
 #include <wx/config.h>
 #include <wx/filename.h>
+#include <wx/notebook.h>
+#include <wx/panel.h>
+#include <wx/textctrl.h>
 
 document_manager::document_manager(wxNotebook* notebook) : notebook_(notebook) {}
 
@@ -209,7 +213,7 @@ void document_manager::show_document_info(wxWindow* parent) {
 	dlg.ShowModal();
 }
 
-void document_manager::save_document_position(const wxString& path, long position) {
+void document_manager::save_document_position(const wxString& path, long position) const {
 	wxConfigBase* config = wxConfigBase::Get();
 	if (!config) return;
 	config->SetPath("/positions");
@@ -217,7 +221,7 @@ void document_manager::save_document_position(const wxString& path, long positio
 	config->Flush();
 }
 
-long document_manager::load_document_position(const wxString& path) {
+long document_manager::load_document_position(const wxString& path) const {
 	wxConfigBase* config = wxConfigBase::Get();
 	if (!config) return 0;
 	config->SetPath("/positions");
@@ -270,7 +274,7 @@ wxPanel* document_manager::create_tab_panel(const wxString& content, document_ta
 	auto* text_ctrl = new wxTextCtrl(panel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxTE_DONTWRAP);
 	panel->SetClientObject(tab_data);
 	tab_data->text_ctrl = text_ctrl;
-	sizer->Add(text_ctrl, 1, wxEXPAND | wxALL, 5);
+	sizer->Add(text_ctrl, 1, wxEXPAND | wxALL, TEXT_CTRL_BORDER_SIZE);
 	panel->SetSizer(sizer);
 	setup_text_ctrl(text_ctrl, content);
 	return panel;

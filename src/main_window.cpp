@@ -12,7 +12,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	auto* const panel = new wxPanel(this);
 	notebook = new wxNotebook(panel, wxID_ANY);
 	auto* const sizer = new wxBoxSizer(wxVERTICAL);
-	sizer->Add(notebook, 1, wxEXPAND | wxALL, 10);
+	sizer->Add(notebook, 1, wxEXPAND | wxALL, DEFAULT_BORDER_SIZE);
 	panel->SetSizer(sizer);
 	doc_manager = std::make_unique<document_manager>(notebook);
 	create_menus();
@@ -20,7 +20,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	status_bar->SetStatusText("Ready");
 	position_save_timer = new wxTimer(this);
 	bind_events();
-	position_save_timer->Start(5000);
+	position_save_timer->Start(POSITION_SAVE_TIMER_INTERVAL_MS);
 	update_ui();
 }
 

@@ -28,10 +28,10 @@ inline constexpr bool has_option(find_options options, find_options flag) noexce
 	return (options & flag) != find_options::none;
 }
 
-long find_text(const wxString& haystack, const wxString& needle, long start, find_options options = find_options::forward);
-std::string collapse_whitespace(std::string_view input);
-std::string trim_string(const std::string& str);
-bool should_open_as_txt(const wxString& path);
+[[nodiscard]] long find_text(const wxString& haystack, const wxString& needle, long start, find_options options = find_options::forward);
+[[nodiscard]] std::string collapse_whitespace(std::string_view input);
+[[nodiscard]] std::string trim_string(const std::string& str);
+[[nodiscard]] bool should_open_as_txt(const wxString& path);
 void speak(const wxString& message);
-std::string url_decode(const std::string& encoded);
-Poco::Zip::ZipArchive::FileHeaders::const_iterator find_file_in_archive(const std::string& filename, const std::unique_ptr<Poco::Zip::ZipArchive>& archive);
+[[nodiscard]] std::string url_decode(std::string_view encoded);
+[[nodiscard]] Poco::Zip::ZipArchive::FileHeaders::const_iterator find_file_in_archive(std::string_view filename, const std::unique_ptr<Poco::Zip::ZipArchive>& archive);

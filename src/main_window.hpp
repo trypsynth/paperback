@@ -3,11 +3,12 @@
 #include "dialogs.hpp"
 #include <memory>
 #include <wx/wx.h>
+#include <wx/bookctrl.h>
 
 class main_window : public wxFrame {
 public:
 	main_window();
-	document_manager* get_doc_manager() const noexcept { return doc_manager.get(); }
+	[[nodiscard]] document_manager* get_doc_manager() const noexcept { return doc_manager.get(); }
 
 private:
 	std::unique_ptr<document_manager> doc_manager;

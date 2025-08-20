@@ -2,6 +2,7 @@
 #include <Poco/Exception.h>
 #include <Poco/RegularExpression.h>
 #include <Poco/URI.h>
+#include <Poco/Zip/ZipArchive.h>
 #include <cctype>
 #include <sstream>
 #ifdef _WIN32
@@ -102,28 +103,29 @@ void speak(const wxString& message) {
 #endif
 }
 
-std::string url_decode(const std::string& encoded) {
+std::string url_decode(std::string_view encoded) {
 	try {
 		auto decoded = std::string{};
-		Poco::URI::decode(encoded, decoded);
+		Poco::URI::decode(std::string{encoded}, decoded);
 		return decoded;
 	} catch (const Poco::Exception&) {
-		return encoded;
+		return std::string{encoded};
 	}
 }
 
-Poco::Zip::ZipArchive::FileHeaders::const_iterator find_file_in_archive(const std::string& filename, const std::unique_ptr<Poco::Zip::ZipArchive>& archive) {
-	auto header = archive->findHeader(filename);
+Poco::Zip::ZipArchive::FileHeaders::const_iterator find_file_in_archive(std::string_view filename, const std::unique_ptr<Poco::Zip::ZipArchive>& archive) {
+	const std::string filename_str{filename};
+	auto header = archive->findHeader(filename_str);
 	if (header != archive->headerEnd()) return header;
 	const auto decoded = url_decode(filename);
-	if (decoded != filename) {
+	if (decoded != filename_str) {
 		header = archive->findHeader(decoded);
 		if (header != archive->headerEnd()) return header;
 	}
 	auto encoded = std::string{};
 	try {
-		Poco::URI::encode(filename, "", encoded);
-		if (encoded != filename) {
+		Poco::URI::encode(filename_str, "", encoded);
+		if (encoded != filename_str) {
 			header = archive->findHeader(encoded);
 			if (header != archive->headerEnd()) return header;
 		}
