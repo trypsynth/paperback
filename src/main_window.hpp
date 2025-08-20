@@ -1,9 +1,9 @@
 #pragma once
-#include "document_manager.hpp"
 #include "dialogs.hpp"
+#include "document_manager.hpp"
 #include <memory>
-#include <wx/wx.h>
 #include <wx/bookctrl.h>
+#include <wx/wx.h>
 
 class main_window : public wxFrame {
 public:

@@ -283,8 +283,10 @@ void go_to_page_dialog::adjust_page_number(int delta) {
 	if (current_value.ToLong(&current_page)) {
 		long new_page = current_page + delta;
 		long max_page = get_max_page();
-		if (new_page < 1) new_page = 1;
-		else if (new_page > max_page) new_page = max_page;
+		if (new_page < 1)
+			new_page = 1;
+		else if (new_page > max_page)
+			new_page = max_page;
 		input_ctrl->SetValue(wxString::Format("%ld", new_page));
 		input_ctrl->SetSelection(-1, -1);
 	}

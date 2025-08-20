@@ -2,8 +2,8 @@
 #include "document.hpp"
 #include "utils.hpp"
 #include <memory>
-#include <wx/string.h>
 #include <wx/clntdata.h>
+#include <wx/string.h>
 
 class parser;
 class wxNotebook;

@@ -120,14 +120,10 @@ std::vector<std::string> pdf_parser::process_text_lines(const std::string& raw_t
 	std::vector<std::string> processed_lines;
 	std::istringstream stream(raw_text);
 	std::string line;
-	
 	while (std::getline(stream, line)) {
 		std::string collapsed = collapse_whitespace(line);
 		std::string trimmed = trim_string(collapsed);
-		if (!trimmed.empty()) {
-			processed_lines.emplace_back(std::move(trimmed));
-		}
+		if (!trimmed.empty()) processed_lines.emplace_back(std::move(trimmed));
 	}
-	
 	return processed_lines;
 }
