@@ -12,11 +12,25 @@
 
 struct epub_section {
 	std::vector<std::string> lines;
+
+	epub_section() = default;
+	~epub_section() = default;
+	epub_section(const epub_section&) = default;
+	epub_section& operator=(const epub_section&) = default;
+	epub_section(epub_section&&) = default;
+	epub_section& operator=(epub_section&&) = default;
 };
 
 struct manifest_item {
 	std::string path;
 	std::string media_type;
+
+	manifest_item() = default;
+	~manifest_item() = default;
+	manifest_item(const manifest_item&) = default;
+	manifest_item& operator=(const manifest_item&) = default;
+	manifest_item(manifest_item&&) = default;
+	manifest_item& operator=(manifest_item&&) = default;
 };
 
 class parse_error : public std::runtime_error {
@@ -26,12 +40,18 @@ public:
 
 class epub_parser : public parser {
 public:
-	wxString name() const override { return "Epub Books"; }
-	std::span<const wxString> extensions() const override {
+	epub_parser() = default;
+	~epub_parser() = default;
+	epub_parser(const epub_parser&) = delete;
+	epub_parser& operator=(const epub_parser&) = delete;
+	epub_parser(epub_parser&&) = delete;
+	epub_parser& operator=(epub_parser&&) = delete;
+	[[nodiscard]] wxString name() const override { return "Epub Books"; }
+	[[nodiscard]] std::span<const wxString> extensions() const override {
 		static const wxString exts[] = {"epub"};
 		return exts;
 	}
-	std::unique_ptr<document> load(const wxString& path) const override;
+	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 
 private:
 	struct epub_context {
@@ -58,8 +78,8 @@ private:
 	void parse_epub3_nav_list(Poco::XML::Element* ol_element, std::vector<std::unique_ptr<toc_item>>& toc_items, const epub_context& ctx) const;
 	std::unique_ptr<toc_item> parse_epub3_nav_item(Poco::XML::Element* li_element, const epub_context& ctx) const;
 	int calculate_offset_from_href(const std::string& href, const epub_context& ctx) const;
-	bool is_html_content(const std::string& media_type) const;
-	std::string extract_zip_entry_content(const std::string& filename, const epub_context& ctx) const;
+	[[nodiscard]] bool is_html_content(const std::string& media_type) const;
+	[[nodiscard]] std::string extract_zip_entry_content(const std::string& filename, const epub_context& ctx) const;
 };
 
 REGISTER_PARSER(epub_parser)

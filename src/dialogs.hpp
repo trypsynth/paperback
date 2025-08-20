@@ -6,6 +6,11 @@
 class document_info_dialog : public wxDialog {
 public:
 	document_info_dialog(wxWindow* parent, const document* doc);
+	~document_info_dialog() = default;
+	document_info_dialog(const document_info_dialog&) = delete;
+	document_info_dialog& operator=(const document_info_dialog&) = delete;
+	document_info_dialog(document_info_dialog&&) = delete;
+	document_info_dialog& operator=(document_info_dialog&&) = delete;
 
 private:
 	wxTextCtrl* info_text_ctrl = nullptr;
@@ -14,10 +19,15 @@ private:
 class find_dialog : public wxDialog {
 public:
 	find_dialog(wxWindow* parent);
-	wxString get_find_text() const;
-	bool get_match_case() const noexcept;
-	bool get_match_whole_word() const noexcept;
-	bool get_use_regex() const noexcept;
+	~find_dialog() = default;
+	find_dialog(const find_dialog&) = delete;
+	find_dialog& operator=(const find_dialog&) = delete;
+	find_dialog(find_dialog&&) = delete;
+	find_dialog& operator=(find_dialog&&) = delete;
+	[[nodiscard]] wxString get_find_text() const;
+	[[nodiscard]] bool get_match_case() const noexcept;
+	[[nodiscard]] bool get_match_whole_word() const noexcept;
+	[[nodiscard]] bool get_use_regex() const noexcept;
 	void set_find_text(const wxString& text);
 	void add_to_history(const wxString& text);
 	void focus_find_text();
@@ -43,7 +53,12 @@ private:
 class go_to_dialog : public wxDialog {
 public:
 	go_to_dialog(wxWindow* parent, wxTextCtrl* text_ctrl);
-	long get_position() const;
+	~go_to_dialog() = default;
+	go_to_dialog(const go_to_dialog&) = delete;
+	go_to_dialog& operator=(const go_to_dialog&) = delete;
+	go_to_dialog(go_to_dialog&&) = delete;
+	go_to_dialog& operator=(go_to_dialog&&) = delete;
+	[[nodiscard]] long get_position() const;
 
 private:
 	wxTextCtrl* textbox = nullptr;
@@ -52,13 +67,18 @@ private:
 	void on_key_down(wxKeyEvent& event);
 	void on_char(wxKeyEvent& event);
 	void adjust_line_number(int delta);
-	long get_max_line() const;
+	[[nodiscard]] long get_max_line() const;
 };
 
 class go_to_page_dialog : public wxDialog {
 public:
 	go_to_page_dialog(wxWindow* parent, document* doc, int current_page = 1);
-	int get_page_number() const;
+	~go_to_page_dialog() = default;
+	go_to_page_dialog(const go_to_page_dialog&) = delete;
+	go_to_page_dialog& operator=(const go_to_page_dialog&) = delete;
+	go_to_page_dialog(go_to_page_dialog&&) = delete;
+	go_to_page_dialog& operator=(go_to_page_dialog&&) = delete;
+	[[nodiscard]] int get_page_number() const;
 
 private:
 	document* doc_ = nullptr;
@@ -67,7 +87,7 @@ private:
 	void on_key_down(wxKeyEvent& event);
 	void on_char(wxKeyEvent& event);
 	void adjust_page_number(int delta);
-	int get_max_page() const;
+	[[nodiscard]] int get_max_page() const;
 };
 
 class toc_tree_item_data : public wxTreeItemData {
@@ -80,7 +100,12 @@ public:
 class toc_dialog : public wxDialog {
 public:
 	toc_dialog(wxWindow* parent, const document* doc, int current_offset = -1);
-	int get_selected_offset() const { return selected_offset; }
+	~toc_dialog() = default;
+	toc_dialog(const toc_dialog&) = delete;
+	toc_dialog& operator=(const toc_dialog&) = delete;
+	toc_dialog(toc_dialog&&) = delete;
+	toc_dialog& operator=(toc_dialog&&) = delete;
+	[[nodiscard]] int get_selected_offset() const { return selected_offset; }
 
 private:
 	wxTreeCtrl* tree;

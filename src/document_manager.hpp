@@ -16,12 +16,23 @@ struct document_tab : public wxClientData {
 	std::unique_ptr<document> doc;
 	wxString file_path;
 	wxPanel* panel{nullptr};
+
+	document_tab() = default;
+	~document_tab() = default;
+	document_tab(const document_tab&) = delete;
+	document_tab& operator=(const document_tab&) = delete;
+	document_tab(document_tab&&) = default;
+	document_tab& operator=(document_tab&&) = default;
 };
 
 class document_manager {
 public:
 	explicit document_manager(wxNotebook* notebook);
 	~document_manager();
+	document_manager(const document_manager&) = delete;
+	document_manager& operator=(const document_manager&) = delete;
+	document_manager(document_manager&&) = delete;
+	document_manager& operator=(document_manager&&) = delete;
 	[[nodiscard]] bool open_document(const wxString& path, const parser* parser);
 	void close_document(int index);
 	void close_all_documents();

@@ -8,6 +8,11 @@
 class main_window : public wxFrame {
 public:
 	main_window();
+	~main_window() = default;
+	main_window(const main_window&) = delete;
+	main_window& operator=(const main_window&) = delete;
+	main_window(main_window&&) = delete;
+	main_window& operator=(main_window&&) = delete;
 	[[nodiscard]] document_manager* get_doc_manager() const noexcept { return doc_manager.get(); }
 
 private:

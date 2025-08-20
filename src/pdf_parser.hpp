@@ -13,12 +13,18 @@ public:
 
 class pdf_parser : public parser {
 public:
-	wxString name() const override { return "PDF Documents"; }
-	std::span<const wxString> extensions() const override {
+	pdf_parser() = default;
+	~pdf_parser() = default;
+	pdf_parser(const pdf_parser&) = delete;
+	pdf_parser& operator=(const pdf_parser&) = delete;
+	pdf_parser(pdf_parser&&) = delete;
+	pdf_parser& operator=(pdf_parser&&) = delete;
+	[[nodiscard]] wxString name() const override { return "PDF Documents"; }
+	[[nodiscard]] std::span<const wxString> extensions() const override {
 		static const wxString exts[] = {"pdf"};
 		return exts;
 	}
-	std::unique_ptr<document> load(const wxString& path) const override;
+	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 
 private:
 	struct pdf_context {
@@ -35,7 +41,7 @@ private:
 	void extract_metadata(const pdf_context& ctx, wxString& title, wxString& author) const;
 	void extract_toc(const pdf_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items, const std::vector<size_t>& page_offsets) const;
 	void extract_outline_items(fz_outline* outline, std::vector<std::unique_ptr<toc_item>>& toc_items, const std::vector<size_t>& page_offsets, const pdf_context& ctx) const;
-	std::vector<std::string> process_text_lines(const std::string& raw_text) const;
+	[[nodiscard]] std::vector<std::string> process_text_lines(const std::string& raw_text) const;
 };
 
 REGISTER_PARSER(pdf_parser)

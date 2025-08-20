@@ -5,10 +5,16 @@
 
 class app : public wxApp {
 public:
+	app() = default;
+	~app() = default;
+	app(const app&) = delete;
+	app& operator=(const app&) = delete;
+	app(app&&) = delete;
+	app& operator=(app&&) = delete;
 	bool OnInit() override;
 	int OnExit() override;
 	void parse_command_line();
-	config_manager& get_config_manager() { return config_mgr; }
+	[[nodiscard]] config_manager& get_config_manager() { return config_mgr; }
 
 private:
 	main_window* frame = nullptr;
