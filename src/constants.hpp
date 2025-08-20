@@ -5,9 +5,7 @@ inline const wxString APP_NAME = "Paperback";
 inline const wxString APP_VERSION = "0.2";
 inline const wxString APP_COPYRIGHT = "Copyright (C) 2025 Quin Gillespie. All rights reserved.";
 inline const wxString APP_WEBSITE = "https://github.com/trypsynth/paperback";
-inline constexpr int DEFAULT_BORDER_SIZE = 10;
-inline constexpr int TEXT_CTRL_BORDER_SIZE = 5;
-inline constexpr int POSITION_SAVE_TIMER_INTERVAL_MS = 5000;
+inline constexpr int POSITION_SAVE_TIMER_INTERVAL = 5000;
 
 enum {
 	ID_EXPORT = wxID_HIGHEST + 1,

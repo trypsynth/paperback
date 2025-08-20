@@ -274,7 +274,7 @@ wxPanel* document_manager::create_tab_panel(const wxString& content, document_ta
 	auto* text_ctrl = new wxTextCtrl(panel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxTE_DONTWRAP);
 	panel->SetClientObject(tab_data);
 	tab_data->text_ctrl = text_ctrl;
-	sizer->Add(text_ctrl, 1, wxEXPAND | wxALL, TEXT_CTRL_BORDER_SIZE);
+	sizer->Add(text_ctrl, 1, wxEXPAND | wxALL, 5);
 	panel->SetSizer(sizer);
 	setup_text_ctrl(text_ctrl, content);
 	return panel;
