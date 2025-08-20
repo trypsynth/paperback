@@ -1,6 +1,7 @@
 #include "main_window.hpp"
 #include "constants.hpp"
 #include "go_to_dialog.hpp"
+#include "go_to_page_dialog.hpp"
 #include "parser.hpp"
 #include "utils.hpp"
 #include <wx/aboutdlg.h>
@@ -52,9 +53,13 @@ wxMenu* main_window::create_go_menu() {
 	menu->Append(ID_FIND_PREVIOUS, "Find P&revious\tShift+F3");
 	menu->AppendSeparator();
 	menu->Append(ID_GO_TO, "&Go to...\tCtrl+G");
+	menu->Append(ID_GO_TO_PAGE, "Go to &page...\tCtrl+P");
 	menu->AppendSeparator();
 	menu->Append(ID_PREVIOUS_SECTION, "Previous section\t[");
 	menu->Append(ID_NEXT_SECTION, "Next section\t]");
+	menu->AppendSeparator();
+	menu->Append(ID_PREVIOUS_PAGE, "Previous &page\tShift+P");
+	menu->Append(ID_NEXT_PAGE, "&Next page\tP");
 	return menu;
 }
 
@@ -85,8 +90,11 @@ void main_window::bind_events() {
 		{ID_FIND_NEXT, &main_window::on_find_next},
 		{ID_FIND_PREVIOUS, &main_window::on_find_previous},
 		{ID_GO_TO, &main_window::on_go_to},
+		{ID_GO_TO_PAGE, &main_window::on_go_to_page},
 		{ID_PREVIOUS_SECTION, &main_window::on_previous_section},
 		{ID_NEXT_SECTION, &main_window::on_next_section},
+		{ID_PREVIOUS_PAGE, &main_window::on_previous_page},
+		{ID_NEXT_PAGE, &main_window::on_next_page},
 		{ID_WORD_COUNT, &main_window::on_word_count},
 		{ID_DOC_INFO, &main_window::on_doc_info},
 		{ID_TABLE_OF_CONTENTS, &main_window::on_toc},
@@ -114,6 +122,7 @@ void main_window::update_ui() {
 		ID_FIND_NEXT,
 		ID_FIND_PREVIOUS,
 		ID_GO_TO,
+		ID_GO_TO_PAGE,
 		ID_WORD_COUNT,
 		ID_DOC_INFO};
 	for (const auto id : doc_items)
@@ -121,11 +130,15 @@ void main_window::update_ui() {
 	if (!has_doc) {
 		enable(ID_PREVIOUS_SECTION, false);
 		enable(ID_NEXT_SECTION, false);
+		enable(ID_PREVIOUS_PAGE, false);
+		enable(ID_NEXT_PAGE, false);
 		enable(ID_TABLE_OF_CONTENTS, false);
 		return;
 	}
 	enable(ID_PREVIOUS_SECTION, true);
 	enable(ID_NEXT_SECTION, true);
+	enable(ID_PREVIOUS_PAGE, true);
+	enable(ID_NEXT_PAGE, true);
 	enable(ID_TABLE_OF_CONTENTS, true);
 }
 
@@ -233,21 +246,46 @@ void main_window::on_go_to(wxCommandEvent&) {
 	update_status_bar();
 }
 
-void main_window::on_previous_section(wxCommandEvent&) {
-	if (!doc_manager->active_document_supports_sections()) {
-		speak("No sections.");
+void main_window::on_go_to_page(wxCommandEvent&) {
+	auto* const doc = doc_manager->get_active_document();
+	if (!doc) return;
+	if (!doc->has_flag(document_flags::supports_pages)) {
+		speak("Document doesn't support pages.");
 		return;
 	}
+	int current_page = 1;
+	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
+	if (!text_ctrl) return;
+	const size_t current_pos = text_ctrl->GetInsertionPoint();
+	const int current_page_idx = doc->page_index(current_pos);
+	if (current_page_idx >= 0) current_page = current_page_idx + 1; // Convert to 1-based index
+	go_to_page_dialog dlg(this, doc, current_page);
+	if (dlg.ShowModal() != wxID_OK) return;
+	const int page = dlg.get_page_number();
+	if (page >= 1 && page <= static_cast<int>(doc->page_offsets.size())) {
+		const size_t offset = doc->page_offsets[page - 1]; // Convert to 0-based index
+		doc_manager->go_to_position(offset);
+		update_status_bar();
+	}
+}
+
+void main_window::on_previous_section(wxCommandEvent&) {
 	doc_manager->go_to_previous_section();
 	update_status_bar();
 }
 
 void main_window::on_next_section(wxCommandEvent&) {
-	if (!doc_manager->active_document_supports_sections()) {
-		speak("No sections.");
-		return;
-	}
 	doc_manager->go_to_next_section();
+	update_status_bar();
+}
+
+void main_window::on_previous_page(wxCommandEvent&) {
+	doc_manager->go_to_previous_page();
+	update_status_bar();
+}
+
+void main_window::on_next_page(wxCommandEvent&) {
+	doc_manager->go_to_next_page();
 	update_status_bar();
 }
 
@@ -261,10 +299,6 @@ void main_window::on_doc_info(wxCommandEvent&) {
 }
 
 void main_window::on_toc(wxCommandEvent&) {
-	if (!doc_manager->active_document_supports_toc()) {
-		speak("No table of contents.");
-		return;
-	}
 	doc_manager->show_table_of_contents(this);
 	update_status_bar();
 }

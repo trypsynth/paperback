@@ -27,6 +27,32 @@ size_t document::offset_for_section(int section_index) const noexcept {
 	return section_offsets[section_index];
 }
 
+int document::next_page_index(size_t position) const noexcept {
+	for (size_t i = 0; i < page_offsets.size(); ++i)
+		if (page_offsets[i] > position)
+			return static_cast<int>(i);
+	return -1;
+}
+
+int document::previous_page_index(size_t position) const noexcept {
+	for (int i = static_cast<int>(page_offsets.size()) - 1; i >= 0; --i)
+		if (page_offsets[i] < position)
+			return i;
+	return -1;
+}
+
+int document::page_index(size_t position) const noexcept {
+	for (int i = static_cast<int>(page_offsets.size()) - 1; i >= 0; --i)
+		if (position >= page_offsets[i])
+			return i;
+	return -1;
+}
+
+size_t document::offset_for_page(int page_index) const noexcept {
+	if (page_index < 0 || page_index >= static_cast<int>(page_offsets.size())) return 0;
+	return page_offsets[page_index];
+}
+
 void document::calculate_statistics() const {
 	stats.char_count = text_content.Length();
 	stats.char_count_no_whitespace = 0;

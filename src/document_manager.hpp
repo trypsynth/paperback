@@ -30,11 +30,11 @@ public:
 	int get_tab_count() const;
 	int get_active_tab_index() const;
 	bool has_documents() const { return get_tab_count() > 0; }
-	bool active_document_supports_sections() const;
-	bool active_document_supports_toc() const;
 	void go_to_position(long position);
 	void go_to_previous_section();
 	void go_to_next_section();
+	void go_to_previous_page();
+	void go_to_next_page();
 	void show_table_of_contents(wxWindow* parent);
 	int get_word_count() const;
 	void show_document_info(wxWindow* parent);

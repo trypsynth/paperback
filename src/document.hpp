@@ -7,6 +7,7 @@ enum class document_flags {
 	none = 0,
 	supports_sections = 1 << 0,
 	supports_toc = 1 << 1,
+	supports_pages = 1 << 2,
 };
 
 inline constexpr document_flags operator|(document_flags a, document_flags b) noexcept {
@@ -41,6 +42,7 @@ struct document {
 	wxString text_content;
 	document_flags flags{document_flags::none};
 	std::vector<size_t> section_offsets;
+	std::vector<size_t> page_offsets;
 	std::vector<std::unique_ptr<toc_item>> toc_items;
 	mutable document_stats stats;
 
@@ -68,5 +70,9 @@ struct document {
 	int previous_section_index(size_t position) const noexcept;
 	int section_index(size_t position) const noexcept;
 	size_t offset_for_section(int section_index) const noexcept;
+	int next_page_index(size_t position) const noexcept;
+	int previous_page_index(size_t position) const noexcept;
+	int page_index(size_t position) const noexcept;
+	size_t offset_for_page(int page_index) const noexcept;
 	void calculate_statistics() const;
 };

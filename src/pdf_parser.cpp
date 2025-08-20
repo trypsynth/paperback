@@ -33,9 +33,9 @@ std::unique_ptr<document> pdf_parser::load(const wxString& path) const {
 		extract_metadata(ctx, document_ptr->title, document_ptr->author);
 		std::vector<size_t> page_offsets;
 		extract_text_content(ctx, document_ptr->text_content, page_offsets);
-		document_ptr->section_offsets = page_offsets;
+		document_ptr->page_offsets = page_offsets;
 		extract_toc(ctx, document_ptr->toc_items, page_offsets);
-		document_ptr->flags = document_flags::supports_sections;
+		document_ptr->flags = document_flags::supports_pages | document_flags::supports_toc;
 		if (!document_ptr->toc_items.empty()) document_ptr->flags |= document_flags::supports_toc;
 		return document_ptr;
 	} catch (const std::exception& e) {

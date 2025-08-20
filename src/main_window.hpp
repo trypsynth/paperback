@@ -34,8 +34,11 @@ private:
 	void on_find_next(wxCommandEvent&);
 	void on_find_previous(wxCommandEvent&);
 	void on_go_to(wxCommandEvent&);
+	void on_go_to_page(wxCommandEvent&);
 	void on_previous_section(wxCommandEvent&);
 	void on_next_section(wxCommandEvent&);
+	void on_previous_page(wxCommandEvent&);
+	void on_next_page(wxCommandEvent&);
 	void on_word_count(wxCommandEvent&);
 	void on_doc_info(wxCommandEvent&);
 	void on_toc(wxCommandEvent&);

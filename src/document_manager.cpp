@@ -81,16 +81,6 @@ int document_manager::get_active_tab_index() const {
 	return notebook_->GetSelection();
 }
 
-bool document_manager::active_document_supports_sections() const {
-	document* doc = get_active_document();
-	return doc && doc->has_flag(document_flags::supports_sections);
-}
-
-bool document_manager::active_document_supports_toc() const {
-	document* doc = get_active_document();
-	return doc && doc->has_flag(document_flags::supports_toc);
-}
-
 void document_manager::go_to_position(long position) {
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (!text_ctrl) return;
@@ -105,6 +95,10 @@ void document_manager::go_to_previous_section() {
 	document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (!doc || !text_ctrl) return;
+	if (!doc->has_flag(document_flags::supports_sections)) {
+		speak("No sections.");
+		return;
+	}
 	size_t current_pos = text_ctrl->GetInsertionPoint();
 	int prev_index = doc->previous_section_index(current_pos);
 	if (prev_index == -1) {
@@ -123,6 +117,10 @@ void document_manager::go_to_next_section() {
 	document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (!doc || !text_ctrl) return;
+	if (!doc->has_flag(document_flags::supports_sections)) {
+		speak("No sections.");
+		return;
+	}
 	size_t current_pos = text_ctrl->GetInsertionPoint();
 	int next_index = doc->next_section_index(current_pos);
 	if (next_index == -1) {
@@ -137,12 +135,60 @@ void document_manager::go_to_next_section() {
 	speak(current_line);
 }
 
+void document_manager::go_to_previous_page() {
+	document* doc = get_active_document();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (!doc || !text_ctrl) return;
+	if (!doc->has_flag(document_flags::supports_pages)) {
+		speak("No pages.");
+		return;
+	}
+	size_t current_pos = text_ctrl->GetInsertionPoint();
+	int prev_index = doc->previous_page_index(current_pos);
+	if (prev_index == -1) {
+		speak("No previous page.");
+		return;
+	}
+	size_t offset = doc->offset_for_page(prev_index);
+	text_ctrl->SetInsertionPoint(offset);
+	long line;
+	text_ctrl->PositionToXY(offset, 0, &line);
+	wxString current_line = text_ctrl->GetLineText(line);
+	speak(wxString::Format("Page %d: %s", prev_index + 1, current_line));
+}
+
+void document_manager::go_to_next_page() {
+	document* doc = get_active_document();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (!doc || !text_ctrl) return;
+	if (!doc->has_flag(document_flags::supports_pages)) {
+		speak("No pages.");
+		return;
+	}
+	size_t current_pos = text_ctrl->GetInsertionPoint();
+	int next_index = doc->next_page_index(current_pos);
+	if (next_index == -1) {
+		speak("No next page.");
+		return;
+	}
+	size_t offset = doc->offset_for_page(next_index);
+	text_ctrl->SetInsertionPoint(offset);
+	long line;
+	text_ctrl->PositionToXY(offset, 0, &line);
+	wxString current_line = text_ctrl->GetLineText(line);
+	speak(wxString::Format("Page %d: %s", next_index + 1, current_line));
+}
+
 void document_manager::show_table_of_contents(wxWindow* parent) {
 	document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (!doc || !text_ctrl) return;
+	if (!doc->has_flag(document_flags::supports_toc)) {
+		speak("No table of contents.");
+		return;
+	}
 	if (doc->toc_items.empty()) {
-		speak("Table of contents is empty");
+		speak("Table of contents is empty.");
 		return;
 	}
 	size_t current_pos = text_ctrl->GetInsertionPoint();
