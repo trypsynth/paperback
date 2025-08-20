@@ -23,14 +23,6 @@ document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc
 }
 
 find_dialog::find_dialog(wxWindow* parent) : wxDialog(parent, wxID_ANY, "Find") {
-	create_controls();
-	bind_events();
-	find_what_combo->SetFocus();
-	Fit();
-	CenterOnParent();
-}
-
-void find_dialog::create_controls() {
 	auto* const main_sizer = new wxBoxSizer(wxVERTICAL);
 	auto* const find_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* const find_label = new wxStaticText(this, wxID_ANY, "Find &what:");
@@ -57,14 +49,14 @@ void find_dialog::create_controls() {
 	main_sizer->Add(options_box, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 	main_sizer->Add(button_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 	SetSizer(main_sizer);
-}
-
-void find_dialog::bind_events() {
 	find_previous_btn->Bind(wxEVT_BUTTON, &find_dialog::on_find_previous, this);
 	find_next_btn->Bind(wxEVT_BUTTON, &find_dialog::on_find_next, this);
 	cancel_btn->Bind(wxEVT_BUTTON, &find_dialog::on_cancel, this);
 	find_what_combo->Bind(wxEVT_TEXT_ENTER, &find_dialog::on_find_text_enter, this);
 	Bind(wxEVT_CLOSE_WINDOW, &find_dialog::on_close, this);
+	find_what_combo->SetFocus();
+	Fit();
+	CenterOnParent();
 }
 
 wxString find_dialog::get_find_text() const {

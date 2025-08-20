@@ -41,8 +41,6 @@ private:
 	wxButton* find_next_btn{nullptr};
 	wxButton* cancel_btn{nullptr};
 
-	void create_controls();
-	void bind_events();
 	void on_find_previous(wxCommandEvent& event);
 	void on_find_next(wxCommandEvent& event);
 	void on_cancel(wxCommandEvent& event);
