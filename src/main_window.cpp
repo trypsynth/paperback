@@ -124,9 +124,9 @@ void main_window::update_ui() {
 		enable(ID_TABLE_OF_CONTENTS, false);
 		return;
 	}
-	enable(ID_PREVIOUS_SECTION, doc_manager->active_document_supports_sections());
-	enable(ID_NEXT_SECTION, doc_manager->active_document_supports_sections());
-	enable(ID_TABLE_OF_CONTENTS, doc_manager->active_document_supports_toc());
+	enable(ID_PREVIOUS_SECTION, true);
+	enable(ID_NEXT_SECTION, true);
+	enable(ID_TABLE_OF_CONTENTS, true);
 }
 
 void main_window::update_title() {
@@ -234,11 +234,19 @@ void main_window::on_go_to(wxCommandEvent&) {
 }
 
 void main_window::on_previous_section(wxCommandEvent&) {
+	if (!doc_manager->active_document_supports_sections()) {
+		speak("No sections.");
+		return;
+	}
 	doc_manager->go_to_previous_section();
 	update_status_bar();
 }
 
 void main_window::on_next_section(wxCommandEvent&) {
+	if (!doc_manager->active_document_supports_sections()) {
+		speak("No sections.");
+		return;
+	}
 	doc_manager->go_to_next_section();
 	update_status_bar();
 }
@@ -253,6 +261,10 @@ void main_window::on_doc_info(wxCommandEvent&) {
 }
 
 void main_window::on_toc(wxCommandEvent&) {
+	if (!doc_manager->active_document_supports_toc()) {
+		speak("No table of contents.");
+		return;
+	}
 	doc_manager->show_table_of_contents(this);
 	update_status_bar();
 }
