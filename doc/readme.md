@@ -54,9 +54,9 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * Fixed loading epubs with URL-encoded filenames in their manifests. [#20](https://github.com/trypsynth/paperback/issues/20).
 * Fixed loading epub 3 books with XHTML embedded inside of them. [#35](https://github.com/trypsynth/paperback/issues/35).
 * A message is now spoken if the document doesn't support a table of contents or sections, as opposed to the menu items being disabled. [#39](https://github.com/trypsynth/paperback/issues/39).
-* Added a recent documents menu! It currently stores your last 10 opened documents, and pressing enter on one will open it for reading.
-* Completely rewrote the Find dialog, making it much simpler to use, while also adding a history of your last 25 searches and regular expression support!
-* Previously opened documents are now remembered across application restarts. This is configurable through the new options item in the tools menu.
+* Added a recent documents menu! It currently stores your last 10 opened documents, and pressing enter on one will open it for reading. [#32](https://github.com/trypsynth/paperback/issues/32).
+* Completely rewrote the Find dialog, making it much simpler to use, while also adding a history of your last 25 searches and regular expression support! [#21](https://github.com/trypsynth/paperback/issues/21).
+* Previously opened documents are now remembered across application restarts. This is configurable through the new options item in the tools menu. [#18](https://github.com/trypsynth/paperback/issues/18).
 
 ### Version 0.1
 * Initial release.
