@@ -94,12 +94,8 @@ void xml_to_text::process_text_node(Text* text_node) {
 
 void xml_to_text::add_line(std::string_view line) {
 	std::string processed_line;
-	if (preserve_whitespace)
-		processed_line = std::string(line);
-	else {
-		processed_line = collapse_whitespace(line);
-		processed_line = trim_string(processed_line);
-	}
+	processed_line = preserve_whitespace ? std::string(line) : collapse_whitespace(line);
+	processed_line = trim_string(processed_line);
 	if (!processed_line.empty()) lines.emplace_back(std::move(processed_line));
 }
 
