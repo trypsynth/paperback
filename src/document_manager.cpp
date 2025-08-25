@@ -3,6 +3,7 @@
 #include "dialogs.hpp"
 #include "parser.hpp"
 #include "utils.hpp"
+#include "app.hpp"
 #include <wx/config.h>
 #include <wx/filename.h>
 #include <wx/notebook.h>
@@ -27,6 +28,7 @@ bool document_manager::open_document(const wxString& path, const parser* par) {
 	notebook_->AddPage(panel, tab_data->doc->title, true);
 	restore_document_position(tab_data);
 	tab_data->text_ctrl->SetFocus();
+	wxGetApp().get_config_manager().add_recent_document(path);
 	return true;
 }
 

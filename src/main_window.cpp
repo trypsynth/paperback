@@ -3,6 +3,7 @@
 #include "dialogs.hpp"
 #include "parser.hpp"
 #include "utils.hpp"
+#include "app.hpp"
 #include <wx/aboutdlg.h>
 #include <wx/filename.h>
 #include <wx/stdpaths.h>
@@ -68,6 +69,8 @@ wxMenu* main_window::create_tools_menu() {
 	menu->Append(ID_DOC_INFO, "Document &info\tCtrl+I");
 	menu->AppendSeparator();
 	menu->Append(ID_TABLE_OF_CONTENTS, "Table of contents\tCtrl+T");
+	menu->AppendSeparator();
+	menu->Append(ID_OPTIONS, "&Options\tCtrl+,");
 	return menu;
 }
 
@@ -97,6 +100,7 @@ void main_window::bind_events() {
 		{ID_WORD_COUNT, &main_window::on_word_count},
 		{ID_DOC_INFO, &main_window::on_doc_info},
 		{ID_TABLE_OF_CONTENTS, &main_window::on_toc},
+		{ID_OPTIONS, &main_window::on_options},
 		{wxID_ABOUT, &main_window::on_about},
 		{wxID_HELP, &main_window::on_help},
 	};
@@ -300,6 +304,15 @@ void main_window::on_doc_info(wxCommandEvent&) {
 void main_window::on_toc(wxCommandEvent&) {
 	doc_manager->show_table_of_contents(this);
 	update_status_bar();
+}
+
+void main_window::on_options(wxCommandEvent&) {
+	auto& config_mgr = wxGetApp().get_config_manager();
+	options_dialog dlg(this);
+	dlg.set_restore_previous_documents(config_mgr.get_restore_previous_documents());
+	if (dlg.ShowModal() != wxID_OK) return;
+	config_mgr.set_restore_previous_documents(dlg.get_restore_previous_documents());
+	config_mgr.flush();
 }
 
 void main_window::on_about(wxCommandEvent&) {

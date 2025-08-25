@@ -1,5 +1,6 @@
 #include "dialogs.hpp"
 #include "constants.hpp"
+#include "config_manager.hpp"
 
 document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc) : wxDialog(parent, wxID_ANY, "Document Info") {
 	auto* main_sizer = new wxBoxSizer(wxVERTICAL);
@@ -287,6 +288,42 @@ void go_to_page_dialog::adjust_page_number(int delta) {
 int go_to_page_dialog::get_max_page() const {
 	if (!doc_ || !doc_->has_flag(document_flags::supports_pages)) return 1;
 	return static_cast<int>(doc_->page_offsets.size());
+}
+
+options_dialog::options_dialog(wxWindow* parent) : wxDialog(parent, wxID_ANY, "Options") {
+	auto* main_sizer = new wxBoxSizer(wxVERTICAL);
+	auto* general_box = new wxStaticBoxSizer(wxVERTICAL, this, "General");
+	restore_docs_check = new wxCheckBox(this, wxID_ANY, "&Restore previously opened documents on startup");
+	general_box->Add(restore_docs_check, 0, wxALL, 5);
+	auto* button_sizer = new wxStdDialogButtonSizer();
+	auto* ok_button = new wxButton(this, wxID_OK, "&OK");
+	auto* cancel_button = new wxButton(this, wxID_CANCEL, "&Cancel");
+	button_sizer->SetAffirmativeButton(ok_button);
+	button_sizer->SetCancelButton(cancel_button);
+	button_sizer->Realize();
+	main_sizer->Add(general_box, 1, wxEXPAND | wxALL, 10);
+	main_sizer->Add(button_sizer, 0, wxALIGN_RIGHT | wxALL, 10);
+	Bind(wxEVT_BUTTON, &options_dialog::on_ok, this, wxID_OK);
+	Bind(wxEVT_BUTTON, &options_dialog::on_cancel, this, wxID_CANCEL);
+	SetSizerAndFit(main_sizer);
+	SetMinSize(wxSize(400, 200));
+	CentreOnParent();
+}
+
+bool options_dialog::get_restore_previous_documents() const {
+	return restore_docs_check ? restore_docs_check->GetValue() : false;
+}
+
+void options_dialog::set_restore_previous_documents(bool restore) {
+	if (restore_docs_check) restore_docs_check->SetValue(restore);
+}
+
+void options_dialog::on_ok(wxCommandEvent& event) {
+	EndModal(wxID_OK);
+}
+
+void options_dialog::on_cancel(wxCommandEvent& event) {
+	EndModal(wxID_CANCEL);
 }
 
 toc_dialog::toc_dialog(wxWindow* parent, const document* doc, int current_offset) : wxDialog(parent, wxID_ANY, "Table of Contents"), selected_offset{-1} {

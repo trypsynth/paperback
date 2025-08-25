@@ -14,6 +14,7 @@ public:
 	bool OnInit() override;
 	int OnExit() override;
 	void parse_command_line();
+	void restore_previous_documents();
 	[[nodiscard]] config_manager& get_config_manager() { return config_mgr; }
 
 private:

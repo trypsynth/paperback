@@ -21,6 +21,8 @@ void config_manager::flush() {
 }
 
 void config_manager::load_defaults() {
+	config->SetPath("/");
+	if (!config->HasEntry("RestorePreviousDocuments")) set_bool("RestorePreviousDocuments", true);
 }
 
 wxString config_manager::get_config_path() const {
@@ -51,4 +53,63 @@ void config_manager::set_bool(const wxString& key, bool value) {
 
 void config_manager::set_int(const wxString& key, int value) {
 	if (config) config->Write(key, value);
+}
+
+void config_manager::add_recent_document(const wxString& path) {
+	if (!config) return;
+	wxArrayString recent = get_recent_documents();
+	int existing_index = recent.Index(path);
+	if (existing_index != wxNOT_FOUND) recent.RemoveAt(existing_index);
+	recent.Insert(path, 0);
+	const int max_recent = 10;
+	while (recent.GetCount() > max_recent) recent.RemoveAt(recent.GetCount() - 1);
+	config->DeleteGroup("RecentDocuments");
+	config->SetPath("/RecentDocuments");
+	for (size_t i = 0; i < recent.GetCount(); ++i) config->Write(wxString::Format("File%zu", i), recent[i]);
+	config->SetPath("/");
+}
+
+wxArrayString config_manager::get_recent_documents() const {
+	wxArrayString result;
+	if (!config) return result;
+	config->SetPath("/RecentDocuments");
+	wxString key;
+	long index;
+	bool cont = config->GetFirstEntry(key, index);
+	wxArrayString temp_list;
+	while (cont) {
+		wxString path = config->Read(key, "");
+		if (!path.IsEmpty() && wxFileName::FileExists(path)) temp_list.Add(path);
+		cont = config->GetNextEntry(key, index);
+	}
+	config->SetPath("/");
+	for (int i = 0; i < 10 && i < temp_list.GetCount(); ++i) {
+		wxString key_name = wxString::Format("File%d", i);
+		for (const auto& path : temp_list) {
+			if (config->Read("/RecentDocuments/" + key_name, "") == path) {
+				result.Add(path);
+				break;
+			}
+		}
+	}
+	return result;
+}
+
+void config_manager::clear_recent_documents() {
+	if (config) config->DeleteGroup("RecentDocuments");
+}
+
+bool config_manager::get_restore_previous_documents() const {
+	if (config) {
+		config->SetPath("/");
+		return config->ReadBool("RestorePreviousDocuments", true);
+	}
+	return true;
+}
+
+void config_manager::set_restore_previous_documents(bool restore) {
+	if (config) {
+		config->SetPath("/");
+		config->Write("RestorePreviousDocuments", restore);
+	}
 }

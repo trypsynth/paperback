@@ -88,6 +88,24 @@ private:
 	[[nodiscard]] int get_max_page() const;
 };
 
+class options_dialog : public wxDialog {
+public:
+	options_dialog(wxWindow* parent);
+	~options_dialog() = default;
+	options_dialog(const options_dialog&) = delete;
+	options_dialog& operator=(const options_dialog&) = delete;
+	options_dialog(options_dialog&&) = delete;
+	options_dialog& operator=(options_dialog&&) = delete;
+	bool get_restore_previous_documents() const;
+	void set_restore_previous_documents(bool restore);
+
+private:
+	wxCheckBox* restore_docs_check = nullptr;
+
+	void on_ok(wxCommandEvent& event);
+	void on_cancel(wxCommandEvent& event);
+};
+
 class toc_tree_item_data : public wxTreeItemData {
 public:
 	toc_tree_item_data(int offset_) : offset{offset_} {}

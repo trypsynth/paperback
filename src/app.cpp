@@ -10,6 +10,7 @@ bool app::OnInit() {
 	}
 	frame = new main_window();
 	if (argc > 1) parse_command_line();
+	else if (config_mgr.get_restore_previous_documents()) restore_previous_documents();
 	frame->Show(true);
 	return true;
 }
@@ -32,6 +33,19 @@ void app::parse_command_line() {
 	}
 	if (!frame->get_doc_manager()->open_document(path, par))
 		wxMessageBox("Failed to load document.", "Error", wxICON_ERROR);
+}
+
+void app::restore_previous_documents() {
+	wxArrayString recent_docs = config_mgr.get_recent_documents();
+	for (const auto& path : recent_docs) {
+		if (!wxFileName::FileExists(path)) continue;
+		auto* par = find_parser_by_extension(wxFileName(path).GetExt());
+		if (!par) {
+			if (!should_open_as_txt(path)) continue;
+			par = find_parser_by_extension("txt");
+		}
+		if (!frame->get_doc_manager()->open_document(path, par)) continue;
+	}
 }
 
 wxIMPLEMENT_APP(app);

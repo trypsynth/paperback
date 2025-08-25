@@ -21,6 +21,11 @@ public:
 	void set_int(const wxString& key, int value);
 	wxFileConfig* get_config() const { return config.get(); }
 	bool is_initialized() const { return config != nullptr; }
+	void add_recent_document(const wxString& path);
+	wxArrayString get_recent_documents() const;
+	void clear_recent_documents();
+	bool get_restore_previous_documents() const;
+	void set_restore_previous_documents(bool restore);
 
 private:
 	std::unique_ptr<wxFileConfig> config;

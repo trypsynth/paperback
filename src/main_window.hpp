@@ -48,6 +48,7 @@ private:
 	void on_word_count(wxCommandEvent&);
 	void on_doc_info(wxCommandEvent&);
 	void on_toc(wxCommandEvent&);
+	void on_options(wxCommandEvent&);
 	void on_about(wxCommandEvent&);
 	void on_help(wxCommandEvent&);
 	void on_notebook_page_changed(wxBookCtrlEvent& event);
