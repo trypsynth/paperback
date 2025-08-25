@@ -40,6 +40,10 @@ wxMenu* main_window::create_file_menu() {
 	menu->Append(wxID_CLOSE, "Close\tCtrl+F4");
 	menu->Append(wxID_CLOSE_ALL, "Close &All\tCtrl+Shift+F4");
 	menu->AppendSeparator();
+	recent_documents_menu = new wxMenu();
+	menu->AppendSubMenu(recent_documents_menu, "&Recent Documents");
+	update_recent_documents_menu();
+	menu->AppendSeparator();
 	menu->Append(ID_EXPORT, "&Export...\tCtrl+E");
 	menu->AppendSeparator();
 	menu->Append(wxID_EXIT, "E&xit");
@@ -171,6 +175,9 @@ void main_window::on_open(wxCommandEvent&) {
 		text_ctrl->Bind(wxEVT_LEFT_UP, &main_window::on_text_cursor_changed, this);
 		text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, this);
 	}
+	auto& config_mgr = wxGetApp().get_config_manager();
+	config_mgr.add_recent_document(path);
+	update_recent_documents_menu();
 	update_title();
 	update_status_bar();
 	update_ui();
@@ -367,6 +374,65 @@ void main_window::on_close_window(wxCloseEvent& event) {
 
 void main_window::on_position_save_timer(wxTimerEvent&) {
 	doc_manager->save_current_tab_position();
+}
+
+void main_window::on_recent_document(wxCommandEvent& event) {
+	const int id = event.GetId();
+	const int index = id - ID_RECENT_DOCUMENTS_BASE;
+	auto& config_mgr = wxGetApp().get_config_manager();
+	const wxArrayString recent_docs = config_mgr.get_recent_documents();
+	if (index >= 0 && index < static_cast<int>(recent_docs.GetCount())) {
+		const wxString& path = recent_docs[index];
+		if (!wxFileName::FileExists(path)) {
+			wxMessageBox("File no longer exists: " + path, "Error", wxICON_ERROR);
+			update_recent_documents_menu();
+			return;
+		}
+		const auto* par = find_parser_by_extension(wxFileName(path).GetExt());
+		if (!par) {
+			if (!should_open_as_txt(path)) return;
+			par = find_parser_by_extension("txt");
+		}
+		if (!doc_manager->open_document(path, par)) {
+			wxMessageBox("Failed to load document.", "Error", wxICON_ERROR);
+			return;
+		}
+		auto* const text_ctrl = doc_manager->get_active_text_ctrl();
+		if (text_ctrl) {
+			text_ctrl->Bind(wxEVT_LEFT_UP, &main_window::on_text_cursor_changed, this);
+			text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, this);
+		}
+		config_mgr.add_recent_document(path);
+		update_recent_documents_menu();
+		update_title();
+		update_status_bar();
+		update_ui();
+	}
+}
+
+void main_window::update_recent_documents_menu() {
+	if (!recent_documents_menu) return;
+	while (recent_documents_menu->GetMenuItemCount() > 0) {
+		wxMenuItem* item = recent_documents_menu->FindItemByPosition(0);
+		if (item) {
+			Unbind(wxEVT_MENU, &main_window::on_recent_document, this, item->GetId());
+			recent_documents_menu->Delete(item);
+		}
+	}
+	auto& config_mgr = wxGetApp().get_config_manager();
+	const wxArrayString recent_docs = config_mgr.get_recent_documents();
+	if (recent_docs.IsEmpty()) {
+		recent_documents_menu->Append(wxID_ANY, "(No recent documents)")->Enable(false);
+		return;
+	}
+	for (size_t i = 0; i < recent_docs.GetCount() && i < 10; ++i) {
+		const wxString& path = recent_docs[i];
+		const wxString filename = wxFileName(path).GetFullName();
+		const wxString menu_text = wxString::Format("&%zu %s", i + 1, filename);
+		const int id = ID_RECENT_DOCUMENTS_BASE + static_cast<int>(i);
+		recent_documents_menu->Append(id, menu_text, path);
+		Bind(wxEVT_MENU, &main_window::on_recent_document, this, id);
+	}
 }
 
 void main_window::do_find(bool forward) {

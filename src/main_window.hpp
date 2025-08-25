@@ -21,6 +21,7 @@ private:
 	wxStatusBar* status_bar{nullptr};
 	wxTimer* position_save_timer{nullptr};
 	find_dialog* find_dlg{nullptr};
+	wxMenu* recent_documents_menu{nullptr};
 
 	void create_menus();
 	wxMenu* create_file_menu();
@@ -55,5 +56,7 @@ private:
 	void on_text_cursor_changed(wxEvent& event);
 	void on_close_window(wxCloseEvent& event);
 	void on_position_save_timer(wxTimerEvent&);
+	void on_recent_document(wxCommandEvent& event);
 	void do_find(bool forward);
+	void update_recent_documents_menu();
 };
