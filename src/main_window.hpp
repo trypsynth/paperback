@@ -61,6 +61,7 @@ private:
 	void on_options(wxCommandEvent&);
 	void on_about(wxCommandEvent&);
 	void on_help(wxCommandEvent&);
+	void on_help_internal(wxCommandEvent&);
 	void on_notebook_page_changed(wxBookCtrlEvent& event);
 	void on_text_cursor_changed(wxEvent& event);
 	void on_close_window(wxCloseEvent& event);

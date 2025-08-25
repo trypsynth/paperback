@@ -90,7 +90,8 @@ wxMenu* main_window::create_tools_menu() {
 wxMenu* main_window::create_help_menu() {
 	auto* const menu = new wxMenu();
 	menu->Append(wxID_ABOUT, "About " + APP_NAME + "\tCtrl+F1");
-	menu->Append(wxID_HELP, "&Help\tF1");
+	menu->Append(wxID_HELP, "View &help in default browser\tF1");
+	menu->Append(ID_HELP_INTERNAL, "View Help in " + APP_NAME + "\tShift+F1");
 	return menu;
 }
 
@@ -116,6 +117,7 @@ void main_window::bind_events() {
 		{ID_OPTIONS, &main_window::on_options},
 		{wxID_ABOUT, &main_window::on_about},
 		{wxID_HELP, &main_window::on_help},
+		{ID_HELP_INTERNAL, &main_window::on_help_internal},
 	};
 	for (const auto& [id, handler] : menu_bindings)
 		Bind(wxEVT_MENU, handler, this, id);
@@ -345,6 +347,28 @@ void main_window::on_help(wxCommandEvent&) {
 	const auto url = "file://" + wxFileName(path, "readme.html").GetFullPath();
 	if (!wxLaunchDefaultBrowser(url))
 		wxMessageBox("Failed to launch default browser.", "Error", wxICON_ERROR);
+}
+
+void main_window::on_help_internal(wxCommandEvent&) {
+	const auto path = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath();
+	const auto readme_path = wxFileName(path, "readme.html").GetFullPath();
+	if (!wxFileName::FileExists(readme_path)) {
+		wxMessageBox("readme.html not found. Please ensure the application was built properly.", "Error", wxICON_ERROR);
+		return;
+	}
+	const auto* par = find_parser_by_extension("html");
+	if (!par) return;
+	if (!doc_manager->open_document(readme_path, par)) {
+		wxMessageBox("Failed to load readme.html.", "Error", wxICON_ERROR);
+		return;
+	}
+	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
+	if (!text_ctrl) return;
+	text_ctrl->Bind(wxEVT_LEFT_UP, &main_window::on_text_cursor_changed, this);
+	text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, this);
+	update_title();
+	update_status_bar();
+	update_ui();
 }
 
 void main_window::on_notebook_page_changed(wxBookCtrlEvent& event) {
