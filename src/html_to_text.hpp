@@ -11,6 +11,7 @@
 #include <lexbor/html/html.h>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 class html_to_text {
@@ -24,6 +25,7 @@ public:
 	[[nodiscard]] bool convert(const std::string& html_content);
 	[[nodiscard]] const std::vector<std::string>& get_lines() const noexcept { return lines; }
 	[[nodiscard]] std::string get_text() const;
+	[[nodiscard]] const std::unordered_map<std::string, size_t>& get_id_positions() const noexcept { return id_positions; }
 	void clear() noexcept;
 
 private:
@@ -36,6 +38,7 @@ private:
 
 	std::vector<std::string> lines;
 	std::string current_line;
+	std::unordered_map<std::string, size_t> id_positions;
 	bool in_body = false;
 	bool preserve_whitespace = false;
 	DocumentPtr doc;
@@ -45,6 +48,7 @@ private:
 	void add_line(std::string_view line);
 	void finalize_current_line();
 	void finalize_text(); // New method for final cleanup
+	size_t get_current_text_position() const;
 	[[nodiscard]] static constexpr bool is_block_element(std::string_view tag_name) noexcept;
 	[[nodiscard]] static std::string_view get_tag_name(lxb_dom_element_t* element) noexcept;
 };

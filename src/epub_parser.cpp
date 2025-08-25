@@ -140,7 +140,7 @@ void epub_parser::parse_opf(const std::string& filename, epub_context& ctx) cons
 	}
 }
 
-epub_section epub_parser::parse_section(size_t index, const epub_context& ctx) const {
+epub_section epub_parser::parse_section(size_t index, epub_context& ctx) const {
 	if (index >= ctx.spine_items.size()) throw parse_error("Section index out of range");
 	const auto& id = ctx.spine_items[index];
 	auto it = ctx.manifest_items.find(id);
@@ -159,12 +159,18 @@ epub_section epub_parser::parse_section(size_t index, const epub_context& ctx) c
 		if (converter.convert(content_buffer.str())) {
 			const auto& lines = converter.get_lines();
 			section.lines.assign(lines.begin(), lines.end());
+			const auto& id_positions = converter.get_id_positions();
+			for (const auto& [id, relative_pos] : id_positions)
+				ctx.id_positions[href][id] = ctx.section_offsets[index] + relative_pos;
 		}
 	} else {
 		xml_to_text converter;
 		if (converter.convert(content_buffer.str())) {
 			const auto& lines = converter.get_lines();
 			section.lines.assign(lines.begin(), lines.end());
+			const auto& id_positions = converter.get_id_positions();
+			for (const auto& [id, relative_pos] : id_positions)
+				ctx.id_positions[href][id] = ctx.section_offsets[index] + relative_pos;
 		}
 	}
 	return section;
@@ -318,6 +324,13 @@ int epub_parser::calculate_offset_from_href(const std::string& href, const epub_
 	Path full_path(ctx.opf_path);
 	if (!file_path.empty()) full_path.append(file_path);
 	std::string resolved_path = full_path.toString(Path::PATH_UNIX);
+	if (!fragment.empty()) {
+		auto file_ids_it = ctx.id_positions.find(resolved_path);
+		if (file_ids_it != ctx.id_positions.end()) {
+			auto id_pos_it = file_ids_it->second.find(fragment);
+			if (id_pos_it != file_ids_it->second.end()) return static_cast<int>(id_pos_it->second);
+		}
+	}
 	std::string manifest_id;
 	for (const auto& [id, item] : ctx.manifest_items) {
 		if (item.path == resolved_path) {

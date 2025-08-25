@@ -55,6 +55,7 @@ std::string xml_to_text::get_text() const {
 void xml_to_text::clear() noexcept {
 	lines.clear();
 	current_line.clear();
+	id_positions.clear();
 	in_body = false;
 	preserve_whitespace = false;
 }
@@ -73,6 +74,10 @@ void xml_to_text::process_node(Node* node) {
 			preserve_whitespace = true;
 		else if (tag_name == "br" || tag_name == "li")
 			finalize_current_line();
+		if (in_body && element->hasAttribute("id")) {
+			std::string id = element->getAttribute("id");
+			if (!id.empty()) id_positions[id] = get_current_text_position();
+		}
 	} else if (node_type == Node::TEXT_NODE)
 		process_text_node(static_cast<Text*>(node));
 	auto* child = node->firstChild();
@@ -102,6 +107,13 @@ void xml_to_text::add_line(std::string_view line) {
 void xml_to_text::finalize_current_line() {
 	add_line(current_line);
 	current_line.clear();
+}
+
+size_t xml_to_text::get_current_text_position() const {
+	size_t total_length = 0;
+	for (const auto& line : lines) total_length += line.length() + 1;
+	total_length += current_line.length();
+	return total_length;
 }
 
 constexpr bool xml_to_text::is_block_element(std::string_view tag_name) noexcept {

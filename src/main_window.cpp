@@ -271,7 +271,7 @@ void main_window::on_go_to_page(wxCommandEvent&) {
 	auto* const doc = doc_manager->get_active_document();
 	if (!doc) return;
 	if (!doc->has_flag(document_flags::supports_pages)) {
-		speak("Document doesn't support pages.");
+		speak("No pages.");
 		return;
 	}
 	int current_page = 1;

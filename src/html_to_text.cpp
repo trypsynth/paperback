@@ -42,6 +42,7 @@ std::string html_to_text::get_text() const {
 void html_to_text::clear() noexcept {
 	lines.clear();
 	current_line.clear();
+	id_positions.clear();
 	in_body = false;
 	preserve_whitespace = false;
 }
@@ -55,14 +56,24 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 		tag_name = get_tag_name(element);
 	}
 	switch (node->type) {
-	case LXB_DOM_NODE_TYPE_ELEMENT:
+	case LXB_DOM_NODE_TYPE_ELEMENT: {
+		auto* element = lxb_dom_interface_element(node);
 		if (tag_name == "body")
 			in_body = true;
 		else if (tag_name == "pre")
 			preserve_whitespace = true;
 		else if (tag_name == "br" || tag_name == "li")
 			finalize_current_line();
+		if (in_body && element) {
+			size_t id_len;
+			const lxb_char_t* id_attr = lxb_dom_element_get_attribute(element, (const lxb_char_t*)"id", 2, &id_len);
+			if (id_attr && id_len > 0) {
+				std::string id{reinterpret_cast<const char*>(id_attr), id_len};
+				id_positions[id] = get_current_text_position();
+			}
+		}
 		break;
+	}
 	case LXB_DOM_NODE_TYPE_TEXT:
 		process_text_node(lxb_dom_interface_text(node));
 		break;
@@ -104,6 +115,13 @@ void html_to_text::finalize_text() {
 		if (!line.empty()) cleaned_lines.emplace_back(std::move(line));
 	}
 	lines = std::move(cleaned_lines);
+}
+
+size_t html_to_text::get_current_text_position() const {
+	size_t total_length = 0;
+	for (const auto& line : lines) total_length += line.length() + 1;
+	total_length += current_line.length();
+	return total_length;
 }
 
 constexpr bool html_to_text::is_block_element(std::string_view tag_name) noexcept {
