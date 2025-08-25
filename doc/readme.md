@@ -9,10 +9,11 @@ Paperback currently runs on Windows 10/11. It's possible it runs on earlier vers
 * Incredibly fast and standalone.
 * Simple tabbed interface, allowing you to open as many documents as you want at once.
 * Saves your cursor position across every document you open.
+* Optionally remembers what documents you had open when you closed the program, and restores them on next launch.
 * Designed with screen reader users in mind.
-* Fast and efficient text finding throughout your entire document.
-* Ability to navigate through epub sections, with other navigation units planned.
-* Usable with the Windows open with dialog.
+* Ability to navigate through epub sections, as well as pages in a PDF. More navigation units, such as HTML headings, are planned.
+* Includes a robust find dialog, including features like history and regular expression support.
+* Usable from the Windows open with dialog.
 
 ## Currently supported filetypes:
 Paperback supports several common file formats, with more planned for future releases.
@@ -20,6 +21,7 @@ Paperback supports several common file formats, with more planned for future rel
 * Epub 2/3 books.
 * HTML documents.
 * Markdown documents.
+* PDF documents.
 * Text documents.
 
 ## Hotkeys
@@ -35,13 +37,17 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * F3: find next.
 * Shift+F3: find previous.
 * Ctrl+G: bring up the go to dialog, allowing you to go to either a line number or a percentage.
+* Ctrl+P: brings up a dialog allowing you to specify a page number to jump to, if the document supports pages.
 * Left bracket: go to the previous epub section.
 * Right bracket: go to the next epub section.
+* P: go to the next page.
+* Shift+P: go to the previous page.
 
 ### Tools menu
 * Ctrl+W: view the word count of the currently focused document.
 * Ctrl+I: bring up the document info dialog.
 * Ctrl+T: show the table of contents.
+* Ctrl+Comma: bring up the options dialog.
 
 ### About menu
 * Ctrl+F1: show the about dialog.
