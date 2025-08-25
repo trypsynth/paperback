@@ -35,6 +35,10 @@ public:
 	void clear_recent_documents();
 	bool get_restore_previous_documents() const;
 	void set_restore_previous_documents(bool restore);
+	void add_opened_document(const wxString& path);
+	void remove_opened_document(const wxString& path);
+	wxArrayString get_opened_documents() const;
+	void clear_opened_documents();
 
 private:
 	std::unique_ptr<wxFileConfig> config;

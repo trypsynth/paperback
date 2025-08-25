@@ -23,6 +23,7 @@ document_manager::document_manager(wxNotebook* notebook) : notebook_(notebook) {
 
 document_manager::~document_manager() {
 	save_all_tab_positions();
+	wxGetApp().get_config_manager().clear_opened_documents();
 }
 
 bool document_manager::open_document(const wxString& path, const parser* par) {
@@ -38,6 +39,7 @@ bool document_manager::open_document(const wxString& path, const parser* par) {
 	restore_document_position(tab_data);
 	tab_data->text_ctrl->SetFocus();
 	wxGetApp().get_config_manager().add_recent_document(path);
+	wxGetApp().get_config_manager().add_opened_document(path);
 	return true;
 }
 
@@ -47,12 +49,14 @@ void document_manager::close_document(int index) {
 	if (tab && tab->text_ctrl) {
 		long position = tab->text_ctrl->GetInsertionPoint();
 		save_document_position(tab->file_path, position);
+		wxGetApp().get_config_manager().remove_opened_document(tab->file_path);
 	}
 	notebook_->DeletePage(index);
 }
 
 void document_manager::close_all_documents() {
 	save_all_tab_positions();
+	wxGetApp().get_config_manager().clear_opened_documents();
 	notebook_->DeleteAllPages();
 }
 

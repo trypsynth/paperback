@@ -47,8 +47,8 @@ void app::parse_command_line() {
 }
 
 void app::restore_previous_documents() {
-	wxArrayString recent_docs = config_mgr.get_recent_documents();
-	for (const auto& path : recent_docs) {
+	wxArrayString opened_docs = config_mgr.get_opened_documents();
+	for (const auto& path : opened_docs) {
 		if (!wxFileName::FileExists(path)) continue;
 		auto* par = find_parser_by_extension(wxFileName(path).GetExt());
 		if (!par) {

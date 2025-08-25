@@ -122,3 +122,49 @@ void config_manager::set_restore_previous_documents(bool restore) {
 		config->Write("restore_previous_documents", restore);
 	}
 }
+
+void config_manager::add_opened_document(const wxString& path) {
+	if (!config) return;
+	wxArrayString opened = get_opened_documents();
+	int existing_index = opened.Index(path);
+	if (existing_index == wxNOT_FOUND) {
+		opened.Add(path);
+		config->DeleteGroup("opened_documents");
+		config->SetPath("/opened_documents");
+		for (size_t i = 0; i < opened.GetCount(); ++i) config->Write(wxString::Format("File%zu", i), opened[i]);
+		config->SetPath("/");
+	}
+}
+
+void config_manager::remove_opened_document(const wxString& path) {
+	if (!config) return;
+	wxArrayString opened = get_opened_documents();
+	int existing_index = opened.Index(path);
+	if (existing_index != wxNOT_FOUND) {
+		opened.RemoveAt(existing_index);
+		config->DeleteGroup("opened_documents");
+		config->SetPath("/opened_documents");
+		for (size_t i = 0; i < opened.GetCount(); ++i) config->Write(wxString::Format("File%zu", i), opened[i]);
+		config->SetPath("/");
+	}
+}
+
+wxArrayString config_manager::get_opened_documents() const {
+	wxArrayString result;
+	if (!config) return result;
+	config->SetPath("/opened_documents");
+	wxString key;
+	long index;
+	bool cont = config->GetFirstEntry(key, index);
+	while (cont) {
+		wxString path = config->Read(key, "");
+		if (!path.IsEmpty()) result.Add(path);
+		cont = config->GetNextEntry(key, index);
+	}
+	config->SetPath("/");
+	return result;
+}
+
+void config_manager::clear_opened_documents() {
+	if (config) config->DeleteGroup("opened_documents");
+}
