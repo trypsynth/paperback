@@ -41,8 +41,7 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 		if (header == archive->headerEnd()) return nullptr;
 		ZipInputStream zis(fp, header->second, true);
 		InputSource src(zis);
-		// If we don't call fp.clear() here, certain epubs (e.g. Bookshare) will fail to open, because the stream's
-		// error bit will be set. This seems like a bug in Poco to me, but I dunno man, I just work here.
+		// If we don't call fp.clear() here, certain epubs (e.g. Bookshare) will fail to open, because the stream's error bit will be set. This seems like a bug in Poco to me, but I just work here.
 		fp.clear();
 		DOMParser parser;
 		auto doc = parser.parse(&src);

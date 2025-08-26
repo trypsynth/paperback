@@ -96,8 +96,8 @@ std::string trim_string(const std::string& str) {
 		return !std::isspace(ch);
 	});
 	end = std::find_if(str.rbegin(), std::string::const_reverse_iterator(start), [](const unsigned char ch) noexcept {
-			  return !std::isspace(ch);
-		  }).base();
+		return !std::isspace(ch);
+	}).base();
 	return std::string(start, end);
 }
 
@@ -138,7 +138,6 @@ Poco::Zip::ZipArchive::FileHeaders::const_iterator find_file_in_archive(std::str
 			header = archive->findHeader(encoded);
 			if (header != archive->headerEnd()) return header;
 		}
-	} catch (const Poco::Exception&) {
-	}
+	} catch (const Poco::Exception&) {}
 	return archive->headerEnd();
 }
