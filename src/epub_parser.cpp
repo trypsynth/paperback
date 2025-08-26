@@ -58,9 +58,7 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 		for (size_t i = 0; i < ctx.spine_items.size(); ++i) {
 			if (!content.empty()) content += "\n";
 			document_ptr->section_offsets.push_back(content.length());
-		}
-		ctx.section_offsets = document_ptr->section_offsets;
-		for (size_t i = 0; i < ctx.spine_items.size(); ++i) {
+			ctx.section_offsets = document_ptr->section_offsets;
 			auto section = parse_section(i, ctx);
 			for (const auto& line : section.lines) {
 				content += wxString::FromUTF8(line);
