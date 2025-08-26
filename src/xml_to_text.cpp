@@ -76,7 +76,11 @@ void xml_to_text::process_node(Node* node) {
 			finalize_current_line();
 		if (in_body && element->hasAttributeNS("", "id")) {
 			std::string id = element->getAttributeNS("", "id");
-			if (!id.empty()) id_positions[id] = get_current_text_position();
+			if (!id.empty()) {
+				size_t total_length = 0;
+				for (const auto& line : lines) total_length += line.length() + 1;
+				id_positions[id] = total_length;
+			}
 		}
 	} else if (node_type == Node::TEXT_NODE)
 		process_text_node(static_cast<Text*>(node));

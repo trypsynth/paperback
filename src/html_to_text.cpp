@@ -69,7 +69,9 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 			const lxb_char_t* id_attr = lxb_dom_element_get_attribute(element, (const lxb_char_t*)"id", 2, &id_len);
 			if (id_attr && id_len > 0) {
 				std::string id{reinterpret_cast<const char*>(id_attr), id_len};
-				id_positions[id] = get_current_text_position();
+				size_t total_length = 0;
+				for (const auto& line : lines) total_length += line.length() + 1;
+				id_positions[id] = total_length;
 			}
 		}
 		break;
