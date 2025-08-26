@@ -210,9 +210,8 @@ void document_manager::show_table_of_contents(wxWindow* parent) {
 		return;
 	}
 	size_t current_pos = text_ctrl->GetInsertionPoint();
-	int current_section_idx = doc->section_index(current_pos);
-	size_t current_offset = doc->offset_for_section(current_section_idx);
-	toc_dialog dlg(parent, doc, current_offset);
+	int closest_toc_offset = doc->find_closest_toc_offset(current_pos);
+	toc_dialog dlg(parent, doc, closest_toc_offset);
 	if (dlg.ShowModal() != wxID_OK) return;
 	int offset = dlg.get_selected_offset();
 	if (offset >= 0) {

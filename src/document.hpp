@@ -104,5 +104,6 @@ struct document {
 	[[nodiscard]] int previous_page_index(size_t position) const noexcept;
 	[[nodiscard]] int page_index(size_t position) const noexcept;
 	[[nodiscard]] size_t offset_for_page(int page_index) const noexcept;
+	[[nodiscard]] int find_closest_toc_offset(size_t position) const noexcept;
 	void calculate_statistics() const;
 };

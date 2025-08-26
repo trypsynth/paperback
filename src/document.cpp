@@ -9,6 +9,8 @@
 
 #include "document.hpp"
 #include <wx/tokenzr.h>
+#include <functional>
+#include <climits>
 
 int document::next_section_index(size_t position) const noexcept {
 	for (size_t i = 0; i < section_offsets.size(); ++i)
@@ -62,19 +64,36 @@ size_t document::offset_for_page(int page_index) const noexcept {
 	return page_offsets[page_index];
 }
 
+int document::find_closest_toc_offset(size_t position) const noexcept {
+	int best_offset = -1;
+	int best_distance = INT_MAX;
+	std::function<void(const std::vector<std::unique_ptr<toc_item>>&)> search_items = [&](const std::vector<std::unique_ptr<toc_item>>& items) {
+		for (const auto& item : items) {
+			if (item->offset >= 0) {
+				int distance = std::abs(static_cast<int>(position) - item->offset);
+				if (item->offset <= static_cast<int>(position) && distance < best_distance) {
+					best_offset = item->offset;
+					best_distance = distance;
+				}
+			}
+			if (!item->children.empty()) search_items(item->children);
+		}
+	};
+	search_items(toc_items);
+	return best_offset;
+}
+
 void document::calculate_statistics() const {
 	stats.char_count = text_content.Length();
 	stats.char_count_no_whitespace = 0;
-	for (const auto ch : text_content) {
+	for (const auto ch : text_content)
 		if (ch != ' ' && ch != '\t' && ch != '\r' && ch != '\n') ++stats.char_count_no_whitespace;
-	}
 	if (text_content.IsEmpty())
 		stats.line_count = 0;
 	else {
 		stats.line_count = 1;
-		for (const auto ch : text_content) {
+		for (const auto ch : text_content)
 			if (ch == '\n') ++stats.line_count;
-		}
 	}
 	if (text_content.IsEmpty())
 		stats.word_count = 0;
