@@ -11,6 +11,7 @@
 #include <Poco/Exception.h>
 #include <Poco/RegularExpression.h>
 #include <Poco/URI.h>
+#include <Poco/UTF8String.h>
 #include <Poco/Zip/ZipArchive.h>
 #include <cctype>
 #include <sstream>
@@ -102,13 +103,14 @@ std::string trim_string(const std::string& str) {
 }
 
 std::string remove_soft_hyphens(std::string_view input) {
-	std::string result;
-	result.reserve(input.size());
-	for (size_t i = 0; i < input.size(); ++i) {
-		if (static_cast<unsigned char>(input[i]) == 0xC2 && i + 1 < input.size() && static_cast<unsigned char>(input[i + 1]) == 0xAD) ++i;
-		else result += input[i];
+	try {
+		std::string result(input);
+		Poco::RegularExpression regex("\xC2\xAD", Poco::RegularExpression::RE_UTF8);
+		regex.subst(result, "", Poco::RegularExpression::RE_GLOBAL);
+		return result;
+	} catch (const Poco::Exception&) {
+		return std::string(input);
 	}
-	return result;
 }
 
 bool should_open_as_txt(const wxString& path) {
@@ -148,7 +150,6 @@ Poco::Zip::ZipArchive::FileHeaders::const_iterator find_file_in_archive(std::str
 			header = archive->findHeader(encoded);
 			if (header != archive->headerEnd()) return header;
 		}
-	} catch (const Poco::Exception&) {
-	}
+	} catch (const Poco::Exception&) {}
 	return archive->headerEnd();
 }
