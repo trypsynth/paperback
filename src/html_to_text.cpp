@@ -102,7 +102,10 @@ void html_to_text::process_text_node(lxb_dom_text_t* text_node) {
 	const auto* text_data = lxb_dom_node_text_content(lxb_dom_interface_node(text_node), &length);
 	if (!text_data || length == 0) return;
 	const std::string_view text{reinterpret_cast<const char*>(text_data), length};
-	if (!text.empty()) current_line += preserve_whitespace ? text : collapse_whitespace(text);
+	if (!text.empty()) {
+		std::string processed_text = remove_soft_hyphens(text);
+		current_line += preserve_whitespace ? processed_text : collapse_whitespace(processed_text);
+	}
 }
 
 void html_to_text::add_line(std::string_view line) {

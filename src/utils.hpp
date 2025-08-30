@@ -40,6 +40,7 @@ inline constexpr bool has_option(find_options options, find_options flag) noexce
 [[nodiscard]] long find_text(const wxString& haystack, const wxString& needle, long start, find_options options = find_options::forward);
 [[nodiscard]] std::string collapse_whitespace(std::string_view input);
 [[nodiscard]] std::string trim_string(const std::string& str);
+[[nodiscard]] std::string remove_soft_hyphens(std::string_view input);
 [[nodiscard]] bool should_open_as_txt(const wxString& path);
 void speak(const wxString& message);
 [[nodiscard]] std::string url_decode(std::string_view encoded);

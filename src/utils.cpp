@@ -101,6 +101,16 @@ std::string trim_string(const std::string& str) {
 	return std::string(start, end);
 }
 
+std::string remove_soft_hyphens(std::string_view input) {
+	std::string result;
+	result.reserve(input.size());
+	for (size_t i = 0; i < input.size(); ++i) {
+		if (static_cast<unsigned char>(input[i]) == 0xC2 && i + 1 < input.size() && static_cast<unsigned char>(input[i + 1]) == 0xAD) ++i;
+		else result += input[i];
+	}
+	return result;
+}
+
 bool should_open_as_txt(const wxString& path) {
 	const auto message = wxString::Format("No suitable parser was found for %s. Would you like to treat it as plain text?", path);
 	return wxMessageBox(message, "Warning", wxICON_WARNING | wxYES_NO) == wxYES;

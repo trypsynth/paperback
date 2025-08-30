@@ -105,7 +105,10 @@ void xml_to_text::process_node(Node* node) {
 void xml_to_text::process_text_node(Text* text_node) {
 	if (!in_body || !text_node) return;
 	const auto text = text_node->data();
-	if (!text.empty()) current_line += preserve_whitespace ? text : collapse_whitespace(text);
+	if (!text.empty()) {
+		std::string processed_text = remove_soft_hyphens(text);
+		current_line += preserve_whitespace ? processed_text : collapse_whitespace(processed_text);
+	}
 }
 
 void xml_to_text::add_line(std::string_view line) {
