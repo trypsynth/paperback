@@ -8,6 +8,7 @@
  */
 
 #pragma once
+#include "structured_nav.hpp"
 #include <lexbor/html/html.h>
 #include <memory>
 #include <string>
@@ -26,6 +27,7 @@ public:
 	[[nodiscard]] const std::vector<std::string>& get_lines() const noexcept { return lines; }
 	[[nodiscard]] std::string get_text() const;
 	[[nodiscard]] const std::unordered_map<std::string, size_t>& get_id_positions() const noexcept { return id_positions; }
+	[[nodiscard]] const std::vector<simple_heading_info>& get_headings() const noexcept { return headings; }
 	void clear() noexcept;
 
 private:
@@ -39,6 +41,7 @@ private:
 	std::vector<std::string> lines;
 	std::string current_line;
 	std::unordered_map<std::string, size_t> id_positions;
+	std::vector<simple_heading_info> headings;
 	bool in_body = false;
 	bool preserve_whitespace = false;
 	DocumentPtr doc;
@@ -51,4 +54,5 @@ private:
 	size_t get_current_text_position() const;
 	[[nodiscard]] static constexpr bool is_block_element(std::string_view tag_name) noexcept;
 	[[nodiscard]] static std::string_view get_tag_name(lxb_dom_element_t* element) noexcept;
+	[[nodiscard]] static std::string get_element_text(lxb_dom_element_t* element) noexcept;
 };

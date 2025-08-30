@@ -1,4 +1,4 @@
-/* constants.hpp - contains app-wide constants.
+/* structured_nav.hpp - structured navigation header file.
  *
  * Paperback.
  * Copyright (c) 2025 Quin Gillespie.
@@ -8,42 +8,29 @@
  */
 
 #pragma once
-#include <wx/string.h>
+#include <cstddef>
+#include <string>
+#include <vector>
 
-inline const wxString APP_NAME = "Paperback";
-inline const wxString APP_VERSION = "0.2";
-inline const wxString APP_COPYRIGHT = "Copyright (C) 2025 Quin Gillespie. All rights reserved.";
-inline const wxString APP_WEBSITE = "https://github.com/trypsynth/paperback";
-inline constexpr int POSITION_SAVE_TIMER_INTERVAL = 5000;
+struct simple_heading_info {
+	size_t offset;
+	int level;
+	std::string text;
+};
 
-enum {
-	ID_EXPORT = wxID_HIGHEST + 1,
-	ID_FIND_NEXT,
-	ID_FIND_PREVIOUS,
-	ID_GO_TO,
-	ID_PREVIOUS_SECTION,
-	ID_NEXT_SECTION,
-	ID_PREVIOUS_PAGE,
-	ID_NEXT_PAGE,
-	ID_GO_TO_PAGE,
-	ID_WORD_COUNT,
-	ID_DOC_INFO,
-	ID_TABLE_OF_CONTENTS,
-	ID_OPTIONS,
-	ID_RECENT_DOCUMENTS_BASE,
-	ID_HELP_INTERNAL,
-	ID_NEXT_HEADING,
-	ID_PREVIOUS_HEADING,
-	ID_NEXT_HEADING_1,
-	ID_PREVIOUS_HEADING_1,
-	ID_NEXT_HEADING_2,
-	ID_PREVIOUS_HEADING_2,
-	ID_NEXT_HEADING_3,
-	ID_PREVIOUS_HEADING_3,
-	ID_NEXT_HEADING_4,
-	ID_PREVIOUS_HEADING_4,
-	ID_NEXT_HEADING_5,
-	ID_PREVIOUS_HEADING_5,
-	ID_NEXT_HEADING_6,
-	ID_PREVIOUS_HEADING_6,
+class document_manager;
+class wxMenu;
+
+class structured_nav_manager {
+public:
+	static void go_to_previous_heading(document_manager* doc_mgr);
+	static void go_to_next_heading(document_manager* doc_mgr);
+	static void go_to_previous_heading(document_manager* doc_mgr, int level);
+	static void go_to_next_heading(document_manager* doc_mgr, int level);
+	static void go_to_previous_page(document_manager* doc_mgr);
+	static void go_to_next_page(document_manager* doc_mgr);
+	static void create_heading_menu(wxMenu* menu);
+
+private:
+	static void navigate_to_heading(document_manager* doc_mgr, bool next, int specific_level = -1);
 };

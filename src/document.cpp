@@ -8,9 +8,9 @@
  */
 
 #include "document.hpp"
-#include <wx/tokenzr.h>
-#include <functional>
 #include <climits>
+#include <functional>
+#include <wx/tokenzr.h>
 
 int document::next_section_index(size_t position) const noexcept {
 	for (size_t i = 0; i < section_offsets.size(); ++i)
@@ -81,6 +81,39 @@ int document::find_closest_toc_offset(size_t position) const noexcept {
 	};
 	search_items(toc_items);
 	return best_offset;
+}
+
+int document::next_heading_index(size_t position) const noexcept {
+	for (size_t i = 0; i < heading_offsets.size(); ++i)
+		if (heading_offsets[i].offset > position)
+			return static_cast<int>(i);
+	return -1;
+}
+
+int document::previous_heading_index(size_t position) const noexcept {
+	for (int i = static_cast<int>(heading_offsets.size()) - 1; i >= 0; --i)
+		if (heading_offsets[i].offset < position)
+			return i;
+	return -1;
+}
+
+int document::next_heading_index(size_t position, int level) const noexcept {
+	for (size_t i = 0; i < heading_offsets.size(); ++i)
+		if (heading_offsets[i].offset > position && heading_offsets[i].level == level)
+			return static_cast<int>(i);
+	return -1;
+}
+
+int document::previous_heading_index(size_t position, int level) const noexcept {
+	for (int i = static_cast<int>(heading_offsets.size()) - 1; i >= 0; --i)
+		if (heading_offsets[i].offset < position && heading_offsets[i].level == level)
+			return i;
+	return -1;
+}
+
+size_t document::offset_for_heading(int heading_index) const noexcept {
+	if (heading_index < 0 || heading_index >= static_cast<int>(heading_offsets.size())) return 0;
+	return heading_offsets[heading_index].offset;
 }
 
 void document::calculate_statistics() const {

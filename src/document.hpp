@@ -59,6 +59,12 @@ struct document_stats {
 	document_stats& operator=(document_stats&&) = default;
 };
 
+struct heading_info {
+	size_t offset;
+	int level;
+	wxString text;
+};
+
 struct document {
 	wxString title;
 	wxString author;
@@ -67,6 +73,7 @@ struct document {
 	std::vector<size_t> section_offsets;
 	std::vector<size_t> page_offsets;
 	std::vector<std::unique_ptr<toc_item>> toc_items;
+	std::vector<heading_info> heading_offsets;
 	mutable document_stats stats;
 
 	document() = default;
@@ -105,5 +112,10 @@ struct document {
 	[[nodiscard]] int page_index(size_t position) const noexcept;
 	[[nodiscard]] size_t offset_for_page(int page_index) const noexcept;
 	[[nodiscard]] int find_closest_toc_offset(size_t position) const noexcept;
+	[[nodiscard]] int next_heading_index(size_t position) const noexcept;
+	[[nodiscard]] int previous_heading_index(size_t position) const noexcept;
+	[[nodiscard]] int next_heading_index(size_t position, int level) const noexcept;
+	[[nodiscard]] int previous_heading_index(size_t position, int level) const noexcept;
+	[[nodiscard]] size_t offset_for_heading(int heading_index) const noexcept;
 	void calculate_statistics() const;
 };

@@ -8,6 +8,7 @@
  */
 
 #pragma once
+#include "structured_nav.hpp"
 #include <Poco/DOM/Document.h>
 #include <Poco/DOM/Element.h>
 #include <Poco/DOM/Node.h>
@@ -29,12 +30,14 @@ public:
 	[[nodiscard]] const std::vector<std::string>& get_lines() const noexcept { return lines; }
 	[[nodiscard]] std::string get_text() const;
 	[[nodiscard]] const std::unordered_map<std::string, size_t>& get_id_positions() const noexcept { return id_positions; }
+	[[nodiscard]] const std::vector<simple_heading_info>& get_headings() const noexcept { return headings; }
 	void clear() noexcept;
 
 private:
 	std::vector<std::string> lines;
 	std::string current_line;
 	std::unordered_map<std::string, size_t> id_positions;
+	std::vector<simple_heading_info> headings;
 	bool in_body = false;
 	bool preserve_whitespace = false;
 
@@ -44,4 +47,5 @@ private:
 	void finalize_current_line();
 	size_t get_current_text_position() const;
 	[[nodiscard]] static constexpr bool is_block_element(std::string_view tag_name) noexcept;
+	[[nodiscard]] static std::string get_element_text(Poco::XML::Element* element) noexcept;
 };

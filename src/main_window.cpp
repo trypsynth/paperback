@@ -12,6 +12,7 @@
 #include "constants.hpp"
 #include "dialogs.hpp"
 #include "parser.hpp"
+#include "structured_nav.hpp"
 #include "utils.hpp"
 #include <wx/aboutdlg.h>
 #include <wx/filename.h>
@@ -71,6 +72,8 @@ wxMenu* main_window::create_go_menu() {
 	menu->Append(ID_PREVIOUS_SECTION, "Previous section\t[");
 	menu->Append(ID_NEXT_SECTION, "Next section\t]");
 	menu->AppendSeparator();
+	structured_nav_manager::create_heading_menu(menu);
+	menu->AppendSeparator();
 	menu->Append(ID_PREVIOUS_PAGE, "Previous &page\tShift+P");
 	menu->Append(ID_NEXT_PAGE, "&Next page\tP");
 	return menu;
@@ -109,6 +112,20 @@ void main_window::bind_events() {
 		{ID_GO_TO_PAGE, &main_window::on_go_to_page},
 		{ID_PREVIOUS_SECTION, &main_window::on_previous_section},
 		{ID_NEXT_SECTION, &main_window::on_next_section},
+		{ID_PREVIOUS_HEADING, &main_window::on_previous_heading},
+		{ID_NEXT_HEADING, &main_window::on_next_heading},
+		{ID_PREVIOUS_HEADING_1, &main_window::on_previous_heading_1},
+		{ID_NEXT_HEADING_1, &main_window::on_next_heading_1},
+		{ID_PREVIOUS_HEADING_2, &main_window::on_previous_heading_2},
+		{ID_NEXT_HEADING_2, &main_window::on_next_heading_2},
+		{ID_PREVIOUS_HEADING_3, &main_window::on_previous_heading_3},
+		{ID_NEXT_HEADING_3, &main_window::on_next_heading_3},
+		{ID_PREVIOUS_HEADING_4, &main_window::on_previous_heading_4},
+		{ID_NEXT_HEADING_4, &main_window::on_next_heading_4},
+		{ID_PREVIOUS_HEADING_5, &main_window::on_previous_heading_5},
+		{ID_NEXT_HEADING_5, &main_window::on_next_heading_5},
+		{ID_PREVIOUS_HEADING_6, &main_window::on_previous_heading_6},
+		{ID_NEXT_HEADING_6, &main_window::on_next_heading_6},
 		{ID_PREVIOUS_PAGE, &main_window::on_previous_page},
 		{ID_NEXT_PAGE, &main_window::on_next_page},
 		{ID_WORD_COUNT, &main_window::on_word_count},
@@ -155,6 +172,20 @@ void main_window::update_ui() {
 	}
 	enable(ID_PREVIOUS_SECTION, true);
 	enable(ID_NEXT_SECTION, true);
+	enable(ID_PREVIOUS_HEADING, true);
+	enable(ID_NEXT_HEADING, true);
+	enable(ID_PREVIOUS_HEADING_1, true);
+	enable(ID_NEXT_HEADING_1, true);
+	enable(ID_PREVIOUS_HEADING_2, true);
+	enable(ID_NEXT_HEADING_2, true);
+	enable(ID_PREVIOUS_HEADING_3, true);
+	enable(ID_NEXT_HEADING_3, true);
+	enable(ID_PREVIOUS_HEADING_4, true);
+	enable(ID_NEXT_HEADING_4, true);
+	enable(ID_PREVIOUS_HEADING_5, true);
+	enable(ID_NEXT_HEADING_5, true);
+	enable(ID_PREVIOUS_HEADING_6, true);
+	enable(ID_NEXT_HEADING_6, true);
 	enable(ID_PREVIOUS_PAGE, true);
 	enable(ID_NEXT_PAGE, true);
 	enable(ID_TABLE_OF_CONTENTS, true);
@@ -307,6 +338,76 @@ void main_window::on_previous_page(wxCommandEvent&) {
 
 void main_window::on_next_page(wxCommandEvent&) {
 	doc_manager->go_to_next_page();
+	update_status_bar();
+}
+
+void main_window::on_previous_heading(wxCommandEvent&) {
+	doc_manager->go_to_previous_heading();
+	update_status_bar();
+}
+
+void main_window::on_next_heading(wxCommandEvent&) {
+	doc_manager->go_to_next_heading();
+	update_status_bar();
+}
+
+void main_window::on_previous_heading_1(wxCommandEvent&) {
+	doc_manager->go_to_previous_heading(1);
+	update_status_bar();
+}
+
+void main_window::on_next_heading_1(wxCommandEvent&) {
+	doc_manager->go_to_next_heading(1);
+	update_status_bar();
+}
+
+void main_window::on_previous_heading_2(wxCommandEvent&) {
+	doc_manager->go_to_previous_heading(2);
+	update_status_bar();
+}
+
+void main_window::on_next_heading_2(wxCommandEvent&) {
+	doc_manager->go_to_next_heading(2);
+	update_status_bar();
+}
+
+void main_window::on_previous_heading_3(wxCommandEvent&) {
+	doc_manager->go_to_previous_heading(3);
+	update_status_bar();
+}
+
+void main_window::on_next_heading_3(wxCommandEvent&) {
+	doc_manager->go_to_next_heading(3);
+	update_status_bar();
+}
+
+void main_window::on_previous_heading_4(wxCommandEvent&) {
+	doc_manager->go_to_previous_heading(4);
+	update_status_bar();
+}
+
+void main_window::on_next_heading_4(wxCommandEvent&) {
+	doc_manager->go_to_next_heading(4);
+	update_status_bar();
+}
+
+void main_window::on_previous_heading_5(wxCommandEvent&) {
+	doc_manager->go_to_previous_heading(5);
+	update_status_bar();
+}
+
+void main_window::on_next_heading_5(wxCommandEvent&) {
+	doc_manager->go_to_next_heading(5);
+	update_status_bar();
+}
+
+void main_window::on_previous_heading_6(wxCommandEvent&) {
+	doc_manager->go_to_previous_heading(6);
+	update_status_bar();
+}
+
+void main_window::on_next_heading_6(wxCommandEvent&) {
+	doc_manager->go_to_next_heading(6);
 	update_status_bar();
 }
 

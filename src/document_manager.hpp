@@ -56,6 +56,10 @@ public:
 	void go_to_position(long position);
 	void go_to_previous_section();
 	void go_to_next_section();
+	void go_to_previous_heading();
+	void go_to_next_heading();
+	void go_to_previous_heading(int level);
+	void go_to_next_heading(int level);
 	void go_to_previous_page();
 	void go_to_next_page();
 	void show_table_of_contents(wxWindow* parent);

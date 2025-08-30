@@ -80,7 +80,7 @@ private:
 	};
 
 	void parse_opf(const std::string& filename, epub_context& ctx) const;
-	epub_section parse_section(size_t index, epub_context& ctx) const;
+	epub_section parse_section(size_t index, epub_context& ctx, std::vector<heading_info>& heading_offsets) const;
 	void parse_toc(epub_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items) const;
 	void parse_epub2_ncx(const std::string& ncx_id, const epub_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items) const;
 	void parse_epub3_nav(const std::string& nav_id, const epub_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items) const;

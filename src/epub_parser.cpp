@@ -59,7 +59,7 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 			if (!content.empty()) content += "\n";
 			document_ptr->section_offsets.push_back(content.length());
 			ctx.section_offsets = document_ptr->section_offsets;
-			auto section = parse_section(i, ctx);
+			auto section = parse_section(i, ctx, document_ptr->heading_offsets);
 			for (const auto& line : section.lines) {
 				content += wxString::FromUTF8(line);
 				if (&line != &section.lines.back()) content += "\n";
@@ -139,7 +139,7 @@ void epub_parser::parse_opf(const std::string& filename, epub_context& ctx) cons
 	}
 }
 
-epub_section epub_parser::parse_section(size_t index, epub_context& ctx) const {
+epub_section epub_parser::parse_section(size_t index, epub_context& ctx, std::vector<heading_info>& heading_offsets) const {
 	if (index >= ctx.spine_items.size()) throw parse_error("Section index out of range");
 	const auto& id = ctx.spine_items[index];
 	auto it = ctx.manifest_items.find(id);
@@ -161,6 +161,13 @@ epub_section epub_parser::parse_section(size_t index, epub_context& ctx) const {
 			const auto& id_positions = converter.get_id_positions();
 			for (const auto& [id, relative_pos] : id_positions)
 				ctx.id_positions[href][id] = ctx.section_offsets[index] + relative_pos;
+			for (const auto& heading : converter.get_headings()) {
+				heading_info hi;
+				hi.offset = ctx.section_offsets[index] + heading.offset;
+				hi.level = heading.level;
+				hi.text = wxString::FromUTF8(heading.text);
+				heading_offsets.push_back(hi);
+			}
 		}
 	} else {
 		xml_to_text converter;
@@ -170,6 +177,13 @@ epub_section epub_parser::parse_section(size_t index, epub_context& ctx) const {
 			const auto& id_positions = converter.get_id_positions();
 			for (const auto& [id, relative_pos] : id_positions)
 				ctx.id_positions[href][id] = ctx.section_offsets[index] + relative_pos;
+			for (const auto& heading : converter.get_headings()) {
+				heading_info hi;
+				hi.offset = ctx.section_offsets[index] + heading.offset;
+				hi.level = heading.level;
+				hi.text = wxString::FromUTF8(heading.text);
+				heading_offsets.push_back(hi);
+			}
 		}
 	}
 	return section;

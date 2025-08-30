@@ -43,6 +43,7 @@ void html_to_text::clear() noexcept {
 	lines.clear();
 	current_line.clear();
 	id_positions.clear();
+	headings.clear();
 	in_body = false;
 	preserve_whitespace = false;
 }
@@ -72,6 +73,12 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 				size_t total_length = 0;
 				for (const auto& line : lines) total_length += line.length() + 1;
 				id_positions[id] = total_length;
+			}
+			if (tag_name.length() == 2 && tag_name[0] == 'h' && tag_name[1] >= '1' && tag_name[1] <= '6') {
+				int level = tag_name[1] - '0';
+				size_t heading_offset = get_current_text_position();
+				std::string heading_text = get_element_text(element);
+				if (!heading_text.empty()) headings.push_back({heading_offset, level, heading_text});
 			}
 		}
 		break;
@@ -167,4 +174,12 @@ std::string_view html_to_text::get_tag_name(lxb_dom_element_t* element) noexcept
 	if (!element) return {};
 	const auto* name = lxb_dom_element_qualified_name(element, nullptr);
 	return name ? std::string_view{reinterpret_cast<const char*>(name)} : std::string_view{};
+}
+
+std::string html_to_text::get_element_text(lxb_dom_element_t* element) noexcept {
+	if (!element) return {};
+	size_t text_length;
+	const auto* text = lxb_dom_node_text_content(lxb_dom_interface_node(element), &text_length);
+	if (!text || text_length == 0) return {};
+	return std::string{reinterpret_cast<const char*>(text), text_length};
 }

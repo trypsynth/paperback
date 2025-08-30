@@ -1,4 +1,4 @@
-/* document_manager.cpp - manages document state, navigation, etc.
+/* document_manager.cpp - manages documents and helps bridge them to the main window.
  *
  * Paperback.
  * Copyright (c) 2025 Quin Gillespie.
@@ -12,6 +12,7 @@
 #include "constants.hpp"
 #include "dialogs.hpp"
 #include "parser.hpp"
+#include "structured_nav.hpp"
 #include "utils.hpp"
 #include <wx/config.h>
 #include <wx/filename.h>
@@ -153,48 +154,28 @@ void document_manager::go_to_next_section() {
 	speak(current_line);
 }
 
+void document_manager::go_to_previous_heading() {
+	structured_nav_manager::go_to_previous_heading(this);
+}
+
+void document_manager::go_to_next_heading() {
+	structured_nav_manager::go_to_next_heading(this);
+}
+
+void document_manager::go_to_previous_heading(int level) {
+	structured_nav_manager::go_to_previous_heading(this, level);
+}
+
+void document_manager::go_to_next_heading(int level) {
+	structured_nav_manager::go_to_next_heading(this, level);
+}
+
 void document_manager::go_to_previous_page() {
-	document* doc = get_active_document();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!doc || !text_ctrl) return;
-	if (!doc->has_flag(document_flags::supports_pages)) {
-		speak("No pages.");
-		return;
-	}
-	size_t current_pos = text_ctrl->GetInsertionPoint();
-	int prev_index = doc->previous_page_index(current_pos);
-	if (prev_index == -1) {
-		speak("No previous page.");
-		return;
-	}
-	size_t offset = doc->offset_for_page(prev_index);
-	text_ctrl->SetInsertionPoint(offset);
-	long line;
-	text_ctrl->PositionToXY(offset, 0, &line);
-	wxString current_line = text_ctrl->GetLineText(line);
-	speak(wxString::Format("Page %d: %s", prev_index + 1, current_line));
+	structured_nav_manager::go_to_previous_page(this);
 }
 
 void document_manager::go_to_next_page() {
-	document* doc = get_active_document();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!doc || !text_ctrl) return;
-	if (!doc->has_flag(document_flags::supports_pages)) {
-		speak("No pages.");
-		return;
-	}
-	size_t current_pos = text_ctrl->GetInsertionPoint();
-	int next_index = doc->next_page_index(current_pos);
-	if (next_index == -1) {
-		speak("No next page.");
-		return;
-	}
-	size_t offset = doc->offset_for_page(next_index);
-	text_ctrl->SetInsertionPoint(offset);
-	long line;
-	text_ctrl->PositionToXY(offset, 0, &line);
-	wxString current_line = text_ctrl->GetLineText(line);
-	speak(wxString::Format("Page %d: %s", next_index + 1, current_line));
+	structured_nav_manager::go_to_next_page(this);
 }
 
 void document_manager::show_table_of_contents(wxWindow* parent) {

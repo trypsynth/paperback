@@ -56,6 +56,7 @@ void xml_to_text::clear() noexcept {
 	lines.clear();
 	current_line.clear();
 	id_positions.clear();
+	headings.clear();
 	in_body = false;
 	preserve_whitespace = false;
 }
@@ -81,6 +82,12 @@ void xml_to_text::process_node(Node* node) {
 				for (const auto& line : lines) total_length += line.length() + 1;
 				id_positions[id] = total_length;
 			}
+		}
+		if (in_body && tag_name.length() == 2 && tag_name[0] == 'h' && tag_name[1] >= '1' && tag_name[1] <= '6') {
+			int level = tag_name[1] - '0';
+			size_t heading_offset = get_current_text_position();
+			std::string heading_text = get_element_text(element);
+			if (!heading_text.empty()) headings.push_back({heading_offset, level, heading_text});
 		}
 	} else if (node_type == Node::TEXT_NODE)
 		process_text_node(static_cast<Text*>(node));
@@ -153,6 +160,22 @@ constexpr bool xml_to_text::is_block_element(std::string_view tag_name) noexcept
 		"tfoot",
 		"tr",
 		"td",
-		"th"};
+		"th"
+	};
 	return std::find(block_elements.begin(), block_elements.end(), tag_name) != block_elements.end();
+}
+
+std::string xml_to_text::get_element_text(Element* element) noexcept {
+	if (!element) return {};
+	std::string text;
+	auto* child = element->firstChild();
+	while (child) {
+		if (child->nodeType() == Node::TEXT_NODE) {
+			auto* text_node = static_cast<Text*>(child);
+			text += text_node->data();
+		} else if (child->nodeType() == Node::ELEMENT_NODE)
+			text += get_element_text(static_cast<Element*>(child));
+		child = child->nextSibling();
+	}
+	return collapse_whitespace(trim_string(text));
 }

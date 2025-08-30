@@ -29,5 +29,12 @@ std::unique_ptr<document> markdown_parser::load(const wxString& path) const {
 	auto doc = std::make_unique<document>();
 	doc->text_content = converter.get_text();
 	doc->flags = document_flags::supports_toc;
+	for (const auto& heading : converter.get_headings()) {
+		heading_info info{};
+		info.offset = heading.offset;
+		info.level = heading.level;
+		info.text = wxString::FromUTF8(heading.text);
+		doc->heading_offsets.push_back(std::move(info));
+	}
 	return doc;
 }
