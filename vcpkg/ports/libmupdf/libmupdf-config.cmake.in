@@ -19,7 +19,7 @@ if(NOT TARGET libmupdf::libmupdf)
 		NO_DEFAULT_PATH
 	)
 	find_library(LIBMUPDF_LIBRARY_DEBUG
-		NAMES libmupdf libmupdf${CMAKE_DEBUG_POSTFIX}
+		NAMES libmupdfd
 		PATHS "${CMAKE_CURRENT_LIST_DIR}/../../debug/lib"
 		NO_DEFAULT_PATH
 	)
