@@ -150,7 +150,8 @@ std::vector<const marker*> document_buffer::get_heading_markers(int level) const
 
 size_t document_buffer::count_markers_by_type(marker_type type) const noexcept {
 	size_t count = 0;
-	for (const auto& m : markers) if (m.type == type) count++;
+	for (const auto& m : markers)
+		if (m.type == type) count++;
 	return count;
 }
 

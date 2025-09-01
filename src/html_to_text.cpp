@@ -57,38 +57,38 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 		tag_name = get_tag_name(element);
 	}
 	switch (node->type) {
-	case LXB_DOM_NODE_TYPE_ELEMENT: {
-		auto* element = lxb_dom_interface_element(node);
-		if (tag_name == "body")
-			in_body = true;
-		else if (tag_name == "pre")
-			preserve_whitespace = true;
-		else if (tag_name == "br" || tag_name == "li")
-			finalize_current_line();
-		if (in_body && element) {
-			size_t id_len;
-			const lxb_char_t* id_attr = lxb_dom_element_get_attribute(element, (const lxb_char_t*)"id", 2, &id_len);
-			if (id_attr && id_len > 0) {
-				std::string id{reinterpret_cast<const char*>(id_attr), id_len};
-				size_t total_length = 0;
-				for (const auto& line : lines) total_length += line.length() + 1;
-				id_positions[id] = total_length;
-			}
-			if (tag_name.length() == 2 && tag_name[0] == 'h' && tag_name[1] >= '1' && tag_name[1] <= '6') {
-				int level = tag_name[1] - '0';
+		case LXB_DOM_NODE_TYPE_ELEMENT: {
+			auto* element = lxb_dom_interface_element(node);
+			if (tag_name == "body")
+				in_body = true;
+			else if (tag_name == "pre")
+				preserve_whitespace = true;
+			else if (tag_name == "br" || tag_name == "li")
 				finalize_current_line();
-				size_t heading_offset = get_current_text_position();
-				std::string heading_text = get_element_text(element);
-				if (!heading_text.empty()) headings.push_back({heading_offset, level, heading_text});
+			if (in_body && element) {
+				size_t id_len;
+				const lxb_char_t* id_attr = lxb_dom_element_get_attribute(element, (const lxb_char_t*)"id", 2, &id_len);
+				if (id_attr && id_len > 0) {
+					std::string id{reinterpret_cast<const char*>(id_attr), id_len};
+					size_t total_length = 0;
+					for (const auto& line : lines) total_length += line.length() + 1;
+					id_positions[id] = total_length;
+				}
+				if (tag_name.length() == 2 && tag_name[0] == 'h' && tag_name[1] >= '1' && tag_name[1] <= '6') {
+					int level = tag_name[1] - '0';
+					finalize_current_line();
+					size_t heading_offset = get_current_text_position();
+					std::string heading_text = get_element_text(element);
+					if (!heading_text.empty()) headings.push_back({heading_offset, level, heading_text});
+				}
 			}
+			break;
 		}
-		break;
-	}
-	case LXB_DOM_NODE_TYPE_TEXT:
-		process_text_node(lxb_dom_interface_text(node));
-		break;
-	default:
-		break;
+		case LXB_DOM_NODE_TYPE_TEXT:
+			process_text_node(lxb_dom_interface_text(node));
+			break;
+		default:
+			break;
 	}
 	for (auto* child = node->first_child; child; child = child->next) process_node(child);
 	if (is_element) {

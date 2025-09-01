@@ -11,7 +11,7 @@ AlwaysBreakAfterReturnType: None
 BreakBeforeBraces: Attach
 ColumnLimit: 0
 AccessModifierOffset: -4
-IndentCaseLabels: false
+IndentCaseLabels: true
 SpaceBeforeParens: ControlStatements
 Cpp11BracedListStyle: true
 SortIncludes: true

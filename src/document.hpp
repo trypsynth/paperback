@@ -8,10 +8,10 @@
  */
 
 #pragma once
+#include "document_buffer.hpp"
 #include <memory>
 #include <vector>
 #include <wx/string.h>
-#include "document_buffer.hpp"
 
 enum class document_flags {
 	none = 0,
