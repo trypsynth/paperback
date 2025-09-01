@@ -1,4 +1,4 @@
-# Paperback - version 0.2
+# Paperback - version 0.21
 ## Introduction
 Paperback is a lightweight, fast, and accessible ebook/document reader designed to make reading fun and seamless, regardless of the file format being used or the user's reading preferences.
 
@@ -54,6 +54,13 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * F1: pop up this readme file in your default web browser.
 
 ## Changelog
+### Version 0.21
+* Added the total number of pages to the page label in the go to page dialog. [#46](https://github.com/trypsynth/paperback/issues/46).
+* Allow tabbing from the document content to your list of opened documents. [#19](https://github.com/trypsynth/paperback/issues/19).
+* Fixed the heading keystrokes sometimes opening recent documents if you had enough of them. [#47](https://github.com/trypsynth/paperback/issues/47).
+* Paperback will now remove unnecessary soft hyphens from text output.
+* Fixed heading navigation sometimes putting you on the wrong character.
+
 ### Version 0.2
 * Added markdown document support! [#22](https://github.com/trypsynth/paperback/issues/22).
 * Added PDF document support, including the ability to navigate between pages! [#12](https://github.com/trypsynth/paperback/issues/12), [#37](https://github.com/trypsynth/paperback/issues/37).
