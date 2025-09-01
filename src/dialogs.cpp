@@ -229,7 +229,7 @@ long go_to_dialog::get_max_line() const {
 go_to_page_dialog::go_to_page_dialog(wxWindow* parent, document* doc, int current_page) : wxDialog(parent, wxID_ANY, "Go to page"), doc_{doc} {
 	auto* main_sizer = new wxBoxSizer(wxVERTICAL);
 	auto* page_sizer = new wxBoxSizer(wxHORIZONTAL);
-	auto* label = new wxStaticText(this, wxID_ANY, "Go to page:");
+	auto* label = new wxStaticText(this, wxID_ANY, wxString::Format("Go to page (1/%d):", get_max_page()));
 	input_ctrl = new wxTextCtrl(this, wxID_ANY);
 	page_sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
 	page_sizer->Add(input_ctrl, 1, wxEXPAND);
