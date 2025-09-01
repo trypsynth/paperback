@@ -34,7 +34,7 @@ bool document_manager::open_document(const wxString& path, const parser* par) {
 	auto* tab_data = new document_tab;
 	tab_data->doc = std::move(doc);
 	tab_data->file_path = path;
-	wxPanel* panel = create_tab_panel(tab_data->doc->text_content, tab_data);
+	wxPanel* panel = create_tab_panel(tab_data->doc->buffer.str(), tab_data);
 	tab_data->panel = panel;
 	notebook_->AddPage(panel, tab_data->doc->title, true);
 	restore_document_position(tab_data);
@@ -119,15 +119,35 @@ void document_manager::go_to_previous_section() {
 		return;
 	}
 	size_t current_pos = text_ctrl->GetInsertionPoint();
-	int prev_index = doc->previous_section_index(current_pos);
+	int current_index = doc->section_index(current_pos);
+	if (current_index != -1) {
+		size_t current_section_offset = doc->offset_for_section(current_index);
+		if (current_pos > current_section_offset + 1) {
+			text_ctrl->SetInsertionPoint(current_section_offset + 1);
+			long line;
+			text_ctrl->PositionToXY(current_section_offset + 1, 0, &line);
+			wxString current_line = text_ctrl->GetLineText(line);
+			speak(current_line);
+			return;
+		}
+	}
+	size_t search_pos = current_pos;
+	if (current_index != -1) {
+		size_t current_section_offset = doc->offset_for_section(current_index);
+		if (current_pos <= current_section_offset + 1) {
+			// We're at the start of the current section, so search from just before the section marker.
+			search_pos = current_section_offset > 0 ? current_section_offset - 1 : 0;
+		}
+	}
+	int prev_index = doc->previous_section_index(search_pos);
 	if (prev_index == -1) {
 		speak("No previous section");
 		return;
 	}
 	size_t offset = doc->offset_for_section(prev_index);
-	text_ctrl->SetInsertionPoint(offset);
+	text_ctrl->SetInsertionPoint(offset + 1);
 	long line;
-	text_ctrl->PositionToXY(offset, 0, &line);
+	text_ctrl->PositionToXY(offset + 1, 0, &line);
 	wxString current_line = text_ctrl->GetLineText(line);
 	speak(current_line);
 }
@@ -147,9 +167,9 @@ void document_manager::go_to_next_section() {
 		return;
 	}
 	size_t offset = doc->offset_for_section(next_index);
-	text_ctrl->SetInsertionPoint(offset);
+	text_ctrl->SetInsertionPoint(offset + 1);
 	long line;
-	text_ctrl->PositionToXY(offset, 0, &line);
+	text_ctrl->PositionToXY(offset + 1, 0, &line);
 	wxString current_line = text_ctrl->GetLineText(line);
 	speak(current_line);
 }

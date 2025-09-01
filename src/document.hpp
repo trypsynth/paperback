@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 #include <wx/string.h>
+#include "document_buffer.hpp"
 
 enum class document_flags {
 	none = 0,
@@ -59,21 +60,12 @@ struct document_stats {
 	document_stats& operator=(document_stats&&) = default;
 };
 
-struct heading_info {
-	size_t offset;
-	int level;
-	wxString text;
-};
-
 struct document {
 	wxString title;
 	wxString author;
-	wxString text_content;
+	document_buffer buffer;
 	document_flags flags{document_flags::none};
-	std::vector<size_t> section_offsets;
-	std::vector<size_t> page_offsets;
 	std::vector<std::unique_ptr<toc_item>> toc_items;
-	std::vector<heading_info> heading_offsets;
 	mutable document_stats stats;
 
 	document() = default;
@@ -87,22 +79,6 @@ struct document {
 		return (flags & flag) == flag;
 	}
 
-	[[nodiscard]] inline int get_word_count() const noexcept {
-		return stats.word_count;
-	}
-
-	[[nodiscard]] inline int get_line_count() const noexcept {
-		return stats.line_count;
-	}
-
-	[[nodiscard]] inline int get_char_count() const noexcept {
-		return stats.char_count;
-	}
-
-	[[nodiscard]] inline int get_char_count_no_whitespace() const noexcept {
-		return stats.char_count_no_whitespace;
-	}
-
 	[[nodiscard]] int next_section_index(size_t position) const noexcept;
 	[[nodiscard]] int previous_section_index(size_t position) const noexcept;
 	[[nodiscard]] int section_index(size_t position) const noexcept;
@@ -112,10 +88,9 @@ struct document {
 	[[nodiscard]] int page_index(size_t position) const noexcept;
 	[[nodiscard]] size_t offset_for_page(int page_index) const noexcept;
 	[[nodiscard]] int find_closest_toc_offset(size_t position) const noexcept;
-	[[nodiscard]] int next_heading_index(size_t position) const noexcept;
-	[[nodiscard]] int previous_heading_index(size_t position) const noexcept;
 	[[nodiscard]] int next_heading_index(size_t position, int level) const noexcept;
 	[[nodiscard]] int previous_heading_index(size_t position, int level) const noexcept;
 	[[nodiscard]] size_t offset_for_heading(int heading_index) const noexcept;
+	[[nodiscard]] const marker* get_heading_marker(int heading_index) const noexcept;
 	void calculate_statistics() const;
 };

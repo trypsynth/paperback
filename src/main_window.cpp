@@ -314,8 +314,8 @@ void main_window::on_go_to_page(wxCommandEvent&) {
 	go_to_page_dialog dlg(this, doc, current_page);
 	if (dlg.ShowModal() != wxID_OK) return;
 	const int page = dlg.get_page_number();
-	if (page >= 1 && page <= static_cast<int>(doc->page_offsets.size())) {
-		const size_t offset = doc->page_offsets[page - 1]; // Convert to 0-based index
+	if (page >= 1 && page <= static_cast<int>(doc->buffer.count_markers_by_type(marker_type::page_break))) {
+		const size_t offset = doc->buffer.get_marker_position_by_index(marker_type::page_break, page - 1); // Convert to 0-based index
 		doc_manager->go_to_position(offset);
 		update_status_bar();
 	}
@@ -412,7 +412,7 @@ void main_window::on_next_heading_6(wxCommandEvent&) {
 }
 
 void main_window::on_word_count(wxCommandEvent&) {
-	const size_t count = doc_manager->get_active_document()->get_word_count();
+	const size_t count = doc_manager->get_active_document()->stats.word_count;
 	wxMessageBox(wxString::Format("The document contains %d %s", count, count == 1 ? "word" : "words"), "Word count", wxICON_INFORMATION);
 }
 

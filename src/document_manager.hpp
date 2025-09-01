@@ -63,7 +63,6 @@ public:
 	void go_to_previous_page();
 	void go_to_next_page();
 	void show_table_of_contents(wxWindow* parent);
-	[[nodiscard]] int get_word_count() const;
 	void show_document_info(wxWindow* parent);
 	void save_document_position(const wxString& path, long position) const;
 	[[nodiscard]] long load_document_position(const wxString& path) const;

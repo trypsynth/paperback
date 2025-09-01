@@ -68,7 +68,6 @@ private:
 		std::unique_ptr<Poco::Zip::ZipArchive>& archive;
 		std::map<std::string, manifest_item> manifest_items;
 		std::vector<std::string> spine_items;
-		std::vector<size_t> section_offsets;
 		std::map<std::string, std::map<std::string, size_t>> id_positions;
 		Poco::Path opf_path;
 		std::string title;
@@ -80,14 +79,14 @@ private:
 	};
 
 	void parse_opf(const std::string& filename, epub_context& ctx) const;
-	epub_section parse_section(size_t index, epub_context& ctx, std::vector<heading_info>& heading_offsets) const;
-	void parse_toc(epub_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items) const;
-	void parse_epub2_ncx(const std::string& ncx_id, const epub_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items) const;
-	void parse_epub3_nav(const std::string& nav_id, const epub_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items) const;
-	std::unique_ptr<toc_item> parse_ncx_nav_point(Poco::XML::Element* nav_point, const Poco::XML::NamespaceSupport& nsmap, const epub_context& ctx) const;
-	void parse_epub3_nav_list(Poco::XML::Element* ol_element, std::vector<std::unique_ptr<toc_item>>& toc_items, const epub_context& ctx) const;
-	std::unique_ptr<toc_item> parse_epub3_nav_item(Poco::XML::Element* li_element, const epub_context& ctx) const;
-	int calculate_offset_from_href(const std::string& href, const epub_context& ctx) const;
+	void parse_section(size_t index, epub_context& ctx, document_buffer& buffer) const;
+	void parse_toc(epub_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items, const document_buffer& buffer) const;
+	void parse_epub2_ncx(const std::string& ncx_id, const epub_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items, const document_buffer& buffer) const;
+	void parse_epub3_nav(const std::string& nav_id, const epub_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items, const document_buffer& buffer) const;
+	std::unique_ptr<toc_item> parse_ncx_nav_point(Poco::XML::Element* nav_point, const Poco::XML::NamespaceSupport& nsmap, const epub_context& ctx, const document_buffer& buffer) const;
+	void parse_epub3_nav_list(Poco::XML::Element* ol_element, std::vector<std::unique_ptr<toc_item>>& toc_items, const epub_context& ctx, const document_buffer& buffer) const;
+	std::unique_ptr<toc_item> parse_epub3_nav_item(Poco::XML::Element* li_element, const epub_context& ctx, const document_buffer& buffer) const;
+	int calculate_offset_from_href(const std::string& href, const epub_context& ctx, const document_buffer& buffer) const;
 	[[nodiscard]] bool is_html_content(const std::string& media_type) const;
 	[[nodiscard]] std::string extract_zip_entry_content(const std::string& filename, const epub_context& ctx) const;
 };

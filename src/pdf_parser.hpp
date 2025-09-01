@@ -46,10 +46,10 @@ private:
 		void open_document(const wxString& path);
 	};
 
-	void extract_text_content(const pdf_context& ctx, wxString& content, std::vector<size_t>& page_offsets) const;
+	void extract_text_content(const pdf_context& ctx, document_buffer& buffer) const;
 	void extract_metadata(const pdf_context& ctx, wxString& title, wxString& author) const;
-	void extract_toc(const pdf_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items, const std::vector<size_t>& page_offsets) const;
-	void extract_outline_items(fz_outline* outline, std::vector<std::unique_ptr<toc_item>>& toc_items, const std::vector<size_t>& page_offsets, const pdf_context& ctx) const;
+	void extract_toc(const pdf_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items, const document_buffer& buffer) const;
+	void extract_outline_items(fz_outline* outline, std::vector<std::unique_ptr<toc_item>>& toc_items, const document_buffer& buffer, const pdf_context& ctx) const;
 	[[nodiscard]] std::vector<std::string> process_text_lines(const std::string& raw_text) const;
 };
 

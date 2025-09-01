@@ -17,10 +17,10 @@ document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc
 	wxString info_text;
 	info_text << "Title: " << doc->title << "\n";
 	info_text << "Author: " << doc->author << "\n";
-	info_text << "Total number of words: " << doc->get_word_count() << ".\n";
-	info_text << "Total number of lines: " << doc->get_line_count() << ".\n";
-	info_text << "Total number of characters: " << doc->get_char_count() << ".\n";
-	info_text << "Total number of characters (excluding whitespace): " << doc->get_char_count_no_whitespace() << ".\n";
+	info_text << "Total number of words: " << doc->stats.word_count << ".\n";
+	info_text << "Total number of lines: " << doc->stats.line_count << ".\n";
+	info_text << "Total number of characters: " << doc->stats.char_count << ".\n";
+	info_text << "Total number of characters (excluding whitespace): " << doc->stats.char_count_no_whitespace << ".\n";
 	info_text_ctrl->SetValue(info_text);
 	main_sizer->Add(info_text_ctrl, 1, wxEXPAND | wxALL, 10);
 	auto* button_sizer = new wxStdDialogButtonSizer();
@@ -296,7 +296,7 @@ void go_to_page_dialog::adjust_page_number(int delta) {
 
 int go_to_page_dialog::get_max_page() const {
 	if (!doc_ || !doc_->has_flag(document_flags::supports_pages)) return 1;
-	return static_cast<int>(doc_->page_offsets.size());
+	return static_cast<int>(doc_->buffer.count_markers_by_type(marker_type::page_break));
 }
 
 options_dialog::options_dialog(wxWindow* parent) : wxDialog(parent, wxID_ANY, "Options") {

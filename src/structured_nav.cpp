@@ -36,13 +36,13 @@ void structured_nav_manager::go_to_previous_page(document_manager* doc_mgr) {
 	document* doc = doc_mgr->get_active_document();
 	wxTextCtrl* text_ctrl = doc_mgr->get_active_text_ctrl();
 	if (!doc || !text_ctrl) return;
-	if (doc->page_offsets.empty()) {
+	if (doc->buffer.count_markers_by_type(marker_type::page_break) == 0) {
 		speak("No pages.");
 		return;
 	}
 	size_t current_pos = text_ctrl->GetInsertionPoint();
-	int prev_index = doc->page_index(current_pos) - 1;
-	if (prev_index < 0) {
+	int prev_index = doc->previous_page_index(current_pos);
+	if (prev_index == -1) {
 		speak("No previous page.");
 		return;
 	}
@@ -58,13 +58,13 @@ void structured_nav_manager::go_to_next_page(document_manager* doc_mgr) {
 	document* doc = doc_mgr->get_active_document();
 	wxTextCtrl* text_ctrl = doc_mgr->get_active_text_ctrl();
 	if (!doc || !text_ctrl) return;
-	if (doc->page_offsets.empty()) {
+	if (doc->buffer.count_markers_by_type(marker_type::page_break) == 0) {
 		speak("No pages.");
 		return;
 	}
 	size_t current_pos = text_ctrl->GetInsertionPoint();
-	int next_index = doc->page_index(current_pos) + 1;
-	if (next_index >= static_cast<int>(doc->page_offsets.size())) {
+	int next_index = doc->next_page_index(current_pos);
+	if (next_index == -1) {
 		speak("No next page.");
 		return;
 	}
@@ -90,16 +90,13 @@ void structured_nav_manager::navigate_to_heading(document_manager* doc_mgr, bool
 	document* doc = doc_mgr->get_active_document();
 	wxTextCtrl* text_ctrl = doc_mgr->get_active_text_ctrl();
 	if (!doc || !text_ctrl) return;
-	if (doc->heading_offsets.empty()) {
+	if (doc->buffer.get_heading_markers().size() == 0) {
 		speak("No headings.");
 		return;
 	}
 	size_t current_pos = text_ctrl->GetInsertionPoint();
 	int target_index = -1;
-	if (next)
-		target_index = (specific_level == -1) ? doc->next_heading_index(current_pos) : doc->next_heading_index(current_pos, specific_level);
-	else
-		target_index = (specific_level == -1) ? doc->previous_heading_index(current_pos) : doc->previous_heading_index(current_pos, specific_level);
+	target_index = next ? doc->next_heading_index(current_pos, specific_level) : doc->previous_heading_index(current_pos, specific_level);
 	if (target_index == -1) {
 		wxString msg = (specific_level == -1) ? wxString::Format("No %s heading", next ? "next" : "previous") : wxString::Format("No %s heading at level %d", next ? "next" : "previous", specific_level);
 		speak(msg);
@@ -107,6 +104,6 @@ void structured_nav_manager::navigate_to_heading(document_manager* doc_mgr, bool
 	}
 	size_t offset = doc->offset_for_heading(target_index);
 	text_ctrl->SetInsertionPoint(offset);
-	const auto& heading = doc->heading_offsets[target_index];
-	speak(wxString::Format("%s Heading level %d", heading.text, heading.level));
+	const marker* heading_marker = doc->get_heading_marker(target_index);
+	if (heading_marker) speak(wxString::Format("%s Heading level %d", heading_marker->text, heading_marker->level));
 }

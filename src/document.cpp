@@ -13,55 +13,35 @@
 #include <wx/tokenzr.h>
 
 int document::next_section_index(size_t position) const noexcept {
-	for (size_t i = 0; i < section_offsets.size(); ++i)
-		if (section_offsets[i] > position)
-			return static_cast<int>(i);
-	return -1;
+	return buffer.next_marker_index(position, marker_type::section_break);
 }
 
 int document::previous_section_index(size_t position) const noexcept {
-	for (int i = static_cast<int>(section_offsets.size()) - 1; i >= 0; --i)
-		if (section_offsets[i] < position)
-			return i;
-	return -1;
+	return buffer.previous_marker_index(position, marker_type::section_break);
 }
 
 int document::section_index(size_t position) const noexcept {
-	for (int i = static_cast<int>(section_offsets.size()) - 1; i >= 0; --i)
-		if (position >= section_offsets[i])
-			return i;
-	return -1;
+	return buffer.current_marker_index(position, marker_type::section_break);
 }
 
 size_t document::offset_for_section(int section_index) const noexcept {
-	if (section_index < 0 || section_index >= static_cast<int>(section_offsets.size())) return 0;
-	return section_offsets[section_index];
+	return buffer.marker_position(section_index);
 }
 
 int document::next_page_index(size_t position) const noexcept {
-	for (size_t i = 0; i < page_offsets.size(); ++i)
-		if (page_offsets[i] > position)
-			return static_cast<int>(i);
-	return -1;
+	return buffer.next_marker_index(position, marker_type::page_break);
 }
 
 int document::previous_page_index(size_t position) const noexcept {
-	for (int i = static_cast<int>(page_offsets.size()) - 1; i >= 0; --i)
-		if (page_offsets[i] < position)
-			return i;
-	return -1;
+	return buffer.previous_marker_index(position, marker_type::page_break);
 }
 
 int document::page_index(size_t position) const noexcept {
-	for (int i = static_cast<int>(page_offsets.size()) - 1; i >= 0; --i)
-		if (position >= page_offsets[i])
-			return i;
-	return -1;
+	return buffer.current_marker_index(position, marker_type::page_break);
 }
 
 size_t document::offset_for_page(int page_index) const noexcept {
-	if (page_index < 0 || page_index >= static_cast<int>(page_offsets.size())) return 0;
-	return page_offsets[page_index];
+	return buffer.marker_position(page_index);
 }
 
 int document::find_closest_toc_offset(size_t position) const noexcept {
@@ -83,40 +63,28 @@ int document::find_closest_toc_offset(size_t position) const noexcept {
 	return best_offset;
 }
 
-int document::next_heading_index(size_t position) const noexcept {
-	for (size_t i = 0; i < heading_offsets.size(); ++i)
-		if (heading_offsets[i].offset > position)
-			return static_cast<int>(i);
-	return -1;
-}
-
-int document::previous_heading_index(size_t position) const noexcept {
-	for (int i = static_cast<int>(heading_offsets.size()) - 1; i >= 0; --i)
-		if (heading_offsets[i].offset < position)
-			return i;
-	return -1;
-}
-
 int document::next_heading_index(size_t position, int level) const noexcept {
-	for (size_t i = 0; i < heading_offsets.size(); ++i)
-		if (heading_offsets[i].offset > position && heading_offsets[i].level == level)
-			return static_cast<int>(i);
-	return -1;
+	return buffer.next_heading_marker_index(position, level);
 }
 
 int document::previous_heading_index(size_t position, int level) const noexcept {
-	for (int i = static_cast<int>(heading_offsets.size()) - 1; i >= 0; --i)
-		if (heading_offsets[i].offset < position && heading_offsets[i].level == level)
-			return i;
-	return -1;
+	return buffer.previous_heading_marker_index(position, level);
 }
 
 size_t document::offset_for_heading(int heading_index) const noexcept {
-	if (heading_index < 0 || heading_index >= static_cast<int>(heading_offsets.size())) return 0;
-	return heading_offsets[heading_index].offset;
+	const auto& heading_markers = buffer.get_heading_markers();
+	if (heading_index < 0 || heading_index >= static_cast<int>(heading_markers.size())) return 0;
+	return heading_markers[heading_index]->pos;
+}
+
+const marker* document::get_heading_marker(int heading_index) const noexcept {
+	const auto& heading_markers = buffer.get_heading_markers();
+	if (heading_index < 0 || heading_index >= static_cast<int>(heading_markers.size())) return nullptr;
+	return heading_markers[heading_index];
 }
 
 void document::calculate_statistics() const {
+	const auto& text_content = buffer.str();
 	stats.char_count = text_content.Length();
 	stats.char_count_no_whitespace = 0;
 	for (const auto ch : text_content)

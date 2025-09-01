@@ -22,14 +22,15 @@ std::unique_ptr<document> html_parser::load(const wxString& path) const {
 	html_to_text converter;
 	if (!converter.convert(content.ToStdString())) return nullptr;
 	auto doc = std::make_unique<document>();
-	doc->text_content = converter.get_text();
+	doc->buffer.clear();
 	doc->flags = document_flags::supports_toc;
-	for (const auto& heading : converter.get_headings()) {
-		heading_info hi;
-		hi.offset = heading.offset;
-		hi.level = heading.level;
-		hi.text = wxString::FromUTF8(heading.text);
-		doc->heading_offsets.push_back(hi);
+	const auto& text = converter.get_text();
+	const auto& headings = converter.get_headings();
+	doc->buffer.set_content(wxString::FromUTF8(text));
+	for (const auto& heading : headings) {
+		marker_type type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + heading.level - 1);
+		size_t char_offset = document_buffer::utf8_byte_offset_to_wx_char_offset(text, heading.offset);
+		doc->buffer.add_marker(char_offset, type, wxString::FromUTF8(heading.text), wxString(), heading.level);
 	}
 	return doc;
 }

@@ -85,6 +85,7 @@ void xml_to_text::process_node(Node* node) {
 		}
 		if (in_body && tag_name.length() == 2 && tag_name[0] == 'h' && tag_name[1] >= '1' && tag_name[1] <= '6') {
 			int level = tag_name[1] - '0';
+			finalize_current_line();
 			size_t heading_offset = get_current_text_position();
 			std::string heading_text = get_element_text(element);
 			if (!heading_text.empty()) headings.push_back({heading_offset, level, heading_text});
