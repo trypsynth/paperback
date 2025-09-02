@@ -74,7 +74,7 @@ public:
 	void apply_word_wrap(bool word_wrap);
 
 private:
-	wxNotebook* notebook_;
+	wxNotebook* notebook{nullptr};
 
 	void setup_text_ctrl(wxTextCtrl* text_ctrl, const wxString& content);
 	void restore_document_position(document_tab* tab);

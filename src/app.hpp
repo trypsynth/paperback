@@ -27,7 +27,7 @@ public:
 	[[nodiscard]] config_manager& get_config_manager() { return config_mgr; }
 
 private:
-	main_window* frame = nullptr;
+	main_window* frame{nullptr};
 	config_manager config_mgr;
 	void load_default_config();
 };

@@ -22,7 +22,7 @@ public:
 	document_info_dialog& operator=(document_info_dialog&&) = delete;
 
 private:
-	wxTextCtrl* info_text_ctrl = nullptr;
+	wxTextCtrl* info_text_ctrl{nullptr};
 };
 
 class find_dialog : public wxDialog {
@@ -68,8 +68,8 @@ public:
 	[[nodiscard]] long get_position() const;
 
 private:
-	wxTextCtrl* textbox = nullptr;
-	wxTextCtrl* input_ctrl = nullptr;
+	wxTextCtrl* textbox{nullptr};
+	wxTextCtrl* input_ctrl{nullptr};
 
 	void on_key_down(wxKeyEvent& event);
 	void on_char(wxKeyEvent& event);
@@ -88,8 +88,8 @@ public:
 	[[nodiscard]] int get_page_number() const;
 
 private:
-	document* doc_ = nullptr;
-	wxTextCtrl* input_ctrl = nullptr;
+	document* doc_{nullptr};
+	wxTextCtrl* input_ctrl{nullptr};
 
 	void on_key_down(wxKeyEvent& event);
 	void on_char(wxKeyEvent& event);
@@ -111,8 +111,8 @@ public:
 	void set_word_wrap(bool word_wrap);
 
 private:
-	wxCheckBox* restore_docs_check = nullptr;
-	wxCheckBox* word_wrap_check = nullptr;
+	wxCheckBox* restore_docs_check{nullptr};
+	wxCheckBox* word_wrap_check{nullptr};
 
 	void on_ok(wxCommandEvent& event);
 	void on_cancel(wxCommandEvent& event);
@@ -136,7 +136,7 @@ public:
 	[[nodiscard]] int get_selected_offset() const { return selected_offset; }
 
 private:
-	wxTreeCtrl* tree;
+	wxTreeCtrl* tree{nullptr};
 	int selected_offset;
 
 	void populate_tree(const std::vector<std::unique_ptr<toc_item>>& items, const wxTreeItemId& parent);

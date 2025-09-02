@@ -20,7 +20,7 @@
 #include <wx/panel.h>
 #include <wx/textctrl.h>
 
-document_manager::document_manager(wxNotebook* notebook) : notebook_(notebook) {}
+document_manager::document_manager(wxNotebook* nbk) : notebook{nbk} {}
 
 document_manager::~document_manager() {
 	save_all_tab_positions();
@@ -36,7 +36,7 @@ bool document_manager::open_document(const wxString& path, const parser* par) {
 	tab_data->file_path = path;
 	wxPanel* panel = create_tab_panel(tab_data->doc->buffer.str(), tab_data);
 	tab_data->panel = panel;
-	notebook_->AddPage(panel, tab_data->doc->title, true);
+	notebook->AddPage(panel, tab_data->doc->title, true);
 	restore_document_position(tab_data);
 	tab_data->text_ctrl->SetFocus();
 	wxGetApp().get_config_manager().add_recent_document(path);
@@ -52,13 +52,13 @@ void document_manager::close_document(int index) {
 		save_document_position(tab->file_path, position);
 		wxGetApp().get_config_manager().remove_opened_document(tab->file_path);
 	}
-	notebook_->DeletePage(index);
+	notebook->DeletePage(index);
 }
 
 void document_manager::close_all_documents() {
 	save_all_tab_positions();
 	wxGetApp().get_config_manager().clear_opened_documents();
-	notebook_->DeleteAllPages();
+	notebook->DeleteAllPages();
 }
 
 bool document_manager::export_document(int index, const wxString& export_path) {
@@ -73,12 +73,12 @@ bool document_manager::export_document(int index, const wxString& export_path) {
 
 document_tab* document_manager::get_tab(int index) const {
 	if (index < 0 || index >= get_tab_count()) return nullptr;
-	wxPanel* panel = static_cast<wxPanel*>(notebook_->GetPage(index));
+	wxPanel* panel = static_cast<wxPanel*>(notebook->GetPage(index));
 	return static_cast<document_tab*>(panel->GetClientObject());
 }
 
 document_tab* document_manager::get_active_tab() const {
-	int selection = notebook_->GetSelection();
+	int selection = notebook->GetSelection();
 	return selection >= 0 ? get_tab(selection) : nullptr;
 }
 
@@ -93,11 +93,11 @@ wxTextCtrl* document_manager::get_active_text_ctrl() const {
 }
 
 int document_manager::get_tab_count() const {
-	return notebook_->GetPageCount();
+	return notebook->GetPageCount();
 }
 
 int document_manager::get_active_tab_index() const {
-	return notebook_->GetSelection();
+	return notebook->GetSelection();
 }
 
 void document_manager::go_to_position(long position) {
@@ -284,7 +284,7 @@ long document_manager::find_text(const wxString& query, long start_pos, find_opt
 }
 
 wxPanel* document_manager::create_tab_panel(const wxString& content, document_tab* tab_data) {
-	wxPanel* panel = new wxPanel(notebook_, wxID_ANY);
+	wxPanel* panel = new wxPanel(notebook, wxID_ANY);
 	auto* sizer = new wxBoxSizer(wxVERTICAL);
 	auto& config_mgr = wxGetApp().get_config_manager();
 	bool word_wrap = config_mgr.get_word_wrap();
