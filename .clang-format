@@ -19,6 +19,10 @@ PointerAlignment: Left
 AlignConsecutiveAssignments: None
 AlignConsecutiveDeclarations: None
 AlignOperands: DontAlign
+AllowShortBlocksOnASingleLine: Always
+LambdaBodyIndentation: Signature
+ContinuationIndentWidth: 4
+AlignAfterOpenBracket: DontAlign
 BraceWrapping:
   AfterControlStatement: false
   AfterFunction: false
