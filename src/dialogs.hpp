@@ -107,9 +107,12 @@ public:
 	options_dialog& operator=(options_dialog&&) = delete;
 	bool get_restore_previous_documents() const;
 	void set_restore_previous_documents(bool restore);
+	bool get_word_wrap() const;
+	void set_word_wrap(bool word_wrap);
 
 private:
 	wxCheckBox* restore_docs_check = nullptr;
+	wxCheckBox* word_wrap_check = nullptr;
 
 	void on_ok(wxCommandEvent& event);
 	void on_cancel(wxCommandEvent& event);

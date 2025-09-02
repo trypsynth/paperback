@@ -286,7 +286,10 @@ long document_manager::find_text(const wxString& query, long start_pos, find_opt
 wxPanel* document_manager::create_tab_panel(const wxString& content, document_tab* tab_data) {
 	wxPanel* panel = new wxPanel(notebook_, wxID_ANY);
 	auto* sizer = new wxBoxSizer(wxVERTICAL);
-	auto* text_ctrl = new wxTextCtrl(panel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxTE_DONTWRAP);
+	auto& config_mgr = wxGetApp().get_config_manager();
+	bool word_wrap = config_mgr.get_word_wrap();
+	long style = wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | (word_wrap ? wxTE_WORDWRAP : wxTE_DONTWRAP);
+	auto* text_ctrl = new wxTextCtrl(panel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, style);
 	panel->SetClientObject(tab_data);
 	tab_data->text_ctrl = text_ctrl;
 	sizer->Add(text_ctrl, 1, wxEXPAND | wxALL, 5);
@@ -309,6 +312,31 @@ void document_manager::restore_document_position(document_tab* tab) {
 		if (saved_position <= max_position) {
 			tab->text_ctrl->SetInsertionPoint(saved_position);
 			tab->text_ctrl->ShowPosition(saved_position);
+		}
+	}
+}
+
+void document_manager::apply_word_wrap(bool word_wrap) {
+	int active_tab = get_active_tab_index();
+	for (int i = 0; i < get_tab_count(); ++i) {
+		document_tab* tab = get_tab(i);
+		if (tab && tab->text_ctrl && tab->panel) {
+			wxTextCtrl* old_ctrl = tab->text_ctrl;
+			long current_pos = old_ctrl->GetInsertionPoint();
+			wxString content = old_ctrl->GetValue();
+			wxSizer* sizer = tab->panel->GetSizer();
+			sizer->Detach(old_ctrl);
+			old_ctrl->Destroy();
+			long style = wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | (word_wrap ? wxTE_WORDWRAP : wxTE_DONTWRAP);
+			wxTextCtrl* new_ctrl = new wxTextCtrl(tab->panel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, style);
+			tab->text_ctrl = new_ctrl;
+			new_ctrl->Freeze();
+			new_ctrl->SetValue(content);
+			new_ctrl->SetInsertionPoint(current_pos);
+			new_ctrl->ShowPosition(current_pos);
+			new_ctrl->Thaw();
+			sizer->Add(new_ctrl, 1, wxEXPAND | wxALL, 5);
+			tab->panel->Layout();
 		}
 	}
 }

@@ -123,6 +123,21 @@ void config_manager::set_restore_previous_documents(bool restore) {
 	}
 }
 
+bool config_manager::get_word_wrap() const {
+	if (config) {
+		config->SetPath("/");
+		return config->ReadBool("word_wrap", false);
+	}
+	return false;
+}
+
+void config_manager::set_word_wrap(bool word_wrap) {
+	if (config) {
+		config->SetPath("/");
+		config->Write("word_wrap", word_wrap);
+	}
+}
+
 void config_manager::add_opened_document(const wxString& path) {
 	if (!config) return;
 	wxArrayString opened = get_opened_documents();

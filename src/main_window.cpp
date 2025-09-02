@@ -427,10 +427,19 @@ void main_window::on_toc(wxCommandEvent&) {
 
 void main_window::on_options(wxCommandEvent&) {
 	auto& config_mgr = wxGetApp().get_config_manager();
+	wxTextCtrl* active_text_ctrl = doc_manager->get_active_text_ctrl();
 	options_dialog dlg(this);
 	dlg.set_restore_previous_documents(config_mgr.get_restore_previous_documents());
+	dlg.set_word_wrap(config_mgr.get_word_wrap());
 	if (dlg.ShowModal() != wxID_OK) return;
+	bool old_word_wrap = config_mgr.get_word_wrap();
+	bool new_word_wrap = dlg.get_word_wrap();
 	config_mgr.set_restore_previous_documents(dlg.get_restore_previous_documents());
+	config_mgr.set_word_wrap(new_word_wrap);
+	if (old_word_wrap != new_word_wrap) {
+		doc_manager->apply_word_wrap(new_word_wrap);
+		if (active_text_ctrl && doc_manager->get_active_text_ctrl()) doc_manager->get_active_text_ctrl()->SetFocus();
+	}
 	config_mgr.flush();
 }
 

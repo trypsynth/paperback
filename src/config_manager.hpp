@@ -35,6 +35,8 @@ public:
 	void clear_recent_documents();
 	bool get_restore_previous_documents() const;
 	void set_restore_previous_documents(bool restore);
+	bool get_word_wrap() const;
+	void set_word_wrap(bool word_wrap);
 	void add_opened_document(const wxString& path);
 	void remove_opened_document(const wxString& path);
 	wxArrayString get_opened_documents() const;

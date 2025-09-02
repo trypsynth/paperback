@@ -304,6 +304,8 @@ options_dialog::options_dialog(wxWindow* parent) : wxDialog(parent, wxID_ANY, "O
 	auto* general_box = new wxStaticBoxSizer(wxVERTICAL, this, "General");
 	restore_docs_check = new wxCheckBox(this, wxID_ANY, "&Restore previously opened documents on startup");
 	general_box->Add(restore_docs_check, 0, wxALL, 5);
+	word_wrap_check = new wxCheckBox(this, wxID_ANY, "&Word wrap");
+	general_box->Add(word_wrap_check, 0, wxALL, 5);
 	auto* button_sizer = new wxStdDialogButtonSizer();
 	auto* ok_button = new wxButton(this, wxID_OK, "&OK");
 	auto* cancel_button = new wxButton(this, wxID_CANCEL, "&Cancel");
@@ -325,6 +327,14 @@ bool options_dialog::get_restore_previous_documents() const {
 
 void options_dialog::set_restore_previous_documents(bool restore) {
 	if (restore_docs_check) restore_docs_check->SetValue(restore);
+}
+
+bool options_dialog::get_word_wrap() const {
+	return word_wrap_check ? word_wrap_check->GetValue() : false;
+}
+
+void options_dialog::set_word_wrap(bool word_wrap) {
+	if (word_wrap_check) word_wrap_check->SetValue(word_wrap);
 }
 
 void options_dialog::on_ok(wxCommandEvent& event) {
