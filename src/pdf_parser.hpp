@@ -10,7 +10,15 @@
 #pragma once
 #include "parser.hpp"
 #include <memory>
-#include <mupdf/fitz.h>
+#ifdef _WIN32
+struct HDC__;
+typedef HDC__* HDC;
+struct HBITMAP__;
+typedef HBITMAP__* HBITMAP;
+#endif
+#include "fpdfview.h"
+#include "fpdf_text.h"
+#include "fpdf_doc.h"
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -37,8 +45,7 @@ public:
 
 private:
 	struct pdf_context {
-		fz_context* ctx{nullptr};
-		fz_document* doc{nullptr};
+		FPDF_DOCUMENT doc{nullptr};
 		int page_count{0};
 
 		pdf_context();
@@ -49,7 +56,7 @@ private:
 	void extract_text_content(const pdf_context& ctx, document_buffer& buffer) const;
 	void extract_metadata(const pdf_context& ctx, wxString& title, wxString& author) const;
 	void extract_toc(const pdf_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items, const document_buffer& buffer) const;
-	void extract_outline_items(fz_outline* outline, std::vector<std::unique_ptr<toc_item>>& toc_items, const document_buffer& buffer, const pdf_context& ctx) const;
+	void extract_outline_items(FPDF_BOOKMARK bookmark, std::vector<std::unique_ptr<toc_item>>& toc_items, const document_buffer& buffer, const pdf_context& ctx) const;
 	[[nodiscard]] std::vector<std::string> process_text_lines(const std::string& raw_text) const;
 };
 

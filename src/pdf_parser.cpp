@@ -13,25 +13,18 @@
 #include <wx/msgdlg.h>
 
 pdf_parser::pdf_context::pdf_context() {
-	ctx = fz_new_context(nullptr, nullptr, FZ_STORE_UNLIMITED);
-	if (!ctx) throw pdf_parse_error("Failed to create fitz context");
-	fz_register_document_handlers(ctx);
+	FPDF_InitLibrary();
 }
 
 pdf_parser::pdf_context::~pdf_context() {
-	if (doc) fz_drop_document(ctx, doc);
-	if (ctx) fz_drop_context(ctx);
+	if (doc) FPDF_CloseDocument(doc);
+	FPDF_DestroyLibrary();
 }
 
 void pdf_parser::pdf_context::open_document(const wxString& path) {
-	fz_try(ctx) {
-		doc = fz_open_document(ctx, path.ToUTF8().data());
-		if (!doc) throw pdf_parse_error("Failed to open PDF document");
-		page_count = fz_count_pages(ctx, doc);
-	}
-	fz_catch(ctx) {
-		throw pdf_parse_error("Error opening PDF: " + std::string(fz_caught_message(ctx)));
-	}
+	doc = FPDF_LoadDocument(path.ToUTF8().data(), nullptr);
+	if (!doc) throw pdf_parse_error("Failed to open PDF document");
+	page_count = FPDF_GetPageCount(doc);
 }
 
 std::unique_ptr<document> pdf_parser::load(const wxString& path) const {
@@ -39,7 +32,6 @@ std::unique_ptr<document> pdf_parser::load(const wxString& path) const {
 		pdf_context ctx;
 		ctx.open_document(path);
 		auto document_ptr = std::make_unique<document>();
-		extract_metadata(ctx, document_ptr->title, document_ptr->author);
 		extract_text_content(ctx, document_ptr->buffer);
 		extract_toc(ctx, document_ptr->toc_items, document_ptr->buffer);
 		document_ptr->flags = document_flags::supports_pages | document_flags::supports_toc;
@@ -51,74 +43,57 @@ std::unique_ptr<document> pdf_parser::load(const wxString& path) const {
 	}
 }
 
-void pdf_parser::extract_metadata(const pdf_context& ctx, wxString& title, wxString& author) const {
-	fz_try(ctx.ctx) {
-		char buf[256];
-		if (fz_lookup_metadata(ctx.ctx, ctx.doc, FZ_META_INFO_TITLE, buf, sizeof(buf)) > 0)
-			title = wxString::FromUTF8(buf);
-		if (fz_lookup_metadata(ctx.ctx, ctx.doc, FZ_META_INFO_AUTHOR, buf, sizeof(buf)) > 0)
-			author = wxString::FromUTF8(buf);
-	}
-	fz_catch(ctx.ctx) {
-	}
-}
-
 void pdf_parser::extract_text_content(const pdf_context& ctx, document_buffer& buffer) const {
 	buffer.clear();
-	fz_try(ctx.ctx) {
-		for (int page_num = 0; page_num < ctx.page_count; ++page_num) {
-			buffer.add_page_break(wxString::Format("Page %d", page_num + 1));
-			fz_page* page = fz_load_page(ctx.ctx, ctx.doc, page_num);
-			if (!page) continue;
-			fz_stext_page* text_page = fz_new_stext_page_from_page(ctx.ctx, page, nullptr);
-			if (text_page) {
-				fz_buffer* mupdf_buffer = fz_new_buffer_from_stext_page(ctx.ctx, text_page);
-				if (mupdf_buffer) {
-					unsigned char* data;
-					size_t data_size = fz_buffer_extract(ctx.ctx, mupdf_buffer, &data);
-					if (data && data_size > 0) {
-						std::string page_text(reinterpret_cast<char*>(data), data_size);
-						auto processed_lines = process_text_lines(page_text);
-						for (size_t i = 0; i < processed_lines.size(); ++i) {
-							buffer.append_line(wxString::FromUTF8(processed_lines[i]));
-						}
-					}
-					fz_drop_buffer(ctx.ctx, mupdf_buffer);
+	for (int page_num = 0; page_num < ctx.page_count; ++page_num) {
+		buffer.add_page_break(wxString::Format("Page %d", page_num + 1));
+		FPDF_PAGE page = FPDF_LoadPage(ctx.doc, page_num);
+		if (!page) continue;
+		FPDF_TEXTPAGE text_page = FPDFText_LoadPage(page);
+		if (text_page) {
+			int char_count = FPDFText_CountChars(text_page);
+			if (char_count > 0) {
+				std::vector<unsigned short> text_buffer(char_count + 1);
+				int chars_written = FPDFText_GetText(text_page, 0, char_count, text_buffer.data());
+				if (chars_written > 0) {
+					wxString page_text(reinterpret_cast<const wchar_t*>(text_buffer.data()));
+					std::string page_text_utf8 = page_text.ToUTF8().data();
+					auto processed_lines = process_text_lines(page_text_utf8);
+					for (size_t i = 0; i < processed_lines.size(); ++i) buffer.append_line(wxString::FromUTF8(processed_lines[i]));
 				}
-				fz_drop_stext_page(ctx.ctx, text_page);
 			}
-			fz_drop_page(ctx.ctx, page);
+			FPDFText_ClosePage(text_page);
 		}
-	}
-	fz_catch(ctx.ctx) {
-		throw pdf_parse_error("Failed to extract text content from PDF");
+		FPDF_ClosePage(page);
 	}
 }
 
 void pdf_parser::extract_toc(const pdf_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items, const document_buffer& buffer) const {
-	fz_try(ctx.ctx) {
-		fz_outline* outline = fz_load_outline(ctx.ctx, ctx.doc);
-		if (outline) {
-			extract_outline_items(outline, toc_items, buffer, ctx);
-			fz_drop_outline(ctx.ctx, outline);
-		}
-	}
-	fz_catch(ctx.ctx) {
-	}
+	FPDF_BOOKMARK bookmark = FPDFBookmark_GetFirstChild(ctx.doc, nullptr);
+	if (bookmark) extract_outline_items(bookmark, toc_items, buffer, ctx);
 }
 
-void pdf_parser::extract_outline_items(fz_outline* outline, std::vector<std::unique_ptr<toc_item>>& toc_items, const document_buffer& buffer, const pdf_context& ctx) const {
-	while (outline) {
+void pdf_parser::extract_outline_items(FPDF_BOOKMARK bookmark, std::vector<std::unique_ptr<toc_item>>& toc_items, const document_buffer& buffer, const pdf_context& ctx) const {
+	while (bookmark) {
 		auto item = std::make_unique<toc_item>();
-		if (outline->title) item->name = wxString::FromUTF8(outline->title);
-		if (outline->page.page >= 0 && outline->page.page < static_cast<int>(buffer.count_markers_by_type(marker_type::page_break)))
-			item->offset = static_cast<int>(buffer.get_marker_position_by_index(marker_type::page_break, outline->page.page));
-		else
-			item->offset = -1;
-		if (outline->uri) item->ref = wxString::FromUTF8(outline->uri);
-		if (outline->down) extract_outline_items(outline->down, item->children, buffer, ctx);
+		unsigned long title_length = FPDFBookmark_GetTitle(bookmark, nullptr, 0);
+		if (title_length > 2) {
+			std::vector<unsigned short> title_buffer(title_length);
+			FPDFBookmark_GetTitle(bookmark, title_buffer.data(), title_length);
+			item->name = wxString(reinterpret_cast<const wchar_t*>(title_buffer.data()));
+		}
+		FPDF_DEST dest = FPDFBookmark_GetDest(ctx.doc, bookmark);
+		if (dest) {
+			unsigned long page_index = FPDFDest_GetDestPageIndex(ctx.doc, dest);
+			if (page_index < static_cast<unsigned long>(buffer.count_markers_by_type(marker_type::page_break)))
+				item->offset = static_cast<int>(buffer.get_marker_position_by_index(marker_type::page_break, page_index));
+			else
+				item->offset = -1;
+		} else item->offset = -1;
+		FPDF_BOOKMARK child = FPDFBookmark_GetFirstChild(ctx.doc, bookmark);
+		if (child) extract_outline_items(child, item->children, buffer, ctx);
 		toc_items.push_back(std::move(item));
-		outline = outline->next;
+		bookmark = FPDFBookmark_GetNextSibling(ctx.doc, bookmark);
 	}
 }
 
