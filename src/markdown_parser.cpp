@@ -11,6 +11,7 @@
 #include "html_to_text.hpp"
 #include <maddy/parser.h>
 #include <memory>
+#include <wx/filename.h>
 #include <wx/txtstrm.h>
 #include <wx/wfstream.h>
 
@@ -27,11 +28,13 @@ std::unique_ptr<document> markdown_parser::load(const wxString& path) const {
 	html_to_text converter;
 	if (!converter.convert(html)) return nullptr;
 	auto doc = std::make_unique<document>();
+	doc->title = wxFileName(path).GetName();
+	doc->author = "Unknown";
 	doc->buffer.clear();
 	doc->flags = document_flags::supports_toc;
 	const auto& text = converter.get_text();
 	const auto& headings = converter.get_headings();
-	doc->buffer.set_content(wxString::FromUTF8(text));
+	doc->buffer.set_content(wxString(text));
 	for (const auto& heading : headings) {
 		marker_type type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + heading.level - 1);
 		size_t char_offset = document_buffer::utf8_byte_offset_to_wx_char_offset(text, heading.offset);
