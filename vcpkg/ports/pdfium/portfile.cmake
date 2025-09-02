@@ -45,7 +45,6 @@ if(VCPKG_TARGET_IS_WINDOWS)
 	else()
 		file(INSTALL "${SOURCE_PATH}/lib/pdfium.dll.lib" DESTINATION "${CURRENT_PACKAGES_DIR}/debug/lib" RENAME "pdfium.lib")
 	endif()
-	# Always install DLLs for Windows, even with static linkage
 	file(INSTALL "${SOURCE_PATH}/bin/" DESTINATION "${CURRENT_PACKAGES_DIR}/bin" FILES_MATCHING PATTERN "*.dll")
 	if(EXISTS "${SOURCE_PATH}/debug/bin/")
 		file(INSTALL "${SOURCE_PATH}/debug/bin/" DESTINATION "${CURRENT_PACKAGES_DIR}/debug/bin" FILES_MATCHING PATTERN "*.dll")
