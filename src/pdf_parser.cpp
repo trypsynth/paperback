@@ -89,7 +89,8 @@ void pdf_parser::extract_outline_items(FPDF_BOOKMARK bookmark, std::vector<std::
 				item->offset = static_cast<int>(buffer.get_marker_position_by_index(marker_type::page_break, page_index));
 			else
 				item->offset = -1;
-		} else item->offset = -1;
+		} else
+			item->offset = -1;
 		FPDF_BOOKMARK child = FPDFBookmark_GetFirstChild(ctx.doc, bookmark);
 		if (child) extract_outline_items(child, item->children, buffer, ctx);
 		toc_items.push_back(std::move(item));

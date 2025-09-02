@@ -16,9 +16,9 @@ typedef HDC__* HDC;
 struct HBITMAP__;
 typedef HBITMAP__* HBITMAP;
 #endif
-#include "fpdfview.h"
-#include "fpdf_text.h"
 #include "fpdf_doc.h"
+#include "fpdf_text.h"
+#include "fpdfview.h"
 #include <stdexcept>
 #include <string>
 #include <vector>
