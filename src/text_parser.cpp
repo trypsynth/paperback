@@ -10,7 +10,9 @@
 
 #include "text_parser.hpp"
 #include "utils.hpp"
+#include <vector>
 #include <wx/filename.h>
+#include <wx/strconv.h>
 #include <wx/txtstrm.h>
 #include <wx/wfstream.h>
 
@@ -18,13 +20,24 @@ std::unique_ptr<document> text_parser::load(const wxString& path) const {
 	wxFileInputStream file_stream(path);
 	if (!file_stream.IsOk()) return nullptr;
 	wxBufferedInputStream bs(file_stream);
-	wxTextInputStream text_stream(bs);
+	size_t file_size = bs.GetSize();
+	if (file_size == 0) return nullptr;
+	std::vector<char> buffer(file_size);
+	bs.Read(buffer.data(), file_size);
 	wxString content;
-	while (!bs.Eof()) content += text_stream.ReadLine() + "\n";
+	content = wxString::FromUTF8(buffer.data(), file_size);
+	if (content.empty()) content = wxString(buffer.data(), wxConvLocal, file_size);
+	if (content.empty()) {
+		wxCSConv conv("windows-1252");
+		content = wxString(buffer.data(), conv, file_size);
+	}
+	if (content.empty()) content = wxString(buffer.data(), wxConvISO8859_1, file_size);
 	auto doc = std::make_unique<document>();
 	doc->title = wxFileName(path).GetName();
 	doc->author = "Unknown";
-	doc->buffer.set_content(wxString::FromUTF8(remove_soft_hyphens(content.ToStdString())));
+	std::string utf8_content = content.ToUTF8().data();
+	std::string processed = remove_soft_hyphens(utf8_content);
+	doc->buffer.set_content(processed);
 	doc->flags = document_flags::none;
 	return doc;
 }
