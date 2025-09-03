@@ -502,11 +502,7 @@ void main_window::on_text_cursor_changed(wxEvent& event) {
 }
 
 void main_window::on_close_window(wxCloseEvent& event) {
-	if (position_save_timer) {
-		position_save_timer->Stop();
-		delete position_save_timer;
-		position_save_timer = nullptr;
-	}
+	if (position_save_timer) position_save_timer->Stop();
 	if (find_dlg) {
 		find_dlg->Destroy();
 		find_dlg = nullptr;
