@@ -120,7 +120,7 @@ bool should_open_as_txt(const wxString& path) {
 
 void speak(const wxString& message) {
 #ifdef _WIN32
-	speechSayA(message, 1);
+	speechSay(message, 1);
 #endif
 }
 
