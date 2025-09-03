@@ -77,7 +77,7 @@ std::string collapse_whitespace(std::string_view input) {
 	auto result = std::ostringstream{};
 	bool prev_was_space = false;
 	for (const auto ch : input) {
-		if (std::isspace(ch)) {
+		if (std::isspace(static_cast<unsigned char>(ch))) {
 			if (!prev_was_space) {
 				result << ' ';
 				prev_was_space = true;
