@@ -13,7 +13,7 @@
 #include <wx/stdpaths.h>
 
 config_manager::~config_manager() {
-	flush();
+	if (config) shutdown();
 }
 
 bool config_manager::initialize() {
@@ -27,6 +27,14 @@ bool config_manager::initialize() {
 
 void config_manager::flush() {
 	if (config) config->Flush();
+}
+
+void config_manager::shutdown() {
+	if (config) {
+		config->Flush();
+		if (wxConfigBase::Get() == config.get()) wxConfigBase::Set(nullptr);
+		config.reset();
+	}
 }
 
 void config_manager::load_defaults() {

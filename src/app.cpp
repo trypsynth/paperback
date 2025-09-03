@@ -27,7 +27,7 @@ bool app::OnInit() {
 }
 
 int app::OnExit() {
-	config_mgr.flush();
+	config_mgr.shutdown();
 	return wxApp::OnExit();
 }
 

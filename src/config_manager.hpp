@@ -22,6 +22,7 @@ public:
 	config_manager& operator=(config_manager&&) = default;
 	bool initialize();
 	void flush();
+	void shutdown();
 	wxString get_string(const wxString& key, const wxString& default_value = "") const;
 	bool get_bool(const wxString& key, bool default_value = false) const;
 	int get_int(const wxString& key, int default_value = 0) const;
