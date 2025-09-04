@@ -33,6 +33,7 @@ std::unique_ptr<document> pdf_parser::load(const wxString& path) const {
 		ctx.open_document(path);
 		auto document_ptr = std::make_unique<document>();
 		extract_text_content(ctx, document_ptr->buffer);
+		extract_metadata(ctx, document_ptr->title, document_ptr->author);
 		extract_toc(ctx, document_ptr->toc_items, document_ptr->buffer);
 		document_ptr->flags = document_flags::supports_pages | document_flags::supports_toc;
 		if (!document_ptr->toc_items.empty()) document_ptr->flags |= document_flags::supports_toc;
@@ -66,6 +67,20 @@ void pdf_parser::extract_text_content(const pdf_context& ctx, document_buffer& b
 		}
 		FPDF_ClosePage(page);
 	}
+}
+
+void pdf_parser::extract_metadata(const pdf_context& ctx, wxString& title, wxString& author) const {
+	title.Clear();
+	author.Clear();
+	auto extract_metadata_string = [](FPDF_DOCUMENT doc, const char* tag) -> wxString {
+		unsigned long length = FPDF_GetMetaText(doc, tag, nullptr, 0);
+		if (length <= 2) return wxString();
+		std::vector<unsigned short> buffer(length);
+		FPDF_GetMetaText(doc, tag, buffer.data(), length);
+		return wxString(reinterpret_cast<const wchar_t*>(buffer.data()));
+	};
+	title = extract_metadata_string(ctx.doc, "Title");
+	author = extract_metadata_string(ctx.doc, "Author");
 }
 
 void pdf_parser::extract_toc(const pdf_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items, const document_buffer& buffer) const {
