@@ -17,7 +17,7 @@
 class main_window : public wxFrame {
 public:
 	main_window();
-	~main_window() = default;
+	~main_window();
 	main_window(const main_window&) = delete;
 	main_window& operator=(const main_window&) = delete;
 	main_window(main_window&&) = delete;

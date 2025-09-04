@@ -35,6 +35,18 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	update_ui();
 }
 
+main_window::~main_window() {
+	if (position_save_timer) {
+		position_save_timer->Stop();
+		position_save_timer = nullptr;
+	}
+	if (find_dlg) {
+		find_dlg->Destroy();
+		find_dlg = nullptr;
+	}
+	doc_manager.reset();
+}
+
 void main_window::create_menus() {
 	auto* const menu_bar = new wxMenuBar();
 	menu_bar->Append(create_file_menu(), "&File");
@@ -502,12 +514,6 @@ void main_window::on_text_cursor_changed(wxEvent& event) {
 }
 
 void main_window::on_close_window(wxCloseEvent& event) {
-	if (position_save_timer) position_save_timer->Stop();
-	if (find_dlg) {
-		find_dlg->Destroy();
-		find_dlg = nullptr;
-	}
-	doc_manager.reset();
 	event.Skip();
 }
 
