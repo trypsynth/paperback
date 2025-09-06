@@ -37,7 +37,7 @@ std::unique_ptr<document> text_parser::load(const wxString& path) const {
 	doc->author = "Unknown";
 	std::string utf8_content = content.ToUTF8().data();
 	std::string processed = remove_soft_hyphens(utf8_content);
-	doc->buffer.set_content(processed);
+	doc->buffer.set_content(wxString::FromUTF8(processed));
 	doc->flags = document_flags::none;
 	return doc;
 }
