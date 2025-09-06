@@ -24,7 +24,6 @@ document_manager::document_manager(wxNotebook* nbk) : notebook{nbk} {}
 
 document_manager::~document_manager() {
 	save_all_tab_positions();
-	wxGetApp().get_config_manager().clear_opened_documents();
 }
 
 bool document_manager::open_document(const wxString& path, const parser* par) {

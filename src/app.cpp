@@ -58,10 +58,10 @@ bool app::OnInit() {
 	ipc_server = new paperback_server();
 	if (!ipc_server->Create(IPC_SERVICE)) wxMessageBox("Failed to create IPC server", "Warning", wxICON_WARNING);
 	frame = new main_window();
+	if (config_mgr.get_restore_previous_documents())
+		restore_previous_documents();
 	if (argc > 1)
 		parse_command_line();
-	else if (config_mgr.get_restore_previous_documents())
-		restore_previous_documents();
 	frame->Show(true);
 	return true;
 }
