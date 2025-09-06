@@ -2,17 +2,31 @@
 Paperback is a lightweight, fast, and accessible ebook and document reader built with C++ and wxWidgets. It's designed for cross-platform compatibility, screen reader accessibility, and a bloat-free experience.
 
 ## Features
-* Blazing fast performance with native code and minimal runtime dependencies.
-* Extensive document format support, with ongoing additions.
+* Written entirely in C++ and optimized for speed.
+* Supports many common document formats, including but not limited to HTML, epub, PDF, and txt.
 * Intuitive tabbed interface for managing multiple documents.
 * Full screen reader accessibility.
 * Robust find functionality for quick document searches.
-* Seamless navigation between EPUB sections via hotkeys.
+* Seamless navigation between EPUB sections, headings, and pages via hotkeys.
 * Precise navigation to specific lines or percentages within documents.
 * Command-line file opening for 'Open With' integration.
 
 ## Building
-It's recommended to build from an x64 Visual Studio Developer Command Prompt to ensure all paths are correctly configured.
+We use VCPKG for managing dependencies. Currently we manage our own VCPKG installation through a submodule. As such, make sure to clone Paperback recursively:
+
+```batch
+git clone --recursive https://github.com/trypsynth/paperback
+```
+
+If you've already cloned and forgot the --recursive flag, run the following in your paperback directory before trying to build:
+
+```batch
+git submodule update --init
+```
+
+You'll also need CMake and Ninja installed alongside a functional Visual Studio 2022 installation. Only installing the build tools should be sufficient.
+
+Finally, you can compile the project. It's recommended to build from an x64 Visual Studio Developer Command Prompt to ensure all paths are correctly configured.
 
 ```batch
 mkdir build
@@ -21,7 +35,8 @@ cmake .. -GNinja
 cmake --build .
 ```
 
-This will generate a paperback.exe binary in your build directory, as well as all of the screen reader DLLs needed for fully functional speech output.
+This will generate paperback.exe and all its dependencieds, including its readme in HTML format, in your build folder, as well as creating a read-to-release zip file containing everything someone needs to get up and running with Paperback.
+
 ## Contributing
 Contributions are welcome! Whether through issues, pull requests, discussions, or other means, your interest is appreciated.
 
