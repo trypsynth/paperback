@@ -39,8 +39,22 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * Shift+F3: find previous.
 * Ctrl+G: bring up the go to dialog, allowing you to go to either a line number or a percentage.
 * Ctrl+P: brings up a dialog allowing you to specify a page number to jump to, if the document supports pages.
-* Left bracket: go to the previous epub section.
-* Right bracket: go to the next epub section.
+* Left bracket: go to the previous section.
+* Right bracket: go to the next section.
+* Shift+H: go to the previous heading.
+* H: Go to the next heading.
+* Shift+1: go to the previous heading level 1.
+* 1: go to the next heading level 1.
+* Shift+2: go to the previous heading level 2.
+* 2: go to the next heading level 2.
+* Shift+3: go to the previous heading level 3.
+* 3: go to the next heading level 3.
+* Shift+4: go to the previous heading level 4.
+* 4: go to the next heading level 4.
+* Shift+5: go to the previous heading level 5.
+* 5: go to the next heading level 5.
+* Shift+6: go to the previous heading level 6.
+* 6: go to the next heading level 6.
 * P: go to the next page.
 * Shift+P: go to the previous page.
 
@@ -53,6 +67,7 @@ Paperback's user interface was designed specifically with keyboard and screen re
 ### About menu
 * Ctrl+F1: show the about dialog.
 * F1: pop up this readme file in your default web browser.
+* Shift+F1: pop up this readme file in Paperback itself.
 
 ## Changelog
 ### Version 0.21
