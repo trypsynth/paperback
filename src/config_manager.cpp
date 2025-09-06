@@ -20,7 +20,10 @@ bool config_manager::initialize() {
 	const wxString config_path = get_config_path();
 	config = std::make_unique<wxFileConfig>(APP_NAME, "", config_path);
 	if (!config) return false;
-	wxConfigBase::Set(config.get());
+	if (!wxConfigBase::Get()) {
+		wxConfigBase::Set(config.get());
+		owns_global_config = true;
+	}
 	load_defaults();
 	return true;
 }
@@ -32,7 +35,10 @@ void config_manager::flush() {
 void config_manager::shutdown() {
 	if (config) {
 		config->Flush();
-		if (wxConfigBase::Get() == config.get()) wxConfigBase::Set(nullptr);
+		if (owns_global_config) {
+			wxConfigBase::Set(nullptr);
+			owns_global_config = false;
+		}
 		config.reset();
 	}
 }

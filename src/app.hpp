@@ -11,6 +11,21 @@
 #include "config_manager.hpp"
 #include "main_window.hpp"
 #include <wx/wx.h>
+#include <wx/ipc.h>
+#include <wx/snglinst.h>
+
+class paperback_connection : public wxConnection {
+public:
+	bool OnExec(const wxString& topic, const wxString& data) override;
+};
+
+class paperback_server : public wxServer {
+public:
+	wxConnectionBase* OnAcceptConnection(const wxString& topic) override;
+};
+
+class paperback_client : public wxClient {
+};
 
 class app : public wxApp {
 public:
@@ -25,11 +40,15 @@ public:
 	void parse_command_line();
 	void restore_previous_documents();
 	[[nodiscard]] config_manager& get_config_manager() { return config_mgr; }
+	void open_file(const wxString& filename);
 
 private:
 	main_window* frame{nullptr};
 	config_manager config_mgr;
+	wxSingleInstanceChecker* single_instance_checker{nullptr};
+	paperback_server* ipc_server{nullptr};
 	void load_default_config();
+	static const wxString IPC_SERVICE;
 };
 
 wxDECLARE_APP(app);

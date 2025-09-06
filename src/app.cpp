@@ -12,11 +12,51 @@
 #include "parser.hpp"
 #include "utils.hpp"
 
+const wxString app::IPC_SERVICE = "paperback_ipc_service";
+
+bool paperback_connection::OnExec(const wxString& topic, const wxString& data) {
+	if (topic == "open_file") {
+		wxGetApp().open_file(data);
+		return true;
+	}
+	return false;
+}
+
+wxConnectionBase* paperback_server::OnAcceptConnection(const wxString& topic) {
+	if (topic == "open_file") return new paperback_connection();
+	return nullptr;
+}
+
 bool app::OnInit() {
 	if (!config_mgr.initialize()) {
 		wxMessageBox("Failed to initialize configuration", "Error", wxICON_ERROR);
 		return false;
 	}
+	single_instance_checker = new wxSingleInstanceChecker("paperback_running");
+	if (single_instance_checker->IsAnotherRunning()) {
+		if (argc > 1) {
+			paperback_client client;
+			wxConnectionBase* connection = client.MakeConnection("localhost", IPC_SERVICE, "open_file");
+			if (connection) {
+				connection->Execute(wxString(argv[1]));
+				connection->Disconnect();
+				delete connection;
+			}
+		} else {
+			paperback_client client;
+			wxConnectionBase* connection = client.MakeConnection("localhost", IPC_SERVICE, "open_file");
+			if (connection) {
+				connection->Execute("ACTIVATE");
+				connection->Disconnect();
+				delete connection;
+			}
+		}
+		delete single_instance_checker;
+		single_instance_checker = nullptr;
+		return false;
+	}
+	ipc_server = new paperback_server();
+	if (!ipc_server->Create(IPC_SERVICE)) wxMessageBox("Failed to create IPC server", "Warning", wxICON_WARNING);
 	frame = new main_window();
 	if (argc > 1)
 		parse_command_line();
@@ -27,6 +67,14 @@ bool app::OnInit() {
 }
 
 int app::OnExit() {
+	if (ipc_server) {
+		delete ipc_server;
+		ipc_server = nullptr;
+	}
+	if (single_instance_checker) {
+		delete single_instance_checker;
+		single_instance_checker = nullptr;
+	}
 	config_mgr.shutdown();
 	return wxApp::OnExit();
 }
@@ -56,6 +104,28 @@ void app::restore_previous_documents() {
 			par = find_parser_by_extension("txt");
 		}
 		if (!frame->get_doc_manager()->open_document(path, par)) continue;
+	}
+}
+
+void app::open_file(const wxString& filename) {
+	if (filename == "ACTIVATE") {
+		if (frame) frame->Raise();
+		return;
+	}
+	if (!wxFileName::FileExists(filename)) {
+		wxMessageBox("File not found: " + filename, "Error", wxICON_ERROR);
+		return;
+	}
+	auto* par = find_parser_by_extension(wxFileName(filename).GetExt());
+	if (!par) {
+		if (!should_open_as_txt(filename)) return;
+		par = find_parser_by_extension("txt");
+	}
+	if (!frame->get_doc_manager()->open_document(filename, par))
+		wxMessageBox("Failed to load document.", "Error", wxICON_ERROR);
+	else {
+		frame->Raise();
+		frame->RequestUserAttention();
 	}
 }
 

@@ -45,6 +45,7 @@ public:
 
 private:
 	std::unique_ptr<wxFileConfig> config;
+	bool owns_global_config{false};
 
 	wxString get_config_path() const;
 	void load_defaults();
