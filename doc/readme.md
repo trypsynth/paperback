@@ -26,6 +26,7 @@ Paperback supports several common file formats, with more planned for future rel
 
 ## Hotkeys
 Paperback's user interface was designed specifically with keyboard and screen reader users in mind. As such, every action has an associated hotkey. Below, you'll find a list of all of them, grouped by menu structure.
+
 ### File menu
 * Ctrl+O: open a document.
 * Ctrl+F4: close the currently focused document.

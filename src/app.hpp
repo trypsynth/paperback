@@ -10,9 +10,9 @@
 #pragma once
 #include "config_manager.hpp"
 #include "main_window.hpp"
-#include <wx/wx.h>
 #include <wx/ipc.h>
 #include <wx/snglinst.h>
+#include <wx/wx.h>
 
 class paperback_connection : public wxConnection {
 public:
