@@ -9,6 +9,7 @@
 
 #include "html_to_text.hpp"
 #include "utils.hpp"
+#include <wx/string.h>
 #include <algorithm>
 #include <array>
 #include <cctype>
@@ -46,6 +47,7 @@ void html_to_text::clear() noexcept {
 	headings.clear();
 	in_body = false;
 	preserve_whitespace = false;
+	cached_char_length = 0;
 }
 
 void html_to_text::process_node(lxb_dom_node_t* node) {
@@ -70,9 +72,7 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 				const lxb_char_t* id_attr = lxb_dom_element_get_attribute(element, (const lxb_char_t*)"id", 2, &id_len);
 				if (id_attr && id_len > 0) {
 					std::string id{reinterpret_cast<const char*>(id_attr), id_len};
-					size_t total_length = 0;
-					for (const auto& line : lines) total_length += line.length() + 1;
-					id_positions[id] = total_length;
+					id_positions[id] = cached_char_length;
 				}
 				if (tag_name.length() == 2 && tag_name[0] == 'h' && tag_name[1] >= '1' && tag_name[1] <= '6') {
 					int level = tag_name[1] - '0';
@@ -112,7 +112,10 @@ void html_to_text::process_text_node(lxb_dom_text_t* text_node) {
 void html_to_text::add_line(std::string_view line) {
 	std::string processed_line = collapse_whitespace(line);
 	processed_line = trim_string(processed_line);
-	if (!processed_line.empty()) lines.emplace_back(std::move(processed_line));
+	if (!processed_line.empty()) {
+		cached_char_length += wxString::FromUTF8(processed_line).length() + 1; // +1 for newline
+		lines.emplace_back(std::move(processed_line));
+	}
 }
 
 void html_to_text::finalize_current_line() {
@@ -122,19 +125,20 @@ void html_to_text::finalize_current_line() {
 
 void html_to_text::finalize_text() {
 	std::vector<std::string> cleaned_lines;
+	cached_char_length = 0;
 	for (auto& line : lines) {
 		line = collapse_whitespace(line);
 		line = trim_string(line);
-		if (!line.empty()) cleaned_lines.emplace_back(std::move(line));
+		if (!line.empty()) {
+			cached_char_length += wxString::FromUTF8(line).length() + 1; // +1 for newline
+			cleaned_lines.emplace_back(std::move(line));
+		}
 	}
 	lines = std::move(cleaned_lines);
 }
 
 size_t html_to_text::get_current_text_position() const {
-	size_t total_length = 0;
-	for (const auto& line : lines) total_length += line.length() + 1;
-	total_length += current_line.length();
-	return total_length;
+	return cached_char_length + wxString::FromUTF8(current_line).length();
 }
 
 constexpr bool html_to_text::is_block_element(std::string_view tag_name) noexcept {

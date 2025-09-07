@@ -10,6 +10,7 @@
 
 #include "xml_to_text.hpp"
 #include "utils.hpp"
+#include <wx/string.h>
 #include <Poco/AutoPtr.h>
 #include <Poco/DOM/DOMParser.h>
 #include <Poco/Exception.h>
@@ -59,6 +60,7 @@ void xml_to_text::clear() noexcept {
 	headings.clear();
 	in_body = false;
 	preserve_whitespace = false;
+	cached_char_length = 0;
 }
 
 void xml_to_text::process_node(Node* node) {
@@ -78,9 +80,7 @@ void xml_to_text::process_node(Node* node) {
 		if (in_body && element->hasAttributeNS("", "id")) {
 			std::string id = element->getAttributeNS("", "id");
 			if (!id.empty()) {
-				size_t total_length = 0;
-				for (const auto& line : lines) total_length += line.length() + 1;
-				id_positions[id] = total_length;
+				id_positions[id] = cached_char_length;
 			}
 		}
 		if (in_body && tag_name.length() == 2 && tag_name[0] == 'h' && tag_name[1] >= '1' && tag_name[1] <= '6') {
@@ -116,7 +116,10 @@ void xml_to_text::add_line(std::string_view line) {
 	std::string processed_line;
 	processed_line = preserve_whitespace ? std::string(line) : collapse_whitespace(line);
 	processed_line = trim_string(processed_line);
-	if (!processed_line.empty()) lines.emplace_back(std::move(processed_line));
+	if (!processed_line.empty()) {
+		cached_char_length += wxString::FromUTF8(processed_line).length() + 1; // +1 for newline
+		lines.emplace_back(std::move(processed_line));
+	}
 }
 
 void xml_to_text::finalize_current_line() {
@@ -125,10 +128,7 @@ void xml_to_text::finalize_current_line() {
 }
 
 size_t xml_to_text::get_current_text_position() const {
-	size_t total_length = 0;
-	for (const auto& line : lines) total_length += line.length() + 1;
-	total_length += current_line.length();
-	return total_length;
+	return cached_char_length + wxString::FromUTF8(current_line).length();
 }
 
 constexpr bool xml_to_text::is_block_element(std::string_view tag_name) noexcept {

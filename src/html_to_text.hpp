@@ -44,6 +44,7 @@ private:
 	std::vector<simple_heading_info> headings;
 	bool in_body = false;
 	bool preserve_whitespace = false;
+	size_t cached_char_length = 0;
 	DocumentPtr doc;
 
 	void process_node(lxb_dom_node_t* node);

@@ -40,6 +40,7 @@ private:
 	std::vector<simple_heading_info> headings;
 	bool in_body = false;
 	bool preserve_whitespace = false;
+	size_t cached_char_length = 0;
 
 	void process_node(Poco::XML::Node* node);
 	void process_text_node(Poco::XML::Text* text_node);
