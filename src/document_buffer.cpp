@@ -205,24 +205,3 @@ size_t document_buffer::utf8_byte_offset_to_wx_char_offset(const std::string& ut
 	std::string substr = utf8_text.substr(0, byte_offset);
 	return wxString::FromUTF8(substr).length();
 }
-
-void document_buffer::debug_print() const {
-	wxLogMessage("Total markers: %zu", markers.size());
-	for (size_t i = 0; i < markers.size(); ++i) {
-		const auto& m = markers[i];
-		wxString type_str;
-		switch (m.type) {
-			case marker_type::heading_1: type_str = "H1"; break;
-			case marker_type::heading_2: type_str = "H2"; break;
-			case marker_type::heading_3: type_str = "H3"; break;
-			case marker_type::heading_4: type_str = "H4"; break;
-			case marker_type::heading_5: type_str = "H5"; break;
-			case marker_type::heading_6: type_str = "H6"; break;
-			case marker_type::page_break: type_str = "PAGE_BREAK"; break;
-			case marker_type::section_break: type_str = "SECTION_BREAK"; break;
-			case marker_type::toc_item: type_str = "TOC_ITEM"; break;
-			default: type_str = "UNKNOWN"; break;
-		}
-		wxLogMessage("[%zu] %s at pos %zu, level %d, text: \"%s\", ref: \"%s\"", i, type_str, m.pos, m.level, m.text, m.ref);
-	}
-}
