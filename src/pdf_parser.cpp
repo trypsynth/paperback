@@ -10,6 +10,7 @@
 #include "pdf_parser.hpp"
 #include "utils.hpp"
 #include <sstream>
+#include <wx/filename.h>
 #include <wx/msgdlg.h>
 
 pdf_parser::pdf_context::pdf_context() {
@@ -33,7 +34,7 @@ std::unique_ptr<document> pdf_parser::load(const wxString& path) const {
 		ctx.open_document(path);
 		auto document_ptr = std::make_unique<document>();
 		extract_text_content(ctx, document_ptr->buffer);
-		extract_metadata(ctx, document_ptr->title, document_ptr->author);
+		extract_metadata(ctx, document_ptr->title, document_ptr->author, path);
 		extract_toc(ctx, document_ptr->toc_items, document_ptr->buffer);
 		document_ptr->flags = document_flags::supports_pages | document_flags::supports_toc;
 		if (!document_ptr->toc_items.empty()) document_ptr->flags |= document_flags::supports_toc;
@@ -69,7 +70,7 @@ void pdf_parser::extract_text_content(const pdf_context& ctx, document_buffer& b
 	}
 }
 
-void pdf_parser::extract_metadata(const pdf_context& ctx, wxString& title, wxString& author) const {
+void pdf_parser::extract_metadata(const pdf_context& ctx, wxString& title, wxString& author, const wxString& path) const {
 	title.Clear();
 	author.Clear();
 	auto extract_metadata_string = [](FPDF_DOCUMENT doc, const char* tag) -> wxString {
@@ -81,6 +82,9 @@ void pdf_parser::extract_metadata(const pdf_context& ctx, wxString& title, wxStr
 	};
 	title = extract_metadata_string(ctx.doc, "Title");
 	author = extract_metadata_string(ctx.doc, "Author");
+	
+	if (title.IsEmpty()) title = wxFileName(path).GetName();
+	if (author.IsEmpty()) author = "Unknown";
 }
 
 void pdf_parser::extract_toc(const pdf_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items, const document_buffer& buffer) const {
