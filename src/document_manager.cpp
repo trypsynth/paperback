@@ -121,10 +121,10 @@ void document_manager::go_to_previous_section() {
 	int current_index = doc->section_index(current_pos);
 	if (current_index != -1) {
 		size_t current_section_offset = doc->offset_for_section(current_index);
-		if (current_pos > current_section_offset + 1) {
-			text_ctrl->SetInsertionPoint(current_section_offset + 1);
+		if (current_pos > current_section_offset) {
+			text_ctrl->SetInsertionPoint(current_section_offset);
 			long line;
-			text_ctrl->PositionToXY(current_section_offset + 1, 0, &line);
+			text_ctrl->PositionToXY(current_section_offset, 0, &line);
 			wxString current_line = text_ctrl->GetLineText(line);
 			speak(current_line);
 			return;
@@ -133,7 +133,7 @@ void document_manager::go_to_previous_section() {
 	size_t search_pos = current_pos;
 	if (current_index != -1) {
 		size_t current_section_offset = doc->offset_for_section(current_index);
-		if (current_pos <= current_section_offset + 1) {
+		if (current_pos <= current_section_offset) {
 			// We're at the start of the current section, so search from just before the section marker.
 			search_pos = current_section_offset > 0 ? current_section_offset - 1 : 0;
 		}
@@ -144,9 +144,9 @@ void document_manager::go_to_previous_section() {
 		return;
 	}
 	size_t offset = doc->offset_for_section(prev_index);
-	text_ctrl->SetInsertionPoint(offset + 1);
+	text_ctrl->SetInsertionPoint(offset);
 	long line;
-	text_ctrl->PositionToXY(offset + 1, 0, &line);
+	text_ctrl->PositionToXY(offset, 0, &line);
 	wxString current_line = text_ctrl->GetLineText(line);
 	speak(current_line);
 }
@@ -166,9 +166,9 @@ void document_manager::go_to_next_section() {
 		return;
 	}
 	size_t offset = doc->offset_for_section(next_index);
-	text_ctrl->SetInsertionPoint(offset + 1);
+	text_ctrl->SetInsertionPoint(offset);
 	long line;
-	text_ctrl->PositionToXY(offset + 1, 0, &line);
+	text_ctrl->PositionToXY(offset, 0, &line);
 	wxString current_line = text_ctrl->GetLineText(line);
 	speak(current_line);
 }
