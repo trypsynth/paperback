@@ -215,15 +215,7 @@ void main_window::on_open(wxCommandEvent&) {
 	wxFileDialog dlg(this, "Select a document to read", "", "", get_supported_wildcards(), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 	if (dlg.ShowModal() != wxID_OK) return;
 	const auto path = dlg.GetPath();
-	const auto* par = find_parser_by_extension(wxFileName(path).GetExt());
-	if (!par) {
-		if (!should_open_as_txt(path)) return;
-		par = find_parser_by_extension("txt");
-	}
-	if (!doc_manager->open_document(path, par)) {
-		wxMessageBox("Failed to load document.", "Error", wxICON_ERROR);
-		return;
-	}
+	wxGetApp().open_file(path);
 	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
 	if (text_ctrl) {
 		text_ctrl->Bind(wxEVT_LEFT_UP, &main_window::on_text_cursor_changed, this);
@@ -478,16 +470,12 @@ void main_window::on_help_internal(wxCommandEvent&) {
 		wxMessageBox("readme.html not found. Please ensure the application was built properly.", "Error", wxICON_ERROR);
 		return;
 	}
-	const auto* par = find_parser_by_extension("html");
-	if (!par) return;
-	if (!doc_manager->open_document(readme_path, par)) {
-		wxMessageBox("Failed to load readme.html.", "Error", wxICON_ERROR);
-		return;
-	}
+	wxGetApp().open_file(readme_path);
 	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-	if (!text_ctrl) return;
-	text_ctrl->Bind(wxEVT_LEFT_UP, &main_window::on_text_cursor_changed, this);
-	text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, this);
+	if (text_ctrl) {
+		text_ctrl->Bind(wxEVT_LEFT_UP, &main_window::on_text_cursor_changed, this);
+		text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, this);
+	}
 	update_title();
 	update_status_bar();
 	update_ui();
@@ -533,15 +521,7 @@ void main_window::on_recent_document(wxCommandEvent& event) {
 			update_recent_documents_menu();
 			return;
 		}
-		const auto* par = find_parser_by_extension(wxFileName(path).GetExt());
-		if (!par) {
-			if (!should_open_as_txt(path)) return;
-			par = find_parser_by_extension("txt");
-		}
-		if (!doc_manager->open_document(path, par)) {
-			wxMessageBox("Failed to load document.", "Error", wxICON_ERROR);
-			return;
-		}
+		wxGetApp().open_file(path);
 		auto* const text_ctrl = doc_manager->get_active_text_ctrl();
 		if (text_ctrl) {
 			text_ctrl->Bind(wxEVT_LEFT_UP, &main_window::on_text_cursor_changed, this);

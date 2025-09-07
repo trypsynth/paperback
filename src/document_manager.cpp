@@ -339,3 +339,11 @@ void document_manager::apply_word_wrap(bool word_wrap) {
 		}
 	}
 }
+
+int document_manager::find_tab_by_path(const wxString& path) const {
+	for (int i = 0; i < get_tab_count(); ++i) {
+		document_tab* tab = get_tab(i);
+		if (tab && tab->file_path == path) return i;
+	}
+	return -1;
+}

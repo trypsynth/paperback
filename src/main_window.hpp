@@ -23,6 +23,7 @@ public:
 	main_window(main_window&&) = delete;
 	main_window& operator=(main_window&&) = delete;
 	[[nodiscard]] document_manager* get_doc_manager() const noexcept { return doc_manager.get(); }
+	[[nodiscard]] wxNotebook* get_notebook() const noexcept { return notebook; }
 
 private:
 	std::unique_ptr<document_manager> doc_manager;

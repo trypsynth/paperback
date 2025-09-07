@@ -85,25 +85,36 @@ void app::parse_command_line() {
 		wxMessageBox("File not found: " + path, "Error", wxICON_ERROR);
 		return;
 	}
+	auto* doc_manager = frame->get_doc_manager();
+	const int existing_tab = doc_manager->find_tab_by_path(path);
+	if (existing_tab >= 0) {
+		frame->get_notebook()->SetSelection(existing_tab);
+		auto* const text_ctrl = doc_manager->get_active_text_ctrl();
+		if (text_ctrl) text_ctrl->SetFocus();
+		return;
+	}
 	auto* par = find_parser_by_extension(wxFileName(path).GetExt());
 	if (!par) {
 		if (!should_open_as_txt(path)) return;
 		par = find_parser_by_extension("txt");
 	}
-	if (!frame->get_doc_manager()->open_document(path, par))
+	if (!doc_manager->open_document(path, par))
 		wxMessageBox("Failed to load document.", "Error", wxICON_ERROR);
 }
 
 void app::restore_previous_documents() {
 	wxArrayString opened_docs = config_mgr.get_opened_documents();
+	auto* doc_manager = frame->get_doc_manager();
 	for (const auto& path : opened_docs) {
 		if (!wxFileName::FileExists(path)) continue;
+		const int existing_tab = doc_manager->find_tab_by_path(path);
+		if (existing_tab >= 0) continue;
 		auto* par = find_parser_by_extension(wxFileName(path).GetExt());
 		if (!par) {
 			if (!should_open_as_txt(path)) continue;
 			par = find_parser_by_extension("txt");
 		}
-		if (!frame->get_doc_manager()->open_document(path, par)) continue;
+		if (!doc_manager->open_document(path, par)) continue;
 	}
 }
 
@@ -116,12 +127,22 @@ void app::open_file(const wxString& filename) {
 		wxMessageBox("File not found: " + filename, "Error", wxICON_ERROR);
 		return;
 	}
+	auto* doc_manager = frame->get_doc_manager();
+	const int existing_tab = doc_manager->find_tab_by_path(filename);
+	if (existing_tab >= 0) {
+		frame->get_notebook()->SetSelection(existing_tab);
+		auto* const text_ctrl = doc_manager->get_active_text_ctrl();
+		if (text_ctrl) text_ctrl->SetFocus();
+		frame->Raise();
+		frame->RequestUserAttention();
+		return;
+	}
 	auto* par = find_parser_by_extension(wxFileName(filename).GetExt());
 	if (!par) {
 		if (!should_open_as_txt(filename)) return;
 		par = find_parser_by_extension("txt");
 	}
-	if (!frame->get_doc_manager()->open_document(filename, par))
+	if (!doc_manager->open_document(filename, par))
 		wxMessageBox("Failed to load document.", "Error", wxICON_ERROR);
 	else {
 		frame->Raise();

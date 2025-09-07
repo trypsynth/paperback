@@ -72,6 +72,7 @@ public:
 	[[nodiscard]] wxString get_window_title(const wxString& app_name) const;
 	[[nodiscard]] long find_text(const wxString& query, long start_pos, find_options options) const;
 	void apply_word_wrap(bool word_wrap);
+	[[nodiscard]] int find_tab_by_path(const wxString& path) const;
 
 private:
 	wxNotebook* notebook{nullptr};
