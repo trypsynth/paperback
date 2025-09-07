@@ -32,5 +32,6 @@ std::unique_ptr<document> html_parser::load(const wxString& path) const {
 		size_t char_offset = document_buffer::utf8_byte_offset_to_wx_char_offset(text, heading.offset);
 		doc->buffer.add_marker(char_offset, type, wxString::FromUTF8(heading.text), wxString(), heading.level);
 	}
+	doc->buffer.debug_print();
 	return doc;
 }
