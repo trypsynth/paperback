@@ -24,9 +24,7 @@ If you've already cloned and forgot the --recursive flag, run the following in y
 git submodule update --init
 ```
 
-You'll also need CMake and Ninja installed alongside a functional Visual Studio 2022 installation. Only installing the build tools should be sufficient.
-
-Finally, you can compile the project. It's recommended to build from an x64 Visual Studio Developer Command Prompt to ensure all paths are correctly configured.
+You'll also need CMake and Ninja installed alongside a functional Visual Studio 2022 installation. Once you have everything necessary, you can compile the project. It's recommended to build from an x64 Visual Studio Developer Command Prompt to ensure all paths are correctly configured.
 
 ```batch
 mkdir build
@@ -35,7 +33,7 @@ cmake .. -GNinja
 cmake --build .
 ```
 
-This will generate paperback.exe and all its dependencieds, including its readme in HTML format, in your build folder, as well as creating a read-to-release zip file containing everything someone needs to get up and running with Paperback.
+This will generate paperback.exe and all its dependencieds, including its readme in HTML format, in your build folder, as well as creating a ready-to-release zip file containing everything someone needs to get up and running with Paperback.
 
 ## Contributing
 Contributions are welcome! Whether through issues, pull requests, discussions, or other means, your interest is appreciated.
