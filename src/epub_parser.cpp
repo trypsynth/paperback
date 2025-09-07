@@ -158,7 +158,7 @@ void epub_parser::parse_section(size_t index, epub_context& ctx, document_buffer
 				size_t char_offset = document_buffer::utf8_byte_offset_to_wx_char_offset(text, heading.offset);
 				buffer.add_marker(section_start + char_offset, type, wxString::FromUTF8(heading.text), wxString(), heading.level);
 			}
-			if (!buffer.str().EndsWith("\n")) buffer.append("\n");
+			if (buffer.str().length() > 0 && !buffer.str().EndsWith("\n")) buffer.append("\n");
 		}
 	} else {
 		xml_to_text converter;
@@ -174,7 +174,7 @@ void epub_parser::parse_section(size_t index, epub_context& ctx, document_buffer
 				size_t char_offset = document_buffer::utf8_byte_offset_to_wx_char_offset(text, heading.offset);
 				buffer.add_marker(section_start + char_offset, type, wxString::FromUTF8(heading.text), wxString(), heading.level);
 			}
-			if (!buffer.str().EndsWith("\n")) buffer.append("\n");
+			if (buffer.str().length() > 0 && !buffer.str().EndsWith("\n")) buffer.append("\n");
 		}
 	}
 }
