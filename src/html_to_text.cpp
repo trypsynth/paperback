@@ -9,13 +9,13 @@
 
 #include "html_to_text.hpp"
 #include "utils.hpp"
-#include <wx/string.h>
 #include <algorithm>
 #include <array>
 #include <cctype>
 #include <sstream>
 #include <stdexcept>
 #include <string_view>
+#include <wx/string.h>
 
 html_to_text::html_to_text() : doc(lxb_html_document_create()) {
 	if (!doc) throw std::runtime_error("Failed to create Lexbor HTML document");

@@ -10,7 +10,6 @@
 
 #include "xml_to_text.hpp"
 #include "utils.hpp"
-#include <wx/string.h>
 #include <Poco/AutoPtr.h>
 #include <Poco/DOM/DOMParser.h>
 #include <Poco/Exception.h>
@@ -19,6 +18,7 @@
 #include <array>
 #include <sstream>
 #include <string_view>
+#include <wx/string.h>
 
 using namespace Poco::XML;
 
