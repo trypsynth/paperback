@@ -383,6 +383,7 @@ void toc_dialog::find_and_select_item(const wxTreeItemId& parent, int offset) {
 			tree->SelectItem(item_id);
 			tree->SetFocusedItem(item_id);
 			tree->EnsureVisible(item_id);
+			selected_offset = data->offset;
 			return;
 		}
 		if (tree->ItemHasChildren(item_id))
