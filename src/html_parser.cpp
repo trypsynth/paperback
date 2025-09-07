@@ -20,18 +20,17 @@ std::unique_ptr<document> html_parser::load(const wxString& path) const {
 	wxString content;
 	while (!bs.Eof()) content += text_stream.ReadLine() + "\n";
 	html_to_text converter;
-	if (!converter.convert(content.ToStdString())) return nullptr;
+	if (!converter.convert(content.utf8_string())) return nullptr;
 	auto doc = std::make_unique<document>();
 	doc->buffer.clear();
 	doc->flags = document_flags::supports_toc;
 	const auto& text = converter.get_text();
 	const auto& headings = converter.get_headings();
-	doc->buffer.set_content(text);
+	doc->buffer.set_content(wxString::FromUTF8(text));
 	for (const auto& heading : headings) {
 		marker_type type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + heading.level - 1);
 		size_t char_offset = document_buffer::utf8_byte_offset_to_wx_char_offset(text, heading.offset);
 		doc->buffer.add_marker(char_offset, type, wxString::FromUTF8(heading.text), wxString(), heading.level);
 	}
-	doc->buffer.debug_print();
 	return doc;
 }
