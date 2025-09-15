@@ -22,6 +22,9 @@
 main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	auto* const panel = new wxPanel(this);
 	notebook = new wxNotebook(panel, wxID_ANY);
+	#ifdef __WXMSW__
+		notebook->MSWDisableComposited();
+	#endif
 	auto* const sizer = new wxBoxSizer(wxVERTICAL);
 	sizer->Add(notebook, 1, wxEXPAND | wxALL, 10);
 	panel->SetSizer(sizer);
