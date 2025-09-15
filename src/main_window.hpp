@@ -24,6 +24,11 @@ public:
 	main_window& operator=(main_window&&) = delete;
 	[[nodiscard]] document_manager* get_doc_manager() const noexcept { return doc_manager.get(); }
 	[[nodiscard]] wxNotebook* get_notebook() const noexcept { return notebook; }
+	void on_text_cursor_changed(wxEvent& event);
+	void update_ui();
+	void update_title();
+	void update_status_bar();
+	void update_recent_documents_menu();
 
 private:
 	std::unique_ptr<document_manager> doc_manager;
@@ -39,9 +44,6 @@ private:
 	wxMenu* create_tools_menu();
 	wxMenu* create_help_menu();
 	void bind_events();
-	void update_ui();
-	void update_title();
-	void update_status_bar();
 	void on_open(wxCommandEvent&);
 	void on_close(wxCommandEvent&);
 	void on_close_all(wxCommandEvent&);
@@ -78,10 +80,8 @@ private:
 	void on_help(wxCommandEvent&);
 	void on_help_internal(wxCommandEvent&);
 	void on_notebook_page_changed(wxBookCtrlEvent& event);
-	void on_text_cursor_changed(wxEvent& event);
 	void on_close_window(wxCloseEvent& event);
 	void on_position_save_timer(wxTimerEvent&);
 	void on_recent_document(wxCommandEvent& event);
 	void do_find(bool forward);
-	void update_recent_documents_menu();
 };

@@ -98,7 +98,7 @@ void app::parse_command_line() {
 		if (!should_open_as_txt(path)) return;
 		par = find_parser_by_extension("txt");
 	}
-	if (!doc_manager->open_document(path, par))
+	if (!doc_manager->create_document_tab(path, par))
 		wxMessageBox("Failed to load document.", "Error", wxICON_ERROR);
 }
 
@@ -114,7 +114,7 @@ void app::restore_previous_documents() {
 			if (!should_open_as_txt(path)) continue;
 			par = find_parser_by_extension("txt");
 		}
-		if (!doc_manager->open_document(path, par)) continue;
+		if (!doc_manager->create_document_tab(path, par)) continue;
 	}
 }
 
@@ -142,7 +142,7 @@ void app::open_file(const wxString& filename) {
 		if (!should_open_as_txt(filename)) return;
 		par = find_parser_by_extension("txt");
 	}
-	if (!doc_manager->open_document(filename, par))
+	if (!doc_manager->create_document_tab(filename, par))
 		wxMessageBox("Failed to load document.", "Error", wxICON_ERROR);
 	else {
 		frame->Raise();

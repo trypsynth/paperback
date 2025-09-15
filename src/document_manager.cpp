@@ -11,6 +11,7 @@
 #include "app.hpp"
 #include "constants.hpp"
 #include "dialogs.hpp"
+#include "main_window.hpp"
 #include "parser.hpp"
 #include "structured_nav.hpp"
 #include "utils.hpp"
@@ -26,7 +27,7 @@ document_manager::~document_manager() {
 	save_all_tab_positions();
 }
 
-bool document_manager::open_document(const wxString& path, const parser* par) {
+bool document_manager::create_document_tab(const wxString& path, const parser* par) {
 	std::unique_ptr<document> doc = par->load(path);
 	if (!doc) return false;
 	doc->calculate_statistics();
@@ -41,6 +42,53 @@ bool document_manager::open_document(const wxString& path, const parser* par) {
 	wxGetApp().get_config_manager().add_recent_document(path);
 	wxGetApp().get_config_manager().add_opened_document(path);
 	return true;
+}
+
+bool document_manager::open_file(const wxString& path, bool add_to_recent) {
+	if (!wxFileName::FileExists(path)) {
+		wxMessageBox("File not found: " + path, "Error", wxICON_ERROR);
+		return false;
+	}
+	const int existing_tab = find_tab_by_path(path);
+	if (existing_tab >= 0) {
+		notebook->SetSelection(existing_tab);
+		auto* const text_ctrl = get_active_text_ctrl();
+		if (text_ctrl) text_ctrl->SetFocus();
+		return true;
+	}
+	auto* par = find_parser_by_extension(wxFileName(path).GetExt());
+	if (!par) {
+		if (!should_open_as_txt(path)) return false;
+		par = find_parser_by_extension("txt");
+	}
+	if (!create_document_tab(path, par)) {
+		wxMessageBox("Failed to load document.", "Error", wxICON_ERROR);
+		return false;
+	}
+	auto* const text_ctrl = get_active_text_ctrl();
+	if (text_ctrl) {
+		auto* main_win = static_cast<main_window*>(wxGetApp().GetTopWindow());
+		if (main_win) {
+			text_ctrl->Bind(wxEVT_LEFT_UP, &main_window::on_text_cursor_changed, main_win);
+			text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, main_win);
+		}
+	}
+	if (add_to_recent) {
+		auto& config_mgr = wxGetApp().get_config_manager();
+		config_mgr.add_recent_document(path);
+	}
+	update_ui();
+	return true;
+}
+
+void document_manager::update_ui() {
+	auto* main_win = static_cast<main_window*>(wxGetApp().GetTopWindow());
+	if (main_win) {
+		main_win->update_recent_documents_menu();
+		main_win->update_title();
+		main_win->update_status_bar();
+		main_win->update_ui();
+	}
 }
 
 void document_manager::close_document(int index) {

@@ -19,6 +19,7 @@ class wxNotebook;
 class wxTextCtrl;
 class wxPanel;
 class wxWindow;
+class main_window;
 
 struct document_tab : public wxClientData {
 	wxTextCtrl* text_ctrl{nullptr};
@@ -42,7 +43,9 @@ public:
 	document_manager& operator=(const document_manager&) = delete;
 	document_manager(document_manager&&) = delete;
 	document_manager& operator=(document_manager&&) = delete;
-	[[nodiscard]] bool open_document(const wxString& path, const parser* parser);
+	[[nodiscard]] bool open_file(const wxString& path, bool add_to_recent = true);
+	[[nodiscard]] bool create_document_tab(const wxString& path, const parser* parser);
+	void update_ui();
 	void close_document(int index);
 	void close_all_documents();
 	[[nodiscard]] bool export_document(int index, const wxString& export_path);

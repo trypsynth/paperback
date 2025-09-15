@@ -218,18 +218,7 @@ void main_window::on_open(wxCommandEvent&) {
 	wxFileDialog dlg(this, "Select a document to read", "", "", get_supported_wildcards(), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 	if (dlg.ShowModal() != wxID_OK) return;
 	const auto path = dlg.GetPath();
-	wxGetApp().open_file(path);
-	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-	if (text_ctrl) {
-		text_ctrl->Bind(wxEVT_LEFT_UP, &main_window::on_text_cursor_changed, this);
-		text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, this);
-	}
-	auto& config_mgr = wxGetApp().get_config_manager();
-	config_mgr.add_recent_document(path);
-	update_recent_documents_menu();
-	update_title();
-	update_status_bar();
-	update_ui();
+	[[maybe_unused]] bool success = doc_manager->open_file(path);
 }
 
 void main_window::on_close(wxCommandEvent&) {
@@ -473,15 +462,7 @@ void main_window::on_help_internal(wxCommandEvent&) {
 		wxMessageBox("readme.html not found. Please ensure the application was built properly.", "Error", wxICON_ERROR);
 		return;
 	}
-	wxGetApp().open_file(readme_path);
-	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-	if (text_ctrl) {
-		text_ctrl->Bind(wxEVT_LEFT_UP, &main_window::on_text_cursor_changed, this);
-		text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, this);
-	}
-	update_title();
-	update_status_bar();
-	update_ui();
+	[[maybe_unused]] bool success = doc_manager->open_file(readme_path, false);
 }
 
 void main_window::on_notebook_page_changed(wxBookCtrlEvent& event) {
@@ -524,17 +505,7 @@ void main_window::on_recent_document(wxCommandEvent& event) {
 			update_recent_documents_menu();
 			return;
 		}
-		wxGetApp().open_file(path);
-		auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-		if (text_ctrl) {
-			text_ctrl->Bind(wxEVT_LEFT_UP, &main_window::on_text_cursor_changed, this);
-			text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, this);
-		}
-		config_mgr.add_recent_document(path);
-		update_recent_documents_menu();
-		update_title();
-		update_status_bar();
-		update_ui();
+		[[maybe_unused]] bool success = doc_manager->open_file(path);
 	}
 }
 
