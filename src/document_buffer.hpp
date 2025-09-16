@@ -63,7 +63,6 @@ public:
 	[[nodiscard]] std::vector<const marker*> get_heading_markers(int level = -1) const;
 	[[nodiscard]] size_t count_markers_by_type(marker_type type) const noexcept;
 	[[nodiscard]] size_t get_marker_position_by_index(marker_type type, size_t index) const noexcept;
-	[[nodiscard]] static size_t utf8_byte_offset_to_wx_char_offset(const std::string& utf8_text, size_t byte_offset) noexcept;
 
 private:
 	wxString content;

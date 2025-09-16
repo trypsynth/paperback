@@ -197,11 +197,3 @@ void document_buffer::sort_markers() {
 		return a.pos < b.pos;
 	});
 }
-
-size_t document_buffer::utf8_byte_offset_to_wx_char_offset(const std::string& utf8_text, size_t byte_offset) noexcept {
-	if (byte_offset == 0) return 0;
-	if (byte_offset >= utf8_text.length()) return wxString::FromUTF8(utf8_text).length();
-	while (byte_offset > 0 && (utf8_text[byte_offset] & 0xC0) == 0x80) --byte_offset;
-	std::string substr = utf8_text.substr(0, byte_offset);
-	return wxString::FromUTF8(substr).length();
-}

@@ -155,8 +155,7 @@ void epub_parser::parse_section(size_t index, epub_context& ctx, document_buffer
 			buffer.append(wxString::FromUTF8(text));
 			for (const auto& heading : headings) {
 				marker_type type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + heading.level - 1);
-				size_t char_offset = document_buffer::utf8_byte_offset_to_wx_char_offset(text, heading.offset);
-				buffer.add_marker(section_start + char_offset, type, wxString::FromUTF8(heading.text), wxString(), heading.level);
+				buffer.add_marker(section_start + heading.offset, type, wxString::FromUTF8(heading.text), wxString(), heading.level);
 			}
 			if (buffer.str().length() > 0 && !buffer.str().EndsWith("\n")) buffer.append("\n");
 		}
@@ -171,8 +170,7 @@ void epub_parser::parse_section(size_t index, epub_context& ctx, document_buffer
 			buffer.append(wxString::FromUTF8(text));
 			for (const auto& heading : headings) {
 				marker_type type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + heading.level - 1);
-				size_t char_offset = document_buffer::utf8_byte_offset_to_wx_char_offset(text, heading.offset);
-				buffer.add_marker(section_start + char_offset, type, wxString::FromUTF8(heading.text), wxString(), heading.level);
+				buffer.add_marker(section_start + heading.offset, type, wxString::FromUTF8(heading.text), wxString(), heading.level);
 			}
 			if (buffer.str().length() > 0 && !buffer.str().EndsWith("\n")) buffer.append("\n");
 		}
