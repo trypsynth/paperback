@@ -328,15 +328,17 @@ int epub_parser::calculate_offset_from_href(const std::string& href, const epub_
 	if (!file_path.empty()) full_path.append(file_path);
 	std::string resolved_path = full_path.toString(Path::PATH_UNIX);
 	if (!fragment.empty()) {
-		auto file_ids_it = ctx.id_positions.find(resolved_path);
-		if (file_ids_it != ctx.id_positions.end()) {
-			auto id_pos_it = file_ids_it->second.find(fragment);
-			if (id_pos_it != file_ids_it->second.end()) return static_cast<int>(id_pos_it->second);
+		for (const auto& [stored_path, id_map] : ctx.id_positions) {
+			if (url_decode(stored_path) == resolved_path) {
+				auto id_pos_it = id_map.find(fragment);
+				if (id_pos_it != id_map.end()) return static_cast<int>(id_pos_it->second);
+				break;
+			}
 		}
 	}
 	std::string manifest_id;
 	for (const auto& [id, item] : ctx.manifest_items) {
-		if (item.path == resolved_path) {
+		if (url_decode(item.path) == resolved_path) {
 			manifest_id = id;
 			break;
 		}
