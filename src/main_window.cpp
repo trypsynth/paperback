@@ -36,6 +36,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	bind_events();
 	position_save_timer->Start(POSITION_SAVE_TIMER_INTERVAL);
 	update_ui();
+	notebook->Bind(wxEVT_KEY_DOWN, &main_window::on_notebook_key_down, this);
 }
 
 main_window::~main_window() {
@@ -516,6 +517,22 @@ void main_window::on_recent_document(wxCommandEvent& event) {
 		}
 		[[maybe_unused]] bool success = doc_manager->open_file(path);
 	}
+}
+
+void main_window::on_notebook_key_down(wxKeyEvent& event) {
+	if (event.GetKeyCode() == WXK_DELETE) {
+		if (notebook->FindFocus() == notebook) {
+			int sel = notebook->GetSelection();
+			if (sel != wxNOT_FOUND) {
+				doc_manager->close_document(sel);
+				update_title();
+				update_status_bar();
+				update_ui();
+				return;
+			}
+		}
+	}
+	event.Skip();
 }
 
 void main_window::update_recent_documents_menu() {
