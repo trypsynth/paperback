@@ -79,10 +79,12 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * Fixed nested TOC items in EPub books putting your cursor at the wrong position.
 * Fixed a crash on application exit in certain cases. [#45](https://github.com/trypsynth/paperback/issues/45).
 * Added a checkbox in the options dialog to enable or disable word wrap!
+* It is now possible to donate to Paperback's development, either through the new donate item in the help menu or through the sponsor this project link at the bottom of the GitHub repository's main page.
 * Markdown documents will now always have a title, and Paperback should now be able to load virtually any Markdown file. [#52](https://github.com/trypsynth/paperback/issues/52).
 * PDF documents will now always have a title, even if the metadata is missing. [#56](https://github.com/trypsynth/paperback/issues/56).
 * Switched PDF libraries to the one used in Chromium, leading to far more reliable PDF parsing across the board. [#41](https://github.com/trypsynth/paperback/issues/41).
 * You can now only have one instance of Paperback running at a time. Running paperback.exe with a filename while it's already running will open that document in the already running instance.
+* You can now press delete on a document in the tab control to close it.
 
 ### Version 0.21
 * Added the total number of pages to the page label in the go to page dialog. [#46](https://github.com/trypsynth/paperback/issues/46).
