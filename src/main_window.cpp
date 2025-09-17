@@ -22,9 +22,9 @@
 main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	auto* const panel = new wxPanel(this);
 	notebook = new wxNotebook(panel, wxID_ANY);
-	#ifdef __WXMSW__
-		notebook->MSWDisableComposited();
-	#endif
+#ifdef __WXMSW__
+	notebook->MSWDisableComposited();
+#endif
 	auto* const sizer = new wxBoxSizer(wxVERTICAL);
 	sizer->Add(notebook, 1, wxEXPAND | wxALL, 10);
 	panel->SetSizer(sizer);
@@ -110,6 +110,8 @@ wxMenu* main_window::create_help_menu() {
 	menu->Append(wxID_ABOUT, "About " + APP_NAME + "\tCtrl+F1");
 	menu->Append(wxID_HELP, "View &help in default browser\tF1");
 	menu->Append(ID_HELP_INTERNAL, "View Help in " + APP_NAME + "\tShift+F1");
+	menu->AppendSeparator();
+	menu->Append(ID_DONATE, "&Donate\tCtrl+D");
 	return menu;
 }
 
@@ -150,6 +152,7 @@ void main_window::bind_events() {
 		{wxID_ABOUT, &main_window::on_about},
 		{wxID_HELP, &main_window::on_help},
 		{ID_HELP_INTERNAL, &main_window::on_help_internal},
+		{ID_DONATE, &main_window::on_donate},
 	};
 	for (const auto& [id, handler] : menu_bindings)
 		Bind(wxEVT_MENU, handler, this, id);
@@ -463,6 +466,12 @@ void main_window::on_help_internal(wxCommandEvent&) {
 		return;
 	}
 	[[maybe_unused]] bool success = doc_manager->open_file(readme_path, false);
+}
+
+void main_window::on_donate(wxCommandEvent&) {
+	const wxString url = "https://paypal.me/tygillespie05";
+	if (!wxLaunchDefaultBrowser(url))
+		wxMessageBox("Failed to open donation page in browser.", "Error", wxICON_ERROR);
 }
 
 void main_window::on_notebook_page_changed(wxBookCtrlEvent& event) {

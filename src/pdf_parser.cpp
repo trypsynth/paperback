@@ -82,7 +82,6 @@ void pdf_parser::extract_metadata(const pdf_context& ctx, wxString& title, wxStr
 	};
 	title = extract_metadata_string(ctx.doc, "Title");
 	author = extract_metadata_string(ctx.doc, "Author");
-	
 	if (title.IsEmpty()) title = wxFileName(path).GetName();
 	if (author.IsEmpty()) author = "Unknown";
 }
