@@ -163,7 +163,7 @@ void find_dialog::on_close(wxCloseEvent& event) {
 go_to_line_dialog::go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : dialog(parent, "Go to Line"), textbox{text_ctrl} {
 	auto* line_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* label = new wxStaticText(this, wxID_ANY, "&Line number:");
-	wxTextValidator validator(wxFILTER_NUMERIC);
+	wxTextValidator validator(wxFILTER_DIGITS);
 	input_ctrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER, validator);
 	line_sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
 	line_sizer->Add(input_ctrl, 1, wxEXPAND);
@@ -216,7 +216,7 @@ long go_to_line_dialog::get_max_line() const {
 go_to_page_dialog::go_to_page_dialog(wxWindow* parent, document* doc, int current_page) : dialog(parent, "Go to page"), doc_{doc} {
 	auto* page_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* label = new wxStaticText(this, wxID_ANY, wxString::Format("Go to page (1/%d):", get_max_page()));
-	wxTextValidator validator(wxFILTER_NUMERIC);
+	wxTextValidator validator(wxFILTER_DIGITS);
 	input_ctrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER, validator);
 	page_sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
 	page_sizer->Add(input_ctrl, 1, wxEXPAND);
