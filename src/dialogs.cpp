@@ -136,19 +136,19 @@ void find_dialog::on_close(wxCloseEvent& event) {
 	Hide();
 }
 
-go_to_dialog::go_to_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : wxDialog(parent, wxID_ANY, "Go to"), textbox{text_ctrl} {
+go_to_line_dialog::go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : wxDialog(parent, wxID_ANY, "Go to Line"), textbox{text_ctrl} {
 	auto* main_sizer = new wxBoxSizer(wxVERTICAL);
 	auto* line_sizer = new wxBoxSizer(wxHORIZONTAL);
-	auto* label = new wxStaticText(this, wxID_ANY, "Go to:");
-	input_ctrl = new wxTextCtrl(this, wxID_ANY);
+	auto* label = new wxStaticText(this, wxID_ANY, "&Line number:");
+	wxTextValidator validator(wxFILTER_NUMERIC);
+	input_ctrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER, validator);
 	line_sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
 	line_sizer->Add(input_ctrl, 1, wxEXPAND);
 	long line;
 	textbox->PositionToXY(textbox->GetInsertionPoint(), 0, &line);
 	input_ctrl->SetValue(wxString::Format("%d", line + 1));
 	input_ctrl->SetSelection(-1, -1);
-	input_ctrl->Bind(wxEVT_KEY_DOWN, &go_to_dialog::on_key_down, this);
-	input_ctrl->Bind(wxEVT_CHAR, &go_to_dialog::on_char, this);
+	input_ctrl->Bind(wxEVT_KEY_DOWN, &go_to_line_dialog::on_key_down, this);
 	auto* button_sizer = new wxStdDialogButtonSizer();
 	auto* ok_button = new wxButton(this, wxID_OK);
 	button_sizer->AddButton(ok_button);
@@ -160,24 +160,15 @@ go_to_dialog::go_to_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : wxDialog(p
 	SetSizerAndFit(main_sizer);
 }
 
-long go_to_dialog::get_position() const {
+long go_to_line_dialog::get_position() const {
 	wxString input = input_ctrl->GetValue().Trim(true).Trim(false);
-	if (input.EndsWith("%")) {
-		input.RemoveLast();
-		long percent;
-		if (input.ToLong(&percent) && percent >= 0 && percent <= 100) {
-			long total_chars = textbox->GetLastPosition();
-			return (percent * total_chars) / 100;
-		}
-	} else {
-		long line;
-		if (input.ToLong(&line) && line >= 1 && line <= textbox->GetNumberOfLines())
-			return textbox->XYToPosition(0, line - 1);
-	}
+	long line;
+	if (input.ToLong(&line) && line >= 1 && line <= textbox->GetNumberOfLines())
+		return textbox->XYToPosition(0, line - 1);
 	return textbox->GetInsertionPoint();
 }
 
-void go_to_dialog::on_key_down(wxKeyEvent& event) {
+void go_to_line_dialog::on_key_down(wxKeyEvent& event) {
 	int key_code = event.GetKeyCode();
 	if (key_code == WXK_UP)
 		adjust_line_number(1);
@@ -187,42 +178,23 @@ void go_to_dialog::on_key_down(wxKeyEvent& event) {
 		event.Skip();
 }
 
-void go_to_dialog::on_char(wxKeyEvent& event) {
-	int key = event.GetKeyCode();
-	if (key < WXK_SPACE || key == WXK_DELETE || key == WXK_BACK || key == WXK_LEFT || key == WXK_RIGHT || key == WXK_TAB) {
-		event.Skip();
-		return;
-	}
-	wxString current = input_ctrl->GetValue();
-	long from, to;
-	input_ctrl->GetSelection(&from, &to);
-	wxChar ch = static_cast<wxChar>(key);
-	if (wxIsdigit(ch))
-		event.Skip();
-	else if (ch == '%' && !current.Contains('%'))
-		event.Skip();
-	else
-		wxBell();
-}
 
-void go_to_dialog::adjust_line_number(int delta) {
+void go_to_line_dialog::adjust_line_number(int delta) {
 	wxString current_value = input_ctrl->GetValue().Trim(true).Trim(false);
-	if (!current_value.EndsWith("%")) {
-		long current_line;
-		if (current_value.ToLong(&current_line)) {
-			long new_line = current_line + delta;
-			long max_line = get_max_line();
-			if (new_line < 1)
-				new_line = 1;
-			else if (new_line > max_line)
-				new_line = max_line;
-			input_ctrl->SetValue(wxString::Format("%ld", new_line));
-			input_ctrl->SetSelection(-1, -1);
-		}
+	long current_line;
+	if (current_value.ToLong(&current_line)) {
+		long new_line = current_line + delta;
+		long max_line = get_max_line();
+		if (new_line < 1)
+			new_line = 1;
+		else if (new_line > max_line)
+			new_line = max_line;
+		input_ctrl->SetValue(wxString::Format("%ld", new_line));
+		input_ctrl->SetSelection(-1, -1);
 	}
 }
 
-long go_to_dialog::get_max_line() const {
+long go_to_line_dialog::get_max_line() const {
 	return textbox->GetNumberOfLines();
 }
 
@@ -297,6 +269,31 @@ void go_to_page_dialog::adjust_page_number(int delta) {
 int go_to_page_dialog::get_max_page() const {
 	if (!doc_ || !doc_->has_flag(document_flags::supports_pages)) return 1;
 	return static_cast<int>(doc_->buffer.count_markers_by_type(marker_type::page_break));
+}
+
+go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : wxDialog(parent, wxID_ANY, "Go to Percentage"), textbox{text_ctrl} {
+	auto* main_sizer = new wxBoxSizer(wxVERTICAL);
+	long current_pos = textbox->GetInsertionPoint();
+	long total_pos = textbox->GetLastPosition();
+	int current_percent = total_pos > 0 ? static_cast<int>((current_pos * 100) / total_pos) : 0;
+	auto* label = new wxStaticText(this, wxID_ANY, "&Percent");
+	percent_slider = new wxSlider(this, wxID_ANY, current_percent, 0, 100);
+	main_sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
+	main_sizer->Add(percent_slider, 0, wxALL | wxEXPAND, 10);
+	auto* button_sizer = new wxStdDialogButtonSizer();
+	auto* ok_button = new wxButton(this, wxID_OK);
+	button_sizer->AddButton(ok_button);
+	button_sizer->AddButton(new wxButton(this, wxID_CANCEL));
+	ok_button->SetDefault();
+	button_sizer->Realize();
+	main_sizer->Add(button_sizer, 0, wxALIGN_RIGHT | wxALL, 10);
+	SetSizerAndFit(main_sizer);
+}
+
+long go_to_percent_dialog::get_position() const {
+	int percent = percent_slider->GetValue();
+	long total_chars = textbox->GetLastPosition();
+	return (percent * total_chars) / 100;
 }
 
 options_dialog::options_dialog(wxWindow* parent) : wxDialog(parent, wxID_ANY, "Options") {

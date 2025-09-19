@@ -82,7 +82,8 @@ wxMenu* main_window::create_go_menu() {
 	menu->Append(ID_FIND_NEXT, "Find Ne&xt\tF3");
 	menu->Append(ID_FIND_PREVIOUS, "Find P&revious\tShift+F3");
 	menu->AppendSeparator();
-	menu->Append(ID_GO_TO, "&Go to...\tCtrl+G");
+	menu->Append(ID_GO_TO_LINE, "Go to &line...\tCtrl+G");
+	menu->Append(ID_GO_TO_PERCENT, "Go to &percent...\tCtrl+Shift+G");
 	menu->Append(ID_GO_TO_PAGE, "Go to &page...\tCtrl+P");
 	menu->AppendSeparator();
 	menu->Append(ID_PREVIOUS_SECTION, "Previous section\t[");
@@ -126,7 +127,8 @@ void main_window::bind_events() {
 		{wxID_FIND, &main_window::on_find},
 		{ID_FIND_NEXT, &main_window::on_find_next},
 		{ID_FIND_PREVIOUS, &main_window::on_find_previous},
-		{ID_GO_TO, &main_window::on_go_to},
+		{ID_GO_TO_LINE, &main_window::on_go_to_line},
+		{ID_GO_TO_PERCENT, &main_window::on_go_to_percent},
 		{ID_GO_TO_PAGE, &main_window::on_go_to_page},
 		{ID_PREVIOUS_SECTION, &main_window::on_previous_section},
 		{ID_NEXT_SECTION, &main_window::on_next_section},
@@ -175,7 +177,8 @@ void main_window::update_ui() {
 		wxID_FIND,
 		ID_FIND_NEXT,
 		ID_FIND_PREVIOUS,
-		ID_GO_TO,
+		ID_GO_TO_LINE,
+		ID_GO_TO_PERCENT,
 		ID_GO_TO_PAGE,
 		ID_WORD_COUNT,
 		ID_DOC_INFO};
@@ -288,10 +291,20 @@ void main_window::on_find_previous(wxCommandEvent&) {
 	}
 }
 
-void main_window::on_go_to(wxCommandEvent&) {
+void main_window::on_go_to_line(wxCommandEvent&) {
 	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
 	if (!text_ctrl) return;
-	go_to_dialog dlg(this, text_ctrl);
+	go_to_line_dialog dlg(this, text_ctrl);
+	if (dlg.ShowModal() != wxID_OK) return;
+	const auto pos = dlg.get_position();
+	doc_manager->go_to_position(pos);
+	update_status_bar();
+}
+
+void main_window::on_go_to_percent(wxCommandEvent&) {
+	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
+	if (!text_ctrl) return;
+	go_to_percent_dialog dlg(this, text_ctrl);
 	if (dlg.ShowModal() != wxID_OK) return;
 	const auto pos = dlg.get_position();
 	doc_manager->go_to_position(pos);

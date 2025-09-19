@@ -57,14 +57,14 @@ private:
 	void on_close(wxCloseEvent& event);
 };
 
-class go_to_dialog : public wxDialog {
+class go_to_line_dialog : public wxDialog {
 public:
-	go_to_dialog(wxWindow* parent, wxTextCtrl* text_ctrl);
-	~go_to_dialog() = default;
-	go_to_dialog(const go_to_dialog&) = delete;
-	go_to_dialog& operator=(const go_to_dialog&) = delete;
-	go_to_dialog(go_to_dialog&&) = delete;
-	go_to_dialog& operator=(go_to_dialog&&) = delete;
+	go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl);
+	~go_to_line_dialog() = default;
+	go_to_line_dialog(const go_to_line_dialog&) = delete;
+	go_to_line_dialog& operator=(const go_to_line_dialog&) = delete;
+	go_to_line_dialog(go_to_line_dialog&&) = delete;
+	go_to_line_dialog& operator=(go_to_line_dialog&&) = delete;
 	[[nodiscard]] long get_position() const;
 
 private:
@@ -72,7 +72,6 @@ private:
 	wxTextCtrl* input_ctrl{nullptr};
 
 	void on_key_down(wxKeyEvent& event);
-	void on_char(wxKeyEvent& event);
 	void adjust_line_number(int delta);
 	[[nodiscard]] long get_max_line() const;
 };
@@ -95,6 +94,21 @@ private:
 	void on_char(wxKeyEvent& event);
 	void adjust_page_number(int delta);
 	[[nodiscard]] int get_max_page() const;
+};
+
+class go_to_percent_dialog : public wxDialog {
+public:
+	go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ctrl);
+	~go_to_percent_dialog() = default;
+	go_to_percent_dialog(const go_to_percent_dialog&) = delete;
+	go_to_percent_dialog& operator=(const go_to_percent_dialog&) = delete;
+	go_to_percent_dialog(go_to_percent_dialog&&) = delete;
+	go_to_percent_dialog& operator=(go_to_percent_dialog&&) = delete;
+	[[nodiscard]] long get_position() const;
+
+private:
+	wxTextCtrl* textbox{nullptr};
+	wxSlider* percent_slider{nullptr};
 };
 
 class options_dialog : public wxDialog {

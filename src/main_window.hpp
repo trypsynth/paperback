@@ -52,7 +52,8 @@ private:
 	void on_find(wxCommandEvent&);
 	void on_find_next(wxCommandEvent&);
 	void on_find_previous(wxCommandEvent&);
-	void on_go_to(wxCommandEvent&);
+	void on_go_to_line(wxCommandEvent&);
+	void on_go_to_percent(wxCommandEvent&);
 	void on_go_to_page(wxCommandEvent&);
 	void on_previous_section(wxCommandEvent&);
 	void on_next_section(wxCommandEvent&);
