@@ -10,6 +10,7 @@
 #pragma once
 #include "document_buffer.hpp"
 #include <memory>
+#include <string>
 #include <vector>
 #include <wx/string.h>
 
@@ -44,6 +45,12 @@ struct toc_item {
 	toc_item& operator=(const toc_item&) = delete;
 	toc_item(toc_item&&) = default;
 	toc_item& operator=(toc_item&&) = default;
+};
+
+struct heading_info {
+	size_t offset;
+	int level;
+	std::string text;
 };
 
 struct document_stats {

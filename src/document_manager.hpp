@@ -19,6 +19,7 @@ class wxNotebook;
 class wxTextCtrl;
 class wxPanel;
 class wxWindow;
+class wxMenu;
 class main_window;
 
 struct document_tab : public wxClientData {
@@ -76,6 +77,7 @@ public:
 	[[nodiscard]] long find_text(const wxString& query, long start_pos, find_options options) const;
 	void apply_word_wrap(bool word_wrap);
 	[[nodiscard]] int find_tab_by_path(const wxString& path) const;
+	static void create_heading_menu(wxMenu* menu);
 
 private:
 	wxNotebook* notebook{nullptr};
@@ -83,4 +85,5 @@ private:
 	void setup_text_ctrl(wxTextCtrl* text_ctrl, const wxString& content);
 	void restore_document_position(document_tab* tab);
 	wxPanel* create_tab_panel(const wxString& content, document_tab* tab_data);
+	void navigate_to_heading(bool next, int specific_level = -1);
 };

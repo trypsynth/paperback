@@ -12,7 +12,6 @@
 #include "constants.hpp"
 #include "dialogs.hpp"
 #include "parser.hpp"
-#include "structured_nav.hpp"
 #include "utils.hpp"
 #include <wx/aboutdlg.h>
 #include <wx/filename.h>
@@ -89,7 +88,7 @@ wxMenu* main_window::create_go_menu() {
 	menu->Append(ID_PREVIOUS_SECTION, "Previous section\t[");
 	menu->Append(ID_NEXT_SECTION, "Next section\t]");
 	menu->AppendSeparator();
-	structured_nav_manager::create_heading_menu(menu);
+	document_manager::create_heading_menu(menu);
 	menu->AppendSeparator();
 	menu->Append(ID_PREVIOUS_PAGE, "Previous &page\tShift+P");
 	menu->Append(ID_NEXT_PAGE, "&Next page\tP");

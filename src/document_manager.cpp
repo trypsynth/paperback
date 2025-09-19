@@ -13,10 +13,10 @@
 #include "dialogs.hpp"
 #include "main_window.hpp"
 #include "parser.hpp"
-#include "structured_nav.hpp"
 #include "utils.hpp"
 #include <wx/config.h>
 #include <wx/filename.h>
+#include <wx/menu.h>
 #include <wx/notebook.h>
 #include <wx/panel.h>
 #include <wx/textctrl.h>
@@ -222,27 +222,63 @@ void document_manager::go_to_next_section() {
 }
 
 void document_manager::go_to_previous_heading() {
-	structured_nav_manager::go_to_previous_heading(this);
+	navigate_to_heading(false);
 }
 
 void document_manager::go_to_next_heading() {
-	structured_nav_manager::go_to_next_heading(this);
+	navigate_to_heading(true);
 }
 
 void document_manager::go_to_previous_heading(int level) {
-	structured_nav_manager::go_to_previous_heading(this, level);
+	navigate_to_heading(false, level);
 }
 
 void document_manager::go_to_next_heading(int level) {
-	structured_nav_manager::go_to_next_heading(this, level);
+	navigate_to_heading(true, level);
 }
 
 void document_manager::go_to_previous_page() {
-	structured_nav_manager::go_to_previous_page(this);
+	document* doc = get_active_document();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (!doc || !text_ctrl) return;
+	if (doc->buffer.count_markers_by_type(marker_type::page_break) == 0) {
+		speak("No pages.");
+		return;
+	}
+	size_t current_pos = text_ctrl->GetInsertionPoint();
+	int prev_index = doc->previous_page_index(current_pos);
+	if (prev_index == -1) {
+		speak("No previous page.");
+		return;
+	}
+	size_t offset = doc->offset_for_page(prev_index);
+	text_ctrl->SetInsertionPoint(offset);
+	long line;
+	text_ctrl->PositionToXY(offset, 0, &line);
+	wxString current_line = text_ctrl->GetLineText(line);
+	speak(wxString::Format("Page %d: %s", prev_index + 1, current_line));
 }
 
 void document_manager::go_to_next_page() {
-	structured_nav_manager::go_to_next_page(this);
+	document* doc = get_active_document();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (!doc || !text_ctrl) return;
+	if (doc->buffer.count_markers_by_type(marker_type::page_break) == 0) {
+		speak("No pages.");
+		return;
+	}
+	size_t current_pos = text_ctrl->GetInsertionPoint();
+	int next_index = doc->next_page_index(current_pos);
+	if (next_index == -1) {
+		speak("No next page.");
+		return;
+	}
+	size_t offset = doc->offset_for_page(next_index);
+	text_ctrl->SetInsertionPoint(offset);
+	long line;
+	text_ctrl->PositionToXY(offset, 0, &line);
+	wxString current_line = text_ctrl->GetLineText(line);
+	speak(wxString::Format("Page %d: %s", next_index + 1, current_line));
 }
 
 void document_manager::show_table_of_contents(wxWindow* parent) {
@@ -401,4 +437,36 @@ int document_manager::find_tab_by_path(const wxString& path) const {
 		}
 	}
 	return -1;
+}
+
+void document_manager::create_heading_menu(wxMenu* menu) {
+	menu->Append(ID_PREVIOUS_HEADING, "Previous heading\tShift+H");
+	menu->Append(ID_NEXT_HEADING, "Next heading\tH");
+	menu->AppendSeparator();
+	for (int level = 1; level <= 6; ++level) {
+		menu->Append(ID_PREVIOUS_HEADING_1 + (level - 1) * 2, wxString::Format("Previous heading level %d\tShift+%d", level, level));
+		menu->Append(ID_NEXT_HEADING_1 + (level - 1) * 2, wxString::Format("Next heading level %d\t%d", level, level));
+	}
+}
+
+void document_manager::navigate_to_heading(bool next, int specific_level) {
+	document* doc = get_active_document();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (!doc || !text_ctrl) return;
+	if (doc->buffer.get_heading_markers().size() == 0) {
+		speak("No headings.");
+		return;
+	}
+	size_t current_pos = text_ctrl->GetInsertionPoint();
+	int target_index = -1;
+	target_index = next ? doc->next_heading_index(current_pos, specific_level) : doc->previous_heading_index(current_pos, specific_level);
+	if (target_index == -1) {
+		wxString msg = (specific_level == -1) ? wxString::Format("No %s heading", next ? "next" : "previous") : wxString::Format("No %s heading at level %d", next ? "next" : "previous", specific_level);
+		speak(msg);
+		return;
+	}
+	size_t offset = doc->offset_for_heading(target_index);
+	text_ctrl->SetInsertionPoint(offset);
+	const marker* heading_marker = doc->get_heading_marker(target_index);
+	if (heading_marker) speak(wxString::Format("%s Heading level %d", heading_marker->text, heading_marker->level));
 }
