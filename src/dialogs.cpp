@@ -11,8 +11,36 @@
 #include "config_manager.hpp"
 #include "constants.hpp"
 
-document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc) : wxDialog(parent, wxID_ANY, "Document Info") {
-	auto* main_sizer = new wxBoxSizer(wxVERTICAL);
+dialog::dialog(wxWindow* parent, const wxString& title, dialog_button_config buttons) : wxDialog(parent, wxID_ANY, title), button_config{buttons} {
+	main_sizer = new wxBoxSizer(wxVERTICAL);
+	SetSizer(main_sizer);
+}
+
+void dialog::set_content(wxSizer* content_sizer) {
+	if (layout_finalized) return;
+	main_sizer->Add(content_sizer, 1, wxEXPAND | wxALL, 10);
+}
+
+void dialog::finalize_layout() {
+	if (layout_finalized) return;
+	create_buttons();
+	main_sizer->Add(button_sizer, 0, wxALIGN_RIGHT | wxALL, 10);
+	SetSizerAndFit(main_sizer);
+	CentreOnParent();
+	layout_finalized = true;
+}
+
+void dialog::create_buttons() {
+	button_sizer = new wxStdDialogButtonSizer();
+	auto* ok_button = new wxButton(this, wxID_OK);
+	button_sizer->AddButton(ok_button);
+	if (button_config == dialog_button_config::ok_cancel)
+		button_sizer->AddButton(new wxButton(this, wxID_CANCEL));
+	ok_button->SetDefault();
+	button_sizer->Realize();
+}
+
+document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc) : dialog(parent, "Document Info", dialog_button_config::ok_only) {
 	info_text_ctrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(600, 400), wxTE_MULTILINE | wxTE_READONLY);
 	wxString info_text;
 	info_text << "Title: " << doc->title << "\n";
@@ -22,14 +50,10 @@ document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc
 	info_text << "Total number of characters: " << doc->stats.char_count << ".\n";
 	info_text << "Total number of characters (excluding whitespace): " << doc->stats.char_count_no_whitespace << ".\n";
 	info_text_ctrl->SetValue(info_text);
-	main_sizer->Add(info_text_ctrl, 1, wxEXPAND | wxALL, 10);
-	auto* button_sizer = new wxStdDialogButtonSizer();
-	button_sizer->AddButton(new wxButton(this, wxID_OK));
-	button_sizer->Realize();
-	main_sizer->Add(button_sizer, 0, wxALIGN_RIGHT | wxALL, 10);
-	SetSizerAndFit(main_sizer);
-	SetMinSize(wxSize(350, 250));
-	CentreOnParent();
+	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
+	content_sizer->Add(info_text_ctrl, 1, wxEXPAND);
+	set_content(content_sizer);
+	finalize_layout();
 }
 
 find_dialog::find_dialog(wxWindow* parent) : wxDialog(parent, wxID_ANY, "Find") {
@@ -136,8 +160,7 @@ void find_dialog::on_close(wxCloseEvent& event) {
 	Hide();
 }
 
-go_to_line_dialog::go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : wxDialog(parent, wxID_ANY, "Go to Line"), textbox{text_ctrl} {
-	auto* main_sizer = new wxBoxSizer(wxVERTICAL);
+go_to_line_dialog::go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : dialog(parent, "Go to Line"), textbox{text_ctrl} {
 	auto* line_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* label = new wxStaticText(this, wxID_ANY, "&Line number:");
 	wxTextValidator validator(wxFILTER_NUMERIC);
@@ -149,15 +172,8 @@ go_to_line_dialog::go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : 
 	input_ctrl->SetValue(wxString::Format("%d", line + 1));
 	input_ctrl->SetSelection(-1, -1);
 	input_ctrl->Bind(wxEVT_KEY_DOWN, &go_to_line_dialog::on_key_down, this);
-	auto* button_sizer = new wxStdDialogButtonSizer();
-	auto* ok_button = new wxButton(this, wxID_OK);
-	button_sizer->AddButton(ok_button);
-	button_sizer->AddButton(new wxButton(this, wxID_CANCEL));
-	ok_button->SetDefault();
-	button_sizer->Realize();
-	main_sizer->Add(line_sizer, 0, wxALL | wxEXPAND, 5);
-	main_sizer->Add(button_sizer, 0, wxALIGN_RIGHT | wxALL, 10);
-	SetSizerAndFit(main_sizer);
+	set_content(line_sizer);
+	finalize_layout();
 }
 
 long go_to_line_dialog::get_position() const {
@@ -178,7 +194,6 @@ void go_to_line_dialog::on_key_down(wxKeyEvent& event) {
 		event.Skip();
 }
 
-
 void go_to_line_dialog::adjust_line_number(int delta) {
 	wxString current_value = input_ctrl->GetValue().Trim(true).Trim(false);
 	long current_line;
@@ -198,8 +213,7 @@ long go_to_line_dialog::get_max_line() const {
 	return textbox->GetNumberOfLines();
 }
 
-go_to_page_dialog::go_to_page_dialog(wxWindow* parent, document* doc, int current_page) : wxDialog(parent, wxID_ANY, "Go to page"), doc_{doc} {
-	auto* main_sizer = new wxBoxSizer(wxVERTICAL);
+go_to_page_dialog::go_to_page_dialog(wxWindow* parent, document* doc, int current_page) : dialog(parent, "Go to page"), doc_{doc} {
 	auto* page_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* label = new wxStaticText(this, wxID_ANY, wxString::Format("Go to page (1/%d):", get_max_page()));
 	input_ctrl = new wxTextCtrl(this, wxID_ANY);
@@ -209,15 +223,8 @@ go_to_page_dialog::go_to_page_dialog(wxWindow* parent, document* doc, int curren
 	input_ctrl->SetSelection(-1, -1);
 	input_ctrl->Bind(wxEVT_KEY_DOWN, &go_to_page_dialog::on_key_down, this);
 	input_ctrl->Bind(wxEVT_CHAR, &go_to_page_dialog::on_char, this);
-	auto* button_sizer = new wxStdDialogButtonSizer();
-	auto* ok_button = new wxButton(this, wxID_OK);
-	button_sizer->AddButton(ok_button);
-	button_sizer->AddButton(new wxButton(this, wxID_CANCEL));
-	ok_button->SetDefault();
-	button_sizer->Realize();
-	main_sizer->Add(page_sizer, 0, wxALL | wxEXPAND, 5);
-	main_sizer->Add(button_sizer, 0, wxALIGN_RIGHT | wxALL, 10);
-	SetSizerAndFit(main_sizer);
+	set_content(page_sizer);
+	finalize_layout();
 }
 
 int go_to_page_dialog::get_page_number() const {
@@ -271,23 +278,17 @@ int go_to_page_dialog::get_max_page() const {
 	return static_cast<int>(doc_->buffer.count_markers_by_type(marker_type::page_break));
 }
 
-go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : wxDialog(parent, wxID_ANY, "Go to Percentage"), textbox{text_ctrl} {
-	auto* main_sizer = new wxBoxSizer(wxVERTICAL);
+go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : dialog(parent, "Go to Percentage"), textbox{text_ctrl} {
 	long current_pos = textbox->GetInsertionPoint();
 	long total_pos = textbox->GetLastPosition();
 	int current_percent = total_pos > 0 ? static_cast<int>((current_pos * 100) / total_pos) : 0;
 	auto* label = new wxStaticText(this, wxID_ANY, "&Percent");
 	percent_slider = new wxSlider(this, wxID_ANY, current_percent, 0, 100);
-	main_sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
-	main_sizer->Add(percent_slider, 0, wxALL | wxEXPAND, 10);
-	auto* button_sizer = new wxStdDialogButtonSizer();
-	auto* ok_button = new wxButton(this, wxID_OK);
-	button_sizer->AddButton(ok_button);
-	button_sizer->AddButton(new wxButton(this, wxID_CANCEL));
-	ok_button->SetDefault();
-	button_sizer->Realize();
-	main_sizer->Add(button_sizer, 0, wxALIGN_RIGHT | wxALL, 10);
-	SetSizerAndFit(main_sizer);
+	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
+	content_sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
+	content_sizer->Add(percent_slider, 0, wxEXPAND);
+	set_content(content_sizer);
+	finalize_layout();
 }
 
 long go_to_percent_dialog::get_position() const {
@@ -296,26 +297,16 @@ long go_to_percent_dialog::get_position() const {
 	return (percent * total_chars) / 100;
 }
 
-options_dialog::options_dialog(wxWindow* parent) : wxDialog(parent, wxID_ANY, "Options") {
-	auto* main_sizer = new wxBoxSizer(wxVERTICAL);
+options_dialog::options_dialog(wxWindow* parent) : dialog(parent, "Options") {
 	auto* general_box = new wxStaticBoxSizer(wxVERTICAL, this, "General");
 	restore_docs_check = new wxCheckBox(this, wxID_ANY, "&Restore previously opened documents on startup");
 	general_box->Add(restore_docs_check, 0, wxALL, 5);
 	word_wrap_check = new wxCheckBox(this, wxID_ANY, "&Word wrap");
 	general_box->Add(word_wrap_check, 0, wxALL, 5);
-	auto* button_sizer = new wxStdDialogButtonSizer();
-	auto* ok_button = new wxButton(this, wxID_OK, "&OK");
-	auto* cancel_button = new wxButton(this, wxID_CANCEL, "&Cancel");
-	button_sizer->SetAffirmativeButton(ok_button);
-	button_sizer->SetCancelButton(cancel_button);
-	button_sizer->Realize();
-	main_sizer->Add(general_box, 1, wxEXPAND | wxALL, 10);
-	main_sizer->Add(button_sizer, 0, wxALIGN_RIGHT | wxALL, 10);
+	set_content(general_box);
 	Bind(wxEVT_BUTTON, &options_dialog::on_ok, this, wxID_OK);
 	Bind(wxEVT_BUTTON, &options_dialog::on_cancel, this, wxID_CANCEL);
-	SetSizerAndFit(main_sizer);
-	SetMinSize(wxSize(400, 200));
-	CentreOnParent();
+	finalize_layout();
 }
 
 bool options_dialog::get_restore_previous_documents() const {
@@ -342,24 +333,18 @@ void options_dialog::on_cancel(wxCommandEvent& event) {
 	EndModal(wxID_CANCEL);
 }
 
-toc_dialog::toc_dialog(wxWindow* parent, const document* doc, int current_offset) : wxDialog(parent, wxID_ANY, "Table of Contents"), selected_offset{-1} {
-	auto* main_sizer = new wxBoxSizer(wxVERTICAL);
+toc_dialog::toc_dialog(wxWindow* parent, const document* doc, int current_offset) : dialog(parent, "Table of Contents"), selected_offset{-1} {
 	tree = new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTR_HIDE_ROOT);
 	wxTreeItemId root = tree->AddRoot("Root");
 	populate_tree(doc->toc_items, root);
 	if (current_offset != -1) find_and_select_item(root, current_offset);
-	auto* button_sizer = new wxStdDialogButtonSizer();
-	for (int id : {wxID_OK, wxID_CANCEL})
-		button_sizer->AddButton(new wxButton(this, id));
-	button_sizer->Realize();
-	main_sizer->Add(tree, 1, wxEXPAND | wxALL, 10);
-	main_sizer->Add(button_sizer, 0, wxALIGN_RIGHT | wxALL, 10);
+	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
+	content_sizer->Add(tree, 1, wxEXPAND);
+	set_content(content_sizer);
 	Bind(wxEVT_TREE_SEL_CHANGED, &toc_dialog::on_tree_selection_changed, this);
 	Bind(wxEVT_TREE_ITEM_ACTIVATED, &toc_dialog::on_tree_item_activated, this, wxID_ANY);
 	Bind(wxEVT_BUTTON, &toc_dialog::on_ok, this, wxID_OK);
-	SetSizer(main_sizer);
-	SetSize(500, 400);
-	CentreOnParent();
+	finalize_layout();
 }
 
 void toc_dialog::populate_tree(const std::vector<std::unique_ptr<toc_item>>& items, const wxTreeItemId& parent) {

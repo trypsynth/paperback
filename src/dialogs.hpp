@@ -12,7 +12,30 @@
 #include <wx/treectrl.h>
 #include <wx/wx.h>
 
-class document_info_dialog : public wxDialog {
+enum class dialog_button_config {
+	ok_only,
+	ok_cancel
+};
+
+class dialog : public wxDialog {
+public:
+	dialog(wxWindow* parent, const wxString& title, dialog_button_config buttons = dialog_button_config::ok_cancel);
+	virtual ~dialog() = default;
+
+protected:
+	void set_content(wxSizer* content_sizer);
+	void finalize_layout();
+
+private:
+	wxBoxSizer* main_sizer{nullptr};
+	wxStdDialogButtonSizer* button_sizer{nullptr};
+	dialog_button_config button_config;
+	bool layout_finalized{false};
+
+	void create_buttons();
+};
+
+class document_info_dialog : public dialog {
 public:
 	document_info_dialog(wxWindow* parent, const document* doc);
 	~document_info_dialog() = default;
@@ -57,7 +80,7 @@ private:
 	void on_close(wxCloseEvent& event);
 };
 
-class go_to_line_dialog : public wxDialog {
+class go_to_line_dialog : public dialog {
 public:
 	go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl);
 	~go_to_line_dialog() = default;
@@ -76,7 +99,7 @@ private:
 	[[nodiscard]] long get_max_line() const;
 };
 
-class go_to_page_dialog : public wxDialog {
+class go_to_page_dialog : public dialog {
 public:
 	go_to_page_dialog(wxWindow* parent, document* doc, int current_page = 1);
 	~go_to_page_dialog() = default;
@@ -96,7 +119,7 @@ private:
 	[[nodiscard]] int get_max_page() const;
 };
 
-class go_to_percent_dialog : public wxDialog {
+class go_to_percent_dialog : public dialog {
 public:
 	go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ctrl);
 	~go_to_percent_dialog() = default;
@@ -111,7 +134,7 @@ private:
 	wxSlider* percent_slider{nullptr};
 };
 
-class options_dialog : public wxDialog {
+class options_dialog : public dialog {
 public:
 	options_dialog(wxWindow* parent);
 	~options_dialog() = default;
@@ -139,7 +162,7 @@ public:
 	int offset;
 };
 
-class toc_dialog : public wxDialog {
+class toc_dialog : public dialog {
 public:
 	toc_dialog(wxWindow* parent, const document* doc, int current_offset = -1);
 	~toc_dialog() = default;
