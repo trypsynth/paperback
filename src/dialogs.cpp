@@ -216,13 +216,13 @@ long go_to_line_dialog::get_max_line() const {
 go_to_page_dialog::go_to_page_dialog(wxWindow* parent, document* doc, int current_page) : dialog(parent, "Go to page"), doc_{doc} {
 	auto* page_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* label = new wxStaticText(this, wxID_ANY, wxString::Format("Go to page (1/%d):", get_max_page()));
-	input_ctrl = new wxTextCtrl(this, wxID_ANY);
+	wxTextValidator validator(wxFILTER_NUMERIC);
+	input_ctrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER, validator);
 	page_sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
 	page_sizer->Add(input_ctrl, 1, wxEXPAND);
 	input_ctrl->SetValue(wxString::Format("%d", current_page));
 	input_ctrl->SetSelection(-1, -1);
 	input_ctrl->Bind(wxEVT_KEY_DOWN, &go_to_page_dialog::on_key_down, this);
-	input_ctrl->Bind(wxEVT_CHAR, &go_to_page_dialog::on_char, this);
 	set_content(page_sizer);
 	finalize_layout();
 }
@@ -245,18 +245,6 @@ void go_to_page_dialog::on_key_down(wxKeyEvent& event) {
 		event.Skip();
 }
 
-void go_to_page_dialog::on_char(wxKeyEvent& event) {
-	int key = event.GetKeyCode();
-	if (key < WXK_SPACE || key == WXK_DELETE || key == WXK_BACK || key == WXK_LEFT || key == WXK_RIGHT || key == WXK_TAB) {
-		event.Skip();
-		return;
-	}
-	wxChar ch = static_cast<wxChar>(key);
-	if (wxIsdigit(ch))
-		event.Skip();
-	else
-		wxBell();
-}
 
 void go_to_page_dialog::adjust_page_number(int delta) {
 	wxString current_value = input_ctrl->GetValue().Trim(true).Trim(false);

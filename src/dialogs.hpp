@@ -114,7 +114,6 @@ private:
 	wxTextCtrl* input_ctrl{nullptr};
 
 	void on_key_down(wxKeyEvent& event);
-	void on_char(wxKeyEvent& event);
 	void adjust_page_number(int delta);
 	[[nodiscard]] int get_max_page() const;
 };
