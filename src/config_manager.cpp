@@ -105,7 +105,7 @@ void config_manager::add_recent_document(const wxString& path) {
 	config->SetPath("/recent_documents");
 	for (size_t i = 0; i < recent_paths.GetCount(); ++i) {
 		wxString path_doc_id = escape_document_path(recent_paths[i]);
-		config->Write(wxString::Format("Doc%zu", i), path_doc_id);
+		config->Write(wxString::Format("doc%zu", i), path_doc_id);
 	}
 	config->SetPath("/");
 }
