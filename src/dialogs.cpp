@@ -309,7 +309,7 @@ int go_to_page_dialog::get_max_page() const {
 	return static_cast<int>(doc_->buffer.count_markers_by_type(marker_type::page_break));
 }
 
-go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : dialog(parent, "Go to Percentage"), textbox{text_ctrl} {
+go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : dialog(parent, "Go to Percent"), textbox{text_ctrl} {
 	long current_pos = textbox->GetInsertionPoint();
 	long total_pos = textbox->GetLastPosition();
 	int current_percent = total_pos > 0 ? static_cast<int>((current_pos * 100) / total_pos) : 0;
