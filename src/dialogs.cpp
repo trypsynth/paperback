@@ -325,7 +325,7 @@ go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ct
 long go_to_percent_dialog::get_position() const {
 	int percent = percent_slider->GetValue();
 	long total_chars = textbox->GetLastPosition();
-	return (percent * total_chars) / 100;
+	return (percent * total_chars) / 100 + 1;
 }
 
 options_dialog::options_dialog(wxWindow* parent) : dialog(parent, "Options") {
