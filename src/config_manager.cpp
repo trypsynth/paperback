@@ -16,6 +16,7 @@
 #include <sstream>
 #include <wx/filename.h>
 #include <wx/stdpaths.h>
+#include <wx/tokenzr.h>
 
 config_manager::~config_manager() {
 	if (config) shutdown();
@@ -46,21 +47,6 @@ void config_manager::shutdown() {
 		}
 		config.reset();
 	}
-}
-
-void config_manager::load_defaults() {
-	if (needs_migration()) migrate_config();
-	config->SetPath("/app");
-	if (!config->HasEntry("restore_previous_documents")) config->Write("restore_previous_documents", true);
-	if (!config->HasEntry("word_wrap")) config->Write("word_wrap", false);
-	if (get_config_version() != CONFIG_VERSION_CURRENT) set_config_version(CONFIG_VERSION_CURRENT);
-	config->SetPath("/");
-}
-
-wxString config_manager::get_config_path() const {
-	const wxString exe_path = wxStandardPaths::Get().GetExecutablePath();
-	const wxString exe_dir = wxFileName(exe_path).GetPath();
-	return exe_dir + wxFileName::GetPathSeparator() + APP_NAME + ".ini";
 }
 
 wxString config_manager::get_string(const wxString& key, const wxString& default_value) const {
@@ -336,6 +322,123 @@ bool config_manager::migrate_config() {
 	config->DeleteEntry("word_wrap");
 	config->DeleteGroup("opened_documents");
 	return true;
+}
+
+void config_manager::add_bookmark(const wxString& path, long position) {
+	if (!config) return;
+	wxArrayLong bookmarks = get_bookmarks(path);
+	if (bookmarks.Index(position) == wxNOT_FOUND) {
+		bookmarks.Add(position);
+		bookmarks.Sort([](long a, long b) { return a < b ? -1 : (a > b ? 1 : 0); });
+		wxString bookmark_string = "";
+		for (size_t i = 0; i < bookmarks.GetCount(); ++i) {
+			if (i > 0) bookmark_string += ",";
+			bookmark_string += wxString::Format("%ld", bookmarks[i]);
+		}
+		with_document_section(path, [this, path, bookmark_string]() {
+			config->Write("path", path);
+			config->Write("bookmarks", bookmark_string);
+		});
+	}
+}
+
+void config_manager::remove_bookmark(const wxString& path, long position) {
+	if (!config) return;
+	wxArrayLong bookmarks = get_bookmarks(path);
+	int index = bookmarks.Index(position);
+	if (index != wxNOT_FOUND) {
+		bookmarks.RemoveAt(index);
+		wxString bookmark_string = "";
+		for (size_t i = 0; i < bookmarks.GetCount(); ++i) {
+			if (i > 0) bookmark_string += ",";
+			bookmark_string += wxString::Format("%ld", bookmarks[i]);
+		}
+		with_document_section(path, [this, path, bookmark_string]() {
+			config->Write("path", path);
+			if (bookmark_string.IsEmpty())
+				config->DeleteEntry("bookmarks");
+			else
+				config->Write("bookmarks", bookmark_string);
+		});
+	}
+}
+
+void config_manager::toggle_bookmark(const wxString& path, long position) {
+	wxArrayLong bookmarks = get_bookmarks(path);
+	if (bookmarks.Index(position) != wxNOT_FOUND)
+		remove_bookmark(path, position);
+	else
+		add_bookmark(path, position);
+}
+
+wxArrayLong config_manager::get_bookmarks(const wxString& path) const {
+	wxArrayLong result;
+	if (!config) return result;
+	wxString bookmark_string = "";
+	with_document_section(path, [this, &bookmark_string]() {
+		bookmark_string = config->Read("bookmarks", "");
+	});
+	if (!bookmark_string.IsEmpty()) {
+		wxStringTokenizer tokenizer(bookmark_string, ",");
+		while (tokenizer.HasMoreTokens()) {
+			wxString token = tokenizer.GetNextToken().Trim().Trim(false);
+			long position;
+			if (token.ToLong(&position)) result.Add(position);
+		}
+		result.Sort([](long a, long b) { return a < b ? -1 : (a > b ? 1 : 0); });
+	}
+	return result;
+}
+
+void config_manager::clear_bookmarks(const wxString& path) {
+	if (!config) return;
+	with_document_section(path, [this]() {
+		config->DeleteEntry("bookmarks");
+	});
+}
+
+long config_manager::get_next_bookmark(const wxString& path, long current_position) const {
+	wxArrayLong bookmarks = get_bookmarks(path);
+	for (size_t i = 0; i < bookmarks.GetCount(); ++i)
+		if (bookmarks[i] > current_position) return bookmarks[i];
+	return -1;
+}
+
+long config_manager::get_previous_bookmark(const wxString& path, long current_position) const {
+	wxArrayLong bookmarks = get_bookmarks(path);
+	for (int i = bookmarks.GetCount() - 1; i >= 0; --i)
+		if (bookmarks[i] < current_position) return bookmarks[i];
+	return -1;
+}
+
+long config_manager::get_closest_bookmark(const wxString& path, long current_position) const {
+	wxArrayLong bookmarks = get_bookmarks(path);
+	if (bookmarks.IsEmpty()) return -1;
+	long closest = bookmarks[0];
+	long min_distance = std::abs(closest - current_position);
+	for (size_t i = 1; i < bookmarks.GetCount(); ++i) {
+		long distance = std::abs(bookmarks[i] - current_position);
+		if (distance < min_distance) {
+			min_distance = distance;
+			closest = bookmarks[i];
+		}
+	}
+	return closest;
+}
+
+wxString config_manager::get_config_path() const {
+	const wxString exe_path = wxStandardPaths::Get().GetExecutablePath();
+	const wxString exe_dir = wxFileName(exe_path).GetPath();
+	return exe_dir + wxFileName::GetPathSeparator() + APP_NAME + ".ini";
+}
+
+void config_manager::load_defaults() {
+	if (needs_migration()) migrate_config();
+	config->SetPath("/app");
+	if (!config->HasEntry("restore_previous_documents")) config->Write("restore_previous_documents", true);
+	if (!config->HasEntry("word_wrap")) config->Write("word_wrap", false);
+	if (get_config_version() != CONFIG_VERSION_CURRENT) set_config_version(CONFIG_VERSION_CURRENT);
+	config->SetPath("/");
 }
 
 wxString config_manager::get_document_section(const wxString& path) const {

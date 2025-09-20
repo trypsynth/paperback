@@ -92,6 +92,11 @@ wxMenu* main_window::create_go_menu() {
 	menu->AppendSeparator();
 	menu->Append(ID_PREVIOUS_PAGE, "Previous &page\tShift+P");
 	menu->Append(ID_NEXT_PAGE, "&Next page\tP");
+	menu->AppendSeparator();
+	menu->Append(ID_PREVIOUS_BOOKMARK, "Previous &bookmark\tShift+B");
+	menu->Append(ID_NEXT_BOOKMARK, "Next b&ookmark\tB");
+	menu->Append(ID_TOGGLE_BOOKMARK, "Toggle bookmark\tCtrl+Shift+B");
+	menu->Append(ID_JUMP_TO_BOOKMARK, "Jump to bookmark...\tCtrl+B");
 	return menu;
 }
 
@@ -147,6 +152,10 @@ void main_window::bind_events() {
 		{ID_NEXT_HEADING_6, &main_window::on_next_heading_6},
 		{ID_PREVIOUS_PAGE, &main_window::on_previous_page},
 		{ID_NEXT_PAGE, &main_window::on_next_page},
+		{ID_PREVIOUS_BOOKMARK, &main_window::on_previous_bookmark},
+		{ID_NEXT_BOOKMARK, &main_window::on_next_bookmark},
+		{ID_TOGGLE_BOOKMARK, &main_window::on_toggle_bookmark},
+		{ID_JUMP_TO_BOOKMARK, &main_window::on_jump_to_bookmark},
 		{ID_WORD_COUNT, &main_window::on_word_count},
 		{ID_DOC_INFO, &main_window::on_doc_info},
 		{ID_TABLE_OF_CONTENTS, &main_window::on_toc},
@@ -188,6 +197,10 @@ void main_window::update_ui() {
 		enable(ID_NEXT_SECTION, false);
 		enable(ID_PREVIOUS_PAGE, false);
 		enable(ID_NEXT_PAGE, false);
+		enable(ID_PREVIOUS_BOOKMARK, false);
+		enable(ID_NEXT_BOOKMARK, false);
+		enable(ID_TOGGLE_BOOKMARK, false);
+		enable(ID_JUMP_TO_BOOKMARK, false);
 		enable(ID_TABLE_OF_CONTENTS, false);
 		return;
 	}
@@ -209,6 +222,10 @@ void main_window::update_ui() {
 	enable(ID_NEXT_HEADING_6, true);
 	enable(ID_PREVIOUS_PAGE, true);
 	enable(ID_NEXT_PAGE, true);
+	enable(ID_PREVIOUS_BOOKMARK, true);
+	enable(ID_NEXT_BOOKMARK, true);
+	enable(ID_TOGGLE_BOOKMARK, true);
+	enable(ID_JUMP_TO_BOOKMARK, true);
 	enable(ID_TABLE_OF_CONTENTS, true);
 }
 
@@ -350,6 +367,25 @@ void main_window::on_previous_page(wxCommandEvent&) {
 
 void main_window::on_next_page(wxCommandEvent&) {
 	doc_manager->go_to_next_page();
+	update_status_bar();
+}
+
+void main_window::on_previous_bookmark(wxCommandEvent&) {
+	doc_manager->go_to_previous_bookmark();
+	update_status_bar();
+}
+
+void main_window::on_next_bookmark(wxCommandEvent&) {
+	doc_manager->go_to_next_bookmark();
+	update_status_bar();
+}
+
+void main_window::on_toggle_bookmark(wxCommandEvent&) {
+	doc_manager->toggle_bookmark();
+}
+
+void main_window::on_jump_to_bookmark(wxCommandEvent&) {
+	doc_manager->show_bookmark_dialog(this);
 	update_status_bar();
 }
 

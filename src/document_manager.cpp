@@ -287,6 +287,83 @@ void document_manager::go_to_next_page() {
 	speak(wxString::Format("Page %d: %s", next_index + 1, current_line));
 }
 
+void document_manager::go_to_next_bookmark() {
+	document_tab* tab = get_active_tab();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (!tab || !text_ctrl) return;
+	auto& config_mgr = wxGetApp().get_config_manager();
+	long current_pos = text_ctrl->GetInsertionPoint();
+	long next_pos = config_mgr.get_next_bookmark(tab->file_path, current_pos);
+	if (next_pos == -1) {
+		speak("No next bookmark");
+		return;
+	}
+	text_ctrl->SetInsertionPoint(next_pos);
+	long line;
+	text_ctrl->PositionToXY(next_pos, 0, &line);
+	wxString current_line = text_ctrl->GetLineText(line);
+	wxArrayLong bookmarks = config_mgr.get_bookmarks(tab->file_path);
+	int bookmark_index = bookmarks.Index(next_pos);
+	speak(wxString::Format("Bookmark %d: %s", bookmark_index + 1, current_line));
+}
+
+void document_manager::go_to_previous_bookmark() {
+	document_tab* tab = get_active_tab();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (!tab || !text_ctrl) return;
+	auto& config_mgr = wxGetApp().get_config_manager();
+	long current_pos = text_ctrl->GetInsertionPoint();
+	long prev_pos = config_mgr.get_previous_bookmark(tab->file_path, current_pos);
+	if (prev_pos == -1) {
+		speak("No previous bookmark");
+		return;
+	}
+	text_ctrl->SetInsertionPoint(prev_pos);
+	long line;
+	text_ctrl->PositionToXY(prev_pos, 0, &line);
+	wxString current_line = text_ctrl->GetLineText(line);
+	wxArrayLong bookmarks = config_mgr.get_bookmarks(tab->file_path);
+	int bookmark_index = bookmarks.Index(prev_pos);
+	speak(wxString::Format("Bookmark %d: %s", bookmark_index + 1, current_line));
+}
+
+void document_manager::toggle_bookmark() {
+	document_tab* tab = get_active_tab();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (!tab || !text_ctrl) return;
+	auto& config_mgr = wxGetApp().get_config_manager();
+	long current_pos = text_ctrl->GetInsertionPoint();
+	wxArrayLong bookmarks = config_mgr.get_bookmarks(tab->file_path);
+	bool was_bookmarked = bookmarks.Index(current_pos) != wxNOT_FOUND;
+	config_mgr.toggle_bookmark(tab->file_path, current_pos);
+	config_mgr.flush();
+	speak(was_bookmarked ? "Bookmark removed" : "Bookmarked");
+}
+
+void document_manager::show_bookmark_dialog(wxWindow* parent) {
+	document_tab* tab = get_active_tab();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (!tab || !text_ctrl) return;
+	auto& config_mgr = wxGetApp().get_config_manager();
+	wxArrayLong bookmarks = config_mgr.get_bookmarks(tab->file_path);
+	if (bookmarks.IsEmpty()) {
+		speak("No bookmarks");
+		return;
+	}
+	long current_pos = text_ctrl->GetInsertionPoint();
+	bookmark_dialog dialog(parent, bookmarks, text_ctrl, current_pos);
+	if (dialog.ShowModal() != wxID_OK) return;
+	long pos = dialog.get_selected_position();
+	if (pos < 0) return;
+	text_ctrl->SetInsertionPoint(pos);
+	text_ctrl->SetFocus();
+	long line;
+	text_ctrl->PositionToXY(pos, 0, &line);
+	wxString current_line = text_ctrl->GetLineText(line);
+	speak(wxString::Format("Bookmark: %s", current_line));
+	update_ui();
+}
+
 void document_manager::show_table_of_contents(wxWindow* parent) {
 	document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();

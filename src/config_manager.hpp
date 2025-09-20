@@ -52,6 +52,14 @@ public:
 	void set_config_version(int version);
 	bool needs_migration() const;
 	bool migrate_config();
+	void add_bookmark(const wxString& path, long position);
+	void remove_bookmark(const wxString& path, long position);
+	void toggle_bookmark(const wxString& path, long position);
+	wxArrayLong get_bookmarks(const wxString& path) const;
+	void clear_bookmarks(const wxString& path);
+	long get_next_bookmark(const wxString& path, long current_position) const;
+	long get_previous_bookmark(const wxString& path, long current_position) const;
+	long get_closest_bookmark(const wxString& path, long current_position) const;
 
 private:
 	std::unique_ptr<wxFileConfig> config;

@@ -73,6 +73,10 @@ private:
 	void on_next_heading_6(wxCommandEvent&);
 	void on_previous_page(wxCommandEvent&);
 	void on_next_page(wxCommandEvent&);
+	void on_next_bookmark(wxCommandEvent&);
+	void on_previous_bookmark(wxCommandEvent&);
+	void on_toggle_bookmark(wxCommandEvent&);
+	void on_jump_to_bookmark(wxCommandEvent&);
 	void on_word_count(wxCommandEvent&);
 	void on_doc_info(wxCommandEvent&);
 	void on_toc(wxCommandEvent&);

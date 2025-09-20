@@ -40,6 +40,50 @@ void dialog::create_buttons() {
 	button_sizer->Realize();
 }
 
+bookmark_dialog::bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks, wxTextCtrl* text_ctrl, long current_pos) : dialog(parent, "Jump to Bookmark"), bookmark_positions(bookmarks), selected_position{-1} {
+	bookmark_list = new wxListBox(this, wxID_ANY);
+	int closest_index = -1;
+	long closest_distance = LONG_MAX;
+	for (size_t i = 0; i < bookmarks.GetCount(); ++i) {
+		long pos = bookmarks[i];
+		long line;
+		text_ctrl->PositionToXY(pos, 0, &line);
+		wxString line_text = text_ctrl->GetLineText(line);
+		line_text = line_text.Strip(wxString::both);
+		if (line_text.IsEmpty()) line_text = "blank";
+		wxString bookmark_desc = wxString::Format("Bookmark %zu: %s", i + 1, line_text);
+		bookmark_list->Append(bookmark_desc);
+		if (current_pos >= 0) {
+			long distance = std::abs(pos - current_pos);
+			if (distance < closest_distance) {
+				closest_distance = distance;
+				closest_index = i;
+			}
+		}
+	}
+	if (closest_index >= 0) {
+		bookmark_list->SetSelection(closest_index);
+		selected_position = bookmarks[closest_index];
+	}
+	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
+	content_sizer->Add(bookmark_list, 1, wxEXPAND);
+	set_content(content_sizer);
+	bookmark_list->Bind(wxEVT_LISTBOX, &bookmark_dialog::on_list_selection_changed, this);
+	Bind(wxEVT_BUTTON, &bookmark_dialog::on_ok, this, wxID_OK);
+	finalize_layout();
+}
+
+void bookmark_dialog::on_list_selection_changed(wxCommandEvent& event) {
+	int selection = bookmark_list->GetSelection();
+	if (selection >= 0 && selection < static_cast<int>(bookmark_positions.GetCount())) selected_position = bookmark_positions[selection];
+}
+
+void bookmark_dialog::on_ok(wxCommandEvent& event) {
+	if (selected_position >= 0) EndModal(wxID_OK);
+	else
+		wxMessageBox("Please select a bookmark to jump to.", "error", wxICON_ERROR);
+}
+
 document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc) : dialog(parent, "Document Info", dialog_button_config::ok_only) {
 	info_text_ctrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(600, 400), wxTE_MULTILINE | wxTE_READONLY);
 	wxString info_text;

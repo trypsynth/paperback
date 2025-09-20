@@ -35,6 +35,25 @@ private:
 	void create_buttons();
 };
 
+class bookmark_dialog : public dialog {
+public:
+	bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks, wxTextCtrl* text_ctrl, long current_pos = -1);
+	~bookmark_dialog() = default;
+	bookmark_dialog(const bookmark_dialog&) = delete;
+	bookmark_dialog& operator=(const bookmark_dialog&) = delete;
+	bookmark_dialog(bookmark_dialog&&) = delete;
+	bookmark_dialog& operator=(bookmark_dialog&&) = delete;
+	[[nodiscard]] long get_selected_position() const { return selected_position; }
+
+private:
+	wxListBox* bookmark_list{nullptr};
+	wxArrayLong bookmark_positions;
+	long selected_position;
+
+	void on_list_selection_changed(wxCommandEvent& event);
+	void on_ok(wxCommandEvent& event);
+};
+
 class document_info_dialog : public dialog {
 public:
 	document_info_dialog(wxWindow* parent, const document* doc);
