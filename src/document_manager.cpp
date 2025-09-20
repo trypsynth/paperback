@@ -39,8 +39,9 @@ bool document_manager::create_document_tab(const wxString& path, const parser* p
 	notebook->AddPage(panel, tab_data->doc->title, true);
 	restore_document_position(tab_data);
 	tab_data->text_ctrl->SetFocus();
-	wxGetApp().get_config_manager().add_recent_document(path);
-	wxGetApp().get_config_manager().add_opened_document(path);
+	auto& config_mgr = wxGetApp().get_config_manager();
+	config_mgr.add_recent_document(path);
+	config_mgr.set_document_opened(path, true);
 	return true;
 }
 
@@ -97,14 +98,19 @@ void document_manager::close_document(int index) {
 	if (tab && tab->text_ctrl) {
 		long position = tab->text_ctrl->GetInsertionPoint();
 		save_document_position(tab->file_path, position);
-		wxGetApp().get_config_manager().remove_opened_document(tab->file_path);
+		auto& config_mgr = wxGetApp().get_config_manager();
+		config_mgr.set_document_opened(tab->file_path, false);
 	}
 	notebook->DeletePage(index);
 }
 
 void document_manager::close_all_documents() {
 	save_all_tab_positions();
-	wxGetApp().get_config_manager().clear_opened_documents();
+	auto& config_mgr = wxGetApp().get_config_manager();
+	for (int i = 0; i < get_tab_count(); ++i) {
+		document_tab* tab = get_tab(i);
+		if (tab) config_mgr.set_document_opened(tab->file_path, false);
+	}
 	notebook->DeleteAllPages();
 }
 
@@ -312,18 +318,14 @@ void document_manager::show_document_info(wxWindow* parent) {
 }
 
 void document_manager::save_document_position(const wxString& path, long position) const {
-	wxConfigBase* config = wxConfigBase::Get();
-	if (!config) return;
-	config->SetPath("/positions");
-	config->Write(path, position);
-	config->Flush();
+	auto& config_mgr = wxGetApp().get_config_manager();
+	config_mgr.set_document_position(path, position);
+	config_mgr.flush();
 }
 
 long document_manager::load_document_position(const wxString& path) const {
-	wxConfigBase* config = wxConfigBase::Get();
-	if (!config) return 0;
-	config->SetPath("/positions");
-	return config->Read(path, 0L);
+	auto& config_mgr = wxGetApp().get_config_manager();
+	return config_mgr.get_document_position(path);
 }
 
 void document_manager::save_current_tab_position() {

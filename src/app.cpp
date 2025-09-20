@@ -103,7 +103,7 @@ void app::parse_command_line() {
 }
 
 void app::restore_previous_documents() {
-	wxArrayString opened_docs = config_mgr.get_opened_documents();
+	wxArrayString opened_docs = config_mgr.get_all_opened_documents();
 	auto* doc_manager = frame->get_doc_manager();
 	for (const auto& path : opened_docs) {
 		if (!wxFileName::FileExists(path)) continue;

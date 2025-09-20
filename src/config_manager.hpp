@@ -8,6 +8,7 @@
  */
 
 #pragma once
+#include <functional>
 #include <memory>
 #include <wx/fileconf.h>
 #include <wx/string.h>
@@ -42,6 +43,15 @@ public:
 	void remove_opened_document(const wxString& path);
 	wxArrayString get_opened_documents() const;
 	void clear_opened_documents();
+	void set_document_position(const wxString& path, long position);
+	long get_document_position(const wxString& path) const;
+	void set_document_opened(const wxString& path, bool opened);
+	bool get_document_opened(const wxString& path) const;
+	wxArrayString get_all_opened_documents() const;
+	int get_config_version() const;
+	void set_config_version(int version);
+	bool needs_migration() const;
+	bool migrate_config();
 
 private:
 	std::unique_ptr<wxFileConfig> config;
@@ -49,4 +59,8 @@ private:
 
 	wxString get_config_path() const;
 	void load_defaults();
+	wxString get_document_section(const wxString& path) const;
+	wxString escape_document_path(const wxString& path) const;
+	void with_document_section(const wxString& path, std::function<void()> func) const;
+	void with_app_section(std::function<void()> func) const;
 };

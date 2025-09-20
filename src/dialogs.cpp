@@ -245,7 +245,6 @@ void go_to_page_dialog::on_key_down(wxKeyEvent& event) {
 		event.Skip();
 }
 
-
 void go_to_page_dialog::adjust_page_number(int delta) {
 	wxString current_value = input_ctrl->GetValue().Trim(true).Trim(false);
 	long current_page;
