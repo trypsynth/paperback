@@ -39,8 +39,9 @@ target_link_libraries(paperback PRIVATE
 	Poco::Foundation
 	Poco::XML
 	Poco::Zip
-	wx::core
 	wx::base
+	wx::core
+	wx::net
 )
 if(WIN32)
 	target_link_libraries(paperback PRIVATE psapi universalspeech::universalspeech)
