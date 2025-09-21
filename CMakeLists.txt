@@ -17,6 +17,7 @@ if(MSVC)
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()
 
+find_package(chmlib CONFIG REQUIRED)
 find_package(lexbor CONFIG REQUIRED)
 find_package(maddy CONFIG REQUIRED)
 find_package(pdfium CONFIG REQUIRED)
@@ -33,6 +34,7 @@ else()
 	add_executable(paperback ${SRC_FILES})
 endif()
 target_link_libraries(paperback PRIVATE
+	chmlib::chm
 	lexbor::lexbor
 	maddy::maddy
 	pdfium::pdfium
