@@ -1,19 +1,19 @@
 {
-  "name": "pdfium",
-  "version": "141.0.7374.0",
-  "description": "PDFium is an open-source PDF rendering library",
-  "homepage": "https://pdfium.googlesource.com/pdfium/",
-  "documentation": "https://pdfium.googlesource.com/pdfium/+/HEAD/docs/",
-  "license": "BSD-3-Clause",
-  "supports": "!(uwp | xbox | android | ios | emscripten)",
-  "dependencies": [
-    {
-      "name": "vcpkg-cmake",
-      "host": true
-    },
-    {
-      "name": "vcpkg-cmake-config",
-      "host": true
-    }
-  ]
+	"name": "pdfium",
+	"version": "141.0.7374.0",
+	"description": "PDFium is an open-source PDF rendering library",
+	"homepage": "https://pdfium.googlesource.com/pdfium/",
+	"documentation": "https://pdfium.googlesource.com/pdfium/+/HEAD/docs/",
+	"license": "BSD-3-Clause",
+	"supports": "!(uwp | xbox | android | ios | emscripten)",
+	"dependencies": [
+		{
+			"name": "vcpkg-cmake",
+			"host": true
+		},
+		{
+			"name": "vcpkg-cmake-config",
+			"host": true
+		}
+	]
 }

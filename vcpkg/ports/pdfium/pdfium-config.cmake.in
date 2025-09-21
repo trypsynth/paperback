@@ -1,0 +1,23 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+if(NOT TARGET pdfium::pdfium)
+	get_filename_component(_IMPORT_PREFIX "${CMAKE_CURRENT_LIST_FILE}" PATH)
+	get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
+	get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
+	if(WIN32 OR APPLE)
+		add_library(pdfium::pdfium STATIC IMPORTED)
+		set_target_properties(pdfium::pdfium PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include")
+		if(WIN32)
+			set_target_properties(pdfium::pdfium PROPERTIES IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/lib/pdfium.lib" IMPORTED_LOCATION_DEBUG "${_IMPORT_PREFIX}/debug/lib/pdfium.lib")
+		else()
+			set_target_properties(pdfium::pdfium PROPERTIES IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/lib/libpdfium.a" IMPORTED_LOCATION_DEBUG "${_IMPORT_PREFIX}/debug/lib/libpdfium.a")
+		endif()
+		set_target_properties(pdfium::pdfium PROPERTIES IMPORTED_LINK_INTERFACE_LANGUAGES "CXX")
+	else()
+		add_library(pdfium::pdfium SHARED IMPORTED)
+		set_target_properties(pdfium::pdfium PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include")
+		set_target_properties(pdfium::pdfium PROPERTIES IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/lib/libpdfium.so" IMPORTED_LOCATION_DEBUG "${_IMPORT_PREFIX}/debug/lib/libpdfium.so")
+	endif()
+endif()
