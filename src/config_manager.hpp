@@ -39,6 +39,8 @@ public:
 	void set_restore_previous_documents(bool restore);
 	bool get_word_wrap() const;
 	void set_word_wrap(bool word_wrap);
+	void set_active_document(const wxString& path);
+	wxString get_active_document() const;
 	void add_opened_document(const wxString& path);
 	void remove_opened_document(const wxString& path);
 	wxArrayString get_opened_documents() const;
@@ -50,8 +52,6 @@ public:
 	wxArrayString get_all_opened_documents() const;
 	int get_config_version() const;
 	void set_config_version(int version);
-	bool needs_migration() const;
-	bool migrate_config();
 	void add_bookmark(const wxString& path, long position);
 	void remove_bookmark(const wxString& path, long position);
 	void toggle_bookmark(const wxString& path, long position);
@@ -60,8 +60,8 @@ public:
 	long get_next_bookmark(const wxString& path, long current_position) const;
 	long get_previous_bookmark(const wxString& path, long current_position) const;
 	long get_closest_bookmark(const wxString& path, long current_position) const;
-	void set_active_document(const wxString& path);
-	wxString get_active_document() const;
+	bool needs_migration() const;
+	bool migrate_config();
 
 private:
 	std::unique_ptr<wxFileConfig> config;
