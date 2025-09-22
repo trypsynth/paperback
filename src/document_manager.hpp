@@ -45,7 +45,7 @@ public:
 	document_manager(document_manager&&) = delete;
 	document_manager& operator=(document_manager&&) = delete;
 	[[nodiscard]] bool open_file(const wxString& path, bool add_to_recent = true);
-	[[nodiscard]] bool create_document_tab(const wxString& path, const parser* parser);
+	[[nodiscard]] bool create_document_tab(const wxString& path, const parser* parser, bool set_focus = true);
 	void update_ui();
 	void close_document(int index);
 	void close_all_documents();

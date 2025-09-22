@@ -426,6 +426,20 @@ long config_manager::get_closest_bookmark(const wxString& path, long current_pos
 	return closest;
 }
 
+void config_manager::set_active_document(const wxString& path) {
+	with_app_section([this, path]() {
+		config->Write("active_document", path);
+	});
+}
+
+wxString config_manager::get_active_document() const {
+	wxString active_doc = "";
+	with_app_section([this, &active_doc]() {
+		active_doc = config->Read("active_document", "");
+	});
+	return active_doc;
+}
+
 wxString config_manager::get_config_path() const {
 	const wxString exe_path = wxStandardPaths::Get().GetExecutablePath();
 	const wxString exe_dir = wxFileName(exe_path).GetPath();

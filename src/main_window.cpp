@@ -544,6 +544,14 @@ void main_window::on_text_cursor_changed(wxEvent& event) {
 }
 
 void main_window::on_close_window(wxCloseEvent& event) {
+	if (doc_manager->has_documents()) {
+		auto* active_tab = doc_manager->get_active_tab();
+		if (active_tab) {
+			auto& config_mgr = wxGetApp().get_config_manager();
+			config_mgr.set_active_document(active_tab->file_path);
+			config_mgr.flush();
+		}
+	}
 	event.Skip();
 }
 

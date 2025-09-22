@@ -79,7 +79,8 @@ void bookmark_dialog::on_list_selection_changed(wxCommandEvent& event) {
 }
 
 void bookmark_dialog::on_ok(wxCommandEvent& event) {
-	if (selected_position >= 0) EndModal(wxID_OK);
+	if (selected_position >= 0)
+		EndModal(wxID_OK);
 	else
 		wxMessageBox("Please select a bookmark to jump to.", "error", wxICON_ERROR);
 }

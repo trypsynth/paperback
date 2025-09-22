@@ -105,6 +105,7 @@ void app::parse_command_line() {
 void app::restore_previous_documents() {
 	wxArrayString opened_docs = config_mgr.get_all_opened_documents();
 	auto* doc_manager = frame->get_doc_manager();
+	wxString active_doc = config_mgr.get_active_document();
 	for (const auto& path : opened_docs) {
 		if (!wxFileName::FileExists(path)) continue;
 		const int existing_tab = doc_manager->find_tab_by_path(path);
@@ -114,7 +115,18 @@ void app::restore_previous_documents() {
 			if (!should_open_as_txt(path)) continue;
 			par = find_parser_by_extension("txt");
 		}
-		if (!doc_manager->create_document_tab(path, par)) continue;
+		if (!doc_manager->create_document_tab(path, par, false)) continue;
+	}
+	if (!active_doc.IsEmpty() && wxFileName::FileExists(active_doc)) {
+		const int active_tab = doc_manager->find_tab_by_path(active_doc);
+		if (active_tab >= 0) {
+			frame->get_notebook()->SetSelection(active_tab);
+			auto* const text_ctrl = doc_manager->get_active_text_ctrl();
+			if (text_ctrl) text_ctrl->SetFocus();
+		}
+	} else if (doc_manager->has_documents()) {
+		auto* const text_ctrl = doc_manager->get_active_text_ctrl();
+		if (text_ctrl) text_ctrl->SetFocus();
 	}
 }
 

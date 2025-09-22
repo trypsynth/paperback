@@ -27,7 +27,7 @@ document_manager::~document_manager() {
 	save_all_tab_positions();
 }
 
-bool document_manager::create_document_tab(const wxString& path, const parser* par) {
+bool document_manager::create_document_tab(const wxString& path, const parser* par, bool set_focus) {
 	std::unique_ptr<document> doc = par->load(path);
 	if (!doc) return false;
 	doc->calculate_statistics();
@@ -38,7 +38,7 @@ bool document_manager::create_document_tab(const wxString& path, const parser* p
 	tab_data->panel = panel;
 	notebook->AddPage(panel, tab_data->doc->title, true);
 	restore_document_position(tab_data);
-	tab_data->text_ctrl->SetFocus();
+	if (set_focus) tab_data->text_ctrl->SetFocus();
 	auto& config_mgr = wxGetApp().get_config_manager();
 	config_mgr.add_recent_document(path);
 	config_mgr.set_document_opened(path, true);
