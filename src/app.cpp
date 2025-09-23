@@ -100,6 +100,7 @@ void app::parse_command_line() {
 	}
 	if (!doc_manager->create_document_tab(path, par))
 		wxMessageBox("Failed to load document.", "Error", wxICON_ERROR);
+	doc_manager->update_ui();
 }
 
 void app::restore_previous_documents() {
@@ -117,6 +118,7 @@ void app::restore_previous_documents() {
 		}
 		if (!doc_manager->create_document_tab(path, par, false)) continue;
 	}
+	doc_manager->update_ui();
 	if (!active_doc.IsEmpty() && wxFileName::FileExists(active_doc)) {
 		const int active_tab = doc_manager->find_tab_by_path(active_doc);
 		if (active_tab >= 0) {
