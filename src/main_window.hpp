@@ -25,6 +25,8 @@ public:
 	[[nodiscard]] document_manager* get_doc_manager() const noexcept { return doc_manager.get(); }
 	[[nodiscard]] wxNotebook* get_notebook() const noexcept { return notebook; }
 	void on_text_cursor_changed(wxEvent& event);
+	void trigger_throttled_position_save();
+	void save_position_immediately();
 	void update_ui();
 	void update_title();
 	void update_status_bar();

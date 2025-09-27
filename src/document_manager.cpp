@@ -69,10 +69,7 @@ bool document_manager::open_file(const wxString& path, bool add_to_recent) {
 	auto* const text_ctrl = get_active_text_ctrl();
 	if (text_ctrl) {
 		auto* main_win = static_cast<main_window*>(wxGetApp().GetTopWindow());
-		if (main_win) {
-			text_ctrl->Bind(wxEVT_LEFT_UP, &main_window::on_text_cursor_changed, main_win);
-			text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, main_win);
-		}
+		if (main_win) text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, main_win);
 	}
 	if (add_to_recent) {
 		auto& config_mgr = wxGetApp().get_config_manager();

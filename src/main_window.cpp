@@ -33,7 +33,6 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	status_bar->SetStatusText("Ready");
 	position_save_timer = new wxTimer(this);
 	bind_events();
-	position_save_timer->Start(POSITION_SAVE_TIMER_INTERVAL);
 	update_ui();
 	notebook->Bind(wxEVT_KEY_DOWN, &main_window::on_notebook_key_down, this);
 }
@@ -315,6 +314,7 @@ void main_window::on_go_to_line(wxCommandEvent&) {
 	const auto pos = dlg.get_position();
 	doc_manager->go_to_position(pos);
 	update_status_bar();
+	save_position_immediately();
 }
 
 void main_window::on_go_to_percent(wxCommandEvent&) {
@@ -325,6 +325,7 @@ void main_window::on_go_to_percent(wxCommandEvent&) {
 	const auto pos = dlg.get_position();
 	doc_manager->go_to_position(pos);
 	update_status_bar();
+	save_position_immediately();
 }
 
 void main_window::on_go_to_page(wxCommandEvent&) {
@@ -347,37 +348,44 @@ void main_window::on_go_to_page(wxCommandEvent&) {
 		const size_t offset = doc->buffer.get_marker_position_by_index(marker_type::page_break, page - 1); // Convert to 0-based index
 		doc_manager->go_to_position(offset);
 		update_status_bar();
+		save_position_immediately();
 	}
 }
 
 void main_window::on_previous_section(wxCommandEvent&) {
 	doc_manager->go_to_previous_section();
 	update_status_bar();
+	trigger_throttled_position_save();
 }
 
 void main_window::on_next_section(wxCommandEvent&) {
 	doc_manager->go_to_next_section();
 	update_status_bar();
+	trigger_throttled_position_save();
 }
 
 void main_window::on_previous_page(wxCommandEvent&) {
 	doc_manager->go_to_previous_page();
 	update_status_bar();
+	trigger_throttled_position_save();
 }
 
 void main_window::on_next_page(wxCommandEvent&) {
 	doc_manager->go_to_next_page();
 	update_status_bar();
+	trigger_throttled_position_save();
 }
 
 void main_window::on_previous_bookmark(wxCommandEvent&) {
 	doc_manager->go_to_previous_bookmark();
 	update_status_bar();
+	trigger_throttled_position_save();
 }
 
 void main_window::on_next_bookmark(wxCommandEvent&) {
 	doc_manager->go_to_next_bookmark();
 	update_status_bar();
+	trigger_throttled_position_save();
 }
 
 void main_window::on_toggle_bookmark(wxCommandEvent&) {
@@ -387,76 +395,91 @@ void main_window::on_toggle_bookmark(wxCommandEvent&) {
 void main_window::on_jump_to_bookmark(wxCommandEvent&) {
 	doc_manager->show_bookmark_dialog(this);
 	update_status_bar();
+	save_position_immediately();
 }
 
 void main_window::on_previous_heading(wxCommandEvent&) {
 	doc_manager->go_to_previous_heading();
 	update_status_bar();
+	trigger_throttled_position_save();
 }
 
 void main_window::on_next_heading(wxCommandEvent&) {
 	doc_manager->go_to_next_heading();
 	update_status_bar();
+	trigger_throttled_position_save();
 }
 
 void main_window::on_previous_heading_1(wxCommandEvent&) {
 	doc_manager->go_to_previous_heading(1);
 	update_status_bar();
+	trigger_throttled_position_save();
 }
 
 void main_window::on_next_heading_1(wxCommandEvent&) {
 	doc_manager->go_to_next_heading(1);
 	update_status_bar();
+	trigger_throttled_position_save();
 }
 
 void main_window::on_previous_heading_2(wxCommandEvent&) {
 	doc_manager->go_to_previous_heading(2);
 	update_status_bar();
+	trigger_throttled_position_save();
 }
 
 void main_window::on_next_heading_2(wxCommandEvent&) {
 	doc_manager->go_to_next_heading(2);
 	update_status_bar();
+	trigger_throttled_position_save();
 }
 
 void main_window::on_previous_heading_3(wxCommandEvent&) {
 	doc_manager->go_to_previous_heading(3);
 	update_status_bar();
+	trigger_throttled_position_save();
 }
 
 void main_window::on_next_heading_3(wxCommandEvent&) {
 	doc_manager->go_to_next_heading(3);
 	update_status_bar();
+	trigger_throttled_position_save();
 }
 
 void main_window::on_previous_heading_4(wxCommandEvent&) {
 	doc_manager->go_to_previous_heading(4);
 	update_status_bar();
+	trigger_throttled_position_save();
 }
 
 void main_window::on_next_heading_4(wxCommandEvent&) {
 	doc_manager->go_to_next_heading(4);
 	update_status_bar();
+	trigger_throttled_position_save();
 }
 
 void main_window::on_previous_heading_5(wxCommandEvent&) {
 	doc_manager->go_to_previous_heading(5);
 	update_status_bar();
+	trigger_throttled_position_save();
 }
 
 void main_window::on_next_heading_5(wxCommandEvent&) {
 	doc_manager->go_to_next_heading(5);
 	update_status_bar();
+	trigger_throttled_position_save();
 }
 
 void main_window::on_previous_heading_6(wxCommandEvent&) {
 	doc_manager->go_to_previous_heading(6);
 	update_status_bar();
+	trigger_throttled_position_save();
 }
 
 void main_window::on_next_heading_6(wxCommandEvent&) {
 	doc_manager->go_to_next_heading(6);
 	update_status_bar();
+	trigger_throttled_position_save();
 }
 
 void main_window::on_word_count(wxCommandEvent&) {
@@ -471,6 +494,7 @@ void main_window::on_doc_info(wxCommandEvent&) {
 void main_window::on_toc(wxCommandEvent&) {
 	doc_manager->show_table_of_contents(this);
 	update_status_bar();
+	save_position_immediately();
 }
 
 void main_window::on_options(wxCommandEvent&) {
@@ -540,7 +564,17 @@ void main_window::on_notebook_page_changed(wxBookCtrlEvent& event) {
 
 void main_window::on_text_cursor_changed(wxEvent& event) {
 	update_status_bar();
+	trigger_throttled_position_save();
 	event.Skip();
+}
+
+void main_window::trigger_throttled_position_save() {
+	if (position_save_timer->IsRunning()) position_save_timer->Stop();
+	position_save_timer->StartOnce(POSITION_SAVE_THROTTLE_MS);
+}
+
+void main_window::save_position_immediately() {
+	doc_manager->save_current_tab_position();
 }
 
 void main_window::on_close_window(wxCloseEvent& event) {
@@ -644,4 +678,5 @@ void main_window::do_find(bool forward) {
 	text_ctrl->SetSelection(found_pos, found_pos + query.Length());
 	text_ctrl->ShowPosition(found_pos);
 	update_status_bar();
+	trigger_throttled_position_save();
 }
