@@ -32,6 +32,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	status_bar = CreateStatusBar(1);
 	status_bar->SetStatusText("Ready");
 	position_save_timer = new wxTimer(this);
+	status_update_timer = new wxTimer(this);
 	bind_events();
 	update_ui();
 	notebook->Bind(wxEVT_KEY_DOWN, &main_window::on_notebook_key_down, this);
@@ -41,6 +42,10 @@ main_window::~main_window() {
 	if (position_save_timer) {
 		position_save_timer->Stop();
 		position_save_timer = nullptr;
+	}
+	if (status_update_timer) {
+		status_update_timer->Stop();
+		status_update_timer = nullptr;
 	}
 	if (find_dlg) {
 		find_dlg->Destroy();
@@ -169,6 +174,7 @@ void main_window::bind_events() {
 	Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, &main_window::on_notebook_page_changed, this);
 	Bind(wxEVT_CLOSE_WINDOW, &main_window::on_close_window, this);
 	Bind(wxEVT_TIMER, &main_window::on_position_save_timer, this, position_save_timer->GetId());
+	Bind(wxEVT_TIMER, &main_window::on_status_update_timer, this, status_update_timer->GetId());
 }
 
 void main_window::update_ui() {
@@ -563,7 +569,7 @@ void main_window::on_notebook_page_changed(wxBookCtrlEvent& event) {
 }
 
 void main_window::on_text_cursor_changed(wxEvent& event) {
-	update_status_bar();
+	trigger_throttled_status_update();
 	trigger_throttled_position_save();
 	event.Skip();
 }
@@ -571,6 +577,20 @@ void main_window::on_text_cursor_changed(wxEvent& event) {
 void main_window::trigger_throttled_position_save() {
 	if (position_save_timer->IsRunning()) position_save_timer->Stop();
 	position_save_timer->StartOnce(POSITION_SAVE_THROTTLE_MS);
+}
+
+void main_window::trigger_throttled_status_update() {
+	wxLongLong current_time = wxGetLocalTimeMillis();
+	wxLongLong time_since_last_update = current_time - last_status_update_time;
+	const int MIN_UPDATE_INTERVAL_MS = 50;
+	if (time_since_last_update >= MIN_UPDATE_INTERVAL_MS) {
+		update_status_bar();
+		last_status_update_time = current_time;
+	} else {
+		if (status_update_timer->IsRunning()) status_update_timer->Stop();
+		int delay = MIN_UPDATE_INTERVAL_MS - time_since_last_update.ToLong();
+		status_update_timer->StartOnce(delay);
+	}
 }
 
 void main_window::save_position_immediately() {
@@ -591,6 +611,11 @@ void main_window::on_close_window(wxCloseEvent& event) {
 
 void main_window::on_position_save_timer(wxTimerEvent&) {
 	doc_manager->save_current_tab_position();
+}
+
+void main_window::on_status_update_timer(wxTimerEvent&) {
+	update_status_bar();
+	last_status_update_time = wxGetLocalTimeMillis();
 }
 
 void main_window::on_recent_document(wxCommandEvent& event) {

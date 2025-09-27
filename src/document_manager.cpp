@@ -426,7 +426,11 @@ wxString document_manager::get_status_text() const {
 	long current_pos = text_ctrl->GetInsertionPoint();
 	long total_chars = text_ctrl->GetLastPosition();
 	int percentage = total_chars > 0 ? (current_pos * 100) / total_chars : 0;
-	return wxString::Format("%d%%", percentage);
+	long line;
+	text_ctrl->PositionToXY(current_pos, 0, &line);
+	long line_number = line + 1;
+	long character_number = current_pos + 1;
+	return wxString::Format("line %ld, character %ld, reading %d%%", line_number, character_number, percentage);
 }
 
 wxString document_manager::get_window_title(const wxString& app_name) const {
@@ -451,6 +455,9 @@ wxPanel* document_manager::create_tab_panel(const wxString& content, document_ta
 	auto* text_ctrl = new wxTextCtrl(panel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, style);
 	panel->SetClientObject(tab_data);
 	tab_data->text_ctrl = text_ctrl;
+
+	auto* main_win = static_cast<main_window*>(wxGetApp().GetTopWindow());
+	if (main_win) text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, main_win);
 	sizer->Add(text_ctrl, 1, wxEXPAND | wxALL, 5);
 	panel->SetSizer(sizer);
 	setup_text_ctrl(text_ctrl, content);
@@ -489,6 +496,8 @@ void document_manager::apply_word_wrap(bool word_wrap) {
 			long style = wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | (word_wrap ? wxTE_WORDWRAP : wxTE_DONTWRAP);
 			wxTextCtrl* new_ctrl = new wxTextCtrl(tab->panel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, style);
 			tab->text_ctrl = new_ctrl;
+			auto* main_win = static_cast<main_window*>(wxGetApp().GetTopWindow());
+			if (main_win) new_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, main_win);
 			new_ctrl->Freeze();
 			new_ctrl->SetValue(content);
 			new_ctrl->SetInsertionPoint(current_pos);

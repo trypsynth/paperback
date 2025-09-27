@@ -12,6 +12,7 @@
 #include "document_manager.hpp"
 #include <memory>
 #include <wx/bookctrl.h>
+#include <wx/longlong.h>
 #include <wx/wx.h>
 
 class main_window : public wxFrame {
@@ -27,6 +28,7 @@ public:
 	void on_text_cursor_changed(wxEvent& event);
 	void trigger_throttled_position_save();
 	void save_position_immediately();
+	void trigger_throttled_status_update();
 	void update_ui();
 	void update_title();
 	void update_status_bar();
@@ -37,6 +39,8 @@ private:
 	wxNotebook* notebook{nullptr};
 	wxStatusBar* status_bar{nullptr};
 	wxTimer* position_save_timer{nullptr};
+	wxTimer* status_update_timer{nullptr};
+	wxLongLong last_status_update_time{0};
 	find_dialog* find_dlg{nullptr};
 	wxMenu* recent_documents_menu{nullptr};
 
@@ -90,6 +94,7 @@ private:
 	void on_notebook_page_changed(wxBookCtrlEvent& event);
 	void on_close_window(wxCloseEvent& event);
 	void on_position_save_timer(wxTimerEvent&);
+	void on_status_update_timer(wxTimerEvent&);
 	void on_recent_document(wxCommandEvent& event);
 	void on_notebook_key_down(wxKeyEvent& event);
 	void do_find(bool forward);
