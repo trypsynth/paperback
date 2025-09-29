@@ -59,7 +59,7 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 			parse_section(i, ctx, document_ptr->buffer);
 		}
 		document_ptr->title = wxString::FromUTF8(ctx.title);
-		document_ptr->author = ctx.author.empty() ? wxString("Unknown") : wxString::FromUTF8(ctx.author);
+		if (!ctx.author.empty()) document_ptr->author = wxString::FromUTF8(ctx.author);
 		document_ptr->flags = document_flags::supports_sections | document_flags::supports_toc;
 		parse_toc(ctx, document_ptr->toc_items, document_ptr->buffer);
 		return document_ptr;

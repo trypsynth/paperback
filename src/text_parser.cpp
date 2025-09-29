@@ -34,7 +34,6 @@ std::unique_ptr<document> text_parser::load(const wxString& path) const {
 	if (content.empty()) content = wxString(buffer.data(), wxConvISO8859_1, file_size);
 	auto doc = std::make_unique<document>();
 	doc->title = wxFileName(path).GetName();
-	doc->author = "Unknown";
 	std::string utf8_content = content.ToUTF8().data();
 	std::string processed = remove_soft_hyphens(utf8_content);
 	doc->buffer.set_content(wxString::FromUTF8(processed));

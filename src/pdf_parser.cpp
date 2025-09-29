@@ -83,7 +83,6 @@ void pdf_parser::extract_metadata(const pdf_context& ctx, wxString& title, wxStr
 	title = extract_metadata_string(ctx.doc, "Title");
 	author = extract_metadata_string(ctx.doc, "Author");
 	if (title.IsEmpty()) title = wxFileName(path).GetName();
-	if (author.IsEmpty()) author = "Unknown";
 }
 
 void pdf_parser::extract_toc(const pdf_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items, const document_buffer& buffer) const {

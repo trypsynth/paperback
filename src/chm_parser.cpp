@@ -26,8 +26,6 @@ std::unique_ptr<document> chm_parser::load(const wxString& path) const {
 		auto document_ptr = std::make_unique<document>();
 		document_ptr->buffer.clear();
 		parse_html_files(ctx, document_ptr->buffer);
-		document_ptr->title = "CHM document";
-		document_ptr->author = "Unknown";
 		document_ptr->flags = document_flags::supports_toc;
 		chm_close(file);
 		return document_ptr;

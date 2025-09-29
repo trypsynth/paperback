@@ -68,8 +68,8 @@ struct document_stats {
 };
 
 struct document {
-	wxString title;
-	wxString author;
+	wxString title{"Untitled"};
+	wxString author{"Unknown"};
 	document_buffer buffer;
 	document_flags flags{document_flags::none};
 	std::vector<std::unique_ptr<toc_item>> toc_items;

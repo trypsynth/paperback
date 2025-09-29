@@ -29,7 +29,6 @@ std::unique_ptr<document> markdown_parser::load(const wxString& path) const {
 	if (!converter.convert(html)) return nullptr;
 	auto doc = std::make_unique<document>();
 	doc->title = wxFileName(path).GetName();
-	doc->author = "Unknown";
 	doc->buffer.clear();
 	doc->flags = document_flags::supports_toc;
 	const auto& text = converter.get_text();

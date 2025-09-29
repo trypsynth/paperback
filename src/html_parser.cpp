@@ -9,6 +9,7 @@
 
 #include "html_parser.hpp"
 #include "html_to_text.hpp"
+#include <wx/filename.h>
 #include <wx/txtstrm.h>
 #include <wx/wfstream.h>
 
@@ -22,6 +23,7 @@ std::unique_ptr<document> html_parser::load(const wxString& path) const {
 	html_to_text converter;
 	if (!converter.convert(content.utf8_string())) return nullptr;
 	auto doc = std::make_unique<document>();
+	doc->title = wxFileName(path).GetName();
 	doc->buffer.clear();
 	doc->flags = document_flags::supports_toc;
 	const auto& text = converter.get_text();
