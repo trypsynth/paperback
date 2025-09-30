@@ -12,6 +12,7 @@
 #include "document_buffer.hpp"
 #include "parser.hpp"
 #include <chm_lib.h>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -20,8 +21,10 @@
 struct chm_context {
 	chmFile* file;
 	std::vector<std::string> html_files;
+	std::map<std::string, std::map<std::string, size_t>> id_positions;
 	std::string title;
 	std::string author;
+	std::string hhc_file;
 
 	chm_context(chmFile* f) : file(f) {}
 };
@@ -39,8 +42,13 @@ public:
 
 private:
 	void enumerate_files(chm_context& ctx) const;
-	void parse_html_files(chm_context& ctx, document_buffer& buffer) const;
+	void parse_hhc_file(chm_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items) const;
+	void parse_html_files(chm_context& ctx, document_buffer& buffer, const std::vector<std::unique_ptr<toc_item>>& toc_items) const;
+	void collect_html_files_from_toc(const std::vector<std::unique_ptr<toc_item>>& items, std::vector<std::string>& files) const;
+	void calculate_toc_offsets(std::vector<std::unique_ptr<toc_item>>& items, const chm_context& ctx) const;
+	int calculate_offset_from_path(const std::string& path, const chm_context& ctx) const;
 	std::string read_file_content(chmFile* file, const std::string& path) const;
+	std::string normalize_path(const std::string& path) const;
 	static int file_enumerator(chmFile* h, chmUnitInfo* ui, void* context);
 };
 

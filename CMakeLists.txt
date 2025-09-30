@@ -54,7 +54,7 @@ if(WIN32)
 	set(LOCAL_DLLS "")
 	foreach(DLL IN LISTS DLLS)
 		get_filename_component(DLL_NAME "${DLL}" NAME)
-		add_custom_command(TARGET paperback POST_BUILD 
+		add_custom_command(TARGET paperback POST_BUILD
 			COMMAND ${CMAKE_COMMAND} -E copy_if_different "${DLL}" "$<TARGET_FILE_DIR:paperback>")
 		list(APPEND LOCAL_DLLS "${DLL_NAME}")
 	endforeach()
