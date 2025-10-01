@@ -87,9 +87,12 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 		case LXB_DOM_NODE_TYPE_TEXT:
 			process_text_node(lxb_dom_interface_text(node));
 			break;
+		case LXB_DOM_NODE_TYPE_COMMENT:
+			return;
 		default:
 			break;
 	}
+	if (is_element && (tag_name == "script" || tag_name == "style")) return;
 	for (auto* child = node->first_child; child; child = child->next) process_node(child);
 	if (is_element) {
 		if (is_block_element(tag_name)) finalize_current_line();
