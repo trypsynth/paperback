@@ -443,7 +443,15 @@ bool config_manager::migrate_config() {
 wxString config_manager::get_config_path() const {
 	const wxString exe_path = wxStandardPaths::Get().GetExecutablePath();
 	const wxString exe_dir = wxFileName(exe_path).GetPath();
-	return exe_dir + wxFileName::GetPathSeparator() + APP_NAME + ".ini";
+	if (is_directory_writable(exe_dir)) return exe_dir + wxFileName::GetPathSeparator() + APP_NAME + ".ini";
+	wxString appdata_dir = wxStandardPaths::Get().GetUserDataDir();
+	if (!wxFileName::DirExists(appdata_dir)) wxFileName::Mkdir(appdata_dir, wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
+	return appdata_dir + wxFileName::GetPathSeparator() + APP_NAME + ".ini";
+}
+
+bool config_manager::is_directory_writable(const wxString& dir) const {
+    wxFileName fn(dir, wxEmptyString);
+    return fn.IsDirWritable();
 }
 
 void config_manager::load_defaults() {

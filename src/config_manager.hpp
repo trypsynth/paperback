@@ -68,6 +68,7 @@ private:
 	bool owns_global_config{false};
 
 	wxString get_config_path() const;
+	bool is_directory_writable(const wxString& dir) const;
 	void load_defaults();
 	wxString get_document_section(const wxString& path) const;
 	wxString escape_document_path(const wxString& path) const;
