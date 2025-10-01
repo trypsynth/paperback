@@ -158,39 +158,44 @@ Poco::Zip::ZipArchive::FileHeaders::const_iterator find_file_in_archive(std::str
 std::string convert_to_utf8(const std::string& input) {
 	if (input.empty()) return input;
 	const auto* data = reinterpret_cast<const unsigned char*>(input.data());
-	const auto len = input.length();
+	const size_t len = input.length();
+	auto try_convert = [&](size_t bom_size, wxMBConv& conv) -> std::optional<std::string> {
+		wxString content(input.data() + bom_size, conv, len - bom_size);
+		if (!content.empty()) return std::string(content.ToUTF8());
+		return std::nullopt;
+	};
 	if (len >= 4 && data[0] == 0xFF && data[1] == 0xFE && data[2] == 0x00 && data[3] == 0x00) {
 		wxMBConvUTF32LE conv;
-		wxString content(input.data() + 4, conv, len - 4);
-		if (!content.empty()) return std::string(content.ToUTF8());
+		if (auto result = try_convert(4, conv)) return *result;
 	}
 	if (len >= 4 && data[0] == 0x00 && data[1] == 0x00 && data[2] == 0xFE && data[3] == 0xFF) {
 		wxMBConvUTF32BE conv;
-		wxString content(input.data() + 4, conv, len - 4);
-		if (!content.empty()) return std::string(content.ToUTF8());
+		if (auto result = try_convert(4, conv)) return *result;
 	}
-	if (len >= 3 && data[0] == 0xEF && data[1] == 0xBB && data[2] == 0xBF) {
-		wxString content = wxString::FromUTF8(input.data() + 3, len - 3);
-		if (!content.empty()) return std::string(content.ToUTF8());
-	}
+	if (len >= 3 && data[0] == 0xEF && data[1] == 0xBB && data[2] == 0xBF) return input.substr(3);
 	if (len >= 2 && data[0] == 0xFF && data[1] == 0xFE) {
 		wxMBConvUTF16LE conv;
-		wxString content(input.data() + 2, conv, len - 2);
-		if (!content.empty()) return std::string(content.ToUTF8());
+		if (auto result = try_convert(2, conv)) return *result;
 	}
 	if (len >= 2 && data[0] == 0xFE && data[1] == 0xFF) {
 		wxMBConvUTF16BE conv;
-		wxString content(input.data() + 2, conv, len - 2);
+		if (auto result = try_convert(2, conv)) return *result;
+	}
+	const std::pair<const char*, wxMBConv*> fallback_encodings[] = {
+		{nullptr, nullptr}, // UTF-8 without BOM
+		{"local", &wxConvLocal},
+		{"windows-1252", nullptr},
+		{"iso-8859-1", &wxConvISO8859_1}
+	};
+	for (const auto& [name, conv] : fallback_encodings) {
+		wxString content;
+		if (!name) content = wxString::FromUTF8(input.data(), len);
+		else if (conv) content = wxString(input.data(), *conv, len);
+		else {
+			wxCSConv csconv(name);
+			content = wxString(input.data(), csconv, len);
+		}
 		if (!content.empty()) return std::string(content.ToUTF8());
 	}
-	wxString content;
-	content = wxString::FromUTF8(input.data(), input.length());
-	if (content.empty()) content = wxString(input.data(), wxConvLocal, input.length());
-	if (content.empty()) {
-		wxCSConv conv("windows-1252");
-		content = wxString(input.data(), conv, input.length());
-	}
-	if (content.empty()) content = wxString(input.data(), wxConvISO8859_1, input.length());
-	if (content.empty()) return input;
-	return std::string(content.ToUTF8());
+	return input;
 }
