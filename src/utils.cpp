@@ -189,8 +189,10 @@ std::string convert_to_utf8(const std::string& input) {
 	};
 	for (const auto& [name, conv] : fallback_encodings) {
 		wxString content;
-		if (!name) content = wxString::FromUTF8(input.data(), len);
-		else if (conv) content = wxString(input.data(), *conv, len);
+		if (!name)
+			content = wxString::FromUTF8(input.data(), len);
+		else if (conv)
+			content = wxString(input.data(), *conv, len);
 		else {
 			wxCSConv csconv(name);
 			content = wxString(input.data(), csconv, len);
