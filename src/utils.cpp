@@ -15,6 +15,7 @@
 #include <Poco/Zip/ZipArchive.h>
 #include <cctype>
 #include <sstream>
+#include <wx/strconv.h>
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #define UNIVERSAL_SPEECH_STATIC
@@ -152,4 +153,18 @@ Poco::Zip::ZipArchive::FileHeaders::const_iterator find_file_in_archive(std::str
 		}
 	} catch (const Poco::Exception&) {}
 	return archive->headerEnd();
+}
+
+std::string convert_to_utf8_string(const std::string& input) {
+	if (input.empty()) return input;
+	wxString content;
+	content = wxString::FromUTF8(input.data(), input.length());
+	if (content.empty()) content = wxString(input.data(), wxConvLocal, input.length());
+	if (content.empty()) {
+		wxCSConv conv("windows-1252");
+		content = wxString(input.data(), conv, input.length());
+	}
+	if (content.empty()) content = wxString(input.data(), wxConvISO8859_1, input.length());
+	if (content.empty()) return input;
+	return content.ToUTF8().data();
 }

@@ -85,6 +85,7 @@ void chm_parser::parse_html_files(chm_context& ctx, document_buffer& buffer, con
 		size_t section_start = buffer.str().length();
 		std::string content = read_file_content(ctx.file, file_path);
 		if (content.empty()) continue;
+		content = convert_to_utf8_string(content);
 		html_to_text converter;
 		if (!converter.convert(content)) continue;
 		const auto& text = converter.get_text();
@@ -94,7 +95,6 @@ void chm_parser::parse_html_files(chm_context& ctx, document_buffer& buffer, con
 		ctx.id_positions[normalized_path][""] = section_start;
 		for (const auto& [id, relative_pos] : id_positions) ctx.id_positions[normalized_path][id] = section_start + relative_pos;
 		wxString wx_text = wxString::FromUTF8(text);
-		if (wx_text.empty() && !text.empty()) wx_text = wxString::From8BitData(text.data(), text.length());
 		buffer.append(wx_text);
 		for (const auto& heading : headings) {
 			marker_type type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + heading.level - 1);
@@ -140,6 +140,7 @@ void chm_parser::parse_hhc_file(chm_context& ctx, std::vector<std::unique_ptr<to
 	if (ctx.hhc_file.empty()) return;
 	std::string hhc_content = read_file_content(ctx.file, ctx.hhc_file);
 	if (hhc_content.empty()) return;
+	hhc_content = convert_to_utf8_string(hhc_content);
 	lxb_html_document_t* document = lxb_html_document_create();
 	if (!document) return;
 	lxb_status_t status = lxb_html_document_parse(document, reinterpret_cast<const lxb_char_t*>(hhc_content.data()), hhc_content.length());
