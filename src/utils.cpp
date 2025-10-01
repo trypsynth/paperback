@@ -166,5 +166,5 @@ std::string convert_to_utf8(const std::string& input) {
 	}
 	if (content.empty()) content = wxString(input.data(), wxConvISO8859_1, input.length());
 	if (content.empty()) return input;
-	return content.ToUTF8().data();
+	return std::string(content.ToUTF8());
 }
