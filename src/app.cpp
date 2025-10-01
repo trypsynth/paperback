@@ -11,6 +11,7 @@
 #include "constants.hpp"
 #include "parser.hpp"
 #include "utils.hpp"
+#include <wx/filename.h>
 
 const wxString app::IPC_SERVICE = "paperback_ipc_service";
 
@@ -38,7 +39,10 @@ bool app::OnInit() {
 			paperback_client client;
 			wxConnectionBase* connection = client.MakeConnection("localhost", IPC_SERVICE, "open_file");
 			if (connection) {
-				connection->Execute(wxString(argv[1]));
+				wxString arg_path = wxString(argv[1]);
+				wxFileName file_path{arg_path};
+				file_path.Normalize(wxPATH_NORM_ABSOLUTE);
+				connection->Execute(file_path.GetFullPath());
 				connection->Disconnect();
 				delete connection;
 			}
@@ -80,7 +84,10 @@ int app::OnExit() {
 }
 
 void app::parse_command_line() {
-	wxString path = wxString(argv[1]);
+	wxString arg_path = wxString(argv[1]);
+	wxFileName file_path{arg_path};
+	file_path.Normalize(wxPATH_NORM_ABSOLUTE);
+	wxString path = file_path.GetFullPath();
 	if (!wxFileName::FileExists(path)) {
 		wxMessageBox("File not found: " + path, "Error", wxICON_ERROR);
 		return;

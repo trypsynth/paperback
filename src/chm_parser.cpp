@@ -184,19 +184,23 @@ void chm_parser::parse_hhc_file(chm_context& ctx, std::vector<std::unique_ptr<to
 									std::string attr_name(reinterpret_cast<const char*>(name_attr));
 									std::string attr_value(reinterpret_cast<const char*>(value_attr), attr_len);
 									std::transform(attr_name.begin(), attr_name.end(), attr_name.begin(), [](unsigned char c) { return std::tolower(c); });
-									if (attr_name == "name") name_str = attr_value;
-									else if (attr_name == "local") local_str = attr_value;
+									if (attr_name == "name")
+										name_str = attr_value;
+									else if (attr_name == "local")
+										local_str = attr_value;
 								}
 							}
 						}
-					} else if (li_tag == "ul") parse_node(li_child, item->children);
+					} else if (li_tag == "ul")
+						parse_node(li_child, item->children);
 				}
 				if (!name_str.empty()) {
 					item->name = wxString::FromUTF8(name_str);
 					item->ref = wxString::FromUTF8(local_str);
 					items.push_back(std::move(item));
 				}
-			} else if (tag_str == "ul") parse_node(child, items);
+			} else if (tag_str == "ul")
+				parse_node(child, items);
 		}
 	};
 	lxb_dom_node_t* body = lxb_dom_interface_node(lxb_html_document_body_element(document));
