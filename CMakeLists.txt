@@ -92,8 +92,16 @@ if(WIN32)
 else()
 	add_custom_command(
 		TARGET paperback POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E chdir "$<TARGET_FILE_DIR:paperback>" 
-		${CMAKE_COMMAND} -E tar czf "${PACKAGE_PATH}" 
+		COMMAND ${CMAKE_COMMAND} -E chdir "$<TARGET_FILE_DIR:paperback>"
+		${CMAKE_COMMAND} -E tar czf "${PACKAGE_PATH}"
 		"$<TARGET_FILE_NAME:paperback>" "${CMAKE_BINARY_DIR}/readme.html" ${LOCAL_DLLS}
 	)
+endif()
+
+if(WIN32)
+	find_program(INNO_SETUP_COMPILER ISCC.exe PATHS "$ENV{ProgramFiles\(x86\)}/Inno Setup 6" "$ENV{ProgramFiles}/Inno Setup 6")
+	if(INNO_SETUP_COMPILER)
+		add_custom_command(OUTPUT "${CMAKE_BINARY_DIR}/paperback_setup.exe" COMMAND ${INNO_SETUP_COMPILER} "${CMAKE_SOURCE_DIR}/paperback.iss" DEPENDS "${CMAKE_SOURCE_DIR}/paperback.iss" paperback WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+		add_custom_target(installer ALL DEPENDS "${CMAKE_BINARY_DIR}/paperback_setup.exe")
+	endif()
 endif()
