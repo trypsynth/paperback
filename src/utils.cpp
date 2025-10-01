@@ -157,6 +157,32 @@ Poco::Zip::ZipArchive::FileHeaders::const_iterator find_file_in_archive(std::str
 
 std::string convert_to_utf8(const std::string& input) {
 	if (input.empty()) return input;
+	const auto* data = reinterpret_cast<const unsigned char*>(input.data());
+	const auto len = input.length();
+	if (len >= 4 && data[0] == 0xFF && data[1] == 0xFE && data[2] == 0x00 && data[3] == 0x00) {
+		wxMBConvUTF32LE conv;
+		wxString content(input.data() + 4, conv, len - 4);
+		if (!content.empty()) return std::string(content.ToUTF8());
+	}
+	if (len >= 4 && data[0] == 0x00 && data[1] == 0x00 && data[2] == 0xFE && data[3] == 0xFF) {
+		wxMBConvUTF32BE conv;
+		wxString content(input.data() + 4, conv, len - 4);
+		if (!content.empty()) return std::string(content.ToUTF8());
+	}
+	if (len >= 3 && data[0] == 0xEF && data[1] == 0xBB && data[2] == 0xBF) {
+		wxString content = wxString::FromUTF8(input.data() + 3, len - 3);
+		if (!content.empty()) return std::string(content.ToUTF8());
+	}
+	if (len >= 2 && data[0] == 0xFF && data[1] == 0xFE) {
+		wxMBConvUTF16LE conv;
+		wxString content(input.data() + 2, conv, len - 2);
+		if (!content.empty()) return std::string(content.ToUTF8());
+	}
+	if (len >= 2 && data[0] == 0xFE && data[1] == 0xFF) {
+		wxMBConvUTF16BE conv;
+		wxString content(input.data() + 2, conv, len - 2);
+		if (!content.empty()) return std::string(content.ToUTF8());
+	}
 	wxString content;
 	content = wxString::FromUTF8(input.data(), input.length());
 	if (content.empty()) content = wxString(input.data(), wxConvLocal, input.length());
