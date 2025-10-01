@@ -155,7 +155,7 @@ Poco::Zip::ZipArchive::FileHeaders::const_iterator find_file_in_archive(std::str
 	return archive->headerEnd();
 }
 
-std::string convert_to_utf8_string(const std::string& input) {
+std::string convert_to_utf8(const std::string& input) {
 	if (input.empty()) return input;
 	wxString content;
 	content = wxString::FromUTF8(input.data(), input.length());

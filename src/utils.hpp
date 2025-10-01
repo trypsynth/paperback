@@ -45,4 +45,4 @@ inline constexpr bool has_option(find_options options, find_options flag) noexce
 void speak(const wxString& message);
 [[nodiscard]] std::string url_decode(std::string_view encoded);
 [[nodiscard]] Poco::Zip::ZipArchive::FileHeaders::const_iterator find_file_in_archive(std::string_view filename, const std::unique_ptr<Poco::Zip::ZipArchive>& archive);
-[[nodiscard]] std::string convert_to_utf8_string(const std::string& input);
+[[nodiscard]] std::string convert_to_utf8(const std::string& input);

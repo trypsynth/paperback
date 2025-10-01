@@ -12,8 +12,6 @@
 #include "utils.hpp"
 #include <vector>
 #include <wx/filename.h>
-#include <wx/strconv.h>
-#include <wx/txtstrm.h>
 #include <wx/wfstream.h>
 
 std::unique_ptr<document> text_parser::load(const wxString& path) const {
@@ -24,17 +22,9 @@ std::unique_ptr<document> text_parser::load(const wxString& path) const {
 	if (file_size == 0) return nullptr;
 	std::vector<char> buffer(file_size);
 	bs.Read(buffer.data(), file_size);
-	wxString content;
-	content = wxString::FromUTF8(buffer.data(), file_size);
-	if (content.empty()) content = wxString(buffer.data(), wxConvLocal, file_size);
-	if (content.empty()) {
-		wxCSConv conv("windows-1252");
-		content = wxString(buffer.data(), conv, file_size);
-	}
-	if (content.empty()) content = wxString(buffer.data(), wxConvISO8859_1, file_size);
+	std::string utf8_content = convert_to_utf8(std::string(buffer.data(), file_size));
 	auto doc = std::make_unique<document>();
 	doc->title = wxFileName(path).GetName();
-	std::string utf8_content = content.ToUTF8().data();
 	std::string processed = remove_soft_hyphens(utf8_content);
 	doc->buffer.set_content(wxString::FromUTF8(processed));
 	doc->flags = document_flags::none;
