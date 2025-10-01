@@ -71,6 +71,19 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * Shift+F1: pop up this readme file in Paperback itself.
 
 ## Changelog
+### Version 0.4
+* Added CHM file support! [#23](https://github.com/trypsynth/paperback/issues/23).
+* Added bookmark support! You can have as many bookmarks throughout as many documents as you like. You can jump forward and backward through them with b and shift+b, set one with control+shift+b, and bring up a dialog to jump to a specific bookmark with control+b. [#13](https://github.com/trypsynth/paperback/issues/13).
+* Text files with BOMs should now be decoded properly, and the BOM will no longer be displayed at the beginning of the text either.
+* Added far more information to the status bar. It'll now show you your current line, character, and reading percentage. [#51](https://github.com/trypsynth/paperback/issues/51).
+* HTML comments, as well as the contents of script and style tags, will no longer be shown in text output.
+* If passing a relative path to Paperback on the command line, it will now resolve it properly.
+* Percentage movement is now handled by its own slider-based dialog, accessible with control+shift+g. [#57](https://github.com/trypsynth/paperback/issues/57).
+* Documents without known titles or authors will now always have a default.
+* The position saving logic is now much smarter and should only write to the disk when absolutely necessary.
+* The document you had focused when you closed Paperback is now remembered across application restarts.
+* Input into the go to line and go to page dialogs should now be sanatized more strictly.
+
 ### Version 0.3
 * Fixed the table of contents in epub books with URL-encoded manifests. [#34](https://github.com/trypsynth/paperback/issues/34).
 * Fixed heading navigation in HTML documents containing multi-byte Unicode characters. [#42](https://github.com/trypsynth/paperback/issues/42), [#59](https://github.com/trypsynth/paperback/issues/59), [#61](https://github.com/trypsynth/paperback/issues/61).
