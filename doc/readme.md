@@ -1,24 +1,24 @@
-# Paperback - version 0.3
+# Paperback - version 0.4
 ## Introduction
 Paperback is a lightweight, fast, and accessible ebook/document reader designed to make reading fun and seamless, regardless of the file format being used or the user's preferences.
 
 ## System Requirements
 Paperback currently runs on Windows 7 through Windows 11. It's possible it runs on earlier versions of Windows too and/or can be built in such a way that it will, but this hasn't been tested yet. Support for other platforms is planned for a future version.
 
-## Features:
+## Features
 * Incredibly fast and standalone.
 * Simple tabbed interface, allowing you to open as many documents as you want side-by-side.
 * Saves your cursor position across every document you open.
 * Optionally remembers what documents you had open when you closed the program, and restores them on next launch.
 * Designed with screen reader users in mind.
-* Ability to navigate through epub sections, as well as HTML headings and pages in a PDF.
+* Ability to navigate by various navigation units, including HTML headings, PDF pages, and epub sections.
 * Robust find dialog, including features such as history and regular expression support.
-* Intuitive go-to dialog, allowing you to jump to a particular line or percent in your document.
-* Usable from the Windows open with dialog.
+* Can be ran entirely portably, or installed with file associations automatically set up.
 
-## Currently supported filetypes:
+## Currently supported filetypes
 Paperback supports several common file formats, with more planned for future releases.
 
+* CHM help files.
 * Epub 2/3 books.
 * HTML documents.
 * Markdown documents.
@@ -38,7 +38,8 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * Ctrl+F: show the find dialog.
 * F3: find next.
 * Shift+F3: find previous.
-* Ctrl+G: bring up the go-to dialog, allowing you to go to either a line number or a percentage.
+* Ctrl+G: bring up the go to line dialog.
+* Ctrl+Shift+G: bring up the go to percent dialog, allowing you to go to a percentage through your document with a slider.
 * Ctrl+P: brings up a dialog allowing you to specify a page number to jump to, if the document supports pages.
 * Left bracket: go to the previous section.
 * Right bracket: go to the next section.
@@ -56,8 +57,12 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * 5: go to the next heading level 5.
 * Shift+6: go to the previous heading level 6.
 * 6: go to the next heading level 6.
-* P: go to the next page.
 * Shift+P: go to the previous page.
+* P: go to the next page.
+* Shift+B: go to the previous bookmark.
+* B: go to the next bookmark.
+* Ctrl+Shift+B: toggle a bookmark at your current cursor position.
+* Ctrl+B: bring up the jump to bookmark dialog.
 
 ### Tools menu
 * Ctrl+W: view the word count of the currently focused document.
@@ -74,6 +79,7 @@ Paperback's user interface was designed specifically with keyboard and screen re
 ### Version 0.4
 * Added CHM file support! [#23](https://github.com/trypsynth/paperback/issues/23).
 * Added bookmark support! You can have as many bookmarks throughout as many documents as you like. You can jump forward and backward through them with b and shift+b, set one with control+shift+b, and bring up a dialog to jump to a specific bookmark with control+b. [#13](https://github.com/trypsynth/paperback/issues/13).
+* Added an installer alongside the portable zip file! The installer will install Paperback into your Program Files directory, and automatically set up file associations for you. [#33](https://github.com/trypsynth/paperback/issues/33).
 * Text files with BOMs should now be decoded properly, and the BOM will no longer be displayed at the beginning of the text either.
 * Added far more information to the status bar. It'll now show you your current line, character, and reading percentage. [#51](https://github.com/trypsynth/paperback/issues/51).
 * HTML comments, as well as the contents of script and style tags, will no longer be shown in text output.
