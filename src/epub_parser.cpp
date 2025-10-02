@@ -245,6 +245,8 @@ void epub_parser::parse_epub3_nav(const std::string& nav_id, const epub_context&
 	auto it = ctx.manifest_items.find(nav_id);
 	if (it == ctx.manifest_items.end()) return;
 	const auto& nav_file = it->second.path;
+	Path nav_base_path(nav_file, Path::PATH_UNIX);
+	nav_base_path.makeParent();
 	auto header = find_file_in_archive(nav_file, ctx.archive);
 	if (header == ctx.archive->headerEnd()) return;
 	ZipInputStream zis(ctx.file_stream, header->second, true);
@@ -270,25 +272,25 @@ void epub_parser::parse_epub3_nav(const std::string& nav_id, const epub_context&
 		auto ol_nodes = toc_nav->getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "ol");
 		if (ol_nodes->length() > 0) {
 			auto* ol = static_cast<Element*>(ol_nodes->item(0));
-			parse_epub3_nav_list(ol, toc_items, ctx, buffer);
+			parse_epub3_nav_list(ol, toc_items, ctx, buffer, nav_base_path);
 		}
 	}
 }
 
-void epub_parser::parse_epub3_nav_list(Element* ol_element, std::vector<std::unique_ptr<toc_item>>& toc_items, const epub_context& ctx, const document_buffer& buffer) const {
+void epub_parser::parse_epub3_nav_list(Element* ol_element, std::vector<std::unique_ptr<toc_item>>& toc_items, const epub_context& ctx, const document_buffer& buffer, const Path& nav_base_path) const {
 	auto children = ol_element->childNodes();
 	for (size_t i = 0; i < children->length(); ++i) {
 		auto* node = children->item(i);
 		if (node->nodeType() != Node::ELEMENT_NODE) continue;
 		auto* element = static_cast<Element*>(node);
 		if (element->localName() == "li") {
-			auto item = parse_epub3_nav_item(element, ctx, buffer);
+			auto item = parse_epub3_nav_item(element, ctx, buffer, nav_base_path);
 			if (item) toc_items.push_back(std::move(item));
 		}
 	}
 }
 
-std::unique_ptr<toc_item> epub_parser::parse_epub3_nav_item(Element* li_element, const epub_context& ctx, const document_buffer& buffer) const {
+std::unique_ptr<toc_item> epub_parser::parse_epub3_nav_item(Element* li_element, const epub_context& ctx, const document_buffer& buffer, const Path& nav_base_path) const {
 	auto item = std::make_unique<toc_item>();
 	auto a_nodes = li_element->getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "a");
 	if (a_nodes->length() > 0) {
@@ -296,7 +298,9 @@ std::unique_ptr<toc_item> epub_parser::parse_epub3_nav_item(Element* li_element,
 		item->name = wxString::FromUTF8(a->innerText());
 		auto href = a->getAttribute("href");
 		item->ref = wxString::FromUTF8(href);
-		item->offset = calculate_offset_from_href(href, ctx, buffer);
+		Path resolved_path(nav_base_path);
+		resolved_path.append(href);
+		item->offset = calculate_offset_from_href(resolved_path.toString(Path::PATH_UNIX), ctx, buffer);
 	} else {
 		auto span_nodes = li_element->getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "span");
 		if (span_nodes->length() > 0) {
@@ -309,7 +313,7 @@ std::unique_ptr<toc_item> epub_parser::parse_epub3_nav_item(Element* li_element,
 	auto ol_nodes = li_element->getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "ol");
 	if (ol_nodes->length() > 0) {
 		auto* ol = static_cast<Element*>(ol_nodes->item(0));
-		parse_epub3_nav_list(ol, item->children, ctx, buffer);
+		parse_epub3_nav_list(ol, item->children, ctx, buffer, nav_base_path);
 	}
 	return item;
 }
