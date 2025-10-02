@@ -89,6 +89,7 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * The position saving logic is now much smarter and should only write to the disk when absolutely necessary.
 * The document you had focused when you closed Paperback is now remembered across application restarts.
 * Input into the go to line and go to page dialogs should now be sanatized more strictly.
+* Fixed table of contents navigation in epub 3 books with relative paths in their manifests.
 
 ### Version 0.3
 * Fixed the table of contents in epub books with URL-encoded manifests. [#34](https://github.com/trypsynth/paperback/issues/34).
