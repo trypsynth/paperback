@@ -450,8 +450,8 @@ wxString config_manager::get_config_path() const {
 }
 
 bool config_manager::is_directory_writable(const wxString& dir) const {
-    wxFileName fn(dir, wxEmptyString);
-    return fn.IsDirWritable();
+	wxFileName fn(dir, wxEmptyString);
+	return fn.IsDirWritable();
 }
 
 void config_manager::load_defaults() {

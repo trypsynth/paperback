@@ -42,6 +42,7 @@ public:
 
 private:
 	void enumerate_files(chm_context& ctx) const;
+	void parse_system_file(chm_context& ctx) const;
 	void parse_hhc_file(chm_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items) const;
 	void parse_html_files(chm_context& ctx, document_buffer& buffer, const std::vector<std::unique_ptr<toc_item>>& toc_items) const;
 	void collect_html_files_from_toc(const std::vector<std::unique_ptr<toc_item>>& items, std::vector<std::string>& files) const;

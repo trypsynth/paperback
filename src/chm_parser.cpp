@@ -34,12 +34,14 @@ std::unique_ptr<document> chm_parser::load(const wxString& path) const {
 		if (!file) return nullptr;
 		chm_context ctx(file);
 		enumerate_files(ctx);
+		parse_system_file(ctx);
 		auto document_ptr = std::make_unique<document>();
 		parse_hhc_file(ctx, document_ptr->toc_items);
 		document_ptr->buffer.clear();
 		parse_html_files(ctx, document_ptr->buffer, document_ptr->toc_items);
 		document_ptr->flags = document_flags::supports_toc;
 		if (!document_ptr->toc_items.empty()) calculate_toc_offsets(document_ptr->toc_items, ctx);
+		if (!ctx.title.empty()) document_ptr->title = wxString::FromUTF8(ctx.title);
 		chm_close(file);
 		return document_ptr;
 	} catch (const std::exception& e) {
@@ -122,6 +124,23 @@ std::string chm_parser::normalize_path(const std::string& path) const {
 	return result;
 }
 
+void chm_parser::parse_system_file(chm_context& ctx) const {
+	std::string system_content = read_file_content(ctx.file, "/#SYSTEM");
+	if (system_content.length() < 4) return;
+	size_t index = 4;
+	while (index + 4 <= system_content.length()) {
+		uint16_t code = static_cast<unsigned char>(system_content[index]) | (static_cast<unsigned char>(system_content[index + 1]) << 8);
+		uint16_t length = static_cast<unsigned char>(system_content[index + 2]) | (static_cast<unsigned char>(system_content[index + 3]) << 8);
+		if (index + 4 + length > system_content.length()) break;
+		std::string data = system_content.substr(index + 4, length);
+		if (code == 3 && !data.empty()) {
+			if (data.back() == '\0') data.pop_back();
+			ctx.title = data;
+		}
+		index += 4 + length;
+	}
+}
+
 int chm_parser::file_enumerator(chmFile* h, chmUnitInfo* ui, void* context) {
 	auto* ctx = static_cast<chm_context*>(context);
 	std::string path(ui->path);
@@ -150,6 +169,7 @@ void chm_parser::parse_hhc_file(chm_context& ctx, std::vector<std::unique_ptr<to
 	}
 	std::function<void(lxb_dom_node_t*, std::vector<std::unique_ptr<toc_item>>&)> parse_node;
 	parse_node = [&](lxb_dom_node_t* node, std::vector<std::unique_ptr<toc_item>>& items) {
+		toc_item* last_item = nullptr;
 		for (lxb_dom_node_t* child = node->first_child; child != nullptr; child = child->next) {
 			if (child->type != LXB_DOM_NODE_TYPE_ELEMENT) continue;
 			lxb_dom_element_t* element = lxb_dom_interface_element(child);
@@ -199,9 +219,14 @@ void chm_parser::parse_hhc_file(chm_context& ctx, std::vector<std::unique_ptr<to
 					item->name = wxString::FromUTF8(name_str);
 					item->ref = wxString::FromUTF8(local_str);
 					items.push_back(std::move(item));
+					last_item = items.back().get();
 				}
-			} else if (tag_str == "ul")
-				parse_node(child, items);
+			} else if (tag_str == "ul") {
+				if (last_item)
+					parse_node(child, last_item->children);
+				else
+					parse_node(child, items);
+			}
 		}
 	};
 	lxb_dom_node_t* body = lxb_dom_interface_node(lxb_html_document_body_element(document));
