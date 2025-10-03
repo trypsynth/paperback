@@ -125,17 +125,20 @@ std::string chm_parser::normalize_path(const std::string& path) const {
 }
 
 void chm_parser::parse_system_file(chm_context& ctx) const {
-	std::string system_content = read_file_content(ctx.file, "/#SYSTEM");
-	if (system_content.length() < 4) return;
-	size_t index = 4;
-	while (index + 4 <= system_content.length()) {
-		uint16_t code = static_cast<unsigned char>(system_content[index]) | (static_cast<unsigned char>(system_content[index + 1]) << 8);
-		uint16_t length = static_cast<unsigned char>(system_content[index + 2]) | (static_cast<unsigned char>(system_content[index + 3]) << 8);
-		if (index + 4 + length > system_content.length()) break;
-		std::string data = system_content.substr(index + 4, length);
-		if (code == 3 && !data.empty()) {
-			if (data.back() == '\0') data.pop_back();
-			ctx.title = data;
+	const auto system_content = read_file_content(ctx.file, "/#SYSTEM");
+	if (system_content.size() < 4) return;
+	const std::span data{reinterpret_cast<const std::byte*>(system_content.data()), system_content.size()};
+	auto read_le16 = [](std::span<const std::byte> bytes, size_t offset) -> uint16_t {
+		return std::to_integer<uint16_t>(bytes[offset]) | (std::to_integer<uint16_t>(bytes[offset + 1]) << 8);
+	};
+	for (size_t index = 4; index + 4 <= data.size();) {
+		const auto code = read_le16(data, index);
+		const auto length = read_le16(data, index + 2);
+		if (index + 4 + length > data.size()) [[unlikely]] break;
+		if (code == 3 && length > 0) {
+			std::string_view entry{reinterpret_cast<const char*>(data.data() + index + 4), length};
+			if (entry.ends_with('\0')) entry.remove_suffix(1);
+			ctx.title = entry;
 		}
 		index += 4 + length;
 	}
