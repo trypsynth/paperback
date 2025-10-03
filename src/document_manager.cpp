@@ -27,24 +27,6 @@ document_manager::~document_manager() {
 	save_all_tab_positions();
 }
 
-bool document_manager::create_document_tab(const wxString& path, const parser* par, bool set_focus) {
-	std::unique_ptr<document> doc = par->load(path);
-	if (!doc) return false;
-	doc->calculate_statistics();
-	auto* tab_data = new document_tab;
-	tab_data->doc = std::move(doc);
-	tab_data->file_path = path;
-	wxPanel* panel = create_tab_panel(tab_data->doc->buffer.str(), tab_data);
-	tab_data->panel = panel;
-	notebook->AddPage(panel, tab_data->doc->title, true);
-	restore_document_position(tab_data);
-	if (set_focus) tab_data->text_ctrl->SetFocus();
-	auto& config_mgr = wxGetApp().get_config_manager();
-	config_mgr.add_recent_document(path);
-	config_mgr.set_document_opened(path, true);
-	return true;
-}
-
 bool document_manager::open_file(const wxString& path, bool add_to_recent) {
 	if (!wxFileName::FileExists(path)) {
 		wxMessageBox("File not found: " + path, "Error", wxICON_ERROR);
@@ -76,6 +58,24 @@ bool document_manager::open_file(const wxString& path, bool add_to_recent) {
 		config_mgr.add_recent_document(path);
 	}
 	update_ui();
+	return true;
+}
+
+bool document_manager::create_document_tab(const wxString& path, const parser* par, bool set_focus) {
+	std::unique_ptr<document> doc = par->load(path);
+	if (!doc) return false;
+	doc->calculate_statistics();
+	auto* tab_data = new document_tab;
+	tab_data->doc = std::move(doc);
+	tab_data->file_path = path;
+	wxPanel* panel = create_tab_panel(tab_data->doc->buffer.str(), tab_data);
+	tab_data->panel = panel;
+	notebook->AddPage(panel, tab_data->doc->title, true);
+	restore_document_position(tab_data);
+	if (set_focus) tab_data->text_ctrl->SetFocus();
+	auto& config_mgr = wxGetApp().get_config_manager();
+	config_mgr.add_recent_document(path);
+	config_mgr.set_document_opened(path, true);
 	return true;
 }
 
@@ -284,26 +284,6 @@ void document_manager::go_to_next_page() {
 	speak(wxString::Format("Page %d: %s", next_index + 1, current_line));
 }
 
-void document_manager::go_to_next_bookmark() {
-	document_tab* tab = get_active_tab();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!tab || !text_ctrl) return;
-	auto& config_mgr = wxGetApp().get_config_manager();
-	long current_pos = text_ctrl->GetInsertionPoint();
-	long next_pos = config_mgr.get_next_bookmark(tab->file_path, current_pos);
-	if (next_pos == -1) {
-		speak("No next bookmark");
-		return;
-	}
-	text_ctrl->SetInsertionPoint(next_pos);
-	long line;
-	text_ctrl->PositionToXY(next_pos, 0, &line);
-	wxString current_line = text_ctrl->GetLineText(line);
-	wxArrayLong bookmarks = config_mgr.get_bookmarks(tab->file_path);
-	int bookmark_index = bookmarks.Index(next_pos);
-	speak(wxString::Format("Bookmark %d: %s", bookmark_index + 1, current_line));
-}
-
 void document_manager::go_to_previous_bookmark() {
 	document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
@@ -321,6 +301,26 @@ void document_manager::go_to_previous_bookmark() {
 	wxString current_line = text_ctrl->GetLineText(line);
 	wxArrayLong bookmarks = config_mgr.get_bookmarks(tab->file_path);
 	int bookmark_index = bookmarks.Index(prev_pos);
+	speak(wxString::Format("Bookmark %d: %s", bookmark_index + 1, current_line));
+}
+
+void document_manager::go_to_next_bookmark() {
+	document_tab* tab = get_active_tab();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (!tab || !text_ctrl) return;
+	auto& config_mgr = wxGetApp().get_config_manager();
+	long current_pos = text_ctrl->GetInsertionPoint();
+	long next_pos = config_mgr.get_next_bookmark(tab->file_path, current_pos);
+	if (next_pos == -1) {
+		speak("No next bookmark");
+		return;
+	}
+	text_ctrl->SetInsertionPoint(next_pos);
+	long line;
+	text_ctrl->PositionToXY(next_pos, 0, &line);
+	wxString current_line = text_ctrl->GetLineText(line);
+	wxArrayLong bookmarks = config_mgr.get_bookmarks(tab->file_path);
+	int bookmark_index = bookmarks.Index(next_pos);
 	speak(wxString::Format("Bookmark %d: %s", bookmark_index + 1, current_line));
 }
 
@@ -446,42 +446,6 @@ long document_manager::find_text(const wxString& query, long start_pos, find_opt
 	return ::find_text(full_text, query, start_pos, options);
 }
 
-wxPanel* document_manager::create_tab_panel(const wxString& content, document_tab* tab_data) {
-	wxPanel* panel = new wxPanel(notebook, wxID_ANY);
-	auto* sizer = new wxBoxSizer(wxVERTICAL);
-	auto& config_mgr = wxGetApp().get_config_manager();
-	bool word_wrap = config_mgr.get_word_wrap();
-	long style = wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | (word_wrap ? wxTE_WORDWRAP : wxTE_DONTWRAP);
-	auto* text_ctrl = new wxTextCtrl(panel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, style);
-	panel->SetClientObject(tab_data);
-	tab_data->text_ctrl = text_ctrl;
-
-	auto* main_win = static_cast<main_window*>(wxGetApp().GetTopWindow());
-	if (main_win) text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, main_win);
-	sizer->Add(text_ctrl, 1, wxEXPAND | wxALL, 5);
-	panel->SetSizer(sizer);
-	setup_text_ctrl(text_ctrl, content);
-	return panel;
-}
-
-void document_manager::setup_text_ctrl(wxTextCtrl* text_ctrl, const wxString& content) {
-	text_ctrl->Freeze();
-	text_ctrl->SetValue(content);
-	text_ctrl->Thaw();
-}
-
-void document_manager::restore_document_position(document_tab* tab) {
-	if (!tab || !tab->text_ctrl) return;
-	long saved_position = load_document_position(tab->file_path);
-	if (saved_position > 0) {
-		long max_position = tab->text_ctrl->GetLastPosition();
-		if (saved_position <= max_position) {
-			tab->text_ctrl->SetInsertionPoint(saved_position);
-			tab->text_ctrl->ShowPosition(saved_position);
-		}
-	}
-}
-
 void document_manager::apply_word_wrap(bool word_wrap) {
 	int active_tab = get_active_tab_index();
 	for (int i = 0; i < get_tab_count(); ++i) {
@@ -532,6 +496,41 @@ void document_manager::create_heading_menu(wxMenu* menu) {
 		menu->Append(ID_PREVIOUS_HEADING_1 + (level - 1) * 2, wxString::Format("Previous heading level %d\tShift+%d", level, level));
 		menu->Append(ID_NEXT_HEADING_1 + (level - 1) * 2, wxString::Format("Next heading level %d\t%d", level, level));
 	}
+}
+
+void document_manager::setup_text_ctrl(wxTextCtrl* text_ctrl, const wxString& content) {
+	text_ctrl->Freeze();
+	text_ctrl->SetValue(content);
+	text_ctrl->Thaw();
+}
+
+void document_manager::restore_document_position(document_tab* tab) {
+	if (!tab || !tab->text_ctrl) return;
+	long saved_position = load_document_position(tab->file_path);
+	if (saved_position > 0) {
+		long max_position = tab->text_ctrl->GetLastPosition();
+		if (saved_position <= max_position) {
+			tab->text_ctrl->SetInsertionPoint(saved_position);
+			tab->text_ctrl->ShowPosition(saved_position);
+		}
+	}
+}
+
+wxPanel* document_manager::create_tab_panel(const wxString& content, document_tab* tab_data) {
+	wxPanel* panel = new wxPanel(notebook, wxID_ANY);
+	auto* sizer = new wxBoxSizer(wxVERTICAL);
+	auto& config_mgr = wxGetApp().get_config_manager();
+	bool word_wrap = config_mgr.get_word_wrap();
+	long style = wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | (word_wrap ? wxTE_WORDWRAP : wxTE_DONTWRAP);
+	auto* text_ctrl = new wxTextCtrl(panel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, style);
+	panel->SetClientObject(tab_data);
+	tab_data->text_ctrl = text_ctrl;
+	auto* main_win = static_cast<main_window*>(wxGetApp().GetTopWindow());
+	if (main_win) text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, main_win);
+	sizer->Add(text_ctrl, 1, wxEXPAND | wxALL, 5);
+	panel->SetSizer(sizer);
+	setup_text_ctrl(text_ctrl, content);
+	return panel;
 }
 
 void document_manager::navigate_to_heading(bool next, int specific_level) {

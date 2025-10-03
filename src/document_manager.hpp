@@ -66,8 +66,8 @@ public:
 	void go_to_next_heading(int level);
 	void go_to_previous_page();
 	void go_to_next_page();
-	void go_to_next_bookmark();
 	void go_to_previous_bookmark();
+	void go_to_next_bookmark();
 	void toggle_bookmark();
 	void show_bookmark_dialog(wxWindow* parent);
 	void show_table_of_contents(wxWindow* parent);
