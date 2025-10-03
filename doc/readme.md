@@ -74,6 +74,7 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * Ctrl+F1: show the about dialog.
 * F1: pop up this readme file in your default web browser.
 * Shift+F1: pop up this readme file in Paperback itself.
+* Ctrl+D: open my PayPal donations page in your default web browser.
 
 ## Changelog
 ### Version 0.4
