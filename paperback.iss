@@ -27,12 +27,12 @@
 
 [Tasks]
 	Name: "desktopicon"; Description: "Desktop Shortcut"
-	Name: "assoc_chm"; Description: "Associate with Compiled HTML Help files (*.chm)"
-	Name: "assoc_epub"; Description: "Associate with Epub Books (*.epub)"; Flags: checkedonce
-	Name: "assoc_html"; Description: "Associate with HTML Documents (*.htm, *.html, *.xhtml)"
-	Name: "assoc_markdown"; Description: "Associate with Markdown Documents (*.md, *.markdown, *.mdx, *.mdown, *.mdwn, *.mkd, *.mkdn, *.mkdown, *.ronn)"
-	Name: "assoc_pdf"; Description: "Associate with PDF Documents (*.pdf)"; Flags: checkedonce
-	Name: "assoc_text"; Description: "Associate with Text Files (*.txt, *.log)"
+	Name: "assoc_chm"; Description: "Associate with Compiled HTML Help files (*.chm)"; Flags: unchecked
+	Name: "assoc_epub"; Description: "Associate with Epub Books (*.epub)"
+	Name: "assoc_html"; Description: "Associate with HTML Documents (*.htm, *.html, *.xhtml)"; Flags: unchecked
+	Name: "assoc_markdown"; Description: "Associate with Markdown Documents (*.md, *.markdown, *.mdx, *.mdown, *.mdwn, *.mkd, *.mkdn, *.mkdown, *.ronn)"; Flags: unchecked
+	Name: "assoc_pdf"; Description: "Associate with PDF Documents (*.pdf)"
+	Name: "assoc_text"; Description: "Associate with Text Files (*.txt, *.log)"; Flags: unchecked
 
 [Icons]
 	Name: "{autodesktop}\Paperback"; Filename: "{app}\paperback.exe"; Tasks: desktopicon
