@@ -62,6 +62,7 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 		if (!ctx.author.empty()) document_ptr->author = wxString::FromUTF8(ctx.author);
 		document_ptr->flags = document_flags::supports_sections | document_flags::supports_toc;
 		parse_toc(ctx, document_ptr->toc_items, document_ptr->buffer);
+		cleanup_toc(document_ptr->toc_items);
 		return document_ptr;
 	} catch (const Exception& e) {
 		wxMessageBox(e.displayText(), "Error", wxICON_ERROR);

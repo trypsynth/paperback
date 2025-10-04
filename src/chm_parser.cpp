@@ -37,6 +37,7 @@ std::unique_ptr<document> chm_parser::load(const wxString& path) const {
 		parse_system_file(ctx);
 		auto document_ptr = std::make_unique<document>();
 		parse_hhc_file(ctx, document_ptr->toc_items);
+		cleanup_toc(document_ptr->toc_items);
 		document_ptr->buffer.clear();
 		parse_html_files(ctx, document_ptr->buffer, document_ptr->toc_items);
 		document_ptr->flags = document_flags::supports_toc;

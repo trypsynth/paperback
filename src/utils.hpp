@@ -12,6 +12,7 @@
 #include <string>
 #include <string_view>
 #include <wx/string.h>
+#include "document.hpp"
 
 enum class find_options {
 	none = 0,
@@ -46,3 +47,4 @@ void speak(const wxString& message);
 [[nodiscard]] std::string url_decode(std::string_view encoded);
 [[nodiscard]] Poco::Zip::ZipArchive::FileHeaders::const_iterator find_file_in_archive(std::string_view filename, const std::unique_ptr<Poco::Zip::ZipArchive>& archive);
 [[nodiscard]] std::string convert_to_utf8(const std::string& input);
+void cleanup_toc(std::vector<std::unique_ptr<toc_item>>& items);
