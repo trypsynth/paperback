@@ -27,6 +27,7 @@
 
 [Tasks]
 	Name: "desktopicon"; Description: "Desktop Shortcut"
+	Name: "startmenuicon"; Description: "Start Menu Shortcut"; Flags: unchecked
 	Name: "assoc_chm"; Description: "Associate with Compiled HTML Help files (*.chm)"; Flags: unchecked
 	Name: "assoc_epub"; Description: "Associate with Epub Books (*.epub)"
 	Name: "assoc_html"; Description: "Associate with HTML Documents (*.htm, *.html, *.xhtml)"; Flags: unchecked
@@ -36,6 +37,7 @@
 
 [Icons]
 	Name: "{autodesktop}\Paperback"; Filename: "{app}\paperback.exe"; Tasks: desktopicon
+	Name: "{autoprograms}\Paperback"; Filename: "{app}\paperback.exe"; Tasks: startmenuicon
 
 [Registry]
 	; Core Paperback.Document class registration.
