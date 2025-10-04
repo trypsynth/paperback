@@ -300,7 +300,12 @@ std::unique_ptr<toc_item> epub_parser::parse_epub3_nav_item(Element* li_element,
 		item->ref = wxString::FromUTF8(href);
 		Path resolved_path(nav_base_path);
 		resolved_path.append(href);
-		item->offset = calculate_offset_from_href(resolved_path.toString(Path::PATH_UNIX), ctx, buffer);
+		std::string abs_str = resolved_path.toString(Path::PATH_UNIX);
+		std::string opf_str = ctx.opf_path.toString(Path::PATH_UNIX);
+		std::string href_relative_to_opf;
+		if (abs_str.find(opf_str) == 0) href_relative_to_opf = abs_str.substr(opf_str.length());
+		else href_relative_to_opf = href;
+		item->offset = calculate_offset_from_href(href_relative_to_opf, ctx, buffer);
 	} else {
 		auto span_nodes = li_element->getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "span");
 		if (span_nodes->length() > 0) {
