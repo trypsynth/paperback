@@ -418,75 +418,51 @@ void main_window::on_next_heading(wxCommandEvent&) {
 }
 
 void main_window::on_previous_heading_1(wxCommandEvent&) {
-	doc_manager->go_to_previous_heading(1);
-	update_status_bar();
-	trigger_throttled_position_save();
+	navigate_heading_by_level(1, false);
 }
 
 void main_window::on_next_heading_1(wxCommandEvent&) {
-	doc_manager->go_to_next_heading(1);
-	update_status_bar();
-	trigger_throttled_position_save();
+	navigate_heading_by_level(1, true);
 }
 
 void main_window::on_previous_heading_2(wxCommandEvent&) {
-	doc_manager->go_to_previous_heading(2);
-	update_status_bar();
-	trigger_throttled_position_save();
+	navigate_heading_by_level(2, false);
 }
 
 void main_window::on_next_heading_2(wxCommandEvent&) {
-	doc_manager->go_to_next_heading(2);
-	update_status_bar();
-	trigger_throttled_position_save();
+	navigate_heading_by_level(2, true);
 }
 
 void main_window::on_previous_heading_3(wxCommandEvent&) {
-	doc_manager->go_to_previous_heading(3);
-	update_status_bar();
-	trigger_throttled_position_save();
+	navigate_heading_by_level(3, false);
 }
 
 void main_window::on_next_heading_3(wxCommandEvent&) {
-	doc_manager->go_to_next_heading(3);
-	update_status_bar();
-	trigger_throttled_position_save();
+	navigate_heading_by_level(3, true);
 }
 
 void main_window::on_previous_heading_4(wxCommandEvent&) {
-	doc_manager->go_to_previous_heading(4);
-	update_status_bar();
-	trigger_throttled_position_save();
+	navigate_heading_by_level(4, false);
 }
 
 void main_window::on_next_heading_4(wxCommandEvent&) {
-	doc_manager->go_to_next_heading(4);
-	update_status_bar();
-	trigger_throttled_position_save();
+	navigate_heading_by_level(4, true);
 }
 
 void main_window::on_previous_heading_5(wxCommandEvent&) {
-	doc_manager->go_to_previous_heading(5);
-	update_status_bar();
-	trigger_throttled_position_save();
+	navigate_heading_by_level(5, false);
 }
 
 void main_window::on_next_heading_5(wxCommandEvent&) {
-	doc_manager->go_to_next_heading(5);
-	update_status_bar();
-	trigger_throttled_position_save();
+	navigate_heading_by_level(5, true);
 }
 
 void main_window::on_previous_heading_6(wxCommandEvent&) {
-	doc_manager->go_to_previous_heading(6);
-	update_status_bar();
-	trigger_throttled_position_save();
+	navigate_heading_by_level(6, false);
 }
 
 void main_window::on_next_heading_6(wxCommandEvent&) {
-	doc_manager->go_to_next_heading(6);
-	update_status_bar();
-	trigger_throttled_position_save();
+	navigate_heading_by_level(6, true);
 }
 
 void main_window::on_word_count(wxCommandEvent&) {
@@ -703,6 +679,12 @@ void main_window::do_find(bool forward) {
 	text_ctrl->SetFocus();
 	text_ctrl->SetSelection(found_pos, found_pos + query.Length());
 	text_ctrl->ShowPosition(found_pos);
+	update_status_bar();
+	trigger_throttled_position_save();
+}
+
+void main_window::navigate_heading_by_level(int level, bool forward) {
+	forward ? doc_manager->go_to_next_heading(level) : doc_manager->go_to_previous_heading(level);
 	update_status_bar();
 	trigger_throttled_position_save();
 }

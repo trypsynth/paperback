@@ -98,4 +98,5 @@ private:
 	void on_recent_document(wxCommandEvent& event);
 	void on_notebook_key_down(wxKeyEvent& event);
 	void do_find(bool forward);
+	void navigate_heading_by_level(int level, bool forward);
 };
