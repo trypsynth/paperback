@@ -9,6 +9,7 @@
 
 #pragma once
 #include "document.hpp"
+#include "parser.hpp"
 #include <wx/treectrl.h>
 #include <wx/wx.h>
 
@@ -120,7 +121,7 @@ private:
 
 class go_to_page_dialog : public dialog {
 public:
-	go_to_page_dialog(wxWindow* parent, document* doc, int current_page = 1);
+	go_to_page_dialog(wxWindow* parent, document* doc, const parser* par, int current_page = 1);
 	~go_to_page_dialog() = default;
 	go_to_page_dialog(const go_to_page_dialog&) = delete;
 	go_to_page_dialog& operator=(const go_to_page_dialog&) = delete;
@@ -130,6 +131,7 @@ public:
 
 private:
 	document* doc_{nullptr};
+	const parser* parser_{nullptr};
 	wxTextCtrl* input_ctrl{nullptr};
 
 	void on_key_down(wxKeyEvent& event);

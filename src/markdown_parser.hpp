@@ -23,6 +23,7 @@ public:
 		static const wxString exts[] = {"md", "markdown", "mdx", "mdown", "mdwn", "mkd", "mkdn", "mkdown", "ronn"};
 		return exts;
 	}
+	[[nodiscard]] parser_flags supported_flags() const override { return parser_flags::supports_toc; }
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 };
 

@@ -27,6 +27,7 @@ struct document_tab : public wxClientData {
 	std::unique_ptr<document> doc;
 	wxString file_path;
 	wxPanel* panel{nullptr};
+	const parser* parser{nullptr};
 
 	document_tab() = default;
 	~document_tab() = default;
@@ -54,6 +55,7 @@ public:
 	[[nodiscard]] document_tab* get_active_tab() const;
 	[[nodiscard]] document* get_active_document() const;
 	[[nodiscard]] wxTextCtrl* get_active_text_ctrl() const;
+	[[nodiscard]] const parser* get_active_parser() const;
 	[[nodiscard]] int get_tab_count() const;
 	[[nodiscard]] int get_active_tab_index() const;
 	[[nodiscard]] bool has_documents() const { return get_tab_count() > 0; }

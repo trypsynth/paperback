@@ -218,3 +218,30 @@ void cleanup_toc(std::vector<std::unique_ptr<toc_item>>& items) {
 		cleanup_toc(item->children);
 	}
 }
+
+std::vector<std::unique_ptr<toc_item>> build_toc_from_headings(const document_buffer& buffer) {
+	std::vector<std::unique_ptr<toc_item>> result;
+	const auto heading_markers = buffer.get_heading_markers();
+	if (heading_markers.empty()) return result;
+	std::vector<std::vector<std::unique_ptr<toc_item>>*> level_stacks(7, nullptr);
+	level_stacks[0] = &result;
+	for (const auto* marker : heading_markers) {
+		auto item = std::make_unique<toc_item>();
+		item->name = marker->text;
+		item->offset = static_cast<int>(marker->pos);
+		const int level = marker->level;
+		if (level < 1 || level > 6) continue;
+		std::vector<std::unique_ptr<toc_item>>* parent_list = nullptr;
+		for (int i = level - 1; i >= 0; --i) {
+			if (level_stacks[i]) {
+				parent_list = level_stacks[i];
+				break;
+			}
+		}
+		if (!parent_list) parent_list = &result;
+		parent_list->push_back(std::move(item));
+		level_stacks[level] = &parent_list->back()->children;
+		for (int i = level + 1; i < 7; ++i) level_stacks[i] = nullptr;
+	}
+	return result;
+}

@@ -68,6 +68,7 @@ bool document_manager::create_document_tab(const wxString& path, const parser* p
 	auto* tab_data = new document_tab;
 	tab_data->doc = std::move(doc);
 	tab_data->file_path = path;
+	tab_data->parser = par;
 	wxPanel* panel = create_tab_panel(tab_data->doc->buffer.str(), tab_data);
 	tab_data->panel = panel;
 	notebook->AddPage(panel, tab_data->doc->title, true);
@@ -142,6 +143,11 @@ wxTextCtrl* document_manager::get_active_text_ctrl() const {
 	return tab ? tab->text_ctrl : nullptr;
 }
 
+const parser* document_manager::get_active_parser() const {
+	document_tab* tab = get_active_tab();
+	return tab ? tab->parser : nullptr;
+}
+
 int document_manager::get_tab_count() const {
 	return notebook->GetPageCount();
 }
@@ -163,8 +169,9 @@ void document_manager::go_to_position(long position) {
 void document_manager::go_to_previous_section() {
 	document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!doc || !text_ctrl) return;
-	if (!doc->has_flag(document_flags::supports_sections)) {
+	const parser* par = get_active_parser();
+	if (!doc || !text_ctrl || !par) return;
+	if (!par->has_flag(parser_flags::supports_sections)) {
 		speak("No sections.");
 		return;
 	}
@@ -205,8 +212,9 @@ void document_manager::go_to_previous_section() {
 void document_manager::go_to_next_section() {
 	document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!doc || !text_ctrl) return;
-	if (!doc->has_flag(document_flags::supports_sections)) {
+	const parser* par = get_active_parser();
+	if (!doc || !text_ctrl || !par) return;
+	if (!par->has_flag(parser_flags::supports_sections)) {
 		speak("No sections.");
 		return;
 	}
@@ -364,8 +372,9 @@ void document_manager::show_bookmark_dialog(wxWindow* parent) {
 void document_manager::show_table_of_contents(wxWindow* parent) {
 	document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!doc || !text_ctrl) return;
-	if (!doc->has_flag(document_flags::supports_toc)) {
+	const parser* par = get_active_parser();
+	if (!doc || !text_ctrl || !par) return;
+	if (!par->has_flag(parser_flags::supports_toc)) {
 		speak("No table of contents.");
 		return;
 	}

@@ -40,7 +40,6 @@ std::unique_ptr<document> chm_parser::load(const wxString& path) const {
 		cleanup_toc(document_ptr->toc_items);
 		document_ptr->buffer.clear();
 		parse_html_files(ctx, document_ptr->buffer, document_ptr->toc_items);
-		document_ptr->flags = document_flags::supports_toc;
 		if (!document_ptr->toc_items.empty()) calculate_toc_offsets(document_ptr->toc_items, ctx);
 		if (!ctx.title.empty()) document_ptr->title = wxString::FromUTF8(ctx.title);
 		chm_close(file);

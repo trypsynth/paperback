@@ -258,7 +258,7 @@ long go_to_line_dialog::get_max_line() const {
 	return textbox->GetNumberOfLines();
 }
 
-go_to_page_dialog::go_to_page_dialog(wxWindow* parent, document* doc, int current_page) : dialog(parent, "Go to page"), doc_{doc} {
+go_to_page_dialog::go_to_page_dialog(wxWindow* parent, document* doc, const parser* par, int current_page) : dialog(parent, "Go to page"), doc_{doc}, parser_{par} {
 	auto* page_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* label = new wxStaticText(this, wxID_ANY, wxString::Format("Go to page (1/%d):", get_max_page()));
 	wxTextValidator validator(wxFILTER_DIGITS);
@@ -306,7 +306,8 @@ void go_to_page_dialog::adjust_page_number(int delta) {
 }
 
 int go_to_page_dialog::get_max_page() const {
-	if (!doc_ || !doc_->has_flag(document_flags::supports_pages)) return 1;
+	if (!doc_ || !parser_) return 1;
+	if (!parser_->has_flag(parser_flags::supports_pages)) return 1;
 	return static_cast<int>(doc_->buffer.count_markers_by_type(marker_type::page_break));
 }
 

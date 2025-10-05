@@ -9,6 +9,7 @@
 
 #include "markdown_parser.hpp"
 #include "html_to_text.hpp"
+#include "utils.hpp"
 #include <maddy/parser.h>
 #include <memory>
 #include <wx/filename.h>
@@ -30,7 +31,6 @@ std::unique_ptr<document> markdown_parser::load(const wxString& path) const {
 	auto doc = std::make_unique<document>();
 	doc->title = wxFileName(path).GetName();
 	doc->buffer.clear();
-	doc->flags = document_flags::supports_toc;
 	const auto& text = converter.get_text();
 	const auto& headings = converter.get_headings();
 	doc->buffer.set_content(text);
@@ -38,5 +38,6 @@ std::unique_ptr<document> markdown_parser::load(const wxString& path) const {
 		marker_type type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + heading.level - 1);
 		doc->buffer.add_marker(heading.offset, type, wxString::FromUTF8(heading.text), wxString(), heading.level);
 	}
+	doc->toc_items = build_toc_from_headings(doc->buffer);
 	return doc;
 }

@@ -27,6 +27,5 @@ std::unique_ptr<document> text_parser::load(const wxString& path) const {
 	doc->title = wxFileName(path).GetName();
 	std::string processed = remove_soft_hyphens(utf8_content);
 	doc->buffer.set_content(wxString::FromUTF8(processed));
-	doc->flags = document_flags::none;
 	return doc;
 }

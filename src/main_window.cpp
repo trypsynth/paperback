@@ -336,8 +336,9 @@ void main_window::on_go_to_percent(wxCommandEvent&) {
 
 void main_window::on_go_to_page(wxCommandEvent&) {
 	auto* const doc = doc_manager->get_active_document();
-	if (!doc) return;
-	if (!doc->has_flag(document_flags::supports_pages)) {
+	auto* const par = doc_manager->get_active_parser();
+	if (!doc || !par) return;
+	if (!par->has_flag(parser_flags::supports_pages)) {
 		speak("No pages.");
 		return;
 	}
@@ -347,7 +348,7 @@ void main_window::on_go_to_page(wxCommandEvent&) {
 	const size_t current_pos = text_ctrl->GetInsertionPoint();
 	const int current_page_idx = doc->page_index(current_pos);
 	if (current_page_idx >= 0) current_page = current_page_idx + 1; // Convert to 1-based index
-	go_to_page_dialog dlg(this, doc, current_page);
+	go_to_page_dialog dlg(this, doc, par, current_page);
 	if (dlg.ShowModal() != wxID_OK) return;
 	const int page = dlg.get_page_number();
 	if (page >= 1 && page <= static_cast<int>(doc->buffer.count_markers_by_type(marker_type::page_break))) {

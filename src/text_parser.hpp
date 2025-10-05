@@ -23,6 +23,7 @@ public:
 		static const wxString exts[] = {"txt", "log"};
 		return exts;
 	}
+	[[nodiscard]] parser_flags supported_flags() const override { return parser_flags::none; }
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 };
 

@@ -48,3 +48,4 @@ void speak(const wxString& message);
 [[nodiscard]] Poco::Zip::ZipArchive::FileHeaders::const_iterator find_file_in_archive(std::string_view filename, const std::unique_ptr<Poco::Zip::ZipArchive>& archive);
 [[nodiscard]] std::string convert_to_utf8(const std::string& input);
 void cleanup_toc(std::vector<std::unique_ptr<toc_item>>& items);
+[[nodiscard]] std::vector<std::unique_ptr<toc_item>> build_toc_from_headings(const document_buffer& buffer);

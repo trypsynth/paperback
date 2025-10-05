@@ -36,8 +36,6 @@ std::unique_ptr<document> pdf_parser::load(const wxString& path) const {
 		extract_text_content(ctx, document_ptr->buffer);
 		extract_metadata(ctx, document_ptr->title, document_ptr->author, path);
 		extract_toc(ctx, document_ptr->toc_items, document_ptr->buffer);
-		document_ptr->flags = document_flags::supports_pages | document_flags::supports_toc;
-		if (!document_ptr->toc_items.empty()) document_ptr->flags |= document_flags::supports_toc;
 		return document_ptr;
 	} catch (const std::exception& e) {
 		wxMessageBox(wxString::FromUTF8(e.what()), "PDF Parse Error", wxICON_ERROR);
