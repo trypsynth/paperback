@@ -185,8 +185,7 @@ std::string convert_to_utf8(const std::string& input) {
 		{nullptr, nullptr}, // UTF-8 without BOM
 		{"local", &wxConvLocal},
 		{"windows-1252", nullptr},
-		{"iso-8859-1", &wxConvISO8859_1}
-	};
+		{"iso-8859-1", &wxConvISO8859_1}};
 	for (const auto& [name, conv] : fallback_encodings) {
 		wxString content;
 		if (!name)

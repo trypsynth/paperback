@@ -8,11 +8,11 @@
  */
 
 #pragma once
+#include "document.hpp"
 #include <Poco/Zip/ZipArchive.h>
 #include <string>
 #include <string_view>
 #include <wx/string.h>
-#include "document.hpp"
 
 enum class find_options {
 	none = 0,

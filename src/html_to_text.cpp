@@ -118,7 +118,8 @@ void html_to_text::process_text_node(lxb_dom_text_t* text_node) {
 				pos = found + 1;
 			}
 			if (pos < processed_text.length()) current_line += processed_text.substr(pos);
-		} else current_line += collapse_whitespace(processed_text);
+		} else
+			current_line += collapse_whitespace(processed_text);
 	}
 }
 

@@ -135,7 +135,8 @@ void chm_parser::parse_system_file(chm_context& ctx) const {
 	for (size_t index = 4; index + 4 <= data.size();) {
 		const auto code = read_le16(data, index);
 		const auto length = read_le16(data, index + 2);
-		if (index + 4 + length > data.size()) [[unlikely]] break;
+		if (index + 4 + length > data.size()) [[unlikely]]
+			break;
 		if (code == 3 && length > 0) {
 			std::string_view entry{reinterpret_cast<const char*>(data.data() + index + 4), length};
 			if (entry.ends_with('\0')) entry.remove_suffix(1);
