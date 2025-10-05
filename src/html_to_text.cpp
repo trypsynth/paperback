@@ -64,7 +64,7 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 			auto* element = lxb_dom_interface_element(node);
 			if (tag_name == "body")
 				in_body = true;
-			else if (tag_name == "pre" || tag_name == "code")
+			else if (tag_name == "pre")
 				preserve_whitespace = true;
 			else if (tag_name == "br" || tag_name == "li")
 				finalize_current_line();
@@ -96,8 +96,8 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 	if (is_element && (tag_name == "script" || tag_name == "style")) return;
 	for (auto* child = node->first_child; child; child = child->next) process_node(child);
 	if (is_element) {
+		if (tag_name == "pre") preserve_whitespace = false;
 		if (is_block_element(tag_name)) finalize_current_line();
-		if (tag_name == "pre" || tag_name == "code") preserve_whitespace = false;
 	}
 }
 
