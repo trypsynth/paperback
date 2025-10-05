@@ -16,6 +16,7 @@ inline const wxString APP_COPYRIGHT = "Copyright (C) 2025 Quin Gillespie. All ri
 inline const wxString APP_WEBSITE = "https://github.com/trypsynth/paperback";
 inline constexpr int POSITION_SAVE_THROTTLE_MS = 1000;
 inline constexpr int STATUS_UPDATE_THROTTLE_MS = 100;
+inline constexpr int MAX_FIND_HISTORY_SIZE = 10;
 inline constexpr int CONFIG_VERSION_CURRENT = 1;
 inline constexpr int CONFIG_VERSION_LEGACY = 0;
 

@@ -165,7 +165,7 @@ void find_dialog::add_to_history(const wxString& text) {
 	if (existing != wxNOT_FOUND)
 		find_what_combo->Delete(existing);
 	find_what_combo->Insert(text, 0);
-	while (find_what_combo->GetCount() > 10)
+	while (find_what_combo->GetCount() > MAX_FIND_HISTORY_SIZE)
 		find_what_combo->Delete(find_what_combo->GetCount() - 1);
 	find_what_combo->SetValue(text);
 }
