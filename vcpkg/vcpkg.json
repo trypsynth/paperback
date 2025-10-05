@@ -1,6 +1,6 @@
 {
 	"name": "paperback",
-	"version": "0.1.0",
+	"version": "0.41",
 	"dependencies": [
 		"chmlib",
 		"lexbor",
