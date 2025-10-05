@@ -42,6 +42,7 @@ private:
 	std::string current_line;
 	std::unordered_map<std::string, size_t> id_positions;
 	std::vector<heading_info> headings;
+	std::vector<bool> preserve_line_whitespace;
 	bool in_body = false;
 	bool preserve_whitespace = false;
 	size_t cached_char_length = 0;

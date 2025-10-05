@@ -42,6 +42,7 @@ std::string html_to_text::get_text() const {
 
 void html_to_text::clear() noexcept {
 	lines.clear();
+	preserve_line_whitespace.clear();
 	current_line.clear();
 	id_positions.clear();
 	headings.clear();
@@ -63,7 +64,7 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 			auto* element = lxb_dom_interface_element(node);
 			if (tag_name == "body")
 				in_body = true;
-			else if (tag_name == "pre")
+			else if (tag_name == "pre" || tag_name == "code")
 				preserve_whitespace = true;
 			else if (tag_name == "br" || tag_name == "li")
 				finalize_current_line();
@@ -96,7 +97,7 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 	for (auto* child = node->first_child; child; child = child->next) process_node(child);
 	if (is_element) {
 		if (is_block_element(tag_name)) finalize_current_line();
-		if (tag_name == "pre") preserve_whitespace = false;
+		if (tag_name == "pre" || tag_name == "code") preserve_whitespace = false;
 	}
 }
 
@@ -108,16 +109,34 @@ void html_to_text::process_text_node(lxb_dom_text_t* text_node) {
 	const std::string_view text{reinterpret_cast<const char*>(text_data), length};
 	if (!text.empty()) {
 		std::string processed_text = remove_soft_hyphens(text);
-		current_line += preserve_whitespace ? processed_text : collapse_whitespace(processed_text);
+		if (preserve_whitespace) {
+			size_t pos = 0;
+			size_t found;
+			while ((found = processed_text.find('\n', pos)) != std::string::npos) {
+				current_line += processed_text.substr(pos, found - pos);
+				finalize_current_line();
+				pos = found + 1;
+			}
+			if (pos < processed_text.length()) current_line += processed_text.substr(pos);
+		} else current_line += collapse_whitespace(processed_text);
 	}
 }
 
 void html_to_text::add_line(std::string_view line) {
-	std::string processed_line = collapse_whitespace(line);
-	processed_line = trim_string(processed_line);
-	if (!processed_line.empty()) {
+	std::string processed_line;
+	if (preserve_whitespace) {
+		processed_line = std::string(line);
 		cached_char_length += wxString::FromUTF8(processed_line).length() + 1; // +1 for newline
 		lines.emplace_back(std::move(processed_line));
+		preserve_line_whitespace.push_back(true);
+	} else {
+		processed_line = collapse_whitespace(line);
+		processed_line = trim_string(processed_line);
+		if (!processed_line.empty()) {
+			cached_char_length += wxString::FromUTF8(processed_line).length() + 1; // +1 for newline
+			lines.emplace_back(std::move(processed_line));
+			preserve_line_whitespace.push_back(false);
+		}
 	}
 }
 
@@ -128,16 +147,27 @@ void html_to_text::finalize_current_line() {
 
 void html_to_text::finalize_text() {
 	std::vector<std::string> cleaned_lines;
+	std::vector<bool> cleaned_preserve;
 	cached_char_length = 0;
-	for (auto& line : lines) {
-		line = collapse_whitespace(line);
-		line = trim_string(line);
-		if (!line.empty()) {
+	for (size_t i = 0; i < lines.size(); ++i) {
+		auto& line = lines[i];
+		bool preserve_ws = i < preserve_line_whitespace.size() ? preserve_line_whitespace[i] : false;
+		if (preserve_ws) {
 			cached_char_length += wxString::FromUTF8(line).length() + 1; // +1 for newline
 			cleaned_lines.emplace_back(std::move(line));
+			cleaned_preserve.push_back(true);
+		} else {
+			line = collapse_whitespace(line);
+			line = trim_string(line);
+			if (!line.empty()) {
+				cached_char_length += wxString::FromUTF8(line).length() + 1; // +1 for newline
+				cleaned_lines.emplace_back(std::move(line));
+				cleaned_preserve.push_back(false);
+			}
 		}
 	}
 	lines = std::move(cleaned_lines);
+	preserve_line_whitespace = std::move(cleaned_preserve);
 }
 
 size_t html_to_text::get_current_text_position() const {
