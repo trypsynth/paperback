@@ -46,6 +46,7 @@ void html_to_text::clear() noexcept {
 	current_line.clear();
 	id_positions.clear();
 	headings.clear();
+	title.clear();
 	in_body = false;
 	preserve_whitespace = false;
 	cached_char_length = 0;
@@ -62,7 +63,10 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 	switch (node->type) {
 		case LXB_DOM_NODE_TYPE_ELEMENT: {
 			auto* element = lxb_dom_interface_element(node);
-			if (tag_name == "body")
+			if (tag_name == "title" && title.empty()) {
+				title = get_element_text(element);
+				title = trim_string(collapse_whitespace(title));
+			} else if (tag_name == "body")
 				in_body = true;
 			else if (tag_name == "pre")
 				preserve_whitespace = true;

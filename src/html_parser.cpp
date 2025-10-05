@@ -23,7 +23,8 @@ std::unique_ptr<document> html_parser::load(const wxString& path) const {
 	html_to_text converter;
 	if (!converter.convert(content.utf8_string())) return nullptr;
 	auto doc = std::make_unique<document>();
-	doc->title = wxFileName(path).GetName();
+	const auto& extracted_title = converter.get_title();
+	doc->title = extracted_title.empty() ? wxFileName(path).GetName() : wxString::FromUTF8(extracted_title);
 	doc->buffer.clear();
 	doc->flags = document_flags::supports_toc;
 	const auto& text = converter.get_text();

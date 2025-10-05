@@ -28,6 +28,7 @@ public:
 	[[nodiscard]] std::string get_text() const;
 	[[nodiscard]] const std::unordered_map<std::string, size_t>& get_id_positions() const noexcept { return id_positions; }
 	[[nodiscard]] const std::vector<heading_info>& get_headings() const noexcept { return headings; }
+	[[nodiscard]] const std::string& get_title() const noexcept { return title; }
 	void clear() noexcept;
 
 private:
@@ -43,6 +44,7 @@ private:
 	std::unordered_map<std::string, size_t> id_positions;
 	std::vector<heading_info> headings;
 	std::vector<bool> preserve_line_whitespace;
+	std::string title;
 	bool in_body = false;
 	bool preserve_whitespace = false;
 	size_t cached_char_length = 0;
