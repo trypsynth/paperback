@@ -142,18 +142,6 @@ void main_window::bind_events() {
 		{ID_NEXT_SECTION, &main_window::on_next_section},
 		{ID_PREVIOUS_HEADING, &main_window::on_previous_heading},
 		{ID_NEXT_HEADING, &main_window::on_next_heading},
-		{ID_PREVIOUS_HEADING_1, &main_window::on_previous_heading_1},
-		{ID_NEXT_HEADING_1, &main_window::on_next_heading_1},
-		{ID_PREVIOUS_HEADING_2, &main_window::on_previous_heading_2},
-		{ID_NEXT_HEADING_2, &main_window::on_next_heading_2},
-		{ID_PREVIOUS_HEADING_3, &main_window::on_previous_heading_3},
-		{ID_NEXT_HEADING_3, &main_window::on_next_heading_3},
-		{ID_PREVIOUS_HEADING_4, &main_window::on_previous_heading_4},
-		{ID_NEXT_HEADING_4, &main_window::on_next_heading_4},
-		{ID_PREVIOUS_HEADING_5, &main_window::on_previous_heading_5},
-		{ID_NEXT_HEADING_5, &main_window::on_next_heading_5},
-		{ID_PREVIOUS_HEADING_6, &main_window::on_previous_heading_6},
-		{ID_NEXT_HEADING_6, &main_window::on_next_heading_6},
 		{ID_PREVIOUS_PAGE, &main_window::on_previous_page},
 		{ID_NEXT_PAGE, &main_window::on_next_page},
 		{ID_PREVIOUS_BOOKMARK, &main_window::on_previous_bookmark},
@@ -171,6 +159,12 @@ void main_window::bind_events() {
 	};
 	for (const auto& [id, handler] : menu_bindings)
 		Bind(wxEVT_MENU, handler, this, id);
+	for (int level = 1; level <= 6; ++level) {
+		const int prev_id = ID_PREVIOUS_HEADING_1 + (level - 1) * 2;
+		const int next_id = ID_NEXT_HEADING_1 + (level - 1) * 2;
+		Bind(wxEVT_MENU, [this, level](wxCommandEvent&) { navigate_heading_by_level(level, false); }, prev_id);
+		Bind(wxEVT_MENU, [this, level](wxCommandEvent&) { navigate_heading_by_level(level, true); }, next_id);
+	}
 	Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, &main_window::on_notebook_page_changed, this);
 	Bind(wxEVT_CLOSE_WINDOW, &main_window::on_close_window, this);
 	Bind(wxEVT_TIMER, &main_window::on_position_save_timer, this, position_save_timer->GetId());
@@ -406,53 +400,6 @@ void main_window::on_next_heading(wxCommandEvent&) {
 	trigger_throttled_position_save();
 }
 
-void main_window::on_previous_heading_1(wxCommandEvent&) {
-	navigate_heading_by_level(1, false);
-}
-
-void main_window::on_next_heading_1(wxCommandEvent&) {
-	navigate_heading_by_level(1, true);
-}
-
-void main_window::on_previous_heading_2(wxCommandEvent&) {
-	navigate_heading_by_level(2, false);
-}
-
-void main_window::on_next_heading_2(wxCommandEvent&) {
-	navigate_heading_by_level(2, true);
-}
-
-void main_window::on_previous_heading_3(wxCommandEvent&) {
-	navigate_heading_by_level(3, false);
-}
-
-void main_window::on_next_heading_3(wxCommandEvent&) {
-	navigate_heading_by_level(3, true);
-}
-
-void main_window::on_previous_heading_4(wxCommandEvent&) {
-	navigate_heading_by_level(4, false);
-}
-
-void main_window::on_next_heading_4(wxCommandEvent&) {
-	navigate_heading_by_level(4, true);
-}
-
-void main_window::on_previous_heading_5(wxCommandEvent&) {
-	navigate_heading_by_level(5, false);
-}
-
-void main_window::on_next_heading_5(wxCommandEvent&) {
-	navigate_heading_by_level(5, true);
-}
-
-void main_window::on_previous_heading_6(wxCommandEvent&) {
-	navigate_heading_by_level(6, false);
-}
-
-void main_window::on_next_heading_6(wxCommandEvent&) {
-	navigate_heading_by_level(6, true);
-}
 
 void main_window::on_word_count(wxCommandEvent&) {
 	const size_t count = doc_manager->get_active_document()->stats.word_count;

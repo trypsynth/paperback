@@ -65,18 +65,6 @@ private:
 	void on_next_section(wxCommandEvent&);
 	void on_previous_heading(wxCommandEvent&);
 	void on_next_heading(wxCommandEvent&);
-	void on_previous_heading_1(wxCommandEvent&);
-	void on_next_heading_1(wxCommandEvent&);
-	void on_previous_heading_2(wxCommandEvent&);
-	void on_next_heading_2(wxCommandEvent&);
-	void on_previous_heading_3(wxCommandEvent&);
-	void on_next_heading_3(wxCommandEvent&);
-	void on_previous_heading_4(wxCommandEvent&);
-	void on_next_heading_4(wxCommandEvent&);
-	void on_previous_heading_5(wxCommandEvent&);
-	void on_next_heading_5(wxCommandEvent&);
-	void on_previous_heading_6(wxCommandEvent&);
-	void on_next_heading_6(wxCommandEvent&);
 	void on_previous_page(wxCommandEvent&);
 	void on_next_page(wxCommandEvent&);
 	void on_next_bookmark(wxCommandEvent&);
