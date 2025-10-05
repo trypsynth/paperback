@@ -193,45 +193,34 @@ void main_window::update_ui() {
 		ID_GO_TO_LINE,
 		ID_GO_TO_PERCENT,
 		ID_GO_TO_PAGE,
+		ID_PREVIOUS_SECTION,
+		ID_NEXT_SECTION,
+		ID_PREVIOUS_HEADING,
+		ID_NEXT_HEADING,
+		ID_PREVIOUS_HEADING_1,
+		ID_NEXT_HEADING_1,
+		ID_PREVIOUS_HEADING_2,
+		ID_NEXT_HEADING_2,
+		ID_PREVIOUS_HEADING_3,
+		ID_NEXT_HEADING_3,
+		ID_PREVIOUS_HEADING_4,
+		ID_NEXT_HEADING_4,
+		ID_PREVIOUS_HEADING_5,
+		ID_NEXT_HEADING_5,
+		ID_PREVIOUS_HEADING_6,
+		ID_NEXT_HEADING_6,
+		ID_PREVIOUS_PAGE,
+		ID_NEXT_PAGE,
+		ID_PREVIOUS_BOOKMARK,
+		ID_NEXT_BOOKMARK,
+		ID_TOGGLE_BOOKMARK,
+		ID_JUMP_TO_BOOKMARK,
 		ID_WORD_COUNT,
-		ID_DOC_INFO};
+		ID_DOC_INFO,
+		ID_TABLE_OF_CONTENTS
+	};
 	for (const auto id : doc_items)
 		enable(id, has_doc);
-	if (!has_doc) {
-		enable(ID_PREVIOUS_SECTION, false);
-		enable(ID_NEXT_SECTION, false);
-		enable(ID_PREVIOUS_PAGE, false);
-		enable(ID_NEXT_PAGE, false);
-		enable(ID_PREVIOUS_BOOKMARK, false);
-		enable(ID_NEXT_BOOKMARK, false);
-		enable(ID_TOGGLE_BOOKMARK, false);
-		enable(ID_JUMP_TO_BOOKMARK, false);
-		enable(ID_TABLE_OF_CONTENTS, false);
-		return;
-	}
-	enable(ID_PREVIOUS_SECTION, true);
-	enable(ID_NEXT_SECTION, true);
-	enable(ID_PREVIOUS_HEADING, true);
-	enable(ID_NEXT_HEADING, true);
-	enable(ID_PREVIOUS_HEADING_1, true);
-	enable(ID_NEXT_HEADING_1, true);
-	enable(ID_PREVIOUS_HEADING_2, true);
-	enable(ID_NEXT_HEADING_2, true);
-	enable(ID_PREVIOUS_HEADING_3, true);
-	enable(ID_NEXT_HEADING_3, true);
-	enable(ID_PREVIOUS_HEADING_4, true);
-	enable(ID_NEXT_HEADING_4, true);
-	enable(ID_PREVIOUS_HEADING_5, true);
-	enable(ID_NEXT_HEADING_5, true);
-	enable(ID_PREVIOUS_HEADING_6, true);
-	enable(ID_NEXT_HEADING_6, true);
-	enable(ID_PREVIOUS_PAGE, true);
-	enable(ID_NEXT_PAGE, true);
-	enable(ID_PREVIOUS_BOOKMARK, true);
-	enable(ID_NEXT_BOOKMARK, true);
-	enable(ID_TOGGLE_BOOKMARK, true);
-	enable(ID_JUMP_TO_BOOKMARK, true);
-	enable(ID_TABLE_OF_CONTENTS, true);
 }
 
 void main_window::update_title() {
