@@ -8,6 +8,7 @@
  */
 
 #pragma once
+#include "controls.hpp"
 #include "document.hpp"
 #include "parser.hpp"
 #include <wx/treectrl.h>
@@ -112,10 +113,8 @@ public:
 
 private:
 	wxTextCtrl* textbox{nullptr};
-	wxTextCtrl* input_ctrl{nullptr};
+	numeric_spin_ctrl* input_ctrl{nullptr};
 
-	void on_key_down(wxKeyEvent& event);
-	void adjust_line_number(int delta);
 	[[nodiscard]] long get_max_line() const;
 };
 
@@ -132,10 +131,8 @@ public:
 private:
 	document* doc_{nullptr};
 	const parser* parser_{nullptr};
-	wxTextCtrl* input_ctrl{nullptr};
+	numeric_spin_ctrl* input_ctrl{nullptr};
 
-	void on_key_down(wxKeyEvent& event);
-	void adjust_page_number(int delta);
 	[[nodiscard]] int get_max_page() const;
 };
 
@@ -152,11 +149,9 @@ public:
 private:
 	wxTextCtrl* textbox{nullptr};
 	wxSlider* percent_slider{nullptr};
-	wxTextCtrl* input_ctrl{nullptr};
+	numeric_spin_ctrl* input_ctrl{nullptr};
 
-	void on_key_down(wxKeyEvent& event);
 	void on_slider_changed(wxCommandEvent& event);
-	void adjust_percent(int delta);
 };
 
 class options_dialog : public dialog {

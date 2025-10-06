@@ -208,50 +208,20 @@ void find_dialog::on_close(wxCloseEvent& event) {
 go_to_line_dialog::go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : dialog(parent, "Go to Line"), textbox{text_ctrl} {
 	auto* line_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* label = new wxStaticText(this, wxID_ANY, "&Line number:");
-	wxTextValidator validator(wxFILTER_DIGITS);
-	input_ctrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER, validator);
-	line_sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
-	line_sizer->Add(input_ctrl, 1, wxEXPAND);
 	long line;
 	textbox->PositionToXY(textbox->GetInsertionPoint(), 0, &line);
-	input_ctrl->SetValue(wxString::Format("%d", line + 1));
-	input_ctrl->SetSelection(-1, -1);
-	input_ctrl->Bind(wxEVT_KEY_DOWN, &go_to_line_dialog::on_key_down, this);
+	input_ctrl = new numeric_spin_ctrl(this, wxID_ANY, line + 1, 1, textbox->GetNumberOfLines());
+	line_sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
+	line_sizer->Add(input_ctrl, 1, wxEXPAND);
 	set_content(line_sizer);
 	finalize_layout();
 }
 
 long go_to_line_dialog::get_position() const {
-	wxString input = input_ctrl->GetValue().Trim(true).Trim(false);
-	long line;
-	if (input.ToLong(&line) && line >= 1 && line <= textbox->GetNumberOfLines())
+	long line = input_ctrl->get_value();
+	if (line >= 1 && line <= textbox->GetNumberOfLines())
 		return textbox->XYToPosition(0, line - 1);
 	return textbox->GetInsertionPoint();
-}
-
-void go_to_line_dialog::on_key_down(wxKeyEvent& event) {
-	int key_code = event.GetKeyCode();
-	if (key_code == WXK_UP)
-		adjust_line_number(1);
-	else if (key_code == WXK_DOWN)
-		adjust_line_number(-1);
-	else
-		event.Skip();
-}
-
-void go_to_line_dialog::adjust_line_number(int delta) {
-	wxString current_value = input_ctrl->GetValue().Trim(true).Trim(false);
-	long current_line;
-	if (current_value.ToLong(&current_line)) {
-		long new_line = current_line + delta;
-		long max_line = get_max_line();
-		if (new_line < 1)
-			new_line = 1;
-		else if (new_line > max_line)
-			new_line = max_line;
-		input_ctrl->SetValue(wxString::Format("%ld", new_line));
-		input_ctrl->SetSelection(-1, -1);
-	}
 }
 
 long go_to_line_dialog::get_max_line() const {
@@ -261,48 +231,18 @@ long go_to_line_dialog::get_max_line() const {
 go_to_page_dialog::go_to_page_dialog(wxWindow* parent, document* doc, const parser* par, int current_page) : dialog(parent, "Go to page"), doc_{doc}, parser_{par} {
 	auto* page_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* label = new wxStaticText(this, wxID_ANY, wxString::Format("Go to page (1/%d):", get_max_page()));
-	wxTextValidator validator(wxFILTER_DIGITS);
-	input_ctrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER, validator);
+	input_ctrl = new numeric_spin_ctrl(this, wxID_ANY, current_page, 1, get_max_page());
 	page_sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
 	page_sizer->Add(input_ctrl, 1, wxEXPAND);
-	input_ctrl->SetValue(wxString::Format("%d", current_page));
-	input_ctrl->SetSelection(-1, -1);
-	input_ctrl->Bind(wxEVT_KEY_DOWN, &go_to_page_dialog::on_key_down, this);
 	set_content(page_sizer);
 	finalize_layout();
 }
 
 int go_to_page_dialog::get_page_number() const {
-	wxString input = input_ctrl->GetValue().Trim(true).Trim(false);
-	long page;
-	if (input.ToLong(&page) && page >= 1 && page <= get_max_page())
+	long page = input_ctrl->get_value();
+	if (page >= 1 && page <= get_max_page())
 		return static_cast<int>(page);
 	return 1;
-}
-
-void go_to_page_dialog::on_key_down(wxKeyEvent& event) {
-	int key_code = event.GetKeyCode();
-	if (key_code == WXK_UP)
-		adjust_page_number(1);
-	else if (key_code == WXK_DOWN)
-		adjust_page_number(-1);
-	else
-		event.Skip();
-}
-
-void go_to_page_dialog::adjust_page_number(int delta) {
-	wxString current_value = input_ctrl->GetValue().Trim(true).Trim(false);
-	long current_page;
-	if (current_value.ToLong(&current_page)) {
-		long new_page = current_page + delta;
-		long max_page = get_max_page();
-		if (new_page < 1)
-			new_page = 1;
-		else if (new_page > max_page)
-			new_page = max_page;
-		input_ctrl->SetValue(wxString::Format("%ld", new_page));
-		input_ctrl->SetSelection(-1, -1);
-	}
 }
 
 int go_to_page_dialog::get_max_page() const {
@@ -318,61 +258,26 @@ go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ct
 	auto* slider_label = new wxStaticText(this, wxID_ANY, "&Percent");
 	percent_slider = new wxSlider(this, wxID_ANY, current_percent, 0, 100);
 	auto* input_label = new wxStaticText(this, wxID_ANY, "P&ercent");
-	wxTextValidator validator(wxFILTER_DIGITS);
-	input_ctrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER, validator);
-	input_ctrl->SetValue(wxString::Format("%d", current_percent));
-	input_ctrl->SetSelection(-1, -1);
+	input_ctrl = new numeric_spin_ctrl(this, wxID_ANY, current_percent, 0, 100);
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	content_sizer->Add(slider_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
 	content_sizer->Add(percent_slider, 0, wxEXPAND | wxBOTTOM, 5);
 	content_sizer->Add(input_label, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, 5);
 	content_sizer->Add(input_ctrl, 0, wxEXPAND);
-	input_ctrl->Bind(wxEVT_KEY_DOWN, &go_to_percent_dialog::on_key_down, this);
 	percent_slider->Bind(wxEVT_SLIDER, &go_to_percent_dialog::on_slider_changed, this);
 	set_content(content_sizer);
 	finalize_layout();
 }
 
 long go_to_percent_dialog::get_position() const {
-	wxString input = input_ctrl->GetValue().Trim(true).Trim(false);
-	long percent;
-	if (input.ToLong(&percent) && percent >= 0 && percent <= 100) {
-		long total_chars = textbox->GetLastPosition();
-		return (percent * total_chars + 100 - 1) / 100;
-	}
-	percent = percent_slider->GetValue();
+	long percent = input_ctrl->get_value();
 	long total_chars = textbox->GetLastPosition();
 	return (percent * total_chars + 100 - 1) / 100;
 }
 
-void go_to_percent_dialog::on_key_down(wxKeyEvent& event) {
-	int key_code = event.GetKeyCode();
-	if (key_code == WXK_UP)
-		adjust_percent(1);
-	else if (key_code == WXK_DOWN)
-		adjust_percent(-1);
-	else
-		event.Skip();
-}
-
 void go_to_percent_dialog::on_slider_changed(wxCommandEvent& event) {
 	int slider_value = percent_slider->GetValue();
-	input_ctrl->SetValue(wxString::Format("%d", slider_value));
-}
-
-void go_to_percent_dialog::adjust_percent(int delta) {
-	wxString current_value = input_ctrl->GetValue().Trim(true).Trim(false);
-	long current_percent;
-	if (current_value.ToLong(&current_percent)) {
-		long new_percent = current_percent + delta;
-		if (new_percent < 0)
-			new_percent = 0;
-		else if (new_percent > 100)
-			new_percent = 100;
-		input_ctrl->SetValue(wxString::Format("%ld", new_percent));
-		input_ctrl->SetSelection(-1, -1);
-		percent_slider->SetValue(static_cast<int>(new_percent));
-	}
+	input_ctrl->set_value(slider_value);
 }
 
 options_dialog::options_dialog(wxWindow* parent) : dialog(parent, "Options") {
