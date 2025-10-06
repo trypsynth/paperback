@@ -211,7 +211,7 @@ void main_window::update_ui() {
 		ID_JUMP_TO_BOOKMARK,
 		ID_WORD_COUNT,
 		ID_DOC_INFO,
-		ID_TABLE_OF_CONTENTS
+		ID_TABLE_OF_CONTENTS,
 	};
 	for (const auto id : doc_items)
 		enable(id, has_doc);
@@ -399,7 +399,6 @@ void main_window::on_next_heading(wxCommandEvent&) {
 	update_status_bar();
 	trigger_throttled_position_save();
 }
-
 
 void main_window::on_word_count(wxCommandEvent&) {
 	const size_t count = doc_manager->get_active_document()->stats.word_count;
