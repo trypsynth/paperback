@@ -27,7 +27,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	auto* const sizer = new wxBoxSizer(wxVERTICAL);
 	sizer->Add(notebook, 1, wxEXPAND | wxALL, 10);
 	panel->SetSizer(sizer);
-	doc_manager = std::make_unique<document_manager>(notebook);
+	doc_manager = std::make_unique<document_manager>(notebook, wxGetApp().get_config_manager(), *this);
 	create_menus();
 	status_bar = CreateStatusBar(1);
 	status_bar->SetStatusText("Ready");

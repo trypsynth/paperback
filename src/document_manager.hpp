@@ -8,6 +8,7 @@
  */
 
 #pragma once
+#include "config_manager.hpp"
 #include "document.hpp"
 #include "utils.hpp"
 #include <memory>
@@ -39,7 +40,7 @@ struct document_tab : public wxClientData {
 
 class document_manager {
 public:
-	explicit document_manager(wxNotebook* notebook);
+	explicit document_manager(wxNotebook* notebook, config_manager& config, main_window& main_win);
 	~document_manager();
 	document_manager(const document_manager&) = delete;
 	document_manager& operator=(const document_manager&) = delete;
@@ -87,6 +88,8 @@ public:
 
 private:
 	wxNotebook* notebook{nullptr};
+	config_manager& config;
+	main_window& main_win;
 
 	void setup_text_ctrl(wxTextCtrl* text_ctrl, const wxString& content);
 	void restore_document_position(document_tab* tab);

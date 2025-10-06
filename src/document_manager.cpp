@@ -21,7 +21,7 @@
 #include <wx/panel.h>
 #include <wx/textctrl.h>
 
-document_manager::document_manager(wxNotebook* nbk) : notebook{nbk} {}
+document_manager::document_manager(wxNotebook* nbk, config_manager& cfg, main_window& win) : notebook{nbk}, config{cfg}, main_win{win} {}
 
 document_manager::~document_manager() {
 	save_all_tab_positions();
@@ -50,12 +50,10 @@ bool document_manager::open_file(const wxString& path, bool add_to_recent) {
 	}
 	auto* const text_ctrl = get_active_text_ctrl();
 	if (text_ctrl) {
-		auto* main_win = static_cast<main_window*>(wxGetApp().GetTopWindow());
-		if (main_win) text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, main_win);
+		text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, &main_win);
 	}
 	if (add_to_recent) {
-		auto& config_mgr = wxGetApp().get_config_manager();
-		config_mgr.add_recent_document(path);
+		config.add_recent_document(path);
 	}
 	update_ui();
 	return true;
@@ -74,20 +72,16 @@ bool document_manager::create_document_tab(const wxString& path, const parser* p
 	notebook->AddPage(panel, tab_data->doc->title, true);
 	restore_document_position(tab_data);
 	if (set_focus) tab_data->text_ctrl->SetFocus();
-	auto& config_mgr = wxGetApp().get_config_manager();
-	config_mgr.add_recent_document(path);
-	config_mgr.set_document_opened(path, true);
+	config.add_recent_document(path);
+	config.set_document_opened(path, true);
 	return true;
 }
 
 void document_manager::update_ui() {
-	auto* main_win = static_cast<main_window*>(wxGetApp().GetTopWindow());
-	if (main_win) {
-		main_win->update_recent_documents_menu();
-		main_win->update_title();
-		main_win->update_status_bar();
-		main_win->update_ui();
-	}
+	main_win.update_recent_documents_menu();
+	main_win.update_title();
+	main_win.update_status_bar();
+	main_win.update_ui();
 }
 
 void document_manager::close_document(int index) {
@@ -96,18 +90,16 @@ void document_manager::close_document(int index) {
 	if (tab && tab->text_ctrl) {
 		long position = tab->text_ctrl->GetInsertionPoint();
 		save_document_position(tab->file_path, position);
-		auto& config_mgr = wxGetApp().get_config_manager();
-		config_mgr.set_document_opened(tab->file_path, false);
+		config.set_document_opened(tab->file_path, false);
 	}
 	notebook->DeletePage(index);
 }
 
 void document_manager::close_all_documents() {
 	save_all_tab_positions();
-	auto& config_mgr = wxGetApp().get_config_manager();
 	for (int i = 0; i < get_tab_count(); ++i) {
 		document_tab* tab = get_tab(i);
-		if (tab) config_mgr.set_document_opened(tab->file_path, false);
+		if (tab) config.set_document_opened(tab->file_path, false);
 	}
 	notebook->DeleteAllPages();
 }
@@ -296,9 +288,8 @@ void document_manager::go_to_previous_bookmark() {
 	document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (!tab || !text_ctrl) return;
-	auto& config_mgr = wxGetApp().get_config_manager();
 	long current_pos = text_ctrl->GetInsertionPoint();
-	long prev_pos = config_mgr.get_previous_bookmark(tab->file_path, current_pos);
+	long prev_pos = config.get_previous_bookmark(tab->file_path, current_pos);
 	if (prev_pos == -1) {
 		speak("No previous bookmark");
 		return;
@@ -307,7 +298,7 @@ void document_manager::go_to_previous_bookmark() {
 	long line;
 	text_ctrl->PositionToXY(prev_pos, 0, &line);
 	wxString current_line = text_ctrl->GetLineText(line);
-	wxArrayLong bookmarks = config_mgr.get_bookmarks(tab->file_path);
+	wxArrayLong bookmarks = config.get_bookmarks(tab->file_path);
 	int bookmark_index = bookmarks.Index(prev_pos);
 	speak(wxString::Format("Bookmark %d: %s", bookmark_index + 1, current_line));
 }
@@ -316,9 +307,8 @@ void document_manager::go_to_next_bookmark() {
 	document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (!tab || !text_ctrl) return;
-	auto& config_mgr = wxGetApp().get_config_manager();
 	long current_pos = text_ctrl->GetInsertionPoint();
-	long next_pos = config_mgr.get_next_bookmark(tab->file_path, current_pos);
+	long next_pos = config.get_next_bookmark(tab->file_path, current_pos);
 	if (next_pos == -1) {
 		speak("No next bookmark");
 		return;
@@ -327,7 +317,7 @@ void document_manager::go_to_next_bookmark() {
 	long line;
 	text_ctrl->PositionToXY(next_pos, 0, &line);
 	wxString current_line = text_ctrl->GetLineText(line);
-	wxArrayLong bookmarks = config_mgr.get_bookmarks(tab->file_path);
+	wxArrayLong bookmarks = config.get_bookmarks(tab->file_path);
 	int bookmark_index = bookmarks.Index(next_pos);
 	speak(wxString::Format("Bookmark %d: %s", bookmark_index + 1, current_line));
 }
@@ -336,12 +326,11 @@ void document_manager::toggle_bookmark() {
 	document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (!tab || !text_ctrl) return;
-	auto& config_mgr = wxGetApp().get_config_manager();
 	long current_pos = text_ctrl->GetInsertionPoint();
-	wxArrayLong bookmarks = config_mgr.get_bookmarks(tab->file_path);
+	wxArrayLong bookmarks = config.get_bookmarks(tab->file_path);
 	bool was_bookmarked = bookmarks.Index(current_pos) != wxNOT_FOUND;
-	config_mgr.toggle_bookmark(tab->file_path, current_pos);
-	config_mgr.flush();
+	config.toggle_bookmark(tab->file_path, current_pos);
+	config.flush();
 	speak(was_bookmarked ? "Bookmark removed" : "Bookmarked");
 }
 
@@ -349,8 +338,7 @@ void document_manager::show_bookmark_dialog(wxWindow* parent) {
 	document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (!tab || !text_ctrl) return;
-	auto& config_mgr = wxGetApp().get_config_manager();
-	wxArrayLong bookmarks = config_mgr.get_bookmarks(tab->file_path);
+	wxArrayLong bookmarks = config.get_bookmarks(tab->file_path);
 	if (bookmarks.IsEmpty()) {
 		speak("No bookmarks");
 		return;
@@ -401,14 +389,12 @@ void document_manager::show_document_info(wxWindow* parent) {
 }
 
 void document_manager::save_document_position(const wxString& path, long position) const {
-	auto& config_mgr = wxGetApp().get_config_manager();
-	config_mgr.set_document_position(path, position);
-	config_mgr.flush();
+	config.set_document_position(path, position);
+	config.flush();
 }
 
 long document_manager::load_document_position(const wxString& path) const {
-	auto& config_mgr = wxGetApp().get_config_manager();
-	return config_mgr.get_document_position(path);
+	return config.get_document_position(path);
 }
 
 void document_manager::save_current_tab_position() {
@@ -469,8 +455,7 @@ void document_manager::apply_word_wrap(bool word_wrap) {
 			long style = wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | (word_wrap ? wxTE_WORDWRAP : wxTE_DONTWRAP);
 			wxTextCtrl* new_ctrl = new wxTextCtrl(tab->panel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, style);
 			tab->text_ctrl = new_ctrl;
-			auto* main_win = static_cast<main_window*>(wxGetApp().GetTopWindow());
-			if (main_win) new_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, main_win);
+			new_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, &main_win);
 			new_ctrl->Freeze();
 			new_ctrl->SetValue(content);
 			new_ctrl->SetInsertionPoint(current_pos);
@@ -528,14 +513,12 @@ void document_manager::restore_document_position(document_tab* tab) {
 wxPanel* document_manager::create_tab_panel(const wxString& content, document_tab* tab_data) {
 	wxPanel* panel = new wxPanel(notebook, wxID_ANY);
 	auto* sizer = new wxBoxSizer(wxVERTICAL);
-	auto& config_mgr = wxGetApp().get_config_manager();
-	bool word_wrap = config_mgr.get_word_wrap();
+	bool word_wrap = config.get_word_wrap();
 	long style = wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | (word_wrap ? wxTE_WORDWRAP : wxTE_DONTWRAP);
 	auto* text_ctrl = new wxTextCtrl(panel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, style);
 	panel->SetClientObject(tab_data);
 	tab_data->text_ctrl = text_ctrl;
-	auto* main_win = static_cast<main_window*>(wxGetApp().GetTopWindow());
-	if (main_win) text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, main_win);
+	text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, &main_win);
 	sizer->Add(text_ctrl, 1, wxEXPAND | wxALL, 5);
 	panel->SetSizer(sizer);
 	setup_text_ctrl(text_ctrl, content);

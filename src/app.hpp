@@ -10,6 +10,7 @@
 #pragma once
 #include "config_manager.hpp"
 #include "main_window.hpp"
+#include <memory>
 #include <wx/ipc.h>
 #include <wx/snglinst.h>
 #include <wx/wx.h>
@@ -45,8 +46,8 @@ public:
 private:
 	main_window* frame{nullptr};
 	config_manager config_mgr;
-	wxSingleInstanceChecker* single_instance_checker{nullptr};
-	paperback_server* ipc_server{nullptr};
+	std::unique_ptr<wxSingleInstanceChecker> single_instance_checker;
+	std::unique_ptr<paperback_server> ipc_server;
 	void load_default_config();
 	static const wxString IPC_SERVICE;
 };

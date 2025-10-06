@@ -33,33 +33,29 @@ bool app::OnInit() {
 		wxMessageBox("Failed to initialize configuration", "Error", wxICON_ERROR);
 		return false;
 	}
-	single_instance_checker = new wxSingleInstanceChecker("paperback_running");
+	single_instance_checker = std::make_unique<wxSingleInstanceChecker>("paperback_running");
 	if (single_instance_checker->IsAnotherRunning()) {
 		if (argc > 1) {
 			paperback_client client;
-			wxConnectionBase* connection = client.MakeConnection("localhost", IPC_SERVICE, "open_file");
+			std::unique_ptr<wxConnectionBase> connection(client.MakeConnection("localhost", IPC_SERVICE, "open_file"));
 			if (connection) {
 				wxString arg_path = wxString(argv[1]);
 				wxFileName file_path{arg_path};
 				file_path.Normalize(wxPATH_NORM_ABSOLUTE);
 				connection->Execute(file_path.GetFullPath());
 				connection->Disconnect();
-				delete connection;
 			}
 		} else {
 			paperback_client client;
-			wxConnectionBase* connection = client.MakeConnection("localhost", IPC_SERVICE, "open_file");
+			std::unique_ptr<wxConnectionBase> connection(client.MakeConnection("localhost", IPC_SERVICE, "open_file"));
 			if (connection) {
 				connection->Execute("ACTIVATE");
 				connection->Disconnect();
-				delete connection;
 			}
 		}
-		delete single_instance_checker;
-		single_instance_checker = nullptr;
 		return false;
 	}
-	ipc_server = new paperback_server();
+	ipc_server = std::make_unique<paperback_server>();
 	if (!ipc_server->Create(IPC_SERVICE)) wxMessageBox("Failed to create IPC server", "Warning", wxICON_WARNING);
 	frame = new main_window();
 	if (config_mgr.get_restore_previous_documents())
@@ -71,14 +67,6 @@ bool app::OnInit() {
 }
 
 int app::OnExit() {
-	if (ipc_server) {
-		delete ipc_server;
-		ipc_server = nullptr;
-	}
-	if (single_instance_checker) {
-		delete single_instance_checker;
-		single_instance_checker = nullptr;
-	}
 	config_mgr.shutdown();
 	return wxApp::OnExit();
 }
