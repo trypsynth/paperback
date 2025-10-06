@@ -152,6 +152,11 @@ public:
 private:
 	wxTextCtrl* textbox{nullptr};
 	wxSlider* percent_slider{nullptr};
+	wxTextCtrl* input_ctrl{nullptr};
+
+	void on_key_down(wxKeyEvent& event);
+	void on_slider_changed(wxCommandEvent& event);
+	void adjust_percent(int delta);
 };
 
 class options_dialog : public dialog {

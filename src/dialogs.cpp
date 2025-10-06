@@ -315,19 +315,64 @@ go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ct
 	long current_pos = textbox->GetInsertionPoint();
 	long total_pos = textbox->GetLastPosition();
 	int current_percent = total_pos > 0 ? static_cast<int>((current_pos * 100) / total_pos) : 0;
-	auto* label = new wxStaticText(this, wxID_ANY, "&Percent");
+	auto* slider_label = new wxStaticText(this, wxID_ANY, "&Percent");
 	percent_slider = new wxSlider(this, wxID_ANY, current_percent, 0, 100);
+	auto* input_label = new wxStaticText(this, wxID_ANY, "P&ercent");
+	wxTextValidator validator(wxFILTER_DIGITS);
+	input_ctrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER, validator);
+	input_ctrl->SetValue(wxString::Format("%d", current_percent));
+	input_ctrl->SetSelection(-1, -1);
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
-	content_sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
-	content_sizer->Add(percent_slider, 0, wxEXPAND);
+	content_sizer->Add(slider_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
+	content_sizer->Add(percent_slider, 0, wxEXPAND | wxBOTTOM, 5);
+	content_sizer->Add(input_label, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, 5);
+	content_sizer->Add(input_ctrl, 0, wxEXPAND);
+	input_ctrl->Bind(wxEVT_KEY_DOWN, &go_to_percent_dialog::on_key_down, this);
+	percent_slider->Bind(wxEVT_SLIDER, &go_to_percent_dialog::on_slider_changed, this);
 	set_content(content_sizer);
 	finalize_layout();
 }
 
 long go_to_percent_dialog::get_position() const {
-	int percent = percent_slider->GetValue();
+	wxString input = input_ctrl->GetValue().Trim(true).Trim(false);
+	long percent;
+	if (input.ToLong(&percent) && percent >= 0 && percent <= 100) {
+		long total_chars = textbox->GetLastPosition();
+		return (percent * total_chars + 100 - 1) / 100;
+	}
+	percent = percent_slider->GetValue();
 	long total_chars = textbox->GetLastPosition();
 	return (percent * total_chars + 100 - 1) / 100;
+}
+
+void go_to_percent_dialog::on_key_down(wxKeyEvent& event) {
+	int key_code = event.GetKeyCode();
+	if (key_code == WXK_UP)
+		adjust_percent(1);
+	else if (key_code == WXK_DOWN)
+		adjust_percent(-1);
+	else
+		event.Skip();
+}
+
+void go_to_percent_dialog::on_slider_changed(wxCommandEvent& event) {
+	int slider_value = percent_slider->GetValue();
+	input_ctrl->SetValue(wxString::Format("%d", slider_value));
+}
+
+void go_to_percent_dialog::adjust_percent(int delta) {
+	wxString current_value = input_ctrl->GetValue().Trim(true).Trim(false);
+	long current_percent;
+	if (current_value.ToLong(&current_percent)) {
+		long new_percent = current_percent + delta;
+		if (new_percent < 0)
+			new_percent = 0;
+		else if (new_percent > 100)
+			new_percent = 100;
+		input_ctrl->SetValue(wxString::Format("%ld", new_percent));
+		input_ctrl->SetSelection(-1, -1);
+		percent_slider->SetValue(static_cast<int>(new_percent));
+	}
 }
 
 options_dialog::options_dialog(wxWindow* parent) : dialog(parent, "Options") {
