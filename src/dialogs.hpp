@@ -155,6 +155,20 @@ private:
 	void on_slider_changed(wxCommandEvent& event);
 };
 
+class open_as_dialog : public dialog {
+public:
+	open_as_dialog(wxWindow* parent, const wxString& path);
+	~open_as_dialog() = default;
+	open_as_dialog(const open_as_dialog&) = delete;
+	open_as_dialog& operator=(const open_as_dialog&) = delete;
+	open_as_dialog(open_as_dialog&&) = delete;
+	open_as_dialog& operator=(open_as_dialog&&) = delete;
+	[[nodiscard]] wxString get_selected_format() const;
+
+private:
+	wxComboBox* format_combo{nullptr};
+};
+
 class options_dialog : public dialog {
 public:
 	options_dialog(wxWindow* parent);

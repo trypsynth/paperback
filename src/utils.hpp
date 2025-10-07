@@ -14,6 +14,9 @@
 #include <string_view>
 #include <wx/string.h>
 
+class config_manager;
+class parser;
+
 enum class find_options {
 	none = 0,
 	forward = 1 << 0,
@@ -42,7 +45,7 @@ inline constexpr bool has_option(find_options options, find_options flag) noexce
 [[nodiscard]] std::string collapse_whitespace(std::string_view input);
 [[nodiscard]] std::string trim_string(const std::string& str);
 [[nodiscard]] std::string remove_soft_hyphens(std::string_view input);
-[[nodiscard]] bool should_open_as_txt(const wxString& path);
+[[nodiscard]] const parser* get_parser_for_unknown_file(const wxString& path, config_manager& config);
 void speak(const wxString& message);
 [[nodiscard]] std::string url_decode(std::string_view encoded);
 [[nodiscard]] Poco::Zip::ZipArchive::FileHeaders::const_iterator find_file_in_archive(std::string_view filename, const std::unique_ptr<Poco::Zip::ZipArchive>& archive);

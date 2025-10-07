@@ -90,14 +90,8 @@ void app::parse_command_line() {
 	}
 	auto* par = find_parser_by_extension(wxFileName(path).GetExt());
 	if (!par) {
-		wxString saved_format = config_mgr.get_document_format(path);
-		if (saved_format == "txt")
-			par = find_parser_by_extension("txt");
-		else {
-			if (!should_open_as_txt(path)) return;
-			par = find_parser_by_extension("txt");
-			config_mgr.set_document_format(path, "txt");
-		}
+		par = get_parser_for_unknown_file(path, config_mgr);
+		if (!par) return;
 	}
 	if (!doc_manager->create_document_tab(path, par))
 		wxMessageBox("Failed to load document.", "Error", wxICON_ERROR);
@@ -114,14 +108,8 @@ void app::restore_previous_documents() {
 		if (existing_tab >= 0) continue;
 		auto* par = find_parser_by_extension(wxFileName(path).GetExt());
 		if (!par) {
-			wxString saved_format = config_mgr.get_document_format(path);
-			if (saved_format == "txt")
-				par = find_parser_by_extension("txt");
-			else {
-				if (!should_open_as_txt(path)) continue;
-				par = find_parser_by_extension("txt");
-				config_mgr.set_document_format(path, "txt");
-			}
+			par = get_parser_for_unknown_file(path, config_mgr);
+			if (!par) continue;
 		}
 		if (!doc_manager->create_document_tab(path, par, false)) continue;
 	}
@@ -160,14 +148,8 @@ void app::open_file(const wxString& filename) {
 	}
 	auto* par = find_parser_by_extension(wxFileName(filename).GetExt());
 	if (!par) {
-		wxString saved_format = config_mgr.get_document_format(filename);
-		if (saved_format == "txt")
-			par = find_parser_by_extension("txt");
-		else {
-			if (!should_open_as_txt(filename)) return;
-			par = find_parser_by_extension("txt");
-			config_mgr.set_document_format(filename, "txt");
-		}
+		par = get_parser_for_unknown_file(filename, config_mgr);
+		if (!par) return;
 	}
 	if (!doc_manager->create_document_tab(filename, par))
 		wxMessageBox("Failed to load document.", "Error", wxICON_ERROR);

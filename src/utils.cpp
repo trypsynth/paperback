@@ -8,6 +8,9 @@
  */
 
 #include "utils.hpp"
+#include "config_manager.hpp"
+#include "dialogs.hpp"
+#include "parser.hpp"
 #include <Poco/Exception.h>
 #include <Poco/RegularExpression.h>
 #include <Poco/URI.h>
@@ -130,9 +133,17 @@ std::string remove_soft_hyphens(std::string_view input) {
 	}
 }
 
-bool should_open_as_txt(const wxString& path) {
-	const auto message = wxString::Format("No suitable parser was found for %s. Would you like to treat it as plain text?", path);
-	return wxMessageBox(message, "Warning", wxICON_WARNING | wxYES_NO) == wxYES;
+const parser* get_parser_for_unknown_file(const wxString& path, config_manager& config) {
+	wxString saved_format = config.get_document_format(path);
+	if (!saved_format.IsEmpty()) {
+		auto* par = find_parser_by_extension(saved_format);
+		if (par) return par;
+	}
+	open_as_dialog dlg(nullptr, path);
+	if (dlg.ShowModal() != wxID_OK) return nullptr;
+	wxString format = dlg.get_selected_format();
+	config.set_document_format(path, format);
+	return find_parser_by_extension(format);
 }
 
 void speak(const wxString& message) {

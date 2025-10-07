@@ -280,6 +280,39 @@ void go_to_percent_dialog::on_slider_changed(wxCommandEvent& event) {
 	input_ctrl->SetValue(slider_value);
 }
 
+open_as_dialog::open_as_dialog(wxWindow* parent, const wxString& path) : dialog(parent, "Open As") {
+	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
+	auto* label = new wxStaticText(this, wxID_ANY, wxString::Format("No suitable parser was found for %s.\nHow would you like to open this file?", path));
+	content_sizer->Add(label, 0, wxALL, 5);
+	auto* format_sizer = new wxBoxSizer(wxHORIZONTAL);
+	auto* format_label = new wxStaticText(this, wxID_ANY, "Open &as:");
+	format_combo = new wxComboBox(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, 0, nullptr, wxCB_READONLY);
+	format_combo->Append("Plain Text");
+	format_combo->Append("HTML");
+	format_combo->Append("Markdown");
+	format_combo->SetSelection(0);
+	format_sizer->Add(format_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
+	format_sizer->Add(format_combo, 1, wxEXPAND);
+	content_sizer->Add(format_sizer, 0, wxEXPAND | wxALL, 5);
+	set_content(content_sizer);
+	finalize_layout();
+	format_combo->SetFocus();
+}
+
+wxString open_as_dialog::get_selected_format() const {
+	const int selection = format_combo->GetSelection();
+	switch (selection) {
+		case 0:
+			return "txt";
+		case 1:
+			return "html";
+		case 2:
+			return "md";
+		default:
+			return "txt";
+	}
+}
+
 options_dialog::options_dialog(wxWindow* parent) : dialog(parent, "Options") {
 	auto* general_box = new wxStaticBoxSizer(wxVERTICAL, this, "General");
 	restore_docs_check = new wxCheckBox(this, wxID_ANY, "&Restore previously opened documents on startup");
