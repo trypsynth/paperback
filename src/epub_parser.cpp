@@ -332,6 +332,8 @@ int epub_parser::calculate_offset_from_href(const std::string& href, const epub_
 		file_path = href.substr(0, hash_pos);
 		fragment = href.substr(hash_pos + 1);
 	}
+	file_path = url_decode(file_path);
+	fragment = url_decode(fragment);
 	Path full_path(ctx.opf_path);
 	if (!file_path.empty()) full_path.append(file_path);
 	std::string resolved_path = full_path.toString(Path::PATH_UNIX);
