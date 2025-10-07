@@ -377,6 +377,21 @@ long config_manager::get_closest_bookmark(const wxString& path, long current_pos
 	return closest;
 }
 
+void config_manager::set_document_format(const wxString& path, const wxString& format) {
+	with_document_section(path, [this, path, format]() {
+		config->Write("path", path);
+		config->Write("format", format);
+	});
+}
+
+wxString config_manager::get_document_format(const wxString& path) const {
+	wxString format = "";
+	with_document_section(path, [this, &format]() {
+		format = config->Read("format", "");
+	});
+	return format;
+}
+
 bool config_manager::needs_migration() const {
 	if (!config) return false;
 	if (get_config_version() == CONFIG_VERSION_CURRENT) return false;

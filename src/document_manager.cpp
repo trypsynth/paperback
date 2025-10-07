@@ -41,8 +41,14 @@ bool document_manager::open_file(const wxString& path, bool add_to_recent) {
 	}
 	auto* par = find_parser_by_extension(wxFileName(path).GetExt());
 	if (!par) {
-		if (!should_open_as_txt(path)) return false;
-		par = find_parser_by_extension("txt");
+		wxString saved_format = config.get_document_format(path);
+		if (saved_format == "txt")
+			par = find_parser_by_extension("txt");
+		else {
+			if (!should_open_as_txt(path)) return false;
+			par = find_parser_by_extension("txt");
+			config.set_document_format(path, "txt");
+		}
 	}
 	if (!create_document_tab(path, par)) {
 		wxMessageBox("Failed to load document.", "Error", wxICON_ERROR);

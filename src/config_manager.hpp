@@ -60,6 +60,8 @@ public:
 	long get_next_bookmark(const wxString& path, long current_position) const;
 	long get_previous_bookmark(const wxString& path, long current_position) const;
 	long get_closest_bookmark(const wxString& path, long current_position) const;
+	void set_document_format(const wxString& path, const wxString& format);
+	wxString get_document_format(const wxString& path) const;
 	bool needs_migration() const;
 	bool migrate_config();
 
