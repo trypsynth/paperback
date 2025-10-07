@@ -77,14 +77,18 @@ long find_text(const wxString& haystack, const wxString& needle, long start, fin
 std::string collapse_whitespace(std::string_view input) {
 	auto result = std::ostringstream{};
 	bool prev_was_space = false;
-	for (const auto ch : input) {
-		if (std::isspace(static_cast<unsigned char>(ch))) {
+	for (size_t i = 0; i < input.size(); ++i) {
+		const auto ch = static_cast<unsigned char>(input[i]);
+		// Check for non-breaking space (UTF-8: 0xC2A0)
+		const bool is_nbsp = (i + 1 < input.size() && ch == 0xC2 && static_cast<unsigned char>(input[i + 1]) == 0xA0);
+		if (std::isspace(ch) || is_nbsp) {
 			if (!prev_was_space) {
 				result << ' ';
 				prev_was_space = true;
 			}
+			if (is_nbsp) ++i; // Skip the second byte of the UTF-8 sequence.
 		} else {
-			result << ch;
+			result << input[i];
 			prev_was_space = false;
 		}
 	}
@@ -94,12 +98,24 @@ std::string collapse_whitespace(std::string_view input) {
 std::string trim_string(const std::string& str) {
 	auto start = str.begin();
 	auto end = str.end();
-	start = std::find_if(start, end, [](const unsigned char ch) noexcept {
-		return !std::isspace(ch);
-	});
-	end = std::find_if(str.rbegin(), std::string::const_reverse_iterator(start), [](const unsigned char ch) noexcept {
-		return !std::isspace(ch);
-	}).base();
+	auto is_nbsp = [&](std::string::const_iterator it) -> bool {
+		return it != str.end() && std::next(it) != str.end() && static_cast<unsigned char>(*it) == 0xC2 && static_cast<unsigned char>(*std::next(it)) == 0xA0;
+	};
+	while (start != end && (std::isspace(static_cast<unsigned char>(*start)) || is_nbsp(start))) {
+		if (is_nbsp(start))
+			start += 2;
+		else
+			++start;
+	}
+	while (start != end) {
+		auto prev = std::prev(end);
+		if (std::isspace(static_cast<unsigned char>(*prev)))
+			end = prev;
+		else if (prev != start && std::prev(prev) != start && is_nbsp(std::prev(prev)))
+			end = std::prev(prev);
+		else
+			break;
+	}
 	return std::string(start, end);
 }
 
