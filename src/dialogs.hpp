@@ -8,9 +8,9 @@
  */
 
 #pragma once
-#include "controls.hpp"
 #include "document.hpp"
 #include "parser.hpp"
+#include <wx/spinctrl.h>
 #include <wx/treectrl.h>
 #include <wx/wx.h>
 
@@ -113,7 +113,7 @@ public:
 
 private:
 	wxTextCtrl* textbox{nullptr};
-	numeric_spin_ctrl* input_ctrl{nullptr};
+	wxSpinCtrl* input_ctrl{nullptr};
 
 	[[nodiscard]] long get_max_line() const;
 };
@@ -131,7 +131,7 @@ public:
 private:
 	document* doc_{nullptr};
 	const parser* parser_{nullptr};
-	numeric_spin_ctrl* input_ctrl{nullptr};
+	wxSpinCtrl* input_ctrl{nullptr};
 
 	[[nodiscard]] int get_max_page() const;
 };
@@ -149,7 +149,7 @@ public:
 private:
 	wxTextCtrl* textbox{nullptr};
 	wxSlider* percent_slider{nullptr};
-	numeric_spin_ctrl* input_ctrl{nullptr};
+	wxSpinCtrl* input_ctrl{nullptr};
 
 	void on_slider_changed(wxCommandEvent& event);
 };

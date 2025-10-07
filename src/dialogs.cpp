@@ -210,7 +210,7 @@ go_to_line_dialog::go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : 
 	auto* label = new wxStaticText(this, wxID_ANY, "&Line number:");
 	long line;
 	textbox->PositionToXY(textbox->GetInsertionPoint(), 0, &line);
-	input_ctrl = new numeric_spin_ctrl(this, wxID_ANY, line + 1, 1, textbox->GetNumberOfLines());
+	input_ctrl = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, textbox->GetNumberOfLines(), line + 1);
 	line_sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
 	line_sizer->Add(input_ctrl, 1, wxEXPAND);
 	set_content(line_sizer);
@@ -218,7 +218,7 @@ go_to_line_dialog::go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : 
 }
 
 long go_to_line_dialog::get_position() const {
-	long line = input_ctrl->get_value();
+	long line = input_ctrl->GetValue();
 	if (line >= 1 && line <= textbox->GetNumberOfLines())
 		return textbox->XYToPosition(0, line - 1);
 	return textbox->GetInsertionPoint();
@@ -231,7 +231,7 @@ long go_to_line_dialog::get_max_line() const {
 go_to_page_dialog::go_to_page_dialog(wxWindow* parent, document* doc, const parser* par, int current_page) : dialog(parent, "Go to page"), doc_{doc}, parser_{par} {
 	auto* page_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* label = new wxStaticText(this, wxID_ANY, wxString::Format("Go to page (1/%d):", get_max_page()));
-	input_ctrl = new numeric_spin_ctrl(this, wxID_ANY, current_page, 1, get_max_page());
+	input_ctrl = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, get_max_page(), current_page);
 	page_sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
 	page_sizer->Add(input_ctrl, 1, wxEXPAND);
 	set_content(page_sizer);
@@ -239,7 +239,7 @@ go_to_page_dialog::go_to_page_dialog(wxWindow* parent, document* doc, const pars
 }
 
 int go_to_page_dialog::get_page_number() const {
-	long page = input_ctrl->get_value();
+	long page = input_ctrl->GetValue();
 	if (page >= 1 && page <= get_max_page())
 		return static_cast<int>(page);
 	return 1;
@@ -258,7 +258,7 @@ go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ct
 	auto* slider_label = new wxStaticText(this, wxID_ANY, "&Percent");
 	percent_slider = new wxSlider(this, wxID_ANY, current_percent, 0, 100);
 	auto* input_label = new wxStaticText(this, wxID_ANY, "P&ercent");
-	input_ctrl = new numeric_spin_ctrl(this, wxID_ANY, current_percent, 0, 100);
+	input_ctrl = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 100, current_percent);
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	content_sizer->Add(slider_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
 	content_sizer->Add(percent_slider, 0, wxEXPAND | wxBOTTOM, 5);
@@ -270,14 +270,14 @@ go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ct
 }
 
 long go_to_percent_dialog::get_position() const {
-	long percent = input_ctrl->get_value();
+	long percent = input_ctrl->GetValue();
 	long total_chars = textbox->GetLastPosition();
 	return (percent * total_chars + 100 - 1) / 100;
 }
 
 void go_to_percent_dialog::on_slider_changed(wxCommandEvent& event) {
 	int slider_value = percent_slider->GetValue();
-	input_ctrl->set_value(slider_value);
+	input_ctrl->SetValue(slider_value);
 }
 
 options_dialog::options_dialog(wxWindow* parent) : dialog(parent, "Options") {
