@@ -8,6 +8,7 @@
  */
 
 #pragma once
+#include "controls.hpp"
 #include "document.hpp"
 #include "parser.hpp"
 #include <wx/spinctrl.h>
@@ -148,7 +149,7 @@ public:
 
 private:
 	wxTextCtrl* textbox{nullptr};
-	wxSlider* percent_slider{nullptr};
+	accessible_slider* percent_slider{nullptr};
 	wxSpinCtrl* input_ctrl{nullptr};
 
 	void on_slider_changed(wxCommandEvent& event);
