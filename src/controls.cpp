@@ -1,4 +1,4 @@
-/* controls.cpp - custom control implementations.
+/* controls.cpp - custom UI control implementations.
  *
  * Paperback.
  * Copyright (c) 2025 Quin Gillespie.
