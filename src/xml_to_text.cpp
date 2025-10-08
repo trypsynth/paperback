@@ -180,5 +180,5 @@ std::string xml_to_text::get_element_text(Element* element) noexcept {
 			text += get_element_text(static_cast<Element*>(child));
 		child = child->nextSibling();
 	}
-	return collapse_whitespace(trim_string(text));
+	return text;
 }
