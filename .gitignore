@@ -1,4 +1,3 @@
+.claude/
 build/
 vcpkg/bin/
-.claude/
-.vscode/
