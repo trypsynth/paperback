@@ -257,7 +257,7 @@ go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ct
 	int current_percent = total_pos > 0 ? static_cast<int>((current_pos * 100) / total_pos) : 0;
 	auto* slider_label = new wxStaticText(this, wxID_ANY, "&Percent");
 	percent_slider = new accessible_slider(this, wxID_ANY, current_percent, 0, 100);
-	auto* input_label = new wxStaticText(this, wxID_ANY, "P&ercent");
+	auto* input_label = new wxStaticText(this, wxID_ANY, "P&ercent:");
 	input_ctrl = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 100, current_percent);
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	content_sizer->Add(slider_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
