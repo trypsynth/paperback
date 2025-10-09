@@ -18,31 +18,37 @@
 #include <Poco/DOM/NodeList.h>
 #include <Poco/SAX/InputSource.h>
 #include <Poco/String.h>
-#include <Poco/Zip/ZipStream.h>
+#include <Poco/URI.h>
 #include <memory>
 #include <sstream>
 #include <wx/filename.h>
 #include <wx/msgdlg.h>
 #include <wx/wfstream.h>
+#include <wx/zipstrm.h>
 
 using namespace Poco;
 using namespace Poco::XML;
-using namespace Poco::Zip;
 
 std::unique_ptr<document> epub_parser::load(const wxString& path) const {
-	std::ifstream fp;
-	std::unique_ptr<ZipArchive> archive;
 	try {
-		fp.open(path.ToStdString(), std::ios::binary);
-		if (fp.fail()) return nullptr;
-		archive = std::make_unique<ZipArchive>(fp);
-		epub_context ctx(fp, archive);
-		auto header = archive->findHeader("META-INF/container.xml");
-		if (header == archive->headerEnd()) return nullptr;
-		ZipInputStream zis(fp, header->second, true);
-		InputSource src(zis);
-		// If we don't call fp.clear() here, certain epubs (e.g. Bookshare) will fail to open, because the stream's error bit will be set. This seems like a bug in Poco to me, but I just work here.
-		fp.clear();
+		auto fp = std::make_unique<wxFileInputStream>(path);
+		if (!fp->IsOk()) return nullptr;
+		wxZipInputStream zip_index(*fp);
+		std::map<std::string, wxZipEntry*> entries;
+		while (wxZipEntry* entry = zip_index.GetNextEntry()) {
+			std::string name = entry->GetName(wxPATH_UNIX).ToStdString();
+			entries[name] = entry;
+		}
+		fp->SeekI(0);
+		epub_context ctx(*fp);
+		ctx.zip_entries = std::move(entries);
+		wxZipEntry* container_entry = find_zip_entry("META-INF/container.xml", ctx.zip_entries);
+		if (!container_entry) return nullptr;
+		wxZipInputStream container_zip(*fp);
+		if (!container_zip.OpenEntry(*container_entry)) return nullptr;
+		std::string container_content = read_zip_entry(container_zip);
+		std::istringstream container_stream(container_content);
+		InputSource src(container_stream);
 		DOMParser parser;
 		auto doc = parser.parse(&src);
 		NamespaceSupport nsmap;
@@ -69,10 +75,14 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 }
 
 void epub_parser::parse_opf(const std::string& filename, epub_context& ctx) const {
-	auto header = find_file_in_archive(filename, ctx.archive);
-	if (header == ctx.archive->headerEnd()) throw parse_error("No OPF file found");
-	ZipInputStream zis(ctx.file_stream, header->second, true);
-	InputSource src(zis);
+	wxZipEntry* opf_entry = find_zip_entry(filename, ctx.zip_entries);
+	if (!opf_entry) throw parse_error("No OPF file found");
+	ctx.file_stream.SeekI(0);
+	wxZipInputStream zis(ctx.file_stream);
+	if (!zis.OpenEntry(*opf_entry)) throw parse_error("Failed to open OPF file");
+	std::string opf_content = read_zip_entry(zis);
+	std::istringstream opf_stream(opf_content);
+	InputSource src(opf_stream);
 	DOMParser parser;
 	auto doc = parser.parse(&src);
 	NamespaceSupport nsmap;
@@ -138,14 +148,15 @@ void epub_parser::parse_section(size_t index, epub_context& ctx, document_buffer
 	const auto& manifest_item = it->second;
 	const auto& href = manifest_item.path;
 	const auto& media_type = manifest_item.media_type;
-	auto header = find_file_in_archive(href, ctx.archive);
-	if (header == ctx.archive->headerEnd()) throw parse_error("File not found: " + href);
-	ZipInputStream zis(ctx.file_stream, header->second, true);
-	std::ostringstream content_buffer;
-	content_buffer << zis.rdbuf();
+	wxZipEntry* section_entry = find_zip_entry(href, ctx.zip_entries);
+	if (!section_entry) throw parse_error("File not found: " + href);
+	ctx.file_stream.SeekI(0);
+	wxZipInputStream zis(ctx.file_stream);
+	if (!zis.OpenEntry(*section_entry)) throw parse_error("Failed to open section file: " + href);
+	std::string content = read_zip_entry(zis);
 	if (is_html_content(media_type)) {
 		html_to_text converter;
-		if (converter.convert(content_buffer.str())) {
+		if (converter.convert(content)) {
 			const auto& text = converter.get_text();
 			const auto& headings = converter.get_headings();
 			const auto& id_positions = converter.get_id_positions();
@@ -160,7 +171,7 @@ void epub_parser::parse_section(size_t index, epub_context& ctx, document_buffer
 		}
 	} else {
 		xml_to_text converter;
-		if (converter.convert(content_buffer.str())) {
+		if (converter.convert(content)) {
 			const auto& text = converter.get_text();
 			const auto& headings = converter.get_headings();
 			const auto& id_positions = converter.get_id_positions();
@@ -195,10 +206,14 @@ void epub_parser::parse_epub2_ncx(const std::string& ncx_id, const epub_context&
 	auto it = ctx.manifest_items.find(ncx_id);
 	if (it == ctx.manifest_items.end()) return;
 	const auto& ncx_file = it->second.path;
-	auto header = find_file_in_archive(ncx_file, ctx.archive);
-	if (header == ctx.archive->headerEnd()) return;
-	ZipInputStream zis(ctx.file_stream, header->second, true);
-	InputSource src(zis);
+	wxZipEntry* ncx_entry = find_zip_entry(ncx_file, ctx.zip_entries);
+	if (!ncx_entry) return;
+	ctx.file_stream.SeekI(0);
+	wxZipInputStream zis(ctx.file_stream);
+	if (!zis.OpenEntry(*ncx_entry)) return;
+	std::string ncx_content = read_zip_entry(zis);
+	std::istringstream ncx_stream(ncx_content);
+	InputSource src(ncx_stream);
 	DOMParser parser;
 	auto doc = parser.parse(&src);
 	NamespaceSupport nsmap;
@@ -246,10 +261,14 @@ void epub_parser::parse_epub3_nav(const std::string& nav_id, const epub_context&
 	const auto& nav_file = it->second.path;
 	Path nav_base_path(nav_file, Path::PATH_UNIX);
 	nav_base_path.makeParent();
-	auto header = find_file_in_archive(nav_file, ctx.archive);
-	if (header == ctx.archive->headerEnd()) return;
-	ZipInputStream zis(ctx.file_stream, header->second, true);
-	InputSource src(zis);
+	wxZipEntry* nav_entry = find_zip_entry(nav_file, ctx.zip_entries);
+	if (!nav_entry) return;
+	ctx.file_stream.SeekI(0);
+	wxZipInputStream zis(ctx.file_stream);
+	if (!zis.OpenEntry(*nav_entry)) return;
+	std::string nav_content = read_zip_entry(zis);
+	std::istringstream nav_stream(nav_content);
+	InputSource src(nav_stream);
 	DOMParser parser;
 	auto doc = parser.parse(&src);
 	NamespaceSupport nsmap;

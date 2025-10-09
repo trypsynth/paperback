@@ -11,13 +11,14 @@
 #include "parser.hpp"
 #include <Poco/DOM/Element.h>
 #include <Poco/Path.h>
-#include <Poco/Zip/ZipArchive.h>
 #include <fstream>
 #include <map>
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <wx/wfstream.h>
+#include <wx/zipstrm.h>
 
 struct epub_section {
 	std::vector<std::string> lines;
@@ -65,8 +66,8 @@ public:
 
 private:
 	struct epub_context {
-		std::ifstream& file_stream;
-		std::unique_ptr<Poco::Zip::ZipArchive>& archive;
+		wxFileInputStream& file_stream;
+		std::map<std::string, wxZipEntry*> zip_entries;
 		std::map<std::string, manifest_item> manifest_items;
 		std::vector<std::string> spine_items;
 		std::map<std::string, std::map<std::string, size_t>> id_positions;
@@ -76,7 +77,10 @@ private:
 		std::string toc_ncx_id;
 		std::string nav_doc_id;
 
-		epub_context(std::ifstream& fs, std::unique_ptr<Poco::Zip::ZipArchive>& arch) : file_stream(fs), archive(arch) {}
+		epub_context(wxFileInputStream& fs) : file_stream(fs) {}
+		~epub_context() {
+			for (auto& [_, entry] : zip_entries) delete entry;
+		}
 	};
 
 	void parse_opf(const std::string& filename, epub_context& ctx) const;

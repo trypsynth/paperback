@@ -15,8 +15,8 @@
 #include <Poco/RegularExpression.h>
 #include <Poco/URI.h>
 #include <Poco/UTF8String.h>
-#include <Poco/Zip/ZipArchive.h>
 #include <cctype>
+#include <optional>
 #include <sstream>
 #include <wx/strconv.h>
 #ifdef _WIN32
@@ -162,26 +162,6 @@ std::string url_decode(std::string_view encoded) {
 	}
 }
 
-Poco::Zip::ZipArchive::FileHeaders::const_iterator find_file_in_archive(std::string_view filename, const std::unique_ptr<Poco::Zip::ZipArchive>& archive) {
-	const std::string filename_str{filename};
-	auto header = archive->findHeader(filename_str);
-	if (header != archive->headerEnd()) return header;
-	const auto decoded = url_decode(filename);
-	if (decoded != filename_str) {
-		header = archive->findHeader(decoded);
-		if (header != archive->headerEnd()) return header;
-	}
-	auto encoded = std::string{};
-	try {
-		Poco::URI::encode(filename_str, "", encoded);
-		if (encoded != filename_str) {
-			header = archive->findHeader(encoded);
-			if (header != archive->headerEnd()) return header;
-		}
-	} catch (const Poco::Exception&) {}
-	return archive->headerEnd();
-}
-
 std::string convert_to_utf8(const std::string& input) {
 	if (input.empty()) return input;
 	const auto* data = reinterpret_cast<const unsigned char*>(input.data());
@@ -271,4 +251,31 @@ std::vector<std::unique_ptr<toc_item>> build_toc_from_headings(const document_bu
 		for (int i = level + 1; i < 7; ++i) level_stacks[i] = nullptr;
 	}
 	return result;
+}
+
+std::string read_zip_entry(wxZipInputStream& zip) {
+	std::ostringstream buffer;
+	char buf[4096];
+	while (zip.Read(buf, sizeof(buf)).LastRead() > 0)
+		buffer.write(buf, zip.LastRead());
+	return buffer.str();
+}
+
+wxZipEntry* find_zip_entry(const std::string& filename, const std::map<std::string, wxZipEntry*>& entries) {
+	auto it = entries.find(filename);
+	if (it != entries.end()) return it->second;
+	auto decoded = url_decode(filename);
+	if (decoded != filename) {
+		it = entries.find(decoded);
+		if (it != entries.end()) return it->second;
+	}
+	std::string encoded;
+	try {
+		Poco::URI::encode(filename, "", encoded);
+		if (encoded != filename) {
+			it = entries.find(encoded);
+			if (it != entries.end()) return it->second;
+		}
+	} catch (const Exception&) {}
+	return nullptr;
 }

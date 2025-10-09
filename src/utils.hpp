@@ -9,10 +9,10 @@
 
 #pragma once
 #include "document.hpp"
-#include <Poco/Zip/ZipArchive.h>
 #include <string>
 #include <string_view>
 #include <wx/string.h>
+#include <wx/zipstrm.h>
 
 class config_manager;
 class parser;
@@ -48,7 +48,8 @@ inline constexpr bool has_option(find_options options, find_options flag) noexce
 [[nodiscard]] const parser* get_parser_for_unknown_file(const wxString& path, config_manager& config);
 void speak(const wxString& message);
 [[nodiscard]] std::string url_decode(std::string_view encoded);
-[[nodiscard]] Poco::Zip::ZipArchive::FileHeaders::const_iterator find_file_in_archive(std::string_view filename, const std::unique_ptr<Poco::Zip::ZipArchive>& archive);
 [[nodiscard]] std::string convert_to_utf8(const std::string& input);
 void cleanup_toc(std::vector<std::unique_ptr<toc_item>>& items);
 [[nodiscard]] std::vector<std::unique_ptr<toc_item>> build_toc_from_headings(const document_buffer& buffer);
+[[nodiscard]] std::string read_zip_entry(wxZipInputStream& zip) {
+	[[nodiscard]] wxZipEntry* find_zip_entry(const std::string& filename, const std::map<std::string, wxZipEntry*>& entries) {

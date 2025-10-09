@@ -21,7 +21,7 @@ find_package(chmlib CONFIG REQUIRED)
 find_package(lexbor CONFIG REQUIRED)
 find_package(maddy CONFIG REQUIRED)
 find_package(pdfium CONFIG REQUIRED)
-find_package(Poco REQUIRED COMPONENTS Foundation XML Zip)
+find_package(Poco REQUIRED COMPONENTS Foundation XML)
 if(WIN32)
 	find_package(universalspeech CONFIG REQUIRED)
 endif()
@@ -40,7 +40,6 @@ target_link_libraries(paperback PRIVATE
 	pdfium::pdfium
 	Poco::Foundation
 	Poco::XML
-	Poco::Zip
 	wx::base
 	wx::core
 	wx::net
