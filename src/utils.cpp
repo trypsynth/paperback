@@ -19,6 +19,7 @@
 #include <optional>
 #include <sstream>
 #include <wx/strconv.h>
+#include <wx/zipstrm.h>
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #define UNIVERSAL_SPEECH_STATIC
@@ -276,6 +277,6 @@ wxZipEntry* find_zip_entry(const std::string& filename, const std::map<std::stri
 			it = entries.find(encoded);
 			if (it != entries.end()) return it->second;
 		}
-	} catch (const Exception&) {}
+	} catch (const Poco::Exception&) {}
 	return nullptr;
 }
