@@ -8,10 +8,7 @@
 		"pdfium",
 		{
 			"name": "poco",
-			"features": [
-				"xml",
-				"zip"
-			]
+			"features": ["xml"]
 		},
 		{
 			"name": "universalspeech",
