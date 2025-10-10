@@ -30,10 +30,11 @@
 	Name: "startmenuicon"; Description: "Start Menu Shortcut"; Flags: unchecked
 	Name: "assoc_chm"; Description: "Associate with Compiled HTML Help files (*.chm)"; Flags: unchecked
 	Name: "assoc_epub"; Description: "Associate with Epub Books (*.epub)"
-	Name: "assoc_docx"; Description: "Associate with Word Documents (*.docx, *.docm)"
+	Name: "assoc_docx"; Description: "Associate with Word Documents (*.docx, *.docm)"; Flags: unchecked
 	Name: "assoc_html"; Description: "Associate with HTML Documents (*.htm, *.html, *.xhtml)"; Flags: unchecked
 	Name: "assoc_markdown"; Description: "Associate with Markdown Documents (*.md, *.markdown, *.mdx, *.mdown, *.mdwn, *.mkd, *.mkdn, *.mkdown, *.ronn)"; Flags: unchecked
 	Name: "assoc_pdf"; Description: "Associate with PDF Documents (*.pdf)"
+	Name: "assoc_pptx"; Description: "Associate with PowerPoint Presentations (*.pptx, *.pptm)"; Flags: unchecked
 	Name: "assoc_text"; Description: "Associate with Text Files (*.txt, *.log)"; Flags: unchecked
 
 [Icons]
@@ -68,6 +69,9 @@
 	Root: HKCR; Subkey: ".ronn\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_markdown
 	; PDF Documents.
 	Root: HKCR; Subkey: ".pdf\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_pdf
+	; PowerPoint Presentations.
+	Root: HKCR; Subkey: ".pptx\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_pptx
+	Root: HKCR; Subkey: ".pptm\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_pptx
 	; Text Files.
 	Root: HKCR; Subkey: ".log\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_text
 	Root: HKCR; Subkey: ".txt\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_text
