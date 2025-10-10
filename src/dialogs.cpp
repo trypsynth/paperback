@@ -11,7 +11,8 @@
 #include "config_manager.hpp"
 #include "constants.hpp"
 
-dialog::dialog(wxWindow* parent, const wxString& title, dialog_button_config buttons) : wxDialog(parent, wxID_ANY, title), button_config{buttons} {
+dialog::dialog(wxWindow* parent, const wxString& title, dialog_button_config buttons)
+	: wxDialog(parent, wxID_ANY, title), button_config{buttons} {
 	main_sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(main_sizer);
 }
@@ -40,7 +41,8 @@ void dialog::create_buttons() {
 	button_sizer->Realize();
 }
 
-bookmark_dialog::bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks, wxTextCtrl* text_ctrl, long current_pos) : dialog(parent, "Jump to Bookmark"), bookmark_positions(bookmarks), selected_position{-1} {
+bookmark_dialog::bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks, wxTextCtrl* text_ctrl, long current_pos)
+	: dialog(parent, "Jump to Bookmark"), bookmark_positions(bookmarks), selected_position{-1} {
 	bookmark_list = new wxListBox(this, wxID_ANY);
 	int closest_index = -1;
 	long closest_distance = LONG_MAX;
@@ -85,7 +87,8 @@ void bookmark_dialog::on_ok(wxCommandEvent& event) {
 		wxMessageBox("Please select a bookmark to jump to.", "error", wxICON_ERROR);
 }
 
-document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc) : dialog(parent, "Document Info", dialog_button_config::ok_only) {
+document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc)
+	: dialog(parent, "Document Info", dialog_button_config::ok_only) {
 	info_text_ctrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(600, 400), wxTE_MULTILINE | wxTE_READONLY);
 	wxString info_text;
 	info_text << "Title: " << doc->title << "\n";
@@ -101,7 +104,8 @@ document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc
 	finalize_layout();
 }
 
-find_dialog::find_dialog(wxWindow* parent) : wxDialog(parent, wxID_ANY, "Find") {
+find_dialog::find_dialog(wxWindow* parent)
+	: wxDialog(parent, wxID_ANY, "Find") {
 	auto* const main_sizer = new wxBoxSizer(wxVERTICAL);
 	auto* const find_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* const find_label = new wxStaticText(this, wxID_ANY, "Find &what:");
@@ -205,7 +209,8 @@ void find_dialog::on_close(wxCloseEvent& event) {
 	Hide();
 }
 
-go_to_line_dialog::go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : dialog(parent, "Go to Line"), textbox{text_ctrl} {
+go_to_line_dialog::go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl)
+	: dialog(parent, "Go to Line"), textbox{text_ctrl} {
 	auto* line_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* label = new wxStaticText(this, wxID_ANY, "&Line number:");
 	long line;
@@ -228,7 +233,8 @@ long go_to_line_dialog::get_max_line() const {
 	return textbox->GetNumberOfLines();
 }
 
-go_to_page_dialog::go_to_page_dialog(wxWindow* parent, document* doc, const parser* par, int current_page) : dialog(parent, "Go to page"), doc_{doc}, parser_{par} {
+go_to_page_dialog::go_to_page_dialog(wxWindow* parent, document* doc, const parser* par, int current_page)
+	: dialog(parent, "Go to page"), doc_{doc}, parser_{par} {
 	auto* page_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* label = new wxStaticText(this, wxID_ANY, wxString::Format("Go to page (1/%d):", get_max_page()));
 	input_ctrl = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, get_max_page(), current_page);
@@ -251,7 +257,8 @@ int go_to_page_dialog::get_max_page() const {
 	return static_cast<int>(doc_->buffer.count_markers_by_type(marker_type::page_break));
 }
 
-go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : dialog(parent, "Go to Percent"), textbox{text_ctrl} {
+go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ctrl)
+	: dialog(parent, "Go to Percent"), textbox{text_ctrl} {
 	long current_pos = textbox->GetInsertionPoint();
 	long total_pos = textbox->GetLastPosition();
 	int current_percent = total_pos > 0 ? static_cast<int>((current_pos * 100) / total_pos) : 0;
@@ -280,7 +287,8 @@ void go_to_percent_dialog::on_slider_changed(wxCommandEvent& event) {
 	input_ctrl->SetValue(slider_value);
 }
 
-open_as_dialog::open_as_dialog(wxWindow* parent, const wxString& path) : dialog(parent, "Open As") {
+open_as_dialog::open_as_dialog(wxWindow* parent, const wxString& path)
+	: dialog(parent, "Open As") {
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	auto* label = new wxStaticText(this, wxID_ANY, wxString::Format("No suitable parser was found for %s.\nHow would you like to open this file?", path));
 	content_sizer->Add(label, 0, wxALL, 5);
@@ -313,7 +321,8 @@ wxString open_as_dialog::get_selected_format() const {
 	}
 }
 
-options_dialog::options_dialog(wxWindow* parent) : dialog(parent, "Options") {
+options_dialog::options_dialog(wxWindow* parent)
+	: dialog(parent, "Options") {
 	auto* general_box = new wxStaticBoxSizer(wxVERTICAL, this, "General");
 	restore_docs_check = new wxCheckBox(this, wxID_ANY, "&Restore previously opened documents on startup");
 	general_box->Add(restore_docs_check, 0, wxALL, 5);
@@ -349,7 +358,8 @@ void options_dialog::on_cancel(wxCommandEvent& event) {
 	EndModal(wxID_CANCEL);
 }
 
-toc_dialog::toc_dialog(wxWindow* parent, const document* doc, int current_offset) : dialog(parent, "Table of Contents"), selected_offset{-1} {
+toc_dialog::toc_dialog(wxWindow* parent, const document* doc, int current_offset)
+	: dialog(parent, "Table of Contents"), selected_offset{-1} {
 	tree = new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTR_HIDE_ROOT);
 	wxTreeItemId root = tree->AddRoot("Root");
 	populate_tree(doc->toc_items, root);

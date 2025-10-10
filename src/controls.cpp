@@ -13,7 +13,8 @@
 #include <windows.h>
 #endif
 
-accessible_slider::accessible_slider(wxWindow* parent, wxWindowID id, int value, int minValue, int maxValue) : wxSlider(parent, id, value, minValue, maxValue) {
+accessible_slider::accessible_slider(wxWindow* parent, wxWindowID id, int value, int minValue, int maxValue)
+	: wxSlider(parent, id, value, minValue, maxValue) {
 	Bind(wxEVT_CHAR, &accessible_slider::on_char, this);
 }
 

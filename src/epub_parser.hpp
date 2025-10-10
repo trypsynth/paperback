@@ -77,7 +77,8 @@ private:
 		std::string toc_ncx_id;
 		std::string nav_doc_id;
 
-		epub_context(wxFileInputStream& fs) : file_stream(fs) {}
+		epub_context(wxFileInputStream& fs)
+			: file_stream(fs) {}
 		~epub_context() {
 			for (auto& [_, entry] : zip_entries) delete entry;
 		}

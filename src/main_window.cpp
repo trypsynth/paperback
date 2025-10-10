@@ -18,7 +18,8 @@
 #include <wx/stdpaths.h>
 #include <wx/timer.h>
 
-main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
+main_window::main_window()
+	: wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	auto* const panel = new wxPanel(this);
 	notebook = new wxNotebook(panel, wxID_ANY);
 #ifdef __WXMSW__

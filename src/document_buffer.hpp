@@ -31,7 +31,8 @@ struct marker {
 	wxString ref;
 	int level;
 
-	marker(size_t position, marker_type marker_type, const wxString& marker_text = wxString(), const wxString& marker_ref = wxString(), int marker_level = 0) : pos{position}, type{marker_type}, text{marker_text}, ref{marker_ref}, level{marker_level} {}
+	marker(size_t position, marker_type marker_type, const wxString& marker_text = wxString(), const wxString& marker_ref = wxString(), int marker_level = 0)
+		: pos{position}, type{marker_type}, text{marker_text}, ref{marker_ref}, level{marker_level} {}
 };
 
 class document_buffer {
