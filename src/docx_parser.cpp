@@ -13,7 +13,6 @@
 #include <Poco/AutoPtr.h>
 #include <Poco/DOM/DOMParser.h>
 #include <Poco/DOM/Document.h>
-#include <Poco/DOM/Element.h>
 #include <Poco/DOM/Node.h>
 #include <Poco/DOM/NodeList.h>
 #include <Poco/DOM/Text.h>
@@ -22,81 +21,115 @@
 #include <wx/msgdlg.h>
 #include <wx/wfstream.h>
 #include <wx/zipstrm.h>
-
 #include <algorithm>
 #include <sstream>
 #include <vector>
 
+using namespace Poco;
+using namespace Poco::XML;
+
 const std::string WORDML_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 
-void docx_parser::traverse(Poco::XML::Node* pNode, wxString& text, std::vector<heading_info>& headings) const {
-	if (!pNode) return;
-
-	if (pNode->nodeType() == Poco::XML::Node::ELEMENT_NODE) {
-		auto* pElement = static_cast<Poco::XML::Element*>(pNode);
-		if (pElement->localName() == "p") {
-			process_paragraph(pElement, text, headings);
-			return;
+std::unique_ptr<document> docx_parser::load(const wxString& path) const {
+	try {
+		auto fp = std::make_unique<wxFileInputStream>(path);
+		if (!fp->IsOk()) return nullptr;
+		wxZipInputStream zip(*fp);
+		if (!zip.IsOk()) return nullptr;
+		std::unique_ptr<wxZipEntry> entry;
+		bool found = false;
+		while ((entry.reset(zip.GetNextEntry())), entry.get() != nullptr) {
+			if (entry->GetInternalName() == "word/document.xml") {
+				found = true;
+				break;
+			}
 		}
-	}
-
-	Poco::XML::Node* pChild = pNode->firstChild();
-	while (pChild) {
-		traverse(pChild, text, headings);
-		pChild = pChild->nextSibling();
+		if (!found) return nullptr;
+		std::string content = read_zip_entry(zip);
+		if (content.empty()) return nullptr;
+		std::istringstream content_stream(content);
+		InputSource source(content_stream);
+		DOMParser parser;
+		parser.setFeature(XMLReader::FEATURE_NAMESPACES, true);
+		parser.setFeature(DOMParser::FEATURE_FILTER_WHITESPACE, false);
+		AutoPtr<Document> pDoc = parser.parse(&source);
+		wxString text;
+		std::vector<heading_info> headings;
+		traverse(pDoc->documentElement(), text, headings);
+		auto doc = std::make_unique<document>();
+		doc->title = wxFileName(path).GetName();
+		doc->buffer.clear();
+		doc->buffer.set_content(text);
+		for (const auto& heading : headings) {
+			marker_type type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + heading.level - 1);
+			doc->buffer.add_marker(heading.offset, type, wxString::FromUTF8(heading.text), wxString(), heading.level);
+		}
+		doc->toc_items = build_toc_from_headings(doc->buffer);
+		return doc;
+	} catch (const Poco::Exception& e) {
+		wxMessageBox("XML parsing error: " + wxString(e.displayText()), "Error", wxICON_ERROR);
+		return nullptr;
+	} catch (...) {
+		wxMessageBox("Unknown error while parsing DOCX file", "Error", wxICON_ERROR);
+		return nullptr;
 	}
 }
 
-void docx_parser::process_paragraph(Poco::XML::Element* pElement, wxString& text, std::vector<heading_info>& headings) const {
+void docx_parser::traverse(Node* node, wxString& text, std::vector<heading_info>& headings) const {
+	if (!node) return;
+	if (node->nodeType() == Node::ELEMENT_NODE) {
+		auto* element = static_cast<Element*>(node);
+		if (element->localName() == "p") {
+			process_paragraph(element, text, headings);
+			return;
+		}
+	}
+	Node* child = node->firstChild();
+	while (child) {
+		traverse(child, text, headings);
+		child = child->nextSibling();
+	}
+}
+
+void docx_parser::process_paragraph(Element* element, wxString& text, std::vector<heading_info>& headings) const {
 	std::string paragraph_text_utf8;
 	int heading_level = 0;
-
-	Poco::XML::Node* pChild = pElement->firstChild();
-	while (pChild) {
-		if (pChild->nodeType() == Poco::XML::Node::ELEMENT_NODE) {
-			auto* pChildElement = static_cast<Poco::XML::Element*>(pChild);
-			std::string localName = pChildElement->localName();
-
-			if (localName == "pPr") {
-				heading_level = get_heading_level(pChildElement);
-			} else if (localName == "r") {
-				paragraph_text_utf8 += get_run_text(pChildElement);
-			}
+	Node* child = element->firstChild();
+	while (child) {
+		if (child->nodeType() == Node::ELEMENT_NODE) {
+			auto* child_element = static_cast<Element*>(child);
+			std::string localName = child_element->localName();
+			if (localName == "pPr")
+				heading_level = get_heading_level(child_element);
+			else if (localName == "r")
+				paragraph_text_utf8 += get_run_text(child_element);
 		}
-		pChild = pChild->nextSibling();
+		child = child->nextSibling();
 	}
-
 	size_t offset = text.length();
 	wxString paragraph_wx = wxString::FromUTF8(paragraph_text_utf8);
-
 	text += paragraph_wx;
 	text += "\n";
-
 	if (heading_level > 0) {
 		heading_info h;
 		h.offset = offset;
 		h.level = heading_level;
 		h.text = std::string(paragraph_wx.Trim().utf8_str());
-
-		if (!h.text.empty()) {
-			headings.push_back(h);
-		}
+		if (!h.text.empty()) headings.push_back(h);
 	}
 }
 
-int docx_parser::get_heading_level(Poco::XML::Element* pPrElement) const {
-	Poco::XML::Node* pChild = pPrElement->firstChild();
-	while (pChild) {
-		if (pChild->nodeType() == Poco::XML::Node::ELEMENT_NODE) {
-			auto* pElement = static_cast<Poco::XML::Element*>(pChild);
-			std::string localName = pElement->localName();
-
+int docx_parser::get_heading_level(Element* pr_element) const {
+	Node* child = pr_element->firstChild();
+	while (child) {
+		if (child->nodeType() == Node::ELEMENT_NODE) {
+			auto* element = static_cast<Element*>(child);
+			std::string localName = element->localName();
 			if (localName == "pStyle") {
-				std::string style = pElement->getAttributeNS(WORDML_NS, "val");
+				std::string style = element->getAttributeNS(WORDML_NS, "val");
 				if (!style.empty()) {
 					std::string style_lower = style;
-					std::transform(style_lower.begin(), style_lower.end(), style_lower.begin(), ::tolower);
-
+					std::transform(style_lower.begin(), style_lower.end(), style_lower.begin(), ::tolower);\
 					if (style_lower.rfind("heading", 0) == 0) {
 						try {
 							size_t num_pos = style.find_first_of("0123456789");
@@ -109,7 +142,7 @@ int docx_parser::get_heading_level(Poco::XML::Element* pPrElement) const {
 					}
 				}
 			} else if (localName == "outlineLvl") {
-				std::string level_str = pElement->getAttributeNS(WORDML_NS, "val");
+				std::string level_str = element->getAttributeNS(WORDML_NS, "val");
 				if (!level_str.empty()) {
 					try {
 						int level = std::stoi(level_str) + 1;
@@ -119,100 +152,26 @@ int docx_parser::get_heading_level(Poco::XML::Element* pPrElement) const {
 				}
 			}
 		}
-		pChild = pChild->nextSibling();
+		child = child->nextSibling();
 	}
 	return 0;
 }
 
-std::string docx_parser::get_run_text(Poco::XML::Element* pRunElement) const {
+std::string docx_parser::get_run_text(Element* run_element) const {
 	std::string run_text;
-	Poco::XML::Node* pChild = pRunElement->firstChild();
-	while (pChild) {
-		if (pChild->nodeType() == Poco::XML::Node::ELEMENT_NODE) {
-			auto* pElement = static_cast<Poco::XML::Element*>(pChild);
-			if (pElement->localName() == "t") {
-				if (pElement->firstChild() && pElement->firstChild()->nodeType() == Poco::XML::Node::TEXT_NODE) {
-					run_text += pElement->firstChild()->getNodeValue();
-				}
-			} else if (pElement->localName() == "tab") {
+	Node* child = run_element->firstChild();
+	while (child) {
+		if (child->nodeType() == Node::ELEMENT_NODE) {
+			auto* element = static_cast<Element*>(child);
+			if (element->localName() == "t") {
+				if (element->firstChild() && element->firstChild()->nodeType() == Node::TEXT_NODE)
+					run_text += element->firstChild()->getNodeValue();
+			} else if (element->localName() == "tab")
 				run_text += "\t";
-			} else if (pElement->localName() == "br") {
+			else if (element->localName() == "br")
 				run_text += "\n";
-			}
 		}
-		pChild = pChild->nextSibling();
+		child = child->nextSibling();
 	}
 	return run_text;
-}
-
-static std::string read_zip_entry(wxZipInputStream& zip) {
-	std::ostringstream oss;
-	char buffer[4096];
-
-	while (!zip.Eof()) {
-		zip.Read(buffer, sizeof(buffer));
-		size_t bytes_read = zip.LastRead();
-		if (bytes_read > 0) {
-			oss.write(buffer, bytes_read);
-		}
-	}
-
-	return oss.str();
-}
-
-std::unique_ptr<document> docx_parser::load(const wxString& path) const {
-	try {
-		auto fp = std::make_unique<wxFileInputStream>(path);
-		if (!fp->IsOk()) return nullptr;
-
-		wxZipInputStream zip(*fp);
-		if (!zip.IsOk()) return nullptr;
-
-		std::unique_ptr<wxZipEntry> entry;
-		bool found = false;
-		while ((entry.reset(zip.GetNextEntry())), entry.get() != nullptr) {
-			if (entry->GetInternalName() == "word/document.xml") {
-				found = true;
-				break;
-			}
-		}
-
-		if (!found) return nullptr;
-
-		std::string content = read_zip_entry(zip);
-		if (content.empty()) return nullptr;
-
-		std::istringstream content_stream(content);
-		Poco::XML::InputSource source(content_stream);
-		Poco::XML::DOMParser parser;
-		parser.setFeature(Poco::XML::XMLReader::FEATURE_NAMESPACES, true);
-		parser.setFeature(Poco::XML::DOMParser::FEATURE_FILTER_WHITESPACE, false);
-
-		Poco::AutoPtr<Poco::XML::Document> pDoc = parser.parse(&source);
-
-		wxString text;
-		std::vector<heading_info> headings;
-		traverse(pDoc->documentElement(), text, headings);
-
-		auto doc = std::make_unique<document>();
-		doc->title = wxFileName(path).GetName();
-
-		doc->buffer.clear();
-		doc->buffer.set_content(text);
-
-		for (const auto& heading : headings) {
-			marker_type type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + heading.level - 1);
-			doc->buffer.add_marker(heading.offset, type, wxString::FromUTF8(heading.text), wxString(), heading.level);
-		}
-
-		doc->toc_items = build_toc_from_headings(doc->buffer);
-
-		return doc;
-	} catch (const Poco::Exception& e) {
-		wxMessageBox("XML parsing error: " + wxString(e.displayText()), "Error", wxICON_ERROR);
-		return nullptr;
-	} catch (...) {
-		wxMessageBox("Unknown error while parsing DOCX file", "Error", wxICON_ERROR);
-		return nullptr;
-	}
 }

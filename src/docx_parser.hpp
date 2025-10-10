@@ -11,18 +11,12 @@
 #include "parser.hpp"
 #include "document.hpp"
 #include <vector>
-
-namespace Poco {
-	namespace XML {
-		class Node;
-		class Element;
-	}
-}
+#include <Poco/DOM/Element.h>
 
 class docx_parser : public parser {
 public:
-	docx_parser() {}
-	~docx_parser() {}
+	docx_parser() = default;
+	~docx_parser() = default;
 	docx_parser(const docx_parser&) = delete;
 	docx_parser& operator=(const docx_parser&) = delete;
 	docx_parser(docx_parser&&) = delete;
