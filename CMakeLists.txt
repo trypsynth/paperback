@@ -22,9 +22,6 @@ find_package(lexbor CONFIG REQUIRED)
 find_package(maddy CONFIG REQUIRED)
 find_package(pdfium CONFIG REQUIRED)
 find_package(Poco REQUIRED COMPONENTS Foundation XML)
-if(WIN32)
-	find_package(universalspeech CONFIG REQUIRED)
-endif()
 find_package(wxWidgets CONFIG REQUIRED)
 
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS src/*.cpp)
@@ -44,9 +41,6 @@ target_link_libraries(paperback PRIVATE
 	wx::core
 	wx::net
 )
-if(WIN32)
-	target_link_libraries(paperback PRIVATE psapi universalspeech::universalspeech)
-endif()
 
 if(WIN32)
 	file(GLOB DLLS "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin/*.dll")

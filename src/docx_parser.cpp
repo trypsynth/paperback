@@ -17,13 +17,13 @@
 #include <Poco/DOM/NodeList.h>
 #include <Poco/DOM/Text.h>
 #include <Poco/SAX/InputSource.h>
+#include <algorithm>
+#include <sstream>
+#include <vector>
 #include <wx/filename.h>
 #include <wx/msgdlg.h>
 #include <wx/wfstream.h>
 #include <wx/zipstrm.h>
-#include <algorithm>
-#include <sstream>
-#include <vector>
 
 using namespace Poco;
 using namespace Poco::XML;
@@ -132,7 +132,7 @@ int docx_parser::get_heading_level(Element* pr_element) const {
 				std::string style = element->getAttributeNS(WORDML_NS, "val");
 				if (!style.empty()) {
 					std::string style_lower = style;
-					std::transform(style_lower.begin(), style_lower.end(), style_lower.begin(), ::tolower);\
+					std::transform(style_lower.begin(), style_lower.end(), style_lower.begin(), ::tolower);
 					if (style_lower.rfind("heading", 0) == 0) {
 						try {
 							size_t num_pos = style.find_first_of("0123456789");

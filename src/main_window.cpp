@@ -11,6 +11,7 @@
 #include "app.hpp"
 #include "constants.hpp"
 #include "dialogs.hpp"
+#include "live_region.hpp"
 #include "parser.hpp"
 #include "utils.hpp"
 #include <wx/aboutdlg.h>
@@ -24,6 +25,9 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 #ifdef __WXMSW__
 	notebook->MSWDisableComposited();
 #endif
+	live_region_label = new wxStaticText(panel, wxID_ANY, "", wxDefaultPosition, wxSize(0, 0));
+	live_region_label->Hide();
+	[[maybe_unused]] bool live_region_set = set_live_region(live_region_label, live_region_mode::assertive);
 	auto* const sizer = new wxBoxSizer(wxVERTICAL);
 	sizer->Add(notebook, 1, wxEXPAND | wxALL, 10);
 	panel->SetSizer(sizer);

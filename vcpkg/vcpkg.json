@@ -10,10 +10,6 @@
 			"name": "poco",
 			"features": ["xml"]
 		},
-		{
-			"name": "universalspeech",
-			"platform": "windows"
-		},
 		"wxwidgets"
 	]
 }

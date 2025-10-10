@@ -8,8 +8,11 @@
  */
 
 #include "utils.hpp"
+#include "app.hpp"
 #include "config_manager.hpp"
 #include "dialogs.hpp"
+#include "live_region.hpp"
+#include "main_window.hpp"
 #include "parser.hpp"
 #include <Poco/Exception.h>
 #include <Poco/RegularExpression.h>
@@ -18,14 +21,9 @@
 #include <cctype>
 #include <optional>
 #include <sstream>
+#include <wx/msgdlg.h>
 #include <wx/strconv.h>
 #include <wx/zipstrm.h>
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#define UNIVERSAL_SPEECH_STATIC
-#include <UniversalSpeech.h>
-#endif
-#include <wx/msgdlg.h>
 
 long find_text(const wxString& haystack, const wxString& needle, long start, find_options options) {
 	if (needle.empty()) return wxNOT_FOUND;
@@ -148,9 +146,12 @@ const parser* get_parser_for_unknown_file(const wxString& path, config_manager& 
 }
 
 void speak(const wxString& message) {
-#ifdef _WIN32
-	speechSay(message, 1);
-#endif
+	auto* main_win = dynamic_cast<main_window*>(wxGetApp().GetTopWindow());
+	if (!main_win) return;
+	auto* label = main_win->get_live_region_label();
+	if (!label) return;
+	label->SetLabel(message);
+	[[maybe_unused]] bool notified = notify_live_region_changed(label);
 }
 
 std::string url_decode(std::string_view encoded) {

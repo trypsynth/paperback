@@ -25,6 +25,7 @@ public:
 	main_window& operator=(main_window&&) = delete;
 	[[nodiscard]] document_manager* get_doc_manager() const noexcept { return doc_manager.get(); }
 	[[nodiscard]] wxNotebook* get_notebook() const noexcept { return notebook; }
+	[[nodiscard]] wxStaticText* get_live_region_label() const noexcept { return live_region_label; }
 	void on_text_cursor_changed(wxEvent& event);
 	void trigger_throttled_position_save();
 	void save_position_immediately();
@@ -43,6 +44,7 @@ private:
 	wxLongLong last_status_update_time{0};
 	find_dialog* find_dlg{nullptr};
 	wxMenu* recent_documents_menu{nullptr};
+	wxStaticText* live_region_label{nullptr};
 
 	void create_menus();
 	wxMenu* create_file_menu();

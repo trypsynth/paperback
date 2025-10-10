@@ -8,10 +8,10 @@
  */
 
 #pragma once
-#include "parser.hpp"
 #include "document.hpp"
-#include <vector>
+#include "parser.hpp"
 #include <Poco/DOM/Element.h>
+#include <vector>
 
 class docx_parser : public parser {
 public:
