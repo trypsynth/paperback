@@ -33,6 +33,10 @@ class chm_parser : public parser {
 public:
 	chm_parser() = default;
 	~chm_parser() = default;
+	chm_parser(const chm_parser&) = delete;
+	chm_parser& operator=(const chm_parser&) = delete;
+	chm_parser(chm_parser&&) = delete;
+	chm_parser& operator=(chm_parser&&) = delete;
 	[[nodiscard]] wxString name() const override { return "Compiled HTML Help files"; }
 	[[nodiscard]] std::span<const wxString> extensions() const override {
 		static const wxString exts[] = {"chm"};
