@@ -192,8 +192,7 @@ private:
 
 class toc_tree_item_data : public wxTreeItemData {
 public:
-	toc_tree_item_data(int offset_)
-		: offset{offset_} {}
+	toc_tree_item_data(int offset_) : offset{offset_} {}
 
 	int offset;
 };

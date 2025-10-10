@@ -81,18 +81,12 @@ else()
 	set(PACKAGE_NAME "paperback.tar.gz")
 endif()
 set(PACKAGE_PATH "${CMAKE_BINARY_DIR}/${PACKAGE_NAME}")
-if(PANDOC_EXECUTABLE)
-	set(DOC_FILE "${CMAKE_BINARY_DIR}/readme.html")
-else()
-	set(DOC_FILE "")
-endif()
-
 if(WIN32)
 	add_custom_command(
 		TARGET paperback POST_BUILD
 		COMMAND ${CMAKE_COMMAND} -E chdir "$<TARGET_FILE_DIR:paperback>" 
 		${CMAKE_COMMAND} -E tar cf "${PACKAGE_PATH}" --format=zip 
-		"$<TARGET_FILE_NAME:paperback>" ${DOC_FILE} ${LOCAL_DLLS}
+		"$<TARGET_FILE_NAME:paperback>" "${CMAKE_BINARY_DIR}/readme.html" ${LOCAL_DLLS}
 	)
 else()
 	add_custom_command(

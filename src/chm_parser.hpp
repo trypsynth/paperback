@@ -26,8 +26,7 @@ struct chm_context {
 	std::string author;
 	std::string hhc_file;
 
-	chm_context(chmFile* f)
-		: file(f) {}
+	chm_context(chmFile* f) : file(f) {}
 };
 
 class chm_parser : public parser {

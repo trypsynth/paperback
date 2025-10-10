@@ -17,8 +17,7 @@
 #include <string_view>
 #include <wx/string.h>
 
-html_to_text::html_to_text()
-	: doc(lxb_html_document_create()) {
+html_to_text::html_to_text() : doc(lxb_html_document_create()) {
 	if (!doc) throw std::runtime_error("Failed to create Lexbor HTML document");
 }
 

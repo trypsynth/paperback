@@ -30,6 +30,7 @@
 	Name: "startmenuicon"; Description: "Start Menu Shortcut"; Flags: unchecked
 	Name: "assoc_chm"; Description: "Associate with Compiled HTML Help files (*.chm)"; Flags: unchecked
 	Name: "assoc_epub"; Description: "Associate with Epub Books (*.epub)"
+	Name: "assoc_docx"; Description: "Associate with Word Documents (*.docx)"
 	Name: "assoc_html"; Description: "Associate with HTML Documents (*.htm, *.html, *.xhtml)"; Flags: unchecked
 	Name: "assoc_markdown"; Description: "Associate with Markdown Documents (*.md, *.markdown, *.mdx, *.mdown, *.mdwn, *.mkd, *.mkdn, *.mkdown, *.ronn)"; Flags: unchecked
 	Name: "assoc_pdf"; Description: "Associate with PDF Documents (*.pdf)"
@@ -48,6 +49,8 @@
 	Root: HKCR; Subkey: ".chm\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_chm
 	; Epub Books.
 	Root: HKCR; Subkey: ".epub"; ValueType: string; ValueName: ""; ValueData: "Paperback.Document"; Flags: uninsdeletevalue; Tasks: assoc_epub
+	; Word Documents.
+	Root: HKCR; Subkey: ".docx\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_docx
 	; HTML Documents.
 	Root: HKCR; Subkey: ".htm\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_html
 	Root: HKCR; Subkey: ".html\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_html
