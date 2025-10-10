@@ -22,7 +22,9 @@ Paperback supports several common file formats, with more planned for future rel
 * Epub 2/3 books.
 * HTML documents.
 * Markdown documents.
+* microsoft Word documents.
 * PDF documents.
+* PowerPoint presentations.
 * Text documents.
 
 ## Hotkeys
@@ -77,6 +79,25 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * Ctrl+D: open my PayPal donations page in your default web browser.
 
 ## Changelog
+### Version 0.5
+* Added Microsoft Word document support! [#27](https://github.com/trypsynth/paperback/issues/27).
+* Added support for PowerPoint presentations! [#25](https://github.com/trypsynth/paperback/issues/25).
+* Fixed certain menu items not being disabled with no documents open.
+* Fixed the orientation of the go to percent slider. [#70](https://github.com/trypsynth/paperback/issues/70).
+* Fixed the table of contents in Epub books with URL-encoded file paths and/or fragment IDs.
+* Fixed whitespace being stripped from XHTML headings in weird ways.
+* Fixed whitespace handling inside of nested pre tags in HTML documents.
+* HTML and Markdown documents now support the table of contents feature! When you load an HTML/Markdown document, Paperback will build its own table of contents out of the structure of the headings in your document, and it will show that to you in the control+t dialog.
+* HTML documents will now have the title as set in the title tag, if it exists. Otherwise, they'll continue to use the filename without the extension.
+* Switched from UniversalSpeech to using a live region to report speech. This means no screen reader DLLs are shipped alongside the program anymore, and more screen readers will now be supported, such as Microsoft Narrator.
+* Switched zip libraries to allow for opening a wider array of epub books. [#73](https://github.com/trypsynth/paperback/issues/73).
+* The dialog asking you if you want to open your document as plain text has been completely redone, and it now allows you to open your document as plain text, HTML, or Markdown.
+* The go to percent dialog now includes a text field allowing you to manually input a percentage to jump to. [#66](https://github.com/trypsynth/paperback/issues/66).
+* The HTML parser will now recognize dd, dt, and dl as list elements.
+* The table of contents in Epub books will once again be preserved exactly.
+* The unicode non-breaking space is now considered when stripping blank lines. [#71](https://github.com/trypsynth/paperback/issues/71).
+* You will no longer be asked how you want to open an unrecognized file every single time you load it, only the first time.
+
 ### Version 0.41
 * Added an optional start menu icon to the installer.
 * The table of contents should now be cleaner in a few cases, for example if you have a child and parent item with the same text at the same position you'll now only see the parent item.
