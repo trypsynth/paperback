@@ -16,6 +16,7 @@
 #include <stdexcept>
 #include <string_view>
 #include <wx/string.h>
+#include <lexbor/html/serialize.h>
 
 html_to_text::html_to_text() : doc(lxb_html_document_create()) {
 	if (!doc) throw std::runtime_error("Failed to create Lexbor HTML document");
@@ -49,6 +50,7 @@ void html_to_text::clear() noexcept {
 	title.clear();
 	in_body = false;
 	preserve_whitespace = false;
+	in_code = false;
 	cached_char_length = 0;
 }
 
@@ -70,6 +72,8 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 				in_body = true;
 			else if (tag_name == "pre")
 				preserve_whitespace = true;
+			else if (tag_name == "code")
+				in_code = true;
 			else if (tag_name == "br" || tag_name == "li")
 				finalize_current_line();
 			if (in_body && element) {
@@ -98,9 +102,23 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 			break;
 	}
 	if (is_element && (tag_name == "script" || tag_name == "style")) return;
-	for (auto* child = node->first_child; child; child = child->next) process_node(child);
+	if (in_code && is_element && tag_name == "code") {
+		for (auto* child = node->first_child; child; child = child->next) {
+			if (child->type == LXB_DOM_NODE_TYPE_ELEMENT) {
+				lexbor_str_t str = {0};
+				lxb_html_serialize_tree_str(child, &str);
+				if (str.data && str.length > 0) {
+					current_line += std::string(reinterpret_cast<const char*>(str.data), str.length);
+					lexbor_str_destroy(&str, doc.get()->dom_document.text, false);
+				}
+			} else process_node(child);
+		}
+	} else {
+		for (auto* child = node->first_child; child; child = child->next) process_node(child);
+	}
 	if (is_element) {
 		if (tag_name == "pre") preserve_whitespace = false;
+		if (tag_name == "code") in_code = false;
 		if (is_block_element(tag_name)) finalize_current_line();
 	}
 }

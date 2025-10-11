@@ -47,6 +47,7 @@ private:
 	std::string title;
 	bool in_body = false;
 	bool preserve_whitespace = false;
+	bool in_code = false;
 	size_t cached_char_length = 0;
 	DocumentPtr doc;
 
