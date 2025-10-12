@@ -12,11 +12,11 @@
 #include <algorithm>
 #include <array>
 #include <cctype>
+#include <lexbor/html/serialize.h>
 #include <sstream>
 #include <stdexcept>
 #include <string_view>
 #include <wx/string.h>
-#include <lexbor/html/serialize.h>
 
 html_to_text::html_to_text() : doc(lxb_html_document_create()) {
 	if (!doc) throw std::runtime_error("Failed to create Lexbor HTML document");
@@ -112,7 +112,8 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 					current_line += std::string(reinterpret_cast<const char*>(str.data), str.length);
 					lexbor_str_destroy(&str, doc.get()->dom_document.text, false);
 				}
-			} else process_node(child);
+			} else
+				process_node(child);
 		}
 	} else {
 		for (auto* child = node->first_child; child; child = child->next) process_node(child);

@@ -117,6 +117,8 @@ void xml_to_text::add_line(std::string_view line) {
 	std::string processed_line;
 	if (preserve_whitespace) {
 		processed_line = std::string(line);
+		while (!processed_line.empty() && (processed_line.back() == '\n' || processed_line.back() == '\r'))
+			processed_line.pop_back();
 		cached_char_length += wxString::FromUTF8(processed_line).length() + 1; // +1 for newline
 		lines.emplace_back(std::move(processed_line));
 	} else {
