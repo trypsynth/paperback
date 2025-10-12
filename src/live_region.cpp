@@ -25,7 +25,7 @@ bool init_live_region() {
 	hr = CoCreateInstance(CLSID_AccPropServices, nullptr, CLSCTX_INPROC, IID_IAccPropServices, reinterpret_cast<void**>(&acc_prop_services));
 	return SUCCEEDED(hr);
 }
-}
+} // namespace
 
 bool set_live_region(wxWindow* window, live_region_mode mode) {
 	if (!window) return false;

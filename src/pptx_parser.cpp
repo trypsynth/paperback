@@ -110,7 +110,8 @@ void pptx_parser::extract_text_from_node(Node* node, std::string& text) const {
 		if (element->localName() == "t") {
 			Node* text_node = element->firstChild();
 			if (text_node && text_node->nodeType() == Node::TEXT_NODE) text += text_node->getNodeValue();
-		} else if (element->localName() == "br") text += "\n";
+		} else if (element->localName() == "br")
+			text += "\n";
 		else if (element->localName() == "p") {
 			Node* child = node->firstChild();
 			while (child) {
