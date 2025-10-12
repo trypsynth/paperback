@@ -50,7 +50,7 @@ all_documents_dialog::all_documents_dialog(wxWindow* parent, config_manager& cfg
 	populate_document_list();
 	content_sizer->Add(doc_list, 1, wxEXPAND | wxALL, 10);
 	auto* button_sizer = new wxBoxSizer(wxHORIZONTAL);
-	auto* open_button = new wxButton(this, wxID_OPEN, "&Open");
+	open_button = new wxButton(this, wxID_OPEN, "&Open");
 	auto* remove_button = new wxButton(this, wxID_REMOVE, "&Remove");
 	button_sizer->Add(open_button, 0, wxRIGHT, 10);
 	button_sizer->Add(remove_button, 0, wxRIGHT, 10);
@@ -60,6 +60,14 @@ all_documents_dialog::all_documents_dialog(wxWindow* parent, config_manager& cfg
 	Bind(wxEVT_BUTTON, &all_documents_dialog::on_open, this, wxID_OPEN);
 	Bind(wxEVT_BUTTON, &all_documents_dialog::on_remove, this, wxID_REMOVE);
 	Bind(wxEVT_LIST_ITEM_ACTIVATED, &all_documents_dialog::on_list_item_activated, this, wxID_ANY);
+	Bind(wxEVT_LIST_ITEM_SELECTED, &all_documents_dialog::on_list_item_selected, this, wxID_ANY);
+	if (doc_list->GetItemCount() > 0) {
+		long item = doc_list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+		if (item != -1) {
+			wxString status = doc_list->GetItemText(item, 1);
+			open_button->Enable(status != "Missing");
+		}
+	}
 }
 
 void all_documents_dialog::populate_document_list() {
@@ -69,21 +77,34 @@ void all_documents_dialog::populate_document_list() {
 	for (const auto& path : doc_paths) {
 		wxFileName fn(path);
 		long index = doc_list->InsertItem(doc_list->GetItemCount(), fn.GetFullName());
-		wxString status = (open_doc_paths.Index(path) != wxNOT_FOUND) ? "Open" : "Closed";
+		wxString status;
+		if (!wxFileName::FileExists(path))
+			status = "Missing";
+		else if (open_doc_paths.Index(path) != wxNOT_FOUND)
+			status = "Open";
+		else
+			status = "Closed";
 		doc_list->SetItem(index, 1, status);
 		doc_list->SetItem(index, 2, path);
 	}
 	if (doc_list->GetItemCount() > 0) {
 		doc_list->SetItemState(0, wxLIST_STATE_SELECTED | wxLIST_STATE_FOCUSED, wxLIST_STATE_SELECTED | wxLIST_STATE_FOCUSED);
 		doc_list->EnsureVisible(0);
+		if (open_button) {
+			wxString status = doc_list->GetItemText(0, 1);
+			open_button->Enable(status != "Missing");
+		}
 	}
 }
 
 void all_documents_dialog::on_open(wxCommandEvent& event) {
 	long item = doc_list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
 	if (item != -1) {
-		selected_path = doc_list->GetItemText(item, 2);
-		EndModal(wxID_OK);
+		wxString path = doc_list->GetItemText(item, 2);
+		if (wxFileName::FileExists(path)) {
+			selected_path = path;
+			EndModal(wxID_OK);
+		}
 	}
 }
 
@@ -106,8 +127,19 @@ void all_documents_dialog::on_remove(wxCommandEvent& event) {
 }
 
 void all_documents_dialog::on_list_item_activated(wxListEvent& event) {
-	selected_path = doc_list->GetItemText(event.GetIndex(), 2);
-	EndModal(wxID_OK);
+	wxString path = doc_list->GetItemText(event.GetIndex(), 2);
+	if (wxFileName::FileExists(path)) {
+		selected_path = path;
+		EndModal(wxID_OK);
+	}
+}
+
+void all_documents_dialog::on_list_item_selected(wxListEvent& event) {
+	long item = event.GetIndex();
+	if (item != -1 && open_button) {
+		wxString status = doc_list->GetItemText(item, 1);
+		open_button->Enable(status != "Missing");
+	}
 }
 
 bookmark_dialog::bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks, wxTextCtrl* text_ctrl, long current_pos) : dialog(parent, "Jump to Bookmark"), bookmark_positions(bookmarks), selected_position{-1} {

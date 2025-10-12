@@ -52,6 +52,7 @@ public:
 
 private:
 	wxListView* doc_list{nullptr};
+	wxButton* open_button{nullptr};
 	config_manager& config_mgr;
 	wxArrayString doc_paths;
 	wxArrayString open_doc_paths;
@@ -60,6 +61,7 @@ private:
 	void on_open(wxCommandEvent& event);
 	void on_remove(wxCommandEvent& event);
 	void on_list_item_activated(wxListEvent& event);
+	void on_list_item_selected(wxListEvent& event);
 	void populate_document_list();
 };
 

@@ -544,11 +544,6 @@ void main_window::on_recent_document(wxCommandEvent& event) {
 	const wxArrayString recent_docs = config_mgr.get_recent_documents();
 	if (index >= 0 && index < static_cast<int>(recent_docs.GetCount())) {
 		const wxString& path = recent_docs[index];
-		if (!wxFileName::FileExists(path)) {
-			wxMessageBox("File no longer exists: " + path, "Error", wxICON_ERROR);
-			update_recent_documents_menu();
-			return;
-		}
 		[[maybe_unused]] bool success = doc_manager->open_file(path);
 	}
 }
@@ -596,19 +591,22 @@ void main_window::update_recent_documents_menu() {
 	}
 	auto& config_mgr = wxGetApp().get_config_manager();
 	const wxArrayString recent_docs = config_mgr.get_recent_documents();
-	if (recent_docs.IsEmpty()) {
-		recent_documents_menu->Append(wxID_ANY, "(No recent documents)")->Enable(false);
-		return;
-	}
-	for (size_t i = 0; i < recent_docs.GetCount() && i < config_mgr.get_recent_documents_to_show(); ++i) {
+	size_t menu_count = 0;
+	for (size_t i = 0; i < recent_docs.GetCount() && menu_count < config_mgr.get_recent_documents_to_show(); ++i) {
 		const wxString& path = recent_docs[i];
+		if (!wxFileName::FileExists(path)) continue;
 		const wxString filename = wxFileName(path).GetFullName();
-		const wxString menu_text = wxString::Format("&%zu %s", i + 1, filename);
+		const wxString menu_text = wxString::Format("&%zu %s", menu_count + 1, filename);
 		const int id = ID_RECENT_DOCUMENTS_BASE + static_cast<int>(i);
 		recent_documents_menu->Append(id, menu_text, path);
 		Bind(wxEVT_MENU, &main_window::on_recent_document, this, id);
+		++menu_count;
 	}
-	if (recent_docs.GetCount() > 0) recent_documents_menu->AppendSeparator();
+	if (menu_count == 0) {
+		recent_documents_menu->Append(wxID_ANY, "(No recent documents)")->Enable(false);
+		return;
+	}
+	recent_documents_menu->AppendSeparator();
 	recent_documents_menu->Append(ID_SHOW_ALL_DOCUMENTS, "Show All...");
 	Bind(wxEVT_MENU, &main_window::on_show_all_documents, this, ID_SHOW_ALL_DOCUMENTS);
 }
