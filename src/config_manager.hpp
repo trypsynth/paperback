@@ -35,6 +35,7 @@ public:
 	void add_recent_document(const wxString& path);
 	wxArrayString get_recent_documents() const;
 	void clear_recent_documents();
+	void rebuild_recent_documents();
 	int get_recent_documents_to_show() const;
 	void set_recent_documents_to_show(int count);
 	bool get_restore_previous_documents() const;

@@ -100,18 +100,14 @@ wxArrayString config_manager::get_recent_documents() const {
 	wxArrayString result;
 	if (!config) return result;
 	config->SetPath("/recent_documents");
-	wxString key;
-	long index;
-	bool cont = config->GetFirstEntry(key, index);
-	while (cont) {
+	for (size_t i = 0; i < 100; ++i) {
+		wxString key = wxString::Format("doc%zu", i);
 		wxString doc_id = config->Read(key, "");
-		if (!doc_id.IsEmpty()) {
-			config->SetPath("/" + doc_id);
-			wxString path = config->Read("path", "");
-			if (!path.IsEmpty() && wxFileName::FileExists(path)) result.Add(path);
-			config->SetPath("/recent_documents");
-		}
-		cont = config->GetNextEntry(key, index);
+		if (doc_id.IsEmpty()) break;
+		config->SetPath("/" + doc_id);
+		wxString path = config->Read("path", "");
+		if (!path.IsEmpty()) result.Add(path);
+		config->SetPath("/recent_documents");
 	}
 	config->SetPath("/");
 	return result;
@@ -119,6 +115,21 @@ wxArrayString config_manager::get_recent_documents() const {
 
 void config_manager::clear_recent_documents() {
 	if (config) config->DeleteGroup("recent_documents");
+}
+
+void config_manager::rebuild_recent_documents() {
+	if (!config) return;
+	wxArrayString current_recent = get_recent_documents();
+	wxArrayString all_docs = get_all_documents();
+	for (const auto& doc : all_docs)
+		if (current_recent.Index(doc) == wxNOT_FOUND) current_recent.Add(doc);
+	config->DeleteGroup("recent_documents");
+	config->SetPath("/recent_documents");
+	for (size_t i = 0; i < current_recent.GetCount(); ++i) {
+		wxString path_doc_id = escape_document_path(current_recent[i]);
+		config->Write(wxString::Format("doc%zu", i), path_doc_id);
+	}
+	config->SetPath("/");
 }
 
 int config_manager::get_recent_documents_to_show() const {
@@ -527,6 +538,7 @@ void config_manager::load_defaults() {
 	if (!config->HasEntry("recent_documents_to_show")) config->Write("recent_documents_to_show", 25);
 	if (get_config_version() != CONFIG_VERSION_CURRENT) set_config_version(CONFIG_VERSION_CURRENT);
 	config->SetPath("/");
+	rebuild_recent_documents();
 }
 
 wxString config_manager::get_document_section(const wxString& path) const {
