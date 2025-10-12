@@ -594,7 +594,6 @@ void main_window::update_recent_documents_menu() {
 	size_t menu_count = 0;
 	for (size_t i = 0; i < recent_docs.GetCount() && menu_count < config_mgr.get_recent_documents_to_show(); ++i) {
 		const wxString& path = recent_docs[i];
-		if (!wxFileName::FileExists(path)) continue;
 		const wxString filename = wxFileName(path).GetFullName();
 		const wxString menu_text = wxString::Format("&%zu %s", menu_count + 1, filename);
 		const int id = ID_RECENT_DOCUMENTS_BASE + static_cast<int>(i);
