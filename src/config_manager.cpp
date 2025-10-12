@@ -291,13 +291,9 @@ wxArrayString config_manager::get_all_opened_documents() const {
 
 void config_manager::remove_document_history(const wxString& path) {
 	if (!config) return;
-
 	wxArrayString recent_paths = get_recent_documents();
 	int existing_index = recent_paths.Index(path);
-	if (existing_index != wxNOT_FOUND) {
-		recent_paths.RemoveAt(existing_index);
-	}
-
+	if (existing_index != wxNOT_FOUND) recent_paths.RemoveAt(existing_index);
 	config->DeleteGroup("recent_documents");
 	config->SetPath("/recent_documents");
 	for (size_t i = 0; i < recent_paths.GetCount(); ++i) {
@@ -305,7 +301,6 @@ void config_manager::remove_document_history(const wxString& path) {
 		config->Write(wxString::Format("doc%zu", i), path_doc_id);
 	}
 	config->SetPath("/");
-
 	wxString doc_id_to_remove = escape_document_path(path);
 	config->DeleteGroup(doc_id_to_remove);
 }
