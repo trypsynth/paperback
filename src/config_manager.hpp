@@ -35,6 +35,8 @@ public:
 	void add_recent_document(const wxString& path);
 	wxArrayString get_recent_documents() const;
 	void clear_recent_documents();
+	int get_recent_documents_to_show() const;
+	void set_recent_documents_to_show(int count);
 	bool get_restore_previous_documents() const;
 	void set_restore_previous_documents(bool restore);
 	bool get_word_wrap() const;
@@ -48,8 +50,10 @@ public:
 	void set_document_position(const wxString& path, long position);
 	long get_document_position(const wxString& path) const;
 	void set_document_opened(const wxString& path, bool opened);
+	void remove_document_history(const wxString& path);
 	bool get_document_opened(const wxString& path) const;
 	wxArrayString get_all_opened_documents() const;
+	wxArrayString get_all_documents() const;
 	int get_config_version() const;
 	void set_config_version(int version);
 	void add_bookmark(const wxString& path, long position);

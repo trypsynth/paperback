@@ -4,7 +4,7 @@
  * Copyright (c) 2025 Quin Gillespie.
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN an ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include "main_window.hpp"
@@ -425,16 +425,19 @@ void main_window::on_options(wxCommandEvent&) {
 	options_dialog dlg(this);
 	dlg.set_restore_previous_documents(config_mgr.get_restore_previous_documents());
 	dlg.set_word_wrap(config_mgr.get_word_wrap());
+	dlg.set_recent_documents_to_show(config_mgr.get_recent_documents_to_show());
 	if (dlg.ShowModal() != wxID_OK) return;
 	bool old_word_wrap = config_mgr.get_word_wrap();
 	bool new_word_wrap = dlg.get_word_wrap();
 	config_mgr.set_restore_previous_documents(dlg.get_restore_previous_documents());
 	config_mgr.set_word_wrap(new_word_wrap);
+	config_mgr.set_recent_documents_to_show(dlg.get_recent_documents_to_show());
 	if (old_word_wrap != new_word_wrap) {
 		doc_manager->apply_word_wrap(new_word_wrap);
 		if (active_text_ctrl && doc_manager->get_active_text_ctrl()) doc_manager->get_active_text_ctrl()->SetFocus();
 	}
 	config_mgr.flush();
+	update_recent_documents_menu();
 }
 
 void main_window::on_about(wxCommandEvent&) {
@@ -550,6 +553,26 @@ void main_window::on_recent_document(wxCommandEvent& event) {
 	}
 }
 
+void main_window::on_show_all_documents(wxCommandEvent& event) {
+    auto& config_mgr = wxGetApp().get_config_manager();
+
+    wxArrayString open_docs;
+    for (size_t i = 0; i < doc_manager->get_tab_count(); ++i) {
+        if (doc_manager->get_tab(i)) {
+            open_docs.Add(doc_manager->get_tab(i)->file_path);
+        }
+    }
+
+    all_documents_dialog dlg(this, config_mgr, open_docs);
+    if (dlg.ShowModal() == wxID_OK) {
+        wxString path = dlg.get_selected_path();
+        if (!path.IsEmpty() && wxFileName::FileExists(path)) {
+            [[maybe_unused]] bool success = doc_manager->open_file(path);
+        }
+    }
+	update_recent_documents_menu();
+}
+
 void main_window::on_notebook_key_down(wxKeyEvent& event) {
 	if (event.GetKeyCode() == WXK_DELETE) {
 		if (notebook->FindFocus() == notebook) {
@@ -581,7 +604,8 @@ void main_window::update_recent_documents_menu() {
 		recent_documents_menu->Append(wxID_ANY, "(No recent documents)")->Enable(false);
 		return;
 	}
-	for (size_t i = 0; i < recent_docs.GetCount() && i < 10; ++i) {
+
+	for (size_t i = 0; i < recent_docs.GetCount() && i < config_mgr.get_recent_documents_to_show(); ++i) {
 		const wxString& path = recent_docs[i];
 		const wxString filename = wxFileName(path).GetFullName();
 		const wxString menu_text = wxString::Format("&%zu %s", i + 1, filename);
@@ -589,6 +613,11 @@ void main_window::update_recent_documents_menu() {
 		recent_documents_menu->Append(id, menu_text, path);
 		Bind(wxEVT_MENU, &main_window::on_recent_document, this, id);
 	}
+	if (recent_docs.GetCount() > 0) {
+		recent_documents_menu->AppendSeparator();
+	}
+	recent_documents_menu->Append(ID_SHOW_ALL_DOCUMENTS, "Show All...");
+	Bind(wxEVT_MENU, &main_window::on_show_all_documents, this, ID_SHOW_ALL_DOCUMENTS);
 }
 
 void main_window::do_find(bool forward) {
