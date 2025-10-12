@@ -562,9 +562,8 @@ void main_window::on_show_all_documents(wxCommandEvent& event) {
 	all_documents_dialog dlg(this, config_mgr, open_docs);
 	if (dlg.ShowModal() == wxID_OK) {
 		wxString path = dlg.get_selected_path();
-		if (!path.IsEmpty() && wxFileName::FileExists(path)) {
+		if (!path.IsEmpty() && wxFileName::FileExists(path))
 			[[maybe_unused]] bool success = doc_manager->open_file(path);
-		}
 	}
 	update_recent_documents_menu();
 }
@@ -600,7 +599,6 @@ void main_window::update_recent_documents_menu() {
 		recent_documents_menu->Append(wxID_ANY, "(No recent documents)")->Enable(false);
 		return;
 	}
-
 	for (size_t i = 0; i < recent_docs.GetCount() && i < config_mgr.get_recent_documents_to_show(); ++i) {
 		const wxString& path = recent_docs[i];
 		const wxString filename = wxFileName(path).GetFullName();
@@ -609,9 +607,7 @@ void main_window::update_recent_documents_menu() {
 		recent_documents_menu->Append(id, menu_text, path);
 		Bind(wxEVT_MENU, &main_window::on_recent_document, this, id);
 	}
-	if (recent_docs.GetCount() > 0) {
-		recent_documents_menu->AppendSeparator();
-	}
+	if (recent_docs.GetCount() > 0) recent_documents_menu->AppendSeparator();
 	recent_documents_menu->Append(ID_SHOW_ALL_DOCUMENTS, "Show All...");
 	Bind(wxEVT_MENU, &main_window::on_show_all_documents, this, ID_SHOW_ALL_DOCUMENTS);
 }
