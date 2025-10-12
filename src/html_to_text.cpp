@@ -70,9 +70,10 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 				title = trim_string(collapse_whitespace(title));
 			} else if (tag_name == "body")
 				in_body = true;
-			else if (tag_name == "pre")
+			else if (tag_name == "pre") {
+				finalize_current_line();
 				preserve_whitespace = true;
-			else if (tag_name == "code")
+			} else if (tag_name == "code")
 				in_code = true;
 			else if (tag_name == "br" || tag_name == "li")
 				finalize_current_line();
