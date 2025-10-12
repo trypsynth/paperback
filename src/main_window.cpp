@@ -563,7 +563,8 @@ void main_window::on_show_all_documents(wxCommandEvent& event) {
 	if (dlg.ShowModal() == wxID_OK) {
 		wxString path = dlg.get_selected_path();
 		if (!path.IsEmpty() && wxFileName::FileExists(path))
-			[[maybe_unused]] bool success = doc_manager->open_file(path);
+			[[maybe_unused]]
+			bool success = doc_manager->open_file(path);
 	}
 	update_recent_documents_menu();
 }
