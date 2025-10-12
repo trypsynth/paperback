@@ -73,9 +73,10 @@ void xml_to_text::process_node(Node* node) {
 		std::transform(tag_name.begin(), tag_name.end(), tag_name.begin(), ::tolower);
 		if (tag_name == "body")
 			in_body = true;
-		else if (tag_name == "pre")
+		else if (tag_name == "pre") {
+			finalize_current_line();
 			preserve_whitespace = true;
-		else if (tag_name == "br" || tag_name == "li")
+		} else if (tag_name == "br" || tag_name == "li")
 			finalize_current_line();
 		if (in_body && element->hasAttributeNS("", "id")) {
 			std::string id = element->getAttributeNS("", "id");
@@ -114,11 +115,17 @@ void xml_to_text::process_text_node(Text* text_node) {
 
 void xml_to_text::add_line(std::string_view line) {
 	std::string processed_line;
-	processed_line = preserve_whitespace ? std::string(line) : collapse_whitespace(line);
-	processed_line = trim_string(processed_line);
-	if (!processed_line.empty()) {
+	if (preserve_whitespace) {
+		processed_line = std::string(line);
 		cached_char_length += wxString::FromUTF8(processed_line).length() + 1; // +1 for newline
 		lines.emplace_back(std::move(processed_line));
+	} else {
+		processed_line = collapse_whitespace(line);
+		processed_line = trim_string(processed_line);
+		if (!processed_line.empty()) {
+			cached_char_length += wxString::FromUTF8(processed_line).length() + 1; // +1 for newline
+			lines.emplace_back(std::move(processed_line));
+		}
 	}
 }
 
