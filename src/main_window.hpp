@@ -86,6 +86,7 @@ private:
 	void on_position_save_timer(wxTimerEvent&);
 	void on_status_update_timer(wxTimerEvent&);
 	void on_recent_document(wxCommandEvent& event);
+	void on_show_all_documents(wxCommandEvent& event);
 	void on_notebook_key_down(wxKeyEvent& event);
 	void do_find(bool forward);
 	void navigate_heading_by_level(int level, bool forward);

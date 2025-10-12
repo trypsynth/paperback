@@ -8,9 +8,11 @@
  */
 
 #pragma once
+#include "config_manager.hpp"
 #include "controls.hpp"
 #include "document.hpp"
 #include "parser.hpp"
+#include <wx/listctrl.h>
 #include <wx/spinctrl.h>
 #include <wx/treectrl.h>
 #include <wx/wx.h>
@@ -36,6 +38,29 @@ private:
 	bool layout_finalized{false};
 
 	void create_buttons();
+};
+
+class all_documents_dialog : public dialog {
+public:
+	all_documents_dialog(wxWindow* parent, config_manager& cfg_mgr, const wxArrayString& open_docs);
+	~all_documents_dialog() = default;
+	all_documents_dialog(const all_documents_dialog&) = delete;
+	all_documents_dialog& operator=(const all_documents_dialog&) = delete;
+	all_documents_dialog(all_documents_dialog&&) = delete;
+	all_documents_dialog& operator=(all_documents_dialog&&) = delete;
+	[[nodiscard]] wxString get_selected_path() const { return selected_path; }
+
+private:
+	wxListView* doc_list{nullptr};
+	config_manager& config_mgr;
+	wxArrayString doc_paths;
+	wxArrayString open_doc_paths;
+	wxString selected_path;
+
+	void on_open(wxCommandEvent& event);
+	void on_remove(wxCommandEvent& event);
+	void on_list_item_activated(wxListEvent& event);
+	void populate_document_list();
 };
 
 class bookmark_dialog : public dialog {
@@ -181,10 +206,13 @@ public:
 	void set_restore_previous_documents(bool restore);
 	bool get_word_wrap() const;
 	void set_word_wrap(bool word_wrap);
+	int get_recent_documents_to_show() const;
+	void set_recent_documents_to_show(int count);
 
 private:
 	wxCheckBox* restore_docs_check{nullptr};
 	wxCheckBox* word_wrap_check{nullptr};
+	wxSpinCtrl* recent_docs_count_spin{nullptr};
 
 	void on_ok(wxCommandEvent& event);
 	void on_cancel(wxCommandEvent& event);

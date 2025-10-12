@@ -10,6 +10,7 @@
 #include "dialogs.hpp"
 #include "config_manager.hpp"
 #include "constants.hpp"
+#include <wx/filename.h>
 
 dialog::dialog(wxWindow* parent, const wxString& title, dialog_button_config buttons) : wxDialog(parent, wxID_ANY, title), button_config{buttons} {
 	main_sizer = new wxBoxSizer(wxVERTICAL);
@@ -38,6 +39,63 @@ void dialog::create_buttons() {
 		button_sizer->AddButton(new wxButton(this, wxID_CANCEL));
 	ok_button->SetDefault();
 	button_sizer->Realize();
+}
+
+all_documents_dialog::all_documents_dialog(wxWindow* parent, config_manager& cfg_mgr, const wxArrayString& open_docs) : dialog(parent, "All Documents", dialog_button_config::ok_only), config_mgr(cfg_mgr), open_doc_paths(open_docs) {
+	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
+	doc_list = new wxListView(this, wxID_ANY, wxDefaultPosition, wxSize(800, 600), wxLC_REPORT | wxLC_SINGLE_SEL);
+	doc_list->AppendColumn("File Name", wxLIST_FORMAT_LEFT, 250);
+	doc_list->AppendColumn("Status", wxLIST_FORMAT_LEFT, 100);
+	doc_list->AppendColumn("Path", wxLIST_FORMAT_LEFT, 450);
+	populate_document_list();
+	content_sizer->Add(doc_list, 1, wxEXPAND | wxALL, 10);
+	auto* button_sizer = new wxBoxSizer(wxHORIZONTAL);
+	auto* open_button = new wxButton(this, wxID_OPEN, "&Open");
+	auto* remove_button = new wxButton(this, wxID_REMOVE);
+	button_sizer->Add(open_button, 0, wxRIGHT, 10);
+	button_sizer->Add(remove_button, 0, wxRIGHT, 10);
+	content_sizer->Add(button_sizer, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+	set_content(content_sizer);
+	finalize_layout();
+	Bind(wxEVT_BUTTON, &all_documents_dialog::on_open, this, wxID_OPEN);
+	Bind(wxEVT_BUTTON, &all_documents_dialog::on_remove, this, wxID_REMOVE);
+	Bind(wxEVT_LIST_ITEM_ACTIVATED, &all_documents_dialog::on_list_item_activated, this, wxID_ANY);
+}
+
+void all_documents_dialog::populate_document_list() {
+	doc_list->DeleteAllItems();
+	doc_paths = config_mgr.get_all_documents();
+	doc_paths.Sort();
+	for (const auto& path : doc_paths) {
+		wxFileName fn(path);
+		long index = doc_list->InsertItem(doc_list->GetItemCount(), fn.GetFullName());
+		wxString status = (open_doc_paths.Index(path) != wxNOT_FOUND) ? "Open" : "Closed";
+		doc_list->SetItem(index, 1, status);
+		doc_list->SetItem(index, 2, path);
+	}
+}
+
+void all_documents_dialog::on_open(wxCommandEvent& event) {
+	long item = doc_list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+	if (item != -1) {
+		selected_path = doc_list->GetItemText(item, 2);
+		EndModal(wxID_OK);
+	}
+}
+
+void all_documents_dialog::on_remove(wxCommandEvent& event) {
+	long item = doc_list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+	if (item == -1) return;
+	if (wxMessageBox("Are you sure you want to remove this document from the list? This will also remove its reading position.", "Confirm", wxYES_NO | wxICON_QUESTION) != wxYES) return;
+	wxString path_to_remove = doc_list->GetItemText(item, 2);
+	config_mgr.remove_document_history(path_to_remove);
+	config_mgr.flush();
+	populate_document_list();
+}
+
+void all_documents_dialog::on_list_item_activated(wxListEvent& event) {
+	selected_path = doc_list->GetItemText(event.GetIndex(), 2);
+	EndModal(wxID_OK);
 }
 
 bookmark_dialog::bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks, wxTextCtrl* text_ctrl, long current_pos) : dialog(parent, "Jump to Bookmark"), bookmark_positions(bookmarks), selected_position{-1} {
@@ -319,6 +377,12 @@ options_dialog::options_dialog(wxWindow* parent) : dialog(parent, "Options") {
 	general_box->Add(restore_docs_check, 0, wxALL, 5);
 	word_wrap_check = new wxCheckBox(this, wxID_ANY, "&Word wrap");
 	general_box->Add(word_wrap_check, 0, wxALL, 5);
+	auto* recent_docs_sizer = new wxBoxSizer(wxHORIZONTAL);
+	auto* recent_docs_label = new wxStaticText(this, wxID_ANY, "Number of &recent documents to show:");
+	recent_docs_count_spin = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 100, 10);
+	recent_docs_sizer->Add(recent_docs_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
+	recent_docs_sizer->Add(recent_docs_count_spin, 0, wxALIGN_CENTER_VERTICAL);
+	general_box->Add(recent_docs_sizer, 0, wxALL, 5);
 	set_content(general_box);
 	Bind(wxEVT_BUTTON, &options_dialog::on_ok, this, wxID_OK);
 	Bind(wxEVT_BUTTON, &options_dialog::on_cancel, this, wxID_CANCEL);
@@ -339,6 +403,14 @@ bool options_dialog::get_word_wrap() const {
 
 void options_dialog::set_word_wrap(bool word_wrap) {
 	if (word_wrap_check) word_wrap_check->SetValue(word_wrap);
+}
+
+int options_dialog::get_recent_documents_to_show() const {
+	return recent_docs_count_spin ? recent_docs_count_spin->GetValue() : 10;
+}
+
+void options_dialog::set_recent_documents_to_show(int count) {
+	if (recent_docs_count_spin) recent_docs_count_spin->SetValue(count);
 }
 
 void options_dialog::on_ok(wxCommandEvent& event) {
