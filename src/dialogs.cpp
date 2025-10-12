@@ -51,7 +51,7 @@ all_documents_dialog::all_documents_dialog(wxWindow* parent, config_manager& cfg
 	content_sizer->Add(doc_list, 1, wxEXPAND | wxALL, 10);
 	auto* button_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* open_button = new wxButton(this, wxID_OPEN, "&Open");
-	auto* remove_button = new wxButton(this, wxID_REMOVE);
+	auto* remove_button = new wxButton(this, wxID_REMOVE, "&Remove");
 	button_sizer->Add(open_button, 0, wxRIGHT, 10);
 	button_sizer->Add(remove_button, 0, wxRIGHT, 10);
 	content_sizer->Add(button_sizer, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxBOTTOM, 10);
@@ -73,6 +73,10 @@ void all_documents_dialog::populate_document_list() {
 		doc_list->SetItem(index, 1, status);
 		doc_list->SetItem(index, 2, path);
 	}
+	if (doc_list->GetItemCount() > 0) {
+		doc_list->SetItemState(0, wxLIST_STATE_SELECTED | wxLIST_STATE_FOCUSED, wxLIST_STATE_SELECTED | wxLIST_STATE_FOCUSED);
+		doc_list->EnsureVisible(0);
+	}
 }
 
 void all_documents_dialog::on_open(wxCommandEvent& event) {
@@ -86,11 +90,19 @@ void all_documents_dialog::on_open(wxCommandEvent& event) {
 void all_documents_dialog::on_remove(wxCommandEvent& event) {
 	long item = doc_list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
 	if (item == -1) return;
-	if (wxMessageBox("Are you sure you want to remove this document from the list? This will also remove its reading position.", "Confirm", wxYES_NO | wxICON_QUESTION) != wxYES) return;
+	if (wxMessageBox("Are you sure you want to remove this document from the list? This will also remove its reading position.", "Confirm", wxYES_NO | wxICON_INFORMATION) != wxYES) return;
 	wxString path_to_remove = doc_list->GetItemText(item, 2);
+	long removed_index = item;
+	long total_items = doc_list->GetItemCount();
 	config_mgr.remove_document_history(path_to_remove);
 	config_mgr.flush();
 	populate_document_list();
+	if (doc_list->GetItemCount() > 0) {
+		long new_selection = removed_index;
+		if (new_selection >= doc_list->GetItemCount()) new_selection = doc_list->GetItemCount() - 1;
+		doc_list->SetItemState(new_selection, wxLIST_STATE_SELECTED | wxLIST_STATE_FOCUSED, wxLIST_STATE_SELECTED | wxLIST_STATE_FOCUSED);
+		doc_list->EnsureVisible(new_selection);
+	}
 }
 
 void all_documents_dialog::on_list_item_activated(wxListEvent& event) {
