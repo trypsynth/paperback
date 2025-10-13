@@ -27,7 +27,7 @@ std::unique_ptr<document> markdown_parser::load(const wxString& path) const {
 	std::istringstream iss(content.ToStdString());
 	std::string html = parser->Parse(iss);
 	html_to_text converter;
-	if (!converter.convert(html)) return nullptr;
+	if (!converter.convert(html, html_source_mode::markdown)) return nullptr;
 	auto doc = std::make_unique<document>();
 	doc->title = wxFileName(path).GetName();
 	doc->buffer.clear();

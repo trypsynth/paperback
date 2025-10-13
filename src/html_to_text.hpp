@@ -15,6 +15,12 @@
 #include <unordered_map>
 #include <vector>
 
+// This is needed because we don't want to render HTML code inside of markdown code blocks, but don't want HTML code blocks to have tons of tags in them either.
+enum class html_source_mode {
+	native_html,
+	markdown
+};
+
 class html_to_text {
 public:
 	html_to_text();
@@ -23,7 +29,7 @@ public:
 	html_to_text& operator=(const html_to_text&) = delete;
 	html_to_text(html_to_text&&) = default;
 	html_to_text& operator=(html_to_text&&) = default;
-	[[nodiscard]] bool convert(const std::string& html_content);
+	[[nodiscard]] bool convert(const std::string& html_content, html_source_mode mode = html_source_mode::native_html);
 	[[nodiscard]] const std::vector<std::string>& get_lines() const noexcept { return lines; }
 	[[nodiscard]] std::string get_text() const;
 	[[nodiscard]] const std::unordered_map<std::string, size_t>& get_id_positions() const noexcept { return id_positions; }
@@ -48,6 +54,7 @@ private:
 	bool in_body = false;
 	bool preserve_whitespace = false;
 	bool in_code = false;
+	html_source_mode source_mode = html_source_mode::native_html;
 	size_t cached_char_length = 0;
 	DocumentPtr doc;
 

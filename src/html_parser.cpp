@@ -22,7 +22,7 @@ std::unique_ptr<document> html_parser::load(const wxString& path) const {
 	wxString content;
 	while (!bs.Eof()) content += text_stream.ReadLine() + "\n";
 	html_to_text converter;
-	if (!converter.convert(content.utf8_string())) return nullptr;
+	if (!converter.convert(content.utf8_string(), html_source_mode::native_html)) return nullptr;
 	auto doc = std::make_unique<document>();
 	const auto& extracted_title = converter.get_title();
 	doc->title = extracted_title.empty() ? wxFileName(path).GetName() : wxString::FromUTF8(extracted_title);

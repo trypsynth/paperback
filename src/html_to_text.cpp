@@ -22,8 +22,9 @@ html_to_text::html_to_text() : doc(lxb_html_document_create()) {
 	if (!doc) throw std::runtime_error("Failed to create Lexbor HTML document");
 }
 
-bool html_to_text::convert(const std::string& html_content) {
+bool html_to_text::convert(const std::string& html_content, html_source_mode mode) {
 	clear();
+	source_mode = mode;
 	const auto status = lxb_html_document_parse(doc.get(), reinterpret_cast<const lxb_char_t*>(html_content.data()), html_content.length());
 	if (status != LXB_STATUS_OK) return false;
 	if (auto* node = lxb_dom_interface_node(doc.get())) process_node(node);
@@ -103,7 +104,7 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 			break;
 	}
 	if (is_element && (tag_name == "script" || tag_name == "style")) return;
-	if (in_code && is_element && tag_name == "code") {
+	if (source_mode == html_source_mode::markdown && in_code && preserve_whitespace && is_element && tag_name == "code") {
 		for (auto* child = node->first_child; child; child = child->next) {
 			if (child->type == LXB_DOM_NODE_TYPE_ELEMENT) {
 				lexbor_str_t str = {0};
