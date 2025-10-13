@@ -78,3 +78,4 @@
 
 [Run]
 	Filename: "{app}\paperback.exe"; Description: "Launch Paperback"; Flags: nowait postinstall skipifsilent
+	Filename: "{app}\readme.html"; Description: "View readme.html"; Flags: shellexec postinstall skipifsilent unchecked
