@@ -565,7 +565,8 @@ void main_window::on_show_all_documents(wxCommandEvent& event) {
 }
 
 void main_window::on_notebook_key_down(wxKeyEvent& event) {
-	if (event.GetKeyCode() == WXK_DELETE) {
+	int key = event.GetKeyCode();
+	if (key == WXK_DELETE || key == WXK_NUMPAD_DELETE) {
 		if (notebook->FindFocus() == notebook) {
 			int sel = notebook->GetSelection();
 			if (sel != wxNOT_FOUND) {
