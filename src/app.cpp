@@ -13,10 +13,8 @@
 #include "utils.hpp"
 #include <wx/filename.h>
 
-const wxString app::IPC_SERVICE = "paperback_ipc_service";
-
 bool paperback_connection::OnExec(const wxString& topic, const wxString& data) {
-	if (topic == "open_file") {
+	if (topic == IPC_TOPIC_OPEN_FILE) {
 		wxGetApp().open_file(data);
 		return true;
 	}
@@ -24,7 +22,7 @@ bool paperback_connection::OnExec(const wxString& topic, const wxString& data) {
 }
 
 wxConnectionBase* paperback_server::OnAcceptConnection(const wxString& topic) {
-	if (topic == "open_file") return new paperback_connection();
+	if (topic == IPC_TOPIC_OPEN_FILE) return new paperback_connection();
 	return nullptr;
 }
 
@@ -33,11 +31,11 @@ bool app::OnInit() {
 		wxMessageBox("Failed to initialize configuration", "Error", wxICON_ERROR);
 		return false;
 	}
-	single_instance_checker = std::make_unique<wxSingleInstanceChecker>("paperback_running");
+	single_instance_checker = std::make_unique<wxSingleInstanceChecker>(SINGLE_INSTANCE_NAME);
 	if (single_instance_checker->IsAnotherRunning()) {
 		if (argc > 1) {
 			paperback_client client;
-			std::unique_ptr<wxConnectionBase> connection(client.MakeConnection("localhost", IPC_SERVICE, "open_file"));
+			std::unique_ptr<wxConnectionBase> connection(client.MakeConnection(IPC_HOST_LOCALHOST, IPC_SERVICE, IPC_TOPIC_OPEN_FILE));
 			if (connection) {
 				wxString arg_path = wxString(argv[1]);
 				wxFileName file_path{arg_path};
@@ -47,9 +45,9 @@ bool app::OnInit() {
 			}
 		} else {
 			paperback_client client;
-			std::unique_ptr<wxConnectionBase> connection(client.MakeConnection("localhost", IPC_SERVICE, "open_file"));
+			std::unique_ptr<wxConnectionBase> connection(client.MakeConnection(IPC_HOST_LOCALHOST, IPC_SERVICE, IPC_TOPIC_OPEN_FILE));
 			if (connection) {
-				connection->Execute("ACTIVATE");
+				connection->Execute(IPC_COMMAND_ACTIVATE);
 				connection->Disconnect();
 			}
 		}
@@ -128,7 +126,7 @@ void app::restore_previous_documents() {
 }
 
 void app::open_file(const wxString& filename) {
-	if (filename == "ACTIVATE") {
+	if (filename == IPC_COMMAND_ACTIVATE) {
 		if (frame) frame->Raise();
 		return;
 	}

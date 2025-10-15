@@ -49,7 +49,6 @@ private:
 	std::unique_ptr<wxSingleInstanceChecker> single_instance_checker;
 	std::unique_ptr<paperback_server> ipc_server;
 	void load_default_config();
-	static const wxString IPC_SERVICE;
 };
 
 wxDECLARE_APP(app);

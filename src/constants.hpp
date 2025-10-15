@@ -19,6 +19,11 @@ inline constexpr int STATUS_UPDATE_THROTTLE_MS = 100;
 inline constexpr int MAX_FIND_HISTORY_SIZE = 10;
 inline constexpr int CONFIG_VERSION_CURRENT = 1;
 inline constexpr int CONFIG_VERSION_LEGACY = 0;
+inline const wxString IPC_SERVICE = "paperback_ipc_service";
+inline const wxString IPC_TOPIC_OPEN_FILE = "open_file";
+inline const wxString IPC_COMMAND_ACTIVATE = "ACTIVATE";
+inline const wxString IPC_HOST_LOCALHOST = "localhost";
+inline const wxString SINGLE_INSTANCE_NAME = "paperback_running";
 
 enum {
 	// File menu
