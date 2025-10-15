@@ -15,7 +15,9 @@
 
 bool paperback_connection::OnExec(const wxString& topic, const wxString& data) {
 	if (topic == IPC_TOPIC_OPEN_FILE) {
-		wxGetApp().open_file(data);
+		wxGetApp().CallAfter([data]() {
+			wxGetApp().open_file(data);
+		});
 		return true;
 	}
 	return false;
