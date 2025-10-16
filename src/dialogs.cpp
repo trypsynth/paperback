@@ -61,6 +61,7 @@ all_documents_dialog::all_documents_dialog(wxWindow* parent, config_manager& cfg
 	Bind(wxEVT_BUTTON, &all_documents_dialog::on_remove, this, wxID_REMOVE);
 	Bind(wxEVT_LIST_ITEM_ACTIVATED, &all_documents_dialog::on_list_item_activated, this, wxID_ANY);
 	Bind(wxEVT_LIST_ITEM_SELECTED, &all_documents_dialog::on_list_item_selected, this, wxID_ANY);
+	doc_list->Bind(wxEVT_KEY_DOWN, &all_documents_dialog::on_key_down, this);
 	if (doc_list->GetItemCount() > 0) {
 		long item = doc_list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
 		if (item != -1) {
@@ -139,6 +140,16 @@ void all_documents_dialog::on_list_item_selected(wxListEvent& event) {
 	if (item != -1 && open_button) {
 		wxString status = doc_list->GetItemText(item, 1);
 		open_button->Enable(status != "Missing");
+	}
+}
+
+void all_documents_dialog::on_key_down(wxKeyEvent& event) {
+	if (event.GetKeyCode() == WXK_DELETE) {
+		wxCommandEvent remove_event(wxEVT_BUTTON, wxID_REMOVE);
+		wxPostEvent(this, remove_event);
+	}
+	else {
+		event.Skip();
 	}
 }
 

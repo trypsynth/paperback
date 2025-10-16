@@ -62,6 +62,7 @@ private:
 	void on_remove(wxCommandEvent& event);
 	void on_list_item_activated(wxListEvent& event);
 	void on_list_item_selected(wxListEvent& event);
+	void on_key_down(wxKeyEvent& event);
 	void populate_document_list();
 };
 
