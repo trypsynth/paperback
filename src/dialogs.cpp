@@ -430,6 +430,8 @@ options_dialog::options_dialog(wxWindow* parent) : dialog(parent, "Options") {
 	general_box->Add(restore_docs_check, 0, wxALL, 5);
 	word_wrap_check = new wxCheckBox(this, wxID_ANY, "&Word wrap");
 	general_box->Add(word_wrap_check, 0, wxALL, 5);
+	minimize_to_tray_check = new wxCheckBox(this, wxID_ANY, "&Minimize to system tray");
+	general_box->Add(minimize_to_tray_check, 0, wxALL, 5);
 	auto* recent_docs_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* recent_docs_label = new wxStaticText(this, wxID_ANY, "Number of &recent documents to show:");
 	recent_docs_count_spin = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 100, 10);
@@ -456,6 +458,14 @@ bool options_dialog::get_word_wrap() const {
 
 void options_dialog::set_word_wrap(bool word_wrap) {
 	if (word_wrap_check) word_wrap_check->SetValue(word_wrap);
+}
+
+bool options_dialog::get_minimize_to_tray() const {
+	return minimize_to_tray_check ? minimize_to_tray_check->GetValue() : false;
+}
+
+void options_dialog::set_minimize_to_tray(bool minimize) {
+	if (minimize_to_tray_check) minimize_to_tray_check->SetValue(minimize);
 }
 
 int options_dialog::get_recent_documents_to_show() const {

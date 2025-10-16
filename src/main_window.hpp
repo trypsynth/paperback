@@ -10,6 +10,7 @@
 #pragma once
 #include "dialogs.hpp"
 #include "document_manager.hpp"
+#include "task_bar_icon.hpp"
 #include <memory>
 #include <wx/bookctrl.h>
 #include <wx/longlong.h>
@@ -45,6 +46,7 @@ private:
 	find_dialog* find_dlg{nullptr};
 	wxMenu* recent_documents_menu{nullptr};
 	wxStaticText* live_region_label{nullptr};
+	task_bar_icon* task_bar_icon_{nullptr};
 
 	void create_menus();
 	wxMenu* create_file_menu();
@@ -88,6 +90,7 @@ private:
 	void on_recent_document(wxCommandEvent& event);
 	void on_show_all_documents(wxCommandEvent& event);
 	void on_notebook_key_down(wxKeyEvent& event);
+	void on_iconize(wxIconizeEvent& event);
 	void do_find(bool forward);
 	void navigate_heading_by_level(int level, bool forward);
 };

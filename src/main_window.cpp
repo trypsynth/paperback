@@ -20,6 +20,7 @@
 #include <wx/timer.h>
 
 main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
+	task_bar_icon_ = new task_bar_icon(this);
 	auto* const panel = new wxPanel(this);
 	notebook = new wxNotebook(panel, wxID_ANY);
 #ifdef __WXMSW__
@@ -43,6 +44,10 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 }
 
 main_window::~main_window() {
+	if (task_bar_icon_) {
+		task_bar_icon_->Destroy();
+		task_bar_icon_ = nullptr;
+	}
 	if (position_save_timer) {
 		position_save_timer->Stop();
 		position_save_timer = nullptr;
@@ -171,8 +176,20 @@ void main_window::bind_events() {
 	}
 	Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, &main_window::on_notebook_page_changed, this);
 	Bind(wxEVT_CLOSE_WINDOW, &main_window::on_close_window, this);
+	Bind(wxEVT_ICONIZE, &main_window::on_iconize, this);
 	Bind(wxEVT_TIMER, &main_window::on_position_save_timer, this, position_save_timer->GetId());
 	Bind(wxEVT_TIMER, &main_window::on_status_update_timer, this, status_update_timer->GetId());
+}
+
+void main_window::on_iconize(wxIconizeEvent& event) {
+	if (event.IsIconized()) {
+		auto& config_mgr = wxGetApp().get_config_manager();
+		if (config_mgr.get_minimize_to_tray()) {
+			Hide();
+			task_bar_icon_->SetIcon(wxICON(wxICON_INFORMATION), APP_NAME);
+		}
+	}
+	event.Skip();
 }
 
 void main_window::update_ui() {
@@ -425,12 +442,14 @@ void main_window::on_options(wxCommandEvent&) {
 	options_dialog dlg(this);
 	dlg.set_restore_previous_documents(config_mgr.get_restore_previous_documents());
 	dlg.set_word_wrap(config_mgr.get_word_wrap());
+	dlg.set_minimize_to_tray(config_mgr.get_minimize_to_tray());
 	dlg.set_recent_documents_to_show(config_mgr.get_recent_documents_to_show());
 	if (dlg.ShowModal() != wxID_OK) return;
 	bool old_word_wrap = config_mgr.get_word_wrap();
 	bool new_word_wrap = dlg.get_word_wrap();
 	config_mgr.set_restore_previous_documents(dlg.get_restore_previous_documents());
 	config_mgr.set_word_wrap(new_word_wrap);
+	config_mgr.set_minimize_to_tray(dlg.get_minimize_to_tray());
 	config_mgr.set_recent_documents_to_show(dlg.get_recent_documents_to_show());
 	if (old_word_wrap != new_word_wrap) {
 		doc_manager->apply_word_wrap(new_word_wrap);

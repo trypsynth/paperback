@@ -209,12 +209,15 @@ public:
 	void set_restore_previous_documents(bool restore);
 	bool get_word_wrap() const;
 	void set_word_wrap(bool word_wrap);
+	bool get_minimize_to_tray() const;
+	void set_minimize_to_tray(bool minimize);
 	int get_recent_documents_to_show() const;
 	void set_recent_documents_to_show(int count);
 
 private:
 	wxCheckBox* restore_docs_check{nullptr};
 	wxCheckBox* word_wrap_check{nullptr};
+	wxCheckBox* minimize_to_tray_check{nullptr};
 	wxSpinCtrl* recent_docs_count_spin{nullptr};
 
 	void on_ok(wxCommandEvent& event);
