@@ -13,12 +13,12 @@
 #include "dialogs.hpp"
 #include "live_region.hpp"
 #include "parser.hpp"
-#include "task_bar_icon.hpp"
 #include "utils.hpp"
 #include <wx/aboutdlg.h>
 #include <wx/filename.h>
 #include <wx/stdpaths.h>
 #include <wx/timer.h>
+
 main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	task_bar_icon_ = new task_bar_icon(this);
 	auto* const panel = new wxPanel(this);
@@ -141,7 +141,6 @@ void main_window::bind_events() {
 		{wxID_CLOSE_ALL, &main_window::on_close_all},
 		{ID_EXPORT, &main_window::on_export},
 		{wxID_EXIT, &main_window::on_exit},
-		{ID_MINIMIZE_TO_TRAY, &main_window::on_minimize_to_tray},
 		{wxID_FIND, &main_window::on_find},
 		{ID_FIND_NEXT, &main_window::on_find_next},
 		{ID_FIND_PREVIOUS, &main_window::on_find_previous},
@@ -192,13 +191,6 @@ void main_window::on_iconize(wxIconizeEvent& event) {
 	}
 	event.Skip();
 }
-
-void main_window::on_minimize_to_tray(wxCommandEvent&) {
-	Hide();
-	task_bar_icon_->SetIcon(wxICON(wxICON_INFORMATION), APP_NAME);
-}
-
-
 
 void main_window::update_ui() {
 	const bool has_doc = doc_manager->has_documents();
@@ -554,6 +546,7 @@ void main_window::on_close_window(wxCloseEvent& event) {
 	}
 	event.Skip();
 }
+
 void main_window::on_position_save_timer(wxTimerEvent&) {
 	doc_manager->save_current_tab_position();
 }

@@ -25,10 +25,10 @@ inline const wxString IPC_COMMAND_ACTIVATE = "ACTIVATE";
 inline const wxString IPC_HOST_LOCALHOST = "localhost";
 inline const wxString SINGLE_INSTANCE_NAME = "paperback_running";
 
+// Main menu constants.
 enum {
 	// File menu
 	ID_EXPORT = wxID_HIGHEST + 1,
-	ID_MINIMIZE_TO_TRAY,
 	ID_RECENT_DOCUMENTS_BASE,
 	ID_RECENT_DOCUMENTS_END = ID_RECENT_DOCUMENTS_BASE + 100,
 	ID_SHOW_ALL_DOCUMENTS,
@@ -68,4 +68,9 @@ enum {
 	// Help menu
 	ID_HELP_INTERNAL,
 	ID_DONATE,
+};
+
+// System tray menu constants.
+enum {
+	ID_RESTORE = wxID_HIGHEST + 1,
 };

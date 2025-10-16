@@ -7,15 +7,12 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include "constants.hpp"
 #include "task_bar_icon.hpp"
 #include "main_window.hpp"
 #include <wx/menu.h>
 
-enum {
-	ID_RESTORE = 1,
-};
-
-task_bar_icon::task_bar_icon(main_window* frame) : frame_(frame) {
+task_bar_icon::task_bar_icon(main_window* frame) : frame_{frame} {
 	Bind(wxEVT_MENU, &task_bar_icon::on_restore_from_tray, this, ID_RESTORE);
 	Bind(wxEVT_MENU, &task_bar_icon::on_exit_from_tray, this, wxID_EXIT);
 	Bind(wxEVT_TASKBAR_LEFT_DCLICK, &task_bar_icon::on_tray_icon_activated, this);

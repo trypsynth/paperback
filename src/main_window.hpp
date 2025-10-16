@@ -16,8 +16,6 @@
 #include <wx/longlong.h>
 #include <wx/wx.h>
 
-class task_bar_icon;
-
 class main_window : public wxFrame {
 public:
 	main_window();
@@ -93,7 +91,6 @@ private:
 	void on_show_all_documents(wxCommandEvent& event);
 	void on_notebook_key_down(wxKeyEvent& event);
 	void on_iconize(wxIconizeEvent& event);
-	void on_minimize_to_tray(wxCommandEvent&);
 	void do_find(bool forward);
 	void navigate_heading_by_level(int level, bool forward);
 };

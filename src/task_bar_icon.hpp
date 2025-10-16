@@ -1,4 +1,4 @@
-/* task_bar_icon.hpp - wxTaskBarIcon implementation for Paperback.
+/* task_bar_icon.hpp - wxTaskBarIcon header file for Paperback.
  *
  * Paperback.
  * Copyright (c) 2025 Quin Gillespie.
@@ -8,7 +8,6 @@
  */
 
 #pragma once
-
 #include <wx/taskbar.h>
 
 class main_window;
