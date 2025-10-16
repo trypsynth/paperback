@@ -25,39 +25,41 @@
 #include <wx/strconv.h>
 #include <wx/zipstrm.h>
 
-long find_text(const wxString& haystack, const wxString& needle, long start, find_options options) {
-	if (needle.empty()) return wxNOT_FOUND;
+long find_text_regex(const wxString& haystack, const wxString& needle, long start, find_options options) {
 	const auto forward = has_option(options, find_options::forward);
 	const auto match_case = has_option(options, find_options::match_case);
 	const auto match_whole_word = has_option(options, find_options::match_whole_word);
-	const auto use_regex = has_option(options, find_options::use_regex);
-	if (use_regex) {
-		try {
-			auto pattern = needle.ToStdString();
-			const auto text = haystack.ToStdString();
-			if (match_whole_word) pattern = "\\b" + pattern + "\\b";
-			int options = 0;
-			if (!match_case) options |= Poco::RegularExpression::RE_CASELESS;
-			Poco::RegularExpression regex(pattern, options);
-			Poco::RegularExpression::Match match;
-			if (forward)
-				if (regex.match(text, start, match))
-					return match.offset;
-				else {
-					const auto search_text = text.substr(0, start);
-					int last_match = wxNOT_FOUND;
-					size_t pos = 0;
-					while (regex.match(search_text, pos, match)) {
-						last_match = match.offset;
-						pos = match.offset + 1;
-					}
-					return last_match;
-				}
-		} catch (const Poco::Exception&) {
-			return wxNOT_FOUND;
+	try {
+		auto pattern = needle.ToStdString();
+		const auto text = haystack.ToStdString();
+		if (match_whole_word) pattern = "\\b" + pattern + "\\b";
+		int regex_options = 0;
+		if (!match_case) regex_options |= Poco::RegularExpression::RE_CASELESS;
+		Poco::RegularExpression regex(pattern, regex_options);
+		Poco::RegularExpression::Match match;
+		if (forward) {
+			if (regex.match(text, start, match))
+				return match.offset;
+		} else {
+			const auto search_text = text.substr(0, start);
+			int last_match = wxNOT_FOUND;
+			size_t pos = 0;
+			while (regex.match(search_text, pos, match)) {
+				last_match = match.offset;
+				pos = match.offset + 1;
+			}
+			return last_match;
 		}
+	} catch (const Poco::Exception&) {
 		return wxNOT_FOUND;
 	}
+	return wxNOT_FOUND;
+}
+
+long find_text_literal(const wxString& haystack, const wxString& needle, long start, find_options options) {
+	const auto forward = has_option(options, find_options::forward);
+	const auto match_case = has_option(options, find_options::match_case);
+	const auto match_whole_word = has_option(options, find_options::match_whole_word);
 	const auto& search_haystack = match_case ? haystack : haystack.Lower();
 	const auto& search_needle = match_case ? needle : needle.Lower();
 	if (!match_whole_word)
@@ -74,6 +76,13 @@ long find_text(const wxString& haystack, const wxString& needle, long start, fin
 		if (!forward && pos < 0) break;
 	}
 	return wxNOT_FOUND;
+}
+
+long find_text(const wxString& haystack, const wxString& needle, long start, find_options options) {
+	if (needle.empty()) return wxNOT_FOUND;
+	if (has_option(options, find_options::use_regex))
+		return find_text_regex(haystack, needle, start, options);
+	return find_text_literal(haystack, needle, start, options);
 }
 
 std::string collapse_whitespace(std::string_view input) {

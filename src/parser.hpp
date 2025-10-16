@@ -67,7 +67,7 @@ private:
 	static inline ParserType instance{};
 };
 
-#define REGISTER_PARSER(ParserType) static parser_registrar<ParserType> ParserType##_registrar;
+#define REGISTER_PARSER(parser_type) static parser_registrar<parser_type> parser_type##_registrar;
 
 [[nodiscard]] const parser* find_parser_by_extension(const wxString& extension) noexcept;
 [[nodiscard]] wxString get_supported_wildcards();

@@ -167,29 +167,12 @@ size_t document_buffer::get_marker_position_by_index(marker_type type, size_t in
 }
 
 bool document_buffer::is_heading_marker(marker_type type) noexcept {
-	switch (type) {
-		case marker_type::heading_1:
-		case marker_type::heading_2:
-		case marker_type::heading_3:
-		case marker_type::heading_4:
-		case marker_type::heading_5:
-		case marker_type::heading_6:
-			return true;
-		default:
-			return false;
-	}
+	return type >= marker_type::heading_1 && type <= marker_type::heading_6;
 }
 
 int document_buffer::heading_level_from_type(marker_type type) noexcept {
-	switch (type) {
-		case marker_type::heading_1: return 1;
-		case marker_type::heading_2: return 2;
-		case marker_type::heading_3: return 3;
-		case marker_type::heading_4: return 4;
-		case marker_type::heading_5: return 5;
-		case marker_type::heading_6: return 6;
-		default: return 0;
-	}
+	if (!is_heading_marker(type)) return 0;
+	return static_cast<int>(type) - static_cast<int>(marker_type::heading_1) + 1;
 }
 
 void document_buffer::sort_markers() {

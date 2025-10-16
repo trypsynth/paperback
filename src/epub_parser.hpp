@@ -22,25 +22,11 @@
 
 struct epub_section {
 	std::vector<std::string> lines;
-
-	epub_section() = default;
-	~epub_section() = default;
-	epub_section(const epub_section&) = default;
-	epub_section& operator=(const epub_section&) = default;
-	epub_section(epub_section&&) = default;
-	epub_section& operator=(epub_section&&) = default;
 };
 
 struct manifest_item {
 	std::string path;
 	std::string media_type;
-
-	manifest_item() = default;
-	~manifest_item() = default;
-	manifest_item(const manifest_item&) = default;
-	manifest_item& operator=(const manifest_item&) = default;
-	manifest_item(manifest_item&&) = default;
-	manifest_item& operator=(manifest_item&&) = default;
 };
 
 class parse_error : public std::runtime_error {
@@ -85,6 +71,8 @@ private:
 
 	void parse_opf(const std::string& filename, epub_context& ctx) const;
 	void parse_section(size_t index, epub_context& ctx, document_buffer& buffer) const;
+	template <typename Converter>
+	void process_section_content(Converter& converter, const std::string& content, const std::string& href, epub_context& ctx, document_buffer& buffer) const;
 	void parse_toc(epub_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items, const document_buffer& buffer) const;
 	void parse_epub2_ncx(const std::string& ncx_id, const epub_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items, const document_buffer& buffer) const;
 	void parse_epub3_nav(const std::string& nav_id, const epub_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items, const document_buffer& buffer) const;

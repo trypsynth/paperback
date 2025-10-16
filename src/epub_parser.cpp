@@ -140,6 +140,23 @@ void epub_parser::parse_opf(const std::string& filename, epub_context& ctx) cons
 	}
 }
 
+template <typename Converter>
+void epub_parser::process_section_content(Converter& converter, const std::string& content, const std::string& href, epub_context& ctx, document_buffer& buffer) const {
+	if (converter.convert(content)) {
+		const auto& text = converter.get_text();
+		const auto& headings = converter.get_headings();
+		const auto& id_positions = converter.get_id_positions();
+		size_t section_start = buffer.str().length();
+		for (const auto& [id, relative_pos] : id_positions) ctx.id_positions[href][id] = section_start + relative_pos;
+		buffer.append(wxString::FromUTF8(text));
+		for (const auto& heading : headings) {
+			marker_type type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + heading.level - 1);
+			buffer.add_marker(section_start + heading.offset, type, wxString::FromUTF8(heading.text), wxString(), heading.level);
+		}
+		if (buffer.str().length() > 0 && !buffer.str().EndsWith("\n")) buffer.append("\n");
+	}
+}
+
 void epub_parser::parse_section(size_t index, epub_context& ctx, document_buffer& buffer) const {
 	if (index >= ctx.spine_items.size()) throw parse_error("Section index out of range");
 	const auto& id = ctx.spine_items[index];
@@ -156,34 +173,10 @@ void epub_parser::parse_section(size_t index, epub_context& ctx, document_buffer
 	std::string content = read_zip_entry(zis);
 	if (is_html_content(media_type)) {
 		html_to_text converter;
-		if (converter.convert(content)) {
-			const auto& text = converter.get_text();
-			const auto& headings = converter.get_headings();
-			const auto& id_positions = converter.get_id_positions();
-			size_t section_start = buffer.str().length();
-			for (const auto& [id, relative_pos] : id_positions) ctx.id_positions[href][id] = section_start + relative_pos;
-			buffer.append(wxString::FromUTF8(text));
-			for (const auto& heading : headings) {
-				marker_type type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + heading.level - 1);
-				buffer.add_marker(section_start + heading.offset, type, wxString::FromUTF8(heading.text), wxString(), heading.level);
-			}
-			if (buffer.str().length() > 0 && !buffer.str().EndsWith("\n")) buffer.append("\n");
-		}
+		process_section_content(converter, content, href, ctx, buffer);
 	} else {
 		xml_to_text converter;
-		if (converter.convert(content)) {
-			const auto& text = converter.get_text();
-			const auto& headings = converter.get_headings();
-			const auto& id_positions = converter.get_id_positions();
-			size_t section_start = buffer.str().length();
-			for (const auto& [id, relative_pos] : id_positions) ctx.id_positions[href][id] = section_start + relative_pos;
-			buffer.append(wxString::FromUTF8(text));
-			for (const auto& heading : headings) {
-				marker_type type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + heading.level - 1);
-				buffer.add_marker(section_start + heading.offset, type, wxString::FromUTF8(heading.text), wxString(), heading.level);
-			}
-			if (buffer.str().length() > 0 && !buffer.str().EndsWith("\n")) buffer.append("\n");
-		}
+		process_section_content(converter, content, href, ctx, buffer);
 	}
 }
 
