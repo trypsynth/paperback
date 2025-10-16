@@ -5,19 +5,19 @@
 	"homepage": "https://github.com/lexbor/lexbor",
 	"supports": "!uwp",
 	"dependencies": [
-	{
-		"name": "vcpkg-cmake",
-		"host": true
-	},
-	{
-		"name": "vcpkg-cmake-config",
-		"host": true
-	}
+		{
+			"name": "vcpkg-cmake",
+			"host": true
+		},
+		{
+			"name": "vcpkg-cmake-config",
+			"host": true
+		}
 	],
 	"features": {
-	"perf": {
-		"description": "Enables support for rdtsc",
-		"supports": "!arm"
-	}
+		"perf": {
+			"description": "Enables support for rdtsc",
+			"supports": "!arm"
+		}
 	}
 }
