@@ -147,10 +147,8 @@ void all_documents_dialog::on_key_down(wxKeyEvent& event) {
 	if (event.GetKeyCode() == WXK_DELETE) {
 		wxCommandEvent remove_event(wxEVT_BUTTON, wxID_REMOVE);
 		wxPostEvent(this, remove_event);
-	}
-	else {
+	} else
 		event.Skip();
-	}
 }
 
 bookmark_dialog::bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks, wxTextCtrl* text_ctrl, long current_pos) : dialog(parent, "Jump to Bookmark"), bookmark_positions(bookmarks), selected_position{-1} {
