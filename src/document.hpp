@@ -39,13 +39,6 @@ struct document_stats {
 	int line_count{0};
 	int char_count{0};
 	int char_count_no_whitespace{0};
-
-	document_stats() = default;
-	~document_stats() = default;
-	document_stats(const document_stats&) = default;
-	document_stats& operator=(const document_stats&) = default;
-	document_stats(document_stats&&) = default;
-	document_stats& operator=(document_stats&&) = default;
 };
 
 struct document {

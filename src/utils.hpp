@@ -8,15 +8,14 @@
  */
 
 #pragma once
+#include "config_manager.hpp"
 #include "document.hpp"
+#include "parser.hpp"
 #include <map>
 #include <string>
 #include <string_view>
 #include <wx/string.h>
 #include <wx/zipstrm.h>
-
-class config_manager;
-class parser;
 
 enum class find_options {
 	none = 0,
