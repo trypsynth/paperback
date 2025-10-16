@@ -42,6 +42,8 @@ public:
 	void set_restore_previous_documents(bool restore);
 	bool get_word_wrap() const;
 	void set_word_wrap(bool word_wrap);
+	bool get_minimize_to_tray() const;
+	void set_minimize_to_tray(bool minimize);
 	void set_active_document(const wxString& path);
 	wxString get_active_document() const;
 	void add_opened_document(const wxString& path);
