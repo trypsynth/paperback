@@ -328,19 +328,19 @@ void document_manager::go_to_previous_link() {
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (!doc || !text_ctrl) return;
 	if (doc->buffer.count_markers_by_type(marker_type::link) == 0) {
-		speak("No links.");
+		speak(_("No links."));
 		return;
 	}
 	size_t current_pos = text_ctrl->GetInsertionPoint();
 	int prev_index = doc->buffer.previous_marker_index(current_pos, marker_type::link);
 	if (prev_index == -1) {
-		speak("No previous link.");
+		speak(_("No previous link."));
 		return;
 	}
 	const marker* link_marker = doc->buffer.get_marker(prev_index);
 	if (link_marker) {
 		go_to_position(link_marker->pos);
-		speak("Link: " + link_marker->text);
+		speak(_("Link: " + link_marker->text));
 	}
 }
 
@@ -349,19 +349,19 @@ void document_manager::go_to_next_link() {
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (!doc || !text_ctrl) return;
 	if (doc->buffer.count_markers_by_type(marker_type::link) == 0) {
-		speak("No links.");
+		speak(_("No links."));
 		return;
 	}
 	size_t current_pos = text_ctrl->GetInsertionPoint();
 	int next_index = doc->buffer.next_marker_index(current_pos, marker_type::link);
 	if (next_index == -1) {
-		speak("No next link.");
+		speak(_("No next link."));
 		return;
 	}
 	const marker* link_marker = doc->buffer.get_marker(next_index);
 	if (link_marker) {
 		go_to_position(link_marker->pos);
-		speak("Link: " + link_marker->text);
+		speak(link_marker->text + _(" link"));
 	}
 }
 
@@ -380,17 +380,17 @@ void document_manager::activate_current_link() {
 	wxString href_lower = href.Lower();
 	if (href_lower.StartsWith("http:") || href_lower.StartsWith("https:") || href_lower.StartsWith("mailto:")) {
 		if (wxLaunchDefaultBrowser(href))
-			speak("Opening link in default browser.");
+			speak(_("Opening link in default browser."));
 		else
-			speak("Failed to open link.");
+			speak(_("Failed to open link."));
 	} else if (href.StartsWith("#")) {
 		wxString id = href.Mid(1);
 		auto it = doc->id_positions.find(std::string(id.mb_str()));
 		if (it != doc->id_positions.end()) {
 			go_to_position(it->second);
-			speak("Navigated to internal link.");
+			speak(_("Navigated to internal link."));
 		} else
-			speak("Internal link target not found.");
+			speak(_("Internal link target not found."));
 	} else {
 		wxString file_path = href.BeforeFirst('#');
 		wxString fragment = href.AfterFirst('#');
@@ -398,7 +398,7 @@ void document_manager::activate_current_link() {
 			auto it = doc->id_positions.find(std::string(fragment.mb_str()));
 			if (it != doc->id_positions.end()) {
 				go_to_position(it->second);
-				speak("Navigated to internal link.");
+				speak(_("Navigated to internal link."));
 				return;
 			}
 		}
@@ -415,11 +415,11 @@ void document_manager::activate_current_link() {
 				int spine_index = std::distance(doc->spine_items.begin(), it);
 				size_t offset = doc->buffer.get_marker_position_by_index(marker_type::section_break, spine_index);
 				go_to_position(offset);
-				speak("Navigated to internal link.");
+				speak(_("Navigated to internal link."));
 				return;
 			}
 		}
-		speak("Internal link target not found.");
+		speak(_("Internal link target not found."));
 	}
 }
 
