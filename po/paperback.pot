@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.5\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2025-10-16 23:09-0600\n"
+"POT-Creation-Date: 2025-10-17 07:52-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,10 +30,10 @@ msgstr ""
 #: C:/Users/Quin/git/paperback/src/dialogs.cpp:197
 #: C:/Users/Quin/git/paperback/src/document_manager.cpp:32
 #: C:/Users/Quin/git/paperback/src/document_manager.cpp:48
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:294
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:287
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:493
 #: C:/Users/Quin/git/paperback/src/main_window.cpp:500
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:507
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:516
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:509
 msgid "Error"
 msgstr ""
 
@@ -269,23 +269,23 @@ msgstr ""
 msgid "&Language:"
 msgstr ""
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:517
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:516
 msgid "Table of Contents"
 msgstr ""
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:519
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:518
 msgid "Root"
 msgstr ""
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:533
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:532
 msgid "Untitled"
 msgstr ""
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:574
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:573
 msgid "Please select a section from the table of contents."
 msgstr ""
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:574
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:573
 msgid "No Selection"
 msgstr ""
 
@@ -304,7 +304,7 @@ msgstr ""
 
 #: C:/Users/Quin/git/paperback/src/document_manager.cpp:248
 #: C:/Users/Quin/git/paperback/src/document_manager.cpp:270
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:363
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:356
 msgid "No pages."
 msgstr ""
 
@@ -433,6 +433,10 @@ msgstr ""
 msgid "&Help"
 msgstr ""
 
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:78
+msgid "&Open...\tCtrl+O"
+msgstr ""
+
 #: C:/Users/Quin/git/paperback/src/main_window.cpp:79
 msgid "Close\tCtrl+F4"
 msgstr ""
@@ -452,6 +456,10 @@ msgstr ""
 #: C:/Users/Quin/git/paperback/src/main_window.cpp:88
 #: C:/Users/Quin/git/paperback/src/task_bar_icon.cpp:26
 msgid "E&xit"
+msgstr ""
+
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:94
+msgid "&Find...\tCtrl+F"
 msgstr ""
 
 #: C:/Users/Quin/git/paperback/src/main_window.cpp:95
@@ -540,59 +548,59 @@ msgstr ""
 msgid "&Donate\tCtrl+D"
 msgstr ""
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:267
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:260
 msgid "Select a document to read"
 msgstr ""
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:290
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:283
 msgid "Export Document"
 msgstr ""
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:290
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:283
 msgid "Text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgstr ""
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:294
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:287
 msgid "Failed to export document."
 msgstr ""
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:443
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:436
 #, c-format
 msgid "The document contains %d word"
 msgid_plural "The document contains %d words"
 msgstr[0] ""
 msgstr[1] ""
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:443
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:436
 msgid "Word count"
 msgstr ""
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:500
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:493
 msgid "Failed to launch default browser."
 msgstr ""
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:507
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:500
 msgid ""
 "readme.html not found. Please ensure the application was built properly."
 msgstr ""
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:516
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:509
 msgid "Failed to open donation page in browser."
 msgstr ""
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:650
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:643
 msgid "(No recent documents)"
 msgstr ""
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:654
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:647
 msgid "Show All..."
 msgstr ""
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:674
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:667
 msgid "No more results. Wrapping search."
 msgstr ""
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:678
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:671
 msgid "Not found."
 msgstr ""
 
