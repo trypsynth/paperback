@@ -328,7 +328,7 @@ void document_manager::go_to_previous_link() {
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (!doc || !text_ctrl) return;
 	if (doc->buffer.count_markers_by_type(marker_type::link) == 0) {
-		speak("No links in this document.");
+		speak("No links.");
 		return;
 	}
 	size_t current_pos = text_ctrl->GetInsertionPoint();
@@ -349,7 +349,7 @@ void document_manager::go_to_next_link() {
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (!doc || !text_ctrl) return;
 	if (doc->buffer.count_markers_by_type(marker_type::link) == 0) {
-		speak("No links in this document.");
+		speak("No links.");
 		return;
 	}
 	size_t current_pos = text_ctrl->GetInsertionPoint();
@@ -371,32 +371,26 @@ void document_manager::activate_current_link() {
 	if (!doc || !text_ctrl) return;
 	size_t current_pos = text_ctrl->GetInsertionPoint();
 	int link_index = doc->buffer.current_marker_index(current_pos, marker_type::link);
-	if (link_index == -1) {
-		return;
-	}
+	if (link_index == -1) return;
 	const marker* link_marker = doc->buffer.get_marker(link_index);
 	if (!link_marker) return;
-	if (current_pos < link_marker->pos || current_pos > (link_marker->pos + link_marker->text.length())) {
-		return;
-	}
+	if (current_pos < link_marker->pos || current_pos > (link_marker->pos + link_marker->text.length())) return;
 	wxString href = link_marker->ref;
 	if (href.empty()) return;
 	wxString href_lower = href.Lower();
-	if (href_lower.StartsWith("http:") || href_lower.StartsWith("https://") || href_lower.StartsWith("mailto:")) {
-		if (wxLaunchDefaultBrowser(href)) {
-			speak("Opening link in browser.");
-		} else {
+	if (href_lower.StartsWith("http:") || href_lower.StartsWith("https:") || href_lower.StartsWith("mailto:")) {
+		if (wxLaunchDefaultBrowser(href))
+			speak("Opening link in default browser.");
+		else
 			speak("Failed to open link.");
-		}
 	} else if (href.StartsWith("#")) {
 		wxString id = href.Mid(1);
 		auto it = doc->id_positions.find(std::string(id.mb_str()));
 		if (it != doc->id_positions.end()) {
 			go_to_position(it->second);
 			speak("Navigated to internal link.");
-		} else {
+		} else
 			speak("Internal link target not found.");
-		}
 	} else {
 		wxString file_path = href.BeforeFirst('#');
 		wxString fragment = href.AfterFirst('#');

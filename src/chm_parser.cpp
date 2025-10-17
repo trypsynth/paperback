@@ -40,11 +40,9 @@ std::unique_ptr<document> chm_parser::load(const wxString& path) const {
 		cleanup_toc(document_ptr->toc_items);
 		document_ptr->buffer.clear();
 		parse_html_files(ctx, document_ptr->buffer, document_ptr->toc_items);
-		for (const std::pair<const std::string, std::map<std::string, size_t>>& pair_file_path_id_map : ctx.id_positions) {
-			for (const std::pair<const std::string, size_t>& pair_id_pos : pair_file_path_id_map.second) {
+		for (const auto pair_file_path_id_map : ctx.id_positions)
+			for (const auto& pair_id_pos : pair_file_path_id_map.second)
 				document_ptr->id_positions[pair_id_pos.first] = pair_id_pos.second;
-			}
-		}
 		if (!document_ptr->toc_items.empty()) calculate_toc_offsets(document_ptr->toc_items, ctx);
 		if (!ctx.title.empty()) document_ptr->title = wxString::FromUTF8(ctx.title);
 		chm_close(file);
@@ -111,9 +109,9 @@ void chm_parser::parse_html_files(chm_context& ctx, document_buffer& buffer, con
 		for (const auto& link : links) {
 			wxString resolved_href;
 			wxString href_lower = wxString(link.ref).Lower();
-			if (href_lower.StartsWith("http:") || href_lower.StartsWith("https://") || href_lower.StartsWith("mailto:")) {
+			if (href_lower.StartsWith("http:") || href_lower.StartsWith("https:") || href_lower.StartsWith("mailto:"))
 				resolved_href = link.ref;
-			} else {
+			else {
 				wxFileName link_path(wxString::FromUTF8(file_path));
 				link_path.SetFullName(wxString::FromUTF8(link.ref));
 				link_path.Normalize(wxPATH_NORM_ALL, "/");
