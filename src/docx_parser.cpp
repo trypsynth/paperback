@@ -170,8 +170,10 @@ void docx_parser::process_paragraph(Element* element, wxString& text, std::vecto
 							}
 							if (fldCharElement) {
 								std::string type = fldCharElement->getAttributeNS(WORDML_NS, "fldCharType");
-								if (type == "separate") in_display_text = true;
-								else if (type == "end") break;
+								if (type == "separate")
+									in_display_text = true;
+								else if (type == "end")
+									break;
 							} else if (in_display_text)
 								display_text_utf8 += get_run_text(field_run);
 						}
@@ -223,7 +225,8 @@ void docx_parser::process_hyperlink(Element* element, wxString& text, document* 
 	if (!r_id.empty()) {
 		auto it = rels.find(r_id);
 		if (it != rels.end()) link_target = it->second;
-	} else if (!anchor.empty()) link_target = "#" + anchor;
+	} else if (!anchor.empty())
+		link_target = "#" + anchor;
 	if (link_target.empty()) { // If no target, just process the text
 		Node* child = element->firstChild();
 		while (child) {
