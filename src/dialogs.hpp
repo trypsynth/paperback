@@ -213,12 +213,15 @@ public:
 	void set_minimize_to_tray(bool minimize);
 	int get_recent_documents_to_show() const;
 	void set_recent_documents_to_show(int count);
+	wxString get_language() const;
+	void set_language(const wxString& language);
 
 private:
 	wxCheckBox* restore_docs_check{nullptr};
 	wxCheckBox* word_wrap_check{nullptr};
 	wxCheckBox* minimize_to_tray_check{nullptr};
 	wxSpinCtrl* recent_docs_count_spin{nullptr};
+	wxComboBox* language_combo{nullptr};
 
 	void on_ok(wxCommandEvent& event);
 	void on_cancel(wxCommandEvent& event);

@@ -10,6 +10,7 @@
 #include "dialogs.hpp"
 #include "config_manager.hpp"
 #include "constants.hpp"
+#include "translation_manager.hpp"
 #include <wx/filename.h>
 
 dialog::dialog(wxWindow* parent, const wxString& title, dialog_button_config buttons) : wxDialog(parent, wxID_ANY, title), button_config{buttons} {
@@ -41,17 +42,17 @@ void dialog::create_buttons() {
 	button_sizer->Realize();
 }
 
-all_documents_dialog::all_documents_dialog(wxWindow* parent, config_manager& cfg_mgr, const wxArrayString& open_docs) : dialog(parent, "All Documents", dialog_button_config::ok_only), config_mgr(cfg_mgr), open_doc_paths(open_docs) {
+all_documents_dialog::all_documents_dialog(wxWindow* parent, config_manager& cfg_mgr, const wxArrayString& open_docs) : dialog(parent, _("All Documents"), dialog_button_config::ok_only), config_mgr(cfg_mgr), open_doc_paths(open_docs) {
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	doc_list = new wxListView(this, wxID_ANY, wxDefaultPosition, wxSize(800, 600), wxLC_REPORT | wxLC_SINGLE_SEL);
-	doc_list->AppendColumn("File Name", wxLIST_FORMAT_LEFT, 250);
-	doc_list->AppendColumn("Status", wxLIST_FORMAT_LEFT, 100);
-	doc_list->AppendColumn("Path", wxLIST_FORMAT_LEFT, 450);
+	doc_list->AppendColumn(_("File Name"), wxLIST_FORMAT_LEFT, 250);
+	doc_list->AppendColumn(_("Status"), wxLIST_FORMAT_LEFT, 100);
+	doc_list->AppendColumn(_("Path"), wxLIST_FORMAT_LEFT, 450);
 	populate_document_list();
 	content_sizer->Add(doc_list, 1, wxEXPAND | wxALL, 10);
 	auto* button_sizer = new wxBoxSizer(wxHORIZONTAL);
-	open_button = new wxButton(this, wxID_OPEN, "&Open");
-	auto* remove_button = new wxButton(this, wxID_REMOVE, "&Remove");
+	open_button = new wxButton(this, wxID_OPEN, _("&Open"));
+	auto* remove_button = new wxButton(this, wxID_REMOVE, _("&Remove"));
 	button_sizer->Add(open_button, 0, wxRIGHT, 10);
 	button_sizer->Add(remove_button, 0, wxRIGHT, 10);
 	content_sizer->Add(button_sizer, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxBOTTOM, 10);
@@ -66,7 +67,7 @@ all_documents_dialog::all_documents_dialog(wxWindow* parent, config_manager& cfg
 		long item = doc_list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
 		if (item != -1) {
 			wxString status = doc_list->GetItemText(item, 1);
-			open_button->Enable(status != "Missing");
+			open_button->Enable(status != _("Missing"));
 		}
 	}
 }
@@ -80,11 +81,11 @@ void all_documents_dialog::populate_document_list() {
 		long index = doc_list->InsertItem(doc_list->GetItemCount(), fn.GetFullName());
 		wxString status;
 		if (!wxFileName::FileExists(path))
-			status = "Missing";
+			status = _("Missing");
 		else if (open_doc_paths.Index(path) != wxNOT_FOUND)
-			status = "Open";
+			status = _("Open");
 		else
-			status = "Closed";
+			status = _("Closed");
 		doc_list->SetItem(index, 1, status);
 		doc_list->SetItem(index, 2, path);
 	}
@@ -93,7 +94,7 @@ void all_documents_dialog::populate_document_list() {
 		doc_list->EnsureVisible(0);
 		if (open_button) {
 			wxString status = doc_list->GetItemText(0, 1);
-			open_button->Enable(status != "Missing");
+			open_button->Enable(status != _("Missing"));
 		}
 	}
 }
@@ -112,7 +113,7 @@ void all_documents_dialog::on_open(wxCommandEvent& event) {
 void all_documents_dialog::on_remove(wxCommandEvent& event) {
 	long item = doc_list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
 	if (item == -1) return;
-	if (wxMessageBox("Are you sure you want to remove this document from the list? This will also remove its reading position.", "Confirm", wxYES_NO | wxICON_INFORMATION) != wxYES) return;
+	if (wxMessageBox(_("Are you sure you want to remove this document from the list? This will also remove its reading position."), _("Confirm"), wxYES_NO | wxICON_INFORMATION) != wxYES) return;
 	wxString path_to_remove = doc_list->GetItemText(item, 2);
 	long removed_index = item;
 	long total_items = doc_list->GetItemCount();
@@ -139,7 +140,7 @@ void all_documents_dialog::on_list_item_selected(wxListEvent& event) {
 	long item = event.GetIndex();
 	if (item != -1 && open_button) {
 		wxString status = doc_list->GetItemText(item, 1);
-		open_button->Enable(status != "Missing");
+		open_button->Enable(status != _("Missing"));
 	}
 }
 
@@ -151,7 +152,7 @@ void all_documents_dialog::on_key_down(wxKeyEvent& event) {
 		event.Skip();
 }
 
-bookmark_dialog::bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks, wxTextCtrl* text_ctrl, long current_pos) : dialog(parent, "Jump to Bookmark"), bookmark_positions(bookmarks), selected_position{-1} {
+bookmark_dialog::bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks, wxTextCtrl* text_ctrl, long current_pos) : dialog(parent, _("Jump to Bookmark")), bookmark_positions(bookmarks), selected_position{-1} {
 	bookmark_list = new wxListBox(this, wxID_ANY);
 	int closest_index = -1;
 	long closest_distance = LONG_MAX;
@@ -161,8 +162,8 @@ bookmark_dialog::bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks,
 		text_ctrl->PositionToXY(pos, 0, &line);
 		wxString line_text = text_ctrl->GetLineText(line);
 		line_text = line_text.Strip(wxString::both);
-		if (line_text.IsEmpty()) line_text = "blank";
-		wxString bookmark_desc = wxString::Format("Bookmark %zu: %s", i + 1, line_text);
+		if (line_text.IsEmpty()) line_text = _("blank");
+		wxString bookmark_desc = wxString::Format(_("Bookmark %zu: %s"), i + 1, line_text);
 		bookmark_list->Append(bookmark_desc);
 		if (current_pos >= 0) {
 			long distance = std::abs(pos - current_pos);
@@ -193,18 +194,18 @@ void bookmark_dialog::on_ok(wxCommandEvent& event) {
 	if (selected_position >= 0)
 		EndModal(wxID_OK);
 	else
-		wxMessageBox("Please select a bookmark to jump to.", "error", wxICON_ERROR);
+		wxMessageBox(_("Please select a bookmark to jump to."), _("Error"), wxICON_ERROR);
 }
 
-document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc) : dialog(parent, "Document Info", dialog_button_config::ok_only) {
+document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc) : dialog(parent, _("Document Info"), dialog_button_config::ok_only) {
 	info_text_ctrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(600, 400), wxTE_MULTILINE | wxTE_READONLY);
 	wxString info_text;
-	info_text << "Title: " << doc->title << "\n";
-	info_text << "Author: " << doc->author << "\n";
-	info_text << "Total number of words: " << doc->stats.word_count << ".\n";
-	info_text << "Total number of lines: " << doc->stats.line_count << ".\n";
-	info_text << "Total number of characters: " << doc->stats.char_count << ".\n";
-	info_text << "Total number of characters (excluding whitespace): " << doc->stats.char_count_no_whitespace << ".\n";
+	info_text << _("Title: ") << doc->title << "\n";
+	info_text << _("Author: ") << doc->author << "\n";
+	info_text << _("Total number of words: ") << doc->stats.word_count << ".\n";
+	info_text << _("Total number of lines: ") << doc->stats.line_count << ".\n";
+	info_text << _("Total number of characters: ") << doc->stats.char_count << ".\n";
+	info_text << _("Total number of characters (excluding whitespace): ") << doc->stats.char_count_no_whitespace << ".\n";
 	info_text_ctrl->SetValue(info_text);
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	content_sizer->Add(info_text_ctrl, 1, wxEXPAND);
@@ -212,24 +213,24 @@ document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc
 	finalize_layout();
 }
 
-find_dialog::find_dialog(wxWindow* parent) : wxDialog(parent, wxID_ANY, "Find") {
+find_dialog::find_dialog(wxWindow* parent) : wxDialog(parent, wxID_ANY, _("Find")) {
 	auto* const main_sizer = new wxBoxSizer(wxVERTICAL);
 	auto* const find_sizer = new wxBoxSizer(wxHORIZONTAL);
-	auto* const find_label = new wxStaticText(this, wxID_ANY, "Find &what:");
+	auto* const find_label = new wxStaticText(this, wxID_ANY, _("Find &what:"));
 	find_what_combo = new wxComboBox(this, wxID_ANY, "", wxDefaultPosition, wxSize(250, -1), 0, nullptr, wxTE_PROCESS_ENTER);
 	find_sizer->Add(find_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
 	find_sizer->Add(find_what_combo, 1, wxEXPAND);
-	auto* const options_box = new wxStaticBoxSizer(wxVERTICAL, this, "Options");
-	match_case_check = new wxCheckBox(this, wxID_ANY, "&Match case");
-	match_whole_word_check = new wxCheckBox(this, wxID_ANY, "Match &whole word");
-	use_regex_check = new wxCheckBox(this, wxID_ANY, "Use &regular expressions");
+	auto* const options_box = new wxStaticBoxSizer(wxVERTICAL, this, _("Options"));
+	match_case_check = new wxCheckBox(this, wxID_ANY, _("&Match case"));
+	match_whole_word_check = new wxCheckBox(this, wxID_ANY, _("Match &whole word"));
+	use_regex_check = new wxCheckBox(this, wxID_ANY, _("Use &regular expressions"));
 	options_box->Add(match_case_check, 0, wxALL, 2);
 	options_box->Add(match_whole_word_check, 0, wxALL, 2);
 	options_box->Add(use_regex_check, 0, wxALL, 2);
 	auto* const button_sizer = new wxBoxSizer(wxHORIZONTAL);
-	find_previous_btn = new wxButton(this, wxID_ANY, "Find &Previous");
-	find_next_btn = new wxButton(this, wxID_ANY, "Find &Next");
-	cancel_btn = new wxButton(this, wxID_CANCEL, "Cancel");
+	find_previous_btn = new wxButton(this, wxID_ANY, _("Find &Previous"));
+	find_next_btn = new wxButton(this, wxID_ANY, _("Find &Next"));
+	cancel_btn = new wxButton(this, wxID_CANCEL, _("Cancel"));
 	button_sizer->Add(find_previous_btn, 0, wxRIGHT, 5);
 	button_sizer->Add(find_next_btn, 0, wxRIGHT, 5);
 	button_sizer->AddStretchSpacer();
@@ -316,9 +317,9 @@ void find_dialog::on_close(wxCloseEvent& event) {
 	Hide();
 }
 
-go_to_line_dialog::go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : dialog(parent, "Go to Line"), textbox{text_ctrl} {
+go_to_line_dialog::go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : dialog(parent, _("Go to Line")), textbox{text_ctrl} {
 	auto* line_sizer = new wxBoxSizer(wxHORIZONTAL);
-	auto* label = new wxStaticText(this, wxID_ANY, "&Line number:");
+	auto* label = new wxStaticText(this, wxID_ANY, _("&Line number:"));
 	long line;
 	textbox->PositionToXY(textbox->GetInsertionPoint(), 0, &line);
 	input_ctrl = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, textbox->GetNumberOfLines(), line + 1);
@@ -339,9 +340,9 @@ long go_to_line_dialog::get_max_line() const {
 	return textbox->GetNumberOfLines();
 }
 
-go_to_page_dialog::go_to_page_dialog(wxWindow* parent, document* doc, const parser* par, int current_page) : dialog(parent, "Go to page"), doc_{doc}, parser_{par} {
+go_to_page_dialog::go_to_page_dialog(wxWindow* parent, document* doc, const parser* par, int current_page) : dialog(parent, _("Go to page")), doc_{doc}, parser_{par} {
 	auto* page_sizer = new wxBoxSizer(wxHORIZONTAL);
-	auto* label = new wxStaticText(this, wxID_ANY, wxString::Format("Go to page (1/%d):", get_max_page()));
+	auto* label = new wxStaticText(this, wxID_ANY, wxString::Format(_("Go to page (1/%d):"), get_max_page()));
 	input_ctrl = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, get_max_page(), current_page);
 	page_sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
 	page_sizer->Add(input_ctrl, 1, wxEXPAND);
@@ -362,13 +363,13 @@ int go_to_page_dialog::get_max_page() const {
 	return static_cast<int>(doc_->buffer.count_markers_by_type(marker_type::page_break));
 }
 
-go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : dialog(parent, "Go to Percent"), textbox{text_ctrl} {
+go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : dialog(parent, _("Go to Percent")), textbox{text_ctrl} {
 	long current_pos = textbox->GetInsertionPoint();
 	long total_pos = textbox->GetLastPosition();
 	int current_percent = total_pos > 0 ? static_cast<int>((current_pos * 100) / total_pos) : 0;
-	auto* slider_label = new wxStaticText(this, wxID_ANY, "&Percent");
+	auto* slider_label = new wxStaticText(this, wxID_ANY, _("&Percent"));
 	percent_slider = new accessible_slider(this, wxID_ANY, current_percent, 0, 100);
-	auto* input_label = new wxStaticText(this, wxID_ANY, "P&ercent:");
+	auto* input_label = new wxStaticText(this, wxID_ANY, _("P&ercent:"));
 	input_ctrl = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 100, current_percent);
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	content_sizer->Add(slider_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
@@ -391,16 +392,16 @@ void go_to_percent_dialog::on_slider_changed(wxCommandEvent& event) {
 	input_ctrl->SetValue(slider_value);
 }
 
-open_as_dialog::open_as_dialog(wxWindow* parent, const wxString& path) : dialog(parent, "Open As") {
+open_as_dialog::open_as_dialog(wxWindow* parent, const wxString& path) : dialog(parent, _("Open As")) {
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
-	auto* label = new wxStaticText(this, wxID_ANY, wxString::Format("No suitable parser was found for %s.\nHow would you like to open this file?", path));
+	auto* label = new wxStaticText(this, wxID_ANY, wxString::Format(_("No suitable parser was found for %s.\nHow would you like to open this file?"), path));
 	content_sizer->Add(label, 0, wxALL, 5);
 	auto* format_sizer = new wxBoxSizer(wxHORIZONTAL);
-	auto* format_label = new wxStaticText(this, wxID_ANY, "Open &as:");
+	auto* format_label = new wxStaticText(this, wxID_ANY, _("Open &as:"));
 	format_combo = new wxComboBox(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, 0, nullptr, wxCB_READONLY);
-	format_combo->Append("Plain Text");
-	format_combo->Append("HTML");
-	format_combo->Append("Markdown");
+	format_combo->Append(_("Plain Text"));
+	format_combo->Append(_("HTML"));
+	format_combo->Append(_("Markdown"));
 	format_combo->SetSelection(0);
 	format_sizer->Add(format_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
 	format_sizer->Add(format_combo, 1, wxEXPAND);
@@ -424,20 +425,29 @@ wxString open_as_dialog::get_selected_format() const {
 	}
 }
 
-options_dialog::options_dialog(wxWindow* parent) : dialog(parent, "Options") {
-	auto* general_box = new wxStaticBoxSizer(wxVERTICAL, this, "General");
-	restore_docs_check = new wxCheckBox(this, wxID_ANY, "&Restore previously opened documents on startup");
+options_dialog::options_dialog(wxWindow* parent) : dialog(parent, _("Options")) {
+	auto* general_box = new wxStaticBoxSizer(wxVERTICAL, this, _("General"));
+	restore_docs_check = new wxCheckBox(this, wxID_ANY, _("&Restore previously opened documents on startup"));
 	general_box->Add(restore_docs_check, 0, wxALL, 5);
-	word_wrap_check = new wxCheckBox(this, wxID_ANY, "&Word wrap");
+	word_wrap_check = new wxCheckBox(this, wxID_ANY, _("&Word wrap"));
 	general_box->Add(word_wrap_check, 0, wxALL, 5);
-	minimize_to_tray_check = new wxCheckBox(this, wxID_ANY, "&Minimize to system tray");
+	minimize_to_tray_check = new wxCheckBox(this, wxID_ANY, _("&Minimize to system tray"));
 	general_box->Add(minimize_to_tray_check, 0, wxALL, 5);
 	auto* recent_docs_sizer = new wxBoxSizer(wxHORIZONTAL);
-	auto* recent_docs_label = new wxStaticText(this, wxID_ANY, "Number of &recent documents to show:");
+	auto* recent_docs_label = new wxStaticText(this, wxID_ANY, _("Number of &recent documents to show:"));
 	recent_docs_count_spin = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 100, 10);
 	recent_docs_sizer->Add(recent_docs_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
 	recent_docs_sizer->Add(recent_docs_count_spin, 0, wxALIGN_CENTER_VERTICAL);
 	general_box->Add(recent_docs_sizer, 0, wxALL, 5);
+	auto* language_sizer = new wxBoxSizer(wxHORIZONTAL);
+	auto* language_label = new wxStaticText(this, wxID_ANY, _("&Language:"));
+	language_combo = new wxComboBox(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, 0, nullptr, wxCB_READONLY);
+	auto available_languages = translation_manager::instance().get_available_languages();
+	for (const auto& lang : available_languages)
+		language_combo->Append(lang.native_name, new wxStringClientData(lang.code));
+	language_sizer->Add(language_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
+	language_sizer->Add(language_combo, 0, wxALIGN_CENTER_VERTICAL);
+	general_box->Add(language_sizer, 0, wxALL, 5);
 	set_content(general_box);
 	Bind(wxEVT_BUTTON, &options_dialog::on_ok, this, wxID_OK);
 	Bind(wxEVT_BUTTON, &options_dialog::on_cancel, this, wxID_CANCEL);
@@ -476,6 +486,25 @@ void options_dialog::set_recent_documents_to_show(int count) {
 	if (recent_docs_count_spin) recent_docs_count_spin->SetValue(count);
 }
 
+wxString options_dialog::get_language() const {
+	if (!language_combo) return wxString("");
+	int selection = language_combo->GetSelection();
+	if (selection == wxNOT_FOUND) return wxString("");
+	wxStringClientData* data = static_cast<wxStringClientData*>(language_combo->GetClientObject(selection));
+	return data ? data->GetData() : wxString("");
+}
+
+void options_dialog::set_language(const wxString& language) {
+	if (!language_combo) return;
+	for (unsigned int i = 0; i < language_combo->GetCount(); ++i) {
+		wxStringClientData* data = static_cast<wxStringClientData*>(language_combo->GetClientObject(i));
+		if (data && data->GetData() == language) {
+			language_combo->SetSelection(i);
+			return;
+		}
+	}
+}
+
 void options_dialog::on_ok(wxCommandEvent& event) {
 	EndModal(wxID_OK);
 }
@@ -484,9 +513,9 @@ void options_dialog::on_cancel(wxCommandEvent& event) {
 	EndModal(wxID_CANCEL);
 }
 
-toc_dialog::toc_dialog(wxWindow* parent, const document* doc, int current_offset) : dialog(parent, "Table of Contents"), selected_offset{-1} {
+toc_dialog::toc_dialog(wxWindow* parent, const document* doc, int current_offset) : dialog(parent, _("Table of Contents")), selected_offset{-1} {
 	tree = new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTR_HIDE_ROOT);
-	wxTreeItemId root = tree->AddRoot("Root");
+	wxTreeItemId root = tree->AddRoot(_("Root"));
 	populate_tree(doc->toc_items, root);
 	if (current_offset != -1) find_and_select_item(root, current_offset);
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
@@ -500,7 +529,7 @@ toc_dialog::toc_dialog(wxWindow* parent, const document* doc, int current_offset
 
 void toc_dialog::populate_tree(const std::vector<std::unique_ptr<toc_item>>& items, const wxTreeItemId& parent) {
 	for (const auto& item : items) {
-		wxString display_text = item->name.IsEmpty() ? wxString("Untitled") : item->name;
+		wxString display_text = item->name.IsEmpty() ? wxString(_("Untitled")) : item->name;
 		wxTreeItemId item_id = tree->AppendItem(parent, display_text);
 		tree->SetItemData(item_id, new toc_tree_item_data(item->offset));
 		if (!item->children.empty())
@@ -541,5 +570,5 @@ void toc_dialog::on_ok(wxCommandEvent& event) {
 	if (selected_offset >= 0)
 		EndModal(wxID_OK);
 	else
-		wxMessageBox("Please select a section from the table of contents.", "No Selection", wxOK | wxICON_INFORMATION, this);
+		wxMessageBox(_("Please select a section from the table of contents."), _("No Selection"), wxOK | wxICON_INFORMATION, this);
 }

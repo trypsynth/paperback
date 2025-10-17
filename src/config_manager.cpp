@@ -188,6 +188,20 @@ void config_manager::set_minimize_to_tray(bool minimize) {
 	});
 }
 
+wxString config_manager::get_language() const {
+	wxString result = "";
+	with_app_section([this, &result]() {
+		result = config->Read("language", "");
+	});
+	return result;
+}
+
+void config_manager::set_language(const wxString& language) {
+	with_app_section([this, language]() {
+		config->Write("language", language);
+	});
+}
+
 int config_manager::get_config_version() const {
 	int version = CONFIG_VERSION_LEGACY;
 	with_app_section([this, &version]() {

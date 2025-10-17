@@ -53,6 +53,7 @@ private:
 	wxMenu* create_go_menu();
 	wxMenu* create_tools_menu();
 	wxMenu* create_help_menu();
+	void refresh_ui_language();
 	void bind_events();
 	void on_open(wxCommandEvent&);
 	void on_close(wxCommandEvent&);

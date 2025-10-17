@@ -3,6 +3,10 @@
 	"version": "0.5",
 	"dependencies": [
 		"chmlib",
+		{
+			"name": "gettext",
+			"features": ["tools"]
+		},
 		"lexbor",
 		"maddy",
 		"pdfium",
