@@ -340,7 +340,7 @@ void document_manager::go_to_previous_link() {
 	const marker* link_marker = doc->buffer.get_marker(prev_index);
 	if (link_marker) {
 		go_to_position(link_marker->pos);
-		speak(_("Link: ") + link_marker->text);
+		speak(link_marker->text + _(" link"));
 	}
 }
 
