@@ -29,7 +29,7 @@ public:
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 
 private:
-	void extract_text_from_node(Poco::XML::Node* node, std::string& text) const;
+	void extract_text_from_node(Poco::XML::Node* node, std::string& text, wxString& full_text, document* doc, const std::map<std::string, std::string>& rels) const;
 };
 
 REGISTER_PARSER(pptx_parser)

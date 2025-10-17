@@ -19,6 +19,7 @@
 #include <Poco/DOM/Text.h>
 #include <Poco/SAX/InputSource.h>
 #include <algorithm>
+#include <functional>
 #include <map>
 #include <sstream>
 #include <string>
@@ -32,6 +33,7 @@ using namespace Poco;
 using namespace Poco::XML;
 
 const std::string DRAWINGML_NS = "http://schemas.openxmlformats.org/drawingml/2006/main";
+const std::string REL_NS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 
 std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 	try {
@@ -40,6 +42,7 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 		wxZipInputStream zip(*fp);
 		if (!zip.IsOk()) return nullptr;
 		std::map<std::string, std::string> slide_contents;
+		std::map<std::string, std::string> slide_rels;
 		std::unique_ptr<wxZipEntry> entry;
 		while ((entry.reset(zip.GetNextEntry())), entry.get() != nullptr) {
 			std::string name = entry->GetInternalName().ToStdString();
@@ -48,6 +51,9 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 					std::string content = read_zip_entry(zip);
 					if (!content.empty()) slide_contents[name] = std::move(content);
 				}
+			} else if (name.find("ppt/slides/_rels/slide") == 0 && name.ends_with(".xml.rels")) {
+				std::string content = read_zip_entry(zip);
+				if (!content.empty()) slide_rels[name] = std::move(content);
 			}
 		}
 		if (slide_contents.empty()) return nullptr;
@@ -72,6 +78,29 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 		std::vector<size_t> slide_positions;
 		for (const auto& slide_file : slide_files) {
 			const std::string& slide_content = slide_contents[slide_file];
+			std::map<std::string, std::string> rels;
+			std::string slide_base = slide_file.substr(slide_file.find_last_of('/') + 1);
+			std::string rels_file = "ppt/slides/_rels/" + slide_base + ".rels";
+			auto rels_it = slide_rels.find(rels_file);
+			if (rels_it != slide_rels.end()) {
+				try {
+					std::istringstream rels_stream(rels_it->second);
+					InputSource rels_source(rels_stream);
+					DOMParser rels_parser;
+					rels_parser.setFeature(XMLReader::FEATURE_NAMESPACES, true);
+					AutoPtr<Document> pRelsDoc = rels_parser.parse(&rels_source);
+					NodeList* rel_nodes = pRelsDoc->getElementsByTagNameNS(REL_NS, "Relationship");
+					for (unsigned long i = 0; i < rel_nodes->length(); ++i) {
+						Node* node = rel_nodes->item(i);
+						auto* element = static_cast<Element*>(node);
+						std::string id = element->getAttribute("Id");
+						std::string target = element->getAttribute("Target");
+						std::string type = element->getAttribute("Type");
+						if (type == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink") rels[id] = target;
+					}
+				} catch (...) {
+				}
+			}
 			std::istringstream content_stream(slide_content);
 			InputSource source(content_stream);
 			DOMParser parser;
@@ -79,7 +108,7 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 			parser.setFeature(DOMParser::FEATURE_FILTER_WHITESPACE, false);
 			AutoPtr<Document> slide_doc = parser.parse(&source);
 			std::string slide_text;
-			extract_text_from_node(slide_doc->documentElement(), slide_text);
+			extract_text_from_node(slide_doc->documentElement(), slide_text, full_text, doc.get(), rels);
 			if (!slide_text.empty()) {
 				wxString slide_wx = wxString::FromUTF8(slide_text);
 				slide_wx.Trim(true).Trim(false);
@@ -103,7 +132,7 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 	}
 }
 
-void pptx_parser::extract_text_from_node(Node* node, std::string& text) const {
+void pptx_parser::extract_text_from_node(Node* node, std::string& text, wxString& full_text, document* doc, const std::map<std::string, std::string>& rels) const {
 	if (!node) return;
 	if (node->nodeType() == Node::ELEMENT_NODE) {
 		auto* element = static_cast<Element*>(node);
@@ -115,16 +144,49 @@ void pptx_parser::extract_text_from_node(Node* node, std::string& text) const {
 		else if (element->localName() == "p") {
 			Node* child = node->firstChild();
 			while (child) {
-				extract_text_from_node(child, text);
+				extract_text_from_node(child, text, full_text, doc, rels);
 				child = child->nextSibling();
 			}
 			if (!text.empty() && text.back() != '\n') text += "\n";
 			return; // Don't process children again.
+		} else if (element->localName() == "hlinkClick" && element->namespaceURI() == DRAWINGML_NS) {
+			std::string r_id = element->getAttributeNS(REL_NS, "id");
+			std::string link_target;
+			if (!r_id.empty()) {
+				auto it = rels.find(r_id);
+				if (it != rels.end()) link_target = it->second;
+			}
+			// In PPTX, the link wraps the text runs, so we need to find the text within this subtree.
+			std::string link_text_utf8;
+			std::function<void(Node*)> extract_link_text = [&](Node* n) {
+				if (!n) return;
+				if (n->nodeType() == Node::ELEMENT_NODE) {
+					auto* el = static_cast<Element*>(n);
+					if (el->localName() == "t") {
+						Node* tn = el->firstChild();
+						if (tn && tn->nodeType() == Node::TEXT_NODE) link_text_utf8 += tn->getNodeValue();
+					}
+				}
+				Node* c = n->firstChild();
+				while (c) {
+					extract_link_text(c);
+					c = c->nextSibling();
+				}
+			};
+			Node* parent = node->parentNode();
+			if (parent) extract_link_text(parent);
+			if (!link_text_utf8.empty() && !link_target.empty()) {
+				size_t link_start = full_text.length() + text.length();
+				text += link_text_utf8;
+				wxString link_text_wx = wxString::FromUTF8(link_text_utf8);
+				doc->buffer.add_link(link_start, link_text_wx, wxString::FromUTF8(link_target));
+			}
+			return; // Don't process children again since we already extracted text.
 		}
 	}
 	Node* child = node->firstChild();
 	while (child) {
-		extract_text_from_node(child, text);
+		extract_text_from_node(child, text, full_text, doc, rels);
 		child = child->nextSibling();
 	}
 }
