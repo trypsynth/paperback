@@ -1,4 +1,4 @@
-/* utils.hpp - various helper functions that didn't belong anywhere else.
+/* utils.hpp - miscellaneous helpers shared across Paperback.
  *
  * Paperback.
  * Copyright (c) 2025 Quin Gillespie.

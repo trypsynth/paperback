@@ -146,8 +146,8 @@ void epub_parser::parse_opf(const std::string& filename, epub_context& ctx) cons
 	}
 }
 
-template <typename Converter>
-void epub_parser::process_section_content(Converter& converter, const std::string& content, const std::string& href, epub_context& ctx, document_buffer& buffer) const {
+template <typename conv>
+void epub_parser::process_section_content(conv& converter, const std::string& content, const std::string& href, epub_context& ctx, document_buffer& buffer) const {
 	if (converter.convert(content)) {
 		const auto& text = converter.get_text();
 		const auto& headings = converter.get_headings();
