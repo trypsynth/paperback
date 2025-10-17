@@ -28,6 +28,7 @@ public:
 	[[nodiscard]] wxNotebook* get_notebook() const noexcept { return notebook; }
 	[[nodiscard]] wxStaticText* get_live_region_label() const noexcept { return live_region_label; }
 	void on_text_cursor_changed(wxEvent& event);
+	void on_text_char(wxKeyEvent& event);
 	void trigger_throttled_position_save();
 	void save_position_immediately();
 	void trigger_throttled_status_update();
@@ -75,6 +76,8 @@ private:
 	void on_previous_bookmark(wxCommandEvent&);
 	void on_toggle_bookmark(wxCommandEvent&);
 	void on_jump_to_bookmark(wxCommandEvent&);
+	void on_next_link(wxCommandEvent&);
+	void on_previous_link(wxCommandEvent&);
 	void on_word_count(wxCommandEvent&);
 	void on_doc_info(wxCommandEvent&);
 	void on_toc(wxCommandEvent&);

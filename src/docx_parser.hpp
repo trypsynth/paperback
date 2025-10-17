@@ -11,6 +11,7 @@
 #include "document.hpp"
 #include "parser.hpp"
 #include <Poco/DOM/Element.h>
+#include <wx/stream.h>
 #include <vector>
 
 class docx_parser : public parser {
@@ -30,10 +31,13 @@ public:
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 
 private:
-	void traverse(Poco::XML::Node* pNode, wxString& text, std::vector<heading_info>& headings) const;
-	void process_paragraph(Poco::XML::Element* pElement, wxString& text, std::vector<heading_info>& headings) const;
+	void traverse(Poco::XML::Node* node, wxString& text, std::vector<heading_info>& headings, document* doc, const std::map<std::string, std::string>& rels) const;
+	void process_paragraph(Poco::XML::Element* pElement, wxString& text, std::vector<heading_info>& headings, document* doc, const std::map<std::string, std::string>& rels) const;
+	void process_hyperlink(Poco::XML::Element* element, wxString& text, document* doc, const std::map<std::string, std::string>& rels, size_t paragraph_start_offset) const;
 	[[nodiscard]] int get_heading_level(Poco::XML::Element* pPrElement) const;
 	[[nodiscard]] std::string get_run_text(Poco::XML::Element* pRunElement) const;
+	[[nodiscard]] std::string parse_hyperlink_instruction(const std::string& instruction) const;
+
 };
 
 REGISTER_PARSER(docx_parser)

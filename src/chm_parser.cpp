@@ -40,6 +40,11 @@ std::unique_ptr<document> chm_parser::load(const wxString& path) const {
 		cleanup_toc(document_ptr->toc_items);
 		document_ptr->buffer.clear();
 		parse_html_files(ctx, document_ptr->buffer, document_ptr->toc_items);
+		for (const std::pair<const std::string, std::map<std::string, size_t>>& pair_file_path_id_map : ctx.id_positions) {
+			for (const std::pair<const std::string, size_t>& pair_id_pos : pair_file_path_id_map.second) {
+				document_ptr->id_positions[pair_id_pos.first] = pair_id_pos.second;
+			}
+		}
 		if (!document_ptr->toc_items.empty()) calculate_toc_offsets(document_ptr->toc_items, ctx);
 		if (!ctx.title.empty()) document_ptr->title = wxString::FromUTF8(ctx.title);
 		chm_close(file);
@@ -92,6 +97,7 @@ void chm_parser::parse_html_files(chm_context& ctx, document_buffer& buffer, con
 		if (!converter.convert(content)) continue;
 		const auto& text = converter.get_text();
 		const auto& headings = converter.get_headings();
+		const auto& links = converter.get_links();
 		const auto& id_positions = converter.get_id_positions();
 		std::string normalized_path = normalize_path(file_path);
 		ctx.id_positions[normalized_path][""] = section_start;
@@ -101,6 +107,19 @@ void chm_parser::parse_html_files(chm_context& ctx, document_buffer& buffer, con
 		for (const auto& heading : headings) {
 			marker_type type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + heading.level - 1);
 			buffer.add_marker(section_start + heading.offset, type, wxString::FromUTF8(heading.text), wxString(), heading.level);
+		}
+		for (const auto& link : links) {
+			wxString resolved_href;
+			wxString href_lower = wxString(link.ref).Lower();
+			if (href_lower.StartsWith("http:") || href_lower.StartsWith("https://") || href_lower.StartsWith("mailto:")) {
+				resolved_href = link.ref;
+			} else {
+				wxFileName link_path(wxString::FromUTF8(file_path));
+				link_path.SetFullName(wxString::FromUTF8(link.ref));
+				link_path.Normalize(wxPATH_NORM_ALL, "/");
+				resolved_href = link_path.GetFullPath(wxPATH_UNIX);
+			}
+			buffer.add_link(section_start + link.offset, wxString::FromUTF8(link.text), resolved_href);
 		}
 		if (buffer.str().length() > 0 && !buffer.str().EndsWith("\n")) buffer.append("\n");
 	}

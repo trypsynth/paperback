@@ -58,6 +58,7 @@ void xml_to_text::clear() noexcept {
 	current_line.clear();
 	id_positions.clear();
 	headings.clear();
+	links.clear();
 	in_body = false;
 	preserve_whitespace = false;
 	cached_char_length = 0;
@@ -71,36 +72,56 @@ void xml_to_text::process_node(Node* node) {
 		auto* element = static_cast<Element*>(node);
 		tag_name = element->localName();
 		std::transform(tag_name.begin(), tag_name.end(), tag_name.begin(), ::tolower);
-		if (tag_name == "body")
+
+		if (tag_name == "a" && element->hasAttributeNS("", "href")) {
+			std::string href = element->getAttributeNS("", "href");
+			size_t link_offset = get_current_text_position();
+			std::string link_text = get_element_text(element);
+			if (!link_text.empty()) {
+				links.push_back({link_offset, trim_string(collapse_whitespace(link_text)), href});
+			}
+		} else if (tag_name == "body") {
 			in_body = true;
-		else if (tag_name == "pre") {
+		} else if (tag_name == "pre") {
 			finalize_current_line();
 			preserve_whitespace = true;
-		} else if (tag_name == "br" || tag_name == "li")
+		} else if (tag_name == "br" || tag_name == "li") {
 			finalize_current_line();
+		}
+
 		if (in_body && element->hasAttributeNS("", "id")) {
 			std::string id = element->getAttributeNS("", "id");
 			if (!id.empty()) {
-				id_positions[id] = cached_char_length;
+				id_positions[id] = get_current_text_position();
 			}
 		}
+
 		if (in_body && tag_name.length() == 2 && tag_name[0] == 'h' && tag_name[1] >= '1' && tag_name[1] <= '6') {
 			int level = tag_name[1] - '0';
 			finalize_current_line();
 			size_t heading_offset = get_current_text_position();
 			std::string heading_text = get_element_text(element);
-			if (!heading_text.empty()) headings.push_back({heading_offset, level, heading_text});
+			if (!heading_text.empty()) {
+				headings.push_back({heading_offset, level, trim_string(collapse_whitespace(heading_text))});
+			}
 		}
-	} else if (node_type == Node::TEXT_NODE)
+	} else if (node_type == Node::TEXT_NODE) {
 		process_text_node(static_cast<Text*>(node));
+	}
+
 	auto* child = node->firstChild();
 	while (child) {
 		process_node(child);
 		child = child->nextSibling();
 	}
+
 	if (node_type == Node::ELEMENT_NODE) {
-		if (is_block_element(tag_name)) finalize_current_line();
-		if (tag_name == "pre") preserve_whitespace = false;
+		if (is_block_element(tag_name)) {
+			finalize_current_line();
+		}
+		if (tag_name == "pre") {
+			preserve_whitespace = false;
+		}
 	}
 }
 

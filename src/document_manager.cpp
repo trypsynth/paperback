@@ -51,6 +51,7 @@ bool document_manager::open_file(const wxString& path, bool add_to_recent) {
 	auto* const text_ctrl = get_active_text_ctrl();
 	if (text_ctrl) {
 		text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, &main_win);
+		text_ctrl->Bind(wxEVT_CHAR, &main_window::on_text_char, &main_win);
 	}
 	if (add_to_recent) {
 		config.add_recent_document(path);
@@ -322,6 +323,112 @@ void document_manager::go_to_next_bookmark() {
 	speak(wxString::Format("Bookmark %d: %s", bookmark_index + 1, current_line));
 }
 
+void document_manager::go_to_previous_link() {
+	document* doc = get_active_document();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (!doc || !text_ctrl) return;
+	if (doc->buffer.count_markers_by_type(marker_type::link) == 0) {
+		speak("No links in this document.");
+		return;
+	}
+	size_t current_pos = text_ctrl->GetInsertionPoint();
+	int prev_index = doc->buffer.previous_marker_index(current_pos, marker_type::link);
+	if (prev_index == -1) {
+		speak("No previous link.");
+		return;
+	}
+	const marker* link_marker = doc->buffer.get_marker(prev_index);
+	if (link_marker) {
+		go_to_position(link_marker->pos);
+		speak("Link: " + link_marker->text);
+	}
+}
+
+void document_manager::go_to_next_link() {
+	document* doc = get_active_document();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (!doc || !text_ctrl) return;
+	if (doc->buffer.count_markers_by_type(marker_type::link) == 0) {
+		speak("No links in this document.");
+		return;
+	}
+	size_t current_pos = text_ctrl->GetInsertionPoint();
+	int next_index = doc->buffer.next_marker_index(current_pos, marker_type::link);
+	if (next_index == -1) {
+		speak("No next link.");
+		return;
+	}
+	const marker* link_marker = doc->buffer.get_marker(next_index);
+	if (link_marker) {
+		go_to_position(link_marker->pos);
+		speak("Link: " + link_marker->text);
+	}
+}
+
+void document_manager::activate_current_link() {
+	document* doc = get_active_document();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (!doc || !text_ctrl) return;
+	size_t current_pos = text_ctrl->GetInsertionPoint();
+	int link_index = doc->buffer.current_marker_index(current_pos, marker_type::link);
+	if (link_index == -1) {
+		return;
+	}
+	const marker* link_marker = doc->buffer.get_marker(link_index);
+	if (!link_marker) return;
+	if (current_pos < link_marker->pos || current_pos > (link_marker->pos + link_marker->text.length())) {
+		return;
+	}
+	wxString href = link_marker->ref;
+	if (href.empty()) return;
+	wxString href_lower = href.Lower();
+	if (href_lower.StartsWith("http:") || href_lower.StartsWith("https://") || href_lower.StartsWith("mailto:")) {
+		if (wxLaunchDefaultBrowser(href)) {
+			speak("Opening link in browser.");
+		} else {
+			speak("Failed to open link.");
+		}
+	} else if (href.StartsWith("#")) {
+		wxString id = href.Mid(1);
+		auto it = doc->id_positions.find(std::string(id.mb_str()));
+		if (it != doc->id_positions.end()) {
+			go_to_position(it->second);
+			speak("Navigated to internal link.");
+		} else {
+			speak("Internal link target not found.");
+		}
+	} else {
+		wxString file_path = href.BeforeFirst('#');
+		wxString fragment = href.AfterFirst('#');
+		if (!fragment.empty()) {
+			auto it = doc->id_positions.find(std::string(fragment.mb_str()));
+			if (it != doc->id_positions.end()) {
+				go_to_position(it->second);
+				speak("Navigated to internal link.");
+				return;
+			}
+		}
+		wxString manifest_id;
+		for (auto const& [id, path] : doc->manifest_items) {
+			if (path == file_path) {
+				manifest_id = id;
+				break;
+			}
+		}
+		if (!manifest_id.empty()) {
+			auto it = std::find(doc->spine_items.begin(), doc->spine_items.end(), std::string(manifest_id.mb_str()));
+			if (it != doc->spine_items.end()) {
+				int spine_index = std::distance(doc->spine_items.begin(), it);
+				size_t offset = doc->buffer.get_marker_position_by_index(marker_type::section_break, spine_index);
+				go_to_position(offset);
+				speak("Navigated to internal link.");
+				return;
+			}
+		}
+		speak("Internal link target not found.");
+	}
+}
+
 void document_manager::toggle_bookmark() {
 	document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
@@ -519,6 +626,7 @@ wxPanel* document_manager::create_tab_panel(const wxString& content, document_ta
 	panel->SetClientObject(tab_data);
 	tab_data->text_ctrl = text_ctrl;
 	text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, &main_win);
+	text_ctrl->Bind(wxEVT_CHAR, &main_window::on_text_char, &main_win);
 	sizer->Add(text_ctrl, 1, wxEXPAND | wxALL, 5);
 	panel->SetSizer(sizer);
 	setup_text_ctrl(text_ctrl, content);

@@ -9,6 +9,7 @@
 
 #pragma once
 #include "document.hpp"
+#include "html_to_text.hpp" // For link_info struct
 #include <Poco/DOM/Document.h>
 #include <Poco/DOM/Element.h>
 #include <Poco/DOM/Node.h>
@@ -31,13 +32,16 @@ public:
 	[[nodiscard]] std::string get_text() const;
 	[[nodiscard]] const std::unordered_map<std::string, size_t>& get_id_positions() const noexcept { return id_positions; }
 	[[nodiscard]] const std::vector<heading_info>& get_headings() const noexcept { return headings; }
+	[[nodiscard]] const std::vector<link_info>& get_links() const noexcept { return links; }
 	void clear() noexcept;
+
 
 private:
 	std::vector<std::string> lines;
 	std::string current_line;
 	std::unordered_map<std::string, size_t> id_positions;
 	std::vector<heading_info> headings;
+	std::vector<link_info> links;
 	bool in_body = false;
 	bool preserve_whitespace = false;
 	size_t cached_char_length = 0;

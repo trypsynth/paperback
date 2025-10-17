@@ -1,4 +1,4 @@
-/* main_window.cpp - main user interface of Paperback.
+/* main_window.hpp - primary user interface header file.
  *
  * Paperback.
  * Copyright (c) 2025 Quin Gillespie.
@@ -6,6 +6,7 @@
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
 
 #include "main_window.hpp"
 #include "app.hpp"
@@ -110,6 +111,9 @@ wxMenu* main_window::create_go_menu() {
 	menu->Append(ID_NEXT_BOOKMARK, "Next b&ookmark\tB");
 	menu->Append(ID_TOGGLE_BOOKMARK, "Toggle bookmark\tCtrl+Shift+B");
 	menu->Append(ID_JUMP_TO_BOOKMARK, "Jump to bookmark...\tCtrl+B");
+	menu->AppendSeparator();
+	menu->Append(ID_PREVIOUS_LINK, "Previous lin&k\tShift+K");
+	menu->Append(ID_NEXT_LINK, "Next lin&k\tK");
 	return menu;
 }
 
@@ -157,6 +161,8 @@ void main_window::bind_events() {
 		{ID_NEXT_BOOKMARK, &main_window::on_next_bookmark},
 		{ID_TOGGLE_BOOKMARK, &main_window::on_toggle_bookmark},
 		{ID_JUMP_TO_BOOKMARK, &main_window::on_jump_to_bookmark},
+		{ID_PREVIOUS_LINK, &main_window::on_previous_link},
+		{ID_NEXT_LINK, &main_window::on_next_link},
 		{ID_WORD_COUNT, &main_window::on_word_count},
 		{ID_DOC_INFO, &main_window::on_doc_info},
 		{ID_TABLE_OF_CONTENTS, &main_window::on_toc},
@@ -230,6 +236,8 @@ void main_window::update_ui() {
 		ID_NEXT_BOOKMARK,
 		ID_TOGGLE_BOOKMARK,
 		ID_JUMP_TO_BOOKMARK,
+		ID_PREVIOUS_LINK,
+		ID_NEXT_LINK,
 		ID_WORD_COUNT,
 		ID_DOC_INFO,
 		ID_TABLE_OF_CONTENTS,
@@ -409,6 +417,18 @@ void main_window::on_jump_to_bookmark(wxCommandEvent&) {
 	save_position_immediately();
 }
 
+void main_window::on_previous_link(wxCommandEvent&) {
+	doc_manager->go_to_previous_link();
+	update_status_bar();
+	trigger_throttled_position_save();
+}
+
+void main_window::on_next_link(wxCommandEvent&) {
+	doc_manager->go_to_next_link();
+	update_status_bar();
+	trigger_throttled_position_save();
+}
+
 void main_window::on_previous_heading(wxCommandEvent&) {
 	doc_manager->go_to_previous_heading();
 	update_status_bar();
@@ -512,6 +532,14 @@ void main_window::on_text_cursor_changed(wxEvent& event) {
 	event.Skip();
 }
 
+void main_window::on_text_char(wxKeyEvent& event) {
+	if (event.GetKeyCode() == WXK_RETURN) {
+		doc_manager->activate_current_link();
+	} else {
+		event.Skip();
+	}
+}
+
 void main_window::trigger_throttled_position_save() {
 	if (position_save_timer->IsRunning()) position_save_timer->Stop();
 	position_save_timer->StartOnce(POSITION_SAVE_THROTTLE_MS);
@@ -596,6 +624,15 @@ void main_window::on_notebook_key_down(wxKeyEvent& event) {
 				return;
 			}
 		}
+	} else if (key == 'K') {
+		if (event.ShiftDown()) {
+			doc_manager->go_to_previous_link();
+		} else {
+			doc_manager->go_to_next_link();
+		}
+		update_status_bar();
+		trigger_throttled_position_save();
+		return;
 	}
 	event.Skip();
 }

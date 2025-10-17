@@ -29,41 +29,76 @@ using namespace Poco;
 using namespace Poco::XML;
 
 const std::string WORDML_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const std::string REL_NS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 
 std::unique_ptr<document> docx_parser::load(const wxString& path) const {
 	try {
 		auto fp = std::make_unique<wxFileInputStream>(path);
 		if (!fp->IsOk()) return nullptr;
+
 		wxZipInputStream zip(*fp);
 		if (!zip.IsOk()) return nullptr;
+
+		std::string rels_content;
+		std::string doc_content;
+
 		std::unique_ptr<wxZipEntry> entry;
-		bool found = false;
 		while ((entry.reset(zip.GetNextEntry())), entry.get() != nullptr) {
-			if (entry->GetInternalName() == "word/document.xml") {
-				found = true;
-				break;
+			std::string entry_name = entry->GetInternalName().ToStdString();
+			if (entry_name == "word/_rels/document.xml.rels") {
+				rels_content = read_zip_entry(zip);
+			} else if (entry_name == "word/document.xml") {
+				doc_content = read_zip_entry(zip);
+			}
+			if (!rels_content.empty() && !doc_content.empty()) {
+				break; // Found both files
 			}
 		}
-		if (!found) return nullptr;
-		std::string content = read_zip_entry(zip);
-		if (content.empty()) return nullptr;
-		std::istringstream content_stream(content);
+
+		if (doc_content.empty()) return nullptr;
+
+		std::map<std::string, std::string> rels;
+		if (!rels_content.empty()) {
+			std::istringstream rels_stream(rels_content);
+			InputSource rels_source(rels_stream);
+			DOMParser rels_parser;
+			rels_parser.setFeature(XMLReader::FEATURE_NAMESPACES, true);
+			AutoPtr<Document> pRelsDoc = rels_parser.parse(&rels_source);
+			NodeList* rel_nodes = pRelsDoc->getElementsByTagNameNS(REL_NS, "Relationship");
+			for (unsigned long i = 0; i < rel_nodes->length(); ++i) {
+				Node* node = rel_nodes->item(i);
+				auto* element = static_cast<Element*>(node);
+				std::string id = element->getAttribute("Id");
+				std::string target = element->getAttribute("Target");
+				std::string type = element->getAttribute("Type");
+				if (type == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink") {
+					rels[id] = target;
+				}
+			}
+		}
+
+		std::istringstream content_stream(doc_content);
 		InputSource source(content_stream);
 		DOMParser parser;
 		parser.setFeature(XMLReader::FEATURE_NAMESPACES, true);
 		parser.setFeature(DOMParser::FEATURE_FILTER_WHITESPACE, false);
 		AutoPtr<Document> pDoc = parser.parse(&source);
-		wxString text;
-		std::vector<heading_info> headings;
-		traverse(pDoc->documentElement(), text, headings);
+
 		auto doc = std::make_unique<document>();
 		doc->title = wxFileName(path).GetName();
 		doc->buffer.clear();
+
+		wxString text;
+		std::vector<heading_info> headings;
+		traverse(pDoc->documentElement(), text, headings, doc.get(), rels);
+
 		doc->buffer.set_content(text);
+
 		for (const auto& heading : headings) {
 			marker_type type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + heading.level - 1);
 			doc->buffer.add_marker(heading.offset, type, wxString::FromUTF8(heading.text), wxString(), heading.level);
 		}
+
 		doc->toc_items = build_toc_from_headings(doc->buffer);
 		return doc;
 	} catch (const Poco::Exception& e) {
@@ -75,50 +110,194 @@ std::unique_ptr<document> docx_parser::load(const wxString& path) const {
 	}
 }
 
-void docx_parser::traverse(Node* node, wxString& text, std::vector<heading_info>& headings) const {
+
+
+void docx_parser::traverse(Node* node, wxString& text, std::vector<heading_info>& headings, document* doc, const std::map<std::string, std::string>& rels) const {
 	if (!node) return;
 	if (node->nodeType() == Node::ELEMENT_NODE) {
 		auto* element = static_cast<Element*>(node);
-		if (element->localName() == "p") {
-			process_paragraph(element, text, headings);
-			return;
+		std::string localName = element->localName();
+
+		std::string id_attr = element->getAttributeNS(WORDML_NS, "id");
+		if (!id_attr.empty()) {
+			doc->id_positions[id_attr] = text.length();
+		}
+
+		if (localName == "p") {
+			process_paragraph(element, text, headings, doc, rels);
+			return; // process_paragraph handles its children
 		}
 	}
 	Node* child = node->firstChild();
 	while (child) {
-		traverse(child, text, headings);
+		traverse(child, text, headings, doc, rels);
 		child = child->nextSibling();
 	}
 }
 
-void docx_parser::process_paragraph(Element* element, wxString& text, std::vector<heading_info>& headings) const {
-	std::string paragraph_text_utf8;
+void docx_parser::process_paragraph(Element* element, wxString& text, std::vector<heading_info>& headings, document* doc, const std::map<std::string, std::string>& rels) const {
+    wxString paragraph_text;
 	int heading_level = 0;
+    size_t paragraph_start_offset = text.length();
+	Node* child = element->firstChild();
+	while (child) {
+		if (child->nodeType() != Node::ELEMENT_NODE) {
+			child = child->nextSibling();
+			continue;
+		}
+		auto* child_element = static_cast<Element*>(child);
+		std::string localName = child_element->localName();
+
+		if (localName == "pPr") {
+			heading_level = get_heading_level(child_element);
+		} else if (localName == "bookmarkStart") {
+			std::string name_attr = child_element->getAttributeNS(WORDML_NS, "name");
+			if (!name_attr.empty()) {
+				doc->id_positions[name_attr] = paragraph_start_offset + paragraph_text.length();
+			}
+		} else if (localName == "hyperlink") {
+            process_hyperlink(child_element, paragraph_text, doc, rels, paragraph_start_offset);
+		} else if (localName == "r") {
+			Element* instrTextElement = nullptr;
+			Node* node = child_element->firstChild();
+			while(node) {
+				if (node->nodeType() == Node::ELEMENT_NODE) {
+					Element* el = static_cast<Element*>(node);
+					if (el->localName() == "instrText" && el->namespaceURI() == WORDML_NS) {
+						instrTextElement = el;
+						break;
+					}
+				}
+				node = node->nextSibling();
+			}
+
+			if (instrTextElement && instrTextElement->innerText().find("HYPERLINK") != std::string::npos) {
+				std::string instruction = instrTextElement->innerText();
+				std::string link_target = parse_hyperlink_instruction(instruction);
+
+				if (!link_target.empty()) {
+					std::string display_text_utf8;
+					size_t link_offset_in_paragraph = paragraph_text.length();
+
+					Node* field_node = child->nextSibling();
+					bool in_display_text = false;
+					while(field_node) {
+						if (field_node->nodeType() == Node::ELEMENT_NODE && static_cast<Element*>(field_node)->localName() == "r") {
+							Element* field_run = static_cast<Element*>(field_node);
+							Element* fldCharElement = nullptr;
+							Node* node = field_run->firstChild();
+							while(node) {
+								if (node->nodeType() == Node::ELEMENT_NODE) {
+									Element* el = static_cast<Element*>(node);
+									if (el->localName() == "fldChar" && el->namespaceURI() == WORDML_NS) {
+										fldCharElement = el;
+										break;
+									}
+								}
+								node = node->nextSibling();
+							}
+							if (fldCharElement) {
+								std::string type = fldCharElement->getAttributeNS(WORDML_NS, "fldCharType");
+								if (type == "separate") {
+									in_display_text = true;
+								} else if (type == "end") {
+									break; 
+								}
+							} else if (in_display_text) {
+								display_text_utf8 += get_run_text(field_run);
+							}
+						}
+						field_node = field_node->nextSibling();
+					}
+
+					wxString display_text_wx = wxString::FromUTF8(display_text_utf8);
+					if (!display_text_wx.IsEmpty()) {
+						paragraph_text += display_text_wx;
+						doc->buffer.add_link(paragraph_start_offset + link_offset_in_paragraph, display_text_wx, wxString::FromUTF8(link_target));
+					}
+					
+					child = field_node;
+					if (child) child = child->nextSibling();
+					continue;
+				}
+			}
+			paragraph_text += wxString::FromUTF8(get_run_text(child_element));
+		}
+		child = child->nextSibling();
+	}
+
+	paragraph_text.Trim(true).Trim(false);
+	if (!paragraph_text.IsEmpty()) {
+		text += paragraph_text;
+		text += "\n";
+		if (heading_level > 0) {
+			heading_info h;
+			h.offset = paragraph_start_offset;
+			h.level = heading_level;
+			h.text = std::string(paragraph_text.utf8_str());
+			if (!h.text.empty()) headings.push_back(h);
+		}
+	}
+}
+
+std::string docx_parser::parse_hyperlink_instruction(const std::string& instruction) const {
+    size_t first_quote = instruction.find('"');
+    size_t last_quote = instruction.rfind('"');
+    if (first_quote != std::string::npos && last_quote != std::string::npos && first_quote != last_quote) {
+        std::string target = instruction.substr(first_quote + 1, last_quote - first_quote - 1);
+        if (instruction.find("\\l") != std::string::npos) {
+            return "#" + target;
+        }
+        return target;
+    }
+    return "";
+}
+
+void docx_parser::process_hyperlink(Element* element, wxString& text, document* doc, const std::map<std::string, std::string>& rels, size_t paragraph_start_offset) const {
+	std::string r_id = element->getAttributeNS(REL_NS, "id");
+	std::string anchor = element->getAttributeNS(WORDML_NS, "anchor");
+	std::string link_target;
+
+	if (!r_id.empty()) {
+		auto it = rels.find(r_id);
+		if (it != rels.end()) {
+			link_target = it->second;
+		}
+	} else if (!anchor.empty()) {
+		link_target = "#" + anchor;
+	}
+
+	if (link_target.empty()) { // If no target, just process the text
+		Node* child = element->firstChild();
+		while (child) {
+			if (child->nodeType() == Node::ELEMENT_NODE) {
+				auto* child_element = static_cast<Element*>(child);
+				if (child_element->localName() == "r") {
+					text += wxString::FromUTF8(get_run_text(child_element));
+				}
+			}
+			child = child->nextSibling();
+		}
+		return;
+	}
+
+	size_t link_offset = text.length();
+	std::string link_text_utf8;
 	Node* child = element->firstChild();
 	while (child) {
 		if (child->nodeType() == Node::ELEMENT_NODE) {
 			auto* child_element = static_cast<Element*>(child);
-			std::string localName = child_element->localName();
-			if (localName == "pPr")
-				heading_level = get_heading_level(child_element);
-			else if (localName == "r")
-				paragraph_text_utf8 += get_run_text(child_element);
+			if (child_element->localName() == "r") {
+				link_text_utf8 += get_run_text(child_element);
+			}
 		}
 		child = child->nextSibling();
 	}
-	wxString paragraph_wx = wxString::FromUTF8(paragraph_text_utf8);
-	paragraph_wx.Trim(true).Trim(false);
-	if (!paragraph_wx.IsEmpty()) {
-		size_t offset = text.length();
-		text += paragraph_wx;
-		text += "\n";
-		if (heading_level > 0) {
-			heading_info h;
-			h.offset = offset;
-			h.level = heading_level;
-			h.text = std::string(paragraph_wx.utf8_str());
-			if (!h.text.empty()) headings.push_back(h);
-		}
+
+	wxString link_text_wx = wxString::FromUTF8(link_text_utf8);
+	if (!link_text_wx.IsEmpty()) {
+		text += link_text_wx;
+		doc->buffer.add_link(paragraph_start_offset + link_offset, link_text_wx, wxString::FromUTF8(link_target));
 	}
 }
 
@@ -159,6 +338,7 @@ int docx_parser::get_heading_level(Element* pr_element) const {
 	}
 	return 0;
 }
+
 
 std::string docx_parser::get_run_text(Element* run_element) const {
 	std::string run_text;

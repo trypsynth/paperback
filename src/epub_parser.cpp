@@ -66,6 +66,15 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 		}
 		document_ptr->title = wxString::FromUTF8(ctx.title);
 		if (!ctx.author.empty()) document_ptr->author = wxString::FromUTF8(ctx.author);
+		for (const auto& [section_href, id_map] : ctx.id_positions) {
+			for (const auto& [id, pos] : id_map) {
+				document_ptr->id_positions[id] = pos;
+			}
+		}
+		document_ptr->spine_items = ctx.spine_items;
+		for (const auto& [id, item] : ctx.manifest_items) {
+			document_ptr->manifest_items[id] = item.path;
+		}
 		parse_toc(ctx, document_ptr->toc_items, document_ptr->buffer);
 		return document_ptr;
 	} catch (const Exception& e) {
@@ -145,13 +154,28 @@ void epub_parser::process_section_content(Converter& converter, const std::strin
 	if (converter.convert(content)) {
 		const auto& text = converter.get_text();
 		const auto& headings = converter.get_headings();
+		const auto& links = converter.get_links();
 		const auto& id_positions = converter.get_id_positions();
 		size_t section_start = buffer.str().length();
+		Path section_base_path(href, Path::PATH_UNIX);
+		section_base_path.makeParent();
 		for (const auto& [id, relative_pos] : id_positions) ctx.id_positions[href][id] = section_start + relative_pos;
 		buffer.append(wxString::FromUTF8(text));
 		for (const auto& heading : headings) {
 			marker_type type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + heading.level - 1);
 			buffer.add_marker(section_start + heading.offset, type, wxString::FromUTF8(heading.text), wxString(), heading.level);
+		}
+		for (const auto& link : links) {
+			wxString resolved_href;
+			wxString href_lower = wxString(link.ref).Lower();
+			if (href_lower.StartsWith("http:") || href_lower.StartsWith("https://") || href_lower.StartsWith("mailto:")) {
+				resolved_href = link.ref;
+			} else {
+				Path resolved_path(section_base_path);
+				resolved_path.append(link.ref);
+				resolved_href = resolved_path.toString(Path::PATH_UNIX);
+			}
+			buffer.add_link(section_start + link.offset, wxString::FromUTF8(link.text), resolved_href);
 		}
 		if (buffer.str().length() > 0 && !buffer.str().EndsWith("\n")) buffer.append("\n");
 	}
