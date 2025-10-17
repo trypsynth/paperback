@@ -532,11 +532,10 @@ void main_window::on_text_cursor_changed(wxEvent& event) {
 }
 
 void main_window::on_text_char(wxKeyEvent& event) {
-	if (event.GetKeyCode() == WXK_RETURN) {
+	if (event.GetKeyCode() == WXK_RETURN)
 		doc_manager->activate_current_link();
-	} else {
+	else
 		event.Skip();
-	}
 }
 
 void main_window::trigger_throttled_position_save() {
@@ -623,15 +622,6 @@ void main_window::on_notebook_key_down(wxKeyEvent& event) {
 				return;
 			}
 		}
-	} else if (key == 'K') {
-		if (event.ShiftDown()) {
-			doc_manager->go_to_previous_link();
-		} else {
-			doc_manager->go_to_next_link();
-		}
-		update_status_bar();
-		trigger_throttled_position_save();
-		return;
 	}
 	event.Skip();
 }

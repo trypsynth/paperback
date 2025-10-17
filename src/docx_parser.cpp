@@ -127,12 +127,12 @@ void docx_parser::process_paragraph(Element* element, wxString& text, std::vecto
 		std::string local_name = child_element->localName();
 		if (local_name == "pPr")
 			heading_level = get_heading_level(child_element);
-		else if (localName == "bookmarkStart") {
+		else if (local_name == "bookmarkStart") {
 			std::string name_attr = child_element->getAttributeNS(WORDML_NS, "name");
 			if (!name_attr.empty()) doc->id_positions[name_attr] = paragraph_start_offset + paragraph_text.length();
-		} else if (localName == "hyperlink")
+		} else if (local_name == "hyperlink")
 			process_hyperlink(child_element, paragraph_text, doc, rels, paragraph_start_offset);
-		else if (localName == "r") {
+		else if (local_name == "r") {
 			Element* instrTextElement = nullptr;
 			Node* node = child_element->firstChild();
 			while (node) {

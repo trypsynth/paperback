@@ -77,9 +77,8 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 					in_link = true;
 					size_t href_len;
 					const lxb_char_t* href_attr = lxb_dom_element_get_attribute(element, (const lxb_char_t*)"href", 4, &href_len);
-					if (href_attr && href_len > 0) {
+					if (href_attr && href_len > 0)
 						current_link_href = std::string(reinterpret_cast<const char*>(href_attr), href_len);
-					}
 					link_start_pos = get_current_text_position();
 				}
 			}
@@ -155,9 +154,7 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 			if (href_attr && href_len > 0) {
 				std::string href{reinterpret_cast<const char*>(href_attr), href_len};
 				std::string link_text = current_line.substr(link_start_pos);
-				if (!link_text.empty()) {
-					links.push_back({link_start_pos, trim_string(collapse_whitespace(link_text)), href});
-				}
+				if (!link_text.empty()) links.push_back({link_start_pos, trim_string(collapse_whitespace(link_text)), href});
 			}
 		}
 		if (tag_name == "pre") preserve_whitespace = false;
