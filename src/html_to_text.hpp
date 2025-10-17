@@ -21,6 +21,12 @@ enum class html_source_mode {
 	markdown
 };
 
+struct link_info {
+	size_t offset;
+	std::string text;
+	std::string ref;
+};
+
 class html_to_text {
 public:
 	html_to_text();
@@ -34,6 +40,7 @@ public:
 	[[nodiscard]] std::string get_text() const;
 	[[nodiscard]] const std::unordered_map<std::string, size_t>& get_id_positions() const noexcept { return id_positions; }
 	[[nodiscard]] const std::vector<heading_info>& get_headings() const noexcept { return headings; }
+	[[nodiscard]] const std::vector<link_info>& get_links() const noexcept { return links; }
 	[[nodiscard]] const std::string& get_title() const noexcept { return title; }
 	void clear() noexcept;
 
@@ -49,11 +56,16 @@ private:
 	std::string current_line;
 	std::unordered_map<std::string, size_t> id_positions;
 	std::vector<heading_info> headings;
+	std::vector<link_info> links;
 	std::vector<bool> preserve_line_whitespace;
 	std::string title;
 	bool in_body = false;
 	bool preserve_whitespace = false;
 	bool in_code = false;
+	bool in_link = false;
+	std::string current_link_href;
+	std::string current_link_text;
+	size_t link_start_pos = 0;
 	html_source_mode source_mode = html_source_mode::native_html;
 	size_t cached_char_length = 0;
 	DocumentPtr doc;

@@ -48,16 +48,22 @@ void html_to_text::clear() noexcept {
 	current_line.clear();
 	id_positions.clear();
 	headings.clear();
+	links.clear();
 	title.clear();
 	in_body = false;
 	preserve_whitespace = false;
 	in_code = false;
+	in_link = false;
+	current_link_href.clear();
+	current_link_text.clear();
+	link_start_pos = 0;
 	cached_char_length = 0;
 }
 
 void html_to_text::process_node(lxb_dom_node_t* node) {
 	if (!node) return;
 	std::string_view tag_name;
+	size_t link_start_pos = 0;
 	const bool is_element = (node->type == LXB_DOM_NODE_TYPE_ELEMENT);
 	if (is_element) {
 		auto* element = lxb_dom_interface_element(node);
@@ -66,6 +72,16 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 	switch (node->type) {
 		case LXB_DOM_NODE_TYPE_ELEMENT: {
 			auto* element = lxb_dom_interface_element(node);
+			if (tag_name == "a") {
+				if (!in_link) {
+					in_link = true;
+					size_t href_len;
+					const lxb_char_t* href_attr = lxb_dom_element_get_attribute(element, (const lxb_char_t*)"href", 4, &href_len);
+					if (href_attr && href_len > 0)
+						current_link_href = std::string(reinterpret_cast<const char*>(href_attr), href_len);
+					link_start_pos = get_current_text_position();
+				}
+			}
 			if (tag_name == "title" && title.empty()) {
 				title = get_element_text(element);
 				title = trim_string(collapse_whitespace(title));
@@ -120,6 +136,27 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 		for (auto* child = node->first_child; child; child = child->next) process_node(child);
 	}
 	if (is_element) {
+		if (tag_name == "a") {
+			if (in_link) {
+				in_link = false;
+				if (!current_link_text.empty()) {
+					links.push_back({link_start_pos, trim_string(collapse_whitespace(current_link_text)), current_link_href});
+					current_line += current_link_text;
+				}
+				current_link_href.clear();
+				current_link_text.clear();
+				link_start_pos = 0;
+			}
+		}
+		if (tag_name == "a") {
+			size_t href_len;
+			const lxb_char_t* href_attr = lxb_dom_element_get_attribute(lxb_dom_interface_element(node), (const lxb_char_t*)"href", 4, &href_len);
+			if (href_attr && href_len > 0) {
+				std::string href{reinterpret_cast<const char*>(href_attr), href_len};
+				std::string link_text = current_line.substr(link_start_pos);
+				if (!link_text.empty()) links.push_back({link_start_pos, trim_string(collapse_whitespace(link_text)), href});
+			}
+		}
 		if (tag_name == "pre") preserve_whitespace = false;
 		if (tag_name == "code") in_code = false;
 		if (is_block_element(tag_name)) finalize_current_line();
@@ -142,7 +179,9 @@ void html_to_text::process_text_node(lxb_dom_text_t* text_node) {
 				finalize_current_line();
 				pos = found + 1;
 			}
-			if (pos < processed_text.length()) current_line += processed_text.substr(pos);
+			current_line += processed_text.substr(pos);
+		} else if (in_link) {
+			current_link_text += collapse_whitespace(processed_text);
 		} else
 			current_line += collapse_whitespace(processed_text);
 	}
@@ -243,8 +282,9 @@ constexpr bool html_to_text::is_block_element(std::string_view tag_name) noexcep
 
 std::string_view html_to_text::get_tag_name(lxb_dom_element_t* element) noexcept {
 	if (!element) return {};
-	const auto* name = lxb_dom_element_qualified_name(element, nullptr);
-	return name ? std::string_view{reinterpret_cast<const char*>(name)} : std::string_view{};
+	size_t len;
+	const auto* name = lxb_dom_element_qualified_name(element, &len);
+	return name ? std::string_view{reinterpret_cast<const char*>(name), len} : std::string_view{};
 }
 
 std::string html_to_text::get_element_text(lxb_dom_element_t* element) noexcept {

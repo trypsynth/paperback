@@ -9,6 +9,7 @@
 
 #pragma once
 #include "document_buffer.hpp"
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -46,6 +47,9 @@ struct document {
 	wxString author{"Unknown"};
 	document_buffer buffer;
 	std::vector<std::unique_ptr<toc_item>> toc_items;
+	std::map<std::string, size_t> id_positions;
+	std::vector<std::string> spine_items;
+	std::map<std::string, std::string> manifest_items;
 	mutable document_stats stats;
 
 	document() = default;

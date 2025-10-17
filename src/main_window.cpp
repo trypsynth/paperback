@@ -1,4 +1,4 @@
-/* main_window.cpp - main user interface of Paperback.
+/* main_window.hpp - primary user interface header file.
  *
  * Paperback.
  * Copyright (c) 2025 Quin Gillespie.
@@ -111,6 +111,9 @@ wxMenu* main_window::create_go_menu() {
 	menu->Append(ID_NEXT_BOOKMARK, _("Next b&ookmark\tB"));
 	menu->Append(ID_TOGGLE_BOOKMARK, _("Toggle bookmark\tCtrl+Shift+B"));
 	menu->Append(ID_JUMP_TO_BOOKMARK, _("Jump to bookmark...\tCtrl+B"));
+	menu->AppendSeparator();
+	menu->Append(ID_PREVIOUS_LINK, _("Previous lin&k\tShift+K"));
+	menu->Append(ID_NEXT_LINK, _("Next lin&k\tK"));
 	return menu;
 }
 
@@ -167,6 +170,8 @@ void main_window::bind_events() {
 		{ID_NEXT_BOOKMARK, &main_window::on_next_bookmark},
 		{ID_TOGGLE_BOOKMARK, &main_window::on_toggle_bookmark},
 		{ID_JUMP_TO_BOOKMARK, &main_window::on_jump_to_bookmark},
+		{ID_PREVIOUS_LINK, &main_window::on_previous_link},
+		{ID_NEXT_LINK, &main_window::on_next_link},
 		{ID_WORD_COUNT, &main_window::on_word_count},
 		{ID_DOC_INFO, &main_window::on_doc_info},
 		{ID_TABLE_OF_CONTENTS, &main_window::on_toc},
@@ -240,6 +245,8 @@ void main_window::update_ui() {
 		ID_NEXT_BOOKMARK,
 		ID_TOGGLE_BOOKMARK,
 		ID_JUMP_TO_BOOKMARK,
+		ID_PREVIOUS_LINK,
+		ID_NEXT_LINK,
 		ID_WORD_COUNT,
 		ID_DOC_INFO,
 		ID_TABLE_OF_CONTENTS,
@@ -419,6 +426,18 @@ void main_window::on_jump_to_bookmark(wxCommandEvent&) {
 	save_position_immediately();
 }
 
+void main_window::on_previous_link(wxCommandEvent&) {
+	doc_manager->go_to_previous_link();
+	update_status_bar();
+	trigger_throttled_position_save();
+}
+
+void main_window::on_next_link(wxCommandEvent&) {
+	doc_manager->go_to_next_link();
+	update_status_bar();
+	trigger_throttled_position_save();
+}
+
 void main_window::on_previous_heading(wxCommandEvent&) {
 	doc_manager->go_to_previous_heading();
 	update_status_bar();
@@ -528,6 +547,13 @@ void main_window::on_text_cursor_changed(wxEvent& event) {
 	trigger_throttled_status_update();
 	trigger_throttled_position_save();
 	event.Skip();
+}
+
+void main_window::on_text_char(wxKeyEvent& event) {
+	if (event.GetKeyCode() == WXK_RETURN)
+		doc_manager->activate_current_link();
+	else
+		event.Skip();
 }
 
 void main_window::trigger_throttled_position_save() {
