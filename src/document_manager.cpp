@@ -29,7 +29,7 @@ document_manager::~document_manager() {
 
 bool document_manager::open_file(const wxString& path, bool add_to_recent) {
 	if (!wxFileName::FileExists(path)) {
-		wxMessageBox("File not found: " + path, "Error", wxICON_ERROR);
+		wxMessageBox(wxString::Format(_("File not found: %s"), path), _("Error"), wxICON_ERROR);
 		return false;
 	}
 	const int existing_tab = find_tab_by_path(path);
@@ -45,7 +45,7 @@ bool document_manager::open_file(const wxString& path, bool add_to_recent) {
 		if (!par) return false;
 	}
 	if (!create_document_tab(path, par)) {
-		wxMessageBox("Failed to load document.", "Error", wxICON_ERROR);
+		wxMessageBox(_("Failed to load document."), _("Error"), wxICON_ERROR);
 		return false;
 	}
 	auto* const text_ctrl = get_active_text_ctrl();
@@ -165,7 +165,7 @@ void document_manager::go_to_previous_section() {
 	const parser* par = get_active_parser();
 	if (!doc || !text_ctrl || !par) return;
 	if (!par->has_flag(parser_flags::supports_sections)) {
-		speak("No sections.");
+		speak(_("No sections."));
 		return;
 	}
 	size_t current_pos = text_ctrl->GetInsertionPoint();
@@ -191,7 +191,7 @@ void document_manager::go_to_previous_section() {
 	}
 	int prev_index = doc->previous_section_index(search_pos);
 	if (prev_index == -1) {
-		speak("No previous section");
+		speak(_("No previous section"));
 		return;
 	}
 	size_t offset = doc->offset_for_section(prev_index);
@@ -208,13 +208,13 @@ void document_manager::go_to_next_section() {
 	const parser* par = get_active_parser();
 	if (!doc || !text_ctrl || !par) return;
 	if (!par->has_flag(parser_flags::supports_sections)) {
-		speak("No sections.");
+		speak(_("No sections."));
 		return;
 	}
 	size_t current_pos = text_ctrl->GetInsertionPoint();
 	int next_index = doc->next_section_index(current_pos);
 	if (next_index == -1) {
-		speak("No next section");
+		speak(_("No next section"));
 		return;
 	}
 	size_t offset = doc->offset_for_section(next_index);
@@ -246,13 +246,13 @@ void document_manager::go_to_previous_page() {
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (!doc || !text_ctrl) return;
 	if (doc->buffer.count_markers_by_type(marker_type::page_break) == 0) {
-		speak("No pages.");
+		speak(_("No pages."));
 		return;
 	}
 	size_t current_pos = text_ctrl->GetInsertionPoint();
 	int prev_index = doc->previous_page_index(current_pos);
 	if (prev_index == -1) {
-		speak("No previous page.");
+		speak(_("No previous page."));
 		return;
 	}
 	size_t offset = doc->offset_for_page(prev_index);
@@ -260,7 +260,7 @@ void document_manager::go_to_previous_page() {
 	long line;
 	text_ctrl->PositionToXY(offset, 0, &line);
 	wxString current_line = text_ctrl->GetLineText(line);
-	speak(wxString::Format("Page %d: %s", prev_index + 1, current_line));
+	speak(wxString::Format(_("Page %d: %s"), prev_index + 1, current_line));
 }
 
 void document_manager::go_to_next_page() {
@@ -268,13 +268,13 @@ void document_manager::go_to_next_page() {
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (!doc || !text_ctrl) return;
 	if (doc->buffer.count_markers_by_type(marker_type::page_break) == 0) {
-		speak("No pages.");
+		speak(_("No pages."));
 		return;
 	}
 	size_t current_pos = text_ctrl->GetInsertionPoint();
 	int next_index = doc->next_page_index(current_pos);
 	if (next_index == -1) {
-		speak("No next page.");
+		speak(_("No next page."));
 		return;
 	}
 	size_t offset = doc->offset_for_page(next_index);
@@ -282,7 +282,7 @@ void document_manager::go_to_next_page() {
 	long line;
 	text_ctrl->PositionToXY(offset, 0, &line);
 	wxString current_line = text_ctrl->GetLineText(line);
-	speak(wxString::Format("Page %d: %s", next_index + 1, current_line));
+	speak(wxString::Format(_("Page %d: %s"), next_index + 1, current_line));
 }
 
 void document_manager::go_to_previous_bookmark() {
@@ -292,7 +292,7 @@ void document_manager::go_to_previous_bookmark() {
 	long current_pos = text_ctrl->GetInsertionPoint();
 	long prev_pos = config.get_previous_bookmark(tab->file_path, current_pos);
 	if (prev_pos == -1) {
-		speak("No previous bookmark");
+		speak(_("No previous bookmark"));
 		return;
 	}
 	text_ctrl->SetInsertionPoint(prev_pos);
@@ -301,7 +301,7 @@ void document_manager::go_to_previous_bookmark() {
 	wxString current_line = text_ctrl->GetLineText(line);
 	wxArrayLong bookmarks = config.get_bookmarks(tab->file_path);
 	int bookmark_index = bookmarks.Index(prev_pos);
-	speak(wxString::Format("Bookmark %d: %s", bookmark_index + 1, current_line));
+	speak(wxString::Format(_("Bookmark %d: %s"), bookmark_index + 1, current_line));
 }
 
 void document_manager::go_to_next_bookmark() {
@@ -311,7 +311,7 @@ void document_manager::go_to_next_bookmark() {
 	long current_pos = text_ctrl->GetInsertionPoint();
 	long next_pos = config.get_next_bookmark(tab->file_path, current_pos);
 	if (next_pos == -1) {
-		speak("No next bookmark");
+		speak(_("No next bookmark"));
 		return;
 	}
 	text_ctrl->SetInsertionPoint(next_pos);
@@ -320,7 +320,7 @@ void document_manager::go_to_next_bookmark() {
 	wxString current_line = text_ctrl->GetLineText(line);
 	wxArrayLong bookmarks = config.get_bookmarks(tab->file_path);
 	int bookmark_index = bookmarks.Index(next_pos);
-	speak(wxString::Format("Bookmark %d: %s", bookmark_index + 1, current_line));
+	speak(wxString::Format(_("Bookmark %d: %s"), bookmark_index + 1, current_line));
 }
 
 void document_manager::go_to_previous_link() {
@@ -432,7 +432,7 @@ void document_manager::toggle_bookmark() {
 	bool was_bookmarked = bookmarks.Index(current_pos) != wxNOT_FOUND;
 	config.toggle_bookmark(tab->file_path, current_pos);
 	config.flush();
-	speak(was_bookmarked ? "Bookmark removed" : "Bookmarked");
+	speak(was_bookmarked ? _("Bookmark removed") : _("Bookmarked"));
 }
 
 void document_manager::show_bookmark_dialog(wxWindow* parent) {
@@ -441,7 +441,7 @@ void document_manager::show_bookmark_dialog(wxWindow* parent) {
 	if (!tab || !text_ctrl) return;
 	wxArrayLong bookmarks = config.get_bookmarks(tab->file_path);
 	if (bookmarks.IsEmpty()) {
-		speak("No bookmarks");
+		speak(_("No bookmarks"));
 		return;
 	}
 	long current_pos = text_ctrl->GetInsertionPoint();
@@ -454,7 +454,7 @@ void document_manager::show_bookmark_dialog(wxWindow* parent) {
 	long line;
 	text_ctrl->PositionToXY(pos, 0, &line);
 	wxString current_line = text_ctrl->GetLineText(line);
-	speak(wxString::Format("Bookmark: %s", current_line));
+	speak(wxString::Format(_("Bookmark: %s"), current_line));
 	update_ui();
 }
 
@@ -464,11 +464,11 @@ void document_manager::show_table_of_contents(wxWindow* parent) {
 	const parser* par = get_active_parser();
 	if (!doc || !text_ctrl || !par) return;
 	if (!par->has_flag(parser_flags::supports_toc)) {
-		speak("No table of contents.");
+		speak(_("No table of contents."));
 		return;
 	}
 	if (doc->toc_items.empty()) {
-		speak("Table of contents is empty.");
+		speak(_("Table of contents is empty."));
 		return;
 	}
 	size_t current_pos = text_ctrl->GetInsertionPoint();
@@ -516,9 +516,9 @@ void document_manager::save_all_tab_positions() {
 }
 
 wxString document_manager::get_status_text() const {
-	if (!has_documents()) return "Ready";
+	if (!has_documents()) return _("Ready");
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!text_ctrl) return "Ready";
+	if (!text_ctrl) return _("Ready");
 	long current_pos = text_ctrl->GetInsertionPoint();
 	long total_chars = text_ctrl->GetLastPosition();
 	int percentage = total_chars > 0 ? (current_pos * 100) / total_chars : 0;
@@ -526,7 +526,7 @@ wxString document_manager::get_status_text() const {
 	text_ctrl->PositionToXY(current_pos, 0, &line);
 	long line_number = line + 1;
 	long character_number = current_pos + 1;
-	return wxString::Format("line %ld, character %ld, reading %d%%", line_number, character_number, percentage);
+	return wxString::Format(_("line %ld, character %ld, reading %d%%"), line_number, character_number, percentage);
 }
 
 wxString document_manager::get_window_title(const wxString& app_name) const {
@@ -584,12 +584,12 @@ int document_manager::find_tab_by_path(const wxString& path) const {
 }
 
 void document_manager::create_heading_menu(wxMenu* menu) {
-	menu->Append(ID_PREVIOUS_HEADING, "Previous heading\tShift+H");
-	menu->Append(ID_NEXT_HEADING, "Next heading\tH");
+	menu->Append(ID_PREVIOUS_HEADING, _("Previous heading\tShift+H"));
+	menu->Append(ID_NEXT_HEADING, _("Next heading\tH"));
 	menu->AppendSeparator();
 	for (int level = 1; level <= 6; ++level) {
-		menu->Append(ID_PREVIOUS_HEADING_1 + (level - 1) * 2, wxString::Format("Previous heading level %d\tShift+%d", level, level));
-		menu->Append(ID_NEXT_HEADING_1 + (level - 1) * 2, wxString::Format("Next heading level %d\t%d", level, level));
+		menu->Append(ID_PREVIOUS_HEADING_1 + (level - 1) * 2, wxString::Format(_("Previous heading level %d\tShift+%d"), level, level));
+		menu->Append(ID_NEXT_HEADING_1 + (level - 1) * 2, wxString::Format(_("Next heading level %d\t%d"), level, level));
 	}
 }
 
@@ -632,19 +632,19 @@ void document_manager::navigate_to_heading(bool next, int specific_level) {
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (!doc || !text_ctrl) return;
 	if (doc->buffer.get_heading_markers().size() == 0) {
-		speak("No headings.");
+		speak(_("No headings."));
 		return;
 	}
 	size_t current_pos = text_ctrl->GetInsertionPoint();
 	int target_index = -1;
 	target_index = next ? doc->next_heading_index(current_pos, specific_level) : doc->previous_heading_index(current_pos, specific_level);
 	if (target_index == -1) {
-		wxString msg = (specific_level == -1) ? wxString::Format("No %s heading", next ? "next" : "previous") : wxString::Format("No %s heading at level %d", next ? "next" : "previous", specific_level);
+		wxString msg = (specific_level == -1) ? wxString::Format(_("No %s heading"), next ? _("next") : _("previous")) : wxString::Format(_("No %s heading at level %d"), next ? _("next") : _("previous"), specific_level);
 		speak(msg);
 		return;
 	}
 	size_t offset = doc->offset_for_heading(target_index);
 	text_ctrl->SetInsertionPoint(offset);
 	const marker* heading_marker = doc->get_heading_marker(target_index);
-	if (heading_marker) speak(wxString::Format("%s Heading level %d", heading_marker->text, heading_marker->level));
+	if (heading_marker) speak(wxString::Format(_("%s Heading level %d"), heading_marker->text, heading_marker->level));
 }

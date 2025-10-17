@@ -21,9 +21,9 @@ task_bar_icon::task_bar_icon(main_window* frame) : frame_{frame} {
 
 wxMenu* task_bar_icon::CreatePopupMenu() {
 	auto* menu = new wxMenu;
-	menu->Append(ID_RESTORE, "&Restore");
+	menu->Append(ID_RESTORE, _("&Restore"));
 	menu->AppendSeparator();
-	menu->Append(wxID_EXIT, "E&xit");
+	menu->Append(wxID_EXIT, _("E&xit"));
 	return menu;
 }
 

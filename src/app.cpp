@@ -10,6 +10,7 @@
 #include "app.hpp"
 #include "constants.hpp"
 #include "parser.hpp"
+#include "translation_manager.hpp"
 #include "utils.hpp"
 #include <wx/filename.h>
 
@@ -30,9 +31,13 @@ wxConnectionBase* paperback_server::OnAcceptConnection(const wxString& topic) {
 
 bool app::OnInit() {
 	if (!config_mgr.initialize()) {
-		wxMessageBox("Failed to initialize configuration", "Error", wxICON_ERROR);
+		wxMessageBox(_("Failed to initialize configuration"), _("Error"), wxICON_ERROR);
 		return false;
 	}
+	translation_manager::instance().initialize();
+	wxString preferred_language = config_mgr.get_language();
+	if (!preferred_language.IsEmpty())
+		translation_manager::instance().set_language(preferred_language);
 	single_instance_checker = std::make_unique<wxSingleInstanceChecker>(SINGLE_INSTANCE_NAME);
 	if (single_instance_checker->IsAnotherRunning()) {
 		if (argc > 1) {
@@ -56,7 +61,7 @@ bool app::OnInit() {
 		return false;
 	}
 	ipc_server = std::make_unique<paperback_server>();
-	if (!ipc_server->Create(IPC_SERVICE)) wxMessageBox("Failed to create IPC server", "Warning", wxICON_WARNING);
+	if (!ipc_server->Create(IPC_SERVICE)) wxMessageBox(_("Failed to create IPC server"), _("Warning"), wxICON_WARNING);
 	frame = new main_window();
 	if (config_mgr.get_restore_previous_documents())
 		restore_previous_documents();
@@ -77,7 +82,7 @@ void app::parse_command_line() {
 	file_path.Normalize(wxPATH_NORM_ABSOLUTE);
 	wxString path = file_path.GetFullPath();
 	if (!wxFileName::FileExists(path)) {
-		wxMessageBox("File not found: " + path, "Error", wxICON_ERROR);
+		wxMessageBox(wxString::Format(_("File not found: %s"), path), _("Error"), wxICON_ERROR);
 		return;
 	}
 	auto* doc_manager = frame->get_doc_manager();
@@ -94,7 +99,7 @@ void app::parse_command_line() {
 		if (!par) return;
 	}
 	if (!doc_manager->create_document_tab(path, par))
-		wxMessageBox("Failed to load document.", "Error", wxICON_ERROR);
+		wxMessageBox(_("Failed to load document."), _("Error"), wxICON_ERROR);
 	doc_manager->update_ui();
 }
 
@@ -133,7 +138,7 @@ void app::open_file(const wxString& filename) {
 		return;
 	}
 	if (!wxFileName::FileExists(filename)) {
-		wxMessageBox("File not found: " + filename, "Error", wxICON_ERROR);
+		wxMessageBox(wxString::Format(_("File not found: %s"), filename), _("Error"), wxICON_ERROR);
 		return;
 	}
 	auto* doc_manager = frame->get_doc_manager();
@@ -152,7 +157,7 @@ void app::open_file(const wxString& filename) {
 		if (!par) return;
 	}
 	if (!doc_manager->create_document_tab(filename, par))
-		wxMessageBox("Failed to load document.", "Error", wxICON_ERROR);
+		wxMessageBox(_("Failed to load document."), _("Error"), wxICON_ERROR);
 	else {
 		frame->Raise();
 		frame->RequestUserAttention();

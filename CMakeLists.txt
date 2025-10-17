@@ -23,6 +23,49 @@ find_package(maddy CONFIG REQUIRED)
 find_package(pdfium CONFIG REQUIRED)
 find_package(Poco REQUIRED COMPONENTS Foundation XML)
 find_package(wxWidgets CONFIG REQUIRED)
+find_package(Gettext)
+
+if(GETTEXT_FOUND)
+	find_program(XGETTEXT_EXECUTABLE xgettext PATHS ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/tools/gettext)
+	if(XGETTEXT_EXECUTABLE)
+		file(GLOB_RECURSE TRANSLATABLE_FILES CONFIGURE_DEPENDS src/*.cpp src/*.hpp)
+		add_custom_command(
+			OUTPUT ${CMAKE_SOURCE_DIR}/po/paperback.pot
+			COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/po
+			COMMAND ${XGETTEXT_EXECUTABLE}
+				--keyword=_
+				--keyword=wxPLURAL:1,2
+				--keyword=wxTRANSLATE
+				--language=C++
+				--add-comments=TRANSLATORS
+				--package-name=paperback
+				--package-version=${PROJECT_VERSION}
+				--msgid-bugs-address=https://github.com/trypsynth/paperback/issues
+				--copyright-holder="Quin Gillespie"
+				--output=${CMAKE_SOURCE_DIR}/po/paperback.pot
+				${TRANSLATABLE_FILES}
+			DEPENDS ${TRANSLATABLE_FILES}
+			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		)
+		add_custom_target(update-pot DEPENDS ${CMAKE_SOURCE_DIR}/po/paperback.pot)
+	else()
+		message(WARNING "xgettext not found. Translation template (.pot) generation will not be available.")
+	endif()
+	file(GLOB PO_FILES ${CMAKE_SOURCE_DIR}/po/*.po)
+	set(MO_FILES "")
+	foreach(PO_FILE ${PO_FILES})
+		get_filename_component(LANG ${PO_FILE} NAME_WE)
+		set(MO_DIR ${CMAKE_BINARY_DIR}/langs/${LANG}/LC_MESSAGES)
+		set(MO_FILE ${MO_DIR}/paperback.mo)
+		add_custom_command(OUTPUT ${MO_FILE} COMMAND ${CMAKE_COMMAND} -E make_directory ${MO_DIR} COMMAND ${GETTEXT_MSGFMT_EXECUTABLE} -o ${MO_FILE} ${PO_FILE} DEPENDS ${PO_FILE})
+		list(APPEND MO_FILES ${MO_FILE})
+	endforeach()
+	if(MO_FILES)
+		add_custom_target(translations ALL DEPENDS ${MO_FILES})
+	endif()
+else()
+	message(WARNING "Gettext not found. Translations will not be built.")
+endif()
 
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS src/*.cpp)
 if(WIN32)

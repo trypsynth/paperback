@@ -13,6 +13,7 @@
 #include "dialogs.hpp"
 #include "live_region.hpp"
 #include "parser.hpp"
+#include "translation_manager.hpp"
 #include "utils.hpp"
 #include <wx/aboutdlg.h>
 #include <wx/filename.h>
@@ -35,7 +36,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	doc_manager = std::make_unique<document_manager>(notebook, wxGetApp().get_config_manager(), *this);
 	create_menus();
 	status_bar = CreateStatusBar(1);
-	status_bar->SetStatusText("Ready");
+	status_bar->SetStatusText(_("Ready"));
 	position_save_timer = new wxTimer(this);
 	status_update_timer = new wxTimer(this);
 	bind_events();
@@ -65,76 +66,85 @@ main_window::~main_window() {
 
 void main_window::create_menus() {
 	auto* const menu_bar = new wxMenuBar();
-	menu_bar->Append(create_file_menu(), "&File");
-	menu_bar->Append(create_go_menu(), "&Go");
-	menu_bar->Append(create_tools_menu(), "&Tools");
-	menu_bar->Append(create_help_menu(), "&Help");
+	menu_bar->Append(create_file_menu(), _("&File"));
+	menu_bar->Append(create_go_menu(), _("&Go"));
+	menu_bar->Append(create_tools_menu(), _("&Tools"));
+	menu_bar->Append(create_help_menu(), _("&Help"));
 	SetMenuBar(menu_bar);
 }
 
 wxMenu* main_window::create_file_menu() {
 	auto* const menu = new wxMenu();
-	menu->Append(wxID_OPEN);
-	menu->Append(wxID_CLOSE, "Close\tCtrl+F4");
-	menu->Append(wxID_CLOSE_ALL, "Close &All\tCtrl+Shift+F4");
+	menu->Append(wxID_OPEN, _("&Open...\tCtrl+O"));
+	menu->Append(wxID_CLOSE, _("Close\tCtrl+F4"));
+	menu->Append(wxID_CLOSE_ALL, _("Close &All\tCtrl+Shift+F4"));
 	menu->AppendSeparator();
 	recent_documents_menu = new wxMenu();
-	menu->AppendSubMenu(recent_documents_menu, "&Recent Documents");
+	menu->AppendSubMenu(recent_documents_menu, _("&Recent Documents"));
 	update_recent_documents_menu();
 	menu->AppendSeparator();
-	menu->Append(ID_EXPORT, "&Export...\tCtrl+E");
+	menu->Append(ID_EXPORT, _("&Export...\tCtrl+E"));
 	menu->AppendSeparator();
-	menu->Append(wxID_EXIT, "E&xit");
+	menu->Append(wxID_EXIT, _("E&xit"));
 	return menu;
 }
 
 wxMenu* main_window::create_go_menu() {
 	auto* const menu = new wxMenu();
-	menu->Append(wxID_FIND);
-	menu->Append(ID_FIND_NEXT, "Find Ne&xt\tF3");
-	menu->Append(ID_FIND_PREVIOUS, "Find P&revious\tShift+F3");
+	menu->Append(wxID_FIND, _("&Find...\tCtrl+F"));
+	menu->Append(ID_FIND_NEXT, _("Find Ne&xt\tF3"));
+	menu->Append(ID_FIND_PREVIOUS, _("Find P&revious\tShift+F3"));
 	menu->AppendSeparator();
-	menu->Append(ID_GO_TO_LINE, "Go to &line...\tCtrl+G");
-	menu->Append(ID_GO_TO_PERCENT, "Go to &percent...\tCtrl+Shift+G");
-	menu->Append(ID_GO_TO_PAGE, "Go to &page...\tCtrl+P");
+	menu->Append(ID_GO_TO_LINE, _("Go to &line...\tCtrl+G"));
+	menu->Append(ID_GO_TO_PERCENT, _("Go to &percent...\tCtrl+Shift+G"));
+	menu->Append(ID_GO_TO_PAGE, _("Go to &page...\tCtrl+P"));
 	menu->AppendSeparator();
-	menu->Append(ID_PREVIOUS_SECTION, "Previous section\t[");
-	menu->Append(ID_NEXT_SECTION, "Next section\t]");
+	menu->Append(ID_PREVIOUS_SECTION, _("Previous section\t["));
+	menu->Append(ID_NEXT_SECTION, _("Next section\t]"));
 	menu->AppendSeparator();
 	document_manager::create_heading_menu(menu);
 	menu->AppendSeparator();
-	menu->Append(ID_PREVIOUS_PAGE, "Previous &page\tShift+P");
-	menu->Append(ID_NEXT_PAGE, "&Next page\tP");
+	menu->Append(ID_PREVIOUS_PAGE, _("Previous &page\tShift+P"));
+	menu->Append(ID_NEXT_PAGE, _("&Next page\tP"));
 	menu->AppendSeparator();
-	menu->Append(ID_PREVIOUS_BOOKMARK, "Previous &bookmark\tShift+B");
-	menu->Append(ID_NEXT_BOOKMARK, "Next b&ookmark\tB");
-	menu->Append(ID_TOGGLE_BOOKMARK, "Toggle bookmark\tCtrl+Shift+B");
-	menu->Append(ID_JUMP_TO_BOOKMARK, "Jump to bookmark...\tCtrl+B");
+	menu->Append(ID_PREVIOUS_BOOKMARK, _("Previous &bookmark\tShift+B"));
+	menu->Append(ID_NEXT_BOOKMARK, _("Next b&ookmark\tB"));
+	menu->Append(ID_TOGGLE_BOOKMARK, _("Toggle bookmark\tCtrl+Shift+B"));
+	menu->Append(ID_JUMP_TO_BOOKMARK, _("Jump to bookmark...\tCtrl+B"));
 	menu->AppendSeparator();
-	menu->Append(ID_PREVIOUS_LINK, "Previous lin&k\tShift+K");
-	menu->Append(ID_NEXT_LINK, "Next lin&k\tK");
+	menu->Append(ID_PREVIOUS_LINK, _("Previous lin&k\tShift+K"));
+	menu->Append(ID_NEXT_LINK, _("Next lin&k\tK"));
 	return menu;
 }
 
 wxMenu* main_window::create_tools_menu() {
 	auto* const menu = new wxMenu();
-	menu->Append(ID_WORD_COUNT, "&Word count\tCtrl+W");
-	menu->Append(ID_DOC_INFO, "Document &info\tCtrl+I");
+	menu->Append(ID_WORD_COUNT, _("&Word count\tCtrl+W"));
+	menu->Append(ID_DOC_INFO, _("Document &info\tCtrl+I"));
 	menu->AppendSeparator();
-	menu->Append(ID_TABLE_OF_CONTENTS, "Table of contents\tCtrl+T");
+	menu->Append(ID_TABLE_OF_CONTENTS, _("Table of contents\tCtrl+T"));
 	menu->AppendSeparator();
-	menu->Append(ID_OPTIONS, "&Options\tCtrl+,");
+	menu->Append(ID_OPTIONS, _("&Options\tCtrl+,"));
 	return menu;
 }
 
 wxMenu* main_window::create_help_menu() {
 	auto* const menu = new wxMenu();
-	menu->Append(wxID_ABOUT, "About " + APP_NAME + "\tCtrl+F1");
-	menu->Append(wxID_HELP, "View &help in default browser\tF1");
-	menu->Append(ID_HELP_INTERNAL, "View Help in " + APP_NAME + "\tShift+F1");
+	menu->Append(wxID_ABOUT, wxString::Format(_("About %s\tCtrl+F1"), APP_NAME));
+	menu->Append(wxID_HELP, _("View &help in default browser\tF1"));
+	menu->Append(ID_HELP_INTERNAL, wxString::Format(_("View Help in %s\tShift+F1"), APP_NAME));
 	menu->AppendSeparator();
-	menu->Append(ID_DONATE, "&Donate\tCtrl+D");
+	menu->Append(ID_DONATE, _("&Donate\tCtrl+D"));
 	return menu;
+}
+
+void main_window::refresh_ui_language() {
+	wxMenuBar* old_menu_bar = GetMenuBar();
+	create_menus();
+	delete old_menu_bar;
+	update_status_bar();
+	update_title();
+	update_recent_documents_menu();
 }
 
 void main_window::bind_events() {
@@ -254,7 +264,7 @@ void main_window::update_status_bar() {
 }
 
 void main_window::on_open(wxCommandEvent&) {
-	wxFileDialog dlg(this, "Select a document to read", "", "", get_supported_wildcards(), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+	wxFileDialog dlg(this, _("Select a document to read"), "", "", get_supported_wildcards(), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 	if (dlg.ShowModal() != wxID_OK) return;
 	const auto path = dlg.GetPath();
 	[[maybe_unused]] bool success = doc_manager->open_file(path);
@@ -277,11 +287,11 @@ void main_window::on_close_all(wxCommandEvent&) {
 void main_window::on_export(wxCommandEvent&) {
 	auto* const doc = doc_manager->get_active_document();
 	if (!doc) return;
-	wxFileDialog save_dialog(this, "Export Document", "", doc->title + ".txt", "Text files (*.txt)|*.txt|All files (*.*)|*.*", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+	wxFileDialog save_dialog(this, _("Export Document"), "", doc->title + ".txt", _("Text files (*.txt)|*.txt|All files (*.*)|*.*"), wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 	if (save_dialog.ShowModal() != wxID_OK) return;
 	const auto file_path = save_dialog.GetPath();
 	if (!doc_manager->export_document(doc_manager->get_active_tab_index(), file_path))
-		wxMessageBox("Failed to export document.", "Error", wxICON_ERROR);
+		wxMessageBox(_("Failed to export document."), _("Error"), wxICON_ERROR);
 }
 
 void main_window::on_exit(wxCommandEvent&) {
@@ -350,7 +360,7 @@ void main_window::on_go_to_page(wxCommandEvent&) {
 	auto* const par = doc_manager->get_active_parser();
 	if (!doc || !par) return;
 	if (!par->has_flag(parser_flags::supports_pages)) {
-		speak("No pages.");
+		speak(_("No pages."));
 		return;
 	}
 	int current_page = 1;
@@ -442,7 +452,7 @@ void main_window::on_next_heading(wxCommandEvent&) {
 
 void main_window::on_word_count(wxCommandEvent&) {
 	const size_t count = doc_manager->get_active_document()->stats.word_count;
-	wxMessageBox(wxString::Format("The document contains %d %s", count, count == 1 ? "word" : "words"), "Word count", wxICON_INFORMATION);
+	wxMessageBox(wxString::Format(wxPLURAL("The document contains %d word", "The document contains %d words", count), count), _("Word count"), wxICON_INFORMATION);
 }
 
 void main_window::on_doc_info(wxCommandEvent&) {
@@ -463,16 +473,24 @@ void main_window::on_options(wxCommandEvent&) {
 	dlg.set_word_wrap(config_mgr.get_word_wrap());
 	dlg.set_minimize_to_tray(config_mgr.get_minimize_to_tray());
 	dlg.set_recent_documents_to_show(config_mgr.get_recent_documents_to_show());
+	wxString current_language = translation_manager::instance().get_current_language();
+	dlg.set_language(current_language);
 	if (dlg.ShowModal() != wxID_OK) return;
 	bool old_word_wrap = config_mgr.get_word_wrap();
 	bool new_word_wrap = dlg.get_word_wrap();
+	wxString new_language = dlg.get_language();
 	config_mgr.set_restore_previous_documents(dlg.get_restore_previous_documents());
 	config_mgr.set_word_wrap(new_word_wrap);
 	config_mgr.set_minimize_to_tray(dlg.get_minimize_to_tray());
 	config_mgr.set_recent_documents_to_show(dlg.get_recent_documents_to_show());
+	config_mgr.set_language(new_language);
 	if (old_word_wrap != new_word_wrap) {
 		doc_manager->apply_word_wrap(new_word_wrap);
 		if (active_text_ctrl && doc_manager->get_active_text_ctrl()) doc_manager->get_active_text_ctrl()->SetFocus();
+	}
+	if (current_language != new_language) {
+		translation_manager::instance().set_language(new_language);
+		// refresh_ui_language();
 	}
 	config_mgr.flush();
 	update_recent_documents_menu();
@@ -491,14 +509,14 @@ void main_window::on_help(wxCommandEvent&) {
 	const auto path = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath();
 	const auto url = "file://" + wxFileName(path, "readme.html").GetFullPath();
 	if (!wxLaunchDefaultBrowser(url))
-		wxMessageBox("Failed to launch default browser.", "Error", wxICON_ERROR);
+		wxMessageBox(_("Failed to launch default browser."), _("Error"), wxICON_ERROR);
 }
 
 void main_window::on_help_internal(wxCommandEvent&) {
 	const auto path = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath();
 	const auto readme_path = wxFileName(path, "readme.html").GetFullPath();
 	if (!wxFileName::FileExists(readme_path)) {
-		wxMessageBox("readme.html not found. Please ensure the application was built properly.", "Error", wxICON_ERROR);
+		wxMessageBox(_("readme.html not found. Please ensure the application was built properly."), _("Error"), wxICON_ERROR);
 		return;
 	}
 	[[maybe_unused]] bool success = doc_manager->open_file(readme_path, false);
@@ -507,7 +525,7 @@ void main_window::on_help_internal(wxCommandEvent&) {
 void main_window::on_donate(wxCommandEvent&) {
 	const wxString url = "https://paypal.me/tygillespie05";
 	if (!wxLaunchDefaultBrowser(url))
-		wxMessageBox("Failed to open donation page in browser.", "Error", wxICON_ERROR);
+		wxMessageBox(_("Failed to open donation page in browser."), _("Error"), wxICON_ERROR);
 }
 
 void main_window::on_notebook_page_changed(wxBookCtrlEvent& event) {
@@ -648,11 +666,11 @@ void main_window::update_recent_documents_menu() {
 		++menu_count;
 	}
 	if (menu_count == 0) {
-		recent_documents_menu->Append(wxID_ANY, "(No recent documents)")->Enable(false);
+		recent_documents_menu->Append(wxID_ANY, _("(No recent documents)"))->Enable(false);
 		return;
 	}
 	recent_documents_menu->AppendSeparator();
-	recent_documents_menu->Append(ID_SHOW_ALL_DOCUMENTS, "Show All...");
+	recent_documents_menu->Append(ID_SHOW_ALL_DOCUMENTS, _("Show All..."));
 	Bind(wxEVT_MENU, &main_window::on_show_all_documents, this, ID_SHOW_ALL_DOCUMENTS);
 }
 
@@ -672,11 +690,11 @@ void main_window::do_find(bool forward) {
 	const long start_pos = forward ? sel_end : sel_start;
 	long found_pos = doc_manager->find_text(query, start_pos, options);
 	if (found_pos == wxNOT_FOUND) {
-		speak("No more results. Wrapping search.");
+		speak(_("No more results. Wrapping search."));
 		const auto wrap_pos = forward ? 0 : text_ctrl->GetLastPosition();
 		found_pos = doc_manager->find_text(query, wrap_pos, options);
 		if (found_pos == wxNOT_FOUND) {
-			speak("Not found.");
+			speak(_("Not found."));
 			return;
 		}
 	}
