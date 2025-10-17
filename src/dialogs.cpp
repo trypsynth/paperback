@@ -163,8 +163,7 @@ bookmark_dialog::bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks,
 		wxString line_text = text_ctrl->GetLineText(line);
 		line_text = line_text.Strip(wxString::both);
 		if (line_text.IsEmpty()) line_text = _("blank");
-		wxString bookmark_desc = wxString::Format(_("Bookmark %zu: %s"), i + 1, line_text);
-		bookmark_list->Append(bookmark_desc);
+		bookmark_list->Append(line_text);
 		if (current_pos >= 0) {
 			long distance = std::abs(pos - current_pos);
 			if (distance < closest_distance) {
