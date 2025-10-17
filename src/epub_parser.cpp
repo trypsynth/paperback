@@ -66,15 +66,12 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 		}
 		document_ptr->title = wxString::FromUTF8(ctx.title);
 		if (!ctx.author.empty()) document_ptr->author = wxString::FromUTF8(ctx.author);
-		for (const auto& [section_href, id_map] : ctx.id_positions) {
-			for (const auto& [id, pos] : id_map) {
+		for (const auto& [section_href, id_map] : ctx.id_positions)
+			for (const auto& [id, pos] : id_map)
 				document_ptr->id_positions[id] = pos;
-			}
-		}
 		document_ptr->spine_items = ctx.spine_items;
-		for (const auto& [id, item] : ctx.manifest_items) {
+		for (const auto& [id, item] : ctx.manifest_items)
 			document_ptr->manifest_items[id] = item.path;
-		}
 		parse_toc(ctx, document_ptr->toc_items, document_ptr->buffer);
 		return document_ptr;
 	} catch (const Exception& e) {
@@ -168,9 +165,9 @@ void epub_parser::process_section_content(Converter& converter, const std::strin
 		for (const auto& link : links) {
 			wxString resolved_href;
 			wxString href_lower = wxString(link.ref).Lower();
-			if (href_lower.StartsWith("http:") || href_lower.StartsWith("https://") || href_lower.StartsWith("mailto:")) {
+			if (href_lower.StartsWith("http:") || href_lower.StartsWith("https:") || href_lower.StartsWith("mailto:"))
 				resolved_href = link.ref;
-			} else {
+			else {
 				Path resolved_path(section_base_path);
 				resolved_path.append(link.ref);
 				resolved_href = resolved_path.toString(Path::PATH_UNIX);
