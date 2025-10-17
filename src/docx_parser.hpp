@@ -11,8 +11,8 @@
 #include "document.hpp"
 #include "parser.hpp"
 #include <Poco/DOM/Element.h>
-#include <wx/stream.h>
 #include <vector>
+#include <wx/stream.h>
 
 class docx_parser : public parser {
 public:
@@ -37,7 +37,6 @@ private:
 	[[nodiscard]] int get_heading_level(Poco::XML::Element* pPrElement) const;
 	[[nodiscard]] std::string get_run_text(Poco::XML::Element* pRunElement) const;
 	[[nodiscard]] std::string parse_hyperlink_instruction(const std::string& instruction) const;
-
 };
 
 REGISTER_PARSER(docx_parser)

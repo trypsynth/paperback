@@ -44,7 +44,6 @@ public:
 	[[nodiscard]] const std::string& get_title() const noexcept { return title; }
 	void clear() noexcept;
 
-
 private:
 	struct DocumentDeleter {
 		void operator()(lxb_html_document_t* doc) const noexcept {

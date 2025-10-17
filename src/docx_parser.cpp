@@ -35,28 +35,20 @@ std::unique_ptr<document> docx_parser::load(const wxString& path) const {
 	try {
 		auto fp = std::make_unique<wxFileInputStream>(path);
 		if (!fp->IsOk()) return nullptr;
-
 		wxZipInputStream zip(*fp);
 		if (!zip.IsOk()) return nullptr;
-
 		std::string rels_content;
 		std::string doc_content;
-
 		std::unique_ptr<wxZipEntry> entry;
 		while ((entry.reset(zip.GetNextEntry())), entry.get() != nullptr) {
 			std::string entry_name = entry->GetInternalName().ToStdString();
-			if (entry_name == "word/_rels/document.xml.rels") {
+			if (entry_name == "word/_rels/document.xml.rels")
 				rels_content = read_zip_entry(zip);
-			} else if (entry_name == "word/document.xml") {
+			else if (entry_name == "word/document.xml")
 				doc_content = read_zip_entry(zip);
-			}
-			if (!rels_content.empty() && !doc_content.empty()) {
-				break; // Found both files
-			}
+			if (!rels_content.empty() && !doc_content.empty()) break;
 		}
-
 		if (doc_content.empty()) return nullptr;
-
 		std::map<std::string, std::string> rels;
 		if (!rels_content.empty()) {
 			std::istringstream rels_stream(rels_content);
@@ -71,34 +63,26 @@ std::unique_ptr<document> docx_parser::load(const wxString& path) const {
 				std::string id = element->getAttribute("Id");
 				std::string target = element->getAttribute("Target");
 				std::string type = element->getAttribute("Type");
-				if (type == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink") {
-					rels[id] = target;
-				}
+				if (type == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink") rels[id] = target;
 			}
 		}
-
 		std::istringstream content_stream(doc_content);
 		InputSource source(content_stream);
 		DOMParser parser;
 		parser.setFeature(XMLReader::FEATURE_NAMESPACES, true);
 		parser.setFeature(DOMParser::FEATURE_FILTER_WHITESPACE, false);
 		AutoPtr<Document> pDoc = parser.parse(&source);
-
 		auto doc = std::make_unique<document>();
 		doc->title = wxFileName(path).GetName();
 		doc->buffer.clear();
-
 		wxString text;
 		std::vector<heading_info> headings;
 		traverse(pDoc->documentElement(), text, headings, doc.get(), rels);
-
 		doc->buffer.set_content(text);
-
 		for (const auto& heading : headings) {
 			marker_type type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + heading.level - 1);
 			doc->buffer.add_marker(heading.offset, type, wxString::FromUTF8(heading.text), wxString(), heading.level);
 		}
-
 		doc->toc_items = build_toc_from_headings(doc->buffer);
 		return doc;
 	} catch (const Poco::Exception& e) {
@@ -110,19 +94,13 @@ std::unique_ptr<document> docx_parser::load(const wxString& path) const {
 	}
 }
 
-
-
 void docx_parser::traverse(Node* node, wxString& text, std::vector<heading_info>& headings, document* doc, const std::map<std::string, std::string>& rels) const {
 	if (!node) return;
 	if (node->nodeType() == Node::ELEMENT_NODE) {
 		auto* element = static_cast<Element*>(node);
 		std::string localName = element->localName();
-
 		std::string id_attr = element->getAttributeNS(WORDML_NS, "id");
-		if (!id_attr.empty()) {
-			doc->id_positions[id_attr] = text.length();
-		}
-
+		if (!id_attr.empty()) doc->id_positions[id_attr] = text.length();
 		if (localName == "p") {
 			process_paragraph(element, text, headings, doc, rels);
 			return; // process_paragraph handles its children
@@ -136,9 +114,9 @@ void docx_parser::traverse(Node* node, wxString& text, std::vector<heading_info>
 }
 
 void docx_parser::process_paragraph(Element* element, wxString& text, std::vector<heading_info>& headings, document* doc, const std::map<std::string, std::string>& rels) const {
-    wxString paragraph_text;
+	wxString paragraph_text;
 	int heading_level = 0;
-    size_t paragraph_start_offset = text.length();
+	size_t paragraph_start_offset = text.length();
 	Node* child = element->firstChild();
 	while (child) {
 		if (child->nodeType() != Node::ELEMENT_NODE) {
@@ -156,11 +134,11 @@ void docx_parser::process_paragraph(Element* element, wxString& text, std::vecto
 				doc->id_positions[name_attr] = paragraph_start_offset + paragraph_text.length();
 			}
 		} else if (localName == "hyperlink") {
-            process_hyperlink(child_element, paragraph_text, doc, rels, paragraph_start_offset);
+			process_hyperlink(child_element, paragraph_text, doc, rels, paragraph_start_offset);
 		} else if (localName == "r") {
 			Element* instrTextElement = nullptr;
 			Node* node = child_element->firstChild();
-			while(node) {
+			while (node) {
 				if (node->nodeType() == Node::ELEMENT_NODE) {
 					Element* el = static_cast<Element*>(node);
 					if (el->localName() == "instrText" && el->namespaceURI() == WORDML_NS) {
@@ -181,12 +159,12 @@ void docx_parser::process_paragraph(Element* element, wxString& text, std::vecto
 
 					Node* field_node = child->nextSibling();
 					bool in_display_text = false;
-					while(field_node) {
+					while (field_node) {
 						if (field_node->nodeType() == Node::ELEMENT_NODE && static_cast<Element*>(field_node)->localName() == "r") {
 							Element* field_run = static_cast<Element*>(field_node);
 							Element* fldCharElement = nullptr;
 							Node* node = field_run->firstChild();
-							while(node) {
+							while (node) {
 								if (node->nodeType() == Node::ELEMENT_NODE) {
 									Element* el = static_cast<Element*>(node);
 									if (el->localName() == "fldChar" && el->namespaceURI() == WORDML_NS) {
@@ -201,7 +179,7 @@ void docx_parser::process_paragraph(Element* element, wxString& text, std::vecto
 								if (type == "separate") {
 									in_display_text = true;
 								} else if (type == "end") {
-									break; 
+									break;
 								}
 							} else if (in_display_text) {
 								display_text_utf8 += get_run_text(field_run);
@@ -215,7 +193,7 @@ void docx_parser::process_paragraph(Element* element, wxString& text, std::vecto
 						paragraph_text += display_text_wx;
 						doc->buffer.add_link(paragraph_start_offset + link_offset_in_paragraph, display_text_wx, wxString::FromUTF8(link_target));
 					}
-					
+
 					child = field_node;
 					if (child) child = child->nextSibling();
 					continue;
@@ -241,16 +219,16 @@ void docx_parser::process_paragraph(Element* element, wxString& text, std::vecto
 }
 
 std::string docx_parser::parse_hyperlink_instruction(const std::string& instruction) const {
-    size_t first_quote = instruction.find('"');
-    size_t last_quote = instruction.rfind('"');
-    if (first_quote != std::string::npos && last_quote != std::string::npos && first_quote != last_quote) {
-        std::string target = instruction.substr(first_quote + 1, last_quote - first_quote - 1);
-        if (instruction.find("\\l") != std::string::npos) {
-            return "#" + target;
-        }
-        return target;
-    }
-    return "";
+	size_t first_quote = instruction.find('"');
+	size_t last_quote = instruction.rfind('"');
+	if (first_quote != std::string::npos && last_quote != std::string::npos && first_quote != last_quote) {
+		std::string target = instruction.substr(first_quote + 1, last_quote - first_quote - 1);
+		if (instruction.find("\\l") != std::string::npos) {
+			return "#" + target;
+		}
+		return target;
+	}
+	return "";
 }
 
 void docx_parser::process_hyperlink(Element* element, wxString& text, document* doc, const std::map<std::string, std::string>& rels, size_t paragraph_start_offset) const {
@@ -338,7 +316,6 @@ int docx_parser::get_heading_level(Element* pr_element) const {
 	}
 	return 0;
 }
-
 
 std::string docx_parser::get_run_text(Element* run_element) const {
 	std::string run_text;

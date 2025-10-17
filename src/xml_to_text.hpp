@@ -35,7 +35,6 @@ public:
 	[[nodiscard]] const std::vector<link_info>& get_links() const noexcept { return links; }
 	void clear() noexcept;
 
-
 private:
 	std::vector<std::string> lines;
 	std::string current_line;

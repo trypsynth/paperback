@@ -136,34 +136,34 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 	} else {
 		for (auto* child = node->first_child; child; child = child->next) process_node(child);
 	}
-		if (is_element) {
-			if (tag_name == "a") {
-				if (in_link) {
-					in_link = false;
-					if (!current_link_text.empty()) {
-						links.push_back({link_start_pos, trim_string(collapse_whitespace(current_link_text)), current_link_href});
-						current_line += current_link_text;
-					}
-					current_link_href.clear();
-					current_link_text.clear();
-					link_start_pos = 0;
+	if (is_element) {
+		if (tag_name == "a") {
+			if (in_link) {
+				in_link = false;
+				if (!current_link_text.empty()) {
+					links.push_back({link_start_pos, trim_string(collapse_whitespace(current_link_text)), current_link_href});
+					current_line += current_link_text;
 				}
+				current_link_href.clear();
+				current_link_text.clear();
+				link_start_pos = 0;
 			}
-			if (tag_name == "a") {
-				size_t href_len;
-				const lxb_char_t* href_attr = lxb_dom_element_get_attribute(lxb_dom_interface_element(node), (const lxb_char_t*)"href", 4, &href_len);
-				if (href_attr && href_len > 0) {
-					std::string href{reinterpret_cast<const char*>(href_attr), href_len};
-					std::string link_text = current_line.substr(link_start_pos);
-					if (!link_text.empty()) {
-						links.push_back({link_start_pos, trim_string(collapse_whitespace(link_text)), href});
-					}
-				}
-			}
-			if (tag_name == "pre") preserve_whitespace = false;
-			if (tag_name == "code") in_code = false;
-			if (is_block_element(tag_name)) finalize_current_line();
 		}
+		if (tag_name == "a") {
+			size_t href_len;
+			const lxb_char_t* href_attr = lxb_dom_element_get_attribute(lxb_dom_interface_element(node), (const lxb_char_t*)"href", 4, &href_len);
+			if (href_attr && href_len > 0) {
+				std::string href{reinterpret_cast<const char*>(href_attr), href_len};
+				std::string link_text = current_line.substr(link_start_pos);
+				if (!link_text.empty()) {
+					links.push_back({link_start_pos, trim_string(collapse_whitespace(link_text)), href});
+				}
+			}
+		}
+		if (tag_name == "pre") preserve_whitespace = false;
+		if (tag_name == "code") in_code = false;
+		if (is_block_element(tag_name)) finalize_current_line();
+	}
 }
 
 void html_to_text::process_text_node(lxb_dom_text_t* text_node) {

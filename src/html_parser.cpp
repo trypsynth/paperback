@@ -31,7 +31,7 @@ std::unique_ptr<document> html_parser::load(const wxString& path) const {
 	const auto& headings = converter.get_headings();
 	const auto& links = converter.get_links();
 	doc->buffer.set_content(wxString::FromUTF8(text));
-	
+
 	for (const auto& pair : converter.get_id_positions()) {
 		doc->id_positions[pair.first] = pair.second;
 	}
