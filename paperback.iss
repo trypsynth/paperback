@@ -24,6 +24,7 @@
 	Source: "build\paperback.exe"; DestDir: "{app}"; Flags: ignoreversion
 	Source: "build\*.dll"; DestDir: "{app}"; Flags: ignoreversion
 	Source: "build\readme.html"; DestDir: "{app}"; Flags: ignoreversion
+	Source: "build\langs\*"; DestDir: "{app}\langs"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Tasks]
 	Name: "desktopicon"; Description: "Desktop Shortcut"
