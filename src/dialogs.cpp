@@ -432,6 +432,8 @@ options_dialog::options_dialog(wxWindow* parent) : dialog(parent, _("Options")) 
 	general_box->Add(word_wrap_check, 0, wxALL, 5);
 	minimize_to_tray_check = new wxCheckBox(this, wxID_ANY, _("&Minimize to system tray"));
 	general_box->Add(minimize_to_tray_check, 0, wxALL, 5);
+	open_in_new_window_check = new wxCheckBox(this, wxID_ANY, _("Open documents in a &new window"));
+	general_box->Add(open_in_new_window_check, 0, wxALL, 5);
 	auto* recent_docs_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* recent_docs_label = new wxStaticText(this, wxID_ANY, _("Number of &recent documents to show:"));
 	recent_docs_count_spin = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 100, 10);
@@ -475,6 +477,14 @@ bool options_dialog::get_minimize_to_tray() const {
 
 void options_dialog::set_minimize_to_tray(bool minimize) {
 	if (minimize_to_tray_check) minimize_to_tray_check->SetValue(minimize);
+}
+
+bool options_dialog::get_open_in_new_window() const {
+	return open_in_new_window_check ? open_in_new_window_check->GetValue() : false;
+}
+
+void options_dialog::set_open_in_new_window(bool open_in_new_window) {
+	if (open_in_new_window_check) open_in_new_window_check->SetValue(open_in_new_window);
 }
 
 int options_dialog::get_recent_documents_to_show() const {

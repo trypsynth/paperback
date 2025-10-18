@@ -188,6 +188,20 @@ void config_manager::set_minimize_to_tray(bool minimize) {
 	});
 }
 
+bool config_manager::get_open_in_new_window() const {
+	bool result = false;
+	with_app_section([this, &result]() {
+		result = config->ReadBool("open_in_new_window", false);
+	});
+	return result;
+}
+
+void config_manager::set_open_in_new_window(bool open_in_new_window) {
+	with_app_section([this, open_in_new_window]() {
+		config->Write("open_in_new_window", open_in_new_window);
+	});
+}
+
 wxString config_manager::get_language() const {
 	wxString result = "";
 	with_app_section([this, &result]() {
@@ -564,6 +578,7 @@ void config_manager::load_defaults() {
 	if (!config->HasEntry("restore_previous_documents")) config->Write("restore_previous_documents", true);
 	if (!config->HasEntry("word_wrap")) config->Write("word_wrap", false);
 	if (!config->HasEntry("minimize_to_tray")) config->Write("minimize_to_tray", false);
+	if (!config->HasEntry("open_in_new_window")) config->Write("open_in_new_window", false);
 	if (!config->HasEntry("recent_documents_to_show")) config->Write("recent_documents_to_show", 25);
 	if (get_config_version() != CONFIG_VERSION_CURRENT) set_config_version(CONFIG_VERSION_CURRENT);
 	config->SetPath("/");

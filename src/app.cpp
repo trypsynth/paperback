@@ -62,12 +62,12 @@ bool app::OnInit() {
 	}
 	ipc_server = std::make_unique<paperback_server>();
 	if (!ipc_server->Create(IPC_SERVICE)) wxMessageBox(_("Failed to create IPC server"), _("Warning"), wxICON_WARNING);
-	frame = new main_window();
 	if (config_mgr.get_restore_previous_documents())
 		restore_previous_documents();
 	if (argc > 1)
 		parse_command_line();
-	frame->Show(true);
+	if (frames.empty())
+		create_new_window();
 	return true;
 }
 
@@ -85,6 +85,11 @@ void app::parse_command_line() {
 		wxMessageBox(wxString::Format(_("File not found: %s"), path), _("Error"), wxICON_ERROR);
 		return;
 	}
+	if (config_mgr.get_open_in_new_window()) {
+		create_new_window(path);
+		return;
+	}
+	main_window* frame = frames.empty() ? create_new_window() : frames.back();
 	auto* doc_manager = frame->get_doc_manager();
 	const int existing_tab = doc_manager->find_tab_by_path(path);
 	if (existing_tab >= 0) {
@@ -105,42 +110,56 @@ void app::parse_command_line() {
 
 void app::restore_previous_documents() {
 	wxArrayString opened_docs = config_mgr.get_all_opened_documents();
-	auto* doc_manager = frame->get_doc_manager();
-	wxString active_doc = config_mgr.get_active_document();
-	for (const auto& path : opened_docs) {
-		if (!wxFileName::FileExists(path)) continue;
-		const int existing_tab = doc_manager->find_tab_by_path(path);
-		if (existing_tab >= 0) continue;
-		auto* par = find_parser_by_extension(wxFileName(path).GetExt());
-		if (!par) {
-			par = get_parser_for_unknown_file(path, config_mgr);
-			if (!par) continue;
+	if (config_mgr.get_open_in_new_window()) {
+		for (const auto& path : opened_docs) {
+			if (!wxFileName::FileExists(path)) continue;
+			create_new_window(path);
 		}
-		if (!doc_manager->create_document_tab(path, par, false)) continue;
-	}
-	doc_manager->update_ui();
-	if (!active_doc.IsEmpty() && wxFileName::FileExists(active_doc)) {
-		const int active_tab = doc_manager->find_tab_by_path(active_doc);
-		if (active_tab >= 0) {
-			frame->get_notebook()->SetSelection(active_tab);
+	} else {
+		if (opened_docs.IsEmpty()) return;
+		main_window* frame = frames.empty() ? create_new_window() : frames.front();
+		auto* doc_manager = frame->get_doc_manager();
+		wxString active_doc = config_mgr.get_active_document();
+		for (const auto& path : opened_docs) {
+			if (!wxFileName::FileExists(path)) continue;
+			const int existing_tab = doc_manager->find_tab_by_path(path);
+			if (existing_tab >= 0) continue;
+			auto* par = find_parser_by_extension(wxFileName(path).GetExt());
+			if (!par) {
+				par = get_parser_for_unknown_file(path, config_mgr);
+				if (!par) continue;
+			}
+			if (!doc_manager->create_document_tab(path, par, false)) continue;
+		}
+		doc_manager->update_ui();
+		if (!active_doc.IsEmpty() && wxFileName::FileExists(active_doc)) {
+			const int active_tab = doc_manager->find_tab_by_path(active_doc);
+			if (active_tab >= 0) {
+				frame->get_notebook()->SetSelection(active_tab);
+				auto* const text_ctrl = doc_manager->get_active_text_ctrl();
+				if (text_ctrl) text_ctrl->SetFocus();
+			}
+		} else if (doc_manager->has_documents()) {
 			auto* const text_ctrl = doc_manager->get_active_text_ctrl();
 			if (text_ctrl) text_ctrl->SetFocus();
 		}
-	} else if (doc_manager->has_documents()) {
-		auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-		if (text_ctrl) text_ctrl->SetFocus();
 	}
 }
 
 void app::open_file(const wxString& filename) {
 	if (filename == IPC_COMMAND_ACTIVATE) {
-		if (frame) frame->Raise();
+		if (!frames.empty()) frames.back()->Raise();
 		return;
 	}
 	if (!wxFileName::FileExists(filename)) {
 		wxMessageBox(wxString::Format(_("File not found: %s"), filename), _("Error"), wxICON_ERROR);
 		return;
 	}
+	if (config_mgr.get_open_in_new_window()) {
+		create_new_window(filename);
+		return;
+	}
+	main_window* frame = frames.empty() ? create_new_window() : frames.back();
 	auto* doc_manager = frame->get_doc_manager();
 	const int existing_tab = doc_manager->find_tab_by_path(filename);
 	if (existing_tab >= 0) {
@@ -161,6 +180,30 @@ void app::open_file(const wxString& filename) {
 	else {
 		frame->Raise();
 		frame->RequestUserAttention();
+	}
+}
+
+main_window* app::create_new_window(const wxString& path) {
+	main_window* frame = new main_window();
+	frames.push_back(frame);
+	if (!path.IsEmpty()) {
+		auto* doc_manager = frame->get_doc_manager();
+		auto* par = find_parser_by_extension(wxFileName(path).GetExt());
+		if (!par) {
+			par = get_parser_for_unknown_file(path, config_mgr);
+		}
+		if (par) {
+			[[maybe_unused]] bool success = doc_manager->create_document_tab(path, par);
+		}
+	}
+	frame->Show(true);
+	return frame;
+}
+
+void app::remove_window(main_window* frame) {
+	frames.erase(std::remove(frames.begin(), frames.end(), frame), frames.end());
+	if (frames.empty()) {
+		Exit();
 	}
 }
 
