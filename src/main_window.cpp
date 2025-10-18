@@ -230,7 +230,7 @@ void main_window::on_iconize(wxIconizeEvent& event) {
 		auto& config_mgr = wxGetApp().get_config_manager();
 		if (config_mgr.get_minimize_to_tray()) {
 			Hide();
-			task_bar_icon_->SetIcon(wxICON(wxICON_INFORMATION), APP_NAME);
+			task_bar_icon_->SetIcon(wxICON(wxICON_INFORMATION), GetTitle());
 		}
 	}
 	event.Skip();
@@ -298,7 +298,11 @@ void main_window::on_open(wxCommandEvent&) {
 		return;
 	}
 	const auto path = dlg.GetPath();
-	[[maybe_unused]] bool success = doc_manager->open_file(path);
+	if (wxGetApp().get_config_manager().get_open_in_new_window() && doc_manager->has_documents()) {
+		wxGetApp().create_new_window(path);
+	} else {
+		[[maybe_unused]] bool success = doc_manager->open_file(path);
+	}
 }
 
 void main_window::on_close(wxCommandEvent&) {
@@ -526,6 +530,7 @@ void main_window::on_options(wxCommandEvent&) {
 	dlg.set_restore_previous_documents(config_mgr.get_restore_previous_documents());
 	dlg.set_word_wrap(config_mgr.get_word_wrap());
 	dlg.set_minimize_to_tray(config_mgr.get_minimize_to_tray());
+	dlg.set_open_in_new_window(config_mgr.get_open_in_new_window());
 	dlg.set_compact_go_menu(config_mgr.get_compact_go_menu());
 	dlg.set_recent_documents_to_show(config_mgr.get_recent_documents_to_show());
 	wxString current_language = translation_manager::instance().get_current_language();
@@ -541,6 +546,7 @@ void main_window::on_options(wxCommandEvent&) {
 	config_mgr.set_restore_previous_documents(dlg.get_restore_previous_documents());
 	config_mgr.set_word_wrap(new_word_wrap);
 	config_mgr.set_minimize_to_tray(dlg.get_minimize_to_tray());
+	config_mgr.set_open_in_new_window(dlg.get_open_in_new_window());
 	config_mgr.set_compact_go_menu(new_compact_menu);
 	config_mgr.set_recent_documents_to_show(dlg.get_recent_documents_to_show());
 	config_mgr.set_language(new_language);
@@ -651,6 +657,7 @@ void main_window::save_position_immediately() {
 }
 
 void main_window::on_close_window(wxCloseEvent& event) {
+	wxGetApp().remove_window(this);
 	if (doc_manager->has_documents()) {
 		auto* active_tab = doc_manager->get_active_tab();
 		if (active_tab) {

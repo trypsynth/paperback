@@ -11,6 +11,7 @@
 #include "config_manager.hpp"
 #include "main_window.hpp"
 #include <memory>
+#include <vector>
 #include <wx/ipc.h>
 #include <wx/snglinst.h>
 #include <wx/wx.h>
@@ -42,9 +43,11 @@ public:
 	void restore_previous_documents();
 	[[nodiscard]] config_manager& get_config_manager() { return config_mgr; }
 	void open_file(const wxString& filename);
+	main_window* create_new_window(const wxString& path = "");
+	void remove_window(main_window* frame);
 
 private:
-	main_window* frame{nullptr};
+	std::vector<main_window*> frames;
 	config_manager config_mgr;
 	std::unique_ptr<wxSingleInstanceChecker> single_instance_checker;
 	std::unique_ptr<paperback_server> ipc_server;
