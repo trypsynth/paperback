@@ -98,7 +98,6 @@ void all_documents_dialog::on_remove(wxCommandEvent& event) {
 	}
 	wxString path_to_remove = doc_list->GetItemText(item, 2);
 	long removed_index = item;
-	long total_items = doc_list->GetItemCount();
 	config_mgr.remove_document_history(path_to_remove);
 	config_mgr.flush();
 	populate_document_list();

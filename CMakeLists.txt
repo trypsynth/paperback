@@ -17,6 +17,13 @@ if(MSVC)
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()
 
+find_program(CLANG_TIDY_EXE NAMES clang-tidy)
+if(CLANG_TIDY_EXE)
+	set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE};-warnings-as-errors=*;--header-filter=^${CMAKE_SOURCE_DIR}/src/;--extra-arg=/EHsc")
+else()
+	message(WARNING "clang-tidy not found, skipping static analysis.")
+endif()
+
 find_package(chmlib CONFIG REQUIRED)
 find_package(lexbor CONFIG REQUIRED)
 find_package(maddy CONFIG REQUIRED)
