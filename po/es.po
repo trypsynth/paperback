@@ -254,10 +254,6 @@ msgstr "&Ajuste de texto"
 msgid "&Minimize to system tray"
 msgstr "&Minimizar a la bandeja del sistema"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:462
-msgid "Show compact &go menu"
-msgstr ""
-
 #: C:/Users/Quin/git/paperback/src/dialogs.cpp:465
 msgid "Number of &recent documents to show:"
 msgstr "Número de documentos &recientes a mostrar:"
@@ -333,46 +329,17 @@ msgstr "Marcador %d: %s"
 msgid "No next bookmark"
 msgstr "No hay siguiente marcador"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:369
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:392
-msgid "No links."
-msgstr ""
-
 #: C:/Users/Quin/git/paperback/src/document_manager.cpp:375
-#, fuzzy
 msgid "No previous link."
-msgstr "No hay sección anterior"
-
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:381
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:404
-msgid " link"
-msgstr ""
-
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:398
-#, fuzzy
-msgid "No next link."
-msgstr "No hay siguiente sección"
+msgstr "No hay sección anterior."
 
 #: C:/Users/Quin/git/paperback/src/document_manager.cpp:433
-#, fuzzy
 msgid "Opening link in default browser."
 msgstr "Ver &ayuda en el navegador predeterminado\tF1"
 
 #: C:/Users/Quin/git/paperback/src/document_manager.cpp:435
-#, fuzzy
 msgid "Failed to open link."
 msgstr "No se pudo cargar el documento."
-
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:442
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:453
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:470
-msgid "Navigated to internal link."
-msgstr ""
-
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:444
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:474
-msgid "Internal link target not found."
-msgstr ""
 
 #: C:/Users/Quin/git/paperback/src/document_manager.cpp:489
 msgid "Bookmark removed"
@@ -527,12 +494,10 @@ msgid "Next section\t]"
 msgstr "Siguiente sección\t]"
 
 #: C:/Users/Quin/git/paperback/src/main_window.cpp:107
-#, fuzzy
 msgid "&Sections"
 msgstr "Sin secciones."
 
 #: C:/Users/Quin/git/paperback/src/main_window.cpp:110
-#, fuzzy
 msgid "&Headings"
 msgstr "Sin encabezados."
 
@@ -550,10 +515,6 @@ msgstr "&Página anterior\tShift+P"
 #: C:/Users/Quin/git/paperback/src/main_window.cpp:136
 msgid "&Next page\tP"
 msgstr "&Siguiente página\tP"
-
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:116
-msgid "&Pages"
-msgstr ""
 
 #: C:/Users/Quin/git/paperback/src/main_window.cpp:118
 #: C:/Users/Quin/git/paperback/src/main_window.cpp:138
@@ -576,25 +537,18 @@ msgid "Jump to bookmark...\tCtrl+B"
 msgstr "Ir al marcador...\tCtrl+B"
 
 #: C:/Users/Quin/git/paperback/src/main_window.cpp:122
-#, fuzzy
 msgid "&Bookmarks"
 msgstr "Marcador: %s"
 
 #: C:/Users/Quin/git/paperback/src/main_window.cpp:124
 #: C:/Users/Quin/git/paperback/src/main_window.cpp:143
-#, fuzzy
 msgid "Previous lin&k\tShift+K"
 msgstr "Encabezado anterior\tShift+H"
 
 #: C:/Users/Quin/git/paperback/src/main_window.cpp:125
 #: C:/Users/Quin/git/paperback/src/main_window.cpp:144
-#, fuzzy
 msgid "Next lin&k\tK"
 msgstr "Siguiente encabezado\tH"
-
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:126
-msgid "&Links"
-msgstr ""
 
 #: C:/Users/Quin/git/paperback/src/main_window.cpp:151
 msgid "&Word count\tCtrl+W"
@@ -700,10 +654,6 @@ msgstr "Mostrar menú compacto de &ir"
 msgid "No links."
 msgstr "Sin enlaces."
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:375
-msgid "No previous link."
-msgstr "No hay enlace anterior."
-
 #: C:/Users/Quin/git/paperback/src/document_manager.cpp:381
 #: C:/Users/Quin/git/paperback/src/document_manager.cpp:404
 msgid " link"
@@ -712,14 +662,6 @@ msgstr " enlace"
 #: C:/Users/Quin/git/paperback/src/document_manager.cpp:398
 msgid "No next link."
 msgstr "No hay siguiente enlace."
-
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:433
-msgid "Opening link in default browser."
-msgstr "Abriendo enlace en el navegador predeterminado."
-
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:435
-msgid "Failed to open link."
-msgstr "No se pudo abrir el enlace."
 
 #: C:/Users/Quin/git/paperback/src/document_manager.cpp:442
 #: C:/Users/Quin/git/paperback/src/document_manager.cpp:453
@@ -731,31 +673,3 @@ msgstr "Navegó a un enlace interno."
 #: C:/Users/Quin/git/paperback/src/document_manager.cpp:474
 msgid "Internal link target not found."
 msgstr "Destino del enlace interno no encontrado."
-
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:107
-msgid "&Sections"
-msgstr "&Secciones"
-
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:110
-msgid "&Headings"
-msgstr "&Encabezados"
-
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:116
-msgid "&Pages"
-msgstr "&Páginas"
-
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:122
-msgid "&Bookmarks"
-msgstr "&Marcadores"
-
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:124
-msgid "Previous lin&k\tShift+K"
-msgstr "Enlace anterior\tShift+K"
-
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:125
-msgid "Next lin&k\tK"
-msgstr "Siguiente enlace\tK"
-
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:126
-msgid "&Links"
-msgstr "&Enlaces"
