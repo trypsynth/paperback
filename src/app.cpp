@@ -156,8 +156,11 @@ void app::open_file(const wxString& filename) {
 		return;
 	}
 	if (config_mgr.get_open_in_new_window()) {
-		create_new_window(filename);
-		return;
+		main_window* frame = frames.empty() ? nullptr : frames.back();
+		if (frame && frame->get_doc_manager()->has_documents()) {
+			create_new_window(filename);
+			return;
+		}
 	}
 	main_window* frame = frames.empty() ? create_new_window() : frames.back();
 	auto* doc_manager = frame->get_doc_manager();
@@ -175,9 +178,9 @@ void app::open_file(const wxString& filename) {
 		par = get_parser_for_unknown_file(filename, config_mgr);
 		if (!par) return;
 	}
-	if (!doc_manager->create_document_tab(filename, par))
+	if (!doc_manager->create_document_tab(filename, par)) {
 		wxMessageBox(_("Failed to load document."), _("Error"), wxICON_ERROR);
-	else {
+	} else {
 		frame->Raise();
 		frame->RequestUserAttention();
 	}

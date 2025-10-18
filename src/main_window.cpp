@@ -267,7 +267,7 @@ void main_window::on_open(wxCommandEvent&) {
 	wxFileDialog dlg(this, _("Select a document to read"), "", "", get_supported_wildcards(), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 	if (dlg.ShowModal() != wxID_OK) return;
 	const auto path = dlg.GetPath();
-	if (wxGetApp().get_config_manager().get_open_in_new_window()) {
+	if (wxGetApp().get_config_manager().get_open_in_new_window() && doc_manager->has_documents()) {
 		wxGetApp().create_new_window(path);
 	} else {
 		[[maybe_unused]] bool success = doc_manager->open_file(path);
