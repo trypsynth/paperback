@@ -24,7 +24,9 @@ translation_manager::translation_manager() {
 }
 
 bool translation_manager::initialize() {
-	if (initialized) return true;
+	if (initialized) {
+		return true;
+	}
 	translations = new wxTranslations();
 	wxTranslations::Set(translations);
 	wxString exe_path = wxStandardPaths::Get().GetExecutablePath();
@@ -35,19 +37,25 @@ bool translation_manager::initialize() {
 	translations->AddCatalog("paperback");
 	scan_available_languages();
 	wxString sys_lang = get_system_language();
-	if (is_language_available(sys_lang))
+	if (is_language_available(sys_lang)) {
 		current_language = sys_lang;
-	else
+	} else {
 		current_language = "en";
-	if (current_language != "en")
+	}
+	if (current_language != "en") {
 		translations->SetLanguage(current_language);
+	}
 	initialized = true;
 	return true;
 }
 
 bool translation_manager::set_language(const wxString& language_code) {
-	if (!initialized) return false;
-	if (!is_language_available(language_code)) return false;
+	if (!initialized) {
+		return false;
+	}
+	if (!is_language_available(language_code)) {
+		return false;
+	}
 	current_language = language_code;
 	translations = new wxTranslations();
 	// Calling Set() deletes the previous object automatically. Remove this and we crash. Yay C++!
@@ -58,7 +66,9 @@ bool translation_manager::set_language(const wxString& language_code) {
 	wxFileTranslationsLoader::AddCatalogLookupPathPrefix(langs_dir);
 	translations->SetLanguage(language_code);
 	translations->AddStdCatalog();
-	if (language_code != "en") translations->AddCatalog("paperback");
+	if (language_code != "en") {
+		translations->AddCatalog("paperback");
+	}
 	return true;
 }
 
@@ -71,16 +81,20 @@ std::vector<language_info> translation_manager::get_available_languages() const 
 }
 
 wxString translation_manager::get_language_display_name(const wxString& language_code) const {
-	for (const auto& lang : available_languages)
-		if (lang.code == language_code)
+	for (const auto& lang : available_languages) {
+		if (lang.code == language_code) {
 			return lang.native_name;
+		}
+	}
 	return language_code;
 }
 
 bool translation_manager::is_language_available(const wxString& language_code) const {
-	for (const auto& lang : available_languages)
-		if (lang.code == language_code)
+	for (const auto& lang : available_languages) {
+		if (lang.code == language_code) {
 			return true;
+		}
+	}
 	return false;
 }
 
@@ -88,9 +102,13 @@ void translation_manager::scan_available_languages() {
 	wxString exe_path = wxStandardPaths::Get().GetExecutablePath();
 	wxFileName exe_file(exe_path);
 	wxString langs_dir = exe_file.GetPath() + wxFileName::GetPathSeparator() + "langs";
-	if (!wxDir::Exists(langs_dir)) return;
+	if (!wxDir::Exists(langs_dir)) {
+		return;
+	}
 	wxDir dir(langs_dir);
-	if (!dir.IsOpened()) return;
+	if (!dir.IsOpened()) {
+		return;
+	}
 	wxString dirname;
 	bool cont = dir.GetFirst(&dirname, "", wxDIR_DIRS);
 	static const std::unordered_map<std::string, std::pair<std::string, std::string>> language_names = {
@@ -110,6 +128,7 @@ void translation_manager::scan_available_languages() {
 		{"pl", {"Polish", "Polski"}},
 		{"pt", {"Portuguese", "Português"}},
 		{"ru", {"Russian", "Русский"}},
+		{"sr", {"Serbian", "Српски"}},
 		{"sv", {"Swedish", "Svenska"}},
 		{"tr", {"Turkish", "Türkçe"}},
 		{"zh_CN", {"Chinese (Simplified)", "简体中文"}},

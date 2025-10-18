@@ -19,12 +19,16 @@ dialog::dialog(wxWindow* parent, const wxString& title, dialog_button_config but
 }
 
 void dialog::set_content(wxSizer* content_sizer) {
-	if (layout_finalized) return;
+	if (layout_finalized) {
+		return;
+	}
 	main_sizer->Add(content_sizer, 1, wxEXPAND | wxALL, 10);
 }
 
 void dialog::finalize_layout() {
-	if (layout_finalized) return;
+	if (layout_finalized) {
+		return;
+	}
 	create_buttons();
 	main_sizer->Add(button_sizer, 0, wxALIGN_RIGHT | wxALL, 10);
 	SetSizerAndFit(main_sizer);
@@ -36,8 +40,9 @@ void dialog::create_buttons() {
 	button_sizer = new wxStdDialogButtonSizer();
 	auto* ok_button = new wxButton(this, wxID_OK);
 	button_sizer->AddButton(ok_button);
-	if (button_config == dialog_button_config::ok_cancel)
+	if (button_config == dialog_button_config::ok_cancel) {
 		button_sizer->AddButton(new wxButton(this, wxID_CANCEL));
+	}
 	ok_button->SetDefault();
 	button_sizer->Realize();
 }
@@ -85,8 +90,12 @@ void all_documents_dialog::on_open(wxCommandEvent& event) {
 
 void all_documents_dialog::on_remove(wxCommandEvent& event) {
 	long item = doc_list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-	if (item == -1) return;
-	if (wxMessageBox(_("Are you sure you want to remove this document from the list? This will also remove its reading position."), _("Confirm"), wxYES_NO | wxICON_INFORMATION) != wxYES) return;
+	if (item == -1) {
+		return;
+	}
+	if (wxMessageBox(_("Are you sure you want to remove this document from the list? This will also remove its reading position."), _("Confirm"), wxYES_NO | wxICON_INFORMATION) != wxYES) {
+		return;
+	}
 	wxString path_to_remove = doc_list->GetItemText(item, 2);
 	long removed_index = item;
 	long total_items = doc_list->GetItemCount();
@@ -95,7 +104,9 @@ void all_documents_dialog::on_remove(wxCommandEvent& event) {
 	populate_document_list();
 	if (doc_list->GetItemCount() > 0) {
 		long new_selection = removed_index;
-		if (new_selection >= doc_list->GetItemCount()) new_selection = doc_list->GetItemCount() - 1;
+		if (new_selection >= doc_list->GetItemCount()) {
+			new_selection = doc_list->GetItemCount() - 1;
+		}
 		doc_list->SetItemState(new_selection, wxLIST_STATE_SELECTED | wxLIST_STATE_FOCUSED, wxLIST_STATE_SELECTED | wxLIST_STATE_FOCUSED);
 		doc_list->EnsureVisible(new_selection);
 	}
@@ -121,8 +132,9 @@ void all_documents_dialog::on_key_down(wxKeyEvent& event) {
 	if (event.GetKeyCode() == WXK_DELETE) {
 		wxCommandEvent remove_event(wxEVT_BUTTON, wxID_REMOVE);
 		wxPostEvent(this, remove_event);
-	} else
+	} else {
 		event.Skip();
+	}
 }
 
 void all_documents_dialog::populate_document_list() {
@@ -133,12 +145,13 @@ void all_documents_dialog::populate_document_list() {
 		wxFileName fn(path);
 		long index = doc_list->InsertItem(doc_list->GetItemCount(), fn.GetFullName());
 		wxString status;
-		if (!wxFileName::FileExists(path))
+		if (!wxFileName::FileExists(path)) {
 			status = _("Missing");
-		else if (open_doc_paths.Index(path) != wxNOT_FOUND)
+		} else if (open_doc_paths.Index(path) != wxNOT_FOUND) {
 			status = _("Open");
-		else
+		} else {
 			status = _("Closed");
+		}
 		doc_list->SetItem(index, 1, status);
 		doc_list->SetItem(index, 2, path);
 	}
@@ -162,7 +175,9 @@ bookmark_dialog::bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks,
 		text_ctrl->PositionToXY(pos, 0, &line);
 		wxString line_text = text_ctrl->GetLineText(line);
 		line_text = line_text.Strip(wxString::both);
-		if (line_text.IsEmpty()) line_text = _("blank");
+		if (line_text.IsEmpty()) {
+			line_text = _("blank");
+		}
 		bookmark_list->Append(line_text);
 		if (current_pos >= 0) {
 			long distance = std::abs(pos - current_pos);
@@ -186,14 +201,17 @@ bookmark_dialog::bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks,
 
 void bookmark_dialog::on_list_selection_changed(wxCommandEvent& event) {
 	int selection = bookmark_list->GetSelection();
-	if (selection >= 0 && selection < static_cast<int>(bookmark_positions.GetCount())) selected_position = bookmark_positions[selection];
+	if (selection >= 0 && selection < static_cast<int>(bookmark_positions.GetCount())) {
+		selected_position = bookmark_positions[selection];
+	}
 }
 
 void bookmark_dialog::on_ok(wxCommandEvent& event) {
-	if (selected_position >= 0)
+	if (selected_position >= 0) {
 		EndModal(wxID_OK);
-	else
+	} else {
 		wxMessageBox(_("Please select a bookmark to jump to."), _("Error"), wxICON_ERROR);
+	}
 }
 
 document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc) : dialog(parent, _("Document Info"), dialog_button_config::ok_only) {
@@ -271,13 +289,17 @@ void find_dialog::set_find_text(const wxString& text) {
 }
 
 void find_dialog::add_to_history(const wxString& text) {
-	if (text.IsEmpty()) return;
+	if (text.IsEmpty()) {
+		return;
+	}
 	const int existing = find_what_combo->FindString(text);
-	if (existing != wxNOT_FOUND)
+	if (existing != wxNOT_FOUND) {
 		find_what_combo->Delete(existing);
+	}
 	find_what_combo->Insert(text, 0);
-	while (find_what_combo->GetCount() > MAX_FIND_HISTORY_SIZE)
+	while (find_what_combo->GetCount() > MAX_FIND_HISTORY_SIZE) {
 		find_what_combo->Delete(find_what_combo->GetCount() - 1);
+	}
 	find_what_combo->SetValue(text);
 }
 
@@ -330,8 +352,9 @@ go_to_line_dialog::go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : 
 
 long go_to_line_dialog::get_position() const {
 	long line = input_ctrl->GetValue();
-	if (line >= 1 && line <= textbox->GetNumberOfLines())
+	if (line >= 1 && line <= textbox->GetNumberOfLines()) {
 		return textbox->XYToPosition(0, line - 1);
+	}
 	return textbox->GetInsertionPoint();
 }
 
@@ -351,14 +374,19 @@ go_to_page_dialog::go_to_page_dialog(wxWindow* parent, document* doc, const pars
 
 int go_to_page_dialog::get_page_number() const {
 	long page = input_ctrl->GetValue();
-	if (page >= 1 && page <= get_max_page())
+	if (page >= 1 && page <= get_max_page()) {
 		return static_cast<int>(page);
+	}
 	return 1;
 }
 
 int go_to_page_dialog::get_max_page() const {
-	if (!doc_ || !parser_) return 1;
-	if (!parser_->has_flag(parser_flags::supports_pages)) return 1;
+	if (!doc_ || !parser_) {
+		return 1;
+	}
+	if (!parser_->has_flag(parser_flags::supports_pages)) {
+		return 1;
+	}
 	return static_cast<int>(doc_->buffer.count_markers_by_type(marker_type::page_break));
 }
 
@@ -444,8 +472,9 @@ options_dialog::options_dialog(wxWindow* parent) : dialog(parent, _("Options")) 
 	auto* language_label = new wxStaticText(this, wxID_ANY, _("&Language:"));
 	language_combo = new wxComboBox(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, 0, nullptr, wxCB_READONLY);
 	auto available_languages = translation_manager::instance().get_available_languages();
-	for (const auto& lang : available_languages)
+	for (const auto& lang : available_languages) {
 		language_combo->Append(lang.native_name, new wxStringClientData(lang.code));
+	}
 	language_sizer->Add(language_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
 	language_sizer->Add(language_combo, 0, wxALIGN_CENTER_VERTICAL);
 	general_box->Add(language_sizer, 0, wxALL, 5);
@@ -460,7 +489,9 @@ bool options_dialog::get_restore_previous_documents() const {
 }
 
 void options_dialog::set_restore_previous_documents(bool restore) {
-	if (restore_docs_check) restore_docs_check->SetValue(restore);
+	if (restore_docs_check) {
+		restore_docs_check->SetValue(restore);
+	}
 }
 
 bool options_dialog::get_word_wrap() const {
@@ -468,7 +499,9 @@ bool options_dialog::get_word_wrap() const {
 }
 
 void options_dialog::set_word_wrap(bool word_wrap) {
-	if (word_wrap_check) word_wrap_check->SetValue(word_wrap);
+	if (word_wrap_check) {
+		word_wrap_check->SetValue(word_wrap);
+	}
 }
 
 bool options_dialog::get_minimize_to_tray() const {
@@ -476,7 +509,9 @@ bool options_dialog::get_minimize_to_tray() const {
 }
 
 void options_dialog::set_minimize_to_tray(bool minimize) {
-	if (minimize_to_tray_check) minimize_to_tray_check->SetValue(minimize);
+	if (minimize_to_tray_check) {
+		minimize_to_tray_check->SetValue(minimize);
+	}
 }
 
 bool options_dialog::get_open_in_new_window() const {
@@ -492,19 +527,27 @@ int options_dialog::get_recent_documents_to_show() const {
 }
 
 void options_dialog::set_recent_documents_to_show(int count) {
-	if (recent_docs_count_spin) recent_docs_count_spin->SetValue(count);
+	if (recent_docs_count_spin) {
+		recent_docs_count_spin->SetValue(count);
+	}
 }
 
 wxString options_dialog::get_language() const {
-	if (!language_combo) return wxString("");
+	if (!language_combo) {
+		return wxString("");
+	}
 	int selection = language_combo->GetSelection();
-	if (selection == wxNOT_FOUND) return wxString("");
+	if (selection == wxNOT_FOUND) {
+		return wxString("");
+	}
 	wxStringClientData* data = static_cast<wxStringClientData*>(language_combo->GetClientObject(selection));
 	return data ? data->GetData() : wxString("");
 }
 
 void options_dialog::set_language(const wxString& language) {
-	if (!language_combo) return;
+	if (!language_combo) {
+		return;
+	}
 	for (unsigned int i = 0; i < language_combo->GetCount(); ++i) {
 		wxStringClientData* data = static_cast<wxStringClientData*>(language_combo->GetClientObject(i));
 		if (data && data->GetData() == language) {
@@ -526,7 +569,9 @@ toc_dialog::toc_dialog(wxWindow* parent, const document* doc, int current_offset
 	tree = new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTR_HIDE_ROOT);
 	wxTreeItemId root = tree->AddRoot(_("Root"));
 	populate_tree(doc->toc_items, root);
-	if (current_offset != -1) find_and_select_item(root, current_offset);
+	if (current_offset != -1) {
+		find_and_select_item(root, current_offset);
+	}
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	content_sizer->Add(tree, 1, wxEXPAND);
 	set_content(content_sizer);
@@ -541,8 +586,9 @@ void toc_dialog::populate_tree(const std::vector<std::unique_ptr<toc_item>>& ite
 		wxString display_text = item->name.IsEmpty() ? wxString(_("Untitled")) : item->name;
 		wxTreeItemId item_id = tree->AppendItem(parent, display_text);
 		tree->SetItemData(item_id, new toc_tree_item_data(item->offset));
-		if (!item->children.empty())
+		if (!item->children.empty()) {
 			populate_tree(item->children, item_id);
+		}
 	}
 }
 
@@ -557,27 +603,34 @@ void toc_dialog::find_and_select_item(const wxTreeItemId& parent, int offset) {
 			selected_offset = data->offset;
 			return;
 		}
-		if (tree->ItemHasChildren(item_id))
+		if (tree->ItemHasChildren(item_id)) {
 			find_and_select_item(item_id, offset);
+		}
 	}
 }
 
 void toc_dialog::on_tree_selection_changed(wxTreeEvent& event) {
 	const wxTreeItemId item = event.GetItem();
-	if (!item.IsOk()) return;
+	if (!item.IsOk()) {
+		return;
+	}
 	auto* data = dynamic_cast<toc_tree_item_data*>(tree->GetItemData(item));
-	if (!data) return;
+	if (!data) {
+		return;
+	}
 	selected_offset = data->offset;
 }
 
 void toc_dialog::on_tree_item_activated(wxTreeEvent& event) {
-	if (selected_offset >= 0)
+	if (selected_offset >= 0) {
 		EndModal(wxID_OK);
+	}
 }
 
 void toc_dialog::on_ok(wxCommandEvent& event) {
-	if (selected_offset >= 0)
+	if (selected_offset >= 0) {
 		EndModal(wxID_OK);
-	else
+	} else {
 		wxMessageBox(_("Please select a section from the table of contents."), _("No Selection"), wxOK | wxICON_INFORMATION, this);
+	}
 }

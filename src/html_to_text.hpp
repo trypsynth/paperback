@@ -47,7 +47,9 @@ public:
 private:
 	struct DocumentDeleter {
 		void operator()(lxb_html_document_t* doc) const noexcept {
-			if (doc) lxb_html_document_destroy(doc);
+			if (doc) {
+				lxb_html_document_destroy(doc);
+			}
 		}
 	};
 	using DocumentPtr = std::unique_ptr<lxb_html_document_t, DocumentDeleter>;

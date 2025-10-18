@@ -265,7 +265,9 @@ void main_window::update_status_bar() {
 
 void main_window::on_open(wxCommandEvent&) {
 	wxFileDialog dlg(this, _("Select a document to read"), "", "", get_supported_wildcards(), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-	if (dlg.ShowModal() != wxID_OK) return;
+	if (dlg.ShowModal() != wxID_OK) {
+		return;
+	}
 	const auto path = dlg.GetPath();
 	if (wxGetApp().get_config_manager().get_open_in_new_window() && doc_manager->has_documents()) {
 		wxGetApp().create_new_window(path);
@@ -290,12 +292,17 @@ void main_window::on_close_all(wxCommandEvent&) {
 
 void main_window::on_export(wxCommandEvent&) {
 	auto* const doc = doc_manager->get_active_document();
-	if (!doc) return;
+	if (!doc) {
+		return;
+	}
 	wxFileDialog save_dialog(this, _("Export Document"), "", doc->title + ".txt", _("Text files (*.txt)|*.txt|All files (*.*)|*.*"), wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
-	if (save_dialog.ShowModal() != wxID_OK) return;
+	if (save_dialog.ShowModal() != wxID_OK) {
+		return;
+	}
 	const auto file_path = save_dialog.GetPath();
-	if (!doc_manager->export_document(doc_manager->get_active_tab_index(), file_path))
+	if (!doc_manager->export_document(doc_manager->get_active_tab_index(), file_path)) {
 		wxMessageBox(_("Failed to export document."), _("Error"), wxICON_ERROR);
+	}
 }
 
 void main_window::on_exit(wxCommandEvent&) {
@@ -303,7 +310,9 @@ void main_window::on_exit(wxCommandEvent&) {
 }
 
 void main_window::on_find(wxCommandEvent&) {
-	if (!find_dlg) find_dlg = new find_dialog(this);
+	if (!find_dlg) {
+		find_dlg = new find_dialog(this);
+	}
 	// If there's selected text, use it as the initial search term.
 	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
 	if (text_ctrl) {
@@ -320,18 +329,18 @@ void main_window::on_find(wxCommandEvent&) {
 }
 
 void main_window::on_find_next(wxCommandEvent&) {
-	if (find_dlg && find_dlg->IsShown())
+	if (find_dlg && find_dlg->IsShown()) {
 		do_find(true);
-	else {
+	} else {
 		wxCommandEvent evt{};
 		on_find(evt);
 	}
 }
 
 void main_window::on_find_previous(wxCommandEvent&) {
-	if (find_dlg && find_dlg->IsShown())
+	if (find_dlg && find_dlg->IsShown()) {
 		do_find(false);
-	else {
+	} else {
 		wxCommandEvent evt{};
 		on_find(evt);
 	}
@@ -339,9 +348,13 @@ void main_window::on_find_previous(wxCommandEvent&) {
 
 void main_window::on_go_to_line(wxCommandEvent&) {
 	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-	if (!text_ctrl) return;
+	if (!text_ctrl) {
+		return;
+	}
 	go_to_line_dialog dlg(this, text_ctrl);
-	if (dlg.ShowModal() != wxID_OK) return;
+	if (dlg.ShowModal() != wxID_OK) {
+		return;
+	}
 	const auto pos = dlg.get_position();
 	doc_manager->go_to_position(pos);
 	update_status_bar();
@@ -350,9 +363,13 @@ void main_window::on_go_to_line(wxCommandEvent&) {
 
 void main_window::on_go_to_percent(wxCommandEvent&) {
 	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-	if (!text_ctrl) return;
+	if (!text_ctrl) {
+		return;
+	}
 	go_to_percent_dialog dlg(this, text_ctrl);
-	if (dlg.ShowModal() != wxID_OK) return;
+	if (dlg.ShowModal() != wxID_OK) {
+		return;
+	}
 	const auto pos = dlg.get_position();
 	doc_manager->go_to_position(pos);
 	update_status_bar();
@@ -362,19 +379,27 @@ void main_window::on_go_to_percent(wxCommandEvent&) {
 void main_window::on_go_to_page(wxCommandEvent&) {
 	auto* const doc = doc_manager->get_active_document();
 	auto* const par = doc_manager->get_active_parser();
-	if (!doc || !par) return;
+	if (!doc || !par) {
+		return;
+	}
 	if (!par->has_flag(parser_flags::supports_pages)) {
 		speak(_("No pages."));
 		return;
 	}
 	int current_page = 1;
 	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-	if (!text_ctrl) return;
+	if (!text_ctrl) {
+		return;
+	}
 	const size_t current_pos = text_ctrl->GetInsertionPoint();
 	const int current_page_idx = doc->page_index(current_pos);
-	if (current_page_idx >= 0) current_page = current_page_idx + 1; // Convert to 1-based index
+	if (current_page_idx >= 0) {
+		current_page = current_page_idx + 1; // Convert to 1-based index
+	}
 	go_to_page_dialog dlg(this, doc, par, current_page);
-	if (dlg.ShowModal() != wxID_OK) return;
+	if (dlg.ShowModal() != wxID_OK) {
+		return;
+	}
 	const int page = dlg.get_page_number();
 	if (page >= 1 && page <= static_cast<int>(doc->buffer.count_markers_by_type(marker_type::page_break))) {
 		const size_t offset = doc->buffer.get_marker_position_by_index(marker_type::page_break, page - 1); // Convert to 0-based index
@@ -480,7 +505,9 @@ void main_window::on_options(wxCommandEvent&) {
 	dlg.set_recent_documents_to_show(config_mgr.get_recent_documents_to_show());
 	wxString current_language = translation_manager::instance().get_current_language();
 	dlg.set_language(current_language);
-	if (dlg.ShowModal() != wxID_OK) return;
+	if (dlg.ShowModal() != wxID_OK) {
+		return;
+	}
 	bool old_word_wrap = config_mgr.get_word_wrap();
 	bool new_word_wrap = dlg.get_word_wrap();
 	wxString new_language = dlg.get_language();
@@ -492,11 +519,13 @@ void main_window::on_options(wxCommandEvent&) {
 	config_mgr.set_language(new_language);
 	if (old_word_wrap != new_word_wrap) {
 		doc_manager->apply_word_wrap(new_word_wrap);
-		if (active_text_ctrl && doc_manager->get_active_text_ctrl()) doc_manager->get_active_text_ctrl()->SetFocus();
+		if (active_text_ctrl && doc_manager->get_active_text_ctrl()) {
+			doc_manager->get_active_text_ctrl()->SetFocus();
+		}
 	}
 	if (current_language != new_language) {
 		translation_manager::instance().set_language(new_language);
-		// refresh_ui_language();
+		refresh_ui_language();
 	}
 	config_mgr.flush();
 	update_recent_documents_menu();
@@ -514,8 +543,9 @@ void main_window::on_about(wxCommandEvent&) {
 void main_window::on_help(wxCommandEvent&) {
 	const auto path = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath();
 	const auto url = "file://" + wxFileName(path, "readme.html").GetFullPath();
-	if (!wxLaunchDefaultBrowser(url))
+	if (!wxLaunchDefaultBrowser(url)) {
 		wxMessageBox(_("Failed to launch default browser."), _("Error"), wxICON_ERROR);
+	}
 }
 
 void main_window::on_help_internal(wxCommandEvent&) {
@@ -530,8 +560,9 @@ void main_window::on_help_internal(wxCommandEvent&) {
 
 void main_window::on_donate(wxCommandEvent&) {
 	const wxString url = "https://paypal.me/tygillespie05";
-	if (!wxLaunchDefaultBrowser(url))
+	if (!wxLaunchDefaultBrowser(url)) {
 		wxMessageBox(_("Failed to open donation page in browser."), _("Error"), wxICON_ERROR);
+	}
 }
 
 void main_window::on_notebook_page_changed(wxBookCtrlEvent& event) {
@@ -556,14 +587,17 @@ void main_window::on_text_cursor_changed(wxEvent& event) {
 }
 
 void main_window::on_text_char(wxKeyEvent& event) {
-	if (event.GetKeyCode() == WXK_RETURN)
+	if (event.GetKeyCode() == WXK_RETURN) {
 		doc_manager->activate_current_link();
-	else
+	} else {
 		event.Skip();
+	}
 }
 
 void main_window::trigger_throttled_position_save() {
-	if (position_save_timer->IsRunning()) position_save_timer->Stop();
+	if (position_save_timer->IsRunning()) {
+		position_save_timer->Stop();
+	}
 	position_save_timer->StartOnce(POSITION_SAVE_THROTTLE_MS);
 }
 
@@ -575,7 +609,9 @@ void main_window::trigger_throttled_status_update() {
 		update_status_bar();
 		last_status_update_time = current_time;
 	} else {
-		if (status_update_timer->IsRunning()) status_update_timer->Stop();
+		if (status_update_timer->IsRunning()) {
+			status_update_timer->Stop();
+		}
 		int delay = MIN_UPDATE_INTERVAL_MS - time_since_last_update.ToLong();
 		status_update_timer->StartOnce(delay);
 	}
@@ -621,15 +657,18 @@ void main_window::on_recent_document(wxCommandEvent& event) {
 void main_window::on_show_all_documents(wxCommandEvent& event) {
 	auto& config_mgr = wxGetApp().get_config_manager();
 	wxArrayString open_docs;
-	for (size_t i = 0; i < doc_manager->get_tab_count(); ++i)
-		if (doc_manager->get_tab(i))
+	for (size_t i = 0; i < doc_manager->get_tab_count(); ++i) {
+		if (doc_manager->get_tab(i)) {
 			open_docs.Add(doc_manager->get_tab(i)->file_path);
+		}
+	}
 	all_documents_dialog dlg(this, config_mgr, open_docs);
 	if (dlg.ShowModal() == wxID_OK) {
 		wxString path = dlg.get_selected_path();
-		if (!path.IsEmpty() && wxFileName::FileExists(path))
+		if (!path.IsEmpty() && wxFileName::FileExists(path)) {
 			[[maybe_unused]]
 			bool success = doc_manager->open_file(path);
+		}
 	}
 	update_recent_documents_menu();
 }
@@ -652,7 +691,9 @@ void main_window::on_notebook_key_down(wxKeyEvent& event) {
 }
 
 void main_window::update_recent_documents_menu() {
-	if (!recent_documents_menu) return;
+	if (!recent_documents_menu) {
+		return;
+	}
 	while (recent_documents_menu->GetMenuItemCount() > 0) {
 		wxMenuItem* item = recent_documents_menu->FindItemByPosition(0);
 		if (item) {
@@ -682,16 +723,30 @@ void main_window::update_recent_documents_menu() {
 }
 
 void main_window::do_find(bool forward) {
-	if (!find_dlg) return;
+	if (!find_dlg) {
+		return;
+	}
 	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-	if (!text_ctrl) return;
+	if (!text_ctrl) {
+		return;
+	}
 	const auto& query = find_dlg->get_find_text();
-	if (query.IsEmpty()) return;
+	if (query.IsEmpty()) {
+		return;
+	}
 	find_options options = find_options::none;
-	if (forward) options |= find_options::forward;
-	if (find_dlg->get_match_case()) options |= find_options::match_case;
-	if (find_dlg->get_match_whole_word()) options |= find_options::match_whole_word;
-	if (find_dlg->get_use_regex()) options |= find_options::use_regex;
+	if (forward) {
+		options |= find_options::forward;
+	}
+	if (find_dlg->get_match_case()) {
+		options |= find_options::match_case;
+	}
+	if (find_dlg->get_match_whole_word()) {
+		options |= find_options::match_whole_word;
+	}
+	if (find_dlg->get_use_regex()) {
+		options |= find_options::use_regex;
+	}
 	long sel_start, sel_end;
 	text_ctrl->GetSelection(&sel_start, &sel_end);
 	const long start_pos = forward ? sel_end : sel_start;

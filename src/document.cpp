@@ -56,7 +56,9 @@ int document::find_closest_toc_offset(size_t position) const noexcept {
 					best_distance = distance;
 				}
 			}
-			if (!item->children.empty()) search_items(item->children);
+			if (!item->children.empty()) {
+				search_items(item->children);
+			}
 		}
 	};
 	search_items(toc_items);
@@ -73,13 +75,17 @@ int document::previous_heading_index(size_t position, int level) const noexcept 
 
 size_t document::offset_for_heading(int heading_index) const noexcept {
 	const auto& heading_markers = buffer.get_heading_markers();
-	if (heading_index < 0 || heading_index >= static_cast<int>(heading_markers.size())) return 0;
+	if (heading_index < 0 || heading_index >= static_cast<int>(heading_markers.size())) {
+		return 0;
+	}
 	return heading_markers[heading_index]->pos;
 }
 
 const marker* document::get_heading_marker(int heading_index) const noexcept {
 	const auto& heading_markers = buffer.get_heading_markers();
-	if (heading_index < 0 || heading_index >= static_cast<int>(heading_markers.size())) return nullptr;
+	if (heading_index < 0 || heading_index >= static_cast<int>(heading_markers.size())) {
+		return nullptr;
+	}
 	return heading_markers[heading_index];
 }
 
@@ -87,18 +93,24 @@ void document::calculate_statistics() const {
 	const auto& text_content = buffer.str();
 	stats.char_count = text_content.Length();
 	stats.char_count_no_whitespace = 0;
-	for (const auto ch : text_content)
-		if (ch != ' ' && ch != '\t' && ch != '\r' && ch != '\n') ++stats.char_count_no_whitespace;
-	if (text_content.IsEmpty())
-		stats.line_count = 0;
-	else {
-		stats.line_count = 1;
-		for (const auto ch : text_content)
-			if (ch == '\n') ++stats.line_count;
+	for (const auto ch : text_content) {
+		if (ch != ' ' && ch != '\t' && ch != '\r' && ch != '\n') {
+			++stats.char_count_no_whitespace;
+		}
 	}
-	if (text_content.IsEmpty())
+	if (text_content.IsEmpty()) {
+		stats.line_count = 0;
+	} else {
+		stats.line_count = 1;
+		for (const auto ch : text_content) {
+			if (ch == '\n') {
+				++stats.line_count;
+			}
+		}
+	}
+	if (text_content.IsEmpty()) {
 		stats.word_count = 0;
-	else {
+	} else {
 		wxStringTokenizer tokenizer(text_content, " \t\r\n", wxTOKEN_STRTOK);
 		stats.word_count = 0;
 		while (tokenizer.HasMoreTokens()) {

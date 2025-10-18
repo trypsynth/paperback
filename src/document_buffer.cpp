@@ -20,7 +20,9 @@ void document_buffer::append(const wxString& text) {
 }
 
 void document_buffer::append_line(const wxString& text) {
-	if (!text.IsEmpty()) content += text;
+	if (!text.IsEmpty()) {
+		content += text;
+	}
 	content += "\n";
 }
 
@@ -29,7 +31,9 @@ void document_buffer::add_heading(int level, const wxString& text) {
 	marker_type type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + level - 1);
 	markers.emplace_back(pos, type, text, wxString(), level);
 	content += text;
-	if (!content.EndsWith("\n")) content += "\n";
+	if (!content.EndsWith("\n")) {
+		content += "\n";
+	}
 }
 
 void document_buffer::add_page_break(const wxString& label) {
@@ -53,7 +57,9 @@ void document_buffer::add_link(size_t pos, const wxString& text, const wxString&
 }
 
 void document_buffer::add_marker(size_t pos, marker_type type, const wxString& text, const wxString& ref, int level) {
-	if (is_heading_marker(type) && level == 0) level = heading_level_from_type(type);
+	if (is_heading_marker(type) && level == 0) {
+		level = heading_level_from_type(type);
+	}
 	markers.emplace_back(pos, type, text, ref, level);
 	sort_markers();
 }
@@ -64,9 +70,11 @@ void document_buffer::clear() {
 }
 
 int document_buffer::next_marker_index(size_t position, marker_type type) const noexcept {
-	for (size_t i = 0; i < markers.size(); ++i)
-		if (markers[i].pos > position && markers[i].type == type)
+	for (size_t i = 0; i < markers.size(); ++i) {
+		if (markers[i].pos > position && markers[i].type == type) {
 			return static_cast<int>(i);
+		}
+	}
 	return -1;
 }
 
@@ -79,28 +87,39 @@ int document_buffer::previous_marker_index(size_t position, marker_type type) co
 		}
 	}
 	if (current_index >= 0) {
-		for (int i = current_index - 1; i >= 0; --i)
-			if (markers[i].type == type) return i;
+		for (int i = current_index - 1; i >= 0; --i) {
+			if (markers[i].type == type) {
+				return i;
+			}
+		}
 	} else {
-		for (int i = static_cast<int>(markers.size()) - 1; i >= 0; --i)
-			if (markers[i].pos < position && markers[i].type == type) return i;
+		for (int i = static_cast<int>(markers.size()) - 1; i >= 0; --i) {
+			if (markers[i].pos < position && markers[i].type == type) {
+				return i;
+			}
+		}
 	}
 	return -1;
 }
 
 int document_buffer::current_marker_index(size_t position, marker_type type) const noexcept {
-	for (int i = static_cast<int>(markers.size()) - 1; i >= 0; --i)
-		if (markers[i].pos <= position && markers[i].type == type)
+	for (int i = static_cast<int>(markers.size()) - 1; i >= 0; --i) {
+		if (markers[i].pos <= position && markers[i].type == type) {
 			return i;
+		}
+	}
 	return -1;
 }
 
 int document_buffer::next_heading_marker_index(size_t position, int level) const noexcept {
 	auto heading_markers = get_heading_markers();
-	for (size_t i = 0; i < heading_markers.size(); ++i)
-		if (heading_markers[i]->pos > position)
-			if (level == -1 || heading_markers[i]->level == level)
+	for (size_t i = 0; i < heading_markers.size(); ++i) {
+		if (heading_markers[i]->pos > position) {
+			if (level == -1 || heading_markers[i]->level == level) {
 				return static_cast<int>(i);
+			}
+		}
+	}
 	return -1;
 }
 
@@ -114,49 +133,66 @@ int document_buffer::previous_heading_marker_index(size_t position, int level) c
 		}
 	}
 	if (current_index >= 0) {
-		for (int i = current_index - 1; i >= 0; --i)
-			if (level == -1 || heading_markers[i]->level == level)
+		for (int i = current_index - 1; i >= 0; --i) {
+			if (level == -1 || heading_markers[i]->level == level) {
 				return i;
+			}
+		}
 	} else {
-		for (int i = static_cast<int>(heading_markers.size()) - 1; i >= 0; --i)
-			if (heading_markers[i]->pos < position)
-				if (level == -1 || heading_markers[i]->level == level)
+		for (int i = static_cast<int>(heading_markers.size()) - 1; i >= 0; --i) {
+			if (heading_markers[i]->pos < position) {
+				if (level == -1 || heading_markers[i]->level == level) {
 					return i;
+				}
+			}
+		}
 	}
 	return -1;
 }
 
 size_t document_buffer::marker_position(int marker_index) const noexcept {
-	if (marker_index < 0 || marker_index >= static_cast<int>(markers.size())) return 0;
+	if (marker_index < 0 || marker_index >= static_cast<int>(markers.size())) {
+		return 0;
+	}
 	return markers[marker_index].pos;
 }
 
 const marker* document_buffer::get_marker(int marker_index) const noexcept {
-	if (marker_index < 0 || marker_index >= static_cast<int>(markers.size())) return nullptr;
+	if (marker_index < 0 || marker_index >= static_cast<int>(markers.size())) {
+		return nullptr;
+	}
 	return &markers[marker_index];
 }
 
 std::vector<const marker*> document_buffer::get_markers_by_type(marker_type type) const {
 	std::vector<const marker*> result;
-	for (const auto& m : markers)
-		if (m.type == type)
+	for (const auto& m : markers) {
+		if (m.type == type) {
 			result.push_back(&m);
+		}
+	}
 	return result;
 }
 
 std::vector<const marker*> document_buffer::get_heading_markers(int level) const {
 	std::vector<const marker*> result;
-	for (const auto& m : markers)
-		if (is_heading_marker(m.type))
-			if (level == -1 || m.level == level)
+	for (const auto& m : markers) {
+		if (is_heading_marker(m.type)) {
+			if (level == -1 || m.level == level) {
 				result.push_back(&m);
+			}
+		}
+	}
 	return result;
 }
 
 size_t document_buffer::count_markers_by_type(marker_type type) const noexcept {
 	size_t count = 0;
-	for (const auto& m : markers)
-		if (m.type == type) count++;
+	for (const auto& m : markers) {
+		if (m.type == type) {
+			count++;
+		}
+	}
 	return count;
 }
 
@@ -164,7 +200,9 @@ size_t document_buffer::get_marker_position_by_index(marker_type type, size_t in
 	size_t count = 0;
 	for (const auto& m : markers) {
 		if (m.type == type) {
-			if (count == index) return m.pos;
+			if (count == index) {
+				return m.pos;
+			}
 			count++;
 		}
 	}
@@ -176,7 +214,9 @@ bool document_buffer::is_heading_marker(marker_type type) noexcept {
 }
 
 int document_buffer::heading_level_from_type(marker_type type) noexcept {
-	if (!is_heading_marker(type)) return 0;
+	if (!is_heading_marker(type)) {
+		return 0;
+	}
 	return static_cast<int>(type) - static_cast<int>(marker_type::heading_1) + 1;
 }
 

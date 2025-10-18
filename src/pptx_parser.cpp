@@ -38,9 +38,13 @@ const std::string REL_NS = "http://schemas.openxmlformats.org/officeDocument/200
 std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 	try {
 		auto fp = std::make_unique<wxFileInputStream>(path);
-		if (!fp->IsOk()) return nullptr;
+		if (!fp->IsOk()) {
+			return nullptr;
+		}
 		wxZipInputStream zip(*fp);
-		if (!zip.IsOk()) return nullptr;
+		if (!zip.IsOk()) {
+			return nullptr;
+		}
 		std::map<std::string, std::string> slide_contents;
 		std::map<std::string, std::string> slide_rels;
 		std::unique_ptr<wxZipEntry> entry;
@@ -49,24 +53,36 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 			if (name.find("ppt/slides/slide") == 0 && name.ends_with(".xml")) {
 				if (name.find("slideLayout") == std::string::npos && name.find("slideMaster") == std::string::npos) {
 					std::string content = read_zip_entry(zip);
-					if (!content.empty()) slide_contents[name] = std::move(content);
+					if (!content.empty()) {
+						slide_contents[name] = std::move(content);
+					}
 				}
 			} else if (name.find("ppt/slides/_rels/slide") == 0 && name.ends_with(".xml.rels")) {
 				std::string content = read_zip_entry(zip);
-				if (!content.empty()) slide_rels[name] = std::move(content);
+				if (!content.empty()) {
+					slide_rels[name] = std::move(content);
+				}
 			}
 		}
-		if (slide_contents.empty()) return nullptr;
+		if (slide_contents.empty()) {
+			return nullptr;
+		}
 		std::vector<std::string> slide_files;
-		for (const auto& [name, content] : slide_contents)
+		for (const auto& [name, content] : slide_contents) {
 			slide_files.push_back(name);
+		}
 		std::sort(slide_files.begin(), slide_files.end(), [](const std::string& a, const std::string& b) {
 			auto extract_number = [](const std::string& s) {
 				size_t pos = s.find_last_of('/');
-				if (pos == std::string::npos) pos = 0;
+				if (pos == std::string::npos) {
+					pos = 0;
+				}
 				std::string num_str;
-				for (char c : s.substr(pos))
-					if (c >= '0' && c <= '9') num_str += c;
+				for (char c : s.substr(pos)) {
+					if (c >= '0' && c <= '9') {
+						num_str += c;
+					}
+				}
 				return num_str.empty() ? 0 : std::stoi(num_str);
 			};
 			return extract_number(a) < extract_number(b);
@@ -96,7 +112,9 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 						std::string id = element->getAttribute("Id");
 						std::string target = element->getAttribute("Target");
 						std::string type = element->getAttribute("Type");
-						if (type == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink") rels[id] = target;
+						if (type == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink") {
+							rels[id] = target;
+						}
 					}
 				} catch (...) {
 				}
@@ -120,8 +138,9 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 			}
 		}
 		doc->buffer.set_content(full_text);
-		for (size_t i = 0; i < slide_positions.size(); ++i)
+		for (size_t i = 0; i < slide_positions.size(); ++i) {
 			doc->buffer.add_marker(slide_positions[i], marker_type::page_break, wxString::Format("Slide %zu", i + 1));
+		}
 		return doc;
 	} catch (const Poco::Exception& e) {
 		wxMessageBox("XML parsing error: " + wxString(e.displayText()), "Error", wxICON_ERROR);
@@ -133,38 +152,50 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 }
 
 void pptx_parser::extract_text_from_node(Node* node, std::string& text, wxString& full_text, document* doc, const std::map<std::string, std::string>& rels) const {
-	if (!node) return;
+	if (!node) {
+		return;
+	}
 	if (node->nodeType() == Node::ELEMENT_NODE) {
 		auto* element = static_cast<Element*>(node);
 		if (element->localName() == "t") {
 			Node* text_node = element->firstChild();
-			if (text_node && text_node->nodeType() == Node::TEXT_NODE) text += text_node->getNodeValue();
-		} else if (element->localName() == "br")
+			if (text_node && text_node->nodeType() == Node::TEXT_NODE) {
+				text += text_node->getNodeValue();
+			}
+		} else if (element->localName() == "br") {
 			text += "\n";
-		else if (element->localName() == "p") {
+		} else if (element->localName() == "p") {
 			Node* child = node->firstChild();
 			while (child) {
 				extract_text_from_node(child, text, full_text, doc, rels);
 				child = child->nextSibling();
 			}
-			if (!text.empty() && text.back() != '\n') text += "\n";
+			if (!text.empty() && text.back() != '\n') {
+				text += "\n";
+			}
 			return; // Don't process children again.
 		} else if (element->localName() == "hlinkClick" && element->namespaceURI() == DRAWINGML_NS) {
 			std::string r_id = element->getAttributeNS(REL_NS, "id");
 			std::string link_target;
 			if (!r_id.empty()) {
 				auto it = rels.find(r_id);
-				if (it != rels.end()) link_target = it->second;
+				if (it != rels.end()) {
+					link_target = it->second;
+				}
 			}
 			// In PPTX, the link wraps the text runs, so we need to find the text within this subtree.
 			std::string link_text_utf8;
 			std::function<void(Node*)> extract_link_text = [&](Node* n) {
-				if (!n) return;
+				if (!n) {
+					return;
+				}
 				if (n->nodeType() == Node::ELEMENT_NODE) {
 					auto* el = static_cast<Element*>(n);
 					if (el->localName() == "t") {
 						Node* tn = el->firstChild();
-						if (tn && tn->nodeType() == Node::TEXT_NODE) link_text_utf8 += tn->getNodeValue();
+						if (tn && tn->nodeType() == Node::TEXT_NODE) {
+							link_text_utf8 += tn->getNodeValue();
+						}
 					}
 				}
 				Node* c = n->firstChild();
@@ -174,7 +205,9 @@ void pptx_parser::extract_text_from_node(Node* node, std::string& text, wxString
 				}
 			};
 			Node* parent = node->parentNode();
-			if (parent) extract_link_text(parent);
+			if (parent) {
+				extract_link_text(parent);
+			}
 			if (!link_text_utf8.empty() && !link_target.empty()) {
 				size_t link_start = full_text.length() + text.length();
 				text += link_text_utf8;
