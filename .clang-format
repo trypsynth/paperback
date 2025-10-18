@@ -3,10 +3,10 @@ Standard: c++20
 IndentWidth: 4
 UseTab: Always
 TabWidth: 4
-AllowShortIfStatementsOnASingleLine: true
-AllowShortLoopsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Inline
-AllowShortCaseLabelsOnASingleLine: true
+AllowShortCaseLabelsOnASingleLine: false
 AlwaysBreakAfterReturnType: None
 BreakBeforeBraces: Attach
 ColumnLimit: 0
