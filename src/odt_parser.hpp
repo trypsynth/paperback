@@ -1,4 +1,4 @@
-/* odt_parser.hpp - odt parser header.
+/* odt_parser.hpp - odt parser header file.
  *
  * Paperback.
  * Copyright (c) 2025 Quin Gillespie.
@@ -13,14 +13,23 @@
 
 class odt_parser : public parser {
 public:
-    [[nodiscard]] wxString name() const override;
-    [[nodiscard]] std::span<const wxString> extensions() const override;
-    [[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
-    [[nodiscard]] parser_flags supported_flags() const override;
+	odt_parser() = default;
+	~odt_parser() = default;
+	odt_parser(const odt_parser&) = delete;
+	odt_parser& operator=(const odt_parser&) = delete;
+	odt_parser(odt_parser&&) = delete;
+	odt_parser& operator=(odt_parser&&) = delete;
+	[[nodiscard]] wxString name() const override { return "OpenDocument files"; }
+	[[nodiscard]] std::span<const wxString> extensions() const override {
+		static const wxString exts[] = {"odt"};
+		return exts;
+	}
+	[[nodiscard]] parser_flags supported_flags() const override { return parser_flags::supports_toc; }
+	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 
 private:
-    void traverse(Poco::XML::Node* node, wxString& text, document* doc) const;
-    void traverse_children(Poco::XML::Node* node, wxString& text, document* doc) const;
+	void traverse(Poco::XML::Node* node, wxString& text, document* doc) const;
+	void traverse_children(Poco::XML::Node* node, wxString& text, document* doc) const;
 };
 
 REGISTER_PARSER(odt_parser);
