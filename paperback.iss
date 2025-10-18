@@ -33,6 +33,7 @@
 	Name: "assoc_docx"; Description: "Associate with Word Documents (*.docx, *.docm)"; Flags: unchecked
 	Name: "assoc_html"; Description: "Associate with HTML Documents (*.htm, *.html, *.xhtml)"; Flags: unchecked
 	Name: "assoc_markdown"; Description: "Associate with Markdown Documents (*.md, *.markdown, *.mdx, *.mdown, *.mdwn, *.mkd, *.mkdn, *.mkdown, *.ronn)"; Flags: unchecked
+	Name: "assoc_odt"; Description: "Associate with OpenDOcument files (*.odt)"; Flags: unchecked
 	Name: "assoc_pdf"; Description: "Associate with PDF Documents (*.pdf)"
 	Name: "assoc_pptx"; Description: "Associate with PowerPoint Presentations (*.pptx, *.pptm)"; Flags: unchecked
 	Name: "assoc_text"; Description: "Associate with Text Files (*.txt, *.log)"; Flags: unchecked
@@ -67,6 +68,8 @@
 	Root: HKCR; Subkey: ".mkdn\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_markdown
 	Root: HKCR; Subkey: ".mkdown\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_markdown
 	Root: HKCR; Subkey: ".ronn\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_markdown
+	; ODT Documents.
+	Root: HKCR; Subkey: ".odt\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_odt
 	; PDF Documents.
 	Root: HKCR; Subkey: ".pdf\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_pdf
 	; PowerPoint Presentations.
