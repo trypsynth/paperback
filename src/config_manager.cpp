@@ -175,6 +175,7 @@ void config_manager::set_recent_documents_to_show(int count) {
 	with_app_section([this, count]() {
 		config->Write("recent_documents_to_show", count);
 	});
+	flush();
 }
 
 bool config_manager::get_restore_previous_documents() const {
@@ -189,6 +190,7 @@ void config_manager::set_restore_previous_documents(bool restore) {
 	with_app_section([this, restore]() {
 		config->Write("restore_previous_documents", restore);
 	});
+	flush();
 }
 
 bool config_manager::get_word_wrap() const {
@@ -203,6 +205,7 @@ void config_manager::set_word_wrap(bool word_wrap) {
 	with_app_section([this, word_wrap]() {
 		config->Write("word_wrap", word_wrap);
 	});
+	flush();
 }
 
 bool config_manager::get_minimize_to_tray() const {
@@ -217,6 +220,7 @@ void config_manager::set_minimize_to_tray(bool minimize) {
 	with_app_section([this, minimize]() {
 		config->Write("minimize_to_tray", minimize);
 	});
+	flush();
 }
 
 bool config_manager::get_open_in_new_window() const {
@@ -239,12 +243,14 @@ void config_manager::set_open_in_new_window(bool open_in_new_window) {
 	with_app_section([this, open_in_new_window]() {
 		config->Write("open_in_new_window", open_in_new_window);
 	});
+	flush();
 }
 
 void config_manager::set_compact_go_menu(bool compact) {
 	with_app_section([this, compact]() {
 		config->Write("compact_go_menu", compact);
 	});
+	flush();
 }
 
 wxString config_manager::get_language() const {
@@ -259,6 +265,7 @@ void config_manager::set_language(const wxString& language) {
 	with_app_section([this, language]() {
 		config->Write("language", language);
 	});
+	flush();
 }
 
 int config_manager::get_config_version() const {

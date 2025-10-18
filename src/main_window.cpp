@@ -27,6 +27,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 #ifdef __WXMSW__
 	notebook->MSWDisableComposited();
 #endif
+
 	live_region_label = new wxStaticText(panel, wxID_ANY, "", wxDefaultPosition, wxSize(0, 0));
 	live_region_label->Hide();
 	[[maybe_unused]] bool live_region_set = set_live_region(live_region_label);
@@ -298,11 +299,7 @@ void main_window::on_open(wxCommandEvent&) {
 		return;
 	}
 	const auto path = dlg.GetPath();
-	if (wxGetApp().get_config_manager().get_open_in_new_window() && doc_manager->has_documents()) {
-		wxGetApp().create_new_window(path);
-	} else {
-		[[maybe_unused]] bool success = doc_manager->open_file(path);
-	}
+	wxGetApp().open_file(path);
 }
 
 void main_window::on_close(wxCommandEvent&) {

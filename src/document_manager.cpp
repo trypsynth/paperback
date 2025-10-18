@@ -104,6 +104,9 @@ void document_manager::close_document(int index) {
 		config.set_document_opened(tab->file_path, false);
 	}
 	notebook->DeletePage(index);
+	if (get_tab_count() == 0 && config.get_open_in_new_window()) {
+		main_win.Close();
+	}
 }
 
 void document_manager::close_all_documents() {

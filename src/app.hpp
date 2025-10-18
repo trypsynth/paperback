@@ -45,6 +45,7 @@ public:
 	void open_file(const wxString& filename);
 	main_window* create_new_window(const wxString& path = "");
 	void remove_window(main_window* frame);
+	void update_all_windows_ui();
 
 private:
 	std::vector<main_window*> frames;
