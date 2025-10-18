@@ -128,6 +128,7 @@ void translation_manager::scan_available_languages() {
 		{"pl", {"Polish", "Polski"}},
 		{"pt", {"Portuguese", "Português"}},
 		{"ru", {"Russian", "Русский"}},
+		{"sr", {"Serbian", "Српски"}},
 		{"sv", {"Swedish", "Svenska"}},
 		{"tr", {"Turkish", "Türkçe"}},
 		{"zh_CN", {"Chinese (Simplified)", "简体中文"}},
