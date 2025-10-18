@@ -67,7 +67,7 @@ bool app::OnInit() {
 	if (!ipc_server->Create(IPC_SERVICE)) {
 		wxMessageBox(_("Failed to create IPC server"), _("Warning"), wxICON_WARNING);
 	}
-	frame = new main_window();
+	create_new_window();
 	if (config_mgr.get_restore_previous_documents()) {
 		restore_previous_documents();
 	}
@@ -77,7 +77,6 @@ bool app::OnInit() {
 	if (frames.empty()) {
 		create_new_window();
 	}
-	frame->Show(true);
 	return true;
 }
 
