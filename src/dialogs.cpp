@@ -460,8 +460,10 @@ options_dialog::options_dialog(wxWindow* parent) : dialog(parent, _("Options")) 
 	general_box->Add(word_wrap_check, 0, wxALL, 5);
 	minimize_to_tray_check = new wxCheckBox(this, wxID_ANY, _("&Minimize to system tray"));
 	general_box->Add(minimize_to_tray_check, 0, wxALL, 5);
-	open_in_new_window_check = new wxCheckBox(this, wxID_ANY, _("Open documents in a &new window"));
+    	open_in_new_window_check = new wxCheckBox(this, wxID_ANY, _("Open documents in a &new window"));
 	general_box->Add(open_in_new_window_check, 0, wxALL, 5);
+	compact_go_menu_check = new wxCheckBox(this, wxID_ANY, _("Show compact &go menu"));
+	general_box->Add(compact_go_menu_check, 0, wxALL, 5);
 	auto* recent_docs_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* recent_docs_label = new wxStaticText(this, wxID_ANY, _("Number of &recent documents to show:"));
 	recent_docs_count_spin = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 100, 10);
@@ -520,6 +522,14 @@ bool options_dialog::get_open_in_new_window() const {
 
 void options_dialog::set_open_in_new_window(bool open_in_new_window) {
 	if (open_in_new_window_check) open_in_new_window_check->SetValue(open_in_new_window);
+bool options_dialog::get_compact_go_menu() const {
+	return compact_go_menu_check ? compact_go_menu_check->GetValue() : true;
+}
+
+void options_dialog::set_compact_go_menu(bool compact) {
+	if (compact_go_menu_check) {
+		compact_go_menu_check->SetValue(compact);
+	}
 }
 
 int options_dialog::get_recent_documents_to_show() const {

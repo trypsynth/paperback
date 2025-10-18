@@ -213,6 +213,8 @@ public:
 	void set_minimize_to_tray(bool minimize);
 	bool get_open_in_new_window() const;
 	void set_open_in_new_window(bool open_in_new_window);
+	bool get_compact_go_menu() const;
+	void set_compact_go_menu(bool compact);
 	int get_recent_documents_to_show() const;
 	void set_recent_documents_to_show(int count);
 	wxString get_language() const;
@@ -223,6 +225,7 @@ private:
 	wxCheckBox* word_wrap_check{nullptr};
 	wxCheckBox* minimize_to_tray_check{nullptr};
 	wxCheckBox* open_in_new_window_check{nullptr};
+	wxCheckBox* compact_go_menu_check{nullptr};
 	wxSpinCtrl* recent_docs_count_spin{nullptr};
 	wxComboBox* language_combo{nullptr};
 

@@ -46,6 +46,8 @@ public:
 	void set_minimize_to_tray(bool minimize);
 	bool get_open_in_new_window() const;
 	void set_open_in_new_window(bool open_in_new_window);
+	bool get_compact_go_menu() const;
+	void set_compact_go_menu(bool compact);
 	wxString get_language() const;
 	void set_language(const wxString& language);
 	void set_active_document(const wxString& path);

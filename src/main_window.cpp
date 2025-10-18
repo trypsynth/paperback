@@ -91,29 +91,58 @@ wxMenu* main_window::create_file_menu() {
 
 wxMenu* main_window::create_go_menu() {
 	auto* const menu = new wxMenu();
+	auto& config_mgr = wxGetApp().get_config_manager();
+	bool compact = config_mgr.get_compact_go_menu();
 	menu->Append(wxID_FIND, _("&Find...\tCtrl+F"));
 	menu->Append(ID_FIND_NEXT, _("Find Ne&xt\tF3"));
 	menu->Append(ID_FIND_PREVIOUS, _("Find P&revious\tShift+F3"));
 	menu->AppendSeparator();
 	menu->Append(ID_GO_TO_LINE, _("Go to &line...\tCtrl+G"));
 	menu->Append(ID_GO_TO_PERCENT, _("Go to &percent...\tCtrl+Shift+G"));
-	menu->Append(ID_GO_TO_PAGE, _("Go to &page...\tCtrl+P"));
 	menu->AppendSeparator();
-	menu->Append(ID_PREVIOUS_SECTION, _("Previous section\t["));
-	menu->Append(ID_NEXT_SECTION, _("Next section\t]"));
-	menu->AppendSeparator();
-	document_manager::create_heading_menu(menu);
-	menu->AppendSeparator();
-	menu->Append(ID_PREVIOUS_PAGE, _("Previous &page\tShift+P"));
-	menu->Append(ID_NEXT_PAGE, _("&Next page\tP"));
-	menu->AppendSeparator();
-	menu->Append(ID_PREVIOUS_BOOKMARK, _("Previous &bookmark\tShift+B"));
-	menu->Append(ID_NEXT_BOOKMARK, _("Next b&ookmark\tB"));
-	menu->Append(ID_TOGGLE_BOOKMARK, _("Toggle bookmark\tCtrl+Shift+B"));
-	menu->Append(ID_JUMP_TO_BOOKMARK, _("Jump to bookmark...\tCtrl+B"));
-	menu->AppendSeparator();
-	menu->Append(ID_PREVIOUS_LINK, _("Previous lin&k\tShift+K"));
-	menu->Append(ID_NEXT_LINK, _("Next lin&k\tK"));
+	if (compact) {
+		auto* sections_menu = new wxMenu();
+		sections_menu->Append(ID_PREVIOUS_SECTION, _("Previous section\t["));
+		sections_menu->Append(ID_NEXT_SECTION, _("Next section\t]"));
+		menu->AppendSubMenu(sections_menu, _("&Sections"));
+		auto* headings_menu = new wxMenu();
+		document_manager::create_heading_menu(headings_menu);
+		menu->AppendSubMenu(headings_menu, _("&Headings"));
+		auto* pages_menu = new wxMenu();
+		pages_menu->Append(ID_GO_TO_PAGE, _("Go to &page...\tCtrl+P"));
+		pages_menu->AppendSeparator();
+		pages_menu->Append(ID_PREVIOUS_PAGE, _("Previous &page\tShift+P"));
+		pages_menu->Append(ID_NEXT_PAGE, _("&Next page\tP"));
+		menu->AppendSubMenu(pages_menu, _("&Pages"));
+		auto* bookmarks_menu = new wxMenu();
+		bookmarks_menu->Append(ID_PREVIOUS_BOOKMARK, _("Previous &bookmark\tShift+B"));
+		bookmarks_menu->Append(ID_NEXT_BOOKMARK, _("Next b&ookmark\tB"));
+		bookmarks_menu->Append(ID_TOGGLE_BOOKMARK, _("Toggle bookmark\tCtrl+Shift+B"));
+		bookmarks_menu->Append(ID_JUMP_TO_BOOKMARK, _("Jump to bookmark...\tCtrl+B"));
+		menu->AppendSubMenu(bookmarks_menu, _("&Bookmarks"));
+		auto* links_menu = new wxMenu();
+		links_menu->Append(ID_PREVIOUS_LINK, _("Previous lin&k\tShift+K"));
+		links_menu->Append(ID_NEXT_LINK, _("Next lin&k\tK"));
+		menu->AppendSubMenu(links_menu, _("&Links"));
+	} else {
+		menu->Append(ID_GO_TO_PAGE, _("Go to &page...\tCtrl+P"));
+		menu->AppendSeparator();
+		menu->Append(ID_PREVIOUS_SECTION, _("Previous section\t["));
+		menu->Append(ID_NEXT_SECTION, _("Next section\t]"));
+		menu->AppendSeparator();
+		document_manager::create_heading_menu(menu);
+		menu->AppendSeparator();
+		menu->Append(ID_PREVIOUS_PAGE, _("Previous &page\tShift+P"));
+		menu->Append(ID_NEXT_PAGE, _("&Next page\tP"));
+		menu->AppendSeparator();
+		menu->Append(ID_PREVIOUS_BOOKMARK, _("Previous &bookmark\tShift+B"));
+		menu->Append(ID_NEXT_BOOKMARK, _("Next b&ookmark\tB"));
+		menu->Append(ID_TOGGLE_BOOKMARK, _("Toggle bookmark\tCtrl+Shift+B"));
+		menu->Append(ID_JUMP_TO_BOOKMARK, _("Jump to bookmark...\tCtrl+B"));
+		menu->AppendSeparator();
+		menu->Append(ID_PREVIOUS_LINK, _("Previous lin&k\tShift+K"));
+		menu->Append(ID_NEXT_LINK, _("Next lin&k\tK"));
+	}
 	return menu;
 }
 
@@ -502,6 +531,7 @@ void main_window::on_options(wxCommandEvent&) {
 	dlg.set_word_wrap(config_mgr.get_word_wrap());
 	dlg.set_minimize_to_tray(config_mgr.get_minimize_to_tray());
 	dlg.set_open_in_new_window(config_mgr.get_open_in_new_window());
+	dlg.set_compact_go_menu(config_mgr.get_compact_go_menu());
 	dlg.set_recent_documents_to_show(config_mgr.get_recent_documents_to_show());
 	wxString current_language = translation_manager::instance().get_current_language();
 	dlg.set_language(current_language);
@@ -510,11 +540,14 @@ void main_window::on_options(wxCommandEvent&) {
 	}
 	bool old_word_wrap = config_mgr.get_word_wrap();
 	bool new_word_wrap = dlg.get_word_wrap();
+	bool old_compact_menu = config_mgr.get_compact_go_menu();
+	bool new_compact_menu = dlg.get_compact_go_menu();
 	wxString new_language = dlg.get_language();
 	config_mgr.set_restore_previous_documents(dlg.get_restore_previous_documents());
 	config_mgr.set_word_wrap(new_word_wrap);
 	config_mgr.set_minimize_to_tray(dlg.get_minimize_to_tray());
 	config_mgr.set_open_in_new_window(dlg.get_open_in_new_window());
+	config_mgr.set_compact_go_menu(new_compact_menu);
 	config_mgr.set_recent_documents_to_show(dlg.get_recent_documents_to_show());
 	config_mgr.set_language(new_language);
 	if (old_word_wrap != new_word_wrap) {
@@ -523,8 +556,10 @@ void main_window::on_options(wxCommandEvent&) {
 			doc_manager->get_active_text_ctrl()->SetFocus();
 		}
 	}
-	if (current_language != new_language) {
-		translation_manager::instance().set_language(new_language);
+	if (current_language != new_language || old_compact_menu != new_compact_menu) {
+		if (current_language != new_language) {
+			translation_manager::instance().set_language(new_language);
+		}
 		refresh_ui_language();
 	}
 	config_mgr.flush();
