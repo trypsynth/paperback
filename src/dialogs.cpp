@@ -522,6 +522,8 @@ bool options_dialog::get_open_in_new_window() const {
 
 void options_dialog::set_open_in_new_window(bool open_in_new_window) {
 	if (open_in_new_window_check) open_in_new_window_check->SetValue(open_in_new_window);
+}
+
 bool options_dialog::get_compact_go_menu() const {
 	return compact_go_menu_check ? compact_go_menu_check->GetValue() : true;
 }

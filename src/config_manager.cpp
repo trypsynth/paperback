@@ -223,6 +223,10 @@ bool config_manager::get_open_in_new_window() const {
 	bool result = false;
 	with_app_section([this, &result]() {
 		result = config->ReadBool("open_in_new_window", false);
+	});
+	return result;
+}
+
 bool config_manager::get_compact_go_menu() const {
 	bool result = true;
 	with_app_section([this, &result]() {
@@ -234,6 +238,9 @@ bool config_manager::get_compact_go_menu() const {
 void config_manager::set_open_in_new_window(bool open_in_new_window) {
 	with_app_section([this, open_in_new_window]() {
 		config->Write("open_in_new_window", open_in_new_window);
+	});
+}
+
 void config_manager::set_compact_go_menu(bool compact) {
 	with_app_section([this, compact]() {
 		config->Write("compact_go_menu", compact);
@@ -700,6 +707,7 @@ void config_manager::load_defaults() {
 	}
 if (!config->HasEntry("open_in_new_window")) {
 		config->Write("open_in_new_window", false);
+	}
 	if (!config->HasEntry("compact_go_menu")) {
 		config->Write("compact_go_menu", true);
 	}
