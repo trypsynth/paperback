@@ -219,6 +219,20 @@ void config_manager::set_minimize_to_tray(bool minimize) {
 	});
 }
 
+bool config_manager::get_compact_go_menu() const {
+	bool result = true;
+	with_app_section([this, &result]() {
+		result = config->ReadBool("compact_go_menu", true);
+	});
+	return result;
+}
+
+void config_manager::set_compact_go_menu(bool compact) {
+	with_app_section([this, compact]() {
+		config->Write("compact_go_menu", compact);
+	});
+}
+
 wxString config_manager::get_language() const {
 	wxString result = "";
 	with_app_section([this, &result]() {
@@ -676,6 +690,9 @@ void config_manager::load_defaults() {
 	}
 	if (!config->HasEntry("minimize_to_tray")) {
 		config->Write("minimize_to_tray", false);
+	}
+	if (!config->HasEntry("compact_go_menu")) {
+		config->Write("compact_go_menu", true);
 	}
 	if (!config->HasEntry("recent_documents_to_show")) {
 		config->Write("recent_documents_to_show", 25);
