@@ -65,7 +65,9 @@ private:
 
 		epub_context(wxFileInputStream& fs) : file_stream(fs) {}
 		~epub_context() {
-			for (auto& [_, entry] : zip_entries) delete entry;
+			for (auto& [_, entry] : zip_entries) {
+				delete entry;
+			}
 		}
 	};
 

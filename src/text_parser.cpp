@@ -16,10 +16,14 @@
 
 std::unique_ptr<document> text_parser::load(const wxString& path) const {
 	wxFileInputStream file_stream(path);
-	if (!file_stream.IsOk()) return nullptr;
+	if (!file_stream.IsOk()) {
+		return nullptr;
+	}
 	wxBufferedInputStream bs(file_stream);
 	size_t file_size = bs.GetSize();
-	if (file_size == 0) return nullptr;
+	if (file_size == 0) {
+		return nullptr;
+	}
 	std::vector<char> buffer(file_size);
 	bs.Read(buffer.data(), file_size);
 	std::string utf8_content = convert_to_utf8(std::string(buffer.data(), file_size));

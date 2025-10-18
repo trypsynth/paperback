@@ -36,13 +36,17 @@ bool document_manager::open_file(const wxString& path, bool add_to_recent) {
 	if (existing_tab >= 0) {
 		notebook->SetSelection(existing_tab);
 		auto* const text_ctrl = get_active_text_ctrl();
-		if (text_ctrl) text_ctrl->SetFocus();
+		if (text_ctrl) {
+			text_ctrl->SetFocus();
+		}
 		return true;
 	}
 	auto* par = find_parser_by_extension(wxFileName(path).GetExt());
 	if (!par) {
 		par = get_parser_for_unknown_file(path, config);
-		if (!par) return false;
+		if (!par) {
+			return false;
+		}
 	}
 	if (!create_document_tab(path, par)) {
 		wxMessageBox(_("Failed to load document."), _("Error"), wxICON_ERROR);
@@ -62,7 +66,9 @@ bool document_manager::open_file(const wxString& path, bool add_to_recent) {
 
 bool document_manager::create_document_tab(const wxString& path, const parser* par, bool set_focus) {
 	std::unique_ptr<document> doc = par->load(path);
-	if (!doc) return false;
+	if (!doc) {
+		return false;
+	}
 	doc->calculate_statistics();
 	auto* tab_data = new document_tab;
 	tab_data->doc = std::move(doc);
@@ -72,7 +78,9 @@ bool document_manager::create_document_tab(const wxString& path, const parser* p
 	tab_data->panel = panel;
 	notebook->AddPage(panel, tab_data->doc->title, true);
 	restore_document_position(tab_data);
-	if (set_focus) tab_data->text_ctrl->SetFocus();
+	if (set_focus) {
+		tab_data->text_ctrl->SetFocus();
+	}
 	config.add_recent_document(path);
 	config.set_document_opened(path, true);
 	return true;
@@ -86,7 +94,9 @@ void document_manager::update_ui() {
 }
 
 void document_manager::close_document(int index) {
-	if (index < 0 || index >= get_tab_count()) return;
+	if (index < 0 || index >= get_tab_count()) {
+		return;
+	}
 	document_tab* tab = get_tab(index);
 	if (tab && tab->text_ctrl) {
 		long position = tab->text_ctrl->GetInsertionPoint();
@@ -100,23 +110,31 @@ void document_manager::close_all_documents() {
 	save_all_tab_positions();
 	for (int i = 0; i < get_tab_count(); ++i) {
 		document_tab* tab = get_tab(i);
-		if (tab) config.set_document_opened(tab->file_path, false);
+		if (tab) {
+			config.set_document_opened(tab->file_path, false);
+		}
 	}
 	notebook->DeleteAllPages();
 }
 
 bool document_manager::export_document(int index, const wxString& export_path) {
 	document_tab* tab = get_tab(index);
-	if (!tab || !tab->text_ctrl) return false;
+	if (!tab || !tab->text_ctrl) {
+		return false;
+	}
 	wxFile file;
-	if (!file.Open(export_path, wxFile::write)) return false;
+	if (!file.Open(export_path, wxFile::write)) {
+		return false;
+	}
 	file.Write(tab->text_ctrl->GetValue());
 	file.Close();
 	return true;
 }
 
 document_tab* document_manager::get_tab(int index) const {
-	if (index < 0 || index >= get_tab_count()) return nullptr;
+	if (index < 0 || index >= get_tab_count()) {
+		return nullptr;
+	}
 	wxPanel* panel = static_cast<wxPanel*>(notebook->GetPage(index));
 	return static_cast<document_tab*>(panel->GetClientObject());
 }
@@ -151,10 +169,16 @@ int document_manager::get_active_tab_index() const {
 
 void document_manager::go_to_position(long position) {
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!text_ctrl) return;
+	if (!text_ctrl) {
+		return;
+	}
 	long max_pos = text_ctrl->GetLastPosition();
-	if (position > max_pos) position = max_pos;
-	if (position < 0) position = 0;
+	if (position > max_pos) {
+		position = max_pos;
+	}
+	if (position < 0) {
+		position = 0;
+	}
 	text_ctrl->SetInsertionPoint(position);
 	text_ctrl->ShowPosition(position);
 }
@@ -163,7 +187,9 @@ void document_manager::go_to_previous_section() {
 	document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	const parser* par = get_active_parser();
-	if (!doc || !text_ctrl || !par) return;
+	if (!doc || !text_ctrl || !par) {
+		return;
+	}
 	if (!par->has_flag(parser_flags::supports_sections)) {
 		speak(_("No sections."));
 		return;
@@ -206,7 +232,9 @@ void document_manager::go_to_next_section() {
 	document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	const parser* par = get_active_parser();
-	if (!doc || !text_ctrl || !par) return;
+	if (!doc || !text_ctrl || !par) {
+		return;
+	}
 	if (!par->has_flag(parser_flags::supports_sections)) {
 		speak(_("No sections."));
 		return;
@@ -244,7 +272,9 @@ void document_manager::go_to_next_heading(int level) {
 void document_manager::go_to_previous_page() {
 	document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!doc || !text_ctrl) return;
+	if (!doc || !text_ctrl) {
+		return;
+	}
 	if (doc->buffer.count_markers_by_type(marker_type::page_break) == 0) {
 		speak(_("No pages."));
 		return;
@@ -266,7 +296,9 @@ void document_manager::go_to_previous_page() {
 void document_manager::go_to_next_page() {
 	document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!doc || !text_ctrl) return;
+	if (!doc || !text_ctrl) {
+		return;
+	}
 	if (doc->buffer.count_markers_by_type(marker_type::page_break) == 0) {
 		speak(_("No pages."));
 		return;
@@ -288,7 +320,9 @@ void document_manager::go_to_next_page() {
 void document_manager::go_to_previous_bookmark() {
 	document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!tab || !text_ctrl) return;
+	if (!tab || !text_ctrl) {
+		return;
+	}
 	long current_pos = text_ctrl->GetInsertionPoint();
 	long prev_pos = config.get_previous_bookmark(tab->file_path, current_pos);
 	if (prev_pos == -1) {
@@ -307,7 +341,9 @@ void document_manager::go_to_previous_bookmark() {
 void document_manager::go_to_next_bookmark() {
 	document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!tab || !text_ctrl) return;
+	if (!tab || !text_ctrl) {
+		return;
+	}
 	long current_pos = text_ctrl->GetInsertionPoint();
 	long next_pos = config.get_next_bookmark(tab->file_path, current_pos);
 	if (next_pos == -1) {
@@ -326,7 +362,9 @@ void document_manager::go_to_next_bookmark() {
 void document_manager::go_to_previous_link() {
 	document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!doc || !text_ctrl) return;
+	if (!doc || !text_ctrl) {
+		return;
+	}
 	if (doc->buffer.count_markers_by_type(marker_type::link) == 0) {
 		speak(_("No links."));
 		return;
@@ -347,7 +385,9 @@ void document_manager::go_to_previous_link() {
 void document_manager::go_to_next_link() {
 	document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!doc || !text_ctrl) return;
+	if (!doc || !text_ctrl) {
+		return;
+	}
 	if (doc->buffer.count_markers_by_type(marker_type::link) == 0) {
 		speak(_("No links."));
 		return;
@@ -368,29 +408,41 @@ void document_manager::go_to_next_link() {
 void document_manager::activate_current_link() {
 	document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!doc || !text_ctrl) return;
+	if (!doc || !text_ctrl) {
+		return;
+	}
 	size_t current_pos = text_ctrl->GetInsertionPoint();
 	int link_index = doc->buffer.current_marker_index(current_pos, marker_type::link);
-	if (link_index == -1) return;
+	if (link_index == -1) {
+		return;
+	}
 	const marker* link_marker = doc->buffer.get_marker(link_index);
-	if (!link_marker) return;
-	if (current_pos < link_marker->pos || current_pos > (link_marker->pos + link_marker->text.length())) return;
+	if (!link_marker) {
+		return;
+	}
+	if (current_pos < link_marker->pos || current_pos > (link_marker->pos + link_marker->text.length())) {
+		return;
+	}
 	wxString href = link_marker->ref;
-	if (href.empty()) return;
+	if (href.empty()) {
+		return;
+	}
 	wxString href_lower = href.Lower();
 	if (href_lower.StartsWith("http:") || href_lower.StartsWith("https:") || href_lower.StartsWith("mailto:")) {
-		if (wxLaunchDefaultBrowser(href))
+		if (wxLaunchDefaultBrowser(href)) {
 			speak(_("Opening link in default browser."));
-		else
+		} else {
 			speak(_("Failed to open link."));
+		}
 	} else if (href.StartsWith("#")) {
 		wxString id = href.Mid(1);
 		auto it = doc->id_positions.find(std::string(id.mb_str()));
 		if (it != doc->id_positions.end()) {
 			go_to_position(it->second);
 			speak(_("Navigated to internal link."));
-		} else
+		} else {
 			speak(_("Internal link target not found."));
+		}
 	} else {
 		wxString file_path = href.BeforeFirst('#');
 		wxString fragment = href.AfterFirst('#');
@@ -426,7 +478,9 @@ void document_manager::activate_current_link() {
 void document_manager::toggle_bookmark() {
 	document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!tab || !text_ctrl) return;
+	if (!tab || !text_ctrl) {
+		return;
+	}
 	long current_pos = text_ctrl->GetInsertionPoint();
 	wxArrayLong bookmarks = config.get_bookmarks(tab->file_path);
 	bool was_bookmarked = bookmarks.Index(current_pos) != wxNOT_FOUND;
@@ -438,7 +492,9 @@ void document_manager::toggle_bookmark() {
 void document_manager::show_bookmark_dialog(wxWindow* parent) {
 	document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!tab || !text_ctrl) return;
+	if (!tab || !text_ctrl) {
+		return;
+	}
 	wxArrayLong bookmarks = config.get_bookmarks(tab->file_path);
 	if (bookmarks.IsEmpty()) {
 		speak(_("No bookmarks"));
@@ -446,9 +502,13 @@ void document_manager::show_bookmark_dialog(wxWindow* parent) {
 	}
 	long current_pos = text_ctrl->GetInsertionPoint();
 	bookmark_dialog dialog(parent, bookmarks, text_ctrl, current_pos);
-	if (dialog.ShowModal() != wxID_OK) return;
+	if (dialog.ShowModal() != wxID_OK) {
+		return;
+	}
 	long pos = dialog.get_selected_position();
-	if (pos < 0) return;
+	if (pos < 0) {
+		return;
+	}
 	text_ctrl->SetInsertionPoint(pos);
 	text_ctrl->SetFocus();
 	long line;
@@ -462,7 +522,9 @@ void document_manager::show_table_of_contents(wxWindow* parent) {
 	document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	const parser* par = get_active_parser();
-	if (!doc || !text_ctrl || !par) return;
+	if (!doc || !text_ctrl || !par) {
+		return;
+	}
 	if (!par->has_flag(parser_flags::supports_toc)) {
 		speak(_("No table of contents."));
 		return;
@@ -474,7 +536,9 @@ void document_manager::show_table_of_contents(wxWindow* parent) {
 	size_t current_pos = text_ctrl->GetInsertionPoint();
 	int closest_toc_offset = doc->find_closest_toc_offset(current_pos);
 	toc_dialog dlg(parent, doc, closest_toc_offset);
-	if (dlg.ShowModal() != wxID_OK) return;
+	if (dlg.ShowModal() != wxID_OK) {
+		return;
+	}
 	int offset = dlg.get_selected_offset();
 	if (offset >= 0) {
 		go_to_position(offset);
@@ -484,7 +548,9 @@ void document_manager::show_table_of_contents(wxWindow* parent) {
 
 void document_manager::show_document_info(wxWindow* parent) {
 	document* doc = get_active_document();
-	if (!doc) return;
+	if (!doc) {
+		return;
+	}
 	document_info_dialog dlg(parent, doc);
 	dlg.ShowModal();
 }
@@ -500,7 +566,9 @@ long document_manager::load_document_position(const wxString& path) const {
 
 void document_manager::save_current_tab_position() {
 	document_tab* tab = get_active_tab();
-	if (!tab || !tab->text_ctrl) return;
+	if (!tab || !tab->text_ctrl) {
+		return;
+	}
 	long position = tab->text_ctrl->GetInsertionPoint();
 	save_document_position(tab->file_path, position);
 }
@@ -516,9 +584,13 @@ void document_manager::save_all_tab_positions() {
 }
 
 wxString document_manager::get_status_text() const {
-	if (!has_documents()) return _("Ready");
+	if (!has_documents()) {
+		return _("Ready");
+	}
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!text_ctrl) return _("Ready");
+	if (!text_ctrl) {
+		return _("Ready");
+	}
 	long current_pos = text_ctrl->GetInsertionPoint();
 	long total_chars = text_ctrl->GetLastPosition();
 	int percentage = total_chars > 0 ? (current_pos * 100) / total_chars : 0;
@@ -530,14 +602,18 @@ wxString document_manager::get_status_text() const {
 }
 
 wxString document_manager::get_window_title(const wxString& app_name) const {
-	if (!has_documents()) return app_name;
+	if (!has_documents()) {
+		return app_name;
+	}
 	document* doc = get_active_document();
 	return doc ? app_name + " - " + doc->title : app_name;
 }
 
 long document_manager::find_text(const wxString& query, long start_pos, find_options options) const {
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!text_ctrl) return wxNOT_FOUND;
+	if (!text_ctrl) {
+		return wxNOT_FOUND;
+	}
 	const wxString& full_text = text_ctrl->GetValue();
 	return ::find_text(full_text, query, start_pos, options);
 }
@@ -577,7 +653,9 @@ int document_manager::find_tab_by_path(const wxString& path) const {
 		if (tab) {
 			wxFileName tabFile(tab->file_path);
 			tabFile.Normalize(wxPATH_NORM_ABSOLUTE | wxPATH_NORM_LONG);
-			if (tabFile.GetFullPath().IsSameAs(inputAbsPath, false)) return i;
+			if (tabFile.GetFullPath().IsSameAs(inputAbsPath, false)) {
+				return i;
+			}
 		}
 	}
 	return -1;
@@ -600,7 +678,9 @@ void document_manager::setup_text_ctrl(wxTextCtrl* text_ctrl, const wxString& co
 }
 
 void document_manager::restore_document_position(document_tab* tab) {
-	if (!tab || !tab->text_ctrl) return;
+	if (!tab || !tab->text_ctrl) {
+		return;
+	}
 	long saved_position = load_document_position(tab->file_path);
 	if (saved_position > 0) {
 		long max_position = tab->text_ctrl->GetLastPosition();
@@ -630,7 +710,9 @@ wxPanel* document_manager::create_tab_panel(const wxString& content, document_ta
 void document_manager::navigate_to_heading(bool next, int specific_level) {
 	document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!doc || !text_ctrl) return;
+	if (!doc || !text_ctrl) {
+		return;
+	}
 	if (doc->buffer.get_heading_markers().size() == 0) {
 		speak(_("No headings."));
 		return;
@@ -646,5 +728,7 @@ void document_manager::navigate_to_heading(bool next, int specific_level) {
 	size_t offset = doc->offset_for_heading(target_index);
 	text_ctrl->SetInsertionPoint(offset);
 	const marker* heading_marker = doc->get_heading_marker(target_index);
-	if (heading_marker) speak(wxString::Format(_("%s Heading level %d"), heading_marker->text, heading_marker->level));
+	if (heading_marker) {
+		speak(wxString::Format(_("%s Heading level %d"), heading_marker->text, heading_marker->level));
+	}
 }
