@@ -198,7 +198,7 @@ void html_to_text::process_text_node(lxb_dom_text_t* text_node) {
 	}
 	size_t length{0};
 	const auto* text_data = lxb_dom_node_text_content(lxb_dom_interface_node(text_node), &length);
-	if (text_data  == nullptr || length == 0) {
+	if (text_data == nullptr || length == 0) {
 		return;
 	}
 	const std::string_view text{reinterpret_cast<const char*>(text_data), length};

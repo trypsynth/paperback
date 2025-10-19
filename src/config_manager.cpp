@@ -448,8 +448,12 @@ void config_manager::add_bookmark(const wxString& path, long position) {
 	if (bookmarks.Index(position) == wxNOT_FOUND) {
 		bookmarks.Add(position);
 		bookmarks.Sort([](long* a, long* b) {
-			if (*a < *b) return -1;
-			if (*a > *b) return 1;
+			if (*a < *b) {
+				return -1;
+			}
+			if (*a > *b) {
+				return 1;
+			}
 			return 0;
 		});
 		const wxString bookmark_string = [&bookmarks]() {
@@ -461,7 +465,7 @@ void config_manager::add_bookmark(const wxString& path, long position) {
 				str += wxString::Format("%ld", bookmarks[i]);
 			}
 			return str;
-		}();	
+		}();
 		with_document_section(path, [this, path, bookmark_string]() {
 			config->Write("path", path);
 			config->Write("bookmarks", bookmark_string);
@@ -526,8 +530,12 @@ wxArrayLong config_manager::get_bookmarks(const wxString& path) const {
 			}
 		}
 		result.Sort([](long* a, long* b) {
-			if (*a < *b) return -1;
-			if (*a > *b) return 1;
+			if (*a < *b) {
+				return -1;
+			}
+			if (*a > *b) {
+				return 1;
+			}
 			return 0;
 		});
 	}
