@@ -57,8 +57,8 @@ public:
 	[[nodiscard]] int next_marker_index(size_t position, marker_type type) const noexcept;
 	[[nodiscard]] int previous_marker_index(size_t position, marker_type type) const noexcept;
 	[[nodiscard]] int current_marker_index(size_t position, marker_type type) const noexcept;
-	[[nodiscard]] int next_heading_marker_index(size_t position, int level = -1) const noexcept;
-	[[nodiscard]] int previous_heading_marker_index(size_t position, int level = -1) const noexcept;
+	[[nodiscard]] int next_heading_marker_index(size_t position, int level = -1) const;
+	[[nodiscard]] int previous_heading_marker_index(size_t position, int level = -1) const;
 	[[nodiscard]] size_t marker_position(int marker_index) const noexcept;
 	[[nodiscard]] const marker* get_marker(int marker_index) const noexcept;
 	[[nodiscard]] std::vector<const marker*> get_markers_by_type(marker_type type) const;

@@ -11,10 +11,11 @@
 #include "utils.hpp"
 #include <algorithm>
 #include <array>
-#include <cctype>
+#include <lexbor/html/html.h>
 #include <lexbor/html/serialize.h>
 #include <sstream>
 #include <stdexcept>
+#include <string>
 #include <string_view>
 #include <wx/string.h>
 
