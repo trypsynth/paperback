@@ -6,16 +6,21 @@
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include "live_region.hpp"
+#include <combaseapi.h>
+#include <oaidl.h>
 #include <oleacc.h>
 #include <uiautomation.h>
-#include <windows.h>
+#include <windef.h>
+#include <winerror.h>
+#include <winuser.h>
+#include <wtypes.h>
+#include <wx/window.h>
 
 namespace {
-static IAccPropServices* const acc_prop_services{nullptr};
+IAccPropServices* acc_prop_services{nullptr};
 
 bool init_live_region() {
 	if (acc_prop_services != nullptr) {
@@ -41,8 +46,10 @@ bool set_live_region(wxWindow* window, live_region_mode mode) {
 	if (hwnd == nullptr) {
 		return false;
 	}
-	VARIANT var;
+	VARIANT var{};
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
 	var.vt = VT_I4;
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
 	var.lVal = static_cast<int>(mode);
 	const HRESULT hr = acc_prop_services->SetHwndProp(hwnd, OBJID_CLIENT, CHILDID_SELF, LiveSetting_Property_GUID, var);
 	return SUCCEEDED(hr);
@@ -52,7 +59,7 @@ bool notify_live_region_changed(wxWindow* window) {
 	if (window == nullptr) {
 		return false;
 	}
-	HWND const hwnd = static_cast<HWND>(window->GetHandle());
+	HWND hwnd = static_cast<HWND>(window->GetHandle());
 	if (hwnd == nullptr) {
 		return false;
 	}

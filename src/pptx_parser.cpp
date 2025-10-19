@@ -10,22 +10,26 @@
 #include "pptx_parser.hpp"
 #include "document.hpp"
 #include "utils.hpp"
+#include <algorithm>
+#include <cstddef>
+#include <functional>
+#include <map>
+#include <memory>
 #include <Poco/AutoPtr.h>
 #include <Poco/DOM/DOMParser.h>
 #include <Poco/DOM/Document.h>
 #include <Poco/DOM/Element.h>
 #include <Poco/DOM/Node.h>
 #include <Poco/DOM/NodeList.h>
-#include <Poco/DOM/Text.h>
 #include <Poco/SAX/InputSource.h>
-#include <algorithm>
-#include <functional>
-#include <map>
+#include <Poco/SAX/XMLReader.h>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 #include <wx/filename.h>
 #include <wx/msgdlg.h>
+#include <wx/string.h>
 #include <wx/wfstream.h>
 #include <wx/zipstrm.h>
 
@@ -48,16 +52,16 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 		std::map<std::string, std::string> slide_contents;
 		std::map<std::string, std::string> slide_rels;
 		std::unique_ptr<wxZipEntry> entry;
-		while ((entry.reset(zip.GetNextEntry())), entry.get() != nullptr) {
-			std::string name = entry->GetInternalName().ToStdString();
-			if (name.find("ppt/slides/slide") == 0 && name.ends_with(".xml")) {
+		while ((entry.reset(zip.GetNextEntry())), entry != nullptr) {
+			const std::string name = entry->GetInternalName().ToStdString();
+			if (name.starts_with("ppt/slides/slide") && name.ends_with(".xml")) {
 				if (name.find("slideLayout") == std::string::npos && name.find("slideMaster") == std::string::npos) {
-					std::string content = read_zip_entry(zip);
+					const std::string content = read_zip_entry(zip);
 					if (!content.empty()) {
-						slide_contents[name] = std::move(content);
+						slide_contents[name] = content;
 					}
 				}
-			} else if (name.find("ppt/slides/_rels/slide") == 0 && name.ends_with(".xml.rels")) {
+			} else if (name.starts_with("ppt/slides/_rels/slide") && name.ends_with(".xml.rels")) {
 				std::string content = read_zip_entry(zip);
 				if (!content.empty()) {
 					slide_rels[name] = std::move(content);
@@ -78,7 +82,7 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 					pos = 0;
 				}
 				std::string num_str;
-				for (char c : s.substr(pos)) {
+				for (const char c : s.substr(pos)) {
 					if (c >= '0' && c <= '9') {
 						num_str += c;
 					}
@@ -95,8 +99,8 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 		for (const auto& slide_file : slide_files) {
 			const std::string& slide_content = slide_contents[slide_file];
 			std::map<std::string, std::string> rels;
-			std::string slide_base = slide_file.substr(slide_file.find_last_of('/') + 1);
-			std::string rels_file = "ppt/slides/_rels/" + slide_base + ".rels";
+			const std::string slide_base = slide_file.substr(slide_file.find_last_of('/') + 1);
+			const std::string rels_file = "ppt/slides/_rels/" + slide_base + ".rels";
 			auto rels_it = slide_rels.find(rels_file);
 			if (rels_it != slide_rels.end()) {
 				try {
@@ -104,8 +108,8 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 					InputSource rels_source(rels_stream);
 					DOMParser rels_parser;
 					rels_parser.setFeature(XMLReader::FEATURE_NAMESPACES, true);
-					AutoPtr<Document> pRelsDoc = rels_parser.parse(&rels_source);
-					NodeList* rel_nodes = pRelsDoc->getElementsByTagNameNS(REL_NS, "Relationship");
+					AutoPtr<Document> rels_doc = rels_parser.parse(&rels_source);
+					const NodeList* rel_nodes = prels_doc->getElementsByTagNameNS(REL_NS, "Relationship");
 					for (unsigned long i = 0; i < rel_nodes->length(); ++i) {
 						Node* node = rel_nodes->item(i);
 						auto* element = static_cast<Element*>(node);

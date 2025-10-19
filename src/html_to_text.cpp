@@ -100,7 +100,7 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 				if (!in_link) {
 					in_link = true;
 					size_t href_len{0};
-					const lxb_char_t* href_attr = lxb_dom_element_get_attribute(element, static_cast<const lxb_char_t*>("href"), 4, &href_len);
+					const lxb_char_t* href_attr = lxb_dom_element_get_attribute(element, reinterpret_cast<const lxb_char_t*>("href"), 4, &href_len);
 					if (href_attr != nullptr && href_len > 0) {
 						current_link_href = std::string(reinterpret_cast<const char*>(href_attr), href_len);
 					}
@@ -122,7 +122,7 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 			}
 			if (in_body && element != nullptr) {
 				size_t id_len{0};
-				const lxb_char_t* id_attr = lxb_dom_element_get_attribute(element, static_cast<const lxb_char_t*>("id"), 2, &id_len);
+				const lxb_char_t* id_attr = lxb_dom_element_get_attribute(element, reinterpret_cast<const lxb_char_t*>("id"), 2, &id_len);
 				if (id_attr != nullptr && id_len > 0) {
 					const std::string id{reinterpret_cast<const char*>(id_attr), id_len};
 					id_positions[id] = cached_char_length;

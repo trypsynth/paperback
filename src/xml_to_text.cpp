@@ -10,14 +10,21 @@
 
 #include "xml_to_text.hpp"
 #include "utils.hpp"
-#include <Poco/AutoPtr.h>
 #include <Poco/DOM/DOMParser.h>
+#include <Poco/DOM/Element.h>
+#include <Poco/DOM/Node.h>
+#include <Poco/DOM/Text.h>
 #include <Poco/Exception.h>
 #include <Poco/SAX/InputSource.h>
+#include <Poco/SAX/XMLReader.h>
 #include <algorithm>
 #include <array>
+#include <cctype>
+#include <cstddef>
 #include <sstream>
+#include <string>
 #include <string_view>
+#include <utility>
 #include <wx/string.h>
 
 using namespace Poco::XML;
@@ -30,8 +37,8 @@ bool xml_to_text::convert(const std::string& xml_content) {
 		DOMParser parser;
 		parser.setFeature(XMLReader::FEATURE_NAMESPACES, true);
 		parser.setFeature(XMLReader::FEATURE_NAMESPACE_PREFIXES, false);
-		auto doc = parser.parse(&src);
-		if (doc) {
+		auto* doc = parser.parse(&src);
+		if (doc != nullptr) {
 			process_node(doc);
 			finalize_current_line();
 			return true;
@@ -70,24 +77,24 @@ void xml_to_text::clear() noexcept {
 }
 
 void xml_to_text::process_node(Node* node) {
-	if (!node) {
+	if (node == nullptr) {
 		return;
 	}
 	const auto node_type = node->nodeType();
 	std::string tag_name;
 	bool skip_children = false;
 	if (node_type == Node::ELEMENT_NODE) {
-		auto* element = static_cast<Element*>(node);
+		auto* element = dynamic_cast<Element*>(node);
 		tag_name = element->localName();
-		std::transform(tag_name.begin(), tag_name.end(), tag_name.begin(), ::tolower);
+		std::ranges::transform(tag_name, tag_name.begin(), ::tolower);
 		if (tag_name == "a" && element->hasAttributeNS("", "href")) {
-			std::string href = element->getAttributeNS("", "href");
-			std::string link_text = get_element_text(element);
+			const std::string href = element->getAttributeNS("", "href");
+			const std::string link_text = get_element_text(element);
 			if (!link_text.empty()) {
-				std::string processed_link_text = trim_string(collapse_whitespace(link_text));
-				size_t link_offset = get_current_text_position();
+				const std::string processed_link_text = trim_string(collapse_whitespace(link_text));
+				const size_t link_offset = get_current_text_position();
 				current_line += processed_link_text;
-				links.push_back({link_offset, processed_link_text, href});
+				links.push_back({.offset = link_offset, .text = processed_link_text, .ref = href});
 				skip_children = true;
 			}
 		} else if (tag_name == "body") {
@@ -99,26 +106,26 @@ void xml_to_text::process_node(Node* node) {
 			finalize_current_line();
 		}
 		if (in_body && element->hasAttributeNS("", "id")) {
-			std::string id = element->getAttributeNS("", "id");
+			const std::string id = element->getAttributeNS("", "id");
 			if (!id.empty()) {
 				id_positions[id] = get_current_text_position();
 			}
 		}
 		if (in_body && tag_name.length() == 2 && tag_name[0] == 'h' && tag_name[1] >= '1' && tag_name[1] <= '6') {
-			int level = tag_name[1] - '0';
+			const int level = tag_name[1] - '0';
 			finalize_current_line();
-			size_t heading_offset = get_current_text_position();
-			std::string heading_text = get_element_text(element);
+			const size_t heading_offset = get_current_text_position();
+			const std::string heading_text = get_element_text(element);
 			if (!heading_text.empty()) {
-				headings.push_back({heading_offset, level, trim_string(collapse_whitespace(heading_text))});
+				headings.push_back({.offset = heading_offset, .level = level, .text = trim_string(collapse_whitespace(heading_text))});
 			}
 		}
 	} else if (node_type == Node::TEXT_NODE) {
-		process_text_node(static_cast<Text*>(node));
+		process_text_node(dynamic_cast<Text*>(node));
 	}
 	if (!skip_children) {
 		auto* child = node->firstChild();
-		while (child) {
+		while (child != nullptr) {
 			process_node(child);
 			child = child->nextSibling();
 		}
@@ -134,12 +141,12 @@ void xml_to_text::process_node(Node* node) {
 }
 
 void xml_to_text::process_text_node(Text* text_node) {
-	if (!in_body || !text_node) {
+	if (!in_body || text_node == nullptr) {
 		return;
 	}
-	const auto text = text_node->data();
+	const auto& text = text_node->data();
 	if (!text.empty()) {
-		std::string processed_text = remove_soft_hyphens(text);
+		const std::string processed_text = remove_soft_hyphens(text);
 		current_line += preserve_whitespace ? processed_text : collapse_whitespace(processed_text);
 	}
 }
@@ -213,21 +220,21 @@ constexpr bool xml_to_text::is_block_element(std::string_view tag_name) noexcept
 		"td",
 		"th",
 	};
-	return std::find(block_elements.begin(), block_elements.end(), tag_name) != block_elements.end();
+	return std::ranges::find(block_elements, tag_name) != block_elements.end();
 }
 
-std::string xml_to_text::get_element_text(Element* element) noexcept {
-	if (!element) {
+std::string xml_to_text::get_element_text(Element* element) {
+	if (element == nullptr) {
 		return {};
 	}
 	std::string text;
 	auto* child = element->firstChild();
-	while (child) {
+	while (child != nullptr) {
 		if (child->nodeType() == Node::TEXT_NODE) {
-			auto* text_node = static_cast<Text*>(child);
+			auto* text_node = dynamic_cast<Text*>(child);
 			text += text_node->data();
 		} else if (child->nodeType() == Node::ELEMENT_NODE) {
-			text += get_element_text(static_cast<Element*>(child));
+			text += get_element_text(dynamic_cast<Element*>(child));
 		}
 		child = child->nextSibling();
 	}
