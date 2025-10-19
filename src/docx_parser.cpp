@@ -11,9 +11,6 @@
 #include "document.hpp"
 #include "document_buffer.hpp"
 #include "utils.hpp"
-#include <algorithm>
-#include <cctype>
-#include <cstddef>
 #include <Poco/AutoPtr.h>
 #include <Poco/DOM/DOMParser.h>
 #include <Poco/DOM/Document.h>
@@ -24,6 +21,9 @@
 #include <Poco/SAX/InputSource.h>
 #include <Poco/SAX/XMLReader.h>
 #include <Poco/XML/XMLString.h>
+#include <algorithm>
+#include <cctype>
+#include <cstddef>
 #include <map>
 #include <memory>
 #include <sstream>
