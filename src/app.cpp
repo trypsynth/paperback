@@ -13,6 +13,7 @@
 #include "translation_manager.hpp"
 #include "utils.hpp"
 #include <wx/filename.h>
+#include <wx/translation.h>
 
 bool paperback_connection::OnExec(const wxString& topic, const wxString& data) {
 	if (topic == IPC_TOPIC_OPEN_FILE) {

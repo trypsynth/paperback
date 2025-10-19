@@ -19,6 +19,7 @@
 #include <wx/filename.h>
 #include <wx/stdpaths.h>
 #include <wx/timer.h>
+#include <wx/translation.h>
 
 main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	task_bar_icon_ = new task_bar_icon(this);

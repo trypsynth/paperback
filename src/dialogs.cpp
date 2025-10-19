@@ -12,6 +12,7 @@
 #include "constants.hpp"
 #include "translation_manager.hpp"
 #include <wx/filename.h>
+#include <wx/translation.h>
 
 dialog::dialog(wxWindow* parent, const wxString& title, dialog_button_config buttons) : wxDialog(parent, wxID_ANY, title), button_config{buttons} {
 	main_sizer = new wxBoxSizer(wxVERTICAL);

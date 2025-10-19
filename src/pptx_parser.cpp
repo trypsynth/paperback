@@ -35,6 +35,7 @@
 #include <wx/filename.h>
 #include <wx/msgdlg.h>
 #include <wx/string.h>
+#include <wx/translation.h>
 #include <wx/wfstream.h>
 #include <wx/zipstrm.h>
 

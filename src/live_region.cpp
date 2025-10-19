@@ -14,6 +14,7 @@
 #include <objbase.h>
 #include <oleacc.h>
 #include <uiautomation.h>
+#include <uiautomationcoreapi.h>
 #include <windef.h>
 #include <winerror.h>
 #include <winuser.h>
@@ -21,17 +22,22 @@
 #include <wx/window.h>
 
 namespace {
-IAccPropServices* acc_prop_services{nullptr};
+IAccPropServices*& get_acc_prop_services() {
+	// NOLINTNEXTLINE(misc-const-correctness) - COM interface pointer cannot be const
+	static IAccPropServices* acc_prop_services{nullptr};
+	return acc_prop_services;
+}
 
 bool init_live_region() {
-	if (acc_prop_services != nullptr) {
+	if (get_acc_prop_services() != nullptr) {
 		return true;
 	}
+	// NOLINTNEXTLINE(misc-include-cleaner) - HRESULT is available from wtypes.h
 	HRESULT hr = CoInitialize(nullptr);
 	if (FAILED(hr) && hr != RPC_E_CHANGED_MODE) {
 		return false;
 	}
-	hr = CoCreateInstance(CLSID_AccPropServices, nullptr, CLSCTX_INPROC, IID_IAccPropServices, reinterpret_cast<void**>(&acc_prop_services));
+	hr = CoCreateInstance(CLSID_AccPropServices, nullptr, CLSCTX_INPROC, IID_IAccPropServices, reinterpret_cast<void**>(&get_acc_prop_services()));
 	return SUCCEEDED(hr);
 }
 } // namespace
@@ -52,7 +58,7 @@ bool set_live_region(wxWindow* window, live_region_mode mode) {
 	var.vt = VT_I4;
 	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
 	var.lVal = static_cast<int>(mode);
-	const HRESULT hr = acc_prop_services->SetHwndProp(hwnd, OBJID_CLIENT, CHILDID_SELF, LiveSetting_Property_GUID, var);
+	const HRESULT hr = get_acc_prop_services()->SetHwndProp(hwnd, OBJID_CLIENT, CHILDID_SELF, LiveSetting_Property_GUID, var);
 	return SUCCEEDED(hr);
 }
 

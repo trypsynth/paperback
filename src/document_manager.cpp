@@ -20,6 +20,7 @@
 #include <wx/notebook.h>
 #include <wx/panel.h>
 #include <wx/textctrl.h>
+#include <wx/translation.h>
 
 document_manager::document_manager(wxNotebook* nbk, config_manager& cfg, main_window& win) : notebook{nbk}, config{cfg}, main_win{win} {}
 

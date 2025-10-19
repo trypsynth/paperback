@@ -11,7 +11,6 @@
 #include "document.hpp"
 #include "document_buffer.hpp"
 #include "html_to_text.hpp"
-#include "translation_manager.hpp"
 #include "utils.hpp"
 #include "xml_to_text.hpp"
 #include <Poco/DOM/DOMParser.h>
@@ -22,7 +21,9 @@
 #include <Poco/SAX/InputSource.h>
 #include <Poco/SAX/NamespaceSupport.h>
 #include <Poco/URI.h>
+#include <algorithm>
 #include <cstddef>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <sstream>
@@ -32,6 +33,7 @@
 #include <wx/filename.h>
 #include <wx/msgdlg.h>
 #include <wx/string.h>
+#include <wx/translation.h>
 #include <wx/wfstream.h>
 #include <wx/zipstrm.h>
 
@@ -97,7 +99,7 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 		parse_toc(ctx, document_ptr->toc_items, document_ptr->buffer);
 		return document_ptr;
 	} catch (const Exception& e) {
-		wxMessageBox(e.displayText(), "Error", wxICON_ERROR);
+		wxMessageBox(e.displayText(), _("Error"), wxICON_ERROR);
 		return nullptr;
 	}
 }
@@ -276,7 +278,7 @@ void epub_parser::parse_toc(epub_context& ctx, std::vector<std::unique_ptr<toc_i
 			parse_epub2_ncx(ctx.toc_ncx_id, ctx, toc_items, buffer);
 		}
 	} catch (const Exception& e) {
-		wxMessageBox("Warning: Could not parse table of contents: " + wxString(e.displayText()), "Warning", wxICON_WARNING);
+		wxMessageBox(wxString::Format(_("Couldn't parse table of contents: %s"), wxString(e.displayText())), _("Warning"), wxICON_WARNING);
 	}
 }
 

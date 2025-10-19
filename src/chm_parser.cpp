@@ -8,30 +8,27 @@
  */
 
 #include "chm_parser.hpp"
+#include "document.hpp"
+#include "document_buffer.hpp"
 #include "html_to_text.hpp"
 #include "utils.hpp"
-#include <Poco/AutoPtr.h>
-#include <Poco/DOM/DOMParser.h>
-#include <Poco/DOM/Document.h>
-#include <Poco/DOM/Element.h>
-#include <Poco/DOM/Node.h>
-#include <Poco/DOM/NodeList.h>
-#include <Poco/SAX/InputSource.h>
-#include <Poco/String.h>
 #include <algorithm>
-#include <iostream>
+#include <chm_lib.h>
+#include <cstddef>
+#include <exception>
+#include <map>
 #include <memory>
 #include <set>
-#include <sstream>
+#include <vector>
 #include <wx/filename.h>
-#include <wx/log.h>
 #include <wx/msgdlg.h>
+#include <wx/string.h>
 
 std::unique_ptr<document> chm_parser::load(const wxString& path) const {
 	chmFile* file = nullptr;
 	try {
 		file = chm_open(path.ToStdString().c_str());
-		if (!file) {
+		if (file == nullptr) {
 			return nullptr;
 		}
 		chm_context ctx(file);
@@ -42,7 +39,7 @@ std::unique_ptr<document> chm_parser::load(const wxString& path) const {
 		cleanup_toc(document_ptr->toc_items);
 		document_ptr->buffer.clear();
 		parse_html_files(ctx, document_ptr->buffer, document_ptr->toc_items);
-		for (const auto pair_file_path_id_map : ctx.id_positions) {
+		for (const auto& pair_file_path_id_map : ctx.id_positions) {
 			for (const auto& pair_id_pos : pair_file_path_id_map.second) {
 				document_ptr->id_positions[pair_id_pos.first] = pair_id_pos.second;
 			}
@@ -56,13 +53,13 @@ std::unique_ptr<document> chm_parser::load(const wxString& path) const {
 		chm_close(file);
 		return document_ptr;
 	} catch (const std::exception& e) {
-		if (file) {
+		if (file != nullptr) {
 			chm_close(file);
 		}
 		wxMessageBox(wxString::FromUTF8(e.what()), "Error", wxICON_ERROR);
 		return nullptr;
 	} catch (...) {
-		if (file) {
+		if (file != nullptr) {
 			chm_close(file);
 		}
 		wxMessageBox("Unknown error while parsing CHM file", "Error", wxICON_ERROR);
@@ -70,16 +67,16 @@ std::unique_ptr<document> chm_parser::load(const wxString& path) const {
 	}
 }
 
-void chm_parser::enumerate_files(chm_context& ctx) const {
+void chm_parser::enumerate_files(chm_context& ctx) {
 	chm_enumerate(ctx.file, CHM_ENUMERATE_ALL, file_enumerator, &ctx);
-	std::sort(ctx.html_files.begin(), ctx.html_files.end());
+	std::ranges::sort(ctx.html_files);
 }
 
 void chm_parser::parse_html_files(chm_context& ctx, document_buffer& buffer, const std::vector<std::unique_ptr<toc_item>>& toc_items) const {
 	std::vector<std::string> ordered_files;
 	std::map<std::string, std::string> toc_to_actual;
 	for (const auto& file : ctx.html_files) {
-		std::string normalized = normalize_path(file);
+		const std::string normalized = normalize_path(file);
 		toc_to_actual[normalized] = file;
 	}
 	if (!toc_items.empty()) {
@@ -94,16 +91,15 @@ void chm_parser::parse_html_files(chm_context& ctx, document_buffer& buffer, con
 			}
 		}
 		for (const auto& [normalized, actual] : toc_to_actual) {
-			if (processed_files.find(normalized) == processed_files.end()) {
+			if (!processed_files.contains(normalized)) {
 				ordered_files.push_back(actual);
 			}
 		}
 	} else {
 		ordered_files = ctx.html_files;
 	}
-	for (size_t i = 0; i < ordered_files.size(); ++i) {
-		const auto& file_path = ordered_files[i];
-		size_t section_start = buffer.str().length();
+	for (const auto& file_path : ordered_files) {
+		const size_t section_start = buffer.str().length();
 		std::string content = read_file_content(ctx.file, file_path);
 		if (content.empty()) {
 			continue;
@@ -117,38 +113,38 @@ void chm_parser::parse_html_files(chm_context& ctx, document_buffer& buffer, con
 		const auto& headings = converter.get_headings();
 		const auto& links = converter.get_links();
 		const auto& id_positions = converter.get_id_positions();
-		std::string normalized_path = normalize_path(file_path);
+		const std::string normalized_path = normalize_path(file_path);
 		ctx.id_positions[normalized_path][""] = section_start;
 		for (const auto& [id, relative_pos] : id_positions) {
 			ctx.id_positions[normalized_path][id] = section_start + relative_pos;
 		}
-		wxString wx_text = wxString::FromUTF8(text);
+		const wxString wx_text = wxString::FromUTF8(text);
 		buffer.append(wx_text);
 		for (const auto& heading : headings) {
-			marker_type type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + heading.level - 1);
+			const auto type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + heading.level - 1);
 			buffer.add_marker(section_start + heading.offset, type, wxString::FromUTF8(heading.text), wxString(), heading.level);
 		}
 		for (const auto& link : links) {
 			wxString resolved_href;
-			wxString href_lower = wxString(link.ref).Lower();
+			const wxString href_lower = wxString(link.ref).Lower();
 			if (href_lower.StartsWith("http:") || href_lower.StartsWith("https:") || href_lower.StartsWith("mailto:")) {
 				resolved_href = link.ref;
 			} else {
 				wxFileName link_path(wxString::FromUTF8(file_path));
 				link_path.SetFullName(wxString::FromUTF8(link.ref));
-				link_path.Normalize(wxPATH_NORM_DOTS | wxPATH_NORM_TILDE | wxPATH_NORM_ABSOLUTE | wxPATH_NORM_SHORTCUT, "/");
+				link_path.Normalize(static_cast<unsigned>(wxPATH_NORM_DOTS | wxPATH_NORM_TILDE | wxPATH_NORM_ABSOLUTE | wxPATH_NORM_SHORTCUT), "/");
 				resolved_href = link_path.GetFullPath(wxPATH_UNIX);
 			}
 			buffer.add_link(section_start + link.offset, wxString::FromUTF8(link.text), resolved_href);
 		}
-		if (buffer.str().length() > 0 && !buffer.str().EndsWith("\n")) {
+		if (!buffer.str().empty() && !buffer.str().EndsWith("\n")) {
 			buffer.append("\n");
 		}
 	}
 }
 
-std::string chm_parser::read_file_content(chmFile* file, const std::string& path) const {
-	chmUnitInfo ui;
+std::string chm_parser::read_file_content(chmFile* file, const std::string& path) {
+	chmUnitInfo ui{};
 	if (chm_resolve_object(file, path.c_str(), &ui) != CHM_RESOLVE_SUCCESS) {
 		return "";
 	}
@@ -156,7 +152,7 @@ std::string chm_parser::read_file_content(chmFile* file, const std::string& path
 		return "";
 	}
 	std::vector<unsigned char> buffer(static_cast<size_t>(ui.length));
-	LONGINT64 bytes_read = chm_retrieve_object(file, &ui, buffer.data(), 0, ui.length);
+	const LONGINT64 bytes_read = chm_retrieve_object(file, &ui, buffer.data(), 0, ui.length);
 	if (bytes_read != static_cast<LONGINT64>(ui.length)) {
 		return "";
 	}

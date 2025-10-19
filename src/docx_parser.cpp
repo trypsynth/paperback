@@ -38,7 +38,9 @@
 using namespace Poco;
 using namespace Poco::XML;
 
+// NOLINTNEXTLINE(cert-err58-cpp) - String construction from literals is safe in practice
 inline const XMLString WORDML_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+// NOLINTNEXTLINE(cert-err58-cpp) - String construction from literals is safe in practice
 inline const XMLString REL_NS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 
 std::unique_ptr<document> docx_parser::load(const wxString& path) const {
@@ -318,7 +320,7 @@ int docx_parser::get_heading_level(Element* pr_element) {
 									return level;
 								}
 							}
-						} catch (...) {
+						} catch (...) { // NOLINT(bugprone-empty-catch) - Invalid heading numbers are silently skipped
 						}
 					}
 				}
@@ -330,7 +332,7 @@ int docx_parser::get_heading_level(Element* pr_element) {
 						if (level > 0 && level <= max_heading_level) {
 							return level;
 						}
-					} catch (...) {
+					} catch (...) { // NOLINT(bugprone-empty-catch) - Invalid outline level values are silently skipped
 					}
 				}
 			}

@@ -17,6 +17,7 @@
 #include <wx/slider.h>
 #include <wx/window.h>
 
+// NOLINTNEXTLINE(misc-include-cleaner) - False positive: wx/slider.h is correctly included, wxSlider is available
 accessible_slider::accessible_slider(wxWindow* parent, wxWindowID id, int value, int min_value, int max_value) : wxSlider(parent, id, value, min_value, max_value) {
 	Bind(wxEVT_CHAR, &accessible_slider::on_char, this);
 }
