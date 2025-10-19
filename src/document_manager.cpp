@@ -633,7 +633,6 @@ long document_manager::find_text(const wxString& query, long start_pos, find_opt
 }
 
 void document_manager::apply_word_wrap(bool word_wrap) {
-	int active_tab = get_active_tab_index();
 	for (int i = 0; i < get_tab_count(); ++i) {
 		document_tab* tab = get_tab(i);
 		if (tab && tab->text_ctrl && tab->panel) {

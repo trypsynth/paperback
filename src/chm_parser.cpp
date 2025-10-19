@@ -136,7 +136,7 @@ void chm_parser::parse_html_files(chm_context& ctx, document_buffer& buffer, con
 			} else {
 				wxFileName link_path(wxString::FromUTF8(file_path));
 				link_path.SetFullName(wxString::FromUTF8(link.ref));
-				link_path.Normalize(wxPATH_NORM_ALL, "/");
+				link_path.Normalize(wxPATH_NORM_DOTS | wxPATH_NORM_TILDE | wxPATH_NORM_ABSOLUTE | wxPATH_NORM_SHORTCUT, "/");
 				resolved_href = link_path.GetFullPath(wxPATH_UNIX);
 			}
 			buffer.add_link(section_start + link.offset, wxString::FromUTF8(link.text), resolved_href);

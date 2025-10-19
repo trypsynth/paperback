@@ -168,7 +168,6 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 				}
 				current_link_href.clear();
 				current_link_text.clear();
-				link_start_pos = 0;
 			}
 		}
 		if (tag_name == "pre") {

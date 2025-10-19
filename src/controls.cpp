@@ -29,7 +29,7 @@ void accessible_slider::on_char(wxKeyEvent& event) {
 	const int current_value = GetValue();
 	const int min_value = GetMin();
 	const int max_value = GetMax();
-	int new_value = current_value;
+	int new_value{0};
 	bool handled = false;
 	switch (key) {
 		case WXK_UP:

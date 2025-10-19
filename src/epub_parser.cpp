@@ -240,7 +240,18 @@ void epub_parser::parse_section(size_t index, epub_context& ctx, document_buffer
 		process_section_content(converter, content, href, ctx, buffer);
 	} else {
 		xml_to_text converter;
-		process_section_content(converter, content, href, ctx, buffer);
+		if (!converter.convert(content)) {
+			// The file may contain HTML syntax despite claiming to be XML; try parsing as HTML instead.
+			static bool warning_shown = false;
+			if (!warning_shown) {
+				wxMessageBox(_("This book contains malformed content. Some files claim to be XML but contain HTML syntax."), _("Warning"), wxICON_WARNING);
+				warning_shown = true;
+			}
+			html_to_text html_converter;
+			process_section_content(html_converter, content, href, ctx, buffer);
+		} else {
+			process_section_content(converter, content, href, ctx, buffer);
+		}
 	}
 }
 

@@ -75,16 +75,20 @@ void xml_to_text::process_node(Node* node) {
 	}
 	const auto node_type = node->nodeType();
 	std::string tag_name;
+	bool skip_children = false;
 	if (node_type == Node::ELEMENT_NODE) {
 		auto* element = static_cast<Element*>(node);
 		tag_name = element->localName();
 		std::transform(tag_name.begin(), tag_name.end(), tag_name.begin(), ::tolower);
 		if (tag_name == "a" && element->hasAttributeNS("", "href")) {
 			std::string href = element->getAttributeNS("", "href");
-			size_t link_offset = get_current_text_position();
 			std::string link_text = get_element_text(element);
 			if (!link_text.empty()) {
-				links.push_back({link_offset, trim_string(collapse_whitespace(link_text)), href});
+				std::string processed_link_text = trim_string(collapse_whitespace(link_text));
+				size_t link_offset = get_current_text_position();
+				current_line += processed_link_text;
+				links.push_back({link_offset, processed_link_text, href});
+				skip_children = true;
 			}
 		} else if (tag_name == "body") {
 			in_body = true;
@@ -112,10 +116,12 @@ void xml_to_text::process_node(Node* node) {
 	} else if (node_type == Node::TEXT_NODE) {
 		process_text_node(static_cast<Text*>(node));
 	}
-	auto* child = node->firstChild();
-	while (child) {
-		process_node(child);
-		child = child->nextSibling();
+	if (!skip_children) {
+		auto* child = node->firstChild();
+		while (child) {
+			process_node(child);
+			child = child->nextSibling();
+		}
 	}
 	if (node_type == Node::ELEMENT_NODE) {
 		if (is_block_element(tag_name)) {
@@ -163,7 +169,11 @@ void xml_to_text::finalize_current_line() {
 }
 
 size_t xml_to_text::get_current_text_position() const {
-	return cached_char_length + wxString::FromUTF8(current_line).length();
+	std::string trimmed_line = current_line;
+	while (!trimmed_line.empty() && trimmed_line.back() == ' ') {
+		trimmed_line.pop_back();
+	}
+	return cached_char_length + wxString::FromUTF8(trimmed_line).length();
 }
 
 constexpr bool xml_to_text::is_block_element(std::string_view tag_name) noexcept {
