@@ -17,6 +17,7 @@ inline const wxString APP_WEBSITE = "https://github.com/trypsynth/paperback";
 inline constexpr int POSITION_SAVE_THROTTLE_MS = 1000;
 inline constexpr int STATUS_UPDATE_THROTTLE_MS = 100;
 inline constexpr int MAX_FIND_HISTORY_SIZE = 10;
+inline constexpr int DEFAULT_RECENT_DOCUMENTS_TO_SHOW = 25;
 inline constexpr int CONFIG_VERSION_CURRENT = 1;
 inline constexpr int CONFIG_VERSION_LEGACY = 0;
 inline const wxString IPC_SERVICE = "paperback_ipc_service";

@@ -115,7 +115,7 @@ int document_buffer::current_marker_index(size_t position, marker_type type) con
 }
 
 int document_buffer::next_heading_marker_index(size_t position, int level) const {
-	auto heading_markers = get_heading_markers();
+	const auto heading_markers = get_heading_markers();
 	for (size_t i = 0; i < heading_markers.size(); ++i) {
 		if (heading_markers[i]->pos > position) {
 			if (level == -1 || heading_markers[i]->level == level) {
@@ -127,7 +127,7 @@ int document_buffer::next_heading_marker_index(size_t position, int level) const
 }
 
 int document_buffer::previous_heading_marker_index(size_t position, int level) const {
-	auto heading_markers = get_heading_markers();
+	const auto heading_markers = get_heading_markers();
 	int current_index = -1;
 	for (size_t i = 0; i < heading_markers.size(); ++i) {
 		if (heading_markers[i]->pos >= position) {

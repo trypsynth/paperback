@@ -11,7 +11,9 @@
 #include "utils.hpp"
 #include <algorithm>
 #include <array>
+#include <lexbor/dom/interfaces/element.h>
 #include <lexbor/html/html.h>
+#include <lexbor/html/parser.h>
 #include <lexbor/html/serialize.h>
 #include <sstream>
 #include <stdexcept>
