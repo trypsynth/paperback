@@ -23,17 +23,39 @@
 main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	task_bar_icon_ = new task_bar_icon(this);
 	auto* const panel = new wxPanel(this);
-	notebook = new wxNotebook(panel, wxID_ANY);
+
+    auto& config_mgr = wxGetApp().get_config_manager();
+    single_window_mode = config_mgr.get_open_in_new_window();
+
+	if (single_window_mode) {
+        single_doc_panel = new wxPanel(panel);
+        auto* sizer = new wxBoxSizer(wxVERTICAL);
+        long style = wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | (config_mgr.get_word_wrap() ? wxTE_WORDWRAP : wxTE_DONTWRAP);
+        single_text_ctrl = new wxTextCtrl(single_doc_panel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, style);
+        single_text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, this);
+        single_text_ctrl->Bind(wxEVT_CHAR, &main_window::on_text_char, this);
+        sizer->Add(single_text_ctrl, 1, wxEXPAND | wxALL, 5);
+        single_doc_panel->SetSizer(sizer);
+
+        auto* panel_sizer = new wxBoxSizer(wxVERTICAL);
+        panel_sizer->Add(single_doc_panel, 1, wxEXPAND | wxALL, 10);
+        panel->SetSizer(panel_sizer);
+
+        notebook = new wxNotebook(panel, wxID_ANY);
+        notebook->Hide();
+    } else {
+	    notebook = new wxNotebook(panel, wxID_ANY);
 #ifdef __WXMSW__
-	notebook->MSWDisableComposited();
+	    notebook->MSWDisableComposited();
 #endif
+	    auto* const sizer = new wxBoxSizer(wxVERTICAL);
+	    sizer->Add(notebook, 1, wxEXPAND | wxALL, 10);
+	    panel->SetSizer(sizer);
+    }
 
 	live_region_label = new wxStaticText(panel, wxID_ANY, "", wxDefaultPosition, wxSize(0, 0));
 	live_region_label->Hide();
 	[[maybe_unused]] bool live_region_set = set_live_region(live_region_label);
-	auto* const sizer = new wxBoxSizer(wxVERTICAL);
-	sizer->Add(notebook, 1, wxEXPAND | wxALL, 10);
-	panel->SetSizer(sizer);
 	doc_manager = std::make_unique<document_manager>(notebook, wxGetApp().get_config_manager(), *this);
 	create_menus();
 	status_bar = CreateStatusBar(1);
@@ -43,6 +65,12 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME) {
 	bind_events();
 	update_ui();
 	notebook->Bind(wxEVT_KEY_DOWN, &main_window::on_notebook_key_down, this);
+}
+
+void main_window::set_document_content(const wxString& content) {
+    if (single_window_mode && single_text_ctrl) {
+        single_text_ctrl->SetValue(content);
+    }
 }
 
 main_window::~main_window() {
@@ -237,6 +265,8 @@ void main_window::on_iconize(wxIconizeEvent& event) {
 	event.Skip();
 }
 
+
+
 void main_window::update_ui() {
 	const bool has_doc = doc_manager->has_documents();
 	const auto enable = [this](const int id, const bool state) noexcept {
@@ -299,7 +329,7 @@ void main_window::on_open(wxCommandEvent&) {
 		return;
 	}
 	const auto path = dlg.GetPath();
-	wxGetApp().open_file(path);
+	wxGetApp().open_file(path, this);
 }
 
 void main_window::on_close(wxCommandEvent&) {
@@ -682,7 +712,7 @@ void main_window::on_recent_document(wxCommandEvent& event) {
 	const wxArrayString recent_docs = config_mgr.get_recent_documents();
 	if (index >= 0 && index < static_cast<int>(recent_docs.GetCount())) {
 		const wxString& path = recent_docs[index];
-		[[maybe_unused]] bool success = doc_manager->open_file(path);
+		wxGetApp().open_file(path, this);
 	}
 }
 
