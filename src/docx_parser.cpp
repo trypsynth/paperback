@@ -34,21 +34,30 @@ const std::string REL_NS = "http://schemas.openxmlformats.org/officeDocument/200
 std::unique_ptr<document> docx_parser::load(const wxString& path) const {
 	try {
 		auto fp = std::make_unique<wxFileInputStream>(path);
-		if (!fp->IsOk()) return nullptr;
+		if (!fp->IsOk()) {
+			return nullptr;
+		}
 		wxZipInputStream zip(*fp);
-		if (!zip.IsOk()) return nullptr;
+		if (!zip.IsOk()) {
+			return nullptr;
+		}
 		std::string rels_content;
 		std::string doc_content;
 		std::unique_ptr<wxZipEntry> entry;
 		while ((entry.reset(zip.GetNextEntry())), entry.get() != nullptr) {
 			std::string entry_name = entry->GetInternalName().ToStdString();
-			if (entry_name == "word/_rels/document.xml.rels")
+			if (entry_name == "word/_rels/document.xml.rels") {
 				rels_content = read_zip_entry(zip);
-			else if (entry_name == "word/document.xml")
+			} else if (entry_name == "word/document.xml") {
 				doc_content = read_zip_entry(zip);
-			if (!rels_content.empty() && !doc_content.empty()) break;
+			}
+			if (!rels_content.empty() && !doc_content.empty()) {
+				break;
+			}
 		}
-		if (doc_content.empty()) return nullptr;
+		if (doc_content.empty()) {
+			return nullptr;
+		}
 		std::map<std::string, std::string> rels;
 		if (!rels_content.empty()) {
 			std::istringstream rels_stream(rels_content);
@@ -63,7 +72,9 @@ std::unique_ptr<document> docx_parser::load(const wxString& path) const {
 				std::string id = element->getAttribute("Id");
 				std::string target = element->getAttribute("Target");
 				std::string type = element->getAttribute("Type");
-				if (type == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink") rels[id] = target;
+				if (type == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink") {
+					rels[id] = target;
+				}
 			}
 		}
 		std::istringstream content_stream(doc_content);
@@ -95,12 +106,16 @@ std::unique_ptr<document> docx_parser::load(const wxString& path) const {
 }
 
 void docx_parser::traverse(Node* node, wxString& text, std::vector<heading_info>& headings, document* doc, const std::map<std::string, std::string>& rels) const {
-	if (!node) return;
+	if (!node) {
+		return;
+	}
 	if (node->nodeType() == Node::ELEMENT_NODE) {
 		auto* element = static_cast<Element*>(node);
 		std::string local_name = element->localName();
 		std::string id_attr = element->getAttributeNS(WORDML_NS, "id");
-		if (!id_attr.empty()) doc->id_positions[id_attr] = text.length();
+		if (!id_attr.empty()) {
+			doc->id_positions[id_attr] = text.length();
+		}
 		if (local_name == "p") {
 			process_paragraph(element, text, headings, doc, rels);
 			return; // process_paragraph handles its children
@@ -125,14 +140,16 @@ void docx_parser::process_paragraph(Element* element, wxString& text, std::vecto
 		}
 		auto* child_element = static_cast<Element*>(child);
 		std::string local_name = child_element->localName();
-		if (local_name == "pPr")
+		if (local_name == "pPr") {
 			heading_level = get_heading_level(child_element);
-		else if (local_name == "bookmarkStart") {
+		} else if (local_name == "bookmarkStart") {
 			std::string name_attr = child_element->getAttributeNS(WORDML_NS, "name");
-			if (!name_attr.empty()) doc->id_positions[name_attr] = paragraph_start_offset + paragraph_text.length();
-		} else if (local_name == "hyperlink")
+			if (!name_attr.empty()) {
+				doc->id_positions[name_attr] = paragraph_start_offset + paragraph_text.length();
+			}
+		} else if (local_name == "hyperlink") {
 			process_hyperlink(child_element, paragraph_text, doc, rels, paragraph_start_offset);
-		else if (local_name == "r") {
+		} else if (local_name == "r") {
 			Element* instrTextElement = nullptr;
 			Node* node = child_element->firstChild();
 			while (node) {
@@ -170,12 +187,14 @@ void docx_parser::process_paragraph(Element* element, wxString& text, std::vecto
 							}
 							if (fldCharElement) {
 								std::string type = fldCharElement->getAttributeNS(WORDML_NS, "fldCharType");
-								if (type == "separate")
+								if (type == "separate") {
 									in_display_text = true;
-								else if (type == "end")
+								} else if (type == "end") {
 									break;
-							} else if (in_display_text)
+								}
+							} else if (in_display_text) {
 								display_text_utf8 += get_run_text(field_run);
+							}
 						}
 						field_node = field_node->nextSibling();
 					}
@@ -185,7 +204,9 @@ void docx_parser::process_paragraph(Element* element, wxString& text, std::vecto
 						doc->buffer.add_link(paragraph_start_offset + link_offset_in_paragraph, display_text_wx, wxString::FromUTF8(link_target));
 					}
 					child = field_node;
-					if (child) child = child->nextSibling();
+					if (child) {
+						child = child->nextSibling();
+					}
 					continue;
 				}
 			}
@@ -202,7 +223,9 @@ void docx_parser::process_paragraph(Element* element, wxString& text, std::vecto
 			h.offset = paragraph_start_offset;
 			h.level = heading_level;
 			h.text = std::string(paragraph_text.utf8_str());
-			if (!h.text.empty()) headings.push_back(h);
+			if (!h.text.empty()) {
+				headings.push_back(h);
+			}
 		}
 	}
 }
@@ -212,7 +235,9 @@ std::string docx_parser::parse_hyperlink_instruction(const std::string& instruct
 	size_t last_quote = instruction.rfind('"');
 	if (first_quote != std::string::npos && last_quote != std::string::npos && first_quote != last_quote) {
 		std::string target = instruction.substr(first_quote + 1, last_quote - first_quote - 1);
-		if (instruction.find("\\l") != std::string::npos) return "#" + target;
+		if (instruction.find("\\l") != std::string::npos) {
+			return "#" + target;
+		}
 		return target;
 	}
 	return "";
@@ -224,16 +249,20 @@ void docx_parser::process_hyperlink(Element* element, wxString& text, document* 
 	std::string link_target;
 	if (!r_id.empty()) {
 		auto it = rels.find(r_id);
-		if (it != rels.end()) link_target = it->second;
-	} else if (!anchor.empty())
+		if (it != rels.end()) {
+			link_target = it->second;
+		}
+	} else if (!anchor.empty()) {
 		link_target = "#" + anchor;
+	}
 	if (link_target.empty()) { // If no target, just process the text
 		Node* child = element->firstChild();
 		while (child) {
 			if (child->nodeType() == Node::ELEMENT_NODE) {
 				auto* child_element = static_cast<Element*>(child);
-				if (child_element->localName() == "r")
+				if (child_element->localName() == "r") {
 					text += wxString::FromUTF8(get_run_text(child_element));
+				}
 			}
 			child = child->nextSibling();
 		}
@@ -245,8 +274,9 @@ void docx_parser::process_hyperlink(Element* element, wxString& text, document* 
 	while (child) {
 		if (child->nodeType() == Node::ELEMENT_NODE) {
 			auto* child_element = static_cast<Element*>(child);
-			if (child_element->localName() == "r")
+			if (child_element->localName() == "r") {
 				link_text_utf8 += get_run_text(child_element);
+			}
 		}
 		child = child->nextSibling();
 	}
@@ -273,7 +303,9 @@ int docx_parser::get_heading_level(Element* pr_element) const {
 							size_t num_pos = style.find_first_of("0123456789");
 							if (num_pos != std::string::npos) {
 								int level = std::stoi(style.substr(num_pos));
-								if (level > 0 && level <= 9) return level;
+								if (level > 0 && level <= 9) {
+									return level;
+								}
 							}
 						} catch (...) {
 						}
@@ -284,7 +316,9 @@ int docx_parser::get_heading_level(Element* pr_element) const {
 				if (!level_str.empty()) {
 					try {
 						int level = std::stoi(level_str) + 1;
-						if (level > 0 && level <= 9) return level;
+						if (level > 0 && level <= 9) {
+							return level;
+						}
 					} catch (...) {
 					}
 				}
@@ -302,12 +336,14 @@ std::string docx_parser::get_run_text(Element* run_element) const {
 		if (child->nodeType() == Node::ELEMENT_NODE) {
 			auto* element = static_cast<Element*>(child);
 			if (element->localName() == "t") {
-				if (element->firstChild() && element->firstChild()->nodeType() == Node::TEXT_NODE)
+				if (element->firstChild() && element->firstChild()->nodeType() == Node::TEXT_NODE) {
 					run_text += element->firstChild()->getNodeValue();
-			} else if (element->localName() == "tab")
+				}
+			} else if (element->localName() == "tab") {
 				run_text += "\t";
-			else if (element->localName() == "br")
+			} else if (element->localName() == "br") {
 				run_text += "\n";
+			}
 		}
 		child = child->nextSibling();
 	}

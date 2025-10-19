@@ -44,12 +44,17 @@ bool xml_to_text::convert(const std::string& xml_content) {
 }
 
 std::string xml_to_text::get_text() const {
-	if (lines.empty()) return {};
+	if (lines.empty()) {
+		return {};
+	}
 	std::ostringstream oss;
-	for (const auto& line : lines)
+	for (const auto& line : lines) {
 		oss << line << '\n';
+	}
 	auto result = oss.str();
-	if (!result.empty()) result.pop_back();
+	if (!result.empty()) {
+		result.pop_back();
+	}
 	return result;
 }
 
@@ -65,53 +70,73 @@ void xml_to_text::clear() noexcept {
 }
 
 void xml_to_text::process_node(Node* node) {
-	if (!node) return;
+	if (!node) {
+		return;
+	}
 	const auto node_type = node->nodeType();
 	std::string tag_name;
+	bool skip_children = false;
 	if (node_type == Node::ELEMENT_NODE) {
 		auto* element = static_cast<Element*>(node);
 		tag_name = element->localName();
 		std::transform(tag_name.begin(), tag_name.end(), tag_name.begin(), ::tolower);
 		if (tag_name == "a" && element->hasAttributeNS("", "href")) {
 			std::string href = element->getAttributeNS("", "href");
-			size_t link_offset = get_current_text_position();
 			std::string link_text = get_element_text(element);
-			if (!link_text.empty()) links.push_back({link_offset, trim_string(collapse_whitespace(link_text)), href});
-		} else if (tag_name == "body")
+			if (!link_text.empty()) {
+				std::string processed_link_text = trim_string(collapse_whitespace(link_text));
+				size_t link_offset = get_current_text_position();
+				current_line += processed_link_text;
+				links.push_back({link_offset, processed_link_text, href});
+				skip_children = true;
+			}
+		} else if (tag_name == "body") {
 			in_body = true;
-		else if (tag_name == "pre") {
+		} else if (tag_name == "pre") {
 			finalize_current_line();
 			preserve_whitespace = true;
-		} else if (tag_name == "br" || tag_name == "li")
+		} else if (tag_name == "br" || tag_name == "li") {
 			finalize_current_line();
+		}
 		if (in_body && element->hasAttributeNS("", "id")) {
 			std::string id = element->getAttributeNS("", "id");
-			if (!id.empty()) id_positions[id] = get_current_text_position();
+			if (!id.empty()) {
+				id_positions[id] = get_current_text_position();
+			}
 		}
 		if (in_body && tag_name.length() == 2 && tag_name[0] == 'h' && tag_name[1] >= '1' && tag_name[1] <= '6') {
 			int level = tag_name[1] - '0';
 			finalize_current_line();
 			size_t heading_offset = get_current_text_position();
 			std::string heading_text = get_element_text(element);
-			if (!heading_text.empty()) headings.push_back({heading_offset, level, trim_string(collapse_whitespace(heading_text))});
+			if (!heading_text.empty()) {
+				headings.push_back({heading_offset, level, trim_string(collapse_whitespace(heading_text))});
+			}
 		}
-	} else if (node_type == Node::TEXT_NODE)
+	} else if (node_type == Node::TEXT_NODE) {
 		process_text_node(static_cast<Text*>(node));
-	auto* child = node->firstChild();
-	while (child) {
-		process_node(child);
-		child = child->nextSibling();
+	}
+	if (!skip_children) {
+		auto* child = node->firstChild();
+		while (child) {
+			process_node(child);
+			child = child->nextSibling();
+		}
 	}
 	if (node_type == Node::ELEMENT_NODE) {
-		if (is_block_element(tag_name))
+		if (is_block_element(tag_name)) {
 			finalize_current_line();
-		if (tag_name == "pre")
+		}
+		if (tag_name == "pre") {
 			preserve_whitespace = false;
+		}
 	}
 }
 
 void xml_to_text::process_text_node(Text* text_node) {
-	if (!in_body || !text_node) return;
+	if (!in_body || !text_node) {
+		return;
+	}
 	const auto text = text_node->data();
 	if (!text.empty()) {
 		std::string processed_text = remove_soft_hyphens(text);
@@ -123,8 +148,9 @@ void xml_to_text::add_line(std::string_view line) {
 	std::string processed_line;
 	if (preserve_whitespace) {
 		processed_line = std::string(line);
-		while (!processed_line.empty() && (processed_line.back() == '\n' || processed_line.back() == '\r'))
+		while (!processed_line.empty() && (processed_line.back() == '\n' || processed_line.back() == '\r')) {
 			processed_line.pop_back();
+		}
 		cached_char_length += wxString::FromUTF8(processed_line).length() + 1; // +1 for newline
 		lines.emplace_back(std::move(processed_line));
 	} else {
@@ -143,11 +169,17 @@ void xml_to_text::finalize_current_line() {
 }
 
 size_t xml_to_text::get_current_text_position() const {
-	return cached_char_length + wxString::FromUTF8(current_line).length();
+	std::string trimmed_line = current_line;
+	while (!trimmed_line.empty() && trimmed_line.back() == ' ') {
+		trimmed_line.pop_back();
+	}
+	return cached_char_length + wxString::FromUTF8(trimmed_line).length();
 }
 
 constexpr bool xml_to_text::is_block_element(std::string_view tag_name) noexcept {
-	if (tag_name.empty()) return false;
+	if (tag_name.empty()) {
+		return false;
+	}
 	constexpr std::array block_elements = {
 		"div",
 		"p",
@@ -185,15 +217,18 @@ constexpr bool xml_to_text::is_block_element(std::string_view tag_name) noexcept
 }
 
 std::string xml_to_text::get_element_text(Element* element) noexcept {
-	if (!element) return {};
+	if (!element) {
+		return {};
+	}
 	std::string text;
 	auto* child = element->firstChild();
 	while (child) {
 		if (child->nodeType() == Node::TEXT_NODE) {
 			auto* text_node = static_cast<Text*>(child);
 			text += text_node->data();
-		} else if (child->nodeType() == Node::ELEMENT_NODE)
+		} else if (child->nodeType() == Node::ELEMENT_NODE) {
 			text += get_element_text(static_cast<Element*>(child));
+		}
 		child = child->nextSibling();
 	}
 	return text;

@@ -19,26 +19,38 @@
 #include <wx/string.h>
 
 html_to_text::html_to_text() : doc(lxb_html_document_create()) {
-	if (!doc) throw std::runtime_error("Failed to create Lexbor HTML document");
+	if (!doc) {
+		throw std::runtime_error("Failed to create Lexbor HTML document");
+	}
 }
 
 bool html_to_text::convert(const std::string& html_content, html_source_mode mode) {
 	clear();
 	source_mode = mode;
 	const auto status = lxb_html_document_parse(doc.get(), reinterpret_cast<const lxb_char_t*>(html_content.data()), html_content.length());
-	if (status != LXB_STATUS_OK) return false;
-	if (auto* node = lxb_dom_interface_node(doc.get())) process_node(node);
+	if (status != LXB_STATUS_OK) {
+		return false;
+	}
+	if (auto* node = lxb_dom_interface_node(doc.get())) {
+		process_node(node);
+	}
 	finalize_current_line();
 	finalize_text();
 	return true;
 }
 
 std::string html_to_text::get_text() const {
-	if (lines.empty()) return {};
+	if (lines.empty()) {
+		return {};
+	}
 	std::ostringstream oss;
-	for (const auto& line : lines) oss << line << '\n';
+	for (const auto& line : lines) {
+		oss << line << '\n';
+	}
 	auto result = oss.str();
-	if (!result.empty()) result.pop_back(); // Remove trailing newline
+	if (!result.empty()) {
+		result.pop_back(); // Remove trailing newline
+	}
 	return result;
 }
 
@@ -61,7 +73,9 @@ void html_to_text::clear() noexcept {
 }
 
 void html_to_text::process_node(lxb_dom_node_t* node) {
-	if (!node) return;
+	if (!node) {
+		return;
+	}
 	std::string_view tag_name;
 	size_t link_start_pos = 0;
 	const bool is_element = (node->type == LXB_DOM_NODE_TYPE_ELEMENT);
@@ -77,23 +91,25 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 					in_link = true;
 					size_t href_len;
 					const lxb_char_t* href_attr = lxb_dom_element_get_attribute(element, (const lxb_char_t*)"href", 4, &href_len);
-					if (href_attr && href_len > 0)
+					if (href_attr && href_len > 0) {
 						current_link_href = std::string(reinterpret_cast<const char*>(href_attr), href_len);
+					}
 					link_start_pos = get_current_text_position();
 				}
 			}
 			if (tag_name == "title" && title.empty()) {
 				title = get_element_text(element);
 				title = trim_string(collapse_whitespace(title));
-			} else if (tag_name == "body")
+			} else if (tag_name == "body") {
 				in_body = true;
-			else if (tag_name == "pre") {
+			} else if (tag_name == "pre") {
 				finalize_current_line();
 				preserve_whitespace = true;
-			} else if (tag_name == "code")
+			} else if (tag_name == "code") {
 				in_code = true;
-			else if (tag_name == "br" || tag_name == "li")
+			} else if (tag_name == "br" || tag_name == "li") {
 				finalize_current_line();
+			}
 			if (in_body && element) {
 				size_t id_len;
 				const lxb_char_t* id_attr = lxb_dom_element_get_attribute(element, (const lxb_char_t*)"id", 2, &id_len);
@@ -106,7 +122,9 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 					finalize_current_line();
 					size_t heading_offset = get_current_text_position();
 					std::string heading_text = get_element_text(element);
-					if (!heading_text.empty()) headings.push_back({heading_offset, level, heading_text});
+					if (!heading_text.empty()) {
+						headings.push_back({heading_offset, level, heading_text});
+					}
 				}
 			}
 			break;
@@ -119,7 +137,9 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 		default:
 			break;
 	}
-	if (is_element && (tag_name == "script" || tag_name == "style")) return;
+	if (is_element && (tag_name == "script" || tag_name == "style")) {
+		return;
+	}
 	if (source_mode == html_source_mode::markdown && in_code && preserve_whitespace && is_element && tag_name == "code") {
 		for (auto* child = node->first_child; child; child = child->next) {
 			if (child->type == LXB_DOM_NODE_TYPE_ELEMENT) {
@@ -129,11 +149,14 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 					current_line += std::string(reinterpret_cast<const char*>(str.data), str.length);
 					lexbor_str_destroy(&str, doc.get()->dom_document.text, false);
 				}
-			} else
+			} else {
 				process_node(child);
+			}
 		}
 	} else {
-		for (auto* child = node->first_child; child; child = child->next) process_node(child);
+		for (auto* child = node->first_child; child; child = child->next) {
+			process_node(child);
+		}
 	}
 	if (is_element) {
 		if (tag_name == "a") {
@@ -145,20 +168,29 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 				}
 				current_link_href.clear();
 				current_link_text.clear();
-				link_start_pos = 0;
 			}
 		}
-		if (tag_name == "pre") preserve_whitespace = false;
-		if (tag_name == "code") in_code = false;
-		if (is_block_element(tag_name)) finalize_current_line();
+		if (tag_name == "pre") {
+			preserve_whitespace = false;
+		}
+		if (tag_name == "code") {
+			in_code = false;
+		}
+		if (is_block_element(tag_name)) {
+			finalize_current_line();
+		}
 	}
 }
 
 void html_to_text::process_text_node(lxb_dom_text_t* text_node) {
-	if (!in_body) return;
+	if (!in_body) {
+		return;
+	}
 	size_t length;
 	const auto* text_data = lxb_dom_node_text_content(lxb_dom_interface_node(text_node), &length);
-	if (!text_data || length == 0) return;
+	if (!text_data || length == 0) {
+		return;
+	}
 	const std::string_view text{reinterpret_cast<const char*>(text_data), length};
 	if (!text.empty()) {
 		std::string processed_text = remove_soft_hyphens(text);
@@ -173,8 +205,9 @@ void html_to_text::process_text_node(lxb_dom_text_t* text_node) {
 			current_line += processed_text.substr(pos);
 		} else if (in_link) {
 			current_link_text += collapse_whitespace(processed_text);
-		} else
+		} else {
 			current_line += collapse_whitespace(processed_text);
+		}
 	}
 }
 
@@ -231,7 +264,9 @@ size_t html_to_text::get_current_text_position() const {
 }
 
 constexpr bool html_to_text::is_block_element(std::string_view tag_name) noexcept {
-	if (tag_name.empty()) return false;
+	if (tag_name.empty()) {
+		return false;
+	}
 	constexpr std::array block_elements = {
 		"div",
 		"p",
@@ -272,16 +307,22 @@ constexpr bool html_to_text::is_block_element(std::string_view tag_name) noexcep
 }
 
 std::string_view html_to_text::get_tag_name(lxb_dom_element_t* element) noexcept {
-	if (!element) return {};
+	if (!element) {
+		return {};
+	}
 	size_t len;
 	const auto* name = lxb_dom_element_qualified_name(element, &len);
 	return name ? std::string_view{reinterpret_cast<const char*>(name), len} : std::string_view{};
 }
 
 std::string html_to_text::get_element_text(lxb_dom_element_t* element) noexcept {
-	if (!element) return {};
+	if (!element) {
+		return {};
+	}
 	size_t text_length;
 	const auto* text = lxb_dom_node_text_content(lxb_dom_interface_node(element), &text_length);
-	if (!text || text_length == 0) return {};
+	if (!text || text_length == 0) {
+		return {};
+	}
 	return std::string{reinterpret_cast<const char*>(text), text_length};
 }
