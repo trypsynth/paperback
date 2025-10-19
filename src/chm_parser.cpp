@@ -144,7 +144,7 @@ void chm_parser::parse_html_files(chm_context& ctx, document_buffer& buffer, con
 			} else {
 				wxFileName link_path(wxString::FromUTF8(file_path));
 				link_path.SetFullName(wxString::FromUTF8(link.ref));
-				link_path.Normalize(static_cast<unsigned>(wxPATH_NORM_DOTS | wxPATH_NORM_TILDE | wxPATH_NORM_ABSOLUTE | wxPATH_NORM_SHORTCUT), "/");
+				link_path.Normalize(static_cast<unsigned int>(wxPATH_NORM_DOTS) | static_cast<unsigned int>(wxPATH_NORM_TILDE) | static_cast<unsigned int>(wxPATH_NORM_ABSOLUTE) | static_cast<unsigned int>(wxPATH_NORM_SHORTCUT), "/");
 				resolved_href = link_path.GetFullPath(wxPATH_UNIX);
 			}
 			buffer.add_link(section_start + link.offset, wxString::FromUTF8(link.text), resolved_href);
@@ -187,8 +187,9 @@ void chm_parser::parse_system_file(chm_context& ctx) {
 		return;
 	}
 	const std::span data{reinterpret_cast<const std::byte*>(system_content.data()), system_content.size()};
+	constexpr int shift_amount = 8;
 	auto read_le16 = [](std::span<const std::byte> bytes, size_t offset) -> uint16_t {
-		return std::to_integer<uint16_t>(bytes[offset]) | (std::to_integer<uint16_t>(bytes[offset + 1]) << 8);
+		return static_cast<uint16_t>(std::to_integer<uint16_t>(bytes[offset]) | (static_cast<uint16_t>(std::to_integer<uint16_t>(bytes[offset + 1])) << shift_amount));
 	};
 	for (size_t index = 4; index + 4 <= data.size();) {
 		const auto code = read_le16(data, index);
@@ -289,7 +290,8 @@ void chm_parser::parse_hhc_file(chm_context& ctx, std::vector<std::unique_ptr<to
 							if (param_tag_str == "param") {
 								size_t attr_len{0};
 								const lxb_char_t* name_attr = lxb_dom_element_get_attribute(param_elem, reinterpret_cast<const lxb_char_t*>("name"), 4, &attr_len);
-								const lxb_char_t* value_attr = lxb_dom_element_get_attribute(param_elem, reinterpret_cast<const lxb_char_t*>("value"), 5, &attr_len);
+								constexpr size_t value_attr_len = 5;
+								const lxb_char_t* value_attr = lxb_dom_element_get_attribute(param_elem, reinterpret_cast<const lxb_char_t*>("value"), value_attr_len, &attr_len);
 								if (name_attr && value_attr) {
 									std::string attr_name{reinterpret_cast<const char*>(name_attr)};
 									const std::string attr_value{reinterpret_cast<const char*>(value_attr), attr_len};

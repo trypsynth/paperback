@@ -51,7 +51,7 @@ public:
 	void update_ui();
 	void close_document(int index);
 	void close_all_documents();
-	[[nodiscard]] bool export_document(int index, const wxString& export_path);
+	[[nodiscard]] bool export_document(int index, const wxString& export_path) const;
 	[[nodiscard]] document_tab* get_tab(int index) const;
 	[[nodiscard]] document_tab* get_active_tab() const;
 	[[nodiscard]] document* get_active_document() const;
@@ -60,15 +60,15 @@ public:
 	[[nodiscard]] int get_tab_count() const;
 	[[nodiscard]] int get_active_tab_index() const;
 	[[nodiscard]] bool has_documents() const { return get_tab_count() > 0; }
-	void go_to_position(long position);
-	void go_to_previous_section();
-	void go_to_next_section();
+	void go_to_position(long position) const;
+	void go_to_previous_section() const;
+	void go_to_next_section() const;
 	void go_to_previous_heading();
 	void go_to_next_heading();
 	void go_to_previous_heading(int level);
 	void go_to_next_heading(int level);
-	void go_to_previous_page();
-	void go_to_next_page();
+	void go_to_previous_page() const;
+	void go_to_next_page() const;
 	void go_to_previous_bookmark();
 	void go_to_next_bookmark();
 	void go_to_previous_link();

@@ -9,17 +9,26 @@
 
 #include "document_manager.hpp"
 #include "constants.hpp"
+#include "config_manager.hpp"
 #include "dialogs.hpp"
+#include "document.hpp"
+#include "document_buffer.hpp"
 #include "main_window.hpp"
 #include "parser.hpp"
 #include "utils.hpp"
-#include <wx/config.h>
+#include <cstddef>
+#include <memory>
+#include <utility>
+#include <wx/dynarray.h> // at some point stop using this.
+#include <wx/event.h>
 #include <wx/filename.h>
 #include <wx/menu.h>
-#include <wx/notebook.h>
+#include <wx/msgdlg.h>
 #include <wx/panel.h>
+#include <wx/string.h>
 #include <wx/textctrl.h>
 #include <wx/translation.h>
+#include <wx/utils.h>
 
 document_manager::document_manager(wxNotebook* nbk, config_manager& cfg, main_window& win) : notebook{nbk}, config{cfg}, main_win{win} {}
 
@@ -36,15 +45,15 @@ bool document_manager::open_file(const wxString& path, bool add_to_recent) {
 	if (existing_tab >= 0) {
 		notebook->SetSelection(existing_tab);
 		auto* const text_ctrl = get_active_text_ctrl();
-		if (text_ctrl) {
+		if (text_ctrl != nullptr) {
 			text_ctrl->SetFocus();
 		}
 		return true;
 	}
-	auto* par = find_parser_by_extension(wxFileName(path).GetExt());
-	if (!par) {
+	const auto* par = find_parser_by_extension(wxFileName(path).GetExt());
+	if (par == nullptr) {
 		par = get_parser_for_unknown_file(path, config);
-		if (!par) {
+		if (par == nullptr) {
 			return false;
 		}
 	}
@@ -53,7 +62,7 @@ bool document_manager::open_file(const wxString& path, bool add_to_recent) {
 		return false;
 	}
 	auto* const text_ctrl = get_active_text_ctrl();
-	if (text_ctrl) {
+	if (text_ctrl != nullptr) {
 		text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, &main_win);
 		text_ctrl->Bind(wxEVT_CHAR, &main_window::on_text_char, &main_win);
 	}
@@ -97,9 +106,9 @@ void document_manager::close_document(int index) {
 	if (index < 0 || index >= get_tab_count()) {
 		return;
 	}
-	document_tab* tab = get_tab(index);
-	if (tab && tab->text_ctrl) {
-		long position = tab->text_ctrl->GetInsertionPoint();
+	const document_tab* tab = get_tab(index);
+	if (tab != nullptr && tab->text_ctrl != nullptr) {
+		const long position = tab->text_ctrl->GetInsertionPoint();
 		save_document_position(tab->file_path, position);
 		config.set_document_opened(tab->file_path, false);
 	}
@@ -109,17 +118,17 @@ void document_manager::close_document(int index) {
 void document_manager::close_all_documents() {
 	save_all_tab_positions();
 	for (int i = 0; i < get_tab_count(); ++i) {
-		document_tab* tab = get_tab(i);
-		if (tab) {
+		const document_tab* tab = get_tab(i);
+		if (tab != nullptr) {
 			config.set_document_opened(tab->file_path, false);
 		}
 	}
 	notebook->DeleteAllPages();
 }
 
-bool document_manager::export_document(int index, const wxString& export_path) {
-	document_tab* tab = get_tab(index);
-	if (!tab || !tab->text_ctrl) {
+bool document_manager::export_document(int index, const wxString& export_path) const {
+	const document_tab* tab = get_tab(index);
+	if (tab == nullptr || tab->text_ctrl == nullptr) {
 		return false;
 	}
 	wxFile file;
@@ -135,121 +144,116 @@ document_tab* document_manager::get_tab(int index) const {
 	if (index < 0 || index >= get_tab_count()) {
 		return nullptr;
 	}
-	wxPanel* panel = static_cast<wxPanel*>(notebook->GetPage(index));
-	return static_cast<document_tab*>(panel->GetClientObject());
+	const auto* panel = dynamic_cast<wxPanel*>(notebook->GetPage(index));
+	return dynamic_cast<document_tab*>(panel->GetClientObject());
 }
 
 document_tab* document_manager::get_active_tab() const {
-	int selection = notebook->GetSelection();
+	const int selection = notebook->GetSelection();
 	return selection >= 0 ? get_tab(selection) : nullptr;
 }
 
 document* document_manager::get_active_document() const {
-	document_tab* tab = get_active_tab();
-	return tab ? tab->doc.get() : nullptr;
+	const document_tab* tab = get_active_tab();
+	return tab != nullptr ? tab->doc.get() : nullptr;
 }
 
 wxTextCtrl* document_manager::get_active_text_ctrl() const {
-	document_tab* tab = get_active_tab();
-	return tab ? tab->text_ctrl : nullptr;
+	const document_tab* tab = get_active_tab();
+	return tab != nullptr ? tab->text_ctrl : nullptr;
 }
 
 const parser* document_manager::get_active_parser() const {
-	document_tab* tab = get_active_tab();
-	return tab ? tab->parser : nullptr;
+	const document_tab* tab = get_active_tab();
+	return tab != nullptr ? tab->parser : nullptr;
 }
 
 int document_manager::get_tab_count() const {
-	return notebook->GetPageCount();
+	return static_cast<int>(notebook->GetPageCount());
 }
 
 int document_manager::get_active_tab_index() const {
 	return notebook->GetSelection();
 }
 
-void document_manager::go_to_position(long position) {
+void document_manager::go_to_position(long position) const {
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!text_ctrl) {
+	if (text_ctrl == nullptr) {
 		return;
 	}
-	long max_pos = text_ctrl->GetLastPosition();
-	if (position > max_pos) {
-		position = max_pos;
-	}
-	if (position < 0) {
-		position = 0;
-	}
+	const long max_pos = text_ctrl->GetLastPosition();
+	position = std::clamp(position, 0, max_pos);
 	text_ctrl->SetInsertionPoint(position);
 	text_ctrl->ShowPosition(position);
 }
 
-void document_manager::go_to_previous_section() {
-	document* doc = get_active_document();
+void document_manager::go_to_previous_section() const {
+	const document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	const parser* par = get_active_parser();
-	if (!doc || !text_ctrl || !par) {
+	if (doc == nullptr || text_ctrl == nullptr || par == nullptr) {
 		return;
 	}
 	if (!par->has_flag(parser_flags::supports_sections)) {
 		speak(_("No sections."));
 		return;
 	}
-	size_t current_pos = text_ctrl->GetInsertionPoint();
-	int current_index = doc->section_index(current_pos);
+	const size_t current_pos = text_ctrl->GetInsertionPoint();
+	const int current_index = doc->section_index(current_pos);
 	if (current_index != -1) {
-		size_t current_section_offset = doc->offset_for_section(current_index);
+		const size_t current_section_offset = doc->offset_for_section(current_index);
 		if (current_pos > current_section_offset) {
 			text_ctrl->SetInsertionPoint(current_section_offset);
-			long line;
+			long line{0};
 			text_ctrl->PositionToXY(current_section_offset, 0, &line);
-			wxString current_line = text_ctrl->GetLineText(line);
+			const wxString current_line = text_ctrl->GetLineText(line);
 			speak(current_line);
 			return;
 		}
 	}
 	size_t search_pos = current_pos;
 	if (current_index != -1) {
-		size_t current_section_offset = doc->offset_for_section(current_index);
+		const size_t current_section_offset = doc->offset_for_section(current_index);
 		if (current_pos <= current_section_offset) {
 			// We're at the start of the current section, so search from just before the section marker.
 			search_pos = current_section_offset > 0 ? current_section_offset - 1 : 0;
 		}
 	}
-	int prev_index = doc->previous_section_index(search_pos);
+	const int prev_index = doc->previous_section_index(search_pos);
 	if (prev_index == -1) {
 		speak(_("No previous section"));
 		return;
 	}
-	size_t offset = doc->offset_for_section(prev_index);
+	const size_t offset = doc->offset_for_section(prev_index);
 	text_ctrl->SetInsertionPoint(offset);
-	long line;
+	long line{0};
 	text_ctrl->PositionToXY(offset, 0, &line);
-	wxString current_line = text_ctrl->GetLineText(line);
+	const wxString current_line = text_ctrl->GetLineText(line);
 	speak(current_line);
 }
 
-void document_manager::go_to_next_section() {
-	document* doc = get_active_document();
+void document_manager::go_to_next_section() const {
+	const document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	const parser* par = get_active_parser();
-	if (!doc || !text_ctrl || !par) {
+	if (doc == nullptr || text_ctrl == nullptr || par == nullptr) {
 		return;
 	}
 	if (!par->has_flag(parser_flags::supports_sections)) {
 		speak(_("No sections."));
 		return;
 	}
-	size_t current_pos = text_ctrl->GetInsertionPoint();
-	int next_index = doc->next_section_index(current_pos);
+	const size_t current_pos = text_ctrl->GetInsertionPoint();
+	const int next_index = doc->next_section_index(current_pos);
 	if (next_index == -1) {
 		speak(_("No next section"));
 		return;
 	}
-	size_t offset = doc->offset_for_section(next_index);
+	const size_t offset = doc->offset_for_section(next_index);
 	text_ctrl->SetInsertionPoint(offset);
-	long line;
+	long line{0};
 	text_ctrl->PositionToXY(offset, 0, &line);
-	wxString current_line = text_ctrl->GetLineText(line);
+	const wxString current_line = text_ctrl->GetLineText(line);
 	speak(current_line);
 }
 
@@ -269,137 +273,137 @@ void document_manager::go_to_next_heading(int level) {
 	navigate_to_heading(true, level);
 }
 
-void document_manager::go_to_previous_page() {
-	document* doc = get_active_document();
+void document_manager::go_to_previous_page() const {
+	const document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!doc || !text_ctrl) {
+	if (doc == nullptr || text_ctrl == nullptr) {
 		return;
 	}
 	if (doc->buffer.count_markers_by_type(marker_type::page_break) == 0) {
 		speak(_("No pages."));
 		return;
 	}
-	size_t current_pos = text_ctrl->GetInsertionPoint();
-	int prev_index = doc->previous_page_index(current_pos);
+	const size_t current_pos = text_ctrl->GetInsertionPoint();
+	const int prev_index = doc->previous_page_index(current_pos);
 	if (prev_index == -1) {
 		speak(_("No previous page."));
 		return;
 	}
-	size_t offset = doc->offset_for_page(prev_index);
+	const size_t offset = doc->offset_for_page(prev_index);
 	text_ctrl->SetInsertionPoint(offset);
-	long line;
+	long line{0};
 	text_ctrl->PositionToXY(offset, 0, &line);
-	wxString current_line = text_ctrl->GetLineText(line);
+	const wxString current_line = text_ctrl->GetLineText(line);
 	speak(wxString::Format(_("Page %d: %s"), prev_index + 1, current_line));
 }
 
-void document_manager::go_to_next_page() {
-	document* doc = get_active_document();
+void document_manager::go_to_next_page() const {
+	const document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!doc || !text_ctrl) {
+	if (doc == nullptr || text_ctrl == nullptr) {
 		return;
 	}
 	if (doc->buffer.count_markers_by_type(marker_type::page_break) == 0) {
 		speak(_("No pages."));
 		return;
 	}
-	size_t current_pos = text_ctrl->GetInsertionPoint();
-	int next_index = doc->next_page_index(current_pos);
+	const size_t current_pos = text_ctrl->GetInsertionPoint();
+	const int next_index = doc->next_page_index(current_pos);
 	if (next_index == -1) {
 		speak(_("No next page."));
 		return;
 	}
-	size_t offset = doc->offset_for_page(next_index);
+	const size_t offset = doc->offset_for_page(next_index);
 	text_ctrl->SetInsertionPoint(offset);
-	long line;
+	long line{0};
 	text_ctrl->PositionToXY(offset, 0, &line);
-	wxString current_line = text_ctrl->GetLineText(line);
+	const wxString current_line = text_ctrl->GetLineText(line);
 	speak(wxString::Format(_("Page %d: %s"), next_index + 1, current_line));
 }
 
 void document_manager::go_to_previous_bookmark() {
-	document_tab* tab = get_active_tab();
+	const document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!tab || !text_ctrl) {
+	if (tab == nullptr || text_ctrl == nullptr) {
 		return;
 	}
-	long current_pos = text_ctrl->GetInsertionPoint();
-	long prev_pos = config.get_previous_bookmark(tab->file_path, current_pos);
+	const long current_pos = text_ctrl->GetInsertionPoint();
+	const long prev_pos = config.get_previous_bookmark(tab->file_path, current_pos);
 	if (prev_pos == -1) {
 		speak(_("No previous bookmark"));
 		return;
 	}
 	text_ctrl->SetInsertionPoint(prev_pos);
-	long line;
+	long line{0};
 	text_ctrl->PositionToXY(prev_pos, 0, &line);
-	wxString current_line = text_ctrl->GetLineText(line);
-	wxArrayLong bookmarks = config.get_bookmarks(tab->file_path);
-	int bookmark_index = bookmarks.Index(prev_pos);
+	const wxString current_line = text_ctrl->GetLineText(line);
+	const wxArrayLong bookmarks = config.get_bookmarks(tab->file_path);
+	const int bookmark_index = bookmarks.Index(prev_pos);
 	speak(wxString::Format(_("Bookmark %d: %s"), bookmark_index + 1, current_line));
 }
 
 void document_manager::go_to_next_bookmark() {
-	document_tab* tab = get_active_tab();
+	const document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!tab || !text_ctrl) {
+	if (tab == nullptr || text_ctrl == nullptr) {
 		return;
 	}
-	long current_pos = text_ctrl->GetInsertionPoint();
-	long next_pos = config.get_next_bookmark(tab->file_path, current_pos);
+	const long current_pos = text_ctrl->GetInsertionPoint();
+	const long next_pos = config.get_next_bookmark(tab->file_path, current_pos);
 	if (next_pos == -1) {
 		speak(_("No next bookmark"));
 		return;
 	}
 	text_ctrl->SetInsertionPoint(next_pos);
-	long line;
+	long line{0};
 	text_ctrl->PositionToXY(next_pos, 0, &line);
-	wxString current_line = text_ctrl->GetLineText(line);
-	wxArrayLong bookmarks = config.get_bookmarks(tab->file_path);
-	int bookmark_index = bookmarks.Index(next_pos);
+	const wxString current_line = text_ctrl->GetLineText(line);
+	const wxArrayLong bookmarks = config.get_bookmarks(tab->file_path);
+	const int bookmark_index = bookmarks.Index(next_pos);
 	speak(wxString::Format(_("Bookmark %d: %s"), bookmark_index + 1, current_line));
 }
 
 void document_manager::go_to_previous_link() {
-	document* doc = get_active_document();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!doc || !text_ctrl) {
+	const document* doc = get_active_document();
+	const wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (doc == nullptr || text_ctrl == nullptr) {
 		return;
 	}
 	if (doc->buffer.count_markers_by_type(marker_type::link) == 0) {
 		speak(_("No links."));
 		return;
 	}
-	size_t current_pos = text_ctrl->GetInsertionPoint();
-	int prev_index = doc->buffer.previous_marker_index(current_pos, marker_type::link);
+	const size_t current_pos = text_ctrl->GetInsertionPoint();
+	const int prev_index = doc->buffer.previous_marker_index(current_pos, marker_type::link);
 	if (prev_index == -1) {
 		speak(_("No previous link."));
 		return;
 	}
 	const marker* link_marker = doc->buffer.get_marker(prev_index);
-	if (link_marker) {
+	if (link_marker != nullptr) {
 		go_to_position(link_marker->pos);
 		speak(link_marker->text + _(" link"));
 	}
 }
 
 void document_manager::go_to_next_link() {
-	document* doc = get_active_document();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!doc || !text_ctrl) {
+	const document* doc = get_active_document();
+	const wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (doc == nullptr || text_ctrl == nullptr) {
 		return;
 	}
 	if (doc->buffer.count_markers_by_type(marker_type::link) == 0) {
 		speak(_("No links."));
 		return;
 	}
-	size_t current_pos = text_ctrl->GetInsertionPoint();
-	int next_index = doc->buffer.next_marker_index(current_pos, marker_type::link);
+	const size_t current_pos = text_ctrl->GetInsertionPoint();
+	const int next_index = doc->buffer.next_marker_index(current_pos, marker_type::link);
 	if (next_index == -1) {
 		speak(_("No next link."));
 		return;
 	}
 	const marker* link_marker = doc->buffer.get_marker(next_index);
-	if (link_marker) {
+	if (link_marker != nullptr) {
 		go_to_position(link_marker->pos);
 		speak(link_marker->text + _(" link"));
 	}
@@ -407,27 +411,27 @@ void document_manager::go_to_next_link() {
 
 void document_manager::activate_current_link() {
 	document* doc = get_active_document();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (!doc || !text_ctrl) {
+	const wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (doc == nullptr || text_ctrl == nullptr) {
 		return;
 	}
-	size_t current_pos = text_ctrl->GetInsertionPoint();
-	int link_index = doc->buffer.current_marker_index(current_pos, marker_type::link);
+	const size_t current_pos = text_ctrl->GetInsertionPoint();
+	const int link_index = doc->buffer.current_marker_index(current_pos, marker_type::link);
 	if (link_index == -1) {
 		return;
 	}
 	const marker* link_marker = doc->buffer.get_marker(link_index);
-	if (!link_marker) {
+	if (link_marker == nullptr) {
 		return;
 	}
 	if (current_pos < link_marker->pos || current_pos > (link_marker->pos + link_marker->text.length())) {
 		return;
 	}
-	wxString href = link_marker->ref;
+	const wxString href = link_marker->ref;
 	if (href.empty()) {
 		return;
 	}
-	wxString href_lower = href.Lower();
+	const wxString href_lower = href.Lower();
 	if (href_lower.StartsWith("http:") || href_lower.StartsWith("https:") || href_lower.StartsWith("mailto:")) {
 		if (wxLaunchDefaultBrowser(href)) {
 			speak(_("Opening link in default browser."));

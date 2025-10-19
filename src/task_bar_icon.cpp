@@ -10,6 +10,7 @@
 #include "task_bar_icon.hpp"
 #include "constants.hpp"
 #include "main_window.hpp"
+#include <memory>
 #include <wx/defs.h>
 #include <wx/event.h>
 #include <wx/menu.h>
@@ -24,11 +25,11 @@ task_bar_icon::task_bar_icon(main_window* frame) : frame_{frame} {
 }
 
 wxMenu* task_bar_icon::CreatePopupMenu() {
-	auto* menu = new wxMenu;
+	std::unique_ptr<wxMenu> menu = std::make_unique<wxMenu>();
 	menu->Append(ID_RESTORE, _("&Restore"));
 	menu->AppendSeparator();
 	menu->Append(wxID_EXIT, _("E&xit"));
-	return menu;
+	return menu.release();
 }
 
 void task_bar_icon::on_restore_from_tray(wxCommandEvent& /*unused*/) {
