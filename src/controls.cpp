@@ -8,7 +8,9 @@
  */
 
 #include "controls.hpp"
+#include <algorithm>
 #ifdef __WXMSW__
+#include <windef.h>
 #include <winuser.h>
 #endif
 #include <wx/event.h>

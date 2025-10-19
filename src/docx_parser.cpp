@@ -298,6 +298,7 @@ void docx_parser::process_hyperlink(Element* element, wxString& text, document* 
 }
 
 int docx_parser::get_heading_level(Element* pr_element) {
+	constexpr int max_heading_level = 9;
 	Node* child = pr_element->firstChild();
 	while (child != nullptr) {
 		if (child->nodeType() == Node::ELEMENT_NODE) {
@@ -313,7 +314,7 @@ int docx_parser::get_heading_level(Element* pr_element) {
 							const size_t num_pos = style.find_first_of("0123456789");
 							if (num_pos != std::string::npos) {
 								const int level = std::stoi(style.substr(num_pos));
-								if (level > 0 && level <= 9) {
+								if (level > 0 && level <= max_heading_level) {
 									return level;
 								}
 							}
@@ -326,7 +327,7 @@ int docx_parser::get_heading_level(Element* pr_element) {
 				if (!level_str.empty()) {
 					try {
 						const int level = std::stoi(level_str) + 1;
-						if (level > 0 && level <= 9) {
+						if (level > 0 && level <= max_heading_level) {
 							return level;
 						}
 					} catch (...) {

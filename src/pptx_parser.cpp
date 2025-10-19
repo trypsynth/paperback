@@ -9,20 +9,25 @@
 
 #include "pptx_parser.hpp"
 #include "document.hpp"
+#include "document_buffer.hpp"
 #include "utils.hpp"
 #include <algorithm>
+#include <cctype>
 #include <cstddef>
 #include <functional>
 #include <map>
 #include <memory>
+#include <numeric>
 #include <Poco/AutoPtr.h>
 #include <Poco/DOM/DOMParser.h>
 #include <Poco/DOM/Document.h>
 #include <Poco/DOM/Element.h>
 #include <Poco/DOM/Node.h>
 #include <Poco/DOM/NodeList.h>
+#include <Poco/Exception.h>
 #include <Poco/SAX/InputSource.h>
 #include <Poco/SAX/XMLReader.h>
+#include <ranges>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -75,21 +80,14 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 		for (const auto& [name, content] : slide_contents) {
 			slide_files.push_back(name);
 		}
-		std::sort(slide_files.begin(), slide_files.end(), [](const std::string& a, const std::string& b) {
-			auto extract_number = [](const std::string& s) {
-				size_t pos = s.find_last_of('/');
-				if (pos == std::string::npos) {
-					pos = 0;
-				}
-				std::string num_str;
-				for (const char c : s.substr(pos)) {
-					if (c >= '0' && c <= '9') {
-						num_str += c;
-					}
-				}
-				return num_str.empty() ? 0 : std::stoi(num_str);
-			};
-			return extract_number(a) < extract_number(b);
+		auto extract_number_view = [](const std::string& s) -> int {
+			constexpr int decimal_base = 10;
+			auto start_it = s.rfind('/') == std::string::npos ? s.begin() : s.begin() + static_cast<std::string::difference_type>(s.rfind('/'));
+			auto digits_view = std::ranges::subrange(start_it, s.end()) | std::views::filter([](char c){ return std::isdigit(c); });
+			return std::accumulate(digits_view.begin(), digits_view.end(), 0, [](int acc, char c){ return (acc * decimal_base) + (c - '0'); });
+		};
+		std::ranges::sort(slide_files, [&](const std::string& a, const std::string& b) {
+			return extract_number_view(a) < extract_number_view(b);
 		});
 		auto doc = std::make_unique<document>();
 		doc->title = wxFileName(path).GetName();
@@ -109,18 +107,19 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 					DOMParser rels_parser;
 					rels_parser.setFeature(XMLReader::FEATURE_NAMESPACES, true);
 					AutoPtr<Document> rels_doc = rels_parser.parse(&rels_source);
-					const NodeList* rel_nodes = prels_doc->getElementsByTagNameNS(REL_NS, "Relationship");
+					const NodeList* rel_nodes = rels_doc->getElementsByTagNameNS(REL_NS, "Relationship");
 					for (unsigned long i = 0; i < rel_nodes->length(); ++i) {
 						Node* node = rel_nodes->item(i);
-						auto* element = static_cast<Element*>(node);
-						std::string id = element->getAttribute("Id");
-						std::string target = element->getAttribute("Target");
-						std::string type = element->getAttribute("Type");
+						auto* element = dynamic_cast<Element*>(node);
+						const std::string id = element->getAttribute("Id");
+						const std::string target = element->getAttribute("Target");
+						const std::string type = element->getAttribute("Type");
 						if (type == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink") {
 							rels[id] = target;
 						}
 					}
 				} catch (...) {
+					wxMessageBox(_("Parsing of links in the document failed."), _("Warning"), wxICON_WARNING);
 				}
 			}
 			std::istringstream content_stream(slide_content);
@@ -156,21 +155,21 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 }
 
 void pptx_parser::extract_text_from_node(Node* node, std::string& text, wxString& full_text, document* doc, const std::map<std::string, std::string>& rels) const {
-	if (!node) {
+	if (node == nullptr) {
 		return;
 	}
 	if (node->nodeType() == Node::ELEMENT_NODE) {
-		auto* element = static_cast<Element*>(node);
+		auto* element = dynamic_cast<Element*>(node);
 		if (element->localName() == "t") {
-			Node* text_node = element->firstChild();
-			if (text_node && text_node->nodeType() == Node::TEXT_NODE) {
+			const Node* text_node = element->firstChild();
+			if (text_node != nullptr && text_node->nodeType() == Node::TEXT_NODE) {
 				text += text_node->getNodeValue();
 			}
 		} else if (element->localName() == "br") {
 			text += "\n";
 		} else if (element->localName() == "p") {
 			Node* child = node->firstChild();
-			while (child) {
+			while (child != nullptr) {
 				extract_text_from_node(child, text, full_text, doc, rels);
 				child = child->nextSibling();
 			}
@@ -179,7 +178,7 @@ void pptx_parser::extract_text_from_node(Node* node, std::string& text, wxString
 			}
 			return; // Don't process children again.
 		} else if (element->localName() == "hlinkClick" && element->namespaceURI() == DRAWINGML_NS) {
-			std::string r_id = element->getAttributeNS(REL_NS, "id");
+			const std::string r_id = element->getAttributeNS(REL_NS, "id");
 			std::string link_target;
 			if (!r_id.empty()) {
 				auto it = rels.find(r_id);
@@ -194,9 +193,9 @@ void pptx_parser::extract_text_from_node(Node* node, std::string& text, wxString
 					return;
 				}
 				if (n->nodeType() == Node::ELEMENT_NODE) {
-					auto* el = static_cast<Element*>(n);
+					const auto* el = dynamic_cast<Element*>(n);
 					if (el->localName() == "t") {
-						Node* tn = el->firstChild();
+						const Node* tn = el->firstChild();
 						if (tn && tn->nodeType() == Node::TEXT_NODE) {
 							link_text_utf8 += tn->getNodeValue();
 						}
@@ -209,20 +208,20 @@ void pptx_parser::extract_text_from_node(Node* node, std::string& text, wxString
 				}
 			};
 			Node* parent = node->parentNode();
-			if (parent) {
+			if (parent != nullptr) {
 				extract_link_text(parent);
 			}
 			if (!link_text_utf8.empty() && !link_target.empty()) {
-				size_t link_start = full_text.length() + text.length();
+				const size_t link_start = full_text.length() + text.length();
 				text += link_text_utf8;
-				wxString link_text_wx = wxString::FromUTF8(link_text_utf8);
+				const wxString link_text_wx = wxString::FromUTF8(link_text_utf8);
 				doc->buffer.add_link(link_start, link_text_wx, wxString::FromUTF8(link_target));
 			}
 			return; // Don't process children again since we already extracted text.
 		}
 	}
 	Node* child = node->firstChild();
-	while (child) {
+	while (child != nullptr) {
 		extract_text_from_node(child, text, full_text, doc, rels);
 		child = child->nextSibling();
 	}
