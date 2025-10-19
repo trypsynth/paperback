@@ -69,12 +69,12 @@ std::unique_ptr<document> odt_parser::load(const wxString& file_path) const {
 }
 
 void odt_parser::traverse(Poco::XML::Node* node, wxString& text, document* doc) const {
-	if (!node) {
+	if (node == nullptr) {
 		return;
 	}
 	if (node->nodeType() == Poco::XML::Node::ELEMENT_NODE) {
 		auto* element = dynamic_cast<Poco::XML::Element*>(node);
-		const std::string local_name = element->local_name();
+		const std::string local_name = element->localName();
 		if (local_name == "h") {
 			int level = 0;
 			if (element->hasAttributeNS("urn:oasis:names:tc:opendocument:xmlns:text:1.0", "outline-level")) {
@@ -111,7 +111,7 @@ void odt_parser::traverse(Poco::XML::Node* node, wxString& text, document* doc) 
 
 void odt_parser::traverse_children(Poco::XML::Node* node, wxString& text, document* doc) const {
 	Poco::XML::Node* child = node->firstChild();
-	while (child) {
+	while (child != nullptr) {
 		traverse(child, text, doc);
 		child = child->nextSibling();
 	}

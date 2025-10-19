@@ -10,16 +10,15 @@
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include "live_region.hpp"
-#include <initguid.h>
 #include <oleacc.h>
 #include <uiautomation.h>
 #include <windows.h>
 
 namespace {
-IAccPropServices* acc_prop_services = nullptr;
+static IAccPropServices* const acc_prop_services{nullptr};
 
 bool init_live_region() {
-	if (acc_prop_services) {
+	if (acc_prop_services != nullptr) {
 		return true;
 	}
 	HRESULT hr = CoInitialize(nullptr);
@@ -32,29 +31,29 @@ bool init_live_region() {
 } // namespace
 
 bool set_live_region(wxWindow* window, live_region_mode mode) {
-	if (!window) {
+	if (window == nullptr) {
 		return false;
 	}
 	if (!init_live_region()) {
 		return false;
 	}
 	HWND hwnd = static_cast<HWND>(window->GetHandle());
-	if (!hwnd) {
+	if (hwnd == nullptr) {
 		return false;
 	}
 	VARIANT var;
 	var.vt = VT_I4;
 	var.lVal = static_cast<int>(mode);
-	HRESULT hr = acc_prop_services->SetHwndProp(hwnd, OBJID_CLIENT, CHILDID_SELF, LiveSetting_Property_GUID, var);
+	const HRESULT hr = acc_prop_services->SetHwndProp(hwnd, OBJID_CLIENT, CHILDID_SELF, LiveSetting_Property_GUID, var);
 	return SUCCEEDED(hr);
 }
 
 bool notify_live_region_changed(wxWindow* window) {
-	if (!window) {
+	if (window == nullptr) {
 		return false;
 	}
-	HWND hwnd = static_cast<HWND>(window->GetHandle());
-	if (!hwnd) {
+	HWND const hwnd = static_cast<HWND>(window->GetHandle());
+	if (hwnd == nullptr) {
 		return false;
 	}
 	NotifyWinEvent(EVENT_OBJECT_LIVEREGIONCHANGED, hwnd, OBJID_CLIENT, CHILDID_SELF);

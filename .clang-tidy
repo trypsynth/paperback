@@ -25,6 +25,7 @@ Checks: >
   -hicpp-vararg,
   -hicpp-no-array-decay,
   -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -misc-no-recursion,
 WarningsAsErrors: ''
 HeaderFilterRegex: '.*'
 FormatStyle: file
