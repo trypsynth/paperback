@@ -11,6 +11,7 @@
 #include "live_region.hpp"
 #include <combaseapi.h>
 #include <oaidl.h>
+#include <objbase.h>
 #include <oleacc.h>
 #include <uiautomation.h>
 #include <windef.h>

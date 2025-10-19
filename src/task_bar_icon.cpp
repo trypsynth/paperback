@@ -10,6 +10,8 @@
 #include "task_bar_icon.hpp"
 #include "constants.hpp"
 #include "main_window.hpp"
+#include "translation_manager.hpp"
+#include <wx/event.h>
 #include <wx/menu.h>
 
 task_bar_icon::task_bar_icon(main_window* frame) : frame_{frame} {
