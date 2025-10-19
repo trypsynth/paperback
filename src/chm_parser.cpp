@@ -13,12 +13,24 @@
 #include "html_to_text.hpp"
 #include "utils.hpp"
 #include <algorithm>
+#include <cctype>
 #include <chm_lib.h>
 #include <cstddef>
+#include <cstdint>
 #include <exception>
+#include <functional>
+#include <lexbor/core/base.h>
+#include <lexbor/core/types.h>
+#include <lexbor/dom/interface.h>
+#include <lexbor/dom/interfaces/element.h>
+#include <lexbor/dom/interfaces/node.h>
+#include <lexbor/html/interfaces/document.h>
 #include <map>
 #include <memory>
 #include <set>
+#include <span>
+#include <string_view>
+#include <utility>
 #include <vector>
 #include <wx/filename.h>
 #include <wx/msgdlg.h>
@@ -153,23 +165,23 @@ std::string chm_parser::read_file_content(chmFile* file, const std::string& path
 	}
 	std::vector<unsigned char> buffer(static_cast<size_t>(ui.length));
 	const LONGINT64 bytes_read = chm_retrieve_object(file, &ui, buffer.data(), 0, ui.length);
-	if (bytes_read != static_cast<LONGINT64>(ui.length)) {
+	if (std::cmp_not_equal(bytes_read, static_cast<LONGINT64>(ui.length))) {
 		return "";
 	}
-	return std::string(buffer.begin(), buffer.end());
+	return {buffer.begin(), buffer.end()};
 }
 
-std::string chm_parser::normalize_path(const std::string& path) const {
+std::string chm_parser::normalize_path(const std::string& path) {
 	std::string result = path;
-	std::replace(result.begin(), result.end(), '\\', '/');
-	std::transform(result.begin(), result.end(), result.begin(), [](unsigned char c) { return std::tolower(c); });
+	std::ranges::replace(result, '\\', '/');
+	std::ranges::transform(result, result.begin(), [](unsigned char c) {return static_cast<char>(std::tolower(c));});
 	if (!result.empty() && result[0] != '/') {
 		result = "/" + result;
 	}
 	return result;
 }
 
-void chm_parser::parse_system_file(chm_context& ctx) const {
+void chm_parser::parse_system_file(chm_context& ctx) {
 	const auto system_content = read_file_content(ctx.file, "/#SYSTEM");
 	if (system_content.size() < 4) {
 		return;
@@ -195,11 +207,11 @@ void chm_parser::parse_system_file(chm_context& ctx) const {
 	}
 }
 
-int chm_parser::file_enumerator(chmFile* h, chmUnitInfo* ui, void* context) {
+int chm_parser::file_enumerator(chmFile* /*unused*/, chmUnitInfo* ui, void* context) {
 	auto* ctx = static_cast<chm_context*>(context);
-	std::string path(ui->path);
-	std::string lower_path = path;
-	std::transform(lower_path.begin(), lower_path.end(), lower_path.begin(), [](unsigned char c) { return std::tolower(c); });
+	std::string path{ui->path};
+	std::string& lower_path = path;
+	std::ranges::transform(lower_path, lower_path.begin(), [](unsigned char c) { return std::tolower(c); });
 	if (lower_path.find(".hhc") != std::string::npos) {
 		if (ctx->hhc_file.empty() || lower_path.find("index.hhc") != std::string::npos) {
 			ctx->hhc_file = path;
@@ -213,7 +225,7 @@ int chm_parser::file_enumerator(chmFile* h, chmUnitInfo* ui, void* context) {
 	return CHM_ENUMERATOR_CONTINUE;
 }
 
-void chm_parser::parse_hhc_file(chm_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items) const {
+void chm_parser::parse_hhc_file(chm_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items) {
 	if (ctx.hhc_file.empty()) {
 		return;
 	}
@@ -223,10 +235,10 @@ void chm_parser::parse_hhc_file(chm_context& ctx, std::vector<std::unique_ptr<to
 	}
 	hhc_content = convert_to_utf8(hhc_content);
 	lxb_html_document_t* document = lxb_html_document_create();
-	if (!document) {
+	if (document == nullptr) {
 		return;
 	}
-	lxb_status_t status = lxb_html_document_parse(document, reinterpret_cast<const lxb_char_t*>(hhc_content.data()), hhc_content.length());
+	const lxb_status_t status = lxb_html_document_parse(document, reinterpret_cast<const lxb_char_t*>(hhc_content.data()), hhc_content.length());
 	if (status != LXB_STATUS_OK) {
 		lxb_html_document_destroy(document);
 		return;
@@ -239,17 +251,18 @@ void chm_parser::parse_hhc_file(chm_context& ctx, std::vector<std::unique_ptr<to
 				continue;
 			}
 			lxb_dom_element_t* element = lxb_dom_interface_element(child);
-			size_t tag_name_len;
+			size_t tag_name_len{0};
 			const lxb_char_t* tag_name = lxb_dom_element_qualified_name(element, &tag_name_len);
 			if (!tag_name) {
 				continue;
 			}
 			std::string tag_str(reinterpret_cast<const char*>(tag_name), tag_name_len);
-			std::transform(tag_str.begin(), tag_str.end(), tag_str.begin(), [](unsigned char c) { return std::tolower(c); });
+			std::ranges::transform(tag_str, tag_str.begin(), [](unsigned char c) { return std::tolower(c); });
 			if (tag_str == "li") {
 				auto item = std::make_unique<toc_item>();
 				item->offset = -1;
-				std::string name_str, local_str;
+				std::string name_str;
+				std::string local_str;
 				for (lxb_dom_node_t* li_child = child->first_child; li_child != nullptr; li_child = li_child->next) {
 					if (li_child->type != LXB_DOM_NODE_TYPE_ELEMENT) {
 						continue;
@@ -260,7 +273,7 @@ void chm_parser::parse_hhc_file(chm_context& ctx, std::vector<std::unique_ptr<to
 						continue;
 					}
 					std::string li_tag(reinterpret_cast<const char*>(li_tag_name), tag_name_len);
-					std::transform(li_tag.begin(), li_tag.end(), li_tag.begin(), [](unsigned char c) { return std::tolower(c); });
+					std::ranges::transform(li_tag, li_tag.begin(), [](unsigned char c) { return std::tolower(c); });
 					if (li_tag == "object") {
 						for (lxb_dom_node_t* param_node = li_child->first_child; param_node != nullptr; param_node = param_node->next) {
 							if (param_node->type != LXB_DOM_NODE_TYPE_ELEMENT) {
@@ -272,15 +285,15 @@ void chm_parser::parse_hhc_file(chm_context& ctx, std::vector<std::unique_ptr<to
 								continue;
 							}
 							std::string param_tag_str(reinterpret_cast<const char*>(param_tag), tag_name_len);
-							std::transform(param_tag_str.begin(), param_tag_str.end(), param_tag_str.begin(), [](unsigned char c) { return std::tolower(c); });
+							std::ranges::transform(param_tag_str, param_tag_str.begin(), [](unsigned char c) { return std::tolower(c); });
 							if (param_tag_str == "param") {
-								size_t attr_len;
+								size_t attr_len{0};
 								const lxb_char_t* name_attr = lxb_dom_element_get_attribute(param_elem, reinterpret_cast<const lxb_char_t*>("name"), 4, &attr_len);
 								const lxb_char_t* value_attr = lxb_dom_element_get_attribute(param_elem, reinterpret_cast<const lxb_char_t*>("value"), 5, &attr_len);
 								if (name_attr && value_attr) {
-									std::string attr_name(reinterpret_cast<const char*>(name_attr));
-									std::string attr_value(reinterpret_cast<const char*>(value_attr), attr_len);
-									std::transform(attr_name.begin(), attr_name.end(), attr_name.begin(), [](unsigned char c) { return std::tolower(c); });
+									std::string attr_name{reinterpret_cast<const char*>(name_attr)};
+									const std::string attr_value{reinterpret_cast<const char*>(value_attr), attr_len};
+									std::ranges::transform(attr_name, attr_name.begin(), [](unsigned char c) { return std::tolower(c); });
 									if (attr_name == "name") {
 										name_str = attr_value;
 									} else if (attr_name == "local") {
@@ -309,7 +322,7 @@ void chm_parser::parse_hhc_file(chm_context& ctx, std::vector<std::unique_ptr<to
 		}
 	};
 	lxb_dom_node_t* body = lxb_dom_interface_node(lxb_html_document_body_element(document));
-	if (body) {
+	if (body != nullptr) {
 		parse_node(body, toc_items);
 	}
 	lxb_html_document_destroy(document);
@@ -319,12 +332,12 @@ void chm_parser::collect_html_files_from_toc(const std::vector<std::unique_ptr<t
 	for (const auto& item : items) {
 		if (!item->ref.IsEmpty()) {
 			std::string file_path = item->ref.ToStdString();
-			size_t fragment_pos = file_path.find('#');
+			const size_t fragment_pos = file_path.find('#');
 			if (fragment_pos != std::string::npos) {
 				file_path = file_path.substr(0, fragment_pos);
 			}
 			file_path = normalize_path(file_path);
-			if (std::find(files.begin(), files.end(), file_path) == files.end()) {
+			if (std::ranges::find(files, file_path) == files.end()) {
 				files.push_back(file_path);
 			}
 		}
@@ -332,10 +345,10 @@ void chm_parser::collect_html_files_from_toc(const std::vector<std::unique_ptr<t
 	}
 }
 
-int chm_parser::calculate_offset_from_path(const std::string& path, const chm_context& ctx) const {
+int chm_parser::calculate_offset_from_path(const std::string& path, const chm_context& ctx) {
 	std::string file_path = path;
 	std::string fragment_id;
-	size_t fragment_pos = path.find('#');
+	const size_t fragment_pos = path.find('#');
 	if (fragment_pos != std::string::npos) {
 		file_path = path.substr(0, fragment_pos);
 		fragment_id = path.substr(fragment_pos + 1);

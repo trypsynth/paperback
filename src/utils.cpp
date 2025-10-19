@@ -17,15 +17,24 @@
 #include <Poco/Exception.h>
 #include <Poco/RegularExpression.h>
 #include <Poco/URI.h>
-#include <Poco/UTF8String.h>
 #include <cctype>
+#include <cstddef>
+#include <iterator>
 #include <optional>
 #include <sstream>
-#include <wx/msgdlg.h>
+#include <string>
+#include <string_view>
+#include <wx/defs.h>
 #include <wx/strconv.h>
+#include <wx/string.h>
 #include <wx/zipstrm.h>
 
-long find_text_regex(const wxString& haystack, const wxString& needle, long start, find_options options) {
+namespace {
+constexpr unsigned char UTF8_NBSP_FIRST = 0xC2;
+constexpr unsigned char UTF8_NBSP_SECOND = 0xA0;
+} // namespace
+
+static long find_text_regex(const wxString& haystack, const wxString& needle, long start, find_options options) {
 	const auto forward = has_option(options, find_options::forward);
 	const auto match_case = has_option(options, find_options::match_case);
 	const auto match_whole_word = has_option(options, find_options::match_whole_word);
@@ -35,23 +44,23 @@ long find_text_regex(const wxString& haystack, const wxString& needle, long star
 		if (match_whole_word) {
 			pattern = "\\b" + pattern + "\\b";
 		}
-		int regex_options = 0;
+		unsigned int regex_options = 0;
 		if (!match_case) {
-			regex_options |= Poco::RegularExpression::RE_CASELESS;
+			regex_options |= static_cast<unsigned int>(Poco::RegularExpression::RE_CASELESS);
 		}
-		Poco::RegularExpression regex(pattern, regex_options);
+		const Poco::RegularExpression regex(pattern, static_cast<int>(regex_options));
 		Poco::RegularExpression::Match match;
 		if (forward) {
-			if (regex.match(text, start, match)) {
-				return match.offset;
+			if (regex.match(text, start, match) != 0) {
+				return static_cast<long>(match.offset);
 			}
 		} else {
-			const auto search_text = text.substr(0, start);
-			int last_match = wxNOT_FOUND;
+			const auto search_text = text.substr(0, static_cast<size_t>(start));
+			long last_match = wxNOT_FOUND;
 			size_t pos = 0;
-			while (regex.match(search_text, pos, match)) {
-				last_match = match.offset;
-				pos = match.offset + 1;
+			while (regex.match(search_text, pos, match) != 0) {
+				last_match = static_cast<long>(match.offset);
+				pos = static_cast<size_t>(match.offset) + 1;
 			}
 			return last_match;
 		}
@@ -61,28 +70,28 @@ long find_text_regex(const wxString& haystack, const wxString& needle, long star
 	return wxNOT_FOUND;
 }
 
-long find_text_literal(const wxString& haystack, const wxString& needle, long start, find_options options) {
+static long find_text_literal(const wxString& haystack, const wxString& needle, long start, find_options options) {
 	const auto forward = has_option(options, find_options::forward);
 	const auto match_case = has_option(options, find_options::match_case);
 	const auto match_whole_word = has_option(options, find_options::match_whole_word);
 	const auto& search_haystack = match_case ? haystack : haystack.Lower();
 	const auto& search_needle = match_case ? needle : needle.Lower();
 	if (!match_whole_word) {
-		return forward ? search_haystack.find(search_needle, start) : search_haystack.Left(start).rfind(search_needle);
+		return forward ? static_cast<long>(search_haystack.find(search_needle, static_cast<size_t>(start))) : static_cast<long>(search_haystack.Left(start).rfind(search_needle));
 	}
-	size_t pos = start;
+	long pos = start;
 	while (true) {
-		pos = forward ? search_haystack.find(search_needle, pos) : search_haystack.Left(pos).rfind(search_needle);
-		if (pos == wxNOT_FOUND) {
+		pos = forward ? static_cast<long>(search_haystack.find(search_needle, static_cast<size_t>(pos))) : static_cast<long>(search_haystack.Left(static_cast<size_t>(pos)).rfind(search_needle));
+		if (pos == static_cast<long>(wxNOT_FOUND)) {
 			break;
 		}
-		const auto word_start = (pos == 0) || !wxIsalnum(haystack[pos - 1]);
-		const auto word_end = (pos + needle.length() >= haystack.length()) || !wxIsalnum(haystack[pos + needle.length()]);
+		const auto word_start = (pos == 0) || (wxIsalnum(haystack[static_cast<size_t>(pos) - 1]) == 0);
+		const auto word_end = (static_cast<size_t>(pos) + needle.length() >= haystack.length()) || (wxIsalnum(haystack[static_cast<size_t>(pos) + needle.length()]) == 0);
 		if (word_start && word_end) {
-			return pos;
+			return static_cast<long>(pos);
 		}
 		pos = forward ? pos + 1 : pos - 1;
-		if (forward && pos >= haystack.length()) {
+		if (forward && static_cast<size_t>(pos) >= haystack.length()) {
 			break;
 		}
 		if (!forward && pos < 0) {
@@ -108,8 +117,8 @@ std::string collapse_whitespace(std::string_view input) {
 	for (size_t i = 0; i < input.size(); ++i) {
 		const auto ch = static_cast<unsigned char>(input[i]);
 		// Check for non-breaking space (UTF-8: 0xC2A0)
-		const bool is_nbsp = (i + 1 < input.size() && ch == 0xC2 && static_cast<unsigned char>(input[i + 1]) == 0xA0);
-		if (std::isspace(ch) || is_nbsp) {
+		const bool is_nbsp = (i + 1 < input.size() && ch == UTF8_NBSP_FIRST && static_cast<unsigned char>(input[i + 1]) == UTF8_NBSP_SECOND);
+		if ((std::isspace(ch) != 0) || is_nbsp) {
 			if (!prev_was_space) {
 				result << ' ';
 				prev_was_space = true;
@@ -129,9 +138,9 @@ std::string trim_string(const std::string& str) {
 	auto start = str.begin();
 	auto end = str.end();
 	auto is_nbsp = [&](std::string::const_iterator it) -> bool {
-		return it != str.end() && std::next(it) != str.end() && static_cast<unsigned char>(*it) == 0xC2 && static_cast<unsigned char>(*std::next(it)) == 0xA0;
+		return it != str.end() && std::next(it) != str.end() && static_cast<unsigned char>(*it) == UTF8_NBSP_FIRST && static_cast<unsigned char>(*std::next(it)) == UTF8_NBSP_SECOND;
 	};
-	while (start != end && (std::isspace(static_cast<unsigned char>(*start)) || is_nbsp(start))) {
+	while (start != end && ((std::isspace(static_cast<unsigned char>(*start)) != 0) || is_nbsp(start))) {
 		if (is_nbsp(start)) {
 			start += 2;
 		} else {
@@ -140,7 +149,7 @@ std::string trim_string(const std::string& str) {
 	}
 	while (start != end) {
 		auto prev = std::prev(end);
-		if (std::isspace(static_cast<unsigned char>(*prev))) {
+		if (std::isspace(static_cast<unsigned char>(*prev)) != 0) {
 			end = prev;
 		} else if (prev != start && std::prev(prev) != start && is_nbsp(std::prev(prev))) {
 			end = std::prev(prev);
@@ -148,13 +157,13 @@ std::string trim_string(const std::string& str) {
 			break;
 		}
 	}
-	return std::string(start, end);
+	return {start, end};
 }
 
 std::string remove_soft_hyphens(std::string_view input) {
 	try {
 		std::string result(input);
-		Poco::RegularExpression regex("\xC2\xAD", Poco::RegularExpression::RE_UTF8);
+		const Poco::RegularExpression regex("\xC2\xAD", Poco::RegularExpression::RE_UTF8);
 		regex.subst(result, "", Poco::RegularExpression::RE_GLOBAL);
 		return result;
 	} catch (const Poco::Exception&) {
@@ -163,9 +172,9 @@ std::string remove_soft_hyphens(std::string_view input) {
 }
 
 const parser* get_parser_for_unknown_file(const wxString& path, config_manager& config) {
-	wxString saved_format = config.get_document_format(path);
+	const wxString saved_format = config.get_document_format(path);
 	if (!saved_format.IsEmpty()) {
-		auto* par = find_parser_by_extension(saved_format);
+		const auto* par = find_parser_by_extension(saved_format);
 		if (par) {
 			return par;
 		}

@@ -31,17 +31,17 @@ wxMenu* task_bar_icon::CreatePopupMenu() {
 	return menu;
 }
 
-void task_bar_icon::on_restore_from_tray(wxCommandEvent& _event) {
+void task_bar_icon::on_restore_from_tray(wxCommandEvent& /*unused*/) {
 	frame_->Show(true);
 	frame_->Raise();
 	frame_->Iconize(false);
 }
 
-void task_bar_icon::on_exit_from_tray(wxCommandEvent& _event) {
+void task_bar_icon::on_exit_from_tray(wxCommandEvent& /*unused*/) {
 	frame_->Close(true);
 }
 
-void task_bar_icon::on_tray_icon_activated(wxTaskBarIconEvent& _event) {
+void task_bar_icon::on_tray_icon_activated(wxTaskBarIconEvent& /*unused*/) {
 	frame_->Show(true);
 	frame_->Raise();
 	frame_->Iconize(false);

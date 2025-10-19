@@ -13,7 +13,6 @@
 #include <memory>
 #include <wx/ipc.h>
 #include <wx/snglinst.h>
-#include <wx/wx.h>
 
 class paperback_connection : public wxConnection {
 public:

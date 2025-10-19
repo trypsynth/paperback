@@ -8,7 +8,6 @@
  */
 
 #include "document_manager.hpp"
-#include "app.hpp"
 #include "constants.hpp"
 #include "dialogs.hpp"
 #include "main_window.hpp"
