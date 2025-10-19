@@ -9,10 +9,12 @@
 
 #pragma once
 #include "document.hpp"
+#include "document.hpp"
 #include "html_to_text.hpp" // For link_info struct
 #include <Poco/DOM/Document.h>
 #include <Poco/DOM/Element.h>
 #include <Poco/DOM/Node.h>
+#include <Poco/DOM/NodeList.h>
 #include <Poco/DOM/Text.h>
 #include <memory>
 #include <string>
@@ -33,6 +35,7 @@ public:
 	[[nodiscard]] const std::unordered_map<std::string, size_t>& get_id_positions() const noexcept { return id_positions; }
 	[[nodiscard]] const std::vector<heading_info>& get_headings() const noexcept { return headings; }
 	[[nodiscard]] const std::vector<link_info>& get_links() const noexcept { return links; }
+	[[nodiscard]] const std::vector<table_info>& get_tables() const noexcept { return tables; }
 	void clear() noexcept;
 
 private:
@@ -41,6 +44,7 @@ private:
 	std::unordered_map<std::string, size_t> id_positions;
 	std::vector<heading_info> headings;
 	std::vector<link_info> links;
+	std::vector<table_info> tables;
 	bool in_body = false;
 	bool preserve_whitespace = false;
 	size_t cached_char_length = 0;
@@ -52,4 +56,5 @@ private:
 	size_t get_current_text_position() const;
 	[[nodiscard]] static constexpr bool is_block_element(std::string_view tag_name) noexcept;
 	[[nodiscard]] static std::string get_element_text(Poco::XML::Element* element) noexcept;
+	[[nodiscard]] std::string extract_table_text(Poco::XML::Node* table_node);
 };

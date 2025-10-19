@@ -34,7 +34,7 @@ find_package(lexbor CONFIG REQUIRED)
 find_package(maddy CONFIG REQUIRED)
 find_package(pdfium CONFIG REQUIRED)
 find_package(Poco REQUIRED COMPONENTS Foundation XML)
-find_package(wxWidgets CONFIG REQUIRED)
+find_package(wxWidgets CONFIG REQUIRED COMPONENTS webview)
 find_package(Gettext)
 
 if(GETTEXT_FOUND)
@@ -95,7 +95,12 @@ target_link_libraries(paperback PRIVATE
 	wx::base
 	wx::core
 	wx::net
+	wx::webview
 )
+
+if(WIN32)
+	target_link_libraries(paperback PRIVATE "${CMAKE_SOURCE_DIR}/vcpkg/bin/buildtrees/wxwidgets/x64-windows-static-rel/libs/webview/packages/Microsoft.Web.WebView2.1.0.1722.45/build/native/x64/WebView2LoaderStatic.lib")
+endif()
 
 if(WIN32)
 	file(GLOB DLLS "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin/*.dll")

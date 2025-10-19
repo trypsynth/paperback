@@ -49,7 +49,7 @@ std::string html_to_text::get_text() const {
 	}
 	auto result = oss.str();
 	if (!result.empty()) {
-		result.pop_back(); // Remove trailing newline
+		result.pop_back(); 
 	}
 	return result;
 }
@@ -107,11 +107,12 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 				preserve_whitespace = true;
 			} else if (tag_name == "code") {
 				in_code = true;
-			} else if (tag_name == "br" || tag_name == "li") {
-				finalize_current_line();
-			}
-			if (in_body && element) {
-				size_t id_len;
+			                                                            } else if (tag_name == "table") {
+			                                                                finalize_current_line();
+			                                                                std::string table_html_content = extract_table_text(node);
+			                                                                tables.push_back({get_current_text_position(), "[Table]", table_html_content});
+			                                                            }
+			                                                			if (in_body && element) {				size_t id_len;
 				const lxb_char_t* id_attr = lxb_dom_element_get_attribute(element, (const lxb_char_t*)"id", 2, &id_len);
 				if (id_attr && id_len > 0) {
 					std::string id{reinterpret_cast<const char*>(id_attr), id_len};
@@ -215,14 +216,14 @@ void html_to_text::add_line(std::string_view line) {
 	std::string processed_line;
 	if (preserve_whitespace) {
 		processed_line = std::string(line);
-		cached_char_length += wxString::FromUTF8(processed_line).length() + 1; // +1 for newline
+		cached_char_length += wxString::FromUTF8(processed_line).length() + 1;
 		lines.emplace_back(std::move(processed_line));
 		preserve_line_whitespace.push_back(true);
 	} else {
 		processed_line = collapse_whitespace(line);
 		processed_line = trim_string(processed_line);
 		if (!processed_line.empty()) {
-			cached_char_length += wxString::FromUTF8(processed_line).length() + 1; // +1 for newline
+			cached_char_length += wxString::FromUTF8(processed_line).length() + 1;
 			lines.emplace_back(std::move(processed_line));
 			preserve_line_whitespace.push_back(false);
 		}
@@ -242,14 +243,14 @@ void html_to_text::finalize_text() {
 		auto& line = lines[i];
 		bool preserve_ws = i < preserve_line_whitespace.size() ? preserve_line_whitespace[i] : false;
 		if (preserve_ws) {
-			cached_char_length += wxString::FromUTF8(line).length() + 1; // +1 for newline
+			cached_char_length += wxString::FromUTF8(line).length() + 1;
 			cleaned_lines.emplace_back(std::move(line));
 			cleaned_preserve.push_back(true);
 		} else {
 			line = collapse_whitespace(line);
 			line = trim_string(line);
 			if (!line.empty()) {
-				cached_char_length += wxString::FromUTF8(line).length() + 1; // +1 for newline
+				cached_char_length += wxString::FromUTF8(line).length() + 1;
 				cleaned_lines.emplace_back(std::move(line));
 				cleaned_preserve.push_back(false);
 			}
@@ -325,4 +326,44 @@ std::string html_to_text::get_element_text(lxb_dom_element_t* element) noexcept 
 		return {};
 	}
 	return std::string{reinterpret_cast<const char*>(text), text_length};
+}
+
+std::string html_to_text::extract_table_text(lxb_dom_node_t* table_node) {
+    std::string table_html = "<table>";
+
+    auto process_row_html = [&](lxb_dom_node_t* row_node, bool is_header) {
+        table_html += "<tr>";
+        for (lxb_dom_node_t* cell_node = row_node->first_child; cell_node; cell_node = cell_node->next) {
+            if (cell_node->type == LXB_DOM_NODE_TYPE_ELEMENT) {
+                std::string_view cell_tag_name = get_tag_name(lxb_dom_interface_element(cell_node));
+                if (cell_tag_name == "td" || cell_tag_name == "th") {
+                    table_html += "<" + std::string(cell_tag_name) + ">";
+
+                    table_html += get_element_text(lxb_dom_interface_element(cell_node));
+                    table_html += "</" + std::string(cell_tag_name) + ">";
+                }
+            }
+        }
+        table_html += "</tr>";
+    };
+
+    for (lxb_dom_node_t* child = table_node->first_child; child; child = child->next) {
+        if (child->type == LXB_DOM_NODE_TYPE_ELEMENT) {
+            std::string_view tag_name = get_tag_name(lxb_dom_interface_element(child));
+            if (tag_name == "thead" || tag_name == "tbody" || tag_name == "tfoot") {
+                table_html += "<" + std::string(tag_name) + ">";
+                for (lxb_dom_node_t* row_node = child->first_child; row_node; row_node = row_node->next) {
+                    if (row_node->type == LXB_DOM_NODE_TYPE_ELEMENT && get_tag_name(lxb_dom_interface_element(row_node)) == "tr") {
+                        process_row_html(row_node, tag_name == "thead");
+                    }
+                }
+                table_html += "</" + std::string(tag_name) + ">";
+            } else if (tag_name == "tr") {
+                process_row_html(child, false);
+            }
+        }
+    }
+
+    table_html += "</table>";
+    return table_html;
 }

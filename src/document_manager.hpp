@@ -73,7 +73,10 @@ public:
 	void go_to_next_bookmark();
 	void go_to_previous_link();
 	void go_to_next_link();
+	void go_to_previous_table();
+	void go_to_next_table();
 	void activate_current_link();
+	void activate_current_table();
 	void toggle_bookmark();
 	void show_bookmark_dialog(wxWindow* parent);
 	void show_table_of_contents(wxWindow* parent);

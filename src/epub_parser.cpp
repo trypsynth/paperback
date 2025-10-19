@@ -1,4 +1,4 @@
-/* epub_parser.cpp - parser for Epub 2/3 ebooks.
+/* app.cpp - wxApp implementation code.
  *
  * Paperback.
  * Copyright (c) 2025 Quin Gillespie.
@@ -134,11 +134,11 @@ void epub_parser::parse_opf(const std::string& filename, epub_context& ctx) cons
 	}
 	auto children = manifest->childNodes();
 	for (size_t i = 0; i < children->length(); ++i) {
-		auto* node = children->item(i);
-		if (node->nodeType() != Node::ELEMENT_NODE) {
+			auto* node = children->item(i);
+			if (node->nodeType() != Node::ELEMENT_NODE) {
 			continue;
 		}
-		auto* element = static_cast<Element*>(node);
+			auto* element = static_cast<Element*>(node);
 		const auto href = element->getAttribute("href");
 		const auto id = element->getAttribute("id");
 		const auto media_type = element->getAttribute("media-type");
@@ -160,22 +160,22 @@ void epub_parser::parse_opf(const std::string& filename, epub_context& ctx) cons
 		throw parse_error("No spine");
 	}
 	if (ctx.toc_ncx_id.empty()) {
-		auto toc_attr = static_cast<Element*>(spine)->getAttribute("toc");
+			auto toc_attr = static_cast<Element*>(spine)->getAttribute("toc");
 		if (!toc_attr.empty()) {
-			ctx.toc_ncx_id = toc_attr;
+				ctx.toc_ncx_id = toc_attr;
+			}
 		}
-	}
 	children = spine->childNodes();
 	for (size_t i = 0; i < children->length(); ++i) {
-		auto* node = children->item(i);
-		if (node->nodeType() != Node::ELEMENT_NODE) {
-			continue;
+			auto* node = children->item(i);
+			if (node->nodeType() != Node::ELEMENT_NODE) {
+				continue;
+			}
+			auto* element = static_cast<Element*>(node);
+			const auto idref = element->getAttribute("idref");
+			ctx.spine_items.push_back(idref);
 		}
-		auto* element = static_cast<Element*>(node);
-		const auto idref = element->getAttribute("idref");
-		ctx.spine_items.push_back(idref);
 	}
-}
 
 template <typename conv>
 void epub_parser::process_section_content(conv& converter, const std::string& content, const std::string& href, epub_context& ctx, document_buffer& buffer) const {
@@ -183,6 +183,7 @@ void epub_parser::process_section_content(conv& converter, const std::string& co
 		const auto& text = converter.get_text();
 		const auto& headings = converter.get_headings();
 		const auto& links = converter.get_links();
+		const auto& tables = converter.get_tables();
 		const auto& id_positions = converter.get_id_positions();
 		size_t section_start = buffer.str().length();
 		Path section_base_path(href, Path::PATH_UNIX);
@@ -206,6 +207,9 @@ void epub_parser::process_section_content(conv& converter, const std::string& co
 				resolved_href = resolved_path.toString(Path::PATH_UNIX);
 			}
 			buffer.add_link(section_start + link.offset, wxString::FromUTF8(link.text), resolved_href);
+		}
+		for (const auto& table : tables) {
+			buffer.add_table(section_start + table.offset, wxString::FromUTF8(table.text), wxString::FromUTF8(table.ref));
 		}
 		if (buffer.str().length() > 0 && !buffer.str().EndsWith("\n")) {
 			buffer.append("\n");

@@ -56,6 +56,11 @@ void document_buffer::add_link(size_t pos, const wxString& text, const wxString&
 	sort_markers();
 }
 
+void document_buffer::add_table(size_t pos, const wxString& text, const wxString& ref) {
+	markers.emplace_back(pos, marker_type::table, text, ref, 0);
+	sort_markers();
+}
+
 void document_buffer::add_marker(size_t pos, marker_type type, const wxString& text, const wxString& ref, int level) {
 	if (is_heading_marker(type) && level == 0) {
 		level = heading_level_from_type(type);
