@@ -189,7 +189,7 @@ void all_documents_dialog::populate_document_list() {
 	}
 }
 
-bookmark_dialog::bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks, wxTextCtrl* text_ctrl, long current_pos) : dialog(parent, _("Jump to Bookmark")), bookmark_positions(bookmarks), selected_position{-1} {
+bookmark_dialog::bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks, wxTextCtrl* text_ctrl, long current_pos) : dialog(parent, _("Jump to Bookmark"), dialog_button_config::ok_cancel), bookmark_positions(bookmarks), selected_position{-1} {
 	bookmark_list = new wxListBox(this, wxID_ANY);
 	int closest_index = -1;
 	long closest_distance = LONG_MAX;
@@ -211,22 +211,50 @@ bookmark_dialog::bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks,
 			}
 		}
 	}
+
+	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
+	content_sizer->Add(bookmark_list, 1, wxEXPAND | wxALL, DIALOG_PADDING);
+
+	auto* button_sizer = new wxStdDialogButtonSizer();
+	delete_button = new wxButton(this, wxID_DELETE, _("&Delete"));
+	jump_button = new wxButton(this, wxID_OK, _("&Jump"));
+	auto* cancel_button = new wxButton(this, wxID_CANCEL, _("&Cancel"));
+	button_sizer->AddButton(delete_button);
+	button_sizer->AddButton(jump_button);
+	button_sizer->AddButton(cancel_button);
+	button_sizer->Realize();
+	content_sizer->Add(button_sizer, 0, wxALIGN_RIGHT | wxALL, DIALOG_PADDING);
+
+	set_content(content_sizer);
+	SetSizerAndFit(main_sizer);
+	CentreOnParent();
+
+	jump_button->SetDefault();
+	jump_button->Enable(false);
+	delete_button->Enable(false);
+
 	if (closest_index >= 0) {
 		bookmark_list->SetSelection(closest_index);
 		selected_position = bookmarks[closest_index];
+		jump_button->Enable(true);
+		delete_button->Enable(true);
 	}
-	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
-	content_sizer->Add(bookmark_list, 1, wxEXPAND);
-	set_content(content_sizer);
+
 	bookmark_list->Bind(wxEVT_LISTBOX, &bookmark_dialog::on_list_selection_changed, this);
 	Bind(wxEVT_BUTTON, &bookmark_dialog::on_ok, this, wxID_OK);
-	finalize_layout();
+	Bind(wxEVT_BUTTON, &bookmark_dialog::on_delete, this, wxID_DELETE);
 }
 
 void bookmark_dialog::on_list_selection_changed(wxCommandEvent& /*event*/) {
 	const int selection = bookmark_list->GetSelection();
 	if (selection >= 0 && static_cast<unsigned int>(selection) < bookmark_positions.GetCount()) {
 		selected_position = bookmark_positions[static_cast<std::size_t>(selection)];
+		jump_button->Enable(true);
+		delete_button->Enable(true);
+	} else {
+		selected_position = -1;
+		jump_button->Enable(false);
+		delete_button->Enable(false);
 	}
 }
 
@@ -236,6 +264,29 @@ void bookmark_dialog::on_ok(wxCommandEvent& /*event*/) {
 	} else {
 		wxMessageBox(_("Please select a bookmark to jump to."), _("Error"), wxICON_ERROR);
 	}
+}
+
+void bookmark_dialog::on_delete(wxCommandEvent& /*event*/) {
+	const int selection = bookmark_list->GetSelection();
+	if (selection < 0) {
+		return;
+	}
+
+	const long deleted_pos = bookmark_positions[static_cast<std::size_t>(selection)];
+	positions_to_delete.Add(deleted_pos);
+
+	bookmark_positions.RemoveAt(static_cast<std::size_t>(selection));
+	bookmark_list->Delete(static_cast<unsigned int>(selection));
+
+	if (static_cast<unsigned int>(selection) < bookmark_list->GetCount()) {
+		bookmark_list->SetSelection(selection);
+	} else if (bookmark_list->GetCount() > 0) {
+		bookmark_list->SetSelection(bookmark_list->GetCount() - 1);
+	}
+
+	// Manually trigger the selection event to update the button states
+	wxCommandEvent empty_event(wxEVT_LISTBOX, GetId());
+	on_list_selection_changed(empty_event);
 }
 
 document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc) : dialog(parent, _("Document Info"), dialog_button_config::ok_only) {

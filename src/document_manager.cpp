@@ -510,13 +510,25 @@ void document_manager::show_bookmark_dialog(wxWindow* parent) {
 	}
 	const long current_pos = text_ctrl->GetInsertionPoint();
 	bookmark_dialog dialog(parent, bookmarks, text_ctrl, current_pos);
-	if (dialog.ShowModal() != wxID_OK) {
+	const int result = dialog.ShowModal();
+
+	const wxArrayLong deleted_bookmarks = dialog.get_deleted_positions();
+	for (long deleted_pos : deleted_bookmarks) {
+		config.toggle_bookmark(tab->file_path, deleted_pos);
+	}
+	if (!deleted_bookmarks.IsEmpty()) {
+		config.flush();
+	}
+
+	if (result != wxID_OK) {
 		return;
 	}
+
 	const long pos = dialog.get_selected_position();
 	if (pos < 0) {
 		return;
 	}
+
 	text_ctrl->SetInsertionPoint(pos);
 	text_ctrl->SetFocus();
 	long line{0};
