@@ -189,7 +189,7 @@ void all_documents_dialog::populate_document_list() {
 	}
 }
 
-bookmark_dialog::bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks, wxTextCtrl* text_ctrl, long current_pos) : dialog(parent, _("Jump to Bookmark"), dialog_button_config::ok_cancel), bookmark_positions(bookmarks), selected_position{-1} {
+bookmark_dialog::bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos) : dialog(parent, _("Jump to Bookmark"), dialog_button_config::ok_cancel), bookmark_positions(bookmarks), selected_position{-1}, config(config), file_path(file_path) {
 	bookmark_list = new wxListBox(this, wxID_ANY);
 	int closest_index = -1;
 	long closest_distance = LONG_MAX;
@@ -266,7 +266,8 @@ void bookmark_dialog::on_delete(wxCommandEvent& /*event*/) {
 		return;
 	}
 	const long deleted_pos = bookmark_positions[static_cast<std::size_t>(selection)];
-	positions_to_delete.Add(deleted_pos);
+	config.remove_bookmark(file_path, deleted_pos);
+	config.flush();
 	bookmark_positions.RemoveAt(static_cast<std::size_t>(selection));
 	bookmark_list->Delete(static_cast<unsigned int>(selection));
 	if (static_cast<unsigned int>(selection) < bookmark_list->GetCount()) {

@@ -75,20 +75,20 @@ private:
 
 class bookmark_dialog : public dialog {
 public:
-	bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks, wxTextCtrl* text_ctrl, long current_pos = -1);
+	bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos = -1);
 	~bookmark_dialog() = default;
 	bookmark_dialog(const bookmark_dialog&) = delete;
 	bookmark_dialog& operator=(const bookmark_dialog&) = delete;
 	bookmark_dialog(bookmark_dialog&&) = delete;
 	bookmark_dialog& operator=(bookmark_dialog&&) = delete;
 	[[nodiscard]] long get_selected_position() const { return selected_position; }
-	[[nodiscard]] const wxArrayLong& get_deleted_positions() const { return positions_to_delete; }
 
 private:
 	wxListBox* bookmark_list{nullptr};
 	wxArrayLong bookmark_positions;
-	wxArrayLong positions_to_delete;
 	long selected_position;
+	config_manager& config;
+	wxString file_path;
 	wxButton* jump_button{nullptr};
 	wxButton* delete_button{nullptr};
 
