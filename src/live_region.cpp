@@ -9,7 +9,7 @@
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include "live_region.hpp"
-#include <objbase.h>
+#include <initguid.h>
 #include <oleacc.h>
 #include <uiautomation.h>
 #include <windows.h>
