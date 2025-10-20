@@ -165,7 +165,7 @@ std::string chm_parser::read_file_content(chmFile* file, const std::string& path
 std::string chm_parser::normalize_path(const std::string& path) {
 	std::string result = path;
 	std::ranges::replace(result, '\\', '/');
-	std::ranges::transform(result, result.begin(), [](unsigned char c) {return static_cast<char>(std::tolower(c));});
+	std::ranges::transform(result, result.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 	if (!result.empty() && result[0] != '/') {
 		result = "/" + result;
 	}

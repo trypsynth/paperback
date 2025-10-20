@@ -746,7 +746,7 @@ wxString config_manager::escape_document_path(const wxString& path) {
 	return wxString::Format("doc_%s", b64_stream.str());
 }
 
-void config_manager::with_document_section(const wxString& path, const std::function<void()>& func) const  {
+void config_manager::with_document_section(const wxString& path, const std::function<void()>& func) const {
 	if (!config) {
 		return;
 	}

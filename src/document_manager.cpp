@@ -8,8 +8,8 @@
  */
 
 #include "document_manager.hpp"
-#include "constants.hpp"
 #include "config_manager.hpp"
+#include "constants.hpp"
 #include "dialogs.hpp"
 #include "document.hpp"
 #include "document_buffer.hpp"

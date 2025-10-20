@@ -325,7 +325,7 @@ find_dialog::find_dialog(wxWindow* parent) : wxDialog(parent, wxID_ANY, _("Find"
 	button_sizer->Add(cancel_btn, 0);
 	find_next_btn->SetDefault();
 	main_sizer->Add(find_sizer, 0, wxEXPAND | wxALL, DIALOG_PADDING);
-	main_sizer->Add(options_box, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING); // NOLINT(hicpp-signed-bitwise)
+	main_sizer->Add(options_box, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);  // NOLINT(hicpp-signed-bitwise)
 	main_sizer->Add(button_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING); // NOLINT(hicpp-signed-bitwise)
 	SetSizer(main_sizer);
 	find_previous_btn->Bind(wxEVT_BUTTON, &find_dialog::on_find_previous, this);
