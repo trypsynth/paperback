@@ -17,5 +17,7 @@ public:
 
 private:
 	wxWebView* web_view;
-	void on_char_hook(wxKeyEvent& event);
+	
+	void on_show(wxShowEvent& event);
+	void on_webview_key(wxWebViewEvent& event);
 };

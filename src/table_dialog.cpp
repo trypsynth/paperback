@@ -17,16 +17,28 @@ table_dialog::table_dialog(wxWindow* parent, const wxString& title, const wxStri
 	auto* sizer = new wxBoxSizer(wxVERTICAL);
 	sizer->Add(web_view, 1, wxEXPAND | wxALL, 5);
 
+	auto* button_sizer = CreateStdDialogButtonSizer(wxCLOSE);
+	sizer->Add(button_sizer, 0, wxALIGN_RIGHT | wxALL, 5);
+
 	SetSizerAndFit(sizer);
 	Centre();
 
-	Bind(wxEVT_CHAR_HOOK, &table_dialog::on_char_hook, this);
+	web_view->Bind(wxEVT_WEBVIEW_KEY, &table_dialog::on_webview_key, this);
 }
 
-void table_dialog::on_char_hook(wxKeyEvent& event) {
+void table_dialog::on_webview_key(wxWebViewEvent& event) {
 	if (event.GetKeyCode() == WXK_ESCAPE) {
 		EndModal(wxID_CANCEL);
 	} else {
 		event.Skip();
 	}
+}
+
+
+
+void table_dialog::on_show(wxShowEvent& event) {
+	if (event.IsShown()) {
+		web_view->SetFocus();
+	}
+	event.Skip();
 }
