@@ -9,16 +9,10 @@
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include "live_region.hpp"
-#include <combaseapi.h>
-#include <oaidl.h>
 #include <objbase.h>
 #include <oleacc.h>
 #include <uiautomation.h>
-#include <uiautomationcoreapi.h>
-#include <windef.h>
-#include <winerror.h>
-#include <winuser.h>
-#include <wtypes.h>
+#include <windows.h>
 #include <wx/window.h>
 
 namespace {
@@ -32,7 +26,6 @@ bool init_live_region() {
 	if (get_acc_prop_services() != nullptr) {
 		return true;
 	}
-	// NOLINTNEXTLINE(misc-include-cleaner) - HRESULT is available from wtypes.h
 	HRESULT hr = CoInitialize(nullptr);
 	if (FAILED(hr) && hr != RPC_E_CHANGED_MODE) {
 		return false;
