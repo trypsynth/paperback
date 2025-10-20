@@ -10,14 +10,12 @@
 #include "controls.hpp"
 #include <algorithm>
 #ifdef __WXMSW__
-#include <windef.h>
-#include <winuser.h>
+#include <windows.h>
 #endif
 #include <wx/event.h>
 #include <wx/slider.h>
 #include <wx/window.h>
 
-// NOLINTNEXTLINE(misc-include-cleaner) - False positive: wx/slider.h is correctly included, wxSlider is available
 accessible_slider::accessible_slider(wxWindow* parent, wxWindowID id, int value, int min_value, int max_value) : wxSlider(parent, id, value, min_value, max_value) {
 	Bind(wxEVT_CHAR, &accessible_slider::on_char, this);
 }
@@ -70,9 +68,8 @@ void accessible_slider::on_char(wxKeyEvent& event) {
 	if (handled) {
 		SetValue(new_value);
 		// Generate a scroll event so any bound handlers are notified.
-		wxCommandEvent scroll_event(wxEVT_SLIDER, GetId());
-		scroll_event.SetEventObject(this);
-		scroll_event.SetInt(new_value);
-		GetEventHandler()->ProcessEvent(scroll_event);
+		wxCommandEvent e(wxEVT_SLIDER, GetId());
+		e.SetInt(new_value);
+		ProcessWindowEvent(e);
 	}
 }
