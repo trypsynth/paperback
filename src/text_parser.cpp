@@ -9,9 +9,15 @@
  */
 
 #include "text_parser.hpp"
+#include "document.hpp"
 #include "utils.hpp"
+#include <cstdlib>
+#include <memory>
+#include <string>
 #include <vector>
 #include <wx/filename.h>
+#include <wx/stream.h>
+#include <wx/string.h>
 #include <wx/wfstream.h>
 
 std::unique_ptr<document> text_parser::load(const wxString& path) const {
@@ -20,16 +26,16 @@ std::unique_ptr<document> text_parser::load(const wxString& path) const {
 		return nullptr;
 	}
 	wxBufferedInputStream bs(file_stream);
-	size_t file_size = bs.GetSize();
+	const size_t file_size = bs.GetSize();
 	if (file_size == 0) {
 		return nullptr;
 	}
 	std::vector<char> buffer(file_size);
 	bs.Read(buffer.data(), file_size);
-	std::string utf8_content = convert_to_utf8(std::string(buffer.data(), file_size));
+	const std::string utf8_content = convert_to_utf8(std::string(buffer.data(), file_size));
 	auto doc = std::make_unique<document>();
 	doc->title = wxFileName(path).GetName();
-	std::string processed = remove_soft_hyphens(utf8_content);
+	const std::string processed = remove_soft_hyphens(utf8_content);
 	doc->buffer.set_content(wxString::FromUTF8(processed));
 	return doc;
 }

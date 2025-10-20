@@ -17,12 +17,13 @@ enum class live_region_mode {
 };
 
 #ifdef _WIN32
-[[nodiscard]] bool set_live_region(wxWindow* window, live_region_mode mode = live_region_mode::polite);
-[[nodiscard]] bool notify_live_region_changed(wxWindow* window);
+bool set_live_region(wxWindow* window, live_region_mode mode = live_region_mode::polite);
+bool notify_live_region_changed(wxWindow* window);
 #else
 inline bool set_live_region(wxWindow*, live_region_mode = live_region_mode::polite) {
 	return false;
 }
+
 inline bool notify_live_region_changed(wxWindow*) {
 	return false;
 }

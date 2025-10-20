@@ -8,11 +8,17 @@
  */
 
 #include "markdown_parser.hpp"
+#include "document.hpp"
+#include "document_buffer.hpp"
 #include "html_to_text.hpp"
 #include "utils.hpp"
 #include <maddy/parser.h>
 #include <memory>
+#include <sstream>
+#include <string>
 #include <wx/filename.h>
+#include <wx/stream.h>
+#include <wx/string.h>
 #include <wx/txtstrm.h>
 #include <wx/wfstream.h>
 
@@ -27,9 +33,9 @@ std::unique_ptr<document> markdown_parser::load(const wxString& path) const {
 	while (!bs.Eof()) {
 		content += text_stream.ReadLine() + "\n";
 	}
-	std::shared_ptr<maddy::Parser> parser = std::make_shared<maddy::Parser>();
+	const std::shared_ptr<maddy::Parser> parser = std::make_shared<maddy::Parser>();
 	std::istringstream iss(content.ToStdString());
-	std::string html = parser->Parse(iss);
+	const std::string html = parser->Parse(iss);
 	html_to_text converter;
 	if (!converter.convert(html, html_source_mode::markdown)) {
 		return nullptr;
@@ -45,7 +51,7 @@ std::unique_ptr<document> markdown_parser::load(const wxString& path) const {
 		doc->id_positions[pair.first] = pair.second;
 	}
 	for (const auto& heading : headings) {
-		marker_type type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + heading.level - 1);
+		const auto type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + heading.level - 1);
 		doc->buffer.add_marker(heading.offset, type, wxString::FromUTF8(heading.text), wxString(), heading.level);
 	}
 	for (const auto& link : links) {

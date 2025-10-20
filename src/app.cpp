@@ -37,7 +37,7 @@ bool app::OnInit() {
 		return false;
 	}
 	translation_manager::instance().initialize();
-	wxString preferred_language = config_mgr.get_language();
+	const wxString preferred_language = config_mgr.get_language();
 	if (!preferred_language.IsEmpty()) {
 		translation_manager::instance().set_language(preferred_language);
 	}
@@ -45,9 +45,9 @@ bool app::OnInit() {
 	if (single_instance_checker->IsAnotherRunning()) {
 		if (argc > 1) {
 			paperback_client client;
-			std::unique_ptr<wxConnectionBase> connection(client.MakeConnection(IPC_HOST_LOCALHOST, IPC_SERVICE, IPC_TOPIC_OPEN_FILE));
+			const std::unique_ptr<wxConnectionBase> connection(client.MakeConnection(IPC_HOST_LOCALHOST, IPC_SERVICE, IPC_TOPIC_OPEN_FILE));
 			if (connection) {
-				wxString arg_path = wxString(argv[1]);
+				const wxString arg_path = wxString(argv[1]);
 				wxFileName file_path{arg_path};
 				file_path.Normalize(wxPATH_NORM_ABSOLUTE);
 				connection->Execute(file_path.GetFullPath());
@@ -55,7 +55,7 @@ bool app::OnInit() {
 			}
 		} else {
 			paperback_client client;
-			std::unique_ptr<wxConnectionBase> connection(client.MakeConnection(IPC_HOST_LOCALHOST, IPC_SERVICE, IPC_TOPIC_OPEN_FILE));
+			const std::unique_ptr<wxConnectionBase> connection(client.MakeConnection(IPC_HOST_LOCALHOST, IPC_SERVICE, IPC_TOPIC_OPEN_FILE));
 			if (connection) {
 				connection->Execute(IPC_COMMAND_ACTIVATE);
 				connection->Disconnect();
@@ -84,10 +84,10 @@ int app::OnExit() {
 }
 
 void app::parse_command_line() {
-	wxString arg_path = wxString(argv[1]);
+	const wxString arg_path = wxString(argv[1]);
 	wxFileName file_path{arg_path};
 	file_path.Normalize(wxPATH_NORM_ABSOLUTE);
-	wxString path = file_path.GetFullPath();
+	const wxString path = file_path.GetFullPath();
 	if (!wxFileName::FileExists(path)) {
 		wxMessageBox(wxString::Format(_("File not found: %s"), path), _("Error"), wxICON_ERROR);
 		return;
@@ -97,15 +97,15 @@ void app::parse_command_line() {
 	if (existing_tab >= 0) {
 		frame->get_notebook()->SetSelection(existing_tab);
 		auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-		if (text_ctrl) {
+		if (text_ctrl != nullptr) {
 			text_ctrl->SetFocus();
 		}
 		return;
 	}
-	auto* par = find_parser_by_extension(wxFileName(path).GetExt());
-	if (!par) {
+	const auto* par = find_parser_by_extension(wxFileName(path).GetExt());
+	if (par == nullptr) {
 		par = get_parser_for_unknown_file(path, config_mgr);
-		if (!par) {
+		if (par == nullptr) {
 			return;
 		}
 	}
@@ -116,9 +116,9 @@ void app::parse_command_line() {
 }
 
 void app::restore_previous_documents() {
-	wxArrayString opened_docs = config_mgr.get_all_opened_documents();
+	const wxArrayString opened_docs = config_mgr.get_all_opened_documents();
 	auto* doc_manager = frame->get_doc_manager();
-	wxString active_doc = config_mgr.get_active_document();
+	const wxString active_doc = config_mgr.get_active_document();
 	for (const auto& path : opened_docs) {
 		if (!wxFileName::FileExists(path)) {
 			continue;
@@ -127,10 +127,10 @@ void app::restore_previous_documents() {
 		if (existing_tab >= 0) {
 			continue;
 		}
-		auto* par = find_parser_by_extension(wxFileName(path).GetExt());
-		if (!par) {
+		const auto* par = find_parser_by_extension(wxFileName(path).GetExt());
+		if (par == nullptr) {
 			par = get_parser_for_unknown_file(path, config_mgr);
-			if (!par) {
+			if (par == nullptr) {
 				continue;
 			}
 		}
@@ -144,13 +144,13 @@ void app::restore_previous_documents() {
 		if (active_tab >= 0) {
 			frame->get_notebook()->SetSelection(active_tab);
 			auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-			if (text_ctrl) {
+			if (text_ctrl != nullptr) {
 				text_ctrl->SetFocus();
 			}
 		}
 	} else if (doc_manager->has_documents()) {
 		auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-		if (text_ctrl) {
+		if (text_ctrl != nullptr) {
 			text_ctrl->SetFocus();
 		}
 	}
@@ -158,7 +158,7 @@ void app::restore_previous_documents() {
 
 void app::open_file(const wxString& filename) {
 	if (filename == IPC_COMMAND_ACTIVATE) {
-		if (frame) {
+		if (frame != nullptr) {
 			frame->Raise();
 		}
 		return;
@@ -172,17 +172,17 @@ void app::open_file(const wxString& filename) {
 	if (existing_tab >= 0) {
 		frame->get_notebook()->SetSelection(existing_tab);
 		auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-		if (text_ctrl) {
+		if (text_ctrl != nullptr) {
 			text_ctrl->SetFocus();
 		}
 		frame->Raise();
 		frame->RequestUserAttention();
 		return;
 	}
-	auto* par = find_parser_by_extension(wxFileName(filename).GetExt());
-	if (!par) {
+	const auto* par = find_parser_by_extension(wxFileName(filename).GetExt());
+	if (par == nullptr) {
 		par = get_parser_for_unknown_file(filename, config_mgr);
-		if (!par) {
+		if (par == nullptr) {
 			return;
 		}
 	}

@@ -80,11 +80,11 @@ private:
 	std::unique_ptr<wxFileConfig> config;
 	bool owns_global_config{false};
 
-	wxString get_config_path() const;
-	bool is_directory_writable(const wxString& dir) const;
+	static wxString get_config_path();
+	static bool is_directory_writable(const wxString& dir);
 	void load_defaults();
-	wxString get_document_section(const wxString& path) const;
-	wxString escape_document_path(const wxString& path) const;
-	void with_document_section(const wxString& path, std::function<void()> func) const;
-	void with_app_section(std::function<void()> func) const;
+	static wxString get_document_section(const wxString& path);
+	static wxString escape_document_path(const wxString& path);
+	void with_document_section(const wxString& path, const std::function<void()>& func) const;
+	void with_app_section(const std::function<void()>& func) const;
 };

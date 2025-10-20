@@ -40,7 +40,7 @@ struct document_tab : public wxClientData {
 
 class document_manager {
 public:
-	explicit document_manager(wxNotebook* notebook, config_manager& config, main_window& main_win);
+	explicit document_manager(wxNotebook* nbk, config_manager& cfg, main_window& win);
 	~document_manager();
 	document_manager(const document_manager&) = delete;
 	document_manager& operator=(const document_manager&) = delete;
@@ -51,7 +51,7 @@ public:
 	void update_ui();
 	void close_document(int index);
 	void close_all_documents();
-	[[nodiscard]] bool export_document(int index, const wxString& export_path);
+	[[nodiscard]] bool export_document(int index, const wxString& export_path) const;
 	[[nodiscard]] document_tab* get_tab(int index) const;
 	[[nodiscard]] document_tab* get_active_tab() const;
 	[[nodiscard]] document* get_active_document() const;
@@ -60,28 +60,28 @@ public:
 	[[nodiscard]] int get_tab_count() const;
 	[[nodiscard]] int get_active_tab_index() const;
 	[[nodiscard]] bool has_documents() const { return get_tab_count() > 0; }
-	void go_to_position(long position);
-	void go_to_previous_section();
-	void go_to_next_section();
+	void go_to_position(long position) const;
+	void go_to_previous_section() const;
+	void go_to_next_section() const;
 	void go_to_previous_heading();
 	void go_to_next_heading();
 	void go_to_previous_heading(int level);
 	void go_to_next_heading(int level);
-	void go_to_previous_page();
-	void go_to_next_page();
+	void go_to_previous_page() const;
+	void go_to_next_page() const;
 	void go_to_previous_bookmark();
 	void go_to_next_bookmark();
-	void go_to_previous_link();
-	void go_to_next_link();
-	void activate_current_link();
+	void go_to_previous_link() const;
+	void go_to_next_link() const;
+	void activate_current_link() const;
 	void toggle_bookmark();
 	void show_bookmark_dialog(wxWindow* parent);
-	void show_table_of_contents(wxWindow* parent);
-	void show_document_info(wxWindow* parent);
+	void show_table_of_contents(wxWindow* parent) const;
+	void show_document_info(wxWindow* parent) const;
 	void save_document_position(const wxString& path, long position) const;
 	[[nodiscard]] long load_document_position(const wxString& path) const;
-	void save_current_tab_position();
-	void save_all_tab_positions();
+	void save_current_tab_position() const;
+	void save_all_tab_positions() const;
 	[[nodiscard]] wxString get_status_text() const;
 	[[nodiscard]] wxString get_window_title(const wxString& app_name) const;
 	[[nodiscard]] long find_text(const wxString& query, long start_pos, find_options options) const;
@@ -94,8 +94,8 @@ private:
 	config_manager& config;
 	main_window& main_win;
 
-	void setup_text_ctrl(wxTextCtrl* text_ctrl, const wxString& content);
-	void restore_document_position(document_tab* tab);
+	static void setup_text_ctrl(wxTextCtrl* text_ctrl, const wxString& content);
+	void restore_document_position(document_tab* tab) const;
 	wxPanel* create_tab_panel(const wxString& content, document_tab* tab_data);
-	void navigate_to_heading(bool next, int specific_level = -1);
+	void navigate_to_heading(bool next, int specific_level = -1) const;
 };

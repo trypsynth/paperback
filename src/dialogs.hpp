@@ -12,10 +12,17 @@
 #include "controls.hpp"
 #include "document.hpp"
 #include "parser.hpp"
+#include <wx/arrstr.h>
+#include <wx/button.h>
+#include <wx/checkbox.h>
+#include <wx/clntdata.h>
+#include <wx/combobox.h>
+#include <wx/dialog.h>
+#include <wx/listbox.h>
 #include <wx/listctrl.h>
 #include <wx/spinctrl.h>
+#include <wx/textctrl.h>
 #include <wx/treectrl.h>
-#include <wx/wx.h>
 
 enum class dialog_button_config {
 	ok_only,

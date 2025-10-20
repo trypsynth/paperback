@@ -6,7 +6,6 @@
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include "live_region.hpp"
@@ -14,47 +13,54 @@
 #include <oleacc.h>
 #include <uiautomation.h>
 #include <windows.h>
+#include <wx/window.h>
 
 namespace {
-IAccPropServices* acc_prop_services = nullptr;
+IAccPropServices*& get_acc_prop_services() {
+	// NOLINTNEXTLINE(misc-const-correctness) - COM interface pointer cannot be const
+	static IAccPropServices* acc_prop_services{nullptr};
+	return acc_prop_services;
+}
 
 bool init_live_region() {
-	if (acc_prop_services) {
+	if (get_acc_prop_services() != nullptr) {
 		return true;
 	}
 	HRESULT hr = CoInitialize(nullptr);
 	if (FAILED(hr) && hr != RPC_E_CHANGED_MODE) {
 		return false;
 	}
-	hr = CoCreateInstance(CLSID_AccPropServices, nullptr, CLSCTX_INPROC, IID_IAccPropServices, reinterpret_cast<void**>(&acc_prop_services));
+	hr = CoCreateInstance(CLSID_AccPropServices, nullptr, CLSCTX_INPROC, IID_IAccPropServices, reinterpret_cast<void**>(&get_acc_prop_services()));
 	return SUCCEEDED(hr);
 }
 } // namespace
 
 bool set_live_region(wxWindow* window, live_region_mode mode) {
-	if (!window) {
+	if (window == nullptr) {
 		return false;
 	}
 	if (!init_live_region()) {
 		return false;
 	}
 	HWND hwnd = static_cast<HWND>(window->GetHandle());
-	if (!hwnd) {
+	if (hwnd == nullptr) {
 		return false;
 	}
-	VARIANT var;
+	VARIANT var{};
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
 	var.vt = VT_I4;
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
 	var.lVal = static_cast<int>(mode);
-	HRESULT hr = acc_prop_services->SetHwndProp(hwnd, OBJID_CLIENT, CHILDID_SELF, LiveSetting_Property_GUID, var);
+	const HRESULT hr = get_acc_prop_services()->SetHwndProp(hwnd, OBJID_CLIENT, CHILDID_SELF, LiveSetting_Property_GUID, var);
 	return SUCCEEDED(hr);
 }
 
 bool notify_live_region_changed(wxWindow* window) {
-	if (!window) {
+	if (window == nullptr) {
 		return false;
 	}
 	HWND hwnd = static_cast<HWND>(window->GetHandle());
-	if (!hwnd) {
+	if (hwnd == nullptr) {
 		return false;
 	}
 	NotifyWinEvent(EVENT_OBJECT_LIVEREGIONCHANGED, hwnd, OBJID_CLIENT, CHILDID_SELF);
