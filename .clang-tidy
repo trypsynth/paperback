@@ -23,12 +23,21 @@ Checks: >
   -modernize-avoid-c-arrays,
   -hicpp-no-array-decay,
   -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-avoid-non-const-global-variables,
   -misc-no-recursion,
   -bugprone-easily-swappable-parameters,
   -bugprone-exception-escape,
   -misc-include-cleaner,
   -hicpp-named-parameter,
   -readability-named-parameter,
+  -readability-non-const-parameter,
+  -readability-convert-member-functions-to-static,
+  -readability-redundant-casting,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -readability-magic-numbers,
+  -modernize-use-integer-sign-comparison,
+  -readability-implicit-bool-conversion,
+  -hicpp-signed-bitwise,
 WarningsAsErrors: ''
 HeaderFilterRegex: '.*'
 FormatStyle: file

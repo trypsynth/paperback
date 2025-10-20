@@ -294,7 +294,8 @@ void main_window::update_status_bar() {
 }
 
 void main_window::on_open(wxCommandEvent&) {
-	wxFileDialog dlg(this, _("Select a document to read"), "", "", get_supported_wildcards(), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+	const long flags = wxFD_OPEN | wxFD_FILE_MUST_EXIST;
+	wxFileDialog dlg(this, _("Select a document to read"), "", "", get_supported_wildcards(), flags);
 	if (dlg.ShowModal() != wxID_OK) {
 		return;
 	}
@@ -321,7 +322,8 @@ void main_window::on_export(wxCommandEvent&) {
 	if (doc == nullptr) {
 		return;
 	}
-	wxFileDialog save_dialog(this, _("Export Document"), "", doc->title + ".txt", _("Text files (*.txt)|*.txt|All files (*.*)|*.*"), wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+	const long flags = wxFD_SAVE | wxFD_OVERWRITE_PROMPT;
+	wxFileDialog save_dialog(this, _("Export Document"), "", doc->title + ".txt", _("Text files (*.txt)|*.txt|All files (*.*)|*.*"), flags);
 	if (save_dialog.ShowModal() != wxID_OK) {
 		return;
 	}
@@ -428,9 +430,9 @@ void main_window::on_go_to_page(wxCommandEvent&) {
 		return;
 	}
 	const int page = dlg.get_page_number();
-	if (page >= 1 && page <= static_cast<int>(doc->buffer.count_markers_by_type(marker_type::page_break))) {
+	if (page >= 1 && std::cmp_less_equal(page, doc->buffer.count_markers_by_type(marker_type::page_break))) {
 		const size_t offset = doc->buffer.get_marker_position_by_index(marker_type::page_break, page - 1); // Convert to 0-based index
-		doc_manager->go_to_position(offset);
+		doc_manager->go_to_position(static_cast<long>(offset));
 		update_status_bar();
 		save_position_immediately();
 	}
@@ -688,8 +690,8 @@ void main_window::on_show_all_documents(wxCommandEvent&) {
 	auto& config_mgr = wxGetApp().get_config_manager();
 	wxArrayString open_docs;
 	for (size_t i = 0; i < doc_manager->get_tab_count(); ++i) {
-		if (doc_manager->get_tab(i) != nullptr) {
-			open_docs.Add(doc_manager->get_tab(i)->file_path);
+		if (doc_manager->get_tab(static_cast<int>(i)) != nullptr) {
+			open_docs.Add(doc_manager->get_tab(static_cast<int>(i))->file_path);
 		}
 	}
 	all_documents_dialog dlg(this, config_mgr, open_docs);
@@ -792,7 +794,7 @@ void main_window::do_find(bool forward) {
 		}
 	}
 	text_ctrl->SetFocus();
-	text_ctrl->SetSelection(found_pos, found_pos + query.Length());
+	text_ctrl->SetSelection(found_pos, static_cast<long>(found_pos + query.Length()));
 	text_ctrl->ShowPosition(found_pos);
 	update_status_bar();
 	trigger_throttled_position_save();

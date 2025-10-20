@@ -164,7 +164,7 @@ std::string chm_parser::read_file_content(chmFile* file, const std::string& path
 		return "";
 	}
 	std::vector<unsigned char> buffer(static_cast<size_t>(ui.length));
-	const LONGINT64 bytes_read = chm_retrieve_object(file, &ui, buffer.data(), 0, ui.length);
+	const LONGINT64 bytes_read = chm_retrieve_object(file, &ui, buffer.data(), 0, static_cast<LONGINT64>(ui.length));
 	if (std::cmp_not_equal(bytes_read, static_cast<LONGINT64>(ui.length))) {
 		return "";
 	}
@@ -187,9 +187,9 @@ void chm_parser::parse_system_file(chm_context& ctx) {
 		return;
 	}
 	const std::span data{reinterpret_cast<const std::byte*>(system_content.data()), system_content.size()};
-	constexpr int shift_amount = 8;
 	auto read_le16 = [](std::span<const std::byte> bytes, size_t offset) -> uint16_t {
-		return static_cast<uint16_t>(std::to_integer<uint16_t>(bytes[offset]) | (static_cast<uint16_t>(std::to_integer<uint16_t>(bytes[offset + 1])) << shift_amount));
+		constexpr unsigned int shift = 8U;
+		return static_cast<uint16_t>(static_cast<uint16_t>(std::to_integer<uint16_t>(bytes[offset])) | static_cast<uint16_t>(static_cast<uint16_t>(std::to_integer<uint16_t>(bytes[offset + 1])) << shift));
 	};
 	for (size_t index = 4; index + 4 <= data.size();) {
 		const auto code = read_le16(data, index);

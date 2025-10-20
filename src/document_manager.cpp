@@ -207,9 +207,9 @@ void document_manager::go_to_previous_section() const {
 	if (current_index != -1) {
 		const size_t current_section_offset = doc->offset_for_section(current_index);
 		if (current_pos > current_section_offset) {
-			text_ctrl->SetInsertionPoint(current_section_offset);
+			text_ctrl->SetInsertionPoint(static_cast<long>(current_section_offset));
 			long line{0};
-			text_ctrl->PositionToXY(current_section_offset, nullptr, &line);
+			text_ctrl->PositionToXY(static_cast<long>(current_section_offset), nullptr, &line);
 			const wxString current_line = text_ctrl->GetLineText(line);
 			speak(current_line);
 			return;
@@ -229,9 +229,9 @@ void document_manager::go_to_previous_section() const {
 		return;
 	}
 	const size_t offset = doc->offset_for_section(prev_index);
-	text_ctrl->SetInsertionPoint(offset);
+	text_ctrl->SetInsertionPoint(static_cast<long>(offset));
 	long line{0};
-	text_ctrl->PositionToXY(offset, nullptr, &line);
+	text_ctrl->PositionToXY(static_cast<long>(offset), nullptr, &line);
 	const wxString current_line = text_ctrl->GetLineText(line);
 	speak(current_line);
 }
@@ -254,9 +254,9 @@ void document_manager::go_to_next_section() const {
 		return;
 	}
 	const size_t offset = doc->offset_for_section(next_index);
-	text_ctrl->SetInsertionPoint(offset);
+	text_ctrl->SetInsertionPoint(static_cast<long>(offset));
 	long line{0};
-	text_ctrl->PositionToXY(offset, nullptr, &line);
+	text_ctrl->PositionToXY(static_cast<long>(offset), nullptr, &line);
 	const wxString current_line = text_ctrl->GetLineText(line);
 	speak(current_line);
 }
@@ -294,9 +294,9 @@ void document_manager::go_to_previous_page() const {
 		return;
 	}
 	const size_t offset = doc->offset_for_page(prev_index);
-	text_ctrl->SetInsertionPoint(offset);
+	text_ctrl->SetInsertionPoint(static_cast<long>(offset));
 	long line{0};
-	text_ctrl->PositionToXY(offset, nullptr, &line);
+	text_ctrl->PositionToXY(static_cast<long>(offset), nullptr, &line);
 	const wxString current_line = text_ctrl->GetLineText(line);
 	speak(wxString::Format(_("Page %d: %s"), prev_index + 1, current_line));
 }
@@ -318,9 +318,9 @@ void document_manager::go_to_next_page() const {
 		return;
 	}
 	const size_t offset = doc->offset_for_page(next_index);
-	text_ctrl->SetInsertionPoint(offset);
+	text_ctrl->SetInsertionPoint(static_cast<long>(offset));
 	long line{0};
-	text_ctrl->PositionToXY(offset, nullptr, &line);
+	text_ctrl->PositionToXY(static_cast<long>(offset), nullptr, &line);
 	const wxString current_line = text_ctrl->GetLineText(line);
 	speak(wxString::Format(_("Page %d: %s"), next_index + 1, current_line));
 }
@@ -385,7 +385,7 @@ void document_manager::go_to_previous_link() const {
 	}
 	const marker* link_marker = doc->buffer.get_marker(prev_index);
 	if (link_marker != nullptr) {
-		go_to_position(link_marker->pos);
+		go_to_position(static_cast<long>(link_marker->pos));
 		speak(link_marker->text + _(" link"));
 	}
 }
@@ -408,7 +408,7 @@ void document_manager::go_to_next_link() const {
 	}
 	const marker* link_marker = doc->buffer.get_marker(next_index);
 	if (link_marker != nullptr) {
-		go_to_position(link_marker->pos);
+		go_to_position(static_cast<long>(link_marker->pos));
 		speak(link_marker->text + _(" link"));
 	}
 }
@@ -446,7 +446,7 @@ void document_manager::activate_current_link() const {
 		const wxString id = href.Mid(1);
 		auto it = doc->id_positions.find(std::string(id.mb_str()));
 		if (it != doc->id_positions.end()) {
-			go_to_position(it->second);
+			go_to_position(static_cast<long>(it->second));
 			speak(_("Navigated to internal link."));
 		} else {
 			speak(_("Internal link target not found."));
@@ -457,7 +457,7 @@ void document_manager::activate_current_link() const {
 		if (!fragment.empty()) {
 			auto it = doc->id_positions.find(std::string(fragment.mb_str()));
 			if (it != doc->id_positions.end()) {
-				go_to_position(it->second);
+				go_to_position(static_cast<long>(it->second));
 				speak(_("Navigated to internal link."));
 				return;
 			}
@@ -472,9 +472,9 @@ void document_manager::activate_current_link() const {
 		if (!manifest_id.empty()) {
 			auto it = std::ranges::find(doc->spine_items, std::string(manifest_id.mb_str()));
 			if (it != doc->spine_items.end()) {
-				const int spine_index = std::distance(doc->spine_items.begin(), it);
+				const int spine_index = static_cast<int>(std::distance(doc->spine_items.begin(), it));
 				const size_t offset = doc->buffer.get_marker_position_by_index(marker_type::section_break, spine_index);
-				go_to_position(offset);
+				go_to_position(static_cast<long>(offset));
 				speak(_("Navigated to internal link."));
 				return;
 			}
@@ -645,7 +645,7 @@ void document_manager::apply_word_wrap(bool word_wrap) {
 			new_ctrl->SetInsertionPoint(current_pos);
 			new_ctrl->ShowPosition(current_pos);
 			new_ctrl->Thaw();
-			sizer->Add(new_ctrl, 1, wxEXPAND | wxALL, 5);
+			sizer->Add(new_ctrl, 1, wxEXPAND | wxALL, static_cast<int>(5));
 			tab->panel->Layout();
 		}
 	}
@@ -709,7 +709,7 @@ wxPanel* document_manager::create_tab_panel(const wxString& content, document_ta
 	tab_data->text_ctrl = text_ctrl;
 	text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, &main_win);
 	text_ctrl->Bind(wxEVT_CHAR, &main_window::on_text_char, &main_win);
-	sizer->Add(text_ctrl, 1, wxEXPAND | wxALL, 5);
+	sizer->Add(text_ctrl, 1, wxEXPAND | wxALL, static_cast<int>(5));
 	panel->SetSizer(sizer);
 	setup_text_ctrl(text_ctrl, content);
 	return panel;
@@ -734,7 +734,7 @@ void document_manager::navigate_to_heading(bool next, int specific_level) const 
 		return;
 	}
 	const size_t offset = doc->offset_for_heading(target_index);
-	text_ctrl->SetInsertionPoint(offset);
+	text_ctrl->SetInsertionPoint(static_cast<long>(offset));
 	const marker* heading_marker = doc->get_heading_marker(target_index);
 	if (heading_marker != nullptr) {
 		speak(wxString::Format(_("%s Heading level %d"), heading_marker->text, heading_marker->level));

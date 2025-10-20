@@ -333,7 +333,7 @@ std::string read_zip_entry(wxZipInputStream& zip) {
 	std::ostringstream buffer;
 	char buf[buffer_size];
 	while (zip.Read(buf, sizeof(buf)).LastRead() > 0) {
-		buffer.write(buf, zip.LastRead());
+		buffer.write(buf, static_cast<std::streamsize>(zip.LastRead()));
 	}
 	return buffer.str();
 }
@@ -359,6 +359,8 @@ wxZipEntry* find_zip_entry(const std::string& filename, const std::map<std::stri
 				return it->second;
 			}
 		}
-	} catch (const Poco::Exception&) {}
+	} catch (const Poco::Exception&) {
+		return nullptr;
+	}
 	return nullptr;
 }
