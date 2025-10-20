@@ -9,17 +9,10 @@
 
 #include "app.hpp"
 #include "constants.hpp"
-#include "main_window.hpp"
 #include "parser.hpp"
 #include "translation_manager.hpp"
 #include "utils.hpp"
-#include <memory>
 #include <wx/filename.h>
-#include <wx/ipcbase.h>
-#include <wx/msgdlg.h>
-#include <wx/snglinst.h>
-#include <wx/string.h>
-#include <wx/translation.h>
 
 bool paperback_connection::OnExec(const wxString& topic, const wxString& data) {
 	if (topic == IPC_TOPIC_OPEN_FILE) {

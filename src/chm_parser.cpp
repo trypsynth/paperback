@@ -13,17 +13,8 @@
 #include "html_to_text.hpp"
 #include "utils.hpp"
 #include <algorithm>
-#include <cctype>
 #include <chm_lib.h>
-#include <cstddef>
-#include <cstdint>
-#include <exception>
 #include <functional>
-#include <lexbor/core/base.h>
-#include <lexbor/core/types.h>
-#include <lexbor/dom/interface.h>
-#include <lexbor/dom/interfaces/element.h>
-#include <lexbor/dom/interfaces/node.h>
 #include <lexbor/html/interfaces/document.h>
 #include <map>
 #include <memory>
