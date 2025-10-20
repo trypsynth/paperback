@@ -16,10 +16,10 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <vector>
 #include <wx/filename.h>
 #include <wx/stream.h>
 #include <wx/string.h>
-#include <wx/txtstrm.h>
 #include <wx/wfstream.h>
 
 std::unique_ptr<document> markdown_parser::load(const wxString& path) const {
@@ -28,13 +28,15 @@ std::unique_ptr<document> markdown_parser::load(const wxString& path) const {
 		return nullptr;
 	}
 	wxBufferedInputStream bs(file_stream);
-	wxTextInputStream text_stream(bs);
-	wxString content;
-	while (!bs.Eof()) {
-		content += text_stream.ReadLine() + "\n";
+	const size_t file_size = bs.GetSize();
+	if (file_size == 0) {
+		return nullptr;
 	}
+	std::vector<char> buffer(file_size);
+	bs.Read(buffer.data(), file_size);
+	const std::string markdown_content(buffer.data(), file_size);
 	const std::shared_ptr<maddy::Parser> parser = std::make_shared<maddy::Parser>();
-	std::istringstream iss(content.ToStdString());
+	std::istringstream iss(markdown_content);
 	const std::string html = parser->Parse(iss);
 	html_to_text converter;
 	if (!converter.convert(html, html_source_mode::markdown)) {
