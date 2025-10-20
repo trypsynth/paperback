@@ -211,10 +211,8 @@ bookmark_dialog::bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks,
 			}
 		}
 	}
-
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	content_sizer->Add(bookmark_list, 1, wxEXPAND | wxALL, DIALOG_PADDING);
-
 	auto* button_sizer = new wxStdDialogButtonSizer();
 	delete_button = new wxButton(this, wxID_DELETE, _("&Delete"));
 	jump_button = new wxButton(this, wxID_OK, _("&Jump"));
@@ -224,22 +222,18 @@ bookmark_dialog::bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks,
 	button_sizer->AddButton(cancel_button);
 	button_sizer->Realize();
 	content_sizer->Add(button_sizer, 0, wxALIGN_RIGHT | wxALL, DIALOG_PADDING);
-
 	set_content(content_sizer);
 	SetSizerAndFit(main_sizer);
 	CentreOnParent();
-
 	jump_button->SetDefault();
 	jump_button->Enable(false);
 	delete_button->Enable(false);
-
 	if (closest_index >= 0) {
 		bookmark_list->SetSelection(closest_index);
 		selected_position = bookmarks[closest_index];
 		jump_button->Enable(true);
 		delete_button->Enable(true);
 	}
-
 	bookmark_list->Bind(wxEVT_LISTBOX, &bookmark_dialog::on_list_selection_changed, this);
 	Bind(wxEVT_BUTTON, &bookmark_dialog::on_ok, this, wxID_OK);
 	Bind(wxEVT_BUTTON, &bookmark_dialog::on_delete, this, wxID_DELETE);
@@ -271,19 +265,15 @@ void bookmark_dialog::on_delete(wxCommandEvent& /*event*/) {
 	if (selection < 0) {
 		return;
 	}
-
 	const long deleted_pos = bookmark_positions[static_cast<std::size_t>(selection)];
 	positions_to_delete.Add(deleted_pos);
-
 	bookmark_positions.RemoveAt(static_cast<std::size_t>(selection));
 	bookmark_list->Delete(static_cast<unsigned int>(selection));
-
 	if (static_cast<unsigned int>(selection) < bookmark_list->GetCount()) {
 		bookmark_list->SetSelection(selection);
 	} else if (bookmark_list->GetCount() > 0) {
 		bookmark_list->SetSelection(bookmark_list->GetCount() - 1);
 	}
-
 	// Manually trigger the selection event to update the button states
 	wxCommandEvent empty_event(wxEVT_LISTBOX, GetId());
 	on_list_selection_changed(empty_event);
