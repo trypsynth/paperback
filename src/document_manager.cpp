@@ -8,8 +8,8 @@
  */
 
 #include "document_manager.hpp"
-#include "constants.hpp"
 #include "config_manager.hpp"
+#include "constants.hpp"
 #include "dialogs.hpp"
 #include "document.hpp"
 #include "document_buffer.hpp"
@@ -509,14 +509,18 @@ void document_manager::show_bookmark_dialog(wxWindow* parent) {
 		return;
 	}
 	const long current_pos = text_ctrl->GetInsertionPoint();
-	bookmark_dialog dialog(parent, bookmarks, text_ctrl, current_pos);
-	if (dialog.ShowModal() != wxID_OK) {
+	bookmark_dialog dialog(parent, bookmarks, text_ctrl, config, tab->file_path, current_pos);
+	const int result = dialog.ShowModal();
+
+	if (result != wxID_OK) {
 		return;
 	}
+
 	const long pos = dialog.get_selected_position();
 	if (pos < 0) {
 		return;
 	}
+
 	text_ctrl->SetInsertionPoint(pos);
 	text_ctrl->SetFocus();
 	long line{0};

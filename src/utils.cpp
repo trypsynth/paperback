@@ -100,7 +100,7 @@ long find_text_literal(const wxString& haystack, const wxString& needle, long st
 	}
 	return wxNOT_FOUND;
 }
-}
+} // namespace
 
 long find_text(const wxString& haystack, const wxString& needle, long start, find_options options) {
 	if (needle.empty()) {

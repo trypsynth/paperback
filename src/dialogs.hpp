@@ -37,9 +37,9 @@ public:
 protected:
 	void set_content(wxSizer* content_sizer);
 	void finalize_layout();
+	wxBoxSizer* main_sizer{nullptr};
 
 private:
-	wxBoxSizer* main_sizer{nullptr};
 	wxStdDialogButtonSizer* button_sizer{nullptr};
 	dialog_button_config button_config;
 	bool layout_finalized{false};
@@ -75,7 +75,7 @@ private:
 
 class bookmark_dialog : public dialog {
 public:
-	bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks, wxTextCtrl* text_ctrl, long current_pos = -1);
+	bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos = -1);
 	~bookmark_dialog() = default;
 	bookmark_dialog(const bookmark_dialog&) = delete;
 	bookmark_dialog& operator=(const bookmark_dialog&) = delete;
@@ -87,9 +87,14 @@ private:
 	wxListBox* bookmark_list{nullptr};
 	wxArrayLong bookmark_positions;
 	long selected_position;
+	config_manager& config;
+	wxString file_path;
+	wxButton* jump_button{nullptr};
+	wxButton* delete_button{nullptr};
 
 	void on_list_selection_changed(wxCommandEvent& event);
 	void on_ok(wxCommandEvent& event);
+	void on_delete(wxCommandEvent& event);
 };
 
 class document_info_dialog : public dialog {
