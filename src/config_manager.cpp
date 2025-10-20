@@ -35,7 +35,7 @@ bool config_manager::initialize() {
 	if (!config) {
 		return false;
 	}
-	if (!wxConfigBase::Get()) {
+	if (wxConfigBase::Get() == nullptr) {
 		wxConfigBase::Set(config.get());
 		owns_global_config = true;
 	}
@@ -94,14 +94,14 @@ void config_manager::add_recent_document(const wxString& path) {
 	if (!config) {
 		return;
 	}
-	wxString doc_id = escape_document_path(path);
+	const wxString doc_id = escape_document_path(path);
 	with_document_section(path, [this, path]() {
 		if (!config->HasEntry("path")) {
 			config->Write("path", path);
 		}
 	});
 	wxArrayString recent_paths = get_recent_documents();
-	int existing_index = recent_paths.Index(path);
+	const int existing_index = recent_paths.Index(path);
 	if (existing_index != wxNOT_FOUND) {
 		recent_paths.RemoveAt(existing_index);
 	}
@@ -113,7 +113,7 @@ void config_manager::add_recent_document(const wxString& path) {
 	config->DeleteGroup("recent_documents");
 	config->SetPath("/recent_documents");
 	for (size_t i = 0; i < recent_paths.GetCount(); ++i) {
-		wxString path_doc_id = escape_document_path(recent_paths[i]);
+		const wxString path_doc_id = escape_document_path(recent_paths[i]);
 		config->Write(wxString::Format("doc%zu", i), path_doc_id);
 	}
 	config->SetPath("/");
@@ -127,12 +127,12 @@ wxArrayString config_manager::get_recent_documents() const {
 	config->SetPath("/recent_documents");
 	for (size_t i = 0; i < 100; ++i) {
 		wxString key = wxString::Format("doc%zu", i);
-		wxString doc_id = config->Read(key, "");
+		const wxString doc_id = config->Read(key, "");
 		if (doc_id.IsEmpty()) {
 			break;
 		}
 		config->SetPath("/" + doc_id);
-		wxString path = config->Read("path", "");
+		const wxString path = config->Read("path", "");
 		if (!path.IsEmpty()) {
 			result.Add(path);
 		}
@@ -153,7 +153,7 @@ void config_manager::rebuild_recent_documents() {
 		return;
 	}
 	wxArrayString current_recent = get_recent_documents();
-	wxArrayString all_docs = get_all_documents();
+	const wxArrayString all_docs = get_all_documents();
 	for (const auto& doc : all_docs) {
 		if (current_recent.Index(doc) == wxNOT_FOUND) {
 			current_recent.Add(doc);
@@ -162,7 +162,7 @@ void config_manager::rebuild_recent_documents() {
 	config->DeleteGroup("recent_documents");
 	config->SetPath("/recent_documents");
 	for (size_t i = 0; i < current_recent.GetCount(); ++i) {
-		wxString path_doc_id = escape_document_path(current_recent[i]);
+		const wxString path_doc_id = escape_document_path(current_recent[i]);
 		config->Write(wxString::Format("doc%zu", i), path_doc_id);
 	}
 	config->SetPath("/");
@@ -285,7 +285,7 @@ void config_manager::add_opened_document(const wxString& path) {
 		return;
 	}
 	wxArrayString opened = get_opened_documents();
-	int existing_index = opened.Index(path);
+	const int existing_index = opened.Index(path);
 	if (existing_index == wxNOT_FOUND) {
 		opened.Add(path);
 		config->DeleteGroup("opened_documents");
@@ -302,7 +302,7 @@ void config_manager::remove_opened_document(const wxString& path) {
 		return;
 	}
 	wxArrayString opened = get_opened_documents();
-	int existing_index = opened.Index(path);
+	const int existing_index = opened.Index(path);
 	if (existing_index != wxNOT_FOUND) {
 		opened.RemoveAt(existing_index);
 		config->DeleteGroup("opened_documents");

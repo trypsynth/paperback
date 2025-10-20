@@ -32,9 +32,8 @@
 namespace {
 constexpr unsigned char UTF8_NBSP_FIRST = 0xC2;
 constexpr unsigned char UTF8_NBSP_SECOND = 0xA0;
-} // namespace
 
-static long find_text_regex(const wxString& haystack, const wxString& needle, long start, find_options options) {
+long find_text_regex(const wxString& haystack, const wxString& needle, long start, find_options options) {
 	const auto forward = has_option(options, find_options::forward);
 	const auto match_case = has_option(options, find_options::match_case);
 	const auto match_whole_word = has_option(options, find_options::match_whole_word);
@@ -70,7 +69,7 @@ static long find_text_regex(const wxString& haystack, const wxString& needle, lo
 	return wxNOT_FOUND;
 }
 
-static long find_text_literal(const wxString& haystack, const wxString& needle, long start, find_options options) {
+long find_text_literal(const wxString& haystack, const wxString& needle, long start, find_options options) {
 	const auto forward = has_option(options, find_options::forward);
 	const auto match_case = has_option(options, find_options::match_case);
 	const auto match_whole_word = has_option(options, find_options::match_whole_word);
@@ -88,7 +87,7 @@ static long find_text_literal(const wxString& haystack, const wxString& needle, 
 		const auto word_start = (pos == 0) || (wxIsalnum(haystack[static_cast<size_t>(pos) - 1]) == 0);
 		const auto word_end = (static_cast<size_t>(pos) + needle.length() >= haystack.length()) || (wxIsalnum(haystack[static_cast<size_t>(pos) + needle.length()]) == 0);
 		if (word_start && word_end) {
-			return static_cast<long>(pos);
+			return pos;
 		}
 		pos = forward ? pos + 1 : pos - 1;
 		if (forward && static_cast<size_t>(pos) >= haystack.length()) {
@@ -99,6 +98,7 @@ static long find_text_literal(const wxString& haystack, const wxString& needle, 
 		}
 	}
 	return wxNOT_FOUND;
+}
 }
 
 long find_text(const wxString& haystack, const wxString& needle, long start, find_options options) {
@@ -175,7 +175,7 @@ const parser* get_parser_for_unknown_file(const wxString& path, config_manager& 
 	const wxString saved_format = config.get_document_format(path);
 	if (!saved_format.IsEmpty()) {
 		const auto* par = find_parser_by_extension(saved_format);
-		if (par) {
+		if (par != nullptr) {
 			return par;
 		}
 	}
@@ -183,22 +183,22 @@ const parser* get_parser_for_unknown_file(const wxString& path, config_manager& 
 	if (dlg.ShowModal() != wxID_OK) {
 		return nullptr;
 	}
-	wxString format = dlg.get_selected_format();
+	const wxString format = dlg.get_selected_format();
 	config.set_document_format(path, format);
 	return find_parser_by_extension(format);
 }
 
 void speak(const wxString& message) {
 	auto* main_win = dynamic_cast<main_window*>(wxGetApp().GetTopWindow());
-	if (!main_win) {
+	if (main_win == nullptr) {
 		return;
 	}
 	auto* label = main_win->get_live_region_label();
-	if (!label) {
+	if (label == nullptr) {
 		return;
 	}
 	label->SetLabel(message);
-	[[maybe_unused]] bool notified = notify_live_region_changed(label);
+	notify_live_region_changed(label);
 }
 
 std::string url_decode(std::string_view encoded) {
@@ -218,7 +218,7 @@ std::string convert_to_utf8(const std::string& input) {
 	const auto* data = reinterpret_cast<const unsigned char*>(input.data());
 	const size_t len = input.length();
 	auto try_convert = [&](size_t bom_size, wxMBConv& conv) -> std::optional<std::string> {
-		wxString content(input.data() + bom_size, conv, len - bom_size);
+		const wxString content(input.data() + bom_size, conv, len - bom_size);
 		if (!content.empty()) {
 			return std::string(content.ToUTF8());
 		}
@@ -259,12 +259,12 @@ std::string convert_to_utf8(const std::string& input) {
 	};
 	for (const auto& [name, conv] : fallback_encodings) {
 		wxString content;
-		if (!name) {
+		if (name == nullptr) {
 			content = wxString::FromUTF8(input.data(), len);
-		} else if (conv) {
+		} else if (conv != nullptr) {
 			content = wxString(input.data(), *conv, len);
 		} else {
-			wxCSConv csconv(name);
+			const wxCSConv csconv(name);
 			content = wxString(input.data(), csconv, len);
 		}
 		if (!content.empty()) {
@@ -298,29 +298,29 @@ std::vector<std::unique_ptr<toc_item>> build_toc_from_headings(const document_bu
 	if (heading_markers.empty()) {
 		return result;
 	}
-	std::vector<std::vector<std::unique_ptr<toc_item>>*> level_stacks(7, nullptr);
+	std::vector<std::vector<std::unique_ptr<toc_item>>*> level_stacks(MAX_HEADING_LEVELS + 1, nullptr);
 	level_stacks[0] = &result;
 	for (const auto* marker : heading_markers) {
 		auto item = std::make_unique<toc_item>();
 		item->name = marker->text;
 		item->offset = static_cast<int>(marker->pos);
 		const int level = marker->level;
-		if (level < 1 || level > 6) {
+		if (level < 1 || level > MAX_HEADING_LEVELS) {
 			continue;
 		}
 		std::vector<std::unique_ptr<toc_item>>* parent_list = nullptr;
 		for (int i = level - 1; i >= 0; --i) {
-			if (level_stacks[i]) {
+			if (level_stacks[i] != nullptr) {
 				parent_list = level_stacks[i];
 				break;
 			}
 		}
-		if (!parent_list) {
+		if (parent_list == nullptr) {
 			parent_list = &result;
 		}
 		parent_list->push_back(std::move(item));
 		level_stacks[level] = &parent_list->back()->children;
-		for (int i = level + 1; i < 7; ++i) {
+		for (int i = level + 1; i < MAX_HEADING_LEVELS + 1; ++i) {
 			level_stacks[i] = nullptr;
 		}
 	}

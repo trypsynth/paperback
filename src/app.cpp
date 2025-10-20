@@ -14,7 +14,6 @@
 #include "translation_manager.hpp"
 #include "utils.hpp"
 #include <memory>
-#include <wx/app.h>
 #include <wx/filename.h>
 #include <wx/ipcbase.h>
 #include <wx/msgdlg.h>
