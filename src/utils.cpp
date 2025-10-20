@@ -269,7 +269,7 @@ std::string convert_to_utf8(const std::string& input) {
 			content = wxString(input.data(), csconv, len);
 		}
 		if (!content.empty()) {
-			return {content.ToUTF8()};
+			return std::string(content.ToUTF8());
 		}
 	}
 	return input;
