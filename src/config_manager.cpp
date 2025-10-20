@@ -106,8 +106,7 @@ void config_manager::add_recent_document(const wxString& path) {
 		recent_paths.RemoveAt(existing_index);
 	}
 	recent_paths.Insert(path, 0);
-	const int max_recent = 100;
-	while (recent_paths.GetCount() > max_recent) {
+	while (recent_paths.GetCount() > MAX_RECENT_DOCUMENTS_TO_SHOW) {
 		recent_paths.RemoveAt(recent_paths.GetCount() - 1);
 	}
 	config->DeleteGroup("recent_documents");
@@ -125,8 +124,8 @@ wxArrayString config_manager::get_recent_documents() const {
 		return result;
 	}
 	config->SetPath("/recent_documents");
-	for (size_t i = 0; i < 100; ++i) {
-		wxString key = wxString::Format("doc%zu", i);
+	for (size_t i = 0; i < MAX_RECENT_DOCUMENTS_TO_SHOW; ++i) {
+		const wxString key = wxString::Format("doc%zu", i);
 		const wxString doc_id = config->Read(key, "");
 		if (doc_id.IsEmpty()) {
 			break;
@@ -401,18 +400,18 @@ void config_manager::remove_document_history(const wxString& path) {
 		return;
 	}
 	wxArrayString recent_paths = get_recent_documents();
-	int existing_index = recent_paths.Index(path);
+	const int existing_index = recent_paths.Index(path);
 	if (existing_index != wxNOT_FOUND) {
 		recent_paths.RemoveAt(existing_index);
 	}
 	config->DeleteGroup("recent_documents");
 	config->SetPath("/recent_documents");
 	for (size_t i = 0; i < recent_paths.GetCount(); ++i) {
-		wxString path_doc_id = escape_document_path(recent_paths[i]);
+		const wxString path_doc_id = escape_document_path(recent_paths[i]);
 		config->Write(wxString::Format("doc%zu", i), path_doc_id);
 	}
 	config->SetPath("/");
-	wxString doc_id_to_remove = escape_document_path(path);
+	const wxString doc_id_to_remove = escape_document_path(path);
 	config->DeleteGroup(doc_id_to_remove);
 }
 
@@ -478,7 +477,7 @@ void config_manager::remove_bookmark(const wxString& path, long position) {
 		return;
 	}
 	wxArrayLong bookmarks = get_bookmarks(path);
-	int index = bookmarks.Index(position);
+	const int index = bookmarks.Index(position);
 	if (index != wxNOT_FOUND) {
 		bookmarks.RemoveAt(index);
 		wxString bookmark_string = "";
@@ -500,7 +499,7 @@ void config_manager::remove_bookmark(const wxString& path, long position) {
 }
 
 void config_manager::toggle_bookmark(const wxString& path, long position) {
-	wxArrayLong bookmarks = get_bookmarks(path);
+	const wxArrayLong bookmarks = get_bookmarks(path);
 	if (bookmarks.Index(position) != wxNOT_FOUND) {
 		remove_bookmark(path, position);
 	} else {
@@ -747,7 +746,7 @@ wxString config_manager::escape_document_path(const wxString& path) {
 	return wxString::Format("doc_%s", b64_stream.str());
 }
 
-void config_manager::with_document_section(const wxString& path, const std::function<void()>& func) const {
+void config_manager::with_document_section(const wxString& path, const std::function<void()>& func) const  {
 	if (!config) {
 		return;
 	}

@@ -25,6 +25,7 @@ Checks: >
   -cppcoreguidelines-owning-memory,
   -misc-no-recursion,
   -bugprone-easily-swappable-parameters,
+  -bugprone-exception-escape,
   -misc-include-cleaner,
   -hicpp-named-parameter,
   -readability-named-parameter,

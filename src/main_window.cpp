@@ -299,7 +299,7 @@ void main_window::on_open(wxCommandEvent&) {
 		return;
 	}
 	const auto path = dlg.GetPath();
-	doc_manager->open_file(path);
+	[[maybe_unused]] const bool success = doc_manager->open_file(path);
 }
 
 void main_window::on_close(wxCommandEvent&) {
@@ -586,7 +586,7 @@ void main_window::on_help_internal(wxCommandEvent&) {
 		wxMessageBox(_("readme.html not found. Please ensure the application was built properly."), _("Error"), wxICON_ERROR);
 		return;
 	}
-	doc_manager->open_file(readme_path, false);
+	[[maybe_unused]] const bool success = doc_manager->open_file(readme_path, false);
 }
 
 void main_window::on_donate(wxCommandEvent&) {
@@ -680,7 +680,7 @@ void main_window::on_recent_document(wxCommandEvent& event) {
 	const wxArrayString recent_docs = config_mgr.get_recent_documents();
 	if (index >= 0 && index < static_cast<int>(recent_docs.GetCount())) {
 		const wxString& path = recent_docs[index];
-		doc_manager->open_file(path);
+		[[maybe_unused]] const bool success = doc_manager->open_file(path);
 	}
 }
 

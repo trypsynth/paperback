@@ -10,6 +10,7 @@
 #include "utils.hpp"
 #include "app.hpp"
 #include "config_manager.hpp"
+#include "constants.hpp"
 #include "dialogs.hpp"
 #include "live_region.hpp"
 #include "main_window.hpp"
@@ -84,8 +85,8 @@ long find_text_literal(const wxString& haystack, const wxString& needle, long st
 		if (pos == static_cast<long>(wxNOT_FOUND)) {
 			break;
 		}
-		const auto word_start = (pos == 0) || (wxIsalnum(haystack[static_cast<size_t>(pos) - 1]) == 0);
-		const auto word_end = (static_cast<size_t>(pos) + needle.length() >= haystack.length()) || (wxIsalnum(haystack[static_cast<size_t>(pos) + needle.length()]) == 0);
+		const bool word_start = (pos == 0) || (wxIsalnum(haystack[static_cast<size_t>(pos) - 1]) == 0);
+		const bool word_end = (static_cast<size_t>(pos) + needle.length() >= haystack.length()) || (wxIsalnum(haystack[static_cast<size_t>(pos) + needle.length()]) == 0);
 		if (word_start && word_end) {
 			return pos;
 		}
@@ -268,7 +269,7 @@ std::string convert_to_utf8(const std::string& input) {
 			content = wxString(input.data(), csconv, len);
 		}
 		if (!content.empty()) {
-			return std::string(content.ToUTF8());
+			return {content.ToUTF8()};
 		}
 	}
 	return input;
@@ -328,8 +329,9 @@ std::vector<std::unique_ptr<toc_item>> build_toc_from_headings(const document_bu
 }
 
 std::string read_zip_entry(wxZipInputStream& zip) {
+	constexpr int buffer_size = 4096;
 	std::ostringstream buffer;
-	char buf[4096];
+	char buf[buffer_size];
 	while (zip.Read(buf, sizeof(buf)).LastRead() > 0) {
 		buffer.write(buf, zip.LastRead());
 	}
