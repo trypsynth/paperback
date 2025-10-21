@@ -237,6 +237,20 @@ void config_manager::set_compact_go_menu(bool compact) {
 	});
 }
 
+bool config_manager::get_check_for_updates_on_startup() const {
+	bool result = true;
+	with_app_section([this, &result]() {
+		result = config->ReadBool("check_for_updates_on_startup", true);
+	});
+	return result;
+}
+
+void config_manager::set_check_for_updates_on_startup(bool check) {
+	with_app_section([this, check]() {
+		config->Write("check_for_updates_on_startup", check);
+	});
+}
+
 wxString config_manager::get_language() const {
 	wxString result = "";
 	with_app_section([this, &result]() {
@@ -720,6 +734,9 @@ void config_manager::load_defaults() {
 	}
 	if (!config->HasEntry("compact_go_menu")) {
 		config->Write("compact_go_menu", true);
+	}
+	if (!config->HasEntry("check_for_updates_on_startup")) {
+		config->Write("check_for_updates_on_startup", true);
 	}
 	if (!config->HasEntry("recent_documents_to_show")) {
 		config->Write("recent_documents_to_show", DEFAULT_RECENT_DOCUMENTS_TO_SHOW);

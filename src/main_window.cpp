@@ -14,6 +14,7 @@
 #include "live_region.hpp"
 #include "parser.hpp"
 #include "translation_manager.hpp"
+#include "update_checker.hpp"
 #include "utils.hpp"
 #include <wx/aboutdlg.h>
 #include <wx/filename.h>
@@ -161,6 +162,8 @@ wxMenu* main_window::create_help_menu() {
 	menu->Append(wxID_HELP, _("View &help in default browser\tF1"));
 	menu->Append(ID_HELP_INTERNAL, wxString::Format(_("View Help in %s\tShift+F1"), APP_NAME));
 	menu->AppendSeparator();
+	menu->Append(ID_CHECK_FOR_UPDATES, _("Check for &Updates"));
+	menu->AppendSeparator();
 	menu->Append(ID_DONATE, _("&Donate\tCtrl+D"));
 	return menu;
 }
@@ -207,6 +210,7 @@ void main_window::bind_events() {
 		{wxID_HELP, &main_window::on_help},
 		{ID_HELP_INTERNAL, &main_window::on_help_internal},
 		{ID_DONATE, &main_window::on_donate},
+		{ID_CHECK_FOR_UPDATES, &main_window::on_check_for_updates},
 	};
 	for (const auto& [id, handler] : menu_bindings) {
 		Bind(wxEVT_MENU, handler, this, id);
@@ -531,6 +535,7 @@ void main_window::on_options(wxCommandEvent&) {
 	dlg.set_word_wrap(config_mgr.get_word_wrap());
 	dlg.set_minimize_to_tray(config_mgr.get_minimize_to_tray());
 	dlg.set_compact_go_menu(config_mgr.get_compact_go_menu());
+	dlg.set_check_for_updates_on_startup(config_mgr.get_check_for_updates_on_startup());
 	dlg.set_recent_documents_to_show(config_mgr.get_recent_documents_to_show());
 	const wxString current_language = translation_manager::instance().get_current_language();
 	dlg.set_language(current_language);
@@ -546,6 +551,7 @@ void main_window::on_options(wxCommandEvent&) {
 	config_mgr.set_word_wrap(new_word_wrap);
 	config_mgr.set_minimize_to_tray(dlg.get_minimize_to_tray());
 	config_mgr.set_compact_go_menu(new_compact_menu);
+	config_mgr.set_check_for_updates_on_startup(dlg.get_check_for_updates_on_startup());
 	config_mgr.set_recent_documents_to_show(dlg.get_recent_documents_to_show());
 	config_mgr.set_language(new_language);
 	if (old_word_wrap != new_word_wrap) {
@@ -596,6 +602,10 @@ void main_window::on_donate(wxCommandEvent&) {
 	if (!wxLaunchDefaultBrowser(url)) {
 		wxMessageBox(_("Failed to open donation page in browser."), _("Error"), wxICON_ERROR);
 	}
+}
+
+void main_window::on_check_for_updates(wxCommandEvent&) {
+	check_for_updates(false);
 }
 
 void main_window::on_notebook_page_changed(wxBookCtrlEvent& event) {

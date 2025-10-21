@@ -87,6 +87,7 @@ private:
 	void on_help(wxCommandEvent&);
 	void on_help_internal(wxCommandEvent&);
 	void on_donate(wxCommandEvent&);
+	void on_check_for_updates(wxCommandEvent&);
 	void on_notebook_page_changed(wxBookCtrlEvent& event);
 	void on_close_window(wxCloseEvent& event);
 	void on_position_save_timer(wxTimerEvent&);

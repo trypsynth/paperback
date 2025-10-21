@@ -225,6 +225,8 @@ public:
 	void set_minimize_to_tray(bool minimize);
 	bool get_compact_go_menu() const;
 	void set_compact_go_menu(bool compact);
+	bool get_check_for_updates_on_startup() const;
+	void set_check_for_updates_on_startup(bool check);
 	int get_recent_documents_to_show() const;
 	void set_recent_documents_to_show(int count);
 	wxString get_language() const;
@@ -235,6 +237,7 @@ private:
 	wxCheckBox* word_wrap_check{nullptr};
 	wxCheckBox* minimize_to_tray_check{nullptr};
 	wxCheckBox* compact_go_menu_check{nullptr};
+	wxCheckBox* check_for_updates_on_startup_check{nullptr};
 	wxSpinCtrl* recent_docs_count_spin{nullptr};
 	wxComboBox* language_combo{nullptr};
 

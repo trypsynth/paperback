@@ -11,6 +11,7 @@
 #include "constants.hpp"
 #include "parser.hpp"
 #include "translation_manager.hpp"
+#include "update_checker.hpp"
 #include "utils.hpp"
 #include <wx/filename.h>
 
@@ -75,6 +76,9 @@ bool app::OnInit() {
 		parse_command_line();
 	}
 	frame->Show(true);
+	if (config_mgr.get_check_for_updates_on_startup()) {
+		check_for_updates(true);
+	}
 	return true;
 }
 

@@ -32,7 +32,7 @@ find_package(chmlib CONFIG REQUIRED)
 find_package(lexbor CONFIG REQUIRED)
 find_package(maddy CONFIG REQUIRED)
 find_package(pdfium CONFIG REQUIRED)
-find_package(Poco REQUIRED COMPONENTS Foundation XML)
+find_package(Poco REQUIRED COMPONENTS Foundation JSON XML)
 find_package(wxWidgets CONFIG REQUIRED)
 find_package(Gettext)
 
@@ -90,6 +90,7 @@ target_link_libraries(paperback PRIVATE
 	maddy::maddy
 	pdfium::pdfium
 	Poco::Foundation
+	Poco::JSON
 	Poco::XML
 	wx::base
 	wx::core

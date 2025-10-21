@@ -545,6 +545,8 @@ options_dialog::options_dialog(wxWindow* parent) : dialog(parent, _("Options")) 
 	general_box->Add(minimize_to_tray_check, 0, wxALL, option_padding);
 	compact_go_menu_check = new wxCheckBox(this, wxID_ANY, _("Show compact &go menu"));
 	general_box->Add(compact_go_menu_check, 0, wxALL, option_padding);
+	check_for_updates_on_startup_check = new wxCheckBox(this, wxID_ANY, _("Check for &updates on startup"));
+	general_box->Add(check_for_updates_on_startup_check, 0, wxALL, option_padding);
 	auto* recent_docs_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* recent_docs_label = new wxStaticText(this, wxID_ANY, _("Number of &recent documents to show:"));
 	recent_docs_count_spin = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, max_recent_docs, default_recent_docs);
@@ -604,6 +606,16 @@ bool options_dialog::get_compact_go_menu() const {
 void options_dialog::set_compact_go_menu(bool compact) {
 	if (compact_go_menu_check != nullptr) {
 		compact_go_menu_check->SetValue(compact);
+	}
+}
+
+bool options_dialog::get_check_for_updates_on_startup() const {
+	return check_for_updates_on_startup_check != nullptr ? check_for_updates_on_startup_check->GetValue() : true;
+}
+
+void options_dialog::set_check_for_updates_on_startup(bool check) {
+	if (check_for_updates_on_startup_check != nullptr) {
+		check_for_updates_on_startup_check->SetValue(check);
 	}
 }
 
