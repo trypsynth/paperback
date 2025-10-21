@@ -34,7 +34,6 @@
 using namespace Poco;
 using namespace Poco::XML;
 
-
 inline const XMLString DRAW_NS = "urn:oasis:names:tc:opendocument:xmlns:drawing:1.0";
 inline const XMLString TEXT_NS = "urn:oasis:names:tc:opendocument:xmlns:text:1.0";
 inline const XMLString XLINK_NS = "http://www.w3.org/1999/xlink";
@@ -61,7 +60,7 @@ std::unique_ptr<document> odp_parser::load(const wxString& file_path) const {
 		InputSource source(content_stream);
 		DOMParser parser;
 		parser.setFeature(XMLReader::FEATURE_NAMESPACES, true);
-		AutoPtr<Poco::XML::Document> p_doc = parser.parse(&source);
+		AutoPtr<Document> p_doc = parser.parse(&source);
 		auto doc = std::make_unique<document>();
 		doc->title = wxFileName(file_path).GetName();
 		wxString full_text;
@@ -88,17 +87,17 @@ std::unique_ptr<document> odp_parser::load(const wxString& file_path) const {
 			doc->buffer.add_marker(slide_positions[i], marker_type::page_break, wxString::Format("Slide %zu", i + 1));
 		}
 		return doc;
-	} catch (Poco::Exception&) {
+	} catch (Exception&) {
 		return nullptr;
 	}
 }
 
-void odp_parser::traverse(Poco::XML::Node* node, wxString& text, document* doc, wxString* full_text) const {
+void odp_parser::traverse(Node* node, wxString& text, document* doc, wxString* full_text) const {
 	if (node == nullptr) {
 		return;
 	}
-	if (node->nodeType() == Poco::XML::Node::ELEMENT_NODE) {
-		auto* element = dynamic_cast<Poco::XML::Element*>(node);
+	if (node->nodeType() == Node::ELEMENT_NODE) {
+		auto* element = dynamic_cast<Element*>(node);
 		const std::string local_name = element->localName();
 		if (local_name == "a" && element->namespaceURI() == TEXT_NS) {
 			const std::string href = element->getAttributeNS(XLINK_NS, "href");
@@ -119,14 +118,14 @@ void odp_parser::traverse(Poco::XML::Node* node, wxString& text, document* doc, 
 		} else {
 			traverse_children(element, text, doc, full_text);
 		}
-	} else if (node->nodeType() == Poco::XML::Node::TEXT_NODE) {
-		auto* text_node = dynamic_cast<Poco::XML::Text*>(node);
+	} else if (node->nodeType() == Node::TEXT_NODE) {
+		auto* text_node = dynamic_cast<Text*>(node);
 		text += wxString::FromUTF8(text_node->data());
 	}
 }
 
-void odp_parser::traverse_children(Poco::XML::Node* node, wxString& text, document* doc, wxString* full_text) const {
-	Poco::XML::Node* child = node->firstChild();
+void odp_parser::traverse_children(Node* node, wxString& text, document* doc, wxString* full_text) const {
+	Node* child = node->firstChild();
 	while (child != nullptr) {
 		traverse(child, text, doc, full_text);
 		child = child->nextSibling();
