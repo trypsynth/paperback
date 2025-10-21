@@ -153,7 +153,8 @@ void all_documents_dialog::on_list_item_selected(wxListEvent& event) {
 }
 
 void all_documents_dialog::on_key_down(wxKeyEvent& event) {
-	if (event.GetKeyCode() == WXK_DELETE) {
+	const int key = event.GetKeyCode();
+	if (key == WXK_DELETE || key == WXK_NUMPAD_DELETE) {
 		const wxCommandEvent remove_event(wxEVT_BUTTON, wxID_REMOVE);
 		wxPostEvent(this, remove_event);
 	} else {
