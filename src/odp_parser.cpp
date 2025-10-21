@@ -36,6 +36,8 @@ using namespace Poco::XML;
 
 
 inline const XMLString DRAW_NS = "urn:oasis:names:tc:opendocument:xmlns:drawing:1.0";
+inline const XMLString TEXT_NS = "urn:oasis:names:tc:opendocument:xmlns:text:1.0";
+inline const XMLString XLINK_NS = "http://www.w3.org/1999/xlink";
 
 std::unique_ptr<document> odp_parser::load(const wxString& file_path) const {
 	wxFileInputStream file_stream(file_path);
@@ -71,7 +73,7 @@ std::unique_ptr<document> odp_parser::load(const wxString& file_path) const {
 		for (unsigned long i = 0; i < pages->length(); ++i) {
 			Node* page_node = pages->item(i);
 			wxString slide_text;
-			traverse(page_node, slide_text, doc.get());
+			traverse(page_node, slide_text, doc.get(), &full_text);
 			if (!slide_text.IsEmpty()) {
 				slide_text.Trim(true).Trim(false);
 				if (!slide_text.IsEmpty()) {
@@ -91,20 +93,31 @@ std::unique_ptr<document> odp_parser::load(const wxString& file_path) const {
 	}
 }
 
-void odp_parser::traverse(Poco::XML::Node* node, wxString& text, document* doc) const {
+void odp_parser::traverse(Poco::XML::Node* node, wxString& text, document* doc, wxString* full_text) const {
 	if (node == nullptr) {
 		return;
 	}
 	if (node->nodeType() == Poco::XML::Node::ELEMENT_NODE) {
 		auto* element = dynamic_cast<Poco::XML::Element*>(node);
 		const std::string local_name = element->localName();
-		if (local_name == "p" || local_name == "span") {
-			traverse_children(element, text, doc);
+		if (local_name == "a" && element->namespaceURI() == TEXT_NS) {
+			const std::string href = element->getAttributeNS(XLINK_NS, "href");
+			if (!href.empty()) {
+				const size_t link_start = full_text->length() + text.length();
+				wxString link_text;
+				traverse_children(element, link_text, doc, full_text);
+				if (!link_text.IsEmpty()) {
+					doc->buffer.add_link(link_start, link_text, wxString::FromUTF8(href));
+					text += link_text;
+				}
+			}
+		} else if (local_name == "p" || local_name == "span") {
+			traverse_children(element, text, doc, full_text);
 			if (local_name == "p" && !text.EndsWith("\n")) {
 				text += "\n";
 			}
 		} else {
-			traverse_children(element, text, doc);
+			traverse_children(element, text, doc, full_text);
 		}
 	} else if (node->nodeType() == Poco::XML::Node::TEXT_NODE) {
 		auto* text_node = dynamic_cast<Poco::XML::Text*>(node);
@@ -112,10 +125,10 @@ void odp_parser::traverse(Poco::XML::Node* node, wxString& text, document* doc) 
 	}
 }
 
-void odp_parser::traverse_children(Poco::XML::Node* node, wxString& text, document* doc) const {
+void odp_parser::traverse_children(Poco::XML::Node* node, wxString& text, document* doc, wxString* full_text) const {
 	Poco::XML::Node* child = node->firstChild();
 	while (child != nullptr) {
-		traverse(child, text, doc);
+		traverse(child, text, doc, full_text);
 		child = child->nextSibling();
 	}
 }

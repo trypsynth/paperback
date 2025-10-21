@@ -29,8 +29,8 @@ public:
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 
 private:
-	void traverse(Poco::XML::Node* node, wxString& text, document* doc) const;
-	void traverse_children(Poco::XML::Node* node, wxString& text, document* doc) const;
+	void traverse(Poco::XML::Node* node, wxString& text, document* doc, wxString* full_text) const;
+	void traverse_children(Poco::XML::Node* node, wxString& text, document* doc, wxString* full_text) const;
 };
 
 REGISTER_PARSER(odp_parser)
