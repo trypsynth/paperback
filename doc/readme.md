@@ -88,10 +88,12 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * Aryan Choudhary: added multiple new document formats, link support, more.
 
 ### Donations
-The following people have made donations of some size to Paperback development. No names are included here without consent.
+The following people have made donations of some size to Paperback development. If you make a donation your name won't automatically be added here, I only add people who want their donation made public.
 
+* Devin Prater
 * James Scholes
 * Jayson Smith
+* Pratik Patel
 
 ### Translations
 * Tarik Hadžirović: Bosnian translation
