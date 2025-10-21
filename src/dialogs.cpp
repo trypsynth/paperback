@@ -299,6 +299,9 @@ document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc
 	wxString info_text;
 	info_text << _("Title: ") << doc->title << "\n";
 	info_text << _("Author: ") << doc->author << "\n";
+	for (const auto& [key, value] : doc->metadata) {
+		info_text << key << ": " << value << "\n";
+	}
 	info_text << _("Total number of words: ") << doc->stats.word_count << ".\n";
 	info_text << _("Total number of lines: ") << doc->stats.line_count << ".\n";
 	info_text << _("Total number of characters: ") << doc->stats.char_count << ".\n";

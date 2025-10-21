@@ -33,6 +33,7 @@ public:
 	[[nodiscard]] const std::unordered_map<std::string, size_t>& get_id_positions() const noexcept { return id_positions; }
 	[[nodiscard]] const std::vector<heading_info>& get_headings() const noexcept { return headings; }
 	[[nodiscard]] const std::vector<link_info>& get_links() const noexcept { return links; }
+	[[nodiscard]] const std::vector<size_t>& get_section_offsets() const noexcept { return section_offsets; }
 	void clear() noexcept;
 
 private:
@@ -41,6 +42,7 @@ private:
 	std::unordered_map<std::string, size_t> id_positions;
 	std::vector<heading_info> headings;
 	std::vector<link_info> links;
+	std::vector<size_t> section_offsets;
 	bool in_body = false;
 	bool preserve_whitespace = false;
 	size_t cached_char_length = 0;

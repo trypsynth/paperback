@@ -45,6 +45,7 @@ struct document_stats {
 struct document {
 	wxString title{"Untitled"};
 	wxString author{"Unknown"};
+	std::map<wxString, wxString> metadata;
 	document_buffer buffer;
 	std::vector<std::unique_ptr<toc_item>> toc_items;
 	std::map<std::string, size_t> id_positions;
