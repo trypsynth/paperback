@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 #include <wx/filename.h>
+#include <wx/txtstrm.h>
 #include <wx/stream.h>
 #include <wx/string.h>
 #include <wx/wfstream.h>
@@ -27,16 +28,27 @@ std::unique_ptr<document> markdown_parser::load(const wxString& path) const {
 	if (!file_stream.IsOk()) {
 		return nullptr;
 	}
-	wxBufferedInputStream bs(file_stream);
-	const size_t file_size = bs.GetSize();
-	if (file_size == 0) {
-		return nullptr;
+
+	const auto size = file_stream.GetLength();
+	std::string content_str;
+	if (size > 256 * 1024) {
+		std::string content(size, 0);
+		if (size > 0) {
+			file_stream.Read(content.data(), size);
+		}
+		content_str = content;
+	} else {
+		wxBufferedInputStream bs(file_stream);
+		wxTextInputStream text_stream(bs);
+		wxString content_wx;
+		while (!bs.Eof()) {
+			content_wx += text_stream.ReadLine() + "\n";
+		}
+		content_str = content_wx.ToStdString();
 	}
-	std::vector<char> buffer(file_size);
-	bs.Read(buffer.data(), file_size);
-	const std::string markdown_content(buffer.data(), file_size);
+
 	const std::shared_ptr<maddy::Parser> parser = std::make_shared<maddy::Parser>();
-	std::istringstream iss(markdown_content);
+	std::istringstream iss(content_str);
 	const std::string html = parser->Parse(iss);
 	html_to_text converter;
 	if (!converter.convert(html, html_source_mode::markdown)) {

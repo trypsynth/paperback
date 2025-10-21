@@ -88,6 +88,7 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 	}
 	std::string_view tag_name;
 	size_t link_start_pos = 0;
+	bool skip_children = false;
 	const bool is_element = (node->type == LXB_DOM_NODE_TYPE_ELEMENT);
 	if (is_element) {
 		auto* element = lxb_dom_interface_element(node);
@@ -135,6 +136,7 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 					if (!heading_text.empty()) {
 						headings.push_back({.offset = heading_offset, .level = level, .text = heading_text});
 					}
+					skip_children = true;
 				}
 			}
 			break;
@@ -159,8 +161,6 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 					current_line += std::string(reinterpret_cast<const char*>(str.data), str.length);
 					lexbor_str_destroy(&str, doc.get()->dom_document.text, false);
 				}
-			} else {
-				process_node(child);
 			}
 		}
 	} else {
@@ -304,14 +304,7 @@ constexpr bool html_to_text::is_block_element(std::string_view tag_name) noexcep
 		"figure",
 		"figcaption",
 		"address",
-		"hr",
-		"table",
-		"thead",
-		"tbody",
-		"tfoot",
-		"tr",
-		"td",
-		"th",
+		"hr"
 	};
 	return std::ranges::find(block_elements, tag_name) != block_elements.end();
 }
