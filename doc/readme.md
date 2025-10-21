@@ -90,10 +90,14 @@ Paperback's user interface was designed specifically with keyboard and screen re
 ### Donations
 The following people have made donations of some size to Paperback development. If you make a donation your name won't automatically be added here, I only add people who want their donation made public.
 
+Note: I consider a public GitHub sponsor grounds for automatic inclusion in this list.
+
+* Brian Hartgen
 * Devin Prater
 * James Scholes
 * Jayson Smith
 * Pratik Patel
+* Roberto Perez
 
 ### Translations
 * Tarik Hadžirović: Bosnian translation
