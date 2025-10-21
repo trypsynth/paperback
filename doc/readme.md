@@ -82,6 +82,22 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * Shift+F1: pop up this readme file in Paperback itself.
 * Ctrl+D: open my PayPal donations page in your default web browser.
 
+## Credits
+### Development
+* Quin Gillespie: primary developer and project founder.
+* Aryan Choudhary: added multiple new document formats, link support, more.
+
+### Donations
+The following people have made donations of some size to Paperback development. No names are included here without consent.
+
+* James Scholes
+* Jayson Smith
+
+### Translations
+* Tarik Hadžirović: Bosnian translation
+* Martin Courcelles: French translation
+* Nikola Jović: Serbian translation
+
 ## Changelog
 ### Version 0.5
 * Added Microsoft Word document support! [#27](https://github.com/trypsynth/paperback/issues/27).
