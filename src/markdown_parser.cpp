@@ -34,7 +34,8 @@ std::unique_ptr<document> markdown_parser::load(const wxString& path) const {
 	}
 	std::vector<char> buffer(file_size);
 	bs.Read(buffer.data(), file_size);
-	const std::string markdown_content(buffer.data(), file_size);
+	std::string markdown_content(buffer.data(), file_size);
+	markdown_content = preprocess_markdown(markdown_content);
 	const std::shared_ptr<maddy::Parser> parser = std::make_shared<maddy::Parser>();
 	std::istringstream iss(markdown_content);
 	const std::string html = parser->Parse(iss);
@@ -61,4 +62,34 @@ std::unique_ptr<document> markdown_parser::load(const wxString& path) const {
 	}
 	doc->toc_items = build_toc_from_headings(doc->buffer);
 	return doc;
+}
+
+// Maddy expects Markdown formatted according to CommonMark, so we try to hack that together by adding blank lines before headings and lists when missing
+std::string markdown_parser::preprocess_markdown(const std::string& input) {
+	std::istringstream iss(input);
+	std::ostringstream oss;
+	std::string line;
+	std::string prev_line;
+	bool first_line = true;
+	bool prev_was_list = false;
+	while (std::getline(iss, line)) {
+		if (!line.empty() && line.back() == '\r') {
+			line.pop_back();
+		}
+		const bool is_heading = !line.empty() && (line[0] == '#');
+		const bool is_list = !line.empty() && ((line[0] >= '0' && line[0] <= '9' && line.length() > 1 && line[1] == '.') || line[0] == '-' || line[0] == '*' || line[0] == '+');
+		// Add blank line before headings if previous line wasn't blank
+		if (!first_line && is_heading && !prev_line.empty()) {
+			oss << "\n";
+		}
+		// Add blank line before first list item if previous wasn't list or blank
+		if (!first_line && is_list && !prev_was_list && !prev_line.empty()) {
+			oss << "\n";
+		}
+		oss << line << "\n";
+		prev_line = line;
+		prev_was_list = is_list;
+		first_line = false;
+	}
+	return oss.str();
 }

@@ -25,6 +25,9 @@ public:
 	}
 	[[nodiscard]] parser_flags supported_flags() const override { return parser_flags::supports_toc; }
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
+
+private:
+	static std::string preprocess_markdown(const std::string& input);
 };
 
 REGISTER_PARSER(markdown_parser)
