@@ -19,10 +19,12 @@ Paperback currently runs on Windows 7 through Windows 11. It's possible it runs 
 Paperback supports several common file formats, with more planned for future releases.
 
 * CHM help files.
+* microsoft Word documents.
 * Epub 2/3 books.
 * HTML documents.
 * Markdown documents.
-* microsoft Word documents.
+* OpenDocument presentations.
+* OpenDocument text files.
 * PDF documents.
 * PowerPoint presentations.
 * Text documents.
@@ -65,6 +67,8 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * B: go to the next bookmark.
 * Ctrl+Shift+B: toggle a bookmark at your current cursor position.
 * Ctrl+B: bring up the jump to bookmark dialog.
+* Shift+K:" go to the previous link.
+* K: go to the next link.
 
 ### Tools menu
 * Ctrl+W: view the word count of the currently focused document.
