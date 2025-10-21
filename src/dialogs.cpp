@@ -236,6 +236,7 @@ bookmark_dialog::bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks,
 		delete_button->Enable(true);
 	}
 	bookmark_list->Bind(wxEVT_LISTBOX, &bookmark_dialog::on_list_selection_changed, this);
+	bookmark_list->Bind(wxEVT_KEY_DOWN, &bookmark_dialog::on_key_down, this);
 	Bind(wxEVT_BUTTON, &bookmark_dialog::on_ok, this, wxID_OK);
 	Bind(wxEVT_BUTTON, &bookmark_dialog::on_delete, this, wxID_DELETE);
 }
@@ -261,7 +262,17 @@ void bookmark_dialog::on_ok(wxCommandEvent& /*event*/) {
 	}
 }
 
-void bookmark_dialog::on_delete(wxCommandEvent& /*event*/) {
+void bookmark_dialog::on_key_down(wxKeyEvent& event) {
+	const int key = event.GetKeyCode();
+	if (key == WXK_DELETE || key == WXK_NUMPAD_DELETE) {
+		const wxCommandEvent remove_event(wxEVT_BUTTON, wxID_DELETE);
+		wxPostEvent(this, remove_event);
+	} else {
+		event.Skip();
+	}
+}
+
+void bookmark_dialog::on_delete(wxCommandEvent&) {
 	const int selection = bookmark_list->GetSelection();
 	if (selection < 0) {
 		return;
