@@ -1,4 +1,4 @@
-/* main_window.hpp - primary user interface header file.
+/* main_window.cpp - primary user interface file.
  *
  * Paperback.
  * Copyright (c) 2025 Quin Gillespie.
@@ -24,16 +24,39 @@
 
 main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME), task_bar_icon_{new task_bar_icon(this)}, position_save_timer{new wxTimer(this)}, status_update_timer{new wxTimer(this)} {
 	auto* const panel = new wxPanel(this);
-	notebook = new wxNotebook(panel, wxID_ANY);
+
+    auto& config_mgr = wxGetApp().get_config_manager();
+    single_window_mode = config_mgr.get_open_in_new_window();
+
+	if (single_window_mode) {
+        single_doc_panel = new wxPanel(panel);
+        auto* sizer = new wxBoxSizer(wxVERTICAL);
+        long style = wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | (config_mgr.get_word_wrap() ? wxTE_WORDWRAP : wxTE_DONTWRAP);
+        single_text_ctrl = new wxTextCtrl(single_doc_panel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, style);
+        single_text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, this);
+        single_text_ctrl->Bind(wxEVT_CHAR, &main_window::on_text_char, this);
+        sizer->Add(single_text_ctrl, 1, wxEXPAND | wxALL, 5);
+        single_doc_panel->SetSizer(sizer);
+
+        auto* panel_sizer = new wxBoxSizer(wxVERTICAL);
+        panel_sizer->Add(single_doc_panel, 1, wxEXPAND | wxALL, 10);
+        panel->SetSizer(panel_sizer);
+
+        notebook = new wxNotebook(panel, wxID_ANY);
+        notebook->Hide();
+    } else {
+	    notebook = new wxNotebook(panel, wxID_ANY);
 #ifdef __WXMSW__
-	notebook->MSWDisableComposited();
+	    notebook->MSWDisableComposited();
 #endif
+	    auto* const sizer = new wxBoxSizer(wxVERTICAL);
+	    sizer->Add(notebook, 1, wxEXPAND | wxALL, 10);
+	    panel->SetSizer(sizer);
+    }
+
 	live_region_label = new wxStaticText(panel, wxID_ANY, "", wxDefaultPosition, wxSize(0, 0));
 	live_region_label->Hide();
-	set_live_region(live_region_label);
-	auto* const sizer = new wxBoxSizer(wxVERTICAL);
-	sizer->Add(notebook, 1, wxEXPAND | wxALL, DIALOG_PADDING);
-	panel->SetSizer(sizer);
+	[[maybe_unused]] bool live_region_set = set_live_region(live_region_label);
 	doc_manager = std::make_unique<document_manager>(notebook, wxGetApp().get_config_manager(), *this);
 	create_menus();
 	status_bar = CreateStatusBar(1);
@@ -41,6 +64,12 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME), task_bar_icon
 	bind_events();
 	update_ui();
 	notebook->Bind(wxEVT_KEY_DOWN, &main_window::on_notebook_key_down, this);
+}
+
+void main_window::set_document_content(const wxString& content) {
+    if (single_window_mode && single_text_ctrl) {
+        single_text_ctrl->SetValue(content);
+    }
 }
 
 main_window::~main_window() {
@@ -233,11 +262,13 @@ void main_window::on_iconize(wxIconizeEvent& event) {
 		auto& config_mgr = wxGetApp().get_config_manager();
 		if (config_mgr.get_minimize_to_tray()) {
 			Hide();
-			task_bar_icon_->SetIcon(wxICON(wxICON_INFORMATION), APP_NAME);
+			task_bar_icon_->SetIcon(wxICON(wxICON_INFORMATION), GetTitle());
 		}
 	}
 	event.Skip();
 }
+
+
 
 void main_window::update_ui() {
 	const bool has_doc = doc_manager->has_documents();
@@ -304,7 +335,7 @@ void main_window::on_open(wxCommandEvent&) {
 		return;
 	}
 	const auto path = dlg.GetPath();
-	[[maybe_unused]] const bool success = doc_manager->open_file(path);
+	wxGetApp().open_file(path, this);
 }
 
 void main_window::on_close(wxCommandEvent&) {
@@ -534,6 +565,7 @@ void main_window::on_options(wxCommandEvent&) {
 	dlg.set_restore_previous_documents(config_mgr.get_restore_previous_documents());
 	dlg.set_word_wrap(config_mgr.get_word_wrap());
 	dlg.set_minimize_to_tray(config_mgr.get_minimize_to_tray());
+	dlg.set_open_in_new_window(config_mgr.get_open_in_new_window());
 	dlg.set_compact_go_menu(config_mgr.get_compact_go_menu());
 	dlg.set_check_for_updates_on_startup(config_mgr.get_check_for_updates_on_startup());
 	dlg.set_recent_documents_to_show(config_mgr.get_recent_documents_to_show());
@@ -550,6 +582,7 @@ void main_window::on_options(wxCommandEvent&) {
 	config_mgr.set_restore_previous_documents(dlg.get_restore_previous_documents());
 	config_mgr.set_word_wrap(new_word_wrap);
 	config_mgr.set_minimize_to_tray(dlg.get_minimize_to_tray());
+	config_mgr.set_open_in_new_window(dlg.get_open_in_new_window());
 	config_mgr.set_compact_go_menu(new_compact_menu);
 	config_mgr.set_check_for_updates_on_startup(dlg.get_check_for_updates_on_startup());
 	config_mgr.set_recent_documents_to_show(dlg.get_recent_documents_to_show());
@@ -665,6 +698,7 @@ void main_window::save_position_immediately() {
 }
 
 void main_window::on_close_window(wxCloseEvent& event) {
+	wxGetApp().remove_window(this);
 	if (doc_manager->has_documents()) {
 		auto* active_tab = doc_manager->get_active_tab();
 		if (active_tab != nullptr) {
@@ -692,7 +726,7 @@ void main_window::on_recent_document(wxCommandEvent& event) {
 	const wxArrayString recent_docs = config_mgr.get_recent_documents();
 	if (index >= 0 && index < static_cast<int>(recent_docs.GetCount())) {
 		const wxString& path = recent_docs[index];
-		[[maybe_unused]] const bool success = doc_manager->open_file(path);
+		wxGetApp().open_file(path, this);
 	}
 }
 
