@@ -30,8 +30,9 @@
 	Name: "desktopicon"; Description: "Desktop Shortcut"
 	Name: "startmenuicon"; Description: "Start Menu Shortcut"; Flags: unchecked
 	Name: "assoc_chm"; Description: "Associate with Compiled HTML Help files (*.chm)"; Flags: unchecked
-	Name: "assoc_epub"; Description: "Associate with Epub Books (*.epub)"
 	Name: "assoc_docx"; Description: "Associate with Word Documents (*.docx, *.docm)"; Flags: unchecked
+	Name: "assoc_epub"; Description: "Associate with Epub Books (*.epub)"
+	Name: "assoc_fb2"; Description: "Associate with FB2 Books (*.fb2)"; Flags: unchecked
 	Name: "assoc_html"; Description: "Associate with HTML Documents (*.htm, *.html, *.xhtml)"; Flags: unchecked
 	Name: "assoc_markdown"; Description: "Associate with Markdown Documents (*.md, *.markdown, *.mdx, *.mdown, *.mdwn, *.mkd, *.mkdn, *.mkdown, *.ronn)"; Flags: unchecked
 	Name: "assoc_odp"; Description: "Associate with OpenDocument presentations (*.odp)"; Flags: unchecked
@@ -51,11 +52,13 @@
 	Root: HKCR; Subkey: "Paperback.Document\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\paperback.exe"" ""%1"""
 	; Compiled HTML Help files.
 	Root: HKCR; Subkey: ".chm\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_chm
-	; Epub Books.
-	Root: HKCR; Subkey: ".epub"; ValueType: string; ValueName: ""; ValueData: "Paperback.Document"; Flags: uninsdeletevalue; Tasks: assoc_epub
 	; Word Documents.
 	Root: HKCR; Subkey: ".docx\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_docx
 	Root: HKCR; Subkey: ".docm\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_docx
+	; Epub Books.
+	Root: HKCR; Subkey: ".epub"; ValueType: string; ValueName: ""; ValueData: "Paperback.Document"; Flags: uninsdeletevalue; Tasks: assoc_epub
+	; FB2 Books.
+	Root: HKCR; Subkey: ".fb2"; ValueType: string; ValueName: ""; ValueData: "Paperback.Document"; Flags: uninsdeletevalue; Tasks: assoc_fb2
 	; HTML Documents.
 	Root: HKCR; Subkey: ".htm\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_html
 	Root: HKCR; Subkey: ".html\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_html
