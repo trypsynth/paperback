@@ -98,6 +98,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Jayson Smith
 * Pratik Patel
 * Roberto Perez
+* Sean Randall
 
 ### Translations
 * Tarik Hadžirović: Bosnian translation
