@@ -26,25 +26,10 @@
 #include <sstream>
 #include <wx/log.h>
 
-inline const Poco::XML::XMLString FB2_NS = "http://www.gribuser.ru/xml/fictionbook/2.0";
+using namespace Poco;
+using namespace Poco::XML;
 
-static std::string get_element_text(Poco::XML::Element* element) {
-	if (element == nullptr) {
-		return {};
-	}
-	std::string text;
-	auto* child = element->firstChild();
-	while (child != nullptr) {
-		if (child->nodeType() == Poco::XML::Node::TEXT_NODE) {
-			auto* text_node = dynamic_cast<Poco::XML::Text*>(child);
-			text += text_node->data();
-		} else if (child->nodeType() == Poco::XML::Node::ELEMENT_NODE) {
-			text += get_element_text(dynamic_cast<Poco::XML::Element*>(child));
-		}
-		child = child->nextSibling();
-	}
-	return text;
-}
+inline const XMLString FB2_NS = "http://www.gribuser.ru/xml/fictionbook/2.0";
 
 std::unique_ptr<document> fb2_parser::load(const wxString &path) const {
 	wxFileInputStream input(path);
@@ -64,58 +49,49 @@ std::unique_ptr<document> fb2_parser::load(const wxString &path) const {
 		return nullptr;
 	}
 	try {
-		Poco::XML::DOMParser dom_parser;
+		DOMParser dom_parser;
 		std::istringstream iss_dom(xml_content);
-		Poco::XML::InputSource source_dom(iss_dom);
-		Poco::AutoPtr<Poco::XML::Document> poco_dom_doc = dom_parser.parse(&source_dom);
-
-		Poco::XML::NodeList* binary_nodes = poco_dom_doc->getElementsByTagNameNS(FB2_NS, "binary");
+		InputSource source_dom(iss_dom);
+		AutoPtr<Document> poco_dom_doc = dom_parser.parse(&source_dom);
+		NodeList* binary_nodes = poco_dom_doc->getElementsByTagNameNS(FB2_NS, "binary");
 		for (int i = binary_nodes->length() - 1; i >= 0; --i) {
-			Poco::XML::Node* node_to_remove = binary_nodes->item(i);
+			Node* node_to_remove = binary_nodes->item(i);
 			node_to_remove->parentNode()->removeChild(node_to_remove);
 		}
-
 		std::ostringstream oss_cleaned_xml;
-		Poco::XML::DOMWriter writer;
+		DOMWriter writer;
 		writer.writeNode(oss_cleaned_xml, poco_dom_doc);
 		xml_content = oss_cleaned_xml.str();
-
-	} catch (const Poco::Exception& exc) {
-
-		// This might lead to the "random garbage" but won't crash the app.
-		wxLogError("Failed to remove binary tags from FB2: %s", exc.displayText().c_str());
+	} catch (const Exception& exc) {
 	}
-
 	xml_to_text converter;
 	if (!converter.convert(xml_content)) {
 		return nullptr;
 	}
-
 	auto doc = std::make_unique<document>();
 	doc->buffer.set_content(wxString::FromUTF8(converter.get_text()));
-
 	try {
-		Poco::XML::DOMParser parser;
+		DOMParser parser;
 		std::istringstream iss(xml_content);
-		Poco::XML::InputSource source(iss);
-		Poco::AutoPtr<Poco::XML::Document> poco_doc = parser.parse(&source);
-		Poco::XML::Element* root = poco_doc->documentElement();
+		InputSource source(iss);
+		AutoPtr<Document> poco_doc = parser.parse(&source);
+		Element* root = poco_doc->documentElement();
 		if (root) {
-			Poco::XML::Element* description = root->getChildElementNS(FB2_NS, "description");
+			Element* description = root->getChildElementNS(FB2_NS, "description");
 			if (description) {
-				Poco::XML::Element* title_info = description->getChildElementNS(FB2_NS, "title-info");
+				Element* title_info = description->getChildElementNS(FB2_NS, "title-info");
 				if (title_info) {
-					Poco::XML::Element* title_node = title_info->getChildElementNS(FB2_NS, "book-title");
+					Element* title_node = title_info->getChildElementNS(FB2_NS, "book-title");
 					if (title_node) {
 						doc->title = wxString::FromUTF8(get_element_text(title_node));
 					}
-					Poco::XML::Element* author_node = title_info->getChildElementNS(FB2_NS, "author");
+					Element* author_node = title_info->getChildElementNS(FB2_NS, "author");
 					if(author_node) {
-						Poco::XML::Element* first_name_node = author_node->getChildElementNS(FB2_NS, "first-name");
+						Element* first_name_node = author_node->getChildElementNS(FB2_NS, "first-name");
 						if (first_name_node) {
 							doc->author = wxString::FromUTF8(get_element_text(first_name_node));
 						}
-						Poco::XML::Element* last_name_node = author_node->getChildElementNS(FB2_NS, "last-name");
+						Element* last_name_node = author_node->getChildElementNS(FB2_NS, "last-name");
 						if (last_name_node) {
 							if (!doc->author.IsEmpty()) {
 								doc->author += " ";
@@ -126,17 +102,32 @@ std::unique_ptr<document> fb2_parser::load(const wxString &path) const {
 				}
 			}
 		}
-	} catch (const Poco::Exception&) {
+	} catch (const Exception&) {
 		// Ignore XML parsing errors, we still have the text
 	}
-
 	for (const auto& heading : converter.get_headings()) {
 		doc->buffer.add_heading(heading.level, wxString::FromUTF8(heading.text));
 	}
-
 	for (const auto& offset : converter.get_section_offsets()) {
 		doc->buffer.add_marker(offset, marker_type::section_break);
 	}
-
 	return doc;
+}
+
+std::string fb2_parser::get_element_text(Element* element) {
+	if (element == nullptr) {
+		return {};
+	}
+	std::string text;
+	auto* child = element->firstChild();
+	while (child != nullptr) {
+		if (child->nodeType() == Node::TEXT_NODE) {
+			auto* text_node = dynamic_cast<Text*>(child);
+			text += text_node->data();
+		} else if (child->nodeType() == Node::ELEMENT_NODE) {
+			text += get_element_text(dynamic_cast<Element*>(child));
+		}
+		child = child->nextSibling();
+	}
+	return text;
 }
