@@ -41,6 +41,7 @@ public:
 	[[nodiscard]] const std::unordered_map<std::string, size_t>& get_id_positions() const noexcept { return id_positions; }
 	[[nodiscard]] const std::vector<heading_info>& get_headings() const noexcept { return headings; }
 	[[nodiscard]] const std::vector<link_info>& get_links() const noexcept { return links; }
+	[[nodiscard]] const std::vector<table_info>& get_tables() const noexcept { return tables; }
 	[[nodiscard]] const std::string& get_title() const noexcept { return title; }
 	void clear() noexcept;
 
@@ -59,6 +60,7 @@ private:
 	std::unordered_map<std::string, size_t> id_positions;
 	std::vector<heading_info> headings;
 	std::vector<link_info> links;
+	std::vector<table_info> tables;
 	std::vector<bool> preserve_line_whitespace;
 	std::string title;
 	bool in_body = false;
@@ -81,4 +83,5 @@ private:
 	[[nodiscard]] static constexpr bool is_block_element(std::string_view tag_name) noexcept;
 	[[nodiscard]] static std::string_view get_tag_name(lxb_dom_element_t* element) noexcept;
 	[[nodiscard]] static std::string get_element_text(lxb_dom_element_t* element);
+	[[nodiscard]] std::string extract_table_text(lxb_dom_node_t* table_node);
 };

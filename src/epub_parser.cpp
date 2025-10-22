@@ -1,4 +1,4 @@
-/* epub_parser.cpp - parser for Epub 2/3 ebooks.
+/* app.cpp - wxApp implementation code.
  *
  * Paperback.
  * Copyright (c) 2025 Quin Gillespie.
@@ -194,6 +194,7 @@ void epub_parser::process_section_content(conv& converter, const std::string& co
 		const auto& text = converter.get_text();
 		const auto& headings = converter.get_headings();
 		const auto& links = converter.get_links();
+		const auto& tables = converter.get_tables();
 		const auto& id_positions = converter.get_id_positions();
 		const size_t section_start = buffer.str().length();
 		Path section_base_path(href, Path::PATH_UNIX);
@@ -217,6 +218,9 @@ void epub_parser::process_section_content(conv& converter, const std::string& co
 				resolved_href = resolved_path.toString(Path::PATH_UNIX);
 			}
 			buffer.add_link(section_start + link.offset, wxString::FromUTF8(link.text), resolved_href);
+		}
+		for (const auto& table : tables) {
+			buffer.add_table(section_start + table.offset, wxString::FromUTF8(table.text), wxString::FromUTF8(table.ref));
 		}
 		if (!buffer.str().empty() && !buffer.str().EndsWith("\n")) {
 			buffer.append("\n");

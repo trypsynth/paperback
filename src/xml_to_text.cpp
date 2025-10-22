@@ -72,6 +72,7 @@ void xml_to_text::clear() noexcept {
 	headings.clear();
 	links.clear();
 	section_offsets.clear();
+	tables.clear();
 	in_body = false;
 	preserve_whitespace = false;
 	cached_char_length = 0;
@@ -91,7 +92,11 @@ void xml_to_text::process_node(Node* node) {
 		if (tag_name == "section") {
 			section_offsets.push_back(get_current_text_position());
 		}
-		if (tag_name == "a" && element->hasAttributeNS("", "href")) {
+		if (tag_name == "table") {
+			std::string table_html_content = extract_table_text(node);
+			tables.push_back({get_current_text_position(), "[Table]", table_html_content});
+			current_line += "[Table]";
+		} else if (tag_name == "a" && element->hasAttributeNS("", "href")) {
 			const std::string href = element->getAttributeNS("", "href");
 			const std::string link_text = get_element_text(element);
 			if (!link_text.empty()) {
@@ -243,4 +248,59 @@ std::string xml_to_text::get_element_text(Element* element) {
 		child = child->nextSibling();
 	}
 	return text;
+}
+
+std::string xml_to_text::extract_table_text(Poco::XML::Node* table_node) {
+	std::string table_html = "<table>";
+
+	auto process_row_html = [&](Poco::XML::Node* row_node, bool is_header) {
+		table_html += "<tr>";
+		Poco::XML::NodeList* cells = row_node->childNodes();
+		for (size_t i = 0; i < cells->length(); ++i) {
+			Poco::XML::Node* cell_node = cells->item(i);
+			if (cell_node->nodeType() == Poco::XML::Node::ELEMENT_NODE) {
+				Poco::XML::Element* cell_element = static_cast<Poco::XML::Element*>(cell_node);
+				std::string cell_tag_name = cell_element->localName();
+				std::transform(cell_tag_name.begin(), cell_tag_name.end(), cell_tag_name.begin(), ::tolower);
+
+				if (cell_tag_name == "td" || cell_tag_name == "th") {
+					table_html += "<" + cell_tag_name + ">";
+					table_html += get_element_text(cell_element);
+					table_html += "</" + cell_tag_name + ">";
+				}
+			}
+		}
+		table_html += "</tr>";
+	};
+
+	Poco::XML::NodeList* children = table_node->childNodes();
+	for (size_t i = 0; i < children->length(); ++i) {
+		Poco::XML::Node* child = children->item(i);
+		if (child->nodeType() == Poco::XML::Node::ELEMENT_NODE) {
+			Poco::XML::Element* element = static_cast<Poco::XML::Element*>(child);
+			std::string tag_name = element->localName();
+			std::transform(tag_name.begin(), tag_name.end(), tag_name.begin(), ::tolower);
+
+			if (tag_name == "thead" || tag_name == "tbody" || tag_name == "tfoot") {
+				table_html += "<" + tag_name + ">";
+				Poco::XML::NodeList* inner_children = element->childNodes();
+				for (size_t j = 0; j < inner_children->length(); ++j) {
+					Poco::XML::Node* row_node = inner_children->item(j);
+					if (row_node->nodeType() == Poco::XML::Node::ELEMENT_NODE) {
+						std::string row_tag_name = static_cast<Poco::XML::Element*>(row_node)->localName();
+						std::transform(row_tag_name.begin(), row_tag_name.end(), row_tag_name.begin(), ::tolower);
+						if (row_tag_name == "tr") {
+							process_row_html(row_node, tag_name == "thead");
+						}
+					}
+				}
+				table_html += "</" + tag_name + ">";
+			} else if (tag_name == "tr") {
+				process_row_html(child, false); // Direct <tr> child of <table>
+			}
+		}
+	}
+
+	table_html += "</table>";
+	return table_html;
 }

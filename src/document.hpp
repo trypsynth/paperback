@@ -35,6 +35,12 @@ struct heading_info {
 	std::string text;
 };
 
+struct table_info {
+	size_t offset;
+	std::string text;
+	std::string ref;
+};
+
 struct document_stats {
 	size_t word_count{0};
 	size_t line_count{0};
