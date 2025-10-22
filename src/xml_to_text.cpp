@@ -71,6 +71,7 @@ void xml_to_text::clear() noexcept {
 	id_positions.clear();
 	headings.clear();
 	links.clear();
+	section_offsets.clear();
 	in_body = false;
 	preserve_whitespace = false;
 	cached_char_length = 0;
@@ -87,6 +88,9 @@ void xml_to_text::process_node(Node* node) {
 		auto* element = dynamic_cast<Element*>(node);
 		tag_name = element->localName();
 		std::ranges::transform(tag_name, tag_name.begin(), ::tolower);
+		if (tag_name == "section") {
+			section_offsets.push_back(get_current_text_position());
+		}
 		if (tag_name == "a" && element->hasAttributeNS("", "href")) {
 			const std::string href = element->getAttributeNS("", "href");
 			const std::string link_text = get_element_text(element);
