@@ -271,20 +271,6 @@ void config_manager::set_check_for_updates_on_startup(bool check) {
 	});
 }
 
-bool config_manager::get_check_for_updates_on_startup() const {
-	bool result = true;
-	with_app_section([this, &result]() {
-		result = config->ReadBool("check_for_updates_on_startup", true);
-	});
-	return result;
-}
-
-void config_manager::set_check_for_updates_on_startup(bool check) {
-	with_app_section([this, check]() {
-		config->Write("check_for_updates_on_startup", check);
-	});
-}
-
 wxString config_manager::get_language() const {
 	wxString result = "";
 	with_app_section([this, &result]() {
