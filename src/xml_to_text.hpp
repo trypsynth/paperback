@@ -51,5 +51,5 @@ private:
 	void finalize_current_line();
 	size_t get_current_text_position() const;
 	[[nodiscard]] static constexpr bool is_block_element(std::string_view tag_name) noexcept;
-	[[nodiscard]] static std::string get_element_text(Poco::XML::Element* element) noexcept;
+	[[nodiscard]] static std::string get_element_text(Poco::XML::Element* element);
 };

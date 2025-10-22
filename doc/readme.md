@@ -19,10 +19,12 @@ Paperback currently runs on Windows 7 through Windows 11. It's possible it runs 
 Paperback supports several common file formats, with more planned for future releases.
 
 * CHM help files.
+* microsoft Word documents.
 * Epub 2/3 books.
 * HTML documents.
 * Markdown documents.
-* microsoft Word documents.
+* OpenDocument presentations.
+* OpenDocument text files.
 * PDF documents.
 * PowerPoint presentations.
 * Text documents.
@@ -65,6 +67,8 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * B: go to the next bookmark.
 * Ctrl+Shift+B: toggle a bookmark at your current cursor position.
 * Ctrl+B: bring up the jump to bookmark dialog.
+* Shift+K:" go to the previous link.
+* K: go to the next link.
 
 ### Tools menu
 * Ctrl+W: view the word count of the currently focused document.
@@ -77,6 +81,28 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * F1: pop up this readme file in your default web browser.
 * Shift+F1: pop up this readme file in Paperback itself.
 * Ctrl+D: open my PayPal donations page in your default web browser.
+
+## Credits
+### Development
+* Quin Gillespie: primary developer and project founder.
+* Aryan Choudhary: added multiple new document formats, link support, more.
+
+### Donations
+The following people have made donations of some size to Paperback development. If you make a donation your name won't automatically be added here, I only add people who want their donation made public.
+
+Note: I consider a public GitHub sponsor grounds for automatic inclusion in this list.
+
+* Brian Hartgen
+* Devin Prater
+* James Scholes
+* Jayson Smith
+* Pratik Patel
+* Roberto Perez
+
+### Translations
+* Tarik Hadžirović: Bosnian translation
+* Martin Courcelles: French translation
+* Nikola Jović: Serbian translation
 
 ## Changelog
 ### Version 0.5

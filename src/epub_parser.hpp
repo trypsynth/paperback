@@ -71,7 +71,7 @@ private:
 		}
 	};
 
-	void parse_opf(const std::string& filename, epub_context& ctx) const;
+	static void parse_opf(const std::string& filename, epub_context& ctx);
 	void parse_section(size_t index, epub_context& ctx, document_buffer& buffer) const;
 	template <typename Converter>
 	void process_section_content(Converter& converter, const std::string& content, const std::string& href, epub_context& ctx, document_buffer& buffer) const;
@@ -81,9 +81,9 @@ private:
 	std::unique_ptr<toc_item> parse_ncx_nav_point(Poco::XML::Element* nav_point, const Poco::XML::NamespaceSupport& nsmap, const epub_context& ctx, const document_buffer& buffer) const;
 	void parse_epub3_nav_list(Poco::XML::Element* ol_element, std::vector<std::unique_ptr<toc_item>>& toc_items, const epub_context& ctx, const document_buffer& buffer, const Poco::Path& nav_base_path) const;
 	std::unique_ptr<toc_item> parse_epub3_nav_item(Poco::XML::Element* li_element, const epub_context& ctx, const document_buffer& buffer, const Poco::Path& nav_base_path) const;
-	int calculate_offset_from_href(const std::string& href, const epub_context& ctx, const document_buffer& buffer) const;
-	[[nodiscard]] bool is_html_content(const std::string& media_type) const;
-	[[nodiscard]] std::string extract_zip_entry_content(const std::string& filename, const epub_context& ctx) const;
+	static bool is_html_content(const std::string& media_type);
+	std::string extract_zip_entry_content(const std::string& filename, const epub_context& ctx);
+	static int calculate_offset_from_href(const std::string& href, const epub_context& ctx, const document_buffer& buffer);
 };
 
 REGISTER_PARSER(epub_parser)

@@ -8,9 +8,14 @@
  */
 
 #include "html_parser.hpp"
+#include "document.hpp"
+#include "document_buffer.hpp"
 #include "html_to_text.hpp"
 #include "utils.hpp"
+#include <memory>
 #include <wx/filename.h>
+#include <wx/stream.h>
+#include <wx/string.h>
 #include <wx/txtstrm.h>
 #include <wx/wfstream.h>
 
@@ -41,7 +46,7 @@ std::unique_ptr<document> html_parser::load(const wxString& path) const {
 		doc->id_positions[pair.first] = pair.second;
 	}
 	for (const auto& heading : headings) {
-		marker_type type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + heading.level - 1);
+		const auto type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + heading.level - 1);
 		doc->buffer.add_marker(heading.offset, type, wxString::FromUTF8(heading.text), wxString(), heading.level);
 	}
 	for (const auto& link : links) {

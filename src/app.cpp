@@ -11,6 +11,7 @@
 #include "constants.hpp"
 #include "parser.hpp"
 #include "translation_manager.hpp"
+#include "update_checker.hpp"
 #include "utils.hpp"
 #include <wx/filename.h>
 
@@ -37,7 +38,7 @@ bool app::OnInit() {
 		return false;
 	}
 	translation_manager::instance().initialize();
-	wxString preferred_language = config_mgr.get_language();
+	const wxString preferred_language = config_mgr.get_language();
 	if (!preferred_language.IsEmpty()) {
 		translation_manager::instance().set_language(preferred_language);
 	}
@@ -45,9 +46,9 @@ bool app::OnInit() {
 	if (single_instance_checker->IsAnotherRunning()) {
 		if (argc > 1) {
 			paperback_client client;
-			std::unique_ptr<wxConnectionBase> connection(client.MakeConnection(IPC_HOST_LOCALHOST, IPC_SERVICE, IPC_TOPIC_OPEN_FILE));
+			const std::unique_ptr<wxConnectionBase> connection(client.MakeConnection(IPC_HOST_LOCALHOST, IPC_SERVICE, IPC_TOPIC_OPEN_FILE));
 			if (connection) {
-				wxString arg_path = wxString(argv[1]);
+				const wxString arg_path = wxString(argv[1]);
 				wxFileName file_path{arg_path};
 				file_path.Normalize(wxPATH_NORM_ABSOLUTE);
 				connection->Execute(file_path.GetFullPath());
@@ -55,7 +56,7 @@ bool app::OnInit() {
 			}
 		} else {
 			paperback_client client;
-			std::unique_ptr<wxConnectionBase> connection(client.MakeConnection(IPC_HOST_LOCALHOST, IPC_SERVICE, IPC_TOPIC_OPEN_FILE));
+			const std::unique_ptr<wxConnectionBase> connection(client.MakeConnection(IPC_HOST_LOCALHOST, IPC_SERVICE, IPC_TOPIC_OPEN_FILE));
 			if (connection) {
 				connection->Execute(IPC_COMMAND_ACTIVATE);
 				connection->Disconnect();
@@ -76,6 +77,9 @@ bool app::OnInit() {
 	if (frames.empty()) {
 		create_new_window();
 	}
+	if (config_mgr.get_check_for_updates_on_startup()) {
+		check_for_updates(true);
+	}
 	return true;
 }
 
@@ -85,7 +89,7 @@ int app::OnExit() {
 }
 
 void app::parse_command_line() {
-	wxString arg_path = wxString(argv[1]);
+	const wxString arg_path = wxString(argv[1]);
 	wxFileName file_path{arg_path};
 	file_path.Normalize(wxPATH_NORM_ABSOLUTE);
 	wxString path = file_path.GetFullPath();
@@ -125,7 +129,7 @@ void app::restore_previous_documents() {
 			}
 		} else if (doc_manager->has_documents()) {
 			auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-			if (text_ctrl) {
+			if (text_ctrl != nullptr) {
 				text_ctrl->SetFocus();
 			}
 		}
@@ -190,7 +194,7 @@ void app::open_file(const wxString& filename, main_window* current_frame) {
 	auto* par = find_parser_by_extension(wxFileName(filename).GetExt());
 	if (!par) {
 		par = get_parser_for_unknown_file(filename, config_mgr);
-		if (!par) {
+		if (par == nullptr) {
 			return;
 		}
 	}

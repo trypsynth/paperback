@@ -33,6 +33,9 @@ struct marker {
 	int level;
 
 	marker(size_t position, marker_type marker_type, const wxString& marker_text = wxString(), const wxString& marker_ref = wxString(), int marker_level = 0) : pos{position}, type{marker_type}, text{marker_text}, ref{marker_ref}, level{marker_level} {}
+
+	[[nodiscard]] auto operator<=>(const marker& other) const noexcept { return pos <=> other.pos; }
+	[[nodiscard]] bool operator==(const marker& other) const noexcept { return pos == other.pos; }
 };
 
 class document_buffer {
@@ -57,8 +60,8 @@ public:
 	[[nodiscard]] int next_marker_index(size_t position, marker_type type) const noexcept;
 	[[nodiscard]] int previous_marker_index(size_t position, marker_type type) const noexcept;
 	[[nodiscard]] int current_marker_index(size_t position, marker_type type) const noexcept;
-	[[nodiscard]] int next_heading_marker_index(size_t position, int level = -1) const noexcept;
-	[[nodiscard]] int previous_heading_marker_index(size_t position, int level = -1) const noexcept;
+	[[nodiscard]] int next_heading_marker_index(size_t position, int level = -1) const;
+	[[nodiscard]] int previous_heading_marker_index(size_t position, int level = -1) const;
 	[[nodiscard]] size_t marker_position(int marker_index) const noexcept;
 	[[nodiscard]] const marker* get_marker(int marker_index) const noexcept;
 	[[nodiscard]] std::vector<const marker*> get_markers_by_type(marker_type type) const;

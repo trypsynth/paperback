@@ -38,7 +38,7 @@ private:
 	translation_manager(translation_manager&&) = delete;
 	translation_manager& operator=(translation_manager&&) = delete;
 	void scan_available_languages();
-	wxString get_system_language() const;
+	static wxString get_system_language();
 
 	wxTranslations* translations{nullptr};
 	wxString current_language;

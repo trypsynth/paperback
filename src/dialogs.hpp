@@ -12,10 +12,17 @@
 #include "controls.hpp"
 #include "document.hpp"
 #include "parser.hpp"
+#include <wx/arrstr.h>
+#include <wx/button.h>
+#include <wx/checkbox.h>
+#include <wx/clntdata.h>
+#include <wx/combobox.h>
+#include <wx/dialog.h>
+#include <wx/listbox.h>
 #include <wx/listctrl.h>
 #include <wx/spinctrl.h>
+#include <wx/textctrl.h>
 #include <wx/treectrl.h>
-#include <wx/wx.h>
 
 enum class dialog_button_config {
 	ok_only,
@@ -30,9 +37,9 @@ public:
 protected:
 	void set_content(wxSizer* content_sizer);
 	void finalize_layout();
+	wxBoxSizer* main_sizer{nullptr};
 
 private:
-	wxBoxSizer* main_sizer{nullptr};
 	wxStdDialogButtonSizer* button_sizer{nullptr};
 	dialog_button_config button_config;
 	bool layout_finalized{false};
@@ -62,13 +69,13 @@ private:
 	void on_remove(wxCommandEvent& event);
 	void on_list_item_activated(wxListEvent& event);
 	void on_list_item_selected(wxListEvent& event);
-	void on_key_down(wxKeyEvent& event);
+	void on_key_down(wxKeyEvent&);
 	void populate_document_list();
 };
 
 class bookmark_dialog : public dialog {
 public:
-	bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks, wxTextCtrl* text_ctrl, long current_pos = -1);
+	bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos = -1);
 	~bookmark_dialog() = default;
 	bookmark_dialog(const bookmark_dialog&) = delete;
 	bookmark_dialog& operator=(const bookmark_dialog&) = delete;
@@ -80,9 +87,15 @@ private:
 	wxListBox* bookmark_list{nullptr};
 	wxArrayLong bookmark_positions;
 	long selected_position;
+	config_manager& config;
+	wxString file_path;
+	wxButton* jump_button{nullptr};
+	wxButton* delete_button{nullptr};
 
 	void on_list_selection_changed(wxCommandEvent& event);
 	void on_ok(wxCommandEvent& event);
+	void on_key_down(wxKeyEvent&);
+	void on_delete(wxCommandEvent& event);
 };
 
 class document_info_dialog : public dialog {
@@ -215,6 +228,8 @@ public:
 	void set_open_in_new_window(bool open_in_new_window);
 	bool get_compact_go_menu() const;
 	void set_compact_go_menu(bool compact);
+	bool get_check_for_updates_on_startup() const;
+	void set_check_for_updates_on_startup(bool check);
 	int get_recent_documents_to_show() const;
 	void set_recent_documents_to_show(int count);
 	wxString get_language() const;
@@ -226,6 +241,7 @@ private:
 	wxCheckBox* minimize_to_tray_check{nullptr};
 	wxCheckBox* open_in_new_window_check{nullptr};
 	wxCheckBox* compact_go_menu_check{nullptr};
+	wxCheckBox* check_for_updates_on_startup_check{nullptr};
 	wxSpinCtrl* recent_docs_count_spin{nullptr};
 	wxComboBox* language_combo{nullptr};
 

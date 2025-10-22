@@ -8,12 +8,18 @@
  */
 
 #include "markdown_parser.hpp"
+#include "document.hpp"
+#include "document_buffer.hpp"
 #include "html_to_text.hpp"
 #include "utils.hpp"
 #include <maddy/parser.h>
 #include <memory>
+#include <sstream>
+#include <string>
+#include <vector>
 #include <wx/filename.h>
-#include <wx/txtstrm.h>
+#include <wx/stream.h>
+#include <wx/string.h>
 #include <wx/wfstream.h>
 
 std::unique_ptr<document> markdown_parser::load(const wxString& path) const {
@@ -22,14 +28,17 @@ std::unique_ptr<document> markdown_parser::load(const wxString& path) const {
 		return nullptr;
 	}
 	wxBufferedInputStream bs(file_stream);
-	wxTextInputStream text_stream(bs);
-	wxString content;
-	while (!bs.Eof()) {
-		content += text_stream.ReadLine() + "\n";
+	const size_t file_size = bs.GetSize();
+	if (file_size == 0) {
+		return nullptr;
 	}
-	std::shared_ptr<maddy::Parser> parser = std::make_shared<maddy::Parser>();
-	std::istringstream iss(content.ToStdString());
-	std::string html = parser->Parse(iss);
+	std::vector<char> buffer(file_size);
+	bs.Read(buffer.data(), file_size);
+	std::string markdown_content(buffer.data(), file_size);
+	markdown_content = preprocess_markdown(markdown_content);
+	const std::shared_ptr<maddy::Parser> parser = std::make_shared<maddy::Parser>();
+	std::istringstream iss(markdown_content);
+	const std::string html = parser->Parse(iss);
 	html_to_text converter;
 	if (!converter.convert(html, html_source_mode::markdown)) {
 		return nullptr;
@@ -45,7 +54,7 @@ std::unique_ptr<document> markdown_parser::load(const wxString& path) const {
 		doc->id_positions[pair.first] = pair.second;
 	}
 	for (const auto& heading : headings) {
-		marker_type type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + heading.level - 1);
+		const auto type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + heading.level - 1);
 		doc->buffer.add_marker(heading.offset, type, wxString::FromUTF8(heading.text), wxString(), heading.level);
 	}
 	for (const auto& link : links) {
@@ -53,4 +62,34 @@ std::unique_ptr<document> markdown_parser::load(const wxString& path) const {
 	}
 	doc->toc_items = build_toc_from_headings(doc->buffer);
 	return doc;
+}
+
+// Maddy expects Markdown formatted according to CommonMark, so we try to hack that together by adding blank lines before headings and lists when missing
+std::string markdown_parser::preprocess_markdown(const std::string& input) {
+	std::istringstream iss(input);
+	std::ostringstream oss;
+	std::string line;
+	std::string prev_line;
+	bool first_line = true;
+	bool prev_was_list = false;
+	while (std::getline(iss, line)) {
+		if (!line.empty() && line.back() == '\r') {
+			line.pop_back();
+		}
+		const bool is_heading = !line.empty() && (line[0] == '#');
+		const bool is_list = !line.empty() && ((line[0] >= '0' && line[0] <= '9' && line.length() > 1 && line[1] == '.') || line[0] == '-' || line[0] == '*' || line[0] == '+');
+		// Add blank line before headings if previous line wasn't blank
+		if (!first_line && is_heading && !prev_line.empty()) {
+			oss << "\n";
+		}
+		// Add blank line before first list item if previous wasn't list or blank
+		if (!first_line && is_list && !prev_was_list && !prev_line.empty()) {
+			oss << "\n";
+		}
+		oss << line << "\n";
+		prev_line = line;
+		prev_was_list = is_list;
+		first_line = false;
+	}
+	return oss.str();
 }

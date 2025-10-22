@@ -1,4 +1,4 @@
-/* markdown_parser.hpp - markdown parser header file.
+/* update_checker.hpp - Update checking functionality header.
  *
  * Paperback.
  * Copyright (c) 2025 Quin Gillespie.
@@ -8,26 +8,5 @@
  */
 
 #pragma once
-#include "parser.hpp"
 
-class markdown_parser : public parser {
-public:
-	markdown_parser() = default;
-	~markdown_parser() = default;
-	markdown_parser(const markdown_parser&) = delete;
-	markdown_parser& operator=(const markdown_parser&) = delete;
-	markdown_parser(markdown_parser&&) = delete;
-	markdown_parser& operator=(markdown_parser&&) = delete;
-	[[nodiscard]] wxString name() const override { return "Markdown Documents"; }
-	[[nodiscard]] std::span<const wxString> extensions() const override {
-		static const wxString exts[] = {"md", "markdown", "mdx", "mdown", "mdwn", "mkd", "mkdn", "mkdown", "ronn"};
-		return exts;
-	}
-	[[nodiscard]] parser_flags supported_flags() const override { return parser_flags::supports_toc; }
-	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
-
-private:
-	static std::string preprocess_markdown(const std::string& input);
-};
-
-REGISTER_PARSER(markdown_parser)
+void check_for_updates(bool silent);

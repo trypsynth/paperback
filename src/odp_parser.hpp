@@ -1,5 +1,4 @@
-/* text_parser.cpp - handles the reading of plain text files.
- * This is decidedly the smallest and most simple parser, and it is recommended to use this file and its corresponding header as a base whenever adding a new parser.
+/* odp_parser.hpp - header file for odp document parser.
  *
  * Paperback.
  * Copyright (c) 2025 Quin Gillespie.
@@ -8,34 +7,30 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "text_parser.hpp"
+#pragma once
 #include "document.hpp"
-#include "utils.hpp"
-#include <cstdlib>
-#include <memory>
-#include <string>
-#include <vector>
-#include <wx/filename.h>
-#include <wx/stream.h>
-#include <wx/string.h>
-#include <wx/wfstream.h>
+#include "parser.hpp"
+#include <Poco/DOM/Node.h>
 
-std::unique_ptr<document> text_parser::load(const wxString& path) const {
-	wxFileInputStream file_stream(path);
-	if (!file_stream.IsOk()) {
-		return nullptr;
+class odp_parser : public parser {
+public:
+	odp_parser() = default;
+	~odp_parser() = default;
+	odp_parser(const odp_parser&) = delete;
+	odp_parser& operator=(const odp_parser&) = delete;
+	odp_parser(odp_parser&&) = delete;
+	odp_parser& operator=(odp_parser&&) = delete;
+	[[nodiscard]] wxString name() const override { return "OpenDocument Presentations"; }
+	[[nodiscard]] std::span<const wxString> extensions() const override {
+		static const wxString exts[] = {"odp"};
+		return exts;
 	}
-	wxBufferedInputStream bs(file_stream);
-	const size_t file_size = bs.GetSize();
-	if (file_size == 0) {
-		return nullptr;
-	}
-	std::vector<char> buffer(file_size);
-	bs.Read(buffer.data(), file_size);
-	const std::string utf8_content = convert_to_utf8(std::string(buffer.data(), file_size));
-	auto doc = std::make_unique<document>();
-	doc->title = wxFileName(path).GetName();
-	const std::string processed = remove_soft_hyphens(utf8_content);
-	doc->buffer.set_content(wxString::FromUTF8(processed));
-	return doc;
-}
+	[[nodiscard]] parser_flags supported_flags() const override { return parser_flags::supports_pages; }
+	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
+
+private:
+	void traverse(Poco::XML::Node* node, wxString& text, document* doc, wxString* full_text) const;
+	void traverse_children(Poco::XML::Node* node, wxString& text, document* doc, wxString* full_text) const;
+};
+
+REGISTER_PARSER(odp_parser)

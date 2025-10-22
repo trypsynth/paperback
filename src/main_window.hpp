@@ -59,9 +59,9 @@ private:
 
 	void create_menus();
 	wxMenu* create_file_menu();
-	wxMenu* create_go_menu();
-	wxMenu* create_tools_menu();
-	wxMenu* create_help_menu();
+	static wxMenu* create_go_menu();
+	static wxMenu* create_tools_menu();
+	static wxMenu* create_help_menu();
 	void refresh_ui_language();
 	void bind_events();
 	void on_open(wxCommandEvent&);
@@ -95,12 +95,13 @@ private:
 	void on_help(wxCommandEvent&);
 	void on_help_internal(wxCommandEvent&);
 	void on_donate(wxCommandEvent&);
+	void on_check_for_updates(wxCommandEvent&);
 	void on_notebook_page_changed(wxBookCtrlEvent& event);
 	void on_close_window(wxCloseEvent& event);
 	void on_position_save_timer(wxTimerEvent&);
 	void on_status_update_timer(wxTimerEvent&);
 	void on_recent_document(wxCommandEvent& event);
-	void on_show_all_documents(wxCommandEvent& event);
+	void on_show_all_documents(wxCommandEvent&);
 	void on_notebook_key_down(wxKeyEvent& event);
 	void on_iconize(wxIconizeEvent& event);
 	void on_char_hook(wxKeyEvent& event);

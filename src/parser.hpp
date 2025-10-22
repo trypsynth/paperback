@@ -69,5 +69,5 @@ private:
 
 #define REGISTER_PARSER(parser_type) static parser_registrar<parser_type> parser_type##_registrar;
 
-[[nodiscard]] const parser* find_parser_by_extension(const wxString& extension) noexcept;
+[[nodiscard]] const parser* find_parser_by_extension(const wxString& extension);
 [[nodiscard]] wxString get_supported_wildcards();

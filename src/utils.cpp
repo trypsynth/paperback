@@ -10,6 +10,7 @@
 #include "utils.hpp"
 #include "app.hpp"
 #include "config_manager.hpp"
+#include "constants.hpp"
 #include "dialogs.hpp"
 #include "live_region.hpp"
 #include "main_window.hpp"
@@ -17,13 +18,21 @@
 #include <Poco/Exception.h>
 #include <Poco/RegularExpression.h>
 #include <Poco/URI.h>
-#include <Poco/UTF8String.h>
 #include <cctype>
+#include <cstddef>
+#include <iterator>
 #include <optional>
 #include <sstream>
-#include <wx/msgdlg.h>
+#include <string>
+#include <string_view>
+#include <wx/defs.h>
 #include <wx/strconv.h>
+#include <wx/string.h>
 #include <wx/zipstrm.h>
+
+namespace {
+constexpr unsigned char UTF8_NBSP_FIRST = 0xC2;
+constexpr unsigned char UTF8_NBSP_SECOND = 0xA0;
 
 long find_text_regex(const wxString& haystack, const wxString& needle, long start, find_options options) {
 	const auto forward = has_option(options, find_options::forward);
@@ -35,23 +44,23 @@ long find_text_regex(const wxString& haystack, const wxString& needle, long star
 		if (match_whole_word) {
 			pattern = "\\b" + pattern + "\\b";
 		}
-		int regex_options = 0;
+		unsigned int regex_options = 0;
 		if (!match_case) {
-			regex_options |= Poco::RegularExpression::RE_CASELESS;
+			regex_options |= static_cast<unsigned int>(Poco::RegularExpression::RE_CASELESS);
 		}
-		Poco::RegularExpression regex(pattern, regex_options);
+		const Poco::RegularExpression regex(pattern, static_cast<int>(regex_options));
 		Poco::RegularExpression::Match match;
 		if (forward) {
-			if (regex.match(text, start, match)) {
-				return match.offset;
+			if (regex.match(text, start, match) != 0) {
+				return static_cast<long>(match.offset);
 			}
 		} else {
-			const auto search_text = text.substr(0, start);
-			int last_match = wxNOT_FOUND;
+			const auto search_text = text.substr(0, static_cast<size_t>(start));
+			long last_match = wxNOT_FOUND;
 			size_t pos = 0;
-			while (regex.match(search_text, pos, match)) {
-				last_match = match.offset;
-				pos = match.offset + 1;
+			while (regex.match(search_text, pos, match) != 0) {
+				last_match = static_cast<long>(match.offset);
+				pos = static_cast<size_t>(match.offset) + 1;
 			}
 			return last_match;
 		}
@@ -68,21 +77,21 @@ long find_text_literal(const wxString& haystack, const wxString& needle, long st
 	const auto& search_haystack = match_case ? haystack : haystack.Lower();
 	const auto& search_needle = match_case ? needle : needle.Lower();
 	if (!match_whole_word) {
-		return forward ? search_haystack.find(search_needle, start) : search_haystack.Left(start).rfind(search_needle);
+		return forward ? static_cast<long>(search_haystack.find(search_needle, static_cast<size_t>(start))) : static_cast<long>(search_haystack.Left(start).rfind(search_needle));
 	}
-	size_t pos = start;
+	long pos = start;
 	while (true) {
-		pos = forward ? search_haystack.find(search_needle, pos) : search_haystack.Left(pos).rfind(search_needle);
-		if (pos == wxNOT_FOUND) {
+		pos = forward ? static_cast<long>(search_haystack.find(search_needle, static_cast<size_t>(pos))) : static_cast<long>(search_haystack.Left(static_cast<size_t>(pos)).rfind(search_needle));
+		if (pos == static_cast<long>(wxNOT_FOUND)) {
 			break;
 		}
-		const auto word_start = (pos == 0) || !wxIsalnum(haystack[pos - 1]);
-		const auto word_end = (pos + needle.length() >= haystack.length()) || !wxIsalnum(haystack[pos + needle.length()]);
+		const bool word_start = (pos == 0) || (wxIsalnum(haystack[static_cast<size_t>(pos) - 1]) == 0);
+		const bool word_end = (static_cast<size_t>(pos) + needle.length() >= haystack.length()) || (wxIsalnum(haystack[static_cast<size_t>(pos) + needle.length()]) == 0);
 		if (word_start && word_end) {
 			return pos;
 		}
 		pos = forward ? pos + 1 : pos - 1;
-		if (forward && pos >= haystack.length()) {
+		if (forward && static_cast<size_t>(pos) >= haystack.length()) {
 			break;
 		}
 		if (!forward && pos < 0) {
@@ -91,6 +100,7 @@ long find_text_literal(const wxString& haystack, const wxString& needle, long st
 	}
 	return wxNOT_FOUND;
 }
+} // namespace
 
 long find_text(const wxString& haystack, const wxString& needle, long start, find_options options) {
 	if (needle.empty()) {
@@ -108,8 +118,8 @@ std::string collapse_whitespace(std::string_view input) {
 	for (size_t i = 0; i < input.size(); ++i) {
 		const auto ch = static_cast<unsigned char>(input[i]);
 		// Check for non-breaking space (UTF-8: 0xC2A0)
-		const bool is_nbsp = (i + 1 < input.size() && ch == 0xC2 && static_cast<unsigned char>(input[i + 1]) == 0xA0);
-		if (std::isspace(ch) || is_nbsp) {
+		const bool is_nbsp = (i + 1 < input.size() && ch == UTF8_NBSP_FIRST && static_cast<unsigned char>(input[i + 1]) == UTF8_NBSP_SECOND);
+		if ((std::isspace(ch) != 0) || is_nbsp) {
 			if (!prev_was_space) {
 				result << ' ';
 				prev_was_space = true;
@@ -129,9 +139,9 @@ std::string trim_string(const std::string& str) {
 	auto start = str.begin();
 	auto end = str.end();
 	auto is_nbsp = [&](std::string::const_iterator it) -> bool {
-		return it != str.end() && std::next(it) != str.end() && static_cast<unsigned char>(*it) == 0xC2 && static_cast<unsigned char>(*std::next(it)) == 0xA0;
+		return it != str.end() && std::next(it) != str.end() && static_cast<unsigned char>(*it) == UTF8_NBSP_FIRST && static_cast<unsigned char>(*std::next(it)) == UTF8_NBSP_SECOND;
 	};
-	while (start != end && (std::isspace(static_cast<unsigned char>(*start)) || is_nbsp(start))) {
+	while (start != end && ((std::isspace(static_cast<unsigned char>(*start)) != 0) || is_nbsp(start))) {
 		if (is_nbsp(start)) {
 			start += 2;
 		} else {
@@ -140,7 +150,7 @@ std::string trim_string(const std::string& str) {
 	}
 	while (start != end) {
 		auto prev = std::prev(end);
-		if (std::isspace(static_cast<unsigned char>(*prev))) {
+		if (std::isspace(static_cast<unsigned char>(*prev)) != 0) {
 			end = prev;
 		} else if (prev != start && std::prev(prev) != start && is_nbsp(std::prev(prev))) {
 			end = std::prev(prev);
@@ -148,13 +158,13 @@ std::string trim_string(const std::string& str) {
 			break;
 		}
 	}
-	return std::string(start, end);
+	return {start, end};
 }
 
 std::string remove_soft_hyphens(std::string_view input) {
 	try {
 		std::string result(input);
-		Poco::RegularExpression regex("\xC2\xAD", Poco::RegularExpression::RE_UTF8);
+		const Poco::RegularExpression regex("\xC2\xAD", Poco::RegularExpression::RE_UTF8);
 		regex.subst(result, "", Poco::RegularExpression::RE_GLOBAL);
 		return result;
 	} catch (const Poco::Exception&) {
@@ -163,10 +173,10 @@ std::string remove_soft_hyphens(std::string_view input) {
 }
 
 const parser* get_parser_for_unknown_file(const wxString& path, config_manager& config) {
-	wxString saved_format = config.get_document_format(path);
+	const wxString saved_format = config.get_document_format(path);
 	if (!saved_format.IsEmpty()) {
-		auto* par = find_parser_by_extension(saved_format);
-		if (par) {
+		const auto* par = find_parser_by_extension(saved_format);
+		if (par != nullptr) {
 			return par;
 		}
 	}
@@ -174,22 +184,22 @@ const parser* get_parser_for_unknown_file(const wxString& path, config_manager& 
 	if (dlg.ShowModal() != wxID_OK) {
 		return nullptr;
 	}
-	wxString format = dlg.get_selected_format();
+	const wxString format = dlg.get_selected_format();
 	config.set_document_format(path, format);
 	return find_parser_by_extension(format);
 }
 
 void speak(const wxString& message) {
 	auto* main_win = dynamic_cast<main_window*>(wxGetApp().GetTopWindow());
-	if (!main_win) {
+	if (main_win == nullptr) {
 		return;
 	}
 	auto* label = main_win->get_live_region_label();
-	if (!label) {
+	if (label == nullptr) {
 		return;
 	}
 	label->SetLabel(message);
-	[[maybe_unused]] bool notified = notify_live_region_changed(label);
+	notify_live_region_changed(label);
 }
 
 std::string url_decode(std::string_view encoded) {
@@ -209,7 +219,7 @@ std::string convert_to_utf8(const std::string& input) {
 	const auto* data = reinterpret_cast<const unsigned char*>(input.data());
 	const size_t len = input.length();
 	auto try_convert = [&](size_t bom_size, wxMBConv& conv) -> std::optional<std::string> {
-		wxString content(input.data() + bom_size, conv, len - bom_size);
+		const wxString content(input.data() + bom_size, conv, len - bom_size);
 		if (!content.empty()) {
 			return std::string(content.ToUTF8());
 		}
@@ -250,12 +260,12 @@ std::string convert_to_utf8(const std::string& input) {
 	};
 	for (const auto& [name, conv] : fallback_encodings) {
 		wxString content;
-		if (!name) {
+		if (name == nullptr) {
 			content = wxString::FromUTF8(input.data(), len);
-		} else if (conv) {
+		} else if (conv != nullptr) {
 			content = wxString(input.data(), *conv, len);
 		} else {
-			wxCSConv csconv(name);
+			const wxCSConv csconv(name);
 			content = wxString(input.data(), csconv, len);
 		}
 		if (!content.empty()) {
@@ -289,29 +299,29 @@ std::vector<std::unique_ptr<toc_item>> build_toc_from_headings(const document_bu
 	if (heading_markers.empty()) {
 		return result;
 	}
-	std::vector<std::vector<std::unique_ptr<toc_item>>*> level_stacks(7, nullptr);
+	std::vector<std::vector<std::unique_ptr<toc_item>>*> level_stacks(MAX_HEADING_LEVELS + 1, nullptr);
 	level_stacks[0] = &result;
 	for (const auto* marker : heading_markers) {
 		auto item = std::make_unique<toc_item>();
 		item->name = marker->text;
 		item->offset = static_cast<int>(marker->pos);
 		const int level = marker->level;
-		if (level < 1 || level > 6) {
+		if (level < 1 || level > MAX_HEADING_LEVELS) {
 			continue;
 		}
 		std::vector<std::unique_ptr<toc_item>>* parent_list = nullptr;
 		for (int i = level - 1; i >= 0; --i) {
-			if (level_stacks[i]) {
+			if (level_stacks[i] != nullptr) {
 				parent_list = level_stacks[i];
 				break;
 			}
 		}
-		if (!parent_list) {
+		if (parent_list == nullptr) {
 			parent_list = &result;
 		}
 		parent_list->push_back(std::move(item));
 		level_stacks[level] = &parent_list->back()->children;
-		for (int i = level + 1; i < 7; ++i) {
+		for (int i = level + 1; i < MAX_HEADING_LEVELS + 1; ++i) {
 			level_stacks[i] = nullptr;
 		}
 	}
@@ -319,10 +329,11 @@ std::vector<std::unique_ptr<toc_item>> build_toc_from_headings(const document_bu
 }
 
 std::string read_zip_entry(wxZipInputStream& zip) {
+	constexpr int buffer_size = 4096;
 	std::ostringstream buffer;
-	char buf[4096];
+	char buf[buffer_size];
 	while (zip.Read(buf, sizeof(buf)).LastRead() > 0) {
-		buffer.write(buf, zip.LastRead());
+		buffer.write(buf, static_cast<std::streamsize>(zip.LastRead()));
 	}
 	return buffer.str();
 }
@@ -348,6 +359,8 @@ wxZipEntry* find_zip_entry(const std::string& filename, const std::map<std::stri
 				return it->second;
 			}
 		}
-	} catch (const Poco::Exception&) {}
+	} catch (const Poco::Exception&) {
+		return nullptr;
+	}
 	return nullptr;
 }

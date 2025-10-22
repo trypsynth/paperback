@@ -36,10 +36,10 @@ struct heading_info {
 };
 
 struct document_stats {
-	int word_count{0};
-	int line_count{0};
-	int char_count{0};
-	int char_count_no_whitespace{0};
+	size_t word_count{0};
+	size_t line_count{0};
+	size_t char_count{0};
+	size_t char_count_no_whitespace{0};
 };
 
 struct document {
