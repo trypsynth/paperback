@@ -44,6 +44,8 @@ public:
 	void set_word_wrap(bool word_wrap);
 	bool get_minimize_to_tray() const;
 	void set_minimize_to_tray(bool minimize);
+	bool get_open_in_new_window() const;
+	void set_open_in_new_window(bool open_in_new_window);
 	bool get_compact_go_menu() const;
 	void set_compact_go_menu(bool compact);
 	bool get_check_for_updates_on_startup() const;

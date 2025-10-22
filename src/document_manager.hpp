@@ -95,7 +95,11 @@ private:
 	main_window& main_win;
 
 	static void setup_text_ctrl(wxTextCtrl* text_ctrl, const wxString& content);
+<<<<<<< HEAD
 	void restore_document_position(document_tab* tab) const;
+=======
+	void restore_document_position(document_tab* tab);
+>>>>>>> multyple_windows
 	wxPanel* create_tab_panel(const wxString& content, document_tab* tab_data);
 	void navigate_to_heading(bool next, int specific_level = -1) const;
 };
