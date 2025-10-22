@@ -147,7 +147,7 @@ else()
 endif()
 
 if(WIN32)
-	find_program(INNO_SETUP_COMPILER ISCC.exe PATHS "$ENV{ProgramFiles\(x86\)}/Inno Setup 6" "$ENV{ProgramFiles}/Inno Setup 6")
+	find_program(INNO_SETUP_COMPILER ISCC.exe PATHS "$ENV{ProgramFiles\(x86\)}/Inno Setup 6" "$ENV{LOCALAPPDATA}/Programs/Inno Setup 6" "$ENV{ProgramFiles}/Inno Setup 6")
 	if(INNO_SETUP_COMPILER)
 		add_custom_command(OUTPUT "${CMAKE_BINARY_DIR}/paperback_setup.exe" COMMAND ${INNO_SETUP_COMPILER} "${CMAKE_SOURCE_DIR}/paperback.iss" DEPENDS "${CMAKE_SOURCE_DIR}/paperback.iss" paperback WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 		add_custom_target(installer DEPENDS "${CMAKE_BINARY_DIR}/paperback_setup.exe")
