@@ -25,7 +25,7 @@ public:
 		return exts;
 	}
 	[[nodiscard]] parser_flags supported_flags() const override { return parser_flags::supports_sections; }
-	[[nodiscard]] std::unique_ptr<document> load(const wxString &path) const override;
+	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 
 private:
 	static std::string get_element_text(Poco::XML::Element* element);

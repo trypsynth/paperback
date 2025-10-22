@@ -8,30 +8,30 @@
  */
 
 #include "fb2_parser.hpp"
-#include "xml_to_text.hpp"
 #include "utils.hpp"
-#include <wx/filename.h>
-#include <wx/wfstream.h>
+#include "xml_to_text.hpp"
+#include <Poco/AutoPtr.h>
 #include <Poco/DOM/DOMParser.h>
+#include <Poco/DOM/DOMWriter.h>
 #include <Poco/DOM/Element.h>
 #include <Poco/DOM/Node.h>
+#include <Poco/DOM/NodeList.h>
 #include <Poco/DOM/Text.h>
-#include <Poco/SAX/InputSource.h>
 #include <Poco/Exception.h>
-#include <Poco/AutoPtr.h>
+#include <Poco/SAX/InputSource.h>
 #include <Poco/XML/XMLString.h>
 #include <Poco/XML/XMLWriter.h>
-#include <Poco/DOM/DOMWriter.h>
-#include <Poco/DOM/NodeList.h>
 #include <sstream>
+#include <wx/filename.h>
 #include <wx/log.h>
+#include <wx/wfstream.h>
 
 using namespace Poco;
 using namespace Poco::XML;
 
 inline const XMLString FB2_NS = "http://www.gribuser.ru/xml/fictionbook/2.0";
 
-std::unique_ptr<document> fb2_parser::load(const wxString &path) const {
+std::unique_ptr<document> fb2_parser::load(const wxString& path) const {
 	wxFileInputStream input(path);
 	if (!input.IsOk()) {
 		return nullptr;
@@ -86,7 +86,7 @@ std::unique_ptr<document> fb2_parser::load(const wxString &path) const {
 						doc->title = wxString::FromUTF8(get_element_text(title_node));
 					}
 					Element* author_node = title_info->getChildElementNS(FB2_NS, "author");
-					if(author_node) {
+					if (author_node) {
 						Element* first_name_node = author_node->getChildElementNS(FB2_NS, "first-name");
 						if (first_name_node) {
 							doc->author = wxString::FromUTF8(get_element_text(first_name_node));

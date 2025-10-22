@@ -11,12 +11,12 @@
 #include "constants.hpp"
 #include <Poco/JSON/Object.h>
 #include <Poco/JSON/Parser.h>
+#include <sstream>
 #include <wx/filename.h>
 #include <wx/msgdlg.h>
 #include <wx/stdpaths.h>
 #include <wx/utils.h>
 #include <wx/webrequest.h>
-#include <sstream>
 
 void check_for_updates(bool silent) {
 	try {
