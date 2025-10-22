@@ -12,13 +12,19 @@
 
 class fb2_parser : public parser {
 public:
-	[[nodiscard]] wxString name() const override { return "FB2"; }
+	fb2_parser() = default;
+	~fb2_parser() = default;
+	fb2_parser(const fb2_parser&) = delete;
+	fb2_parser& operator=(const fb2_parser&) = delete;
+	fb2_parser(fb2_parser&&) = delete;
+	fb2_parser& operator=(fb2_parser&&) = delete;
+	[[nodiscard]] wxString name() const override { return "FB2 Books"; }
 	[[nodiscard]] std::span<const wxString> extensions() const override {
 		static const wxString exts[] = {"fb2"};
 		return exts;
 	}
-	[[nodiscard]] std::unique_ptr<document> load(const wxString &path) const override;
 	[[nodiscard]] parser_flags supported_flags() const override { return parser_flags::supports_sections; }
+	[[nodiscard]] std::unique_ptr<document> load(const wxString &path) const override;
 };
 
 REGISTER_PARSER(fb2_parser);

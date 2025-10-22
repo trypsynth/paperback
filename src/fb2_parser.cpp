@@ -51,25 +51,18 @@ std::unique_ptr<document> fb2_parser::load(const wxString &path) const {
 	if (!input.IsOk()) {
 		return nullptr;
 	}
-
 	const size_t size = input.GetSize();
 	std::string xml_content(size, 0);
 	input.Read(&xml_content[0], size);
-
 	const std::string closing_tag = "</FictionBook>";
 	const size_t closing_tag_pos = xml_content.rfind(closing_tag);
-
 	if (closing_tag_pos != std::string::npos) {
 		xml_content.resize(closing_tag_pos + closing_tag.length());
 	}
 	// If the tag isn't found, we'll try to parse the whole file, which may fail but is the best we can do.
-
 	if (xml_content.empty()) {
-
 		return nullptr;
 	}
-
-	// Remove <binary> tags and their content
 	try {
 		Poco::XML::DOMParser dom_parser;
 		std::istringstream iss_dom(xml_content);
