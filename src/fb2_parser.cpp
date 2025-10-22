@@ -26,8 +26,6 @@
 #include <sstream>
 #include <wx/log.h>
 
-REGISTER_PARSER(fb2_parser);
-
 inline const Poco::XML::XMLString FB2_NS = "http://www.gribuser.ru/xml/fictionbook/2.0";
 
 static std::string get_element_text(Poco::XML::Element* element) {
@@ -46,15 +44,6 @@ static std::string get_element_text(Poco::XML::Element* element) {
 		child = child->nextSibling();
 	}
 	return text;
-}
-
-wxString fb2_parser::name() const {
-	return "FB2";
-}
-
-std::span<const wxString> fb2_parser::extensions() const {
-	static const wxString exts[] = {"fb2"};
-	return exts;
 }
 
 std::unique_ptr<document> fb2_parser::load(const wxString &path) const {
@@ -142,25 +131,6 @@ std::unique_ptr<document> fb2_parser::load(const wxString &path) const {
 						}
 					}
 				}
-				Poco::XML::Element* doc_info = description->getChildElementNS(FB2_NS, "document-info");
-				if (doc_info) {
-					Poco::XML::Element* program_used_node = doc_info->getChildElementNS(FB2_NS, "program-used");
-					if (program_used_node) {
-						doc->metadata["Program Used"] = wxString::FromUTF8(get_element_text(program_used_node));
-					}
-					Poco::XML::Element* date_node = doc_info->getChildElementNS(FB2_NS, "date");
-					if (date_node) {
-						doc->metadata["Date"] = wxString::FromUTF8(get_element_text(date_node));
-					}
-					Poco::XML::Element* id_node = doc_info->getChildElementNS(FB2_NS, "id");
-					if (id_node) {
-						doc->metadata["ID"] = wxString::FromUTF8(get_element_text(id_node));
-					}
-					Poco::XML::Element* version_node = doc_info->getChildElementNS(FB2_NS, "version");
-					if (version_node) {
-						doc->metadata["Version"] = wxString::FromUTF8(get_element_text(version_node));
-					}
-				}
 			}
 		}
 	} catch (const Poco::Exception&) {
@@ -176,8 +146,4 @@ std::unique_ptr<document> fb2_parser::load(const wxString &path) const {
 	}
 
 	return doc;
-}
-
-parser_flags fb2_parser::supported_flags() const {
-	return parser_flags::supports_sections;
 }
