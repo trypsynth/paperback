@@ -31,6 +31,7 @@
 #include <wx/sizer.h>
 #include <wx/string.h>
 #include <wx/textctrl.h>
+#include <wx/textdlg.h>
 #include <wx/translation.h>
 #include <wx/utils.h>
 
@@ -354,7 +355,13 @@ void document_manager::go_to_previous_bookmark() {
 			break;
 		}
 	}
-	speak(wxString::Format(_("%s bookmark %d"), text_to_speak, bookmark_index + 1));
+	wxString announcement;
+	if (prev_bookmark.has_note()) {
+		announcement = wxString::Format(_("Bookmark %d: %s - %s"), bookmark_index + 1, prev_bookmark.note, text_to_speak);
+	} else {
+		announcement = wxString::Format(_("Bookmark %d: %s"), bookmark_index + 1, text_to_speak);
+	}
+	speak(announcement);
 }
 
 void document_manager::go_to_next_bookmark() {
@@ -386,7 +393,13 @@ void document_manager::go_to_next_bookmark() {
 			break;
 		}
 	}
-	speak(wxString::Format(_("%s bookmark %d"), text_to_speak, bookmark_index + 1));
+	wxString announcement;
+	if (next_bookmark.has_note()) {
+		announcement = wxString::Format(_("Bookmark %d: %s - %s"), bookmark_index + 1, next_bookmark.note, text_to_speak);
+	} else {
+		announcement = wxString::Format(_("Bookmark %d: %s"), bookmark_index + 1, text_to_speak);
+	}
+	speak(announcement);
 }
 
 void document_manager::go_to_previous_link() const {
@@ -537,6 +550,51 @@ void document_manager::toggle_bookmark() {
 	speak(was_bookmarked ? _("Bookmark removed") : _("Bookmarked"));
 }
 
+void document_manager::add_bookmark_with_note() {
+	const document_tab* tab = get_active_tab();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (tab == nullptr || text_ctrl == nullptr) {
+		return;
+	}
+	long selection_start{0};
+	long selection_end{0};
+	text_ctrl->GetSelection(&selection_start, &selection_end);
+	long bookmark_start, bookmark_end;
+	if (selection_end > selection_start) {
+		bookmark_start = selection_start;
+		bookmark_end = selection_end;
+	} else {
+		const long current_pos = text_ctrl->GetInsertionPoint();
+		bookmark_start = current_pos;
+		bookmark_end = current_pos;
+	}
+	std::vector<bookmark> bookmarks = config.get_bookmarks(tab->file_path);
+	bookmark existing_bookmark(bookmark_start, bookmark_end);
+	wxString existing_note;
+	bool bookmark_exists = false;
+	for (const auto& bm : bookmarks) {
+		if (bm.start == bookmark_start && bm.end == bookmark_end) {
+			bookmark_exists = true;
+			existing_note = bm.note;
+			break;
+		}
+	}
+	wxString prompt = bookmark_exists ? _("Edit bookmark note:") : _("Enter bookmark note:");
+	wxTextEntryDialog note_dialog(nullptr, prompt, _("Bookmark Note"), existing_note);
+	if (note_dialog.ShowModal() != wxID_OK) {
+		return;
+	}
+	wxString note = note_dialog.GetValue();
+	if (bookmark_exists) {
+		config.update_bookmark_note(tab->file_path, bookmark_start, bookmark_end, note);
+		speak(_("Bookmark note updated"));
+	} else {
+		config.add_bookmark(tab->file_path, bookmark_start, bookmark_end, note);
+		speak(_("Bookmarked with note"));
+	}
+	config.flush();
+}
+
 void document_manager::show_bookmark_dialog(wxWindow* parent) {
 	const document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
@@ -561,6 +619,7 @@ void document_manager::show_bookmark_dialog(wxWindow* parent) {
 	text_ctrl->SetInsertionPoint(pos);
 	text_ctrl->SetFocus();
 	wxString text_to_speak;
+	wxString note_to_speak;
 	for (const auto& bm : bookmarks) {
 		if (bm.start == pos) {
 			if (bm.is_whole_line()) {
@@ -570,10 +629,17 @@ void document_manager::show_bookmark_dialog(wxWindow* parent) {
 			} else {
 				text_to_speak = text_ctrl->GetRange(bm.start, bm.end);
 			}
+			note_to_speak = bm.note;
 			break;
 		}
 	}
-	speak(wxString::Format(_("%s bookmark"), text_to_speak));
+	wxString announcement;
+	if (!note_to_speak.IsEmpty()) {
+		announcement = wxString::Format(_("Bookmark: %s - %s"), note_to_speak, text_to_speak);
+	} else {
+		announcement = wxString::Format(_("Bookmark: %s"), text_to_speak);
+	}
+	speak(announcement);
 	update_ui();
 }
 

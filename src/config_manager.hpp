@@ -17,10 +17,14 @@
 struct bookmark {
 	long start;
 	long end;
+	wxString note;
 
-	bookmark(long s, long e) : start{s}, end{e} {}
-	bookmark() : start{0}, end{0} {}
+	bookmark(long s, long e, const wxString& n = wxEmptyString) : start{s}, end{e}, note{n} {}
+	bookmark() : start{0}, end{0}, note{wxEmptyString} {}
+
 	bool is_whole_line() const { return start == end; }
+	bool has_note() const { return !note.IsEmpty(); }
+
 	bool operator==(const bookmark& other) const {
 		return start == other.start && end == other.end;
 	}
@@ -78,9 +82,10 @@ public:
 	wxArrayString get_all_documents() const;
 	int get_config_version() const;
 	void set_config_version(int version);
-	void add_bookmark(const wxString& path, long start, long end);
+	void add_bookmark(const wxString& path, long start, long end, const wxString& note = wxEmptyString);
 	void remove_bookmark(const wxString& path, long start, long end);
-	void toggle_bookmark(const wxString& path, long start, long end);
+	void toggle_bookmark(const wxString& path, long start, long end, const wxString& note = wxEmptyString);
+	void update_bookmark_note(const wxString& path, long start, long end, const wxString& note);
 	std::vector<bookmark> get_bookmarks(const wxString& path) const;
 	void clear_bookmarks(const wxString& path);
 	bookmark get_next_bookmark(const wxString& path, long current_position) const;
@@ -102,4 +107,6 @@ private:
 	static wxString escape_document_path(const wxString& path);
 	void with_document_section(const wxString& path, const std::function<void()>& func) const;
 	void with_app_section(const std::function<void()>& func) const;
+	static wxString encode_note(const wxString& note);
+	static wxString decode_note(const wxString& encoded);
 };

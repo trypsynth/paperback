@@ -89,13 +89,16 @@ private:
 	long selected_position;
 	config_manager& config;
 	wxString file_path;
+	wxTextCtrl* text_ctrl;
 	wxButton* jump_button{nullptr};
 	wxButton* delete_button{nullptr};
+	wxButton* edit_note_button{nullptr};
 
 	void on_list_selection_changed(wxCommandEvent& event);
 	void on_ok(wxCommandEvent& event);
 	void on_key_down(wxKeyEvent&);
 	void on_delete(wxCommandEvent& event);
+	void on_edit_note(wxCommandEvent& event);
 };
 
 class document_info_dialog : public dialog {

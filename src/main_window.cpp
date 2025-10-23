@@ -117,6 +117,7 @@ wxMenu* main_window::create_go_menu() {
 		bookmarks_menu->Append(ID_PREVIOUS_BOOKMARK, _("Previous &bookmark\tShift+B"));
 		bookmarks_menu->Append(ID_NEXT_BOOKMARK, _("Next b&ookmark\tB"));
 		bookmarks_menu->Append(ID_TOGGLE_BOOKMARK, _("Toggle bookmark\tCtrl+Shift+B"));
+		bookmarks_menu->Append(ID_BOOKMARK_WITH_NOTE, _("Bookmark with &note\tCtrl+Shift+N"));
 		bookmarks_menu->Append(ID_JUMP_TO_BOOKMARK, _("Jump to bookmark...\tCtrl+B"));
 		menu->AppendSubMenu(bookmarks_menu, _("&Bookmarks"));
 		auto* links_menu = new wxMenu();
@@ -137,6 +138,7 @@ wxMenu* main_window::create_go_menu() {
 		menu->Append(ID_PREVIOUS_BOOKMARK, _("Previous &bookmark\tShift+B"));
 		menu->Append(ID_NEXT_BOOKMARK, _("Next b&ookmark\tB"));
 		menu->Append(ID_TOGGLE_BOOKMARK, _("Toggle bookmark\tCtrl+Shift+B"));
+		menu->Append(ID_BOOKMARK_WITH_NOTE, _("Bookmark with &note\tCtrl+Shift+N"));
 		menu->Append(ID_JUMP_TO_BOOKMARK, _("Jump to bookmark...\tCtrl+B"));
 		menu->AppendSeparator();
 		menu->Append(ID_PREVIOUS_LINK, _("Previous lin&k\tShift+K"));
@@ -199,6 +201,7 @@ void main_window::bind_events() {
 		{ID_PREVIOUS_BOOKMARK, &main_window::on_previous_bookmark},
 		{ID_NEXT_BOOKMARK, &main_window::on_next_bookmark},
 		{ID_TOGGLE_BOOKMARK, &main_window::on_toggle_bookmark},
+		{ID_BOOKMARK_WITH_NOTE, &main_window::on_bookmark_with_note},
 		{ID_JUMP_TO_BOOKMARK, &main_window::on_jump_to_bookmark},
 		{ID_PREVIOUS_LINK, &main_window::on_previous_link},
 		{ID_NEXT_LINK, &main_window::on_next_link},
@@ -277,6 +280,7 @@ void main_window::update_ui() {
 		ID_PREVIOUS_BOOKMARK,
 		ID_NEXT_BOOKMARK,
 		ID_TOGGLE_BOOKMARK,
+		ID_BOOKMARK_WITH_NOTE,
 		ID_JUMP_TO_BOOKMARK,
 		ID_PREVIOUS_LINK,
 		ID_NEXT_LINK,
@@ -480,6 +484,10 @@ void main_window::on_next_bookmark(wxCommandEvent&) {
 
 void main_window::on_toggle_bookmark(wxCommandEvent&) {
 	doc_manager->toggle_bookmark();
+}
+
+void main_window::on_bookmark_with_note(wxCommandEvent&) {
+	doc_manager->add_bookmark_with_note();
 }
 
 void main_window::on_jump_to_bookmark(wxCommandEvent&) {

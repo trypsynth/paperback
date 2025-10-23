@@ -75,6 +75,7 @@ public:
 	void go_to_next_link() const;
 	void activate_current_link() const;
 	void toggle_bookmark();
+	void add_bookmark_with_note();
 	void show_bookmark_dialog(wxWindow* parent);
 	void show_table_of_contents(wxWindow* parent) const;
 	void show_document_info(wxWindow* parent) const;

@@ -31,6 +31,7 @@
 #include <wx/stattext.h>
 #include <wx/string.h>
 #include <wx/textctrl.h>
+#include <wx/textdlg.h>
 #include <wx/translation.h>
 #include <wx/window.h>
 
@@ -190,27 +191,33 @@ void all_documents_dialog::populate_document_list() {
 	}
 }
 
-bookmark_dialog::bookmark_dialog(wxWindow* parent, const std::vector<bookmark>& bookmarks, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos) : dialog(parent, _("Jump to Bookmark"), dialog_button_config::ok_cancel), bookmark_positions(bookmarks), selected_position{-1}, config(config), file_path(file_path) {
+bookmark_dialog::bookmark_dialog(wxWindow* parent, const std::vector<bookmark>& bookmarks, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos) : dialog(parent, _("Jump to Bookmark"), dialog_button_config::ok_cancel), bookmark_positions(bookmarks), selected_position{-1}, config(config), file_path(file_path), text_ctrl(text_ctrl) {
 	bookmark_list = new wxListBox(this, wxID_ANY);
 	int closest_index = -1;
 	long closest_distance = LONG_MAX;
-	for (size_t i = 0; i < bookmarks.size(); ++i) {
-		const auto& bm = bookmarks[i];
+	for (std::size_t i = 0; i < bookmarks.size(); ++i) {
+		const bookmark& bm = bookmarks[i];
 		wxString display_text;
+		wxString text_snippet;
 		if (bm.is_whole_line()) {
-			long line{0};
+			long line = 0;
 			text_ctrl->PositionToXY(bm.start, nullptr, &line);
-			display_text = text_ctrl->GetLineText(line);
-			display_text = display_text.Strip(wxString::both);
-			if (display_text.IsEmpty()) {
-				display_text = _("blank");
+			text_snippet = text_ctrl->GetLineText(line);
+			text_snippet = text_snippet.Strip(wxString::both);
+			if (text_snippet.IsEmpty()) {
+				text_snippet = _("blank");
 			}
 		} else {
-			display_text = text_ctrl->GetRange(bm.start, bm.end);
-			display_text = display_text.Strip(wxString::both);
-			if (display_text.IsEmpty()) {
-				display_text = _("blank");
+			text_snippet = text_ctrl->GetRange(bm.start, bm.end);
+			text_snippet = text_snippet.Strip(wxString::both);
+			if (text_snippet.IsEmpty()) {
+				text_snippet = _("blank");
 			}
+		}
+		if (bm.has_note()) {
+			display_text = wxString::Format("%s - %s", bm.note, text_snippet);
+		} else {
+			display_text = text_snippet;
 		}
 		bookmark_list->Append(display_text);
 		if (current_pos >= 0) {
@@ -224,9 +231,11 @@ bookmark_dialog::bookmark_dialog(wxWindow* parent, const std::vector<bookmark>& 
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	content_sizer->Add(bookmark_list, 1, wxEXPAND | wxALL, DIALOG_PADDING);
 	auto* button_sizer = new wxStdDialogButtonSizer();
+	edit_note_button = new wxButton(this, wxID_EDIT, _("&Edit Note"));
 	delete_button = new wxButton(this, wxID_DELETE, _("&Delete"));
 	jump_button = new wxButton(this, wxID_OK, _("&Jump"));
 	auto* cancel_button = new wxButton(this, wxID_CANCEL, _("&Cancel"));
+	button_sizer->AddButton(edit_note_button);
 	button_sizer->AddButton(delete_button);
 	button_sizer->AddButton(jump_button);
 	button_sizer->AddButton(cancel_button);
@@ -238,16 +247,19 @@ bookmark_dialog::bookmark_dialog(wxWindow* parent, const std::vector<bookmark>& 
 	jump_button->SetDefault();
 	jump_button->Enable(false);
 	delete_button->Enable(false);
+	edit_note_button->Enable(false);
 	if (closest_index >= 0) {
 		bookmark_list->SetSelection(closest_index);
 		selected_position = bookmarks[closest_index].start;
 		jump_button->Enable(true);
 		delete_button->Enable(true);
+		edit_note_button->Enable(true);
 	}
 	bookmark_list->Bind(wxEVT_LISTBOX, &bookmark_dialog::on_list_selection_changed, this);
 	bookmark_list->Bind(wxEVT_KEY_DOWN, &bookmark_dialog::on_key_down, this);
 	Bind(wxEVT_BUTTON, &bookmark_dialog::on_ok, this, wxID_OK);
 	Bind(wxEVT_BUTTON, &bookmark_dialog::on_delete, this, wxID_DELETE);
+	Bind(wxEVT_BUTTON, &bookmark_dialog::on_edit_note, this, wxID_EDIT);
 }
 
 void bookmark_dialog::on_list_selection_changed(wxCommandEvent& /*event*/) {
@@ -256,10 +268,12 @@ void bookmark_dialog::on_list_selection_changed(wxCommandEvent& /*event*/) {
 		selected_position = bookmark_positions[static_cast<std::size_t>(selection)].start;
 		jump_button->Enable(true);
 		delete_button->Enable(true);
+		edit_note_button->Enable(true);
 	} else {
 		selected_position = -1;
 		jump_button->Enable(false);
 		delete_button->Enable(false);
+		edit_note_button->Enable(false);
 	}
 }
 
@@ -299,6 +313,45 @@ void bookmark_dialog::on_delete(wxCommandEvent&) {
 	// Manually trigger the selection event to update the button states
 	wxCommandEvent empty_event(wxEVT_LISTBOX, GetId());
 	on_list_selection_changed(empty_event);
+}
+
+void bookmark_dialog::on_edit_note(wxCommandEvent&) {
+	const int selection = bookmark_list->GetSelection();
+	if (selection < 0 || static_cast<size_t>(selection) >= bookmark_positions.size()) {
+		return;
+	}
+	bookmark& selected_bookmark = bookmark_positions[static_cast<std::size_t>(selection)];
+	wxTextEntryDialog note_dialog(this, _("Edit bookmark note:"), _("Bookmark Note"), selected_bookmark.note);
+	if (note_dialog.ShowModal() != wxID_OK) {
+		return;
+	}
+	wxString new_note = note_dialog.GetValue();
+	config.update_bookmark_note(file_path, selected_bookmark.start, selected_bookmark.end, new_note);
+	config.flush();
+	selected_bookmark.note = new_note;
+	wxString text_snippet;
+	if (selected_bookmark.is_whole_line()) {
+		long line = 0;
+		text_ctrl->PositionToXY(selected_bookmark.start, nullptr, &line);
+		text_snippet = text_ctrl->GetLineText(line);
+		text_snippet = text_snippet.Strip(wxString::both);
+		if (text_snippet.IsEmpty()) {
+			text_snippet = _("blank");
+		}
+	} else {
+		text_snippet = text_ctrl->GetRange(selected_bookmark.start, selected_bookmark.end);
+		text_snippet = text_snippet.Strip(wxString::both);
+		if (text_snippet.IsEmpty()) {
+			text_snippet = _("blank");
+		}
+	}
+	wxString display_text;
+	if (selected_bookmark.has_note()) {
+		display_text = wxString::Format("%s - %s", selected_bookmark.note, text_snippet);
+	} else {
+		display_text = text_snippet;
+	}
+	bookmark_list->SetString(static_cast<unsigned int>(selection), display_text);
 }
 
 document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc) : dialog(parent, _("Document Info"), dialog_button_config::ok_only) {

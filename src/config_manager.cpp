@@ -10,6 +10,7 @@
 #include "config_manager.hpp"
 #include "constants.hpp"
 #include <Poco/Base64Encoder.h>
+#include <Poco/Base64Decoder.h>
 #include <Poco/DigestEngine.h>
 #include <Poco/SHA1Engine.h>
 #include <algorithm>
@@ -453,12 +454,12 @@ wxArrayString config_manager::get_all_documents() const {
 	return result;
 }
 
-void config_manager::add_bookmark(const wxString& path, long start, long end) {
+void config_manager::add_bookmark(const wxString& path, long start, long end, const wxString& note) {
 	if (!config) {
 		return;
 	}
 	std::vector<bookmark> bookmarks = get_bookmarks(path);
-	bookmark new_bookmark(start, end);
+	bookmark new_bookmark(start, end, note);
 	bool exists = false;
 	for (const auto& bm : bookmarks) {
 		if (bm == new_bookmark) {
@@ -473,12 +474,14 @@ void config_manager::add_bookmark(const wxString& path, long start, long end) {
 	std::sort(bookmarks.begin(), bookmarks.end(), [](const bookmark& a, const bookmark& b) {
 		return a.start < b.start;
 	});
-	std::vector<wxString> parts;
-	parts.reserve(bookmarks.size());
-	for (const auto& b : bookmarks) {
-		parts.emplace_back(wxString::Format("%ld:%ld", b.start, b.end));
+	wxString bookmark_string;
+	for (size_t i = 0; i < bookmarks.size(); ++i) {
+		if (i > 0) {
+			bookmark_string += ",";
+		}
+		const wxString encoded_note = encode_note(bookmarks[i].note);
+		bookmark_string += wxString::Format("%ld:%ld:%s", bookmarks[i].start, bookmarks[i].end, encoded_note);
 	}
-	wxString bookmark_string = wxJoin(parts, ',');
 	with_document_section(path, [this, path, bookmark_string]() {
 		config->Write("path", path);
 		config->Write("bookmarks", bookmark_string);
@@ -496,12 +499,14 @@ void config_manager::remove_bookmark(const wxString& path, long start, long end)
 		return;
 	}
 	bookmarks.erase(it);
-	std::vector<wxString> parts;
-	parts.reserve(bookmarks.size());
-	for (const auto& b : bookmarks) {
-		parts.emplace_back(wxString::Format("%ld:%ld", b.start, b.end));
+	wxString bookmark_string;
+	for (size_t i = 0; i < bookmarks.size(); ++i) {
+		if (i > 0) {
+			bookmark_string += ",";
+		}
+		const wxString encoded_note = encode_note(bookmarks[i].note);
+		bookmark_string += wxString::Format("%ld:%ld:%s", bookmarks[i].start, bookmarks[i].end, encoded_note);
 	}
-	wxString bookmark_string = wxJoin(parts, ',');
 	with_document_section(path, [this, path, bookmark_string]() {
 		config->Write("path", path);
 		if (bookmark_string.IsEmpty()) {
@@ -512,7 +517,7 @@ void config_manager::remove_bookmark(const wxString& path, long start, long end)
 	});
 }
 
-void config_manager::toggle_bookmark(const wxString& path, long start, long end) {
+void config_manager::toggle_bookmark(const wxString& path, long start, long end, const wxString& note) {
 	std::vector<bookmark> bookmarks = get_bookmarks(path);
 	bookmark to_toggle(start, end);
 	bool exists = false;
@@ -525,8 +530,38 @@ void config_manager::toggle_bookmark(const wxString& path, long start, long end)
 	if (exists) {
 		remove_bookmark(path, start, end);
 	} else {
-		add_bookmark(path, start, end);
+		add_bookmark(path, start, end, note);
 	}
+}
+
+void config_manager::update_bookmark_note(const wxString& path, long start, long end, const wxString& note) {
+	if (!config) {
+		return;
+	}
+	std::vector<bookmark> bookmarks = get_bookmarks(path);
+	bool found = false;
+	for (auto& bm : bookmarks) {
+		if (bm.start == start && bm.end == end) {
+			bm.note = note;
+			found = true;
+			break;
+		}
+	}
+	if (!found) {
+		return;
+	}
+	wxString bookmark_string;
+	for (size_t i = 0; i < bookmarks.size(); ++i) {
+		if (i > 0) {
+			bookmark_string += ",";
+		}
+		const wxString encoded_note = encode_note(bookmarks[i].note);
+		bookmark_string += wxString::Format("%ld:%ld:%s", bookmarks[i].start, bookmarks[i].end, encoded_note);
+	}
+	with_document_section(path, [this, path, bookmark_string]() {
+		config->Write("path", path);
+		config->Write("bookmarks", bookmark_string);
+	});
 }
 
 std::vector<bookmark> config_manager::get_bookmarks(const wxString& path) const {
@@ -553,10 +588,15 @@ std::vector<bookmark> config_manager::get_bookmarks(const wxString& path) const 
 				wxString start_str = pair_tokenizer.GetNextToken();
 				if (pair_tokenizer.HasMoreTokens()) {
 					wxString end_str = pair_tokenizer.GetNextToken();
+					wxString note_str;
+					if (pair_tokenizer.HasMoreTokens()) {
+						note_str = pair_tokenizer.GetNextToken();
+					}
 					long start{0};
 					long end{0};
 					if (start_str.ToLong(&start) && end_str.ToLong(&end)) {
-						result.push_back(bookmark(start, end));
+						wxString decoded_note = decode_note(note_str);
+						result.push_back(bookmark(start, end, decoded_note));
 					}
 				}
 			}
@@ -564,7 +604,7 @@ std::vector<bookmark> config_manager::get_bookmarks(const wxString& path) const 
 			// Backward compatibility. This shouldn't happen after migration, but handle it gracefully anyway.
 			long position = 0;
 			if (token.ToLong(&position)) {
-				result.push_back(bookmark(position, position));
+				result.push_back(bookmark(position, position, wxEmptyString));
 			}
 		}
 	}
@@ -740,14 +780,19 @@ bool config_manager::migrate_config() {
 								if (!first) {
 									new_bookmarks += ",";
 								}
-								new_bookmarks += wxString::Format("%ld:%ld", position, position);
+								new_bookmarks += wxString::Format("%ld:%ld:", position, position);
 								first = false;
 							}
 						} else {
+							int colon_count = token.Freq(':');
 							if (!first) {
 								new_bookmarks += ",";
 							}
-							new_bookmarks += token;
+							if (colon_count == 1) {
+								new_bookmarks += token + ":";
+							} else {
+								new_bookmarks += token;
+							}
 							first = false;
 						}
 					}
@@ -844,4 +889,27 @@ void config_manager::with_app_section(const std::function<void()>& func) const {
 	config->SetPath("/app");
 	func();
 	config->SetPath("/");
+}
+
+wxString config_manager::encode_note(const wxString& note) {
+	if (note.IsEmpty()) {
+		return wxEmptyString;
+	}
+	std::ostringstream b64_stream;
+	Poco::Base64Encoder encoder(b64_stream);
+	const std::string note_str = note.ToStdString();
+	encoder.write(note_str.data(), static_cast<std::streamsize>(note_str.size()));
+	encoder.close();
+	return wxString(b64_stream.str());
+}
+
+wxString config_manager::decode_note(const wxString& encoded) {
+	if (encoded.IsEmpty()) {
+		return wxEmptyString;
+	}
+	std::istringstream b64_stream(encoded.ToStdString());
+	Poco::Base64Decoder decoder(b64_stream);
+	std::string decoded_str;
+	std::getline(decoder, decoded_str, '\0');
+	return wxString::FromUTF8(decoded_str.c_str());
 }
