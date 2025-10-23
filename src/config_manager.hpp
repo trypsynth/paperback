@@ -63,6 +63,8 @@ public:
 	void set_minimize_to_tray(bool minimize);
 	bool get_compact_go_menu() const;
 	void set_compact_go_menu(bool compact);
+	[[nodiscard]] bool get_navigation_wrap() const;
+	void set_navigation_wrap(bool navigation_wrap);
 	bool get_check_for_updates_on_startup() const;
 	void set_check_for_updates_on_startup(bool check);
 	wxString get_language() const;

@@ -238,6 +238,20 @@ void config_manager::set_compact_go_menu(bool compact) {
 	});
 }
 
+bool config_manager::get_navigation_wrap() const {
+	bool result = false;
+	with_app_section([this, &result]() {
+		result = config->ReadBool("navigation_wrap", false);
+	});
+	return result;
+}
+
+void config_manager::set_navigation_wrap(bool navigation_wrap) {
+	with_app_section([this, navigation_wrap]() {
+		config->Write("navigation_wrap", navigation_wrap);
+	});
+}
+
 bool config_manager::get_check_for_updates_on_startup() const {
 	bool result = true;
 	with_app_section([this, &result]() {
@@ -843,6 +857,9 @@ void config_manager::load_defaults() {
 	}
 	if (!config->HasEntry("compact_go_menu")) {
 		config->Write("compact_go_menu", true);
+	}
+	if (!config->HasEntry("navigation_wrap")) {
+		config->Write("navigation_wrap", false);
 	}
 	if (!config->HasEntry("check_for_updates_on_startup")) {
 		config->Write("check_for_updates_on_startup", true);

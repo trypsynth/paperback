@@ -72,9 +72,9 @@ void document_buffer::clear() {
 	markers.clear();
 }
 
-int document_buffer::next_marker_index(size_t position, marker_type type) const noexcept {
+int document_buffer::next_marker_index(long position, marker_type type) const noexcept {
 	for (size_t i = 0; i < markers.size(); ++i) {
-		if (markers[i].pos > position && markers[i].type == type) {
+		if (static_cast<long>(markers[i].pos) > position && markers[i].type == type) {
 			return static_cast<int>(i);
 		}
 	}
@@ -114,10 +114,10 @@ int document_buffer::current_marker_index(size_t position, marker_type type) con
 	return -1;
 }
 
-int document_buffer::next_heading_marker_index(size_t position, int level) const {
+int document_buffer::next_heading_marker_index(long position, int level) const {
 	const auto heading_markers = get_heading_markers();
 	for (size_t i = 0; i < heading_markers.size(); ++i) {
-		if (heading_markers[i]->pos > position) {
+		if (static_cast<long>(heading_markers[i]->pos) > position) {
 			if (level == -1 || heading_markers[i]->level == level) {
 				return static_cast<int>(i);
 			}

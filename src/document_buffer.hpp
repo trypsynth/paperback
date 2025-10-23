@@ -57,10 +57,10 @@ public:
 	void add_link(size_t pos, const wxString& text, const wxString& ref);
 	void add_marker(size_t pos, marker_type type, const wxString& text = wxString(), const wxString& ref = wxString(), int level = 0);
 	void clear();
-	[[nodiscard]] int next_marker_index(size_t position, marker_type type) const noexcept;
+	[[nodiscard]] int next_marker_index(long position, marker_type type) const noexcept;
 	[[nodiscard]] int previous_marker_index(size_t position, marker_type type) const noexcept;
 	[[nodiscard]] int current_marker_index(size_t position, marker_type type) const noexcept;
-	[[nodiscard]] int next_heading_marker_index(size_t position, int level = -1) const;
+	[[nodiscard]] int next_heading_marker_index(long position, int level = -1) const;
 	[[nodiscard]] int previous_heading_marker_index(size_t position, int level = -1) const;
 	[[nodiscard]] size_t marker_position(int marker_index) const noexcept;
 	[[nodiscard]] const marker* get_marker(int marker_index) const noexcept;

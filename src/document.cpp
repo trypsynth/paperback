@@ -18,7 +18,7 @@
 #include <vector>
 #include <wx/tokenzr.h>
 
-int document::next_section_index(size_t position) const noexcept {
+int document::next_section_index(long position) const noexcept {
 	return buffer.next_marker_index(position, marker_type::section_break);
 }
 
@@ -34,7 +34,7 @@ size_t document::offset_for_section(int section_index) const noexcept {
 	return buffer.marker_position(section_index);
 }
 
-int document::next_page_index(size_t position) const noexcept {
+int document::next_page_index(long position) const noexcept {
 	return buffer.next_marker_index(position, marker_type::page_break);
 }
 
@@ -73,7 +73,7 @@ int document::find_closest_toc_offset(size_t position) const noexcept {
 	return best_offset;
 }
 
-int document::next_heading_index(size_t position, int level) const noexcept {
+int document::next_heading_index(long position, int level) const noexcept {
 	return buffer.next_heading_marker_index(position, level);
 }
 
