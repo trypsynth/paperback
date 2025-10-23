@@ -1,4 +1,4 @@
 ---
 layout: default.liquid
 ---
-## Paperback!
+# {{ page.title }}
