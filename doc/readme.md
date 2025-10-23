@@ -106,6 +106,12 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Nikola Jović: Serbian translation
 
 ## Changelog
+### Version 0.6
+* Fixed whitespace handling at the beginning of pre tags in both HTML and XHTML documents.
+* HTML inside Markdown code blocks will now be rendered properly. [#79](https://github.com/trypsynth/paperback/issues/79).
+* Numpad delete now works to remove documents from the tab bar in addition to normal delete.
+* The installer now includes an option to view the readme in your browser after installation.
+
 ### Version 0.5
 * Added Microsoft Word document support! [#27](https://github.com/trypsynth/paperback/issues/27).
 * Added support for PowerPoint presentations! [#25](https://github.com/trypsynth/paperback/issues/25).
