@@ -17,12 +17,6 @@ jobs:
           wget https://github.com/cobalt-org/cobalt.rs/releases/download/v0.20.0/cobalt-v0.20.0-x86_64-unknown-linux-musl.tar.gz
           tar -xzf cobalt-*.tar.gz
           sudo mv cobalt /usr/local/bin/
-      - name: Install Pandoc
-        uses: pandoc/actions/setup@v3
-        with:
-          version: 'latest'
-      - name: Convert README into docs page
-        run: pandoc doc/readme.md -o web/docs/readme.md --defaults=pandoc.yaml
       - name: Build Cobalt site
         run: cobalt build
       - name: Deploy to GitHub Pages
