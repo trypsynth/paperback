@@ -75,7 +75,7 @@ private:
 
 class bookmark_dialog : public dialog {
 public:
-	bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos = -1);
+	bookmark_dialog(wxWindow* parent, const std::vector<bookmark>& bookmarks, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos = -1);
 	~bookmark_dialog() = default;
 	bookmark_dialog(const bookmark_dialog&) = delete;
 	bookmark_dialog& operator=(const bookmark_dialog&) = delete;
@@ -85,7 +85,7 @@ public:
 
 private:
 	wxListBox* bookmark_list{nullptr};
-	wxArrayLong bookmark_positions;
+	std::vector<bookmark> bookmark_positions;
 	long selected_position;
 	config_manager& config;
 	wxString file_path;

@@ -10,8 +10,21 @@
 #pragma once
 #include <functional>
 #include <memory>
+#include <vector>
 #include <wx/fileconf.h>
 #include <wx/string.h>
+
+struct bookmark {
+	long start;
+	long end;
+
+	bookmark(long s, long e) : start{s}, end{e} {}
+	bookmark() : start{0}, end{0} {}
+	bool is_whole_line() const { return start == end; }
+	bool operator==(const bookmark& other) const {
+		return start == other.start && end == other.end;
+	}
+};
 
 class config_manager {
 public:
@@ -65,14 +78,14 @@ public:
 	wxArrayString get_all_documents() const;
 	int get_config_version() const;
 	void set_config_version(int version);
-	void add_bookmark(const wxString& path, long position);
-	void remove_bookmark(const wxString& path, long position);
-	void toggle_bookmark(const wxString& path, long position);
-	wxArrayLong get_bookmarks(const wxString& path) const;
+	void add_bookmark(const wxString& path, long start, long end);
+	void remove_bookmark(const wxString& path, long start, long end);
+	void toggle_bookmark(const wxString& path, long start, long end);
+	std::vector<bookmark> get_bookmarks(const wxString& path) const;
 	void clear_bookmarks(const wxString& path);
-	long get_next_bookmark(const wxString& path, long current_position) const;
-	long get_previous_bookmark(const wxString& path, long current_position) const;
-	long get_closest_bookmark(const wxString& path, long current_position) const;
+	bookmark get_next_bookmark(const wxString& path, long current_position) const;
+	bookmark get_previous_bookmark(const wxString& path, long current_position) const;
+	bookmark get_closest_bookmark(const wxString& path, long current_position) const;
 	void set_document_format(const wxString& path, const wxString& format);
 	wxString get_document_format(const wxString& path) const;
 	bool needs_migration() const;

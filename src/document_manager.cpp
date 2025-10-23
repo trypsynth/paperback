@@ -332,18 +332,29 @@ void document_manager::go_to_previous_bookmark() {
 		return;
 	}
 	const long current_pos = text_ctrl->GetInsertionPoint();
-	const long prev_pos = config.get_previous_bookmark(tab->file_path, current_pos);
-	if (prev_pos == -1) {
+	const bookmark prev_bookmark = config.get_previous_bookmark(tab->file_path, current_pos);
+	if (prev_bookmark.start == -1) {
 		speak(_("No previous bookmark"));
 		return;
 	}
-	text_ctrl->SetInsertionPoint(prev_pos);
-	long line{0};
-	text_ctrl->PositionToXY(prev_pos, nullptr, &line);
-	const wxString current_line = text_ctrl->GetLineText(line);
-	const wxArrayLong bookmarks = config.get_bookmarks(tab->file_path);
-	const int bookmark_index = bookmarks.Index(prev_pos);
-	speak(wxString::Format(_("Bookmark %d: %s"), bookmark_index + 1, current_line));
+	text_ctrl->SetInsertionPoint(prev_bookmark.start);
+	wxString text_to_speak;
+	if (prev_bookmark.is_whole_line()) {
+		long line{0};
+		text_ctrl->PositionToXY(prev_bookmark.start, nullptr, &line);
+		text_to_speak = text_ctrl->GetLineText(line);
+	} else {
+		text_to_speak = text_ctrl->GetRange(prev_bookmark.start, prev_bookmark.end);
+	}
+	std::vector<bookmark> bookmarks = config.get_bookmarks(tab->file_path);
+	int bookmark_index = 0;
+	for (size_t i = 0; i < bookmarks.size(); ++i) {
+		if (bookmarks[i] == prev_bookmark) {
+			bookmark_index = static_cast<int>(i);
+			break;
+		}
+	}
+	speak(wxString::Format(_("Bookmark %d: %s"), bookmark_index + 1, text_to_speak));
 }
 
 void document_manager::go_to_next_bookmark() {
@@ -353,18 +364,29 @@ void document_manager::go_to_next_bookmark() {
 		return;
 	}
 	const long current_pos = text_ctrl->GetInsertionPoint();
-	const long next_pos = config.get_next_bookmark(tab->file_path, current_pos);
-	if (next_pos == -1) {
+	const bookmark next_bookmark = config.get_next_bookmark(tab->file_path, current_pos);
+	if (next_bookmark.start == -1) {
 		speak(_("No next bookmark"));
 		return;
 	}
-	text_ctrl->SetInsertionPoint(next_pos);
-	long line{0};
-	text_ctrl->PositionToXY(next_pos, nullptr, &line);
-	const wxString current_line = text_ctrl->GetLineText(line);
-	const wxArrayLong bookmarks = config.get_bookmarks(tab->file_path);
-	const int bookmark_index = bookmarks.Index(next_pos);
-	speak(wxString::Format(_("Bookmark %d: %s"), bookmark_index + 1, current_line));
+	text_ctrl->SetInsertionPoint(next_bookmark.start);
+	wxString text_to_speak;
+	if (next_bookmark.is_whole_line()) {
+		long line{0};
+		text_ctrl->PositionToXY(next_bookmark.start, nullptr, &line);
+		text_to_speak = text_ctrl->GetLineText(line);
+	} else {
+		text_to_speak = text_ctrl->GetRange(next_bookmark.start, next_bookmark.end);
+	}
+	std::vector<bookmark> bookmarks = config.get_bookmarks(tab->file_path);
+	int bookmark_index = 0;
+	for (size_t i = 0; i < bookmarks.size(); ++i) {
+		if (bookmarks[i] == next_bookmark) {
+			bookmark_index = static_cast<int>(i);
+			break;
+		}
+	}
+	speak(wxString::Format(_("Bookmark %d: %s"), bookmark_index + 1, text_to_speak));
 }
 
 void document_manager::go_to_previous_link() const {
@@ -489,10 +511,28 @@ void document_manager::toggle_bookmark() {
 	if (tab == nullptr || text_ctrl == nullptr) {
 		return;
 	}
-	const long current_pos = text_ctrl->GetInsertionPoint();
-	const wxArrayLong bookmarks = config.get_bookmarks(tab->file_path);
-	const bool was_bookmarked = bookmarks.Index(current_pos) != wxNOT_FOUND;
-	config.toggle_bookmark(tab->file_path, current_pos);
+	long selection_start = 0;
+	long selection_end = 0;
+	text_ctrl->GetSelection(&selection_start, &selection_end);
+	long bookmark_start, bookmark_end;
+	if (selection_end > selection_start) {
+		bookmark_start = selection_start;
+		bookmark_end = selection_end;
+	} else {
+		const long current_pos = text_ctrl->GetInsertionPoint();
+		bookmark_start = current_pos;
+		bookmark_end = current_pos;
+	}
+	std::vector<bookmark> bookmarks = config.get_bookmarks(tab->file_path);
+	bookmark to_toggle(bookmark_start, bookmark_end);
+	bool was_bookmarked = false;
+	for (const auto& bm : bookmarks) {
+		if (bm == to_toggle) {
+			was_bookmarked = true;
+			break;
+		}
+	}
+	config.toggle_bookmark(tab->file_path, bookmark_start, bookmark_end);
 	config.flush();
 	speak(was_bookmarked ? _("Bookmark removed") : _("Bookmarked"));
 }
@@ -503,8 +543,8 @@ void document_manager::show_bookmark_dialog(wxWindow* parent) {
 	if (tab == nullptr || text_ctrl == nullptr) {
 		return;
 	}
-	const wxArrayLong bookmarks = config.get_bookmarks(tab->file_path);
-	if (bookmarks.IsEmpty()) {
+	const std::vector<bookmark> bookmarks = config.get_bookmarks(tab->file_path);
+	if (bookmarks.empty()) {
 		speak(_("No bookmarks"));
 		return;
 	}
@@ -523,10 +563,20 @@ void document_manager::show_bookmark_dialog(wxWindow* parent) {
 
 	text_ctrl->SetInsertionPoint(pos);
 	text_ctrl->SetFocus();
-	long line{0};
-	text_ctrl->PositionToXY(pos, nullptr, &line);
-	const wxString current_line = text_ctrl->GetLineText(line);
-	speak(wxString::Format(_("Bookmark: %s"), current_line));
+	wxString text_to_speak;
+	for (const auto& bm : bookmarks) {
+		if (bm.start == pos) {
+			if (bm.is_whole_line()) {
+				long line{0};
+				text_ctrl->PositionToXY(pos, nullptr, &line);
+				text_to_speak = text_ctrl->GetLineText(line);
+			} else {
+				text_to_speak = text_ctrl->GetRange(bm.start, bm.end);
+			}
+			break;
+		}
+	}
+	speak(wxString::Format(_("Bookmark: %s"), text_to_speak));
 	update_ui();
 }
 

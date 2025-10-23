@@ -20,14 +20,19 @@ inline constexpr int MAX_FIND_HISTORY_SIZE = 10;
 inline constexpr int MAX_HEADING_LEVELS = 6;
 inline constexpr int DEFAULT_RECENT_DOCUMENTS_TO_SHOW = 25;
 inline constexpr int MAX_RECENT_DOCUMENTS_TO_SHOW = 100;
-inline constexpr int CONFIG_VERSION_CURRENT = 1;
-inline constexpr int CONFIG_VERSION_LEGACY = 0;
 inline const wxString IPC_SERVICE = "paperback_ipc_service";
 inline const wxString IPC_TOPIC_OPEN_FILE = "open_file";
 inline const wxString IPC_COMMAND_ACTIVATE = "ACTIVATE";
 inline const wxString IPC_HOST_LOCALHOST = "localhost";
 inline const wxString SINGLE_INSTANCE_NAME = "paperback_running";
 inline constexpr int DIALOG_PADDING = 10;
+
+enum config_version {
+	CONFIG_VERSION_LEGACY = 0,
+	CONFIG_VERSION_1 = 1,
+	CONFIG_VERSION_2 = 2,
+	CONFIG_VERSION_CURRENT = CONFIG_VERSION_2
+};
 
 // Main menu constants.
 enum {
