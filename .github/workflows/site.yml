@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install Cobalt
         run: |
-          wget https://github.com/cobalt-org/cobalt.rs/releases/download/v0.20.0/cobalt-v0.20.0-x86_64-unknown-linux-musl.tar.gz
+          wget https://github.com/cobalt-org/cobalt.rs/releases/download/v0.20.0/cobalt-v0.20.0-x86_64-unknown-linux-gnu.tar.gz
           tar -xzf cobalt-*.tar.gz
           sudo mv cobalt /usr/local/bin/
       - name: Build Cobalt site
