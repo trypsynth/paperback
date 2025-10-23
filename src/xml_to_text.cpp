@@ -10,9 +10,11 @@
 
 #include "xml_to_text.hpp"
 #include "utils.hpp"
+#include <Poco/AutoPtr.h>
 #include <Poco/DOM/DOMParser.h>
 #include <Poco/DOM/Element.h>
 #include <Poco/DOM/Node.h>
+#include <Poco/DOM/NodeList.h>
 #include <Poco/DOM/Text.h>
 #include <Poco/Exception.h>
 #include <Poco/SAX/InputSource.h>
@@ -93,9 +95,29 @@ void xml_to_text::process_node(Node* node) {
 			section_offsets.push_back(get_current_text_position());
 		}
 		if (tag_name == "table") {
+			finalize_current_line();
 			std::string table_html_content = extract_table_text(node);
-			tables.push_back({get_current_text_position(), "[Table]", table_html_content});
-			current_line += "[Table]";
+			std::string placeholder_text = "table: ";
+			auto* table_element = dynamic_cast<Element*>(node);
+			const std::string ns = table_element->namespaceURI();
+	Poco::AutoPtr<NodeList> rows = table_element->getElementsByTagNameNS(ns, "tr");
+			if (rows && rows->length() > 0) {
+				auto* first_row_element = dynamic_cast<Element*>(rows->item(0));
+				Node* cell = first_row_element->firstChild();
+				while (cell) {
+					if (cell->nodeType() == Node::ELEMENT_NODE) {
+						auto* cell_element = dynamic_cast<Element*>(cell);
+						const std::string cell_name = cell_element->localName();
+						if (cell_name == "td" || cell_name == "th") {
+							placeholder_text += get_element_text(cell_element) + " ";
+						}
+					}
+					cell = cell->nextSibling();
+				}
+			}
+			tables.push_back({get_current_text_position(), trim_string(placeholder_text), table_html_content});
+			current_line += placeholder_text;
+			skip_children = true;
 		} else if (tag_name == "a" && element->hasAttributeNS("", "href")) {
 			const std::string href = element->getAttributeNS("", "href");
 			const std::string link_text = get_element_text(element);

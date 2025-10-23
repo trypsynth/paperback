@@ -36,6 +36,8 @@ private:
 	static void process_hyperlink(Poco::XML::Element* element, wxString& text, document* doc, const std::map<std::string, std::string>& rels, size_t paragraph_start_offset);
 	static int get_heading_level(Poco::XML::Element* pr_element);
 	static std::string get_run_text(Poco::XML::Element* prun_element);
+	static std::pair<wxString, wxString> process_table(Poco::XML::Element* table_element);
+	static wxString get_cell_text(Poco::XML::Element* cell_element);
 	static std::string parse_hyperlink_instruction(const std::string& instruction);
 };
 

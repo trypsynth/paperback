@@ -130,14 +130,80 @@ void docx_parser::traverse(Node* node, wxString& text, std::vector<heading_info>
 		}
 		if (local_name == "p") {
 			process_paragraph(element, text, headings, doc, rels);
-			return; // process_paragraph handles its children
-		}
+			return; 
+		} else if (local_name == "tbl") {
+            auto table_data = process_table(element);
+            doc->buffer.add_table(text.length(), table_data.first, table_data.second);
+            text += table_data.first + "\n";
+            return;
+        }
 	}
 	Node* child = node->firstChild();
 	while (child != nullptr) {
 		traverse(child, text, headings, doc, rels);
 		child = child->nextSibling();
 	}
+}
+
+std::pair<wxString, wxString> docx_parser::process_table(Element* table_element) {
+    wxString html = "<table border=\"1\" style=\"border-collapse: collapse; width: 100%;\">";
+    wxString placeholder = "table: ";
+
+    NodeList* rows = table_element->getElementsByTagNameNS(WORDML_NS, "tr");
+    for (unsigned long i = 0; i < rows->length(); ++i) {
+        html += "<tr>";
+        auto* row = dynamic_cast<Element*>(rows->item(i));
+        NodeList* cells = row->getElementsByTagNameNS(WORDML_NS, "tc");
+        for (unsigned long j = 0; j < cells->length(); ++j) {
+            auto* cell = dynamic_cast<Element*>(cells->item(j));
+            wxString cell_text = get_cell_text(cell);
+
+            if (i == 0) {
+                placeholder += cell_text + " ";
+            }
+
+            wxString style;
+            Element* tcPr = cell->getChildElementNS(WORDML_NS, "tcPr");
+            if (tcPr) {
+                Element* tcW = tcPr->getChildElementNS(WORDML_NS, "tcW");
+                if (tcW) {
+                    std::string width_str = tcW->getAttributeNS(WORDML_NS, "w");
+                    if (!width_str.empty()) {
+                        try {
+                            double width = std::stod(width_str);
+                            style += wxString::Format("width: %.2fpt;", width / 20.0);
+                        } catch (...) {
+                            // Ignore invalid width values
+                        }
+                    }
+                }
+            }
+
+            html += wxString::Format("<td style=\"%s\">%s</td>", style, cell_text);
+        }
+        html += "</tr>";
+    }
+    html += "</table>";
+
+    placeholder.Trim();
+    return {placeholder, html};
+}
+
+wxString docx_parser::get_cell_text(Element* cell_element) {
+    wxString cell_text;
+    NodeList* paragraphs = cell_element->getElementsByTagNameNS(WORDML_NS, "p");
+    for (unsigned long i = 0; i < paragraphs->length(); ++i) {
+        auto* p_element = dynamic_cast<Element*>(paragraphs->item(i));
+        NodeList* runs = p_element->getElementsByTagNameNS(WORDML_NS, "r");
+        for (unsigned long j = 0; j < runs->length(); ++j) {
+            auto* run_element = dynamic_cast<Element*>(runs->item(j));
+            cell_text += wxString::FromUTF8(get_run_text(run_element));
+        }
+        if (i < paragraphs->length() - 1) {
+            cell_text += "\n";
+        }
+    }
+    return cell_text;
 }
 
 void docx_parser::process_paragraph(Element* element, wxString& text, std::vector<heading_info>& headings, document* doc, const std::map<std::string, std::string>& rels) {
