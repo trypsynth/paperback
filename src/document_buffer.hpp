@@ -22,7 +22,8 @@ enum class marker_type {
 	page_break,
 	section_break,
 	toc_item,
-	link
+	link,
+	table
 };
 
 struct marker {
@@ -55,6 +56,7 @@ public:
 	void add_section_break(const wxString& label = wxString());
 	void add_toc_marker(const wxString& text, const wxString& ref = wxString());
 	void add_link(size_t pos, const wxString& text, const wxString& ref);
+	void add_table(size_t pos, const wxString& text, const wxString& ref);
 	void add_marker(size_t pos, marker_type type, const wxString& text = wxString(), const wxString& ref = wxString(), int level = 0);
 	void clear();
 	[[nodiscard]] int next_marker_index(size_t position, marker_type type) const noexcept;

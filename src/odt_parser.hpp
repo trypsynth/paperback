@@ -6,10 +6,10 @@
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
 #pragma once
 #include "parser.hpp"
 #include <Poco/DOM/Node.h>
+#include <Poco/DOM/Element.h>
 
 class odt_parser : public parser {
 public:
@@ -30,6 +30,8 @@ public:
 private:
 	void traverse(Poco::XML::Node* node, wxString& text, document* doc) const;
 	void traverse_children(Poco::XML::Node* node, wxString& text, document* doc) const;
+	static std::pair<wxString, wxString> process_table(Poco::XML::Element* table_element);
+	static wxString get_cell_text(Poco::XML::Element* cell_element);
 };
 
 REGISTER_PARSER(odt_parser);
