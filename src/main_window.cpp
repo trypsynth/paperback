@@ -22,7 +22,7 @@
 #include <wx/timer.h>
 #include <wx/translation.h>
 
-main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME), task_bar_icon_{new task_bar_icon(this)}, position_save_timer{new wxTimer(this)}, status_update_timer{new wxTimer(this)} {
+main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME), task_bar_icon_{new task_bar_icon(this)}, position_save_timer{new wxTimer(this)}, status_update_timer{new wxTimer(this)}, sleep_timer{new wxTimer(this)}, sleep_status_update_timer{new wxTimer(this)} {
 	auto* const panel = new wxPanel(this);
 	notebook = new wxNotebook(panel, wxID_ANY);
 #ifdef __WXMSW__
@@ -55,6 +55,14 @@ main_window::~main_window() {
 	if (status_update_timer != nullptr) {
 		status_update_timer->Stop();
 		status_update_timer = nullptr;
+	}
+	if (sleep_timer != nullptr) {
+		sleep_timer->Stop();
+		sleep_timer = nullptr;
+	}
+	if (sleep_status_update_timer != nullptr) {
+		sleep_status_update_timer->Stop();
+		sleep_status_update_timer = nullptr;
 	}
 	if (find_dlg != nullptr) {
 		find_dlg->Destroy();
@@ -155,6 +163,7 @@ wxMenu* main_window::create_tools_menu() {
 	menu->Append(ID_TABLE_OF_CONTENTS, _("Table of contents\tCtrl+T"));
 	menu->AppendSeparator();
 	menu->Append(ID_OPTIONS, _("&Options\tCtrl+,"));
+	menu->Append(ID_SLEEP_TIMER, _("&Sleep Timer..."));
 	return menu;
 }
 
@@ -214,6 +223,7 @@ void main_window::bind_events() {
 		{ID_HELP_INTERNAL, &main_window::on_help_internal},
 		{ID_DONATE, &main_window::on_donate},
 		{ID_CHECK_FOR_UPDATES, &main_window::on_check_for_updates},
+		{ID_SLEEP_TIMER, &main_window::on_sleep_timer},
 	};
 	for (const auto& [id, handler] : menu_bindings) {
 		Bind(wxEVT_MENU, handler, this, id);
@@ -227,8 +237,11 @@ void main_window::bind_events() {
 	Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, &main_window::on_notebook_page_changed, this);
 	Bind(wxEVT_CLOSE_WINDOW, &main_window::on_close_window, this);
 	Bind(wxEVT_ICONIZE, &main_window::on_iconize, this);
+	Bind(wxEVT_ACTIVATE, &main_window::on_activate, this);
 	Bind(wxEVT_TIMER, &main_window::on_position_save_timer, this, position_save_timer->GetId());
 	Bind(wxEVT_TIMER, &main_window::on_status_update_timer, this, status_update_timer->GetId());
+	Bind(wxEVT_TIMER, &main_window::on_sleep_timer_tick, this, sleep_timer->GetId());
+	Bind(wxEVT_TIMER, &main_window::on_sleep_status_update_timer, this, sleep_status_update_timer->GetId());
 }
 
 void main_window::on_iconize(wxIconizeEvent& event) {
@@ -238,6 +251,14 @@ void main_window::on_iconize(wxIconizeEvent& event) {
 			Hide();
 			task_bar_icon_->SetIcon(wxICON(wxICON_INFORMATION), APP_NAME);
 		}
+	}
+	event.Skip();
+}
+
+void main_window::on_activate(wxActivateEvent& event) {
+	if (event.GetActive() && sleep_timer->IsRunning()) {
+		sleep_timer->StartOnce(sleep_timer_duration_minutes * 60 * 1000);
+		sleep_timer_start_time = wxGetLocalTimeMillis();
 	}
 	event.Skip();
 }
@@ -298,7 +319,18 @@ void main_window::update_title() {
 }
 
 void main_window::update_status_bar() {
-	status_bar->SetStatusText(doc_manager->get_status_text());
+	wxString status_text = doc_manager->get_status_text();
+	if (sleep_timer->IsRunning()) {
+		wxLongLong elapsed_ms = wxGetLocalTimeMillis() - sleep_timer_start_time;
+		int remaining_seconds = sleep_timer_duration_minutes * 60 - elapsed_ms.ToLong() / 1000;
+		if (remaining_seconds < 0) {
+			remaining_seconds = 0;
+		}
+		int minutes = remaining_seconds / 60;
+		int seconds = remaining_seconds % 60;
+		status_text += wxString::Format(_(" | Sleep timer: %02d:%02d"), minutes, seconds);
+	}
+	status_bar->SetStatusText(status_text);
 }
 
 void main_window::on_open(wxCommandEvent&) {
@@ -616,7 +648,46 @@ void main_window::on_check_for_updates(wxCommandEvent&) {
 	check_for_updates(false);
 }
 
+void main_window::on_sleep_timer(wxCommandEvent&) {
+	if (sleep_timer->IsRunning()) {
+		sleep_timer->Stop();
+		sleep_status_update_timer->Stop();
+		update_status_bar();
+		speak(_("Sleep timer cancelled."));
+		return;
+	}
+
+	auto& config_mgr = wxGetApp().get_config_manager();
+	sleep_timer_dialog dlg(this, config_mgr.get_sleep_timer_duration());
+	if (dlg.ShowModal() != wxID_OK) {
+		return;
+	}
+
+	sleep_timer_duration_minutes = dlg.get_duration();
+	config_mgr.set_sleep_timer_duration(sleep_timer_duration_minutes);
+	sleep_timer_start_time = wxGetLocalTimeMillis();
+	sleep_timer->StartOnce(sleep_timer_duration_minutes * 60 * 1000);
+	sleep_status_update_timer->Start(1000);
+	set_live_region(live_region_label, live_region_mode::polite);
+	update_status_bar();
+	speak(wxString::Format(_("Sleep timer set for %d minutes."), sleep_timer_duration_minutes));
+}
+
+void main_window::on_sleep_timer_tick(wxTimerEvent&) {
+	sleep_status_update_timer->Stop();
+	emulate_ctrl_key_press();
+	update_status_bar();
+}
+
+void main_window::on_sleep_status_update_timer(wxTimerEvent&) {
+	update_status_bar();
+}
+
 void main_window::on_notebook_page_changed(wxBookCtrlEvent& event) {
+	if (sleep_timer->IsRunning()) {
+		sleep_timer->StartOnce(sleep_timer_duration_minutes * 60 * 1000);
+		sleep_timer_start_time = wxGetLocalTimeMillis();
+	}
 	const auto old_selection = event.GetOldSelection();
 	if (old_selection >= 0) {
 		auto* const tab = doc_manager->get_tab(old_selection);

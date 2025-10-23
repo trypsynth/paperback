@@ -266,6 +266,20 @@ void config_manager::set_language(const wxString& language) {
 	});
 }
 
+int config_manager::get_sleep_timer_duration() const {
+	int result = 30;
+	with_app_section([this, &result]() {
+		result = config->ReadLong("sleep_timer_duration", 30);
+	});
+	return result;
+}
+
+void config_manager::set_sleep_timer_duration(int duration) {
+	with_app_section([this, duration]() {
+		config->Write("sleep_timer_duration", duration);
+	});
+}
+
 int config_manager::get_config_version() const {
 	int version = CONFIG_VERSION_LEGACY;
 	with_app_section([this, &version]() {
