@@ -354,7 +354,7 @@ void document_manager::go_to_previous_bookmark() {
 			break;
 		}
 	}
-	speak(wxString::Format(_("Bookmark %d: %s"), bookmark_index + 1, text_to_speak));
+	speak(wxString::Format(_("%s bookmark %d"), text_to_speak, bookmark_index + 1));
 }
 
 void document_manager::go_to_next_bookmark() {
@@ -386,7 +386,7 @@ void document_manager::go_to_next_bookmark() {
 			break;
 		}
 	}
-	speak(wxString::Format(_("Bookmark %d: %s"), bookmark_index + 1, text_to_speak));
+	speak(wxString::Format(_("%s bookmark %d"), text_to_speak, bookmark_index + 1));
 }
 
 void document_manager::go_to_previous_link() const {
@@ -551,16 +551,13 @@ void document_manager::show_bookmark_dialog(wxWindow* parent) {
 	const long current_pos = text_ctrl->GetInsertionPoint();
 	bookmark_dialog dialog(parent, bookmarks, text_ctrl, config, tab->file_path, current_pos);
 	const int result = dialog.ShowModal();
-
 	if (result != wxID_OK) {
 		return;
 	}
-
 	const long pos = dialog.get_selected_position();
 	if (pos < 0) {
 		return;
 	}
-
 	text_ctrl->SetInsertionPoint(pos);
 	text_ctrl->SetFocus();
 	wxString text_to_speak;
@@ -576,7 +573,7 @@ void document_manager::show_bookmark_dialog(wxWindow* parent) {
 			break;
 		}
 	}
-	speak(wxString::Format(_("Bookmark: %s"), text_to_speak));
+	speak(wxString::Format(_("%s bookmark"), text_to_speak));
 	update_ui();
 }
 
