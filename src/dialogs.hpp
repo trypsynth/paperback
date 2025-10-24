@@ -249,6 +249,8 @@ public:
 	void set_recent_documents_to_show(int count);
 	wxString get_language() const;
 	void set_language(const wxString& language);
+	sleep_timer_action get_sleep_timer_action() const;
+	void set_sleep_timer_action(sleep_timer_action action);
 
 private:
 	wxCheckBox* restore_docs_check{nullptr};
@@ -258,6 +260,7 @@ private:
 	wxCheckBox* check_for_updates_on_startup_check{nullptr};
 	wxSpinCtrl* recent_docs_count_spin{nullptr};
 	wxComboBox* language_combo{nullptr};
+	wxComboBox* sleep_timer_action_combo{nullptr};
 
 	void on_ok(wxCommandEvent& event);
 	void on_cancel(wxCommandEvent& event);

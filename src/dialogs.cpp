@@ -652,6 +652,16 @@ options_dialog::options_dialog(wxWindow* parent) : dialog(parent, _("Options")) 
 	language_sizer->Add(language_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, DIALOG_PADDING);
 	language_sizer->Add(language_combo, 0, wxALIGN_CENTER_VERTICAL);
 	general_box->Add(language_sizer, 0, wxALL, option_padding);
+
+	auto* sleep_timer_action_sizer = new wxBoxSizer(wxHORIZONTAL);
+	auto* sleep_timer_action_label = new wxStaticText(this, wxID_ANY, _("When sleep timer ends:"));
+	sleep_timer_action_combo = new wxComboBox(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, nullptr, wxCB_READONLY);
+	sleep_timer_action_combo->Append(_("Stop speech"));
+	sleep_timer_action_combo->Append(_("Exit application"));
+	sleep_timer_action_sizer->Add(sleep_timer_action_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, DIALOG_PADDING);
+	sleep_timer_action_sizer->Add(sleep_timer_action_combo, 0, wxALIGN_CENTER_VERTICAL);
+	general_box->Add(sleep_timer_action_sizer, 0, wxALL, option_padding);
+
 	set_content(general_box);
 	Bind(wxEVT_BUTTON, &options_dialog::on_ok, this, wxID_OK);
 	Bind(wxEVT_BUTTON, &options_dialog::on_cancel, this, wxID_CANCEL);
@@ -741,6 +751,19 @@ void options_dialog::set_language(const wxString& language) {
 			language_combo->SetSelection(static_cast<int>(i));
 			return;
 		}
+	}
+}
+
+sleep_timer_action options_dialog::get_sleep_timer_action() const {
+	if (sleep_timer_action_combo != nullptr) {
+		return static_cast<sleep_timer_action>(sleep_timer_action_combo->GetSelection());
+	}
+	return sleep_timer_action::stop_speech;
+}
+
+void options_dialog::set_sleep_timer_action(sleep_timer_action action) {
+	if (sleep_timer_action_combo != nullptr) {
+		sleep_timer_action_combo->SetSelection(static_cast<int>(action));
 	}
 }
 
