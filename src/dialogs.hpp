@@ -199,6 +199,20 @@ private:
 	void on_slider_changed(wxCommandEvent& event);
 };
 
+class sleep_timer_dialog : public dialog {
+public:
+	sleep_timer_dialog(wxWindow* parent, int initial_duration);
+	~sleep_timer_dialog() = default;
+	sleep_timer_dialog(const sleep_timer_dialog&) = delete;
+	sleep_timer_dialog& operator=(const sleep_timer_dialog&) = delete;
+	sleep_timer_dialog(sleep_timer_dialog&&) = delete;
+	sleep_timer_dialog& operator=(sleep_timer_dialog&&) = delete;
+	[[nodiscard]] int get_duration() const;
+
+private:
+	wxSpinCtrl* input_ctrl{nullptr};
+};
+
 class open_as_dialog : public dialog {
 public:
 	open_as_dialog(wxWindow* parent, const wxString& path);
@@ -235,6 +249,8 @@ public:
 	void set_recent_documents_to_show(int count);
 	wxString get_language() const;
 	void set_language(const wxString& language);
+	sleep_timer_action get_sleep_timer_action() const;
+	void set_sleep_timer_action(sleep_timer_action action);
 
 private:
 	wxCheckBox* restore_docs_check{nullptr};
@@ -244,6 +260,7 @@ private:
 	wxCheckBox* check_for_updates_on_startup_check{nullptr};
 	wxSpinCtrl* recent_docs_count_spin{nullptr};
 	wxComboBox* language_combo{nullptr};
+	wxComboBox* sleep_timer_action_combo{nullptr};
 
 	void on_ok(wxCommandEvent& event);
 	void on_cancel(wxCommandEvent& event);

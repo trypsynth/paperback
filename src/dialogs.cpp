@@ -569,6 +569,21 @@ void go_to_percent_dialog::on_slider_changed(wxCommandEvent& /*event*/) {
 	input_ctrl->SetValue(slider_value);
 }
 
+sleep_timer_dialog::sleep_timer_dialog(wxWindow* parent, int initial_duration) : dialog(parent, _("Sleep Timer")) {
+	constexpr int label_spacing = 5;
+	auto* sizer = new wxBoxSizer(wxHORIZONTAL);
+	auto* label = new wxStaticText(this, wxID_ANY, _("&Minutes:"));
+	input_ctrl = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 999, initial_duration);
+	sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, label_spacing);
+	sizer->Add(input_ctrl, 1, wxEXPAND);
+	set_content(sizer);
+	finalize_layout();
+}
+
+int sleep_timer_dialog::get_duration() const {
+	return input_ctrl->GetValue();
+}
+
 open_as_dialog::open_as_dialog(wxWindow* parent, const wxString& path) : dialog(parent, _("Open As")) {
 	constexpr int label_padding = 5;
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
@@ -637,6 +652,16 @@ options_dialog::options_dialog(wxWindow* parent) : dialog(parent, _("Options")) 
 	language_sizer->Add(language_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, DIALOG_PADDING);
 	language_sizer->Add(language_combo, 0, wxALIGN_CENTER_VERTICAL);
 	general_box->Add(language_sizer, 0, wxALL, option_padding);
+
+	auto* sleep_timer_action_sizer = new wxBoxSizer(wxHORIZONTAL);
+	auto* sleep_timer_action_label = new wxStaticText(this, wxID_ANY, _("When sleep timer ends:"));
+	sleep_timer_action_combo = new wxComboBox(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, nullptr, wxCB_READONLY);
+	sleep_timer_action_combo->Append(_("Stop speech"));
+	sleep_timer_action_combo->Append(_("Exit application"));
+	sleep_timer_action_sizer->Add(sleep_timer_action_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, DIALOG_PADDING);
+	sleep_timer_action_sizer->Add(sleep_timer_action_combo, 0, wxALIGN_CENTER_VERTICAL);
+	general_box->Add(sleep_timer_action_sizer, 0, wxALL, option_padding);
+
 	set_content(general_box);
 	Bind(wxEVT_BUTTON, &options_dialog::on_ok, this, wxID_OK);
 	Bind(wxEVT_BUTTON, &options_dialog::on_cancel, this, wxID_CANCEL);
@@ -726,6 +751,19 @@ void options_dialog::set_language(const wxString& language) {
 			language_combo->SetSelection(static_cast<int>(i));
 			return;
 		}
+	}
+}
+
+sleep_timer_action options_dialog::get_sleep_timer_action() const {
+	if (sleep_timer_action_combo != nullptr) {
+		return static_cast<sleep_timer_action>(sleep_timer_action_combo->GetSelection());
+	}
+	return sleep_timer_action::stop_speech;
+}
+
+void options_dialog::set_sleep_timer_action(sleep_timer_action action) {
+	if (sleep_timer_action_combo != nullptr) {
+		sleep_timer_action_combo->SetSelection(static_cast<int>(action));
 	}
 }
 

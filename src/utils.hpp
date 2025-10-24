@@ -49,6 +49,7 @@ inline constexpr bool has_option(find_options options, find_options flag) noexce
 [[nodiscard]] std::string remove_soft_hyphens(std::string_view input);
 [[nodiscard]] const parser* get_parser_for_unknown_file(const wxString& path, config_manager& config);
 void speak(const wxString& message);
+void emulate_ctrl_key_press();
 [[nodiscard]] std::string url_decode(std::string_view encoded);
 [[nodiscard]] std::string convert_to_utf8(const std::string& input);
 void cleanup_toc(std::vector<std::unique_ptr<toc_item>>& items);

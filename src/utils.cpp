@@ -190,17 +190,31 @@ const parser* get_parser_for_unknown_file(const wxString& path, config_manager& 
 }
 
 void speak(const wxString& message) {
-	auto* main_win = dynamic_cast<main_window*>(wxGetApp().GetTopWindow());
-	if (main_win == nullptr) {
-		return;
+	auto* frame = dynamic_cast<main_window*>(wxGetApp().GetTopWindow());
+	if (frame != nullptr) {
+		frame->get_live_region_label()->SetLabel(message);
 	}
-	auto* label = main_win->get_live_region_label();
-	if (label == nullptr) {
-		return;
-	}
-	label->SetLabel(message);
-	notify_live_region_changed(label);
 }
+
+#ifdef _WIN32
+#include <windows.h>
+void emulate_ctrl_key_press() {
+    INPUT ip;
+    ip.type = INPUT_KEYBOARD;
+    ip.ki.wScan = 0;
+    ip.ki.time = 0;
+    ip.ki.dwExtraInfo = 0;
+
+    ip.ki.wVk = VK_LCONTROL;
+    ip.ki.dwFlags = 0; // 0 for key press
+    SendInput(1, &ip, sizeof(INPUT));
+
+    ip.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
+    SendInput(1, &ip, sizeof(INPUT));
+}
+#else
+void emulate_ctrl_key_press() {}
+#endif
 
 std::string url_decode(std::string_view encoded) {
 	try {
