@@ -34,7 +34,6 @@ bool translation_manager::initialize() {
 	if (initialized) {
 		return true;
 	}
-	// NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
 	translations = new wxTranslations();
 	wxTranslations::Set(translations);
 	const wxString exe_path = wxStandardPaths::Get().GetExecutablePath();
@@ -65,7 +64,6 @@ bool translation_manager::set_language(const wxString& language_code) {
 		return false;
 	}
 	current_language = language_code;
-	// NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
 	translations = new wxTranslations();
 	// Calling Set() deletes the previous object automatically. Remove this and we crash. Yay C++!
 	wxTranslations::Set(translations);

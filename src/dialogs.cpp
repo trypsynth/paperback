@@ -86,7 +86,7 @@ all_documents_dialog::all_documents_dialog(wxWindow* parent, config_manager& cfg
 	auto* remove_button = new wxButton(this, wxID_REMOVE, _("&Remove"));
 	button_sizer->Add(open_button, 0, wxRIGHT, DIALOG_PADDING);
 	button_sizer->Add(remove_button, 0, wxRIGHT, DIALOG_PADDING);
-	content_sizer->Add(button_sizer, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING); // NOLINT(hicpp-signed-bitwise)
+	content_sizer->Add(button_sizer, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);
 	set_content(content_sizer);
 	finalize_layout();
 	Bind(wxEVT_BUTTON, &all_documents_dialog::on_open, this, wxID_OPEN);
@@ -399,8 +399,8 @@ find_dialog::find_dialog(wxWindow* parent) : wxDialog(parent, wxID_ANY, _("Find"
 	button_sizer->Add(cancel_btn, 0);
 	find_next_btn->SetDefault();
 	main_sizer->Add(find_sizer, 0, wxEXPAND | wxALL, DIALOG_PADDING);
-	main_sizer->Add(options_box, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);  // NOLINT(hicpp-signed-bitwise)
-	main_sizer->Add(button_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING); // NOLINT(hicpp-signed-bitwise)
+	main_sizer->Add(options_box, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);
+	main_sizer->Add(button_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);
 	SetSizer(main_sizer);
 	find_previous_btn->Bind(wxEVT_BUTTON, &find_dialog::on_find_previous, this);
 	find_next_btn->Bind(wxEVT_BUTTON, &find_dialog::on_find_next, this);

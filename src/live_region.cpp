@@ -17,7 +17,6 @@
 
 namespace {
 IAccPropServices*& get_acc_prop_services() {
-	// NOLINTNEXTLINE(misc-const-correctness) - COM interface pointer cannot be const
 	static IAccPropServices* acc_prop_services{nullptr};
 	return acc_prop_services;
 }
@@ -47,9 +46,7 @@ bool set_live_region(wxWindow* window, live_region_mode mode) {
 		return false;
 	}
 	VARIANT var{};
-	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
 	var.vt = VT_I4;
-	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
 	var.lVal = static_cast<int>(mode);
 	const HRESULT hr = get_acc_prop_services()->SetHwndProp(hwnd, OBJID_CLIENT, CHILDID_SELF, LiveSetting_Property_GUID, var);
 	return SUCCEEDED(hr);

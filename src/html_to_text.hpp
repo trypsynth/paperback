@@ -76,7 +76,7 @@ private:
 	void process_text_node(lxb_dom_text_t* text_node);
 	void add_line(std::string_view line);
 	void finalize_current_line();
-	void finalize_text(); // New method for final cleanup
+	void finalize_text();
 	size_t get_current_text_position() const;
 	[[nodiscard]] static constexpr bool is_block_element(std::string_view tag_name) noexcept;
 	[[nodiscard]] static std::string_view get_tag_name(lxb_dom_element_t* element) noexcept;

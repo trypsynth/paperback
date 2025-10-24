@@ -43,9 +43,7 @@
 using namespace Poco;
 using namespace Poco::XML;
 
-// NOLINTNEXTLINE(cert-err58-cpp) - String construction from literals is safe in practice
 inline const XMLString DRAWINGML_NS = "http://schemas.openxmlformats.org/drawingml/2006/main";
-// NOLINTNEXTLINE(cert-err58-cpp) - String construction from literals is safe in practice
 inline const XMLString REL_NS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 
 std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
