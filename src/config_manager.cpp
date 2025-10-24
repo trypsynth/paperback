@@ -368,15 +368,15 @@ void config_manager::clear_opened_documents() {
 	}
 }
 
-void config_manager::set_document_position(const wxString& path, long position) {
+void config_manager::set_document_position(const wxString& path, int position) {
 	with_document_section(path, [this, path, position]() {
 		config->Write("path", path);
 		config->Write("last_position", position);
 	});
 }
 
-long config_manager::get_document_position(const wxString& path) const {
-	long position = 0;
+int config_manager::get_document_position(const wxString& path) const {
+	int position = 0;
 	with_document_section(path, [this, &position]() {
 		position = config->ReadLong("last_position", 0);
 	});
@@ -468,7 +468,7 @@ wxArrayString config_manager::get_all_documents() const {
 	return result;
 }
 
-void config_manager::add_bookmark(const wxString& path, long start, long end, const wxString& note) {
+void config_manager::add_bookmark(const wxString& path, int start, int end, const wxString& note) {
 	if (!config) {
 		return;
 	}
@@ -494,7 +494,7 @@ void config_manager::add_bookmark(const wxString& path, long start, long end, co
 			bookmark_string += ",";
 		}
 		const wxString encoded_note = encode_note(bookmarks[i].note);
-		bookmark_string += wxString::Format("%ld:%ld:%s", bookmarks[i].start, bookmarks[i].end, encoded_note);
+		bookmark_string += wxString::Format("%d:%d:%s", bookmarks[i].start, bookmarks[i].end, encoded_note);
 	}
 	with_document_section(path, [this, path, bookmark_string]() {
 		config->Write("path", path);
@@ -502,7 +502,7 @@ void config_manager::add_bookmark(const wxString& path, long start, long end, co
 	});
 }
 
-void config_manager::remove_bookmark(const wxString& path, long start, long end) {
+void config_manager::remove_bookmark(const wxString& path, int start, int end) {
 	if (!config) {
 		return;
 	}
@@ -519,7 +519,7 @@ void config_manager::remove_bookmark(const wxString& path, long start, long end)
 			bookmark_string += ",";
 		}
 		const wxString encoded_note = encode_note(bookmarks[i].note);
-		bookmark_string += wxString::Format("%ld:%ld:%s", bookmarks[i].start, bookmarks[i].end, encoded_note);
+		bookmark_string += wxString::Format("%d:%d:%s", bookmarks[i].start, bookmarks[i].end, encoded_note);
 	}
 	with_document_section(path, [this, path, bookmark_string]() {
 		config->Write("path", path);
@@ -531,7 +531,7 @@ void config_manager::remove_bookmark(const wxString& path, long start, long end)
 	});
 }
 
-void config_manager::toggle_bookmark(const wxString& path, long start, long end, const wxString& note) {
+void config_manager::toggle_bookmark(const wxString& path, int start, int end, const wxString& note) {
 	std::vector<bookmark> bookmarks = get_bookmarks(path);
 	bookmark to_toggle(start, end);
 	bool exists = false;
@@ -548,7 +548,7 @@ void config_manager::toggle_bookmark(const wxString& path, long start, long end,
 	}
 }
 
-void config_manager::update_bookmark_note(const wxString& path, long start, long end, const wxString& note) {
+void config_manager::update_bookmark_note(const wxString& path, int start, int end, const wxString& note) {
 	if (!config) {
 		return;
 	}
@@ -570,7 +570,7 @@ void config_manager::update_bookmark_note(const wxString& path, long start, long
 			bookmark_string += ",";
 		}
 		const wxString encoded_note = encode_note(bookmarks[i].note);
-		bookmark_string += wxString::Format("%ld:%ld:%s", bookmarks[i].start, bookmarks[i].end, encoded_note);
+		bookmark_string += wxString::Format("%d:%d:%s", bookmarks[i].start, bookmarks[i].end, encoded_note);
 	}
 	with_document_section(path, [this, path, bookmark_string]() {
 		config->Write("path", path);
@@ -606,9 +606,9 @@ std::vector<bookmark> config_manager::get_bookmarks(const wxString& path) const 
 					if (pair_tokenizer.HasMoreTokens()) {
 						note_str = pair_tokenizer.GetNextToken();
 					}
-					long start{0};
-					long end{0};
-					if (start_str.ToLong(&start) && end_str.ToLong(&end)) {
+					int start{0};
+					int end{0};
+					if (start_str.ToInt(&start) && end_str.ToInt(&end)) {
 						wxString decoded_note = decode_note(note_str);
 						result.push_back(bookmark(start, end, decoded_note));
 					}
@@ -616,8 +616,8 @@ std::vector<bookmark> config_manager::get_bookmarks(const wxString& path) const 
 			}
 		} else {
 			// Backward compatibility. This shouldn't happen after migration, but handle it gracefully anyway.
-			long position = 0;
-			if (token.ToLong(&position)) {
+			int position = 0;
+			if (token.ToInt(&position)) {
 				result.push_back(bookmark(position, position, wxEmptyString));
 			}
 		}
@@ -657,15 +657,15 @@ bookmark config_manager::get_previous_bookmark(const wxString& path, int current
 	return {-1, -1};
 }
 
-bookmark config_manager::get_closest_bookmark(const wxString& path, long current_position) const {
+bookmark config_manager::get_closest_bookmark(const wxString& path, int current_position) const {
 	const auto& bookmarks = get_bookmarks(path);
 	if (bookmarks.empty()) {
 		return {-1, -1};
 	}
 	const auto* closest = &bookmarks.front();
-	long min_distance = std::abs(closest->start - current_position);
+	int min_distance = std::abs(closest->start - current_position);
 	for (const auto& bm : bookmarks) {
-		const long distance = std::abs(bm.start - current_position);
+		const int distance = std::abs(bm.start - current_position);
 		if (distance < min_distance) {
 			min_distance = distance;
 			closest = &bm;

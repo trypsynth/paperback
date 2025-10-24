@@ -30,7 +30,7 @@ int document::section_index(size_t position) const noexcept {
 	return buffer.current_marker_index(position, marker_type::section_break);
 }
 
-size_t document::offset_for_section(int section_index) const noexcept {
+int document::offset_for_section(int section_index) const noexcept {
 	return buffer.marker_position(section_index);
 }
 
@@ -46,7 +46,7 @@ int document::page_index(size_t position) const noexcept {
 	return buffer.current_marker_index(position, marker_type::page_break);
 }
 
-size_t document::offset_for_page(int page_index) const noexcept {
+int document::offset_for_page(int page_index) const noexcept {
 	return buffer.marker_position(page_index);
 }
 
@@ -81,7 +81,7 @@ int document::previous_heading_index(int position, int level) const noexcept {
 	return buffer.previous_heading_marker_index(position, level);
 }
 
-size_t document::offset_for_heading(int heading_index) const noexcept {
+int document::offset_for_heading(int heading_index) const noexcept {
 	const auto& heading_markers = buffer.get_heading_markers();
 	if (heading_index < 0 || std::cmp_greater_equal(heading_index, heading_markers.size())) {
 		return 0;
