@@ -203,7 +203,7 @@ void document_manager::go_to_previous_section() const {
 		speak(_("No sections."));
 		return;
 	}
-	const size_t current_pos = text_ctrl->GetInsertionPoint();
+	const int current_pos = text_ctrl->GetInsertionPoint();
 	bool wrapping = false;
 	const int current_index = doc->section_index(current_pos);
 	if (current_index != -1) {
@@ -217,7 +217,7 @@ void document_manager::go_to_previous_section() const {
 			return;
 		}
 	}
-	size_t search_pos = current_pos;
+	int search_pos = current_pos;
 	if (current_index != -1) {
 		const size_t current_section_offset = doc->offset_for_section(current_index);
 		if (current_pos <= current_section_offset) {
@@ -261,7 +261,7 @@ void document_manager::go_to_next_section() const {
 		speak(_("No sections."));
 		return;
 	}
-	const size_t current_pos = text_ctrl->GetInsertionPoint();
+	const int current_pos = text_ctrl->GetInsertionPoint();
 	bool wrapping = false;
 	int next_index = doc->next_section_index(current_pos);
 	if (next_index == -1) {
@@ -314,7 +314,7 @@ void document_manager::go_to_previous_page() const {
 		speak(_("No pages."));
 		return;
 	}
-	const size_t current_pos = text_ctrl->GetInsertionPoint();
+	const int current_pos = text_ctrl->GetInsertionPoint();
 	bool wrapping = false;
 	int prev_index = doc->previous_page_index(current_pos);
 	if (prev_index == -1) {
@@ -337,7 +337,8 @@ void document_manager::go_to_previous_page() const {
 	wxString message = wxString::Format(_("Page %d: %s"), prev_index + 1, current_line);
 	if (wrapping) {
 		message = _("Wrapping to end. ") + message;
-	}
+	} else {
+		    message = wxString::Format(_("Page %d: %s"), prev_index + 1, current_line);	}
 	speak(message);
 }
 
@@ -351,7 +352,7 @@ void document_manager::go_to_next_page() const {
 		speak(_("No pages."));
 		return;
 	}
-	const size_t current_pos = text_ctrl->GetInsertionPoint();
+	const int current_pos = text_ctrl->GetInsertionPoint();
 	bool wrapping = false;
 	int next_index = doc->next_page_index(current_pos);
 	if (next_index == -1) {
@@ -374,7 +375,8 @@ void document_manager::go_to_next_page() const {
 	wxString message = wxString::Format(_("Page %d: %s"), next_index + 1, current_line);
 	if (wrapping) {
 		message = _("Wrapping to start. ") + message;
-	}
+	} else {
+		    message = wxString::Format(_("Page %d: %s"), next_index + 1, current_line);	}
 	speak(message);
 }
 
@@ -384,7 +386,7 @@ void document_manager::go_to_previous_bookmark() {
 	if (tab == nullptr || text_ctrl == nullptr) {
 		return;
 	}
-	const long current_pos = text_ctrl->GetInsertionPoint();
+	const int current_pos = text_ctrl->GetInsertionPoint();
 	bool wrapping = false;
 	bookmark prev_bookmark = config.get_previous_bookmark(tab->file_path, current_pos);
 	if (prev_bookmark.start == -1) {
@@ -434,7 +436,7 @@ void document_manager::go_to_next_bookmark() {
 	if (tab == nullptr || text_ctrl == nullptr) {
 		return;
 	}
-	const long current_pos = text_ctrl->GetInsertionPoint();
+	const int current_pos = text_ctrl->GetInsertionPoint();
 	bool wrapping = false;
 	bookmark next_bookmark = config.get_next_bookmark(tab->file_path, current_pos);
 	if (next_bookmark.start == -1) {
@@ -488,7 +490,7 @@ void document_manager::go_to_previous_link() const {
 		speak(_("No links."));
 		return;
 	}
-	const size_t current_pos = text_ctrl->GetInsertionPoint();
+	const int current_pos = text_ctrl->GetInsertionPoint();
 	bool wrapping = false;
 	int prev_index = doc->buffer.previous_marker_index(current_pos, marker_type::link);
 	if (prev_index == -1) {
@@ -524,7 +526,7 @@ void document_manager::go_to_next_link() const {
 		speak(_("No links."));
 		return;
 	}
-	const size_t current_pos = text_ctrl->GetInsertionPoint();
+	const int current_pos = text_ctrl->GetInsertionPoint();
 	bool wrapping = false;
 	int next_index = doc->buffer.next_marker_index(current_pos, marker_type::link);
 	if (next_index == -1) {
@@ -944,7 +946,7 @@ void document_manager::navigate_to_heading(bool next, int specific_level) const 
 		speak(_("No headings."));
 		return;
 	}
-	const size_t current_pos = text_ctrl->GetInsertionPoint();
+	const int current_pos = text_ctrl->GetInsertionPoint();
 	int target_index = -1;
 	bool wrapping = false;
 	target_index = next ? doc->next_heading_index(current_pos, specific_level) : doc->previous_heading_index(current_pos, specific_level);

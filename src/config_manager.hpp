@@ -90,8 +90,8 @@ public:
 	void update_bookmark_note(const wxString& path, long start, long end, const wxString& note);
 	std::vector<bookmark> get_bookmarks(const wxString& path) const;
 	void clear_bookmarks(const wxString& path);
-	bookmark get_next_bookmark(const wxString& path, long current_position) const;
-	bookmark get_previous_bookmark(const wxString& path, long current_position) const;
+	bookmark get_next_bookmark(const wxString& path, int current_position) const;
+	bookmark get_previous_bookmark(const wxString& path, int current_position) const;
 	bookmark get_closest_bookmark(const wxString& path, long current_position) const;
 	void set_document_format(const wxString& path, const wxString& format);
 	wxString get_document_format(const wxString& path) const;

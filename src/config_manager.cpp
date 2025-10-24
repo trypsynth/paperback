@@ -637,7 +637,7 @@ void config_manager::clear_bookmarks(const wxString& path) {
 	});
 }
 
-bookmark config_manager::get_next_bookmark(const wxString& path, long current_position) const {
+bookmark config_manager::get_next_bookmark(const wxString& path, int current_position) const {
 	const auto& bookmarks = get_bookmarks(path);
 	for (const auto& bm : bookmarks) {
 		if (bm.start > current_position) {
@@ -647,7 +647,7 @@ bookmark config_manager::get_next_bookmark(const wxString& path, long current_po
 	return {-1, -1};
 }
 
-bookmark config_manager::get_previous_bookmark(const wxString& path, long current_position) const {
+bookmark config_manager::get_previous_bookmark(const wxString& path, int current_position) const {
 	const auto& bookmarks = get_bookmarks(path);
 	for (auto it = bookmarks.rbegin(); it != bookmarks.rend(); ++it) {
 		if (it->start < current_position) {
