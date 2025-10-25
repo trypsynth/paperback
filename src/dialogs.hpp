@@ -23,6 +23,7 @@
 #include <wx/spinctrl.h>
 #include <wx/textctrl.h>
 #include <wx/treectrl.h>
+#include <wx/timer.h>
 
 enum class dialog_button_config {
 	ok_only,
@@ -269,10 +270,15 @@ public:
 private:
 	wxTreeCtrl* tree{nullptr};
 	int selected_offset;
+	wxString search_string_;
+	wxTimer* search_timer_{nullptr};
 
 	void populate_tree(const std::vector<std::unique_ptr<toc_item>>& items, const wxTreeItemId& parent);
 	void find_and_select_item(const wxTreeItemId& parent, int offset);
 	void on_tree_selection_changed(wxTreeEvent& event);
 	void on_tree_item_activated(wxTreeEvent& event);
 	void on_ok(wxCommandEvent& event);
+	void on_char_hook(wxKeyEvent& event);
+	void on_search_timer(wxTimerEvent& event);
+	bool find_and_select_item_by_name(const wxString& name, const wxTreeItemId& parent);
 };
