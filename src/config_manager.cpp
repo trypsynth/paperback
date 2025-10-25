@@ -9,8 +9,8 @@
 
 #include "config_manager.hpp"
 #include "constants.hpp"
-#include <Poco/Base64Encoder.h>
 #include <Poco/Base64Decoder.h>
+#include <Poco/Base64Encoder.h>
 #include <Poco/DigestEngine.h>
 #include <Poco/SHA1Engine.h>
 #include <algorithm>

@@ -338,7 +338,8 @@ void document_manager::go_to_previous_page() const {
 	if (wrapping) {
 		message = _("Wrapping to end. ") + message;
 	} else {
-		    message = wxString::Format(_("Page %d: %s"), prev_index + 1, current_line);	}
+		message = wxString::Format(_("Page %d: %s"), prev_index + 1, current_line);
+	}
 	speak(message);
 }
 
@@ -376,7 +377,8 @@ void document_manager::go_to_next_page() const {
 	if (wrapping) {
 		message = _("Wrapping to start. ") + message;
 	} else {
-		    message = wxString::Format(_("Page %d: %s"), next_index + 1, current_line);	}
+		message = wxString::Format(_("Page %d: %s"), next_index + 1, current_line);
+	}
 	speak(message);
 }
 

@@ -686,7 +686,7 @@ void options_dialog::set_compact_go_menu(bool compact) {
 }
 
 bool options_dialog::get_navigation_wrap() const {
-	return navigation_wrap_check->GetValue();
+	return navigation_wrap_check != nullptr ? navigation_wrap_check->GetValue() : false;
 }
 
 void options_dialog::set_navigation_wrap(bool value) {
