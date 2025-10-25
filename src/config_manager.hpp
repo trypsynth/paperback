@@ -102,6 +102,14 @@ private:
 	std::unique_ptr<wxFileConfig> config;
 	bool owns_global_config{false};
 
+	template <typename T>
+	T get_app_setting(const wxString& key, const T& default_value) const;
+	template <typename T>
+	void set_app_setting(const wxString& key, const T& value);
+	template <typename T>
+	T get_document_setting(const wxString& path, const wxString& key, const T& default_value) const;
+	template <typename T>
+	void set_document_setting(const wxString& path, const wxString& key, const T& value);
 	static wxString get_config_path();
 	static bool is_directory_writable(const wxString& dir);
 	void load_defaults();

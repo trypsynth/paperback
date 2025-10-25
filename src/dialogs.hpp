@@ -22,8 +22,8 @@
 #include <wx/listctrl.h>
 #include <wx/spinctrl.h>
 #include <wx/textctrl.h>
-#include <wx/treectrl.h>
 #include <wx/timer.h>
+#include <wx/treectrl.h>
 
 enum class dialog_button_config {
 	ok_only,
@@ -257,7 +257,7 @@ class toc_tree_item_data : public wxTreeItemData {
 public:
 	toc_tree_item_data(int offset_) : offset{offset_} {}
 
-	int offset;
+	int offset{0};
 };
 
 class toc_dialog : public dialog {
@@ -272,7 +272,7 @@ public:
 
 private:
 	wxTreeCtrl* tree{nullptr};
-	int selected_offset;
+	int selected_offset{0};
 	wxString search_string_;
 	wxTimer* search_timer_{nullptr};
 

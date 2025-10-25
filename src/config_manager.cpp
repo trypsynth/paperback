@@ -24,6 +24,24 @@
 #include <wx/string.h>
 #include <wx/tokenzr.h>
 
+namespace {
+inline bool read_config_value(wxFileConfig* cfg, const wxString& key, bool default_val) {
+	return cfg->ReadBool(key, default_val);
+}
+
+inline long read_config_value(wxFileConfig* cfg, const wxString& key, long default_val) {
+	return cfg->ReadLong(key, default_val);
+}
+
+inline int read_config_value(wxFileConfig* cfg, const wxString& key, int default_val) {
+	return static_cast<int>(cfg->ReadLong(key, default_val));
+}
+
+inline wxString read_config_value(wxFileConfig* cfg, const wxString& key, const wxString& default_val) {
+	return cfg->Read(key, default_val);
+}
+} // namespace
+
 config_manager::~config_manager() {
 	if (config) {
 		shutdown();
@@ -89,6 +107,39 @@ void config_manager::set_int(const wxString& key, int value) {
 	if (config) {
 		config->Write(key, value);
 	}
+}
+
+template <typename T>
+T config_manager::get_app_setting(const wxString& key, const T& default_value) const {
+	T result = default_value;
+	with_app_section([this, &key, &default_value, &result]() {
+		result = read_config_value(config.get(), key, default_value);
+	});
+	return result;
+}
+
+template <typename T>
+void config_manager::set_app_setting(const wxString& key, const T& value) {
+	with_app_section([this, &key, &value]() {
+		config->Write(key, value);
+	});
+}
+
+template <typename T>
+T config_manager::get_document_setting(const wxString& path, const wxString& key, const T& default_value) const {
+	T result = default_value;
+	with_document_section(path, [this, &key, &default_value, &result]() {
+		result = read_config_value(config.get(), key, default_value);
+	});
+	return result;
+}
+
+template <typename T>
+void config_manager::set_document_setting(const wxString& path, const wxString& key, const T& value) {
+	with_document_section(path, [this, &path, &key, &value]() {
+		config->Write("path", path);
+		config->Write(key, value);
+	});
 }
 
 void config_manager::add_recent_document(const wxString& path) {
@@ -169,143 +220,83 @@ void config_manager::rebuild_recent_documents() {
 }
 
 int config_manager::get_recent_documents_to_show() const {
-	int result = DEFAULT_RECENT_DOCUMENTS_TO_SHOW;
-	with_app_section([this, &result]() {
-		result = config->ReadLong("recent_documents_to_show", DEFAULT_RECENT_DOCUMENTS_TO_SHOW);
-	});
-	return result;
+	return get_app_setting("recent_documents_to_show", DEFAULT_RECENT_DOCUMENTS_TO_SHOW);
 }
 
 void config_manager::set_recent_documents_to_show(int count) {
-	with_app_section([this, count]() {
-		config->Write("recent_documents_to_show", count);
-	});
+	set_app_setting("recent_documents_to_show", count);
 }
 
 bool config_manager::get_restore_previous_documents() const {
-	bool result = true;
-	with_app_section([this, &result]() {
-		result = config->ReadBool("restore_previous_documents", true);
-	});
-	return result;
+	return get_app_setting("restore_previous_documents", true);
 }
 
 void config_manager::set_restore_previous_documents(bool restore) {
-	with_app_section([this, restore]() {
-		config->Write("restore_previous_documents", restore);
-	});
+	set_app_setting("restore_previous_documents", restore);
 }
 
 bool config_manager::get_word_wrap() const {
-	bool result = false;
-	with_app_section([this, &result]() {
-		result = config->ReadBool("word_wrap", false);
-	});
-	return result;
+	return get_app_setting("word_wrap", false);
 }
 
 void config_manager::set_word_wrap(bool word_wrap) {
-	with_app_section([this, word_wrap]() {
-		config->Write("word_wrap", word_wrap);
-	});
+	set_app_setting("word_wrap", word_wrap);
 }
 
 bool config_manager::get_minimize_to_tray() const {
-	bool result = false;
-	with_app_section([this, &result]() {
-		result = config->ReadBool("minimize_to_tray", false);
-	});
-	return result;
+	return get_app_setting("minimize_to_tray", false);
 }
 
 void config_manager::set_minimize_to_tray(bool minimize) {
-	with_app_section([this, minimize]() {
-		config->Write("minimize_to_tray", minimize);
-	});
+	set_app_setting("minimize_to_tray", minimize);
 }
 
 bool config_manager::get_compact_go_menu() const {
-	bool result = true;
-	with_app_section([this, &result]() {
-		result = config->ReadBool("compact_go_menu", true);
-	});
-	return result;
+	return get_app_setting("compact_go_menu", true);
 }
 
 void config_manager::set_compact_go_menu(bool compact) {
-	with_app_section([this, compact]() {
-		config->Write("compact_go_menu", compact);
-	});
+	set_app_setting("compact_go_menu", compact);
 }
 
 bool config_manager::get_navigation_wrap() const {
-	bool result = false;
-	with_app_section([this, &result]() {
-		result = config->ReadBool("navigation_wrap", false);
-	});
-	return result;
+	return get_app_setting("navigation_wrap", false);
 }
 
 void config_manager::set_navigation_wrap(bool navigation_wrap) {
-	with_app_section([this, navigation_wrap]() {
-		config->Write("navigation_wrap", navigation_wrap);
-	});
+	set_app_setting("navigation_wrap", navigation_wrap);
 }
 
 bool config_manager::get_check_for_updates_on_startup() const {
-	bool result = true;
-	with_app_section([this, &result]() {
-		result = config->ReadBool("check_for_updates_on_startup", true);
-	});
-	return result;
+	return get_app_setting("check_for_updates_on_startup", true);
 }
 
 void config_manager::set_check_for_updates_on_startup(bool check) {
-	with_app_section([this, check]() {
-		config->Write("check_for_updates_on_startup", check);
-	});
+	set_app_setting("check_for_updates_on_startup", check);
 }
 
 wxString config_manager::get_language() const {
-	wxString result = "";
-	with_app_section([this, &result]() {
-		result = config->Read("language", "");
-	});
-	return result;
+	return get_app_setting("language", wxString(""));
 }
 
 void config_manager::set_language(const wxString& language) {
-	with_app_section([this, language]() {
-		config->Write("language", language);
-	});
+	set_app_setting("language", language);
 }
 
 int config_manager::get_config_version() const {
-	int version = CONFIG_VERSION_LEGACY;
-	with_app_section([this, &version]() {
-		version = config->ReadLong("version", CONFIG_VERSION_LEGACY);
-	});
-	return version;
+	return get_app_setting("version", static_cast<int>(CONFIG_VERSION_LEGACY));
 }
 
 void config_manager::set_config_version(int version) {
-	with_app_section([this, version]() {
-		config->Write("version", version);
-	});
+	set_app_setting("version", version);
 }
 
 void config_manager::set_active_document(const wxString& path) {
-	with_app_section([this, path]() {
-		config->Write("active_document", path);
-	});
+	set_app_setting("active_document", path);
 }
 
 wxString config_manager::get_active_document() const {
-	wxString active_doc = "";
-	with_app_section([this, &active_doc]() {
-		active_doc = config->Read("active_document", "");
-	});
-	return active_doc;
+	return get_app_setting("active_document", wxString(""));
 }
 
 void config_manager::add_opened_document(const wxString& path) {
@@ -369,33 +360,19 @@ void config_manager::clear_opened_documents() {
 }
 
 void config_manager::set_document_position(const wxString& path, int position) {
-	with_document_section(path, [this, path, position]() {
-		config->Write("path", path);
-		config->Write("last_position", position);
-	});
+	set_document_setting(path, "last_position", position);
 }
 
 int config_manager::get_document_position(const wxString& path) const {
-	int position = 0;
-	with_document_section(path, [this, &position]() {
-		position = config->ReadLong("last_position", 0);
-	});
-	return position;
+	return get_document_setting(path, "last_position", 0);
 }
 
 void config_manager::set_document_opened(const wxString& path, bool opened) {
-	with_document_section(path, [this, path, opened]() {
-		config->Write("path", path);
-		config->Write("opened", opened);
-	});
+	set_document_setting(path, "opened", opened);
 }
 
 bool config_manager::get_document_opened(const wxString& path) const {
-	bool opened = false;
-	with_document_section(path, [this, &opened]() {
-		opened = config->ReadBool("opened", false);
-	});
-	return opened;
+	return get_document_setting(path, "opened", false);
 }
 
 wxArrayString config_manager::get_all_opened_documents() const {
@@ -675,18 +652,11 @@ bookmark config_manager::get_closest_bookmark(const wxString& path, int current_
 }
 
 void config_manager::set_document_format(const wxString& path, const wxString& format) {
-	with_document_section(path, [this, path, format]() {
-		config->Write("path", path);
-		config->Write("format", format);
-	});
+	set_document_setting(path, "format", format);
 }
 
 wxString config_manager::get_document_format(const wxString& path) const {
-	wxString format = "";
-	with_document_section(path, [this, &format]() {
-		format = config->Read("format", "");
-	});
-	return format;
+	return get_document_setting(path, "format", wxString(""));
 }
 
 bool config_manager::needs_migration() const {
