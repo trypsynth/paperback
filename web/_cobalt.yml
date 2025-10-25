@@ -7,4 +7,5 @@ site:
   data:
     nav:
       - [Home, "/"]
+      - [README, "/readme.html"]
       - [Source code, "https://github.com/trypsynth/paperback"]
