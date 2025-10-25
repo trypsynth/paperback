@@ -738,6 +738,7 @@ void options_dialog::on_cancel(wxCommandEvent& /*event*/) {
 }
 
 toc_dialog::toc_dialog(wxWindow* parent, const document* doc, int current_offset) : dialog(parent, _("Table of Contents")), selected_offset{-1} {
+	search_timer_ = new wxTimer(this);
 	tree = new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTR_HIDE_ROOT);
 	const wxTreeItemId root = tree->AddRoot(_("Root"));
 	populate_tree(doc->toc_items, root);
@@ -750,6 +751,8 @@ toc_dialog::toc_dialog(wxWindow* parent, const document* doc, int current_offset
 	Bind(wxEVT_TREE_SEL_CHANGED, &toc_dialog::on_tree_selection_changed, this);
 	Bind(wxEVT_TREE_ITEM_ACTIVATED, &toc_dialog::on_tree_item_activated, this, wxID_ANY);
 	Bind(wxEVT_BUTTON, &toc_dialog::on_ok, this, wxID_OK);
+	Bind(wxEVT_CHAR_HOOK, &toc_dialog::on_char_hook, this);
+	Bind(wxEVT_TIMER, &toc_dialog::on_search_timer, this, search_timer_->GetId());
 	finalize_layout();
 }
 
@@ -805,4 +808,39 @@ void toc_dialog::on_ok(wxCommandEvent& /*event*/) {
 	} else {
 		wxMessageBox(_("Please select a section from the table of contents."), _("No Selection"), wxOK | wxICON_INFORMATION, this);
 	}
+}
+
+void toc_dialog::on_char_hook(wxKeyEvent& event) {
+	const int key_code = event.GetKeyCode();
+	if (key_code >= WXK_SPACE && key_code < WXK_DELETE) {
+		search_timer_->StartOnce(500);
+		search_string_ += static_cast<wxChar>(event.GetUnicodeKey());
+		if (!find_and_select_item_by_name(search_string_, tree->GetRootItem())) {
+			search_string_.RemoveLast(); // No match, remove last char
+		}
+	} else {
+		event.Skip();
+	}
+}
+
+void toc_dialog::on_search_timer(wxTimerEvent& /*event*/) {
+	search_string_.Clear();
+}
+
+bool toc_dialog::find_and_select_item_by_name(const wxString& name, const wxTreeItemId& parent) {
+	wxTreeItemIdValue cookie{};
+	for (wxTreeItemId item_id = tree->GetFirstChild(parent, cookie); item_id.IsOk(); item_id = tree->GetNextChild(parent, cookie)) {
+		if (tree->GetItemText(item_id).Lower().StartsWith(name.Lower())) {
+			tree->SelectItem(item_id);
+			tree->SetFocusedItem(item_id);
+			tree->EnsureVisible(item_id);
+			return true;
+		}
+		if (tree->ItemHasChildren(item_id)) {
+			if (find_and_select_item_by_name(name, item_id)) {
+				return true;
+			}
+		}
+	}
+	return false;
 }
