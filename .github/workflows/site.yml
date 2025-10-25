@@ -18,9 +18,10 @@ jobs:
           tar -xzf cobalt-*.tar.gz
           sudo mv cobalt /usr/local/bin/
       - name: Build Cobalt site
-        run: cobalt build --source web
+        run: cobalt build
+        working-directory: web
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .cobalt
+          publish_dir: web/_site
