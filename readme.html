@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Paperback - version 0.5</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Paperback - version 0.5</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#introduction" id="toc-introduction">Introduction</a></li>
+<li><a href="#system-requirements" id="toc-system-requirements">System
+Requirements</a></li>
+<li><a href="#features" id="toc-features">Features</a></li>
+<li><a href="#currently-supported-filetypes"
+id="toc-currently-supported-filetypes">Currently supported
+filetypes</a></li>
+<li><a href="#hotkeys" id="toc-hotkeys">Hotkeys</a>
+<ul>
+<li><a href="#file-menu" id="toc-file-menu">File menu</a></li>
+<li><a href="#go-menu" id="toc-go-menu">Go menu</a></li>
+<li><a href="#tools-menu" id="toc-tools-menu">Tools menu</a></li>
+<li><a href="#about-menu" id="toc-about-menu">About menu</a></li>
+</ul></li>
+<li><a href="#credits" id="toc-credits">Credits</a>
+<ul>
+<li><a href="#development" id="toc-development">Development</a></li>
+<li><a href="#donations" id="toc-donations">Donations</a></li>
+<li><a href="#translations" id="toc-translations">Translations</a></li>
+</ul></li>
+<li><a href="#changelog" id="toc-changelog">Changelog</a>
+<ul>
+<li><a href="#version-0.6" id="toc-version-0.6">Version 0.6</a></li>
+<li><a href="#version-0.5" id="toc-version-0.5">Version 0.5</a></li>
+<li><a href="#version-0.41" id="toc-version-0.41">Version 0.41</a></li>
+<li><a href="#version-0.4" id="toc-version-0.4">Version 0.4</a></li>
+<li><a href="#version-0.3" id="toc-version-0.3">Version 0.3</a></li>
+<li><a href="#version-0.21" id="toc-version-0.21">Version 0.21</a></li>
+<li><a href="#version-0.2" id="toc-version-0.2">Version 0.2</a></li>
+<li><a href="#version-0.1" id="toc-version-0.1">Version 0.1</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="introduction">Introduction</h1>
+<p>Paperback is a lightweight, fast, and accessible ebook/document
+reader designed to make reading fun and seamless, regardless of the file
+format being used or the user’s preferences.</p>
+<h1 id="system-requirements">System Requirements</h1>
+<p>Paperback currently runs on Windows 7 through Windows 11. It’s
+possible it runs on earlier versions of Windows too and/or can be built
+in such a way that it will, but this hasn’t been tested yet. Support for
+other platforms is planned for a future version.</p>
+<h1 id="features">Features</h1>
+<ul>
+<li>Incredibly fast and standalone.</li>
+<li>Simple tabbed interface, allowing you to open as many documents as
+you want side-by-side.</li>
+<li>Saves your cursor position across every document you open.</li>
+<li>Optionally remembers what documents you had open when you closed the
+program, and restores them on next launch.</li>
+<li>Designed with screen reader users in mind.</li>
+<li>Ability to navigate by various navigation units, including HTML
+headings, PDF pages, and epub sections.</li>
+<li>Robust find dialog, including features such as history and regular
+expression support.</li>
+<li>Can be ran entirely portably, or installed with file associations
+automatically set up.</li>
+</ul>
+<h1 id="currently-supported-filetypes">Currently supported
+filetypes</h1>
+<p>Paperback supports several common file formats, with more planned for
+future releases.</p>
+<ul>
+<li>CHM help files.</li>
+<li>microsoft Word documents.</li>
+<li>Epub 2/3 books.</li>
+<li>HTML documents.</li>
+<li>Markdown documents.</li>
+<li>OpenDocument presentations.</li>
+<li>OpenDocument text files.</li>
+<li>PDF documents.</li>
+<li>PowerPoint presentations.</li>
+<li>Text documents.</li>
+</ul>
+<h1 id="hotkeys">Hotkeys</h1>
+<p>Paperback’s user interface was designed specifically with keyboard
+and screen reader users in mind. As such, every action has an associated
+hotkey. Below, you’ll find a list of all of them, grouped by menu
+structure.</p>
+<h2 id="file-menu">File menu</h2>
+<ul>
+<li>Ctrl+O: open a document.</li>
+<li>Ctrl+F4: close the currently focused document.</li>
+<li>Ctrl+Shift+F4: close all currently opened documents.</li>
+<li>Ctrl+E: export the currently focused document to plain text.</li>
+</ul>
+<h2 id="go-menu">Go menu</h2>
+<ul>
+<li>Ctrl+F: show the find dialog.</li>
+<li>F3: find next.</li>
+<li>Shift+F3: find previous.</li>
+<li>Ctrl+G: bring up the go to line dialog.</li>
+<li>Ctrl+Shift+G: bring up the go to percent dialog, allowing you to go
+to a percentage through your document with a slider.</li>
+<li>Ctrl+P: brings up a dialog allowing you to specify a page number to
+jump to, if the document supports pages.</li>
+<li>Left bracket: go to the previous section.</li>
+<li>Right bracket: go to the next section.</li>
+<li>Shift+H: go to the previous heading.</li>
+<li>H: Go to the next heading.</li>
+<li>Shift+1: go to the previous heading level 1.</li>
+<li>1: go to the next heading level 1.</li>
+<li>Shift+2: go to the previous heading level 2.</li>
+<li>2: go to the next heading level 2.</li>
+<li>Shift+3: go to the previous heading level 3.</li>
+<li>3: go to the next heading level 3.</li>
+<li>Shift+4: go to the previous heading level 4.</li>
+<li>4: go to the next heading level 4.</li>
+<li>Shift+5: go to the previous heading level 5.</li>
+<li>5: go to the next heading level 5.</li>
+<li>Shift+6: go to the previous heading level 6.</li>
+<li>6: go to the next heading level 6.</li>
+<li>Shift+P: go to the previous page.</li>
+<li>P: go to the next page.</li>
+<li>Shift+B: go to the previous bookmark.</li>
+<li>B: go to the next bookmark.</li>
+<li>Ctrl+Shift+B: toggle a bookmark at your current cursor
+position.</li>
+<li>Ctrl+B: bring up the jump to bookmark dialog.</li>
+<li>Shift+K:” go to the previous link.</li>
+<li>K: go to the next link.</li>
+</ul>
+<h2 id="tools-menu">Tools menu</h2>
+<ul>
+<li>Ctrl+W: view the word count of the currently focused document.</li>
+<li>Ctrl+I: bring up the document info dialog.</li>
+<li>Ctrl+T: show the table of contents.</li>
+<li>Ctrl+Comma: bring up the options dialog.</li>
+</ul>
+<h2 id="about-menu">About menu</h2>
+<ul>
+<li>Ctrl+F1: show the about dialog.</li>
+<li>F1: pop up this readme file in your default web browser.</li>
+<li>Shift+F1: pop up this readme file in Paperback itself.</li>
+<li>Ctrl+D: open my PayPal donations page in your default web
+browser.</li>
+</ul>
+<h1 id="credits">Credits</h1>
+<h2 id="development">Development</h2>
+<ul>
+<li>Quin Gillespie: primary developer and project founder.</li>
+<li>Aryan Choudhary: added multiple new document formats, link support,
+more.</li>
+</ul>
+<h2 id="donations">Donations</h2>
+<p>The following people have made donations of some size to Paperback
+development. If you make a donation your name won’t automatically be
+added here, I only add people who want their donation made public.</p>
+<p>Note: I consider a public GitHub sponsor grounds for automatic
+inclusion in this list.</p>
+<ul>
+<li>Brandon McGinty</li>
+<li>Brian Hartgen</li>
+<li>Devin Prater</li>
+<li>Felix Steindorff</li>
+<li>James Scholes</li>
+<li>Jayson Smith</li>
+<li>Pratik Patel</li>
+<li>Roberto Perez</li>
+<li>Sean Randall</li>
+</ul>
+<h2 id="translations">Translations</h2>
+<ul>
+<li>Tarik Hadžirović: Bosnian translation</li>
+<li>Martin Courcelles: French translation</li>
+<li>Nikola Jović: Serbian translation</li>
+</ul>
+<h1 id="changelog">Changelog</h1>
+<h2 id="version-0.6">Version 0.6</h2>
+<ul>
+<li>Fixed whitespace handling at the beginning of pre tags in both HTML
+and XHTML documents.</li>
+<li>HTML inside Markdown code blocks will now be rendered properly. <a
+href="https://github.com/trypsynth/paperback/issues/79">#79</a>.</li>
+<li>If loading a book with a command line parameter while an existing
+Paperback instance is running, you’ll no longer get an error if loading
+your document takes more than 5 seconds.</li>
+<li>Numpad delete now works to remove documents from the tab bar in
+addition to normal delete.</li>
+<li>Paperback can now optionally minimize to your system tray! This
+option is off by default, but turning it on will make the minimize
+option in the system menu put Paperback in your tray, able to be
+restored by clicking on the spawned icon. <a
+href="https://github.com/trypsynth/paperback/issues/49">#49</a>, <a
+href="https://github.com/trypsynth/paperback/pull/85">#85</a>.</li>
+<li>The installer now includes an option to view the readme in your
+browser after installation.</li>
+<li>The recent documents list has been dramatically expanded! Instead of
+simply showing you the last 10 documents you opened, it’ll now show you
+a customizable number, with the rest of the documents you’ve ever opened
+being accessible through a small dialog. <a
+href="https://github.com/trypsynth/paperback/issues/78">#78</a>, <a
+href="https://github.com/trypsynth/paperback/pull/80">#80</a>, <a
+href="https://github.com/trypsynth/paperback/pull/84">#84</a>.</li>
+</ul>
+<h2 id="version-0.5">Version 0.5</h2>
+<ul>
+<li>Added Microsoft Word document support! <a
+href="https://github.com/trypsynth/paperback/issues/27">#27</a>.</li>
+<li>Added support for PowerPoint presentations! <a
+href="https://github.com/trypsynth/paperback/issues/25">#25</a>.</li>
+<li>Fixed certain menu items not being disabled with no documents
+open.</li>
+<li>Fixed the orientation of the go to percent slider. <a
+href="https://github.com/trypsynth/paperback/issues/70">#70</a>.</li>
+<li>Fixed the table of contents in Epub books with URL-encoded file
+paths and/or fragment IDs.</li>
+<li>Fixed whitespace being stripped from XHTML headings in weird
+ways.</li>
+<li>Fixed whitespace handling inside of nested pre tags in HTML
+documents.</li>
+<li>HTML and Markdown documents now support the table of contents
+feature! When you load an HTML/Markdown document, Paperback will build
+its own table of contents out of the structure of the headings in your
+document, and it will show that to you in the control+t dialog.</li>
+<li>HTML documents will now have the title as set in the title tag, if
+it exists. Otherwise, they’ll continue to use the filename without the
+extension.</li>
+<li>Switched from UniversalSpeech to using a live region to report
+speech. This means no screen reader DLLs are shipped alongside the
+program anymore, and more screen readers will now be supported, such as
+Microsoft Narrator.</li>
+<li>Switched zip libraries to allow for opening a wider array of epub
+books. <a
+href="https://github.com/trypsynth/paperback/issues/73">#73</a>.</li>
+<li>The dialog asking you if you want to open your document as plain
+text has been completely redone, and it now allows you to open your
+document as plain text, HTML, or Markdown.</li>
+<li>The go to percent dialog now includes a text field allowing you to
+manually input a percentage to jump to. <a
+href="https://github.com/trypsynth/paperback/issues/66">#66</a>.</li>
+<li>The HTML parser will now recognize dd, dt, and dl as list
+elements.</li>
+<li>The table of contents in Epub books will once again be preserved
+exactly.</li>
+<li>The unicode non-breaking space is now considered when stripping
+blank lines. <a
+href="https://github.com/trypsynth/paperback/issues/71">#71</a>.</li>
+<li>You will no longer be asked how you want to open an unrecognized
+file every single time you load it, only the first time.</li>
+</ul>
+<h2 id="version-0.41">Version 0.41</h2>
+<ul>
+<li>Added an optional start menu icon to the installer.</li>
+<li>The table of contents should now be cleaner in a few cases, for
+example if you have a child and parent item with the same text at the
+same position you’ll now only see the parent item.</li>
+<li>Fixed the table of contents in certain CHM documents.</li>
+<li>Fixed the table of contents in Epub 3 books with absolute paths in
+them. <a
+href="https://github.com/trypsynth/paperback/issues/67">#67</a>.</li>
+<li>CHM documents should now show their title as set in the metadata
+file.</li>
+</ul>
+<h2 id="version-0.4">Version 0.4</h2>
+<ul>
+<li>Added CHM file support! <a
+href="https://github.com/trypsynth/paperback/issues/23">#23</a>.</li>
+<li>Added bookmark support! You can have as many bookmarks throughout as
+many documents as you like. You can jump forward and backward through
+them with b and shift+b, set one with control+shift+b, and bring up a
+dialog to jump to a specific bookmark with control+b. <a
+href="https://github.com/trypsynth/paperback/issues/13">#13</a>.</li>
+<li>Added an installer alongside the portable zip file! The installer
+will install Paperback into your Program Files directory, and
+automatically set up file associations for you. <a
+href="https://github.com/trypsynth/paperback/issues/33">#33</a>.</li>
+<li>Text files with BOMs should now be decoded properly, and the BOM
+will no longer be displayed at the beginning of the text either.</li>
+<li>Added far more information to the status bar. It’ll now show you
+your current line, character, and reading percentage. <a
+href="https://github.com/trypsynth/paperback/issues/51">#51</a>.</li>
+<li>HTML comments, as well as the contents of script and style tags,
+will no longer be shown in text output.</li>
+<li>If passing a relative path to Paperback on the command line, it will
+now resolve it properly.</li>
+<li>Percentage movement is now handled by its own slider-based dialog,
+accessible with control+shift+g. <a
+href="https://github.com/trypsynth/paperback/issues/57">#57</a>.</li>
+<li>Documents without known titles or authors will now always have a
+default.</li>
+<li>The position saving logic is now much smarter and should only write
+to the disk when absolutely necessary.</li>
+<li>The document you had focused when you closed Paperback is now
+remembered across application restarts.</li>
+<li>Input into the go to line and go to page dialogs should now be
+sanitized more strictly.</li>
+<li>Fixed table of contents navigation in epub 3 books with relative
+paths in their manifests.</li>
+</ul>
+<h2 id="version-0.3">Version 0.3</h2>
+<ul>
+<li>Fixed the table of contents in epub books with URL-encoded
+manifests. <a
+href="https://github.com/trypsynth/paperback/issues/34">#34</a>.</li>
+<li>Fixed heading navigation in HTML documents containing multi-byte
+Unicode characters. <a
+href="https://github.com/trypsynth/paperback/issues/42">#42</a>, <a
+href="https://github.com/trypsynth/paperback/issues/59">#59</a>, <a
+href="https://github.com/trypsynth/paperback/issues/61">#61</a>.</li>
+<li>Fixed high CPU usage in documents with long titles due to a
+regression in wxWidgets. <a
+href="https://github.com/trypsynth/paperback/issues/60">#60</a>.</li>
+<li>Fixed loading UTF-8 text files.</li>
+<li>Fixed nested TOC items in EPub books putting your cursor at the
+wrong position.</li>
+<li>Fixed a crash on application exit in certain cases. <a
+href="https://github.com/trypsynth/paperback/issues/45">#45</a>.</li>
+<li>Added a checkbox in the options dialog to enable or disable word
+wrap!</li>
+<li>It is now possible to donate to Paperback’s development, either
+through the new donate item in the help menu or through the sponsor this
+project link at the bottom of the GitHub repository’s main page.</li>
+<li>Markdown documents will now always have a title, and Paperback
+should now be able to load virtually any Markdown file. <a
+href="https://github.com/trypsynth/paperback/issues/52">#52</a>.</li>
+<li>PDF documents will now always have a title, even if the metadata is
+missing. <a
+href="https://github.com/trypsynth/paperback/issues/56">#56</a>.</li>
+<li>Switched PDF libraries to the one used in Chromium, leading to far
+more reliable PDF parsing across the board. <a
+href="https://github.com/trypsynth/paperback/issues/41">#41</a>.</li>
+<li>You can now only have one instance of Paperback running at a time.
+Running paperback.exe with a filename while it’s already running will
+open that document in the already running instance.</li>
+<li>You can now press delete on a document in the tab control to close
+it.</li>
+</ul>
+<h2 id="version-0.21">Version 0.21</h2>
+<ul>
+<li>Added the total number of pages to the page label in the go to page
+dialog. <a
+href="https://github.com/trypsynth/paperback/issues/46">#46</a>.</li>
+<li>Allow tabbing from the document content to your list of opened
+documents. <a
+href="https://github.com/trypsynth/paperback/issues/19">#19</a>.</li>
+<li>Fixed the heading keystrokes sometimes opening recent documents if
+you had enough of them. <a
+href="https://github.com/trypsynth/paperback/issues/47">#47</a>.</li>
+<li>Paperback will now remove unnecessary soft hyphens from text
+output.</li>
+<li>Fixed heading navigation sometimes putting you on the wrong
+character.</li>
+</ul>
+<h2 id="version-0.2">Version 0.2</h2>
+<ul>
+<li>Added markdown document support! <a
+href="https://github.com/trypsynth/paperback/issues/22">#22</a>.</li>
+<li>Added PDF document support, including the ability to navigate
+between pages! <a
+href="https://github.com/trypsynth/paperback/issues/12">#12</a>, <a
+href="https://github.com/trypsynth/paperback/issues/37">#37</a>.</li>
+<li>Added keystrokes for navigating by headings in HTML content,
+including epub books and markdown documents. These keystrokes were
+designed to work similar to a screen reader. <a
+href="https://github.com/trypsynth/paperback/issues/3">#3</a>.</li>
+<li>Fixed loading epubs with URL-encoded filenames in their manifests.
+<a href="https://github.com/trypsynth/paperback/issues/20">#20</a>.</li>
+<li>Fixed loading epub 3 books with XHTML embedded inside of them. <a
+href="https://github.com/trypsynth/paperback/issues/35">#35</a>.</li>
+<li>A message is now spoken if the document doesn’t support a table of
+contents or sections, as opposed to the menu items being disabled. <a
+href="https://github.com/trypsynth/paperback/issues/39">#39</a>.</li>
+<li>Added a recent documents menu! It currently stores your last 10
+opened documents, and pressing enter on one will open it for reading. <a
+href="https://github.com/trypsynth/paperback/issues/32">#32</a>.</li>
+<li>Completely rewrote the Find dialog, making it much simpler to use,
+while also adding a history of your last 25 searches and regular
+expression support! <a
+href="https://github.com/trypsynth/paperback/issues/21">#21</a>.</li>
+<li>Previously opened documents are now remembered across application
+restarts. This is configurable through the new options item in the tools
+menu. <a
+href="https://github.com/trypsynth/paperback/issues/18">#18</a>.</li>
+<li>Added shift+f1 to open the readme directly in Paperback itself.</li>
+</ul>
+<h2 id="version-0.1">Version 0.1</h2>
+<ul>
+<li>Initial release.</li>
+</ul>
+</body>
+</html>
