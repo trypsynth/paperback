@@ -25,11 +25,12 @@ public:
 		static const wxString exts[] = {"pptx", "pptm"};
 		return exts;
 	}
-	[[nodiscard]] parser_flags supported_flags() const override { return parser_flags::supports_pages; }
+	[[nodiscard]] parser_flags supported_flags() const override { return parser_flags::supports_pages | parser_flags::supports_toc; }
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 
 private:
 	void extract_text_from_node(Poco::XML::Node* node, std::string& text, wxString& full_text, document* doc, const std::map<std::string, std::string>& rels) const;
+	wxString extract_slide_title(Poco::XML::Document* slide_doc) const;
 };
 
 REGISTER_PARSER(pptx_parser)
