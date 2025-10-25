@@ -815,9 +815,7 @@ void toc_dialog::on_char_hook(wxKeyEvent& event) {
 	if (key_code >= WXK_SPACE && key_code < WXK_DELETE) {
 		search_timer_->StartOnce(500);
 		search_string_ += static_cast<wxChar>(event.GetUnicodeKey());
-		if (find_and_select_item_by_name(search_string_, tree->GetRootItem())) {
-			// Found and selected
-		} else {
+		if (!find_and_select_item_by_name(search_string_, tree->GetRootItem())) {
 			search_string_.RemoveLast(); // No match, remove last char
 		}
 	} else {
@@ -846,5 +844,3 @@ bool toc_dialog::find_and_select_item_by_name(const wxString& name, const wxTree
 	}
 	return false;
 }
-		
-		
