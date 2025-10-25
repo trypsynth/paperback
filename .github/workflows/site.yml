@@ -26,6 +26,8 @@ jobs:
         working-directory: web
       - name: Copy README to site
         run: cp readme.html web/_site/readme.html
+      - name: Copy CNAME to site
+        run: cp CNAME web/_site/CNAME
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
