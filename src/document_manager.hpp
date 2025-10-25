@@ -60,7 +60,7 @@ public:
 	[[nodiscard]] int get_tab_count() const;
 	[[nodiscard]] int get_active_tab_index() const;
 	[[nodiscard]] bool has_documents() const { return get_tab_count() > 0; }
-	void go_to_position(long position) const;
+	void go_to_position(int position) const;
 	void go_to_previous_section() const;
 	void go_to_next_section() const;
 	void go_to_previous_heading();
@@ -79,13 +79,13 @@ public:
 	void show_bookmark_dialog(wxWindow* parent);
 	void show_table_of_contents(wxWindow* parent) const;
 	void show_document_info(wxWindow* parent) const;
-	void save_document_position(const wxString& path, long position) const;
-	[[nodiscard]] long load_document_position(const wxString& path) const;
+	void save_document_position(const wxString& path, int position) const;
+	[[nodiscard]] int load_document_position(const wxString& path) const;
 	void save_current_tab_position() const;
 	void save_all_tab_positions() const;
 	[[nodiscard]] wxString get_status_text() const;
 	[[nodiscard]] wxString get_window_title(const wxString& app_name) const;
-	[[nodiscard]] long find_text(const wxString& query, long start_pos, find_options options) const;
+	[[nodiscard]] int find_text(const wxString& query, int start_pos, find_options options) const;
 	void apply_word_wrap(bool word_wrap);
 	[[nodiscard]] int find_tab_by_path(const wxString& path) const;
 	static void create_heading_menu(wxMenu* menu);

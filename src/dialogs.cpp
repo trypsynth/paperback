@@ -619,6 +619,8 @@ options_dialog::options_dialog(wxWindow* parent) : dialog(parent, _("Options")) 
 	general_box->Add(minimize_to_tray_check, 0, wxALL, option_padding);
 	compact_go_menu_check = new wxCheckBox(this, wxID_ANY, _("Show compact &go menu"));
 	general_box->Add(compact_go_menu_check, 0, wxALL, option_padding);
+	navigation_wrap_check = new wxCheckBox(this, wxID_ANY, _("&Wrap navigation"));
+	general_box->Add(navigation_wrap_check, 0, wxALL, option_padding);
 	check_for_updates_on_startup_check = new wxCheckBox(this, wxID_ANY, _("Check for &updates on startup"));
 	general_box->Add(check_for_updates_on_startup_check, 0, wxALL, option_padding);
 	auto* recent_docs_sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -680,6 +682,16 @@ bool options_dialog::get_compact_go_menu() const {
 void options_dialog::set_compact_go_menu(bool compact) {
 	if (compact_go_menu_check != nullptr) {
 		compact_go_menu_check->SetValue(compact);
+	}
+}
+
+bool options_dialog::get_navigation_wrap() const {
+	return navigation_wrap_check != nullptr ? navigation_wrap_check->GetValue() : false;
+}
+
+void options_dialog::set_navigation_wrap(bool value) {
+	if (navigation_wrap_check) {
+		navigation_wrap_check->SetValue(value);
 	}
 }
 
