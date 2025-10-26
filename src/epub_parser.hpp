@@ -47,7 +47,7 @@ public:
 		static const wxString exts[] = {"epub"};
 		return exts;
 	}
-	[[nodiscard]] parser_flags supported_flags() const override { return parser_flags::supports_sections | parser_flags::supports_toc; }
+[[nodiscard]] parser_flags supported_flags() const override { return parser_flags::supports_sections | parser_flags::supports_toc | parser_flags::supports_lists; }
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 
 private:
