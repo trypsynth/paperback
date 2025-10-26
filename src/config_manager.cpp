@@ -225,86 +225,6 @@ void config_manager::rebuild_recent_documents() {
 	config->SetPath("/");
 }
 
-int config_manager::get_recent_documents_to_show() const {
-	return get_app_setting("recent_documents_to_show", DEFAULT_RECENT_DOCUMENTS_TO_SHOW);
-}
-
-void config_manager::set_recent_documents_to_show(int count) {
-	set_app_setting("recent_documents_to_show", count);
-}
-
-bool config_manager::get_restore_previous_documents() const {
-	return get_app_setting("restore_previous_documents", true);
-}
-
-void config_manager::set_restore_previous_documents(bool restore) {
-	set_app_setting("restore_previous_documents", restore);
-}
-
-bool config_manager::get_word_wrap() const {
-	return get_app_setting("word_wrap", false);
-}
-
-void config_manager::set_word_wrap(bool word_wrap) {
-	set_app_setting("word_wrap", word_wrap);
-}
-
-bool config_manager::get_minimize_to_tray() const {
-	return get_app_setting("minimize_to_tray", false);
-}
-
-void config_manager::set_minimize_to_tray(bool minimize) {
-	set_app_setting("minimize_to_tray", minimize);
-}
-
-bool config_manager::get_compact_go_menu() const {
-	return get_app_setting("compact_go_menu", true);
-}
-
-void config_manager::set_compact_go_menu(bool compact) {
-	set_app_setting("compact_go_menu", compact);
-}
-
-bool config_manager::get_navigation_wrap() const {
-	return get_app_setting("navigation_wrap", false);
-}
-
-void config_manager::set_navigation_wrap(bool navigation_wrap) {
-	set_app_setting("navigation_wrap", navigation_wrap);
-}
-
-bool config_manager::get_check_for_updates_on_startup() const {
-	return get_app_setting("check_for_updates_on_startup", true);
-}
-
-void config_manager::set_check_for_updates_on_startup(bool check) {
-	set_app_setting("check_for_updates_on_startup", check);
-}
-
-wxString config_manager::get_language() const {
-	return get_app_setting("language", wxString(""));
-}
-
-void config_manager::set_language(const wxString& language) {
-	set_app_setting("language", language);
-}
-
-int config_manager::get_config_version() const {
-	return get_app_setting("version", static_cast<int>(CONFIG_VERSION_LEGACY));
-}
-
-void config_manager::set_config_version(int version) {
-	set_app_setting("version", version);
-}
-
-void config_manager::set_active_document(const wxString& path) {
-	set_app_setting("active_document", path);
-}
-
-wxString config_manager::get_active_document() const {
-	return get_app_setting("active_document", wxString(""));
-}
-
 void config_manager::add_opened_document(const wxString& path) {
 	if (!config) {
 		return;
@@ -669,7 +589,7 @@ bool config_manager::needs_migration() const {
 	if (!config) {
 		return false;
 	}
-	const int version = get_config_version();
+	const int version = get(config_version);
 	if (version == CONFIG_VERSION_CURRENT) {
 		return false;
 	}
@@ -688,7 +608,7 @@ bool config_manager::migrate_config() {
 	if (!config) {
 		return false;
 	}
-	const int version = get_config_version();
+	const int version = get(config_version);
 	if (version == CONFIG_VERSION_LEGACY) {
 		config->SetPath("/");
 		const bool restore_docs = config->ReadBool("restore_previous_documents", true);
@@ -795,7 +715,7 @@ bool config_manager::migrate_config() {
 			cont = config->GetNextGroup(group, group_index);
 		}
 	}
-	set_config_version(CONFIG_VERSION_CURRENT);
+	set(config_version, static_cast<int>(CONFIG_VERSION_CURRENT));
 	return true;
 }
 
@@ -821,32 +741,23 @@ void config_manager::load_defaults() {
 	if (needs_migration()) {
 		migrate_config();
 	}
-	config->SetPath("/app");
-	if (!config->HasEntry("restore_previous_documents")) {
-		config->Write("restore_previous_documents", true);
+	auto set_default_if_missing = [this](const auto& setting) {
+		config->SetPath("/app");
+		if (!config->HasEntry(setting.key)) {
+			config->Write(setting.key, setting.default_value);
+		}
+		config->SetPath("/");
+	};
+	set_default_if_missing(restore_previous_documents);
+	set_default_if_missing(word_wrap);
+	set_default_if_missing(minimize_to_tray);
+	set_default_if_missing(compact_go_menu);
+	set_default_if_missing(navigation_wrap);
+	set_default_if_missing(check_for_updates_on_startup);
+	set_default_if_missing(recent_documents_to_show);
+	if (get(config_version) != CONFIG_VERSION_CURRENT) {
+		set(config_version, static_cast<int>(CONFIG_VERSION_CURRENT));
 	}
-	if (!config->HasEntry("word_wrap")) {
-		config->Write("word_wrap", false);
-	}
-	if (!config->HasEntry("minimize_to_tray")) {
-		config->Write("minimize_to_tray", false);
-	}
-	if (!config->HasEntry("compact_go_menu")) {
-		config->Write("compact_go_menu", true);
-	}
-	if (!config->HasEntry("navigation_wrap")) {
-		config->Write("navigation_wrap", false);
-	}
-	if (!config->HasEntry("check_for_updates_on_startup")) {
-		config->Write("check_for_updates_on_startup", true);
-	}
-	if (!config->HasEntry("recent_documents_to_show")) {
-		config->Write("recent_documents_to_show", DEFAULT_RECENT_DOCUMENTS_TO_SHOW);
-	}
-	if (get_config_version() != CONFIG_VERSION_CURRENT) {
-		set_config_version(CONFIG_VERSION_CURRENT);
-	}
-	config->SetPath("/");
 	rebuild_recent_documents();
 }
 
@@ -906,3 +817,10 @@ wxString config_manager::decode_note(const wxString& encoded) {
 	std::getline(decoder, decoded_str, '\0');
 	return wxString::FromUTF8(decoded_str.c_str());
 }
+
+template bool config_manager::get_app_setting<bool>(const wxString&, const bool&) const;
+template int config_manager::get_app_setting<int>(const wxString&, const int&) const;
+template wxString config_manager::get_app_setting<wxString>(const wxString&, const wxString&) const;
+template void config_manager::set_app_setting<bool>(const wxString&, const bool&);
+template void config_manager::set_app_setting<int>(const wxString&, const int&);
+template void config_manager::set_app_setting<wxString>(const wxString&, const wxString&);
