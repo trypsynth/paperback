@@ -543,18 +543,20 @@ go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ct
 	const long current_pos = textbox->GetInsertionPoint();
 	const long total_pos = textbox->GetLastPosition();
 	const int current_percent = total_pos > 0 ? static_cast<int>((current_pos * percent_max) / total_pos) : 0;
-	auto* slider_label = new wxStaticText(this, wxID_ANY, _("&Percent"));
-	percent_slider = new accessible_slider(this, wxID_ANY, current_percent, 0, percent_max);
 	auto* input_label = new wxStaticText(this, wxID_ANY, _("P&ercent:"));
 	input_ctrl = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, percent_max, current_percent);
+	auto* slider_label = new wxStaticText(this, wxID_ANY, _("&Percent"));
+	percent_slider = new accessible_slider(this, wxID_ANY, current_percent, 0, percent_max);
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	content_sizer->Add(slider_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, label_spacing);
 	content_sizer->Add(percent_slider, 0, wxEXPAND | wxBOTTOM, label_spacing);
 	content_sizer->Add(input_label, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, label_spacing);
 	content_sizer->Add(input_ctrl, 0, wxEXPAND);
 	percent_slider->Bind(wxEVT_SLIDER, &go_to_percent_dialog::on_slider_changed, this);
+	input_ctrl->Bind(wxEVT_SPINCTRL, &go_to_percent_dialog::on_spin_changed, this);
 	set_content(content_sizer);
 	finalize_layout();
+	percent_slider->SetFocus();
 }
 
 long go_to_percent_dialog::get_position() const {
@@ -567,6 +569,11 @@ long go_to_percent_dialog::get_position() const {
 void go_to_percent_dialog::on_slider_changed(wxCommandEvent& /*event*/) {
 	const int slider_value = percent_slider->GetValue();
 	input_ctrl->SetValue(slider_value);
+}
+
+void go_to_percent_dialog::on_spin_changed(wxSpinEvent& /*event*/) {
+	const int spin_value = input_ctrl->GetValue();
+	percent_slider->SetValue(spin_value);
 }
 
 open_as_dialog::open_as_dialog(wxWindow* parent, const wxString& path) : dialog(parent, _("Open As")) {

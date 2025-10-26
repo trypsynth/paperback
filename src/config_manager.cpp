@@ -63,20 +63,22 @@ bool config_manager::initialize() {
 }
 
 void config_manager::flush() {
-	if (config) {
-		config->Flush();
+	if (!config) {
+		return;
 	}
+	config->Flush();
 }
 
 void config_manager::shutdown() {
-	if (config) {
-		config->Flush();
-		if (owns_global_config) {
-			wxConfigBase::Set(nullptr);
-			owns_global_config = false;
-		}
-		config.reset();
+	if (!config) {
+		return;
 	}
+	config->Flush();
+	if (owns_global_config) {
+		wxConfigBase::Set(nullptr);
+		owns_global_config = false;
+	}
+	config.reset();
 }
 
 wxString config_manager::get_string(const wxString& key, const wxString& default_value) const {
@@ -92,21 +94,24 @@ int config_manager::get_int(const wxString& key, int default_value) const {
 }
 
 void config_manager::set_string(const wxString& key, const wxString& value) {
-	if (config) {
-		config->Write(key, value);
+	if (!config) {
+		return;
 	}
+	config->Write(key, value);
 }
 
 void config_manager::set_bool(const wxString& key, bool value) {
-	if (config) {
-		config->Write(key, value);
+	if (!config) {
+		return;
 	}
+	config->Write(key, value);
 }
 
 void config_manager::set_int(const wxString& key, int value) {
-	if (config) {
-		config->Write(key, value);
+	if (!config) {
+		return;
 	}
+	config->Write(key, value);
 }
 
 template <typename T>
@@ -194,9 +199,10 @@ wxArrayString config_manager::get_recent_documents() const {
 }
 
 void config_manager::clear_recent_documents() {
-	if (config) {
-		config->DeleteGroup("recent_documents");
+	if (!config) {
+		return;
 	}
+	config->DeleteGroup("recent_documents");
 }
 
 void config_manager::rebuild_recent_documents() {
@@ -340,7 +346,7 @@ wxArrayString config_manager::get_opened_documents() const {
 	}
 	config->SetPath("/opened_documents");
 	wxString key;
-	long index = 0;
+	long index{0};
 	bool cont = config->GetFirstEntry(key, index);
 	while (cont) {
 		const wxString path = config->Read(key, "");
@@ -382,7 +388,7 @@ wxArrayString config_manager::get_all_opened_documents() const {
 	}
 	config->SetPath("/");
 	wxString group;
-	long index = 0;
+	long index{0};
 	bool cont = config->GetFirstGroup(group, index);
 	while (cont) {
 		if (group.StartsWith("doc_")) {
@@ -428,7 +434,7 @@ wxArrayString config_manager::get_all_documents() const {
 	}
 	config->SetPath("/");
 	wxString group;
-	long index = 0;
+	long index{0};
 	bool cont = config->GetFirstGroup(group, index);
 	while (cont) {
 		if (group.StartsWith("doc_")) {
@@ -593,7 +599,7 @@ std::vector<bookmark> config_manager::get_bookmarks(const wxString& path) const 
 			}
 		} else {
 			// Backward compatibility. This shouldn't happen after migration, but handle it gracefully anyway.
-			int position = 0;
+			int position{0};
 			if (token.ToInt(&position)) {
 				result.push_back(bookmark(position, position, wxEmptyString));
 			}
@@ -669,7 +675,7 @@ bool config_manager::needs_migration() const {
 	}
 	config->SetPath("/positions");
 	wxString key;
-	long index = 0;
+	long index{0};
 	const bool has_old_positions = config->GetFirstEntry(key, index);
 	config->SetPath("/");
 	const bool has_old_globals = config->HasEntry("restore_previous_documents") || config->HasEntry("word_wrap");
@@ -696,7 +702,7 @@ bool config_manager::migrate_config() {
 		}
 		config->SetPath("/positions");
 		wxString key;
-		long index = 0;
+		long index{0};
 		bool cont = config->GetFirstEntry(key, index);
 		while (cont) {
 			const long position = config->ReadLong(key, 0);
@@ -707,7 +713,7 @@ bool config_manager::migrate_config() {
 		}
 		config->SetPath("/recent_documents");
 		wxString recent_key;
-		long recent_index = 0;
+		long recent_index{0};
 		bool recent_cont = config->GetFirstEntry(recent_key, recent_index);
 		wxArrayString old_recent_paths;
 		while (recent_cont) {
@@ -724,7 +730,7 @@ bool config_manager::migrate_config() {
 		}
 		config->SetPath("/opened_documents");
 		wxString opened_key;
-		long opened_index = 0;
+		long opened_index{0};
 		bool opened_cont = config->GetFirstEntry(opened_key, opened_index);
 		wxArrayString old_opened_paths;
 		while (opened_cont) {
@@ -746,7 +752,7 @@ bool config_manager::migrate_config() {
 	} else if (version == CONFIG_VERSION_1) {
 		config->SetPath("/");
 		wxString group;
-		long group_index = 0;
+		long group_index{0};
 		bool cont = config->GetFirstGroup(group, group_index);
 		while (cont) {
 			if (group.StartsWith("doc_")) {
@@ -759,7 +765,7 @@ bool config_manager::migrate_config() {
 					while (tokenizer.HasMoreTokens()) {
 						const wxString token = tokenizer.GetNextToken().Trim().Trim(false);
 						if (!token.Contains(":")) {
-							long position = 0;
+							long position{0};
 							if (token.ToLong(&position)) {
 								if (!first) {
 									new_bookmarks += ",";
@@ -768,7 +774,7 @@ bool config_manager::migrate_config() {
 								first = false;
 							}
 						} else {
-							int colon_count = token.Freq(':');
+							int colon_count{token.Freq(':')};
 							if (!first) {
 								new_bookmarks += ",";
 							}

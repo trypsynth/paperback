@@ -198,6 +198,7 @@ private:
 	wxSpinCtrl* input_ctrl{nullptr};
 
 	void on_slider_changed(wxCommandEvent& event);
+	void on_spin_changed(wxSpinEvent& event);
 };
 
 class open_as_dialog : public dialog {
