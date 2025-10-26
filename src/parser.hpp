@@ -20,6 +20,7 @@ enum class parser_flags {
 	supports_sections = 1 << 0,
 	supports_toc = 1 << 1,
 	supports_pages = 1 << 2,
+	supports_lists = 1 << 3,
 };
 
 inline constexpr parser_flags operator|(parser_flags a, parser_flags b) noexcept {

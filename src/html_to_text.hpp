@@ -12,6 +12,7 @@
 #include <lexbor/html/html.h>
 #include <memory>
 #include <string>
+#include <stack>
 #include <unordered_map>
 #include <vector>
 
@@ -25,6 +26,22 @@ struct link_info {
 	size_t offset;
 	std::string text;
 	std::string ref;
+};
+
+struct list_item_info {
+	size_t offset;
+	int level;
+	std::string text;
+};
+
+struct list_style_info {
+	bool ordered = false;
+	int item_number = 1;
+};
+
+struct list_info {
+	size_t offset;
+	int item_count;
 };
 
 class html_to_text {
@@ -41,6 +58,8 @@ public:
 	[[nodiscard]] const std::unordered_map<std::string, size_t>& get_id_positions() const noexcept { return id_positions; }
 	[[nodiscard]] const std::vector<heading_info>& get_headings() const noexcept { return headings; }
 	[[nodiscard]] const std::vector<link_info>& get_links() const noexcept { return links; }
+	[[nodiscard]] const std::vector<list_info>& get_lists() const noexcept { return lists; }
+	[[nodiscard]] const std::vector<list_item_info>& get_list_items() const noexcept { return list_items; }
 	[[nodiscard]] const std::string& get_title() const noexcept { return title; }
 	void clear() noexcept;
 
@@ -59,6 +78,8 @@ private:
 	std::unordered_map<std::string, size_t> id_positions;
 	std::vector<heading_info> headings;
 	std::vector<link_info> links;
+	std::vector<list_info> lists;
+	std::vector<list_item_info> list_items;
 	std::vector<bool> preserve_line_whitespace;
 	std::string title;
 	bool in_body = false;
@@ -67,6 +88,8 @@ private:
 	bool in_link = false;
 	std::string current_link_href;
 	std::string current_link_text;
+	std::stack<list_style_info> list_style_stack;
+	int list_level = 0;
 	size_t link_start_pos = 0;
 	html_source_mode source_mode = html_source_mode::native_html;
 	size_t cached_char_length = 0;
@@ -81,4 +104,5 @@ private:
 	[[nodiscard]] static constexpr bool is_block_element(std::string_view tag_name) noexcept;
 	[[nodiscard]] static std::string_view get_tag_name(lxb_dom_element_t* element) noexcept;
 	[[nodiscard]] static std::string get_element_text(lxb_dom_element_t* element);
+	[[nodiscard]] static std::string get_bullet_for_level(int level) noexcept;
 };

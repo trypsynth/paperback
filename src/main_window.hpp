@@ -80,6 +80,10 @@ private:
 	void on_jump_to_bookmark(wxCommandEvent&);
 	void on_next_link(wxCommandEvent&);
 	void on_previous_link(wxCommandEvent&);
+	void on_previous_list(wxCommandEvent&);
+	void on_next_list(wxCommandEvent&);
+	void on_previous_list_item(wxCommandEvent&);
+	void on_next_list_item(wxCommandEvent&);
 	void on_word_count(wxCommandEvent&);
 	void on_doc_info(wxCommandEvent&);
 	void on_toc(wxCommandEvent&);

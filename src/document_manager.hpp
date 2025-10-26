@@ -73,6 +73,10 @@ public:
 	void go_to_next_bookmark();
 	void go_to_previous_link() const;
 	void go_to_next_link() const;
+	void go_to_previous_list();
+	void go_to_next_list();
+	void go_to_previous_list_item();
+	void go_to_next_list_item();
 	void activate_current_link() const;
 	void toggle_bookmark();
 	void add_bookmark_with_note();

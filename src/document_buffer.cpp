@@ -81,6 +81,15 @@ int document_buffer::next_marker_index(int position, marker_type type) const noe
 	return -1;
 }
 
+int document_buffer::find_first_marker_after(int position, marker_type type) const noexcept {
+	for (size_t i = 0; i < markers.size(); ++i) {
+		if (static_cast<long>(markers[i].pos) >= position && markers[i].type == type) {
+			return static_cast<int>(i);
+		}
+	}
+	return -1;
+}
+
 int document_buffer::previous_marker_index(int position, marker_type type) const noexcept {
 	int current_index = -1;
 	for (size_t i = 0; i < markers.size(); ++i) {
