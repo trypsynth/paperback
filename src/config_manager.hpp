@@ -15,11 +15,11 @@
 #include <wx/string.h>
 
 struct bookmark {
-	long start;
-	long end;
+	int start;
+	int end;
 	wxString note;
 
-	bookmark(long s, long e, const wxString& n = wxEmptyString) : start{s}, end{e}, note{n} {}
+	bookmark(int s, int e, const wxString& n = wxEmptyString) : start{s}, end{e}, note{n} {}
 	bookmark() : start{0}, end{0}, note{wxEmptyString} {}
 
 	bool is_whole_line() const { return start == end; }
@@ -63,6 +63,8 @@ public:
 	void set_minimize_to_tray(bool minimize);
 	bool get_compact_go_menu() const;
 	void set_compact_go_menu(bool compact);
+	[[nodiscard]] bool get_navigation_wrap() const;
+	void set_navigation_wrap(bool navigation_wrap);
 	bool get_check_for_updates_on_startup() const;
 	void set_check_for_updates_on_startup(bool check);
 	wxString get_language() const;
@@ -75,8 +77,8 @@ public:
 	void remove_opened_document(const wxString& path);
 	wxArrayString get_opened_documents() const;
 	void clear_opened_documents();
-	void set_document_position(const wxString& path, long position);
-	long get_document_position(const wxString& path) const;
+	void set_document_position(const wxString& path, int position);
+	int get_document_position(const wxString& path) const;
 	void set_document_opened(const wxString& path, bool opened);
 	void remove_document_history(const wxString& path);
 	bool get_document_opened(const wxString& path) const;
@@ -84,15 +86,15 @@ public:
 	wxArrayString get_all_documents() const;
 	int get_config_version() const;
 	void set_config_version(int version);
-	void add_bookmark(const wxString& path, long start, long end, const wxString& note = wxEmptyString);
-	void remove_bookmark(const wxString& path, long start, long end);
-	void toggle_bookmark(const wxString& path, long start, long end, const wxString& note = wxEmptyString);
-	void update_bookmark_note(const wxString& path, long start, long end, const wxString& note);
+	void add_bookmark(const wxString& path, int start, int end, const wxString& note = wxEmptyString);
+	void remove_bookmark(const wxString& path, int start, int end);
+	void toggle_bookmark(const wxString& path, int start, int end, const wxString& note = wxEmptyString);
+	void update_bookmark_note(const wxString& path, int start, int end, const wxString& note);
 	std::vector<bookmark> get_bookmarks(const wxString& path) const;
 	void clear_bookmarks(const wxString& path);
-	bookmark get_next_bookmark(const wxString& path, long current_position) const;
-	bookmark get_previous_bookmark(const wxString& path, long current_position) const;
-	bookmark get_closest_bookmark(const wxString& path, long current_position) const;
+	bookmark get_next_bookmark(const wxString& path, int current_position) const;
+	bookmark get_previous_bookmark(const wxString& path, int current_position) const;
+	bookmark get_closest_bookmark(const wxString& path, int current_position) const;
 	void set_document_format(const wxString& path, const wxString& format);
 	wxString get_document_format(const wxString& path) const;
 	bool needs_migration() const;
@@ -102,6 +104,14 @@ private:
 	std::unique_ptr<wxFileConfig> config;
 	bool owns_global_config{false};
 
+	template <typename T>
+	T get_app_setting(const wxString& key, const T& default_value) const;
+	template <typename T>
+	void set_app_setting(const wxString& key, const T& value);
+	template <typename T>
+	T get_document_setting(const wxString& path, const wxString& key, const T& default_value) const;
+	template <typename T>
+	void set_document_setting(const wxString& path, const wxString& key, const T& value);
 	static wxString get_config_path();
 	static bool is_directory_writable(const wxString& dir);
 	void load_defaults();

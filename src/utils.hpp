@@ -25,7 +25,6 @@ enum class find_options {
 	use_regex = 1 << 3
 };
 
-// NOLINTBEGIN(clang-analyzer-optin.core.EnumCastOutOfRange)
 inline constexpr find_options operator|(find_options a, find_options b) noexcept {
 	return static_cast<find_options>(static_cast<int>(a) | static_cast<int>(b));
 }
@@ -33,7 +32,6 @@ inline constexpr find_options operator|(find_options a, find_options b) noexcept
 inline constexpr find_options operator&(find_options a, find_options b) noexcept {
 	return static_cast<find_options>(static_cast<int>(a) & static_cast<int>(b));
 }
-// NOLINTEND(clang-analyzer-optin.core.EnumCastOutOfRange)
 
 inline constexpr find_options& operator|=(find_options& a, find_options b) noexcept {
 	return a = a | b;
@@ -49,7 +47,6 @@ inline constexpr bool has_option(find_options options, find_options flag) noexce
 [[nodiscard]] std::string remove_soft_hyphens(std::string_view input);
 [[nodiscard]] const parser* get_parser_for_unknown_file(const wxString& path, config_manager& config);
 void speak(const wxString& message);
-void emulate_ctrl_key_press();
 [[nodiscard]] std::string url_decode(std::string_view encoded);
 [[nodiscard]] std::string convert_to_utf8(const std::string& input);
 void cleanup_toc(std::vector<std::unique_ptr<toc_item>>& items);
