@@ -56,6 +56,7 @@ public:
 	static constexpr app_setting<bool> compact_go_menu{"compact_go_menu", true};
 	static constexpr app_setting<bool> navigation_wrap{"navigation_wrap", false};
 	static constexpr app_setting<bool> check_for_updates_on_startup{"check_for_updates_on_startup", true};
+	static constexpr app_setting<int> sleep_timer_duration{"sleep_timer_duration", 30};
 	static constexpr app_setting<int> config_version{"version", 0};
 	static inline const app_setting<wxString> language{"language", wxString("")};
 	static inline const app_setting<wxString> active_document{"active_document", wxString("")};

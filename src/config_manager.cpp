@@ -755,6 +755,7 @@ void config_manager::load_defaults() {
 	set_default_if_missing(navigation_wrap);
 	set_default_if_missing(check_for_updates_on_startup);
 	set_default_if_missing(recent_documents_to_show);
+	set_default_if_missing(sleep_timer_duration);
 	if (get(config_version) != CONFIG_VERSION_CURRENT) {
 		set(config_version, static_cast<int>(CONFIG_VERSION_CURRENT));
 	}

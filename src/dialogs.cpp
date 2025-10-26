@@ -756,6 +756,21 @@ void options_dialog::on_cancel(wxCommandEvent& /*event*/) {
 	EndModal(wxID_CANCEL);
 }
 
+sleep_timer_dialog::sleep_timer_dialog(wxWindow* parent, int initial_duration) : dialog(parent, _("Sleep Timer")) {
+	constexpr int label_spacing = 5;
+	auto* sizer = new wxBoxSizer(wxHORIZONTAL);
+	auto* label = new wxStaticText(this, wxID_ANY, _("&Minutes:"));
+	input_ctrl = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 999, initial_duration);
+	sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, label_spacing);
+	sizer->Add(input_ctrl, 1, wxEXPAND);
+	set_content(sizer);
+	finalize_layout();
+}
+
+int sleep_timer_dialog::get_duration() const {
+	return input_ctrl->GetValue();
+}
+
 toc_dialog::toc_dialog(wxWindow* parent, const document* doc, int current_offset) : dialog(parent, _("Table of Contents")), selected_offset{-1} {
 	search_timer_ = new wxTimer(this);
 	tree = new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTR_HIDE_ROOT);
