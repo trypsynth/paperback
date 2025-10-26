@@ -227,7 +227,7 @@ void document_manager::go_to_previous_section() const {
 	}
 	int prev_index = doc->previous_section_index(search_pos);
 	if (prev_index == -1) {
-		if (config.get_navigation_wrap()) {
+		if (config.get(config_manager::navigation_wrap)) {
 			prev_index = doc->previous_section_index(text_ctrl->GetLastPosition() + 1);
 			if (prev_index != -1) {
 				wrapping = true;
@@ -265,7 +265,7 @@ void document_manager::go_to_next_section() const {
 	bool wrapping = false;
 	int next_index = doc->next_section_index(current_pos);
 	if (next_index == -1) {
-		if (config.get_navigation_wrap()) {
+		if (config.get(config_manager::navigation_wrap)) {
 			next_index = doc->next_section_index(-1);
 			if (next_index != -1) {
 				wrapping = true;
@@ -318,7 +318,7 @@ void document_manager::go_to_previous_page() const {
 	bool wrapping = false;
 	int prev_index = doc->previous_page_index(current_pos);
 	if (prev_index == -1) {
-		if (config.get_navigation_wrap()) {
+		if (config.get(config_manager::navigation_wrap)) {
 			prev_index = doc->previous_page_index(text_ctrl->GetLastPosition() + 1);
 			if (prev_index != -1) {
 				wrapping = true;
@@ -357,7 +357,7 @@ void document_manager::go_to_next_page() const {
 	bool wrapping = false;
 	int next_index = doc->next_page_index(current_pos);
 	if (next_index == -1) {
-		if (config.get_navigation_wrap()) {
+		if (config.get(config_manager::navigation_wrap)) {
 			next_index = doc->next_page_index(-1);
 			if (next_index != -1) {
 				wrapping = true;
@@ -392,7 +392,7 @@ void document_manager::go_to_previous_bookmark() {
 	bool wrapping = false;
 	bookmark prev_bookmark = config.get_previous_bookmark(tab->file_path, current_pos);
 	if (prev_bookmark.start == -1) {
-		if (config.get_navigation_wrap()) {
+		if (config.get(config_manager::navigation_wrap)) {
 			prev_bookmark = config.get_previous_bookmark(tab->file_path, text_ctrl->GetLastPosition() + 1);
 			if (prev_bookmark.start != -1) {
 				wrapping = true;
@@ -442,7 +442,7 @@ void document_manager::go_to_next_bookmark() {
 	bool wrapping = false;
 	bookmark next_bookmark = config.get_next_bookmark(tab->file_path, current_pos);
 	if (next_bookmark.start == -1) {
-		if (config.get_navigation_wrap()) {
+		if (config.get(config_manager::navigation_wrap)) {
 			next_bookmark = config.get_next_bookmark(tab->file_path, -1);
 			if (next_bookmark.start != -1) {
 				wrapping = true;
@@ -496,7 +496,7 @@ void document_manager::go_to_previous_link() const {
 	bool wrapping = false;
 	int prev_index = doc->buffer.previous_marker_index(current_pos, marker_type::link);
 	if (prev_index == -1) {
-		if (config.get_navigation_wrap()) {
+		if (config.get(config_manager::navigation_wrap)) {
 			prev_index = doc->buffer.previous_marker_index(text_ctrl->GetLastPosition() + 1, marker_type::link);
 			if (prev_index != -1) {
 				wrapping = true;
@@ -532,7 +532,7 @@ void document_manager::go_to_next_link() const {
 	bool wrapping = false;
 	int next_index = doc->buffer.next_marker_index(current_pos, marker_type::link);
 	if (next_index == -1) {
-		if (config.get_navigation_wrap()) {
+		if (config.get(config_manager::navigation_wrap)) {
 			next_index = doc->buffer.next_marker_index(-1, marker_type::link);
 			if (next_index != -1) {
 				wrapping = true;
@@ -925,7 +925,7 @@ void document_manager::restore_document_position(document_tab* tab) const {
 wxPanel* document_manager::create_tab_panel(const wxString& content, document_tab* tab_data) {
 	auto* panel = new wxPanel(notebook, wxID_ANY);
 	auto* sizer = new wxBoxSizer(wxVERTICAL);
-	const bool word_wrap = config.get_word_wrap();
+	const bool word_wrap = config.get(config_manager::word_wrap);
 	const long style = wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | (word_wrap ? wxTE_WORDWRAP : wxTE_DONTWRAP);
 	auto* text_ctrl = new wxTextCtrl(panel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, style);
 	panel->SetClientObject(tab_data);
@@ -953,7 +953,7 @@ void document_manager::navigate_to_heading(bool next, int specific_level) const 
 	bool wrapping = false;
 	target_index = next ? doc->next_heading_index(current_pos, specific_level) : doc->previous_heading_index(current_pos, specific_level);
 	if (target_index == -1) {
-		if (config.get_navigation_wrap()) {
+		if (config.get(config_manager::navigation_wrap)) {
 			target_index = next ? doc->next_heading_index(-1, specific_level) : doc->previous_heading_index(text_ctrl->GetLastPosition() + 1, specific_level);
 			if (target_index != -1) {
 				wrapping = true;
