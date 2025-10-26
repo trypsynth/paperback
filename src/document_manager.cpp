@@ -643,7 +643,7 @@ void document_manager::go_to_previous_list() {
 	bool wrapping = false;
 	int prev_index = doc->buffer.previous_marker_index(current_pos, marker_type::list);
 	if (prev_index == -1) {
-		if (config.get_navigation_wrap()) {
+		if (config.get(config_manager::navigation_wrap)) {
 			prev_index = doc->buffer.previous_marker_index(text_ctrl->GetLastPosition() + 1, marker_type::list);
 			if (prev_index != -1) {
 				wrapping = true;
@@ -696,7 +696,7 @@ void document_manager::go_to_next_list() {
 	bool wrapping = false;
 	int next_index = doc->buffer.next_marker_index(current_pos, marker_type::list);
 	if (next_index == -1) {
-		if (config.get_navigation_wrap()) {
+		if (config.get(config_manager::navigation_wrap)) {
 			next_index = doc->buffer.next_marker_index(-1, marker_type::list);
 			if (next_index != -1) {
 				wrapping = true;
@@ -750,7 +750,7 @@ void document_manager::go_to_previous_list_item() {
 	bool wrapping = false;
 	int prev_index = doc->buffer.previous_marker_index(current_pos, marker_type::list_item);
 	if (prev_index == -1) {
-		if (config.get_navigation_wrap()) {
+		if (config.get(config_manager::navigation_wrap)) {
 			prev_index = doc->buffer.previous_marker_index(text_ctrl->GetLastPosition() + 1, marker_type::list_item);
 			if (prev_index != -1) {
 				wrapping = true;
@@ -795,7 +795,7 @@ void document_manager::go_to_next_list_item() {
 	bool wrapping = false;
 	int next_index = doc->buffer.next_marker_index(current_pos, marker_type::list_item);
 	if (next_index == -1) {
-		if (config.get_navigation_wrap()) {
+		if (config.get(config_manager::navigation_wrap)) {
 			next_index = doc->buffer.next_marker_index(-1, marker_type::list_item);
 			if (next_index != -1) {
 				wrapping = true;
