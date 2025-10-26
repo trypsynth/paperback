@@ -26,13 +26,13 @@ struct chm_context {
 	std::string author;
 	std::string hhc_file;
 
-	chm_context(chmFile* f) : file(f) {}
+	explicit chm_context(chmFile* f) : file{f} {}
 };
 
 class chm_parser : public parser {
 public:
 	chm_parser() = default;
-	~chm_parser() = default;
+	~chm_parser() override = default;
 	chm_parser(const chm_parser&) = delete;
 	chm_parser& operator=(const chm_parser&) = delete;
 	chm_parser(chm_parser&&) = delete;

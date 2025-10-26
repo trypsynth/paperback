@@ -1,4 +1,4 @@
-# Paperback - version 0.5
+# Paperback - version 0.6
 ## Introduction
 Paperback is a lightweight, fast, and accessible ebook/document reader designed to make reading fun and seamless, regardless of the file format being used or the user's preferences.
 
@@ -18,16 +18,17 @@ Paperback currently runs on Windows 7 through Windows 11. It's possible it runs 
 ## Currently supported filetypes
 Paperback supports several common file formats, with more planned for future releases.
 
-* CHM help files.
-* microsoft Word documents.
-* Epub 2/3 books.
-* HTML documents.
-* Markdown documents.
-* OpenDocument presentations.
-* OpenDocument text files.
-* PDF documents.
-* PowerPoint presentations.
-* Text documents.
+* CHM help files
+* microsoft Word documents
+* Epub books (version 2 and 3)
+* FB2 ebooks
+* HTML documents
+* Markdown documents
+* OpenDocument presentations
+* OpenDocument text files
+* PDF documents
+* PowerPoint presentations
+* Text documents
 
 ## Hotkeys
 Paperback's user interface was designed specifically with keyboard and screen reader users in mind. As such, every action has an associated hotkey. Below, you'll find a list of all of them, grouped by menu structure.
@@ -36,6 +37,7 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * Ctrl+O: open a document.
 * Ctrl+F4: close the currently focused document.
 * Ctrl+Shift+F4: close all currently opened documents.
+* Ctrl+R: bring up the all documents dialog.
 * Ctrl+E: export the currently focused document to plain text.
 
 ### Go menu
