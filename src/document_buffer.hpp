@@ -32,10 +32,16 @@ struct marker {
 	wxString ref;
 	int level;
 
-	marker(int position, marker_type marker_type, const wxString& marker_text = wxString(), const wxString& marker_ref = wxString(), int marker_level = 0) : pos{position}, type{marker_type}, text{marker_text}, ref{marker_ref}, level{marker_level} {}
+	marker(int position, marker_type marker_type, const wxString& marker_text = wxString(), const wxString& marker_ref = wxString(), int marker_level = 0) : pos{position}, type{marker_type}, text{marker_text}, ref{marker_ref}, level{marker_level} {
+	}
 
-	[[nodiscard]] auto operator<=>(const marker& other) const noexcept { return pos <=> other.pos; }
-	[[nodiscard]] bool operator==(const marker& other) const noexcept { return pos == other.pos; }
+	[[nodiscard]] auto operator<=>(const marker& other) const noexcept {
+		return pos <=> other.pos;
+	}
+
+	[[nodiscard]] bool operator==(const marker& other) const noexcept {
+		return pos == other.pos;
+	}
 };
 
 class document_buffer {
@@ -47,7 +53,11 @@ public:
 	document_buffer(document_buffer&&) = default;
 	document_buffer& operator=(document_buffer&&) = default;
 	void set_content(const wxString& text);
-	[[nodiscard]] const wxString& str() const noexcept { return content; }
+
+	[[nodiscard]] const wxString& str() const noexcept {
+		return content;
+	}
+
 	void append(const wxString& text);
 	void append_line(const wxString& text = wxString());
 	void add_heading(int level, const wxString& text);

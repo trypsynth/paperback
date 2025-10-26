@@ -19,7 +19,8 @@ struct app_setting {
 	const char* key;
 	T default_value;
 
-	constexpr app_setting(const char* k, const T& def) : key{k}, default_value{def} {}
+	constexpr app_setting(const char* k, const T& def) : key{k}, default_value{def} {
+	}
 };
 
 struct bookmark {
@@ -27,11 +28,19 @@ struct bookmark {
 	int end;
 	wxString note;
 
-	bookmark(int s, int e, const wxString& n = wxEmptyString) : start{s}, end{e}, note{n} {}
-	bookmark() : start{0}, end{0}, note{wxEmptyString} {}
+	bookmark(int s, int e, const wxString& n = wxEmptyString) : start{s}, end{e}, note{n} {
+	}
 
-	bool is_whole_line() const { return start == end; }
-	bool has_note() const { return !note.IsEmpty(); }
+	bookmark() : start{0}, end{0}, note{wxEmptyString} {
+	}
+
+	bool is_whole_line() const {
+		return start == end;
+	}
+
+	bool has_note() const {
+		return !note.IsEmpty();
+	}
 
 	bool operator==(const bookmark& other) const {
 		return start == other.start && end == other.end;
@@ -69,8 +78,14 @@ public:
 	void set_string(const wxString& key, const wxString& value);
 	void set_bool(const wxString& key, bool value);
 	void set_int(const wxString& key, int value);
-	wxFileConfig* get_config() const { return config.get(); }
-	bool is_initialized() const { return config != nullptr; }
+
+	wxFileConfig* get_config() const {
+		return config.get();
+	}
+
+	bool is_initialized() const {
+		return config != nullptr;
+	}
 
 	template <typename T>
 	T get(const app_setting<T>& setting) const {

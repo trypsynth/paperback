@@ -20,12 +20,20 @@ public:
 	odp_parser& operator=(const odp_parser&) = delete;
 	odp_parser(odp_parser&&) = delete;
 	odp_parser& operator=(odp_parser&&) = delete;
-	[[nodiscard]] wxString name() const override { return "OpenDocument Presentations"; }
+
+	[[nodiscard]] wxString name() const override {
+		return "OpenDocument Presentations";
+	}
+
 	[[nodiscard]] std::span<const wxString> extensions() const override {
 		static const wxString exts[] = {"odp"};
 		return exts;
 	}
-	[[nodiscard]] parser_flags supported_flags() const override { return parser_flags::supports_pages; }
+
+	[[nodiscard]] parser_flags supported_flags() const override {
+		return parser_flags::supports_pages;
+	}
+
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 
 private:

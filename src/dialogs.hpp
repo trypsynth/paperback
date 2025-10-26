@@ -56,7 +56,10 @@ public:
 	all_documents_dialog& operator=(const all_documents_dialog&) = delete;
 	all_documents_dialog(all_documents_dialog&&) = delete;
 	all_documents_dialog& operator=(all_documents_dialog&&) = delete;
-	[[nodiscard]] wxString get_selected_path() const { return selected_path; }
+
+	[[nodiscard]] wxString get_selected_path() const {
+		return selected_path;
+	}
 
 private:
 	wxListView* doc_list{nullptr};
@@ -82,7 +85,10 @@ public:
 	bookmark_dialog& operator=(const bookmark_dialog&) = delete;
 	bookmark_dialog(bookmark_dialog&&) = delete;
 	bookmark_dialog& operator=(bookmark_dialog&&) = delete;
-	[[nodiscard]] long get_selected_position() const { return selected_position; }
+
+	[[nodiscard]] long get_selected_position() const {
+		return selected_position;
+	}
 
 private:
 	wxListBox* bookmark_list{nullptr};
@@ -270,7 +276,8 @@ private:
 
 class toc_tree_item_data : public wxTreeItemData {
 public:
-	toc_tree_item_data(int offset_) : offset{offset_} {}
+	toc_tree_item_data(int offset_) : offset{offset_} {
+	}
 
 	int offset{0};
 };
@@ -283,7 +290,10 @@ public:
 	toc_dialog& operator=(const toc_dialog&) = delete;
 	toc_dialog(toc_dialog&&) = delete;
 	toc_dialog& operator=(toc_dialog&&) = delete;
-	[[nodiscard]] int get_selected_offset() const { return selected_offset; }
+
+	[[nodiscard]] int get_selected_offset() const {
+		return selected_offset;
+	}
 
 private:
 	wxTreeCtrl* tree{nullptr};

@@ -28,24 +28,41 @@ public:
 	xml_to_text(xml_to_text&&) = default;
 	xml_to_text& operator=(xml_to_text&&) = default;
 	[[nodiscard]] bool convert(const std::string& xml_content);
-	[[nodiscard]] const std::vector<std::string>& get_lines() const noexcept { return lines; }
+
+	[[nodiscard]] const std::vector<std::string>& get_lines() const noexcept {
+		return lines;
+	}
+
 	[[nodiscard]] std::string get_text() const;
-	[[nodiscard]] const std::unordered_map<std::string, size_t>& get_id_positions() const noexcept { return id_positions; }
-	[[nodiscard]] const std::vector<heading_info>& get_headings() const noexcept { return headings; }
-	[[nodiscard]] const std::vector<link_info>& get_links() const noexcept { return links; }
-	[[nodiscard]] const std::vector<size_t>& get_section_offsets() const noexcept { return section_offsets; }
+
+	[[nodiscard]] const std::unordered_map<std::string, size_t>& get_id_positions() const noexcept {
+		return id_positions;
+	}
+
+	[[nodiscard]] const std::vector<heading_info>& get_headings() const noexcept {
+		return headings;
+	}
+
+	[[nodiscard]] const std::vector<link_info>& get_links() const noexcept {
+		return links;
+	}
+
+	[[nodiscard]] const std::vector<size_t>& get_section_offsets() const noexcept {
+		return section_offsets;
+	}
+
 	void clear() noexcept;
 
 private:
-	std::vector<std::string> lines;
-	std::string current_line;
-	std::unordered_map<std::string, size_t> id_positions;
-	std::vector<heading_info> headings;
-	std::vector<link_info> links;
-	std::vector<size_t> section_offsets;
-	bool in_body = false;
-	bool preserve_whitespace = false;
-	size_t cached_char_length = 0;
+	std::vector<std::string> lines{};
+	std::string current_line{};
+	std::unordered_map<std::string, size_t> id_positions{};
+	std::vector<heading_info> headings{};
+	std::vector<link_info> links{};
+	std::vector<size_t> section_offsets{};
+	bool in_body{false};
+	bool preserve_whitespace{false};
+	size_t cached_char_length{0};
 
 	void process_node(Poco::XML::Node* node);
 	void process_text_node(Poco::XML::Text* text_node);
