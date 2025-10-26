@@ -98,7 +98,8 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 		wxString full_text;
 		std::vector<size_t> slide_positions;
 		std::vector<wxString> slide_titles;
-		for (const auto& slide_file : slide_files) {
+		for (size_t i = 0; i < slide_files.size(); ++i) {
+			const auto& slide_file = slide_files[i];
 			const std::string& slide_content = slide_contents[slide_file];
 			std::map<std::string, std::string> rels;
 			const std::string slide_base = slide_file.substr(slide_file.find_last_of('/') + 1);
@@ -143,6 +144,10 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 					slide_titles.push_back(slide_title);
 					full_text += slide_wx;
 					full_text += "\n";
+					if (i + 1 < slide_files.size()) {
+						// Ensure we don't get double blank lines at the end of the document.
+						full_text += "\n";
+					}
 				}
 			}
 		}
