@@ -575,6 +575,7 @@ void main_window::on_options(wxCommandEvent&) {
 	dlg.set_word_wrap(config_mgr.get_word_wrap());
 	dlg.set_minimize_to_tray(config_mgr.get_minimize_to_tray());
 	dlg.set_compact_go_menu(config_mgr.get_compact_go_menu());
+	dlg.set_navigation_wrap(config_mgr.get_navigation_wrap());
 	dlg.set_check_for_updates_on_startup(config_mgr.get_check_for_updates_on_startup());
 	dlg.set_recent_documents_to_show(config_mgr.get_recent_documents_to_show());
 	const wxString current_language = translation_manager::instance().get_current_language();
@@ -591,6 +592,7 @@ void main_window::on_options(wxCommandEvent&) {
 	config_mgr.set_word_wrap(new_word_wrap);
 	config_mgr.set_minimize_to_tray(dlg.get_minimize_to_tray());
 	config_mgr.set_compact_go_menu(new_compact_menu);
+	config_mgr.set_navigation_wrap(dlg.get_navigation_wrap());
 	config_mgr.set_check_for_updates_on_startup(dlg.get_check_for_updates_on_startup());
 	config_mgr.set_recent_documents_to_show(dlg.get_recent_documents_to_show());
 	config_mgr.set_language(new_language);
@@ -837,7 +839,7 @@ void main_window::update_recent_documents_menu() {
 		return;
 	}
 	recent_documents_menu->AppendSeparator();
-	recent_documents_menu->Append(ID_SHOW_ALL_DOCUMENTS, _("Show All..."));
+	recent_documents_menu->Append(ID_SHOW_ALL_DOCUMENTS, _("Show All...\tCtrl+R"));
 	Bind(wxEVT_MENU, &main_window::on_show_all_documents, this, ID_SHOW_ALL_DOCUMENTS);
 }
 

@@ -22,6 +22,7 @@
 #include <wx/listctrl.h>
 #include <wx/spinctrl.h>
 #include <wx/textctrl.h>
+#include <wx/timer.h>
 #include <wx/treectrl.h>
 
 enum class dialog_button_config {
@@ -197,6 +198,7 @@ private:
 	wxSpinCtrl* input_ctrl{nullptr};
 
 	void on_slider_changed(wxCommandEvent& event);
+	void on_spin_changed(wxSpinEvent& event);
 };
 
 class sleep_timer_dialog : public dialog {
@@ -243,6 +245,8 @@ public:
 	void set_minimize_to_tray(bool minimize);
 	bool get_compact_go_menu() const;
 	void set_compact_go_menu(bool compact);
+	bool get_navigation_wrap() const;
+	void set_navigation_wrap(bool value);
 	bool get_check_for_updates_on_startup() const;
 	void set_check_for_updates_on_startup(bool check);
 	int get_recent_documents_to_show() const;
@@ -255,6 +259,7 @@ private:
 	wxCheckBox* word_wrap_check{nullptr};
 	wxCheckBox* minimize_to_tray_check{nullptr};
 	wxCheckBox* compact_go_menu_check{nullptr};
+	wxCheckBox* navigation_wrap_check{nullptr};
 	wxCheckBox* check_for_updates_on_startup_check{nullptr};
 	wxSpinCtrl* recent_docs_count_spin{nullptr};
 	wxComboBox* language_combo{nullptr};
@@ -267,7 +272,7 @@ class toc_tree_item_data : public wxTreeItemData {
 public:
 	toc_tree_item_data(int offset_) : offset{offset_} {}
 
-	int offset;
+	int offset{0};
 };
 
 class toc_dialog : public dialog {
@@ -282,11 +287,16 @@ public:
 
 private:
 	wxTreeCtrl* tree{nullptr};
-	int selected_offset;
+	int selected_offset{0};
+	wxString search_string_;
+	wxTimer* search_timer_{nullptr};
 
 	void populate_tree(const std::vector<std::unique_ptr<toc_item>>& items, const wxTreeItemId& parent);
 	void find_and_select_item(const wxTreeItemId& parent, int offset);
 	void on_tree_selection_changed(wxTreeEvent& event);
 	void on_tree_item_activated(wxTreeEvent& event);
 	void on_ok(wxCommandEvent& event);
+	void on_char_hook(wxKeyEvent& event);
+	void on_search_timer(wxTimerEvent& event);
+	bool find_and_select_item_by_name(const wxString& name, const wxTreeItemId& parent);
 };

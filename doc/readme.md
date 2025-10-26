@@ -92,8 +92,10 @@ The following people have made donations of some size to Paperback development. 
 
 Note: I consider a public GitHub sponsor grounds for automatic inclusion in this list.
 
+* Brandon McGinty
 * Brian Hartgen
 * Devin Prater
+* Felix Steindorff
 * James Scholes
 * Jayson Smith
 * Pratik Patel
@@ -109,8 +111,11 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 ### Version 0.6
 * Fixed whitespace handling at the beginning of pre tags in both HTML and XHTML documents.
 * HTML inside Markdown code blocks will now be rendered properly. [#79](https://github.com/trypsynth/paperback/issues/79).
+* If loading a book with a command line parameter while an existing Paperback instance is running, you'll no longer get an error if loading your document takes more than 5 seconds.
 * Numpad delete now works to remove documents from the tab bar in addition to normal delete.
+* Paperback can now optionally minimize to your system tray! This option is off by default, but turning it on will make the minimize option in the system menu put Paperback in your tray, able to be restored by clicking on the spawned icon. [#49](https://github.com/trypsynth/paperback/issues/49), [#85](https://github.com/trypsynth/paperback/pull/85).
 * The installer now includes an option to view the readme in your browser after installation.
+* The recent documents list has been dramatically expanded! Instead of simply showing you the last 10 documents you opened, it'll now show you a customizable number, with the rest of the documents you've ever opened being accessible through a small dialog. [#78](https://github.com/trypsynth/paperback/issues/78), [#80](https://github.com/trypsynth/paperback/pull/80), [#84](https://github.com/trypsynth/paperback/pull/84).
 
 ### Version 0.5
 * Added Microsoft Word document support! [#27](https://github.com/trypsynth/paperback/issues/27).

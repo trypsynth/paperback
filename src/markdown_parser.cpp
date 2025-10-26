@@ -77,6 +77,13 @@ std::string markdown_parser::preprocess_markdown(const std::string& input) {
 			line.pop_back();
 		}
 		const bool is_heading = !line.empty() && (line[0] == '#');
+		// Strip custom ID syntax from headings
+		if (is_heading) {
+			const auto pos = line.rfind(" {#");
+			if (pos != std::string::npos && line.back() == '}') {
+				line.erase(pos);
+			}
+		}
 		const bool is_list = !line.empty() && ((line[0] >= '0' && line[0] <= '9' && line.length() > 1 && line[1] == '.') || line[0] == '-' || line[0] == '*' || line[0] == '+');
 		// Add blank line before headings if previous line wasn't blank
 		if (!first_line && is_heading && !prev_line.empty()) {
