@@ -86,7 +86,7 @@ all_documents_dialog::all_documents_dialog(wxWindow* parent, config_manager& cfg
 	auto* remove_button = new wxButton(this, wxID_REMOVE, _("&Remove"));
 	button_sizer->Add(open_button, 0, wxRIGHT, DIALOG_PADDING);
 	button_sizer->Add(remove_button, 0, wxRIGHT, DIALOG_PADDING);
-	content_sizer->Add(button_sizer, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING); // NOLINT(hicpp-signed-bitwise)
+	content_sizer->Add(button_sizer, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);
 	set_content(content_sizer);
 	finalize_layout();
 	Bind(wxEVT_BUTTON, &all_documents_dialog::on_open, this, wxID_OPEN);
@@ -399,8 +399,8 @@ find_dialog::find_dialog(wxWindow* parent) : wxDialog(parent, wxID_ANY, _("Find"
 	button_sizer->Add(cancel_btn, 0);
 	find_next_btn->SetDefault();
 	main_sizer->Add(find_sizer, 0, wxEXPAND | wxALL, DIALOG_PADDING);
-	main_sizer->Add(options_box, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);  // NOLINT(hicpp-signed-bitwise)
-	main_sizer->Add(button_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING); // NOLINT(hicpp-signed-bitwise)
+	main_sizer->Add(options_box, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);
+	main_sizer->Add(button_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);
 	SetSizer(main_sizer);
 	find_previous_btn->Bind(wxEVT_BUTTON, &find_dialog::on_find_previous, this);
 	find_next_btn->Bind(wxEVT_BUTTON, &find_dialog::on_find_next, this);
@@ -543,18 +543,20 @@ go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ct
 	const long current_pos = textbox->GetInsertionPoint();
 	const long total_pos = textbox->GetLastPosition();
 	const int current_percent = total_pos > 0 ? static_cast<int>((current_pos * percent_max) / total_pos) : 0;
-	auto* slider_label = new wxStaticText(this, wxID_ANY, _("&Percent"));
-	percent_slider = new accessible_slider(this, wxID_ANY, current_percent, 0, percent_max);
 	auto* input_label = new wxStaticText(this, wxID_ANY, _("P&ercent:"));
 	input_ctrl = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, percent_max, current_percent);
+	auto* slider_label = new wxStaticText(this, wxID_ANY, _("&Percent"));
+	percent_slider = new accessible_slider(this, wxID_ANY, current_percent, 0, percent_max);
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	content_sizer->Add(slider_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, label_spacing);
 	content_sizer->Add(percent_slider, 0, wxEXPAND | wxBOTTOM, label_spacing);
 	content_sizer->Add(input_label, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, label_spacing);
 	content_sizer->Add(input_ctrl, 0, wxEXPAND);
 	percent_slider->Bind(wxEVT_SLIDER, &go_to_percent_dialog::on_slider_changed, this);
+	input_ctrl->Bind(wxEVT_SPINCTRL, &go_to_percent_dialog::on_spin_changed, this);
 	set_content(content_sizer);
 	finalize_layout();
+	percent_slider->SetFocus();
 }
 
 long go_to_percent_dialog::get_position() const {
@@ -569,19 +571,9 @@ void go_to_percent_dialog::on_slider_changed(wxCommandEvent& /*event*/) {
 	input_ctrl->SetValue(slider_value);
 }
 
-sleep_timer_dialog::sleep_timer_dialog(wxWindow* parent, int initial_duration) : dialog(parent, _("Sleep Timer")) {
-	constexpr int label_spacing = 5;
-	auto* sizer = new wxBoxSizer(wxHORIZONTAL);
-	auto* label = new wxStaticText(this, wxID_ANY, _("&Minutes:"));
-	input_ctrl = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 999, initial_duration);
-	sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, label_spacing);
-	sizer->Add(input_ctrl, 1, wxEXPAND);
-	set_content(sizer);
-	finalize_layout();
-}
-
-int sleep_timer_dialog::get_duration() const {
-	return input_ctrl->GetValue();
+void go_to_percent_dialog::on_spin_changed(wxSpinEvent& /*event*/) {
+	const int spin_value = input_ctrl->GetValue();
+	percent_slider->SetValue(spin_value);
 }
 
 open_as_dialog::open_as_dialog(wxWindow* parent, const wxString& path) : dialog(parent, _("Open As")) {
@@ -634,6 +626,8 @@ options_dialog::options_dialog(wxWindow* parent) : dialog(parent, _("Options")) 
 	general_box->Add(minimize_to_tray_check, 0, wxALL, option_padding);
 	compact_go_menu_check = new wxCheckBox(this, wxID_ANY, _("Show compact &go menu"));
 	general_box->Add(compact_go_menu_check, 0, wxALL, option_padding);
+	navigation_wrap_check = new wxCheckBox(this, wxID_ANY, _("&Wrap navigation"));
+	general_box->Add(navigation_wrap_check, 0, wxALL, option_padding);
 	check_for_updates_on_startup_check = new wxCheckBox(this, wxID_ANY, _("Check for &updates on startup"));
 	general_box->Add(check_for_updates_on_startup_check, 0, wxALL, option_padding);
 	auto* recent_docs_sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -698,6 +692,16 @@ void options_dialog::set_compact_go_menu(bool compact) {
 	}
 }
 
+bool options_dialog::get_navigation_wrap() const {
+	return navigation_wrap_check != nullptr ? navigation_wrap_check->GetValue() : false;
+}
+
+void options_dialog::set_navigation_wrap(bool value) {
+	if (navigation_wrap_check) {
+		navigation_wrap_check->SetValue(value);
+	}
+}
+
 bool options_dialog::get_check_for_updates_on_startup() const {
 	return check_for_updates_on_startup_check != nullptr ? check_for_updates_on_startup_check->GetValue() : true;
 }
@@ -752,7 +756,23 @@ void options_dialog::on_cancel(wxCommandEvent& /*event*/) {
 	EndModal(wxID_CANCEL);
 }
 
+sleep_timer_dialog::sleep_timer_dialog(wxWindow* parent, int initial_duration) : dialog(parent, _("Sleep Timer")) {
+	constexpr int label_spacing = 5;
+	auto* sizer = new wxBoxSizer(wxHORIZONTAL);
+	auto* label = new wxStaticText(this, wxID_ANY, _("&Minutes:"));
+	input_ctrl = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 999, initial_duration);
+	sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, label_spacing);
+	sizer->Add(input_ctrl, 1, wxEXPAND);
+	set_content(sizer);
+	finalize_layout();
+}
+
+int sleep_timer_dialog::get_duration() const {
+	return input_ctrl->GetValue();
+}
+
 toc_dialog::toc_dialog(wxWindow* parent, const document* doc, int current_offset) : dialog(parent, _("Table of Contents")), selected_offset{-1} {
+	search_timer_ = new wxTimer(this);
 	tree = new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTR_HIDE_ROOT);
 	const wxTreeItemId root = tree->AddRoot(_("Root"));
 	populate_tree(doc->toc_items, root);
@@ -765,6 +785,8 @@ toc_dialog::toc_dialog(wxWindow* parent, const document* doc, int current_offset
 	Bind(wxEVT_TREE_SEL_CHANGED, &toc_dialog::on_tree_selection_changed, this);
 	Bind(wxEVT_TREE_ITEM_ACTIVATED, &toc_dialog::on_tree_item_activated, this, wxID_ANY);
 	Bind(wxEVT_BUTTON, &toc_dialog::on_ok, this, wxID_OK);
+	Bind(wxEVT_CHAR_HOOK, &toc_dialog::on_char_hook, this);
+	Bind(wxEVT_TIMER, &toc_dialog::on_search_timer, this, search_timer_->GetId());
 	finalize_layout();
 }
 
@@ -820,4 +842,39 @@ void toc_dialog::on_ok(wxCommandEvent& /*event*/) {
 	} else {
 		wxMessageBox(_("Please select a section from the table of contents."), _("No Selection"), wxOK | wxICON_INFORMATION, this);
 	}
+}
+
+void toc_dialog::on_char_hook(wxKeyEvent& event) {
+	const int key_code = event.GetKeyCode();
+	if (key_code >= WXK_SPACE && key_code < WXK_DELETE) {
+		search_timer_->StartOnce(500);
+		search_string_ += static_cast<wxChar>(event.GetUnicodeKey());
+		if (!find_and_select_item_by_name(search_string_, tree->GetRootItem())) {
+			search_string_.RemoveLast(); // No match, remove last char
+		}
+	} else {
+		event.Skip();
+	}
+}
+
+void toc_dialog::on_search_timer(wxTimerEvent& /*event*/) {
+	search_string_.Clear();
+}
+
+bool toc_dialog::find_and_select_item_by_name(const wxString& name, const wxTreeItemId& parent) {
+	wxTreeItemIdValue cookie{};
+	for (wxTreeItemId item_id = tree->GetFirstChild(parent, cookie); item_id.IsOk(); item_id = tree->GetNextChild(parent, cookie)) {
+		if (tree->GetItemText(item_id).Lower().StartsWith(name.Lower())) {
+			tree->SelectItem(item_id);
+			tree->SetFocusedItem(item_id);
+			tree->EnsureVisible(item_id);
+			return true;
+		}
+		if (tree->ItemHasChildren(item_id)) {
+			if (find_and_select_item_by_name(name, item_id)) {
+				return true;
+			}
+		}
+	}
+	return false;
 }
