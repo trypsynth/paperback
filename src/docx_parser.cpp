@@ -224,18 +224,18 @@ void docx_parser::process_paragraph(Element* element, wxString& text, std::vecto
 		}
 		child = child->nextSibling();
 	}
-	paragraph_text.Trim(true).Trim(false);
 	if (!paragraph_text.IsEmpty()) {
-		text += paragraph_text;
-		text += "\n";
-		if (heading_level > 0) {
-			heading_info h;
-			h.offset = paragraph_start_offset;
-			h.level = heading_level;
-			h.text = std::string(paragraph_text.utf8_str());
-			if (!h.text.empty()) {
-				headings.push_back(h);
-			}
+		paragraph_text.Trim(true).Trim(false);
+	}
+	text += paragraph_text;
+	text += "\n";
+	if (heading_level > 0 && !paragraph_text.IsEmpty()) {
+		heading_info h;
+		h.offset = paragraph_start_offset;
+		h.level = heading_level;
+		h.text = std::string(paragraph_text.utf8_str());
+		if (!h.text.empty()) {
+			headings.push_back(h);
 		}
 	}
 }
