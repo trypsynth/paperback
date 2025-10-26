@@ -54,15 +54,15 @@ public:
 	void clear() noexcept;
 
 private:
-	std::vector<std::string> lines;
-	std::string current_line;
-	std::unordered_map<std::string, size_t> id_positions;
-	std::vector<heading_info> headings;
-	std::vector<link_info> links;
-	std::vector<size_t> section_offsets;
-	bool in_body = false;
-	bool preserve_whitespace = false;
-	size_t cached_char_length = 0;
+	std::vector<std::string> lines{};
+	std::string current_line{};
+	std::unordered_map<std::string, size_t> id_positions{};
+	std::vector<heading_info> headings{};
+	std::vector<link_info> links{};
+	std::vector<size_t> section_offsets{};
+	bool in_body{false};
+	bool preserve_whitespace{false};
+	size_t cached_char_length{0};
 
 	void process_node(Poco::XML::Node* node);
 	void process_text_node(Poco::XML::Text* text_node);
