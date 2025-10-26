@@ -518,6 +518,7 @@ std::vector<bookmark> config_manager::get_bookmarks(const wxString& path) const 
 				}
 			}
 		} else {
+			// Backward compatibility. This shouldn't happen after migration, but handle it gracefully anyway.
 			int position{0};
 			if (token.ToInt(&position)) {
 				result.push_back(bookmark(position, position, wxEmptyString));
@@ -740,7 +741,6 @@ void config_manager::load_defaults() {
 	if (needs_migration()) {
 		migrate_config();
 	}
-
 	auto set_default_if_missing = [this](const auto& setting) {
 		config->SetPath("/app");
 		if (!config->HasEntry(setting.key)) {
@@ -748,7 +748,6 @@ void config_manager::load_defaults() {
 		}
 		config->SetPath("/");
 	};
-
 	set_default_if_missing(restore_previous_documents);
 	set_default_if_missing(word_wrap);
 	set_default_if_missing(minimize_to_tray);
@@ -757,11 +756,9 @@ void config_manager::load_defaults() {
 	set_default_if_missing(check_for_updates_on_startup);
 	set_default_if_missing(recent_documents_to_show);
 	set_default_if_missing(sleep_timer_duration);
-
 	if (get(config_version) != CONFIG_VERSION_CURRENT) {
 		set(config_version, static_cast<int>(CONFIG_VERSION_CURRENT));
 	}
-	config->SetPath("/");
 	rebuild_recent_documents();
 }
 
