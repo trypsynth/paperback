@@ -157,6 +157,7 @@ void xml_to_text::process_node(Node* node) {
 				child = child->nextSibling();
 			}
 			if (item_count > 0) {
+				finalize_current_line();
 				lists.push_back({.offset = get_current_text_position(), .item_count = item_count});
 			}
 		}
