@@ -38,7 +38,7 @@ bool app::OnInit() {
 		return false;
 	}
 	translation_manager::instance().initialize();
-	const wxString preferred_language = config_mgr.get_language();
+	const wxString preferred_language = config_mgr.get(config_manager::language);
 	if (!preferred_language.IsEmpty()) {
 		translation_manager::instance().set_language(preferred_language);
 	}
@@ -69,14 +69,14 @@ bool app::OnInit() {
 		wxMessageBox(_("Failed to create IPC server"), _("Warning"), wxICON_WARNING);
 	}
 	frame = new main_window();
-	if (config_mgr.get_restore_previous_documents()) {
+	if (config_mgr.get(config_manager::restore_previous_documents)) {
 		restore_previous_documents();
 	}
 	if (argc > 1) {
 		parse_command_line();
 	}
 	frame->Show(true);
-	if (config_mgr.get_check_for_updates_on_startup()) {
+	if (config_mgr.get(config_manager::check_for_updates_on_startup)) {
 		check_for_updates(true);
 	}
 	return true;
@@ -122,7 +122,7 @@ void app::parse_command_line() {
 void app::restore_previous_documents() {
 	const wxArrayString opened_docs = config_mgr.get_all_opened_documents();
 	auto* doc_manager = frame->get_doc_manager();
-	const wxString active_doc = config_mgr.get_active_document();
+	const wxString active_doc = config_mgr.get(config_manager::active_document);
 	for (const auto& path : opened_docs) {
 		if (!wxFileName::FileExists(path)) {
 			continue;

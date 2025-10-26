@@ -91,7 +91,7 @@ wxMenu* main_window::create_file_menu() {
 wxMenu* main_window::create_go_menu() {
 	auto* const menu = new wxMenu();
 	auto& config_mgr = wxGetApp().get_config_manager();
-	const bool compact = config_mgr.get_compact_go_menu();
+	const bool compact = config_mgr.get(config_manager::compact_go_menu);
 	menu->Append(wxID_FIND, _("&Find...\tCtrl+F"));
 	menu->Append(ID_FIND_NEXT, _("Find Ne&xt\tF3"));
 	menu->Append(ID_FIND_PREVIOUS, _("Find P&revious\tShift+F3"));
@@ -249,7 +249,7 @@ void main_window::bind_events() {
 void main_window::on_iconize(wxIconizeEvent& event) {
 	if (event.IsIconized()) {
 		auto& config_mgr = wxGetApp().get_config_manager();
-		if (config_mgr.get_minimize_to_tray()) {
+		if (config_mgr.get(config_manager::minimize_to_tray)) {
 			Hide();
 			task_bar_icon_->SetIcon(wxICON(wxICON_INFORMATION), APP_NAME);
 		}
@@ -581,31 +581,31 @@ void main_window::on_options(wxCommandEvent&) {
 	auto& config_mgr = wxGetApp().get_config_manager();
 	const wxTextCtrl* active_text_ctrl = doc_manager->get_active_text_ctrl();
 	options_dialog dlg(this);
-	dlg.set_restore_previous_documents(config_mgr.get_restore_previous_documents());
-	dlg.set_word_wrap(config_mgr.get_word_wrap());
-	dlg.set_minimize_to_tray(config_mgr.get_minimize_to_tray());
-	dlg.set_compact_go_menu(config_mgr.get_compact_go_menu());
-	dlg.set_navigation_wrap(config_mgr.get_navigation_wrap());
-	dlg.set_check_for_updates_on_startup(config_mgr.get_check_for_updates_on_startup());
-	dlg.set_recent_documents_to_show(config_mgr.get_recent_documents_to_show());
+	dlg.set_restore_previous_documents(config_mgr.get(config_manager::restore_previous_documents));
+	dlg.set_word_wrap(config_mgr.get(config_manager::word_wrap));
+	dlg.set_minimize_to_tray(config_mgr.get(config_manager::minimize_to_tray));
+	dlg.set_compact_go_menu(config_mgr.get(config_manager::compact_go_menu));
+	dlg.set_navigation_wrap(config_mgr.get(config_manager::navigation_wrap));
+	dlg.set_check_for_updates_on_startup(config_mgr.get(config_manager::check_for_updates_on_startup));
+	dlg.set_recent_documents_to_show(config_mgr.get(config_manager::recent_documents_to_show));
 	const wxString current_language = translation_manager::instance().get_current_language();
 	dlg.set_language(current_language);
 	if (dlg.ShowModal() != wxID_OK) {
 		return;
 	}
-	const bool old_word_wrap = config_mgr.get_word_wrap();
+	const bool old_word_wrap = config_mgr.get(config_manager::word_wrap);
 	const bool new_word_wrap = dlg.get_word_wrap();
-	const bool old_compact_menu = config_mgr.get_compact_go_menu();
+	const bool old_compact_menu = config_mgr.get(config_manager::compact_go_menu);
 	const bool new_compact_menu = dlg.get_compact_go_menu();
 	const wxString new_language = dlg.get_language();
-	config_mgr.set_restore_previous_documents(dlg.get_restore_previous_documents());
-	config_mgr.set_word_wrap(new_word_wrap);
-	config_mgr.set_minimize_to_tray(dlg.get_minimize_to_tray());
-	config_mgr.set_compact_go_menu(new_compact_menu);
-	config_mgr.set_navigation_wrap(dlg.get_navigation_wrap());
-	config_mgr.set_check_for_updates_on_startup(dlg.get_check_for_updates_on_startup());
-	config_mgr.set_recent_documents_to_show(dlg.get_recent_documents_to_show());
-	config_mgr.set_language(new_language);
+	config_mgr.set(config_manager::restore_previous_documents, dlg.get_restore_previous_documents());
+	config_mgr.set(config_manager::word_wrap, new_word_wrap);
+	config_mgr.set(config_manager::minimize_to_tray, dlg.get_minimize_to_tray());
+	config_mgr.set(config_manager::compact_go_menu, new_compact_menu);
+	config_mgr.set(config_manager::navigation_wrap, dlg.get_navigation_wrap());
+	config_mgr.set(config_manager::check_for_updates_on_startup, dlg.get_check_for_updates_on_startup());
+	config_mgr.set(config_manager::recent_documents_to_show, dlg.get_recent_documents_to_show());
+	config_mgr.set(config_manager::language, new_language);
 	if (old_word_wrap != new_word_wrap) {
 		doc_manager->apply_word_wrap(new_word_wrap);
 		if (active_text_ctrl != nullptr && doc_manager->get_active_text_ctrl() != nullptr) {
@@ -721,7 +721,7 @@ void main_window::on_close_window(wxCloseEvent& event) {
 		auto* active_tab = doc_manager->get_active_tab();
 		if (active_tab != nullptr) {
 			auto& config_mgr = wxGetApp().get_config_manager();
-			config_mgr.set_active_document(active_tab->file_path);
+			config_mgr.set(config_manager::active_document, active_tab->file_path);
 			config_mgr.flush();
 		}
 	}
@@ -798,7 +798,7 @@ void main_window::update_recent_documents_menu() {
 	auto& config_mgr = wxGetApp().get_config_manager();
 	const wxArrayString recent_docs = config_mgr.get_recent_documents();
 	size_t menu_count = 0;
-	for (size_t i = 0; i < recent_docs.GetCount() && menu_count < config_mgr.get_recent_documents_to_show(); ++i) {
+	for (size_t i = 0; i < recent_docs.GetCount() && menu_count < config_mgr.get(config_manager::recent_documents_to_show); ++i) {
 		const wxString& path = recent_docs[i];
 		const wxString filename = wxFileName(path).GetFullName();
 		const wxString menu_text = wxString::Format("&%zu %s", menu_count + 1, filename);

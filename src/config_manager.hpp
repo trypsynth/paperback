@@ -14,6 +14,14 @@
 #include <wx/fileconf.h>
 #include <wx/string.h>
 
+template <typename T>
+struct app_setting {
+	const char* key;
+	T default_value;
+
+	constexpr app_setting(const char* k, const T& def) : key{k}, default_value{def} {}
+};
+
 struct bookmark {
 	int start;
 	int end;
@@ -32,6 +40,17 @@ struct bookmark {
 
 class config_manager {
 public:
+	static constexpr app_setting<int> recent_documents_to_show{"recent_documents_to_show", 25};
+	static constexpr app_setting<bool> restore_previous_documents{"restore_previous_documents", true};
+	static constexpr app_setting<bool> word_wrap{"word_wrap", false};
+	static constexpr app_setting<bool> minimize_to_tray{"minimize_to_tray", false};
+	static constexpr app_setting<bool> compact_go_menu{"compact_go_menu", true};
+	static constexpr app_setting<bool> navigation_wrap{"navigation_wrap", false};
+	static constexpr app_setting<bool> check_for_updates_on_startup{"check_for_updates_on_startup", true};
+	static constexpr app_setting<int> config_version{"version", 0};
+	static inline const app_setting<wxString> language{"language", wxString("")};
+	static inline const app_setting<wxString> active_document{"active_document", wxString("")};
+
 	config_manager() = default;
 	~config_manager();
 	config_manager(const config_manager&) = delete;
@@ -49,28 +68,18 @@ public:
 	void set_int(const wxString& key, int value);
 	wxFileConfig* get_config() const { return config.get(); }
 	bool is_initialized() const { return config != nullptr; }
+	template <typename T>
+	T get(const app_setting<T>& setting) const {
+		return get_app_setting(wxString(setting.key), setting.default_value);
+	}
+	template <typename T>
+	void set(const app_setting<T>& setting, const T& value) {
+		set_app_setting(wxString(setting.key), value);
+	}
 	void add_recent_document(const wxString& path);
 	wxArrayString get_recent_documents() const;
 	void clear_recent_documents();
 	void rebuild_recent_documents();
-	int get_recent_documents_to_show() const;
-	void set_recent_documents_to_show(int count);
-	bool get_restore_previous_documents() const;
-	void set_restore_previous_documents(bool restore);
-	bool get_word_wrap() const;
-	void set_word_wrap(bool word_wrap);
-	bool get_minimize_to_tray() const;
-	void set_minimize_to_tray(bool minimize);
-	bool get_compact_go_menu() const;
-	void set_compact_go_menu(bool compact);
-	[[nodiscard]] bool get_navigation_wrap() const;
-	void set_navigation_wrap(bool navigation_wrap);
-	bool get_check_for_updates_on_startup() const;
-	void set_check_for_updates_on_startup(bool check);
-	wxString get_language() const;
-	void set_language(const wxString& language);
-	void set_active_document(const wxString& path);
-	wxString get_active_document() const;
 	void add_opened_document(const wxString& path);
 	void remove_opened_document(const wxString& path);
 	wxArrayString get_opened_documents() const;
@@ -82,8 +91,6 @@ public:
 	bool get_document_opened(const wxString& path) const;
 	wxArrayString get_all_opened_documents() const;
 	wxArrayString get_all_documents() const;
-	int get_config_version() const;
-	void set_config_version(int version);
 	void add_bookmark(const wxString& path, int start, int end, const wxString& note = wxEmptyString);
 	void remove_bookmark(const wxString& path, int start, int end);
 	void toggle_bookmark(const wxString& path, int start, int end, const wxString& note = wxEmptyString);
