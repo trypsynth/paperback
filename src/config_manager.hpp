@@ -30,11 +30,6 @@ struct bookmark {
 	}
 };
 
-enum class sleep_timer_action {
-	stop_speech,
-	exit_app
-};
-
 class config_manager {
 public:
 	config_manager() = default;
@@ -74,8 +69,6 @@ public:
 	void set_language(const wxString& language);
 	int get_sleep_timer_duration() const;
 	void set_sleep_timer_duration(int duration);
-	sleep_timer_action get_sleep_timer_action() const;
-	void set_sleep_timer_action(sleep_timer_action action);
 	void set_active_document(const wxString& path);
 	wxString get_active_document() const;
 	void add_opened_document(const wxString& path);

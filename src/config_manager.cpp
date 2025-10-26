@@ -280,20 +280,6 @@ void config_manager::set_sleep_timer_duration(int duration) {
 	});
 }
 
-sleep_timer_action config_manager::get_sleep_timer_action() const {
-	int result = 0;
-	with_app_section([this, &result]() {
-		result = config->ReadLong("sleep_timer_action", 0);
-	});
-	return static_cast<sleep_timer_action>(result);
-}
-
-void config_manager::set_sleep_timer_action(sleep_timer_action action) {
-	with_app_section([this, action]() {
-		config->Write("sleep_timer_action", static_cast<long>(action));
-	});
-}
-
 int config_manager::get_config_version() const {
 	int version = CONFIG_VERSION_LEGACY;
 	with_app_section([this, &version]() {
@@ -877,9 +863,6 @@ void config_manager::load_defaults() {
 	}
 	if (!config->HasEntry("recent_documents_to_show")) {
 		config->Write("recent_documents_to_show", DEFAULT_RECENT_DOCUMENTS_TO_SHOW);
-	}
-	if (!config->HasEntry("sleep_timer_action")) {
-		config->Write("sleep_timer_action", static_cast<long>(sleep_timer_action::stop_speech));
 	}
 	if (get_config_version() != CONFIG_VERSION_CURRENT) {
 		set_config_version(CONFIG_VERSION_CURRENT);

@@ -579,7 +579,6 @@ void main_window::on_options(wxCommandEvent&) {
 	dlg.set_recent_documents_to_show(config_mgr.get_recent_documents_to_show());
 	const wxString current_language = translation_manager::instance().get_current_language();
 	dlg.set_language(current_language);
-	dlg.set_sleep_timer_action(config_mgr.get_sleep_timer_action());
 	if (dlg.ShowModal() != wxID_OK) {
 		return;
 	}
@@ -595,7 +594,6 @@ void main_window::on_options(wxCommandEvent&) {
 	config_mgr.set_check_for_updates_on_startup(dlg.get_check_for_updates_on_startup());
 	config_mgr.set_recent_documents_to_show(dlg.get_recent_documents_to_show());
 	config_mgr.set_language(new_language);
-	config_mgr.set_sleep_timer_action(dlg.get_sleep_timer_action());
 	if (old_word_wrap != new_word_wrap) {
 		doc_manager->apply_word_wrap(new_word_wrap);
 		if (active_text_ctrl != nullptr && doc_manager->get_active_text_ctrl() != nullptr) {
@@ -677,16 +675,7 @@ void main_window::on_sleep_timer(wxCommandEvent&) {
 
 void main_window::on_sleep_timer_tick(wxTimerEvent&) {
 	sleep_status_update_timer->Stop();
-	auto& config_mgr = wxGetApp().get_config_manager();
-	const sleep_timer_action action = config_mgr.get_sleep_timer_action();
-	switch (action) {
-		case sleep_timer_action::stop_speech:
-			emulate_ctrl_key_press();
-			break;
-		case sleep_timer_action::exit_app:
-			Close(true);
-			break;
-	}
+	emulate_ctrl_key_press();
 	update_status_bar();
 }
 
