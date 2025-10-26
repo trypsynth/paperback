@@ -59,7 +59,11 @@ public:
 	[[nodiscard]] const parser* get_active_parser() const;
 	[[nodiscard]] int get_tab_count() const;
 	[[nodiscard]] int get_active_tab_index() const;
-	[[nodiscard]] bool has_documents() const { return get_tab_count() > 0; }
+
+	[[nodiscard]] bool has_documents() const {
+		return get_tab_count() > 0;
+	}
+
 	void go_to_position(int position) const;
 	void go_to_previous_section() const;
 	void go_to_next_section() const;

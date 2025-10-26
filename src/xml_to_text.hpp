@@ -28,12 +28,29 @@ public:
 	xml_to_text(xml_to_text&&) = default;
 	xml_to_text& operator=(xml_to_text&&) = default;
 	[[nodiscard]] bool convert(const std::string& xml_content);
-	[[nodiscard]] const std::vector<std::string>& get_lines() const noexcept { return lines; }
+
+	[[nodiscard]] const std::vector<std::string>& get_lines() const noexcept {
+		return lines;
+	}
+
 	[[nodiscard]] std::string get_text() const;
-	[[nodiscard]] const std::unordered_map<std::string, size_t>& get_id_positions() const noexcept { return id_positions; }
-	[[nodiscard]] const std::vector<heading_info>& get_headings() const noexcept { return headings; }
-	[[nodiscard]] const std::vector<link_info>& get_links() const noexcept { return links; }
-	[[nodiscard]] const std::vector<size_t>& get_section_offsets() const noexcept { return section_offsets; }
+
+	[[nodiscard]] const std::unordered_map<std::string, size_t>& get_id_positions() const noexcept {
+		return id_positions;
+	}
+
+	[[nodiscard]] const std::vector<heading_info>& get_headings() const noexcept {
+		return headings;
+	}
+
+	[[nodiscard]] const std::vector<link_info>& get_links() const noexcept {
+		return links;
+	}
+
+	[[nodiscard]] const std::vector<size_t>& get_section_offsets() const noexcept {
+		return section_offsets;
+	}
+
 	void clear() noexcept;
 
 private:

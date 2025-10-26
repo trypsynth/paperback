@@ -20,12 +20,20 @@ public:
 	pptx_parser& operator=(const pptx_parser&) = delete;
 	pptx_parser(pptx_parser&&) = delete;
 	pptx_parser& operator=(pptx_parser&&) = delete;
-	[[nodiscard]] wxString name() const override { return "PowerPoint Presentations"; }
+
+	[[nodiscard]] wxString name() const override {
+		return "PowerPoint Presentations";
+	}
+
 	[[nodiscard]] std::span<const wxString> extensions() const override {
 		static const wxString exts[] = {"pptx", "pptm"};
 		return exts;
 	}
-	[[nodiscard]] parser_flags supported_flags() const override { return parser_flags::supports_pages | parser_flags::supports_toc; }
+
+	[[nodiscard]] parser_flags supported_flags() const override {
+		return parser_flags::supports_pages | parser_flags::supports_toc;
+	}
+
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 
 private:

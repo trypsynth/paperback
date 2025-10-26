@@ -24,9 +24,19 @@ public:
 	main_window& operator=(const main_window&) = delete;
 	main_window(main_window&&) = delete;
 	main_window& operator=(main_window&&) = delete;
-	[[nodiscard]] document_manager* get_doc_manager() const noexcept { return doc_manager.get(); }
-	[[nodiscard]] wxNotebook* get_notebook() const noexcept { return notebook; }
-	[[nodiscard]] wxStaticText* get_live_region_label() const noexcept { return live_region_label; }
+
+	[[nodiscard]] document_manager* get_doc_manager() const noexcept {
+		return doc_manager.get();
+	}
+
+	[[nodiscard]] wxNotebook* get_notebook() const noexcept {
+		return notebook;
+	}
+
+	[[nodiscard]] wxStaticText* get_live_region_label() const noexcept {
+		return live_region_label;
+	}
+
 	void on_text_cursor_changed(wxEvent& event);
 	void on_text_char(wxKeyEvent& event);
 	void trigger_throttled_position_save();
