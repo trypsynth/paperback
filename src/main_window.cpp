@@ -674,9 +674,7 @@ void main_window::on_sleep_timer(wxCommandEvent&) {
 }
 
 void main_window::on_sleep_timer_tick(wxTimerEvent&) {
-	sleep_status_update_timer->Stop();
-	emulate_ctrl_key_press();
-	update_status_bar();
+	Close(true);
 }
 
 void main_window::on_sleep_status_update_timer(wxTimerEvent&) {
