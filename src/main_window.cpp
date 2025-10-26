@@ -163,7 +163,7 @@ wxMenu* main_window::create_tools_menu() {
 	menu->Append(ID_TABLE_OF_CONTENTS, _("Table of contents\tCtrl+T"));
 	menu->AppendSeparator();
 	menu->Append(ID_OPTIONS, _("&Options\tCtrl+,"));
-	menu->Append(ID_SLEEP_TIMER, _("&Sleep Timer..."));
+	menu->Append(ID_SLEEP_TIMER, _("&Sleep Timer...\tCtrl+Shift+S"));
 	return menu;
 }
 
@@ -218,12 +218,12 @@ void main_window::bind_events() {
 		{ID_DOC_INFO, &main_window::on_doc_info},
 		{ID_TABLE_OF_CONTENTS, &main_window::on_toc},
 		{ID_OPTIONS, &main_window::on_options},
+		{ID_SLEEP_TIMER, &main_window::on_sleep_timer},
 		{wxID_ABOUT, &main_window::on_about},
 		{wxID_HELP, &main_window::on_help},
 		{ID_HELP_INTERNAL, &main_window::on_help_internal},
 		{ID_DONATE, &main_window::on_donate},
 		{ID_CHECK_FOR_UPDATES, &main_window::on_check_for_updates},
-		{ID_SLEEP_TIMER, &main_window::on_sleep_timer},
 	};
 	for (const auto& [id, handler] : menu_bindings) {
 		Bind(wxEVT_MENU, handler, this, id);
@@ -655,22 +655,19 @@ void main_window::on_sleep_timer(wxCommandEvent&) {
 		sleep_timer->Stop();
 		sleep_status_update_timer->Stop();
 		update_status_bar();
-		speak(_("Sleep timer cancelled."));
+		speak(_("Sleep timer canceled."));
 		return;
 	}
-
 	auto& config_mgr = wxGetApp().get_config_manager();
 	sleep_timer_dialog dlg(this, config_mgr.get(config_manager::sleep_timer_duration));
 	if (dlg.ShowModal() != wxID_OK) {
 		return;
 	}
-
 	sleep_timer_duration_minutes = dlg.get_duration();
 	config_mgr.set(config_manager::sleep_timer_duration, sleep_timer_duration_minutes);
 	sleep_timer_start_time = wxGetLocalTimeMillis();
 	sleep_timer->StartOnce(sleep_timer_duration_minutes * 60 * 1000);
 	sleep_status_update_timer->Start(1000);
-	set_live_region(live_region_label, live_region_mode::polite);
 	update_status_bar();
 	speak(wxString::Format(_("Sleep timer set for %d minutes."), sleep_timer_duration_minutes));
 }

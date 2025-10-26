@@ -207,20 +207,6 @@ private:
 	void on_spin_changed(wxSpinEvent& event);
 };
 
-class sleep_timer_dialog : public dialog {
-public:
-	sleep_timer_dialog(wxWindow* parent, int initial_duration);
-	~sleep_timer_dialog() = default;
-	sleep_timer_dialog(const sleep_timer_dialog&) = delete;
-	sleep_timer_dialog& operator=(const sleep_timer_dialog&) = delete;
-	sleep_timer_dialog(sleep_timer_dialog&&) = delete;
-	sleep_timer_dialog& operator=(sleep_timer_dialog&&) = delete;
-	[[nodiscard]] int get_duration() const;
-
-private:
-	wxSpinCtrl* input_ctrl{nullptr};
-};
-
 class open_as_dialog : public dialog {
 public:
 	open_as_dialog(wxWindow* parent, const wxString& path);
@@ -272,6 +258,20 @@ private:
 
 	void on_ok(wxCommandEvent& event);
 	void on_cancel(wxCommandEvent& event);
+};
+
+class sleep_timer_dialog : public dialog {
+public:
+	sleep_timer_dialog(wxWindow* parent, int initial_duration);
+	~sleep_timer_dialog() = default;
+	sleep_timer_dialog(const sleep_timer_dialog&) = delete;
+	sleep_timer_dialog& operator=(const sleep_timer_dialog&) = delete;
+	sleep_timer_dialog(sleep_timer_dialog&&) = delete;
+	sleep_timer_dialog& operator=(sleep_timer_dialog&&) = delete;
+	[[nodiscard]] int get_duration() const;
+
+private:
+	wxSpinCtrl* input_ctrl{nullptr};
 };
 
 class toc_tree_item_data : public wxTreeItemData {
