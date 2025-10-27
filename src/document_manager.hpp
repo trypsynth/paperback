@@ -87,6 +87,7 @@ public:
 	[[nodiscard]] int load_document_position(const wxString& path) const;
 	void save_current_tab_position() const;
 	void save_all_tab_positions() const;
+	void ensure_tab_text_ctrl(document_tab* tab);
 	[[nodiscard]] wxString get_status_text() const;
 	[[nodiscard]] wxString get_window_title(const wxString& app_name) const;
 	[[nodiscard]] int find_text(const wxString& query, int start_pos, find_options options) const;
@@ -100,7 +101,7 @@ private:
 	main_window& main_win;
 
 	static void setup_text_ctrl(wxTextCtrl* text_ctrl, const wxString& content);
-	void restore_document_position(document_tab* tab) const;
+	void restore_document_position(document_tab* tab);
 	wxPanel* create_tab_panel(const wxString& content, document_tab* tab_data);
 	void navigate_to_heading(bool next, int specific_level = -1) const;
 };

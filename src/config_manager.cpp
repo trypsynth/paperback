@@ -751,6 +751,7 @@ void config_manager::load_defaults() {
 	set_default_if_missing(restore_previous_documents);
 	set_default_if_missing(word_wrap);
 	set_default_if_missing(minimize_to_tray);
+	set_default_if_missing(open_in_new_window);
 	set_default_if_missing(compact_go_menu);
 	set_default_if_missing(navigation_wrap);
 	set_default_if_missing(check_for_updates_on_startup);

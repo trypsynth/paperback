@@ -16,6 +16,8 @@
 #include <wx/longlong.h>
 #include <wx/wx.h>
 
+
+
 class main_window : public wxFrame {
 public:
 	main_window();
@@ -46,10 +48,17 @@ public:
 	void update_title();
 	void update_status_bar();
 	void update_recent_documents_menu();
+	void set_document_content(const wxString& content);
+	bool is_in_single_window_mode() const { return single_window_mode; }
+	wxTextCtrl* get_single_text_ctrl() const { return single_text_ctrl; }
 
 private:
 	std::unique_ptr<document_manager> doc_manager;
+	wxPanel* main_panel{nullptr};
 	wxNotebook* notebook{nullptr};
+	wxPanel* single_doc_panel{nullptr};
+	wxTextCtrl* single_text_ctrl{nullptr};
+	bool single_window_mode{false};
 	wxStatusBar* status_bar{nullptr};
 	wxTimer* position_save_timer{nullptr};
 	wxTimer* status_update_timer{nullptr};
