@@ -12,6 +12,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         submodules: recursive
+        fetch-depth: 0
     - name: Setup MSVC
       uses: ilammy/msvc-dev-cmd@v1
       with:
@@ -55,11 +56,27 @@ jobs:
       run: |
         git fetch --tags
         echo "tag=$(git tag --sort=-creatordate | grep -E '^v?0\.[0-9]+(\.[0-9]+)?$' | head -n 1)" >> $GITHUB_OUTPUT
+    - name: Generate release notes
+      id: release_notes
+      shell: bash
+      run: |
+        PREV_TAG=$(git tag --sort=-creatordate --list | head -n 1)
+        if [ -z "$PREV_TAG" ]; then
+          COMMITS=$(git log --oneline --pretty=format:"- %h: %s" HEAD)
+        else
+          COMMITS=$(git log --oneline --pretty=format:"- %h: %s" $PREV_TAG..HEAD)
+        fi
+        COMMITS="${COMMITS//'%'/'%25'}"
+        COMMITS="${COMMITS//$'\n'/'%0A'}"
+        echo "commits=$COMMITS" >> $GITHUB_OUTPUT
     - name: Create or update latest release
       uses: softprops/action-gh-release@v1
       with:
         tag_name: latest
         name: Development Build
+        body: |
+          ## Commits since last release
+          ${{ steps.release_notes.outputs.commits }}
         files: |
           build/paperback.zip
           build/paperback_setup.exe
