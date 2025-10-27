@@ -769,7 +769,7 @@ void document_manager::go_to_previous_list_item() {
 		const marker* prev_list_marker = doc->buffer.get_marker(prev_list_index);
 		wxString message;
 		if (prev_list_index != -1 && prev_list_index != current_list_index) {
-			message += wxString::Format(_("List with %d items. "), prev_list_marker->level);
+			message += wxString::Format(_("List with %d items "), prev_list_marker->level);
 		}
 		go_to_position(static_cast<long>(list_item_marker->pos));
 		long line_num{0};
@@ -824,7 +824,7 @@ void document_manager::go_to_next_list_item() {
 		const marker* next_list_marker = doc->buffer.get_marker(next_list_index);
 		wxString message;
 		if (next_list_index != -1 && next_list_index != current_list_index) {
-			message += wxString::Format(_("List with %d items. "), next_list_marker->level);
+			message += wxString::Format(_("List with %d items "), next_list_marker->level);
 		}
 		go_to_position(static_cast<long>(list_item_marker->pos));
 		long line_num{0};
