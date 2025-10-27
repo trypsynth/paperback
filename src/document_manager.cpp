@@ -743,6 +743,12 @@ void document_manager::go_to_previous_list_item() {
 		return;
 	}
 	const int current_pos = text_ctrl->GetInsertionPoint();
+	const int current_list_item_index = doc->buffer.current_marker_index(current_pos, marker_type::list_item);
+	const marker* current_list_item_marker = doc->buffer.get_marker(current_list_item_index);
+	int current_list_index = -1;
+	if (current_list_item_marker) {
+		current_list_index = doc->buffer.current_marker_index(current_list_item_marker->pos, marker_type::list);
+	}
 	bool wrapping = false;
 	int prev_index = doc->buffer.previous_marker_index(current_pos, marker_type::list_item);
 	if (prev_index == -1) {
@@ -759,10 +765,16 @@ void document_manager::go_to_previous_list_item() {
 	}
 	const marker* list_item_marker = doc->buffer.get_marker(prev_index);
 	if (list_item_marker != nullptr) {
+		const int prev_list_index = doc->buffer.current_marker_index(list_item_marker->pos, marker_type::list);
+		const marker* prev_list_marker = doc->buffer.get_marker(prev_list_index);
+		wxString message;
+		if (prev_list_index != -1 && prev_list_index != current_list_index) {
+			message += wxString::Format(_("List with %d items. "), prev_list_marker->level);
+		}
 		go_to_position(static_cast<long>(list_item_marker->pos));
 		long line_num{0};
 		text_ctrl->PositionToXY(list_item_marker->pos, nullptr, &line_num);
-		wxString message = text_ctrl->GetLineText(line_num).Trim(); // Trim leading whitespace
+		message += text_ctrl->GetLineText(line_num).Trim();
 		if (wrapping) {
 			message = _("Wrapping to end. ") + message;
 		}
@@ -786,6 +798,12 @@ void document_manager::go_to_next_list_item() {
 		return;
 	}
 	const int current_pos = text_ctrl->GetInsertionPoint();
+	const int current_list_item_index = doc->buffer.current_marker_index(current_pos, marker_type::list_item);
+	const marker* current_list_item_marker = doc->buffer.get_marker(current_list_item_index);
+	int current_list_index = -1;
+	if (current_list_item_marker) {
+		current_list_index = doc->buffer.current_marker_index(current_list_item_marker->pos, marker_type::list);
+	}
 	bool wrapping = false;
 	int next_index = doc->buffer.next_marker_index(current_pos, marker_type::list_item);
 	if (next_index == -1) {
@@ -802,10 +820,16 @@ void document_manager::go_to_next_list_item() {
 	}
 	const marker* list_item_marker = doc->buffer.get_marker(next_index);
 	if (list_item_marker != nullptr) {
+		const int next_list_index = doc->buffer.current_marker_index(list_item_marker->pos, marker_type::list);
+		const marker* next_list_marker = doc->buffer.get_marker(next_list_index);
+		wxString message;
+		if (next_list_index != -1 && next_list_index != current_list_index) {
+			message += wxString::Format(_("List with %d items. "), next_list_marker->level);
+		}
 		go_to_position(static_cast<long>(list_item_marker->pos));
 		long line_num{0};
 		text_ctrl->PositionToXY(list_item_marker->pos, nullptr, &line_num);
-		wxString message = text_ctrl->GetLineText(line_num).Trim(); // Trim leading whitespace
+		message += text_ctrl->GetLineText(line_num).Trim();
 		if (wrapping) {
 			message = _("Wrapping to start. ") + message;
 		}
