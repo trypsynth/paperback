@@ -22,12 +22,20 @@ public:
 	docx_parser& operator=(const docx_parser&) = delete;
 	docx_parser(docx_parser&&) = delete;
 	docx_parser& operator=(docx_parser&&) = delete;
-	[[nodiscard]] wxString name() const override { return "Word Documents"; }
+
+	[[nodiscard]] wxString name() const override {
+		return "Word Documents";
+	}
+
 	[[nodiscard]] std::span<const wxString> extensions() const override {
 		static const wxString exts[] = {"docx", "docm"};
 		return exts;
 	}
-	[[nodiscard]] parser_flags supported_flags() const override { return parser_flags::supports_toc; }
+
+	[[nodiscard]] parser_flags supported_flags() const override {
+		return parser_flags::supports_toc;
+	}
+
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 
 private:

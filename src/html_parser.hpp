@@ -18,12 +18,20 @@ public:
 	html_parser& operator=(const html_parser&) = delete;
 	html_parser(html_parser&&) = delete;
 	html_parser& operator=(html_parser&&) = delete;
-	[[nodiscard]] wxString name() const override { return "HTML Documents"; }
+
+	[[nodiscard]] wxString name() const override {
+		return "HTML Documents";
+	}
+
 	[[nodiscard]] std::span<const wxString> extensions() const override {
 		static const wxString exts[] = {"htm", "html", "xhtml"};
 		return exts;
 	}
-	[[nodiscard]] parser_flags supported_flags() const override { return parser_flags::supports_toc; }
+
+	[[nodiscard]] parser_flags supported_flags() const override {
+		return parser_flags::supports_toc;
+	}
+
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 };
 

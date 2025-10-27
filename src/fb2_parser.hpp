@@ -1,4 +1,4 @@
-/* odt_parser.hpp - odt parser header file.
+/* fb2_parser.hpp - fb2 parser header file.
  *
  * Paperback.
  * Copyright (c) 2025 Quin Gillespie.
@@ -9,35 +9,34 @@
 
 #pragma once
 #include "parser.hpp"
-#include <Poco/DOM/Node.h>
+#include <Poco/DOM/Element.h>
 
-class odt_parser : public parser {
+class fb2_parser : public parser {
 public:
-	odt_parser() = default;
-	~odt_parser() = default;
-	odt_parser(const odt_parser&) = delete;
-	odt_parser& operator=(const odt_parser&) = delete;
-	odt_parser(odt_parser&&) = delete;
-	odt_parser& operator=(odt_parser&&) = delete;
+	fb2_parser() = default;
+	~fb2_parser() = default;
+	fb2_parser(const fb2_parser&) = delete;
+	fb2_parser& operator=(const fb2_parser&) = delete;
+	fb2_parser(fb2_parser&&) = delete;
+	fb2_parser& operator=(fb2_parser&&) = delete;
 
 	[[nodiscard]] wxString name() const override {
-		return "OpenDocument files";
+		return "FB2 Books";
 	}
 
 	[[nodiscard]] std::span<const wxString> extensions() const override {
-		static const wxString exts[] = {"odt"};
+		static const wxString exts[] = {"fb2"};
 		return exts;
 	}
 
 	[[nodiscard]] parser_flags supported_flags() const override {
-		return parser_flags::supports_toc;
+		return parser_flags::supports_sections;
 	}
 
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 
 private:
-	void traverse(Poco::XML::Node* node, wxString& text, document* doc) const;
-	void traverse_children(Poco::XML::Node* node, wxString& text, document* doc) const;
+	static std::string get_element_text(Poco::XML::Element* element);
 };
 
-REGISTER_PARSER(odt_parser);
+REGISTER_PARSER(fb2_parser);

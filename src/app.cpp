@@ -38,7 +38,7 @@ bool app::OnInit() {
 		return false;
 	}
 	translation_manager::instance().initialize();
-	const wxString preferred_language = config_mgr.get_language();
+	const wxString preferred_language = config_mgr.get(config_manager::language);
 	if (!preferred_language.IsEmpty()) {
 		translation_manager::instance().set_language(preferred_language);
 	}
@@ -68,7 +68,7 @@ bool app::OnInit() {
 	if (!ipc_server->Create(IPC_SERVICE)) {
 		wxMessageBox(_("Failed to create IPC server"), _("Warning"), wxICON_WARNING);
 	}
-	if (config_mgr.get_restore_previous_documents()) {
+	if (config_mgr.get(config_manager::restore_previous_documents)) {
 		restore_previous_documents();
 	}
 	if (argc > 1) {
@@ -77,7 +77,7 @@ bool app::OnInit() {
 	if (frames.empty()) {
 		create_new_window();
 	}
-	if (config_mgr.get_check_for_updates_on_startup()) {
+	if (config_mgr.get(config_manager::check_for_updates_on_startup)) {
 		check_for_updates(true);
 	}
 	return true;
@@ -98,8 +98,8 @@ void app::parse_command_line() {
 
 void app::restore_previous_documents() {
 	wxArrayString opened_docs = config_mgr.get_all_opened_documents();
-	if (config_mgr.get_open_in_new_window()) {
-		for (const auto& path : opened_docs) {
+	if (config_mgr.get(config_manager::open_in_new_window)) {
+		for (const wxString& path : opened_docs) {
 			if (!wxFileName::FileExists(path)) continue;
 			create_new_window(path);
 		}
@@ -107,8 +107,8 @@ void app::restore_previous_documents() {
 		if (opened_docs.IsEmpty()) return;
 		main_window* frame = frames.empty() ? create_new_window() : frames.front();
 		auto* doc_manager = frame->get_doc_manager();
-		wxString active_doc = config_mgr.get_active_document();
-		for (const auto& path : opened_docs) {
+		wxString active_doc = config_mgr.get(config_manager::active_document);
+		for (const wxString& path : opened_docs) {
 			if (!wxFileName::FileExists(path)) continue;
 			const int existing_tab = doc_manager->find_tab_by_path(path);
 			if (existing_tab >= 0) continue;
@@ -167,7 +167,7 @@ void app::open_file(const wxString& filename, main_window* current_frame) {
 		}
 	}
 
-	if (config_mgr.get_open_in_new_window()) {
+	if (config_mgr.get(config_manager::open_in_new_window)) {
         if (current_frame && !current_frame->get_doc_manager()->has_documents()) {
             auto* doc_manager = current_frame->get_doc_manager();
             const auto* par = find_parser_by_extension(wxFileName(filename).GetExt());

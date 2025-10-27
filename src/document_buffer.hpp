@@ -26,16 +26,22 @@ enum class marker_type {
 };
 
 struct marker {
-	size_t pos;
+	int pos;
 	marker_type type;
 	wxString text;
 	wxString ref;
 	int level;
 
-	marker(size_t position, marker_type marker_type, const wxString& marker_text = wxString(), const wxString& marker_ref = wxString(), int marker_level = 0) : pos{position}, type{marker_type}, text{marker_text}, ref{marker_ref}, level{marker_level} {}
+	marker(int position, marker_type marker_type, const wxString& marker_text = wxString(), const wxString& marker_ref = wxString(), int marker_level = 0) : pos{position}, type{marker_type}, text{marker_text}, ref{marker_ref}, level{marker_level} {
+	}
 
-	[[nodiscard]] auto operator<=>(const marker& other) const noexcept { return pos <=> other.pos; }
-	[[nodiscard]] bool operator==(const marker& other) const noexcept { return pos == other.pos; }
+	[[nodiscard]] auto operator<=>(const marker& other) const noexcept {
+		return pos <=> other.pos;
+	}
+
+	[[nodiscard]] bool operator==(const marker& other) const noexcept {
+		return pos == other.pos;
+	}
 };
 
 class document_buffer {
@@ -47,27 +53,31 @@ public:
 	document_buffer(document_buffer&&) = default;
 	document_buffer& operator=(document_buffer&&) = default;
 	void set_content(const wxString& text);
-	[[nodiscard]] const wxString& str() const noexcept { return content; }
+
+	[[nodiscard]] const wxString& str() const noexcept {
+		return content;
+	}
+
 	void append(const wxString& text);
 	void append_line(const wxString& text = wxString());
 	void add_heading(int level, const wxString& text);
 	void add_page_break(const wxString& label = wxString());
 	void add_section_break(const wxString& label = wxString());
 	void add_toc_marker(const wxString& text, const wxString& ref = wxString());
-	void add_link(size_t pos, const wxString& text, const wxString& ref);
-	void add_marker(size_t pos, marker_type type, const wxString& text = wxString(), const wxString& ref = wxString(), int level = 0);
+	void add_link(int pos, const wxString& text, const wxString& ref);
+	void add_marker(int pos, marker_type type, const wxString& text = wxString(), const wxString& ref = wxString(), int level = 0);
 	void clear();
-	[[nodiscard]] int next_marker_index(size_t position, marker_type type) const noexcept;
-	[[nodiscard]] int previous_marker_index(size_t position, marker_type type) const noexcept;
+	[[nodiscard]] int next_marker_index(int position, marker_type type) const noexcept;
+	[[nodiscard]] int previous_marker_index(int position, marker_type type) const noexcept;
 	[[nodiscard]] int current_marker_index(size_t position, marker_type type) const noexcept;
-	[[nodiscard]] int next_heading_marker_index(size_t position, int level = -1) const;
-	[[nodiscard]] int previous_heading_marker_index(size_t position, int level = -1) const;
-	[[nodiscard]] size_t marker_position(int marker_index) const noexcept;
+	[[nodiscard]] int next_heading_marker_index(int position, int level = -1) const;
+	[[nodiscard]] int previous_heading_marker_index(int position, int level = -1) const;
+	[[nodiscard]] int marker_position(int marker_index) const noexcept;
 	[[nodiscard]] const marker* get_marker(int marker_index) const noexcept;
 	[[nodiscard]] std::vector<const marker*> get_markers_by_type(marker_type type) const;
 	[[nodiscard]] std::vector<const marker*> get_heading_markers(int level = -1) const;
 	[[nodiscard]] size_t count_markers_by_type(marker_type type) const noexcept;
-	[[nodiscard]] size_t get_marker_position_by_index(marker_type type, size_t index) const noexcept;
+	[[nodiscard]] int get_marker_position_by_index(marker_type type, int index) const noexcept;
 
 private:
 	wxString content;

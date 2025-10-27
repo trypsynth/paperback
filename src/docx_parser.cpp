@@ -38,9 +38,7 @@
 using namespace Poco;
 using namespace Poco::XML;
 
-// NOLINTNEXTLINE(cert-err58-cpp) - String construction from literals is safe in practice
 inline const XMLString WORDML_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
-// NOLINTNEXTLINE(cert-err58-cpp) - String construction from literals is safe in practice
 inline const XMLString REL_NS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 
 std::unique_ptr<document> docx_parser::load(const wxString& path) const {
@@ -226,18 +224,18 @@ void docx_parser::process_paragraph(Element* element, wxString& text, std::vecto
 		}
 		child = child->nextSibling();
 	}
-	paragraph_text.Trim(true).Trim(false);
 	if (!paragraph_text.IsEmpty()) {
-		text += paragraph_text;
-		text += "\n";
-		if (heading_level > 0) {
-			heading_info h;
-			h.offset = paragraph_start_offset;
-			h.level = heading_level;
-			h.text = std::string(paragraph_text.utf8_str());
-			if (!h.text.empty()) {
-				headings.push_back(h);
-			}
+		paragraph_text.Trim(true).Trim(false);
+	}
+	text += paragraph_text;
+	text += "\n";
+	if (heading_level > 0 && !paragraph_text.IsEmpty()) {
+		heading_info h;
+		h.offset = paragraph_start_offset;
+		h.level = heading_level;
+		h.text = std::string(paragraph_text.utf8_str());
+		if (!h.text.empty()) {
+			headings.push_back(h);
 		}
 	}
 }
@@ -320,7 +318,7 @@ int docx_parser::get_heading_level(Element* pr_element) {
 									return level;
 								}
 							}
-						} catch (...) { // NOLINT(bugprone-empty-catch) - Invalid heading numbers are silently skipped
+						} catch (...) {
 						}
 					}
 				}
@@ -332,7 +330,7 @@ int docx_parser::get_heading_level(Element* pr_element) {
 						if (level > 0 && level <= max_heading_level) {
 							return level;
 						}
-					} catch (...) { // NOLINT(bugprone-empty-catch) - Invalid outline level values are silently skipped
+					} catch (...) {
 					}
 				}
 			}

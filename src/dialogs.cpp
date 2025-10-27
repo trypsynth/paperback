@@ -31,6 +31,7 @@
 #include <wx/stattext.h>
 #include <wx/string.h>
 #include <wx/textctrl.h>
+#include <wx/textdlg.h>
 #include <wx/translation.h>
 #include <wx/window.h>
 
@@ -85,7 +86,7 @@ all_documents_dialog::all_documents_dialog(wxWindow* parent, config_manager& cfg
 	auto* remove_button = new wxButton(this, wxID_REMOVE, _("&Remove"));
 	button_sizer->Add(open_button, 0, wxRIGHT, DIALOG_PADDING);
 	button_sizer->Add(remove_button, 0, wxRIGHT, DIALOG_PADDING);
-	content_sizer->Add(button_sizer, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING); // NOLINT(hicpp-signed-bitwise)
+	content_sizer->Add(button_sizer, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);
 	set_content(content_sizer);
 	finalize_layout();
 	Bind(wxEVT_BUTTON, &all_documents_dialog::on_open, this, wxID_OPEN);
@@ -190,22 +191,37 @@ void all_documents_dialog::populate_document_list() {
 	}
 }
 
-bookmark_dialog::bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos) : dialog(parent, _("Jump to Bookmark"), dialog_button_config::ok_cancel), bookmark_positions(bookmarks), selected_position{-1}, config(config), file_path(file_path) {
+bookmark_dialog::bookmark_dialog(wxWindow* parent, const std::vector<bookmark>& bookmarks, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos) : dialog(parent, _("Jump to Bookmark"), dialog_button_config::ok_cancel), bookmark_positions(bookmarks), selected_position{-1}, config(config), file_path(file_path), text_ctrl(text_ctrl) {
 	bookmark_list = new wxListBox(this, wxID_ANY);
 	int closest_index = -1;
 	long closest_distance = LONG_MAX;
-	for (std::size_t i = 0; i < bookmarks.GetCount(); ++i) {
-		const long pos = bookmarks[i];
-		long line = 0;
-		text_ctrl->PositionToXY(pos, nullptr, &line);
-		wxString line_text = text_ctrl->GetLineText(line);
-		line_text = line_text.Strip(wxString::both);
-		if (line_text.IsEmpty()) {
-			line_text = _("blank");
+	for (std::size_t i = 0; i < bookmarks.size(); ++i) {
+		const bookmark& bm = bookmarks[i];
+		wxString display_text;
+		wxString text_snippet;
+		if (bm.is_whole_line()) {
+			long line = 0;
+			text_ctrl->PositionToXY(bm.start, nullptr, &line);
+			text_snippet = text_ctrl->GetLineText(line);
+			text_snippet = text_snippet.Strip(wxString::both);
+			if (text_snippet.IsEmpty()) {
+				text_snippet = _("blank");
+			}
+		} else {
+			text_snippet = text_ctrl->GetRange(bm.start, bm.end);
+			text_snippet = text_snippet.Strip(wxString::both);
+			if (text_snippet.IsEmpty()) {
+				text_snippet = _("blank");
+			}
 		}
-		bookmark_list->Append(line_text);
+		if (bm.has_note()) {
+			display_text = wxString::Format("%s - %s", bm.note, text_snippet);
+		} else {
+			display_text = text_snippet;
+		}
+		bookmark_list->Append(display_text);
 		if (current_pos >= 0) {
-			const long distance = std::abs(pos - current_pos);
+			const long distance = std::abs(bm.start - current_pos);
 			if (distance < closest_distance) {
 				closest_distance = distance;
 				closest_index = static_cast<int>(i);
@@ -215,9 +231,11 @@ bookmark_dialog::bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks,
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	content_sizer->Add(bookmark_list, 1, wxEXPAND | wxALL, DIALOG_PADDING);
 	auto* button_sizer = new wxStdDialogButtonSizer();
+	edit_note_button = new wxButton(this, wxID_EDIT, _("&Edit Note"));
 	delete_button = new wxButton(this, wxID_DELETE, _("&Delete"));
 	jump_button = new wxButton(this, wxID_OK, _("&Jump"));
 	auto* cancel_button = new wxButton(this, wxID_CANCEL, _("&Cancel"));
+	button_sizer->AddButton(edit_note_button);
 	button_sizer->AddButton(delete_button);
 	button_sizer->AddButton(jump_button);
 	button_sizer->AddButton(cancel_button);
@@ -229,28 +247,33 @@ bookmark_dialog::bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks,
 	jump_button->SetDefault();
 	jump_button->Enable(false);
 	delete_button->Enable(false);
+	edit_note_button->Enable(false);
 	if (closest_index >= 0) {
 		bookmark_list->SetSelection(closest_index);
-		selected_position = bookmarks[closest_index];
+		selected_position = bookmarks[closest_index].start;
 		jump_button->Enable(true);
 		delete_button->Enable(true);
+		edit_note_button->Enable(true);
 	}
 	bookmark_list->Bind(wxEVT_LISTBOX, &bookmark_dialog::on_list_selection_changed, this);
 	bookmark_list->Bind(wxEVT_KEY_DOWN, &bookmark_dialog::on_key_down, this);
 	Bind(wxEVT_BUTTON, &bookmark_dialog::on_ok, this, wxID_OK);
 	Bind(wxEVT_BUTTON, &bookmark_dialog::on_delete, this, wxID_DELETE);
+	Bind(wxEVT_BUTTON, &bookmark_dialog::on_edit_note, this, wxID_EDIT);
 }
 
 void bookmark_dialog::on_list_selection_changed(wxCommandEvent& /*event*/) {
 	const int selection = bookmark_list->GetSelection();
-	if (selection >= 0 && static_cast<unsigned int>(selection) < bookmark_positions.GetCount()) {
-		selected_position = bookmark_positions[static_cast<std::size_t>(selection)];
+	if (selection >= 0 && static_cast<size_t>(selection) < bookmark_positions.size()) {
+		selected_position = bookmark_positions[static_cast<std::size_t>(selection)].start;
 		jump_button->Enable(true);
 		delete_button->Enable(true);
+		edit_note_button->Enable(true);
 	} else {
 		selected_position = -1;
 		jump_button->Enable(false);
 		delete_button->Enable(false);
+		edit_note_button->Enable(false);
 	}
 }
 
@@ -277,10 +300,10 @@ void bookmark_dialog::on_delete(wxCommandEvent&) {
 	if (selection < 0) {
 		return;
 	}
-	const long deleted_pos = bookmark_positions[static_cast<std::size_t>(selection)];
-	config.remove_bookmark(file_path, deleted_pos);
+	const bookmark& deleted_bookmark = bookmark_positions[static_cast<std::size_t>(selection)];
+	config.remove_bookmark(file_path, deleted_bookmark.start, deleted_bookmark.end);
 	config.flush();
-	bookmark_positions.RemoveAt(static_cast<std::size_t>(selection));
+	bookmark_positions.erase(bookmark_positions.begin() + selection);
 	bookmark_list->Delete(static_cast<unsigned int>(selection));
 	if (static_cast<unsigned int>(selection) < bookmark_list->GetCount()) {
 		bookmark_list->SetSelection(selection);
@@ -290,6 +313,45 @@ void bookmark_dialog::on_delete(wxCommandEvent&) {
 	// Manually trigger the selection event to update the button states
 	wxCommandEvent empty_event(wxEVT_LISTBOX, GetId());
 	on_list_selection_changed(empty_event);
+}
+
+void bookmark_dialog::on_edit_note(wxCommandEvent&) {
+	const int selection = bookmark_list->GetSelection();
+	if (selection < 0 || static_cast<size_t>(selection) >= bookmark_positions.size()) {
+		return;
+	}
+	bookmark& selected_bookmark = bookmark_positions[static_cast<std::size_t>(selection)];
+	wxTextEntryDialog note_dialog(this, _("Edit bookmark note:"), _("Bookmark Note"), selected_bookmark.note);
+	if (note_dialog.ShowModal() != wxID_OK) {
+		return;
+	}
+	wxString new_note = note_dialog.GetValue();
+	config.update_bookmark_note(file_path, selected_bookmark.start, selected_bookmark.end, new_note);
+	config.flush();
+	selected_bookmark.note = new_note;
+	wxString text_snippet;
+	if (selected_bookmark.is_whole_line()) {
+		long line = 0;
+		text_ctrl->PositionToXY(selected_bookmark.start, nullptr, &line);
+		text_snippet = text_ctrl->GetLineText(line);
+		text_snippet = text_snippet.Strip(wxString::both);
+		if (text_snippet.IsEmpty()) {
+			text_snippet = _("blank");
+		}
+	} else {
+		text_snippet = text_ctrl->GetRange(selected_bookmark.start, selected_bookmark.end);
+		text_snippet = text_snippet.Strip(wxString::both);
+		if (text_snippet.IsEmpty()) {
+			text_snippet = _("blank");
+		}
+	}
+	wxString display_text;
+	if (selected_bookmark.has_note()) {
+		display_text = wxString::Format("%s - %s", selected_bookmark.note, text_snippet);
+	} else {
+		display_text = text_snippet;
+	}
+	bookmark_list->SetString(static_cast<unsigned int>(selection), display_text);
 }
 
 document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc) : dialog(parent, _("Document Info"), dialog_button_config::ok_only) {
@@ -337,8 +399,8 @@ find_dialog::find_dialog(wxWindow* parent) : wxDialog(parent, wxID_ANY, _("Find"
 	button_sizer->Add(cancel_btn, 0);
 	find_next_btn->SetDefault();
 	main_sizer->Add(find_sizer, 0, wxEXPAND | wxALL, DIALOG_PADDING);
-	main_sizer->Add(options_box, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);  // NOLINT(hicpp-signed-bitwise)
-	main_sizer->Add(button_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING); // NOLINT(hicpp-signed-bitwise)
+	main_sizer->Add(options_box, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);
+	main_sizer->Add(button_sizer, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);
 	SetSizer(main_sizer);
 	find_previous_btn->Bind(wxEVT_BUTTON, &find_dialog::on_find_previous, this);
 	find_next_btn->Bind(wxEVT_BUTTON, &find_dialog::on_find_next, this);
@@ -481,18 +543,20 @@ go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ct
 	const long current_pos = textbox->GetInsertionPoint();
 	const long total_pos = textbox->GetLastPosition();
 	const int current_percent = total_pos > 0 ? static_cast<int>((current_pos * percent_max) / total_pos) : 0;
-	auto* slider_label = new wxStaticText(this, wxID_ANY, _("&Percent"));
-	percent_slider = new accessible_slider(this, wxID_ANY, current_percent, 0, percent_max);
 	auto* input_label = new wxStaticText(this, wxID_ANY, _("P&ercent:"));
 	input_ctrl = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, percent_max, current_percent);
+	auto* slider_label = new wxStaticText(this, wxID_ANY, _("&Percent"));
+	percent_slider = new accessible_slider(this, wxID_ANY, current_percent, 0, percent_max);
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	content_sizer->Add(slider_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, label_spacing);
 	content_sizer->Add(percent_slider, 0, wxEXPAND | wxBOTTOM, label_spacing);
 	content_sizer->Add(input_label, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, label_spacing);
 	content_sizer->Add(input_ctrl, 0, wxEXPAND);
 	percent_slider->Bind(wxEVT_SLIDER, &go_to_percent_dialog::on_slider_changed, this);
+	input_ctrl->Bind(wxEVT_SPINCTRL, &go_to_percent_dialog::on_spin_changed, this);
 	set_content(content_sizer);
 	finalize_layout();
+	percent_slider->SetFocus();
 }
 
 long go_to_percent_dialog::get_position() const {
@@ -505,6 +569,11 @@ long go_to_percent_dialog::get_position() const {
 void go_to_percent_dialog::on_slider_changed(wxCommandEvent& /*event*/) {
 	const int slider_value = percent_slider->GetValue();
 	input_ctrl->SetValue(slider_value);
+}
+
+void go_to_percent_dialog::on_spin_changed(wxSpinEvent& /*event*/) {
+	const int spin_value = input_ctrl->GetValue();
+	percent_slider->SetValue(spin_value);
 }
 
 open_as_dialog::open_as_dialog(wxWindow* parent, const wxString& path) : dialog(parent, _("Open As")) {
@@ -559,6 +628,8 @@ options_dialog::options_dialog(wxWindow* parent) : dialog(parent, _("Options")) 
 	general_box->Add(open_in_new_window_check, 0, wxALL, option_padding);
 	compact_go_menu_check = new wxCheckBox(this, wxID_ANY, _("Show compact &go menu"));
 	general_box->Add(compact_go_menu_check, 0, wxALL, option_padding);
+	navigation_wrap_check = new wxCheckBox(this, wxID_ANY, _("&Wrap navigation"));
+	general_box->Add(navigation_wrap_check, 0, wxALL, option_padding);
 	check_for_updates_on_startup_check = new wxCheckBox(this, wxID_ANY, _("Check for &updates on startup"));
 	general_box->Add(check_for_updates_on_startup_check, 0, wxALL, option_padding);
 	auto* recent_docs_sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -631,6 +702,16 @@ void options_dialog::set_compact_go_menu(bool compact) {
 	}
 }
 
+bool options_dialog::get_navigation_wrap() const {
+	return navigation_wrap_check != nullptr ? navigation_wrap_check->GetValue() : false;
+}
+
+void options_dialog::set_navigation_wrap(bool value) {
+	if (navigation_wrap_check) {
+		navigation_wrap_check->SetValue(value);
+	}
+}
+
 bool options_dialog::get_check_for_updates_on_startup() const {
 	return check_for_updates_on_startup_check != nullptr ? check_for_updates_on_startup_check->GetValue() : true;
 }
@@ -685,7 +766,23 @@ void options_dialog::on_cancel(wxCommandEvent& /*event*/) {
 	EndModal(wxID_CANCEL);
 }
 
+sleep_timer_dialog::sleep_timer_dialog(wxWindow* parent, int initial_duration) : dialog(parent, _("Sleep Timer")) {
+	constexpr int label_spacing = 5;
+	auto* sizer = new wxBoxSizer(wxHORIZONTAL);
+	auto* label = new wxStaticText(this, wxID_ANY, _("&Minutes:"));
+	input_ctrl = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 999, initial_duration);
+	sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, label_spacing);
+	sizer->Add(input_ctrl, 1, wxEXPAND);
+	set_content(sizer);
+	finalize_layout();
+}
+
+int sleep_timer_dialog::get_duration() const {
+	return input_ctrl->GetValue();
+}
+
 toc_dialog::toc_dialog(wxWindow* parent, const document* doc, int current_offset) : dialog(parent, _("Table of Contents")), selected_offset{-1} {
+	search_timer_ = new wxTimer(this);
 	tree = new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTR_HIDE_ROOT);
 	const wxTreeItemId root = tree->AddRoot(_("Root"));
 	populate_tree(doc->toc_items, root);
@@ -698,6 +795,8 @@ toc_dialog::toc_dialog(wxWindow* parent, const document* doc, int current_offset
 	Bind(wxEVT_TREE_SEL_CHANGED, &toc_dialog::on_tree_selection_changed, this);
 	Bind(wxEVT_TREE_ITEM_ACTIVATED, &toc_dialog::on_tree_item_activated, this, wxID_ANY);
 	Bind(wxEVT_BUTTON, &toc_dialog::on_ok, this, wxID_OK);
+	Bind(wxEVT_CHAR_HOOK, &toc_dialog::on_char_hook, this);
+	Bind(wxEVT_TIMER, &toc_dialog::on_search_timer, this, search_timer_->GetId());
 	finalize_layout();
 }
 
@@ -753,4 +852,39 @@ void toc_dialog::on_ok(wxCommandEvent& /*event*/) {
 	} else {
 		wxMessageBox(_("Please select a section from the table of contents."), _("No Selection"), wxOK | wxICON_INFORMATION, this);
 	}
+}
+
+void toc_dialog::on_char_hook(wxKeyEvent& event) {
+	const int key_code = event.GetKeyCode();
+	if (key_code >= WXK_SPACE && key_code < WXK_DELETE) {
+		search_timer_->StartOnce(500);
+		search_string_ += static_cast<wxChar>(event.GetUnicodeKey());
+		if (!find_and_select_item_by_name(search_string_, tree->GetRootItem())) {
+			search_string_.RemoveLast(); // No match, remove last char
+		}
+	} else {
+		event.Skip();
+	}
+}
+
+void toc_dialog::on_search_timer(wxTimerEvent& /*event*/) {
+	search_string_.Clear();
+}
+
+bool toc_dialog::find_and_select_item_by_name(const wxString& name, const wxTreeItemId& parent) {
+	wxTreeItemIdValue cookie{};
+	for (wxTreeItemId item_id = tree->GetFirstChild(parent, cookie); item_id.IsOk(); item_id = tree->GetNextChild(parent, cookie)) {
+		if (tree->GetItemText(item_id).Lower().StartsWith(name.Lower())) {
+			tree->SelectItem(item_id);
+			tree->SetFocusedItem(item_id);
+			tree->EnsureVisible(item_id);
+			return true;
+		}
+		if (tree->ItemHasChildren(item_id)) {
+			if (find_and_select_item_by_name(name, item_id)) {
+				return true;
+			}
+		}
+	}
+	return false;
 }

@@ -43,9 +43,7 @@
 using namespace Poco;
 using namespace Poco::XML;
 
-// NOLINTNEXTLINE(cert-err58-cpp) - String construction from literals is safe in practice
 inline const XMLString DRAWINGML_NS = "http://schemas.openxmlformats.org/drawingml/2006/main";
-// NOLINTNEXTLINE(cert-err58-cpp) - String construction from literals is safe in practice
 inline const XMLString REL_NS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 
 std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
@@ -99,7 +97,9 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 		doc->buffer.clear();
 		wxString full_text;
 		std::vector<size_t> slide_positions;
-		for (const auto& slide_file : slide_files) {
+		std::vector<wxString> slide_titles;
+		for (size_t i = 0; i < slide_files.size(); ++i) {
+			const auto& slide_file = slide_files[i];
 			const std::string& slide_content = slide_contents[slide_file];
 			std::map<std::string, std::string> rels;
 			const std::string slide_base = slide_file.substr(slide_file.find_last_of('/') + 1);
@@ -133,6 +133,7 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 			parser.setFeature(XMLReader::FEATURE_NAMESPACES, true);
 			parser.setFeature(DOMParser::FEATURE_FILTER_WHITESPACE, false);
 			AutoPtr<Document> slide_doc = parser.parse(&source);
+			wxString slide_title = extract_slide_title(slide_doc.get());
 			std::string slide_text;
 			extract_text_from_node(slide_doc->documentElement(), slide_text, full_text, doc.get(), rels);
 			if (!slide_text.empty()) {
@@ -140,14 +141,29 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 				slide_wx.Trim(true).Trim(false);
 				if (!slide_wx.IsEmpty()) {
 					slide_positions.push_back(full_text.length());
+					slide_titles.push_back(slide_title);
 					full_text += slide_wx;
 					full_text += "\n";
+					if (i + 1 < slide_files.size()) {
+						// Ensure we don't get double blank lines at the end of the document.
+						full_text += "\n";
+					}
 				}
 			}
 		}
 		doc->buffer.set_content(full_text);
 		for (size_t i = 0; i < slide_positions.size(); ++i) {
 			doc->buffer.add_marker(slide_positions[i], marker_type::page_break, wxString::Format("Slide %zu", i + 1));
+		}
+		for (size_t i = 0; i < slide_positions.size(); ++i) {
+			auto toc_entry = std::make_unique<toc_item>();
+			if (slide_titles[i].IsEmpty()) {
+				toc_entry->name = wxString::Format("Slide %zu", i + 1);
+			} else {
+				toc_entry->name = slide_titles[i];
+			}
+			toc_entry->offset = static_cast<int>(slide_positions[i]);
+			doc->toc_items.push_back(std::move(toc_entry));
 		}
 		return doc;
 	} catch (const Poco::Exception& e) {
@@ -230,4 +246,72 @@ void pptx_parser::extract_text_from_node(Node* node, std::string& text, wxString
 		extract_text_from_node(child, text, full_text, doc, rels);
 		child = child->nextSibling();
 	}
+}
+
+wxString pptx_parser::extract_slide_title(Document* slide_doc) const {
+	if (slide_doc == nullptr) {
+		return wxEmptyString;
+	}
+	std::function<std::string(Node*)> extract_text = [&](Node* node) -> std::string {
+		std::string result;
+		if (node == nullptr) {
+			return result;
+		}
+		if (node->nodeType() == Node::ELEMENT_NODE) {
+			auto* element = dynamic_cast<Element*>(node);
+			if (element->localName() == "t") {
+				const Node* text_node = element->firstChild();
+				if (text_node != nullptr && text_node->nodeType() == Node::TEXT_NODE) {
+					result += text_node->getNodeValue();
+				}
+			}
+		}
+		Node* child = node->firstChild();
+		while (child != nullptr) {
+			result += extract_text(child);
+			child = child->nextSibling();
+		}
+		return result;
+	};
+	const XMLString PRESENTATION_NS = "http://schemas.openxmlformats.org/presentationml/2006/main";
+	const NodeList* shapes = slide_doc->getElementsByTagNameNS(PRESENTATION_NS, "sp");
+	if (shapes == nullptr) {
+		return wxEmptyString;
+	}
+	for (unsigned long i = 0; i < shapes->length(); ++i) {
+		Node* shape = shapes->item(i);
+		bool is_title = false;
+		std::function<void(Node*)> find_title_placeholder = [&](Node* node) {
+			if (node == nullptr || is_title) {
+				return;
+			}
+			if (node->nodeType() == Node::ELEMENT_NODE) {
+				auto* element = dynamic_cast<Element*>(node);
+				if (element->localName() == "ph") {
+					std::string type = element->getAttribute("type");
+					if (type == "title" || type == "ctrTitle") {
+						is_title = true;
+						return;
+					}
+				}
+			}
+			Node* child = node->firstChild();
+			while (child != nullptr) {
+				find_title_placeholder(child);
+				child = child->nextSibling();
+			}
+		};
+		find_title_placeholder(shape);
+		if (is_title) {
+			std::string title_text = extract_text(shape);
+			if (!title_text.empty()) {
+				wxString title = wxString::FromUTF8(title_text);
+				title.Trim(true).Trim(false);
+				if (!title.IsEmpty()) {
+					return title;
+				}
+			}
+		}
+	}
+	return wxEmptyString;
 }

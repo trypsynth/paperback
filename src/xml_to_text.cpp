@@ -71,6 +71,7 @@ void xml_to_text::clear() noexcept {
 	id_positions.clear();
 	headings.clear();
 	links.clear();
+	section_offsets.clear();
 	in_body = false;
 	preserve_whitespace = false;
 	cached_char_length = 0;
@@ -82,11 +83,14 @@ void xml_to_text::process_node(Node* node) {
 	}
 	const auto node_type = node->nodeType();
 	std::string tag_name;
-	bool skip_children = false;
+	bool skip_children{false};
 	if (node_type == Node::ELEMENT_NODE) {
 		auto* element = dynamic_cast<Element*>(node);
 		tag_name = element->localName();
 		std::ranges::transform(tag_name, tag_name.begin(), ::tolower);
+		if (tag_name == "section") {
+			section_offsets.push_back(get_current_text_position());
+		}
 		if (tag_name == "a" && element->hasAttributeNS("", "href")) {
 			const std::string href = element->getAttributeNS("", "href");
 			const std::string link_text = get_element_text(element);
@@ -152,7 +156,7 @@ void xml_to_text::process_text_node(Text* text_node) {
 }
 
 void xml_to_text::add_line(std::string_view line) {
-	std::string processed_line;
+	std::string processed_line{};
 	if (preserve_whitespace) {
 		processed_line = std::string(line);
 		while (!processed_line.empty() && (processed_line.back() == '\n' || processed_line.back() == '\r')) {

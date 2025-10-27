@@ -9,6 +9,7 @@
 
 #include "config_manager.hpp"
 #include "constants.hpp"
+#include <Poco/Base64Decoder.h>
 #include <Poco/Base64Encoder.h>
 #include <Poco/DigestEngine.h>
 #include <Poco/SHA1Engine.h>
@@ -22,6 +23,24 @@
 #include <wx/stdpaths.h>
 #include <wx/string.h>
 #include <wx/tokenzr.h>
+
+namespace {
+inline bool read_config_value(wxFileConfig* cfg, const wxString& key, bool default_val) {
+	return cfg->ReadBool(key, default_val);
+}
+
+inline long read_config_value(wxFileConfig* cfg, const wxString& key, long default_val) {
+	return cfg->ReadLong(key, default_val);
+}
+
+inline int read_config_value(wxFileConfig* cfg, const wxString& key, int default_val) {
+	return static_cast<int>(cfg->ReadLong(key, default_val));
+}
+
+inline wxString read_config_value(wxFileConfig* cfg, const wxString& key, const wxString& default_val) {
+	return cfg->Read(key, default_val);
+}
+} // namespace
 
 config_manager::~config_manager() {
 	if (config) {
@@ -44,20 +63,22 @@ bool config_manager::initialize() {
 }
 
 void config_manager::flush() {
-	if (config) {
-		config->Flush();
+	if (!config) {
+		return;
 	}
+	config->Flush();
 }
 
 void config_manager::shutdown() {
-	if (config) {
-		config->Flush();
-		if (owns_global_config) {
-			wxConfigBase::Set(nullptr);
-			owns_global_config = false;
-		}
-		config.reset();
+	if (!config) {
+		return;
 	}
+	config->Flush();
+	if (owns_global_config) {
+		wxConfigBase::Set(nullptr);
+		owns_global_config = false;
+	}
+	config.reset();
 }
 
 wxString config_manager::get_string(const wxString& key, const wxString& default_value) const {
@@ -73,21 +94,57 @@ int config_manager::get_int(const wxString& key, int default_value) const {
 }
 
 void config_manager::set_string(const wxString& key, const wxString& value) {
-	if (config) {
-		config->Write(key, value);
+	if (!config) {
+		return;
 	}
+	config->Write(key, value);
 }
 
 void config_manager::set_bool(const wxString& key, bool value) {
-	if (config) {
-		config->Write(key, value);
+	if (!config) {
+		return;
 	}
+	config->Write(key, value);
 }
 
 void config_manager::set_int(const wxString& key, int value) {
-	if (config) {
-		config->Write(key, value);
+	if (!config) {
+		return;
 	}
+	config->Write(key, value);
+}
+
+template <typename T>
+T config_manager::get_app_setting(const wxString& key, const T& default_value) const {
+	T result = default_value;
+	with_app_section([this, &key, &default_value, &result]() {
+		result = read_config_value(config.get(), key, default_value);
+	});
+	return result;
+}
+
+template <typename T>
+void config_manager::set_app_setting(const wxString& key, const T& value) {
+	with_app_section([this, &key, &value]() {
+		config->Write(key, value);
+	});
+}
+
+template <typename T>
+T config_manager::get_document_setting(const wxString& path, const wxString& key, const T& default_value) const {
+	T result = default_value;
+	with_document_section(path, [this, &key, &default_value, &result]() {
+		result = read_config_value(config.get(), key, default_value);
+	});
+	return result;
+}
+
+template <typename T>
+void config_manager::set_document_setting(const wxString& path, const wxString& key, const T& value) {
+	with_document_section(path, [this, &path, &key, &value]() {
+		config->Write("path", path);
+		config->Write(key, value);
+	});
 }
 
 void config_manager::add_recent_document(const wxString& path) {
@@ -142,9 +199,10 @@ wxArrayString config_manager::get_recent_documents() const {
 }
 
 void config_manager::clear_recent_documents() {
-	if (config) {
-		config->DeleteGroup("recent_documents");
+	if (!config) {
+		return;
 	}
+	config->DeleteGroup("recent_documents");
 }
 
 void config_manager::rebuild_recent_documents() {
@@ -167,152 +225,6 @@ void config_manager::rebuild_recent_documents() {
 	config->SetPath("/");
 }
 
-int config_manager::get_recent_documents_to_show() const {
-	int result = DEFAULT_RECENT_DOCUMENTS_TO_SHOW;
-	with_app_section([this, &result]() {
-		result = config->ReadLong("recent_documents_to_show", DEFAULT_RECENT_DOCUMENTS_TO_SHOW);
-	});
-	return result;
-}
-
-void config_manager::set_recent_documents_to_show(int count) {
-	with_app_section([this, count]() {
-		config->Write("recent_documents_to_show", count);
-	});
-	flush();
-}
-
-bool config_manager::get_restore_previous_documents() const {
-	bool result = true;
-	with_app_section([this, &result]() {
-		result = config->ReadBool("restore_previous_documents", true);
-	});
-	return result;
-}
-
-void config_manager::set_restore_previous_documents(bool restore) {
-	with_app_section([this, restore]() {
-		config->Write("restore_previous_documents", restore);
-	});
-	flush();
-}
-
-bool config_manager::get_word_wrap() const {
-	bool result = false;
-	with_app_section([this, &result]() {
-		result = config->ReadBool("word_wrap", false);
-	});
-	return result;
-}
-
-void config_manager::set_word_wrap(bool word_wrap) {
-	with_app_section([this, word_wrap]() {
-		config->Write("word_wrap", word_wrap);
-	});
-	flush();
-}
-
-bool config_manager::get_minimize_to_tray() const {
-	bool result = false;
-	with_app_section([this, &result]() {
-		result = config->ReadBool("minimize_to_tray", false);
-	});
-	return result;
-}
-
-void config_manager::set_minimize_to_tray(bool minimize) {
-	with_app_section([this, minimize]() {
-		config->Write("minimize_to_tray", minimize);
-	});
-	flush();
-}
-
-bool config_manager::get_open_in_new_window() const {
-	bool result = false;
-	with_app_section([this, &result]() {
-		result = config->ReadBool("open_in_new_window", false);
-	});
-	return result;
-}
-
-bool config_manager::get_compact_go_menu() const {
-	bool result = true;
-	with_app_section([this, &result]() {
-		result = config->ReadBool("compact_go_menu", true);
-	});
-	return result;
-}
-
-void config_manager::set_open_in_new_window(bool open_in_new_window) {
-	with_app_section([this, open_in_new_window]() {
-		config->Write("open_in_new_window", open_in_new_window);
-	});
-	flush();
-}
-
-void config_manager::set_compact_go_menu(bool compact) {
-	with_app_section([this, compact]() {
-		config->Write("compact_go_menu", compact);
-	});
-	flush();
-}
-
-bool config_manager::get_check_for_updates_on_startup() const {
-	bool result = true;
-	with_app_section([this, &result]() {
-		result = config->ReadBool("check_for_updates_on_startup", true);
-	});
-	return result;
-}
-
-void config_manager::set_check_for_updates_on_startup(bool check) {
-	with_app_section([this, check]() {
-		config->Write("check_for_updates_on_startup", check);
-	});
-}
-
-wxString config_manager::get_language() const {
-	wxString result = "";
-	with_app_section([this, &result]() {
-		result = config->Read("language", "");
-	});
-	return result;
-}
-
-void config_manager::set_language(const wxString& language) {
-	with_app_section([this, language]() {
-		config->Write("language", language);
-	});
-	flush();
-}
-
-int config_manager::get_config_version() const {
-	int version = CONFIG_VERSION_LEGACY;
-	with_app_section([this, &version]() {
-		version = config->ReadLong("version", CONFIG_VERSION_LEGACY);
-	});
-	return version;
-}
-
-void config_manager::set_config_version(int version) {
-	with_app_section([this, version]() {
-		config->Write("version", version);
-	});
-}
-
-void config_manager::set_active_document(const wxString& path) {
-	with_app_section([this, path]() {
-		config->Write("active_document", path);
-	});
-}
-
-wxString config_manager::get_active_document() const {
-	wxString active_doc = "";
-	with_app_section([this, &active_doc]() {
-		active_doc = config->Read("active_document", "");
-	});
-	return active_doc;
-}
 
 void config_manager::add_opened_document(const wxString& path) {
 	if (!config) {
@@ -355,7 +267,7 @@ wxArrayString config_manager::get_opened_documents() const {
 	}
 	config->SetPath("/opened_documents");
 	wxString key;
-	long index = 0;
+	long index{0};
 	bool cont = config->GetFirstEntry(key, index);
 	while (cont) {
 		const wxString path = config->Read(key, "");
@@ -374,34 +286,20 @@ void config_manager::clear_opened_documents() {
 	}
 }
 
-void config_manager::set_document_position(const wxString& path, long position) {
-	with_document_section(path, [this, path, position]() {
-		config->Write("path", path);
-		config->Write("last_position", position);
-	});
+void config_manager::set_document_position(const wxString& path, int position) {
+	set_document_setting(path, "last_position", position);
 }
 
-long config_manager::get_document_position(const wxString& path) const {
-	long position = 0;
-	with_document_section(path, [this, &position]() {
-		position = config->ReadLong("last_position", 0);
-	});
-	return position;
+int config_manager::get_document_position(const wxString& path) const {
+	return get_document_setting(path, "last_position", 0);
 }
 
 void config_manager::set_document_opened(const wxString& path, bool opened) {
-	with_document_section(path, [this, path, opened]() {
-		config->Write("path", path);
-		config->Write("opened", opened);
-	});
+	set_document_setting(path, "opened", opened);
 }
 
 bool config_manager::get_document_opened(const wxString& path) const {
-	bool opened = false;
-	with_document_section(path, [this, &opened]() {
-		opened = config->ReadBool("opened", false);
-	});
-	return opened;
+	return get_document_setting(path, "opened", false);
 }
 
 wxArrayString config_manager::get_all_opened_documents() const {
@@ -411,7 +309,7 @@ wxArrayString config_manager::get_all_opened_documents() const {
 	}
 	config->SetPath("/");
 	wxString group;
-	long index = 0;
+	long index{0};
 	bool cont = config->GetFirstGroup(group, index);
 	while (cont) {
 		if (group.StartsWith("doc_")) {
@@ -457,7 +355,7 @@ wxArrayString config_manager::get_all_documents() const {
 	}
 	config->SetPath("/");
 	wxString group;
-	long index = 0;
+	long index{0};
 	bool cont = config->GetFirstGroup(group, index);
 	while (cont) {
 		if (group.StartsWith("doc_")) {
@@ -474,76 +372,118 @@ wxArrayString config_manager::get_all_documents() const {
 	return result;
 }
 
-void config_manager::add_bookmark(const wxString& path, long position) {
+void config_manager::add_bookmark(const wxString& path, int start, int end, const wxString& note) {
 	if (!config) {
 		return;
 	}
-	wxArrayLong bookmarks = get_bookmarks(path);
-	if (bookmarks.Index(position) == wxNOT_FOUND) {
-		bookmarks.Add(position);
-		bookmarks.Sort([](long* a, long* b) {
-			if (*a < *b) {
-				return -1;
-			}
-			if (*a > *b) {
-				return 1;
-			}
-			return 0;
-		});
-		const wxString bookmark_string = [&bookmarks]() {
-			wxString str;
-			for (size_t i = 0; i < bookmarks.GetCount(); ++i) {
-				if (i > 0) {
-					str += ",";
-				}
-				str += wxString::Format("%ld", bookmarks[i]);
-			}
-			return str;
-		}();
-		with_document_section(path, [this, path, bookmark_string]() {
-			config->Write("path", path);
-			config->Write("bookmarks", bookmark_string);
-		});
-	}
-}
-
-void config_manager::remove_bookmark(const wxString& path, long position) {
-	if (!config) {
-		return;
-	}
-	wxArrayLong bookmarks = get_bookmarks(path);
-	const int index = bookmarks.Index(position);
-	if (index != wxNOT_FOUND) {
-		bookmarks.RemoveAt(index);
-		wxString bookmark_string = "";
-		for (size_t i = 0; i < bookmarks.GetCount(); ++i) {
-			if (i > 0) {
-				bookmark_string += ",";
-			}
-			bookmark_string += wxString::Format("%ld", bookmarks[i]);
+	std::vector<bookmark> bookmarks = get_bookmarks(path);
+	bookmark new_bookmark(start, end, note);
+	bool exists = false;
+	for (const auto& bm : bookmarks) {
+		if (bm == new_bookmark) {
+			exists = true;
+			break;
 		}
-		with_document_section(path, [this, path, bookmark_string]() {
-			config->Write("path", path);
-			if (bookmark_string.IsEmpty()) {
-				config->DeleteEntry("bookmarks");
-			} else {
-				config->Write("bookmarks", bookmark_string);
-			}
-		});
 	}
+	if (exists) {
+		return;
+	}
+	bookmarks.push_back(new_bookmark);
+	std::sort(bookmarks.begin(), bookmarks.end(), [](const bookmark& a, const bookmark& b) {
+		return a.start < b.start;
+	});
+	wxString bookmark_string;
+	for (size_t i = 0; i < bookmarks.size(); ++i) {
+		if (i > 0) {
+			bookmark_string += ",";
+		}
+		const wxString encoded_note = encode_note(bookmarks[i].note);
+		bookmark_string += wxString::Format("%d:%d:%s", bookmarks[i].start, bookmarks[i].end, encoded_note);
+	}
+	with_document_section(path, [this, path, bookmark_string]() {
+		config->Write("path", path);
+		config->Write("bookmarks", bookmark_string);
+	});
 }
 
-void config_manager::toggle_bookmark(const wxString& path, long position) {
-	const wxArrayLong bookmarks = get_bookmarks(path);
-	if (bookmarks.Index(position) != wxNOT_FOUND) {
-		remove_bookmark(path, position);
+void config_manager::remove_bookmark(const wxString& path, int start, int end) {
+	if (!config) {
+		return;
+	}
+	std::vector<bookmark> bookmarks = get_bookmarks(path);
+	bookmark to_remove(start, end);
+	auto it = std::find(bookmarks.begin(), bookmarks.end(), to_remove);
+	if (it == bookmarks.end()) {
+		return;
+	}
+	bookmarks.erase(it);
+	wxString bookmark_string;
+	for (size_t i = 0; i < bookmarks.size(); ++i) {
+		if (i > 0) {
+			bookmark_string += ",";
+		}
+		const wxString encoded_note = encode_note(bookmarks[i].note);
+		bookmark_string += wxString::Format("%d:%d:%s", bookmarks[i].start, bookmarks[i].end, encoded_note);
+	}
+	with_document_section(path, [this, path, bookmark_string]() {
+		config->Write("path", path);
+		if (bookmark_string.IsEmpty()) {
+			config->DeleteEntry("bookmarks");
+		} else {
+			config->Write("bookmarks", bookmark_string);
+		}
+	});
+}
+
+void config_manager::toggle_bookmark(const wxString& path, int start, int end, const wxString& note) {
+	std::vector<bookmark> bookmarks = get_bookmarks(path);
+	bookmark to_toggle(start, end);
+	bool exists = false;
+	for (const auto& bm : bookmarks) {
+		if (bm == to_toggle) {
+			exists = true;
+			break;
+		}
+	}
+	if (exists) {
+		remove_bookmark(path, start, end);
 	} else {
-		add_bookmark(path, position);
+		add_bookmark(path, start, end, note);
 	}
 }
 
-wxArrayLong config_manager::get_bookmarks(const wxString& path) const {
-	wxArrayLong result;
+void config_manager::update_bookmark_note(const wxString& path, int start, int end, const wxString& note) {
+	if (!config) {
+		return;
+	}
+	std::vector<bookmark> bookmarks = get_bookmarks(path);
+	bool found = false;
+	for (auto& bm : bookmarks) {
+		if (bm.start == start && bm.end == end) {
+			bm.note = note;
+			found = true;
+			break;
+		}
+	}
+	if (!found) {
+		return;
+	}
+	wxString bookmark_string;
+	for (size_t i = 0; i < bookmarks.size(); ++i) {
+		if (i > 0) {
+			bookmark_string += ",";
+		}
+		const wxString encoded_note = encode_note(bookmarks[i].note);
+		bookmark_string += wxString::Format("%d:%d:%s", bookmarks[i].start, bookmarks[i].end, encoded_note);
+	}
+	with_document_section(path, [this, path, bookmark_string]() {
+		config->Write("path", path);
+		config->Write("bookmarks", bookmark_string);
+	});
+}
+
+std::vector<bookmark> config_manager::get_bookmarks(const wxString& path) const {
+	std::vector<bookmark> result;
 	if (!config) {
 		return result;
 	}
@@ -554,25 +494,41 @@ wxArrayLong config_manager::get_bookmarks(const wxString& path) const {
 		});
 		return str;
 	}();
-	if (!bookmark_string.IsEmpty()) {
-		wxStringTokenizer tokenizer(bookmark_string, ",");
-		while (tokenizer.HasMoreTokens()) {
-			const wxString token = tokenizer.GetNextToken().Trim().Trim(false);
-			long position = 0;
-			if (token.ToLong(&position)) {
-				result.Add(position);
+	if (bookmark_string.IsEmpty()) {
+		return result;
+	}
+	wxStringTokenizer tokenizer(bookmark_string, ",");
+	while (tokenizer.HasMoreTokens()) {
+		const wxString token = tokenizer.GetNextToken().Trim().Trim(false);
+		if (token.Contains(":")) {
+			wxStringTokenizer pair_tokenizer(token, ":");
+			if (pair_tokenizer.HasMoreTokens()) {
+				wxString start_str = pair_tokenizer.GetNextToken();
+				if (pair_tokenizer.HasMoreTokens()) {
+					wxString end_str = pair_tokenizer.GetNextToken();
+					wxString note_str;
+					if (pair_tokenizer.HasMoreTokens()) {
+						note_str = pair_tokenizer.GetNextToken();
+					}
+					int start{0};
+					int end{0};
+					if (start_str.ToInt(&start) && end_str.ToInt(&end)) {
+						wxString decoded_note = decode_note(note_str);
+						result.push_back(bookmark(start, end, decoded_note));
+					}
+				}
+			}
+		} else {
+			// Backward compatibility. This shouldn't happen after migration, but handle it gracefully anyway.
+			int position{0};
+			if (token.ToInt(&position)) {
+				result.push_back(bookmark(position, position, wxEmptyString));
 			}
 		}
-		result.Sort([](long* a, long* b) {
-			if (*a < *b) {
-				return -1;
-			}
-			if (*a > *b) {
-				return 1;
-			}
-			return 0;
-		});
 	}
+	std::sort(result.begin(), result.end(), [](const bookmark& a, const bookmark& b) {
+		return a.start < b.start;
+	});
 	return result;
 }
 
@@ -585,139 +541,182 @@ void config_manager::clear_bookmarks(const wxString& path) {
 	});
 }
 
-long config_manager::get_next_bookmark(const wxString& path, long current_position) const {
-	wxArrayLong bookmarks = get_bookmarks(path);
-	for (size_t i = 0; i < bookmarks.GetCount(); ++i) {
-		if (bookmarks[i] > current_position) {
-			return bookmarks[i];
+bookmark config_manager::get_next_bookmark(const wxString& path, int current_position) const {
+	const auto& bookmarks = get_bookmarks(path);
+	for (const auto& bm : bookmarks) {
+		if (bm.start > current_position) {
+			return bm;
 		}
 	}
-	return -1;
+	return {-1, -1};
 }
 
-long config_manager::get_previous_bookmark(const wxString& path, long current_position) const {
-	wxArrayLong bookmarks = get_bookmarks(path);
-	for (int i = static_cast<int>(bookmarks.GetCount()) - 1; i >= 0; --i) {
-		if (bookmarks[i] < current_position) {
-			return bookmarks[i];
+bookmark config_manager::get_previous_bookmark(const wxString& path, int current_position) const {
+	const auto& bookmarks = get_bookmarks(path);
+	for (auto it = bookmarks.rbegin(); it != bookmarks.rend(); ++it) {
+		if (it->start < current_position) {
+			return *it;
 		}
 	}
-	return -1;
+	return {-1, -1};
 }
 
-long config_manager::get_closest_bookmark(const wxString& path, long current_position) const {
-	wxArrayLong bookmarks = get_bookmarks(path);
-	if (bookmarks.IsEmpty()) {
-		return -1;
+bookmark config_manager::get_closest_bookmark(const wxString& path, int current_position) const {
+	const auto& bookmarks = get_bookmarks(path);
+	if (bookmarks.empty()) {
+		return {-1, -1};
 	}
-	long closest = bookmarks[0];
-	const long min_distance_initial = std::abs(closest - current_position);
-	long min_distance = min_distance_initial;
-	for (size_t i = 1; i < bookmarks.GetCount(); ++i) {
-		const long distance = std::abs(bookmarks[i] - current_position);
+	const auto* closest = &bookmarks.front();
+	int min_distance = std::abs(closest->start - current_position);
+	for (const auto& bm : bookmarks) {
+		const int distance = std::abs(bm.start - current_position);
 		if (distance < min_distance) {
 			min_distance = distance;
-			closest = bookmarks[i];
+			closest = &bm;
 		}
 	}
-	return closest;
+	return *closest;
 }
 
 void config_manager::set_document_format(const wxString& path, const wxString& format) {
-	with_document_section(path, [this, path, format]() {
-		config->Write("path", path);
-		config->Write("format", format);
-	});
+	set_document_setting(path, "format", format);
 }
 
 wxString config_manager::get_document_format(const wxString& path) const {
-	wxString format = "";
-	with_document_section(path, [this, &format]() {
-		format = config->Read("format", "");
-	});
-	return format;
+	return get_document_setting(path, "format", wxString(""));
 }
 
 bool config_manager::needs_migration() const {
 	if (!config) {
 		return false;
 	}
-	if (get_config_version() == CONFIG_VERSION_CURRENT) {
+	const int version = get(config_version);
+	if (version == CONFIG_VERSION_CURRENT) {
 		return false;
 	}
 	config->SetPath("/positions");
 	wxString key;
-	long index = 0;
+	long index{0};
 	const bool has_old_positions = config->GetFirstEntry(key, index);
 	config->SetPath("/");
 	const bool has_old_globals = config->HasEntry("restore_previous_documents") || config->HasEntry("word_wrap");
 	const bool has_old_opened = config->HasGroup("opened_documents");
-	return has_old_positions || has_old_globals || has_old_opened;
+	const bool needs_v1_to_v2 = (version == CONFIG_VERSION_1);
+	return has_old_positions || has_old_globals || has_old_opened || needs_v1_to_v2;
 }
 
 bool config_manager::migrate_config() {
 	if (!config) {
 		return false;
 	}
-	config->SetPath("/");
-	const bool restore_docs = config->ReadBool("restore_previous_documents", true);
-	const bool word_wrap = config->ReadBool("word_wrap", false);
-	config->SetPath("/app");
-	if (!config->HasEntry("restore_previous_documents")) {
-		config->Write("restore_previous_documents", restore_docs);
-	}
-	if (!config->HasEntry("word_wrap")) {
-		config->Write("word_wrap", word_wrap);
-	}
-	config->SetPath("/positions");
-	wxString key;
-	long index = 0;
-	bool cont = config->GetFirstEntry(key, index);
-	while (cont) {
-		const long position = config->ReadLong(key, 0);
-		if (position > 0) {
-			set_document_position(key, position);
+	const int version = get(config_version);
+	if (version == CONFIG_VERSION_LEGACY) {
+		config->SetPath("/");
+		const bool restore_docs = config->ReadBool("restore_previous_documents", true);
+		const bool word_wrap = config->ReadBool("word_wrap", false);
+		config->SetPath("/app");
+		if (!config->HasEntry("restore_previous_documents")) {
+			config->Write("restore_previous_documents", restore_docs);
 		}
-		cont = config->GetNextEntry(key, index);
-	}
-	config->SetPath("/recent_documents");
-	wxString recent_key;
-	long recent_index = 0;
-	bool recent_cont = config->GetFirstEntry(recent_key, recent_index);
-	wxArrayString old_recent_paths;
-	while (recent_cont) {
-		const wxString path = config->Read(recent_key, "");
-		if (!path.IsEmpty()) {
-			old_recent_paths.Add(path);
+		if (!config->HasEntry("word_wrap")) {
+			config->Write("word_wrap", word_wrap);
 		}
-		recent_cont = config->GetNextEntry(recent_key, recent_index);
-	}
-	config->SetPath("/");
-	config->DeleteGroup("recent_documents");
-	for (const auto& path : old_recent_paths) {
-		add_recent_document(path);
-	}
-	config->SetPath("/opened_documents");
-	wxString opened_key;
-	long opened_index = 0;
-	bool opened_cont = config->GetFirstEntry(opened_key, opened_index);
-	wxArrayString old_opened_paths;
-	while (opened_cont) {
-		const wxString path = config->Read(opened_key, "");
-		if (!path.IsEmpty()) {
-			old_opened_paths.Add(path);
+		config->SetPath("/positions");
+		wxString key;
+		long index{0};
+		bool cont = config->GetFirstEntry(key, index);
+		while (cont) {
+			const long position = config->ReadLong(key, 0);
+			if (position > 0) {
+				set_document_position(key, position);
+			}
+			cont = config->GetNextEntry(key, index);
 		}
-		opened_cont = config->GetNextEntry(opened_key, opened_index);
+		config->SetPath("/recent_documents");
+		wxString recent_key;
+		long recent_index{0};
+		bool recent_cont = config->GetFirstEntry(recent_key, recent_index);
+		wxArrayString old_recent_paths;
+		while (recent_cont) {
+			const wxString path = config->Read(recent_key, "");
+			if (!path.IsEmpty()) {
+				old_recent_paths.Add(path);
+			}
+			recent_cont = config->GetNextEntry(recent_key, recent_index);
+		}
+		config->SetPath("/");
+		config->DeleteGroup("recent_documents");
+		for (const auto& path : old_recent_paths) {
+			add_recent_document(path);
+		}
+		config->SetPath("/opened_documents");
+		wxString opened_key;
+		long opened_index{0};
+		bool opened_cont = config->GetFirstEntry(opened_key, opened_index);
+		wxArrayString old_opened_paths;
+		while (opened_cont) {
+			const wxString path = config->Read(opened_key, "");
+			if (!path.IsEmpty()) {
+				old_opened_paths.Add(path);
+			}
+			opened_cont = config->GetNextEntry(opened_key, opened_index);
+		}
+		config->SetPath("/");
+		for (const auto& path : old_opened_paths) {
+			set_document_opened(path, true);
+		}
+		config->SetPath("/");
+		config->DeleteGroup("positions");
+		config->DeleteEntry("restore_previous_documents");
+		config->DeleteEntry("word_wrap");
+		config->DeleteGroup("opened_documents");
+	} else if (version == CONFIG_VERSION_1) {
+		config->SetPath("/");
+		wxString group;
+		long group_index{0};
+		bool cont = config->GetFirstGroup(group, group_index);
+		while (cont) {
+			if (group.StartsWith("doc_")) {
+				config->SetPath("/" + group);
+				const wxString old_bookmarks = config->Read("bookmarks", "");
+				if (!old_bookmarks.IsEmpty()) {
+					wxString new_bookmarks;
+					wxStringTokenizer tokenizer(old_bookmarks, ",");
+					bool first = true;
+					while (tokenizer.HasMoreTokens()) {
+						const wxString token = tokenizer.GetNextToken().Trim().Trim(false);
+						if (!token.Contains(":")) {
+							long position{0};
+							if (token.ToLong(&position)) {
+								if (!first) {
+									new_bookmarks += ",";
+								}
+								new_bookmarks += wxString::Format("%ld:%ld:", position, position);
+								first = false;
+							}
+						} else {
+							int colon_count{token.Freq(':')};
+							if (!first) {
+								new_bookmarks += ",";
+							}
+							if (colon_count == 1) {
+								new_bookmarks += token + ":";
+							} else {
+								new_bookmarks += token;
+							}
+							first = false;
+						}
+					}
+					if (!new_bookmarks.IsEmpty()) {
+						config->Write("bookmarks", new_bookmarks);
+					}
+				}
+				config->SetPath("/");
+			}
+			cont = config->GetNextGroup(group, group_index);
+		}
 	}
-	config->SetPath("/");
-	for (const auto& path : old_opened_paths) {
-		set_document_opened(path, true);
-	}
-	config->SetPath("/");
-	config->DeleteGroup("positions");
-	config->DeleteEntry("restore_previous_documents");
-	config->DeleteEntry("word_wrap");
-	config->DeleteGroup("opened_documents");
+	set(config_version, static_cast<int>(CONFIG_VERSION_CURRENT));
 	return true;
 }
 
@@ -743,32 +742,25 @@ void config_manager::load_defaults() {
 	if (needs_migration()) {
 		migrate_config();
 	}
-	config->SetPath("/app");
-	if (!config->HasEntry("restore_previous_documents")) {
-		config->Write("restore_previous_documents", true);
+	auto set_default_if_missing = [this](const auto& setting) {
+		config->SetPath("/app");
+		if (!config->HasEntry(setting.key)) {
+			config->Write(setting.key, setting.default_value);
+		}
+		config->SetPath("/");
+	};
+	set_default_if_missing(restore_previous_documents);
+	set_default_if_missing(word_wrap);
+	set_default_if_missing(minimize_to_tray);
+	set_default_if_missing(open_in_new_window);
+	set_default_if_missing(compact_go_menu);
+	set_default_if_missing(navigation_wrap);
+	set_default_if_missing(check_for_updates_on_startup);
+	set_default_if_missing(recent_documents_to_show);
+	set_default_if_missing(sleep_timer_duration);
+	if (get(config_version) != CONFIG_VERSION_CURRENT) {
+		set(config_version, static_cast<int>(CONFIG_VERSION_CURRENT));
 	}
-	if (!config->HasEntry("word_wrap")) {
-		config->Write("word_wrap", false);
-	}
-	if (!config->HasEntry("minimize_to_tray")) {
-		config->Write("minimize_to_tray", false);
-	}
-if (!config->HasEntry("open_in_new_window")) {
-		config->Write("open_in_new_window", false);
-	}
-	if (!config->HasEntry("compact_go_menu")) {
-		config->Write("compact_go_menu", true);
-	}
-	if (!config->HasEntry("check_for_updates_on_startup")) {
-		config->Write("check_for_updates_on_startup", true);
-	}
-	if (!config->HasEntry("recent_documents_to_show")) {
-		config->Write("recent_documents_to_show", DEFAULT_RECENT_DOCUMENTS_TO_SHOW);
-	}
-	if (get_config_version() != CONFIG_VERSION_CURRENT) {
-		set_config_version(CONFIG_VERSION_CURRENT);
-	}
-	config->SetPath("/");
 	rebuild_recent_documents();
 }
 
@@ -805,3 +797,33 @@ void config_manager::with_app_section(const std::function<void()>& func) const {
 	func();
 	config->SetPath("/");
 }
+
+wxString config_manager::encode_note(const wxString& note) {
+	if (note.IsEmpty()) {
+		return wxEmptyString;
+	}
+	std::ostringstream b64_stream;
+	Poco::Base64Encoder encoder(b64_stream);
+	const std::string note_str = note.ToStdString();
+	encoder.write(note_str.data(), static_cast<std::streamsize>(note_str.size()));
+	encoder.close();
+	return wxString(b64_stream.str());
+}
+
+wxString config_manager::decode_note(const wxString& encoded) {
+	if (encoded.IsEmpty()) {
+		return wxEmptyString;
+	}
+	std::istringstream b64_stream(encoded.ToStdString());
+	Poco::Base64Decoder decoder(b64_stream);
+	std::string decoded_str;
+	std::getline(decoder, decoded_str, '\0');
+	return wxString::FromUTF8(decoded_str.c_str());
+}
+
+template bool config_manager::get_app_setting<bool>(const wxString&, const bool&) const;
+template int config_manager::get_app_setting<int>(const wxString&, const int&) const;
+template wxString config_manager::get_app_setting<wxString>(const wxString&, const wxString&) const;
+template void config_manager::set_app_setting<bool>(const wxString&, const bool&);
+template void config_manager::set_app_setting<int>(const wxString&, const int&);
+template void config_manager::set_app_setting<wxString>(const wxString&, const wxString&);

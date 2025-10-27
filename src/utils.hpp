@@ -25,7 +25,6 @@ enum class find_options {
 	use_regex = 1 << 3
 };
 
-// NOLINTBEGIN(clang-analyzer-optin.core.EnumCastOutOfRange)
 inline constexpr find_options operator|(find_options a, find_options b) noexcept {
 	return static_cast<find_options>(static_cast<int>(a) | static_cast<int>(b));
 }
@@ -33,7 +32,6 @@ inline constexpr find_options operator|(find_options a, find_options b) noexcept
 inline constexpr find_options operator&(find_options a, find_options b) noexcept {
 	return static_cast<find_options>(static_cast<int>(a) & static_cast<int>(b));
 }
-// NOLINTEND(clang-analyzer-optin.core.EnumCastOutOfRange)
 
 inline constexpr find_options& operator|=(find_options& a, find_options b) noexcept {
 	return a = a | b;

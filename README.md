@@ -33,7 +33,7 @@ cmake .. -GNinja
 cmake --build .
 ```
 
-This will generate paperback.exe and all its dependencieds, including its readme in HTML format, in your build folder, as well as creating a ready-to-release zip file.
+This will generate paperback.exe and all its dependencieds, including its readme in HTML format, in your build folder.
 
 ## Contributing
 Contributions are welcome! Whether through issues, pull requests, discussions, or other means, your interest is appreciated.
