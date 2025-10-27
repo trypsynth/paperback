@@ -566,34 +566,34 @@ void main_window::on_previous_heading(wxCommandEvent&) {
 }
 
 void main_window::on_next_heading(wxCommandEvent&) {
-			doc_manager->go_to_next_heading();
-			update_status_bar();
-			trigger_throttled_position_save();
-		}
-	
-	void main_window::on_previous_list(wxCommandEvent&) {
-		doc_manager->go_to_previous_list();
-		update_status_bar();
-		trigger_throttled_position_save();
-	}
-	
-	void main_window::on_next_list(wxCommandEvent&) {
-		doc_manager->go_to_next_list();
-		update_status_bar();
-		trigger_throttled_position_save();
-	}
-	
-	void main_window::on_previous_list_item(wxCommandEvent&) {
-		doc_manager->go_to_previous_list_item();
-		update_status_bar();
-		trigger_throttled_position_save();
-	}
-	
-	void main_window::on_next_list_item(wxCommandEvent&) {
-		doc_manager->go_to_next_list_item();
-		update_status_bar();
-		trigger_throttled_position_save();
-	}
+	doc_manager->go_to_next_heading();
+	update_status_bar();
+	trigger_throttled_position_save();
+}
+
+void main_window::on_previous_list(wxCommandEvent&) {
+	doc_manager->go_to_previous_list();
+	update_status_bar();
+	trigger_throttled_position_save();
+}
+
+void main_window::on_next_list(wxCommandEvent&) {
+	doc_manager->go_to_next_list();
+	update_status_bar();
+	trigger_throttled_position_save();
+}
+
+void main_window::on_previous_list_item(wxCommandEvent&) {
+	doc_manager->go_to_previous_list_item();
+	update_status_bar();
+	trigger_throttled_position_save();
+}
+
+void main_window::on_next_list_item(wxCommandEvent&) {
+	doc_manager->go_to_next_list_item();
+	update_status_bar();
+	trigger_throttled_position_save();
+}
 void main_window::on_word_count(wxCommandEvent&) {
 	const size_t count = doc_manager->get_active_document()->stats.word_count;
 	wxMessageBox(wxString::Format(wxPLURAL("The document contains %d word", "The document contains %d words", count), count), _("Word count"), wxICON_INFORMATION);

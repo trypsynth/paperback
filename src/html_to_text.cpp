@@ -167,7 +167,7 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 					}
 				}
 				if (item_count > 0) {
-				finalize_current_line();
+					finalize_current_line();
 					lists.push_back({.offset = get_current_text_position(), .item_count = item_count});
 				}
 			}

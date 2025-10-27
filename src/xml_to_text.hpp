@@ -15,8 +15,8 @@
 #include <Poco/DOM/Node.h>
 #include <Poco/DOM/Text.h>
 #include <memory>
-#include <string>
 #include <stack>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -35,12 +35,24 @@ public:
 	}
 
 	[[nodiscard]] std::string get_text() const;
-	[[nodiscard]] const std::unordered_map<std::string, size_t>& get_id_positions() const noexcept { return id_positions; }
-	[[nodiscard]] const std::vector<heading_info>& get_headings() const noexcept { return headings; }
-	[[nodiscard]] const std::vector<link_info>& get_links() const noexcept { return links; }
-	[[nodiscard]] const std::vector<list_info>& get_lists() const noexcept { return lists; }
-	[[nodiscard]] const std::vector<list_item_info>& get_list_items() const noexcept { return list_items; }
-	[[nodiscard]] const std::vector<size_t>& get_section_offsets() const noexcept { return section_offsets; }
+	[[nodiscard]] const std::unordered_map<std::string, size_t>& get_id_positions() const noexcept {
+		return id_positions;
+	}
+	[[nodiscard]] const std::vector<heading_info>& get_headings() const noexcept {
+		return headings;
+	}
+	[[nodiscard]] const std::vector<link_info>& get_links() const noexcept {
+		return links;
+	}
+	[[nodiscard]] const std::vector<list_info>& get_lists() const noexcept {
+		return lists;
+	}
+	[[nodiscard]] const std::vector<list_item_info>& get_list_items() const noexcept {
+		return list_items;
+	}
+	[[nodiscard]] const std::vector<size_t>& get_section_offsets() const noexcept {
+		return section_offsets;
+	}
 	void clear() noexcept;
 
 private:

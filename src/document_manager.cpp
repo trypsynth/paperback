@@ -621,10 +621,10 @@ void document_manager::activate_current_link() const {
 				return;
 			}
 		}
-				speak(_("Internal link target not found."));
-			}
-		}
-		
+		speak(_("Internal link target not found."));
+	}
+}
+
 void document_manager::go_to_previous_list() {
 	const document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();

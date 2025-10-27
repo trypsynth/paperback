@@ -28,7 +28,9 @@ public:
 		return exts;
 	}
 <<<<<<< HEAD
-	[[nodiscard]] parser_flags supported_flags() const override { return parser_flags::supports_toc | parser_flags::supports_lists; }
+	[[nodiscard]] parser_flags supported_flags() const override {
+		return parser_flags::supports_toc | parser_flags::supports_lists;
+	}
 =======
 
 	[[nodiscard]] parser_flags supported_flags() const override {
