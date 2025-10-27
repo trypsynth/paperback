@@ -2,8 +2,8 @@ name: Build Paperback
 on:
   push:
   workflow_dispatch:
-  permissions:
-    contents: write
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: windows-latest
