@@ -83,6 +83,7 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 			document_ptr->buffer.add_section_break(wxString::Format("Section %zu", i + 1));
 			parse_section(i, ctx, document_ptr->buffer);
 		}
+		document_ptr->buffer.finalize_markers();
 		document_ptr->title = wxString::FromUTF8(ctx.title);
 		if (!ctx.author.empty()) {
 			document_ptr->author = wxString::FromUTF8(ctx.author);

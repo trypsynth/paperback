@@ -1,0 +1,66 @@
+name: Build Paperback
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Setup MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+    - name: Cache VCPKG packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          vcpkg/bin/downloads
+          vcpkg/bin/packages
+          vcpkg/bin/buildtrees
+          build/vcpkg_installed
+        key: ${{ runner.os }}-vcpkg-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
+        restore-keys: |
+          ${{ runner.os }}-vcpkg-
+    - name: Install CMake, Ninja, and Pandoc
+      run: |
+        choco install cmake ninja pandoc -y
+    - name: Configure CMake
+      run: |
+        if (-not (Test-Path build)) {
+          New-Item -ItemType Directory -Path build
+        }
+        cd build
+        cmake .. -GNinja
+    - name: Build
+      run: |
+        cd build
+        cmake --build . --target release
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: paperback-build
+        path: |
+          build/paperback.zip
+          build/paperback_setup.exe
+        retention-days: 30
+    - name: Get latest stable tag
+      id: get_tag
+      shell: bash
+      run: |
+        git fetch --tags
+        echo "tag=$(git tag --sort=-creatordate | grep -E '^v?0\.[0-9]+(\.[0-9]+)?$' | head -n 1)" >> $GITHUB_OUTPUT
+    - name: Create or update latest release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: latest
+        name: Development Build
+        files: |
+          build/paperback.zip
+          build/paperback_setup.exe
+        prerelease: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

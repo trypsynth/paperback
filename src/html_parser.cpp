@@ -60,6 +60,7 @@ std::unique_ptr<document> html_parser::load(const wxString& path) const {
 	for (const auto& list_item : list_items) {
 		doc->buffer.add_marker(list_item.offset, marker_type::list_item, wxString::FromUTF8(list_item.text), wxString(), list_item.level);
 	}
+	doc->buffer.finalize_markers();
 	doc->toc_items = build_toc_from_headings(doc->buffer);
 	return doc;
 }

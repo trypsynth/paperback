@@ -53,14 +53,38 @@ public:
 	html_to_text(html_to_text&&) = default;
 	html_to_text& operator=(html_to_text&&) = default;
 	[[nodiscard]] bool convert(const std::string& html_content, html_source_mode mode = html_source_mode::native_html);
-	[[nodiscard]] const std::vector<std::string>& get_lines() const noexcept { return lines; }
+
+	[[nodiscard]] const std::vector<std::string>& get_lines() const noexcept {
+		return lines;
+	}
+
 	[[nodiscard]] std::string get_text() const;
+<<<<<<< HEAD
 	[[nodiscard]] const std::unordered_map<std::string, size_t>& get_id_positions() const noexcept { return id_positions; }
 	[[nodiscard]] const std::vector<heading_info>& get_headings() const noexcept { return headings; }
 	[[nodiscard]] const std::vector<link_info>& get_links() const noexcept { return links; }
 	[[nodiscard]] const std::vector<list_info>& get_lists() const noexcept { return lists; }
 	[[nodiscard]] const std::vector<list_item_info>& get_list_items() const noexcept { return list_items; }
 	[[nodiscard]] const std::string& get_title() const noexcept { return title; }
+=======
+
+	[[nodiscard]] const std::unordered_map<std::string, size_t>& get_id_positions() const noexcept {
+		return id_positions;
+	}
+
+	[[nodiscard]] const std::vector<heading_info>& get_headings() const noexcept {
+		return headings;
+	}
+
+	[[nodiscard]] const std::vector<link_info>& get_links() const noexcept {
+		return links;
+	}
+
+	[[nodiscard]] const std::string& get_title() const noexcept {
+		return title;
+	}
+
+>>>>>>> master
 	void clear() noexcept;
 
 private:
@@ -71,8 +95,8 @@ private:
 			}
 		}
 	};
-	using DocumentPtr = std::unique_ptr<lxb_html_document_t, DocumentDeleter>;
 
+<<<<<<< HEAD
 	std::vector<std::string> lines;
 	std::string current_line;
 	std::unordered_map<std::string, size_t> id_positions;
@@ -94,6 +118,27 @@ private:
 	html_source_mode source_mode = html_source_mode::native_html;
 	size_t cached_char_length = 0;
 	DocumentPtr doc;
+=======
+	using document_ptr = std::unique_ptr<lxb_html_document_t, DocumentDeleter>;
+
+	std::vector<std::string> lines{};
+	std::string current_line{};
+	std::unordered_map<std::string, size_t> id_positions{};
+	std::vector<heading_info> headings{};
+	std::vector<link_info> links{};
+	std::vector<bool> preserve_line_whitespace{};
+	std::string title{};
+	bool in_body{false};
+	bool preserve_whitespace{false};
+	bool in_code{false};
+	bool in_link{false};
+	std::string current_link_href{};
+	std::string current_link_text{};
+	size_t link_start_pos{0};
+	html_source_mode source_mode{html_source_mode::native_html};
+	size_t cached_char_length{0};
+	document_ptr doc{};
+>>>>>>> master
 
 	void process_node(lxb_dom_node_t* node);
 	void process_text_node(lxb_dom_text_t* text_node);

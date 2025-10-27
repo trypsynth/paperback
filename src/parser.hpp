@@ -42,6 +42,7 @@ public:
 	[[nodiscard]] virtual std::span<const wxString> extensions() const = 0;
 	[[nodiscard]] virtual std::unique_ptr<document> load(const wxString& path) const = 0;
 	[[nodiscard]] virtual parser_flags supported_flags() const = 0;
+
 	[[nodiscard]] inline bool has_flag(parser_flags flag) const noexcept {
 		return (supported_flags() & flag) == flag;
 	}
@@ -49,8 +50,13 @@ public:
 
 class parser_registry {
 public:
-	static void register_parser(const parser& p) { get_parsers().push_back(&p); }
-	[[nodiscard]] static std::span<const parser* const> get_all() noexcept { return get_parsers(); }
+	static void register_parser(const parser& p) {
+		get_parsers().push_back(&p);
+	}
+
+	[[nodiscard]] static std::span<const parser* const> get_all() noexcept {
+		return get_parsers();
+	}
 
 private:
 	static std::vector<const parser*>& get_parsers() {
@@ -62,7 +68,9 @@ private:
 template <typename ParserType>
 class parser_registrar {
 public:
-	parser_registrar() { parser_registry::register_parser(instance); }
+	parser_registrar() {
+		parser_registry::register_parser(instance);
+	}
 
 private:
 	static inline ParserType instance{};

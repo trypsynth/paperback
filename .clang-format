@@ -5,7 +5,7 @@ UseTab: Always
 TabWidth: 4
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: Inline
+AllowShortFunctionsOnASingleLine: false
 AllowShortCaseLabelsOnASingleLine: false
 AlwaysBreakAfterReturnType: None
 BreakBeforeBraces: Attach
