@@ -66,6 +66,7 @@ public:
 	void add_toc_marker(const wxString& text, const wxString& ref = wxString());
 	void add_link(int pos, const wxString& text, const wxString& ref);
 	void add_marker(int pos, marker_type type, const wxString& text = wxString(), const wxString& ref = wxString(), int level = 0);
+	void finalize_markers();
 	void clear();
 	[[nodiscard]] int next_marker_index(int position, marker_type type) const noexcept;
 	[[nodiscard]] int previous_marker_index(int position, marker_type type) const noexcept;

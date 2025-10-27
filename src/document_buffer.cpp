@@ -56,6 +56,9 @@ void document_buffer::add_toc_marker(const wxString& text, const wxString& ref) 
 
 void document_buffer::add_link(int pos, const wxString& text, const wxString& ref) {
 	markers.emplace_back(pos, marker_type::link, text, ref, 0);
+}
+
+void document_buffer::finalize_markers() {
 	sort_markers();
 }
 

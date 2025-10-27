@@ -52,6 +52,7 @@ std::unique_ptr<document> html_parser::load(const wxString& path) const {
 	for (const auto& link : links) {
 		doc->buffer.add_link(link.offset, wxString::FromUTF8(link.text), wxString::FromUTF8(link.ref));
 	}
+	doc->buffer.finalize_markers();
 	doc->toc_items = build_toc_from_headings(doc->buffer);
 	return doc;
 }

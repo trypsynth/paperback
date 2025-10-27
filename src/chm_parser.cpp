@@ -42,6 +42,7 @@ std::unique_ptr<document> chm_parser::load(const wxString& path) const {
 		cleanup_toc(document_ptr->toc_items);
 		document_ptr->buffer.clear();
 		parse_html_files(ctx, document_ptr->buffer, document_ptr->toc_items);
+		document_ptr->buffer.finalize_markers();
 		for (const auto& pair_file_path_id_map : ctx.id_positions) {
 			for (const auto& pair_id_pos : pair_file_path_id_map.second) {
 				document_ptr->id_positions[pair_id_pos.first] = pair_id_pos.second;
