@@ -35,40 +35,47 @@ public:
 	}
 
 	[[nodiscard]] std::string get_text() const;
+
 	[[nodiscard]] const std::unordered_map<std::string, size_t>& get_id_positions() const noexcept {
 		return id_positions;
 	}
+
 	[[nodiscard]] const std::vector<heading_info>& get_headings() const noexcept {
 		return headings;
 	}
+
 	[[nodiscard]] const std::vector<link_info>& get_links() const noexcept {
 		return links;
 	}
+
 	[[nodiscard]] const std::vector<list_info>& get_lists() const noexcept {
 		return lists;
 	}
+
 	[[nodiscard]] const std::vector<list_item_info>& get_list_items() const noexcept {
 		return list_items;
 	}
+
 	[[nodiscard]] const std::vector<size_t>& get_section_offsets() const noexcept {
 		return section_offsets;
 	}
+
 	void clear() noexcept;
 
 private:
-	std::vector<std::string> lines;
-	std::string current_line;
-	std::unordered_map<std::string, size_t> id_positions;
-	std::vector<heading_info> headings;
-	std::vector<link_info> links;
-	std::vector<list_info> lists;
-	std::vector<list_item_info> list_items;
-	std::vector<size_t> section_offsets;
-	bool in_body = false;
-	bool preserve_whitespace = false;
-	int list_level = 0;
-	std::stack<list_style_info> list_style_stack;
-	size_t cached_char_length = 0;
+	std::vector<std::string> lines{};
+	std::string current_line{};
+	std::unordered_map<std::string, size_t> id_positions{};
+	std::vector<heading_info> headings{};
+	std::vector<link_info> links{};
+	std::vector<list_info> lists{};
+	std::vector<list_item_info> list_items{};
+	std::vector<size_t> section_offsets{};
+	bool in_body{false};
+	bool preserve_whitespace{false};
+	int list_level{0};
+	std::stack<list_style_info> list_style_stack{};
+	size_t cached_char_length{0};
 
 	void process_node(Poco::XML::Node* node);
 	void process_text_node(Poco::XML::Text* text_node);
