@@ -27,17 +27,11 @@ public:
 		static const wxString exts[] = {"htm", "html", "xhtml"};
 		return exts;
 	}
-<<<<<<< HEAD
+
 	[[nodiscard]] parser_flags supported_flags() const override {
 		return parser_flags::supports_toc | parser_flags::supports_lists;
 	}
-=======
 
-	[[nodiscard]] parser_flags supported_flags() const override {
-		return parser_flags::supports_toc;
-	}
-
->>>>>>> master
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 };
 
