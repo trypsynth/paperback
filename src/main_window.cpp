@@ -124,8 +124,6 @@ wxMenu* main_window::create_go_menu() {
 		auto* bookmarks_menu = new wxMenu();
 		bookmarks_menu->Append(ID_PREVIOUS_BOOKMARK, _("Previous &bookmark\tShift+B"));
 		bookmarks_menu->Append(ID_NEXT_BOOKMARK, _("Next b&ookmark\tB"));
-		bookmarks_menu->Append(ID_TOGGLE_BOOKMARK, _("Toggle bookmark\tCtrl+Shift+B"));
-		bookmarks_menu->Append(ID_BOOKMARK_WITH_NOTE, _("Bookmark with &note\tCtrl+Shift+N"));
 		bookmarks_menu->Append(ID_JUMP_TO_BOOKMARK, _("Jump to bookmark...\tCtrl+B"));
 		menu->AppendSubMenu(bookmarks_menu, _("&Bookmarks"));
 		auto* links_menu = new wxMenu();
@@ -172,6 +170,9 @@ wxMenu* main_window::create_tools_menu() {
 	menu->Append(ID_DOC_INFO, _("Document &info\tCtrl+I"));
 	menu->AppendSeparator();
 	menu->Append(ID_TABLE_OF_CONTENTS, _("Table of contents\tCtrl+T"));
+	menu->AppendSeparator();
+	menu->Append(ID_TOGGLE_BOOKMARK, _("Toggle bookmark\tCtrl+Shift+B"));
+	menu->Append(ID_BOOKMARK_WITH_NOTE, _("Bookmark with &note\tCtrl+Shift+N"));
 	menu->AppendSeparator();
 	menu->Append(ID_OPTIONS, _("&Options\tCtrl+,"));
 	menu->Append(ID_SLEEP_TIMER, _("&Sleep Timer...\tCtrl+Shift+S"));
