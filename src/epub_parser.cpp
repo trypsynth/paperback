@@ -1,4 +1,4 @@
-/* epub_parser.cpp - wxApp implementation code.
+/* epub_parser.cpp - parser for Epub 2/3 ebooks.
  *
  * Paperback.
  * Copyright (c) 2025 Quin Gillespie.
