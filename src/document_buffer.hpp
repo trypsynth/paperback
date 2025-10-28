@@ -22,7 +22,9 @@ enum class marker_type {
 	page_break,
 	section_break,
 	toc_item,
-	link
+	link,
+	list,
+	list_item
 };
 
 struct marker {
@@ -69,6 +71,7 @@ public:
 	void finalize_markers();
 	void clear();
 	[[nodiscard]] int next_marker_index(int position, marker_type type) const noexcept;
+	[[nodiscard]] int find_first_marker_after(int position, marker_type type) const noexcept;
 	[[nodiscard]] int previous_marker_index(int position, marker_type type) const noexcept;
 	[[nodiscard]] int current_marker_index(size_t position, marker_type type) const noexcept;
 	[[nodiscard]] int next_heading_marker_index(int position, int level = -1) const;

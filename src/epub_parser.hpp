@@ -53,7 +53,7 @@ public:
 	}
 
 	[[nodiscard]] parser_flags supported_flags() const override {
-		return parser_flags::supports_sections | parser_flags::supports_toc;
+		return parser_flags::supports_sections | parser_flags::supports_toc | parser_flags::supports_lists;
 	}
 
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
@@ -73,6 +73,7 @@ private:
 
 		epub_context(wxFileInputStream& fs) : file_stream(fs) {
 		}
+
 		~epub_context() {
 			for (auto& [_, entry] : zip_entries) {
 				delete entry;

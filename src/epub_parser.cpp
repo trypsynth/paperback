@@ -195,6 +195,8 @@ void epub_parser::process_section_content(conv& converter, const std::string& co
 		const auto& text = converter.get_text();
 		const auto& headings = converter.get_headings();
 		const auto& links = converter.get_links();
+		const auto& lists = converter.get_lists();
+		const auto& list_items = converter.get_list_items();
 		const auto& id_positions = converter.get_id_positions();
 		const size_t section_start = buffer.str().length();
 		Path section_base_path(href, Path::PATH_UNIX);
@@ -218,6 +220,12 @@ void epub_parser::process_section_content(conv& converter, const std::string& co
 				resolved_href = resolved_path.toString(Path::PATH_UNIX);
 			}
 			buffer.add_link(section_start + link.offset, wxString::FromUTF8(link.text), resolved_href);
+		}
+		for (const auto& list : lists) {
+			buffer.add_marker(section_start + list.offset, marker_type::list, wxString(), wxString(), list.item_count);
+		}
+		for (const auto& list_item : list_items) {
+			buffer.add_marker(section_start + list_item.offset, marker_type::list_item, wxString::FromUTF8(list_item.text), wxString(), list_item.level);
 		}
 		if (!buffer.str().empty() && !buffer.str().EndsWith("\n")) {
 			buffer.append("\n");

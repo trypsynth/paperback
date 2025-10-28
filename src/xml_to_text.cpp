@@ -71,10 +71,24 @@ void xml_to_text::clear() noexcept {
 	id_positions.clear();
 	headings.clear();
 	links.clear();
+	lists.clear();
+	list_items.clear();
 	section_offsets.clear();
 	in_body = false;
 	preserve_whitespace = false;
 	cached_char_length = 0;
+	list_level = 0;
+	while (!list_style_stack.empty()) {
+		list_style_stack.pop();
+	}
+}
+
+std::string xml_to_text::get_bullet_for_level(int level) noexcept {
+	constexpr std::array<const char*, 3> bullets = {"•", "◦", "-"};
+	if (level > 0 && level <= bullets.size()) {
+		return bullets[level - 1];
+	}
+	return "•";
 }
 
 void xml_to_text::process_node(Node* node) {
@@ -106,8 +120,46 @@ void xml_to_text::process_node(Node* node) {
 		} else if (tag_name == "pre") {
 			finalize_current_line();
 			preserve_whitespace = true;
-		} else if (tag_name == "br" || tag_name == "li") {
+		} else if (tag_name == "br") {
 			finalize_current_line();
+		} else if (tag_name == "li") {
+			finalize_current_line();
+			const std::string li_text = get_element_text(element);
+			list_items.push_back({.offset = get_current_text_position(), .level = list_level, .text = li_text});
+			current_line += std::string(list_level * 2, ' ');
+			if (!list_style_stack.empty()) {
+				auto& style = list_style_stack.top();
+				if (style.ordered) {
+					current_line += std::to_string(style.item_number++) + ". ";
+				} else {
+					current_line += get_bullet_for_level(list_level) + " ";
+				}
+			} else {
+				current_line += get_bullet_for_level(list_level) + " ";
+			}
+		} else if (tag_name == "ul" || tag_name == "ol") {
+			list_level++;
+			list_style_info style;
+			if (tag_name == "ol") {
+				style.ordered = true;
+			}
+			list_style_stack.push(style);
+			int item_count = 0;
+			auto* child = node->firstChild();
+			while (child != nullptr) {
+				if (child->nodeType() == Node::ELEMENT_NODE) {
+					auto* element = dynamic_cast<Element*>(child);
+					std::string child_tag_name = element->localName();
+					if (child_tag_name == "li") {
+						item_count++;
+					}
+				}
+				child = child->nextSibling();
+			}
+			if (item_count > 0) {
+				finalize_current_line();
+				lists.push_back({.offset = get_current_text_position(), .item_count = item_count});
+			}
 		}
 		if (in_body && element->hasAttributeNS("", "id")) {
 			const std::string id = element->getAttributeNS("", "id");
@@ -140,6 +192,12 @@ void xml_to_text::process_node(Node* node) {
 		}
 		if (tag_name == "pre") {
 			preserve_whitespace = false;
+		}
+		if (tag_name == "ul" || tag_name == "ol") {
+			list_level--;
+			if (!list_style_stack.empty()) {
+				list_style_stack.pop();
+			}
 		}
 	}
 }

@@ -625,6 +625,218 @@ void document_manager::activate_current_link() const {
 	}
 }
 
+void document_manager::go_to_previous_list() {
+	const document* doc = get_active_document();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	const parser* par = get_active_parser();
+	if (doc == nullptr || text_ctrl == nullptr || par == nullptr) {
+		return;
+	}
+	if (!par->has_flag(parser_flags::supports_lists)) {
+		speak(_("No lists."));
+		return;
+	}
+	if (doc->buffer.count_markers_by_type(marker_type::list) == 0) {
+		speak(_("No lists."));
+		return;
+	}
+	const int current_pos = text_ctrl->GetInsertionPoint();
+	bool wrapping{false};
+	int prev_index = doc->buffer.previous_marker_index(current_pos, marker_type::list);
+	if (prev_index == -1) {
+		if (config.get(config_manager::navigation_wrap)) {
+			prev_index = doc->buffer.previous_marker_index(text_ctrl->GetLastPosition() + 1, marker_type::list);
+			if (prev_index != -1) {
+				wrapping = true;
+			}
+		}
+		if (prev_index == -1) {
+			speak(_("No previous list."));
+			return;
+		}
+	}
+	const marker* list_marker = doc->buffer.get_marker(prev_index);
+	if (list_marker != nullptr) {
+		wxString message = wxString::Format(_("List with %d items"), list_marker->level);
+		const int first_item_index = doc->buffer.find_first_marker_after(list_marker->pos, marker_type::list_item);
+		const marker* first_item_marker = doc->buffer.get_marker(first_item_index);
+		if (first_item_marker != nullptr) {
+			go_to_position(static_cast<long>(first_item_marker->pos));
+			long line_num{0};
+			text_ctrl->PositionToXY(first_item_marker->pos, nullptr, &line_num);
+			wxString line_text = text_ctrl->GetLineText(line_num).Trim();
+			message += " " + line_text;
+		} else {
+			go_to_position(static_cast<long>(list_marker->pos));
+		}
+		if (wrapping) {
+			message = _("Wrapping to end. ") + message;
+		}
+		speak(message);
+	}
+}
+
+void document_manager::go_to_next_list() {
+	const document* doc = get_active_document();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	const parser* par = get_active_parser();
+	if (doc == nullptr || text_ctrl == nullptr || par == nullptr) {
+		return;
+	}
+	if (!par->has_flag(parser_flags::supports_lists)) {
+		speak(_("No lists."));
+		return;
+	}
+	if (doc->buffer.count_markers_by_type(marker_type::list) == 0) {
+		speak(_("No lists."));
+		return;
+	}
+	const int current_pos = text_ctrl->GetInsertionPoint();
+	bool wrapping = false;
+	int next_index = doc->buffer.next_marker_index(current_pos, marker_type::list);
+	if (next_index == -1) {
+		if (config.get(config_manager::navigation_wrap)) {
+			next_index = doc->buffer.next_marker_index(-1, marker_type::list);
+			if (next_index != -1) {
+				wrapping = true;
+			}
+		}
+		if (next_index == -1) {
+			speak(_("No next list."));
+			return;
+		}
+	}
+	const marker* list_marker = doc->buffer.get_marker(next_index);
+	if (list_marker != nullptr) {
+		wxString message = wxString::Format(_("List with %d items"), list_marker->level);
+		const int first_item_index = doc->buffer.find_first_marker_after(list_marker->pos, marker_type::list_item);
+		const marker* first_item_marker = doc->buffer.get_marker(first_item_index);
+		if (first_item_marker != nullptr) {
+			go_to_position(static_cast<long>(first_item_marker->pos));
+			long line_num = 0;
+			text_ctrl->PositionToXY(first_item_marker->pos, nullptr, &line_num);
+			wxString line_text = text_ctrl->GetLineText(line_num).Trim();
+			message += " " + line_text;
+		} else {
+			go_to_position(static_cast<long>(list_marker->pos));
+		}
+		if (wrapping) {
+			message = _("Wrapping to start. ") + message;
+		}
+		speak(message);
+	}
+}
+
+void document_manager::go_to_previous_list_item() {
+	const document* doc = get_active_document();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	const parser* par = get_active_parser();
+	if (doc == nullptr || text_ctrl == nullptr || par == nullptr) {
+		return;
+	}
+	if (!par->has_flag(parser_flags::supports_lists)) {
+		speak(_("No lists."));
+		return;
+	}
+	if (doc->buffer.count_markers_by_type(marker_type::list_item) == 0) {
+		speak(_("No list items."));
+		return;
+	}
+	const int current_pos = text_ctrl->GetInsertionPoint();
+	const int current_list_item_index = doc->buffer.current_marker_index(current_pos, marker_type::list_item);
+	const marker* current_list_item_marker = doc->buffer.get_marker(current_list_item_index);
+	int current_list_index = -1;
+	if (current_list_item_marker) {
+		current_list_index = doc->buffer.current_marker_index(current_list_item_marker->pos, marker_type::list);
+	}
+	bool wrapping = false;
+	int prev_index = doc->buffer.previous_marker_index(current_pos, marker_type::list_item);
+	if (prev_index == -1) {
+		if (config.get(config_manager::navigation_wrap)) {
+			prev_index = doc->buffer.previous_marker_index(text_ctrl->GetLastPosition() + 1, marker_type::list_item);
+			if (prev_index != -1) {
+				wrapping = true;
+			}
+		}
+		if (prev_index == -1) {
+			speak(_("No previous list item."));
+			return;
+		}
+	}
+	const marker* list_item_marker = doc->buffer.get_marker(prev_index);
+	if (list_item_marker != nullptr) {
+		const int prev_list_index = doc->buffer.current_marker_index(list_item_marker->pos, marker_type::list);
+		const marker* prev_list_marker = doc->buffer.get_marker(prev_list_index);
+		wxString message;
+		if (prev_list_index != -1 && prev_list_index != current_list_index) {
+			message += wxString::Format(_("List with %d items "), prev_list_marker->level);
+		}
+		go_to_position(static_cast<long>(list_item_marker->pos));
+		long line_num{0};
+		text_ctrl->PositionToXY(list_item_marker->pos, nullptr, &line_num);
+		message += text_ctrl->GetLineText(line_num).Trim();
+		if (wrapping) {
+			message = _("Wrapping to end. ") + message;
+		}
+		speak(message);
+	}
+}
+
+void document_manager::go_to_next_list_item() {
+	const document* doc = get_active_document();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	const parser* par = get_active_parser();
+	if (doc == nullptr || text_ctrl == nullptr || par == nullptr) {
+		return;
+	}
+	if (!par->has_flag(parser_flags::supports_lists)) {
+		speak(_("No lists."));
+		return;
+	}
+	if (doc->buffer.count_markers_by_type(marker_type::list_item) == 0) {
+		speak(_("No list items."));
+		return;
+	}
+	const int current_pos = text_ctrl->GetInsertionPoint();
+	const int current_list_item_index = doc->buffer.current_marker_index(current_pos, marker_type::list_item);
+	const marker* current_list_item_marker = doc->buffer.get_marker(current_list_item_index);
+	int current_list_index = -1;
+	if (current_list_item_marker) {
+		current_list_index = doc->buffer.current_marker_index(current_list_item_marker->pos, marker_type::list);
+	}
+	bool wrapping = false;
+	int next_index = doc->buffer.next_marker_index(current_pos, marker_type::list_item);
+	if (next_index == -1) {
+		if (config.get(config_manager::navigation_wrap)) {
+			next_index = doc->buffer.next_marker_index(-1, marker_type::list_item);
+			if (next_index != -1) {
+				wrapping = true;
+			}
+		}
+		if (next_index == -1) {
+			speak(_("No next list item."));
+			return;
+		}
+	}
+	const marker* list_item_marker = doc->buffer.get_marker(next_index);
+	if (list_item_marker != nullptr) {
+		const int next_list_index = doc->buffer.current_marker_index(list_item_marker->pos, marker_type::list);
+		const marker* next_list_marker = doc->buffer.get_marker(next_list_index);
+		wxString message;
+		if (next_list_index != -1 && next_list_index != current_list_index) {
+			message += wxString::Format(_("List with %d items "), next_list_marker->level);
+		}
+		go_to_position(static_cast<long>(list_item_marker->pos));
+		long line_num{0};
+		text_ctrl->PositionToXY(list_item_marker->pos, nullptr, &line_num);
+		message += text_ctrl->GetLineText(line_num).Trim();
+		if (wrapping) {
+			message = _("Wrapping to start. ") + message;
+		}
+		speak(message);
+	}
+}
+
 void document_manager::toggle_bookmark() {
 	const document_tab* tab = get_active_tab();
 	const wxTextCtrl* text_ctrl = get_active_text_ctrl();
