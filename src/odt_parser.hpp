@@ -19,12 +19,20 @@ public:
 	odt_parser& operator=(const odt_parser&) = delete;
 	odt_parser(odt_parser&&) = delete;
 	odt_parser& operator=(odt_parser&&) = delete;
-	[[nodiscard]] wxString name() const override { return "OpenDocument files"; }
+
+	[[nodiscard]] wxString name() const override {
+		return "OpenDocument files";
+	}
+
 	[[nodiscard]] std::span<const wxString> extensions() const override {
 		static const wxString exts[] = {"odt"};
 		return exts;
 	}
-	[[nodiscard]] parser_flags supported_flags() const override { return parser_flags::supports_toc; }
+
+	[[nodiscard]] parser_flags supported_flags() const override {
+		return parser_flags::supports_toc;
+	}
+
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 
 private:

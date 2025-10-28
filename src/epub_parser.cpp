@@ -83,6 +83,7 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 			document_ptr->buffer.add_section_break(wxString::Format("Section %zu", i + 1));
 			parse_section(i, ctx, document_ptr->buffer);
 		}
+		document_ptr->buffer.finalize_markers();
 		document_ptr->title = wxString::FromUTF8(ctx.title);
 		if (!ctx.author.empty()) {
 			document_ptr->author = wxString::FromUTF8(ctx.author);
@@ -195,6 +196,8 @@ void epub_parser::process_section_content(conv& converter, const std::string& co
 		const auto& headings = converter.get_headings();
 		const auto& links = converter.get_links();
 		const auto& tables = converter.get_tables();
+		const auto& lists = converter.get_lists();
+		const auto& list_items = converter.get_list_items();
 		const auto& id_positions = converter.get_id_positions();
 		const size_t section_start = buffer.str().length();
 		Path section_base_path(href, Path::PATH_UNIX);
@@ -222,11 +225,17 @@ void epub_parser::process_section_content(conv& converter, const std::string& co
 		for (const auto& table : tables) {
 			buffer.add_table(section_start + table.offset, wxString::FromUTF8(table.text), wxString::FromUTF8(table.ref));
 		}
+		for (const auto& list : lists) {
+			buffer.add_marker(section_start + list.offset, marker_type::list, wxString(), wxString(), list.item_count);
+		}
+		for (const auto& list_item : list_items) {
+			buffer.add_marker(section_start + list_item.offset, marker_type::list_item, wxString::FromUTF8(list_item.text), wxString(), list_item.level);
+		}
+	}
 		if (!buffer.str().empty() && !buffer.str().EndsWith("\n")) {
 			buffer.append("\n");
 		}
 	}
-}
 
 void epub_parser::parse_section(size_t index, epub_context& ctx, document_buffer& buffer) const {
 	if (index >= ctx.spine_items.size()) {

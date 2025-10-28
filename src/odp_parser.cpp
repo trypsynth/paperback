@@ -86,6 +86,7 @@ std::unique_ptr<document> odp_parser::load(const wxString& file_path) const {
 		for (size_t i = 0; i < slide_positions.size(); ++i) {
 			doc->buffer.add_marker(slide_positions[i], marker_type::page_break, wxString::Format("Slide %zu", i + 1));
 		}
+		doc->buffer.finalize_markers();
 		return doc;
 	} catch (Exception&) {
 		return nullptr;

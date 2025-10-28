@@ -24,9 +24,19 @@ public:
 	main_window& operator=(const main_window&) = delete;
 	main_window(main_window&&) = delete;
 	main_window& operator=(main_window&&) = delete;
-	[[nodiscard]] document_manager* get_doc_manager() const noexcept { return doc_manager.get(); }
-	[[nodiscard]] wxNotebook* get_notebook() const noexcept { return notebook; }
-	[[nodiscard]] wxStaticText* get_live_region_label() const noexcept { return live_region_label; }
+
+	[[nodiscard]] document_manager* get_doc_manager() const noexcept {
+		return doc_manager.get();
+	}
+
+	[[nodiscard]] wxNotebook* get_notebook() const noexcept {
+		return notebook;
+	}
+
+	[[nodiscard]] wxStaticText* get_live_region_label() const noexcept {
+		return live_region_label;
+	}
+
 	void on_text_cursor_changed(wxEvent& event);
 	void on_text_char(wxKeyEvent& event);
 	void trigger_throttled_position_save();
@@ -48,6 +58,10 @@ private:
 	wxMenu* recent_documents_menu{nullptr};
 	wxStaticText* live_region_label{nullptr};
 	task_bar_icon* task_bar_icon_{nullptr};
+	wxTimer* sleep_timer{nullptr};
+	wxTimer* sleep_status_update_timer{nullptr};
+	int sleep_timer_duration_minutes{0};
+	wxLongLong sleep_timer_start_time{0};
 
 	void create_menus();
 	wxMenu* create_file_menu();
@@ -76,11 +90,16 @@ private:
 	void on_next_bookmark(wxCommandEvent&);
 	void on_previous_bookmark(wxCommandEvent&);
 	void on_toggle_bookmark(wxCommandEvent&);
+	void on_bookmark_with_note(wxCommandEvent&);
 	void on_jump_to_bookmark(wxCommandEvent&);
 	void on_next_link(wxCommandEvent&);
 	void on_previous_link(wxCommandEvent&);
 	void on_previous_table(wxCommandEvent&);
 	void on_next_table(wxCommandEvent&);
+	void on_previous_list(wxCommandEvent&);
+	void on_next_list(wxCommandEvent&);
+	void on_previous_list_item(wxCommandEvent&);
+	void on_next_list_item(wxCommandEvent&);
 	void on_word_count(wxCommandEvent&);
 	void on_doc_info(wxCommandEvent&);
 	void on_toc(wxCommandEvent&);
@@ -90,6 +109,9 @@ private:
 	void on_help_internal(wxCommandEvent&);
 	void on_donate(wxCommandEvent&);
 	void on_check_for_updates(wxCommandEvent&);
+	void on_sleep_timer(wxCommandEvent&);
+	void on_sleep_timer_tick(wxTimerEvent&);
+	void on_sleep_status_update_timer(wxTimerEvent&);
 	void on_notebook_page_changed(wxBookCtrlEvent& event);
 	void on_close_window(wxCloseEvent& event);
 	void on_position_save_timer(wxTimerEvent&);
@@ -98,6 +120,7 @@ private:
 	void on_show_all_documents(wxCommandEvent&);
 	void on_notebook_key_down(wxKeyEvent& event);
 	void on_iconize(wxIconizeEvent& event);
+	void on_activate(wxActivateEvent& event);
 	void do_find(bool forward);
 	void navigate_heading_by_level(int level, bool forward);
 };

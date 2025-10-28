@@ -36,12 +36,20 @@ public:
 	pdf_parser& operator=(const pdf_parser&) = delete;
 	pdf_parser(pdf_parser&&) = delete;
 	pdf_parser& operator=(pdf_parser&&) = delete;
-	[[nodiscard]] wxString name() const override { return "PDF Documents"; }
+
+	[[nodiscard]] wxString name() const override {
+		return "PDF Documents";
+	}
+
 	[[nodiscard]] std::span<const wxString> extensions() const override {
 		static const wxString exts[] = {"pdf"};
 		return exts;
 	}
-	[[nodiscard]] parser_flags supported_flags() const override { return parser_flags::supports_pages | parser_flags::supports_toc; }
+
+	[[nodiscard]] parser_flags supported_flags() const override {
+		return parser_flags::supports_pages | parser_flags::supports_toc;
+	}
+
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 
 private:

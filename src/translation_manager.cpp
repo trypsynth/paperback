@@ -9,9 +9,6 @@
 
 #include "translation_manager.hpp"
 #include <algorithm>
-#include <string>
-#include <unordered_map>
-#include <utility>
 #include <vector>
 #include <wx/dir.h>
 #include <wx/filefn.h>
@@ -34,7 +31,6 @@ bool translation_manager::initialize() {
 	if (initialized) {
 		return true;
 	}
-	// NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
 	translations = new wxTranslations();
 	wxTranslations::Set(translations);
 	const wxString exe_path = wxStandardPaths::Get().GetExecutablePath();
@@ -65,7 +61,6 @@ bool translation_manager::set_language(const wxString& language_code) {
 		return false;
 	}
 	current_language = language_code;
-	// NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
 	translations = new wxTranslations();
 	// Calling Set() deletes the previous object automatically. Remove this and we crash. Yay C++!
 	wxTranslations::Set(translations);
@@ -117,98 +112,19 @@ void translation_manager::scan_available_languages() {
 	}
 	wxString dirname;
 	bool cont = dir.GetFirst(&dirname, "", wxDIR_DIRS);
-	static const std::unordered_map<std::string, std::pair<std::string, std::string>> language_names = {
-		{"af", {"Afrikaans", "Afrikaans"}},
-		{"am", {"Amharic", "አማርኛ"}},
-		{"ar", {"Arabic", "العربية"}},
-		{"az", {"Azerbaijani", "Azərbaycan"}},
-		{"be", {"Belarusian", "Беларуская"}},
-		{"bg", {"Bulgarian", "Български"}},
-		{"bn", {"Bengali", "বাংলা"}},
-		{"bs", {"Bosnian", "Bosanski"}},
-		{"ca", {"Catalan", "Català"}},
-		{"cs", {"Czech", "Čeština"}},
-		{"cy", {"Welsh", "Cymraeg"}},
-		{"da", {"Danish", "Dansk"}},
-		{"de", {"German", "Deutsch"}},
-		{"el", {"Greek", "Ελληνικά"}},
-		{"en", {"English", "English"}},
-		{"eo", {"Esperanto", "Esperanto"}},
-		{"es", {"Spanish", "Español"}},
-		{"et", {"Estonian", "Eesti"}},
-		{"eu", {"Basque", "Euskara"}},
-		{"fa", {"Persian", "فارسی"}},
-		{"fi", {"Finnish", "Suomi"}},
-		{"fil", {"Filipino", "Filipino"}},
-		{"fr", {"French", "Français"}},
-		{"ga", {"Irish", "Gaeilge"}},
-		{"gl", {"Galician", "Galego"}},
-		{"gu", {"Gujarati", "ગુજરાતી"}},
-		{"he", {"Hebrew", "עברית"}},
-		{"hi", {"Hindi", "हिन्दी"}},
-		{"hr", {"Croatian", "Hrvatski"}},
-		{"hu", {"Hungarian", "Magyar"}},
-		{"hy", {"Armenian", "Հայերեն"}},
-		{"id", {"Indonesian", "Bahasa Indonesia"}},
-		{"is", {"Icelandic", "Íslenska"}},
-		{"it", {"Italian", "Italiano"}},
-		{"ja", {"Japanese", "日本語"}},
-		{"ka", {"Georgian", "ქართული"}},
-		{"kk", {"Kazakh", "Қазақ"}},
-		{"km", {"Khmer", "ខ្មែរ"}},
-		{"kn", {"Kannada", "ಕನ್ನಡ"}},
-		{"ko", {"Korean", "한국어"}},
-		{"ky", {"Kyrgyz", "Кыргызча"}},
-		{"lo", {"Lao", "ລາວ"}},
-		{"lt", {"Lithuanian", "Lietuvių"}},
-		{"lv", {"Latvian", "Latviešu"}},
-		{"mk", {"Macedonian", "Македонски"}},
-		{"ml", {"Malayalam", "മലയാളം"}},
-		{"mn", {"Mongolian", "Монгол"}},
-		{"mr", {"Marathi", "मराठी"}},
-		{"ms", {"Malay", "Bahasa Melayu"}},
-		{"mt", {"Maltese", "Malti"}},
-		{"nb", {"Norwegian Bokmål", "Bokmål"}},
-		{"ne", {"Nepali", "नेपाली"}},
-		{"nl", {"Dutch", "Nederlands"}},
-		{"no", {"Norwegian", "Norsk"}},
-		{"pa", {"Punjabi", "ਪੰਜਾਬੀ"}},
-		{"pl", {"Polish", "Polski"}},
-		{"ps", {"Pashto", "پښتو"}},
-		{"pt", {"Portuguese", "Português"}},
-		{"ro", {"Romanian", "Română"}},
-		{"ru", {"Russian", "Русский"}},
-		{"si", {"Sinhala", "සිංහල"}},
-		{"sk", {"Slovak", "Slovenčina"}},
-		{"sl", {"Slovenian", "Slovenščina"}},
-		{"sq", {"Albanian", "Shqip"}},
-		{"sr", {"Serbian", "Српски"}},
-		{"sv", {"Swedish", "Svenska"}},
-		{"sw", {"Swahili", "Kiswahili"}},
-		{"ta", {"Tamil", "தமிழ்"}},
-		{"te", {"Telugu", "తెలుగు"}},
-		{"th", {"Thai", "ไทย"}},
-		{"tl", {"Tagalog", "Tagalog"}},
-		{"tr", {"Turkish", "Türkçe"}},
-		{"uk", {"Ukrainian", "Українська"}},
-		{"ur", {"Urdu", "اردو"}},
-		{"uz", {"Uzbek", "Oʻzbek"}},
-		{"vi", {"Vietnamese", "Tiếng Việt"}},
-		{"xh", {"Xhosa", "isiXhosa"}},
-		{"yi", {"Yiddish", "ייִדיש"}},
-		{"zh_CN", {"Chinese (Simplified)", "简体中文"}},
-		{"zh_TW", {"Chinese (Traditional)", "繁體中文"}},
-		{"zu", {"Zulu", "isiZulu"}},
-	};
 	while (cont) {
 		const wxString catalog_path = langs_dir + wxFileName::GetPathSeparator() + dirname + wxFileName::GetPathSeparator() + "LC_MESSAGES" + wxFileName::GetPathSeparator() + "paperback.mo";
 		if (wxFileExists(catalog_path)) {
 			wxString display_name = dirname;
 			wxString native_name = dirname;
-			auto it = language_names.find(dirname.ToStdString());
-			if (it != language_names.end()) {
-				display_name = wxString::FromUTF8(it->second.first);
-				native_name = wxString::FromUTF8(it->second.second);
+			const wxLanguageInfo* lang_info = wxLocale::FindLanguageInfo(dirname);
+			if (lang_info) {
+				if (!lang_info->Description.empty()) {
+					display_name = lang_info->Description;
+				}
+				if (!lang_info->DescriptionNative.empty()) {
+					native_name = lang_info->DescriptionNative;
+				}
 			}
 			available_languages.emplace_back(dirname, display_name, native_name);
 		}

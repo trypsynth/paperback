@@ -60,6 +60,7 @@ std::unique_ptr<document> markdown_parser::load(const wxString& path) const {
 	for (const auto& link : links) {
 		doc->buffer.add_link(link.offset, wxString::FromUTF8(link.text), wxString::FromUTF8(link.ref));
 	}
+	doc->buffer.finalize_markers();
 	doc->toc_items = build_toc_from_headings(doc->buffer);
 	return doc;
 }
@@ -77,6 +78,13 @@ std::string markdown_parser::preprocess_markdown(const std::string& input) {
 			line.pop_back();
 		}
 		const bool is_heading = !line.empty() && (line[0] == '#');
+		// Strip custom ID syntax from headings
+		if (is_heading) {
+			const auto pos = line.rfind(" {#");
+			if (pos != std::string::npos && line.back() == '}') {
+				line.erase(pos);
+			}
+		}
 		const bool is_list = !line.empty() && ((line[0] >= '0' && line[0] <= '9' && line.length() > 1 && line[1] == '.') || line[0] == '-' || line[0] == '*' || line[0] == '+');
 		// Add blank line before headings if previous line wasn't blank
 		if (!first_line && is_heading && !prev_line.empty()) {

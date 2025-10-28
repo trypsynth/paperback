@@ -61,6 +61,7 @@ std::unique_ptr<document> odt_parser::load(const wxString& file_path) const {
 		wxString text;
 		traverse(p_doc->documentElement(), text, doc.get());
 		doc->buffer.set_content(text);
+		doc->buffer.finalize_markers();
 		doc->toc_items = build_toc_from_headings(doc->buffer);
 		return doc;
 	} catch (Poco::Exception&) {

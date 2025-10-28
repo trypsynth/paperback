@@ -41,6 +41,8 @@ std::unique_ptr<document> html_parser::load(const wxString& path) const {
 	const auto& text = converter.get_text();
 	const auto& headings = converter.get_headings();
 	const auto& links = converter.get_links();
+	const auto& lists = converter.get_lists();
+	const auto& list_items = converter.get_list_items();
 	doc->buffer.set_content(wxString::FromUTF8(text));
 	for (const auto& pair : converter.get_id_positions()) {
 		doc->id_positions[pair.first] = pair.second;
@@ -56,6 +58,13 @@ std::unique_ptr<document> html_parser::load(const wxString& path) const {
 	for (const auto& table : tables) {
 		doc->buffer.add_table(table.offset, wxString::FromUTF8(table.text), wxString::FromUTF8(table.ref));
 	}
+	for (const auto& list : lists) {
+		doc->buffer.add_marker(list.offset, marker_type::list, wxString(), wxString(), list.item_count);
+	}
+	for (const auto& list_item : list_items) {
+		doc->buffer.add_marker(list_item.offset, marker_type::list_item, wxString::FromUTF8(list_item.text), wxString(), list_item.level);
+	}
+	doc->buffer.finalize_markers();
 	doc->toc_items = build_toc_from_headings(doc->buffer);
 	return doc;
 }

@@ -20,14 +20,19 @@ inline constexpr int MAX_FIND_HISTORY_SIZE = 10;
 inline constexpr int MAX_HEADING_LEVELS = 6;
 inline constexpr int DEFAULT_RECENT_DOCUMENTS_TO_SHOW = 25;
 inline constexpr int MAX_RECENT_DOCUMENTS_TO_SHOW = 100;
-inline constexpr int CONFIG_VERSION_CURRENT = 1;
-inline constexpr int CONFIG_VERSION_LEGACY = 0;
 inline const wxString IPC_SERVICE = "paperback_ipc_service";
 inline const wxString IPC_TOPIC_OPEN_FILE = "open_file";
 inline const wxString IPC_COMMAND_ACTIVATE = "ACTIVATE";
 inline const wxString IPC_HOST_LOCALHOST = "localhost";
 inline const wxString SINGLE_INSTANCE_NAME = "paperback_running";
 inline constexpr int DIALOG_PADDING = 10;
+
+enum config_version {
+	CONFIG_VERSION_LEGACY = 0,
+	CONFIG_VERSION_1 = 1,
+	CONFIG_VERSION_2 = 2,
+	CONFIG_VERSION_CURRENT = CONFIG_VERSION_2
+};
 
 // Main menu constants.
 enum {
@@ -63,17 +68,23 @@ enum {
 	ID_NEXT_BOOKMARK,
 	ID_PREVIOUS_BOOKMARK,
 	ID_TOGGLE_BOOKMARK,
+	ID_BOOKMARK_WITH_NOTE,
 	ID_JUMP_TO_BOOKMARK,
 	ID_NEXT_LINK,
 	ID_PREVIOUS_LINK,
 	ID_ACTIVATE_LINK,
 	ID_PREVIOUS_TABLE,
 	ID_NEXT_TABLE,
+	ID_PREVIOUS_LIST,
+	ID_NEXT_LIST,
+	ID_PREVIOUS_LIST_ITEM,
+	ID_NEXT_LIST_ITEM,
 	// Tools menu
 	ID_WORD_COUNT,
 	ID_DOC_INFO,
 	ID_TABLE_OF_CONTENTS,
 	ID_OPTIONS,
+	ID_SLEEP_TIMER,
 	// Help menu
 	ID_HELP_INTERNAL,
 	ID_DONATE,

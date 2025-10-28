@@ -26,23 +26,32 @@ struct chm_context {
 	std::string author;
 	std::string hhc_file;
 
-	chm_context(chmFile* f) : file(f) {}
+	explicit chm_context(chmFile* f) : file{f} {
+	}
 };
 
 class chm_parser : public parser {
 public:
 	chm_parser() = default;
-	~chm_parser() = default;
+	~chm_parser() override = default;
 	chm_parser(const chm_parser&) = delete;
 	chm_parser& operator=(const chm_parser&) = delete;
 	chm_parser(chm_parser&&) = delete;
 	chm_parser& operator=(chm_parser&&) = delete;
-	[[nodiscard]] wxString name() const override { return "Compiled HTML Help files"; }
+
+	[[nodiscard]] wxString name() const override {
+		return "Compiled HTML Help files";
+	}
+
 	[[nodiscard]] std::span<const wxString> extensions() const override {
 		static const wxString exts[] = {"chm"};
 		return exts;
 	}
-	[[nodiscard]] parser_flags supported_flags() const override { return parser_flags::supports_toc; }
+
+	[[nodiscard]] parser_flags supported_flags() const override {
+		return parser_flags::supports_toc;
+	}
+
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 
 private:

@@ -42,12 +42,20 @@ public:
 	epub_parser& operator=(const epub_parser&) = delete;
 	epub_parser(epub_parser&&) = delete;
 	epub_parser& operator=(epub_parser&&) = delete;
-	[[nodiscard]] wxString name() const override { return "Epub Books"; }
+
+	[[nodiscard]] wxString name() const override {
+		return "Epub Books";
+	}
+
 	[[nodiscard]] std::span<const wxString> extensions() const override {
 		static const wxString exts[] = {"epub"};
 		return exts;
 	}
-	[[nodiscard]] parser_flags supported_flags() const override { return parser_flags::supports_sections | parser_flags::supports_toc; }
+
+	[[nodiscard]] parser_flags supported_flags() const override {
+		return parser_flags::supports_sections | parser_flags::supports_toc | parser_flags::supports_lists;
+	}
+
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 
 private:
@@ -63,7 +71,9 @@ private:
 		std::string toc_ncx_id;
 		std::string nav_doc_id;
 
-		epub_context(wxFileInputStream& fs) : file_stream(fs) {}
+		epub_context(wxFileInputStream& fs) : file_stream(fs) {
+		}
+
 		~epub_context() {
 			for (auto& [_, entry] : zip_entries) {
 				delete entry;
