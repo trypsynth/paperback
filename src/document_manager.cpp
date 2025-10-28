@@ -423,9 +423,9 @@ void document_manager::go_to_previous_bookmark() {
 	}
 	wxString announcement;
 	if (prev_bookmark.has_note()) {
-		announcement = wxString::Format(_("Bookmark %d: %s - %s"), bookmark_index + 1, prev_bookmark.note, text_to_speak);
+		announcement = wxString::Format(_("%s - %s - Bookmark %d"), prev_bookmark.note, text_to_speak, bookmark_index + 1);
 	} else {
-		announcement = wxString::Format(_("Bookmark %d: %s"), bookmark_index + 1, text_to_speak);
+		announcement = wxString::Format(_("%s - Bookmark %d"), text_to_speak, bookmark_index + 1);
 	}
 	if (wrapping) {
 		announcement = _("Wrapping to end. ") + announcement;
@@ -473,9 +473,9 @@ void document_manager::go_to_next_bookmark() {
 	}
 	wxString announcement;
 	if (next_bookmark.has_note()) {
-		announcement = wxString::Format(_("Bookmark %d: %s - %s"), bookmark_index + 1, next_bookmark.note, text_to_speak);
+		announcement = wxString::Format(_("%s - %s - Bookmark %d"), next_bookmark.note, text_to_speak, bookmark_index + 1);
 	} else {
-		announcement = wxString::Format(_("Bookmark %d: %s"), bookmark_index + 1, text_to_speak);
+		announcement = wxString::Format(_("%s - Bookmark %d"), text_to_speak, bookmark_index + 1);
 	}
 	if (wrapping) {
 		announcement = _("Wrapping to start. ") + announcement;
