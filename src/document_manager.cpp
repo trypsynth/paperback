@@ -596,27 +596,38 @@ void document_manager::activate_current_link() const {
 	} else {
 		const wxString file_path = href.BeforeFirst('#');
 		const wxString fragment = href.AfterFirst('#');
-		if (!fragment.empty()) {
+		if (!file_path.empty()) {
+			wxString manifest_id;
+			for (auto const& [id, path] : doc->manifest_items) {
+				if (path == file_path) {
+					manifest_id = id;
+					break;
+				}
+			}
+			if (!manifest_id.empty()) {
+				auto it = std::ranges::find(doc->spine_items, std::string(manifest_id.mb_str()));
+				if (it != doc->spine_items.end()) {
+					const int spine_index = static_cast<int>(std::distance(doc->spine_items.begin(), it));
+					size_t section_start = doc->buffer.get_marker_position_by_index(marker_type::section_break, spine_index);
+					size_t section_end = (spine_index + 1 < static_cast<int>(doc->spine_items.size()))
+						? doc->buffer.get_marker_position_by_index(marker_type::section_break, spine_index + 1)
+						: doc->buffer.str().length();
+					size_t offset = section_start;
+					if (!fragment.empty()) {
+						auto frag_it = doc->id_positions.find(std::string(fragment.mb_str()));
+						if (frag_it != doc->id_positions.end() && frag_it->second >= section_start && frag_it->second < section_end) {
+							offset = frag_it->second;
+						}
+					}
+					go_to_position(static_cast<long>(offset));
+					speak(_("Navigated to internal link."));
+					return;
+				}
+			}
+		} else if (!fragment.empty()) {
 			auto it = doc->id_positions.find(std::string(fragment.mb_str()));
 			if (it != doc->id_positions.end()) {
 				go_to_position(static_cast<long>(it->second));
-				speak(_("Navigated to internal link."));
-				return;
-			}
-		}
-		wxString manifest_id;
-		for (auto const& [id, path] : doc->manifest_items) {
-			if (path == file_path) {
-				manifest_id = id;
-				break;
-			}
-		}
-		if (!manifest_id.empty()) {
-			auto it = std::ranges::find(doc->spine_items, std::string(manifest_id.mb_str()));
-			if (it != doc->spine_items.end()) {
-				const int spine_index = static_cast<int>(std::distance(doc->spine_items.begin(), it));
-				const size_t offset = doc->buffer.get_marker_position_by_index(marker_type::section_break, spine_index);
-				go_to_position(static_cast<long>(offset));
 				speak(_("Navigated to internal link."));
 				return;
 			}
