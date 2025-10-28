@@ -23,6 +23,7 @@ enum class marker_type {
 	section_break,
 	toc_item,
 	link,
+	table,
 	list,
 	list_item
 };
@@ -67,6 +68,7 @@ public:
 	void add_section_break(const wxString& label = wxString());
 	void add_toc_marker(const wxString& text, const wxString& ref = wxString());
 	void add_link(int pos, const wxString& text, const wxString& ref);
+	void add_table(int pos, const wxString& text, const wxString& ref);
 	void add_marker(int pos, marker_type type, const wxString& text = wxString(), const wxString& ref = wxString(), int level = 0);
 	void finalize_markers();
 	void clear();

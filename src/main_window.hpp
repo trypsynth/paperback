@@ -94,6 +94,8 @@ private:
 	void on_jump_to_bookmark(wxCommandEvent&);
 	void on_next_link(wxCommandEvent&);
 	void on_previous_link(wxCommandEvent&);
+	void on_previous_table(wxCommandEvent&);
+	void on_next_table(wxCommandEvent&);
 	void on_previous_list(wxCommandEvent&);
 	void on_next_list(wxCommandEvent&);
 	void on_previous_list_item(wxCommandEvent&);

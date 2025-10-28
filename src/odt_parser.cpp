@@ -69,6 +69,14 @@ std::unique_ptr<document> odt_parser::load(const wxString& file_path) const {
 	}
 }
 
+void odt_parser::traverse_children(Poco::XML::Node* node, wxString& text, document* doc) const {
+	Poco::XML::Node* child = node->firstChild();
+	while (child != nullptr) {
+		traverse(child, text, doc);
+		child = child->nextSibling();
+	}
+}
+
 void odt_parser::traverse(Poco::XML::Node* node, wxString& text, document* doc) const {
 	if (node == nullptr) {
 		return;
@@ -92,6 +100,10 @@ void odt_parser::traverse(Poco::XML::Node* node, wxString& text, document* doc) 
 		} else if (local_name == "p") {
 			traverse_children(element, text, doc);
 			text += "\n";
+		} else if (local_name == "table") {
+			auto table_data = process_table(element);
+			doc->buffer.add_table(text.length(), table_data.first, table_data.second);
+			text += table_data.first + "\n";
 		} else if (local_name == "a") {
 			if (element->hasAttributeNS("http://www.w3.org/1999/xlink", "href")) {
 				const wxString href = wxString::FromUTF8(element->getAttributeNS("http://www.w3.org/1999/xlink", "href"));
@@ -110,10 +122,80 @@ void odt_parser::traverse(Poco::XML::Node* node, wxString& text, document* doc) 
 	}
 }
 
-void odt_parser::traverse_children(Poco::XML::Node* node, wxString& text, document* doc) const {
-	Poco::XML::Node* child = node->firstChild();
+std::pair<wxString, wxString> odt_parser::process_table(Poco::XML::Element* table_element) {
+	wxString html = "<table border=\"1\" style=\"border-collapse: collapse; width: 100%;\">";
+	wxString placeholder = "table: ";
+	Poco::XML::Node* child = table_element->firstChild();
+	bool first_row = true;
 	while (child != nullptr) {
-		traverse(child, text, doc);
+		if (child->nodeType() == Poco::XML::Node::ELEMENT_NODE) {
+			auto* element = dynamic_cast<Poco::XML::Element*>(child);
+			if (element->localName() == "table-row") {
+				html += "<tr>";
+				Poco::XML::Node* cell_node = element->firstChild();
+				while (cell_node != nullptr) {
+					if (cell_node->nodeType() == Poco::XML::Node::ELEMENT_NODE) {
+						auto* cell_element = dynamic_cast<Poco::XML::Element*>(cell_node);
+						if (cell_element->localName() == "table-cell") {
+							wxString cell_text = get_cell_text(cell_element);
+							if (first_row) {
+								placeholder += cell_text + " ";
+							}
+							wxString style;
+							if (cell_element->hasAttributeNS("urn:oasis:names:tc:opendocument:xmlns:table:1.0", "style-name")) {
+								// You could parse style information here if needed
+							}
+							html += wxString::Format("<td style=\"%s\">%s</td>", style, cell_text);
+						}
+					}
+					cell_node = cell_node->nextSibling();
+				}
+				html += "</tr>";
+				first_row = false;
+			}
+		}
 		child = child->nextSibling();
 	}
+	html += "</table>";
+	placeholder.Trim();
+	return {placeholder, html};
+}
+
+wxString odt_parser::get_cell_text(Poco::XML::Element* cell_element) {
+	wxString cell_text;
+	Poco::XML::Node* child = cell_element->firstChild();
+	bool first_para = true;
+	while (child != nullptr) {
+		if (child->nodeType() == Poco::XML::Node::ELEMENT_NODE) {
+			auto* element = dynamic_cast<Poco::XML::Element*>(child);
+			if (element->localName() == "p") {
+				if (!first_para) {
+					cell_text += "\n";
+				}
+				Poco::XML::Node* text_node = element->firstChild();
+				while (text_node != nullptr) {
+					if (text_node->nodeType() == Poco::XML::Node::TEXT_NODE) {
+						auto* text = dynamic_cast<Poco::XML::Text*>(text_node);
+						cell_text += wxString::FromUTF8(text->data());
+					} else if (text_node->nodeType() == Poco::XML::Node::ELEMENT_NODE) {
+						auto* text_element = dynamic_cast<Poco::XML::Element*>(text_node);
+						if (text_element->localName() == "span") {
+							Poco::XML::Node* span_child = text_element->firstChild();
+							while (span_child != nullptr) {
+								if (span_child->nodeType() == Poco::XML::Node::TEXT_NODE) {
+									auto* text = dynamic_cast<Poco::XML::Text*>(span_child);
+									cell_text += wxString::FromUTF8(text->data());
+								}
+								span_child = span_child->nextSibling();
+							}
+						}
+					}
+					text_node = text_node->nextSibling();
+				}
+				first_para = false;
+			}
+		}
+		child = child->nextSibling();
+	}
+	return cell_text;
 }

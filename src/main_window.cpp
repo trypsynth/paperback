@@ -130,6 +130,10 @@ wxMenu* main_window::create_go_menu() {
 		links_menu->Append(ID_PREVIOUS_LINK, _("Previous lin&k\tShift+K"));
 		links_menu->Append(ID_NEXT_LINK, _("Next lin&k\tK"));
 		menu->AppendSubMenu(links_menu, _("&Links"));
+		auto* tables_menu = new wxMenu();
+		tables_menu->Append(ID_PREVIOUS_TABLE, _("Previous &table\tShift+T"));
+		tables_menu->Append(ID_NEXT_TABLE, _("Next &table\tT"));
+		menu->AppendSubMenu(tables_menu, _("&Tables"));
 		auto* lists_menu = new wxMenu();
 		lists_menu->Append(ID_PREVIOUS_LIST, _("Previous lis&t\tShift+L"));
 		lists_menu->Append(ID_NEXT_LIST, _("Next lis&t\tL"));
@@ -156,6 +160,8 @@ wxMenu* main_window::create_go_menu() {
 		menu->Append(ID_PREVIOUS_LINK, _("Previous lin&k\tShift+K"));
 		menu->Append(ID_NEXT_LINK, _("Next lin&k\tK"));
 		menu->AppendSeparator();
+		menu->Append(ID_PREVIOUS_TABLE, _("Previous &table\tShift+T"));
+		menu->Append(ID_NEXT_TABLE, _("Next &table\tT"));
 		menu->Append(ID_PREVIOUS_LIST, _("Previous lis&t\tShift+L"));
 		menu->Append(ID_NEXT_LIST, _("Next lis&t\tL"));
 		menu->Append(ID_PREVIOUS_LIST_ITEM, _("Previous list &item\tShift+I"));
@@ -226,6 +232,8 @@ void main_window::bind_events() {
 		{ID_JUMP_TO_BOOKMARK, &main_window::on_jump_to_bookmark},
 		{ID_PREVIOUS_LINK, &main_window::on_previous_link},
 		{ID_NEXT_LINK, &main_window::on_next_link},
+		{ID_PREVIOUS_TABLE, &main_window::on_previous_table},
+		{ID_NEXT_TABLE, &main_window::on_next_table},
 		{ID_PREVIOUS_LIST, &main_window::on_previous_list},
 		{ID_NEXT_LIST, &main_window::on_next_list},
 		{ID_PREVIOUS_LIST_ITEM, &main_window::on_previous_list_item},
@@ -321,6 +329,8 @@ void main_window::update_ui() {
 		ID_JUMP_TO_BOOKMARK,
 		ID_PREVIOUS_LINK,
 		ID_NEXT_LINK,
+		ID_PREVIOUS_TABLE,
+		ID_NEXT_TABLE,
 		ID_PREVIOUS_LIST,
 		ID_NEXT_LIST,
 		ID_PREVIOUS_LIST_ITEM,
@@ -560,6 +570,18 @@ void main_window::on_next_link(wxCommandEvent&) {
 	trigger_throttled_position_save();
 }
 
+void main_window::on_previous_table(wxCommandEvent&) {
+	doc_manager->go_to_previous_table();
+	update_status_bar();
+	trigger_throttled_position_save();
+}
+
+void main_window::on_next_table(wxCommandEvent&) {
+	doc_manager->go_to_next_table();
+	update_status_bar();
+	trigger_throttled_position_save();
+}
+
 void main_window::on_previous_heading(wxCommandEvent&) {
 	doc_manager->go_to_previous_heading();
 	update_status_bar();
@@ -750,6 +772,7 @@ void main_window::on_text_cursor_changed(wxEvent& event) {
 
 void main_window::on_text_char(wxKeyEvent& event) {
 	if (event.GetKeyCode() == WXK_RETURN) {
+		doc_manager->activate_current_table();
 		doc_manager->activate_current_link();
 	} else {
 		event.Skip();

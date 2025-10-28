@@ -35,6 +35,12 @@ struct heading_info {
 	std::string text;
 };
 
+struct table_info {
+	size_t offset;
+	std::string text;
+	std::string ref;
+};
+
 struct document_stats {
 	size_t word_count{0};
 	size_t line_count{0};
@@ -48,6 +54,7 @@ struct document {
 	document_buffer buffer;
 	std::vector<std::unique_ptr<toc_item>> toc_items;
 	std::map<std::string, size_t> id_positions;
+	std::map<size_t, wxString> html_tables;
 	std::vector<std::string> spine_items;
 	std::map<std::string, std::string> manifest_items;
 	mutable document_stats stats;

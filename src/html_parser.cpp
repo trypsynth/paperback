@@ -54,6 +54,10 @@ std::unique_ptr<document> html_parser::load(const wxString& path) const {
 	for (const auto& link : links) {
 		doc->buffer.add_link(link.offset, wxString::FromUTF8(link.text), wxString::FromUTF8(link.ref));
 	}
+	const auto& tables = converter.get_tables();
+	for (const auto& table : tables) {
+		doc->buffer.add_table(table.offset, wxString::FromUTF8(table.text), wxString::FromUTF8(table.ref));
+	}
 	for (const auto& list : lists) {
 		doc->buffer.add_marker(list.offset, marker_type::list, wxString(), wxString(), list.item_count);
 	}
