@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.5\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2025-10-18 22:09-0600\n"
-"PO-Revision-Date: 2025-10-19 20:42+0200\n"
+"POT-Creation-Date: 2025-10-27 21:45-0600\n"
+"PO-Revision-Date: 2025-10-29 15:32+0100\n"
 "Last-Translator: Nikola Jović <wwenikola123@gmail.com>\n"
 "Language-Team: \n"
 "Language: sr\n"
@@ -20,79 +20,86 @@ msgstr ""
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 "X-Generator: Poedit 3.8\n"
 
-#: C:/Users/Quin/git/paperback/src/app.cpp:36
+#: C:/Users/Quin/git/paperback/src/app.cpp:37
 msgid "Failed to initialize configuration"
 msgstr "Učitavanje podešavanja nije uspelo"
 
-#: C:/Users/Quin/git/paperback/src/app.cpp:36
-#: C:/Users/Quin/git/paperback/src/app.cpp:92
-#: C:/Users/Quin/git/paperback/src/app.cpp:113
-#: C:/Users/Quin/git/paperback/src/app.cpp:167
-#: C:/Users/Quin/git/paperback/src/app.cpp:190
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:212
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:32
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:52
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:329
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:576
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:584
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:593
+#: C:/Users/Quin/git/paperback/src/app.cpp:37
+#: C:/Users/Quin/git/paperback/src/app.cpp:96
+#: C:/Users/Quin/git/paperback/src/app.cpp:117
+#: C:/Users/Quin/git/paperback/src/app.cpp:171
+#: C:/Users/Quin/git/paperback/src/app.cpp:194
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:284
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:47
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:67
+#: C:/Users/Quin/git/paperback/src/epub_parser.cpp:103
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:392
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:671
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:679
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:688
+#: C:/Users/Quin/git/paperback/src/update_checker.cpp:30
+#: C:/Users/Quin/git/paperback/src/update_checker.cpp:41
+#: C:/Users/Quin/git/paperback/src/update_checker.cpp:50
+#: C:/Users/Quin/git/paperback/src/update_checker.cpp:90
+#: C:/Users/Quin/git/paperback/src/update_checker.cpp:106
 msgid "Error"
 msgstr "Greška"
 
-#: C:/Users/Quin/git/paperback/src/app.cpp:68
+#: C:/Users/Quin/git/paperback/src/app.cpp:69
 msgid "Failed to create IPC server"
 msgstr "Nemoguće napraviti IPC server"
 
-#: C:/Users/Quin/git/paperback/src/app.cpp:68
-#: C:/Users/Quin/git/paperback/src/epub_parser.cpp:247
+#: C:/Users/Quin/git/paperback/src/app.cpp:69
+#: C:/Users/Quin/git/paperback/src/epub_parser.cpp:285
+#: C:/Users/Quin/git/paperback/src/pptx_parser.cpp:127
 msgid "Warning"
 msgstr "Upozorenje"
 
-#: C:/Users/Quin/git/paperback/src/app.cpp:92
-#: C:/Users/Quin/git/paperback/src/app.cpp:167
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:32
+#: C:/Users/Quin/git/paperback/src/app.cpp:96
+#: C:/Users/Quin/git/paperback/src/app.cpp:171
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:47
 #, c-format
 msgid "File not found: %s"
 msgstr "Datoteka nije pronađena: %s"
 
-#: C:/Users/Quin/git/paperback/src/app.cpp:113
-#: C:/Users/Quin/git/paperback/src/app.cpp:190
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:52
+#: C:/Users/Quin/git/paperback/src/app.cpp:117
+#: C:/Users/Quin/git/paperback/src/app.cpp:194
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:67
 msgid "Failed to load document."
 msgstr "Učitavanje dokumenta nije uspelo."
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:50
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:71
 msgid "All Documents"
 msgstr "Svi dokumenti"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:53
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:79
 msgid "File Name"
 msgstr "Ime datoteke"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:54
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:80
 msgid "Status"
 msgstr "Status"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:55
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:81
 msgid "Path"
 msgstr "Putanja"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:59
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:85
 msgid "&Open"
 msgstr "&Otvori"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:60
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:86
 msgid "&Remove"
 msgstr "&Ukloni"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:75
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:126
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:148
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:162
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:101
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:152
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:175
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:189
 msgid "Missing"
 msgstr "Nedostaje"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:96
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:122
 msgid ""
 "Are you sure you want to remove this document from the list? This will also "
 "remove its reading position."
@@ -100,129 +107,158 @@ msgstr ""
 "Da li ste sigurni da želite da uklonite ovaj dokument sa liste? Ovo će "
 "takođe ukloniti njegovu poziciju čitanja."
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:96
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:122
 msgid "Confirm"
 msgstr "Potvrdi"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:150
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:177
 msgid "Open"
 msgstr "Otvori"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:152
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:179
 msgid "Closed"
 msgstr "Zatvori"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:167
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:194
 msgid "Jump to Bookmark"
 msgstr "Skoči na knjižnu oznaku"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:178
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:208
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:214
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:339
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:345
 msgid "blank"
 msgstr "prazno"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:212
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:234
+msgid "&Edit Note"
+msgstr "&Uredi napomenu"
+
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:235
+msgid "&Delete"
+msgstr "&Obriši"
+
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:236
+msgid "&Jump"
+msgstr "&Skoči"
+
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:237
+msgid "&Cancel"
+msgstr "&Otkaži"
+
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:284
 msgid "Please select a bookmark to jump to."
 msgstr "Molimo izaberite knjižnu oznaku na koju želite da skočite."
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:216
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:324
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:912
+msgid "Edit bookmark note:"
+msgstr "Uredi napomenu knjižne oznake:"
+
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:324
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:913
+msgid "Bookmark Note"
+msgstr "Napomena knjižne oznake"
+
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:357
 msgid "Document Info"
 msgstr "Informacije o dokumentu"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:219
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:362
 msgid "Title: "
 msgstr "Naslov: "
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:220
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:363
 msgid "Author: "
 msgstr "Autor: "
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:221
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:364
 msgid "Total number of words: "
 msgstr "Ukupan broj reči: "
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:222
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:365
 msgid "Total number of lines: "
 msgstr "Ukupan broj redova: "
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:223
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:366
 msgid "Total number of characters: "
 msgstr "Ukupan broj znakova: "
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:224
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:367
 msgid "Total number of characters (excluding whitespace): "
 msgstr "Ukupan broj znakova (bez razmaka): "
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:232
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:375
 msgid "Find"
 msgstr "Pronađi"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:235
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:381
 msgid "Find &what:"
 msgstr "&Šta pronaći:"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:239
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:454
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:385
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:616
 msgid "Options"
 msgstr "Podešavanja"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:240
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:386
 msgid "&Match case"
 msgstr "&Osetljiva na veličinu slova"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:241
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:387
 msgid "Match &whole word"
 msgstr "Samo &cele reči"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:242
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:388
 msgid "Use &regular expressions"
 msgstr "Koristi &regularne izraze"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:247
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:393
 msgid "Find &Previous"
 msgstr "Pronađi &prethodno"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:248
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:394
 msgid "Find &Next"
 msgstr "Pronađi &sledeće"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:249
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:395
 msgid "Cancel"
 msgstr "Otkaži"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:340
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:486
 msgid "Go to Line"
 msgstr "Pređi na red"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:342
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:489
 msgid "&Line number:"
 msgstr "&Broj reda:"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:364
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:511
 msgid "Go to page"
 msgstr "Pređi na stranicu"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:366
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:514
 #, c-format
 msgid "Go to page (1/%d):"
 msgstr "Pređi na stranicu (1/%d):"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:392
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:540
 msgid "Go to Percent"
 msgstr "Pređi na procenat"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:396
-msgid "&Percent"
-msgstr "&procenat"
-
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:398
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:546
 msgid "P&ercent:"
 msgstr "P&rocenat:"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:421
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:548
+msgid "&Percent"
+msgstr "&procenat"
+
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:579
 msgid "Open As"
 msgstr "Otvori kao"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:423
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:582
 #, c-format
 msgid ""
 "No suitable parser was found for %s.\n"
@@ -231,434 +267,594 @@ msgstr ""
 "Nije pronađen nijedan odgovarajući čitač za %s.\n"
 "Kako želite da otvorite ovu datoteku?"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:426
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:585
 msgid "Open &as:"
 msgstr "Otvori &kao:"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:428
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:587
 msgid "Plain Text"
 msgstr "Običan tekst"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:429
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:588
 msgid "HTML"
 msgstr "HTML"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:430
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:589
 msgid "Markdown"
 msgstr "Markdown"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:455
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:620
 msgid "General"
 msgstr "Oppšta"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:456
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:621
 msgid "&Restore previously opened documents on startup"
 msgstr "&Vrati prethodno otvorene dokumente pri pokretanju"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:458
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:623
 msgid "&Word wrap"
 msgstr "&Prelamanje reči"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:460
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:625
 msgid "&Minimize to system tray"
 msgstr "&Umanji u sistemsku traku"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:462
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:627
 msgid "Show compact &go menu"
 msgstr "Prikaži kompaktan meni &kretanja"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:465
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:629
+msgid "&Wrap navigation"
+msgstr "&Kružna navigacija"
+
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:631
+msgid "Check for &updates on startup"
+msgstr "Proveri &ažuriranja pri pokretanju"
+
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:634
 msgid "Number of &recent documents to show:"
 msgstr "Broj &nedavnih dokumenata za prikazivanje:"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:471
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:640
 msgid "&Language:"
 msgstr "&Jezik:"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:569
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:759
+msgid "Sleep Timer"
+msgstr "Tajmer pre spavanja"
+
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:762
+msgid "&Minutes:"
+msgstr "&Minuti:"
+
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:774
 msgid "Table of Contents"
 msgstr "Sadržaj"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:571
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:777
 msgid "Root"
 msgstr "Koren"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:587
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:795
 msgid "Untitled"
 msgstr "Nenaslovljeno"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:635
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:843
 msgid "Please select a section from the table of contents."
 msgstr "Molimo izaberite odeljak iz sadržaja."
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:635
+#: C:/Users/Quin/git/paperback/src/dialogs.cpp:843
 msgid "No Selection"
 msgstr "Bez izbora"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:194
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:239
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:204
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:262
 msgid "No sections."
 msgstr "Nema odeljaka."
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:220
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:238
 msgid "No previous section"
 msgstr "Nema prethodnog odeljka"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:245
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:248
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:340
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:431
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:516
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:684
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:790
+msgid "Wrapping to end. "
+msgstr "Vraćanje na dno. "
+
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:276
 msgid "No next section"
 msgstr "Nema narednog odeljka"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:279
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:303
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:411
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:286
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:379
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:481
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:552
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:735
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:845
+msgid "Wrapping to start. "
+msgstr "Vraćanje na početak. "
+
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:315
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:354
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:475
 msgid "No pages."
 msgstr "Nema stranica."
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:285
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:329
 msgid "No previous page."
 msgstr "Nema prethodne stranice."
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:293
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:317
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:338
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:342
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:377
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:381
 #, c-format
 msgid "Page %d: %s"
 msgstr "Stranica %d: %s"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:309
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:368
 msgid "No next page."
 msgstr "Nema naredne stranice."
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:329
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:403
 msgid "No previous bookmark"
 msgstr "Nema prethodne knjižne oznake"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:338
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:359
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:426
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:476
 #, c-format
-msgid "Bookmark %d: %s"
-msgstr "Knjižna oznaka %d: %s"
+#| msgid "Bookmark %d: %s"
+msgid "%s - %s - Bookmark %d"
+msgstr "%s - %s - knjižna oznaka %d"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:350
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:428
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:478
+#, c-format
+#| msgid "Bookmark: %s"
+msgid "%s - Bookmark %d"
+msgstr "%s - knjižna oznaka %d"
+
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:453
 msgid "No next bookmark"
 msgstr "Nema naredne knjižne oznake"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:369
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:392
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:493
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:529
 msgid "No links."
 msgstr "Nema linkova."
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:375
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:507
 msgid "No previous link."
 msgstr "Nema prethodnog linka."
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:381
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:404
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:514
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:550
 msgid " link"
 msgstr " link"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:398
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:543
 msgid "No next link."
 msgstr "Nema narednog linka."
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:433
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:583
 msgid "Opening link in default browser."
 msgstr "Otvaranje linka u podrazumevanom pretraživaču."
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:435
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:585
 msgid "Failed to open link."
 msgstr "Otvaranje linka nije uspelo."
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:442
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:453
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:470
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:592
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:623
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:631
 msgid "Navigated to internal link."
 msgstr "Prebačen do unutrašnjeg linka."
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:444
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:474
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:594
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:635
 msgid "Internal link target not found."
 msgstr "Odredište unutrašnjeg linka nije pronađeno."
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:489
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:647
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:651
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:698
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:702
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:749
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:804
+msgid "No lists."
+msgstr "Nema lista."
+
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:665
+msgid "No previous list."
+msgstr "Nema prethodne liste."
+
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:671
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:722
+#, c-format
+msgid "List with %d items"
+msgstr "Lista sa %d stavki"
+
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:716
+msgid "No next list."
+msgstr "Nema naredne liste."
+
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:753
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:808
+msgid "No list items."
+msgstr "Nema stavki liste."
+
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:773
+msgid "No previous list item."
+msgstr "Nema prethodne stavke liste."
+
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:783
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:838
+#, c-format
+msgid "List with %d items "
+msgstr "Lista sa %d stavki "
+
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:828
+msgid "No next list item."
+msgstr "Nema naredne stavke liste."
+
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:880
 msgid "Bookmark removed"
 msgstr "Knjižna oznaka uklonjena"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:489
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:880
 msgid "Bookmarked"
 msgstr "Knjižna oznaka dodata"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:500
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:912
+msgid "Enter bookmark note:"
+msgstr "Upišite napomenu za knjižnu oznaku:"
+
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:920
+msgid "Bookmark note updated"
+msgstr "Napomena knjižne oznake ažurirana"
+
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:923
+msgid "Bookmarked with note"
+msgstr "Knjižna oznaka dodata sa napomenom"
+
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:936
 msgid "No bookmarks"
 msgstr "Nema knjižnih oznaka"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:517
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:968
+#, c-format
+#| msgid "Bookmark: %s"
+msgid "Bookmark: %s - %s"
+msgstr "Knjižna oznaka: %s - %s"
+
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:970
 #, c-format
 msgid "Bookmark: %s"
 msgstr "Knjižna oznaka: %s"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:529
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:984
 msgid "No table of contents."
 msgstr "Nema sadržaja."
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:533
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:988
 msgid "Table of contents is empty."
 msgstr "Sadržaj je prazan."
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:588
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:592
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:39
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:1043
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:1047
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:40
 msgid "Ready"
 msgstr "Spreman"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:601
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:1056
 #, c-format
 msgid "line %ld, character %ld, reading %d%%"
 msgstr "red %ld, znak %ld, čitanje %d%%"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:664
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:1120
 msgid "Previous heading\tShift+H"
 msgstr "Prethodni naslov\tShift+H"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:665
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:1121
 msgid "Next heading\tH"
 msgstr "Naredni naslov \tH"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:668
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:1124
 #, c-format
 msgid "Previous heading level %d\tShift+%d"
 msgstr "Prethodni naslov na nivou %d\tShift+%d"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:669
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:1125
 #, c-format
 msgid "Next heading level %d\t%d"
 msgstr "Naredni naslov na nivou %d\t%d"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:716
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:1172
 msgid "No headings."
 msgstr "Nema naslova."
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:723
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:1187
 #, c-format
 msgid "No %s heading"
 msgstr "Ne postoji %s naslov"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:723
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:1187
 msgid "next"
 msgstr "naredni"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:723
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:1187
 msgid "previous"
 msgstr "prethodni"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:723
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:1187
 #, c-format
 msgid "No %s heading at level %d"
 msgstr "Ne postoji %s naslov na nivou %d"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:731
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:1198
+#, c-format
+#| msgid "%s Heading level %d"
+msgid "Wrapping to %s. %s Heading level %d"
+msgstr "Vraćanje na %s. %s naslov nivoa %d"
+
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:1198
+msgid "start"
+msgstr "početak"
+
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:1198
+msgid "end"
+msgstr "kraj"
+
+#: C:/Users/Quin/git/paperback/src/document_manager.cpp:1200
 #, c-format
 msgid "%s Heading level %d"
 msgstr "%s naslov nivo %d"
 
-#: C:/Users/Quin/git/paperback/src/epub_parser.cpp:247
-msgid ""
-"This book contains malformed content. Some files claim to be XML but contain "
-"HTML syntax."
-msgstr ""
-"Ova knjiga sadrži delove neispravnog oblika. Neke datoteke su označene kao "
-"XML ali sadrže HTML sintaksu."
+#: C:/Users/Quin/git/paperback/src/epub_parser.cpp:285
+#, c-format
+#| msgid "No table of contents."
+msgid "Couldn't parse table of contents: %s"
+msgstr "Nemoguće obraditi sadržaj: %s"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:69
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:76
 msgid "&File"
 msgstr "&Datoteka"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:70
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:77
 msgid "&Go"
 msgstr "&Kretanje"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:71
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:78
 msgid "&Tools"
 msgstr "&Alati"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:72
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:79
 msgid "&Help"
 msgstr "&Pomoć"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:78
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:85
 msgid "&Open...\tCtrl+O"
 msgstr "&Otvori...\tCtrl+O"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:79
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:86
 msgid "Close\tCtrl+F4"
 msgstr "Zatvori\tCtrl+F4"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:80
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:87
 msgid "Close &All\tCtrl+Shift+F4"
 msgstr "Zatvori &sve\tCtrl+Shift+F4"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:83
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:90
 msgid "&Recent Documents"
 msgstr "&Nedavni dokumenti"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:86
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:93
 msgid "&Export...\tCtrl+E"
 msgstr "&Izvezi...\tCtrl+E"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:88
-#: C:/Users/Quin/git/paperback/src/task_bar_icon.cpp:26
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:95
+#: C:/Users/Quin/git/paperback/src/task_bar_icon.cpp:31
 msgid "E&xit"
 msgstr "I&zlaz"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:96
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:103
 msgid "&Find...\tCtrl+F"
 msgstr "&Pronađi...\tCtrl+F"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:97
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:104
 msgid "Find Ne&xt\tF3"
 msgstr "Pronađi sl&edeće\tF3"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:98
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:105
 msgid "Find P&revious\tShift+F3"
 msgstr "Pronađi p&rethodno\tShift+F3"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:100
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:107
 msgid "Go to &line...\tCtrl+G"
 msgstr "Pređi na &red...\tCtrl+G"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:101
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:108
 msgid "Go to &percent...\tCtrl+Shift+G"
 msgstr "Pređi na &procenat...\tCtrl+Shift+G"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:105
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:130
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:112
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:142
 msgid "Previous section\t["
 msgstr "Prethodni odeljak\t["
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:106
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:131
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:113
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:143
 msgid "Next section\t]"
 msgstr "Naredni odeljak\t]"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:107
-#| msgid "No sections."
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:114
 msgid "&Sections"
 msgstr "&odeljci"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:110
-#| msgid "No headings."
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:117
 msgid "&Headings"
 msgstr "&naslovi"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:112
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:128
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:119
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:140
 msgid "Go to &page...\tCtrl+P"
 msgstr "Pređi na &stranicu...\tCtrl+P"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:114
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:135
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:121
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:147
 msgid "Previous &page\tShift+P"
 msgstr "Prethodna &stranica\tShift+P"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:115
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:136
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:122
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:148
 msgid "&Next page\tP"
 msgstr "&Naredna stranica\tP"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:116
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:123
 msgid "&Pages"
 msgstr "&stranice"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:118
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:138
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:125
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:150
 msgid "Previous &bookmark\tShift+B"
 msgstr "Prethodna &knjižna oznaka\tShift+B"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:119
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:139
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:126
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:151
 msgid "Next b&ookmark\tB"
 msgstr "Naredna k&njižna oznaka\tB"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:120
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:140
-msgid "Toggle bookmark\tCtrl+Shift+B"
-msgstr "Dodaj ili ukloni knjižnu oznaku\tCtrl+Shift+B"
-
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:121
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:141
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:127
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:154
 msgid "Jump to bookmark...\tCtrl+B"
 msgstr "Skoči na knjižnu oznaku...\tCtrl+B"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:122
-#| msgid "Bookmark: %s"
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:128
 msgid "&Bookmarks"
 msgstr "&knjižne oznake"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:124
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:143
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:130
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:156
 msgid "Previous lin&k\tShift+K"
 msgstr "Prethodni Lin&k\tShift+K"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:125
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:144
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:131
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:157
 msgid "Next lin&k\tK"
 msgstr "Naredni lin&k\tK"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:126
-#| msgid "Link: "
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:132
 msgid "&Links"
 msgstr "&linkovi"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:151
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:134
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:159
+#| msgid "Previous lin&k\tShift+K"
+msgid "Previous lis&t\tShift+L"
+msgstr "Prethodna lis&ta\tShift+L"
+
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:135
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:160
+#| msgid "Next lin&k\tK"
+msgid "Next lis&t\tL"
+msgstr "Naredna lis&ta\tL"
+
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:136
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:161
+#| msgid "Previous lin&k\tShift+K"
+msgid "Previous list &item\tShift+I"
+msgstr "Prethodna &stavka liste\tShift+I"
+
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:137
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:162
+#| msgid "Next lin&k\tK"
+msgid "Next list &item\tI"
+msgstr "Naredna &stavka liste\tI"
+
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:138
+msgid "&Lists"
+msgstr "&Liste"
+
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:152
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:174
+msgid "Toggle bookmark\tCtrl+Shift+B"
+msgstr "Dodaj ili ukloni knjižnu oznaku\tCtrl+Shift+B"
+
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:153
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:175
+#| msgid "Toggle bookmark\tCtrl+Shift+B"
+msgid "Bookmark with &note\tCtrl+Shift+N"
+msgstr "Dodaj knjižnu oznaku sa &napomenom\tCtrl+Shift+N"
+
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:169
 msgid "&Word count\tCtrl+W"
 msgstr "&Broj reči\tCtrl+W"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:152
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:170
 msgid "Document &info\tCtrl+I"
 msgstr "&Informacije o dokumentu\tCtrl+I"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:154
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:172
 msgid "Table of contents\tCtrl+T"
 msgstr "Sadržaj\tCtrl+T"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:156
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:177
 msgid "&Options\tCtrl+,"
 msgstr "&Podešavanja\tCtrl+,"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:162
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:178
+#| msgid "Go to &percent...\tCtrl+Shift+G"
+msgid "&Sleep Timer...\tCtrl+Shift+S"
+msgstr "Tajmer pre &spavanja...\tCtrl+Shift+S"
+
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:184
 #, c-format
 msgid "About %s\tCtrl+F1"
 msgstr "O programu %s\tCtrl+F1"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:163
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:185
 msgid "View &help in default browser\tF1"
 msgstr "Prikaži &pomoć u podrazumevanom pretraživaču\tF1"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:164
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:186
 #, c-format
 msgid "View Help in %s\tShift+F1"
 msgstr "Prikaži pomoć u programu %s\tShift+F1"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:166
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:188
+msgid "Check for &Updates"
+msgstr "Proveri dostupna &ažuriranja"
+
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:190
 msgid "&Donate\tCtrl+D"
 msgstr "&Doniraj\tCtrl+D"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:296
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:351
+#, c-format
+msgid " | Sleep timer: %02d:%02d"
+msgstr " | Tajmer pre spavanja: %02d:%02d"
+
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:358
 msgid "Select a document to read"
 msgstr "Izaberite dokument za čitanje"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:323
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:386
 msgid "Export Document"
 msgstr "Izvezi dokument"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:323
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:386
 msgid "Text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgstr "Tekstualne datoteke (*.txt)|*.txt|Sve datoteke (*.*)|*.*"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:329
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:392
 msgid "Failed to export document."
 msgstr "Izvoz dokumenta nije uspeo."
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:509
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:600
 #, c-format
 msgid "The document contains %d word"
 msgid_plural "The document contains %d words"
@@ -666,42 +862,116 @@ msgstr[0] "Dokument sadrži %d reč"
 msgstr[1] "Dokument sadrži %d reči"
 msgstr[2] "Dokument sadrži %d reči"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:509
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:600
 msgid "Word count"
 msgstr "Broj reči"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:576
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:671
 msgid "Failed to launch default browser."
 msgstr "Otvaranje podrazumevanog pretraživača nije uspelo."
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:584
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:679
 msgid ""
 "readme.html not found. Please ensure the application was built properly."
 msgstr ""
 "readme.html nije pronađen. Molimo uverite se da je aplikacija ispravno "
 "spakovana."
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:593
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:688
 msgid "Failed to open donation page in browser."
 msgstr ""
 "Otvaranje stranice za doniranje u podrazumevanom pretraživaču nije uspelo."
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:745
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:701
+msgid "Sleep timer canceled."
+msgstr "Tajmer pre spavanja otkazan."
+
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:715
+#, c-format
+msgid "Sleep timer set for %d minute%s."
+msgstr "Tajmer pre spavanja podešen na %d minut %s."
+
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:878
 msgid "(No recent documents)"
 msgstr "(nema nedavnih dokumenata)"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:749
-msgid "Show All..."
-msgstr "Prikaži sve..."
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:882
+#| msgid "Show All..."
+msgid "Show All...\tCtrl+R"
+msgstr "Prikaži sve...\tCtrl+R"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:783
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:917
 msgid "No more results. Wrapping search."
 msgstr "Nema više rezultata. Vraćanje pretrage na početak."
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:787
+#: C:/Users/Quin/git/paperback/src/main_window.cpp:921
 msgid "Not found."
 msgstr "Nije pronađeno."
 
-#: C:/Users/Quin/git/paperback/src/task_bar_icon.cpp:24
+#: C:/Users/Quin/git/paperback/src/pptx_parser.cpp:127
+msgid "Parsing of links in the document failed."
+msgstr "Obrada linkova u dokumentu nije uspela."
+
+#: C:/Users/Quin/git/paperback/src/task_bar_icon.cpp:29
 msgid "&Restore"
 msgstr "&Vrati"
+
+#: C:/Users/Quin/git/paperback/src/update_checker.cpp:30
+#| msgid "Failed to create IPC server"
+msgid "Failed to create update request."
+msgstr "Zahtev za ažuriranje nije uspešno kreiran."
+
+#: C:/Users/Quin/git/paperback/src/update_checker.cpp:41
+msgid "error checking for updates."
+msgstr "greška pri proveri ažuriranja."
+
+#: C:/Users/Quin/git/paperback/src/update_checker.cpp:50
+#, c-format
+msgid "Failed to check for updates. HTTP status: %d"
+msgstr "Provera ažuriranja nije uspela. HTTP status: %d"
+
+#: C:/Users/Quin/git/paperback/src/update_checker.cpp:64
+msgid "No updates available."
+msgstr "Nema dostupnih ažuriranja."
+
+#: C:/Users/Quin/git/paperback/src/update_checker.cpp:64
+msgid "Info"
+msgstr "Informacija"
+
+#: C:/Users/Quin/git/paperback/src/update_checker.cpp:90
+msgid "Update is available but download link could not be found."
+msgstr ""
+"Ažuriranje je dostupno ali link za preuzimanje nije mogao biti pronađen."
+
+#: C:/Users/Quin/git/paperback/src/update_checker.cpp:95
+#, c-format
+msgid ""
+"There is an update available.\n"
+"Your version: %s\n"
+"Latest version: %s\n"
+"Description:\n"
+"%s\n"
+"Do you want to open the direct download link?"
+msgstr ""
+"Dostupno je ažuriranje.\n"
+"Vaša verzija: %s\n"
+"Najnovija verzija: %s\n"
+"Opis:\n"
+"%s\n"
+"Da li želite da otvorite direktan link za preuzimanje?"
+
+#: C:/Users/Quin/git/paperback/src/update_checker.cpp:97
+msgid "Update available"
+msgstr "Ažuriranje dostupno"
+
+#: C:/Users/Quin/git/paperback/src/update_checker.cpp:106
+#, c-format
+msgid "Error checking for updates: %s"
+msgstr "Greška pri proveri ažuriranja: %s"
+
+#~ msgid ""
+#~ "This book contains malformed content. Some files claim to be XML but "
+#~ "contain HTML syntax."
+#~ msgstr ""
+#~ "Ova knjiga sadrži delove neispravnog oblika. Neke datoteke su označene "
+#~ "kao XML ali sadrže HTML sintaksu."
