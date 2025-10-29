@@ -20,6 +20,7 @@
 #include <wx/dialog.h>
 #include <wx/listbox.h>
 #include <wx/listctrl.h>
+#include <wx/srchctrl.h>
 #include <wx/spinctrl.h>
 #include <wx/textctrl.h>
 #include <wx/timer.h>
@@ -62,6 +63,7 @@ public:
 	}
 
 private:
+	wxSearchCtrl* search_ctrl{nullptr};
 	wxListView* doc_list{nullptr};
 	wxButton* open_button{nullptr};
 	config_manager& config_mgr;
@@ -71,10 +73,11 @@ private:
 
 	void on_open(wxCommandEvent& event);
 	void on_remove(wxCommandEvent& event);
+	void on_search(wxCommandEvent& event);
 	void on_list_item_activated(wxListEvent& event);
 	void on_list_item_selected(wxListEvent& event);
 	void on_key_down(wxKeyEvent&);
-	void populate_document_list();
+	void populate_document_list(const wxString& filter = wxEmptyString);
 };
 
 class bookmark_dialog : public dialog {
