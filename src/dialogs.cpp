@@ -70,8 +70,14 @@ void dialog::create_buttons() {
 
 all_documents_dialog::all_documents_dialog(wxWindow* parent, config_manager& cfg_mgr, const wxArrayString& open_docs) : dialog(parent, _("All Documents"), dialog_button_config::ok_only), config_mgr(cfg_mgr), open_doc_paths(open_docs) {
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
-	search_ctrl = new wxSearchCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-	content_sizer->Add(search_ctrl, 0, wxEXPAND | wxALL, DIALOG_PADDING);
+
+	auto* search_sizer = new wxBoxSizer(wxHORIZONTAL);
+	auto* search_lable= new wxStaticText(this, wxID_ANY, _("&search"));
+	search_ctrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(300, -1));
+	search_sizer->Add(search_lable, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
+	search_sizer->Add(search_ctrl, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
+	content_sizer->Add(search_sizer, 0, wxEXPAND | wxALL, DIALOG_PADDING);
+	set_content(content_sizer);
 	constexpr int list_width = 800;
 	constexpr int list_height = 600;
 	constexpr int filename_column_width = 250;

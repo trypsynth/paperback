@@ -63,7 +63,7 @@ public:
 	}
 
 private:
-	wxSearchCtrl* search_ctrl{nullptr};
+	wxTextCtrl* search_ctrl{nullptr};
 	wxListView* doc_list{nullptr};
 	wxButton* open_button{nullptr};
 	config_manager& config_mgr;
