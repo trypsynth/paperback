@@ -76,7 +76,6 @@ all_documents_dialog::all_documents_dialog(wxWindow* parent, config_manager& cfg
 	search_sizer->Add(search_lable, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
 	search_sizer->Add(search_ctrl, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
 	content_sizer->Add(search_sizer, 0, wxEXPAND | wxALL, DIALOG_PADDING);
-	set_content(content_sizer);
 	constexpr int list_width = 800;
 	constexpr int list_height = 600;
 	constexpr int filename_column_width = 250;
@@ -88,12 +87,14 @@ all_documents_dialog::all_documents_dialog(wxWindow* parent, config_manager& cfg
 	doc_list->AppendColumn(_("Path"), wxLIST_FORMAT_LEFT, path_column_width);
 	populate_document_list();
 	content_sizer->Add(doc_list, 1, wxEXPAND | wxALL, DIALOG_PADDING);
+	doc_list->SetFocus();
 	auto* button_sizer = new wxBoxSizer(wxHORIZONTAL);
 	open_button = new wxButton(this, wxID_OPEN, _("&Open"));
 	auto* remove_button = new wxButton(this, wxID_REMOVE, _("&Remove"));
 	button_sizer->Add(open_button, 0, wxRIGHT, DIALOG_PADDING);
 	button_sizer->Add(remove_button, 0, wxRIGHT, DIALOG_PADDING);
 	content_sizer->Add(button_sizer, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);
+	set_content(content_sizer);
 	finalize_layout();
 	Bind(wxEVT_BUTTON, &all_documents_dialog::on_open, this, wxID_OPEN);
 	Bind(wxEVT_BUTTON, &all_documents_dialog::on_remove, this, wxID_REMOVE);
