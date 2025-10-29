@@ -94,7 +94,6 @@ all_documents_dialog::all_documents_dialog(wxWindow* parent, config_manager& cfg
 	button_sizer->Add(open_button, 0, wxRIGHT, DIALOG_PADDING);
 	button_sizer->Add(remove_button, 0, wxRIGHT, DIALOG_PADDING);
 	content_sizer->Add(button_sizer, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);
-	set_content(content_sizer);
 	finalize_layout();
 	Bind(wxEVT_BUTTON, &all_documents_dialog::on_open, this, wxID_OPEN);
 	Bind(wxEVT_BUTTON, &all_documents_dialog::on_remove, this, wxID_REMOVE);
