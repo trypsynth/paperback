@@ -30,11 +30,13 @@
 	Name: "desktopicon"; Description: "Desktop Shortcut"
 	Name: "startmenuicon"; Description: "Start Menu Shortcut"; Flags: unchecked
 	Name: "assoc_chm"; Description: "Associate with Compiled HTML Help files (*.chm)"; Flags: unchecked
-	Name: "assoc_epub"; Description: "Associate with Epub Books (*.epub)"
 	Name: "assoc_docx"; Description: "Associate with Word Documents (*.docx, *.docm)"; Flags: unchecked
+	Name: "assoc_epub"; Description: "Associate with Epub Books (*.epub)"
+	Name: "assoc_fb2"; Description: "Associate with FB2 Books (*.fb2)"; Flags: unchecked
 	Name: "assoc_html"; Description: "Associate with HTML Documents (*.htm, *.html, *.xhtml)"; Flags: unchecked
 	Name: "assoc_markdown"; Description: "Associate with Markdown Documents (*.md, *.markdown, *.mdx, *.mdown, *.mdwn, *.mkd, *.mkdn, *.mkdown, *.ronn)"; Flags: unchecked
-	Name: "assoc_odt"; Description: "Associate with OpenDOcument files (*.odt)"; Flags: unchecked
+	Name: "assoc_odp"; Description: "Associate with OpenDocument presentations (*.odp)"; Flags: unchecked
+	Name: "assoc_odt"; Description: "Associate with OpenDocument text files (*.odt)"; Flags: unchecked
 	Name: "assoc_pdf"; Description: "Associate with PDF Documents (*.pdf)"
 	Name: "assoc_pptx"; Description: "Associate with PowerPoint Presentations (*.pptx, *.pptm)"; Flags: unchecked
 	Name: "assoc_text"; Description: "Associate with Text Files (*.txt, *.log)"; Flags: unchecked
@@ -50,11 +52,13 @@
 	Root: HKCR; Subkey: "Paperback.Document\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\paperback.exe"" ""%1"""
 	; Compiled HTML Help files.
 	Root: HKCR; Subkey: ".chm\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_chm
-	; Epub Books.
-	Root: HKCR; Subkey: ".epub"; ValueType: string; ValueName: ""; ValueData: "Paperback.Document"; Flags: uninsdeletevalue; Tasks: assoc_epub
 	; Word Documents.
 	Root: HKCR; Subkey: ".docx\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_docx
 	Root: HKCR; Subkey: ".docm\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_docx
+	; Epub Books.
+	Root: HKCR; Subkey: ".epub"; ValueType: string; ValueName: ""; ValueData: "Paperback.Document"; Flags: uninsdeletevalue; Tasks: assoc_epub
+	; FB2 Books.
+	Root: HKCR; Subkey: ".fb2"; ValueType: string; ValueName: ""; ValueData: "Paperback.Document"; Flags: uninsdeletevalue; Tasks: assoc_fb2
 	; HTML Documents.
 	Root: HKCR; Subkey: ".htm\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_html
 	Root: HKCR; Subkey: ".html\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_html
@@ -69,7 +73,9 @@
 	Root: HKCR; Subkey: ".mkdn\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_markdown
 	Root: HKCR; Subkey: ".mkdown\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_markdown
 	Root: HKCR; Subkey: ".ronn\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_markdown
-	; ODT Documents.
+	; OpenDocument presentation files.
+	Root: HKCR; Subkey: ".odp\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_odp
+	; OpenDocument text files.
 	Root: HKCR; Subkey: ".odt\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_odt
 	; PDF Documents.
 	Root: HKCR; Subkey: ".pdf\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_pdf

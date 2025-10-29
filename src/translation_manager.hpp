@@ -17,7 +17,8 @@ struct language_info {
 	wxString name;
 	wxString native_name;
 
-	language_info(const wxString& c, const wxString& n, const wxString& nn) : code{c}, name{n}, native_name{nn} {}
+	language_info(const wxString& c, const wxString& n, const wxString& nn) : code{c}, name{n}, native_name{nn} {
+	}
 };
 
 class translation_manager {
@@ -38,7 +39,7 @@ private:
 	translation_manager(translation_manager&&) = delete;
 	translation_manager& operator=(translation_manager&&) = delete;
 	void scan_available_languages();
-	wxString get_system_language() const;
+	static wxString get_system_language();
 
 	wxTranslations* translations{nullptr};
 	wxString current_language;

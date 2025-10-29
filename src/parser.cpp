@@ -10,10 +10,12 @@
 #include "parser.hpp"
 #include <set>
 #include <sstream>
+#include <string>
+#include <wx/string.h>
 
-const parser* find_parser_by_extension(const wxString& extension) noexcept {
+const parser* find_parser_by_extension(const wxString& extension) {
 	const wxString normalized = extension.Lower();
-	for (auto* par : parser_registry::get_all()) {
+	for (const auto* par : parser_registry::get_all()) {
 		for (const auto& ext : par->extensions()) {
 			if (ext.Lower() == normalized) {
 				return par;
@@ -45,14 +47,14 @@ wxString get_supported_wildcards() {
 		return wxString::FromUTF8(oss.str());
 	};
 	wxString result;
-	wxString all_ext_part = join_extensions(all_exts);
+	const wxString all_ext_part = join_extensions(all_exts);
 	result += "All Supported Files (" + all_ext_part + ")|" + all_ext_part + "|";
 	for (const parser* p : parsers) {
 		const auto& exts = p->extensions();
 		if (exts.empty()) {
 			continue;
 		}
-		wxString ext_part = join_extensions(exts);
+		const wxString ext_part = join_extensions(exts);
 		result += p->name() + " (" + ext_part + ")|" + ext_part + "|";
 	}
 	result += "All Files (*.*)|*.*";

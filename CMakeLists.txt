@@ -24,16 +24,15 @@ if(CLANG_FORMAT_EXE)
 endif()
 find_program(CLANG_TIDY_EXE NAMES clang-tidy)
 if(CLANG_TIDY_EXE)
-	set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE};-warnings-as-errors=*;--header-filter=^${CMAKE_SOURCE_DIR}/src/;--extra-arg=/EHsc")
-else()
-	message(WARNING "clang-tidy not found, skipping static analysis.")
+	file(GLOB_RECURSE ALL_SOURCE_FILES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/*.cpp ${CMAKE_SOURCE_DIR}/src/*.hpp)
+	add_custom_target(lint COMMAND ${CLANG_TIDY_EXE} -warnings-as-errors=* --header-filter=^${CMAKE_SOURCE_DIR}/src/ --extra-arg=/EHsc ${ALL_SOURCE_FILES} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} USES_TERMINAL)
 endif()
 
 find_package(chmlib CONFIG REQUIRED)
 find_package(lexbor CONFIG REQUIRED)
 find_package(maddy CONFIG REQUIRED)
 find_package(pdfium CONFIG REQUIRED)
-find_package(Poco REQUIRED COMPONENTS Foundation XML)
+find_package(Poco REQUIRED COMPONENTS Foundation JSON XML)
 find_package(wxWidgets CONFIG REQUIRED)
 find_package(Gettext)
 
@@ -91,6 +90,7 @@ target_link_libraries(paperback PRIVATE
 	maddy::maddy
 	pdfium::pdfium
 	Poco::Foundation
+	Poco::JSON
 	Poco::XML
 	wx::base
 	wx::core
@@ -147,7 +147,7 @@ else()
 endif()
 
 if(WIN32)
-	find_program(INNO_SETUP_COMPILER ISCC.exe PATHS "$ENV{ProgramFiles\(x86\)}/Inno Setup 6" "$ENV{ProgramFiles}/Inno Setup 6")
+	find_program(INNO_SETUP_COMPILER ISCC.exe PATHS "$ENV{ProgramFiles\(x86\)}/Inno Setup 6" "$ENV{LOCALAPPDATA}/Programs/Inno Setup 6" "$ENV{ProgramFiles}/Inno Setup 6")
 	if(INNO_SETUP_COMPILER)
 		add_custom_command(OUTPUT "${CMAKE_BINARY_DIR}/paperback_setup.exe" COMMAND ${INNO_SETUP_COMPILER} "${CMAKE_SOURCE_DIR}/paperback.iss" DEPENDS "${CMAKE_SOURCE_DIR}/paperback.iss" paperback WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 		add_custom_target(installer DEPENDS "${CMAKE_BINARY_DIR}/paperback_setup.exe")

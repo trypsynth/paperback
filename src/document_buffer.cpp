@@ -9,7 +9,10 @@
 
 #include "document_buffer.hpp"
 #include <algorithm>
-#include <wx/log.h>
+#include <cstddef>
+#include <utility>
+#include <vector>
+#include <wx/string.h>
 
 void document_buffer::set_content(const wxString& text) {
 	content = text;
@@ -27,8 +30,8 @@ void document_buffer::append_line(const wxString& text) {
 }
 
 void document_buffer::add_heading(int level, const wxString& text) {
-	size_t pos = content.length();
-	marker_type type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + level - 1);
+	const int pos = content.length();
+	const auto type = static_cast<marker_type>(static_cast<int>(marker_type::heading_1) + level - 1);
 	markers.emplace_back(pos, type, text, wxString(), level);
 	content += text;
 	if (!content.EndsWith("\n")) {
@@ -37,26 +40,29 @@ void document_buffer::add_heading(int level, const wxString& text) {
 }
 
 void document_buffer::add_page_break(const wxString& label) {
-	size_t pos = content.length();
+	const int pos = content.length();
 	markers.emplace_back(pos, marker_type::page_break, label, wxString(), 0);
 }
 
 void document_buffer::add_section_break(const wxString& label) {
-	size_t pos = content.length();
+	const int pos = content.length();
 	markers.emplace_back(pos, marker_type::section_break, label, wxString(), 0);
 }
 
 void document_buffer::add_toc_marker(const wxString& text, const wxString& ref) {
-	size_t pos = content.length();
+	const int pos = content.length();
 	markers.emplace_back(pos, marker_type::toc_item, text, ref, 0);
 }
 
-void document_buffer::add_link(size_t pos, const wxString& text, const wxString& ref) {
+void document_buffer::add_link(int pos, const wxString& text, const wxString& ref) {
 	markers.emplace_back(pos, marker_type::link, text, ref, 0);
+}
+
+void document_buffer::finalize_markers() {
 	sort_markers();
 }
 
-void document_buffer::add_marker(size_t pos, marker_type type, const wxString& text, const wxString& ref, int level) {
+void document_buffer::add_marker(int pos, marker_type type, const wxString& text, const wxString& ref, int level) {
 	if (is_heading_marker(type) && level == 0) {
 		level = heading_level_from_type(type);
 	}
@@ -69,16 +75,25 @@ void document_buffer::clear() {
 	markers.clear();
 }
 
-int document_buffer::next_marker_index(size_t position, marker_type type) const noexcept {
+int document_buffer::next_marker_index(int position, marker_type type) const noexcept {
 	for (size_t i = 0; i < markers.size(); ++i) {
-		if (markers[i].pos > position && markers[i].type == type) {
+		if (static_cast<long>(markers[i].pos) > position && markers[i].type == type) {
 			return static_cast<int>(i);
 		}
 	}
 	return -1;
 }
 
-int document_buffer::previous_marker_index(size_t position, marker_type type) const noexcept {
+int document_buffer::find_first_marker_after(int position, marker_type type) const noexcept {
+	for (size_t i = 0; i < markers.size(); ++i) {
+		if (static_cast<long>(markers[i].pos) >= position && markers[i].type == type) {
+			return static_cast<int>(i);
+		}
+	}
+	return -1;
+}
+
+int document_buffer::previous_marker_index(int position, marker_type type) const noexcept {
 	int current_index = -1;
 	for (size_t i = 0; i < markers.size(); ++i) {
 		if (markers[i].pos >= position && markers[i].type == type) {
@@ -111,10 +126,10 @@ int document_buffer::current_marker_index(size_t position, marker_type type) con
 	return -1;
 }
 
-int document_buffer::next_heading_marker_index(size_t position, int level) const noexcept {
-	auto heading_markers = get_heading_markers();
+int document_buffer::next_heading_marker_index(int position, int level) const {
+	const auto heading_markers = get_heading_markers();
 	for (size_t i = 0; i < heading_markers.size(); ++i) {
-		if (heading_markers[i]->pos > position) {
+		if (static_cast<long>(heading_markers[i]->pos) > position) {
 			if (level == -1 || heading_markers[i]->level == level) {
 				return static_cast<int>(i);
 			}
@@ -123,8 +138,8 @@ int document_buffer::next_heading_marker_index(size_t position, int level) const
 	return -1;
 }
 
-int document_buffer::previous_heading_marker_index(size_t position, int level) const noexcept {
-	auto heading_markers = get_heading_markers();
+int document_buffer::previous_heading_marker_index(int position, int level) const {
+	const auto heading_markers = get_heading_markers();
 	int current_index = -1;
 	for (size_t i = 0; i < heading_markers.size(); ++i) {
 		if (heading_markers[i]->pos >= position) {
@@ -150,15 +165,15 @@ int document_buffer::previous_heading_marker_index(size_t position, int level) c
 	return -1;
 }
 
-size_t document_buffer::marker_position(int marker_index) const noexcept {
-	if (marker_index < 0 || marker_index >= static_cast<int>(markers.size())) {
+int document_buffer::marker_position(int marker_index) const noexcept {
+	if (marker_index < 0 || std::cmp_greater_equal(marker_index, markers.size())) {
 		return 0;
 	}
 	return markers[marker_index].pos;
 }
 
 const marker* document_buffer::get_marker(int marker_index) const noexcept {
-	if (marker_index < 0 || marker_index >= static_cast<int>(markers.size())) {
+	if (marker_index < 0 || std::cmp_greater_equal(marker_index, markers.size())) {
 		return nullptr;
 	}
 	return &markers[marker_index];
@@ -196,8 +211,8 @@ size_t document_buffer::count_markers_by_type(marker_type type) const noexcept {
 	return count;
 }
 
-size_t document_buffer::get_marker_position_by_index(marker_type type, size_t index) const noexcept {
-	size_t count = 0;
+int document_buffer::get_marker_position_by_index(marker_type type, int index) const noexcept {
+	int count = 0;
 	for (const auto& m : markers) {
 		if (m.type == type) {
 			if (count == index) {
@@ -221,7 +236,5 @@ int document_buffer::heading_level_from_type(marker_type type) noexcept {
 }
 
 void document_buffer::sort_markers() {
-	std::sort(markers.begin(), markers.end(), [](const marker& a, const marker& b) {
-		return a.pos < b.pos;
-	});
+	std::ranges::sort(markers);
 }

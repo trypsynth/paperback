@@ -22,21 +22,29 @@ public:
 	docx_parser& operator=(const docx_parser&) = delete;
 	docx_parser(docx_parser&&) = delete;
 	docx_parser& operator=(docx_parser&&) = delete;
-	[[nodiscard]] wxString name() const override { return "Word Documents"; }
+
+	[[nodiscard]] wxString name() const override {
+		return "Word Documents";
+	}
+
 	[[nodiscard]] std::span<const wxString> extensions() const override {
 		static const wxString exts[] = {"docx", "docm"};
 		return exts;
 	}
-	[[nodiscard]] parser_flags supported_flags() const override { return parser_flags::supports_toc; }
+
+	[[nodiscard]] parser_flags supported_flags() const override {
+		return parser_flags::supports_toc;
+	}
+
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 
 private:
 	void traverse(Poco::XML::Node* node, wxString& text, std::vector<heading_info>& headings, document* doc, const std::map<std::string, std::string>& rels) const;
-	void process_paragraph(Poco::XML::Element* pElement, wxString& text, std::vector<heading_info>& headings, document* doc, const std::map<std::string, std::string>& rels) const;
-	void process_hyperlink(Poco::XML::Element* element, wxString& text, document* doc, const std::map<std::string, std::string>& rels, size_t paragraph_start_offset) const;
-	[[nodiscard]] int get_heading_level(Poco::XML::Element* pPrElement) const;
-	[[nodiscard]] std::string get_run_text(Poco::XML::Element* pRunElement) const;
-	[[nodiscard]] std::string parse_hyperlink_instruction(const std::string& instruction) const;
+	static void process_paragraph(Poco::XML::Element* pElement, wxString& text, std::vector<heading_info>& headings, document* doc, const std::map<std::string, std::string>& rels);
+	static void process_hyperlink(Poco::XML::Element* element, wxString& text, document* doc, const std::map<std::string, std::string>& rels, size_t paragraph_start_offset);
+	static int get_heading_level(Poco::XML::Element* pr_element);
+	static std::string get_run_text(Poco::XML::Element* prun_element);
+	static std::string parse_hyperlink_instruction(const std::string& instruction);
 };
 
 REGISTER_PARSER(docx_parser)

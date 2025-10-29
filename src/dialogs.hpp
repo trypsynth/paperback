@@ -12,10 +12,18 @@
 #include "controls.hpp"
 #include "document.hpp"
 #include "parser.hpp"
+#include <wx/arrstr.h>
+#include <wx/button.h>
+#include <wx/checkbox.h>
+#include <wx/clntdata.h>
+#include <wx/combobox.h>
+#include <wx/dialog.h>
+#include <wx/listbox.h>
 #include <wx/listctrl.h>
 #include <wx/spinctrl.h>
+#include <wx/textctrl.h>
+#include <wx/timer.h>
 #include <wx/treectrl.h>
-#include <wx/wx.h>
 
 enum class dialog_button_config {
 	ok_only,
@@ -30,9 +38,9 @@ public:
 protected:
 	void set_content(wxSizer* content_sizer);
 	void finalize_layout();
+	wxBoxSizer* main_sizer{nullptr};
 
 private:
-	wxBoxSizer* main_sizer{nullptr};
 	wxStdDialogButtonSizer* button_sizer{nullptr};
 	dialog_button_config button_config;
 	bool layout_finalized{false};
@@ -48,7 +56,10 @@ public:
 	all_documents_dialog& operator=(const all_documents_dialog&) = delete;
 	all_documents_dialog(all_documents_dialog&&) = delete;
 	all_documents_dialog& operator=(all_documents_dialog&&) = delete;
-	[[nodiscard]] wxString get_selected_path() const { return selected_path; }
+
+	[[nodiscard]] wxString get_selected_path() const {
+		return selected_path;
+	}
 
 private:
 	wxListView* doc_list{nullptr};
@@ -62,27 +73,39 @@ private:
 	void on_remove(wxCommandEvent& event);
 	void on_list_item_activated(wxListEvent& event);
 	void on_list_item_selected(wxListEvent& event);
-	void on_key_down(wxKeyEvent& event);
+	void on_key_down(wxKeyEvent&);
 	void populate_document_list();
 };
 
 class bookmark_dialog : public dialog {
 public:
-	bookmark_dialog(wxWindow* parent, const wxArrayLong& bookmarks, wxTextCtrl* text_ctrl, long current_pos = -1);
+	bookmark_dialog(wxWindow* parent, const std::vector<bookmark>& bookmarks, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos = -1);
 	~bookmark_dialog() = default;
 	bookmark_dialog(const bookmark_dialog&) = delete;
 	bookmark_dialog& operator=(const bookmark_dialog&) = delete;
 	bookmark_dialog(bookmark_dialog&&) = delete;
 	bookmark_dialog& operator=(bookmark_dialog&&) = delete;
-	[[nodiscard]] long get_selected_position() const { return selected_position; }
+
+	[[nodiscard]] long get_selected_position() const {
+		return selected_position;
+	}
 
 private:
 	wxListBox* bookmark_list{nullptr};
-	wxArrayLong bookmark_positions;
+	std::vector<bookmark> bookmark_positions;
 	long selected_position;
+	config_manager& config;
+	wxString file_path;
+	wxTextCtrl* text_ctrl;
+	wxButton* jump_button{nullptr};
+	wxButton* delete_button{nullptr};
+	wxButton* edit_note_button{nullptr};
 
 	void on_list_selection_changed(wxCommandEvent& event);
 	void on_ok(wxCommandEvent& event);
+	void on_key_down(wxKeyEvent&);
+	void on_delete(wxCommandEvent& event);
+	void on_edit_note(wxCommandEvent& event);
 };
 
 class document_info_dialog : public dialog {
@@ -181,6 +204,7 @@ private:
 	wxSpinCtrl* input_ctrl{nullptr};
 
 	void on_slider_changed(wxCommandEvent& event);
+	void on_spin_changed(wxSpinEvent& event);
 };
 
 class open_as_dialog : public dialog {
@@ -213,6 +237,10 @@ public:
 	void set_minimize_to_tray(bool minimize);
 	bool get_compact_go_menu() const;
 	void set_compact_go_menu(bool compact);
+	bool get_navigation_wrap() const;
+	void set_navigation_wrap(bool value);
+	bool get_check_for_updates_on_startup() const;
+	void set_check_for_updates_on_startup(bool check);
 	int get_recent_documents_to_show() const;
 	void set_recent_documents_to_show(int count);
 	wxString get_language() const;
@@ -223,6 +251,8 @@ private:
 	wxCheckBox* word_wrap_check{nullptr};
 	wxCheckBox* minimize_to_tray_check{nullptr};
 	wxCheckBox* compact_go_menu_check{nullptr};
+	wxCheckBox* navigation_wrap_check{nullptr};
+	wxCheckBox* check_for_updates_on_startup_check{nullptr};
 	wxSpinCtrl* recent_docs_count_spin{nullptr};
 	wxComboBox* language_combo{nullptr};
 
@@ -230,11 +260,26 @@ private:
 	void on_cancel(wxCommandEvent& event);
 };
 
+class sleep_timer_dialog : public dialog {
+public:
+	sleep_timer_dialog(wxWindow* parent, int initial_duration);
+	~sleep_timer_dialog() = default;
+	sleep_timer_dialog(const sleep_timer_dialog&) = delete;
+	sleep_timer_dialog& operator=(const sleep_timer_dialog&) = delete;
+	sleep_timer_dialog(sleep_timer_dialog&&) = delete;
+	sleep_timer_dialog& operator=(sleep_timer_dialog&&) = delete;
+	[[nodiscard]] int get_duration() const;
+
+private:
+	wxSpinCtrl* input_ctrl{nullptr};
+};
+
 class toc_tree_item_data : public wxTreeItemData {
 public:
-	toc_tree_item_data(int offset_) : offset{offset_} {}
+	toc_tree_item_data(int offset_) : offset{offset_} {
+	}
 
-	int offset;
+	int offset{0};
 };
 
 class toc_dialog : public dialog {
@@ -245,15 +290,23 @@ public:
 	toc_dialog& operator=(const toc_dialog&) = delete;
 	toc_dialog(toc_dialog&&) = delete;
 	toc_dialog& operator=(toc_dialog&&) = delete;
-	[[nodiscard]] int get_selected_offset() const { return selected_offset; }
+
+	[[nodiscard]] int get_selected_offset() const {
+		return selected_offset;
+	}
 
 private:
 	wxTreeCtrl* tree{nullptr};
-	int selected_offset;
+	int selected_offset{0};
+	wxString search_string_;
+	wxTimer* search_timer_{nullptr};
 
 	void populate_tree(const std::vector<std::unique_ptr<toc_item>>& items, const wxTreeItemId& parent);
 	void find_and_select_item(const wxTreeItemId& parent, int offset);
 	void on_tree_selection_changed(wxTreeEvent& event);
 	void on_tree_item_activated(wxTreeEvent& event);
 	void on_ok(wxCommandEvent& event);
+	void on_char_hook(wxKeyEvent& event);
+	void on_search_timer(wxTimerEvent& event);
+	bool find_and_select_item_by_name(const wxString& name, const wxTreeItemId& parent);
 };

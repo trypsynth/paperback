@@ -13,7 +13,6 @@
 #include <memory>
 #include <wx/ipc.h>
 #include <wx/snglinst.h>
-#include <wx/wx.h>
 
 class paperback_connection : public wxConnection {
 public:
@@ -40,7 +39,9 @@ public:
 	int OnExit() override;
 	void parse_command_line();
 	void restore_previous_documents();
-	[[nodiscard]] config_manager& get_config_manager() { return config_mgr; }
+	[[nodiscard]] config_manager& get_config_manager() {
+		return config_mgr;
+	}
 	void open_file(const wxString& filename);
 
 private:

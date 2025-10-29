@@ -1,4 +1,4 @@
-# Paperback - version 0.5
+# Paperback - version 0.6
 ## Introduction
 Paperback is a lightweight, fast, and accessible ebook/document reader designed to make reading fun and seamless, regardless of the file format being used or the user's preferences.
 
@@ -18,14 +18,17 @@ Paperback currently runs on Windows 7 through Windows 11. It's possible it runs 
 ## Currently supported filetypes
 Paperback supports several common file formats, with more planned for future releases.
 
-* CHM help files.
-* Epub 2/3 books.
-* HTML documents.
-* Markdown documents.
-* microsoft Word documents.
-* PDF documents.
-* PowerPoint presentations.
-* Text documents.
+* CHM help files
+* microsoft Word documents
+* Epub books (version 2 and 3)
+* FB2 ebooks
+* HTML documents
+* Markdown documents
+* OpenDocument presentations
+* OpenDocument text files
+* PDF documents
+* PowerPoint presentations
+* Text documents
 
 ## Hotkeys
 Paperback's user interface was designed specifically with keyboard and screen reader users in mind. As such, every action has an associated hotkey. Below, you'll find a list of all of them, grouped by menu structure.
@@ -34,6 +37,7 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * Ctrl+O: open a document.
 * Ctrl+F4: close the currently focused document.
 * Ctrl+Shift+F4: close all currently opened documents.
+* Ctrl+R: bring up the all documents dialog.
 * Ctrl+E: export the currently focused document to plain text.
 
 ### Go menu
@@ -65,6 +69,8 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * B: go to the next bookmark.
 * Ctrl+Shift+B: toggle a bookmark at your current cursor position.
 * Ctrl+B: bring up the jump to bookmark dialog.
+* Shift+K:" go to the previous link.
+* K: go to the next link.
 
 ### Tools menu
 * Ctrl+W: view the word count of the currently focused document.
@@ -78,7 +84,42 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * Shift+F1: pop up this readme file in Paperback itself.
 * Ctrl+D: open my PayPal donations page in your default web browser.
 
+## Credits
+### Development
+* Quin Gillespie: primary developer and project founder.
+* Aryan Choudhary: added multiple new document formats, link support, more.
+
+### Donations
+The following people have made donations of some size to Paperback development. If you make a donation your name won't automatically be added here, I only add people who want their donation made public.
+
+Note: I consider a public GitHub sponsor grounds for automatic inclusion in this list.
+
+* Brandon McGinty
+* Brian Hartgen
+* Devin Prater
+* Felix Steindorff
+* James Scholes
+* Jayson Smith
+* Pratik Patel
+* Roberto Perez
+* Sean Randall
+
+### Translations
+* Tarik Hadžirović: Bosnian translation
+* Martin Courcelles: French translation
+* Nikola Jović: Serbian translation
+* Steffen Schultz: German translation
+
 ## Changelog
+### Version 0.6
+* Fixed whitespace handling at the beginning of pre tags in both HTML and XHTML documents.
+* HTML inside Markdown code blocks will now be rendered properly. [#79](https://github.com/trypsynth/paperback/issues/79).
+* If loading a book with a command line parameter while an existing Paperback instance is running, you'll no longer get an error if loading your document takes more than 5 seconds.
+* Numpad delete now works to remove documents from the tab bar in addition to normal delete.
+* Paperback can now optionally minimize to your system tray! This option is off by default, but turning it on will make the minimize option in the system menu put Paperback in your tray, able to be restored by clicking on the spawned icon. [#49](https://github.com/trypsynth/paperback/issues/49), [#85](https://github.com/trypsynth/paperback/pull/85).
+* The installer now includes an option to view the readme in your browser after installation.
+* The recent documents list has been dramatically expanded! Instead of simply showing you the last 10 documents you opened, it'll now show you a customizable number, with the rest of the documents you've ever opened being accessible through a small dialog. [#78](https://github.com/trypsynth/paperback/issues/78), [#80](https://github.com/trypsynth/paperback/pull/80), [#84](https://github.com/trypsynth/paperback/pull/84).
+
 ### Version 0.5
 * Added Microsoft Word document support! [#27](https://github.com/trypsynth/paperback/issues/27).
 * Added support for PowerPoint presentations! [#25](https://github.com/trypsynth/paperback/issues/25).
