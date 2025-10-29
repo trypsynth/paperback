@@ -70,6 +70,12 @@ void dialog::create_buttons() {
 
 all_documents_dialog::all_documents_dialog(wxWindow* parent, config_manager& cfg_mgr, const wxArrayString& open_docs) : dialog(parent, _("All Documents"), dialog_button_config::ok_only), config_mgr(cfg_mgr), open_doc_paths(open_docs) {
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
+	auto* search_sizer = new wxBoxSizer(wxHORIZONTAL);
+	auto* search_lable= new wxStaticText(this, wxID_ANY, _("&search"));
+	search_ctrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(300, -1));
+	search_sizer->Add(search_lable, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
+	search_sizer->Add(search_ctrl, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
+	content_sizer->Add(search_sizer, 0, wxEXPAND | wxALL, DIALOG_PADDING);
 	constexpr int list_width = 800;
 	constexpr int list_height = 600;
 	constexpr int filename_column_width = 250;
@@ -81,6 +87,7 @@ all_documents_dialog::all_documents_dialog(wxWindow* parent, config_manager& cfg
 	doc_list->AppendColumn(_("Path"), wxLIST_FORMAT_LEFT, path_column_width);
 	populate_document_list();
 	content_sizer->Add(doc_list, 1, wxEXPAND | wxALL, DIALOG_PADDING);
+	doc_list->SetFocus();
 	auto* button_sizer = new wxBoxSizer(wxHORIZONTAL);
 	open_button = new wxButton(this, wxID_OPEN, _("&Open"));
 	auto* remove_button = new wxButton(this, wxID_REMOVE, _("&Remove"));
@@ -91,6 +98,7 @@ all_documents_dialog::all_documents_dialog(wxWindow* parent, config_manager& cfg
 	finalize_layout();
 	Bind(wxEVT_BUTTON, &all_documents_dialog::on_open, this, wxID_OPEN);
 	Bind(wxEVT_BUTTON, &all_documents_dialog::on_remove, this, wxID_REMOVE);
+	Bind(wxEVT_TEXT, &all_documents_dialog::on_search, this, wxID_ANY);
 	Bind(wxEVT_LIST_ITEM_ACTIVATED, &all_documents_dialog::on_list_item_activated, this, wxID_ANY);
 	Bind(wxEVT_LIST_ITEM_SELECTED, &all_documents_dialog::on_list_item_selected, this, wxID_ANY);
 	doc_list->Bind(wxEVT_KEY_DOWN, &all_documents_dialog::on_key_down, this);
@@ -137,6 +145,11 @@ void all_documents_dialog::on_remove(wxCommandEvent& /*event*/) {
 	}
 }
 
+void all_documents_dialog::on_search(wxCommandEvent& /*event*/) {
+	const wxString filter = search_ctrl->GetValue();
+	populate_document_list(filter);
+}
+
 void all_documents_dialog::on_list_item_activated(wxListEvent& event) {
 	const wxString path = doc_list->GetItemText(event.GetIndex(), 2);
 	if (wxFileName::FileExists(path)) {
@@ -163,12 +176,15 @@ void all_documents_dialog::on_key_down(wxKeyEvent& event) {
 	}
 }
 
-void all_documents_dialog::populate_document_list() {
+void all_documents_dialog::populate_document_list(const wxString& filter) {
 	doc_list->DeleteAllItems();
 	doc_paths = config_mgr.get_all_documents();
 	doc_paths.Sort();
 	for (const auto& path : doc_paths) {
 		const wxFileName fn(path);
+		if (!filter.IsEmpty() && fn.GetFullName().Lower().Find(filter.Lower()) == wxNOT_FOUND) {
+			continue;
+		}
 		const long index = doc_list->InsertItem(doc_list->GetItemCount(), fn.GetFullName());
 		wxString status;
 		if (!wxFileName::FileExists(path)) {
