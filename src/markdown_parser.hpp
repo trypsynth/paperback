@@ -18,13 +18,24 @@ public:
 	markdown_parser& operator=(const markdown_parser&) = delete;
 	markdown_parser(markdown_parser&&) = delete;
 	markdown_parser& operator=(markdown_parser&&) = delete;
-	[[nodiscard]] wxString name() const override { return "Markdown Documents"; }
+
+	[[nodiscard]] wxString name() const override {
+		return "Markdown Documents";
+	}
+
 	[[nodiscard]] std::span<const wxString> extensions() const override {
 		static const wxString exts[] = {"md", "markdown", "mdx", "mdown", "mdwn", "mkd", "mkdn", "mkdown", "ronn"};
 		return exts;
 	}
-	[[nodiscard]] parser_flags supported_flags() const override { return parser_flags::supports_toc; }
+
+	[[nodiscard]] parser_flags supported_flags() const override {
+		return parser_flags::supports_toc;
+	}
+
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
+
+private:
+	static std::string preprocess_markdown(const std::string& input);
 };
 
 REGISTER_PARSER(markdown_parser)

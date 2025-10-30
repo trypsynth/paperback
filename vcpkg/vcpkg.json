@@ -12,7 +12,7 @@
 		"pdfium",
 		{
 			"name": "poco",
-			"features": ["xml"]
+			"features": ["json", "xml"]
 		},
 		"wxwidgets"
 	]

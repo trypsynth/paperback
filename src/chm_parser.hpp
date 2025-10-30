@@ -26,36 +26,45 @@ struct chm_context {
 	std::string author;
 	std::string hhc_file;
 
-	chm_context(chmFile* f) : file(f) {}
+	explicit chm_context(chmFile* f) : file{f} {
+	}
 };
 
 class chm_parser : public parser {
 public:
 	chm_parser() = default;
-	~chm_parser() = default;
+	~chm_parser() override = default;
 	chm_parser(const chm_parser&) = delete;
 	chm_parser& operator=(const chm_parser&) = delete;
 	chm_parser(chm_parser&&) = delete;
 	chm_parser& operator=(chm_parser&&) = delete;
-	[[nodiscard]] wxString name() const override { return "Compiled HTML Help files"; }
+
+	[[nodiscard]] wxString name() const override {
+		return "Compiled HTML Help files";
+	}
+
 	[[nodiscard]] std::span<const wxString> extensions() const override {
 		static const wxString exts[] = {"chm"};
 		return exts;
 	}
-	[[nodiscard]] parser_flags supported_flags() const override { return parser_flags::supports_toc; }
+
+	[[nodiscard]] parser_flags supported_flags() const override {
+		return parser_flags::supports_toc;
+	}
+
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 
 private:
-	void enumerate_files(chm_context& ctx) const;
-	void parse_system_file(chm_context& ctx) const;
-	void parse_hhc_file(chm_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items) const;
+	static void enumerate_files(chm_context& ctx);
+	static void parse_system_file(chm_context& ctx);
+	static void parse_hhc_file(chm_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items);
 	void parse_html_files(chm_context& ctx, document_buffer& buffer, const std::vector<std::unique_ptr<toc_item>>& toc_items) const;
 	void collect_html_files_from_toc(const std::vector<std::unique_ptr<toc_item>>& items, std::vector<std::string>& files) const;
 	void calculate_toc_offsets(std::vector<std::unique_ptr<toc_item>>& items, const chm_context& ctx) const;
-	int calculate_offset_from_path(const std::string& path, const chm_context& ctx) const;
-	std::string read_file_content(chmFile* file, const std::string& path) const;
-	std::string normalize_path(const std::string& path) const;
-	static int file_enumerator(chmFile* h, chmUnitInfo* ui, void* context);
+	static int calculate_offset_from_path(const std::string& path, const chm_context& ctx);
+	static std::string read_file_content(chmFile* file, const std::string& path);
+	static std::string normalize_path(const std::string& path);
+	static int file_enumerator(chmFile*, chmUnitInfo* ui, void* context);
 };
 
 REGISTER_PARSER(chm_parser)

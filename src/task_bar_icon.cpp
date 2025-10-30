@@ -10,7 +10,12 @@
 #include "task_bar_icon.hpp"
 #include "constants.hpp"
 #include "main_window.hpp"
+#include <memory>
+#include <wx/defs.h>
+#include <wx/event.h>
 #include <wx/menu.h>
+#include <wx/taskbar.h>
+#include <wx/translation.h>
 
 task_bar_icon::task_bar_icon(main_window* frame) : frame_{frame} {
 	Bind(wxEVT_MENU, &task_bar_icon::on_restore_from_tray, this, ID_RESTORE);
@@ -20,24 +25,24 @@ task_bar_icon::task_bar_icon(main_window* frame) : frame_{frame} {
 }
 
 wxMenu* task_bar_icon::CreatePopupMenu() {
-	auto* menu = new wxMenu;
+	std::unique_ptr<wxMenu> menu = std::make_unique<wxMenu>();
 	menu->Append(ID_RESTORE, _("&Restore"));
 	menu->AppendSeparator();
 	menu->Append(wxID_EXIT, _("E&xit"));
-	return menu;
+	return menu.release();
 }
 
-void task_bar_icon::on_restore_from_tray(wxCommandEvent&) {
+void task_bar_icon::on_restore_from_tray(wxCommandEvent& /*unused*/) {
 	frame_->Show(true);
 	frame_->Raise();
 	frame_->Iconize(false);
 }
 
-void task_bar_icon::on_exit_from_tray(wxCommandEvent&) {
+void task_bar_icon::on_exit_from_tray(wxCommandEvent& /*unused*/) {
 	frame_->Close(true);
 }
 
-void task_bar_icon::on_tray_icon_activated(wxTaskBarIconEvent&) {
+void task_bar_icon::on_tray_icon_activated(wxTaskBarIconEvent& /*unused*/) {
 	frame_->Show(true);
 	frame_->Raise();
 	frame_->Iconize(false);

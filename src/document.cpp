@@ -8,15 +8,21 @@
  */
 
 #include "document.hpp"
+#include "document_buffer.hpp"
 #include <climits>
+#include <cstddef>
+#include <cstdlib>
 #include <functional>
+#include <memory>
+#include <utility>
+#include <vector>
 #include <wx/tokenzr.h>
 
-int document::next_section_index(size_t position) const noexcept {
+int document::next_section_index(int position) const noexcept {
 	return buffer.next_marker_index(position, marker_type::section_break);
 }
 
-int document::previous_section_index(size_t position) const noexcept {
+int document::previous_section_index(int position) const noexcept {
 	return buffer.previous_marker_index(position, marker_type::section_break);
 }
 
@@ -24,15 +30,15 @@ int document::section_index(size_t position) const noexcept {
 	return buffer.current_marker_index(position, marker_type::section_break);
 }
 
-size_t document::offset_for_section(int section_index) const noexcept {
+int document::offset_for_section(int section_index) const noexcept {
 	return buffer.marker_position(section_index);
 }
 
-int document::next_page_index(size_t position) const noexcept {
+int document::next_page_index(int position) const noexcept {
 	return buffer.next_marker_index(position, marker_type::page_break);
 }
 
-int document::previous_page_index(size_t position) const noexcept {
+int document::previous_page_index(int position) const noexcept {
 	return buffer.previous_marker_index(position, marker_type::page_break);
 }
 
@@ -40,7 +46,7 @@ int document::page_index(size_t position) const noexcept {
 	return buffer.current_marker_index(position, marker_type::page_break);
 }
 
-size_t document::offset_for_page(int page_index) const noexcept {
+int document::offset_for_page(int page_index) const noexcept {
 	return buffer.marker_position(page_index);
 }
 
@@ -50,10 +56,12 @@ int document::find_closest_toc_offset(size_t position) const noexcept {
 	std::function<void(const std::vector<std::unique_ptr<toc_item>>&)> search_items = [&](const std::vector<std::unique_ptr<toc_item>>& items) {
 		for (const auto& item : items) {
 			if (item->offset >= 0) {
-				int distance = std::abs(static_cast<int>(position) - item->offset);
-				if (item->offset <= static_cast<int>(position) && distance < best_distance) {
+				const auto pos = static_cast<std::ptrdiff_t>(position);
+				const auto off = static_cast<std::ptrdiff_t>(item->offset);
+				const auto distance = std::abs(pos - off);
+				if (std::cmp_less_equal(off, pos) && distance < best_distance) {
 					best_offset = item->offset;
-					best_distance = distance;
+					best_distance = static_cast<int>(distance);
 				}
 			}
 			if (!item->children.empty()) {
@@ -65,17 +73,17 @@ int document::find_closest_toc_offset(size_t position) const noexcept {
 	return best_offset;
 }
 
-int document::next_heading_index(size_t position, int level) const noexcept {
+int document::next_heading_index(int position, int level) const noexcept {
 	return buffer.next_heading_marker_index(position, level);
 }
 
-int document::previous_heading_index(size_t position, int level) const noexcept {
+int document::previous_heading_index(int position, int level) const noexcept {
 	return buffer.previous_heading_marker_index(position, level);
 }
 
-size_t document::offset_for_heading(int heading_index) const noexcept {
+int document::offset_for_heading(int heading_index) const noexcept {
 	const auto& heading_markers = buffer.get_heading_markers();
-	if (heading_index < 0 || heading_index >= static_cast<int>(heading_markers.size())) {
+	if (heading_index < 0 || std::cmp_greater_equal(heading_index, heading_markers.size())) {
 		return 0;
 	}
 	return heading_markers[heading_index]->pos;
@@ -83,7 +91,7 @@ size_t document::offset_for_heading(int heading_index) const noexcept {
 
 const marker* document::get_heading_marker(int heading_index) const noexcept {
 	const auto& heading_markers = buffer.get_heading_markers();
-	if (heading_index < 0 || heading_index >= static_cast<int>(heading_markers.size())) {
+	if (heading_index < 0 || std::cmp_greater_equal(heading_index, heading_markers.size())) {
 		return nullptr;
 	}
 	return heading_markers[heading_index];

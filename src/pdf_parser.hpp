@@ -36,12 +36,20 @@ public:
 	pdf_parser& operator=(const pdf_parser&) = delete;
 	pdf_parser(pdf_parser&&) = delete;
 	pdf_parser& operator=(pdf_parser&&) = delete;
-	[[nodiscard]] wxString name() const override { return "PDF Documents"; }
+
+	[[nodiscard]] wxString name() const override {
+		return "PDF Documents";
+	}
+
 	[[nodiscard]] std::span<const wxString> extensions() const override {
 		static const wxString exts[] = {"pdf"};
 		return exts;
 	}
-	[[nodiscard]] parser_flags supported_flags() const override { return parser_flags::supports_pages | parser_flags::supports_toc; }
+
+	[[nodiscard]] parser_flags supported_flags() const override {
+		return parser_flags::supports_pages | parser_flags::supports_toc;
+	}
+
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 
 private:
@@ -54,11 +62,11 @@ private:
 		void open_document(const wxString& path);
 	};
 
-	void extract_text_content(const pdf_context& ctx, document_buffer& buffer) const;
-	void extract_metadata(const pdf_context& ctx, wxString& title, wxString& author, const wxString& path) const;
+	static void extract_text_content(const pdf_context& ctx, document_buffer& buffer);
+	static void extract_metadata(const pdf_context& ctx, wxString& title, wxString& author, const wxString& path);
 	void extract_toc(const pdf_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items, const document_buffer& buffer) const;
 	void extract_outline_items(FPDF_BOOKMARK bookmark, std::vector<std::unique_ptr<toc_item>>& toc_items, const document_buffer& buffer, const pdf_context& ctx) const;
-	[[nodiscard]] std::vector<std::string> process_text_lines(const std::string& raw_text) const;
+	static std::vector<std::string> process_text_lines(const std::string& raw_text);
 };
 
 REGISTER_PARSER(pdf_parser)
