@@ -9,10 +9,11 @@
 		},
 		"lexbor",
 		"maddy",
+		"nlohmann-json",
 		"pdfium",
 		{
 			"name": "poco",
-			"features": ["json", "xml"]
+			"features": ["xml"]
 		},
 		"wxwidgets"
 	]
