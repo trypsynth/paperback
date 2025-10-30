@@ -1002,11 +1002,15 @@ void document_manager::show_table_of_contents(wxWindow* parent) const {
 }
 
 void document_manager::show_document_info(wxWindow* parent) const {
-	const document* doc = get_active_document();
+	const document_tab* tab = get_active_tab();
+	if (tab == nullptr) {
+		return;
+	}
+	const document* doc = tab->doc.get();
 	if (doc == nullptr) {
 		return;
 	}
-	document_info_dialog dlg(parent, doc);
+	document_info_dialog dlg(parent, doc, tab->file_path);
 	dlg.ShowModal();
 }
 
