@@ -171,7 +171,7 @@ wxMenu* main_window::create_tools_menu() {
 	menu->AppendSeparator();
 	menu->Append(ID_TABLE_OF_CONTENTS, _("Table of contents\tCtrl+T"));
 	menu->AppendSeparator();
-	menu->Append(ID_OPEN_CONTAINING_FOLDER, _("Open containing folder"));
+	menu->Append(ID_OPEN_CONTAINING_FOLDER, _("Open &containing folder"));
 	menu->AppendSeparator();
 	menu->Append(ID_TOGGLE_BOOKMARK, _("Toggle bookmark\tCtrl+Shift+B"));
 	menu->Append(ID_BOOKMARK_WITH_NOTE, _("Bookmark with &note\tCtrl+Shift+N"));
