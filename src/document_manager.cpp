@@ -85,21 +85,17 @@ bool document_manager::create_document_tab(const wxString& path, const parser* p
 		return false;
 	}
 	doc->calculate_statistics();
-
 	auto* tab_data = new document_tab;
 	tab_data->doc = std::move(doc);
 	tab_data->file_path = path;
 	tab_data->parser = par;
-
-    if (main_win.is_in_single_window_mode()) {
-        tab_data->text_ctrl = main_win.get_single_text_ctrl();
-    }
-
+	if (main_win.is_in_single_window_mode()) {
+		tab_data->text_ctrl = main_win.get_single_text_ctrl();
+	}
 	wxPanel* panel = create_tab_panel(tab_data->doc->buffer.str(), tab_data);
 	tab_data->panel = panel;
 	notebook->AddPage(panel, tab_data->doc->title, true);
-
-    setup_text_ctrl(tab_data->text_ctrl, tab_data->doc->buffer.str());
+	setup_text_ctrl(tab_data->text_ctrl, tab_data->doc->buffer.str());
 	restore_document_position(tab_data);
 	if (set_focus) {
 		tab_data->text_ctrl->SetFocus();
@@ -178,9 +174,9 @@ document* document_manager::get_active_document() const {
 }
 
 wxTextCtrl* document_manager::get_active_text_ctrl() const {
-    if (main_win.is_in_single_window_mode()) {
-        return main_win.get_single_text_ctrl();
-    }
+	if (main_win.is_in_single_window_mode()) {
+		return main_win.get_single_text_ctrl();
+	}
 	document_tab* tab = get_active_tab();
 	return tab ? tab->text_ctrl : nullptr;
 }
@@ -1059,19 +1055,20 @@ void document_manager::save_all_tab_positions() const {
 }
 
 void document_manager::ensure_tab_text_ctrl(document_tab* tab) {
-    if (!tab || !tab->panel) return;
-
-    if (tab->text_ctrl == main_win.get_single_text_ctrl() || !tab->text_ctrl) {
-        auto* sizer = new wxBoxSizer(wxVERTICAL);
-        bool word_wrap = config.get(config_manager::word_wrap);
-        long style = wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | (word_wrap ? wxTE_WORDWRAP : wxTE_DONTWRAP);
-        auto* text_ctrl = new wxTextCtrl(tab->panel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, style);
-        text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, &main_win);
-        text_ctrl->Bind(wxEVT_CHAR, &main_window::on_text_char, &main_win);
-        sizer->Add(text_ctrl, 1, wxEXPAND | wxALL, 5);
-        tab->panel->SetSizer(sizer);
-        tab->text_ctrl = text_ctrl;
-    }
+	if (tab == nullptr || tab->panel == nullptr) {
+		return;
+	}
+	if (tab->text_ctrl == main_win.get_single_text_ctrl() || tab->text_ctrl == nullptr) {
+		auto* sizer = new wxBoxSizer(wxVERTICAL);
+		const bool word_wrap = config.get(config_manager::word_wrap);
+		const long style = wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | (word_wrap ? wxTE_WORDWRAP : wxTE_DONTWRAP);
+		auto* text_ctrl = new wxTextCtrl(tab->panel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, style);
+		text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, &main_win);
+		text_ctrl->Bind(wxEVT_CHAR, &main_window::on_text_char, &main_win);
+		sizer->Add(text_ctrl, 1, wxEXPAND | wxALL, 5);
+		tab->panel->SetSizer(sizer);
+		tab->text_ctrl = text_ctrl;
+	}
 }
 
 wxString document_manager::get_status_text() const {
@@ -1163,7 +1160,9 @@ void document_manager::create_heading_menu(wxMenu* menu) {
 }
 
 void document_manager::setup_text_ctrl(wxTextCtrl* text_ctrl, const wxString& content) {
-    if (!text_ctrl) return;
+	if (text_ctrl == nullptr) {
+		return;
+	}
 	text_ctrl->Freeze();
 	text_ctrl->SetValue(content);
 	text_ctrl->Thaw();
@@ -1174,16 +1173,14 @@ void document_manager::restore_document_position(document_tab* tab) {
 		return;
 	}
 	wxTextCtrl* text_ctrl = nullptr;
-    if (main_win.is_in_single_window_mode()) {
-        text_ctrl = main_win.get_single_text_ctrl();
-    } else {
-        text_ctrl = tab->text_ctrl;
-    }
-
+	if (main_win.is_in_single_window_mode()) {
+		text_ctrl = main_win.get_single_text_ctrl();
+	} else {
+		text_ctrl = tab->text_ctrl;
+	}
 	if (!text_ctrl) {
 		return;
 	}
-
 	long saved_position = load_document_position(tab->file_path);
 	if (saved_position > 0) {
 		long max_position = text_ctrl->GetLastPosition();
@@ -1197,16 +1194,16 @@ void document_manager::restore_document_position(document_tab* tab) {
 wxPanel* document_manager::create_tab_panel(const wxString& content, document_tab* tab_data) {
 	wxPanel* panel = new wxPanel(notebook, wxID_ANY);
 	if (!main_win.is_in_single_window_mode()) {
-        auto* sizer = new wxBoxSizer(wxVERTICAL);
-        bool word_wrap = config.get(config_manager::word_wrap);
-        long style = wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | (word_wrap ? wxTE_WORDWRAP : wxTE_DONTWRAP);
-        auto* text_ctrl = new wxTextCtrl(panel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, style);
-        text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, &main_win);
-        text_ctrl->Bind(wxEVT_CHAR, &main_window::on_text_char, &main_win);
-        sizer->Add(text_ctrl, 1, wxEXPAND | wxALL, 5);
-        panel->SetSizer(sizer);
-        tab_data->text_ctrl = text_ctrl;
-    }
+		auto* sizer = new wxBoxSizer(wxVERTICAL);
+		bool word_wrap = config.get(config_manager::word_wrap);
+		long style = wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | (word_wrap ? wxTE_WORDWRAP : wxTE_DONTWRAP);
+		auto* text_ctrl = new wxTextCtrl(panel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, style);
+		text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, &main_win);
+		text_ctrl->Bind(wxEVT_CHAR, &main_window::on_text_char, &main_win);
+		sizer->Add(text_ctrl, 1, wxEXPAND | wxALL, 5);
+		panel->SetSizer(sizer);
+		tab_data->text_ctrl = text_ctrl;
+	}
 	panel->SetClientObject(tab_data);
 	return panel;
 }

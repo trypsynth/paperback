@@ -40,7 +40,9 @@ public:
 	int OnExit() override;
 	void parse_command_line();
 	void restore_previous_documents();
-	[[nodiscard]] config_manager& get_config_manager() { return config_mgr; }
+	[[nodiscard]] config_manager& get_config_manager() {
+		return config_mgr;
+	}
 	void open_file(const wxString& filename, main_window* current_frame = nullptr);
 	main_window* create_new_window(const wxString& path = "");
 	void remove_window(main_window* frame);

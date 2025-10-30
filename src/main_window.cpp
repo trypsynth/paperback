@@ -25,36 +25,36 @@
 main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME), task_bar_icon_{new task_bar_icon(this)}, position_save_timer{new wxTimer(this)}, status_update_timer{new wxTimer(this)}, sleep_timer{new wxTimer(this)}, sleep_status_update_timer{new wxTimer(this)} {
 	main_panel = new wxPanel(this);
 
-    auto& config_mgr = wxGetApp().get_config_manager();
-    single_window_mode = config_mgr.get(config_manager::open_in_new_window);
+	auto& config_mgr = wxGetApp().get_config_manager();
+	single_window_mode = config_mgr.get(config_manager::open_in_new_window);
 
-    auto* sizer = new wxBoxSizer(wxVERTICAL);
+	auto* sizer = new wxBoxSizer(wxVERTICAL);
 
-    notebook = new wxNotebook(main_panel, wxID_ANY);
+	notebook = new wxNotebook(main_panel, wxID_ANY);
 #ifdef __WXMSW__
-    notebook->MSWDisableComposited();
+	notebook->MSWDisableComposited();
 #endif
-    sizer->Add(notebook, 1, wxEXPAND | wxALL, 10);
+	sizer->Add(notebook, 1, wxEXPAND | wxALL, 10);
 
-    single_doc_panel = new wxPanel(main_panel);
-    auto* single_sizer = new wxBoxSizer(wxVERTICAL);
-    long style = wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | (config_mgr.get(config_manager::word_wrap) ? wxTE_WORDWRAP : wxTE_DONTWRAP);
-    single_text_ctrl = new wxTextCtrl(single_doc_panel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, style);
-    single_text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, this);
-    single_text_ctrl->Bind(wxEVT_CHAR, &main_window::on_text_char, this);
-    single_sizer->Add(single_text_ctrl, 1, wxEXPAND | wxALL, 5);
-    single_doc_panel->SetSizer(single_sizer);
-    sizer->Add(single_doc_panel, 1, wxEXPAND | wxALL, 10);
+	single_doc_panel = new wxPanel(main_panel);
+	auto* single_sizer = new wxBoxSizer(wxVERTICAL);
+	long style = wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | (config_mgr.get(config_manager::word_wrap) ? wxTE_WORDWRAP : wxTE_DONTWRAP);
+	single_text_ctrl = new wxTextCtrl(single_doc_panel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, style);
+	single_text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, this);
+	single_text_ctrl->Bind(wxEVT_CHAR, &main_window::on_text_char, this);
+	single_sizer->Add(single_text_ctrl, 1, wxEXPAND | wxALL, 5);
+	single_doc_panel->SetSizer(single_sizer);
+	sizer->Add(single_doc_panel, 1, wxEXPAND | wxALL, 10);
 
-    main_panel->SetSizer(sizer);
+	main_panel->SetSizer(sizer);
 
 	if (single_window_mode) {
-        notebook->Hide();
-        single_doc_panel->Show();
-    } else {
-        single_doc_panel->Hide();
-        notebook->Show();
-    }
+		notebook->Hide();
+		single_doc_panel->Show();
+	} else {
+		single_doc_panel->Hide();
+		notebook->Show();
+	}
 
 	live_region_label = new wxStaticText(main_panel, wxID_ANY, "", wxDefaultPosition, wxSize(0, 0));
 	live_region_label->Hide();
@@ -69,9 +69,9 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME), task_bar_icon
 }
 
 void main_window::set_document_content(const wxString& content) {
-    if (single_window_mode && single_text_ctrl) {
-        single_text_ctrl->SetValue(content);
-    }
+	if (single_window_mode && single_text_ctrl) {
+		single_text_ctrl->SetValue(content);
+	}
 }
 
 main_window::~main_window() {

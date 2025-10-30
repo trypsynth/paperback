@@ -199,7 +199,6 @@ void app::open_file(const wxString& filename, main_window* current_frame) {
 		}
 		return;
 	}
-
 	main_window* frame = frames.empty() ? create_new_window() : frames.back();
 	auto* doc_manager = frame->get_doc_manager();
 	const auto* par = find_parser_by_extension(wxFileName(filename).GetExt());
@@ -209,7 +208,6 @@ void app::open_file(const wxString& filename, main_window* current_frame) {
 			return;
 		}
 	}
-
 	if (!doc_manager->create_document_tab(filename, par)) {
 		wxMessageBox(_("Failed to load document."), _("Error"), wxICON_ERROR);
 	} else {

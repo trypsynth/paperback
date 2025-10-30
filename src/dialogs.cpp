@@ -641,7 +641,7 @@ options_dialog::options_dialog(wxWindow* parent) : dialog(parent, _("Options")) 
 	general_box->Add(word_wrap_check, 0, wxALL, option_padding);
 	minimize_to_tray_check = new wxCheckBox(this, wxID_ANY, _("&Minimize to system tray"));
 	general_box->Add(minimize_to_tray_check, 0, wxALL, option_padding);
-    open_in_new_window_check = new wxCheckBox(this, wxID_ANY, _("Open documents in a &new window"));
+	open_in_new_window_check = new wxCheckBox(this, wxID_ANY, _("Open documents in &new windows"));
 	general_box->Add(open_in_new_window_check, 0, wxALL, option_padding);
 	compact_go_menu_check = new wxCheckBox(this, wxID_ANY, _("Show compact &go menu"));
 	general_box->Add(compact_go_menu_check, 0, wxALL, option_padding);
