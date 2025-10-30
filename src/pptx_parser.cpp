@@ -155,6 +155,7 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 		for (size_t i = 0; i < slide_positions.size(); ++i) {
 			doc->buffer.add_marker(slide_positions[i], marker_type::page_break, wxString::Format("Slide %zu", i + 1));
 		}
+		doc->buffer.finalize_markers();
 		for (size_t i = 0; i < slide_positions.size(); ++i) {
 			auto toc_entry = std::make_unique<toc_item>();
 			if (slide_titles[i].IsEmpty()) {

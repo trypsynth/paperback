@@ -56,6 +56,9 @@ void document_buffer::add_toc_marker(const wxString& text, const wxString& ref) 
 
 void document_buffer::add_link(int pos, const wxString& text, const wxString& ref) {
 	markers.emplace_back(pos, marker_type::link, text, ref, 0);
+}
+
+void document_buffer::finalize_markers() {
 	sort_markers();
 }
 
@@ -75,6 +78,15 @@ void document_buffer::clear() {
 int document_buffer::next_marker_index(int position, marker_type type) const noexcept {
 	for (size_t i = 0; i < markers.size(); ++i) {
 		if (static_cast<long>(markers[i].pos) > position && markers[i].type == type) {
+			return static_cast<int>(i);
+		}
+	}
+	return -1;
+}
+
+int document_buffer::find_first_marker_after(int position, marker_type type) const noexcept {
+	for (size_t i = 0; i < markers.size(); ++i) {
+		if (static_cast<long>(markers[i].pos) >= position && markers[i].type == type) {
 			return static_cast<int>(i);
 		}
 	}

@@ -155,14 +155,18 @@ wxMenu* main_window::create_go_menu() {
 		auto* bookmarks_menu = new wxMenu();
 		bookmarks_menu->Append(ID_PREVIOUS_BOOKMARK, _("Previous &bookmark\tShift+B"));
 		bookmarks_menu->Append(ID_NEXT_BOOKMARK, _("Next b&ookmark\tB"));
-		bookmarks_menu->Append(ID_TOGGLE_BOOKMARK, _("Toggle bookmark\tCtrl+Shift+B"));
-		bookmarks_menu->Append(ID_BOOKMARK_WITH_NOTE, _("Bookmark with &note\tCtrl+Shift+N"));
 		bookmarks_menu->Append(ID_JUMP_TO_BOOKMARK, _("Jump to bookmark...\tCtrl+B"));
 		menu->AppendSubMenu(bookmarks_menu, _("&Bookmarks"));
 		auto* links_menu = new wxMenu();
 		links_menu->Append(ID_PREVIOUS_LINK, _("Previous lin&k\tShift+K"));
 		links_menu->Append(ID_NEXT_LINK, _("Next lin&k\tK"));
 		menu->AppendSubMenu(links_menu, _("&Links"));
+		auto* lists_menu = new wxMenu();
+		lists_menu->Append(ID_PREVIOUS_LIST, _("Previous lis&t\tShift+L"));
+		lists_menu->Append(ID_NEXT_LIST, _("Next lis&t\tL"));
+		lists_menu->Append(ID_PREVIOUS_LIST_ITEM, _("Previous list &item\tShift+I"));
+		lists_menu->Append(ID_NEXT_LIST_ITEM, _("Next list &item\tI"));
+		menu->AppendSubMenu(lists_menu, _("&Lists"));
 	} else {
 		menu->Append(ID_GO_TO_PAGE, _("Go to &page...\tCtrl+P"));
 		menu->AppendSeparator();
@@ -182,6 +186,11 @@ wxMenu* main_window::create_go_menu() {
 		menu->AppendSeparator();
 		menu->Append(ID_PREVIOUS_LINK, _("Previous lin&k\tShift+K"));
 		menu->Append(ID_NEXT_LINK, _("Next lin&k\tK"));
+		menu->AppendSeparator();
+		menu->Append(ID_PREVIOUS_LIST, _("Previous lis&t\tShift+L"));
+		menu->Append(ID_NEXT_LIST, _("Next lis&t\tL"));
+		menu->Append(ID_PREVIOUS_LIST_ITEM, _("Previous list &item\tShift+I"));
+		menu->Append(ID_NEXT_LIST_ITEM, _("Next list &item\tI"));
 	}
 	return menu;
 }
@@ -192,6 +201,9 @@ wxMenu* main_window::create_tools_menu() {
 	menu->Append(ID_DOC_INFO, _("Document &info\tCtrl+I"));
 	menu->AppendSeparator();
 	menu->Append(ID_TABLE_OF_CONTENTS, _("Table of contents\tCtrl+T"));
+	menu->AppendSeparator();
+	menu->Append(ID_TOGGLE_BOOKMARK, _("Toggle bookmark\tCtrl+Shift+B"));
+	menu->Append(ID_BOOKMARK_WITH_NOTE, _("Bookmark with &note\tCtrl+Shift+N"));
 	menu->AppendSeparator();
 	menu->Append(ID_OPTIONS, _("&Options\tCtrl+,"));
 	menu->Append(ID_SLEEP_TIMER, _("&Sleep Timer...\tCtrl+Shift+S"));
@@ -245,6 +257,10 @@ void main_window::bind_events() {
 		{ID_JUMP_TO_BOOKMARK, &main_window::on_jump_to_bookmark},
 		{ID_PREVIOUS_LINK, &main_window::on_previous_link},
 		{ID_NEXT_LINK, &main_window::on_next_link},
+		{ID_PREVIOUS_LIST, &main_window::on_previous_list},
+		{ID_NEXT_LIST, &main_window::on_next_list},
+		{ID_PREVIOUS_LIST_ITEM, &main_window::on_previous_list_item},
+		{ID_NEXT_LIST_ITEM, &main_window::on_next_list_item},
 		{ID_WORD_COUNT, &main_window::on_word_count},
 		{ID_DOC_INFO, &main_window::on_doc_info},
 		{ID_TABLE_OF_CONTENTS, &main_window::on_toc},
@@ -336,6 +352,10 @@ void main_window::update_ui() {
 		ID_JUMP_TO_BOOKMARK,
 		ID_PREVIOUS_LINK,
 		ID_NEXT_LINK,
+		ID_PREVIOUS_LIST,
+		ID_NEXT_LIST,
+		ID_PREVIOUS_LIST_ITEM,
+		ID_NEXT_LIST_ITEM,
 		ID_WORD_COUNT,
 		ID_DOC_INFO,
 		ID_TABLE_OF_CONTENTS,
@@ -583,6 +603,29 @@ void main_window::on_next_heading(wxCommandEvent&) {
 	trigger_throttled_position_save();
 }
 
+void main_window::on_previous_list(wxCommandEvent&) {
+	doc_manager->go_to_previous_list();
+	update_status_bar();
+	trigger_throttled_position_save();
+}
+
+void main_window::on_next_list(wxCommandEvent&) {
+	doc_manager->go_to_next_list();
+	update_status_bar();
+	trigger_throttled_position_save();
+}
+
+void main_window::on_previous_list_item(wxCommandEvent&) {
+	doc_manager->go_to_previous_list_item();
+	update_status_bar();
+	trigger_throttled_position_save();
+}
+
+void main_window::on_next_list_item(wxCommandEvent&) {
+	doc_manager->go_to_next_list_item();
+	update_status_bar();
+	trigger_throttled_position_save();
+}
 void main_window::on_word_count(wxCommandEvent&) {
 	const size_t count = doc_manager->get_active_document()->stats.word_count;
 	wxMessageBox(wxString::Format(wxPLURAL("The document contains %d word", "The document contains %d words", count), count), _("Word count"), wxICON_INFORMATION);

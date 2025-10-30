@@ -71,6 +71,8 @@ void html_to_text::clear() noexcept {
 	id_positions.clear();
 	headings.clear();
 	links.clear();
+	lists.clear();
+	list_items.clear();
 	title.clear();
 	in_body = false;
 	preserve_whitespace = false;
@@ -78,8 +80,20 @@ void html_to_text::clear() noexcept {
 	in_link = false;
 	current_link_href.clear();
 	current_link_text.clear();
+	while (!list_style_stack.empty()) {
+		list_style_stack.pop();
+	}
+	list_level = 0;
 	link_start_pos = 0;
 	cached_char_length = 0;
+}
+
+std::string html_to_text::get_bullet_for_level(int level) noexcept {
+	constexpr std::array<const char*, 3> bullets = {"•", "◦", "-"};
+	if (level > 0 && level <= bullets.size()) {
+		return bullets[level - 1];
+	}
+	return "•";
 }
 
 void html_to_text::process_node(lxb_dom_node_t* node) {
@@ -117,8 +131,45 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 				preserve_whitespace = true;
 			} else if (tag_name == "code") {
 				in_code = true;
-			} else if (tag_name == "br" || tag_name == "li") {
+			} else if (tag_name == "br") {
 				finalize_current_line();
+			}
+			if (tag_name == "li") {
+				finalize_current_line();
+				const std::string li_text = get_element_text(element);
+				list_items.push_back({.offset = get_current_text_position(), .level = list_level, .text = li_text});
+				current_line += std::string(list_level * 2, ' ');
+				if (!list_style_stack.empty()) {
+					auto& style = list_style_stack.top();
+					if (style.ordered) {
+						current_line += std::to_string(style.item_number++) + ". ";
+					} else {
+						current_line += get_bullet_for_level(list_level) + " ";
+					}
+				} else {
+					current_line += get_bullet_for_level(list_level) + " ";
+				}
+			}
+			if (tag_name == "ul" || tag_name == "ol") {
+				list_level++;
+				list_style_info style;
+				if (tag_name == "ol") {
+					style.ordered = true;
+				}
+				list_style_stack.push(style);
+				int item_count = 0;
+				for (auto* child = node->first_child; child != nullptr; child = child->next) {
+					if (child->type == LXB_DOM_NODE_TYPE_ELEMENT) {
+						auto* element = lxb_dom_interface_element(child);
+						if (get_tag_name(element) == "li") {
+							item_count++;
+						}
+					}
+				}
+				if (item_count > 0) {
+					finalize_current_line();
+					lists.push_back({.offset = get_current_text_position(), .item_count = item_count});
+				}
 			}
 			if (in_body && element != nullptr) {
 				size_t id_len{0};
@@ -185,6 +236,12 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 		}
 		if (tag_name == "code") {
 			in_code = false;
+		}
+		if (tag_name == "ul" || tag_name == "ol") {
+			list_level--;
+			if (!list_style_stack.empty()) {
+				list_style_stack.pop();
+			}
 		}
 		if (is_block_element(tag_name)) {
 			finalize_current_line();

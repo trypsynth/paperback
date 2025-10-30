@@ -108,6 +108,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Tarik Hadžirović: Bosnian translation
 * Martin Courcelles: French translation
 * Nikola Jović: Serbian translation
+* Steffen Schultz: German translation
 
 ## Changelog
 ### Version 0.6
