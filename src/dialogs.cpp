@@ -370,13 +370,14 @@ void bookmark_dialog::on_edit_note(wxCommandEvent&) {
 	bookmark_list->SetString(static_cast<unsigned int>(selection), display_text);
 }
 
-document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc) : dialog(parent, _("Document Info"), dialog_button_config::ok_only) {
+document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc, const wxString& file_path) : dialog(parent, _("Document Info"), dialog_button_config::ok_only) {
 	constexpr int info_width = 600;
 	constexpr int info_height = 400;
 	info_text_ctrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(info_width, info_height), wxTE_MULTILINE | wxTE_READONLY);
 	wxString info_text;
 	info_text << _("Title: ") << doc->title << "\n";
 	info_text << _("Author: ") << doc->author << "\n";
+	info_text << _("Path: ") << file_path << "\n";
 	info_text << _("Total number of words: ") << doc->stats.word_count << ".\n";
 	info_text << _("Total number of lines: ") << doc->stats.line_count << ".\n";
 	info_text << _("Total number of characters: ") << doc->stats.char_count << ".\n";
