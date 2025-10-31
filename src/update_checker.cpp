@@ -9,8 +9,7 @@
 
 #include "update_checker.hpp"
 #include "constants.hpp"
-#include <Poco/JSON/Object.h>
-#include <Poco/JSON/Parser.h>
+#include <nlohmann/json.hpp>
 #include <sstream>
 #include <thread>
 #include <wx/app.h>
@@ -19,6 +18,8 @@
 #include <wx/stdpaths.h>
 #include <wx/utils.h>
 #include <wx/webrequest.h>
+
+using nlohmann::json;
 
 void check_for_updates(bool silent) {
 	std::thread([silent]() {
@@ -38,7 +39,7 @@ void check_for_updates(bool silent) {
 			if (!request.GetResponse().IsOk()) {
 				if (!silent) {
 					wxTheApp->CallAfter([]() {
-						wxMessageBox(_("error checking for updates."), _("Error"), wxICON_ERROR);
+						wxMessageBox(_("Error checking for updates."), _("Error"), wxICON_ERROR);
 					});
 				}
 				return;
@@ -53,11 +54,17 @@ void check_for_updates(bool silent) {
 				return;
 			}
 			wxString response_body = request.GetResponse().AsString();
-			Poco::JSON::Parser parser;
-			auto json_result = parser.parse(response_body.ToStdString());
-			auto json_object = json_result.extract<Poco::JSON::Object::Ptr>();
-			const std::string latest_version = json_object->getValue<std::string>("tag_name");
-			const std::string release_body = json_object->getValue<std::string>("body");
+			auto json_object = json::parse(response_body.ToStdString(), nullptr, false);
+			if (json_object.is_discarded()) {
+				if (!silent) {
+					wxTheApp->CallAfter([]() {
+						wxMessageBox(_("Failed to parse update response."), _("Error"), wxICON_ERROR);
+					});
+				}
+				return;
+			}
+			std::string latest_version = json_object.value("tag_name", "");
+			std::string release_body = json_object.value("body", "");
 			if (APP_VERSION.ToStdString() >= latest_version) {
 				if (!silent) {
 					wxTheApp->CallAfter([]() {
@@ -71,17 +78,17 @@ void check_for_updates(bool silent) {
 			const wxString uninstaller_path = exe_dir + wxFileName::GetPathSeparator() + "unins000.exe";
 			const bool is_installer = wxFileName::FileExists(uninstaller_path);
 			wxString download_url;
-			auto assets = json_object->getArray("assets");
-			for (size_t i = 0; i < assets->size(); ++i) {
-				auto asset = assets->getObject(i);
-				const std::string asset_name = asset->getValue<std::string>("name");
-				if (is_installer && asset_name == "paperback_setup.exe") {
-					download_url = wxString::FromUTF8(asset->getValue<std::string>("browser_download_url"));
-					break;
-				}
-				if (!is_installer && asset_name == "paperback.zip") {
-					download_url = wxString::FromUTF8(asset->getValue<std::string>("browser_download_url"));
-					break;
+			if (json_object.contains("assets") && json_object["assets"].is_array()) {
+				for (const auto& asset : json_object["assets"]) {
+					std::string asset_name = asset.value("name", "");
+					if (is_installer && asset_name == "paperback_setup.exe") {
+						download_url = wxString::FromUTF8(asset.value("browser_download_url", ""));
+						break;
+					}
+					if (!is_installer && asset_name == "paperback.zip") {
+						download_url = wxString::FromUTF8(asset.value("browser_download_url", ""));
+						break;
+					}
 				}
 			}
 			if (download_url.IsEmpty()) {
@@ -94,12 +101,13 @@ void check_for_updates(bool silent) {
 			}
 			const wxString message = wxString::Format(_("There is an update available.\nYour version: %s\nLatest version: %s\nDescription:\n%s\nDo you want to open the direct download link?"), APP_VERSION, wxString::FromUTF8(latest_version), wxString::FromUTF8(release_body));
 			wxTheApp->CallAfter([message, download_url]() {
-				const int result_dialog = wxMessageBox(message, _("Update available"), wxYES_NO | wxICON_INFORMATION);
+				int result_dialog = wxMessageBox(message, _("Update available"), wxYES_NO | wxICON_INFORMATION);
 				if (result_dialog == wxYES) {
 					wxLaunchDefaultBrowser(download_url);
 				}
 			});
-		} catch (const std::exception& e) {
+		}
+		catch (const std::exception& e) {
 			if (!silent) {
 				const std::string error_msg = e.what();
 				wxTheApp->CallAfter([error_msg]() {

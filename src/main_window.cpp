@@ -202,6 +202,8 @@ wxMenu* main_window::create_tools_menu() {
 	menu->AppendSeparator();
 	menu->Append(ID_TABLE_OF_CONTENTS, _("Table of contents\tCtrl+T"));
 	menu->AppendSeparator();
+	menu->Append(ID_OPEN_CONTAINING_FOLDER, _("Open &containing folder"));
+	menu->AppendSeparator();
 	menu->Append(ID_TOGGLE_BOOKMARK, _("Toggle bookmark\tCtrl+Shift+B"));
 	menu->Append(ID_BOOKMARK_WITH_NOTE, _("Bookmark with &note\tCtrl+Shift+N"));
 	menu->AppendSeparator();
@@ -264,6 +266,7 @@ void main_window::bind_events() {
 		{ID_WORD_COUNT, &main_window::on_word_count},
 		{ID_DOC_INFO, &main_window::on_doc_info},
 		{ID_TABLE_OF_CONTENTS, &main_window::on_toc},
+		{ID_OPEN_CONTAINING_FOLDER, &main_window::on_open_containing_folder},
 		{ID_OPTIONS, &main_window::on_options},
 		{ID_SLEEP_TIMER, &main_window::on_sleep_timer},
 		{wxID_ABOUT, &main_window::on_about},
@@ -359,6 +362,7 @@ void main_window::update_ui() {
 		ID_WORD_COUNT,
 		ID_DOC_INFO,
 		ID_TABLE_OF_CONTENTS,
+		ID_OPEN_CONTAINING_FOLDER,
 	};
 	for (const auto id : doc_items) {
 		enable(id, has_doc);
@@ -639,6 +643,18 @@ void main_window::on_toc(wxCommandEvent&) {
 	doc_manager->show_table_of_contents(this);
 	update_status_bar();
 	save_position_immediately();
+}
+
+void main_window::on_open_containing_folder(wxCommandEvent&) {
+	auto* const tab = doc_manager->get_active_tab();
+	if (tab == nullptr) {
+		return;
+	}
+	const wxString path = tab->file_path;
+	const wxString dir = wxFileName(path).GetPath();
+	if (!wxLaunchDefaultBrowser("file://" + dir)) {
+		wxMessageBox(_("Failed to open containing folder."), _("Error"), wxICON_ERROR);
+	}
 }
 
 void main_window::on_options(wxCommandEvent&) {

@@ -884,7 +884,7 @@ void toc_dialog::on_char_hook(wxKeyEvent& event) {
 	}
 }
 
-void toc_dialog::on_search_timer(wxTimerEvent& /*event*/) {
+void toc_dialog::on_search_timer(wxTimerEvent&) {
 	search_string_.Clear();
 }
 
