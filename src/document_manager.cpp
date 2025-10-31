@@ -142,7 +142,6 @@ bool document_manager::export_document(int index, const wxString& export_path) c
 		return false;
 	}
 	file.Write(tab->text_ctrl->GetValue());
-	file.Close();
 	return true;
 }
 
@@ -265,19 +264,19 @@ void document_manager::go_to_next_section() const {
 	navigate_to_section(true);
 }
 
-void document_manager::go_to_previous_heading() {
+void document_manager::go_to_previous_heading() const {
 	navigate_to_heading(false);
 }
 
-void document_manager::go_to_next_heading() {
+void document_manager::go_to_next_heading() const {
 	navigate_to_heading(true);
 }
 
-void document_manager::go_to_previous_heading(int level) {
+void document_manager::go_to_previous_heading(int level) const {
 	navigate_to_heading(false, level);
 }
 
-void document_manager::go_to_next_heading(int level) {
+void document_manager::go_to_next_heading(int level) const {
 	navigate_to_heading(true, level);
 }
 
@@ -326,7 +325,7 @@ void document_manager::go_to_next_page() const {
 	navigate_to_page(true);
 }
 
-void document_manager::navigate_to_bookmark(bool next) {
+void document_manager::navigate_to_bookmark(bool next) const {
 	const document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (tab == nullptr || text_ctrl == nullptr) {
@@ -376,11 +375,11 @@ void document_manager::navigate_to_bookmark(bool next) {
 	speak(announcement);
 }
 
-void document_manager::go_to_previous_bookmark() {
+void document_manager::go_to_previous_bookmark() const {
 	navigate_to_bookmark(false);
 }
 
-void document_manager::go_to_next_bookmark() {
+void document_manager::go_to_next_bookmark() const {
 	navigate_to_bookmark(true);
 }
 
@@ -509,7 +508,7 @@ void document_manager::activate_current_link() const {
 	}
 }
 
-void document_manager::navigate_to_list(bool next) {
+void document_manager::navigate_to_list(bool next) const {
 	const document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	const parser* par = get_active_parser();
@@ -560,15 +559,15 @@ void document_manager::navigate_to_list(bool next) {
 	}
 }
 
-void document_manager::go_to_previous_list() {
+void document_manager::go_to_previous_list() const {
 	navigate_to_list(false);
 }
 
-void document_manager::go_to_next_list() {
+void document_manager::go_to_next_list() const {
 	navigate_to_list(true);
 }
 
-void document_manager::navigate_to_list_item(bool next) {
+void document_manager::navigate_to_list_item(bool next) const {
 	const document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	const parser* par = get_active_parser();
@@ -623,15 +622,15 @@ void document_manager::navigate_to_list_item(bool next) {
 	}
 }
 
-void document_manager::go_to_previous_list_item() {
+void document_manager::go_to_previous_list_item() const {
 	navigate_to_list_item(false);
 }
 
-void document_manager::go_to_next_list_item() {
+void document_manager::go_to_next_list_item() const {
 	navigate_to_list_item(true);
 }
 
-void document_manager::toggle_bookmark() {
+void document_manager::toggle_bookmark() const {
 	const document_tab* tab = get_active_tab();
 	const wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (tab == nullptr || text_ctrl == nullptr) {
@@ -663,7 +662,7 @@ void document_manager::toggle_bookmark() {
 	speak(was_bookmarked ? _("Bookmark removed") : _("Bookmarked"));
 }
 
-void document_manager::add_bookmark_with_note() {
+void document_manager::add_bookmark_with_note() const {
 	const document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (tab == nullptr || text_ctrl == nullptr) {
