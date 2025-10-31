@@ -107,4 +107,10 @@ private:
 	void restore_document_position(document_tab* tab) const;
 	wxPanel* create_tab_panel(const wxString& content, document_tab* tab_data);
 	void navigate_to_heading(bool next, int specific_level = -1) const;
+	void navigate_to_section(bool next) const;
+	void navigate_to_page(bool next) const;
+	void navigate_to_bookmark(bool next);
+	void navigate_to_link(bool next) const;
+	void navigate_to_list(bool next);
+	void navigate_to_list_item(bool next);
 };
