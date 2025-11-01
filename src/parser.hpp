@@ -101,7 +101,7 @@ private:
 	}
 };
 
-template <typename ParserType>
+template <typename parser_type>
 class parser_registrar {
 public:
 	parser_registrar() {
@@ -109,7 +109,7 @@ public:
 	}
 
 private:
-	static inline ParserType instance{};
+	static inline parser_type instance{};
 };
 
 #define REGISTER_PARSER(parser_type) static parser_registrar<parser_type> parser_type##_registrar;
