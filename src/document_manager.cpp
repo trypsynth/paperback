@@ -223,8 +223,8 @@ void document_manager::navigate_to_section(bool next) const {
 	if (!next) {
 		const int current_index = doc->section_index(current_pos);
 		if (current_index != -1) {
-			const int current_section_offset = doc->offset_for_section(current_index);
-			if (current_pos > current_section_offset) {
+			const size_t current_section_offset = doc->offset_for_section(current_index);
+			if (static_cast<size_t>(current_pos) > current_section_offset) {
 				text_ctrl->SetInsertionPoint(static_cast<long>(current_section_offset));
 				long line{0};
 				text_ctrl->PositionToXY(static_cast<long>(current_section_offset), nullptr, &line);
@@ -238,10 +238,10 @@ void document_manager::navigate_to_section(bool next) const {
 	if (!next) {
 		const int current_index = doc->section_index(current_pos);
 		if (current_index != -1) {
-			const int current_section_offset = doc->offset_for_section(current_index);
-			if (current_pos <= current_section_offset) {
+			const size_t current_section_offset = doc->offset_for_section(current_index);
+			if (static_cast<size_t>(current_pos) <= current_section_offset) {
 				// We're at the start of the current section, so search from just before the section marker.
-				search_pos = current_section_offset > 0 ? current_section_offset - 1 : 0;
+				search_pos = current_section_offset > 0 ? static_cast<int>(current_section_offset - 1) : 0;
 			}
 		}
 	}
@@ -258,7 +258,7 @@ void document_manager::navigate_to_section(bool next) const {
 			return;
 		}
 	}
-	const int offset = doc->offset_for_section(target_index);
+	const size_t offset = doc->offset_for_section(target_index);
 	text_ctrl->SetInsertionPoint(static_cast<long>(offset));
 	long line{0};
 	text_ctrl->PositionToXY(static_cast<long>(offset), nullptr, &line);
@@ -319,7 +319,7 @@ void document_manager::navigate_to_page(bool next) const {
 			return;
 		}
 	}
-	const int offset = doc->offset_for_page(target_index);
+	const size_t offset = doc->offset_for_page(target_index);
 	text_ctrl->SetInsertionPoint(static_cast<long>(offset));
 	long line{0};
 	text_ctrl->PositionToXY(static_cast<long>(offset), nullptr, &line);
@@ -447,8 +447,8 @@ void document_manager::activate_current_link() const {
 	if (doc == nullptr || text_ctrl == nullptr) {
 		return;
 	}
-	const int current_pos = text_ctrl->GetInsertionPoint();
-	const int link_index = doc->buffer.current_marker_index(current_pos, marker_type::link);
+	const long current_pos = text_ctrl->GetInsertionPoint();
+	const int link_index = doc->buffer.current_marker_index(static_cast<size_t>(current_pos), marker_type::link);
 	if (link_index == -1) {
 		return;
 	}
@@ -456,7 +456,8 @@ void document_manager::activate_current_link() const {
 	if (link_marker == nullptr) {
 		return;
 	}
-	if (current_pos < link_marker->pos || current_pos > (link_marker->pos + link_marker->text.length())) {
+	const size_t link_end = link_marker->pos + link_marker->text.length();
+	if (static_cast<size_t>(current_pos) < link_marker->pos || static_cast<size_t>(current_pos) > link_end) {
 		return;
 	}
 	const wxString href = link_marker->ref;
@@ -555,12 +556,12 @@ void document_manager::navigate_to_list(bool next) const {
 	const marker* list_marker = doc->buffer.get_marker(target_index);
 	if (list_marker != nullptr) {
 		wxString message = wxString::Format(_("List with %d items"), list_marker->level);
-		const int first_item_index = doc->buffer.find_first_marker_after(list_marker->pos, marker_type::list_item);
+		const int first_item_index = doc->buffer.find_first_marker_after(static_cast<long>(list_marker->pos), marker_type::list_item);
 		const marker* first_item_marker = doc->buffer.get_marker(first_item_index);
 		if (first_item_marker != nullptr) {
 			go_to_position(static_cast<long>(first_item_marker->pos));
 			long line_num{0};
-			text_ctrl->PositionToXY(first_item_marker->pos, nullptr, &line_num);
+			text_ctrl->PositionToXY(static_cast<long>(first_item_marker->pos), nullptr, &line_num);
 			wxString line_text = text_ctrl->GetLineText(line_num).Trim();
 			message += " " + line_text;
 		} else {
@@ -627,7 +628,7 @@ void document_manager::navigate_to_list_item(bool next) const {
 		}
 		go_to_position(static_cast<long>(list_item_marker->pos));
 		long line_num{0};
-		text_ctrl->PositionToXY(list_item_marker->pos, nullptr, &line_num);
+		text_ctrl->PositionToXY(static_cast<long>(list_item_marker->pos), nullptr, &line_num);
 		message += text_ctrl->GetLineText(line_num).Trim();
 		if (wrapping) {
 			message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
@@ -810,12 +811,12 @@ void document_manager::show_document_info(wxWindow* parent) const {
 	dlg.ShowModal();
 }
 
-void document_manager::save_document_position(const wxString& path, int position) const {
+void document_manager::save_document_position(const wxString& path, long position) const {
 	config.set_document_position(path, position);
 	config.flush();
 }
 
-int document_manager::load_document_position(const wxString& path) const {
+long document_manager::load_document_position(const wxString& path) const {
 	return config.get_document_position(path);
 }
 
@@ -989,7 +990,7 @@ void document_manager::navigate_to_heading(bool next, int specific_level) const 
 			return;
 		}
 	}
-	const int offset = doc->offset_for_heading(target_index);
+	const size_t offset = doc->offset_for_heading(target_index);
 	text_ctrl->SetInsertionPoint(static_cast<long>(offset));
 	const marker* heading_marker = doc->get_heading_marker(target_index);
 	if (heading_marker != nullptr) {

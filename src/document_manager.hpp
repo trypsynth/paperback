@@ -87,8 +87,8 @@ public:
 	void show_bookmark_dialog(wxWindow* parent);
 	void show_table_of_contents(wxWindow* parent) const;
 	void show_document_info(wxWindow* parent) const;
-	void save_document_position(const wxString& path, int position) const;
-	[[nodiscard]] int load_document_position(const wxString& path) const;
+	void save_document_position(const wxString& path, long position) const;
+	[[nodiscard]] long load_document_position(const wxString& path) const;
 	void save_current_tab_position() const;
 	void save_all_tab_positions() const;
 	[[nodiscard]] wxString get_status_text() const;

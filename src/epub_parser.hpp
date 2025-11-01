@@ -56,7 +56,7 @@ public:
 private:
 	struct epub_context {
 		wxFileInputStream& file_stream;
-		std::map<std::string, wxZipEntry*> zip_entries;
+		std::map<std::string, std::unique_ptr<wxZipEntry>> zip_entries;
 		std::map<std::string, manifest_item> manifest_items;
 		std::vector<std::string> spine_items;
 		std::map<std::string, std::map<std::string, size_t>> id_positions;
@@ -69,11 +69,7 @@ private:
 		epub_context(wxFileInputStream& fs) : file_stream(fs) {
 		}
 
-		~epub_context() {
-			for (auto& [_, entry] : zip_entries) {
-				delete entry;
-			}
-		}
+		~epub_context() = default;
 	};
 
 	static void parse_opf(const std::string& filename, epub_context& ctx);

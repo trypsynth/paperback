@@ -338,16 +338,16 @@ std::string read_zip_entry(wxZipInputStream& zip) {
 	return buffer.str();
 }
 
-wxZipEntry* find_zip_entry(const std::string& filename, const std::map<std::string, wxZipEntry*>& entries) {
+wxZipEntry* find_zip_entry(const std::string& filename, const std::map<std::string, std::unique_ptr<wxZipEntry>>& entries) {
 	auto it = entries.find(filename);
 	if (it != entries.end()) {
-		return it->second;
+		return it->second.get();
 	}
 	auto decoded = url_decode(filename);
 	if (decoded != filename) {
 		it = entries.find(decoded);
 		if (it != entries.end()) {
-			return it->second;
+			return it->second.get();
 		}
 	}
 	std::string encoded;
@@ -356,7 +356,7 @@ wxZipEntry* find_zip_entry(const std::string& filename, const std::map<std::stri
 		if (encoded != filename) {
 			it = entries.find(encoded);
 			if (it != entries.end()) {
-				return it->second;
+				return it->second.get();
 			}
 		}
 	} catch (const Poco::Exception&) {

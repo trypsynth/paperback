@@ -46,10 +46,10 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 			return nullptr;
 		}
 		wxZipInputStream zip_index(*fp);
-		std::map<std::string, wxZipEntry*> entries;
+		std::map<std::string, std::unique_ptr<wxZipEntry>> entries;
 		while (wxZipEntry* entry = zip_index.GetNextEntry()) {
 			const std::string name = entry->GetName(wxPATH_UNIX).ToStdString();
-			entries[name] = entry;
+			entries[name] = std::unique_ptr<wxZipEntry>(entry);
 		}
 		fp->SeekI(0);
 		epub_context ctx(*fp);
