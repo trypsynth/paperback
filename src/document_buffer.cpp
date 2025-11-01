@@ -82,10 +82,12 @@ void document_buffer::clear() {
 }
 
 int document_buffer::next_marker_index(int position, marker_type type) const noexcept {
-	for (size_t i = 0; i < markers.size(); ++i) {
-		if (static_cast<long>(markers[i].pos) > position && markers[i].type == type) {
-			return static_cast<int>(i);
+	auto it = std::upper_bound(markers.begin(), markers.end(), position, [](int pos, const marker& m) { return pos < static_cast<long>(m.pos); });
+	while (it != markers.end()) {
+		if (it->type == type) {
+			return static_cast<int>(std::distance(markers.begin(), it));
 		}
+		++it;
 	}
 	return -1;
 }
@@ -100,73 +102,50 @@ int document_buffer::find_first_marker_after(int position, marker_type type) con
 }
 
 int document_buffer::previous_marker_index(int position, marker_type type) const noexcept {
-	int current_index = -1;
-	for (size_t i = 0; i < markers.size(); ++i) {
-		if (markers[i].pos >= position && markers[i].type == type) {
-			current_index = static_cast<int>(i);
-			break;
+	auto it = std::lower_bound(markers.begin(), markers.end(), position, [](const marker& m, int pos) { return static_cast<long>(m.pos) < pos; });
+	auto rit = std::make_reverse_iterator(it);
+	while (rit != markers.rend()) {
+		if (rit->type == type && static_cast<long>(rit->pos) < position) {
+			return static_cast<int>(std::distance(markers.begin(), rit.base()) - 1);
 		}
-	}
-	if (current_index >= 0) {
-		for (int i = current_index - 1; i >= 0; --i) {
-			if (markers[i].type == type) {
-				return i;
-			}
-		}
-	} else {
-		for (int i = static_cast<int>(markers.size()) - 1; i >= 0; --i) {
-			if (markers[i].pos < position && markers[i].type == type) {
-				return i;
-			}
-		}
+		++rit;
 	}
 	return -1;
 }
 
 int document_buffer::current_marker_index(size_t position, marker_type type) const noexcept {
-	for (int i = static_cast<int>(markers.size()) - 1; i >= 0; --i) {
-		if (markers[i].pos <= position && markers[i].type == type) {
-			return i;
+	auto it = std::upper_bound(markers.begin(), markers.end(), position, [](size_t pos, const marker& m) { return pos < m.pos; });
+	auto rit = std::make_reverse_iterator(it);
+	while (rit != markers.rend()) {
+		if (rit->type == type) {
+			return static_cast<int>(std::distance(markers.begin(), rit.base()) - 1);
 		}
+		++rit;
 	}
 	return -1;
 }
 
 int document_buffer::next_heading_marker_index(int position, int level) const {
 	const auto heading_markers = get_heading_markers();
-	for (size_t i = 0; i < heading_markers.size(); ++i) {
-		if (static_cast<long>(heading_markers[i]->pos) > position) {
-			if (level == -1 || heading_markers[i]->level == level) {
-				return static_cast<int>(i);
-			}
+	auto it = std::upper_bound(heading_markers.begin(), heading_markers.end(), position, [](int pos, const marker* m) { return pos < static_cast<long>(m->pos); });
+	while (it != heading_markers.end()) {
+		if (level == -1 || (*it)->level == level) {
+			return static_cast<int>(std::distance(heading_markers.begin(), it));
 		}
+		++it;
 	}
 	return -1;
 }
 
 int document_buffer::previous_heading_marker_index(int position, int level) const {
 	const auto heading_markers = get_heading_markers();
-	int current_index = -1;
-	for (size_t i = 0; i < heading_markers.size(); ++i) {
-		if (heading_markers[i]->pos >= position) {
-			current_index = static_cast<int>(i);
-			break;
+	auto it = std::lower_bound(heading_markers.begin(), heading_markers.end(), position, [](const marker* m, int pos) { return static_cast<long>(m->pos) < pos; });
+	auto rit = std::make_reverse_iterator(it);
+	while (rit != heading_markers.rend()) {
+		if (static_cast<long>((*rit)->pos) < position && (level == -1 || (*rit)->level == level)) {
+			return static_cast<int>(std::distance(heading_markers.begin(), rit.base()) - 1);
 		}
-	}
-	if (current_index >= 0) {
-		for (int i = current_index - 1; i >= 0; --i) {
-			if (level == -1 || heading_markers[i]->level == level) {
-				return i;
-			}
-		}
-	} else {
-		for (int i = static_cast<int>(heading_markers.size()) - 1; i >= 0; --i) {
-			if (heading_markers[i]->pos < position) {
-				if (level == -1 || heading_markers[i]->level == level) {
-					return i;
-				}
-			}
-		}
+		++rit;
 	}
 	return -1;
 }

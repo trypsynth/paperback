@@ -215,6 +215,8 @@ void epub_parser::process_section_content(conv& converter, const std::string& co
 			const wxString href_lower = wxString(link.ref).Lower();
 			if (href_lower.StartsWith("http:") || href_lower.StartsWith("https:") || href_lower.StartsWith("mailto:")) {
 				resolved_href = link.ref;
+			} else if (!link.ref.empty() && link.ref[0] == '#') {
+				resolved_href = link.ref;
 			} else {
 				Path resolved_path(section_base_path);
 				resolved_path.append(link.ref);

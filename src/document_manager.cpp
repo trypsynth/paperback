@@ -143,7 +143,6 @@ bool document_manager::export_document(int index, const wxString& export_path) c
 		return false;
 	}
 	file.Write(tab->text_ctrl->GetValue());
-	file.Close();
 	return true;
 }
 
@@ -194,7 +193,7 @@ void document_manager::go_to_position(int position) const {
 	text_ctrl->ShowPosition(position);
 }
 
-void document_manager::go_to_previous_section() const {
+void document_manager::navigate_to_section(bool next) const {
 	const document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	const parser* par = get_active_parser();
@@ -207,106 +206,82 @@ void document_manager::go_to_previous_section() const {
 	}
 	const int current_pos = text_ctrl->GetInsertionPoint();
 	bool wrapping = false;
-	const int current_index = doc->section_index(current_pos);
-	if (current_index != -1) {
-		const int current_section_offset = doc->offset_for_section(current_index);
-		if (current_pos > current_section_offset) {
-			text_ctrl->SetInsertionPoint(static_cast<long>(current_section_offset));
-			long line{0};
-			text_ctrl->PositionToXY(static_cast<long>(current_section_offset), nullptr, &line);
-			const wxString current_line = text_ctrl->GetLineText(line);
-			speak(current_line);
-			return;
+	// Special case for previous: if we're past the section start, go to section start first.
+	if (!next) {
+		const int current_index = doc->section_index(current_pos);
+		if (current_index != -1) {
+			const int current_section_offset = doc->offset_for_section(current_index);
+			if (current_pos > current_section_offset) {
+				text_ctrl->SetInsertionPoint(static_cast<long>(current_section_offset));
+				long line{0};
+				text_ctrl->PositionToXY(static_cast<long>(current_section_offset), nullptr, &line);
+				const wxString current_line = text_ctrl->GetLineText(line);
+				speak(current_line);
+				return;
+			}
 		}
 	}
 	int search_pos = current_pos;
-	if (current_index != -1) {
-		const int current_section_offset = doc->offset_for_section(current_index);
-		if (current_pos <= current_section_offset) {
-			// We're at the start of the current section, so search from just before the section marker.
-			search_pos = current_section_offset > 0 ? current_section_offset - 1 : 0;
+	if (!next) {
+		const int current_index = doc->section_index(current_pos);
+		if (current_index != -1) {
+			const int current_section_offset = doc->offset_for_section(current_index);
+			if (current_pos <= current_section_offset) {
+				// We're at the start of the current section, so search from just before the section marker.
+				search_pos = current_section_offset > 0 ? current_section_offset - 1 : 0;
+			}
 		}
 	}
-	int prev_index = doc->previous_section_index(search_pos);
-	if (prev_index == -1) {
+	int target_index = next ? doc->next_section_index(current_pos) : doc->previous_section_index(search_pos);
+	if (target_index == -1) {
 		if (config.get(config_manager::navigation_wrap)) {
-			prev_index = doc->previous_section_index(text_ctrl->GetLastPosition() + 1);
-			if (prev_index != -1) {
+			target_index = next ? doc->next_section_index(-1) : doc->previous_section_index(text_ctrl->GetLastPosition() + 1);
+			if (target_index != -1) {
 				wrapping = true;
 			}
 		}
-		if (prev_index == -1) {
-			speak(_("No previous section"));
+		if (target_index == -1) {
+			speak(next ? _("No next section") : _("No previous section"));
 			return;
 		}
 	}
-	const int offset = doc->offset_for_section(prev_index);
+	const int offset = doc->offset_for_section(target_index);
 	text_ctrl->SetInsertionPoint(static_cast<long>(offset));
 	long line{0};
 	text_ctrl->PositionToXY(static_cast<long>(offset), nullptr, &line);
 	const wxString current_line = text_ctrl->GetLineText(line);
 	if (wrapping) {
-		speak(_("Wrapping to end. ") + current_line);
+		speak((next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + current_line);
 	} else {
 		speak(current_line);
 	}
+}
+
+void document_manager::go_to_previous_section() const {
+	navigate_to_section(false);
 }
 
 void document_manager::go_to_next_section() const {
-	const document* doc = get_active_document();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	const parser* par = get_active_parser();
-	if (doc == nullptr || text_ctrl == nullptr || par == nullptr) {
-		return;
-	}
-	if (!par->has_flag(parser_flags::supports_sections)) {
-		speak(_("No sections."));
-		return;
-	}
-	const int current_pos = text_ctrl->GetInsertionPoint();
-	bool wrapping = false;
-	int next_index = doc->next_section_index(current_pos);
-	if (next_index == -1) {
-		if (config.get(config_manager::navigation_wrap)) {
-			next_index = doc->next_section_index(-1);
-			if (next_index != -1) {
-				wrapping = true;
-			}
-		}
-		if (next_index == -1) {
-			speak(_("No next section"));
-			return;
-		}
-	}
-	const int offset = doc->offset_for_section(next_index);
-	text_ctrl->SetInsertionPoint(static_cast<long>(offset));
-	long line{0};
-	text_ctrl->PositionToXY(static_cast<long>(offset), nullptr, &line);
-	const wxString current_line = text_ctrl->GetLineText(line);
-	if (wrapping) {
-		speak(_("Wrapping to start. ") + current_line);
-	} else {
-		speak(current_line);
-	}
+	navigate_to_section(true);
 }
 
-void document_manager::go_to_previous_heading() {
+void document_manager::go_to_previous_heading() const {
 	navigate_to_heading(false);
 }
 
-void document_manager::go_to_next_heading() {
+void document_manager::go_to_next_heading() const {
 	navigate_to_heading(true);
 }
 
-void document_manager::go_to_previous_heading(int level) {
+void document_manager::go_to_previous_heading(int level) const {
 	navigate_to_heading(false, level);
 }
 
-void document_manager::go_to_next_heading(int level) {
+void document_manager::go_to_next_heading(int level) const {
 	navigate_to_heading(true, level);
 }
 
-void document_manager::go_to_previous_page() const {
+void document_manager::navigate_to_page(bool next) const {
 	const document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (doc == nullptr || text_ctrl == nullptr) {
@@ -318,242 +293,139 @@ void document_manager::go_to_previous_page() const {
 	}
 	const int current_pos = text_ctrl->GetInsertionPoint();
 	bool wrapping = false;
-	int prev_index = doc->previous_page_index(current_pos);
-	if (prev_index == -1) {
+	int target_index = next ? doc->next_page_index(current_pos) : doc->previous_page_index(current_pos);
+	if (target_index == -1) {
 		if (config.get(config_manager::navigation_wrap)) {
-			prev_index = doc->previous_page_index(text_ctrl->GetLastPosition() + 1);
-			if (prev_index != -1) {
+			target_index = next ? doc->next_page_index(-1) : doc->previous_page_index(text_ctrl->GetLastPosition() + 1);
+			if (target_index != -1) {
 				wrapping = true;
 			}
 		}
-		if (prev_index == -1) {
-			speak(_("No previous page."));
+		if (target_index == -1) {
+			speak(next ? _("No next page.") : _("No previous page."));
 			return;
 		}
 	}
-	const int offset = doc->offset_for_page(prev_index);
+	const int offset = doc->offset_for_page(target_index);
 	text_ctrl->SetInsertionPoint(static_cast<long>(offset));
 	long line{0};
 	text_ctrl->PositionToXY(static_cast<long>(offset), nullptr, &line);
 	const wxString current_line = text_ctrl->GetLineText(line);
-	wxString message = wxString::Format(_("Page %d: %s"), prev_index + 1, current_line);
+	wxString message = wxString::Format(_("Page %d: %s"), target_index + 1, current_line);
 	if (wrapping) {
-		message = _("Wrapping to end. ") + message;
-	} else {
-		message = wxString::Format(_("Page %d: %s"), prev_index + 1, current_line);
+		message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
 	}
 	speak(message);
+}
+
+void document_manager::go_to_previous_page() const {
+	navigate_to_page(false);
 }
 
 void document_manager::go_to_next_page() const {
-	const document* doc = get_active_document();
+	navigate_to_page(true);
+}
+
+void document_manager::navigate_to_bookmark(bool next) const {
+	const document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (tab == nullptr || text_ctrl == nullptr) {
+		return;
+	}
+	const int current_pos = text_ctrl->GetInsertionPoint();
+	bool wrapping = false;
+	bookmark target_bookmark = next ? config.get_next_bookmark(tab->file_path, current_pos) : config.get_previous_bookmark(tab->file_path, current_pos);
+	if (target_bookmark.start == -1) {
+		if (config.get(config_manager::navigation_wrap)) {
+			target_bookmark = next ? config.get_next_bookmark(tab->file_path, -1) : config.get_previous_bookmark(tab->file_path, text_ctrl->GetLastPosition() + 1);
+			if (target_bookmark.start != -1) {
+				wrapping = true;
+			}
+		}
+		if (target_bookmark.start == -1) {
+			speak(next ? _("No next bookmark") : _("No previous bookmark"));
+			return;
+		}
+	}
+	text_ctrl->SetInsertionPoint(target_bookmark.start);
+	wxString text_to_speak;
+	if (target_bookmark.is_whole_line()) {
+		long line{0};
+		text_ctrl->PositionToXY(target_bookmark.start, nullptr, &line);
+		text_to_speak = text_ctrl->GetLineText(line);
+	} else {
+		text_to_speak = text_ctrl->GetRange(target_bookmark.start, target_bookmark.end);
+	}
+	std::vector<bookmark> bookmarks = config.get_bookmarks(tab->file_path);
+	int bookmark_index = 0;
+	for (size_t i = 0; i < bookmarks.size(); ++i) {
+		if (bookmarks[i] == target_bookmark) {
+			bookmark_index = static_cast<int>(i);
+			break;
+		}
+	}
+	wxString announcement;
+	if (target_bookmark.has_note()) {
+		announcement = wxString::Format(_("%s - %s - Bookmark %d"), target_bookmark.note, text_to_speak, bookmark_index + 1);
+	} else {
+		announcement = wxString::Format(_("%s - Bookmark %d"), text_to_speak, bookmark_index + 1);
+	}
+	if (wrapping) {
+		announcement = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + announcement;
+	}
+	speak(announcement);
+}
+
+void document_manager::go_to_previous_bookmark() const {
+	navigate_to_bookmark(false);
+}
+
+void document_manager::go_to_next_bookmark() const {
+	navigate_to_bookmark(true);
+}
+
+void document_manager::navigate_to_link(bool next) const {
+	const document* doc = get_active_document();
+	const wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (doc == nullptr || text_ctrl == nullptr) {
 		return;
 	}
-	if (doc->buffer.count_markers_by_type(marker_type::page_break) == 0) {
-		speak(_("No pages."));
+	if (doc->buffer.count_markers_by_type(marker_type::link) == 0) {
+		speak(_("No links."));
 		return;
 	}
 	const int current_pos = text_ctrl->GetInsertionPoint();
 	bool wrapping = false;
-	int next_index = doc->next_page_index(current_pos);
-	if (next_index == -1) {
+	int target_index = next ? doc->buffer.next_marker_index(current_pos, marker_type::link) : doc->buffer.previous_marker_index(current_pos, marker_type::link);
+	if (target_index == -1) {
 		if (config.get(config_manager::navigation_wrap)) {
-			next_index = doc->next_page_index(-1);
-			if (next_index != -1) {
+			target_index = next ? doc->buffer.next_marker_index(-1, marker_type::link) : doc->buffer.previous_marker_index(text_ctrl->GetLastPosition() + 1, marker_type::link);
+			if (target_index != -1) {
 				wrapping = true;
 			}
 		}
-		if (next_index == -1) {
-			speak(_("No next page."));
+		if (target_index == -1) {
+			speak(next ? _("No next link.") : _("No previous link."));
 			return;
 		}
 	}
-	const int offset = doc->offset_for_page(next_index);
-	text_ctrl->SetInsertionPoint(static_cast<long>(offset));
-	long line{0};
-	text_ctrl->PositionToXY(static_cast<long>(offset), nullptr, &line);
-	const wxString current_line = text_ctrl->GetLineText(line);
-	wxString message = wxString::Format(_("Page %d: %s"), next_index + 1, current_line);
-	if (wrapping) {
-		message = _("Wrapping to start. ") + message;
-	} else {
-		message = wxString::Format(_("Page %d: %s"), next_index + 1, current_line);
-	}
-	speak(message);
-}
-
-void document_manager::go_to_previous_bookmark() {
-	const document_tab* tab = get_active_tab();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr) {
-		return;
-	}
-	const int current_pos = text_ctrl->GetInsertionPoint();
-	bool wrapping = false;
-	bookmark prev_bookmark = config.get_previous_bookmark(tab->file_path, current_pos);
-	if (prev_bookmark.start == -1) {
-		if (config.get(config_manager::navigation_wrap)) {
-			prev_bookmark = config.get_previous_bookmark(tab->file_path, text_ctrl->GetLastPosition() + 1);
-			if (prev_bookmark.start != -1) {
-				wrapping = true;
-			}
+	const marker* link_marker = doc->buffer.get_marker(target_index);
+	if (link_marker != nullptr) {
+		go_to_position(static_cast<long>(link_marker->pos));
+		wxString message = link_marker->text + _(" link");
+		if (wrapping) {
+			message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
 		}
-		if (prev_bookmark.start == -1) {
-			speak(_("No previous bookmark"));
-			return;
-		}
+		speak(message);
 	}
-	text_ctrl->SetInsertionPoint(prev_bookmark.start);
-	wxString text_to_speak;
-	if (prev_bookmark.is_whole_line()) {
-		long line{0};
-		text_ctrl->PositionToXY(prev_bookmark.start, nullptr, &line);
-		text_to_speak = text_ctrl->GetLineText(line);
-	} else {
-		text_to_speak = text_ctrl->GetRange(prev_bookmark.start, prev_bookmark.end);
-	}
-	std::vector<bookmark> bookmarks = config.get_bookmarks(tab->file_path);
-	int bookmark_index = 0;
-	for (size_t i = 0; i < bookmarks.size(); ++i) {
-		if (bookmarks[i] == prev_bookmark) {
-			bookmark_index = static_cast<int>(i);
-			break;
-		}
-	}
-	wxString announcement;
-	if (prev_bookmark.has_note()) {
-		announcement = wxString::Format(_("%s - %s - Bookmark %d"), prev_bookmark.note, text_to_speak, bookmark_index + 1);
-	} else {
-		announcement = wxString::Format(_("%s - Bookmark %d"), text_to_speak, bookmark_index + 1);
-	}
-	if (wrapping) {
-		announcement = _("Wrapping to end. ") + announcement;
-	}
-	speak(announcement);
-}
-
-void document_manager::go_to_next_bookmark() {
-	const document_tab* tab = get_active_tab();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr) {
-		return;
-	}
-	const int current_pos = text_ctrl->GetInsertionPoint();
-	bool wrapping = false;
-	bookmark next_bookmark = config.get_next_bookmark(tab->file_path, current_pos);
-	if (next_bookmark.start == -1) {
-		if (config.get(config_manager::navigation_wrap)) {
-			next_bookmark = config.get_next_bookmark(tab->file_path, -1);
-			if (next_bookmark.start != -1) {
-				wrapping = true;
-			}
-		}
-		if (next_bookmark.start == -1) {
-			speak(_("No next bookmark"));
-			return;
-		}
-	}
-	text_ctrl->SetInsertionPoint(next_bookmark.start);
-	wxString text_to_speak;
-	if (next_bookmark.is_whole_line()) {
-		long line{0};
-		text_ctrl->PositionToXY(next_bookmark.start, nullptr, &line);
-		text_to_speak = text_ctrl->GetLineText(line);
-	} else {
-		text_to_speak = text_ctrl->GetRange(next_bookmark.start, next_bookmark.end);
-	}
-	std::vector<bookmark> bookmarks = config.get_bookmarks(tab->file_path);
-	int bookmark_index = 0;
-	for (size_t i = 0; i < bookmarks.size(); ++i) {
-		if (bookmarks[i] == next_bookmark) {
-			bookmark_index = static_cast<int>(i);
-			break;
-		}
-	}
-	wxString announcement;
-	if (next_bookmark.has_note()) {
-		announcement = wxString::Format(_("%s - %s - Bookmark %d"), next_bookmark.note, text_to_speak, bookmark_index + 1);
-	} else {
-		announcement = wxString::Format(_("%s - Bookmark %d"), text_to_speak, bookmark_index + 1);
-	}
-	if (wrapping) {
-		announcement = _("Wrapping to start. ") + announcement;
-	}
-	speak(announcement);
 }
 
 void document_manager::go_to_previous_link() const {
-	const document* doc = get_active_document();
-	const wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (doc == nullptr || text_ctrl == nullptr) {
-		return;
-	}
-	if (doc->buffer.count_markers_by_type(marker_type::link) == 0) {
-		speak(_("No links."));
-		return;
-	}
-	const int current_pos = text_ctrl->GetInsertionPoint();
-	bool wrapping = false;
-	int prev_index = doc->buffer.previous_marker_index(current_pos, marker_type::link);
-	if (prev_index == -1) {
-		if (config.get(config_manager::navigation_wrap)) {
-			prev_index = doc->buffer.previous_marker_index(text_ctrl->GetLastPosition() + 1, marker_type::link);
-			if (prev_index != -1) {
-				wrapping = true;
-			}
-		}
-		if (prev_index == -1) {
-			speak(_("No previous link."));
-			return;
-		}
-	}
-	const marker* link_marker = doc->buffer.get_marker(prev_index);
-	if (link_marker != nullptr) {
-		go_to_position(static_cast<long>(link_marker->pos));
-		wxString message = link_marker->text + _(" link");
-		if (wrapping) {
-			message = _("Wrapping to end. ") + message;
-		}
-		speak(message);
-	}
+	navigate_to_link(false);
 }
 
 void document_manager::go_to_next_link() const {
-	const document* doc = get_active_document();
-	const wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (doc == nullptr || text_ctrl == nullptr) {
-		return;
-	}
-	if (doc->buffer.count_markers_by_type(marker_type::link) == 0) {
-		speak(_("No links."));
-		return;
-	}
-	const int current_pos = text_ctrl->GetInsertionPoint();
-	bool wrapping = false;
-	int next_index = doc->buffer.next_marker_index(current_pos, marker_type::link);
-	if (next_index == -1) {
-		if (config.get(config_manager::navigation_wrap)) {
-			next_index = doc->buffer.next_marker_index(-1, marker_type::link);
-			if (next_index != -1) {
-				wrapping = true;
-			}
-		}
-		if (next_index == -1) {
-			speak(_("No next link."));
-			return;
-		}
-	}
-	const marker* link_marker = doc->buffer.get_marker(next_index);
-	if (link_marker != nullptr) {
-		go_to_position(static_cast<long>(link_marker->pos));
-		wxString message = link_marker->text + _(" link");
-		if (wrapping) {
-			message = _("Wrapping to start. ") + message;
-		}
-		speak(message);
-	}
+	navigate_to_link(true);
 }
 
 
@@ -707,7 +579,7 @@ void document_manager::activate_current_table() {
 	dlg.ShowModal();
 }
 
-void document_manager::go_to_previous_list() {
+void document_manager::navigate_to_list(bool next) const {
 	const document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	const parser* par = get_active_parser();
@@ -723,21 +595,21 @@ void document_manager::go_to_previous_list() {
 		return;
 	}
 	const int current_pos = text_ctrl->GetInsertionPoint();
-	bool wrapping{false};
-	int prev_index = doc->buffer.previous_marker_index(current_pos, marker_type::list);
-	if (prev_index == -1) {
+	bool wrapping = false;
+	int target_index = next ? doc->buffer.next_marker_index(current_pos, marker_type::list) : doc->buffer.previous_marker_index(current_pos, marker_type::list);
+	if (target_index == -1) {
 		if (config.get(config_manager::navigation_wrap)) {
-			prev_index = doc->buffer.previous_marker_index(text_ctrl->GetLastPosition() + 1, marker_type::list);
-			if (prev_index != -1) {
+			target_index = next ? doc->buffer.next_marker_index(-1, marker_type::list) : doc->buffer.previous_marker_index(text_ctrl->GetLastPosition() + 1, marker_type::list);
+			if (target_index != -1) {
 				wrapping = true;
 			}
 		}
-		if (prev_index == -1) {
-			speak(_("No previous list."));
+		if (target_index == -1) {
+			speak(next ? _("No next list.") : _("No previous list."));
 			return;
 		}
 	}
-	const marker* list_marker = doc->buffer.get_marker(prev_index);
+	const marker* list_marker = doc->buffer.get_marker(target_index);
 	if (list_marker != nullptr) {
 		wxString message = wxString::Format(_("List with %d items"), list_marker->level);
 		const int first_item_index = doc->buffer.find_first_marker_after(list_marker->pos, marker_type::list_item);
@@ -752,64 +624,21 @@ void document_manager::go_to_previous_list() {
 			go_to_position(static_cast<long>(list_marker->pos));
 		}
 		if (wrapping) {
-			message = _("Wrapping to end. ") + message;
+			message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
 		}
 		speak(message);
 	}
 }
 
-void document_manager::go_to_next_list() {
-	const document* doc = get_active_document();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	const parser* par = get_active_parser();
-	if (doc == nullptr || text_ctrl == nullptr || par == nullptr) {
-		return;
-	}
-	if (!par->has_flag(parser_flags::supports_lists)) {
-		speak(_("No lists."));
-		return;
-	}
-	if (doc->buffer.count_markers_by_type(marker_type::list) == 0) {
-		speak(_("No lists."));
-		return;
-	}
-	const int current_pos = text_ctrl->GetInsertionPoint();
-	bool wrapping = false;
-	int next_index = doc->buffer.next_marker_index(current_pos, marker_type::list);
-	if (next_index == -1) {
-		if (config.get(config_manager::navigation_wrap)) {
-			next_index = doc->buffer.next_marker_index(-1, marker_type::list);
-			if (next_index != -1) {
-				wrapping = true;
-			}
-		}
-		if (next_index == -1) {
-			speak(_("No next list."));
-			return;
-		}
-	}
-	const marker* list_marker = doc->buffer.get_marker(next_index);
-	if (list_marker != nullptr) {
-		wxString message = wxString::Format(_("List with %d items"), list_marker->level);
-		const int first_item_index = doc->buffer.find_first_marker_after(list_marker->pos, marker_type::list_item);
-		const marker* first_item_marker = doc->buffer.get_marker(first_item_index);
-		if (first_item_marker != nullptr) {
-			go_to_position(static_cast<long>(first_item_marker->pos));
-			long line_num = 0;
-			text_ctrl->PositionToXY(first_item_marker->pos, nullptr, &line_num);
-			wxString line_text = text_ctrl->GetLineText(line_num).Trim();
-			message += " " + line_text;
-		} else {
-			go_to_position(static_cast<long>(list_marker->pos));
-		}
-		if (wrapping) {
-			message = _("Wrapping to start. ") + message;
-		}
-		speak(message);
-	}
+void document_manager::go_to_previous_list() const {
+	navigate_to_list(false);
 }
 
-void document_manager::go_to_previous_list_item() {
+void document_manager::go_to_next_list() const {
+	navigate_to_list(true);
+}
+
+void document_manager::navigate_to_list_item(bool next) const {
 	const document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	const parser* par = get_active_parser();
@@ -832,93 +661,47 @@ void document_manager::go_to_previous_list_item() {
 		current_list_index = doc->buffer.current_marker_index(current_list_item_marker->pos, marker_type::list);
 	}
 	bool wrapping = false;
-	int prev_index = doc->buffer.previous_marker_index(current_pos, marker_type::list_item);
-	if (prev_index == -1) {
+	int target_index = next ? doc->buffer.next_marker_index(current_pos, marker_type::list_item) : doc->buffer.previous_marker_index(current_pos, marker_type::list_item);
+	if (target_index == -1) {
 		if (config.get(config_manager::navigation_wrap)) {
-			prev_index = doc->buffer.previous_marker_index(text_ctrl->GetLastPosition() + 1, marker_type::list_item);
-			if (prev_index != -1) {
+			target_index = next ? doc->buffer.next_marker_index(-1, marker_type::list_item) : doc->buffer.previous_marker_index(text_ctrl->GetLastPosition() + 1, marker_type::list_item);
+			if (target_index != -1) {
 				wrapping = true;
 			}
 		}
-		if (prev_index == -1) {
-			speak(_("No previous list item."));
+		if (target_index == -1) {
+			speak(next ? _("No next list item.") : _("No previous list item."));
 			return;
 		}
 	}
-	const marker* list_item_marker = doc->buffer.get_marker(prev_index);
+	const marker* list_item_marker = doc->buffer.get_marker(target_index);
 	if (list_item_marker != nullptr) {
-		const int prev_list_index = doc->buffer.current_marker_index(list_item_marker->pos, marker_type::list);
-		const marker* prev_list_marker = doc->buffer.get_marker(prev_list_index);
+		const int target_list_index = doc->buffer.current_marker_index(list_item_marker->pos, marker_type::list);
+		const marker* target_list_marker = doc->buffer.get_marker(target_list_index);
 		wxString message;
-		if (prev_list_index != -1 && prev_list_index != current_list_index) {
-			message += wxString::Format(_("List with %d items "), prev_list_marker->level);
+		if (target_list_index != -1 && target_list_index != current_list_index && target_list_marker != nullptr) {
+			message += wxString::Format(_("List with %d items "), target_list_marker->level);
 		}
 		go_to_position(static_cast<long>(list_item_marker->pos));
 		long line_num{0};
 		text_ctrl->PositionToXY(list_item_marker->pos, nullptr, &line_num);
 		message += text_ctrl->GetLineText(line_num).Trim();
 		if (wrapping) {
-			message = _("Wrapping to end. ") + message;
+			message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
 		}
 		speak(message);
 	}
 }
 
-void document_manager::go_to_next_list_item() {
-	const document* doc = get_active_document();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	const parser* par = get_active_parser();
-	if (doc == nullptr || text_ctrl == nullptr || par == nullptr) {
-		return;
-	}
-	if (!par->has_flag(parser_flags::supports_lists)) {
-		speak(_("No lists."));
-		return;
-	}
-	if (doc->buffer.count_markers_by_type(marker_type::list_item) == 0) {
-		speak(_("No list items."));
-		return;
-	}
-	const int current_pos = text_ctrl->GetInsertionPoint();
-	const int current_list_item_index = doc->buffer.current_marker_index(current_pos, marker_type::list_item);
-	const marker* current_list_item_marker = doc->buffer.get_marker(current_list_item_index);
-	int current_list_index = -1;
-	if (current_list_item_marker) {
-		current_list_index = doc->buffer.current_marker_index(current_list_item_marker->pos, marker_type::list);
-	}
-	bool wrapping = false;
-	int next_index = doc->buffer.next_marker_index(current_pos, marker_type::list_item);
-	if (next_index == -1) {
-		if (config.get(config_manager::navigation_wrap)) {
-			next_index = doc->buffer.next_marker_index(-1, marker_type::list_item);
-			if (next_index != -1) {
-				wrapping = true;
-			}
-		}
-		if (next_index == -1) {
-			speak(_("No next list item."));
-			return;
-		}
-	}
-	const marker* list_item_marker = doc->buffer.get_marker(next_index);
-	if (list_item_marker != nullptr) {
-		const int next_list_index = doc->buffer.current_marker_index(list_item_marker->pos, marker_type::list);
-		const marker* next_list_marker = doc->buffer.get_marker(next_list_index);
-		wxString message;
-		if (next_list_index != -1 && next_list_index != current_list_index) {
-			message += wxString::Format(_("List with %d items "), next_list_marker->level);
-		}
-		go_to_position(static_cast<long>(list_item_marker->pos));
-		long line_num{0};
-		text_ctrl->PositionToXY(list_item_marker->pos, nullptr, &line_num);
-		message += text_ctrl->GetLineText(line_num).Trim();
-		if (wrapping) {
-			message = _("Wrapping to start. ") + message;
-		}
-		speak(message);
-	}
+void document_manager::go_to_previous_list_item() const {
+	navigate_to_list_item(false);
 }
-void document_manager::toggle_bookmark() {
+
+void document_manager::go_to_next_list_item() const {
+	navigate_to_list_item(true);
+}
+
+void document_manager::toggle_bookmark() const {
 	const document_tab* tab = get_active_tab();
 	const wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (tab == nullptr || text_ctrl == nullptr) {
@@ -939,7 +722,7 @@ void document_manager::toggle_bookmark() {
 	std::vector<bookmark> bookmarks = config.get_bookmarks(tab->file_path);
 	bookmark to_toggle(bookmark_start, bookmark_end);
 	bool was_bookmarked = false;
-	for (const auto& bm : bookmarks) {
+    	for (const auto& bm : bookmarks) {
 		if (bm == to_toggle) {
 			was_bookmarked = true;
 			break;
@@ -950,7 +733,7 @@ void document_manager::toggle_bookmark() {
 	speak(was_bookmarked ? _("Bookmark removed") : _("Bookmarked"));
 }
 
-void document_manager::add_bookmark_with_note() {
+void document_manager::add_bookmark_with_note() const {
 	const document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (tab == nullptr || text_ctrl == nullptr) {
@@ -1072,11 +855,15 @@ void document_manager::show_table_of_contents(wxWindow* parent) const {
 }
 
 void document_manager::show_document_info(wxWindow* parent) const {
-	const document* doc = get_active_document();
+	const document_tab* tab = get_active_tab();
+	if (tab == nullptr) {
+		return;
+	}
+	const document* doc = tab->doc.get();
 	if (doc == nullptr) {
 		return;
 	}
-	document_info_dialog dlg(parent, doc);
+	document_info_dialog dlg(parent, doc, tab->file_path);
 	dlg.ShowModal();
 }
 
