@@ -343,6 +343,27 @@ inclusion in this list.</p>
 <h1 id="changelog">Changelog</h1>
 <h2 id="version-0.6">Version 0.6</h2>
 <ul>
+<li>A new option to show the go menu in a far more compact form has been
+added to the options dialog, checked by default.</li>
+<li>Added a quite simple, but very effective, updating system. <a
+href="https://github.com/trypsynth/paperback/issues/28">#28</a>.</li>
+<li>Added support for parsing FB2 ebooks! <a
+href="https://github.com/trypsynth/paperback/issues/30">#30</a>, <a
+href="https://github.com/trypsynth/paperback/pull/107">#107</a>.</li>
+<li>Added support for parsing OpenDocument presentations! <a
+href="https://github.com/trypsynth/paperback/issues/105">#105</a>, <a
+href="https://github.com/trypsynth/paperback/pull/106">#106</a>.</li>
+<li>Added support for parsing OpenDocument Text files! <a
+href="https://github.com/trypsynth/paperback/issues/29">#29</a>, <a
+href="https://github.com/trypsynth/paperback/pull/90">#90</a>.</li>
+<li>Bookmarks in the bookmarks dialog will no longer have an annoying
+“bookmark x” prefix. <a
+href="https://github.com/trypsynth/paperback/issues/86">#86</a>.</li>
+<li>Epub books containing HTML content pretending to be XML will now be
+handled properly. <a
+href="https://github.com/trypsynth/paperback/issues/96">#96</a>.</li>
+<li>Fixed loading large Markdown documents. <a
+href="https://github.com/trypsynth/paperback/issues/97">#97</a>.</li>
 <li>Fixed whitespace handling at the beginning of pre tags in both HTML
 and XHTML documents.</li>
 <li>HTML inside Markdown code blocks will now be rendered properly. <a
@@ -350,6 +371,16 @@ href="https://github.com/trypsynth/paperback/issues/79">#79</a>.</li>
 <li>If loading a book with a command line parameter while an existing
 Paperback instance is running, you’ll no longer get an error if loading
 your document takes more than 5 seconds.</li>
+<li>It is now possible to delete a bookmark directly from within the
+bookmarks dialog. <a
+href="https://github.com/trypsynth/paperback/issues/100">#100</a>, <a
+href="https://github.com/trypsynth/paperback/pull/103">#103</a>.</li>
+<li>Links inside documents are now fully supported! Use k and shift+k to
+move forward and backward through them, and press enter to open/activate
+one. <a href="https://github.com/trypsynth/paperback/issues/74">#74</a>,
+<a href="https://github.com/trypsynth/paperback/pull/87">#87</a>.</li>
+<li>Markdown content is now preprocessed in order to be CommonMark
+compliant before rendering.</li>
 <li>Numpad delete now works to remove documents from the tab bar in
 addition to normal delete.</li>
 <li>Paperback can now optionally minimize to your system tray! This
@@ -358,6 +389,11 @@ option in the system menu put Paperback in your tray, able to be
 restored by clicking on the spawned icon. <a
 href="https://github.com/trypsynth/paperback/issues/49">#49</a>, <a
 href="https://github.com/trypsynth/paperback/pull/85">#85</a>.</li>
+<li>Paperback is now fully translatable! The list of languages it
+supports is currently fairly small, but it’s constantly growing! <a
+href="https://github.com/trypsynth/paperback/issues/75">#75</a>, <a
+href="https://github.com/trypsynth/paperback/pull/92">#92</a>, <a
+href="https://github.com/trypsynth/paperback/pull/95">#95</a>.</li>
 <li>The installer now includes an option to view the readme in your
 browser after installation.</li>
 <li>The recent documents list has been dramatically expanded! Instead of
