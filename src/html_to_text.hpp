@@ -72,6 +72,10 @@ public:
 		return links;
 	}
 
+	[[nodiscard]] const std::vector<table_info>& get_tables() const noexcept {
+		return tables;
+	}
+
 	[[nodiscard]] const std::vector<list_info>& get_lists() const noexcept {
 		return lists;
 	}
@@ -102,6 +106,7 @@ private:
 	std::unordered_map<std::string, size_t> id_positions{};
 	std::vector<heading_info> headings{};
 	std::vector<link_info> links{};
+	std::vector<table_info> tables{};
 	std::vector<list_info> lists{};
 	std::vector<list_item_info> list_items{};
 	std::vector<bool> preserve_line_whitespace{};

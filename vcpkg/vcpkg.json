@@ -1,4 +1,5 @@
 {
+	"builtin-baseline": "b1b19307e2d2ec1eefbdb7ea069de7d4bcd31f01",
 	"name": "paperback",
 	"version": "0.6",
 	"dependencies": [
@@ -15,6 +16,9 @@
 			"name": "poco",
 			"features": ["xml"]
 		},
-		"wxwidgets"
+		{
+			"name": "wxwidgets",
+			"features": ["webview"]
+		}
 	]
 }

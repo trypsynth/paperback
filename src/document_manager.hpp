@@ -77,6 +77,9 @@ public:
 	void go_to_next_bookmark() const;
 	void go_to_previous_link() const;
 	void go_to_next_link() const;
+	void go_to_previous_table();
+	void go_to_next_table();
+	void activate_current_table();
 	void go_to_previous_list() const;
 	void go_to_next_list() const;
 	void go_to_previous_list_item() const;

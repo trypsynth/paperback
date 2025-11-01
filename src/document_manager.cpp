@@ -13,6 +13,7 @@
 #include "dialogs.hpp"
 #include "document.hpp"
 #include "document_buffer.hpp"
+#include "table_dialog.hpp"
 #include "main_window.hpp"
 #include "parser.hpp"
 #include "utils.hpp"
@@ -441,6 +442,54 @@ void document_manager::go_to_next_link() const {
 	navigate_to_link(true);
 }
 
+
+
+void document_manager::go_to_previous_table() {
+	document* doc = get_active_document();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (!doc || !text_ctrl) {
+		return;
+	}
+	if (doc->buffer.count_markers_by_type(marker_type::table) == 0) {
+		speak(_("No tables."));
+		return;
+	}
+	int current_pos = text_ctrl->GetInsertionPoint();
+	int prev_index = doc->buffer.previous_marker_index(current_pos, marker_type::table);
+	if (prev_index == -1) {
+		speak(_("No previous table."));
+		return;
+	}
+	const marker* table_marker = doc->buffer.get_marker(prev_index);
+	if (table_marker) {
+		go_to_position(table_marker->pos);
+		speak(table_marker->text);
+	}
+}
+
+void document_manager::go_to_next_table() {
+	document* doc = get_active_document();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (!doc || !text_ctrl) {
+		return;
+	}
+	if (doc->buffer.count_markers_by_type(marker_type::table) == 0) {
+		speak(_("No tables."));
+		return;
+	}
+	int current_pos = text_ctrl->GetInsertionPoint();
+	int next_index = doc->buffer.next_marker_index(current_pos, marker_type::table);
+	if (next_index == -1) {
+		speak(_("No next table."));
+		return;
+	}
+	const marker* table_marker = doc->buffer.get_marker(next_index);
+	if (table_marker) {
+		go_to_position(table_marker->pos);
+		speak(table_marker->text);
+	}
+}
+
 void document_manager::activate_current_link() const {
 	document* doc = get_active_document();
 	const wxTextCtrl* text_ctrl = get_active_text_ctrl();
@@ -520,6 +569,28 @@ void document_manager::activate_current_link() const {
 		}
 		speak(_("Internal link target not found."));
 	}
+}
+
+void document_manager::activate_current_table() {
+	document* doc = get_active_document();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (!doc || !text_ctrl) {
+		return;
+	}
+	int current_pos = text_ctrl->GetInsertionPoint();
+	int table_index = doc->buffer.current_marker_index(current_pos, marker_type::table);
+	if (table_index == -1) {
+		return;
+	}
+	const marker* table_marker = doc->buffer.get_marker(table_index);
+	if (!table_marker) {
+		return;
+	}
+	if (current_pos < table_marker->pos || current_pos > (table_marker->pos + table_marker->text.length())) {
+		return;
+	}
+	table_dialog dlg(&main_win, _("Table"), table_marker->ref);
+	dlg.ShowModal();
 }
 
 void document_manager::navigate_to_list(bool next) const {
@@ -665,7 +736,7 @@ void document_manager::toggle_bookmark() const {
 	std::vector<bookmark> bookmarks = config.get_bookmarks(tab->file_path);
 	bookmark to_toggle(bookmark_start, bookmark_end);
 	bool was_bookmarked = false;
-	for (const auto& bm : bookmarks) {
+    	for (const auto& bm : bookmarks) {
 		if (bm == to_toggle) {
 			was_bookmarked = true;
 			break;
