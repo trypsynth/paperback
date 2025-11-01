@@ -288,8 +288,6 @@ jump to, if the document supports pages.</li>
 <li>P: go to the next page.</li>
 <li>Shift+B: go to the previous bookmark.</li>
 <li>B: go to the next bookmark.</li>
-<li>Ctrl+Shift+B: toggle a bookmark at your current cursor
-position.</li>
 <li>Ctrl+B: bring up the jump to bookmark dialog.</li>
 <li>Shift+K:” go to the previous link.</li>
 <li>K: go to the next link.</li>
@@ -299,7 +297,12 @@ position.</li>
 <li>Ctrl+W: view the word count of the currently focused document.</li>
 <li>Ctrl+I: bring up the document info dialog.</li>
 <li>Ctrl+T: show the table of contents.</li>
+<li>Ctrl+Shift+B: toggle a bookmark at your current cursor
+position.</li>
+<li>Ctrl+Shift+N: add/edit a bookmarked note at your current cursor
+position.</li>
 <li>Ctrl+Comma: bring up the options dialog.</li>
+<li>Ctrl+Shift+S: toggle the sleep timer.</li>
 </ul>
 <h2 id="about-menu">About menu</h2>
 <ul>
@@ -313,8 +316,8 @@ browser.</li>
 <h2 id="development">Development</h2>
 <ul>
 <li>Quin Gillespie: primary developer and project founder.</li>
-<li>Aryan Choudhary: added multiple new document formats, link support,
-more.</li>
+<li>Aryan Choudhary: added multiple new document formats, link and list
+support, more.</li>
 </ul>
 <h2 id="donations">Donations</h2>
 <p>The following people have made donations of some size to Paperback
@@ -356,6 +359,12 @@ href="https://github.com/trypsynth/paperback/pull/106">#106</a>.</li>
 <li>Added support for parsing OpenDocument Text files! <a
 href="https://github.com/trypsynth/paperback/issues/29">#29</a>, <a
 href="https://github.com/trypsynth/paperback/pull/90">#90</a>.</li>
+<li>Bookmarks can now be made to bookmark an entire line, or to mark
+only some specified text. If you have no selection active when placing a
+bookmark, the behavior is like pre-0.6, and it’ll mark the entire line.
+However, if you select some text, only that text will be included in the
+bookmark. <a
+href="https://github.com/trypsynth/paperback/issues/99">#99</a>.</li>
 <li>Bookmarks in the bookmarks dialog will no longer have an annoying
 “bookmark x” prefix. <a
 href="https://github.com/trypsynth/paperback/issues/86">#86</a>.</li>
@@ -366,6 +375,8 @@ href="https://github.com/trypsynth/paperback/issues/96">#96</a>.</li>
 href="https://github.com/trypsynth/paperback/issues/97">#97</a>.</li>
 <li>Fixed whitespace handling at the beginning of pre tags in both HTML
 and XHTML documents.</li>
+<li>Fixed the rendering of custom HTML IDs in Markdown documents. <a
+href="https://github.com/trypsynth/paperback/issues/113">#113</a>.</li>
 <li>HTML inside Markdown code blocks will now be rendered properly. <a
 href="https://github.com/trypsynth/paperback/issues/79">#79</a>.</li>
 <li>If loading a book with a command line parameter while an existing
@@ -375,6 +386,8 @@ your document takes more than 5 seconds.</li>
 bookmarks dialog. <a
 href="https://github.com/trypsynth/paperback/issues/100">#100</a>, <a
 href="https://github.com/trypsynth/paperback/pull/103">#103</a>.</li>
+<li>It is now possible to create bookmarks with notes attached to them!
+<a href="https://github.com/trypsynth/paperback/issues/68">#68</a>.</li>
 <li>Links inside documents are now fully supported! Use k and shift+k to
 move forward and backward through them, and press enter to open/activate
 one. <a href="https://github.com/trypsynth/paperback/issues/74">#74</a>,
@@ -394,6 +407,8 @@ supports is currently fairly small, but it’s constantly growing! <a
 href="https://github.com/trypsynth/paperback/issues/75">#75</a>, <a
 href="https://github.com/trypsynth/paperback/pull/92">#92</a>, <a
 href="https://github.com/trypsynth/paperback/pull/95">#95</a>.</li>
+<li>Paperback now has an official website, at <a
+href="https://paperback.dev">paperback.dev</a>!</li>
 <li>The installer now includes an option to view the readme in your
 browser after installation.</li>
 <li>The recent documents list has been dramatically expanded! Instead of
