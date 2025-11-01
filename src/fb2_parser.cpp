@@ -24,6 +24,7 @@
 #include <sstream>
 #include <wx/filename.h>
 #include <wx/log.h>
+#include <wx/translation.h>
 #include <wx/wfstream.h>
 
 using namespace Poco;
@@ -34,7 +35,7 @@ inline const XMLString FB2_NS = "http://www.gribuser.ru/xml/fictionbook/2.0";
 std::unique_ptr<document> fb2_parser::load(const wxString& path) const {
 	wxFileInputStream input(path);
 	if (!input.IsOk()) {
-		return nullptr;
+		throw parser_exception(_("Failed to open FB2 file"), path);
 	}
 	const size_t size = input.GetSize();
 	std::string xml_content(size, 0);
@@ -46,7 +47,7 @@ std::unique_ptr<document> fb2_parser::load(const wxString& path) const {
 	}
 	// If the tag isn't found, we'll try to parse the whole file, which may fail but is the best we can do.
 	if (xml_content.empty()) {
-		return nullptr;
+		throw parser_exception(_("FB2 file is empty or could not be read"), path);
 	}
 	try {
 		DOMParser dom_parser;
@@ -66,7 +67,7 @@ std::unique_ptr<document> fb2_parser::load(const wxString& path) const {
 	}
 	xml_to_text converter;
 	if (!converter.convert(xml_content)) {
-		return nullptr;
+		throw parser_exception(_("Failed to convert FB2 XML to text"), path);
 	}
 	auto doc = std::make_unique<document>();
 	doc->buffer.set_content(wxString::FromUTF8(converter.get_text()));

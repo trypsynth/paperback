@@ -23,11 +23,6 @@ typedef HBITMAP__* HBITMAP;
 #include <string>
 #include <vector>
 
-class pdf_parse_error : public std::runtime_error {
-public:
-	using std::runtime_error::runtime_error;
-};
-
 class pdf_parser : public parser {
 public:
 	pdf_parser() = default;

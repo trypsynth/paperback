@@ -50,21 +50,22 @@ jobs:
           build/paperback.zip
           build/paperback_setup.exe
         retention-days: 30
-    - name: Get latest stable tag
+    - name: Get latest tag reachable from HEAD
       id: get_tag
       shell: bash
       run: |
         git fetch --tags
-        echo "tag=$(git tag --sort=-creatordate | grep -E '^v?0\.[0-9]+(\.[0-9]+)?$' | head -n 1)" >> $GITHUB_OUTPUT
+        TAG=$(git describe --tags --abbrev=0)
+        echo "tag=$TAG" >> $GITHUB_OUTPUT
     - name: Generate release notes
       id: release_notes
       shell: bash
       run: |
-        PREV_TAG=$(git tag --sort=-creatordate --list | head -n 1)
+        PREV_TAG="${{ steps.get_tag.outputs.tag }}"
         if [ -z "$PREV_TAG" ]; then
           COMMITS=$(git log --oneline --pretty=format:"- %h: %s" HEAD)
         else
-          COMMITS=$(git log --oneline --pretty=format:"- %h: %s" $PREV_TAG..HEAD)
+          COMMITS=$(git log --oneline --pretty=format:"- %h: %s" "$PREV_TAG"..HEAD)
         fi
         COMMITS="${COMMITS//'%'/'%25'}"
         COMMITS="${COMMITS//$'\n'/'%0A'}"
