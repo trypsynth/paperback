@@ -11,9 +11,45 @@
 #include "document.hpp"
 #include <memory>
 #include <span>
+#include <stdexcept>
 #include <string_view>
 #include <vector>
 #include <wx/string.h>
+
+enum class error_severity {
+	error,
+	warning
+};
+
+class parser_exception : public std::runtime_error {
+public:
+	parser_exception(const wxString& msg, error_severity sev = error_severity::error) : std::runtime_error(msg.ToStdString()), message{msg}, severity{sev} {}
+	parser_exception(const wxString& msg, const wxString& fp, error_severity sev = error_severity::error) : std::runtime_error(msg.ToStdString()), message{msg}, file_path{fp}, severity{sev} {}
+
+	[[nodiscard]] error_severity get_severity() const noexcept {
+		return severity;
+	}
+
+	[[nodiscard]] const wxString& get_file_path() const noexcept {
+		return file_path;
+	}
+
+	[[nodiscard]] const wxString& get_message() const noexcept {\
+		return message;
+	}
+
+	[[nodiscard]] wxString get_display_message() const {
+		if (file_path.IsEmpty()) {
+			return message;
+		}
+		return wxString::Format("%s: %s", file_path, message);
+	}
+
+private:
+	wxString message;
+	wxString file_path;
+	error_severity severity;
+};
 
 enum class parser_flags {
 	none = 0,

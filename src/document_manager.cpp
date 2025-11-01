@@ -42,6 +42,12 @@ document_manager::~document_manager() {
 	save_all_tab_positions();
 }
 
+void document_manager::show_parser_error(const parser_exception& e) {
+	const wxString title = (e.get_severity() == error_severity::warning) ? _("Warning") : _("Error");
+	const long icon = (e.get_severity() == error_severity::warning) ? wxICON_WARNING : wxICON_ERROR;
+	wxMessageBox(e.get_display_message(), title, icon);
+}
+
 bool document_manager::open_file(const wxString& path, bool add_to_recent) {
 	if (!wxFileName::FileExists(path)) {
 		wxMessageBox(wxString::Format(_("File not found: %s"), path), _("Error"), wxICON_ERROR);
@@ -64,7 +70,6 @@ bool document_manager::open_file(const wxString& path, bool add_to_recent) {
 		}
 	}
 	if (!create_document_tab(path, par)) {
-		wxMessageBox(_("Failed to load document."), _("Error"), wxICON_ERROR);
 		return false;
 	}
 	auto* const text_ctrl = get_active_text_ctrl();
@@ -80,7 +85,16 @@ bool document_manager::open_file(const wxString& path, bool add_to_recent) {
 }
 
 bool document_manager::create_document_tab(const wxString& path, const parser* par, bool set_focus) {
-	std::unique_ptr<document> doc = par->load(path);
+	std::unique_ptr<document> doc;
+	try {
+		doc = par->load(path);
+	} catch (const parser_exception& e) {
+		show_parser_error(e);
+		return false;
+	} catch (const std::exception& e) {
+		wxMessageBox(wxString::Format(_("Failed to parse document: %s"), wxString::FromUTF8(e.what())), _("Error"), wxICON_ERROR);
+		return false;
+	}
 	if (!doc) {
 		return false;
 	}

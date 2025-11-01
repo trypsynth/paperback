@@ -30,8 +30,8 @@
 #include <string>
 #include <vector>
 #include <wx/filename.h>
-#include <wx/msgdlg.h>
 #include <wx/string.h>
+#include <wx/translation.h>
 #include <wx/wfstream.h>
 #include <wx/zipstrm.h>
 
@@ -108,11 +108,11 @@ std::unique_ptr<document> docx_parser::load(const wxString& path) const {
 		doc->toc_items = build_toc_from_headings(doc->buffer);
 		return doc;
 	} catch (const Poco::Exception& e) {
-		wxMessageBox("XML parsing error: " + wxString(e.displayText()), "Error", wxICON_ERROR);
-		return nullptr;
+		throw parser_exception(wxString::Format(_("XML parsing error: %s"), wxString::FromUTF8(e.displayText())), path);
+	} catch (const std::exception& e) {
+		throw parser_exception(wxString::Format(_("Error parsing DOCX file: %s"), wxString::FromUTF8(e.what())), path);
 	} catch (...) {
-		wxMessageBox("Unknown error while parsing DOCX file", "Error", wxICON_ERROR);
-		return nullptr;
+		throw parser_exception(_("Unknown error while parsing DOCX file"), path);
 	}
 }
 

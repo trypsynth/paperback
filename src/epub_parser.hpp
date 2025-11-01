@@ -29,11 +29,6 @@ struct manifest_item {
 	std::string media_type;
 };
 
-class parse_error : public std::runtime_error {
-public:
-	using std::runtime_error::runtime_error;
-};
-
 class epub_parser : public parser {
 public:
 	epub_parser() = default;
