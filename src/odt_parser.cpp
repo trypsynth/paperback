@@ -27,6 +27,7 @@
 #include <string>
 #include <wx/filename.h>
 #include <wx/string.h>
+#include <wx/translation.h>
 #include <wx/wfstream.h>
 #include <wx/zipstrm.h>
 
@@ -36,7 +37,7 @@ using namespace Poco::XML;
 std::unique_ptr<document> odt_parser::load(const wxString& file_path) const {
 	wxFileInputStream file_stream(file_path);
 	if (!file_stream.IsOk()) {
-		return nullptr;
+		throw parser_exception(_("Failed to open ODT file"), file_path);
 	}
 	wxZipInputStream zip_stream(file_stream);
 	std::unique_ptr<wxZipEntry> entry;
@@ -48,7 +49,7 @@ std::unique_ptr<document> odt_parser::load(const wxString& file_path) const {
 		}
 	}
 	if (content.empty()) {
-		return nullptr;
+		throw parser_exception(_("ODT file does not contain content.xml or it is empty"), file_path);
 	}
 	try {
 		std::istringstream content_stream(content);
@@ -64,8 +65,8 @@ std::unique_ptr<document> odt_parser::load(const wxString& file_path) const {
 		doc->buffer.finalize_markers();
 		doc->toc_items = build_toc_from_headings(doc->buffer);
 		return doc;
-	} catch (Poco::Exception&) {
-		return nullptr;
+	} catch (const Poco::Exception& e) {
+		throw parser_exception(wxString::Format(_("XML parsing error: %s"), wxString::FromUTF8(e.displayText())), file_path);
 	}
 }
 

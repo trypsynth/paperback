@@ -31,7 +31,6 @@
 #include <utility>
 #include <vector>
 #include <wx/filename.h>
-#include <wx/msgdlg.h>
 #include <wx/string.h>
 #include <wx/translation.h>
 #include <wx/wfstream.h>
@@ -100,20 +99,19 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 		parse_toc(ctx, document_ptr->toc_items, document_ptr->buffer);
 		return document_ptr;
 	} catch (const Exception& e) {
-		wxMessageBox(e.displayText(), _("Error"), wxICON_ERROR);
-		return nullptr;
+		throw parser_exception(wxString::FromUTF8(e.displayText()), path);
 	}
 }
 
 void epub_parser::parse_opf(const std::string& filename, epub_context& ctx) {
 	wxZipEntry* opf_entry = find_zip_entry(filename, ctx.zip_entries);
 	if (opf_entry == nullptr) {
-		throw parse_error("No OPF file found");
+		throw parser_exception("No OPF file found");
 	}
 	ctx.file_stream.SeekI(0);
 	wxZipInputStream zis(ctx.file_stream);
 	if (!zis.OpenEntry(*opf_entry)) {
-		throw parse_error("Failed to open OPF file");
+		throw parser_exception("Failed to open OPF file");
 	}
 	const std::string opf_content = read_zip_entry(zis);
 	std::istringstream opf_stream(opf_content);
@@ -142,7 +140,7 @@ void epub_parser::parse_opf(const std::string& filename, epub_context& ctx) {
 	}
 	const auto* manifest = doc->getNodeByPathNS("opf:package/opf:manifest", nsmap);
 	if (manifest == nullptr) {
-		throw parse_error("No manifest");
+		throw parser_exception("No manifest");
 	}
 	auto* children = manifest->childNodes();
 	for (size_t i = 0; i < children->length(); ++i) {
@@ -169,7 +167,7 @@ void epub_parser::parse_opf(const std::string& filename, epub_context& ctx) {
 	}
 	auto* spine = doc->getNodeByPathNS("opf:package/opf:spine", nsmap);
 	if (spine == nullptr) {
-		throw parse_error("No spine");
+		throw parser_exception("No spine");
 	}
 	if (ctx.toc_ncx_id.empty()) {
 		auto toc_attr = dynamic_cast<Element*>(spine)->getAttribute("toc");
@@ -241,24 +239,24 @@ void epub_parser::process_section_content(conv& converter, const std::string& co
 
 void epub_parser::parse_section(size_t index, epub_context& ctx, document_buffer& buffer) const {
 	if (index >= ctx.spine_items.size()) {
-		throw parse_error("Section index out of range");
+		throw parser_exception("Section index out of range");
 	}
 	const auto& id = ctx.spine_items[index];
 	auto it = ctx.manifest_items.find(id);
 	if (it == ctx.manifest_items.end()) {
-		throw parse_error("Unknown spine item id: " + id);
+		throw parser_exception(wxString::FromUTF8("Unknown spine item id: " + id));
 	}
 	const auto& manifest_item = it->second;
 	const auto& href = manifest_item.path;
 	const auto& media_type = manifest_item.media_type;
 	wxZipEntry* section_entry = find_zip_entry(href, ctx.zip_entries);
 	if (section_entry == nullptr) {
-		throw parse_error("File not found: " + href);
+		throw parser_exception(wxString::FromUTF8("File not found: " + href));
 	}
 	ctx.file_stream.SeekI(0);
 	wxZipInputStream zis(ctx.file_stream);
 	if (!zis.OpenEntry(*section_entry)) {
-		throw parse_error("Failed to open section file: " + href);
+		throw parser_exception(wxString::FromUTF8("Failed to open section file: " + href));
 	}
 	const std::string content = read_zip_entry(zis);
 	if (is_html_content(media_type)) {
@@ -288,7 +286,7 @@ void epub_parser::parse_toc(epub_context& ctx, std::vector<std::unique_ptr<toc_i
 			parse_epub2_ncx(ctx.toc_ncx_id, ctx, toc_items, buffer);
 		}
 	} catch (const Exception& e) {
-		wxMessageBox(wxString::Format(_("Couldn't parse table of contents: %s"), wxString(e.displayText())), _("Warning"), wxICON_WARNING);
+		throw parser_exception(wxString::Format(_("Couldn't parse table of contents: %s"), wxString::FromUTF8(e.displayText())), error_severity::warning);
 	}
 }
 

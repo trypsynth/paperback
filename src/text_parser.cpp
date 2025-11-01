@@ -18,17 +18,18 @@
 #include <wx/filename.h>
 #include <wx/stream.h>
 #include <wx/string.h>
+#include <wx/translation.h>
 #include <wx/wfstream.h>
 
 std::unique_ptr<document> text_parser::load(const wxString& path) const {
 	wxFileInputStream file_stream(path);
 	if (!file_stream.IsOk()) {
-		return nullptr;
+		throw parser_exception(_("Failed to open text file"), path);
 	}
 	wxBufferedInputStream bs(file_stream);
 	const size_t file_size = bs.GetSize();
 	if (file_size == 0) {
-		return nullptr;
+		throw parser_exception(_("Text file is empty"), path);
 	}
 	std::vector<char> buffer(file_size);
 	bs.Read(buffer.data(), file_size);

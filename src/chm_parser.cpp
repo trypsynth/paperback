@@ -24,8 +24,8 @@
 #include <utility>
 #include <vector>
 #include <wx/filename.h>
-#include <wx/msgdlg.h>
 #include <wx/string.h>
+#include <wx/translation.h>
 
 std::unique_ptr<document> chm_parser::load(const wxString& path) const {
 	chmFile* file = nullptr;
@@ -56,18 +56,21 @@ std::unique_ptr<document> chm_parser::load(const wxString& path) const {
 		}
 		chm_close(file);
 		return document_ptr;
+	} catch (const parser_exception&) {
+		if (file != nullptr) {
+			chm_close(file);
+		}
+		throw;
 	} catch (const std::exception& e) {
 		if (file != nullptr) {
 			chm_close(file);
 		}
-		wxMessageBox(wxString::FromUTF8(e.what()), "Error", wxICON_ERROR);
-		return nullptr;
+		throw parser_exception(wxString::FromUTF8(e.what()), path);
 	} catch (...) {
 		if (file != nullptr) {
 			chm_close(file);
 		}
-		wxMessageBox("Unknown error while parsing CHM file", "Error", wxICON_ERROR);
-		return nullptr;
+		throw parser_exception(_("Unknown error while parsing CHM file"), path);
 	}
 }
 

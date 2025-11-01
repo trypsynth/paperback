@@ -106,6 +106,7 @@ private:
 	config_manager& config;
 	main_window& main_win;
 
+	static void show_parser_error(const parser_exception& e);
 	static void setup_text_ctrl(wxTextCtrl* text_ctrl, const wxString& content);
 	void restore_document_position(document_tab* tab) const;
 	wxPanel* create_tab_panel(const wxString& content, document_tab* tab_data);

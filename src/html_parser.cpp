@@ -16,13 +16,14 @@
 #include <wx/filename.h>
 #include <wx/stream.h>
 #include <wx/string.h>
+#include <wx/translation.h>
 #include <wx/txtstrm.h>
 #include <wx/wfstream.h>
 
 std::unique_ptr<document> html_parser::load(const wxString& path) const {
 	wxFileInputStream file_stream(path);
 	if (!file_stream.IsOk()) {
-		return nullptr;
+		throw parser_exception(_("Failed to open HTML file"), path);
 	}
 	wxBufferedInputStream bs(file_stream);
 	wxTextInputStream text_stream(bs);
@@ -32,7 +33,7 @@ std::unique_ptr<document> html_parser::load(const wxString& path) const {
 	}
 	html_to_text converter;
 	if (!converter.convert(content.utf8_string(), html_source_mode::native_html)) {
-		return nullptr;
+		throw parser_exception(_("Failed to convert HTML to text"), path);
 	}
 	auto doc = std::make_unique<document>();
 	const auto& extracted_title = converter.get_title();

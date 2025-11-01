@@ -34,7 +34,6 @@
 #include <utility>
 #include <vector>
 #include <wx/filename.h>
-#include <wx/msgdlg.h>
 #include <wx/string.h>
 #include <wx/translation.h>
 #include <wx/wfstream.h>
@@ -124,7 +123,7 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 						}
 					}
 				} catch (...) {
-					wxMessageBox(_("Parsing of links in the document failed."), _("Warning"), wxICON_WARNING);
+					throw parser_exception(_("Parsing of links in the document failed."), error_severity::warning);
 				}
 			}
 			std::istringstream content_stream(slide_content);
@@ -168,11 +167,11 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 		}
 		return doc;
 	} catch (const Poco::Exception& e) {
-		wxMessageBox("XML parsing error: " + wxString(e.displayText()), "Error", wxICON_ERROR);
-		return nullptr;
+		throw parser_exception(wxString::Format(_("XML parsing error: %s"), wxString::FromUTF8(e.displayText())), path);
+	} catch (const std::exception& e) {
+		throw parser_exception(wxString::Format(_("Error parsing PPTX file: %s"), wxString::FromUTF8(e.what())), path);
 	} catch (...) {
-		wxMessageBox("Unknown error while parsing PPTX file", "Error", wxICON_ERROR);
-		return nullptr;
+		throw parser_exception(_("Unknown error while parsing PPTX file"), path);
 	}
 }
 

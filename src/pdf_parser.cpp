@@ -21,7 +21,6 @@
 #include <utility>
 #include <vector>
 #include <wx/filename.h>
-#include <wx/msgdlg.h>
 #include <wx/string.h>
 
 pdf_parser::pdf_context::pdf_context() {
@@ -38,7 +37,7 @@ pdf_parser::pdf_context::~pdf_context() {
 void pdf_parser::pdf_context::open_document(const wxString& path) {
 	doc = FPDF_LoadDocument(path.ToUTF8().data(), nullptr);
 	if (doc == nullptr) {
-		throw pdf_parse_error("Failed to open PDF document");
+		throw parser_exception("Failed to open PDF document", path);
 	}
 	page_count = FPDF_GetPageCount(doc);
 }
@@ -52,9 +51,10 @@ std::unique_ptr<document> pdf_parser::load(const wxString& path) const {
 		extract_metadata(ctx, document_ptr->title, document_ptr->author, path);
 		extract_toc(ctx, document_ptr->toc_items, document_ptr->buffer);
 		return document_ptr;
+	} catch (const parser_exception&) {
+		throw;
 	} catch (const std::exception& e) {
-		wxMessageBox(wxString::FromUTF8(e.what()), "PDF Parse Error", wxICON_ERROR);
-		return nullptr;
+		throw parser_exception(wxString::FromUTF8(e.what()), path);
 	}
 }
 

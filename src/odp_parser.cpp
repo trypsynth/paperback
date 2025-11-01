@@ -28,6 +28,7 @@
 #include <vector>
 #include <wx/filename.h>
 #include <wx/string.h>
+#include <wx/translation.h>
 #include <wx/wfstream.h>
 #include <wx/zipstrm.h>
 
@@ -41,7 +42,7 @@ inline const XMLString XLINK_NS = "http://www.w3.org/1999/xlink";
 std::unique_ptr<document> odp_parser::load(const wxString& file_path) const {
 	wxFileInputStream file_stream(file_path);
 	if (!file_stream.IsOk()) {
-		return nullptr;
+		throw parser_exception(_("Failed to open ODP file"), file_path);
 	}
 	wxZipInputStream zip_stream(file_stream);
 	std::unique_ptr<wxZipEntry> entry;
@@ -53,7 +54,7 @@ std::unique_ptr<document> odp_parser::load(const wxString& file_path) const {
 		}
 	}
 	if (content.empty()) {
-		return nullptr;
+		throw parser_exception(_("ODP file does not contain content.xml or it is empty"), file_path);
 	}
 	try {
 		std::istringstream content_stream(content);
@@ -67,7 +68,7 @@ std::unique_ptr<document> odp_parser::load(const wxString& file_path) const {
 		std::vector<size_t> slide_positions;
 		const NodeList* pages = p_doc->getElementsByTagNameNS(DRAW_NS, "page");
 		if (pages == nullptr) {
-			return nullptr;
+			throw parser_exception(_("ODP file does not contain any pages"), file_path);
 		}
 		for (unsigned long i = 0; i < pages->length(); ++i) {
 			Node* page_node = pages->item(i);
@@ -88,8 +89,8 @@ std::unique_ptr<document> odp_parser::load(const wxString& file_path) const {
 		}
 		doc->buffer.finalize_markers();
 		return doc;
-	} catch (Exception&) {
-		return nullptr;
+	} catch (const Exception& e) {
+		throw parser_exception(wxString::Format(_("XML parsing error: %s"), wxString::FromUTF8(e.displayText())), file_path);
 	}
 }
 
