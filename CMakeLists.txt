@@ -97,6 +97,12 @@ target_link_libraries(paperback PRIVATE
 	wx::net
 )
 
+if (MSVC)
+    target_compile_options(paperback PRIVATE /W4 /permissive-)
+else()
+    target_compile_options(paperback PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
 if(WIN32)
 	file(GLOB DLLS "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin/*.dll")
 	set(LOCAL_DLLS "")

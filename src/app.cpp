@@ -138,7 +138,7 @@ void app::restore_previous_documents() {
 				continue;
 			}
 		}
-		if (!doc_manager->create_document_tab(path, par, false)) {
+		if (!doc_manager->create_document_tab(path, par, false, false)) {
 			continue;
 		}
 	}
