@@ -85,6 +85,7 @@ bool document_manager::open_file(const wxString& path, bool add_to_recent) {
 }
 
 bool document_manager::create_document_tab(const wxString& path, const parser* par, bool set_focus) {
+	config.import_document_settings(path);
 	std::unique_ptr<document> doc;
 	try {
 		doc = par->load(path);
@@ -798,7 +799,7 @@ void document_manager::show_table_of_contents(wxWindow* parent) const {
 	}
 }
 
-void document_manager::show_document_info(wxWindow* parent) const {
+void document_manager::show_document_info(wxWindow* parent) {
 	const document_tab* tab = get_active_tab();
 	if (tab == nullptr) {
 		return;
@@ -807,8 +808,11 @@ void document_manager::show_document_info(wxWindow* parent) const {
 	if (doc == nullptr) {
 		return;
 	}
-	document_info_dialog dlg(parent, doc, tab->file_path);
+	document_info_dialog dlg(parent, doc, tab->file_path, config);
 	dlg.ShowModal();
+	if (dlg.imported_position > -1) {
+		go_to_position(dlg.imported_position);
+	}
 }
 
 void document_manager::save_document_position(const wxString& path, long position) const {

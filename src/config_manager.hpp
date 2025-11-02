@@ -123,6 +123,8 @@ public:
 	wxString get_document_format(const wxString& path) const;
 	bool needs_migration() const;
 	bool migrate_config();
+	void export_document_settings(const wxString& path);
+	void import_document_settings(const wxString& path);
 
 private:
 	std::unique_ptr<wxFileConfig> config;

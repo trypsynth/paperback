@@ -113,15 +113,22 @@ private:
 
 class document_info_dialog : public dialog {
 public:
-	document_info_dialog(wxWindow* parent, const document* doc, const wxString& file_path);
+	document_info_dialog(wxWindow* parent, const document* doc, const wxString& file_path, config_manager& cfg_mgr);
 	~document_info_dialog() = default;
 	document_info_dialog(const document_info_dialog&) = delete;
 	document_info_dialog& operator=(const document_info_dialog&) = delete;
 	document_info_dialog(document_info_dialog&&) = delete;
 	document_info_dialog& operator=(document_info_dialog&&) = delete;
 
+	long imported_position{-1};
+
 private:
 	wxTextCtrl* info_text_ctrl{nullptr};
+	config_manager& config_mgr;
+	wxString doc_path;
+
+	void on_export_settings(wxCommandEvent& event);
+	void on_import_settings(wxCommandEvent& event);
 };
 
 class find_dialog : public wxDialog {

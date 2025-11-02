@@ -719,6 +719,51 @@ bool config_manager::migrate_config() {
 	return true;
 }
 
+void config_manager::export_document_settings(const wxString& path) {
+	if (!config) {
+		return;
+	}
+	const wxString doc_section = get_document_section(path);
+	const wxString export_path = path + ".paperback";
+	wxFileConfig export_config(APP_NAME, "", export_path, wxEmptyString, wxCONFIG_USE_LOCAL_FILE);
+	config->SetPath(doc_section);
+	export_config.DeleteGroup("/");
+	long index{0};
+	wxString key;
+	bool cont = config->GetFirstEntry(key, index);
+	while (cont) {
+		if (key != "path") {
+			export_config.Write(key, config->Read(key, ""));
+		}
+		cont = config->GetNextEntry(key, index);
+	}
+	config->SetPath("/");
+	export_config.Flush();
+}
+
+void config_manager::import_document_settings(const wxString& path) {
+	if (!config) {
+		return;
+	}
+	const wxString import_path = path + ".paperback";
+	if (!wxFileName::FileExists(import_path)) {
+		return;
+	}
+	wxFileConfig import_config(APP_NAME, "", import_path, wxEmptyString, wxCONFIG_USE_LOCAL_FILE);
+	const wxString doc_section = get_document_section(path);
+	config->SetPath(doc_section);
+	long index{0};
+	wxString key;
+	bool cont = import_config.GetFirstEntry(key, index);
+	while (cont) {
+		config->Write(key, import_config.Read(key, ""));
+		cont = import_config.GetNextEntry(key, index);
+	}
+	config->Write("path", path);
+	config->SetPath("/");
+	config->Flush();
+}
+
 wxString config_manager::get_config_path() {
 	const wxString exe_path = wxStandardPaths::Get().GetExecutablePath();
 	const wxString exe_dir = wxFileName(exe_path).GetPath();
