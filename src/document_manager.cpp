@@ -81,8 +81,6 @@ bool document_manager::open_file(const wxString& path, bool add_to_recent) {
 	return true;
 }
 
-
-
 bool document_manager::create_document_tab(const wxString& path, const parser* par, bool set_focus, bool add_to_recent) {
 	config.import_document_settings(path);
 	std::unique_ptr<document> doc;

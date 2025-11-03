@@ -756,7 +756,6 @@ void config_manager::import_settings_from_file(const wxString& doc_path, const w
 	if (!config || !wxFileName::FileExists(import_path)) {
 		return;
 	}
-
 	wxFileConfig import_config(APP_NAME, "", import_path, wxEmptyString, wxCONFIG_USE_LOCAL_FILE);
 	const wxString doc_section = get_document_section(doc_path);
 	config->SetPath(doc_section);
