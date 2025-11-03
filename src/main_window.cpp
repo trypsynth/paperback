@@ -86,8 +86,6 @@ wxMenu* main_window::create_file_menu() {
 	menu->AppendSubMenu(recent_documents_menu, _("&Recent Documents"));
 	update_recent_documents_menu();
 	menu->AppendSeparator();
-	menu->Append(ID_EXPORT_TO_TEXT, _("&Export to text...\tCtrl+E"));
-	menu->AppendSeparator();
 	menu->Append(wxID_EXIT, _("E&xit"));
 	return menu;
 }
@@ -169,8 +167,9 @@ wxMenu* main_window::create_tools_menu() {
 	menu->AppendSeparator();
 	menu->Append(ID_OPEN_CONTAINING_FOLDER, _("Open &containing folder"));
 	wxMenu* const import_export_menu = new wxMenu();
-	import_export_menu->Append(ID_IMPORT, _("&Import..."));
-	import_export_menu->Append(ID_EXPORT_DOCUMENT_DATA, _("&Export..."));
+	import_export_menu->Append(ID_IMPORT, _("&Import document data..."));
+	import_export_menu->Append(ID_EXPORT_DOCUMENT_DATA, _("&Export document data..."));
+	import_export_menu->Append(ID_EXPORT_TO_TEXT, _("Export document to &plain text...\tCtrl+E"));
 	menu->AppendSubMenu(import_export_menu, _("Import/&Export"));
 	menu->AppendSeparator();
 	menu->Append(ID_TOGGLE_BOOKMARK, _("Toggle bookmark\tCtrl+Shift+B"));
