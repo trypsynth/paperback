@@ -74,6 +74,8 @@ private:
 	void on_close(wxCommandEvent&);
 	void on_close_all(wxCommandEvent&);
 	void on_export(wxCommandEvent&);
+	void on_export_document_data(wxCommandEvent&);
+	void on_import_document_data(wxCommandEvent&);
 	void on_exit(wxCommandEvent&);
 	void on_find(wxCommandEvent&);
 	void on_find_next(wxCommandEvent&);

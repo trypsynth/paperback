@@ -86,8 +86,6 @@ wxMenu* main_window::create_file_menu() {
 	menu->AppendSubMenu(recent_documents_menu, _("&Recent Documents"));
 	update_recent_documents_menu();
 	menu->AppendSeparator();
-	menu->Append(ID_EXPORT, _("&Export...\tCtrl+E"));
-	menu->AppendSeparator();
 	menu->Append(wxID_EXIT, _("E&xit"));
 	return menu;
 }
@@ -168,6 +166,11 @@ wxMenu* main_window::create_tools_menu() {
 	menu->Append(ID_TABLE_OF_CONTENTS, _("Table of contents\tCtrl+T"));
 	menu->AppendSeparator();
 	menu->Append(ID_OPEN_CONTAINING_FOLDER, _("Open &containing folder"));
+	wxMenu* const import_export_menu = new wxMenu();
+	import_export_menu->Append(ID_IMPORT, _("&Import document data..."));
+	import_export_menu->Append(ID_EXPORT_DOCUMENT_DATA, _("&Export document data..."));
+	import_export_menu->Append(ID_EXPORT_TO_TEXT, _("Export document to &plain text...\tCtrl+E"));
+	menu->AppendSubMenu(import_export_menu, _("Import/&Export"));
 	menu->AppendSeparator();
 	menu->Append(ID_TOGGLE_BOOKMARK, _("Toggle bookmark\tCtrl+Shift+B"));
 	menu->Append(ID_BOOKMARK_WITH_NOTE, _("Bookmark with &note\tCtrl+Shift+N"));
@@ -203,7 +206,9 @@ void main_window::bind_events() {
 		{wxID_OPEN, &main_window::on_open},
 		{wxID_CLOSE, &main_window::on_close},
 		{wxID_CLOSE_ALL, &main_window::on_close_all},
-		{ID_EXPORT, &main_window::on_export},
+		{ID_EXPORT_TO_TEXT, &main_window::on_export},
+		{ID_IMPORT, &main_window::on_import_document_data},
+		{ID_EXPORT_DOCUMENT_DATA, &main_window::on_export_document_data},
 		{wxID_EXIT, &main_window::on_exit},
 		{wxID_FIND, &main_window::on_find},
 		{ID_FIND_NEXT, &main_window::on_find_next},
@@ -288,7 +293,6 @@ void main_window::update_ui() {
 	constexpr int doc_items[] = {
 		wxID_CLOSE,
 		wxID_CLOSE_ALL,
-		ID_EXPORT,
 		wxID_FIND,
 		ID_FIND_NEXT,
 		ID_FIND_PREVIOUS,
@@ -328,6 +332,9 @@ void main_window::update_ui() {
 		ID_DOC_INFO,
 		ID_TABLE_OF_CONTENTS,
 		ID_OPEN_CONTAINING_FOLDER,
+		ID_IMPORT,
+		ID_EXPORT_DOCUMENT_DATA,
+		ID_EXPORT_TO_TEXT,
 	};
 	for (const auto id : doc_items) {
 		enable(id, has_doc);
@@ -391,6 +398,38 @@ void main_window::on_export(wxCommandEvent&) {
 	if (!doc_manager->export_document(doc_manager->get_active_tab_index(), file_path)) {
 		wxMessageBox(_("Failed to export document."), _("Error"), wxICON_ERROR);
 	}
+}
+
+void main_window::on_export_document_data(wxCommandEvent&) {
+	auto* const tab = doc_manager->get_active_tab();
+	if (tab == nullptr) {
+		return;
+	}
+	wxFileName fn(tab->file_path);
+	wxFileDialog save_dialog(this, _("Export notes and bookmarks"), fn.GetPath(), fn.GetFullName() + ".paperback", _("Paperback files (*.paperback)|*.paperback"), wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+	if (save_dialog.ShowModal() != wxID_OK) {
+		return;
+	}
+	wxGetApp().get_config_manager().export_document_settings(tab->file_path, save_dialog.GetPath());
+	wxMessageBox(_("Notes and bookmarks exported successfully."), _("Export Successful"), wxOK | wxICON_INFORMATION);
+}
+
+void main_window::on_import_document_data(wxCommandEvent&) {
+	auto* const tab = doc_manager->get_active_tab();
+	if (tab == nullptr) {
+		return;
+	}
+	wxFileName fn(tab->file_path);
+	wxFileDialog open_dialog(this, _("Import notes and bookmarks"), fn.GetPath(), "", _("Paperback files (*.paperback)|*.paperback"), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+	if (open_dialog.ShowModal() != wxID_OK) {
+		return;
+	}
+	wxGetApp().get_config_manager().import_settings_from_file(tab->file_path, open_dialog.GetPath());
+	const long imported_position = wxGetApp().get_config_manager().get_document_position(tab->file_path);
+	if (imported_position >= 0) {
+		doc_manager->go_to_position(imported_position);
+	}
+	wxMessageBox(_("Notes and bookmarks imported successfully."), _("Import Successful"), wxOK | wxICON_INFORMATION);
 }
 
 void main_window::on_exit(wxCommandEvent&) {
