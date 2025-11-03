@@ -14,10 +14,10 @@
 #include "document.hpp"
 #include "parser.hpp"
 #include "translation_manager.hpp"
+#include <algorithm>
 #include <climits>
 #include <cmath>
 #include <cstddef>
-#include <algorithm>
 #include <vector>
 #include <wx/arrstr.h>
 #include <wx/combobox.h>

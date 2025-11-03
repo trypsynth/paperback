@@ -276,9 +276,12 @@ void main_window::on_iconize(wxIconizeEvent& event) {
 }
 
 void main_window::on_activate(wxActivateEvent& event) {
-	if (event.GetActive() && sleep_timer->IsRunning()) {
-		sleep_timer->StartOnce(sleep_timer_duration_minutes * 60 * 1000);
-		sleep_timer_start_time = wxGetLocalTimeMillis();
+	if (event.GetActive()) {
+		CallAfter([this]() { restore_focus_to_text(); });
+		if (sleep_timer->IsRunning()) {
+			sleep_timer->StartOnce(sleep_timer_duration_minutes * 60 * 1000);
+			sleep_timer_start_time = wxGetLocalTimeMillis();
+		}
 	}
 	event.Skip();
 }
@@ -704,6 +707,18 @@ void main_window::on_options(wxCommandEvent&) {
 	}
 	config_mgr.flush();
 	update_recent_documents_menu();
+}
+
+void main_window::restore_focus_to_text() {
+	if (find_dlg != nullptr && find_dlg->IsShown()) {
+		find_dlg->Raise();
+		find_dlg->focus_find_text();
+		return;
+	}
+	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
+	if (text_ctrl != nullptr) {
+		text_ctrl->SetFocus();
+	}
 }
 
 void main_window::on_about(wxCommandEvent&) {

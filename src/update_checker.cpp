@@ -175,7 +175,6 @@ void check_for_updates(bool silent) {
 					});
 				}
 			}
-		}
-	}, req_id);
+		} }, req_id);
 	request.Start();
 }

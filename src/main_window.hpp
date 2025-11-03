@@ -37,6 +37,7 @@ public:
 		return live_region_label;
 	}
 
+	void restore_focus_to_text();
 	void on_text_cursor_changed(wxEvent& event);
 	void on_text_char(wxKeyEvent& event);
 	void trigger_throttled_position_save();

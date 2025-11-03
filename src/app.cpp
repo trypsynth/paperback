@@ -163,7 +163,10 @@ void app::restore_previous_documents() {
 void app::open_file(const wxString& filename) {
 	if (filename == IPC_COMMAND_ACTIVATE) {
 		if (frame != nullptr) {
+			frame->Show(true);
+			frame->Iconize(false);
 			frame->Raise();
+			frame->CallAfter([frm = frame] { frm->restore_focus_to_text(); });
 		}
 		return;
 	}
