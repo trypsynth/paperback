@@ -406,7 +406,7 @@ void document_info_dialog::on_export_settings(wxCommandEvent& /*event*/) {
 	if (save_dialog.ShowModal() != wxID_OK) {
 		return;
 	}
-	config_mgr.export_document_settings(doc_path);
+	config_mgr.export_document_settings(doc_path, save_dialog.GetPath());
 	wxMessageBox(_("Notes and bookmarks exported successfully."), _("Export Successful"), wxOK | wxICON_INFORMATION);
 }
 

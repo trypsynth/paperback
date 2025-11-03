@@ -123,7 +123,7 @@ public:
 	wxString get_document_format(const wxString& path) const;
 	bool needs_migration() const;
 	bool migrate_config();
-	void export_document_settings(const wxString& path);
+	void export_document_settings(const wxString& doc_path, const wxString& export_path);
 	void import_document_settings(const wxString& path);
 
 private:

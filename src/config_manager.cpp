@@ -719,12 +719,11 @@ bool config_manager::migrate_config() {
 	return true;
 }
 
-void config_manager::export_document_settings(const wxString& path) {
+void config_manager::export_document_settings(const wxString& doc_path, const wxString& export_path) {
 	if (!config) {
 		return;
 	}
-	const wxString doc_section = get_document_section(path);
-	const wxString export_path = path + ".paperback";
+	const wxString doc_section = get_document_section(doc_path);
 	wxFileConfig export_config(APP_NAME, "", export_path, wxEmptyString, wxCONFIG_USE_LOCAL_FILE);
 	config->SetPath(doc_section);
 	export_config.DeleteGroup("/");
