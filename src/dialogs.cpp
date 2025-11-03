@@ -416,7 +416,7 @@ void document_info_dialog::on_import_settings(wxCommandEvent& /*event*/) {
 	if (open_dialog.ShowModal() != wxID_OK) {
 		return;
 	}
-	config_mgr.import_document_settings(doc_path);
+	config_mgr.import_settings_from_file(doc_path, open_dialog.GetPath());
 	imported_position = config_mgr.get_document_position(doc_path);
 	wxMessageBox(_("Notes and bookmarks imported successfully."), _("Import Successful"), wxOK | wxICON_INFORMATION);
 }

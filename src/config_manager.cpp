@@ -748,8 +748,16 @@ void config_manager::import_document_settings(const wxString& path) {
 	if (!wxFileName::FileExists(import_path)) {
 		return;
 	}
+	import_settings_from_file(path, import_path);
+}
+
+void config_manager::import_settings_from_file(const wxString& doc_path, const wxString& import_path) {
+	if (!config || !wxFileName::FileExists(import_path)) {
+		return;
+	}
+
 	wxFileConfig import_config(APP_NAME, "", import_path, wxEmptyString, wxCONFIG_USE_LOCAL_FILE);
-	const wxString doc_section = get_document_section(path);
+	const wxString doc_section = get_document_section(doc_path);
 	config->SetPath(doc_section);
 	long index{0};
 	wxString key;
@@ -758,7 +766,7 @@ void config_manager::import_document_settings(const wxString& path) {
 		config->Write(key, import_config.Read(key, ""));
 		cont = import_config.GetNextEntry(key, index);
 	}
-	config->Write("path", path);
+	config->Write("path", doc_path);
 	config->SetPath("/");
 	config->Flush();
 }
