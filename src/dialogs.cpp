@@ -387,38 +387,8 @@ document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc
 	info_text_ctrl->SetValue(info_text);
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	content_sizer->Add(info_text_ctrl, 1, wxEXPAND);
-	auto* button_sizer = new wxBoxSizer(wxHORIZONTAL);
-	auto* export_button = new wxButton(this, wxID_ANY, _("&Export"));
-	auto* import_button = new wxButton(this, wxID_ANY, _("&Import"));
-	button_sizer->Add(export_button, 0, wxRIGHT, DIALOG_PADDING);
-	button_sizer->Add(import_button, 0, wxRIGHT, DIALOG_PADDING);
-	content_sizer->Add(button_sizer, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);
 	set_content(content_sizer);
 	finalize_layout();
-
-	Bind(wxEVT_BUTTON, &document_info_dialog::on_export_settings, this, export_button->GetId());
-	Bind(wxEVT_BUTTON, &document_info_dialog::on_import_settings, this, import_button->GetId());
-}
-
-void document_info_dialog::on_export_settings(wxCommandEvent& /*event*/) {
-	wxFileName fn(doc_path);
-	wxFileDialog save_dialog(this, _("Export notes and bookmarks"), fn.GetPath(), fn.GetFullName() + ".paperback", _("Paperback files (*.paperback)|*.paperback"), wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
-	if (save_dialog.ShowModal() != wxID_OK) {
-		return;
-	}
-	config_mgr.export_document_settings(doc_path, save_dialog.GetPath());
-	wxMessageBox(_("Notes and bookmarks exported successfully."), _("Export Successful"), wxOK | wxICON_INFORMATION);
-}
-
-void document_info_dialog::on_import_settings(wxCommandEvent& /*event*/) {
-	wxFileName fn(doc_path);
-	wxFileDialog open_dialog(this, _("Import notes and bookmarks"), fn.GetPath(), "", _("Paperback files (*.paperback)|*.paperback"), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-	if (open_dialog.ShowModal() != wxID_OK) {
-		return;
-	}
-	config_mgr.import_settings_from_file(doc_path, open_dialog.GetPath());
-	imported_position = config_mgr.get_document_position(doc_path);
-	wxMessageBox(_("Notes and bookmarks imported successfully."), _("Import Successful"), wxOK | wxICON_INFORMATION);
 }
 
 find_dialog::find_dialog(wxWindow* parent) : wxDialog(parent, wxID_ANY, _("Find")) {

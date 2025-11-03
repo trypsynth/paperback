@@ -126,9 +126,6 @@ private:
 	wxTextCtrl* info_text_ctrl{nullptr};
 	config_manager& config_mgr;
 	wxString doc_path;
-
-	void on_export_settings(wxCommandEvent& event);
-	void on_import_settings(wxCommandEvent& event);
 };
 
 class find_dialog : public wxDialog {
