@@ -51,15 +51,15 @@ private:
 	std::unique_ptr<document_manager> doc_manager;
 	wxNotebook* notebook{nullptr};
 	wxStatusBar* status_bar{nullptr};
-	wxTimer* position_save_timer{nullptr};
-	wxTimer* status_update_timer{nullptr};
+	std::unique_ptr<wxTimer> position_save_timer;
+	std::unique_ptr<wxTimer> status_update_timer;
 	wxLongLong last_status_update_time{0};
 	find_dialog* find_dlg{nullptr};
 	wxMenu* recent_documents_menu{nullptr};
 	wxStaticText* live_region_label{nullptr};
 	task_bar_icon* task_bar_icon_{nullptr};
-	wxTimer* sleep_timer{nullptr};
-	wxTimer* sleep_status_update_timer{nullptr};
+	std::unique_ptr<wxTimer> sleep_timer;
+	std::unique_ptr<wxTimer> sleep_status_update_timer;
 	int sleep_timer_duration_minutes{0};
 	wxLongLong sleep_timer_start_time{0};
 

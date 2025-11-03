@@ -23,8 +23,10 @@ enum class error_severity {
 
 class parser_exception : public std::runtime_error {
 public:
-	parser_exception(const wxString& msg, error_severity sev = error_severity::error) : std::runtime_error(msg.ToStdString()), message{msg}, severity{sev} {}
-	parser_exception(const wxString& msg, const wxString& fp, error_severity sev = error_severity::error) : std::runtime_error(msg.ToStdString()), message{msg}, file_path{fp}, severity{sev} {}
+	parser_exception(const wxString& msg, error_severity sev = error_severity::error) : std::runtime_error(msg.ToStdString()), message{msg}, severity{sev} {
+	}
+	parser_exception(const wxString& msg, const wxString& fp, error_severity sev = error_severity::error) : std::runtime_error(msg.ToStdString()), message{msg}, file_path{fp}, severity{sev} {
+	}
 
 	[[nodiscard]] error_severity get_severity() const noexcept {
 		return severity;
@@ -34,7 +36,7 @@ public:
 		return file_path;
 	}
 
-	[[nodiscard]] const wxString& get_message() const noexcept {\
+	[[nodiscard]] const wxString& get_message() const noexcept {
 		return message;
 	}
 

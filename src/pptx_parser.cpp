@@ -112,8 +112,8 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 					rels_parser.setFeature(XMLReader::FEATURE_NAMESPACES, true);
 					AutoPtr<Document> rels_doc = rels_parser.parse(&rels_source);
 					const NodeList* rel_nodes = rels_doc->getElementsByTagNameNS(REL_NS, "Relationship");
-					for (unsigned long i = 0; i < rel_nodes->length(); ++i) {
-						Node* node = rel_nodes->item(i);
+					for (unsigned long j = 0; j < rel_nodes->length(); ++j) {
+						Node* node = rel_nodes->item(j);
 						auto* element = dynamic_cast<Element*>(node);
 						const std::string id = element->getAttribute("Id");
 						const std::string target = element->getAttribute("Target");

@@ -22,7 +22,7 @@
 #include <wx/timer.h>
 #include <wx/translation.h>
 
-main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME), task_bar_icon_{new task_bar_icon(this)}, position_save_timer{new wxTimer(this)}, status_update_timer{new wxTimer(this)}, sleep_timer{new wxTimer(this)}, sleep_status_update_timer{new wxTimer(this)} {
+main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME), task_bar_icon_{new task_bar_icon(this)}, position_save_timer{std::make_unique<wxTimer>(this)}, status_update_timer{std::make_unique<wxTimer>(this)}, sleep_timer{std::make_unique<wxTimer>(this)}, sleep_status_update_timer{std::make_unique<wxTimer>(this)} {
 	auto* const panel = new wxPanel(this);
 	notebook = new wxNotebook(panel, wxID_ANY);
 #ifdef __WXMSW__
@@ -48,21 +48,17 @@ main_window::~main_window() {
 		task_bar_icon_->Destroy();
 		task_bar_icon_ = nullptr;
 	}
-	if (position_save_timer != nullptr) {
+	if (position_save_timer) {
 		position_save_timer->Stop();
-		position_save_timer = nullptr;
 	}
-	if (status_update_timer != nullptr) {
+	if (status_update_timer) {
 		status_update_timer->Stop();
-		status_update_timer = nullptr;
 	}
-	if (sleep_timer != nullptr) {
+	if (sleep_timer) {
 		sleep_timer->Stop();
-		sleep_timer = nullptr;
 	}
-	if (sleep_status_update_timer != nullptr) {
+	if (sleep_status_update_timer) {
 		sleep_status_update_timer->Stop();
-		sleep_status_update_timer = nullptr;
 	}
 	if (find_dlg != nullptr) {
 		find_dlg->Destroy();

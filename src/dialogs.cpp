@@ -72,9 +72,9 @@ void dialog::create_buttons() {
 all_documents_dialog::all_documents_dialog(wxWindow* parent, config_manager& cfg_mgr, const wxArrayString& open_docs) : dialog(parent, _("All Documents"), dialog_button_config::ok_only), config_mgr(cfg_mgr), open_doc_paths(open_docs) {
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	auto* search_sizer = new wxBoxSizer(wxHORIZONTAL);
-	auto* search_lable= new wxStaticText(this, wxID_ANY, _("&search"));
+	auto* search_label = new wxStaticText(this, wxID_ANY, _("&search"));
 	search_ctrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(300, -1));
-	search_sizer->Add(search_lable, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
+	search_sizer->Add(search_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
 	search_sizer->Add(search_ctrl, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
 	content_sizer->Add(search_sizer, 0, wxEXPAND | wxALL, DIALOG_PADDING);
 	constexpr int list_width = 800;
@@ -89,12 +89,12 @@ all_documents_dialog::all_documents_dialog(wxWindow* parent, config_manager& cfg
 	populate_document_list();
 	content_sizer->Add(doc_list, 1, wxEXPAND | wxALL, DIALOG_PADDING);
 	doc_list->SetFocus();
-	auto* button_sizer = new wxBoxSizer(wxHORIZONTAL);
+	auto* action_sizer = new wxBoxSizer(wxHORIZONTAL);
 	open_button = new wxButton(this, wxID_OPEN, _("&Open"));
 	auto* remove_button = new wxButton(this, wxID_REMOVE, _("&Remove"));
-	button_sizer->Add(open_button, 0, wxRIGHT, DIALOG_PADDING);
-	button_sizer->Add(remove_button, 0, wxRIGHT, DIALOG_PADDING);
-	content_sizer->Add(button_sizer, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);
+	action_sizer->Add(open_button, 0, wxRIGHT, DIALOG_PADDING);
+	action_sizer->Add(remove_button, 0, wxRIGHT, DIALOG_PADDING);
+	content_sizer->Add(action_sizer, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);
 	set_content(content_sizer);
 	finalize_layout();
 	Bind(wxEVT_BUTTON, &all_documents_dialog::on_open, this, wxID_OPEN);
@@ -247,17 +247,17 @@ bookmark_dialog::bookmark_dialog(wxWindow* parent, const std::vector<bookmark>& 
 	}
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	content_sizer->Add(bookmark_list, 1, wxEXPAND | wxALL, DIALOG_PADDING);
-	auto* button_sizer = new wxStdDialogButtonSizer();
+	auto* action_sizer = new wxStdDialogButtonSizer();
 	edit_note_button = new wxButton(this, wxID_EDIT, _("&Edit Note"));
 	delete_button = new wxButton(this, wxID_DELETE, _("&Delete"));
 	jump_button = new wxButton(this, wxID_OK, _("&Jump"));
 	auto* cancel_button = new wxButton(this, wxID_CANCEL, _("&Cancel"));
-	button_sizer->AddButton(edit_note_button);
-	button_sizer->AddButton(delete_button);
-	button_sizer->AddButton(jump_button);
-	button_sizer->AddButton(cancel_button);
-	button_sizer->Realize();
-	content_sizer->Add(button_sizer, 0, wxALIGN_RIGHT | wxALL, DIALOG_PADDING);
+	action_sizer->AddButton(edit_note_button);
+	action_sizer->AddButton(delete_button);
+	action_sizer->AddButton(jump_button);
+	action_sizer->AddButton(cancel_button);
+	action_sizer->Realize();
+	content_sizer->Add(action_sizer, 0, wxALIGN_RIGHT | wxALL, DIALOG_PADDING);
 	set_content(content_sizer);
 	SetSizerAndFit(main_sizer);
 	CentreOnParent();

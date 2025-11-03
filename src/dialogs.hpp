@@ -20,8 +20,8 @@
 #include <wx/dialog.h>
 #include <wx/listbox.h>
 #include <wx/listctrl.h>
-#include <wx/srchctrl.h>
 #include <wx/spinctrl.h>
+#include <wx/srchctrl.h>
 #include <wx/textctrl.h>
 #include <wx/timer.h>
 #include <wx/treectrl.h>

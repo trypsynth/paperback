@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
+#include <limits>
 #include <map>
 #include <memory>
 #include <sstream>
@@ -451,7 +452,7 @@ std::unique_ptr<toc_item> epub_parser::parse_epub3_nav_item(Element* li_element,
 		} else {
 			item->name = wxString::FromUTF8(li_element->innerText()).BeforeFirst('\n').Trim();
 		}
-		item->offset = -1;
+		item->offset = std::numeric_limits<size_t>::max();
 	}
 	auto* ol_nodes = li_element->getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "ol");
 	if (ol_nodes->length() > 0) {

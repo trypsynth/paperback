@@ -69,7 +69,7 @@ bool document_manager::open_file(const wxString& path, bool add_to_recent) {
 			return false;
 		}
 	}
-	if (!create_document_tab(path, par)) {
+	if (!create_document_tab(path, par, true, add_to_recent)) {
 		return false;
 	}
 	auto* const text_ctrl = get_active_text_ctrl();
@@ -77,14 +77,13 @@ bool document_manager::open_file(const wxString& path, bool add_to_recent) {
 		text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, &main_win);
 		text_ctrl->Bind(wxEVT_CHAR, &main_window::on_text_char, &main_win);
 	}
-	if (add_to_recent) {
-		config.add_recent_document(path);
-	}
 	update_ui();
 	return true;
 }
 
-bool document_manager::create_document_tab(const wxString& path, const parser* par, bool set_focus) {
+
+
+bool document_manager::create_document_tab(const wxString& path, const parser* par, bool set_focus, bool add_to_recent) {
 	config.import_document_settings(path);
 	std::unique_ptr<document> doc;
 	try {
@@ -111,7 +110,9 @@ bool document_manager::create_document_tab(const wxString& path, const parser* p
 	if (set_focus) {
 		tab_data->text_ctrl->SetFocus();
 	}
-	config.add_recent_document(path);
+	if (add_to_recent) {
+		config.add_recent_document(path);
+	}
 	config.set_document_opened(path, true);
 	return true;
 }
@@ -152,12 +153,19 @@ bool document_manager::export_document(int index, const wxString& export_path) c
 	if (tab == nullptr || tab->text_ctrl == nullptr) {
 		return false;
 	}
-	wxFile file;
-	if (!file.Open(export_path, wxFile::write)) {
+	const wxString content = tab->text_ctrl->GetValue();
+	const wxCharBuffer buf = content.ToUTF8();
+	if (!buf.data()) {
 		return false;
 	}
-	file.Write(tab->text_ctrl->GetValue());
-	return true;
+	FILE* f = wxFopen(export_path, "wb");
+	if (!f) {
+		return false;
+	}
+	const size_t len = std::strlen(buf.data());
+	const size_t written = std::fwrite(buf.data(), 1, len, f);
+	std::fclose(f);
+	return written == len;
 }
 
 document_tab* document_manager::get_tab(int index) const {
