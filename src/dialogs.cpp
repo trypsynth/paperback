@@ -17,6 +17,8 @@
 #include <climits>
 #include <cmath>
 #include <cstddef>
+#include <algorithm>
+#include <vector>
 #include <wx/arrstr.h>
 #include <wx/combobox.h>
 #include <wx/defs.h>
@@ -178,8 +180,33 @@ void all_documents_dialog::on_key_down(wxKeyEvent& event) {
 
 void all_documents_dialog::populate_document_list(const wxString& filter) {
 	doc_list->DeleteAllItems();
-	doc_paths = config_mgr.get_all_documents();
-	doc_paths.Sort();
+	const wxArrayString recent = config_mgr.get_recent_documents();
+	const wxArrayString all = config_mgr.get_all_documents();
+	doc_paths.Clear();
+	for (const auto& path : recent) {
+		if (doc_paths.Index(path) == wxNOT_FOUND) {
+			doc_paths.Add(path);
+		}
+	}
+	std::vector<wxString> rest;
+	rest.reserve(all.GetCount());
+	for (const auto& path : all) {
+		if (doc_paths.Index(path) == wxNOT_FOUND) {
+			rest.push_back(path);
+		}
+	}
+	std::sort(rest.begin(), rest.end(), [](const wxString& a, const wxString& b) {
+		const wxString an = wxFileName(a).GetFullName();
+		const wxString bn = wxFileName(b).GetFullName();
+		const int cmp = an.CmpNoCase(bn);
+		if (cmp != 0) {
+			return cmp < 0;
+		}
+		return a.CmpNoCase(b) < 0;
+	});
+	for (const auto& path : rest) {
+		doc_paths.Add(path);
+	}
 	for (const auto& path : doc_paths) {
 		const wxFileName fn(path);
 		if (!filter.IsEmpty() && fn.GetFullName().Lower().Find(filter.Lower()) == wxNOT_FOUND) {
