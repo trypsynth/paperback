@@ -293,7 +293,6 @@ void main_window::update_ui() {
 	constexpr int doc_items[] = {
 		wxID_CLOSE,
 		wxID_CLOSE_ALL,
-		ID_EXPORT_TO_TEXT,
 		wxID_FIND,
 		ID_FIND_NEXT,
 		ID_FIND_PREVIOUS,
@@ -333,6 +332,9 @@ void main_window::update_ui() {
 		ID_DOC_INFO,
 		ID_TABLE_OF_CONTENTS,
 		ID_OPEN_CONTAINING_FOLDER,
+		ID_IMPORT,
+		ID_EXPORT_DOCUMENT_DATA,
+		ID_EXPORT_TO_TEXT,
 	};
 	for (const auto id : doc_items) {
 		enable(id, has_doc);
