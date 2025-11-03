@@ -612,13 +612,13 @@ bool config_manager::migrate_config() {
 	if (version == CONFIG_VERSION_LEGACY) {
 		config->SetPath("/");
 		const bool restore_docs = config->ReadBool("restore_previous_documents", true);
-		const bool word_wrap = config->ReadBool("word_wrap", false);
+		const bool wordwrap = config->ReadBool("word_wrap", false);
 		config->SetPath("/app");
 		if (!config->HasEntry("restore_previous_documents")) {
 			config->Write("restore_previous_documents", restore_docs);
 		}
 		if (!config->HasEntry("word_wrap")) {
-			config->Write("word_wrap", word_wrap);
+			config->Write("word_wrap", wordwrap);
 		}
 		config->SetPath("/positions");
 		wxString key;

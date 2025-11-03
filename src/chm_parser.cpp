@@ -16,6 +16,7 @@
 #include <chm_lib.h>
 #include <functional>
 #include <lexbor/html/interfaces/document.h>
+#include <limits>
 #include <map>
 #include <memory>
 #include <set>
@@ -256,7 +257,7 @@ void chm_parser::parse_hhc_file(chm_context& ctx, std::vector<std::unique_ptr<to
 			std::ranges::transform(tag_str, tag_str.begin(), [](unsigned char c) { return std::tolower(c); });
 			if (tag_str == "li") {
 				auto item = std::make_unique<toc_item>();
-				item->offset = -1;
+				item->offset = std::numeric_limits<size_t>::max();
 				std::string name_str;
 				std::string local_str;
 				for (lxb_dom_node_t* li_child = child->first_child; li_child != nullptr; li_child = li_child->next) {

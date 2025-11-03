@@ -63,7 +63,7 @@ std::unique_ptr<document> fb2_parser::load(const wxString& path) const {
 		DOMWriter writer;
 		writer.writeNode(oss_cleaned_xml, poco_dom_doc);
 		xml_content = oss_cleaned_xml.str();
-	} catch (const Exception& exc) {
+	} catch (const Exception&) {
 	}
 	xml_to_text converter;
 	if (!converter.convert(xml_content)) {

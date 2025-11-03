@@ -185,16 +185,16 @@ void docx_parser::process_paragraph(Element* element, wxString& text, std::vecto
 						if (field_node->nodeType() == Node::ELEMENT_NODE && dynamic_cast<Element*>(field_node)->localName() == "r") {
 							auto* field_run = dynamic_cast<Element*>(field_node);
 							const Element* fld_char_element = nullptr;
-							Node* node = field_run->firstChild();
-							while (node != nullptr) {
-								if (node->nodeType() == Node::ELEMENT_NODE) {
-									auto* el = dynamic_cast<Element*>(node);
+							Node* child_node = field_run->firstChild();
+							while (child_node != nullptr) {
+								if (child_node->nodeType() == Node::ELEMENT_NODE) {
+									auto* el = dynamic_cast<Element*>(child_node);
 									if (el->localName() == "fldChar" && el->namespaceURI() == WORDML_NS) {
 										fld_char_element = el;
 										break;
 									}
 								}
-								node = node->nextSibling();
+								child_node = child_node->nextSibling();
 							}
 							if (fld_char_element != nullptr) {
 								const std::string type = fld_char_element->getAttributeNS(WORDML_NS, "fldCharType");

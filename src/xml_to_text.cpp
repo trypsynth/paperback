@@ -148,8 +148,8 @@ void xml_to_text::process_node(Node* node) {
 			auto* child = node->firstChild();
 			while (child != nullptr) {
 				if (child->nodeType() == Node::ELEMENT_NODE) {
-					auto* element = dynamic_cast<Element*>(child);
-					std::string child_tag_name = element->localName();
+					auto* child_element = dynamic_cast<Element*>(child);
+					std::string child_tag_name = child_element->localName();
 					if (child_tag_name == "li") {
 						item_count++;
 					}

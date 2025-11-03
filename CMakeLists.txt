@@ -98,9 +98,9 @@ target_link_libraries(paperback PRIVATE
 )
 
 if (MSVC)
-    target_compile_options(paperback PRIVATE /W4 /permissive-)
+	target_compile_options(paperback PRIVATE /W4 /permissive- /WX)
 else()
-    target_compile_options(paperback PRIVATE -Wall -Wextra -Wpedantic)
+	target_compile_options(paperback PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 if(WIN32)

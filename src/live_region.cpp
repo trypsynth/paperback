@@ -48,7 +48,7 @@ bool set_live_region(wxWindow* window, live_region_mode mode) {
 	VARIANT var{};
 	var.vt = VT_I4;
 	var.lVal = static_cast<int>(mode);
-	const HRESULT hr = get_acc_prop_services()->SetHwndProp(hwnd, OBJID_CLIENT, CHILDID_SELF, LiveSetting_Property_GUID, var);
+	const HRESULT hr = get_acc_prop_services()->SetHwndProp(hwnd, static_cast<DWORD>(OBJID_CLIENT), static_cast<DWORD>(CHILDID_SELF), LiveSetting_Property_GUID, var);
 	return SUCCEEDED(hr);
 }
 
