@@ -23,6 +23,7 @@
 #include <wx/stdpaths.h>
 #include <wx/string.h>
 #include <wx/tokenzr.h>
+#include <wx/utils.h>
 
 namespace {
 inline bool read_config_value(wxFileConfig* cfg, const wxString& key, bool default_val) {
@@ -722,9 +723,23 @@ bool config_manager::migrate_config() {
 wxString config_manager::get_config_path() {
 	const wxString exe_path = wxStandardPaths::Get().GetExecutablePath();
 	const wxString exe_dir = wxFileName(exe_path).GetPath();
+#ifdef __WXMSW__
+	bool force_appdata = false;
+	wxString program_files_path;
+	wxGetEnv("ProgramFiles", &program_files_path);
+	wxString program_files_x86_path;
+	wxGetEnv("ProgramFiles(x86)", &program_files_x86_path);
+	if ((!program_files_path.IsEmpty() && exe_path.StartsWith(program_files_path)) || (!program_files_x86_path.IsEmpty() && exe_path.StartsWith(program_files_x86_path))) {
+		force_appdata = true;
+	}
+	if (!force_appdata && is_directory_writable(exe_dir)) {
+		return exe_dir + wxFileName::GetPathSeparator() + APP_NAME + ".ini";
+	}
+#else
 	if (is_directory_writable(exe_dir)) {
 		return exe_dir + wxFileName::GetPathSeparator() + APP_NAME + ".ini";
 	}
+#endif
 	const wxString appdata_dir = wxStandardPaths::Get().GetUserDataDir();
 	if (!wxFileName::DirExists(appdata_dir)) {
 		wxFileName::Mkdir(appdata_dir, wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
