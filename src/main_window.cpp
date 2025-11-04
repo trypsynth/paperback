@@ -460,7 +460,19 @@ void main_window::on_find(wxCommandEvent&) {
 }
 
 void main_window::on_find_next(wxCommandEvent&) {
-	if (find_dlg != nullptr && find_dlg->IsShown()) {
+	if (find_dlg == nullptr) {
+		find_dlg = new find_dialog(this);
+	}
+	if (find_dlg->get_find_text().IsEmpty()) {
+		if (auto* const text_ctrl = doc_manager->get_active_text_ctrl(); text_ctrl != nullptr) {
+			long start{0}, end{0};
+			text_ctrl->GetSelection(&start, &end);
+			if (start != end) {
+				find_dlg->set_find_text(text_ctrl->GetStringSelection());
+			}
+		}
+	}
+	if (!find_dlg->get_find_text().IsEmpty()) {
 		do_find(true);
 	} else {
 		wxCommandEvent evt{};
@@ -469,7 +481,19 @@ void main_window::on_find_next(wxCommandEvent&) {
 }
 
 void main_window::on_find_previous(wxCommandEvent&) {
-	if (find_dlg != nullptr && find_dlg->IsShown()) {
+	if (find_dlg == nullptr) {
+		find_dlg = new find_dialog(this);
+	}
+	if (find_dlg->get_find_text().IsEmpty()) {
+		if (auto* const text_ctrl = doc_manager->get_active_text_ctrl(); text_ctrl != nullptr) {
+			long start{0}, end{0};
+			text_ctrl->GetSelection(&start, &end);
+			if (start != end) {
+				find_dlg->set_find_text(text_ctrl->GetStringSelection());
+			}
+		}
+	}
+	if (!find_dlg->get_find_text().IsEmpty()) {
 		do_find(false);
 	} else {
 		wxCommandEvent evt{};

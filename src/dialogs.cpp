@@ -521,7 +521,11 @@ void find_dialog::on_cancel(wxCommandEvent& /*event*/) {
 }
 
 void find_dialog::on_find_text_enter(wxCommandEvent& event) {
-	on_find_next(event);
+    const bool has_text = !get_find_text().IsEmpty();
+    on_find_next(event);
+    if (has_text) {
+        Hide();
+    }
 }
 
 void find_dialog::on_close(wxCloseEvent& /*event*/) {
