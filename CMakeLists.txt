@@ -40,7 +40,12 @@ find_package(Gettext)
 if(GETTEXT_FOUND)
 	find_program(XGETTEXT_EXECUTABLE xgettext PATHS ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/tools/gettext)
 	if(XGETTEXT_EXECUTABLE)
-		file(GLOB_RECURSE TRANSLATABLE_FILES CONFIGURE_DEPENDS src/*.cpp src/*.hpp)
+		file(GLOB_RECURSE TRANSLATABLE_FILES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/*.cpp ${CMAKE_SOURCE_DIR}/src/*.hpp)
+		set(REL_TRANSLATABLE_FILES "")
+		foreach(F ${TRANSLATABLE_FILES})
+			file(RELATIVE_PATH F_REL "${CMAKE_SOURCE_DIR}" "${F}")
+			list(APPEND REL_TRANSLATABLE_FILES "${F_REL}")
+		endforeach()
 		add_custom_command(
 			OUTPUT ${CMAKE_SOURCE_DIR}/po/paperback.pot
 			COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/po
@@ -49,13 +54,15 @@ if(GETTEXT_FOUND)
 				--keyword=wxPLURAL:1,2
 				--keyword=wxTRANSLATE
 				--language=C++
+				--from-code=UTF-8
 				--add-comments=TRANSLATORS
+				--add-location=file
 				--package-name=paperback
 				--package-version=${PROJECT_VERSION}
 				--msgid-bugs-address=https://github.com/trypsynth/paperback/issues
 				--copyright-holder="Quin Gillespie"
 				--output=${CMAKE_SOURCE_DIR}/po/paperback.pot
-				${TRANSLATABLE_FILES}
+				${REL_TRANSLATABLE_FILES}
 			DEPENDS ${TRANSLATABLE_FILES}
 			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		)
