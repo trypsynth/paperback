@@ -9,6 +9,7 @@
 
 #include "update_checker.hpp"
 #include "constants.hpp"
+#include <memory>
 #include <nlohmann/json.hpp>
 #include <wx/app.h>
 #include <wx/filename.h>
@@ -87,7 +88,8 @@ void check_for_updates(bool silent) {
 	request.SetHeader("Accept", "application/vnd.github.v3+json");
 	request.SetHeader("User-Agent", std::string(APP_NAME.mb_str()));
 	const auto req_id = request.GetId();
-	app->Bind(wxEVT_WEBREQUEST_STATE, [silent, req_id](wxWebRequestEvent& evt) {
+	auto handler = std::make_shared<std::function<void(wxWebRequestEvent&)>>();
+	*handler = [silent, req_id, handler](wxWebRequestEvent& evt) {
 		if (evt.GetId() != req_id) {
 			return;
 		}
@@ -96,7 +98,9 @@ void check_for_updates(bool silent) {
 		if (!app_local) {
 			return;
 		}
-		auto unbind = []() {};
+		auto unbind = [app_local, handler, req_id]() {
+			app_local->Unbind(wxEVT_WEBREQUEST_STATE, *handler, req_id);
+		};
 		if (state == wxWebRequest::State_Completed) {
 			int status = evt.GetResponse().GetStatus();
 			if (status != 200) {
@@ -175,6 +179,9 @@ void check_for_updates(bool silent) {
 					});
 				}
 			}
-		} }, req_id);
+			unbind();
+		}
+	};
+	app->Bind(wxEVT_WEBREQUEST_STATE, *handler, req_id);
 	request.Start();
 }

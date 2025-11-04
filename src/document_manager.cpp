@@ -34,6 +34,7 @@
 #include <wx/textdlg.h>
 #include <wx/translation.h>
 #include <wx/utils.h>
+#include <wx/wfstream.h>
 
 document_manager::document_manager(wxNotebook* nbk, config_manager& cfg, main_window& win) : notebook{nbk}, config{cfg}, main_win{win} {
 }
@@ -156,14 +157,12 @@ bool document_manager::export_document(int index, const wxString& export_path) c
 	if (!buf.data()) {
 		return false;
 	}
-	FILE* f = wxFopen(export_path, "wb");
-	if (!f) {
+	wxFileOutputStream out(export_path);
+	if (!out.IsOk()) {
 		return false;
 	}
-	const size_t len = std::strlen(buf.data());
-	const size_t written = std::fwrite(buf.data(), 1, len, f);
-	std::fclose(f);
-	return written == len;
+	out.Write(buf.data(), buf.length());
+	return out.IsOk();
 }
 
 document_tab* document_manager::get_tab(int index) const {

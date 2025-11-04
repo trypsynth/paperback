@@ -97,26 +97,9 @@ void app::parse_command_line() {
 		return;
 	}
 	auto* doc_manager = frame->get_doc_manager();
-	const int existing_tab = doc_manager->find_tab_by_path(path);
-	if (existing_tab >= 0) {
-		frame->get_notebook()->SetSelection(existing_tab);
-		auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-		if (text_ctrl != nullptr) {
-			text_ctrl->SetFocus();
-		}
-		return;
-	}
-	const auto* par = find_parser_by_extension(wxFileName(path).GetExt());
-	if (par == nullptr) {
-		par = get_parser_for_unknown_file(path, config_mgr);
-		if (par == nullptr) {
-			return;
-		}
-	}
-	if (!doc_manager->create_document_tab(path, par)) {
+	if (!doc_manager->open_file(path)) {
 		wxMessageBox(_("Failed to load document."), _("Error"), wxICON_ERROR);
 	}
-	doc_manager->update_ui();
 }
 
 void app::restore_previous_documents() {
@@ -175,30 +158,12 @@ void app::open_file(const wxString& filename) {
 		return;
 	}
 	auto* doc_manager = frame->get_doc_manager();
-	const int existing_tab = doc_manager->find_tab_by_path(filename);
-	if (existing_tab >= 0) {
-		frame->get_notebook()->SetSelection(existing_tab);
-		auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-		if (text_ctrl != nullptr) {
-			text_ctrl->SetFocus();
-		}
-		frame->Raise();
-		frame->RequestUserAttention();
+	if (!doc_manager->open_file(filename)) {
+		wxMessageBox(_("Failed to load document."), _("Error"), wxICON_ERROR);
 		return;
 	}
-	const auto* par = find_parser_by_extension(wxFileName(filename).GetExt());
-	if (par == nullptr) {
-		par = get_parser_for_unknown_file(filename, config_mgr);
-		if (par == nullptr) {
-			return;
-		}
-	}
-	if (!doc_manager->create_document_tab(filename, par)) {
-		wxMessageBox(_("Failed to load document."), _("Error"), wxICON_ERROR);
-	} else {
-		frame->Raise();
-		frame->RequestUserAttention();
-	}
+	frame->Raise();
+	frame->RequestUserAttention();
 }
 
 wxIMPLEMENT_APP(app);
