@@ -10,7 +10,7 @@
 #pragma once
 #include "document.hpp"
 #include "parser.hpp"
-#include <Poco/DOM/Node.h>
+#include <pugixml.hpp>
 
 class pptx_parser : public parser {
 public:
@@ -37,8 +37,8 @@ public:
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 
 private:
-	void extract_text_from_node(Poco::XML::Node* node, std::string& text, wxString& full_text, document* doc, const std::map<std::string, std::string>& rels) const;
-	wxString extract_slide_title(Poco::XML::Document* slide_doc) const;
+	void extract_text_from_node(pugi::xml_node node, std::string& text, wxString& full_text, document* doc, const std::map<std::string, std::string>& rels) const;
+	wxString extract_slide_title(pugi::xml_document& slide_doc) const;
 };
 
 REGISTER_PARSER(pptx_parser)

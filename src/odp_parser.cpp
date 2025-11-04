@@ -11,18 +11,9 @@
 #include "document.hpp"
 #include "document_buffer.hpp"
 #include "utils.hpp"
-#include <Poco/AutoPtr.h>
-#include <Poco/DOM/DOMParser.h>
-#include <Poco/DOM/Document.h>
-#include <Poco/DOM/Element.h>
-#include <Poco/DOM/Node.h>
-#include <Poco/DOM/NodeList.h>
-#include <Poco/DOM/Text.h>
-#include <Poco/Exception.h>
-#include <Poco/SAX/InputSource.h>
-#include <Poco/SAX/XMLReader.h>
 #include <cstddef>
 #include <memory>
+#include <pugixml.hpp>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -32,12 +23,18 @@
 #include <wx/wfstream.h>
 #include <wx/zipstrm.h>
 
-using namespace Poco;
-using namespace Poco::XML;
+inline const char* DRAW_NS = "urn:oasis:names:tc:opendocument:xmlns:drawing:1.0";
+inline const char* TEXT_NS = "urn:oasis:names:tc:opendocument:xmlns:text:1.0";
+inline const char* XLINK_NS = "http://www.w3.org/1999/xlink";
 
-inline const XMLString DRAW_NS = "urn:oasis:names:tc:opendocument:xmlns:drawing:1.0";
-inline const XMLString TEXT_NS = "urn:oasis:names:tc:opendocument:xmlns:text:1.0";
-inline const XMLString XLINK_NS = "http://www.w3.org/1999/xlink";
+static std::string get_local_name(const char* qname) {
+	if (!qname) {
+		return {};
+	}
+	std::string s(qname);
+	size_t pos = s.find(':');
+	return pos == std::string::npos ? s : s.substr(pos + 1);
+}
 
 std::unique_ptr<document> odp_parser::load(const wxString& file_path) const {
 	wxFileInputStream file_stream(file_path);
@@ -57,23 +54,21 @@ std::unique_ptr<document> odp_parser::load(const wxString& file_path) const {
 		throw parser_exception(_("ODP file does not contain content.xml or it is empty"), file_path);
 	}
 	try {
-		std::istringstream content_stream(content);
-		InputSource source(content_stream);
-		DOMParser parser;
-		parser.setFeature(XMLReader::FEATURE_NAMESPACES, true);
-		AutoPtr<Document> p_doc = parser.parse(&source);
+		pugi::xml_document p_doc;
+		if (!p_doc.load_buffer(content.data(), content.size(), pugi::parse_default | pugi::parse_ws_pcdata)) {
+			throw parser_exception("Invalid ODP content", file_path);
+		}
 		auto doc = std::make_unique<document>();
 		doc->title = wxFileName(file_path).GetName();
 		wxString full_text;
 		std::vector<size_t> slide_positions;
-		const NodeList* pages = p_doc->getElementsByTagNameNS(DRAW_NS, "page");
-		if (pages == nullptr) {
+		auto root = p_doc.document_element();
+		if (!root) {
 			throw parser_exception(_("ODP file does not contain any pages"), file_path);
 		}
-		for (unsigned long i = 0; i < pages->length(); ++i) {
-			Node* page_node = pages->item(i);
+		for (auto page_node : root.select_nodes("//*[local-name()='page']")) {
 			wxString slide_text;
-			traverse(page_node, slide_text, doc.get(), &full_text);
+			traverse(page_node.node(), slide_text, doc.get(), &full_text);
 			if (!slide_text.IsEmpty()) {
 				slide_text.Trim(true).Trim(false);
 				if (!slide_text.IsEmpty()) {
@@ -89,20 +84,20 @@ std::unique_ptr<document> odp_parser::load(const wxString& file_path) const {
 		}
 		doc->buffer.finalize_markers();
 		return doc;
-	} catch (const Exception& e) {
-		throw parser_exception(wxString::Format(_("XML parsing error: %s"), wxString::FromUTF8(e.displayText())), file_path);
+	} catch (...) {
+		throw;
 	}
 }
 
-void odp_parser::traverse(Node* node, wxString& text, document* doc, wxString* full_text) const {
+void odp_parser::traverse(pugi::xml_node node, wxString& text, document* doc, wxString* full_text) const {
 	if (node == nullptr) {
 		return;
 	}
-	if (node->nodeType() == Node::ELEMENT_NODE) {
-		auto* element = dynamic_cast<Element*>(node);
-		const std::string local_name = element->localName();
-		if (local_name == "a" && element->namespaceURI() == TEXT_NS) {
-			const std::string href = element->getAttributeNS(XLINK_NS, "href");
+	if (node.type() == pugi::node_element) {
+		auto element = node;
+		const std::string local_name = get_local_name(element.name());
+		if (local_name == "a") {
+			const std::string href = element.attribute("xlink:href").as_string();
 			if (!href.empty()) {
 				const size_t link_start = full_text->length() + text.length();
 				wxString link_text;
@@ -120,16 +115,13 @@ void odp_parser::traverse(Node* node, wxString& text, document* doc, wxString* f
 		} else {
 			traverse_children(element, text, doc, full_text);
 		}
-	} else if (node->nodeType() == Node::TEXT_NODE) {
-		auto* text_node = dynamic_cast<Text*>(node);
-		text += wxString::FromUTF8(text_node->data());
+	} else if (node.type() == pugi::node_pcdata || node.type() == pugi::node_cdata) {
+		text += wxString::FromUTF8(node.value());
 	}
 }
 
-void odp_parser::traverse_children(Node* node, wxString& text, document* doc, wxString* full_text) const {
-	Node* child = node->firstChild();
-	while (child != nullptr) {
+void odp_parser::traverse_children(pugi::xml_node node, wxString& text, document* doc, wxString* full_text) const {
+	for (auto child : node.children()) {
 		traverse(child, text, doc, full_text);
-		child = child->nextSibling();
 	}
 }

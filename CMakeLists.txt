@@ -29,13 +29,14 @@ if(CLANG_TIDY_EXE)
 endif()
 
 find_package(chmlib CONFIG REQUIRED)
+find_package(Gettext)
 find_package(lexbor CONFIG REQUIRED)
 find_package(maddy CONFIG REQUIRED)
+find_package(MbedTLS CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(pdfium CONFIG REQUIRED)
-find_package(Poco REQUIRED COMPONENTS Foundation XML)
+find_package(pugixml CONFIG REQUIRED)
 find_package(wxWidgets CONFIG REQUIRED)
-find_package(Gettext)
 
 if(GETTEXT_FOUND)
 	find_program(XGETTEXT_EXECUTABLE xgettext PATHS ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/tools/gettext)
@@ -96,9 +97,9 @@ target_link_libraries(paperback PRIVATE
 	chmlib::chm
 	lexbor::lexbor
 	maddy::maddy
+	MbedTLS::mbedcrypto
 	pdfium::pdfium
-	Poco::Foundation
-	Poco::XML
+	pugixml::pugixml
 	wx::base
 	wx::core
 	wx::net

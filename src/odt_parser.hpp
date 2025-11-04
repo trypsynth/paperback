@@ -9,7 +9,7 @@
 
 #pragma once
 #include "parser.hpp"
-#include <Poco/DOM/Node.h>
+#include <pugixml.hpp>
 
 class odt_parser : public parser {
 public:
@@ -36,8 +36,8 @@ public:
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 
 private:
-	void traverse(Poco::XML::Node* node, wxString& text, document* doc) const;
-	void traverse_children(Poco::XML::Node* node, wxString& text, document* doc) const;
+	void traverse(pugi::xml_node node, wxString& text, document* doc) const;
+	void traverse_children(pugi::xml_node node, wxString& text, document* doc) const;
 };
 
 REGISTER_PARSER(odt_parser);

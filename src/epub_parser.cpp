@@ -13,20 +13,14 @@
 #include "html_to_text.hpp"
 #include "utils.hpp"
 #include "xml_to_text.hpp"
-#include <Poco/DOM/DOMParser.h>
-#include <Poco/DOM/Document.h>
-#include <Poco/DOM/NamedNodeMap.h>
-#include <Poco/DOM/NodeList.h>
-#include <Poco/Exception.h>
-#include <Poco/SAX/InputSource.h>
-#include <Poco/SAX/NamespaceSupport.h>
-#include <Poco/URI.h>
 #include <algorithm>
 #include <cstddef>
+#include <filesystem>
 #include <iterator>
 #include <limits>
 #include <map>
 #include <memory>
+#include <pugixml.hpp>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -37,71 +31,72 @@
 #include <wx/wfstream.h>
 #include <wx/zipstrm.h>
 
-using namespace Poco;
-using namespace Poco::XML;
+namespace fs = std::filesystem;
 
 std::unique_ptr<document> epub_parser::load(const wxString& path) const {
-	try {
-		auto fp = std::make_unique<wxFileInputStream>(path);
-		if (!fp->IsOk()) {
-			return nullptr;
-		}
-		wxZipInputStream zip_index(*fp);
-		std::map<std::string, std::unique_ptr<wxZipEntry>> entries;
-		while (wxZipEntry* entry = zip_index.GetNextEntry()) {
-			const std::string name = entry->GetName(wxPATH_UNIX).ToStdString();
-			entries[name] = std::unique_ptr<wxZipEntry>(entry);
-		}
-		fp->SeekI(0);
-		epub_context ctx(*fp);
-		ctx.zip_entries = std::move(entries);
-		wxZipEntry* container_entry = find_zip_entry("META-INF/container.xml", ctx.zip_entries);
-		if (container_entry == nullptr) {
-			return nullptr;
-		}
-		wxZipInputStream container_zip(*fp);
-		if (!container_zip.OpenEntry(*container_entry)) {
-			return nullptr;
-		}
-		const std::string container_content = read_zip_entry(container_zip);
-		std::istringstream container_stream(container_content);
-		InputSource src(container_stream);
-		DOMParser parser;
-		auto* doc = parser.parse(&src);
-		NamespaceSupport nsmap;
-		nsmap.declarePrefix("container", "urn:oasis:names:tc:opendocument:xmlns:container");
-		auto* node = doc->getNodeByPathNS("container:container/container:rootfiles/container:rootfile", nsmap);
-		if (node == nullptr) {
-			return nullptr;
-		}
-		auto opf_filename = dynamic_cast<Element*>(node)->getAttribute("full-path");
-		ctx.opf_path = Path(opf_filename, Path::PATH_UNIX).makeParent();
-		parse_opf(opf_filename, ctx);
-		auto document_ptr = std::make_unique<document>();
-		document_ptr->buffer.clear();
-		for (size_t i = 0; i < ctx.spine_items.size(); ++i) {
-			document_ptr->buffer.add_section_break(wxString::Format("Section %zu", i + 1));
-			parse_section(i, ctx, document_ptr->buffer);
-		}
-		document_ptr->buffer.finalize_markers();
-		document_ptr->title = wxString::FromUTF8(ctx.title);
-		if (!ctx.author.empty()) {
-			document_ptr->author = wxString::FromUTF8(ctx.author);
-		}
-		for (const auto& [section_href, id_map] : ctx.id_positions) {
-			for (const auto& [id, pos] : id_map) {
-				document_ptr->id_positions[id] = pos;
-			}
-		}
-		document_ptr->spine_items = ctx.spine_items;
-		for (const auto& [id, item] : ctx.manifest_items) {
-			document_ptr->manifest_items[id] = item.path;
-		}
-		parse_toc(ctx, document_ptr->toc_items, document_ptr->buffer);
-		return document_ptr;
-	} catch (const Exception& e) {
-		throw parser_exception(wxString::FromUTF8(e.displayText()), path);
+	auto fp = std::make_unique<wxFileInputStream>(path);
+	if (!fp->IsOk()) {
+		return nullptr;
 	}
+	wxZipInputStream zip_index(*fp);
+	std::map<std::string, std::unique_ptr<wxZipEntry>> entries;
+	while (wxZipEntry* entry = zip_index.GetNextEntry()) {
+		const std::string name = entry->GetName(wxPATH_UNIX).ToStdString();
+		entries[name] = std::unique_ptr<wxZipEntry>(entry);
+	}
+	fp->SeekI(0);
+	epub_context ctx(*fp);
+	ctx.zip_entries = std::move(entries);
+	wxZipEntry* container_entry = find_zip_entry("META-INF/container.xml", ctx.zip_entries);
+	if (container_entry == nullptr) {
+		return nullptr;
+	}
+	wxZipInputStream container_zip(*fp);
+	if (!container_zip.OpenEntry(*container_entry)) {
+		return nullptr;
+	}
+	const std::string container_content = read_zip_entry(container_zip);
+	pugi::xml_document doc;
+	if (!doc.load_buffer(container_content.data(), container_content.size())) {
+		return nullptr;
+	}
+	std::string opf_filename;
+	for (auto rootfile : doc.select_nodes("/container:container/container:rootfiles/container:rootfile")) {
+		opf_filename = rootfile.node().attribute("full-path").as_string();
+		break;
+	}
+	if (opf_filename.empty()) {
+		auto c = doc.child("container").child("rootfiles").child("rootfile");
+		opf_filename = c.attribute("full-path").as_string();
+		if (opf_filename.empty()) {
+			return nullptr;
+		}
+	}
+	auto slashpos = opf_filename.find_last_of('/');
+	ctx.opf_dir = (slashpos == std::string::npos) ? std::string() : opf_filename.substr(0, slashpos);
+	parse_opf(opf_filename, ctx);
+	auto document_ptr = std::make_unique<document>();
+	document_ptr->buffer.clear();
+	for (size_t i = 0; i < ctx.spine_items.size(); ++i) {
+		document_ptr->buffer.add_section_break(wxString::Format("Section %zu", i + 1));
+		parse_section(i, ctx, document_ptr->buffer);
+	}
+	document_ptr->buffer.finalize_markers();
+	document_ptr->title = wxString::FromUTF8(ctx.title);
+	if (!ctx.author.empty()) {
+		document_ptr->author = wxString::FromUTF8(ctx.author);
+	}
+	for (const auto& [section_href, id_map] : ctx.id_positions) {
+		for (const auto& [id, pos] : id_map) {
+			document_ptr->id_positions[id] = pos;
+		}
+	}
+	document_ptr->spine_items = ctx.spine_items;
+	for (const auto& [id, item] : ctx.manifest_items) {
+		document_ptr->manifest_items[id] = item.path;
+	}
+	parse_toc(ctx, document_ptr->toc_items, document_ptr->buffer);
+	return document_ptr;
 }
 
 void epub_parser::parse_opf(const std::string& filename, epub_context& ctx) {
@@ -115,49 +110,40 @@ void epub_parser::parse_opf(const std::string& filename, epub_context& ctx) {
 		throw parser_exception("Failed to open OPF file");
 	}
 	const std::string opf_content = read_zip_entry(zis);
-	std::istringstream opf_stream(opf_content);
-	InputSource src(opf_stream);
-	DOMParser parser;
-	auto* doc = parser.parse(&src);
-	NamespaceSupport nsmap;
-	nsmap.declarePrefix("opf", "http://www.idpf.org/2007/opf");
-	nsmap.declarePrefix("dc", "http://purl.org/dc/elements/1.1/");
-	auto* metadata = doc->getNodeByPathNS("opf:package/opf:metadata", nsmap);
-	if (metadata != nullptr) {
-		auto* children = metadata->childNodes();
-		for (size_t i = 0; i < children->length(); ++i) {
-			auto* node = children->item(i);
-			if (node->nodeType() != Node::ELEMENT_NODE) {
-				continue;
+	pugi::xml_document doc;
+	if (!doc.load_buffer(opf_content.data(), opf_content.size())) {
+		throw parser_exception("Invalid OPF");
+	}
+	auto package = doc.child("package");
+	if (package == nullptr) {
+		package = doc.first_child();
+	}
+	if (auto metadata = package.child("metadata")) {
+		for (auto child : metadata.children()) {
+			std::string name = child.name();
+			auto pos = name.find(':');
+			if (pos != std::string::npos) {
+				name = name.substr(pos + 1);
 			}
-			auto* element = dynamic_cast<Element*>(node);
-			auto local_name = element->localName();
-			if (local_name == "title" && ctx.title.empty()) {
-				ctx.title = element->innerText();
-			} else if (local_name == "creator" && ctx.author.empty()) {
-				ctx.author = element->innerText();
+			if (name == "title" && ctx.title.empty()) {
+				ctx.title = child.text().as_string();
+			} else if (name == "creator" && ctx.author.empty()) {
+				ctx.author = child.text().as_string();
 			}
 		}
 	}
-	const auto* manifest = doc->getNodeByPathNS("opf:package/opf:manifest", nsmap);
+	auto manifest = package.child("manifest");
 	if (manifest == nullptr) {
 		throw parser_exception("No manifest");
 	}
-	auto* children = manifest->childNodes();
-	for (size_t i = 0; i < children->length(); ++i) {
-		auto* node = children->item(i);
-		if (node->nodeType() != Node::ELEMENT_NODE) {
-			continue;
-		}
-		auto* element = dynamic_cast<Element*>(node);
-		const auto href = element->getAttribute("href");
-		const auto id = element->getAttribute("id");
-		const auto media_type = element->getAttribute("media-type");
-		const auto properties = element->getAttribute("properties");
-		Path file_path(ctx.opf_path);
-		file_path.append(href);
+	for (auto item_node : manifest.children("item")) {
+		const std::string href = item_node.attribute("href").as_string();
+		const std::string id = item_node.attribute("id").as_string();
+		const std::string media_type = item_node.attribute("media-type").as_string();
+		const std::string properties = item_node.attribute("properties").as_string();
+		std::string full = ctx.opf_dir.empty() ? href : (ctx.opf_dir + "/" + href);
 		manifest_item item;
-		item.path = file_path.toString(Path::PATH_UNIX);
+		item.path = full;
 		item.media_type = media_type;
 		ctx.manifest_items.emplace(id, std::move(item));
 		if (media_type == "application/x-dtbncx+xml") {
@@ -166,25 +152,18 @@ void epub_parser::parse_opf(const std::string& filename, epub_context& ctx) {
 			ctx.nav_doc_id = id;
 		}
 	}
-	auto* spine = doc->getNodeByPathNS("opf:package/opf:spine", nsmap);
+	auto spine = package.child("spine");
 	if (spine == nullptr) {
 		throw parser_exception("No spine");
 	}
 	if (ctx.toc_ncx_id.empty()) {
-		auto toc_attr = dynamic_cast<Element*>(spine)->getAttribute("toc");
-		if (!toc_attr.empty()) {
+		const auto toc_attr = spine.attribute("toc").as_string();
+		if (*toc_attr) {
 			ctx.toc_ncx_id = toc_attr;
 		}
 	}
-	children = spine->childNodes();
-	for (size_t i = 0; i < children->length(); ++i) {
-		auto* node = children->item(i);
-		if (node->nodeType() != Node::ELEMENT_NODE) {
-			continue;
-		}
-		auto* element = dynamic_cast<Element*>(node);
-		const auto idref = element->getAttribute("idref");
-		ctx.spine_items.push_back(idref);
+	for (auto itemref : spine.children("itemref")) {
+		ctx.spine_items.push_back(itemref.attribute("idref").as_string());
 	}
 }
 
@@ -198,8 +177,9 @@ void epub_parser::process_section_content(conv& converter, const std::string& co
 		const auto& list_items = converter.get_list_items();
 		const auto& id_positions = converter.get_id_positions();
 		const size_t section_start = buffer.str().length();
-		Path section_base_path(href, Path::PATH_UNIX);
-		section_base_path.makeParent();
+		std::string section_base_dir = href;
+		auto pos = section_base_dir.find_last_of('/');
+		section_base_dir = (pos == std::string::npos) ? std::string() : section_base_dir.substr(0, pos);
 		for (const auto& [id, relative_pos] : id_positions) {
 			ctx.id_positions[href][id] = section_start + relative_pos;
 		}
@@ -216,9 +196,7 @@ void epub_parser::process_section_content(conv& converter, const std::string& co
 			} else if (!link.ref.empty() && link.ref[0] == '#') {
 				resolved_href = link.ref;
 			} else {
-				Path resolved_path(section_base_path);
-				resolved_path.append(link.ref);
-				resolved_href = resolved_path.toString(Path::PATH_UNIX);
+				resolved_href = section_base_dir.empty() ? link.ref : (section_base_dir + "/" + link.ref);
 			}
 			buffer.add_link(section_start + link.offset, wxString::FromUTF8(link.text), resolved_href);
 		}
@@ -282,8 +260,8 @@ void epub_parser::parse_toc(epub_context& ctx, std::vector<std::unique_ptr<toc_i
 		} else if (!ctx.toc_ncx_id.empty()) {
 			parse_epub2_ncx(ctx.toc_ncx_id, ctx, toc_items, buffer);
 		}
-	} catch (const Exception& e) {
-		throw parser_exception(wxString::Format(_("Couldn't parse table of contents: %s"), wxString::FromUTF8(e.displayText())), error_severity::warning);
+	} catch (...) {
+		throw parser_exception(_("Couldn't parse table of contents"), error_severity::warning);
 	}
 }
 
@@ -303,56 +281,38 @@ void epub_parser::parse_epub2_ncx(const std::string& ncx_id, const epub_context&
 		return;
 	}
 	const std::string ncx_content = read_zip_entry(zis);
-	std::istringstream ncx_stream(ncx_content);
-	InputSource src(ncx_stream);
-	DOMParser parser;
-	auto* doc = parser.parse(&src);
-	NamespaceSupport nsmap;
-	nsmap.declarePrefix("ncx", "http://www.daisy.org/z3986/2005/ncx/");
-	auto* nav_map = doc->getNodeByPathNS("ncx:ncx/ncx:navMap", nsmap);
+	pugi::xml_document doc;
+	if (!doc.load_buffer(ncx_content.data(), ncx_content.size())) {
+		return;
+	}
+	auto nav_map = doc.child("ncx").child("navMap");
 	if (nav_map == nullptr) {
 		return;
 	}
-	auto* children = nav_map->childNodes();
-	for (size_t i = 0; i < children->length(); ++i) {
-		auto* node = children->item(i);
-		if (node->nodeType() != Node::ELEMENT_NODE) {
-			continue;
-		}
-		auto* element = dynamic_cast<Element*>(node);
-		if (element->localName() == "navPoint") {
-			auto toc_entry = parse_ncx_nav_point(element, nsmap, ctx, buffer);
-			if (toc_entry) {
-				toc_items.push_back(std::move(toc_entry));
-			}
+	for (auto nav_point : nav_map.children("navPoint")) {
+		auto toc_entry = parse_ncx_nav_point(nav_point, ctx, buffer);
+		if (toc_entry) {
+			toc_items.push_back(std::move(toc_entry));
 		}
 	}
 }
 
-std::unique_ptr<toc_item> epub_parser::parse_ncx_nav_point(Element* nav_point, const NamespaceSupport& nsmap, const epub_context& ctx, const document_buffer& buffer) const {
+std::unique_ptr<toc_item> epub_parser::parse_ncx_nav_point(pugi::xml_node nav_point, const epub_context& ctx, const document_buffer& buffer) const {
 	auto item = std::make_unique<toc_item>();
-	auto* nav_label = nav_point->getNodeByPathNS("ncx:navLabel/ncx:text", nsmap);
+	auto nav_label = nav_point.child("navLabel").child("text");
 	if (nav_label != nullptr) {
-		item->name = wxString::FromUTF8(nav_label->innerText());
+		item->name = wxString::FromUTF8(nav_label.text().as_string());
 	}
-	auto* content = nav_point->getNodeByPathNS("ncx:content", nsmap);
+	auto content = nav_point.child("content");
 	if (content != nullptr) {
-		auto src = dynamic_cast<Element*>(content)->getAttribute("src");
+		std::string src = content.attribute("src").as_string();
 		item->ref = wxString::FromUTF8(src);
 		item->offset = calculate_offset_from_href(src, ctx, buffer);
 	}
-	auto* children = nav_point->childNodes();
-	for (size_t i = 0; i < children->length(); ++i) {
-		auto* node = children->item(i);
-		if (node->nodeType() != Node::ELEMENT_NODE) {
-			continue;
-		}
-		auto* element = dynamic_cast<Element*>(node);
-		if (element->localName() == "navPoint") {
-			auto child_item = parse_ncx_nav_point(element, nsmap, ctx, buffer);
-			if (child_item) {
-				item->children.push_back(std::move(child_item));
-			}
+	for (auto child_np : nav_point.children("navPoint")) {
+		auto child_item = parse_ncx_nav_point(child_np, ctx, buffer);
+		if (child_item) {
+			item->children.push_back(std::move(child_item));
 		}
 	}
 	return item;
@@ -364,8 +324,7 @@ void epub_parser::parse_epub3_nav(const std::string& nav_id, const epub_context&
 		return;
 	}
 	const auto& nav_file = it->second.path;
-	Path nav_base_path(nav_file, Path::PATH_UNIX);
-	nav_base_path.makeParent();
+	std::string nav_base_dir = nav_file.substr(0, nav_file.find_last_of('/'));
 	wxZipEntry* nav_entry = find_zip_entry(nav_file, ctx.zip_entries);
 	if (nav_entry == nullptr) {
 		return;
@@ -376,87 +335,63 @@ void epub_parser::parse_epub3_nav(const std::string& nav_id, const epub_context&
 		return;
 	}
 	const std::string nav_content = read_zip_entry(zis);
-	std::istringstream nav_stream(nav_content);
-	InputSource src(nav_stream);
-	DOMParser parser;
-	auto* doc = parser.parse(&src);
-	NamespaceSupport nsmap;
-	nsmap.declarePrefix("html", "http://www.w3.org/1999/xhtml");
-	nsmap.declarePrefix("epub", "http://www.idpf.org/2007/ops");
-	auto* nav_nodes = doc->getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "nav");
-	const Element* toc_nav = nullptr;
-	for (size_t i = 0; i < nav_nodes->length(); ++i) {
-		auto* nav = dynamic_cast<Element*>(nav_nodes->item(i));
-		auto epub_type = nav->getAttributeNS("http://www.idpf.org/2007/ops", "type");
-		if (epub_type.empty()) {
-			epub_type = nav->getAttribute("epub:type");
-		}
-		if (epub_type == "toc") {
-			toc_nav = nav;
+	pugi::xml_document doc;
+	if (!doc.load_buffer(nav_content.data(), nav_content.size())) {
+		return;
+	}
+	pugi::xml_node toc_nav;
+	for (auto nav : doc.select_nodes("//nav")) {
+		auto n = nav.node();
+		auto t = n.attribute("epub:type").as_string();
+		if (std::string(t) == "toc") {
+			toc_nav = n;
 			break;
 		}
 	}
-	if (toc_nav == nullptr && nav_nodes->length() > 0) {
-		toc_nav = dynamic_cast<Element*>(nav_nodes->item(0));
+	if (toc_nav == nullptr) {
+		toc_nav = doc.find_node([](pugi::xml_node n) { return std::string(n.name()) == "nav"; });
 	}
-	if (toc_nav != nullptr) {
-		auto* ol_nodes = toc_nav->getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "ol");
-		if (ol_nodes->length() > 0) {
-			auto* ol = dynamic_cast<Element*>(ol_nodes->item(0));
-			parse_epub3_nav_list(ol, toc_items, ctx, buffer, nav_base_path);
+	if (toc_nav) {
+		auto ol = toc_nav.child("ol");
+		if (ol) {
+			parse_epub3_nav_list(ol, toc_items, ctx, buffer, nav_base_dir);
 		}
 	}
 }
 
-void epub_parser::parse_epub3_nav_list(Element* ol_element, std::vector<std::unique_ptr<toc_item>>& toc_items, const epub_context& ctx, const document_buffer& buffer, const Path& nav_base_path) const {
-	auto* children = ol_element->childNodes();
-	for (size_t i = 0; i < children->length(); ++i) {
-		auto* node = children->item(i);
-		if (node->nodeType() != Node::ELEMENT_NODE) {
-			continue;
-		}
-		auto* element = dynamic_cast<Element*>(node);
-		if (element->localName() == "li") {
-			auto item = parse_epub3_nav_item(element, ctx, buffer, nav_base_path);
-			if (item) {
-				toc_items.push_back(std::move(item));
-			}
+void epub_parser::parse_epub3_nav_list(pugi::xml_node ol_element, std::vector<std::unique_ptr<toc_item>>& toc_items, const epub_context& ctx, const document_buffer& buffer, const std::string& nav_base_path) const {
+	for (auto li : ol_element.children("li")) {
+		auto item = parse_epub3_nav_item(li, ctx, buffer, nav_base_path);
+		if (item) {
+			toc_items.push_back(std::move(item));
 		}
 	}
 }
 
-std::unique_ptr<toc_item> epub_parser::parse_epub3_nav_item(Element* li_element, const epub_context& ctx, const document_buffer& buffer, const Path& nav_base_path) const {
+std::unique_ptr<toc_item> epub_parser::parse_epub3_nav_item(pugi::xml_node li_element, const epub_context& ctx, const document_buffer& buffer, const std::string& nav_base_path) const {
 	auto item = std::make_unique<toc_item>();
-	auto* a_nodes = li_element->getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "a");
-	if (a_nodes->length() > 0) {
-		auto* a = dynamic_cast<Element*>(a_nodes->item(0));
-		item->name = wxString::FromUTF8(a->innerText());
-		auto href = a->getAttribute("href");
+	if (auto a = li_element.child("a")) {
+		item->name = wxString::FromUTF8(a.text().as_string());
+		std::string href = a.attribute("href").as_string();
 		item->ref = wxString::FromUTF8(href);
-		Path resolved_path(nav_base_path);
-		resolved_path.append(href);
-		const std::string abs_str = resolved_path.toString(Path::PATH_UNIX);
-		const std::string opf_str = ctx.opf_path.toString(Path::PATH_UNIX);
+		std::string abs_str = nav_base_path.empty() ? href : (nav_base_path + "/" + href);
+		const std::string& opf_str = ctx.opf_dir;
 		std::string href_relative_to_opf;
-		if (abs_str.starts_with(opf_str)) {
-			href_relative_to_opf = abs_str.substr(opf_str.length());
+		if (!opf_str.empty() && abs_str.rfind(opf_str, 0) == 0) {
+			href_relative_to_opf = abs_str.substr(opf_str.size() + (opf_str.back() == '/' ? 0 : 1));
 		} else {
 			href_relative_to_opf = href;
 		}
 		item->offset = calculate_offset_from_href(href_relative_to_opf, ctx, buffer);
 	} else {
-		auto* span_nodes = li_element->getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "span");
-		if (span_nodes->length() > 0) {
-			auto* span = dynamic_cast<Element*>(span_nodes->item(0));
-			item->name = wxString::FromUTF8(span->innerText());
+		if (auto span = li_element.child("span")) {
+			item->name = wxString::FromUTF8(span.text().as_string());
 		} else {
-			item->name = wxString::FromUTF8(li_element->innerText()).BeforeFirst('\n').Trim();
+			item->name = wxString::FromUTF8(li_element.text().as_string()).BeforeFirst('\n').Trim();
 		}
 		item->offset = std::numeric_limits<size_t>::max();
 	}
-	auto* ol_nodes = li_element->getElementsByTagNameNS("http://www.w3.org/1999/xhtml", "ol");
-	if (ol_nodes->length() > 0) {
-		auto* ol = dynamic_cast<Element*>(ol_nodes->item(0));
+	if (auto ol = li_element.child("ol")) {
 		parse_epub3_nav_list(ol, item->children, ctx, buffer, nav_base_path);
 	}
 	return item;
@@ -472,11 +407,10 @@ int epub_parser::calculate_offset_from_href(const std::string& href, const epub_
 	}
 	file_path = url_decode(file_path);
 	fragment = url_decode(fragment);
-	Path full_path(ctx.opf_path);
+	std::string resolved_path = ctx.opf_dir;
 	if (!file_path.empty()) {
-		full_path.append(file_path);
+		resolved_path = (resolved_path.empty() ? file_path : (resolved_path + "/" + file_path));
 	}
-	const std::string resolved_path = full_path.toString(Path::PATH_UNIX);
 	if (!fragment.empty()) {
 		for (const auto& [stored_path, id_map] : ctx.id_positions) {
 			if (url_decode(stored_path) == resolved_path) {

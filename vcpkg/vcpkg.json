@@ -9,12 +9,10 @@
 		},
 		"lexbor",
 		"maddy",
+		"mbedtls",
 		"nlohmann-json",
 		"pdfium",
-		{
-			"name": "poco",
-			"features": ["xml"]
-		},
+		"pugixml",
 		"wxwidgets"
 	]
 }

@@ -23,6 +23,7 @@ AllowShortBlocksOnASingleLine: Always
 LambdaBodyIndentation: Signature
 ContinuationIndentWidth: 4
 AlignAfterOpenBracket: DontAlign
+InsertBraces: true
 BraceWrapping:
   AfterControlStatement: false
   AfterFunction: false

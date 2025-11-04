@@ -9,14 +9,12 @@
 
 #include "config_manager.hpp"
 #include "constants.hpp"
-#include <Poco/Base64Decoder.h>
-#include <Poco/Base64Encoder.h>
-#include <Poco/DigestEngine.h>
-#include <Poco/SHA1Engine.h>
 #include <algorithm>
 #include <cmath>
 #include <functional>
 #include <ios>
+#include <mbedtls/sha1.h>
+#include <mbedtls/version.h>
 #include <sstream>
 #include <wx/filefn.h>
 #include <wx/filename.h>
@@ -26,6 +24,105 @@
 #include <wx/utils.h>
 
 namespace {
+static std::string b64_encode(const unsigned char* data, size_t len, bool url_safe, bool pad) {
+	static constexpr char k_std[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+	static constexpr char k_url[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+	const char* alpha = url_safe ? k_url : k_std;
+	std::string out;
+	out.reserve(((len + 2) / 3) * 4);
+	size_t i{0};
+	while (i + 3 <= len) {
+		uint32_t n = (uint32_t(data[i]) << 16) | (uint32_t(data[i + 1]) << 8) | uint32_t(data[i + 2]);
+		out.push_back(alpha[(n >> 18) & 63]);
+		out.push_back(alpha[(n >> 12) & 63]);
+		out.push_back(alpha[(n >> 6) & 63]);
+		out.push_back(alpha[n & 63]);
+		i += 3;
+	}
+	size_t rem{len - i};
+	if (rem == 1) {
+		uint32_t n = (uint32_t(data[i]) << 16);
+		out.push_back(alpha[(n >> 18) & 63]);
+		out.push_back(alpha[(n >> 12) & 63]);
+		if (pad) {
+			out.push_back('=');
+			out.push_back('=');
+		}
+	} else if (rem == 2) {
+		uint32_t n = (uint32_t(data[i]) << 16) | (uint32_t(data[i + 1]) << 8);
+		out.push_back(alpha[(n >> 18) & 63]);
+		out.push_back(alpha[(n >> 12) & 63]);
+		out.push_back(alpha[(n >> 6) & 63]);
+		if (pad) {
+			out.push_back('=');
+		}
+	}
+	return out;
+}
+
+static inline unsigned b64_val(int c, bool url_safe) {
+	if (c >= 'A' && c <= 'Z') {
+		return c - 'A';
+	}
+	if (c >= 'a' && c <= 'z') {
+		return c - 'a' + 26;
+	}
+	if (c >= '0' && c <= '9') {
+		return c - '0' + 52;
+	}
+	if (url_safe) {
+		if (c == '-') {
+			return 62;
+		}
+		if (c == '_') {
+			return 63;
+		}
+	} else {
+		if (c == '+') {
+			return 62;
+		}
+		if (c == '/') {
+			return 63;
+		}
+	}
+	return 255;
+}
+
+static std::string b64_decode(std::string_view s, bool url_safe) {
+	std::string out;
+	out.reserve((s.size() * 3) / 4);
+	uint32_t buf{0};
+	int bits{0};
+	for (char ch : s) {
+		if (ch == '=') {
+			break;
+		}
+		unsigned v = b64_val(static_cast<unsigned char>(ch), url_safe);
+		if (v == 255) {
+			continue;
+		}
+		buf = (buf << 6) | v;
+		bits += 6;
+		if (bits >= 8) {
+			bits -= 8;
+			out.push_back(char((buf >> bits) & 0xFF));
+		}
+	}
+	return out;
+}
+
+static int sha1_compute(const unsigned char* data, size_t len, unsigned char out[20]) {
+#if defined(MBEDTLS_VERSION_NUMBER)
+#if MBEDTLS_VERSION_NUMBER >= 0x03000000
+	return mbedtls_sha1(data, len, out);
+#else
+	return mbedtls_sha1_ret(data, len, out);
+#endif
+#else
+	return -1;
+#endif
+}
+
 inline bool read_config_value(wxFileConfig* cfg, const wxString& key, bool default_val) {
 	return cfg->ReadBool(key, default_val);
 }
@@ -833,14 +930,13 @@ wxString config_manager::get_document_section(const wxString& path) {
 }
 
 wxString config_manager::escape_document_path(const wxString& path) {
-	Poco::SHA1Engine sha1;
-	sha1.update(path.ToStdString());
-	const Poco::DigestEngine::Digest& digest = sha1.digest();
-	std::ostringstream b64_stream;
-	Poco::Base64Encoder encoder(b64_stream, static_cast<unsigned>(Poco::BASE64_URL_ENCODING) | static_cast<unsigned>(Poco::BASE64_NO_PADDING));
-	encoder.write(reinterpret_cast<const char*>(digest.data()), static_cast<std::streamsize>(digest.size()));
-	encoder.close();
-	return wxString::Format("doc_%s", b64_stream.str());
+	unsigned char digest[20]{};
+	const std::string s = path.ToStdString();
+	if (sha1_compute(reinterpret_cast<const unsigned char*>(s.data()), s.size(), digest) != 0) {
+		return wxString::Format("doc_%s", wxString::FromUTF8(s));
+	}
+	const std::string enc = b64_encode(digest, sizeof(digest), /*url_safe*/ true, /*pad*/ false);
+	return wxString::Format("doc_%s", enc);
 }
 
 void config_manager::with_document_section(const wxString& path, const std::function<void()>& func) const {
@@ -866,23 +962,17 @@ wxString config_manager::encode_note(const wxString& note) {
 	if (note.IsEmpty()) {
 		return wxEmptyString;
 	}
-	std::ostringstream b64_stream;
-	Poco::Base64Encoder encoder(b64_stream);
 	const std::string note_str = note.ToStdString();
-	encoder.write(note_str.data(), static_cast<std::streamsize>(note_str.size()));
-	encoder.close();
-	return wxString(b64_stream.str());
+	const auto enc = b64_encode(reinterpret_cast<const unsigned char*>(note_str.data()), note_str.size(), /*url_safe*/ false, /*pad*/ true);
+	return wxString::FromUTF8(enc);
 }
 
 wxString config_manager::decode_note(const wxString& encoded) {
 	if (encoded.IsEmpty()) {
 		return wxEmptyString;
 	}
-	std::istringstream b64_stream(encoded.ToStdString());
-	Poco::Base64Decoder decoder(b64_stream);
-	std::string decoded_str;
-	std::getline(decoder, decoded_str, '\0');
-	return wxString::FromUTF8(decoded_str.c_str());
+	const std::string dec = b64_decode(encoded.ToStdString(), /*url_safe*/ false);
+	return wxString::FromUTF8(dec.c_str());
 }
 
 template bool config_manager::get_app_setting<bool>(const wxString&, const bool&) const;

@@ -10,44 +10,28 @@
 
 #include "xml_to_text.hpp"
 #include "utils.hpp"
-#include <Poco/DOM/DOMParser.h>
-#include <Poco/DOM/Element.h>
-#include <Poco/DOM/Node.h>
-#include <Poco/DOM/Text.h>
-#include <Poco/Exception.h>
-#include <Poco/SAX/InputSource.h>
-#include <Poco/SAX/XMLReader.h>
 #include <algorithm>
 #include <array>
 #include <cctype>
 #include <cstddef>
+#include <pugixml.hpp>
 #include <sstream>
 #include <string>
 #include <string_view>
 #include <utility>
 #include <wx/string.h>
 
-using namespace Poco::XML;
-
 bool xml_to_text::convert(const std::string& xml_content) {
 	clear();
-	try {
-		std::istringstream iss(xml_content);
-		InputSource src(iss);
-		DOMParser parser;
-		parser.setFeature(XMLReader::FEATURE_NAMESPACES, true);
-		parser.setFeature(XMLReader::FEATURE_NAMESPACE_PREFIXES, false);
-		auto* doc = parser.parse(&src);
-		if (doc != nullptr) {
-			process_node(doc);
-			finalize_current_line();
-			return true;
-		}
-	} catch (const Poco::Exception&) {
+	pugi::xml_document doc;
+	const auto result = doc.load_buffer(xml_content.data(), xml_content.size(), pugi::parse_default | pugi::parse_ws_pcdata);
+	if (!result) {
 		clear();
 		return false;
 	}
-	return false;
+	process_node(doc);
+	finalize_current_line();
+	return true;
 }
 
 std::string xml_to_text::get_text() const {
@@ -91,22 +75,31 @@ std::string xml_to_text::get_bullet_for_level(int level) noexcept {
 	return "•";
 }
 
-void xml_to_text::process_node(Node* node) {
+static std::string get_local_name(const char* qname) {
+	if (qname == nullptr) {
+		return {};
+	}
+	std::string s(qname);
+	auto pos = s.find(':');
+	return pos == std::string::npos ? s : s.substr(pos + 1);
+}
+
+void xml_to_text::process_node(pugi::xml_node node) {
 	if (node == nullptr) {
 		return;
 	}
-	const auto node_type = node->nodeType();
+	const auto node_type = node.type();
 	std::string tag_name;
 	bool skip_children{false};
-	if (node_type == Node::ELEMENT_NODE) {
-		auto* element = dynamic_cast<Element*>(node);
-		tag_name = element->localName();
+	if (node_type == pugi::node_element) {
+		auto element = node;
+		tag_name = get_local_name(element.name());
 		std::ranges::transform(tag_name, tag_name.begin(), ::tolower);
 		if (tag_name == "section") {
 			section_offsets.push_back(get_current_text_position());
 		}
-		if (tag_name == "a" && element->hasAttributeNS("", "href")) {
-			const std::string href = element->getAttributeNS("", "href");
+		if (tag_name == "a") {
+			const std::string href = element.attribute("href").as_string();
 			const std::string link_text = get_element_text(element);
 			if (!link_text.empty()) {
 				const std::string processed_link_text = trim_string(collapse_whitespace(link_text));
@@ -145,24 +138,18 @@ void xml_to_text::process_node(Node* node) {
 			}
 			list_style_stack.push(style);
 			int item_count = 0;
-			auto* child = node->firstChild();
-			while (child != nullptr) {
-				if (child->nodeType() == Node::ELEMENT_NODE) {
-					auto* child_element = dynamic_cast<Element*>(child);
-					std::string child_tag_name = child_element->localName();
-					if (child_tag_name == "li") {
-						item_count++;
-					}
+			for (auto child : node.children()) {
+				if (child.type() == pugi::node_element && get_local_name(child.name()) == "li") {
+					item_count++;
 				}
-				child = child->nextSibling();
 			}
 			if (item_count > 0) {
 				finalize_current_line();
 				lists.push_back({.offset = get_current_text_position(), .item_count = item_count});
 			}
 		}
-		if (in_body && element->hasAttributeNS("", "id")) {
-			const std::string id = element->getAttributeNS("", "id");
+		if (in_body) {
+			const std::string id = element.attribute("id").as_string();
 			if (!id.empty()) {
 				id_positions[id] = get_current_text_position();
 			}
@@ -176,17 +163,15 @@ void xml_to_text::process_node(Node* node) {
 				headings.push_back({.offset = heading_offset, .level = level, .text = trim_string(collapse_whitespace(heading_text))});
 			}
 		}
-	} else if (node_type == Node::TEXT_NODE) {
-		process_text_node(dynamic_cast<Text*>(node));
+	} else if (node_type == pugi::node_pcdata || node_type == pugi::node_cdata) {
+		process_text_node(node);
 	}
 	if (!skip_children) {
-		auto* child = node->firstChild();
-		while (child != nullptr) {
+		for (auto child : node.children()) {
 			process_node(child);
-			child = child->nextSibling();
 		}
 	}
-	if (node_type == Node::ELEMENT_NODE) {
+	if (node_type == pugi::node_element) {
 		if (is_block_element(tag_name)) {
 			finalize_current_line();
 		}
@@ -202,12 +187,12 @@ void xml_to_text::process_node(Node* node) {
 	}
 }
 
-void xml_to_text::process_text_node(Text* text_node) {
+void xml_to_text::process_text_node(pugi::xml_node text_node) {
 	if (!in_body || text_node == nullptr) {
 		return;
 	}
-	const auto& text = text_node->data();
-	if (!text.empty()) {
+	const auto* text = text_node.value();
+	if (text != nullptr && *text != '\0') {
 		const std::string processed_text = remove_soft_hyphens(text);
 		current_line += preserve_whitespace ? processed_text : collapse_whitespace(processed_text);
 	}
@@ -285,20 +270,17 @@ constexpr bool xml_to_text::is_block_element(std::string_view tag_name) noexcept
 	return std::ranges::find(block_elements, tag_name) != block_elements.end();
 }
 
-std::string xml_to_text::get_element_text(Element* element) {
+std::string xml_to_text::get_element_text(pugi::xml_node element) {
 	if (element == nullptr) {
 		return {};
 	}
 	std::string text;
-	auto* child = element->firstChild();
-	while (child != nullptr) {
-		if (child->nodeType() == Node::TEXT_NODE) {
-			auto* text_node = dynamic_cast<Text*>(child);
-			text += text_node->data();
-		} else if (child->nodeType() == Node::ELEMENT_NODE) {
-			text += get_element_text(dynamic_cast<Element*>(child));
+	for (auto child : element.children()) {
+		if (child.type() == pugi::node_pcdata || child.type() == pugi::node_cdata) {
+			text += child.value();
+		} else if (child.type() == pugi::node_element) {
+			text += get_element_text(child);
 		}
-		child = child->nextSibling();
 	}
 	return text;
 }

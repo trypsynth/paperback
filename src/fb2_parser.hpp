@@ -9,7 +9,7 @@
 
 #pragma once
 #include "parser.hpp"
-#include <Poco/DOM/Element.h>
+#include <pugixml.hpp>
 
 class fb2_parser : public parser {
 public:
@@ -36,7 +36,7 @@ public:
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 
 private:
-	static std::string get_element_text(Poco::XML::Element* element);
+	static std::string get_element_text(pugi::xml_node element);
 };
 
 REGISTER_PARSER(fb2_parser);
