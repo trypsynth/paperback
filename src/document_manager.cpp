@@ -345,6 +345,10 @@ void document_manager::go_to_next_page() const {
 	navigate_to_page(true);
 }
 
+static bool is_candidate_for_filter(const bookmark& bm, bool notes) {
+	return notes ? bm.has_note() : !bm.has_note();
+}
+
 void document_manager::navigate_to_bookmark(bool next) const {
 	const document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
@@ -352,43 +356,132 @@ void document_manager::navigate_to_bookmark(bool next) const {
 		return;
 	}
 	const int current_pos = text_ctrl->GetInsertionPoint();
-	bool wrapping = false;
-	bookmark target_bookmark = next ? config.get_next_bookmark(tab->file_path, current_pos) : config.get_previous_bookmark(tab->file_path, current_pos);
-	if (target_bookmark.start == -1) {
-		if (config.get(config_manager::navigation_wrap)) {
-			target_bookmark = next ? config.get_next_bookmark(tab->file_path, -1) : config.get_previous_bookmark(tab->file_path, text_ctrl->GetLastPosition() + 1);
-			if (target_bookmark.start != -1) {
-				wrapping = true;
+	const bool allow_wrap = config.get(config_manager::navigation_wrap);
+	const auto all = config.get_bookmarks(tab->file_path);
+	std::vector<bookmark> list;
+	list.reserve(all.size());
+	for (const auto& bm : all) {
+		if (is_candidate_for_filter(bm, /*notes*/ false)) {
+			list.push_back(bm);
+		}
+	}
+	if (list.empty()) {
+		speak(_("No bookmarks."));
+		return;
+	}
+	auto find_target = [&](long start_from) -> bookmark {
+		if (next) {
+			for (const auto& bm : list) {
+				if (bm.start > start_from) {
+					return bm;
+				}
+			}
+		} else {
+			for (auto it = list.rbegin(); it != list.rend(); ++it) {
+				if (it->start < start_from) {
+					return *it;
+				}
 			}
 		}
-		if (target_bookmark.start == -1) {
-			speak(next ? _("No next bookmark") : _("No previous bookmark"));
-			return;
-		}
+		return bookmark{-1, -1};
+	};
+	bool wrapping = false;
+	bookmark target = find_target(current_pos);
+	if (target.start == -1 && allow_wrap) {
+		wrapping = true;
+		target = next ? find_target(-1) : find_target(text_ctrl->GetLastPosition() + 1);
 	}
-	text_ctrl->SetInsertionPoint(target_bookmark.start);
+	if (target.start == -1) {
+		speak(next ? _("No next bookmark") : _("No previous bookmark"));
+		return;
+	}
+	text_ctrl->SetInsertionPoint(target.start);
 	wxString text_to_speak;
-	if (target_bookmark.is_whole_line()) {
+	if (target.is_whole_line()) {
 		long line{0};
-		text_ctrl->PositionToXY(target_bookmark.start, nullptr, &line);
+		text_ctrl->PositionToXY(target.start, nullptr, &line);
 		text_to_speak = text_ctrl->GetLineText(line);
 	} else {
-		text_to_speak = text_ctrl->GetRange(target_bookmark.start, target_bookmark.end);
+		text_to_speak = text_ctrl->GetRange(target.start, target.end);
 	}
-	std::vector<bookmark> bookmarks = config.get_bookmarks(tab->file_path);
-	int bookmark_index = 0;
-	for (size_t i = 0; i < bookmarks.size(); ++i) {
-		if (bookmarks[i] == target_bookmark) {
-			bookmark_index = static_cast<int>(i);
+	int index{0};
+	for (size_t i = 0; i < list.size(); ++i) {
+		if (list[i] == target) {
+			index = static_cast<int>(i);
+			break;
+		}
+	}
+	wxString announcement = wxString::Format(_("%s - Bookmark %d"), text_to_speak, index + 1);
+	if (wrapping) {
+		announcement = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + announcement;
+	}
+	speak(announcement);
+}
+
+void document_manager::navigate_to_note(bool next) const {
+	const document_tab* tab = get_active_tab();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (tab == nullptr || text_ctrl == nullptr) {
+		return;
+	}
+	const int current_pos = text_ctrl->GetInsertionPoint();
+	const bool allow_wrap = config.get(config_manager::navigation_wrap);
+	const auto all = config.get_bookmarks(tab->file_path);
+	std::vector<bookmark> list;
+	list.reserve(all.size());
+	for (const auto& bm : all) {
+		if (is_candidate_for_filter(bm, /*notes*/ true)) {
+			list.push_back(bm);
+		}
+	}
+	if (list.empty()) {
+		speak(_("No notes."));
+		return;
+	}
+	auto find_target = [&](long start_from) -> bookmark {
+		if (next) {
+			for (const auto& bm : list) {
+				if (bm.start > start_from) {
+					return bm;
+				}
+			}
+		} else {
+			for (auto it = list.rbegin(); it != list.rend(); ++it) {
+				if (it->start < start_from) {
+					return *it;
+				}
+			}
+		}
+		return bookmark{-1, -1};
+	};
+	bool wrapping{false};
+	bookmark target = find_target(current_pos);
+	if (target.start == -1 && allow_wrap) {
+		wrapping = true;
+		target = next ? find_target(-1) : find_target(text_ctrl->GetLastPosition() + 1);
+	}
+	if (target.start == -1) {
+		speak(next ? _("No next note") : _("No previous note"));
+		return;
+	}
+	text_ctrl->SetInsertionPoint(target.start);
+	wxString text_to_speak;
+	if (target.is_whole_line()) {
+		long line{0};
+		text_ctrl->PositionToXY(target.start, nullptr, &line);
+		text_to_speak = text_ctrl->GetLineText(line);
+	} else {
+		text_to_speak = text_ctrl->GetRange(target.start, target.end);
+	}
+	int index{0};
+	for (size_t i = 0; i < list.size(); ++i) {
+		if (list[i] == target) {
+			index = static_cast<int>(i);
 			break;
 		}
 	}
 	wxString announcement;
-	if (target_bookmark.has_note()) {
-		announcement = wxString::Format(_("%s - %s - Bookmark %d"), target_bookmark.note, text_to_speak, bookmark_index + 1);
-	} else {
-		announcement = wxString::Format(_("%s - Bookmark %d"), text_to_speak, bookmark_index + 1);
-	}
+	announcement = target.has_note() ? wxString::Format(_("%s - %s - Note %d"), target.note, text_to_speak, index + 1) : wxString::Format(_("%s - Note %d"), text_to_speak, index + 1);
 	if (wrapping) {
 		announcement = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + announcement;
 	}
@@ -401,6 +494,14 @@ void document_manager::go_to_previous_bookmark() const {
 
 void document_manager::go_to_next_bookmark() const {
 	navigate_to_bookmark(true);
+}
+
+void document_manager::go_to_previous_note() const {
+	navigate_to_note(false);
+}
+
+void document_manager::go_to_next_note() const {
+	navigate_to_note(true);
 }
 
 void document_manager::navigate_to_link(bool next) const {
@@ -728,7 +829,7 @@ void document_manager::add_bookmark_with_note() const {
 	config.flush();
 }
 
-void document_manager::show_bookmark_dialog(wxWindow* parent) {
+void document_manager::show_bookmark_dialog(wxWindow* parent, bookmark_filter initial_filter) {
 	const document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (tab == nullptr || text_ctrl == nullptr) {
@@ -740,7 +841,7 @@ void document_manager::show_bookmark_dialog(wxWindow* parent) {
 		return;
 	}
 	const int current_pos = text_ctrl->GetInsertionPoint();
-	bookmark_dialog dialog(parent, bookmarks, text_ctrl, config, tab->file_path, current_pos);
+	bookmark_dialog dialog(parent, bookmarks, text_ctrl, config, tab->file_path, current_pos, initial_filter);
 	const int result = dialog.ShowModal();
 	if (result != wxID_OK) {
 		return;

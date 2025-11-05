@@ -92,9 +92,13 @@ private:
 	void on_next_page(wxCommandEvent&);
 	void on_next_bookmark(wxCommandEvent&);
 	void on_previous_bookmark(wxCommandEvent&);
+	void on_next_note(wxCommandEvent&);
+	void on_previous_note(wxCommandEvent&);
 	void on_toggle_bookmark(wxCommandEvent&);
 	void on_bookmark_with_note(wxCommandEvent&);
 	void on_jump_to_bookmark(wxCommandEvent&);
+	void on_jump_to_bookmarks_only(wxCommandEvent&);
+	void on_jump_to_notes(wxCommandEvent&);
 	void on_next_link(wxCommandEvent&);
 	void on_previous_link(wxCommandEvent&);
 	void on_previous_list(wxCommandEvent&);

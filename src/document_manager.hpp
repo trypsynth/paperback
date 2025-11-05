@@ -9,6 +9,7 @@
 
 #pragma once
 #include "config_manager.hpp"
+#include "dialogs.hpp"
 #include "document.hpp"
 #include "utils.hpp"
 #include <memory>
@@ -75,6 +76,8 @@ public:
 	void go_to_next_page() const;
 	void go_to_previous_bookmark() const;
 	void go_to_next_bookmark() const;
+	void go_to_previous_note() const;
+	void go_to_next_note() const;
 	void go_to_previous_link() const;
 	void go_to_next_link() const;
 	void go_to_previous_list() const;
@@ -84,7 +87,7 @@ public:
 	void activate_current_link() const;
 	void toggle_bookmark() const;
 	void add_bookmark_with_note() const;
-	void show_bookmark_dialog(wxWindow* parent);
+	void show_bookmark_dialog(wxWindow* parent, bookmark_filter initial_filter = bookmark_filter::all);
 	void show_table_of_contents(wxWindow* parent) const;
 	void show_document_info(wxWindow* parent);
 	void save_document_position(const wxString& path, long position) const;
@@ -111,6 +114,7 @@ private:
 	void navigate_to_section(bool next) const;
 	void navigate_to_page(bool next) const;
 	void navigate_to_bookmark(bool next) const;
+	void navigate_to_note(bool next) const;
 	void navigate_to_link(bool next) const;
 	void navigate_to_list(bool next) const;
 	void navigate_to_list_item(bool next) const;

@@ -118,7 +118,12 @@ wxMenu* main_window::create_go_menu() {
 		auto* bookmarks_menu = new wxMenu();
 		bookmarks_menu->Append(ID_PREVIOUS_BOOKMARK, _("Previous &bookmark\tShift+B"));
 		bookmarks_menu->Append(ID_NEXT_BOOKMARK, _("Next b&ookmark\tB"));
-		bookmarks_menu->Append(ID_JUMP_TO_BOOKMARK, _("Jump to bookmark...\tCtrl+B"));
+		bookmarks_menu->Append(ID_PREVIOUS_NOTE, _("Previous &note\tShift+N"));
+		bookmarks_menu->Append(ID_NEXT_NOTE, _("Next &note\tN"));
+		bookmarks_menu->AppendSeparator();
+		bookmarks_menu->Append(ID_JUMP_TO_BOOKMARK, _("Jump to &all...\tCtrl+B"));
+		bookmarks_menu->Append(ID_JUMP_TO_BOOKMARKS_ONLY, _("Jump to &bookmarks...\tCtrl+Alt+B"));
+		bookmarks_menu->Append(ID_JUMP_TO_NOTES, _("Jump to &notes...\tCtrl+Alt+M"));
 		menu->AppendSubMenu(bookmarks_menu, _("&Bookmarks"));
 		auto* links_menu = new wxMenu();
 		links_menu->Append(ID_PREVIOUS_LINK, _("Previous lin&k\tShift+K"));
@@ -143,9 +148,13 @@ wxMenu* main_window::create_go_menu() {
 		menu->AppendSeparator();
 		menu->Append(ID_PREVIOUS_BOOKMARK, _("Previous &bookmark\tShift+B"));
 		menu->Append(ID_NEXT_BOOKMARK, _("Next b&ookmark\tB"));
+		menu->Append(ID_PREVIOUS_NOTE, _("Previous &note\tShift+N"));
+		menu->Append(ID_NEXT_NOTE, _("Next &note\tN"));
 		menu->Append(ID_TOGGLE_BOOKMARK, _("Toggle bookmark\tCtrl+Shift+B"));
 		menu->Append(ID_BOOKMARK_WITH_NOTE, _("Bookmark with &note\tCtrl+Shift+N"));
-		menu->Append(ID_JUMP_TO_BOOKMARK, _("Jump to bookmark...\tCtrl+B"));
+		menu->Append(ID_JUMP_TO_BOOKMARK, _("Jump to &all...\tCtrl+B"));
+		menu->Append(ID_JUMP_TO_BOOKMARKS_ONLY, _("Jump to &bookmarks...\tCtrl+Alt+B"));
+		menu->Append(ID_JUMP_TO_NOTES, _("Jump to &notes...\tCtrl+Alt+M"));
 		menu->AppendSeparator();
 		menu->Append(ID_PREVIOUS_LINK, _("Previous lin&k\tShift+K"));
 		menu->Append(ID_NEXT_LINK, _("Next lin&k\tK"));
@@ -224,9 +233,13 @@ void main_window::bind_events() {
 		{ID_NEXT_PAGE, &main_window::on_next_page},
 		{ID_PREVIOUS_BOOKMARK, &main_window::on_previous_bookmark},
 		{ID_NEXT_BOOKMARK, &main_window::on_next_bookmark},
+		{ID_PREVIOUS_NOTE, &main_window::on_previous_note},
+		{ID_NEXT_NOTE, &main_window::on_next_note},
 		{ID_TOGGLE_BOOKMARK, &main_window::on_toggle_bookmark},
 		{ID_BOOKMARK_WITH_NOTE, &main_window::on_bookmark_with_note},
 		{ID_JUMP_TO_BOOKMARK, &main_window::on_jump_to_bookmark},
+		{ID_JUMP_TO_BOOKMARKS_ONLY, &main_window::on_jump_to_bookmarks_only},
+		{ID_JUMP_TO_NOTES, &main_window::on_jump_to_notes},
 		{ID_PREVIOUS_LINK, &main_window::on_previous_link},
 		{ID_NEXT_LINK, &main_window::on_next_link},
 		{ID_PREVIOUS_LIST, &main_window::on_previous_list},
@@ -600,6 +613,18 @@ void main_window::on_next_bookmark(wxCommandEvent&) {
 	trigger_throttled_position_save();
 }
 
+void main_window::on_previous_note(wxCommandEvent&) {
+	doc_manager->go_to_previous_note();
+	update_status_bar();
+	trigger_throttled_position_save();
+}
+
+void main_window::on_next_note(wxCommandEvent&) {
+	doc_manager->go_to_next_note();
+	update_status_bar();
+	trigger_throttled_position_save();
+}
+
 void main_window::on_toggle_bookmark(wxCommandEvent&) {
 	doc_manager->toggle_bookmark();
 }
@@ -609,7 +634,19 @@ void main_window::on_bookmark_with_note(wxCommandEvent&) {
 }
 
 void main_window::on_jump_to_bookmark(wxCommandEvent&) {
-	doc_manager->show_bookmark_dialog(this);
+	doc_manager->show_bookmark_dialog(this, bookmark_filter::all);
+	update_status_bar();
+	save_position_immediately();
+}
+
+void main_window::on_jump_to_bookmarks_only(wxCommandEvent&) {
+	doc_manager->show_bookmark_dialog(this, bookmark_filter::bookmarks_only);
+	update_status_bar();
+	save_position_immediately();
+}
+
+void main_window::on_jump_to_notes(wxCommandEvent&) {
+	doc_manager->show_bookmark_dialog(this, bookmark_filter::notes_only);
 	update_status_bar();
 	save_position_immediately();
 }
