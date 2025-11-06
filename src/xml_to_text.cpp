@@ -69,7 +69,7 @@ void xml_to_text::clear() noexcept {
 
 std::string xml_to_text::get_bullet_for_level(int level) noexcept {
 	constexpr std::array<const char*, 3> bullets = {"•", "◦", "-"};
-	if (level > 0 && level <= bullets.size()) {
+	if (level > 0 && static_cast<std::size_t>(level) <= bullets.size()) {
 		return bullets[level - 1];
 	}
 	return "•";

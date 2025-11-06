@@ -17,12 +17,19 @@
 #include "update_checker.hpp"
 #include "utils.hpp"
 #include <wx/aboutdlg.h>
+#include <wx/artprov.h>
 #include <wx/filename.h>
 #include <wx/stdpaths.h>
 #include <wx/timer.h>
 #include <wx/translation.h>
 
-main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME), task_bar_icon_{new task_bar_icon(this)}, position_save_timer{std::make_unique<wxTimer>(this)}, status_update_timer{std::make_unique<wxTimer>(this)}, sleep_timer{std::make_unique<wxTimer>(this)}, sleep_status_update_timer{std::make_unique<wxTimer>(this)} {
+main_window::main_window()
+	: wxFrame(nullptr, wxID_ANY, APP_NAME),
+	  position_save_timer{std::make_unique<wxTimer>(this)},
+	  status_update_timer{std::make_unique<wxTimer>(this)},
+	  task_bar_icon_{new task_bar_icon(this)},
+	  sleep_timer{std::make_unique<wxTimer>(this)},
+	  sleep_status_update_timer{std::make_unique<wxTimer>(this)} {
 	auto* const panel = new wxPanel(this);
 	notebook = new wxNotebook(panel, wxID_ANY);
 #ifdef __WXMSW__
@@ -282,7 +289,15 @@ void main_window::on_iconize(wxIconizeEvent& event) {
 		auto& config_mgr = wxGetApp().get_config_manager();
 		if (config_mgr.get(config_manager::minimize_to_tray)) {
 			Hide();
-			task_bar_icon_->SetIcon(wxICON(wxICON_INFORMATION), APP_NAME);
+			wxIcon info_icon;
+#ifdef __WXMSW__
+			info_icon = wxICON(wxICON_INFORMATION);
+#else
+			info_icon = wxArtProvider::GetIcon(wxART_INFORMATION, wxART_OTHER, wxSize(32, 32));
+#endif
+			if (info_icon.IsOk() && task_bar_icon_ != nullptr) {
+				task_bar_icon_->SetIcon(info_icon, APP_NAME);
+			}
 		}
 	}
 	event.Skip();
@@ -945,9 +960,10 @@ void main_window::on_recent_document(wxCommandEvent& event) {
 void main_window::on_show_all_documents(wxCommandEvent&) {
 	auto& config_mgr = wxGetApp().get_config_manager();
 	wxArrayString open_docs;
-	for (size_t i = 0; i < doc_manager->get_tab_count(); ++i) {
-		if (doc_manager->get_tab(static_cast<int>(i)) != nullptr) {
-			open_docs.Add(doc_manager->get_tab(static_cast<int>(i))->file_path);
+	const int tab_count = doc_manager->get_tab_count();
+	for (int i = 0; i < tab_count; ++i) {
+		if (doc_manager->get_tab(i) != nullptr) {
+			open_docs.Add(doc_manager->get_tab(i)->file_path);
 		}
 	}
 	all_documents_dialog dlg(this, config_mgr, open_docs);
@@ -992,7 +1008,9 @@ void main_window::update_recent_documents_menu() {
 	auto& config_mgr = wxGetApp().get_config_manager();
 	const wxArrayString recent_docs = config_mgr.get_recent_documents();
 	size_t menu_count = 0;
-	for (size_t i = 0; i < recent_docs.GetCount() && menu_count < config_mgr.get(config_manager::recent_documents_to_show); ++i) {
+	const int max_items_config = config_mgr.get(config_manager::recent_documents_to_show);
+	const size_t max_items = max_items_config > 0 ? static_cast<size_t>(max_items_config) : 0;
+	for (size_t i = 0; i < recent_docs.GetCount() && menu_count < max_items; ++i) {
 		const wxString& path = recent_docs[i];
 		const wxString filename = wxFileName(path).GetFullName();
 		const wxString menu_text = wxString::Format("&%zu %s", menu_count + 1, filename);

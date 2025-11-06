@@ -914,7 +914,7 @@ void document_manager::show_document_info(wxWindow* parent) {
 	if (doc == nullptr) {
 		return;
 	}
-	document_info_dialog dlg(parent, doc, tab->file_path, config);
+	document_info_dialog dlg(parent, doc, tab->file_path);
 	dlg.ShowModal();
 	if (dlg.imported_position > -1) {
 		go_to_position(dlg.imported_position);

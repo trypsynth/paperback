@@ -90,7 +90,7 @@ void html_to_text::clear() noexcept {
 
 std::string html_to_text::get_bullet_for_level(int level) noexcept {
 	constexpr std::array<const char*, 3> bullets = {"•", "◦", "-"};
-	if (level > 0 && level <= bullets.size()) {
+	if (level > 0 && static_cast<std::size_t>(level) <= bullets.size()) {
 		return bullets[level - 1];
 	}
 	return "•";
@@ -203,7 +203,7 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 	if (source_mode == html_source_mode::markdown && in_code && preserve_whitespace && is_element && tag_name == "code") {
 		for (auto* child = node->first_child; child != nullptr; child = child->next) {
 			if (child->type == LXB_DOM_NODE_TYPE_ELEMENT) {
-				lexbor_str_t str{nullptr};
+					lexbor_str_t str{nullptr, 0};
 				lxb_html_serialize_tree_str(child, &str);
 				if (str.data != nullptr && str.length > 0) {
 					current_line += std::string(reinterpret_cast<const char*>(str.data), str.length);

@@ -249,7 +249,6 @@ void config_manager::add_recent_document(const wxString& path) {
 	if (!config) {
 		return;
 	}
-	const wxString doc_id = escape_document_path(path);
 	with_document_section(path, [this, path]() {
 		if (!config->HasEntry("path")) {
 			config->Write("path", path);
