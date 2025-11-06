@@ -16,12 +16,148 @@
 #include "translation_manager.hpp"
 #include "update_checker.hpp"
 #include "utils.hpp"
+#include <initializer_list>
+#include <wx/accel.h>
 #include <wx/aboutdlg.h>
 #include <wx/artprov.h>
 #include <wx/filename.h>
 #include <wx/stdpaths.h>
 #include <wx/timer.h>
 #include <wx/translation.h>
+
+namespace {
+
+enum class shortcut_modifier { primary, shift, alt, control };
+
+wxString primary_modifier_token() {
+#ifdef __WXOSX__
+	return _("Cmd");
+#else
+	return _("Ctrl");
+#endif
+}
+
+wxString alt_modifier_token() {
+#ifdef __WXOSX__
+	return _("Option");
+#else
+	return _("Alt");
+#endif
+}
+
+wxString control_modifier_token() {
+	return _("Ctrl");
+}
+
+wxString compose_shortcut(const wxString& key, std::initializer_list<shortcut_modifier> modifiers) {
+	bool include_primary = false;
+	bool include_shift = false;
+	bool include_alt = false;
+	bool include_control = false;
+	for (const auto modifier : modifiers) {
+		switch (modifier) {
+			case shortcut_modifier::primary:
+				include_primary = true;
+				break;
+			case shortcut_modifier::shift:
+				include_shift = true;
+				break;
+			case shortcut_modifier::alt:
+				include_alt = true;
+				break;
+			case shortcut_modifier::control:
+				include_control = true;
+				break;
+		}
+	}
+	wxString result;
+	const auto append = [&result](const wxString& segment) {
+		if (segment.IsEmpty()) {
+			return;
+		}
+		if (!result.IsEmpty()) {
+			result += "+";
+		}
+		result += segment;
+	};
+#ifdef __WXOSX__
+	if (include_control) {
+		append(control_modifier_token());
+	}
+	if (include_alt) {
+		append(alt_modifier_token());
+	}
+	if (include_shift) {
+		append(_("Shift"));
+	}
+	if (include_primary) {
+		append(primary_modifier_token());
+	}
+#else
+	if (include_shift) {
+		append(_("Shift"));
+	}
+	if (include_control) {
+		append(control_modifier_token());
+	}
+	if (include_alt) {
+		append(alt_modifier_token());
+	}
+	if (include_primary) {
+		append(primary_modifier_token());
+	}
+#endif
+	if (!key.IsEmpty()) {
+		if (!result.IsEmpty()) {
+			result += "+";
+		}
+		result += key;
+	}
+	return result;
+}
+
+int accelerator_flags(std::initializer_list<shortcut_modifier> modifiers) {
+	int flags = 0;
+	for (const auto modifier : modifiers) {
+		switch (modifier) {
+			case shortcut_modifier::primary:
+				flags |= wxACCEL_CMD;
+				break;
+			case shortcut_modifier::shift:
+				flags |= wxACCEL_SHIFT;
+				break;
+			case shortcut_modifier::alt:
+				flags |= wxACCEL_ALT;
+				break;
+			case shortcut_modifier::control:
+				flags |= wxACCEL_CTRL;
+				break;
+		}
+	}
+	return flags;
+}
+
+wxMenuItem* append_menu_item_with_shortcut(wxMenu* menu,
+	const int id,
+	const wxString& base_label,
+	const wxString& key_display,
+	const int keycode,
+	std::initializer_list<shortcut_modifier> modifiers) {
+	wxString full_label = base_label;
+	if (!key_display.IsEmpty()) {
+		full_label += "\t" + compose_shortcut(key_display, modifiers);
+	}
+	auto* item = new wxMenuItem(menu, id, full_label);
+	if (!key_display.IsEmpty()) {
+		auto* accel = new wxAcceleratorEntry();
+		accel->Set(accelerator_flags(modifiers), keycode, id);
+		item->SetAccel(accel);
+	}
+	menu->Append(item);
+	return item;
+}
+
+} // namespace
 
 main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME),
 	position_save_timer{std::make_unique<wxTimer>(this)},
@@ -75,6 +211,9 @@ main_window::~main_window() {
 
 void main_window::create_menus() {
 	auto* const menu_bar = new wxMenuBar();
+#ifdef __WXOSX__
+	setup_macos_app_menu(menu_bar);
+#endif
 	menu_bar->Append(create_file_menu(), _("&File"));
 	menu_bar->Append(create_go_menu(), _("&Go"));
 	menu_bar->Append(create_tools_menu(), _("&Tools"));
@@ -82,17 +221,41 @@ void main_window::create_menus() {
 	SetMenuBar(menu_bar);
 }
 
+#ifdef __WXOSX__
+void main_window::setup_macos_app_menu(wxMenuBar* menu_bar) {
+	if (menu_bar == nullptr) {
+		return;
+	}
+	auto* const app_menu = new wxMenu();
+	app_menu->Append(wxID_ABOUT, wxString::Format(_("About %s"), APP_NAME));
+	app_menu->AppendSeparator();
+	append_menu_item_with_shortcut(app_menu, wxID_PREFERENCES, _("Preferences..."), ",", ',', {shortcut_modifier::primary});
+	app_menu->AppendSeparator();
+	append_menu_item_with_shortcut(app_menu, wxID_EXIT, wxString::Format(_("Quit %s"), APP_NAME), "Q", 'Q', {shortcut_modifier::primary});
+	menu_bar->Append(app_menu, APP_NAME);
+}
+#endif
+
 wxMenu* main_window::create_file_menu() {
 	auto* const menu = new wxMenu();
-	menu->Append(wxID_OPEN, _("&Open...\tCtrl+O"));
-	menu->Append(wxID_CLOSE, _("Close\tCtrl+F4"));
-	menu->Append(wxID_CLOSE_ALL, _("Close &All\tCtrl+Shift+F4"));
+	append_menu_item_with_shortcut(menu, wxID_OPEN, _("&Open..."), "O", 'O', {shortcut_modifier::primary});
+#ifdef __WXOSX__
+	const wxString close_display = "W";
+	const int close_keycode = 'W';
+#else
+	const wxString close_display = "F4";
+	const int close_keycode = WXK_F4;
+#endif
+	append_menu_item_with_shortcut(menu, wxID_CLOSE, _("Close"), close_display, close_keycode, {shortcut_modifier::primary});
+	append_menu_item_with_shortcut(menu, wxID_CLOSE_ALL, _("Close &All"), close_display, close_keycode, {shortcut_modifier::primary, shortcut_modifier::shift});
 	menu->AppendSeparator();
 	recent_documents_menu = new wxMenu();
 	menu->AppendSubMenu(recent_documents_menu, _("&Recent Documents"));
 	update_recent_documents_menu();
 	menu->AppendSeparator();
+#ifndef __WXOSX__
 	menu->Append(wxID_EXIT, _("E&xit"));
+#endif
 	return menu;
 }
 
@@ -100,12 +263,22 @@ wxMenu* main_window::create_go_menu() {
 	auto* const menu = new wxMenu();
 	auto& config_mgr = wxGetApp().get_config_manager();
 	const bool compact = config_mgr.get(config_manager::compact_go_menu);
-	menu->Append(wxID_FIND, _("&Find...\tCtrl+F"));
-	menu->Append(ID_FIND_NEXT, _("Find Ne&xt\tF3"));
-	menu->Append(ID_FIND_PREVIOUS, _("Find P&revious\tShift+F3"));
+	append_menu_item_with_shortcut(menu, wxID_FIND, _("&Find..."), "F", 'F', {shortcut_modifier::primary});
+#ifdef __WXOSX__
+	append_menu_item_with_shortcut(menu, ID_FIND_NEXT, _("Find Ne&xt"), "G", 'G', {shortcut_modifier::primary});
+	append_menu_item_with_shortcut(menu, ID_FIND_PREVIOUS, _("Find P&revious"), "G", 'G', {shortcut_modifier::primary, shortcut_modifier::shift});
+#else
+	append_menu_item_with_shortcut(menu, ID_FIND_NEXT, _("Find Ne&xt"), "F3", WXK_F3, {});
+	append_menu_item_with_shortcut(menu, ID_FIND_PREVIOUS, _("Find P&revious"), "F3", WXK_F3, {shortcut_modifier::shift});
+#endif
 	menu->AppendSeparator();
-	menu->Append(ID_GO_TO_LINE, _("Go to &line...\tCtrl+G"));
-	menu->Append(ID_GO_TO_PERCENT, _("Go to &percent...\tCtrl+Shift+G"));
+#ifdef __WXOSX__
+	append_menu_item_with_shortcut(menu, ID_GO_TO_LINE, _("Go to &line..."), "L", 'L', {shortcut_modifier::primary});
+	append_menu_item_with_shortcut(menu, ID_GO_TO_PERCENT, _("Go to &percent..."), "P", 'P', {shortcut_modifier::primary, shortcut_modifier::shift});
+#else
+	append_menu_item_with_shortcut(menu, ID_GO_TO_LINE, _("Go to &line..."), "G", 'G', {shortcut_modifier::primary});
+	append_menu_item_with_shortcut(menu, ID_GO_TO_PERCENT, _("Go to &percent..."), "G", 'G', {shortcut_modifier::primary, shortcut_modifier::shift});
+#endif
 	menu->AppendSeparator();
 	if (compact) {
 		auto* sections_menu = new wxMenu();
@@ -116,7 +289,7 @@ wxMenu* main_window::create_go_menu() {
 		document_manager::create_heading_menu(headings_menu);
 		menu->AppendSubMenu(headings_menu, _("&Headings"));
 		auto* pages_menu = new wxMenu();
-		pages_menu->Append(ID_GO_TO_PAGE, _("Go to &page...\tCtrl+P"));
+		append_menu_item_with_shortcut(pages_menu, ID_GO_TO_PAGE, _("Go to &page..."), "P", 'P', {shortcut_modifier::primary});
 		pages_menu->AppendSeparator();
 		pages_menu->Append(ID_PREVIOUS_PAGE, _("Previous &page\tShift+P"));
 		pages_menu->Append(ID_NEXT_PAGE, _("&Next page\tP"));
@@ -127,9 +300,9 @@ wxMenu* main_window::create_go_menu() {
 		bookmarks_menu->Append(ID_PREVIOUS_NOTE, _("Previous &note\tShift+N"));
 		bookmarks_menu->Append(ID_NEXT_NOTE, _("Next &note\tN"));
 		bookmarks_menu->AppendSeparator();
-		bookmarks_menu->Append(ID_JUMP_TO_BOOKMARK, _("Jump to &all...\tCtrl+B"));
-		bookmarks_menu->Append(ID_JUMP_TO_BOOKMARKS_ONLY, _("Jump to &bookmarks...\tCtrl+Alt+B"));
-		bookmarks_menu->Append(ID_JUMP_TO_NOTES, _("Jump to &notes...\tCtrl+Alt+M"));
+		append_menu_item_with_shortcut(bookmarks_menu, ID_JUMP_TO_BOOKMARK, _("Jump to &all..."), "B", 'B', {shortcut_modifier::primary});
+		append_menu_item_with_shortcut(bookmarks_menu, ID_JUMP_TO_BOOKMARKS_ONLY, _("Jump to &bookmarks..."), "B", 'B', {shortcut_modifier::primary, shortcut_modifier::alt});
+		append_menu_item_with_shortcut(bookmarks_menu, ID_JUMP_TO_NOTES, _("Jump to &notes..."), "M", 'M', {shortcut_modifier::primary, shortcut_modifier::alt});
 		menu->AppendSubMenu(bookmarks_menu, _("&Bookmarks"));
 		auto* links_menu = new wxMenu();
 		links_menu->Append(ID_PREVIOUS_LINK, _("Previous lin&k\tShift+K"));
@@ -142,7 +315,7 @@ wxMenu* main_window::create_go_menu() {
 		lists_menu->Append(ID_NEXT_LIST_ITEM, _("Next list &item\tI"));
 		menu->AppendSubMenu(lists_menu, _("&Lists"));
 	} else {
-		menu->Append(ID_GO_TO_PAGE, _("Go to &page...\tCtrl+P"));
+		append_menu_item_with_shortcut(menu, ID_GO_TO_PAGE, _("Go to &page..."), "P", 'P', {shortcut_modifier::primary});
 		menu->AppendSeparator();
 		menu->Append(ID_PREVIOUS_SECTION, _("Previous section\t["));
 		menu->Append(ID_NEXT_SECTION, _("Next section\t]"));
@@ -156,11 +329,11 @@ wxMenu* main_window::create_go_menu() {
 		menu->Append(ID_NEXT_BOOKMARK, _("Next b&ookmark\tB"));
 		menu->Append(ID_PREVIOUS_NOTE, _("Previous &note\tShift+N"));
 		menu->Append(ID_NEXT_NOTE, _("Next &note\tN"));
-		menu->Append(ID_TOGGLE_BOOKMARK, _("Toggle bookmark\tCtrl+Shift+B"));
-		menu->Append(ID_BOOKMARK_WITH_NOTE, _("Bookmark with &note\tCtrl+Shift+N"));
-		menu->Append(ID_JUMP_TO_BOOKMARK, _("Jump to &all...\tCtrl+B"));
-		menu->Append(ID_JUMP_TO_BOOKMARKS_ONLY, _("Jump to &bookmarks...\tCtrl+Alt+B"));
-		menu->Append(ID_JUMP_TO_NOTES, _("Jump to &notes...\tCtrl+Alt+M"));
+		append_menu_item_with_shortcut(menu, ID_TOGGLE_BOOKMARK, _("Toggle bookmark"), "B", 'B', {shortcut_modifier::primary, shortcut_modifier::shift});
+		append_menu_item_with_shortcut(menu, ID_BOOKMARK_WITH_NOTE, _("Bookmark with &note"), "N", 'N', {shortcut_modifier::primary, shortcut_modifier::shift});
+		append_menu_item_with_shortcut(menu, ID_JUMP_TO_BOOKMARK, _("Jump to &all..."), "B", 'B', {shortcut_modifier::primary});
+		append_menu_item_with_shortcut(menu, ID_JUMP_TO_BOOKMARKS_ONLY, _("Jump to &bookmarks..."), "B", 'B', {shortcut_modifier::primary, shortcut_modifier::alt});
+		append_menu_item_with_shortcut(menu, ID_JUMP_TO_NOTES, _("Jump to &notes..."), "M", 'M', {shortcut_modifier::primary, shortcut_modifier::alt});
 		menu->AppendSeparator();
 		menu->Append(ID_PREVIOUS_LINK, _("Previous lin&k\tShift+K"));
 		menu->Append(ID_NEXT_LINK, _("Next lin&k\tK"));
@@ -175,35 +348,43 @@ wxMenu* main_window::create_go_menu() {
 
 wxMenu* main_window::create_tools_menu() {
 	auto* const menu = new wxMenu();
-	menu->Append(ID_WORD_COUNT, _("&Word count\tCtrl+W"));
-	menu->Append(ID_DOC_INFO, _("Document &info\tCtrl+I"));
+#ifdef __WXOSX__
+	append_menu_item_with_shortcut(menu, ID_WORD_COUNT, _("&Word count"), "W", 'W', {shortcut_modifier::control});
+#else
+	append_menu_item_with_shortcut(menu, ID_WORD_COUNT, _("&Word count"), "W", 'W', {shortcut_modifier::primary});
+#endif
+	append_menu_item_with_shortcut(menu, ID_DOC_INFO, _("Document &info"), "I", 'I', {shortcut_modifier::primary});
 	menu->AppendSeparator();
-	menu->Append(ID_TABLE_OF_CONTENTS, _("Table of contents\tCtrl+T"));
+	append_menu_item_with_shortcut(menu, ID_TABLE_OF_CONTENTS, _("Table of contents"), "T", 'T', {shortcut_modifier::primary});
 	menu->AppendSeparator();
 	menu->Append(ID_OPEN_CONTAINING_FOLDER, _("Open &containing folder"));
 	wxMenu* const import_export_menu = new wxMenu();
 	import_export_menu->Append(ID_IMPORT, _("&Import document data..."));
 	import_export_menu->Append(ID_EXPORT_DOCUMENT_DATA, _("&Export document data..."));
-	import_export_menu->Append(ID_EXPORT_TO_TEXT, _("Export document to &plain text...\tCtrl+E"));
+	append_menu_item_with_shortcut(import_export_menu, ID_EXPORT_TO_TEXT, _("Export document to &plain text..."), "E", 'E', {shortcut_modifier::primary});
 	menu->AppendSubMenu(import_export_menu, _("Import/&Export"));
 	menu->AppendSeparator();
-	menu->Append(ID_TOGGLE_BOOKMARK, _("Toggle bookmark\tCtrl+Shift+B"));
-	menu->Append(ID_BOOKMARK_WITH_NOTE, _("Bookmark with &note\tCtrl+Shift+N"));
+	append_menu_item_with_shortcut(menu, ID_TOGGLE_BOOKMARK, _("Toggle bookmark"), "B", 'B', {shortcut_modifier::primary, shortcut_modifier::shift});
+	append_menu_item_with_shortcut(menu, ID_BOOKMARK_WITH_NOTE, _("Bookmark with &note"), "N", 'N', {shortcut_modifier::primary, shortcut_modifier::shift});
 	menu->AppendSeparator();
-	menu->Append(ID_OPTIONS, _("&Options\tCtrl+,"));
-	menu->Append(ID_SLEEP_TIMER, _("&Sleep Timer...\tCtrl+Shift+S"));
+#ifndef __WXOSX__
+	append_menu_item_with_shortcut(menu, ID_OPTIONS, _("&Options"), ",", ',', {shortcut_modifier::primary});
+#endif
+	append_menu_item_with_shortcut(menu, ID_SLEEP_TIMER, _("&Sleep Timer..."), "S", 'S', {shortcut_modifier::primary, shortcut_modifier::shift});
 	return menu;
 }
 
 wxMenu* main_window::create_help_menu() {
 	auto* const menu = new wxMenu();
-	menu->Append(wxID_ABOUT, wxString::Format(_("About %s\tCtrl+F1"), APP_NAME));
+#ifndef __WXOSX__
+	append_menu_item_with_shortcut(menu, wxID_ABOUT, wxString::Format(_("About %s"), APP_NAME), "F1", WXK_F1, {shortcut_modifier::primary});
+#endif
 	menu->Append(wxID_HELP, _("View &help in default browser\tF1"));
-	menu->Append(ID_HELP_INTERNAL, wxString::Format(_("View Help in %s\tShift+F1"), APP_NAME));
+	append_menu_item_with_shortcut(menu, ID_HELP_INTERNAL, wxString::Format(_("View Help in %s"), APP_NAME), "F1", WXK_F1, {shortcut_modifier::shift});
 	menu->AppendSeparator();
 	menu->Append(ID_CHECK_FOR_UPDATES, _("Check for &Updates"));
 	menu->AppendSeparator();
-	menu->Append(ID_DONATE, _("&Donate\tCtrl+D"));
+	append_menu_item_with_shortcut(menu, ID_DONATE, _("&Donate"), "D", 'D', {shortcut_modifier::primary});
 	return menu;
 }
 
@@ -257,6 +438,9 @@ void main_window::bind_events() {
 		{ID_TABLE_OF_CONTENTS, &main_window::on_toc},
 		{ID_OPEN_CONTAINING_FOLDER, &main_window::on_open_containing_folder},
 		{ID_OPTIONS, &main_window::on_options},
+#ifdef __WXOSX__
+		{wxID_PREFERENCES, &main_window::on_options},
+#endif
 		{ID_SLEEP_TIMER, &main_window::on_sleep_timer},
 		{wxID_ABOUT, &main_window::on_about},
 		{wxID_HELP, &main_window::on_help},
@@ -1023,7 +1207,7 @@ void main_window::update_recent_documents_menu() {
 		return;
 	}
 	recent_documents_menu->AppendSeparator();
-	recent_documents_menu->Append(ID_SHOW_ALL_DOCUMENTS, _("Show All...\tCtrl+R"));
+	append_menu_item_with_shortcut(recent_documents_menu, ID_SHOW_ALL_DOCUMENTS, _("Show All..."), "R", 'R', {shortcut_modifier::primary});
 	Bind(wxEVT_MENU, &main_window::on_show_all_documents, this, ID_SHOW_ALL_DOCUMENTS);
 }
 

@@ -33,15 +33,15 @@ wxConnectionBase* paperback_server::OnAcceptConnection(const wxString& topic) {
 }
 
 bool app::OnInit() {
+	SetVendorName("Trypsynth");
+	SetAppName(APP_NAME);
+#ifdef __WXOSX__
+	SetAppDisplayName(APP_NAME);
+#endif
 	if (!config_mgr.initialize()) {
 		wxMessageBox(_("Failed to initialize configuration"), _("Error"), wxICON_ERROR);
 		return false;
 	}
-	SetVendorName("Trypsynth");
-	SetAppName(APP_NAME);
-#if defined(__WXOSX__)
-	SetAppDisplayName(APP_NAME);
-#endif
 	translation_manager::instance().initialize();
 	const wxString preferred_language = config_mgr.get(config_manager::language);
 	if (!preferred_language.IsEmpty()) {

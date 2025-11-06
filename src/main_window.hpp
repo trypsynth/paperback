@@ -69,6 +69,9 @@ private:
 	static wxMenu* create_go_menu();
 	static wxMenu* create_tools_menu();
 	static wxMenu* create_help_menu();
+#ifdef __WXOSX__
+	void setup_macos_app_menu(wxMenuBar* menu_bar);
+#endif
 	void refresh_ui_language();
 	void bind_events();
 	void on_open(wxCommandEvent&);
