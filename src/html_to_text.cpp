@@ -203,7 +203,7 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 	if (source_mode == html_source_mode::markdown && in_code && preserve_whitespace && is_element && tag_name == "code") {
 		for (auto* child = node->first_child; child != nullptr; child = child->next) {
 			if (child->type == LXB_DOM_NODE_TYPE_ELEMENT) {
-					lexbor_str_t str{nullptr, 0};
+				lexbor_str_t str{nullptr, 0};
 				lxb_html_serialize_tree_str(child, &str);
 				if (str.data != nullptr && str.length > 0) {
 					current_line += std::string(reinterpret_cast<const char*>(str.data), str.length);

@@ -10,8 +10,8 @@
 #include "update_checker.hpp"
 #include "constants.hpp"
 #include <memory>
-#include <sstream>
 #include <nlohmann/json.hpp>
+#include <sstream>
 #include <wx/app.h>
 #include <wx/filename.h>
 #include <wx/msgdlg.h>
