@@ -705,11 +705,15 @@ void document_manager::navigate_to_list_item(bool next) const {
 		return;
 	}
 	const int current_pos = text_ctrl->GetInsertionPoint();
-	const int current_list_item_index = doc->buffer.current_marker_index(current_pos, marker_type::list_item);
-	const marker* current_list_item_marker = doc->buffer.get_marker(current_list_item_index);
-	int current_list_index = -1;
-	if (current_list_item_marker) {
-		current_list_index = doc->buffer.current_marker_index(current_list_item_marker->pos, marker_type::list);
+	// Using current_marker_index with list_item can incorrectly return the previous list item when the caret is outside a list. As such, we instead check for a list_item marker exactly at the current line start.
+	long current_line_num{0};
+	text_ctrl->PositionToXY(current_pos, nullptr, &current_line_num);
+	const long current_line_start = text_ctrl->XYToPosition(0, current_line_num);
+	int marker_index_at_line = doc->buffer.find_first_marker_after(current_line_start, marker_type::list_item);
+	const marker* line_item_marker = doc->buffer.get_marker(marker_index_at_line);
+	int current_list_index{-1};
+	if (line_item_marker != nullptr && static_cast<long>(line_item_marker->pos) == current_line_start) {
+		current_list_index = doc->buffer.current_marker_index(line_item_marker->pos, marker_type::list);
 	}
 	bool wrapping = false;
 	int target_index = next ? doc->buffer.next_marker_index(current_pos, marker_type::list_item) : doc->buffer.previous_marker_index(current_pos, marker_type::list_item);
