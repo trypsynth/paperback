@@ -46,7 +46,11 @@ wxString alt_modifier_token() {
 }
 
 wxString control_modifier_token() {
+#ifdef __WXOSX__
+	return _("Control");
+#else
 	return _("Ctrl");
+#endif
 }
 
 wxString compose_shortcut(const wxString& key, std::initializer_list<shortcut_modifier> modifiers) {
@@ -130,11 +134,35 @@ int accelerator_flags(std::initializer_list<shortcut_modifier> modifiers) {
 				flags |= wxACCEL_ALT;
 				break;
 			case shortcut_modifier::control:
+#ifdef __WXOSX__
+				flags |= wxACCEL_RAW_CTRL;
+#else
 				flags |= wxACCEL_CTRL;
+#endif
 				break;
 		}
 	}
 	return flags;
+}
+
+void configure_menu_item(wxMenuItem* item,
+	const wxString& base_label,
+	const wxString& key_display,
+	const int keycode,
+	std::initializer_list<shortcut_modifier> modifiers) {
+	if (item == nullptr) {
+		return;
+	}
+	wxString full_label = base_label;
+	if (!key_display.IsEmpty()) {
+		full_label += "\t" + compose_shortcut(key_display, modifiers);
+	}
+	item->SetItemLabel(full_label);
+	if (!key_display.IsEmpty()) {
+		auto* accel = new wxAcceleratorEntry();
+		accel->Set(accelerator_flags(modifiers), keycode, item->GetId());
+		item->SetAccel(accel);
+	}
 }
 
 wxMenuItem* append_menu_item_with_shortcut(wxMenu* menu,
@@ -143,16 +171,8 @@ wxMenuItem* append_menu_item_with_shortcut(wxMenu* menu,
 	const wxString& key_display,
 	const int keycode,
 	std::initializer_list<shortcut_modifier> modifiers) {
-	wxString full_label = base_label;
-	if (!key_display.IsEmpty()) {
-		full_label += "\t" + compose_shortcut(key_display, modifiers);
-	}
-	auto* item = new wxMenuItem(menu, id, full_label);
-	if (!key_display.IsEmpty()) {
-		auto* accel = new wxAcceleratorEntry();
-		accel->Set(accelerator_flags(modifiers), keycode, id);
-		item->SetAccel(accel);
-	}
+	auto* item = new wxMenuItem(menu, id);
+	configure_menu_item(item, base_label, key_display, keycode, modifiers);
 	menu->Append(item);
 	return item;
 }
@@ -211,14 +231,14 @@ main_window::~main_window() {
 
 void main_window::create_menus() {
 	auto* const menu_bar = new wxMenuBar();
-#ifdef __WXOSX__
-	setup_macos_app_menu(menu_bar);
-#endif
 	menu_bar->Append(create_file_menu(), _("&File"));
 	menu_bar->Append(create_go_menu(), _("&Go"));
 	menu_bar->Append(create_tools_menu(), _("&Tools"));
 	menu_bar->Append(create_help_menu(), _("&Help"));
 	SetMenuBar(menu_bar);
+#ifdef __WXOSX__
+	setup_macos_app_menu(menu_bar);
+#endif
 }
 
 #ifdef __WXOSX__
@@ -226,13 +246,24 @@ void main_window::setup_macos_app_menu(wxMenuBar* menu_bar) {
 	if (menu_bar == nullptr) {
 		return;
 	}
-	auto* const app_menu = new wxMenu();
-	app_menu->Append(wxID_ABOUT, wxString::Format(_("About %s"), APP_NAME));
-	app_menu->AppendSeparator();
-	append_menu_item_with_shortcut(app_menu, wxID_PREFERENCES, _("Preferences..."), ",", ',', {shortcut_modifier::primary});
-	app_menu->AppendSeparator();
-	append_menu_item_with_shortcut(app_menu, wxID_EXIT, wxString::Format(_("Quit %s"), APP_NAME), "Q", 'Q', {shortcut_modifier::primary});
-	menu_bar->Append(app_menu, APP_NAME);
+	wxMenu* app_menu = menu_bar->OSXGetAppleMenu();
+	if (app_menu == nullptr) {
+		return;
+	}
+	if (wxMenuItem* about_item = app_menu->FindItem(wxID_ABOUT)) {
+		about_item->SetItemLabel(wxString::Format(_("About %s"), APP_NAME));
+	}
+	wxMenuItem* preferences_item = app_menu->FindItem(wxID_PREFERENCES);
+	if (preferences_item == nullptr) {
+		preferences_item = new wxMenuItem(app_menu, wxID_PREFERENCES);
+		// Insert after About, if present, otherwise prepend.
+		const int insert_pos = app_menu->FindItem(wxID_ABOUT) != nullptr ? 1 : 0;
+		app_menu->Insert(insert_pos, preferences_item);
+	}
+	configure_menu_item(preferences_item, _("Preferences..."), ",", ',', {shortcut_modifier::primary});
+	if (wxMenuItem* quit_item = app_menu->FindItem(wxID_EXIT)) {
+		configure_menu_item(quit_item, wxString::Format(_("Quit %s"), APP_NAME), "Q", 'Q', {shortcut_modifier::primary});
+	}
 }
 #endif
 
@@ -348,11 +379,7 @@ wxMenu* main_window::create_go_menu() {
 
 wxMenu* main_window::create_tools_menu() {
 	auto* const menu = new wxMenu();
-#ifdef __WXOSX__
 	append_menu_item_with_shortcut(menu, ID_WORD_COUNT, _("&Word count"), "W", 'W', {shortcut_modifier::control});
-#else
-	append_menu_item_with_shortcut(menu, ID_WORD_COUNT, _("&Word count"), "W", 'W', {shortcut_modifier::primary});
-#endif
 	append_menu_item_with_shortcut(menu, ID_DOC_INFO, _("Document &info"), "I", 'I', {shortcut_modifier::primary});
 	menu->AppendSeparator();
 	append_menu_item_with_shortcut(menu, ID_TABLE_OF_CONTENTS, _("Table of contents"), "T", 'T', {shortcut_modifier::primary});
