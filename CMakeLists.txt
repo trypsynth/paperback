@@ -92,13 +92,7 @@ if(WIN32)
 	add_executable(paperback WIN32 ${SRC_FILES})
 elseif(APPLE)
 	add_executable(paperback MACOSX_BUNDLE ${SRC_FILES})
-	set_target_properties(paperback PROPERTIES
-		MACOSX_BUNDLE_GUI_IDENTIFIER "com.trypsynth.paperback"
-		MACOSX_BUNDLE_BUNDLE_NAME "Paperback"
-		MACOSX_BUNDLE_INFO_STRING "Paperback - Accessible ebook reader"
-		MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
-		MACOSX_BUNDLE_LONG_VERSION_STRING "${PROJECT_VERSION}"
-	)
+	set_target_properties(paperback PROPERTIES MACOSX_BUNDLE_GUI_IDENTIFIER "dev.paperback" MACOSX_BUNDLE_BUNDLE_NAME "Paperback" MACOSX_BUNDLE_INFO_STRING "Light-weight, accessible ebook and document reader" MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}" MACOSX_BUNDLE_LONG_VERSION_STRING "${PROJECT_VERSION}")
 else()
 	add_executable(paperback ${SRC_FILES})
 endif()

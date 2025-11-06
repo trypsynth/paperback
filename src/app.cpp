@@ -83,13 +83,6 @@ bool app::OnInit() {
 	}
 	frame->Show(true);
 	frame->Raise();
-	frame->CallAfter([frm = frame] {
-		if (auto* const text_ctrl = frm->get_doc_manager()->get_active_text_ctrl(); text_ctrl != nullptr) {
-			text_ctrl->SetFocus();
-		} else {
-			frm->SetFocus();
-		}
-	});
 	if (config_mgr.get(config_manager::check_for_updates_on_startup)) {
 		check_for_updates(true);
 	}
