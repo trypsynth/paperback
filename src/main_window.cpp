@@ -23,13 +23,12 @@
 #include <wx/timer.h>
 #include <wx/translation.h>
 
-main_window::main_window()
-	: wxFrame(nullptr, wxID_ANY, APP_NAME),
-	  position_save_timer{std::make_unique<wxTimer>(this)},
-	  status_update_timer{std::make_unique<wxTimer>(this)},
-	  task_bar_icon_{new task_bar_icon(this)},
-	  sleep_timer{std::make_unique<wxTimer>(this)},
-	  sleep_status_update_timer{std::make_unique<wxTimer>(this)} {
+main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME),
+	position_save_timer{std::make_unique<wxTimer>(this)},
+	status_update_timer{std::make_unique<wxTimer>(this)},
+	task_bar_icon_{new task_bar_icon(this)},
+	sleep_timer{std::make_unique<wxTimer>(this)},
+	sleep_status_update_timer{std::make_unique<wxTimer>(this)} {
 	auto* const panel = new wxPanel(this);
 	notebook = new wxNotebook(panel, wxID_ANY);
 #ifdef __WXMSW__
