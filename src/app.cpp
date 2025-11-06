@@ -37,6 +37,11 @@ bool app::OnInit() {
 		wxMessageBox(_("Failed to initialize configuration"), _("Error"), wxICON_ERROR);
 		return false;
 	}
+	SetVendorName("Trypsynth");
+	SetAppName(APP_NAME);
+#if defined(__WXOSX__)
+	SetAppDisplayName(APP_NAME);
+#endif
 	translation_manager::instance().initialize();
 	const wxString preferred_language = config_mgr.get(config_manager::language);
 	if (!preferred_language.IsEmpty()) {
@@ -69,6 +74,7 @@ bool app::OnInit() {
 		wxMessageBox(_("Failed to create IPC server"), _("Warning"), wxICON_WARNING);
 	}
 	frame = new main_window();
+	SetTopWindow(frame);
 	if (config_mgr.get(config_manager::restore_previous_documents)) {
 		restore_previous_documents();
 	}
@@ -76,6 +82,14 @@ bool app::OnInit() {
 		parse_command_line();
 	}
 	frame->Show(true);
+	frame->Raise();
+	frame->CallAfter([frm = frame] {
+		if (auto* const text_ctrl = frm->get_doc_manager()->get_active_text_ctrl(); text_ctrl != nullptr) {
+			text_ctrl->SetFocus();
+		} else {
+			frm->SetFocus();
+		}
+	});
 	if (config_mgr.get(config_manager::check_for_updates_on_startup)) {
 		check_for_updates(true);
 	}
