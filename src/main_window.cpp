@@ -124,6 +124,7 @@ wxMenu* main_window::create_go_menu() {
 		bookmarks_menu->Append(ID_JUMP_TO_BOOKMARK, _("Jump to &all...\tCtrl+B"));
 		bookmarks_menu->Append(ID_JUMP_TO_BOOKMARKS_ONLY, _("Jump to &bookmarks...\tCtrl+Alt+B"));
 		bookmarks_menu->Append(ID_JUMP_TO_NOTES, _("Jump to &notes...\tCtrl+Alt+M"));
+		bookmarks_menu->Append(ID_VIEW_NOTE_TEXT, _("&View note text\tCtrl+Shift+W"));
 		menu->AppendSubMenu(bookmarks_menu, _("&Bookmarks"));
 		auto* links_menu = new wxMenu();
 		links_menu->Append(ID_PREVIOUS_LINK, _("Previous lin&k\tShift+K"));
@@ -155,6 +156,7 @@ wxMenu* main_window::create_go_menu() {
 		menu->Append(ID_JUMP_TO_BOOKMARK, _("Jump to &all...\tCtrl+B"));
 		menu->Append(ID_JUMP_TO_BOOKMARKS_ONLY, _("Jump to &bookmarks...\tCtrl+Alt+B"));
 		menu->Append(ID_JUMP_TO_NOTES, _("Jump to &notes...\tCtrl+Alt+M"));
+		menu->Append(ID_VIEW_NOTE_TEXT, _("&View note text\tCtrl+Shift+W"));
 		menu->AppendSeparator();
 		menu->Append(ID_PREVIOUS_LINK, _("Previous lin&k\tShift+K"));
 		menu->Append(ID_NEXT_LINK, _("Next lin&k\tK"));
@@ -240,6 +242,7 @@ void main_window::bind_events() {
 		{ID_JUMP_TO_BOOKMARK, &main_window::on_jump_to_bookmark},
 		{ID_JUMP_TO_BOOKMARKS_ONLY, &main_window::on_jump_to_bookmarks_only},
 		{ID_JUMP_TO_NOTES, &main_window::on_jump_to_notes},
+		{ID_VIEW_NOTE_TEXT, &main_window::on_view_note_text},
 		{ID_PREVIOUS_LINK, &main_window::on_previous_link},
 		{ID_NEXT_LINK, &main_window::on_next_link},
 		{ID_PREVIOUS_LIST, &main_window::on_previous_list},
@@ -649,6 +652,31 @@ void main_window::on_jump_to_notes(wxCommandEvent&) {
 	doc_manager->show_bookmark_dialog(this, bookmark_filter::notes_only);
 	update_status_bar();
 	save_position_immediately();
+}
+
+void main_window::on_view_note_text(wxCommandEvent&) {
+	auto* tab = doc_manager->get_active_tab();
+	auto* text_ctrl = doc_manager->get_active_text_ctrl();
+	if (tab == nullptr || text_ctrl == nullptr) {
+		return;
+	}
+	const long current_pos = text_ctrl->GetInsertionPoint();
+	const auto bookmarks = wxGetApp().get_config_manager().get_bookmarks(tab->file_path);
+	wxString note_text;
+	bool found{false};
+	for (const auto& bm : bookmarks) {
+		if (bm.start == current_pos && bm.has_note()) {
+			note_text = bm.note;
+			found = true;
+			break;
+		}
+	}
+	if (!found) {
+		wxMessageBox(_("No note at the current position."), _("View Note"), wxOK | wxICON_INFORMATION);
+		return;
+	}
+	view_note_dialog dlg(this, note_text);
+	dlg.ShowModal();
 }
 
 void main_window::on_previous_link(wxCommandEvent&) {

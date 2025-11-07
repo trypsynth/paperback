@@ -818,11 +818,11 @@ void document_manager::add_bookmark_with_note() const {
 		}
 	}
 	wxString prompt = bookmark_exists ? _("Edit bookmark note:") : _("Enter bookmark note:");
-	wxTextEntryDialog note_dialog(nullptr, prompt, _("Bookmark Note"), existing_note);
+	note_entry_dialog note_dialog(nullptr, _("Bookmark Note"), prompt, existing_note);
 	if (note_dialog.ShowModal() != wxID_OK) {
 		return;
 	}
-	wxString note = note_dialog.GetValue();
+	wxString note = note_dialog.get_note();
 	if (bookmark_exists) {
 		config.update_bookmark_note(tab->file_path, bookmark_start, bookmark_end, note);
 		speak(_("Bookmark note updated"));

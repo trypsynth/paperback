@@ -345,11 +345,11 @@ void bookmark_dialog::on_edit_note(wxCommandEvent&) {
 		return;
 	}
 	bookmark& selected_bookmark = bookmark_positions[static_cast<std::size_t>(selection)];
-	wxTextEntryDialog note_dialog(this, _("Edit bookmark note:"), _("Bookmark Note"), selected_bookmark.note);
+	note_entry_dialog note_dialog(this, _("Bookmark Note"), _("Edit bookmark note:"), selected_bookmark.note);
 	if (note_dialog.ShowModal() != wxID_OK) {
 		return;
 	}
-	wxString new_note = note_dialog.GetValue();
+	wxString new_note = note_dialog.get_note();
 	config.update_bookmark_note(file_path, selected_bookmark.start, selected_bookmark.end, new_note);
 	config.flush();
 	for (auto& bm : all_bookmarks) {
@@ -701,6 +701,32 @@ wxString open_as_dialog::get_selected_format() const {
 	}
 }
 
+note_entry_dialog::note_entry_dialog(wxWindow* parent, const wxString& title, const wxString& message, const wxString& existing_note) : dialog(parent, title) {
+	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
+	auto* message_label = new wxStaticText(this, wxID_ANY, message);
+	content_sizer->Add(message_label, 0, wxALL, DIALOG_PADDING);
+	note_ctrl = new wxTextCtrl(this, wxID_ANY, existing_note, wxDefaultPosition, wxSize(400, 200), wxTE_MULTILINE);
+	content_sizer->Add(note_ctrl, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);
+	set_content(content_sizer);
+	finalize_layout();
+	note_ctrl->SetFocus();
+	note_ctrl->Bind(wxEVT_KEY_DOWN, &note_entry_dialog::on_key_down, this);
+}
+
+wxString note_entry_dialog::get_note() const {
+	return note_ctrl->GetValue();
+}
+
+void note_entry_dialog::on_key_down(wxKeyEvent& event) {
+	if (event.GetKeyCode() == WXK_RETURN && event.ShiftDown()) {
+		note_ctrl->WriteText("\n");
+	} else if (event.GetKeyCode() == WXK_RETURN) {
+		EndModal(wxID_OK);
+	} else {
+		event.Skip();
+	}
+}
+
 options_dialog::options_dialog(wxWindow* parent) : dialog(parent, _("Options")) {
 	constexpr int option_padding = 5;
 	constexpr int max_recent_docs = 100;
@@ -965,4 +991,14 @@ bool toc_dialog::find_and_select_item_by_name(const wxString& name, const wxTree
 		}
 	}
 	return false;
+}
+
+view_note_dialog::view_note_dialog(wxWindow* parent, const wxString& note_text) : dialog(parent, _("View Note"), dialog_button_config::ok_only) {
+	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
+	note_ctrl = new wxTextCtrl(this, wxID_ANY, note_text, wxDefaultPosition, wxSize(400, 200), wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2);
+	content_sizer->Add(note_ctrl, 1, wxEXPAND | wxALL, DIALOG_PADDING);
+	set_content(content_sizer);
+	finalize_layout();
+	FindWindow(wxID_OK)->SetLabel(_("Close"));
+	note_ctrl->SetFocus();
 }
