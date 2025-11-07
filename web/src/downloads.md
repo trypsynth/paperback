@@ -9,4 +9,4 @@ permalink: /downloads
 
 <div id="latest-dev">Loading…</div>
 
-<script src="{{ "/js/downloads.js" | url }}"></script>
+<script src="{{ "/js/downloads.js" }}"></script>
