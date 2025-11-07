@@ -7,7 +7,7 @@
 <body>
 	<a href="#content-anchor">Skip to main content</a>
 	<nav>
-		<ul>
+		<ul style="list-style-type:none;">
 			{% for item in site.data.nav %}
 				{% assign link = item[1] %}
 				{% if page.permalink == link %}
