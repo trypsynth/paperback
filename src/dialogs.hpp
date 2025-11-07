@@ -50,6 +50,22 @@ private:
 	void create_buttons();
 };
 
+class note_entry_dialog : public dialog {
+public:
+	note_entry_dialog(wxWindow* parent, const wxString& title, const wxString& message, const wxString& existing_note);
+	~note_entry_dialog() = default;
+	note_entry_dialog(const note_entry_dialog&) = delete;
+	note_entry_dialog& operator=(const note_entry_dialog&) = delete;
+	note_entry_dialog(note_entry_dialog&&) = delete;
+	note_entry_dialog& operator=(note_entry_dialog&&) = delete;
+
+	[[nodiscard]] wxString get_note() const;
+
+private:
+	wxTextCtrl* note_ctrl{nullptr};
+	void on_key_down(wxKeyEvent& event);
+};
+
 class all_documents_dialog : public dialog {
 public:
 	all_documents_dialog(wxWindow* parent, config_manager& cfg_mgr, const wxArrayString& open_docs);
