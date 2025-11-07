@@ -5,10 +5,8 @@ permalink: /downloads
 ---
 ## Downloads
 
-### Latest Stable Release
 <div id="latest-stable">Loading…</div>
 
-### Latest Development Build
 <div id="latest-dev">Loading…</div>
 
 <script>
@@ -28,12 +26,12 @@ permalink: /downloads
 		return res.json();
 	}
 
-	function render(release) {
+	function render(release, suffix = "") {
 		const assets = release.assets || [];
 		const zip = assets.find(a => a.name.toLowerCase().endsWith(".zip"));
 		const exe = assets.find(a => a.name.toLowerCase().endsWith(".exe"));
 		return `
-			<h2>${release.tag_name}</h2>
+			<h2>${release.tag_name}${suffix}</h2>
 			<ul>
 				${exe ? `<li><a href="${exe.browser_download_url}">paperback_setup.exe</a></li>` : ""}
 				${zip ? `<li><a href="${zip.browser_download_url}">paperback.zip</a></li>` : ""}
@@ -49,7 +47,7 @@ permalink: /downloads
 		const stable = releases.find(r => /^v?\d+(\.\d+){1,2}$/.test(r.tag_name));
 		const dev = releases[0];
 		set(stableEl, stable ? render(stable) : "No stable release found.");
-		set(devEl, dev ? render(dev) : "No development builds found.");
+		set(devEl, dev ? render(dev, " (unstable)") : "No development builds found.");
 	} catch {
 		set(stableEl, 'Unable to load releases. See <a href="https://github.com/trypsynth/paperback/releases">GitHub</a>.');
 		set(devEl, 'Unable to load releases. See <a href="https://github.com/trypsynth/paperback/releases">GitHub</a>.');
