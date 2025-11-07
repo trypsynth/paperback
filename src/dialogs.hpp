@@ -50,36 +50,6 @@ private:
 	void create_buttons();
 };
 
-class note_entry_dialog : public dialog {
-public:
-	note_entry_dialog(wxWindow* parent, const wxString& title, const wxString& message, const wxString& existing_note);
-	~note_entry_dialog() = default;
-	note_entry_dialog(const note_entry_dialog&) = delete;
-	note_entry_dialog& operator=(const note_entry_dialog&) = delete;
-	note_entry_dialog(note_entry_dialog&&) = delete;
-	note_entry_dialog& operator=(note_entry_dialog&&) = delete;
-
-	[[nodiscard]] wxString get_note() const;
-
-private:
-	wxTextCtrl* note_ctrl{nullptr};
-	void on_key_down(wxKeyEvent& event);
-};
-
-class view_note_dialog : public dialog {
-public:
-	view_note_dialog(wxWindow* parent, const wxString& note_text);
-	~view_note_dialog() = default;
-	view_note_dialog(const view_note_dialog&) = delete;
-	view_note_dialog& operator=(const view_note_dialog&) = delete;
-	view_note_dialog(view_note_dialog&&) = delete;
-	view_note_dialog& operator=(view_note_dialog&&) = delete;
-
-private:
-	wxTextCtrl* note_ctrl{nullptr};
-};
-
-
 class all_documents_dialog : public dialog {
 public:
 	all_documents_dialog(wxWindow* parent, config_manager& cfg_mgr, const wxArrayString& open_docs);
@@ -255,6 +225,22 @@ private:
 	void on_spin_changed(wxSpinEvent& event);
 };
 
+class note_entry_dialog : public dialog {
+public:
+	note_entry_dialog(wxWindow* parent, const wxString& title, const wxString& message, const wxString& existing_note);
+	~note_entry_dialog() = default;
+	note_entry_dialog(const note_entry_dialog&) = delete;
+	note_entry_dialog& operator=(const note_entry_dialog&) = delete;
+	note_entry_dialog(note_entry_dialog&&) = delete;
+	note_entry_dialog& operator=(note_entry_dialog&&) = delete;
+
+	[[nodiscard]] wxString get_note() const;
+
+private:
+	wxTextCtrl* note_ctrl{nullptr};
+	void on_key_down(wxKeyEvent& event);
+};
+
 class open_as_dialog : public dialog {
 public:
 	open_as_dialog(wxWindow* parent, const wxString& path);
@@ -357,4 +343,17 @@ private:
 	void on_char_hook(wxKeyEvent& event);
 	void on_search_timer(wxTimerEvent& event);
 	bool find_and_select_item_by_name(const wxString& name, const wxTreeItemId& parent);
+};
+
+class view_note_dialog : public dialog {
+public:
+	view_note_dialog(wxWindow* parent, const wxString& note_text);
+	~view_note_dialog() = default;
+	view_note_dialog(const view_note_dialog&) = delete;
+	view_note_dialog& operator=(const view_note_dialog&) = delete;
+	view_note_dialog(view_note_dialog&&) = delete;
+	view_note_dialog& operator=(view_note_dialog&&) = delete;
+
+private:
+	wxTextCtrl* note_ctrl{nullptr};
 };
