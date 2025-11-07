@@ -279,7 +279,8 @@ wxArrayString config_manager::get_recent_documents() const {
 		return result;
 	}
 	config->SetPath("/recent_documents");
-	for (size_t i = 0; i < MAX_RECENT_DOCUMENTS_TO_SHOW; ++i) {
+	// Read all sequential docN entries without an upper limit, preserving the stored recency order.
+	for (size_t i = 0;; ++i) {
 		const wxString key = wxString::Format("doc%zu", i);
 		const wxString doc_id = config->Read(key, "");
 		if (doc_id.IsEmpty()) {
