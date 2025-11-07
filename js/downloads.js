@@ -18,11 +18,12 @@
 		const assets = release.assets || [];
 		const zip = assets.find(a => a.name.toLowerCase().endsWith(".zip"));
 		const exe = assets.find(a => a.name.toLowerCase().endsWith(".exe"));
+		const fmtCount = (n) => `downloaded ${n} ${n === 1 ? "time" : "times"}`;
 		return `
 			<h3>${release.tag_name}${suffix}</h3>
 			<ul>
-				${exe ? `<li><a href="${exe.browser_download_url}">paperback_setup.exe</a></li>` : ""}
-				${zip ? `<li><a href="${zip.browser_download_url}">paperback.zip</a></li>` : ""}
+				${exe ? `<li><a href="${exe.browser_download_url}">paperback_setup.exe</a> (${fmtCount(exe.download_count)})</li>` : ""}
+				${zip ? `<li><a href="${zip.browser_download_url}">paperback.zip</a> (${fmtCount(zip.download_count)})</li>` : ""}
 			</ul>
 		`;
 	}
