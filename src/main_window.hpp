@@ -99,6 +99,7 @@ private:
 	void on_jump_to_bookmark(wxCommandEvent&);
 	void on_jump_to_bookmarks_only(wxCommandEvent&);
 	void on_jump_to_notes(wxCommandEvent&);
+	void on_view_note_text(wxCommandEvent&);
 	void on_next_link(wxCommandEvent&);
 	void on_previous_link(wxCommandEvent&);
 	void on_previous_list(wxCommandEvent&);

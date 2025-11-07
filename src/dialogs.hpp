@@ -66,6 +66,20 @@ private:
 	void on_key_down(wxKeyEvent& event);
 };
 
+class view_note_dialog : public dialog {
+public:
+	view_note_dialog(wxWindow* parent, const wxString& note_text);
+	~view_note_dialog() = default;
+	view_note_dialog(const view_note_dialog&) = delete;
+	view_note_dialog& operator=(const view_note_dialog&) = delete;
+	view_note_dialog(view_note_dialog&&) = delete;
+	view_note_dialog& operator=(view_note_dialog&&) = delete;
+
+private:
+	wxTextCtrl* note_ctrl{nullptr};
+};
+
+
 class all_documents_dialog : public dialog {
 public:
 	all_documents_dialog(wxWindow* parent, config_manager& cfg_mgr, const wxArrayString& open_docs);

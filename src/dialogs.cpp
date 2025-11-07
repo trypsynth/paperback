@@ -463,6 +463,16 @@ void note_entry_dialog::on_key_down(wxKeyEvent& event) {
 	}
 }
 
+view_note_dialog::view_note_dialog(wxWindow* parent, const wxString& note_text) : dialog(parent, _("View Note"), dialog_button_config::ok_only) {
+	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
+	note_ctrl = new wxTextCtrl(this, wxID_ANY, note_text, wxDefaultPosition, wxSize(400, 200), wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2);
+	content_sizer->Add(note_ctrl, 1, wxEXPAND | wxALL, DIALOG_PADDING);
+	set_content(content_sizer);
+	finalize_layout();
+	FindWindow(wxID_OK)->SetLabel(_("Close"));
+	note_ctrl->SetFocus();
+}
+
 document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc, const wxString& file_path, config_manager& cfg_mgr) : dialog(parent, _("Document Info"), dialog_button_config::ok_only), config_mgr{cfg_mgr}, doc_path{file_path} {
 	constexpr int info_width = 600;
 	constexpr int info_height = 400;
