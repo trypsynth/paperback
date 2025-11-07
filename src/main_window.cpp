@@ -660,12 +660,10 @@ void main_window::on_view_note_text(wxCommandEvent&) {
 	if (tab == nullptr || text_ctrl == nullptr) {
 		return;
 	}
-
 	const long current_pos = text_ctrl->GetInsertionPoint();
 	const auto bookmarks = wxGetApp().get_config_manager().get_bookmarks(tab->file_path);
-
 	wxString note_text;
-	bool found = false;
+	bool found{false};
 	for (const auto& bm : bookmarks) {
 		if (bm.start == current_pos && bm.has_note()) {
 			note_text = bm.note;
@@ -673,13 +671,12 @@ void main_window::on_view_note_text(wxCommandEvent&) {
 			break;
 		}
 	}
-
-	if (found) {
-		view_note_dialog dlg(this, note_text);
-		dlg.ShowModal();
-	} else {
+	if (!found) {
 		wxMessageBox(_("No note at the current position."), _("View Note"), wxOK | wxICON_INFORMATION);
+		return;
 	}
+	view_note_dialog dlg(this, note_text);
+	dlg.ShowModal();
 }
 
 void main_window::on_previous_link(wxCommandEvent&) {
