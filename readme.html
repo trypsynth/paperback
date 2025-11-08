@@ -308,6 +308,10 @@ field.</li>
 <li>Ctrl+W: view the word count of the currently focused document.</li>
 <li>Ctrl+I: bring up the document info dialog.</li>
 <li>Ctrl+T: show the table of contents.</li>
+<li>Ctrl+Shift+E: export your currently focused document’s bookmarks and
+reading position to a file for easy sharing.</li>
+<li>Ctrl+Shift+I: import metadata about a book from a .paperback
+file.</li>
 <li>Ctrl+E: export your focused document’s contents to a text file.</li>
 <li>Ctrl+Shift+B: toggle a bookmark at your current cursor
 position.</li>
@@ -321,6 +325,7 @@ position.</li>
 <li>Ctrl+F1: show the about dialog.</li>
 <li>F1: pop up this readme file in your default web browser.</li>
 <li>Shift+F1: pop up this readme file in Paperback itself.</li>
+<li>Ctrl+Shift+U: check for updates.</li>
 <li>Ctrl+D: open my PayPal donations page in your default web
 browser.</li>
 </ul>
@@ -362,6 +367,9 @@ inclusion in this list.</p>
 added to the options dialog, checked by default.</li>
 <li>Added an option to make navigation by structural elements wrap. <a
 href="https://github.com/trypsynth/paperback/pull/116">#116</a>.</li>
+<li>Added an option to the tools menu to open the containing folder of
+the currently focused document. <a
+href="https://github.com/trypsynth/paperback/pull/142">#142</a>.</li>
 <li>Added a quite simple, but very effective, updating system. <a
 href="https://github.com/trypsynth/paperback/issues/28">#28</a>.</li>
 <li>Added a basic sleep timer feature, accessible with Ctrl+Shift+S. <a
@@ -382,6 +390,17 @@ bookmark, the behavior is like pre-0.6, and it’ll mark the entire line.
 However, if you select some text, only that text will be included in the
 bookmark. <a
 href="https://github.com/trypsynth/paperback/issues/99">#99</a>.</li>
+<li>Bookmarks can now have optional text notes attached to them!
+Navigate between bookmarks containing notes with N and Shift+N, or pop
+up the bookmarks dialog with all bookmarks, only notes, or only
+non-notes selected with specific hotkeys. <a
+href="https://github.com/trypsynth/paperback/issues/68">#68</a>, <a
+href="https://github.com/trypsynth/paperback/issues/128">#128</a>, <a
+href="https://github.com/trypsynth/paperback/issues/156">#156</a>, <a
+href="https://github.com/trypsynth/paperback/issues/157">#157</a>, <a
+href="https://github.com/trypsynth/paperback/pull/158">#158</a>, <a
+href="https://github.com/trypsynth/paperback/issues/159">#159</a>, <a
+href="https://github.com/trypsynth/paperback/pull/161">#161</a>.</li>
 <li>Bookmarks in the bookmarks dialog will no longer have an annoying
 “bookmark x” prefix. <a
 href="https://github.com/trypsynth/paperback/issues/86">#86</a>.</li>
@@ -396,6 +415,9 @@ href="https://github.com/trypsynth/paperback/issues/121">#121</a>, <a
 href="https://github.com/trypsynth/paperback/pull/123">#123</a>.</li>
 <li>Fixed whitespace handling at the beginning of pre tags in both HTML
 and XHTML documents.</li>
+<li>Fixed the text control not regaining focus sometimes when returning
+to Paperback’s window. <a
+href="https://github.com/trypsynth/paperback/issues/138">#138</a>.</li>
 <li>Fixed the text field in the go to percent dialog not updating the
 slider’s value.</li>
 <li>Fixed the rendering of custom HTML IDs in Markdown documents. <a
@@ -405,19 +427,38 @@ href="https://github.com/trypsynth/paperback/issues/79">#79</a>.</li>
 <li>If loading a book with a command line parameter while an existing
 Paperback instance is running, you’ll no longer get an error if loading
 your document takes more than 5 seconds.</li>
+<li>If running Paperback as administrator, the configuration will now be
+properly loaded and saved. <a
+href="https://github.com/trypsynth/paperback/issues/148">#148</a>, <a
+href="https://github.com/trypsynth/paperback/pull/149">#149</a>.</li>
 <li>It is now possible to delete a bookmark directly from within the
 bookmarks dialog. <a
 href="https://github.com/trypsynth/paperback/issues/100">#100</a>, <a
 href="https://github.com/trypsynth/paperback/pull/103">#103</a>.</li>
-<li>It is now possible to create bookmarks with notes attached to them!
-<a href="https://github.com/trypsynth/paperback/issues/68">#68</a>.</li>
+<li>It is now possible to import and export your bookmarks and reading
+position for a particular document. The generated file is named after
+the file with a .paperback extension. If such a file is found in the
+same directory as a file while loading it, it will be automatically
+loaded. Otherwise, you can manually import them using an item in the
+tools menu. <a
+href="https://github.com/trypsynth/paperback/issues/146">#146</a>, <a
+href="https://github.com/trypsynth/paperback/pull/147">#147</a>.</li>
 <li>Links inside documents are now fully supported! Use k and shift+k to
 move forward and backward through them, and press enter to open/activate
 one. <a href="https://github.com/trypsynth/paperback/issues/74">#74</a>,
 <a href="https://github.com/trypsynth/paperback/pull/87">#87</a>, <a
-href="https://github.com/trypsynth/paperback/issues/126">#126</a>.</li>
+href="https://github.com/trypsynth/paperback/issues/126">#126</a>, <a
+href="https://github.com/trypsynth/paperback/issues/129">#129</a>, <a
+href="https://github.com/trypsynth/paperback/issues/130">#130</a>.</li>
+<li>Many internal refactors, making the app faster and the binary
+smaller.</li>
 <li>Markdown content is now preprocessed in order to be CommonMark
 compliant before rendering.</li>
+<li>Navigation by lists and their items is now fully supported! Use L
+and Shift+L to go by lists themselves, and I and Shift+I to go through
+list items. <a
+href="https://github.com/trypsynth/paperback/issues/119">#119</a>, <a
+href="https://github.com/trypsynth/paperback/pull/124">#124</a>.</li>
 <li>Numpad delete now works to remove documents from the tab bar in
 addition to normal delete.</li>
 <li>Paperback can now optionally minimize to your system tray! This
@@ -430,12 +471,20 @@ href="https://github.com/trypsynth/paperback/pull/85">#85</a>.</li>
 supports is currently fairly small, but it’s constantly growing! <a
 href="https://github.com/trypsynth/paperback/issues/75">#75</a>, <a
 href="https://github.com/trypsynth/paperback/pull/92">#92</a>, <a
-href="https://github.com/trypsynth/paperback/pull/95">#95</a>.</li>
+href="https://github.com/trypsynth/paperback/pull/95">#95</a>, <a
+href="https://github.com/trypsynth/paperback/pull/134">#134</a>, <a
+href="https://github.com/trypsynth/paperback/pull/137">#137</a>, <a
+href="https://github.com/trypsynth/paperback/pull/141">#141</a>, <a
+href="https://github.com/trypsynth/paperback/pull/152">#152</a>.</li>
 <li>Paperback now has an official website, at <a
 href="https://paperback.dev">paperback.dev</a>!</li>
 <li>PPTX documents will now show a basic table of contents, containing
 all of the slides. <a
 href="https://github.com/trypsynth/paperback/issues/122">#122</a>.</li>
+<li>The full path to the opened document will now be shown in the
+document info dialog. <a
+href="https://github.com/trypsynth/paperback/issues/139">#139</a>, <a
+href="https://github.com/trypsynth/paperback/pull/140">#140</a>.</li>
 <li>The installer now includes an option to view the readme in your
 browser after installation.</li>
 <li>The recent documents list has been dramatically expanded! Instead of
@@ -444,7 +493,8 @@ a customizable number, with the rest of the documents you’ve ever opened
 being accessible through a small dialog. <a
 href="https://github.com/trypsynth/paperback/issues/78">#78</a>, <a
 href="https://github.com/trypsynth/paperback/pull/80">#80</a>, <a
-href="https://github.com/trypsynth/paperback/pull/84">#84</a>.</li>
+href="https://github.com/trypsynth/paperback/pull/84">#84</a>, <a
+href="https://github.com/trypsynth/paperback/pull/135">#135</a>.</li>
 <li>Various small improvements to the parsers across the board,
 including putting a blank line between slides in PPTX presentations,
 fixing the newline handling inside of paragraphs in word documents, and
