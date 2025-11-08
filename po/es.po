@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.5\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2025-10-18 14:18-0600\n"
+"POT-Creation-Date: 2025-11-08 09:26-0700\n"
 "PO-Revision-Date: 2025-10-16 23:59-0600\n"
 "Last-Translator: Quin Gillespie <trypsynth@gmail.com>\n"
 "Language-Team: Español <es@example.com>\n"
@@ -20,78 +20,69 @@ msgstr ""
 "X-Poedit-KeywordsList: _;wxTRANSLATE;wxPLURAL:1,2\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
-#: C:/Users/Quin/git/paperback/src/app.cpp:36
+#: src/app.cpp
 msgid "Failed to initialize configuration"
 msgstr "No se pudo inicializar la configuración"
 
-#: C:/Users/Quin/git/paperback/src/app.cpp:36
-#: C:/Users/Quin/git/paperback/src/app.cpp:92
-#: C:/Users/Quin/git/paperback/src/app.cpp:113
-#: C:/Users/Quin/git/paperback/src/app.cpp:167
-#: C:/Users/Quin/git/paperback/src/app.cpp:190
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:212
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:32
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:52
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:329
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:576
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:584
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:593
+#: src/app.cpp src/dialogs.cpp src/document_manager.cpp src/main_window.cpp
+#: src/update_checker.cpp
 msgid "Error"
 msgstr "Error"
 
-#: C:/Users/Quin/git/paperback/src/app.cpp:68
+#: src/app.cpp
 msgid "Failed to create IPC server"
 msgstr "No se pudo crear el servidor IPC"
 
-#: C:/Users/Quin/git/paperback/src/app.cpp:68
+#: src/app.cpp src/document_manager.cpp
 msgid "Warning"
 msgstr "Advertencia"
 
-#: C:/Users/Quin/git/paperback/src/app.cpp:92
-#: C:/Users/Quin/git/paperback/src/app.cpp:167
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:32
+#: src/app.cpp src/document_manager.cpp
 #, c-format
 msgid "File not found: %s"
 msgstr "Archivo no encontrado: %s"
 
-#: C:/Users/Quin/git/paperback/src/app.cpp:113
-#: C:/Users/Quin/git/paperback/src/app.cpp:190
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:52
+#: src/app.cpp
 msgid "Failed to load document."
 msgstr "No se pudo cargar el documento."
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:50
+#: src/chm_parser.cpp
+msgid "Unknown error while parsing CHM file"
+msgstr "Error desconocido al analizar el archivo CHM"
+
+#: src/dialogs.cpp
 msgid "All Documents"
 msgstr "Todos los documentos"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:53
+#: src/dialogs.cpp
+msgid "&search"
+msgstr "&Buscar"
+
+#: src/dialogs.cpp
 msgid "File Name"
 msgstr "Nombre del archivo"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:54
+#: src/dialogs.cpp
 msgid "Status"
 msgstr "Estado"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:55
+#: src/dialogs.cpp
 msgid "Path"
 msgstr "Ruta"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:59
+#: src/dialogs.cpp
 msgid "&Open"
 msgstr "&Abrir"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:60
+#: src/dialogs.cpp
 msgid "&Remove"
 msgstr "&Eliminar"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:75
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:126
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:148
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:162
+#: src/dialogs.cpp
 msgid "Missing"
 msgstr "Faltante"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:96
+#: src/dialogs.cpp
 msgid ""
 "Are you sure you want to remove this document from the list? This will also "
 "remove its reading position."
@@ -99,129 +90,173 @@ msgstr ""
 "¿Seguro que desea eliminar este documento de la lista? Esto también borrará "
 "su posición de lectura."
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:96
+#: src/dialogs.cpp
 msgid "Confirm"
 msgstr "Confirmar"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:150
+#: src/dialogs.cpp
 msgid "Open"
 msgstr "Abierto"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:152
+#: src/dialogs.cpp
 msgid "Closed"
 msgstr "Cerrado"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:167
+#: src/dialogs.cpp
 msgid "Jump to Bookmark"
 msgstr "Ir al marcador"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:178
-msgid "blank"
-msgstr "vacío"
+#: src/dialogs.cpp
+msgid "&Filter:"
+msgstr "&Filtro:"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:212
+#: src/dialogs.cpp
+msgid "All"
+msgstr "Todos"
+
+#: src/dialogs.cpp
+msgid "Bookmarks"
+msgstr "Marcadores"
+
+#: src/dialogs.cpp
+msgid "Notes"
+msgstr "Notas"
+
+#: src/dialogs.cpp
+msgid "&Edit Note"
+msgstr "&Editar nota"
+
+#: src/dialogs.cpp
+msgid "&Delete"
+msgstr "&Eliminar"
+
+#: src/dialogs.cpp
+msgid "&Jump"
+msgstr "&Ir"
+
+#: src/dialogs.cpp
+msgid "&Cancel"
+msgstr "&Cancelar"
+
+#: src/dialogs.cpp
 msgid "Please select a bookmark to jump to."
 msgstr "Seleccione un marcador al que ir."
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:216
+#: src/dialogs.cpp src/document_manager.cpp
+msgid "Bookmark Note"
+msgstr "Nota del marcador"
+
+#: src/dialogs.cpp src/document_manager.cpp
+msgid "Edit bookmark note:"
+msgstr "Editar nota del marcador:"
+
+#: src/dialogs.cpp
+msgid "blank"
+msgstr "vacío"
+
+#: src/dialogs.cpp
 msgid "Document Info"
 msgstr "Información del documento"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:219
+#: src/dialogs.cpp
 msgid "Title: "
 msgstr "Título: "
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:220
+#: src/dialogs.cpp
 msgid "Author: "
 msgstr "Autor: "
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:221
+#: src/dialogs.cpp
+#, fuzzy
+msgid "Path: "
+msgstr "Ruta"
+
+#: src/dialogs.cpp
 msgid "Total number of words: "
 msgstr "Número total de palabras: "
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:222
+#: src/dialogs.cpp
 msgid "Total number of lines: "
 msgstr "Número total de líneas: "
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:223
+#: src/dialogs.cpp
 msgid "Total number of characters: "
 msgstr "Número total de caracteres: "
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:224
+#: src/dialogs.cpp
 msgid "Total number of characters (excluding whitespace): "
 msgstr "Número total de caracteres (sin espacios en blanco): "
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:232
+#: src/dialogs.cpp
 msgid "Find"
 msgstr "Buscar"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:235
+#: src/dialogs.cpp
 msgid "Find &what:"
 msgstr "Buscar &qué:"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:239
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:454
+#: src/dialogs.cpp
 msgid "Options"
 msgstr "Opciones"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:240
+#: src/dialogs.cpp
 msgid "&Match case"
 msgstr "&Coincidir mayúsculas/minúsculas"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:241
+#: src/dialogs.cpp
 msgid "Match &whole word"
 msgstr "Coincidir palabra &completa"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:242
+#: src/dialogs.cpp
 msgid "Use &regular expressions"
 msgstr "Usar expresiones &regulares"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:247
+#: src/dialogs.cpp
 msgid "Find &Previous"
 msgstr "Buscar &anterior"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:248
+#: src/dialogs.cpp
 msgid "Find &Next"
 msgstr "Buscar &siguiente"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:249
+#: src/dialogs.cpp
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:340
+#: src/dialogs.cpp
 msgid "Go to Line"
 msgstr "Ir a la línea"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:342
+#: src/dialogs.cpp
 msgid "&Line number:"
 msgstr "Número de &línea:"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:364
+#: src/dialogs.cpp
 msgid "Go to page"
 msgstr "Ir a la página"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:366
+#: src/dialogs.cpp
 #, c-format
 msgid "Go to page (1/%d):"
 msgstr "Ir a la página (1/%d):"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:392
+#: src/dialogs.cpp
 msgid "Go to Percent"
 msgstr "Ir al porcentaje"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:396
-msgid "&Percent"
-msgstr "&Porcentaje"
-
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:398
+#: src/dialogs.cpp
 msgid "P&ercent:"
 msgstr "P&orcentaje:"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:421
+#: src/dialogs.cpp
+msgid "&Percent"
+msgstr "&Porcentaje"
+
+#: src/dialogs.cpp
 msgid "Open As"
 msgstr "Abrir como"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:423
+#: src/dialogs.cpp
 #, c-format
 msgid ""
 "No suitable parser was found for %s.\n"
@@ -230,454 +265,854 @@ msgstr ""
 "No se encontró un analizador adecuado para %s.\n"
 "¿Cómo desea abrir este archivo?"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:426
+#: src/dialogs.cpp
 msgid "Open &as:"
 msgstr "Abrir &como:"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:428
+#: src/dialogs.cpp
 msgid "Plain Text"
 msgstr "Texto plano"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:429
+#: src/dialogs.cpp
 msgid "HTML"
 msgstr "HTML"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:430
+#: src/dialogs.cpp
 msgid "Markdown"
 msgstr "Markdown"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:455
+#: src/dialogs.cpp
 msgid "General"
 msgstr "General"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:456
+#: src/dialogs.cpp
 msgid "&Restore previously opened documents on startup"
 msgstr "&Restaurar documentos abiertos anteriormente al iniciar"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:458
+#: src/dialogs.cpp
 msgid "&Word wrap"
 msgstr "&Ajuste de texto"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:460
+#: src/dialogs.cpp
 msgid "&Minimize to system tray"
 msgstr "&Minimizar a la bandeja del sistema"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:465
+#: src/dialogs.cpp
+msgid "Show compact &go menu"
+msgstr "Mostrar menú compacto de &ir"
+
+#: src/dialogs.cpp
+msgid "&Wrap navigation"
+msgstr "&Navegación cíclica"
+
+#: src/dialogs.cpp
+msgid "Check for &updates on startup"
+msgstr "Buscar &actualizaciones al iniciar"
+
+#: src/dialogs.cpp
 msgid "Number of &recent documents to show:"
 msgstr "Número de documentos &recientes a mostrar:"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:471
+#: src/dialogs.cpp
 msgid "&Language:"
 msgstr "&Idioma:"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:569
+#: src/dialogs.cpp
+msgid "Sleep Timer"
+msgstr "Temporizador de suspensión"
+
+#: src/dialogs.cpp
+msgid "&Minutes:"
+msgstr "&Minutos:"
+
+#: src/dialogs.cpp
 msgid "Table of Contents"
 msgstr "Tabla de contenidos"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:571
+#: src/dialogs.cpp
 msgid "Root"
 msgstr "Raíz"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:587
+#: src/dialogs.cpp
 msgid "Untitled"
 msgstr "Sin título"
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:635
+#: src/dialogs.cpp
 msgid "Please select a section from the table of contents."
 msgstr "Seleccione una sección de la tabla de contenidos."
 
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:635
+#: src/dialogs.cpp
 msgid "No Selection"
 msgstr "Sin selección"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:194
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:239
+#: src/dialogs.cpp src/main_window.cpp
+msgid "View Note"
+msgstr "Ver nota"
+
+#: src/dialogs.cpp
+#, fuzzy
+msgid "Close"
+msgstr "Cerrado"
+
+#: src/document_manager.cpp
+#, fuzzy, c-format
+msgid "Failed to parse document: %s"
+msgstr "No se pudo exportar el documento."
+
+#: src/document_manager.cpp
 msgid "No sections."
 msgstr "Sin secciones."
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:220
-msgid "No previous section"
-msgstr "No hay sección anterior"
-
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:245
+#: src/document_manager.cpp
 msgid "No next section"
 msgstr "No hay siguiente sección"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:279
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:303
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:411
+#: src/document_manager.cpp
+msgid "No previous section"
+msgstr "No hay sección anterior"
+
+#: src/document_manager.cpp
+msgid "Wrapping to start. "
+msgstr "Volviendo al inicio. "
+
+#: src/document_manager.cpp
+msgid "Wrapping to end. "
+msgstr "Volviendo al final. "
+
+#: src/document_manager.cpp src/main_window.cpp
 msgid "No pages."
 msgstr "Sin páginas."
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:285
+#: src/document_manager.cpp
+msgid "No next page."
+msgstr "No hay siguiente página."
+
+#: src/document_manager.cpp
 msgid "No previous page."
 msgstr "No hay página anterior."
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:293
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:317
+#: src/document_manager.cpp
 #, c-format
 msgid "Page %d: %s"
 msgstr "Página %d: %s"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:309
-msgid "No next page."
-msgstr "No hay siguiente página."
+#: src/document_manager.cpp
+#, fuzzy
+msgid "No bookmarks."
+msgstr "Sin marcadores"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:329
-msgid "No previous bookmark"
-msgstr "No hay marcador anterior"
-
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:338
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:359
-#, c-format
-msgid "Bookmark %d: %s"
-msgstr "Marcador %d: %s"
-
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:350
+#: src/document_manager.cpp
 msgid "No next bookmark"
 msgstr "No hay siguiente marcador"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:375
+#: src/document_manager.cpp
+msgid "No previous bookmark"
+msgstr "No hay marcador anterior"
+
+#: src/document_manager.cpp
+#, fuzzy, c-format
+msgid "%s - Bookmark %d"
+msgstr "Marcador: %s"
+
+#: src/document_manager.cpp
+#, fuzzy
+msgid "No notes."
+msgstr "No hay siguiente página."
+
+#: src/document_manager.cpp
+#, fuzzy
+msgid "No next note"
+msgstr "No hay siguiente página."
+
+#: src/document_manager.cpp
+#, fuzzy
+msgid "No previous note"
+msgstr "No hay página anterior."
+
+#: src/document_manager.cpp
+#, c-format
+msgid "%s - %s - Note %d"
+msgstr "%s - %s - Nota %d"
+
+#: src/document_manager.cpp
+#, c-format
+msgid "%s - Note %d"
+msgstr "%s - Nota %d"
+
+#: src/document_manager.cpp
+msgid "No links."
+msgstr "Sin enlaces."
+
+#: src/document_manager.cpp
+msgid "No next link."
+msgstr "No hay siguiente enlace."
+
+#: src/document_manager.cpp
 msgid "No previous link."
 msgstr "No hay sección anterior."
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:433
+#: src/document_manager.cpp
+msgid " link"
+msgstr " enlace"
+
+#: src/document_manager.cpp
 msgid "Opening link in default browser."
 msgstr "Ver &ayuda en el navegador predeterminado\tF1"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:435
+#: src/document_manager.cpp
 msgid "Failed to open link."
 msgstr "No se pudo cargar el documento."
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:489
+#: src/document_manager.cpp
+msgid "Navigated to internal link."
+msgstr "Navegó a un enlace interno."
+
+#: src/document_manager.cpp
+msgid "Internal link target not found."
+msgstr "Destino del enlace interno no encontrado."
+
+#: src/document_manager.cpp
+#, fuzzy
+msgid "No lists."
+msgstr "Sin enlaces."
+
+#: src/document_manager.cpp
+#, fuzzy
+msgid "No next list."
+msgstr "No hay siguiente enlace."
+
+#: src/document_manager.cpp
+#, fuzzy
+msgid "No previous list."
+msgstr "No hay sección anterior."
+
+#: src/document_manager.cpp
+#, c-format
+msgid "List with %d items"
+msgstr "Lista con %d elementos"
+
+#: src/document_manager.cpp
+#, fuzzy
+msgid "No list items."
+msgstr "Sin enlaces."
+
+#: src/document_manager.cpp
+#, fuzzy
+msgid "No next list item."
+msgstr "No hay siguiente enlace."
+
+#: src/document_manager.cpp
+#, fuzzy
+msgid "No previous list item."
+msgstr "No hay sección anterior."
+
+#: src/document_manager.cpp
+#, c-format
+msgid "List with %d items "
+msgstr "Lista con %d elementos "
+
+#: src/document_manager.cpp
 msgid "Bookmark removed"
 msgstr "Marcador eliminado"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:489
+#: src/document_manager.cpp
 msgid "Bookmarked"
 msgstr "Marcado"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:500
+#: src/document_manager.cpp
+#, fuzzy
+msgid "Enter bookmark note:"
+msgstr "No hay siguiente marcador"
+
+#: src/document_manager.cpp
+#, fuzzy
+msgid "Bookmark note updated"
+msgstr "Marcador eliminado"
+
+#: src/document_manager.cpp
+#, fuzzy
+msgid "Bookmarked with note"
+msgstr "Marcado"
+
+#: src/document_manager.cpp
 msgid "No bookmarks"
 msgstr "Sin marcadores"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:517
+#: src/document_manager.cpp
+#, fuzzy, c-format
+msgid "Bookmark: %s - %s"
+msgstr "Marcador: %s"
+
+#: src/document_manager.cpp
 #, c-format
 msgid "Bookmark: %s"
 msgstr "Marcador: %s"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:529
+#: src/document_manager.cpp
 msgid "No table of contents."
 msgstr "Sin tabla de contenidos."
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:533
+#: src/document_manager.cpp
 msgid "Table of contents is empty."
 msgstr "La tabla de contenidos está vacía."
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:588
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:592
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:39
+#: src/document_manager.cpp src/main_window.cpp
 msgid "Ready"
 msgstr "Listo"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:601
+#: src/document_manager.cpp
 #, c-format
 msgid "line %ld, character %ld, reading %d%%"
 msgstr "línea %ld, carácter %ld, lectura %d%%"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:664
+#: src/document_manager.cpp
 msgid "Previous heading\tShift+H"
 msgstr "Encabezado anterior\tShift+H"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:665
+#: src/document_manager.cpp
 msgid "Next heading\tH"
 msgstr "Siguiente encabezado\tH"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:668
+#: src/document_manager.cpp
 #, c-format
 msgid "Previous heading level %d\tShift+%d"
 msgstr "Nivel de encabezado anterior %d\tShift+%d"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:669
+#: src/document_manager.cpp
 #, c-format
 msgid "Next heading level %d\t%d"
 msgstr "Nivel de encabezado siguiente %d\t%d"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:716
+#: src/document_manager.cpp
 msgid "No headings."
 msgstr "Sin encabezados."
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:723
+#: src/document_manager.cpp
 #, c-format
 msgid "No %s heading"
 msgstr "No hay encabezado %s"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:723
+#: src/document_manager.cpp
 msgid "next"
 msgstr "siguiente"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:723
+#: src/document_manager.cpp
 msgid "previous"
 msgstr "anterior"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:723
+#: src/document_manager.cpp
 #, c-format
 msgid "No %s heading at level %d"
 msgstr "No hay encabezado %s en el nivel %d"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:731
+#: src/document_manager.cpp
+#, fuzzy, c-format
+msgid "Wrapping to %s. %s Heading level %d"
+msgstr "Encabezado %s nivel %d"
+
+#: src/document_manager.cpp
+msgid "start"
+msgstr "inicio"
+
+#: src/document_manager.cpp
+msgid "end"
+msgstr "fin"
+
+#: src/document_manager.cpp
 #, c-format
 msgid "%s Heading level %d"
 msgstr "Encabezado %s nivel %d"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:69
-msgid "&File"
-msgstr "&Archivo"
+#: src/epub_parser.cpp
+#, fuzzy
+msgid "Couldn't parse table of contents"
+msgstr "Sin tabla de contenidos."
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:70
-msgid "&Go"
-msgstr "&Ir"
+#: src/fb2_parser.cpp
+#, fuzzy
+msgid "Failed to open FB2 file"
+msgstr "No se pudo cargar el documento."
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:71
-msgid "&Tools"
-msgstr "&Herramientas"
+#: src/fb2_parser.cpp
+msgid "FB2 file is empty or could not be read"
+msgstr "El archivo FB2 está vacío o no se pudo leer"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:72
-msgid "&Help"
-msgstr "&Ayuda"
+#: src/fb2_parser.cpp
+msgid "Failed to convert FB2 XML to text"
+msgstr "No se pudo convertir el XML de FB2 a texto"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:78
-msgid "&Open...\tCtrl+O"
-msgstr "&Abrir...\tCtrl+O"
+#: src/html_parser.cpp
+msgid "Failed to open HTML file"
+msgstr "No se pudo abrir el archivo HTML"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:79
-msgid "Close\tCtrl+F4"
-msgstr "Cerrar\tCtrl+F4"
+#: src/html_parser.cpp
+#, fuzzy
+msgid "Failed to convert HTML to text"
+msgstr "No se pudo exportar el documento."
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:80
-msgid "Close &All\tCtrl+Shift+F4"
-msgstr "Cerrar &todo\tCtrl+Shift+F4"
-
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:83
-msgid "&Recent Documents"
-msgstr "Documentos &recientes"
-
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:86
-msgid "&Export...\tCtrl+E"
-msgstr "&Exportar...\tCtrl+E"
-
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:88
-#: C:/Users/Quin/git/paperback/src/task_bar_icon.cpp:26
-msgid "E&xit"
-msgstr "&Salir"
-
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:96
-msgid "&Find...\tCtrl+F"
-msgstr "&Buscar...\tCtrl+F"
-
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:97
-msgid "Find Ne&xt\tF3"
-msgstr "Buscar si&guiente\tF3"
-
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:98
-msgid "Find P&revious\tShift+F3"
-msgstr "Buscar &anterior\tShift+F3"
-
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:100
-msgid "Go to &line...\tCtrl+G"
-msgstr "Ir a la &línea...\tCtrl+G"
-
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:101
-msgid "Go to &percent...\tCtrl+Shift+G"
-msgstr "Ir al &porcentaje...\tCtrl+Shift+G"
-
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:105
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:130
+#: src/main_window.cpp
 msgid "Previous section\t["
 msgstr "Sección anterior\t["
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:106
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:131
+#: src/main_window.cpp
 msgid "Next section\t]"
 msgstr "Siguiente sección\t]"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:107
-msgid "&Sections"
-msgstr "Sin secciones."
-
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:110
-msgid "&Headings"
-msgstr "Sin encabezados."
-
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:112
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:128
+#: src/main_window.cpp
 msgid "Go to &page...\tCtrl+P"
 msgstr "Ir a la &página...\tCtrl+P"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:114
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:135
+#: src/main_window.cpp
 msgid "Previous &page\tShift+P"
 msgstr "&Página anterior\tShift+P"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:115
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:136
+#: src/main_window.cpp
 msgid "&Next page\tP"
 msgstr "&Siguiente página\tP"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:118
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:138
+#: src/main_window.cpp
 msgid "Previous &bookmark\tShift+B"
 msgstr "&Marcador anterior\tShift+B"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:119
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:139
+#: src/main_window.cpp
 msgid "Next b&ookmark\tB"
 msgstr "Siguiente m&arcador\tB"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:120
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:140
-msgid "Toggle bookmark\tCtrl+Shift+B"
-msgstr "Alternar marcador\tCtrl+Shift+B"
+#: src/main_window.cpp
+#, fuzzy
+msgid "Previous &note\tShift+N"
+msgstr "&Página anterior\tShift+P"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:121
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:141
-msgid "Jump to bookmark...\tCtrl+B"
+#: src/main_window.cpp
+msgid "Next &note\tN"
+msgstr "Siguiente &nota\tN"
+
+#: src/main_window.cpp
+#, fuzzy
+msgid "Jump to &all...\tCtrl+B"
+msgstr "Ir a &todos...\tCtrl+B"
+
+#: src/main_window.cpp
+#, fuzzy
+msgid "Jump to &bookmarks...\tCtrl+Alt+B"
 msgstr "Ir al marcador...\tCtrl+B"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:122
-msgid "&Bookmarks"
-msgstr "Marcador: %s"
+#: src/main_window.cpp
+#, fuzzy
+msgid "Jump to &notes...\tCtrl+Alt+M"
+msgstr "Ir al marcador...\tCtrl+B"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:124
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:143
+#: src/main_window.cpp
+msgid "&View note text\tCtrl+Shift+W"
+msgstr "&Ver texto de la nota\tCtrl+Shift+W"
+
+#: src/main_window.cpp
 msgid "Previous lin&k\tShift+K"
-msgstr "Encabezado anterior\tShift+H"
+msgstr "Enlace anterior\tShift+K"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:125
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:144
+#: src/main_window.cpp
 msgid "Next lin&k\tK"
 msgstr "Siguiente encabezado\tH"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:151
+#: src/main_window.cpp
+#, fuzzy
+msgid "Previous lis&t\tShift+L"
+msgstr "Encabezado anterior\tShift+H"
+
+#: src/main_window.cpp
+#, fuzzy
+msgid "Next lis&t\tL"
+msgstr "Siguiente encabezado\tH"
+
+#: src/main_window.cpp
+#, fuzzy
+msgid "Previous list &item\tShift+I"
+msgstr "Encabezado anterior\tShift+H"
+
+#: src/main_window.cpp
+#, fuzzy
+msgid "Next list &item\tI"
+msgstr "Siguiente encabezado\tH"
+
+#: src/main_window.cpp
+msgid "&File"
+msgstr "&Archivo"
+
+#: src/main_window.cpp
+msgid "&Open...\tCtrl+O"
+msgstr "&Abrir...\tCtrl+O"
+
+#: src/main_window.cpp
+msgid "Close\tCtrl+F4"
+msgstr "Cerrar\tCtrl+F4"
+
+#: src/main_window.cpp
+msgid "Close &All\tCtrl+Shift+F4"
+msgstr "Cerrar &todo\tCtrl+Shift+F4"
+
+#: src/main_window.cpp
+msgid "&Recent Documents"
+msgstr "Documentos &recientes"
+
+#: src/main_window.cpp src/task_bar_icon.cpp
+msgid "E&xit"
+msgstr "&Salir"
+
+#: src/main_window.cpp
+msgid "&Find...\tCtrl+F"
+msgstr "&Buscar...\tCtrl+F"
+
+#: src/main_window.cpp
+msgid "Find Ne&xt\tF3"
+msgstr "Buscar si&guiente\tF3"
+
+#: src/main_window.cpp
+msgid "Find P&revious\tShift+F3"
+msgstr "Buscar &anterior\tShift+F3"
+
+#: src/main_window.cpp
+msgid "Go to &line...\tCtrl+G"
+msgstr "Ir a la &línea...\tCtrl+G"
+
+#: src/main_window.cpp
+msgid "Go to &percent...\tCtrl+Shift+G"
+msgstr "Ir al &porcentaje...\tCtrl+Shift+G"
+
+#: src/main_window.cpp
+msgid "&Sections"
+msgstr "Sin secciones."
+
+#: src/main_window.cpp
+msgid "&Headings"
+msgstr "Sin encabezados."
+
+#: src/main_window.cpp
+msgid "&Pages"
+msgstr "&Páginas"
+
+#: src/main_window.cpp
+msgid "&Bookmarks"
+msgstr "&Marcadores"
+
+#: src/main_window.cpp
+msgid "&Links"
+msgstr "&Enlaces"
+
+#: src/main_window.cpp
+msgid "&Lists"
+msgstr "&Listas"
+
+#: src/main_window.cpp
+msgid "&Go"
+msgstr "&Ir"
+
+#: src/main_window.cpp
+msgid "&Tools"
+msgstr "&Herramientas"
+
+#: src/main_window.cpp
 msgid "&Word count\tCtrl+W"
 msgstr "Contar &palabras\tCtrl+W"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:152
+#: src/main_window.cpp
 msgid "Document &info\tCtrl+I"
 msgstr "&Información del documento\tCtrl+I"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:154
+#: src/main_window.cpp
 msgid "Table of contents\tCtrl+T"
 msgstr "Tabla de contenidos\tCtrl+T"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:156
+#: src/main_window.cpp
+msgid "Open &containing folder\tCtrl+Shift+C"
+msgstr "Abrir carpeta &contenedora\tCtrl+Shift+C"
+
+#: src/main_window.cpp
+msgid "Import/&Export"
+msgstr "Importar/&Exportar"
+
+#: src/main_window.cpp
+msgid "&Import document data...\tCtrl+Shift+I"
+msgstr "&Importar datos del documento...\tCtrl+Shift+I"
+
+#: src/main_window.cpp
+msgid "&Export document data...\tCtrl+Shift+E"
+msgstr "&Exportar datos del documento...\tCtrl+Shift+E"
+
+#: src/main_window.cpp
+#, fuzzy
+msgid "Export document to &plain text...\tCtrl+E"
+msgstr "Ir a la &línea...\tCtrl+G"
+
+#: src/main_window.cpp
+msgid "Toggle bookmark\tCtrl+Shift+B"
+msgstr "Alternar marcador\tCtrl+Shift+B"
+
+#: src/main_window.cpp
+#, fuzzy
+msgid "Bookmark with &note\tCtrl+Shift+N"
+msgstr "Alternar marcador\tCtrl+Shift+B"
+
+#: src/main_window.cpp
 msgid "&Options\tCtrl+,"
 msgstr "&Opciones\tCtrl+,"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:162
+#: src/main_window.cpp
+#, fuzzy
+msgid "&Sleep Timer...\tCtrl+Shift+S"
+msgstr "Ir al &porcentaje...\tCtrl+Shift+G"
+
+#: src/main_window.cpp
+msgid "&Help"
+msgstr "&Ayuda"
+
+#: src/main_window.cpp
 #, c-format
 msgid "About %s\tCtrl+F1"
 msgstr "Acerca de %s\tCtrl+F1"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:163
+#: src/main_window.cpp
 msgid "View &help in default browser\tF1"
 msgstr "Ver &ayuda en el navegador predeterminado\tF1"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:164
+#: src/main_window.cpp
 #, c-format
 msgid "View Help in %s\tShift+F1"
 msgstr "Ver ayuda en %s\tShift+F1"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:166
+#: src/main_window.cpp
+msgid "Check for &Updates"
+msgstr "Buscar &actualizaciones"
+
+#: src/main_window.cpp
 msgid "&Donate\tCtrl+D"
 msgstr "&Donar\tCtrl+D"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:296
+#: src/main_window.cpp
+#, c-format
+msgid " | Sleep timer: %02d:%02d"
+msgstr " | Temporizador de suspensión: %02d:%02d"
+
+#: src/main_window.cpp
 msgid "Select a document to read"
 msgstr "Seleccione un documento para leer"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:323
+#: src/main_window.cpp
 msgid "Export Document"
 msgstr "Exportar documento"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:323
+#: src/main_window.cpp
 msgid "Text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgstr "Archivos de texto (*.txt)|*.txt|Todos los archivos (*.*)|*.*"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:329
+#: src/main_window.cpp
 msgid "Failed to export document."
 msgstr "No se pudo exportar el documento."
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:509
+#: src/main_window.cpp
+#, fuzzy
+msgid "Export notes and bookmarks"
+msgstr "No hay siguiente marcador"
+
+#: src/main_window.cpp
+msgid "Paperback files (*.paperback)|*.paperback"
+msgstr "Archivos de Paperback (*.paperback)|*.paperback"
+
+#: src/main_window.cpp
+msgid "Notes and bookmarks exported successfully."
+msgstr "Notas y marcadores exportados correctamente."
+
+#: src/main_window.cpp
+msgid "Export Successful"
+msgstr "Exportación correcta"
+
+#: src/main_window.cpp
+#, fuzzy
+msgid "Import notes and bookmarks"
+msgstr "No hay siguiente marcador"
+
+#: src/main_window.cpp
+msgid "Notes and bookmarks imported successfully."
+msgstr "Notas y marcadores importados correctamente."
+
+#: src/main_window.cpp
+msgid "Import Successful"
+msgstr "Importación correcta"
+
+#: src/main_window.cpp
+msgid "No note at the current position."
+msgstr "No hay nota en la posición actual."
+
+#: src/main_window.cpp
 #, c-format
 msgid "The document contains %d word"
 msgid_plural "The document contains %d words"
 msgstr[0] "El documento contiene %d palabra"
 msgstr[1] "El documento contiene %d palabras"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:509
+#: src/main_window.cpp
 msgid "Word count"
 msgstr "Conteo de palabras"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:576
+#: src/main_window.cpp
+#, fuzzy
+msgid "Failed to open containing folder."
+msgstr "No se pudo abrir la página de donaciones en el navegador."
+
+#: src/main_window.cpp
 msgid "Failed to launch default browser."
 msgstr "No se pudo abrir el navegador predeterminado."
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:584
+#: src/main_window.cpp
 msgid ""
 "readme.html not found. Please ensure the application was built properly."
 msgstr ""
 "No se encontró readme.html. Asegúrese de que la aplicación se haya compilado "
 "correctamente."
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:593
+#: src/main_window.cpp
 msgid "Failed to open donation page in browser."
 msgstr "No se pudo abrir la página de donaciones en el navegador."
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:745
+#: src/main_window.cpp
+msgid "Sleep timer canceled."
+msgstr "Temporizador de suspensión cancelado."
+
+#: src/main_window.cpp
+#, c-format
+msgid "Sleep timer set for %d minute%s."
+msgstr "Temporizador de suspensión configurado para %d minuto%s."
+
+#: src/main_window.cpp
 msgid "(No recent documents)"
 msgstr "(Sin documentos recientes)"
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:749
-msgid "Show All..."
+#: src/main_window.cpp
+#, fuzzy
+msgid "Show All...\tCtrl+R"
 msgstr "Mostrar todo..."
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:783
+#: src/main_window.cpp
 msgid "No more results. Wrapping search."
 msgstr "No hay más resultados. Volviendo al inicio."
 
-#: C:/Users/Quin/git/paperback/src/main_window.cpp:787
+#: src/main_window.cpp
 msgid "Not found."
 msgstr "No encontrado."
 
-#: C:/Users/Quin/git/paperback/src/task_bar_icon.cpp:24
+#: src/markdown_parser.cpp
+#, fuzzy
+msgid "Failed to open Markdown file"
+msgstr "No se pudo cargar el documento."
+
+#: src/markdown_parser.cpp
+msgid "Markdown file is empty"
+msgstr "El archivo Markdown está vacío"
+
+#: src/markdown_parser.cpp
+msgid "Failed to convert Markdown HTML to text"
+msgstr "No se pudo convertir el HTML de Markdown a texto"
+
+#: src/odp_parser.cpp
+msgid "Failed to open ODP file"
+msgstr "No se pudo abrir el archivo ODP"
+
+#: src/odp_parser.cpp
+msgid "ODP file does not contain content.xml or it is empty"
+msgstr "El archivo ODP no contiene content.xml o está vacío"
+
+#: src/odp_parser.cpp
+msgid "ODP file does not contain any pages"
+msgstr "El archivo ODP no contiene ninguna página"
+
+#: src/odt_parser.cpp
+msgid "Failed to open ODT file"
+msgstr "No se pudo abrir el archivo ODT"
+
+#: src/odt_parser.cpp
+msgid "ODT file does not contain content.xml or it is empty"
+msgstr "El archivo ODT no contiene content.xml o está vacío"
+
+#: src/pptx_parser.cpp
+msgid "Parsing of links in the document failed."
+msgstr "Error al analizar los enlaces en el documento."
+
+#: src/pptx_parser.cpp
+#, c-format
+msgid "Error parsing PPTX file: %s"
+msgstr "Error al analizar el archivo PPTX: %s"
+
+#: src/pptx_parser.cpp
+msgid "Unknown error while parsing PPTX file"
+msgstr "Error desconocido al analizar el archivo PPTX"
+
+#: src/task_bar_icon.cpp
 msgid "&Restore"
 msgstr "&Restaurar"
-#: C:/Users/Quin/git/paperback/src/dialogs.cpp:462
-msgid "Show compact &go menu"
-msgstr "Mostrar menú compacto de &ir"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:369
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:392
-msgid "No links."
-msgstr "Sin enlaces."
+#: src/text_parser.cpp
+#, fuzzy
+msgid "Failed to open text file"
+msgstr "No se pudo cargar el documento."
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:381
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:404
-msgid " link"
-msgstr " enlace"
+#: src/text_parser.cpp
+#, fuzzy
+msgid "Text file is empty"
+msgstr "La tabla de contenidos está vacía."
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:398
-msgid "No next link."
-msgstr "No hay siguiente enlace."
+#: src/update_checker.cpp
+#, fuzzy
+msgid "Failed to create update request."
+msgstr "No se pudo crear el servidor IPC"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:442
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:453
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:470
-msgid "Navigated to internal link."
-msgstr "Navegó a un enlace interno."
+#: src/update_checker.cpp
+#, c-format
+msgid "Failed to check for updates. HTTP status: %d"
+msgstr "No se pudo comprobar actualizaciones. Estado HTTP: %d"
 
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:444
-#: C:/Users/Quin/git/paperback/src/document_manager.cpp:474
-msgid "Internal link target not found."
-msgstr "Destino del enlace interno no encontrado."
+#: src/update_checker.cpp
+msgid "Failed to parse update response."
+msgstr "No se pudo analizar la respuesta de actualización."
+
+#: src/update_checker.cpp
+msgid "No updates available."
+msgstr "No hay actualizaciones disponibles."
+
+#: src/update_checker.cpp
+msgid "Info"
+msgstr "Información"
+
+#: src/update_checker.cpp
+msgid "Update is available but download link could not be found."
+msgstr "Hay una actualización disponible, pero no se pudo encontrar el enlace de descarga."
+
+#: src/update_checker.cpp
+#, c-format
+msgid ""
+"There is an update available.\n"
+"Your version: %s\n"
+"Latest version: %s\n"
+"Description:\n"
+"%s\n"
+"Do you want to open the direct download link?"
+msgstr ""
+"Hay una actualización disponible.\n"
+"Su versión: %s\n"
+"Última versión: %s\n"
+"Descripción:\n"
+"%s\n"
+"¿Desea abrir el enlace de descarga directa?"
+
+#: src/update_checker.cpp
+msgid "Update available"
+msgstr "Actualización disponible"
+
+#: src/update_checker.cpp
+msgid "Error checking for updates."
+msgstr "Error al comprobar actualizaciones."
+
+#, c-format
+#~ msgid "Bookmark %d: %s"
+#~ msgstr "Marcador %d: %s"
+
+#~ msgid "&Export...\tCtrl+E"
+#~ msgstr "&Exportar...\tCtrl+E"
