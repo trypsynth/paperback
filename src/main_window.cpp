@@ -197,7 +197,7 @@ void main_window::create_menus() {
 		parent->Append(ID_HELP_INTERNAL, wxString::Format(_("View Help in %s\tShift+F1"), APP_NAME));
 	}),
 			menu_item::sep(),
-			menu_item::item(ID_CHECK_FOR_UPDATES, _("Check for &Updates")),
+			menu_item::item(ID_CHECK_FOR_UPDATES, _("Check for &Updates\tCtrl+Shift+U")),
 			menu_item::sep(),
 			menu_item::item(ID_DONATE, _("&Donate\tCtrl+D")),
 		}});

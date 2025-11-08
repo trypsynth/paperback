@@ -83,6 +83,8 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * Ctrl+W: view the word count of the currently focused document.
 * Ctrl+I: bring up the document info dialog.
 * Ctrl+T: show the table of contents.
+* Ctrl+Shift+E: export your currently focused document's bookmarks and reading position to a file for easy sharing.
+* Ctrl+Shift+I: import metadata about a book from a .paperback file.
 * Ctrl+E: export your focused document's contents to a text file.
 * Ctrl+Shift+B: toggle a bookmark at your current cursor position.
 * Ctrl+Shift+N: add/edit a bookmarked note at your current cursor position.
@@ -93,6 +95,7 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * Ctrl+F1: show the about dialog.
 * F1: pop up this readme file in your default web browser.
 * Shift+F1: pop up this readme file in Paperback itself.
+* Ctrl+Shift+U: check for updates.
 * Ctrl+D: open my PayPal donations page in your default web browser.
 
 ## Credits
@@ -125,32 +128,39 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 ### Version 0.6
 * A new option to show the go menu in a far more compact form has been added to the options dialog, checked by default. 
 * Added an option to make navigation by structural elements wrap. [#116](https://github.com/trypsynth/paperback/pull/116).
+* Added an option to the tools menu to open the containing folder of the currently focused document. [#142](https://github.com/trypsynth/paperback/pull/142).
 * Added a quite simple, but very effective, updating system. [#28](https://github.com/trypsynth/paperback/issues/28).
 * Added a basic sleep timer feature, accessible with Ctrl+Shift+S. [#117](https://github.com/trypsynth/paperback/issues/117), [#118](https://github.com/trypsynth/paperback/pull/118).
 * Added support for parsing FB2 ebooks! [#30](https://github.com/trypsynth/paperback/issues/30), [#107](https://github.com/trypsynth/paperback/pull/107).
 * Added support for parsing OpenDocument presentations! [#105](https://github.com/trypsynth/paperback/issues/105), [#106](https://github.com/trypsynth/paperback/pull/106).
 * Added support for parsing OpenDocument Text files! [#29](https://github.com/trypsynth/paperback/issues/29), [#90](https://github.com/trypsynth/paperback/pull/90).
 * Bookmarks can now be made to bookmark an entire line, or to mark only some specified text. If you have no selection active when placing a bookmark, the behavior is like pre-0.6, and it'll mark the entire line. However, if you select some text, only that text will be included in the bookmark. [#99](https://github.com/trypsynth/paperback/issues/99).
+* Bookmarks can now have optional text notes attached to them! Navigate between bookmarks containing notes with N and Shift+N, or pop up the bookmarks dialog with all bookmarks, only notes, or only non-notes selected with specific hotkeys. [#68](https://github.com/trypsynth/paperback/issues/68), [#128](https://github.com/trypsynth/paperback/issues/128), [#156](https://github.com/trypsynth/paperback/issues/156), [#157](https://github.com/trypsynth/paperback/issues/157), [#158](https://github.com/trypsynth/paperback/pull/158), [#159](https://github.com/trypsynth/paperback/issues/159), [#161](https://github.com/trypsynth/paperback/pull/161).
 * Bookmarks in the bookmarks dialog will no longer have an annoying "bookmark x" prefix. [#86](https://github.com/trypsynth/paperback/issues/86).
 * Epub books containing HTML content pretending to be XML will now be handled properly. [#96](https://github.com/trypsynth/paperback/issues/96).
 * Fixed loading large Markdown documents. [#97](https://github.com/trypsynth/paperback/issues/97).
 * Fixd pressing space in the table of contents tree view activating the OK button. [#121](https://github.com/trypsynth/paperback/issues/121), [#123](https://github.com/trypsynth/paperback/pull/123).
 * Fixed whitespace handling at the beginning of pre tags in both HTML and XHTML documents.
+* Fixed the text control not regaining focus sometimes when returning to Paperback's window. [#138](https://github.com/trypsynth/paperback/issues/138).
 * Fixed the text field in the go to percent dialog not updating the slider's value.
 * Fixed the rendering of custom HTML IDs in Markdown documents. [#113](https://github.com/trypsynth/paperback/issues/113).
 * HTML inside Markdown code blocks will now be rendered properly. [#79](https://github.com/trypsynth/paperback/issues/79).
 * If loading a book with a command line parameter while an existing Paperback instance is running, you'll no longer get an error if loading your document takes more than 5 seconds.
+* If running Paperback as administrator, the configuration will now be properly loaded and saved. [#148](https://github.com/trypsynth/paperback/issues/148), [#149](https://github.com/trypsynth/paperback/pull/149).
 * It is now possible to delete a bookmark directly from within the bookmarks dialog. [#100](https://github.com/trypsynth/paperback/issues/100), [#103](https://github.com/trypsynth/paperback/pull/103).
-* It is now possible to create bookmarks with notes attached to them! [#68](https://github.com/trypsynth/paperback/issues/68).
-* Links inside documents are now fully supported! Use k and shift+k to move forward and backward through them, and press enter to open/activate one. [#74](https://github.com/trypsynth/paperback/issues/74), [#87](https://github.com/trypsynth/paperback/pull/87), [#126](https://github.com/trypsynth/paperback/issues/126).
+* It is now possible to import and export your bookmarks and reading position for a particular document. The generated file is named after the file with a .paperback extension. If such a file is found in the same directory as a file while loading it, it will be automatically loaded. Otherwise, you can manually import them using an item in the tools menu. [#146](https://github.com/trypsynth/paperback/issues/146), [#147](https://github.com/trypsynth/paperback/pull/147).
+* Links inside documents are now fully supported! Use k and shift+k to move forward and backward through them, and press enter to open/activate one. [#74](https://github.com/trypsynth/paperback/issues/74), [#87](https://github.com/trypsynth/paperback/pull/87), [#126](https://github.com/trypsynth/paperback/issues/126), [#129](https://github.com/trypsynth/paperback/issues/129), [#130](https://github.com/trypsynth/paperback/issues/130).
+* Many internal refactors, making the app faster and the binary smaller.
 * Markdown content is now preprocessed in order to be CommonMark compliant before rendering.
+* Navigation by lists and their items is now fully supported! Use L and Shift+L to go by lists themselves, and I and Shift+I to go through list items. [#119](https://github.com/trypsynth/paperback/issues/119), [#124](https://github.com/trypsynth/paperback/pull/124).
 * Numpad delete now works to remove documents from the tab bar in addition to normal delete.
 * Paperback can now optionally minimize to your system tray! This option is off by default, but turning it on will make the minimize option in the system menu put Paperback in your tray, able to be restored by clicking on the spawned icon. [#49](https://github.com/trypsynth/paperback/issues/49), [#85](https://github.com/trypsynth/paperback/pull/85).
-* Paperback is now fully translatable! The list of languages it supports is currently fairly small, but it's constantly growing! [#75](https://github.com/trypsynth/paperback/issues/75), [#92](https://github.com/trypsynth/paperback/pull/92), [#95](https://github.com/trypsynth/paperback/pull/95).
+* Paperback is now fully translatable! The list of languages it supports is currently fairly small, but it's constantly growing! [#75](https://github.com/trypsynth/paperback/issues/75), [#92](https://github.com/trypsynth/paperback/pull/92), [#95](https://github.com/trypsynth/paperback/pull/95), [#134](https://github.com/trypsynth/paperback/pull/134), [#137](https://github.com/trypsynth/paperback/pull/137), [#141](https://github.com/trypsynth/paperback/pull/141), [#152](https://github.com/trypsynth/paperback/pull/152).
 * Paperback now has an official website, at [paperback.dev](https://paperback.dev)!
 * PPTX documents will now show a basic table of contents, containing all of the slides. [#122](https://github.com/trypsynth/paperback/issues/122).
+* The full path to the opened document will now be shown in the document info dialog. [#139](https://github.com/trypsynth/paperback/issues/139), [#140](https://github.com/trypsynth/paperback/pull/140).
 * The installer now includes an option to view the readme in your browser after installation.
-* The recent documents list has been dramatically expanded! Instead of simply showing you the last 10 documents you opened, it'll now show you a customizable number, with the rest of the documents you've ever opened being accessible through a small dialog. [#78](https://github.com/trypsynth/paperback/issues/78), [#80](https://github.com/trypsynth/paperback/pull/80), [#84](https://github.com/trypsynth/paperback/pull/84).
+* The recent documents list has been dramatically expanded! Instead of simply showing you the last 10 documents you opened, it'll now show you a customizable number, with the rest of the documents you've ever opened being accessible through a small dialog. [#78](https://github.com/trypsynth/paperback/issues/78), [#80](https://github.com/trypsynth/paperback/pull/80), [#84](https://github.com/trypsynth/paperback/pull/84), [#135](https://github.com/trypsynth/paperback/pull/135).
 * Various small improvements to the parsers across the board, including putting a blank line between slides in PPTX presentations, fixing the newline handling inside of paragraphs in word documents, and adding bullet points to list items.
 
 ### Version 0.5
