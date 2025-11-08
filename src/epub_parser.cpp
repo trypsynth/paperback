@@ -351,7 +351,9 @@ void epub_parser::parse_epub3_nav(const std::string& nav_id, const epub_context&
 		}
 	}
 	if (toc_nav == nullptr) {
-		toc_nav = doc.find_node([](pugi::xml_node n) { return std::string(n.name()) == "nav"; });
+		toc_nav = doc.find_node([](pugi::xml_node n) {
+			return std::string(n.name()) == "nav";
+		});
 	}
 	if (toc_nav) {
 		auto ol = toc_nav.child("ol");

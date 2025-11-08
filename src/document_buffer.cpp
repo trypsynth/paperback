@@ -76,7 +76,9 @@ void document_buffer::clear() {
 }
 
 int document_buffer::next_marker_index(long position, marker_type type) const noexcept {
-	auto it = std::upper_bound(markers.begin(), markers.end(), position, [](long pos, const marker& m) { return pos < static_cast<long>(m.pos); });
+	auto it = std::upper_bound(markers.begin(), markers.end(), position, [](long pos, const marker& m) {
+		return pos < static_cast<long>(m.pos);
+	});
 	while (it != markers.end()) {
 		if (it->type == type) {
 			return static_cast<int>(std::distance(markers.begin(), it));
@@ -96,7 +98,9 @@ int document_buffer::find_first_marker_after(long position, marker_type type) co
 }
 
 int document_buffer::previous_marker_index(long position, marker_type type) const noexcept {
-	auto it = std::lower_bound(markers.begin(), markers.end(), position, [](const marker& m, long pos) { return static_cast<long>(m.pos) < pos; });
+	auto it = std::lower_bound(markers.begin(), markers.end(), position, [](const marker& m, long pos) {
+		return static_cast<long>(m.pos) < pos;
+	});
 	auto rit = std::make_reverse_iterator(it);
 	while (rit != markers.rend()) {
 		if (rit->type == type && static_cast<long>(rit->pos) < position) {
@@ -108,7 +112,9 @@ int document_buffer::previous_marker_index(long position, marker_type type) cons
 }
 
 int document_buffer::current_marker_index(size_t position, marker_type type) const noexcept {
-	auto it = std::upper_bound(markers.begin(), markers.end(), position, [](size_t pos, const marker& m) { return pos < m.pos; });
+	auto it = std::upper_bound(markers.begin(), markers.end(), position, [](size_t pos, const marker& m) {
+		return pos < m.pos;
+	});
 	auto rit = std::make_reverse_iterator(it);
 	while (rit != markers.rend()) {
 		if (rit->type == type) {
@@ -121,7 +127,9 @@ int document_buffer::current_marker_index(size_t position, marker_type type) con
 
 int document_buffer::next_heading_marker_index(long position, int level) const {
 	const auto heading_markers = get_heading_markers();
-	auto it = std::upper_bound(heading_markers.begin(), heading_markers.end(), position, [](long pos, const marker* m) { return pos < static_cast<long>(m->pos); });
+	auto it = std::upper_bound(heading_markers.begin(), heading_markers.end(), position, [](long pos, const marker* m) {
+		return pos < static_cast<long>(m->pos);
+	});
 	while (it != heading_markers.end()) {
 		if (level == -1 || (*it)->level == level) {
 			return static_cast<int>(std::distance(heading_markers.begin(), it));
@@ -133,7 +141,9 @@ int document_buffer::next_heading_marker_index(long position, int level) const {
 
 int document_buffer::previous_heading_marker_index(long position, int level) const {
 	const auto heading_markers = get_heading_markers();
-	auto it = std::lower_bound(heading_markers.begin(), heading_markers.end(), position, [](const marker* m, long pos) { return static_cast<long>(m->pos) < pos; });
+	auto it = std::lower_bound(heading_markers.begin(), heading_markers.end(), position, [](const marker* m, long pos) {
+		return static_cast<long>(m->pos) < pos;
+	});
 	auto rit = std::make_reverse_iterator(it);
 	while (rit != heading_markers.rend()) {
 		if (static_cast<long>((*rit)->pos) < position && (level == -1 || (*rit)->level == level)) {

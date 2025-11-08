@@ -82,8 +82,12 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 		auto extract_number_view = [](const std::string& s) -> int {
 			constexpr int decimal_base = 10;
 			auto start_it = s.rfind('/') == std::string::npos ? s.begin() : s.begin() + static_cast<std::string::difference_type>(s.rfind('/'));
-			auto digits_view = std::ranges::subrange(start_it, s.end()) | std::views::filter([](char c) { return std::isdigit(c); });
-			return std::accumulate(digits_view.begin(), digits_view.end(), 0, [](int acc, char c) { return (acc * decimal_base) + (c - '0'); });
+			auto digits_view = std::ranges::subrange(start_it, s.end()) | std::views::filter([](char c) {
+				return std::isdigit(c);
+			});
+			return std::accumulate(digits_view.begin(), digits_view.end(), 0, [](int acc, char c) {
+				return (acc * decimal_base) + (c - '0');
+			});
 		};
 		std::ranges::sort(slide_files, [&](const std::string& a, const std::string& b) {
 			return extract_number_view(a) < extract_number_view(b);

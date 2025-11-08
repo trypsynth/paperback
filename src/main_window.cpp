@@ -120,9 +120,9 @@ void main_window::create_menus() {
 			menu_item::item(wxID_CLOSE_ALL, _("Close &All\tCtrl+Shift+F4")),
 			menu_item::sep(),
 			menu_item::submenu_populate(_("&Recent Documents"), [this](wxMenu* sub) {
-				recent_documents_menu = sub;
-				update_recent_documents_menu();
-			}),
+		recent_documents_menu = sub;
+		update_recent_documents_menu();
+	}),
 			menu_item::sep(),
 			menu_item::item(wxID_EXIT, _("E&xit")),
 		}});
@@ -177,10 +177,10 @@ void main_window::create_menus() {
 			menu_item::sep(),
 			menu_item::item(ID_OPEN_CONTAINING_FOLDER, _("Open &containing folder\tCtrl+Shift+C")),
 			menu_item::submenu(_("Import/&Export"), {
-				menu_item::item(ID_IMPORT, _("&Import document data...\tCtrl+Shift+I")),
-				menu_item::item(ID_EXPORT_DOCUMENT_DATA, _("&Export document data...\tCtrl+Shift+E")),
-				menu_item::item(ID_EXPORT_TO_TEXT, _("Export document to &plain text...\tCtrl+E")),
-			}),
+														menu_item::item(ID_IMPORT, _("&Import document data...\tCtrl+Shift+I")),
+														menu_item::item(ID_EXPORT_DOCUMENT_DATA, _("&Export document data...\tCtrl+Shift+E")),
+														menu_item::item(ID_EXPORT_TO_TEXT, _("Export document to &plain text...\tCtrl+E")),
+													}),
 			menu_item::sep(),
 			menu_item::item(ID_TOGGLE_BOOKMARK, _("Toggle bookmark\tCtrl+Shift+B")),
 			menu_item::item(ID_BOOKMARK_WITH_NOTE, _("Bookmark with &note\tCtrl+Shift+N")),
@@ -192,10 +192,10 @@ void main_window::create_menus() {
 		_("&Help"),
 		{
 			menu_item::populate([](wxMenu* parent) {
-				parent->Append(wxID_ABOUT, wxString::Format(_("About %s\tCtrl+F1"), APP_NAME));
-				parent->Append(wxID_HELP, _("View &help in default browser\tF1"));
-				parent->Append(ID_HELP_INTERNAL, wxString::Format(_("View Help in %s\tShift+F1"), APP_NAME));
-			}),
+		parent->Append(wxID_ABOUT, wxString::Format(_("About %s\tCtrl+F1"), APP_NAME));
+		parent->Append(wxID_HELP, _("View &help in default browser\tF1"));
+		parent->Append(ID_HELP_INTERNAL, wxString::Format(_("View Help in %s\tShift+F1"), APP_NAME));
+	}),
 			menu_item::sep(),
 			menu_item::item(ID_CHECK_FOR_UPDATES, _("Check for &Updates")),
 			menu_item::sep(),
@@ -274,8 +274,12 @@ void main_window::bind_events() {
 	for (int level = 1; level <= MAX_HEADING_LEVELS; ++level) {
 		const int prev_id = ID_PREVIOUS_HEADING_1 + ((level - 1) * 2);
 		const int next_id = ID_NEXT_HEADING_1 + ((level - 1) * 2);
-		Bind(wxEVT_MENU, [this, level](wxCommandEvent&) { navigate_heading_by_level(level, false); }, prev_id);
-		Bind(wxEVT_MENU, [this, level](wxCommandEvent&) { navigate_heading_by_level(level, true); }, next_id);
+		Bind(wxEVT_MENU, [this, level](wxCommandEvent&) {
+			navigate_heading_by_level(level, false);
+		}, prev_id);
+		Bind(wxEVT_MENU, [this, level](wxCommandEvent&) {
+			navigate_heading_by_level(level, true);
+		}, next_id);
 	}
 	Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, &main_window::on_notebook_page_changed, this);
 	Bind(wxEVT_CLOSE_WINDOW, &main_window::on_close_window, this);
@@ -300,7 +304,9 @@ void main_window::on_iconize(wxIconizeEvent& event) {
 
 void main_window::on_activate(wxActivateEvent& event) {
 	if (event.GetActive()) {
-		CallAfter([this]() { restore_focus_to_text(); });
+		CallAfter([this]() {
+			restore_focus_to_text();
+		});
 		if (sleep_timer->IsRunning()) {
 			sleep_timer->StartOnce(sleep_timer_duration_minutes * 60 * 1000);
 			sleep_timer_start_time = wxGetLocalTimeMillis();

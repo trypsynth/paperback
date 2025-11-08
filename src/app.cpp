@@ -149,7 +149,9 @@ void app::open_file(const wxString& filename) {
 			frame->Show(true);
 			frame->Iconize(false);
 			frame->Raise();
-			frame->CallAfter([frm = frame] { frm->restore_focus_to_text(); });
+			frame->CallAfter([frm = frame] {
+				frm->restore_focus_to_text();
+			});
 		}
 		return;
 	}
