@@ -102,7 +102,7 @@ void xml_to_text::process_node(pugi::xml_node node) {
 			const std::string href = element.attribute("href").as_string();
 			const std::string link_text = get_element_text(element);
 			if (!link_text.empty()) {
-				const std::string processed_link_text = trim_string(collapse_whitespace(link_text));
+				const std::string processed_link_text = collapse_whitespace(link_text);
 				const size_t link_offset = get_current_text_position();
 				current_line += processed_link_text;
 				links.push_back({.offset = link_offset, .text = processed_link_text, .ref = href});

@@ -223,7 +223,7 @@ void html_to_text::process_node(lxb_dom_node_t* node) {
 			if (in_link) {
 				in_link = false;
 				if (!current_link_text.empty()) {
-					links.push_back({.offset = link_start_pos, .text = trim_string(collapse_whitespace(current_link_text)), .ref = current_link_href});
+					links.push_back({.offset = link_start_pos, .text = collapse_whitespace(current_link_text), .ref = current_link_href});
 					current_line += current_link_text;
 				}
 				current_link_href.clear();
