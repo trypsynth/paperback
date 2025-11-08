@@ -1082,12 +1082,19 @@ void main_window::do_find(bool forward) {
 	const long start_pos = forward ? sel_end : sel_start;
 	long found_pos = doc_manager->find_text(query, start_pos, options);
 	if (found_pos == wxNOT_FOUND) {
-		speak(_("No more results. Wrapping search."));
 		const auto wrap_pos = forward ? 0 : text_ctrl->GetLastPosition();
-		found_pos = doc_manager->find_text(query, wrap_pos, options);
-		if (found_pos == wxNOT_FOUND) {
+		const long wrapped_pos = doc_manager->find_text(query, wrap_pos, options);
+		if (wrapped_pos == wxNOT_FOUND) {
 			speak(_("Not found."));
+			if (find_dlg != nullptr) {
+				find_dlg->Show();
+				find_dlg->Raise();
+				find_dlg->focus_find_text();
+			}
 			return;
+		} else {
+			speak(_("No more results. Wrapping search."));
+			found_pos = wrapped_pos;
 		}
 	}
 	text_ctrl->SetFocus();
