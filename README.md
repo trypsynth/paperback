@@ -35,6 +35,10 @@ cmake --build .
 
 This will generate paperback.exe and all its dependencieds, including its readme in HTML format, in your build folder.
 
+Optional tools:
+- `pandoc` on your `PATH` to generate the HTML readme during the build.
+- `gettext` tools (`xgettext`, `msgfmt`, `msgmerge`) on your `PATH` to generate the translation template and compile translations.
+
 ## Contributing
 Contributions are welcome! Whether through issues, pull requests, discussions, or other means, your interest is appreciated.
 
