@@ -65,10 +65,6 @@ private:
 	wxLongLong sleep_timer_start_time{0};
 
 	void create_menus();
-	wxMenu* create_file_menu();
-	static wxMenu* create_go_menu();
-	static wxMenu* create_tools_menu();
-	static wxMenu* create_help_menu();
 	void refresh_ui_language();
 	void bind_events();
 	void on_open(wxCommandEvent&);

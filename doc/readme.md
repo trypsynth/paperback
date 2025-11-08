@@ -38,15 +38,14 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * Ctrl+F4: close the currently focused document.
 * Ctrl+Shift+F4: close all currently opened documents.
 * Ctrl+R: bring up the all documents dialog.
-* Ctrl+E: export the currently focused document to plain text.
 
 ### Go menu
 * Ctrl+F: show the find dialog.
 * F3: find next.
 * Shift+F3: find previous.
 * Ctrl+G: bring up the go to line dialog.
-* Ctrl+Shift+G: bring up the go to percent dialog, allowing you to go to a percentage through your document with a slider.
-* Ctrl+P: brings up a dialog allowing you to specify a page number to jump to, if the document supports pages.
+* Ctrl+Shift+G: bring up the go to percent dialog.
+* Ctrl+P: Bring up the go to page dialog, if supported in your focused document.
 * Left bracket: go to the previous section.
 * Right bracket: go to the next section.
 * Shift+H: go to the previous heading.
@@ -84,6 +83,7 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * Ctrl+W: view the word count of the currently focused document.
 * Ctrl+I: bring up the document info dialog.
 * Ctrl+T: show the table of contents.
+* Ctrl+E: export your focused document's contents to a text file.
 * Ctrl+Shift+B: toggle a bookmark at your current cursor position.
 * Ctrl+Shift+N: add/edit a bookmarked note at your current cursor position.
 * Ctrl+Comma: bring up the options dialog.

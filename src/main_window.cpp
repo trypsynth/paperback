@@ -12,6 +12,7 @@
 #include "constants.hpp"
 #include "dialogs.hpp"
 #include "live_region.hpp"
+#include "menu_builder.hpp"
 #include "parser.hpp"
 #include "translation_manager.hpp"
 #include "update_checker.hpp"
@@ -68,139 +69,145 @@ main_window::~main_window() {
 }
 
 void main_window::create_menus() {
-	auto* const menu_bar = new wxMenuBar();
-	menu_bar->Append(create_file_menu(), _("&File"));
-	menu_bar->Append(create_go_menu(), _("&Go"));
-	menu_bar->Append(create_tools_menu(), _("&Tools"));
-	menu_bar->Append(create_help_menu(), _("&Help"));
-	SetMenuBar(menu_bar);
-}
-
-wxMenu* main_window::create_file_menu() {
-	auto* const menu = new wxMenu();
-	menu->Append(wxID_OPEN, _("&Open...\tCtrl+O"));
-	menu->Append(wxID_CLOSE, _("Close\tCtrl+F4"));
-	menu->Append(wxID_CLOSE_ALL, _("Close &All\tCtrl+Shift+F4"));
-	menu->AppendSeparator();
-	recent_documents_menu = new wxMenu();
-	menu->AppendSubMenu(recent_documents_menu, _("&Recent Documents"));
-	update_recent_documents_menu();
-	menu->AppendSeparator();
-	menu->Append(wxID_EXIT, _("E&xit"));
-	return menu;
-}
-
-wxMenu* main_window::create_go_menu() {
-	auto* const menu = new wxMenu();
 	auto& config_mgr = wxGetApp().get_config_manager();
 	const bool compact = config_mgr.get(config_manager::compact_go_menu);
-	menu->Append(wxID_FIND, _("&Find...\tCtrl+F"));
-	menu->Append(ID_FIND_NEXT, _("Find Ne&xt\tF3"));
-	menu->Append(ID_FIND_PREVIOUS, _("Find P&revious\tShift+F3"));
-	menu->AppendSeparator();
-	menu->Append(ID_GO_TO_LINE, _("Go to &line...\tCtrl+G"));
-	menu->Append(ID_GO_TO_PERCENT, _("Go to &percent...\tCtrl+Shift+G"));
-	menu->AppendSeparator();
-	if (compact) {
-		auto* sections_menu = new wxMenu();
-		sections_menu->Append(ID_PREVIOUS_SECTION, _("Previous section\t["));
-		sections_menu->Append(ID_NEXT_SECTION, _("Next section\t]"));
-		menu->AppendSubMenu(sections_menu, _("&Sections"));
-		auto* headings_menu = new wxMenu();
-		document_manager::create_heading_menu(headings_menu);
-		menu->AppendSubMenu(headings_menu, _("&Headings"));
-		auto* pages_menu = new wxMenu();
-		pages_menu->Append(ID_GO_TO_PAGE, _("Go to &page...\tCtrl+P"));
-		pages_menu->AppendSeparator();
-		pages_menu->Append(ID_PREVIOUS_PAGE, _("Previous &page\tShift+P"));
-		pages_menu->Append(ID_NEXT_PAGE, _("&Next page\tP"));
-		menu->AppendSubMenu(pages_menu, _("&Pages"));
-		auto* bookmarks_menu = new wxMenu();
-		bookmarks_menu->Append(ID_PREVIOUS_BOOKMARK, _("Previous &bookmark\tShift+B"));
-		bookmarks_menu->Append(ID_NEXT_BOOKMARK, _("Next b&ookmark\tB"));
-		bookmarks_menu->Append(ID_PREVIOUS_NOTE, _("Previous &note\tShift+N"));
-		bookmarks_menu->Append(ID_NEXT_NOTE, _("Next &note\tN"));
-		bookmarks_menu->AppendSeparator();
-		bookmarks_menu->Append(ID_JUMP_TO_BOOKMARK, _("Jump to &all...\tCtrl+B"));
-		bookmarks_menu->Append(ID_JUMP_TO_BOOKMARKS_ONLY, _("Jump to &bookmarks...\tCtrl+Alt+B"));
-		bookmarks_menu->Append(ID_JUMP_TO_NOTES, _("Jump to &notes...\tCtrl+Alt+M"));
-		bookmarks_menu->Append(ID_VIEW_NOTE_TEXT, _("&View note text\tCtrl+Shift+W"));
-		menu->AppendSubMenu(bookmarks_menu, _("&Bookmarks"));
-		auto* links_menu = new wxMenu();
-		links_menu->Append(ID_PREVIOUS_LINK, _("Previous lin&k\tShift+K"));
-		links_menu->Append(ID_NEXT_LINK, _("Next lin&k\tK"));
-		menu->AppendSubMenu(links_menu, _("&Links"));
-		auto* lists_menu = new wxMenu();
-		lists_menu->Append(ID_PREVIOUS_LIST, _("Previous lis&t\tShift+L"));
-		lists_menu->Append(ID_NEXT_LIST, _("Next lis&t\tL"));
-		lists_menu->Append(ID_PREVIOUS_LIST_ITEM, _("Previous list &item\tShift+I"));
-		lists_menu->Append(ID_NEXT_LIST_ITEM, _("Next list &item\tI"));
-		menu->AppendSubMenu(lists_menu, _("&Lists"));
-	} else {
-		menu->Append(ID_GO_TO_PAGE, _("Go to &page...\tCtrl+P"));
-		menu->AppendSeparator();
-		menu->Append(ID_PREVIOUS_SECTION, _("Previous section\t["));
-		menu->Append(ID_NEXT_SECTION, _("Next section\t]"));
-		menu->AppendSeparator();
-		document_manager::create_heading_menu(menu);
-		menu->AppendSeparator();
-		menu->Append(ID_PREVIOUS_PAGE, _("Previous &page\tShift+P"));
-		menu->Append(ID_NEXT_PAGE, _("&Next page\tP"));
-		menu->AppendSeparator();
-		menu->Append(ID_PREVIOUS_BOOKMARK, _("Previous &bookmark\tShift+B"));
-		menu->Append(ID_NEXT_BOOKMARK, _("Next b&ookmark\tB"));
-		menu->Append(ID_PREVIOUS_NOTE, _("Previous &note\tShift+N"));
-		menu->Append(ID_NEXT_NOTE, _("Next &note\tN"));
-		menu->Append(ID_TOGGLE_BOOKMARK, _("Toggle bookmark\tCtrl+Shift+B"));
-		menu->Append(ID_BOOKMARK_WITH_NOTE, _("Bookmark with &note\tCtrl+Shift+N"));
-		menu->Append(ID_JUMP_TO_BOOKMARK, _("Jump to &all...\tCtrl+B"));
-		menu->Append(ID_JUMP_TO_BOOKMARKS_ONLY, _("Jump to &bookmarks...\tCtrl+Alt+B"));
-		menu->Append(ID_JUMP_TO_NOTES, _("Jump to &notes...\tCtrl+Alt+M"));
-		menu->Append(ID_VIEW_NOTE_TEXT, _("&View note text\tCtrl+Shift+W"));
-		menu->AppendSeparator();
-		menu->Append(ID_PREVIOUS_LINK, _("Previous lin&k\tShift+K"));
-		menu->Append(ID_NEXT_LINK, _("Next lin&k\tK"));
-		menu->AppendSeparator();
-		menu->Append(ID_PREVIOUS_LIST, _("Previous lis&t\tShift+L"));
-		menu->Append(ID_NEXT_LIST, _("Next lis&t\tL"));
-		menu->Append(ID_PREVIOUS_LIST_ITEM, _("Previous list &item\tShift+I"));
-		menu->Append(ID_NEXT_LIST_ITEM, _("Next list &item\tI"));
+	auto sections_items = [] {
+		return std::vector<menu_item>{
+			menu_item::item(ID_PREVIOUS_SECTION, _("Previous section\t[")),
+			menu_item::item(ID_NEXT_SECTION, _("Next section\t]")),
+		};
+	};
+	auto pages_items = [] {
+		return std::vector<menu_item>{
+			menu_item::item(ID_GO_TO_PAGE, _("Go to &page...\tCtrl+P")),
+			menu_item::item(ID_PREVIOUS_PAGE, _("Previous &page\tShift+P")),
+			menu_item::item(ID_NEXT_PAGE, _("&Next page\tP")),
+		};
+	};
+	auto bookmarks_items = [] {
+		return std::vector<menu_item>{
+			menu_item::item(ID_PREVIOUS_BOOKMARK, _("Previous &bookmark\tShift+B")),
+			menu_item::item(ID_NEXT_BOOKMARK, _("Next b&ookmark\tB")),
+			menu_item::item(ID_PREVIOUS_NOTE, _("Previous &note\tShift+N")),
+			menu_item::item(ID_NEXT_NOTE, _("Next &note\tN")),
+			menu_item::sep(),
+			menu_item::item(ID_JUMP_TO_BOOKMARK, _("Jump to &all...\tCtrl+B")),
+			menu_item::item(ID_JUMP_TO_BOOKMARKS_ONLY, _("Jump to &bookmarks...\tCtrl+Alt+B")),
+			menu_item::item(ID_JUMP_TO_NOTES, _("Jump to &notes...\tCtrl+Alt+M")),
+			menu_item::item(ID_VIEW_NOTE_TEXT, _("&View note text\tCtrl+Shift+W")),
+		};
+	};
+	auto links_items = [] {
+		return std::vector<menu_item>{
+			menu_item::item(ID_PREVIOUS_LINK, _("Previous lin&k\tShift+K")),
+			menu_item::item(ID_NEXT_LINK, _("Next lin&k\tK")),
+		};
+	};
+	auto lists_items = [] {
+		return std::vector<menu_item>{
+			menu_item::item(ID_PREVIOUS_LIST, _("Previous lis&t\tShift+L")),
+			menu_item::item(ID_NEXT_LIST, _("Next lis&t\tL")),
+			menu_item::item(ID_PREVIOUS_LIST_ITEM, _("Previous list &item\tShift+I")),
+			menu_item::item(ID_NEXT_LIST_ITEM, _("Next list &item\tI")),
+		};
+	};
+	std::vector<menu> menus;
+	menus.push_back(menu{
+		_("&File"),
+		{
+			menu_item::item(wxID_OPEN, _("&Open...\tCtrl+O")),
+			menu_item::item(wxID_CLOSE, _("Close\tCtrl+F4")),
+			menu_item::item(wxID_CLOSE_ALL, _("Close &All\tCtrl+Shift+F4")),
+			menu_item::sep(),
+			menu_item::submenu_populate(_("&Recent Documents"), [this](wxMenu* sub) {
+				recent_documents_menu = sub;
+				update_recent_documents_menu();
+			}),
+			menu_item::sep(),
+			menu_item::item(wxID_EXIT, _("E&xit")),
+		}});
+	{
+		std::vector<menu_item> go_items = {
+			menu_item::item(wxID_FIND, _("&Find...\tCtrl+F")),
+			menu_item::item(ID_FIND_NEXT, _("Find Ne&xt\tF3")),
+			menu_item::item(ID_FIND_PREVIOUS, _("Find P&revious\tShift+F3")),
+			menu_item::sep(),
+			menu_item::item(ID_GO_TO_LINE, _("Go to &line...\tCtrl+G")),
+			menu_item::item(ID_GO_TO_PERCENT, _("Go to &percent...\tCtrl+Shift+G")),
+			menu_item::sep(),
+		};
+		if (compact) {
+			go_items.push_back(menu_item::submenu(_("&Sections"), sections_items()));
+			go_items.push_back(menu_item::submenu_populate(_("&Headings"), [](wxMenu* sub) {
+				document_manager::create_heading_menu(sub);
+			}));
+			go_items.push_back(menu_item::submenu(_("&Pages"), pages_items()));
+			go_items.push_back(menu_item::submenu(_("&Bookmarks"), bookmarks_items()));
+			go_items.push_back(menu_item::submenu(_("&Links"), links_items()));
+			go_items.push_back(menu_item::submenu(_("&Lists"), lists_items()));
+		} else {
+			auto secs = sections_items();
+			go_items.insert(go_items.end(), secs.begin(), secs.end());
+			go_items.push_back(menu_item::sep());
+			go_items.push_back(menu_item::populate([](wxMenu* parent) {
+				document_manager::create_heading_menu(parent);
+			}));
+			go_items.push_back(menu_item::sep());
+			auto pgs = pages_items();
+			go_items.insert(go_items.end(), pgs.begin(), pgs.end());
+			go_items.push_back(menu_item::sep());
+			auto bms = bookmarks_items();
+			go_items.insert(go_items.end(), bms.begin(), bms.end());
+			go_items.push_back(menu_item::sep());
+			auto lnks = links_items();
+			go_items.insert(go_items.end(), lnks.begin(), lnks.end());
+			go_items.push_back(menu_item::sep());
+			auto lsts = lists_items();
+			go_items.insert(go_items.end(), lsts.begin(), lsts.end());
+		}
+		menus.push_back(menu{_("&Go"), std::move(go_items)});
 	}
-	return menu;
-}
-
-wxMenu* main_window::create_tools_menu() {
-	auto* const menu = new wxMenu();
-	menu->Append(ID_WORD_COUNT, _("&Word count\tCtrl+W"));
-	menu->Append(ID_DOC_INFO, _("Document &info\tCtrl+I"));
-	menu->AppendSeparator();
-	menu->Append(ID_TABLE_OF_CONTENTS, _("Table of contents\tCtrl+T"));
-	menu->AppendSeparator();
-	menu->Append(ID_OPEN_CONTAINING_FOLDER, _("Open &containing folder"));
-	wxMenu* const import_export_menu = new wxMenu();
-	import_export_menu->Append(ID_IMPORT, _("&Import document data..."));
-	import_export_menu->Append(ID_EXPORT_DOCUMENT_DATA, _("&Export document data..."));
-	import_export_menu->Append(ID_EXPORT_TO_TEXT, _("Export document to &plain text...\tCtrl+E"));
-	menu->AppendSubMenu(import_export_menu, _("Import/&Export"));
-	menu->AppendSeparator();
-	menu->Append(ID_TOGGLE_BOOKMARK, _("Toggle bookmark\tCtrl+Shift+B"));
-	menu->Append(ID_BOOKMARK_WITH_NOTE, _("Bookmark with &note\tCtrl+Shift+N"));
-	menu->AppendSeparator();
-	menu->Append(ID_OPTIONS, _("&Options\tCtrl+,"));
-	menu->Append(ID_SLEEP_TIMER, _("&Sleep Timer...\tCtrl+Shift+S"));
-	return menu;
-}
-
-wxMenu* main_window::create_help_menu() {
-	auto* const menu = new wxMenu();
-	menu->Append(wxID_ABOUT, wxString::Format(_("About %s\tCtrl+F1"), APP_NAME));
-	menu->Append(wxID_HELP, _("View &help in default browser\tF1"));
-	menu->Append(ID_HELP_INTERNAL, wxString::Format(_("View Help in %s\tShift+F1"), APP_NAME));
-	menu->AppendSeparator();
-	menu->Append(ID_CHECK_FOR_UPDATES, _("Check for &Updates"));
-	menu->AppendSeparator();
-	menu->Append(ID_DONATE, _("&Donate\tCtrl+D"));
-	return menu;
+	menus.push_back(menu{
+		_("&Tools"),
+		{
+			menu_item::item(ID_WORD_COUNT, _("&Word count\tCtrl+W")),
+			menu_item::item(ID_DOC_INFO, _("Document &info\tCtrl+I")),
+			menu_item::sep(),
+			menu_item::item(ID_TABLE_OF_CONTENTS, _("Table of contents\tCtrl+T")),
+			menu_item::sep(),
+			menu_item::item(ID_OPEN_CONTAINING_FOLDER, _("Open &containing folder")),
+			menu_item::submenu(_("Import/&Export"), {
+														menu_item::item(ID_IMPORT, _("&Import document data...")),
+														menu_item::item(ID_EXPORT_DOCUMENT_DATA, _("&Export document data...")),
+														menu_item::item(ID_EXPORT_TO_TEXT, _("Export document to &plain text...\tCtrl+E")),
+													}),
+			menu_item::sep(),
+			menu_item::item(ID_TOGGLE_BOOKMARK, _("Toggle bookmark\tCtrl+Shift+B")),
+			menu_item::item(ID_BOOKMARK_WITH_NOTE, _("Bookmark with &note\tCtrl+Shift+N")),
+			menu_item::sep(),
+			menu_item::item(ID_OPTIONS, _("&Options\tCtrl+,")),
+			menu_item::item(ID_SLEEP_TIMER, _("&Sleep Timer...\tCtrl+Shift+S")),
+		}});
+	menus.push_back(menu{
+		_("&Help"),
+		{
+			menu_item::populate([](wxMenu* parent) {
+				parent->Append(wxID_ABOUT, wxString::Format(_("About %s\tCtrl+F1"), APP_NAME));
+				parent->Append(wxID_HELP, _("View &help in default browser\tF1"));
+				parent->Append(ID_HELP_INTERNAL, wxString::Format(_("View Help in %s\tShift+F1"), APP_NAME));
+			}),
+			menu_item::sep(),
+			menu_item::item(ID_CHECK_FOR_UPDATES, _("Check for &Updates")),
+			menu_item::sep(),
+			menu_item::item(ID_DONATE, _("&Donate\tCtrl+D")),
+		}});
+	auto* const menu_bar = new wxMenuBar();
+	for (const auto& def : menus) {
+		auto* const menu = new wxMenu();
+		append_items(menu, def.items);
+		menu_bar->Append(menu, def.title);
+	}
+	SetMenuBar(menu_bar);
 }
 
 void main_window::refresh_ui_language() {
