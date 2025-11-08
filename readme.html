@@ -182,7 +182,7 @@ filetypes</a></li>
 <li><a href="#file-menu" id="toc-file-menu">File menu</a></li>
 <li><a href="#go-menu" id="toc-go-menu">Go menu</a></li>
 <li><a href="#tools-menu" id="toc-tools-menu">Tools menu</a></li>
-<li><a href="#about-menu" id="toc-about-menu">About menu</a></li>
+<li><a href="#help-menu" id="toc-help-menu">Help menu</a></li>
 </ul></li>
 <li><a href="#credits" id="toc-credits">Credits</a>
 <ul>
@@ -288,9 +288,22 @@ jump to, if the document supports pages.</li>
 <li>P: go to the next page.</li>
 <li>Shift+B: go to the previous bookmark.</li>
 <li>B: go to the next bookmark.</li>
-<li>Ctrl+B: bring up the jump to bookmark dialog.</li>
+<li>Shift+N: go to the previous note.</li>
+<li>N: go to the next note.</li>
+<li>Ctrl+B: bring up the jump to bookmark dialog, with both bookmarks
+and notes selected.</li>
+<li>Ctrl+Alt+B: bring up the jump to bookmark dialog, with only
+bookmarks selected.</li>
+<li>Ctrl+Alt+M: bring up the jump to bookmark dialog, with only notes
+selected.</li>
+<li>Ctrl+Shift+W: view the currently focused note in a read-only text
+field.</li>
 <li>Shift+K:” go to the previous link.</li>
 <li>K: go to the next link.</li>
+<li>Shift+L: go to the previous list.</li>
+<li>L: go to the next list.</li>
+<li>Shift+I: go to the previous list item.</li>
+<li>I: go to the next list item.</li>
 </ul>
 <h2 id="tools-menu">Tools menu</h2>
 <ul>
@@ -304,7 +317,7 @@ position.</li>
 <li>Ctrl+Comma: bring up the options dialog.</li>
 <li>Ctrl+Shift+S: toggle the sleep timer.</li>
 </ul>
-<h2 id="about-menu">About menu</h2>
+<h2 id="help-menu">Help menu</h2>
 <ul>
 <li>Ctrl+F1: show the about dialog.</li>
 <li>F1: pop up this readme file in your default web browser.</li>
@@ -348,8 +361,13 @@ inclusion in this list.</p>
 <ul>
 <li>A new option to show the go menu in a far more compact form has been
 added to the options dialog, checked by default.</li>
+<li>Added an option to make navigation by structural elements wrap. <a
+href="https://github.com/trypsynth/paperback/pull/116">#116</a>.</li>
 <li>Added a quite simple, but very effective, updating system. <a
 href="https://github.com/trypsynth/paperback/issues/28">#28</a>.</li>
+<li>Added a basic sleep timer feature, accessible with Ctrl+Shift+S. <a
+href="https://github.com/trypsynth/paperback/issues/117">#117</a>, <a
+href="https://github.com/trypsynth/paperback/pull/118">#118</a>.</li>
 <li>Added support for parsing FB2 ebooks! <a
 href="https://github.com/trypsynth/paperback/issues/30">#30</a>, <a
 href="https://github.com/trypsynth/paperback/pull/107">#107</a>.</li>
@@ -373,8 +391,14 @@ handled properly. <a
 href="https://github.com/trypsynth/paperback/issues/96">#96</a>.</li>
 <li>Fixed loading large Markdown documents. <a
 href="https://github.com/trypsynth/paperback/issues/97">#97</a>.</li>
+<li>Fixd pressing space in the table of contents tree view activating
+the OK button. <a
+href="https://github.com/trypsynth/paperback/issues/121">#121</a>, <a
+href="https://github.com/trypsynth/paperback/pull/123">#123</a>.</li>
 <li>Fixed whitespace handling at the beginning of pre tags in both HTML
 and XHTML documents.</li>
+<li>Fixed the text field in the go to percent dialog not updating the
+slider’s value.</li>
 <li>Fixed the rendering of custom HTML IDs in Markdown documents. <a
 href="https://github.com/trypsynth/paperback/issues/113">#113</a>.</li>
 <li>HTML inside Markdown code blocks will now be rendered properly. <a
@@ -391,7 +415,8 @@ href="https://github.com/trypsynth/paperback/pull/103">#103</a>.</li>
 <li>Links inside documents are now fully supported! Use k and shift+k to
 move forward and backward through them, and press enter to open/activate
 one. <a href="https://github.com/trypsynth/paperback/issues/74">#74</a>,
-<a href="https://github.com/trypsynth/paperback/pull/87">#87</a>.</li>
+<a href="https://github.com/trypsynth/paperback/pull/87">#87</a>, <a
+href="https://github.com/trypsynth/paperback/issues/126">#126</a>.</li>
 <li>Markdown content is now preprocessed in order to be CommonMark
 compliant before rendering.</li>
 <li>Numpad delete now works to remove documents from the tab bar in
@@ -409,6 +434,9 @@ href="https://github.com/trypsynth/paperback/pull/92">#92</a>, <a
 href="https://github.com/trypsynth/paperback/pull/95">#95</a>.</li>
 <li>Paperback now has an official website, at <a
 href="https://paperback.dev">paperback.dev</a>!</li>
+<li>PPTX documents will now show a basic table of contents, containing
+all of the slides. <a
+href="https://github.com/trypsynth/paperback/issues/122">#122</a>.</li>
 <li>The installer now includes an option to view the readme in your
 browser after installation.</li>
 <li>The recent documents list has been dramatically expanded! Instead of
@@ -418,6 +446,10 @@ being accessible through a small dialog. <a
 href="https://github.com/trypsynth/paperback/issues/78">#78</a>, <a
 href="https://github.com/trypsynth/paperback/pull/80">#80</a>, <a
 href="https://github.com/trypsynth/paperback/pull/84">#84</a>.</li>
+<li>Various small improvements to the parsers across the board,
+including putting a blank line between slides in PPTX presentations,
+fixing the newline handling inside of paragraphs in word documents, and
+adding bullet points to list items.</li>
 </ul>
 <h2 id="version-0.5">Version 0.5</h2>
 <ul>
@@ -438,7 +470,7 @@ documents.</li>
 <li>HTML and Markdown documents now support the table of contents
 feature! When you load an HTML/Markdown document, Paperback will build
 its own table of contents out of the structure of the headings in your
-document, and it will show that to you in the control+t dialog.</li>
+document, and it will show that to you in the ctrl+t dialog.</li>
 <li>HTML documents will now have the title as set in the title tag, if
 it exists. Otherwise, they’ll continue to use the filename without the
 extension.</li>
