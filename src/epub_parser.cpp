@@ -219,14 +219,14 @@ void epub_parser::parse_section(size_t index, epub_context& ctx, document_buffer
 	const auto& id = ctx.spine_items[index];
 	auto it = ctx.manifest_items.find(id);
 	if (it == ctx.manifest_items.end()) {
-		throw parser_exception(wxString::FromUTF8("Unknown spine item id: " + id));
+		return;
 	}
 	const auto& manifest_item = it->second;
 	const auto& href = manifest_item.path;
 	const auto& media_type = manifest_item.media_type;
 	wxZipEntry* section_entry = find_zip_entry(href, ctx.zip_entries);
 	if (section_entry == nullptr) {
-		throw parser_exception(wxString::FromUTF8("File not found: " + href));
+		return;
 	}
 	ctx.file_stream.SeekI(0);
 	wxZipInputStream zis(ctx.file_stream);
