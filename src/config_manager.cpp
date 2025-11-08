@@ -572,7 +572,7 @@ void config_manager::update_bookmark_note(const wxString& path, long start, long
 			bookmark_string += ",";
 		}
 		const wxString encoded_note = encode_note(bookmarks[i].note);
-		bookmark_string += wxString::Format("%d:%d:%s", bookmarks[i].start, bookmarks[i].end, encoded_note);
+		bookmark_string += wxString::Format("%ld:%ld:%s", bookmarks[i].start, bookmarks[i].end, encoded_note);
 	}
 	with_document_section(path, [this, path, bookmark_string]() {
 		config->Write("path", path);
@@ -963,8 +963,8 @@ wxString config_manager::encode_note(const wxString& note) {
 	if (note.IsEmpty()) {
 		return wxEmptyString;
 	}
-	const std::string note_str = note.ToStdString();
-	const auto enc = b64_encode(reinterpret_cast<const unsigned char*>(note_str.data()), note_str.size(), /*url_safe*/ false, /*pad*/ true);
+	const wxScopedCharBuffer note_utf8 = note.ToUTF8();
+	const auto enc = b64_encode(reinterpret_cast<const unsigned char*>(note_utf8.data()), note_utf8.length(), /*url_safe*/ false, /*pad*/ true);
 	return wxString::FromUTF8(enc);
 }
 
