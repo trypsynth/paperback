@@ -132,11 +132,12 @@ void epub_parser::parse_opf(const std::string& filename, epub_context& ctx) {
 			}
 		}
 	}
-	auto manifest = package.child("manifest");
+	auto manifest = package.select_node("*[local-name()='manifest']").node();
 	if (manifest == nullptr) {
 		throw parser_exception("No manifest");
 	}
-	for (auto item_node : manifest.children("item")) {
+	for (auto x : manifest.select_nodes("*[local-name()='item']")) {
+		auto item_node = x.node();
 		const std::string href = item_node.attribute("href").as_string();
 		const std::string id = item_node.attribute("id").as_string();
 		const std::string media_type = item_node.attribute("media-type").as_string();
@@ -152,7 +153,7 @@ void epub_parser::parse_opf(const std::string& filename, epub_context& ctx) {
 			ctx.nav_doc_id = id;
 		}
 	}
-	auto spine = package.child("spine");
+	auto spine = package.select_node("*[local-name()='spine']").node();
 	if (spine == nullptr) {
 		throw parser_exception("No spine");
 	}
@@ -162,7 +163,8 @@ void epub_parser::parse_opf(const std::string& filename, epub_context& ctx) {
 			ctx.toc_ncx_id = toc_attr;
 		}
 	}
-	for (auto itemref : spine.children("itemref")) {
+	for (auto x : spine.select_nodes("*[local-name()='itemref']")) {
+		auto itemref = x.node();
 		ctx.spine_items.push_back(itemref.attribute("idref").as_string());
 	}
 }
@@ -231,7 +233,7 @@ void epub_parser::parse_section(size_t index, epub_context& ctx, document_buffer
 	ctx.file_stream.SeekI(0);
 	wxZipInputStream zis(ctx.file_stream);
 	if (!zis.OpenEntry(*section_entry)) {
-		throw parser_exception(wxString::FromUTF8("Failed to open section file: " + href));
+		return;
 	}
 	const std::string content = read_zip_entry(zis);
 	if (is_html_content(media_type)) {
