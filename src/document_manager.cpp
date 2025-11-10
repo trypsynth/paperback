@@ -591,9 +591,13 @@ void document_manager::activate_current_link() const {
 		const wxString file_path = href.BeforeFirst('#');
 		const wxString fragment = href.AfterFirst('#');
 		if (!file_path.empty()) {
+			wxFileName link_path;
+			link_path.Assign(file_path, wxPATH_UNIX);
+			link_path.Normalize(wxPATH_NORM_DOTS, "", wxPATH_UNIX);
+			const wxString normalized_file_path = link_path.GetFullPath(wxPATH_UNIX);
 			wxString manifest_id;
 			for (auto const& [id, path] : doc->manifest_items) {
-				if (path == file_path) {
+				if (path == normalized_file_path) {
 					manifest_id = id;
 					break;
 				}
