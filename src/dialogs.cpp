@@ -960,7 +960,8 @@ void toc_dialog::on_ok(wxCommandEvent& /*event*/) {
 
 void toc_dialog::on_char_hook(wxKeyEvent& event) {
 	const int key_code = event.GetKeyCode();
-	if (key_code >= WXK_SPACE && key_code < WXK_DELETE) {
+	wxWindow* focused = wxWindow::FindFocus();
+	if (focused == tree && key_code >= WXK_SPACE && key_code < WXK_DELETE) {
 		search_timer_->StartOnce(500);
 		search_string_ += static_cast<wxChar>(event.GetUnicodeKey());
 		if (!find_and_select_item_by_name(search_string_, tree->GetRootItem())) {
