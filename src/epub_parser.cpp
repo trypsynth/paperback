@@ -198,7 +198,10 @@ void epub_parser::process_section_content(conv& converter, const std::string& co
 			} else if (!link.ref.empty() && link.ref[0] == '#') {
 				resolved_href = link.ref;
 			} else {
-				resolved_href = section_base_dir.empty() ? link.ref : (section_base_dir + "/" + link.ref);
+				wxFileName path;
+				path.Assign(wxString::FromUTF8(section_base_dir + "/" + link.ref), wxPATH_UNIX);
+				path.Normalize(wxPATH_NORM_DOTS, "", wxPATH_UNIX);
+				resolved_href = path.GetFullPath(wxPATH_UNIX);
 			}
 			buffer.add_link(section_start + link.offset, wxString::FromUTF8(link.text), resolved_href);
 		}
