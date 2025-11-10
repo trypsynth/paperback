@@ -108,12 +108,14 @@ The following people have made donations of some size to Paperback development. 
 
 Note: I consider a public GitHub sponsor grounds for automatic inclusion in this list.
 
+* Alex Hall
 * Brandon McGinty
 * Brian Hartgen
 * Devin Prater
 * Felix Steindorff
 * James Scholes
 * Jayson Smith
+* Jonathan Schuster
 * Pratik Patel 
 * Roberto Perez
 * Sean Randall
