@@ -269,6 +269,8 @@ public:
 	void set_word_wrap(bool word_wrap);
 	bool get_minimize_to_tray() const;
 	void set_minimize_to_tray(bool minimize);
+	bool get_start_maximized() const;
+	void set_start_maximized(bool maximized);
 	bool get_compact_go_menu() const;
 	void set_compact_go_menu(bool compact);
 	bool get_navigation_wrap() const;
@@ -284,6 +286,7 @@ private:
 	wxCheckBox* restore_docs_check{nullptr};
 	wxCheckBox* word_wrap_check{nullptr};
 	wxCheckBox* minimize_to_tray_check{nullptr};
+	wxCheckBox* start_maximized_check{nullptr};
 	wxCheckBox* compact_go_menu_check{nullptr};
 	wxCheckBox* navigation_wrap_check{nullptr};
 	wxCheckBox* check_for_updates_on_startup_check{nullptr};

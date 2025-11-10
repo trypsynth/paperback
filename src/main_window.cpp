@@ -40,6 +40,9 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME), task_bar_icon
 	status_bar = CreateStatusBar(1);
 	status_bar->SetStatusText(_("Ready"));
 	bind_events();
+	if (wxGetApp().get_config_manager().get(config_manager::start_maximized)) {
+		Maximize();
+	}
 	update_ui();
 	notebook->Bind(wxEVT_KEY_DOWN, &main_window::on_notebook_key_down, this);
 }
@@ -773,6 +776,7 @@ void main_window::on_options(wxCommandEvent&) {
 	dlg.set_restore_previous_documents(config_mgr.get(config_manager::restore_previous_documents));
 	dlg.set_word_wrap(config_mgr.get(config_manager::word_wrap));
 	dlg.set_minimize_to_tray(config_mgr.get(config_manager::minimize_to_tray));
+	dlg.set_start_maximized(config_mgr.get(config_manager::start_maximized));
 	dlg.set_compact_go_menu(config_mgr.get(config_manager::compact_go_menu));
 	dlg.set_navigation_wrap(config_mgr.get(config_manager::navigation_wrap));
 	dlg.set_check_for_updates_on_startup(config_mgr.get(config_manager::check_for_updates_on_startup));
@@ -790,6 +794,7 @@ void main_window::on_options(wxCommandEvent&) {
 	config_mgr.set(config_manager::restore_previous_documents, dlg.get_restore_previous_documents());
 	config_mgr.set(config_manager::word_wrap, new_word_wrap);
 	config_mgr.set(config_manager::minimize_to_tray, dlg.get_minimize_to_tray());
+	config_mgr.set(config_manager::start_maximized, dlg.get_start_maximized());
 	config_mgr.set(config_manager::compact_go_menu, new_compact_menu);
 	config_mgr.set(config_manager::navigation_wrap, dlg.get_navigation_wrap());
 	config_mgr.set(config_manager::check_for_updates_on_startup, dlg.get_check_for_updates_on_startup());
