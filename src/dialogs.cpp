@@ -738,6 +738,8 @@ options_dialog::options_dialog(wxWindow* parent) : dialog(parent, _("Options")) 
 	general_box->Add(word_wrap_check, 0, wxALL, option_padding);
 	minimize_to_tray_check = new wxCheckBox(this, wxID_ANY, _("&Minimize to system tray"));
 	general_box->Add(minimize_to_tray_check, 0, wxALL, option_padding);
+	start_maximized_check = new wxCheckBox(this, wxID_ANY, _("&Start maximized"));
+	general_box->Add(start_maximized_check, 0, wxALL, option_padding);
 	compact_go_menu_check = new wxCheckBox(this, wxID_ANY, _("Show compact &go menu"));
 	general_box->Add(compact_go_menu_check, 0, wxALL, option_padding);
 	navigation_wrap_check = new wxCheckBox(this, wxID_ANY, _("&Wrap navigation"));
@@ -793,6 +795,16 @@ bool options_dialog::get_minimize_to_tray() const {
 void options_dialog::set_minimize_to_tray(bool minimize) {
 	if (minimize_to_tray_check != nullptr) {
 		minimize_to_tray_check->SetValue(minimize);
+	}
+}
+
+bool options_dialog::get_start_maximized() const {
+	return start_maximized_check != nullptr ? start_maximized_check->GetValue() : false;
+}
+
+void options_dialog::set_start_maximized(bool maximized) {
+	if (start_maximized_check != nullptr) {
+		start_maximized_check->SetValue(maximized);
 	}
 }
 
