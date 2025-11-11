@@ -5,7 +5,7 @@ on:
 permissions:
   contents: write
 jobs:
-  build:
+  build-windows:
     runs-on: windows-latest
     steps:
     - name: Checkout repository
@@ -64,11 +64,51 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: paperback-build
+        name: paperback-windows
         path: |
           build/paperback.zip
           build/paperback_setup.exe
         retention-days: 30
+
+  build-linux-flatpak:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-49
+      options: --privileged
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Generate cargo sources for Flatpak
+      run: |
+        pip install aiohttp tomlkit
+        curl -sSL https://raw.githubusercontent.com/flatpak/flatpak-builder-tools/master/cargo/flatpak-cargo-generator.py -o flatpak-cargo-generator.py
+        python3 flatpak-cargo-generator.py lib/Cargo.lock -o cargo-sources.json
+    - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+      with:
+        bundle: paperback.flatpak
+        manifest-path: io.github.trypsynth.Paperback.yaml
+        cache-key: flatpak-builder-${{ github.sha }}
+
+  release:
+    needs: [build-windows, build-linux-flatpak]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Download Windows artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: paperback-windows
+        path: windows-build
+    - name: Download Linux Flatpak
+      uses: actions/download-artifact@v4
+      with:
+        name: paperback-x86_64.flatpak
+        path: linux-build
     - name: Get latest tag reachable from HEAD
       id: get_tag
       shell: bash
@@ -99,8 +139,9 @@ jobs:
           ## Commits since last release
           ${{ steps.release_notes.outputs.commits }}
         files: |
-          build/paperback.zip
-          build/paperback_setup.exe
+          windows-build/paperback.zip
+          windows-build/paperback_setup.exe
+          linux-build/paperback.flatpak
         prerelease: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

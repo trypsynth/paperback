@@ -433,7 +433,7 @@ void bookmark_dialog::repopulate_list(long current_pos) {
 	}
 }
 
-document_info_dialog::document_info_dialog(wxWindow* parent, session_document* session_doc, const wxString& file_path, config_manager& cfg_mgr) : dialog(parent, _("Document Info"), dialog_button_config::ok_only), config_mgr{cfg_mgr}, doc_path{file_path} {
+document_info_dialog::document_info_dialog(wxWindow* parent, session_document* session_doc, const wxString& file_path, [[maybe_unused]] config_manager& cfg_mgr) : dialog(parent, _("Document Info"), dialog_button_config::ok_only), doc_path{file_path} {
 	constexpr int info_width = 600;
 	constexpr int info_height = 400;
 	info_text_ctrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(info_width, info_height), wxTE_MULTILINE | wxTE_READONLY);

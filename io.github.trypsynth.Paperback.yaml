@@ -1,0 +1,202 @@
+app-id: io.github.trypsynth.Paperback
+runtime: org.gnome.Platform
+runtime-version: '49'
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+command: paperback
+
+finish-args:
+  # Filesystem access to open documents
+  - --filesystem=home
+  - --filesystem=xdg-documents
+  - --filesystem=xdg-download
+  # X11 and Wayland display
+  - --socket=x11
+  - --socket=wayland
+  # GPU acceleration
+  - --device=dri
+  # Access to network for update checks and external links
+  - --share=network
+  # IPC for accessibility
+  - --share=ipc
+
+cleanup:
+  - /include
+  - /lib/cmake
+  - /lib/pkgconfig
+  - /share/bakefile
+  - /share/man
+  - /bin/wx-config
+  - '*.la'
+  - '*.a'
+
+modules:
+  # wxWidgets 3.2.8.1 - GUI toolkit
+  - name: wxwidgets
+    sources:
+      - type: archive
+        url: https://github.com/wxWidgets/wxWidgets/releases/download/v3.2.8.1/wxWidgets-3.2.8.1.tar.bz2
+        sha256: ad0cf6c18815dcf1a6a89ad3c3d21a306cd7b5d99a602f77372ef1d92cb7d756
+    config-opts:
+      - --enable-shared
+      - --enable-unicode
+      - --with-gtk=3
+      - --without-opengl
+      - --enable-display
+      - --enable-propgrid
+      - --enable-stc
+      - --with-libjpeg
+      - --with-libpng
+      - --with-zlib
+      - --enable-webview
+      - --disable-ribbon
+    cleanup:
+      - /bin/wxrc*
+
+  # pdfium - PDF rendering (using pre-built binaries)
+  # Using bblanchon/pdfium-binaries since building from source requires
+  # Chromium's depot_tools and is extremely complex for Flatpak
+  # Version chromium/7520 is PDFium 144.0.7520.0, latest stable as of Nov 2025
+  - name: pdfium
+    buildsystem: simple
+    sources:
+      - type: archive
+        url: https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7520/pdfium-linux-x64.tgz
+        sha256: e737634cca16ba28b760077b915b469bea076b71f208769c56fb96ee138e876f
+    build-commands:
+      # Install headers (flatpak-builder strips first component, headers are at top level)
+      - install -Dm644 *.h -t /app/include/
+      - install -Dm644 cpp/*.h -t /app/include/cpp/
+      # Install library (also at top level after strip-components)
+      - install -Dm644 libpdfium.so -t /app/lib/
+      # Create pkg-config file for CMake to find pdfium
+      - mkdir -p /app/lib/pkgconfig
+      - |
+        cat > /app/lib/pkgconfig/pdfium.pc << 'EOF'
+        prefix=/app
+        libdir=${prefix}/lib
+        includedir=${prefix}/include
+
+        Name: pdfium
+        Description: PDF rendering library
+        Version: chromium-7520
+        Libs: -L${libdir} -lpdfium
+        Cflags: -I${includedir}
+        EOF
+
+  # pandoc - Documentation build tool (build-time only)
+  - name: pandoc
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 pandoc-3.8.2.1/bin/pandoc /app/bin/pandoc
+    cleanup:
+      - /bin/pandoc
+    sources:
+      - type: archive
+        url: https://github.com/jgm/pandoc/releases/download/3.8.2.1/pandoc-3.8.2.1-linux-amd64.tar.gz
+        sha256: b362815e21d8ad3629c124aa92baf54558da086ad72374b4f6fdd97b9f3275b0
+        strip-components: 0
+
+  # paperback - Main application
+  - name: paperback
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/rust-stable/bin:/app/bin
+      env:
+        CARGO_HOME: /run/build/paperback/cargo
+        CHMLIB_TARBALL: /run/build/paperback/chmlib-0.40.tar.bz2
+    build-commands:
+      # Create pdfium directory structure that Rust build.rs expects
+      # This prevents it from trying to download pdfium (no network in Flatpak)
+      - mkdir -p build/lib/pdfium/linux-x64/lib
+      - ln -sf /app/lib/libpdfium.so build/lib/pdfium/linux-x64/lib/libpdfium.so
+      # Patch libchm's build.rs to use local chmlib tarball instead of downloading
+      # The crate's build.rs tries to download chmlib but Flatpak has no network
+      - |
+        cat > cargo/vendor/libchm-0.1.0/build.rs << 'PATCHEOF'
+        use std::{
+          env, fs,
+          io::Cursor,
+          path::{Path, PathBuf},
+        };
+
+        use bzip2::read::BzDecoder;
+        use cc::Build;
+        use tar::Archive;
+
+        fn main() {
+          let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
+          let chmlib_dir = out_dir.join("chmlib-0.40");
+          let src_dir = chmlib_dir.join("src");
+          if !chmlib_dir.exists() {
+            extract_chmlib(&out_dir);
+          }
+          apply_patches(&src_dir);
+          let mut build = Build::new();
+          build.file(src_dir.join("chm_lib.c")).file(src_dir.join("lzx.c")).include(&src_dir).warnings(false);
+          if cfg!(target_os = "windows") {
+            build.define("WIN32", None);
+            build.define("_WINDOWS", None);
+          } else {
+            build.define("CHMLIB_HAVE_STRINGS_H", None);
+          }
+          build.compile("chm");
+          println!("cargo:rustc-link-lib=static=chm");
+        }
+
+        fn extract_chmlib(out_dir: &Path) {
+          let tarball_path = env::var("CHMLIB_TARBALL").expect("CHMLIB_TARBALL env var must be set for offline build");
+          let buf = fs::read(&tarball_path).expect("Failed to read chmlib tarball");
+          let decompressor = BzDecoder::new(Cursor::new(buf));
+          let mut archive = Archive::new(decompressor);
+          archive.unpack(out_dir).expect("Failed to extract chmlib");
+        }
+
+        fn apply_patches(src_dir: &Path) {
+          let chm_lib_path = src_dir.join("chm_lib.c");
+          let mut contents = fs::read_to_string(&chm_lib_path).expect("Failed to read chm_lib.c");
+          contents = contents.replace("/* yielding an error is preferable to yielding incorrect behavior */\n#error \"Please define the sized types for your platform in chm_lib.c\"", "typedef unsigned char           UChar;\ntypedef int16_t                 Int16;\ntypedef uint16_t                UInt16;\ntypedef int32_t                 Int32;\ntypedef uint32_t                UInt32;\ntypedef int64_t                 Int64;\ntypedef uint64_t                UInt64;");
+          contents = contents
+            .replace("#if __sun || __sgi\n#include <strings.h>", "#ifdef CHMLIB_HAVE_STRINGS_H\n#include <strings.h>");
+          fs::write(&chm_lib_path, contents).expect("Failed to write patched chm_lib.c");
+        }
+        PATCHEOF
+      # Update .cargo-checksum.json to allow the patched file
+      - |
+        python3 -c "
+        import json
+        with open('cargo/vendor/libchm-0.1.0/.cargo-checksum.json', 'r') as f:
+            data = json.load(f)
+        data['files'] = {}
+        with open('cargo/vendor/libchm-0.1.0/.cargo-checksum.json', 'w') as f:
+            json.dump(data, f)
+        "
+      # Run cmake build
+      - cmake -B build -DCMAKE_BUILD_TYPE=Release -DUSE_SYSTEM_LIBS=ON -DCMAKE_INSTALL_PREFIX=/app -DwxWidgets_CONFIG_EXECUTABLE=/app/bin/wx-config
+      - cmake --build build
+      - cmake --install build
+    post-install:
+      # Rename desktop file to use app-id for Flatpak compliance
+      - mv /app/share/applications/paperback.desktop /app/share/applications/io.github.trypsynth.Paperback.desktop
+      # Update Icon field in desktop file to use app-id
+      - sed -i 's/Icon=paperback/Icon=io.github.trypsynth.Paperback/' /app/share/applications/io.github.trypsynth.Paperback.desktop
+      # Rename all icon files to use app-id for Flatpak compliance
+      - for size in 16 32 48 64 128 256; do mv /app/share/icons/hicolor/${size}x${size}/apps/paperback.png /app/share/icons/hicolor/${size}x${size}/apps/io.github.trypsynth.Paperback.png; done
+    sources:
+      - type: dir
+        path: .
+      - cargo-sources.json
+      - type: inline
+        contents: |
+          [source.crates-io]
+          replace-with = "vendored-sources"
+
+          [source.vendored-sources]
+          directory = "cargo/vendor"
+        dest: cargo
+        dest-filename: config.toml
+      # chmlib tarball for offline build (libchm crate normally downloads this)
+      - type: file
+        url: http://www.jedrea.com/chmlib/chmlib-0.40.tar.bz2
+        sha256: 3449d64b0cf71578b2c7e3ddc048d4af3661f44a83941ea074a7813f3a59ffa3

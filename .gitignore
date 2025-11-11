@@ -3,3 +3,9 @@ build/
 lib/target/
 vcpkg/bin/
 web/_site/
+result
+.direnv/
+.flatpak-builder/
+*.flatpak
+repo-flatpak/
+cargo-sources.json
