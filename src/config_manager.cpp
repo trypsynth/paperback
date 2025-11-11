@@ -392,6 +392,75 @@ long config_manager::get_document_position(const wxString& path) const {
 	return get_document_setting(path, "last_position", 0L);
 }
 
+void config_manager::set_navigation_history(const wxString& path, const std::vector<long>& back_history, const std::vector<long>& forward_history) {
+	if (!config) {
+		return;
+	}
+
+	wxString back_history_string;
+	for (size_t i = 0; i < back_history.size(); ++i) {
+		if (i > 0) {
+			back_history_string += ",";
+		}
+		back_history_string += wxString::Format("%ld", back_history[i]);
+	}
+
+	wxString forward_history_string;
+	for (size_t i = 0; i < forward_history.size(); ++i) {
+		if (i > 0) {
+			forward_history_string += ",";
+		}
+		forward_history_string += wxString::Format("%ld", forward_history[i]);
+	}
+
+	with_document_section(path, [this, path, &back_history_string, &forward_history_string]() {
+		config->Write("path", path);
+		if (back_history_string.IsEmpty()) {
+			config->DeleteEntry("navigation_back_history");
+		} else {
+			config->Write("navigation_back_history", back_history_string);
+		}
+		if (forward_history_string.IsEmpty()) {
+			config->DeleteEntry("navigation_forward_history");
+		} else {
+			config->Write("navigation_forward_history", forward_history_string);
+		}
+	});
+}
+
+void config_manager::get_navigation_history(const wxString& path, std::vector<long>& back_history, std::vector<long>& forward_history) const {
+	if (!config) {
+		return;
+	}
+
+	back_history.clear();
+	forward_history.clear();
+
+	const wxString back_history_string = get_document_setting(path, "navigation_back_history", wxString(""));
+	if (!back_history_string.IsEmpty()) {
+		wxStringTokenizer tokenizer(back_history_string, ",");
+		while (tokenizer.HasMoreTokens()) {
+			const wxString token = tokenizer.GetNextToken().Trim().Trim(false);
+			long position;
+			if (token.ToLong(&position)) {
+				back_history.push_back(position);
+			}
+		}
+	}
+
+	const wxString forward_history_string = get_document_setting(path, "navigation_forward_history", wxString(""));
+	if (!forward_history_string.IsEmpty()) {
+		wxStringTokenizer tokenizer(forward_history_string, ",");
+		while (tokenizer.HasMoreTokens()) {
+			const wxString token = tokenizer.GetNextToken().Trim().Trim(false);
+			long position;
+			if (token.ToLong(&position)) {
+				forward_history.push_back(position);
+			}
+		}
+	}
+}
+
 void config_manager::set_document_opened(const wxString& path, bool opened) {
 	set_document_setting(path, "opened", opened);
 }
@@ -444,6 +513,16 @@ void config_manager::remove_document_history(const wxString& path) {
 	config->SetPath("/");
 	const wxString doc_id_to_remove = escape_document_path(path);
 	config->DeleteGroup(doc_id_to_remove);
+}
+
+void config_manager::remove_navigation_history(const wxString& path) {
+	if (!config) {
+		return;
+	}
+	with_document_section(path, [this]() {
+		config->DeleteEntry("navigation_back_history");
+		config->DeleteEntry("navigation_forward_history");
+	});
 }
 
 wxArrayString config_manager::get_all_documents() const {

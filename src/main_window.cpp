@@ -138,6 +138,9 @@ void main_window::create_menus() {
 			menu_item::item(ID_GO_TO_LINE, _("Go to &line...\tCtrl+G")),
 			menu_item::item(ID_GO_TO_PERCENT, _("Go to &percent...\tCtrl+Shift+G")),
 			menu_item::sep(),
+			menu_item::item(ID_GO_BACK, _("Go &Back\tAlt+Left")),
+			menu_item::item(ID_GO_FORWARD, _("Go &Forward\tAlt+Right")),
+			menu_item::sep(),
 		};
 		if (compact) {
 			go_items.push_back(menu_item::submenu(_("&Sections"), sections_items()));
@@ -236,6 +239,8 @@ void main_window::bind_events() {
 		{ID_FIND_PREVIOUS, &main_window::on_find_previous},
 		{ID_GO_TO_LINE, &main_window::on_go_to_line},
 		{ID_GO_TO_PERCENT, &main_window::on_go_to_percent},
+		{ID_GO_BACK, &main_window::on_go_back},
+		{ID_GO_FORWARD, &main_window::on_go_forward},
 		{ID_GO_TO_PAGE, &main_window::on_go_to_page},
 		{ID_PREVIOUS_SECTION, &main_window::on_previous_section},
 		{ID_NEXT_SECTION, &main_window::on_next_section},
@@ -333,6 +338,8 @@ void main_window::update_ui() {
 		ID_FIND_PREVIOUS,
 		ID_GO_TO_LINE,
 		ID_GO_TO_PERCENT,
+		ID_GO_BACK,
+		ID_GO_FORWARD,
 		ID_GO_TO_PAGE,
 		ID_PREVIOUS_SECTION,
 		ID_NEXT_SECTION,
@@ -561,6 +568,18 @@ void main_window::on_go_to_percent(wxCommandEvent&) {
 	doc_manager->go_to_position(pos);
 	update_status_bar();
 	save_position_immediately();
+}
+
+void main_window::on_go_back(wxCommandEvent&) {
+	doc_manager->go_to_previous_position();
+	update_status_bar();
+	trigger_throttled_position_save();
+}
+
+void main_window::on_go_forward(wxCommandEvent&) {
+	doc_manager->go_to_next_position();
+	update_status_bar();
+	trigger_throttled_position_save();
 }
 
 void main_window::on_go_to_page(wxCommandEvent&) {
