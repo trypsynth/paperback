@@ -38,30 +38,10 @@ bool supports_feature(uint32_t flags, uint32_t feature) {
 	return (flags & feature) != 0;
 }
 
-constexpr uint32_t PARSER_SUPPORTS_SECTIONS = 1 << 0;
 constexpr uint32_t PARSER_SUPPORTS_TOC = 1 << 1;
-constexpr uint32_t PARSER_SUPPORTS_PAGES = 1 << 2;
-constexpr uint32_t PARSER_SUPPORTS_LISTS = 1 << 3;
 
 int to_rust_marker(marker_type type) {
 	return static_cast<int>(type);
-}
-
-std::vector<long> to_long_vector(const rust::Vec<long long>& values) {
-	std::vector<long> result(values.size());
-	std::transform(values.begin(), values.end(), result.begin(), [](long long value) {
-		return static_cast<long>(value);
-	});
-	return result;
-}
-
-rust::Vec<long long> to_rust_history(const std::vector<long>& history) {
-	rust::Vec<long long> rust_history;
-	rust_history.reserve(history.size());
-	std::transform(history.begin(), history.end(), std::back_inserter(rust_history), [](long value) {
-		return static_cast<long long>(value);
-	});
-	return rust_history;
 }
 
 void populate_toc_items(std::vector<std::unique_ptr<toc_item>>& toc_items, const rust::Vec<FfiTocItemWithParent>& ffi_toc_items) {
@@ -92,12 +72,6 @@ void populate_toc_items(std::vector<std::unique_ptr<toc_item>>& toc_items, const
 	}
 }
 
-void ensure_toc_loaded(session_document& session_doc) {
-	if (session_doc.toc_loaded) return;
-	session_doc.toc_loaded = true;
-	const DocumentHandle& handle = session_doc.get_handle();
-	populate_toc_items(session_doc.toc_items, document_toc_items_with_parents(handle));
-}
 } // namespace
 
 void session_document::ensure_toc_loaded() {
@@ -184,9 +158,9 @@ bool document_manager::create_document_tab(const wxString& path, bool set_focus,
 		size_t history_index = 0;
 		config.get_navigation_history(path, history, history_index);
 		if (!history.empty()) {
-			rust::Vec<long long> rust_history;
+			rust::Vec<std::int64_t> rust_history;
 			rust_history.reserve(history.size());
-			for (long pos : history) rust_history.push_back(static_cast<long long>(pos));
+			for (long pos : history) rust_history.push_back(static_cast<std::int64_t>(pos));
 			rust::Slice<const std::int64_t> history_slice(rust_history.data(), rust_history.size());
 			session_set_history(*session, history_slice, history_index);
 		}

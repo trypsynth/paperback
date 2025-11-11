@@ -3,7 +3,9 @@
 Paperback is a lightweight, fast, and accessible ebook/document reader designed to make reading fun and seamless, regardless of the file format being used or the user's preferences.
 
 ## System Requirements
-Paperback currently runs on Windows 7 through Windows 11. It's possible it runs on earlier versions of Windows too and/or can be built in such a way that it will, but this hasn't been tested yet. Support for other platforms is planned for a future version.
+**Windows:** Windows 7 through Windows 11. It's possible it runs on earlier versions of Windows too and/or can be built in such a way that it will, but this hasn't been tested yet.
+
+**Linux:** Any modern distribution with glibc 2.38+ (e.g., Ubuntu 24.04+, Fedora 39+, Arch Linux). Alternatively, use the Flatpak version for broader compatibility with older distributions.
 
 ## Features
 * Incredibly fast and standalone.
