@@ -106,8 +106,8 @@ public:
 	void clear_opened_documents();
 	void set_document_position(const wxString& path, long position);
 	long get_document_position(const wxString& path) const;
-	void set_navigation_history(const wxString& path, const std::vector<long>& back_history, const std::vector<long>& forward_history);
-	void get_navigation_history(const wxString& path, std::vector<long>& back_history, std::vector<long>& forward_history) const;
+	void set_navigation_history(const wxString& path, const std::vector<long>& history, size_t history_index);
+	void get_navigation_history(const wxString& path, std::vector<long>& history, size_t& history_index) const;
 	void set_document_opened(const wxString& path, bool opened);
 	void remove_document_history(const wxString& path);
 	void remove_navigation_history(const wxString& path);

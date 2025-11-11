@@ -99,7 +99,7 @@ bool document_manager::create_document_tab(const wxString& path, const parser* p
 		return false;
 	}
 	doc->calculate_statistics();
-	config.get_navigation_history(path, doc->back_history, doc->forward_history);
+	config.get_navigation_history(path, doc->history, doc->history_index);
 	auto* tab_data = new document_tab;
 	tab_data->doc = std::move(doc);
 	tab_data->file_path = path;
@@ -558,14 +558,13 @@ void document_manager::go_to_previous_position() const {
 		return;
 	}
 
-	if (doc->back_history.empty()) {
+	if (doc->history_index == 0) {
 		speak(_("No previous position."));
 		return;
 	}
 
-	doc->forward_history.push_back(text_ctrl->GetInsertionPoint());
-	const long pos = doc->back_history.back();
-	doc->back_history.pop_back();
+	doc->history_index--;
+	const long pos = doc->history[doc->history_index];
 	go_to_position(pos);
 	speak(_("Navigated to previous position."));
 }
@@ -577,14 +576,13 @@ void document_manager::go_to_next_position() const {
 		return;
 	}
 
-	if (doc->forward_history.empty()) {
+	if (doc->history_index + 1 >= doc->history.size()) {
 		speak(_("No next position."));
 		return;
 	}
 
-	doc->back_history.push_back(text_ctrl->GetInsertionPoint());
-	const long pos = doc->forward_history.back();
-	doc->forward_history.pop_back();
+	doc->history_index++;
+	const long pos = doc->history[doc->history_index];
 	go_to_position(pos);
 	speak(_("Navigated to next position."));
 }
@@ -614,11 +612,14 @@ void document_manager::activate_current_link() const {
 	}
 
 	// Add to navigation history
-	doc->back_history.push_back(current_pos);
-	if (doc->back_history.size() > 10) {
-		doc->back_history.erase(doc->back_history.begin());
+	if (doc->history_index + 1 < doc->history.size()) {
+		doc->history.erase(doc->history.begin() + doc->history_index + 1, doc->history.end());
 	}
-	doc->forward_history.clear();
+	doc->history.push_back(current_pos);
+	if (doc->history.size() > 10) {
+		doc->history.erase(doc->history.begin());
+	}
+	doc->history_index = doc->history.size() - 1;
 
 	const wxString href_lower = href.Lower();
 	if (href_lower.StartsWith("http:") || href_lower.StartsWith("https:") || href_lower.StartsWith("mailto:")) {
@@ -1010,7 +1011,7 @@ void document_manager::save_all_tab_navigation_histories() const {
 	for (int i = 0; i < get_tab_count(); ++i) {
 		const document_tab* tab = get_tab(i);
 		if (tab != nullptr && tab->doc != nullptr) {
-			config.set_navigation_history(tab->file_path, tab->doc->back_history, tab->doc->forward_history);
+			config.set_navigation_history(tab->file_path, tab->doc->history, tab->doc->history_index);
 		}
 	}
 }

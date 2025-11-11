@@ -392,73 +392,52 @@ long config_manager::get_document_position(const wxString& path) const {
 	return get_document_setting(path, "last_position", 0L);
 }
 
-void config_manager::set_navigation_history(const wxString& path, const std::vector<long>& back_history, const std::vector<long>& forward_history) {
+void config_manager::set_navigation_history(const wxString& path, const std::vector<long>& history, size_t history_index) {
 	if (!config) {
 		return;
 	}
 
-	wxString back_history_string;
-	for (size_t i = 0; i < back_history.size(); ++i) {
+	wxString history_string;
+	for (size_t i = 0; i < history.size(); ++i) {
 		if (i > 0) {
-			back_history_string += ",";
+			history_string += ",";
 		}
-		back_history_string += wxString::Format("%ld", back_history[i]);
+		history_string += wxString::Format("%ld", history[i]);
 	}
 
-	wxString forward_history_string;
-	for (size_t i = 0; i < forward_history.size(); ++i) {
-		if (i > 0) {
-			forward_history_string += ",";
-		}
-		forward_history_string += wxString::Format("%ld", forward_history[i]);
-	}
-
-	with_document_section(path, [this, path, &back_history_string, &forward_history_string]() {
+	with_document_section(path, [this, path, &history_string, history_index]() {
 		config->Write("path", path);
-		if (back_history_string.IsEmpty()) {
-			config->DeleteEntry("navigation_back_history");
+		if (history_string.IsEmpty()) {
+			config->DeleteEntry("navigation_history");
+			config->DeleteEntry("navigation_history_index");
 		} else {
-			config->Write("navigation_back_history", back_history_string);
-		}
-		if (forward_history_string.IsEmpty()) {
-			config->DeleteEntry("navigation_forward_history");
-		} else {
-			config->Write("navigation_forward_history", forward_history_string);
+			config->Write("navigation_history", history_string);
+			config->Write("navigation_history_index", static_cast<long>(history_index));
 		}
 	});
 }
 
-void config_manager::get_navigation_history(const wxString& path, std::vector<long>& back_history, std::vector<long>& forward_history) const {
+void config_manager::get_navigation_history(const wxString& path, std::vector<long>& history, size_t& history_index) const {
 	if (!config) {
 		return;
 	}
 
-	back_history.clear();
-	forward_history.clear();
+	history.clear();
+	history_index = 0;
 
-	const wxString back_history_string = get_document_setting(path, "navigation_back_history", wxString(""));
-	if (!back_history_string.IsEmpty()) {
-		wxStringTokenizer tokenizer(back_history_string, ",");
+	const wxString history_string = get_document_setting(path, "navigation_history", wxString(""));
+	if (!history_string.IsEmpty()) {
+		wxStringTokenizer tokenizer(history_string, ",");
 		while (tokenizer.HasMoreTokens()) {
 			const wxString token = tokenizer.GetNextToken().Trim().Trim(false);
 			long position;
 			if (token.ToLong(&position)) {
-				back_history.push_back(position);
+				history.push_back(position);
 			}
 		}
 	}
 
-	const wxString forward_history_string = get_document_setting(path, "navigation_forward_history", wxString(""));
-	if (!forward_history_string.IsEmpty()) {
-		wxStringTokenizer tokenizer(forward_history_string, ",");
-		while (tokenizer.HasMoreTokens()) {
-			const wxString token = tokenizer.GetNextToken().Trim().Trim(false);
-			long position;
-			if (token.ToLong(&position)) {
-				forward_history.push_back(position);
-			}
-		}
-	}
+	history_index = get_document_setting(path, "navigation_history_index", 0L);
 }
 
 void config_manager::set_document_opened(const wxString& path, bool opened) {
@@ -520,8 +499,8 @@ void config_manager::remove_navigation_history(const wxString& path) {
 		return;
 	}
 	with_document_section(path, [this]() {
-		config->DeleteEntry("navigation_back_history");
-		config->DeleteEntry("navigation_forward_history");
+		config->DeleteEntry("navigation_history");
+		config->DeleteEntry("navigation_history_index");
 	});
 }
 

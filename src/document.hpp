@@ -52,8 +52,8 @@ struct document {
 	std::map<std::string, std::string> manifest_items;
 	mutable document_stats stats;
 
-	std::vector<long> back_history;
-	std::vector<long> forward_history;
+	std::vector<long> history;
+	size_t history_index{0};
 
 	document() = default;
 	~document() = default;
