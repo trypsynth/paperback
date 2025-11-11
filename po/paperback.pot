@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2025-11-08 09:51-0700\n"
+"POT-Creation-Date: 2025-11-11 07:27-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -288,6 +288,10 @@ msgstr ""
 
 #: src/dialogs.cpp
 msgid "&Minimize to system tray"
+msgstr ""
+
+#: src/dialogs.cpp
+msgid "&Start maximized"
 msgstr ""
 
 #: src/dialogs.cpp
@@ -845,7 +849,7 @@ msgid "View Help in %s\tShift+F1"
 msgstr ""
 
 #: src/main_window.cpp
-msgid "Check for &Updates"
+msgid "Check for &Updates\tCtrl+Shift+U"
 msgstr ""
 
 #: src/main_window.cpp
@@ -951,11 +955,11 @@ msgid "Show All...\tCtrl+R"
 msgstr ""
 
 #: src/main_window.cpp
-msgid "No more results. Wrapping search."
+msgid "Not found."
 msgstr ""
 
 #: src/main_window.cpp
-msgid "Not found."
+msgid "No more results. Wrapping search."
 msgstr ""
 
 #: src/markdown_parser.cpp
