@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.5
+Type=Application
+Name=Paperback
+GenericName=Document Reader
+Comment=Lightweight, fast, and accessible ebook and document reader
+Exec=paperback %F
+Icon=paperback
+Terminal=false
+Categories=Office;Viewer;GTK;
+Keywords=ebook;epub;pdf;document;reader;chm;accessibility;screen-reader;
+StartupNotify=true
+MimeType=application/epub+zip;application/pdf;application/x-chm;application/vnd.openxmlformats-officedocument.wordprocessingml.document;application/vnd.oasis.opendocument.text;application/x-fictionbook+xml;text/html;text/markdown;text/plain;application/vnd.oasis.opendocument.presentation;application/vnd.openxmlformats-officedocument.presentationml.presentation;

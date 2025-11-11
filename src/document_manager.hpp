@@ -29,7 +29,7 @@ struct document_tab : public wxClientData {
 	std::unique_ptr<document> doc;
 	wxString file_path;
 	wxPanel* panel{nullptr};
-	const parser* parser{nullptr};
+	const parser* format_parser{nullptr};
 
 	document_tab() = default;
 	~document_tab() = default;

@@ -1,4 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
+
+# Option to use system libraries instead of vcpkg (for Nix, Linux distros, etc.)
+option(USE_SYSTEM_LIBS "Use system libraries instead of vcpkg" OFF)
+
+if(NOT USE_SYSTEM_LIBS)
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/vcpkg/bin/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
 set(VCPKG_MANIFEST_DIR "${CMAKE_SOURCE_DIR}/vcpkg")
 if(WIN32)
@@ -7,6 +12,7 @@ elseif(APPLE)
 	set(VCPKG_TARGET_TRIPLET "x64-osx" CACHE STRING "Vcpkg triplet")
 else()
 	set(VCPKG_TARGET_TRIPLET "x64-linux" CACHE STRING "Vcpkg triplet")
+endif()
 endif()
 project(paperback VERSION 0.6.1 LANGUAGES CXX)
 
@@ -28,15 +34,32 @@ if(CLANG_TIDY_EXE)
 	add_custom_target(lint COMMAND ${CLANG_TIDY_EXE} -warnings-as-errors=* --header-filter=^${CMAKE_SOURCE_DIR}/src/ --extra-arg=/EHsc ${ALL_SOURCE_FILES} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} USES_TERMINAL)
 endif()
 
-find_package(chmlib CONFIG REQUIRED)
+if(USE_SYSTEM_LIBS)
+	# Find system libraries (for Nix, system package managers, etc.)
+	find_library(CHMLIB_LIBRARY NAMES chm REQUIRED)
+	find_path(CHMLIB_INCLUDE_DIR NAMES chm_lib.h REQUIRED)
+	find_library(LEXBOR_LIBRARY NAMES lexbor REQUIRED)
+	find_path(LEXBOR_INCLUDE_DIR NAMES lexbor/html/html.h REQUIRED)
+	find_library(MBEDCRYPTO_LIBRARY NAMES mbedcrypto REQUIRED)
+	find_path(MBEDTLS_INCLUDE_DIR NAMES mbedtls/md.h REQUIRED)
+	find_library(PDFIUM_LIBRARY NAMES pdfium REQUIRED)
+	find_path(PDFIUM_INCLUDE_DIR NAMES fpdfview.h REQUIRED)
+	find_library(PUGIXML_LIBRARY NAMES pugixml REQUIRED)
+	find_path(PUGIXML_INCLUDE_DIR NAMES pugixml.hpp REQUIRED)
+	find_package(wxWidgets REQUIRED base core net)
+else()
+	# Use vcpkg libraries (default)
+	find_package(chmlib CONFIG REQUIRED)
+	find_package(lexbor CONFIG REQUIRED)
+	find_package(MbedTLS CONFIG REQUIRED)
+	find_package(pdfium CONFIG REQUIRED)
+	find_package(pugixml CONFIG REQUIRED)
+	find_package(wxWidgets CONFIG REQUIRED)
+endif()
+
 find_package(Gettext)
-find_package(lexbor CONFIG REQUIRED)
 find_package(maddy CONFIG REQUIRED)
-find_package(MbedTLS CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
-find_package(pdfium CONFIG REQUIRED)
-find_package(pugixml CONFIG REQUIRED)
-find_package(wxWidgets CONFIG REQUIRED)
 
 if(GETTEXT_FOUND)
 	find_program(XGETTEXT_EXECUTABLE NAMES xgettext)
@@ -93,17 +116,42 @@ if(WIN32)
 else()
 	add_executable(paperback ${SRC_FILES})
 endif()
-target_link_libraries(paperback PRIVATE
-	chmlib::chm
-	lexbor::lexbor
-	maddy::maddy
-	MbedTLS::mbedcrypto
-	pdfium::pdfium
-	pugixml::pugixml
-	wx::base
-	wx::core
-	wx::net
-)
+
+if(USE_SYSTEM_LIBS)
+	target_include_directories(paperback PRIVATE
+		${CHMLIB_INCLUDE_DIR}
+		${LEXBOR_INCLUDE_DIR}
+		${MBEDTLS_INCLUDE_DIR}
+		${PDFIUM_INCLUDE_DIR}
+		${PUGIXML_INCLUDE_DIR}
+		${wxWidgets_INCLUDE_DIRS}
+	)
+	target_compile_options(paperback PRIVATE ${wxWidgets_CXX_FLAGS})
+	target_compile_definitions(paperback PRIVATE ${wxWidgets_DEFINITIONS})
+	target_link_libraries(paperback PRIVATE
+		${CHMLIB_LIBRARY}
+		${LEXBOR_LIBRARY}
+		maddy::maddy
+		${MBEDCRYPTO_LIBRARY}
+		nlohmann_json::nlohmann_json
+		${PDFIUM_LIBRARY}
+		${PUGIXML_LIBRARY}
+		${wxWidgets_LIBRARIES}
+	)
+else()
+	target_link_libraries(paperback PRIVATE
+		chmlib::chm
+		lexbor::lexbor
+		maddy::maddy
+		MbedTLS::mbedcrypto
+		nlohmann_json::nlohmann_json
+		pdfium::pdfium
+		pugixml::pugixml
+		wx::base
+		wx::core
+		wx::net
+	)
+endif()
 
 if (MSVC)
 	target_compile_options(paperback PRIVATE /W4 /permissive- /WX)
@@ -171,4 +219,38 @@ if(WIN32)
 	endif()
 else()
 	add_custom_target(release DEPENDS package)
+endif()
+
+# Installation rules (Linux desktop integration)
+if(UNIX AND NOT APPLE)
+	# Install binary
+	install(TARGETS paperback DESTINATION bin)
+
+	# Install desktop file
+	install(FILES ${CMAKE_SOURCE_DIR}/paperback.desktop
+	        DESTINATION share/applications)
+
+	# Install icons
+	foreach(size 16 32 48 64 128 256)
+		install(FILES ${CMAKE_SOURCE_DIR}/icons/hicolor/${size}x${size}/apps/paperback.png
+		        DESTINATION share/icons/hicolor/${size}x${size}/apps)
+	endforeach()
+
+	# Install documentation
+	if(TARGET doc)
+		install(FILES ${CMAKE_BINARY_DIR}/readme.html
+		        DESTINATION share/doc/paperback)
+	endif()
+
+	# Install translations
+	if(MO_FILES)
+		foreach(mo_file ${MO_FILES})
+			get_filename_component(mo_dir ${mo_file} DIRECTORY)
+			get_filename_component(lang_dir ${mo_dir} DIRECTORY)
+			get_filename_component(lang ${lang_dir} NAME)
+			install(FILES ${mo_file}
+			        DESTINATION share/locale/${lang}/LC_MESSAGES
+			        RENAME paperback.mo)
+		endforeach()
+	endif()
 endif()
