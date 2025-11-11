@@ -396,7 +396,6 @@ void config_manager::set_navigation_history(const wxString& path, const std::vec
 	if (!config) {
 		return;
 	}
-
 	wxString history_string;
 	for (size_t i = 0; i < history.size(); ++i) {
 		if (i > 0) {
@@ -404,7 +403,6 @@ void config_manager::set_navigation_history(const wxString& path, const std::vec
 		}
 		history_string += wxString::Format("%ld", history[i]);
 	}
-
 	with_document_section(path, [this, path, &history_string, history_index]() {
 		config->Write("path", path);
 		if (history_string.IsEmpty()) {
@@ -421,22 +419,19 @@ void config_manager::get_navigation_history(const wxString& path, std::vector<lo
 	if (!config) {
 		return;
 	}
-
 	history.clear();
 	history_index = 0;
-
 	const wxString history_string = get_document_setting(path, "navigation_history", wxString(""));
 	if (!history_string.IsEmpty()) {
 		wxStringTokenizer tokenizer(history_string, ",");
 		while (tokenizer.HasMoreTokens()) {
 			const wxString token = tokenizer.GetNextToken().Trim().Trim(false);
-			long position;
+			long position{0};
 			if (token.ToLong(&position)) {
 				history.push_back(position);
 			}
 		}
 	}
-
 	history_index = get_document_setting(path, "navigation_history_index", 0L);
 }
 

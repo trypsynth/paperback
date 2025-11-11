@@ -557,12 +557,10 @@ void document_manager::go_to_previous_position() const {
 	if (doc == nullptr || text_ctrl == nullptr) {
 		return;
 	}
-
 	if (doc->history_index == 0) {
 		speak(_("No previous position."));
 		return;
 	}
-
 	doc->history_index--;
 	const long pos = doc->history[doc->history_index];
 	go_to_position(pos);
@@ -575,12 +573,10 @@ void document_manager::go_to_next_position() const {
 	if (doc == nullptr || text_ctrl == nullptr) {
 		return;
 	}
-
 	if (doc->history_index + 1 >= doc->history.size()) {
 		speak(_("No next position."));
 		return;
 	}
-
 	doc->history_index++;
 	const long pos = doc->history[doc->history_index];
 	go_to_position(pos);
@@ -589,7 +585,7 @@ void document_manager::go_to_next_position() const {
 
 void document_manager::activate_current_link() const {
 	document* doc = get_active_document();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	const wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (doc == nullptr || text_ctrl == nullptr) {
 		return;
 	}
@@ -610,8 +606,6 @@ void document_manager::activate_current_link() const {
 	if (href.empty()) {
 		return;
 	}
-
-	// Add to navigation history
 	if (doc->history_index + 1 < doc->history.size()) {
 		doc->history.erase(doc->history.begin() + doc->history_index + 1, doc->history.end());
 	}
@@ -620,7 +614,6 @@ void document_manager::activate_current_link() const {
 		doc->history.erase(doc->history.begin());
 	}
 	doc->history_index = doc->history.size() - 1;
-
 	const wxString href_lower = href.Lower();
 	if (href_lower.StartsWith("http:") || href_lower.StartsWith("https:") || href_lower.StartsWith("mailto:")) {
 		if (wxLaunchDefaultBrowser(href)) {
