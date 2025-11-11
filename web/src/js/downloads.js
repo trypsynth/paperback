@@ -37,7 +37,7 @@
 			throw 0;
 		}
 		const stable = releases.find(r => /^v?\d+(\.\d+){1,2}$/.test(r.tag_name));
-		const dev = releases[0];
+		const dev = releases.find(r => r.tag_name === 'latest');
 		set(stableEl, stable ? render(stable, "Stable Version", "Recommended for most users") : "No stable release found.");
 		set(devEl, dev ? render(dev, "Latest Development Build", "Includes experimental features, may be unstable") : "No development builds found.");
 	} catch {

@@ -83,6 +83,10 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 	}
 	document_ptr->buffer.finalize_markers();
 	document_ptr->title = wxString::FromUTF8(ctx.title);
+	if (document_ptr->title.Trim().IsEmpty()) {
+		wxFileName fn(path);
+		document_ptr->title = fn.GetName();
+	}
 	if (!ctx.author.empty()) {
 		document_ptr->author = wxString::FromUTF8(ctx.author);
 	}
@@ -118,7 +122,8 @@ void epub_parser::parse_opf(const std::string& filename, epub_context& ctx) {
 	if (package == nullptr) {
 		package = doc.first_child();
 	}
-	if (auto metadata = package.child("metadata")) {
+	auto metadata = package.select_node("*[local-name()='metadata']").node();
+	if (metadata) {
 		for (auto child : metadata.children()) {
 			std::string name = child.name();
 			auto pos = name.find(':');
