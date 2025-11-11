@@ -383,7 +383,16 @@ void epub_parser::parse_epub3_nav_list(pugi::xml_node ol_element, std::vector<st
 std::unique_ptr<toc_item> epub_parser::parse_epub3_nav_item(pugi::xml_node li_element, const epub_context& ctx, const document_buffer& buffer, const std::string& nav_base_path) const {
 	auto item = std::make_unique<toc_item>();
 	if (auto a = li_element.child("a")) {
-		item->name = wxString::FromUTF8(a.text().as_string());
+		wxString full_text;
+		for (pugi::xml_node child = a.first_child(); child; child = child.next_sibling()) {
+			if (child.type() == pugi::xml_node_type::node_pcdata || child.type() == pugi::xml_node_type::node_cdata) {
+				full_text += wxString::FromUTF8(child.value());
+			} else if (child.type() == pugi::xml_node_type::node_element) {
+				full_text += wxString::FromUTF8(child.text().as_string());
+			}
+		}
+		full_text.Trim();
+		item->name = full_text;
 		std::string href = a.attribute("href").as_string();
 		item->ref = wxString::FromUTF8(href);
 		std::string abs_str = nav_base_path.empty() ? href : (nav_base_path + "/" + href);
