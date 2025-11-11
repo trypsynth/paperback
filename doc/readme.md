@@ -113,6 +113,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Brian Hartgen
 * Devin Prater
 * Felix Steindorff
+* Hamish Mackenzie
 * James Scholes
 * Jayson Smith
 * Jonathan Schuster
