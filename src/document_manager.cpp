@@ -557,14 +557,38 @@ void document_manager::go_to_previous_position() const {
 	if (doc == nullptr || text_ctrl == nullptr) {
 		return;
 	}
-	if (doc->history_index == 0) {
+	if (doc->history.empty()) {
 		speak(_("No previous position."));
 		return;
 	}
-	doc->history_index--;
-	const long pos = doc->history[doc->history_index];
-	go_to_position(pos);
-	speak(_("Navigated to previous position."));
+
+	const long actual_pos = text_ctrl->GetInsertionPoint();
+	if (doc->history[doc->history_index] != actual_pos) {
+		if (doc->history_index + 1 < doc->history.size()) {
+			if (doc->history[doc->history_index + 1] != actual_pos) {
+				doc->history.erase(doc->history.begin() + doc->history_index + 1, doc->history.end());
+				doc->history.push_back(actual_pos);
+				doc->history_index++;
+			} else {
+				doc->history_index++;
+			}
+		} else {
+			doc->history.push_back(actual_pos);
+			doc->history_index++;
+			if (doc->history.size() > 10) {
+				doc->history.erase(doc->history.begin());
+				doc->history_index--;
+			}
+		}
+	}
+
+	if (doc->history_index > 0) {
+		doc->history_index--;
+		go_to_position(doc->history[doc->history_index]);
+		speak(_("Navigated to previous position."));
+	} else {
+		speak(_("No previous position."));
+	}
 }
 
 void document_manager::go_to_next_position() const {
@@ -573,14 +597,38 @@ void document_manager::go_to_next_position() const {
 	if (doc == nullptr || text_ctrl == nullptr) {
 		return;
 	}
-	if (doc->history_index + 1 >= doc->history.size()) {
+	if (doc->history.empty()) {
 		speak(_("No next position."));
 		return;
 	}
-	doc->history_index++;
-	const long pos = doc->history[doc->history_index];
-	go_to_position(pos);
-	speak(_("Navigated to next position."));
+
+	const long actual_pos = text_ctrl->GetInsertionPoint();
+	if (doc->history[doc->history_index] != actual_pos) {
+		if (doc->history_index + 1 < doc->history.size()) {
+			if (doc->history[doc->history_index + 1] != actual_pos) {
+				doc->history.erase(doc->history.begin() + doc->history_index + 1, doc->history.end());
+				doc->history.push_back(actual_pos);
+				doc->history_index++;
+			} else {
+				doc->history_index++;
+			}
+		} else {
+			doc->history.push_back(actual_pos);
+			doc->history_index++;
+			if (doc->history.size() > 10) {
+				doc->history.erase(doc->history.begin());
+				doc->history_index--;
+			}
+		}
+	}
+
+	if (doc->history_index + 1 < doc->history.size()) {
+		doc->history_index++;
+		go_to_position(doc->history[doc->history_index]);
+		speak(_("Navigated to next position."));
+	} else {
+		speak(_("No next position."));
+	}
 }
 
 void document_manager::activate_current_link() const {
@@ -606,14 +654,14 @@ void document_manager::activate_current_link() const {
 	if (href.empty()) {
 		return;
 	}
-	if (doc->history_index + 1 < doc->history.size()) {
-		doc->history.erase(doc->history.begin() + doc->history_index + 1, doc->history.end());
+	// Add to navigation history
+	if (doc->history.empty() || doc->history[doc->history_index] != current_pos) {
+		if (doc->history_index + 1 < doc->history.size()) {
+			doc->history.erase(doc->history.begin() + doc->history_index + 1, doc->history.end());
+		}
+		doc->history.push_back(current_pos);
+		doc->history_index = doc->history.size() - 1;
 	}
-	doc->history.push_back(current_pos);
-	if (doc->history.size() > 10) {
-		doc->history.erase(doc->history.begin());
-	}
-	doc->history_index = doc->history.size() - 1;
 	const wxString href_lower = href.Lower();
 	if (href_lower.StartsWith("http:") || href_lower.StartsWith("https:") || href_lower.StartsWith("mailto:")) {
 		if (wxLaunchDefaultBrowser(href)) {
