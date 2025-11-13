@@ -392,6 +392,49 @@ long config_manager::get_document_position(const wxString& path) const {
 	return get_document_setting(path, "last_position", 0L);
 }
 
+void config_manager::set_navigation_history(const wxString& path, const std::vector<long>& history, size_t history_index) {
+	if (!config) {
+		return;
+	}
+	wxString history_string;
+	for (size_t i = 0; i < history.size(); ++i) {
+		if (i > 0) {
+			history_string += ",";
+		}
+		history_string += wxString::Format("%ld", history[i]);
+	}
+	with_document_section(path, [this, path, &history_string, history_index]() {
+		config->Write("path", path);
+		if (history_string.IsEmpty()) {
+			config->DeleteEntry("navigation_history");
+			config->DeleteEntry("navigation_history_index");
+		} else {
+			config->Write("navigation_history", history_string);
+			config->Write("navigation_history_index", static_cast<long>(history_index));
+		}
+	});
+}
+
+void config_manager::get_navigation_history(const wxString& path, std::vector<long>& history, size_t& history_index) const {
+	if (!config) {
+		return;
+	}
+	history.clear();
+	history_index = 0;
+	const wxString history_string = get_document_setting(path, "navigation_history", wxString(""));
+	if (!history_string.IsEmpty()) {
+		wxStringTokenizer tokenizer(history_string, ",");
+		while (tokenizer.HasMoreTokens()) {
+			const wxString token = tokenizer.GetNextToken().Trim().Trim(false);
+			long position{0};
+			if (token.ToLong(&position)) {
+				history.push_back(position);
+			}
+		}
+	}
+	history_index = get_document_setting(path, "navigation_history_index", 0L);
+}
+
 void config_manager::set_document_opened(const wxString& path, bool opened) {
 	set_document_setting(path, "opened", opened);
 }
@@ -444,6 +487,16 @@ void config_manager::remove_document_history(const wxString& path) {
 	config->SetPath("/");
 	const wxString doc_id_to_remove = escape_document_path(path);
 	config->DeleteGroup(doc_id_to_remove);
+}
+
+void config_manager::remove_navigation_history(const wxString& path) {
+	if (!config) {
+		return;
+	}
+	with_document_section(path, [this]() {
+		config->DeleteEntry("navigation_history");
+		config->DeleteEntry("navigation_history_index");
+	});
 }
 
 wxArrayString config_manager::get_all_documents() const {

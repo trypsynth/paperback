@@ -84,6 +84,8 @@ public:
 	void go_to_next_list() const;
 	void go_to_previous_list_item() const;
 	void go_to_next_list_item() const;
+	void go_to_previous_position() const;
+	void go_to_next_position() const;
 	void activate_current_link() const;
 	void toggle_bookmark() const;
 	void add_bookmark_with_note() const;
@@ -94,6 +96,7 @@ public:
 	[[nodiscard]] long load_document_position(const wxString& path) const;
 	void save_current_tab_position() const;
 	void save_all_tab_positions() const;
+	void save_all_tab_navigation_histories() const;
 	[[nodiscard]] wxString get_status_text() const;
 	[[nodiscard]] wxString get_window_title(const wxString& app_name) const;
 	[[nodiscard]] int find_text(const wxString& query, int start_pos, find_options options) const;

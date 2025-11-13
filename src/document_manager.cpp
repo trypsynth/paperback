@@ -41,6 +41,7 @@ document_manager::document_manager(wxNotebook* nbk, config_manager& cfg, main_wi
 
 document_manager::~document_manager() {
 	save_all_tab_positions();
+	save_all_tab_navigation_histories();
 }
 
 void document_manager::show_parser_error(const parser_exception& e) {
@@ -98,6 +99,7 @@ bool document_manager::create_document_tab(const wxString& path, const parser* p
 		return false;
 	}
 	doc->calculate_statistics();
+	config.get_navigation_history(path, doc->history, doc->history_index);
 	auto* tab_data = new document_tab;
 	tab_data->doc = std::move(doc);
 	tab_data->file_path = path;
@@ -131,6 +133,7 @@ void document_manager::close_document(int index) {
 	if (tab != nullptr && tab->text_ctrl != nullptr) {
 		const int position = tab->text_ctrl->GetInsertionPoint();
 		save_document_position(tab->file_path, position);
+		config.remove_navigation_history(tab->file_path);
 		config.set_document_opened(tab->file_path, false);
 	}
 	notebook->DeletePage(index);
@@ -548,6 +551,82 @@ void document_manager::go_to_next_link() const {
 	navigate_to_link(true);
 }
 
+void document_manager::go_to_previous_position() const {
+	document* doc = get_active_document();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (doc == nullptr || text_ctrl == nullptr) {
+		return;
+	}
+	if (doc->history.empty()) {
+		speak(_("No previous position."));
+		return;
+	}
+	const long actual_pos = text_ctrl->GetInsertionPoint();
+	if (doc->history[doc->history_index] != actual_pos) {
+		if (doc->history_index + 1 < doc->history.size()) {
+			if (doc->history[doc->history_index + 1] != actual_pos) {
+				doc->history.erase(doc->history.begin() + doc->history_index + 1, doc->history.end());
+				doc->history.push_back(actual_pos);
+				doc->history_index++;
+			} else {
+				doc->history_index++;
+			}
+		} else {
+			doc->history.push_back(actual_pos);
+			doc->history_index++;
+			if (doc->history.size() > 10) {
+				doc->history.erase(doc->history.begin());
+				doc->history_index--;
+			}
+		}
+	}
+	if (doc->history_index > 0) {
+		doc->history_index--;
+		go_to_position(doc->history[doc->history_index]);
+		speak(_("Navigated to previous position."));
+	} else {
+		speak(_("No previous position."));
+	}
+}
+
+void document_manager::go_to_next_position() const {
+	document* doc = get_active_document();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (doc == nullptr || text_ctrl == nullptr) {
+		return;
+	}
+	if (doc->history.empty()) {
+		speak(_("No next position."));
+		return;
+	}
+	const long actual_pos = text_ctrl->GetInsertionPoint();
+	if (doc->history[doc->history_index] != actual_pos) {
+		if (doc->history_index + 1 < doc->history.size()) {
+			if (doc->history[doc->history_index + 1] != actual_pos) {
+				doc->history.erase(doc->history.begin() + doc->history_index + 1, doc->history.end());
+				doc->history.push_back(actual_pos);
+				doc->history_index++;
+			} else {
+				doc->history_index++;
+			}
+		} else {
+			doc->history.push_back(actual_pos);
+			doc->history_index++;
+			if (doc->history.size() > 10) {
+				doc->history.erase(doc->history.begin());
+				doc->history_index--;
+			}
+		}
+	}
+	if (doc->history_index + 1 < doc->history.size()) {
+		doc->history_index++;
+		go_to_position(doc->history[doc->history_index]);
+		speak(_("Navigated to next position."));
+	} else {
+		speak(_("No next position."));
+	}
+}
+
 void document_manager::activate_current_link() const {
 	document* doc = get_active_document();
 	const wxTextCtrl* text_ctrl = get_active_text_ctrl();
@@ -570,6 +649,13 @@ void document_manager::activate_current_link() const {
 	const wxString href = link_marker->ref;
 	if (href.empty()) {
 		return;
+	}
+	if (doc->history.empty() || doc->history[doc->history_index] != current_pos) {
+		if (doc->history_index + 1 < doc->history.size()) {
+			doc->history.erase(doc->history.begin() + doc->history_index + 1, doc->history.end());
+		}
+		doc->history.push_back(current_pos);
+		doc->history_index = doc->history.size() - 1;
 	}
 	const wxString href_lower = href.Lower();
 	if (href_lower.StartsWith("http:") || href_lower.StartsWith("https:") || href_lower.StartsWith("mailto:")) {
@@ -953,6 +1039,15 @@ void document_manager::save_all_tab_positions() const {
 		if (tab != nullptr && tab->text_ctrl != nullptr) {
 			const int position = tab->text_ctrl->GetInsertionPoint();
 			save_document_position(tab->file_path, position);
+		}
+	}
+}
+
+void document_manager::save_all_tab_navigation_histories() const {
+	for (int i = 0; i < get_tab_count(); ++i) {
+		const document_tab* tab = get_tab(i);
+		if (tab != nullptr && tab->doc != nullptr) {
+			config.set_navigation_history(tab->file_path, tab->doc->history, tab->doc->history_index);
 		}
 	}
 }
