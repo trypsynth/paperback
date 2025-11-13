@@ -221,7 +221,7 @@ void app::open_file(const wxString& filename, main_window* current_frame) {
 		}
 		return;
 	}
-	main_window* frame = frames.empty() ? create_new_window() : frames.back();
+	main_window* frame = current_frame != nullptr ? current_frame : (frames.empty() ? create_new_window() : frames.back());
 	auto* doc_manager = frame->get_doc_manager();
 	const auto* par = find_parser_by_extension(wxFileName(filename).GetExt());
 	if (par == nullptr) {

@@ -874,6 +874,7 @@ void main_window::on_options(wxCommandEvent&) {
 				}
 				single_text_ctrl->SetInsertionPoint(current_pos);
 				single_text_ctrl->ShowPosition(current_pos);
+				single_text_ctrl->SetFocus();
 			}
 		} else {
 			single_doc_panel->Hide();
@@ -887,6 +888,7 @@ void main_window::on_options(wxCommandEvent&) {
 						}
 						new_text_ctrl->SetInsertionPoint(current_pos);
 						new_text_ctrl->ShowPosition(current_pos);
+						new_text_ctrl->SetFocus();
 					}
 				}
 			}
