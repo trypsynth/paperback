@@ -561,7 +561,6 @@ void document_manager::go_to_previous_position() const {
 		speak(_("No previous position."));
 		return;
 	}
-
 	const long actual_pos = text_ctrl->GetInsertionPoint();
 	if (doc->history[doc->history_index] != actual_pos) {
 		if (doc->history_index + 1 < doc->history.size()) {
@@ -581,7 +580,6 @@ void document_manager::go_to_previous_position() const {
 			}
 		}
 	}
-
 	if (doc->history_index > 0) {
 		doc->history_index--;
 		go_to_position(doc->history[doc->history_index]);
@@ -601,7 +599,6 @@ void document_manager::go_to_next_position() const {
 		speak(_("No next position."));
 		return;
 	}
-
 	const long actual_pos = text_ctrl->GetInsertionPoint();
 	if (doc->history[doc->history_index] != actual_pos) {
 		if (doc->history_index + 1 < doc->history.size()) {
@@ -621,7 +618,6 @@ void document_manager::go_to_next_position() const {
 			}
 		}
 	}
-
 	if (doc->history_index + 1 < doc->history.size()) {
 		doc->history_index++;
 		go_to_position(doc->history[doc->history_index]);
@@ -654,7 +650,6 @@ void document_manager::activate_current_link() const {
 	if (href.empty()) {
 		return;
 	}
-	// Add to navigation history
 	if (doc->history.empty() || doc->history[doc->history_index] != current_pos) {
 		if (doc->history_index + 1 < doc->history.size()) {
 			doc->history.erase(doc->history.begin() + doc->history_index + 1, doc->history.end());
