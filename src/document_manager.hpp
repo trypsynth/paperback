@@ -113,7 +113,7 @@ private:
 	static void show_parser_error(const parser_exception& e);
 	static void setup_text_ctrl(wxTextCtrl* text_ctrl, const wxString& content);
 	void restore_document_position(document_tab* tab);
-	wxPanel* create_tab_panel(const wxString& content, document_tab* tab_data);
+	wxPanel* create_tab_panel(document_tab* tab_data);
 	void navigate_to_heading(bool next, int specific_level = -1) const;
 	void navigate_to_section(bool next) const;
 	void navigate_to_page(bool next) const;

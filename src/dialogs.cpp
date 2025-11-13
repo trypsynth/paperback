@@ -819,7 +819,6 @@ void options_dialog::set_start_maximized(bool maximized) {
 		start_maximized_check->SetValue(maximized);
 	}
 }
-}
 
 bool options_dialog::get_compact_go_menu() const {
 	return compact_go_menu_check != nullptr ? compact_go_menu_check->GetValue() : true;

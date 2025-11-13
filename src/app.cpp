@@ -132,7 +132,7 @@ void app::restore_previous_documents() {
 				continue;
 			}
 		}
-		doc_manager->create_document_tab(path, par, false);
+		[[maybe_unused]] bool success = doc_manager->create_document_tab(path, par, false);
 	}
 	doc_manager->update_ui();
 	if (!active_doc.IsEmpty() && wxFileName::FileExists(active_doc)) {

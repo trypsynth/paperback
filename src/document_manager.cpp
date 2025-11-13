@@ -107,7 +107,7 @@ bool document_manager::create_document_tab(const wxString& path, const parser* p
 	if (main_win.is_in_single_window_mode()) {
 		tab_data->text_ctrl = main_win.get_single_text_ctrl();
 	}
-	wxPanel* panel = create_tab_panel(tab_data->doc->buffer.str(), tab_data);
+	wxPanel* panel = create_tab_panel(tab_data);
 	tab_data->panel = panel;
 	notebook->AddPage(panel, tab_data->doc->title, true);
 	setup_text_ctrl(tab_data->text_ctrl, tab_data->doc->buffer.str());
@@ -1201,7 +1201,7 @@ void document_manager::restore_document_position(document_tab* tab) {
 	}
 }
 
-wxPanel* document_manager::create_tab_panel(const wxString& content, document_tab* tab_data) {
+wxPanel* document_manager::create_tab_panel(document_tab* tab_data) {
 	wxPanel* panel = new wxPanel(notebook, wxID_ANY);
 	if (!main_win.is_in_single_window_mode()) {
 		auto* sizer = new wxBoxSizer(wxVERTICAL);
