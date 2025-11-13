@@ -680,7 +680,7 @@ void document_manager::activate_current_link() const {
 			wxFileName link_path;
 			link_path.Assign(file_path, wxPATH_UNIX);
 			link_path.Normalize(wxPATH_NORM_DOTS, "", wxPATH_UNIX);
-			const wxString normalized_file_path = link_path.GetFullPath(wxPATH_UNIX);
+			const wxString normalized_file_path = link_path.GetPathWithSep(wxPATH_UNIX) + link_path.GetFullName();
 			wxString manifest_id;
 			for (auto const& [id, path] : doc->manifest_items) {
 				if (path == normalized_file_path) {

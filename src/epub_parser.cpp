@@ -204,9 +204,14 @@ void epub_parser::process_section_content(conv& converter, const std::string& co
 				resolved_href = link.ref;
 			} else {
 				wxFileName path;
-				path.Assign(wxString::FromUTF8(section_base_dir + "/" + link.ref), wxPATH_UNIX);
+				std::string full_link_ref = section_base_dir;
+				if (!full_link_ref.empty() && !link.ref.empty() && link.ref[0] != '/') {
+					full_link_ref += "/";
+				}
+				full_link_ref += link.ref;
+				path.Assign(wxString::FromUTF8(full_link_ref), wxPATH_UNIX);
 				path.Normalize(wxPATH_NORM_DOTS, "", wxPATH_UNIX);
-				resolved_href = path.GetFullPath(wxPATH_UNIX);
+				resolved_href = path.GetPathWithSep(wxPATH_UNIX) + path.GetFullName();
 			}
 			buffer.add_link(section_start + link.offset, wxString::FromUTF8(link.text), resolved_href);
 		}
