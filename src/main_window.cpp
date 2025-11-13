@@ -764,23 +764,18 @@ void main_window::on_list_elements(wxCommandEvent&) {
 	if (doc == nullptr) {
 		return;
 	}
-
 	elements_dialog dlg(this, doc);
 	if (dlg.ShowModal() != wxID_OK) {
 		return;
 	}
-
 	const int offset = dlg.get_selected_offset();
 	if (offset < 0) {
 		return;
 	}
-
 	doc_manager->go_to_position(offset);
-
 	if (dlg.get_selected_view() == 1) {
 		doc_manager->activate_current_link();
 	}
-
 	update_status_bar();
 	save_position_immediately();
 }
