@@ -456,6 +456,112 @@ document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc
 	finalize_layout();
 }
 
+elements_dialog::elements_dialog(wxWindow* parent, const document* doc) : dialog(parent, _("Elements")), doc(doc) {
+	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
+	auto* choice_sizer = new wxBoxSizer(wxHORIZONTAL);
+	auto* choice_label = new wxStaticText(this, wxID_ANY, _("&View:"));
+	view_choice = new wxComboBox(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, 0, nullptr, wxCB_READONLY);
+	view_choice->Append(_("Headings"));
+	view_choice->Append(_("Links"));
+	view_choice->SetSelection(0);
+	choice_sizer->Add(choice_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, DIALOG_PADDING);
+	choice_sizer->Add(view_choice, 1, wxEXPAND);
+	content_sizer->Add(choice_sizer, 0, wxEXPAND | wxALL, DIALOG_PADDING);
+	headings_sizer = new wxBoxSizer(wxVERTICAL);
+	headings_tree = new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxSize(400, 500), wxTR_DEFAULT_STYLE | wxTR_HIDE_ROOT);
+	headings_sizer->Add(headings_tree, 1, wxEXPAND);
+	content_sizer->Add(headings_sizer, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);
+	links_sizer = new wxBoxSizer(wxVERTICAL);
+	links_list = new wxListBox(this, wxID_ANY);
+	links_sizer->Add(links_list, 1, wxEXPAND);
+	content_sizer->Add(links_sizer, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);
+	populate_headings();
+	populate_links();
+	links_sizer->Show(false);
+	set_content(content_sizer);
+	finalize_layout();
+	Bind(wxEVT_COMBOBOX, &elements_dialog::on_view_choice_changed, this, view_choice->GetId());
+	Bind(wxEVT_TREE_ITEM_ACTIVATED, &elements_dialog::on_heading_activated, this, headings_tree->GetId());
+	Bind(wxEVT_BUTTON, &elements_dialog::on_ok, this, wxID_OK);
+	if (view_choice->GetSelection() == 0) {
+		headings_tree->SetFocus();
+	} else {
+		links_list->SetFocus();
+	}
+	view_choice->SetFocus();
+}
+
+void elements_dialog::populate_links() {
+	const auto link_markers = doc->buffer.get_markers_by_type(marker_type::link);
+	for (const auto* link_marker : link_markers) {
+		links_list->Append(link_marker->text);
+		links_list->SetClientData(links_list->GetCount() - 1, reinterpret_cast<void*>(link_marker->pos));
+	}
+}
+
+void elements_dialog::populate_headings() {
+	const wxTreeItemId root = headings_tree->AddRoot(_("Root"));
+	std::vector<wxTreeItemId> parent_ids(7, root);
+	const auto heading_markers = doc->buffer.get_heading_markers();
+	for (const auto* heading_marker : heading_markers) {
+		const int level = heading_marker->level;
+		if (level < 1 || level > 6) {
+			continue;
+		}
+		const wxTreeItemId parent_id = parent_ids[level - 1];
+		const wxString display_text = heading_marker->text.IsEmpty() ? wxString(_("Untitled")) : heading_marker->text;
+		const wxTreeItemId item_id = headings_tree->AppendItem(parent_id, display_text);
+		headings_tree->SetItemData(item_id, new toc_tree_item_data(heading_marker->pos));
+		for (int i = level; i < 7; ++i) {
+			parent_ids[i] = item_id;
+		}
+	}
+	headings_tree->ExpandAll();
+}
+
+void elements_dialog::on_view_choice_changed(wxCommandEvent& /*event*/) {
+	const int selection = view_choice->GetSelection();
+	if (selection == 0) {
+		headings_sizer->Show(true);
+		links_sizer->Show(false);
+	} else {
+		headings_sizer->Show(false);
+		links_sizer->Show(true);
+	}
+	view_choice->SetFocus();
+	main_sizer->Layout();
+}
+
+void elements_dialog::on_heading_activated(wxTreeEvent& event) {
+	const wxTreeItemId item = event.GetItem();
+	if (item.IsOk()) {
+		auto* data = dynamic_cast<toc_tree_item_data*>(headings_tree->GetItemData(item));
+		if (data != nullptr) {
+			selected_offset = data->offset;
+			EndModal(wxID_OK);
+		}
+	}
+}
+
+void elements_dialog::on_ok(wxCommandEvent& /*event*/) {
+	if (view_choice->GetSelection() == 0) {
+		const wxTreeItemId item = headings_tree->GetSelection();
+		if (item.IsOk()) {
+			auto* data = dynamic_cast<toc_tree_item_data*>(headings_tree->GetItemData(item));
+			if (data != nullptr) {
+				selected_offset = data->offset;
+				EndModal(wxID_OK);
+			}
+		}
+	} else {
+		const int selection = links_list->GetSelection();
+		if (selection != wxNOT_FOUND) {
+			selected_offset = static_cast<int>(reinterpret_cast<size_t>(links_list->GetClientData(selection)));
+			EndModal(wxID_OK);
+		}
+	}
+}
+
 find_dialog::find_dialog(wxWindow* parent) : wxDialog(parent, wxID_ANY, _("Find")) {
 	constexpr int combo_width = 250;
 	constexpr int option_padding = 2;
@@ -1014,123 +1120,4 @@ view_note_dialog::view_note_dialog(wxWindow* parent, const wxString& note_text) 
 	finalize_layout();
 	FindWindow(wxID_OK)->SetLabel(_("Close"));
 	note_ctrl->SetFocus();
-}
-
-elements_dialog::elements_dialog(wxWindow* parent, const document* doc) : dialog(parent, _("Elements")), doc(doc) {
-	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
-
-	auto* choice_sizer = new wxBoxSizer(wxHORIZONTAL);
-	auto* choice_label = new wxStaticText(this, wxID_ANY, _("&View:"));
-	view_choice = new wxComboBox(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, 0, nullptr, wxCB_READONLY);
-	view_choice->Append(_("Headings"));
-	view_choice->Append(_("Links"));
-	view_choice->SetSelection(0);
-	choice_sizer->Add(choice_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, DIALOG_PADDING);
-	choice_sizer->Add(view_choice, 1, wxEXPAND);
-	content_sizer->Add(choice_sizer, 0, wxEXPAND | wxALL, DIALOG_PADDING);
-
-	headings_sizer = new wxBoxSizer(wxVERTICAL);
-	headings_tree = new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxSize(400, 500), wxTR_DEFAULT_STYLE | wxTR_HIDE_ROOT);
-	headings_sizer->Add(headings_tree, 1, wxEXPAND);
-	content_sizer->Add(headings_sizer, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);
-
-	links_sizer = new wxBoxSizer(wxVERTICAL);
-	links_list = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxSize(400, 500));
-	links_sizer->Add(links_list, 1, wxEXPAND);
-	content_sizer->Add(links_sizer, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);
-
-	populate_headings();
-	populate_links();
-
-	links_sizer->Show(false);
-
-	set_content(content_sizer);
-	finalize_layout();
-
-	Bind(wxEVT_COMBOBOX, &elements_dialog::on_view_choice_changed, this, view_choice->GetId());
-	Bind(wxEVT_TREE_ITEM_ACTIVATED, &elements_dialog::on_heading_activated, this, headings_tree->GetId());
-	Bind(wxEVT_BUTTON, &elements_dialog::on_ok, this, wxID_OK);
-
-	if (view_choice->GetSelection() == 0) {
-		headings_tree->SetFocus();
-	} else {
-		links_list->SetFocus();
-	}
-	view_choice->SetFocus();
-}
-
-void elements_dialog::populate_links() {
-	const auto link_markers = doc->buffer.get_markers_by_type(marker_type::link);
-	for (const auto* link_marker : link_markers) {
-		links_list->Append(link_marker->text);
-		links_list->SetClientData(links_list->GetCount() - 1, reinterpret_cast<void*>(link_marker->pos));
-	}
-}
-
-void elements_dialog::populate_headings() {
-	const wxTreeItemId root = headings_tree->AddRoot(_("Root"));
-	std::vector<wxTreeItemId> parent_ids(7, root);
-
-	const auto heading_markers = doc->buffer.get_heading_markers();
-
-	for (const auto* heading_marker : heading_markers) {
-		const int level = heading_marker->level;
-		if (level < 1 || level > 6) {
-			continue;
-		}
-
-		const wxTreeItemId parent_id = parent_ids[level - 1];
-		const wxString display_text = heading_marker->text.IsEmpty() ? wxString(_("Untitled")) : heading_marker->text;
-		const wxTreeItemId item_id = headings_tree->AppendItem(parent_id, display_text);
-		headings_tree->SetItemData(item_id, new toc_tree_item_data(heading_marker->pos));
-
-		for (int i = level; i < 7; ++i) {
-			parent_ids[i] = item_id;
-		}
-	}
-	headings_tree->ExpandAll();
-}
-
-
-void elements_dialog::on_view_choice_changed(wxCommandEvent& /*event*/) {
-	const int selection = view_choice->GetSelection();
-	if (selection == 0) {
-		headings_sizer->Show(true);
-		links_sizer->Show(false);
-	} else {
-		headings_sizer->Show(false);
-		links_sizer->Show(true);
-	}
-	view_choice->SetFocus();
-	main_sizer->Layout();
-}
-
-void elements_dialog::on_heading_activated(wxTreeEvent& event) {
-	const wxTreeItemId item = event.GetItem();
-	if (item.IsOk()) {
-		auto* data = dynamic_cast<toc_tree_item_data*>(headings_tree->GetItemData(item));
-		if (data != nullptr) {
-			selected_offset = data->offset;
-			EndModal(wxID_OK);
-		}
-	}
-}
-
-void elements_dialog::on_ok(wxCommandEvent& /*event*/) {
-	if (view_choice->GetSelection() == 0) {
-		const wxTreeItemId item = headings_tree->GetSelection();
-		if (item.IsOk()) {
-			auto* data = dynamic_cast<toc_tree_item_data*>(headings_tree->GetItemData(item));
-			if (data != nullptr) {
-				selected_offset = data->offset;
-				EndModal(wxID_OK);
-			}
-		}
-	} else {
-		const int selection = links_list->GetSelection();
-		if (selection != wxNOT_FOUND) {
-			selected_offset = static_cast<int>(reinterpret_cast<size_t>(links_list->GetClientData(selection)));
-			EndModal(wxID_OK);
-		}
-	}
 }
