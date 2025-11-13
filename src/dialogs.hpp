@@ -139,6 +139,39 @@ private:
 	wxString doc_path;
 };
 
+class elements_dialog : public dialog {
+public:
+	elements_dialog(wxWindow* parent, const document* doc);
+	~elements_dialog() = default;
+	elements_dialog(const elements_dialog&) = delete;
+	elements_dialog& operator=(const elements_dialog&) = delete;
+	elements_dialog(elements_dialog&&) = delete;
+	elements_dialog& operator=(elements_dialog&&) = delete;
+
+	[[nodiscard]] int get_selected_offset() const {
+		return selected_offset;
+	}
+
+	[[nodiscard]] int get_selected_view() const {
+		return view_choice->GetSelection();
+	}
+
+private:
+	const document* doc{nullptr};
+	wxComboBox* view_choice{nullptr};
+	wxListBox* links_list{nullptr};
+	wxTreeCtrl* headings_tree{nullptr};
+	wxBoxSizer* links_sizer{nullptr};
+	wxBoxSizer* headings_sizer{nullptr};
+	int selected_offset{-1};
+
+	void populate_links();
+	void populate_headings();
+	void on_view_choice_changed(wxCommandEvent&);
+	void on_heading_activated(wxTreeEvent& event);
+	void on_ok(wxCommandEvent&);
+};
+
 class find_dialog : public wxDialog {
 public:
 	find_dialog(wxWindow* parent);

@@ -107,6 +107,7 @@ private:
 	void on_word_count(wxCommandEvent&);
 	void on_doc_info(wxCommandEvent&);
 	void on_toc(wxCommandEvent&);
+	void on_list_elements(wxCommandEvent&);
 	void on_open_containing_folder(wxCommandEvent&);
 	void on_options(wxCommandEvent&);
 	void on_about(wxCommandEvent&);
