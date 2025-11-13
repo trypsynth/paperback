@@ -15,13 +15,11 @@
 #include "live_region.hpp"
 #include "main_window.hpp"
 #include "parser.hpp"
-#include <Poco/Exception.h>
-#include <Poco/RegularExpression.h>
-#include <Poco/URI.h>
 #include <cctype>
 #include <cstddef>
 #include <iterator>
 #include <optional>
+#include <regex>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -44,27 +42,34 @@ long find_text_regex(const wxString& haystack, const wxString& needle, long star
 		if (match_whole_word) {
 			pattern = "\\b" + pattern + "\\b";
 		}
-		unsigned int regex_options = 0;
+		std::regex_constants::syntax_option_type flags = std::regex_constants::ECMAScript;
 		if (!match_case) {
-			regex_options |= static_cast<unsigned int>(Poco::RegularExpression::RE_CASELESS);
+			flags |= std::regex_constants::icase;
 		}
-		const Poco::RegularExpression regex(pattern, static_cast<int>(regex_options));
-		Poco::RegularExpression::Match match;
+		const std::regex rx(pattern, flags);
 		if (forward) {
-			if (regex.match(text, start, match) != 0) {
-				return static_cast<long>(match.offset);
+			std::cmatch m;
+			const char* begin = text.c_str() + std::min<size_t>(static_cast<size_t>(start), text.size());
+			if (std::regex_search(begin, text.c_str() + text.size(), m, rx)) {
+				return static_cast<long>(m[0].first - text.c_str());
 			}
 		} else {
-			const auto search_text = text.substr(0, static_cast<size_t>(start));
 			long last_match = wxNOT_FOUND;
-			size_t pos = 0;
-			while (regex.match(search_text, pos, match) != 0) {
-				last_match = static_cast<long>(match.offset);
-				pos = static_cast<size_t>(match.offset) + 1;
+			std::cmatch m;
+			const char* base = text.c_str();
+			const size_t end = std::min<size_t>(static_cast<size_t>(start), text.size());
+			const char* cur = base;
+			while (cur <= base + end) {
+				if (std::regex_search(cur, base + end, m, rx)) {
+					last_match = static_cast<long>(m[0].first - base);
+					cur = m[0].first + 1;
+				} else {
+					break;
+				}
 			}
 			return last_match;
 		}
-	} catch (const Poco::Exception&) {
+	} catch (...) {
 		return wxNOT_FOUND;
 	}
 	return wxNOT_FOUND;
@@ -162,14 +167,13 @@ std::string trim_string(const std::string& str) {
 }
 
 std::string remove_soft_hyphens(std::string_view input) {
-	try {
-		std::string result(input);
-		const Poco::RegularExpression regex("\xC2\xAD", Poco::RegularExpression::RE_UTF8);
-		regex.subst(result, "", Poco::RegularExpression::RE_GLOBAL);
-		return result;
-	} catch (const Poco::Exception&) {
-		return std::string(input);
+	std::string result(input);
+	const std::string sh = "\xC2\xAD";
+	size_t pos = 0;
+	while ((pos = result.find(sh, pos)) != std::string::npos) {
+		result.erase(pos, sh.size());
 	}
+	return result;
 }
 
 const parser* get_parser_for_unknown_file(const wxString& path, config_manager& config) {
@@ -203,13 +207,40 @@ void speak(const wxString& message) {
 }
 
 std::string url_decode(std::string_view encoded) {
-	try {
-		auto decoded = std::string{};
-		Poco::URI::decode(std::string{encoded}, decoded);
-		return decoded;
-	} catch (const Poco::Exception&) {
-		return std::string{encoded};
+	auto hex = [](char c) -> int {
+		if (c >= '0' && c <= '9') {
+			return c - '0';
+		}
+		if (c >= 'a' && c <= 'f') {
+			return c - 'a' + 10;
+		}
+		if (c >= 'A' && c <= 'F') {
+			return c - 'A' + 10;
+		}
+		return -1;
+	};
+	std::string out;
+	out.reserve(encoded.size());
+	for (size_t i = 0; i < encoded.size(); ++i) {
+		char c = encoded[i];
+		if (c == '%') {
+			if (i + 2 < encoded.size()) {
+				int hi = hex(encoded[i + 1]);
+				int lo = hex(encoded[i + 2]);
+				if (hi >= 0 && lo >= 0) {
+					out.push_back(static_cast<char>((hi << 4) | lo));
+					i += 2;
+					continue;
+				}
+			}
+			out.push_back('%');
+		} else if (c == '+') {
+			out.push_back(' ');
+		} else {
+			out.push_back(c);
+		}
 	}
+	return out;
 }
 
 std::string convert_to_utf8(const std::string& input) {
@@ -338,29 +369,40 @@ std::string read_zip_entry(wxZipInputStream& zip) {
 	return buffer.str();
 }
 
-wxZipEntry* find_zip_entry(const std::string& filename, const std::map<std::string, wxZipEntry*>& entries) {
+wxZipEntry* find_zip_entry(const std::string& filename, const std::map<std::string, std::unique_ptr<wxZipEntry>>& entries) {
 	auto it = entries.find(filename);
 	if (it != entries.end()) {
-		return it->second;
+		return it->second.get();
 	}
 	auto decoded = url_decode(filename);
 	if (decoded != filename) {
 		it = entries.find(decoded);
 		if (it != entries.end()) {
-			return it->second;
+			return it->second.get();
 		}
 	}
-	std::string encoded;
-	try {
-		Poco::URI::encode(filename, "", encoded);
-		if (encoded != filename) {
-			it = entries.find(encoded);
-			if (it != entries.end()) {
-				return it->second;
+	auto url_encode = [](std::string_view in) {
+		static const char hex[] = "0123456789ABCDEF";
+		std::string out;
+		out.reserve(in.size());
+		for (unsigned char ch : in) {
+			bool unreserved = (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '-' || ch == '_' || ch == '.' || ch == '~' || ch == '/' || ch == ':';
+			if (unreserved) {
+				out.push_back(static_cast<char>(ch));
+			} else {
+				out.push_back('%');
+				out.push_back(hex[(ch >> 4) & 0xF]);
+				out.push_back(hex[ch & 0xF]);
 			}
 		}
-	} catch (const Poco::Exception&) {
-		return nullptr;
+		return out;
+	};
+	std::string encoded = url_encode(filename);
+	if (encoded != filename) {
+		it = entries.find(encoded);
+		if (it != entries.end()) {
+			return it->second.get();
+		}
 	}
 	return nullptr;
 }

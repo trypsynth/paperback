@@ -12,6 +12,7 @@
 #include "constants.hpp"
 #include "dialogs.hpp"
 #include "live_region.hpp"
+#include "menu_builder.hpp"
 #include "parser.hpp"
 #include "translation_manager.hpp"
 #include "update_checker.hpp"
@@ -22,13 +23,11 @@
 #include <wx/timer.h>
 #include <wx/translation.h>
 
-main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME), task_bar_icon_{new task_bar_icon(this)}, position_save_timer{new wxTimer(this)}, status_update_timer{new wxTimer(this)}, sleep_timer{new wxTimer(this)}, sleep_status_update_timer{new wxTimer(this)} {
-	main_panel = new wxPanel(this);
-
+main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME), task_bar_icon_{new task_bar_icon(this)}, position_save_timer{std::make_unique<wxTimer>(this)}, status_update_timer{std::make_unique<wxTimer>(this)}, sleep_timer{std::make_unique<wxTimer>(this)}, sleep_status_update_timer{std::make_unique<wxTimer>(this)} {
 	auto& config_mgr = wxGetApp().get_config_manager();
-	single_window_mode = config_mgr.get(config_manager::open_in_new_window);
-
+	main_panel = new wxPanel(this);
 	auto* sizer = new wxBoxSizer(wxVERTICAL);
+	single_window_mode = config_mgr.get(config_manager::open_in_new_window);
 
 	notebook = new wxNotebook(main_panel, wxID_ANY);
 #ifdef __WXMSW__
@@ -64,6 +63,9 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME), task_bar_icon
 	status_bar = CreateStatusBar(1);
 	status_bar->SetStatusText(_("Ready"));
 	bind_events();
+	if (wxGetApp().get_config_manager().get(config_manager::start_maximized)) {
+		Maximize();
+	}
 	update_ui();
 	notebook->Bind(wxEVT_KEY_DOWN, &main_window::on_notebook_key_down, this);
 }
@@ -79,21 +81,17 @@ main_window::~main_window() {
 		task_bar_icon_->Destroy();
 		task_bar_icon_ = nullptr;
 	}
-	if (position_save_timer != nullptr) {
+	if (position_save_timer) {
 		position_save_timer->Stop();
-		position_save_timer = nullptr;
 	}
-	if (status_update_timer != nullptr) {
+	if (status_update_timer) {
 		status_update_timer->Stop();
-		status_update_timer = nullptr;
 	}
-	if (sleep_timer != nullptr) {
+	if (sleep_timer) {
 		sleep_timer->Stop();
-		sleep_timer = nullptr;
 	}
-	if (sleep_status_update_timer != nullptr) {
+	if (sleep_status_update_timer) {
 		sleep_status_update_timer->Stop();
-		sleep_status_update_timer = nullptr;
 	}
 	if (find_dlg != nullptr) {
 		find_dlg->Destroy();
@@ -103,125 +101,148 @@ main_window::~main_window() {
 }
 
 void main_window::create_menus() {
-	auto* const menu_bar = new wxMenuBar();
-	menu_bar->Append(create_file_menu(), _("&File"));
-	menu_bar->Append(create_go_menu(), _("&Go"));
-	menu_bar->Append(create_tools_menu(), _("&Tools"));
-	menu_bar->Append(create_help_menu(), _("&Help"));
-	SetMenuBar(menu_bar);
-}
-
-wxMenu* main_window::create_file_menu() {
-	auto* const menu = new wxMenu();
-	menu->Append(wxID_OPEN, _("&Open...\tCtrl+O"));
-	menu->Append(wxID_CLOSE, _("Close\tCtrl+F4"));
-	menu->Append(wxID_CLOSE_ALL, _("Close &All\tCtrl+Shift+F4"));
-	menu->AppendSeparator();
-	recent_documents_menu = new wxMenu();
-	menu->AppendSubMenu(recent_documents_menu, _("&Recent Documents"));
-	update_recent_documents_menu();
-	menu->AppendSeparator();
-	menu->Append(ID_EXPORT, _("&Export...\tCtrl+E"));
-	menu->AppendSeparator();
-	menu->Append(wxID_EXIT, _("E&xit"));
-	return menu;
-}
-
-wxMenu* main_window::create_go_menu() {
-	auto* const menu = new wxMenu();
 	auto& config_mgr = wxGetApp().get_config_manager();
 	const bool compact = config_mgr.get(config_manager::compact_go_menu);
-	menu->Append(wxID_FIND, _("&Find...\tCtrl+F"));
-	menu->Append(ID_FIND_NEXT, _("Find Ne&xt\tF3"));
-	menu->Append(ID_FIND_PREVIOUS, _("Find P&revious\tShift+F3"));
-	menu->AppendSeparator();
-	menu->Append(ID_GO_TO_LINE, _("Go to &line...\tCtrl+G"));
-	menu->Append(ID_GO_TO_PERCENT, _("Go to &percent...\tCtrl+Shift+G"));
-	menu->AppendSeparator();
-	if (compact) {
-		auto* sections_menu = new wxMenu();
-		sections_menu->Append(ID_PREVIOUS_SECTION, _("Previous section\t["));
-		sections_menu->Append(ID_NEXT_SECTION, _("Next section\t]"));
-		menu->AppendSubMenu(sections_menu, _("&Sections"));
-		auto* headings_menu = new wxMenu();
-		document_manager::create_heading_menu(headings_menu);
-		menu->AppendSubMenu(headings_menu, _("&Headings"));
-		auto* pages_menu = new wxMenu();
-		pages_menu->Append(ID_GO_TO_PAGE, _("Go to &page...\tCtrl+P"));
-		pages_menu->AppendSeparator();
-		pages_menu->Append(ID_PREVIOUS_PAGE, _("Previous &page\tShift+P"));
-		pages_menu->Append(ID_NEXT_PAGE, _("&Next page\tP"));
-		menu->AppendSubMenu(pages_menu, _("&Pages"));
-		auto* bookmarks_menu = new wxMenu();
-		bookmarks_menu->Append(ID_PREVIOUS_BOOKMARK, _("Previous &bookmark\tShift+B"));
-		bookmarks_menu->Append(ID_NEXT_BOOKMARK, _("Next b&ookmark\tB"));
-		bookmarks_menu->Append(ID_JUMP_TO_BOOKMARK, _("Jump to bookmark...\tCtrl+B"));
-		menu->AppendSubMenu(bookmarks_menu, _("&Bookmarks"));
-		auto* links_menu = new wxMenu();
-		links_menu->Append(ID_PREVIOUS_LINK, _("Previous lin&k\tShift+K"));
-		links_menu->Append(ID_NEXT_LINK, _("Next lin&k\tK"));
-		menu->AppendSubMenu(links_menu, _("&Links"));
-		auto* lists_menu = new wxMenu();
-		lists_menu->Append(ID_PREVIOUS_LIST, _("Previous lis&t\tShift+L"));
-		lists_menu->Append(ID_NEXT_LIST, _("Next lis&t\tL"));
-		lists_menu->Append(ID_PREVIOUS_LIST_ITEM, _("Previous list &item\tShift+I"));
-		lists_menu->Append(ID_NEXT_LIST_ITEM, _("Next list &item\tI"));
-		menu->AppendSubMenu(lists_menu, _("&Lists"));
-	} else {
-		menu->Append(ID_GO_TO_PAGE, _("Go to &page...\tCtrl+P"));
-		menu->AppendSeparator();
-		menu->Append(ID_PREVIOUS_SECTION, _("Previous section\t["));
-		menu->Append(ID_NEXT_SECTION, _("Next section\t]"));
-		menu->AppendSeparator();
-		document_manager::create_heading_menu(menu);
-		menu->AppendSeparator();
-		menu->Append(ID_PREVIOUS_PAGE, _("Previous &page\tShift+P"));
-		menu->Append(ID_NEXT_PAGE, _("&Next page\tP"));
-		menu->AppendSeparator();
-		menu->Append(ID_PREVIOUS_BOOKMARK, _("Previous &bookmark\tShift+B"));
-		menu->Append(ID_NEXT_BOOKMARK, _("Next b&ookmark\tB"));
-		menu->Append(ID_TOGGLE_BOOKMARK, _("Toggle bookmark\tCtrl+Shift+B"));
-		menu->Append(ID_BOOKMARK_WITH_NOTE, _("Bookmark with &note\tCtrl+Shift+N"));
-		menu->Append(ID_JUMP_TO_BOOKMARK, _("Jump to bookmark...\tCtrl+B"));
-		menu->AppendSeparator();
-		menu->Append(ID_PREVIOUS_LINK, _("Previous lin&k\tShift+K"));
-		menu->Append(ID_NEXT_LINK, _("Next lin&k\tK"));
-		menu->AppendSeparator();
-		menu->Append(ID_PREVIOUS_LIST, _("Previous lis&t\tShift+L"));
-		menu->Append(ID_NEXT_LIST, _("Next lis&t\tL"));
-		menu->Append(ID_PREVIOUS_LIST_ITEM, _("Previous list &item\tShift+I"));
-		menu->Append(ID_NEXT_LIST_ITEM, _("Next list &item\tI"));
+	auto sections_items = [] {
+		return std::vector<menu_item>{
+			menu_item::item(ID_PREVIOUS_SECTION, _("Previous section\t[")),
+			menu_item::item(ID_NEXT_SECTION, _("Next section\t]")),
+		};
+	};
+	auto pages_items = [] {
+		return std::vector<menu_item>{
+			menu_item::item(ID_GO_TO_PAGE, _("Go to &page...\tCtrl+P")),
+			menu_item::item(ID_PREVIOUS_PAGE, _("Previous &page\tShift+P")),
+			menu_item::item(ID_NEXT_PAGE, _("&Next page\tP")),
+		};
+	};
+	auto bookmarks_items = [] {
+		return std::vector<menu_item>{
+			menu_item::item(ID_PREVIOUS_BOOKMARK, _("Previous &bookmark\tShift+B")),
+			menu_item::item(ID_NEXT_BOOKMARK, _("Next b&ookmark\tB")),
+			menu_item::item(ID_PREVIOUS_NOTE, _("Previous &note\tShift+N")),
+			menu_item::item(ID_NEXT_NOTE, _("Next &note\tN")),
+			menu_item::sep(),
+			menu_item::item(ID_JUMP_TO_BOOKMARK, _("Jump to &all...\tCtrl+B")),
+			menu_item::item(ID_JUMP_TO_BOOKMARKS_ONLY, _("Jump to &bookmarks...\tCtrl+Alt+B")),
+			menu_item::item(ID_JUMP_TO_NOTES, _("Jump to &notes...\tCtrl+Alt+M")),
+			menu_item::item(ID_VIEW_NOTE_TEXT, _("&View note text\tCtrl+Shift+W")),
+		};
+	};
+	auto links_items = [] {
+		return std::vector<menu_item>{
+			menu_item::item(ID_PREVIOUS_LINK, _("Previous lin&k\tShift+K")),
+			menu_item::item(ID_NEXT_LINK, _("Next lin&k\tK")),
+		};
+	};
+	auto lists_items = [] {
+		return std::vector<menu_item>{
+			menu_item::item(ID_PREVIOUS_LIST, _("Previous lis&t\tShift+L")),
+			menu_item::item(ID_NEXT_LIST, _("Next lis&t\tL")),
+			menu_item::item(ID_PREVIOUS_LIST_ITEM, _("Previous list &item\tShift+I")),
+			menu_item::item(ID_NEXT_LIST_ITEM, _("Next list &item\tI")),
+		};
+	};
+	std::vector<menu> menus;
+	menus.push_back(menu{
+		_("&File"),
+		{
+			menu_item::item(wxID_OPEN, _("&Open...\tCtrl+O")),
+			menu_item::item(wxID_CLOSE, _("Close\tCtrl+F4")),
+			menu_item::item(wxID_CLOSE_ALL, _("Close &All\tCtrl+Shift+F4")),
+			menu_item::sep(),
+			menu_item::submenu_populate(_("&Recent Documents"), [this](wxMenu* sub) {
+		recent_documents_menu = sub;
+		update_recent_documents_menu();
+	}),
+			menu_item::sep(),
+			menu_item::item(wxID_EXIT, _("E&xit")),
+		}});
+	{
+		std::vector<menu_item> go_items = {
+			menu_item::item(wxID_FIND, _("&Find...\tCtrl+F")),
+			menu_item::item(ID_FIND_NEXT, _("Find Ne&xt\tF3")),
+			menu_item::item(ID_FIND_PREVIOUS, _("Find P&revious\tShift+F3")),
+			menu_item::sep(),
+			menu_item::item(ID_GO_TO_LINE, _("Go to &line...\tCtrl+G")),
+			menu_item::item(ID_GO_TO_PERCENT, _("Go to &percent...\tCtrl+Shift+G")),
+			menu_item::sep(),
+			menu_item::item(ID_GO_BACK, _("Go &Back\tAlt+Left")),
+			menu_item::item(ID_GO_FORWARD, _("Go &Forward\tAlt+Right")),
+			menu_item::sep(),
+		};
+		if (compact) {
+			go_items.push_back(menu_item::submenu(_("&Sections"), sections_items()));
+			go_items.push_back(menu_item::submenu_populate(_("&Headings"), [](wxMenu* sub) {
+				document_manager::create_heading_menu(sub);
+			}));
+			go_items.push_back(menu_item::submenu(_("&Pages"), pages_items()));
+			go_items.push_back(menu_item::submenu(_("&Bookmarks"), bookmarks_items()));
+			go_items.push_back(menu_item::submenu(_("&Links"), links_items()));
+			go_items.push_back(menu_item::submenu(_("&Lists"), lists_items()));
+		} else {
+			auto secs = sections_items();
+			go_items.insert(go_items.end(), secs.begin(), secs.end());
+			go_items.push_back(menu_item::sep());
+			go_items.push_back(menu_item::populate([](wxMenu* parent) {
+				document_manager::create_heading_menu(parent);
+			}));
+			go_items.push_back(menu_item::sep());
+			auto pgs = pages_items();
+			go_items.insert(go_items.end(), pgs.begin(), pgs.end());
+			go_items.push_back(menu_item::sep());
+			auto bms = bookmarks_items();
+			go_items.insert(go_items.end(), bms.begin(), bms.end());
+			go_items.push_back(menu_item::sep());
+			auto lnks = links_items();
+			go_items.insert(go_items.end(), lnks.begin(), lnks.end());
+			go_items.push_back(menu_item::sep());
+			auto lsts = lists_items();
+			go_items.insert(go_items.end(), lsts.begin(), lsts.end());
+		}
+		menus.push_back(menu{_("&Go"), std::move(go_items)});
 	}
-	return menu;
-}
-
-wxMenu* main_window::create_tools_menu() {
-	auto* const menu = new wxMenu();
-	menu->Append(ID_WORD_COUNT, _("&Word count\tCtrl+W"));
-	menu->Append(ID_DOC_INFO, _("Document &info\tCtrl+I"));
-	menu->AppendSeparator();
-	menu->Append(ID_TABLE_OF_CONTENTS, _("Table of contents\tCtrl+T"));
-	menu->AppendSeparator();
-	menu->Append(ID_OPEN_CONTAINING_FOLDER, _("Open &containing folder"));
-	menu->AppendSeparator();
-	menu->Append(ID_TOGGLE_BOOKMARK, _("Toggle bookmark\tCtrl+Shift+B"));
-	menu->Append(ID_BOOKMARK_WITH_NOTE, _("Bookmark with &note\tCtrl+Shift+N"));
-	menu->AppendSeparator();
-	menu->Append(ID_OPTIONS, _("&Options\tCtrl+,"));
-	menu->Append(ID_SLEEP_TIMER, _("&Sleep Timer...\tCtrl+Shift+S"));
-	return menu;
-}
-
-wxMenu* main_window::create_help_menu() {
-	auto* const menu = new wxMenu();
-	menu->Append(wxID_ABOUT, wxString::Format(_("About %s\tCtrl+F1"), APP_NAME));
-	menu->Append(wxID_HELP, _("View &help in default browser\tF1"));
-	menu->Append(ID_HELP_INTERNAL, wxString::Format(_("View Help in %s\tShift+F1"), APP_NAME));
-	menu->AppendSeparator();
-	menu->Append(ID_CHECK_FOR_UPDATES, _("Check for &Updates"));
-	menu->AppendSeparator();
-	menu->Append(ID_DONATE, _("&Donate\tCtrl+D"));
-	return menu;
+	menus.push_back(menu{
+		_("&Tools"),
+		{
+			menu_item::item(ID_WORD_COUNT, _("&Word count\tCtrl+W")),
+			menu_item::item(ID_DOC_INFO, _("Document &info\tCtrl+I")),
+			menu_item::sep(),
+			menu_item::item(ID_TABLE_OF_CONTENTS, _("Table of contents\tCtrl+T")),
+			menu_item::sep(),
+			menu_item::item(ID_OPEN_CONTAINING_FOLDER, _("Open &containing folder\tCtrl+Shift+C")),
+			menu_item::submenu(_("Import/&Export"), {
+														menu_item::item(ID_IMPORT, _("&Import document data...\tCtrl+Shift+I")),
+														menu_item::item(ID_EXPORT_DOCUMENT_DATA, _("&Export document data...\tCtrl+Shift+E")),
+														menu_item::item(ID_EXPORT_TO_TEXT, _("Export document to &plain text...\tCtrl+E")),
+													}),
+			menu_item::sep(),
+			menu_item::item(ID_TOGGLE_BOOKMARK, _("Toggle bookmark\tCtrl+Shift+B")),
+			menu_item::item(ID_BOOKMARK_WITH_NOTE, _("Bookmark with &note\tCtrl+Shift+N")),
+			menu_item::sep(),
+			menu_item::item(ID_OPTIONS, _("&Options\tCtrl+,")),
+			menu_item::item(ID_SLEEP_TIMER, _("&Sleep Timer...\tCtrl+Shift+S")),
+		}});
+	menus.push_back(menu{
+		_("&Help"),
+		{
+			menu_item::populate([](wxMenu* parent) {
+		parent->Append(wxID_ABOUT, wxString::Format(_("About %s\tCtrl+F1"), APP_NAME));
+		parent->Append(wxID_HELP, _("View &help in default browser\tF1"));
+		parent->Append(ID_HELP_INTERNAL, wxString::Format(_("View Help in %s\tShift+F1"), APP_NAME));
+	}),
+			menu_item::sep(),
+			menu_item::item(ID_CHECK_FOR_UPDATES, _("Check for &Updates\tCtrl+Shift+U")),
+			menu_item::sep(),
+			menu_item::item(ID_DONATE, _("&Donate\tCtrl+D")),
+		}});
+	auto* const menu_bar = new wxMenuBar();
+	for (const auto& def : menus) {
+		auto* const menu = new wxMenu();
+		append_items(menu, def.items);
+		menu_bar->Append(menu, def.title);
+	}
+	SetMenuBar(menu_bar);
 }
 
 void main_window::refresh_ui_language() {
@@ -238,13 +259,17 @@ void main_window::bind_events() {
 		{wxID_OPEN, &main_window::on_open},
 		{wxID_CLOSE, &main_window::on_close},
 		{wxID_CLOSE_ALL, &main_window::on_close_all},
-		{ID_EXPORT, &main_window::on_export},
+		{ID_EXPORT_TO_TEXT, &main_window::on_export},
+		{ID_IMPORT, &main_window::on_import_document_data},
+		{ID_EXPORT_DOCUMENT_DATA, &main_window::on_export_document_data},
 		{wxID_EXIT, &main_window::on_exit},
 		{wxID_FIND, &main_window::on_find},
 		{ID_FIND_NEXT, &main_window::on_find_next},
 		{ID_FIND_PREVIOUS, &main_window::on_find_previous},
 		{ID_GO_TO_LINE, &main_window::on_go_to_line},
 		{ID_GO_TO_PERCENT, &main_window::on_go_to_percent},
+		{ID_GO_BACK, &main_window::on_go_back},
+		{ID_GO_FORWARD, &main_window::on_go_forward},
 		{ID_GO_TO_PAGE, &main_window::on_go_to_page},
 		{ID_PREVIOUS_SECTION, &main_window::on_previous_section},
 		{ID_NEXT_SECTION, &main_window::on_next_section},
@@ -254,9 +279,14 @@ void main_window::bind_events() {
 		{ID_NEXT_PAGE, &main_window::on_next_page},
 		{ID_PREVIOUS_BOOKMARK, &main_window::on_previous_bookmark},
 		{ID_NEXT_BOOKMARK, &main_window::on_next_bookmark},
+		{ID_PREVIOUS_NOTE, &main_window::on_previous_note},
+		{ID_NEXT_NOTE, &main_window::on_next_note},
 		{ID_TOGGLE_BOOKMARK, &main_window::on_toggle_bookmark},
 		{ID_BOOKMARK_WITH_NOTE, &main_window::on_bookmark_with_note},
 		{ID_JUMP_TO_BOOKMARK, &main_window::on_jump_to_bookmark},
+		{ID_JUMP_TO_BOOKMARKS_ONLY, &main_window::on_jump_to_bookmarks_only},
+		{ID_JUMP_TO_NOTES, &main_window::on_jump_to_notes},
+		{ID_VIEW_NOTE_TEXT, &main_window::on_view_note_text},
 		{ID_PREVIOUS_LINK, &main_window::on_previous_link},
 		{ID_NEXT_LINK, &main_window::on_next_link},
 		{ID_PREVIOUS_LIST, &main_window::on_previous_list},
@@ -281,8 +311,12 @@ void main_window::bind_events() {
 	for (int level = 1; level <= MAX_HEADING_LEVELS; ++level) {
 		const int prev_id = ID_PREVIOUS_HEADING_1 + ((level - 1) * 2);
 		const int next_id = ID_NEXT_HEADING_1 + ((level - 1) * 2);
-		Bind(wxEVT_MENU, [this, level](wxCommandEvent&) { navigate_heading_by_level(level, false); }, prev_id);
-		Bind(wxEVT_MENU, [this, level](wxCommandEvent&) { navigate_heading_by_level(level, true); }, next_id);
+		Bind(wxEVT_MENU, [this, level](wxCommandEvent&) {
+			navigate_heading_by_level(level, false);
+		}, prev_id);
+		Bind(wxEVT_MENU, [this, level](wxCommandEvent&) {
+			navigate_heading_by_level(level, true);
+		}, next_id);
 	}
 	Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, &main_window::on_notebook_page_changed, this);
 	Bind(wxEVT_CLOSE_WINDOW, &main_window::on_close_window, this);
@@ -306,9 +340,14 @@ void main_window::on_iconize(wxIconizeEvent& event) {
 }
 
 void main_window::on_activate(wxActivateEvent& event) {
-	if (event.GetActive() && sleep_timer->IsRunning()) {
-		sleep_timer->StartOnce(sleep_timer_duration_minutes * 60 * 1000);
-		sleep_timer_start_time = wxGetLocalTimeMillis();
+	if (event.GetActive()) {
+		CallAfter([this]() {
+			restore_focus_to_text();
+		});
+		if (sleep_timer->IsRunning()) {
+			sleep_timer->StartOnce(sleep_timer_duration_minutes * 60 * 1000);
+			sleep_timer_start_time = wxGetLocalTimeMillis();
+		}
 	}
 	event.Skip();
 }
@@ -323,12 +362,13 @@ void main_window::update_ui() {
 	constexpr int doc_items[] = {
 		wxID_CLOSE,
 		wxID_CLOSE_ALL,
-		ID_EXPORT,
 		wxID_FIND,
 		ID_FIND_NEXT,
 		ID_FIND_PREVIOUS,
 		ID_GO_TO_LINE,
 		ID_GO_TO_PERCENT,
+		ID_GO_BACK,
+		ID_GO_FORWARD,
 		ID_GO_TO_PAGE,
 		ID_PREVIOUS_SECTION,
 		ID_NEXT_SECTION,
@@ -363,6 +403,9 @@ void main_window::update_ui() {
 		ID_DOC_INFO,
 		ID_TABLE_OF_CONTENTS,
 		ID_OPEN_CONTAINING_FOLDER,
+		ID_IMPORT,
+		ID_EXPORT_DOCUMENT_DATA,
+		ID_EXPORT_TO_TEXT,
 	};
 	for (const auto id : doc_items) {
 		enable(id, has_doc);
@@ -428,6 +471,38 @@ void main_window::on_export(wxCommandEvent&) {
 	}
 }
 
+void main_window::on_export_document_data(wxCommandEvent&) {
+	auto* const tab = doc_manager->get_active_tab();
+	if (tab == nullptr) {
+		return;
+	}
+	wxFileName fn(tab->file_path);
+	wxFileDialog save_dialog(this, _("Export notes and bookmarks"), fn.GetPath(), fn.GetFullName() + ".paperback", _("Paperback files (*.paperback)|*.paperback"), wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+	if (save_dialog.ShowModal() != wxID_OK) {
+		return;
+	}
+	wxGetApp().get_config_manager().export_document_settings(tab->file_path, save_dialog.GetPath());
+	wxMessageBox(_("Notes and bookmarks exported successfully."), _("Export Successful"), wxOK | wxICON_INFORMATION);
+}
+
+void main_window::on_import_document_data(wxCommandEvent&) {
+	auto* const tab = doc_manager->get_active_tab();
+	if (tab == nullptr) {
+		return;
+	}
+	wxFileName fn(tab->file_path);
+	wxFileDialog open_dialog(this, _("Import notes and bookmarks"), fn.GetPath(), "", _("Paperback files (*.paperback)|*.paperback"), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+	if (open_dialog.ShowModal() != wxID_OK) {
+		return;
+	}
+	wxGetApp().get_config_manager().import_settings_from_file(tab->file_path, open_dialog.GetPath());
+	const long imported_position = wxGetApp().get_config_manager().get_document_position(tab->file_path);
+	if (imported_position >= 0) {
+		doc_manager->go_to_position(imported_position);
+	}
+	wxMessageBox(_("Notes and bookmarks imported successfully."), _("Import Successful"), wxOK | wxICON_INFORMATION);
+}
+
 void main_window::on_exit(wxCommandEvent&) {
 	Close(true);
 }
@@ -453,7 +528,19 @@ void main_window::on_find(wxCommandEvent&) {
 }
 
 void main_window::on_find_next(wxCommandEvent&) {
-	if (find_dlg != nullptr && find_dlg->IsShown()) {
+	if (find_dlg == nullptr) {
+		find_dlg = new find_dialog(this);
+	}
+	if (find_dlg->get_find_text().IsEmpty()) {
+		if (auto* const text_ctrl = doc_manager->get_active_text_ctrl(); text_ctrl != nullptr) {
+			long start{0}, end{0};
+			text_ctrl->GetSelection(&start, &end);
+			if (start != end) {
+				find_dlg->set_find_text(text_ctrl->GetStringSelection());
+			}
+		}
+	}
+	if (!find_dlg->get_find_text().IsEmpty()) {
 		do_find(true);
 	} else {
 		wxCommandEvent evt{};
@@ -462,7 +549,19 @@ void main_window::on_find_next(wxCommandEvent&) {
 }
 
 void main_window::on_find_previous(wxCommandEvent&) {
-	if (find_dlg != nullptr && find_dlg->IsShown()) {
+	if (find_dlg == nullptr) {
+		find_dlg = new find_dialog(this);
+	}
+	if (find_dlg->get_find_text().IsEmpty()) {
+		if (auto* const text_ctrl = doc_manager->get_active_text_ctrl(); text_ctrl != nullptr) {
+			long start{0}, end{0};
+			text_ctrl->GetSelection(&start, &end);
+			if (start != end) {
+				find_dlg->set_find_text(text_ctrl->GetStringSelection());
+			}
+		}
+	}
+	if (!find_dlg->get_find_text().IsEmpty()) {
 		do_find(false);
 	} else {
 		wxCommandEvent evt{};
@@ -498,6 +597,18 @@ void main_window::on_go_to_percent(wxCommandEvent&) {
 	doc_manager->go_to_position(pos);
 	update_status_bar();
 	save_position_immediately();
+}
+
+void main_window::on_go_back(wxCommandEvent&) {
+	doc_manager->go_to_previous_position();
+	update_status_bar();
+	trigger_throttled_position_save();
+}
+
+void main_window::on_go_forward(wxCommandEvent&) {
+	doc_manager->go_to_next_position();
+	update_status_bar();
+	trigger_throttled_position_save();
 }
 
 void main_window::on_go_to_page(wxCommandEvent&) {
@@ -569,6 +680,18 @@ void main_window::on_next_bookmark(wxCommandEvent&) {
 	trigger_throttled_position_save();
 }
 
+void main_window::on_previous_note(wxCommandEvent&) {
+	doc_manager->go_to_previous_note();
+	update_status_bar();
+	trigger_throttled_position_save();
+}
+
+void main_window::on_next_note(wxCommandEvent&) {
+	doc_manager->go_to_next_note();
+	update_status_bar();
+	trigger_throttled_position_save();
+}
+
 void main_window::on_toggle_bookmark(wxCommandEvent&) {
 	doc_manager->toggle_bookmark();
 }
@@ -578,9 +701,46 @@ void main_window::on_bookmark_with_note(wxCommandEvent&) {
 }
 
 void main_window::on_jump_to_bookmark(wxCommandEvent&) {
-	doc_manager->show_bookmark_dialog(this);
+	doc_manager->show_bookmark_dialog(this, bookmark_filter::all);
 	update_status_bar();
 	save_position_immediately();
+}
+
+void main_window::on_jump_to_bookmarks_only(wxCommandEvent&) {
+	doc_manager->show_bookmark_dialog(this, bookmark_filter::bookmarks_only);
+	update_status_bar();
+	save_position_immediately();
+}
+
+void main_window::on_jump_to_notes(wxCommandEvent&) {
+	doc_manager->show_bookmark_dialog(this, bookmark_filter::notes_only);
+	update_status_bar();
+	save_position_immediately();
+}
+
+void main_window::on_view_note_text(wxCommandEvent&) {
+	auto* tab = doc_manager->get_active_tab();
+	auto* text_ctrl = doc_manager->get_active_text_ctrl();
+	if (tab == nullptr || text_ctrl == nullptr) {
+		return;
+	}
+	const long current_pos = text_ctrl->GetInsertionPoint();
+	const auto bookmarks = wxGetApp().get_config_manager().get_bookmarks(tab->file_path);
+	wxString note_text;
+	bool found{false};
+	for (const auto& bm : bookmarks) {
+		if (bm.start == current_pos && bm.has_note()) {
+			note_text = bm.note;
+			found = true;
+			break;
+		}
+	}
+	if (!found) {
+		wxMessageBox(_("No note at the current position."), _("View Note"), wxOK | wxICON_INFORMATION);
+		return;
+	}
+	view_note_dialog dlg(this, note_text);
+	dlg.ShowModal();
 }
 
 void main_window::on_previous_link(wxCommandEvent&) {
@@ -665,6 +825,7 @@ void main_window::on_options(wxCommandEvent&) {
 	dlg.set_word_wrap(config_mgr.get(config_manager::word_wrap));
 	dlg.set_minimize_to_tray(config_mgr.get(config_manager::minimize_to_tray));
 	dlg.set_open_in_new_window(config_mgr.get(config_manager::open_in_new_window));
+	dlg.set_start_maximized(config_mgr.get(config_manager::start_maximized));
 	dlg.set_compact_go_menu(config_mgr.get(config_manager::compact_go_menu));
 	dlg.set_navigation_wrap(config_mgr.get(config_manager::navigation_wrap));
 	dlg.set_check_for_updates_on_startup(config_mgr.get(config_manager::check_for_updates_on_startup));
@@ -681,11 +842,13 @@ void main_window::on_options(wxCommandEvent&) {
 	const wxString new_language = dlg.get_language();
 	const bool old_open_in_new_window = config_mgr.get(config_manager::open_in_new_window);
 	const bool new_open_in_new_window = dlg.get_open_in_new_window();
+	const bool new_start_maximized = dlg.get_start_maximized();
 
 	config_mgr.set(config_manager::restore_previous_documents, dlg.get_restore_previous_documents());
 	config_mgr.set(config_manager::word_wrap, new_word_wrap);
 	config_mgr.set(config_manager::minimize_to_tray, dlg.get_minimize_to_tray());
 	config_mgr.set(config_manager::open_in_new_window, new_open_in_new_window);
+	config_mgr.set(config_manager::start_maximized, new_start_maximized);
 	config_mgr.set(config_manager::compact_go_menu, new_compact_menu);
 	config_mgr.set(config_manager::navigation_wrap, dlg.get_navigation_wrap());
 	config_mgr.set(config_manager::check_for_updates_on_startup, dlg.get_check_for_updates_on_startup());
@@ -694,13 +857,10 @@ void main_window::on_options(wxCommandEvent&) {
 
 	if (old_open_in_new_window != new_open_in_new_window) {
 		long current_pos = 0;
-		if (old_open_in_new_window) {
+		if (old_open_in_new_window && single_text_ctrl != nullptr) {
 			current_pos = single_text_ctrl->GetInsertionPoint();
-		} else {
-			wxTextCtrl* tab_ctrl = doc_manager->get_active_text_ctrl();
-			if (tab_ctrl) {
-				current_pos = tab_ctrl->GetInsertionPoint();
-			}
+		} else if (auto* tab_ctrl = doc_manager->get_active_text_ctrl(); tab_ctrl != nullptr) {
+			current_pos = tab_ctrl->GetInsertionPoint();
 		}
 
 		single_window_mode = new_open_in_new_window;
@@ -708,26 +868,31 @@ void main_window::on_options(wxCommandEvent&) {
 		if (new_open_in_new_window) {
 			notebook->Hide();
 			single_doc_panel->Show();
-			if (doc_manager->get_tab_count() > 0) {
-				single_text_ctrl->SetValue(doc_manager->get_active_document()->buffer.str());
+			if (doc_manager->get_tab_count() > 0 && single_text_ctrl != nullptr) {
+				if (const auto* active_doc = doc_manager->get_active_document(); active_doc != nullptr) {
+					single_text_ctrl->SetValue(active_doc->buffer.str());
+				}
 				single_text_ctrl->SetInsertionPoint(current_pos);
-							doc_manager->get_active_text_ctrl()->ShowPosition(current_pos);
+				single_text_ctrl->ShowPosition(current_pos);
+			}
+		} else {
+			single_doc_panel->Hide();
+			notebook->Show();
+			if (doc_manager->get_tab_count() > 0) {
+				if (document_tab* active_tab = doc_manager->get_active_tab(); active_tab != nullptr) {
+					doc_manager->ensure_tab_text_ctrl(active_tab);
+					if (wxTextCtrl* new_text_ctrl = active_tab->text_ctrl) {
+						if (const auto* active_doc = doc_manager->get_active_document(); active_doc != nullptr) {
+							new_text_ctrl->SetValue(active_doc->buffer.str());
 						}
-					} else {
-						single_doc_panel->Hide();
-						notebook->Show();
-						if (doc_manager->get_tab_count() > 0) {
-							document_tab* active_tab = doc_manager->get_active_tab();
-							doc_manager->ensure_tab_text_ctrl(active_tab);
-							wxTextCtrl* new_text_ctrl = active_tab->text_ctrl;
-							if (new_text_ctrl) {
-								new_text_ctrl->SetValue(doc_manager->get_active_document()->buffer.str());
-								new_text_ctrl->SetInsertionPoint(current_pos);
-								new_text_ctrl->ShowPosition(current_pos);
-							}
-						}
+						new_text_ctrl->SetInsertionPoint(current_pos);
+						new_text_ctrl->ShowPosition(current_pos);
 					}
-					main_panel->Layout();	}
+				}
+			}
+		}
+		main_panel->Layout();
+	}
 
 	if (old_word_wrap != new_word_wrap) {
 		doc_manager->apply_word_wrap(new_word_wrap);
@@ -743,6 +908,18 @@ void main_window::on_options(wxCommandEvent&) {
 	}
 	config_mgr.flush();
 	update_recent_documents_menu();
+}
+
+void main_window::restore_focus_to_text() {
+	if (find_dlg != nullptr && find_dlg->IsShown()) {
+		find_dlg->Raise();
+		find_dlg->focus_find_text();
+		return;
+	}
+	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
+	if (text_ctrl != nullptr) {
+		text_ctrl->SetFocus();
+	}
 }
 
 void main_window::on_about(wxCommandEvent&) {
@@ -1005,12 +1182,19 @@ void main_window::do_find(bool forward) {
 	const long start_pos = forward ? sel_end : sel_start;
 	long found_pos = doc_manager->find_text(query, start_pos, options);
 	if (found_pos == wxNOT_FOUND) {
-		speak(_("No more results. Wrapping search."));
 		const auto wrap_pos = forward ? 0 : text_ctrl->GetLastPosition();
-		found_pos = doc_manager->find_text(query, wrap_pos, options);
-		if (found_pos == wxNOT_FOUND) {
+		const long wrapped_pos = doc_manager->find_text(query, wrap_pos, options);
+		if (wrapped_pos == wxNOT_FOUND) {
 			speak(_("Not found."));
+			if (find_dlg != nullptr) {
+				find_dlg->Show();
+				find_dlg->Raise();
+				find_dlg->focus_find_text();
+			}
 			return;
+		} else {
+			speak(_("No more results. Wrapping search."));
+			found_pos = wrapped_pos;
 		}
 	}
 	text_ctrl->SetFocus();

@@ -9,6 +9,7 @@
 
 #pragma once
 #include "config_manager.hpp"
+#include "dialogs.hpp"
 #include "document.hpp"
 #include "utils.hpp"
 #include <memory>
@@ -47,7 +48,7 @@ public:
 	document_manager(document_manager&&) = delete;
 	document_manager& operator=(document_manager&&) = delete;
 	[[nodiscard]] bool open_file(const wxString& path, bool add_to_recent = true);
-	[[nodiscard]] bool create_document_tab(const wxString& path, const parser* parser, bool set_focus = true);
+	[[nodiscard]] bool create_document_tab(const wxString& path, const parser* parser, bool set_focus = true, bool add_to_recent = true);
 	void update_ui();
 	void close_document(int index);
 	void close_all_documents();
@@ -75,23 +76,28 @@ public:
 	void go_to_next_page() const;
 	void go_to_previous_bookmark() const;
 	void go_to_next_bookmark() const;
+	void go_to_previous_note() const;
+	void go_to_next_note() const;
 	void go_to_previous_link() const;
 	void go_to_next_link() const;
 	void go_to_previous_list() const;
 	void go_to_next_list() const;
 	void go_to_previous_list_item() const;
 	void go_to_next_list_item() const;
+	void go_to_previous_position() const;
+	void go_to_next_position() const;
 	void activate_current_link() const;
 	void toggle_bookmark() const;
 	void add_bookmark_with_note() const;
-	void show_bookmark_dialog(wxWindow* parent);
+	void show_bookmark_dialog(wxWindow* parent, bookmark_filter initial_filter = bookmark_filter::all);
 	void show_table_of_contents(wxWindow* parent) const;
-	void show_document_info(wxWindow* parent) const;
-	void save_document_position(const wxString& path, int position) const;
-	[[nodiscard]] int load_document_position(const wxString& path) const;
+	void show_document_info(wxWindow* parent);
+	void save_document_position(const wxString& path, long position) const;
+	[[nodiscard]] long load_document_position(const wxString& path) const;
 	void save_current_tab_position() const;
 	void save_all_tab_positions() const;
 	void ensure_tab_text_ctrl(document_tab* tab);
+	void save_all_tab_navigation_histories() const;
 	[[nodiscard]] wxString get_status_text() const;
 	[[nodiscard]] wxString get_window_title(const wxString& app_name) const;
 	[[nodiscard]] int find_text(const wxString& query, int start_pos, find_options options) const;
@@ -112,6 +118,7 @@ private:
 	void navigate_to_section(bool next) const;
 	void navigate_to_page(bool next) const;
 	void navigate_to_bookmark(bool next) const;
+	void navigate_to_note(bool next) const;
 	void navigate_to_link(bool next) const;
 	void navigate_to_list(bool next) const;
 	void navigate_to_list_item(bool next) const;

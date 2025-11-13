@@ -10,11 +10,8 @@
 #pragma once
 #include "document.hpp"
 #include "html_to_text.hpp" // For link_info struct
-#include <Poco/DOM/Document.h>
-#include <Poco/DOM/Element.h>
-#include <Poco/DOM/Node.h>
-#include <Poco/DOM/Text.h>
 #include <memory>
+#include <pugixml.hpp>
 #include <stack>
 #include <string>
 #include <unordered_map>
@@ -77,12 +74,12 @@ private:
 	std::stack<list_style_info> list_style_stack{};
 	size_t cached_char_length{0};
 
-	void process_node(Poco::XML::Node* node);
-	void process_text_node(Poco::XML::Text* text_node);
+	void process_node(pugi::xml_node node);
+	void process_text_node(pugi::xml_node text_node);
 	void add_line(std::string_view line);
 	void finalize_current_line();
 	size_t get_current_text_position() const;
 	[[nodiscard]] static constexpr bool is_block_element(std::string_view tag_name) noexcept;
-	[[nodiscard]] static std::string get_element_text(Poco::XML::Element* element);
+	[[nodiscard]] static std::string get_element_text(pugi::xml_node element);
 	[[nodiscard]] static std::string get_bullet_for_level(int level) noexcept;
 };

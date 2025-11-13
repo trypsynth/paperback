@@ -5,18 +5,20 @@
 	<title>{{ page.title }} &ndash; {{ site.title }}</title>
 </head>
 <body>
-	<a href="#content-anchor">Skip to main content</a>
-	<nav>
-		<ul>
-			{% for item in site.data.nav %}
-				{% assign link = item[1] %}
-				{% if page.permalink == link %}
-					<li><a href="{{ link }}" aria-current="page">{{ item[0] }}</a></li>
-				{% else %}
-					<li><a href="{{ link }}">{{ item[0] }}</a></li>
-				{% endif %}
-			{% endfor %}
-		</ul>
-	</nav>
+	<header>
+		<a href="#content-anchor">Skip to main content</a>
+		<nav>
+			<ul style="list-style-type:none;">
+				{% for item in site.data.nav %}
+					{% assign link = item[1] %}
+					{% if page.permalink == link %}
+						<li><a href="{{ link }}" aria-current="page">{{ item[0] }}</a></li>
+					{% else %}
+						<li><a href="{{ link }}">{{ item[0] }}</a></li>
+					{% endif %}
+				{% endfor %}
+			</ul>
+		</nav>
+	</header>
 	<main>
 		<div id="content-anchor"></div>

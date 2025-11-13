@@ -10,27 +10,14 @@
 #include "fb2_parser.hpp"
 #include "utils.hpp"
 #include "xml_to_text.hpp"
-#include <Poco/AutoPtr.h>
-#include <Poco/DOM/DOMParser.h>
-#include <Poco/DOM/DOMWriter.h>
-#include <Poco/DOM/Element.h>
-#include <Poco/DOM/Node.h>
-#include <Poco/DOM/NodeList.h>
-#include <Poco/DOM/Text.h>
-#include <Poco/Exception.h>
-#include <Poco/SAX/InputSource.h>
-#include <Poco/XML/XMLString.h>
-#include <Poco/XML/XMLWriter.h>
+#include <pugixml.hpp>
 #include <sstream>
 #include <wx/filename.h>
 #include <wx/log.h>
 #include <wx/translation.h>
 #include <wx/wfstream.h>
 
-using namespace Poco;
-using namespace Poco::XML;
-
-inline const XMLString FB2_NS = "http://www.gribuser.ru/xml/fictionbook/2.0";
+inline const char* FB2_NS = "http://www.gribuser.ru/xml/fictionbook/2.0";
 
 std::unique_ptr<document> fb2_parser::load(const wxString& path) const {
 	wxFileInputStream input(path);
@@ -50,21 +37,16 @@ std::unique_ptr<document> fb2_parser::load(const wxString& path) const {
 		throw parser_exception(_("FB2 file is empty or could not be read"), path);
 	}
 	try {
-		DOMParser dom_parser;
-		std::istringstream iss_dom(xml_content);
-		InputSource source_dom(iss_dom);
-		AutoPtr<Document> poco_dom_doc = dom_parser.parse(&source_dom);
-		NodeList* binary_nodes = poco_dom_doc->getElementsByTagNameNS(FB2_NS, "binary");
-		for (int i = binary_nodes->length() - 1; i >= 0; --i) {
-			Node* node_to_remove = binary_nodes->item(i);
-			node_to_remove->parentNode()->removeChild(node_to_remove);
+		pugi::xml_document d;
+		if (d.load_buffer(xml_content.data(), xml_content.size())) {
+			for (auto n : d.select_nodes("//*[local-name()='binary']")) {
+				n.node().parent().remove_child(n.node());
+			}
+			std::ostringstream oss;
+			d.save(oss);
+			xml_content = oss.str();
 		}
-		std::ostringstream oss_cleaned_xml;
-		DOMWriter writer;
-		writer.writeNode(oss_cleaned_xml, poco_dom_doc);
-		xml_content = oss_cleaned_xml.str();
-	} catch (const Exception& exc) {
-	}
+	} catch (...) {}
 	xml_to_text converter;
 	if (!converter.convert(xml_content)) {
 		throw parser_exception(_("Failed to convert FB2 XML to text"), path);
@@ -72,38 +54,29 @@ std::unique_ptr<document> fb2_parser::load(const wxString& path) const {
 	auto doc = std::make_unique<document>();
 	doc->buffer.set_content(wxString::FromUTF8(converter.get_text()));
 	try {
-		DOMParser parser;
-		std::istringstream iss(xml_content);
-		InputSource source(iss);
-		AutoPtr<Document> poco_doc = parser.parse(&source);
-		Element* root = poco_doc->documentElement();
-		if (root) {
-			Element* description = root->getChildElementNS(FB2_NS, "description");
-			if (description) {
-				Element* title_info = description->getChildElementNS(FB2_NS, "title-info");
-				if (title_info) {
-					Element* title_node = title_info->getChildElementNS(FB2_NS, "book-title");
-					if (title_node) {
-						doc->title = wxString::FromUTF8(get_element_text(title_node));
-					}
-					Element* author_node = title_info->getChildElementNS(FB2_NS, "author");
-					if (author_node) {
-						Element* first_name_node = author_node->getChildElementNS(FB2_NS, "first-name");
-						if (first_name_node) {
-							doc->author = wxString::FromUTF8(get_element_text(first_name_node));
-						}
-						Element* last_name_node = author_node->getChildElementNS(FB2_NS, "last-name");
-						if (last_name_node) {
-							if (!doc->author.IsEmpty()) {
-								doc->author += " ";
-							}
-							doc->author += wxString::FromUTF8(get_element_text(last_name_node));
-						}
-					}
+		pugi::xml_document d;
+		if (d.load_buffer(xml_content.data(), xml_content.size())) {
+			auto title = d.select_node("/*[local-name()='FictionBook']/*[local-name()='description']/*[local-name()='title-info']/*[local-name()='book-title']");
+			if (title) {
+				doc->title = wxString::FromUTF8(title.node().text().as_string());
+			}
+			auto first = d.select_node("/*[local-name()='FictionBook']/*[local-name()='description']/*[local-name()='title-info']/*[local-name()='author']/*[local-name()='first-name']");
+			auto last = d.select_node("/*[local-name()='FictionBook']/*[local-name()='description']/*[local-name()='title-info']/*[local-name()='author']/*[local-name()='last-name']");
+			wxString author;
+			if (first) {
+				author += wxString::FromUTF8(first.node().text().as_string());
+			}
+			if (last) {
+				if (!author.IsEmpty()) {
+					author += " ";
 				}
+				author += wxString::FromUTF8(last.node().text().as_string());
+			}
+			if (!author.IsEmpty()) {
+				doc->author = author;
 			}
 		}
-	} catch (const Exception&) {
+	} catch (...) {
 		// Ignore XML parsing errors, we still have the text
 	}
 	for (const auto& heading : converter.get_headings()) {
@@ -115,20 +88,17 @@ std::unique_ptr<document> fb2_parser::load(const wxString& path) const {
 	return doc;
 }
 
-std::string fb2_parser::get_element_text(Element* element) {
+std::string fb2_parser::get_element_text(pugi::xml_node element) {
 	if (element == nullptr) {
 		return {};
 	}
 	std::string text;
-	auto* child = element->firstChild();
-	while (child != nullptr) {
-		if (child->nodeType() == Node::TEXT_NODE) {
-			auto* text_node = dynamic_cast<Text*>(child);
-			text += text_node->data();
-		} else if (child->nodeType() == Node::ELEMENT_NODE) {
-			text += get_element_text(dynamic_cast<Element*>(child));
+	for (auto child : element.children()) {
+		if (child.type() == pugi::node_pcdata || child.type() == pugi::node_cdata) {
+			text += child.value();
+		} else if (child.type() == pugi::node_element) {
+			text += get_element_text(child);
 		}
-		child = child->nextSibling();
 	}
 	return text;
 }

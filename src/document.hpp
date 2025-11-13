@@ -19,7 +19,7 @@ struct toc_item {
 	wxString name;
 	wxString ref;
 	std::vector<std::unique_ptr<toc_item>> children;
-	int offset;
+	size_t offset;
 
 	toc_item() = default;
 	~toc_item() = default;
@@ -51,6 +51,8 @@ struct document {
 	std::vector<std::string> spine_items;
 	std::map<std::string, std::string> manifest_items;
 	mutable document_stats stats;
+	std::vector<long> history;
+	size_t history_index{0};
 
 	document() = default;
 	~document() = default;
@@ -59,18 +61,18 @@ struct document {
 	document(document&&) = default;
 	document& operator=(document&&) = default;
 
-	[[nodiscard]] int next_section_index(int position) const noexcept;
-	[[nodiscard]] int previous_section_index(int position) const noexcept;
+	[[nodiscard]] int next_section_index(long position) const noexcept;
+	[[nodiscard]] int previous_section_index(long position) const noexcept;
 	[[nodiscard]] int section_index(size_t position) const noexcept;
-	[[nodiscard]] int offset_for_section(int section_index) const noexcept;
-	[[nodiscard]] int next_page_index(int position) const noexcept;
-	[[nodiscard]] int previous_page_index(int position) const noexcept;
+	[[nodiscard]] size_t offset_for_section(int section_index) const noexcept;
+	[[nodiscard]] int next_page_index(long position) const noexcept;
+	[[nodiscard]] int previous_page_index(long position) const noexcept;
 	[[nodiscard]] int page_index(size_t position) const noexcept;
-	[[nodiscard]] int offset_for_page(int page_index) const noexcept;
-	[[nodiscard]] int find_closest_toc_offset(size_t position) const noexcept;
-	[[nodiscard]] int next_heading_index(int position, int level) const noexcept;
-	[[nodiscard]] int previous_heading_index(int position, int level) const noexcept;
-	[[nodiscard]] int offset_for_heading(int heading_index) const noexcept;
+	[[nodiscard]] size_t offset_for_page(int page_index) const noexcept;
+	[[nodiscard]] size_t find_closest_toc_offset(size_t position) const noexcept;
+	[[nodiscard]] int next_heading_index(long position, int level) const noexcept;
+	[[nodiscard]] int previous_heading_index(long position, int level) const noexcept;
+	[[nodiscard]] size_t offset_for_heading(int heading_index) const noexcept;
 	[[nodiscard]] const marker* get_heading_marker(int heading_index) const noexcept;
 	void calculate_statistics() const;
 };

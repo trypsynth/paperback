@@ -92,7 +92,11 @@ void app::parse_command_line() {
 	const wxString arg_path = wxString(argv[1]);
 	wxFileName file_path{arg_path};
 	file_path.Normalize(wxPATH_NORM_ABSOLUTE);
-	wxString path = file_path.GetFullPath();
+	const wxString path = file_path.GetFullPath();
+	if (!wxFileName::FileExists(path)) {
+		wxMessageBox(wxString::Format(_("File not found: %s"), path), _("Error"), wxICON_ERROR);
+		return;
+	}
 	open_file(path);
 }
 
@@ -105,45 +109,45 @@ void app::restore_previous_documents() {
 			}
 			create_new_window(path);
 		}
-	} else {
-		if (opened_docs.IsEmpty()) {
-			return;
+		return;
+	}
+	if (opened_docs.IsEmpty()) {
+		return;
+	}
+	main_window* frame = frames.empty() ? create_new_window() : frames.front();
+	auto* doc_manager = frame->get_doc_manager();
+	wxString active_doc = config_mgr.get(config_manager::active_document);
+	for (const wxString& path : opened_docs) {
+		if (!wxFileName::FileExists(path)) {
+			continue;
 		}
-		main_window* frame = frames.empty() ? create_new_window() : frames.front();
-		auto* doc_manager = frame->get_doc_manager();
-		wxString active_doc = config_mgr.get(config_manager::active_document);
-		for (const wxString& path : opened_docs) {
-			if (!wxFileName::FileExists(path)) {
-				continue;
-			}
-			const int existing_tab = doc_manager->find_tab_by_path(path);
-			if (existing_tab >= 0) {
-				continue;
-			}
-			const auto* par = find_parser_by_extension(wxFileName(path).GetExt());
+		const int existing_tab = doc_manager->find_tab_by_path(path);
+		if (existing_tab >= 0) {
+			continue;
+		}
+		const auto* par = find_parser_by_extension(wxFileName(path).GetExt());
+		if (par == nullptr) {
+			par = get_parser_for_unknown_file(path, config_mgr);
 			if (par == nullptr) {
-				par = get_parser_for_unknown_file(path, config_mgr);
-				if (par == nullptr) {
-					continue;
-				}
+				continue;
 			}
-			doc_manager->create_document_tab(path, par, false);
 		}
-		doc_manager->update_ui();
-		if (!active_doc.IsEmpty() && wxFileName::FileExists(active_doc)) {
-			const int active_tab = doc_manager->find_tab_by_path(active_doc);
-			if (active_tab >= 0) {
-				frame->get_notebook()->SetSelection(active_tab);
-				auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-				if (text_ctrl) {
-					text_ctrl->SetFocus();
-				}
-			}
-		} else if (doc_manager->has_documents()) {
+		doc_manager->create_document_tab(path, par, false);
+	}
+	doc_manager->update_ui();
+	if (!active_doc.IsEmpty() && wxFileName::FileExists(active_doc)) {
+		const int active_tab = doc_manager->find_tab_by_path(active_doc);
+		if (active_tab >= 0) {
+			frame->get_notebook()->SetSelection(active_tab);
 			auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-			if (text_ctrl != nullptr) {
+			if (text_ctrl) {
 				text_ctrl->SetFocus();
 			}
+		}
+	} else if (doc_manager->has_documents()) {
+		auto* const text_ctrl = doc_manager->get_active_text_ctrl();
+		if (text_ctrl != nullptr) {
+			text_ctrl->SetFocus();
 		}
 	}
 }
@@ -151,7 +155,15 @@ void app::restore_previous_documents() {
 void app::open_file(const wxString& filename, main_window* current_frame) {
 	if (filename == IPC_COMMAND_ACTIVATE) {
 		if (!frames.empty()) {
-			frames.back()->Raise();
+			auto* const target = frames.back();
+			if (target != nullptr) {
+				target->Show(true);
+				target->Iconize(false);
+				target->Raise();
+				target->CallAfter([frm = target] {
+					frm->restore_focus_to_text();
+				});
+			}
 		}
 		return;
 	}
@@ -173,29 +185,39 @@ void app::open_file(const wxString& filename, main_window* current_frame) {
 			if (text_ctrl) {
 				text_ctrl->SetFocus();
 			}
+			frame->Show(true);
+			frame->Iconize(false);
 			frame->Raise();
 			frame->RequestUserAttention();
+			frame->CallAfter([frm = frame] {
+				frm->restore_focus_to_text();
+			});
 			return;
 		}
 	}
 	if (config_mgr.get(config_manager::open_in_new_window)) {
-        if (current_frame && !current_frame->get_doc_manager()->has_documents()) {
-            auto* doc_manager = current_frame->get_doc_manager();
-            const auto* par = find_parser_by_extension(wxFileName(filename).GetExt());
-            if (par == nullptr) {
-                par = get_parser_for_unknown_file(filename, config_mgr);
-                if (par == nullptr) {
-                    return;
-                }
-            }
-            if (!doc_manager->create_document_tab(filename, par)) {
-                wxMessageBox(_("Failed to load document."), _("Error"), wxICON_ERROR);
-            } else {
-                current_frame->Raise();
-                current_frame->RequestUserAttention();
-            }
-        } else {
-		    create_new_window(filename);
+		if (current_frame && !current_frame->get_doc_manager()->has_documents()) {
+			auto* doc_manager = current_frame->get_doc_manager();
+			const auto* par = find_parser_by_extension(wxFileName(filename).GetExt());
+			if (par == nullptr) {
+				par = get_parser_for_unknown_file(filename, config_mgr);
+				if (par == nullptr) {
+					return;
+				}
+			}
+			if (!doc_manager->create_document_tab(filename, par)) {
+				wxMessageBox(_("Failed to load document."), _("Error"), wxICON_ERROR);
+			} else {
+				current_frame->Show(true);
+				current_frame->Iconize(false);
+				current_frame->Raise();
+				current_frame->RequestUserAttention();
+				current_frame->CallAfter([frm = current_frame] {
+					frm->restore_focus_to_text();
+				});
+			}
+		} else {
+			create_new_window(filename);
 		}
 		return;
 	}
@@ -211,8 +233,13 @@ void app::open_file(const wxString& filename, main_window* current_frame) {
 	if (!doc_manager->create_document_tab(filename, par)) {
 		wxMessageBox(_("Failed to load document."), _("Error"), wxICON_ERROR);
 	} else {
+		frame->Show(true);
+		frame->Iconize(false);
 		frame->Raise();
 		frame->RequestUserAttention();
+		frame->CallAfter([frm = frame] {
+			frm->restore_focus_to_text();
+		});
 	}
 }
 

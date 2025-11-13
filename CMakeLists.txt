@@ -8,7 +8,7 @@ elseif(APPLE)
 else()
 	set(VCPKG_TARGET_TRIPLET "x64-linux" CACHE STRING "Vcpkg triplet")
 endif()
-project(paperback VERSION 0.5 LANGUAGES CXX)
+project(paperback VERSION 0.6 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -29,18 +29,24 @@ if(CLANG_TIDY_EXE)
 endif()
 
 find_package(chmlib CONFIG REQUIRED)
+find_package(Gettext)
 find_package(lexbor CONFIG REQUIRED)
 find_package(maddy CONFIG REQUIRED)
+find_package(MbedTLS CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(pdfium CONFIG REQUIRED)
-find_package(Poco REQUIRED COMPONENTS Foundation XML)
+find_package(pugixml CONFIG REQUIRED)
 find_package(wxWidgets CONFIG REQUIRED)
-find_package(Gettext)
 
 if(GETTEXT_FOUND)
-	find_program(XGETTEXT_EXECUTABLE xgettext PATHS ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/tools/gettext)
+	find_program(XGETTEXT_EXECUTABLE NAMES xgettext)
 	if(XGETTEXT_EXECUTABLE)
-		file(GLOB_RECURSE TRANSLATABLE_FILES CONFIGURE_DEPENDS src/*.cpp src/*.hpp)
+		file(GLOB_RECURSE TRANSLATABLE_FILES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/*.cpp ${CMAKE_SOURCE_DIR}/src/*.hpp)
+		set(REL_TRANSLATABLE_FILES "")
+		foreach(F ${TRANSLATABLE_FILES})
+			file(RELATIVE_PATH F_REL "${CMAKE_SOURCE_DIR}" "${F}")
+			list(APPEND REL_TRANSLATABLE_FILES "${F_REL}")
+		endforeach()
 		add_custom_command(
 			OUTPUT ${CMAKE_SOURCE_DIR}/po/paperback.pot
 			COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/po
@@ -49,13 +55,15 @@ if(GETTEXT_FOUND)
 				--keyword=wxPLURAL:1,2
 				--keyword=wxTRANSLATE
 				--language=C++
+				--from-code=UTF-8
 				--add-comments=TRANSLATORS
+				--add-location=file
 				--package-name=paperback
 				--package-version=${PROJECT_VERSION}
 				--msgid-bugs-address=https://github.com/trypsynth/paperback/issues
 				--copyright-holder="Quin Gillespie"
 				--output=${CMAKE_SOURCE_DIR}/po/paperback.pot
-				${TRANSLATABLE_FILES}
+				${REL_TRANSLATABLE_FILES}
 			DEPENDS ${TRANSLATABLE_FILES}
 			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		)
@@ -89,13 +97,19 @@ target_link_libraries(paperback PRIVATE
 	chmlib::chm
 	lexbor::lexbor
 	maddy::maddy
+	MbedTLS::mbedcrypto
 	pdfium::pdfium
-	Poco::Foundation
-	Poco::XML
+	pugixml::pugixml
 	wx::base
 	wx::core
 	wx::net
 )
+
+if (MSVC)
+	target_compile_options(paperback PRIVATE /W4 /permissive- /WX)
+else()
+	target_compile_options(paperback PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
 
 if(WIN32)
 	file(GLOB DLLS "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin/*.dll")

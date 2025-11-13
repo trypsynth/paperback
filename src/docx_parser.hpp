@@ -10,7 +10,7 @@
 #pragma once
 #include "document.hpp"
 #include "parser.hpp"
-#include <Poco/DOM/Element.h>
+#include <pugixml.hpp>
 #include <vector>
 #include <wx/stream.h>
 
@@ -39,11 +39,11 @@ public:
 	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
 
 private:
-	void traverse(Poco::XML::Node* node, wxString& text, std::vector<heading_info>& headings, document* doc, const std::map<std::string, std::string>& rels) const;
-	static void process_paragraph(Poco::XML::Element* pElement, wxString& text, std::vector<heading_info>& headings, document* doc, const std::map<std::string, std::string>& rels);
-	static void process_hyperlink(Poco::XML::Element* element, wxString& text, document* doc, const std::map<std::string, std::string>& rels, size_t paragraph_start_offset);
-	static int get_heading_level(Poco::XML::Element* pr_element);
-	static std::string get_run_text(Poco::XML::Element* prun_element);
+	void traverse(pugi::xml_node node, wxString& text, std::vector<heading_info>& headings, document* doc, const std::map<std::string, std::string>& rels) const;
+	static void process_paragraph(pugi::xml_node element, wxString& text, std::vector<heading_info>& headings, document* doc, const std::map<std::string, std::string>& rels);
+	static void process_hyperlink(pugi::xml_node element, wxString& text, document* doc, const std::map<std::string, std::string>& rels, size_t paragraph_start_offset);
+	static int get_heading_level(pugi::xml_node pr_element);
+	static std::string get_run_text(pugi::xml_node prun_element);
 	static std::string parse_hyperlink_instruction(const std::string& instruction);
 };
 

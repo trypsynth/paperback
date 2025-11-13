@@ -15,13 +15,14 @@
 #include <wx/arrstr.h>
 #include <wx/button.h>
 #include <wx/checkbox.h>
+#include <wx/choice.h>
 #include <wx/clntdata.h>
 #include <wx/combobox.h>
 #include <wx/dialog.h>
 #include <wx/listbox.h>
 #include <wx/listctrl.h>
-#include <wx/srchctrl.h>
 #include <wx/spinctrl.h>
+#include <wx/srchctrl.h>
 #include <wx/textctrl.h>
 #include <wx/timer.h>
 #include <wx/treectrl.h>
@@ -80,9 +81,15 @@ private:
 	void populate_document_list(const wxString& filter = wxEmptyString);
 };
 
+enum class bookmark_filter {
+	all,
+	bookmarks_only,
+	notes_only
+};
+
 class bookmark_dialog : public dialog {
 public:
-	bookmark_dialog(wxWindow* parent, const std::vector<bookmark>& bookmarks, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos = -1);
+	bookmark_dialog(wxWindow* parent, const std::vector<bookmark>& bookmarks, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos = -1, bookmark_filter initial_filter = bookmark_filter::all);
 	~bookmark_dialog() = default;
 	bookmark_dialog(const bookmark_dialog&) = delete;
 	bookmark_dialog& operator=(const bookmark_dialog&) = delete;
@@ -94,6 +101,8 @@ public:
 	}
 
 private:
+	wxChoice* filter_choice{nullptr};
+	std::vector<bookmark> all_bookmarks;
 	wxListBox* bookmark_list{nullptr};
 	std::vector<bookmark> bookmark_positions;
 	long selected_position;
@@ -109,19 +118,25 @@ private:
 	void on_key_down(wxKeyEvent&);
 	void on_delete(wxCommandEvent& event);
 	void on_edit_note(wxCommandEvent& event);
+	void on_filter_changed(wxCommandEvent& event);
+	void repopulate_list(long current_pos = -1);
 };
 
 class document_info_dialog : public dialog {
 public:
-	document_info_dialog(wxWindow* parent, const document* doc, const wxString& file_path);
+	document_info_dialog(wxWindow* parent, const document* doc, const wxString& file_path, config_manager& cfg_mgr);
 	~document_info_dialog() = default;
 	document_info_dialog(const document_info_dialog&) = delete;
 	document_info_dialog& operator=(const document_info_dialog&) = delete;
 	document_info_dialog(document_info_dialog&&) = delete;
 	document_info_dialog& operator=(document_info_dialog&&) = delete;
 
+	long imported_position{-1};
+
 private:
 	wxTextCtrl* info_text_ctrl{nullptr};
+	config_manager& config_mgr;
+	wxString doc_path;
 };
 
 class find_dialog : public wxDialog {
@@ -210,6 +225,22 @@ private:
 	void on_spin_changed(wxSpinEvent& event);
 };
 
+class note_entry_dialog : public dialog {
+public:
+	note_entry_dialog(wxWindow* parent, const wxString& title, const wxString& message, const wxString& existing_note);
+	~note_entry_dialog() = default;
+	note_entry_dialog(const note_entry_dialog&) = delete;
+	note_entry_dialog& operator=(const note_entry_dialog&) = delete;
+	note_entry_dialog(note_entry_dialog&&) = delete;
+	note_entry_dialog& operator=(note_entry_dialog&&) = delete;
+
+	[[nodiscard]] wxString get_note() const;
+
+private:
+	wxTextCtrl* note_ctrl{nullptr};
+	void on_key_down(wxKeyEvent& event);
+};
+
 class open_as_dialog : public dialog {
 public:
 	open_as_dialog(wxWindow* parent, const wxString& path);
@@ -240,6 +271,8 @@ public:
 	void set_minimize_to_tray(bool minimize);
 	bool get_open_in_new_window() const;
 	void set_open_in_new_window(bool open_in_new_window);
+	bool get_start_maximized() const;
+	void set_start_maximized(bool maximized);
 	bool get_compact_go_menu() const;
 	void set_compact_go_menu(bool compact);
 	bool get_navigation_wrap() const;
@@ -256,6 +289,7 @@ private:
 	wxCheckBox* word_wrap_check{nullptr};
 	wxCheckBox* minimize_to_tray_check{nullptr};
 	wxCheckBox* open_in_new_window_check{nullptr};
+	wxCheckBox* start_maximized_check{nullptr};
 	wxCheckBox* compact_go_menu_check{nullptr};
 	wxCheckBox* navigation_wrap_check{nullptr};
 	wxCheckBox* check_for_updates_on_startup_check{nullptr};
@@ -315,4 +349,17 @@ private:
 	void on_char_hook(wxKeyEvent& event);
 	void on_search_timer(wxTimerEvent& event);
 	bool find_and_select_item_by_name(const wxString& name, const wxTreeItemId& parent);
+};
+
+class view_note_dialog : public dialog {
+public:
+	view_note_dialog(wxWindow* parent, const wxString& note_text);
+	~view_note_dialog() = default;
+	view_note_dialog(const view_note_dialog&) = delete;
+	view_note_dialog& operator=(const view_note_dialog&) = delete;
+	view_note_dialog(view_note_dialog&&) = delete;
+	view_note_dialog& operator=(view_note_dialog&&) = delete;
+
+private:
+	wxTextCtrl* note_ctrl{nullptr};
 };

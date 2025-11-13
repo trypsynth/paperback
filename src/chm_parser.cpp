@@ -16,6 +16,7 @@
 #include <chm_lib.h>
 #include <functional>
 #include <lexbor/html/interfaces/document.h>
+#include <limits>
 #include <map>
 #include <memory>
 #include <set>
@@ -169,7 +170,9 @@ std::string chm_parser::read_file_content(chmFile* file, const std::string& path
 std::string chm_parser::normalize_path(const std::string& path) {
 	std::string result = path;
 	std::ranges::replace(result, '\\', '/');
-	std::ranges::transform(result, result.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+	std::ranges::transform(result, result.begin(), [](unsigned char c) {
+		return static_cast<char>(std::tolower(c));
+	});
 	if (!result.empty() && result[0] != '/') {
 		result = "/" + result;
 	}
@@ -207,7 +210,9 @@ int chm_parser::file_enumerator(chmFile* /*unused*/, chmUnitInfo* ui, void* cont
 	auto* ctx = static_cast<chm_context*>(context);
 	std::string path{ui->path};
 	std::string& lower_path = path;
-	std::ranges::transform(lower_path, lower_path.begin(), [](unsigned char c) { return std::tolower(c); });
+	std::ranges::transform(lower_path, lower_path.begin(), [](unsigned char c) {
+		return std::tolower(c);
+	});
 	if (lower_path.find(".hhc") != std::string::npos) {
 		if (ctx->hhc_file.empty() || lower_path.find("index.hhc") != std::string::npos) {
 			ctx->hhc_file = path;
@@ -253,10 +258,12 @@ void chm_parser::parse_hhc_file(chm_context& ctx, std::vector<std::unique_ptr<to
 				continue;
 			}
 			std::string tag_str(reinterpret_cast<const char*>(tag_name), tag_name_len);
-			std::ranges::transform(tag_str, tag_str.begin(), [](unsigned char c) { return std::tolower(c); });
+			std::ranges::transform(tag_str, tag_str.begin(), [](unsigned char c) {
+				return std::tolower(c);
+			});
 			if (tag_str == "li") {
 				auto item = std::make_unique<toc_item>();
-				item->offset = -1;
+				item->offset = std::numeric_limits<size_t>::max();
 				std::string name_str;
 				std::string local_str;
 				for (lxb_dom_node_t* li_child = child->first_child; li_child != nullptr; li_child = li_child->next) {
@@ -269,7 +276,9 @@ void chm_parser::parse_hhc_file(chm_context& ctx, std::vector<std::unique_ptr<to
 						continue;
 					}
 					std::string li_tag(reinterpret_cast<const char*>(li_tag_name), tag_name_len);
-					std::ranges::transform(li_tag, li_tag.begin(), [](unsigned char c) { return std::tolower(c); });
+					std::ranges::transform(li_tag, li_tag.begin(), [](unsigned char c) {
+						return std::tolower(c);
+					});
 					if (li_tag == "object") {
 						for (lxb_dom_node_t* param_node = li_child->first_child; param_node != nullptr; param_node = param_node->next) {
 							if (param_node->type != LXB_DOM_NODE_TYPE_ELEMENT) {
@@ -281,7 +290,9 @@ void chm_parser::parse_hhc_file(chm_context& ctx, std::vector<std::unique_ptr<to
 								continue;
 							}
 							std::string param_tag_str(reinterpret_cast<const char*>(param_tag), tag_name_len);
-							std::ranges::transform(param_tag_str, param_tag_str.begin(), [](unsigned char c) { return std::tolower(c); });
+							std::ranges::transform(param_tag_str, param_tag_str.begin(), [](unsigned char c) {
+								return std::tolower(c);
+							});
 							if (param_tag_str == "param") {
 								size_t attr_len{0};
 								const lxb_char_t* name_attr = lxb_dom_element_get_attribute(param_elem, reinterpret_cast<const lxb_char_t*>("name"), 4, &attr_len);
@@ -290,7 +301,9 @@ void chm_parser::parse_hhc_file(chm_context& ctx, std::vector<std::unique_ptr<to
 								if (name_attr && value_attr) {
 									std::string attr_name{reinterpret_cast<const char*>(name_attr)};
 									const std::string attr_value{reinterpret_cast<const char*>(value_attr), attr_len};
-									std::ranges::transform(attr_name, attr_name.begin(), [](unsigned char c) { return std::tolower(c); });
+									std::ranges::transform(attr_name, attr_name.begin(), [](unsigned char c) {
+										return std::tolower(c);
+									});
 									if (attr_name == "name") {
 										name_str = attr_value;
 									} else if (attr_name == "local") {

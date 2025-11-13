@@ -11,7 +11,7 @@
 #include <wx/string.h>
 
 inline const wxString APP_NAME = "Paperback";
-inline const wxString APP_VERSION = "0.5";
+inline const wxString APP_VERSION = "0.6";
 inline const wxString APP_COPYRIGHT = "Copyright (C) 2025 Quin Gillespie. All rights reserved.";
 inline const wxString APP_WEBSITE = "https://github.com/trypsynth/paperback";
 inline constexpr int POSITION_SAVE_THROTTLE_MS = 1000;
@@ -37,7 +37,6 @@ enum config_version {
 // Main menu constants.
 enum {
 	// File menu
-	ID_EXPORT = wxID_HIGHEST + 1,
 	ID_RECENT_DOCUMENTS_BASE,
 	ID_RECENT_DOCUMENTS_END = ID_RECENT_DOCUMENTS_BASE + 100,
 	ID_SHOW_ALL_DOCUMENTS,
@@ -46,6 +45,8 @@ enum {
 	ID_FIND_PREVIOUS,
 	ID_GO_TO_LINE,
 	ID_GO_TO_PERCENT,
+	ID_GO_BACK,
+	ID_GO_FORWARD,
 	ID_GO_TO_PAGE,
 	ID_PREVIOUS_SECTION,
 	ID_NEXT_SECTION,
@@ -67,9 +68,14 @@ enum {
 	ID_NEXT_PAGE,
 	ID_NEXT_BOOKMARK,
 	ID_PREVIOUS_BOOKMARK,
+	ID_NEXT_NOTE,
+	ID_PREVIOUS_NOTE,
 	ID_TOGGLE_BOOKMARK,
 	ID_BOOKMARK_WITH_NOTE,
 	ID_JUMP_TO_BOOKMARK,
+	ID_JUMP_TO_BOOKMARKS_ONLY,
+	ID_JUMP_TO_NOTES,
+	ID_VIEW_NOTE_TEXT,
 	ID_NEXT_LINK,
 	ID_PREVIOUS_LINK,
 	ID_ACTIVATE_LINK,
@@ -82,6 +88,9 @@ enum {
 	ID_DOC_INFO,
 	ID_TABLE_OF_CONTENTS,
 	ID_OPEN_CONTAINING_FOLDER,
+	ID_EXPORT_TO_TEXT,
+	ID_IMPORT,
+	ID_EXPORT_DOCUMENT_DATA,
 	ID_OPTIONS,
 	ID_SLEEP_TIMER,
 	// Help menu

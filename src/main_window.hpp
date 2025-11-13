@@ -39,6 +39,7 @@ public:
 		return live_region_label;
 	}
 
+	void restore_focus_to_text();
 	void on_text_cursor_changed(wxEvent& event);
 	void on_text_char(wxKeyEvent& event);
 	void trigger_throttled_position_save();
@@ -60,35 +61,35 @@ private:
 	wxTextCtrl* single_text_ctrl{nullptr};
 	bool single_window_mode{false};
 	wxStatusBar* status_bar{nullptr};
-	wxTimer* position_save_timer{nullptr};
-	wxTimer* status_update_timer{nullptr};
+	std::unique_ptr<wxTimer> position_save_timer;
+	std::unique_ptr<wxTimer> status_update_timer;
 	wxLongLong last_status_update_time{0};
 	find_dialog* find_dlg{nullptr};
 	wxMenu* recent_documents_menu{nullptr};
 	wxStaticText* live_region_label{nullptr};
 	task_bar_icon* task_bar_icon_{nullptr};
-	wxTimer* sleep_timer{nullptr};
-	wxTimer* sleep_status_update_timer{nullptr};
+	std::unique_ptr<wxTimer> sleep_timer;
+	std::unique_ptr<wxTimer> sleep_status_update_timer;
 	int sleep_timer_duration_minutes{0};
 	wxLongLong sleep_timer_start_time{0};
 
 	void create_menus();
-	wxMenu* create_file_menu();
-	static wxMenu* create_go_menu();
-	static wxMenu* create_tools_menu();
-	static wxMenu* create_help_menu();
 	void refresh_ui_language();
 	void bind_events();
 	void on_open(wxCommandEvent&);
 	void on_close(wxCommandEvent&);
 	void on_close_all(wxCommandEvent&);
 	void on_export(wxCommandEvent&);
+	void on_export_document_data(wxCommandEvent&);
+	void on_import_document_data(wxCommandEvent&);
 	void on_exit(wxCommandEvent&);
 	void on_find(wxCommandEvent&);
 	void on_find_next(wxCommandEvent&);
 	void on_find_previous(wxCommandEvent&);
 	void on_go_to_line(wxCommandEvent&);
 	void on_go_to_percent(wxCommandEvent&);
+	void on_go_back(wxCommandEvent&);
+	void on_go_forward(wxCommandEvent&);
 	void on_go_to_page(wxCommandEvent&);
 	void on_previous_section(wxCommandEvent&);
 	void on_next_section(wxCommandEvent&);
@@ -98,9 +99,14 @@ private:
 	void on_next_page(wxCommandEvent&);
 	void on_next_bookmark(wxCommandEvent&);
 	void on_previous_bookmark(wxCommandEvent&);
+	void on_next_note(wxCommandEvent&);
+	void on_previous_note(wxCommandEvent&);
 	void on_toggle_bookmark(wxCommandEvent&);
 	void on_bookmark_with_note(wxCommandEvent&);
 	void on_jump_to_bookmark(wxCommandEvent&);
+	void on_jump_to_bookmarks_only(wxCommandEvent&);
+	void on_jump_to_notes(wxCommandEvent&);
+	void on_view_note_text(wxCommandEvent&);
 	void on_next_link(wxCommandEvent&);
 	void on_previous_link(wxCommandEvent&);
 	void on_previous_list(wxCommandEvent&);

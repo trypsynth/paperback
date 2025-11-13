@@ -52,4 +52,4 @@ void speak(const wxString& message);
 void cleanup_toc(std::vector<std::unique_ptr<toc_item>>& items);
 [[nodiscard]] std::vector<std::unique_ptr<toc_item>> build_toc_from_headings(const document_buffer& buffer);
 [[nodiscard]] std::string read_zip_entry(wxZipInputStream& zip);
-[[nodiscard]] wxZipEntry* find_zip_entry(const std::string& filename, const std::map<std::string, wxZipEntry*>& entries);
+[[nodiscard]] wxZipEntry* find_zip_entry(const std::string& filename, const std::map<std::string, std::unique_ptr<wxZipEntry>>& entries);

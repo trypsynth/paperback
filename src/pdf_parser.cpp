@@ -15,6 +15,7 @@
 #include <fpdf_doc.h>
 #include <fpdf_text.h>
 #include <fpdfview.h>
+#include <limits>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -128,10 +129,10 @@ void pdf_parser::extract_outline_items(FPDF_BOOKMARK bookmark, std::vector<std::
 			if (page_index < static_cast<unsigned long>(buffer.count_markers_by_type(marker_type::page_break))) {
 				item->offset = static_cast<int>(buffer.get_marker_position_by_index(marker_type::page_break, page_index));
 			} else {
-				item->offset = -1;
+				item->offset = std::numeric_limits<size_t>::max();
 			}
 		} else {
-			item->offset = -1;
+			item->offset = std::numeric_limits<size_t>::max();
 		}
 		FPDF_BOOKMARK child = FPDFBookmark_GetFirstChild(ctx.doc, bookmark);
 		if (child != nullptr) {

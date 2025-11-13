@@ -11,16 +11,6 @@
 #include "document.hpp"
 #include "document_buffer.hpp"
 #include "utils.hpp"
-#include <Poco/AutoPtr.h>
-#include <Poco/DOM/DOMParser.h>
-#include <Poco/DOM/Document.h>
-#include <Poco/DOM/Element.h>
-#include <Poco/DOM/Node.h>
-#include <Poco/DOM/NodeList.h>
-#include <Poco/Exception.h>
-#include <Poco/SAX/InputSource.h>
-#include <Poco/SAX/XMLReader.h>
-#include <Poco/XML/XMLString.h>
 #include <algorithm>
 #include <cctype>
 #include <cstddef>
@@ -28,6 +18,7 @@
 #include <map>
 #include <memory>
 #include <numeric>
+#include <pugixml.hpp>
 #include <ranges>
 #include <sstream>
 #include <string>
@@ -39,11 +30,17 @@
 #include <wx/wfstream.h>
 #include <wx/zipstrm.h>
 
-using namespace Poco;
-using namespace Poco::XML;
+inline const char* DRAWINGML_NS = "http://schemas.openxmlformats.org/drawingml/2006/main";
+inline const char* REL_NS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 
-inline const XMLString DRAWINGML_NS = "http://schemas.openxmlformats.org/drawingml/2006/main";
-inline const XMLString REL_NS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+static std::string get_local_name(const char* qname) {
+	if (qname == nullptr) {
+		return {};
+	}
+	std::string s(qname);
+	size_t pos = s.find(':');
+	return pos == std::string::npos ? s : s.substr(pos + 1);
+}
 
 std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 	try {
@@ -85,8 +82,12 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 		auto extract_number_view = [](const std::string& s) -> int {
 			constexpr int decimal_base = 10;
 			auto start_it = s.rfind('/') == std::string::npos ? s.begin() : s.begin() + static_cast<std::string::difference_type>(s.rfind('/'));
-			auto digits_view = std::ranges::subrange(start_it, s.end()) | std::views::filter([](char c) { return std::isdigit(c); });
-			return std::accumulate(digits_view.begin(), digits_view.end(), 0, [](int acc, char c) { return (acc * decimal_base) + (c - '0'); });
+			auto digits_view = std::ranges::subrange(start_it, s.end()) | std::views::filter([](char c) {
+				return std::isdigit(c);
+			});
+			return std::accumulate(digits_view.begin(), digits_view.end(), 0, [](int acc, char c) {
+				return (acc * decimal_base) + (c - '0');
+			});
 		};
 		std::ranges::sort(slide_files, [&](const std::string& a, const std::string& b) {
 			return extract_number_view(a) < extract_number_view(b);
@@ -106,35 +107,28 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 			auto rels_it = slide_rels.find(rels_file);
 			if (rels_it != slide_rels.end()) {
 				try {
-					std::istringstream rels_stream(rels_it->second);
-					InputSource rels_source(rels_stream);
-					DOMParser rels_parser;
-					rels_parser.setFeature(XMLReader::FEATURE_NAMESPACES, true);
-					AutoPtr<Document> rels_doc = rels_parser.parse(&rels_source);
-					const NodeList* rel_nodes = rels_doc->getElementsByTagNameNS(REL_NS, "Relationship");
-					for (unsigned long i = 0; i < rel_nodes->length(); ++i) {
-						Node* node = rel_nodes->item(i);
-						auto* element = dynamic_cast<Element*>(node);
-						const std::string id = element->getAttribute("Id");
-						const std::string target = element->getAttribute("Target");
-						const std::string type = element->getAttribute("Type");
-						if (type == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink") {
-							rels[id] = target;
+					pugi::xml_document rels_doc;
+					if (rels_doc.load_buffer(rels_it->second.data(), rels_it->second.size())) {
+						for (auto rel : rels_doc.child("Relationships").children("Relationship")) {
+							std::string id = rel.attribute("Id").as_string();
+							std::string target = rel.attribute("Target").as_string();
+							std::string type = rel.attribute("Type").as_string();
+							if (type == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink") {
+								rels[id] = target;
+							}
 						}
 					}
 				} catch (...) {
 					throw parser_exception(_("Parsing of links in the document failed."), error_severity::warning);
 				}
 			}
-			std::istringstream content_stream(slide_content);
-			InputSource source(content_stream);
-			DOMParser parser;
-			parser.setFeature(XMLReader::FEATURE_NAMESPACES, true);
-			parser.setFeature(DOMParser::FEATURE_FILTER_WHITESPACE, false);
-			AutoPtr<Document> slide_doc = parser.parse(&source);
-			wxString slide_title = extract_slide_title(slide_doc.get());
+			pugi::xml_document slide_doc;
+			if (!slide_doc.load_buffer(slide_content.data(), slide_content.size(), pugi::parse_default | pugi::parse_ws_pcdata)) {
+				continue;
+			}
+			wxString slide_title = extract_slide_title(slide_doc);
 			std::string slide_text;
-			extract_text_from_node(slide_doc->documentElement(), slide_text, full_text, doc.get(), rels);
+			extract_text_from_node(slide_doc.document_element(), slide_text, full_text, doc.get(), rels);
 			if (!slide_text.empty()) {
 				wxString slide_wx = wxString::FromUTF8(slide_text);
 				slide_wx.Trim(true).Trim(false);
@@ -166,8 +160,6 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 			doc->toc_items.push_back(std::move(toc_entry));
 		}
 		return doc;
-	} catch (const Poco::Exception& e) {
-		throw parser_exception(wxString::Format(_("XML parsing error: %s"), wxString::FromUTF8(e.displayText())), path);
 	} catch (const std::exception& e) {
 		throw parser_exception(wxString::Format(_("Error parsing PPTX file: %s"), wxString::FromUTF8(e.what())), path);
 	} catch (...) {
@@ -175,31 +167,26 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 	}
 }
 
-void pptx_parser::extract_text_from_node(Node* node, std::string& text, wxString& full_text, document* doc, const std::map<std::string, std::string>& rels) const {
+void pptx_parser::extract_text_from_node(pugi::xml_node node, std::string& text, wxString& full_text, document* doc, const std::map<std::string, std::string>& rels) const {
 	if (node == nullptr) {
 		return;
 	}
-	if (node->nodeType() == Node::ELEMENT_NODE) {
-		auto* element = dynamic_cast<Element*>(node);
-		if (element->localName() == "t") {
-			const Node* text_node = element->firstChild();
-			if (text_node != nullptr && text_node->nodeType() == Node::TEXT_NODE) {
-				text += text_node->getNodeValue();
-			}
-		} else if (element->localName() == "br") {
+	if (node.type() == pugi::node_element) {
+		auto element = node;
+		if (get_local_name(element.name()) == "t") {
+			text += element.text().as_string();
+		} else if (get_local_name(element.name()) == "br") {
 			text += "\n";
-		} else if (element->localName() == "p") {
-			Node* child = node->firstChild();
-			while (child != nullptr) {
+		} else if (get_local_name(element.name()) == "p") {
+			for (auto child : node.children()) {
 				extract_text_from_node(child, text, full_text, doc, rels);
-				child = child->nextSibling();
 			}
 			if (!text.empty() && text.back() != '\n') {
 				text += "\n";
 			}
 			return; // Don't process children again.
-		} else if (element->localName() == "hlinkClick" && element->namespaceURI() == DRAWINGML_NS) {
-			const std::string r_id = element->getAttributeNS(REL_NS, "id");
+		} else if (get_local_name(element.name()) == "hlinkClick") {
+			const std::string r_id = element.attribute("r:id").as_string();
 			std::string link_target;
 			if (!r_id.empty()) {
 				auto it = rels.find(r_id);
@@ -209,27 +196,21 @@ void pptx_parser::extract_text_from_node(Node* node, std::string& text, wxString
 			}
 			// In PPTX, the link wraps the text runs, so we need to find the text within this subtree.
 			std::string link_text_utf8;
-			std::function<void(Node*)> extract_link_text = [&](Node* n) {
+			std::function<void(pugi::xml_node)> extract_link_text = [&](pugi::xml_node n) {
 				if (!n) {
 					return;
 				}
-				if (n->nodeType() == Node::ELEMENT_NODE) {
-					const auto* el = dynamic_cast<Element*>(n);
-					if (el->localName() == "t") {
-						const Node* tn = el->firstChild();
-						if (tn && tn->nodeType() == Node::TEXT_NODE) {
-							link_text_utf8 += tn->getNodeValue();
-						}
+				if (n.type() == pugi::node_element) {
+					if (get_local_name(n.name()) == "t") {
+						link_text_utf8 += n.text().as_string();
 					}
 				}
-				Node* c = n->firstChild();
-				while (c) {
+				for (auto c : n.children()) {
 					extract_link_text(c);
-					c = c->nextSibling();
 				}
 			};
-			Node* parent = node->parentNode();
-			if (parent != nullptr) {
+			auto parent = node.parent();
+			if (parent) {
 				extract_link_text(parent);
 			}
 			if (!link_text_utf8.empty() && !link_target.empty()) {
@@ -241,64 +222,52 @@ void pptx_parser::extract_text_from_node(Node* node, std::string& text, wxString
 			return; // Don't process children again since we already extracted text.
 		}
 	}
-	Node* child = node->firstChild();
-	while (child != nullptr) {
+	for (auto child : node.children()) {
 		extract_text_from_node(child, text, full_text, doc, rels);
-		child = child->nextSibling();
 	}
 }
 
-wxString pptx_parser::extract_slide_title(Document* slide_doc) const {
-	if (slide_doc == nullptr) {
+wxString pptx_parser::extract_slide_title(pugi::xml_document& slide_doc) const {
+	if (slide_doc.empty()) {
 		return wxEmptyString;
 	}
-	std::function<std::string(Node*)> extract_text = [&](Node* node) -> std::string {
+	std::function<std::string(pugi::xml_node)> extract_text = [&](pugi::xml_node node) -> std::string {
 		std::string result;
-		if (node == nullptr) {
+		if (!node) {
 			return result;
 		}
-		if (node->nodeType() == Node::ELEMENT_NODE) {
-			auto* element = dynamic_cast<Element*>(node);
-			if (element->localName() == "t") {
-				const Node* text_node = element->firstChild();
-				if (text_node != nullptr && text_node->nodeType() == Node::TEXT_NODE) {
-					result += text_node->getNodeValue();
-				}
+		if (node.type() == pugi::node_element) {
+			if (get_local_name(node.name()) == "t") {
+				result += node.text().as_string();
 			}
 		}
-		Node* child = node->firstChild();
-		while (child != nullptr) {
+		for (auto child : node.children()) {
 			result += extract_text(child);
-			child = child->nextSibling();
 		}
 		return result;
 	};
-	const XMLString PRESENTATION_NS = "http://schemas.openxmlformats.org/presentationml/2006/main";
-	const NodeList* shapes = slide_doc->getElementsByTagNameNS(PRESENTATION_NS, "sp");
-	if (shapes == nullptr) {
+	auto shapes = slide_doc.select_nodes("//*[local-name()='sp']");
+	if (shapes.empty()) {
 		return wxEmptyString;
 	}
-	for (unsigned long i = 0; i < shapes->length(); ++i) {
-		Node* shape = shapes->item(i);
+	for (auto sn : shapes) {
+		auto shape = sn.node();
 		bool is_title = false;
-		std::function<void(Node*)> find_title_placeholder = [&](Node* node) {
-			if (node == nullptr || is_title) {
+		std::function<void(pugi::xml_node)> find_title_placeholder = [&](pugi::xml_node node) {
+			if (!node || is_title) {
 				return;
 			}
-			if (node->nodeType() == Node::ELEMENT_NODE) {
-				auto* element = dynamic_cast<Element*>(node);
-				if (element->localName() == "ph") {
-					std::string type = element->getAttribute("type");
+			if (node.type() == pugi::node_element) {
+				if (get_local_name(node.name()) == "ph") {
+					std::string type = node.attribute("type").as_string();
 					if (type == "title" || type == "ctrTitle") {
 						is_title = true;
 						return;
 					}
 				}
 			}
-			Node* child = node->firstChild();
-			while (child != nullptr) {
+			for (auto child : node.children()) {
 				find_title_placeholder(child);
-				child = child->nextSibling();
 			}
 		};
 		find_title_placeholder(shape);

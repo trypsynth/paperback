@@ -11,18 +11,9 @@
 #include "document.hpp"
 #include "document_buffer.hpp"
 #include "utils.hpp"
-#include <Poco/AutoPtr.h>
-#include <Poco/DOM/DOMParser.h>
-#include <Poco/DOM/Document.h>
-#include <Poco/DOM/Element.h>
-#include <Poco/DOM/Node.h>
-#include <Poco/DOM/NodeList.h>
-#include <Poco/DOM/Text.h>
-#include <Poco/Exception.h>
-#include <Poco/SAX/InputSource.h>
-#include <Poco/SAX/XMLReader.h>
 #include <cstddef>
 #include <memory>
+#include <pugixml.hpp>
 #include <sstream>
 #include <string>
 #include <wx/filename.h>
@@ -31,8 +22,14 @@
 #include <wx/wfstream.h>
 #include <wx/zipstrm.h>
 
-using namespace Poco;
-using namespace Poco::XML;
+static std::string get_local_name(const char* qname) {
+	if (!qname) {
+		return {};
+	}
+	std::string s(qname);
+	size_t pos = s.find(':');
+	return pos == std::string::npos ? s : s.substr(pos + 1);
+}
 
 std::unique_ptr<document> odt_parser::load(const wxString& file_path) const {
 	wxFileInputStream file_stream(file_path);
@@ -52,35 +49,34 @@ std::unique_ptr<document> odt_parser::load(const wxString& file_path) const {
 		throw parser_exception(_("ODT file does not contain content.xml or it is empty"), file_path);
 	}
 	try {
-		std::istringstream content_stream(content);
-		InputSource source(content_stream);
-		DOMParser parser;
-		parser.setFeature(XMLReader::FEATURE_NAMESPACES, true);
-		AutoPtr<Poco::XML::Document> p_doc = parser.parse(&source);
+		pugi::xml_document p_doc;
+		if (!p_doc.load_buffer(content.data(), content.size(), pugi::parse_default | pugi::parse_ws_pcdata)) {
+			throw parser_exception("Invalid ODT content", file_path);
+		}
 		auto doc = std::make_unique<document>();
 		doc->title = wxFileName(file_path).GetName();
 		wxString text;
-		traverse(p_doc->documentElement(), text, doc.get());
+		traverse(p_doc.document_element(), text, doc.get());
 		doc->buffer.set_content(text);
 		doc->buffer.finalize_markers();
 		doc->toc_items = build_toc_from_headings(doc->buffer);
 		return doc;
-	} catch (const Poco::Exception& e) {
-		throw parser_exception(wxString::Format(_("XML parsing error: %s"), wxString::FromUTF8(e.displayText())), file_path);
+	} catch (...) {
+		throw;
 	}
 }
 
-void odt_parser::traverse(Poco::XML::Node* node, wxString& text, document* doc) const {
+void odt_parser::traverse(pugi::xml_node node, wxString& text, document* doc) const {
 	if (node == nullptr) {
 		return;
 	}
-	if (node->nodeType() == Poco::XML::Node::ELEMENT_NODE) {
-		auto* element = dynamic_cast<Poco::XML::Element*>(node);
-		const std::string local_name = element->localName();
+	if (node.type() == pugi::node_element) {
+		auto element = node;
+		const std::string local_name = get_local_name(element.name());
 		if (local_name == "h") {
 			int level = 0;
-			if (element->hasAttributeNS("urn:oasis:names:tc:opendocument:xmlns:text:1.0", "outline-level")) {
-				level = std::stoi(element->getAttributeNS("urn:oasis:names:tc:opendocument:xmlns:text:1.0", "outline-level"));
+			if (auto attr = element.attribute("text:outline-level")) {
+				level = std::stoi(attr.as_string());
 			}
 			const size_t heading_offset = text.length();
 			wxString heading_text;
@@ -94,27 +90,25 @@ void odt_parser::traverse(Poco::XML::Node* node, wxString& text, document* doc) 
 			traverse_children(element, text, doc);
 			text += "\n";
 		} else if (local_name == "a") {
-			if (element->hasAttributeNS("http://www.w3.org/1999/xlink", "href")) {
-				const wxString href = wxString::FromUTF8(element->getAttributeNS("http://www.w3.org/1999/xlink", "href"));
+			std::string href = element.attribute("xlink:href").as_string();
+			if (!href.empty()) {
+				const wxString href_wx = wxString::FromUTF8(href);
 				const size_t link_offset = text.length();
 				wxString link_text;
 				traverse_children(element, link_text, doc);
 				text += link_text;
-				doc->buffer.add_link(link_offset, link_text, href);
+				doc->buffer.add_link(link_offset, link_text, href_wx);
 			}
 		} else {
 			traverse_children(element, text, doc);
 		}
-	} else if (node->nodeType() == Poco::XML::Node::TEXT_NODE) {
-		auto* text_node = dynamic_cast<Poco::XML::Text*>(node);
-		text += wxString::FromUTF8(text_node->data());
+	} else if (node.type() == pugi::node_pcdata || node.type() == pugi::node_cdata) {
+		text += wxString::FromUTF8(node.value());
 	}
 }
 
-void odt_parser::traverse_children(Poco::XML::Node* node, wxString& text, document* doc) const {
-	Poco::XML::Node* child = node->firstChild();
-	while (child != nullptr) {
+void odt_parser::traverse_children(pugi::xml_node node, wxString& text, document* doc) const {
+	for (auto child : node.children()) {
 		traverse(child, text, doc);
-		child = child->nextSibling();
 	}
 }

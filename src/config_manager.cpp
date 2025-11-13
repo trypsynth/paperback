@@ -9,22 +9,120 @@
 
 #include "config_manager.hpp"
 #include "constants.hpp"
-#include <Poco/Base64Decoder.h>
-#include <Poco/Base64Encoder.h>
-#include <Poco/DigestEngine.h>
-#include <Poco/SHA1Engine.h>
 #include <algorithm>
 #include <cmath>
 #include <functional>
 #include <ios>
+#include <mbedtls/sha1.h>
+#include <mbedtls/version.h>
 #include <sstream>
 #include <wx/filefn.h>
 #include <wx/filename.h>
 #include <wx/stdpaths.h>
 #include <wx/string.h>
 #include <wx/tokenzr.h>
+#include <wx/utils.h>
 
 namespace {
+static std::string b64_encode(const unsigned char* data, size_t len, bool url_safe, bool pad) {
+	static constexpr char k_std[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+	static constexpr char k_url[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+	const char* alpha = url_safe ? k_url : k_std;
+	std::string out;
+	out.reserve(((len + 2) / 3) * 4);
+	size_t i{0};
+	while (i + 3 <= len) {
+		uint32_t n = (uint32_t(data[i]) << 16) | (uint32_t(data[i + 1]) << 8) | uint32_t(data[i + 2]);
+		out.push_back(alpha[(n >> 18) & 63]);
+		out.push_back(alpha[(n >> 12) & 63]);
+		out.push_back(alpha[(n >> 6) & 63]);
+		out.push_back(alpha[n & 63]);
+		i += 3;
+	}
+	size_t rem{len - i};
+	if (rem == 1) {
+		uint32_t n = (uint32_t(data[i]) << 16);
+		out.push_back(alpha[(n >> 18) & 63]);
+		out.push_back(alpha[(n >> 12) & 63]);
+		if (pad) {
+			out.push_back('=');
+			out.push_back('=');
+		}
+	} else if (rem == 2) {
+		uint32_t n = (uint32_t(data[i]) << 16) | (uint32_t(data[i + 1]) << 8);
+		out.push_back(alpha[(n >> 18) & 63]);
+		out.push_back(alpha[(n >> 12) & 63]);
+		out.push_back(alpha[(n >> 6) & 63]);
+		if (pad) {
+			out.push_back('=');
+		}
+	}
+	return out;
+}
+
+static inline unsigned b64_val(int c, bool url_safe) {
+	if (c >= 'A' && c <= 'Z') {
+		return c - 'A';
+	}
+	if (c >= 'a' && c <= 'z') {
+		return c - 'a' + 26;
+	}
+	if (c >= '0' && c <= '9') {
+		return c - '0' + 52;
+	}
+	if (url_safe) {
+		if (c == '-') {
+			return 62;
+		}
+		if (c == '_') {
+			return 63;
+		}
+	} else {
+		if (c == '+') {
+			return 62;
+		}
+		if (c == '/') {
+			return 63;
+		}
+	}
+	return 255;
+}
+
+static std::string b64_decode(std::string_view s, bool url_safe) {
+	std::string out;
+	out.reserve((s.size() * 3) / 4);
+	uint32_t buf{0};
+	int bits{0};
+	for (char ch : s) {
+		if (ch == '=') {
+			break;
+		}
+		unsigned v = b64_val(static_cast<unsigned char>(ch), url_safe);
+		if (v == 255) {
+			continue;
+		}
+		buf = (buf << 6) | v;
+		bits += 6;
+		if (bits >= 8) {
+			bits -= 8;
+			out.push_back(char((buf >> bits) & 0xFF));
+		}
+	}
+	return out;
+}
+
+static int sha1_compute(const unsigned char* data, size_t len, unsigned char out[20]) {
+#if defined(MBEDTLS_VERSION_NUMBER)
+#if MBEDTLS_VERSION_NUMBER >= 0x03000000
+	return mbedtls_sha1(data, len, out);
+#else
+	return mbedtls_sha1_ret(data, len, out);
+#endif
+#else
+	return -1;
+#endif
+}
+
 inline bool read_config_value(wxFileConfig* cfg, const wxString& key, bool default_val) {
 	return cfg->ReadBool(key, default_val);
 }
@@ -181,7 +279,8 @@ wxArrayString config_manager::get_recent_documents() const {
 		return result;
 	}
 	config->SetPath("/recent_documents");
-	for (size_t i = 0; i < MAX_RECENT_DOCUMENTS_TO_SHOW; ++i) {
+	// Read all sequential docN entries without an upper limit, preserving the stored recency order.
+	for (size_t i = 0;; ++i) {
 		const wxString key = wxString::Format("doc%zu", i);
 		const wxString doc_id = config->Read(key, "");
 		if (doc_id.IsEmpty()) {
@@ -285,12 +384,55 @@ void config_manager::clear_opened_documents() {
 	}
 }
 
-void config_manager::set_document_position(const wxString& path, int position) {
+void config_manager::set_document_position(const wxString& path, long position) {
 	set_document_setting(path, "last_position", position);
 }
 
-int config_manager::get_document_position(const wxString& path) const {
-	return get_document_setting(path, "last_position", 0);
+long config_manager::get_document_position(const wxString& path) const {
+	return get_document_setting(path, "last_position", 0L);
+}
+
+void config_manager::set_navigation_history(const wxString& path, const std::vector<long>& history, size_t history_index) {
+	if (!config) {
+		return;
+	}
+	wxString history_string;
+	for (size_t i = 0; i < history.size(); ++i) {
+		if (i > 0) {
+			history_string += ",";
+		}
+		history_string += wxString::Format("%ld", history[i]);
+	}
+	with_document_section(path, [this, path, &history_string, history_index]() {
+		config->Write("path", path);
+		if (history_string.IsEmpty()) {
+			config->DeleteEntry("navigation_history");
+			config->DeleteEntry("navigation_history_index");
+		} else {
+			config->Write("navigation_history", history_string);
+			config->Write("navigation_history_index", static_cast<long>(history_index));
+		}
+	});
+}
+
+void config_manager::get_navigation_history(const wxString& path, std::vector<long>& history, size_t& history_index) const {
+	if (!config) {
+		return;
+	}
+	history.clear();
+	history_index = 0;
+	const wxString history_string = get_document_setting(path, "navigation_history", wxString(""));
+	if (!history_string.IsEmpty()) {
+		wxStringTokenizer tokenizer(history_string, ",");
+		while (tokenizer.HasMoreTokens()) {
+			const wxString token = tokenizer.GetNextToken().Trim().Trim(false);
+			long position{0};
+			if (token.ToLong(&position)) {
+				history.push_back(position);
+			}
+		}
+	}
+	history_index = get_document_setting(path, "navigation_history_index", 0L);
 }
 
 void config_manager::set_document_opened(const wxString& path, bool opened) {
@@ -347,6 +489,16 @@ void config_manager::remove_document_history(const wxString& path) {
 	config->DeleteGroup(doc_id_to_remove);
 }
 
+void config_manager::remove_navigation_history(const wxString& path) {
+	if (!config) {
+		return;
+	}
+	with_document_section(path, [this]() {
+		config->DeleteEntry("navigation_history");
+		config->DeleteEntry("navigation_history_index");
+	});
+}
+
 wxArrayString config_manager::get_all_documents() const {
 	wxArrayString result;
 	if (!config) {
@@ -371,7 +523,7 @@ wxArrayString config_manager::get_all_documents() const {
 	return result;
 }
 
-void config_manager::add_bookmark(const wxString& path, int start, int end, const wxString& note) {
+void config_manager::add_bookmark(const wxString& path, long start, long end, const wxString& note) {
 	if (!config) {
 		return;
 	}
@@ -397,7 +549,7 @@ void config_manager::add_bookmark(const wxString& path, int start, int end, cons
 			bookmark_string += ",";
 		}
 		const wxString encoded_note = encode_note(bookmarks[i].note);
-		bookmark_string += wxString::Format("%d:%d:%s", bookmarks[i].start, bookmarks[i].end, encoded_note);
+		bookmark_string += wxString::Format("%ld:%ld:%s", bookmarks[i].start, bookmarks[i].end, encoded_note);
 	}
 	with_document_section(path, [this, path, bookmark_string]() {
 		config->Write("path", path);
@@ -405,7 +557,7 @@ void config_manager::add_bookmark(const wxString& path, int start, int end, cons
 	});
 }
 
-void config_manager::remove_bookmark(const wxString& path, int start, int end) {
+void config_manager::remove_bookmark(const wxString& path, long start, long end) {
 	if (!config) {
 		return;
 	}
@@ -422,7 +574,7 @@ void config_manager::remove_bookmark(const wxString& path, int start, int end) {
 			bookmark_string += ",";
 		}
 		const wxString encoded_note = encode_note(bookmarks[i].note);
-		bookmark_string += wxString::Format("%d:%d:%s", bookmarks[i].start, bookmarks[i].end, encoded_note);
+		bookmark_string += wxString::Format("%ld:%ld:%s", bookmarks[i].start, bookmarks[i].end, encoded_note);
 	}
 	with_document_section(path, [this, path, bookmark_string]() {
 		config->Write("path", path);
@@ -434,7 +586,7 @@ void config_manager::remove_bookmark(const wxString& path, int start, int end) {
 	});
 }
 
-void config_manager::toggle_bookmark(const wxString& path, int start, int end, const wxString& note) {
+void config_manager::toggle_bookmark(const wxString& path, long start, long end, const wxString& note) {
 	std::vector<bookmark> bookmarks = get_bookmarks(path);
 	bookmark to_toggle(start, end);
 	bool exists = false;
@@ -451,7 +603,7 @@ void config_manager::toggle_bookmark(const wxString& path, int start, int end, c
 	}
 }
 
-void config_manager::update_bookmark_note(const wxString& path, int start, int end, const wxString& note) {
+void config_manager::update_bookmark_note(const wxString& path, long start, long end, const wxString& note) {
 	if (!config) {
 		return;
 	}
@@ -473,7 +625,7 @@ void config_manager::update_bookmark_note(const wxString& path, int start, int e
 			bookmark_string += ",";
 		}
 		const wxString encoded_note = encode_note(bookmarks[i].note);
-		bookmark_string += wxString::Format("%d:%d:%s", bookmarks[i].start, bookmarks[i].end, encoded_note);
+		bookmark_string += wxString::Format("%ld:%ld:%s", bookmarks[i].start, bookmarks[i].end, encoded_note);
 	}
 	with_document_section(path, [this, path, bookmark_string]() {
 		config->Write("path", path);
@@ -540,7 +692,7 @@ void config_manager::clear_bookmarks(const wxString& path) {
 	});
 }
 
-bookmark config_manager::get_next_bookmark(const wxString& path, int current_position) const {
+bookmark config_manager::get_next_bookmark(const wxString& path, long current_position) const {
 	const auto& bookmarks = get_bookmarks(path);
 	for (const auto& bm : bookmarks) {
 		if (bm.start > current_position) {
@@ -550,7 +702,7 @@ bookmark config_manager::get_next_bookmark(const wxString& path, int current_pos
 	return {-1, -1};
 }
 
-bookmark config_manager::get_previous_bookmark(const wxString& path, int current_position) const {
+bookmark config_manager::get_previous_bookmark(const wxString& path, long current_position) const {
 	const auto& bookmarks = get_bookmarks(path);
 	for (auto it = bookmarks.rbegin(); it != bookmarks.rend(); ++it) {
 		if (it->start < current_position) {
@@ -560,15 +712,15 @@ bookmark config_manager::get_previous_bookmark(const wxString& path, int current
 	return {-1, -1};
 }
 
-bookmark config_manager::get_closest_bookmark(const wxString& path, int current_position) const {
+bookmark config_manager::get_closest_bookmark(const wxString& path, long current_position) const {
 	const auto& bookmarks = get_bookmarks(path);
 	if (bookmarks.empty()) {
 		return {-1, -1};
 	}
 	const auto* closest = &bookmarks.front();
-	int min_distance = std::abs(closest->start - current_position);
+	long min_distance = std::abs(closest->start - current_position);
 	for (const auto& bm : bookmarks) {
-		const int distance = std::abs(bm.start - current_position);
+		const long distance = std::abs(bm.start - current_position);
 		if (distance < min_distance) {
 			min_distance = distance;
 			closest = &bm;
@@ -612,13 +764,13 @@ bool config_manager::migrate_config() {
 	if (version == CONFIG_VERSION_LEGACY) {
 		config->SetPath("/");
 		const bool restore_docs = config->ReadBool("restore_previous_documents", true);
-		const bool word_wrap = config->ReadBool("word_wrap", false);
+		const bool wordwrap = config->ReadBool("word_wrap", false);
 		config->SetPath("/app");
 		if (!config->HasEntry("restore_previous_documents")) {
 			config->Write("restore_previous_documents", restore_docs);
 		}
 		if (!config->HasEntry("word_wrap")) {
-			config->Write("word_wrap", word_wrap);
+			config->Write("word_wrap", wordwrap);
 		}
 		config->SetPath("/positions");
 		wxString key;
@@ -719,12 +871,77 @@ bool config_manager::migrate_config() {
 	return true;
 }
 
+void config_manager::export_document_settings(const wxString& doc_path, const wxString& export_path) {
+	if (!config) {
+		return;
+	}
+	const wxString doc_section = get_document_section(doc_path);
+	wxFileConfig export_config(APP_NAME, "", export_path, wxEmptyString, wxCONFIG_USE_LOCAL_FILE);
+	config->SetPath(doc_section);
+	export_config.DeleteGroup("/");
+	long index{0};
+	wxString key;
+	bool cont = config->GetFirstEntry(key, index);
+	while (cont) {
+		if (key != "path") {
+			export_config.Write(key, config->Read(key, ""));
+		}
+		cont = config->GetNextEntry(key, index);
+	}
+	config->SetPath("/");
+	export_config.Flush();
+}
+
+void config_manager::import_document_settings(const wxString& path) {
+	if (!config) {
+		return;
+	}
+	const wxString import_path = path + ".paperback";
+	if (!wxFileName::FileExists(import_path)) {
+		return;
+	}
+	import_settings_from_file(path, import_path);
+}
+
+void config_manager::import_settings_from_file(const wxString& doc_path, const wxString& import_path) {
+	if (!config || !wxFileName::FileExists(import_path)) {
+		return;
+	}
+	wxFileConfig import_config(APP_NAME, "", import_path, wxEmptyString, wxCONFIG_USE_LOCAL_FILE);
+	const wxString doc_section = get_document_section(doc_path);
+	config->SetPath(doc_section);
+	long index{0};
+	wxString key;
+	bool cont = import_config.GetFirstEntry(key, index);
+	while (cont) {
+		config->Write(key, import_config.Read(key, ""));
+		cont = import_config.GetNextEntry(key, index);
+	}
+	config->Write("path", doc_path);
+	config->SetPath("/");
+	config->Flush();
+}
+
 wxString config_manager::get_config_path() {
 	const wxString exe_path = wxStandardPaths::Get().GetExecutablePath();
 	const wxString exe_dir = wxFileName(exe_path).GetPath();
+#ifdef __WXMSW__
+	bool force_appdata = false;
+	wxString program_files_path;
+	wxGetEnv("ProgramFiles", &program_files_path);
+	wxString program_files_x86_path;
+	wxGetEnv("ProgramFiles(x86)", &program_files_x86_path);
+	if ((!program_files_path.IsEmpty() && exe_path.StartsWith(program_files_path)) || (!program_files_x86_path.IsEmpty() && exe_path.StartsWith(program_files_x86_path))) {
+		force_appdata = true;
+	}
+	if (!force_appdata && is_directory_writable(exe_dir)) {
+		return exe_dir + wxFileName::GetPathSeparator() + APP_NAME + ".ini";
+	}
+#else
 	if (is_directory_writable(exe_dir)) {
 		return exe_dir + wxFileName::GetPathSeparator() + APP_NAME + ".ini";
 	}
+#endif
 	const wxString appdata_dir = wxStandardPaths::Get().GetUserDataDir();
 	if (!wxFileName::DirExists(appdata_dir)) {
 		wxFileName::Mkdir(appdata_dir, wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
@@ -768,14 +985,13 @@ wxString config_manager::get_document_section(const wxString& path) {
 }
 
 wxString config_manager::escape_document_path(const wxString& path) {
-	Poco::SHA1Engine sha1;
-	sha1.update(path.ToStdString());
-	const Poco::DigestEngine::Digest& digest = sha1.digest();
-	std::ostringstream b64_stream;
-	Poco::Base64Encoder encoder(b64_stream, static_cast<unsigned>(Poco::BASE64_URL_ENCODING) | static_cast<unsigned>(Poco::BASE64_NO_PADDING));
-	encoder.write(reinterpret_cast<const char*>(digest.data()), static_cast<std::streamsize>(digest.size()));
-	encoder.close();
-	return wxString::Format("doc_%s", b64_stream.str());
+	unsigned char digest[20]{};
+	const std::string s = path.ToStdString();
+	if (sha1_compute(reinterpret_cast<const unsigned char*>(s.data()), s.size(), digest) != 0) {
+		return wxString::Format("doc_%s", wxString::FromUTF8(s));
+	}
+	const std::string enc = b64_encode(digest, sizeof(digest), /*url_safe*/ true, /*pad*/ false);
+	return wxString::Format("doc_%s", enc);
 }
 
 void config_manager::with_document_section(const wxString& path, const std::function<void()>& func) const {
@@ -801,23 +1017,17 @@ wxString config_manager::encode_note(const wxString& note) {
 	if (note.IsEmpty()) {
 		return wxEmptyString;
 	}
-	std::ostringstream b64_stream;
-	Poco::Base64Encoder encoder(b64_stream);
-	const std::string note_str = note.ToStdString();
-	encoder.write(note_str.data(), static_cast<std::streamsize>(note_str.size()));
-	encoder.close();
-	return wxString(b64_stream.str());
+	const wxScopedCharBuffer note_utf8 = note.ToUTF8();
+	const auto enc = b64_encode(reinterpret_cast<const unsigned char*>(note_utf8.data()), note_utf8.length(), /*url_safe*/ false, /*pad*/ true);
+	return wxString::FromUTF8(enc);
 }
 
 wxString config_manager::decode_note(const wxString& encoded) {
 	if (encoded.IsEmpty()) {
 		return wxEmptyString;
 	}
-	std::istringstream b64_stream(encoded.ToStdString());
-	Poco::Base64Decoder decoder(b64_stream);
-	std::string decoded_str;
-	std::getline(decoder, decoded_str, '\0');
-	return wxString::FromUTF8(decoded_str.c_str());
+	const std::string dec = b64_decode(encoded.ToStdString(), /*url_safe*/ false);
+	return wxString::FromUTF8(dec.c_str());
 }
 
 template bool config_manager::get_app_setting<bool>(const wxString&, const bool&) const;

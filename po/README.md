@@ -1,6 +1,8 @@
 # Paperback Translation Guide
 Thank you for your interest in translating Paperback! This is a complete guide walking you through all the steps of how to easily add a new language, as well as how to update it when new strings get added.
 
+Prerequisites: Install the gettext tools (`xgettext`, `msgmerge`, `msgfmt`) and ensure they are available on your `PATH`.
+
 ## Starting a New Translation
 1. Generate the .pot template (normally not necessary, just in case):
 ```bash

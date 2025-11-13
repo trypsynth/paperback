@@ -7,5 +7,8 @@ site:
   data:
     nav:
       - [Home, "/"]
+      - [Downloads, "/downloads"]
       - [README, "/readme.html"]
       - [Source code, "https://github.com/trypsynth/paperback"]
+      - [Sponsor, "https://github.com/sponsors/trypsynth"]
+      - [Donate, "https://paypal.me/tygillespie05"]
