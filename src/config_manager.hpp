@@ -55,6 +55,7 @@ public:
 	static constexpr app_setting<bool> minimize_to_tray{"minimize_to_tray", false};
 	static constexpr app_setting<bool> start_maximized{"start_maximized", false};
 	static constexpr app_setting<bool> compact_go_menu{"compact_go_menu", true};
+	static constexpr app_setting<bool> open_in_new_window{"open_in_new_window", false};
 	static constexpr app_setting<bool> navigation_wrap{"navigation_wrap", false};
 	static constexpr app_setting<bool> check_for_updates_on_startup{"check_for_updates_on_startup", true};
 	static constexpr app_setting<int> sleep_timer_duration{"sleep_timer_duration", 30};

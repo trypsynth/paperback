@@ -96,6 +96,7 @@ public:
 	[[nodiscard]] long load_document_position(const wxString& path) const;
 	void save_current_tab_position() const;
 	void save_all_tab_positions() const;
+	void ensure_tab_text_ctrl(document_tab* tab);
 	void save_all_tab_navigation_histories() const;
 	[[nodiscard]] wxString get_status_text() const;
 	[[nodiscard]] wxString get_window_title(const wxString& app_name) const;
@@ -111,8 +112,8 @@ private:
 
 	static void show_parser_error(const parser_exception& e);
 	static void setup_text_ctrl(wxTextCtrl* text_ctrl, const wxString& content);
-	void restore_document_position(document_tab* tab) const;
-	wxPanel* create_tab_panel(const wxString& content, document_tab* tab_data);
+	void restore_document_position(document_tab* tab);
+	wxPanel* create_tab_panel(document_tab* tab_data);
 	void navigate_to_heading(bool next, int specific_level = -1) const;
 	void navigate_to_section(bool next) const;
 	void navigate_to_page(bool next) const;
