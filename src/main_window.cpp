@@ -177,6 +177,7 @@ void main_window::create_menus() {
 			menu_item::item(ID_DOC_INFO, _("Document &info\tCtrl+I")),
 			menu_item::sep(),
 			menu_item::item(ID_TABLE_OF_CONTENTS, _("Table of contents\tCtrl+T")),
+			menu_item::item(ID_LIST_ELEMENTS, _("&Elements List...\tF7")),
 			menu_item::sep(),
 			menu_item::item(ID_OPEN_CONTAINING_FOLDER, _("Open &containing folder\tCtrl+Shift+C")),
 			menu_item::submenu(_("Import/&Export"), {
@@ -262,6 +263,7 @@ void main_window::bind_events() {
 		{ID_WORD_COUNT, &main_window::on_word_count},
 		{ID_DOC_INFO, &main_window::on_doc_info},
 		{ID_TABLE_OF_CONTENTS, &main_window::on_toc},
+		{ID_LIST_ELEMENTS, &main_window::on_list_elements},
 		{ID_OPEN_CONTAINING_FOLDER, &main_window::on_open_containing_folder},
 		{ID_OPTIONS, &main_window::on_options},
 		{ID_SLEEP_TIMER, &main_window::on_sleep_timer},
@@ -753,6 +755,32 @@ void main_window::on_doc_info(wxCommandEvent&) {
 
 void main_window::on_toc(wxCommandEvent&) {
 	doc_manager->show_table_of_contents(this);
+	update_status_bar();
+	save_position_immediately();
+}
+
+void main_window::on_list_elements(wxCommandEvent&) {
+	auto* const doc = doc_manager->get_active_document();
+	if (doc == nullptr) {
+		return;
+	}
+
+	elements_dialog dlg(this, doc);
+	if (dlg.ShowModal() != wxID_OK) {
+		return;
+	}
+
+	const int offset = dlg.get_selected_offset();
+	if (offset < 0) {
+		return;
+	}
+
+	doc_manager->go_to_position(offset);
+
+	if (dlg.get_selected_view() == 1) {
+		doc_manager->activate_current_link();
+	}
+
 	update_status_bar();
 	save_position_immediately();
 }
