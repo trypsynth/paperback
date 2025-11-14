@@ -42,7 +42,8 @@ private:
 	void traverse(pugi::xml_node node, wxString& text, std::vector<heading_info>& headings, document* doc, const std::map<std::string, std::string>& rels) const;
 	static void process_paragraph(pugi::xml_node element, wxString& text, std::vector<heading_info>& headings, document* doc, const std::map<std::string, std::string>& rels);
 	static void process_hyperlink(pugi::xml_node element, wxString& text, document* doc, const std::map<std::string, std::string>& rels, size_t paragraph_start_offset);
-	static int get_heading_level(pugi::xml_node pr_element);
+	static int get_paragraph_heading_level(pugi::xml_node pr_element);
+	static int get_run_heading_level(pugi::xml_node rpr_element);
 	static std::string get_run_text(pugi::xml_node prun_element);
 	static std::string parse_hyperlink_instruction(const std::string& instruction);
 };
