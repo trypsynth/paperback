@@ -456,7 +456,7 @@ document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc
 	finalize_layout();
 }
 
-elements_dialog::elements_dialog(wxWindow* parent, const document* doc) : dialog(parent, _("Elements")), doc(doc) {
+elements_dialog::elements_dialog(wxWindow* parent, const document* doc, long current_pos) : dialog(parent, _("Elements")), doc(doc), current_pos(current_pos) {
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	auto* choice_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* choice_label = new wxStaticText(this, wxID_ANY, _("&View:"));
@@ -493,9 +493,25 @@ elements_dialog::elements_dialog(wxWindow* parent, const document* doc) : dialog
 
 void elements_dialog::populate_links() {
 	const auto link_markers = doc->buffer.get_markers_by_type(marker_type::link);
+	int closest_index = -1;
 	for (const auto* link_marker : link_markers) {
 		links_list->Append(link_marker->text);
 		links_list->SetClientData(links_list->GetCount() - 1, reinterpret_cast<void*>(link_marker->pos));
+	}
+	if (links_list->IsEmpty()) {
+		return;
+	}
+	for (int i = links_list->GetCount() - 1; i >= 0; i--) {
+		const size_t pos = reinterpret_cast<size_t>(links_list->GetClientData(i));
+		if (pos <= static_cast<size_t>(current_pos)) {
+			closest_index = i;
+			break;
+		}
+	}
+	if (closest_index != -1) {
+		links_list->SetSelection(closest_index);
+	} else {
+		links_list->SetSelection(0);
 	}
 }
 
@@ -503,6 +519,7 @@ void elements_dialog::populate_headings() {
 	const wxTreeItemId root = headings_tree->AddRoot(_("Root"));
 	std::vector<wxTreeItemId> parent_ids(7, root);
 	const auto heading_markers = doc->buffer.get_heading_markers();
+	wxTreeItemId closest_item;
 	for (const auto* heading_marker : heading_markers) {
 		const int level = heading_marker->level;
 		if (level < 1 || level > 6) {
@@ -512,11 +529,25 @@ void elements_dialog::populate_headings() {
 		const wxString display_text = heading_marker->text.IsEmpty() ? wxString(_("Untitled")) : heading_marker->text;
 		const wxTreeItemId item_id = headings_tree->AppendItem(parent_id, display_text);
 		headings_tree->SetItemData(item_id, new toc_tree_item_data(heading_marker->pos));
+		if (static_cast<long>(heading_marker->pos) <= current_pos) {
+			closest_item = item_id;
+		}
 		for (int i = level; i < 7; ++i) {
 			parent_ids[i] = item_id;
 		}
 	}
 	headings_tree->ExpandAll();
+	if (closest_item.IsOk()) {
+		headings_tree->SelectItem(closest_item);
+		headings_tree->EnsureVisible(closest_item);
+	} else {
+		wxTreeItemIdValue cookie;
+		const wxTreeItemId first_item = headings_tree->GetFirstChild(headings_tree->GetRootItem(), cookie);
+		if (first_item.IsOk()) {
+			headings_tree->SelectItem(first_item);
+			headings_tree->EnsureVisible(first_item);
+		}
+	}
 }
 
 void elements_dialog::on_view_choice_changed(wxCommandEvent& /*event*/) {
