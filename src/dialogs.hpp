@@ -141,7 +141,7 @@ private:
 
 class elements_dialog : public dialog {
 public:
-	elements_dialog(wxWindow* parent, const document* doc);
+	elements_dialog(wxWindow* parent, const document* doc, long current_pos);
 	~elements_dialog() = default;
 	elements_dialog(const elements_dialog&) = delete;
 	elements_dialog& operator=(const elements_dialog&) = delete;
@@ -164,6 +164,7 @@ private:
 	wxBoxSizer* links_sizer{nullptr};
 	wxBoxSizer* headings_sizer{nullptr};
 	int selected_offset{-1};
+	long current_pos{-1};
 
 	void populate_links();
 	void populate_headings();

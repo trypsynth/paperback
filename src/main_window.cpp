@@ -783,7 +783,12 @@ void main_window::on_list_elements(wxCommandEvent&) {
 	if (doc == nullptr) {
 		return;
 	}
-	elements_dialog dlg(this, doc);
+	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
+	if (text_ctrl == nullptr) {
+		return;
+	}
+	const long current_pos = text_ctrl->GetInsertionPoint();
+	elements_dialog dlg(this, doc, current_pos);
 	if (dlg.ShowModal() != wxID_OK) {
 		return;
 	}
