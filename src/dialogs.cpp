@@ -93,7 +93,7 @@ all_documents_dialog::all_documents_dialog(wxWindow* parent, config_manager& cfg
 	doc_list->SetFocus();
 	auto* action_sizer = new wxBoxSizer(wxHORIZONTAL);
 	open_button = new wxButton(this, wxID_OPEN, _("&Open"));
-	auto* remove_button = new wxButton(this, wxID_REMOVE, _("&Remove"));
+	remove_button = new wxButton(this, wxID_REMOVE, _("&Remove"));
 	action_sizer->Add(open_button, 0, wxRIGHT, DIALOG_PADDING);
 	action_sizer->Add(remove_button, 0, wxRIGHT, DIALOG_PADDING);
 	content_sizer->Add(action_sizer, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);
@@ -111,6 +111,9 @@ all_documents_dialog::all_documents_dialog(wxWindow* parent, config_manager& cfg
 			const wxString status = doc_list->GetItemText(item, 1);
 			open_button->Enable(status != _("Missing"));
 		}
+	} else {
+		open_button->Enable(false);
+		remove_button->Enable(false);
 	}
 }
 
@@ -231,6 +234,16 @@ void all_documents_dialog::populate_document_list(const wxString& filter) {
 		if (open_button != nullptr) {
 			const wxString status = doc_list->GetItemText(0, 1);
 			open_button->Enable(status != _("Missing"));
+		}
+		if (remove_button != nullptr) {
+			remove_button->Enable(true);
+		}
+	} else {
+		if (open_button != nullptr) {
+			open_button->Enable(false);
+		}
+		if (remove_button != nullptr) {
+			remove_button->Enable(false);
 		}
 	}
 }

@@ -1037,6 +1037,11 @@ void main_window::on_recent_document(wxCommandEvent& event) {
 
 void main_window::on_show_all_documents(wxCommandEvent&) {
 	auto& config_mgr = wxGetApp().get_config_manager();
+	const wxArrayString all_docs = config_mgr.get_all_documents();
+	if (all_docs.empty()) {
+		speak(_("No recent documents."));
+		return;
+	}
 	wxArrayString open_docs;
 	for (size_t i = 0; i < doc_manager->get_tab_count(); ++i) {
 		if (doc_manager->get_tab(static_cast<int>(i)) != nullptr) {
@@ -1096,7 +1101,6 @@ void main_window::update_recent_documents_menu() {
 	}
 	if (menu_count == 0) {
 		recent_documents_menu->Append(wxID_ANY, _("(No recent documents)"))->Enable(false);
-		return;
 	}
 	recent_documents_menu->AppendSeparator();
 	recent_documents_menu->Append(ID_SHOW_ALL_DOCUMENTS, _("Show All...\tCtrl+R"));

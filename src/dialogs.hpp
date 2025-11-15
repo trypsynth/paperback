@@ -67,6 +67,7 @@ private:
 	wxTextCtrl* search_ctrl{nullptr};
 	wxListView* doc_list{nullptr};
 	wxButton* open_button{nullptr};
+	wxButton* remove_button{nullptr};
 	config_manager& config_mgr;
 	wxArrayString doc_paths;
 	wxArrayString open_doc_paths;
