@@ -46,6 +46,8 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * Ctrl+G: bring up the go to line dialog.
 * Ctrl+Shift+G: bring up the go to percent dialog.
 * Ctrl+P: Bring up the go to page dialog, if supported in your focused document.
+* Alt+left: go to the previous item in the navigation history.
+* Alt+right: go to the next item in the navigation history.
 * Left bracket: go to the previous section.
 * Right bracket: go to the next section.
 * Shift+H: go to the previous heading.
@@ -83,6 +85,7 @@ Paperback's user interface was designed specifically with keyboard and screen re
 * Ctrl+W: view the word count of the currently focused document.
 * Ctrl+I: bring up the document info dialog.
 * Ctrl+T: show the table of contents.
+* F7: bring up the elements list.
 * Ctrl+Shift+E: export your currently focused document's bookmarks and reading position to a file for easy sharing.
 * Ctrl+Shift+I: import metadata about a book from a .paperback file.
 * Ctrl+E: export your focused document's contents to a text file.
@@ -129,11 +132,17 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 
 ## Changelog
 ### Version 0.6.1
+* Added password-protected PDF support! [#169](https://github.com/trypsynth/paperback/issues/169).
+* Added a very basic go to previous/next position feature. If you press enter on an internal link and it moves your cursor, that position will now be remembered, and can be navigated to with alt+left/right arrows. [#115](https://github.com/trypsynth/paperback/issues/115), [#174](https://github.com/trypsynth/paperback/pull/174).
+* Added an elements list! Currently it only shows a tree of all the headings in your document or a list of links, but there are plans to expand it in the future. [#173](https://github.com/trypsynth/paperback/issues/173), [#177](https://github.com/trypsynth/paperback/pull/177).
 * Added an option to start Paperback in maximized mode by default. [#164](https://github.com/trypsynth/paperback/issues/164), [#172](https://github.com/trypsynth/paperback/pull/172).
-* Fixed internal links in some Epub documents not working. [#167](https://github.com/trypsynth/paperback/issues/167), [#171](https://github.com/trypsynth/paperback/pull/171).
+* Fixed links in some Epub documents not working properly. [#167](https://github.com/trypsynth/paperback/issues/167), [#171](https://github.com/trypsynth/paperback/pull/171), [#178](https://github.com/trypsynth/paperback/issues/178), [#180](https://github.com/trypsynth/paperback/pull/180).
+* Fixed parsing EPub TOCs containing relative paths. [#187](https://github.com/trypsynth/paperback/issues/187).
 * Fixed some epub documents not showing a title or author. [#175](https://github.com/trypsynth/paperback/issues/175).
+* Fixed the titles of some epub chapters not showing up properly in the TOC dialog. [#176](https://github.com/trypsynth/paperback/pull/176).
 * Fixed you not being able to use the space bar to activate the OK/cancel buttons in the TOC dialog. [#170](https://github.com/trypsynth/paperback/issues/170).
-
+* Improved the handling of headings in Word documents. [#183](https://github.com/trypsynth/paperback/pull/183).
+* You will now get spoken feedback if the recent documents list is empty when you try to bring up the dialog. [#185](https://github.com/trypsynth/paperback/issues/185).
 
 ### Version 0.6.0
 * A new option to show the go menu in a far more compact form has been added to the options dialog, checked by default. 
