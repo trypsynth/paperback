@@ -32,7 +32,7 @@ public:
 		return parser_flags::supports_toc;
 	}
 
-	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
+	[[nodiscard]] std::unique_ptr<document> load(const parser_context& ctx) const override;
 
 private:
 	static std::string preprocess_markdown(const std::string& input);

@@ -28,32 +28,32 @@
 #include <wx/string.h>
 #include <wx/translation.h>
 
-std::unique_ptr<document> chm_parser::load(const wxString& path) const {
+std::unique_ptr<document> chm_parser::load(const parser_context& ctx) const {
 	chmFile* file = nullptr;
 	try {
-		file = chm_open(path.ToStdString().c_str());
+		file = chm_open(ctx.file_path.ToStdString().c_str());
 		if (file == nullptr) {
 			return nullptr;
 		}
-		chm_context ctx(file);
-		enumerate_files(ctx);
-		parse_system_file(ctx);
+		chm_context chm_ctx(file);
+		enumerate_files(chm_ctx);
+		parse_system_file(chm_ctx);
 		auto document_ptr = std::make_unique<document>();
-		parse_hhc_file(ctx, document_ptr->toc_items);
+		parse_hhc_file(chm_ctx, document_ptr->toc_items);
 		cleanup_toc(document_ptr->toc_items);
 		document_ptr->buffer.clear();
-		parse_html_files(ctx, document_ptr->buffer, document_ptr->toc_items);
+		parse_html_files(chm_ctx, document_ptr->buffer, document_ptr->toc_items);
 		document_ptr->buffer.finalize_markers();
-		for (const auto& pair_file_path_id_map : ctx.id_positions) {
+		for (const auto& pair_file_path_id_map : chm_ctx.id_positions) {
 			for (const auto& pair_id_pos : pair_file_path_id_map.second) {
 				document_ptr->id_positions[pair_id_pos.first] = pair_id_pos.second;
 			}
 		}
 		if (!document_ptr->toc_items.empty()) {
-			calculate_toc_offsets(document_ptr->toc_items, ctx);
+			calculate_toc_offsets(document_ptr->toc_items, chm_ctx);
 		}
-		if (!ctx.title.empty()) {
-			document_ptr->title = wxString::FromUTF8(ctx.title);
+		if (!chm_ctx.title.empty()) {
+			document_ptr->title = wxString::FromUTF8(chm_ctx.title);
 		}
 		chm_close(file);
 		return document_ptr;
@@ -66,24 +66,24 @@ std::unique_ptr<document> chm_parser::load(const wxString& path) const {
 		if (file != nullptr) {
 			chm_close(file);
 		}
-		throw parser_exception(wxString::FromUTF8(e.what()), path);
+		throw parser_exception(wxString::FromUTF8(e.what()), ctx.file_path);
 	} catch (...) {
 		if (file != nullptr) {
 			chm_close(file);
 		}
-		throw parser_exception(_("Unknown error while parsing CHM file"), path);
+		throw parser_exception(_("Unknown error while parsing CHM file"), ctx.file_path);
 	}
 }
 
-void chm_parser::enumerate_files(chm_context& ctx) {
-	chm_enumerate(ctx.file, CHM_ENUMERATE_ALL, file_enumerator, &ctx);
-	std::ranges::sort(ctx.html_files);
+void chm_parser::enumerate_files(chm_context& chm_ctx) {
+	chm_enumerate(chm_ctx.file, CHM_ENUMERATE_ALL, file_enumerator, &chm_ctx);
+	std::ranges::sort(chm_ctx.html_files);
 }
 
-void chm_parser::parse_html_files(chm_context& ctx, document_buffer& buffer, const std::vector<std::unique_ptr<toc_item>>& toc_items) const {
+void chm_parser::parse_html_files(chm_context& chm_ctx, document_buffer& buffer, const std::vector<std::unique_ptr<toc_item>>& toc_items) const {
 	std::vector<std::string> ordered_files;
 	std::map<std::string, std::string> toc_to_actual;
-	for (const auto& file : ctx.html_files) {
+	for (const auto& file : chm_ctx.html_files) {
 		const std::string normalized = normalize_path(file);
 		toc_to_actual[normalized] = file;
 	}
@@ -104,11 +104,11 @@ void chm_parser::parse_html_files(chm_context& ctx, document_buffer& buffer, con
 			}
 		}
 	} else {
-		ordered_files = ctx.html_files;
+		ordered_files = chm_ctx.html_files;
 	}
 	for (const auto& file_path : ordered_files) {
 		const size_t section_start = buffer.str().length();
-		std::string content = read_file_content(ctx.file, file_path);
+		std::string content = read_file_content(chm_ctx.file, file_path);
 		if (content.empty()) {
 			continue;
 		}
@@ -122,9 +122,9 @@ void chm_parser::parse_html_files(chm_context& ctx, document_buffer& buffer, con
 		const auto& links = converter.get_links();
 		const auto& id_positions = converter.get_id_positions();
 		const std::string normalized_path = normalize_path(file_path);
-		ctx.id_positions[normalized_path][""] = section_start;
+		chm_ctx.id_positions[normalized_path][""] = section_start;
 		for (const auto& [id, relative_pos] : id_positions) {
-			ctx.id_positions[normalized_path][id] = section_start + relative_pos;
+			chm_ctx.id_positions[normalized_path][id] = section_start + relative_pos;
 		}
 		const wxString wx_text = wxString::FromUTF8(text);
 		buffer.append(wx_text);
@@ -179,8 +179,8 @@ std::string chm_parser::normalize_path(const std::string& path) {
 	return result;
 }
 
-void chm_parser::parse_system_file(chm_context& ctx) {
-	const auto system_content = read_file_content(ctx.file, "/#SYSTEM");
+void chm_parser::parse_system_file(chm_context& chm_ctx) {
+	const auto system_content = read_file_content(chm_ctx.file, "/#SYSTEM");
 	if (system_content.size() < 4) {
 		return;
 	}
@@ -200,7 +200,7 @@ void chm_parser::parse_system_file(chm_context& ctx) {
 			if (entry.ends_with('\0')) {
 				entry.remove_suffix(1);
 			}
-			ctx.title = entry;
+			chm_ctx.title = entry;
 		}
 		index += 4 + length;
 	}
@@ -209,7 +209,7 @@ void chm_parser::parse_system_file(chm_context& ctx) {
 int chm_parser::file_enumerator(chmFile* /*unused*/, chmUnitInfo* ui, void* context) {
 	auto* ctx = static_cast<chm_context*>(context);
 	std::string path{ui->path};
-	std::string& lower_path = path;
+	std::string lower_path = path;
 	std::ranges::transform(lower_path, lower_path.begin(), [](unsigned char c) {
 		return std::tolower(c);
 	});
@@ -226,11 +226,11 @@ int chm_parser::file_enumerator(chmFile* /*unused*/, chmUnitInfo* ui, void* cont
 	return CHM_ENUMERATOR_CONTINUE;
 }
 
-void chm_parser::parse_hhc_file(chm_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items) {
-	if (ctx.hhc_file.empty()) {
+void chm_parser::parse_hhc_file(chm_context& chm_ctx, std::vector<std::unique_ptr<toc_item>>& toc_items) {
+	if (chm_ctx.hhc_file.empty()) {
 		return;
 	}
-	std::string hhc_content = read_file_content(ctx.file, ctx.hhc_file);
+	std::string hhc_content = read_file_content(chm_ctx.file, chm_ctx.hhc_file);
 	if (hhc_content.empty()) {
 		return;
 	}
@@ -355,7 +355,7 @@ void chm_parser::collect_html_files_from_toc(const std::vector<std::unique_ptr<t
 	}
 }
 
-int chm_parser::calculate_offset_from_path(const std::string& path, const chm_context& ctx) {
+int chm_parser::calculate_offset_from_path(const std::string& path, const chm_context& chm_ctx) {
 	std::string file_path = path;
 	std::string fragment_id;
 	const size_t fragment_pos = path.find('#');
@@ -364,8 +364,8 @@ int chm_parser::calculate_offset_from_path(const std::string& path, const chm_co
 		fragment_id = path.substr(fragment_pos + 1);
 	}
 	file_path = normalize_path(file_path);
-	auto it = ctx.id_positions.find(file_path);
-	if (it == ctx.id_positions.end()) {
+	auto it = chm_ctx.id_positions.find(file_path);
+	if (it == chm_ctx.id_positions.end()) {
 		return -1;
 	}
 	if (!fragment_id.empty()) {
@@ -382,11 +382,11 @@ int chm_parser::calculate_offset_from_path(const std::string& path, const chm_co
 	return -1;
 }
 
-void chm_parser::calculate_toc_offsets(std::vector<std::unique_ptr<toc_item>>& items, const chm_context& ctx) const {
+void chm_parser::calculate_toc_offsets(std::vector<std::unique_ptr<toc_item>>& items, const chm_context& chm_ctx) const {
 	for (auto& item : items) {
 		if (!item->ref.IsEmpty()) {
-			item->offset = calculate_offset_from_path(item->ref.ToStdString(), ctx);
+			item->offset = calculate_offset_from_path(item->ref.ToStdString(), chm_ctx);
 		}
-		calculate_toc_offsets(item->children, ctx);
+		calculate_toc_offsets(item->children, chm_ctx);
 	}
 }

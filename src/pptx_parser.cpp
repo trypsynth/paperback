@@ -42,9 +42,9 @@ static std::string get_local_name(const char* qname) {
 	return pos == std::string::npos ? s : s.substr(pos + 1);
 }
 
-std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
+std::unique_ptr<document> pptx_parser::load(const parser_context& ctx) const {
 	try {
-		auto fp = std::make_unique<wxFileInputStream>(path);
+		auto fp = std::make_unique<wxFileInputStream>(ctx.file_path);
 		if (!fp->IsOk()) {
 			return nullptr;
 		}
@@ -93,7 +93,7 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 			return extract_number_view(a) < extract_number_view(b);
 		});
 		auto doc = std::make_unique<document>();
-		doc->title = wxFileName(path).GetName();
+		doc->title = wxFileName(ctx.file_path).GetName();
 		doc->buffer.clear();
 		wxString full_text;
 		std::vector<size_t> slide_positions;
@@ -161,9 +161,9 @@ std::unique_ptr<document> pptx_parser::load(const wxString& path) const {
 		}
 		return doc;
 	} catch (const std::exception& e) {
-		throw parser_exception(wxString::Format(_("Error parsing PPTX file: %s"), wxString::FromUTF8(e.what())), path);
+		throw parser_exception(wxString::Format(_("Error parsing PPTX file: %s"), wxString::FromUTF8(e.what())), ctx.file_path);
 	} catch (...) {
-		throw parser_exception(_("Unknown error while parsing PPTX file"), path);
+		throw parser_exception(_("Unknown error while parsing PPTX file"), ctx.file_path);
 	}
 }
 

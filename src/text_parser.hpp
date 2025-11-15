@@ -32,7 +32,7 @@ public:
 		return parser_flags::none;
 	}
 
-	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
+	[[nodiscard]] std::unique_ptr<document> load(const parser_context& ctx) const override;
 };
 
 REGISTER_PARSER(text_parser)

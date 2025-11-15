@@ -20,6 +20,7 @@
 #include <cstddef>
 #include <iterator>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <wx/defs.h>
@@ -86,17 +87,54 @@ bool document_manager::open_file(const wxString& path, bool add_to_recent) {
 bool document_manager::create_document_tab(const wxString& path, const parser* par, bool set_focus, bool add_to_recent) {
 	config.import_document_settings(path);
 	std::unique_ptr<document> doc;
+	wxString password_in_use;
+	const wxString saved_password = config.get_document_password(path);
+	auto load_document = [&](const std::optional<std::string>& password) {
+		parser_context ctx;
+		ctx.file_path = path;
+		if (password.has_value()) {
+			ctx.password = password;
+		}
+		return par->load(ctx);
+	};
 	try {
-		doc = par->load(path);
+		std::optional<std::string> initial_password;
+		if (!saved_password.IsEmpty()) {
+			password_in_use = saved_password;
+			initial_password = saved_password.ToStdString();
+		}
+		doc = load_document(initial_password);
 	} catch (const parser_exception& e) {
-		show_parser_error(e);
-		return false;
+		if (e.get_error_code() == parser_error_code::password_required) {
+			config.set_document_password(path, wxEmptyString);
+			password_dialog dlg(&main_win);
+			if (dlg.ShowModal() != wxID_OK) {
+				throw parser_exception(_("Password is required."), path);
+			}
+			const wxString entered_password = dlg.get_password();
+			password_in_use = entered_password;
+			try {
+				doc = load_document(std::optional<std::string>{entered_password.ToStdString()});
+			} catch (const parser_exception& retry_e) {
+				show_parser_error(retry_e);
+				return false;
+			} catch (const std::exception& retry_e) {
+				wxMessageBox(wxString::Format(_("Failed to parse document: %s"), wxString::FromUTF8(retry_e.what())), _("Error"), wxICON_ERROR);
+				return false;
+			}
+		} else {
+			show_parser_error(e);
+			return false;
+		}
 	} catch (const std::exception& e) {
 		wxMessageBox(wxString::Format(_("Failed to parse document: %s"), wxString::FromUTF8(e.what())), _("Error"), wxICON_ERROR);
 		return false;
 	}
 	if (!doc) {
 		return false;
+	}
+	if (!password_in_use.IsEmpty()) {
+		config.set_document_password(path, password_in_use);
 	}
 	doc->calculate_statistics();
 	config.get_navigation_history(path, doc->history, doc->history_index);

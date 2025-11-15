@@ -331,6 +331,21 @@ private:
 	void on_cancel(wxCommandEvent& event);
 };
 
+class password_dialog : public dialog {
+public:
+	password_dialog(wxWindow* parent);
+	~password_dialog() = default;
+	password_dialog(const password_dialog&) = delete;
+	password_dialog& operator=(const password_dialog&) = delete;
+	password_dialog(password_dialog&&) = delete;
+	password_dialog& operator=(password_dialog&&) = delete;
+
+	[[nodiscard]] wxString get_password() const;
+
+private:
+	wxTextCtrl* password_ctrl{nullptr};
+};
+
 class sleep_timer_dialog : public dialog {
 public:
 	sleep_timer_dialog(wxWindow* parent, int initial_duration);

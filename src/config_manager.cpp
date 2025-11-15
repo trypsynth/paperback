@@ -737,6 +737,20 @@ wxString config_manager::get_document_format(const wxString& path) const {
 	return get_document_setting(path, "format", wxString(""));
 }
 
+void config_manager::set_document_password(const wxString& path, const wxString& password) {
+	if (password.IsEmpty()) {
+		with_document_section(path, [this]() {
+			config->DeleteEntry("password");
+		});
+		return;
+	}
+	set_document_setting(path, "password", password);
+}
+
+wxString config_manager::get_document_password(const wxString& path) const {
+	return get_document_setting(path, "password", wxString(""));
+}
+
 bool config_manager::needs_migration() const {
 	if (!config) {
 		return false;

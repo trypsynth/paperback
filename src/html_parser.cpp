@@ -20,10 +20,10 @@
 #include <wx/txtstrm.h>
 #include <wx/wfstream.h>
 
-std::unique_ptr<document> html_parser::load(const wxString& path) const {
-	wxFileInputStream file_stream(path);
+std::unique_ptr<document> html_parser::load(const parser_context& ctx) const {
+	wxFileInputStream file_stream(ctx.file_path);
 	if (!file_stream.IsOk()) {
-		throw parser_exception(_("Failed to open HTML file"), path);
+		throw parser_exception(_("Failed to open HTML file"), ctx.file_path);
 	}
 	wxBufferedInputStream bs(file_stream);
 	wxTextInputStream text_stream(bs);
@@ -33,11 +33,11 @@ std::unique_ptr<document> html_parser::load(const wxString& path) const {
 	}
 	html_to_text converter;
 	if (!converter.convert(content.utf8_string(), html_source_mode::native_html)) {
-		throw parser_exception(_("Failed to convert HTML to text"), path);
+		throw parser_exception(_("Failed to convert HTML to text"), ctx.file_path);
 	}
 	auto doc = std::make_unique<document>();
 	const auto& extracted_title = converter.get_title();
-	doc->title = extracted_title.empty() ? wxFileName(path).GetName() : wxString::FromUTF8(extracted_title);
+	doc->title = extracted_title.empty() ? wxFileName(ctx.file_path).GetName() : wxString::FromUTF8(extracted_title);
 	doc->buffer.clear();
 	const auto& text = converter.get_text();
 	const auto& headings = converter.get_headings();

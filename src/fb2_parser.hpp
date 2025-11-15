@@ -33,7 +33,7 @@ public:
 		return parser_flags::supports_sections;
 	}
 
-	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
+	[[nodiscard]] std::unique_ptr<document> load(const parser_context& ctx) const override;
 
 private:
 	static std::string get_element_text(pugi::xml_node element);

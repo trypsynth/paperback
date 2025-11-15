@@ -31,10 +31,10 @@ static std::string get_local_name(const char* qname) {
 	return pos == std::string::npos ? s : s.substr(pos + 1);
 }
 
-std::unique_ptr<document> odt_parser::load(const wxString& file_path) const {
-	wxFileInputStream file_stream(file_path);
+std::unique_ptr<document> odt_parser::load(const parser_context& ctx) const {
+	wxFileInputStream file_stream(ctx.file_path);
 	if (!file_stream.IsOk()) {
-		throw parser_exception(_("Failed to open ODT file"), file_path);
+		throw parser_exception(_("Failed to open ODT file"), ctx.file_path);
 	}
 	wxZipInputStream zip_stream(file_stream);
 	std::unique_ptr<wxZipEntry> entry;
@@ -46,15 +46,15 @@ std::unique_ptr<document> odt_parser::load(const wxString& file_path) const {
 		}
 	}
 	if (content.empty()) {
-		throw parser_exception(_("ODT file does not contain content.xml or it is empty"), file_path);
+		throw parser_exception(_("ODT file does not contain content.xml or it is empty"), ctx.file_path);
 	}
 	try {
 		pugi::xml_document p_doc;
 		if (!p_doc.load_buffer(content.data(), content.size(), pugi::parse_default | pugi::parse_ws_pcdata)) {
-			throw parser_exception("Invalid ODT content", file_path);
+			throw parser_exception("Invalid ODT content", ctx.file_path);
 		}
 		auto doc = std::make_unique<document>();
-		doc->title = wxFileName(file_path).GetName();
+		doc->title = wxFileName(ctx.file_path).GetName();
 		wxString text;
 		traverse(p_doc.document_element(), text, doc.get());
 		doc->buffer.set_content(text);

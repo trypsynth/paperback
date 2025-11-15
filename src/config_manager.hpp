@@ -125,6 +125,8 @@ public:
 	bookmark get_closest_bookmark(const wxString& path, long current_position) const;
 	void set_document_format(const wxString& path, const wxString& format);
 	wxString get_document_format(const wxString& path) const;
+	void set_document_password(const wxString& path, const wxString& password);
+	wxString get_document_password(const wxString& path) const;
 	bool needs_migration() const;
 	bool migrate_config();
 	void export_document_settings(const wxString& doc_path, const wxString& export_path);

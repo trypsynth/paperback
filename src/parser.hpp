@@ -10,8 +10,10 @@
 #pragma once
 #include "document.hpp"
 #include <memory>
+#include <optional>
 #include <span>
 #include <stdexcept>
+#include <string>
 #include <string_view>
 #include <vector>
 #include <wx/string.h>
@@ -21,11 +23,16 @@ enum class error_severity {
 	warning
 };
 
+enum class parser_error_code {
+	generic,
+	password_required
+};
+
 class parser_exception : public std::runtime_error {
 public:
-	parser_exception(const wxString& msg, error_severity sev = error_severity::error) : std::runtime_error(msg.ToStdString()), message{msg}, severity{sev} {
+	parser_exception(const wxString& msg, error_severity sev = error_severity::error, parser_error_code code = parser_error_code::generic) : std::runtime_error(msg.ToStdString()), message{msg}, severity{sev}, error_code{code} {
 	}
-	parser_exception(const wxString& msg, const wxString& fp, error_severity sev = error_severity::error) : std::runtime_error(msg.ToStdString()), message{msg}, file_path{fp}, severity{sev} {
+	parser_exception(const wxString& msg, const wxString& fp, error_severity sev = error_severity::error, parser_error_code code = parser_error_code::generic) : std::runtime_error(msg.ToStdString()), message{msg}, file_path{fp}, severity{sev}, error_code{code} {
 	}
 
 	[[nodiscard]] error_severity get_severity() const noexcept {
@@ -47,10 +54,15 @@ public:
 		return wxString::Format("%s: %s", file_path, message);
 	}
 
+	[[nodiscard]] parser_error_code get_error_code() const noexcept {
+		return error_code;
+	}
+
 private:
 	wxString message;
 	wxString file_path;
 	error_severity severity;
+	parser_error_code error_code;
 };
 
 enum class parser_flags {
@@ -73,12 +85,17 @@ inline constexpr parser_flags& operator|=(parser_flags& a, parser_flags b) noexc
 	return a = a | b;
 }
 
+struct parser_context {
+	wxString file_path;
+	std::optional<std::string> password;
+};
+
 class parser {
 public:
 	virtual ~parser() = default;
 	[[nodiscard]] virtual wxString name() const = 0;
 	[[nodiscard]] virtual std::span<const wxString> extensions() const = 0;
-	[[nodiscard]] virtual std::unique_ptr<document> load(const wxString& path) const = 0;
+	[[nodiscard]] virtual std::unique_ptr<document> load(const parser_context& ctx) const = 0;
 	[[nodiscard]] virtual parser_flags supported_flags() const = 0;
 
 	[[nodiscard]] inline bool has_flag(parser_flags flag) const noexcept {

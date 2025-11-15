@@ -45,7 +45,7 @@ public:
 		return parser_flags::supports_pages | parser_flags::supports_toc;
 	}
 
-	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
+	[[nodiscard]] std::unique_ptr<document> load(const parser_context& ctx) const override;
 
 private:
 	struct pdf_context {
@@ -54,7 +54,7 @@ private:
 
 		pdf_context();
 		~pdf_context();
-		void open_document(const wxString& path);
+		void open_document(const wxString& path, const std::string& password = "");
 	};
 
 	static void extract_text_content(const pdf_context& ctx, document_buffer& buffer);

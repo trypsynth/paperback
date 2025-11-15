@@ -34,7 +34,7 @@ public:
 		return parser_flags::supports_pages | parser_flags::supports_toc;
 	}
 
-	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
+	[[nodiscard]] std::unique_ptr<document> load(const parser_context& ctx) const override;
 
 private:
 	void extract_text_from_node(pugi::xml_node node, std::string& text, wxString& full_text, document* doc, const std::map<std::string, std::string>& rels) const;

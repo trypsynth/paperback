@@ -38,8 +38,8 @@ static std::string get_local_name(const char* qname) {
 	return pos == std::string::npos ? s : s.substr(pos + 1);
 }
 
-std::unique_ptr<document> docx_parser::load(const wxString& path) const {
-	auto fp = std::make_unique<wxFileInputStream>(path);
+std::unique_ptr<document> docx_parser::load(const parser_context& ctx) const {
+	auto fp = std::make_unique<wxFileInputStream>(ctx.file_path);
 	if (!fp->IsOk()) {
 		return nullptr;
 	}
@@ -83,7 +83,7 @@ std::unique_ptr<document> docx_parser::load(const wxString& path) const {
 		return nullptr;
 	}
 	auto doc = std::make_unique<document>();
-	doc->title = wxFileName(path).GetName();
+	doc->title = wxFileName(ctx.file_path).GetName();
 	doc->buffer.clear();
 	wxString text;
 	std::vector<heading_info> headings;

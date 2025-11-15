@@ -1019,6 +1019,21 @@ void options_dialog::on_cancel(wxCommandEvent& /*event*/) {
 	EndModal(wxID_CANCEL);
 }
 
+password_dialog::password_dialog(wxWindow* parent) : dialog(parent, _("Document Password")) {
+	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
+	auto* message_label = new wxStaticText(this, wxID_ANY, _("&Password"));
+	content_sizer->Add(message_label, 0, wxALL, DIALOG_PADDING);
+	password_ctrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(300, -1), wxTE_PASSWORD);
+	content_sizer->Add(password_ctrl, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);
+	set_content(content_sizer);
+	finalize_layout();
+	password_ctrl->SetFocus();
+}
+
+wxString password_dialog::get_password() const {
+	return password_ctrl->GetValue();
+}
+
 sleep_timer_dialog::sleep_timer_dialog(wxWindow* parent, int initial_duration) : dialog(parent, _("Sleep Timer")) {
 	constexpr int label_spacing = 5;
 	auto* sizer = new wxBoxSizer(wxHORIZONTAL);

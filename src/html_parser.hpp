@@ -32,7 +32,7 @@ public:
 		return parser_flags::supports_toc | parser_flags::supports_lists;
 	}
 
-	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
+	[[nodiscard]] std::unique_ptr<document> load(const parser_context& ctx) const override;
 };
 
 REGISTER_PARSER(html_parser)

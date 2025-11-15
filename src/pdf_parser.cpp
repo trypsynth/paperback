@@ -35,27 +35,33 @@ pdf_parser::pdf_context::~pdf_context() {
 	FPDF_DestroyLibrary();
 }
 
-void pdf_parser::pdf_context::open_document(const wxString& path) {
-	doc = FPDF_LoadDocument(path.ToUTF8().data(), nullptr);
+void pdf_parser::pdf_context::open_document(const wxString& path, const std::string& password) {
+	const char* pwd_ptr = password.empty() ? nullptr : password.c_str();
+	doc = FPDF_LoadDocument(path.ToUTF8().data(), pwd_ptr);
 	if (doc == nullptr) {
+		const unsigned long error = FPDF_GetLastError();
+		if (error == FPDF_ERR_PASSWORD) {
+			throw parser_exception("Password required or incorrect", path, error_severity::error, parser_error_code::password_required);
+		}
 		throw parser_exception("Failed to open PDF document", path);
 	}
 	page_count = FPDF_GetPageCount(doc);
 }
 
-std::unique_ptr<document> pdf_parser::load(const wxString& path) const {
+std::unique_ptr<document> pdf_parser::load(const parser_context& ctx) const {
 	try {
-		pdf_context ctx;
-		ctx.open_document(path);
+		pdf_context pdf_ctx;
+		const std::string password = ctx.password.has_value() ? ctx.password.value() : std::string{};
+		pdf_ctx.open_document(ctx.file_path, password);
 		auto document_ptr = std::make_unique<document>();
-		extract_text_content(ctx, document_ptr->buffer);
-		extract_metadata(ctx, document_ptr->title, document_ptr->author, path);
-		extract_toc(ctx, document_ptr->toc_items, document_ptr->buffer);
+		extract_text_content(pdf_ctx, document_ptr->buffer);
+		extract_metadata(pdf_ctx, document_ptr->title, document_ptr->author, ctx.file_path);
+		extract_toc(pdf_ctx, document_ptr->toc_items, document_ptr->buffer);
 		return document_ptr;
 	} catch (const parser_exception&) {
 		throw;
 	} catch (const std::exception& e) {
-		throw parser_exception(wxString::FromUTF8(e.what()), path);
+		throw parser_exception(wxString::FromUTF8(e.what()), ctx.file_path);
 	}
 }
 

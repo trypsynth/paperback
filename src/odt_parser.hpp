@@ -33,7 +33,7 @@ public:
 		return parser_flags::supports_toc;
 	}
 
-	[[nodiscard]] std::unique_ptr<document> load(const wxString& path) const override;
+	[[nodiscard]] std::unique_ptr<document> load(const parser_context& ctx) const override;
 
 private:
 	void traverse(pugi::xml_node node, wxString& text, document* doc) const;

@@ -21,21 +21,21 @@
 #include <wx/translation.h>
 #include <wx/wfstream.h>
 
-std::unique_ptr<document> text_parser::load(const wxString& path) const {
-	wxFileInputStream file_stream(path);
+std::unique_ptr<document> text_parser::load(const parser_context& ctx) const {
+	wxFileInputStream file_stream(ctx.file_path);
 	if (!file_stream.IsOk()) {
-		throw parser_exception(_("Failed to open text file"), path);
+		throw parser_exception(_("Failed to open text file"), ctx.file_path);
 	}
 	wxBufferedInputStream bs(file_stream);
 	const size_t file_size = bs.GetSize();
 	if (file_size == 0) {
-		throw parser_exception(_("Text file is empty"), path);
+		throw parser_exception(_("Text file is empty"), ctx.file_path);
 	}
 	std::vector<char> buffer(file_size);
 	bs.Read(buffer.data(), file_size);
 	const std::string utf8_content = convert_to_utf8(std::string(buffer.data(), file_size));
 	auto doc = std::make_unique<document>();
-	doc->title = wxFileName(path).GetName();
+	doc->title = wxFileName(ctx.file_path).GetName();
 	const std::string processed = remove_soft_hyphens(utf8_content);
 	doc->buffer.set_content(wxString::FromUTF8(processed));
 	return doc;

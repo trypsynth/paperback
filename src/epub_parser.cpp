@@ -33,8 +33,8 @@
 
 namespace fs = std::filesystem;
 
-std::unique_ptr<document> epub_parser::load(const wxString& path) const {
-	auto fp = std::make_unique<wxFileInputStream>(path);
+std::unique_ptr<document> epub_parser::load(const parser_context& ctx) const {
+	auto fp = std::make_unique<wxFileInputStream>(ctx.file_path);
 	if (!fp->IsOk()) {
 		return nullptr;
 	}
@@ -45,9 +45,9 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 		entries[name] = std::unique_ptr<wxZipEntry>(entry);
 	}
 	fp->SeekI(0);
-	epub_context ctx(*fp);
-	ctx.zip_entries = std::move(entries);
-	wxZipEntry* container_entry = find_zip_entry("META-INF/container.xml", ctx.zip_entries);
+	epub_context epub_ctx(*fp);
+	epub_ctx.zip_entries = std::move(entries);
+	wxZipEntry* container_entry = find_zip_entry("META-INF/container.xml", epub_ctx.zip_entries);
 	if (container_entry == nullptr) {
 		return nullptr;
 	}
@@ -73,43 +73,43 @@ std::unique_ptr<document> epub_parser::load(const wxString& path) const {
 		}
 	}
 	auto slashpos = opf_filename.find_last_of('/');
-	ctx.opf_dir = (slashpos == std::string::npos) ? std::string() : opf_filename.substr(0, slashpos);
-	parse_opf(opf_filename, ctx);
+	epub_ctx.opf_dir = (slashpos == std::string::npos) ? std::string() : opf_filename.substr(0, slashpos);
+	parse_opf(opf_filename, epub_ctx);
 	auto document_ptr = std::make_unique<document>();
 	document_ptr->buffer.clear();
-	for (size_t i = 0; i < ctx.spine_items.size(); ++i) {
+	for (size_t i = 0; i < epub_ctx.spine_items.size(); ++i) {
 		document_ptr->buffer.add_section_break(wxString::Format("Section %zu", i + 1));
-		parse_section(i, ctx, document_ptr->buffer);
+		parse_section(i, epub_ctx, document_ptr->buffer);
 	}
 	document_ptr->buffer.finalize_markers();
-	document_ptr->title = wxString::FromUTF8(ctx.title);
+	document_ptr->title = wxString::FromUTF8(epub_ctx.title);
 	if (document_ptr->title.Trim().IsEmpty()) {
-		wxFileName fn(path);
+		wxFileName fn(ctx.file_path);
 		document_ptr->title = fn.GetName();
 	}
-	if (!ctx.author.empty()) {
-		document_ptr->author = wxString::FromUTF8(ctx.author);
+	if (!epub_ctx.author.empty()) {
+		document_ptr->author = wxString::FromUTF8(epub_ctx.author);
 	}
-	for (const auto& [section_href, id_map] : ctx.id_positions) {
+	for (const auto& [section_href, id_map] : epub_ctx.id_positions) {
 		for (const auto& [id, pos] : id_map) {
 			document_ptr->id_positions[id] = pos;
 		}
 	}
-	document_ptr->spine_items = ctx.spine_items;
-	for (const auto& [id, item] : ctx.manifest_items) {
+	document_ptr->spine_items = epub_ctx.spine_items;
+	for (const auto& [id, item] : epub_ctx.manifest_items) {
 		document_ptr->manifest_items[id] = item.path;
 	}
-	parse_toc(ctx, document_ptr->toc_items, document_ptr->buffer);
+	parse_toc(epub_ctx, document_ptr->toc_items, document_ptr->buffer);
 	return document_ptr;
 }
 
-void epub_parser::parse_opf(const std::string& filename, epub_context& ctx) {
-	wxZipEntry* opf_entry = find_zip_entry(filename, ctx.zip_entries);
+void epub_parser::parse_opf(const std::string& filename, epub_context& epub_ctx) {
+	wxZipEntry* opf_entry = find_zip_entry(filename, epub_ctx.zip_entries);
 	if (opf_entry == nullptr) {
 		throw parser_exception("No OPF file found");
 	}
-	ctx.file_stream.SeekI(0);
-	wxZipInputStream zis(ctx.file_stream);
+	epub_ctx.file_stream.SeekI(0);
+	wxZipInputStream zis(epub_ctx.file_stream);
 	if (!zis.OpenEntry(*opf_entry)) {
 		throw parser_exception("Failed to open OPF file");
 	}
@@ -130,10 +130,10 @@ void epub_parser::parse_opf(const std::string& filename, epub_context& ctx) {
 			if (pos != std::string::npos) {
 				name = name.substr(pos + 1);
 			}
-			if (name == "title" && ctx.title.empty()) {
-				ctx.title = child.text().as_string();
-			} else if (name == "creator" && ctx.author.empty()) {
-				ctx.author = child.text().as_string();
+			if (name == "title" && epub_ctx.title.empty()) {
+				epub_ctx.title = child.text().as_string();
+			} else if (name == "creator" && epub_ctx.author.empty()) {
+				epub_ctx.author = child.text().as_string();
 			}
 		}
 	}
@@ -147,35 +147,35 @@ void epub_parser::parse_opf(const std::string& filename, epub_context& ctx) {
 		const std::string id = item_node.attribute("id").as_string();
 		const std::string media_type = item_node.attribute("media-type").as_string();
 		const std::string properties = item_node.attribute("properties").as_string();
-		std::string full = ctx.opf_dir.empty() ? href : (ctx.opf_dir + "/" + href);
+		std::string full = epub_ctx.opf_dir.empty() ? href : (epub_ctx.opf_dir + "/" + href);
 		manifest_item item;
 		item.path = full;
 		item.media_type = media_type;
-		ctx.manifest_items.emplace(id, std::move(item));
+		epub_ctx.manifest_items.emplace(id, std::move(item));
 		if (media_type == "application/x-dtbncx+xml") {
-			ctx.toc_ncx_id = id;
+			epub_ctx.toc_ncx_id = id;
 		} else if (properties.find("nav") != std::string::npos) {
-			ctx.nav_doc_id = id;
+			epub_ctx.nav_doc_id = id;
 		}
 	}
 	auto spine = package.select_node("*[local-name()='spine']").node();
 	if (spine == nullptr) {
 		throw parser_exception("No spine");
 	}
-	if (ctx.toc_ncx_id.empty()) {
+	if (epub_ctx.toc_ncx_id.empty()) {
 		const auto toc_attr = spine.attribute("toc").as_string();
 		if (*toc_attr) {
-			ctx.toc_ncx_id = toc_attr;
+			epub_ctx.toc_ncx_id = toc_attr;
 		}
 	}
 	for (auto x : spine.select_nodes("*[local-name()='itemref']")) {
 		auto itemref = x.node();
-		ctx.spine_items.push_back(itemref.attribute("idref").as_string());
+		epub_ctx.spine_items.push_back(itemref.attribute("idref").as_string());
 	}
 }
 
 template <typename conv>
-void epub_parser::process_section_content(conv& converter, const std::string& content, const std::string& href, epub_context& ctx, document_buffer& buffer) const {
+void epub_parser::process_section_content(conv& converter, const std::string& content, const std::string& href, epub_context& epub_ctx, document_buffer& buffer) const {
 	if (converter.convert(content)) {
 		const auto& text = converter.get_text();
 		const auto& headings = converter.get_headings();
@@ -188,7 +188,7 @@ void epub_parser::process_section_content(conv& converter, const std::string& co
 		auto pos = section_base_dir.find_last_of('/');
 		section_base_dir = (pos == std::string::npos) ? std::string() : section_base_dir.substr(0, pos);
 		for (const auto& [id, relative_pos] : id_positions) {
-			ctx.id_positions[href][id] = section_start + relative_pos;
+			epub_ctx.id_positions[href][id] = section_start + relative_pos;
 		}
 		buffer.append(wxString::FromUTF8(text));
 		for (const auto& heading : headings) {
@@ -227,39 +227,39 @@ void epub_parser::process_section_content(conv& converter, const std::string& co
 	}
 }
 
-void epub_parser::parse_section(size_t index, epub_context& ctx, document_buffer& buffer) const {
-	if (index >= ctx.spine_items.size()) {
+void epub_parser::parse_section(size_t index, epub_context& epub_ctx, document_buffer& buffer) const {
+	if (index >= epub_ctx.spine_items.size()) {
 		throw parser_exception("Section index out of range");
 	}
-	const auto& id = ctx.spine_items[index];
-	auto it = ctx.manifest_items.find(id);
-	if (it == ctx.manifest_items.end()) {
+	const auto& id = epub_ctx.spine_items[index];
+	auto it = epub_ctx.manifest_items.find(id);
+	if (it == epub_ctx.manifest_items.end()) {
 		return;
 	}
 	const auto& manifest_item = it->second;
 	const auto& href = manifest_item.path;
 	const auto& media_type = manifest_item.media_type;
-	wxZipEntry* section_entry = find_zip_entry(href, ctx.zip_entries);
+	wxZipEntry* section_entry = find_zip_entry(href, epub_ctx.zip_entries);
 	if (section_entry == nullptr) {
 		return;
 	}
-	ctx.file_stream.SeekI(0);
-	wxZipInputStream zis(ctx.file_stream);
+	epub_ctx.file_stream.SeekI(0);
+	wxZipInputStream zis(epub_ctx.file_stream);
 	if (!zis.OpenEntry(*section_entry)) {
 		return;
 	}
 	const std::string content = read_zip_entry(zis);
 	if (is_html_content(media_type)) {
 		html_to_text converter;
-		process_section_content(converter, content, href, ctx, buffer);
+		process_section_content(converter, content, href, epub_ctx, buffer);
 	} else {
 		xml_to_text converter;
 		if (!converter.convert(content)) {
 			// The file may contain HTML syntax despite claiming to be XML; try parsing as HTML instead.
 			html_to_text html_converter;
-			process_section_content(html_converter, content, href, ctx, buffer);
+			process_section_content(html_converter, content, href, epub_ctx, buffer);
 		} else {
-			process_section_content(converter, content, href, ctx, buffer);
+			process_section_content(converter, content, href, epub_ctx, buffer);
 		}
 	}
 }
@@ -268,30 +268,30 @@ bool epub_parser::is_html_content(const std::string& media_type) {
 	return media_type == "text/html";
 }
 
-void epub_parser::parse_toc(epub_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items, const document_buffer& buffer) const {
+void epub_parser::parse_toc(epub_context& epub_ctx, std::vector<std::unique_ptr<toc_item>>& toc_items, const document_buffer& buffer) const {
 	try {
-		if (!ctx.nav_doc_id.empty()) {
-			parse_epub3_nav(ctx.nav_doc_id, ctx, toc_items, buffer);
-		} else if (!ctx.toc_ncx_id.empty()) {
-			parse_epub2_ncx(ctx.toc_ncx_id, ctx, toc_items, buffer);
+		if (!epub_ctx.nav_doc_id.empty()) {
+			parse_epub3_nav(epub_ctx.nav_doc_id, epub_ctx, toc_items, buffer);
+		} else if (!epub_ctx.toc_ncx_id.empty()) {
+			parse_epub2_ncx(epub_ctx.toc_ncx_id, epub_ctx, toc_items, buffer);
 		}
 	} catch (...) {
 		throw parser_exception(_("Couldn't parse table of contents"), error_severity::warning);
 	}
 }
 
-void epub_parser::parse_epub2_ncx(const std::string& ncx_id, const epub_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items, const document_buffer& buffer) const {
-	auto it = ctx.manifest_items.find(ncx_id);
-	if (it == ctx.manifest_items.end()) {
+void epub_parser::parse_epub2_ncx(const std::string& ncx_id, const epub_context& epub_ctx, std::vector<std::unique_ptr<toc_item>>& toc_items, const document_buffer& buffer) const {
+	auto it = epub_ctx.manifest_items.find(ncx_id);
+	if (it == epub_ctx.manifest_items.end()) {
 		return;
 	}
 	const auto& ncx_file = it->second.path;
-	wxZipEntry* ncx_entry = find_zip_entry(ncx_file, ctx.zip_entries);
+	wxZipEntry* ncx_entry = find_zip_entry(ncx_file, epub_ctx.zip_entries);
 	if (ncx_entry == nullptr) {
 		return;
 	}
-	ctx.file_stream.SeekI(0);
-	wxZipInputStream zis(ctx.file_stream);
+	epub_ctx.file_stream.SeekI(0);
+	wxZipInputStream zis(epub_ctx.file_stream);
 	if (!zis.OpenEntry(*ncx_entry)) {
 		return;
 	}
@@ -305,14 +305,14 @@ void epub_parser::parse_epub2_ncx(const std::string& ncx_id, const epub_context&
 		return;
 	}
 	for (auto nav_point : nav_map.children("navPoint")) {
-		auto toc_entry = parse_ncx_nav_point(nav_point, ctx, buffer);
+		auto toc_entry = parse_ncx_nav_point(nav_point, epub_ctx, buffer);
 		if (toc_entry) {
 			toc_items.push_back(std::move(toc_entry));
 		}
 	}
 }
 
-std::unique_ptr<toc_item> epub_parser::parse_ncx_nav_point(pugi::xml_node nav_point, const epub_context& ctx, const document_buffer& buffer) const {
+std::unique_ptr<toc_item> epub_parser::parse_ncx_nav_point(pugi::xml_node nav_point, const epub_context& epub_ctx, const document_buffer& buffer) const {
 	auto item = std::make_unique<toc_item>();
 	auto nav_label = nav_point.child("navLabel").child("text");
 	if (nav_label != nullptr) {
@@ -322,10 +322,10 @@ std::unique_ptr<toc_item> epub_parser::parse_ncx_nav_point(pugi::xml_node nav_po
 	if (content != nullptr) {
 		std::string src = content.attribute("src").as_string();
 		item->ref = wxString::FromUTF8(src);
-		item->offset = calculate_offset_from_href(src, ctx, buffer);
+		item->offset = calculate_offset_from_href(src, epub_ctx, buffer);
 	}
 	for (auto child_np : nav_point.children("navPoint")) {
-		auto child_item = parse_ncx_nav_point(child_np, ctx, buffer);
+		auto child_item = parse_ncx_nav_point(child_np, epub_ctx, buffer);
 		if (child_item) {
 			item->children.push_back(std::move(child_item));
 		}
@@ -333,19 +333,19 @@ std::unique_ptr<toc_item> epub_parser::parse_ncx_nav_point(pugi::xml_node nav_po
 	return item;
 }
 
-void epub_parser::parse_epub3_nav(const std::string& nav_id, const epub_context& ctx, std::vector<std::unique_ptr<toc_item>>& toc_items, const document_buffer& buffer) const {
-	auto it = ctx.manifest_items.find(nav_id);
-	if (it == ctx.manifest_items.end()) {
+void epub_parser::parse_epub3_nav(const std::string& nav_id, const epub_context& epub_ctx, std::vector<std::unique_ptr<toc_item>>& toc_items, const document_buffer& buffer) const {
+	auto it = epub_ctx.manifest_items.find(nav_id);
+	if (it == epub_ctx.manifest_items.end()) {
 		return;
 	}
 	const auto& nav_file = it->second.path;
 	std::string nav_base_dir = nav_file.substr(0, nav_file.find_last_of('/'));
-	wxZipEntry* nav_entry = find_zip_entry(nav_file, ctx.zip_entries);
+	wxZipEntry* nav_entry = find_zip_entry(nav_file, epub_ctx.zip_entries);
 	if (nav_entry == nullptr) {
 		return;
 	}
-	ctx.file_stream.SeekI(0);
-	wxZipInputStream zis(ctx.file_stream);
+	epub_ctx.file_stream.SeekI(0);
+	wxZipInputStream zis(epub_ctx.file_stream);
 	if (!zis.OpenEntry(*nav_entry)) {
 		return;
 	}
@@ -371,21 +371,21 @@ void epub_parser::parse_epub3_nav(const std::string& nav_id, const epub_context&
 	if (toc_nav) {
 		auto ol = toc_nav.child("ol");
 		if (ol) {
-			parse_epub3_nav_list(ol, toc_items, ctx, buffer, nav_base_dir);
+			parse_epub3_nav_list(ol, toc_items, epub_ctx, buffer, nav_base_dir);
 		}
 	}
 }
 
-void epub_parser::parse_epub3_nav_list(pugi::xml_node ol_element, std::vector<std::unique_ptr<toc_item>>& toc_items, const epub_context& ctx, const document_buffer& buffer, const std::string& nav_base_path) const {
+void epub_parser::parse_epub3_nav_list(pugi::xml_node ol_element, std::vector<std::unique_ptr<toc_item>>& toc_items, const epub_context& epub_ctx, const document_buffer& buffer, const std::string& nav_base_path) const {
 	for (auto li : ol_element.children("li")) {
-		auto item = parse_epub3_nav_item(li, ctx, buffer, nav_base_path);
+		auto item = parse_epub3_nav_item(li, epub_ctx, buffer, nav_base_path);
 		if (item) {
 			toc_items.push_back(std::move(item));
 		}
 	}
 }
 
-std::unique_ptr<toc_item> epub_parser::parse_epub3_nav_item(pugi::xml_node li_element, const epub_context& ctx, const document_buffer& buffer, const std::string& nav_base_path) const {
+std::unique_ptr<toc_item> epub_parser::parse_epub3_nav_item(pugi::xml_node li_element, const epub_context& epub_ctx, const document_buffer& buffer, const std::string& nav_base_path) const {
 	auto item = std::make_unique<toc_item>();
 	if (auto a = li_element.child("a")) {
 		wxString full_text;
@@ -401,14 +401,14 @@ std::unique_ptr<toc_item> epub_parser::parse_epub3_nav_item(pugi::xml_node li_el
 		std::string href = a.attribute("href").as_string();
 		item->ref = wxString::FromUTF8(href);
 		std::string abs_str = nav_base_path.empty() ? href : (nav_base_path + "/" + href);
-		const std::string& opf_str = ctx.opf_dir;
+		const std::string& opf_str = epub_ctx.opf_dir;
 		std::string href_relative_to_opf;
 		if (!opf_str.empty() && abs_str.rfind(opf_str, 0) == 0) {
 			href_relative_to_opf = abs_str.substr(opf_str.size() + (opf_str.back() == '/' ? 0 : 1));
 		} else {
 			href_relative_to_opf = href;
 		}
-		item->offset = calculate_offset_from_href(href_relative_to_opf, ctx, buffer);
+		item->offset = calculate_offset_from_href(href_relative_to_opf, epub_ctx, buffer);
 	} else {
 		if (auto span = li_element.child("span")) {
 			item->name = wxString::FromUTF8(span.text().as_string());
@@ -418,12 +418,12 @@ std::unique_ptr<toc_item> epub_parser::parse_epub3_nav_item(pugi::xml_node li_el
 		item->offset = std::numeric_limits<size_t>::max();
 	}
 	if (auto ol = li_element.child("ol")) {
-		parse_epub3_nav_list(ol, item->children, ctx, buffer, nav_base_path);
+		parse_epub3_nav_list(ol, item->children, epub_ctx, buffer, nav_base_path);
 	}
 	return item;
 }
 
-int epub_parser::calculate_offset_from_href(const std::string& href, const epub_context& ctx, const document_buffer& buffer) {
+int epub_parser::calculate_offset_from_href(const std::string& href, const epub_context& epub_ctx, const document_buffer& buffer) {
 	std::string file_path = href;
 	std::string fragment;
 	const size_t hash_pos = href.find('#');
@@ -433,12 +433,12 @@ int epub_parser::calculate_offset_from_href(const std::string& href, const epub_
 	}
 	file_path = url_decode(file_path);
 	fragment = url_decode(fragment);
-	std::string resolved_path = ctx.opf_dir;
+	std::string resolved_path = epub_ctx.opf_dir;
 	if (!file_path.empty()) {
 		resolved_path = (resolved_path.empty() ? file_path : (resolved_path + "/" + file_path));
 	}
 	if (!fragment.empty()) {
-		for (const auto& [stored_path, id_map] : ctx.id_positions) {
+		for (const auto& [stored_path, id_map] : epub_ctx.id_positions) {
 			if (url_decode(stored_path) == resolved_path) {
 				auto id_pos_it = id_map.find(fragment);
 				if (id_pos_it != id_map.end()) {
@@ -449,7 +449,7 @@ int epub_parser::calculate_offset_from_href(const std::string& href, const epub_
 		}
 	}
 	std::string manifest_id;
-	for (const auto& [id, item] : ctx.manifest_items) {
+	for (const auto& [id, item] : epub_ctx.manifest_items) {
 		if (url_decode(item.path) == resolved_path) {
 			manifest_id = id;
 			break;
@@ -458,10 +458,10 @@ int epub_parser::calculate_offset_from_href(const std::string& href, const epub_
 	if (manifest_id.empty()) {
 		return -1;
 	}
-	auto it = std::ranges::find(ctx.spine_items, manifest_id);
-	if (it == ctx.spine_items.end()) {
+	auto it = std::ranges::find(epub_ctx.spine_items, manifest_id);
+	if (it == epub_ctx.spine_items.end()) {
 		return -1;
 	}
-	const size_t spine_index = std::distance(ctx.spine_items.begin(), it);
+	const size_t spine_index = std::distance(epub_ctx.spine_items.begin(), it);
 	return static_cast<int>(buffer.get_marker_position_by_index(marker_type::section_break, spine_index));
 }

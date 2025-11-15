@@ -19,10 +19,10 @@
 
 inline const char* FB2_NS = "http://www.gribuser.ru/xml/fictionbook/2.0";
 
-std::unique_ptr<document> fb2_parser::load(const wxString& path) const {
-	wxFileInputStream input(path);
+std::unique_ptr<document> fb2_parser::load(const parser_context& ctx) const {
+	wxFileInputStream input(ctx.file_path);
 	if (!input.IsOk()) {
-		throw parser_exception(_("Failed to open FB2 file"), path);
+		throw parser_exception(_("Failed to open FB2 file"), ctx.file_path);
 	}
 	const size_t size = input.GetSize();
 	std::string xml_content(size, 0);
@@ -34,7 +34,7 @@ std::unique_ptr<document> fb2_parser::load(const wxString& path) const {
 	}
 	// If the tag isn't found, we'll try to parse the whole file, which may fail but is the best we can do.
 	if (xml_content.empty()) {
-		throw parser_exception(_("FB2 file is empty or could not be read"), path);
+		throw parser_exception(_("FB2 file is empty or could not be read"), ctx.file_path);
 	}
 	try {
 		pugi::xml_document d;
@@ -49,7 +49,7 @@ std::unique_ptr<document> fb2_parser::load(const wxString& path) const {
 	} catch (...) {}
 	xml_to_text converter;
 	if (!converter.convert(xml_content)) {
-		throw parser_exception(_("Failed to convert FB2 XML to text"), path);
+		throw parser_exception(_("Failed to convert FB2 XML to text"), ctx.file_path);
 	}
 	auto doc = std::make_unique<document>();
 	doc->buffer.set_content(wxString::FromUTF8(converter.get_text()));
