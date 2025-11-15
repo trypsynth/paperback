@@ -1,6 +1,6 @@
 [Setup]
 	AppName=Paperback
-	AppVersion=0.6
+	AppVersion=0.6.1
 	AppPublisher=Quin Gillespie
 	AppPublisherURL=https://github.com/trypsynth/paperback
 	AppSupportURL=https://github.com/trypsynth/paperback/issues
