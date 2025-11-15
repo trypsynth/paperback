@@ -39,7 +39,7 @@
     if (!Array.isArray(releases) || releases.length === 0) {
       throw new Error("empty");
     }
-    const stable = releases.find(r => /^v?\d+(\.\d+){1,2}$/.test(r.tag_name));
+    const stable = releases.find(r => /^v?\d+(\.\d+){1,3}$/.test(r.tag_name));
     const dev = releases.find((r) => r.tag_name === "latest");
     set(stableEl, stable ? render(stable, "Stable Version", "Recommended for most users") : "No stable release found.");
     set(devEl, dev ? render(dev, "Master Build", "Includes experimental features, may be unstable") : "No development builds found.");
