@@ -122,6 +122,7 @@ void docx_parser::traverse(pugi::xml_node node, wxString& text, std::vector<head
 void docx_parser::process_paragraph(pugi::xml_node element, wxString& text, std::vector<heading_info>& headings, document* doc, const std::map<std::string, std::string>& rels) {
 	wxString paragraph_text;
 	int heading_level = 0;
+	bool is_paragraph_style_heading = false;
 	const size_t paragraph_start_offset{text.length()};
 	for (auto child : element.children()) {
 		if (child.type() != pugi::node_element) {
@@ -129,7 +130,10 @@ void docx_parser::process_paragraph(pugi::xml_node element, wxString& text, std:
 		}
 		const std::string local_name = get_local_name(child.name());
 		if (local_name == "pPr") {
-			heading_level = get_heading_level(child);
+			heading_level = get_paragraph_heading_level(child);
+			if (heading_level > 0) {
+				is_paragraph_style_heading = true;
+			}
 		} else if (local_name == "bookmarkStart") {
 			const std::string name_attr = child.attribute("w:name").as_string();
 			if (!name_attr.empty()) {
@@ -138,6 +142,11 @@ void docx_parser::process_paragraph(pugi::xml_node element, wxString& text, std:
 		} else if (local_name == "hyperlink") {
 			process_hyperlink(child, paragraph_text, doc, rels, paragraph_start_offset);
 		} else if (local_name == "r") {
+			if (heading_level == 0) {
+				if (const auto rpr_node = child.child("w:rPr")) {
+					heading_level = get_run_heading_level(rpr_node);
+				}
+			}
 			std::string instruction;
 			if (auto itn = child.child("w:instrText")) {
 				instruction = itn.text().as_string();
@@ -185,7 +194,37 @@ void docx_parser::process_paragraph(pugi::xml_node element, wxString& text, std:
 		heading_info h;
 		h.offset = paragraph_start_offset;
 		h.level = heading_level;
-		h.text = std::string(paragraph_text.utf8_str());
+		wxString heading_text_for_toc;
+		if (is_paragraph_style_heading) {
+			heading_text_for_toc = paragraph_text;
+		} else {
+			for (auto child : element.children()) {
+				const std::string local_name = get_local_name(child.name());
+				if (local_name == "r") {
+					int run_level = 0;
+					if (const auto rpr_node = child.child("w:rPr")) {
+						run_level = get_run_heading_level(rpr_node);
+					}
+					if (run_level == heading_level) {
+						heading_text_for_toc += wxString::FromUTF8(get_run_text(child));
+					}
+				} else if (local_name == "hyperlink") {
+					for (auto link_child : child.children()) {
+						if (get_local_name(link_child.name()) == "r") {
+							int run_level = 0;
+							if (const auto rpr_node = link_child.child("w:rPr")) {
+								run_level = get_run_heading_level(rpr_node);
+							}
+							if (run_level == heading_level) {
+								heading_text_for_toc += wxString::FromUTF8(get_run_text(link_child));
+							}
+						}
+					}
+				}
+			}
+		}
+		heading_text_for_toc.Trim(true).Trim(false);
+		h.text = std::string(heading_text_for_toc.utf8_str());
 		if (!h.text.empty()) {
 			headings.push_back(h);
 		}
@@ -239,7 +278,7 @@ void docx_parser::process_hyperlink(pugi::xml_node element, wxString& text, docu
 	}
 }
 
-int docx_parser::get_heading_level(pugi::xml_node pr_element) {
+int docx_parser::get_paragraph_heading_level(pugi::xml_node pr_element) {
 	constexpr int max_heading_level = 9;
 	for (auto child : pr_element.children()) {
 		if (child.type() == pugi::node_element) {
@@ -272,6 +311,30 @@ int docx_parser::get_heading_level(pugi::xml_node pr_element) {
 						}
 					} catch (...) {
 					}
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+int docx_parser::get_run_heading_level(pugi::xml_node rpr_element) {
+	constexpr int max_heading_level = 9;
+	if (const auto rstyle_node = rpr_element.child("w:rStyle")) {
+		const std::string style = rstyle_node.attribute("w:val").as_string();
+		if (!style.empty()) {
+			std::string style_lower = style;
+			std::ranges::transform(style_lower, style_lower.begin(), ::tolower);
+			if (style_lower.starts_with("heading") && style_lower.ends_with("char")) {
+				try {
+					const size_t num_pos = style.find_first_of("0123456789");
+					if (num_pos != std::string::npos) {
+						const int level = std::stoi(style.substr(num_pos));
+						if (level > 0 && level <= max_heading_level) {
+							return level;
+						}
+					}
+				} catch (...) {
 				}
 			}
 		}
