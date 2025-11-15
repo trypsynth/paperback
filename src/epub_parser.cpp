@@ -401,12 +401,16 @@ std::unique_ptr<toc_item> epub_parser::parse_epub3_nav_item(pugi::xml_node li_el
 		std::string href = a.attribute("href").as_string();
 		item->ref = wxString::FromUTF8(href);
 		std::string abs_str = nav_base_path.empty() ? href : (nav_base_path + "/" + href);
+		wxFileName path;
+		path.Assign(wxString::FromUTF8(abs_str), wxPATH_UNIX);
+		path.Normalize(wxPATH_NORM_DOTS, wxEmptyString, wxPATH_UNIX);
+		std::string normalized = path.GetFullPath(wxPATH_UNIX).ToStdString();
 		const std::string& opf_str = epub_ctx.opf_dir;
 		std::string href_relative_to_opf;
-		if (!opf_str.empty() && abs_str.rfind(opf_str, 0) == 0) {
-			href_relative_to_opf = abs_str.substr(opf_str.size() + (opf_str.back() == '/' ? 0 : 1));
+		if (!opf_str.empty() && normalized.rfind(opf_str, 0) == 0) {
+			href_relative_to_opf = normalized.substr(opf_str.size() + 1);
 		} else {
-			href_relative_to_opf = href;
+			href_relative_to_opf = normalized;
 		}
 		item->offset = calculate_offset_from_href(href_relative_to_opf, epub_ctx, buffer);
 	} else {
