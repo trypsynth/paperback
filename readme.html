@@ -276,6 +276,8 @@ structure.</p>
 <li>Ctrl+Shift+G: bring up the go to percent dialog.</li>
 <li>Ctrl+P: Bring up the go to page dialog, if supported in your focused
 document.</li>
+<li>Alt+left: go to the previous item in the navigation history.</li>
+<li>Alt+right: go to the next item in the navigation history.</li>
 <li>Left bracket: go to the previous section.</li>
 <li>Right bracket: go to the next section.</li>
 <li>Shift+H: go to the previous heading.</li>
@@ -318,6 +320,7 @@ field.</li>
 <li>Ctrl+W: view the word count of the currently focused document.</li>
 <li>Ctrl+I: bring up the document info dialog.</li>
 <li>Ctrl+T: show the table of contents.</li>
+<li>F7: bring up the elements list.</li>
 <li>Ctrl+Shift+E: export your currently focused document’s bookmarks and
 reading position to a file for easy sharing.</li>
 <li>Ctrl+Shift+I: import metadata about a book from a .paperback
@@ -376,17 +379,42 @@ inclusion in this list.</p>
 <h1 id="changelog">Changelog</h1>
 <h2 id="version-0.6.1">Version 0.6.1</h2>
 <ul>
+<li>Added password-protected PDF support! <a
+href="https://github.com/trypsynth/paperback/issues/169">#169</a>.</li>
+<li>Added a very basic go to previous/next position feature. If you
+press enter on an internal link and it moves your cursor, that position
+will now be remembered, and can be navigated to with alt+left/right
+arrows. <a
+href="https://github.com/trypsynth/paperback/issues/115">#115</a>, <a
+href="https://github.com/trypsynth/paperback/pull/174">#174</a>.</li>
+<li>Added an elements list! Currently it only shows a tree of all the
+headings in your document or a list of links, but there are plans to
+expand it in the future. <a
+href="https://github.com/trypsynth/paperback/issues/173">#173</a>, <a
+href="https://github.com/trypsynth/paperback/pull/177">#177</a>.</li>
 <li>Added an option to start Paperback in maximized mode by default. <a
 href="https://github.com/trypsynth/paperback/issues/164">#164</a>, <a
 href="https://github.com/trypsynth/paperback/pull/172">#172</a>.</li>
-<li>Fixed internal links in some Epub documents not working. <a
+<li>Fixed links in some Epub documents not working properly. <a
 href="https://github.com/trypsynth/paperback/issues/167">#167</a>, <a
-href="https://github.com/trypsynth/paperback/pull/171">#171</a>.</li>
+href="https://github.com/trypsynth/paperback/pull/171">#171</a>, <a
+href="https://github.com/trypsynth/paperback/issues/178">#178</a>, <a
+href="https://github.com/trypsynth/paperback/pull/180">#180</a>.</li>
+<li>Fixed parsing EPub TOCs containing relative paths. <a
+href="https://github.com/trypsynth/paperback/issues/187">#187</a>.</li>
 <li>Fixed some epub documents not showing a title or author. <a
 href="https://github.com/trypsynth/paperback/issues/175">#175</a>.</li>
+<li>Fixed the titles of some epub chapters not showing up properly in
+the TOC dialog. <a
+href="https://github.com/trypsynth/paperback/pull/176">#176</a>.</li>
 <li>Fixed you not being able to use the space bar to activate the
 OK/cancel buttons in the TOC dialog. <a
 href="https://github.com/trypsynth/paperback/issues/170">#170</a>.</li>
+<li>Improved the handling of headings in Word documents. <a
+href="https://github.com/trypsynth/paperback/pull/183">#183</a>.</li>
+<li>You will now get spoken feedback if the recent documents list is
+empty when you try to bring up the dialog. <a
+href="https://github.com/trypsynth/paperback/issues/185">#185</a>.</li>
 </ul>
 <h2 id="version-0.6.0">Version 0.6.0</h2>
 <ul>
