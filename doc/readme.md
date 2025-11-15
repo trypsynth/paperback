@@ -137,7 +137,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Added an elements list! Currently it only shows a tree of all the headings in your document or a list of links, but there are plans to expand it in the future. [#173](https://github.com/trypsynth/paperback/issues/173), [#177](https://github.com/trypsynth/paperback/pull/177).
 * Added an option to start Paperback in maximized mode by default. [#164](https://github.com/trypsynth/paperback/issues/164), [#172](https://github.com/trypsynth/paperback/pull/172).
 * Fixed links in some Epub documents not working properly. [#167](https://github.com/trypsynth/paperback/issues/167), [#171](https://github.com/trypsynth/paperback/pull/171), [#178](https://github.com/trypsynth/paperback/issues/178), [#180](https://github.com/trypsynth/paperback/pull/180).
-* Fixed parsing EPub TOCs containing relative paths. [#187](https://github.com/trypsynth/paperback/issues/187).
+* Fixed parsing Epub TOCs containing relative paths. [#187](https://github.com/trypsynth/paperback/issues/187).
 * Fixed some epub documents not showing a title or author. [#175](https://github.com/trypsynth/paperback/issues/175).
 * Fixed the titles of some epub chapters not showing up properly in the TOC dialog. [#176](https://github.com/trypsynth/paperback/pull/176).
 * Fixed you not being able to use the space bar to activate the OK/cancel buttons in the TOC dialog. [#170](https://github.com/trypsynth/paperback/issues/170).
@@ -228,7 +228,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Fixed heading navigation in HTML documents containing multi-byte Unicode characters. [#42](https://github.com/trypsynth/paperback/issues/42), [#59](https://github.com/trypsynth/paperback/issues/59), [#61](https://github.com/trypsynth/paperback/issues/61).
 * Fixed high CPU usage in documents with long titles due to a regression in wxWidgets. [#60](https://github.com/trypsynth/paperback/issues/60).
 * Fixed loading UTF-8 text files.
-* Fixed nested TOC items in EPub books putting your cursor at the wrong position.
+* Fixed nested TOC items in Epub books putting your cursor at the wrong position.
 * Fixed a crash on application exit in certain cases. [#45](https://github.com/trypsynth/paperback/issues/45).
 * Added a checkbox in the options dialog to enable or disable word wrap!
 * It is now possible to donate to Paperback's development, either through the new donate item in the help menu or through the sponsor this project link at the bottom of the GitHub repository's main page.
