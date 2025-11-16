@@ -300,11 +300,12 @@ void epub_parser::parse_epub2_ncx(const std::string& ncx_id, const epub_context&
 	if (!doc.load_buffer(ncx_content.data(), ncx_content.size())) {
 		return;
 	}
-	auto nav_map = doc.child("ncx").child("navMap");
+	auto nav_map = doc.select_node("//*[local-name()='navMap']").node();
 	if (nav_map == nullptr) {
 		return;
 	}
-	for (auto nav_point : nav_map.children("navPoint")) {
+	for (auto nav_point_xpath : nav_map.select_nodes("*[local-name()='navPoint']")) {
+		auto nav_point = nav_point_xpath.node();
 		auto toc_entry = parse_ncx_nav_point(nav_point, epub_ctx, buffer);
 		if (toc_entry) {
 			toc_items.push_back(std::move(toc_entry));
@@ -314,17 +315,18 @@ void epub_parser::parse_epub2_ncx(const std::string& ncx_id, const epub_context&
 
 std::unique_ptr<toc_item> epub_parser::parse_ncx_nav_point(pugi::xml_node nav_point, const epub_context& epub_ctx, const document_buffer& buffer) const {
 	auto item = std::make_unique<toc_item>();
-	auto nav_label = nav_point.child("navLabel").child("text");
+	auto nav_label = nav_point.select_node("*[local-name()='navLabel']/*[local-name()='text']").node();
 	if (nav_label != nullptr) {
 		item->name = wxString::FromUTF8(nav_label.text().as_string());
 	}
-	auto content = nav_point.child("content");
+	auto content = nav_point.select_node("*[local-name()='content']").node();
 	if (content != nullptr) {
 		std::string src = content.attribute("src").as_string();
 		item->ref = wxString::FromUTF8(src);
 		item->offset = calculate_offset_from_href(src, epub_ctx, buffer);
 	}
-	for (auto child_np : nav_point.children("navPoint")) {
+	for (auto child_np_xpath : nav_point.select_nodes("*[local-name()='navPoint']")) {
+		auto child_np = child_np_xpath.node();
 		auto child_item = parse_ncx_nav_point(child_np, epub_ctx, buffer);
 		if (child_item) {
 			item->children.push_back(std::move(child_item));
