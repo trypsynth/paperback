@@ -1138,13 +1138,32 @@ void toc_dialog::on_ok(wxCommandEvent& /*event*/) {
 void toc_dialog::on_char_hook(wxKeyEvent& event) {
 	const int key_code = event.GetKeyCode();
 	wxWindow* focused = wxWindow::FindFocus();
-	if (focused == tree && key_code >= WXK_SPACE && key_code < WXK_DELETE) {
+	if (focused != tree || key_code < WXK_SPACE || key_code >= WXK_DELETE) {
+		event.Skip();
+		return;
+	}
+
+	const wxChar current_char = static_cast<wxChar>(event.GetUnicodeKey());
+
+	if (search_string_.IsEmpty()) {
+		if (current_char == ' ') {
+			return;
+		}
+		search_string_ = current_char;
 		search_timer_->StartOnce(500);
-		search_string_ += static_cast<wxChar>(event.GetUnicodeKey());
+		event.Skip();
+		return;
+	}
+
+	if (search_string_.Last() != current_char) {
+		search_string_ += current_char;
+		search_timer_->StartOnce(500);
 		if (!find_and_select_item_by_name(search_string_, tree->GetRootItem())) {
-			search_string_.RemoveLast(); // No match, remove last char
+			search_string_.RemoveLast();
+			wxBell();
 		}
 	} else {
+		search_timer_->StartOnce(500);
 		event.Skip();
 	}
 }
