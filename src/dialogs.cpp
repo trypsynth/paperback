@@ -1142,9 +1142,7 @@ void toc_dialog::on_char_hook(wxKeyEvent& event) {
 		event.Skip();
 		return;
 	}
-
 	const wxChar current_char = static_cast<wxChar>(event.GetUnicodeKey());
-
 	if (search_string_.IsEmpty()) {
 		if (current_char == ' ') {
 			return;
@@ -1154,7 +1152,6 @@ void toc_dialog::on_char_hook(wxKeyEvent& event) {
 		event.Skip();
 		return;
 	}
-
 	if (search_string_.Last() != current_char) {
 		search_string_ += current_char;
 		search_timer_->StartOnce(500);
