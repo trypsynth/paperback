@@ -18,12 +18,13 @@
 #include "update_checker.hpp"
 #include "utils.hpp"
 #include <wx/aboutdlg.h>
+#include <wx/artprov.h>
 #include <wx/filename.h>
 #include <wx/stdpaths.h>
 #include <wx/timer.h>
 #include <wx/translation.h>
 
-main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME), task_bar_icon_{new task_bar_icon(this)}, position_save_timer{std::make_unique<wxTimer>(this)}, status_update_timer{std::make_unique<wxTimer>(this)}, sleep_timer{std::make_unique<wxTimer>(this)}, sleep_status_update_timer{std::make_unique<wxTimer>(this)} {
+main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME), position_save_timer{std::make_unique<wxTimer>(this)}, status_update_timer{std::make_unique<wxTimer>(this)}, task_bar_icon_{new task_bar_icon(this)}, sleep_timer{std::make_unique<wxTimer>(this)}, sleep_status_update_timer{std::make_unique<wxTimer>(this)} {
 	auto* const panel = new wxPanel(this);
 	notebook = new wxNotebook(panel, wxID_ANY);
 #ifdef __WXMSW__
@@ -306,7 +307,15 @@ void main_window::on_iconize(wxIconizeEvent& event) {
 		auto& config_mgr = wxGetApp().get_config_manager();
 		if (config_mgr.get(config_manager::minimize_to_tray)) {
 			Hide();
-			task_bar_icon_->SetIcon(wxICON(wxICON_INFORMATION), APP_NAME);
+#ifdef __WXMSW__
+			// Windows: Load from embedded resource
+			task_bar_icon_->SetIcon(wxIcon("APP_ICON", wxBITMAP_TYPE_ICO_RESOURCE), APP_NAME);
+#else
+			// Linux/Mac: Use standard icon or create from PNG
+			wxIcon icon;
+			icon.CopyFromBitmap(wxArtProvider::GetBitmap(wxART_INFORMATION, wxART_OTHER, wxSize(16,16)));
+			task_bar_icon_->SetIcon(icon, APP_NAME);
+#endif
 		}
 	}
 	event.Skip();
@@ -890,17 +899,53 @@ void main_window::on_about(wxCommandEvent&) {
 	wxAboutBox(about_info);
 }
 
+wxString main_window::get_documentation_path() {
+	wxString doc_path;
+
+#ifdef __linux__
+	// Linux: Try relative to executable first (works for any PREFIX/bin layout)
+	// Executable at PREFIX/bin/paperback -> docs at PREFIX/share/doc/paperback/readme.html
+	const auto exe_path = wxStandardPaths::Get().GetExecutablePath();
+	wxFileName exe_file(exe_path);
+	wxFileName package_root = exe_file;
+	package_root.RemoveLastDir();  // Remove "bin" to get package root
+	const wxString relative_doc_path = package_root.GetPath() + "/share/doc/paperback/readme.html";
+
+	if (wxFileName::FileExists(relative_doc_path)) {
+		return relative_doc_path;
+	}
+
+	// Fallback: Check standard FHS locations
+	const wxString fhs_locations[] = {
+		"/usr/share/doc/paperback/readme.html",           // System install
+		"/usr/local/share/doc/paperback/readme.html",     // Local install
+		"/app/share/doc/paperback/readme.html",           // Flatpak
+	};
+
+	for (const auto& path : fhs_locations) {
+		if (wxFileName::FileExists(path)) {
+			return path;
+		}
+	}
+#endif
+
+	// Universal fallback: executable directory (Windows default, Linux fallback)
+	const auto exe_dir = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath();
+	doc_path = wxFileName(exe_dir, "readme.html").GetFullPath();
+
+	return doc_path;
+}
+
 void main_window::on_help(wxCommandEvent&) {
-	const auto path = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath();
-	const auto url = "file://" + wxFileName(path, "readme.html").GetFullPath();
+	const auto readme_path = get_documentation_path();
+	const auto url = "file://" + readme_path;
 	if (!wxLaunchDefaultBrowser(url)) {
 		wxMessageBox(_("Failed to launch default browser."), _("Error"), wxICON_ERROR);
 	}
 }
 
 void main_window::on_help_internal(wxCommandEvent&) {
-	const auto path = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath();
-	const auto readme_path = wxFileName(path, "readme.html").GetFullPath();
+	const auto readme_path = get_documentation_path();
 	if (!wxFileName::FileExists(readme_path)) {
 		wxMessageBox(_("readme.html not found. Please ensure the application was built properly."), _("Error"), wxICON_ERROR);
 		return;
@@ -1049,9 +1094,9 @@ void main_window::on_show_all_documents(wxCommandEvent&) {
 		return;
 	}
 	wxArrayString open_docs;
-	for (size_t i = 0; i < doc_manager->get_tab_count(); ++i) {
-		if (doc_manager->get_tab(static_cast<int>(i)) != nullptr) {
-			open_docs.Add(doc_manager->get_tab(static_cast<int>(i))->file_path);
+	for (int i = 0; i < doc_manager->get_tab_count(); ++i) {
+		if (doc_manager->get_tab(i) != nullptr) {
+			open_docs.Add(doc_manager->get_tab(i)->file_path);
 		}
 	}
 	all_documents_dialog dlg(this, config_mgr, open_docs);
@@ -1096,7 +1141,7 @@ void main_window::update_recent_documents_menu() {
 	auto& config_mgr = wxGetApp().get_config_manager();
 	const wxArrayString recent_docs = config_mgr.get_recent_documents();
 	size_t menu_count = 0;
-	for (size_t i = 0; i < recent_docs.GetCount() && menu_count < config_mgr.get(config_manager::recent_documents_to_show); ++i) {
+	for (size_t i = 0; i < recent_docs.GetCount() && menu_count < static_cast<size_t>(config_mgr.get(config_manager::recent_documents_to_show)); ++i) {
 		const wxString& path = recent_docs[i];
 		const wxString filename = wxFileName(path).GetFullName();
 		const wxString menu_text = wxString::Format("&%zu %s", menu_count + 1, filename);

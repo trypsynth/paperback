@@ -141,7 +141,7 @@ bool document_manager::create_document_tab(const wxString& path, const parser* p
 	auto* tab_data = new document_tab;
 	tab_data->doc = std::move(doc);
 	tab_data->file_path = path;
-	tab_data->parser = par;
+	tab_data->format_parser = par;
 	wxPanel* panel = create_tab_panel(tab_data->doc->buffer.str(), tab_data);
 	tab_data->panel = panel;
 	notebook->AddPage(panel, tab_data->doc->title, true);
@@ -231,7 +231,7 @@ wxTextCtrl* document_manager::get_active_text_ctrl() const {
 
 const parser* document_manager::get_active_parser() const {
 	const document_tab* tab = get_active_tab();
-	return tab != nullptr ? tab->parser : nullptr;
+	return tab != nullptr ? tab->format_parser : nullptr;
 }
 
 int document_manager::get_tab_count() const {
@@ -731,7 +731,7 @@ void document_manager::activate_current_link() const {
 				if (it != doc->spine_items.end()) {
 					const int spine_index = static_cast<int>(std::distance(doc->spine_items.begin(), it));
 					size_t section_start = doc->buffer.get_marker_position_by_index(marker_type::section_break, spine_index);
-					size_t section_end = (spine_index + 1 < static_cast<int>(doc->spine_items.size()))
+					size_t section_end = (static_cast<size_t>(spine_index + 1) < doc->spine_items.size())
 						? doc->buffer.get_marker_position_by_index(marker_type::section_break, spine_index + 1)
 						: doc->buffer.str().length();
 					size_t offset = section_start;

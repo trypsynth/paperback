@@ -1,0 +1,198 @@
+app-id: io.github.trypsynth.Paperback
+runtime: org.freedesktop.Platform
+runtime-version: '25.08'
+sdk: org.freedesktop.Sdk
+command: paperback
+
+finish-args:
+  # Filesystem access to open documents
+  - --filesystem=home
+  - --filesystem=xdg-documents
+  - --filesystem=xdg-download
+  # X11 and Wayland display
+  - --socket=x11
+  - --socket=wayland
+  # GPU acceleration
+  - --device=dri
+  # Access to network for update checks and external links
+  - --share=network
+  # IPC for accessibility
+  - --share=ipc
+
+cleanup:
+  - /include
+  - /lib/cmake
+  - /lib/pkgconfig
+  - /share/bakefile
+  - /share/man
+  - '*.la'
+  - '*.a'
+
+modules:
+  # wxWidgets 3.2.8.1 - GUI toolkit
+  - name: wxwidgets
+    sources:
+      - type: archive
+        url: https://github.com/wxWidgets/wxWidgets/releases/download/v3.2.8.1/wxWidgets-3.2.8.1.tar.bz2
+        sha256: ad0cf6c18815dcf1a6a89ad3c3d21a306cd7b5d99a602f77372ef1d92cb7d756
+    config-opts:
+      - --enable-shared
+      - --enable-unicode
+      - --with-gtk=3
+      - --without-opengl
+      - --enable-display
+      - --enable-propgrid
+      - --enable-stc
+      - --with-libjpeg
+      - --with-libpng
+      - --with-zlib
+      - --disable-webview
+      - --disable-ribbon
+    cleanup:
+      - /bin/wx-config
+      - /bin/wxrc*
+
+  # chmlib - CHM file format support
+  - name: chmlib
+    sources:
+      - type: archive
+        url: http://www.jedrea.com/chmlib/chmlib-0.40.tar.bz2
+        sha256: 3449d64b0cf71578b2c7e3ddc048d4af3661f44a83941ea074a7813f3a59ffa3
+    config-opts:
+      - --enable-shared
+      - --disable-static
+      - CFLAGS=-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64
+
+  # lexbor - HTML parser
+  - name: lexbor
+    buildsystem: cmake
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DBUILD_SHARED_LIBS=ON
+      - -DLEXBOR_BUILD_TESTS=OFF
+    sources:
+      - type: archive
+        url: https://github.com/lexbor/lexbor/archive/refs/tags/v2.5.0.tar.gz
+        sha256: d89060bb2fb6f7d0e0f399495155dd15e06697aa2c6568eab70ecd4a43084ba9
+
+  # mbedtls - Cryptography library
+  - name: mbedtls
+    buildsystem: cmake
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DENABLE_PROGRAMS=OFF
+      - -DENABLE_TESTING=OFF
+    sources:
+      - type: archive
+        url: https://github.com/Mbed-TLS/mbedtls/releases/download/mbedtls-3.6.4/mbedtls-3.6.4.tar.bz2
+        sha256: ec35b18a6c593cf98c3e30db8b98ff93e8940a8c4e690e66b41dfc011d678110
+
+  # pugixml - XML parser
+  - name: pugixml
+    buildsystem: cmake
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DBUILD_SHARED_LIBS=ON
+    sources:
+      - type: archive
+        url: https://github.com/zeux/pugixml/releases/download/v1.14/pugixml-1.14.tar.gz
+        sha256: 2f10e276870c64b1db6809050a75e11a897a8d7456c4be5c6b2e35a11168a015
+
+  # nlohmann-json - Header-only JSON library
+  - name: nlohmann-json
+    buildsystem: cmake
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DJSON_BuildTests=OFF
+    sources:
+      - type: archive
+        url: https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz
+        sha256: 42f6e95cad6ec532fd372391373363b62a14af6d771056dbfc86160e6dfff7aa
+
+  # maddy - Header-only Markdown parser (using project's version)
+  - name: maddy
+    buildsystem: simple
+    sources:
+      - type: git
+        url: https://github.com/progsource/maddy.git
+        tag: '1.3.0'
+        commit: 88f0222e918863cee317f74cc399b44c810cc02d
+    build-commands:
+      - mkdir -p /app/include
+      - cp -r include/maddy /app/include/
+      # Create CMake config file for header-only library
+      - mkdir -p /app/lib/cmake/maddy
+      - |
+        cat > /app/lib/cmake/maddy/maddyConfig.cmake << 'EOF'
+        # maddy CMake config file
+        if(NOT TARGET maddy::maddy)
+          add_library(maddy::maddy INTERFACE IMPORTED)
+          set_target_properties(maddy::maddy PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/../../../include"
+          )
+        endif()
+        set(maddy_FOUND TRUE)
+        EOF
+
+  # pdfium - PDF rendering (using pre-built binaries)
+  # Using bblanchon/pdfium-binaries since building from source requires
+  # Chromium's depot_tools and is extremely complex for Flatpak
+  # Version chromium/7520 is PDFium 144.0.7520.0, latest stable as of Nov 2025
+  - name: pdfium
+    buildsystem: simple
+    sources:
+      - type: archive
+        url: https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7520/pdfium-linux-x64.tgz
+        sha256: e737634cca16ba28b760077b915b469bea076b71f208769c56fb96ee138e876f
+    build-commands:
+      # Install headers (flatpak-builder strips first component, headers are at top level)
+      - install -Dm644 *.h -t /app/include/
+      - install -Dm644 cpp/*.h -t /app/include/cpp/
+      # Install library (also at top level after strip-components)
+      - install -Dm644 libpdfium.so -t /app/lib/
+      # Create pkg-config file for CMake to find pdfium
+      - mkdir -p /app/lib/pkgconfig
+      - |
+        cat > /app/lib/pkgconfig/pdfium.pc << 'EOF'
+        prefix=/app
+        libdir=${prefix}/lib
+        includedir=${prefix}/include
+
+        Name: pdfium
+        Description: PDF rendering library
+        Version: chromium-7520
+        Libs: -L${libdir} -lpdfium
+        Cflags: -I${includedir}
+        EOF
+
+  # pandoc - Documentation build tool (build-time only)
+  - name: pandoc
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 pandoc-3.8.2.1/bin/pandoc /app/bin/pandoc
+    cleanup:
+      - /bin/pandoc
+    sources:
+      - type: archive
+        url: https://github.com/jgm/pandoc/releases/download/3.8.2.1/pandoc-3.8.2.1-linux-amd64.tar.gz
+        sha256: b362815e21d8ad3629c124aa92baf54558da086ad72374b4f6fdd97b9f3275b0
+        strip-components: 0
+
+  # paperback - Main application
+  - name: paperback
+    buildsystem: cmake
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DUSE_SYSTEM_LIBS=ON
+    post-install:
+      # Rename desktop file to use app-id for Flatpak compliance
+      - mv /app/share/applications/paperback.desktop /app/share/applications/io.github.trypsynth.Paperback.desktop
+      # Update Icon field in desktop file to use app-id
+      - sed -i 's/Icon=paperback/Icon=io.github.trypsynth.Paperback/' /app/share/applications/io.github.trypsynth.Paperback.desktop
+      # Rename all icon files to use app-id for Flatpak compliance
+      - for size in 16 32 48 64 128 256; do mv /app/share/icons/hicolor/${size}x${size}/apps/paperback.png /app/share/icons/hicolor/${size}x${size}/apps/io.github.trypsynth.Paperback.png; done
+    sources:
+      - type: git
+        path: .
+        branch: HEAD
+        disable-submodules: true

@@ -111,6 +111,7 @@ private:
 	void on_open_containing_folder(wxCommandEvent&);
 	void on_options(wxCommandEvent&);
 	void on_about(wxCommandEvent&);
+	wxString get_documentation_path();
 	void on_help(wxCommandEvent&);
 	void on_help_internal(wxCommandEvent&);
 	void on_donate(wxCommandEvent&);

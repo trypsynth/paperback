@@ -12,6 +12,9 @@ Paperback is a lightweight, fast, and accessible ebook and document reader built
 * Command-line file opening for 'Open With' integration.
 
 ## Building
+
+### Windows (VCPKG)
+
 We use VCPKG for managing dependencies. Currently we manage our own VCPKG installation through a submodule. As such, make sure to clone Paperback recursively:
 
 ```batch
@@ -38,6 +41,50 @@ This will generate paperback.exe and all its dependencieds, including its readme
 Optional tools:
 - `pandoc` on your `PATH` to generate the HTML readme during the build.
 - `gettext` tools (`xgettext`, `msgfmt`, `msgmerge`) on your `PATH` to generate the translation template and compile translations.
+
+### Linux
+
+For building with CMake, you'll need CMake 3.21+, a C++20 compiler, and dependencies:
+- wxWidgets 3.2+
+- chmlib, lexbor, mbedtls, pdfium, pugixml, nlohmann-json
+
+```bash
+cmake -B build -DUSE_SYSTEM_LIBS=ON -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+sudo cmake --install build
+```
+
+Optional tools:
+- `pandoc` for HTML readme generation
+- `gettext` tools for translations
+
+### Linux (Nix)
+
+**Run directly:**
+```bash
+nix run github:trypsynth/paperback
+```
+
+**Install to profile:**
+```bash
+nix profile install github:trypsynth/paperback
+```
+
+**Build from source:**
+```bash
+# Clone repository
+git clone --recursive https://github.com/trypsynth/paperback
+cd paperback
+
+# Build and run
+nix run .#paperback
+
+# Or build specific outputs:
+nix build .#paperback  # Nix derivation
+
+# Build Flatpak:
+flatpak-builder --force-clean --repo=repo build io.github.trypsynth.Paperback.yaml
+```
 
 ## Contributing
 Contributions are welcome! Whether through issues, pull requests, discussions, or other means, your interest is appreciated.
