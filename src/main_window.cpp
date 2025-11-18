@@ -28,13 +28,11 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME), task_bar_icon
 	main_panel = new wxPanel(this);
 	auto* sizer = new wxBoxSizer(wxVERTICAL);
 	single_window_mode = config_mgr.get(config_manager::open_in_new_window);
-
 	notebook = new wxNotebook(main_panel, wxID_ANY);
 #ifdef __WXMSW__
 	notebook->MSWDisableComposited();
 #endif
 	sizer->Add(notebook, 1, wxEXPAND | wxALL, 10);
-
 	single_doc_panel = new wxPanel(main_panel);
 	auto* single_sizer = new wxBoxSizer(wxVERTICAL);
 	long style = wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | (config_mgr.get(config_manager::word_wrap) ? wxTE_WORDWRAP : wxTE_DONTWRAP);
@@ -44,9 +42,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME), task_bar_icon
 	single_sizer->Add(single_text_ctrl, 1, wxEXPAND | wxALL, 5);
 	single_doc_panel->SetSizer(single_sizer);
 	sizer->Add(single_doc_panel, 1, wxEXPAND | wxALL, 10);
-
 	main_panel->SetSizer(sizer);
-
 	if (single_window_mode) {
 		notebook->Hide();
 		single_doc_panel->Show();
@@ -54,7 +50,6 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME), task_bar_icon
 		single_doc_panel->Hide();
 		notebook->Show();
 	}
-
 	live_region_label = new wxStaticText(main_panel, wxID_ANY, "", wxDefaultPosition, wxSize(0, 0));
 	live_region_label->Hide();
 	[[maybe_unused]] bool live_region_set = set_live_region(live_region_label);
