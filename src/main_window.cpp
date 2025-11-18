@@ -838,7 +838,6 @@ void main_window::on_options(wxCommandEvent&) {
 	const bool old_open_in_new_window = config_mgr.get(config_manager::open_in_new_window);
 	const bool new_open_in_new_window = dlg.get_open_in_new_window();
 	const bool new_start_maximized = dlg.get_start_maximized();
-
 	config_mgr.set(config_manager::restore_previous_documents, dlg.get_restore_previous_documents());
 	config_mgr.set(config_manager::word_wrap, new_word_wrap);
 	config_mgr.set(config_manager::minimize_to_tray, dlg.get_minimize_to_tray());
@@ -849,7 +848,6 @@ void main_window::on_options(wxCommandEvent&) {
 	config_mgr.set(config_manager::check_for_updates_on_startup, dlg.get_check_for_updates_on_startup());
 	config_mgr.set(config_manager::recent_documents_to_show, dlg.get_recent_documents_to_show());
 	config_mgr.set(config_manager::language, new_language);
-
 	if (old_open_in_new_window != new_open_in_new_window) {
 		long current_pos = 0;
 		if (old_open_in_new_window && single_text_ctrl != nullptr) {
@@ -857,9 +855,7 @@ void main_window::on_options(wxCommandEvent&) {
 		} else if (auto* tab_ctrl = doc_manager->get_active_text_ctrl(); tab_ctrl != nullptr) {
 			current_pos = tab_ctrl->GetInsertionPoint();
 		}
-
 		single_window_mode = new_open_in_new_window;
-
 		if (new_open_in_new_window) {
 			notebook->Hide();
 			single_doc_panel->Show();
@@ -890,7 +886,6 @@ void main_window::on_options(wxCommandEvent&) {
 		}
 		main_panel->Layout();
 	}
-
 	if (old_word_wrap != new_word_wrap) {
 		doc_manager->apply_word_wrap(new_word_wrap);
 		if (active_text_ctrl != nullptr && doc_manager->get_active_text_ctrl() != nullptr) {

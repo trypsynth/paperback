@@ -16,8 +16,6 @@
 #include <wx/longlong.h>
 #include <wx/wx.h>
 
-
-
 class main_window : public wxFrame {
 public:
 	main_window();
