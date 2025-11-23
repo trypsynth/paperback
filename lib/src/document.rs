@@ -157,6 +157,7 @@ pub struct DocumentStats {
 	pub word_count: usize,
 	pub line_count: usize,
 	pub char_count: usize,
+	pub char_count_no_whitespace: usize,
 }
 
 impl DocumentStats {
@@ -165,7 +166,8 @@ impl DocumentStats {
 		let char_count = text.chars().count();
 		let line_count = text.lines().count();
 		let word_count = text.split_whitespace().count();
-		Self { word_count, line_count, char_count }
+		let char_count_no_whitespace = text.chars().filter(|c| !c.is_whitespace()).count();
+		Self { word_count, line_count, char_count, char_count_no_whitespace }
 	}
 }
 
@@ -220,6 +222,202 @@ impl Document {
 impl Default for Document {
 	fn default() -> Self {
 		Self::new()
+	}
+}
+
+fn is_heading_marker(marker_type: MarkerType) -> bool {
+	matches!(
+		marker_type,
+		MarkerType::Heading1
+			| MarkerType::Heading2
+			| MarkerType::Heading3
+			| MarkerType::Heading4
+			| MarkerType::Heading5
+			| MarkerType::Heading6
+	)
+}
+
+#[derive(Debug, Clone)]
+pub struct DocumentHandle {
+	doc: Document,
+}
+
+impl DocumentHandle {
+	#[must_use]
+	pub fn new(mut doc: Document) -> Self {
+		doc.buffer.markers.sort_by_key(|m| m.position);
+		Self { doc }
+	}
+
+	#[must_use]
+	pub fn document(&self) -> &Document {
+		&self.doc
+	}
+
+	#[must_use]
+	pub fn document_mut(&mut self) -> &mut Document {
+		&mut self.doc
+	}
+
+	fn markers_by_type(&self, marker_type: MarkerType) -> impl Iterator<Item = (usize, &Marker)> {
+		self.doc.buffer.markers.iter().enumerate().filter(move |(_, m)| m.marker_type == marker_type)
+	}
+
+	fn heading_markers(&self, level: Option<i32>) -> Vec<(usize, &Marker)> {
+		let mut result: Vec<(usize, &Marker)> = self
+			.doc
+			.buffer
+			.markers
+			.iter()
+			.enumerate()
+			.filter(|(_, marker)| is_heading_marker(marker.marker_type))
+			.filter(|(_, marker)| level.map_or(true, |lvl| marker.level == lvl))
+			.collect();
+		result.sort_by_key(|(_, marker)| marker.position);
+		result
+	}
+
+	pub fn next_marker_index(&self, position: i64, marker_type: MarkerType) -> Option<usize> {
+		self.doc
+			.buffer
+			.markers
+			.iter()
+			.enumerate()
+			.filter(|(_, marker)| marker.marker_type == marker_type && marker.position as i64 > position)
+			.map(|(idx, _)| idx)
+			.next()
+	}
+
+	pub fn previous_marker_index(&self, position: i64, marker_type: MarkerType) -> Option<usize> {
+		self.doc
+			.buffer
+			.markers
+			.iter()
+			.enumerate()
+			.filter(|(_, marker)| marker.marker_type == marker_type && (marker.position as i64) < position)
+			.map(|(idx, _)| idx)
+			.last()
+	}
+
+	pub fn current_marker_index(&self, position: usize, marker_type: MarkerType) -> Option<usize> {
+		let mut result = None;
+		for (idx, marker) in self.doc.buffer.markers.iter().enumerate() {
+			if marker.marker_type == marker_type && marker.position <= position {
+				result = Some(idx);
+			} else if marker.position > position {
+				break;
+			}
+		}
+		result
+	}
+
+	pub fn find_first_marker_after(&self, position: i64, marker_type: MarkerType) -> Option<usize> {
+		self.doc
+			.buffer
+			.markers
+			.iter()
+			.enumerate()
+			.find(|(_, marker)| marker.marker_type == marker_type && marker.position as i64 >= position)
+			.map(|(idx, _)| idx)
+	}
+
+	pub fn next_heading_marker_index(&self, position: i64, level: Option<i32>) -> Option<usize> {
+		let heading_markers = self.heading_markers(level);
+		heading_markers.into_iter().find(|(_, m)| m.position as i64 > position).map(|(idx, _)| idx)
+	}
+
+	pub fn previous_heading_marker_index(&self, position: i64, level: Option<i32>) -> Option<usize> {
+		let heading_markers = self.heading_markers(level);
+		heading_markers.into_iter().filter(|(_, m)| (m.position as i64) < position).map(|(idx, _)| idx).last()
+	}
+
+	pub fn marker_position(&self, marker_index: i32) -> Option<usize> {
+		let idx = usize::try_from(marker_index).ok()?;
+		self.doc.buffer.markers.get(idx).map(|m| m.position)
+	}
+
+	pub fn heading_info(&self, heading_index: i32) -> Option<crate::html_to_text::HeadingInfo> {
+		let idx = usize::try_from(heading_index).ok()?;
+		let heading_markers = self.heading_markers(None);
+		let (_, marker) = heading_markers.get(idx)?;
+		Some(crate::html_to_text::HeadingInfo {
+			offset: marker.position,
+			level: marker.level,
+			text: marker.text.clone(),
+		})
+	}
+
+	#[must_use]
+	pub fn find_closest_toc_offset(&self, position: usize) -> usize {
+		let mut best_offset = 0usize;
+		let mut best_distance = usize::MAX;
+		fn search(items: &[TocItem], position: usize, best_offset: &mut usize, best_distance: &mut usize) {
+			for item in items {
+				if item.offset <= position {
+					let distance = position - item.offset;
+					if distance < *best_distance {
+						*best_distance = distance;
+						*best_offset = item.offset;
+					}
+				}
+				if !item.children.is_empty() {
+					search(&item.children, position, best_offset, best_distance);
+				}
+			}
+		}
+		search(&self.doc.toc_items, position, &mut best_offset, &mut best_distance);
+		best_offset
+	}
+
+	#[must_use]
+	pub fn count_markers_by_type(&self, marker_type: MarkerType) -> usize {
+		self.doc.buffer.markers.iter().filter(|m| m.marker_type == marker_type).count()
+	}
+
+	#[must_use]
+	pub fn get_marker_position_by_index(&self, marker_type: MarkerType, index: i32) -> Option<usize> {
+		let target = usize::try_from(index).ok()?;
+		self.markers_by_type(marker_type).nth(target).map(|(_, marker)| marker.position)
+	}
+
+	#[must_use]
+	pub fn next_section_index(&self, position: i64) -> Option<i32> {
+		self.next_marker_index(position, MarkerType::SectionBreak).and_then(|idx| i32::try_from(idx).ok())
+	}
+
+	#[must_use]
+	pub fn previous_section_index(&self, position: i64) -> Option<i32> {
+		self.previous_marker_index(position, MarkerType::SectionBreak).and_then(|idx| i32::try_from(idx).ok())
+	}
+
+	#[must_use]
+	pub fn section_index(&self, position: usize) -> Option<i32> {
+		self.current_marker_index(position, MarkerType::SectionBreak).and_then(|idx| i32::try_from(idx).ok())
+	}
+
+	#[must_use]
+	pub fn next_page_index(&self, position: i64) -> Option<i32> {
+		self.next_marker_index(position, MarkerType::PageBreak).and_then(|idx| i32::try_from(idx).ok())
+	}
+
+	#[must_use]
+	pub fn previous_page_index(&self, position: i64) -> Option<i32> {
+		self.previous_marker_index(position, MarkerType::PageBreak).and_then(|idx| i32::try_from(idx).ok())
+	}
+
+	#[must_use]
+	pub fn page_index(&self, position: usize) -> Option<i32> {
+		self.current_marker_index(position, MarkerType::PageBreak).and_then(|idx| i32::try_from(idx).ok())
+	}
+
+	#[must_use]
+	pub fn next_heading_index(&self, position: i64, level: Option<i32>) -> Option<i32> {
+		self.next_heading_marker_index(position, level).and_then(|idx| i32::try_from(idx).ok())
+	}
+
+	#[must_use]
+	pub fn previous_heading_index(&self, position: i64, level: Option<i32>) -> Option<i32> {
+		self.previous_heading_marker_index(position, level).and_then(|idx| i32::try_from(idx).ok())
 	}
 }
 

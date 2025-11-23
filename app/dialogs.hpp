@@ -10,7 +10,7 @@
 #pragma once
 #include "config_manager.hpp"
 #include "controls.hpp"
-#include "document.hpp"
+#include "document_data.hpp"
 #include "parser.hpp"
 #include <wx/arrstr.h>
 #include <wx/button.h>

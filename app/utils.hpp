@@ -9,7 +9,6 @@
 
 #pragma once
 #include "config_manager.hpp"
-#include "document.hpp"
 #include "parser.hpp"
 #include <map>
 #include <string>

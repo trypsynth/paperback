@@ -11,8 +11,7 @@
 #include "config_manager.hpp"
 #include "constants.hpp"
 #include "dialogs.hpp"
-#include "document.hpp"
-#include "document_buffer.hpp"
+#include "document_data.hpp"
 #include "main_window.hpp"
 #include "parser.hpp"
 #include "utils.hpp"
@@ -21,6 +20,7 @@
 #include <iterator>
 #include <memory>
 #include <optional>
+#include <ranges>
 #include <string>
 #include <utility>
 #include <wx/defs.h>
@@ -36,6 +36,146 @@
 #include <wx/translation.h>
 #include <wx/utils.h>
 #include <wx/wfstream.h>
+
+namespace {
+int to_rust_marker(marker_type type) {
+	return static_cast<int>(type);
+}
+
+bool is_heading_marker(marker_type type) {
+	return type >= marker_type::heading_1 && type <= marker_type::heading_6;
+}
+
+int doc_next_section_index(const document& doc, long position) {
+	return document_next_marker(**doc.handle, position, to_rust_marker(marker_type::section_break));
+}
+
+int doc_previous_section_index(const document& doc, long position) {
+	return document_previous_marker(**doc.handle, position, to_rust_marker(marker_type::section_break));
+}
+
+int doc_section_index(const document& doc, size_t position) {
+	return document_current_marker(**doc.handle, position, to_rust_marker(marker_type::section_break));
+}
+
+size_t doc_offset_for_section(const document& doc, int section_index) {
+	return document_marker_position(**doc.handle, section_index);
+}
+
+int doc_next_page_index(const document& doc, long position) {
+	return document_next_marker(**doc.handle, position, to_rust_marker(marker_type::page_break));
+}
+
+int doc_previous_page_index(const document& doc, long position) {
+	return document_previous_marker(**doc.handle, position, to_rust_marker(marker_type::page_break));
+}
+
+int doc_page_index(const document& doc, size_t position) {
+	return document_current_marker(**doc.handle, position, to_rust_marker(marker_type::page_break));
+}
+
+size_t doc_offset_for_page(const document& doc, int page_index) {
+	return document_marker_position(**doc.handle, page_index);
+}
+
+size_t doc_find_closest_toc_offset(const document& doc, size_t position) {
+	return document_find_closest_toc_offset(**doc.handle, position);
+}
+
+int doc_next_heading_index(const document& doc, long position, int level) {
+	return document_next_heading(**doc.handle, position, level);
+}
+
+int doc_previous_heading_index(const document& doc, long position, int level) {
+	return document_previous_heading(**doc.handle, position, level);
+}
+
+std::vector<const marker*> doc_get_markers_by_type(const document& doc, marker_type type) {
+	std::vector<const marker*> result;
+	for (const auto& m : doc.markers) {
+		if (m.type == type) {
+			result.push_back(&m);
+		}
+	}
+	return result;
+}
+
+std::vector<const marker*> doc_get_heading_markers(const document& doc, int level = -1) {
+	std::vector<const marker*> result;
+	for (const auto& m : doc.markers) {
+		if (!is_heading_marker(m.type)) {
+			continue;
+		}
+		if (level == -1 || m.level == level) {
+			result.push_back(&m);
+		}
+	}
+	return result;
+}
+
+const marker* doc_get_heading_marker(const document& doc, int heading_index) {
+	const auto headings = doc_get_heading_markers(doc);
+	if (heading_index < 0 || static_cast<size_t>(heading_index) >= headings.size()) {
+		return nullptr;
+	}
+	return headings[static_cast<size_t>(heading_index)];
+}
+
+size_t doc_offset_for_heading(const document& doc, int heading_index) {
+	const marker* heading_marker = doc_get_heading_marker(doc, heading_index);
+	return heading_marker != nullptr ? heading_marker->pos : 0;
+}
+
+int doc_next_marker_index(const document& doc, long position, marker_type type) {
+	return document_next_marker(**doc.handle, position, to_rust_marker(type));
+}
+
+int doc_previous_marker_index(const document& doc, long position, marker_type type) {
+	return document_previous_marker(**doc.handle, position, to_rust_marker(type));
+}
+
+int doc_current_marker_index(const document& doc, size_t position, marker_type type) {
+	return document_current_marker(**doc.handle, position, to_rust_marker(type));
+}
+
+int doc_find_first_marker_after(const document& doc, long position, marker_type type) {
+	return document_find_first_marker_after(**doc.handle, position, to_rust_marker(type));
+}
+
+const marker* doc_get_marker(const document& doc, int marker_index) {
+	if (marker_index < 0 || static_cast<size_t>(marker_index) >= doc.markers.size()) {
+		return nullptr;
+	}
+	return &doc.markers[static_cast<size_t>(marker_index)];
+}
+
+size_t doc_marker_position(const document& doc, int marker_index) {
+	return document_marker_position(**doc.handle, marker_index);
+}
+
+size_t doc_count_markers_by_type(const document& doc, marker_type type) {
+	size_t count = 0;
+	for (const auto& m : doc.markers) {
+		if (m.type == type) {
+			++count;
+		}
+	}
+	return count;
+}
+
+size_t doc_get_marker_position_by_index(const document& doc, marker_type type, int index) {
+	int count = 0;
+	for (const auto& m : doc.markers) {
+		if (m.type == type) {
+			if (count == index) {
+				return m.pos;
+			}
+			++count;
+		}
+	}
+	return 0;
+}
+} // namespace
 
 document_manager::document_manager(wxNotebook* nbk, config_manager& cfg, main_window& win) : notebook{nbk}, config{cfg}, main_win{win} {
 }
@@ -134,13 +274,12 @@ bool document_manager::create_document_tab(const wxString& path, const parser_in
 	if (!password_in_use.IsEmpty()) {
 		config.set_document_password(path, password_in_use);
 	}
-	doc->calculate_statistics();
 	config.get_navigation_history(path, doc->history, doc->history_index);
 	auto* tab_data = new document_tab;
 	tab_data->doc = std::move(doc);
 	tab_data->file_path = path;
 	tab_data->parser = parser;
-	wxPanel* panel = create_tab_panel(tab_data->doc->buffer.str(), tab_data);
+	wxPanel* panel = create_tab_panel(tab_data->doc->content, tab_data);
 	tab_data->panel = panel;
 	notebook->AddPage(panel, tab_data->doc->title, true);
 	restore_document_position(tab_data);
@@ -240,6 +379,21 @@ int document_manager::get_active_tab_index() const {
 	return notebook->GetSelection();
 }
 
+int document_manager::page_index(size_t position) const {
+	const document* doc = get_active_document();
+	return doc != nullptr ? doc_page_index(*doc, position) : -1;
+}
+
+size_t document_manager::marker_count(marker_type type) const {
+	const document* doc = get_active_document();
+	return doc != nullptr ? doc_count_markers_by_type(*doc, type) : 0;
+}
+
+size_t document_manager::marker_position_by_index(marker_type type, int index) const {
+	const document* doc = get_active_document();
+	return doc != nullptr ? doc_get_marker_position_by_index(*doc, type, index) : 0;
+}
+
 void document_manager::go_to_position(int position) const {
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (text_ctrl == nullptr) {
@@ -266,9 +420,9 @@ void document_manager::navigate_to_section(bool next) const {
 	bool wrapping = false;
 	// Special case for previous: if we're past the section start, go to section start first.
 	if (!next) {
-		const int current_index = doc->section_index(current_pos);
+		const int current_index = doc_section_index(*doc, static_cast<size_t>(current_pos));
 		if (current_index != -1) {
-			const size_t current_section_offset = doc->offset_for_section(current_index);
+			const size_t current_section_offset = doc_offset_for_section(*doc, current_index);
 			if (static_cast<size_t>(current_pos) > current_section_offset) {
 				text_ctrl->SetInsertionPoint(static_cast<long>(current_section_offset));
 				long line{0};
@@ -281,19 +435,19 @@ void document_manager::navigate_to_section(bool next) const {
 	}
 	int search_pos = current_pos;
 	if (!next) {
-		const int current_index = doc->section_index(current_pos);
+		const int current_index = doc_section_index(*doc, static_cast<size_t>(current_pos));
 		if (current_index != -1) {
-			const size_t current_section_offset = doc->offset_for_section(current_index);
+			const size_t current_section_offset = doc_offset_for_section(*doc, current_index);
 			if (static_cast<size_t>(current_pos) <= current_section_offset) {
 				// We're at the start of the current section, so search from just before the section marker.
 				search_pos = current_section_offset > 0 ? static_cast<int>(current_section_offset - 1) : 0;
 			}
 		}
 	}
-	int target_index = next ? doc->next_section_index(current_pos) : doc->previous_section_index(search_pos);
+	int target_index = next ? doc_next_section_index(*doc, current_pos) : doc_previous_section_index(*doc, search_pos);
 	if (target_index == -1) {
 		if (config.get(config_manager::navigation_wrap)) {
-			target_index = next ? doc->next_section_index(-1) : doc->previous_section_index(text_ctrl->GetLastPosition() + 1);
+			target_index = next ? doc_next_section_index(*doc, -1) : doc_previous_section_index(*doc, text_ctrl->GetLastPosition() + 1);
 			if (target_index != -1) {
 				wrapping = true;
 			}
@@ -303,7 +457,7 @@ void document_manager::navigate_to_section(bool next) const {
 			return;
 		}
 	}
-	const size_t offset = doc->offset_for_section(target_index);
+	const size_t offset = doc_offset_for_section(*doc, target_index);
 	text_ctrl->SetInsertionPoint(static_cast<long>(offset));
 	long line{0};
 	text_ctrl->PositionToXY(static_cast<long>(offset), nullptr, &line);
@@ -345,16 +499,16 @@ void document_manager::navigate_to_page(bool next) const {
 	if (doc == nullptr || text_ctrl == nullptr) {
 		return;
 	}
-	if (doc->buffer.count_markers_by_type(marker_type::page_break) == 0) {
+	if (doc_count_markers_by_type(*doc, marker_type::page_break) == 0) {
 		speak(_("No pages."));
 		return;
 	}
 	const int current_pos = text_ctrl->GetInsertionPoint();
 	bool wrapping = false;
-	int target_index = next ? doc->next_page_index(current_pos) : doc->previous_page_index(current_pos);
+	int target_index = next ? doc_next_page_index(*doc, current_pos) : doc_previous_page_index(*doc, current_pos);
 	if (target_index == -1) {
 		if (config.get(config_manager::navigation_wrap)) {
-			target_index = next ? doc->next_page_index(-1) : doc->previous_page_index(text_ctrl->GetLastPosition() + 1);
+			target_index = next ? doc_next_page_index(*doc, -1) : doc_previous_page_index(*doc, text_ctrl->GetLastPosition() + 1);
 			if (target_index != -1) {
 				wrapping = true;
 			}
@@ -364,7 +518,7 @@ void document_manager::navigate_to_page(bool next) const {
 			return;
 		}
 	}
-	const size_t offset = doc->offset_for_page(target_index);
+	const size_t offset = doc_offset_for_page(*doc, target_index);
 	text_ctrl->SetInsertionPoint(static_cast<long>(offset));
 	long line{0};
 	text_ctrl->PositionToXY(static_cast<long>(offset), nullptr, &line);
@@ -549,16 +703,16 @@ void document_manager::navigate_to_link(bool next) const {
 	if (doc == nullptr || text_ctrl == nullptr) {
 		return;
 	}
-	if (doc->buffer.count_markers_by_type(marker_type::link) == 0) {
+	if (doc_count_markers_by_type(*doc, marker_type::link) == 0) {
 		speak(_("No links."));
 		return;
 	}
 	const int current_pos = text_ctrl->GetInsertionPoint();
 	bool wrapping = false;
-	int target_index = next ? doc->buffer.next_marker_index(current_pos, marker_type::link) : doc->buffer.previous_marker_index(current_pos, marker_type::link);
+	int target_index = next ? doc_next_marker_index(*doc, current_pos, marker_type::link) : doc_previous_marker_index(*doc, current_pos, marker_type::link);
 	if (target_index == -1) {
 		if (config.get(config_manager::navigation_wrap)) {
-			target_index = next ? doc->buffer.next_marker_index(-1, marker_type::link) : doc->buffer.previous_marker_index(text_ctrl->GetLastPosition() + 1, marker_type::link);
+			target_index = next ? doc_next_marker_index(*doc, -1, marker_type::link) : doc_previous_marker_index(*doc, text_ctrl->GetLastPosition() + 1, marker_type::link);
 			if (target_index != -1) {
 				wrapping = true;
 			}
@@ -568,7 +722,7 @@ void document_manager::navigate_to_link(bool next) const {
 			return;
 		}
 	}
-	const marker* link_marker = doc->buffer.get_marker(target_index);
+	const marker* link_marker = doc_get_marker(*doc, target_index);
 	if (link_marker != nullptr) {
 		go_to_position(static_cast<long>(link_marker->pos));
 		wxString message = link_marker->text + _(" link");
@@ -670,11 +824,11 @@ void document_manager::activate_current_link() const {
 		return;
 	}
 	const long current_pos = text_ctrl->GetInsertionPoint();
-	const int link_index = doc->buffer.current_marker_index(static_cast<size_t>(current_pos), marker_type::link);
+	const int link_index = doc_current_marker_index(*doc, static_cast<size_t>(current_pos), marker_type::link);
 	if (link_index == -1) {
 		return;
 	}
-	const marker* link_marker = doc->buffer.get_marker(link_index);
+	const marker* link_marker = doc_get_marker(*doc, link_index);
 	if (link_marker == nullptr) {
 		return;
 	}
@@ -728,10 +882,10 @@ void document_manager::activate_current_link() const {
 				auto it = std::ranges::find(doc->spine_items, std::string(manifest_id.mb_str()));
 				if (it != doc->spine_items.end()) {
 					const int spine_index = static_cast<int>(std::distance(doc->spine_items.begin(), it));
-					size_t section_start = doc->buffer.get_marker_position_by_index(marker_type::section_break, spine_index);
+					size_t section_start = doc_get_marker_position_by_index(*doc, marker_type::section_break, spine_index);
 					size_t section_end = (spine_index + 1 < static_cast<int>(doc->spine_items.size()))
-						? doc->buffer.get_marker_position_by_index(marker_type::section_break, spine_index + 1)
-						: doc->buffer.str().length();
+						? doc_get_marker_position_by_index(*doc, marker_type::section_break, spine_index + 1)
+						: doc->content.length();
 					size_t offset = section_start;
 					if (!fragment.empty()) {
 						auto frag_it = doc->id_positions.find(std::string(fragment.mb_str()));
@@ -767,16 +921,16 @@ void document_manager::navigate_to_list(bool next) const {
 		speak(_("No lists."));
 		return;
 	}
-	if (doc->buffer.count_markers_by_type(marker_type::list) == 0) {
+	if (doc_count_markers_by_type(*doc, marker_type::list) == 0) {
 		speak(_("No lists."));
 		return;
 	}
 	const int current_pos = text_ctrl->GetInsertionPoint();
 	bool wrapping = false;
-	int target_index = next ? doc->buffer.next_marker_index(current_pos, marker_type::list) : doc->buffer.previous_marker_index(current_pos, marker_type::list);
+	int target_index = next ? doc_next_marker_index(*doc, current_pos, marker_type::list) : doc_previous_marker_index(*doc, current_pos, marker_type::list);
 	if (target_index == -1) {
 		if (config.get(config_manager::navigation_wrap)) {
-			target_index = next ? doc->buffer.next_marker_index(-1, marker_type::list) : doc->buffer.previous_marker_index(text_ctrl->GetLastPosition() + 1, marker_type::list);
+			target_index = next ? doc_next_marker_index(*doc, -1, marker_type::list) : doc_previous_marker_index(*doc, text_ctrl->GetLastPosition() + 1, marker_type::list);
 			if (target_index != -1) {
 				wrapping = true;
 			}
@@ -786,11 +940,11 @@ void document_manager::navigate_to_list(bool next) const {
 			return;
 		}
 	}
-	const marker* list_marker = doc->buffer.get_marker(target_index);
+	const marker* list_marker = doc_get_marker(*doc, target_index);
 	if (list_marker != nullptr) {
 		wxString message = wxString::Format(_("List with %d items"), list_marker->level);
-		const int first_item_index = doc->buffer.find_first_marker_after(static_cast<long>(list_marker->pos), marker_type::list_item);
-		const marker* first_item_marker = doc->buffer.get_marker(first_item_index);
+		const int first_item_index = doc_find_first_marker_after(*doc, static_cast<long>(list_marker->pos), marker_type::list_item);
+		const marker* first_item_marker = doc_get_marker(*doc, first_item_index);
 		if (first_item_marker != nullptr) {
 			go_to_position(static_cast<long>(first_item_marker->pos));
 			long line_num{0};
@@ -826,7 +980,7 @@ void document_manager::navigate_to_list_item(bool next) const {
 		speak(_("No lists."));
 		return;
 	}
-	if (doc->buffer.count_markers_by_type(marker_type::list_item) == 0) {
+	if (doc_count_markers_by_type(*doc, marker_type::list_item) == 0) {
 		speak(_("No list items."));
 		return;
 	}
@@ -835,17 +989,17 @@ void document_manager::navigate_to_list_item(bool next) const {
 	long current_line_num{0};
 	text_ctrl->PositionToXY(current_pos, nullptr, &current_line_num);
 	const long current_line_start = text_ctrl->XYToPosition(0, current_line_num);
-	int marker_index_at_line = doc->buffer.find_first_marker_after(current_line_start, marker_type::list_item);
-	const marker* line_item_marker = doc->buffer.get_marker(marker_index_at_line);
+	int marker_index_at_line = doc_find_first_marker_after(*doc, current_line_start, marker_type::list_item);
+	const marker* line_item_marker = doc_get_marker(*doc, marker_index_at_line);
 	int current_list_index{-1};
 	if (line_item_marker != nullptr && static_cast<long>(line_item_marker->pos) == current_line_start) {
-		current_list_index = doc->buffer.current_marker_index(line_item_marker->pos, marker_type::list);
+		current_list_index = doc_current_marker_index(*doc, line_item_marker->pos, marker_type::list);
 	}
 	bool wrapping = false;
-	int target_index = next ? doc->buffer.next_marker_index(current_pos, marker_type::list_item) : doc->buffer.previous_marker_index(current_pos, marker_type::list_item);
+	int target_index = next ? doc_next_marker_index(*doc, current_pos, marker_type::list_item) : doc_previous_marker_index(*doc, current_pos, marker_type::list_item);
 	if (target_index == -1) {
 		if (config.get(config_manager::navigation_wrap)) {
-			target_index = next ? doc->buffer.next_marker_index(-1, marker_type::list_item) : doc->buffer.previous_marker_index(text_ctrl->GetLastPosition() + 1, marker_type::list_item);
+			target_index = next ? doc_next_marker_index(*doc, -1, marker_type::list_item) : doc_previous_marker_index(*doc, text_ctrl->GetLastPosition() + 1, marker_type::list_item);
 			if (target_index != -1) {
 				wrapping = true;
 			}
@@ -855,10 +1009,10 @@ void document_manager::navigate_to_list_item(bool next) const {
 			return;
 		}
 	}
-	const marker* list_item_marker = doc->buffer.get_marker(target_index);
+	const marker* list_item_marker = doc_get_marker(*doc, target_index);
 	if (list_item_marker != nullptr) {
-		const int target_list_index = doc->buffer.current_marker_index(list_item_marker->pos, marker_type::list);
-		const marker* target_list_marker = doc->buffer.get_marker(target_list_index);
+		const int target_list_index = doc_current_marker_index(*doc, list_item_marker->pos, marker_type::list);
+		const marker* target_list_marker = doc_get_marker(*doc, target_list_index);
 		wxString message;
 		if (target_list_index != -1 && target_list_index != current_list_index && target_list_marker != nullptr) {
 			message += wxString::Format(_("List with %d items "), target_list_marker->level);
@@ -1023,7 +1177,7 @@ void document_manager::show_table_of_contents(wxWindow* parent) const {
 		return;
 	}
 	const int current_pos = text_ctrl->GetInsertionPoint();
-	const int closest_toc_offset = doc->find_closest_toc_offset(current_pos);
+	const int closest_toc_offset = static_cast<int>(doc_find_closest_toc_offset(*doc, static_cast<size_t>(current_pos)));
 	toc_dialog dlg(parent, doc, closest_toc_offset);
 	if (dlg.ShowModal() != wxID_OK) {
 		return;
@@ -1218,17 +1372,17 @@ void document_manager::navigate_to_heading(bool next, int specific_level) const 
 	if (doc == nullptr || text_ctrl == nullptr) {
 		return;
 	}
-	if (doc->buffer.get_heading_markers().empty()) {
+	if (doc_get_heading_markers(*doc).empty()) {
 		speak(_("No headings."));
 		return;
 	}
 	const int current_pos = text_ctrl->GetInsertionPoint();
 	int target_index = -1;
 	bool wrapping = false;
-	target_index = next ? doc->next_heading_index(current_pos, specific_level) : doc->previous_heading_index(current_pos, specific_level);
+	target_index = next ? doc_next_heading_index(*doc, current_pos, specific_level) : doc_previous_heading_index(*doc, current_pos, specific_level);
 	if (target_index == -1) {
 		if (config.get(config_manager::navigation_wrap)) {
-			target_index = next ? doc->next_heading_index(-1, specific_level) : doc->previous_heading_index(text_ctrl->GetLastPosition() + 1, specific_level);
+			target_index = next ? doc_next_heading_index(*doc, -1, specific_level) : doc_previous_heading_index(*doc, text_ctrl->GetLastPosition() + 1, specific_level);
 			if (target_index != -1) {
 				wrapping = true;
 			}
@@ -1239,9 +1393,9 @@ void document_manager::navigate_to_heading(bool next, int specific_level) const 
 			return;
 		}
 	}
-	const size_t offset = doc->offset_for_heading(target_index);
+	const size_t offset = doc_offset_for_heading(*doc, target_index);
 	text_ctrl->SetInsertionPoint(static_cast<long>(offset));
-	const marker* heading_marker = doc->get_heading_marker(target_index);
+	const marker* heading_marker = doc_get_heading_marker(*doc, target_index);
 	if (heading_marker != nullptr) {
 		wxString message;
 		if (wrapping) {

@@ -46,6 +46,7 @@ pub mod ffi {
 		pub word_count: usize,
 		pub line_count: usize,
 		pub char_count: usize,
+		pub char_count_no_whitespace: usize,
 	}
 
 	pub struct FfiIdPosition {
@@ -96,6 +97,7 @@ pub mod ffi {
 
 	extern "Rust" {
 		type ConfigManager;
+		type DocumentHandle;
 
 		fn config_manager_new() -> Box<ConfigManager>;
 		fn config_manager_initialize(manager: &mut ConfigManager) -> bool;
@@ -175,6 +177,32 @@ pub mod ffi {
 		fn config_manager_export_document_settings(manager: &ConfigManager, doc_path: &str, export_path: &str);
 		fn config_manager_import_document_settings(manager: &mut ConfigManager, path: &str);
 		fn config_manager_import_settings_from_file(manager: &mut ConfigManager, doc_path: &str, import_path: &str);
+		fn parse_document_handle(file_path: &str, password: &str) -> Result<Box<DocumentHandle>>;
+		fn document_title(doc: &DocumentHandle) -> String;
+		fn document_author(doc: &DocumentHandle) -> String;
+		fn document_content(doc: &DocumentHandle) -> String;
+		fn document_length(doc: &DocumentHandle) -> usize;
+		fn document_stats(doc: &DocumentHandle) -> FfiDocumentStats;
+		fn document_toc_items(doc: &DocumentHandle) -> Vec<FfiTocItem>;
+		fn document_markers(doc: &DocumentHandle) -> Vec<FfiMarker>;
+		fn document_heading_markers(doc: &DocumentHandle, level: i32) -> Vec<FfiHeadingInfo>;
+		fn document_find_closest_toc_offset(doc: &DocumentHandle, position: usize) -> usize;
+		fn document_next_marker(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32;
+		fn document_previous_marker(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32;
+		fn document_current_marker(doc: &DocumentHandle, position: usize, marker_type: i32) -> i32;
+		fn document_find_first_marker_after(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32;
+		fn document_marker_position(doc: &DocumentHandle, marker_index: i32) -> usize;
+		fn document_marker_at(doc: &DocumentHandle, marker_index: i32) -> FfiMarker;
+		fn document_count_markers(doc: &DocumentHandle, marker_type: i32) -> usize;
+		fn document_marker_position_by_index(doc: &DocumentHandle, marker_type: i32, index: i32) -> usize;
+		fn document_next_heading(doc: &DocumentHandle, position: i64, level: i32) -> i32;
+		fn document_previous_heading(doc: &DocumentHandle, position: i64, level: i32) -> i32;
+		fn document_heading_info(doc: &DocumentHandle, index: i32) -> FfiHeadingInfo;
+		fn document_section_index(doc: &DocumentHandle, position: usize) -> i32;
+		fn document_page_index(doc: &DocumentHandle, position: usize) -> i32;
+		fn document_id_positions(doc: &DocumentHandle) -> Vec<FfiIdPosition>;
+		fn document_spine_items(doc: &DocumentHandle) -> Vec<String>;
+		fn document_manifest_items(doc: &DocumentHandle) -> Vec<FfiManifestItem>;
 		fn check_for_updates(current_version: &str, is_installer: bool) -> UpdateResult;
 		fn remove_soft_hyphens(input: &str) -> String;
 		fn url_decode(encoded: &str) -> String;
@@ -195,7 +223,7 @@ use std::fs::File;
 use self::ffi::UpdateStatus;
 use crate::{
 	config::{Bookmark, ConfigManager as RustConfigManager, NavigationHistory},
-	document::{ParserContext, TocItem},
+	document::{DocumentHandle, MarkerType, ParserContext, TocItem},
 	parser, update as update_module,
 	utils::{encoding, text, zip as zip_module},
 	xml_to_text::XmlToText,
@@ -543,7 +571,8 @@ fn parse_document(file_path: &str, password: &str) -> Result<ffi::FfiDocument, S
 	if !password.is_empty() {
 		context = context.with_password(password.to_string());
 	}
-	let doc = parser::parse_document(&context).map_err(|e| e.to_string())?;
+	let mut doc = parser::parse_document(&context).map_err(|e| e.to_string())?;
+	doc.compute_stats();
 	// Convert TOC items to flat list (cxx doesn't support recursive types easily)
 	let toc_items = flatten_toc_items(&doc.toc_items);
 	Ok(ffi::FfiDocument {
@@ -567,6 +596,7 @@ fn parse_document(file_path: &str, password: &str) -> Result<ffi::FfiDocument, S
 			word_count: doc.stats.word_count,
 			line_count: doc.stats.line_count,
 			char_count: doc.stats.char_count,
+			char_count_no_whitespace: doc.stats.char_count_no_whitespace,
 		},
 		id_positions: doc
 			.id_positions
@@ -626,4 +656,188 @@ fn convert_xml_to_text(content: &str) -> Result<ffi::FfiXmlConversion, String> {
 		section_offsets: converter.get_section_offsets().to_vec(),
 		id_positions,
 	})
+}
+
+fn marker_type_from_i32(value: i32) -> Option<MarkerType> {
+	MarkerType::from_int(value)
+}
+
+fn document_marker_to_ffi(marker: &crate::document::Marker) -> ffi::FfiMarker {
+	ffi::FfiMarker {
+		marker_type: marker.marker_type.to_int(),
+		position: marker.position,
+		text: marker.text.clone(),
+		reference: marker.reference.clone(),
+		level: marker.level,
+	}
+}
+
+fn document_stats_to_ffi(stats: &crate::document::DocumentStats) -> ffi::FfiDocumentStats {
+	ffi::FfiDocumentStats {
+		word_count: stats.word_count,
+		line_count: stats.line_count,
+		char_count: stats.char_count,
+		char_count_no_whitespace: stats.char_count_no_whitespace,
+	}
+}
+
+fn opt_usize_to_i32(value: Option<usize>) -> i32 {
+	value.and_then(|v| i32::try_from(v).ok()).unwrap_or(-1)
+}
+
+fn parse_document_handle(file_path: &str, password: &str) -> Result<Box<DocumentHandle>, String> {
+	let mut context = ParserContext::new(file_path.to_string());
+	if !password.is_empty() {
+		context = context.with_password(password.to_string());
+	}
+	let mut doc = parser::parse_document(&context).map_err(|e| e.to_string())?;
+	doc.compute_stats();
+	Ok(Box::new(DocumentHandle::new(doc)))
+}
+
+fn document_title(doc: &DocumentHandle) -> String {
+	doc.document().title.clone()
+}
+
+fn document_author(doc: &DocumentHandle) -> String {
+	doc.document().author.clone()
+}
+
+fn document_content(doc: &DocumentHandle) -> String {
+	doc.document().buffer.content.clone()
+}
+
+fn document_length(doc: &DocumentHandle) -> usize {
+	doc.document().buffer.content.chars().count()
+}
+
+fn document_stats(doc: &DocumentHandle) -> ffi::FfiDocumentStats {
+	document_stats_to_ffi(&doc.document().stats)
+}
+
+fn document_toc_items(doc: &DocumentHandle) -> Vec<ffi::FfiTocItem> {
+	flatten_toc_items(&doc.document().toc_items)
+}
+
+fn document_markers(doc: &DocumentHandle) -> Vec<ffi::FfiMarker> {
+	doc.document().buffer.markers.iter().map(document_marker_to_ffi).collect()
+}
+
+fn document_heading_markers(doc: &DocumentHandle, level: i32) -> Vec<ffi::FfiHeadingInfo> {
+	let level_filter = if level > 0 { Some(level) } else { None };
+	doc.document()
+		.buffer
+		.markers
+		.iter()
+		.filter(|m| {
+			matches!(
+				m.marker_type,
+				MarkerType::Heading1
+					| MarkerType::Heading2
+					| MarkerType::Heading3
+					| MarkerType::Heading4
+					| MarkerType::Heading5
+					| MarkerType::Heading6
+			)
+		})
+		.filter(|m| level_filter.map_or(true, |lvl| m.level == lvl))
+		.map(|m| ffi::FfiHeadingInfo { offset: m.position, level: m.level, text: m.text.clone() })
+		.collect()
+}
+
+fn document_find_closest_toc_offset(doc: &DocumentHandle, position: usize) -> usize {
+	doc.find_closest_toc_offset(position)
+}
+
+fn document_next_marker(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32 {
+	let Some(marker_type) = marker_type_from_i32(marker_type) else { return -1 };
+	opt_usize_to_i32(doc.next_marker_index(position, marker_type))
+}
+
+fn document_previous_marker(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32 {
+	let Some(marker_type) = marker_type_from_i32(marker_type) else { return -1 };
+	opt_usize_to_i32(doc.previous_marker_index(position, marker_type))
+}
+
+fn document_current_marker(doc: &DocumentHandle, position: usize, marker_type: i32) -> i32 {
+	let Some(marker_type) = marker_type_from_i32(marker_type) else { return -1 };
+	opt_usize_to_i32(doc.current_marker_index(position, marker_type))
+}
+
+fn document_find_first_marker_after(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32 {
+	let Some(marker_type) = marker_type_from_i32(marker_type) else { return -1 };
+	opt_usize_to_i32(doc.find_first_marker_after(position, marker_type))
+}
+
+fn document_marker_position(doc: &DocumentHandle, marker_index: i32) -> usize {
+	doc.marker_position(marker_index).unwrap_or(0)
+}
+
+fn document_marker_at(doc: &DocumentHandle, marker_index: i32) -> ffi::FfiMarker {
+	doc.document()
+		.buffer
+		.markers
+		.get(usize::try_from(marker_index).unwrap_or(usize::MAX))
+		.map(document_marker_to_ffi)
+		.unwrap_or(ffi::FfiMarker {
+			marker_type: -1,
+			position: 0,
+			text: String::new(),
+			reference: String::new(),
+			level: 0,
+		})
+}
+
+fn document_count_markers(doc: &DocumentHandle, marker_type: i32) -> usize {
+	let Some(marker_type) = marker_type_from_i32(marker_type) else { return 0 };
+	doc.count_markers_by_type(marker_type)
+}
+
+fn document_marker_position_by_index(doc: &DocumentHandle, marker_type: i32, index: i32) -> usize {
+	let Some(marker_type) = marker_type_from_i32(marker_type) else { return 0 };
+	doc.get_marker_position_by_index(marker_type, index).unwrap_or(0)
+}
+
+fn document_next_heading(doc: &DocumentHandle, position: i64, level: i32) -> i32 {
+	let level_filter = if level > 0 { Some(level) } else { None };
+	doc.next_heading_index(position, level_filter).unwrap_or(-1)
+}
+
+fn document_previous_heading(doc: &DocumentHandle, position: i64, level: i32) -> i32 {
+	let level_filter = if level > 0 { Some(level) } else { None };
+	doc.previous_heading_index(position, level_filter).unwrap_or(-1)
+}
+
+fn document_heading_info(doc: &DocumentHandle, index: i32) -> ffi::FfiHeadingInfo {
+	doc.heading_info(index)
+		.map(|info| ffi::FfiHeadingInfo { offset: info.offset, level: info.level, text: info.text })
+		.unwrap_or(ffi::FfiHeadingInfo { offset: 0, level: 0, text: String::new() })
+}
+
+fn document_section_index(doc: &DocumentHandle, position: usize) -> i32 {
+	doc.section_index(position).unwrap_or(-1)
+}
+
+fn document_page_index(doc: &DocumentHandle, position: usize) -> i32 {
+	doc.page_index(position).unwrap_or(-1)
+}
+
+fn document_id_positions(doc: &DocumentHandle) -> Vec<ffi::FfiIdPosition> {
+	doc.document()
+		.id_positions
+		.iter()
+		.map(|(id, offset)| ffi::FfiIdPosition { id: id.clone(), offset: *offset })
+		.collect()
+}
+
+fn document_spine_items(doc: &DocumentHandle) -> Vec<String> {
+	doc.document().spine_items.clone()
+}
+
+fn document_manifest_items(doc: &DocumentHandle) -> Vec<ffi::FfiManifestItem> {
+	doc.document()
+		.manifest_items
+		.iter()
+		.map(|(id, path)| ffi::FfiManifestItem { id: id.clone(), path: path.clone() })
+		.collect()
 }

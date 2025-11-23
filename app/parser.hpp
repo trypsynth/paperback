@@ -8,7 +8,7 @@
  */
 
 #pragma once
-#include "document.hpp"
+#include "document_data.hpp"
 #include <memory>
 #include <optional>
 #include <stdexcept>

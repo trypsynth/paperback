@@ -8,8 +8,7 @@
  */
 
 #include "parser.hpp"
-#include "document.hpp"
-#include "document_buffer.hpp"
+#include "document_data.hpp"
 #include "libpaperback/src/bridge.rs.h"
 #include <algorithm>
 #include <memory>
@@ -39,14 +38,21 @@ wxString to_wxstring(const rust::String& rust_str) {
 	return wxString::FromUTF8(utf8.c_str());
 }
 
-void populate_markers(document_buffer& buffer, const rust::Vec<FfiMarker>& ffi_markers) {
+void populate_markers(std::vector<marker>& markers, const rust::Vec<FfiMarker>& ffi_markers) {
+	markers.clear();
+	markers.reserve(ffi_markers.size());
 	for (const auto& rust_marker : ffi_markers) {
-		const auto marker_type_value = static_cast<marker_type>(rust_marker.marker_type);
-		const wxString text = to_wxstring(rust_marker.text);
-		const wxString ref = to_wxstring(rust_marker.reference);
-		buffer.add_marker(rust_marker.position, marker_type_value, text, ref, rust_marker.level);
+		marker m{
+			rust_marker.position,
+			static_cast<marker_type>(rust_marker.marker_type),
+			to_wxstring(rust_marker.text),
+			to_wxstring(rust_marker.reference),
+			rust_marker.level};
+		markers.push_back(std::move(m));
 	}
-	buffer.finalize_markers();
+	std::sort(markers.begin(), markers.end(), [](const marker& a, const marker& b) {
+		return a.pos < b.pos;
+	});
 }
 
 void populate_toc_items(std::vector<std::unique_ptr<toc_item>>& toc_items, const rust::Vec<FfiTocItem>& ffi_toc_items) {
@@ -83,11 +89,6 @@ void populate_toc_items(std::vector<std::unique_ptr<toc_item>>& toc_items, const
 	}
 }
 
-void populate_stats(document_stats& stats, const FfiDocumentStats& ffi_stats) {
-	stats.word_count = ffi_stats.word_count;
-	stats.line_count = ffi_stats.line_count;
-	stats.char_count = ffi_stats.char_count;
-}
 
 void populate_id_positions(document& doc, const rust::Vec<FfiIdPosition>& ffi_positions) {
 	doc.id_positions.clear();
@@ -198,17 +199,19 @@ std::unique_ptr<document> load_document_from_rust(const wxString& path, const st
 	try {
 		const std::string file_path = path.ToUTF8().data();
 		const std::string password_value = password.value_or(std::string());
-		const auto ffi_doc = parse_document(rust::Str(file_path), rust::Str(password_value));
+		auto handle = parse_document_handle(rust::Str(file_path), rust::Str(password_value));
 		auto doc = std::make_unique<document>();
-		doc->title = to_wxstring(ffi_doc.title);
-		doc->author = to_wxstring(ffi_doc.author);
-		doc->buffer.set_content(to_wxstring(ffi_doc.content));
-		populate_markers(doc->buffer, ffi_doc.markers);
-		populate_toc_items(doc->toc_items, ffi_doc.toc_items);
-		populate_stats(doc->stats, ffi_doc.stats);
-		populate_id_positions(*doc, ffi_doc.id_positions);
-		populate_spine_items(*doc, ffi_doc.spine_items);
-		populate_manifest_items(*doc, ffi_doc.manifest_items);
+		doc->handle = std::move(handle);
+		const auto& handle_ref = **doc->handle;
+		doc->title = to_wxstring(document_title(handle_ref));
+		doc->author = to_wxstring(document_author(handle_ref));
+		doc->content = to_wxstring(document_content(handle_ref));
+		populate_markers(doc->markers, document_markers(handle_ref));
+		populate_toc_items(doc->toc_items, document_toc_items(handle_ref));
+		doc->stats = document_stats(handle_ref);
+		populate_id_positions(*doc, document_id_positions(handle_ref));
+		populate_spine_items(*doc, document_spine_items(handle_ref));
+		populate_manifest_items(*doc, document_manifest_items(handle_ref));
 		return doc;
 	} catch (const std::exception& e) {
 		throw make_parser_exception(e, path);

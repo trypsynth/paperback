@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2025-11-16 14:32-0700\n"
+"POT-Creation-Date: 2025-11-23 13:29-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -55,6 +55,7 @@ msgid "Failed to check for updates. HTTP status: %d"
 msgstr ""
 
 #: app/app.cpp app/dialogs.cpp app/document_manager.cpp app/main_window.cpp
+#: app/parser.cpp
 msgid "Error"
 msgstr ""
 
@@ -77,10 +78,6 @@ msgstr ""
 
 #: app/app.cpp
 msgid "Failed to load document."
-msgstr ""
-
-#: app/chm_parser.cpp
-msgid "Unknown error while parsing CHM file"
 msgstr ""
 
 #: app/dialogs.cpp
@@ -685,14 +682,6 @@ msgstr ""
 msgid "%s Heading level %d"
 msgstr ""
 
-#: app/fb2_parser.cpp
-msgid "Failed to open FB2 file"
-msgstr ""
-
-#: app/fb2_parser.cpp
-msgid "FB2 file is empty or could not be read"
-msgstr ""
-
 #: app/main_window.cpp
 msgid "Previous section\t["
 msgstr ""
@@ -1041,29 +1030,8 @@ msgstr ""
 msgid "No more results. Wrapping search."
 msgstr ""
 
-#: app/odp_parser.cpp
-msgid "ODP file does not contain content.xml or it is empty"
-msgstr ""
-
-#: app/odp_parser.cpp
-msgid "ODP file does not contain any pages"
-msgstr ""
-
-#: app/odt_parser.cpp
-msgid "ODT file does not contain content.xml or it is empty"
-msgstr ""
-
-#: app/pptx_parser.cpp
-msgid "Parsing of links in the document failed."
-msgstr ""
-
-#: app/pptx_parser.cpp
-#, c-format
-msgid "Error parsing PPTX file: %s"
-msgstr ""
-
-#: app/pptx_parser.cpp
-msgid "Unknown error while parsing PPTX file"
+#: app/parser.cpp
+msgid "Password required or incorrect."
 msgstr ""
 
 #: app/task_bar_icon.cpp

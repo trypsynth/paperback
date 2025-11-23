@@ -11,7 +11,7 @@
 #include "config_manager.hpp"
 #include "constants.hpp"
 #include "controls.hpp"
-#include "document.hpp"
+#include "document_data.hpp"
 #include "parser.hpp"
 #include "translation_manager.hpp"
 #include <algorithm>
@@ -37,6 +37,51 @@
 #include <wx/textdlg.h>
 #include <wx/translation.h>
 #include <wx/window.h>
+
+namespace {
+bool is_heading_marker(marker_type type) {
+	return type >= marker_type::heading_1 && type <= marker_type::heading_6;
+}
+
+std::vector<const marker*> markers_by_type(const document* doc, marker_type type) {
+	std::vector<const marker*> result;
+	if (doc == nullptr) {
+		return result;
+	}
+	for (const auto& m : doc->markers) {
+		if (m.type == type) {
+			result.push_back(&m);
+		}
+	}
+	return result;
+}
+
+std::vector<const marker*> heading_markers(const document* doc) {
+	std::vector<const marker*> result;
+	if (doc == nullptr) {
+		return result;
+	}
+	for (const auto& m : doc->markers) {
+		if (is_heading_marker(m.type)) {
+			result.push_back(&m);
+		}
+	}
+	return result;
+}
+
+size_t count_markers(const document* doc, marker_type type) {
+	size_t count = 0;
+	if (doc == nullptr) {
+		return count;
+	}
+	for (const auto& m : doc->markers) {
+		if (m.type == type) {
+			++count;
+		}
+	}
+	return count;
+}
+} // namespace
 
 dialog::dialog(wxWindow* parent, const wxString& title, dialog_button_config buttons) : wxDialog(parent, wxID_ANY, title), main_sizer{new wxBoxSizer(wxVERTICAL)}, button_config{buttons} {
 	SetSizer(main_sizer);
@@ -505,7 +550,7 @@ elements_dialog::elements_dialog(wxWindow* parent, const document* doc, long cur
 }
 
 void elements_dialog::populate_links() {
-	const auto link_markers = doc->buffer.get_markers_by_type(marker_type::link);
+	const auto link_markers = markers_by_type(doc, marker_type::link);
 	int closest_index = -1;
 	for (const auto* link_marker : link_markers) {
 		links_list->Append(link_marker->text);
@@ -531,9 +576,9 @@ void elements_dialog::populate_links() {
 void elements_dialog::populate_headings() {
 	const wxTreeItemId root = headings_tree->AddRoot(_("Root"));
 	std::vector<wxTreeItemId> parent_ids(7, root);
-	const auto heading_markers = doc->buffer.get_heading_markers();
+	const auto heading_marker_list = heading_markers(doc);
 	wxTreeItemId closest_item;
-	for (const auto* heading_marker : heading_markers) {
+	for (const auto* heading_marker : heading_marker_list) {
 		const int level = heading_marker->level;
 		if (level < 1 || level > 6) {
 			continue;
@@ -772,7 +817,7 @@ int go_to_page_dialog::get_max_page() const {
 	if (!parser_supports(parser_->flags, parser_flags::supports_pages)) {
 		return 1;
 	}
-	return static_cast<int>(doc_->buffer.count_markers_by_type(marker_type::page_break));
+	return static_cast<int>(count_markers(doc_, marker_type::page_break));
 }
 
 go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : dialog(parent, _("Go to Percent")), textbox{text_ctrl} {

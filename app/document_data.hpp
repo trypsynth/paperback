@@ -1,4 +1,4 @@
-/* document.hpp - document interface header file.
+/* document_data.hpp - plain document data shared with the Rust bridge.
  *
  * Paperback.
  * Copyright (c) 2025 Quin Gillespie.
@@ -8,12 +8,36 @@
  */
 
 #pragma once
-#include "document_buffer.hpp"
+#include "libpaperback/src/bridge.rs.h"
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 #include <wx/string.h>
+
+enum class marker_type : int {
+	heading_1 = 0,
+	heading_2,
+	heading_3,
+	heading_4,
+	heading_5,
+	heading_6,
+	page_break,
+	section_break,
+	toc_item,
+	link,
+	list,
+	list_item
+};
+
+struct marker {
+	size_t pos;
+	marker_type type;
+	wxString text;
+	wxString ref;
+	int level;
+};
 
 struct toc_item {
 	wxString name;
@@ -29,50 +53,26 @@ struct toc_item {
 	toc_item& operator=(toc_item&&) = default;
 };
 
-struct heading_info {
-	size_t offset;
-	int level;
-	std::string text;
-};
-
-struct document_stats {
-	size_t word_count{0};
-	size_t line_count{0};
-	size_t char_count{0};
-	size_t char_count_no_whitespace{0};
-};
-
-struct document {
+struct document_data {
+	std::optional<rust::Box<DocumentHandle>> handle;
 	wxString title{"Untitled"};
 	wxString author{"Unknown"};
-	document_buffer buffer;
+	wxString content;
+	std::vector<marker> markers;
 	std::vector<std::unique_ptr<toc_item>> toc_items;
 	std::map<std::string, size_t> id_positions;
 	std::vector<std::string> spine_items;
 	std::map<std::string, std::string> manifest_items;
-	mutable document_stats stats;
+	FfiDocumentStats stats;
 	std::vector<long> history;
 	size_t history_index{0};
 
-	document() = default;
-	~document() = default;
-	document(const document&) = delete;
-	document& operator=(const document&) = delete;
-	document(document&&) = default;
-	document& operator=(document&&) = default;
-
-	[[nodiscard]] int next_section_index(long position) const noexcept;
-	[[nodiscard]] int previous_section_index(long position) const noexcept;
-	[[nodiscard]] int section_index(size_t position) const noexcept;
-	[[nodiscard]] size_t offset_for_section(int section_index) const noexcept;
-	[[nodiscard]] int next_page_index(long position) const noexcept;
-	[[nodiscard]] int previous_page_index(long position) const noexcept;
-	[[nodiscard]] int page_index(size_t position) const noexcept;
-	[[nodiscard]] size_t offset_for_page(int page_index) const noexcept;
-	[[nodiscard]] size_t find_closest_toc_offset(size_t position) const noexcept;
-	[[nodiscard]] int next_heading_index(long position, int level) const noexcept;
-	[[nodiscard]] int previous_heading_index(long position, int level) const noexcept;
-	[[nodiscard]] size_t offset_for_heading(int heading_index) const noexcept;
-	[[nodiscard]] const marker* get_heading_marker(int heading_index) const noexcept;
-	void calculate_statistics() const;
+	document_data() = default;
+	~document_data() = default;
+	document_data(const document_data&) = delete;
+	document_data& operator=(const document_data&) = delete;
+	document_data(document_data&&) = default;
+	document_data& operator=(document_data&&) = default;
 };
+
+using document = document_data;
