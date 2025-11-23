@@ -127,12 +127,16 @@ impl PdfTextPage {
 		if char_count <= 0 {
 			return String::new();
 		}
-		let mut buffer = vec![0u16; (char_count + 1) as usize];
+		let buffer_size = usize::try_from(char_count + 1).unwrap_or(0);
+		if buffer_size == 0 {
+			return String::new();
+		}
+		let mut buffer = vec![0u16; buffer_size];
 		let written = unsafe { ffi::FPDFText_GetText(self.handle, 0, char_count, buffer.as_mut_ptr()) };
 		if written <= 1 {
 			return String::new();
 		}
-		let actual_len = (written as usize).saturating_sub(1);
+		let actual_len = usize::try_from(written).unwrap_or(0).saturating_sub(1);
 		buffer.truncate(actual_len);
 		String::from_utf16_lossy(&buffer)
 	}
@@ -165,7 +169,10 @@ fn extract_outline_items(
 				if page_index < 0 {
 					usize::MAX
 				} else {
-					page_offsets.get(page_index as usize).copied().unwrap_or(usize::MAX)
+					usize::try_from(page_index)
+						.ok()
+						.and_then(|idx| page_offsets.get(idx).copied())
+						.unwrap_or(usize::MAX)
 				}
 			}
 		};

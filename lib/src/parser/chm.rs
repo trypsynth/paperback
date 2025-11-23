@@ -281,11 +281,8 @@ fn calculate_offset_from_reference(
 	file_positions: &HashMap<String, usize>,
 	id_positions: &HashMap<String, usize>,
 ) -> usize {
-	let (file_path, fragment) = if let Some(pos) = reference.find('#') {
-		(&reference[..pos], Some(&reference[pos + 1..]))
-	} else {
-		(reference, None)
-	};
+	let (file_path, fragment) =
+		reference.find('#').map_or((reference, None), |pos| (&reference[..pos], Some(&reference[pos + 1..])));
 	let normalized_path = normalize_path(file_path);
 	if let Some(fragment_id) = fragment {
 		let id_key = format!("{normalized_path}#{fragment_id}");

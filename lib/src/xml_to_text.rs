@@ -119,93 +119,8 @@ impl XmlToText {
 				if matches!(tag_name.as_str(), "script" | "style" | "noscript" | "iframe" | "object" | "embed") {
 					return;
 				}
-				if tag_name == "section" {
-					self.section_offsets.push(self.get_current_text_position());
-				}
-				if tag_name == "a" {
-					let link_text = Self::get_element_text(node);
-					if !link_text.is_empty() {
-						let href = node.attribute("href").unwrap_or("").to_string();
-						let processed_link_text = collapse_whitespace(&link_text);
-						let link_offset = self.get_current_text_position();
-						self.current_line.push_str(&processed_link_text);
-						self.links.push(LinkInfo { offset: link_offset, text: processed_link_text, reference: href });
-						skip_children = true;
-					}
-				} else if tag_name == "body" {
-					self.in_body = true;
-				} else if tag_name == "pre" {
-					self.finalize_current_line();
-					self.preserve_whitespace = true;
-				} else if tag_name == "br" {
-					self.finalize_current_line();
-				} else if tag_name == "li" {
-					self.finalize_current_line();
-					let li_text = Self::get_element_text(node);
-					self.list_items.push(ListItemInfo {
-						offset: self.get_current_text_position(),
-						level: self.list_level,
-						text: li_text,
-					});
-					self.current_line.push_str(&" ".repeat(usize::try_from(self.list_level * 2).unwrap_or(0)));
-					let bullet = if let Some(style) = self.list_style_stack.last_mut() {
-						if style.ordered {
-							let bullet = format!("{}. ", style.item_number);
-							style.item_number += 1;
-							bullet
-						} else {
-							format!("{} ", Self::get_bullet_for_level(self.list_level))
-						}
-					} else {
-						format!("{} ", Self::get_bullet_for_level(self.list_level))
-					};
-					self.current_line.push_str(&bullet);
-				} else if tag_name == "ul" || tag_name == "ol" {
-					self.list_level += 1;
-					let mut style = ListStyle::default();
-					if tag_name == "ol" {
-						style.ordered = true;
-					}
-					self.list_style_stack.push(style);
-					let mut item_count = 0;
-					for child in node.children() {
-						if child.node_type() == NodeType::Element && child.tag_name().name().eq_ignore_ascii_case("li")
-						{
-							item_count += 1;
-						}
-					}
-					if item_count > 0 {
-						self.finalize_current_line();
-						self.lists.push(ListInfo { offset: self.get_current_text_position(), item_count });
-					}
-				}
-				if self.in_body {
-					if let Some(id) = node.attribute("id") {
-						self.id_positions.insert(id.to_string(), self.get_current_text_position());
-					}
-				}
-				if self.in_body
-					&& tag_name.len() == 2
-					&& tag_name.starts_with('h')
-					&& tag_name.as_bytes()[1].is_ascii_digit()
-				{
-					let level = tag_name.as_bytes()[1] - b'0';
-					if (1..=6).contains(&level) {
-						self.finalize_current_line();
-						let heading_offset = self.get_current_text_position();
-						let text = Self::get_element_text(node);
-						if !text.is_empty() {
-							let normalized = trim_string(&collapse_whitespace(&text));
-							if !normalized.is_empty() {
-								self.headings.push(HeadingInfo {
-									offset: heading_offset,
-									level: i32::from(level),
-									text: normalized,
-								});
-							}
-						}
-					}
-				}
+				skip_children = self.handle_element_opening_xml(&tag_name, node);
+				self.handle_heading_xml(&tag_name, node);
 			}
 			NodeType::Text => {
 				self.process_text_node(node);
@@ -218,16 +133,118 @@ impl XmlToText {
 			}
 		}
 		if node.node_type() == NodeType::Element {
-			if Self::is_block_element(&tag_name) {
+			self.handle_element_closing_xml(&tag_name);
+		}
+	}
+
+	fn handle_element_opening_xml(&mut self, tag_name: &str, node: Node<'_, '_>) -> bool {
+		let mut skip_children = false;
+		if tag_name == "section" {
+			self.section_offsets.push(self.get_current_text_position());
+		}
+		if tag_name == "a" {
+			let link_text = Self::get_element_text(node);
+			if !link_text.is_empty() {
+				let href = node.attribute("href").unwrap_or("").to_string();
+				let processed_link_text = collapse_whitespace(&link_text);
+				let link_offset = self.get_current_text_position();
+				self.current_line.push_str(&processed_link_text);
+				self.links.push(LinkInfo { offset: link_offset, text: processed_link_text, reference: href });
+				skip_children = true;
+			}
+		} else if tag_name == "body" {
+			self.in_body = true;
+		} else if tag_name == "pre" {
+			self.finalize_current_line();
+			self.preserve_whitespace = true;
+		} else if tag_name == "br" {
+			self.finalize_current_line();
+		} else if tag_name == "li" {
+			self.handle_list_item_xml(node);
+		} else if tag_name == "ul" || tag_name == "ol" {
+			self.handle_list_start_xml(tag_name, node);
+		}
+		if self.in_body {
+			if let Some(id) = node.attribute("id") {
+				self.id_positions.insert(id.to_string(), self.get_current_text_position());
+			}
+		}
+		skip_children
+	}
+
+	fn handle_list_item_xml(&mut self, node: Node<'_, '_>) {
+		self.finalize_current_line();
+		let li_text = Self::get_element_text(node);
+		self.list_items.push(ListItemInfo {
+			offset: self.get_current_text_position(),
+			level: self.list_level,
+			text: li_text,
+		});
+		self.current_line.push_str(&" ".repeat(usize::try_from(self.list_level * 2).unwrap_or(0)));
+		let bullet = if let Some(style) = self.list_style_stack.last_mut() {
+			if style.ordered {
+				let bullet = format!("{}. ", style.item_number);
+				style.item_number += 1;
+				bullet
+			} else {
+				format!("{} ", Self::get_bullet_for_level(self.list_level))
+			}
+		} else {
+			format!("{} ", Self::get_bullet_for_level(self.list_level))
+		};
+		self.current_line.push_str(&bullet);
+	}
+
+	fn handle_list_start_xml(&mut self, tag_name: &str, node: Node<'_, '_>) {
+		self.list_level += 1;
+		let mut style = ListStyle::default();
+		if tag_name == "ol" {
+			style.ordered = true;
+		}
+		self.list_style_stack.push(style);
+		let mut item_count = 0;
+		for child in node.children() {
+			if child.node_type() == NodeType::Element && child.tag_name().name().eq_ignore_ascii_case("li") {
+				item_count += 1;
+			}
+		}
+		if item_count > 0 {
+			self.finalize_current_line();
+			self.lists.push(ListInfo { offset: self.get_current_text_position(), item_count });
+		}
+	}
+
+	fn handle_heading_xml(&mut self, tag_name: &str, node: Node<'_, '_>) {
+		if self.in_body && tag_name.len() == 2 && tag_name.starts_with('h') && tag_name.as_bytes()[1].is_ascii_digit() {
+			let level = tag_name.as_bytes()[1] - b'0';
+			if (1..=6).contains(&level) {
 				self.finalize_current_line();
+				let heading_offset = self.get_current_text_position();
+				let text = Self::get_element_text(node);
+				if !text.is_empty() {
+					let normalized = trim_string(&collapse_whitespace(&text));
+					if !normalized.is_empty() {
+						self.headings.push(HeadingInfo {
+							offset: heading_offset,
+							level: i32::from(level),
+							text: normalized,
+						});
+					}
+				}
 			}
-			if tag_name == "pre" {
-				self.preserve_whitespace = false;
-			}
-			if tag_name == "ul" || tag_name == "ol" {
-				self.list_level = (self.list_level - 1).max(0);
-				self.list_style_stack.pop();
-			}
+		}
+	}
+
+	fn handle_element_closing_xml(&mut self, tag_name: &str) {
+		if Self::is_block_element(tag_name) {
+			self.finalize_current_line();
+		}
+		if tag_name == "pre" {
+			self.preserve_whitespace = false;
+		}
+		if tag_name == "ul" || tag_name == "ol" {
+			self.list_level = (self.list_level - 1).max(0);
+			self.list_style_stack.pop();
 		}
 	}
 
@@ -282,7 +299,6 @@ impl XmlToText {
 	fn collect_text(node: Node<'_, '_>) -> String {
 		match node.node_type() {
 			NodeType::Text => node.text().unwrap_or("").to_string(),
-			NodeType::Comment => String::new(),
 			NodeType::Element => node.children().map(Self::collect_text).collect(),
 			_ => String::new(),
 		}

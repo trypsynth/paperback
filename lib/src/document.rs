@@ -284,7 +284,9 @@ impl DocumentHandle {
 			.markers
 			.iter()
 			.enumerate()
-			.filter(|(_, marker)| marker.marker_type == marker_type && marker.position as i64 > position)
+			.filter(|(_, marker)| {
+				marker.marker_type == marker_type && i64::try_from(marker.position).unwrap_or(i64::MAX) > position
+			})
 			.map(|(idx, _)| idx)
 			.next()
 	}
@@ -296,7 +298,9 @@ impl DocumentHandle {
 			.markers
 			.iter()
 			.enumerate()
-			.filter(|(_, marker)| marker.marker_type == marker_type && (marker.position as i64) < position)
+			.filter(|(_, marker)| {
+				marker.marker_type == marker_type && i64::try_from(marker.position).unwrap_or(i64::MAX) < position
+			})
 			.map(|(idx, _)| idx)
 			.next_back()
 	}
@@ -321,20 +325,29 @@ impl DocumentHandle {
 			.markers
 			.iter()
 			.enumerate()
-			.find(|(_, marker)| marker.marker_type == marker_type && marker.position as i64 >= position)
+			.find(|(_, marker)| {
+				marker.marker_type == marker_type && i64::try_from(marker.position).unwrap_or(i64::MAX) >= position
+			})
 			.map(|(idx, _)| idx)
 	}
 
 	#[must_use]
 	pub fn next_heading_marker_index(&self, position: i64, level: Option<i32>) -> Option<usize> {
 		let heading_markers = self.heading_markers(level);
-		heading_markers.into_iter().find(|(_, m)| m.position as i64 > position).map(|(idx, _)| idx)
+		heading_markers
+			.into_iter()
+			.find(|(_, m)| i64::try_from(m.position).unwrap_or(i64::MAX) > position)
+			.map(|(idx, _)| idx)
 	}
 
 	#[must_use]
 	pub fn previous_heading_marker_index(&self, position: i64, level: Option<i32>) -> Option<usize> {
 		let heading_markers = self.heading_markers(level);
-		heading_markers.into_iter().filter(|(_, m)| (m.position as i64) < position).map(|(idx, _)| idx).next_back()
+		heading_markers
+			.into_iter()
+			.filter(|(_, m)| i64::try_from(m.position).unwrap_or(i64::MAX) < position)
+			.map(|(idx, _)| idx)
+			.next_back()
 	}
 
 	#[must_use]
@@ -357,8 +370,6 @@ impl DocumentHandle {
 
 	#[must_use]
 	pub fn find_closest_toc_offset(&self, position: usize) -> usize {
-		let mut best_offset = 0usize;
-		let mut best_distance = usize::MAX;
 		fn search(items: &[TocItem], position: usize, best_offset: &mut usize, best_distance: &mut usize) {
 			for item in items {
 				if item.offset <= position {
@@ -373,6 +384,8 @@ impl DocumentHandle {
 				}
 			}
 		}
+		let mut best_offset = 0usize;
+		let mut best_distance = usize::MAX;
 		search(&self.doc.toc_items, position, &mut best_offset, &mut best_distance);
 		best_offset
 	}
