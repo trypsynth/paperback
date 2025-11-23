@@ -122,8 +122,7 @@ const marker* doc_get_heading_marker(const document& doc, int heading_index) {
 }
 
 size_t doc_offset_for_heading(const document& doc, int heading_index) {
-	const marker* heading_marker = doc_get_heading_marker(doc, heading_index);
-	return heading_marker != nullptr ? heading_marker->pos : 0;
+	return document_marker_position(**doc.handle, heading_index);
 }
 
 int doc_next_marker_index(const document& doc, long position, marker_type type) {
@@ -1395,7 +1394,7 @@ void document_manager::navigate_to_heading(bool next, int specific_level) const 
 	}
 	const size_t offset = doc_offset_for_heading(*doc, target_index);
 	text_ctrl->SetInsertionPoint(static_cast<long>(offset));
-	const marker* heading_marker = doc_get_heading_marker(*doc, target_index);
+	const marker* heading_marker = doc_get_marker(*doc, target_index);
 	if (heading_marker != nullptr) {
 		wxString message;
 		if (wrapping) {
