@@ -23,7 +23,7 @@
   const render = (release, label, subtitle = "") => {
     const assets = release.assets ?? [];
     const zip = assets.find((a) => a.name.toLowerCase().endsWith(".zip"));
-    const exe = assets.find((a) => a.name.toLowerCase().endswith(".exe"));
+    const exe = assets.find((a) => a.name.toLowerCase().endsWith(".exe"));
     const version = release.tag_name.replace(/^v/, "");
     return `
       <h3>${label} ${version}</h3>
