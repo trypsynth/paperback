@@ -275,7 +275,7 @@ impl HtmlToText {
 						}
 					}
 				}
-				if tag_name == "script" || tag_name == "style" {
+				if matches!(tag_name, "script" | "style" | "noscript" | "iframe" | "object" | "embed") {
 					return;
 				}
 				let is_markdown_code = self.source_mode == HtmlSourceMode::Markdown

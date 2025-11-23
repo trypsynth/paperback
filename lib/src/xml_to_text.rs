@@ -116,6 +116,9 @@ impl XmlToText {
 		match node.node_type() {
 			NodeType::Element => {
 				tag_name = node.tag_name().name().to_ascii_lowercase();
+				if matches!(tag_name.as_str(), "script" | "style" | "noscript" | "iframe" | "object" | "embed") {
+					return;
+				}
 				if tag_name == "section" {
 					self.section_offsets.push(self.get_current_text_position());
 				}
@@ -279,6 +282,7 @@ impl XmlToText {
 	fn collect_text(node: Node<'_, '_>) -> String {
 		match node.node_type() {
 			NodeType::Text => node.text().unwrap_or("").to_string(),
+			NodeType::Comment => String::new(),
 			NodeType::Element => node.children().map(Self::collect_text).collect(),
 			_ => String::new(),
 		}
