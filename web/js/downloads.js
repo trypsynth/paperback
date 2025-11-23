@@ -80,6 +80,7 @@
       historyEl.innerHTML = "";
     }
   } catch (err) {
+    console.log(err);
     const msg = `Unable to load releases. See <a href="https://github.com/${owner}/${repo}/releases">GitHub</a>.`;
     set(stableEl, msg);
     set(devEl, msg);
