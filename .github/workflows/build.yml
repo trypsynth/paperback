@@ -17,6 +17,11 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x64
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+        components: rustfmt, clippy
     - name: Cache VCPKG packages
       uses: actions/cache@v4
       with:
@@ -39,20 +44,22 @@ jobs:
         install: >-
           gettext
           mingw-w64-ucrt-x86_64-gettext-tools
-    - name: Add MSYS2 to PATH for CMake
-      run: |
-        echo "C:\msys64\ucrt64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        echo "C:\msys64\usr\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
     - name: Configure CMake
       run: |
         if (-not (Test-Path build)) {
           New-Item -ItemType Directory -Path build
         }
         cd build
-        cmake .. -GNinja
+        $env:PATH = "$env:PATH;C:\msys64\ucrt64\bin;C:\msys64\usr\bin"
+        cmake .. -GNinja `
+          -DGettext_ROOT=C:/msys64 `
+          -DGETTEXT_MSGFMT_EXECUTABLE=C:/msys64/usr/bin/msgfmt.exe `
+          -DGETTEXT_XGETTEXT_EXECUTABLE=C:/msys64/usr/bin/xgettext.exe `
+          -DGETTEXT_MSGMERGE_EXECUTABLE=C:/msys64/usr/bin/msgmerge.exe
     - name: Build
       run: |
         cd build
+        $env:PATH = "$env:PATH;C:\msys64\ucrt64\bin;C:\msys64\usr\bin"
         cmake --build . --target release
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
@@ -67,7 +74,7 @@ jobs:
       shell: bash
       run: |
         git fetch --tags
-        TAG=$(git describe --tags --abbrev=0)
+        TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
         echo "tag=$TAG" >> $GITHUB_OUTPUT
     - name: Generate release notes
       id: release_notes
@@ -75,7 +82,7 @@ jobs:
       run: |
         PREV_TAG="${{ steps.get_tag.outputs.tag }}"
         if [ -z "$PREV_TAG" ]; then
-          COMMITS=$(git log --oneline --pretty=format:"- %h: %s" HEAD)
+          COMMITS=$(git log -1 --oneline --pretty=format:"- %h: %s" HEAD)
         else
           COMMITS=$(git log --oneline --pretty=format:"- %h: %s" "$PREV_TAG"..HEAD)
         fi

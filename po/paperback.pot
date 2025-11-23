@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: paperback 0.6\n"
+"Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2025-11-11 07:27-0700\n"
+"POT-Creation-Date: 2025-11-23 13:29-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,1033 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: src/app.cpp
-msgid "Failed to initialize configuration"
+#: app/app.cpp
+msgid "No release notes were provided."
 msgstr ""
 
-#: src/app.cpp src/dialogs.cpp src/document_manager.cpp src/main_window.cpp
-#: src/update_checker.cpp
-msgid "Error"
-msgstr ""
-
-#: src/app.cpp
-msgid "Failed to create IPC server"
-msgstr ""
-
-#: src/app.cpp src/document_manager.cpp
-msgid "Warning"
-msgstr ""
-
-#: src/app.cpp src/document_manager.cpp
-#, c-format
-msgid "File not found: %s"
-msgstr ""
-
-#: src/app.cpp
-msgid "Failed to load document."
-msgstr ""
-
-#: src/chm_parser.cpp
-msgid "Unknown error while parsing CHM file"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "All Documents"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "&search"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "File Name"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Status"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Path"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "&Open"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "&Remove"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Missing"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid ""
-"Are you sure you want to remove this document from the list? This will also "
-"remove its reading position."
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Confirm"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Open"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Closed"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Jump to Bookmark"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "&Filter:"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "All"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Bookmarks"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Notes"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "&Edit Note"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "&Delete"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "&Jump"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "&Cancel"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Please select a bookmark to jump to."
-msgstr ""
-
-#: src/dialogs.cpp src/document_manager.cpp
-msgid "Bookmark Note"
-msgstr ""
-
-#: src/dialogs.cpp src/document_manager.cpp
-msgid "Edit bookmark note:"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "blank"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Document Info"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Title: "
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Author: "
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Path: "
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Total number of words: "
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Total number of lines: "
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Total number of characters: "
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Total number of characters (excluding whitespace): "
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Find"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Find &what:"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Options"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "&Match case"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Match &whole word"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Use &regular expressions"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Find &Previous"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Find &Next"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Cancel"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Go to Line"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "&Line number:"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Go to page"
-msgstr ""
-
-#: src/dialogs.cpp
-#, c-format
-msgid "Go to page (1/%d):"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Go to Percent"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "P&ercent:"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "&Percent"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Open As"
-msgstr ""
-
-#: src/dialogs.cpp
-#, c-format
-msgid ""
-"No suitable parser was found for %s.\n"
-"How would you like to open this file?"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Open &as:"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Plain Text"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "HTML"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Markdown"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "General"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "&Restore previously opened documents on startup"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "&Word wrap"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "&Minimize to system tray"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "&Start maximized"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Show compact &go menu"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "&Wrap navigation"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Check for &updates on startup"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Number of &recent documents to show:"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "&Language:"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Sleep Timer"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "&Minutes:"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Table of Contents"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Root"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Untitled"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Please select a section from the table of contents."
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "No Selection"
-msgstr ""
-
-#: src/dialogs.cpp src/main_window.cpp
-msgid "View Note"
-msgstr ""
-
-#: src/dialogs.cpp
-msgid "Close"
-msgstr ""
-
-#: src/document_manager.cpp
-#, c-format
-msgid "Failed to parse document: %s"
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "No sections."
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "No next section"
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "No previous section"
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "Wrapping to start. "
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "Wrapping to end. "
-msgstr ""
-
-#: src/document_manager.cpp src/main_window.cpp
-msgid "No pages."
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "No next page."
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "No previous page."
-msgstr ""
-
-#: src/document_manager.cpp
-#, c-format
-msgid "Page %d: %s"
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "No bookmarks."
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "No next bookmark"
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "No previous bookmark"
-msgstr ""
-
-#: src/document_manager.cpp
-#, c-format
-msgid "%s - Bookmark %d"
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "No notes."
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "No next note"
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "No previous note"
-msgstr ""
-
-#: src/document_manager.cpp
-#, c-format
-msgid "%s - %s - Note %d"
-msgstr ""
-
-#: src/document_manager.cpp
-#, c-format
-msgid "%s - Note %d"
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "No links."
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "No next link."
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "No previous link."
-msgstr ""
-
-#: src/document_manager.cpp
-msgid " link"
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "Opening link in default browser."
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "Failed to open link."
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "Navigated to internal link."
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "Internal link target not found."
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "No lists."
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "No next list."
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "No previous list."
-msgstr ""
-
-#: src/document_manager.cpp
-#, c-format
-msgid "List with %d items"
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "No list items."
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "No next list item."
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "No previous list item."
-msgstr ""
-
-#: src/document_manager.cpp
-#, c-format
-msgid "List with %d items "
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "Bookmark removed"
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "Bookmarked"
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "Enter bookmark note:"
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "Bookmark note updated"
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "Bookmarked with note"
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "No bookmarks"
-msgstr ""
-
-#: src/document_manager.cpp
-#, c-format
-msgid "Bookmark: %s - %s"
-msgstr ""
-
-#: src/document_manager.cpp
-#, c-format
-msgid "Bookmark: %s"
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "No table of contents."
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "Table of contents is empty."
-msgstr ""
-
-#: src/document_manager.cpp src/main_window.cpp
-msgid "Ready"
-msgstr ""
-
-#: src/document_manager.cpp
-#, c-format
-msgid "line %ld, character %ld, reading %d%%"
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "Previous heading\tShift+H"
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "Next heading\tH"
-msgstr ""
-
-#: src/document_manager.cpp
-#, c-format
-msgid "Previous heading level %d\tShift+%d"
-msgstr ""
-
-#: src/document_manager.cpp
-#, c-format
-msgid "Next heading level %d\t%d"
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "No headings."
-msgstr ""
-
-#: src/document_manager.cpp
-#, c-format
-msgid "No %s heading"
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "next"
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "previous"
-msgstr ""
-
-#: src/document_manager.cpp
-#, c-format
-msgid "No %s heading at level %d"
-msgstr ""
-
-#: src/document_manager.cpp
-#, c-format
-msgid "Wrapping to %s. %s Heading level %d"
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "start"
-msgstr ""
-
-#: src/document_manager.cpp
-msgid "end"
-msgstr ""
-
-#: src/document_manager.cpp
-#, c-format
-msgid "%s Heading level %d"
-msgstr ""
-
-#: src/epub_parser.cpp
-msgid "Couldn't parse table of contents"
-msgstr ""
-
-#: src/fb2_parser.cpp
-msgid "Failed to open FB2 file"
-msgstr ""
-
-#: src/fb2_parser.cpp
-msgid "FB2 file is empty or could not be read"
-msgstr ""
-
-#: src/fb2_parser.cpp
-msgid "Failed to convert FB2 XML to text"
-msgstr ""
-
-#: src/html_parser.cpp
-msgid "Failed to open HTML file"
-msgstr ""
-
-#: src/html_parser.cpp
-msgid "Failed to convert HTML to text"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Previous section\t["
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Next section\t]"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Go to &page...\tCtrl+P"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Previous &page\tShift+P"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "&Next page\tP"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Previous &bookmark\tShift+B"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Next b&ookmark\tB"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Previous &note\tShift+N"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Next &note\tN"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Jump to &all...\tCtrl+B"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Jump to &bookmarks...\tCtrl+Alt+B"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Jump to &notes...\tCtrl+Alt+M"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "&View note text\tCtrl+Shift+W"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Previous lin&k\tShift+K"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Next lin&k\tK"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Previous lis&t\tShift+L"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Next lis&t\tL"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Previous list &item\tShift+I"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Next list &item\tI"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "&File"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "&Open...\tCtrl+O"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Close\tCtrl+F4"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Close &All\tCtrl+Shift+F4"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "&Recent Documents"
-msgstr ""
-
-#: src/main_window.cpp src/task_bar_icon.cpp
-msgid "E&xit"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "&Find...\tCtrl+F"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Find Ne&xt\tF3"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Find P&revious\tShift+F3"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Go to &line...\tCtrl+G"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Go to &percent...\tCtrl+Shift+G"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "&Sections"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "&Headings"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "&Pages"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "&Bookmarks"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "&Links"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "&Lists"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "&Go"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "&Tools"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "&Word count\tCtrl+W"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Document &info\tCtrl+I"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Table of contents\tCtrl+T"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Open &containing folder\tCtrl+Shift+C"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Import/&Export"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "&Import document data...\tCtrl+Shift+I"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "&Export document data...\tCtrl+Shift+E"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Export document to &plain text...\tCtrl+E"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Toggle bookmark\tCtrl+Shift+B"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Bookmark with &note\tCtrl+Shift+N"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "&Options\tCtrl+,"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "&Sleep Timer...\tCtrl+Shift+S"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "&Help"
-msgstr ""
-
-#: src/main_window.cpp
-#, c-format
-msgid "About %s\tCtrl+F1"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "View &help in default browser\tF1"
-msgstr ""
-
-#: src/main_window.cpp
-#, c-format
-msgid "View Help in %s\tShift+F1"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Check for &Updates\tCtrl+Shift+U"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "&Donate\tCtrl+D"
-msgstr ""
-
-#: src/main_window.cpp
-#, c-format
-msgid " | Sleep timer: %02d:%02d"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Select a document to read"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Export Document"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Text files (*.txt)|*.txt|All files (*.*)|*.*"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Failed to export document."
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Export notes and bookmarks"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Paperback files (*.paperback)|*.paperback"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Notes and bookmarks exported successfully."
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Export Successful"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Import notes and bookmarks"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Notes and bookmarks imported successfully."
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Import Successful"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "No note at the current position."
-msgstr ""
-
-#: src/main_window.cpp
-#, c-format
-msgid "The document contains %d word"
-msgid_plural "The document contains %d words"
-msgstr[0] ""
-msgstr[1] ""
-
-#: src/main_window.cpp
-msgid "Word count"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Failed to open containing folder."
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Failed to launch default browser."
-msgstr ""
-
-#: src/main_window.cpp
-msgid ""
-"readme.html not found. Please ensure the application was built properly."
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Failed to open donation page in browser."
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Sleep timer canceled."
-msgstr ""
-
-#: src/main_window.cpp
-#, c-format
-msgid "Sleep timer set for %d minute%s."
-msgstr ""
-
-#: src/main_window.cpp
-msgid "(No recent documents)"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Show All...\tCtrl+R"
-msgstr ""
-
-#: src/main_window.cpp
-msgid "Not found."
-msgstr ""
-
-#: src/main_window.cpp
-msgid "No more results. Wrapping search."
-msgstr ""
-
-#: src/markdown_parser.cpp
-msgid "Failed to open Markdown file"
-msgstr ""
-
-#: src/markdown_parser.cpp
-msgid "Markdown file is empty"
-msgstr ""
-
-#: src/markdown_parser.cpp
-msgid "Failed to convert Markdown HTML to text"
-msgstr ""
-
-#: src/odp_parser.cpp
-msgid "Failed to open ODP file"
-msgstr ""
-
-#: src/odp_parser.cpp
-msgid "ODP file does not contain content.xml or it is empty"
-msgstr ""
-
-#: src/odp_parser.cpp
-msgid "ODP file does not contain any pages"
-msgstr ""
-
-#: src/odt_parser.cpp
-msgid "Failed to open ODT file"
-msgstr ""
-
-#: src/odt_parser.cpp
-msgid "ODT file does not contain content.xml or it is empty"
-msgstr ""
-
-#: src/pptx_parser.cpp
-msgid "Parsing of links in the document failed."
-msgstr ""
-
-#: src/pptx_parser.cpp
-#, c-format
-msgid "Error parsing PPTX file: %s"
-msgstr ""
-
-#: src/pptx_parser.cpp
-msgid "Unknown error while parsing PPTX file"
-msgstr ""
-
-#: src/task_bar_icon.cpp
-msgid "&Restore"
-msgstr ""
-
-#: src/text_parser.cpp
-msgid "Failed to open text file"
-msgstr ""
-
-#: src/text_parser.cpp
-msgid "Text file is empty"
-msgstr ""
-
-#: src/update_checker.cpp
-msgid "Failed to create update request."
-msgstr ""
-
-#: src/update_checker.cpp
-#, c-format
-msgid "Failed to check for updates. HTTP status: %d"
-msgstr ""
-
-#: src/update_checker.cpp
-msgid "Failed to parse update response."
-msgstr ""
-
-#: src/update_checker.cpp
-msgid "No updates available."
-msgstr ""
-
-#: src/update_checker.cpp
-msgid "Info"
-msgstr ""
-
-#: src/update_checker.cpp
-msgid "Update is available but download link could not be found."
-msgstr ""
-
-#: src/update_checker.cpp
+#: app/app.cpp
 #, c-format
 msgid ""
 "There is an update available.\n"
@@ -1055,10 +33,1007 @@ msgid ""
 "Do you want to open the direct download link?"
 msgstr ""
 
-#: src/update_checker.cpp
+#: app/app.cpp
 msgid "Update available"
 msgstr ""
 
-#: src/update_checker.cpp
+#: app/app.cpp
+msgid "No updates available."
+msgstr ""
+
+#: app/app.cpp
+msgid "Info"
+msgstr ""
+
+#: app/app.cpp
 msgid "Error checking for updates."
+msgstr ""
+
+#: app/app.cpp
+#, c-format
+msgid "Failed to check for updates. HTTP status: %d"
+msgstr ""
+
+#: app/app.cpp app/dialogs.cpp app/document_manager.cpp app/main_window.cpp
+#: app/parser.cpp
+msgid "Error"
+msgstr ""
+
+#: app/app.cpp
+msgid "Failed to initialize configuration"
+msgstr ""
+
+#: app/app.cpp
+msgid "Failed to create IPC server"
+msgstr ""
+
+#: app/app.cpp app/document_manager.cpp
+msgid "Warning"
+msgstr ""
+
+#: app/app.cpp app/document_manager.cpp
+#, c-format
+msgid "File not found: %s"
+msgstr ""
+
+#: app/app.cpp
+msgid "Failed to load document."
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "All Documents"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "&search"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "File Name"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Status"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Path"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "&Open"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "&Remove"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Missing"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid ""
+"Are you sure you want to remove this document from the list? This will also "
+"remove its reading position."
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Confirm"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Open"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Closed"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Jump to Bookmark"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "&Filter:"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "All"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Bookmarks"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Notes"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "&Edit Note"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "&Delete"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "&Jump"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "&Cancel"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Please select a bookmark to jump to."
+msgstr ""
+
+#: app/dialogs.cpp app/document_manager.cpp
+msgid "Bookmark Note"
+msgstr ""
+
+#: app/dialogs.cpp app/document_manager.cpp
+msgid "Edit bookmark note:"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "blank"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Document Info"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Title: "
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Author: "
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Path: "
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Total number of words: "
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Total number of lines: "
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Total number of characters: "
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Total number of characters (excluding whitespace): "
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Elements"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "&View:"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Headings"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Links"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Root"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Untitled"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Find"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Find &what:"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Options"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "&Match case"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Match &whole word"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Use &regular expressions"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Find &Previous"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Find &Next"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Cancel"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Go to Line"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "&Line number:"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Go to page"
+msgstr ""
+
+#: app/dialogs.cpp
+#, c-format
+msgid "Go to page (1/%d):"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Go to Percent"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "P&ercent:"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "&Percent"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Open As"
+msgstr ""
+
+#: app/dialogs.cpp
+#, c-format
+msgid ""
+"No suitable parser was found for %s.\n"
+"How would you like to open this file?"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Open &as:"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Plain Text"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "HTML"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Markdown"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "General"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "&Restore previously opened documents on startup"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "&Word wrap"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "&Minimize to system tray"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "&Start maximized"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Show compact &go menu"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "&Wrap navigation"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Check for &updates on startup"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Number of &recent documents to show:"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "&Language:"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Document Password"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "&Password"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Sleep Timer"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "&Minutes:"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Table of Contents"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Please select a section from the table of contents."
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "No Selection"
+msgstr ""
+
+#: app/dialogs.cpp app/main_window.cpp
+msgid "View Note"
+msgstr ""
+
+#: app/dialogs.cpp
+msgid "Close"
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "Password is required."
+msgstr ""
+
+#: app/document_manager.cpp
+#, c-format
+msgid "Failed to parse document: %s"
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "No sections."
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "No next section"
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "No previous section"
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "Wrapping to start. "
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "Wrapping to end. "
+msgstr ""
+
+#: app/document_manager.cpp app/main_window.cpp
+msgid "No pages."
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "No next page."
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "No previous page."
+msgstr ""
+
+#: app/document_manager.cpp
+#, c-format
+msgid "Page %d: %s"
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "No bookmarks."
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "No next bookmark"
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "No previous bookmark"
+msgstr ""
+
+#: app/document_manager.cpp
+#, c-format
+msgid "%s - Bookmark %d"
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "No notes."
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "No next note"
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "No previous note"
+msgstr ""
+
+#: app/document_manager.cpp
+#, c-format
+msgid "%s - %s - Note %d"
+msgstr ""
+
+#: app/document_manager.cpp
+#, c-format
+msgid "%s - Note %d"
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "No links."
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "No next link."
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "No previous link."
+msgstr ""
+
+#: app/document_manager.cpp
+msgid " link"
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "No previous position."
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "Navigated to previous position."
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "No next position."
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "Navigated to next position."
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "Opening link in default browser."
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "Failed to open link."
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "Navigated to internal link."
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "Internal link target not found."
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "No lists."
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "No next list."
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "No previous list."
+msgstr ""
+
+#: app/document_manager.cpp
+#, c-format
+msgid "List with %d items"
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "No list items."
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "No next list item."
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "No previous list item."
+msgstr ""
+
+#: app/document_manager.cpp
+#, c-format
+msgid "List with %d items "
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "Bookmark removed"
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "Bookmarked"
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "Enter bookmark note:"
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "Bookmark note updated"
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "Bookmarked with note"
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "No bookmarks"
+msgstr ""
+
+#: app/document_manager.cpp
+#, c-format
+msgid "Bookmark: %s - %s"
+msgstr ""
+
+#: app/document_manager.cpp
+#, c-format
+msgid "Bookmark: %s"
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "No table of contents."
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "Table of contents is empty."
+msgstr ""
+
+#: app/document_manager.cpp app/main_window.cpp
+msgid "Ready"
+msgstr ""
+
+#: app/document_manager.cpp
+#, c-format
+msgid "line %ld, character %ld, reading %d%%"
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "Previous heading\tShift+H"
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "Next heading\tH"
+msgstr ""
+
+#: app/document_manager.cpp
+#, c-format
+msgid "Previous heading level %d\tShift+%d"
+msgstr ""
+
+#: app/document_manager.cpp
+#, c-format
+msgid "Next heading level %d\t%d"
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "No headings."
+msgstr ""
+
+#: app/document_manager.cpp
+#, c-format
+msgid "No %s heading"
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "next"
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "previous"
+msgstr ""
+
+#: app/document_manager.cpp
+#, c-format
+msgid "No %s heading at level %d"
+msgstr ""
+
+#: app/document_manager.cpp
+#, c-format
+msgid "Wrapping to %s. %s Heading level %d"
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "start"
+msgstr ""
+
+#: app/document_manager.cpp
+msgid "end"
+msgstr ""
+
+#: app/document_manager.cpp
+#, c-format
+msgid "%s Heading level %d"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Previous section\t["
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Next section\t]"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Go to &page...\tCtrl+P"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Previous &page\tShift+P"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "&Next page\tP"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Previous &bookmark\tShift+B"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Next b&ookmark\tB"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Previous &note\tShift+N"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Next &note\tN"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Jump to &all...\tCtrl+B"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Jump to &bookmarks...\tCtrl+Alt+B"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Jump to &notes...\tCtrl+Alt+M"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "&View note text\tCtrl+Shift+W"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Previous lin&k\tShift+K"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Next lin&k\tK"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Previous lis&t\tShift+L"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Next lis&t\tL"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Previous list &item\tShift+I"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Next list &item\tI"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "&File"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "&Open...\tCtrl+O"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Close\tCtrl+F4"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Close &All\tCtrl+Shift+F4"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "&Recent Documents"
+msgstr ""
+
+#: app/main_window.cpp app/task_bar_icon.cpp
+msgid "E&xit"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "&Find...\tCtrl+F"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Find Ne&xt\tF3"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Find P&revious\tShift+F3"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Go to &line...\tCtrl+G"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Go to &percent...\tCtrl+Shift+G"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Go &Back\tAlt+Left"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Go &Forward\tAlt+Right"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "&Sections"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "&Headings"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "&Pages"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "&Bookmarks"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "&Links"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "&Lists"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "&Go"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "&Tools"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "&Word count\tCtrl+W"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Document &info\tCtrl+I"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Table of contents\tCtrl+T"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "&Elements List...\tF7"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Open &containing folder\tCtrl+Shift+C"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Import/&Export"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "&Import document data...\tCtrl+Shift+I"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "&Export document data...\tCtrl+Shift+E"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Export document to &plain text...\tCtrl+E"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Toggle bookmark\tCtrl+Shift+B"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Bookmark with &note\tCtrl+Shift+N"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "&Options\tCtrl+,"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "&Sleep Timer...\tCtrl+Shift+S"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "&Help"
+msgstr ""
+
+#: app/main_window.cpp
+#, c-format
+msgid "About %s\tCtrl+F1"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "View &help in default browser\tF1"
+msgstr ""
+
+#: app/main_window.cpp
+#, c-format
+msgid "View Help in %s\tShift+F1"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Check for &Updates\tCtrl+Shift+U"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "&Donate\tCtrl+D"
+msgstr ""
+
+#: app/main_window.cpp
+#, c-format
+msgid " | Sleep timer: %02d:%02d"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Select a document to read"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Export Document"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Text files (*.txt)|*.txt|All files (*.*)|*.*"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Failed to export document."
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Export notes and bookmarks"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Paperback files (*.paperback)|*.paperback"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Notes and bookmarks exported successfully."
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Export Successful"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Import notes and bookmarks"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Notes and bookmarks imported successfully."
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Import Successful"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "No note at the current position."
+msgstr ""
+
+#: app/main_window.cpp
+#, c-format
+msgid "The document contains %d word"
+msgid_plural "The document contains %d words"
+msgstr[0] ""
+msgstr[1] ""
+
+#: app/main_window.cpp
+msgid "Word count"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Failed to open containing folder."
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Failed to launch default browser."
+msgstr ""
+
+#: app/main_window.cpp
+msgid ""
+"readme.html not found. Please ensure the application was built properly."
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Failed to open donation page in browser."
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Sleep timer canceled."
+msgstr ""
+
+#: app/main_window.cpp
+#, c-format
+msgid "Sleep timer set for %d minute%s."
+msgstr ""
+
+#: app/main_window.cpp
+msgid "No recent documents."
+msgstr ""
+
+#: app/main_window.cpp
+msgid "(No recent documents)"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Show All...\tCtrl+R"
+msgstr ""
+
+#: app/main_window.cpp
+msgid "Not found."
+msgstr ""
+
+#: app/main_window.cpp
+msgid "No more results. Wrapping search."
+msgstr ""
+
+#: app/parser.cpp
+msgid "Password required or incorrect."
+msgstr ""
+
+#: app/task_bar_icon.cpp
+msgid "&Restore"
 msgstr ""
