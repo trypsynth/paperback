@@ -658,7 +658,7 @@ fn convert_xml_to_text(content: &str) -> Result<ffi::FfiXmlConversion, String> {
 	})
 }
 
-fn marker_type_from_i32(value: i32) -> Option<MarkerType> {
+const fn marker_type_from_i32(value: i32) -> Option<MarkerType> {
 	MarkerType::from_int(value)
 }
 
@@ -672,7 +672,7 @@ fn document_marker_to_ffi(marker: &crate::document::Marker) -> ffi::FfiMarker {
 	}
 }
 
-fn document_stats_to_ffi(stats: &crate::document::DocumentStats) -> ffi::FfiDocumentStats {
+const fn document_stats_to_ffi(stats: &crate::document::DocumentStats) -> ffi::FfiDocumentStats {
 	ffi::FfiDocumentStats {
 		word_count: stats.word_count,
 		line_count: stats.line_count,
@@ -711,7 +711,7 @@ fn document_length(doc: &DocumentHandle) -> usize {
 	doc.document().buffer.content.chars().count()
 }
 
-fn document_stats(doc: &DocumentHandle) -> ffi::FfiDocumentStats {
+const fn document_stats(doc: &DocumentHandle) -> ffi::FfiDocumentStats {
 	document_stats_to_ffi(&doc.document().stats)
 }
 
@@ -740,7 +740,7 @@ fn document_heading_markers(doc: &DocumentHandle, level: i32) -> Vec<ffi::FfiHea
 					| MarkerType::Heading6
 			)
 		})
-		.filter(|m| level_filter.map_or(true, |lvl| m.level == lvl))
+		.filter(|m| level_filter.is_none_or(|lvl| m.level == lvl))
 		.map(|m| ffi::FfiHeadingInfo { offset: m.position, level: m.level, text: m.text.clone() })
 		.collect()
 }
@@ -774,18 +774,10 @@ fn document_marker_position(doc: &DocumentHandle, marker_index: i32) -> usize {
 }
 
 fn document_marker_at(doc: &DocumentHandle, marker_index: i32) -> ffi::FfiMarker {
-	doc.document()
-		.buffer
-		.markers
-		.get(usize::try_from(marker_index).unwrap_or(usize::MAX))
-		.map(document_marker_to_ffi)
-		.unwrap_or(ffi::FfiMarker {
-			marker_type: -1,
-			position: 0,
-			text: String::new(),
-			reference: String::new(),
-			level: 0,
-		})
+	doc.document().buffer.markers.get(usize::try_from(marker_index).unwrap_or(usize::MAX)).map_or(
+		ffi::FfiMarker { marker_type: -1, position: 0, text: String::new(), reference: String::new(), level: 0 },
+		document_marker_to_ffi,
+	)
 }
 
 fn document_count_markers(doc: &DocumentHandle, marker_type: i32) -> usize {
@@ -809,9 +801,9 @@ fn document_previous_heading(doc: &DocumentHandle, position: i64, level: i32) ->
 }
 
 fn document_heading_info(doc: &DocumentHandle, index: i32) -> ffi::FfiHeadingInfo {
-	doc.heading_info(index)
-		.map(|info| ffi::FfiHeadingInfo { offset: info.offset, level: info.level, text: info.text })
-		.unwrap_or(ffi::FfiHeadingInfo { offset: 0, level: 0, text: String::new() })
+	doc.heading_info(index).map_or(ffi::FfiHeadingInfo { offset: 0, level: 0, text: String::new() }, |info| {
+		ffi::FfiHeadingInfo { offset: info.offset, level: info.level, text: info.text }
+	})
 }
 
 fn document_section_index(doc: &DocumentHandle, position: usize) -> i32 {

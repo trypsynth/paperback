@@ -235,8 +235,7 @@ fn build_ordered_file_list(html_files: &[String], toc_items: &[TocItem]) -> Vec<
 fn collect_toc_files(items: &[TocItem], files: &mut Vec<String>) {
 	for item in items {
 		if !item.reference.is_empty() {
-			let file_path =
-				if let Some(pos) = item.reference.find('#') { &item.reference[..pos] } else { &item.reference };
+			let file_path = item.reference.split_once('#').map_or(item.reference.as_str(), |(path, _)| path);
 			if !file_path.is_empty() && !files.contains(&file_path.to_string()) {
 				files.push(file_path.to_string());
 			}

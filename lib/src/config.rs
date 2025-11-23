@@ -1,5 +1,6 @@
 use std::{
 	env,
+	fmt::Write,
 	fs::{self, OpenOptions},
 	path::{Path, PathBuf},
 	string::ToString,
@@ -552,7 +553,7 @@ impl ConfigManager {
 					let colon_count = trimmed.matches(':').count();
 					if colon_count == 0 {
 						if let Ok(pos) = trimmed.parse::<i64>() {
-							new_bookmarks.push_str(&format!("{pos}:{pos}:"));
+							let _ = write!(&mut new_bookmarks, "{pos}:{pos}:");
 						}
 					} else if colon_count == 1 {
 						new_bookmarks.push_str(trimmed);

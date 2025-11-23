@@ -34,10 +34,7 @@ impl Parser for PdfParser {
 				Marker::new(MarkerType::PageBreak, marker_position).with_text(format!("Page {}", page_index + 1)),
 			);
 			page_offsets.push(marker_position);
-			let page = match document.load_page(page_index) {
-				Some(page) => page,
-				None => continue,
-			};
+			let Some(page) = document.load_page(page_index) else { continue };
 			if let Some(text_page) = page.load_text_page() {
 				let raw_text = text_page.extract_text();
 				let lines = process_text_lines(&raw_text);

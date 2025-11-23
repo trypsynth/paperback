@@ -225,7 +225,7 @@ impl Default for Document {
 	}
 }
 
-fn is_heading_marker(marker_type: MarkerType) -> bool {
+const fn is_heading_marker(marker_type: MarkerType) -> bool {
 	matches!(
 		marker_type,
 		MarkerType::Heading1
@@ -250,12 +250,12 @@ impl DocumentHandle {
 	}
 
 	#[must_use]
-	pub fn document(&self) -> &Document {
+	pub const fn document(&self) -> &Document {
 		&self.doc
 	}
 
 	#[must_use]
-	pub fn document_mut(&mut self) -> &mut Document {
+	pub const fn document_mut(&mut self) -> &mut Document {
 		&mut self.doc
 	}
 
@@ -271,12 +271,13 @@ impl DocumentHandle {
 			.iter()
 			.enumerate()
 			.filter(|(_, marker)| is_heading_marker(marker.marker_type))
-			.filter(|(_, marker)| level.map_or(true, |lvl| marker.level == lvl))
+			.filter(|(_, marker)| level.is_none_or(|lvl| marker.level == lvl))
 			.collect();
 		result.sort_by_key(|(_, marker)| marker.position);
 		result
 	}
 
+	#[must_use]
 	pub fn next_marker_index(&self, position: i64, marker_type: MarkerType) -> Option<usize> {
 		self.doc
 			.buffer
@@ -288,6 +289,7 @@ impl DocumentHandle {
 			.next()
 	}
 
+	#[must_use]
 	pub fn previous_marker_index(&self, position: i64, marker_type: MarkerType) -> Option<usize> {
 		self.doc
 			.buffer
@@ -296,9 +298,10 @@ impl DocumentHandle {
 			.enumerate()
 			.filter(|(_, marker)| marker.marker_type == marker_type && (marker.position as i64) < position)
 			.map(|(idx, _)| idx)
-			.last()
+			.next_back()
 	}
 
+	#[must_use]
 	pub fn current_marker_index(&self, position: usize, marker_type: MarkerType) -> Option<usize> {
 		let mut result = None;
 		for (idx, marker) in self.doc.buffer.markers.iter().enumerate() {
@@ -311,6 +314,7 @@ impl DocumentHandle {
 		result
 	}
 
+	#[must_use]
 	pub fn find_first_marker_after(&self, position: i64, marker_type: MarkerType) -> Option<usize> {
 		self.doc
 			.buffer
@@ -321,21 +325,25 @@ impl DocumentHandle {
 			.map(|(idx, _)| idx)
 	}
 
+	#[must_use]
 	pub fn next_heading_marker_index(&self, position: i64, level: Option<i32>) -> Option<usize> {
 		let heading_markers = self.heading_markers(level);
 		heading_markers.into_iter().find(|(_, m)| m.position as i64 > position).map(|(idx, _)| idx)
 	}
 
+	#[must_use]
 	pub fn previous_heading_marker_index(&self, position: i64, level: Option<i32>) -> Option<usize> {
 		let heading_markers = self.heading_markers(level);
-		heading_markers.into_iter().filter(|(_, m)| (m.position as i64) < position).map(|(idx, _)| idx).last()
+		heading_markers.into_iter().filter(|(_, m)| (m.position as i64) < position).map(|(idx, _)| idx).next_back()
 	}
 
+	#[must_use]
 	pub fn marker_position(&self, marker_index: i32) -> Option<usize> {
 		let idx = usize::try_from(marker_index).ok()?;
 		self.doc.buffer.markers.get(idx).map(|m| m.position)
 	}
 
+	#[must_use]
 	pub fn heading_info(&self, heading_index: i32) -> Option<crate::html_to_text::HeadingInfo> {
 		let idx = usize::try_from(heading_index).ok()?;
 		let heading_markers = self.heading_markers(None);
