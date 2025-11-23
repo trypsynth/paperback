@@ -5,56 +5,46 @@ use bitflags::bitflags;
 use crate::utils::text::display_len;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[repr(i32)]
 pub enum MarkerType {
-	Heading1,
-	Heading2,
-	Heading3,
-	Heading4,
-	Heading5,
-	Heading6,
-	PageBreak,
-	SectionBreak,
-	TocItem,
-	Link,
-	List,
-	ListItem,
+	Heading1 = 0,
+	Heading2 = 1,
+	Heading3 = 2,
+	Heading4 = 3,
+	Heading5 = 4,
+	Heading6 = 5,
+	PageBreak = 6,
+	SectionBreak = 7,
+	TocItem = 8,
+	Link = 9,
+	List = 10,
+	ListItem = 11,
 }
 
-impl MarkerType {
-	#[must_use]
-	pub const fn to_int(&self) -> i32 {
-		match self {
-			Self::Heading1 => 0,
-			Self::Heading2 => 1,
-			Self::Heading3 => 2,
-			Self::Heading4 => 3,
-			Self::Heading5 => 4,
-			Self::Heading6 => 5,
-			Self::PageBreak => 6,
-			Self::SectionBreak => 7,
-			Self::TocItem => 8,
-			Self::Link => 9,
-			Self::List => 10,
-			Self::ListItem => 11,
-		}
+impl From<MarkerType> for i32 {
+	fn from(marker: MarkerType) -> Self {
+		marker as i32
 	}
+}
 
-	#[must_use]
-	pub const fn from_int(value: i32) -> Option<Self> {
+impl TryFrom<i32> for MarkerType {
+	type Error = ();
+
+	fn try_from(value: i32) -> Result<Self, Self::Error> {
 		match value {
-			0 => Some(Self::Heading1),
-			1 => Some(Self::Heading2),
-			2 => Some(Self::Heading3),
-			3 => Some(Self::Heading4),
-			4 => Some(Self::Heading5),
-			5 => Some(Self::Heading6),
-			6 => Some(Self::PageBreak),
-			7 => Some(Self::SectionBreak),
-			8 => Some(Self::TocItem),
-			9 => Some(Self::Link),
-			10 => Some(Self::List),
-			11 => Some(Self::ListItem),
-			_ => None,
+			0 => Ok(Self::Heading1),
+			1 => Ok(Self::Heading2),
+			2 => Ok(Self::Heading3),
+			3 => Ok(Self::Heading4),
+			4 => Ok(Self::Heading5),
+			5 => Ok(Self::Heading6),
+			6 => Ok(Self::PageBreak),
+			7 => Ok(Self::SectionBreak),
+			8 => Ok(Self::TocItem),
+			9 => Ok(Self::Link),
+			10 => Ok(Self::List),
+			11 => Ok(Self::ListItem),
+			_ => Err(()),
 		}
 	}
 }

@@ -4,9 +4,9 @@ use std::{
 	time::Duration,
 };
 
-use reqwest::blocking::Client;
 use semver::Version;
 use serde::Deserialize;
+use ureq::{Agent, config::Config};
 
 const RELEASE_URL: &str = "https://api.github.com/repos/trypsynth/paperback/releases/latest";
 
@@ -81,21 +81,20 @@ fn pick_download_url(is_installer: bool, assets: &[ReleaseAsset]) -> Option<Stri
 
 fn fetch_latest_release() -> Result<GithubRelease, UpdateError> {
 	let user_agent = format!("libpaperback/{}", env!("CARGO_PKG_VERSION"));
-	let client = Client::builder()
-		.user_agent(user_agent)
-		.timeout(Duration::from_secs(15))
-		.build()
-		.map_err(|err| UpdateError::NetworkError(format!("Failed to create HTTP client: {err}")))?;
-	match client.get(RELEASE_URL).header("Accept", "application/vnd.github+json").send() {
-		Ok(resp) => {
-			if !resp.status().is_success() {
-				return Err(UpdateError::HttpError(i32::from(resp.status().as_u16())));
-			}
-			resp.json::<GithubRelease>()
-				.map_err(|err| UpdateError::InvalidResponse(format!("Failed to parse release JSON: {err}")))
-		}
-		Err(err) => Err(UpdateError::NetworkError(format!("Network error: {err}"))),
-	}
+	let config = Config::builder().timeout_global(Some(Duration::from_secs(15))).build();
+	let agent = Agent::new_with_config(config);
+	let mut resp = agent
+		.get(RELEASE_URL)
+		.header("User-Agent", &user_agent)
+		.header("Accept", "application/vnd.github+json")
+		.call()
+		.map_err(|err| match err {
+			ureq::Error::StatusCode(code) => UpdateError::HttpError(code as i32),
+			_ => UpdateError::NetworkError(format!("Network error: {err}")),
+		})?;
+	resp.body_mut()
+		.read_json::<GithubRelease>()
+		.map_err(|err| UpdateError::InvalidResponse(format!("Failed to parse release JSON: {err}")))
 }
 
 pub fn check_for_updates(current_version: &str, is_installer: bool) -> Result<UpdateCheckOutcome, UpdateError> {

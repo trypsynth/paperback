@@ -160,7 +160,7 @@ target_link_libraries(paperback PRIVATE
 	wx::net
 )
 if (WIN32)
-	target_link_libraries(paperback PRIVATE bcrypt)
+	target_link_libraries(paperback PRIVATE bcrypt ntdll)
 endif()
 
 if (MSVC)

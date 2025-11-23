@@ -38,9 +38,9 @@ fn build_chmlib() {
 
 fn download_and_extract_chmlib(out_dir: &Path) {
 	let url = "http://www.jedrea.com/chmlib/chmlib-0.40.tar.bz2";
-	let response = reqwest::blocking::get(url).expect("Failed to download chmlib");
-	let bytes = response.bytes().expect("Failed to read chmlib tarball");
-	let decompressor = BzDecoder::new(Cursor::new(&bytes[..]));
+	let response = ureq::get(url).call().expect("Failed to download chmlib");
+	let buf = response.into_body().read_to_vec().expect("Failed to read chmlib tarball");
+	let decompressor = BzDecoder::new(Cursor::new(buf));
 	let mut archive = Archive::new(decompressor);
 	archive.unpack(out_dir).expect("Failed to extract chmlib");
 }
@@ -60,10 +60,9 @@ fn setup_pdfium() {
 	let pdfium_root = target_dir.join("pdfium").join(&platform);
 	let lib_dir = pdfium_root.join("lib");
 	let lib_path = find_or_fetch_pdfium(&pdfium_root, &platform);
-	let link_search_dir = lib_dir.to_string_lossy();
-	println!("cargo:rustc-link-search=native={link_search_dir}");
-	let link_kind = if lib_path.extension().and_then(|ext| ext.to_str()) == Some("a") { "static" } else { "dylib" };
-	println!("cargo:rustc-link-lib={link_kind}=pdfium");
+	println!("cargo:rustc-link-search=native={}", lib_dir.to_string_lossy());
+	let link_kind = if lib_path.extension().and_then(|e| e.to_str()) == Some("a") { "static" } else { "dylib" };
+	println!("cargo:rustc-link-lib={}={}", link_kind, "pdfium");
 	println!("cargo:rerun-if-env-changed=CARGO_CFG_TARGET_OS");
 	println!("cargo:rerun-if-env-changed=CARGO_CFG_TARGET_ARCH");
 }
@@ -80,19 +79,19 @@ fn get_target_dir() -> PathBuf {
 }
 
 fn detect_pdfium_platform() -> String {
-	let target_os = env::var("CARGO_CFG_TARGET_OS").expect("Missing target OS");
-	let target_arch = env::var("CARGO_CFG_TARGET_ARCH").expect("Missing target arch");
-	match (target_os.as_str(), target_arch.as_str()) {
-		("windows", "x86_64") => "win-x64".to_string(),
-		("windows", "x86") => "win-x86".to_string(),
-		("windows", "aarch64") => "win-arm64".to_string(),
-		("linux", "x86_64") => "linux-x64".to_string(),
-		("linux", "x86") => "linux-x86".to_string(),
-		("linux", "aarch64") => "linux-arm64".to_string(),
-		("linux", "arm") => "linux-arm".to_string(),
-		("macos", "x86_64") => "mac-x64".to_string(),
-		("macos", "aarch64") => "mac-arm64".to_string(),
-		_ => panic!("Unsupported target {target_os}-{target_arch} for pdfium"),
+	let os = env::var("CARGO_CFG_TARGET_OS").expect("Missing target OS");
+	let arch = env::var("CARGO_CFG_TARGET_ARCH").expect("Missing target arch");
+	match (os.as_str(), arch.as_str()) {
+		("windows", "x86_64") => "win-x64".into(),
+		("windows", "x86") => "win-x86".into(),
+		("windows", "aarch64") => "win-arm64".into(),
+		("linux", "x86_64") => "linux-x64".into(),
+		("linux", "x86") => "linux-x86".into(),
+		("linux", "aarch64") => "linux-arm64".into(),
+		("linux", "arm") => "linux-arm".into(),
+		("macos", "x86_64") => "mac-x64".into(),
+		("macos", "aarch64") => "mac-arm64".into(),
+		_ => panic!("Unsupported target {os}-{arch} for pdfium"),
 	}
 }
 
@@ -119,20 +118,20 @@ fn find_or_fetch_pdfium(pdfium_root: &Path, platform: &str) -> PathBuf {
 
 fn download_pdfium(pdfium_root: &Path, platform: &str) {
 	let url = format!("https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-{platform}.tgz");
-	let response = reqwest::blocking::get(&url).expect("Failed to download pdfium");
-	let bytes = response.bytes().expect("Failed to read pdfium archive");
-	let decompressor = GzDecoder::new(Cursor::new(bytes));
+	let response = ureq::get(&url).call().expect("Failed to download pdfium");
+	let buf = response.into_body().read_to_vec().expect("Failed to read pdfium archive");
+	let decompressor = GzDecoder::new(Cursor::new(buf));
 	let mut archive = Archive::new(decompressor);
 	if pdfium_root.exists() {
-		fs::remove_dir_all(pdfium_root).expect("Failed to remove existing pdfium directory");
+		fs::remove_dir_all(pdfium_root).expect("Failed to remove old pdfium directory");
 	}
 	fs::create_dir_all(pdfium_root).expect("Failed to create pdfium directory");
 	archive.unpack(pdfium_root).expect("Failed to extract pdfium");
 	if platform.starts_with("win-") {
 		let dll_lib = pdfium_root.join("lib").join("pdfium.dll.lib");
-		let target_lib = pdfium_root.join("lib").join("pdfium.lib");
-		if dll_lib.exists() && !target_lib.exists() {
-			fs::rename(&dll_lib, &target_lib).expect("Failed to rename pdfium import library");
+		let target = pdfium_root.join("lib").join("pdfium.lib");
+		if dll_lib.exists() && !target.exists() {
+			fs::rename(&dll_lib, &target).expect("Failed to rename pdfium import library");
 		}
 	}
 }

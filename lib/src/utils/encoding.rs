@@ -1,3 +1,5 @@
+use std::str;
+
 use encoding_rs::{UTF_16BE, UTF_16LE, WINDOWS_1252};
 
 #[must_use]
@@ -30,17 +32,21 @@ pub fn convert_to_utf8(input: &[u8]) -> String {
 			return decoded.to_string();
 		}
 	}
-	if let Ok(s) = String::from_utf8(input.to_vec()) {
-		return s;
+	// Try UTF-8 without BOM
+	if let Ok(s) = str::from_utf8(input) {
+		return s.to_string();
 	}
+	// Try UTF-16 LE without BOM
 	let (decoded, encoding, had_errors) = UTF_16LE.decode(input);
 	if !had_errors && encoding == UTF_16LE {
 		return decoded.to_string();
 	}
+	// Try UTF-16 BE without BOM
 	let (decoded, encoding, had_errors) = UTF_16BE.decode(input);
 	if !had_errors && encoding == UTF_16BE {
 		return decoded.to_string();
 	}
+	// Try Windows-1252
 	let (decoded, _, _) = WINDOWS_1252.decode(input);
 	if decoded.chars().any(|c| !c.is_control() || c.is_whitespace()) {
 		return decoded.to_string();
@@ -49,29 +55,23 @@ pub fn convert_to_utf8(input: &[u8]) -> String {
 }
 
 fn decode_utf32_le(input: &[u8]) -> String {
-	let mut result = String::new();
-	let mut i = 0;
-	while i + 3 < input.len() {
-		let code_point = u32::from_le_bytes([input[i], input[i + 1], input[i + 2], input[i + 3]]);
-		if let Some(ch) = char::from_u32(code_point) {
-			result.push(ch);
-		}
-		i += 4;
-	}
-	result
+	input
+		.chunks_exact(4)
+		.filter_map(|chunk| {
+			let code_point = u32::from_le_bytes([chunk[0], chunk[1], chunk[2], chunk[3]]);
+			char::from_u32(code_point)
+		})
+		.collect()
 }
 
 fn decode_utf32_be(input: &[u8]) -> String {
-	let mut result = String::new();
-	let mut i = 0;
-	while i + 3 < input.len() {
-		let code_point = u32::from_be_bytes([input[i], input[i + 1], input[i + 2], input[i + 3]]);
-		if let Some(ch) = char::from_u32(code_point) {
-			result.push(ch);
-		}
-		i += 4;
-	}
-	result
+	input
+		.chunks_exact(4)
+		.filter_map(|chunk| {
+			let code_point = u32::from_be_bytes([chunk[0], chunk[1], chunk[2], chunk[3]]);
+			char::from_u32(code_point)
+		})
+		.collect()
 }
 
 #[cfg(test)]

@@ -132,7 +132,21 @@ fn serialize_without_binary(node: Node, output: &mut String) {
 }
 
 fn escape_xml(s: &str) -> String {
-	s.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;").replace('"', "&quot;").replace('\'', "&apos;")
+	if !s.chars().any(|c| matches!(c, '&' | '<' | '>' | '"' | '\'')) {
+		return s.to_string();
+	}
+	let mut result = String::with_capacity(s.len());
+	for c in s.chars() {
+		match c {
+			'&' => result.push_str("&amp;"),
+			'<' => result.push_str("&lt;"),
+			'>' => result.push_str("&gt;"),
+			'"' => result.push_str("&quot;"),
+			'\'' => result.push_str("&apos;"),
+			_ => result.push(c),
+		}
+	}
+	result
 }
 
 fn extract_metadata(xml_content: &str) -> (String, String) {

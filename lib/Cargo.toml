@@ -20,14 +20,14 @@ encoding_rs = "0.8.35"
 epub = "2.1.5"
 percent-encoding = "2.3.2"
 pulldown-cmark = "0.13.0"
-reqwest = { version = "0.12.24", default-features = false, features = ["blocking", "json", "rustls-tls"] }
 roxmltree = "0.21.1"
 scraper = "0.24.0"
 semver = "1.0.27"
-serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.145"
+serde = { version = "1.0.228", default-features = false, features = ["derive", "std"] }
+serde_json = { version = "1.0.145", default-features = false, features = ["std"] }
 sha1 = "0.10.6"
-zip = { version = "6.0.0", default-features = false, features = ["deflate", "bzip2"] }
+ureq = { version = "3.1.4", features = ["json"] }
+zip = { version = "6.0.0", default-features = false, features = ["deflate"] }
 
 [build-dependencies]
 bzip2 = "0.6.1"
@@ -35,8 +35,8 @@ cc = "1.2.47"
 cxx = "1.0.189"
 cxx-build = "1.0.189"
 flate2 = "1.1.5"
-reqwest = { version = "0.12.24", default-features = false, features = ["blocking", "rustls-tls"] }
 tar = "0.4.44"
+ureq = { version = "3.1.4", features = ["gzip"] }
 
 [profile.release]
 strip = true

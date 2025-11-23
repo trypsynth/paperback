@@ -1,7 +1,5 @@
 edition = "2024"
 max_width = 120
-fn_call_width = 120
-single_line_if_else_max_width = 120
 hard_tabs = true
 use_small_heuristics = "Max"
 match_arm_leading_pipes = "Preserve"

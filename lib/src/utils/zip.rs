@@ -13,31 +13,21 @@ pub fn read_zip_entry_by_name<R: Read + Seek>(archive: &mut ZipArchive<R>, name:
 }
 
 pub fn find_zip_entry<R: Read + Seek>(archive: &mut ZipArchive<R>, filename: &str) -> Option<usize> {
-	for i in 0..archive.len() {
-		if let Ok(entry) = archive.by_index(i) {
-			if entry.name() == filename {
-				return Some(i);
-			}
-		}
-	}
-	let decoded = url_decode(filename);
-	if decoded != filename {
-		for i in 0..archive.len() {
-			if let Ok(entry) = archive.by_index(i) {
-				if entry.name() == decoded {
-					return Some(i);
-				}
-			}
-		}
-	}
-	for i in 0..archive.len() {
+	let decoded_filename = url_decode(filename);
+	let needs_decode = decoded_filename != filename;
+	(0..archive.len()).find(|&i| {
 		if let Ok(entry) = archive.by_index(i) {
 			let entry_name = entry.name();
-			let decoded_entry_name = url_decode(entry_name);
-			if decoded_entry_name == filename || decoded_entry_name == decoded {
-				return Some(i);
+			if entry_name == filename {
+				return true;
 			}
+			if needs_decode && entry_name == decoded_filename {
+				return true;
+			}
+			let decoded_entry = url_decode(entry_name);
+			decoded_entry == filename || (needs_decode && decoded_entry == decoded_filename)
+		} else {
+			false
 		}
-	}
-	None
+	})
 }

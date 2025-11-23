@@ -231,69 +231,52 @@ use crate::{
 
 type ConfigManager = crate::config::ConfigManager;
 
+macro_rules! ffi_wrapper {
+	(mut $fn_name:ident, $method:ident) => {
+		fn $fn_name(manager: &mut RustConfigManager) { manager.$method(); }
+	};
+	($fn_name:ident, $method:ident) => {
+		fn $fn_name(manager: &RustConfigManager) { manager.$method(); }
+	};
+	(mut $fn_name:ident, $method:ident -> $ret:ty) => {
+		fn $fn_name(manager: &mut RustConfigManager) -> $ret { manager.$method() }
+	};
+	($fn_name:ident, $method:ident -> $ret:ty) => {
+		fn $fn_name(manager: &RustConfigManager) -> $ret { manager.$method() }
+	};
+	(mut $fn_name:ident, $method:ident($($arg:ident: $ty:ty),*)) => {
+		fn $fn_name(manager: &mut RustConfigManager, $($arg: $ty),*) { manager.$method($($arg),*); }
+	};
+	($fn_name:ident, $method:ident($($arg:ident: $ty:ty),*)) => {
+		fn $fn_name(manager: &RustConfigManager, $($arg: $ty),*) { manager.$method($($arg),*); }
+	};
+	(mut $fn_name:ident, $method:ident($($arg:ident: $ty:ty),*) -> $ret:ty) => {
+		fn $fn_name(manager: &mut RustConfigManager, $($arg: $ty),*) -> $ret { manager.$method($($arg),*) }
+	};
+	($fn_name:ident, $method:ident($($arg:ident: $ty:ty),*) -> $ret:ty) => {
+		fn $fn_name(manager: &RustConfigManager, $($arg: $ty),*) -> $ret { manager.$method($($arg),*) }
+	};
+}
+
 fn config_manager_new() -> Box<RustConfigManager> {
 	Box::new(RustConfigManager::new())
 }
 
-fn config_manager_initialize(manager: &mut RustConfigManager) -> bool {
-	manager.initialize()
-}
-
-fn config_manager_flush(manager: &RustConfigManager) {
-	manager.flush();
-}
-
-fn config_manager_shutdown(manager: &mut RustConfigManager) {
-	manager.shutdown();
-}
-
-fn config_manager_get_string(manager: &RustConfigManager, key: &str, default_value: &str) -> String {
-	manager.get_string(key, default_value)
-}
-
-fn config_manager_get_bool(manager: &RustConfigManager, key: &str, default_value: bool) -> bool {
-	manager.get_bool(key, default_value)
-}
-
-fn config_manager_get_int(manager: &RustConfigManager, key: &str, default_value: i32) -> i32 {
-	manager.get_int(key, default_value)
-}
-
-fn config_manager_set_string(manager: &mut RustConfigManager, key: &str, value: &str) {
-	manager.set_string(key, value);
-}
-
-fn config_manager_set_bool(manager: &mut RustConfigManager, key: &str, value: bool) {
-	manager.set_bool(key, value);
-}
-
-fn config_manager_set_int(manager: &mut RustConfigManager, key: &str, value: i32) {
-	manager.set_int(key, value);
-}
-
-fn config_manager_get_app_string(manager: &RustConfigManager, key: &str, default_value: &str) -> String {
-	manager.get_app_string(key, default_value)
-}
-
-fn config_manager_get_app_bool(manager: &RustConfigManager, key: &str, default_value: bool) -> bool {
-	manager.get_app_bool(key, default_value)
-}
-
-fn config_manager_get_app_int(manager: &RustConfigManager, key: &str, default_value: i32) -> i32 {
-	manager.get_app_int(key, default_value)
-}
-
-fn config_manager_set_app_string(manager: &mut RustConfigManager, key: &str, value: &str) {
-	manager.set_app_string(key, value);
-}
-
-fn config_manager_set_app_bool(manager: &mut RustConfigManager, key: &str, value: bool) {
-	manager.set_app_bool(key, value);
-}
-
-fn config_manager_set_app_int(manager: &mut RustConfigManager, key: &str, value: i32) {
-	manager.set_app_int(key, value);
-}
+ffi_wrapper!(mut config_manager_initialize, initialize -> bool);
+ffi_wrapper!(config_manager_flush, flush);
+ffi_wrapper!(mut config_manager_shutdown, shutdown);
+ffi_wrapper!(config_manager_get_string, get_string(key: &str, default_value: &str) -> String);
+ffi_wrapper!(config_manager_get_bool, get_bool(key: &str, default_value: bool) -> bool);
+ffi_wrapper!(config_manager_get_int, get_int(key: &str, default_value: i32) -> i32);
+ffi_wrapper!(mut config_manager_set_string, set_string(key: &str, value: &str));
+ffi_wrapper!(mut config_manager_set_bool, set_bool(key: &str, value: bool));
+ffi_wrapper!(mut config_manager_set_int, set_int(key: &str, value: i32));
+ffi_wrapper!(config_manager_get_app_string, get_app_string(key: &str, default_value: &str) -> String);
+ffi_wrapper!(config_manager_get_app_bool, get_app_bool(key: &str, default_value: bool) -> bool);
+ffi_wrapper!(config_manager_get_app_int, get_app_int(key: &str, default_value: i32) -> i32);
+ffi_wrapper!(mut config_manager_set_app_string, set_app_string(key: &str, value: &str));
+ffi_wrapper!(mut config_manager_set_app_bool, set_app_bool(key: &str, value: bool));
+ffi_wrapper!(mut config_manager_set_app_int, set_app_int(key: &str, value: i32));
 
 fn config_manager_get_doc_string(manager: &RustConfigManager, path: &str, key: &str, default_value: &str) -> String {
 	manager.get_document_string(path, key, default_value)
@@ -319,45 +302,16 @@ fn config_manager_set_doc_int(manager: &mut RustConfigManager, path: &str, key: 
 	manager.set_document_int(path, key, value);
 }
 
-fn config_manager_add_recent_document(manager: &mut RustConfigManager, path: &str) {
-	manager.add_recent_document(path);
-}
-
-fn config_manager_get_recent_documents(manager: &RustConfigManager) -> Vec<String> {
-	manager.get_recent_documents()
-}
-
-fn config_manager_clear_recent_documents(manager: &mut RustConfigManager) {
-	manager.clear_recent_documents();
-}
-
-fn config_manager_rebuild_recent_documents(manager: &mut RustConfigManager) {
-	manager.rebuild_recent_documents();
-}
-
-fn config_manager_add_opened_document(manager: &mut RustConfigManager, path: &str) {
-	manager.add_opened_document(path);
-}
-
-fn config_manager_remove_opened_document(manager: &mut RustConfigManager, path: &str) {
-	manager.remove_opened_document(path);
-}
-
-fn config_manager_get_opened_documents(manager: &RustConfigManager) -> Vec<String> {
-	manager.get_opened_documents()
-}
-
-fn config_manager_clear_opened_documents(manager: &mut RustConfigManager) {
-	manager.clear_opened_documents();
-}
-
-fn config_manager_set_document_position(manager: &mut RustConfigManager, path: &str, position: i64) {
-	manager.set_document_position(path, position);
-}
-
-fn config_manager_get_document_position(manager: &RustConfigManager, path: &str) -> i64 {
-	manager.get_document_position(path)
-}
+ffi_wrapper!(mut config_manager_add_recent_document, add_recent_document(path: &str));
+ffi_wrapper!(config_manager_get_recent_documents, get_recent_documents -> Vec<String>);
+ffi_wrapper!(mut config_manager_clear_recent_documents, clear_recent_documents);
+ffi_wrapper!(mut config_manager_rebuild_recent_documents, rebuild_recent_documents);
+ffi_wrapper!(mut config_manager_add_opened_document, add_opened_document(path: &str));
+ffi_wrapper!(mut config_manager_remove_opened_document, remove_opened_document(path: &str));
+ffi_wrapper!(config_manager_get_opened_documents, get_opened_documents -> Vec<String>);
+ffi_wrapper!(mut config_manager_clear_opened_documents, clear_opened_documents);
+ffi_wrapper!(mut config_manager_set_document_position, set_document_position(path: &str, position: i64));
+ffi_wrapper!(config_manager_get_document_position, get_document_position(path: &str) -> i64);
 
 fn config_manager_set_navigation_history(
 	manager: &mut RustConfigManager,
@@ -373,29 +327,12 @@ fn config_manager_get_navigation_history(manager: &RustConfigManager, path: &str
 	ffi::FfiNavigationHistory { positions: history.positions, index: history.index }
 }
 
-fn config_manager_set_document_opened(manager: &mut RustConfigManager, path: &str, opened: bool) {
-	manager.set_document_opened(path, opened);
-}
-
-fn config_manager_get_document_opened(manager: &RustConfigManager, path: &str) -> bool {
-	manager.get_document_opened(path)
-}
-
-fn config_manager_remove_document_history(manager: &mut RustConfigManager, path: &str) {
-	manager.remove_document_history(path);
-}
-
-fn config_manager_remove_navigation_history(manager: &mut RustConfigManager, path: &str) {
-	manager.remove_navigation_history(path);
-}
-
-fn config_manager_get_all_opened_documents(manager: &RustConfigManager) -> Vec<String> {
-	manager.get_all_opened_documents()
-}
-
-fn config_manager_get_all_documents(manager: &RustConfigManager) -> Vec<String> {
-	manager.get_all_documents()
-}
+ffi_wrapper!(mut config_manager_set_document_opened, set_document_opened(path: &str, opened: bool));
+ffi_wrapper!(config_manager_get_document_opened, get_document_opened(path: &str) -> bool);
+ffi_wrapper!(mut config_manager_remove_document_history, remove_document_history(path: &str));
+ffi_wrapper!(mut config_manager_remove_navigation_history, remove_navigation_history(path: &str));
+ffi_wrapper!(config_manager_get_all_opened_documents, get_all_opened_documents -> Vec<String>);
+ffi_wrapper!(config_manager_get_all_documents, get_all_documents -> Vec<String>);
 
 fn config_manager_add_bookmark(manager: &mut RustConfigManager, path: &str, start: i64, end: i64, note: &str) {
 	manager.add_bookmark(path, start, end, note);
@@ -414,19 +351,17 @@ fn config_manager_update_bookmark_note(manager: &mut RustConfigManager, path: &s
 }
 
 fn config_manager_get_bookmarks(manager: &RustConfigManager, path: &str) -> Vec<ffi::FfiBookmark> {
-	manager.get_bookmarks(path).into_iter().map(to_ffi_bookmark).collect()
+	manager.get_bookmarks(path).into_iter().map(Into::into).collect()
 }
 
-fn config_manager_clear_bookmarks(manager: &mut RustConfigManager, path: &str) {
-	manager.clear_bookmarks(path);
-}
+ffi_wrapper!(mut config_manager_clear_bookmarks, clear_bookmarks(path: &str));
 
 fn config_manager_get_next_bookmark(
 	manager: &RustConfigManager,
 	path: &str,
 	current_position: i64,
 ) -> ffi::FfiBookmark {
-	to_ffi_bookmark(manager.get_next_bookmark(path, current_position))
+	manager.get_next_bookmark(path, current_position).into()
 }
 
 fn config_manager_get_previous_bookmark(
@@ -434,7 +369,7 @@ fn config_manager_get_previous_bookmark(
 	path: &str,
 	current_position: i64,
 ) -> ffi::FfiBookmark {
-	to_ffi_bookmark(manager.get_previous_bookmark(path, current_position))
+	manager.get_previous_bookmark(path, current_position).into()
 }
 
 fn config_manager_get_closest_bookmark(
@@ -442,47 +377,23 @@ fn config_manager_get_closest_bookmark(
 	path: &str,
 	current_position: i64,
 ) -> ffi::FfiBookmark {
-	to_ffi_bookmark(manager.get_closest_bookmark(path, current_position))
+	manager.get_closest_bookmark(path, current_position).into()
 }
 
-fn config_manager_set_document_format(manager: &mut RustConfigManager, path: &str, format: &str) {
-	manager.set_document_format(path, format);
-}
+ffi_wrapper!(mut config_manager_set_document_format, set_document_format(path: &str, format: &str));
+ffi_wrapper!(config_manager_get_document_format, get_document_format(path: &str) -> String);
+ffi_wrapper!(mut config_manager_set_document_password, set_document_password(path: &str, password: &str));
+ffi_wrapper!(config_manager_get_document_password, get_document_password(path: &str) -> String);
+ffi_wrapper!(config_manager_needs_migration, needs_migration -> bool);
+ffi_wrapper!(mut config_manager_migrate_config, migrate_config -> bool);
+ffi_wrapper!(config_manager_export_document_settings, export_document_settings(doc_path: &str, export_path: &str));
+ffi_wrapper!(mut config_manager_import_document_settings, import_document_settings(path: &str));
+ffi_wrapper!(mut config_manager_import_settings_from_file, import_settings_from_file(doc_path: &str, import_path: &str));
 
-fn config_manager_get_document_format(manager: &RustConfigManager, path: &str) -> String {
-	manager.get_document_format(path)
-}
-
-fn config_manager_set_document_password(manager: &mut RustConfigManager, path: &str, password: &str) {
-	manager.set_document_password(path, password);
-}
-
-fn config_manager_get_document_password(manager: &RustConfigManager, path: &str) -> String {
-	manager.get_document_password(path)
-}
-
-fn config_manager_needs_migration(manager: &RustConfigManager) -> bool {
-	manager.needs_migration()
-}
-
-fn config_manager_migrate_config(manager: &mut RustConfigManager) -> bool {
-	manager.migrate_config()
-}
-
-fn config_manager_export_document_settings(manager: &RustConfigManager, doc_path: &str, export_path: &str) {
-	manager.export_document_settings(doc_path, export_path);
-}
-
-fn config_manager_import_document_settings(manager: &mut RustConfigManager, path: &str) {
-	manager.import_document_settings(path);
-}
-
-fn config_manager_import_settings_from_file(manager: &mut RustConfigManager, doc_path: &str, import_path: &str) {
-	manager.import_settings_from_file(doc_path, import_path);
-}
-
-fn to_ffi_bookmark(bookmark: Bookmark) -> ffi::FfiBookmark {
-	ffi::FfiBookmark { start: bookmark.start, end: bookmark.end, note: bookmark.note }
+impl From<Bookmark> for ffi::FfiBookmark {
+	fn from(bookmark: Bookmark) -> Self {
+		Self { start: bookmark.start, end: bookmark.end, note: bookmark.note }
+	}
 }
 
 fn check_for_updates(current_version: &str, is_installer: bool) -> ffi::UpdateResult {
@@ -584,7 +495,7 @@ fn parse_document(file_path: &str, password: &str) -> Result<ffi::FfiDocument, S
 			.markers
 			.into_iter()
 			.map(|m| ffi::FfiMarker {
-				marker_type: m.marker_type.to_int(),
+				marker_type: m.marker_type.into(),
 				position: m.position,
 				text: m.text,
 				reference: m.reference,
@@ -658,13 +569,13 @@ fn convert_xml_to_text(content: &str) -> Result<ffi::FfiXmlConversion, String> {
 	})
 }
 
-const fn marker_type_from_i32(value: i32) -> Option<MarkerType> {
-	MarkerType::from_int(value)
+fn marker_type_from_i32(value: i32) -> Option<MarkerType> {
+	MarkerType::try_from(value).ok()
 }
 
 fn document_marker_to_ffi(marker: &crate::document::Marker) -> ffi::FfiMarker {
 	ffi::FfiMarker {
-		marker_type: marker.marker_type.to_int(),
+		marker_type: marker.marker_type.into(),
 		position: marker.position,
 		text: marker.text.clone(),
 		reference: marker.reference.clone(),
