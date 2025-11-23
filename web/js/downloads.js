@@ -24,11 +24,13 @@
     const exe = assets.find(a => a.name.toLowerCase().endsWith(".exe"));
     const version = release.tag_name.replace(/^v/, "");
     return `
-      <div class="release-block" style="margin-bottom:1.5em;">
+      <div>
         <h3>${label} ${version}</h3>
         ${subtitle ? `<p>${subtitle}</p>` : ""}
-        ${exe ? `<p><a href="${exe.browser_download_url}">Windows Installer (.exe)</a> – ${fmtCount(exe.download_count)}</p>` : ""}
-        ${zip ? `<p><a href="${zip.browser_download_url}">Portable ZIP (.zip)</a> – ${fmtCount(zip.download_count)}</p>` : ""}
+        <ul>
+          <li>${exe ? `<p><a href="${exe.browser_download_url}">Windows Installer (.exe)</a> – ${fmtCount(exe.download_count)}</p>` : ""}</li>
+          <li>${zip ? `<p><a href="${zip.browser_download_url}">Portable ZIP (.zip)</a> – ${fmtCount(zip.download_count)}</p>` : ""}</li>
+        </ul>
         <p><a href="${release.html_url}">View on GitHub</a></p>
       </div>
     `.trim();
