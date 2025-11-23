@@ -180,7 +180,8 @@ void config_manager::set_navigation_history(const wxString& path, const std::vec
 	for (const auto& entry : history) {
 		rust_history.push_back(static_cast<long long>(entry));
 	}
-	config_manager_set_navigation_history(backend_mut(), to_utf8(path), rust_history, history_index);
+	rust::Slice<const std::int64_t> history_slice(rust_history.data(), rust_history.size());
+	config_manager_set_navigation_history(backend_mut(), to_utf8(path), history_slice, history_index);
 }
 
 void config_manager::get_navigation_history(const wxString& path, std::vector<long>& history, size_t& history_index) const {
