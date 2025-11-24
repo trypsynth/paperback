@@ -645,6 +645,9 @@ impl ConfigManager {
 
 	fn write_recent_documents(&mut self, documents: &[String]) {
 		self.remove_section(Some("recent_documents"));
+		for doc in documents {
+			self.ensure_document_path(doc);
+		}
 		for (idx, doc) in documents.iter().enumerate() {
 			let doc_id = escape_document_path(doc);
 			let key = format!("doc{idx}");
