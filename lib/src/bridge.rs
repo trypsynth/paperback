@@ -125,10 +125,8 @@ pub mod ffi {
 		fn config_manager_add_recent_document(manager: &mut ConfigManager, path: &str);
 		fn config_manager_get_recent_documents(manager: &ConfigManager) -> Vec<String>;
 		fn config_manager_clear_recent_documents(manager: &mut ConfigManager);
-		fn config_manager_rebuild_recent_documents(manager: &mut ConfigManager);
 		fn config_manager_add_opened_document(manager: &mut ConfigManager, path: &str);
 		fn config_manager_remove_opened_document(manager: &mut ConfigManager, path: &str);
-		fn config_manager_get_opened_documents(manager: &ConfigManager) -> Vec<String>;
 		fn config_manager_clear_opened_documents(manager: &mut ConfigManager);
 		fn config_manager_set_document_position(manager: &mut ConfigManager, path: &str, position: i64);
 		fn config_manager_get_document_position(manager: &ConfigManager, path: &str) -> i64;
@@ -163,11 +161,6 @@ pub mod ffi {
 			path: &str,
 			current_position: i64,
 		) -> FfiBookmark;
-		fn config_manager_get_closest_bookmark(
-			manager: &ConfigManager,
-			path: &str,
-			current_position: i64,
-		) -> FfiBookmark;
 		fn config_manager_set_document_format(manager: &mut ConfigManager, path: &str, format: &str);
 		fn config_manager_get_document_format(manager: &ConfigManager, path: &str) -> String;
 		fn config_manager_set_document_password(manager: &mut ConfigManager, path: &str, password: &str);
@@ -185,14 +178,12 @@ pub mod ffi {
 		fn document_stats(doc: &DocumentHandle) -> FfiDocumentStats;
 		fn document_toc_items(doc: &DocumentHandle) -> Vec<FfiTocItem>;
 		fn document_markers(doc: &DocumentHandle) -> Vec<FfiMarker>;
-		fn document_heading_markers(doc: &DocumentHandle, level: i32) -> Vec<FfiHeadingInfo>;
 		fn document_find_closest_toc_offset(doc: &DocumentHandle, position: usize) -> usize;
 		fn document_next_marker(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32;
 		fn document_previous_marker(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32;
 		fn document_current_marker(doc: &DocumentHandle, position: usize, marker_type: i32) -> i32;
 		fn document_find_first_marker_after(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32;
 		fn document_marker_position(doc: &DocumentHandle, marker_index: i32) -> usize;
-		fn document_marker_at(doc: &DocumentHandle, marker_index: i32) -> FfiMarker;
 		fn document_count_markers(doc: &DocumentHandle, marker_type: i32) -> usize;
 		fn document_marker_position_by_index(doc: &DocumentHandle, marker_type: i32, index: i32) -> usize;
 		fn document_next_heading(doc: &DocumentHandle, position: i64, level: i32) -> i32;
@@ -305,10 +296,8 @@ fn config_manager_set_doc_int(manager: &mut RustConfigManager, path: &str, key: 
 ffi_wrapper!(mut config_manager_add_recent_document, add_recent_document(path: &str));
 ffi_wrapper!(config_manager_get_recent_documents, get_recent_documents -> Vec<String>);
 ffi_wrapper!(mut config_manager_clear_recent_documents, clear_recent_documents);
-ffi_wrapper!(mut config_manager_rebuild_recent_documents, rebuild_recent_documents);
 ffi_wrapper!(mut config_manager_add_opened_document, add_opened_document(path: &str));
 ffi_wrapper!(mut config_manager_remove_opened_document, remove_opened_document(path: &str));
-ffi_wrapper!(config_manager_get_opened_documents, get_opened_documents -> Vec<String>);
 ffi_wrapper!(mut config_manager_clear_opened_documents, clear_opened_documents);
 ffi_wrapper!(mut config_manager_set_document_position, set_document_position(path: &str, position: i64));
 ffi_wrapper!(config_manager_get_document_position, get_document_position(path: &str) -> i64);
@@ -370,14 +359,6 @@ fn config_manager_get_previous_bookmark(
 	current_position: i64,
 ) -> ffi::FfiBookmark {
 	manager.get_previous_bookmark(path, current_position).into()
-}
-
-fn config_manager_get_closest_bookmark(
-	manager: &RustConfigManager,
-	path: &str,
-	current_position: i64,
-) -> ffi::FfiBookmark {
-	manager.get_closest_bookmark(path, current_position).into()
 }
 
 ffi_wrapper!(mut config_manager_set_document_format, set_document_format(path: &str, format: &str));
@@ -634,28 +615,6 @@ fn document_markers(doc: &DocumentHandle) -> Vec<ffi::FfiMarker> {
 	doc.document().buffer.markers.iter().map(document_marker_to_ffi).collect()
 }
 
-fn document_heading_markers(doc: &DocumentHandle, level: i32) -> Vec<ffi::FfiHeadingInfo> {
-	let level_filter = if level > 0 { Some(level) } else { None };
-	doc.document()
-		.buffer
-		.markers
-		.iter()
-		.filter(|m| {
-			matches!(
-				m.marker_type,
-				MarkerType::Heading1
-					| MarkerType::Heading2
-					| MarkerType::Heading3
-					| MarkerType::Heading4
-					| MarkerType::Heading5
-					| MarkerType::Heading6
-			)
-		})
-		.filter(|m| level_filter.is_none_or(|lvl| m.level == lvl))
-		.map(|m| ffi::FfiHeadingInfo { offset: m.position, level: m.level, text: m.text.clone() })
-		.collect()
-}
-
 fn document_find_closest_toc_offset(doc: &DocumentHandle, position: usize) -> usize {
 	doc.find_closest_toc_offset(position)
 }
@@ -682,13 +641,6 @@ fn document_find_first_marker_after(doc: &DocumentHandle, position: i64, marker_
 
 fn document_marker_position(doc: &DocumentHandle, marker_index: i32) -> usize {
 	doc.marker_position(marker_index).unwrap_or(0)
-}
-
-fn document_marker_at(doc: &DocumentHandle, marker_index: i32) -> ffi::FfiMarker {
-	doc.document().buffer.markers.get(usize::try_from(marker_index).unwrap_or(usize::MAX)).map_or(
-		ffi::FfiMarker { marker_type: -1, position: 0, text: String::new(), reference: String::new(), level: 0 },
-		document_marker_to_ffi,
-	)
 }
 
 fn document_count_markers(doc: &DocumentHandle, marker_type: i32) -> usize {
