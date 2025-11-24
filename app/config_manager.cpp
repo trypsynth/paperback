@@ -8,6 +8,7 @@
  */
 
 #include "config_manager.hpp"
+#include <algorithm>
 #include <cstdint>
 #include <type_traits>
 
@@ -31,11 +32,10 @@ wxArrayString to_wx_array(const rust::Vec<rust::String>& rust_vec) {
 }
 
 std::vector<long> to_long_vector(const rust::Vec<long long>& values) {
-	std::vector<long> result;
-	result.reserve(values.size());
-	for (const auto& value : values) {
-		result.push_back(static_cast<long>(value));
-	}
+	std::vector<long> result(values.size());
+	std::transform(values.begin(), values.end(), result.begin(), [](long long value) {
+		return static_cast<long>(value);
+	});
 	return result;
 }
 
@@ -164,9 +164,10 @@ void config_manager::set_navigation_history(const wxString& path, const std::vec
 		return;
 	}
 	rust::Vec<long long> rust_history;
-	for (const auto& entry : history) {
-		rust_history.push_back(static_cast<long long>(entry));
-	}
+	rust_history.reserve(history.size());
+	std::transform(history.begin(), history.end(), std::back_inserter(rust_history), [](long entry) {
+		return static_cast<long long>(entry);
+	});
 	rust::Slice<const std::int64_t> history_slice(rust_history.data(), rust_history.size());
 	config_manager_set_navigation_history(backend_mut(), to_utf8(path), history_slice, history_index);
 }
@@ -249,9 +250,9 @@ std::vector<bookmark> config_manager::get_bookmarks(const wxString& path) const 
 	const auto rust_bookmarks = config_manager_get_bookmarks(backend_ref(), to_utf8(path));
 	std::vector<bookmark> result;
 	result.reserve(rust_bookmarks.size());
-	for (const auto& bm : rust_bookmarks) {
-		result.push_back(to_bookmark(bm));
-	}
+	std::transform(rust_bookmarks.begin(), rust_bookmarks.end(), std::back_inserter(result), [](const FfiBookmark& bm) {
+		return to_bookmark(bm);
+	});
 	return result;
 }
 

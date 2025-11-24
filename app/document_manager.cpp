@@ -135,13 +135,9 @@ size_t doc_marker_position(const document& doc, int marker_index) {
 }
 
 size_t doc_count_markers_by_type(const document& doc, marker_type type) {
-	size_t count = 0;
-	for (const auto& m : doc.markers) {
-		if (m.type == type) {
-			++count;
-		}
-	}
-	return count;
+	return static_cast<size_t>(std::count_if(doc.markers.begin(), doc.markers.end(), [type](const marker& m) {
+		return m.type == type;
+	}));
 }
 
 size_t doc_get_marker_position_by_index(const document& doc, marker_type type, int index) {
@@ -534,27 +530,27 @@ void document_manager::navigate_to_bookmark(bool next) const {
 	const auto all = config.get_bookmarks(tab->file_path);
 	std::vector<bookmark> list;
 	list.reserve(all.size());
-	for (const auto& bm : all) {
-		if (is_candidate_for_filter(bm, /*notes*/ false)) {
-			list.push_back(bm);
-		}
-	}
+	std::copy_if(all.begin(), all.end(), std::back_inserter(list), [](const bookmark& bm) {
+		return is_candidate_for_filter(bm, false);
+	});
 	if (list.empty()) {
 		speak(_("No bookmarks."));
 		return;
 	}
 	auto find_target = [&](long start_from) -> bookmark {
 		if (next) {
-			for (const auto& bm : list) {
-				if (bm.start > start_from) {
-					return bm;
-				}
+			const auto it = std::find_if(list.begin(), list.end(), [&](const bookmark& bm) {
+				return bm.start > start_from;
+			});
+			if (it != list.end()) {
+				return *it;
 			}
 		} else {
-			for (auto it = list.rbegin(); it != list.rend(); ++it) {
-				if (it->start < start_from) {
-					return *it;
-				}
+			const auto it = std::find_if(list.rbegin(), list.rend(), [&](const bookmark& bm) {
+				return bm.start < start_from;
+			});
+			if (it != list.rend()) {
+				return *it;
 			}
 		}
 		return bookmark{-1, -1};
@@ -578,13 +574,8 @@ void document_manager::navigate_to_bookmark(bool next) const {
 	} else {
 		text_to_speak = text_ctrl->GetRange(target.start, target.end);
 	}
-	int index{0};
-	for (size_t i = 0; i < list.size(); ++i) {
-		if (list[i] == target) {
-			index = static_cast<int>(i);
-			break;
-		}
-	}
+	const auto idx_it = std::find(list.begin(), list.end(), target);
+	const int index = idx_it != list.end() ? static_cast<int>(std::distance(list.begin(), idx_it)) : 0;
 	wxString announcement = wxString::Format(_("%s - Bookmark %d"), text_to_speak, index + 1);
 	if (wrapping) {
 		announcement = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + announcement;
@@ -603,27 +594,27 @@ void document_manager::navigate_to_note(bool next) const {
 	const auto all = config.get_bookmarks(tab->file_path);
 	std::vector<bookmark> list;
 	list.reserve(all.size());
-	for (const auto& bm : all) {
-		if (is_candidate_for_filter(bm, /*notes*/ true)) {
-			list.push_back(bm);
-		}
-	}
+	std::copy_if(all.begin(), all.end(), std::back_inserter(list), [](const bookmark& bm) {
+		return is_candidate_for_filter(bm, true);
+	});
 	if (list.empty()) {
 		speak(_("No notes."));
 		return;
 	}
 	auto find_target = [&](long start_from) -> bookmark {
 		if (next) {
-			for (const auto& bm : list) {
-				if (bm.start > start_from) {
-					return bm;
-				}
+			const auto it = std::find_if(list.begin(), list.end(), [&](const bookmark& bm) {
+				return bm.start > start_from;
+			});
+			if (it != list.end()) {
+				return *it;
 			}
 		} else {
-			for (auto it = list.rbegin(); it != list.rend(); ++it) {
-				if (it->start < start_from) {
-					return *it;
-				}
+			const auto it = std::find_if(list.rbegin(), list.rend(), [&](const bookmark& bm) {
+				return bm.start < start_from;
+			});
+			if (it != list.rend()) {
+				return *it;
 			}
 		}
 		return bookmark{-1, -1};
@@ -647,13 +638,8 @@ void document_manager::navigate_to_note(bool next) const {
 	} else {
 		text_to_speak = text_ctrl->GetRange(target.start, target.end);
 	}
-	int index{0};
-	for (size_t i = 0; i < list.size(); ++i) {
-		if (list[i] == target) {
-			index = static_cast<int>(i);
-			break;
-		}
-	}
+	const auto idx_it = std::find(list.begin(), list.end(), target);
+	const int index = idx_it != list.end() ? static_cast<int>(std::distance(list.begin(), idx_it)) : 0;
 	wxString announcement;
 	announcement = target.has_note() ? wxString::Format(_("%s - %s - Note %d"), target.note, text_to_speak, index + 1) : wxString::Format(_("%s - Note %d"), text_to_speak, index + 1);
 	if (wrapping) {
@@ -1037,13 +1023,9 @@ void document_manager::toggle_bookmark() const {
 	}
 	std::vector<bookmark> bookmarks = config.get_bookmarks(tab->file_path);
 	bookmark to_toggle(bookmark_start, bookmark_end);
-	bool was_bookmarked = false;
-	for (const auto& bm : bookmarks) {
-		if (bm == to_toggle) {
-			was_bookmarked = true;
-			break;
-		}
-	}
+	const bool was_bookmarked = std::any_of(bookmarks.begin(), bookmarks.end(), [&](const bookmark& bm) {
+		return bm == to_toggle;
+	});
 	config.toggle_bookmark(tab->file_path, bookmark_start, bookmark_end);
 	config.flush();
 	speak(was_bookmarked ? _("Bookmark removed") : _("Bookmarked"));
@@ -1071,12 +1053,12 @@ void document_manager::add_bookmark_with_note() const {
 	bookmark existing_bookmark(bookmark_start, bookmark_end);
 	wxString existing_note;
 	bool bookmark_exists = false;
-	for (const auto& bm : bookmarks) {
-		if (bm.start == bookmark_start && bm.end == bookmark_end) {
-			bookmark_exists = true;
-			existing_note = bm.note;
-			break;
-		}
+	const auto bm_it = std::find_if(bookmarks.begin(), bookmarks.end(), [&](const bookmark& bm) {
+		return bm.start == bookmark_start && bm.end == bookmark_end;
+	});
+	if (bm_it != bookmarks.end()) {
+		bookmark_exists = true;
+		existing_note = bm_it->note;
 	}
 	wxString prompt = bookmark_exists ? _("Edit bookmark note:") : _("Enter bookmark note:");
 	note_entry_dialog note_dialog(nullptr, _("Bookmark Note"), prompt, existing_note);
@@ -1119,18 +1101,18 @@ void document_manager::show_bookmark_dialog(wxWindow* parent, bookmark_filter in
 	text_ctrl->SetFocus();
 	wxString text_to_speak;
 	wxString note_to_speak;
-	for (const auto& bm : bookmarks) {
-		if (bm.start == pos) {
-			if (bm.is_whole_line()) {
-				long line{0};
-				text_ctrl->PositionToXY(pos, nullptr, &line);
-				text_to_speak = text_ctrl->GetLineText(line);
-			} else {
-				text_to_speak = text_ctrl->GetRange(bm.start, bm.end);
-			}
-			note_to_speak = bm.note;
-			break;
+	const auto bm_it = std::find_if(bookmarks.begin(), bookmarks.end(), [&](const bookmark& bm) {
+		return bm.start == pos;
+	});
+	if (bm_it != bookmarks.end()) {
+		if (bm_it->is_whole_line()) {
+			long line{0};
+			text_ctrl->PositionToXY(pos, nullptr, &line);
+			text_to_speak = text_ctrl->GetLineText(line);
+		} else {
+			text_to_speak = text_ctrl->GetRange(bm_it->start, bm_it->end);
 		}
+		note_to_speak = bm_it->note;
 	}
 	wxString announcement;
 	if (!note_to_speak.IsEmpty()) {

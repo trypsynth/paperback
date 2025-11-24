@@ -72,11 +72,11 @@ void populate_toc_items(std::vector<std::unique_ptr<toc_item>>& toc_items, const
 			continue;
 		}
 		std::vector<std::unique_ptr<toc_item>>* parent_list = nullptr;
-		for (int i = depth; i >= 0; --i) {
-			if (depth_stacks[i] != nullptr) {
-				parent_list = depth_stacks[i];
-				break;
-			}
+		const auto parent_it = std::find_if(depth_stacks.rbegin() + (MAX_DEPTH - depth), depth_stacks.rend(), [](const auto* stack) {
+			return stack != nullptr;
+		});
+		if (parent_it != depth_stacks.rend()) {
+			parent_list = *parent_it;
 		}
 		if (parent_list == nullptr) {
 			parent_list = &toc_items;
@@ -150,14 +150,13 @@ const parser_info* find_parser_by_extension(const wxString& extension) {
 		return nullptr;
 	}
 	const wxString normalized = extension.Lower();
-	for (const auto& parser : get_parser_infos()) {
-		for (const auto& ext : parser.extensions) {
-			if (ext.Lower() == normalized) {
-				return &parser;
-			}
-		}
-	}
-	return nullptr;
+	const auto& parsers = get_parser_infos();
+	const auto parser_it = std::find_if(parsers.begin(), parsers.end(), [&](const parser_info& parser) {
+		return std::any_of(parser.extensions.begin(), parser.extensions.end(), [&](const wxString& ext) {
+			return ext.Lower() == normalized;
+		});
+	});
+	return parser_it != parsers.end() ? &(*parser_it) : nullptr;
 }
 
 wxString get_supported_wildcards() {

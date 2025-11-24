@@ -61,6 +61,7 @@ std::vector<const marker*> heading_markers(const document* doc) {
 	if (doc == nullptr) {
 		return result;
 	}
+	result.reserve(doc->markers.size());
 	for (const auto& m : doc->markers) {
 		if (is_heading_marker(m.type)) {
 			result.push_back(&m);
@@ -70,16 +71,9 @@ std::vector<const marker*> heading_markers(const document* doc) {
 }
 
 size_t count_markers(const document* doc, marker_type type) {
-	size_t count = 0;
-	if (doc == nullptr) {
-		return count;
-	}
-	for (const auto& m : doc->markers) {
-		if (m.type == type) {
-			++count;
-		}
-	}
-	return count;
+	return doc == nullptr ? 0U : static_cast<size_t>(std::count_if(doc->markers.begin(), doc->markers.end(), [type](const marker& m) {
+		return m.type == type;
+	}));
 }
 } // namespace
 
@@ -239,11 +233,9 @@ void all_documents_dialog::populate_document_list(const wxString& filter) {
 	}
 	std::vector<wxString> rest;
 	rest.reserve(all.GetCount());
-	for (const auto& path : all) {
-		if (doc_paths.Index(path) == wxNOT_FOUND) {
-			rest.push_back(path);
-		}
-	}
+	std::copy_if(all.begin(), all.end(), std::back_inserter(rest), [&](const wxString& path) {
+		return doc_paths.Index(path) == wxNOT_FOUND;
+	});
 	std::sort(rest.begin(), rest.end(), [](const wxString& a, const wxString& b) {
 		const wxString an = wxFileName(a).GetFullName();
 		const wxString bn = wxFileName(b).GetFullName();
@@ -388,11 +380,11 @@ void bookmark_dialog::on_delete(wxCommandEvent&) {
 	const bookmark& deleted_bookmark = bookmark_positions[static_cast<std::size_t>(selection)];
 	config.remove_bookmark(file_path, deleted_bookmark.start, deleted_bookmark.end);
 	config.flush();
-	for (auto it = all_bookmarks.begin(); it != all_bookmarks.end(); ++it) {
-		if (it->start == deleted_bookmark.start && it->end == deleted_bookmark.end) {
-			all_bookmarks.erase(it);
-			break;
-		}
+	const auto it = std::find_if(all_bookmarks.begin(), all_bookmarks.end(), [&](const bookmark& bm) {
+		return bm.start == deleted_bookmark.start && bm.end == deleted_bookmark.end;
+	});
+	if (it != all_bookmarks.end()) {
+		all_bookmarks.erase(it);
 	}
 	repopulate_list(text_ctrl ? text_ctrl->GetInsertionPoint() : -1);
 }
@@ -410,11 +402,11 @@ void bookmark_dialog::on_edit_note(wxCommandEvent&) {
 	wxString new_note = note_dialog.get_note();
 	config.update_bookmark_note(file_path, selected_bookmark.start, selected_bookmark.end, new_note);
 	config.flush();
-	for (auto& bm : all_bookmarks) {
-		if (bm.start == selected_bookmark.start && bm.end == selected_bookmark.end) {
-			bm.note = new_note;
-			break;
-		}
+	const auto it = std::find_if(all_bookmarks.begin(), all_bookmarks.end(), [&](const bookmark& bm) {
+		return bm.start == selected_bookmark.start && bm.end == selected_bookmark.end;
+	});
+	if (it != all_bookmarks.end()) {
+		it->note = new_note;
 	}
 	repopulate_list(text_ctrl ? text_ctrl->GetInsertionPoint() : -1);
 }
@@ -475,15 +467,17 @@ void bookmark_dialog::repopulate_list(long current_pos) {
 	edit_note_button->Enable(false);
 	selected_position = -1;
 	if (previously_selected >= 0) {
-		for (std::size_t i = 0; i < bookmark_positions.size(); ++i) {
-			if (bookmark_positions[i].start == previously_selected) {
-				bookmark_list->SetSelection(static_cast<int>(i));
-				selected_position = bookmark_positions[i].start;
-				jump_button->Enable(true);
-				delete_button->Enable(true);
-				edit_note_button->Enable(true);
-				return;
-			}
+		const auto it_sel = std::find_if(bookmark_positions.begin(), bookmark_positions.end(), [&](const bookmark& bm) {
+			return bm.start == previously_selected;
+		});
+		if (it_sel != bookmark_positions.end()) {
+			const int idx = static_cast<int>(std::distance(bookmark_positions.begin(), it_sel));
+			bookmark_list->SetSelection(idx);
+			selected_position = it_sel->start;
+			jump_button->Enable(true);
+			delete_button->Enable(true);
+			edit_note_button->Enable(true);
+			return;
 		}
 	}
 	if (closest_index >= 0) {
@@ -1150,7 +1144,7 @@ void toc_dialog::on_tree_selection_changed(wxTreeEvent& event) {
 	if (!item.IsOk()) {
 		return;
 	}
-const auto* data = dynamic_cast<toc_tree_item_data*>(tree->GetItemData(item));
+	const auto* data = dynamic_cast<toc_tree_item_data*>(tree->GetItemData(item));
 	if (data == nullptr) {
 		return;
 	}

@@ -434,7 +434,7 @@ void main_window::on_close_all(wxCommandEvent&) {
 }
 
 void main_window::on_export(wxCommandEvent&) {
-	auto* const doc = doc_manager->get_active_document();
+	const auto* doc = doc_manager->get_active_document();
 	if (doc == nullptr) {
 		return;
 	}
@@ -450,7 +450,7 @@ void main_window::on_export(wxCommandEvent&) {
 }
 
 void main_window::on_export_document_data(wxCommandEvent&) {
-	auto* const tab = doc_manager->get_active_tab();
+	const auto* tab = doc_manager->get_active_tab();
 	if (tab == nullptr) {
 		return;
 	}
@@ -464,7 +464,7 @@ void main_window::on_export_document_data(wxCommandEvent&) {
 }
 
 void main_window::on_import_document_data(wxCommandEvent&) {
-	auto* const tab = doc_manager->get_active_tab();
+	const auto* tab = doc_manager->get_active_tab();
 	if (tab == nullptr) {
 		return;
 	}
@@ -705,19 +705,14 @@ void main_window::on_view_note_text(wxCommandEvent&) {
 	}
 	const long current_pos = text_ctrl->GetInsertionPoint();
 	const auto bookmarks = wxGetApp().get_config_manager().get_bookmarks(tab->file_path);
-	wxString note_text;
-	bool found{false};
-	for (const auto& bm : bookmarks) {
-		if (bm.start == current_pos && bm.has_note()) {
-			note_text = bm.note;
-			found = true;
-			break;
-		}
-	}
-	if (!found) {
+	const auto bm_it = std::find_if(bookmarks.begin(), bookmarks.end(), [&](const bookmark& bm) {
+		return bm.start == current_pos && bm.has_note();
+	});
+	if (bm_it == bookmarks.end()) {
 		wxMessageBox(_("No note at the current position."), _("View Note"), wxOK | wxICON_INFORMATION);
 		return;
 	}
+	const wxString note_text = bm_it->note;
 	view_note_dialog dlg(this, note_text);
 	dlg.ShowModal();
 }
@@ -811,7 +806,7 @@ void main_window::on_list_elements(wxCommandEvent&) {
 }
 
 void main_window::on_open_containing_folder(wxCommandEvent&) {
-	auto* const tab = doc_manager->get_active_tab();
+	const auto* tab = doc_manager->get_active_tab();
 	if (tab == nullptr) {
 		return;
 	}
