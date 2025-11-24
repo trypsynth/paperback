@@ -64,10 +64,7 @@ impl ParserRegistry {
 	#[must_use]
 	pub fn get_parser_for_extension(&self, extension: &str) -> Option<&dyn Parser> {
 		let ext = extension.to_ascii_lowercase();
-		self.extension_map
-			.get(&ext)
-			.and_then(|name| self.parsers.get(name))
-			.map(|parser| &**parser)
+		self.extension_map.get(&ext).and_then(|name| self.parsers.get(name)).map(|parser| &**parser)
 	}
 
 	#[must_use]

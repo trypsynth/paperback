@@ -257,7 +257,15 @@ impl XmlToText {
 			if self.preserve_whitespace {
 				self.current_line.push_str(&processed_text);
 			} else {
-				self.current_line.push_str(&collapse_whitespace(&processed_text));
+				let mut collapsed = collapse_whitespace(&processed_text);
+				if self.current_line.is_empty() {
+					collapsed = collapsed.trim_start().to_string();
+				} else if self.current_line.ends_with(' ') && collapsed.starts_with(' ') {
+					collapsed.remove(0);
+				}
+				if !collapsed.is_empty() {
+					self.current_line.push_str(&collapsed);
+				}
 			}
 		}
 	}
