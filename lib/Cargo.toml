@@ -22,7 +22,6 @@ percent-encoding = "2.3.2"
 pulldown-cmark = "0.13.0"
 roxmltree = "0.21.1"
 scraper = "0.24.0"
-semver = "1.0.27"
 serde = { version = "1.0.228", default-features = false, features = ["derive", "std"] }
 sha1 = "0.10.6"
 ureq = { version = "3.1.4", features = ["json"] }

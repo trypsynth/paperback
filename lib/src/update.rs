@@ -4,7 +4,6 @@ use std::{
 	time::Duration,
 };
 
-use semver::Version;
 use serde::Deserialize;
 use ureq::{Agent, config::Config};
 
@@ -60,13 +59,17 @@ impl Display for UpdateError {
 
 impl Error for UpdateError {}
 
-fn parse_semver_value(value: &str) -> Option<Version> {
+fn parse_semver_value(value: &str) -> Option<(u64, u64, u64)> {
 	let trimmed = value.trim();
 	if trimmed.is_empty() {
 		return None;
 	}
 	let normalized = trimmed.trim_start_matches(['v', 'V']);
-	Version::parse(normalized).ok()
+	let mut parts = normalized.split('.').map(|p| p.split_once('-').map_or(p, |(v, _)| v));
+	let major = parts.next()?.parse().ok()?;
+	let minor = parts.next().unwrap_or("0").parse().ok()?;
+	let patch = parts.next().unwrap_or("0").parse().ok()?;
+	Some((major, minor, patch))
 }
 
 fn pick_download_url(is_installer: bool, assets: &[ReleaseAsset]) -> Option<String> {

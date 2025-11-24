@@ -721,7 +721,6 @@ dependencies = [
  "pulldown-cmark",
  "roxmltree",
  "scraper",
- "semver",
  "serde",
  "sha1",
  "tar",
@@ -1184,12 +1183,6 @@ dependencies = [
  "servo_arc",
  "smallvec",
 ]
-
-[[package]]
-name = "semver"
-version = "1.0.27"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d767eb0aabc880b29956c35734170f26ed551a859dbd361d140cdbeca61ab1e2"
 
 [[package]]
 name = "serde"
