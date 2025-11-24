@@ -270,12 +270,12 @@ impl XmlToText {
 			self.cached_char_length += display_len(&line) + 1;
 			self.lines.push(line);
 		} else {
-			let trimmed = trim_string(&collapse_whitespace(&line));
-			if trimmed.is_empty() {
+			let collapsed = collapse_whitespace(&line);
+			if collapsed.trim().is_empty() {
 				return;
 			}
-			self.cached_char_length += display_len(&trimmed) + 1;
-			self.lines.push(trimmed);
+			self.cached_char_length += display_len(&collapsed) + 1;
+			self.lines.push(collapsed);
 		}
 	}
 

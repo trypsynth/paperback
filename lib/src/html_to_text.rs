@@ -403,8 +403,8 @@ impl HtmlToText {
 			self.cached_char_length += display_len(&line) + 1; // +1 for newline
 			self.lines.push(line);
 		} else {
-			let processed_line = trim_string(&collapse_whitespace(&line));
-			if processed_line.is_empty() {
+			let processed_line = collapse_whitespace(&line);
+			if processed_line.trim().is_empty() {
 				return;
 			}
 			self.cached_char_length += display_len(&processed_line) + 1; // +1 for newline
