@@ -53,7 +53,7 @@ private:
 class all_documents_dialog : public dialog {
 public:
 	all_documents_dialog(wxWindow* parent, config_manager& cfg_mgr, const wxArrayString& open_docs);
-	~all_documents_dialog() = default;
+	~all_documents_dialog() override = default;
 	all_documents_dialog(const all_documents_dialog&) = delete;
 	all_documents_dialog& operator=(const all_documents_dialog&) = delete;
 	all_documents_dialog(all_documents_dialog&&) = delete;
@@ -91,7 +91,7 @@ enum class bookmark_filter {
 class bookmark_dialog : public dialog {
 public:
 	bookmark_dialog(wxWindow* parent, const std::vector<bookmark>& bookmarks, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos = -1, bookmark_filter initial_filter = bookmark_filter::all);
-	~bookmark_dialog() = default;
+	~bookmark_dialog() override = default;
 	bookmark_dialog(const bookmark_dialog&) = delete;
 	bookmark_dialog& operator=(const bookmark_dialog&) = delete;
 	bookmark_dialog(bookmark_dialog&&) = delete;
@@ -126,7 +126,7 @@ private:
 class document_info_dialog : public dialog {
 public:
 	document_info_dialog(wxWindow* parent, const document* doc, const wxString& file_path, config_manager& cfg_mgr);
-	~document_info_dialog() = default;
+	~document_info_dialog() override = default;
 	document_info_dialog(const document_info_dialog&) = delete;
 	document_info_dialog& operator=(const document_info_dialog&) = delete;
 	document_info_dialog(document_info_dialog&&) = delete;
@@ -143,7 +143,7 @@ private:
 class elements_dialog : public dialog {
 public:
 	elements_dialog(wxWindow* parent, const document* doc, long current_pos);
-	~elements_dialog() = default;
+	~elements_dialog() override = default;
 	elements_dialog(const elements_dialog&) = delete;
 	elements_dialog& operator=(const elements_dialog&) = delete;
 	elements_dialog(elements_dialog&&) = delete;
@@ -209,7 +209,7 @@ private:
 class go_to_line_dialog : public dialog {
 public:
 	go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl);
-	~go_to_line_dialog() = default;
+	~go_to_line_dialog() override = default;
 	go_to_line_dialog(const go_to_line_dialog&) = delete;
 	go_to_line_dialog& operator=(const go_to_line_dialog&) = delete;
 	go_to_line_dialog(go_to_line_dialog&&) = delete;
@@ -224,7 +224,7 @@ private:
 class go_to_page_dialog : public dialog {
 public:
 	go_to_page_dialog(wxWindow* parent, document* doc, const parser_info* parser, int current_page = 1);
-	~go_to_page_dialog() = default;
+	~go_to_page_dialog() override = default;
 	go_to_page_dialog(const go_to_page_dialog&) = delete;
 	go_to_page_dialog& operator=(const go_to_page_dialog&) = delete;
 	go_to_page_dialog(go_to_page_dialog&&) = delete;
@@ -242,7 +242,7 @@ private:
 class go_to_percent_dialog : public dialog {
 public:
 	go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ctrl);
-	~go_to_percent_dialog() = default;
+	~go_to_percent_dialog() override = default;
 	go_to_percent_dialog(const go_to_percent_dialog&) = delete;
 	go_to_percent_dialog& operator=(const go_to_percent_dialog&) = delete;
 	go_to_percent_dialog(go_to_percent_dialog&&) = delete;
@@ -261,7 +261,7 @@ private:
 class note_entry_dialog : public dialog {
 public:
 	note_entry_dialog(wxWindow* parent, const wxString& title, const wxString& message, const wxString& existing_note);
-	~note_entry_dialog() = default;
+	~note_entry_dialog() override = default;
 	note_entry_dialog(const note_entry_dialog&) = delete;
 	note_entry_dialog& operator=(const note_entry_dialog&) = delete;
 	note_entry_dialog(note_entry_dialog&&) = delete;
@@ -277,7 +277,7 @@ private:
 class open_as_dialog : public dialog {
 public:
 	open_as_dialog(wxWindow* parent, const wxString& path);
-	~open_as_dialog() = default;
+	~open_as_dialog() override = default;
 	open_as_dialog(const open_as_dialog&) = delete;
 	open_as_dialog& operator=(const open_as_dialog&) = delete;
 	open_as_dialog(open_as_dialog&&) = delete;
@@ -291,7 +291,7 @@ private:
 class options_dialog : public dialog {
 public:
 	explicit options_dialog(wxWindow* parent);
-	~options_dialog() = default;
+	~options_dialog() override = default;
 	options_dialog(const options_dialog&) = delete;
 	options_dialog& operator=(const options_dialog&) = delete;
 	options_dialog(options_dialog&&) = delete;
@@ -333,7 +333,7 @@ private:
 class password_dialog : public dialog {
 public:
 	explicit password_dialog(wxWindow* parent);
-	~password_dialog() = default;
+	~password_dialog() override = default;
 	password_dialog(const password_dialog&) = delete;
 	password_dialog& operator=(const password_dialog&) = delete;
 	password_dialog(password_dialog&&) = delete;
@@ -348,7 +348,7 @@ private:
 class sleep_timer_dialog : public dialog {
 public:
 	sleep_timer_dialog(wxWindow* parent, int initial_duration);
-	~sleep_timer_dialog() = default;
+	~sleep_timer_dialog() override = default;
 	sleep_timer_dialog(const sleep_timer_dialog&) = delete;
 	sleep_timer_dialog& operator=(const sleep_timer_dialog&) = delete;
 	sleep_timer_dialog(sleep_timer_dialog&&) = delete;
@@ -370,7 +370,7 @@ public:
 class toc_dialog : public dialog {
 public:
 	toc_dialog(wxWindow* parent, const document* doc, int current_offset = -1);
-	~toc_dialog() = default;
+	~toc_dialog() override = default;
 	toc_dialog(const toc_dialog&) = delete;
 	toc_dialog& operator=(const toc_dialog&) = delete;
 	toc_dialog(toc_dialog&&) = delete;
@@ -399,7 +399,7 @@ private:
 class view_note_dialog : public dialog {
 public:
 	view_note_dialog(wxWindow* parent, const wxString& note_text);
-	~view_note_dialog() = default;
+	~view_note_dialog() override = default;
 	view_note_dialog(const view_note_dialog&) = delete;
 	view_note_dialog& operator=(const view_note_dialog&) = delete;
 	view_note_dialog(view_note_dialog&&) = delete;

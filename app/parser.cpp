@@ -113,7 +113,8 @@ void populate_manifest_items(document& doc, const rust::Vec<FfiManifestItem>& ff
 parser_exception make_parser_exception(const std::exception& e, const wxString& path) {
 	const std::string message = e.what();
 	if (message.rfind(PASSWORD_REQUIRED_PREFIX, 0) == 0) {
-		const std::string_view trimmed(message.c_str() + PASSWORD_REQUIRED_PREFIX.size(), message.size() - PASSWORD_REQUIRED_PREFIX.size());
+		std::string_view trimmed{message};
+		trimmed.remove_prefix(PASSWORD_REQUIRED_PREFIX.size());
 		const wxString localized = trimmed.empty() ? _("Password required or incorrect.") : wxString::FromUTF8(trimmed.data(), trimmed.size());
 		return parser_exception(localized, path, error_severity::error, parser_error_code::password_required);
 	}

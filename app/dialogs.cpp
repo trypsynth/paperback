@@ -402,7 +402,7 @@ void bookmark_dialog::on_edit_note(wxCommandEvent&) {
 	if (selection < 0 || static_cast<size_t>(selection) >= bookmark_positions.size()) {
 		return;
 	}
-	bookmark& selected_bookmark = bookmark_positions[static_cast<std::size_t>(selection)];
+	const bookmark& selected_bookmark = bookmark_positions[static_cast<std::size_t>(selection)];
 	note_entry_dialog note_dialog(this, _("Bookmark Note"), _("Edit bookmark note:"), selected_bookmark.note);
 	if (note_dialog.ShowModal() != wxID_OK) {
 		return;
@@ -624,7 +624,7 @@ void elements_dialog::on_view_choice_changed(wxCommandEvent& /*event*/) {
 void elements_dialog::on_heading_activated(wxTreeEvent& event) {
 	const wxTreeItemId item = event.GetItem();
 	if (item.IsOk()) {
-		auto* data = dynamic_cast<toc_tree_item_data*>(headings_tree->GetItemData(item));
+		const auto* data = dynamic_cast<toc_tree_item_data*>(headings_tree->GetItemData(item));
 		if (data != nullptr) {
 			selected_offset = data->offset;
 			EndModal(wxID_OK);
@@ -636,7 +636,7 @@ void elements_dialog::on_ok(wxCommandEvent& /*event*/) {
 	if (view_choice->GetSelection() == 0) {
 		const wxTreeItemId item = headings_tree->GetSelection();
 		if (item.IsOk()) {
-			auto* data = dynamic_cast<toc_tree_item_data*>(headings_tree->GetItemData(item));
+			const auto* data = dynamic_cast<toc_tree_item_data*>(headings_tree->GetItemData(item));
 			if (data != nullptr) {
 				selected_offset = data->offset;
 				EndModal(wxID_OK);
@@ -876,16 +876,11 @@ open_as_dialog::open_as_dialog(wxWindow* parent, const wxString& path) : dialog(
 }
 
 wxString open_as_dialog::get_selected_format() const {
-	constexpr int format_txt = 0;
-	constexpr int format_html = 1;
-	constexpr int format_md = 2;
 	const int selection = format_combo->GetSelection();
 	switch (selection) {
-		case format_txt:
-			return "txt";
-		case format_html:
+		case 1:
 			return "html";
-		case format_md:
+		case 2:
 			return "md";
 		default:
 			return "txt";
@@ -1136,7 +1131,7 @@ void toc_dialog::populate_tree(const std::vector<std::unique_ptr<toc_item>>& ite
 void toc_dialog::find_and_select_item(const wxTreeItemId& parent, int offset) {
 	wxTreeItemIdValue cookie{};
 	for (wxTreeItemId item_id = tree->GetFirstChild(parent, cookie); item_id.IsOk(); item_id = tree->GetNextChild(parent, cookie)) {
-		auto* data = dynamic_cast<toc_tree_item_data*>(tree->GetItemData(item_id));
+		const auto* data = dynamic_cast<toc_tree_item_data*>(tree->GetItemData(item_id));
 		if (data != nullptr && data->offset == offset) {
 			tree->SelectItem(item_id);
 			tree->SetFocusedItem(item_id);
@@ -1155,7 +1150,7 @@ void toc_dialog::on_tree_selection_changed(wxTreeEvent& event) {
 	if (!item.IsOk()) {
 		return;
 	}
-	auto* data = dynamic_cast<toc_tree_item_data*>(tree->GetItemData(item));
+const auto* data = dynamic_cast<toc_tree_item_data*>(tree->GetItemData(item));
 	if (data == nullptr) {
 		return;
 	}
