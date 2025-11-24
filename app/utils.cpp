@@ -117,23 +117,6 @@ long find_text(const wxString& haystack, const wxString& needle, long start, fin
 	return find_text_literal(haystack, needle, start, options);
 }
 
-std::string collapse_whitespace(std::string_view input) {
-	try {
-		std::string input_str(input);
-		return std::string(::collapse_whitespace(rust::Str(input_str)));
-	} catch (const std::exception&) {
-		return {};
-	}
-}
-
-std::string trim_string(const std::string& str) {
-	try {
-		return std::string(::trim_string(rust::Str(str)));
-	} catch (const std::exception&) {
-		return {};
-	}
-}
-
 const parser_info* get_parser_for_unknown_file(const wxString& path, config_manager& config) {
 	const wxString saved_format = config.get_document_format(path);
 	if (!saved_format.IsEmpty()) {
