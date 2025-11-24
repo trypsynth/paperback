@@ -123,6 +123,23 @@ int doc_find_first_marker_after(const document& doc, long position, marker_type 
 	return document_find_first_marker_after(**doc.handle, position, to_rust_marker(type));
 }
 
+std::optional<std::string> current_section_path(const document& doc, size_t position) {
+	const int section_index = doc_section_index(doc, position);
+	if (section_index < 0) {
+		return std::nullopt;
+	}
+	const auto idx = static_cast<size_t>(section_index);
+	if (idx >= doc.spine_items.size()) {
+		return std::nullopt;
+	}
+	const auto& manifest_id = doc.spine_items[idx];
+	auto it = doc.manifest_items.find(manifest_id);
+	if (it == doc.manifest_items.end()) {
+		return std::nullopt;
+	}
+	return it->second;
+}
+
 const marker* doc_get_marker(const document& doc, int marker_index) {
 	if (marker_index < 0 || static_cast<size_t>(marker_index) >= doc.markers.size()) {
 		return nullptr;
@@ -824,7 +841,12 @@ void document_manager::activate_current_link() const {
 		}
 	} else if (href.StartsWith("#")) {
 		const wxString id = href.Mid(1);
-		auto it = doc->id_positions.find(std::string(id.mb_str()));
+		std::optional<std::string> section_path = current_section_path(*doc, static_cast<size_t>(current_pos));
+		std::string key = section_path.has_value() ? *section_path + "#" + std::string(id.mb_str()) : "";
+		auto it = (!key.empty()) ? doc->id_positions.find(key) : doc->id_positions.end();
+		if (it == doc->id_positions.end()) {
+			it = doc->id_positions.find(std::string(id.mb_str()));
+		}
 		if (it != doc->id_positions.end()) {
 			go_to_position(static_cast<long>(it->second));
 			speak(_("Navigated to internal link."));
@@ -856,7 +878,12 @@ void document_manager::activate_current_link() const {
 						: doc->content.length();
 					size_t offset = section_start;
 					if (!fragment.empty()) {
-						auto frag_it = doc->id_positions.find(std::string(fragment.mb_str()));
+						const std::string frag_str = std::string(fragment.mb_str());
+						const std::string path_key = std::string(normalized_file_path.mb_str()) + "#" + frag_str;
+						auto frag_it = doc->id_positions.find(path_key);
+						if (frag_it == doc->id_positions.end()) {
+							frag_it = doc->id_positions.find(frag_str);
+						}
 						if (frag_it != doc->id_positions.end() && frag_it->second >= section_start && frag_it->second < section_end) {
 							offset = frag_it->second;
 						}
@@ -867,7 +894,13 @@ void document_manager::activate_current_link() const {
 				}
 			}
 		} else if (!fragment.empty()) {
-			auto it = doc->id_positions.find(std::string(fragment.mb_str()));
+			std::optional<std::string> section_path = current_section_path(*doc, static_cast<size_t>(current_pos));
+			const std::string frag_str = std::string(fragment.mb_str());
+			std::string key = section_path.has_value() ? *section_path + "#" + frag_str : "";
+			auto it = (!key.empty()) ? doc->id_positions.find(key) : doc->id_positions.end();
+			if (it == doc->id_positions.end()) {
+				it = doc->id_positions.find(frag_str);
+			}
 			if (it != doc->id_positions.end()) {
 				go_to_position(static_cast<long>(it->second));
 				speak(_("Navigated to internal link."));

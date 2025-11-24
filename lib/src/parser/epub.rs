@@ -94,7 +94,10 @@ impl Parser for EpubParser {
 			match convert_section(&section_data) {
 				Ok(section) => {
 					for (id, relative) in section.id_positions {
-						id_positions.insert(id, section_start + relative);
+						let absolute = section_start + relative;
+						// Keep the first occurrence for bare ids to avoid later sections overwriting earlier ones.
+						id_positions.entry(id.clone()).or_insert(absolute);
+						id_positions.insert(format!("{}#{id}", item.path), absolute);
 					}
 					for heading in section.headings {
 						let marker_type = heading_level_to_marker_type(heading.level);
@@ -456,7 +459,7 @@ fn compute_nav_offset(reference: &str, sections: &[SectionMeta], id_positions: &
 	let (path_part, fragment) = split_href(reference);
 	if let Some(section) = sections.iter().find(|section| section.path == path_part) {
 		if let Some(frag) = fragment.as_deref() {
-			if let Some(offset) = id_positions.get(frag) {
+			if let Some(offset) = id_positions.get(&format!("{path_part}#{frag}")).or_else(|| id_positions.get(frag)) {
 				if *offset >= section.start && *offset < section.end {
 					return *offset;
 				}

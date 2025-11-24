@@ -195,6 +195,11 @@ impl HtmlToText {
 
 	fn handle_element_opening(&mut self, tag_name: &str, node: NodeRef<'_, Node>, document: &Html) {
 		if let Node::Element(element) = node.value() {
+			if self.flags.contains(ProcessingFlags::IN_BODY) {
+				if let Some(id) = element.attr("id").or_else(|| element.attr("name")) {
+					self.id_positions.insert(id.to_string(), self.get_current_text_position());
+				}
+			}
 			if tag_name == "a" && !self.flags.contains(ProcessingFlags::IN_LINK) {
 				self.flags.insert(ProcessingFlags::IN_LINK);
 				if let Some(href) = element.attr("href") {
@@ -272,11 +277,6 @@ impl HtmlToText {
 
 	fn handle_heading(&mut self, tag_name: &str, node: NodeRef<'_, Node>, document: &Html) {
 		if self.flags.contains(ProcessingFlags::IN_BODY) {
-			if let Node::Element(element) = node.value() {
-				if let Some(id) = element.attr("id") {
-					self.id_positions.insert(id.to_string(), self.cached_char_length);
-				}
-			}
 			if tag_name.len() == 2
 				&& tag_name.starts_with('h')
 				&& tag_name.chars().nth(1).is_some_and(|c| c.is_ascii_digit())

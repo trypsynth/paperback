@@ -158,7 +158,7 @@ impl XmlToText {
 			self.handle_list_start_xml(tag_name, node);
 		}
 		if self.in_body {
-			if let Some(id) = node.attribute("id") {
+			if let Some(id) = node.attribute("id").or_else(|| node.attribute("name")) {
 				self.id_positions.insert(id.to_string(), self.get_current_text_position());
 			}
 		}
