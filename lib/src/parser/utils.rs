@@ -48,7 +48,7 @@ pub fn build_toc_from_headings(headings: &[HeadingInfo]) -> Vec<TocItem> {
 		if heading.level <= 0 {
 			continue;
 		}
-		let heading_level = heading.level as usize;
+		let heading_level: usize = heading.level.try_into().expect("heading level should never be negative");
 		while stack.len() >= heading_level {
 			stack.pop();
 		}

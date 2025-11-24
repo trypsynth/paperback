@@ -391,7 +391,7 @@ impl HtmlToText {
 			Node::Text(text) => buffer.push_str(&text.text),
 			Node::Element(_) => node.children().for_each(|child| Self::collect_text_into(child, buffer)),
 			_ => {}
-		};
+		}
 	}
 
 	fn serialize_node(node: NodeRef<'_, Node>, _document: &Html) -> String {

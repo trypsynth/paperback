@@ -435,23 +435,6 @@ impl ConfigManager {
 		Bookmark { start: -1, end: -1, note: String::new() }
 	}
 
-	pub fn get_closest_bookmark(&self, path: &str, current_position: i64) -> Bookmark {
-		let bookmarks = self.get_bookmarks(path);
-		if bookmarks.is_empty() {
-			return Bookmark { start: -1, end: -1, note: String::new() };
-		}
-		let mut closest = bookmarks[0].clone();
-		let mut min_distance = (closest.start - current_position).abs();
-		for bm in bookmarks.into_iter().skip(1) {
-			let distance = (bm.start - current_position).abs();
-			if distance < min_distance {
-				min_distance = distance;
-				closest = bm;
-			}
-		}
-		closest
-	}
-
 	pub fn set_document_format(&mut self, path: &str, format: &str) {
 		self.set_document_string(path, "format", format);
 	}
