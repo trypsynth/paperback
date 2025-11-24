@@ -82,13 +82,14 @@ jobs:
       run: |
         PREV_TAG="${{ steps.get_tag.outputs.tag }}"
         if [ -z "$PREV_TAG" ]; then
-          COMMITS=$(git log -1 --oneline --pretty=format:"- %h: %s" HEAD)
+          COMMITS=$(git log -1 --pretty=format:"- %h: %s" HEAD)
         else
-          COMMITS=$(git log --oneline --pretty=format:"- %h: %s" "$PREV_TAG"..HEAD)
+          COMMITS=$(git log --pretty=format:"- %h: %s" "$PREV_TAG"..HEAD)
         fi
         COMMITS="${COMMITS//'%'/'%25'}"
-        COMMITS="${COMMITS//$'\n'/'%0A'}"
-        echo "commits=$COMMITS" >> $GITHUB_OUTPUT
+        echo "commits<<EOF" >> $GITHUB_OUTPUT
+        echo "$COMMITS" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
     - name: Create or update latest release
       uses: softprops/action-gh-release@v1
       with:
