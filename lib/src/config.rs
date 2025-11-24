@@ -785,8 +785,8 @@ fn get_config_path() -> PathBuf {
 	if is_directory_writable(&exe_dir) {
 		return exe_dir.join(CONFIG_FILENAME);
 	}
-	let appdata_root = dirs::config_dir().unwrap_or(exe_dir);
-	let appdata_dir = appdata_root.join(CONFIG_DIRECTORY);
+	let base_dir = config_root_dir().unwrap_or(exe_dir);
+	let appdata_dir = base_dir.join(CONFIG_DIRECTORY);
 	if !appdata_dir.exists() {
 		let _ = fs::create_dir_all(&appdata_dir);
 	}
@@ -799,4 +799,18 @@ fn is_directory_writable(path: &Path) -> bool {
 	}
 	let file = path.join(".write_test_tmp");
 	OpenOptions::new().write(true).create_new(true).open(&file).and_then(|_| fs::remove_file(&file)).is_ok()
+}
+
+fn config_root_dir() -> Option<PathBuf> {
+	#[cfg(windows)]
+	{
+		env::var("APPDATA").or_else(|_| env::var("LOCALAPPDATA")).ok().map(PathBuf::from)
+	}
+	#[cfg(not(windows))]
+	{
+		env::var("XDG_CONFIG_HOME")
+			.map(PathBuf::from)
+			.or_else(|_| env::var("HOME").map(|home| PathBuf::from(home).join(".config")))
+			.ok()
+	}
 }

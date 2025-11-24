@@ -14,17 +14,16 @@ base64 = "0.22.1"
 bitflags = "2.10.0"
 configparser = "3.1.0"
 cxx = "1.0.189"
-dirs = "6.0.0"
 ego-tree = "0.10.0"
 encoding_rs = "0.8.35"
 epub = "2.1.5"
 percent-encoding = "2.3.2"
-pulldown-cmark = "0.13.0"
+pulldown-cmark = { version = "0.13.0", default-features = false, features = ["html"] }
 roxmltree = "0.21.1"
 scraper = "0.24.0"
 serde = { version = "1.0.228", default-features = false, features = ["derive", "std"] }
 sha1 = "0.10.6"
-ureq = { version = "3.1.4", features = ["json"] }
+ureq = { version = "3.1.4", default-features = false, features = ["json", "rustls"] }
 zip = { version = "6.0.0", default-features = false, features = ["deflate"] }
 
 [build-dependencies]
@@ -34,7 +33,7 @@ cxx = "1.0.189"
 cxx-build = "1.0.189"
 flate2 = "1.1.5"
 tar = "0.4.44"
-ureq = { version = "3.1.4", features = ["gzip"] }
+ureq = { version = "3.1.4", default-features = false, features = ["gzip", "rustls"] }
 
 [profile.release]
 strip = true
