@@ -447,17 +447,24 @@ bitflags! {
 pub struct ParserContext {
 	pub file_path: String,
 	pub password: Option<String>,
+	pub forced_extension: Option<String>,
 }
 
 impl ParserContext {
 	#[must_use]
 	pub const fn new(file_path: String) -> Self {
-		Self { file_path, password: None }
+		Self { file_path, password: None, forced_extension: None }
 	}
 
 	#[must_use]
 	pub fn with_password(mut self, password: String) -> Self {
 		self.password = Some(password);
+		self
+	}
+
+	#[must_use]
+	pub fn with_forced_extension(mut self, extension: String) -> Self {
+		self.forced_extension = Some(extension);
 		self
 	}
 }

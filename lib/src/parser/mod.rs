@@ -109,10 +109,13 @@ impl ParserRegistry {
 /// - The parser fails to parse the file
 pub fn parse_document(context: &ParserContext) -> Result<Document> {
 	let path = std::path::Path::new(&context.file_path);
-	let extension = path
-		.extension()
-		.and_then(|e| e.to_str())
-		.ok_or_else(|| anyhow::anyhow!("No file extension found for: {}", context.file_path))?;
+	let extension = if let Some(ext) = &context.forced_extension {
+		ext.as_str()
+	} else {
+		path.extension()
+			.and_then(|e| e.to_str())
+			.ok_or_else(|| anyhow::anyhow!("No file extension found for: {}", context.file_path))?
+	};
 	let parser = ParserRegistry::global()
 		.get_parser_for_extension(extension)
 		.ok_or_else(|| anyhow::anyhow!("No parser found for extension: .{extension}"))?;

@@ -170,7 +170,7 @@ pub mod ffi {
 		fn config_manager_export_document_settings(manager: &ConfigManager, doc_path: &str, export_path: &str);
 		fn config_manager_import_document_settings(manager: &mut ConfigManager, path: &str);
 		fn config_manager_import_settings_from_file(manager: &mut ConfigManager, doc_path: &str, import_path: &str);
-		fn parse_document_handle(file_path: &str, password: &str) -> Result<Box<DocumentHandle>>;
+		fn parse_document_handle(file_path: &str, password: &str, forced_extension: &str) -> Result<Box<DocumentHandle>>;
 		fn document_title(doc: &DocumentHandle) -> String;
 		fn document_author(doc: &DocumentHandle) -> String;
 		fn document_content(doc: &DocumentHandle) -> String;
@@ -577,10 +577,13 @@ fn opt_usize_to_i32(value: Option<usize>) -> i32 {
 	value.and_then(|v| i32::try_from(v).ok()).unwrap_or(-1)
 }
 
-fn parse_document_handle(file_path: &str, password: &str) -> Result<Box<DocumentHandle>, String> {
+fn parse_document_handle(file_path: &str, password: &str, forced_extension: &str) -> Result<Box<DocumentHandle>, String> {
 	let mut context = ParserContext::new(file_path.to_string());
 	if !password.is_empty() {
 		context = context.with_password(password.to_string());
+	}
+	if !forced_extension.is_empty() {
+		context = context.with_forced_extension(forced_extension.to_string());
 	}
 	let mut doc = parser::parse_document(&context).map_err(|e| e.to_string())?;
 	doc.compute_stats();

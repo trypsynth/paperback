@@ -194,11 +194,12 @@ wxString get_supported_wildcards() {
 	return result;
 }
 
-std::unique_ptr<document> load_document_from_rust(const wxString& path, const std::optional<std::string>& password) {
+std::unique_ptr<document> load_document_from_rust(const wxString& path, const std::optional<std::string>& password, const wxString& forced_extension) {
 	try {
 		const std::string file_path = path.ToUTF8().data();
 		const std::string password_value = password.value_or(std::string());
-		auto handle = parse_document_handle(rust::Str(file_path), rust::Str(password_value));
+		const std::string extension = forced_extension.ToUTF8().data();
+		auto handle = parse_document_handle(rust::Str(file_path), rust::Str(password_value), rust::Str(extension));
 		auto doc = std::make_unique<document>();
 		doc->handle = std::move(handle);
 		const auto& handle_ref = **doc->handle;

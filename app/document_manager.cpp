@@ -206,11 +206,12 @@ bool document_manager::create_document_tab(const wxString& path, const parser_in
 		return false;
 	}
 	config.import_document_settings(path);
+	const wxString forced_extension = config.get_document_format(path);
 	std::unique_ptr<document> doc;
 	wxString password_in_use;
 	const wxString saved_password = config.get_document_password(path);
 	auto load_document = [&](const std::optional<std::string>& password) {
-		return load_document_from_rust(path, password);
+		return load_document_from_rust(path, password, forced_extension);
 	};
 	try {
 		std::optional<std::string> initial_password;

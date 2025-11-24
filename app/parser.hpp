@@ -96,4 +96,4 @@ struct parser_info {
 bool initialize_parser_registry();
 [[nodiscard]] const parser_info* find_parser_by_extension(const wxString& extension);
 [[nodiscard]] wxString get_supported_wildcards();
-[[nodiscard]] std::unique_ptr<document> load_document_from_rust(const wxString& path, const std::optional<std::string>& password = std::nullopt);
+[[nodiscard]] std::unique_ptr<document> load_document_from_rust(const wxString& path, const std::optional<std::string>& password = std::nullopt, const wxString& forced_extension = wxEmptyString);
