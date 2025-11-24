@@ -145,7 +145,7 @@ add_custom_target(libpaperback_rust DEPENDS ${RUST_LIB_OUTPUT})
 
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS app/*.cpp)
 if(WIN32)
-	add_executable(paperback WIN32 ${SRC_FILES})
+	add_executable(paperback WIN32 ${SRC_FILES} app/paperback.rc)
 else()
 	add_executable(paperback ${SRC_FILES})
 endif()
