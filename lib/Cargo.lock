@@ -723,7 +723,6 @@ dependencies = [
  "scraper",
  "semver",
  "serde",
- "serde_json",
  "sha1",
  "tar",
  "ureq",

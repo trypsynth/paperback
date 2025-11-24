@@ -13,7 +13,7 @@ use crate::{
 	html_to_text::{HeadingInfo, HtmlSourceMode, HtmlToText, LinkInfo, ListInfo, ListItemInfo},
 	parser::{
 		Parser,
-		utils::{extract_title_from_path, heading_level_to_marker_type},
+		utils::{collect_element_text, extract_title_from_path, heading_level_to_marker_type},
 	},
 	utils::text::{collapse_whitespace, trim_string},
 	xml_to_text::XmlToText,
@@ -381,25 +381,8 @@ fn parse_nav_item(
 }
 
 fn extract_link_text(link: Node<'_, '_>) -> String {
-	let mut text = String::new();
-	collect_text(link, &mut text);
+	let text = collect_element_text(link);
 	trim_string(&collapse_whitespace(&text))
-}
-
-fn collect_text(node: Node<'_, '_>, buffer: &mut String) {
-	match node.node_type() {
-		NodeType::Text => {
-			if let Some(value) = node.text() {
-				buffer.push_str(value);
-			}
-		}
-		NodeType::Element => {
-			for child in node.children() {
-				collect_text(child, buffer);
-			}
-		}
-		_ => {}
-	}
 }
 
 fn is_textual_mime(mime: &str) -> bool {

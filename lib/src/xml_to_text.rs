@@ -4,6 +4,7 @@ use roxmltree::{Document, Node, NodeType, ParsingOptions};
 
 use crate::{
 	html_to_text::{HeadingInfo, LinkInfo, ListInfo, ListItemInfo},
+	parser::utils::collect_element_text,
 	utils::text::{collapse_whitespace, display_len, remove_soft_hyphens, trim_string},
 };
 
@@ -103,12 +104,12 @@ impl XmlToText {
 	fn process_node(&mut self, node: Node<'_, '_>) {
 		let (tag_name, skip_children) = match node.node_type() {
 			NodeType::Element => {
-				let tag_name = node.tag_name().name().to_ascii_lowercase();
-				if matches!(tag_name.as_str(), "script" | "style" | "noscript" | "iframe" | "object" | "embed") {
+				let tag_name = node.tag_name().name();
+				if Self::is_ignored_element(tag_name) {
 					return;
 				}
-				let skip_children = self.handle_element_opening_xml(&tag_name, node);
-				self.handle_heading_xml(&tag_name, node);
+				let skip_children = self.handle_element_opening_xml(tag_name, node);
+				self.handle_heading_xml(tag_name, node);
 				(Some(tag_name), skip_children)
 			}
 			NodeType::Text => {
@@ -123,17 +124,17 @@ impl XmlToText {
 			}
 		}
 		if let Some(tag_name) = tag_name {
-			self.handle_element_closing_xml(&tag_name);
+			self.handle_element_closing_xml(tag_name);
 		}
 	}
 
 	fn handle_element_opening_xml(&mut self, tag_name: &str, node: Node<'_, '_>) -> bool {
 		let mut skip_children = false;
-		if tag_name == "section" {
+		if Self::tag_is(tag_name, "section") {
 			self.section_offsets.push(self.get_current_text_position());
 		}
-		if tag_name == "a" {
-			let link_text = Self::get_element_text(node);
+		if Self::tag_is(tag_name, "a") {
+			let link_text = collect_element_text(node);
 			if !link_text.is_empty() {
 				let href = node.attribute("href").unwrap_or("").to_string();
 				let processed_link_text = collapse_whitespace(&link_text);
@@ -142,16 +143,16 @@ impl XmlToText {
 				self.links.push(LinkInfo { offset: link_offset, text: processed_link_text, reference: href });
 				skip_children = true;
 			}
-		} else if tag_name == "body" {
+		} else if Self::tag_is(tag_name, "body") {
 			self.in_body = true;
-		} else if tag_name == "pre" {
+		} else if Self::tag_is(tag_name, "pre") {
 			self.finalize_current_line();
 			self.preserve_whitespace = true;
-		} else if tag_name == "br" {
+		} else if Self::tag_is(tag_name, "br") {
 			self.finalize_current_line();
-		} else if tag_name == "li" {
+		} else if Self::tag_is(tag_name, "li") {
 			self.handle_list_item_xml(node);
-		} else if tag_name == "ul" || tag_name == "ol" {
+		} else if Self::tag_is(tag_name, "ul") || Self::tag_is(tag_name, "ol") {
 			self.handle_list_start_xml(tag_name, node);
 		}
 		if self.in_body {
@@ -164,13 +165,14 @@ impl XmlToText {
 
 	fn handle_list_item_xml(&mut self, node: Node<'_, '_>) {
 		self.finalize_current_line();
-		let li_text = Self::get_element_text(node);
+		let li_text = collect_element_text(node);
 		self.list_items.push(ListItemInfo {
 			offset: self.get_current_text_position(),
 			level: self.list_level,
 			text: li_text,
 		});
-		self.current_line.push_str(&" ".repeat(usize::try_from(self.list_level * 2).unwrap_or(0)));
+		let indent = usize::try_from(self.list_level).unwrap_or(0) * 2;
+		self.current_line.push_str(&" ".repeat(indent));
 		let bullet = if let Some(style) = self.list_style_stack.last_mut() {
 			if style.ordered {
 				let bullet = format!("{}. ", style.item_number);
@@ -205,20 +207,25 @@ impl XmlToText {
 	}
 
 	fn handle_heading_xml(&mut self, tag_name: &str, node: Node<'_, '_>) {
-		if self.in_body && tag_name.len() == 2 && tag_name.starts_with('h') && tag_name.as_bytes()[1].is_ascii_digit() {
-			let level = tag_name.as_bytes()[1] - b'0';
-			if (1..=6).contains(&level) {
-				self.finalize_current_line();
-				let heading_offset = self.get_current_text_position();
-				let text = Self::get_element_text(node);
-				if !text.is_empty() {
-					let normalized = trim_string(&collapse_whitespace(&text));
-					if !normalized.is_empty() {
-						self.headings.push(HeadingInfo {
-							offset: heading_offset,
-							level: i32::from(level),
-							text: normalized,
-						});
+		if self.in_body {
+			let mut chars = tag_name.chars();
+			if let (Some(h), Some(level_char)) = (chars.next(), chars.next()) {
+				if h.eq_ignore_ascii_case(&'h') && level_char.is_ascii_digit() {
+					let level = level_char as u8 - b'0';
+					if (1..=6).contains(&level) {
+						self.finalize_current_line();
+						let heading_offset = self.get_current_text_position();
+						let text = collect_element_text(node);
+						if !text.is_empty() {
+							let normalized = trim_string(&collapse_whitespace(&text));
+							if !normalized.is_empty() {
+								self.headings.push(HeadingInfo {
+									offset: heading_offset,
+									level: i32::from(level),
+									text: normalized,
+								});
+							}
+						}
 					}
 				}
 			}
@@ -229,10 +236,10 @@ impl XmlToText {
 		if Self::is_block_element(tag_name) {
 			self.finalize_current_line();
 		}
-		if tag_name == "pre" {
+		if Self::tag_is(tag_name, "pre") {
 			self.preserve_whitespace = false;
 		}
-		if tag_name == "ul" || tag_name == "ol" {
+		if Self::tag_is(tag_name, "ul") || Self::tag_is(tag_name, "ol") {
 			self.list_level = (self.list_level - 1).max(0);
 			self.list_style_stack.pop();
 		}
@@ -282,39 +289,50 @@ impl XmlToText {
 		self.cached_char_length + display_len(trimmed)
 	}
 
-	fn get_element_text(node: Node<'_, '_>) -> String {
-		Self::collect_text(node)
-	}
-
-	fn collect_text(node: Node<'_, '_>) -> String {
-		match node.node_type() {
-			NodeType::Text => node.text().unwrap_or("").to_string(),
-			NodeType::Element => node.children().map(Self::collect_text).collect(),
-			_ => String::new(),
-		}
-	}
-
 	fn is_block_element(tag_name: &str) -> bool {
-		matches!(
-			tag_name,
-			"div"
-				| "p" | "pre"
-				| "h1" | "h2"
-				| "h3" | "h4"
-				| "h5" | "h6"
-				| "blockquote"
-				| "ul" | "ol"
-				| "li" | "section"
-				| "article" | "header"
-				| "footer" | "nav"
-				| "aside" | "main"
-				| "figure" | "figcaption"
-				| "address" | "hr"
-				| "table" | "thead"
-				| "tbody" | "tfoot"
-				| "tr" | "td"
-				| "th"
-		)
+		[
+			"div",
+			"p",
+			"pre",
+			"h1",
+			"h2",
+			"h3",
+			"h4",
+			"h5",
+			"h6",
+			"blockquote",
+			"ul",
+			"ol",
+			"li",
+			"section",
+			"article",
+			"header",
+			"footer",
+			"nav",
+			"aside",
+			"main",
+			"figure",
+			"figcaption",
+			"address",
+			"hr",
+			"table",
+			"thead",
+			"tbody",
+			"tfoot",
+			"tr",
+			"td",
+			"th",
+		]
+		.iter()
+		.any(|t| Self::tag_is(tag_name, t))
+	}
+
+	fn is_ignored_element(tag_name: &str) -> bool {
+		["script", "style", "noscript", "iframe", "object", "embed"].iter().any(|t| Self::tag_is(tag_name, t))
+	}
+
+	fn tag_is(tag_name: &str, expected: &str) -> bool {
+		tag_name.eq_ignore_ascii_case(expected)
 	}
 
 	const fn get_bullet_for_level(level: i32) -> &'static str {
