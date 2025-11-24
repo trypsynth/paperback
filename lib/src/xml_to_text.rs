@@ -148,6 +148,8 @@ impl XmlToText {
 		} else if Self::tag_is(tag_name, "pre") {
 			self.finalize_current_line();
 			self.preserve_whitespace = true;
+		} else if Self::tag_is(tag_name, "code") {
+			self.preserve_whitespace = true;
 		} else if Self::tag_is(tag_name, "br") {
 			self.finalize_current_line();
 		} else if Self::tag_is(tag_name, "li") {
@@ -239,6 +241,9 @@ impl XmlToText {
 		if Self::tag_is(tag_name, "pre") {
 			self.preserve_whitespace = false;
 		}
+		if Self::tag_is(tag_name, "code") {
+			self.preserve_whitespace = false;
+		}
 		if Self::tag_is(tag_name, "ul") || Self::tag_is(tag_name, "ol") {
 			self.list_level = (self.list_level - 1).max(0);
 			self.list_style_stack.pop();
@@ -279,7 +284,8 @@ impl XmlToText {
 			self.lines.push(line);
 		} else {
 			let collapsed = collapse_whitespace(&line);
-			if collapsed.trim().is_empty() {
+			let collapsed = collapsed.trim_end().to_string();
+			if collapsed.is_empty() {
 				return;
 			}
 			self.cached_char_length += display_len(&collapsed) + 1;

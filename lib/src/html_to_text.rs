@@ -213,6 +213,7 @@ impl HtmlToText {
 			self.flags.insert(ProcessingFlags::PRESERVE_WHITESPACE);
 		} else if tag_name == "code" {
 			self.flags.insert(ProcessingFlags::IN_CODE);
+			self.flags.insert(ProcessingFlags::PRESERVE_WHITESPACE);
 		} else if tag_name == "br" {
 			self.finalize_current_line();
 		}
@@ -342,6 +343,7 @@ impl HtmlToText {
 		}
 		if tag_name == "code" {
 			self.flags.remove(ProcessingFlags::IN_CODE);
+			self.flags.remove(ProcessingFlags::PRESERVE_WHITESPACE);
 		}
 		if tag_name == "ul" || tag_name == "ol" {
 			self.list_level -= 1;
@@ -410,8 +412,8 @@ impl HtmlToText {
 			self.lines.push(line);
 		} else {
 			let processed_line = collapse_whitespace(&line);
-			let processed_line = processed_line.trim_start().to_string();
-			if processed_line.trim().is_empty() {
+			let processed_line = processed_line.trim().to_string();
+			if processed_line.is_empty() {
 				return;
 			}
 			self.cached_char_length += display_len(&processed_line) + 1; // +1 for newline
