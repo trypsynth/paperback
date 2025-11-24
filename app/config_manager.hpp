@@ -92,10 +92,8 @@ public:
 	void add_recent_document(const wxString& path);
 	wxArrayString get_recent_documents() const;
 	void clear_recent_documents();
-	void rebuild_recent_documents();
 	void add_opened_document(const wxString& path);
 	void remove_opened_document(const wxString& path);
-	wxArrayString get_opened_documents() const;
 	void clear_opened_documents();
 	void set_document_position(const wxString& path, long position);
 	long get_document_position(const wxString& path) const;
@@ -115,7 +113,6 @@ public:
 	void clear_bookmarks(const wxString& path);
 	bookmark get_next_bookmark(const wxString& path, long current_position) const;
 	bookmark get_previous_bookmark(const wxString& path, long current_position) const;
-	bookmark get_closest_bookmark(const wxString& path, long current_position) const;
 	void set_document_format(const wxString& path, const wxString& format);
 	wxString get_document_format(const wxString& path) const;
 	void set_document_password(const wxString& path, const wxString& password);

@@ -219,8 +219,6 @@ public:
 private:
 	wxTextCtrl* textbox{nullptr};
 	wxSpinCtrl* input_ctrl{nullptr};
-
-	[[nodiscard]] long get_max_line() const;
 };
 
 class go_to_page_dialog : public dialog {

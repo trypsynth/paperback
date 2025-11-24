@@ -787,10 +787,6 @@ long go_to_line_dialog::get_position() const {
 	return textbox->GetInsertionPoint();
 }
 
-long go_to_line_dialog::get_max_line() const {
-	return textbox->GetNumberOfLines();
-}
-
 go_to_page_dialog::go_to_page_dialog(wxWindow* parent, document* doc, const parser_info* parser, int current_page) : dialog(parent, _("Go to page")), doc_{doc}, parser_{parser} {
 	constexpr int label_spacing = 5;
 	auto* page_sizer = new wxBoxSizer(wxHORIZONTAL);

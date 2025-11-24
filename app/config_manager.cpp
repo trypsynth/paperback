@@ -128,12 +128,6 @@ void config_manager::clear_recent_documents() {
 	}
 }
 
-void config_manager::rebuild_recent_documents() {
-	if (is_initialized()) {
-		config_manager_rebuild_recent_documents(backend_mut());
-	}
-}
-
 void config_manager::add_opened_document(const wxString& path) {
 	if (is_initialized()) {
 		config_manager_add_opened_document(backend_mut(), to_utf8(path));
@@ -144,13 +138,6 @@ void config_manager::remove_opened_document(const wxString& path) {
 	if (is_initialized()) {
 		config_manager_remove_opened_document(backend_mut(), to_utf8(path));
 	}
-}
-
-wxArrayString config_manager::get_opened_documents() const {
-	if (!is_initialized()) {
-		return {};
-	}
-	return to_wx_array(config_manager_get_opened_documents(backend_ref()));
 }
 
 void config_manager::clear_opened_documents() {
@@ -286,13 +273,6 @@ bookmark config_manager::get_previous_bookmark(const wxString& path, long curren
 		return bookmark(-1, -1);
 	}
 	return to_bookmark(config_manager_get_previous_bookmark(backend_ref(), to_utf8(path), static_cast<std::int64_t>(current_position)));
-}
-
-bookmark config_manager::get_closest_bookmark(const wxString& path, long current_position) const {
-	if (!is_initialized()) {
-		return bookmark(-1, -1);
-	}
-	return to_bookmark(config_manager_get_closest_bookmark(backend_ref(), to_utf8(path), static_cast<std::int64_t>(current_position)));
 }
 
 void config_manager::set_document_format(const wxString& path, const wxString& format) {
