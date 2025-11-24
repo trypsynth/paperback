@@ -114,6 +114,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Alex Hall
 * Brandon McGinty
 * Brian Hartgen
+* Debbie Yuille
 * Devin Prater
 * Felix Steindorff
 * Hamish Mackenzie
@@ -123,6 +124,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Pratik Patel 
 * Roberto Perez
 * Sean Randall
+* Timothy Wynn
 
 ### Translations
 * Tarik Hadžirović: Bosnian translation
