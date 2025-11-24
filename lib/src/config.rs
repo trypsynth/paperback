@@ -13,7 +13,6 @@ use base64::{
 use configparser::ini::Ini;
 use sha1::{Digest, Sha1};
 
-const APP_NAME: &str = "Paperback";
 const CONFIG_VERSION_LEGACY: i32 = 0;
 const CONFIG_VERSION_1: i32 = 1;
 const CONFIG_VERSION_2: i32 = 2;

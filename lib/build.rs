@@ -62,7 +62,7 @@ fn setup_pdfium() {
 	let lib_path = find_or_fetch_pdfium(&pdfium_root, &platform);
 	println!("cargo:rustc-link-search=native={}", lib_dir.to_string_lossy());
 	let link_kind = if lib_path.extension().and_then(|e| e.to_str()) == Some("a") { "static" } else { "dylib" };
-	println!("cargo:rustc-link-lib={}={}", link_kind, "pdfium");
+	println!("cargo:rustc-link-lib={}=pdfium", link_kind);
 	println!("cargo:rerun-if-env-changed=CARGO_CFG_TARGET_OS");
 	println!("cargo:rerun-if-env-changed=CARGO_CFG_TARGET_ARCH");
 }

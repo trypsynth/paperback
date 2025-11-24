@@ -89,7 +89,7 @@ fn fetch_latest_release() -> Result<GithubRelease, UpdateError> {
 		.header("Accept", "application/vnd.github+json")
 		.call()
 		.map_err(|err| match err {
-			ureq::Error::StatusCode(code) => UpdateError::HttpError(code as i32),
+			ureq::Error::StatusCode(code) => UpdateError::HttpError(i32::from(code)),
 			_ => UpdateError::NetworkError(format!("Network error: {err}")),
 		})?;
 	resp.body_mut()

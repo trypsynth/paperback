@@ -51,17 +51,7 @@ impl XmlToText {
 
 	#[must_use]
 	pub fn get_text(&self) -> String {
-		if self.lines.is_empty() {
-			return String::new();
-		}
-		let mut result = String::new();
-		for (idx, line) in self.lines.iter().enumerate() {
-			result.push_str(line);
-			if idx + 1 < self.lines.len() {
-				result.push('\n');
-			}
-		}
-		result
+		self.lines.join("\n")
 	}
 
 	#[must_use]
@@ -111,28 +101,28 @@ impl XmlToText {
 	}
 
 	fn process_node(&mut self, node: Node<'_, '_>) {
-		let mut tag_name = String::new();
-		let mut skip_children = false;
-		match node.node_type() {
+		let (tag_name, skip_children) = match node.node_type() {
 			NodeType::Element => {
-				tag_name = node.tag_name().name().to_ascii_lowercase();
+				let tag_name = node.tag_name().name().to_ascii_lowercase();
 				if matches!(tag_name.as_str(), "script" | "style" | "noscript" | "iframe" | "object" | "embed") {
 					return;
 				}
-				skip_children = self.handle_element_opening_xml(&tag_name, node);
+				let skip_children = self.handle_element_opening_xml(&tag_name, node);
 				self.handle_heading_xml(&tag_name, node);
+				(Some(tag_name), skip_children)
 			}
 			NodeType::Text => {
 				self.process_text_node(node);
+				(None, false)
 			}
-			_ => {}
-		}
+			_ => (None, false),
+		};
 		if !skip_children {
 			for child in node.children() {
 				self.process_node(child);
 			}
 		}
-		if node.node_type() == NodeType::Element {
+		if let Some(tag_name) = tag_name {
 			self.handle_element_closing_xml(&tag_name);
 		}
 	}
@@ -265,26 +255,26 @@ impl XmlToText {
 		}
 	}
 
-	fn add_line(&mut self, line: &str) {
+	fn add_line(&mut self, mut line: String) {
 		if self.preserve_whitespace {
-			let mut processed_line = line.to_string();
-			while processed_line.ends_with(['\n', '\r']) {
-				processed_line.pop();
+			while line.ends_with(['\n', '\r']) {
+				line.pop();
 			}
-			self.cached_char_length += display_len(&processed_line) + 1;
-			self.lines.push(processed_line);
+			self.cached_char_length += display_len(&line) + 1;
+			self.lines.push(line);
 		} else {
-			let trimmed = trim_string(&collapse_whitespace(line));
-			if !trimmed.is_empty() {
-				self.cached_char_length += display_len(&trimmed) + 1;
-				self.lines.push(trimmed);
+			let trimmed = trim_string(&collapse_whitespace(&line));
+			if trimmed.is_empty() {
+				return;
 			}
+			self.cached_char_length += display_len(&trimmed) + 1;
+			self.lines.push(trimmed);
 		}
 	}
 
 	fn finalize_current_line(&mut self) {
-		self.add_line(&self.current_line.clone());
-		self.current_line.clear();
+		let line = std::mem::take(&mut self.current_line);
+		self.add_line(line);
 	}
 
 	fn get_current_text_position(&self) -> usize {

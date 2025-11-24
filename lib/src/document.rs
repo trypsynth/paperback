@@ -23,7 +23,7 @@ pub enum MarkerType {
 
 impl From<MarkerType> for i32 {
 	fn from(marker: MarkerType) -> Self {
-		marker as i32
+		marker as Self
 	}
 }
 

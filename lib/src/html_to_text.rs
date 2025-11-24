@@ -63,7 +63,6 @@ impl Default for ListStyle {
 
 pub struct HtmlToText {
 	lines: Vec<String>,
-	preserve_line_whitespace: Vec<bool>,
 	current_line: String,
 	id_positions: HashMap<String, usize>,
 	headings: Vec<HeadingInfo>,
@@ -85,7 +84,6 @@ impl HtmlToText {
 	pub fn new() -> Self {
 		Self {
 			lines: Vec::new(),
-			preserve_line_whitespace: Vec::new(),
 			current_line: String::new(),
 			id_positions: HashMap::new(),
 			headings: Vec::new(),
@@ -111,22 +109,11 @@ impl HtmlToText {
 		let root = document.tree.root();
 		self.process_node(root, &document);
 		self.finalize_current_line();
-		self.finalize_text();
 		true
 	}
 
 	pub fn get_text(&self) -> String {
-		if self.lines.is_empty() {
-			return String::new();
-		}
-		let mut result = String::new();
-		for (i, line) in self.lines.iter().enumerate() {
-			result.push_str(line);
-			if i < self.lines.len() - 1 {
-				result.push('\n');
-			}
-		}
-		result
+		self.lines.join("\n")
 	}
 
 	pub fn get_title(&self) -> &str {
@@ -155,7 +142,6 @@ impl HtmlToText {
 
 	fn clear(&mut self) {
 		self.lines.clear();
-		self.preserve_line_whitespace.clear();
 		self.current_line.clear();
 		self.id_positions.clear();
 		self.headings.clear();
@@ -412,50 +398,23 @@ impl HtmlToText {
 		}
 	}
 
-	fn add_line(&mut self, line: &str) {
+	fn add_line(&mut self, line: String) {
 		if self.flags.contains(ProcessingFlags::PRESERVE_WHITESPACE) {
-			let processed_line = line.to_string();
+			self.cached_char_length += display_len(&line) + 1; // +1 for newline
+			self.lines.push(line);
+		} else {
+			let processed_line = trim_string(&collapse_whitespace(&line));
+			if processed_line.is_empty() {
+				return;
+			}
 			self.cached_char_length += display_len(&processed_line) + 1; // +1 for newline
 			self.lines.push(processed_line);
-			self.preserve_line_whitespace.push(true);
-		} else {
-			let mut processed_line = collapse_whitespace(line);
-			processed_line = trim_string(&processed_line);
-			if !processed_line.is_empty() {
-				self.cached_char_length += display_len(&processed_line) + 1; // +1 for newline
-				self.lines.push(processed_line);
-				self.preserve_line_whitespace.push(false);
-			}
 		}
 	}
 
 	fn finalize_current_line(&mut self) {
-		self.add_line(&self.current_line.clone());
-		self.current_line.clear();
-	}
-
-	fn finalize_text(&mut self) {
-		let mut cleaned_lines = Vec::new();
-		let mut cleaned_preserve = Vec::new();
-		self.cached_char_length = 0;
-		for (i, line) in self.lines.iter().enumerate() {
-			let preserve_ws = self.preserve_line_whitespace.get(i).copied().unwrap_or(false);
-			if preserve_ws {
-				self.cached_char_length += display_len(line) + 1; // +1 for newline
-				cleaned_lines.push(line.clone());
-				cleaned_preserve.push(true);
-			} else {
-				let mut cleaned = collapse_whitespace(line);
-				cleaned = trim_string(&cleaned);
-				if !cleaned.is_empty() {
-					self.cached_char_length += display_len(&cleaned) + 1; // +1 for newline
-					cleaned_lines.push(cleaned);
-					cleaned_preserve.push(false);
-				}
-			}
-		}
-		self.lines = cleaned_lines;
-		self.preserve_line_whitespace = cleaned_preserve;
+		let line = std::mem::take(&mut self.current_line);
+		self.add_line(line);
 	}
 
 	fn get_current_text_position(&self) -> usize {
