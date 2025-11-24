@@ -33,18 +33,14 @@ impl Parser for PptxParser {
 			.with_context(|| format!("Failed to open PPTX file '{}'", context.file_path))?;
 		let mut archive = ZipArchive::new(BufReader::new(file))
 			.with_context(|| format!("Failed to read PPTX as zip '{}'", context.file_path))?;
-		let mut slides = Vec::new();
-		for i in 0..archive.len() {
-			if let Ok(entry) = archive.by_index(i) {
-				let name = entry.name().to_string();
-				if name.starts_with("ppt/slides/slide")
-					&& Path::new(&name).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("xml"))
+		let mut slides = (0..archive.len())
+			.filter_map(|i| archive.by_index(i).ok().map(|entry| entry.name().to_string()))
+			.filter(|name| {
+				name.starts_with("ppt/slides/slide")
+					&& Path::new(name).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("xml"))
 					&& !name.contains("_rels")
-				{
-					slides.push(name);
-				}
-			}
-		}
+			})
+			.collect::<Vec<_>>();
 		if slides.is_empty() {
 			anyhow::bail!("PPTX file contains no slides");
 		}
@@ -98,15 +94,18 @@ fn extract_slide_number(slide_name: &str) -> usize {
 }
 
 fn extract_slide_title(root: Node) -> String {
-	for shape in find_elements_by_name(root, "sp") {
-		if is_title_shape(shape) {
-			let text = collect_text_from_tagged_elements(shape, "t");
-			if !text.trim().is_empty() {
-				return text.trim().to_string();
+	root.descendants()
+		.filter(|node| node.node_type() == NodeType::Element && node.tag_name().name() == "sp")
+		.find_map(|shape| {
+			if is_title_shape(shape) {
+				let text = collect_text_from_tagged_elements(shape, "t");
+				let trimmed = text.trim();
+				if trimmed.is_empty() { None } else { Some(trimmed.to_string()) }
+			} else {
+				None
 			}
-		}
-	}
-	String::new()
+		})
+		.unwrap_or_default()
 }
 
 fn is_title_shape(node: Node) -> bool {
@@ -140,65 +139,55 @@ fn traverse_for_text(
 	slide_start: usize,
 	rels: &HashMap<String, String>,
 ) {
-	if node.node_type() == NodeType::Element {
-		let tag_name = node.tag_name().name();
-		if tag_name == "t" {
-			if let Some(t) = node.text() {
-				text.push_str(t);
-			}
-			return;
-		}
-		if tag_name == "br" {
-			text.push('\n');
-			return;
-		}
-		if tag_name == "p" {
-			for child in node.children() {
-				traverse_for_text(child, text, links, slide_start, rels);
-			}
-			if !text.ends_with('\n') {
-				text.push('\n');
-			}
-			return;
-		}
-		if tag_name == "hlinkClick" {
-			if let Some(r_id) = node.attribute("id") {
-				if let Some(link_target) = rels.get(r_id) {
-					if let Some(parent) = node.parent() {
-						let link_text = collect_text_from_tagged_elements(parent, "t");
-						if !link_text.is_empty() {
-							let link_offset = slide_start + text.len();
-							text.push_str(&link_text);
-							links.push(LinkInfo {
-								offset: link_offset,
-								text: link_text,
-								reference: link_target.clone(),
-							});
+	match node.node_type() {
+		NodeType::Element => {
+			let tag_name = node.tag_name().name();
+			match tag_name {
+				"t" => {
+					if let Some(t) = node.text() {
+						text.push_str(t);
+					}
+					return;
+				}
+				"br" => {
+					text.push('\n');
+					return;
+				}
+				"p" => {
+					for child in node.children() {
+						traverse_for_text(child, text, links, slide_start, rels);
+					}
+					if !text.ends_with('\n') {
+						text.push('\n');
+					}
+					return;
+				}
+				"hlinkClick" => {
+					if let Some(r_id) = node.attribute("id") {
+						if let Some(link_target) = rels.get(r_id) {
+							if let Some(parent) = node.parent() {
+								let link_text = collect_text_from_tagged_elements(parent, "t");
+								if !link_text.is_empty() {
+									let link_offset = slide_start + text.len();
+									text.push_str(&link_text);
+									links.push(LinkInfo {
+										offset: link_offset,
+										text: link_text,
+										reference: link_target.clone(),
+									});
+								}
+							}
 						}
 					}
+					return;
 				}
+				_ => {}
 			}
-			return;
 		}
-	} else if node.node_type() == NodeType::Text {
-		return;
+		NodeType::Text => return,
+		_ => {}
 	}
 	for child in node.children() {
 		traverse_for_text(child, text, links, slide_start, rels);
-	}
-}
-
-fn find_elements_by_name<'a, 'input>(node: Node<'a, 'input>, name: &str) -> Vec<Node<'a, 'input>> {
-	let mut result = Vec::new();
-	collect_elements_by_name(node, name, &mut result);
-	result
-}
-
-fn collect_elements_by_name<'a, 'input>(node: Node<'a, 'input>, name: &str, result: &mut Vec<Node<'a, 'input>>) {
-	if node.node_type() == NodeType::Element && node.tag_name().name() == name {
-		result.push(node);
-	}
-	for child in node.children() {
-		collect_elements_by_name(child, name, result);
 	}
 }
