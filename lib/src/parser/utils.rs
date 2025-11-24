@@ -1,7 +1,7 @@
 use std::{
 	collections::HashMap,
 	fs::File,
-	io::{BufReader, Read},
+	io::{BufReader, Read, Seek},
 	path::Path,
 };
 
@@ -144,7 +144,7 @@ pub fn find_child_element<'a, 'input>(node: Node<'a, 'input>, name: &str) -> Opt
 	node.children().find(|child| child.node_type() == NodeType::Element && child.tag_name().name() == name)
 }
 
-pub fn read_zip_entry(archive: &mut ZipArchive<BufReader<File>>, name: &str) -> Result<String> {
+pub fn read_zip_entry<R: Read + Seek>(archive: &mut ZipArchive<R>, name: &str) -> Result<String> {
 	let mut entry = archive.by_name(name).with_context(|| format!("Failed to get zip entry '{name}'"))?;
 	let mut contents = String::new();
 	Read::read_to_string(&mut entry, &mut contents).with_context(|| format!("Failed to read zip entry '{name}'"))?;
