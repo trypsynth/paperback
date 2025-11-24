@@ -12,6 +12,8 @@ use crate::{
 	xml_to_text::XmlToText,
 };
 
+type Metadata = (String, String);
+
 pub struct Fb2Parser;
 
 impl Parser for Fb2Parser {
@@ -37,8 +39,10 @@ impl Parser for Fb2Parser {
 		if let Some(pos) = xml_content.rfind(CLOSING_TAG) {
 			xml_content.truncate(pos + CLOSING_TAG.len());
 		}
-		xml_content = remove_binary_elements(&xml_content).unwrap_or(xml_content);
-		let (title, author) = extract_metadata(&xml_content);
+		let (xml_content, (title, author)) = clean_fb2(&xml_content).unwrap_or_else(|| {
+			let (title, author) = extract_metadata(&xml_content);
+			(xml_content, (title, author))
+		});
 		let mut converter = XmlToText::new();
 		if !converter.convert(&xml_content) {
 			anyhow::bail!("Failed to convert FB2 XML to text");
@@ -69,11 +73,12 @@ impl Parser for Fb2Parser {
 	}
 }
 
-fn remove_binary_elements(xml_content: &str) -> Option<String> {
+fn clean_fb2(xml_content: &str) -> Option<(String, Metadata)> {
 	let doc = XmlDocument::parse(xml_content).ok()?;
 	let mut result = String::new();
 	serialize_without_binary(doc.root(), &mut result);
-	Some(result)
+	let meta = extract_metadata_from_doc(&doc);
+	Some((result, meta))
 }
 
 fn serialize_without_binary(node: Node, output: &mut String) {
@@ -149,10 +154,12 @@ fn escape_xml(s: &str) -> String {
 	result
 }
 
-fn extract_metadata(xml_content: &str) -> (String, String) {
-	let Ok(doc) = XmlDocument::parse(xml_content) else {
-		return (String::new(), String::new());
-	};
+fn extract_metadata(xml_content: &str) -> Metadata {
+	XmlDocument::parse(xml_content)
+		.map_or_else(|_| (String::new(), String::new()), |doc| extract_metadata_from_doc(&doc))
+}
+
+fn extract_metadata_from_doc(doc: &XmlDocument<'_>) -> Metadata {
 	let mut title = String::new();
 	let mut author = String::new();
 	if let Some(title_node) =
