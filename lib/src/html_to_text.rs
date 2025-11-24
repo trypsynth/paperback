@@ -381,11 +381,17 @@ impl HtmlToText {
 	}
 
 	fn collect_text(node: NodeRef<'_, Node>) -> String {
+		let mut buffer = String::new();
+		Self::collect_text_into(node, &mut buffer);
+		buffer
+	}
+
+	fn collect_text_into(node: NodeRef<'_, Node>, buffer: &mut String) {
 		match node.value() {
-			Node::Text(text) => text.text.to_string(),
-			Node::Element(_) => node.children().map(Self::collect_text).collect(),
-			_ => String::new(),
-		}
+			Node::Text(text) => buffer.push_str(&text.text),
+			Node::Element(_) => node.children().for_each(|child| Self::collect_text_into(child, buffer)),
+			_ => {}
+		};
 	}
 
 	fn serialize_node(node: NodeRef<'_, Node>, _document: &Html) -> String {

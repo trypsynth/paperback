@@ -14,6 +14,14 @@ use crate::{
 	html_to_text::HeadingInfo,
 };
 
+fn children_at_mut<'a>(toc: &'a mut Vec<TocItem>, path: &[usize]) -> &'a mut Vec<TocItem> {
+	let mut current = toc;
+	for &idx in path {
+		current = &mut current[idx].children;
+	}
+	current
+}
+
 pub fn build_toc_from_buffer(buffer: &DocumentBuffer) -> Vec<TocItem> {
 	let headings: Vec<HeadingInfo> = buffer
 		.markers
@@ -35,30 +43,19 @@ pub fn build_toc_from_headings(headings: &[HeadingInfo]) -> Vec<TocItem> {
 		return Vec::new();
 	}
 	let mut toc = Vec::new();
-	let mut stack: Vec<(i32, Vec<usize>)> = Vec::new(); // (level, path to current node)
+	let mut stack: Vec<usize> = Vec::new(); // path to current node
 	for heading in headings {
-		let item = TocItem::new(heading.text.clone(), String::new(), heading.offset);
-		while let Some((level, _)) = stack.last() {
-			if *level < heading.level {
-				break;
-			}
+		if heading.level <= 0 {
+			continue;
+		}
+		let heading_level = heading.level as usize;
+		while stack.len() >= heading_level {
 			stack.pop();
 		}
-		if stack.is_empty() {
-			toc.push(item);
-			stack.push((heading.level, vec![toc.len() - 1]));
-		} else {
-			let (_, path) = stack.last().unwrap();
-			let mut current = &mut toc;
-			for &idx in &path[..path.len() - 1] {
-				current = &mut current[idx].children;
-			}
-			let parent_idx = *path.last().unwrap();
-			current[parent_idx].children.push(item);
-			let mut new_path = path.clone();
-			new_path.push(current[parent_idx].children.len() - 1);
-			stack.push((heading.level, new_path));
-		}
+		let item = TocItem::new(heading.text.clone(), String::new(), heading.offset);
+		let siblings = children_at_mut(&mut toc, &stack);
+		siblings.push(item);
+		stack.push(siblings.len() - 1);
 	}
 	toc
 }

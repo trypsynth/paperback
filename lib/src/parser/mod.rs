@@ -40,15 +40,19 @@ pub struct ParserInfo {
 
 pub struct ParserRegistry {
 	parsers: HashMap<String, Box<dyn Parser>>,
+	extension_map: HashMap<String, String>,
 }
 
 impl ParserRegistry {
 	fn new() -> Self {
-		Self { parsers: HashMap::new() }
+		Self { parsers: HashMap::new(), extension_map: HashMap::new() }
 	}
 
 	pub fn register<P: Parser + 'static>(&mut self, parser: P) {
 		let name = parser.name().to_string();
+		for ext in parser.extensions() {
+			self.extension_map.insert(ext.to_ascii_lowercase(), name.clone());
+		}
 		self.parsers.insert(name, Box::new(parser));
 	}
 
@@ -59,8 +63,11 @@ impl ParserRegistry {
 
 	#[must_use]
 	pub fn get_parser_for_extension(&self, extension: &str) -> Option<&dyn Parser> {
-		let ext = extension.to_lowercase();
-		self.parsers.values().find(|p| p.extensions().iter().any(|e| e.to_lowercase() == ext)).map(|p| &**p)
+		let ext = extension.to_ascii_lowercase();
+		self.extension_map
+			.get(&ext)
+			.and_then(|name| self.parsers.get(name))
+			.map(|parser| &**parser)
 	}
 
 	#[must_use]
