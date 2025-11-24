@@ -51,36 +51,36 @@ bool is_installer_distribution() {
 
 void present_update_result(const update_result_payload& payload, bool silent) {
 	switch (payload.status) {
-	case UpdateStatus::Available: {
-		const wxString latest_version = payload.latest_version.empty() ? APP_VERSION : wxString::FromUTF8(payload.latest_version.c_str());
-		const wxString release_notes = payload.release_notes.empty() ? _("No release notes were provided.") : wxString::FromUTF8(payload.release_notes.c_str());
-		const wxString message = wxString::Format(_("There is an update available.\nYour version: %s\nLatest version: %s\nDescription:\n%s\nDo you want to open the direct download link?"), APP_VERSION, latest_version, release_notes);
-		const int res = wxMessageBox(message, _("Update available"), wxYES_NO | wxICON_INFORMATION);
-		if (res == wxYES && !payload.download_url.empty()) {
-			wxLaunchDefaultBrowser(wxString::FromUTF8(payload.download_url.c_str()));
-		}
-		break;
-	}
-	case UpdateStatus::UpToDate:
-		if (!silent) {
-			wxMessageBox(_("No updates available."), _("Info"), wxICON_INFORMATION);
-		}
-		break;
-	default:
-		if (silent) {
+		case UpdateStatus::Available: {
+			const wxString latest_version = payload.latest_version.empty() ? APP_VERSION : wxString::FromUTF8(payload.latest_version.c_str());
+			const wxString release_notes = payload.release_notes.empty() ? _("No release notes were provided.") : wxString::FromUTF8(payload.release_notes.c_str());
+			const wxString message = wxString::Format(_("There is an update available.\nYour version: %s\nLatest version: %s\nDescription:\n%s\nDo you want to open the direct download link?"), APP_VERSION, latest_version, release_notes);
+			const int res = wxMessageBox(message, _("Update available"), wxYES_NO | wxICON_INFORMATION);
+			if (res == wxYES && !payload.download_url.empty()) {
+				wxLaunchDefaultBrowser(wxString::FromUTF8(payload.download_url.c_str()));
+			}
 			break;
 		}
-		wxString details;
-		if (!payload.error_message.empty()) {
-			details = wxString::FromUTF8(payload.error_message.c_str());
-		} else {
-			details = _("Error checking for updates.");
-		}
-		if (payload.status == UpdateStatus::HttpError && payload.http_status > 0) {
-			details = wxString::Format(_("Failed to check for updates. HTTP status: %d"), payload.http_status);
-		}
-		wxMessageBox(details, _("Error"), wxICON_ERROR);
-		break;
+		case UpdateStatus::UpToDate:
+			if (!silent) {
+				wxMessageBox(_("No updates available."), _("Info"), wxICON_INFORMATION);
+			}
+			break;
+		default:
+			if (silent) {
+				break;
+			}
+			wxString details;
+			if (!payload.error_message.empty()) {
+				details = wxString::FromUTF8(payload.error_message.c_str());
+			} else {
+				details = _("Error checking for updates.");
+			}
+			if (payload.status == UpdateStatus::HttpError && payload.http_status > 0) {
+				details = wxString::Format(_("Failed to check for updates. HTTP status: %d"), payload.http_status);
+			}
+			wxMessageBox(details, _("Error"), wxICON_ERROR);
+			break;
 	}
 }
 } // namespace

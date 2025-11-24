@@ -89,7 +89,6 @@ void populate_toc_items(std::vector<std::unique_ptr<toc_item>>& toc_items, const
 	}
 }
 
-
 void populate_id_positions(document& doc, const rust::Vec<FfiIdPosition>& ffi_positions) {
 	doc.id_positions.clear();
 	for (const auto& entry : ffi_positions) {
