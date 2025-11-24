@@ -20,6 +20,8 @@ const CONFIG_VERSION_2: i32 = 2;
 const CONFIG_VERSION_CURRENT: i32 = CONFIG_VERSION_2;
 const DEFAULT_RECENT_DOCUMENTS_TO_SHOW: i32 = 25;
 const MAX_RECENT_DOCUMENTS_TO_SHOW: usize = 100;
+const CONFIG_DIRECTORY: &str = "paperback";
+const CONFIG_FILENAME: &str = "paperback.ini";
 
 #[derive(Clone, Debug, Default)]
 pub struct Bookmark {
@@ -777,18 +779,19 @@ fn get_config_path() -> PathBuf {
 			}
 		}
 		if !force_appdata && is_directory_writable(&exe_dir) {
-			return exe_dir.join(format!("{APP_NAME}.ini"));
+			return exe_dir.join(CONFIG_FILENAME);
 		}
 	}
 	#[cfg(not(windows))]
 	if is_directory_writable(&exe_dir) {
-		return exe_dir.join(format!("{APP_NAME}.ini"));
+		return exe_dir.join(CONFIG_FILENAME);
 	}
-	let appdata = dirs::config_dir().unwrap_or(exe_dir);
-	if !appdata.exists() {
-		let _ = fs::create_dir_all(&appdata);
+	let appdata_root = dirs::config_dir().unwrap_or(exe_dir);
+	let appdata_dir = appdata_root.join(CONFIG_DIRECTORY);
+	if !appdata_dir.exists() {
+		let _ = fs::create_dir_all(&appdata_dir);
 	}
-	appdata.join(format!("{APP_NAME}.ini"))
+	appdata_dir.join(CONFIG_FILENAME)
 }
 
 fn is_directory_writable(path: &Path) -> bool {
