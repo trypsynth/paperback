@@ -284,7 +284,7 @@ impl XmlToText {
 			self.lines.push(line);
 		} else {
 			let collapsed = collapse_whitespace(&line);
-			let collapsed = collapsed.trim_end().to_string();
+			let collapsed = collapsed.trim().to_string();
 			if collapsed.is_empty() {
 				return;
 			}
