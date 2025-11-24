@@ -410,6 +410,7 @@ impl HtmlToText {
 			self.lines.push(line);
 		} else {
 			let processed_line = collapse_whitespace(&line);
+			let processed_line = processed_line.trim_start().to_string();
 			if processed_line.trim().is_empty() {
 				return;
 			}
