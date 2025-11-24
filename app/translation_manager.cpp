@@ -80,7 +80,7 @@ wxString translation_manager::get_current_language() const {
 	return current_language;
 }
 
-std::vector<language_info> translation_manager::get_available_languages() const {
+const std::vector<language_info>& translation_manager::get_available_languages() const {
 	return available_languages;
 }
 

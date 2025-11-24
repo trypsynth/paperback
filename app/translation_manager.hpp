@@ -27,7 +27,7 @@ public:
 	bool initialize();
 	bool set_language(const wxString& language_code);
 	wxString get_current_language() const;
-	std::vector<language_info> get_available_languages() const;
+	const std::vector<language_info>& get_available_languages() const;
 	wxString get_language_display_name(const wxString& language_code) const;
 	bool is_language_available(const wxString& language_code) const;
 

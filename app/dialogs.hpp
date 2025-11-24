@@ -176,7 +176,7 @@ private:
 
 class find_dialog : public wxDialog {
 public:
-	find_dialog(wxWindow* parent);
+	explicit find_dialog(wxWindow* parent);
 	~find_dialog() = default;
 	find_dialog(const find_dialog&) = delete;
 	find_dialog& operator=(const find_dialog&) = delete;
@@ -290,7 +290,7 @@ private:
 
 class options_dialog : public dialog {
 public:
-	options_dialog(wxWindow* parent);
+	explicit options_dialog(wxWindow* parent);
 	~options_dialog() = default;
 	options_dialog(const options_dialog&) = delete;
 	options_dialog& operator=(const options_dialog&) = delete;
@@ -332,7 +332,7 @@ private:
 
 class password_dialog : public dialog {
 public:
-	password_dialog(wxWindow* parent);
+	explicit password_dialog(wxWindow* parent);
 	~password_dialog() = default;
 	password_dialog(const password_dialog&) = delete;
 	password_dialog& operator=(const password_dialog&) = delete;
@@ -361,7 +361,7 @@ private:
 
 class toc_tree_item_data : public wxTreeItemData {
 public:
-	toc_tree_item_data(int offset_) : offset{offset_} {
+	explicit toc_tree_item_data(int offset_) : offset{offset_} {
 	}
 
 	int offset{0};

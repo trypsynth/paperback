@@ -14,7 +14,7 @@ class main_window;
 
 class task_bar_icon : public wxTaskBarIcon {
 public:
-	task_bar_icon(main_window* frame);
+	explicit task_bar_icon(main_window* frame);
 
 protected:
 	wxMenu* CreatePopupMenu() override;

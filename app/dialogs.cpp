@@ -946,7 +946,7 @@ options_dialog::options_dialog(wxWindow* parent) : dialog(parent, _("Options")) 
 	auto* language_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* language_label = new wxStaticText(this, wxID_ANY, _("&Language:"));
 	language_combo = new wxComboBox(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, 0, nullptr, wxCB_READONLY);
-	auto available_languages = translation_manager::instance().get_available_languages();
+	const auto& available_languages = translation_manager::instance().get_available_languages();
 	for (const auto& lang : available_languages) {
 		language_combo->Append(lang.native_name, new wxStringClientData(lang.code));
 	}

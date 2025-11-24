@@ -28,7 +28,7 @@ enum class parser_error_code {
 
 class parser_exception : public std::runtime_error {
 public:
-	parser_exception(const wxString& msg, error_severity sev = error_severity::error, parser_error_code code = parser_error_code::generic) : std::runtime_error(msg.ToStdString()), message{msg}, severity{sev}, error_code{code} {
+	explicit parser_exception(const wxString& msg, error_severity sev = error_severity::error, parser_error_code code = parser_error_code::generic) : std::runtime_error(msg.ToStdString()), message{msg}, severity{sev}, error_code{code} {
 	}
 	parser_exception(const wxString& msg, const wxString& fp, error_severity sev = error_severity::error, parser_error_code code = parser_error_code::generic) : std::runtime_error(msg.ToStdString()), message{msg}, file_path{fp}, severity{sev}, error_code{code} {
 	}

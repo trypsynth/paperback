@@ -43,7 +43,7 @@ struct toc_item {
 	wxString name;
 	wxString ref;
 	std::vector<std::unique_ptr<toc_item>> children;
-	size_t offset;
+	size_t offset{0};
 
 	toc_item() = default;
 	~toc_item() = default;

@@ -254,7 +254,7 @@ void app::check_for_updates(bool silent) {
 			payload.error_message = std::string(e.what());
 		}
 		auto* wx_app = wxTheApp;
-		if (wx_app == nullptr) {
+		if (wx_app == nullptr || !wx_app->IsMainLoopRunning()) {
 			return;
 		}
 		wx_app->CallAfter([silent, payload = std::move(payload)]() {

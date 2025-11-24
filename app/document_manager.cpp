@@ -90,16 +90,6 @@ int doc_previous_heading_index(const document& doc, long position, int level) {
 	return document_previous_heading(**doc.handle, position, level);
 }
 
-std::vector<const marker*> doc_get_markers_by_type(const document& doc, marker_type type) {
-	std::vector<const marker*> result;
-	for (const auto& m : doc.markers) {
-		if (m.type == type) {
-			result.push_back(&m);
-		}
-	}
-	return result;
-}
-
 std::vector<const marker*> doc_get_heading_markers(const document& doc, int level = -1) {
 	std::vector<const marker*> result;
 	for (const auto& m : doc.markers) {
@@ -111,14 +101,6 @@ std::vector<const marker*> doc_get_heading_markers(const document& doc, int leve
 		}
 	}
 	return result;
-}
-
-const marker* doc_get_heading_marker(const document& doc, int heading_index) {
-	const auto headings = doc_get_heading_markers(doc);
-	if (heading_index < 0 || static_cast<size_t>(heading_index) >= headings.size()) {
-		return nullptr;
-	}
-	return headings[static_cast<size_t>(heading_index)];
 }
 
 size_t doc_offset_for_heading(const document& doc, int heading_index) {

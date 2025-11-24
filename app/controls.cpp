@@ -54,11 +54,11 @@ void accessible_slider::on_char(wxKeyEvent& event) {
 			handled = true;
 			break;
 		case WXK_END:
-			new_value = min_value;
+			new_value = max_value;
 			handled = true;
 			break;
 		case WXK_HOME:
-			new_value = max_value;
+			new_value = min_value;
 			handled = true;
 			break;
 		default:
