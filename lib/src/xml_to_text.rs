@@ -8,10 +8,16 @@ use crate::{
 	utils::text::{collapse_whitespace, display_len, remove_soft_hyphens, trim_string},
 };
 
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Copy)]
 struct ListStyle {
 	ordered: bool,
 	item_number: i32,
+}
+
+impl Default for ListStyle {
+	fn default() -> Self {
+		Self { ordered: false, item_number: 1 }
+	}
 }
 
 #[derive(Default)]
