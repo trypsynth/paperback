@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use bitflags::bitflags;
 
-use crate::utils::text::display_len;
+use crate::utils::text::{display_len, is_space_like};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(i32)]
@@ -156,7 +156,7 @@ impl DocumentStats {
 		let char_count = text.chars().count();
 		let line_count = text.lines().count();
 		let word_count = text.split_whitespace().count();
-		let char_count_no_whitespace = text.chars().filter(|c| !c.is_whitespace()).count();
+		let char_count_no_whitespace = text.chars().filter(|c| !is_space_like(*c)).count();
 		Self { word_count, line_count, char_count, char_count_no_whitespace }
 	}
 }

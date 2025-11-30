@@ -13,7 +13,7 @@ pub fn collapse_whitespace(input: &str) -> String {
 	let mut result = String::with_capacity(input.len());
 	let mut prev_was_space = false;
 	for ch in input.chars() {
-		let is_space = ch.is_whitespace() || ch == '\u{00A0}';
+		let is_space = is_space_like(ch);
 		if is_space {
 			if !prev_was_space {
 				result.push(' ');
@@ -29,7 +29,7 @@ pub fn collapse_whitespace(input: &str) -> String {
 
 #[must_use]
 pub fn trim_string(s: &str) -> String {
-	s.trim_matches(|c: char| c.is_whitespace() || c == '\u{00A0}').to_string()
+	s.trim_matches(is_space_like).to_string()
 }
 
 #[must_use]
@@ -40,8 +40,12 @@ pub fn display_len(s: &str) -> usize {
 	}
 	#[cfg(not(windows))]
 	{
-		s.chars().count()
-	}
+	s.chars().count()
+}
+}
+
+pub const fn is_space_like(ch: char) -> bool {
+	ch.is_whitespace() || matches!(ch, '\u{00A0}' | '\u{200B}')
 }
 
 #[cfg(test)]
@@ -71,6 +75,7 @@ mod tests {
 		assert_eq!(collapse_whitespace("hello\t\tworld"), "hello world");
 		assert_eq!(collapse_whitespace("  spaces  "), "  spaces ");
 		assert_eq!(collapse_whitespace("hello\u{00A0}\u{00A0}world"), "hello world");
+		assert_eq!(collapse_whitespace("hello\u{200B}\u{200B}world"), "hello world");
 	}
 
 	#[test]
@@ -78,6 +83,7 @@ mod tests {
 		assert_eq!(trim_string("  hello  "), "hello");
 		assert_eq!(trim_string("\n\nhello\n\n"), "hello");
 		assert_eq!(trim_string("\u{00A0}hello\u{00A0}"), "hello");
+		assert_eq!(trim_string("\u{200B}hello\u{200B}"), "hello");
 		assert_eq!(trim_string("hello"), "hello");
 	}
 
