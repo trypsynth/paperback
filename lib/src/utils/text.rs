@@ -40,8 +40,8 @@ pub fn display_len(s: &str) -> usize {
 	}
 	#[cfg(not(windows))]
 	{
-	s.chars().count()
-}
+		s.chars().count()
+	}
 }
 
 pub const fn is_space_like(ch: char) -> bool {

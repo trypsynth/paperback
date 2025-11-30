@@ -131,9 +131,11 @@ impl Parser for EpubParser {
 								.with_level(list_item.level),
 						);
 					}
-					buffer.append(&section.text);
-					if !buffer.content.ends_with('\n') {
-						buffer.append("\n");
+					if !section.text.is_empty() {
+						buffer.append(&section.text);
+						if !buffer.content.ends_with('\n') {
+							buffer.append("\n");
+						}
 					}
 					let section_end = buffer.current_position();
 					sections.push(SectionMeta { path: item.path.clone(), start: section_start, end: section_end });
