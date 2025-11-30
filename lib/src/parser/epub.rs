@@ -66,7 +66,11 @@ impl Parser for EpubParser {
 		let container_path = find_container_path(&mut archive)?;
 		let opf_content = read_zip_entry(&mut archive, &container_path)?;
 		let opf_dir = Path::new(&container_path).parent().unwrap_or_else(|| Path::new("")).to_path_buf();
-		let opf_doc = XmlDocument::parse(&opf_content).context("Failed to parse OPF document")?;
+		let opf_doc = XmlDocument::parse_with_options(
+			&opf_content,
+			ParsingOptions { allow_dtd: true, ..ParsingOptions::default() },
+		)
+		.context("Failed to parse OPF document")?;
 		let package_node = opf_doc
 			.descendants()
 			.find(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "package")
@@ -178,7 +182,11 @@ impl Parser for EpubParser {
 fn find_container_path<R: Read + Seek>(archive: &mut ZipArchive<R>) -> Result<String> {
 	let container_xml =
 		read_zip_entry(archive, "META-INF/container.xml").context("Failed to read META-INF/container.xml in EPUB")?;
-	let doc = XmlDocument::parse(&container_xml).context("Failed to parse container.xml")?;
+	let doc = XmlDocument::parse_with_options(
+		&container_xml,
+		ParsingOptions { allow_dtd: true, ..ParsingOptions::default() },
+	)
+	.context("Failed to parse container.xml")?;
 	for node in doc.descendants() {
 		if node.node_type() == NodeType::Element && node.tag_name().name() == "rootfile" {
 			if let Some(path) = node.attribute("full-path") {
@@ -345,7 +353,9 @@ fn build_toc_from_nav_document<R: Read + Seek>(
 	id_positions: &HashMap<String, usize>,
 ) -> Option<Vec<TocItem>> {
 	let nav_content = read_zip_entry(archive, nav_path).ok()?;
-	let nav_doc = XmlDocument::parse(&nav_content).ok()?;
+	let nav_doc =
+		XmlDocument::parse_with_options(&nav_content, ParsingOptions { allow_dtd: true, ..ParsingOptions::default() })
+			.ok()?;
 	let nav_node = nav_doc.descendants().find(|node| {
 		if node.node_type() != NodeType::Element || node.tag_name().name() != "nav" {
 			return false;

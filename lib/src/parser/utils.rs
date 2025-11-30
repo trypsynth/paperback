@@ -43,19 +43,24 @@ pub fn build_toc_from_headings(headings: &[HeadingInfo]) -> Vec<TocItem> {
 		return Vec::new();
 	}
 	let mut toc = Vec::new();
-	let mut stack: Vec<usize> = Vec::new(); // path to current node
+	let mut stack: Vec<usize> = Vec::new();
+	let mut levels: Vec<i32> = Vec::new();
 	for heading in headings {
 		if heading.level <= 0 {
 			continue;
 		}
-		let heading_level: usize = heading.level.try_into().expect("heading level should never be negative");
-		while stack.len() >= heading_level {
+		while let Some(&last_level) = levels.last() {
+			if last_level < heading.level {
+				break;
+			}
 			stack.pop();
+			levels.pop();
 		}
 		let item = TocItem::new(heading.text.clone(), String::new(), heading.offset);
 		let siblings = children_at_mut(&mut toc, &stack);
 		siblings.push(item);
 		stack.push(siblings.len() - 1);
+		levels.push(heading.level);
 	}
 	toc
 }
