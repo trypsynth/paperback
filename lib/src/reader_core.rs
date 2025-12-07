@@ -93,16 +93,9 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 			};
 			if let Some(idx) = idx_final {
 				let offset = doc.marker_position(idx as i32).unwrap_or(0);
-				let (level, text) = doc
-					.document()
-					.buffer
-					.markers
-					.get(idx)
-					.map(|m| (m.level, m.text.clone()))
-					.unwrap_or_else(|| {
-						heading_info(doc, idx as i32)
-							.map(|h| (h.level, h.text))
-							.unwrap_or((0, String::new()))
+				let (level, text) =
+					doc.document().buffer.markers.get(idx).map(|m| (m.level, m.text.clone())).unwrap_or_else(|| {
+						heading_info(doc, idx as i32).map_or((0, String::new()), |h| (h.level, h.text))
 					});
 				return build_nav_result(true, wrapped_final, offset, level, text);
 			}

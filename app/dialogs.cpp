@@ -732,6 +732,7 @@ void find_dialog::on_find_previous(wxCommandEvent& /*event*/) {
 		add_to_history(text);
 		const wxCommandEvent find_event(wxEVT_COMMAND_MENU_SELECTED, ID_FIND_PREVIOUS);
 		wxPostEvent(GetParent(), find_event);
+		Hide();
 	}
 }
 
@@ -741,6 +742,7 @@ void find_dialog::on_find_next(wxCommandEvent& /*event*/) {
 		add_to_history(text);
 		const wxCommandEvent find_event(wxEVT_COMMAND_MENU_SELECTED, ID_FIND_NEXT);
 		wxPostEvent(GetParent(), find_event);
+		Hide();
 	}
 }
 
