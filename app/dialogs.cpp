@@ -1217,6 +1217,21 @@ bool toc_dialog::find_and_select_item_by_name(const wxString& name, const wxTree
 	return false;
 }
 
+update_dialog::update_dialog(wxWindow* parent, const wxString& new_version, const wxString& changelog) : dialog(parent, wxString::Format(_("Update to %s"), new_version), dialog_button_config::ok_cancel) {
+	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
+	auto* message = new wxStaticText(this, wxID_ANY, _("A new version of Paperback is available. Here's what's new:"));
+	content_sizer->Add(message, 0, wxALL, DIALOG_PADDING);
+	changelog_ctrl = new wxTextCtrl(this, wxID_ANY, changelog, wxDefaultPosition, wxSize(500, 300), wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2);
+	content_sizer->Add(changelog_ctrl, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);
+	set_content(content_sizer);
+	finalize_layout();
+	auto* ok_button = FindWindow(wxID_OK);
+	if (ok_button) ok_button->SetLabel(_("&Yes"));
+	auto* cancel_button = FindWindow(wxID_CANCEL);
+	if (cancel_button) cancel_button->SetLabel(_("&No"));
+	changelog_ctrl->SetFocus();
+}
+
 view_note_dialog::view_note_dialog(wxWindow* parent, const wxString& note_text) : dialog(parent, _("View Note"), dialog_button_config::ok_only) {
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	note_ctrl = new wxTextCtrl(this, wxID_ANY, note_text, wxDefaultPosition, wxSize(400, 200), wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2);

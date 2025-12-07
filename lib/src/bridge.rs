@@ -210,6 +210,7 @@ pub mod ffi {
 		fn parse_document(file_path: &str, password: &str) -> Result<FfiDocument>;
 		fn get_parser_for_extension(extension: &str) -> Result<String>;
 		fn convert_xml_to_text(content: &str) -> Result<FfiXmlConversion>;
+		fn markdown_to_text(input: &str) -> String;
 	}
 }
 
@@ -435,6 +436,10 @@ fn collapse_whitespace(input: &str) -> String {
 
 fn trim_string(input: &str) -> String {
 	text::trim_string(input)
+}
+
+fn markdown_to_text(input: &str) -> String {
+	text::markdown_to_text(input)
 }
 
 fn convert_to_utf8(input: &[u8]) -> String {

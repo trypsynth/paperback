@@ -396,6 +396,19 @@ private:
 	bool find_and_select_item_by_name(const wxString& name, const wxTreeItemId& parent);
 };
 
+class update_dialog : public dialog {
+public:
+	update_dialog(wxWindow* parent, const wxString& new_version, const wxString& changelog);
+	~update_dialog() override = default;
+	update_dialog(const update_dialog&) = delete;
+	update_dialog& operator=(const update_dialog&) = delete;
+	update_dialog(update_dialog&&) = delete;
+	update_dialog& operator=(update_dialog&&) = delete;
+
+private:
+	wxTextCtrl* changelog_ctrl{nullptr};
+};
+
 class view_note_dialog : public dialog {
 public:
 	view_note_dialog(wxWindow* parent, const wxString& note_text);
