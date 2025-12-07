@@ -136,9 +136,31 @@ pub fn reader_search(
 	if needle.is_empty() {
 		return -1;
 	}
-	let start = start.clamp(0, haystack.len() as i64) as usize;
+	let start_utf16 = start.clamp(0, i64::MAX) as usize;
 	let haystack = if match_case { haystack.to_string() } else { haystack.to_lowercase() };
 	let needle = if match_case { needle.to_string() } else { needle.to_lowercase() };
+	let utf16_to_byte_index = |s: &str, utf16_idx: usize| -> usize {
+		let mut utf16_count = 0usize;
+		for (byte_idx, ch) in s.char_indices() {
+			let len16 = ch.len_utf16();
+			if utf16_count >= utf16_idx {
+				return byte_idx;
+			}
+			utf16_count += len16;
+		}
+		s.len()
+	};
+	let byte_to_utf16_index = |s: &str, byte_idx: usize| -> usize {
+		let mut utf16_count = 0usize;
+		for (idx, ch) in s.char_indices() {
+			if idx >= byte_idx {
+				break;
+			}
+			utf16_count += ch.len_utf16();
+		}
+		utf16_count
+	};
+	let start_byte = utf16_to_byte_index(&haystack, start_utf16);
 	if regex {
 		let mut pattern = needle;
 		if whole_word {
@@ -153,16 +175,20 @@ pub fn reader_search(
 			Err(_) => return -1,
 		};
 		if forward {
-			if let Some(m) = re.find(&haystack[start..]) {
-				return (start + m.start()) as i64;
+			if let Some(m) = re.find(&haystack[start_byte..]) {
+				let byte_pos = start_byte + m.start();
+				let utf16_pos = byte_to_utf16_index(&haystack, byte_pos);
+				return utf16_pos as i64;
 			}
 		} else {
 			let mut last: Option<usize> = None;
-			for m in re.find_iter(&haystack[..=start.min(haystack.len().saturating_sub(1))]) {
+			let end_byte = start_byte.min(haystack.len());
+			for m in re.find_iter(&haystack[..end_byte]) {
 				last = Some(m.start());
 			}
 			if let Some(pos) = last {
-				return pos as i64;
+				let utf16_pos = byte_to_utf16_index(&haystack, pos);
+				return utf16_pos as i64;
 			}
 		}
 		return -1;
@@ -175,11 +201,12 @@ pub fn reader_search(
 		boundary_before && boundary_after
 	};
 	if forward {
-		let slice = &haystack[start..];
+		let slice = &haystack[start_byte..];
 		if let Some(idx) = slice.find(&needle) {
-			let global = start + idx;
+			let global = start_byte + idx;
 			if !whole_word || check_whole_word(&haystack, global, needle.len()) {
-				return global as i64;
+				let utf16_pos = byte_to_utf16_index(&haystack, global);
+				return utf16_pos as i64;
 			}
 			// Keep searching forward for the next occurrence that matches whole word
 			let mut cursor = global + 1;
@@ -187,7 +214,8 @@ pub fn reader_search(
 				if let Some(next_idx) = haystack[cursor..].find(&needle) {
 					let candidate = cursor + next_idx;
 					if !whole_word || check_whole_word(&haystack, candidate, needle.len()) {
-						return candidate as i64;
+						let utf16_pos = byte_to_utf16_index(&haystack, candidate);
+						return utf16_pos as i64;
 					}
 					cursor = candidate + 1;
 				} else {
@@ -196,7 +224,7 @@ pub fn reader_search(
 			}
 		}
 	} else {
-		let slice = &haystack[..start];
+		let slice = &haystack[..start_byte];
 		let mut last = None;
 		let mut search_start = 0;
 		while let Some(idx) = slice[search_start..].find(&needle) {
@@ -207,7 +235,8 @@ pub fn reader_search(
 			search_start = candidate + 1;
 		}
 		if let Some(pos) = last {
-			return pos as i64;
+			let utf16_pos = byte_to_utf16_index(&haystack, pos);
+			return utf16_pos as i64;
 		}
 	}
 	-1
