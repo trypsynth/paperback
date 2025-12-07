@@ -346,7 +346,7 @@ msgstr "Общие"
 
 #: app/dialogs.cpp
 msgid "&Restore previously opened documents on startup"
-msgstr "Востанавлевать ранее открытые документы при запуске"
+msgstr "Восстанавливать ранее открытые документы при запуске"
 
 #: app/dialogs.cpp
 msgid "&Word wrap"
