@@ -200,7 +200,7 @@ msgstr "Заголовок: "
 
 #: app/dialogs.cpp
 msgid "Author: "
-msgstr "Афтор: "
+msgstr "Автор: "
 
 #: app/dialogs.cpp
 msgid "Path: "
