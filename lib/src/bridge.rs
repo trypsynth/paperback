@@ -220,7 +220,7 @@ use self::ffi::UpdateStatus;
 use crate::{
 	config::{Bookmark, ConfigManager as RustConfigManager, NavigationHistory},
 	document::{DocumentHandle, MarkerType, ParserContext, TocItem},
-	markdown_to_text, parser, update as update_module,
+	parser, update as update_module,
 	utils::{encoding, text, zip as zip_module},
 	xml_to_text::XmlToText,
 };
@@ -439,7 +439,7 @@ fn trim_string(input: &str) -> String {
 }
 
 fn markdown_to_text(input: &str) -> String {
-	markdown_to_text::markdown_to_text(input)
+	text::markdown_to_text(input)
 }
 
 fn convert_to_utf8(input: &[u8]) -> String {
