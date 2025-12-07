@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>Translations &ndash; Paperback</title>
+</head>
+<body>
+	<header>
+		<a href="#content-anchor">Skip to main content</a>
+		<nav>
+			<ul style="list-style-type:none;">
+				
+					
+					
+						<li><a href="/">Home</a></li>
+					
+				
+					
+					
+						<li><a href="/downloads">Downloads</a></li>
+					
+				
+					
+					
+						<li><a href="/readme.html">Documentation</a></li>
+					
+				
+					
+					
+						<li><a href="/translations">Translations</a></li>
+					
+				
+					
+					
+						<li><a href="https://github.com/trypsynth/paperback">Source code</a></li>
+					
+				
+					
+					
+						<li><a href="https://github.com/sponsors/trypsynth">Sponsor</a></li>
+					
+				
+					
+					
+						<li><a href="https://paypal.me/tygillespie05">Donate</a></li>
+					
+				
+			</ul>
+		</nav>
+	</header>
+	<main>
+		<div id="content-anchor"></div>
+
+<h2>Translation Guide</h2>
+<p>Thank you for your interest in translating Paperback! This page walks you through how to start a brand new translation, how to keep it updated when new strings land, and how to submit your work.</p>
+<p>Prerequisites: Install the gettext tools (<code>xgettext</code>, <code>msgmerge</code>, <code>msgfmt</code>) and ensure they are available on your <code>PATH</code>.</p>
+<p>All translation files live in the <code>po</code> directory. The template file is <code>paperback.pot</code>, and each language is stored as <code>po/&lt;lang&gt;.po</code> using the standard language code (for example: <code>es</code>, <code>pt_BR</code>, <code>de</code>).</p>
+<h2>Starting a New Translation</h2>
+<ol>
+<li>Generate the <code>.pot</code> template (normally not necessary, but it keeps everything in sync):</li>
+</ol>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">cmake --build build --target update-pot
+</span></code></pre>
+<ol start="2">
+<li>Create your language file:</li>
+</ol>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">cp paperback.pot your-lang-code.po
+</span></code></pre>
+<ol start="3">
+<li>Edit the header in your <code>.po</code> file with the correct language name, your name, and email.</li>
+<li>Translate the strings using your editor of choice. Keep placeholders and shortcut markers intact (see Notes below).</li>
+<li>Verify the file compiles cleanly:</li>
+</ol>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">msgfmt --check --verbose es.po
+</span></code></pre>
+<ol start="6">
+<li>Test your translation by recompiling Paperback and selecting it from the options dialog.</li>
+</ol>
+<h2>Updating an Existing Translation</h2>
+<p>When new strings are added to Paperback:</p>
+<ol>
+<li>Update the template (if not already done):</li>
+</ol>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">cmake --build build --target update-pot
+</span></code></pre>
+<ol start="2">
+<li>Merge new strings into your translation:</li>
+</ol>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#c0c5ce;">msgmerge -U es.po paperback.pot
+</span></code></pre>
+<ol start="3">
+<li>Translate the new or fuzzy strings. Anything marked with <code>fuzzy</code> needs a review, and any empty strings are brand new.</li>
+<li>Remove fuzzy markers once done reviewing.</li>
+<li>Compile and test (same as step 6 above).</li>
+</ol>
+<h2>Submitting Your Translation</h2>
+<ol>
+<li>Fork the repository and create a branch.</li>
+<li>Commit your updated <code>po/&lt;lang&gt;.po</code> file (and <code>paperback.pot</code> only if you regenerated it).</li>
+<li>Open a pull request here: <a href="https://github.com/trypsynth/paperback/compare">Create a pull request</a>.</li>
+</ol>
+<p>If you prefer not to use Git, you can also attach your <code>.po</code> file to an issue and we'll merge it for you.</p>
+<h2>Notes</h2>
+<ol>
+<li>Keyboard shortcuts: Keep the <code>\t</code> and key name together.</li>
+<li>Format strings: Keep the <code>%s</code>, <code>%d</code>, and similar placeholders.</li>
+<li>Ampersands (&amp;): Used for keyboard shortcuts. Choose different letters if the same key is used twice in a menu.</li>
+<li>Punctuation and spacing: Match the source string for ellipses, colons, and spacing so UI alignment stays consistent.</li>
+<li>Encoding: Files should stay UTF-8 without a BOM.</li>
+</ol>
+
+	</main>
+	<footer>
+		Copyright &copy; 2025 Quin Gillespie. All rights reserved.
+	</footer>
+</body>
+</html>
+
