@@ -7,6 +7,7 @@ pub mod document;
 mod html_to_text;
 pub mod parser;
 mod pdfium;
+mod reader_core;
 mod update;
 mod utils;
 mod xml_to_text;

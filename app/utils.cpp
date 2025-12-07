@@ -28,93 +28,18 @@
 #include <wx/strconv.h>
 #include <wx/string.h>
 
-namespace {
-constexpr unsigned char UTF8_NBSP_FIRST = 0xC2;
-constexpr unsigned char UTF8_NBSP_SECOND = 0xA0;
-
-long find_text_regex(const wxString& haystack, const wxString& needle, long start, find_options options) {
-	const auto forward = has_option(options, find_options::forward);
-	const auto match_case = has_option(options, find_options::match_case);
-	const auto match_whole_word = has_option(options, find_options::match_whole_word);
-	try {
-		auto pattern = needle.ToStdString();
-		const auto text = haystack.ToStdString();
-		if (match_whole_word) {
-			pattern = "\\b" + pattern + "\\b";
-		}
-		std::regex_constants::syntax_option_type flags = std::regex_constants::ECMAScript;
-		if (!match_case) {
-			flags |= std::regex_constants::icase;
-		}
-		const std::regex rx(pattern, flags);
-		if (forward) {
-			std::cmatch m;
-			const char* begin = text.c_str() + std::min<size_t>(static_cast<size_t>(start), text.size());
-			if (std::regex_search(begin, text.c_str() + text.size(), m, rx)) {
-				return static_cast<long>(m[0].first - text.c_str());
-			}
-		} else {
-			long last_match = wxNOT_FOUND;
-			std::cmatch m;
-			const char* base = text.c_str();
-			const size_t end = std::min<size_t>(static_cast<size_t>(start), text.size());
-			const char* cur = base;
-			while (cur <= base + end) {
-				if (std::regex_search(cur, base + end, m, rx)) {
-					last_match = static_cast<long>(m[0].first - base);
-					cur = m[0].first + 1;
-				} else {
-					break;
-				}
-			}
-			return last_match;
-		}
-	} catch (...) {
-		return wxNOT_FOUND;
-	}
-	return wxNOT_FOUND;
-}
-
-long find_text_literal(const wxString& haystack, const wxString& needle, long start, find_options options) {
-	const auto forward = has_option(options, find_options::forward);
-	const auto match_case = has_option(options, find_options::match_case);
-	const auto match_whole_word = has_option(options, find_options::match_whole_word);
-	const auto& search_haystack = match_case ? haystack : haystack.Lower();
-	const auto& search_needle = match_case ? needle : needle.Lower();
-	if (!match_whole_word) {
-		return forward ? static_cast<long>(search_haystack.find(search_needle, static_cast<size_t>(start))) : static_cast<long>(search_haystack.Left(start).rfind(search_needle));
-	}
-	long pos = start;
-	while (true) {
-		pos = forward ? static_cast<long>(search_haystack.find(search_needle, static_cast<size_t>(pos))) : static_cast<long>(search_haystack.Left(static_cast<size_t>(pos)).rfind(search_needle));
-		if (pos == static_cast<long>(wxNOT_FOUND)) {
-			break;
-		}
-		const bool word_start = (pos == 0) || (wxIsalnum(haystack[static_cast<size_t>(pos) - 1]) == 0);
-		const bool word_end = (static_cast<size_t>(pos) + needle.length() >= haystack.length()) || (wxIsalnum(haystack[static_cast<size_t>(pos) + needle.length()]) == 0);
-		if (word_start && word_end) {
-			return pos;
-		}
-		pos = forward ? pos + 1 : pos - 1;
-		if (forward && static_cast<size_t>(pos) >= haystack.length()) {
-			break;
-		}
-		if (!forward && pos < 0) {
-			break;
-		}
-	}
-	return wxNOT_FOUND;
-}
-} // namespace
-
 long find_text(const wxString& haystack, const wxString& needle, long start, find_options options) {
 	if (needle.empty()) {
 		return wxNOT_FOUND;
 	}
-	if (has_option(options, find_options::use_regex)) {
-		return find_text_regex(haystack, needle, start, options);
-	}
-	return find_text_literal(haystack, needle, start, options);
+	const bool forward = has_option(options, find_options::forward);
+	const bool match_case = has_option(options, find_options::match_case);
+	const bool match_whole_word = has_option(options, find_options::match_whole_word);
+	const bool use_regex = has_option(options, find_options::use_regex);
+	const std::string hay = std::string(haystack.ToUTF8());
+	const std::string ned = std::string(needle.ToUTF8());
+	const auto result = reader_search(hay, ned, start, forward, match_case, match_whole_word, use_regex);
+	return result < 0 ? wxNOT_FOUND : static_cast<long>(result);
 }
 
 const parser_info* get_parser_for_unknown_file(const wxString& path, config_manager& config) {

@@ -43,51 +43,43 @@ int to_rust_marker(marker_type type) {
 }
 
 bool is_heading_marker(marker_type type) {
-	return type >= marker_type::heading_1 && type <= marker_type::heading_6;
+	switch (type) {
+		case marker_type::Heading1:
+		case marker_type::Heading2:
+		case marker_type::Heading3:
+		case marker_type::Heading4:
+		case marker_type::Heading5:
+		case marker_type::Heading6:
+			return true;
+		default:
+			return false;
+	}
 }
 
-int doc_next_section_index(const document& doc, long position) {
-	return document_next_marker(**doc.handle, position, to_rust_marker(marker_type::section_break));
-}
-
-int doc_previous_section_index(const document& doc, long position) {
-	return document_previous_marker(**doc.handle, position, to_rust_marker(marker_type::section_break));
+std::optional<NavResult> perform_navigation(const document& doc, long position, NavTarget target, NavDirection direction, bool wrap, int level_filter = 0) {
+	NavRequest request{};
+	request.position = position;
+	request.wrap = wrap;
+	request.direction = direction;
+	request.target = target;
+	request.level_filter = level_filter;
+	const NavResult result = reader_navigate(**doc.handle, request);
+	if (!result.found) {
+		return std::nullopt;
+	}
+	return result;
 }
 
 int doc_section_index(const document& doc, size_t position) {
-	return document_current_marker(**doc.handle, position, to_rust_marker(marker_type::section_break));
-}
-
-size_t doc_offset_for_section(const document& doc, int section_index) {
-	return document_marker_position(**doc.handle, section_index);
-}
-
-int doc_next_page_index(const document& doc, long position) {
-	return document_next_marker(**doc.handle, position, to_rust_marker(marker_type::page_break));
-}
-
-int doc_previous_page_index(const document& doc, long position) {
-	return document_previous_marker(**doc.handle, position, to_rust_marker(marker_type::page_break));
+	return document_current_marker(**doc.handle, position, to_rust_marker(marker_type::SectionBreak));
 }
 
 int doc_page_index(const document& doc, size_t position) {
-	return document_current_marker(**doc.handle, position, to_rust_marker(marker_type::page_break));
-}
-
-size_t doc_offset_for_page(const document& doc, int page_index) {
-	return document_marker_position(**doc.handle, page_index);
+	return document_current_marker(**doc.handle, position, to_rust_marker(marker_type::PageBreak));
 }
 
 size_t doc_find_closest_toc_offset(const document& doc, size_t position) {
 	return document_find_closest_toc_offset(**doc.handle, position);
-}
-
-int doc_next_heading_index(const document& doc, long position, int level) {
-	return document_next_heading(**doc.handle, position, level);
-}
-
-int doc_previous_heading_index(const document& doc, long position, int level) {
-	return document_previous_heading(**doc.handle, position, level);
 }
 
 std::vector<const marker*> doc_get_heading_markers(const document& doc, int level = -1) {
@@ -101,10 +93,6 @@ std::vector<const marker*> doc_get_heading_markers(const document& doc, int leve
 		}
 	}
 	return result;
-}
-
-size_t doc_offset_for_heading(const document& doc, int heading_index) {
-	return document_marker_position(**doc.handle, heading_index);
 }
 
 int doc_next_marker_index(const document& doc, long position, marker_type type) {
@@ -411,53 +399,18 @@ void document_manager::navigate_to_section(bool next) const {
 		speak(_("No sections."));
 		return;
 	}
-	const int current_pos = text_ctrl->GetInsertionPoint();
-	bool wrapping = false;
-	// Special case for previous: if we're past the section start, go to section start first.
-	if (!next) {
-		const int current_index = doc_section_index(*doc, static_cast<size_t>(current_pos));
-		if (current_index != -1) {
-			const size_t current_section_offset = doc_offset_for_section(*doc, current_index);
-			if (static_cast<size_t>(current_pos) > current_section_offset) {
-				text_ctrl->SetInsertionPoint(static_cast<long>(current_section_offset));
-				long line{0};
-				text_ctrl->PositionToXY(static_cast<long>(current_section_offset), nullptr, &line);
-				const wxString current_line = text_ctrl->GetLineText(line);
-				speak(current_line);
-				return;
-			}
-		}
+	const bool wrap = config.get(config_manager::navigation_wrap);
+	const auto nav = perform_navigation(*doc, text_ctrl->GetInsertionPoint(), NavTarget::Section, next ? NavDirection::Next : NavDirection::Previous, wrap);
+	if (!nav.has_value()) {
+		speak(next ? _("No next section") : _("No previous section"));
+		return;
 	}
-	int search_pos = current_pos;
-	if (!next) {
-		const int current_index = doc_section_index(*doc, static_cast<size_t>(current_pos));
-		if (current_index != -1) {
-			const size_t current_section_offset = doc_offset_for_section(*doc, current_index);
-			if (static_cast<size_t>(current_pos) <= current_section_offset) {
-				// We're at the start of the current section, so search from just before the section marker.
-				search_pos = current_section_offset > 0 ? static_cast<int>(current_section_offset - 1) : 0;
-			}
-		}
-	}
-	int target_index = next ? doc_next_section_index(*doc, current_pos) : doc_previous_section_index(*doc, search_pos);
-	if (target_index == -1) {
-		if (config.get(config_manager::navigation_wrap)) {
-			target_index = next ? doc_next_section_index(*doc, -1) : doc_previous_section_index(*doc, text_ctrl->GetLastPosition() + 1);
-			if (target_index != -1) {
-				wrapping = true;
-			}
-		}
-		if (target_index == -1) {
-			speak(next ? _("No next section") : _("No previous section"));
-			return;
-		}
-	}
-	const size_t offset = doc_offset_for_section(*doc, target_index);
-	text_ctrl->SetInsertionPoint(static_cast<long>(offset));
+	const long offset = static_cast<long>(nav->offset);
+	text_ctrl->SetInsertionPoint(offset);
 	long line{0};
-	text_ctrl->PositionToXY(static_cast<long>(offset), nullptr, &line);
+	text_ctrl->PositionToXY(offset, nullptr, &line);
 	const wxString current_line = text_ctrl->GetLineText(line);
-	if (wrapping) {
+	if (nav->wrapped) {
 		speak((next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + current_line);
 	} else {
 		speak(current_line);
@@ -494,32 +447,24 @@ void document_manager::navigate_to_page(bool next) const {
 	if (doc == nullptr || text_ctrl == nullptr) {
 		return;
 	}
-	if (doc_count_markers_by_type(*doc, marker_type::page_break) == 0) {
+	if (doc_count_markers_by_type(*doc, marker_type::PageBreak) == 0) {
 		speak(_("No pages."));
 		return;
 	}
-	const int current_pos = text_ctrl->GetInsertionPoint();
-	bool wrapping = false;
-	int target_index = next ? doc_next_page_index(*doc, current_pos) : doc_previous_page_index(*doc, current_pos);
-	if (target_index == -1) {
-		if (config.get(config_manager::navigation_wrap)) {
-			target_index = next ? doc_next_page_index(*doc, -1) : doc_previous_page_index(*doc, text_ctrl->GetLastPosition() + 1);
-			if (target_index != -1) {
-				wrapping = true;
-			}
-		}
-		if (target_index == -1) {
-			speak(next ? _("No next page.") : _("No previous page."));
-			return;
-		}
+	const bool wrap = config.get(config_manager::navigation_wrap);
+	const auto nav = perform_navigation(*doc, text_ctrl->GetInsertionPoint(), NavTarget::Page, next ? NavDirection::Next : NavDirection::Previous, wrap);
+	if (!nav.has_value()) {
+		speak(next ? _("No next page.") : _("No previous page."));
+		return;
 	}
-	const size_t offset = doc_offset_for_page(*doc, target_index);
-	text_ctrl->SetInsertionPoint(static_cast<long>(offset));
+	const long offset = static_cast<long>(nav->offset);
+	text_ctrl->SetInsertionPoint(offset);
 	long line{0};
-	text_ctrl->PositionToXY(static_cast<long>(offset), nullptr, &line);
+	text_ctrl->PositionToXY(offset, nullptr, &line);
 	const wxString current_line = text_ctrl->GetLineText(line);
-	wxString message = wxString::Format(_("Page %d: %s"), target_index + 1, current_line);
-	if (wrapping) {
+	const int page_idx = doc_page_index(*doc, nav->offset);
+	wxString message = wxString::Format(_("Page %d: %s"), page_idx + 1, current_line);
+	if (nav->wrapped) {
 		message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
 	}
 	speak(message);
@@ -688,16 +633,16 @@ void document_manager::navigate_to_link(bool next) const {
 	if (doc == nullptr || text_ctrl == nullptr) {
 		return;
 	}
-	if (doc_count_markers_by_type(*doc, marker_type::link) == 0) {
+	if (doc_count_markers_by_type(*doc, marker_type::Link) == 0) {
 		speak(_("No links."));
 		return;
 	}
 	const int current_pos = text_ctrl->GetInsertionPoint();
 	bool wrapping = false;
-	int target_index = next ? doc_next_marker_index(*doc, current_pos, marker_type::link) : doc_previous_marker_index(*doc, current_pos, marker_type::link);
+	int target_index = next ? doc_next_marker_index(*doc, current_pos, marker_type::Link) : doc_previous_marker_index(*doc, current_pos, marker_type::Link);
 	if (target_index == -1) {
 		if (config.get(config_manager::navigation_wrap)) {
-			target_index = next ? doc_next_marker_index(*doc, -1, marker_type::link) : doc_previous_marker_index(*doc, text_ctrl->GetLastPosition() + 1, marker_type::link);
+			target_index = next ? doc_next_marker_index(*doc, -1, marker_type::Link) : doc_previous_marker_index(*doc, text_ctrl->GetLastPosition() + 1, marker_type::Link);
 			if (target_index != -1) {
 				wrapping = true;
 			}
@@ -809,7 +754,7 @@ void document_manager::activate_current_link() const {
 		return;
 	}
 	const long current_pos = text_ctrl->GetInsertionPoint();
-	const int link_index = doc_current_marker_index(*doc, static_cast<size_t>(current_pos), marker_type::link);
+	const int link_index = doc_current_marker_index(*doc, static_cast<size_t>(current_pos), marker_type::Link);
 	if (link_index == -1) {
 		return;
 	}
@@ -872,9 +817,9 @@ void document_manager::activate_current_link() const {
 				auto it = std::ranges::find(doc->spine_items, std::string(manifest_id.mb_str()));
 				if (it != doc->spine_items.end()) {
 					const int spine_index = static_cast<int>(std::distance(doc->spine_items.begin(), it));
-					size_t section_start = doc_get_marker_position_by_index(*doc, marker_type::section_break, spine_index);
+					size_t section_start = doc_get_marker_position_by_index(*doc, marker_type::SectionBreak, spine_index);
 					size_t section_end = (spine_index + 1 < static_cast<int>(doc->spine_items.size()))
-						? doc_get_marker_position_by_index(*doc, marker_type::section_break, spine_index + 1)
+						? doc_get_marker_position_by_index(*doc, marker_type::SectionBreak, spine_index + 1)
 						: doc->content.length();
 					size_t offset = section_start;
 					if (!fragment.empty()) {
@@ -922,44 +867,40 @@ void document_manager::navigate_to_list(bool next) const {
 		speak(_("No lists."));
 		return;
 	}
-	if (doc_count_markers_by_type(*doc, marker_type::list) == 0) {
+	if (doc_count_markers_by_type(*doc, marker_type::List) == 0) {
 		speak(_("No lists."));
 		return;
 	}
-	const int current_pos = text_ctrl->GetInsertionPoint();
-	bool wrapping = false;
-	int target_index = next ? doc_next_marker_index(*doc, current_pos, marker_type::list) : doc_previous_marker_index(*doc, current_pos, marker_type::list);
-	if (target_index == -1) {
-		if (config.get(config_manager::navigation_wrap)) {
-			target_index = next ? doc_next_marker_index(*doc, -1, marker_type::list) : doc_previous_marker_index(*doc, text_ctrl->GetLastPosition() + 1, marker_type::list);
-			if (target_index != -1) {
-				wrapping = true;
-			}
-		}
-		if (target_index == -1) {
-			speak(next ? _("No next list.") : _("No previous list."));
-			return;
-		}
+	const bool wrap = config.get(config_manager::navigation_wrap);
+	const auto nav = perform_navigation(*doc, text_ctrl->GetInsertionPoint(), NavTarget::List, next ? NavDirection::Next : NavDirection::Previous, wrap);
+	if (!nav.has_value()) {
+		speak(next ? _("No next list.") : _("No previous list."));
+		return;
 	}
-	const marker* list_marker = doc_get_marker(*doc, target_index);
+	go_to_position(static_cast<long>(nav->offset));
+	const int list_marker_index = doc_current_marker_index(*doc, nav->offset, marker_type::List);
+	const marker* list_marker = doc_get_marker(*doc, list_marker_index);
+	int list_size = nav->marker_level;
+	if (list_marker != nullptr && list_marker->level > 0) {
+		list_size = list_marker->level;
+	}
+	wxString message = wxString::Format(_("List with %d items"), list_size);
 	if (list_marker != nullptr) {
-		wxString message = wxString::Format(_("List with %d items"), list_marker->level);
-		const int first_item_index = doc_find_first_marker_after(*doc, static_cast<long>(list_marker->pos), marker_type::list_item);
+		const int first_item_index = doc_find_first_marker_after(*doc, static_cast<long>(list_marker->pos), marker_type::ListItem);
 		const marker* first_item_marker = doc_get_marker(*doc, first_item_index);
 		if (first_item_marker != nullptr) {
-			go_to_position(static_cast<long>(first_item_marker->pos));
 			long line_num{0};
 			text_ctrl->PositionToXY(static_cast<long>(first_item_marker->pos), nullptr, &line_num);
 			wxString line_text = text_ctrl->GetLineText(line_num).Trim();
-			message += " " + line_text;
-		} else {
-			go_to_position(static_cast<long>(list_marker->pos));
+			if (!line_text.IsEmpty()) {
+				message += " " + line_text;
+			}
 		}
-		if (wrapping) {
-			message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
-		}
-		speak(message);
 	}
+	if (nav->wrapped) {
+		message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
+	}
+	speak(message);
 }
 
 void document_manager::go_to_previous_list() const {
@@ -981,52 +922,31 @@ void document_manager::navigate_to_list_item(bool next) const {
 		speak(_("No lists."));
 		return;
 	}
-	if (doc_count_markers_by_type(*doc, marker_type::list_item) == 0) {
+	if (doc_count_markers_by_type(*doc, marker_type::ListItem) == 0) {
 		speak(_("No list items."));
 		return;
 	}
 	const int current_pos = text_ctrl->GetInsertionPoint();
-	// Using current_marker_index with list_item can incorrectly return the previous list item when the caret is outside a list. As such, we instead check for a list_item marker exactly at the current line start.
-	long current_line_num{0};
-	text_ctrl->PositionToXY(current_pos, nullptr, &current_line_num);
-	const long current_line_start = text_ctrl->XYToPosition(0, current_line_num);
-	int marker_index_at_line = doc_find_first_marker_after(*doc, current_line_start, marker_type::list_item);
-	const marker* line_item_marker = doc_get_marker(*doc, marker_index_at_line);
-	int current_list_index{-1};
-	if (line_item_marker != nullptr && static_cast<long>(line_item_marker->pos) == current_line_start) {
-		current_list_index = doc_current_marker_index(*doc, line_item_marker->pos, marker_type::list);
+	const int current_list_index = doc_current_marker_index(*doc, static_cast<size_t>(current_pos), marker_type::List);
+	const bool wrap = config.get(config_manager::navigation_wrap);
+	const auto nav = perform_navigation(*doc, current_pos, NavTarget::ListItem, next ? NavDirection::Next : NavDirection::Previous, wrap);
+	if (!nav.has_value()) {
+		speak(next ? _("No next list item.") : _("No previous list item."));
+		return;
 	}
-	bool wrapping = false;
-	int target_index = next ? doc_next_marker_index(*doc, current_pos, marker_type::list_item) : doc_previous_marker_index(*doc, current_pos, marker_type::list_item);
-	if (target_index == -1) {
-		if (config.get(config_manager::navigation_wrap)) {
-			target_index = next ? doc_next_marker_index(*doc, -1, marker_type::list_item) : doc_previous_marker_index(*doc, text_ctrl->GetLastPosition() + 1, marker_type::list_item);
-			if (target_index != -1) {
-				wrapping = true;
-			}
-		}
-		if (target_index == -1) {
-			speak(next ? _("No next list item.") : _("No previous list item."));
-			return;
-		}
+	go_to_position(static_cast<long>(nav->offset));
+	const int target_list_index = doc_current_marker_index(*doc, nav->offset, marker_type::List);
+	const marker* target_list_marker = doc_get_marker(*doc, target_list_index);
+	long line_num{0};
+	text_ctrl->PositionToXY(static_cast<long>(nav->offset), nullptr, &line_num);
+	wxString message = text_ctrl->GetLineText(line_num).Trim();
+	if (target_list_index != -1 && target_list_index != current_list_index && target_list_marker != nullptr && target_list_marker->level > 0) {
+		message = wxString::Format(_("List with %d items "), target_list_marker->level) + message;
 	}
-	const marker* list_item_marker = doc_get_marker(*doc, target_index);
-	if (list_item_marker != nullptr) {
-		const int target_list_index = doc_current_marker_index(*doc, list_item_marker->pos, marker_type::list);
-		const marker* target_list_marker = doc_get_marker(*doc, target_list_index);
-		wxString message;
-		if (target_list_index != -1 && target_list_index != current_list_index && target_list_marker != nullptr) {
-			message += wxString::Format(_("List with %d items "), target_list_marker->level);
-		}
-		go_to_position(static_cast<long>(list_item_marker->pos));
-		long line_num{0};
-		text_ctrl->PositionToXY(static_cast<long>(list_item_marker->pos), nullptr, &line_num);
-		message += text_ctrl->GetLineText(line_num).Trim();
-		if (wrapping) {
-			message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
-		}
-		speak(message);
+	if (nav->wrapped) {
+		message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
 	}
+	speak(message);
 }
 
 void document_manager::go_to_previous_list_item() const {
@@ -1373,33 +1293,22 @@ void document_manager::navigate_to_heading(bool next, int specific_level) const 
 		speak(_("No headings."));
 		return;
 	}
-	const int current_pos = text_ctrl->GetInsertionPoint();
-	int target_index = -1;
-	bool wrapping = false;
-	target_index = next ? doc_next_heading_index(*doc, current_pos, specific_level) : doc_previous_heading_index(*doc, current_pos, specific_level);
-	if (target_index == -1) {
-		if (config.get(config_manager::navigation_wrap)) {
-			target_index = next ? doc_next_heading_index(*doc, -1, specific_level) : doc_previous_heading_index(*doc, text_ctrl->GetLastPosition() + 1, specific_level);
-			if (target_index != -1) {
-				wrapping = true;
-			}
-		}
-		if (target_index == -1) {
-			const wxString msg = (specific_level == -1) ? wxString::Format(_("No %s heading"), next ? _("next") : _("previous")) : wxString::Format(_("No %s heading at level %d"), next ? _("next") : _("previous"), specific_level);
-			speak(msg);
-			return;
-		}
+	const bool wrap = config.get(config_manager::navigation_wrap);
+	const auto nav = perform_navigation(*doc, text_ctrl->GetInsertionPoint(), NavTarget::Heading, next ? NavDirection::Next : NavDirection::Previous, wrap, specific_level);
+	if (!nav.has_value()) {
+		const wxString msg = (specific_level == -1) ? wxString::Format(_("No %s heading"), next ? _("next") : _("previous")) : wxString::Format(_("No %s heading at level %d"), next ? _("next") : _("previous"), specific_level);
+		speak(msg);
+		return;
 	}
-	const size_t offset = doc_offset_for_heading(*doc, target_index);
-	text_ctrl->SetInsertionPoint(static_cast<long>(offset));
-	const marker* heading_marker = doc_get_marker(*doc, target_index);
-	if (heading_marker != nullptr) {
-		wxString message;
-		if (wrapping) {
-			message = wxString::Format(_("Wrapping to %s. %s Heading level %d"), next ? _("start") : _("end"), heading_marker->text, heading_marker->level);
-		} else {
-			message = wxString::Format(_("%s Heading level %d"), heading_marker->text, heading_marker->level);
-		}
-		speak(message);
+	const long offset = static_cast<long>(nav->offset);
+	text_ctrl->SetInsertionPoint(offset);
+	wxString message;
+	const std::string heading_text_utf8 = std::string(nav->marker_text);
+	const wxString heading_wx = wxString::FromUTF8(heading_text_utf8.c_str());
+	if (nav->wrapped) {
+		message = wxString::Format(_("Wrapping to %s. %s Heading level %d"), next ? _("start") : _("end"), heading_wx, nav->marker_level);
+	} else {
+		message = wxString::Format(_("%s Heading level %d"), heading_wx, nav->marker_level);
 	}
+	speak(message);
 }

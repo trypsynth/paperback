@@ -614,9 +614,9 @@ void main_window::on_go_to_page(wxCommandEvent&) {
 		return;
 	}
 	const int page = dlg.get_page_number();
-	const size_t total_pages = doc_manager->marker_count(marker_type::page_break);
+	const size_t total_pages = doc_manager->marker_count(marker_type::PageBreak);
 	if (page >= 1 && std::cmp_less_equal(static_cast<size_t>(page), total_pages)) {
-		const size_t offset = doc_manager->marker_position_by_index(marker_type::page_break, page - 1); // Convert to 0-based index
+		const size_t offset = doc_manager->marker_position_by_index(marker_type::PageBreak, page - 1); // Convert to 0-based index
 		doc_manager->go_to_position(static_cast<long>(offset));
 		update_status_bar();
 		save_position_immediately();

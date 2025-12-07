@@ -16,20 +16,7 @@
 #include <vector>
 #include <wx/string.h>
 
-enum class marker_type : int {
-	heading_1 = 0,
-	heading_2,
-	heading_3,
-	heading_4,
-	heading_5,
-	heading_6,
-	page_break,
-	section_break,
-	toc_item,
-	link,
-	list,
-	list_item
-};
+using marker_type = MarkerKind;
 
 struct marker {
 	size_t pos;

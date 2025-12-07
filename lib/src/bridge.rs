@@ -27,6 +27,54 @@ pub mod ffi {
 		pub flags: u32,
 	}
 
+	#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+	#[repr(i32)]
+	pub enum MarkerKind {
+		Heading1 = 0,
+		Heading2 = 1,
+		Heading3 = 2,
+		Heading4 = 3,
+		Heading5 = 4,
+		Heading6 = 5,
+		PageBreak = 6,
+		SectionBreak = 7,
+		TocItem = 8,
+		Link = 9,
+		List = 10,
+		ListItem = 11,
+	}
+
+	#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+	pub enum NavDirection {
+		Next,
+		Previous,
+	}
+
+	#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+	pub enum NavTarget {
+		Section,
+		Page,
+		Heading,
+		List,
+		ListItem,
+	}
+
+	pub struct NavRequest {
+		pub position: i64,
+		pub wrap: bool,
+		pub direction: NavDirection,
+		pub target: NavTarget,
+		pub level_filter: i32,
+	}
+
+	pub struct NavResult {
+		pub found: bool,
+		pub wrapped: bool,
+		pub offset: usize,
+		pub marker_level: i32,
+		pub marker_text: String,
+	}
+
 	pub struct FfiMarker {
 		pub marker_type: i32,
 		pub position: usize,
@@ -211,6 +259,16 @@ pub mod ffi {
 		fn get_parser_for_extension(extension: &str) -> Result<String>;
 		fn convert_xml_to_text(content: &str) -> Result<FfiXmlConversion>;
 		fn markdown_to_text(input: &str) -> String;
+		fn reader_navigate(doc: &DocumentHandle, req: &NavRequest) -> NavResult;
+		fn reader_search(
+			req: &str,
+			needle: &str,
+			start: i64,
+			forward: bool,
+			match_case: bool,
+			whole_word: bool,
+			regex: bool,
+		) -> i64;
 	}
 }
 
@@ -711,4 +769,20 @@ fn document_manifest_items(doc: &DocumentHandle) -> Vec<ffi::FfiManifestItem> {
 		.iter()
 		.map(|(id, path)| ffi::FfiManifestItem { id: id.clone(), path: path.clone() })
 		.collect()
+}
+
+fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavResult {
+	crate::reader_core::reader_navigate(doc, req)
+}
+
+fn reader_search(
+	req: &str,
+	needle: &str,
+	start: i64,
+	forward: bool,
+	match_case: bool,
+	whole_word: bool,
+	regex: bool,
+) -> i64 {
+	crate::reader_core::reader_search(req, needle, start, forward, match_case, whole_word, regex)
 }

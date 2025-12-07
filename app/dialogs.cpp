@@ -40,7 +40,7 @@
 
 namespace {
 bool is_heading_marker(marker_type type) {
-	return type >= marker_type::heading_1 && type <= marker_type::heading_6;
+	return type >= marker_type::Heading1 && type <= marker_type::Heading6;
 }
 
 std::vector<const marker*> markers_by_type(const document* doc, marker_type type) {
@@ -544,7 +544,7 @@ elements_dialog::elements_dialog(wxWindow* parent, const document* doc, long cur
 }
 
 void elements_dialog::populate_links() {
-	const auto link_markers = markers_by_type(doc, marker_type::link);
+	const auto link_markers = markers_by_type(doc, marker_type::Link);
 	int closest_index = -1;
 	for (const auto* link_marker : link_markers) {
 		links_list->Append(link_marker->text);
@@ -807,7 +807,7 @@ int go_to_page_dialog::get_max_page() const {
 	if (!parser_supports(parser_->flags, parser_flags::supports_pages)) {
 		return 1;
 	}
-	return static_cast<int>(count_markers(doc_, marker_type::page_break));
+	return static_cast<int>(count_markers(doc_, marker_type::PageBreak));
 }
 
 go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : dialog(parent, _("Go to Percent")), textbox{text_ctrl} {

@@ -26,7 +26,10 @@ pub fn markdown_to_text(markdown: &str) -> String {
 				if num_len > 0 {
 					let mut end = start + 2 + num_len;
 					if let Some(after_num) = result.get(end..) {
-						if after_num.starts_with(',') || (after_num.starts_with('.') && after_num.get(1..).is_none_or(|s| s.starts_with(char::is_whitespace))) {
+						if after_num.starts_with(',')
+							|| (after_num.starts_with('.')
+								&& after_num.get(1..).is_none_or(|s| s.starts_with(char::is_whitespace)))
+						{
 							end += 1;
 						}
 					}

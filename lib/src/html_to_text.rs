@@ -278,27 +278,27 @@ impl HtmlToText {
 	fn handle_heading(&mut self, tag_name: &str, node: NodeRef<'_, Node>, document: &Html) {
 		if self.flags.contains(ProcessingFlags::IN_BODY)
 			&& tag_name.len() == 2
-				&& tag_name.starts_with('h')
-				&& tag_name.chars().nth(1).is_some_and(|c| c.is_ascii_digit())
-			{
-				if let Some(level_char) = tag_name.chars().nth(1) {
-					if let Some(level) = level_char.to_digit(10) {
-						if (1..=6).contains(&level) {
-							self.finalize_current_line();
-							let heading_offset = self.get_current_text_position();
-							let heading_text = Self::get_element_text(node, document);
-							if !heading_text.is_empty() {
-								#[allow(clippy::cast_possible_wrap)]
-								self.headings.push(HeadingInfo {
-									offset: heading_offset,
-									level: level as i32,
-									text: heading_text,
-								});
-							}
+			&& tag_name.starts_with('h')
+			&& tag_name.chars().nth(1).is_some_and(|c| c.is_ascii_digit())
+		{
+			if let Some(level_char) = tag_name.chars().nth(1) {
+				if let Some(level) = level_char.to_digit(10) {
+					if (1..=6).contains(&level) {
+						self.finalize_current_line();
+						let heading_offset = self.get_current_text_position();
+						let heading_text = Self::get_element_text(node, document);
+						if !heading_text.is_empty() {
+							#[allow(clippy::cast_possible_wrap)]
+							self.headings.push(HeadingInfo {
+								offset: heading_offset,
+								level: level as i32,
+								text: heading_text,
+							});
 						}
 					}
 				}
 			}
+		}
 	}
 
 	fn process_element_children(&mut self, node: NodeRef<'_, Node>, document: &Html, tag_name: &str) {

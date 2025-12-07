@@ -18,6 +18,7 @@ ego-tree = "0.10.0"
 encoding_rs = "0.8.35"
 percent-encoding = "2.3.2"
 pulldown-cmark = { version = "0.13.0", default-features = false, features = ["html"] }
+regex = "1.12.2"
 roxmltree = "0.21.1"
 scraper = "0.24.0"
 serde = { version = "1.0.228", default-features = false, features = ["derive", "std"] }
