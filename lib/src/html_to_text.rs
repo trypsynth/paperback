@@ -276,8 +276,8 @@ impl HtmlToText {
 	}
 
 	fn handle_heading(&mut self, tag_name: &str, node: NodeRef<'_, Node>, document: &Html) {
-		if self.flags.contains(ProcessingFlags::IN_BODY) {
-			if tag_name.len() == 2
+		if self.flags.contains(ProcessingFlags::IN_BODY)
+			&& tag_name.len() == 2
 				&& tag_name.starts_with('h')
 				&& tag_name.chars().nth(1).is_some_and(|c| c.is_ascii_digit())
 			{
@@ -299,7 +299,6 @@ impl HtmlToText {
 					}
 				}
 			}
-		}
 	}
 
 	fn process_element_children(&mut self, node: NodeRef<'_, Node>, document: &Html, tag_name: &str) {
