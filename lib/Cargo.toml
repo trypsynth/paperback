@@ -13,7 +13,7 @@ anyhow = "1.0.100"
 base64 = "0.22.1"
 bitflags = "2.10.0"
 configparser = "3.1.0"
-cxx = "1.0.189"
+cxx = "1.0.190"
 ego-tree = "0.10.0"
 encoding_rs = "0.8.35"
 percent-encoding = "2.3.2"
@@ -27,9 +27,9 @@ zip = { version = "6.0.0", default-features = false, features = ["deflate"] }
 
 [build-dependencies]
 bzip2 = "0.6.1"
-cc = "1.2.47"
-cxx = "1.0.189"
-cxx-build = "1.0.189"
+cc = "1.2.49"
+cxx = "1.0.190"
+cxx-build = "1.0.190"
 flate2 = "1.1.5"
 tar = "0.4.44"
 ureq = { version = "3.1.4", default-features = false, features = ["gzip", "rustls"] }
