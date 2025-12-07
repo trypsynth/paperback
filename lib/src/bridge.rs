@@ -210,6 +210,7 @@ pub mod ffi {
 		fn parse_document(file_path: &str, password: &str) -> Result<FfiDocument>;
 		fn get_parser_for_extension(extension: &str) -> Result<String>;
 		fn convert_xml_to_text(content: &str) -> Result<FfiXmlConversion>;
+		fn markdown_to_text(input: &str) -> String;
 	}
 }
 
@@ -219,7 +220,7 @@ use self::ffi::UpdateStatus;
 use crate::{
 	config::{Bookmark, ConfigManager as RustConfigManager, NavigationHistory},
 	document::{DocumentHandle, MarkerType, ParserContext, TocItem},
-	parser, update as update_module,
+	markdown_to_text, parser, update as update_module,
 	utils::{encoding, text, zip as zip_module},
 	xml_to_text::XmlToText,
 };
@@ -435,6 +436,10 @@ fn collapse_whitespace(input: &str) -> String {
 
 fn trim_string(input: &str) -> String {
 	text::trim_string(input)
+}
+
+fn markdown_to_text(input: &str) -> String {
+	markdown_to_text::markdown_to_text(input)
 }
 
 fn convert_to_utf8(input: &[u8]) -> String {
