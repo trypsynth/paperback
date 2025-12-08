@@ -57,6 +57,7 @@ pub mod ffi {
 		Heading,
 		List,
 		ListItem,
+		Link,
 	}
 
 	pub struct NavRequest {
@@ -73,6 +74,15 @@ pub mod ffi {
 		pub offset: usize,
 		pub marker_level: i32,
 		pub marker_text: String,
+	}
+
+	pub struct BookmarkNavResult {
+		pub found: bool,
+		pub start: i64,
+		pub end: i64,
+		pub note: String,
+		pub index: i32,
+		pub wrapped: bool,
 	}
 
 	pub struct FfiMarker {
@@ -269,6 +279,14 @@ pub mod ffi {
 			whole_word: bool,
 			regex: bool,
 		) -> i64;
+		fn bookmark_navigate(
+			manager: &ConfigManager,
+			path: &str,
+			position: i64,
+			wrap: bool,
+			next: bool,
+			notes_only: bool,
+		) -> BookmarkNavResult;
 	}
 }
 
@@ -785,4 +803,15 @@ fn reader_search(
 	regex: bool,
 ) -> i64 {
 	crate::reader_core::reader_search(req, needle, start, forward, match_case, whole_word, regex)
+}
+
+fn bookmark_navigate(
+	manager: &ConfigManager,
+	path: &str,
+	position: i64,
+	wrap: bool,
+	next: bool,
+	notes_only: bool,
+) -> ffi::BookmarkNavResult {
+	crate::reader_core::bookmark_navigate(manager, path, position, wrap, next, notes_only)
 }

@@ -2,6 +2,7 @@ use regex::RegexBuilder;
 
 use crate::{
 	bridge::ffi,
+	config::{Bookmark, ConfigManager as RustConfigManager},
 	document::{DocumentHandle, MarkerType},
 	html_to_text::HeadingInfo,
 };
@@ -101,8 +102,13 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 			}
 			build_nav_result(false, wrapped_final, 0, 0, String::new())
 		}
-		NavTarget::List | NavTarget::ListItem => {
-			let kind = if req.target == NavTarget::List { MarkerType::List } else { MarkerType::ListItem };
+		NavTarget::List | NavTarget::ListItem | NavTarget::Link => {
+			let kind = match req.target {
+				NavTarget::List => MarkerType::List,
+				NavTarget::ListItem => MarkerType::ListItem,
+				NavTarget::Link => MarkerType::Link,
+				_ => MarkerType::Link,
+			};
 			let (idx_opt, wrapped) = select_marker_index(doc, req.position, req.wrap, req.direction, kind);
 			if let Some(idx) = idx_opt {
 				let marker = doc.document().buffer.markers.get(idx);
@@ -233,4 +239,55 @@ pub fn reader_search(
 		}
 	}
 	-1
+}
+
+pub fn bookmark_navigate(
+	manager: &RustConfigManager,
+	path: &str,
+	position: i64,
+	wrap: bool,
+	next: bool,
+	notes_only: bool,
+) -> ffi::BookmarkNavResult {
+	let mut bookmarks: Vec<Bookmark> = manager.get_bookmarks(path);
+	if notes_only {
+		bookmarks.retain(|b| !b.note.is_empty());
+	} else {
+		bookmarks.retain(|b| b.note.is_empty());
+	}
+	if bookmarks.is_empty() {
+		return ffi::BookmarkNavResult {
+			found: false,
+			start: -1,
+			end: -1,
+			note: String::new(),
+			index: -1,
+			wrapped: false,
+		};
+	}
+	bookmarks.sort_by_key(|b| b.start);
+	let find_from = |from: i64, forward: bool, list: &[Bookmark]| -> Option<(usize, Bookmark)> {
+		if forward {
+			list.iter().enumerate().find(|(_, b)| b.start > from).map(|(i, b)| (i, b.clone()))
+		} else {
+			list.iter().enumerate().rev().find(|(_, b)| b.start < from).map(|(i, b)| (i, b.clone()))
+		}
+	};
+	let mut wrapped = false;
+	let mut hit = if next { find_from(position, true, &bookmarks) } else { find_from(position, false, &bookmarks) };
+	if hit.is_none() && wrap {
+		wrapped = true;
+		hit = if next { find_from(-1, true, &bookmarks) } else { find_from(i64::MAX / 2, false, &bookmarks) };
+	}
+	if let Some((idx, bm)) = hit {
+		return ffi::BookmarkNavResult {
+			found: true,
+			start: bm.start,
+			end: bm.end,
+			note: bm.note.clone(),
+			index: idx as i32,
+			wrapped,
+		};
+	}
+	ffi::BookmarkNavResult { found: false, start: -1, end: -1, note: String::new(), index: -1, wrapped }
 }

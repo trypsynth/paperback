@@ -340,6 +340,10 @@ const ConfigManager& config_manager::backend_ref() const {
 	return **backend;
 }
 
+const ConfigManager& config_manager::backend_for_ffi() const {
+	return backend_ref();
+}
+
 template <typename T>
 T config_manager::get_document_setting(const wxString& path, const wxString& key, const T& default_value) const {
 	if (!is_initialized()) {

@@ -488,59 +488,25 @@ void document_manager::navigate_to_bookmark(bool next) const {
 	if (tab == nullptr || text_ctrl == nullptr) {
 		return;
 	}
-	const int current_pos = text_ctrl->GetInsertionPoint();
 	const bool allow_wrap = config.get(config_manager::navigation_wrap);
-	const auto all = config.get_bookmarks(tab->file_path);
-	std::vector<bookmark> list;
-	list.reserve(all.size());
-	std::copy_if(all.begin(), all.end(), std::back_inserter(list), [](const bookmark& bm) {
-		return is_candidate_for_filter(bm, false);
-	});
-	if (list.empty()) {
-		speak(_("No bookmarks."));
-		return;
-	}
-	auto find_target = [&](long start_from) -> bookmark {
-		if (next) {
-			const auto it = std::find_if(list.begin(), list.end(), [&](const bookmark& bm) {
-				return bm.start > start_from;
-			});
-			if (it != list.end()) {
-				return *it;
-			}
-		} else {
-			const auto it = std::find_if(list.rbegin(), list.rend(), [&](const bookmark& bm) {
-				return bm.start < start_from;
-			});
-			if (it != list.rend()) {
-				return *it;
-			}
-		}
-		return bookmark{-1, -1};
-	};
-	bool wrapping = false;
-	bookmark target = find_target(current_pos);
-	if (target.start == -1 && allow_wrap) {
-		wrapping = true;
-		target = next ? find_target(-1) : find_target(text_ctrl->GetLastPosition() + 1);
-	}
-	if (target.start == -1) {
+	const std::string path_utf8 = std::string(tab->file_path.ToUTF8().data());
+	const auto result = bookmark_navigate(config.backend_for_ffi(), path_utf8, text_ctrl->GetInsertionPoint(), allow_wrap, next, false);
+	if (!result.found) {
 		speak(next ? _("No next bookmark") : _("No previous bookmark"));
 		return;
 	}
-	text_ctrl->SetInsertionPoint(target.start);
+	text_ctrl->SetInsertionPoint(static_cast<long>(result.start));
 	wxString text_to_speak;
-	if (target.is_whole_line()) {
+	if (result.start == result.end) {
 		long line{0};
-		text_ctrl->PositionToXY(target.start, nullptr, &line);
+		text_ctrl->PositionToXY(static_cast<long>(result.start), nullptr, &line);
 		text_to_speak = text_ctrl->GetLineText(line);
 	} else {
-		text_to_speak = text_ctrl->GetRange(target.start, target.end);
+		text_to_speak = text_ctrl->GetRange(static_cast<long>(result.start), static_cast<long>(result.end));
 	}
-	const auto idx_it = std::find(list.begin(), list.end(), target);
-	const int index = idx_it != list.end() ? static_cast<int>(std::distance(list.begin(), idx_it)) : 0;
+	const int index = result.index >= 0 ? result.index : 0;
 	wxString announcement = wxString::Format(_("%s - Bookmark %d"), text_to_speak, index + 1);
-	if (wrapping) {
+	if (result.wrapped) {
 		announcement = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + announcement;
 	}
 	speak(announcement);
@@ -637,30 +603,19 @@ void document_manager::navigate_to_link(bool next) const {
 		speak(_("No links."));
 		return;
 	}
-	const int current_pos = text_ctrl->GetInsertionPoint();
-	bool wrapping = false;
-	int target_index = next ? doc_next_marker_index(*doc, current_pos, marker_type::Link) : doc_previous_marker_index(*doc, current_pos, marker_type::Link);
-	if (target_index == -1) {
-		if (config.get(config_manager::navigation_wrap)) {
-			target_index = next ? doc_next_marker_index(*doc, -1, marker_type::Link) : doc_previous_marker_index(*doc, text_ctrl->GetLastPosition() + 1, marker_type::Link);
-			if (target_index != -1) {
-				wrapping = true;
-			}
-		}
-		if (target_index == -1) {
-			speak(next ? _("No next link.") : _("No previous link."));
-			return;
-		}
+	const bool wrap = config.get(config_manager::navigation_wrap);
+	const auto nav = perform_navigation(*doc, text_ctrl->GetInsertionPoint(), NavTarget::Link, next ? NavDirection::Next : NavDirection::Previous, wrap);
+	if (!nav.has_value()) {
+		speak(next ? _("No next link.") : _("No previous link."));
+		return;
 	}
-	const marker* link_marker = doc_get_marker(*doc, target_index);
-	if (link_marker != nullptr) {
-		go_to_position(static_cast<long>(link_marker->pos));
-		wxString message = link_marker->text + _(" link");
-		if (wrapping) {
-			message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
-		}
-		speak(message);
+	go_to_position(static_cast<long>(nav->offset));
+	const std::string link_text_utf8 = std::string(nav->marker_text);
+	wxString message = wxString::FromUTF8(link_text_utf8.c_str()) + _(" link");
+	if (nav->wrapped) {
+		message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
 	}
+	speak(message);
 }
 
 void document_manager::go_to_previous_link() const {
