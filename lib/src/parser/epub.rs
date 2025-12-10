@@ -513,7 +513,7 @@ fn build_toc_from_ncx<R: Read + Seek>(
 	let mut items = Vec::new();
 	for navpoint in nav_map.children() {
 		if navpoint.node_type() == NodeType::Element && navpoint.tag_name().name() == "navPoint" {
-			if let Some(item) = convert_navpoint(navpoint, sections, id_positions) {
+			if let Some(item) = convert_navpoint(navpoint, sections, id_positions, ncx_path) {
 				items.push(item);
 			}
 		}
@@ -521,7 +521,12 @@ fn build_toc_from_ncx<R: Read + Seek>(
 	if items.is_empty() { None } else { Some(items) }
 }
 
-fn convert_navpoint(nav: Node, sections: &[SectionMeta], id_positions: &HashMap<String, usize>) -> Option<TocItem> {
+fn convert_navpoint(
+	nav: Node,
+	sections: &[SectionMeta],
+	id_positions: &HashMap<String, usize>,
+	base_path: &str,
+) -> Option<TocItem> {
 	let label = nav
 		.children()
 		.find(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "navLabel")
@@ -540,12 +545,12 @@ fn convert_navpoint(nav: Node, sections: &[SectionMeta], id_positions: &HashMap<
 	if label.trim().is_empty() {
 		return None;
 	}
-	let reference = resolve_href("", content_src);
+	let reference = resolve_href(base_path, content_src);
 	let offset = compute_nav_offset(&reference, sections, id_positions);
 	let mut item = TocItem::new(label, reference, offset);
 	for child in nav.children() {
 		if child.node_type() == NodeType::Element && child.tag_name().name() == "navPoint" {
-			if let Some(child_item) = convert_navpoint(child, sections, id_positions) {
+			if let Some(child_item) = convert_navpoint(child, sections, id_positions, base_path) {
 				item.children.push(child_item);
 			}
 		}

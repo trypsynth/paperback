@@ -82,17 +82,29 @@ size_t doc_find_closest_toc_offset(const document& doc, size_t position) {
 	return document_find_closest_toc_offset(**doc.handle, position);
 }
 
-std::vector<const marker*> doc_get_heading_markers(const document& doc, int level = -1) {
-	std::vector<const marker*> result;
-	for (const auto& m : doc.markers) {
-		if (!is_heading_marker(m.type)) {
-			continue;
-		}
-		if (level == -1 || m.level == level) {
-			result.push_back(&m);
-		}
+bool doc_has_heading_markers(const document& doc, int level = -1) {
+	if (!doc.handle.has_value()) {
+		return false;
 	}
-	return result;
+	const auto& handle = **doc.handle;
+	const auto has_marker = [&](marker_type type) {
+		return document_count_markers(handle, to_rust_marker(type)) > 0;
+	};
+	if (level >= 1 && level <= 6) {
+		marker_type heading_type = marker_type::Heading1;
+		switch (level) {
+			case 1: heading_type = marker_type::Heading1; break;
+			case 2: heading_type = marker_type::Heading2; break;
+			case 3: heading_type = marker_type::Heading3; break;
+			case 4: heading_type = marker_type::Heading4; break;
+			case 5: heading_type = marker_type::Heading5; break;
+			case 6: heading_type = marker_type::Heading6; break;
+			default: break;
+		}
+		return has_marker(heading_type);
+	}
+	return has_marker(marker_type::Heading1) || has_marker(marker_type::Heading2) || has_marker(marker_type::Heading3)
+		|| has_marker(marker_type::Heading4) || has_marker(marker_type::Heading5) || has_marker(marker_type::Heading6);
 }
 
 int doc_next_marker_index(const document& doc, long position, marker_type type) {
@@ -140,22 +152,17 @@ size_t doc_marker_position(const document& doc, int marker_index) {
 }
 
 size_t doc_count_markers_by_type(const document& doc, marker_type type) {
-	return static_cast<size_t>(std::count_if(doc.markers.begin(), doc.markers.end(), [type](const marker& m) {
-		return m.type == type;
-	}));
+	if (!doc.handle.has_value()) {
+		return 0;
+	}
+	return document_count_markers(**doc.handle, to_rust_marker(type));
 }
 
 size_t doc_get_marker_position_by_index(const document& doc, marker_type type, int index) {
-	int count = 0;
-	for (const auto& m : doc.markers) {
-		if (m.type == type) {
-			if (count == index) {
-				return m.pos;
-			}
-			++count;
-		}
+	if (!doc.handle.has_value()) {
+		return 0;
 	}
-	return 0;
+	return document_marker_position_by_index(**doc.handle, to_rust_marker(type), index);
 }
 } // namespace
 
@@ -1244,8 +1251,12 @@ void document_manager::navigate_to_heading(bool next, int specific_level) const 
 	if (doc == nullptr || text_ctrl == nullptr) {
 		return;
 	}
-	if (doc_get_heading_markers(*doc).empty()) {
-		speak(_("No headings."));
+	if (!doc_has_heading_markers(*doc, specific_level)) {
+		if (specific_level == -1) {
+			speak(_("No headings."));
+		} else {
+			speak(wxString::Format(_("No headings at level %d."), specific_level));
+		}
 		return;
 	}
 	const bool wrap = config.get(config_manager::navigation_wrap);
