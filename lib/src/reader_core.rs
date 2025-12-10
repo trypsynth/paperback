@@ -30,7 +30,6 @@ fn select_marker_index(
 		return (None, false);
 	}
 	let alt_pos = match direction {
-		ffi::NavDirection::Next => -1,
 		ffi::NavDirection::Previous => i64::try_from(doc.document().buffer.content.len()).unwrap_or(0) + 1,
 		_ => -1,
 	};
@@ -55,7 +54,8 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 			let (idx_opt, wrapped) =
 				select_marker_index(doc, req.position, req.wrap, req.direction, MarkerType::SectionBreak);
 			if let Some(idx) = idx_opt {
-				let offset = doc.marker_position(idx as i32).unwrap_or(0);
+				let Ok(idx_i32) = i32::try_from(idx) else { return build_nav_result(false, wrapped, 0, 0, String::new()) };
+				let offset = doc.marker_position(idx_i32).unwrap_or(0);
 				return build_nav_result(true, wrapped, offset, 0, String::new());
 			}
 			build_nav_result(false, wrapped, 0, 0, String::new())
@@ -64,7 +64,8 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 			let (idx_opt, wrapped) =
 				select_marker_index(doc, req.position, req.wrap, req.direction, MarkerType::PageBreak);
 			if let Some(idx) = idx_opt {
-				let offset = doc.marker_position(idx as i32).unwrap_or(0);
+				let Ok(idx_i32) = i32::try_from(idx) else { return build_nav_result(false, wrapped, 0, 0, String::new()) };
+				let offset = doc.marker_position(idx_i32).unwrap_or(0);
 				return build_nav_result(true, wrapped, offset, 0, String::new());
 			}
 			build_nav_result(false, wrapped, 0, 0, String::new())
@@ -76,10 +77,9 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 				ffi::NavDirection::Previous => doc.previous_heading_index(req.position, level_filter),
 				_ => None,
 			}
-			.map_or((None, false), |idx| (Some(idx as usize), false));
+			.map_or((None, false), |idx| (usize::try_from(idx).ok(), false));
 			let (idx_final, wrapped_final) = if idx_opt.is_none() && req.wrap {
 				let alt_pos = match req.direction {
-					ffi::NavDirection::Next => -1,
 					ffi::NavDirection::Previous => i64::try_from(doc.document().buffer.content.len()).unwrap_or(0) + 1,
 					_ => -1,
 				};
@@ -88,16 +88,20 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 					ffi::NavDirection::Previous => doc.previous_heading_index(alt_pos, level_filter),
 					_ => None,
 				};
-				(retry.map(|i| i as usize), retry.is_some())
+				let retry_idx = retry.and_then(|i| usize::try_from(i).ok());
+				(retry_idx, retry.is_some())
 			} else {
 				(idx_opt, wrapped)
 			};
 			if let Some(idx) = idx_final {
-				let offset = doc.marker_position(idx as i32).unwrap_or(0);
-				let (level, text) =
-					doc.document().buffer.markers.get(idx).map(|m| (m.level, m.text.clone())).unwrap_or_else(|| {
-						heading_info(doc, idx as i32).map_or((0, String::new()), |h| (h.level, h.text))
-					});
+				let Ok(idx_i32) = i32::try_from(idx) else {
+					return build_nav_result(false, wrapped_final, 0, 0, String::new());
+				};
+				let offset = doc.marker_position(idx_i32).unwrap_or(0);
+				let (level, text) = doc.document().buffer.markers.get(idx).map_or_else(
+					|| heading_info(doc, idx_i32).map_or((0, String::new()), |h| (h.level, h.text)),
+					|marker| (marker.level, marker.text.clone()),
+				);
 				return build_nav_result(true, wrapped_final, offset, level, text);
 			}
 			build_nav_result(false, wrapped_final, 0, 0, String::new())
@@ -107,7 +111,7 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 				NavTarget::List => MarkerType::List,
 				NavTarget::ListItem => MarkerType::ListItem,
 				NavTarget::Link => MarkerType::Link,
-				_ => MarkerType::Link,
+				_ => unreachable!("NavTarget should only be List, ListItem, or Link in this branch"),
 			};
 			let (idx_opt, wrapped) = select_marker_index(doc, req.position, req.wrap, req.direction, kind);
 			if let Some(idx) = idx_opt {
@@ -135,7 +139,7 @@ pub fn reader_search(
 	if needle.is_empty() {
 		return -1;
 	}
-	let start_utf16 = start.clamp(0, i64::MAX) as usize;
+	let start_utf16 = usize::try_from(start.clamp(0, i64::MAX)).unwrap_or(0);
 	let haystack = if match_case { haystack.to_string() } else { haystack.to_lowercase() };
 	let needle = if match_case { needle.to_string() } else { needle.to_lowercase() };
 	let utf16_to_byte_index = |s: &str, utf16_idx: usize| -> usize {
@@ -169,15 +173,12 @@ pub fn reader_search(
 		if !match_case {
 			builder.case_insensitive(true);
 		}
-		let re = match builder.build() {
-			Ok(r) => r,
-			Err(_) => return -1,
-		};
+		let Ok(re) = builder.build() else { return -1 };
 		if forward {
 			if let Some(m) = re.find(&haystack[start_byte..]) {
 				let byte_pos = start_byte + m.start();
 				let utf16_pos = byte_to_utf16_index(&haystack, byte_pos);
-				return utf16_pos as i64;
+				return i64::try_from(utf16_pos).unwrap_or(-1);
 			}
 		} else {
 			let mut last: Option<usize> = None;
@@ -187,7 +188,7 @@ pub fn reader_search(
 			}
 			if let Some(pos) = last {
 				let utf16_pos = byte_to_utf16_index(&haystack, pos);
-				return utf16_pos as i64;
+				return i64::try_from(utf16_pos).unwrap_or(-1);
 			}
 		}
 		return -1;
@@ -205,7 +206,7 @@ pub fn reader_search(
 			let global = start_byte + idx;
 			if !whole_word || check_whole_word(&haystack, global, needle.len()) {
 				let utf16_pos = byte_to_utf16_index(&haystack, global);
-				return utf16_pos as i64;
+				return i64::try_from(utf16_pos).unwrap_or(-1);
 			}
 			// Keep searching forward for the next occurrence that matches whole word
 			let mut cursor = global + 1;
@@ -214,7 +215,7 @@ pub fn reader_search(
 					let candidate = cursor + next_idx;
 					if !whole_word || check_whole_word(&haystack, candidate, needle.len()) {
 						let utf16_pos = byte_to_utf16_index(&haystack, candidate);
-						return utf16_pos as i64;
+						return i64::try_from(utf16_pos).unwrap_or(-1);
 					}
 					cursor = candidate + 1;
 				} else {
@@ -235,7 +236,7 @@ pub fn reader_search(
 		}
 		if let Some(pos) = last {
 			let utf16_pos = byte_to_utf16_index(&haystack, pos);
-			return utf16_pos as i64;
+			return i64::try_from(utf16_pos).unwrap_or(-1);
 		}
 	}
 	-1
@@ -280,12 +281,13 @@ pub fn bookmark_navigate(
 		hit = if next { find_from(-1, true, &bookmarks) } else { find_from(i64::MAX / 2, false, &bookmarks) };
 	}
 	if let Some((idx, bm)) = hit {
+		let index = i32::try_from(idx).unwrap_or(-1);
 		return ffi::BookmarkNavResult {
 			found: true,
 			start: bm.start,
 			end: bm.end,
-			note: bm.note.clone(),
-			index: idx as i32,
+			note: bm.note,
+			index,
 			wrapped,
 		};
 	}
