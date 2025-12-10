@@ -31,7 +31,7 @@ pub struct XmlToText {
 	list_items: Vec<ListItemInfo>,
 	section_offsets: Vec<usize>,
 	in_body: bool,
-	preserve_whitespace: bool,
+	preserve_whitespace_depth: usize,
 	list_level: i32,
 	list_style_stack: Vec<ListStyle>,
 	cached_char_length: usize,
@@ -101,7 +101,7 @@ impl XmlToText {
 		self.list_items.clear();
 		self.section_offsets.clear();
 		self.in_body = false;
-		self.preserve_whitespace = false;
+		self.preserve_whitespace_depth = 0;
 		self.list_level = 0;
 		self.cached_char_length = 0;
 		self.list_style_stack.clear();
@@ -153,9 +153,9 @@ impl XmlToText {
 			self.in_body = true;
 		} else if Self::tag_is(tag_name, "pre") {
 			self.finalize_current_line();
-			self.preserve_whitespace = true;
+			self.start_preserve_whitespace();
 		} else if Self::tag_is(tag_name, "code") {
-			self.preserve_whitespace = true;
+			self.start_preserve_whitespace();
 		} else if Self::tag_is(tag_name, "br") {
 			self.finalize_current_line();
 		} else if Self::tag_is(tag_name, "li") {
@@ -241,19 +241,36 @@ impl XmlToText {
 	}
 
 	fn handle_element_closing_xml(&mut self, tag_name: &str) {
-		if Self::is_block_element(tag_name) {
+		let is_pre = Self::tag_is(tag_name, "pre");
+		if is_pre {
 			self.finalize_current_line();
-		}
-		if Self::tag_is(tag_name, "pre") {
-			self.preserve_whitespace = false;
-		}
-		if Self::tag_is(tag_name, "code") {
-			self.preserve_whitespace = false;
+			self.stop_preserve_whitespace();
+		} else {
+			if Self::is_block_element(tag_name) {
+				self.finalize_current_line();
+			}
+			if Self::tag_is(tag_name, "code") {
+				self.stop_preserve_whitespace();
+			}
 		}
 		if Self::tag_is(tag_name, "ul") || Self::tag_is(tag_name, "ol") {
 			self.list_level = (self.list_level - 1).max(0);
 			self.list_style_stack.pop();
 		}
+	}
+
+	fn start_preserve_whitespace(&mut self) {
+		self.preserve_whitespace_depth += 1;
+	}
+
+	fn stop_preserve_whitespace(&mut self) {
+		if self.preserve_whitespace_depth > 0 {
+			self.preserve_whitespace_depth -= 1;
+		}
+	}
+
+	const fn is_preserving_whitespace(&self) -> bool {
+		self.preserve_whitespace_depth > 0
 	}
 
 	fn process_text_node(&mut self, node: Node<'_, '_>) {
@@ -265,7 +282,7 @@ impl XmlToText {
 				return;
 			}
 			let processed_text = remove_soft_hyphens(text);
-			if self.preserve_whitespace {
+			if self.is_preserving_whitespace() {
 				self.current_line.push_str(&processed_text);
 			} else {
 				let mut collapsed = collapse_whitespace(&processed_text);
@@ -282,7 +299,7 @@ impl XmlToText {
 	}
 
 	fn add_line(&mut self, mut line: String) {
-		if self.preserve_whitespace {
+		if self.is_preserving_whitespace() {
 			while line.ends_with(['\n', '\r']) {
 				line.pop();
 			}

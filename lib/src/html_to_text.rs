@@ -70,6 +70,7 @@ pub struct HtmlToText {
 	lists: Vec<ListInfo>,
 	list_items: Vec<ListItemInfo>,
 	title: String,
+	preserve_whitespace_depth: usize,
 	flags: ProcessingFlags,
 	current_link_href: String,
 	current_link_text: String,
@@ -91,6 +92,7 @@ impl HtmlToText {
 			lists: Vec::new(),
 			list_items: Vec::new(),
 			title: String::new(),
+			preserve_whitespace_depth: 0,
 			flags: ProcessingFlags::empty(),
 			current_link_href: String::new(),
 			current_link_text: String::new(),
@@ -149,6 +151,7 @@ impl HtmlToText {
 		self.lists.clear();
 		self.list_items.clear();
 		self.title.clear();
+		self.preserve_whitespace_depth = 0;
 		self.flags = ProcessingFlags::empty();
 		self.current_link_href.clear();
 		self.current_link_text.clear();
@@ -215,10 +218,10 @@ impl HtmlToText {
 			self.flags.insert(ProcessingFlags::IN_BODY);
 		} else if tag_name == "pre" {
 			self.finalize_current_line();
-			self.flags.insert(ProcessingFlags::PRESERVE_WHITESPACE);
+			self.start_preserve_whitespace();
 		} else if tag_name == "code" {
 			self.flags.insert(ProcessingFlags::IN_CODE);
-			self.flags.insert(ProcessingFlags::PRESERVE_WHITESPACE);
+			self.start_preserve_whitespace();
 		} else if tag_name == "br" {
 			self.finalize_current_line();
 		}
@@ -337,18 +340,18 @@ impl HtmlToText {
 			self.current_link_href.clear();
 			self.current_link_text.clear();
 		}
-		if tag_name == "pre" {
-			self.flags.remove(ProcessingFlags::PRESERVE_WHITESPACE);
-		}
 		if tag_name == "code" {
 			self.flags.remove(ProcessingFlags::IN_CODE);
-			self.flags.remove(ProcessingFlags::PRESERVE_WHITESPACE);
+			self.stop_preserve_whitespace();
 		}
 		if tag_name == "ul" || tag_name == "ol" {
 			self.list_level -= 1;
 			self.list_style_stack.pop();
 		}
-		if Self::is_block_element(tag_name) {
+		if tag_name == "pre" {
+			self.finalize_current_line();
+			self.stop_preserve_whitespace();
+		} else if Self::is_block_element(tag_name) {
 			self.finalize_current_line();
 		}
 	}
@@ -374,6 +377,20 @@ impl HtmlToText {
 			self.current_link_text.push_str(&collapse_whitespace(&processed_text));
 		} else {
 			self.current_line.push_str(&collapse_whitespace(&processed_text));
+		}
+	}
+
+	fn start_preserve_whitespace(&mut self) {
+		self.preserve_whitespace_depth += 1;
+		self.flags.insert(ProcessingFlags::PRESERVE_WHITESPACE);
+	}
+
+	fn stop_preserve_whitespace(&mut self) {
+		if self.preserve_whitespace_depth > 0 {
+			self.preserve_whitespace_depth -= 1;
+		}
+		if self.preserve_whitespace_depth == 0 {
+			self.flags.remove(ProcessingFlags::PRESERVE_WHITESPACE);
 		}
 	}
 
