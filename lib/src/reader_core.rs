@@ -253,8 +253,6 @@ pub fn bookmark_navigate(
 	let mut bookmarks: Vec<Bookmark> = manager.get_bookmarks(path);
 	if notes_only {
 		bookmarks.retain(|b| !b.note.is_empty());
-	} else {
-		bookmarks.retain(|b| b.note.is_empty());
 	}
 	if bookmarks.is_empty() {
 		return ffi::BookmarkNavResult {
