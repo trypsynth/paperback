@@ -62,13 +62,13 @@
 <pre style="background-color:#2b303b;">
 <code><span style="color:#c0c5ce;">cmake --build build --target update-pot
 </span></code></pre>
-<ol start="2">
+<ol>
 <li>Create your language file:</li>
 </ol>
 <pre style="background-color:#2b303b;">
 <code><span style="color:#c0c5ce;">cp paperback.pot your-lang-code.po
 </span></code></pre>
-<ol start="3">
+<ol>
 <li>Edit the header in your <code>.po</code> file with the correct language name, your name, and email.</li>
 <li>Translate the strings using your editor of choice. Keep placeholders and shortcut markers intact (see Notes below).</li>
 <li>Verify the file compiles cleanly:</li>
@@ -76,7 +76,7 @@
 <pre style="background-color:#2b303b;">
 <code><span style="color:#c0c5ce;">msgfmt --check --verbose es.po
 </span></code></pre>
-<ol start="6">
+<ol>
 <li>Test your translation by recompiling Paperback and selecting it from the options dialog.</li>
 </ol>
 <h2>Updating an Existing Translation</h2>
@@ -87,13 +87,13 @@
 <pre style="background-color:#2b303b;">
 <code><span style="color:#c0c5ce;">cmake --build build --target update-pot
 </span></code></pre>
-<ol start="2">
+<ol>
 <li>Merge new strings into your translation:</li>
 </ol>
 <pre style="background-color:#2b303b;">
 <code><span style="color:#c0c5ce;">msgmerge -U es.po paperback.pot
 </span></code></pre>
-<ol start="3">
+<ol>
 <li>Translate the new or fuzzy strings. Anything marked with <code>fuzzy</code> needs a review, and any empty strings are brand new.</li>
 <li>Remove fuzzy markers once done reviewing.</li>
 <li>Compile and test (same as step 6 above).</li>
