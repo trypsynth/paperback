@@ -1,4 +1,4 @@
-# Russian translations for paperback package
+  # Russian translations for paperback package
 # Русский переводы для пакета paperback.
 # Copyright (C) 2025 Quin Gillespie
 # This file is distributed under the same license as the paperback package.
@@ -1043,7 +1043,7 @@ msgstr "Больше нет результатов. Поиск завершён.
 
 #: app/parser.cpp
 msgid "Password required or incorrect."
-msgstr "Требуется ввести пароль или он не верен."
+msgstr "Требуется ввести пароль или он неверен."
 
 #: app/task_bar_icon.cpp
 msgid "&Restore"
