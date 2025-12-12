@@ -349,7 +349,13 @@ impl HtmlToText {
 			self.list_style_stack.pop();
 		}
 		if tag_name == "pre" {
-			self.finalize_current_line();
+			let has_preserved_trailing_whitespace = self.flags.contains(ProcessingFlags::PRESERVE_WHITESPACE)
+				&& self.current_line.trim().is_empty();
+			if has_preserved_trailing_whitespace {
+				self.current_line.clear();
+			} else {
+				self.finalize_current_line();
+			}
 			self.stop_preserve_whitespace();
 		} else if Self::is_block_element(tag_name) {
 			self.finalize_current_line();
