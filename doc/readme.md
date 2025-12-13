@@ -127,9 +127,9 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Timothy Wynn
 
 ### Translations
-* Ruslan Gulmagomedov: Russian translation
 * Tarik Hadžirović: Bosnian translation
 * Martin Courcelles: French translation
+* Ruslan Gulmagomedov: Russian translation
 * Nikola Jović: Serbian translation
 * Steffen Schultz: German translation
 

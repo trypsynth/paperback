@@ -49,5 +49,6 @@ Paperback is translated into multiple languages, with many being added by contri
 * Bosnian
 * French
 * German
+* Russian
 * Serbian
 * Spanish
