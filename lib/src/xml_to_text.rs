@@ -322,8 +322,7 @@ impl XmlToText {
 	}
 
 	fn get_current_text_position(&self) -> usize {
-		let trimmed = self.current_line.trim_end_matches(' ');
-		self.cached_char_length + display_len(trimmed)
+		self.cached_char_length + display_len(&self.current_line)
 	}
 
 	fn is_block_element(tag_name: &str) -> bool {
