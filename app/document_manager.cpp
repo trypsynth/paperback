@@ -714,75 +714,22 @@ void document_manager::activate_current_link() const {
 		} else {
 			speak(_("Failed to open link."));
 		}
-	} else if (href.StartsWith("#")) {
-		const wxString id = href.Mid(1);
-		std::optional<std::string> section_path = current_section_path(*doc, static_cast<size_t>(current_pos));
-		std::string key = section_path.has_value() ? *section_path + "#" + std::string(id.mb_str()) : "";
-		auto it = (!key.empty()) ? doc->id_positions.find(key) : doc->id_positions.end();
-		if (it == doc->id_positions.end()) {
-			it = doc->id_positions.find(std::string(id.mb_str()));
-		}
-		if (it != doc->id_positions.end()) {
-			go_to_position(static_cast<long>(it->second));
-			speak(_("Navigated to internal link."));
-		} else {
-			speak(_("Internal link target not found."));
-		}
 	} else {
-		const wxString file_path = href.BeforeFirst('#');
-		const wxString fragment = href.AfterFirst('#');
-		if (!file_path.empty()) {
-			wxFileName link_path;
-			link_path.Assign(file_path, wxPATH_UNIX);
-			link_path.Normalize(wxPATH_NORM_DOTS, "", wxPATH_UNIX);
-			const wxString normalized_file_path = link_path.GetPathWithSep(wxPATH_UNIX) + link_path.GetFullName();
-			wxString manifest_id;
-			for (auto const& [id, path] : doc->manifest_items) {
-				if (path == normalized_file_path) {
-					manifest_id = id;
-					break;
-				}
-			}
-			if (!manifest_id.empty()) {
-				auto it = std::ranges::find(doc->spine_items, std::string(manifest_id.mb_str()));
-				if (it != doc->spine_items.end()) {
-					const int spine_index = static_cast<int>(std::distance(doc->spine_items.begin(), it));
-					size_t section_start = doc_get_marker_position_by_index(*doc, marker_type::SectionBreak, spine_index);
-					size_t section_end = (spine_index + 1 < static_cast<int>(doc->spine_items.size()))
-						? doc_get_marker_position_by_index(*doc, marker_type::SectionBreak, spine_index + 1)
-						: doc->content.length();
-					size_t offset = section_start;
-					if (!fragment.empty()) {
-						const std::string frag_str = std::string(fragment.mb_str());
-						const std::string path_key = std::string(normalized_file_path.mb_str()) + "#" + frag_str;
-						auto frag_it = doc->id_positions.find(path_key);
-						if (frag_it == doc->id_positions.end()) {
-							frag_it = doc->id_positions.find(frag_str);
-						}
-						if (frag_it != doc->id_positions.end() && frag_it->second >= section_start && frag_it->second < section_end) {
-							offset = frag_it->second;
-						}
-					}
-					go_to_position(static_cast<long>(offset));
-					speak(_("Navigated to internal link."));
-					return;
-				}
-			}
-		} else if (!fragment.empty()) {
-			std::optional<std::string> section_path = current_section_path(*doc, static_cast<size_t>(current_pos));
-			const std::string frag_str = std::string(fragment.mb_str());
-			std::string key = section_path.has_value() ? *section_path + "#" + frag_str : "";
-			auto it = (!key.empty()) ? doc->id_positions.find(key) : doc->id_positions.end();
-			if (it == doc->id_positions.end()) {
-				it = doc->id_positions.find(frag_str);
-			}
-			if (it != doc->id_positions.end()) {
-				go_to_position(static_cast<long>(it->second));
-				speak(_("Navigated to internal link."));
-				return;
-			}
+		auto resolution = resolve_link(**doc->handle, std::string(href.mb_str()), current_pos);
+		if (!resolution.found) {
+			speak(_("Internal link target not found."));
+			return;
 		}
-		speak(_("Internal link target not found."));
+		if (resolution.is_external) {
+			if (wxLaunchDefaultBrowser(wxString::FromUTF8(resolution.url.c_str()))) {
+				speak(_("Opening link in default browser."));
+			} else {
+				speak(_("Failed to open link."));
+			}
+			return;
+		}
+		go_to_position(static_cast<long>(resolution.offset));
+		speak(_("Navigated to internal link."));
 	}
 }
 

@@ -153,6 +153,13 @@ pub mod ffi {
 		pub index: usize,
 	}
 
+	pub struct FfiLinkNavigation {
+		pub found: bool,
+		pub is_external: bool,
+		pub offset: usize,
+		pub url: String,
+	}
+
 	extern "Rust" {
 		type ConfigManager;
 		type DocumentHandle;
@@ -287,6 +294,7 @@ pub mod ffi {
 			next: bool,
 			notes_only: bool,
 		) -> BookmarkNavResult;
+		fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> FfiLinkNavigation;
 	}
 }
 
@@ -814,4 +822,8 @@ fn bookmark_navigate(
 	notes_only: bool,
 ) -> ffi::BookmarkNavResult {
 	crate::reader_core::bookmark_navigate(manager, path, position, wrap, next, notes_only)
+}
+
+fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> ffi::FfiLinkNavigation {
+	crate::reader_core::resolve_link(doc, href, current_position)
 }

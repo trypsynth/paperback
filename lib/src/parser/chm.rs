@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use anyhow::{Context, Result};
 use scraper::{ElementRef, Html, Selector};
 
+use libchm::{CHM_ENUMERATE_ALL, ChmHandle, unit_info_path};
 use crate::{
-	chmlib::{CHM_ENUMERATE_ALL, ChmHandle, unit_info_path},
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
 	html_to_text::{HtmlSourceMode, HtmlToText},
 	parser::{

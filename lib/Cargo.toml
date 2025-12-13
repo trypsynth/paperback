@@ -16,6 +16,7 @@ configparser = "3.1.0"
 cxx = "1.0.190"
 ego-tree = "0.10.0"
 encoding_rs = "0.8.35"
+libchm = "0.1.0"
 percent-encoding = "2.3.2"
 pulldown-cmark = { version = "0.13.0", default-features = false, features = ["html"] }
 regex = "1.12.2"
@@ -27,8 +28,6 @@ ureq = { version = "3.1.4", default-features = false, features = ["json", "rustl
 zip = { version = "6.0.0", default-features = false, features = ["deflate"] }
 
 [build-dependencies]
-bzip2 = "0.6.1"
-cc = "1.2.49"
 cxx = "1.0.190"
 cxx-build = "1.0.190"
 flate2 = "1.1.5"
