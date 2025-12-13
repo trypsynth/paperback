@@ -4,7 +4,7 @@ title: Translations
 permalink: /translations
 ---
 
-## Translation Guide
+# Translation Guide
 
 Thank you for your interest in translating Paperback! This page walks you through how to start a brand new translation, how to keep it updated when new strings land, and how to submit your work.
 

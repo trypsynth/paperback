@@ -3,7 +3,7 @@ layout: default.liquid
 title: Downloads
 permalink: /downloads
 ---
-## Downloads
+# Downloads
 
 <div id="latest-stable">Loading…</div>
 <div id="latest-dev">Loading…</div>

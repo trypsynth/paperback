@@ -4,7 +4,7 @@ title: Home
 permalink: /
 ---
 
-## Home
+# Home
 
 Welcome to the website of Paperback, a fully accessible, blazing fast, and completely native ebook and document reader.
 
