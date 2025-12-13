@@ -259,11 +259,11 @@ impl XmlToText {
 		}
 	}
 
-	fn start_preserve_whitespace(&mut self) {
+	const fn start_preserve_whitespace(&mut self) {
 		self.preserve_whitespace_depth += 1;
 	}
 
-	fn stop_preserve_whitespace(&mut self) {
+	const fn stop_preserve_whitespace(&mut self) {
 		if self.preserve_whitespace_depth > 0 {
 			self.preserve_whitespace_depth -= 1;
 		}

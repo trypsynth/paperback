@@ -128,7 +128,7 @@ pub struct TocItem {
 	pub name: String,
 	pub reference: String,
 	pub offset: usize,
-	pub children: Vec<TocItem>,
+	pub children: Vec<Self>,
 }
 
 impl TocItem {

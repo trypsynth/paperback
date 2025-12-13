@@ -5,52 +5,53 @@ use encoding_rs::{UTF_16BE, UTF_16LE, WINDOWS_1252};
 #[must_use]
 pub fn convert_to_utf8(input: &[u8]) -> String {
 	if input.len() >= 4 {
-		// UTF-32 LE.
+		// UTF-32 LE BOM
 		if input[0] == 0xFF && input[1] == 0xFE && input[2] == 0x00 && input[3] == 0x00 {
 			return decode_utf32_le(&input[4..]);
 		}
-		// UTF-32 BE.
+		// UTF-32 BE BOM
 		if input[0] == 0x00 && input[1] == 0x00 && input[2] == 0xFE && input[3] == 0xFF {
 			return decode_utf32_be(&input[4..]);
 		}
 	}
 	if input.len() >= 3 {
-		// UTF-8.
+		// UTF-8 BOM
 		if input[0] == 0xEF && input[1] == 0xBB && input[2] == 0xBF {
 			return String::from_utf8_lossy(&input[3..]).to_string();
 		}
 	}
 	if input.len() >= 2 {
-		// UTF-16 LE.
+		// UTF-16 LE BOM
 		if input[0] == 0xFF && input[1] == 0xFE {
 			let (decoded, _, _) = UTF_16LE.decode(&input[2..]);
 			return decoded.to_string();
 		}
-		// UTF-16 BE.
+		// UTF-16 BE BOM
 		if input[0] == 0xFE && input[1] == 0xFF {
 			let (decoded, _, _) = UTF_16BE.decode(&input[2..]);
 			return decoded.to_string();
 		}
 	}
-	// Try UTF-8 without BOM
+	// UTF-8 without BOM
 	if let Ok(s) = str::from_utf8(input) {
 		return s.to_string();
 	}
-	// Try UTF-16 LE without BOM
+	// UTF-16 LE without BOM
 	let (decoded, encoding, had_errors) = UTF_16LE.decode(input);
 	if !had_errors && encoding == UTF_16LE {
 		return decoded.to_string();
 	}
-	// Try UTF-16 BE without BOM
+	// UTF-16 BE without BOM
 	let (decoded, encoding, had_errors) = UTF_16BE.decode(input);
 	if !had_errors && encoding == UTF_16BE {
 		return decoded.to_string();
 	}
-	// Try Windows-1252
+	// Windows-1252
 	let (decoded, _, _) = WINDOWS_1252.decode(input);
 	if decoded.chars().any(|c| !c.is_control() || c.is_whitespace()) {
 		return decoded.to_string();
 	}
+	// Give up
 	String::from_utf8_lossy(input).to_string()
 }
 
