@@ -148,4 +148,83 @@ mod tests {
 		assert_eq!(display_len("💖"), 1);
 		assert_eq!(display_len("line\nwrap"), 9);
 	}
+
+
+	#[test]
+	fn test_format_list_item() {
+		assert_eq!(format_list_item(1, "1"), "1");
+		assert_eq!(format_list_item(5, "1"), "5");
+		assert_eq!(format_list_item(1, "a"), "a");
+		assert_eq!(format_list_item(26, "a"), "z");
+		assert_eq!(format_list_item(27, "a"), "aa");
+		assert_eq!(format_list_item(1, "A"), "A");
+		assert_eq!(format_list_item(26, "A"), "Z");
+		assert_eq!(format_list_item(27, "A"), "AA");
+		assert_eq!(format_list_item(1, "i"), "i");
+		assert_eq!(format_list_item(4, "i"), "iv");
+		assert_eq!(format_list_item(1994, "i"), "mcmxciv");
+		assert_eq!(format_list_item(1, "I"), "I");
+		assert_eq!(format_list_item(4, "I"), "IV");
+		assert_eq!(format_list_item(1994, "I"), "MCMXCIV");
+		// Test fallback for unknown type
+		assert_eq!(format_list_item(10, "unknown"), "10");
+		// Test zero and negative numbers
+		assert_eq!(format_list_item(0, "a"), "0");
+		assert_eq!(format_list_item(-5, "i"), "-5");
+	}
+}
+
+pub fn format_list_item(number: i32, list_type: &str) -> String {
+	match list_type {
+		"a" => to_alpha(number, false),
+		"A" => to_alpha(number, true),
+		"i" => to_roman(number).to_lowercase(),
+		"I" => to_roman(number),
+		_ => number.to_string(),
+	}
+}
+
+fn to_roman(n: i32) -> String {
+	if n <= 0 {
+		return n.to_string();
+	}
+	let mut num = n;
+	let mut result = String::new();
+	let roman_map = [
+		(1000, "M"),
+		(900, "CM"),
+		(500, "D"),
+		(400, "CD"),
+		(100, "C"),
+		(90, "XC"),
+		(50, "L"),		(40, "XL"),
+		(10, "X"),
+		(9, "IX"),
+		(5, "V"),
+		(4, "IV"),
+		(1, "I"),
+	];
+
+	for &(value, symbol) in &roman_map {
+		while num >= value {
+			result.push_str(symbol);
+			num -= value;
+		}
+	}
+	result
+}
+
+fn to_alpha(n: i32, uppercase: bool) -> String {
+	if n <= 0 {
+		return n.to_string();
+	}
+	let mut num = n;
+	let mut result = String::new();
+	let base = if uppercase { b'A' } else { b'a' };
+	while num > 0 {
+		let remainder = (num - 1) % 26;
+		result.insert(0, (base + remainder as u8) as char);
+		num = (num - 1) / 26;
+	}
+	result
 }

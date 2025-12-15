@@ -5,18 +5,19 @@ use roxmltree::{Document, Node, NodeType, ParsingOptions};
 use crate::{
 	html_to_text::{HeadingInfo, LinkInfo, ListInfo, ListItemInfo},
 	parser::utils::collect_element_text,
-	utils::text::{collapse_whitespace, display_len, remove_soft_hyphens, trim_string},
+	utils::text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string},
 };
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 struct ListStyle {
 	ordered: bool,
 	item_number: i32,
+	list_type: String,
 }
 
 impl Default for ListStyle {
 	fn default() -> Self {
-		Self { ordered: false, item_number: 1 }
+		Self { ordered: false, item_number: 1, list_type: "1".to_string() }
 	}
 }
 
@@ -183,9 +184,9 @@ impl XmlToText {
 		self.current_line.push_str(&" ".repeat(indent));
 		let bullet = if let Some(style) = self.list_style_stack.last_mut() {
 			if style.ordered {
-				let bullet = format!("{}. ", style.item_number);
+				let item_text = format_list_item(style.item_number, &style.list_type);
 				style.item_number += 1;
-				bullet
+				format!("{}. ", item_text)
 			} else {
 				format!("{} ", Self::get_bullet_for_level(self.list_level))
 			}
@@ -198,8 +199,16 @@ impl XmlToText {
 	fn handle_list_start_xml(&mut self, tag_name: &str, node: Node<'_, '_>) {
 		self.list_level += 1;
 		let mut style = ListStyle::default();
-		if tag_name == "ol" {
+		if Self::tag_is(tag_name, "ol") {
 			style.ordered = true;
+			if let Some(start_val) = node.attribute("start") {
+				if let Ok(start_num) = start_val.parse::<i32>() {
+					style.item_number = start_num;
+				}
+			}
+			if let Some(type_val) = node.attribute("type") {
+				style.list_type = type_val.to_lowercase();
+			}
 		}
 		self.list_style_stack.push(style);
 		let mut item_count = 0;

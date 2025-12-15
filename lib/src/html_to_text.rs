@@ -4,7 +4,7 @@ use bitflags::bitflags;
 use ego_tree::NodeRef;
 use scraper::{Html, Node};
 
-use crate::utils::text::{collapse_whitespace, display_len, remove_soft_hyphens, trim_string};
+use crate::utils::text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string};
 
 bitflags! {
 	#[derive(Default, Clone, Copy)]
@@ -53,11 +53,12 @@ pub struct ListItemInfo {
 struct ListStyle {
 	ordered: bool,
 	item_number: i32,
+	list_type: String,
 }
 
 impl Default for ListStyle {
 	fn default() -> Self {
-		Self { ordered: false, item_number: 1 }
+		Self { ordered: false, item_number: 1, list_type: "1".to_string() }
 	}
 }
 
@@ -241,8 +242,9 @@ impl HtmlToText {
 			}
 			if let Some(style) = self.list_style_stack.last_mut() {
 				if style.ordered {
+					let item_text = format_list_item(style.item_number, &style.list_type);
 					use std::fmt::Write;
-					let _ = write!(&mut self.current_line, "{}. ", style.item_number);
+					let _ = write!(&mut self.current_line, "{}. ", item_text);
 					style.item_number += 1;
 				} else {
 					self.current_line.push_str(Self::get_bullet_for_level(self.list_level));
@@ -261,6 +263,16 @@ impl HtmlToText {
 			let mut style = ListStyle::default();
 			if tag_name == "ol" {
 				style.ordered = true;
+				if let Some(element) = scraper::ElementRef::wrap(node) {
+					if let Some(start_val) = element.attr("start") {
+						if let Ok(start_num) = start_val.parse::<i32>() {
+							style.item_number = start_num;
+						}
+					}
+					if let Some(type_val) = element.attr("type") {
+						style.list_type = type_val.to_lowercase();
+					}
+				}
 			}
 			self.list_style_stack.push(style);
 			let mut item_count = 0;
