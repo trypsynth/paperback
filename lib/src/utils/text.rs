@@ -1,4 +1,5 @@
 use pulldown_cmark::{Event, Parser, TagEnd};
+use roman::to;
 
 pub fn markdown_to_text(markdown: &str) -> String {
 	let mut text = String::new();
@@ -94,6 +95,30 @@ pub const fn is_space_like(ch: char) -> bool {
 	ch.is_whitespace() || matches!(ch, '\u{00A0}' | '\u{200B}')
 }
 
+pub fn format_list_item(number: i32, list_type: &str) -> String {
+	match list_type {
+		"a" => to_alpha(number, false),
+		"A" => to_alpha(number, true),
+		"i" => to(number).map(|s| s.to_lowercase()).unwrap_or_else(|| number.to_string()),
+		"I" => to(number).unwrap_or_else(|| number.to_string()),
+		_ => number.to_string(),
+	}
+}
+
+fn to_alpha(mut n: i32, uppercase: bool) -> String {
+	if n <= 0 {
+		return n.to_string();
+	}
+	let mut result = String::new();
+	let base = if uppercase { b'A' } else { b'a' };
+	while n > 0 {
+		n -= 1;
+		result.insert(0, (base + (n % 26) as u8) as char);
+		n /= 26;
+	}
+	result
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -110,23 +135,22 @@ mod tests {
 		assert_eq!(url_decode("hello%20world"), "hello world");
 		assert_eq!(url_decode("test%2Fpath"), "test/path");
 		assert_eq!(url_decode("100%25"), "100%");
-		// Test UTF-8 encoded characters.
 		assert_eq!(url_decode("caf%C3%A9"), "café");
 	}
 
 	#[test]
 	fn test_collapse_whitespace() {
-		assert_eq!(collapse_whitespace("hello   world"), "hello world");
+		assert_eq!(collapse_whitespace("hello   world"), "hello world");
 		assert_eq!(collapse_whitespace("hello\n\nworld"), "hello world");
 		assert_eq!(collapse_whitespace("hello\t\tworld"), "hello world");
-		assert_eq!(collapse_whitespace("  spaces  "), "  spaces ");
+		assert_eq!(collapse_whitespace("  spaces  "), "  spaces ");
 		assert_eq!(collapse_whitespace("hello\u{00A0}\u{00A0}world"), "hello world");
 		assert_eq!(collapse_whitespace("hello\u{200B}\u{200B}world"), "hello world");
 	}
 
 	#[test]
 	fn test_trim_string() {
-		assert_eq!(trim_string("  hello  "), "hello");
+		assert_eq!(trim_string("  hello  "), "hello");
 		assert_eq!(trim_string("\n\nhello\n\n"), "hello");
 		assert_eq!(trim_string("\u{00A0}hello\u{00A0}"), "hello");
 		assert_eq!(trim_string("\u{200B}hello\u{200B}"), "hello");
@@ -149,7 +173,6 @@ mod tests {
 		assert_eq!(display_len("line\nwrap"), 9);
 	}
 
-
 	#[test]
 	fn test_format_list_item() {
 		assert_eq!(format_list_item(1, "1"), "1");
@@ -166,65 +189,8 @@ mod tests {
 		assert_eq!(format_list_item(1, "I"), "I");
 		assert_eq!(format_list_item(4, "I"), "IV");
 		assert_eq!(format_list_item(1994, "I"), "MCMXCIV");
-		// Test fallback for unknown type
 		assert_eq!(format_list_item(10, "unknown"), "10");
-		// Test zero and negative numbers
 		assert_eq!(format_list_item(0, "a"), "0");
 		assert_eq!(format_list_item(-5, "i"), "-5");
 	}
-}
-
-pub fn format_list_item(number: i32, list_type: &str) -> String {
-	match list_type {
-		"a" => to_alpha(number, false),
-		"A" => to_alpha(number, true),
-		"i" => to_roman(number).to_lowercase(),
-		"I" => to_roman(number),
-		_ => number.to_string(),
-	}
-}
-
-fn to_roman(n: i32) -> String {
-	if n <= 0 {
-		return n.to_string();
-	}
-	let mut num = n;
-	let mut result = String::new();
-	let roman_map = [
-		(1000, "M"),
-		(900, "CM"),
-		(500, "D"),
-		(400, "CD"),
-		(100, "C"),
-		(90, "XC"),
-		(50, "L"),		(40, "XL"),
-		(10, "X"),
-		(9, "IX"),
-		(5, "V"),
-		(4, "IV"),
-		(1, "I"),
-	];
-
-	for &(value, symbol) in &roman_map {
-		while num >= value {
-			result.push_str(symbol);
-			num -= value;
-		}
-	}
-	result
-}
-
-fn to_alpha(n: i32, uppercase: bool) -> String {
-	if n <= 0 {
-		return n.to_string();
-	}
-	let mut num = n;
-	let mut result = String::new();
-	let base = if uppercase { b'A' } else { b'a' };
-	while num > 0 {
-		let remainder = (num - 1) % 26;
-		result.insert(0, (base + remainder as u8) as char);
-		num = (num - 1) / 26;
-	}
-	result
 }
