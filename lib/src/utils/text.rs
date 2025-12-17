@@ -135,6 +135,7 @@ mod tests {
 		assert_eq!(url_decode("hello%20world"), "hello world");
 		assert_eq!(url_decode("test%2Fpath"), "test/path");
 		assert_eq!(url_decode("100%25"), "100%");
+		// Test UTF-8 encoded characters.
 		assert_eq!(url_decode("caf%C3%A9"), "café");
 	}
 
