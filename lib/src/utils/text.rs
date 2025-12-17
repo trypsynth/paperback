@@ -1,4 +1,5 @@
 use pulldown_cmark::{Event, Parser, TagEnd};
+use roman::to;
 
 pub fn markdown_to_text(markdown: &str) -> String {
 	let mut text = String::new();
@@ -94,6 +95,30 @@ pub const fn is_space_like(ch: char) -> bool {
 	ch.is_whitespace() || matches!(ch, '\u{00A0}' | '\u{200B}')
 }
 
+pub fn format_list_item(number: i32, list_type: &str) -> String {
+	match list_type {
+		"a" => to_alpha(number, false),
+		"A" => to_alpha(number, true),
+		"i" => to(number).map(|s| s.to_lowercase()).unwrap_or_else(|| number.to_string()),
+		"I" => to(number).unwrap_or_else(|| number.to_string()),
+		_ => number.to_string(),
+	}
+}
+
+fn to_alpha(mut n: i32, uppercase: bool) -> String {
+	if n <= 0 {
+		return n.to_string();
+	}
+	let mut result = String::new();
+	let base = if uppercase { b'A' } else { b'a' };
+	while n > 0 {
+		n -= 1;
+		result.insert(0, (base + (n % 26) as u8) as char);
+		n /= 26;
+	}
+	result
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -147,5 +172,26 @@ mod tests {
 		assert_eq!(display_len("abc"), 3);
 		assert_eq!(display_len("💖"), 1);
 		assert_eq!(display_len("line\nwrap"), 9);
+	}
+
+	#[test]
+	fn test_format_list_item() {
+		assert_eq!(format_list_item(1, "1"), "1");
+		assert_eq!(format_list_item(5, "1"), "5");
+		assert_eq!(format_list_item(1, "a"), "a");
+		assert_eq!(format_list_item(26, "a"), "z");
+		assert_eq!(format_list_item(27, "a"), "aa");
+		assert_eq!(format_list_item(1, "A"), "A");
+		assert_eq!(format_list_item(26, "A"), "Z");
+		assert_eq!(format_list_item(27, "A"), "AA");
+		assert_eq!(format_list_item(1, "i"), "i");
+		assert_eq!(format_list_item(4, "i"), "iv");
+		assert_eq!(format_list_item(1994, "i"), "mcmxciv");
+		assert_eq!(format_list_item(1, "I"), "I");
+		assert_eq!(format_list_item(4, "I"), "IV");
+		assert_eq!(format_list_item(1994, "I"), "MCMXCIV");
+		assert_eq!(format_list_item(10, "unknown"), "10");
+		assert_eq!(format_list_item(0, "a"), "0");
+		assert_eq!(format_list_item(-5, "i"), "-5");
 	}
 }
