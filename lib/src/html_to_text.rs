@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use bitflags::bitflags;
 use ego_tree::NodeRef;
-use scraper::{Html, ElementRef, Node};
+use scraper::{ElementRef, Html, Node};
 
 use crate::utils::text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string};
 
@@ -361,8 +361,8 @@ impl HtmlToText {
 			self.list_style_stack.pop();
 		}
 		if tag_name == "pre" {
-			let has_preserved_trailing_whitespace = self.flags.contains(ProcessingFlags::PRESERVE_WHITESPACE)
-				&& self.current_line.trim().is_empty();
+			let has_preserved_trailing_whitespace =
+				self.flags.contains(ProcessingFlags::PRESERVE_WHITESPACE) && self.current_line.trim().is_empty();
 			if has_preserved_trailing_whitespace {
 				self.current_line.clear();
 			} else {
@@ -432,9 +432,7 @@ impl HtmlToText {
 
 	fn serialize_node(node: NodeRef<'_, Node>, _document: &Html) -> String {
 		match node.value() {
-			Node::Element(_) => {
-				ElementRef::wrap(node).map_or_else(String::new, |element_ref| element_ref.html())
-			}
+			Node::Element(_) => ElementRef::wrap(node).map_or_else(String::new, |element_ref| element_ref.html()),
 			Node::Text(text) => text.text.to_string(),
 			_ => String::new(),
 		}

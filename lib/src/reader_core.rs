@@ -54,7 +54,9 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 			let (idx_opt, wrapped) =
 				select_marker_index(doc, req.position, req.wrap, req.direction, MarkerType::SectionBreak);
 			if let Some(idx) = idx_opt {
-				let Ok(idx_i32) = i32::try_from(idx) else { return build_nav_result(false, wrapped, 0, 0, String::new()) };
+				let Ok(idx_i32) = i32::try_from(idx) else {
+					return build_nav_result(false, wrapped, 0, 0, String::new());
+				};
 				let offset = doc.marker_position(idx_i32).unwrap_or(0);
 				return build_nav_result(true, wrapped, offset, 0, String::new());
 			}
@@ -64,7 +66,9 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 			let (idx_opt, wrapped) =
 				select_marker_index(doc, req.position, req.wrap, req.direction, MarkerType::PageBreak);
 			if let Some(idx) = idx_opt {
-				let Ok(idx_i32) = i32::try_from(idx) else { return build_nav_result(false, wrapped, 0, 0, String::new()) };
+				let Ok(idx_i32) = i32::try_from(idx) else {
+					return build_nav_result(false, wrapped, 0, 0, String::new());
+				};
 				let offset = doc.marker_position(idx_i32).unwrap_or(0);
 				return build_nav_result(true, wrapped, offset, 0, String::new());
 			}
@@ -280,14 +284,7 @@ pub fn bookmark_navigate(
 	}
 	if let Some((idx, bm)) = hit {
 		let index = i32::try_from(idx).unwrap_or(-1);
-		return ffi::BookmarkNavResult {
-			found: true,
-			start: bm.start,
-			end: bm.end,
-			note: bm.note,
-			index,
-			wrapped,
-		};
+		return ffi::BookmarkNavResult { found: true, start: bm.start, end: bm.end, note: bm.note, index, wrapped };
 	}
 	ffi::BookmarkNavResult { found: false, start: -1, end: -1, note: String::new(), index: -1, wrapped }
 }
@@ -342,10 +339,7 @@ fn find_fragment_offset(doc: &DocumentHandle, fragment: &str, scoped_path: Optio
 }
 
 fn find_manifest_id_for_path(doc: &DocumentHandle, path: &str) -> Option<String> {
-	doc.document()
-		.manifest_items
-		.iter()
-		.find_map(|(id, p)| if p == path { Some(id.clone()) } else { None })
+	doc.document().manifest_items.iter().find_map(|(id, p)| if p == path { Some(id.clone()) } else { None })
 }
 
 fn spine_section_bounds(doc: &DocumentHandle, spine_index: usize) -> (usize, usize) {

@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
 use anyhow::{Context, Result};
+use libchm::{CHM_ENUMERATE_ALL, ChmHandle, unit_info_path};
 use scraper::{ElementRef, Html, Selector};
 
-use libchm::{CHM_ENUMERATE_ALL, ChmHandle, unit_info_path};
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
 	html_to_text::{HtmlSourceMode, HtmlToText},
