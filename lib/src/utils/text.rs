@@ -140,17 +140,17 @@ mod tests {
 
 	#[test]
 	fn test_collapse_whitespace() {
-		assert_eq!(collapse_whitespace("hello   world"), "hello world");
+		assert_eq!(collapse_whitespace("hello   world"), "hello world");
 		assert_eq!(collapse_whitespace("hello\n\nworld"), "hello world");
 		assert_eq!(collapse_whitespace("hello\t\tworld"), "hello world");
-		assert_eq!(collapse_whitespace("  spaces  "), "  spaces ");
+		assert_eq!(collapse_whitespace("  spaces  "), "  spaces ");
 		assert_eq!(collapse_whitespace("hello\u{00A0}\u{00A0}world"), "hello world");
 		assert_eq!(collapse_whitespace("hello\u{200B}\u{200B}world"), "hello world");
 	}
 
 	#[test]
 	fn test_trim_string() {
-		assert_eq!(trim_string("  hello  "), "hello");
+		assert_eq!(trim_string("  hello  "), "hello");
 		assert_eq!(trim_string("\n\nhello\n\n"), "hello");
 		assert_eq!(trim_string("\u{00A0}hello\u{00A0}"), "hello");
 		assert_eq!(trim_string("\u{200B}hello\u{200B}"), "hello");

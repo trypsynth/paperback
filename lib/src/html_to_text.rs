@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use bitflags::bitflags;
 use ego_tree::NodeRef;
-use scraper::{Html, Node};
+use scraper::{Html, ElementRef, Node};
 
 use crate::utils::text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string};
 
@@ -263,7 +263,7 @@ impl HtmlToText {
 			let mut style = ListStyle::default();
 			if tag_name == "ol" {
 				style.ordered = true;
-				if let Some(element) = scraper::ElementRef::wrap(node) {
+				if let Some(element) = ElementRef::wrap(node) {
 					if let Some(start_val) = element.attr("start") {
 						if let Ok(start_num) = start_val.parse::<i32>() {
 							style.item_number = start_num;
@@ -374,7 +374,7 @@ impl HtmlToText {
 		}
 	}
 
-	fn handle_text_node(&mut self, text: &scraper::node::Text) {
+	fn handle_text_node(&mut self, text: &node::Text) {
 		if !self.flags.contains(ProcessingFlags::IN_BODY) {
 			return;
 		}
@@ -433,7 +433,7 @@ impl HtmlToText {
 	fn serialize_node(node: NodeRef<'_, Node>, _document: &Html) -> String {
 		match node.value() {
 			Node::Element(_) => {
-				scraper::ElementRef::wrap(node).map_or_else(String::new, |element_ref| element_ref.html())
+				ElementRef::wrap(node).map_or_else(String::new, |element_ref| element_ref.html())
 			}
 			Node::Text(text) => text.text.to_string(),
 			_ => String::new(),
