@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use bitflags::bitflags;
 use ego_tree::NodeRef;
-use scraper::{ElementRef, Html, Node};
+use scraper::{Html, ElementRef, Node, node};
 
 use crate::utils::text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string};
 
