@@ -1,5 +1,3 @@
-source: src
-
 site:
   title: Paperback
   description: Paperback is an accessible, light-weight, and incredibly fast ebook and document reader.
@@ -7,5 +5,9 @@ site:
   data:
     nav:
       - [Home, "/"]
-      - [README, "/readme.html"]
+      - [Downloads, "/downloads"]
+      - [Documentation, "/readme.html"]
+      - [Translations, "/translations"]
       - [Source code, "https://github.com/trypsynth/paperback"]
+      - [Sponsor on GitHub, "https://github.com/sponsors/trypsynth"]
+      - [Donate with PayPal, "https://paypal.me/tygillespie05"]

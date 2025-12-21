@@ -1,0 +1,1050 @@
+  # Russian translations for paperback package
+# Русский переводы для пакета paperback.
+# Copyright (C) 2025 Quin Gillespie
+# This file is distributed under the same license as the paperback package.
+# <gulmagomedovruslan77@gmail.com>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: paperback 0.6.1\n"
+"Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
+"POT-Creation-Date: 2025-11-23 13:29-0700\n"
+"PO-Revision-Date: 2025-12-04 08:13+0300\n"
+"Last-Translator: <gulmagomedovruslan77@gmail.com>\n"
+"Language-Team: Russian\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#: app/app.cpp
+msgid "No release notes were provided."
+msgstr "Не какой заметки к выпуску не придоставлено."
+
+#: app/app.cpp
+#, c-format
+msgid ""
+"There is an update available.\n"
+"Your version: %s\n"
+"Latest version: %s\n"
+"Description:\n"
+"%s\n"
+"Do you want to open the direct download link?"
+msgstr ""
+"доступно обновление.\n"
+"Ваша версия: %s\n"
+"Последняя версия: %s\n"
+"Описание:\n"
+"%s"
+"Вы хотите открыть ссылку для скачивания?"
+#: app/app.cpp
+msgid "Update available"
+msgstr "Доступно обновление"
+
+#: app/app.cpp
+msgid "No updates available."
+msgstr "Нет доступных обновлений."
+
+#: app/app.cpp
+msgid "Info"
+msgstr "Информация"
+
+#: app/app.cpp
+msgid "Error checking for updates."
+msgstr "Ошибка проверки обновлений."
+
+#: app/app.cpp
+#, c-format
+msgid "Failed to check for updates. HTTP status: %d"
+msgstr "Не удалось проверить наличия обновлений. Статус HTTP: %d"
+
+#: app/app.cpp app/dialogs.cpp app/document_manager.cpp app/main_window.cpp
+#: app/parser.cpp
+msgid "Error"
+msgstr "Ошибка"
+
+#: app/app.cpp
+msgid "Failed to initialize configuration"
+msgstr "Не удалось инициализировать конфигурацию"
+
+#: app/app.cpp
+msgid "Failed to create IPC server"
+msgstr "Не удалось создать IPC службу"
+
+#: app/app.cpp app/document_manager.cpp
+msgid "Warning"
+msgstr "Предупреждение"
+
+#: app/app.cpp app/document_manager.cpp
+#, c-format
+msgid "File not found: %s"
+msgstr "Файл не найден: %s"
+
+#: app/app.cpp
+msgid "Failed to load document."
+msgstr "Не удалось загрузить документ."
+
+#: app/dialogs.cpp
+msgid "All Documents"
+msgstr "Все документы"
+
+#: app/dialogs.cpp
+msgid "&search"
+msgstr "Поиск"
+
+#: app/dialogs.cpp
+msgid "File Name"
+msgstr "Название файла"
+
+#: app/dialogs.cpp
+msgid "Status"
+msgstr "Состояние"
+
+#: app/dialogs.cpp
+msgid "Path"
+msgstr "Путь"
+
+#: app/dialogs.cpp
+msgid "&Open"
+msgstr "Открыть"
+
+#: app/dialogs.cpp
+msgid "&Remove"
+msgstr "Удалить"
+
+#: app/dialogs.cpp
+msgid "Missing"
+msgstr "Отсутствует"
+
+#: app/dialogs.cpp
+msgid ""
+"Are you sure you want to remove this document from the list? This will also "
+"remove its reading position."
+msgstr ""
+"Вы уверены, что хотите удалить документ из списка? Это так же может привести к"
+"удалению позиции чтения."
+
+#: app/dialogs.cpp
+msgid "Confirm"
+msgstr "Подтверждение"
+
+#: app/dialogs.cpp
+msgid "Open"
+msgstr "Открыто"
+
+#: app/dialogs.cpp
+msgid "Closed"
+msgstr "Закрыто"
+
+#: app/dialogs.cpp
+msgid "Jump to Bookmark"
+msgstr "Переход к закладком"
+
+#: app/dialogs.cpp
+msgid "&Filter:"
+msgstr "Фильтр"
+
+#: app/dialogs.cpp
+msgid "All"
+msgstr "Всё"
+
+#: app/dialogs.cpp
+msgid "Bookmarks"
+msgstr "Закладки"
+
+#: app/dialogs.cpp
+msgid "Notes"
+msgstr "Заметки"
+
+#: app/dialogs.cpp
+msgid "&Edit Note"
+msgstr "Редактировать заметку"
+
+#: app/dialogs.cpp
+msgid "&Delete"
+msgstr "Удалить"
+
+#: app/dialogs.cpp
+msgid "&Jump"
+msgstr "Перейти"
+
+#: app/dialogs.cpp
+msgid "&Cancel"
+msgstr "Отменить"
+
+#: app/dialogs.cpp
+msgid "Please select a bookmark to jump to."
+msgstr "Пожалуйста, выберите закладку для перехода."
+
+#: app/dialogs.cpp app/document_manager.cpp
+msgid "Bookmark Note"
+msgstr "Заметка с закладкой"
+
+#: app/dialogs.cpp app/document_manager.cpp
+msgid "Edit bookmark note:"
+msgstr "Редактирование заметки закладки"
+
+#: app/dialogs.cpp
+msgid "blank"
+msgstr "Пусто"
+
+#: app/dialogs.cpp
+msgid "Document Info"
+msgstr "Информация о документе"
+
+#: app/dialogs.cpp
+msgid "Title: "
+msgstr "Заголовок: "
+
+#: app/dialogs.cpp
+msgid "Author: "
+msgstr "Автор: "
+
+#: app/dialogs.cpp
+msgid "Path: "
+msgstr "Путь: "
+
+#: app/dialogs.cpp
+msgid "Total number of words: "
+msgstr "Общая количество слов: "
+
+#: app/dialogs.cpp
+msgid "Total number of lines: "
+msgstr "Общая количество строк: "
+
+#: app/dialogs.cpp
+msgid "Total number of characters: "
+msgstr "Общая количество символов: "
+
+#: app/dialogs.cpp
+msgid "Total number of characters (excluding whitespace): "
+msgstr "Общая количество символов (без учёта пробелов): "
+
+#: app/dialogs.cpp
+msgid "Elements"
+msgstr "Элементы"
+
+#: app/dialogs.cpp
+msgid "&View:"
+msgstr "Просмотр"
+
+#: app/dialogs.cpp
+msgid "Headings"
+msgstr "Заголовки"
+
+#: app/dialogs.cpp
+msgid "Links"
+msgstr "Ссылки"
+
+#: app/dialogs.cpp
+msgid "Root"
+msgstr "Корень"
+
+#: app/dialogs.cpp
+msgid "Untitled"
+msgstr "Без заголовков"
+
+#: app/dialogs.cpp
+msgid "Find"
+msgstr "Найти"
+
+#: app/dialogs.cpp
+msgid "Find &what:"
+msgstr "Что найти:"
+
+#: app/dialogs.cpp
+msgid "Options"
+msgstr "Параметры"
+
+#: app/dialogs.cpp
+msgid "&Match case"
+msgstr "Совподение с регистром"
+
+#: app/dialogs.cpp
+msgid "Match &whole word"
+msgstr "Совподение с целым словом"
+
+#: app/dialogs.cpp
+msgid "Use &regular expressions"
+msgstr "Использовать регулярное вырожение"
+
+#: app/dialogs.cpp
+msgid "Find &Previous"
+msgstr "Найти предыдущее"
+
+#: app/dialogs.cpp
+msgid "Find &Next"
+msgstr "Найти следующее"
+
+#: app/dialogs.cpp
+msgid "Cancel"
+msgstr "Отменить"
+
+#: app/dialogs.cpp
+msgid "Go to Line"
+msgstr "Перейти к строке"
+
+#: app/dialogs.cpp
+msgid "&Line number:"
+msgstr "Номер строки:"
+
+#: app/dialogs.cpp
+msgid "Go to page"
+msgstr "Перейти к странице"
+
+#: app/dialogs.cpp
+#, c-format
+msgid "Go to page (1/%d):"
+msgstr "Перейти к страници (1/%d):"
+
+#: app/dialogs.cpp
+msgid "Go to Percent"
+msgstr "Перейти к процентом"
+
+#: app/dialogs.cpp
+msgid "P&ercent:"
+msgstr "Процент:"
+
+#: app/dialogs.cpp
+msgid "&Percent"
+msgstr "Процент"
+
+#: app/dialogs.cpp
+msgid "Open As"
+msgstr "Открыть как"
+
+#: app/dialogs.cpp
+#, c-format
+msgid ""
+"No suitable parser was found for %s.\n"
+"How would you like to open this file?"
+msgstr ""
+"Не найден подходящей синтоксический анализатор для %s.\n"
+"Как бы вы хотели открыть этот файл?"
+
+#: app/dialogs.cpp
+msgid "Open &as:"
+msgstr "Открыть как:"
+
+#: app/dialogs.cpp
+msgid "Plain Text"
+msgstr "Обычный текст"
+
+#: app/dialogs.cpp
+msgid "HTML"
+msgstr "HTML"
+
+#: app/dialogs.cpp
+msgid "Markdown"
+msgstr "Markdown"
+
+#: app/dialogs.cpp
+msgid "General"
+msgstr "Общие"
+
+#: app/dialogs.cpp
+msgid "&Restore previously opened documents on startup"
+msgstr "Восстанавливать ранее открытые документы при запуске"
+
+#: app/dialogs.cpp
+msgid "&Word wrap"
+msgstr "Переносить слова"
+
+#: app/dialogs.cpp
+msgid "&Minimize to system tray"
+msgstr "Минимизировать в системный трей"
+
+#: app/dialogs.cpp
+msgid "&Start maximized"
+msgstr "Разворачивать при запуске"
+
+#: app/dialogs.cpp
+msgid "Show compact &go menu"
+msgstr "Отображать переход в компактном меню"
+
+#: app/dialogs.cpp
+msgid "&Wrap navigation"
+msgstr "Циклическая навигация"
+
+#: app/dialogs.cpp
+msgid "Check for &updates on startup"
+msgstr "Проверять наличие обновлений при запуске"
+
+#: app/dialogs.cpp
+msgid "Number of &recent documents to show:"
+msgstr "Количество последних документов для отображения:"
+
+#: app/dialogs.cpp
+msgid "&Language:"
+msgstr "Язык:"
+
+#: app/dialogs.cpp
+msgid "Document Password"
+msgstr "Пароль документа"
+
+#: app/dialogs.cpp
+msgid "&Password"
+msgstr "Пароль"
+
+#: app/dialogs.cpp
+msgid "Sleep Timer"
+msgstr "Таймер сна"
+
+#: app/dialogs.cpp
+msgid "&Minutes:"
+msgstr "Менуты:"
+
+#: app/dialogs.cpp
+msgid "Table of Contents"
+msgstr "Оглавление"
+
+#: app/dialogs.cpp
+msgid "Please select a section from the table of contents."
+msgstr "Пожалуйста, выберите раздел из оглавления."
+
+#: app/dialogs.cpp
+msgid "No Selection"
+msgstr "Не выбрано"
+
+#: app/dialogs.cpp app/main_window.cpp
+msgid "View Note"
+msgstr "Просмотр заметки"
+
+#: app/dialogs.cpp
+msgid "Close"
+msgstr "Закрыть"
+
+#: app/document_manager.cpp
+msgid "Password is required."
+msgstr "Требуется пароль."
+
+#: app/document_manager.cpp
+#, c-format
+msgid "Failed to parse document: %s"
+msgstr "Не удалось проанализировать документ: %s"
+
+#: app/document_manager.cpp
+msgid "No sections."
+msgstr "Нет разделов."
+
+#: app/document_manager.cpp
+msgid "No next section"
+msgstr "Нет следующего раздела"
+
+#: app/document_manager.cpp
+msgid "No previous section"
+msgstr "Нет предыдущего раздела"
+
+#: app/document_manager.cpp
+msgid "Wrapping to start. "
+msgstr "Начало раздела. "
+
+#: app/document_manager.cpp
+msgid "Wrapping to end. "
+msgstr "Конец раздела. "
+
+#: app/document_manager.cpp app/main_window.cpp
+msgid "No pages."
+msgstr "Нет страниц."
+
+#: app/document_manager.cpp
+msgid "No next page."
+msgstr "Нет следующей страницы."
+
+#: app/document_manager.cpp
+msgid "No previous page."
+msgstr "Нет предыдущей страницы."
+
+#: app/document_manager.cpp
+#, c-format
+msgid "Page %d: %s"
+msgstr "Страница %d: %s"
+
+#: app/document_manager.cpp
+msgid "No bookmarks."
+msgstr "Нет закладок."
+
+#: app/document_manager.cpp
+msgid "No next bookmark"
+msgstr "Нет следующей закладки"
+
+#: app/document_manager.cpp
+msgid "No previous bookmark"
+msgstr "Нет предыдущей закладки"
+
+#: app/document_manager.cpp
+#, c-format
+msgid "%s - Bookmark %d"
+msgstr "%s - Закладка %d"
+
+#: app/document_manager.cpp
+msgid "No notes."
+msgstr "Нет заметок."
+
+#: app/document_manager.cpp
+msgid "No next note"
+msgstr "Нет следующей заметки"
+
+#: app/document_manager.cpp
+msgid "No previous note"
+msgstr "Нет предыдущей заметки"
+
+#: app/document_manager.cpp
+#, c-format
+msgid "%s - %s - Note %d"
+msgstr "%s - %s - Заметка %d"
+
+#: app/document_manager.cpp
+#, c-format
+msgid "%s - Note %d"
+msgstr "%s - Заметка %d"
+
+#: app/document_manager.cpp
+msgid "No links."
+msgstr "Нет ссылок."
+
+#: app/document_manager.cpp
+msgid "No next link."
+msgstr "Нет следующей ссылки."
+
+#: app/document_manager.cpp
+msgid "No previous link."
+msgstr "Нет предыдущей ссылки."
+
+#: app/document_manager.cpp
+msgid " link"
+msgstr " ссылка"
+
+#: app/document_manager.cpp
+msgid "No previous position."
+msgstr "Нет предыдущей позиции."
+
+#: app/document_manager.cpp
+msgid "Navigated to previous position."
+msgstr "Переход к предыдущей позиции."
+
+#: app/document_manager.cpp
+msgid "No next position."
+msgstr "Нет следующей позиции."
+
+#: app/document_manager.cpp
+msgid "Navigated to next position."
+msgstr "Переход к следующей позиции."
+
+#: app/document_manager.cpp
+msgid "Opening link in default browser."
+msgstr "Открытие ссылки в браузере по умолчанию."
+
+#: app/document_manager.cpp
+msgid "Failed to open link."
+msgstr "Не удалось открыть ссылку."
+
+#: app/document_manager.cpp
+msgid "Navigated to internal link."
+msgstr "Переход по внутренней ссылки."
+
+#: app/document_manager.cpp
+msgid "Internal link target not found."
+msgstr "Целевая внутренняя ссылка не найдена."
+
+#: app/document_manager.cpp
+msgid "No lists."
+msgstr "Нет списков."
+
+#: app/document_manager.cpp
+msgid "No next list."
+msgstr "Нет следующего списка."
+
+#: app/document_manager.cpp
+msgid "No previous list."
+msgstr "Нет предыдущего списка."
+
+#: app/document_manager.cpp
+#, c-format
+msgid "List with %d items"
+msgstr "Список из %d элементов"
+
+#: app/document_manager.cpp
+msgid "No list items."
+msgstr "Нет элементов списка."
+
+#: app/document_manager.cpp
+msgid "No next list item."
+msgstr "Нет следующего элемента списка."
+
+#: app/document_manager.cpp
+msgid "No previous list item."
+msgstr "Нет предыдущего элемента списка."
+
+#: app/document_manager.cpp
+#, c-format
+msgid "List with %d items "
+msgstr "Список из %d элементов "
+
+#: app/document_manager.cpp
+msgid "Bookmark removed"
+msgstr "Закладка удалена"
+
+#: app/document_manager.cpp
+msgid "Bookmarked"
+msgstr "Закладка добавлена"
+
+#: app/document_manager.cpp
+msgid "Enter bookmark note:"
+msgstr "Введите заметку закладки"
+
+#: app/document_manager.cpp
+msgid "Bookmark note updated"
+msgstr "Заметка закладки обновлена"
+
+#: app/document_manager.cpp
+msgid "Bookmarked with note"
+msgstr "Закладка с заметкой"
+
+#: app/document_manager.cpp
+msgid "No bookmarks"
+msgstr "Нет закладок"
+
+#: app/document_manager.cpp
+#, c-format
+msgid "Bookmark: %s - %s"
+msgstr "Закладка: %s - %s"
+
+#: app/document_manager.cpp
+#, c-format
+msgid "Bookmark: %s"
+msgstr "Закладка: %s"
+
+#: app/document_manager.cpp
+msgid "No table of contents."
+msgstr "Нет оглавлений."
+
+#: app/document_manager.cpp
+msgid "Table of contents is empty."
+msgstr "Оглавление пустое."
+
+#: app/document_manager.cpp app/main_window.cpp
+msgid "Ready"
+msgstr "Готово"
+
+#: app/document_manager.cpp
+#, c-format
+msgid "line %ld, character %ld, reading %d%%"
+msgstr "Строка %ld, символ %ld, прочитано %d%%"
+
+#: app/document_manager.cpp
+msgid "Previous heading\tShift+H"
+msgstr "Предыдущей заголовок\tShift+H"
+
+#: app/document_manager.cpp
+msgid "Next heading\tH"
+msgstr "Следующей заголовок\tH"
+
+#: app/document_manager.cpp
+#, c-format
+msgid "Previous heading level %d\tShift+%d"
+msgstr "Предыдущей уровень заголовка %d\tShift+%d"
+
+#: app/document_manager.cpp
+#, c-format
+msgid "Next heading level %d\t%d"
+msgstr "Следующей уровень заголовка %d\t%d"
+
+#: app/document_manager.cpp
+msgid "No headings."
+msgstr "Нет заголовков."
+
+#: app/document_manager.cpp
+#, c-format
+msgid "No %s heading"
+msgstr "Нет %s заголовка"
+
+#: app/document_manager.cpp
+msgid "next"
+msgstr "следующего"
+
+#: app/document_manager.cpp
+msgid "previous"
+msgstr "предыдущего"
+
+#: app/document_manager.cpp
+#, c-format
+msgid "No %s heading at level %d"
+msgstr "Нет %s заголовка на уровне %d"
+
+#: app/document_manager.cpp
+#, c-format
+msgid "Wrapping to %s. %s Heading level %d"
+msgstr "Переход к %s. %s на уровне заголовка %d"
+
+#: app/document_manager.cpp
+msgid "start"
+msgstr "Начало"
+
+#: app/document_manager.cpp
+msgid "end"
+msgstr "Конец"
+
+#: app/document_manager.cpp
+#, c-format
+msgid "%s Heading level %d"
+msgstr "%s уровень заголовка %d"
+
+#: app/main_window.cpp
+msgid "Previous section\t["
+msgstr "Предыдущей раздел\t["
+
+#: app/main_window.cpp
+msgid "Next section\t]"
+msgstr "Следующей раздел\t]"
+
+#: app/main_window.cpp
+msgid "Go to &page...\tCtrl+P"
+msgstr "Перейти к страницы...\tCtrl+P"
+
+#: app/main_window.cpp
+msgid "Previous &page\tShift+P"
+msgstr "Предыдущая страница\tShift+P"
+
+#: app/main_window.cpp
+msgid "&Next page\tP"
+msgstr "Следующая страница\tP"
+
+#: app/main_window.cpp
+msgid "Previous &bookmark\tShift+B"
+msgstr "Предыдущая закладка\tShift+B"
+
+#: app/main_window.cpp
+msgid "Next b&ookmark\tB"
+msgstr "Следующая закладка\tB"
+
+#: app/main_window.cpp
+msgid "Previous &note\tShift+N"
+msgstr "Предыдущая заметка\tShift+N"
+
+#: app/main_window.cpp
+msgid "Next &note\tN"
+msgstr "Следующая заметка\tN"
+
+#: app/main_window.cpp
+msgid "Jump to &all...\tCtrl+B"
+msgstr "Перейти ко всем...\tCtrl+B"
+
+#: app/main_window.cpp
+msgid "Jump to &bookmarks...\tCtrl+Alt+B"
+msgstr "Перейти к закладком...\tCtrl+Alt+B"
+
+#: app/main_window.cpp
+msgid "Jump to &notes...\tCtrl+Alt+M"
+msgstr "Перейти к заметком...\tCtrl+Alt+M"
+
+#: app/main_window.cpp
+msgid "&View note text\tCtrl+Shift+W"
+msgstr "Просмотреть текст заметки\tCtrl+Shift+W"
+
+#: app/main_window.cpp
+msgid "Previous lin&k\tShift+K"
+msgstr "Предыдущая ссылка\tShift+K"
+
+#: app/main_window.cpp
+msgid "Next lin&k\tK"
+msgstr "Следующая ссылка\tK"
+
+#: app/main_window.cpp
+msgid "Previous lis&t\tShift+L"
+msgstr "Предыдущей список\tShift+L"
+
+#: app/main_window.cpp
+msgid "Next lis&t\tL"
+msgstr "Следующей список\tL"
+
+#: app/main_window.cpp
+msgid "Previous list &item\tShift+I"
+msgstr "Предыдущей элемент списка\tShift+I"
+
+#: app/main_window.cpp
+msgid "Next list &item\tI"
+msgstr "Следующей элемент списка\tI"
+
+#: app/main_window.cpp
+msgid "&File"
+msgstr "Файл"
+
+#: app/main_window.cpp
+msgid "&Open...\tCtrl+O"
+msgstr "Открыть...\tCtrl+O"
+
+#: app/main_window.cpp
+msgid "Close\tCtrl+F4"
+msgstr "Закрыть\tCtrl+F4"
+
+#: app/main_window.cpp
+msgid "Close &All\tCtrl+Shift+F4"
+msgstr "Закрыть всё\tCtrl+Shift+F4"
+
+#: app/main_window.cpp
+msgid "&Recent Documents"
+msgstr "Последние документы"
+
+#: app/main_window.cpp app/task_bar_icon.cpp
+msgid "E&xit"
+msgstr "Выход"
+
+#: app/main_window.cpp
+msgid "&Find...\tCtrl+F"
+msgstr "Найти...\tCtrl+F"
+
+#: app/main_window.cpp
+msgid "Find Ne&xt\tF3"
+msgstr "Найти следующее\tF3"
+
+#: app/main_window.cpp
+msgid "Find P&revious\tShift+F3"
+msgstr "Найти предыдущее\tShift+F3"
+
+#: app/main_window.cpp
+msgid "Go to &line...\tCtrl+G"
+msgstr "Перейти к строке...\tCtrl+G"
+
+#: app/main_window.cpp
+msgid "Go to &percent...\tCtrl+Shift+G"
+msgstr "Перейти к проценту...\tCtrl+Shift+G"
+
+#: app/main_window.cpp
+msgid "Go &Back\tAlt+Left"
+msgstr "Перейти назад\tAlt+Left"
+
+#: app/main_window.cpp
+msgid "Go &Forward\tAlt+Right"
+msgstr "Перейти вперёд\tAlt+Right"
+
+#: app/main_window.cpp
+msgid "&Sections"
+msgstr "Разделы"
+
+#: app/main_window.cpp
+msgid "&Headings"
+msgstr "Заголовки"
+
+#: app/main_window.cpp
+msgid "&Pages"
+msgstr "Страницы"
+
+#: app/main_window.cpp
+msgid "&Bookmarks"
+msgstr "Закладки"
+
+#: app/main_window.cpp
+msgid "&Links"
+msgstr "Ссылки"
+
+#: app/main_window.cpp
+msgid "&Lists"
+msgstr "Списки"
+
+#: app/main_window.cpp
+msgid "&Go"
+msgstr "Переход"
+
+#: app/main_window.cpp
+msgid "&Tools"
+msgstr "Инструменты"
+
+#: app/main_window.cpp
+msgid "&Word count\tCtrl+W"
+msgstr "Подсчёт слов\tCtrl+W"
+
+#: app/main_window.cpp
+msgid "Document &info\tCtrl+I"
+msgstr "Информация о документе\tCtrl+I"
+
+#: app/main_window.cpp
+msgid "Table of contents\tCtrl+T"
+msgstr "Оглавления\tCtrl+T"
+
+#: app/main_window.cpp
+msgid "&Elements List...\tF7"
+msgstr "Список элементов\tF7"
+
+#: app/main_window.cpp
+msgid "Open &containing folder\tCtrl+Shift+C"
+msgstr "Открыть папку оглавления\tCtrl+Shift+C"
+
+#: app/main_window.cpp
+msgid "Import/&Export"
+msgstr "Импорт/Экспорт"
+
+#: app/main_window.cpp
+msgid "&Import document data...\tCtrl+Shift+I"
+msgstr "Импортировать данные документа...\tCtrl+Shift+I"
+
+#: app/main_window.cpp
+msgid "&Export document data...\tCtrl+Shift+E"
+msgstr "Экспортировать данные документа...\tCtrl+Shift+E"
+
+#: app/main_window.cpp
+msgid "Export document to &plain text...\tCtrl+E"
+msgstr "Экспортировать документ в обычный текст...\tCtrl+E"
+
+#: app/main_window.cpp
+msgid "Toggle bookmark\tCtrl+Shift+B"
+msgstr "Переключить закладку\tCtrl+Shift+B"
+
+#: app/main_window.cpp
+msgid "Bookmark with &note\tCtrl+Shift+N"
+msgstr "Закладка с заметкой\tCtrl+Shift+N"
+
+#: app/main_window.cpp
+msgid "&Options\tCtrl+,"
+msgstr "Параметры\tCtrl+,"
+
+#: app/main_window.cpp
+msgid "&Sleep Timer...\tCtrl+Shift+S"
+msgstr "Таймер сна...\tCtrl+Shift+S"
+
+#: app/main_window.cpp
+msgid "&Help"
+msgstr "Справка"
+
+#: app/main_window.cpp
+#, c-format
+msgid "About %s\tCtrl+F1"
+msgstr "О %s\tCtrl+F1"
+
+#: app/main_window.cpp
+msgid "View &help in default browser\tF1"
+msgstr "Просмотреть справку в браузере по умолчанию\tF1"
+
+#: app/main_window.cpp
+#, c-format
+msgid "View Help in %s\tShift+F1"
+msgstr "Просмотреть справку в %s\tShift+F1"
+
+#: app/main_window.cpp
+msgid "Check for &Updates\tCtrl+Shift+U"
+msgstr "Проверить наличие обновлений\tCtrl+Shift+U"
+
+#: app/main_window.cpp
+msgid "&Donate\tCtrl+D"
+msgstr "Пожертвование\tCtrl+D"
+
+#: app/main_window.cpp
+#, c-format
+msgid " | Sleep timer: %02d:%02d"
+msgstr " | Таймер сна: %02d:%02d"
+
+#: app/main_window.cpp
+msgid "Select a document to read"
+msgstr "Выберите документ для чтения"
+
+#: app/main_window.cpp
+msgid "Export Document"
+msgstr "Экспорт документа"
+
+#: app/main_window.cpp
+msgid "Text files (*.txt)|*.txt|All files (*.*)|*.*"
+msgstr "Текстовые файлы (*.txt)|*.txt|Все файлы (*.*)|*.*"
+
+#: app/main_window.cpp
+msgid "Failed to export document."
+msgstr "Не удалось экспортировать документ."
+
+#: app/main_window.cpp
+msgid "Export notes and bookmarks"
+msgstr "Экспорт заметок и закладок"
+
+#: app/main_window.cpp
+msgid "Paperback files (*.paperback)|*.paperback"
+msgstr "Paperback файлы (*.paperback)|*.paperback"
+
+#: app/main_window.cpp
+msgid "Notes and bookmarks exported successfully."
+msgstr "Заметки и закладки успешно экспортированы."
+
+#: app/main_window.cpp
+msgid "Export Successful"
+msgstr "Успешно экспортировано"
+
+#: app/main_window.cpp
+msgid "Import notes and bookmarks"
+msgstr "Импорт заметок и закладок"
+
+#: app/main_window.cpp
+msgid "Notes and bookmarks imported successfully."
+msgstr "Заметки и закладки успешно импортированы."
+
+#: app/main_window.cpp
+msgid "Import Successful"
+msgstr "Успешно импортировано"
+
+#: app/main_window.cpp
+msgid "No note at the current position."
+msgstr "В текущей позиции нет записи."
+
+#: app/main_window.cpp
+#, c-format
+msgid "The document contains %d word"
+msgid_plural "The document contains %d words"
+msgstr[0] "Документ содержет %d слово"
+msgstr[1] "Документ содержет %d слова"
+msgstr[2] "Документ содержет %d слов"
+
+#: app/main_window.cpp
+msgid "Word count"
+msgstr "Подсчёт слов"
+
+#: app/main_window.cpp
+msgid "Failed to open containing folder."
+msgstr "Не удалось открыть папку оглавления."
+
+#: app/main_window.cpp
+msgid "Failed to launch default browser."
+msgstr "Не удалось запустить браузер по умолчанию."
+
+#: app/main_window.cpp
+msgid ""
+"readme.html not found. Please ensure the application was built properly."
+msgstr "Readme.html не найден. Пожалуйста, убедитесь, что приложение было собрано правильно."
+
+#: app/main_window.cpp
+msgid "Failed to open donation page in browser."
+msgstr "Не удалось открыть страницу пожертвования в браузере."
+
+#: app/main_window.cpp
+msgid "Sleep timer canceled."
+msgstr "Таймер сна отменён."
+
+#: app/main_window.cpp
+#, c-format
+msgid "Sleep timer set for %d minute%s."
+msgstr "Таймер сна установлен на %d минут %s."
+
+#: app/main_window.cpp
+msgid "No recent documents."
+msgstr "Нет последних документов."
+
+#: app/main_window.cpp
+msgid "(No recent documents)"
+msgstr "(Нет последних документов)"
+
+#: app/main_window.cpp
+msgid "Show All...\tCtrl+R"
+msgstr "Показать всё...\tCtrl+R"
+
+#: app/main_window.cpp
+msgid "Not found."
+msgstr "Не найдено."
+
+#: app/main_window.cpp
+msgid "No more results. Wrapping search."
+msgstr "Больше нет результатов. Поиск завершён."
+
+#: app/parser.cpp
+msgid "Password required or incorrect."
+msgstr "Требуется ввести пароль или он неверен."
+
+#: app/task_bar_icon.cpp
+msgid "&Restore"
+msgstr "Восстановить"

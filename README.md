@@ -1,17 +1,21 @@
 # Paperback
-Paperback is a lightweight, fast, and accessible ebook and document reader built with C++ and wxWidgets. It's designed for cross-platform compatibility, screen reader accessibility, and a bloat-free experience.
+
+[Paperback](https://paperback.dev) is a lightweight, fast, and accessible ebook and document reader designed for everyone, from casual readers to heavy power users. It's designed for screen reader accessibility, fast speeds, and a bloat-free experience.
 
 ## Features
-* Written entirely in C++ and optimized for speed.
-* Supports many common document formats, including but not limited to HTML, epub, PDF, and txt.
+
+* Written entirely in native programming languages and optimized for speed.
+* Supports many common document formats, including but not limited to HTML, epub, CHM, PDF, DOCX, PPTX, and txt.
 * Intuitive tabbed interface for managing multiple documents.
 * Full screen reader accessibility.
 * Robust find functionality for quick document searches.
-* Seamless navigation between EPUB sections, headings, and pages via hotkeys.
+* Seamless navigation between EPUB sections, headings, pages, links, lists, and more via hotkeys similar to what you find in a screen reader.
 * Precise navigation to specific lines or percentages within documents.
-* Command-line file opening for 'Open With' integration.
+* Seemless and light-weight installer that automatically sets up file associations for you.
+* Translated into various different languages for the widest possible user support.
 
 ## Building
+
 We use VCPKG for managing dependencies. Currently we manage our own VCPKG installation through a submodule. As such, make sure to clone Paperback recursively:
 
 ```batch
@@ -24,7 +28,7 @@ If you've already cloned and forgot the --recursive flag, run the following in y
 git submodule update --init
 ```
 
-You'll also need CMake and Ninja installed alongside a functional Visual Studio 2022 installation. Once you have everything necessary, you can compile the project. It's recommended to build from an x64 Visual Studio Developer Command Prompt to ensure all paths are correctly configured.
+You'll also need CMake and Ninja installed alongside a functional Visual Studio 2022 installation, in addition to a functional installation of Rust and Cargo. Once you have everything necessary, you can compile the project. It's recommended to build from an x64 Visual Studio Developer Command Prompt to ensure all paths are correctly configured.
 
 ```batch
 mkdir build
@@ -33,12 +37,18 @@ cmake .. -GNinja
 cmake --build .
 ```
 
-This will generate paperback.exe and all its dependencieds, including its readme in HTML format, in your build folder.
+This will generate paperback.exe and all its dependencies, including its readme in HTML format, in your build folder.
+
+Optional tools:
+
+* `pandoc` on your `PATH` to generate the HTML readme during the build.
+* `gettext` tools (`xgettext`, `msgfmt`, `msgmerge`) on your `PATH` to generate the translation template and compile translations.
+* InnoSetup installed to create the installer with the `release` target.
 
 ## Contributing
-Contributions are welcome! Whether through issues, pull requests, discussions, or other means, your interest is appreciated.
 
-When modifying the code, please adhere to the established coding style (tabs for indents, stars attached to the type, not the variable name, braces on the same line, etc.). A `.clang-format` file is included to assist with this. To format the code on Windows, simply run the fmt.bat script in the root of the repository.
+Contributions are welcome! Whether through issues, pull requests, discussions, or other means, your interest is most certainly appreciated.
 
 ## License
+
 This project is licensed under the [MIT license](LICENSE.md).
