@@ -344,7 +344,6 @@ pub fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> 
 		let mut parts = href_trimmed.splitn(2, '#');
 		let file_path = parts.next().unwrap_or_default();
 		let fragment = parts.next().unwrap_or_default();
-	
 		if let Some(manifest_id) = find_manifest_id_for_path(doc, file_path) {
 			if let Some(spine_index) = doc.document().spine_items.iter().position(|id| id == &manifest_id) {
 				let (section_start, section_end) = spine_section_bounds(doc, spine_index);
