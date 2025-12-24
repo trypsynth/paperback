@@ -93,6 +93,11 @@ pub mod ffi {
 		pub level: i32,
 	}
 
+	pub struct FfiMarkerResult {
+		pub found: bool,
+		pub marker: FfiMarker,
+	}
+
 	pub struct FfiTocItem {
 		pub name: String,
 		pub reference: String,
@@ -247,6 +252,8 @@ pub mod ffi {
 		fn document_stats(doc: &DocumentHandle) -> FfiDocumentStats;
 		fn document_toc_items(doc: &DocumentHandle) -> Vec<FfiTocItem>;
 		fn document_markers(doc: &DocumentHandle) -> Vec<FfiMarker>;
+		fn document_marker_info(doc: &DocumentHandle, marker_index: i32) -> FfiMarkerResult;
+		fn document_markers_by_type(doc: &DocumentHandle, marker_type: i32) -> Vec<FfiMarker>;
 		fn document_find_closest_toc_offset(doc: &DocumentHandle, position: usize) -> usize;
 		fn document_next_marker(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32;
 		fn document_previous_marker(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32;
@@ -657,6 +664,10 @@ fn document_marker_to_ffi(marker: &crate::document::Marker) -> ffi::FfiMarker {
 	}
 }
 
+fn empty_ffi_marker() -> ffi::FfiMarker {
+	ffi::FfiMarker { marker_type: -1, position: 0, text: String::new(), reference: String::new(), level: 0 }
+}
+
 const fn document_stats_to_ffi(stats: &crate::document::DocumentStats) -> ffi::FfiDocumentStats {
 	ffi::FfiDocumentStats {
 		word_count: stats.word_count,
@@ -713,6 +724,26 @@ fn document_toc_items(doc: &DocumentHandle) -> Vec<ffi::FfiTocItem> {
 
 fn document_markers(doc: &DocumentHandle) -> Vec<ffi::FfiMarker> {
 	doc.document().buffer.markers.iter().map(document_marker_to_ffi).collect()
+}
+
+fn document_marker_info(doc: &DocumentHandle, marker_index: i32) -> ffi::FfiMarkerResult {
+	let idx = usize::try_from(marker_index).ok();
+	let marker = idx.and_then(|idx| doc.document().buffer.markers.get(idx));
+	if let Some(marker) = marker {
+		return ffi::FfiMarkerResult { found: true, marker: document_marker_to_ffi(marker) };
+	}
+	ffi::FfiMarkerResult { found: false, marker: empty_ffi_marker() }
+}
+
+fn document_markers_by_type(doc: &DocumentHandle, marker_type: i32) -> Vec<ffi::FfiMarker> {
+	let Some(marker_type) = marker_type_from_i32(marker_type) else { return Vec::new() };
+	doc.document()
+		.buffer
+		.markers
+		.iter()
+		.filter(|marker| marker.marker_type == marker_type)
+		.map(document_marker_to_ffi)
+		.collect()
 }
 
 fn document_find_closest_toc_offset(doc: &DocumentHandle, position: usize) -> usize {

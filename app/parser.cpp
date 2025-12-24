@@ -38,23 +38,6 @@ wxString to_wxstring(const rust::String& rust_str) {
 	return wxString::FromUTF8(utf8.c_str());
 }
 
-void populate_markers(std::vector<marker>& markers, const rust::Vec<FfiMarker>& ffi_markers) {
-	markers.clear();
-	markers.reserve(ffi_markers.size());
-	for (const auto& rust_marker : ffi_markers) {
-		marker m{
-			rust_marker.position,
-			static_cast<marker_type>(rust_marker.marker_type),
-			to_wxstring(rust_marker.text),
-			to_wxstring(rust_marker.reference),
-			rust_marker.level};
-		markers.push_back(std::move(m));
-	}
-	std::sort(markers.begin(), markers.end(), [](const marker& a, const marker& b) {
-		return a.pos < b.pos;
-	});
-}
-
 void populate_toc_items(std::vector<std::unique_ptr<toc_item>>& toc_items, const rust::Vec<FfiTocItem>& ffi_toc_items) {
 	if (ffi_toc_items.empty()) {
 		return;
@@ -206,7 +189,6 @@ std::unique_ptr<document> load_document_from_rust(const wxString& path, const st
 		doc->title = to_wxstring(document_title(handle_ref));
 		doc->author = to_wxstring(document_author(handle_ref));
 		doc->content = to_wxstring(document_content(handle_ref));
-		populate_markers(doc->markers, document_markers(handle_ref));
 		populate_toc_items(doc->toc_items, document_toc_items(handle_ref));
 		doc->stats = document_stats(handle_ref);
 		populate_id_positions(*doc, document_id_positions(handle_ref));

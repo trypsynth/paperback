@@ -330,8 +330,17 @@ impl XmlToText {
 		self.add_line(line);
 	}
 
+	fn current_display_len(&self) -> usize {
+		if self.is_preserving_whitespace() {
+			return display_len(&self.current_line);
+		}
+		let collapsed = collapse_whitespace(&self.current_line);
+		let trimmed = collapsed.trim();
+		display_len(trimmed)
+	}
+
 	fn get_current_text_position(&self) -> usize {
-		self.cached_char_length + display_len(&self.current_line)
+		self.cached_char_length + self.current_display_len()
 	}
 
 	fn is_block_element(tag_name: &str) -> bool {

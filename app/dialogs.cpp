@@ -18,6 +18,7 @@
 #include <climits>
 #include <cmath>
 #include <cstddef>
+#include <string>
 #include <vector>
 #include <wx/arrstr.h>
 #include <wx/combobox.h>
@@ -43,37 +44,53 @@ bool is_heading_marker(marker_type type) {
 	return type >= marker_type::Heading1 && type <= marker_type::Heading6;
 }
 
-std::vector<const marker*> markers_by_type(const document* doc, marker_type type) {
-	std::vector<const marker*> result;
-	if (doc == nullptr) {
+wxString to_wxstring(const rust::String& rust_str) {
+	const std::string utf8 = std::string(rust_str);
+	return wxString::FromUTF8(utf8.c_str());
+}
+
+marker to_marker(const FfiMarker& ffi_marker) {
+	return marker{
+		ffi_marker.position,
+		static_cast<marker_type>(ffi_marker.marker_type),
+		to_wxstring(ffi_marker.text),
+		to_wxstring(ffi_marker.reference),
+		ffi_marker.level};
+}
+
+std::vector<marker> markers_by_type(const document* doc, marker_type type) {
+	std::vector<marker> result;
+	if (doc == nullptr || !doc->handle.has_value()) {
 		return result;
 	}
-	for (const auto& m : doc->markers) {
-		if (m.type == type) {
-			result.push_back(&m);
-		}
+	const auto ffi_markers = document_markers_by_type(**doc->handle, static_cast<int>(type));
+	result.reserve(ffi_markers.size());
+	for (const auto& ffi_marker : ffi_markers) {
+		result.push_back(to_marker(ffi_marker));
 	}
 	return result;
 }
 
-std::vector<const marker*> heading_markers(const document* doc) {
-	std::vector<const marker*> result;
-	if (doc == nullptr) {
+std::vector<marker> heading_markers(const document* doc) {
+	std::vector<marker> result;
+	if (doc == nullptr || !doc->handle.has_value()) {
 		return result;
 	}
-	result.reserve(doc->markers.size());
-	for (const auto& m : doc->markers) {
-		if (is_heading_marker(m.type)) {
-			result.push_back(&m);
+	const auto ffi_markers = document_markers(**doc->handle);
+	for (const auto& ffi_marker : ffi_markers) {
+		const auto type = static_cast<marker_type>(ffi_marker.marker_type);
+		if (is_heading_marker(type)) {
+			result.push_back(to_marker(ffi_marker));
 		}
 	}
 	return result;
 }
 
 size_t count_markers(const document* doc, marker_type type) {
-	return doc == nullptr ? 0U : static_cast<size_t>(std::count_if(doc->markers.begin(), doc->markers.end(), [type](const marker& m) {
-		return m.type == type;
-	}));
+	if (doc == nullptr || !doc->handle.has_value()) {
+		return 0U;
+	}
+	return document_count_markers(**doc->handle, static_cast<int>(type));
 }
 } // namespace
 
@@ -546,9 +563,9 @@ elements_dialog::elements_dialog(wxWindow* parent, const document* doc, long cur
 void elements_dialog::populate_links() {
 	const auto link_markers = markers_by_type(doc, marker_type::Link);
 	int closest_index = -1;
-	for (const auto* link_marker : link_markers) {
-		links_list->Append(link_marker->text);
-		links_list->SetClientData(links_list->GetCount() - 1, reinterpret_cast<void*>(link_marker->pos));
+	for (const auto& link_marker : link_markers) {
+		links_list->Append(link_marker.text);
+		links_list->SetClientData(links_list->GetCount() - 1, reinterpret_cast<void*>(link_marker.pos));
 	}
 	if (links_list->IsEmpty()) {
 		return;
@@ -572,16 +589,16 @@ void elements_dialog::populate_headings() {
 	std::vector<wxTreeItemId> parent_ids(7, root);
 	const auto heading_marker_list = heading_markers(doc);
 	wxTreeItemId closest_item;
-	for (const auto* heading_marker : heading_marker_list) {
-		const int level = heading_marker->level;
+	for (const auto& heading_marker : heading_marker_list) {
+		const int level = heading_marker.level;
 		if (level < 1 || level > 6) {
 			continue;
 		}
 		const wxTreeItemId parent_id = parent_ids[level - 1];
-		const wxString display_text = heading_marker->text.IsEmpty() ? wxString(_("Untitled")) : heading_marker->text;
+		const wxString display_text = heading_marker.text.IsEmpty() ? wxString(_("Untitled")) : heading_marker.text;
 		const wxTreeItemId item_id = headings_tree->AppendItem(parent_id, display_text);
-		headings_tree->SetItemData(item_id, new toc_tree_item_data(heading_marker->pos));
-		if (static_cast<long>(heading_marker->pos) <= current_pos) {
+		headings_tree->SetItemData(item_id, new toc_tree_item_data(heading_marker.pos));
+		if (static_cast<long>(heading_marker.pos) <= current_pos) {
 			closest_item = item_id;
 		}
 		for (int i = level; i < 7; ++i) {
