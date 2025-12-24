@@ -46,6 +46,7 @@ struct document_data {
 	wxString author{"Unknown"};
 	wxString content;
 	std::vector<std::unique_ptr<toc_item>> toc_items;
+	bool toc_loaded{false};
 	std::map<std::string, size_t> id_positions;
 	std::vector<std::string> spine_items;
 	std::map<std::string, std::string> manifest_items;

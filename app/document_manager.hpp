@@ -93,7 +93,7 @@ public:
 	void toggle_bookmark() const;
 	void add_bookmark_with_note() const;
 	void show_bookmark_dialog(wxWindow* parent, bookmark_filter initial_filter = bookmark_filter::all);
-	void show_table_of_contents(wxWindow* parent) const;
+	void show_table_of_contents(wxWindow* parent);
 	void show_document_info(wxWindow* parent);
 	void save_document_position(const wxString& path, long position) const;
 	[[nodiscard]] long load_document_position(const wxString& path) const;

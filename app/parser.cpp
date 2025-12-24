@@ -38,40 +38,6 @@ wxString to_wxstring(const rust::String& rust_str) {
 	return wxString::FromUTF8(utf8.c_str());
 }
 
-void populate_toc_items(std::vector<std::unique_ptr<toc_item>>& toc_items, const rust::Vec<FfiTocItem>& ffi_toc_items) {
-	if (ffi_toc_items.empty()) {
-		return;
-	}
-	constexpr int MAX_DEPTH = 32;
-	std::vector<std::vector<std::unique_ptr<toc_item>>*> depth_stacks(MAX_DEPTH + 1, nullptr);
-	depth_stacks[0] = &toc_items;
-	for (const auto& rust_toc : ffi_toc_items) {
-		auto item = std::make_unique<toc_item>();
-		item->name = to_wxstring(rust_toc.name);
-		item->ref = to_wxstring(rust_toc.reference);
-		item->offset = rust_toc.offset;
-		const int depth = rust_toc.depth;
-		if (depth < 0 || depth > MAX_DEPTH) {
-			continue;
-		}
-		std::vector<std::unique_ptr<toc_item>>* parent_list = nullptr;
-		const auto parent_it = std::find_if(depth_stacks.rbegin() + (MAX_DEPTH - depth), depth_stacks.rend(), [](const auto* stack) {
-			return stack != nullptr;
-		});
-		if (parent_it != depth_stacks.rend()) {
-			parent_list = *parent_it;
-		}
-		if (parent_list == nullptr) {
-			parent_list = &toc_items;
-		}
-		parent_list->push_back(std::move(item));
-		depth_stacks[depth + 1] = &parent_list->back()->children;
-		for (int i = depth + 2; i <= MAX_DEPTH; ++i) {
-			depth_stacks[i] = nullptr;
-		}
-	}
-}
-
 void populate_id_positions(document& doc, const rust::Vec<FfiIdPosition>& ffi_positions) {
 	doc.id_positions.clear();
 	for (const auto& entry : ffi_positions) {
@@ -189,7 +155,6 @@ std::unique_ptr<document> load_document_from_rust(const wxString& path, const st
 		doc->title = to_wxstring(document_title(handle_ref));
 		doc->author = to_wxstring(document_author(handle_ref));
 		doc->content = to_wxstring(document_content(handle_ref));
-		populate_toc_items(doc->toc_items, document_toc_items(handle_ref));
 		doc->stats = document_stats(handle_ref);
 		populate_id_positions(*doc, document_id_positions(handle_ref));
 		populate_spine_items(*doc, document_spine_items(handle_ref));

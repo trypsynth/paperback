@@ -158,6 +158,13 @@ pub mod ffi {
 		pub index: usize,
 	}
 
+	pub struct FfiHistoryNavResult {
+		pub found: bool,
+		pub target: i64,
+		pub positions: Vec<i64>,
+		pub index: usize,
+	}
+
 	pub struct FfiLinkNavigation {
 		pub found: bool,
 		pub is_external: bool,
@@ -301,6 +308,25 @@ pub mod ffi {
 			next: bool,
 			notes_only: bool,
 		) -> BookmarkNavResult;
+		fn history_normalize(history: &[i64], history_index: usize) -> FfiNavigationHistory;
+		fn history_record_position(
+			history: &[i64],
+			history_index: usize,
+			current_pos: i64,
+			max_len: usize,
+		) -> FfiNavigationHistory;
+		fn history_go_previous(
+			history: &[i64],
+			history_index: usize,
+			current_pos: i64,
+			max_len: usize,
+		) -> FfiHistoryNavResult;
+		fn history_go_next(
+			history: &[i64],
+			history_index: usize,
+			current_pos: i64,
+			max_len: usize,
+		) -> FfiHistoryNavResult;
 		fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> FfiLinkNavigation;
 	}
 }
@@ -853,6 +879,37 @@ fn bookmark_navigate(
 	notes_only: bool,
 ) -> ffi::BookmarkNavResult {
 	crate::reader_core::bookmark_navigate(manager, path, position, wrap, next, notes_only)
+}
+
+fn history_normalize(history: &[i64], history_index: usize) -> ffi::FfiNavigationHistory {
+	crate::reader_core::history_normalize(history, history_index)
+}
+
+fn history_record_position(
+	history: &[i64],
+	history_index: usize,
+	current_pos: i64,
+	max_len: usize,
+) -> ffi::FfiNavigationHistory {
+	crate::reader_core::history_record_position(history, history_index, current_pos, max_len)
+}
+
+fn history_go_previous(
+	history: &[i64],
+	history_index: usize,
+	current_pos: i64,
+	max_len: usize,
+) -> ffi::FfiHistoryNavResult {
+	crate::reader_core::history_go_previous(history, history_index, current_pos, max_len)
+}
+
+fn history_go_next(
+	history: &[i64],
+	history_index: usize,
+	current_pos: i64,
+	max_len: usize,
+) -> ffi::FfiHistoryNavResult {
+	crate::reader_core::history_go_next(history, history_index, current_pos, max_len)
 }
 
 fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> ffi::FfiLinkNavigation {

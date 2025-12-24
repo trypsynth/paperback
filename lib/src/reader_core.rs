@@ -289,6 +289,108 @@ pub fn bookmark_navigate(
 	ffi::BookmarkNavResult { found: false, start: -1, end: -1, note: String::new(), index: -1, wrapped }
 }
 
+fn normalize_index(positions: &[i64], index: usize) -> usize {
+	if positions.is_empty() {
+		return 0;
+	}
+	index.min(positions.len().saturating_sub(1))
+}
+
+fn trim_history(positions: &mut Vec<i64>, index: &mut usize, max_len: usize) {
+	if max_len == 0 {
+		return;
+	}
+	while positions.len() > max_len {
+		positions.remove(0);
+		if *index > 0 {
+			*index -= 1;
+		}
+	}
+}
+
+fn record_position(positions: &mut Vec<i64>, index: &mut usize, current_pos: i64, max_len: usize) {
+	if positions.is_empty() {
+		positions.push(current_pos);
+		*index = 0;
+		trim_history(positions, index, max_len);
+		return;
+	}
+	*index = normalize_index(positions, *index);
+	if positions[*index] != current_pos {
+		if *index + 1 < positions.len() {
+			if positions[*index + 1] != current_pos {
+				positions.truncate(*index + 1);
+				positions.push(current_pos);
+				*index += 1;
+			} else {
+				*index += 1;
+			}
+		} else {
+			positions.push(current_pos);
+			*index += 1;
+		}
+	}
+	trim_history(positions, index, max_len);
+}
+
+pub fn history_normalize(history: &[i64], history_index: usize) -> ffi::FfiNavigationHistory {
+	let positions = history.to_vec();
+	let index = normalize_index(&positions, history_index);
+	ffi::FfiNavigationHistory { positions, index }
+}
+
+pub fn history_record_position(
+	history: &[i64],
+	history_index: usize,
+	current_pos: i64,
+	max_len: usize,
+) -> ffi::FfiNavigationHistory {
+	let mut positions = history.to_vec();
+	let mut index = history_index;
+	record_position(&mut positions, &mut index, current_pos, max_len);
+	ffi::FfiNavigationHistory { positions, index }
+}
+
+pub fn history_go_previous(
+	history: &[i64],
+	history_index: usize,
+	current_pos: i64,
+	max_len: usize,
+) -> ffi::FfiHistoryNavResult {
+	if history.is_empty() {
+		return ffi::FfiHistoryNavResult { found: false, target: -1, positions: Vec::new(), index: 0 };
+	}
+	let mut positions = history.to_vec();
+	let mut index = history_index;
+	record_position(&mut positions, &mut index, current_pos, max_len);
+	if index > 0 {
+		index -= 1;
+		let target = positions.get(index).copied().unwrap_or(-1);
+		return ffi::FfiHistoryNavResult { found: target >= 0, target, positions, index };
+	}
+	ffi::FfiHistoryNavResult { found: false, target: -1, positions, index }
+}
+
+pub fn history_go_next(
+	history: &[i64],
+	history_index: usize,
+	current_pos: i64,
+	max_len: usize,
+) -> ffi::FfiHistoryNavResult {
+	if history.is_empty() {
+		return ffi::FfiHistoryNavResult { found: false, target: -1, positions: Vec::new(), index: 0 };
+	}
+	let mut positions = history.to_vec();
+	let mut index = history_index;
+	record_position(&mut positions, &mut index, current_pos, max_len);
+	if index + 1 < positions.len() {
+		index += 1;
+		let target = positions.get(index).copied().unwrap_or(-1);
+		return ffi::FfiHistoryNavResult { found: target >= 0, target, positions, index };
+	}
+	ffi::FfiHistoryNavResult { found: false, target: -1, positions, index }
+}
+
 fn current_section_path(doc: &DocumentHandle, position: usize) -> Option<String> {
 	let idx = doc.section_index(position)?;
 	let idx = usize::try_from(idx).ok()?;
