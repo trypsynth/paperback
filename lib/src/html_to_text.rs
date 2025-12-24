@@ -54,6 +54,7 @@ pub struct TableInfo {
 	pub offset: usize,
 	pub placeholder: String,
 	pub html_content: String,
+	pub caption: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -234,6 +235,19 @@ impl HtmlToText {
 		let table_html = Self::serialize_node(node, document);
 		let mut placeholder_text = "table: ".to_string();
 
+		let mut caption = None;
+		for child in node.children() {
+			if let Node::Element(e) = child.value() {
+				if e.name() == "caption" {
+					let caption_text = Self::get_element_text(child, document);
+					if !caption_text.trim().is_empty() {
+						caption = Some(caption_text.trim().to_string());
+					}
+					break;
+				}
+			}
+		}
+
 		if let Some(tr) = self.find_first_tr(node) {
 			for child in tr.children() {
 				if let Node::Element(e) = child.value() {
@@ -250,6 +264,7 @@ impl HtmlToText {
 			offset: self.get_current_text_position(),
 			placeholder: placeholder.clone(),
 			html_content: table_html,
+			caption,
 		});
 		self.current_line.push_str(&placeholder);
 		self.finalize_current_line();
