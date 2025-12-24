@@ -1,24 +1,10 @@
 {
-	"builtin-baseline": "b1b19307e2d2ec1eefbdb7ea069de7d4bcd31f01",
 	"name": "paperback",
-	"version": "0.6",
+	"version": "0.6.1",
 	"dependencies": [
-		"chmlib",
-		{
-			"name": "gettext",
-			"features": ["tools"]
-		},
-		"lexbor",
-		"maddy",
-		"nlohmann-json",
-		"pdfium",
-		{
-			"name": "poco",
-			"features": ["xml"]
-		},
-		{
-			"name": "wxwidgets",
-			"features": ["webview"]
-		}
+{
+		"name": "wxwidgets",
+		"features": ["webview"]
+	}
 	]
 }

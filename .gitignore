@@ -1,4 +1,4 @@
-.claude/
 build/
+lib/target/
 vcpkg/bin/
 web/_site/

@@ -1,0 +1,43 @@
+[package]
+name = "libpaperback"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.87.0"
+
+[lib]
+name = "paperback"
+crate-type = ["staticlib"]
+
+[dependencies]
+anyhow = "1.0.100"
+base64 = "0.22.1"
+bitflags = "2.10.0"
+configparser = "3.1.0"
+cxx = "1.0.190"
+ego-tree = "0.10.0"
+encoding_rs = "0.8.35"
+libchm = "0.1.0"
+percent-encoding = "2.3.2"
+pulldown-cmark = { version = "0.13.0", default-features = false, features = ["html"] }
+regex = "1.12.2"
+roman = "0.1"
+roxmltree = "0.21.1"
+scraper = "0.25.0"
+serde = { version = "1.0.228", default-features = false, features = ["derive", "std"] }
+sha1 = "0.10.6"
+ureq = { version = "3.1.4", default-features = false, features = ["json", "rustls"] }
+zip = { version = "6.0.0", default-features = false, features = ["deflate"] }
+
+[build-dependencies]
+cxx = "1.0.190"
+cxx-build = "1.0.190"
+flate2 = "1.1.5"
+tar = "0.4.44"
+ureq = { version = "3.1.4", default-features = false, features = ["gzip", "rustls"] }
+
+[profile.release]
+strip = true
+opt-level = "z"
+lto = true
+panic = "abort"
+codegen-units = 1
