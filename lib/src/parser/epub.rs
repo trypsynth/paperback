@@ -168,10 +168,10 @@ impl Parser for EpubParser {
 		let author = metadata.author.unwrap_or_default();
 		let toc_items = if let Some(nav_path) = nav_path {
 			build_toc_from_nav_document(&mut archive, &nav_path, &sections, &id_positions)
-					.or_else(|| {
-						ncx_path.as_deref().and_then(|p| build_toc_from_ncx(&mut archive, p, &sections, &id_positions))
-					})
-					.unwrap_or_else(Vec::new)
+				.or_else(|| {
+					ncx_path.as_deref().and_then(|p| build_toc_from_ncx(&mut archive, p, &sections, &id_positions))
+				})
+				.unwrap_or_else(Vec::new)
 		} else if let Some(ncx) = ncx_path {
 			build_toc_from_ncx(&mut archive, &ncx, &sections, &id_positions).unwrap_or_default()
 		} else {
@@ -358,9 +358,7 @@ fn normalize_path(path: &Path) -> String {
 	components.join("/")
 }
 
-fn build_toc_from_nav_document<
-	R: Read + Seek,
->(
+fn build_toc_from_nav_document<R: Read + Seek>(
 	archive: &mut ZipArchive<R>,
 	nav_path: &str,
 	sections: &[SectionMeta],
@@ -500,9 +498,9 @@ fn compute_nav_offset(reference: &str, sections: &[SectionMeta], id_positions: &
 	if let Some(name) = Path::new(&path_part).file_name().and_then(|n| n.to_str()) {
 		if let Some(section) = sections.iter().find(|section| {
 			Path::new(&section.path)
-					.file_name()
-					.and_then(|n| n.to_str())
-					.is_some_and(|base| base.eq_ignore_ascii_case(name))
+				.file_name()
+				.and_then(|n| n.to_str())
+				.is_some_and(|base| base.eq_ignore_ascii_case(name))
 		}) {
 			return section.start;
 		}
