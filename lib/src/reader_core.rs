@@ -341,23 +341,23 @@ pub fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> 
 		}
 		return ffi::FfiLinkNavigation { found: false, is_external: false, offset: 0, url: String::new() };
 	}
-		let mut parts = href_trimmed.splitn(2, '#');
-		let file_path = parts.next().unwrap_or_default();
-		let fragment = parts.next().unwrap_or_default();
-		if let Some(manifest_id) = find_manifest_id_for_path(doc, file_path) {
-			if let Some(spine_index) = doc.document().spine_items.iter().position(|id| id == &manifest_id) {
-				let (section_start, section_end) = spine_section_bounds(doc, spine_index);
-				let mut offset = section_start;
-				if !fragment.is_empty() {
-					if let Some(found) = find_fragment_offset(doc, fragment, Some(file_path)) {
-						if found >= section_start && found < section_end {
-							offset = found;
-						}
+	let mut parts = href_trimmed.splitn(2, '#');
+	let file_path = parts.next().unwrap_or_default();
+	let fragment = parts.next().unwrap_or_default();
+	if let Some(manifest_id) = find_manifest_id_for_path(doc, file_path) {
+		if let Some(spine_index) = doc.document().spine_items.iter().position(|id| id == &manifest_id) {
+			let (section_start, section_end) = spine_section_bounds(doc, spine_index);
+			let mut offset = section_start;
+			if !fragment.is_empty() {
+				if let Some(found) = find_fragment_offset(doc, fragment, Some(file_path)) {
+					if found >= section_start && found < section_end {
+						offset = found;
 					}
 				}
-				return ffi::FfiLinkNavigation { found: true, is_external: false, offset, url: String::new() };
 			}
+			return ffi::FfiLinkNavigation { found: true, is_external: false, offset, url: String::new() };
 		}
+	}
 	if !fragment.is_empty() {
 		if let Some(offset) = find_fragment_offset(doc, fragment, current_section.as_deref()) {
 			return ffi::FfiLinkNavigation { found: true, is_external: false, offset, url: String::new() };

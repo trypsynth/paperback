@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use bitflags::bitflags;
 use ego_tree::NodeRef;
-use scraper::{Html, ElementRef, Node, node};
+use scraper::{ElementRef, Html, Node, node};
 
 use crate::utils::text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string};
 
@@ -458,8 +458,17 @@ impl HtmlToText {
 		self.add_line(line);
 	}
 
+	fn current_display_len(&self) -> usize {
+		if self.flags.contains(ProcessingFlags::PRESERVE_WHITESPACE) {
+			return display_len(&self.current_line);
+		}
+		let collapsed = collapse_whitespace(&self.current_line);
+		let trimmed = collapsed.trim();
+		display_len(trimmed)
+	}
+
 	fn get_current_text_position(&self) -> usize {
-		self.cached_char_length + display_len(&self.current_line)
+		self.cached_char_length + self.current_display_len()
 	}
 
 	fn is_block_element(tag_name: &str) -> bool {

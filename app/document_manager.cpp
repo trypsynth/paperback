@@ -42,6 +42,20 @@ int to_rust_marker(marker_type type) {
 	return static_cast<int>(type);
 }
 
+wxString to_wxstring(const rust::String& rust_str) {
+	const std::string utf8 = std::string(rust_str);
+	return wxString::FromUTF8(utf8.c_str());
+}
+
+marker to_marker(const FfiMarker& ffi_marker) {
+	return marker{
+		ffi_marker.position,
+		static_cast<marker_type>(ffi_marker.marker_type),
+		to_wxstring(ffi_marker.text),
+		to_wxstring(ffi_marker.reference),
+		ffi_marker.level};
+}
+
 bool is_heading_marker(marker_type type) {
 	switch (type) {
 		case marker_type::Heading1:
@@ -140,11 +154,15 @@ std::optional<std::string> current_section_path(const document& doc, size_t posi
 	return it->second;
 }
 
-const marker* doc_get_marker(const document& doc, int marker_index) {
-	if (marker_index < 0 || static_cast<size_t>(marker_index) >= doc.markers.size()) {
-		return nullptr;
+std::optional<marker> doc_get_marker(const document& doc, int marker_index) {
+	if (!doc.handle.has_value()) {
+		return std::nullopt;
 	}
-	return &doc.markers[static_cast<size_t>(marker_index)];
+	const auto result = document_marker_info(**doc.handle, marker_index);
+	if (!result.found) {
+		return std::nullopt;
+	}
+	return to_marker(result.marker);
 }
 
 size_t doc_marker_position(const document& doc, int marker_index) {
@@ -688,8 +706,8 @@ void document_manager::activate_current_link() const {
 	if (link_index == -1) {
 		return;
 	}
-	const marker* link_marker = doc_get_marker(*doc, link_index);
-	if (link_marker == nullptr) {
+	const auto link_marker = doc_get_marker(*doc, link_index);
+	if (!link_marker.has_value()) {
 		return;
 	}
 	const size_t link_end = link_marker->pos + link_marker->text.length();
@@ -756,16 +774,16 @@ void document_manager::navigate_to_list(bool next) const {
 	}
 	go_to_position(static_cast<long>(nav->offset));
 	const int list_marker_index = doc_current_marker_index(*doc, nav->offset, marker_type::List);
-	const marker* list_marker = doc_get_marker(*doc, list_marker_index);
+	const auto list_marker = doc_get_marker(*doc, list_marker_index);
 	int list_size = nav->marker_level;
-	if (list_marker != nullptr && list_marker->level > 0) {
+	if (list_marker.has_value() && list_marker->level > 0) {
 		list_size = list_marker->level;
 	}
 	wxString message = wxString::Format(_("List with %d items"), list_size);
-	if (list_marker != nullptr) {
+	if (list_marker.has_value()) {
 		const int first_item_index = doc_find_first_marker_after(*doc, static_cast<long>(list_marker->pos), marker_type::ListItem);
-		const marker* first_item_marker = doc_get_marker(*doc, first_item_index);
-		if (first_item_marker != nullptr) {
+		const auto first_item_marker = doc_get_marker(*doc, first_item_index);
+		if (first_item_marker.has_value()) {
 			long line_num{0};
 			text_ctrl->PositionToXY(static_cast<long>(first_item_marker->pos), nullptr, &line_num);
 			wxString line_text = text_ctrl->GetLineText(line_num).Trim();
@@ -813,11 +831,12 @@ void document_manager::navigate_to_list_item(bool next) const {
 	}
 	go_to_position(static_cast<long>(nav->offset));
 	const int target_list_index = doc_current_marker_index(*doc, nav->offset, marker_type::List);
-	const marker* target_list_marker = doc_get_marker(*doc, target_list_index);
+	const auto target_list_marker = doc_get_marker(*doc, target_list_index);
 	long line_num{0};
 	text_ctrl->PositionToXY(static_cast<long>(nav->offset), nullptr, &line_num);
 	wxString message = text_ctrl->GetLineText(line_num).Trim();
-	if (target_list_index != -1 && target_list_index != current_list_index && target_list_marker != nullptr && target_list_marker->level > 0) {
+	if (target_list_index != -1 && target_list_index != current_list_index && target_list_marker.has_value()
+		&& target_list_marker->level > 0) {
 		message = wxString::Format(_("List with %d items "), target_list_marker->level) + message;
 	}
 	if (nav->wrapped) {

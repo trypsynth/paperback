@@ -45,7 +45,6 @@ struct document_data {
 	wxString title{"Untitled"};
 	wxString author{"Unknown"};
 	wxString content;
-	std::vector<marker> markers;
 	std::vector<std::unique_ptr<toc_item>> toc_items;
 	std::map<std::string, size_t> id_positions;
 	std::vector<std::string> spine_items;
