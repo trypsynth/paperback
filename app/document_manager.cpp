@@ -16,6 +16,7 @@
 #include "parser.hpp"
 #include "utils.hpp"
 #include <algorithm>
+#include <cstdint>
 #include <cstddef>
 #include <iterator>
 #include <memory>
@@ -40,6 +41,23 @@
 namespace {
 int to_rust_marker(marker_type type) {
 	return static_cast<int>(type);
+}
+
+std::vector<long> to_long_vector(const rust::Vec<long long>& values) {
+	std::vector<long> result(values.size());
+	std::transform(values.begin(), values.end(), result.begin(), [](long long value) {
+		return static_cast<long>(value);
+	});
+	return result;
+}
+
+rust::Vec<long long> to_rust_history(const std::vector<long>& history) {
+	rust::Vec<long long> rust_history;
+	rust_history.reserve(history.size());
+	std::transform(history.begin(), history.end(), std::back_inserter(rust_history), [](long value) {
+		return static_cast<long long>(value);
+	});
+	return rust_history;
 }
 
 wxString to_wxstring(const rust::String& rust_str) {
@@ -165,6 +183,51 @@ std::optional<marker> doc_get_marker(const document& doc, int marker_index) {
 	return to_marker(result.marker);
 }
 
+void populate_toc_items(std::vector<std::unique_ptr<toc_item>>& toc_items, const rust::Vec<FfiTocItem>& ffi_toc_items) {
+	if (ffi_toc_items.empty()) {
+		return;
+	}
+	constexpr int MAX_DEPTH = 32;
+	std::vector<std::vector<std::unique_ptr<toc_item>>*> depth_stacks(MAX_DEPTH + 1, nullptr);
+	depth_stacks[0] = &toc_items;
+	for (const auto& rust_toc : ffi_toc_items) {
+		auto item = std::make_unique<toc_item>();
+		item->name = to_wxstring(rust_toc.name);
+		item->ref = to_wxstring(rust_toc.reference);
+		item->offset = rust_toc.offset;
+		const int depth = rust_toc.depth;
+		if (depth < 0 || depth > MAX_DEPTH) {
+			continue;
+		}
+		std::vector<std::unique_ptr<toc_item>>* parent_list = nullptr;
+		const auto parent_it = std::find_if(depth_stacks.rbegin() + (MAX_DEPTH - depth), depth_stacks.rend(), [](const auto* stack) {
+			return stack != nullptr;
+		});
+		if (parent_it != depth_stacks.rend()) {
+			parent_list = *parent_it;
+		}
+		if (parent_list == nullptr) {
+			parent_list = &toc_items;
+		}
+		parent_list->push_back(std::move(item));
+		depth_stacks[depth + 1] = &parent_list->back()->children;
+		for (int i = depth + 2; i <= MAX_DEPTH; ++i) {
+			depth_stacks[i] = nullptr;
+		}
+	}
+}
+
+void ensure_toc_loaded(document& doc) {
+	if (doc.toc_loaded) {
+		return;
+	}
+	doc.toc_loaded = true;
+	if (!doc.handle.has_value()) {
+		return;
+	}
+	populate_toc_items(doc.toc_items, document_toc_items(**doc.handle));
+}
+
 size_t doc_marker_position(const document& doc, int marker_index) {
 	return document_marker_position(**doc.handle, marker_index);
 }
@@ -283,6 +346,11 @@ bool document_manager::create_document_tab(const wxString& path, const parser_in
 		config.set_document_password(path, password_in_use);
 	}
 	config.get_navigation_history(path, doc->history, doc->history_index);
+	const auto rust_history = to_rust_history(doc->history);
+	rust::Slice<const std::int64_t> history_slice(rust_history.data(), rust_history.size());
+	const auto normalized = history_normalize(history_slice, doc->history_index);
+	doc->history = to_long_vector(normalized.positions);
+	doc->history_index = normalized.index;
 	auto* tab_data = new document_tab;
 	tab_data->doc = std::move(doc);
 	tab_data->file_path = path;
@@ -630,27 +698,14 @@ void document_manager::go_to_previous_position() const {
 		return;
 	}
 	const long actual_pos = text_ctrl->GetInsertionPoint();
-	if (doc->history[doc->history_index] != actual_pos) {
-		if (doc->history_index + 1 < doc->history.size()) {
-			if (doc->history[doc->history_index + 1] != actual_pos) {
-				doc->history.erase(doc->history.begin() + doc->history_index + 1, doc->history.end());
-				doc->history.push_back(actual_pos);
-				doc->history_index++;
-			} else {
-				doc->history_index++;
-			}
-		} else {
-			doc->history.push_back(actual_pos);
-			doc->history_index++;
-			if (doc->history.size() > 10) {
-				doc->history.erase(doc->history.begin());
-				doc->history_index--;
-			}
-		}
-	}
-	if (doc->history_index > 0) {
-		doc->history_index--;
-		go_to_position(doc->history[doc->history_index]);
+	constexpr size_t max_history = 10;
+	const auto rust_history = to_rust_history(doc->history);
+	rust::Slice<const std::int64_t> history_slice(rust_history.data(), rust_history.size());
+	const auto result = history_go_previous(history_slice, doc->history_index, actual_pos, max_history);
+	doc->history = to_long_vector(result.positions);
+	doc->history_index = result.index;
+	if (result.found) {
+		go_to_position(static_cast<long>(result.target));
 		speak(_("Navigated to previous position."));
 	} else {
 		speak(_("No previous position."));
@@ -668,27 +723,14 @@ void document_manager::go_to_next_position() const {
 		return;
 	}
 	const long actual_pos = text_ctrl->GetInsertionPoint();
-	if (doc->history[doc->history_index] != actual_pos) {
-		if (doc->history_index + 1 < doc->history.size()) {
-			if (doc->history[doc->history_index + 1] != actual_pos) {
-				doc->history.erase(doc->history.begin() + doc->history_index + 1, doc->history.end());
-				doc->history.push_back(actual_pos);
-				doc->history_index++;
-			} else {
-				doc->history_index++;
-			}
-		} else {
-			doc->history.push_back(actual_pos);
-			doc->history_index++;
-			if (doc->history.size() > 10) {
-				doc->history.erase(doc->history.begin());
-				doc->history_index--;
-			}
-		}
-	}
-	if (doc->history_index + 1 < doc->history.size()) {
-		doc->history_index++;
-		go_to_position(doc->history[doc->history_index]);
+	constexpr size_t max_history = 10;
+	const auto rust_history = to_rust_history(doc->history);
+	rust::Slice<const std::int64_t> history_slice(rust_history.data(), rust_history.size());
+	const auto result = history_go_next(history_slice, doc->history_index, actual_pos, max_history);
+	doc->history = to_long_vector(result.positions);
+	doc->history_index = result.index;
+	if (result.found) {
+		go_to_position(static_cast<long>(result.target));
 		speak(_("Navigated to next position."));
 	} else {
 		speak(_("No next position."));
@@ -718,13 +760,12 @@ void document_manager::activate_current_link() const {
 	if (href.empty()) {
 		return;
 	}
-	if (doc->history.empty() || doc->history[doc->history_index] != current_pos) {
-		if (doc->history_index + 1 < doc->history.size()) {
-			doc->history.erase(doc->history.begin() + doc->history_index + 1, doc->history.end());
-		}
-		doc->history.push_back(current_pos);
-		doc->history_index = doc->history.size() - 1;
-	}
+	constexpr size_t max_history = 10;
+	const auto rust_history = to_rust_history(doc->history);
+	rust::Slice<const std::int64_t> history_slice(rust_history.data(), rust_history.size());
+	const auto updated = history_record_position(history_slice, doc->history_index, current_pos, max_history);
+	doc->history = to_long_vector(updated.positions);
+	doc->history_index = updated.index;
 	const wxString href_lower = href.Lower();
 	if (href_lower.StartsWith("http:") || href_lower.StartsWith("https:") || href_lower.StartsWith("mailto:")) {
 		if (wxLaunchDefaultBrowser(href)) {
@@ -974,8 +1015,8 @@ void document_manager::show_bookmark_dialog(wxWindow* parent, bookmark_filter in
 	update_ui();
 }
 
-void document_manager::show_table_of_contents(wxWindow* parent) const {
-	const document* doc = get_active_document();
+void document_manager::show_table_of_contents(wxWindow* parent) {
+	document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	const parser_info* parser = get_active_parser();
 	if (doc == nullptr || text_ctrl == nullptr || parser == nullptr) {
@@ -985,6 +1026,7 @@ void document_manager::show_table_of_contents(wxWindow* parent) const {
 		speak(_("No table of contents."));
 		return;
 	}
+	ensure_toc_loaded(*doc);
 	if (doc->toc_items.empty()) {
 		speak(_("Table of contents is empty."));
 		return;
