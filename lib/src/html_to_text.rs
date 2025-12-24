@@ -91,6 +91,7 @@ pub struct HtmlToText {
 }
 
 impl HtmlToText {
+	#[must_use]
 	pub fn new() -> Self {
 		Self {
 			lines: Vec::new(),
@@ -124,39 +125,47 @@ impl HtmlToText {
 		true
 	}
 
+	#[must_use]
 	pub fn get_text(&self) -> String {
 		self.lines.join("\n")
 	}
 
+	#[must_use]
 	pub fn get_title(&self) -> &str {
 		&self.title
 	}
 
+	#[must_use]
 	pub fn get_headings(&self) -> &[HeadingInfo] {
 		&self.headings
 	}
 
+	#[must_use]
 	pub fn get_links(&self) -> &[LinkInfo] {
 		&self.links
 	}
 
+	#[must_use]
 	pub fn get_tables(&self) -> &[TableInfo] {
 		&self.tables
 	}
 
+	#[must_use]
 	pub fn get_lists(&self) -> &[ListInfo] {
 		&self.lists
 	}
 
+	#[must_use]
 	pub fn get_list_items(&self) -> &[ListItemInfo] {
 		&self.list_items
 	}
 
+	#[must_use]
 	pub const fn get_id_positions(&self) -> &HashMap<String, usize> {
 		&self.id_positions
 	}
 
-	fn clear(&mut self) {
+	pub fn clear(&mut self) {
 		self.lines.clear();
 		self.current_line.clear();
 		self.id_positions.clear();
@@ -225,23 +234,7 @@ impl HtmlToText {
 		let table_html = Self::serialize_node(node, document);
 		let mut placeholder_text = "table: ".to_string();
 
-		// Find first row and its cells
-		// Simple recursive search for first 'tr'
-		fn find_first_tr<'a>(node: NodeRef<'a, Node>) -> Option<NodeRef<'a, Node>> {
-			if let Node::Element(e) = node.value() {
-				if e.name() == "tr" {
-					return Some(node);
-				}
-			}
-			for child in node.children() {
-				if let Some(tr) = find_first_tr(child) {
-					return Some(tr);
-				}
-			}
-			None
-		}
-
-		if let Some(tr) = find_first_tr(node) {
+		if let Some(tr) = self.find_first_tr(node) {
 			for child in tr.children() {
 				if let Node::Element(e) = child.value() {
 					if e.name() == "td" || e.name() == "th" {
@@ -260,6 +253,20 @@ impl HtmlToText {
 		});
 		self.current_line.push_str(&placeholder);
 		self.finalize_current_line();
+	}
+
+	fn find_first_tr<'a>(&self, node: NodeRef<'a, Node>) -> Option<NodeRef<'a, Node>> {
+		if let Node::Element(e) = node.value() {
+			if e.name() == "tr" {
+				return Some(node);
+			}
+		}
+		for child in node.children() {
+			if let Some(tr) = self.find_first_tr(child) {
+				return Some(tr);
+			}
+		}
+		None
 	}
 
 	fn handle_element_opening(&mut self, tag_name: &str, node: NodeRef<'_, Node>, document: &Html) {

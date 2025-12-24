@@ -188,19 +188,7 @@ impl XmlToText {
 		let table_xml = node.document().input_text()[node.range()].to_string();
 		let mut placeholder_text = "table: ".to_string();
 
-		fn find_first_tr<'a>(node: Node<'a, 'a>) -> Option<Node<'a, 'a>> {
-			if node.is_element() && node.tag_name().name() == "tr" {
-				return Some(node);
-			}
-			for child in node.children() {
-				if let Some(tr) = find_first_tr(child) {
-					return Some(tr);
-				}
-			}
-			None
-		}
-
-		if let Some(tr) = find_first_tr(node) {
+		if let Some(tr) = self.find_first_tr(node) {
 			for child in tr.children() {
 				if child.is_element() {
 					let name = child.tag_name().name();
@@ -220,6 +208,18 @@ impl XmlToText {
 		});
 		self.current_line.push_str(&placeholder);
 		self.finalize_current_line();
+	}
+
+	fn find_first_tr<'a>(&self, node: Node<'a, 'a>) -> Option<Node<'a, 'a>> {
+		if node.is_element() && node.tag_name().name() == "tr" {
+			return Some(node);
+		}
+		for child in node.children() {
+			if let Some(tr) = self.find_first_tr(child) {
+				return Some(tr);
+			}
+		}
+		None
 	}
 
 	fn handle_list_item_xml(&mut self, node: Node<'_, '_>) {

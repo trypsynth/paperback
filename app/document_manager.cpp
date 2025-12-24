@@ -1255,7 +1255,6 @@ void document_manager::navigate_to_heading(bool next, int specific_level) const 
 	}
 	speak(message);
 }
-
 void document_manager::navigate_to_table(bool next) const {
 	const document* doc = get_active_document();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
