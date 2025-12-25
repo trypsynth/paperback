@@ -40,7 +40,7 @@ if(CLANG_TIDY_EXE)
 endif()
 
 find_package(Gettext REQUIRED)
-find_package(wxWidgets CONFIG REQUIRED)
+find_package(wxWidgets CONFIG REQUIRED COMPONENTS webview)
 
 if(GETTEXT_FOUND)
 	find_program(XGETTEXT_EXECUTABLE NAMES xgettext)
@@ -160,12 +160,14 @@ endif()
 add_dependencies(paperback libpaperback_rust)
 target_include_directories(paperback PRIVATE ${CMAKE_SOURCE_DIR}/app ${CMAKE_SOURCE_DIR} ${PAPERBACK_GENERATED_DIR} ${RUST_TARGET_DIR}/cxxbridge)
 target_link_directories(paperback PRIVATE ${PDFIUM_LIB_DIR})
+target_link_directories(paperback PRIVATE "${CMAKE_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/lib")
 target_link_libraries(paperback PRIVATE
 	${RUST_LIB_OUTPUT}
 	pdfium
 	wx::base
 	wx::core
 	wx::net
+	wx::webview
 )
 if (WIN32)
 	target_link_libraries(paperback PRIVATE bcrypt ntdll)

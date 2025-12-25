@@ -68,6 +68,12 @@ impl Parser for HtmlParser {
 					.with_level(list_item.level),
 			);
 		}
+		for table in converter.get_tables() {
+			let text = table.caption.as_ref().unwrap_or(&table.placeholder).clone();
+			buffer.add_marker(
+				Marker::new(MarkerType::Table, table.offset).with_text(text).with_reference(table.html_content.clone()),
+			);
+		}
 		let toc_items = build_toc_from_headings(converter.get_headings());
 		let mut doc = Document::new().with_title(title);
 		doc.set_buffer(buffer);

@@ -99,7 +99,7 @@ pub fn format_list_item(number: i32, list_type: &str) -> String {
 	match list_type {
 		"a" => to_alpha(number, false),
 		"A" => to_alpha(number, true),
-		"i" => to(number).map(|s| s.to_lowercase()).unwrap_or_else(|| number.to_string()),
+		"i" => to(number).map_or_else(|| number.to_string(), |s| s.to_lowercase()),
 		"I" => to(number).unwrap_or_else(|| number.to_string()),
 		_ => number.to_string(),
 	}

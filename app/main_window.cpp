@@ -105,6 +105,12 @@ void main_window::create_menus() {
 			menu_item::item(ID_NEXT_LINK, _("Next lin&k\tK")),
 		};
 	};
+	auto tables_items = [] {
+		return std::vector<menu_item>{
+			menu_item::item(ID_PREVIOUS_TABLE, _("Previous &table\tShift+T")),
+			menu_item::item(ID_NEXT_TABLE, _("Next &table\tT")),
+		};
+	};
 	auto lists_items = [] {
 		return std::vector<menu_item>{
 			menu_item::item(ID_PREVIOUS_LIST, _("Previous lis&t\tShift+L")),
@@ -149,6 +155,7 @@ void main_window::create_menus() {
 			go_items.push_back(menu_item::submenu(_("&Pages"), pages_items()));
 			go_items.push_back(menu_item::submenu(_("&Bookmarks"), bookmarks_items()));
 			go_items.push_back(menu_item::submenu(_("&Links"), links_items()));
+			go_items.push_back(menu_item::submenu(_("&Tables"), tables_items()));
 			go_items.push_back(menu_item::submenu(_("&Lists"), lists_items()));
 		} else {
 			auto secs = sections_items();
@@ -166,6 +173,9 @@ void main_window::create_menus() {
 			go_items.push_back(menu_item::sep());
 			auto lnks = links_items();
 			go_items.insert(go_items.end(), lnks.begin(), lnks.end());
+			go_items.push_back(menu_item::sep());
+			auto tbls = tables_items();
+			go_items.insert(go_items.end(), tbls.begin(), tbls.end());
 			go_items.push_back(menu_item::sep());
 			auto lsts = lists_items();
 			go_items.insert(go_items.end(), lsts.begin(), lsts.end());
@@ -260,6 +270,8 @@ void main_window::bind_events() {
 		{ID_VIEW_NOTE_TEXT, &main_window::on_view_note_text},
 		{ID_PREVIOUS_LINK, &main_window::on_previous_link},
 		{ID_NEXT_LINK, &main_window::on_next_link},
+		{ID_PREVIOUS_TABLE, &main_window::on_previous_table},
+		{ID_NEXT_TABLE, &main_window::on_next_table},
 		{ID_PREVIOUS_LIST, &main_window::on_previous_list},
 		{ID_NEXT_LIST, &main_window::on_next_list},
 		{ID_PREVIOUS_LIST_ITEM, &main_window::on_previous_list_item},
@@ -372,6 +384,8 @@ void main_window::update_ui() {
 		ID_VIEW_NOTE_TEXT,
 		ID_PREVIOUS_LINK,
 		ID_NEXT_LINK,
+		ID_PREVIOUS_TABLE,
+		ID_NEXT_TABLE,
 		ID_PREVIOUS_LIST,
 		ID_NEXT_LIST,
 		ID_PREVIOUS_LIST_ITEM,
@@ -729,6 +743,18 @@ void main_window::on_next_link(wxCommandEvent&) {
 	trigger_throttled_position_save();
 }
 
+void main_window::on_previous_table(wxCommandEvent&) {
+	doc_manager->go_to_previous_table();
+	update_status_bar();
+	trigger_throttled_position_save();
+}
+
+void main_window::on_next_table(wxCommandEvent&) {
+	doc_manager->go_to_next_table();
+	update_status_bar();
+	trigger_throttled_position_save();
+}
+
 void main_window::on_previous_heading(wxCommandEvent&) {
 	doc_manager->go_to_previous_heading();
 	update_status_bar();
@@ -971,6 +997,7 @@ void main_window::on_text_cursor_changed(wxEvent& event) {
 
 void main_window::on_text_char(wxKeyEvent& event) {
 	if (event.GetKeyCode() == WXK_RETURN) {
+		doc_manager->activate_current_table();
 		doc_manager->activate_current_link();
 	} else {
 		event.Skip();

@@ -110,12 +110,13 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 			}
 			build_nav_result(false, wrapped_final, 0, 0, String::new())
 		}
-		NavTarget::List | NavTarget::ListItem | NavTarget::Link => {
+		NavTarget::List | NavTarget::ListItem | NavTarget::Link | NavTarget::Table => {
 			let kind = match req.target {
 				NavTarget::List => MarkerType::List,
 				NavTarget::ListItem => MarkerType::ListItem,
 				NavTarget::Link => MarkerType::Link,
-				_ => unreachable!("NavTarget should only be List, ListItem, or Link in this branch"),
+				NavTarget::Table => MarkerType::Table,
+				_ => unreachable!("NavTarget should only be List, ListItem, Link, or Table in this branch"),
 			};
 			let (idx_opt, wrapped) = select_marker_index(doc, req.position, req.wrap, req.direction, kind);
 			if let Some(idx) = idx_opt {
@@ -318,11 +319,11 @@ fn record_position(positions: &mut Vec<i64>, index: &mut usize, current_pos: i64
 	*index = normalize_index(positions, *index);
 	if positions[*index] != current_pos {
 		if *index + 1 < positions.len() {
-			if positions[*index + 1] != current_pos {
-				positions.truncate(*index + 1);
-				positions.push(current_pos);
+			if positions[*index + 1] == current_pos {
 				*index += 1;
 			} else {
+				positions.truncate(*index + 1);
+				positions.push(current_pos);
 				*index += 1;
 			}
 		} else {
