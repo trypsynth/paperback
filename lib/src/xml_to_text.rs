@@ -199,7 +199,9 @@ impl XmlToText {
 			}
 		}
 
-		if let Some(tr) = self.find_first_tr(node) {
+		if let Some(cap) = &caption {
+			placeholder_text = cap.clone();
+		} else if let Some(tr) = self.find_first_tr(node) {
 			for child in tr.children() {
 				if child.is_element() {
 					let name = child.tag_name().name();
@@ -248,7 +250,7 @@ impl XmlToText {
 			if style.ordered {
 				let item_text = format_list_item(style.item_number, &style.list_type);
 				style.item_number += 1;
-				format!("{}. ", item_text)
+				format!("{item_text}. ")
 			} else {
 				format!("{} ", Self::get_bullet_for_level(self.list_level))
 			}

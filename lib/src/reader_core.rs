@@ -319,11 +319,11 @@ fn record_position(positions: &mut Vec<i64>, index: &mut usize, current_pos: i64
 	*index = normalize_index(positions, *index);
 	if positions[*index] != current_pos {
 		if *index + 1 < positions.len() {
-			if positions[*index + 1] != current_pos {
-				positions.truncate(*index + 1);
-				positions.push(current_pos);
+			if positions[*index + 1] == current_pos {
 				*index += 1;
 			} else {
+				positions.truncate(*index + 1);
+				positions.push(current_pos);
 				*index += 1;
 			}
 		} else {

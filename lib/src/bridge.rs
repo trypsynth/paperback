@@ -692,7 +692,7 @@ fn document_marker_to_ffi(marker: &crate::document::Marker) -> ffi::FfiMarker {
 	}
 }
 
-fn empty_ffi_marker() -> ffi::FfiMarker {
+const fn empty_ffi_marker() -> ffi::FfiMarker {
 	ffi::FfiMarker { marker_type: -1, position: 0, text: String::new(), reference: String::new(), level: 0 }
 }
 
