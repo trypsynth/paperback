@@ -72,7 +72,7 @@ const std::vector<language_info>& translation_manager::get_available_languages()
 }
 
 wxString translation_manager::get_language_display_name(const wxString& language_code) const {
-	const auto it = std::ranges::find_if(available_languages, [&](const auto& lang) return lang.code == language_code;
+	const auto it = std::ranges::find_if(available_languages, [&](const auto& lang) {return lang.code == language_code;});
 	return it != available_languages.end() ? it->native_name : language_code;
 }
 

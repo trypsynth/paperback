@@ -1,3 +1,4 @@
+.claude/
 build/
 lib/target/
 vcpkg/bin/
