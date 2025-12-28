@@ -29,9 +29,7 @@
 #include <wx/string.h>
 
 long find_text(const wxString& haystack, const wxString& needle, long start, find_options options) {
-	if (needle.empty()) {
-		return wxNOT_FOUND;
-	}
+	if (needle.empty()) return wxNOT_FOUND;
 	const bool forward = has_option(options, find_options::forward);
 	const bool match_case = has_option(options, find_options::match_case);
 	const bool match_whole_word = has_option(options, find_options::match_whole_word);
@@ -46,14 +44,10 @@ const parser_info* get_parser_for_unknown_file(const wxString& path, config_mana
 	const wxString saved_format = config.get_document_format(path);
 	if (!saved_format.IsEmpty()) {
 		const auto* par = find_parser_by_extension(saved_format);
-		if (par != nullptr) {
-			return par;
-		}
+		if (par != nullptr) return par;
 	}
 	open_as_dialog dlg(nullptr, path);
-	if (dlg.ShowModal() != wxID_OK) {
-		return nullptr;
-	}
+	if (dlg.ShowModal() != wxID_OK) return nullptr;
 	const wxString format = dlg.get_selected_format();
 	config.set_document_format(path, format);
 	return find_parser_by_extension(format);
@@ -61,13 +55,9 @@ const parser_info* get_parser_for_unknown_file(const wxString& path, config_mana
 
 void speak(const wxString& message) {
 	auto* main_win = dynamic_cast<main_window*>(wxGetApp().GetTopWindow());
-	if (main_win == nullptr) {
-		return;
-	}
+	if (main_win == nullptr) return;
 	auto* label = main_win->get_live_region_label();
-	if (label == nullptr) {
-		return;
-	}
+	if (label == nullptr) return;
 	label->SetLabel(message);
 	notify_live_region_changed(label);
 }
