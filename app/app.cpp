@@ -57,7 +57,7 @@ void present_update_result(const update_result_payload& payload, bool silent) {
 			const std::string plain_text_notes = std::string(::markdown_to_text(payload.release_notes));
 			const wxString release_notes = plain_text_notes.empty() ? _("No release notes were provided.") : wxString::FromUTF8(plain_text_notes.c_str());
 			update_dialog dlg(nullptr, latest_version, release_notes);
-			if (dlg.ShowModal() == wxID_OK) && !payload.download_url.empty())
+			if (dlg.ShowModal() == wxID_OK && !payload.download_url.empty())
 				wxLaunchDefaultBrowser(wxString::FromUTF8(payload.download_url.c_str()));
 			break;
 		}
