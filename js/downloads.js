@@ -28,7 +28,7 @@
         <h3>${label} ${version}</h3>
         ${subtitle ? `<p>${subtitle}</p>` : ""}
         <p>${exe ? `<p><a href="${exe.browser_download_url}">Windows Installer (.exe)</a> – ${fmtCount(exe.download_count)}</p>` : ""}</p>
-        <p>${zip ? `<p><a href="${zip.browser_download_url}">Portable ZIP (.zip)</a> – ${fmtCount(zip.download_count)}</p>` : ""}</p>
+        <p>${zip ? `<p><a href="${zip.browser_download_url}">Windows Portable (.zip)</a> – ${fmtCount(zip.download_count)}</p>` : ""}</p>
         <p><a href="${release.html_url}">View on GitHub</a></p>
       </div>
     `.trim();
