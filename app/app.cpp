@@ -57,31 +57,17 @@ void present_update_result(const update_result_payload& payload, bool silent) {
 			const std::string plain_text_notes = std::string(::markdown_to_text(payload.release_notes));
 			const wxString release_notes = plain_text_notes.empty() ? _("No release notes were provided.") : wxString::FromUTF8(plain_text_notes.c_str());
 			update_dialog dlg(nullptr, latest_version, release_notes);
-			if (dlg.ShowModal() == wxID_OK) {
-				if (!payload.download_url.empty()) {
-					wxLaunchDefaultBrowser(wxString::FromUTF8(payload.download_url.c_str()));
-				}
-			}
+			if (dlg.ShowModal() == wxID_OK && !payload.download_url.empty())
+				wxLaunchDefaultBrowser(wxString::FromUTF8(payload.download_url.c_str()));
 			break;
 		}
 		case UpdateStatus::UpToDate:
-			if (!silent) {
-				wxMessageBox(_("No updates available."), _("Info"), wxICON_INFORMATION);
-			}
+			if (!silent) wxMessageBox(_("No updates available."), _("Info"), wxICON_INFORMATION);
 			break;
 		default:
-			if (silent) {
-				break;
-			}
-			wxString details;
-			if (!payload.error_message.empty()) {
-				details = wxString::FromUTF8(payload.error_message.c_str());
-			} else {
-				details = _("Error checking for updates.");
-			}
-			if (payload.status == UpdateStatus::HttpError && payload.http_status > 0) {
-				details = wxString::Format(_("Failed to check for updates. HTTP status: %d"), payload.http_status);
-			}
+			if (silent) break;
+			wxString details = payload.error_message.empty() ? _("Error checking for updates.") : wxString::FromUTF8(payload.error_message.c_str());
+			if (payload.status == UpdateStatus::HttpError && payload.http_status > 0) details = wxString::Format(_("Failed to check for updates. HTTP status: %d"), payload.http_status);
 			wxMessageBox(details, _("Error"), wxICON_ERROR);
 			break;
 	}
@@ -99,9 +85,7 @@ bool paperback_connection::OnExec(const wxString& topic, const wxString& data) {
 }
 
 wxConnectionBase* paperback_server::OnAcceptConnection(const wxString& topic) {
-	if (topic == IPC_TOPIC_OPEN_FILE) {
-		return new paperback_connection();
-	}
+	if (topic == IPC_TOPIC_OPEN_FILE) return new paperback_connection();
 	return nullptr;
 }
 
@@ -112,12 +96,9 @@ bool app::OnInit() {
 	}
 	translation_manager::instance().initialize();
 	const wxString preferred_language = config_mgr.get(config_manager::language);
-	if (!preferred_language.IsEmpty()) {
+	if (!preferred_language.IsEmpty())
 		translation_manager::instance().set_language(preferred_language);
-	}
-	if (!initialize_parser_registry()) {
-		return false;
-	}
+	if (!initialize_parser_registry()) return false;
 	single_instance_checker = std::make_unique<wxSingleInstanceChecker>(SINGLE_INSTANCE_NAME);
 	if (single_instance_checker->IsAnotherRunning()) {
 		if (argc > 1) {
@@ -141,20 +122,13 @@ bool app::OnInit() {
 		return false;
 	}
 	ipc_server = std::make_unique<paperback_server>();
-	if (!ipc_server->Create(IPC_SERVICE)) {
+	if (!ipc_server->Create(IPC_SERVICE))
 		wxMessageBox(_("Failed to create IPC server"), _("Warning"), wxICON_WARNING);
-	}
 	frame = new main_window();
-	if (config_mgr.get(config_manager::restore_previous_documents)) {
-		restore_previous_documents();
-	}
-	if (argc > 1) {
-		parse_command_line();
-	}
+	if (config_mgr.get(config_manager::restore_previous_documents)) restore_previous_documents();
+	if (argc > 1) parse_command_line();
 	frame->Show(true);
-	if (config_mgr.get(config_manager::check_for_updates_on_startup)) {
-		check_for_updates(true);
-	}
+	if (config_mgr.get(config_manager::check_for_updates_on_startup)) check_for_updates(true);
 	return true;
 }
 
