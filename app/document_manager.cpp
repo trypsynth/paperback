@@ -14,7 +14,6 @@
 #include "document_data.hpp"
 #include "main_window.hpp"
 #include "parser.hpp"
-#include "table_dialog.hpp"
 #include "utils.hpp"
 #include <algorithm>
 #include <cstdint>

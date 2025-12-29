@@ -26,6 +26,7 @@
 #include <wx/textctrl.h>
 #include <wx/timer.h>
 #include <wx/treectrl.h>
+#include <wx/webview.h>
 
 enum class dialog_button_config {
 	ok_only,
@@ -357,6 +358,16 @@ public:
 
 private:
 	wxSpinCtrl* input_ctrl{nullptr};
+};
+
+class table_dialog : public wxDialog {
+public:
+	table_dialog(wxWindow* parent, const wxString& title, const wxString& html);
+private:
+	wxWebView* web_view;
+	void on_webview_loaded(wxWebViewEvent& event);
+	void on_script_message(wxWebViewEvent& event);
+	void simulate_click();
 };
 
 class toc_tree_item_data : public wxTreeItemData {
