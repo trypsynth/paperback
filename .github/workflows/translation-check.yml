@@ -82,6 +82,21 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Get repository ID and category ID via GraphQL
+          REPO_DATA=$(gh api graphql -f query='
+            query($owner: String!, $name: String!) {
+              repository(owner: $owner, name: $name) {
+                id
+                discussionCategories(first: 10) {
+                  nodes { id name }
+                }
+              }
+            }
+          ' -f owner="${{ github.repository_owner }}" -f name="${{ github.event.repository.name }}")
+
+          REPO_ID=$(echo "$REPO_DATA" | jq -r '.data.repository.id')
+          CATEGORY_ID=$(echo "$REPO_DATA" | jq -r '.data.repository.discussionCategories.nodes[] | select(.name=="Announcements") | .id')
+
           gh api graphql -f query='
             mutation($repositoryId: ID!, $categoryId: ID!, $title: String!, $body: String!) {
               createDiscussion(input: {repositoryId: $repositoryId, categoryId: $categoryId, title: $title, body: $body}) {
@@ -89,7 +104,7 @@ jobs:
               }
             }
           ' \
-            -f repositoryId="$(gh api repos/${{ github.repository }} --jq .node_id)" \
-            -f categoryId="$(gh api repos/${{ github.repository }}/discussions/categories --jq '.[] | select(.name=="Translations") | .node_id')" \
+            -f repositoryId="$REPO_ID" \
+            -f categoryId="$CATEGORY_ID" \
             -f title="New translatable strings - $(date +%Y-%m-%d)" \
             -f body="${{ steps.compare.outputs.body }}"
