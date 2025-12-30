@@ -187,7 +187,6 @@ impl XmlToText {
 		self.finalize_current_line();
 		let table_xml = node.document().input_text()[node.range()].to_string();
 		let mut placeholder_text = "table: ".to_string();
-
 		let mut caption = None;
 		for child in node.children() {
 			if child.is_element() && child.tag_name().name().eq_ignore_ascii_case("caption") {
@@ -198,7 +197,6 @@ impl XmlToText {
 				break;
 			}
 		}
-
 		if let Some(cap) = &caption {
 			placeholder_text = cap.clone();
 		} else if let Some(tr) = self.find_first_tr(node) {
@@ -212,7 +210,6 @@ impl XmlToText {
 				}
 			}
 		}
-
 		let placeholder = trim_string(&placeholder_text);
 		self.tables.push(TableInfo {
 			offset: self.get_current_text_position(),

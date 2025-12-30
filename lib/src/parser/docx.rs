@@ -83,7 +83,6 @@ fn process_table(element: Node, buffer: &mut DocumentBuffer, _rels: &HashMap<Str
 	let mut html_content = String::from("<table border=\"1\">");
 	let mut placeholder_text = String::from("table: ");
 	let mut first_row = true;
-
 	for child in element.children() {
 		if child.node_type() == NodeType::Element && child.tag_name().name() == "tr" {
 			html_content.push_str("<tr>");
@@ -104,7 +103,6 @@ fn process_table(element: Node, buffer: &mut DocumentBuffer, _rels: &HashMap<Str
 					let trimmed_cell = cell_text.trim();
 					html_content.push_str(trimmed_cell);
 					html_content.push_str("</td>");
-
 					if first_row {
 						placeholder_text.push_str(trimmed_cell);
 						placeholder_text.push(' ');
@@ -116,11 +114,9 @@ fn process_table(element: Node, buffer: &mut DocumentBuffer, _rels: &HashMap<Str
 		}
 	}
 	html_content.push_str("</table>");
-
 	let final_placeholder = placeholder_text.trim().to_string();
 	buffer.append(&final_placeholder);
 	buffer.append("\n");
-
 	buffer.add_marker(
 		Marker::new(MarkerType::Table, table_start).with_text(final_placeholder).with_reference(html_content),
 	);

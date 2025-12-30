@@ -234,7 +234,6 @@ impl HtmlToText {
 		self.finalize_current_line();
 		let table_html = Self::serialize_node(node, document);
 		let mut placeholder_text = "table: ".to_string();
-
 		let mut caption = None;
 		for child in node.children() {
 			if let Node::Element(e) = child.value() {
@@ -247,7 +246,6 @@ impl HtmlToText {
 				}
 			}
 		}
-
 		if let Some(cap) = &caption {
 			placeholder_text = cap.clone();
 		} else if let Some(tr) = self.find_first_tr(node) {
@@ -260,7 +258,6 @@ impl HtmlToText {
 				}
 			}
 		}
-
 		let placeholder = trim_string(&placeholder_text);
 		self.tables.push(TableInfo {
 			offset: self.get_current_text_position(),
