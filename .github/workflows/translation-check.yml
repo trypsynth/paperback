@@ -1,0 +1,109 @@
+name: Check for New Translatable Strings
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'app/**/*.cpp'
+      - 'app/**/*.hpp'
+      - 'app/**/*.h'
+  workflow_dispatch:
+permissions:
+  contents: read
+  discussions: write
+jobs:
+  check-strings:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install gettext
+        run: sudo apt-get update && sudo apt-get install -y gettext
+      - name: Generate fresh POT file
+        run: |
+          find app -name '*.cpp' -o -name '*.hpp' -o -name '*.h' | sort > /tmp/source_files.txt
+          xgettext \
+            --files-from=/tmp/source_files.txt \
+            --keyword=_ \
+            --keyword=wxPLURAL:1,2 \
+            --keyword=wxTRANSLATE \
+            --language=C++ \
+            --from-code=UTF-8 \
+            --add-comments=TRANSLATORS \
+            --add-location=file \
+            --package-name=paperback \
+            --output=/tmp/paperback_new.pot
+      - name: Compare strings
+        id: compare
+        run: |
+          grep '^msgid "' po/paperback.pot | sort > /tmp/old_strings.txt
+          grep '^msgid "' /tmp/paperback_new.pot | sort > /tmp/new_strings.txt
+          comm -13 /tmp/old_strings.txt /tmp/new_strings.txt > /tmp/added.txt
+          comm -23 /tmp/old_strings.txt /tmp/new_strings.txt > /tmp/removed.txt
+          ADDED_COUNT=$(wc -l < /tmp/added.txt)
+          REMOVED_COUNT=$(wc -l < /tmp/removed.txt)
+          echo "added_count=$ADDED_COUNT" >> $GITHUB_OUTPUT
+          echo "removed_count=$REMOVED_COUNT" >> $GITHUB_OUTPUT
+          if [ "$ADDED_COUNT" -gt 0 ] || [ "$REMOVED_COUNT" -gt 0 ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+          {
+            echo 'body<<EOF'
+            echo "## Translatable Strings Update"
+            echo ""
+            echo "A recent commit has changed the translatable strings in Paperback."
+            echo ""
+            echo "**$ADDED_COUNT** string(s) added, **$REMOVED_COUNT** string(s) removed."
+            echo ""
+            if [ "$ADDED_COUNT" -gt 0 ]; then
+              echo "### New strings:"
+              echo ""
+              echo '```'
+              cat /tmp/added.txt
+              echo '```'
+              echo ""
+            fi
+            if [ "$REMOVED_COUNT" -gt 0 ]; then
+              echo "### Removed strings:"
+              echo ""
+              echo '```'
+              cat /tmp/removed.txt
+              echo '```'
+              echo ""
+            fi
+            echo "---"
+            echo "**Translators:** Please update your `.po` files using `msgmerge`."
+            echo "See the [translation guide](https://paperback.dev/translations) for instructions."
+            echo ""
+            echo "Commit: ${{ github.sha }}"
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
+      - name: Create Discussion
+        if: steps.compare.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REPO_DATA=$(gh api graphql -f query='
+            query($owner: String!, $name: String!) {
+              repository(owner: $owner, name: $name) {
+                id
+                discussionCategories(first: 10) {
+                  nodes { id name }
+                }
+              }
+            }
+          ' -f owner="${{ github.repository_owner }}" -f name="${{ github.event.repository.name }}")
+          REPO_ID=$(echo "$REPO_DATA" | jq -r '.data.repository.id')
+          CATEGORY_ID=$(echo "$REPO_DATA" | jq -r '.data.repository.discussionCategories.nodes[] | select(.name=="Announcements") | .id')
+          gh api graphql -f query='
+            mutation($repositoryId: ID!, $categoryId: ID!, $title: String!, $body: String!) {
+              createDiscussion(input: {repositoryId: $repositoryId, categoryId: $categoryId, title: $title, body: $body}) {
+                discussion { url }
+              }
+            }
+          ' \
+            -f repositoryId="$REPO_ID" \
+            -f categoryId="$CATEGORY_ID" \
+            -f title="New translatable strings - $(date +%Y-%m-%d)" \
+            -f body="${{ steps.compare.outputs.body }}"

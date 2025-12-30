@@ -39,6 +39,19 @@
 #include <wx/wfstream.h>
 
 namespace {
+wxString rust_to_wx(const rust::String& rust_str) {
+	return wxString::FromUTF8(std::string(rust_str).c_str());
+}
+
+bool supports_feature(uint32_t flags, uint32_t feature) {
+	return (flags & feature) != 0;
+}
+
+constexpr uint32_t PARSER_SUPPORTS_SECTIONS = 1 << 0;
+constexpr uint32_t PARSER_SUPPORTS_TOC = 1 << 1;
+constexpr uint32_t PARSER_SUPPORTS_PAGES = 1 << 2;
+constexpr uint32_t PARSER_SUPPORTS_LISTS = 1 << 3;
+
 int to_rust_marker(marker_type type) {
 	return static_cast<int>(type);
 }
@@ -71,7 +84,8 @@ marker to_marker(const FfiMarker& ffi_marker) {
 		static_cast<marker_type>(ffi_marker.marker_type),
 		to_wxstring(ffi_marker.text),
 		to_wxstring(ffi_marker.reference),
-		ffi_marker.level};
+		ffi_marker.level,
+	};
 }
 
 bool is_heading_marker(marker_type type) {
@@ -482,12 +496,34 @@ void document_manager::go_to_position(int position) const {
 }
 
 void document_manager::navigate_to_section(bool next) const {
-	const document* doc = get_active_document();
+	const document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	const parser_info* parser = get_active_parser();
-	if (doc == nullptr || text_ctrl == nullptr || parser == nullptr) {
+	if (tab == nullptr || text_ctrl == nullptr) return;
+	if (tab->has_session()) {
+		const bool wrap = config.get(config_manager::navigation_wrap);
+		const auto result = session_navigate_section(*tab->get_session(), text_ctrl->GetInsertionPoint(), wrap, next);
+		if (result.not_supported) {
+			speak(_("No sections."));
+			return;
+		}
+		if (!result.found) {
+			speak(next ? _("No next section") : _("No previous section"));
+			return;
+		}
+		const long offset = static_cast<long>(result.offset);
+		text_ctrl->SetInsertionPoint(offset);
+		long line{0};
+		text_ctrl->PositionToXY(offset, nullptr, &line);
+		const wxString current_line = text_ctrl->GetLineText(line);
+		if (result.wrapped)
+			speak((next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + current_line);
+		else
+			speak(current_line);
 		return;
 	}
+	const document* doc = get_active_document();
+	const parser_info* parser = get_active_parser();
+	if (doc == nullptr || parser == nullptr) return;
 	if (!parser_supports(parser->flags, parser_flags::supports_sections)) {
 		speak(_("No sections."));
 		return;
@@ -688,9 +724,22 @@ void document_manager::go_to_next_link() const {
 }
 
 void document_manager::go_to_previous_position() const {
-	document* doc = get_active_document();
+	document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (doc == nullptr || text_ctrl == nullptr) {
+	if (tab == nullptr || text_ctrl == nullptr) return;
+	if (tab->has_session()) {
+		const long actual_pos = text_ctrl->GetInsertionPoint();
+		auto result = session_history_go_back(*tab->get_session(), actual_pos);
+		if (result.found) {
+			go_to_position(static_cast<long>(result.offset));
+			speak(_("Navigated to previous position."));
+		} else {
+			speak(_("No previous position."));
+		}
+		return;
+	}
+	document* doc = get_active_document();
+	if (doc == nullptr) {
 		return;
 	}
 	if (doc->history.empty()) {
@@ -713,9 +762,22 @@ void document_manager::go_to_previous_position() const {
 }
 
 void document_manager::go_to_next_position() const {
-	document* doc = get_active_document();
+	document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (doc == nullptr || text_ctrl == nullptr) {
+	if (tab == nullptr || text_ctrl == nullptr) return;
+	if (tab->has_session()) {
+		const long actual_pos = text_ctrl->GetInsertionPoint();
+		auto result = session_history_go_forward(*tab->get_session(), actual_pos);
+		if (result.found) {
+			go_to_position(static_cast<long>(result.offset));
+			speak(_("Navigated to next position."));
+		} else {
+			speak(_("No next position."));
+		}
+		return;
+	}
+	document* doc = get_active_document();
+	if (doc == nullptr) {
 		return;
 	}
 	if (doc->history.empty()) {
@@ -738,9 +800,34 @@ void document_manager::go_to_next_position() const {
 }
 
 void document_manager::activate_current_link() const {
-	document* doc = get_active_document();
+	document_tab* tab = get_active_tab();
 	const wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (doc == nullptr || text_ctrl == nullptr) {
+	if (tab == nullptr || text_ctrl == nullptr) return;
+	if (tab->has_session()) {
+		const long current_pos = text_ctrl->GetInsertionPoint();
+		auto result = session_activate_link(*tab->get_session(), current_pos);
+		if (!result.found) return;  // No link at current position
+		switch (result.action) {
+			case FfiLinkAction::External:
+				if (wxLaunchDefaultBrowser(rust_to_wx(rust::String(result.url))))
+					speak(_("Opening link in default browser."));
+				else
+					speak(_("Failed to open link."));
+				break;
+			case FfiLinkAction::Internal:
+				go_to_position(static_cast<long>(result.offset));
+				speak(_("Navigated to internal link."));
+				break;
+			case FfiLinkAction::NotFound:
+				speak(_("Internal link target not found."));
+				break;
+			default:
+				break;
+		}
+		return;
+	}
+	document* doc = get_active_document();
+	if (doc == nullptr) {
 		return;
 	}
 	const long current_pos = text_ctrl->GetInsertionPoint();
