@@ -152,13 +152,16 @@ all_documents_dialog::all_documents_dialog(wxWindow* parent, config_manager& cfg
 	auto* action_sizer = new wxBoxSizer(wxHORIZONTAL);
 	open_button = new wxButton(this, wxID_OPEN, _("&Open"));
 	remove_button = new wxButton(this, wxID_REMOVE, _("&Remove"));
+	clear_all_button = new wxButton(this, wxID_CLEAR, _("&Clear All"));
 	action_sizer->Add(open_button, 0, wxRIGHT, DIALOG_PADDING);
 	action_sizer->Add(remove_button, 0, wxRIGHT, DIALOG_PADDING);
+	action_sizer->Add(clear_all_button, 0, wxRIGHT, DIALOG_PADDING);
 	content_sizer->Add(action_sizer, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);
 	set_content(content_sizer);
 	finalize_layout();
 	Bind(wxEVT_BUTTON, &all_documents_dialog::on_open, this, wxID_OPEN);
 	Bind(wxEVT_BUTTON, &all_documents_dialog::on_remove, this, wxID_REMOVE);
+	Bind(wxEVT_BUTTON, &all_documents_dialog::on_clear_all, this, wxID_CLEAR);
 	Bind(wxEVT_TEXT, &all_documents_dialog::on_search, this, wxID_ANY);
 	Bind(wxEVT_LIST_ITEM_ACTIVATED, &all_documents_dialog::on_list_item_activated, this, wxID_ANY);
 	Bind(wxEVT_LIST_ITEM_SELECTED, &all_documents_dialog::on_list_item_selected, this, wxID_ANY);
@@ -172,6 +175,7 @@ all_documents_dialog::all_documents_dialog(wxWindow* parent, config_manager& cfg
 	} else {
 		open_button->Enable(false);
 		remove_button->Enable(false);
+		clear_all_button->Enable(false);
 	}
 }
 
@@ -207,6 +211,21 @@ void all_documents_dialog::on_remove(wxCommandEvent& /*event*/) {
 		doc_list->SetItemState(new_selection, wxLIST_STATE_SELECTED | wxLIST_STATE_FOCUSED, wxLIST_STATE_SELECTED | wxLIST_STATE_FOCUSED);
 		doc_list->EnsureVisible(new_selection);
 	}
+}
+
+void all_documents_dialog::on_clear_all(wxCommandEvent& /*event*/) {
+	if (doc_list->GetItemCount() == 0) {
+		return;
+	}
+	if (wxMessageBox(_("Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks."), _("Confirm"), wxYES_NO | wxICON_WARNING) != wxYES) {
+		return;
+	}
+	const wxArrayString all_docs = config_mgr.get_all_documents();
+	for (const auto& path : all_docs) {
+		config_mgr.remove_document_history(path);
+	}
+	config_mgr.flush();
+	populate_document_list();
 }
 
 void all_documents_dialog::on_search(wxCommandEvent& /*event*/) {
@@ -294,12 +313,18 @@ void all_documents_dialog::populate_document_list(const wxString& filter) {
 		if (remove_button != nullptr) {
 			remove_button->Enable(true);
 		}
+		if (clear_all_button != nullptr) {
+			clear_all_button->Enable(true);
+		}
 	} else {
 		if (open_button != nullptr) {
 			open_button->Enable(false);
 		}
 		if (remove_button != nullptr) {
 			remove_button->Enable(false);
+		}
+		if (clear_all_button != nullptr) {
+			clear_all_button->Enable(false);
 		}
 	}
 }
