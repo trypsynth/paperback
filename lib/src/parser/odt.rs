@@ -87,6 +87,10 @@ fn traverse(node: Node, buffer: &mut DocumentBuffer, id_positions: &mut HashMap<
 		if let Some(id) = node.attribute("id") {
 			id_positions.insert(id.to_string(), buffer.current_position());
 		}
+		if tag_name == "table" {
+			process_table(node, buffer, id_positions);
+			return;
+		}
 	} else if node.node_type() == NodeType::Text {
 		if let Some(text) = node.text() {
 			buffer.append(text);
@@ -99,5 +103,39 @@ fn traverse(node: Node, buffer: &mut DocumentBuffer, id_positions: &mut HashMap<
 fn traverse_children(node: Node, buffer: &mut DocumentBuffer, id_positions: &mut HashMap<String, usize>) {
 	for child in node.children() {
 		traverse(child, buffer, id_positions);
+	}
+}
+
+fn process_table(node: Node, buffer: &mut DocumentBuffer, id_positions: &mut HashMap<String, usize>) {
+	let table_start = buffer.current_position();
+	let mut html_content = String::from("<table border=\"1\">");
+
+	for child in node.children() {
+		if child.is_element() && child.tag_name().name() == "table-row" {
+			html_content.push_str("<tr>");
+			for cell in child.children() {
+				if cell.is_element() && cell.tag_name().name() == "table-cell" {
+					html_content.push_str("<td>");
+					let cell_start = buffer.current_position();
+					traverse_children(cell, buffer, id_positions);
+					let cell_end = buffer.current_position();
+					let cell_text = &buffer.content[cell_start..cell_end];
+					html_content.push_str(&cell_text.replace('\n', "<br/>"));
+					html_content.push_str("</td>");
+					buffer.append(" ");
+				}
+			}
+			html_content.push_str("</tr>");
+			buffer.append("\n");
+		}
+	}
+	html_content.push_str("</table>");
+
+	let table_end = buffer.current_position();
+	let table_text = buffer.content[table_start..table_end].to_string();
+
+	if !table_text.trim().is_empty() {
+		buffer
+			.add_marker(Marker::new(MarkerType::Table, table_start).with_text(table_text).with_reference(html_content));
 	}
 }

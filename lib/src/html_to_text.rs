@@ -52,9 +52,8 @@ pub struct ListItemInfo {
 #[derive(Debug, Clone)]
 pub struct TableInfo {
 	pub offset: usize,
-	pub placeholder: String,
+	pub text: String,
 	pub html_content: String,
-	pub caption: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -233,54 +232,29 @@ impl HtmlToText {
 	fn handle_table(&mut self, node: NodeRef<'_, Node>, document: &Html) {
 		self.finalize_current_line();
 		let table_html = Self::serialize_node(node, document);
-		let mut placeholder_text = "table: ".to_string();
-		let mut caption = None;
-		for child in node.children() {
-			if let Node::Element(e) = child.value() {
-				if e.name() == "caption" {
-					let caption_text = Self::get_element_text(child, document);
-					if !caption_text.trim().is_empty() {
-						caption = Some(caption_text.trim().to_string());
-					}
-					break;
-				}
-			}
-		}
-		if let Some(cap) = &caption {
-			placeholder_text = cap.clone();
-		} else if let Some(tr) = self.find_first_tr(node) {
-			for child in tr.children() {
-				if let Node::Element(e) = child.value() {
-					if e.name() == "td" || e.name() == "th" {
-						placeholder_text += &Self::get_element_text(child, document);
-						placeholder_text += " ";
-					}
-				}
-			}
-		}
-		let placeholder = trim_string(&placeholder_text);
-		self.tables.push(TableInfo {
-			offset: self.get_current_text_position(),
-			placeholder: placeholder.clone(),
-			html_content: table_html,
-			caption,
-		});
-		self.current_line.push_str(&placeholder);
-		self.finalize_current_line();
-	}
+		let start_lines_count = self.lines.len();
+		let start_offset = self.get_current_text_position();
 
-	fn find_first_tr<'a>(&self, node: NodeRef<'a, Node>) -> Option<NodeRef<'a, Node>> {
-		if let Node::Element(e) = node.value() {
-			if e.name() == "tr" {
-				return Some(node);
-			}
-		}
 		for child in node.children() {
-			if let Some(tr) = self.find_first_tr(child) {
-				return Some(tr);
-			}
+			self.process_node(child, document);
 		}
-		None
+		self.finalize_current_line();
+
+		let mut table_text = String::new();
+		for (i, line) in self.lines.iter().enumerate().skip(start_lines_count) {
+			if i > start_lines_count {
+				table_text.push('\n');
+			}
+			table_text.push_str(line);
+		}
+
+		if table_text.trim().is_empty() {
+			table_text = "table".to_string();
+			self.current_line.push_str(&table_text);
+			self.finalize_current_line();
+		}
+
+		self.tables.push(TableInfo { offset: start_offset, text: table_text, html_content: table_html });
 	}
 
 	fn handle_element_opening(&mut self, tag_name: &str, node: NodeRef<'_, Node>, document: &Html) {
