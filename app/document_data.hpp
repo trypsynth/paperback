@@ -40,6 +40,26 @@ struct toc_item {
 	toc_item& operator=(toc_item&&) = default;
 };
 
+struct session_document {
+	rust::Box<DocumentSession> session;
+	wxString content;  // Cached for wxTextCtrl
+	std::vector<std::unique_ptr<toc_item>> toc_items;  // Cached TOC for dialog
+	bool toc_loaded{false};
+
+	session_document() = delete;
+	explicit session_document(rust::Box<DocumentSession> sess) : session(std::move(sess)), content(wxString::FromUTF8(session_content(*session).c_str())) {}
+	~session_document() = default;
+	session_document(const session_document&) = delete;
+	session_document& operator=(const session_document&) = delete;
+	session_document(session_document&&) = default;
+	session_document& operator=(session_document&&) = default;
+	[[nodiscard]] wxString get_title() const { return wxString::FromUTF8(session_title(*session).c_str()); }
+	[[nodiscard]] wxString get_author() const { return wxString::FromUTF8(session_author(*session).c_str()); }
+	[[nodiscard]] const DocumentHandle& get_handle() const { return session_handle(*session); }
+	[[nodiscard]] uint32_t get_parser_flags() const { return session_parser_flags(*session); }
+};
+
+// Legacy document structure (for backward compatibility during migration)
 struct document_data {
 	std::optional<rust::Box<DocumentHandle>> handle;
 	wxString title{"Untitled"};

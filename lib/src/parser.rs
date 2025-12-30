@@ -134,6 +134,20 @@ pub fn get_parser_name_for_extension(extension: &str) -> Option<String> {
 	ParserRegistry::global().get_parser_for_extension(extension).map(|p| p.name().to_string())
 }
 
+#[must_use]
+pub fn get_parser_flags_for_context(context: &ParserContext) -> ParserFlags {
+	let path = std::path::Path::new(&context.file_path);
+	let extension = if let Some(ext) = &context.forced_extension {
+		ext.as_str()
+	} else {
+		path.extension().and_then(|e| e.to_str()).unwrap_or("")
+	};
+	ParserRegistry::global()
+		.get_parser_for_extension(extension)
+		.map(|p| p.supported_flags())
+		.unwrap_or(ParserFlags::NONE)
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
