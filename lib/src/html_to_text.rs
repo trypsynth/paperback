@@ -50,6 +50,14 @@ pub struct ListItemInfo {
 }
 
 #[derive(Debug, Clone)]
+pub struct TableInfo {
+	pub offset: usize,
+	pub placeholder: String,
+	pub html_content: String,
+	pub caption: Option<String>,
+}
+
+#[derive(Debug, Clone)]
 struct ListStyle {
 	ordered: bool,
 	item_number: i32,
@@ -68,6 +76,7 @@ pub struct HtmlToText {
 	id_positions: HashMap<String, usize>,
 	headings: Vec<HeadingInfo>,
 	links: Vec<LinkInfo>,
+	tables: Vec<TableInfo>,
 	lists: Vec<ListInfo>,
 	list_items: Vec<ListItemInfo>,
 	title: String,
@@ -83,6 +92,7 @@ pub struct HtmlToText {
 }
 
 impl HtmlToText {
+	#[must_use]
 	pub fn new() -> Self {
 		Self {
 			lines: Vec::new(),
@@ -90,6 +100,7 @@ impl HtmlToText {
 			id_positions: HashMap::new(),
 			headings: Vec::new(),
 			links: Vec::new(),
+			tables: Vec::new(),
 			lists: Vec::new(),
 			list_items: Vec::new(),
 			title: String::new(),
@@ -115,40 +126,53 @@ impl HtmlToText {
 		true
 	}
 
+	#[must_use]
 	pub fn get_text(&self) -> String {
 		self.lines.join("\n")
 	}
 
+	#[must_use]
 	pub fn get_title(&self) -> &str {
 		&self.title
 	}
 
+	#[must_use]
 	pub fn get_headings(&self) -> &[HeadingInfo] {
 		&self.headings
 	}
 
+	#[must_use]
 	pub fn get_links(&self) -> &[LinkInfo] {
 		&self.links
 	}
 
+	#[must_use]
+	pub fn get_tables(&self) -> &[TableInfo] {
+		&self.tables
+	}
+
+	#[must_use]
 	pub fn get_lists(&self) -> &[ListInfo] {
 		&self.lists
 	}
 
+	#[must_use]
 	pub fn get_list_items(&self) -> &[ListItemInfo] {
 		&self.list_items
 	}
 
+	#[must_use]
 	pub const fn get_id_positions(&self) -> &HashMap<String, usize> {
 		&self.id_positions
 	}
 
-	fn clear(&mut self) {
+	pub fn clear(&mut self) {
 		self.lines.clear();
 		self.current_line.clear();
 		self.id_positions.clear();
 		self.headings.clear();
 		self.links.clear();
+		self.tables.clear();
 		self.lists.clear();
 		self.list_items.clear();
 		self.title.clear();
@@ -175,6 +199,15 @@ impl HtmlToText {
 		match node.value() {
 			Node::Element(element) => {
 				let tag_name = element.name();
+				if tag_name == "table" {
+					if self.flags.contains(ProcessingFlags::IN_BODY) {
+						if let Some(id) = element.attr("id").or_else(|| element.attr("name")) {
+							self.id_positions.insert(id.to_string(), self.get_current_text_position());
+						}
+					}
+					self.handle_table(node, document);
+					return;
+				}
 				self.handle_element_opening(tag_name, node, document);
 				self.handle_list_item(tag_name, node, document);
 				self.handle_list_start(tag_name, node);
@@ -195,6 +228,59 @@ impl HtmlToText {
 				}
 			}
 		}
+	}
+
+	fn handle_table(&mut self, node: NodeRef<'_, Node>, document: &Html) {
+		self.finalize_current_line();
+		let table_html = Self::serialize_node(node, document);
+		let mut placeholder_text = "table: ".to_string();
+		let mut caption = None;
+		for child in node.children() {
+			if let Node::Element(e) = child.value() {
+				if e.name() == "caption" {
+					let caption_text = Self::get_element_text(child, document);
+					if !caption_text.trim().is_empty() {
+						caption = Some(caption_text.trim().to_string());
+					}
+					break;
+				}
+			}
+		}
+		if let Some(cap) = &caption {
+			placeholder_text = cap.clone();
+		} else if let Some(tr) = self.find_first_tr(node) {
+			for child in tr.children() {
+				if let Node::Element(e) = child.value() {
+					if e.name() == "td" || e.name() == "th" {
+						placeholder_text += &Self::get_element_text(child, document);
+						placeholder_text += " ";
+					}
+				}
+			}
+		}
+		let placeholder = trim_string(&placeholder_text);
+		self.tables.push(TableInfo {
+			offset: self.get_current_text_position(),
+			placeholder: placeholder.clone(),
+			html_content: table_html,
+			caption,
+		});
+		self.current_line.push_str(&placeholder);
+		self.finalize_current_line();
+	}
+
+	fn find_first_tr<'a>(&self, node: NodeRef<'a, Node>) -> Option<NodeRef<'a, Node>> {
+		if let Node::Element(e) = node.value() {
+			if e.name() == "tr" {
+				return Some(node);
+			}
+		}
+		for child in node.children() {
+			if let Some(tr) = self.find_first_tr(child) {
+				return Some(tr);
+			}
+		}
+		None
 	}
 
 	fn handle_element_opening(&mut self, tag_name: &str, node: NodeRef<'_, Node>, document: &Html) {
@@ -244,7 +330,7 @@ impl HtmlToText {
 				if style.ordered {
 					let item_text = format_list_item(style.item_number, &style.list_type);
 					use std::fmt::Write;
-					let _ = write!(&mut self.current_line, "{}. ", item_text);
+					let _ = write!(&mut self.current_line, "{item_text}. ");
 					style.item_number += 1;
 				} else {
 					self.current_line.push_str(Self::get_bullet_for_level(self.list_level));

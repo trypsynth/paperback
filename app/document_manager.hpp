@@ -83,6 +83,9 @@ public:
 	void go_to_next_note() const;
 	void go_to_previous_link() const;
 	void go_to_next_link() const;
+	void go_to_previous_table();
+	void go_to_next_table();
+	void activate_current_table();
 	void go_to_previous_list() const;
 	void go_to_next_list() const;
 	void go_to_previous_list_item() const;
@@ -122,6 +125,7 @@ private:
 	void navigate_to_bookmark(bool next) const;
 	void navigate_to_note(bool next) const;
 	void navigate_to_link(bool next) const;
+	void navigate_to_table(bool next) const;
 	void navigate_to_list(bool next) const;
 	void navigate_to_list_item(bool next) const;
 };

@@ -2,6 +2,9 @@
 	"name": "paperback",
 	"version": "0.6.1",
 	"dependencies": [
-		"wxwidgets"
+		{
+			"name": "wxwidgets",
+			"features": ["webview"]
+		}
 	]
 }
