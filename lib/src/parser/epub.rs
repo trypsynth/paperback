@@ -11,7 +11,7 @@ use zip::ZipArchive;
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
-	html_to_text::{HeadingInfo, HtmlSourceMode, HtmlToText, LinkInfo, ListInfo, ListItemInfo},
+	html_to_text::{HeadingInfo, HtmlSourceMode, HtmlToText, LinkInfo, ListInfo, ListItemInfo, TableInfo},
 	parser::{
 		Parser,
 		utils::{extract_title_from_path, heading_level_to_marker_type, read_zip_entry},
@@ -24,6 +24,7 @@ struct SectionContent {
 	text: String,
 	headings: Vec<HeadingInfo>,
 	links: Vec<LinkInfo>,
+	tables: Vec<TableInfo>,
 	lists: Vec<ListInfo>,
 	list_items: Vec<ListItemInfo>,
 	id_positions: HashMap<String, usize>,
@@ -117,6 +118,14 @@ impl Parser for EpubParser {
 							Marker::new(MarkerType::Link, section_start + link.offset)
 								.with_text(link.text.clone())
 								.with_reference(resolved),
+						);
+					}
+					for table in section.tables {
+						let text = table.caption.unwrap_or(table.placeholder);
+						buffer.add_marker(
+							Marker::new(MarkerType::Table, section_start + table.offset)
+								.with_text(text)
+								.with_reference(table.html_content),
 						);
 					}
 					for list in section.lists {
@@ -277,6 +286,7 @@ fn convert_section(content: &str) -> Result<SectionContent> {
 			text: xml_converter.get_text(),
 			headings: xml_converter.get_headings().to_vec(),
 			links: xml_converter.get_links().to_vec(),
+			tables: xml_converter.get_tables().to_vec(),
 			lists: xml_converter.get_lists().to_vec(),
 			list_items: xml_converter.get_list_items().to_vec(),
 			id_positions: xml_converter.get_id_positions().clone(),
@@ -288,6 +298,7 @@ fn convert_section(content: &str) -> Result<SectionContent> {
 			text: html_converter.get_text(),
 			headings: html_converter.get_headings().to_vec(),
 			links: html_converter.get_links().to_vec(),
+			tables: html_converter.get_tables().to_vec(),
 			lists: html_converter.get_lists().to_vec(),
 			list_items: html_converter.get_list_items().to_vec(),
 			id_positions: html_converter.get_id_positions().clone(),

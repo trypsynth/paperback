@@ -68,11 +68,58 @@ fn traverse(
 		if tag_name == "p" {
 			process_paragraph(node, buffer, headings, id_positions, rels);
 			return;
+		} else if tag_name == "tbl" {
+			process_table(node, buffer, rels);
+			return;
 		}
 	}
 	for child in node.children() {
 		traverse(child, buffer, headings, id_positions, rels);
 	}
+}
+
+fn process_table(element: Node, buffer: &mut DocumentBuffer, _rels: &HashMap<String, String>) {
+	let table_start = buffer.current_position();
+	let mut html_content = String::from("<table border=\"1\">");
+	let mut placeholder_text = String::from("table: ");
+	let mut first_row = true;
+	for child in element.children() {
+		if child.node_type() == NodeType::Element && child.tag_name().name() == "tr" {
+			html_content.push_str("<tr>");
+			for tc in child.children() {
+				if tc.node_type() == NodeType::Element && tc.tag_name().name() == "tc" {
+					html_content.push_str("<td>");
+					let mut cell_text = String::new();
+					for p in tc.children() {
+						if p.node_type() == NodeType::Element && p.tag_name().name() == "p" {
+							for r in p.children() {
+								if r.node_type() == NodeType::Element && r.tag_name().name() == "r" {
+									cell_text.push_str(&collect_ooxml_run_text(r));
+								}
+							}
+							cell_text.push(' ');
+						}
+					}
+					let trimmed_cell = cell_text.trim();
+					html_content.push_str(trimmed_cell);
+					html_content.push_str("</td>");
+					if first_row {
+						placeholder_text.push_str(trimmed_cell);
+						placeholder_text.push(' ');
+					}
+				}
+			}
+			html_content.push_str("</tr>");
+			first_row = false;
+		}
+	}
+	html_content.push_str("</table>");
+	let final_placeholder = placeholder_text.trim().to_string();
+	buffer.append(&final_placeholder);
+	buffer.append("\n");
+	buffer.add_marker(
+		Marker::new(MarkerType::Table, table_start).with_text(final_placeholder).with_reference(html_content),
+	);
 }
 
 fn process_paragraph(

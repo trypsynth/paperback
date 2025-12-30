@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use roxmltree::{Document, Node, NodeType, ParsingOptions};
 
 use crate::{
-	html_to_text::{HeadingInfo, LinkInfo, ListInfo, ListItemInfo},
+	html_to_text::{HeadingInfo, LinkInfo, ListInfo, ListItemInfo, TableInfo},
 	parser::utils::collect_element_text,
 	utils::text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string},
 };
@@ -28,6 +28,7 @@ pub struct XmlToText {
 	id_positions: HashMap<String, usize>,
 	headings: Vec<HeadingInfo>,
 	links: Vec<LinkInfo>,
+	tables: Vec<TableInfo>,
 	lists: Vec<ListInfo>,
 	list_items: Vec<ListItemInfo>,
 	section_offsets: Vec<usize>,
@@ -78,6 +79,11 @@ impl XmlToText {
 	}
 
 	#[must_use]
+	pub fn get_tables(&self) -> &[TableInfo] {
+		&self.tables
+	}
+
+	#[must_use]
 	pub fn get_lists(&self) -> &[ListInfo] {
 		&self.lists
 	}
@@ -98,6 +104,7 @@ impl XmlToText {
 		self.id_positions.clear();
 		self.headings.clear();
 		self.links.clear();
+		self.tables.clear();
 		self.lists.clear();
 		self.list_items.clear();
 		self.section_offsets.clear();
@@ -137,6 +144,10 @@ impl XmlToText {
 
 	fn handle_element_opening_xml(&mut self, tag_name: &str, node: Node<'_, '_>) -> bool {
 		let mut skip_children = false;
+		if Self::tag_is(tag_name, "table") {
+			self.handle_table_xml(node);
+			return true;
+		}
 		if Self::tag_is(tag_name, "section") {
 			self.section_offsets.push(self.get_current_text_position());
 		}
@@ -172,6 +183,56 @@ impl XmlToText {
 		skip_children
 	}
 
+	fn handle_table_xml(&mut self, node: Node<'_, '_>) {
+		self.finalize_current_line();
+		let table_xml = node.document().input_text()[node.range()].to_string();
+		let mut placeholder_text = "table: ".to_string();
+		let mut caption = None;
+		for child in node.children() {
+			if child.is_element() && child.tag_name().name().eq_ignore_ascii_case("caption") {
+				let caption_text = collect_element_text(child);
+				if !caption_text.trim().is_empty() {
+					caption = Some(caption_text.trim().to_string());
+				}
+				break;
+			}
+		}
+		if let Some(cap) = &caption {
+			placeholder_text = cap.clone();
+		} else if let Some(tr) = self.find_first_tr(node) {
+			for child in tr.children() {
+				if child.is_element() {
+					let name = child.tag_name().name();
+					if name == "td" || name == "th" {
+						placeholder_text += &collect_element_text(child);
+						placeholder_text += " ";
+					}
+				}
+			}
+		}
+		let placeholder = trim_string(&placeholder_text);
+		self.tables.push(TableInfo {
+			offset: self.get_current_text_position(),
+			placeholder: placeholder.clone(),
+			html_content: table_xml,
+			caption,
+		});
+		self.current_line.push_str(&placeholder);
+		self.finalize_current_line();
+	}
+
+	fn find_first_tr<'a>(&self, node: Node<'a, 'a>) -> Option<Node<'a, 'a>> {
+		if node.is_element() && node.tag_name().name() == "tr" {
+			return Some(node);
+		}
+		for child in node.children() {
+			if let Some(tr) = self.find_first_tr(child) {
+				return Some(tr);
+			}
+		}
+		None
+	}
+
 	fn handle_list_item_xml(&mut self, node: Node<'_, '_>) {
 		self.finalize_current_line();
 		let li_text = collect_element_text(node);
@@ -186,7 +247,7 @@ impl XmlToText {
 			if style.ordered {
 				let item_text = format_list_item(style.item_number, &style.list_type);
 				style.item_number += 1;
-				format!("{}. ", item_text)
+				format!("{item_text}. ")
 			} else {
 				format!("{} ", Self::get_bullet_for_level(self.list_level))
 			}

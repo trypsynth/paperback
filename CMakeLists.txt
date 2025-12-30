@@ -4,6 +4,7 @@ if(POLICY CMP0144)
 endif()
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/vcpkg/bin/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
 set(VCPKG_MANIFEST_DIR "${CMAKE_SOURCE_DIR}/vcpkg")
+set(VCPKG_OVERLAY_TRIPLETS "${CMAKE_SOURCE_DIR}/vcpkg/triplets")
 if(WIN32)
 	set(VCPKG_TARGET_TRIPLET "x64-windows-static" CACHE STRING "Vcpkg triplet")
 elseif(APPLE)
@@ -29,7 +30,7 @@ if(MSVC)
 endif()
 
 find_package(Gettext REQUIRED)
-find_package(wxWidgets CONFIG REQUIRED)
+find_package(wxWidgets CONFIG REQUIRED COMPONENTS webview)
 
 if(GETTEXT_FOUND)
 	find_program(XGETTEXT_EXECUTABLE NAMES xgettext)
@@ -149,12 +150,14 @@ endif()
 add_dependencies(paperback libpaperback_rust)
 target_include_directories(paperback PRIVATE ${CMAKE_SOURCE_DIR}/app ${CMAKE_SOURCE_DIR} ${PAPERBACK_GENERATED_DIR} ${RUST_TARGET_DIR}/cxxbridge)
 target_link_directories(paperback PRIVATE ${PDFIUM_LIB_DIR})
+target_link_directories(paperback PRIVATE "${CMAKE_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/lib")
 target_link_libraries(paperback PRIVATE
 	${RUST_LIB_OUTPUT}
 	pdfium
 	wx::base
 	wx::core
 	wx::net
+	wx::webview
 )
 if (WIN32)
 	target_link_libraries(paperback PRIVATE bcrypt ntdll)

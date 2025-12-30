@@ -1254,3 +1254,46 @@ void document_manager::navigate_to_heading(bool next, int specific_level) const 
 	}
 	speak(message);
 }
+
+void document_manager::navigate_to_table(bool next) const {
+	const document* doc = get_active_document();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (doc == nullptr || text_ctrl == nullptr) return;
+	if (doc_count_markers_by_type(*doc, marker_type::Table) == 0) {
+		speak(_("No tables."));
+		return;
+	}
+	const bool wrap = config.get(config_manager::navigation_wrap);
+	const auto nav = perform_navigation(*doc, text_ctrl->GetInsertionPoint(), NavTarget::Table, next ? NavDirection::Next : NavDirection::Previous, wrap);
+	if (!nav.has_value()) {
+		speak(next ? _("No next table.") : _("No previous table."));
+		return;
+	}
+	go_to_position(static_cast<long>(nav->offset));
+	const std::string table_text_utf8 = std::string(nav->marker_text);
+	wxString message = wxString::FromUTF8(table_text_utf8.c_str());
+	if (nav->wrapped) message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
+	speak(message);
+}
+
+void document_manager::go_to_previous_table() {
+	navigate_to_table(false);
+}
+
+void document_manager::go_to_next_table() {
+	navigate_to_table(true);
+}
+
+void document_manager::activate_current_table() {
+	const document* doc = get_active_document();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (doc == nullptr || text_ctrl == nullptr) return;
+	const int current_pos = text_ctrl->GetInsertionPoint();
+	const int table_index = doc_current_marker_index(*doc, static_cast<size_t>(current_pos), marker_type::Table);
+	if (table_index == -1) return;
+	const auto table_marker = doc_get_marker(*doc, table_index);
+	if (!table_marker.has_value()) return;
+	if (static_cast<size_t>(current_pos) < table_marker->pos || static_cast<size_t>(current_pos) > (table_marker->pos + table_marker->text.length())) return;
+	table_dialog dlg(&main_win, _("Table"), table_marker->ref);
+	dlg.ShowModal();
+}
