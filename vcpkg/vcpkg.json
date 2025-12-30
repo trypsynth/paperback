@@ -4,9 +4,7 @@
 	"dependencies": [
 		{
 			"name": "wxwidgets",
-			"features": [
-				"webview"
-			]
+			"features": ["webview"]
 		}
 	]
 }
