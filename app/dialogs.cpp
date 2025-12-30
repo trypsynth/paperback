@@ -1113,6 +1113,52 @@ int sleep_timer_dialog::get_duration() const {
 	return input_ctrl->GetValue();
 }
 
+table_dialog::table_dialog(wxWindow* parent, const wxString& title, const wxString& html) :
+	wxDialog(parent, wxID_ANY, title, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER) {
+	web_view = wxWebView::New(this, wxID_ANY);
+	web_view->AddScriptMessageHandler("wx");
+	Bind(wxEVT_WEBVIEW_LOADED, &table_dialog::on_webview_loaded, this, web_view->GetId());
+	Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, &table_dialog::on_script_message, this, web_view->GetId());
+	web_view->SetPage(html, "");
+	auto* sizer = new wxBoxSizer(wxVERTICAL);
+	sizer->Add(web_view, 1, wxEXPAND | wxALL, 5);
+	auto* button_sizer = CreateStdDialogButtonSizer(wxCLOSE);
+	sizer->Add(button_sizer, 0, wxALIGN_RIGHT | wxALL, 5);
+	SetSizerAndFit(sizer);
+	Centre();
+}
+
+void table_dialog::simulate_click() {
+	wxPoint pos = web_view->GetScreenPosition();
+	wxSize size = web_view->GetSize();
+	int x = pos.x + size.x / 2;
+	int y = pos.y + size.y / 2;
+	wxUIActionSimulator sim;
+	sim.MouseMove(x, y);
+	sim.MouseClick();
+}
+
+void table_dialog::on_webview_loaded([[maybe_unused]] wxWebViewEvent& event) {
+	wxTimer* timer = new wxTimer();
+	timer->Bind(wxEVT_TIMER, [this, timer](wxTimerEvent&) {
+		simulate_click();
+		timer->Stop();
+		delete timer;
+	});
+	timer->StartOnce(100);
+	web_view->RunScript(
+		"document.addEventListener('keydown', function(event) {"
+		"    if (event.key === 'Escape' || event.keyCode === 27) {"
+		"        window.wx.postMessage('close_dialog');"
+		"    }"
+		"});"
+	);
+}
+
+void table_dialog::on_script_message(wxWebViewEvent& event) {
+	if (event.GetString() == "close_dialog") EndModal(wxID_CANCEL);
+}
+
 toc_dialog::toc_dialog(wxWindow* parent, const document* doc, int current_offset) : dialog(parent, _("Table of Contents")), selected_offset{-1} {
 	search_timer_ = new wxTimer(this);
 	tree = new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTR_HIDE_ROOT);
@@ -1236,54 +1282,6 @@ bool toc_dialog::find_and_select_item_by_name(const wxString& name, const wxTree
 		}
 	}
 	return false;
-}
-
-table_dialog::table_dialog(wxWindow* parent, const wxString& title, const wxString& html) :
-	wxDialog(parent, wxID_ANY, title, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER) {
-	web_view = wxWebView::New(this, wxID_ANY);
-	web_view->AddScriptMessageHandler("wx");
-	Bind(wxEVT_WEBVIEW_LOADED, &table_dialog::on_webview_loaded, this, web_view->GetId());
-	Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, &table_dialog::on_script_message, this, web_view->GetId());
-	web_view->SetPage(html, "");
-	auto* sizer = new wxBoxSizer(wxVERTICAL);
-	sizer->Add(web_view, 1, wxEXPAND | wxALL, 5);
-	auto* button_sizer = CreateStdDialogButtonSizer(wxCLOSE);
-	sizer->Add(button_sizer, 0, wxALIGN_RIGHT | wxALL, 5);
-	SetSizerAndFit(sizer);
-	Centre();
-}
-
-void table_dialog::simulate_click() {
-	wxPoint pos = web_view->GetScreenPosition();
-	wxSize size = web_view->GetSize();
-	int x = pos.x + size.x / 2;
-	int y = pos.y + size.y / 2;
-	wxUIActionSimulator sim;
-	sim.MouseMove(x, y);
-	sim.MouseClick();
-}
-
-void table_dialog::on_webview_loaded([[maybe_unused]] wxWebViewEvent& event) {
-	wxTimer* timer = new wxTimer();
-	timer->Bind(wxEVT_TIMER, [this, timer](wxTimerEvent&) {
-		simulate_click();
-		timer->Stop();
-		delete timer;
-	});
-	timer->StartOnce(100);
-	web_view->RunScript(
-		"document.addEventListener('keydown', function(event) {"
-		"    if (event.key === 'Escape' || event.keyCode === 27) {"
-		"        window.wx.postMessage('close_dialog');"
-		"    }"
-		"});"
-	);
-}
-
-void table_dialog::on_script_message(wxWebViewEvent& event) {
-	if (event.GetString() == "close_dialog") {
-		EndModal(wxID_CANCEL);
-	}
 }
 
 update_dialog::update_dialog(wxWindow* parent, const wxString& new_version, const wxString& changelog) : dialog(parent, wxString::Format(_("Update to %s"), new_version), dialog_button_config::ok_cancel) {

@@ -363,8 +363,10 @@ private:
 class table_dialog : public wxDialog {
 public:
 	table_dialog(wxWindow* parent, const wxString& title, const wxString& html);
+
 private:
 	wxWebView* web_view;
+
 	void on_webview_loaded(wxWebViewEvent& event);
 	void on_script_message(wxWebViewEvent& event);
 	void simulate_click();
