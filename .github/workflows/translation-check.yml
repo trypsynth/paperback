@@ -58,6 +58,7 @@ jobs:
             echo ""
             if [ "$ADDED_COUNT" -gt 0 ]; then
               echo "### New strings:"
+              echo ""
               echo '```'
               cat /tmp/added.txt
               echo '```'
@@ -65,13 +66,14 @@ jobs:
             fi
             if [ "$REMOVED_COUNT" -gt 0 ]; then
               echo "### Removed strings:"
+              echo ""
               echo '```'
               cat /tmp/removed.txt
               echo '```'
               echo ""
             fi
             echo "---"
-            echo "**Translators:** Please update your \`.po\` files using \`msgmerge\`."
+            echo "**Translators:** Please update your `.po` files using `msgmerge`."
             echo "See the [translation guide](https://paperback.dev/translations) for instructions."
             echo ""
             echo "Commit: ${{ github.sha }}"
@@ -82,7 +84,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Get repository ID and category ID via GraphQL
           REPO_DATA=$(gh api graphql -f query='
             query($owner: String!, $name: String!) {
               repository(owner: $owner, name: $name) {
@@ -93,10 +94,8 @@ jobs:
               }
             }
           ' -f owner="${{ github.repository_owner }}" -f name="${{ github.event.repository.name }}")
-
           REPO_ID=$(echo "$REPO_DATA" | jq -r '.data.repository.id')
           CATEGORY_ID=$(echo "$REPO_DATA" | jq -r '.data.repository.discussionCategories.nodes[] | select(.name=="Announcements") | .id')
-
           gh api graphql -f query='
             mutation($repositoryId: ID!, $categoryId: ID!, $title: String!, $body: String!) {
               createDiscussion(input: {repositoryId: $repositoryId, categoryId: $categoryId, title: $title, body: $body}) {
