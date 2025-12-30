@@ -174,9 +174,34 @@ pub mod ffi {
 		pub url: String,
 	}
 
+	pub struct FfiSessionNavResult {
+		pub found: bool,
+		pub wrapped: bool,
+		pub offset: i64,
+		pub marker_text: String,
+		pub marker_level: i32,
+		pub marker_index: i32,
+		pub not_supported: bool,
+	}
+
+	#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+	pub enum FfiLinkAction {
+		Internal,
+		External,
+		NotFound,
+	}
+
+	pub struct FfiLinkActivationResult {
+		pub found: bool,
+		pub action: FfiLinkAction,
+		pub offset: i64,
+		pub url: String,
+	}
+
 	extern "Rust" {
 		type ConfigManager;
 		type DocumentHandle;
+		type DocumentSession;
 
 		fn config_manager_new() -> Box<ConfigManager>;
 		fn config_manager_initialize(manager: &mut ConfigManager) -> bool;
@@ -330,6 +355,76 @@ pub mod ffi {
 			max_len: usize,
 		) -> FfiHistoryNavResult;
 		fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> FfiLinkNavigation;
+		fn session_new(file_path: &str, password: &str, forced_extension: &str) -> Result<Box<DocumentSession>>;
+		fn session_title(session: &DocumentSession) -> String;
+		fn session_author(session: &DocumentSession) -> String;
+		fn session_content(session: &DocumentSession) -> String;
+		fn session_file_path(session: &DocumentSession) -> String;
+		fn session_parser_flags(session: &DocumentSession) -> u32;
+		fn session_get_history(session: &DocumentSession) -> FfiNavigationHistory;
+		fn session_set_history(session: &mut DocumentSession, positions: &[i64], index: usize);
+		fn session_record_position(session: &mut DocumentSession, position: i64);
+		fn session_navigate_section(
+			session: &DocumentSession,
+			position: i64,
+			wrap: bool,
+			next: bool,
+		) -> FfiSessionNavResult;
+		fn session_navigate_heading(
+			session: &DocumentSession,
+			position: i64,
+			wrap: bool,
+			next: bool,
+			level: i32,
+		) -> FfiSessionNavResult;
+		fn session_navigate_page(
+			session: &DocumentSession,
+			position: i64,
+			wrap: bool,
+			next: bool,
+		) -> FfiSessionNavResult;
+		fn session_navigate_link(
+			session: &DocumentSession,
+			position: i64,
+			wrap: bool,
+			next: bool,
+		) -> FfiSessionNavResult;
+		fn session_navigate_list(
+			session: &DocumentSession,
+			position: i64,
+			wrap: bool,
+			next: bool,
+		) -> FfiSessionNavResult;
+		fn session_navigate_list_item(
+			session: &DocumentSession,
+			position: i64,
+			wrap: bool,
+			next: bool,
+		) -> FfiSessionNavResult;
+		fn session_navigate_table(
+			session: &DocumentSession,
+			position: i64,
+			wrap: bool,
+			next: bool,
+		) -> FfiSessionNavResult;
+		fn session_navigate_bookmark(
+			session: &DocumentSession,
+			config: &ConfigManager,
+			position: i64,
+			wrap: bool,
+			next: bool,
+		) -> FfiSessionNavResult;
+		fn session_navigate_note(
+			session: &DocumentSession,
+			config: &ConfigManager,
+			position: i64,
+			wrap: bool,
+			next: bool,
+		) -> FfiSessionNavResult;
+		fn session_history_go_back(session: &mut DocumentSession, current_pos: i64) -> FfiSessionNavResult;
+		fn session_history_go_forward(session: &mut DocumentSession, current_pos: i64) -> FfiSessionNavResult;
+		fn session_activate_link(session: &mut DocumentSession, position: i64) -> FfiLinkActivationResult;
+		fn session_handle(session: &DocumentSession) -> &DocumentHandle;
 	}
 }
 
@@ -916,4 +1011,150 @@ fn history_go_next(
 
 fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> ffi::FfiLinkNavigation {
 	crate::reader_core::resolve_link(doc, href, current_position)
+}
+
+use crate::session::{DocumentSession, LinkAction, NavigationResult};
+
+fn nav_result_to_ffi(result: NavigationResult) -> ffi::FfiSessionNavResult {
+	ffi::FfiSessionNavResult {
+		found: result.found,
+		wrapped: result.wrapped,
+		offset: result.offset,
+		marker_text: result.marker_text,
+		marker_level: result.marker_level,
+		marker_index: result.marker_index,
+		not_supported: result.not_supported,
+	}
+}
+
+fn session_new(file_path: &str, password: &str, forced_extension: &str) -> Result<Box<DocumentSession>, String> {
+	DocumentSession::new(file_path, password, forced_extension).map(Box::new)
+}
+
+fn session_title(session: &DocumentSession) -> String {
+	session.title()
+}
+
+fn session_author(session: &DocumentSession) -> String {
+	session.author()
+}
+
+fn session_content(session: &DocumentSession) -> String {
+	session.content()
+}
+
+fn session_file_path(session: &DocumentSession) -> String {
+	session.file_path().to_string()
+}
+
+fn session_parser_flags(session: &DocumentSession) -> u32 {
+	session.parser_flags().bits()
+}
+
+fn session_get_history(session: &DocumentSession) -> ffi::FfiNavigationHistory {
+	let (positions, index) = session.get_history();
+	ffi::FfiNavigationHistory { positions: positions.to_vec(), index }
+}
+
+fn session_set_history(session: &mut DocumentSession, positions: &[i64], index: usize) {
+	session.set_history(positions, index);
+}
+
+fn session_record_position(session: &mut DocumentSession, position: i64) {
+	session.record_position(position);
+}
+
+fn session_navigate_section(
+	session: &DocumentSession,
+	position: i64,
+	wrap: bool,
+	next: bool,
+) -> ffi::FfiSessionNavResult {
+	nav_result_to_ffi(session.navigate_section(position, wrap, next))
+}
+
+fn session_navigate_heading(
+	session: &DocumentSession,
+	position: i64,
+	wrap: bool,
+	next: bool,
+	level: i32,
+) -> ffi::FfiSessionNavResult {
+	nav_result_to_ffi(session.navigate_heading(position, wrap, next, level))
+}
+
+fn session_navigate_page(session: &DocumentSession, position: i64, wrap: bool, next: bool) -> ffi::FfiSessionNavResult {
+	nav_result_to_ffi(session.navigate_page(position, wrap, next))
+}
+
+fn session_navigate_link(session: &DocumentSession, position: i64, wrap: bool, next: bool) -> ffi::FfiSessionNavResult {
+	nav_result_to_ffi(session.navigate_link(position, wrap, next))
+}
+
+fn session_navigate_list(session: &DocumentSession, position: i64, wrap: bool, next: bool) -> ffi::FfiSessionNavResult {
+	nav_result_to_ffi(session.navigate_list(position, wrap, next))
+}
+
+fn session_navigate_list_item(
+	session: &DocumentSession,
+	position: i64,
+	wrap: bool,
+	next: bool,
+) -> ffi::FfiSessionNavResult {
+	nav_result_to_ffi(session.navigate_list_item(position, wrap, next))
+}
+
+fn session_navigate_table(
+	session: &DocumentSession,
+	position: i64,
+	wrap: bool,
+	next: bool,
+) -> ffi::FfiSessionNavResult {
+	nav_result_to_ffi(session.navigate_table(position, wrap, next))
+}
+
+fn session_navigate_bookmark(
+	session: &DocumentSession,
+	config: &ConfigManager,
+	position: i64,
+	wrap: bool,
+	next: bool,
+) -> ffi::FfiSessionNavResult {
+	nav_result_to_ffi(session.navigate_bookmark(config, position, wrap, next))
+}
+
+fn session_navigate_note(
+	session: &DocumentSession,
+	config: &ConfigManager,
+	position: i64,
+	wrap: bool,
+	next: bool,
+) -> ffi::FfiSessionNavResult {
+	nav_result_to_ffi(session.navigate_note(config, position, wrap, next))
+}
+
+fn session_history_go_back(session: &mut DocumentSession, current_pos: i64) -> ffi::FfiSessionNavResult {
+	nav_result_to_ffi(session.history_go_back(current_pos))
+}
+
+fn session_history_go_forward(session: &mut DocumentSession, current_pos: i64) -> ffi::FfiSessionNavResult {
+	nav_result_to_ffi(session.history_go_forward(current_pos))
+}
+
+fn session_activate_link(session: &mut DocumentSession, position: i64) -> ffi::FfiLinkActivationResult {
+	let result = session.activate_link(position);
+	ffi::FfiLinkActivationResult {
+		found: result.found,
+		action: match result.action {
+			LinkAction::Internal => ffi::FfiLinkAction::Internal,
+			LinkAction::External => ffi::FfiLinkAction::External,
+			LinkAction::NotFound => ffi::FfiLinkAction::NotFound,
+		},
+		offset: result.offset,
+		url: result.url,
+	}
+}
+
+fn session_handle(session: &DocumentSession) -> &DocumentHandle {
+	session.handle()
 }
