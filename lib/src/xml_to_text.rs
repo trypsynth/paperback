@@ -188,7 +188,6 @@ impl XmlToText {
 		let table_xml = node.document().input_text()[node.range()].to_string();
 		let start_lines_count = self.lines.len();
 		let start_offset = self.get_current_text_position();
-
 		let mut table_caption = String::new();
 		for child in node.children() {
 			if child.is_element() && child.tag_name().name() == "caption" {
@@ -196,7 +195,6 @@ impl XmlToText {
 				break;
 			}
 		}
-
 		if table_caption.is_empty() {
 			for child in node.children() {
 				if child.is_element() {
@@ -218,7 +216,6 @@ impl XmlToText {
 				}
 			}
 		}
-
 		for child in node.children() {
 			self.process_node(child);
 		}
@@ -235,11 +232,9 @@ impl XmlToText {
 			self.current_line.push_str(&table_text);
 			self.finalize_current_line();
 		}
-
 		if table_caption.trim().is_empty() {
 			table_caption = "table".to_string();
 		}
-
 		self.tables.push(TableInfo {
 			offset: start_offset,
 			text: table_caption,

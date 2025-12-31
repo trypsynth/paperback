@@ -109,10 +109,8 @@ fn traverse_children(node: Node, buffer: &mut DocumentBuffer, id_positions: &mut
 fn process_table(node: Node, buffer: &mut DocumentBuffer, id_positions: &mut HashMap<String, usize>) {
 	let table_start = buffer.current_position();
 	let mut html_content = String::from("<table border=\"1\">");
-
 	let mut table_caption = String::new();
 	let mut found_first_row = false;
-
 	for child in node.children() {
 		if child.is_element() && child.tag_name().name() == "table-row" {
 			if !found_first_row {
@@ -125,7 +123,6 @@ fn process_table(node: Node, buffer: &mut DocumentBuffer, id_positions: &mut Has
 				}
 				found_first_row = true;
 			}
-
 			html_content.push_str("<tr>");
 			for cell in child.children() {
 				if cell.is_element() && cell.tag_name().name() == "table-cell" {
