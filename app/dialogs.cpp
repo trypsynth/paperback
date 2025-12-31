@@ -58,6 +58,7 @@ marker to_marker(const FfiMarker& ffi_marker) {
 		to_wxstring(ffi_marker.text),
 		to_wxstring(ffi_marker.reference),
 		ffi_marker.level,
+		ffi_marker.length,
 	};
 }
 

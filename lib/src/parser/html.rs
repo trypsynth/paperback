@@ -72,7 +72,8 @@ impl Parser for HtmlParser {
 			buffer.add_marker(
 				Marker::new(MarkerType::Table, table.offset)
 					.with_text(table.text.clone())
-					.with_reference(table.html_content.clone()),
+					.with_reference(table.html_content.clone())
+					.with_length(table.length),
 			);
 		}
 		let toc_items = build_toc_from_headings(converter.get_headings());

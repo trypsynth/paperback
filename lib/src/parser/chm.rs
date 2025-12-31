@@ -97,7 +97,8 @@ impl Parser for ChmParser {
 				buffer.add_marker(
 					Marker::new(MarkerType::Table, section_start + table.offset)
 						.with_text(table.text.clone())
-						.with_reference(table.html_content.clone()),
+						.with_reference(table.html_content.clone())
+						.with_length(table.length),
 				);
 			}
 			if !buffer.content.ends_with('\n') {

@@ -54,6 +54,7 @@ pub struct TableInfo {
 	pub offset: usize,
 	pub text: String,
 	pub html_content: String,
+	pub length: usize,
 }
 
 #[derive(Debug, Clone)]
@@ -234,6 +235,41 @@ impl HtmlToText {
 		let table_html = Self::serialize_node(node, document);
 		let start_lines_count = self.lines.len();
 		let start_offset = self.get_current_text_position();
+
+		let mut table_caption = String::new();
+		for child in node.children() {
+			if let Node::Element(element) = child.value() {
+				if element.name() == "caption" {
+					table_caption = Self::collect_text(child).trim().to_string();
+					break;
+				}
+			}
+		}
+
+		if table_caption.is_empty() {
+			for child in node.children() {
+				if let Node::Element(element) = child.value() {
+					let name = element.name();
+					if name == "tr" {
+						table_caption = Self::collect_text(child).trim().to_string();
+						break;
+					} else if matches!(name, "thead" | "tbody" | "tfoot") {
+						for subchild in child.children() {
+							if let Node::Element(subelem) = subchild.value() {
+								if subelem.name() == "tr" {
+									table_caption = Self::collect_text(subchild).trim().to_string();
+									break;
+								}
+							}
+						}
+						if !table_caption.is_empty() {
+							break;
+						}
+					}
+				}
+			}
+		}
+
 		for child in node.children() {
 			self.process_node(child, document);
 		}
@@ -250,7 +286,17 @@ impl HtmlToText {
 			self.current_line.push_str(&table_text);
 			self.finalize_current_line();
 		}
-		self.tables.push(TableInfo { offset: start_offset, text: table_text, html_content: table_html });
+
+		if table_caption.trim().is_empty() {
+			table_caption = "table".to_string();
+		}
+
+		self.tables.push(TableInfo {
+			offset: start_offset,
+			text: table_caption,
+			html_content: table_html,
+			length: table_text.len(),
+		});
 	}
 
 	fn handle_element_opening(&mut self, tag_name: &str, node: NodeRef<'_, Node>, document: &Html) {

@@ -85,6 +85,7 @@ marker to_marker(const FfiMarker& ffi_marker) {
 		to_wxstring(ffi_marker.text),
 		to_wxstring(ffi_marker.reference),
 		ffi_marker.level,
+		ffi_marker.length,
 	};
 }
 
@@ -1380,7 +1381,7 @@ void document_manager::activate_current_table() {
 	if (table_index == -1) return;
 	const auto table_marker = doc_get_marker(*doc, table_index);
 	if (!table_marker.has_value()) return;
-	if (static_cast<size_t>(current_pos) < table_marker->pos || static_cast<size_t>(current_pos) > (table_marker->pos + table_marker->text.length())) return;
+	if (static_cast<size_t>(current_pos) < table_marker->pos || static_cast<size_t>(current_pos) > (table_marker->pos + table_marker->length)) return;
 	table_dialog dlg(&main_win, _("Table"), table_marker->ref);
 	dlg.ShowModal();
 }

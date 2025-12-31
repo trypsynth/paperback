@@ -124,7 +124,8 @@ impl Parser for EpubParser {
 						buffer.add_marker(
 							Marker::new(MarkerType::Table, section_start + table.offset)
 								.with_text(table.text)
-								.with_reference(table.html_content),
+								.with_reference(table.html_content)
+								.with_length(table.length),
 						);
 					}
 					for list in section.lists {

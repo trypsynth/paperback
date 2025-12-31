@@ -24,6 +24,7 @@ struct marker {
 	wxString text;
 	wxString ref;
 	int level;
+	size_t length{0};
 };
 
 struct toc_item {
