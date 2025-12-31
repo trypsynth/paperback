@@ -58,6 +58,13 @@ impl Parser for Fb2Parser {
 		for offset in converter.get_section_offsets() {
 			buffer.add_marker(Marker::new(MarkerType::SectionBreak, *offset));
 		}
+		for table in converter.get_tables() {
+			buffer.add_marker(
+				Marker::new(MarkerType::Table, table.offset)
+					.with_text(table.text.clone())
+					.with_reference(table.html_content.clone()),
+			);
+		}
 		for link in converter.get_links() {
 			buffer.add_marker(
 				Marker::new(MarkerType::Link, link.offset)

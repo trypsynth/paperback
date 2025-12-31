@@ -121,10 +121,9 @@ impl Parser for EpubParser {
 						);
 					}
 					for table in section.tables {
-						let text = table.caption.unwrap_or(table.placeholder);
 						buffer.add_marker(
 							Marker::new(MarkerType::Table, section_start + table.offset)
-								.with_text(text)
+								.with_text(table.text)
 								.with_reference(table.html_content),
 						);
 					}

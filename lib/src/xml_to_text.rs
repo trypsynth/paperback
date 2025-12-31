@@ -186,51 +186,25 @@ impl XmlToText {
 	fn handle_table_xml(&mut self, node: Node<'_, '_>) {
 		self.finalize_current_line();
 		let table_xml = node.document().input_text()[node.range()].to_string();
-		let mut placeholder_text = "table: ".to_string();
-		let mut caption = None;
+		let start_lines_count = self.lines.len();
+		let start_offset = self.get_current_text_position();
 		for child in node.children() {
-			if child.is_element() && child.tag_name().name().eq_ignore_ascii_case("caption") {
-				let caption_text = collect_element_text(child);
-				if !caption_text.trim().is_empty() {
-					caption = Some(caption_text.trim().to_string());
-				}
-				break;
-			}
+			self.process_node(child);
 		}
-		if let Some(cap) = &caption {
-			placeholder_text = cap.clone();
-		} else if let Some(tr) = self.find_first_tr(node) {
-			for child in tr.children() {
-				if child.is_element() {
-					let name = child.tag_name().name();
-					if name == "td" || name == "th" {
-						placeholder_text += &collect_element_text(child);
-						placeholder_text += " ";
-					}
-				}
-			}
-		}
-		let placeholder = trim_string(&placeholder_text);
-		self.tables.push(TableInfo {
-			offset: self.get_current_text_position(),
-			placeholder: placeholder.clone(),
-			html_content: table_xml,
-			caption,
-		});
-		self.current_line.push_str(&placeholder);
 		self.finalize_current_line();
-	}
-
-	fn find_first_tr<'a>(&self, node: Node<'a, 'a>) -> Option<Node<'a, 'a>> {
-		if node.is_element() && node.tag_name().name() == "tr" {
-			return Some(node);
-		}
-		for child in node.children() {
-			if let Some(tr) = self.find_first_tr(child) {
-				return Some(tr);
+		let mut table_text = String::new();
+		for (i, line) in self.lines.iter().enumerate().skip(start_lines_count) {
+			if i > start_lines_count {
+				table_text.push('\n');
 			}
+			table_text.push_str(line);
 		}
-		None
+		if table_text.trim().is_empty() {
+			table_text = "table".to_string();
+			self.current_line.push_str(&table_text);
+			self.finalize_current_line();
+		}
+		self.tables.push(TableInfo { offset: start_offset, text: table_text, html_content: table_xml });
 	}
 
 	fn handle_list_item_xml(&mut self, node: Node<'_, '_>) {

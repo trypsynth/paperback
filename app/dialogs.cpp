@@ -1033,7 +1033,9 @@ table_dialog::table_dialog(wxWindow* parent, const wxString& title, const wxStri
 	web_view->AddScriptMessageHandler("wx");
 	Bind(wxEVT_WEBVIEW_LOADED, &table_dialog::on_webview_loaded, this, web_view->GetId());
 	Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, &table_dialog::on_script_message, this, web_view->GetId());
-	web_view->SetPage(html, "");
+	wxString full_html;
+	full_html << "<html><head><title>" << title << "</title></head><body>" << html << "</body></html>";
+	web_view->SetPage(full_html, "");
 	auto* sizer = new wxBoxSizer(wxVERTICAL);
 	sizer->Add(web_view, 1, wxEXPAND | wxALL, 5);
 	auto* button_sizer = CreateStdDialogButtonSizer(wxCLOSE);
