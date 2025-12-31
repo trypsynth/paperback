@@ -234,12 +234,10 @@ impl HtmlToText {
 		let table_html = Self::serialize_node(node, document);
 		let start_lines_count = self.lines.len();
 		let start_offset = self.get_current_text_position();
-
 		for child in node.children() {
 			self.process_node(child, document);
 		}
 		self.finalize_current_line();
-
 		let mut table_text = String::new();
 		for (i, line) in self.lines.iter().enumerate().skip(start_lines_count) {
 			if i > start_lines_count {
@@ -247,13 +245,11 @@ impl HtmlToText {
 			}
 			table_text.push_str(line);
 		}
-
 		if table_text.trim().is_empty() {
 			table_text = "table".to_string();
 			self.current_line.push_str(&table_text);
 			self.finalize_current_line();
 		}
-
 		self.tables.push(TableInfo { offset: start_offset, text: table_text, html_content: table_html });
 	}
 
