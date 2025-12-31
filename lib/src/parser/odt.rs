@@ -109,8 +109,20 @@ fn traverse_children(node: Node, buffer: &mut DocumentBuffer, id_positions: &mut
 fn process_table(node: Node, buffer: &mut DocumentBuffer, id_positions: &mut HashMap<String, usize>) {
 	let table_start = buffer.current_position();
 	let mut html_content = String::from("<table border=\"1\">");
+	let mut table_caption = String::new();
+	let mut found_first_row = false;
 	for child in node.children() {
 		if child.is_element() && child.tag_name().name() == "table-row" {
+			if !found_first_row {
+				for cell in child.children() {
+					if cell.is_element() && cell.tag_name().name() == "table-cell" {
+						let cell_text = collect_element_text(cell);
+						table_caption.push_str(&cell_text);
+						table_caption.push(' ');
+					}
+				}
+				found_first_row = true;
+			}
 			html_content.push_str("<tr>");
 			for cell in child.children() {
 				if cell.is_element() && cell.tag_name().name() == "table-cell" {
@@ -132,7 +144,12 @@ fn process_table(node: Node, buffer: &mut DocumentBuffer, id_positions: &mut Has
 	let table_end = buffer.current_position();
 	let table_text = buffer.content[table_start..table_end].to_string();
 	if !table_text.trim().is_empty() {
-		buffer
-			.add_marker(Marker::new(MarkerType::Table, table_start).with_text(table_text).with_reference(html_content));
+		let marker_text = if !table_caption.trim().is_empty() { table_caption } else { "table".to_string() };
+		buffer.add_marker(
+			Marker::new(MarkerType::Table, table_start)
+				.with_text(marker_text)
+				.with_reference(html_content)
+				.with_length(table_text.len()),
+		);
 	}
 }

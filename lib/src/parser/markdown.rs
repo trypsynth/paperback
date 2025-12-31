@@ -58,7 +58,8 @@ impl Parser for MarkdownParser {
 			buffer.add_marker(
 				Marker::new(MarkerType::Table, table.offset)
 					.with_text(table.text.clone())
-					.with_reference(table.html_content.clone()),
+					.with_reference(table.html_content.clone())
+					.with_length(table.length),
 			);
 		}
 		for list in converter.get_lists() {

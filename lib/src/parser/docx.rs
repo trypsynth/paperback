@@ -81,7 +81,7 @@ fn traverse(
 fn process_table(element: Node, buffer: &mut DocumentBuffer, _rels: &HashMap<String, String>) {
 	let table_start = buffer.current_position();
 	let mut html_content = String::from("<table border=\"1\">");
-	let mut placeholder_text = String::from("table: ");
+	let mut table_caption = String::from("table: ");
 	let mut first_row = true;
 	for child in element.children() {
 		if child.node_type() == NodeType::Element && child.tag_name().name() == "tr" {
@@ -104,8 +104,8 @@ fn process_table(element: Node, buffer: &mut DocumentBuffer, _rels: &HashMap<Str
 					html_content.push_str(trimmed_cell);
 					html_content.push_str("</td>");
 					if first_row {
-						placeholder_text.push_str(trimmed_cell);
-						placeholder_text.push(' ');
+						table_caption.push_str(trimmed_cell);
+						table_caption.push(' ');
 					}
 				}
 			}
@@ -114,11 +114,14 @@ fn process_table(element: Node, buffer: &mut DocumentBuffer, _rels: &HashMap<Str
 		}
 	}
 	html_content.push_str("</table>");
-	let final_placeholder = placeholder_text.trim().to_string();
-	buffer.append(&final_placeholder);
+	let final_caption = table_caption.trim().to_string();
+	buffer.append(&final_caption);
 	buffer.append("\n");
 	buffer.add_marker(
-		Marker::new(MarkerType::Table, table_start).with_text(final_placeholder).with_reference(html_content),
+		Marker::new(MarkerType::Table, table_start)
+			.with_text(final_caption.clone())
+			.with_reference(html_content)
+			.with_length(final_caption.len()),
 	);
 }
 

@@ -58,12 +58,13 @@ pub struct Marker {
 	pub text: String,
 	pub reference: String,
 	pub level: i32,
+	pub length: usize,
 }
 
 impl Marker {
 	#[must_use]
 	pub const fn new(marker_type: MarkerType, position: usize) -> Self {
-		Self { marker_type, position, text: String::new(), reference: String::new(), level: 0 }
+		Self { marker_type, position, text: String::new(), reference: String::new(), level: 0, length: 0 }
 	}
 
 	#[must_use]
@@ -81,6 +82,12 @@ impl Marker {
 	#[must_use]
 	pub const fn with_level(mut self, level: i32) -> Self {
 		self.level = level;
+		self
+	}
+
+	#[must_use]
+	pub const fn with_length(mut self, length: usize) -> Self {
+		self.length = length;
 		self
 	}
 }

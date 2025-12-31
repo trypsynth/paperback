@@ -188,6 +188,34 @@ impl XmlToText {
 		let table_xml = node.document().input_text()[node.range()].to_string();
 		let start_lines_count = self.lines.len();
 		let start_offset = self.get_current_text_position();
+		let mut table_caption = String::new();
+		for child in node.children() {
+			if child.is_element() && child.tag_name().name() == "caption" {
+				table_caption = collect_element_text(child).trim().to_string();
+				break;
+			}
+		}
+		if table_caption.is_empty() {
+			for child in node.children() {
+				if child.is_element() {
+					let name = child.tag_name().name();
+					if name == "tr" {
+						table_caption = collect_element_text(child).trim().to_string();
+						break;
+					} else if matches!(name, "thead" | "tbody" | "tfoot") {
+						for subchild in child.children() {
+							if subchild.is_element() && subchild.tag_name().name() == "tr" {
+								table_caption = collect_element_text(subchild).trim().to_string();
+								break;
+							}
+						}
+						if !table_caption.is_empty() {
+							break;
+						}
+					}
+				}
+			}
+		}
 		for child in node.children() {
 			self.process_node(child);
 		}
@@ -204,7 +232,15 @@ impl XmlToText {
 			self.current_line.push_str(&table_text);
 			self.finalize_current_line();
 		}
-		self.tables.push(TableInfo { offset: start_offset, text: table_text, html_content: table_xml });
+		if table_caption.trim().is_empty() {
+			table_caption = "table".to_string();
+		}
+		self.tables.push(TableInfo {
+			offset: start_offset,
+			text: table_caption,
+			html_content: table_xml,
+			length: table_text.len(),
+		});
 	}
 
 	fn handle_list_item_xml(&mut self, node: Node<'_, '_>) {

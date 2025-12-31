@@ -93,6 +93,7 @@ pub mod ffi {
 		pub text: String,
 		pub reference: String,
 		pub level: i32,
+		pub length: usize,
 	}
 
 	pub struct FfiMarkerResult {
@@ -704,6 +705,7 @@ fn parse_document(file_path: &str, password: &str) -> Result<ffi::FfiDocument, S
 				text: m.text,
 				reference: m.reference,
 				level: m.level,
+				length: m.length,
 			})
 			.collect(),
 		toc_items,
@@ -784,11 +786,12 @@ fn document_marker_to_ffi(marker: &crate::document::Marker) -> ffi::FfiMarker {
 		text: marker.text.clone(),
 		reference: marker.reference.clone(),
 		level: marker.level,
+		length: marker.length,
 	}
 }
 
 const fn empty_ffi_marker() -> ffi::FfiMarker {
-	ffi::FfiMarker { marker_type: -1, position: 0, text: String::new(), reference: String::new(), level: 0 }
+	ffi::FfiMarker { marker_type: -1, position: 0, text: String::new(), reference: String::new(), level: 0, length: 0 }
 }
 
 const fn document_stats_to_ffi(stats: &crate::document::DocumentStats) -> ffi::FfiDocumentStats {
