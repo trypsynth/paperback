@@ -608,7 +608,7 @@ void document_manager::navigate_to_page(bool next) const {
 		return;
 	}
 	if (!result.found) {
-		speak(next ? _("No next page") : _("No previous page"));
+		speak(next ? _("No next page.") : _("No previous page."));
 		return;
 	}
 	const long offset = static_cast<long>(result.offset);
@@ -616,10 +616,12 @@ void document_manager::navigate_to_page(bool next) const {
 	long line{0};
 	text_ctrl->PositionToXY(offset, nullptr, &line);
 	const wxString current_line = text_ctrl->GetLineText(line);
-	if (result.wrapped)
-		speak((next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + current_line);
-	else
-		speak(current_line);
+	const int page_number = result.marker_index + 1;
+	wxString message = wxString::Format(_("Page %d: %s"), page_number, current_line);
+	if (result.wrapped) {
+		message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
+	}
+	speak(message);
 }
 
 void document_manager::go_to_previous_page() const {
@@ -724,18 +726,16 @@ void document_manager::navigate_to_link(bool next) const {
 		return;
 	}
 	if (!result.found) {
-		speak(next ? _("No next link") : _("No previous link"));
+		speak(next ? _("No next link.") : _("No previous link."));
 		return;
 	}
-	const long offset = static_cast<long>(result.offset);
-	text_ctrl->SetInsertionPoint(offset);
-	long line{0};
-	text_ctrl->PositionToXY(offset, nullptr, &line);
-	const wxString current_line = text_ctrl->GetLineText(line);
-	if (result.wrapped)
-		speak((next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + current_line);
-	else
-		speak(current_line);
+	go_to_position(static_cast<long>(result.offset));
+	auto link_text_str = result.marker_text;
+	wxString message = wxString::FromUTF8(link_text_str.c_str()) + _(" link");
+	if (result.wrapped) {
+		message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
+	}
+	speak(message);
 }
 
 void document_manager::go_to_previous_link() const {
@@ -811,18 +811,30 @@ void document_manager::navigate_to_list(bool next) const {
 		return;
 	}
 	if (!result.found) {
-		speak(next ? _("No next list") : _("No previous list"));
+		speak(next ? _("No next list.") : _("No previous list."));
 		return;
 	}
-	const long offset = static_cast<long>(result.offset);
-	text_ctrl->SetInsertionPoint(offset);
-	long line{0};
-	text_ctrl->PositionToXY(offset, nullptr, &line);
-	const wxString current_line = text_ctrl->GetLineText(line);
-	if (result.wrapped)
-		speak((next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + current_line);
-	else
-		speak(current_line);
+	go_to_position(static_cast<long>(result.offset));
+	const int list_size = result.marker_level;
+	wxString message = wxString::Format(_("List with %d items"), list_size);
+	// Try to get the first item text
+	const DocumentHandle& handle = tab->session_doc->get_handle();
+	const int first_item_index = document_find_first_marker_after(handle, result.offset, to_rust_marker(marker_type::ListItem));
+	if (first_item_index != -1) {
+		const auto first_item_info = document_marker_info(handle, first_item_index);
+		if (first_item_info.found) {
+			long line_num{0};
+			text_ctrl->PositionToXY(static_cast<long>(first_item_info.marker.position), nullptr, &line_num);
+			wxString line_text = text_ctrl->GetLineText(line_num).Trim();
+			if (!line_text.IsEmpty()) {
+				message += " " + line_text;
+			}
+		}
+	}
+	if (result.wrapped) {
+		message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
+	}
+	speak(message);
 }
 
 void document_manager::go_to_previous_list() const {
@@ -837,25 +849,34 @@ void document_manager::navigate_to_list_item(bool next) const {
 	const document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
+	const int current_pos = text_ctrl->GetInsertionPoint();
+	const DocumentHandle& handle = tab->session_doc->get_handle();
+	const int current_list_index = document_current_marker(handle, static_cast<size_t>(current_pos), to_rust_marker(marker_type::List));
 	const bool wrap = config.get(config_manager::navigation_wrap);
-	const auto result = session_navigate_list_item(*tab->get_session(), text_ctrl->GetInsertionPoint(), wrap, next);
+	const auto result = session_navigate_list_item(*tab->get_session(), current_pos, wrap, next);
 	if (result.not_supported) {
 		speak(_("No list items."));
 		return;
 	}
 	if (!result.found) {
-		speak(next ? _("No next list item") : _("No previous list item"));
+		speak(next ? _("No next list item.") : _("No previous list item."));
 		return;
 	}
-	const long offset = static_cast<long>(result.offset);
-	text_ctrl->SetInsertionPoint(offset);
-	long line{0};
-	text_ctrl->PositionToXY(offset, nullptr, &line);
-	const wxString current_line = text_ctrl->GetLineText(line);
-	if (result.wrapped)
-		speak((next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + current_line);
-	else
-		speak(current_line);
+	go_to_position(static_cast<long>(result.offset));
+	const int target_list_index = document_current_marker(handle, static_cast<size_t>(result.offset), to_rust_marker(marker_type::List));
+	long line_num{0};
+	text_ctrl->PositionToXY(static_cast<long>(result.offset), nullptr, &line_num);
+	wxString message = text_ctrl->GetLineText(line_num).Trim();
+	if (target_list_index != -1 && target_list_index != current_list_index) {
+		const auto target_list_info = document_marker_info(handle, target_list_index);
+		if (target_list_info.found && target_list_info.marker.level > 0) {
+			message = wxString::Format(_("List with %d items "), target_list_info.marker.level) + message;
+		}
+	}
+	if (result.wrapped) {
+		message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
+	}
+	speak(message);
 }
 
 void document_manager::go_to_previous_list_item() const {
@@ -1197,22 +1218,29 @@ void document_manager::navigate_to_heading(bool next, int specific_level) const 
 	const bool wrap = config.get(config_manager::navigation_wrap);
 	const auto result = session_navigate_heading(*tab->get_session(), text_ctrl->GetInsertionPoint(), wrap, next, specific_level);
 	if (result.not_supported) {
-		speak(_("No headings."));
+		if (specific_level == -1) {
+			speak(_("No headings."));
+		} else {
+			speak(wxString::Format(_("No headings at level %d."), specific_level));
+		}
 		return;
 	}
 	if (!result.found) {
-		speak(next ? _("No next heading") : _("No previous heading"));
+		const wxString msg = (specific_level == -1) ? wxString::Format(_("No %s heading"), next ? _("next") : _("previous")) : wxString::Format(_("No %s heading at level %d"), next ? _("next") : _("previous"), specific_level);
+		speak(msg);
 		return;
 	}
 	const long offset = static_cast<long>(result.offset);
 	text_ctrl->SetInsertionPoint(offset);
-	long line{0};
-	text_ctrl->PositionToXY(offset, nullptr, &line);
-	const wxString current_line = text_ctrl->GetLineText(line);
-	if (result.wrapped)
-		speak((next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + current_line);
-	else
-		speak(current_line);
+	auto marker_text_str = result.marker_text;
+	const wxString heading_text = wxString::FromUTF8(marker_text_str.c_str());
+	wxString message;
+	if (result.wrapped) {
+		message = wxString::Format(_("Wrapping to %s. %s Heading level %d"), next ? _("start") : _("end"), heading_text, result.marker_level);
+	} else {
+		message = wxString::Format(_("%s Heading level %d"), heading_text, result.marker_level);
+	}
+	speak(message);
 }
 
 void document_manager::navigate_to_table(bool next) const {
