@@ -1067,14 +1067,11 @@ void table_dialog::on_script_message(wxWebViewEvent& event) {
 	if (event.GetString() == "close_dialog") EndModal(wxID_CANCEL);
 }
 
-toc_dialog::toc_dialog(wxWindow* parent, const document* doc, int current_offset) : dialog(parent, _("Table of Contents")), selected_offset{-1} {
-	(void)doc;  // Unused - document_data was removed
+toc_dialog::toc_dialog(wxWindow* parent, const std::vector<std::unique_ptr<toc_item>>& toc_items, int current_offset) : dialog(parent, _("Table of Contents")), selected_offset{-1} {
 	search_timer_ = new wxTimer(this);
 	tree = new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTR_HIDE_ROOT);
 	const wxTreeItemId root = tree->AddRoot(_("Root"));
-	// TODO: Update to use DocumentSession for TOC
-	std::vector<std::unique_ptr<toc_item>> empty_toc;
-	populate_tree(empty_toc, root);
+	populate_tree(toc_items, root);
 	if (current_offset != -1) find_and_select_item(root, current_offset);
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	content_sizer->Add(tree, 1, wxEXPAND);

@@ -384,7 +384,7 @@ public:
 
 class toc_dialog : public dialog {
 public:
-	toc_dialog(wxWindow* parent, const document* doc, int current_offset = -1);
+	toc_dialog(wxWindow* parent, const std::vector<std::unique_ptr<toc_item>>& toc_items, int current_offset = -1);
 	~toc_dialog() override = default;
 	toc_dialog(const toc_dialog&) = delete;
 	toc_dialog& operator=(const toc_dialog&) = delete;

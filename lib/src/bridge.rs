@@ -425,6 +425,7 @@ pub mod ffi {
 		fn session_history_go_back(session: &mut DocumentSession, current_pos: i64) -> FfiSessionNavResult;
 		fn session_history_go_forward(session: &mut DocumentSession, current_pos: i64) -> FfiSessionNavResult;
 		fn session_activate_link(session: &mut DocumentSession, position: i64) -> FfiLinkActivationResult;
+		fn session_get_table_at_position(session: &DocumentSession, position: i64) -> String;
 		fn session_handle(session: &DocumentSession) -> &DocumentHandle;
 	}
 }
@@ -1156,6 +1157,10 @@ fn session_activate_link(session: &mut DocumentSession, position: i64) -> ffi::F
 		offset: result.offset,
 		url: result.url,
 	}
+}
+
+fn session_get_table_at_position(session: &DocumentSession, position: i64) -> String {
+	session.get_table_at_position(position).unwrap_or_default()
 }
 
 fn session_handle(session: &DocumentSession) -> &DocumentHandle {

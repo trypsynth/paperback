@@ -257,18 +257,14 @@ void populate_toc_items(std::vector<std::unique_ptr<toc_item>>& toc_items, const
 }
 
 // Legacy function - commented out since document_data was removed
-/*
-void ensure_toc_loaded(document& doc) {
-	if (doc.toc_loaded) {
+void ensure_toc_loaded(session_document& session_doc) {
+	if (session_doc.toc_loaded) {
 		return;
 	}
-	doc.toc_loaded = true;
-	if (!doc.handle.has_value()) {
-		return;
-	}
-	populate_toc_items(doc.toc_items, document_toc_items(**doc.handle));
+	session_doc.toc_loaded = true;
+	const DocumentHandle& handle = session_doc.get_handle();
+	populate_toc_items(session_doc.toc_items, document_toc_items(handle));
 }
-*/
 
 // Legacy function - commented out since document_data was removed
 /*
@@ -602,9 +598,28 @@ void document_manager::go_to_next_heading(int level) const {
 }
 
 void document_manager::navigate_to_page(bool next) const {
-	(void)next;
-	// TODO: Update to use DocumentSession navigation
-	speak(_("Page navigation temporarily unavailable."));
+	const document_tab* tab = get_active_tab();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
+	const bool wrap = config.get(config_manager::navigation_wrap);
+	const auto result = session_navigate_page(*tab->get_session(), text_ctrl->GetInsertionPoint(), wrap, next);
+	if (result.not_supported) {
+		speak(_("No pages."));
+		return;
+	}
+	if (!result.found) {
+		speak(next ? _("No next page") : _("No previous page"));
+		return;
+	}
+	const long offset = static_cast<long>(result.offset);
+	text_ctrl->SetInsertionPoint(offset);
+	long line{0};
+	text_ctrl->PositionToXY(offset, nullptr, &line);
+	const wxString current_line = text_ctrl->GetLineText(line);
+	if (result.wrapped)
+		speak((next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + current_line);
+	else
+		speak(current_line);
 }
 
 void document_manager::go_to_previous_page() const {
@@ -699,9 +714,28 @@ void document_manager::go_to_next_note() const {
 }
 
 void document_manager::navigate_to_link(bool next) const {
-	(void)next;
-	// TODO: Update to use DocumentSession navigation
-	speak(_("Link navigation temporarily unavailable."));
+	const document_tab* tab = get_active_tab();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
+	const bool wrap = config.get(config_manager::navigation_wrap);
+	const auto result = session_navigate_link(*tab->get_session(), text_ctrl->GetInsertionPoint(), wrap, next);
+	if (result.not_supported) {
+		speak(_("No links."));
+		return;
+	}
+	if (!result.found) {
+		speak(next ? _("No next link") : _("No previous link"));
+		return;
+	}
+	const long offset = static_cast<long>(result.offset);
+	text_ctrl->SetInsertionPoint(offset);
+	long line{0};
+	text_ctrl->PositionToXY(offset, nullptr, &line);
+	const wxString current_line = text_ctrl->GetLineText(line);
+	if (result.wrapped)
+		speak((next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + current_line);
+	else
+		speak(current_line);
 }
 
 void document_manager::go_to_previous_link() const {
@@ -767,9 +801,28 @@ void document_manager::activate_current_link() const {
 }
 
 void document_manager::navigate_to_list(bool next) const {
-	(void)next;
-	// TODO: Update to use DocumentSession navigation
-	speak(_("List navigation temporarily unavailable."));
+	const document_tab* tab = get_active_tab();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
+	const bool wrap = config.get(config_manager::navigation_wrap);
+	const auto result = session_navigate_list(*tab->get_session(), text_ctrl->GetInsertionPoint(), wrap, next);
+	if (result.not_supported) {
+		speak(_("No lists."));
+		return;
+	}
+	if (!result.found) {
+		speak(next ? _("No next list") : _("No previous list"));
+		return;
+	}
+	const long offset = static_cast<long>(result.offset);
+	text_ctrl->SetInsertionPoint(offset);
+	long line{0};
+	text_ctrl->PositionToXY(offset, nullptr, &line);
+	const wxString current_line = text_ctrl->GetLineText(line);
+	if (result.wrapped)
+		speak((next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + current_line);
+	else
+		speak(current_line);
 }
 
 void document_manager::go_to_previous_list() const {
@@ -781,9 +834,28 @@ void document_manager::go_to_next_list() const {
 }
 
 void document_manager::navigate_to_list_item(bool next) const {
-	(void)next;
-	// TODO: Update to use DocumentSession navigation
-	speak(_("List item navigation temporarily unavailable."));
+	const document_tab* tab = get_active_tab();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
+	const bool wrap = config.get(config_manager::navigation_wrap);
+	const auto result = session_navigate_list_item(*tab->get_session(), text_ctrl->GetInsertionPoint(), wrap, next);
+	if (result.not_supported) {
+		speak(_("No list items."));
+		return;
+	}
+	if (!result.found) {
+		speak(next ? _("No next list item") : _("No previous list item"));
+		return;
+	}
+	const long offset = static_cast<long>(result.offset);
+	text_ctrl->SetInsertionPoint(offset);
+	long line{0};
+	text_ctrl->PositionToXY(offset, nullptr, &line);
+	const wxString current_line = text_ctrl->GetLineText(line);
+	if (result.wrapped)
+		speak((next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + current_line);
+	else
+		speak(current_line);
 }
 
 void document_manager::go_to_previous_list_item() const {
@@ -916,9 +988,32 @@ void document_manager::show_bookmark_dialog(wxWindow* parent, bookmark_filter in
 }
 
 void document_manager::show_table_of_contents(wxWindow* parent) {
-	(void)parent;
-	// TODO: Update to use DocumentSession for TOC
-	speak(_("Table of contents temporarily unavailable."));
+	document_tab* tab = get_active_tab();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	const parser_info* parser = get_active_parser();
+	if (tab == nullptr || text_ctrl == nullptr || parser == nullptr || tab->session_doc == nullptr) {
+		return;
+	}
+	if (!parser_supports(parser->flags, parser_flags::supports_toc)) {
+		speak(_("No table of contents."));
+		return;
+	}
+	ensure_toc_loaded(*tab->session_doc);
+	if (tab->session_doc->toc_items.empty()) {
+		speak(_("Table of contents is empty."));
+		return;
+	}
+	const int current_pos = text_ctrl->GetInsertionPoint();
+	const int closest_toc_offset = static_cast<int>(document_find_closest_toc_offset(tab->session_doc->get_handle(), static_cast<size_t>(current_pos)));
+	toc_dialog dlg(parent, tab->session_doc->toc_items, closest_toc_offset);
+	if (dlg.ShowModal() != wxID_OK) {
+		return;
+	}
+	const int offset = dlg.get_selected_offset();
+	if (offset >= 0) {
+		go_to_position(offset);
+		text_ctrl->SetFocus();
+	}
 }
 
 void document_manager::show_document_info(wxWindow* parent) {
@@ -1096,16 +1191,52 @@ wxPanel* document_manager::create_tab_panel(const wxString& content, document_ta
 }
 
 void document_manager::navigate_to_heading(bool next, int specific_level) const {
-	(void)next;
-	(void)specific_level;
-	// TODO: Update to use DocumentSession navigation
-	speak(_("Heading navigation temporarily unavailable."));
+	const document_tab* tab = get_active_tab();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
+	const bool wrap = config.get(config_manager::navigation_wrap);
+	const auto result = session_navigate_heading(*tab->get_session(), text_ctrl->GetInsertionPoint(), wrap, next, specific_level);
+	if (result.not_supported) {
+		speak(_("No headings."));
+		return;
+	}
+	if (!result.found) {
+		speak(next ? _("No next heading") : _("No previous heading"));
+		return;
+	}
+	const long offset = static_cast<long>(result.offset);
+	text_ctrl->SetInsertionPoint(offset);
+	long line{0};
+	text_ctrl->PositionToXY(offset, nullptr, &line);
+	const wxString current_line = text_ctrl->GetLineText(line);
+	if (result.wrapped)
+		speak((next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + current_line);
+	else
+		speak(current_line);
 }
 
 void document_manager::navigate_to_table(bool next) const {
-	(void)next;
-	// TODO: Update to use DocumentSession navigation
-	speak(_("Table navigation temporarily unavailable."));
+	const document_tab* tab = get_active_tab();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
+	const bool wrap = config.get(config_manager::navigation_wrap);
+	const auto result = session_navigate_table(*tab->get_session(), text_ctrl->GetInsertionPoint(), wrap, next);
+	if (result.not_supported) {
+		speak(_("No tables."));
+		return;
+	}
+	if (!result.found) {
+		speak(next ? _("No next table") : _("No previous table"));
+		return;
+	}
+	const long offset = static_cast<long>(result.offset);
+	text_ctrl->SetInsertionPoint(offset);
+	auto marker_text_str = result.marker_text;
+	const wxString marker_text = wxString::FromUTF8(marker_text_str.c_str());
+	if (result.wrapped)
+		speak((next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + marker_text);
+	else
+		speak(marker_text);
 }
 
 void document_manager::go_to_previous_table() {
@@ -1117,6 +1248,13 @@ void document_manager::go_to_next_table() {
 }
 
 void document_manager::activate_current_table() {
-	// TODO: Update to use DocumentSession
-	speak(_("Table activation temporarily unavailable."));
+	const document_tab* tab = get_active_tab();
+	wxTextCtrl* text_ctrl = get_active_text_ctrl();
+	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
+	const long current_pos = text_ctrl->GetInsertionPoint();
+	auto table_html = session_get_table_at_position(*tab->get_session(), current_pos);
+	if (table_html.empty()) return;
+	const wxString table_html_wx = wxString::FromUTF8(table_html.c_str());
+	table_dialog dlg(&main_win, _("Table"), table_html_wx);
+	dlg.ShowModal();
 }
