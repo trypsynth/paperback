@@ -382,7 +382,6 @@ impl DocumentSession {
 				Some(m) => m,
 				None => return LinkActivationResult::not_found(),
 			};
-			// Check if cursor is within the link text.
 			let link_end = marker.position + marker.text.chars().count();
 			if pos_usize < marker.position || pos_usize > link_end {
 				return LinkActivationResult::not_found();

@@ -38,6 +38,8 @@ wxString to_wxstring(const rust::String& rust_str) {
 	return wxString::FromUTF8(utf8.c_str());
 }
 
+// Legacy helper functions - no longer used since document_data was removed
+/*
 void populate_id_positions(document& doc, const rust::Vec<FfiIdPosition>& ffi_positions) {
 	doc.id_positions.clear();
 	for (const auto& entry : ffi_positions) {
@@ -58,6 +60,7 @@ void populate_manifest_items(document& doc, const rust::Vec<FfiManifestItem>& ff
 		doc.manifest_items[std::string(entry.id)] = std::string(entry.path);
 	}
 }
+*/
 
 parser_exception make_parser_exception(const std::exception& e, const wxString& path) {
 	const std::string message = e.what();
@@ -143,6 +146,9 @@ wxString get_supported_wildcards() {
 	return result;
 }
 
+// Legacy function - no longer used, documents now created via session_new()
+// Kept commented for reference during migration
+/*
 std::unique_ptr<document> load_document_from_rust(const wxString& path, const std::optional<std::string>& password, const wxString& forced_extension) {
 	try {
 		const std::string file_path = path.ToUTF8().data();
@@ -164,3 +170,4 @@ std::unique_ptr<document> load_document_from_rust(const wxString& path, const st
 		throw make_parser_exception(e, path);
 	}
 }
+*/

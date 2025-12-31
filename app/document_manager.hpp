@@ -26,8 +26,7 @@ class main_window;
 
 struct document_tab : public wxClientData {
 	wxTextCtrl* text_ctrl{nullptr};
-	std::unique_ptr<document> doc;  // Legacy document (deprecated, will be removed)
-	std::unique_ptr<session_document> session_doc;  // New session-based document (v0.7+)
+	std::unique_ptr<session_document> session_doc;
 	wxString file_path;
 	wxPanel* panel{nullptr};
 	const parser_info* parser{nullptr};
@@ -39,25 +38,20 @@ struct document_tab : public wxClientData {
 	document_tab(document_tab&&) = default;
 	document_tab& operator=(document_tab&&) = default;
 
-	// Check if using new session-based document
-	[[nodiscard]] bool has_session() const { return session_doc != nullptr; }
-
-	// Get the document session (returns nullptr if using legacy document)
+	// Get the document session
 	[[nodiscard]] DocumentSession* get_session() const {
 		return session_doc ? &*session_doc->session : nullptr;
 	}
 
-	// Get title (works with both legacy and session documents)
+	// Get title
 	[[nodiscard]] wxString get_title() const {
-		if (session_doc) return session_doc->get_title();
-		return doc ? doc->title : wxString("Untitled");
+		return session_doc ? session_doc->get_title() : wxString("Untitled");
 	}
 
-	// Get content (works with both legacy and session documents)
+	// Get content
 	[[nodiscard]] const wxString& get_content() const {
-		if (session_doc) return session_doc->content;
 		static wxString empty;
-		return doc ? doc->content : empty;
+		return session_doc ? session_doc->content : empty;
 	}
 };
 

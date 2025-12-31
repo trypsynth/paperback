@@ -60,27 +60,7 @@ struct session_document {
 	[[nodiscard]] uint32_t get_parser_flags() const { return session_parser_flags(*session); }
 };
 
-// Legacy document structure (for backward compatibility during migration)
-struct document_data {
-	std::optional<rust::Box<DocumentHandle>> handle;
-	wxString title{"Untitled"};
-	wxString author{"Unknown"};
-	wxString content;
-	std::vector<std::unique_ptr<toc_item>> toc_items;
-	bool toc_loaded{false};
-	std::map<std::string, size_t> id_positions;
-	std::vector<std::string> spine_items;
-	std::map<std::string, std::string> manifest_items;
-	FfiDocumentStats stats;
-	std::vector<long> history;
-	size_t history_index{0};
-
-	document_data() = default;
-	~document_data() = default;
-	document_data(const document_data&) = delete;
-	document_data& operator=(const document_data&) = delete;
-	document_data(document_data&&) = default;
-	document_data& operator=(document_data&&) = default;
-};
-
+// Legacy type - kept for compilation compatibility during migration
+// Will be fully removed once all navigation methods are updated to use DocumentSession
+struct document_data;
 using document = document_data;

@@ -448,12 +448,12 @@ void main_window::on_close_all(wxCommandEvent&) {
 }
 
 void main_window::on_export(wxCommandEvent&) {
-	const auto* doc = doc_manager->get_active_document();
-	if (doc == nullptr) {
+	const auto* tab = doc_manager->get_active_tab();
+	if (tab == nullptr || tab->session_doc == nullptr) {
 		return;
 	}
 	const long flags = wxFD_SAVE | wxFD_OVERWRITE_PROMPT;
-	wxFileDialog save_dialog(this, _("Export Document"), "", doc->title + ".txt", _("Text files (*.txt)|*.txt|All files (*.*)|*.*"), flags);
+	wxFileDialog save_dialog(this, _("Export Document"), "", tab->session_doc->get_title() + ".txt", _("Text files (*.txt)|*.txt|All files (*.*)|*.*"), flags);
 	if (save_dialog.ShowModal() != wxID_OK) {
 		return;
 	}
@@ -791,8 +791,8 @@ void main_window::on_next_list_item(wxCommandEvent&) {
 	trigger_throttled_position_save();
 }
 void main_window::on_word_count(wxCommandEvent&) {
-	const size_t count = doc_manager->get_active_document()->stats.word_count;
-	wxMessageBox(wxString::Format(wxPLURAL("The document contains %d word", "The document contains %d words", count), count), _("Word count"), wxICON_INFORMATION);
+	// TODO: Update to use DocumentSession for word count
+	wxMessageBox(_("Word count temporarily unavailable during migration."), _("Word count"), wxICON_INFORMATION);
 }
 
 void main_window::on_doc_info(wxCommandEvent&) {

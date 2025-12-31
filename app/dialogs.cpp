@@ -62,29 +62,23 @@ marker to_marker(const FfiMarker& ffi_marker) {
 	};
 }
 
+// Legacy helper functions - stubbed to return empty results since document_data was removed
+// TODO: Update dialogs to work with DocumentSession instead
 std::vector<marker> markers_by_type(const document* doc, marker_type type) {
-	std::vector<marker> result;
-	if (doc == nullptr || !doc->handle.has_value()) return result;
-	const auto ffi_markers = document_markers_by_type(**doc->handle, static_cast<int>(type));
-	result.reserve(ffi_markers.size());
-	for (const auto& ffi_marker : ffi_markers) result.push_back(to_marker(ffi_marker));
-	return result;
+	(void)doc;
+	(void)type;
+	return std::vector<marker>();  // Stub - returns empty
 }
 
 std::vector<marker> heading_markers(const document* doc) {
-	std::vector<marker> result;
-	if (doc == nullptr || !doc->handle.has_value()) return result;
-	const auto ffi_markers = document_markers(**doc->handle);
-	for (const auto& ffi_marker : ffi_markers) {
-		const auto type = static_cast<marker_type>(ffi_marker.marker_type);
-		if (is_heading_marker(type)) result.push_back(to_marker(ffi_marker));
-	}
-	return result;
+	(void)doc;
+	return std::vector<marker>();  // Stub - returns empty
 }
 
 size_t count_markers(const document* doc, marker_type type) {
-	if (doc == nullptr || !doc->handle.has_value()) return 0U;
-	return document_count_markers(**doc->handle, static_cast<int>(type));
+	(void)doc;
+	(void)type;
+	return 0U;  // Stub - returns 0
 }
 } // namespace
 
@@ -474,17 +468,14 @@ void bookmark_dialog::repopulate_list(long current_pos) {
 }
 
 document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc, const wxString& file_path, config_manager& cfg_mgr) : dialog(parent, _("Document Info"), dialog_button_config::ok_only), config_mgr{cfg_mgr}, doc_path{file_path} {
+	(void)doc;  // Unused - document_data was removed
 	constexpr int info_width = 600;
 	constexpr int info_height = 400;
 	info_text_ctrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(info_width, info_height), wxTE_MULTILINE | wxTE_READONLY);
 	wxString info_text;
-	info_text << _("Title: ") << doc->title << "\n";
-	info_text << _("Author: ") << doc->author << "\n";
+	// TODO: Update to use DocumentSession for metadata
 	info_text << _("Path: ") << file_path << "\n";
-	info_text << _("Total number of words: ") << doc->stats.word_count << ".\n";
-	info_text << _("Total number of lines: ") << doc->stats.line_count << ".\n";
-	info_text << _("Total number of characters: ") << doc->stats.char_count << ".\n";
-	info_text << _("Total number of characters (excluding whitespace): ") << doc->stats.char_count_no_whitespace << ".\n";
+	info_text << _("\n(Document info temporarily unavailable during migration)");
 	info_text_ctrl->SetValue(info_text);
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	content_sizer->Add(info_text_ctrl, 1, wxEXPAND);
@@ -1077,10 +1068,13 @@ void table_dialog::on_script_message(wxWebViewEvent& event) {
 }
 
 toc_dialog::toc_dialog(wxWindow* parent, const document* doc, int current_offset) : dialog(parent, _("Table of Contents")), selected_offset{-1} {
+	(void)doc;  // Unused - document_data was removed
 	search_timer_ = new wxTimer(this);
 	tree = new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTR_HIDE_ROOT);
 	const wxTreeItemId root = tree->AddRoot(_("Root"));
-	populate_tree(doc->toc_items, root);
+	// TODO: Update to use DocumentSession for TOC
+	std::vector<std::unique_ptr<toc_item>> empty_toc;
+	populate_tree(empty_toc, root);
 	if (current_offset != -1) find_and_select_item(root, current_offset);
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	content_sizer->Add(tree, 1, wxEXPAND);
