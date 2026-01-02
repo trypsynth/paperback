@@ -61,25 +61,6 @@ marker to_marker(const FfiMarker& ffi_marker) {
 		ffi_marker.length,
 	};
 }
-
-// Legacy helper functions - stubbed to return empty results since document_data was removed
-// TODO: Update dialogs to work with DocumentSession instead
-std::vector<marker> markers_by_type(const document* doc, marker_type type) {
-	(void)doc;
-	(void)type;
-	return std::vector<marker>();  // Stub - returns empty
-}
-
-std::vector<marker> heading_markers(const document* doc) {
-	(void)doc;
-	return std::vector<marker>();  // Stub - returns empty
-}
-
-size_t count_markers(const document* doc, marker_type type) {
-	(void)doc;
-	(void)type;
-	return 0U;  // Stub - returns 0
-}
 } // namespace
 
 dialog::dialog(wxWindow* parent, const wxString& title, dialog_button_config buttons) : wxDialog(parent, wxID_ANY, title), main_sizer{new wxBoxSizer(wxVERTICAL)}, button_config{buttons} {
@@ -483,7 +464,7 @@ document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc
 	finalize_layout();
 }
 
-elements_dialog::elements_dialog(wxWindow* parent, const document* doc, long current_pos) : dialog(parent, _("Elements")), doc(doc), current_pos(current_pos) {
+elements_dialog::elements_dialog(wxWindow* parent, session_document* session_doc, long current_pos) : dialog(parent, _("Elements")), session_doc_(session_doc), current_pos(current_pos) {
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	auto* choice_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* choice_label = new wxStaticText(this, wxID_ANY, _("&View:"));
@@ -518,11 +499,12 @@ elements_dialog::elements_dialog(wxWindow* parent, const document* doc, long cur
 }
 
 void elements_dialog::populate_links() {
-	const auto link_markers = markers_by_type(doc, marker_type::Link);
+	if (session_doc_ == nullptr) return;
+	const auto link_markers = document_markers_by_type(session_doc_->get_handle(), static_cast<int>(marker_type::Link));
 	int closest_index = -1;
-	for (const auto& link_marker : link_markers) {
-		links_list->Append(link_marker.text);
-		links_list->SetClientData(links_list->GetCount() - 1, reinterpret_cast<void*>(link_marker.pos));
+	for (const auto& ffi_marker : link_markers) {
+		links_list->Append(to_wxstring(ffi_marker.text));
+		links_list->SetClientData(links_list->GetCount() - 1, reinterpret_cast<void*>(ffi_marker.position));
 	}
 	if (links_list->IsEmpty()) return;
 	for (int i = links_list->GetCount() - 1; i >= 0; i--) {
@@ -539,9 +521,22 @@ void elements_dialog::populate_links() {
 }
 
 void elements_dialog::populate_headings() {
+	if (session_doc_ == nullptr) return;
 	const wxTreeItemId root = headings_tree->AddRoot(_("Root"));
 	std::vector<wxTreeItemId> parent_ids(7, root);
-	const auto heading_marker_list = heading_markers(doc);
+	// Collect all heading markers (levels 1-6)
+	std::vector<marker> heading_marker_list;
+	for (int level = 1; level <= 6; ++level) {
+		const int marker_type_value = static_cast<int>(marker_type::Heading1) + (level - 1);
+		const auto ffi_markers = document_markers_by_type(session_doc_->get_handle(), marker_type_value);
+		for (const auto& ffi_marker : ffi_markers) {
+			heading_marker_list.push_back(to_marker(ffi_marker));
+		}
+	}
+	// Sort by position
+	std::sort(heading_marker_list.begin(), heading_marker_list.end(), [](const marker& a, const marker& b) {
+		return a.pos < b.pos;
+	});
 	wxTreeItemId closest_item;
 	for (const auto& heading_marker : heading_marker_list) {
 		const int level = heading_marker.level;
@@ -739,7 +734,7 @@ long go_to_line_dialog::get_position() const {
 	return textbox->GetInsertionPoint();
 }
 
-go_to_page_dialog::go_to_page_dialog(wxWindow* parent, document* doc, const parser_info* parser, int current_page) : dialog(parent, _("Go to page")), doc_{doc}, parser_{parser} {
+go_to_page_dialog::go_to_page_dialog(wxWindow* parent, session_document* session_doc, int current_page) : dialog(parent, _("Go to page")), session_doc_{session_doc} {
 	constexpr int label_spacing = 5;
 	auto* page_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* label = new wxStaticText(this, wxID_ANY, wxString::Format(_("Go to page (1/%d):"), get_max_page()));
@@ -757,9 +752,8 @@ int go_to_page_dialog::get_page_number() const {
 }
 
 int go_to_page_dialog::get_max_page() const {
-	if (doc_ == nullptr || parser_ == nullptr) return 1;
-	if (!parser_supports(parser_->flags, parser_flags::supports_pages)) return 1;
-	return static_cast<int>(count_markers(doc_, marker_type::PageBreak));
+	if (session_doc_ == nullptr) return 1;
+	return static_cast<int>(document_count_markers(session_doc_->get_handle(), static_cast<int>(marker_type::PageBreak)));
 }
 
 go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : dialog(parent, _("Go to Percent")), textbox{text_ctrl} {
@@ -1067,14 +1061,14 @@ void table_dialog::on_script_message(wxWebViewEvent& event) {
 	if (event.GetString() == "close_dialog") EndModal(wxID_CANCEL);
 }
 
-toc_dialog::toc_dialog(wxWindow* parent, const document* doc, int current_offset) : dialog(parent, _("Table of Contents")), selected_offset{-1} {
-	(void)doc;  // Unused - document_data was removed
+toc_dialog::toc_dialog(wxWindow* parent, session_document* session_doc, int current_offset) : dialog(parent, _("Table of Contents")), selected_offset{-1} {
 	search_timer_ = new wxTimer(this);
 	tree = new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTR_HIDE_ROOT);
 	const wxTreeItemId root = tree->AddRoot(_("Root"));
-	// TODO: Update to use DocumentSession for TOC
-	std::vector<std::unique_ptr<toc_item>> empty_toc;
-	populate_tree(empty_toc, root);
+	if (session_doc != nullptr) {
+		session_doc->ensure_toc_loaded();
+		populate_tree(session_doc->toc_items, root);
+	}
 	if (current_offset != -1) find_and_select_item(root, current_offset);
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	content_sizer->Add(tree, 1, wxEXPAND);
