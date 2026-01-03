@@ -38,30 +38,6 @@ wxString to_wxstring(const rust::String& rust_str) {
 	return wxString::FromUTF8(utf8.c_str());
 }
 
-// Legacy helper functions - no longer used since document_data was removed
-/*
-void populate_id_positions(document& doc, const rust::Vec<FfiIdPosition>& ffi_positions) {
-	doc.id_positions.clear();
-	for (const auto& entry : ffi_positions) {
-		doc.id_positions[std::string(entry.id)] = entry.offset;
-	}
-}
-
-void populate_spine_items(document& doc, const rust::Vec<rust::String>& ffi_spine_items) {
-	doc.spine_items.clear();
-	for (const auto& item : ffi_spine_items) {
-		doc.spine_items.emplace_back(std::string(item));
-	}
-}
-
-void populate_manifest_items(document& doc, const rust::Vec<FfiManifestItem>& ffi_manifest) {
-	doc.manifest_items.clear();
-	for (const auto& entry : ffi_manifest) {
-		doc.manifest_items[std::string(entry.id)] = std::string(entry.path);
-	}
-}
-*/
-
 parser_exception make_parser_exception(const std::exception& e, const wxString& path) {
 	const std::string message = e.what();
 	if (message.rfind(PASSWORD_REQUIRED_PREFIX, 0) == 0) {

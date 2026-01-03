@@ -103,125 +103,6 @@ bool is_heading_marker(marker_type type) {
 	}
 }
 
-// Legacy function - commented out since document_data was removed
-/*
-std::optional<NavResult> perform_navigation(const document& doc, long position, NavTarget target, NavDirection direction, bool wrap, int level_filter = 0) {
-	NavRequest request{};
-	request.position = position;
-	request.wrap = wrap;
-	request.direction = direction;
-	request.target = target;
-	request.level_filter = level_filter;
-	const NavResult result = reader_navigate(**doc.handle, request);
-	if (!result.found) return std::nullopt;
-	return result;
-}
-*/
-
-// Legacy function - commented out since document_data was removed
-/*
-int doc_section_index(const document& doc, size_t position) {
-	return document_current_marker(**doc.handle, position, to_rust_marker(marker_type::SectionBreak));
-}
-*/
-
-// Legacy function - commented out since document_data was removed
-/*
-int doc_page_index(const document& doc, size_t position) {
-	return document_current_marker(**doc.handle, position, to_rust_marker(marker_type::PageBreak));
-}
-*/
-
-// Legacy function - commented out since document_data was removed
-/*
-size_t doc_find_closest_toc_offset(const document& doc, size_t position) {
-	return document_find_closest_toc_offset(**doc.handle, position);
-}
-*/
-
-// Legacy function - commented out since document_data was removed
-/*
-bool doc_has_heading_markers(const document& doc, int level = -1) {
-	if (!doc.handle.has_value()) return false;
-	const auto& handle = **doc.handle;
-	const auto has_marker = [&](marker_type type) {
-		return document_count_markers(handle, to_rust_marker(type)) > 0;
-	};
-	if (level >= 1 && level <= 6) {
-		marker_type heading_type = marker_type::Heading1;
-		switch (level) {
-			case 1: heading_type = marker_type::Heading1; break;
-			case 2: heading_type = marker_type::Heading2; break;
-			case 3: heading_type = marker_type::Heading3; break;
-			case 4: heading_type = marker_type::Heading4; break;
-			case 5: heading_type = marker_type::Heading5; break;
-			case 6: heading_type = marker_type::Heading6; break;
-			default: break;
-		}
-		return has_marker(heading_type);
-	}
-	return has_marker(marker_type::Heading1) || has_marker(marker_type::Heading2) || has_marker(marker_type::Heading3) || has_marker(marker_type::Heading4) || has_marker(marker_type::Heading5) || has_marker(marker_type::Heading6);
-}
-*/
-
-// Legacy function - commented out since document_data was removed
-/*
-int doc_next_marker_index(const document& doc, long position, marker_type type) {
-	return document_next_marker(**doc.handle, position, to_rust_marker(type));
-}
-*/
-
-// Legacy function - commented out since document_data was removed
-/*
-int doc_previous_marker_index(const document& doc, long position, marker_type type) {
-	return document_previous_marker(**doc.handle, position, to_rust_marker(type));
-}
-*/
-
-// Legacy function - commented out since document_data was removed
-/*
-int doc_current_marker_index(const document& doc, size_t position, marker_type type) {
-	return document_current_marker(**doc.handle, position, to_rust_marker(type));
-}
-*/
-
-// Legacy function - commented out since document_data was removed
-/*
-int doc_find_first_marker_after(const document& doc, long position, marker_type type) {
-	return document_find_first_marker_after(**doc.handle, position, to_rust_marker(type));
-}
-*/
-
-// Legacy function - commented out since document_data was removed
-/*
-std::optional<std::string> current_section_path(const document& doc, size_t position) {
-	const int section_index = doc_section_index(doc, position);
-	if (section_index < 0) return std::nullopt;
-	const auto idx = static_cast<size_t>(section_index);
-	if (idx >= doc.spine_items.size()) return std::nullopt;
-	const auto& manifest_id = doc.spine_items[idx];
-	auto it = doc.manifest_items.find(manifest_id);
-	if (it == doc.manifest_items.end()) {
-		return std::nullopt;
-	}
-	return it->second;
-}
-*/
-
-// Legacy function - commented out since document_data was removed
-/*
-std::optional<marker> doc_get_marker(const document& doc, int marker_index) {
-	if (!doc.handle.has_value()) {
-		return std::nullopt;
-	}
-	const auto result = document_marker_info(**doc.handle, marker_index);
-	if (!result.found) {
-		return std::nullopt;
-	}
-	return to_marker(result.marker);
-}
-*/
-
 void populate_toc_items(std::vector<std::unique_ptr<toc_item>>& toc_items, const rust::Vec<FfiTocItem>& ffi_toc_items) {
 	if (ffi_toc_items.empty()) {
 		return;
@@ -256,7 +137,6 @@ void populate_toc_items(std::vector<std::unique_ptr<toc_item>>& toc_items, const
 	}
 }
 
-// Legacy function - commented out since document_data was removed
 void ensure_toc_loaded(session_document& session_doc) {
 	if (session_doc.toc_loaded) {
 		return;
@@ -265,33 +145,6 @@ void ensure_toc_loaded(session_document& session_doc) {
 	const DocumentHandle& handle = session_doc.get_handle();
 	populate_toc_items(session_doc.toc_items, document_toc_items(handle));
 }
-
-// Legacy function - commented out since document_data was removed
-/*
-size_t doc_marker_position(const document& doc, int marker_index) {
-	return document_marker_position(**doc.handle, marker_index);
-}
-*/
-
-// Legacy function - commented out since document_data was removed
-/*
-size_t doc_count_markers_by_type(const document& doc, marker_type type) {
-	if (!doc.handle.has_value()) {
-		return 0;
-	}
-	return document_count_markers(**doc.handle, to_rust_marker(type));
-}
-*/
-
-// Legacy function - commented out since document_data was removed
-/*
-size_t doc_get_marker_position_by_index(const document& doc, marker_type type, int index) {
-	if (!doc.handle.has_value()) {
-		return 0;
-	}
-	return document_marker_position_by_index(**doc.handle, to_rust_marker(type), index);
-}
-*/
 } // namespace
 
 void session_document::ensure_toc_loaded() {
@@ -307,7 +160,6 @@ document_manager::document_manager(wxNotebook* nbk, config_manager& cfg, main_wi
 
 document_manager::~document_manager() {
 	save_all_tab_positions();
-	save_all_tab_navigation_histories();
 }
 
 void document_manager::show_parser_error(const parser_exception& e) {
@@ -500,12 +352,6 @@ document_tab* document_manager::get_tab(int index) const {
 document_tab* document_manager::get_active_tab() const {
 	const int selection = notebook->GetSelection();
 	return selection >= 0 ? get_tab(selection) : nullptr;
-}
-
-document* document_manager::get_active_document() const {
-	// Legacy method - always returns nullptr now that document_data has been removed
-	// Navigation methods that use this need to be updated to use DocumentSession instead
-	return nullptr;
 }
 
 wxTextCtrl* document_manager::get_active_text_ctrl() const {
@@ -1074,12 +920,6 @@ void document_manager::save_all_tab_positions() const {
 			save_document_position(tab->file_path, position);
 		}
 	}
-}
-
-void document_manager::save_all_tab_navigation_histories() const {
-	// TODO: Update to use DocumentSession for navigation history
-	// Navigation history is now managed by DocumentSession in Rust
-	// and saved automatically via close_document()
 }
 
 wxString document_manager::get_status_text() const {
