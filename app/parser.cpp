@@ -10,6 +10,7 @@
 #include "parser.hpp"
 #include "document_data.hpp"
 #include "libpaperback/src/bridge.rs.h"
+#include "utils.hpp"
 #include <algorithm>
 #include <memory>
 #include <optional>
@@ -31,11 +32,6 @@ constexpr std::string_view PASSWORD_REQUIRED_PREFIX = "[password_required]";
 parser_list& get_parser_infos() {
 	static parser_list parsers;
 	return parsers;
-}
-
-wxString to_wxstring(const rust::String& rust_str) {
-	const std::string utf8 = std::string(rust_str);
-	return wxString::FromUTF8(utf8.c_str());
 }
 
 parser_exception make_parser_exception(const std::exception& e, const wxString& path) {

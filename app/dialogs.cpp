@@ -14,6 +14,7 @@
 #include "document_data.hpp"
 #include "parser.hpp"
 #include "translation_manager.hpp"
+#include "utils.hpp"
 #include <algorithm>
 #include <climits>
 #include <cmath>
@@ -42,25 +43,6 @@
 #include <wx/window.h>
 
 namespace {
-bool is_heading_marker(marker_type type) {
-	return type >= marker_type::Heading1 && type <= marker_type::Heading6;
-}
-
-wxString to_wxstring(const rust::String& rust_str) {
-	const std::string utf8 = std::string(rust_str);
-	return wxString::FromUTF8(utf8.c_str());
-}
-
-marker to_marker(const FfiMarker& ffi_marker) {
-	return marker{
-		ffi_marker.position,
-		static_cast<marker_type>(ffi_marker.marker_type),
-		to_wxstring(ffi_marker.text),
-		to_wxstring(ffi_marker.reference),
-		ffi_marker.level,
-		ffi_marker.length,
-	};
-}
 } // namespace
 
 dialog::dialog(wxWindow* parent, const wxString& title, dialog_button_config buttons) : wxDialog(parent, wxID_ANY, title), main_sizer{new wxBoxSizer(wxVERTICAL)}, button_config{buttons} {
