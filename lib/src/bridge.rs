@@ -87,6 +87,26 @@ pub mod ffi {
 		pub wrapped: bool,
 	}
 
+	#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+	pub enum BookmarkFilterType {
+		All,
+		BookmarksOnly,
+		NotesOnly,
+	}
+
+	pub struct FfiBookmarkDisplayItem {
+		pub start: i64,
+		pub end: i64,
+		pub note: String,
+		pub is_whole_line: bool,
+		pub index: usize,
+	}
+
+	pub struct FfiFilteredBookmarks {
+		pub items: Vec<FfiBookmarkDisplayItem>,
+		pub closest_index: i32,
+	}
+
 	pub struct FfiMarker {
 		pub marker_type: i32,
 		pub position: usize,
@@ -336,6 +356,12 @@ pub mod ffi {
 			next: bool,
 			notes_only: bool,
 		) -> BookmarkNavResult;
+		fn get_filtered_bookmarks(
+			manager: &ConfigManager,
+			path: &str,
+			current_pos: i64,
+			filter: BookmarkFilterType,
+		) -> FfiFilteredBookmarks;
 		fn history_normalize(history: &[i64], history_index: usize) -> FfiNavigationHistory;
 		fn history_record_position(
 			history: &[i64],
@@ -980,6 +1006,15 @@ fn bookmark_navigate(
 	notes_only: bool,
 ) -> ffi::BookmarkNavResult {
 	crate::reader_core::bookmark_navigate(manager, path, position, wrap, next, notes_only)
+}
+
+fn get_filtered_bookmarks(
+	manager: &ConfigManager,
+	path: &str,
+	current_pos: i64,
+	filter: ffi::BookmarkFilterType,
+) -> ffi::FfiFilteredBookmarks {
+	crate::reader_core::get_filtered_bookmarks(manager, path, current_pos, filter)
 }
 
 fn history_normalize(history: &[i64], history_index: usize) -> ffi::FfiNavigationHistory {

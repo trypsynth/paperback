@@ -290,6 +290,64 @@ pub fn bookmark_navigate(
 	ffi::BookmarkNavResult { found: false, start: -1, end: -1, note: String::new(), index: -1, wrapped }
 }
 
+pub fn get_filtered_bookmarks(
+	manager: &RustConfigManager,
+	path: &str,
+	current_pos: i64,
+	filter: ffi::BookmarkFilterType,
+) -> ffi::FfiFilteredBookmarks {
+	let mut bookmarks: Vec<Bookmark> = manager.get_bookmarks(path);
+
+	// Apply filter
+	match filter {
+		ffi::BookmarkFilterType::BookmarksOnly => {
+			bookmarks.retain(|b| b.note.is_empty());
+		}
+		ffi::BookmarkFilterType::NotesOnly => {
+			bookmarks.retain(|b| !b.note.is_empty());
+		}
+		ffi::BookmarkFilterType::All | _ => {
+			// No filtering needed
+		}
+	}
+
+	// Sort by start position
+	bookmarks.sort_by_key(|b| b.start);
+
+	// Convert to display items
+	let items: Vec<ffi::FfiBookmarkDisplayItem> = bookmarks
+		.iter()
+		.enumerate()
+		.map(|(idx, b)| ffi::FfiBookmarkDisplayItem {
+			start: b.start,
+			end: b.end,
+			note: b.note.clone(),
+			is_whole_line: b.start == b.end,
+			index: idx,
+		})
+		.collect();
+
+	// Find closest bookmark to current position
+	let closest_index = if bookmarks.is_empty() {
+		-1
+	} else {
+		let mut closest_idx = 0;
+		let mut min_distance = i64::MAX;
+
+		for (idx, b) in bookmarks.iter().enumerate() {
+			let distance = (b.start - current_pos).abs();
+			if distance < min_distance {
+				min_distance = distance;
+				closest_idx = idx;
+			}
+		}
+
+		i32::try_from(closest_idx).unwrap_or(-1)
+	};
+
+	ffi::FfiFilteredBookmarks { items, closest_index }
+}
+
 fn normalize_index(positions: &[i64], index: usize) -> usize {
 	if positions.is_empty() {
 		return 0;
