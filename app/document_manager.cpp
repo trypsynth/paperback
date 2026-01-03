@@ -294,6 +294,14 @@ size_t doc_get_marker_position_by_index(const document& doc, marker_type type, i
 */
 } // namespace
 
+void session_document::ensure_toc_loaded() {
+	if (toc_loaded) {
+		return;
+	}
+	toc_loaded = true;
+	populate_toc_items(toc_items, document_toc_items(get_handle()));
+}
+
 document_manager::document_manager(wxNotebook* nbk, config_manager& cfg, main_window& win) : notebook{nbk}, config{cfg}, main_win{win} {
 }
 
@@ -519,22 +527,27 @@ int document_manager::get_active_tab_index() const {
 }
 
 int document_manager::page_index(size_t position) const {
-	(void)position;
-	// TODO: Update to use DocumentSession
-	return -1;
+	const document_tab* tab = get_active_tab();
+	if (tab == nullptr || tab->session_doc == nullptr) {
+		return -1;
+	}
+	return document_page_index(tab->session_doc->get_handle(), position);
 }
 
 size_t document_manager::marker_count(marker_type type) const {
-	(void)type;
-	// TODO: Update to use DocumentSession
-	return 0;
+	const document_tab* tab = get_active_tab();
+	if (tab == nullptr || tab->session_doc == nullptr) {
+		return 0;
+	}
+	return document_count_markers(tab->session_doc->get_handle(), to_rust_marker(type));
 }
 
 size_t document_manager::marker_position_by_index(marker_type type, int index) const {
-	(void)type;
-	(void)index;
-	// TODO: Update to use DocumentSession
-	return 0;
+	const document_tab* tab = get_active_tab();
+	if (tab == nullptr || tab->session_doc == nullptr) {
+		return 0;
+	}
+	return document_marker_position_by_index(tab->session_doc->get_handle(), to_rust_marker(type), index);
 }
 
 void document_manager::go_to_position(int position) const {
@@ -616,8 +629,7 @@ void document_manager::navigate_to_page(bool next) const {
 	long line{0};
 	text_ctrl->PositionToXY(offset, nullptr, &line);
 	const wxString current_line = text_ctrl->GetLineText(line);
-	const int page_number = result.marker_index + 1;
-	wxString message = wxString::Format(_("Page %d: %s"), page_number, current_line);
+	wxString message = wxString::Format(_("Page %d: %s"), result.marker_index + 1, current_line);
 	if (result.wrapped) {
 		message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
 	}
@@ -729,9 +741,15 @@ void document_manager::navigate_to_link(bool next) const {
 		speak(next ? _("No next link.") : _("No previous link."));
 		return;
 	}
-	go_to_position(static_cast<long>(result.offset));
-	auto link_text_str = result.marker_text;
-	wxString message = wxString::FromUTF8(link_text_str.c_str()) + _(" link");
+	const long offset = static_cast<long>(result.offset);
+	text_ctrl->SetInsertionPoint(offset);
+	wxString link_text = rust_to_wx(rust::String(result.marker_text));
+	if (link_text.IsEmpty()) {
+		long line{0};
+		text_ctrl->PositionToXY(offset, nullptr, &line);
+		link_text = text_ctrl->GetLineText(line);
+	}
+	wxString message = link_text + _(" link");
 	if (result.wrapped) {
 		message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
 	}
@@ -814,23 +832,12 @@ void document_manager::navigate_to_list(bool next) const {
 		speak(next ? _("No next list.") : _("No previous list."));
 		return;
 	}
-	go_to_position(static_cast<long>(result.offset));
-	const int list_size = result.marker_level;
-	wxString message = wxString::Format(_("List with %d items"), list_size);
-	// Try to get the first item text
-	const DocumentHandle& handle = tab->session_doc->get_handle();
-	const int first_item_index = document_find_first_marker_after(handle, result.offset, to_rust_marker(marker_type::ListItem));
-	if (first_item_index != -1) {
-		const auto first_item_info = document_marker_info(handle, first_item_index);
-		if (first_item_info.found) {
-			long line_num{0};
-			text_ctrl->PositionToXY(static_cast<long>(first_item_info.marker.position), nullptr, &line_num);
-			wxString line_text = text_ctrl->GetLineText(line_num).Trim();
-			if (!line_text.IsEmpty()) {
-				message += " " + line_text;
-			}
-		}
-	}
+	const long offset = static_cast<long>(result.offset);
+	text_ctrl->SetInsertionPoint(offset);
+	long line{0};
+	text_ctrl->PositionToXY(offset, nullptr, &line);
+	const wxString current_line = text_ctrl->GetLineText(line);
+	wxString message = current_line;
 	if (result.wrapped) {
 		message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
 	}
@@ -849,11 +856,8 @@ void document_manager::navigate_to_list_item(bool next) const {
 	const document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
-	const int current_pos = text_ctrl->GetInsertionPoint();
-	const DocumentHandle& handle = tab->session_doc->get_handle();
-	const int current_list_index = document_current_marker(handle, static_cast<size_t>(current_pos), to_rust_marker(marker_type::List));
 	const bool wrap = config.get(config_manager::navigation_wrap);
-	const auto result = session_navigate_list_item(*tab->get_session(), current_pos, wrap, next);
+	const auto result = session_navigate_list_item(*tab->get_session(), text_ctrl->GetInsertionPoint(), wrap, next);
 	if (result.not_supported) {
 		speak(_("No list items."));
 		return;
@@ -862,17 +866,12 @@ void document_manager::navigate_to_list_item(bool next) const {
 		speak(next ? _("No next list item.") : _("No previous list item."));
 		return;
 	}
-	go_to_position(static_cast<long>(result.offset));
-	const int target_list_index = document_current_marker(handle, static_cast<size_t>(result.offset), to_rust_marker(marker_type::List));
-	long line_num{0};
-	text_ctrl->PositionToXY(static_cast<long>(result.offset), nullptr, &line_num);
-	wxString message = text_ctrl->GetLineText(line_num).Trim();
-	if (target_list_index != -1 && target_list_index != current_list_index) {
-		const auto target_list_info = document_marker_info(handle, target_list_index);
-		if (target_list_info.found && target_list_info.marker.level > 0) {
-			message = wxString::Format(_("List with %d items "), target_list_info.marker.level) + message;
-		}
-	}
+	const long offset = static_cast<long>(result.offset);
+	text_ctrl->SetInsertionPoint(offset);
+	long line{0};
+	text_ctrl->PositionToXY(offset, nullptr, &line);
+	const wxString current_line = text_ctrl->GetLineText(line);
+	wxString message = current_line;
 	if (result.wrapped) {
 		message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
 	}
@@ -1011,22 +1010,21 @@ void document_manager::show_bookmark_dialog(wxWindow* parent, bookmark_filter in
 void document_manager::show_table_of_contents(wxWindow* parent) {
 	document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	const parser_info* parser = get_active_parser();
-	if (tab == nullptr || text_ctrl == nullptr || parser == nullptr || tab->session_doc == nullptr) {
+	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) {
 		return;
 	}
-	if (!parser_supports(parser->flags, parser_flags::supports_toc)) {
+	if (!supports_feature(tab->session_doc->get_parser_flags(), PARSER_SUPPORTS_TOC)) {
 		speak(_("No table of contents."));
 		return;
 	}
-	ensure_toc_loaded(*tab->session_doc);
+	tab->session_doc->ensure_toc_loaded();
 	if (tab->session_doc->toc_items.empty()) {
 		speak(_("Table of contents is empty."));
 		return;
 	}
 	const int current_pos = text_ctrl->GetInsertionPoint();
-	const int closest_toc_offset = static_cast<int>(document_find_closest_toc_offset(tab->session_doc->get_handle(), static_cast<size_t>(current_pos)));
-	toc_dialog dlg(parent, tab->session_doc->toc_items, closest_toc_offset);
+	const int closest_toc_offset = static_cast<int>(tab->session_doc->find_closest_toc_offset(static_cast<size_t>(current_pos)));
+	toc_dialog dlg(parent, tab->session_doc.get(), closest_toc_offset);
 	if (dlg.ShowModal() != wxID_OK) {
 		return;
 	}
@@ -1218,22 +1216,24 @@ void document_manager::navigate_to_heading(bool next, int specific_level) const 
 	const bool wrap = config.get(config_manager::navigation_wrap);
 	const auto result = session_navigate_heading(*tab->get_session(), text_ctrl->GetInsertionPoint(), wrap, next, specific_level);
 	if (result.not_supported) {
-		if (specific_level == -1) {
-			speak(_("No headings."));
+		if (specific_level > 0) {
+			speak(wxString::Format(_("No level %d headings."), specific_level));
 		} else {
-			speak(wxString::Format(_("No headings at level %d."), specific_level));
+			speak(_("No headings."));
 		}
 		return;
 	}
 	if (!result.found) {
-		const wxString msg = (specific_level == -1) ? wxString::Format(_("No %s heading"), next ? _("next") : _("previous")) : wxString::Format(_("No %s heading at level %d"), next ? _("next") : _("previous"), specific_level);
-		speak(msg);
+		if (specific_level > 0) {
+			speak(next ? wxString::Format(_("No next level %d heading."), specific_level) : wxString::Format(_("No previous level %d heading."), specific_level));
+		} else {
+			speak(next ? _("No next heading.") : _("No previous heading."));
+		}
 		return;
 	}
 	const long offset = static_cast<long>(result.offset);
 	text_ctrl->SetInsertionPoint(offset);
-	auto marker_text_str = result.marker_text;
-	const wxString heading_text = wxString::FromUTF8(marker_text_str.c_str());
+	const wxString heading_text = rust_to_wx(rust::String(result.marker_text));
 	wxString message;
 	if (result.wrapped) {
 		message = wxString::Format(_("Wrapping to %s. %s Heading level %d"), next ? _("start") : _("end"), heading_text, result.marker_level);
@@ -1254,17 +1254,22 @@ void document_manager::navigate_to_table(bool next) const {
 		return;
 	}
 	if (!result.found) {
-		speak(next ? _("No next table") : _("No previous table"));
+		speak(next ? _("No next table.") : _("No previous table."));
 		return;
 	}
 	const long offset = static_cast<long>(result.offset);
 	text_ctrl->SetInsertionPoint(offset);
-	auto marker_text_str = result.marker_text;
-	const wxString marker_text = wxString::FromUTF8(marker_text_str.c_str());
-	if (result.wrapped)
-		speak((next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + marker_text);
-	else
-		speak(marker_text);
+	// Use marker_text (caption or first row) if available, otherwise use line text
+	wxString message = rust_to_wx(rust::String(result.marker_text));
+	if (message.IsEmpty()) {
+		long line{0};
+		text_ctrl->PositionToXY(offset, nullptr, &line);
+		message = text_ctrl->GetLineText(line);
+	}
+	if (result.wrapped) {
+		message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
+	}
+	speak(message);
 }
 
 void document_manager::go_to_previous_table() {
@@ -1279,10 +1284,14 @@ void document_manager::activate_current_table() {
 	const document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
-	const long current_pos = text_ctrl->GetInsertionPoint();
-	auto table_html = session_get_table_at_position(*tab->get_session(), current_pos);
-	if (table_html.empty()) return;
-	const wxString table_html_wx = wxString::FromUTF8(table_html.c_str());
-	table_dialog dlg(&main_win, _("Table"), table_html_wx);
+	const int current_pos = text_ctrl->GetInsertionPoint();
+	const auto& handle = tab->session_doc->get_handle();
+	const int table_index = document_current_marker(handle, static_cast<size_t>(current_pos), to_rust_marker(marker_type::Table));
+	if (table_index == -1) return;
+	const auto marker_result = document_marker_info(handle, table_index);
+	if (!marker_result.found) return;
+	const auto& table_marker = marker_result.marker;
+	if (static_cast<size_t>(current_pos) < table_marker.position || static_cast<size_t>(current_pos) > (table_marker.position + table_marker.length)) return;
+	table_dialog dlg(&main_win, _("Table"), rust_to_wx(rust::String(table_marker.reference)));
 	dlg.ShowModal();
 }
