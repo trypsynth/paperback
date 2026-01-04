@@ -88,20 +88,23 @@ void populate_toc_items(std::vector<std::unique_ptr<toc_item>>& toc_items, const
 		item->ref = to_wxstring(rust_toc.reference);
 		item->offset = rust_toc.offset;
 
-		toc_item* item_ptr = item.get();
+		toc_item* item_ptr = nullptr;
 
 		// Use parent_index to find where to insert
 		if (rust_toc.parent_index < 0) {
 			// Root level item
 			toc_items.push_back(std::move(item));
+			item_ptr = toc_items.back().get();
 		} else {
 			// Child item - add to parent's children
 			const auto parent_idx = static_cast<size_t>(rust_toc.parent_index);
-			if (parent_idx < item_ptrs.size()) {
+			if (parent_idx < item_ptrs.size() && item_ptrs[parent_idx] != nullptr) {
 				item_ptrs[parent_idx]->children.push_back(std::move(item));
+				item_ptr = item_ptrs[parent_idx]->children.back().get();
 			} else {
 				// Fallback to root if parent index is invalid
 				toc_items.push_back(std::move(item));
+				item_ptr = toc_items.back().get();
 			}
 		}
 

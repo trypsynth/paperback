@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use anyhow::{Context, Result};
 use libchm::{CHM_ENUMERATE_ALL, ChmHandle, unit_info_path};
@@ -160,11 +160,16 @@ fn parse_hhc_file(chm: &mut ChmHandle, hhc_path: &str) -> Result<Vec<TocItem>> {
 
 fn parse_hhc_node(node: ElementRef, items: &mut Vec<TocItem>) {
 	let param_selector = Selector::parse("param").unwrap();
-	for child in node.children() {
+	let children: Vec<_> = node.children().collect();
+	let mut consumed_indices = HashSet::new();
+	for (index, child) in children.iter().enumerate() {
+		if consumed_indices.contains(&index) {
+			continue;
+		}
 		let Some(child_element) = child.value().as_element() else {
 			continue;
 		};
-		let Some(child_ref) = ElementRef::wrap(child) else {
+		let Some(child_ref) = ElementRef::wrap(*child) else {
 			continue;
 		};
 		match child_element.name() {
@@ -193,12 +198,35 @@ fn parse_hhc_node(node: ElementRef, items: &mut Vec<TocItem>) {
 				}
 				if !name.is_empty() {
 					let mut item = TocItem::new(name, local, usize::MAX);
+					let mut found_child_ul = false;
+					// PATTERN 1: Check for child UL (standard CHM pattern)
 					for nested_child in child_ref.children() {
 						if let Some(nested_element) = nested_child.value().as_element() {
 							if nested_element.name() == "ul" {
 								if let Some(nested_ref) = ElementRef::wrap(nested_child) {
 									parse_hhc_node(nested_ref, &mut item.children);
+									found_child_ul = true;
 								}
+							}
+						}
+					}
+					// PATTERN 2: Check for sibling UL elements, as seen in nvgt.chm.
+					if !found_child_ul {
+						let mut next_element_index = None;
+						for next_idx in (index + 1)..children.len() {
+							if let Some(next_el) = children[next_idx].value().as_element() {
+								if next_el.name() == "ul" {
+									next_element_index = Some(next_idx);
+									break;
+								} else if next_el.name() == "li" {
+									break;
+								}
+							}
+						}
+						if let Some(ul_index) = next_element_index {
+							if let Some(sibling_ref) = ElementRef::wrap(children[ul_index]) {
+								parse_hhc_node(sibling_ref, &mut item.children);
+								consumed_indices.insert(ul_index); // Mark as consumed
 							}
 						}
 					}
