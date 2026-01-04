@@ -1,9 +1,14 @@
+use std::{fs::File, io::BufReader, path::Path};
+
+use zip::ZipArchive;
+
 use crate::{
 	bridge::ffi::{self, NavDirection, NavTarget},
 	config::ConfigManager,
 	document::{DocumentHandle, MarkerType, ParserContext, ParserFlags},
 	parser,
 	reader_core::{bookmark_navigate, history_go_next, history_go_previous, reader_navigate, resolve_link},
+	utils::zip as zip_utils,
 };
 
 const MAX_HISTORY_LEN: usize = 10;
@@ -423,6 +428,27 @@ impl DocumentSession {
 			return None;
 		}
 		Some(marker.reference.clone())
+	}
+
+	pub fn get_current_section_path(&self, position: i64) -> Option<String> {
+		let pos_usize = usize::try_from(position.max(0)).unwrap_or(0);
+		let section_index = self.handle.current_marker_index(pos_usize, MarkerType::SectionBreak)?;
+		let marker = self.handle.document().buffer.markers.get(section_index)?;
+		if marker.reference.is_empty() {
+			return None;
+		}
+		Some(marker.reference.clone())
+	}
+
+	pub fn extract_resource(&self, resource_path: &str, output_path: &str) -> anyhow::Result<bool> {
+		if self.file_path.to_lowercase().ends_with(".epub") {
+			let file = File::open(&self.file_path)?;
+			let mut archive = ZipArchive::new(BufReader::new(file))?;
+			zip_utils::extract_zip_entry_to_file(&mut archive, resource_path, Path::new(output_path))?;
+			Ok(true)
+		} else {
+			Ok(false)
+		}
 	}
 
 	fn has_headings(&self, level: Option<i32>) -> bool {

@@ -728,11 +728,7 @@ pub fn get_sorted_document_list(
 	}
 
 	// Add remaining documents, sorted alphabetically
-	let mut rest: Vec<String> = all_docs
-		.iter()
-		.filter(|path| !doc_paths.contains(path))
-		.cloned()
-		.collect();
+	let mut rest: Vec<String> = all_docs.iter().filter(|path| !doc_paths.contains(path)).cloned().collect();
 
 	rest.sort_by(|a, b| {
 		let a_path = Path::new(a);
@@ -758,11 +754,7 @@ pub fn get_sorted_document_list(
 		.into_iter()
 		.filter_map(|path| {
 			let path_obj = Path::new(&path);
-			let filename = path_obj
-				.file_name()
-				.and_then(|n| n.to_str())
-				.unwrap_or("")
-				.to_string();
+			let filename = path_obj.file_name().and_then(|n| n.to_str()).unwrap_or("").to_string();
 
 			// Apply filter if specified
 			if !filter.is_empty() && !filename.to_lowercase().contains(&filter_lower) {
