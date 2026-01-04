@@ -14,6 +14,7 @@
 #include "document_data.hpp"
 #include "parser.hpp"
 #include "translation_manager.hpp"
+#include "utils.hpp"
 #include <algorithm>
 #include <climits>
 #include <cmath>
@@ -42,44 +43,6 @@
 #include <wx/window.h>
 
 namespace {
-bool is_heading_marker(marker_type type) {
-	return type >= marker_type::Heading1 && type <= marker_type::Heading6;
-}
-
-wxString to_wxstring(const rust::String& rust_str) {
-	const std::string utf8 = std::string(rust_str);
-	return wxString::FromUTF8(utf8.c_str());
-}
-
-marker to_marker(const FfiMarker& ffi_marker) {
-	return marker{
-		ffi_marker.position,
-		static_cast<marker_type>(ffi_marker.marker_type),
-		to_wxstring(ffi_marker.text),
-		to_wxstring(ffi_marker.reference),
-		ffi_marker.level,
-		ffi_marker.length,
-	};
-}
-
-// Legacy helper functions - stubbed to return empty results since document_data was removed
-// TODO: Update dialogs to work with DocumentSession instead
-std::vector<marker> markers_by_type(const document* doc, marker_type type) {
-	(void)doc;
-	(void)type;
-	return std::vector<marker>();  // Stub - returns empty
-}
-
-std::vector<marker> heading_markers(const document* doc) {
-	(void)doc;
-	return std::vector<marker>();  // Stub - returns empty
-}
-
-size_t count_markers(const document* doc, marker_type type) {
-	(void)doc;
-	(void)type;
-	return 0U;  // Stub - returns 0
-}
 } // namespace
 
 dialog::dialog(wxWindow* parent, const wxString& title, dialog_button_config buttons) : wxDialog(parent, wxID_ANY, title), main_sizer{new wxBoxSizer(wxVERTICAL)}, button_config{buttons} {
@@ -231,35 +194,44 @@ void all_documents_dialog::on_key_down(wxKeyEvent& event) {
 
 void all_documents_dialog::populate_document_list(const wxString& filter) {
 	doc_list->DeleteAllItems();
-	const wxArrayString recent = config_mgr.get_recent_documents();
-	const wxArrayString all = config_mgr.get_all_documents();
 	doc_paths.Clear();
-	for (const auto& path : recent)
-		if (doc_paths.Index(path) == wxNOT_FOUND) doc_paths.Add(path);
-	std::vector<wxString> rest;
-	rest.reserve(all.GetCount());
-	std::copy_if(all.begin(), all.end(), std::back_inserter(rest), [&](const wxString& path) {
-		return doc_paths.Index(path) == wxNOT_FOUND;
-	});
-	std::sort(rest.begin(), rest.end(), [](const wxString& a, const wxString& b) {
-		const wxString an = wxFileName(a).GetFullName();
-		const wxString bn = wxFileName(b).GetFullName();
-		const int cmp = an.CmpNoCase(bn);
-		if (cmp != 0) return cmp < 0;
-		return a.CmpNoCase(b) < 0;
-	});
-	for (const auto& path : rest) doc_paths.Add(path);
-	for (const auto& path : doc_paths) {
-		const wxFileName fn(path);
-		if (!filter.IsEmpty() && fn.GetFullName().Lower().Find(filter.Lower()) == wxNOT_FOUND) continue;
-		const long index = doc_list->InsertItem(doc_list->GetItemCount(), fn.GetFullName());
+
+	// Convert open document paths to std::vector<rust::String> for Rust
+	std::vector<rust::String> open_paths_vec;
+	open_paths_vec.reserve(open_doc_paths.GetCount());
+	for (const auto& path : open_doc_paths) {
+		open_paths_vec.push_back(rust::String(path.ToUTF8().data()));
+	}
+
+	// Get sorted and filtered document list from Rust
+	rust::Slice<const rust::String> open_paths_slice{open_paths_vec.data(), open_paths_vec.size()};
+	auto sorted_docs = get_sorted_document_list(
+		config_mgr.backend_for_ffi(),
+		open_paths_slice,
+		filter.ToUTF8().data()
+	);
+
+	// Populate the wxListView with the results
+	for (auto& doc : sorted_docs) {
+		const wxString path = wxString::FromUTF8(doc.path.c_str());
+		const wxString filename = wxString::FromUTF8(doc.filename.c_str());
+		doc_paths.Add(path);
+
+		const long index = doc_list->InsertItem(doc_list->GetItemCount(), filename);
+
 		wxString status;
-		if (!wxFileName::FileExists(path))
-			status = _("Missing");
-		else if (open_doc_paths.Index(path) != wxNOT_FOUND)
-			status = _("Open");
-		else
-			status = _("Closed");
+		switch (doc.status) {
+			case DocumentListStatus::Open:
+				status = _("Open");
+				break;
+			case DocumentListStatus::Closed:
+				status = _("Closed");
+				break;
+			case DocumentListStatus::Missing:
+				status = _("Missing");
+				break;
+		}
+
 		doc_list->SetItem(index, 1, status);
 		doc_list->SetItem(index, 2, path);
 	}
@@ -279,7 +251,7 @@ void all_documents_dialog::populate_document_list(const wxString& filter) {
 	}
 }
 
-bookmark_dialog::bookmark_dialog(wxWindow* parent, const std::vector<bookmark>& bookmarks, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos, bookmark_filter initial_filter) : dialog(parent, _("Jump to Bookmark"), dialog_button_config::ok_cancel), all_bookmarks{bookmarks}, selected_position{-1}, config{config}, file_path{file_path}, text_ctrl{text_ctrl} {
+bookmark_dialog::bookmark_dialog(wxWindow* parent, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos, bookmark_filter initial_filter) : dialog(parent, _("Jump to Bookmark"), dialog_button_config::ok_cancel), selected_position{-1}, config{config}, file_path{file_path}, text_ctrl{text_ctrl} {
 	auto* filter_row = new wxBoxSizer(wxHORIZONTAL);
 	auto* filter_label = new wxStaticText(this, wxID_ANY, _("&Filter:"));
 	filter_choice = new wxChoice(this, wxID_ANY);
@@ -371,10 +343,6 @@ void bookmark_dialog::on_delete(wxCommandEvent&) {
 	const bookmark& deleted_bookmark = bookmark_positions[static_cast<std::size_t>(selection)];
 	config.remove_bookmark(file_path, deleted_bookmark.start, deleted_bookmark.end);
 	config.flush();
-	const auto it = std::find_if(all_bookmarks.begin(), all_bookmarks.end(), [&](const bookmark& bm) {
-		return bm.start == deleted_bookmark.start && bm.end == deleted_bookmark.end;
-	});
-	if (it != all_bookmarks.end()) all_bookmarks.erase(it);
 	repopulate_list(text_ctrl ? text_ctrl->GetInsertionPoint() : -1);
 }
 
@@ -387,10 +355,6 @@ void bookmark_dialog::on_edit_note(wxCommandEvent&) {
 	wxString new_note = note_dialog.get_note();
 	config.update_bookmark_note(file_path, selected_bookmark.start, selected_bookmark.end, new_note);
 	config.flush();
-	const auto it = std::find_if(all_bookmarks.begin(), all_bookmarks.end(), [&](const bookmark& bm) {
-		return bm.start == selected_bookmark.start && bm.end == selected_bookmark.end;
-	});
-	if (it != all_bookmarks.end()) it->note = new_note;
 	repopulate_list(text_ctrl ? text_ctrl->GetInsertionPoint() : -1);
 }
 
@@ -401,49 +365,58 @@ void bookmark_dialog::on_filter_changed(wxCommandEvent&) {
 void bookmark_dialog::repopulate_list(long current_pos) {
 	if (current_pos == -1 && text_ctrl != nullptr) current_pos = text_ctrl->GetInsertionPoint();
 	const int sel = filter_choice != nullptr ? filter_choice->GetSelection() : 0;
-	const bool show_all = (sel == 0);
-	const bool show_bookmarks_only = (sel == 1);
-	const bool show_notes_only = (sel == 2);
+
+	// Convert filter selection to Rust BookmarkFilterType
+	BookmarkFilterType filter_type = BookmarkFilterType::All;
+	if (sel == 1) {
+		filter_type = BookmarkFilterType::BookmarksOnly;
+	} else if (sel == 2) {
+		filter_type = BookmarkFilterType::NotesOnly;
+	}
+
 	bookmark_list->Clear();
 	bookmark_positions.clear();
 	const long previously_selected = selected_position;
-	int closest_index = -1;
-	long closest_distance = LONG_MAX;
-	auto add_entry = [&](const bookmark& bm) {
+
+	// Get filtered bookmarks from Rust
+	auto filtered = get_filtered_bookmarks(config.backend_for_ffi(), file_path.ToUTF8().data(), current_pos, filter_type);
+
+	// Populate the list with display text
+	for (auto& item : filtered.items) {
 		wxString text_snippet;
-		if (bm.is_whole_line()) {
+		if (item.is_whole_line) {
 			long line{0};
-			text_ctrl->PositionToXY(bm.start, nullptr, &line);
+			text_ctrl->PositionToXY(static_cast<long>(item.start), nullptr, &line);
 			text_snippet = text_ctrl->GetLineText(line);
 		} else {
-			text_snippet = text_ctrl->GetRange(bm.start, bm.end);
+			text_snippet = text_ctrl->GetRange(static_cast<long>(item.start), static_cast<long>(item.end));
 		}
 		text_snippet = text_snippet.Strip(wxString::both);
 		if (text_snippet.IsEmpty()) text_snippet = _("blank");
+
 		wxString display_text;
-		if (bm.has_note())
-			display_text = wxString::Format("%s - %s", bm.note, text_snippet);
-		else
+		const wxString note = wxString::FromUTF8(item.note.c_str());
+		if (!note.IsEmpty()) {
+			display_text = wxString::Format("%s - %s", note, text_snippet);
+		} else {
 			display_text = text_snippet;
+		}
+
+		// Create bookmark object for tracking
+		bookmark bm;
+		bm.start = static_cast<long>(item.start);
+		bm.end = static_cast<long>(item.end);
+		bm.note = note;
 		bookmark_positions.push_back(bm);
 		bookmark_list->Append(display_text);
-	};
-	for (const auto& bm : all_bookmarks) {
-		if (show_all || (show_bookmarks_only && !bm.has_note()) || (show_notes_only && bm.has_note())) {
-			add_entry(bm);
-			if (current_pos >= 0) {
-				const long distance = std::abs(bm.start - current_pos);
-				if (distance < closest_distance) {
-					closest_distance = distance;
-					closest_index = static_cast<int>(bookmark_positions.size() - 1);
-				}
-			}
-		}
 	}
+
 	jump_button->Enable(false);
 	delete_button->Enable(false);
 	edit_note_button->Enable(false);
 	selected_position = -1;
+
+	// Try to restore previous selection
 	if (previously_selected >= 0) {
 		const auto it_sel = std::find_if(bookmark_positions.begin(), bookmark_positions.end(), [&](const bookmark& bm) {
 			return bm.start == previously_selected;
@@ -458,24 +431,44 @@ void bookmark_dialog::repopulate_list(long current_pos) {
 			return;
 		}
 	}
-	if (closest_index >= 0) {
-		bookmark_list->SetSelection(closest_index);
-		selected_position = bookmark_positions[static_cast<std::size_t>(closest_index)].start;
+
+	// Use closest index from Rust
+	if (filtered.closest_index >= 0 && static_cast<size_t>(filtered.closest_index) < bookmark_positions.size()) {
+		bookmark_list->SetSelection(filtered.closest_index);
+		selected_position = bookmark_positions[static_cast<size_t>(filtered.closest_index)].start;
 		jump_button->Enable(true);
 		delete_button->Enable(true);
 		edit_note_button->Enable(true);
 	}
 }
 
-document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc, const wxString& file_path, config_manager& cfg_mgr) : dialog(parent, _("Document Info"), dialog_button_config::ok_only), config_mgr{cfg_mgr}, doc_path{file_path} {
-	(void)doc;  // Unused - document_data was removed
+document_info_dialog::document_info_dialog(wxWindow* parent, session_document* session_doc, const wxString& file_path, config_manager& cfg_mgr) : dialog(parent, _("Document Info"), dialog_button_config::ok_only), config_mgr{cfg_mgr}, doc_path{file_path} {
 	constexpr int info_width = 600;
 	constexpr int info_height = 400;
 	info_text_ctrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(info_width, info_height), wxTE_MULTILINE | wxTE_READONLY);
+
 	wxString info_text;
-	// TODO: Update to use DocumentSession for metadata
-	info_text << _("Path: ") << file_path << "\n";
-	info_text << _("\n(Document info temporarily unavailable during migration)");
+	info_text << _("Path: ") << file_path << "\n\n";
+
+	if (session_doc != nullptr) {
+		const auto& handle = session_doc->get_handle();
+		const auto stats = document_stats(handle);
+		const wxString title = wxString::FromUTF8(document_title(handle).c_str());
+		const wxString author = wxString::FromUTF8(document_author(handle).c_str());
+
+		if (!title.IsEmpty()) {
+			info_text << _("Title: ") << title << "\n";
+		}
+		if (!author.IsEmpty()) {
+			info_text << _("Author: ") << author << "\n";
+		}
+		info_text << "\n";
+		info_text << _("Words: ") << stats.word_count << "\n";
+		info_text << _("Lines: ") << stats.line_count << "\n";
+		info_text << _("Characters: ") << stats.char_count << "\n";
+		info_text << _("Characters (no spaces): ") << stats.char_count_no_whitespace << "\n";
+	}
+
 	info_text_ctrl->SetValue(info_text);
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	content_sizer->Add(info_text_ctrl, 1, wxEXPAND);
@@ -483,7 +476,7 @@ document_info_dialog::document_info_dialog(wxWindow* parent, const document* doc
 	finalize_layout();
 }
 
-elements_dialog::elements_dialog(wxWindow* parent, const document* doc, long current_pos) : dialog(parent, _("Elements")), doc(doc), current_pos(current_pos) {
+elements_dialog::elements_dialog(wxWindow* parent, session_document* session_doc, long current_pos) : dialog(parent, _("Elements")), session_doc_(session_doc), current_pos(current_pos) {
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	auto* choice_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* choice_label = new wxStaticText(this, wxID_ANY, _("&View:"));
@@ -518,11 +511,12 @@ elements_dialog::elements_dialog(wxWindow* parent, const document* doc, long cur
 }
 
 void elements_dialog::populate_links() {
-	const auto link_markers = markers_by_type(doc, marker_type::Link);
+	if (session_doc_ == nullptr) return;
+	const auto link_markers = document_markers_by_type(session_doc_->get_handle(), static_cast<int>(marker_type::Link));
 	int closest_index = -1;
-	for (const auto& link_marker : link_markers) {
-		links_list->Append(link_marker.text);
-		links_list->SetClientData(links_list->GetCount() - 1, reinterpret_cast<void*>(link_marker.pos));
+	for (const auto& ffi_marker : link_markers) {
+		links_list->Append(to_wxstring(ffi_marker.text));
+		links_list->SetClientData(links_list->GetCount() - 1, reinterpret_cast<void*>(ffi_marker.position));
 	}
 	if (links_list->IsEmpty()) return;
 	for (int i = links_list->GetCount() - 1; i >= 0; i--) {
@@ -539,9 +533,22 @@ void elements_dialog::populate_links() {
 }
 
 void elements_dialog::populate_headings() {
+	if (session_doc_ == nullptr) return;
 	const wxTreeItemId root = headings_tree->AddRoot(_("Root"));
 	std::vector<wxTreeItemId> parent_ids(7, root);
-	const auto heading_marker_list = heading_markers(doc);
+	// Collect all heading markers (levels 1-6)
+	std::vector<marker> heading_marker_list;
+	for (int level = 1; level <= 6; ++level) {
+		const int marker_type_value = static_cast<int>(marker_type::Heading1) + (level - 1);
+		const auto ffi_markers = document_markers_by_type(session_doc_->get_handle(), marker_type_value);
+		for (const auto& ffi_marker : ffi_markers) {
+			heading_marker_list.push_back(to_marker(ffi_marker));
+		}
+	}
+	// Sort by position
+	std::sort(heading_marker_list.begin(), heading_marker_list.end(), [](const marker& a, const marker& b) {
+		return a.pos < b.pos;
+	});
 	wxTreeItemId closest_item;
 	for (const auto& heading_marker : heading_marker_list) {
 		const int level = heading_marker.level;
@@ -739,7 +746,7 @@ long go_to_line_dialog::get_position() const {
 	return textbox->GetInsertionPoint();
 }
 
-go_to_page_dialog::go_to_page_dialog(wxWindow* parent, document* doc, const parser_info* parser, int current_page) : dialog(parent, _("Go to page")), doc_{doc}, parser_{parser} {
+go_to_page_dialog::go_to_page_dialog(wxWindow* parent, session_document* session_doc, int current_page) : dialog(parent, _("Go to page")), session_doc_{session_doc} {
 	constexpr int label_spacing = 5;
 	auto* page_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* label = new wxStaticText(this, wxID_ANY, wxString::Format(_("Go to page (1/%d):"), get_max_page()));
@@ -757,9 +764,8 @@ int go_to_page_dialog::get_page_number() const {
 }
 
 int go_to_page_dialog::get_max_page() const {
-	if (doc_ == nullptr || parser_ == nullptr) return 1;
-	if (!parser_supports(parser_->flags, parser_flags::supports_pages)) return 1;
-	return static_cast<int>(count_markers(doc_, marker_type::PageBreak));
+	if (session_doc_ == nullptr) return 1;
+	return static_cast<int>(document_count_markers(session_doc_->get_handle(), static_cast<int>(marker_type::PageBreak)));
 }
 
 go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : dialog(parent, _("Go to Percent")), textbox{text_ctrl} {
@@ -1067,14 +1073,14 @@ void table_dialog::on_script_message(wxWebViewEvent& event) {
 	if (event.GetString() == "close_dialog") EndModal(wxID_CANCEL);
 }
 
-toc_dialog::toc_dialog(wxWindow* parent, const document* doc, int current_offset) : dialog(parent, _("Table of Contents")), selected_offset{-1} {
-	(void)doc;  // Unused - document_data was removed
+toc_dialog::toc_dialog(wxWindow* parent, session_document* session_doc, int current_offset) : dialog(parent, _("Table of Contents")), selected_offset{-1} {
 	search_timer_ = new wxTimer(this);
 	tree = new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTR_HIDE_ROOT);
 	const wxTreeItemId root = tree->AddRoot(_("Root"));
-	// TODO: Update to use DocumentSession for TOC
-	std::vector<std::unique_ptr<toc_item>> empty_toc;
-	populate_tree(empty_toc, root);
+	if (session_doc != nullptr) {
+		session_doc->ensure_toc_loaded();
+		populate_tree(session_doc->toc_items, root);
+	}
 	if (current_offset != -1) find_and_select_item(root, current_offset);
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	content_sizer->Add(tree, 1, wxEXPAND);

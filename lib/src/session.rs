@@ -408,6 +408,23 @@ impl DocumentSession {
 		}
 	}
 
+	/// Gets the table marker at the current position.
+	/// Returns None if no table marker is found at the position.
+	#[must_use]
+	pub fn get_table_at_position(&self, position: i64) -> Option<String> {
+		let pos_usize = usize::try_from(position.max(0)).unwrap_or(0);
+		let table_index = self.handle.current_marker_index(pos_usize, MarkerType::Table)?;
+		let marker = self.handle.document().buffer.markers.get(table_index)?;
+		let table_end = marker.position + marker.text.chars().count();
+		if pos_usize < marker.position || pos_usize > table_end {
+			return None;
+		}
+		if marker.reference.is_empty() {
+			return None;
+		}
+		Some(marker.reference.clone())
+	}
+
 	fn has_headings(&self, level: Option<i32>) -> bool {
 		if let Some(lvl) = level {
 			let marker_type = match lvl {

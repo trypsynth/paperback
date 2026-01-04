@@ -93,7 +93,7 @@ enum class bookmark_filter {
 
 class bookmark_dialog : public dialog {
 public:
-	bookmark_dialog(wxWindow* parent, const std::vector<bookmark>& bookmarks, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos = -1, bookmark_filter initial_filter = bookmark_filter::all);
+	bookmark_dialog(wxWindow* parent, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos = -1, bookmark_filter initial_filter = bookmark_filter::all);
 	~bookmark_dialog() override = default;
 	bookmark_dialog(const bookmark_dialog&) = delete;
 	bookmark_dialog& operator=(const bookmark_dialog&) = delete;
@@ -106,7 +106,6 @@ public:
 
 private:
 	wxChoice* filter_choice{nullptr};
-	std::vector<bookmark> all_bookmarks;
 	wxListBox* bookmark_list{nullptr};
 	std::vector<bookmark> bookmark_positions;
 	long selected_position;
@@ -128,7 +127,7 @@ private:
 
 class document_info_dialog : public dialog {
 public:
-	document_info_dialog(wxWindow* parent, const document* doc, const wxString& file_path, config_manager& cfg_mgr);
+	document_info_dialog(wxWindow* parent, session_document* session_doc, const wxString& file_path, config_manager& cfg_mgr);
 	~document_info_dialog() override = default;
 	document_info_dialog(const document_info_dialog&) = delete;
 	document_info_dialog& operator=(const document_info_dialog&) = delete;
@@ -145,7 +144,7 @@ private:
 
 class elements_dialog : public dialog {
 public:
-	elements_dialog(wxWindow* parent, const document* doc, long current_pos);
+	elements_dialog(wxWindow* parent, session_document* session_doc, long current_pos);
 	~elements_dialog() override = default;
 	elements_dialog(const elements_dialog&) = delete;
 	elements_dialog& operator=(const elements_dialog&) = delete;
@@ -161,7 +160,7 @@ public:
 	}
 
 private:
-	const document* doc{nullptr};
+	session_document* session_doc_{nullptr};
 	wxComboBox* view_choice{nullptr};
 	wxListBox* links_list{nullptr};
 	wxTreeCtrl* headings_tree{nullptr};
@@ -226,7 +225,7 @@ private:
 
 class go_to_page_dialog : public dialog {
 public:
-	go_to_page_dialog(wxWindow* parent, document* doc, const parser_info* parser, int current_page = 1);
+	go_to_page_dialog(wxWindow* parent, session_document* session_doc, int current_page = 1);
 	~go_to_page_dialog() override = default;
 	go_to_page_dialog(const go_to_page_dialog&) = delete;
 	go_to_page_dialog& operator=(const go_to_page_dialog&) = delete;
@@ -235,8 +234,7 @@ public:
 	[[nodiscard]] int get_page_number() const;
 
 private:
-	document* doc_{nullptr};
-	const parser_info* parser_{nullptr};
+	session_document* session_doc_{nullptr};
 	wxSpinCtrl* input_ctrl{nullptr};
 
 	[[nodiscard]] int get_max_page() const;
@@ -384,7 +382,7 @@ public:
 
 class toc_dialog : public dialog {
 public:
-	toc_dialog(wxWindow* parent, const document* doc, int current_offset = -1);
+	toc_dialog(wxWindow* parent, session_document* session_doc, int current_offset = -1);
 	~toc_dialog() override = default;
 	toc_dialog(const toc_dialog&) = delete;
 	toc_dialog& operator=(const toc_dialog&) = delete;

@@ -71,7 +71,6 @@ public:
 	[[nodiscard]] bool export_document(int index, const wxString& export_path) const;
 	[[nodiscard]] document_tab* get_tab(int index) const;
 	[[nodiscard]] document_tab* get_active_tab() const;
-	[[nodiscard]] document* get_active_document() const;
 	[[nodiscard]] wxTextCtrl* get_active_text_ctrl() const;
 	[[nodiscard]] const parser_info* get_active_parser() const;
 	[[nodiscard]] int get_tab_count() const;
@@ -118,7 +117,6 @@ public:
 	[[nodiscard]] long load_document_position(const wxString& path) const;
 	void save_current_tab_position() const;
 	void save_all_tab_positions() const;
-	void save_all_tab_navigation_histories() const;
 	[[nodiscard]] wxString get_status_text() const;
 	[[nodiscard]] wxString get_window_title(const wxString& app_name) const;
 	[[nodiscard]] int find_text(const wxString& query, int start_pos, find_options options) const;

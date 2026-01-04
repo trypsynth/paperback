@@ -87,6 +87,39 @@ pub mod ffi {
 		pub wrapped: bool,
 	}
 
+	#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+	pub enum BookmarkFilterType {
+		All,
+		BookmarksOnly,
+		NotesOnly,
+	}
+
+	pub struct FfiBookmarkDisplayItem {
+		pub start: i64,
+		pub end: i64,
+		pub note: String,
+		pub is_whole_line: bool,
+		pub index: usize,
+	}
+
+	pub struct FfiFilteredBookmarks {
+		pub items: Vec<FfiBookmarkDisplayItem>,
+		pub closest_index: i32,
+	}
+
+	#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+	pub enum DocumentListStatus {
+		Open,
+		Closed,
+		Missing,
+	}
+
+	pub struct FfiDocumentListItem {
+		pub path: String,
+		pub filename: String,
+		pub status: DocumentListStatus,
+	}
+
 	pub struct FfiMarker {
 		pub marker_type: i32,
 		pub position: usize,
@@ -106,6 +139,14 @@ pub mod ffi {
 		pub reference: String,
 		pub offset: usize,
 		pub depth: i32,
+	}
+
+	pub struct FfiTocItemWithParent {
+		pub name: String,
+		pub reference: String,
+		pub offset: usize,
+		pub depth: i32,
+		pub parent_index: i32,
 	}
 
 	pub struct FfiDocumentStats {
@@ -286,6 +327,7 @@ pub mod ffi {
 		fn document_length(doc: &DocumentHandle) -> usize;
 		fn document_stats(doc: &DocumentHandle) -> FfiDocumentStats;
 		fn document_toc_items(doc: &DocumentHandle) -> Vec<FfiTocItem>;
+		fn document_toc_items_with_parents(doc: &DocumentHandle) -> Vec<FfiTocItemWithParent>;
 		fn document_markers(doc: &DocumentHandle) -> Vec<FfiMarker>;
 		fn document_marker_info(doc: &DocumentHandle, marker_index: i32) -> FfiMarkerResult;
 		fn document_markers_by_type(doc: &DocumentHandle, marker_type: i32) -> Vec<FfiMarker>;
@@ -336,6 +378,17 @@ pub mod ffi {
 			next: bool,
 			notes_only: bool,
 		) -> BookmarkNavResult;
+		fn get_filtered_bookmarks(
+			manager: &ConfigManager,
+			path: &str,
+			current_pos: i64,
+			filter: BookmarkFilterType,
+		) -> FfiFilteredBookmarks;
+		fn get_sorted_document_list(
+			config: &ConfigManager,
+			open_paths: &[String],
+			filter: &str,
+		) -> Vec<FfiDocumentListItem>;
 		fn history_normalize(history: &[i64], history_index: usize) -> FfiNavigationHistory;
 		fn history_record_position(
 			history: &[i64],
@@ -425,6 +478,7 @@ pub mod ffi {
 		fn session_history_go_back(session: &mut DocumentSession, current_pos: i64) -> FfiSessionNavResult;
 		fn session_history_go_forward(session: &mut DocumentSession, current_pos: i64) -> FfiSessionNavResult;
 		fn session_activate_link(session: &mut DocumentSession, position: i64) -> FfiLinkActivationResult;
+		fn session_get_table_at_position(session: &DocumentSession, position: i64) -> String;
 		fn session_handle(session: &DocumentSession) -> &DocumentHandle;
 	}
 }
@@ -752,6 +806,31 @@ fn flatten_toc_items(items: &[TocItem]) -> Vec<ffi::FfiTocItem> {
 	result
 }
 
+fn flatten_recursive_with_parents(
+	items: &[TocItem],
+	depth: i32,
+	parent_index: i32,
+	result: &mut Vec<ffi::FfiTocItemWithParent>,
+) {
+	for item in items {
+		let current_index = i32::try_from(result.len()).unwrap_or(-1);
+		result.push(ffi::FfiTocItemWithParent {
+			name: item.name.clone(),
+			reference: item.reference.clone(),
+			offset: item.offset,
+			depth,
+			parent_index,
+		});
+		flatten_recursive_with_parents(&item.children, depth + 1, current_index, result);
+	}
+}
+
+fn flatten_toc_items_with_parents(items: &[TocItem]) -> Vec<ffi::FfiTocItemWithParent> {
+	let mut result = Vec::new();
+	flatten_recursive_with_parents(items, 0, -1, &mut result);
+	result
+}
+
 fn convert_xml_to_text(content: &str) -> Result<ffi::FfiXmlConversion, String> {
 	let mut converter = XmlToText::new();
 	if !converter.convert(content) {
@@ -846,6 +925,10 @@ const fn document_stats(doc: &DocumentHandle) -> ffi::FfiDocumentStats {
 
 fn document_toc_items(doc: &DocumentHandle) -> Vec<ffi::FfiTocItem> {
 	flatten_toc_items(&doc.document().toc_items)
+}
+
+fn document_toc_items_with_parents(doc: &DocumentHandle) -> Vec<ffi::FfiTocItemWithParent> {
+	flatten_toc_items_with_parents(&doc.document().toc_items)
 }
 
 fn document_markers(doc: &DocumentHandle) -> Vec<ffi::FfiMarker> {
@@ -979,6 +1062,23 @@ fn bookmark_navigate(
 	notes_only: bool,
 ) -> ffi::BookmarkNavResult {
 	crate::reader_core::bookmark_navigate(manager, path, position, wrap, next, notes_only)
+}
+
+fn get_filtered_bookmarks(
+	manager: &ConfigManager,
+	path: &str,
+	current_pos: i64,
+	filter: ffi::BookmarkFilterType,
+) -> ffi::FfiFilteredBookmarks {
+	crate::reader_core::get_filtered_bookmarks(manager, path, current_pos, filter)
+}
+
+fn get_sorted_document_list(
+	config: &ConfigManager,
+	open_paths: &[String],
+	filter: &str,
+) -> Vec<ffi::FfiDocumentListItem> {
+	crate::config::get_sorted_document_list(config, open_paths, filter)
 }
 
 fn history_normalize(history: &[i64], history_index: usize) -> ffi::FfiNavigationHistory {
@@ -1156,6 +1256,10 @@ fn session_activate_link(session: &mut DocumentSession, position: i64) -> ffi::F
 		offset: result.offset,
 		url: result.url,
 	}
+}
+
+fn session_get_table_at_position(session: &DocumentSession, position: i64) -> String {
+	session.get_table_at_position(position).unwrap_or_default()
 }
 
 fn session_handle(session: &DocumentSession) -> &DocumentHandle {

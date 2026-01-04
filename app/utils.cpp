@@ -12,6 +12,7 @@
 #include "config_manager.hpp"
 #include "constants.hpp"
 #include "dialogs.hpp"
+#include "document_data.hpp"
 #include "libpaperback/src/bridge.rs.h"
 #include "live_region.hpp"
 #include "main_window.hpp"
@@ -60,4 +61,35 @@ void speak(const wxString& message) {
 	if (label == nullptr) return;
 	label->SetLabel(message);
 	notify_live_region_changed(label);
+}
+
+// FFI helper functions
+wxString to_wxstring(const rust::String& rust_str) {
+	const std::string utf8 = std::string(rust_str);
+	return wxString::FromUTF8(utf8.c_str());
+}
+
+marker to_marker(const FfiMarker& ffi_marker) {
+	return marker{
+		ffi_marker.position,
+		static_cast<marker_type>(ffi_marker.marker_type),
+		to_wxstring(ffi_marker.text),
+		to_wxstring(ffi_marker.reference),
+		ffi_marker.level,
+		ffi_marker.length,
+	};
+}
+
+bool is_heading_marker(marker_type type) {
+	switch (type) {
+		case marker_type::Heading1:
+		case marker_type::Heading2:
+		case marker_type::Heading3:
+		case marker_type::Heading4:
+		case marker_type::Heading5:
+		case marker_type::Heading6:
+			return true;
+		default:
+			return false;
+	}
 }

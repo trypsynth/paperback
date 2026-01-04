@@ -58,6 +58,8 @@ struct session_document {
 	[[nodiscard]] wxString get_author() const { return wxString::FromUTF8(session_author(*session).c_str()); }
 	[[nodiscard]] const DocumentHandle& get_handle() const { return session_handle(*session); }
 	[[nodiscard]] uint32_t get_parser_flags() const { return session_parser_flags(*session); }
+	void ensure_toc_loaded();
+	[[nodiscard]] size_t find_closest_toc_offset(size_t position) const { return document_find_closest_toc_offset(get_handle(), position); }
 };
 
 // Legacy type - kept for compilation compatibility during migration

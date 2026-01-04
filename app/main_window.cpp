@@ -604,12 +604,12 @@ void main_window::on_go_forward(wxCommandEvent&) {
 }
 
 void main_window::on_go_to_page(wxCommandEvent&) {
-	auto* const doc = doc_manager->get_active_document();
-	const auto* const parser = doc_manager->get_active_parser();
-	if (doc == nullptr || parser == nullptr) {
+	auto* const tab = doc_manager->get_active_tab();
+	if (tab == nullptr || tab->session_doc == nullptr) {
 		return;
 	}
-	if (!parser_supports(parser->flags, parser_flags::supports_pages)) {
+	const size_t total_pages = doc_manager->marker_count(marker_type::PageBreak);
+	if (total_pages == 0) {
 		speak(_("No pages."));
 		return;
 	}
@@ -623,12 +623,11 @@ void main_window::on_go_to_page(wxCommandEvent&) {
 	if (current_page_idx >= 0) {
 		current_page = current_page_idx + 1; // Convert to 1-based index
 	}
-	go_to_page_dialog dlg(this, doc, parser, current_page);
+	go_to_page_dialog dlg(this, tab->session_doc.get(), current_page);
 	if (dlg.ShowModal() != wxID_OK) {
 		return;
 	}
 	const int page = dlg.get_page_number();
-	const size_t total_pages = doc_manager->marker_count(marker_type::PageBreak);
 	if (page >= 1 && std::cmp_less_equal(static_cast<size_t>(page), total_pages)) {
 		const size_t offset = doc_manager->marker_position_by_index(marker_type::PageBreak, page - 1); // Convert to 0-based index
 		doc_manager->go_to_position(static_cast<long>(offset));
@@ -791,8 +790,18 @@ void main_window::on_next_list_item(wxCommandEvent&) {
 	trigger_throttled_position_save();
 }
 void main_window::on_word_count(wxCommandEvent&) {
-	// TODO: Update to use DocumentSession for word count
-	wxMessageBox(_("Word count temporarily unavailable during migration."), _("Word count"), wxICON_INFORMATION);
+	auto* const tab = doc_manager->get_active_tab();
+	if (tab == nullptr || tab->session_doc == nullptr) {
+		return;
+	}
+
+	const auto stats = document_stats(tab->session_doc->get_handle());
+	wxString msg = wxString::Format(
+		_("Words: %zu\nLines: %zu\nCharacters: %zu\nCharacters (no spaces): %zu"),
+		stats.word_count, stats.line_count,
+		stats.char_count, stats.char_count_no_whitespace
+	);
+	wxMessageBox(msg, _("Word count"), wxICON_INFORMATION);
 }
 
 void main_window::on_doc_info(wxCommandEvent&) {
@@ -806,8 +815,8 @@ void main_window::on_toc(wxCommandEvent&) {
 }
 
 void main_window::on_list_elements(wxCommandEvent&) {
-	auto* const doc = doc_manager->get_active_document();
-	if (doc == nullptr) {
+	auto* const tab = doc_manager->get_active_tab();
+	if (tab == nullptr || tab->session_doc == nullptr) {
 		return;
 	}
 	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
@@ -815,7 +824,7 @@ void main_window::on_list_elements(wxCommandEvent&) {
 		return;
 	}
 	const long current_pos = text_ctrl->GetInsertionPoint();
-	elements_dialog dlg(this, doc, current_pos);
+	elements_dialog dlg(this, tab->session_doc.get(), current_pos);
 	if (dlg.ShowModal() != wxID_OK) {
 		return;
 	}

@@ -9,11 +9,20 @@
 
 #pragma once
 #include "config_manager.hpp"
+#include "document_data.hpp"
 #include "parser.hpp"
 #include <map>
 #include <string>
 #include <string_view>
 #include <wx/string.h>
+
+// Forward declarations for FFI types
+struct FfiMarker;
+namespace rust {
+inline namespace cxxbridge1 {
+class String;
+}
+} // namespace rust
 
 enum class find_options {
 	none = 0,
@@ -42,3 +51,8 @@ inline constexpr bool has_option(find_options options, find_options flag) noexce
 [[nodiscard]] long find_text(const wxString& haystack, const wxString& needle, long start, find_options options = find_options::forward);
 [[nodiscard]] const parser_info* get_parser_for_unknown_file(const wxString& path, config_manager& config);
 void speak(const wxString& message);
+
+// FFI helper functions
+[[nodiscard]] wxString to_wxstring(const rust::String& rust_str);
+[[nodiscard]] marker to_marker(const FfiMarker& ffi_marker);
+[[nodiscard]] bool is_heading_marker(marker_type type);
