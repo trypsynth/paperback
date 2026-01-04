@@ -479,6 +479,8 @@ pub mod ffi {
 		fn session_history_go_forward(session: &mut DocumentSession, current_pos: i64) -> FfiSessionNavResult;
 		fn session_activate_link(session: &mut DocumentSession, position: i64) -> FfiLinkActivationResult;
 		fn session_get_table_at_position(session: &DocumentSession, position: i64) -> String;
+		fn session_get_current_section_path(session: &DocumentSession, position: i64) -> String;
+		fn session_extract_resource(session: &DocumentSession, resource_path: &str, output_path: &str) -> Result<bool>;
 		fn session_handle(session: &DocumentSession) -> &DocumentHandle;
 	}
 }
@@ -1260,6 +1262,14 @@ fn session_activate_link(session: &mut DocumentSession, position: i64) -> ffi::F
 
 fn session_get_table_at_position(session: &DocumentSession, position: i64) -> String {
 	session.get_table_at_position(position).unwrap_or_default()
+}
+
+fn session_get_current_section_path(session: &DocumentSession, position: i64) -> String {
+	session.get_current_section_path(position).unwrap_or_default()
+}
+
+fn session_extract_resource(session: &DocumentSession, resource_path: &str, output_path: &str) -> Result<bool, String> {
+	session.extract_resource(resource_path, output_path).map_err(|e| e.to_string())
 }
 
 fn session_handle(session: &DocumentSession) -> &DocumentHandle {
