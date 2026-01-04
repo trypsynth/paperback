@@ -18,6 +18,7 @@
 #include "utils.hpp"
 #include <wx/aboutdlg.h>
 #include <wx/filename.h>
+#include <wx/filesys.h>
 #include <wx/stdpaths.h>
 #include <wx/timer.h>
 #include <wx/translation.h>
@@ -192,6 +193,7 @@ void main_window::create_menus() {
 			menu_item::item(ID_LIST_ELEMENTS, _("&Elements List...\tF7")),
 			menu_item::sep(),
 			menu_item::item(ID_OPEN_CONTAINING_FOLDER, _("Open &containing folder\tCtrl+Shift+C")),
+			menu_item::item(ID_OPEN_IN_WEBVIEW, _("Open in &Web View\tCtrl+Shift+V")),
 			menu_item::submenu(_("Import/&Export"), {
 														menu_item::item(ID_IMPORT, _("&Import document data...\tCtrl+Shift+I")),
 														menu_item::item(ID_EXPORT_DOCUMENT_DATA, _("&Export document data...\tCtrl+Shift+E")),
@@ -281,6 +283,7 @@ void main_window::bind_events() {
 		{ID_TABLE_OF_CONTENTS, &main_window::on_toc},
 		{ID_LIST_ELEMENTS, &main_window::on_list_elements},
 		{ID_OPEN_CONTAINING_FOLDER, &main_window::on_open_containing_folder},
+		{ID_OPEN_IN_WEBVIEW, &main_window::on_open_in_webview},
 		{ID_OPTIONS, &main_window::on_options},
 		{ID_SLEEP_TIMER, &main_window::on_sleep_timer},
 		{wxID_ABOUT, &main_window::on_about},
@@ -395,6 +398,7 @@ void main_window::update_ui() {
 		ID_TABLE_OF_CONTENTS,
 		ID_LIST_ELEMENTS,
 		ID_OPEN_CONTAINING_FOLDER,
+		ID_OPEN_IN_WEBVIEW,
 		ID_IMPORT,
 		ID_EXPORT_DOCUMENT_DATA,
 		ID_EXPORT_TO_TEXT,
@@ -849,6 +853,49 @@ void main_window::on_open_containing_folder(wxCommandEvent&) {
 	const wxString dir = wxFileName(path).GetPath();
 	if (!wxLaunchDefaultBrowser("file://" + dir)) {
 		wxMessageBox(_("Failed to open containing folder."), _("Error"), wxICON_ERROR);
+	}
+}
+
+void main_window::on_open_in_webview(wxCommandEvent&) {
+	auto* tab = doc_manager->get_active_tab();
+	if (tab == nullptr || tab->session_doc == nullptr) return;
+	auto* text_ctrl = doc_manager->get_active_text_ctrl();
+	if (text_ctrl == nullptr) return;
+	const long pos = text_ctrl->GetInsertionPoint();
+	try {
+		rust::String section_path = session_get_current_section_path(*tab->session_doc->session, pos);
+		wxString url_to_load;
+		wxString section_path_wx = wxString::FromUTF8(section_path.c_str());
+		wxString temp_base = wxStandardPaths::Get().GetTempDir();
+		size_t path_hash = std::hash<std::string>{}(std::string(tab->file_path.ToUTF8().data())); 
+		wxString doc_temp_dir = temp_base + wxFileName::GetPathSeparator() + "paperback_" + std::to_string(path_hash);
+		if (!wxDirExists(doc_temp_dir)) wxFileName::Mkdir(doc_temp_dir, wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
+		if (!section_path.empty()) {
+			wxFileName temp_file(doc_temp_dir, wxFileName(section_path_wx).GetFullName());
+			bool success = session_extract_resource(*tab->session_doc->session, section_path, temp_file.GetFullPath().ToStdString());
+			if (success) url_to_load = wxFileSystem::FileNameToURL(temp_file);
+		} 
+		if (url_to_load.IsEmpty()) {
+			wxFileName fn(tab->file_path);
+			wxString ext = fn.GetExt().Lower();
+			if (ext == "html" || ext == "htm" || ext == "xhtml" || ext == "md" || ext == "markdown")
+				url_to_load = wxFileSystem::FileNameToURL(fn);
+		}
+		auto navigation_handler = [](const wxString& url) -> bool {
+			if (url.Lower().StartsWith("http://") || url.Lower().StartsWith("https://") || url.Lower().StartsWith("mailto:")) {
+				wxLaunchDefaultBrowser(url);
+				return false;
+			}
+			return true;
+		};
+		if (!url_to_load.IsEmpty()) {
+			web_view_dialog dlg(this, _("Web View"), url_to_load, true, navigation_handler);
+			dlg.ShowModal();
+		} else {
+			wxMessageBox(_("Could not determine content to display in Web View."), _("Error"), wxICON_ERROR);
+		}
+	} catch (const std::exception& e) {
+		wxMessageBox(wxString::Format(_("Error opening Web View: %s"), e.what()), _("Error"), wxICON_ERROR);
 	}
 }
 

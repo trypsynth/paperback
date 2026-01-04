@@ -95,7 +95,11 @@ impl Parser for EpubParser {
 			};
 			let section_start = buffer.current_position();
 			let section_label = format!("Section {}", idx + 1);
-			buffer.add_marker(Marker::new(MarkerType::SectionBreak, section_start).with_text(section_label));
+			buffer.add_marker(
+				Marker::new(MarkerType::SectionBreak, section_start)
+					.with_text(section_label)
+					.with_reference(item.path.clone()),
+			);
 			match convert_section(&section_data) {
 				Ok(section) => {
 					for (id, relative) in section.id_positions {

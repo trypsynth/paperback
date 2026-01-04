@@ -111,6 +111,7 @@ private:
 	void on_toc(wxCommandEvent&);
 	void on_list_elements(wxCommandEvent&);
 	void on_open_containing_folder(wxCommandEvent&);
+	void on_open_in_webview(wxCommandEvent&);
 	void on_options(wxCommandEvent&);
 	void on_about(wxCommandEvent&);
 	void on_help(wxCommandEvent&);
