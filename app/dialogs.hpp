@@ -93,7 +93,7 @@ enum class bookmark_filter {
 
 class bookmark_dialog : public dialog {
 public:
-	bookmark_dialog(wxWindow* parent, const std::vector<bookmark>& bookmarks, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos = -1, bookmark_filter initial_filter = bookmark_filter::all);
+	bookmark_dialog(wxWindow* parent, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos = -1, bookmark_filter initial_filter = bookmark_filter::all);
 	~bookmark_dialog() override = default;
 	bookmark_dialog(const bookmark_dialog&) = delete;
 	bookmark_dialog& operator=(const bookmark_dialog&) = delete;
@@ -106,7 +106,6 @@ public:
 
 private:
 	wxChoice* filter_choice{nullptr};
-	std::vector<bookmark> all_bookmarks;
 	wxListBox* bookmark_list{nullptr};
 	std::vector<bookmark> bookmark_positions;
 	long selected_position;
@@ -128,7 +127,7 @@ private:
 
 class document_info_dialog : public dialog {
 public:
-	document_info_dialog(wxWindow* parent, const document* doc, const wxString& file_path, config_manager& cfg_mgr);
+	document_info_dialog(wxWindow* parent, session_document* session_doc, const wxString& file_path, config_manager& cfg_mgr);
 	~document_info_dialog() override = default;
 	document_info_dialog(const document_info_dialog&) = delete;
 	document_info_dialog& operator=(const document_info_dialog&) = delete;

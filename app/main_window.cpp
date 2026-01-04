@@ -790,8 +790,18 @@ void main_window::on_next_list_item(wxCommandEvent&) {
 	trigger_throttled_position_save();
 }
 void main_window::on_word_count(wxCommandEvent&) {
-	// TODO: Update to use DocumentSession for word count
-	wxMessageBox(_("Word count temporarily unavailable during migration."), _("Word count"), wxICON_INFORMATION);
+	auto* const tab = doc_manager->get_active_tab();
+	if (tab == nullptr || tab->session_doc == nullptr) {
+		return;
+	}
+
+	const auto stats = document_stats(tab->session_doc->get_handle());
+	wxString msg = wxString::Format(
+		_("Words: %zu\nLines: %zu\nCharacters: %zu\nCharacters (no spaces): %zu"),
+		stats.word_count, stats.line_count,
+		stats.char_count, stats.char_count_no_whitespace
+	);
+	wxMessageBox(msg, _("Word count"), wxICON_INFORMATION);
 }
 
 void main_window::on_doc_info(wxCommandEvent&) {

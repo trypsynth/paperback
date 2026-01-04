@@ -73,37 +73,39 @@ rust::Vec<long long> to_rust_history(const std::vector<long>& history) {
 	return rust_history;
 }
 
-void populate_toc_items(std::vector<std::unique_ptr<toc_item>>& toc_items, const rust::Vec<FfiTocItem>& ffi_toc_items) {
+void populate_toc_items(std::vector<std::unique_ptr<toc_item>>& toc_items, const rust::Vec<FfiTocItemWithParent>& ffi_toc_items) {
 	if (ffi_toc_items.empty()) {
 		return;
 	}
-	constexpr int MAX_DEPTH = 32;
-	std::vector<std::vector<std::unique_ptr<toc_item>>*> depth_stacks(MAX_DEPTH + 1, nullptr);
-	depth_stacks[0] = &toc_items;
+
+	// Track pointers to items by their index for parent lookups
+	std::vector<toc_item*> item_ptrs;
+	item_ptrs.reserve(ffi_toc_items.size());
+
 	for (const auto& rust_toc : ffi_toc_items) {
 		auto item = std::make_unique<toc_item>();
 		item->name = to_wxstring(rust_toc.name);
 		item->ref = to_wxstring(rust_toc.reference);
 		item->offset = rust_toc.offset;
-		const int depth = rust_toc.depth;
-		if (depth < 0 || depth > MAX_DEPTH) {
-			continue;
+
+		toc_item* item_ptr = item.get();
+
+		// Use parent_index to find where to insert
+		if (rust_toc.parent_index < 0) {
+			// Root level item
+			toc_items.push_back(std::move(item));
+		} else {
+			// Child item - add to parent's children
+			const auto parent_idx = static_cast<size_t>(rust_toc.parent_index);
+			if (parent_idx < item_ptrs.size()) {
+				item_ptrs[parent_idx]->children.push_back(std::move(item));
+			} else {
+				// Fallback to root if parent index is invalid
+				toc_items.push_back(std::move(item));
+			}
 		}
-		std::vector<std::unique_ptr<toc_item>>* parent_list = nullptr;
-		const auto parent_it = std::find_if(depth_stacks.rbegin() + (MAX_DEPTH - depth), depth_stacks.rend(), [](const auto* stack) {
-			return stack != nullptr;
-		});
-		if (parent_it != depth_stacks.rend()) {
-			parent_list = *parent_it;
-		}
-		if (parent_list == nullptr) {
-			parent_list = &toc_items;
-		}
-		parent_list->push_back(std::move(item));
-		depth_stacks[depth + 1] = &parent_list->back()->children;
-		for (int i = depth + 2; i <= MAX_DEPTH; ++i) {
-			depth_stacks[i] = nullptr;
-		}
+
+		item_ptrs.push_back(item_ptr);
 	}
 }
 
@@ -113,7 +115,7 @@ void ensure_toc_loaded(session_document& session_doc) {
 	}
 	session_doc.toc_loaded = true;
 	const DocumentHandle& handle = session_doc.get_handle();
-	populate_toc_items(session_doc.toc_items, document_toc_items(handle));
+	populate_toc_items(session_doc.toc_items, document_toc_items_with_parents(handle));
 }
 } // namespace
 
@@ -122,7 +124,7 @@ void session_document::ensure_toc_loaded() {
 		return;
 	}
 	toc_loaded = true;
-	populate_toc_items(toc_items, document_toc_items(get_handle()));
+	populate_toc_items(toc_items, document_toc_items_with_parents(get_handle()));
 }
 
 document_manager::document_manager(wxNotebook* nbk, config_manager& cfg, main_window& win) : notebook{nbk}, config{cfg}, main_win{win} {
@@ -787,7 +789,7 @@ void document_manager::show_bookmark_dialog(wxWindow* parent, bookmark_filter in
 		return;
 	}
 	const int current_pos = text_ctrl->GetInsertionPoint();
-	bookmark_dialog dialog(parent, bookmarks, text_ctrl, config, tab->file_path, current_pos, initial_filter);
+	bookmark_dialog dialog(parent, text_ctrl, config, tab->file_path, current_pos, initial_filter);
 	const int result = dialog.ShowModal();
 	if (result != wxID_OK) {
 		return;
@@ -856,8 +858,7 @@ void document_manager::show_document_info(wxWindow* parent) {
 	if (tab == nullptr) {
 		return;
 	}
-	// Pass nullptr for document since we removed the legacy document structure
-	document_info_dialog dlg(parent, nullptr, tab->file_path, config);
+	document_info_dialog dlg(parent, tab->session_doc.get(), tab->file_path, config);
 	dlg.ShowModal();
 	if (dlg.imported_position > -1) {
 		go_to_position(dlg.imported_position);
