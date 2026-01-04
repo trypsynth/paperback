@@ -155,14 +155,13 @@ void app::restore_previous_documents() {
 		if (existing_tab >= 0) {
 			continue;
 		}
-		const auto* parser = find_parser_by_extension(wxFileName(path).GetExt());
-		if (parser == nullptr) {
-			parser = get_parser_for_unknown_file(path, config_mgr);
-			if (parser == nullptr) {
+		const wxString extension = wxFileName(path).GetExt();
+		if (!is_parser_supported(extension)) {
+			if (!ensure_parser_for_unknown_file(path, config_mgr)) {
 				continue;
 			}
 		}
-		if (!doc_manager->create_document_tab(path, parser, false, false)) {
+		if (!doc_manager->create_document_tab(path, false, false)) {
 			continue;
 		}
 	}

@@ -15,16 +15,7 @@
 #include <wx/string.h>
 #include <wx/translation.h>
 
-namespace {
-using parser_list = std::vector<parser_info>;
-
 constexpr std::string_view PASSWORD_REQUIRED_PREFIX = "[password_required]";
-
-parser_list& get_parser_infos() {
-	static parser_list parsers;
-	return parsers;
-}
-
 parser_exception make_parser_exception(const std::exception& e, const wxString& path) {
 	const std::string message = e.what();
 	if (message.rfind(PASSWORD_REQUIRED_PREFIX, 0) == 0) {
@@ -35,24 +26,11 @@ parser_exception make_parser_exception(const std::exception& e, const wxString& 
 	}
 	return parser_exception(wxString::FromUTF8(message.c_str()), path);
 }
-} // namespace
 
 bool initialize_parser_registry() {
 	try {
-		const auto parser_infos = get_available_parsers();
-		auto& parsers = get_parser_infos();
-		parsers.clear();
-		parsers.reserve(parser_infos.size());
-		for (const auto& info : parser_infos) {
-			parser_info record;
-			record.name = to_wxstring(info.name);
-			record.flags = static_cast<parser_flags>(info.flags);
-			record.extensions.reserve(info.extensions.size());
-			for (const auto& ext : info.extensions) {
-				record.extensions.push_back(to_wxstring(ext));
-			}
-			parsers.push_back(std::move(record));
-		}
+		// Touch the backend to surface any parser initialization errors early.
+		[[maybe_unused]] const auto parser_infos = get_available_parsers();
 		return true;
 	} catch (const std::exception& e) {
 		wxMessageBox(e.what(), _("Error"), wxICON_ERROR);
@@ -60,18 +38,13 @@ bool initialize_parser_registry() {
 	}
 }
 
-const parser_info* find_parser_by_extension(const wxString& extension) {
+bool is_parser_supported(const wxString& extension) {
 	if (extension.IsEmpty()) {
-		return nullptr;
+		return false;
 	}
 	const wxString normalized = extension.Lower();
-	const auto& parsers = get_parser_infos();
-	const auto parser_it = std::find_if(parsers.begin(), parsers.end(), [&](const parser_info& parser) {
-		return std::any_of(parser.extensions.begin(), parser.extensions.end(), [&](const wxString& ext) {
-			return ext.Lower() == normalized;
-		});
-	});
-	return parser_it != parsers.end() ? &(*parser_it) : nullptr;
+	const std::string ext_utf8 = std::string(normalized.ToUTF8());
+	return parser_supports_extension(ext_utf8);
 }
 
 wxString get_supported_wildcards() {

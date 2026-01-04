@@ -32,17 +32,18 @@ long find_text(const wxString& haystack, const wxString& needle, long start, fin
 	return result < 0 ? wxNOT_FOUND : static_cast<long>(result);
 }
 
-const parser_info* get_parser_for_unknown_file(const wxString& path, config_manager& config) {
+bool ensure_parser_for_unknown_file(const wxString& path, config_manager& config) {
 	const wxString saved_format = config.get_document_format(path);
-	if (!saved_format.IsEmpty()) {
-		const auto* par = find_parser_by_extension(saved_format);
-		if (par != nullptr) return par;
-	}
+	if (!saved_format.IsEmpty() && is_parser_supported(saved_format)) return true;
 	open_as_dialog dlg(nullptr, path);
-	if (dlg.ShowModal() != wxID_OK) return nullptr;
+	if (dlg.ShowModal() != wxID_OK) return false;
 	const wxString format = dlg.get_selected_format();
+	if (!is_parser_supported(format)) {
+		wxMessageBox(_("Unsupported format selected."), _("Error"), wxICON_ERROR);
+		return false;
+	}
 	config.set_document_format(path, format);
-	return find_parser_by_extension(format);
+	return true;
 }
 
 void speak(const wxString& message) {

@@ -131,12 +131,11 @@ bool document_manager::open_file(const wxString& path, bool add_to_recent) {
 		if (text_ctrl != nullptr) text_ctrl->SetFocus();
 		return true;
 	}
-	const parser_info* parser = find_parser_by_extension(wxFileName(path).GetExt());
-	if (parser == nullptr) {
-		parser = get_parser_for_unknown_file(path, config);
-		if (parser == nullptr) return false;
+	const wxString extension = wxFileName(path).GetExt();
+	if (!is_parser_supported(extension)) {
+		if (!ensure_parser_for_unknown_file(path, config)) return false;
 	}
-	if (!create_document_tab(path, parser, true, add_to_recent)) return false;
+	if (!create_document_tab(path, true, add_to_recent)) return false;
 	auto* const text_ctrl = get_active_text_ctrl();
 	if (text_ctrl != nullptr) {
 		text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, &main_win);
@@ -146,8 +145,7 @@ bool document_manager::open_file(const wxString& path, bool add_to_recent) {
 	return true;
 }
 
-bool document_manager::create_document_tab(const wxString& path, const parser_info* parser, bool set_focus, bool add_to_recent) {
-	if (parser == nullptr) return false;
+bool document_manager::create_document_tab(const wxString& path, bool set_focus, bool add_to_recent) {
 	try {
 		config.import_document_settings(path);
 		const wxString forced_extension = config.get_document_format(path);
@@ -196,7 +194,6 @@ bool document_manager::create_document_tab(const wxString& path, const parser_in
 		auto* tab_data = new document_tab;
 		tab_data->session_doc = std::move(session_doc);
 		tab_data->file_path = path;
-		tab_data->parser = parser;
 		wxPanel* panel = create_tab_panel(tab_data->session_doc->content, tab_data);
 		tab_data->panel = panel;
 		notebook->AddPage(panel, tab_data->session_doc->get_title(), true);
@@ -272,11 +269,6 @@ document_tab* document_manager::get_active_tab() const {
 wxTextCtrl* document_manager::get_active_text_ctrl() const {
 	const document_tab* tab = get_active_tab();
 	return tab != nullptr ? tab->text_ctrl : nullptr;
-}
-
-const parser_info* document_manager::get_active_parser() const {
-	const document_tab* tab = get_active_tab();
-	return tab != nullptr ? tab->parser : nullptr;
 }
 
 int document_manager::get_tab_count() const {

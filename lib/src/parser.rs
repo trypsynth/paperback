@@ -148,6 +148,18 @@ pub fn get_parser_flags_for_context(context: &ParserContext) -> ParserFlags {
 	ParserRegistry::global().get_parser_for_extension(extension).map_or(ParserFlags::NONE, Parser::supported_flags)
 }
 
+#[must_use]
+pub fn parser_supports_extension(extension: &str) -> bool {
+	if extension.is_empty() {
+		return false;
+	}
+	let normalized = extension.trim_start_matches('.').to_ascii_lowercase();
+	if normalized.is_empty() {
+		return false;
+	}
+	ParserRegistry::global().get_parser_for_extension(&normalized).is_some()
+}
+
 fn join_extensions<'a, I>(exts: I) -> String
 where
 	I: IntoIterator<Item = &'a str>,

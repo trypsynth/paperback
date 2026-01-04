@@ -357,6 +357,7 @@ pub mod ffi {
 		fn find_zip_entry(zip_path: &str, entry_name: &str) -> Result<usize>;
 		fn get_available_parsers() -> Vec<ParserInfo>;
 		fn parser_supported_wildcards() -> String;
+		fn parser_supports_extension(extension: &str) -> bool;
 		fn parse_document(file_path: &str, password: &str) -> Result<FfiDocument>;
 		fn get_parser_for_extension(extension: &str) -> Result<String>;
 		fn convert_xml_to_text(content: &str) -> Result<FfiXmlConversion>;
@@ -741,6 +742,10 @@ fn get_available_parsers() -> Vec<ffi::ParserInfo> {
 
 fn parser_supported_wildcards() -> String {
 	parser::build_file_filter_string()
+}
+
+fn parser_supports_extension(extension: &str) -> bool {
+	parser::parser_supports_extension(extension)
 }
 
 fn parse_document(file_path: &str, password: &str) -> Result<ffi::FfiDocument, String> {

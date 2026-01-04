@@ -40,7 +40,7 @@ inline constexpr bool has_option(find_options options, find_options flag) noexce
 }
 
 [[nodiscard]] long find_text(const wxString& haystack, const wxString& needle, long start, find_options options = find_options::forward);
-[[nodiscard]] const parser_info* get_parser_for_unknown_file(const wxString& path, config_manager& config);
+[[nodiscard]] bool ensure_parser_for_unknown_file(const wxString& path, config_manager& config);
 void speak(const wxString& message);
 
 // FFI helper functions

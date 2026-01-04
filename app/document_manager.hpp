@@ -7,7 +7,6 @@
 #include <wx/clntdata.h>
 #include <wx/string.h>
 
-struct parser_info;
 class wxNotebook;
 class wxTextCtrl;
 class wxPanel;
@@ -20,7 +19,6 @@ struct document_tab : public wxClientData {
 	std::unique_ptr<session_document> session_doc;
 	wxString file_path;
 	wxPanel* panel{nullptr};
-	const parser_info* parser{nullptr};
 
 	document_tab() = default;
 	~document_tab() = default;
@@ -55,7 +53,7 @@ public:
 	document_manager(document_manager&&) = delete;
 	document_manager& operator=(document_manager&&) = delete;
 	[[nodiscard]] bool open_file(const wxString& path, bool add_to_recent = true);
-	[[nodiscard]] bool create_document_tab(const wxString& path, const parser_info* parser, bool set_focus = true, bool add_to_recent = true);
+	[[nodiscard]] bool create_document_tab(const wxString& path, bool set_focus = true, bool add_to_recent = true);
 	void update_ui();
 	void close_document(int index);
 	void close_all_documents();
@@ -63,7 +61,6 @@ public:
 	[[nodiscard]] document_tab* get_tab(int index) const;
 	[[nodiscard]] document_tab* get_active_tab() const;
 	[[nodiscard]] wxTextCtrl* get_active_text_ctrl() const;
-	[[nodiscard]] const parser_info* get_active_parser() const;
 	[[nodiscard]] int get_tab_count() const;
 	[[nodiscard]] int get_active_tab_index() const;
 	[[nodiscard]] int page_index(size_t position) const;
