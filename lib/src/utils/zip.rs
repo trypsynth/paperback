@@ -1,6 +1,6 @@
 use std::{
-	fs::File,
-	io::{Read, Seek},
+	fs::{self, File},
+	io::{self, Read, Seek},
 	path::Path,
 };
 
@@ -22,13 +22,11 @@ pub fn extract_zip_entry_to_file<R: Read + Seek>(
 	output_path: &Path,
 ) -> Result<()> {
 	let mut entry = archive.by_name(name).with_context(|| format!("Failed to get entry '{name}'"))?;
-
 	if let Some(parent) = output_path.parent() {
-		std::fs::create_dir_all(parent).with_context(|| format!("Failed to create directory '{parent:?}'"))?;
+		fs::create_dir_all(parent).with_context(|| format!("Failed to create directory '{parent:?}'"))?;
 	}
-
 	let mut out_file = File::create(output_path).with_context(|| format!("Failed to create file '{output_path:?}'"))?;
-	std::io::copy(&mut entry, &mut out_file).with_context(|| format!("Failed to extract entry '{name}'"))?;
+	io::copy(&mut entry, &mut out_file).with_context(|| format!("Failed to extract entry '{name}'"))?;
 	Ok(())
 }
 

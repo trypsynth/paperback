@@ -1,6 +1,6 @@
 use std::{fs::File, io::BufReader, path::Path};
 
-use ::zip::ZipArchive;
+use zip::ZipArchive;
 
 use crate::{
 	bridge::ffi::{self, NavDirection, NavTarget},
