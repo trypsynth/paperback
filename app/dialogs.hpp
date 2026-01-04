@@ -361,22 +361,6 @@ private:
 	wxSpinCtrl* input_ctrl{nullptr};
 };
 
-class web_view_dialog : public wxDialog {
-public:
-	web_view_dialog(wxWindow* parent, const wxString& title, const wxString& url_or_content, bool is_url = false, std::function<bool(const wxString&)> navigation_handler = nullptr);
-
-private:
-	wxWebView* web_view;
-	std::function<bool(const wxString&)> navigation_handler_;
-
-	void on_webview_loaded(wxWebViewEvent& event);
-	void on_webview_navigating(wxWebViewEvent& event);
-	void on_script_message(wxWebViewEvent& event);
-	void simulate_click();
-};
-
-using table_dialog = web_view_dialog;
-
 
 class toc_tree_item_data : public wxTreeItemData {
 public:
@@ -439,4 +423,18 @@ public:
 
 private:
 	wxTextCtrl* note_ctrl{nullptr};
+};
+
+class web_view_dialog : public wxDialog {
+public:
+	web_view_dialog(wxWindow* parent, const wxString& title, const wxString& url_or_content, bool is_url = false, std::function<bool(const wxString&)> navigation_handler = nullptr);
+
+private:
+	wxWebView* web_view;
+	std::function<bool(const wxString&)> navigation_handler_;
+
+	void on_webview_loaded(wxWebViewEvent& event);
+	void on_webview_navigating(wxWebViewEvent& event);
+	void on_script_message(wxWebViewEvent& event);
+	void simulate_click();
 };

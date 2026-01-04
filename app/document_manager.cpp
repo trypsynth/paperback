@@ -1103,6 +1103,6 @@ void document_manager::activate_current_table() {
 	if (!marker_result.found) return;
 	const auto& table_marker = marker_result.marker;
 	if (static_cast<size_t>(current_pos) < table_marker.position || static_cast<size_t>(current_pos) > (table_marker.position + table_marker.length)) return;
-	table_dialog dlg(&main_win, _("Table"), rust_to_wx(rust::String(table_marker.reference)));
+	web_view_dialog dlg(&main_win, _("Table"), rust_to_wx(rust::String(table_marker.reference)));
 	dlg.ShowModal();
 }
