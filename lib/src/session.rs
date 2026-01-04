@@ -128,7 +128,7 @@ impl DocumentSession {
 		&self.handle
 	}
 
-	pub fn handle_mut(&mut self) -> &mut DocumentHandle {
+	pub const fn handle_mut(&mut self) -> &mut DocumentHandle {
 		&mut self.handle
 	}
 
@@ -176,6 +176,7 @@ impl DocumentSession {
 		record_position_internal(&mut self.history, &mut self.history_index, position, MAX_HISTORY_LEN);
 	}
 
+	#[must_use]
 	pub fn navigate_section(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
 		if !self.parser_flags.contains(ParserFlags::SUPPORTS_SECTIONS) {
 			return NavigationResult::not_supported();
@@ -191,6 +192,7 @@ impl DocumentSession {
 		NavigationResult::from_nav_result(&result)
 	}
 
+	#[must_use]
 	pub fn navigate_heading(&self, position: i64, wrap: bool, next: bool, level: i32) -> NavigationResult {
 		if !self.has_headings(if level > 0 { Some(level) } else { None }) {
 			return NavigationResult::not_supported();
@@ -206,6 +208,7 @@ impl DocumentSession {
 		NavigationResult::from_nav_result(&result)
 	}
 
+	#[must_use]
 	pub fn navigate_page(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
 		let count = self.handle.count_markers_by_type(MarkerType::PageBreak);
 		if count == 0 {
@@ -227,6 +230,7 @@ impl DocumentSession {
 		nav_result
 	}
 
+	#[must_use]
 	pub fn navigate_link(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
 		let count = self.handle.count_markers_by_type(MarkerType::Link);
 		if count == 0 {
@@ -243,6 +247,7 @@ impl DocumentSession {
 		NavigationResult::from_nav_result(&result)
 	}
 
+	#[must_use]
 	pub fn navigate_list(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
 		if !self.parser_flags.contains(ParserFlags::SUPPORTS_LISTS) {
 			return NavigationResult::not_supported();
@@ -262,6 +267,7 @@ impl DocumentSession {
 		NavigationResult::from_nav_result(&result)
 	}
 
+	#[must_use]
 	pub fn navigate_list_item(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
 		if !self.parser_flags.contains(ParserFlags::SUPPORTS_LISTS) {
 			return NavigationResult::not_supported();
@@ -281,6 +287,7 @@ impl DocumentSession {
 		NavigationResult::from_nav_result(&result)
 	}
 
+	#[must_use]
 	pub fn navigate_table(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
 		let count = self.handle.count_markers_by_type(MarkerType::Table);
 		if count == 0 {
@@ -297,6 +304,7 @@ impl DocumentSession {
 		NavigationResult::from_nav_result(&result)
 	}
 
+	#[must_use]
 	pub fn navigate_bookmark(&self, config: &ConfigManager, position: i64, wrap: bool, next: bool) -> NavigationResult {
 		let result = bookmark_navigate(config, &self.file_path, position, wrap, next, false);
 		if result.found {
@@ -314,6 +322,7 @@ impl DocumentSession {
 		}
 	}
 
+	#[must_use]
 	pub fn navigate_note(&self, config: &ConfigManager, position: i64, wrap: bool, next: bool) -> NavigationResult {
 		let result = bookmark_navigate(config, &self.file_path, position, wrap, next, true);
 		if result.found {
@@ -430,6 +439,7 @@ impl DocumentSession {
 		Some(marker.reference.clone())
 	}
 
+	#[must_use]
 	pub fn get_current_section_path(&self, position: i64) -> Option<String> {
 		let pos_usize = usize::try_from(position.max(0)).unwrap_or(0);
 		let section_index = self.handle.current_marker_index(pos_usize, MarkerType::SectionBreak)?;

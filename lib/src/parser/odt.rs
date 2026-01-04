@@ -144,7 +144,7 @@ fn process_table(node: Node, buffer: &mut DocumentBuffer, id_positions: &mut Has
 	let table_end = buffer.current_position();
 	let table_text = buffer.content[table_start..table_end].to_string();
 	if !table_text.trim().is_empty() {
-		let marker_text = if !table_caption.trim().is_empty() { table_caption } else { "table".to_string() };
+		let marker_text = if table_caption.trim().is_empty() { "table".to_string() } else { table_caption };
 		buffer.add_marker(
 			Marker::new(MarkerType::Table, table_start)
 				.with_text(marker_text)

@@ -142,10 +142,7 @@ pub fn get_parser_flags_for_context(context: &ParserContext) -> ParserFlags {
 	} else {
 		path.extension().and_then(|e| e.to_str()).unwrap_or("")
 	};
-	ParserRegistry::global()
-		.get_parser_for_extension(extension)
-		.map(|p| p.supported_flags())
-		.unwrap_or(ParserFlags::NONE)
+	ParserRegistry::global().get_parser_for_extension(extension).map_or(ParserFlags::NONE, Parser::supported_flags)
 }
 
 #[cfg(test)]

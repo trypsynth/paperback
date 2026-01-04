@@ -41,6 +41,12 @@ pub struct ConfigManager {
 	initialized: bool,
 }
 
+impl Default for ConfigManager {
+	fn default() -> Self {
+		Self::new()
+	}
+}
+
 impl ConfigManager {
 	#[must_use]
 	pub fn new() -> Self {

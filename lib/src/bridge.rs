@@ -1152,7 +1152,7 @@ fn session_file_path(session: &DocumentSession) -> String {
 	session.file_path().to_string()
 }
 
-fn session_parser_flags(session: &DocumentSession) -> u32 {
+const fn session_parser_flags(session: &DocumentSession) -> u32 {
 	session.parser_flags().bits()
 }
 
@@ -1272,6 +1272,6 @@ fn session_extract_resource(session: &DocumentSession, resource_path: &str, outp
 	session.extract_resource(resource_path, output_path).map_err(|e| e.to_string())
 }
 
-fn session_handle(session: &DocumentSession) -> &DocumentHandle {
+const fn session_handle(session: &DocumentSession) -> &DocumentHandle {
 	session.handle()
 }
