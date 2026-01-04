@@ -75,38 +75,7 @@ const parser_info* find_parser_by_extension(const wxString& extension) {
 }
 
 wxString get_supported_wildcards() {
-	const auto& parsers = get_parser_infos();
-	if (parsers.empty()) {
-		return {};
-	}
-	std::set<wxString> all_exts;
-	for (const auto& parser : parsers) {
-		all_exts.insert(parser.extensions.begin(), parser.extensions.end());
-	}
-	auto join_extensions = [](const auto& exts) {
-		std::ostringstream oss;
-		bool first = true;
-		for (const auto& ext : exts) {
-			if (!first) {
-				oss << ";";
-			}
-			oss << "*." << std::string(ext.mb_str());
-			first = false;
-		}
-		return wxString::FromUTF8(oss.str());
-	};
-	wxString result;
-	const wxString all_ext_part = join_extensions(all_exts);
-	result += "All Supported Files (" + all_ext_part + ")|" + all_ext_part + "|";
-	for (const auto& parser : parsers) {
-		if (parser.extensions.empty()) {
-			continue;
-		}
-		const wxString ext_part = join_extensions(parser.extensions);
-		result += parser.name + " (" + ext_part + ")|" + ext_part + "|";
-	}
-	result += "All Files (*.*)|*.*";
-	return result;
+	return to_wxstring(parser_supported_wildcards());
 }
 
 // Legacy function - no longer used, documents now created via session_new()

@@ -1,4 +1,7 @@
-use std::{collections::HashMap, sync::OnceLock};
+use std::{
+	collections::{BTreeSet, HashMap},
+	sync::OnceLock,
+};
 
 use anyhow::Result;
 
@@ -143,6 +146,69 @@ pub fn get_parser_flags_for_context(context: &ParserContext) -> ParserFlags {
 		path.extension().and_then(|e| e.to_str()).unwrap_or("")
 	};
 	ParserRegistry::global().get_parser_for_extension(extension).map_or(ParserFlags::NONE, Parser::supported_flags)
+}
+
+fn join_extensions<'a, I>(exts: I) -> String
+where
+	I: IntoIterator<Item = &'a str>,
+{
+	let mut result = String::new();
+	let mut first = true;
+	for ext in exts {
+		if ext.is_empty() {
+			continue;
+		}
+		if !first {
+			result.push(';');
+		} else {
+			first = false;
+		}
+		result.push_str("*.");
+		result.push_str(ext);
+	}
+	result
+}
+
+#[must_use]
+pub fn build_file_filter_string() -> String {
+	let parsers = ParserRegistry::global().all_parsers();
+	if parsers.is_empty() {
+		return "All Files (*.*)|*.*".to_string();
+	}
+	let mut all_extensions = BTreeSet::new();
+	for parser in &parsers {
+		for ext in &parser.extensions {
+			if !ext.is_empty() {
+				all_extensions.insert(ext.clone());
+			}
+		}
+	}
+	let mut parts = String::new();
+	let all_ext_part = join_extensions(all_extensions.iter().map(std::string::String::as_str));
+	if !all_ext_part.is_empty() {
+		parts.push_str("All Supported Files (");
+		parts.push_str(&all_ext_part);
+		parts.push_str(")|");
+		parts.push_str(&all_ext_part);
+		parts.push('|');
+	}
+	for parser in &parsers {
+		if parser.extensions.is_empty() {
+			continue;
+		}
+		let ext_part = join_extensions(parser.extensions.iter().map(std::string::String::as_str));
+		if ext_part.is_empty() {
+			continue;
+		}
+		parts.push_str(&parser.name);
+		parts.push_str(" (");
+		parts.push_str(&ext_part);
+		parts.push_str(")|");
+		parts.push_str(&ext_part);
+		parts.push('|');
+	}
+	parts.push_str("All Files (*.*)|*.*");
+	parts
 }
 
 #[cfg(test)]
