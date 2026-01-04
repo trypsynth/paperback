@@ -858,56 +858,36 @@ void main_window::on_open_containing_folder(wxCommandEvent&) {
 
 void main_window::on_open_in_webview(wxCommandEvent&) {
 	auto* tab = doc_manager->get_active_tab();
-	if (tab == nullptr || tab->session_doc == nullptr) {
-		return;
-	}
-
+	if (tab == nullptr || tab->session_doc == nullptr) return;
 	auto* text_ctrl = doc_manager->get_active_text_ctrl();
-	if (text_ctrl == nullptr) {
-		return;
-	}
-	
+	if (text_ctrl == nullptr) return;
 	const long pos = text_ctrl->GetInsertionPoint();
-	
 	try {
 		rust::String section_path = session_get_current_section_path(*tab->session_doc->session, pos);
 		wxString url_to_load;
-		               wxString section_path_wx = wxString::FromUTF8(section_path.c_str());
-		
-		               wxString temp_base = wxStandardPaths::Get().GetTempDir();
-		               size_t path_hash = std::hash<std::string>{}(std::string(tab->file_path.ToUTF8().data())); 
-		               wxString doc_temp_dir = temp_base + wxFileName::GetPathSeparator() + "paperback_" + std::to_string(path_hash);
-		
-		               if (!wxDirExists(doc_temp_dir)) {			wxFileName::Mkdir(doc_temp_dir, wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
-		}
-
-		               if (!section_path.empty()) {
-		                       wxFileName temp_file(doc_temp_dir, wxFileName(section_path_wx).GetFullName());    
-		
-		                       bool success = session_extract_resource(
-		                               *tab->session_doc->session,
-		                               section_path,
-		                               temp_file.GetFullPath().ToStdString()
-		                       );
-		
-		                       if (success) {				url_to_load = wxFileSystem::FileNameToURL(temp_file);
-			}
-		               } 
-		
-		               if (url_to_load.IsEmpty()) {
-		                       wxFileName fn(tab->file_path);
-		                       wxString ext = fn.GetExt().Lower();			if (ext == "html" || ext == "htm" || ext == "xhtml" || ext == "md" || ext == "markdown") {
+		wxString section_path_wx = wxString::FromUTF8(section_path.c_str());
+		wxString temp_base = wxStandardPaths::Get().GetTempDir();
+		size_t path_hash = std::hash<std::string>{}(std::string(tab->file_path.ToUTF8().data())); 
+		wxString doc_temp_dir = temp_base + wxFileName::GetPathSeparator() + "paperback_" + std::to_string(path_hash);
+		if (!wxDirExists(doc_temp_dir)) wxFileName::Mkdir(doc_temp_dir, wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
+		if (!section_path.empty()) {
+			wxFileName temp_file(doc_temp_dir, wxFileName(section_path_wx).GetFullName());
+			bool success = session_extract_resource(*tab->session_doc->session, section_path, temp_file.GetFullPath().ToStdString());
+			if (success) url_to_load = wxFileSystem::FileNameToURL(temp_file);
+		} 
+		if (url_to_load.IsEmpty()) {
+			wxFileName fn(tab->file_path);
+			wxString ext = fn.GetExt().Lower();
+			if (ext == "html" || ext == "htm" || ext == "xhtml" || ext == "md" || ext == "markdown")
 				url_to_load = wxFileSystem::FileNameToURL(fn);
-			}
 		}
-
-		               auto navigation_handler = [](const wxString& url) -> bool {
-		                       if (url.Lower().StartsWith("http://") || url.Lower().StartsWith("https://") || url.Lower().StartsWith("mailto:")) {
-		                               wxLaunchDefaultBrowser(url);
-		                               return false;
-		                       }
-		                       return true;
-		               };
+		auto navigation_handler = [](const wxString& url) -> bool {
+			if (url.Lower().StartsWith("http://") || url.Lower().StartsWith("https://") || url.Lower().StartsWith("mailto:")) {
+				wxLaunchDefaultBrowser(url);
+				return false;
+			}
+			return true;
+		};
 		if (!url_to_load.IsEmpty()) {
 			web_view_dialog dlg(this, _("Web View"), url_to_load, true, navigation_handler);
 			dlg.ShowModal();
