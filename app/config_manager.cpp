@@ -20,9 +20,9 @@ wxArrayString to_wx_array(const rust::Vec<rust::String>& rust_vec) {
 	return result;
 }
 
-std::vector<long> to_long_vector(const rust::Vec<long long>& values) {
+std::vector<long> to_long_vector(const rust::Vec<std::int64_t>& values) {
 	std::vector<long> result(values.size());
-	std::transform(values.begin(), values.end(), result.begin(), [](long long value) {
+	std::transform(values.begin(), values.end(), result.begin(), [](std::int64_t value) {
 		return static_cast<long>(value);
 	});
 	return result;
@@ -116,10 +116,10 @@ long config_manager::get_document_position(const wxString& path) const {
 
 void config_manager::set_navigation_history(const wxString& path, const std::vector<long>& history, size_t history_index) {
 	if (!is_initialized()) return;
-	rust::Vec<long long> rust_history;
+	rust::Vec<std::int64_t> rust_history;
 	rust_history.reserve(history.size());
 	std::transform(history.begin(), history.end(), std::back_inserter(rust_history), [](long entry) {
-		return static_cast<long long>(entry);
+		return static_cast<std::int64_t>(entry);
 	});
 	rust::Slice<const std::int64_t> history_slice(rust_history.data(), rust_history.size());
 	config_manager_set_navigation_history(backend_mut(), to_utf8(path), history_slice, history_index);

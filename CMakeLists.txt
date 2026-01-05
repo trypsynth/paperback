@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 3.21)
 if(POLICY CMP0144)
 	cmake_policy(SET CMP0144 NEW)
 endif()
+
+# Option to use system libraries instead of vcpkg (for Nix, Linux distros, etc.)
+option(USE_SYSTEM_LIBS "Use system libraries instead of vcpkg" OFF)
+
+if(NOT USE_SYSTEM_LIBS)
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/vcpkg/bin/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
 set(VCPKG_MANIFEST_DIR "${CMAKE_SOURCE_DIR}/vcpkg")
 set(VCPKG_OVERLAY_TRIPLETS "${CMAKE_SOURCE_DIR}/vcpkg/triplets")
@@ -11,6 +16,7 @@ elseif(APPLE)
 	set(VCPKG_TARGET_TRIPLET "x64-osx" CACHE STRING "Vcpkg triplet")
 else()
 	set(VCPKG_TARGET_TRIPLET "x64-linux" CACHE STRING "Vcpkg triplet")
+endif()
 endif()
 project(paperback VERSION 0.6.1 LANGUAGES CXX)
 
@@ -29,8 +35,28 @@ if(MSVC)
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()
 
-find_package(Gettext REQUIRED)
-find_package(wxWidgets CONFIG REQUIRED COMPONENTS webview)
+find_program(CLANG_FORMAT_EXE NAMES clang-format)
+if(CLANG_FORMAT_EXE)
+	file(GLOB_RECURSE ALL_SOURCE_FILES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/app/*.cpp ${CMAKE_SOURCE_DIR}/app/*.hpp)
+	add_custom_target(format COMMAND ${CLANG_FORMAT_EXE} -i ${ALL_SOURCE_FILES} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+endif()
+find_program(CLANG_TIDY_EXE NAMES clang-tidy)
+if(CLANG_TIDY_EXE)
+	file(GLOB_RECURSE ALL_SOURCE_FILES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/app/*.cpp ${CMAKE_SOURCE_DIR}/app/*.hpp)
+	add_custom_target(lint COMMAND ${CLANG_TIDY_EXE} -warnings-as-errors=* --header-filter=^${CMAKE_SOURCE_DIR}/app/ --extra-arg=-std=c++20 ${ALL_SOURCE_FILES} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} USES_TERMINAL)
+endif()
+
+if(USE_SYSTEM_LIBS)
+	# Find system libraries (for Nix, system package managers, etc.)
+	# Most dependencies are now handled by the Rust library
+	find_package(wxWidgets REQUIRED base core net webview)
+	find_library(PDFIUM_LIBRARY NAMES pdfium REQUIRED)
+	find_path(PDFIUM_INCLUDE_DIR NAMES fpdfview.h REQUIRED)
+else()
+	find_package(wxWidgets CONFIG REQUIRED COMPONENTS webview)
+endif()
+
+find_package(Gettext)
 
 if(GETTEXT_FOUND)
 	find_program(XGETTEXT_EXECUTABLE NAMES xgettext)
@@ -149,17 +175,33 @@ else()
 endif()
 add_dependencies(paperback libpaperback_rust)
 target_include_directories(paperback PRIVATE ${CMAKE_SOURCE_DIR}/app ${CMAKE_SOURCE_DIR} ${PAPERBACK_GENERATED_DIR} ${RUST_TARGET_DIR}/cxxbridge)
-target_link_directories(paperback PRIVATE ${PDFIUM_LIB_DIR})
-target_link_directories(paperback PRIVATE "${CMAKE_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/lib")
-target_link_libraries(paperback PRIVATE
-	${RUST_LIB_OUTPUT}
-	pdfium
-	wx::base
-	wx::core
-	wx::net
-	wx::webview
-)
-if (WIN32)
+
+if(USE_SYSTEM_LIBS)
+	target_include_directories(paperback PRIVATE
+		${PDFIUM_INCLUDE_DIR}
+		${wxWidgets_INCLUDE_DIRS}
+	)
+	target_compile_options(paperback PRIVATE ${wxWidgets_CXX_FLAGS})
+	target_compile_definitions(paperback PRIVATE ${wxWidgets_DEFINITIONS})
+	target_link_libraries(paperback PRIVATE
+		${RUST_LIB_OUTPUT}
+		${PDFIUM_LIBRARY}
+		${wxWidgets_LIBRARIES}
+	)
+else()
+	target_link_directories(paperback PRIVATE ${PDFIUM_LIB_DIR})
+	target_link_directories(paperback PRIVATE "${CMAKE_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/lib")
+	target_link_libraries(paperback PRIVATE
+		${RUST_LIB_OUTPUT}
+		pdfium
+		wx::base
+		wx::core
+		wx::net
+		wx::webview
+	)
+endif()
+
+if(WIN32)
 	target_link_libraries(paperback PRIVATE bcrypt ntdll)
 endif()
 
@@ -237,4 +279,38 @@ if(WIN32)
 	endif()
 else()
 	add_custom_target(release DEPENDS package)
+endif()
+
+# Installation rules (Linux desktop integration)
+if(UNIX AND NOT APPLE)
+	# Install binary
+	install(TARGETS paperback DESTINATION bin)
+
+	# Install desktop file
+	install(FILES ${CMAKE_SOURCE_DIR}/paperback.desktop
+	        DESTINATION share/applications)
+
+	# Install icons
+	foreach(size 16 32 48 64 128 256)
+		install(FILES ${CMAKE_SOURCE_DIR}/icons/hicolor/${size}x${size}/apps/paperback.png
+		        DESTINATION share/icons/hicolor/${size}x${size}/apps)
+	endforeach()
+
+	# Install documentation
+	if(TARGET doc)
+		install(FILES ${CMAKE_BINARY_DIR}/readme.html
+		        DESTINATION share/doc/paperback)
+	endif()
+
+	# Install translations
+	if(MO_FILES)
+		foreach(mo_file ${MO_FILES})
+			get_filename_component(mo_dir ${mo_file} DIRECTORY)
+			get_filename_component(lang_dir ${mo_dir} DIRECTORY)
+			get_filename_component(lang ${lang_dir} NAME)
+			install(FILES ${mo_file}
+			        DESTINATION share/locale/${lang}/LC_MESSAGES
+			        RENAME paperback.mo)
+		endforeach()
+	endif()
 endif()

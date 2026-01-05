@@ -130,7 +130,6 @@ public:
 
 private:
 	wxTextCtrl* info_text_ctrl{nullptr};
-	config_manager& config_mgr;
 	wxString doc_path;
 };
 
