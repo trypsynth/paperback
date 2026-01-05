@@ -518,6 +518,19 @@ impl DocumentSession {
 		self.handle.page_index(pos).map_or(0, |idx| idx + 1)
 	}
 
+	/// Returns the text between two positions (start inclusive, end exclusive).
+	#[must_use]
+	pub fn get_text_range(&self, start: i64, end: i64) -> String {
+		let content = &self.handle.document().buffer.content;
+		let total_chars = content.chars().count();
+		let start_pos = usize::try_from(start.max(0)).unwrap_or(0).min(total_chars);
+		let end_pos = usize::try_from(end.max(0)).unwrap_or(0).min(total_chars);
+		if start_pos >= end_pos {
+			return String::new();
+		}
+		content.chars().skip(start_pos).take(end_pos - start_pos).collect()
+	}
+
 	#[must_use]
 	pub fn get_line_text(&self, position: i64) -> String {
 		let content = &self.handle.document().buffer.content;

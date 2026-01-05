@@ -386,7 +386,7 @@ void document_manager::go_to_next_page() const {
 void document_manager::navigate_to_bookmark(bool next) const {
 	const document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr) return;
+	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
 	const bool allow_wrap = config.get(config_manager::navigation_wrap);
 	const std::string path_utf8 = std::string(tab->file_path.ToUTF8().data());
 	const auto result = bookmark_navigate(config.backend_for_ffi(), path_utf8, text_ctrl->GetInsertionPoint(), allow_wrap, next, false);
@@ -394,14 +394,14 @@ void document_manager::navigate_to_bookmark(bool next) const {
 		speak(next ? _("No next bookmark") : _("No previous bookmark"));
 		return;
 	}
-	text_ctrl->SetInsertionPoint(static_cast<long>(result.start));
+	const long start = static_cast<long>(result.start);
+	const long end = static_cast<long>(result.end);
+	text_ctrl->SetInsertionPoint(start);
 	wxString text_to_speak;
-	if (result.start == result.end) {
-		long line{0};
-		text_ctrl->PositionToXY(static_cast<long>(result.start), nullptr, &line);
-		text_to_speak = text_ctrl->GetLineText(line);
+	if (start == end) {
+		text_to_speak = rust_to_wx(session_get_line_text(*tab->get_session(), start));
 	} else {
-		text_to_speak = text_ctrl->GetRange(static_cast<long>(result.start), static_cast<long>(result.end));
+		text_to_speak = rust_to_wx(session_get_text_range(*tab->get_session(), start, end));
 	}
 	const int index = result.index >= 0 ? result.index : 0;
 	wxString announcement = wxString::Format(_("%s - Bookmark %d"), text_to_speak, index + 1);
@@ -412,27 +412,24 @@ void document_manager::navigate_to_bookmark(bool next) const {
 void document_manager::navigate_to_note(bool next) const {
 	const document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr) return;
+	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
 	const bool allow_wrap = config.get(config_manager::navigation_wrap);
 	const std::string path_utf8 = std::string(tab->file_path.ToUTF8().data());
-	const auto result = bookmark_navigate(config.backend_for_ffi(), path_utf8, text_ctrl->GetInsertionPoint(), allow_wrap, next, true);
+	auto result = bookmark_navigate(config.backend_for_ffi(), path_utf8, text_ctrl->GetInsertionPoint(), allow_wrap, next, true);
 	if (!result.found) {
 		speak(next ? _("No next note") : _("No previous note"));
 		return;
 	}
-	const auto start = static_cast<long>(result.start);
-	const auto end = static_cast<long>(result.end);
+	const long start = static_cast<long>(result.start);
+	const long end = static_cast<long>(result.end);
 	text_ctrl->SetInsertionPoint(start);
 	wxString text_to_speak;
 	if (start == end) {
-		long line{0};
-		text_ctrl->PositionToXY(start, nullptr, &line);
-		text_to_speak = text_ctrl->GetLineText(line);
+		text_to_speak = rust_to_wx(session_get_line_text(*tab->get_session(), start));
 	} else {
-		text_to_speak = text_ctrl->GetRange(start, end);
+		text_to_speak = rust_to_wx(session_get_text_range(*tab->get_session(), start, end));
 	}
-	auto note = result.note;
-	const wxString note_text = wxString::FromUTF8(note.c_str());
+	const wxString note_text = wxString::FromUTF8(result.note.c_str());
 	const int index = result.index >= 0 ? result.index : 0;
 	wxString announcement = wxString::Format(_("%s - Note %d"), text_to_speak, index + 1);
 	if (!note_text.IsEmpty()) announcement = wxString::Format(_("%s - %s - Note %d"), note_text, text_to_speak, index + 1);
@@ -671,7 +668,7 @@ void document_manager::add_bookmark_with_note() const {
 void document_manager::show_bookmark_dialog(wxWindow* parent, bookmark_filter initial_filter) {
 	const document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr) return;
+	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
 	const std::vector<bookmark> bookmarks = config.get_bookmarks(tab->file_path);
 	if (bookmarks.empty()) {
 		speak(_("No bookmarks"));
@@ -692,11 +689,9 @@ void document_manager::show_bookmark_dialog(wxWindow* parent, bookmark_filter in
 	});
 	if (bm_it != bookmarks.end()) {
 		if (bm_it->is_whole_line()) {
-			long line{0};
-			text_ctrl->PositionToXY(pos, nullptr, &line);
-			text_to_speak = text_ctrl->GetLineText(line);
+			text_to_speak = rust_to_wx(session_get_line_text(*tab->get_session(), pos));
 		} else {
-			text_to_speak = text_ctrl->GetRange(bm_it->start, bm_it->end);
+			text_to_speak = rust_to_wx(session_get_text_range(*tab->get_session(), bm_it->start, bm_it->end));
 		}
 		note_to_speak = bm_it->note;
 	}
