@@ -35,12 +35,9 @@ jobs:
       - name: Compare strings
         id: compare
         run: |
-          # Extract full msgid strings (including multi-line) from POT files
-          # This awk script properly handles multi-line msgid entries
           extract_msgids() {
             awk '
               /^msgid "/ {
-                # Start capturing a new msgid
                 in_msgid = 1
                 msgid = $0
                 # Remove the "msgid " prefix
@@ -53,7 +50,7 @@ jobs:
                 next
               }
               in_msgid && /^msgstr/ {
-                # End of msgid, print it (skip empty header msgid)
+                # End of msgid, print it (skiping empty headers)
                 in_msgid = 0
                 if (msgid != "\"\"") {
                   print msgid
@@ -61,22 +58,14 @@ jobs:
               }
             ' "$1" | sort
           }
-
           extract_msgids po/paperback.pot > /tmp/old_strings.txt
           extract_msgids /tmp/paperback_new.pot > /tmp/new_strings.txt
-
-          # Find added and removed strings
           comm -13 /tmp/old_strings.txt /tmp/new_strings.txt > /tmp/added.txt
           comm -23 /tmp/old_strings.txt /tmp/new_strings.txt > /tmp/removed.txt
-
-          # Count changes (trim whitespace from wc output)
           ADDED_COUNT=$(wc -l < /tmp/added.txt | tr -d ' ')
           REMOVED_COUNT=$(wc -l < /tmp/removed.txt | tr -d ' ')
-
           echo "added_count=$ADDED_COUNT" >> $GITHUB_OUTPUT
           echo "removed_count=$REMOVED_COUNT" >> $GITHUB_OUTPUT
-
-          # Only set has_changes if there are actual changes
           if [ "$ADDED_COUNT" -gt 0 ] || [ "$REMOVED_COUNT" -gt 0 ]; then
             echo "has_changes=true" >> $GITHUB_OUTPUT
             echo "Found $ADDED_COUNT added and $REMOVED_COUNT removed strings"
@@ -84,16 +73,12 @@ jobs:
             echo "has_changes=false" >> $GITHUB_OUTPUT
             echo "No translatable string changes detected"
           fi
-
-          # Build the discussion body using printf (avoids shell interpretation)
           printf '%s\n' "## Translatable Strings Update" > /tmp/body.md
           printf '\n' >> /tmp/body.md
           printf '%s\n' "A recent commit has changed the translatable strings in Paperback." >> /tmp/body.md
           printf '\n' >> /tmp/body.md
           printf '%s\n' "**$ADDED_COUNT** string(s) added, **$REMOVED_COUNT** string(s) removed." >> /tmp/body.md
           printf '\n' >> /tmp/body.md
-
-          # Add new strings section if any
           if [ "$ADDED_COUNT" -gt 0 ]; then
             printf '%s\n' "### New strings:" >> /tmp/body.md
             printf '\n' >> /tmp/body.md
@@ -102,8 +87,6 @@ jobs:
             printf '%s\n' '```' >> /tmp/body.md
             printf '\n' >> /tmp/body.md
           fi
-
-          # Add removed strings section if any
           if [ "$REMOVED_COUNT" -gt 0 ]; then
             printf '%s\n' "### Removed strings:" >> /tmp/body.md
             printf '\n' >> /tmp/body.md
@@ -112,15 +95,11 @@ jobs:
             printf '%s\n' '```' >> /tmp/body.md
             printf '\n' >> /tmp/body.md
           fi
-
-          # Add footer (no backticks to avoid interpretation issues)
           printf '%s\n' "---" >> /tmp/body.md
           printf '%s\n' "**Translators:** Please update your .po files using msgmerge." >> /tmp/body.md
           printf '%s\n' "See the [translation guide](https://paperback.dev/translations) for instructions." >> /tmp/body.md
           printf '\n' >> /tmp/body.md
           printf '%s\n' "Commit: ${{ github.sha }}" >> /tmp/body.md
-
-          # Set output using random delimiter to avoid conflicts with file content
           DELIMITER="BODY_$(openssl rand -hex 8)"
           echo "body<<$DELIMITER" >> $GITHUB_OUTPUT
           cat /tmp/body.md >> $GITHUB_OUTPUT
@@ -131,8 +110,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Searching for previous translation discussions to close..."
-
-          # Find all open discussions with "New translatable strings" in the title
           DISCUSSIONS=$(gh api graphql -f query='
             query($owner: String!, $name: String!) {
               repository(owner: $owner, name: $name) {
@@ -146,8 +123,6 @@ jobs:
               }
             }
           ' -f owner="${{ github.repository_owner }}" -f name="${{ github.event.repository.name }}")
-
-          # Extract discussion IDs that match our title pattern
           echo "$DISCUSSIONS" | jq -r '.data.repository.discussions.nodes[] | select(.title | startswith("New translatable strings")) | .id' | while read -r DISC_ID; do
             if [ -n "$DISC_ID" ]; then
               echo "Closing discussion: $DISC_ID"
@@ -160,7 +135,6 @@ jobs:
               ' -f id="$DISC_ID" || echo "Warning: Failed to close discussion $DISC_ID"
             fi
           done
-
           echo "Finished closing previous discussions"
       - name: Create Discussion
         if: steps.compare.outputs.has_changes == 'true'
@@ -179,7 +153,6 @@ jobs:
           ' -f owner="${{ github.repository_owner }}" -f name="${{ github.event.repository.name }}")
           REPO_ID=$(echo "$REPO_DATA" | jq -r '.data.repository.id')
           CATEGORY_ID=$(echo "$REPO_DATA" | jq -r '.data.repository.discussionCategories.nodes[] | select(.name=="Announcements") | .id')
-
           RESULT=$(gh api graphql -f query='
             mutation($repositoryId: ID!, $categoryId: ID!, $title: String!, $body: String!) {
               createDiscussion(input: {repositoryId: $repositoryId, categoryId: $categoryId, title: $title, body: $body}) {
@@ -191,6 +164,5 @@ jobs:
             -f categoryId="$CATEGORY_ID" \
             -f title="New translatable strings - $(date +%Y-%m-%d)" \
             -f body="${{ steps.compare.outputs.body }}")
-
           echo "Created new discussion:"
           echo "$RESULT" | jq -r '.data.createDiscussion.discussion.url'
