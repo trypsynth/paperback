@@ -85,9 +85,8 @@ jobs:
             echo "No translatable string changes detected"
           fi
 
-          # Build the discussion body
+          # Build the discussion body to a temp file first
           {
-            echo 'body<<EOF'
             echo "## Translatable Strings Update"
             echo ""
             echo "A recent commit has changed the translatable strings in Paperback."
@@ -111,11 +110,18 @@ jobs:
               echo ""
             fi
             echo "---"
-            echo "**Translators:** Please update your \`.po\` files using \`msgmerge\`."
+            echo '**Translators:** Please update your `.po` files using `msgmerge`.'
             echo "See the [translation guide](https://paperback.dev/translations) for instructions."
             echo ""
             echo "Commit: ${{ github.sha }}"
-            echo 'EOF'
+          } > /tmp/body.md
+
+          # Use a random delimiter to avoid conflicts with file content
+          DELIMITER="BODY_$(openssl rand -hex 8)"
+          {
+            echo "body<<$DELIMITER"
+            cat /tmp/body.md
+            echo "$DELIMITER"
           } >> $GITHUB_OUTPUT
       - name: Close previous translation discussions
         if: steps.compare.outputs.has_changes == 'true'
