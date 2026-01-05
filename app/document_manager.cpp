@@ -322,9 +322,7 @@ void document_manager::navigate_to_section(bool next) const {
 	}
 	const long offset = static_cast<long>(result.offset);
 	text_ctrl->SetInsertionPoint(offset);
-	long line{0};
-	text_ctrl->PositionToXY(offset, nullptr, &line);
-	const wxString current_line = text_ctrl->GetLineText(line);
+	const wxString current_line = rust_to_wx(session_get_line_text(*tab->get_session(), offset));
 	if (result.wrapped)
 		speak((next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + current_line);
 	else
@@ -371,9 +369,7 @@ void document_manager::navigate_to_page(bool next) const {
 	}
 	const long offset = static_cast<long>(result.offset);
 	text_ctrl->SetInsertionPoint(offset);
-	long line{0};
-	text_ctrl->PositionToXY(offset, nullptr, &line);
-	const wxString current_line = text_ctrl->GetLineText(line);
+	const wxString current_line = rust_to_wx(session_get_line_text(*tab->get_session(), offset));
 	wxString message = wxString::Format(_("Page %d: %s"), result.marker_index + 1, current_line);
 	if (result.wrapped) message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
 	speak(message);
@@ -478,9 +474,7 @@ void document_manager::navigate_to_link(bool next) const {
 	text_ctrl->SetInsertionPoint(offset);
 	wxString link_text = rust_to_wx(rust::String(result.marker_text));
 	if (link_text.IsEmpty()) {
-		long line{0};
-		text_ctrl->PositionToXY(offset, nullptr, &line);
-		link_text = text_ctrl->GetLineText(line);
+		link_text = rust_to_wx(session_get_line_text(*tab->get_session(), offset));
 	}
 	wxString message = link_text + _(" link");
 	if (result.wrapped) message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
@@ -563,9 +557,7 @@ void document_manager::navigate_to_list(bool next) const {
 	}
 	const long offset = static_cast<long>(result.offset);
 	text_ctrl->SetInsertionPoint(offset);
-	long line{0};
-	text_ctrl->PositionToXY(offset, nullptr, &line);
-	const wxString current_line = text_ctrl->GetLineText(line);
+	const wxString current_line = rust_to_wx(session_get_line_text(*tab->get_session(), offset));
 	wxString message = current_line;
 	if (result.wrapped) message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
 	speak(message);
@@ -595,9 +587,7 @@ void document_manager::navigate_to_list_item(bool next) const {
 	}
 	const long offset = static_cast<long>(result.offset);
 	text_ctrl->SetInsertionPoint(offset);
-	long line{0};
-	text_ctrl->PositionToXY(offset, nullptr, &line);
-	const wxString current_line = text_ctrl->GetLineText(line);
+	const wxString current_line = rust_to_wx(session_get_line_text(*tab->get_session(), offset));
 	wxString message = current_line;
 	if (result.wrapped) message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
 	speak(message);
@@ -926,9 +916,7 @@ void document_manager::navigate_to_table(bool next) const {
 	// Use marker_text (caption or first row) if available, otherwise use line text.
 	wxString message = rust_to_wx(rust::String(result.marker_text));
 	if (message.IsEmpty()) {
-		long line{0};
-		text_ctrl->PositionToXY(offset, nullptr, &line);
-		message = text_ctrl->GetLineText(line);
+		message = rust_to_wx(session_get_line_text(*tab->get_session(), offset));
 	}
 	if (result.wrapped) message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
 	speak(message);

@@ -494,6 +494,7 @@ pub mod ffi {
 		fn session_page_count(session: &DocumentSession) -> usize;
 		fn session_current_page(session: &DocumentSession, position: i64) -> i32;
 		fn session_export_content(session: &DocumentSession, output_path: &str) -> Result<()>;
+		fn session_get_line_text(session: &DocumentSession, position: i64) -> String;
 		fn session_handle(session: &DocumentSession) -> &DocumentHandle;
 		fn is_heading_marker_type(marker_type: i32) -> bool;
 	}
@@ -1318,6 +1319,10 @@ fn session_current_page(session: &DocumentSession, position: i64) -> i32 {
 
 fn session_export_content(session: &DocumentSession, output_path: &str) -> Result<(), String> {
 	session.export_content(output_path).map_err(|e| e.to_string())
+}
+
+fn session_get_line_text(session: &DocumentSession, position: i64) -> String {
+	session.get_line_text(position)
 }
 
 fn is_heading_marker_type(marker_type: i32) -> bool {
