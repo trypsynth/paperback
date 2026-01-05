@@ -60,23 +60,23 @@
 <li>Generate the <code>.pot</code> template (normally not necessary, but it keeps everything in sync):</li>
 </ol>
 <pre style="background-color:#2b303b;">
-<code><span style="color:#c0c5ce;">cmake --build build --target update-pot
+<code><span style="color:#8fa1b3;">cmake</span><span style="color:#bf616a;"> --build</span><span style="color:#c0c5ce;"> build</span><span style="color:#bf616a;"> --target</span><span style="color:#c0c5ce;"> update-pot
 </span></code></pre>
-<ol>
+<ol start="2">
 <li>Create your language file:</li>
 </ol>
 <pre style="background-color:#2b303b;">
-<code><span style="color:#c0c5ce;">cp paperback.pot your-lang-code.po
+<code><span style="color:#8fa1b3;">cp</span><span style="color:#c0c5ce;"> paperback.pot your-lang-code.po
 </span></code></pre>
-<ol>
+<ol start="3">
 <li>Edit the header in your <code>.po</code> file with the correct language name, your name, and email.</li>
 <li>Translate the strings using your editor of choice. Keep placeholders and shortcut markers intact (see Notes below).</li>
 <li>Verify the file compiles cleanly:</li>
 </ol>
 <pre style="background-color:#2b303b;">
-<code><span style="color:#c0c5ce;">msgfmt --check --verbose es.po
+<code><span style="color:#8fa1b3;">msgfmt</span><span style="color:#bf616a;"> --check --verbose</span><span style="color:#c0c5ce;"> es.po
 </span></code></pre>
-<ol>
+<ol start="6">
 <li>Test your translation by recompiling Paperback and selecting it from the options dialog.</li>
 </ol>
 <h2>Updating an Existing Translation</h2>
@@ -85,15 +85,15 @@
 <li>Update the template (if not already done):</li>
 </ol>
 <pre style="background-color:#2b303b;">
-<code><span style="color:#c0c5ce;">cmake --build build --target update-pot
+<code><span style="color:#8fa1b3;">cmake</span><span style="color:#bf616a;"> --build</span><span style="color:#c0c5ce;"> build</span><span style="color:#bf616a;"> --target</span><span style="color:#c0c5ce;"> update-pot
 </span></code></pre>
-<ol>
+<ol start="2">
 <li>Merge new strings into your translation:</li>
 </ol>
 <pre style="background-color:#2b303b;">
-<code><span style="color:#c0c5ce;">msgmerge -U es.po paperback.pot
+<code><span style="color:#8fa1b3;">msgmerge</span><span style="color:#bf616a;"> -U</span><span style="color:#c0c5ce;"> es.po paperback.pot
 </span></code></pre>
-<ol>
+<ol start="3">
 <li>Translate the new or fuzzy strings. Anything marked with <code>fuzzy</code> needs a review, and any empty strings are brand new.</li>
 <li>Remove fuzzy markers once done reviewing.</li>
 <li>Compile and test (same as step 6 above).</li>
