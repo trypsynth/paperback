@@ -85,44 +85,46 @@ jobs:
             echo "No translatable string changes detected"
           fi
 
-          # Build the discussion body to a temp file first
-          {
-            echo "## Translatable Strings Update"
-            echo ""
-            echo "A recent commit has changed the translatable strings in Paperback."
-            echo ""
-            echo "**$ADDED_COUNT** string(s) added, **$REMOVED_COUNT** string(s) removed."
-            echo ""
-            if [ "$ADDED_COUNT" -gt 0 ]; then
-              echo "### New strings:"
-              echo ""
-              echo '```'
-              cat /tmp/added.txt
-              echo '```'
-              echo ""
-            fi
-            if [ "$REMOVED_COUNT" -gt 0 ]; then
-              echo "### Removed strings:"
-              echo ""
-              echo '```'
-              cat /tmp/removed.txt
-              echo '```'
-              echo ""
-            fi
-            echo "---"
-            echo '**Translators:** Please update your `.po` files using `msgmerge`.'
-            echo "See the [translation guide](https://paperback.dev/translations) for instructions."
-            echo ""
-            echo "Commit: ${{ github.sha }}"
-          } > /tmp/body.md
+          # Build the discussion body using printf (avoids shell interpretation)
+          printf '%s\n' "## Translatable Strings Update" > /tmp/body.md
+          printf '\n' >> /tmp/body.md
+          printf '%s\n' "A recent commit has changed the translatable strings in Paperback." >> /tmp/body.md
+          printf '\n' >> /tmp/body.md
+          printf '%s\n' "**$ADDED_COUNT** string(s) added, **$REMOVED_COUNT** string(s) removed." >> /tmp/body.md
+          printf '\n' >> /tmp/body.md
 
-          # Use a random delimiter to avoid conflicts with file content
+          # Add new strings section if any
+          if [ "$ADDED_COUNT" -gt 0 ]; then
+            printf '%s\n' "### New strings:" >> /tmp/body.md
+            printf '\n' >> /tmp/body.md
+            printf '%s\n' '```' >> /tmp/body.md
+            cat /tmp/added.txt >> /tmp/body.md
+            printf '%s\n' '```' >> /tmp/body.md
+            printf '\n' >> /tmp/body.md
+          fi
+
+          # Add removed strings section if any
+          if [ "$REMOVED_COUNT" -gt 0 ]; then
+            printf '%s\n' "### Removed strings:" >> /tmp/body.md
+            printf '\n' >> /tmp/body.md
+            printf '%s\n' '```' >> /tmp/body.md
+            cat /tmp/removed.txt >> /tmp/body.md
+            printf '%s\n' '```' >> /tmp/body.md
+            printf '\n' >> /tmp/body.md
+          fi
+
+          # Add footer (no backticks to avoid interpretation issues)
+          printf '%s\n' "---" >> /tmp/body.md
+          printf '%s\n' "**Translators:** Please update your .po files using msgmerge." >> /tmp/body.md
+          printf '%s\n' "See the [translation guide](https://paperback.dev/translations) for instructions." >> /tmp/body.md
+          printf '\n' >> /tmp/body.md
+          printf '%s\n' "Commit: ${{ github.sha }}" >> /tmp/body.md
+
+          # Set output using random delimiter to avoid conflicts with file content
           DELIMITER="BODY_$(openssl rand -hex 8)"
-          {
-            echo "body<<$DELIMITER"
-            cat /tmp/body.md
-            echo "$DELIMITER"
-          } >> $GITHUB_OUTPUT
+          echo "body<<$DELIMITER" >> $GITHUB_OUTPUT
+          cat /tmp/body.md >> $GITHUB_OUTPUT
+          echo "$DELIMITER" >> $GITHUB_OUTPUT
       - name: Close previous translation discussions
         if: steps.compare.outputs.has_changes == 'true'
         env:
