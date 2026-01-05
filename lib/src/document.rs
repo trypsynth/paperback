@@ -224,7 +224,9 @@ impl Default for Document {
 	}
 }
 
-const fn is_heading_marker(marker_type: MarkerType) -> bool {
+/// Returns true if the marker type is a heading (H1-H6).
+#[must_use]
+pub const fn is_heading_marker(marker_type: MarkerType) -> bool {
 	matches!(
 		marker_type,
 		MarkerType::Heading1

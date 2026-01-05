@@ -240,6 +240,13 @@ pub mod ffi {
 		pub url: String,
 	}
 
+	pub struct FfiStatusInfo {
+		pub line_number: i64,
+		pub character_number: i64,
+		pub percentage: i32,
+		pub total_chars: i64,
+	}
+
 	extern "Rust" {
 		type ConfigManager;
 		type DocumentHandle;
@@ -483,7 +490,12 @@ pub mod ffi {
 		fn session_get_table_at_position(session: &DocumentSession, position: i64) -> String;
 		fn session_get_current_section_path(session: &DocumentSession, position: i64) -> String;
 		fn session_extract_resource(session: &DocumentSession, resource_path: &str, output_path: &str) -> Result<bool>;
+		fn session_get_status_info(session: &DocumentSession, position: i64) -> FfiStatusInfo;
+		fn session_page_count(session: &DocumentSession) -> usize;
+		fn session_current_page(session: &DocumentSession, position: i64) -> i32;
+		fn session_export_content(session: &DocumentSession, output_path: &str) -> Result<()>;
 		fn session_handle(session: &DocumentSession) -> &DocumentHandle;
+		fn is_heading_marker_type(marker_type: i32) -> bool;
 	}
 }
 
@@ -1284,4 +1296,30 @@ fn session_extract_resource(session: &DocumentSession, resource_path: &str, outp
 
 const fn session_handle(session: &DocumentSession) -> &DocumentHandle {
 	session.handle()
+}
+
+fn session_get_status_info(session: &DocumentSession, position: i64) -> ffi::FfiStatusInfo {
+	let info = session.get_status_info(position);
+	ffi::FfiStatusInfo {
+		line_number: info.line_number,
+		character_number: info.character_number,
+		percentage: info.percentage,
+		total_chars: info.total_chars,
+	}
+}
+
+fn session_page_count(session: &DocumentSession) -> usize {
+	session.page_count()
+}
+
+fn session_current_page(session: &DocumentSession, position: i64) -> i32 {
+	session.current_page(position)
+}
+
+fn session_export_content(session: &DocumentSession, output_path: &str) -> Result<(), String> {
+	session.export_content(output_path).map_err(|e| e.to_string())
+}
+
+fn is_heading_marker_type(marker_type: i32) -> bool {
+	crate::document::MarkerType::try_from(marker_type).map(crate::document::is_heading_marker).unwrap_or(false)
 }

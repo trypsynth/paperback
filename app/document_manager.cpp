@@ -245,14 +245,14 @@ void document_manager::close_all_documents() {
 
 bool document_manager::export_document(int index, const wxString& export_path) const {
 	const document_tab* tab = get_tab(index);
-	if (tab == nullptr || tab->text_ctrl == nullptr) return false;
-	const wxString content = tab->text_ctrl->GetValue();
-	const wxCharBuffer buf = content.ToUTF8();
-	if (!buf.data()) return false;
-	wxFileOutputStream out(export_path);
-	if (!out.IsOk()) return false;
-	out.Write(buf.data(), buf.length());
-	return out.IsOk();
+	if (tab == nullptr || tab->session_doc == nullptr) return false;
+	try {
+		const std::string path_utf8 = export_path.ToUTF8().data();
+		session_export_content(*tab->get_session(), path_utf8);
+		return true;
+	} catch (const std::exception&) {
+		return false;
+	}
 }
 
 document_tab* document_manager::get_tab(int index) const {
@@ -777,16 +777,12 @@ void document_manager::save_all_tab_positions() const {
 
 wxString document_manager::get_status_text() const {
 	if (!has_documents()) return _("Ready");
+	const document_tab* tab = get_active_tab();
 	const wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (text_ctrl == nullptr) return _("Ready");
-	const int current_pos = text_ctrl->GetInsertionPoint();
-	const int total_chars = text_ctrl->GetLastPosition();
-	const int percentage = total_chars > 0 ? (current_pos * 100) / total_chars : 0;
-	long line{0};
-	text_ctrl->PositionToXY(current_pos, nullptr, &line);
-	const long line_number = line + 1;
-	const long character_number = current_pos + 1;
-	return wxString::Format(_("line %ld, character %ld, reading %d%%"), line_number, character_number, percentage);
+	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return _("Ready");
+	const long current_pos = text_ctrl->GetInsertionPoint();
+	const auto status = session_get_status_info(*tab->get_session(), current_pos);
+	return wxString::Format(_("line %lld, character %lld, reading %d%%"), status.line_number, status.character_number, status.percentage);
 }
 
 wxString document_manager::get_window_title(const wxString& app_name) const {

@@ -1,4 +1,8 @@
-use std::{fs::File, io::BufReader, path::Path};
+use std::{
+	fs::File,
+	io::{BufReader, Write},
+	path::Path,
+};
 
 use zip::ZipArchive;
 
@@ -12,6 +16,19 @@ use crate::{
 };
 
 const MAX_HISTORY_LEN: usize = 10;
+
+/// Status information for a position in a document.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct StatusInfo {
+	/// Line number (1-based)
+	pub line_number: i64,
+	/// Character number (1-based)
+	pub character_number: i64,
+	/// Reading percentage (0-100)
+	pub percentage: i32,
+	/// Total character count in the document
+	pub total_chars: i64,
+}
 
 #[derive(Debug, Clone)]
 pub struct NavigationResult {
@@ -459,6 +476,46 @@ impl DocumentSession {
 		} else {
 			Ok(false)
 		}
+	}
+
+	/// Exports the document content to a file.
+	///
+	/// # Errors
+	///
+	/// Returns an error if the file cannot be written.
+	pub fn export_content(&self, output_path: &str) -> std::io::Result<()> {
+		let content = self.content();
+		let mut file = File::create(output_path)?;
+		file.write_all(content.as_bytes())?;
+		file.flush()?;
+		Ok(())
+	}
+
+	#[must_use]
+	pub fn get_status_info(&self, position: i64) -> StatusInfo {
+		let content = &self.handle.document().buffer.content;
+		let total_chars = content.chars().count();
+		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
+		let line_number = content.chars().take(pos).filter(|&c| c == '\n').count() + 1;
+		let character_number = pos + 1;
+		let percentage = if total_chars > 0 { (pos * 100) / total_chars } else { 0 };
+		StatusInfo {
+			line_number: i64::try_from(line_number).unwrap_or(1),
+			character_number: i64::try_from(character_number).unwrap_or(1),
+			percentage: i32::try_from(percentage).unwrap_or(0),
+			total_chars: i64::try_from(total_chars).unwrap_or(0),
+		}
+	}
+
+	#[must_use]
+	pub fn page_count(&self) -> usize {
+		self.handle.count_markers_by_type(MarkerType::PageBreak)
+	}
+
+	#[must_use]
+	pub fn current_page(&self, position: i64) -> i32 {
+		let pos = usize::try_from(position.max(0)).unwrap_or(0);
+		self.handle.page_index(pos).map_or(0, |idx| idx + 1)
 	}
 
 	fn has_headings(&self, level: Option<i32>) -> bool {

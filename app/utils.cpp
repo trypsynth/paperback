@@ -73,15 +73,5 @@ marker to_marker(const FfiMarker& ffi_marker) {
 }
 
 bool is_heading_marker(marker_type type) {
-	switch (type) {
-		case marker_type::Heading1:
-		case marker_type::Heading2:
-		case marker_type::Heading3:
-		case marker_type::Heading4:
-		case marker_type::Heading5:
-		case marker_type::Heading6:
-			return true;
-		default:
-			return false;
-	}
+	return is_heading_marker_type(static_cast<int>(type));
 }
