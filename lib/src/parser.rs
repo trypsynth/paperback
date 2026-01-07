@@ -112,13 +112,14 @@ impl ParserRegistry {
 /// - The parser fails to parse the file
 pub fn parse_document(context: &ParserContext) -> Result<Document> {
 	let path = std::path::Path::new(&context.file_path);
-	let extension = if let Some(ext) = &context.forced_extension {
-		ext.as_str()
-	} else {
-		path.extension()
-			.and_then(|e| e.to_str())
-			.ok_or_else(|| anyhow::anyhow!("No file extension found for: {}", context.file_path))?
-	};
+	let extension = context.forced_extension.as_ref().map_or_else(
+		|| {
+			path.extension()
+				.and_then(|e| e.to_str())
+				.ok_or_else(|| anyhow::anyhow!("No file extension found for: {}", context.file_path))
+		},
+		|ext| Ok(ext.as_str()),
+	)?;
 	let parser = ParserRegistry::global()
 		.get_parser_for_extension(extension)
 		.ok_or_else(|| anyhow::anyhow!("No parser found for extension: .{extension}"))?;
@@ -140,11 +141,10 @@ pub fn get_parser_name_for_extension(extension: &str) -> Option<String> {
 #[must_use]
 pub fn get_parser_flags_for_context(context: &ParserContext) -> ParserFlags {
 	let path = std::path::Path::new(&context.file_path);
-	let extension = if let Some(ext) = &context.forced_extension {
-		ext.as_str()
-	} else {
-		path.extension().and_then(|e| e.to_str()).unwrap_or("")
-	};
+	let extension = context
+		.forced_extension
+		.as_ref()
+		.map_or_else(|| path.extension().and_then(|e| e.to_str()).unwrap_or(""), |ext| ext.as_str());
 	ParserRegistry::global().get_parser_for_extension(extension).map_or(ParserFlags::NONE, Parser::supported_flags)
 }
 

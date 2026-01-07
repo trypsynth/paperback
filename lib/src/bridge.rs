@@ -796,14 +796,17 @@ fn document_heading_tree(doc: &DocumentHandle, position: i64) -> ffi::FfiHeading
 		if !(1..=6).contains(&level) {
 			continue;
 		}
-		let parent_index = last_indices[(level - 1) as usize];
+		let Ok(level_usize) = usize::try_from(level) else {
+			continue;
+		};
+		let parent_index = last_indices[level_usize - 1];
 		let current_index = i32::try_from(items.len()).unwrap_or(-1);
 		if marker.position <= pos {
 			closest_index = current_index;
 		}
 		items.push(ffi::FfiHeadingTreeItem { offset: marker.position, level, text: marker.text.clone(), parent_index });
-		for idx in level..=6 {
-			last_indices[idx as usize] = current_index;
+		for entry in last_indices.iter_mut().skip(level_usize) {
+			*entry = current_index;
 		}
 	}
 	ffi::FfiHeadingTree { items, closest_index }

@@ -23,9 +23,10 @@ pub fn extract_zip_entry_to_file<R: Read + Seek>(
 ) -> Result<()> {
 	let mut entry = archive.by_name(name).with_context(|| format!("Failed to get entry '{name}'"))?;
 	if let Some(parent) = output_path.parent() {
-		fs::create_dir_all(parent).with_context(|| format!("Failed to create directory '{parent:?}'"))?;
+		fs::create_dir_all(parent).with_context(|| format!("Failed to create directory '{}'", parent.display()))?;
 	}
-	let mut out_file = File::create(output_path).with_context(|| format!("Failed to create file '{output_path:?}'"))?;
+	let mut out_file =
+		File::create(output_path).with_context(|| format!("Failed to create file '{}'", output_path.display()))?;
 	io::copy(&mut entry, &mut out_file).with_context(|| format!("Failed to extract entry '{name}'"))?;
 	Ok(())
 }

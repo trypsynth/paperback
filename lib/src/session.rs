@@ -501,13 +501,11 @@ impl DocumentSession {
 		let pos_usize = usize::try_from(position.max(0)).unwrap_or(0);
 		let href = {
 			let link_index = self.handle.current_marker_index(pos_usize, MarkerType::Link);
-			let link_index = match link_index {
-				Some(idx) => idx,
-				None => return LinkActivationResult::not_found(),
+			let Some(link_index) = link_index else {
+				return LinkActivationResult::not_found();
 			};
-			let marker = match self.handle.document().buffer.markers.get(link_index) {
-				Some(m) => m,
-				None => return LinkActivationResult::not_found(),
+			let Some(marker) = self.handle.document().buffer.markers.get(link_index) else {
+				return LinkActivationResult::not_found();
 			};
 			let link_end = marker.position + marker.text.chars().count();
 			if pos_usize < marker.position || pos_usize > link_end {
@@ -563,6 +561,11 @@ impl DocumentSession {
 		Some(marker.reference.clone())
 	}
 
+	/// Extracts a resource to the given output path.
+	///
+	/// # Errors
+	///
+	/// Returns an error if the EPUB cannot be opened or the resource cannot be written.
 	pub fn extract_resource(&self, resource_path: &str, output_path: &str) -> anyhow::Result<bool> {
 		if self.file_path.to_lowercase().ends_with(".epub") {
 			let file = File::open(&self.file_path)?;
@@ -732,17 +735,14 @@ fn record_position_internal(positions: &mut Vec<i64>, index: &mut usize, current
 	*index = normalize_index(positions, *index);
 	if positions[*index] != current_pos {
 		if *index + 1 < positions.len() {
-			if positions[*index + 1] == current_pos {
-				*index += 1;
-			} else {
+			if positions[*index + 1] != current_pos {
 				positions.truncate(*index + 1);
 				positions.push(current_pos);
-				*index += 1;
 			}
 		} else {
 			positions.push(current_pos);
-			*index += 1;
 		}
+		*index += 1;
 	}
 	trim_history(positions, index, max_len);
 }

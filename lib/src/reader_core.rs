@@ -349,9 +349,7 @@ pub fn get_filtered_bookmarks(
 		ffi::BookmarkFilterType::NotesOnly => {
 			bookmarks.retain(|b| !b.note.is_empty());
 		}
-		ffi::BookmarkFilterType::All | _ => {
-			// No filtering needed
-		}
+		_ => {}
 	}
 
 	// Sort by start position
@@ -420,17 +418,14 @@ fn record_position(positions: &mut Vec<i64>, index: &mut usize, current_pos: i64
 	*index = normalize_index(positions, *index);
 	if positions[*index] != current_pos {
 		if *index + 1 < positions.len() {
-			if positions[*index + 1] == current_pos {
-				*index += 1;
-			} else {
+			if positions[*index + 1] != current_pos {
 				positions.truncate(*index + 1);
 				positions.push(current_pos);
-				*index += 1;
 			}
 		} else {
 			positions.push(current_pos);
-			*index += 1;
 		}
+		*index += 1;
 	}
 	trim_history(positions, index, max_len);
 }
@@ -519,9 +514,14 @@ fn find_manifest_id_for_path(doc: &DocumentHandle, path: &str) -> Option<String>
 }
 
 fn spine_section_bounds(doc: &DocumentHandle, spine_index: usize) -> (usize, usize) {
-	let start = doc.get_marker_position_by_index(MarkerType::SectionBreak, spine_index as i32).unwrap_or(0);
+	let start = i32::try_from(spine_index)
+		.ok()
+		.and_then(|idx| doc.get_marker_position_by_index(MarkerType::SectionBreak, idx))
+		.unwrap_or(0);
 	let end = if spine_index + 1 < doc.document().spine_items.len() {
-		doc.get_marker_position_by_index(MarkerType::SectionBreak, (spine_index + 1) as i32)
+		i32::try_from(spine_index + 1)
+			.ok()
+			.and_then(|idx| doc.get_marker_position_by_index(MarkerType::SectionBreak, idx))
 			.unwrap_or_else(|| doc.document().buffer.content.len())
 	} else {
 		doc.document().buffer.content.len()
@@ -539,8 +539,8 @@ pub fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> 
 		return ffi::FfiLinkNavigation { found: true, is_external: true, offset: 0, url: href_trimmed.to_string() };
 	}
 	let current_section = current_section_path(doc, usize::try_from(current_position.max(0)).unwrap_or(0));
-	if href_trimmed.starts_with('#') {
-		if let Some(offset) = find_fragment_offset(doc, &href_trimmed[1..], current_section.as_deref()) {
+	if let Some(fragment) = href_trimmed.strip_prefix('#') {
+		if let Some(offset) = find_fragment_offset(doc, fragment, current_section.as_deref()) {
 			return ffi::FfiLinkNavigation { found: true, is_external: false, offset, url: String::new() };
 		}
 		return ffi::FfiLinkNavigation { found: false, is_external: false, offset: 0, url: String::new() };

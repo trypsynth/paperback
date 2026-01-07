@@ -212,19 +212,19 @@ fn parse_hhc_node(node: ElementRef, items: &mut Vec<TocItem>) {
 					}
 					// PATTERN 2: Check for sibling UL elements, as seen in nvgt.chm.
 					if !found_child_ul {
-						let mut next_element_index = None;
-						for next_idx in (index + 1)..children.len() {
-							if let Some(next_el) = children[next_idx].value().as_element() {
+						let mut next_element = None;
+						for (next_idx, child) in children.iter().enumerate().skip(index + 1) {
+							if let Some(next_el) = child.value().as_element() {
 								if next_el.name() == "ul" {
-									next_element_index = Some(next_idx);
+									next_element = Some((next_idx, *child));
 									break;
 								} else if next_el.name() == "li" {
 									break;
 								}
 							}
 						}
-						if let Some(ul_index) = next_element_index {
-							if let Some(sibling_ref) = ElementRef::wrap(children[ul_index]) {
+						if let Some((ul_index, sibling_node)) = next_element {
+							if let Some(sibling_ref) = ElementRef::wrap(sibling_node) {
 								parse_hhc_node(sibling_ref, &mut item.children);
 								consumed_indices.insert(ul_index); // Mark as consumed
 							}
