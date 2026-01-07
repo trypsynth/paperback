@@ -33,9 +33,6 @@
 #include <wx/uiaction.h>
 #include <wx/window.h>
 
-namespace {
-} // namespace
-
 dialog::dialog(wxWindow* parent, const wxString& title, dialog_button_config buttons) : wxDialog(parent, wxID_ANY, title), main_sizer{new wxBoxSizer(wxVERTICAL)}, button_config{buttons} {
 	SetSizer(main_sizer);
 }
@@ -136,8 +133,7 @@ void all_documents_dialog::on_remove(wxCommandEvent& /*event*/) {
 	populate_document_list();
 	if (doc_list->GetItemCount() > 0) {
 		long new_selection = removed_index;
-		if (new_selection >= doc_list->GetItemCount())
-			new_selection = doc_list->GetItemCount() - 1;
+		if (new_selection >= doc_list->GetItemCount()) new_selection = doc_list->GetItemCount() - 1;
 		doc_list->SetItemState(new_selection, wxLIST_STATE_SELECTED | wxLIST_STATE_FOCUSED, wxLIST_STATE_SELECTED | wxLIST_STATE_FOCUSED);
 		doc_list->EnsureVisible(new_selection);
 	}
@@ -186,30 +182,16 @@ void all_documents_dialog::on_key_down(wxKeyEvent& event) {
 void all_documents_dialog::populate_document_list(const wxString& filter) {
 	doc_list->DeleteAllItems();
 	doc_paths.Clear();
-
-	// Convert open document paths to std::vector<rust::String> for Rust
 	std::vector<rust::String> open_paths_vec;
 	open_paths_vec.reserve(open_doc_paths.GetCount());
-	for (const auto& path : open_doc_paths) {
-		open_paths_vec.push_back(rust::String(path.ToUTF8().data()));
-	}
-
-	// Get sorted and filtered document list from Rust
+	for (const auto& path : open_doc_paths) open_paths_vec.push_back(rust::String(path.ToUTF8().data()));
 	rust::Slice<const rust::String> open_paths_slice{open_paths_vec.data(), open_paths_vec.size()};
-	auto sorted_docs = get_sorted_document_list(
-		config_mgr.backend_for_ffi(),
-		open_paths_slice,
-		filter.ToUTF8().data()
-	);
-
-	// Populate the wxListView with the results
+	auto sorted_docs = get_sorted_document_list(config_mgr.backend_for_ffi(), open_paths_slice, filter.ToUTF8().data());
 	for (auto& doc : sorted_docs) {
 		const wxString path = wxString::FromUTF8(doc.path.c_str());
 		const wxString filename = wxString::FromUTF8(doc.filename.c_str());
 		doc_paths.Add(path);
-
 		const long index = doc_list->InsertItem(doc_list->GetItemCount(), filename);
-
 		wxString status;
 		switch (doc.status) {
 			case DocumentListStatus::Open:
@@ -222,7 +204,6 @@ void all_documents_dialog::populate_document_list(const wxString& filter) {
 				status = _("Missing");
 				break;
 		}
-
 		doc_list->SetItem(index, 1, status);
 		doc_list->SetItem(index, 2, path);
 	}
@@ -356,15 +337,9 @@ void bookmark_dialog::on_filter_changed(wxCommandEvent&) {
 void bookmark_dialog::repopulate_list(long current_pos) {
 	if (current_pos == -1 && text_ctrl != nullptr) current_pos = text_ctrl->GetInsertionPoint();
 	const int sel = filter_choice != nullptr ? filter_choice->GetSelection() : 0;
-
-	// Convert filter selection to Rust BookmarkFilterType
 	BookmarkFilterType filter_type = BookmarkFilterType::All;
-	if (sel == 1) {
-		filter_type = BookmarkFilterType::BookmarksOnly;
-	} else if (sel == 2) {
-		filter_type = BookmarkFilterType::NotesOnly;
-	}
-
+	if (sel == 1) filter_type = BookmarkFilterType::BookmarksOnly;
+	else if (sel == 2) filter_type = BookmarkFilterType::NotesOnly;
 	bookmark_list->Clear();
 	bookmark_positions.clear();
 	const long previously_selected = selected_position;
@@ -416,13 +391,10 @@ void bookmark_dialog::repopulate_list(long current_pos) {
 			bookmark_list->Append(display_text);
 		}
 	}
-
 	jump_button->Enable(false);
 	delete_button->Enable(false);
 	edit_note_button->Enable(false);
 	selected_position = -1;
-
-	// Try to restore previous selection
 	if (previously_selected >= 0) {
 		const auto it_sel = std::find_if(bookmark_positions.begin(), bookmark_positions.end(), [&](const bookmark& bm) {
 			return bm.start == previously_selected;
@@ -437,8 +409,6 @@ void bookmark_dialog::repopulate_list(long current_pos) {
 			return;
 		}
 	}
-
-	// Use closest index from Rust
 	if (closest_index >= 0 && static_cast<size_t>(closest_index) < bookmark_positions.size()) {
 		bookmark_list->SetSelection(closest_index);
 		selected_position = bookmark_positions[static_cast<size_t>(closest_index)].start;
@@ -452,29 +422,20 @@ document_info_dialog::document_info_dialog(wxWindow* parent, session_document* s
 	constexpr int info_width = 600;
 	constexpr int info_height = 400;
 	info_text_ctrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(info_width, info_height), wxTE_MULTILINE | wxTE_READONLY);
-
 	wxString info_text;
 	info_text << _("Path: ") << file_path << "\n\n";
-
 	if (session_doc != nullptr) {
 		const auto& handle = session_doc->get_handle();
 		const auto stats = document_stats(handle);
 		const wxString title = wxString::FromUTF8(document_title(handle).c_str());
 		const wxString author = wxString::FromUTF8(document_author(handle).c_str());
-
-		if (!title.IsEmpty()) {
-			info_text << _("Title: ") << title << "\n";
-		}
-		if (!author.IsEmpty()) {
-			info_text << _("Author: ") << author << "\n";
-		}
-		info_text << "\n";
+		if (!title.IsEmpty()) info_text << _("Title: ") << title << "\n";
+		if (!author.IsEmpty()) info_text << _("Author: ") << author << "\n";
 		info_text << _("Words: ") << stats.word_count << "\n";
 		info_text << _("Lines: ") << stats.line_count << "\n";
 		info_text << _("Characters: ") << stats.char_count << "\n";
-		info_text << _("Characters (no spaces): ") << stats.char_count_no_whitespace << "\n";
+		info_text << _("Characters (excluding spaces): ") << stats.char_count_no_whitespace << "\n";
 	}
-
 	info_text_ctrl->SetValue(info_text);
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
 	content_sizer->Add(info_text_ctrl, 1, wxEXPAND);
@@ -509,10 +470,8 @@ elements_dialog::elements_dialog(wxWindow* parent, session_document* session_doc
 	Bind(wxEVT_COMBOBOX, &elements_dialog::on_view_choice_changed, this, view_choice->GetId());
 	Bind(wxEVT_TREE_ITEM_ACTIVATED, &elements_dialog::on_heading_activated, this, headings_tree->GetId());
 	Bind(wxEVT_BUTTON, &elements_dialog::on_ok, this, wxID_OK);
-	if (view_choice->GetSelection() == 0)
-		headings_tree->SetFocus();
-	else
-		links_list->SetFocus();
+	if (view_choice->GetSelection() == 0) headings_tree->SetFocus();
+	else links_list->SetFocus();
 	view_choice->SetFocus();
 }
 
@@ -532,26 +491,20 @@ void elements_dialog::populate_links() {
 			break;
 		}
 	}
-	if (closest_index != -1)
-		links_list->SetSelection(closest_index);
-	else
-		links_list->SetSelection(0);
+	if (closest_index != -1) links_list->SetSelection(closest_index);
+	else links_list->SetSelection(0);
 }
 
 void elements_dialog::populate_headings() {
 	if (session_doc_ == nullptr) return;
 	const wxTreeItemId root = headings_tree->AddRoot(_("Root"));
 	std::vector<wxTreeItemId> parent_ids(7, root);
-	// Collect all heading markers (levels 1-6)
 	std::vector<marker> heading_marker_list;
 	for (int level = 1; level <= 6; ++level) {
 		const int marker_type_value = static_cast<int>(marker_type::Heading1) + (level - 1);
 		const auto ffi_markers = document_markers_by_type(session_doc_->get_handle(), marker_type_value);
-		for (const auto& ffi_marker : ffi_markers) {
-			heading_marker_list.push_back(to_marker(ffi_marker));
-		}
+		for (const auto& ffi_marker : ffi_markers) heading_marker_list.push_back(to_marker(ffi_marker));
 	}
-	// Sort by position
 	std::sort(heading_marker_list.begin(), heading_marker_list.end(), [](const marker& a, const marker& b) {
 		return a.pos < b.pos;
 	});
@@ -689,8 +642,7 @@ void find_dialog::add_to_history(const wxString& text) {
 	const int existing = find_what_combo->FindString(text);
 	if (existing != wxNOT_FOUND) find_what_combo->Delete(static_cast<unsigned int>(existing));
 	find_what_combo->Insert(text, 0);
-	while (find_what_combo->GetCount() > MAX_FIND_HISTORY_SIZE)
-		find_what_combo->Delete(find_what_combo->GetCount() - 1);
+	while (find_what_combo->GetCount() > MAX_FIND_HISTORY_SIZE) find_what_combo->Delete(find_what_combo->GetCount() - 1);
 	find_what_combo->SetValue(text);
 }
 
@@ -836,12 +788,9 @@ open_as_dialog::open_as_dialog(wxWindow* parent, const wxString& path) : dialog(
 wxString open_as_dialog::get_selected_format() const {
 	const int selection = format_combo->GetSelection();
 	switch (selection) {
-		case 1:
-			return "html";
-		case 2:
-			return "md";
-		default:
-			return "txt";
+		case 1: return "html";
+		case 2: return "md";
+		default: return "txt";
 	}
 }
 
@@ -862,12 +811,9 @@ wxString note_entry_dialog::get_note() const {
 }
 
 void note_entry_dialog::on_key_down(wxKeyEvent& event) {
-	if (event.GetKeyCode() == WXK_RETURN && event.ShiftDown())
-		note_ctrl->WriteText("\n");
-	else if (event.GetKeyCode() == WXK_RETURN)
-		EndModal(wxID_OK);
-	else
-		event.Skip();
+	if (event.GetKeyCode() == WXK_RETURN && event.ShiftDown()) note_ctrl->WriteText("\n");
+	else if (event.GetKeyCode() == WXK_RETURN) EndModal(wxID_OK);
+	else event.Skip();
 }
 
 options_dialog::options_dialog(wxWindow* parent) : dialog(parent, _("Options")) {

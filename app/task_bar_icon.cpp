@@ -19,10 +19,10 @@ task_bar_icon::task_bar_icon(main_window* frame) : frame_{frame} {
 wxMenu* task_bar_icon::CreatePopupMenu() {
 	std::unique_ptr<wxMenu> menu = std::make_unique<wxMenu>();
 	append_items(menu.get(), {
-								 menu_item::item(ID_RESTORE, _("&Restore")),
-								 menu_item::sep(),
-								 menu_item::item(wxID_EXIT, _("E&xit")),
-							 });
+		menu_item::item(ID_RESTORE, _("&Restore")),
+		menu_item::sep(),
+		menu_item::item(wxID_EXIT, _("E&xit")),
+	});
 	return menu.release();
 }
 
