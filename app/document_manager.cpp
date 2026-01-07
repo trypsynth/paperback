@@ -553,11 +553,8 @@ void document_manager::toggle_bookmark() const {
 		bookmark_start = current_pos;
 		bookmark_end = current_pos;
 	}
-	std::vector<bookmark> bookmarks = config.get_bookmarks(tab->file_path);
-	bookmark to_toggle(bookmark_start, bookmark_end);
-	const bool was_bookmarked = std::any_of(bookmarks.begin(), bookmarks.end(), [&](const bookmark& bm) {
-		return bm == to_toggle;
-	});
+	const auto info = bookmark_info(config.backend_for_ffi(), tab->file_path.ToUTF8().data(), bookmark_start, bookmark_end);
+	const bool was_bookmarked = info.found;
 	config.toggle_bookmark(tab->file_path, bookmark_start, bookmark_end);
 	config.flush();
 	speak(was_bookmarked ? _("Bookmark removed") : _("Bookmarked"));
@@ -579,17 +576,9 @@ void document_manager::add_bookmark_with_note() const {
 		bookmark_start = current_pos;
 		bookmark_end = current_pos;
 	}
-	std::vector<bookmark> bookmarks = config.get_bookmarks(tab->file_path);
-	bookmark existing_bookmark(bookmark_start, bookmark_end);
-	wxString existing_note;
-	bool bookmark_exists = false;
-	const auto bm_it = std::find_if(bookmarks.begin(), bookmarks.end(), [&](const bookmark& bm) {
-		return bm.start == bookmark_start && bm.end == bookmark_end;
-	});
-	if (bm_it != bookmarks.end()) {
-		bookmark_exists = true;
-		existing_note = bm_it->note;
-	}
+	auto info = bookmark_info(config.backend_for_ffi(), tab->file_path.ToUTF8().data(), bookmark_start, bookmark_end);
+	const bool bookmark_exists = info.found;
+	const wxString existing_note = wxString::FromUTF8(info.note.c_str());
 	wxString prompt = bookmark_exists ? _("Edit bookmark note:") : _("Enter bookmark note:");
 	note_entry_dialog note_dialog(nullptr, _("Bookmark Note"), prompt, existing_note);
 	if (note_dialog.ShowModal() != wxID_OK) return;
@@ -608,8 +597,7 @@ void document_manager::show_bookmark_dialog(wxWindow* parent, bookmark_filter in
 	const document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
-	const std::vector<bookmark> bookmarks = config.get_bookmarks(tab->file_path);
-	if (bookmarks.empty()) {
+	if (bookmark_count(config.backend_for_ffi(), tab->file_path.ToUTF8().data()) == 0) {
 		speak(_("No bookmarks"));
 		return;
 	}

@@ -38,7 +38,6 @@ struct session_document {
 	session_document& operator=(session_document&&) = default;
 	[[nodiscard]] wxString get_title() const { return wxString::FromUTF8(session_title(*session).c_str()); }
 	[[nodiscard]] wxString get_author() const { return wxString::FromUTF8(session_author(*session).c_str()); }
-	[[nodiscard]] const DocumentHandle& get_handle() const { return session_handle(*session); }
 	[[nodiscard]] uint32_t get_parser_flags() const { return session_parser_flags(*session); }
 	void ensure_toc_loaded();
 	[[nodiscard]] size_t find_closest_toc_offset(size_t position) const { return session_find_closest_toc_offset(*session, position); }

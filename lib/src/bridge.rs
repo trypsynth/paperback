@@ -103,6 +103,11 @@ pub mod ffi {
 		pub snippet: String,
 	}
 
+	pub struct FfiBookmarkInfo {
+		pub found: bool,
+		pub note: String,
+	}
+
 	#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 	pub enum ParserErrorKind {
 		Generic,
@@ -267,7 +272,6 @@ pub mod ffi {
 
 	extern "Rust" {
 		type ConfigManager;
-		type DocumentHandle;
 		type DocumentSession;
 
 		fn config_manager_new() -> Box<ConfigManager>;
@@ -341,11 +345,6 @@ pub mod ffi {
 		fn config_manager_export_document_settings(manager: &ConfigManager, doc_path: &str, export_path: &str);
 		fn config_manager_import_document_settings(manager: &mut ConfigManager, path: &str);
 		fn config_manager_import_settings_from_file(manager: &mut ConfigManager, doc_path: &str, import_path: &str);
-		fn parse_document_handle(
-			file_path: &str,
-			password: &str,
-			forced_extension: &str,
-		) -> Result<Box<DocumentHandle>>;
 		fn check_for_updates(current_version: &str, is_installer: bool) -> UpdateResult;
 		fn remove_soft_hyphens(input: &str) -> String;
 		fn url_decode(encoded: &str) -> String;
@@ -360,7 +359,6 @@ pub mod ffi {
 		fn parser_error_info(message: &str) -> ParserErrorInfo;
 		fn get_parser_for_extension(extension: &str) -> Result<String>;
 		fn markdown_to_text(input: &str) -> String;
-		fn reader_navigate(doc: &DocumentHandle, req: &NavRequest) -> NavResult;
 		fn reader_search(
 			req: &str,
 			needle: &str,
@@ -387,6 +385,8 @@ pub mod ffi {
 			next: bool,
 			notes_only: bool,
 		) -> BookmarkNavResult;
+		fn bookmark_info(manager: &ConfigManager, path: &str, start: i64, end: i64) -> FfiBookmarkInfo;
+		fn bookmark_count(manager: &ConfigManager, path: &str) -> usize;
 		fn bookmark_note_at_position(manager: &ConfigManager, path: &str, position: i64) -> String;
 		fn get_filtered_bookmarks(
 			manager: &ConfigManager,
@@ -426,7 +426,6 @@ pub mod ffi {
 			current_pos: i64,
 			max_len: usize,
 		) -> FfiHistoryNavResult;
-		fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> FfiLinkNavigation;
 		fn session_new(file_path: &str, password: &str, forced_extension: &str) -> Result<Box<DocumentSession>>;
 		fn session_title(session: &DocumentSession) -> String;
 		fn session_author(session: &DocumentSession) -> String;
@@ -521,7 +520,6 @@ pub mod ffi {
 		fn session_export_content(session: &DocumentSession, output_path: &str) -> Result<()>;
 		fn session_get_text_range(session: &DocumentSession, start: i64, end: i64) -> String;
 		fn session_get_line_text(session: &DocumentSession, position: i64) -> String;
-		fn session_handle(session: &DocumentSession) -> &DocumentHandle;
 		fn session_toc_items_with_parents(session: &DocumentSession) -> Vec<FfiTocItemWithParent>;
 		fn session_find_closest_toc_offset(session: &DocumentSession, position: usize) -> usize;
 		fn session_heading_tree(session: &DocumentSession, position: i64) -> FfiHeadingTree;
@@ -534,7 +532,7 @@ use std::{fs::File, path::Path};
 use self::ffi::UpdateStatus;
 use crate::{
 	config::{Bookmark, ConfigManager as RustConfigManager, NavigationHistory},
-	document::{DocumentHandle, ParserContext, TocItem},
+	document::{DocumentHandle, TocItem},
 	parser, update as update_module,
 	utils::{encoding, text, zip as zip_module},
 };
@@ -836,23 +834,6 @@ const fn document_stats_to_ffi(stats: &crate::document::DocumentStats) -> ffi::F
 	}
 }
 
-fn parse_document_handle(
-	file_path: &str,
-	password: &str,
-	forced_extension: &str,
-) -> Result<Box<DocumentHandle>, String> {
-	let mut context = ParserContext::new(file_path.to_string());
-	if !password.is_empty() {
-		context = context.with_password(password.to_string());
-	}
-	if !forced_extension.is_empty() {
-		context = context.with_forced_extension(forced_extension.to_string());
-	}
-	let mut doc = parser::parse_document(&context).map_err(|e| e.to_string())?;
-	doc.compute_stats();
-	Ok(Box::new(DocumentHandle::new(doc)))
-}
-
 fn document_heading_tree(doc: &DocumentHandle, position: i64) -> ffi::FfiHeadingTree {
 	let pos = usize::try_from(position.max(0)).unwrap_or(0);
 	let mut last_indices = [-1; 7];
@@ -876,10 +857,6 @@ fn document_heading_tree(doc: &DocumentHandle, position: i64) -> ffi::FfiHeading
 		}
 	}
 	ffi::FfiHeadingTree { items, closest_index }
-}
-
-fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavResult {
-	crate::reader_core::reader_navigate(doc, req)
 }
 
 fn reader_search(
@@ -919,6 +896,14 @@ fn bookmark_navigate(
 
 fn bookmark_note_at_position(manager: &ConfigManager, path: &str, position: i64) -> String {
 	crate::reader_core::bookmark_note_at_position(manager, path, position)
+}
+
+fn bookmark_info(manager: &ConfigManager, path: &str, start: i64, end: i64) -> ffi::FfiBookmarkInfo {
+	crate::reader_core::bookmark_info(manager, path, start, end)
+}
+
+fn bookmark_count(manager: &ConfigManager, path: &str) -> usize {
+	crate::reader_core::bookmark_count(manager, path)
 }
 
 fn get_filtered_bookmarks(
@@ -988,10 +973,6 @@ fn history_go_next(
 	max_len: usize,
 ) -> ffi::FfiHistoryNavResult {
 	crate::reader_core::history_go_next(history, history_index, current_pos, max_len)
-}
-
-fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> ffi::FfiLinkNavigation {
-	crate::reader_core::resolve_link(doc, href, current_position)
 }
 
 use crate::session::{DocumentSession, LinkAction, NavigationResult};
@@ -1169,10 +1150,6 @@ fn session_get_current_section_path(session: &DocumentSession, position: i64) ->
 
 fn session_extract_resource(session: &DocumentSession, resource_path: &str, output_path: &str) -> Result<bool, String> {
 	session.extract_resource(resource_path, output_path).map_err(|e| e.to_string())
-}
-
-const fn session_handle(session: &DocumentSession) -> &DocumentHandle {
-	session.handle()
 }
 
 fn session_get_status_info(session: &DocumentSession, position: i64) -> ffi::FfiStatusInfo {
