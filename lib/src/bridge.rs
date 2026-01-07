@@ -179,42 +179,24 @@ pub struct FfiLinkListItem {
 		pub parent_index: i32,
 	}
 
-	pub struct FfiDocumentStats {
-		pub word_count: usize,
-		pub line_count: usize,
-		pub char_count: usize,
-		pub char_count_no_whitespace: usize,
+pub struct FfiDocumentStats {
+	pub word_count: usize,
+	pub line_count: usize,
+	pub char_count: usize,
+	pub char_count_no_whitespace: usize,
+}
+
+pub struct FfiHeadingTreeItem {
+	pub offset: usize,
+	pub level: i32,
+	pub text: String,
+	pub parent_index: i32,
 	}
 
-	pub struct FfiIdPosition {
-		pub id: String,
-		pub offset: usize,
-	}
-
-	pub struct FfiHeadingInfo {
-		pub offset: usize,
-		pub level: i32,
-		pub text: String,
-	}
-
-	pub struct FfiHeadingTreeItem {
-		pub offset: usize,
-		pub level: i32,
-		pub text: String,
-		pub parent_index: i32,
-	}
-
-	pub struct FfiHeadingTree {
-		pub items: Vec<FfiHeadingTreeItem>,
-		pub closest_index: i32,
-	}
-
-	pub struct FfiXmlConversion {
-		pub text: String,
-		pub headings: Vec<FfiHeadingInfo>,
-		pub section_offsets: Vec<usize>,
-		pub id_positions: Vec<FfiIdPosition>,
-	}
+pub struct FfiHeadingTree {
+	pub items: Vec<FfiHeadingTreeItem>,
+	pub closest_index: i32,
+}
 
 	pub struct FfiBookmark {
 		pub start: i64,
@@ -374,7 +356,6 @@ pub struct FfiLinkListItem {
 		fn parser_supports_extension(extension: &str) -> bool;
 		fn parser_error_info(message: &str) -> ParserErrorInfo;
 		fn get_parser_for_extension(extension: &str) -> Result<String>;
-		fn convert_xml_to_text(content: &str) -> Result<FfiXmlConversion>;
 		fn markdown_to_text(input: &str) -> String;
 		fn reader_navigate(doc: &DocumentHandle, req: &NavRequest) -> NavResult;
 		fn reader_search(
@@ -543,7 +524,6 @@ use crate::{
 	document::{DocumentHandle, ParserContext, TocItem},
 	parser, update as update_module,
 	utils::{encoding, text, zip as zip_module},
-	xml_to_text::XmlToText,
 };
 
 type ConfigManager = crate::config::ConfigManager;
@@ -832,29 +812,6 @@ fn flatten_toc_items_with_parents(items: &[TocItem]) -> Vec<ffi::FfiTocItemWithP
 	let mut result = Vec::new();
 	flatten_recursive_with_parents(items, 0, -1, &mut result);
 	result
-}
-
-fn convert_xml_to_text(content: &str) -> Result<ffi::FfiXmlConversion, String> {
-	let mut converter = XmlToText::new();
-	if !converter.convert(content) {
-		return Err("Failed to parse XML content".to_string());
-	}
-	let headings = converter
-		.get_headings()
-		.iter()
-		.map(|heading| ffi::FfiHeadingInfo { offset: heading.offset, level: heading.level, text: heading.text.clone() })
-		.collect();
-	let id_positions = converter
-		.get_id_positions()
-		.iter()
-		.map(|(id, offset)| ffi::FfiIdPosition { id: id.clone(), offset: *offset })
-		.collect();
-	Ok(ffi::FfiXmlConversion {
-		text: converter.get_text(),
-		headings,
-		section_offsets: converter.get_section_offsets().to_vec(),
-		id_positions,
-	})
 }
 
 const fn document_stats_to_ffi(stats: &crate::document::DocumentStats) -> ffi::FfiDocumentStats {
