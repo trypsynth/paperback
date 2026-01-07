@@ -931,13 +931,9 @@ void document_manager::activate_current_table() {
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
 	const int current_pos = text_ctrl->GetInsertionPoint();
-	const auto& handle = tab->session_doc->get_handle();
-	const int table_index = document_current_marker(handle, static_cast<size_t>(current_pos), to_rust_marker(marker_type::Table));
-	if (table_index == -1) return;
-	const auto marker_result = document_marker_info(handle, table_index);
-	if (!marker_result.found) return;
-	const auto& table_marker = marker_result.marker;
-	if (static_cast<size_t>(current_pos) < table_marker.position || static_cast<size_t>(current_pos) > (table_marker.position + table_marker.length)) return;
-	web_view_dialog dlg(&main_win, _("Table"), rust_to_wx(rust::String(table_marker.reference)));
+	const rust::String table_html = session_get_table_at_position(*tab->session_doc->session, current_pos);
+	const wxString table_content = rust_to_wx(table_html);
+	if (table_content.IsEmpty()) return;
+	web_view_dialog dlg(&main_win, _("Table"), table_content);
 	dlg.ShowModal();
 }
