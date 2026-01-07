@@ -425,10 +425,9 @@ document_info_dialog::document_info_dialog(wxWindow* parent, session_document* s
 	wxString info_text;
 	info_text << _("Path: ") << file_path << "\n\n";
 	if (session_doc != nullptr) {
-		const auto& handle = session_doc->get_handle();
-		const auto stats = document_stats(handle);
-		const wxString title = wxString::FromUTF8(document_title(handle).c_str());
-		const wxString author = wxString::FromUTF8(document_author(handle).c_str());
+		const auto stats = session_stats(*session_doc->session);
+		const wxString title = session_doc->get_title();
+		const wxString author = session_doc->get_author();
 		if (!title.IsEmpty()) info_text << _("Title: ") << title << "\n";
 		if (!author.IsEmpty()) info_text << _("Author: ") << author << "\n";
 		info_text << _("Words: ") << stats.word_count << "\n";

@@ -346,9 +346,6 @@ pub mod ffi {
 			password: &str,
 			forced_extension: &str,
 		) -> Result<Box<DocumentHandle>>;
-		fn document_title(doc: &DocumentHandle) -> String;
-		fn document_author(doc: &DocumentHandle) -> String;
-		fn document_stats(doc: &DocumentHandle) -> FfiDocumentStats;
 		fn document_toc_items_with_parents(doc: &DocumentHandle) -> Vec<FfiTocItemWithParent>;
 		fn document_find_closest_toc_offset(doc: &DocumentHandle, position: usize) -> usize;
 		fn document_heading_tree(doc: &DocumentHandle, position: i64) -> FfiHeadingTree;
@@ -520,6 +517,7 @@ pub mod ffi {
 		fn session_get_current_section_path(session: &DocumentSession, position: i64) -> String;
 		fn session_extract_resource(session: &DocumentSession, resource_path: &str, output_path: &str) -> Result<bool>;
 		fn session_get_status_info(session: &DocumentSession, position: i64) -> FfiStatusInfo;
+		fn session_stats(session: &DocumentSession) -> FfiDocumentStats;
 		fn session_page_count(session: &DocumentSession) -> usize;
 		fn session_current_page(session: &DocumentSession, position: i64) -> i32;
 		fn session_page_offset(session: &DocumentSession, page_index: i32) -> i64;
@@ -853,18 +851,6 @@ fn parse_document_handle(
 	let mut doc = parser::parse_document(&context).map_err(|e| e.to_string())?;
 	doc.compute_stats();
 	Ok(Box::new(DocumentHandle::new(doc)))
-}
-
-fn document_title(doc: &DocumentHandle) -> String {
-	doc.document().title.clone()
-}
-
-fn document_author(doc: &DocumentHandle) -> String {
-	doc.document().author.clone()
-}
-
-const fn document_stats(doc: &DocumentHandle) -> ffi::FfiDocumentStats {
-	document_stats_to_ffi(&doc.document().stats)
 }
 
 fn document_toc_items_with_parents(doc: &DocumentHandle) -> Vec<ffi::FfiTocItemWithParent> {
@@ -1205,6 +1191,10 @@ fn session_get_status_info(session: &DocumentSession, position: i64) -> ffi::Ffi
 		percentage: info.percentage,
 		total_chars: info.total_chars,
 	}
+}
+
+fn session_stats(session: &DocumentSession) -> ffi::FfiDocumentStats {
+	document_stats_to_ffi(session.stats())
 }
 
 fn session_page_count(session: &DocumentSession) -> usize {

@@ -728,7 +728,7 @@ void main_window::on_next_list_item(wxCommandEvent&) {
 void main_window::on_word_count(wxCommandEvent&) {
 	auto* const tab = doc_manager->get_active_tab();
 	if (tab == nullptr || tab->session_doc == nullptr) return;
-	const auto stats = document_stats(tab->session_doc->get_handle());
+	const auto stats = session_stats(*tab->session_doc->session);
 	wxMessageBox(wxString::Format(_("The document contains %zu words."), stats.word_count), _("Word count"), wxICON_INFORMATION);
 }
 
