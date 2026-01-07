@@ -393,14 +393,11 @@ pub mod ffi {
 		fn document_stats(doc: &DocumentHandle) -> FfiDocumentStats;
 		fn document_toc_items(doc: &DocumentHandle) -> Vec<FfiTocItem>;
 		fn document_toc_items_with_parents(doc: &DocumentHandle) -> Vec<FfiTocItemWithParent>;
-		fn document_markers(doc: &DocumentHandle) -> Vec<FfiMarker>;
 		fn document_find_closest_toc_offset(doc: &DocumentHandle, position: usize) -> usize;
 		fn document_next_marker(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32;
 		fn document_previous_marker(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32;
 		fn document_current_marker(doc: &DocumentHandle, position: usize, marker_type: i32) -> i32;
 		fn document_find_first_marker_after(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32;
-		fn document_marker_position(doc: &DocumentHandle, marker_index: i32) -> usize;
-		fn document_count_markers(doc: &DocumentHandle, marker_type: i32) -> usize;
 		fn document_next_heading(doc: &DocumentHandle, position: i64, level: i32) -> i32;
 		fn document_previous_heading(doc: &DocumentHandle, position: i64, level: i32) -> i32;
 		fn document_heading_tree(doc: &DocumentHandle, position: i64) -> FfiHeadingTree;
@@ -975,17 +972,6 @@ fn marker_type_from_i32(value: i32) -> Option<MarkerType> {
 	MarkerType::try_from(value).ok()
 }
 
-fn document_marker_to_ffi(marker: &crate::document::Marker) -> ffi::FfiMarker {
-	ffi::FfiMarker {
-		marker_type: marker.marker_type.into(),
-		position: marker.position,
-		text: marker.text.clone(),
-		reference: marker.reference.clone(),
-		level: marker.level,
-		length: marker.length,
-	}
-}
-
 const fn document_stats_to_ffi(stats: &crate::document::DocumentStats) -> ffi::FfiDocumentStats {
 	ffi::FfiDocumentStats {
 		word_count: stats.word_count,
@@ -1044,10 +1030,6 @@ fn document_toc_items_with_parents(doc: &DocumentHandle) -> Vec<ffi::FfiTocItemW
 	flatten_toc_items_with_parents(&doc.document().toc_items)
 }
 
-fn document_markers(doc: &DocumentHandle) -> Vec<ffi::FfiMarker> {
-	doc.document().buffer.markers.iter().map(document_marker_to_ffi).collect()
-}
-
 fn document_find_closest_toc_offset(doc: &DocumentHandle, position: usize) -> usize {
 	doc.find_closest_toc_offset(position)
 }
@@ -1070,15 +1052,6 @@ fn document_current_marker(doc: &DocumentHandle, position: usize, marker_type: i
 fn document_find_first_marker_after(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32 {
 	let Some(marker_type) = marker_type_from_i32(marker_type) else { return -1 };
 	opt_usize_to_i32(doc.find_first_marker_after(position, marker_type))
-}
-
-fn document_marker_position(doc: &DocumentHandle, marker_index: i32) -> usize {
-	doc.marker_position(marker_index).unwrap_or(0)
-}
-
-fn document_count_markers(doc: &DocumentHandle, marker_type: i32) -> usize {
-	let Some(marker_type) = marker_type_from_i32(marker_type) else { return 0 };
-	doc.count_markers_by_type(marker_type)
 }
 
 fn document_next_heading(doc: &DocumentHandle, position: i64, level: i32) -> i32 {
