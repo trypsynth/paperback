@@ -32,6 +32,22 @@ long find_text(const wxString& haystack, const wxString& needle, long start, fin
 	return result < 0 ? wxNOT_FOUND : static_cast<long>(result);
 }
 
+search_result find_text_with_wrap(const wxString& haystack, const wxString& needle, long start, find_options options) {
+	search_result result{};
+	if (needle.empty()) return result;
+	const bool forward = has_option(options, find_options::forward);
+	const bool match_case = has_option(options, find_options::match_case);
+	const bool match_whole_word = has_option(options, find_options::match_whole_word);
+	const bool use_regex = has_option(options, find_options::use_regex);
+	const std::string hay = std::string(haystack.ToUTF8());
+	const std::string ned = std::string(needle.ToUTF8());
+	const auto search = reader_search_with_wrap(hay, ned, start, forward, match_case, match_whole_word, use_regex);
+	result.found = search.found;
+	result.wrapped = search.wrapped;
+	result.position = search.found ? static_cast<long>(search.position) : wxNOT_FOUND;
+	return result;
+}
+
 bool ensure_parser_for_unknown_file(const wxString& path, config_manager& config) {
 	const wxString saved_format = config.get_document_format(path);
 	if (!saved_format.IsEmpty() && is_parser_supported(saved_format)) return true;

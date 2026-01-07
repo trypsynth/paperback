@@ -87,6 +87,12 @@ pub mod ffi {
 		pub wrapped: bool,
 	}
 
+	pub struct FfiSearchResult {
+		pub found: bool,
+		pub wrapped: bool,
+		pub position: i64,
+	}
+
 	#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 	pub enum BookmarkFilterType {
 		All,
@@ -393,6 +399,15 @@ pub mod ffi {
 			whole_word: bool,
 			regex: bool,
 		) -> i64;
+		fn reader_search_with_wrap(
+			req: &str,
+			needle: &str,
+			start: i64,
+			forward: bool,
+			match_case: bool,
+			whole_word: bool,
+			regex: bool,
+		) -> FfiSearchResult;
 		fn bookmark_navigate(
 			manager: &ConfigManager,
 			path: &str,
@@ -1099,6 +1114,18 @@ fn reader_search(
 	regex: bool,
 ) -> i64 {
 	crate::reader_core::reader_search(req, needle, start, forward, match_case, whole_word, regex)
+}
+
+fn reader_search_with_wrap(
+	req: &str,
+	needle: &str,
+	start: i64,
+	forward: bool,
+	match_case: bool,
+	whole_word: bool,
+	regex: bool,
+) -> ffi::FfiSearchResult {
+	crate::reader_core::reader_search_with_wrap(req, needle, start, forward, match_case, whole_word, regex)
 }
 
 fn bookmark_navigate(

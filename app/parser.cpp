@@ -50,29 +50,3 @@ bool is_parser_supported(const wxString& extension) {
 wxString get_supported_wildcards() {
 	return to_wxstring(parser_supported_wildcards());
 }
-
-// Legacy function - no longer used, documents now created via session_new()
-// Kept commented for reference during migration
-/*
-std::unique_ptr<document> load_document_from_rust(const wxString& path, const std::optional<std::string>& password, const wxString& forced_extension) {
-	try {
-		const std::string file_path = path.ToUTF8().data();
-		const std::string password_value = password.value_or(std::string());
-		const std::string extension = forced_extension.ToUTF8().data();
-		auto handle = parse_document_handle(rust::Str(file_path), rust::Str(password_value), rust::Str(extension));
-		auto doc = std::make_unique<document>();
-		doc->handle = std::move(handle);
-		const auto& handle_ref = **doc->handle;
-		doc->title = to_wxstring(document_title(handle_ref));
-		doc->author = to_wxstring(document_author(handle_ref));
-		doc->content = to_wxstring(document_content(handle_ref));
-		doc->stats = document_stats(handle_ref);
-		populate_id_positions(*doc, document_id_positions(handle_ref));
-		populate_spine_items(*doc, document_spine_items(handle_ref));
-		populate_manifest_items(*doc, document_manifest_items(handle_ref));
-		return doc;
-	} catch (const std::exception& e) {
-		throw make_parser_exception(e, path);
-	}
-}
-*/

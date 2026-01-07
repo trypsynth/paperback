@@ -247,6 +247,27 @@ pub fn reader_search(
 	-1
 }
 
+pub fn reader_search_with_wrap(
+	haystack: &str,
+	needle: &str,
+	start: i64,
+	forward: bool,
+	match_case: bool,
+	whole_word: bool,
+	regex: bool,
+) -> ffi::FfiSearchResult {
+	let position = reader_search(haystack, needle, start, forward, match_case, whole_word, regex);
+	if position >= 0 {
+		return ffi::FfiSearchResult { found: true, wrapped: false, position };
+	}
+	let wrap_pos = if forward { 0 } else { i64::try_from(haystack.encode_utf16().count()).unwrap_or(0) };
+	let wrapped_position = reader_search(haystack, needle, wrap_pos, forward, match_case, whole_word, regex);
+	if wrapped_position >= 0 {
+		return ffi::FfiSearchResult { found: true, wrapped: true, position: wrapped_position };
+	}
+	ffi::FfiSearchResult { found: false, wrapped: false, position: -1 }
+}
+
 pub fn bookmark_navigate(
 	manager: &RustConfigManager,
 	path: &str,

@@ -81,5 +81,3 @@ inline constexpr bool parser_supports(parser_flags flags, parser_flags flag) noe
 bool initialize_parser_registry();
 [[nodiscard]] bool is_parser_supported(const wxString& extension);
 [[nodiscard]] wxString get_supported_wildcards();
-// Legacy function - commented out, use session_new() instead
-// [[nodiscard]] std::unique_ptr<document> load_document_from_rust(const wxString& path, const std::optional<std::string>& password = std::nullopt, const wxString& forced_extension = wxEmptyString);

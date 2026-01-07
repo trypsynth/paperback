@@ -40,6 +40,12 @@ inline constexpr bool has_option(find_options options, find_options flag) noexce
 }
 
 [[nodiscard]] long find_text(const wxString& haystack, const wxString& needle, long start, find_options options = find_options::forward);
+struct search_result {
+	bool found{false};
+	bool wrapped{false};
+	long position{wxNOT_FOUND};
+};
+[[nodiscard]] search_result find_text_with_wrap(const wxString& haystack, const wxString& needle, long start, find_options options = find_options::forward);
 [[nodiscard]] bool ensure_parser_for_unknown_file(const wxString& path, config_manager& config);
 void speak(const wxString& message);
 
