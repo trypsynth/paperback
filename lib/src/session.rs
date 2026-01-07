@@ -208,7 +208,11 @@ impl DocumentSession {
 			level_filter: 0,
 		};
 		let result = reader_navigate(&self.handle, &req);
-		NavigationResult::from_nav_result(&result)
+		let mut nav_result = NavigationResult::from_nav_result(&result);
+		if nav_result.found && nav_result.marker_text.is_empty() {
+			nav_result.marker_text = self.get_line_text(nav_result.offset);
+		}
+		nav_result
 	}
 
 	#[must_use]
@@ -245,6 +249,9 @@ impl DocumentSession {
 		if nav_result.found {
 			let offset = usize::try_from(nav_result.offset).unwrap_or(0);
 			nav_result.marker_index = self.handle.page_index(offset).unwrap_or(-1);
+			if nav_result.marker_text.is_empty() {
+				nav_result.marker_text = self.get_line_text(nav_result.offset);
+			}
 		}
 		nav_result
 	}
@@ -263,7 +270,11 @@ impl DocumentSession {
 			level_filter: 0,
 		};
 		let result = reader_navigate(&self.handle, &req);
-		NavigationResult::from_nav_result(&result)
+		let mut nav_result = NavigationResult::from_nav_result(&result);
+		if nav_result.found && nav_result.marker_text.is_empty() {
+			nav_result.marker_text = self.get_line_text(nav_result.offset);
+		}
+		nav_result
 	}
 
 	#[must_use]
@@ -283,7 +294,11 @@ impl DocumentSession {
 			level_filter: 0,
 		};
 		let result = reader_navigate(&self.handle, &req);
-		NavigationResult::from_nav_result(&result)
+		let mut nav_result = NavigationResult::from_nav_result(&result);
+		if nav_result.found && nav_result.marker_text.is_empty() {
+			nav_result.marker_text = self.get_line_text(nav_result.offset);
+		}
+		nav_result
 	}
 
 	#[must_use]
@@ -303,7 +318,11 @@ impl DocumentSession {
 			level_filter: 0,
 		};
 		let result = reader_navigate(&self.handle, &req);
-		NavigationResult::from_nav_result(&result)
+		let mut nav_result = NavigationResult::from_nav_result(&result);
+		if nav_result.found && nav_result.marker_text.is_empty() {
+			nav_result.marker_text = self.get_line_text(nav_result.offset);
+		}
+		nav_result
 	}
 
 	#[must_use]
@@ -320,7 +339,11 @@ impl DocumentSession {
 			level_filter: 0,
 		};
 		let result = reader_navigate(&self.handle, &req);
-		NavigationResult::from_nav_result(&result)
+		let mut nav_result = NavigationResult::from_nav_result(&result);
+		if nav_result.found && nav_result.marker_text.is_empty() {
+			nav_result.marker_text = self.get_line_text(nav_result.offset);
+		}
+		nav_result
 	}
 
 	#[must_use]
