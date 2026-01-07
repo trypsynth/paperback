@@ -388,24 +388,12 @@ pub mod ffi {
 		) -> Result<Box<DocumentHandle>>;
 		fn document_title(doc: &DocumentHandle) -> String;
 		fn document_author(doc: &DocumentHandle) -> String;
-		fn document_content(doc: &DocumentHandle) -> String;
-		fn document_length(doc: &DocumentHandle) -> usize;
 		fn document_stats(doc: &DocumentHandle) -> FfiDocumentStats;
-		fn document_toc_items(doc: &DocumentHandle) -> Vec<FfiTocItem>;
 		fn document_toc_items_with_parents(doc: &DocumentHandle) -> Vec<FfiTocItemWithParent>;
 		fn document_find_closest_toc_offset(doc: &DocumentHandle, position: usize) -> usize;
-		fn document_next_marker(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32;
-		fn document_previous_marker(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32;
-		fn document_current_marker(doc: &DocumentHandle, position: usize, marker_type: i32) -> i32;
-		fn document_find_first_marker_after(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32;
 		fn document_next_heading(doc: &DocumentHandle, position: i64, level: i32) -> i32;
 		fn document_previous_heading(doc: &DocumentHandle, position: i64, level: i32) -> i32;
 		fn document_heading_tree(doc: &DocumentHandle, position: i64) -> FfiHeadingTree;
-		fn document_section_index(doc: &DocumentHandle, position: usize) -> i32;
-		fn document_page_index(doc: &DocumentHandle, position: usize) -> i32;
-		fn document_id_positions(doc: &DocumentHandle) -> Vec<FfiIdPosition>;
-		fn document_spine_items(doc: &DocumentHandle) -> Vec<String>;
-		fn document_manifest_items(doc: &DocumentHandle) -> Vec<FfiManifestItem>;
 		fn check_for_updates(current_version: &str, is_installer: bool) -> UpdateResult;
 		fn remove_soft_hyphens(input: &str) -> String;
 		fn url_decode(encoded: &str) -> String;
@@ -968,10 +956,6 @@ fn convert_xml_to_text(content: &str) -> Result<ffi::FfiXmlConversion, String> {
 	})
 }
 
-fn marker_type_from_i32(value: i32) -> Option<MarkerType> {
-	MarkerType::try_from(value).ok()
-}
-
 const fn document_stats_to_ffi(stats: &crate::document::DocumentStats) -> ffi::FfiDocumentStats {
 	ffi::FfiDocumentStats {
 		word_count: stats.word_count,
@@ -979,10 +963,6 @@ const fn document_stats_to_ffi(stats: &crate::document::DocumentStats) -> ffi::F
 		char_count: stats.char_count,
 		char_count_no_whitespace: stats.char_count_no_whitespace,
 	}
-}
-
-fn opt_usize_to_i32(value: Option<usize>) -> i32 {
-	value.and_then(|v| i32::try_from(v).ok()).unwrap_or(-1)
 }
 
 fn parse_document_handle(
@@ -1010,20 +990,8 @@ fn document_author(doc: &DocumentHandle) -> String {
 	doc.document().author.clone()
 }
 
-fn document_content(doc: &DocumentHandle) -> String {
-	doc.document().buffer.content.clone()
-}
-
-fn document_length(doc: &DocumentHandle) -> usize {
-	doc.document().buffer.content.chars().count()
-}
-
 const fn document_stats(doc: &DocumentHandle) -> ffi::FfiDocumentStats {
 	document_stats_to_ffi(&doc.document().stats)
-}
-
-fn document_toc_items(doc: &DocumentHandle) -> Vec<ffi::FfiTocItem> {
-	flatten_toc_items(&doc.document().toc_items)
 }
 
 fn document_toc_items_with_parents(doc: &DocumentHandle) -> Vec<ffi::FfiTocItemWithParent> {
@@ -1032,26 +1000,6 @@ fn document_toc_items_with_parents(doc: &DocumentHandle) -> Vec<ffi::FfiTocItemW
 
 fn document_find_closest_toc_offset(doc: &DocumentHandle, position: usize) -> usize {
 	doc.find_closest_toc_offset(position)
-}
-
-fn document_next_marker(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32 {
-	let Some(marker_type) = marker_type_from_i32(marker_type) else { return -1 };
-	opt_usize_to_i32(doc.next_marker_index(position, marker_type))
-}
-
-fn document_previous_marker(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32 {
-	let Some(marker_type) = marker_type_from_i32(marker_type) else { return -1 };
-	opt_usize_to_i32(doc.previous_marker_index(position, marker_type))
-}
-
-fn document_current_marker(doc: &DocumentHandle, position: usize, marker_type: i32) -> i32 {
-	let Some(marker_type) = marker_type_from_i32(marker_type) else { return -1 };
-	opt_usize_to_i32(doc.current_marker_index(position, marker_type))
-}
-
-fn document_find_first_marker_after(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32 {
-	let Some(marker_type) = marker_type_from_i32(marker_type) else { return -1 };
-	opt_usize_to_i32(doc.find_first_marker_after(position, marker_type))
 }
 
 fn document_next_heading(doc: &DocumentHandle, position: i64, level: i32) -> i32 {
@@ -1087,34 +1035,6 @@ fn document_heading_tree(doc: &DocumentHandle, position: i64) -> ffi::FfiHeading
 		}
 	}
 	ffi::FfiHeadingTree { items, closest_index }
-}
-
-fn document_section_index(doc: &DocumentHandle, position: usize) -> i32 {
-	doc.section_index(position).unwrap_or(-1)
-}
-
-fn document_page_index(doc: &DocumentHandle, position: usize) -> i32 {
-	doc.page_index(position).unwrap_or(-1)
-}
-
-fn document_id_positions(doc: &DocumentHandle) -> Vec<ffi::FfiIdPosition> {
-	doc.document()
-		.id_positions
-		.iter()
-		.map(|(id, offset)| ffi::FfiIdPosition { id: id.clone(), offset: *offset })
-		.collect()
-}
-
-fn document_spine_items(doc: &DocumentHandle) -> Vec<String> {
-	doc.document().spine_items.clone()
-}
-
-fn document_manifest_items(doc: &DocumentHandle) -> Vec<ffi::FfiManifestItem> {
-	doc.document()
-		.manifest_items
-		.iter()
-		.map(|(id, path)| ffi::FfiManifestItem { id: id.clone(), path: path.clone() })
-		.collect()
 }
 
 fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavResult {
