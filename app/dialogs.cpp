@@ -477,21 +477,13 @@ elements_dialog::elements_dialog(wxWindow* parent, session_document* session_doc
 
 void elements_dialog::populate_links() {
 	if (session_doc_ == nullptr) return;
-	const auto link_markers = document_markers_by_type(session_doc_->get_handle(), static_cast<int>(marker_type::Link));
-	int closest_index = -1;
-	for (const auto& ffi_marker : link_markers) {
+	const auto link_markers = document_markers_with_closest(session_doc_->get_handle(), static_cast<int>(marker_type::Link), current_pos);
+	for (const auto& ffi_marker : link_markers.items) {
 		links_list->Append(to_wxstring(ffi_marker.text));
 		links_list->SetClientData(links_list->GetCount() - 1, reinterpret_cast<void*>(ffi_marker.position));
 	}
 	if (links_list->IsEmpty()) return;
-	for (int i = links_list->GetCount() - 1; i >= 0; i--) {
-		const size_t pos = reinterpret_cast<size_t>(links_list->GetClientData(i));
-		if (pos <= static_cast<size_t>(current_pos)) {
-			closest_index = i;
-			break;
-		}
-	}
-	if (closest_index != -1) links_list->SetSelection(closest_index);
+	if (link_markers.closest_index != -1) links_list->SetSelection(link_markers.closest_index);
 	else links_list->SetSelection(0);
 }
 
@@ -499,24 +491,18 @@ void elements_dialog::populate_headings() {
 	if (session_doc_ == nullptr) return;
 	const wxTreeItemId root = headings_tree->AddRoot(_("Root"));
 	std::vector<wxTreeItemId> parent_ids(7, root);
-	std::vector<marker> heading_marker_list;
-	for (int level = 1; level <= 6; ++level) {
-		const int marker_type_value = static_cast<int>(marker_type::Heading1) + (level - 1);
-		const auto ffi_markers = document_markers_by_type(session_doc_->get_handle(), marker_type_value);
-		for (const auto& ffi_marker : ffi_markers) heading_marker_list.push_back(to_marker(ffi_marker));
-	}
-	std::sort(heading_marker_list.begin(), heading_marker_list.end(), [](const marker& a, const marker& b) {
-		return a.pos < b.pos;
-	});
+	const auto heading_marker_list = document_heading_list(session_doc_->get_handle());
 	wxTreeItemId closest_item;
 	for (const auto& heading_marker : heading_marker_list) {
 		const int level = heading_marker.level;
 		if (level < 1 || level > 6) continue;
 		const wxTreeItemId parent_id = parent_ids[level - 1];
-		const wxString display_text = heading_marker.text.IsEmpty() ? wxString(_("Untitled")) : heading_marker.text;
+		auto text = heading_marker.text;
+		const wxString heading_text = wxString::FromUTF8(text.c_str());
+		const wxString display_text = heading_text.IsEmpty() ? wxString(_("Untitled")) : heading_text;
 		const wxTreeItemId item_id = headings_tree->AppendItem(parent_id, display_text);
-		headings_tree->SetItemData(item_id, new toc_tree_item_data(heading_marker.pos));
-		if (static_cast<long>(heading_marker.pos) <= current_pos) closest_item = item_id;
+		headings_tree->SetItemData(item_id, new toc_tree_item_data(heading_marker.offset));
+		if (static_cast<long>(heading_marker.offset) <= current_pos) closest_item = item_id;
 		for (int i = level; i < 7; ++i) parent_ids[i] = item_id;
 	}
 	headings_tree->ExpandAll();

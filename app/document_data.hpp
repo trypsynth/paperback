@@ -9,15 +9,6 @@
 
 using marker_type = MarkerKind;
 
-struct marker {
-	size_t pos;
-	marker_type type;
-	wxString text;
-	wxString ref;
-	int level;
-	size_t length{0};
-};
-
 struct toc_item {
 	wxString name;
 	wxString ref;

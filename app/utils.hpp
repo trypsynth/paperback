@@ -8,7 +8,6 @@
 #include <wx/string.h>
 
 // Forward declarations for FFI types
-struct FfiMarker;
 namespace rust {
 inline namespace cxxbridge1 {
 class String;
@@ -51,5 +50,4 @@ void speak(const wxString& message);
 
 // FFI helper functions
 [[nodiscard]] wxString to_wxstring(const rust::String& rust_str);
-[[nodiscard]] marker to_marker(const FfiMarker& ffi_marker);
 [[nodiscard]] bool is_heading_marker(marker_type type);

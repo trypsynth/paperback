@@ -170,6 +170,11 @@ pub mod ffi {
 		pub length: usize,
 	}
 
+	pub struct FfiMarkerList {
+		pub items: Vec<FfiMarker>,
+		pub closest_index: i32,
+	}
+
 	pub struct FfiMarkerResult {
 		pub found: bool,
 		pub marker: FfiMarker,
@@ -379,6 +384,7 @@ pub mod ffi {
 		fn document_markers(doc: &DocumentHandle) -> Vec<FfiMarker>;
 		fn document_marker_info(doc: &DocumentHandle, marker_index: i32) -> FfiMarkerResult;
 		fn document_markers_by_type(doc: &DocumentHandle, marker_type: i32) -> Vec<FfiMarker>;
+		fn document_markers_with_closest(doc: &DocumentHandle, marker_type: i32, position: i64) -> FfiMarkerList;
 		fn document_find_closest_toc_offset(doc: &DocumentHandle, position: usize) -> usize;
 		fn document_next_marker(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32;
 		fn document_previous_marker(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32;
@@ -390,6 +396,7 @@ pub mod ffi {
 		fn document_next_heading(doc: &DocumentHandle, position: i64, level: i32) -> i32;
 		fn document_previous_heading(doc: &DocumentHandle, position: i64, level: i32) -> i32;
 		fn document_heading_info(doc: &DocumentHandle, index: i32) -> FfiHeadingInfo;
+		fn document_heading_list(doc: &DocumentHandle) -> Vec<FfiHeadingInfo>;
 		fn document_section_index(doc: &DocumentHandle, position: usize) -> i32;
 		fn document_page_index(doc: &DocumentHandle, position: usize) -> i32;
 		fn document_id_positions(doc: &DocumentHandle) -> Vec<FfiIdPosition>;
@@ -1056,6 +1063,22 @@ fn document_markers_by_type(doc: &DocumentHandle, marker_type: i32) -> Vec<ffi::
 		.collect()
 }
 
+fn document_markers_with_closest(doc: &DocumentHandle, marker_type: i32, position: i64) -> ffi::FfiMarkerList {
+	let Some(marker_type) = marker_type_from_i32(marker_type) else {
+		return ffi::FfiMarkerList { items: Vec::new(), closest_index: -1 };
+	};
+	let pos = usize::try_from(position.max(0)).unwrap_or(0);
+	let mut closest_index = -1;
+	let mut items = Vec::new();
+	for marker in doc.document().buffer.markers.iter().filter(|marker| marker.marker_type == marker_type) {
+		if marker.position <= pos {
+			closest_index = i32::try_from(items.len()).unwrap_or(-1);
+		}
+		items.push(document_marker_to_ffi(marker));
+	}
+	ffi::FfiMarkerList { items, closest_index }
+}
+
 fn document_find_closest_toc_offset(doc: &DocumentHandle, position: usize) -> usize {
 	doc.find_closest_toc_offset(position)
 }
@@ -1108,6 +1131,16 @@ fn document_heading_info(doc: &DocumentHandle, index: i32) -> ffi::FfiHeadingInf
 	doc.heading_info(index).map_or(ffi::FfiHeadingInfo { offset: 0, level: 0, text: String::new() }, |info| {
 		ffi::FfiHeadingInfo { offset: info.offset, level: info.level, text: info.text }
 	})
+}
+
+fn document_heading_list(doc: &DocumentHandle) -> Vec<ffi::FfiHeadingInfo> {
+	doc.document()
+		.buffer
+		.markers
+		.iter()
+		.filter(|marker| crate::document::is_heading_marker(marker.marker_type))
+		.map(|marker| ffi::FfiHeadingInfo { offset: marker.position, level: marker.level, text: marker.text.clone() })
+		.collect()
 }
 
 fn document_section_index(doc: &DocumentHandle, position: usize) -> i32 {
