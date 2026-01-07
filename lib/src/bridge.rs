@@ -401,7 +401,6 @@ pub mod ffi {
 		fn document_find_first_marker_after(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32;
 		fn document_marker_position(doc: &DocumentHandle, marker_index: i32) -> usize;
 		fn document_count_markers(doc: &DocumentHandle, marker_type: i32) -> usize;
-		fn document_marker_position_by_index(doc: &DocumentHandle, marker_type: i32, index: i32) -> usize;
 		fn document_next_heading(doc: &DocumentHandle, position: i64, level: i32) -> i32;
 		fn document_previous_heading(doc: &DocumentHandle, position: i64, level: i32) -> i32;
 		fn document_heading_tree(doc: &DocumentHandle, position: i64) -> FfiHeadingTree;
@@ -576,6 +575,7 @@ pub mod ffi {
 		fn session_get_status_info(session: &DocumentSession, position: i64) -> FfiStatusInfo;
 		fn session_page_count(session: &DocumentSession) -> usize;
 		fn session_current_page(session: &DocumentSession, position: i64) -> i32;
+		fn session_page_offset(session: &DocumentSession, page_index: i32) -> i64;
 		fn session_export_content(session: &DocumentSession, output_path: &str) -> Result<()>;
 		fn session_get_text_range(session: &DocumentSession, start: i64, end: i64) -> String;
 		fn session_get_line_text(session: &DocumentSession, position: i64) -> String;
@@ -1081,11 +1081,6 @@ fn document_count_markers(doc: &DocumentHandle, marker_type: i32) -> usize {
 	doc.count_markers_by_type(marker_type)
 }
 
-fn document_marker_position_by_index(doc: &DocumentHandle, marker_type: i32, index: i32) -> usize {
-	let Some(marker_type) = marker_type_from_i32(marker_type) else { return 0 };
-	doc.get_marker_position_by_index(marker_type, index).unwrap_or(0)
-}
-
 fn document_next_heading(doc: &DocumentHandle, position: i64, level: i32) -> i32 {
 	let level_filter = if level > 0 { Some(level) } else { None };
 	doc.next_heading_index(position, level_filter).unwrap_or(-1)
@@ -1443,6 +1438,10 @@ fn session_page_count(session: &DocumentSession) -> usize {
 
 fn session_current_page(session: &DocumentSession, position: i64) -> i32 {
 	session.current_page(position)
+}
+
+fn session_page_offset(session: &DocumentSession, page_index: i32) -> i64 {
+	session.page_offset(page_index)
 }
 
 fn session_export_content(session: &DocumentSession, output_path: &str) -> Result<(), String> {

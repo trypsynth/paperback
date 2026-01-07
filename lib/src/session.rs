@@ -632,6 +632,17 @@ impl DocumentSession {
 		self.handle.page_index(pos).map_or(0, |idx| idx + 1)
 	}
 
+	#[must_use]
+	pub fn page_offset(&self, page_index: i32) -> i64 {
+		if page_index < 0 {
+			return -1;
+		}
+		self.handle
+			.get_marker_position_by_index(MarkerType::PageBreak, page_index)
+			.map(|offset| i64::try_from(offset).unwrap_or(-1))
+			.unwrap_or(-1)
+	}
+
 	/// Returns the text between two positions (start inclusive, end exclusive).
 	#[must_use]
 	pub fn get_text_range(&self, start: i64, end: i64) -> String {

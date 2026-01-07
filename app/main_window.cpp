@@ -566,10 +566,12 @@ void main_window::on_go_to_page(wxCommandEvent&) {
 	if (dlg.ShowModal() != wxID_OK) return;
 	const int page = dlg.get_page_number();
 	if (page >= 1 && std::cmp_less_equal(static_cast<size_t>(page), total_pages)) {
-		const size_t offset = document_marker_position_by_index(tab->session_doc->get_handle(), static_cast<int>(marker_type::PageBreak), page - 1); // Convert to 0-based index
-		doc_manager->go_to_position(static_cast<long>(offset));
-		update_status_bar();
-		save_position_immediately();
+		const auto offset = session_page_offset(*tab->session_doc->session, page - 1); // Convert to 0-based index
+		if (offset >= 0) {
+			doc_manager->go_to_position(static_cast<long>(offset));
+			update_status_bar();
+			save_position_immediately();
+		}
 	}
 }
 
