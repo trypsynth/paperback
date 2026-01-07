@@ -621,19 +621,9 @@ void document_manager::show_bookmark_dialog(wxWindow* parent, bookmark_filter in
 	if (pos < 0) return;
 	text_ctrl->SetInsertionPoint(pos);
 	text_ctrl->SetFocus();
-	wxString text_to_speak;
-	wxString note_to_speak;
-	const auto bm_it = std::find_if(bookmarks.begin(), bookmarks.end(), [&](const bookmark& bm) {
-		return bm.start == pos;
-	});
-	if (bm_it != bookmarks.end()) {
-		if (bm_it->is_whole_line()) {
-			text_to_speak = rust_to_wx(session_get_line_text(*tab->get_session(), pos));
-		} else {
-			text_to_speak = rust_to_wx(session_get_text_range(*tab->get_session(), bm_it->start, bm_it->end));
-		}
-		note_to_speak = bm_it->note;
-	}
+	auto display = session_bookmark_display_at_position(*tab->get_session(), config.backend_for_ffi(), pos);
+	const wxString text_to_speak = rust_to_wx(display.snippet);
+	const wxString note_to_speak = wxString::FromUTF8(display.note.c_str());
 	wxString announcement;
 	if (!note_to_speak.IsEmpty()) announcement = wxString::Format(_("Bookmark: %s - %s"), note_to_speak, text_to_speak);
 	else announcement = wxString::Format(_("Bookmark: %s"), text_to_speak);

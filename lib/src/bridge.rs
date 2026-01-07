@@ -97,6 +97,12 @@ pub mod ffi {
 		pub index: i32,
 	}
 
+	pub struct FfiBookmarkDisplayAtPosition {
+		pub found: bool,
+		pub note: String,
+		pub snippet: String,
+	}
+
 	#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 	pub enum ParserErrorKind {
 		Generic,
@@ -161,10 +167,15 @@ pub mod ffi {
 		pub status: DocumentListStatus,
 	}
 
-pub struct FfiLinkListItem {
-	pub offset: usize,
-	pub text: String,
-}
+	pub struct FfiRecentDocument {
+		pub path: String,
+		pub filename: String,
+	}
+
+	pub struct FfiLinkListItem {
+		pub offset: usize,
+		pub text: String,
+	}
 
 	pub struct FfiLinkList {
 		pub items: Vec<FfiLinkListItem>,
@@ -179,24 +190,24 @@ pub struct FfiLinkListItem {
 		pub parent_index: i32,
 	}
 
-pub struct FfiDocumentStats {
-	pub word_count: usize,
-	pub line_count: usize,
-	pub char_count: usize,
-	pub char_count_no_whitespace: usize,
-}
-
-pub struct FfiHeadingTreeItem {
-	pub offset: usize,
-	pub level: i32,
-	pub text: String,
-	pub parent_index: i32,
+	pub struct FfiDocumentStats {
+		pub word_count: usize,
+		pub line_count: usize,
+		pub char_count: usize,
+		pub char_count_no_whitespace: usize,
 	}
 
-pub struct FfiHeadingTree {
-	pub items: Vec<FfiHeadingTreeItem>,
-	pub closest_index: i32,
-}
+	pub struct FfiHeadingTreeItem {
+		pub offset: usize,
+		pub level: i32,
+		pub text: String,
+		pub parent_index: i32,
+	}
+
+	pub struct FfiHeadingTree {
+		pub items: Vec<FfiHeadingTreeItem>,
+		pub closest_index: i32,
+	}
 
 	pub struct FfiBookmark {
 		pub start: i64,
@@ -340,8 +351,6 @@ pub struct FfiHeadingTree {
 		fn document_stats(doc: &DocumentHandle) -> FfiDocumentStats;
 		fn document_toc_items_with_parents(doc: &DocumentHandle) -> Vec<FfiTocItemWithParent>;
 		fn document_find_closest_toc_offset(doc: &DocumentHandle, position: usize) -> usize;
-		fn document_next_heading(doc: &DocumentHandle, position: i64, level: i32) -> i32;
-		fn document_previous_heading(doc: &DocumentHandle, position: i64, level: i32) -> i32;
 		fn document_heading_tree(doc: &DocumentHandle, position: i64) -> FfiHeadingTree;
 		fn check_for_updates(current_version: &str, is_installer: bool) -> UpdateResult;
 		fn remove_soft_hyphens(input: &str) -> String;
@@ -403,6 +412,7 @@ pub struct FfiHeadingTree {
 			open_paths: &[String],
 			filter: &str,
 		) -> Vec<FfiDocumentListItem>;
+		fn get_recent_documents_for_menu(config: &ConfigManager, limit: usize) -> Vec<FfiRecentDocument>;
 		fn history_normalize(history: &[i64], history_index: usize) -> FfiNavigationHistory;
 		fn history_record_position(
 			history: &[i64],
@@ -490,6 +500,11 @@ pub struct FfiHeadingTree {
 			next: bool,
 			notes_only: bool,
 		) -> FfiBookmarkNavDisplay;
+		fn session_bookmark_display_at_position(
+			session: &DocumentSession,
+			config: &ConfigManager,
+			position: i64,
+		) -> FfiBookmarkDisplayAtPosition;
 		fn session_navigate_note(
 			session: &DocumentSession,
 			config: &ConfigManager,
@@ -516,7 +531,7 @@ pub struct FfiHeadingTree {
 	}
 }
 
-use std::fs::File;
+use std::{fs::File, path::Path};
 
 use self::ffi::UpdateStatus;
 use crate::{
@@ -860,16 +875,6 @@ fn document_find_closest_toc_offset(doc: &DocumentHandle, position: usize) -> us
 	doc.find_closest_toc_offset(position)
 }
 
-fn document_next_heading(doc: &DocumentHandle, position: i64, level: i32) -> i32 {
-	let level_filter = if level > 0 { Some(level) } else { None };
-	doc.next_heading_index(position, level_filter).unwrap_or(-1)
-}
-
-fn document_previous_heading(doc: &DocumentHandle, position: i64, level: i32) -> i32 {
-	let level_filter = if level > 0 { Some(level) } else { None };
-	doc.previous_heading_index(position, level_filter).unwrap_or(-1)
-}
-
 fn document_heading_tree(doc: &DocumentHandle, position: i64) -> ffi::FfiHeadingTree {
 	let pos = usize::try_from(position.max(0)).unwrap_or(0);
 	let mut last_indices = [-1; 7];
@@ -963,6 +968,17 @@ fn get_sorted_document_list(
 	filter: &str,
 ) -> Vec<ffi::FfiDocumentListItem> {
 	crate::config::get_sorted_document_list(config, open_paths, filter)
+}
+
+fn get_recent_documents_for_menu(config: &ConfigManager, limit: usize) -> Vec<ffi::FfiRecentDocument> {
+	let docs = config.get_recent_documents();
+	docs.into_iter()
+		.take(limit)
+		.map(|path| {
+			let filename = Path::new(&path).file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default();
+			ffi::FfiRecentDocument { path, filename }
+		})
+		.collect()
 }
 
 fn history_normalize(history: &[i64], history_index: usize) -> ffi::FfiNavigationHistory {
@@ -1119,6 +1135,14 @@ fn session_navigate_bookmark_display(
 	notes_only: bool,
 ) -> ffi::FfiBookmarkNavDisplay {
 	session.navigate_bookmark_display(config, position, wrap, next, notes_only)
+}
+
+fn session_bookmark_display_at_position(
+	session: &DocumentSession,
+	config: &ConfigManager,
+	position: i64,
+) -> ffi::FfiBookmarkDisplayAtPosition {
+	session.bookmark_display_at_position(config, position)
 }
 
 fn session_navigate_note(

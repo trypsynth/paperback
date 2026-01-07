@@ -420,6 +420,24 @@ impl DocumentSession {
 	}
 
 	#[must_use]
+	pub fn bookmark_display_at_position(
+		&self,
+		config: &ConfigManager,
+		position: i64,
+	) -> ffi::FfiBookmarkDisplayAtPosition {
+		let bookmark = config.get_bookmarks(&self.file_path).into_iter().find(|bm| bm.start == position);
+		let Some(bookmark) = bookmark else {
+			return ffi::FfiBookmarkDisplayAtPosition { found: false, note: String::new(), snippet: String::new() };
+		};
+		let snippet = if bookmark.start == bookmark.end {
+			self.get_line_text(bookmark.start)
+		} else {
+			self.get_text_range(bookmark.start, bookmark.end)
+		};
+		ffi::FfiBookmarkDisplayAtPosition { found: true, note: bookmark.note, snippet }
+	}
+
+	#[must_use]
 	pub fn link_list(&self, position: i64) -> ffi::FfiLinkList {
 		let pos = usize::try_from(position.max(0)).unwrap_or(0);
 		let mut closest_index = -1;

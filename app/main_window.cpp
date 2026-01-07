@@ -778,14 +778,14 @@ void main_window::on_open_in_webview(wxCommandEvent&) {
 		wxString url_to_load;
 		wxString section_path_wx = wxString::FromUTF8(section_path.c_str());
 		wxString temp_base = wxStandardPaths::Get().GetTempDir();
-		size_t path_hash = std::hash<std::string>{}(std::string(tab->file_path.ToUTF8().data())); 
+		size_t path_hash = std::hash<std::string>{}(std::string(tab->file_path.ToUTF8().data()));
 		wxString doc_temp_dir = temp_base + wxFileName::GetPathSeparator() + "paperback_" + std::to_string(path_hash);
 		if (!wxDirExists(doc_temp_dir)) wxFileName::Mkdir(doc_temp_dir, wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
 		if (!section_path.empty()) {
 			wxFileName temp_file(doc_temp_dir, wxFileName(section_path_wx).GetFullName());
 			bool success = session_extract_resource(*tab->session_doc->session, section_path, temp_file.GetFullPath().ToStdString());
 			if (success) url_to_load = wxFileSystem::FileNameToURL(temp_file);
-		} 
+		}
 		if (url_to_load.IsEmpty()) {
 			wxFileName fn(tab->file_path);
 			wxString ext = fn.GetExt().Lower();
@@ -1062,11 +1062,11 @@ void main_window::update_recent_documents_menu() {
 		}
 	}
 	auto& config_mgr = wxGetApp().get_config_manager();
-	const wxArrayString recent_docs = config_mgr.get_recent_documents();
+	auto recent_docs = get_recent_documents_for_menu(config_mgr.backend_for_ffi(), config_mgr.get(config_manager::recent_documents_to_show));
 	size_t menu_count = 0;
-	for (size_t i = 0; i < recent_docs.GetCount() && menu_count < config_mgr.get(config_manager::recent_documents_to_show); ++i) {
-		const wxString& path = recent_docs[i];
-		const wxString filename = wxFileName(path).GetFullName();
+	for (size_t i = 0; i < recent_docs.size(); ++i) {
+		const wxString path = wxString::FromUTF8(recent_docs[i].path.c_str());
+		const wxString filename = wxString::FromUTF8(recent_docs[i].filename.c_str());
 		const wxString menu_text = wxString::Format("&%zu %s", menu_count + 1, filename);
 		const int id = ID_RECENT_DOCUMENTS_BASE + static_cast<int>(i);
 		recent_documents_menu->Append(id, menu_text, path);
