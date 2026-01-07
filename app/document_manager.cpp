@@ -43,10 +43,6 @@ constexpr uint32_t PARSER_SUPPORTS_TOC = 1 << 1;
 constexpr uint32_t PARSER_SUPPORTS_PAGES = 1 << 2;
 constexpr uint32_t PARSER_SUPPORTS_LISTS = 1 << 3;
 
-int to_rust_marker(marker_type type) {
-	return static_cast<int>(type);
-}
-
 void populate_toc_items(std::vector<std::unique_ptr<toc_item>>& toc_items, const rust::Vec<FfiTocItemWithParent>& ffi_toc_items) {
 	if (ffi_toc_items.empty()) return;
 	std::vector<toc_item*> item_ptrs;
@@ -255,24 +251,6 @@ int document_manager::get_tab_count() const {
 
 int document_manager::get_active_tab_index() const {
 	return notebook->GetSelection();
-}
-
-int document_manager::page_index(size_t position) const {
-	const document_tab* tab = get_active_tab();
-	if (tab == nullptr || tab->session_doc == nullptr) return -1;
-	return document_page_index(tab->session_doc->get_handle(), position);
-}
-
-size_t document_manager::marker_count(marker_type type) const {
-	const document_tab* tab = get_active_tab();
-	if (tab == nullptr || tab->session_doc == nullptr) return 0;
-	return document_count_markers(tab->session_doc->get_handle(), to_rust_marker(type));
-}
-
-size_t document_manager::marker_position_by_index(marker_type type, int index) const {
-	const document_tab* tab = get_active_tab();
-	if (tab == nullptr || tab->session_doc == nullptr) return 0;
-	return document_marker_position_by_index(tab->session_doc->get_handle(), to_rust_marker(type), index);
 }
 
 void document_manager::go_to_position(int position) const {

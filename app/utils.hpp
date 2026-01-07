@@ -49,4 +49,3 @@ void speak(const wxString& message);
 
 // FFI helper functions
 [[nodiscard]] wxString to_wxstring(const rust::String& rust_str);
-[[nodiscard]] bool is_heading_marker(marker_type type);

@@ -64,7 +64,3 @@ wxString to_wxstring(const rust::String& rust_str) {
 	const std::string utf8 = std::string(rust_str);
 	return wxString::FromUTF8(utf8.c_str());
 }
-
-bool is_heading_marker(marker_type type) {
-	return is_heading_marker_type(static_cast<int>(type));
-}

@@ -551,7 +551,7 @@ void main_window::on_go_forward(wxCommandEvent&) {
 void main_window::on_go_to_page(wxCommandEvent&) {
 	auto* const tab = doc_manager->get_active_tab();
 	if (tab == nullptr || tab->session_doc == nullptr) return;
-	const size_t total_pages = doc_manager->marker_count(marker_type::PageBreak);
+	const size_t total_pages = session_page_count(*tab->session_doc->session);
 	if (total_pages == 0) {
 		speak(_("No pages."));
 		return;
@@ -560,13 +560,13 @@ void main_window::on_go_to_page(wxCommandEvent&) {
 	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
 	if (text_ctrl == nullptr) return;
 	const size_t current_pos = text_ctrl->GetInsertionPoint();
-	const int current_page_idx = doc_manager->page_index(current_pos);
-	if (current_page_idx >= 0) current_page = current_page_idx + 1; // Convert to 1-based index
+	const int session_page = session_current_page(*tab->session_doc->session, static_cast<long>(current_pos));
+	if (session_page > 0) current_page = session_page;
 	go_to_page_dialog dlg(this, tab->session_doc.get(), current_page);
 	if (dlg.ShowModal() != wxID_OK) return;
 	const int page = dlg.get_page_number();
 	if (page >= 1 && std::cmp_less_equal(static_cast<size_t>(page), total_pages)) {
-		const size_t offset = doc_manager->marker_position_by_index(marker_type::PageBreak, page - 1); // Convert to 0-based index
+		const size_t offset = document_marker_position_by_index(tab->session_doc->get_handle(), static_cast<int>(marker_type::PageBreak), page - 1); // Convert to 0-based index
 		doc_manager->go_to_position(static_cast<long>(offset));
 		update_status_bar();
 		save_position_immediately();

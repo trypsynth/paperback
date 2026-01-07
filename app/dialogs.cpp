@@ -709,7 +709,7 @@ int go_to_page_dialog::get_page_number() const {
 
 int go_to_page_dialog::get_max_page() const {
 	if (session_doc_ == nullptr) return 1;
-	return static_cast<int>(document_count_markers(session_doc_->get_handle(), static_cast<int>(marker_type::PageBreak)));
+	return static_cast<int>(session_page_count(*session_doc_->session));
 }
 
 go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : dialog(parent, _("Go to Percent")), textbox{text_ctrl} {

@@ -63,9 +63,6 @@ public:
 	[[nodiscard]] wxTextCtrl* get_active_text_ctrl() const;
 	[[nodiscard]] int get_tab_count() const;
 	[[nodiscard]] int get_active_tab_index() const;
-	[[nodiscard]] int page_index(size_t position) const;
-	[[nodiscard]] size_t marker_count(marker_type type) const;
-	[[nodiscard]] size_t marker_position_by_index(marker_type type, int index) const;
 
 	[[nodiscard]] bool has_documents() const {
 		return get_tab_count() > 0;
