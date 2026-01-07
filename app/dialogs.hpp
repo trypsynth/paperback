@@ -85,7 +85,7 @@ enum class bookmark_filter {
 
 class bookmark_dialog : public dialog {
 public:
-	bookmark_dialog(wxWindow* parent, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos = -1, bookmark_filter initial_filter = bookmark_filter::all);
+	bookmark_dialog(wxWindow* parent, session_document* session_doc, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos = -1, bookmark_filter initial_filter = bookmark_filter::all);
 	~bookmark_dialog() override = default;
 	bookmark_dialog(const bookmark_dialog&) = delete;
 	bookmark_dialog& operator=(const bookmark_dialog&) = delete;
@@ -104,6 +104,7 @@ private:
 	config_manager& config;
 	wxString file_path;
 	wxTextCtrl* text_ctrl;
+	session_document* session_doc_{nullptr};
 	wxButton* jump_button{nullptr};
 	wxButton* delete_button{nullptr};
 	wxButton* edit_note_button{nullptr};

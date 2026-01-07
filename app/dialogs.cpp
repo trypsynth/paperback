@@ -242,7 +242,7 @@ void all_documents_dialog::populate_document_list(const wxString& filter) {
 	}
 }
 
-bookmark_dialog::bookmark_dialog(wxWindow* parent, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos, bookmark_filter initial_filter) : dialog(parent, _("Jump to Bookmark"), dialog_button_config::ok_cancel), selected_position{-1}, config{config}, file_path{file_path}, text_ctrl{text_ctrl} {
+bookmark_dialog::bookmark_dialog(wxWindow* parent, session_document* session_doc, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos, bookmark_filter initial_filter) : dialog(parent, _("Jump to Bookmark"), dialog_button_config::ok_cancel), selected_position{-1}, config{config}, file_path{file_path}, text_ctrl{text_ctrl}, session_doc_{session_doc} {
 	auto* filter_row = new wxBoxSizer(wxHORIZONTAL);
 	auto* filter_label = new wxStaticText(this, wxID_ANY, _("&Filter:"));
 	filter_choice = new wxChoice(this, wxID_ANY);
@@ -368,38 +368,53 @@ void bookmark_dialog::repopulate_list(long current_pos) {
 	bookmark_list->Clear();
 	bookmark_positions.clear();
 	const long previously_selected = selected_position;
-
-	// Get filtered bookmarks from Rust
-	auto filtered = get_filtered_bookmarks(config.backend_for_ffi(), file_path.ToUTF8().data(), current_pos, filter_type);
-
-	// Populate the list with display text
-	for (auto& item : filtered.items) {
-		wxString text_snippet;
-		if (item.is_whole_line) {
-			long line{0};
-			text_ctrl->PositionToXY(static_cast<long>(item.start), nullptr, &line);
-			text_snippet = text_ctrl->GetLineText(line);
-		} else {
-			text_snippet = text_ctrl->GetRange(static_cast<long>(item.start), static_cast<long>(item.end));
+	int closest_index = -1;
+	if (session_doc_ != nullptr) {
+		auto filtered = get_filtered_bookmark_display_items(*session_doc_->session, config.backend_for_ffi(), file_path.ToUTF8().data(), current_pos, filter_type);
+		closest_index = filtered.closest_index;
+		for (auto& item : filtered.items) {
+			wxString text_snippet = wxString::FromUTF8(item.snippet.c_str()).Strip(wxString::both);
+			if (text_snippet.IsEmpty()) text_snippet = _("blank");
+			wxString display_text;
+			const wxString note = wxString::FromUTF8(item.note.c_str());
+			if (!note.IsEmpty())
+				display_text = wxString::Format("%s - %s", note, text_snippet);
+			else
+				display_text = text_snippet;
+			bookmark bm;
+			bm.start = static_cast<long>(item.start);
+			bm.end = static_cast<long>(item.end);
+			bm.note = note;
+			bookmark_positions.push_back(bm);
+			bookmark_list->Append(display_text);
 		}
-		text_snippet = text_snippet.Strip(wxString::both);
-		if (text_snippet.IsEmpty()) text_snippet = _("blank");
-
-		wxString display_text;
-		const wxString note = wxString::FromUTF8(item.note.c_str());
-		if (!note.IsEmpty()) {
-			display_text = wxString::Format("%s - %s", note, text_snippet);
-		} else {
-			display_text = text_snippet;
+	} else {
+		auto filtered = get_filtered_bookmarks(config.backend_for_ffi(), file_path.ToUTF8().data(), current_pos, filter_type);
+		closest_index = filtered.closest_index;
+		for (auto& item : filtered.items) {
+			wxString text_snippet;
+			if (item.is_whole_line) {
+				long line{0};
+				text_ctrl->PositionToXY(static_cast<long>(item.start), nullptr, &line);
+				text_snippet = text_ctrl->GetLineText(line);
+			} else {
+				text_snippet = text_ctrl->GetRange(static_cast<long>(item.start), static_cast<long>(item.end));
+			}
+			text_snippet = text_snippet.Strip(wxString::both);
+			if (text_snippet.IsEmpty()) text_snippet = _("blank");
+			wxString display_text;
+			const wxString note = wxString::FromUTF8(item.note.c_str());
+			if (!note.IsEmpty())
+				display_text = wxString::Format("%s - %s", note, text_snippet);
+			else
+				display_text = text_snippet;
+			bookmark bm;
+			bm.start = static_cast<long>(item.start);
+			bm.end = static_cast<long>(item.end);
+			bm.note = note;
+			bookmark_positions.push_back(bm);
+			bookmark_list->Append(display_text);
 		}
-
-		// Create bookmark object for tracking
-		bookmark bm;
-		bm.start = static_cast<long>(item.start);
-		bm.end = static_cast<long>(item.end);
-		bm.note = note;
-		bookmark_positions.push_back(bm);
-		bookmark_list->Append(display_text);
 	}
 
 	jump_button->Enable(false);
@@ -424,9 +439,9 @@ void bookmark_dialog::repopulate_list(long current_pos) {
 	}
 
 	// Use closest index from Rust
-	if (filtered.closest_index >= 0 && static_cast<size_t>(filtered.closest_index) < bookmark_positions.size()) {
-		bookmark_list->SetSelection(filtered.closest_index);
-		selected_position = bookmark_positions[static_cast<size_t>(filtered.closest_index)].start;
+	if (closest_index >= 0 && static_cast<size_t>(closest_index) < bookmark_positions.size()) {
+		bookmark_list->SetSelection(closest_index);
+		selected_position = bookmark_positions[static_cast<size_t>(closest_index)].start;
 		jump_button->Enable(true);
 		delete_button->Enable(true);
 		edit_note_button->Enable(true);

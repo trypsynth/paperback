@@ -11,7 +11,9 @@ use crate::{
 	config::ConfigManager,
 	document::{DocumentHandle, MarkerType, ParserContext, ParserFlags},
 	parser,
-	reader_core::{bookmark_navigate, history_go_next, history_go_previous, reader_navigate, resolve_link},
+	reader_core::{
+		bookmark_navigate, get_filtered_bookmarks, history_go_next, history_go_previous, reader_navigate, resolve_link,
+	},
 	utils::zip as zip_utils,
 };
 
@@ -489,6 +491,37 @@ impl DocumentSession {
 		file.write_all(content.as_bytes())?;
 		file.flush()?;
 		Ok(())
+	}
+
+	#[must_use]
+	pub fn get_filtered_bookmark_display_items(
+		&self,
+		config: &ConfigManager,
+		path: &str,
+		current_pos: i64,
+		filter: ffi::BookmarkFilterType,
+	) -> ffi::FfiFilteredBookmarkDisplay {
+		let filtered = get_filtered_bookmarks(config, path, current_pos, filter);
+		let items = filtered
+			.items
+			.into_iter()
+			.map(|item| {
+				let snippet = if item.is_whole_line {
+					self.get_line_text(item.start)
+				} else {
+					self.get_text_range(item.start, item.end)
+				};
+				ffi::FfiBookmarkDisplayEntry {
+					start: item.start,
+					end: item.end,
+					note: item.note,
+					snippet,
+					is_whole_line: item.is_whole_line,
+					index: item.index,
+				}
+			})
+			.collect();
+		ffi::FfiFilteredBookmarkDisplay { items, closest_index: filtered.closest_index }
 	}
 
 	#[must_use]

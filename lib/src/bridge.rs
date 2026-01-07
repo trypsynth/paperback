@@ -102,8 +102,22 @@ pub mod ffi {
 		pub index: usize,
 	}
 
+	pub struct FfiBookmarkDisplayEntry {
+		pub start: i64,
+		pub end: i64,
+		pub note: String,
+		pub snippet: String,
+		pub is_whole_line: bool,
+		pub index: usize,
+	}
+
 	pub struct FfiFilteredBookmarks {
 		pub items: Vec<FfiBookmarkDisplayItem>,
+		pub closest_index: i32,
+	}
+
+	pub struct FfiFilteredBookmarkDisplay {
+		pub items: Vec<FfiBookmarkDisplayEntry>,
 		pub closest_index: i32,
 	}
 
@@ -394,6 +408,13 @@ pub mod ffi {
 			current_pos: i64,
 			filter: BookmarkFilterType,
 		) -> FfiFilteredBookmarks;
+		fn get_filtered_bookmark_display_items(
+			session: &DocumentSession,
+			manager: &ConfigManager,
+			path: &str,
+			current_pos: i64,
+			filter: BookmarkFilterType,
+		) -> FfiFilteredBookmarkDisplay;
 		fn get_sorted_document_list(
 			config: &ConfigManager,
 			open_paths: &[String],
@@ -1102,6 +1123,16 @@ fn get_filtered_bookmarks(
 	filter: ffi::BookmarkFilterType,
 ) -> ffi::FfiFilteredBookmarks {
 	crate::reader_core::get_filtered_bookmarks(manager, path, current_pos, filter)
+}
+
+fn get_filtered_bookmark_display_items(
+	session: &DocumentSession,
+	manager: &ConfigManager,
+	path: &str,
+	current_pos: i64,
+	filter: ffi::BookmarkFilterType,
+) -> ffi::FfiFilteredBookmarkDisplay {
+	session.get_filtered_bookmark_display_items(manager, path, current_pos, filter)
 }
 
 fn get_sorted_document_list(

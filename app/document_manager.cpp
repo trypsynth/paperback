@@ -675,7 +675,7 @@ void document_manager::show_bookmark_dialog(wxWindow* parent, bookmark_filter in
 		return;
 	}
 	const int current_pos = text_ctrl->GetInsertionPoint();
-	bookmark_dialog dialog(parent, text_ctrl, config, tab->file_path, current_pos, initial_filter);
+	bookmark_dialog dialog(parent, tab->session_doc.get(), text_ctrl, config, tab->file_path, current_pos, initial_filter);
 	const int result = dialog.ShowModal();
 	if (result != wxID_OK) return;
 	const int pos = dialog.get_selected_position();
