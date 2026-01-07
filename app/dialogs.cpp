@@ -489,7 +489,7 @@ void elements_dialog::populate_links() {
 void elements_dialog::populate_headings() {
 	if (session_doc_ == nullptr) return;
 	const wxTreeItemId root = headings_tree->AddRoot(_("Root"));
-	const auto tree = document_heading_tree(session_doc_->get_handle(), current_pos);
+	const auto tree = session_heading_tree(*session_doc_->session, current_pos);
 	std::vector<wxTreeItemId> item_ids(tree.items.size());
 	for (size_t i = 0; i < tree.items.size(); ++i) {
 		const auto& heading_marker = tree.items[i];

@@ -41,7 +41,7 @@ struct session_document {
 	[[nodiscard]] const DocumentHandle& get_handle() const { return session_handle(*session); }
 	[[nodiscard]] uint32_t get_parser_flags() const { return session_parser_flags(*session); }
 	void ensure_toc_loaded();
-	[[nodiscard]] size_t find_closest_toc_offset(size_t position) const { return document_find_closest_toc_offset(get_handle(), position); }
+	[[nodiscard]] size_t find_closest_toc_offset(size_t position) const { return session_find_closest_toc_offset(*session, position); }
 };
 
 // Legacy type - kept for compilation compatibility during migration

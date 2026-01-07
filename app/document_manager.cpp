@@ -76,7 +76,7 @@ void populate_toc_items(std::vector<std::unique_ptr<toc_item>>& toc_items, const
 void session_document::ensure_toc_loaded() {
 	if (toc_loaded) return;
 	toc_loaded = true;
-	populate_toc_items(toc_items, document_toc_items_with_parents(get_handle()));
+	populate_toc_items(toc_items, session_toc_items_with_parents(*session));
 }
 
 document_manager::document_manager(wxNotebook* nbk, config_manager& cfg, main_window& win) : notebook{nbk}, config{cfg}, main_win{win} {

@@ -346,9 +346,6 @@ pub mod ffi {
 			password: &str,
 			forced_extension: &str,
 		) -> Result<Box<DocumentHandle>>;
-		fn document_toc_items_with_parents(doc: &DocumentHandle) -> Vec<FfiTocItemWithParent>;
-		fn document_find_closest_toc_offset(doc: &DocumentHandle, position: usize) -> usize;
-		fn document_heading_tree(doc: &DocumentHandle, position: i64) -> FfiHeadingTree;
 		fn check_for_updates(current_version: &str, is_installer: bool) -> UpdateResult;
 		fn remove_soft_hyphens(input: &str) -> String;
 		fn url_decode(encoded: &str) -> String;
@@ -525,6 +522,9 @@ pub mod ffi {
 		fn session_get_text_range(session: &DocumentSession, start: i64, end: i64) -> String;
 		fn session_get_line_text(session: &DocumentSession, position: i64) -> String;
 		fn session_handle(session: &DocumentSession) -> &DocumentHandle;
+		fn session_toc_items_with_parents(session: &DocumentSession) -> Vec<FfiTocItemWithParent>;
+		fn session_find_closest_toc_offset(session: &DocumentSession, position: usize) -> usize;
+		fn session_heading_tree(session: &DocumentSession, position: i64) -> FfiHeadingTree;
 		fn is_heading_marker_type(marker_type: i32) -> bool;
 	}
 }
@@ -851,14 +851,6 @@ fn parse_document_handle(
 	let mut doc = parser::parse_document(&context).map_err(|e| e.to_string())?;
 	doc.compute_stats();
 	Ok(Box::new(DocumentHandle::new(doc)))
-}
-
-fn document_toc_items_with_parents(doc: &DocumentHandle) -> Vec<ffi::FfiTocItemWithParent> {
-	flatten_toc_items_with_parents(&doc.document().toc_items)
-}
-
-fn document_find_closest_toc_offset(doc: &DocumentHandle, position: usize) -> usize {
-	doc.find_closest_toc_offset(position)
 }
 
 fn document_heading_tree(doc: &DocumentHandle, position: i64) -> ffi::FfiHeadingTree {
@@ -1219,6 +1211,18 @@ fn session_get_text_range(session: &DocumentSession, start: i64, end: i64) -> St
 
 fn session_get_line_text(session: &DocumentSession, position: i64) -> String {
 	session.get_line_text(position)
+}
+
+fn session_toc_items_with_parents(session: &DocumentSession) -> Vec<ffi::FfiTocItemWithParent> {
+	flatten_toc_items_with_parents(&session.handle().document().toc_items)
+}
+
+fn session_find_closest_toc_offset(session: &DocumentSession, position: usize) -> usize {
+	session.handle().find_closest_toc_offset(position)
+}
+
+fn session_heading_tree(session: &DocumentSession, position: i64) -> ffi::FfiHeadingTree {
+	document_heading_tree(session.handle(), position)
 }
 
 fn is_heading_marker_type(marker_type: i32) -> bool {
