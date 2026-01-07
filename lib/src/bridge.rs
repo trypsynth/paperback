@@ -161,30 +161,14 @@ pub mod ffi {
 		pub status: DocumentListStatus,
 	}
 
-	pub struct FfiMarker {
-		pub marker_type: i32,
-		pub position: usize,
-		pub text: String,
-		pub reference: String,
-		pub level: i32,
-		pub length: usize,
-	}
-
-	pub struct FfiLinkListItem {
-		pub offset: usize,
-		pub text: String,
-	}
+pub struct FfiLinkListItem {
+	pub offset: usize,
+	pub text: String,
+}
 
 	pub struct FfiLinkList {
 		pub items: Vec<FfiLinkListItem>,
 		pub closest_index: i32,
-	}
-
-	pub struct FfiTocItem {
-		pub name: String,
-		pub reference: String,
-		pub offset: usize,
-		pub depth: i32,
 	}
 
 	pub struct FfiTocItemWithParent {
@@ -205,11 +189,6 @@ pub mod ffi {
 	pub struct FfiIdPosition {
 		pub id: String,
 		pub offset: usize,
-	}
-
-	pub struct FfiManifestItem {
-		pub id: String,
-		pub path: String,
 	}
 
 	pub struct FfiHeadingInfo {
@@ -235,18 +214,6 @@ pub mod ffi {
 		pub headings: Vec<FfiHeadingInfo>,
 		pub section_offsets: Vec<usize>,
 		pub id_positions: Vec<FfiIdPosition>,
-	}
-
-	pub struct FfiDocument {
-		pub title: String,
-		pub author: String,
-		pub content: String,
-		pub markers: Vec<FfiMarker>,
-		pub toc_items: Vec<FfiTocItem>,
-		pub stats: FfiDocumentStats,
-		pub id_positions: Vec<FfiIdPosition>,
-		pub spine_items: Vec<String>,
-		pub manifest_items: Vec<FfiManifestItem>,
 	}
 
 	pub struct FfiBookmark {
@@ -406,7 +373,6 @@ pub mod ffi {
 		fn parser_supported_wildcards() -> String;
 		fn parser_supports_extension(extension: &str) -> bool;
 		fn parser_error_info(message: &str) -> ParserErrorInfo;
-		fn parse_document(file_path: &str, password: &str) -> Result<FfiDocument>;
 		fn get_parser_for_extension(extension: &str) -> Result<String>;
 		fn convert_xml_to_text(content: &str) -> Result<FfiXmlConversion>;
 		fn markdown_to_text(input: &str) -> String;
@@ -574,7 +540,7 @@ use std::fs::File;
 use self::ffi::UpdateStatus;
 use crate::{
 	config::{Bookmark, ConfigManager as RustConfigManager, NavigationHistory},
-	document::{DocumentHandle, MarkerType, ParserContext, TocItem},
+	document::{DocumentHandle, ParserContext, TocItem},
 	parser, update as update_module,
 	utils::{encoding, text, zip as zip_module},
 	xml_to_text::XmlToText,
@@ -838,74 +804,9 @@ fn parser_error_info(message: &str) -> ffi::ParserErrorInfo {
 	ffi::ParserErrorInfo { kind: ffi::ParserErrorKind::Generic, detail: message.to_string() }
 }
 
-fn parse_document(file_path: &str, password: &str) -> Result<ffi::FfiDocument, String> {
-	let mut context = ParserContext::new(file_path.to_string());
-	if !password.is_empty() {
-		context = context.with_password(password.to_string());
-	}
-	let mut doc = parser::parse_document(&context).map_err(|e| e.to_string())?;
-	doc.compute_stats();
-	// Convert TOC items to flat list (cxx doesn't support recursive types easily)
-	let toc_items = flatten_toc_items(&doc.toc_items);
-	Ok(ffi::FfiDocument {
-		title: doc.title,
-		author: doc.author,
-		content: doc.buffer.content,
-		markers: doc
-			.buffer
-			.markers
-			.into_iter()
-			.map(|m| ffi::FfiMarker {
-				marker_type: m.marker_type.into(),
-				position: m.position,
-				text: m.text,
-				reference: m.reference,
-				level: m.level,
-				length: m.length,
-			})
-			.collect(),
-		toc_items,
-		stats: ffi::FfiDocumentStats {
-			word_count: doc.stats.word_count,
-			line_count: doc.stats.line_count,
-			char_count: doc.stats.char_count,
-			char_count_no_whitespace: doc.stats.char_count_no_whitespace,
-		},
-		id_positions: doc
-			.id_positions
-			.iter()
-			.map(|(id, offset)| ffi::FfiIdPosition { id: id.clone(), offset: *offset })
-			.collect(),
-		spine_items: doc.spine_items.clone(),
-		manifest_items: doc
-			.manifest_items
-			.iter()
-			.map(|(id, path)| ffi::FfiManifestItem { id: id.clone(), path: path.clone() })
-			.collect(),
-	})
-}
-
 fn get_parser_for_extension(extension: &str) -> Result<String, String> {
 	parser::get_parser_name_for_extension(extension)
 		.ok_or_else(|| format!("No parser found for extension: .{extension}"))
-}
-
-fn flatten_recursive(items: &[TocItem], depth: i32, result: &mut Vec<ffi::FfiTocItem>) {
-	for item in items {
-		result.push(ffi::FfiTocItem {
-			name: item.name.clone(),
-			reference: item.reference.clone(),
-			offset: item.offset,
-			depth,
-		});
-		flatten_recursive(&item.children, depth + 1, result);
-	}
-}
-
-fn flatten_toc_items(items: &[TocItem]) -> Vec<ffi::FfiTocItem> {
-	let mut result = Vec::new();
-	flatten_recursive(items, 0, &mut result);
-	result
 }
 
 fn flatten_recursive_with_parents(
