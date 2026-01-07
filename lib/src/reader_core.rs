@@ -290,6 +290,15 @@ pub fn bookmark_navigate(
 	ffi::BookmarkNavResult { found: false, start: -1, end: -1, note: String::new(), index: -1, wrapped }
 }
 
+pub fn bookmark_note_at_position(manager: &RustConfigManager, path: &str, position: i64) -> String {
+	manager
+		.get_bookmarks(path)
+		.into_iter()
+		.find(|bm| bm.start == position && !bm.note.is_empty())
+		.map(|bm| bm.note)
+		.unwrap_or_default()
+}
+
 pub fn get_filtered_bookmarks(
 	manager: &RustConfigManager,
 	path: &str,

@@ -387,6 +387,7 @@ pub mod ffi {
 			next: bool,
 			notes_only: bool,
 		) -> BookmarkNavResult;
+		fn bookmark_note_at_position(manager: &ConfigManager, path: &str, position: i64) -> String;
 		fn get_filtered_bookmarks(
 			manager: &ConfigManager,
 			path: &str,
@@ -1088,6 +1089,10 @@ fn bookmark_navigate(
 	notes_only: bool,
 ) -> ffi::BookmarkNavResult {
 	crate::reader_core::bookmark_navigate(manager, path, position, wrap, next, notes_only)
+}
+
+fn bookmark_note_at_position(manager: &ConfigManager, path: &str, position: i64) -> String {
+	crate::reader_core::bookmark_note_at_position(manager, path, position)
 }
 
 fn get_filtered_bookmarks(

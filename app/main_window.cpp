@@ -652,15 +652,13 @@ void main_window::on_view_note_text(wxCommandEvent&) {
 	auto* text_ctrl = doc_manager->get_active_text_ctrl();
 	if (tab == nullptr || text_ctrl == nullptr) return;
 	const long current_pos = text_ctrl->GetInsertionPoint();
-	const auto bookmarks = wxGetApp().get_config_manager().get_bookmarks(tab->file_path);
-	const auto bm_it = std::find_if(bookmarks.begin(), bookmarks.end(), [&](const bookmark& bm) {
-		return bm.start == current_pos && bm.has_note();
-	});
-	if (bm_it == bookmarks.end()) {
+	auto& config_mgr = wxGetApp().get_config_manager();
+	const std::string note_utf8 = std::string(bookmark_note_at_position(config_mgr.backend_for_ffi(), tab->file_path.ToUTF8().data(), current_pos));
+	const wxString note_text = wxString::FromUTF8(note_utf8.c_str());
+	if (note_text.IsEmpty()) {
 		wxMessageBox(_("No note at the current position."), _("View Note"), wxOK | wxICON_INFORMATION);
 		return;
 	}
-	const wxString note_text = bm_it->note;
 	view_note_dialog dlg(this, note_text);
 	dlg.ShowModal();
 }
