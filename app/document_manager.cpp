@@ -389,21 +389,14 @@ void document_manager::navigate_to_bookmark(bool next) const {
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
 	const bool allow_wrap = config.get(config_manager::navigation_wrap);
-	const std::string path_utf8 = std::string(tab->file_path.ToUTF8().data());
-	const auto result = bookmark_navigate(config.backend_for_ffi(), path_utf8, text_ctrl->GetInsertionPoint(), allow_wrap, next, false);
+	const auto result = session_navigate_bookmark_display(*tab->get_session(), config.backend_for_ffi(), text_ctrl->GetInsertionPoint(), allow_wrap, next, false);
 	if (!result.found) {
 		speak(next ? _("No next bookmark") : _("No previous bookmark"));
 		return;
 	}
 	const long start = static_cast<long>(result.start);
-	const long end = static_cast<long>(result.end);
 	text_ctrl->SetInsertionPoint(start);
-	wxString text_to_speak;
-	if (start == end) {
-		text_to_speak = rust_to_wx(session_get_line_text(*tab->get_session(), start));
-	} else {
-		text_to_speak = rust_to_wx(session_get_text_range(*tab->get_session(), start, end));
-	}
+	const wxString text_to_speak = rust_to_wx(result.snippet);
 	const int index = result.index >= 0 ? result.index : 0;
 	wxString announcement = wxString::Format(_("%s - Bookmark %d"), text_to_speak, index + 1);
 	if (result.wrapped) announcement = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + announcement;
@@ -415,21 +408,14 @@ void document_manager::navigate_to_note(bool next) const {
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
 	const bool allow_wrap = config.get(config_manager::navigation_wrap);
-	const std::string path_utf8 = std::string(tab->file_path.ToUTF8().data());
-	auto result = bookmark_navigate(config.backend_for_ffi(), path_utf8, text_ctrl->GetInsertionPoint(), allow_wrap, next, true);
+	auto result = session_navigate_bookmark_display(*tab->get_session(), config.backend_for_ffi(), text_ctrl->GetInsertionPoint(), allow_wrap, next, true);
 	if (!result.found) {
 		speak(next ? _("No next note") : _("No previous note"));
 		return;
 	}
 	const long start = static_cast<long>(result.start);
-	const long end = static_cast<long>(result.end);
 	text_ctrl->SetInsertionPoint(start);
-	wxString text_to_speak;
-	if (start == end) {
-		text_to_speak = rust_to_wx(session_get_line_text(*tab->get_session(), start));
-	} else {
-		text_to_speak = rust_to_wx(session_get_text_range(*tab->get_session(), start, end));
-	}
+	const wxString text_to_speak = rust_to_wx(result.snippet);
 	const wxString note_text = wxString::FromUTF8(result.note.c_str());
 	const int index = result.index >= 0 ? result.index : 0;
 	wxString announcement = wxString::Format(_("%s - Note %d"), text_to_speak, index + 1);

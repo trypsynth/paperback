@@ -87,6 +87,16 @@ pub mod ffi {
 		pub wrapped: bool,
 	}
 
+	pub struct FfiBookmarkNavDisplay {
+		pub found: bool,
+		pub wrapped: bool,
+		pub start: i64,
+		pub end: i64,
+		pub note: String,
+		pub snippet: String,
+		pub index: i32,
+	}
+
 	#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 	pub enum ParserErrorKind {
 		Generic,
@@ -526,6 +536,14 @@ pub mod ffi {
 			wrap: bool,
 			next: bool,
 		) -> FfiSessionNavResult;
+		fn session_navigate_bookmark_display(
+			session: &DocumentSession,
+			config: &ConfigManager,
+			position: i64,
+			wrap: bool,
+			next: bool,
+			notes_only: bool,
+		) -> FfiBookmarkNavDisplay;
 		fn session_navigate_note(
 			session: &DocumentSession,
 			config: &ConfigManager,
@@ -814,10 +832,7 @@ fn parser_supports_extension(extension: &str) -> bool {
 fn parser_error_info(message: &str) -> ffi::ParserErrorInfo {
 	let prefix = parser::PASSWORD_REQUIRED_ERROR_PREFIX;
 	if let Some(rest) = message.strip_prefix(prefix) {
-		return ffi::ParserErrorInfo {
-			kind: ffi::ParserErrorKind::PasswordRequired,
-			detail: rest.to_string(),
-		};
+		return ffi::ParserErrorInfo { kind: ffi::ParserErrorKind::PasswordRequired, detail: rest.to_string() };
 	}
 	ffi::ParserErrorInfo { kind: ffi::ParserErrorKind::Generic, detail: message.to_string() }
 }
@@ -1336,6 +1351,17 @@ fn session_navigate_bookmark(
 	next: bool,
 ) -> ffi::FfiSessionNavResult {
 	nav_result_to_ffi(session.navigate_bookmark(config, position, wrap, next))
+}
+
+fn session_navigate_bookmark_display(
+	session: &DocumentSession,
+	config: &ConfigManager,
+	position: i64,
+	wrap: bool,
+	next: bool,
+	notes_only: bool,
+) -> ffi::FfiBookmarkNavDisplay {
+	session.navigate_bookmark_display(config, position, wrap, next, notes_only)
 }
 
 fn session_navigate_note(

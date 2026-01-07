@@ -359,6 +359,43 @@ impl DocumentSession {
 		}
 	}
 
+	#[must_use]
+	pub fn navigate_bookmark_display(
+		&self,
+		config: &ConfigManager,
+		position: i64,
+		wrap: bool,
+		next: bool,
+		notes_only: bool,
+	) -> ffi::FfiBookmarkNavDisplay {
+		let result = bookmark_navigate(config, &self.file_path, position, wrap, next, notes_only);
+		if !result.found {
+			return ffi::FfiBookmarkNavDisplay {
+				found: false,
+				wrapped: false,
+				start: -1,
+				end: -1,
+				note: String::new(),
+				snippet: String::new(),
+				index: -1,
+			};
+		}
+		let snippet = if result.start == result.end {
+			self.get_line_text(result.start)
+		} else {
+			self.get_text_range(result.start, result.end)
+		};
+		ffi::FfiBookmarkNavDisplay {
+			found: true,
+			wrapped: result.wrapped,
+			start: result.start,
+			end: result.end,
+			note: result.note,
+			snippet,
+			index: result.index,
+		}
+	}
+
 	pub fn history_go_back(&mut self, current_pos: i64) -> NavigationResult {
 		if self.history.is_empty() {
 			return NavigationResult::not_found();

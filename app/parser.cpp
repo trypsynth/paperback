@@ -19,8 +19,7 @@ parser_exception make_parser_exception(const std::exception& e, const wxString& 
 	const std::string message = e.what();
 	auto info = parser_error_info(message);
 	if (info.kind == ParserErrorKind::PasswordRequired) {
-		const wxString detail = wxString::FromUTF8(info.detail.c_str());
-		const wxString localized = detail.IsEmpty() ? _("Password required or incorrect.") : detail;
+		const wxString localized = _("Password required or incorrect.");
 		return parser_exception(localized, path, error_severity::error, parser_error_code::password_required);
 	}
 	return parser_exception(wxString::FromUTF8(message.c_str()), path);
