@@ -20,18 +20,6 @@
 #include <wx/strconv.h>
 #include <wx/string.h>
 
-long find_text(const wxString& haystack, const wxString& needle, long start, find_options options) {
-	if (needle.empty()) return wxNOT_FOUND;
-	const bool forward = has_option(options, find_options::forward);
-	const bool match_case = has_option(options, find_options::match_case);
-	const bool match_whole_word = has_option(options, find_options::match_whole_word);
-	const bool use_regex = has_option(options, find_options::use_regex);
-	const std::string hay = std::string(haystack.ToUTF8());
-	const std::string ned = std::string(needle.ToUTF8());
-	const auto result = reader_search(hay, ned, start, forward, match_case, match_whole_word, use_regex);
-	return result < 0 ? wxNOT_FOUND : static_cast<long>(result);
-}
-
 search_result find_text_with_wrap(const wxString& haystack, const wxString& needle, long start, find_options options) {
 	search_result result{};
 	if (needle.empty()) return result;

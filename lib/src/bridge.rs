@@ -170,8 +170,13 @@ pub mod ffi {
 		pub length: usize,
 	}
 
-	pub struct FfiMarkerList {
-		pub items: Vec<FfiMarker>,
+	pub struct FfiLinkListItem {
+		pub offset: usize,
+		pub text: String,
+	}
+
+	pub struct FfiLinkList {
+		pub items: Vec<FfiLinkListItem>,
 		pub closest_index: i32,
 	}
 
@@ -216,6 +221,18 @@ pub mod ffi {
 		pub offset: usize,
 		pub level: i32,
 		pub text: String,
+	}
+
+	pub struct FfiHeadingTreeItem {
+		pub offset: usize,
+		pub level: i32,
+		pub text: String,
+		pub parent_index: i32,
+	}
+
+	pub struct FfiHeadingTree {
+		pub items: Vec<FfiHeadingTreeItem>,
+		pub closest_index: i32,
 	}
 
 	pub struct FfiXmlConversion {
@@ -384,7 +401,6 @@ pub mod ffi {
 		fn document_markers(doc: &DocumentHandle) -> Vec<FfiMarker>;
 		fn document_marker_info(doc: &DocumentHandle, marker_index: i32) -> FfiMarkerResult;
 		fn document_markers_by_type(doc: &DocumentHandle, marker_type: i32) -> Vec<FfiMarker>;
-		fn document_markers_with_closest(doc: &DocumentHandle, marker_type: i32, position: i64) -> FfiMarkerList;
 		fn document_find_closest_toc_offset(doc: &DocumentHandle, position: usize) -> usize;
 		fn document_next_marker(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32;
 		fn document_previous_marker(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32;
@@ -396,7 +412,7 @@ pub mod ffi {
 		fn document_next_heading(doc: &DocumentHandle, position: i64, level: i32) -> i32;
 		fn document_previous_heading(doc: &DocumentHandle, position: i64, level: i32) -> i32;
 		fn document_heading_info(doc: &DocumentHandle, index: i32) -> FfiHeadingInfo;
-		fn document_heading_list(doc: &DocumentHandle) -> Vec<FfiHeadingInfo>;
+		fn document_heading_tree(doc: &DocumentHandle, position: i64) -> FfiHeadingTree;
 		fn document_section_index(doc: &DocumentHandle, position: usize) -> i32;
 		fn document_page_index(doc: &DocumentHandle, position: usize) -> i32;
 		fn document_id_positions(doc: &DocumentHandle) -> Vec<FfiIdPosition>;
@@ -558,6 +574,7 @@ pub mod ffi {
 			wrap: bool,
 			next: bool,
 		) -> FfiSessionNavResult;
+		fn session_link_list(session: &DocumentSession, position: i64) -> FfiLinkList;
 		fn session_history_go_back(session: &mut DocumentSession, current_pos: i64) -> FfiSessionNavResult;
 		fn session_history_go_forward(session: &mut DocumentSession, current_pos: i64) -> FfiSessionNavResult;
 		fn session_activate_link(session: &mut DocumentSession, position: i64) -> FfiLinkActivationResult;
@@ -1063,22 +1080,6 @@ fn document_markers_by_type(doc: &DocumentHandle, marker_type: i32) -> Vec<ffi::
 		.collect()
 }
 
-fn document_markers_with_closest(doc: &DocumentHandle, marker_type: i32, position: i64) -> ffi::FfiMarkerList {
-	let Some(marker_type) = marker_type_from_i32(marker_type) else {
-		return ffi::FfiMarkerList { items: Vec::new(), closest_index: -1 };
-	};
-	let pos = usize::try_from(position.max(0)).unwrap_or(0);
-	let mut closest_index = -1;
-	let mut items = Vec::new();
-	for marker in doc.document().buffer.markers.iter().filter(|marker| marker.marker_type == marker_type) {
-		if marker.position <= pos {
-			closest_index = i32::try_from(items.len()).unwrap_or(-1);
-		}
-		items.push(document_marker_to_ffi(marker));
-	}
-	ffi::FfiMarkerList { items, closest_index }
-}
-
 fn document_find_closest_toc_offset(doc: &DocumentHandle, position: usize) -> usize {
 	doc.find_closest_toc_offset(position)
 }
@@ -1133,14 +1134,29 @@ fn document_heading_info(doc: &DocumentHandle, index: i32) -> ffi::FfiHeadingInf
 	})
 }
 
-fn document_heading_list(doc: &DocumentHandle) -> Vec<ffi::FfiHeadingInfo> {
-	doc.document()
-		.buffer
-		.markers
-		.iter()
-		.filter(|marker| crate::document::is_heading_marker(marker.marker_type))
-		.map(|marker| ffi::FfiHeadingInfo { offset: marker.position, level: marker.level, text: marker.text.clone() })
-		.collect()
+fn document_heading_tree(doc: &DocumentHandle, position: i64) -> ffi::FfiHeadingTree {
+	let pos = usize::try_from(position.max(0)).unwrap_or(0);
+	let mut last_indices = [-1; 7];
+	let mut closest_index = -1;
+	let mut items = Vec::new();
+	for marker in
+		doc.document().buffer.markers.iter().filter(|marker| crate::document::is_heading_marker(marker.marker_type))
+	{
+		let level = marker.level;
+		if !(1..=6).contains(&level) {
+			continue;
+		}
+		let parent_index = last_indices[(level - 1) as usize];
+		let current_index = i32::try_from(items.len()).unwrap_or(-1);
+		if marker.position <= pos {
+			closest_index = current_index;
+		}
+		items.push(ffi::FfiHeadingTreeItem { offset: marker.position, level, text: marker.text.clone(), parent_index });
+		for idx in level..=6 {
+			last_indices[idx as usize] = current_index;
+		}
+	}
+	ffi::FfiHeadingTree { items, closest_index }
 }
 
 fn document_section_index(doc: &DocumentHandle, position: usize) -> i32 {
@@ -1405,6 +1421,10 @@ fn session_navigate_note(
 	next: bool,
 ) -> ffi::FfiSessionNavResult {
 	nav_result_to_ffi(session.navigate_note(config, position, wrap, next))
+}
+
+fn session_link_list(session: &DocumentSession, position: i64) -> ffi::FfiLinkList {
+	session.link_list(position)
 }
 
 fn session_history_go_back(session: &mut DocumentSession, current_pos: i64) -> ffi::FfiSessionNavResult {

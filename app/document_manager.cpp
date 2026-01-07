@@ -738,13 +738,6 @@ wxString document_manager::get_window_title(const wxString& app_name) const {
 	return app_name;
 }
 
-int document_manager::find_text(const wxString& query, int start_pos, find_options options) const {
-	const wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (text_ctrl == nullptr) return wxNOT_FOUND;
-	const wxString& full_text = text_ctrl->GetValue();
-	return ::find_text(full_text, query, start_pos, options);
-}
-
 void document_manager::apply_word_wrap(bool word_wrap) {
 	for (int i = 0; i < get_tab_count(); ++i) {
 		document_tab* tab = get_tab(i);

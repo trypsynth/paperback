@@ -107,7 +107,6 @@ public:
 	void save_all_tab_positions() const;
 	[[nodiscard]] wxString get_status_text() const;
 	[[nodiscard]] wxString get_window_title(const wxString& app_name) const;
-	[[nodiscard]] int find_text(const wxString& query, int start_pos, find_options options) const;
 	void apply_word_wrap(bool word_wrap);
 	[[nodiscard]] int find_tab_by_path(const wxString& path) const;
 	static void create_heading_menu(wxMenu* menu);

@@ -419,6 +419,27 @@ impl DocumentSession {
 		}
 	}
 
+	#[must_use]
+	pub fn link_list(&self, position: i64) -> ffi::FfiLinkList {
+		let pos = usize::try_from(position.max(0)).unwrap_or(0);
+		let mut closest_index = -1;
+		let mut items = Vec::new();
+		for marker in
+			self.handle.document().buffer.markers.iter().filter(|marker| marker.marker_type == MarkerType::Link)
+		{
+			let text = if marker.text.is_empty() {
+				self.get_line_text(i64::try_from(marker.position).unwrap_or(0))
+			} else {
+				marker.text.clone()
+			};
+			if marker.position <= pos {
+				closest_index = i32::try_from(items.len()).unwrap_or(-1);
+			}
+			items.push(ffi::FfiLinkListItem { offset: marker.position, text });
+		}
+		ffi::FfiLinkList { items, closest_index }
+	}
+
 	pub fn history_go_back(&mut self, current_pos: i64) -> NavigationResult {
 		if self.history.is_empty() {
 			return NavigationResult::not_found();

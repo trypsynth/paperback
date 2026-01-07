@@ -38,7 +38,6 @@ inline constexpr bool has_option(find_options options, find_options flag) noexce
 	return (options & flag) != find_options::none;
 }
 
-[[nodiscard]] long find_text(const wxString& haystack, const wxString& needle, long start, find_options options = find_options::forward);
 struct search_result {
 	bool found{false};
 	bool wrapped{false};
