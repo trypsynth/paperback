@@ -164,7 +164,8 @@ bool document_manager::create_document_tab(const wxString& path, bool set_focus,
 				return sess;
 			} catch (const std::exception& e) {
 				const std::string error_msg = e.what();
-				if (error_msg.find("[password_required]") == 0) {
+				const auto info = parser_error_info(error_msg);
+				if (info.kind == ParserErrorKind::PasswordRequired) {
 					config.set_document_password(path, wxEmptyString);
 					password_dialog dlg(&main_win);
 					if (dlg.ShowModal() != wxID_OK) {

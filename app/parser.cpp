@@ -15,13 +15,12 @@
 #include <wx/string.h>
 #include <wx/translation.h>
 
-constexpr std::string_view PASSWORD_REQUIRED_PREFIX = "[password_required]";
 parser_exception make_parser_exception(const std::exception& e, const wxString& path) {
 	const std::string message = e.what();
-	if (message.rfind(PASSWORD_REQUIRED_PREFIX, 0) == 0) {
-		std::string_view trimmed{message};
-		trimmed.remove_prefix(PASSWORD_REQUIRED_PREFIX.size());
-		const wxString localized = trimmed.empty() ? _("Password required or incorrect.") : wxString::FromUTF8(trimmed.data(), trimmed.size());
+	auto info = parser_error_info(message);
+	if (info.kind == ParserErrorKind::PasswordRequired) {
+		const wxString detail = wxString::FromUTF8(info.detail.c_str());
+		const wxString localized = detail.IsEmpty() ? _("Password required or incorrect.") : detail;
 		return parser_exception(localized, path, error_severity::error, parser_error_code::password_required);
 	}
 	return parser_exception(wxString::FromUTF8(message.c_str()), path);

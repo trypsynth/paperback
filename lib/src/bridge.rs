@@ -87,6 +87,17 @@ pub mod ffi {
 		pub wrapped: bool,
 	}
 
+	#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+	pub enum ParserErrorKind {
+		Generic,
+		PasswordRequired,
+	}
+
+	pub struct ParserErrorInfo {
+		pub kind: ParserErrorKind,
+		pub detail: String,
+	}
+
 	pub struct FfiSearchResult {
 		pub found: bool,
 		pub wrapped: bool,
@@ -385,6 +396,7 @@ pub mod ffi {
 		fn get_available_parsers() -> Vec<ParserInfo>;
 		fn parser_supported_wildcards() -> String;
 		fn parser_supports_extension(extension: &str) -> bool;
+		fn parser_error_info(message: &str) -> ParserErrorInfo;
 		fn parse_document(file_path: &str, password: &str) -> Result<FfiDocument>;
 		fn get_parser_for_extension(extension: &str) -> Result<String>;
 		fn convert_xml_to_text(content: &str) -> Result<FfiXmlConversion>;
@@ -797,6 +809,17 @@ fn parser_supported_wildcards() -> String {
 
 fn parser_supports_extension(extension: &str) -> bool {
 	parser::parser_supports_extension(extension)
+}
+
+fn parser_error_info(message: &str) -> ffi::ParserErrorInfo {
+	let prefix = parser::PASSWORD_REQUIRED_ERROR_PREFIX;
+	if let Some(rest) = message.strip_prefix(prefix) {
+		return ffi::ParserErrorInfo {
+			kind: ffi::ParserErrorKind::PasswordRequired,
+			detail: rest.to_string(),
+		};
+	}
+	ffi::ParserErrorInfo { kind: ffi::ParserErrorKind::Generic, detail: message.to_string() }
 }
 
 fn parse_document(file_path: &str, password: &str) -> Result<ffi::FfiDocument, String> {
