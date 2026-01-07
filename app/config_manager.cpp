@@ -206,6 +206,10 @@ const ConfigManager& config_manager::backend_for_ffi() const {
 	return backend_ref();
 }
 
+ConfigManager& config_manager::backend_for_ffi_mut() {
+	return backend_mut();
+}
+
 template <typename T>
 T config_manager::get_document_setting(const wxString& path, const wxString& key, const T& default_value) const {
 	if (!is_initialized()) return default_value;

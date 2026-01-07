@@ -154,16 +154,8 @@ bool document_manager::create_document_tab(const wxString& path, bool set_focus,
 			}
 		}();
 		if (!password_in_use.IsEmpty()) config.set_document_password(path, password_in_use);
-		std::vector<long> history;
-		size_t history_index = 0;
-		config.get_navigation_history(path, history, history_index);
-		if (!history.empty()) {
-			rust::Vec<long long> rust_history;
-			rust_history.reserve(history.size());
-			for (long pos : history) rust_history.push_back(static_cast<long long>(pos));
-			rust::Slice<const std::int64_t> history_slice(rust_history.data(), rust_history.size());
-			session_set_history(*session, history_slice, history_index);
-		}
+		const std::string path_utf8 = path.ToUTF8().data();
+		session_load_history_from_config(*session, config.backend_for_ffi(), path_utf8);
 		auto session_doc = std::make_unique<session_document>(std::move(session));
 		auto* tab_data = new document_tab;
 		tab_data->session_doc = std::move(session_doc);
@@ -195,13 +187,8 @@ void document_manager::close_document(int index) {
 		const int position = tab->text_ctrl->GetInsertionPoint();
 		save_document_position(tab->file_path, position);
 		if (tab->session_doc && tab->get_session()) {
-			const auto history_data = session_get_history(*tab->get_session());
-			if (!history_data.positions.empty()) {
-				std::vector<long> history_vec;
-				history_vec.reserve(history_data.positions.size());
-				for (const auto pos : history_data.positions) history_vec.push_back(static_cast<long>(pos));
-				config.set_navigation_history(tab->file_path, history_vec, history_data.index);
-			}
+			const std::string path_utf8 = tab->file_path.ToUTF8().data();
+			session_save_history_to_config(*tab->get_session(), config.backend_for_ffi_mut(), path_utf8);
 		}
 		config.set_document_opened(tab->file_path, false);
 	}

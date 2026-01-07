@@ -96,8 +96,8 @@ public:
 	void export_document_settings(const wxString& doc_path, const wxString& export_path);
 	void import_document_settings(const wxString& path);
 	void import_settings_from_file(const wxString& doc_path, const wxString& import_path);
-	// Exposes the Rust backend for FFI helpers that need a const reference.
 	const ConfigManager& backend_for_ffi() const;
+	ConfigManager& backend_for_ffi_mut();
 
 private:
 	std::optional<rust::Box<ConfigManager>> backend;

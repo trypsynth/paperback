@@ -415,6 +415,8 @@ pub mod ffi {
 		fn session_parser_flags(session: &DocumentSession) -> u32;
 		fn session_get_history(session: &DocumentSession) -> FfiNavigationHistory;
 		fn session_set_history(session: &mut DocumentSession, positions: &[i64], index: usize);
+		fn session_load_history_from_config(session: &mut DocumentSession, config: &ConfigManager, path: &str);
+		fn session_save_history_to_config(session: &DocumentSession, config: &mut ConfigManager, path: &str);
 		fn session_record_position(session: &mut DocumentSession, position: i64);
 		fn session_navigate_section(
 			session: &DocumentSession,
@@ -968,6 +970,21 @@ fn session_get_history(session: &DocumentSession) -> ffi::FfiNavigationHistory {
 
 fn session_set_history(session: &mut DocumentSession, positions: &[i64], index: usize) {
 	session.set_history(positions, index);
+}
+
+fn session_load_history_from_config(session: &mut DocumentSession, config: &RustConfigManager, path: &str) {
+	let history = config.get_navigation_history(path);
+	if !history.positions.is_empty() {
+		session.set_history(&history.positions, history.index);
+	}
+}
+
+fn session_save_history_to_config(session: &DocumentSession, config: &mut RustConfigManager, path: &str) {
+	let (positions, index) = session.get_history();
+	if positions.is_empty() {
+		return;
+	}
+	config.set_navigation_history(path, positions, index);
 }
 
 fn session_record_position(session: &mut DocumentSession, position: i64) {
