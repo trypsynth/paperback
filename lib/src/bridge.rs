@@ -1127,7 +1127,7 @@ fn session_get_status_info(session: &DocumentSession, position: i64) -> ffi::Ffi
 	}
 }
 
-fn session_stats(session: &DocumentSession) -> ffi::FfiDocumentStats {
+const fn session_stats(session: &DocumentSession) -> ffi::FfiDocumentStats {
 	document_stats_to_ffi(session.stats())
 }
 

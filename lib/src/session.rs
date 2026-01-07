@@ -89,17 +89,12 @@ pub struct LinkActivationResult {
 	pub url: String,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum LinkAction {
 	Internal,
 	External,
+	#[default]
 	NotFound,
-}
-
-impl Default for LinkAction {
-	fn default() -> Self {
-		Self::NotFound
-	}
 }
 
 impl LinkActivationResult {
@@ -657,8 +652,7 @@ impl DocumentSession {
 		}
 		self.handle
 			.get_marker_position_by_index(MarkerType::PageBreak, page_index)
-			.map(|offset| i64::try_from(offset).unwrap_or(-1))
-			.unwrap_or(-1)
+			.map_or(-1, |offset| i64::try_from(offset).unwrap_or(-1))
 	}
 
 	/// Returns the text between two positions (start inclusive, end exclusive).

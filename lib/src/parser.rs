@@ -170,10 +170,10 @@ where
 		if ext.is_empty() {
 			continue;
 		}
-		if !first {
-			result.push(';');
-		} else {
+		if first {
 			first = false;
+		} else {
+			result.push(';');
 		}
 		result.push_str("*.");
 		result.push_str(ext);
