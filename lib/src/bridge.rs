@@ -214,12 +214,6 @@ pub mod ffi {
 		pub closest_index: i32,
 	}
 
-	pub struct FfiBookmark {
-		pub start: i64,
-		pub end: i64,
-		pub note: String,
-	}
-
 	pub struct FfiNavigationHistory {
 		pub positions: Vec<i64>,
 		pub index: usize,
@@ -298,11 +292,6 @@ pub mod ffi {
 		fn config_manager_set_doc_bool(manager: &mut ConfigManager, path: &str, key: &str, value: bool);
 		fn config_manager_set_doc_int(manager: &mut ConfigManager, path: &str, key: &str, value: i64);
 		fn config_manager_add_recent_document(manager: &mut ConfigManager, path: &str);
-		fn config_manager_get_recent_documents(manager: &ConfigManager) -> Vec<String>;
-		fn config_manager_clear_recent_documents(manager: &mut ConfigManager);
-		fn config_manager_add_opened_document(manager: &mut ConfigManager, path: &str);
-		fn config_manager_remove_opened_document(manager: &mut ConfigManager, path: &str);
-		fn config_manager_clear_opened_documents(manager: &mut ConfigManager);
 		fn config_manager_set_document_position(manager: &mut ConfigManager, path: &str, position: i64);
 		fn config_manager_get_document_position(manager: &ConfigManager, path: &str) -> i64;
 		fn config_manager_set_navigation_history(
@@ -328,14 +317,6 @@ pub mod ffi {
 			end: i64,
 			note: &str,
 		);
-		fn config_manager_get_bookmarks(manager: &ConfigManager, path: &str) -> Vec<FfiBookmark>;
-		fn config_manager_clear_bookmarks(manager: &mut ConfigManager, path: &str);
-		fn config_manager_get_next_bookmark(manager: &ConfigManager, path: &str, current_position: i64) -> FfiBookmark;
-		fn config_manager_get_previous_bookmark(
-			manager: &ConfigManager,
-			path: &str,
-			current_position: i64,
-		) -> FfiBookmark;
 		fn config_manager_set_document_format(manager: &mut ConfigManager, path: &str, format: &str);
 		fn config_manager_get_document_format(manager: &ConfigManager, path: &str) -> String;
 		fn config_manager_set_document_password(manager: &mut ConfigManager, path: &str, password: &str);
@@ -531,7 +512,7 @@ use std::{fs::File, path::Path};
 
 use self::ffi::UpdateStatus;
 use crate::{
-	config::{Bookmark, ConfigManager as RustConfigManager, NavigationHistory},
+	config::{ConfigManager as RustConfigManager, NavigationHistory},
 	document::{DocumentHandle, TocItem},
 	parser, update as update_module,
 	utils::{encoding, text, zip as zip_module},
@@ -611,11 +592,6 @@ fn config_manager_set_doc_int(manager: &mut RustConfigManager, path: &str, key: 
 }
 
 ffi_wrapper!(mut config_manager_add_recent_document, add_recent_document(path: &str));
-ffi_wrapper!(config_manager_get_recent_documents, get_recent_documents -> Vec<String>);
-ffi_wrapper!(mut config_manager_clear_recent_documents, clear_recent_documents);
-ffi_wrapper!(mut config_manager_add_opened_document, add_opened_document(path: &str));
-ffi_wrapper!(mut config_manager_remove_opened_document, remove_opened_document(path: &str));
-ffi_wrapper!(mut config_manager_clear_opened_documents, clear_opened_documents);
 ffi_wrapper!(mut config_manager_set_document_position, set_document_position(path: &str, position: i64));
 ffi_wrapper!(config_manager_get_document_position, get_document_position(path: &str) -> i64);
 
@@ -656,28 +632,6 @@ fn config_manager_update_bookmark_note(manager: &mut RustConfigManager, path: &s
 	manager.update_bookmark_note(path, start, end, note);
 }
 
-fn config_manager_get_bookmarks(manager: &RustConfigManager, path: &str) -> Vec<ffi::FfiBookmark> {
-	manager.get_bookmarks(path).into_iter().map(Into::into).collect()
-}
-
-ffi_wrapper!(mut config_manager_clear_bookmarks, clear_bookmarks(path: &str));
-
-fn config_manager_get_next_bookmark(
-	manager: &RustConfigManager,
-	path: &str,
-	current_position: i64,
-) -> ffi::FfiBookmark {
-	manager.get_next_bookmark(path, current_position).into()
-}
-
-fn config_manager_get_previous_bookmark(
-	manager: &RustConfigManager,
-	path: &str,
-	current_position: i64,
-) -> ffi::FfiBookmark {
-	manager.get_previous_bookmark(path, current_position).into()
-}
-
 ffi_wrapper!(mut config_manager_set_document_format, set_document_format(path: &str, format: &str));
 ffi_wrapper!(config_manager_get_document_format, get_document_format(path: &str) -> String);
 ffi_wrapper!(mut config_manager_set_document_password, set_document_password(path: &str, password: &str));
@@ -687,12 +641,6 @@ ffi_wrapper!(mut config_manager_migrate_config, migrate_config -> bool);
 ffi_wrapper!(config_manager_export_document_settings, export_document_settings(doc_path: &str, export_path: &str));
 ffi_wrapper!(mut config_manager_import_document_settings, import_document_settings(path: &str));
 ffi_wrapper!(mut config_manager_import_settings_from_file, import_settings_from_file(doc_path: &str, import_path: &str));
-
-impl From<Bookmark> for ffi::FfiBookmark {
-	fn from(bookmark: Bookmark) -> Self {
-		Self { start: bookmark.start, end: bookmark.end, note: bookmark.note }
-	}
-}
 
 fn check_for_updates(current_version: &str, is_installer: bool) -> ffi::UpdateResult {
 	match update_module::check_for_updates(current_version, is_installer) {

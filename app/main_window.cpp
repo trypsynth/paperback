@@ -1007,9 +1007,9 @@ void main_window::on_recent_document(wxCommandEvent& event) {
 	const int id = event.GetId();
 	const int index = id - ID_RECENT_DOCUMENTS_BASE;
 	auto& config_mgr = wxGetApp().get_config_manager();
-	const wxArrayString recent_docs = config_mgr.get_recent_documents();
-	if (index >= 0 && index < static_cast<int>(recent_docs.GetCount())) {
-		const wxString& path = recent_docs[index];
+	auto recent_docs = get_recent_documents_for_menu(config_mgr.backend_for_ffi(), config_mgr.get(config_manager::recent_documents_to_show));
+	if (index >= 0 && index < static_cast<int>(recent_docs.size())) {
+		const wxString path = wxString::FromUTF8(recent_docs[static_cast<size_t>(index)].path.c_str());
 		[[maybe_unused]] const bool success = doc_manager->open_file(path);
 	}
 }
