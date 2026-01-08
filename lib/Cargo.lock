@@ -664,33 +664,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "libpaperback"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "base64",
- "bitflags",
- "configparser",
- "cxx",
- "cxx-build",
- "ego-tree",
- "encoding_rs",
- "flate2",
- "libchm",
- "percent-encoding",
- "pulldown-cmark",
- "regex",
- "roman",
- "roxmltree",
- "scraper",
- "serde",
- "sha1",
- "tar",
- "ureq",
- "zip",
-]
-
-[[package]]
 name = "libredox"
 version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -802,6 +775,33 @@ name = "once_cell"
 version = "1.21.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "42f5e15c9953c5e4ccceeb2e7382a716482c34515315f7b03532b8b4e8393d2d"
+
+[[package]]
+name = "paperback"
+version = "0.7.0"
+dependencies = [
+ "anyhow",
+ "base64",
+ "bitflags",
+ "configparser",
+ "cxx",
+ "cxx-build",
+ "ego-tree",
+ "encoding_rs",
+ "flate2",
+ "libchm",
+ "percent-encoding",
+ "pulldown-cmark",
+ "regex",
+ "roman",
+ "roxmltree",
+ "scraper",
+ "serde",
+ "sha1",
+ "tar",
+ "ureq",
+ "zip",
+]
 
 [[package]]
 name = "parking_lot"

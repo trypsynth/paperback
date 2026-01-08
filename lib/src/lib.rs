@@ -1,4 +1,4 @@
-#![warn(clippy::all, clippy::pedantic, clippy::nursery)]
+#![warn(clippy::all, clippy::nursery, clippy::pedantic)]
 
 mod bridge;
 mod config;

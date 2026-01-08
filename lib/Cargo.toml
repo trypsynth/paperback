@@ -1,6 +1,9 @@
 [package]
-name = "libpaperback"
-version = "0.1.0"
+name = "paperback"
+description = "An accessible, light-weight, fast ebook and document reader"
+version = "0.7.0"
+license = "MIT"
+repository = "https://github.com/trypsynth/paperback"
 edition = "2024"
 rust-version = "1.87.0"
 

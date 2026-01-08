@@ -581,7 +581,7 @@ impl DocumentSession {
 		}
 		let ext = Path::new(&self.file_path).extension().map(|ext| ext.to_string_lossy().to_ascii_lowercase());
 		match ext.as_deref() {
-			Some("html") | Some("htm") | Some("xhtml") | Some("md") | Some("markdown") => Some(self.file_path.clone()),
+			Some("html" | "htm" | "xhtml" | "md" | "markdown") => Some(self.file_path.clone()),
 			_ => None,
 		}
 	}
