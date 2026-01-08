@@ -1,9 +1,10 @@
 use std::{
-	fs::File,
+	fs::{self, File},
 	io::{BufReader, Write},
 	path::Path,
 };
 
+use sha1::{Digest, Sha1};
 use zip::ZipArchive;
 
 use crate::{
@@ -559,6 +560,30 @@ impl DocumentSession {
 			return None;
 		}
 		Some(marker.reference.clone())
+	}
+
+	#[must_use]
+	pub fn webview_target_path(&self, position: i64, temp_dir: &str) -> Option<String> {
+		let section_path = self.get_current_section_path(position).filter(|path| !path.is_empty());
+		if let Some(section_path) = section_path {
+			let mut hasher = Sha1::new();
+			hasher.update(self.file_path.as_bytes());
+			let hash = format!("{:x}", hasher.finalize());
+			let doc_temp_dir = Path::new(temp_dir).join(format!("paperback_{hash}"));
+			if fs::create_dir_all(&doc_temp_dir).is_ok() {
+				let file_name = Path::new(&section_path).file_name()?.to_string_lossy().to_string();
+				let output_path = doc_temp_dir.join(file_name);
+				let output_str = output_path.to_string_lossy().to_string();
+				if self.extract_resource(&section_path, &output_str).ok() == Some(true) {
+					return Some(output_str);
+				}
+			}
+		}
+		let ext = Path::new(&self.file_path).extension().map(|ext| ext.to_string_lossy().to_ascii_lowercase());
+		match ext.as_deref() {
+			Some("html") | Some("htm") | Some("xhtml") | Some("md") | Some("markdown") => Some(self.file_path.clone()),
+			_ => None,
+		}
 	}
 
 	/// Extracts a resource to the given output path.

@@ -264,6 +264,11 @@ pub mod ffi {
 		pub total_chars: i64,
 	}
 
+	pub struct FfiWebViewTarget {
+		pub found: bool,
+		pub path: String,
+	}
+
 	extern "Rust" {
 		type ConfigManager;
 		type DocumentSession;
@@ -297,7 +302,6 @@ pub mod ffi {
 		fn config_manager_set_document_opened(manager: &mut ConfigManager, path: &str, opened: bool);
 		fn config_manager_get_document_opened(manager: &ConfigManager, path: &str) -> bool;
 		fn config_manager_remove_document_history(manager: &mut ConfigManager, path: &str);
-		fn config_manager_remove_navigation_history(manager: &mut ConfigManager, path: &str);
 		fn config_manager_get_all_opened_documents(manager: &ConfigManager) -> Vec<String>;
 		fn config_manager_get_all_documents(manager: &ConfigManager) -> Vec<String>;
 		fn config_manager_add_bookmark(manager: &mut ConfigManager, path: &str, start: i64, end: i64, note: &str);
@@ -486,8 +490,7 @@ pub mod ffi {
 		fn session_history_go_forward(session: &mut DocumentSession, current_pos: i64) -> FfiSessionNavResult;
 		fn session_activate_link(session: &mut DocumentSession, position: i64) -> FfiLinkActivationResult;
 		fn session_get_table_at_position(session: &DocumentSession, position: i64) -> String;
-		fn session_get_current_section_path(session: &DocumentSession, position: i64) -> String;
-		fn session_extract_resource(session: &DocumentSession, resource_path: &str, output_path: &str) -> Result<bool>;
+		fn session_webview_target(session: &DocumentSession, position: i64, temp_dir: &str) -> FfiWebViewTarget;
 		fn session_get_status_info(session: &DocumentSession, position: i64) -> FfiStatusInfo;
 		fn session_stats(session: &DocumentSession) -> FfiDocumentStats;
 		fn session_page_count(session: &DocumentSession) -> usize;
@@ -593,7 +596,6 @@ ffi_wrapper!(config_manager_get_document_position, get_document_position(path: &
 ffi_wrapper!(mut config_manager_set_document_opened, set_document_opened(path: &str, opened: bool));
 ffi_wrapper!(config_manager_get_document_opened, get_document_opened(path: &str) -> bool);
 ffi_wrapper!(mut config_manager_remove_document_history, remove_document_history(path: &str));
-ffi_wrapper!(mut config_manager_remove_navigation_history, remove_navigation_history(path: &str));
 ffi_wrapper!(config_manager_get_all_opened_documents, get_all_opened_documents -> Vec<String>);
 ffi_wrapper!(config_manager_get_all_documents, get_all_documents -> Vec<String>);
 
@@ -1091,12 +1093,9 @@ fn session_get_table_at_position(session: &DocumentSession, position: i64) -> St
 	session.get_table_at_position(position).unwrap_or_default()
 }
 
-fn session_get_current_section_path(session: &DocumentSession, position: i64) -> String {
-	session.get_current_section_path(position).unwrap_or_default()
-}
-
-fn session_extract_resource(session: &DocumentSession, resource_path: &str, output_path: &str) -> Result<bool, String> {
-	session.extract_resource(resource_path, output_path).map_err(|e| e.to_string())
+fn session_webview_target(session: &DocumentSession, position: i64, temp_dir: &str) -> ffi::FfiWebViewTarget {
+	let path = session.webview_target_path(position, temp_dir);
+	ffi::FfiWebViewTarget { found: path.is_some(), path: path.unwrap_or_default() }
 }
 
 fn session_get_status_info(session: &DocumentSession, position: i64) -> ffi::FfiStatusInfo {

@@ -89,10 +89,6 @@ void config_manager::remove_document_history(const wxString& path) {
 	if (is_initialized()) config_manager_remove_document_history(backend_mut(), to_utf8(path));
 }
 
-void config_manager::remove_navigation_history(const wxString& path) {
-	if (is_initialized()) config_manager_remove_navigation_history(backend_mut(), to_utf8(path));
-}
-
 bool config_manager::get_document_opened(const wxString& path) const {
 	return is_initialized() ? config_manager_get_document_opened(backend_ref(), to_utf8(path)) : false;
 }
