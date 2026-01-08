@@ -1,4 +1,5 @@
 #include "dialogs.hpp"
+#include "app.hpp"
 #include "config_manager.hpp"
 #include "constants.hpp"
 #include "controls.hpp"
@@ -597,6 +598,7 @@ find_dialog::find_dialog(wxWindow* parent) : wxDialog(parent, wxID_ANY, _("Find"
 	find_what_combo->Bind(wxEVT_TEXT_ENTER, &find_dialog::on_find_text_enter, this);
 	Bind(wxEVT_CLOSE_WINDOW, &find_dialog::on_close, this);
 	find_what_combo->SetFocus();
+	reload_history();
 	Fit();
 	CenterOnParent();
 }
@@ -624,10 +626,10 @@ void find_dialog::set_find_text(const wxString& text) {
 
 void find_dialog::add_to_history(const wxString& text) {
 	if (text.IsEmpty()) return;
-	const int existing = find_what_combo->FindString(text);
-	if (existing != wxNOT_FOUND) find_what_combo->Delete(static_cast<unsigned int>(existing));
-	find_what_combo->Insert(text, 0);
-	while (find_what_combo->GetCount() > MAX_FIND_HISTORY_SIZE) find_what_combo->Delete(find_what_combo->GetCount() - 1);
+	auto& config_mgr = wxGetApp().get_config_manager();
+	const std::string text_utf8 = std::string(text.ToUTF8());
+	config_manager_add_find_history(config_mgr.backend_for_ffi_mut(), text_utf8, MAX_FIND_HISTORY_SIZE);
+	reload_history();
 	find_what_combo->SetValue(text);
 }
 
@@ -668,6 +670,13 @@ void find_dialog::on_find_text_enter(wxCommandEvent& event) {
 
 void find_dialog::on_close(wxCloseEvent& /*event*/) {
 	Hide();
+}
+
+void find_dialog::reload_history() {
+	find_what_combo->Clear();
+	auto& config_mgr = wxGetApp().get_config_manager();
+	const auto history = config_manager_get_find_history(config_mgr.backend_for_ffi());
+	for (const auto& entry : history) find_what_combo->Append(to_wxstring(entry));
 }
 
 go_to_line_dialog::go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : dialog(parent, _("Go to Line")), textbox{text_ctrl} {

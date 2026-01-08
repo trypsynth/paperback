@@ -285,6 +285,8 @@ pub mod ffi {
 		fn config_manager_remove_document_history(manager: &mut ConfigManager, path: &str);
 		fn config_manager_get_all_opened_documents(manager: &ConfigManager) -> Vec<String>;
 		fn config_manager_get_opened_documents_existing(manager: &ConfigManager) -> Vec<String>;
+		fn config_manager_get_find_history(manager: &ConfigManager) -> Vec<String>;
+		fn config_manager_add_find_history(manager: &mut ConfigManager, text: &str, max_len: usize);
 		fn config_manager_get_all_documents(manager: &ConfigManager) -> Vec<String>;
 		fn config_manager_add_bookmark(manager: &mut ConfigManager, path: &str, start: i64, end: i64, note: &str);
 		fn config_manager_remove_bookmark(manager: &mut ConfigManager, path: &str, start: i64, end: i64);
@@ -306,28 +308,11 @@ pub mod ffi {
 		fn config_manager_import_document_settings(manager: &mut ConfigManager, path: &str);
 		fn config_manager_import_settings_from_file(manager: &mut ConfigManager, doc_path: &str, import_path: &str);
 		fn check_for_updates(current_version: &str, is_installer: bool) -> UpdateResult;
-		fn remove_soft_hyphens(input: &str) -> String;
-		fn url_decode(encoded: &str) -> String;
-		fn collapse_whitespace(input: &str) -> String;
-		fn trim_string(input: &str) -> String;
-		fn convert_to_utf8(input: &[u8]) -> String;
-		fn read_zip_entry(zip_path: &str, entry_name: &str) -> Result<String>;
-		fn find_zip_entry(zip_path: &str, entry_name: &str) -> Result<usize>;
 		fn get_available_parsers() -> Vec<ParserInfo>;
 		fn parser_supported_wildcards() -> String;
 		fn parser_supports_extension(extension: &str) -> bool;
 		fn parser_error_info(message: &str) -> ParserErrorInfo;
-		fn get_parser_for_extension(extension: &str) -> Result<String>;
 		fn markdown_to_text(input: &str) -> String;
-		fn reader_search(
-			req: &str,
-			needle: &str,
-			start: i64,
-			forward: bool,
-			match_case: bool,
-			whole_word: bool,
-			regex: bool,
-		) -> i64;
 		fn reader_search_with_wrap(
 			req: &str,
 			needle: &str,
@@ -371,7 +356,6 @@ pub mod ffi {
 		fn session_title(session: &DocumentSession) -> String;
 		fn session_author(session: &DocumentSession) -> String;
 		fn session_content(session: &DocumentSession) -> String;
-		fn session_file_path(session: &DocumentSession) -> String;
 		fn session_parser_flags(session: &DocumentSession) -> u32;
 		fn session_load_history_from_config(session: &mut DocumentSession, config: &ConfigManager, path: &str);
 		fn session_save_history_to_config(session: &DocumentSession, config: &mut ConfigManager, path: &str);
@@ -457,8 +441,6 @@ pub mod ffi {
 		fn session_current_page(session: &DocumentSession, position: i64) -> i32;
 		fn session_page_offset(session: &DocumentSession, page_index: i32) -> i64;
 		fn session_export_content(session: &DocumentSession, output_path: &str) -> Result<()>;
-		fn session_get_text_range(session: &DocumentSession, start: i64, end: i64) -> String;
-		fn session_get_line_text(session: &DocumentSession, position: i64) -> String;
 		fn session_toc_items_with_parents(session: &DocumentSession) -> Vec<FfiTocItemWithParent>;
 		fn session_find_closest_toc_offset(session: &DocumentSession, position: usize) -> usize;
 		fn session_heading_tree(session: &DocumentSession, position: i64) -> FfiHeadingTree;
@@ -466,14 +448,14 @@ pub mod ffi {
 	}
 }
 
-use std::{fs::File, path::Path};
+use std::path::Path;
 
 use self::ffi::UpdateStatus;
 use crate::{
 	config::ConfigManager as RustConfigManager,
 	document::{DocumentHandle, TocItem},
 	parser, update as update_module,
-	utils::{encoding, text, zip as zip_module},
+	utils::text,
 };
 
 type ConfigManager = crate::config::ConfigManager;
@@ -558,6 +540,8 @@ ffi_wrapper!(config_manager_get_document_opened, get_document_opened(path: &str)
 ffi_wrapper!(mut config_manager_remove_document_history, remove_document_history(path: &str));
 ffi_wrapper!(config_manager_get_all_opened_documents, get_all_opened_documents -> Vec<String>);
 ffi_wrapper!(config_manager_get_opened_documents_existing, get_opened_documents_existing -> Vec<String>);
+ffi_wrapper!(config_manager_get_find_history, get_find_history -> Vec<String>);
+ffi_wrapper!(mut config_manager_add_find_history, add_find_history(text: &str, max_len: usize));
 ffi_wrapper!(config_manager_get_all_documents, get_all_documents -> Vec<String>);
 
 fn config_manager_add_bookmark(manager: &mut RustConfigManager, path: &str, start: i64, end: i64, note: &str) {
@@ -626,41 +610,8 @@ fn check_for_updates(current_version: &str, is_installer: bool) -> ffi::UpdateRe
 	}
 }
 
-fn remove_soft_hyphens(input: &str) -> String {
-	text::remove_soft_hyphens(input)
-}
-
-fn url_decode(encoded: &str) -> String {
-	text::url_decode(encoded)
-}
-
-fn collapse_whitespace(input: &str) -> String {
-	text::collapse_whitespace(input)
-}
-
-fn trim_string(input: &str) -> String {
-	text::trim_string(input)
-}
-
 fn markdown_to_text(input: &str) -> String {
 	text::markdown_to_text(input)
-}
-
-fn convert_to_utf8(input: &[u8]) -> String {
-	encoding::convert_to_utf8(input)
-}
-
-fn read_zip_entry(zip_path: &str, entry_name: &str) -> Result<String, String> {
-	let file = File::open(zip_path).map_err(|e| format!("Failed to open ZIP file: {e}"))?;
-	let mut archive = zip::ZipArchive::new(file).map_err(|e| format!("Failed to read ZIP archive: {e}"))?;
-	zip_module::read_zip_entry_by_name(&mut archive, entry_name).map_err(|e| e.to_string())
-}
-
-fn find_zip_entry(zip_path: &str, entry_name: &str) -> Result<usize, String> {
-	let file = File::open(zip_path).map_err(|e| format!("Failed to open ZIP file: {e}"))?;
-	let mut archive = zip::ZipArchive::new(file).map_err(|e| format!("Failed to read ZIP archive: {e}"))?;
-	zip_module::find_zip_entry(&mut archive, entry_name)
-		.ok_or_else(|| format!("Entry '{entry_name}' not found in ZIP archive"))
 }
 
 fn get_available_parsers() -> Vec<ffi::ParserInfo> {
@@ -685,11 +636,6 @@ fn parser_error_info(message: &str) -> ffi::ParserErrorInfo {
 		return ffi::ParserErrorInfo { kind: ffi::ParserErrorKind::PasswordRequired, detail: rest.to_string() };
 	}
 	ffi::ParserErrorInfo { kind: ffi::ParserErrorKind::Generic, detail: message.to_string() }
-}
-
-fn get_parser_for_extension(extension: &str) -> Result<String, String> {
-	parser::get_parser_name_for_extension(extension)
-		.ok_or_else(|| format!("No parser found for extension: .{extension}"))
 }
 
 fn flatten_recursive_with_parents(
@@ -752,18 +698,6 @@ fn document_heading_tree(doc: &DocumentHandle, position: i64) -> ffi::FfiHeading
 		}
 	}
 	ffi::FfiHeadingTree { items, closest_index }
-}
-
-fn reader_search(
-	req: &str,
-	needle: &str,
-	start: i64,
-	forward: bool,
-	match_case: bool,
-	whole_word: bool,
-	regex: bool,
-) -> i64 {
-	crate::reader_core::reader_search(req, needle, start, forward, match_case, whole_word, regex)
 }
 
 fn reader_search_with_wrap(
@@ -867,10 +801,6 @@ fn session_author(session: &DocumentSession) -> String {
 
 fn session_content(session: &DocumentSession) -> String {
 	session.content()
-}
-
-fn session_file_path(session: &DocumentSession) -> String {
-	session.file_path().to_string()
 }
 
 const fn session_parser_flags(session: &DocumentSession) -> u32 {
@@ -1043,14 +973,6 @@ fn session_page_offset(session: &DocumentSession, page_index: i32) -> i64 {
 
 fn session_export_content(session: &DocumentSession, output_path: &str) -> Result<(), String> {
 	session.export_content(output_path).map_err(|e| e.to_string())
-}
-
-fn session_get_text_range(session: &DocumentSession, start: i64, end: i64) -> String {
-	session.get_text_range(start, end)
-}
-
-fn session_get_line_text(session: &DocumentSession, position: i64) -> String {
-	session.get_line_text(position)
 }
 
 fn session_toc_items_with_parents(session: &DocumentSession) -> Vec<ffi::FfiTocItemWithParent> {

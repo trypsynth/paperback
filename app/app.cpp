@@ -138,9 +138,7 @@ void app::parse_command_line() {
 		return;
 	}
 	auto* doc_manager = frame->get_doc_manager();
-	if (!doc_manager->open_file(path)) {
-		wxMessageBox(_("Failed to load document."), _("Error"), wxICON_ERROR);
-	}
+	if (!doc_manager->open_file(path)) wxMessageBox(_("Failed to load document."), _("Error"), wxICON_ERROR);
 }
 
 void app::restore_previous_documents() {
@@ -150,18 +148,10 @@ void app::restore_previous_documents() {
 	for (const auto& path : opened_docs) {
 		const wxString wx_path = to_wxstring(path);
 		const int existing_tab = doc_manager->find_tab_by_path(wx_path);
-		if (existing_tab >= 0) {
-			continue;
-		}
+		if (existing_tab >= 0) continue;
 		const wxString extension = wxFileName(wx_path).GetExt();
-		if (!is_parser_supported(extension)) {
-			if (!ensure_parser_for_unknown_file(wx_path, config_mgr)) {
-				continue;
-			}
-		}
-		if (!doc_manager->create_document_tab(wx_path, false, false)) {
-			continue;
-		}
+		if (!is_parser_supported(extension) && !ensure_parser_for_unknown_file(wx_path, config_mgr)) continue;
+		if (!doc_manager->create_document_tab(wx_path, false, false)) continue;
 	}
 	doc_manager->update_ui();
 	if (!active_doc.IsEmpty() && wxFileName::FileExists(active_doc)) {
@@ -169,15 +159,11 @@ void app::restore_previous_documents() {
 		if (active_tab >= 0) {
 			frame->get_notebook()->SetSelection(active_tab);
 			auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-			if (text_ctrl != nullptr) {
-				text_ctrl->SetFocus();
-			}
+			if (text_ctrl != nullptr) text_ctrl->SetFocus();
 		}
 	} else if (doc_manager->has_documents()) {
 		auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-		if (text_ctrl != nullptr) {
-			text_ctrl->SetFocus();
-		}
+		if (text_ctrl != nullptr) text_ctrl->SetFocus();
 	}
 }
 
@@ -219,9 +205,7 @@ void app::check_for_updates(bool silent) {
 			payload.error_message = std::string(e.what());
 		}
 		auto* wx_app = wxTheApp;
-		if (wx_app == nullptr || !wx_app->IsMainLoopRunning()) {
-			return;
-		}
+		if (wx_app == nullptr || !wx_app->IsMainLoopRunning()) return;
 		wx_app->CallAfter([silent, payload = std::move(payload)]() {
 			present_update_result(payload, silent);
 		});

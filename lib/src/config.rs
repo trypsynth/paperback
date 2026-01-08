@@ -251,6 +251,45 @@ impl ConfigManager {
 		self.get_opened_documents().into_iter().filter(|path| Path::new(path).exists()).collect()
 	}
 
+	pub fn get_find_history(&self) -> Vec<String> {
+		if !self.is_ready() {
+			return Vec::new();
+		}
+		let mut result = Vec::new();
+		for idx in 0.. {
+			let key = format!("item{idx}");
+			let entry = match self.get_value(Some("find_history"), &key) {
+				Some(v) if !v.is_empty() => v,
+				_ => break,
+			};
+			result.push(entry);
+		}
+		result
+	}
+
+	pub fn add_find_history(&mut self, text: &str, max_len: usize) {
+		if !self.is_ready() {
+			return;
+		}
+		let trimmed = text.trim();
+		if trimmed.is_empty() {
+			return;
+		}
+		let mut history = self.get_find_history();
+		if let Some(idx) = history.iter().position(|entry| entry == trimmed) {
+			history.remove(idx);
+		}
+		history.insert(0, trimmed.to_string());
+		while history.len() > max_len {
+			history.pop();
+		}
+		self.remove_section(Some("find_history"));
+		for (idx, entry) in history.iter().enumerate() {
+			let key = format!("item{idx}");
+			self.set_value(Some("find_history"), &key, entry);
+		}
+	}
+
 	pub fn clear_opened_documents(&mut self) {
 		self.remove_section(Some("opened_documents"));
 	}
