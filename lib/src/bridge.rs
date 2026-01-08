@@ -294,13 +294,6 @@ pub mod ffi {
 		fn config_manager_add_recent_document(manager: &mut ConfigManager, path: &str);
 		fn config_manager_set_document_position(manager: &mut ConfigManager, path: &str, position: i64);
 		fn config_manager_get_document_position(manager: &ConfigManager, path: &str) -> i64;
-		fn config_manager_set_navigation_history(
-			manager: &mut ConfigManager,
-			path: &str,
-			history: &[i64],
-			history_index: usize,
-		);
-		fn config_manager_get_navigation_history(manager: &ConfigManager, path: &str) -> FfiNavigationHistory;
 		fn config_manager_set_document_opened(manager: &mut ConfigManager, path: &str, opened: bool);
 		fn config_manager_get_document_opened(manager: &ConfigManager, path: &str) -> bool;
 		fn config_manager_remove_document_history(manager: &mut ConfigManager, path: &str);
@@ -514,7 +507,7 @@ use std::{fs::File, path::Path};
 
 use self::ffi::UpdateStatus;
 use crate::{
-	config::{ConfigManager as RustConfigManager, NavigationHistory},
+	config::ConfigManager as RustConfigManager,
 	document::{DocumentHandle, TocItem},
 	parser, update as update_module,
 	utils::{encoding, text, zip as zip_module},
@@ -596,20 +589,6 @@ fn config_manager_set_doc_int(manager: &mut RustConfigManager, path: &str, key: 
 ffi_wrapper!(mut config_manager_add_recent_document, add_recent_document(path: &str));
 ffi_wrapper!(mut config_manager_set_document_position, set_document_position(path: &str, position: i64));
 ffi_wrapper!(config_manager_get_document_position, get_document_position(path: &str) -> i64);
-
-fn config_manager_set_navigation_history(
-	manager: &mut RustConfigManager,
-	path: &str,
-	history: &[i64],
-	history_index: usize,
-) {
-	manager.set_navigation_history(path, history, history_index);
-}
-
-fn config_manager_get_navigation_history(manager: &RustConfigManager, path: &str) -> ffi::FfiNavigationHistory {
-	let history: NavigationHistory = manager.get_navigation_history(path);
-	ffi::FfiNavigationHistory { positions: history.positions, index: history.index }
-}
 
 ffi_wrapper!(mut config_manager_set_document_opened, set_document_opened(path: &str, opened: bool));
 ffi_wrapper!(config_manager_get_document_opened, get_document_opened(path: &str) -> bool);

@@ -2,7 +2,6 @@
 #include "libpaperback/src/bridge.rs.h"
 #include <optional>
 #include <string>
-#include <vector>
 #include <wx/arrstr.h>
 #include <wx/string.h>
 
@@ -75,8 +74,6 @@ public:
 	void add_recent_document(const wxString& path);
 	void set_document_position(const wxString& path, long position);
 	long get_document_position(const wxString& path) const;
-	void set_navigation_history(const wxString& path, const std::vector<long>& history, size_t history_index);
-	void get_navigation_history(const wxString& path, std::vector<long>& history, size_t& history_index) const;
 	void set_document_opened(const wxString& path, bool opened);
 	void remove_document_history(const wxString& path);
 	void remove_navigation_history(const wxString& path);
