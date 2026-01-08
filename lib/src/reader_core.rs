@@ -430,22 +430,12 @@ fn record_position(positions: &mut Vec<i64>, index: &mut usize, current_pos: i64
 	trim_history(positions, index, max_len);
 }
 
-pub fn history_normalize(history: &[i64], history_index: usize) -> ffi::FfiNavigationHistory {
-	let positions = history.to_vec();
-	let index = normalize_index(&positions, history_index);
-	ffi::FfiNavigationHistory { positions, index }
-}
-
-pub fn history_record_position(
-	history: &[i64],
-	history_index: usize,
-	current_pos: i64,
-	max_len: usize,
-) -> ffi::FfiNavigationHistory {
-	let mut positions = history.to_vec();
-	let mut index = history_index;
-	record_position(&mut positions, &mut index, current_pos, max_len);
-	ffi::FfiNavigationHistory { positions, index }
+#[derive(Debug, Clone)]
+pub struct HistoryNavResult {
+	pub found: bool,
+	pub target: i64,
+	pub positions: Vec<i64>,
+	pub index: usize,
 }
 
 pub fn history_go_previous(
@@ -453,9 +443,9 @@ pub fn history_go_previous(
 	history_index: usize,
 	current_pos: i64,
 	max_len: usize,
-) -> ffi::FfiHistoryNavResult {
+) -> HistoryNavResult {
 	if history.is_empty() {
-		return ffi::FfiHistoryNavResult { found: false, target: -1, positions: Vec::new(), index: 0 };
+		return HistoryNavResult { found: false, target: -1, positions: Vec::new(), index: 0 };
 	}
 	let mut positions = history.to_vec();
 	let mut index = history_index;
@@ -463,9 +453,9 @@ pub fn history_go_previous(
 	if index > 0 {
 		index -= 1;
 		let target = positions.get(index).copied().unwrap_or(-1);
-		return ffi::FfiHistoryNavResult { found: target >= 0, target, positions, index };
+		return HistoryNavResult { found: target >= 0, target, positions, index };
 	}
-	ffi::FfiHistoryNavResult { found: false, target: -1, positions, index }
+	HistoryNavResult { found: false, target: -1, positions, index }
 }
 
 pub fn history_go_next(
@@ -473,9 +463,9 @@ pub fn history_go_next(
 	history_index: usize,
 	current_pos: i64,
 	max_len: usize,
-) -> ffi::FfiHistoryNavResult {
+) -> HistoryNavResult {
 	if history.is_empty() {
-		return ffi::FfiHistoryNavResult { found: false, target: -1, positions: Vec::new(), index: 0 };
+		return HistoryNavResult { found: false, target: -1, positions: Vec::new(), index: 0 };
 	}
 	let mut positions = history.to_vec();
 	let mut index = history_index;
@@ -483,9 +473,17 @@ pub fn history_go_next(
 	if index + 1 < positions.len() {
 		index += 1;
 		let target = positions.get(index).copied().unwrap_or(-1);
-		return ffi::FfiHistoryNavResult { found: target >= 0, target, positions, index };
+		return HistoryNavResult { found: target >= 0, target, positions, index };
 	}
-	ffi::FfiHistoryNavResult { found: false, target: -1, positions, index }
+	HistoryNavResult { found: false, target: -1, positions, index }
+}
+
+#[derive(Debug, Clone)]
+pub struct LinkNavigation {
+	pub found: bool,
+	pub is_external: bool,
+	pub offset: usize,
+	pub url: String,
 }
 
 fn current_section_path(doc: &DocumentHandle, position: usize) -> Option<String> {
@@ -529,21 +527,21 @@ fn spine_section_bounds(doc: &DocumentHandle, spine_index: usize) -> (usize, usi
 	(start, end)
 }
 
-pub fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> ffi::FfiLinkNavigation {
+pub fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> LinkNavigation {
 	let href_trimmed = href.trim();
 	if href_trimmed.is_empty() {
-		return ffi::FfiLinkNavigation { found: false, is_external: false, offset: 0, url: String::new() };
+		return LinkNavigation { found: false, is_external: false, offset: 0, url: String::new() };
 	}
 	let href_lower = href_trimmed.to_ascii_lowercase();
 	if href_lower.starts_with("http:") || href_lower.starts_with("https:") || href_lower.starts_with("mailto:") {
-		return ffi::FfiLinkNavigation { found: true, is_external: true, offset: 0, url: href_trimmed.to_string() };
+		return LinkNavigation { found: true, is_external: true, offset: 0, url: href_trimmed.to_string() };
 	}
 	let current_section = current_section_path(doc, usize::try_from(current_position.max(0)).unwrap_or(0));
 	if let Some(fragment) = href_trimmed.strip_prefix('#') {
 		if let Some(offset) = find_fragment_offset(doc, fragment, current_section.as_deref()) {
-			return ffi::FfiLinkNavigation { found: true, is_external: false, offset, url: String::new() };
+			return LinkNavigation { found: true, is_external: false, offset, url: String::new() };
 		}
-		return ffi::FfiLinkNavigation { found: false, is_external: false, offset: 0, url: String::new() };
+		return LinkNavigation { found: false, is_external: false, offset: 0, url: String::new() };
 	}
 	let mut parts = href_trimmed.splitn(2, '#');
 	let file_path = parts.next().unwrap_or_default();
@@ -559,13 +557,13 @@ pub fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> 
 					}
 				}
 			}
-			return ffi::FfiLinkNavigation { found: true, is_external: false, offset, url: String::new() };
+			return LinkNavigation { found: true, is_external: false, offset, url: String::new() };
 		}
 	}
 	if !fragment.is_empty() {
 		if let Some(offset) = find_fragment_offset(doc, fragment, current_section.as_deref()) {
-			return ffi::FfiLinkNavigation { found: true, is_external: false, offset, url: String::new() };
+			return LinkNavigation { found: true, is_external: false, offset, url: String::new() };
 		}
 	}
-	ffi::FfiLinkNavigation { found: false, is_external: false, offset: 0, url: String::new() }
+	LinkNavigation { found: false, is_external: false, offset: 0, url: String::new() }
 }

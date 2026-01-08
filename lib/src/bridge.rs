@@ -214,25 +214,6 @@ pub mod ffi {
 		pub closest_index: i32,
 	}
 
-	pub struct FfiNavigationHistory {
-		pub positions: Vec<i64>,
-		pub index: usize,
-	}
-
-	pub struct FfiHistoryNavResult {
-		pub found: bool,
-		pub target: i64,
-		pub positions: Vec<i64>,
-		pub index: usize,
-	}
-
-	pub struct FfiLinkNavigation {
-		pub found: bool,
-		pub is_external: bool,
-		pub offset: usize,
-		pub url: String,
-	}
-
 	pub struct FfiSessionNavResult {
 		pub found: bool,
 		pub wrapped: bool,
@@ -385,36 +366,14 @@ pub mod ffi {
 			filter: &str,
 		) -> Vec<FfiDocumentListItem>;
 		fn get_recent_documents_for_menu(config: &ConfigManager, limit: usize) -> Vec<FfiRecentDocument>;
-		fn history_normalize(history: &[i64], history_index: usize) -> FfiNavigationHistory;
-		fn history_record_position(
-			history: &[i64],
-			history_index: usize,
-			current_pos: i64,
-			max_len: usize,
-		) -> FfiNavigationHistory;
-		fn history_go_previous(
-			history: &[i64],
-			history_index: usize,
-			current_pos: i64,
-			max_len: usize,
-		) -> FfiHistoryNavResult;
-		fn history_go_next(
-			history: &[i64],
-			history_index: usize,
-			current_pos: i64,
-			max_len: usize,
-		) -> FfiHistoryNavResult;
 		fn session_new(file_path: &str, password: &str, forced_extension: &str) -> Result<Box<DocumentSession>>;
 		fn session_title(session: &DocumentSession) -> String;
 		fn session_author(session: &DocumentSession) -> String;
 		fn session_content(session: &DocumentSession) -> String;
 		fn session_file_path(session: &DocumentSession) -> String;
 		fn session_parser_flags(session: &DocumentSession) -> u32;
-		fn session_get_history(session: &DocumentSession) -> FfiNavigationHistory;
-		fn session_set_history(session: &mut DocumentSession, positions: &[i64], index: usize);
 		fn session_load_history_from_config(session: &mut DocumentSession, config: &ConfigManager, path: &str);
 		fn session_save_history_to_config(session: &DocumentSession, config: &mut ConfigManager, path: &str);
-		fn session_record_position(session: &mut DocumentSession, position: i64);
 		fn session_navigate_section(
 			session: &DocumentSession,
 			position: i64,
@@ -878,37 +837,6 @@ fn get_recent_documents_for_menu(config: &ConfigManager, limit: usize) -> Vec<ff
 		.collect()
 }
 
-fn history_normalize(history: &[i64], history_index: usize) -> ffi::FfiNavigationHistory {
-	crate::reader_core::history_normalize(history, history_index)
-}
-
-fn history_record_position(
-	history: &[i64],
-	history_index: usize,
-	current_pos: i64,
-	max_len: usize,
-) -> ffi::FfiNavigationHistory {
-	crate::reader_core::history_record_position(history, history_index, current_pos, max_len)
-}
-
-fn history_go_previous(
-	history: &[i64],
-	history_index: usize,
-	current_pos: i64,
-	max_len: usize,
-) -> ffi::FfiHistoryNavResult {
-	crate::reader_core::history_go_previous(history, history_index, current_pos, max_len)
-}
-
-fn history_go_next(
-	history: &[i64],
-	history_index: usize,
-	current_pos: i64,
-	max_len: usize,
-) -> ffi::FfiHistoryNavResult {
-	crate::reader_core::history_go_next(history, history_index, current_pos, max_len)
-}
-
 use crate::session::{DocumentSession, LinkAction, NavigationResult};
 
 fn nav_result_to_ffi(result: NavigationResult) -> ffi::FfiSessionNavResult {
@@ -947,15 +875,6 @@ const fn session_parser_flags(session: &DocumentSession) -> u32 {
 	session.parser_flags().bits()
 }
 
-fn session_get_history(session: &DocumentSession) -> ffi::FfiNavigationHistory {
-	let (positions, index) = session.get_history();
-	ffi::FfiNavigationHistory { positions: positions.to_vec(), index }
-}
-
-fn session_set_history(session: &mut DocumentSession, positions: &[i64], index: usize) {
-	session.set_history(positions, index);
-}
-
 fn session_load_history_from_config(session: &mut DocumentSession, config: &RustConfigManager, path: &str) {
 	let history = config.get_navigation_history(path);
 	if !history.positions.is_empty() {
@@ -969,10 +888,6 @@ fn session_save_history_to_config(session: &DocumentSession, config: &mut RustCo
 		return;
 	}
 	config.set_navigation_history(path, positions, index);
-}
-
-fn session_record_position(session: &mut DocumentSession, position: i64) {
-	session.record_position(position);
 }
 
 fn session_navigate_section(
