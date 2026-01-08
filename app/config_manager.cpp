@@ -93,11 +93,6 @@ bool config_manager::get_document_opened(const wxString& path) const {
 	return is_initialized() ? config_manager_get_document_opened(backend_ref(), to_utf8(path)) : false;
 }
 
-wxArrayString config_manager::get_all_opened_documents() const {
-	if (!is_initialized()) return {};
-	return to_wx_array(config_manager_get_all_opened_documents(backend_ref()));
-}
-
 wxArrayString config_manager::get_all_documents() const {
 	if (!is_initialized()) return {};
 	return to_wx_array(config_manager_get_all_documents(backend_ref()));

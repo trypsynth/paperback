@@ -35,6 +35,13 @@ pub struct NavigationHistory {
 	pub index: usize,
 }
 
+#[derive(Clone, Copy, Debug, Default)]
+pub struct FindSettings {
+	pub match_case: bool,
+	pub whole_word: bool,
+	pub use_regex: bool,
+}
+
 pub struct ConfigManager {
 	data: Ini,
 	config_path: PathBuf,
@@ -251,6 +258,20 @@ impl ConfigManager {
 		self.get_opened_documents().into_iter().filter(|path| Path::new(path).exists()).collect()
 	}
 
+	pub fn get_find_settings(&self) -> FindSettings {
+		FindSettings {
+			match_case: self.get_app_bool("find_match_case", false),
+			whole_word: self.get_app_bool("find_whole_word", false),
+			use_regex: self.get_app_bool("find_use_regex", false),
+		}
+	}
+
+	pub fn set_find_settings(&mut self, settings: FindSettings) {
+		self.set_app_bool("find_match_case", settings.match_case);
+		self.set_app_bool("find_whole_word", settings.whole_word);
+		self.set_app_bool("find_use_regex", settings.use_regex);
+	}
+
 	pub fn get_find_history(&self) -> Vec<String> {
 		if !self.is_ready() {
 			return Vec::new();
@@ -345,25 +366,6 @@ impl ConfigManager {
 	#[must_use]
 	pub fn get_document_opened(&self, path: &str) -> bool {
 		self.get_document_bool(path, "opened", false)
-	}
-
-	pub fn get_all_opened_documents(&self) -> Vec<String> {
-		let mut result = Vec::new();
-		for section in self.section_names() {
-			if !section.starts_with("doc_") {
-				continue;
-			}
-			if let Some(opened) = self.get_value(Some(&section), "opened") {
-				if parse_bool(&opened, false) {
-					if let Some(path) = self.get_value(Some(&section), "path") {
-						if !path.is_empty() {
-							result.push(path);
-						}
-					}
-				}
-			}
-		}
-		result
 	}
 
 	pub fn remove_document_history(&mut self, path: &str) {

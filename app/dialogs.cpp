@@ -599,6 +599,7 @@ find_dialog::find_dialog(wxWindow* parent) : wxDialog(parent, wxID_ANY, _("Find"
 	Bind(wxEVT_CLOSE_WINDOW, &find_dialog::on_close, this);
 	find_what_combo->SetFocus();
 	reload_history();
+	save_settings();
 	Fit();
 	CenterOnParent();
 }
@@ -641,6 +642,7 @@ void find_dialog::focus_find_text() {
 void find_dialog::on_find_previous(wxCommandEvent& /*event*/) {
 	const wxString text = get_find_text();
 	if (!text.IsEmpty()) {
+		save_settings();
 		add_to_history(text);
 		const wxCommandEvent find_event(wxEVT_COMMAND_MENU_SELECTED, ID_FIND_PREVIOUS);
 		wxPostEvent(GetParent(), find_event);
@@ -651,6 +653,7 @@ void find_dialog::on_find_previous(wxCommandEvent& /*event*/) {
 void find_dialog::on_find_next(wxCommandEvent& /*event*/) {
 	const wxString text = get_find_text();
 	if (!text.IsEmpty()) {
+		save_settings();
 		add_to_history(text);
 		const wxCommandEvent find_event(wxEVT_COMMAND_MENU_SELECTED, ID_FIND_NEXT);
 		wxPostEvent(GetParent(), find_event);
@@ -659,6 +662,7 @@ void find_dialog::on_find_next(wxCommandEvent& /*event*/) {
 }
 
 void find_dialog::on_cancel(wxCommandEvent& /*event*/) {
+	save_settings();
 	Hide();
 }
 
@@ -669,6 +673,7 @@ void find_dialog::on_find_text_enter(wxCommandEvent& event) {
 }
 
 void find_dialog::on_close(wxCloseEvent& /*event*/) {
+	save_settings();
 	Hide();
 }
 
@@ -677,6 +682,20 @@ void find_dialog::reload_history() {
 	auto& config_mgr = wxGetApp().get_config_manager();
 	const auto history = config_manager_get_find_history(config_mgr.backend_for_ffi());
 	for (const auto& entry : history) find_what_combo->Append(to_wxstring(entry));
+	const auto settings = config_manager_get_find_settings(config_mgr.backend_for_ffi());
+	match_case_check->SetValue(settings.match_case);
+	match_whole_word_check->SetValue(settings.whole_word);
+	use_regex_check->SetValue(settings.use_regex);
+}
+
+void find_dialog::save_settings() {
+	auto& config_mgr = wxGetApp().get_config_manager();
+	config_manager_set_find_settings(
+		config_mgr.backend_for_ffi_mut(),
+		match_case_check->GetValue(),
+		match_whole_word_check->GetValue(),
+		use_regex_check->GetValue()
+	);
 }
 
 go_to_line_dialog::go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : dialog(parent, _("Go to Line")), textbox{text_ctrl} {

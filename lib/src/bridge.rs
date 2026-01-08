@@ -245,6 +245,12 @@ pub mod ffi {
 		pub total_chars: i64,
 	}
 
+	pub struct FfiFindSettings {
+		pub match_case: bool,
+		pub whole_word: bool,
+		pub use_regex: bool,
+	}
+
 	pub struct FfiWebViewTarget {
 		pub found: bool,
 		pub path: String,
@@ -283,8 +289,14 @@ pub mod ffi {
 		fn config_manager_set_document_opened(manager: &mut ConfigManager, path: &str, opened: bool);
 		fn config_manager_get_document_opened(manager: &ConfigManager, path: &str) -> bool;
 		fn config_manager_remove_document_history(manager: &mut ConfigManager, path: &str);
-		fn config_manager_get_all_opened_documents(manager: &ConfigManager) -> Vec<String>;
 		fn config_manager_get_opened_documents_existing(manager: &ConfigManager) -> Vec<String>;
+		fn config_manager_get_find_settings(manager: &ConfigManager) -> FfiFindSettings;
+		fn config_manager_set_find_settings(
+			manager: &mut ConfigManager,
+			match_case: bool,
+			whole_word: bool,
+			use_regex: bool,
+		);
 		fn config_manager_get_find_history(manager: &ConfigManager) -> Vec<String>;
 		fn config_manager_add_find_history(manager: &mut ConfigManager, text: &str, max_len: usize);
 		fn config_manager_get_all_documents(manager: &ConfigManager) -> Vec<String>;
@@ -538,8 +550,24 @@ ffi_wrapper!(config_manager_get_document_position, get_document_position(path: &
 ffi_wrapper!(mut config_manager_set_document_opened, set_document_opened(path: &str, opened: bool));
 ffi_wrapper!(config_manager_get_document_opened, get_document_opened(path: &str) -> bool);
 ffi_wrapper!(mut config_manager_remove_document_history, remove_document_history(path: &str));
-ffi_wrapper!(config_manager_get_all_opened_documents, get_all_opened_documents -> Vec<String>);
 ffi_wrapper!(config_manager_get_opened_documents_existing, get_opened_documents_existing -> Vec<String>);
+fn config_manager_get_find_settings(manager: &RustConfigManager) -> ffi::FfiFindSettings {
+	let settings = manager.get_find_settings();
+	ffi::FfiFindSettings {
+		match_case: settings.match_case,
+		whole_word: settings.whole_word,
+		use_regex: settings.use_regex,
+	}
+}
+
+fn config_manager_set_find_settings(
+	manager: &mut RustConfigManager,
+	match_case: bool,
+	whole_word: bool,
+	use_regex: bool,
+) {
+	manager.set_find_settings(crate::config::FindSettings { match_case, whole_word, use_regex });
+}
 ffi_wrapper!(config_manager_get_find_history, get_find_history -> Vec<String>);
 ffi_wrapper!(mut config_manager_add_find_history, add_find_history(text: &str, max_len: usize));
 ffi_wrapper!(config_manager_get_all_documents, get_all_documents -> Vec<String>);

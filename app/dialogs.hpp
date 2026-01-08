@@ -200,6 +200,7 @@ private:
 	void on_find_text_enter(wxCommandEvent& event);
 	void on_close(wxCloseEvent& event);
 	void reload_history();
+	void save_settings();
 };
 
 class go_to_line_dialog : public dialog {

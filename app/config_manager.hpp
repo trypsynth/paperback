@@ -77,7 +77,6 @@ public:
 	void set_document_opened(const wxString& path, bool opened);
 	void remove_document_history(const wxString& path);
 	bool get_document_opened(const wxString& path) const;
-	wxArrayString get_all_opened_documents() const;
 	wxArrayString get_all_documents() const;
 	void add_bookmark(const wxString& path, long start, long end, const wxString& note = wxEmptyString);
 	void remove_bookmark(const wxString& path, long start, long end);
