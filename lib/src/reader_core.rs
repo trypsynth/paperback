@@ -458,12 +458,7 @@ pub fn history_go_previous(
 	HistoryNavResult { found: false, target: -1, positions, index }
 }
 
-pub fn history_go_next(
-	history: &[i64],
-	history_index: usize,
-	current_pos: i64,
-	max_len: usize,
-) -> HistoryNavResult {
+pub fn history_go_next(history: &[i64], history_index: usize, current_pos: i64, max_len: usize) -> HistoryNavResult {
 	if history.is_empty() {
 		return HistoryNavResult { found: false, target: -1, positions: Vec::new(), index: 0 };
 	}

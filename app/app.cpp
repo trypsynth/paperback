@@ -144,24 +144,22 @@ void app::parse_command_line() {
 }
 
 void app::restore_previous_documents() {
-	const wxArrayString opened_docs = config_mgr.get_all_opened_documents();
+	const auto opened_docs = config_manager_get_opened_documents_existing(config_mgr.backend_for_ffi());
 	auto* doc_manager = frame->get_doc_manager();
 	const wxString active_doc = config_mgr.get(config_manager::active_document);
 	for (const auto& path : opened_docs) {
-		if (!wxFileName::FileExists(path)) {
-			continue;
-		}
-		const int existing_tab = doc_manager->find_tab_by_path(path);
+		const wxString wx_path = to_wxstring(path);
+		const int existing_tab = doc_manager->find_tab_by_path(wx_path);
 		if (existing_tab >= 0) {
 			continue;
 		}
-		const wxString extension = wxFileName(path).GetExt();
+		const wxString extension = wxFileName(wx_path).GetExt();
 		if (!is_parser_supported(extension)) {
-			if (!ensure_parser_for_unknown_file(path, config_mgr)) {
+			if (!ensure_parser_for_unknown_file(wx_path, config_mgr)) {
 				continue;
 			}
 		}
-		if (!doc_manager->create_document_tab(path, false, false)) {
+		if (!doc_manager->create_document_tab(wx_path, false, false)) {
 			continue;
 		}
 	}

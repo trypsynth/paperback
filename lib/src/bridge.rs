@@ -284,6 +284,7 @@ pub mod ffi {
 		fn config_manager_get_document_opened(manager: &ConfigManager, path: &str) -> bool;
 		fn config_manager_remove_document_history(manager: &mut ConfigManager, path: &str);
 		fn config_manager_get_all_opened_documents(manager: &ConfigManager) -> Vec<String>;
+		fn config_manager_get_opened_documents_existing(manager: &ConfigManager) -> Vec<String>;
 		fn config_manager_get_all_documents(manager: &ConfigManager) -> Vec<String>;
 		fn config_manager_add_bookmark(manager: &mut ConfigManager, path: &str, start: i64, end: i64, note: &str);
 		fn config_manager_remove_bookmark(manager: &mut ConfigManager, path: &str, start: i64, end: i64);
@@ -556,6 +557,7 @@ ffi_wrapper!(mut config_manager_set_document_opened, set_document_opened(path: &
 ffi_wrapper!(config_manager_get_document_opened, get_document_opened(path: &str) -> bool);
 ffi_wrapper!(mut config_manager_remove_document_history, remove_document_history(path: &str));
 ffi_wrapper!(config_manager_get_all_opened_documents, get_all_opened_documents -> Vec<String>);
+ffi_wrapper!(config_manager_get_opened_documents_existing, get_opened_documents_existing -> Vec<String>);
 ffi_wrapper!(config_manager_get_all_documents, get_all_documents -> Vec<String>);
 
 fn config_manager_add_bookmark(manager: &mut RustConfigManager, path: &str, start: i64, end: i64, note: &str) {

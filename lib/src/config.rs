@@ -247,6 +247,10 @@ impl ConfigManager {
 		entries.into_iter().map(|(_, v)| v).collect()
 	}
 
+	pub fn get_opened_documents_existing(&self) -> Vec<String> {
+		self.get_opened_documents().into_iter().filter(|path| Path::new(path).exists()).collect()
+	}
+
 	pub fn clear_opened_documents(&mut self) {
 		self.remove_section(Some("opened_documents"));
 	}
