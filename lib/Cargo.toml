@@ -1,5 +1,5 @@
 [package]
-name = "paperback"
+name = "libpaperback"
 description = "An accessible, light-weight, fast ebook and document reader"
 version = "0.7.0"
 license = "MIT"
