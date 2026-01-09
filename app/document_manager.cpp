@@ -559,9 +559,7 @@ void document_manager::toggle_bookmark() const {
 		bookmark_start = current_pos;
 		bookmark_end = current_pos;
 	}
-	const auto info = bookmark_info(config.backend_for_ffi(), tab->file_path.ToUTF8().data(), bookmark_start, bookmark_end);
-	const bool was_bookmarked = info.found;
-	config.toggle_bookmark(tab->file_path, bookmark_start, bookmark_end);
+	const bool was_bookmarked = config_manager_toggle_bookmark_with_result(config.backend_for_ffi_mut(), tab->file_path.ToUTF8().data(), bookmark_start, bookmark_end, "");
 	config.flush();
 	speak(was_bookmarked ? _("Bookmark removed") : _("Bookmarked"));
 }
@@ -589,13 +587,8 @@ void document_manager::add_bookmark_with_note() const {
 	note_entry_dialog note_dialog(nullptr, _("Bookmark Note"), prompt, existing_note);
 	if (note_dialog.ShowModal() != wxID_OK) return;
 	wxString note = note_dialog.get_note();
-	if (bookmark_exists) {
-		config.update_bookmark_note(tab->file_path, bookmark_start, bookmark_end, note);
-		speak(_("Bookmark note updated"));
-	} else {
-		config.add_bookmark(tab->file_path, bookmark_start, bookmark_end, note);
-		speak(_("Bookmarked with note"));
-	}
+	const bool updated = config_manager_upsert_bookmark_note(config.backend_for_ffi_mut(), tab->file_path.ToUTF8().data(), bookmark_start, bookmark_end, note.ToUTF8().data());
+	speak(updated ? _("Bookmark note updated") : _("Bookmarked with note"));
 	config.flush();
 }
 

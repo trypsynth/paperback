@@ -319,6 +319,20 @@ pub mod ffi {
 		fn config_manager_add_bookmark(manager: &mut ConfigManager, path: &str, start: i64, end: i64, note: &str);
 		fn config_manager_remove_bookmark(manager: &mut ConfigManager, path: &str, start: i64, end: i64);
 		fn config_manager_toggle_bookmark(manager: &mut ConfigManager, path: &str, start: i64, end: i64, note: &str);
+		fn config_manager_toggle_bookmark_with_result(
+			manager: &mut ConfigManager,
+			path: &str,
+			start: i64,
+			end: i64,
+			note: &str,
+		) -> bool;
+		fn config_manager_upsert_bookmark_note(
+			manager: &mut ConfigManager,
+			path: &str,
+			start: i64,
+			end: i64,
+			note: &str,
+		) -> bool;
 		fn config_manager_update_bookmark_note(
 			manager: &mut ConfigManager,
 			path: &str,
@@ -619,6 +633,34 @@ fn config_manager_remove_bookmark(manager: &mut RustConfigManager, path: &str, s
 
 fn config_manager_toggle_bookmark(manager: &mut RustConfigManager, path: &str, start: i64, end: i64, note: &str) {
 	manager.toggle_bookmark(path, start, end, note);
+}
+
+fn config_manager_toggle_bookmark_with_result(
+	manager: &mut RustConfigManager,
+	path: &str,
+	start: i64,
+	end: i64,
+	note: &str,
+) -> bool {
+	let was_bookmarked = manager.get_bookmarks(path).iter().any(|bm| bm.start == start && bm.end == end);
+	manager.toggle_bookmark(path, start, end, note);
+	was_bookmarked
+}
+
+fn config_manager_upsert_bookmark_note(
+	manager: &mut RustConfigManager,
+	path: &str,
+	start: i64,
+	end: i64,
+	note: &str,
+) -> bool {
+	let exists = manager.get_bookmarks(path).iter().any(|bm| bm.start == start && bm.end == end);
+	if exists {
+		manager.update_bookmark_note(path, start, end, note);
+	} else {
+		manager.add_bookmark(path, start, end, note);
+	}
+	exists
 }
 
 fn config_manager_update_bookmark_note(manager: &mut RustConfigManager, path: &str, start: i64, end: i64, note: &str) {
