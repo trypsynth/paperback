@@ -62,6 +62,22 @@ pub mod ffi {
 		Table,
 	}
 
+	#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+	pub enum NavOutcome {
+		Found,
+		FoundWrapped,
+		NotFound,
+		NotSupported,
+	}
+
+	pub struct FfiUnifiedNavResult {
+		pub outcome: NavOutcome,
+		pub offset: i64,
+		pub context_text: String,
+		pub context_index: i32,
+		pub secondary_text: String,
+	}
+
 	pub struct NavRequest {
 		pub position: i64,
 		pub wrap: bool,
@@ -414,6 +430,27 @@ pub mod ffi {
 			wrap: bool,
 			next: bool,
 		) -> FfiSessionNavResult;
+		fn session_navigate_unified(
+			session: &DocumentSession,
+			config: &ConfigManager,
+			position: i64,
+			target: NavTarget,
+			direction: NavDirection,
+			level_filter: i32,
+		) -> FfiUnifiedNavResult;
+		fn session_navigate_bookmark_unified(
+			session: &DocumentSession,
+			config: &ConfigManager,
+			position: i64,
+			direction: NavDirection,
+			notes_only: bool,
+		) -> FfiUnifiedNavResult;
+		fn session_history_navigate(
+			session: &mut DocumentSession,
+			config: &ConfigManager,
+			position: i64,
+			direction: NavDirection,
+		) -> FfiUnifiedNavResult;
 		fn session_navigate_bookmark(
 			session: &DocumentSession,
 			config: &ConfigManager,
@@ -897,6 +934,109 @@ fn session_navigate_table(
 	next: bool,
 ) -> ffi::FfiSessionNavResult {
 	nav_result_to_ffi(session.navigate_table(position, wrap, next))
+}
+
+fn session_navigate_unified(
+	session: &DocumentSession,
+	config: &ConfigManager,
+	position: i64,
+	target: ffi::NavTarget,
+	direction: ffi::NavDirection,
+	level_filter: i32,
+) -> ffi::FfiUnifiedNavResult {
+	let wrap = config.get_app_bool("navigation_wrap", false);
+	let next = direction == ffi::NavDirection::Next;
+	let result = match target {
+		ffi::NavTarget::Section => session.navigate_section(position, wrap, next),
+		ffi::NavTarget::Heading => session.navigate_heading(position, wrap, next, level_filter),
+		ffi::NavTarget::Page => session.navigate_page(position, wrap, next),
+		ffi::NavTarget::Link => session.navigate_link(position, wrap, next),
+		ffi::NavTarget::List => session.navigate_list(position, wrap, next),
+		ffi::NavTarget::ListItem => session.navigate_list_item(position, wrap, next),
+		ffi::NavTarget::Table => session.navigate_table(position, wrap, next),
+		_ => {
+			return ffi::FfiUnifiedNavResult {
+				outcome: ffi::NavOutcome::NotSupported,
+				offset: 0,
+				context_text: String::new(),
+				context_index: 0,
+				secondary_text: String::new(),
+			};
+		}
+	};
+	let outcome = if result.not_supported {
+		ffi::NavOutcome::NotSupported
+	} else if !result.found {
+		ffi::NavOutcome::NotFound
+	} else if result.wrapped {
+		ffi::NavOutcome::FoundWrapped
+	} else {
+		ffi::NavOutcome::Found
+	};
+	let context_index = if target == ffi::NavTarget::Heading { result.marker_level } else { result.marker_index };
+	ffi::FfiUnifiedNavResult {
+		outcome,
+		offset: result.offset,
+		context_text: result.marker_text,
+		context_index,
+		secondary_text: String::new(),
+	}
+}
+
+fn session_navigate_bookmark_unified(
+	session: &DocumentSession,
+	config: &ConfigManager,
+	position: i64,
+	direction: ffi::NavDirection,
+	notes_only: bool,
+) -> ffi::FfiUnifiedNavResult {
+	let wrap = config.get_app_bool("navigation_wrap", false);
+	let next = direction == ffi::NavDirection::Next;
+	let result = session.navigate_bookmark_display(config, position, wrap, next, notes_only);
+	let outcome = if !result.found {
+		ffi::NavOutcome::NotFound
+	} else if result.wrapped {
+		ffi::NavOutcome::FoundWrapped
+	} else {
+		ffi::NavOutcome::Found
+	};
+	ffi::FfiUnifiedNavResult {
+		outcome,
+		offset: result.start,
+		context_text: result.snippet,
+		context_index: result.index,
+		secondary_text: result.note,
+	}
+}
+
+fn session_history_navigate(
+	session: &mut DocumentSession,
+	config: &ConfigManager,
+	position: i64,
+	direction: ffi::NavDirection,
+) -> ffi::FfiUnifiedNavResult {
+	let _ = config; // config not needed for history navigation, but kept for API consistency
+	let result = match direction {
+		ffi::NavDirection::Next => session.history_go_forward(position),
+		ffi::NavDirection::Previous => session.history_go_back(position),
+		_ => {
+			return ffi::FfiUnifiedNavResult {
+				outcome: ffi::NavOutcome::NotFound,
+				offset: 0,
+				context_text: String::new(),
+				context_index: 0,
+				secondary_text: String::new(),
+			};
+		}
+	};
+	let outcome = if result.found { ffi::NavOutcome::Found } else { ffi::NavOutcome::NotFound };
+	ffi::FfiUnifiedNavResult {
+		outcome,
+		offset: result.offset,
+		context_text: String::new(),
+		context_index: 0,
+		secondary_text: String::new(),
+	}
 }
 
 fn session_navigate_bookmark(
