@@ -345,52 +345,30 @@ void bookmark_dialog::repopulate_list(long current_pos) {
 	bookmark_positions.clear();
 	const long previously_selected = selected_position;
 	int closest_index = -1;
-	if (session_doc_ != nullptr) {
-		auto filtered = get_filtered_bookmark_display_items(*session_doc_->session, config.backend_for_ffi(), file_path.ToUTF8().data(), current_pos, filter_type);
-		closest_index = filtered.closest_index;
-		for (auto& item : filtered.items) {
-			wxString text_snippet = wxString::FromUTF8(item.snippet.c_str()).Strip(wxString::both);
-			if (text_snippet.IsEmpty()) text_snippet = _("blank");
-			wxString display_text;
-			const wxString note = wxString::FromUTF8(item.note.c_str());
-			if (!note.IsEmpty())
-				display_text = wxString::Format("%s - %s", note, text_snippet);
-			else
-				display_text = text_snippet;
-			bookmark bm;
-			bm.start = static_cast<long>(item.start);
-			bm.end = static_cast<long>(item.end);
-			bm.note = note;
-			bookmark_positions.push_back(bm);
-			bookmark_list->Append(display_text);
-		}
-	} else {
-		auto filtered = get_filtered_bookmarks(config.backend_for_ffi(), file_path.ToUTF8().data(), current_pos, filter_type);
-		closest_index = filtered.closest_index;
-		for (auto& item : filtered.items) {
-			wxString text_snippet;
-			if (item.is_whole_line) {
-				long line{0};
-				text_ctrl->PositionToXY(static_cast<long>(item.start), nullptr, &line);
-				text_snippet = text_ctrl->GetLineText(line);
-			} else {
-				text_snippet = text_ctrl->GetRange(static_cast<long>(item.start), static_cast<long>(item.end));
-			}
-			text_snippet = text_snippet.Strip(wxString::both);
-			if (text_snippet.IsEmpty()) text_snippet = _("blank");
-			wxString display_text;
-			const wxString note = wxString::FromUTF8(item.note.c_str());
-			if (!note.IsEmpty())
-				display_text = wxString::Format("%s - %s", note, text_snippet);
-			else
-				display_text = text_snippet;
-			bookmark bm;
-			bm.start = static_cast<long>(item.start);
-			bm.end = static_cast<long>(item.end);
-			bm.note = note;
-			bookmark_positions.push_back(bm);
-			bookmark_list->Append(display_text);
-		}
+	if (session_doc_ == nullptr) {
+		jump_button->Enable(false);
+		delete_button->Enable(false);
+		edit_note_button->Enable(false);
+		selected_position = -1;
+		return;
+	}
+	auto filtered = get_filtered_bookmark_display_items(*session_doc_->session, config.backend_for_ffi(), file_path.ToUTF8().data(), current_pos, filter_type);
+	closest_index = filtered.closest_index;
+	for (auto& item : filtered.items) {
+		wxString text_snippet = wxString::FromUTF8(item.snippet.c_str()).Strip(wxString::both);
+		if (text_snippet.IsEmpty()) text_snippet = _("blank");
+		wxString display_text;
+		const wxString note = wxString::FromUTF8(item.note.c_str());
+		if (!note.IsEmpty())
+			display_text = wxString::Format("%s - %s", note, text_snippet);
+		else
+			display_text = text_snippet;
+		bookmark bm;
+		bm.start = static_cast<long>(item.start);
+		bm.end = static_cast<long>(item.end);
+		bm.note = note;
+		bookmark_positions.push_back(bm);
+		bookmark_list->Append(display_text);
 	}
 	jump_button->Enable(false);
 	delete_button->Enable(false);
