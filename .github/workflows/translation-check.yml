@@ -1,7 +1,7 @@
 name: Check for New Translatable Strings
 on:
   push:
-    branches: [master]
+    branches: [rc]
     paths:
       - 'app/**/*.cpp'
       - 'app/**/*.hpp'
@@ -40,17 +40,14 @@ jobs:
               /^msgid "/ {
                 in_msgid = 1
                 msgid = $0
-                # Remove the "msgid " prefix
                 sub(/^msgid /, "", msgid)
                 next
               }
               in_msgid && /^"/ {
-                # Continuation of multi-line msgid
                 msgid = msgid $0
                 next
               }
               in_msgid && /^msgstr/ {
-                # End of msgid, print it (skiping empty headers)
                 in_msgid = 0
                 if (msgid != "\"\"") {
                   print msgid
@@ -68,36 +65,28 @@ jobs:
           echo "removed_count=$REMOVED_COUNT" >> $GITHUB_OUTPUT
           if [ "$ADDED_COUNT" -gt 0 ] || [ "$REMOVED_COUNT" -gt 0 ]; then
             echo "has_changes=true" >> $GITHUB_OUTPUT
-            echo "Found $ADDED_COUNT added and $REMOVED_COUNT removed strings"
           else
             echo "has_changes=false" >> $GITHUB_OUTPUT
-            echo "No translatable string changes detected"
           fi
-          printf '%s\n' "## Translatable Strings Update" > /tmp/body.md
+          printf '%s\n' "## Translation Freeze for Upcoming Release" > /tmp/body.md
           printf '\n' >> /tmp/body.md
-          printf '%s\n' "A recent commit has changed the translatable strings in Paperback." >> /tmp/body.md
+          printf '%s\n' "The \`rc\` branch has been created or updated. Translatable strings are now frozen for this release." >> /tmp/body.md
           printf '\n' >> /tmp/body.md
-          printf '%s\n' "**$ADDED_COUNT** string(s) added, **$REMOVED_COUNT** string(s) removed." >> /tmp/body.md
+          printf '%s\n' "**$ADDED_COUNT** string(s) added, **$REMOVED_COUNT** string(s) removed since the previous template." >> /tmp/body.md
           printf '\n' >> /tmp/body.md
           if [ "$ADDED_COUNT" -gt 0 ]; then
-            printf '%s\n' "### New strings:" >> /tmp/body.md
-            printf '\n' >> /tmp/body.md
-            printf '%s\n' '```' >> /tmp/body.md
+            printf '%s\n\n```' "### New strings:" >> /tmp/body.md
             cat /tmp/added.txt >> /tmp/body.md
-            printf '%s\n' '```' >> /tmp/body.md
-            printf '\n' >> /tmp/body.md
+            printf '\n```\n' >> /tmp/body.md
           fi
           if [ "$REMOVED_COUNT" -gt 0 ]; then
-            printf '%s\n' "### Removed strings:" >> /tmp/body.md
-            printf '\n' >> /tmp/body.md
-            printf '%s\n' '```' >> /tmp/body.md
+            printf '%s\n\n```' "### Removed strings:" >> /tmp/body.md
             cat /tmp/removed.txt >> /tmp/body.md
-            printf '%s\n' '```' >> /tmp/body.md
-            printf '\n' >> /tmp/body.md
+            printf '\n```\n' >> /tmp/body.md
           fi
           printf '%s\n' "---" >> /tmp/body.md
-          printf '%s\n' "**Translators:** Please update your .po files using msgmerge." >> /tmp/body.md
-          printf '%s\n' "See the [translation guide](https://paperback.dev/translations) for instructions." >> /tmp/body.md
+          printf '%s\n' "**Translators:** Please update your `.po` files against the `rc` branch using `msgmerge`." >> /tmp/body.md
+          printf '%s\n' "This notification is sent once per release, when strings are considered stable." >> /tmp/body.md
           printf '\n' >> /tmp/body.md
           printf '%s\n' "Commit: ${{ github.sha }}" >> /tmp/body.md
           DELIMITER="BODY_$(openssl rand -hex 8)"
@@ -109,34 +98,29 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Searching for previous translation discussions to close..."
           DISCUSSIONS=$(gh api graphql -f query='
             query($owner: String!, $name: String!) {
               repository(owner: $owner, name: $name) {
                 discussions(first: 50, states: OPEN) {
-                  nodes {
-                    id
-                    title
-                    number
-                  }
+                  nodes { id title }
                 }
               }
             }
           ' -f owner="${{ github.repository_owner }}" -f name="${{ github.event.repository.name }}")
-          echo "$DISCUSSIONS" | jq -r '.data.repository.discussions.nodes[] | select(.title | startswith("New translatable strings")) | .id' | while read -r DISC_ID; do
-            if [ -n "$DISC_ID" ]; then
-              echo "Closing discussion: $DISC_ID"
-              gh api graphql -f query='
-                mutation($id: ID!) {
-                  closeDiscussion(input: {discussionId: $id, reason: OUTDATED}) {
-                    discussion { id }
-                  }
+          echo "$DISCUSSIONS" | jq -r '
+            .data.repository.discussions.nodes[]
+            | select(.title | startswith("Translation Freeze"))
+            | .id
+          ' | while read -r ID; do
+            gh api graphql -f query='
+              mutation($id: ID!) {
+                closeDiscussion(input: { discussionId: $id, reason: OUTDATED }) {
+                  discussion { id }
                 }
-              ' -f id="$DISC_ID" || echo "Warning: Failed to close discussion $DISC_ID"
-            fi
+              }
+            ' -f id="$ID"
           done
-          echo "Finished closing previous discussions"
-      - name: Create Discussion
+      - name: Create translation discussion
         if: steps.compare.outputs.has_changes == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -152,17 +136,24 @@ jobs:
             }
           ' -f owner="${{ github.repository_owner }}" -f name="${{ github.event.repository.name }}")
           REPO_ID=$(echo "$REPO_DATA" | jq -r '.data.repository.id')
-          CATEGORY_ID=$(echo "$REPO_DATA" | jq -r '.data.repository.discussionCategories.nodes[] | select(.name=="Announcements") | .id')
-          RESULT=$(gh api graphql -f query='
+          CATEGORY_ID=$(echo "$REPO_DATA" | jq -r '
+            .data.repository.discussionCategories.nodes[]
+            | select(.name=="Announcements")
+            | .id
+          ')
+          gh api graphql -f query='
             mutation($repositoryId: ID!, $categoryId: ID!, $title: String!, $body: String!) {
-              createDiscussion(input: {repositoryId: $repositoryId, categoryId: $categoryId, title: $title, body: $body}) {
+              createDiscussion(input: {
+                repositoryId: $repositoryId,
+                categoryId: $categoryId,
+                title: $title,
+                body: $body
+              }) {
                 discussion { url }
               }
             }
           ' \
             -f repositoryId="$REPO_ID" \
             -f categoryId="$CATEGORY_ID" \
-            -f title="New translatable strings - $(date +%Y-%m-%d)" \
-            -f body="${{ steps.compare.outputs.body }}")
-          echo "Created new discussion:"
-          echo "$RESULT" | jq -r '.data.createDiscussion.discussion.url'
+            -f title="Translation Freeze – $(date +%Y-%m-%d)" \
+            -f body="${{ steps.compare.outputs.body }}"
