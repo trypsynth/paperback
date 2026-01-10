@@ -249,32 +249,93 @@ void document_manager::go_to_position(int position) const {
 	text_ctrl->ShowPosition(position);
 }
 
-void document_manager::navigate_to_section(bool next) const {
+namespace {
+struct nav_announcements {
+	wxString not_supported;
+	wxString not_found_next;
+	wxString not_found_prev;
+	// For formatting found messages - %s is context_text, %d is context_index
+	enum class found_format { text_only, text_with_index, text_with_level, page_format, link_format };
+	found_format format{found_format::text_only};
+};
+
+nav_announcements get_nav_announcements(NavTarget target, int level_filter) {
+	switch (target) {
+		case NavTarget::Section:
+			return {_("No sections."), _("No next section"), _("No previous section"), nav_announcements::found_format::text_only};
+		case NavTarget::Heading:
+			if (level_filter > 0) {
+				return {
+					wxString::Format(_("No headings at level %d."), level_filter),
+					wxString::Format(_("No next heading at level %d."), level_filter),
+					wxString::Format(_("No previous heading at level %d."), level_filter),
+					nav_announcements::found_format::text_with_level
+				};
+			}
+			return {_("No headings."), _("No next heading."), _("No previous heading."), nav_announcements::found_format::text_with_level};
+		case NavTarget::Page:
+			return {_("No pages."), _("No next page."), _("No previous page."), nav_announcements::found_format::page_format};
+		case NavTarget::Link:
+			return {_("No links."), _("No next link."), _("No previous link."), nav_announcements::found_format::link_format};
+		case NavTarget::List:
+			return {_("No lists."), _("No next list."), _("No previous list."), nav_announcements::found_format::text_only};
+		case NavTarget::ListItem:
+			return {_("No list items."), _("No next list item."), _("No previous list item."), nav_announcements::found_format::text_only};
+		case NavTarget::Table:
+			return {_("No tables."), _("No next table."), _("No previous table."), nav_announcements::found_format::text_only};
+		default:
+			return {_("Not supported."), _("Not found."), _("Not found."), nav_announcements::found_format::text_only};
+	}
+}
+
+wxString format_nav_found_message(const nav_announcements& ann, const wxString& context_text, int context_index, bool wrapped, bool next) {
+	wxString wrap_prefix;
+	if (wrapped) wrap_prefix = next ? _("Wrapping to start. ") : _("Wrapping to end. ");
+	switch (ann.format) {
+		case nav_announcements::found_format::text_only:
+			return wrap_prefix + context_text;
+		case nav_announcements::found_format::text_with_level:
+			return wrap_prefix + wxString::Format(_("%s Heading level %d"), context_text, context_index);
+		case nav_announcements::found_format::page_format:
+			return wrap_prefix + wxString::Format(_("Page %d: %s"), context_index + 1, context_text);
+		case nav_announcements::found_format::link_format:
+			return wrap_prefix + context_text + _(" link");
+		case nav_announcements::found_format::text_with_index:
+		default:
+			return wrap_prefix + context_text;
+	}
+}
+} // namespace
+
+void document_manager::navigate_to_element(NavTarget target, bool next, int level_filter) const {
 	const document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
 	const auto direction = next ? NavDirection::Next : NavDirection::Previous;
-	const auto result = session_navigate_unified(*tab->get_session(), config.backend_for_ffi(), text_ctrl->GetInsertionPoint(), NavTarget::Section, direction, 0);
+	const auto result = session_navigate_unified(*tab->get_session(), config.backend_for_ffi(), text_ctrl->GetInsertionPoint(), target, direction, level_filter);
+	const auto ann = get_nav_announcements(target, level_filter);
 	switch (result.outcome) {
 		case NavOutcome::NotSupported:
-			speak(_("No sections."));
+			speak(ann.not_supported);
 			return;
 		case NavOutcome::NotFound:
-			speak(next ? _("No next section") : _("No previous section"));
+			speak(next ? ann.not_found_next : ann.not_found_prev);
 			return;
 		case NavOutcome::Found:
 		case NavOutcome::FoundWrapped: {
 			text_ctrl->SetInsertionPoint(static_cast<long>(result.offset));
-			const wxString current_line = rust_to_wx(result.context_text);
-			if (result.outcome == NavOutcome::FoundWrapped)
-				speak((next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + current_line);
-			else
-				speak(current_line);
+			const wxString context_text = rust_to_wx(result.context_text);
+			const bool wrapped = result.outcome == NavOutcome::FoundWrapped;
+			speak(format_nav_found_message(ann, context_text, result.context_index, wrapped, next));
 			break;
 		}
 		default:
 			break;
 	}
+}
+
+void document_manager::navigate_to_section(bool next) const {
+	navigate_to_element(NavTarget::Section, next);
 }
 
 void document_manager::go_to_previous_section() const {
@@ -302,30 +363,7 @@ void document_manager::go_to_next_heading(int level) const {
 }
 
 void document_manager::navigate_to_page(bool next) const {
-	const document_tab* tab = get_active_tab();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
-	const auto direction = next ? NavDirection::Next : NavDirection::Previous;
-	const auto result = session_navigate_unified(*tab->get_session(), config.backend_for_ffi(), text_ctrl->GetInsertionPoint(), NavTarget::Page, direction, 0);
-	switch (result.outcome) {
-		case NavOutcome::NotSupported:
-			speak(_("No pages."));
-			return;
-		case NavOutcome::NotFound:
-			speak(next ? _("No next page.") : _("No previous page."));
-			return;
-		case NavOutcome::Found:
-		case NavOutcome::FoundWrapped: {
-			text_ctrl->SetInsertionPoint(static_cast<long>(result.offset));
-			const wxString current_line = rust_to_wx(result.context_text);
-			wxString message = wxString::Format(_("Page %d: %s"), result.context_index + 1, current_line);
-			if (result.outcome == NavOutcome::FoundWrapped) message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
-			speak(message);
-			break;
-		}
-		default:
-			break;
-	}
+	navigate_to_element(NavTarget::Page, next);
 }
 
 void document_manager::go_to_previous_page() const {
@@ -391,30 +429,7 @@ void document_manager::go_to_next_note() const {
 }
 
 void document_manager::navigate_to_link(bool next) const {
-	const document_tab* tab = get_active_tab();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
-	const auto direction = next ? NavDirection::Next : NavDirection::Previous;
-	const auto result = session_navigate_unified(*tab->get_session(), config.backend_for_ffi(), text_ctrl->GetInsertionPoint(), NavTarget::Link, direction, 0);
-	switch (result.outcome) {
-		case NavOutcome::NotSupported:
-			speak(_("No links."));
-			return;
-		case NavOutcome::NotFound:
-			speak(next ? _("No next link.") : _("No previous link."));
-			return;
-		case NavOutcome::Found:
-		case NavOutcome::FoundWrapped: {
-			text_ctrl->SetInsertionPoint(static_cast<long>(result.offset));
-			const wxString link_text = rust_to_wx(result.context_text);
-			wxString message = link_text + _(" link");
-			if (result.outcome == NavOutcome::FoundWrapped) message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
-			speak(message);
-			break;
-		}
-		default:
-			break;
-	}
+	navigate_to_element(NavTarget::Link, next);
 }
 
 void document_manager::go_to_previous_link() const {
@@ -476,29 +491,7 @@ void document_manager::activate_current_link() const {
 }
 
 void document_manager::navigate_to_list(bool next) const {
-	const document_tab* tab = get_active_tab();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
-	const auto direction = next ? NavDirection::Next : NavDirection::Previous;
-	const auto result = session_navigate_unified(*tab->get_session(), config.backend_for_ffi(), text_ctrl->GetInsertionPoint(), NavTarget::List, direction, 0);
-	switch (result.outcome) {
-		case NavOutcome::NotSupported:
-			speak(_("No lists."));
-			return;
-		case NavOutcome::NotFound:
-			speak(next ? _("No next list.") : _("No previous list."));
-			return;
-		case NavOutcome::Found:
-		case NavOutcome::FoundWrapped: {
-			text_ctrl->SetInsertionPoint(static_cast<long>(result.offset));
-			wxString message = rust_to_wx(result.context_text);
-			if (result.outcome == NavOutcome::FoundWrapped) message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
-			speak(message);
-			break;
-		}
-		default:
-			break;
-	}
+	navigate_to_element(NavTarget::List, next);
 }
 
 void document_manager::go_to_previous_list() const {
@@ -510,29 +503,7 @@ void document_manager::go_to_next_list() const {
 }
 
 void document_manager::navigate_to_list_item(bool next) const {
-	const document_tab* tab = get_active_tab();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
-	const auto direction = next ? NavDirection::Next : NavDirection::Previous;
-	const auto result = session_navigate_unified(*tab->get_session(), config.backend_for_ffi(), text_ctrl->GetInsertionPoint(), NavTarget::ListItem, direction, 0);
-	switch (result.outcome) {
-		case NavOutcome::NotSupported:
-			speak(_("No list items."));
-			return;
-		case NavOutcome::NotFound:
-			speak(next ? _("No next list item.") : _("No previous list item."));
-			return;
-		case NavOutcome::Found:
-		case NavOutcome::FoundWrapped: {
-			text_ctrl->SetInsertionPoint(static_cast<long>(result.offset));
-			wxString message = rust_to_wx(result.context_text);
-			if (result.outcome == NavOutcome::FoundWrapped) message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
-			speak(message);
-			break;
-		}
-		default:
-			break;
-	}
+	navigate_to_element(NavTarget::ListItem, next);
 }
 
 void document_manager::go_to_previous_list_item() const {
@@ -777,59 +748,11 @@ wxPanel* document_manager::create_tab_panel(const wxString& content, document_ta
 }
 
 void document_manager::navigate_to_heading(bool next, int specific_level) const {
-	const document_tab* tab = get_active_tab();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
-	const auto direction = next ? NavDirection::Next : NavDirection::Previous;
-	const auto result = session_navigate_unified(*tab->get_session(), config.backend_for_ffi(), text_ctrl->GetInsertionPoint(), NavTarget::Heading, direction, specific_level);
-	switch (result.outcome) {
-		case NavOutcome::NotSupported:
-			if (specific_level > 0) speak(wxString::Format(_("No level %d headings."), specific_level));
-			else speak(_("No headings."));
-			return;
-		case NavOutcome::NotFound:
-			if (specific_level > 0) speak(next ? wxString::Format(_("No next level %d heading."), specific_level) : wxString::Format(_("No previous level %d heading."), specific_level));
-			else speak(next ? _("No next heading.") : _("No previous heading."));
-			return;
-		case NavOutcome::Found:
-		case NavOutcome::FoundWrapped: {
-			text_ctrl->SetInsertionPoint(static_cast<long>(result.offset));
-			const wxString heading_text = rust_to_wx(result.context_text);
-			wxString message;
-			if (result.outcome == NavOutcome::FoundWrapped) message = wxString::Format(_("Wrapping to %s. %s Heading level %d"), next ? _("start") : _("end"), heading_text, result.context_index);
-			else message = wxString::Format(_("%s Heading level %d"), heading_text, result.context_index);
-			speak(message);
-			break;
-		}
-		default:
-			break;
-	}
+	navigate_to_element(NavTarget::Heading, next, specific_level);
 }
 
 void document_manager::navigate_to_table(bool next) const {
-	const document_tab* tab = get_active_tab();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
-	const auto direction = next ? NavDirection::Next : NavDirection::Previous;
-	const auto result = session_navigate_unified(*tab->get_session(), config.backend_for_ffi(), text_ctrl->GetInsertionPoint(), NavTarget::Table, direction, 0);
-	switch (result.outcome) {
-		case NavOutcome::NotSupported:
-			speak(_("No tables."));
-			return;
-		case NavOutcome::NotFound:
-			speak(next ? _("No next table.") : _("No previous table."));
-			return;
-		case NavOutcome::Found:
-		case NavOutcome::FoundWrapped: {
-			text_ctrl->SetInsertionPoint(static_cast<long>(result.offset));
-			wxString message = rust_to_wx(result.context_text);
-			if (result.outcome == NavOutcome::FoundWrapped) message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
-			speak(message);
-			break;
-		}
-		default:
-			break;
-	}
+	navigate_to_element(NavTarget::Table, next);
 }
 
 void document_manager::go_to_previous_table() {

@@ -126,4 +126,5 @@ private:
 	void navigate_to_table(bool next) const;
 	void navigate_to_list(bool next) const;
 	void navigate_to_list_item(bool next) const;
+	void navigate_to_element(NavTarget target, bool next, int level_filter = 0) const;
 };
