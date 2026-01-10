@@ -74,6 +74,7 @@ public:
 	void add_recent_document(const wxString& path);
 	void set_document_position(const wxString& path, long position);
 	long get_document_position(const wxString& path) const;
+	long get_validated_document_position(const wxString& path, long max_position) const;
 	void set_document_opened(const wxString& path, bool opened);
 	void remove_document_history(const wxString& path);
 	bool get_document_opened(const wxString& path) const;

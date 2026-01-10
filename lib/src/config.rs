@@ -324,6 +324,14 @@ impl ConfigManager {
 		self.get_document_int(path, "last_position", 0)
 	}
 
+	/// Returns the saved document position if it's valid (> 0 and <= max_position),
+	/// otherwise returns -1.
+	#[must_use]
+	pub fn get_validated_document_position(&self, path: &str, max_position: i64) -> i64 {
+		let saved = self.get_document_position(path);
+		if saved > 0 && saved <= max_position { saved } else { -1 }
+	}
+
 	pub fn set_navigation_history(&mut self, path: &str, history: &[i64], history_index: usize) {
 		let section = get_document_section(path);
 		if history.is_empty() {

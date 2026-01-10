@@ -81,6 +81,11 @@ long config_manager::get_document_position(const wxString& path) const {
 	return static_cast<long>(config_manager_get_document_position(backend_ref(), to_utf8(path)));
 }
 
+long config_manager::get_validated_document_position(const wxString& path, long max_position) const {
+	if (!is_initialized()) return -1;
+	return static_cast<long>(config_manager_get_validated_document_position(backend_ref(), to_utf8(path), static_cast<std::int64_t>(max_position)));
+}
+
 void config_manager::set_document_opened(const wxString& path, bool opened) {
 	if (is_initialized()) config_manager_set_document_opened(backend_mut(), to_utf8(path), opened);
 }

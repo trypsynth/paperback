@@ -623,10 +623,6 @@ void document_manager::save_document_position(const wxString& path, long positio
 	config.flush();
 }
 
-long document_manager::load_document_position(const wxString& path) const {
-	return config.get_document_position(path);
-}
-
 void document_manager::save_current_tab_position() const {
 	const document_tab* tab = get_active_tab();
 	if (tab == nullptr || tab->text_ctrl == nullptr) return;
@@ -718,13 +714,11 @@ void document_manager::setup_text_ctrl(wxTextCtrl* text_ctrl, const wxString& co
 
 void document_manager::restore_document_position(document_tab* tab) const {
 	if (tab == nullptr || tab->text_ctrl == nullptr) return;
-	const int saved_position = load_document_position(tab->file_path);
-	if (saved_position > 0) {
-		const int max_position = tab->text_ctrl->GetLastPosition();
-		if (saved_position <= max_position) {
-			tab->text_ctrl->SetInsertionPoint(saved_position);
-			tab->text_ctrl->ShowPosition(saved_position);
-		}
+	const long max_position = tab->text_ctrl->GetLastPosition();
+	const long position = config.get_validated_document_position(tab->file_path, max_position);
+	if (position >= 0) {
+		tab->text_ctrl->SetInsertionPoint(position);
+		tab->text_ctrl->ShowPosition(position);
 	}
 }
 
