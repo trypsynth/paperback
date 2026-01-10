@@ -237,16 +237,18 @@ private:
 
 class go_to_percent_dialog : public dialog {
 public:
-	go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ctrl);
+	go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ctrl, DocumentSession* session);
 	~go_to_percent_dialog() override = default;
 	go_to_percent_dialog(const go_to_percent_dialog&) = delete;
 	go_to_percent_dialog& operator=(const go_to_percent_dialog&) = delete;
 	go_to_percent_dialog(go_to_percent_dialog&&) = delete;
 	go_to_percent_dialog& operator=(go_to_percent_dialog&&) = delete;
 	[[nodiscard]] long get_position() const;
+	[[nodiscard]] int get_percent() const;
 
 private:
 	wxTextCtrl* textbox{nullptr};
+	DocumentSession* doc_session{nullptr};
 	accessible_slider* percent_slider{nullptr};
 	wxSpinCtrl* input_ctrl{nullptr};
 

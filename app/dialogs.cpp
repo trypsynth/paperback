@@ -717,12 +717,11 @@ int go_to_page_dialog::get_max_page() const {
 	return static_cast<int>(session_page_count(*session_doc_->session));
 }
 
-go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : dialog(parent, _("Go to Percent")), textbox{text_ctrl} {
+go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ctrl, DocumentSession* session) : dialog(parent, _("Go to Percent")), textbox{text_ctrl}, doc_session{session} {
 	constexpr int percent_max = 100;
 	constexpr int label_spacing = 5;
-	const long current_pos = textbox->GetInsertionPoint();
-	const long total_pos = textbox->GetLastPosition();
-	const int current_percent = total_pos > 0 ? static_cast<int>((current_pos * percent_max) / total_pos) : 0;
+	const auto status = session_get_status_info(*doc_session, textbox->GetInsertionPoint());
+	const int current_percent = status.percentage;
 	auto* input_label = new wxStaticText(this, wxID_ANY, _("P&ercent:"));
 	input_ctrl = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, percent_max, current_percent);
 	auto* slider_label = new wxStaticText(this, wxID_ANY, _("&Percent"));
@@ -740,10 +739,11 @@ go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ct
 }
 
 long go_to_percent_dialog::get_position() const {
-	constexpr int percent_max = 100;
-	const long percent = input_ctrl->GetValue();
-	const long total_chars = textbox->GetLastPosition();
-	return (percent * total_chars + percent_max - 1) / percent_max;
+	return static_cast<long>(session_position_from_percent(*doc_session, get_percent()));
+}
+
+int go_to_percent_dialog::get_percent() const {
+	return input_ctrl->GetValue();
 }
 
 void go_to_percent_dialog::on_slider_changed(wxCommandEvent& /*event*/) {

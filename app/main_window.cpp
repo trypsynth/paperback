@@ -526,9 +526,9 @@ void main_window::on_go_to_line(wxCommandEvent&) {
 }
 
 void main_window::on_go_to_percent(wxCommandEvent&) {
-	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-	if (text_ctrl == nullptr) return;
-	go_to_percent_dialog dlg(this, text_ctrl);
+	auto* const tab = doc_manager->get_active_tab();
+	if (tab == nullptr || tab->text_ctrl == nullptr || tab->get_session() == nullptr) return;
+	go_to_percent_dialog dlg(this, tab->text_ctrl, tab->get_session());
 	if (dlg.ShowModal() != wxID_OK) return;
 	const auto pos = dlg.get_position();
 	doc_manager->go_to_position(pos);

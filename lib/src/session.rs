@@ -663,6 +663,18 @@ impl DocumentSession {
 	}
 
 	#[must_use]
+	pub fn position_from_percent(&self, percent: i32) -> i64 {
+		let content = &self.handle.document().buffer.content;
+		let total_chars = i64::try_from(content.chars().count()).unwrap_or(0);
+		let percent = i64::from(percent.clamp(0, 100));
+		if total_chars == 0 {
+			return 0;
+		}
+		// Ceiling division: (percent * total_chars + 99) / 100
+		(percent * total_chars + 99) / 100
+	}
+
+	#[must_use]
 	pub fn page_count(&self) -> usize {
 		self.handle.count_markers_by_type(MarkerType::PageBreak)
 	}

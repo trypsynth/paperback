@@ -500,6 +500,7 @@ pub mod ffi {
 		fn session_get_table_at_position(session: &DocumentSession, position: i64) -> String;
 		fn session_webview_target(session: &DocumentSession, position: i64, temp_dir: &str) -> FfiWebViewTarget;
 		fn session_get_status_info(session: &DocumentSession, position: i64) -> FfiStatusInfo;
+		fn session_position_from_percent(session: &DocumentSession, percent: i32) -> i64;
 		fn session_stats(session: &DocumentSession) -> FfiDocumentStats;
 		fn session_page_count(session: &DocumentSession) -> usize;
 		fn session_current_page(session: &DocumentSession, position: i64) -> i32;
@@ -1168,6 +1169,10 @@ fn session_get_status_info(session: &DocumentSession, position: i64) -> ffi::Ffi
 		percentage: info.percentage,
 		total_chars: info.total_chars,
 	}
+}
+
+fn session_position_from_percent(session: &DocumentSession, percent: i32) -> i64 {
+	session.position_from_percent(percent)
 }
 
 const fn session_stats(session: &DocumentSession) -> ffi::FfiDocumentStats {
