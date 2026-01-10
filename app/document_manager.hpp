@@ -122,6 +122,7 @@ private:
 	void navigate_to_page(bool next) const;
 	void navigate_to_bookmark(bool next) const;
 	void navigate_to_note(bool next) const;
+	void navigate_to_bookmark_or_note(bool next, bool notes_only) const;
 	void navigate_to_link(bool next) const;
 	void navigate_to_table(bool next) const;
 	void navigate_to_list(bool next) const;

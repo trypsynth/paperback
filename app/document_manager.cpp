@@ -374,42 +374,43 @@ void document_manager::go_to_next_page() const {
 	navigate_to_page(true);
 }
 
-void document_manager::navigate_to_bookmark(bool next) const {
+void document_manager::navigate_to_bookmark_or_note(bool next, bool notes_only) const {
 	const document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
 	const auto direction = next ? NavDirection::Next : NavDirection::Previous;
-	const auto result = session_navigate_bookmark_unified(*tab->get_session(), config.backend_for_ffi(), text_ctrl->GetInsertionPoint(), direction, false);
+	const auto result = session_navigate_bookmark_unified(*tab->get_session(), config.backend_for_ffi(), text_ctrl->GetInsertionPoint(), direction, notes_only);
 	if (result.outcome == NavOutcome::NotFound) {
-		speak(next ? _("No next bookmark") : _("No previous bookmark"));
+		if (notes_only)
+			speak(next ? _("No next note") : _("No previous note"));
+		else
+			speak(next ? _("No next bookmark") : _("No previous bookmark"));
 		return;
 	}
 	text_ctrl->SetInsertionPoint(static_cast<long>(result.offset));
-	const wxString text_to_speak = rust_to_wx(result.context_text);
+	const wxString snippet = rust_to_wx(result.context_text);
 	const int index = result.context_index >= 0 ? result.context_index : 0;
-	wxString announcement = wxString::Format(_("%s - Bookmark %d"), text_to_speak, index + 1);
-	if (result.outcome == NavOutcome::FoundWrapped) announcement = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + announcement;
+	wxString announcement;
+	if (notes_only) {
+		const wxString note_text = rust_to_wx(result.secondary_text);
+		if (!note_text.IsEmpty())
+			announcement = wxString::Format(_("%s - %s - Note %d"), note_text, snippet, index + 1);
+		else
+			announcement = wxString::Format(_("%s - Note %d"), snippet, index + 1);
+	} else {
+		announcement = wxString::Format(_("%s - Bookmark %d"), snippet, index + 1);
+	}
+	if (result.outcome == NavOutcome::FoundWrapped)
+		announcement = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + announcement;
 	speak(announcement);
 }
 
+void document_manager::navigate_to_bookmark(bool next) const {
+	navigate_to_bookmark_or_note(next, false);
+}
+
 void document_manager::navigate_to_note(bool next) const {
-	const document_tab* tab = get_active_tab();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
-	const auto direction = next ? NavDirection::Next : NavDirection::Previous;
-	const auto result = session_navigate_bookmark_unified(*tab->get_session(), config.backend_for_ffi(), text_ctrl->GetInsertionPoint(), direction, true);
-	if (result.outcome == NavOutcome::NotFound) {
-		speak(next ? _("No next note") : _("No previous note"));
-		return;
-	}
-	text_ctrl->SetInsertionPoint(static_cast<long>(result.offset));
-	const wxString text_to_speak = rust_to_wx(result.context_text);
-	const wxString note_text = rust_to_wx(result.secondary_text);
-	const int index = result.context_index >= 0 ? result.context_index : 0;
-	wxString announcement = wxString::Format(_("%s - Note %d"), text_to_speak, index + 1);
-	if (!note_text.IsEmpty()) announcement = wxString::Format(_("%s - %s - Note %d"), note_text, text_to_speak, index + 1);
-	if (result.outcome == NavOutcome::FoundWrapped) announcement = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + announcement;
-	speak(announcement);
+	navigate_to_bookmark_or_note(next, true);
 }
 
 void document_manager::go_to_previous_bookmark() const {
