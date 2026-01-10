@@ -92,6 +92,7 @@ public:
 	void go_to_next_list_item() const;
 	void go_to_previous_position() const;
 	void go_to_next_position() const;
+	void navigate_history(bool next) const;
 	void activate_current_link() const;
 	void toggle_bookmark() const;
 	void add_bookmark_with_note() const;

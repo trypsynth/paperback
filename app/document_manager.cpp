@@ -441,30 +441,26 @@ void document_manager::go_to_next_link() const {
 	navigate_to_link(true);
 }
 
-void document_manager::go_to_previous_position() const {
+void document_manager::navigate_history(bool next) const {
 	document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
-	const auto result = session_history_navigate(*tab->get_session(), config.backend_for_ffi(), text_ctrl->GetInsertionPoint(), NavDirection::Previous);
+	const auto direction = next ? NavDirection::Next : NavDirection::Previous;
+	const auto result = session_history_navigate(*tab->get_session(), config.backend_for_ffi(), text_ctrl->GetInsertionPoint(), direction);
 	if (result.outcome == NavOutcome::Found) {
 		go_to_position(static_cast<long>(result.offset));
-		speak(_("Navigated to previous position."));
+		speak(next ? _("Navigated to next position.") : _("Navigated to previous position."));
 	} else {
-		speak(_("No previous position."));
+		speak(next ? _("No next position.") : _("No previous position."));
 	}
 }
 
+void document_manager::go_to_previous_position() const {
+	navigate_history(false);
+}
+
 void document_manager::go_to_next_position() const {
-	document_tab* tab = get_active_tab();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
-	const auto result = session_history_navigate(*tab->get_session(), config.backend_for_ffi(), text_ctrl->GetInsertionPoint(), NavDirection::Next);
-	if (result.outcome == NavOutcome::Found) {
-		go_to_position(static_cast<long>(result.offset));
-		speak(_("Navigated to next position."));
-	} else {
-		speak(_("No next position."));
-	}
+	navigate_history(true);
 }
 
 void document_manager::activate_current_link() const {
