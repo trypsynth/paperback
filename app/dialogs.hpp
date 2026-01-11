@@ -205,16 +205,18 @@ private:
 
 class go_to_line_dialog : public dialog {
 public:
-	go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl);
+	go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl, DocumentSession* session);
 	~go_to_line_dialog() override = default;
 	go_to_line_dialog(const go_to_line_dialog&) = delete;
 	go_to_line_dialog& operator=(const go_to_line_dialog&) = delete;
 	go_to_line_dialog(go_to_line_dialog&&) = delete;
 	go_to_line_dialog& operator=(go_to_line_dialog&&) = delete;
 	[[nodiscard]] long get_position() const;
+	[[nodiscard]] long get_line() const;
 
 private:
 	wxTextCtrl* textbox{nullptr};
+	DocumentSession* doc_session{nullptr};
 	wxSpinCtrl* input_ctrl{nullptr};
 };
 

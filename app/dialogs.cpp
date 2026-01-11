@@ -676,13 +676,13 @@ void find_dialog::save_settings() {
 	);
 }
 
-go_to_line_dialog::go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : dialog(parent, _("Go to Line")), textbox{text_ctrl} {
+go_to_line_dialog::go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl, DocumentSession* session) : dialog(parent, _("Go to Line")), textbox{text_ctrl}, doc_session{session} {
 	constexpr int label_spacing = 5;
 	auto* line_sizer = new wxBoxSizer(wxHORIZONTAL);
 	auto* label = new wxStaticText(this, wxID_ANY, _("&Line number:"));
-	long line = 0;
-	textbox->PositionToXY(textbox->GetInsertionPoint(), nullptr, &line);
-	input_ctrl = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, textbox->GetNumberOfLines(), line + 1);
+	const auto status = session_get_status_info(*doc_session, textbox->GetInsertionPoint());
+	const int total_lines = static_cast<int>(session_line_count(*doc_session));
+	input_ctrl = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, total_lines, static_cast<int>(status.line_number));
 	line_sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, label_spacing);
 	line_sizer->Add(input_ctrl, 1, wxEXPAND);
 	set_content(line_sizer);
@@ -690,9 +690,11 @@ go_to_line_dialog::go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl) : 
 }
 
 long go_to_line_dialog::get_position() const {
-	const long line = input_ctrl->GetValue();
-	if (line >= 1 && line <= textbox->GetNumberOfLines()) return textbox->XYToPosition(0, line - 1);
-	return textbox->GetInsertionPoint();
+	return static_cast<long>(session_position_from_line(*doc_session, get_line()));
+}
+
+long go_to_line_dialog::get_line() const {
+	return input_ctrl->GetValue();
 }
 
 go_to_page_dialog::go_to_page_dialog(wxWindow* parent, session_document* session_doc, int current_page) : dialog(parent, _("Go to page")), session_doc_{session_doc} {

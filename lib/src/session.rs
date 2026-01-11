@@ -675,6 +675,37 @@ impl DocumentSession {
 	}
 
 	#[must_use]
+	pub fn line_count(&self) -> i64 {
+		let content = &self.handle.document().buffer.content;
+		let newline_count = content.chars().filter(|&c| c == '\n').count();
+		// Line count is newlines + 1 (last line may not have trailing newline)
+		i64::try_from(newline_count + 1).unwrap_or(1)
+	}
+
+	#[must_use]
+	pub fn position_from_line(&self, line: i64) -> i64 {
+		if line < 1 {
+			return 0;
+		}
+		let content = &self.handle.document().buffer.content;
+		if line == 1 {
+			return 0;
+		}
+		let target_newlines = usize::try_from(line - 1).unwrap_or(0);
+		let mut newline_count = 0;
+		for (i, c) in content.chars().enumerate() {
+			if c == '\n' {
+				newline_count += 1;
+				if newline_count == target_newlines {
+					return i64::try_from(i + 1).unwrap_or(0);
+				}
+			}
+		}
+		// Line number exceeds actual lines, return end of document.
+		i64::try_from(content.chars().count()).unwrap_or(0)
+	}
+
+	#[must_use]
 	pub fn page_count(&self) -> usize {
 		self.handle.count_markers_by_type(MarkerType::PageBreak)
 	}

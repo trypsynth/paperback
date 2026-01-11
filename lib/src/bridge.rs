@@ -501,6 +501,8 @@ pub mod ffi {
 		fn session_webview_target(session: &DocumentSession, position: i64, temp_dir: &str) -> FfiWebViewTarget;
 		fn session_get_status_info(session: &DocumentSession, position: i64) -> FfiStatusInfo;
 		fn session_position_from_percent(session: &DocumentSession, percent: i32) -> i64;
+		fn session_line_count(session: &DocumentSession) -> i64;
+		fn session_position_from_line(session: &DocumentSession, line: i64) -> i64;
 		fn session_stats(session: &DocumentSession) -> FfiDocumentStats;
 		fn session_page_count(session: &DocumentSession) -> usize;
 		fn session_current_page(session: &DocumentSession, position: i64) -> i32;
@@ -1173,6 +1175,14 @@ fn session_get_status_info(session: &DocumentSession, position: i64) -> ffi::Ffi
 
 fn session_position_from_percent(session: &DocumentSession, percent: i32) -> i64 {
 	session.position_from_percent(percent)
+}
+
+fn session_line_count(session: &DocumentSession) -> i64 {
+	session.line_count()
+}
+
+fn session_position_from_line(session: &DocumentSession, line: i64) -> i64 {
+	session.position_from_line(line)
 }
 
 const fn session_stats(session: &DocumentSession) -> ffi::FfiDocumentStats {
