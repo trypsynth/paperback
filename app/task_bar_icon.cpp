@@ -27,9 +27,9 @@ wxMenu* task_bar_icon::CreatePopupMenu() {
 }
 
 void task_bar_icon::on_restore_from_tray(wxCommandEvent& /*unused*/) {
+	frame_->Iconize(false);
 	frame_->Show(true);
 	frame_->Raise();
-	frame_->Iconize(false);
 	frame_->CallAfter([frm = frame_] {
 		frm->restore_focus_to_text();
 	});
@@ -40,9 +40,9 @@ void task_bar_icon::on_exit_from_tray(wxCommandEvent& /*unused*/) {
 }
 
 void task_bar_icon::on_tray_icon_activated(wxTaskBarIconEvent& /*unused*/) {
+	frame_->Iconize(false);
 	frame_->Show(true);
 	frame_->Raise();
-	frame_->Iconize(false);
 	frame_->CallAfter([frm = frame_] {
 		frm->restore_focus_to_text();
 	});
