@@ -121,7 +121,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * James Scholes
 * Jayson Smith
 * Jonathan Schuster
-* Pratik Patel 
+* Pratik Patel
 * Roberto Perez
 * Sean Randall
 * Timothy Wynn
@@ -134,6 +134,33 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Steffen Schultz: German translation
 
 ## Changelog
+
+### Version 0.7.0
+* Added table support for HTML and XHTML-based documents! Navigate between tables using T and Shift+T, and press Enter to view one in a webview. [#81](https://github.com/trypsynth/paperback/issues/81), [#98](https://github.com/trypsynth/paperback/pull/98), [#226](https://github.com/trypsynth/paperback/pull/226), [#228](https://github.com/trypsynth/paperback/pull/228).
+* Added a basic web rendering feature! Press Ctrl+Shift+V to open the current section of your document in a web-based renderer, useful for content like complex formatting or code samples. [#188](https://github.com/trypsynth/paperback/issues/188), [#239](https://github.com/trypsynth/paperback/pull/239).
+* Added a Russian translation, thanks Ruslan Gulmagomedov! [#211](https://github.com/trypsynth/paperback/pull/211), [#212](https://github.com/trypsynth/paperback/pull/212).
+* Added a Clear All button to the All Documents dialog. [#217](https://github.com/trypsynth/paperback/issues/217).
+* The update checker now displays release notes when a new version is available. [#210](https://github.com/trypsynth/paperback/pull/210).
+* Updated Serbian translation. [#219](https://github.com/trypsynth/paperback/pull/219), [#229](https://github.com/trypsynth/paperback/pull/229).
+* Updated Bosnian translation. [#218](https://github.com/trypsynth/paperback/pull/218), [#225](https://github.com/trypsynth/paperback/pull/225).
+* Fixed restoring the window from the system tray. [#284](https://github.com/trypsynth/paperback/issues/284).
+* Fixed Yes/No button translations in confirmation dialogs. [#285](https://github.com/trypsynth/paperback/issues/285).
+* Fixed loading configs when running as administrator. [#201](https://github.com/trypsynth/paperback/issues/201).
+* Fixed comment handling in XML and HTML documents. [#198](https://github.com/trypsynth/paperback/issues/198).
+* Fixed TOC parsing in Epub 2 books. [#192](https://github.com/trypsynth/paperback/pull/192).
+* Fixed navigating to the next item with the same letter in the table of contents. [#191](https://github.com/trypsynth/paperback/pull/191).
+* Fixed the find dialog not hiding properly when using the next/previous buttons.
+* Fixed epub TOCs occasionally throwing you to the wrong item.
+* Fixed various whitespace handling issues in XML, HTML, and pre tags.
+* Fixed off-by-one error in link navigation.
+* Fixed some books having trailing whitespace on their lines.
+* Fixed various parser issues. [#208](https://github.com/trypsynth/paperback/pull/208).
+* Bookmark-related menu items are now properly disabled when no document is open. [#196](https://github.com/trypsynth/paperback/pull/196).
+* The elements list is now properly disabled when no document is open. [#194](https://github.com/trypsynth/paperback/issues/194).
+* Improved list handling in various document formats. [#213](https://github.com/trypsynth/paperback/pull/213).
+* Improved the translation workflow for contributors. [#270](https://github.com/trypsynth/paperback/issues/270).
+* Many internal refactors, moving the majority of the application's business logic from C++ to Rust for improved performance and maintainability.
+
 ### Version 0.6.1
 * Added password-protected PDF support! [#169](https://github.com/trypsynth/paperback/issues/169).
 * Added a very basic go to previous/next position feature. If you press enter on an internal link and it moves your cursor, that position will now be remembered, and can be navigated to with alt+left/right arrows. [#115](https://github.com/trypsynth/paperback/issues/115), [#174](https://github.com/trypsynth/paperback/pull/174).
@@ -148,7 +175,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * You will now get spoken feedback if the recent documents list is empty when you try to bring up the dialog. [#185](https://github.com/trypsynth/paperback/issues/185).
 
 ### Version 0.6.0
-* A new option to show the go menu in a far more compact form has been added to the options dialog, checked by default. 
+* A new option to show the go menu in a far more compact form has been added to the options dialog, checked by default.
 * Added an option to make navigation by structural elements wrap. [#116](https://github.com/trypsynth/paperback/pull/116).
 * Added an option to the tools menu to open the containing folder of the currently focused document. [#142](https://github.com/trypsynth/paperback/pull/142).
 * Added a quite simple, but very effective, updating system. [#28](https://github.com/trypsynth/paperback/issues/28).
