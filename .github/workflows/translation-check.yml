@@ -1,7 +1,8 @@
 name: Check for New Translatable Strings
 on:
   push:
-    branches: [rc]
+    tags:
+      - 'rc-*'
     paths:
       - 'app/**/*.cpp'
       - 'app/**/*.hpp'
