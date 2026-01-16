@@ -126,7 +126,9 @@ void all_documents_dialog::on_open(wxCommandEvent& /*event*/) {
 void all_documents_dialog::on_remove(wxCommandEvent& /*event*/) {
 	const long item = doc_list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
 	if (item == -1) return;
-	if (wxMessageBox(_("Are you sure you want to remove this document from the list? This will also remove its reading position."), _("Confirm"), wxYES_NO | wxICON_INFORMATION) != wxYES) return;
+	wxMessageDialog confirm_dlg(this, _("Are you sure you want to remove this document from the list? This will also remove its reading position."), _("Confirm"), wxYES_NO | wxICON_INFORMATION);
+	confirm_dlg.SetYesNoLabels(_("&Yes"), _("&No"));
+	if (confirm_dlg.ShowModal() != wxID_YES) return;
 	const wxString path_to_remove = doc_list->GetItemText(item, 2);
 	const long removed_index = item;
 	config_mgr.remove_document_history(path_to_remove);
@@ -142,7 +144,9 @@ void all_documents_dialog::on_remove(wxCommandEvent& /*event*/) {
 
 void all_documents_dialog::on_clear_all(wxCommandEvent& /*event*/) {
 	if (doc_list->GetItemCount() == 0) return;
-	if (wxMessageBox(_("Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks."), _("Confirm"), wxYES_NO | wxICON_WARNING) != wxYES) return;
+	wxMessageDialog confirm_dlg(this, _("Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks."), _("Confirm"), wxYES_NO | wxICON_WARNING);
+	confirm_dlg.SetYesNoLabels(_("&Yes"), _("&No"));
+	if (confirm_dlg.ShowModal() != wxID_YES) return;
 	const wxArrayString all_docs = config_mgr.get_all_documents();
 	for (const auto& path : all_docs) config_mgr.remove_document_history(path);
 	config_mgr.flush();

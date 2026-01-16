@@ -1043,6 +1043,14 @@ msgstr "Update verfügbar"
 msgid "Error checking for updates."
 msgstr "Fehler beim Prüfen auf Updates."
 
+#: app/dialogs.cpp
+msgid "&Yes"
+msgstr "&Ja"
+
+#: app/dialogs.cpp
+msgid "&No"
+msgstr "&Nein"
+
 #~ msgid "&Export...\tCtrl+E"
 #~ msgstr "&Exportieren...\tCtrl+E"
 

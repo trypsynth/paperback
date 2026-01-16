@@ -26,13 +26,13 @@ bool translation_manager::initialize() {
 	const wxFileName exe_file(exe_path);
 	const wxString langs_dir = exe_file.GetPath() + wxFileName::GetPathSeparator() + "langs";
 	wxFileTranslationsLoader::AddCatalogLookupPathPrefix(langs_dir);
-	translations->AddStdCatalog();
-	translations->AddCatalog("paperback");
 	scan_available_languages();
 	const wxString sys_lang = get_system_language();
 	if (is_language_available(sys_lang)) current_language = sys_lang;
 	else current_language = "en";
 	if (current_language != "en") translations->SetLanguage(current_language);
+	translations->AddStdCatalog();
+	if (current_language != "en") translations->AddCatalog("paperback");
 	initialized = true;
 	return true;
 }
