@@ -511,6 +511,7 @@ pub mod ffi {
 		fn session_toc_items_with_parents(session: &DocumentSession) -> Vec<FfiTocItemWithParent>;
 		fn session_find_closest_toc_offset(session: &DocumentSession, position: usize) -> usize;
 		fn session_heading_tree(session: &DocumentSession, position: i64) -> FfiHeadingTree;
+		fn session_supports_toc(session: &DocumentSession) -> bool;
 		fn is_heading_marker_type(marker_type: i32) -> bool;
 	}
 }
@@ -1215,6 +1216,10 @@ fn session_find_closest_toc_offset(session: &DocumentSession, position: usize) -
 
 fn session_heading_tree(session: &DocumentSession, position: i64) -> ffi::FfiHeadingTree {
 	document_heading_tree(session.handle(), position)
+}
+
+fn session_supports_toc(session: &DocumentSession) -> bool {
+	session.parser_flags().contains(crate::document::ParserFlags::SUPPORTS_TOC)
 }
 
 fn is_heading_marker_type(marker_type: i32) -> bool {

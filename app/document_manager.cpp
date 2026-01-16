@@ -7,7 +7,6 @@
 #include "parser.hpp"
 #include "utils.hpp"
 #include <algorithm>
-#include <cstdint>
 #include <cstddef>
 #include <iterator>
 #include <memory>
@@ -33,15 +32,6 @@ namespace {
 wxString rust_to_wx(const rust::String& rust_str) {
 	return wxString::FromUTF8(std::string(rust_str).c_str());
 }
-
-bool supports_feature(uint32_t flags, uint32_t feature) {
-	return (flags & feature) != 0;
-}
-
-constexpr uint32_t PARSER_SUPPORTS_SECTIONS = 1 << 0;
-constexpr uint32_t PARSER_SUPPORTS_TOC = 1 << 1;
-constexpr uint32_t PARSER_SUPPORTS_PAGES = 1 << 2;
-constexpr uint32_t PARSER_SUPPORTS_LISTS = 1 << 3;
 
 void populate_toc_items(std::vector<std::unique_ptr<toc_item>>& toc_items, const rust::Vec<FfiTocItemWithParent>& ffi_toc_items) {
 	if (ffi_toc_items.empty()) return;
@@ -590,7 +580,7 @@ void document_manager::show_table_of_contents(wxWindow* parent) {
 	document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
-	if (!supports_feature(tab->session_doc->get_parser_flags(), PARSER_SUPPORTS_TOC)) {
+	if (!session_supports_toc(*tab->session_doc->session)) {
 		speak(_("No table of contents."));
 		return;
 	}
