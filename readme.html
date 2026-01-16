@@ -192,6 +192,8 @@ filetypes</a></li>
 </ul></li>
 <li><a href="#changelog" id="toc-changelog">Changelog</a>
 <ul>
+<li><a href="#version-0.7.0" id="toc-version-0.7.0">Version
+0.7.0</a></li>
 <li><a href="#version-0.6.1" id="toc-version-0.6.1">Version
 0.6.1</a></li>
 <li><a href="#version-0.6.0" id="toc-version-0.6.0">Version
@@ -380,6 +382,70 @@ inclusion in this list.</p>
 <li>Steffen Schultz: German translation</li>
 </ul>
 <h1 id="changelog">Changelog</h1>
+<h2 id="version-0.7.0">Version 0.7.0</h2>
+<ul>
+<li>Added table support for HTML and XHTML-based documents! Navigate
+between tables using T and Shift+T, and press Enter to view one in a
+webview. <a
+href="https://github.com/trypsynth/paperback/issues/81">#81</a>, <a
+href="https://github.com/trypsynth/paperback/pull/98">#98</a>, <a
+href="https://github.com/trypsynth/paperback/pull/226">#226</a>, <a
+href="https://github.com/trypsynth/paperback/pull/228">#228</a>.</li>
+<li>Added a basic web rendering feature! Press Ctrl+Shift+V to open the
+current section of your document in a web-based renderer, useful for
+content like complex formatting or code samples. <a
+href="https://github.com/trypsynth/paperback/issues/188">#188</a>, <a
+href="https://github.com/trypsynth/paperback/pull/239">#239</a>.</li>
+<li>Added a Russian translation, thanks Ruslan Gulmagomedov! <a
+href="https://github.com/trypsynth/paperback/pull/211">#211</a>, <a
+href="https://github.com/trypsynth/paperback/pull/212">#212</a>.</li>
+<li>Added a Clear All button to the All Documents dialog. <a
+href="https://github.com/trypsynth/paperback/issues/217">#217</a>.</li>
+<li>The update checker now displays release notes when a new version is
+available. <a
+href="https://github.com/trypsynth/paperback/pull/210">#210</a>.</li>
+<li>Updated Serbian translation. <a
+href="https://github.com/trypsynth/paperback/pull/219">#219</a>, <a
+href="https://github.com/trypsynth/paperback/pull/229">#229</a>.</li>
+<li>Updated Bosnian translation. <a
+href="https://github.com/trypsynth/paperback/pull/218">#218</a>, <a
+href="https://github.com/trypsynth/paperback/pull/225">#225</a>.</li>
+<li>Fixed restoring the window from the system tray. <a
+href="https://github.com/trypsynth/paperback/issues/284">#284</a>.</li>
+<li>Fixed Yes/No button translations in confirmation dialogs. <a
+href="https://github.com/trypsynth/paperback/issues/285">#285</a>.</li>
+<li>Fixed loading configs when running as administrator. <a
+href="https://github.com/trypsynth/paperback/issues/201">#201</a>.</li>
+<li>Fixed comment handling in XML and HTML documents. <a
+href="https://github.com/trypsynth/paperback/issues/198">#198</a>.</li>
+<li>Fixed TOC parsing in Epub 2 books. <a
+href="https://github.com/trypsynth/paperback/pull/192">#192</a>.</li>
+<li>Fixed navigating to the next item with the same letter in the table
+of contents. <a
+href="https://github.com/trypsynth/paperback/pull/191">#191</a>.</li>
+<li>Fixed the find dialog not hiding properly when using the
+next/previous buttons.</li>
+<li>Fixed epub TOCs occasionally throwing you to the wrong item.</li>
+<li>Fixed various whitespace handling issues in XML, HTML, and pre
+tags.</li>
+<li>Fixed off-by-one error in link navigation.</li>
+<li>Fixed some books having trailing whitespace on their lines.</li>
+<li>Fixed various parser issues. <a
+href="https://github.com/trypsynth/paperback/pull/208">#208</a>.</li>
+<li>Bookmark-related menu items are now properly disabled when no
+document is open. <a
+href="https://github.com/trypsynth/paperback/pull/196">#196</a>.</li>
+<li>The elements list is now properly disabled when no document is open.
+<a
+href="https://github.com/trypsynth/paperback/issues/194">#194</a>.</li>
+<li>Improved list handling in various document formats. <a
+href="https://github.com/trypsynth/paperback/pull/213">#213</a>.</li>
+<li>Improved the translation workflow for contributors. <a
+href="https://github.com/trypsynth/paperback/issues/270">#270</a>.</li>
+<li>Many internal refactors, moving the majority of the application’s
+business logic from C++ to Rust for improved performance and
+maintainability.</li>
+</ul>
 <h2 id="version-0.6.1">Version 0.6.1</h2>
 <ul>
 <li>Added password-protected PDF support! <a
