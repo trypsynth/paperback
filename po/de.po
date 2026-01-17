@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.5\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2025-11-04 12:39+0100\n"
-"PO-Revision-Date: 2025-11-04 13:14+0100\n"
+"POT-Creation-Date: 2026-01-17 09:54+0100\n"
+"PO-Revision-Date: 2026-01-17 10:37+0100\n"
 "Last-Translator: Steffen Schultz <steffenschultz@mailbox.org>\n"
 "Language-Team: Steffen Schultz <steffenschultz@mailbox.org>\n"
 "Language: de\n"
@@ -19,83 +19,104 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.8\n"
 "X-Poedit-Basepath: ..\n"
-"X-Poedit-SearchPath-0: src\n"
+"X-Poedit-KeywordsList: _;wxTRANSLATE;wxPLURAL:1,2\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-SearchPath-0: app\n"
 "X-Poedit-SearchPathExcluded-0: build\n"
 "X-Poedit-SearchPathExcluded-1: vcpkg\n"
 "X-Poedit-SearchPathExcluded-2: web\n"
 "X-Poedit-SearchPathExcluded-3: po\n"
-"X-Poedit-KeywordsList: _;wxTRANSLATE;wxPLURAL:1,2\n"
-"X-Poedit-SourceCharset: UTF-8\n"
 
-#: src/app.cpp:37
-msgid "Failed to initialize configuration"
-msgstr "Die Konfiguration konnte nicht initialisiert werden"
+#: app/app.cpp:49
+msgid "No release notes were provided."
+msgstr "Es wurden keine Veröffentlichungshinweise angegeben."
 
-#: src/app.cpp:37 src/app.cpp:96 src/app.cpp:117 src/app.cpp:174
-#: src/app.cpp:197 src/dialogs.cpp:328 src/document_manager.cpp:46
-#: src/document_manager.cpp:53 src/document_manager.cpp:93
-#: src/main_window.cpp:402 src/main_window.cpp:663 src/main_window.cpp:737
-#: src/main_window.cpp:745 src/main_window.cpp:754 src/update_checker.cpp:82
-#: src/update_checker.cpp:106 src/update_checker.cpp:117
-#: src/update_checker.cpp:157 src/update_checker.cpp:174
+#: app/app.cpp:56
+msgid "No updates available."
+msgstr "Keine Updates verfügbar."
+
+#: app/app.cpp:56
+msgid "Info"
+msgstr "Info"
+
+#: app/app.cpp:60
+msgid "Error checking for updates."
+msgstr "Fehler beim Prüfen auf Updates."
+
+#: app/app.cpp:61
+#, c-format
+msgid "Failed to check for updates. HTTP status: %d"
+msgstr "Fehler beim Prüfen auf Updates. HTTP-Status: %d"
+
+#: app/app.cpp:62 app/app.cpp:85 app/app.cpp:137 app/app.cpp:141
+#: app/app.cpp:183 app/app.cpp:188 app/dialogs.cpp:304
+#: app/document_manager.cpp:80 app/document_manager.cpp:87
+#: app/document_manager.cpp:135 app/document_manager.cpp:142
+#: app/main_window.cpp:436 app/main_window.cpp:767 app/main_window.cpp:795
+#: app/main_window.cpp:798 app/main_window.cpp:866 app/main_window.cpp:873
+#: app/main_window.cpp:882 app/parser.cpp:34 app/utils.cpp:46
 msgid "Error"
 msgstr "Fehler"
 
-#: src/app.cpp:69
+#: app/app.cpp:85
+msgid "Failed to initialize configuration"
+msgstr "Die Konfiguration konnte nicht initialisiert werden"
+
+#: app/app.cpp:117
 msgid "Failed to create IPC server"
 msgstr "IPC-Server konnte nicht erstellt werden"
 
-#: src/app.cpp:69 src/document_manager.cpp:46
+#: app/app.cpp:117 app/document_manager.cpp:80
 msgid "Warning"
 msgstr "Warnung"
 
-#: src/app.cpp:96 src/app.cpp:174 src/document_manager.cpp:53
+#: app/app.cpp:137 app/app.cpp:183 app/document_manager.cpp:87
 #, c-format
 msgid "File not found: %s"
 msgstr "Datei nicht gefunden: %s"
 
-#: src/app.cpp:117 src/app.cpp:197
+#: app/app.cpp:141 app/app.cpp:188
 msgid "Failed to load document."
 msgstr "Das Dokument konnte nicht geladen werden."
 
-#: src/chm_parser.cpp:74
-msgid "Unknown error while parsing CHM file"
-msgstr "Unbekannter Fehler beim Parsen der CHM-Datei"
-
-#: src/dialogs.cpp:74
+#: app/dialogs.cpp:65
 msgid "All Documents"
 msgstr "Alle Dokumente"
 
-#: src/dialogs.cpp:77
+#: app/dialogs.cpp:68
 msgid "&search"
 msgstr "&Suchen"
 
-#: src/dialogs.cpp:88
+#: app/dialogs.cpp:79
 msgid "File Name"
 msgstr "Dateiname"
 
-#: src/dialogs.cpp:89
+#: app/dialogs.cpp:80
 msgid "Status"
 msgstr "Status"
 
-#: src/dialogs.cpp:90
+#: app/dialogs.cpp:81
 msgid "Path"
 msgstr "Pfad"
 
-#: src/dialogs.cpp:95
+#: app/dialogs.cpp:86
 msgid "&Open"
 msgstr "Ö&ffnen"
 
-#: src/dialogs.cpp:96
+#: app/dialogs.cpp:87
 msgid "&Remove"
 msgstr "Entfe&rnen"
 
-#: src/dialogs.cpp:112 src/dialogs.cpp:168 src/dialogs.cpp:219
-#: src/dialogs.cpp:233
+#: app/dialogs.cpp:88
+msgid "&Clear All"
+msgstr "Alle &löschen"
+
+#: app/dialogs.cpp:106 app/dialogs.cpp:173 app/dialogs.cpp:209
+#: app/dialogs.cpp:220
 msgid "Missing"
 msgstr "Nicht vorhanden"
 
-#: src/dialogs.cpp:133
+#: app/dialogs.cpp:129
 msgid ""
 "Are you sure you want to remove this document from the list? This will also "
 "remove its reading position."
@@ -103,157 +124,212 @@ msgstr ""
 "Soll dieses Dokument wirklich aus der Liste entfernt werden? Dadurch wird "
 "auch die Leseposition gelöscht."
 
-#: src/dialogs.cpp:133
+#: app/dialogs.cpp:129 app/dialogs.cpp:147
 msgid "Confirm"
 msgstr "Bestätigen"
 
-#: src/dialogs.cpp:221
+#: app/dialogs.cpp:130 app/dialogs.cpp:148 app/dialogs.cpp:1097
+msgid "&Yes"
+msgstr "&Ja"
+
+#: app/dialogs.cpp:130 app/dialogs.cpp:148 app/dialogs.cpp:1099
+msgid "&No"
+msgstr "&Nein"
+
+#: app/dialogs.cpp:147
+msgid ""
+"Are you sure you want to remove all documents from the list? This will also "
+"remove all reading positions and bookmarks."
+msgstr ""
+"Sollen wirklich alle Dokumente aus der Liste gelöscht werden? Dabei werden "
+"auch alle Lesezeichen und Lesemarkierungen gelöscht."
+
+#: app/dialogs.cpp:203
 msgid "Open"
 msgstr "Geöffnet"
 
-#: src/dialogs.cpp:223
+#: app/dialogs.cpp:206
 msgid "Closed"
 msgstr "Geschlossen"
 
-#: src/dialogs.cpp:238
+#: app/dialogs.cpp:231
 msgid "Jump to Bookmark"
 msgstr "Springe zu Lesezeichen"
 
-#: src/dialogs.cpp:252 src/dialogs.cpp:258 src/dialogs.cpp:383
-#: src/dialogs.cpp:389
-msgid "blank"
-msgstr "leer"
+#: app/dialogs.cpp:233
+msgid "&Filter:"
+msgstr "&Filter:"
 
-#: src/dialogs.cpp:278
+#: app/dialogs.cpp:235
+msgid "All"
+msgstr "Alle"
+
+#: app/dialogs.cpp:236
+msgid "Bookmarks"
+msgstr "Lesezeichen"
+
+#: app/dialogs.cpp:237
+msgid "Notes"
+msgstr "Notizen"
+
+#: app/dialogs.cpp:258
 msgid "&Edit Note"
 msgstr "Notiz &bearbeiten"
 
-#: src/dialogs.cpp:279
+#: app/dialogs.cpp:259
 msgid "&Delete"
 msgstr "&Löschen"
 
-#: src/dialogs.cpp:280
+#: app/dialogs.cpp:260
 msgid "&Jump"
 msgstr "&Springen"
 
-#: src/dialogs.cpp:281
+#: app/dialogs.cpp:261
 msgid "&Cancel"
 msgstr "&Abbrechen"
 
-#: src/dialogs.cpp:328
+#: app/dialogs.cpp:304
 msgid "Please select a bookmark to jump to."
 msgstr "Bitte ein Lesezeichen zum Anspringen auswählen."
 
-#: src/dialogs.cpp:368 src/document_manager.cpp:716
-msgid "Edit bookmark note:"
-msgstr "Lesezeichennotiz bearbeiten:"
-
-#: src/dialogs.cpp:368 src/document_manager.cpp:717
+#: app/dialogs.cpp:330 app/document_manager.cpp:545
 msgid "Bookmark Note"
 msgstr "Lesezeichennotiz"
 
-#: src/dialogs.cpp:401
+#: app/dialogs.cpp:330 app/document_manager.cpp:544
+msgid "Edit bookmark note:"
+msgstr "Lesezeichennotiz bearbeiten:"
+
+#: app/dialogs.cpp:363
+msgid "blank"
+msgstr "leer"
+
+#: app/dialogs.cpp:404
 msgid "Document Info"
 msgstr "Dokumentinfo"
 
-#: src/dialogs.cpp:406
-msgid "Title: "
-msgstr "Titel: "
-
-#: src/dialogs.cpp:407
-msgid "Author: "
-msgstr "Autor: "
-
-#: src/dialogs.cpp:408
+#: app/dialogs.cpp:409
 msgid "Path: "
 msgstr "Pfad: "
 
-#: src/dialogs.cpp:409
-msgid "Total number of words: "
-msgstr "Wortanzahl: "
+#: app/dialogs.cpp:414
+msgid "Title: "
+msgstr "Titel: "
 
-#: src/dialogs.cpp:410
-msgid "Total number of lines: "
-msgstr "Zeilen insgesamt: "
+#: app/dialogs.cpp:415
+msgid "Author: "
+msgstr "Autor: "
 
-#: src/dialogs.cpp:411
-msgid "Total number of characters: "
-msgstr "Anzahl Zeichen insgesamt: "
+#: app/dialogs.cpp:416
+msgid "Words: "
+msgstr "Wörter: "
 
-#: src/dialogs.cpp:412
-msgid "Total number of characters (excluding whitespace): "
-msgstr "Zeichenanzahl ohne Leerzeichen: "
+#: app/dialogs.cpp:417
+msgid "Lines: "
+msgstr "Zeilen: "
 
-#: src/dialogs.cpp:420
+#: app/dialogs.cpp:418
+msgid "Characters: "
+msgstr "Zeichen: "
+
+#: app/dialogs.cpp:419
+msgid "Characters (excluding spaces): "
+msgstr "Zeichen (ohne Leerzeichen): "
+
+#: app/dialogs.cpp:428
+msgid "Elements"
+msgstr "Elemente"
+
+#: app/dialogs.cpp:431
+msgid "&View:"
+msgstr "An&sehen:"
+
+#: app/dialogs.cpp:433
+msgid "Headings"
+msgstr "Überschriften"
+
+#: app/dialogs.cpp:434
+msgid "Links"
+msgstr "Links"
+
+#: app/dialogs.cpp:474 app/dialogs.cpp:980
+msgid "Root"
+msgstr "Wurzel"
+
+#: app/dialogs.cpp:485 app/dialogs.cpp:999
+msgid "Untitled"
+msgstr "Unbenannt"
+
+#: app/dialogs.cpp:547
 msgid "Find"
 msgstr "Suchen"
 
-#: src/dialogs.cpp:426
+#: app/dialogs.cpp:553
 msgid "Find &what:"
 msgstr "&Suche nach:"
 
-#: src/dialogs.cpp:430 src/dialogs.cpp:661
+#: app/dialogs.cpp:557 app/dialogs.cpp:816
 msgid "Options"
 msgstr "Optionen"
 
-#: src/dialogs.cpp:431
+#: app/dialogs.cpp:558
 msgid "&Match case"
 msgstr "&Großschreibung beachten"
 
-#: src/dialogs.cpp:432
+#: app/dialogs.cpp:559
 msgid "Match &whole word"
 msgstr "Nur ganze &Wörter"
 
-#: src/dialogs.cpp:433
+#: app/dialogs.cpp:560
 msgid "Use &regular expressions"
 msgstr "Verwende &reguläre Ausdrücke"
 
-#: src/dialogs.cpp:438
+#: app/dialogs.cpp:565
 msgid "Find &Previous"
 msgstr "&Vorheriges suchen"
 
-#: src/dialogs.cpp:439
+#: app/dialogs.cpp:566
 msgid "Find &Next"
 msgstr "&Nächstes suchen"
 
-#: src/dialogs.cpp:440
+#: app/dialogs.cpp:567
 msgid "Cancel"
 msgstr "Abbrechen"
 
-#: src/dialogs.cpp:531
+#: app/dialogs.cpp:683
 msgid "Go to Line"
 msgstr "Gehe zu Zeile"
 
-#: src/dialogs.cpp:534
+#: app/dialogs.cpp:686
 msgid "&Line number:"
 msgstr "&Zeilennummer:"
 
-#: src/dialogs.cpp:556
+#: app/dialogs.cpp:704
 msgid "Go to page"
 msgstr "Gehe zu Seite"
 
-#: src/dialogs.cpp:559
+#: app/dialogs.cpp:707
 #, c-format
 msgid "Go to page (1/%d):"
 msgstr "Gehe zu Seite (1/%d):"
 
-#: src/dialogs.cpp:585
+#: app/dialogs.cpp:726
 msgid "Go to Percent"
 msgstr "Gehe zu Prozent"
 
-#: src/dialogs.cpp:591
+#: app/dialogs.cpp:731
 msgid "P&ercent:"
 msgstr "Pr&ozent:"
 
-#: src/dialogs.cpp:593
+#: app/dialogs.cpp:733
 msgid "&Percent"
 msgstr "&Prozent"
 
-#: src/dialogs.cpp:624
+#: app/dialogs.cpp:765
 msgid "Open As"
 msgstr "Öffnen als"
 
-#: src/dialogs.cpp:627
+#: app/dialogs.cpp:768
 #, c-format
 msgid ""
 "No suitable parser was found for %s.\n"
@@ -262,794 +338,902 @@ msgstr ""
 "Es wurde kein passender Parser für %s gefunden.\n"
 "Wie soll diese Datei geöffnet werden?"
 
-#: src/dialogs.cpp:630
+#: app/dialogs.cpp:771
 msgid "Open &as:"
 msgstr "Öffnen &als:"
 
-#: src/dialogs.cpp:632
+#: app/dialogs.cpp:773
 msgid "Plain Text"
 msgstr "Nur Text"
 
-#: src/dialogs.cpp:633
+#: app/dialogs.cpp:774
 msgid "HTML"
 msgstr "HTML"
 
-#: src/dialogs.cpp:634
+#: app/dialogs.cpp:775
 msgid "Markdown"
 msgstr "Markdown"
 
-#: src/dialogs.cpp:665
+#: app/dialogs.cpp:820
 msgid "General"
 msgstr "Allgemein"
 
-#: src/dialogs.cpp:666
+#: app/dialogs.cpp:821
 msgid "&Restore previously opened documents on startup"
 msgstr "Zuletzt geöffnete Dokumente beim Start wieder&herstellen"
 
-#: src/dialogs.cpp:668
+#: app/dialogs.cpp:823
 msgid "&Word wrap"
 msgstr "&Wortumbruch"
 
-#: src/dialogs.cpp:670
+#: app/dialogs.cpp:825
 msgid "&Minimize to system tray"
 msgstr "In den Infobereich &minimieren"
 
-#: src/dialogs.cpp:672
+#: app/dialogs.cpp:827
+msgid "&Start maximized"
+msgstr "Maximiert &starten"
+
+#: app/dialogs.cpp:829
 msgid "Show compact &go menu"
 msgstr "&Gehe-zu-Menü kompakt anzeigen"
 
-#: src/dialogs.cpp:674
+#: app/dialogs.cpp:831
 msgid "&Wrap navigation"
 msgstr "&Kreisförmige Navigation"
 
-#: src/dialogs.cpp:676
+#: app/dialogs.cpp:833
 msgid "Check for &updates on startup"
 msgstr "Beim Start auf &Updates prüfen"
 
-#: src/dialogs.cpp:679
+#: app/dialogs.cpp:836
 msgid "Number of &recent documents to show:"
 msgstr "Anzahl &zuletzt geöffneter Dokumente:"
 
-#: src/dialogs.cpp:685
+#: app/dialogs.cpp:842
 msgid "&Language:"
 msgstr "&Sprache:"
 
-#: src/dialogs.cpp:804
+#: app/dialogs.cpp:947
+msgid "Document Password"
+msgstr "Dokumentpasswort"
+
+#: app/dialogs.cpp:949
+msgid "&Password"
+msgstr "&Passwort"
+
+#: app/dialogs.cpp:962
 msgid "Sleep Timer"
 msgstr "Schlaftimer"
 
-#: src/dialogs.cpp:807
+#: app/dialogs.cpp:965
 msgid "&Minutes:"
 msgstr "&Minuten:"
 
-#: src/dialogs.cpp:819
+#: app/dialogs.cpp:977
 msgid "Table of Contents"
 msgstr "Inhaltsverzeichnis"
 
-#: src/dialogs.cpp:822
-msgid "Root"
-msgstr "Wurzel"
-
-#: src/dialogs.cpp:840
-msgid "Untitled"
-msgstr "Unbenannt"
-
-#: src/dialogs.cpp:888
+#: app/dialogs.cpp:1037
 msgid "Please select a section from the table of contents."
 msgstr "Bitte einen Abschnitt aus dem Inhaltsverzeichnis wählen."
 
-#: src/dialogs.cpp:888
+#: app/dialogs.cpp:1037
 msgid "No Selection"
 msgstr "Keine Auswahl"
 
-#: src/document_manager.cpp:93
+#: app/dialogs.cpp:1088
+#, c-format
+msgid "Update to %s"
+msgstr "Update auf %s"
+
+#: app/dialogs.cpp:1090
+msgid "A new version of Paperback is available. Here's what's new:"
+msgstr "Es gibt eine neue Version von Paperback. Hier sind die Neuerungen:"
+
+#: app/dialogs.cpp:1103 app/main_window.cpp:661
+msgid "View Note"
+msgstr "Notiz ansehen"
+
+#: app/dialogs.cpp:1109
+msgid "Close"
+msgstr "Schließen"
+
+#: app/document_manager.cpp:135
+msgid "Password is required."
+msgstr "Passwort wird benötigt."
+
+#: app/document_manager.cpp:142
 #, c-format
 msgid "Failed to parse document: %s"
 msgstr "Parsen des Dokuments fehlgeschlagen: %s"
 
-#: src/document_manager.cpp:224
+#: app/document_manager.cpp:255
 msgid "No sections."
 msgstr "Keine Abschnitte."
 
-#: src/document_manager.cpp:264
+#: app/document_manager.cpp:255
 msgid "No next section"
 msgstr "Kein weiterer Abschnitt"
 
-#: src/document_manager.cpp:264
+#: app/document_manager.cpp:255
 msgid "No previous section"
 msgstr "Kein vorheriger Abschnitt"
 
-#: src/document_manager.cpp:274 src/document_manager.cpp:336
-#: src/document_manager.cpp:394 src/document_manager.cpp:437
-#: src/document_manager.cpp:578 src/document_manager.cpp:641
-msgid "Wrapping to start. "
-msgstr "Springe zum Anfang. "
-
-#: src/document_manager.cpp:274 src/document_manager.cpp:336
-#: src/document_manager.cpp:394 src/document_manager.cpp:437
-#: src/document_manager.cpp:578 src/document_manager.cpp:641
-msgid "Wrapping to end. "
-msgstr "Springe zum Ende. "
-
-#: src/document_manager.cpp:311 src/main_window.cpp:517
-msgid "No pages."
-msgstr "Keine Seiten."
-
-#: src/document_manager.cpp:325
-msgid "No next page."
-msgstr "Keine weitere Seite."
-
-#: src/document_manager.cpp:325
-msgid "No previous page."
-msgstr "Keine vorherige Seite."
-
-#: src/document_manager.cpp:334
+#: app/document_manager.cpp:259
 #, c-format
-msgid "Page %d: %s"
-msgstr "Seite %d: %s"
+msgid "No headings at level %d."
+msgstr "Keine Überschriften auf Ebene %d."
 
-#: src/document_manager.cpp:366
-msgid "No next bookmark"
-msgstr "Kein weiteres Lesezeichen"
-
-#: src/document_manager.cpp:366
-msgid "No previous bookmark"
-msgstr "Kein vorheriges Lesezeichen"
-
-#: src/document_manager.cpp:389
+#: app/document_manager.cpp:260
 #, c-format
-msgid "%s - %s - Bookmark %d"
-msgstr "%s - %s - Lesezeichen %d"
+msgid "No next heading at level %d."
+msgstr "Keine weitere Überschrift auf Ebene %d."
 
-#: src/document_manager.cpp:391
+#: app/document_manager.cpp:261
 #, c-format
-msgid "%s - Bookmark %d"
-msgstr "%s - Lesezeichen %d"
+msgid "No previous heading at level %d."
+msgstr "Keine vorherige Überschrift auf Ebene %d."
 
-#: src/document_manager.cpp:414
-msgid "No links."
-msgstr "Keine Links."
-
-#: src/document_manager.cpp:428
-msgid "No next link."
-msgstr "Kein weiterer Link."
-
-#: src/document_manager.cpp:428
-msgid "No previous link."
-msgstr "Kein vorheriger Link."
-
-#: src/document_manager.cpp:435
-msgid " link"
-msgstr " Link"
-
-#: src/document_manager.cpp:477
-msgid "Opening link in default browser."
-msgstr "Link wird im Standardbrowser geöffnet."
-
-#: src/document_manager.cpp:479
-msgid "Failed to open link."
-msgstr "Link konnte nicht geöffnet werden."
-
-#: src/document_manager.cpp:486 src/document_manager.cpp:517
-#: src/document_manager.cpp:525
-msgid "Navigated to internal link."
-msgstr "Zu internem Link navigiert."
-
-#: src/document_manager.cpp:488 src/document_manager.cpp:529
-msgid "Internal link target not found."
-msgstr "Internes Linkziel nicht gefunden."
-
-#: src/document_manager.cpp:541 src/document_manager.cpp:545
-#: src/document_manager.cpp:600
-msgid "No lists."
-msgstr "Keine Listen."
-
-#: src/document_manager.cpp:559
-msgid "No next list."
-msgstr "Keine weitere Liste."
-
-#: src/document_manager.cpp:559
-msgid "No previous list."
-msgstr "Keine vorherige Liste."
-
-#: src/document_manager.cpp:565
-#, c-format
-msgid "List with %d items"
-msgstr "Liste mit %d Einträgen"
-
-#: src/document_manager.cpp:604
-msgid "No list items."
-msgstr "Keine Listeneinträge."
-
-#: src/document_manager.cpp:624
-msgid "No next list item."
-msgstr "Kein weiterer Listeneintrag."
-
-#: src/document_manager.cpp:624
-msgid "No previous list item."
-msgstr "Kein vorheriger Listeneintrag."
-
-#: src/document_manager.cpp:634
-#, c-format
-msgid "List with %d items "
-msgstr "Liste mit %d Einträgen "
-
-#: src/document_manager.cpp:684
-msgid "Bookmark removed"
-msgstr "Lesezeichen entfernt"
-
-#: src/document_manager.cpp:684
-msgid "Bookmarked"
-msgstr "Lesezeichen gesetzt"
-
-#: src/document_manager.cpp:716
-msgid "Enter bookmark note:"
-msgstr "Lesezeichennotiz eingeben:"
-
-#: src/document_manager.cpp:724
-msgid "Bookmark note updated"
-msgstr "Lesezeichennotiz aktualisiert"
-
-#: src/document_manager.cpp:727
-msgid "Bookmarked with note"
-msgstr "Lesezeichen mit Notiz gesetzt"
-
-#: src/document_manager.cpp:740
-msgid "No bookmarks"
-msgstr "Keine Lesezeichen"
-
-#: src/document_manager.cpp:772
-#, c-format
-msgid "Bookmark: %s - %s"
-msgstr "Lesezeichen: %s - %s"
-
-#: src/document_manager.cpp:774
-#, c-format
-msgid "Bookmark: %s"
-msgstr "Lesezeichen: %s"
-
-#: src/document_manager.cpp:788
-msgid "No table of contents."
-msgstr "Kein Inhaltsverzeichnis."
-
-#: src/document_manager.cpp:792
-msgid "Table of contents is empty."
-msgstr "Inhaltsverzeichnis ist leer."
-
-#: src/document_manager.cpp:854 src/document_manager.cpp:858
-#: src/main_window.cpp:40
-msgid "Ready"
-msgstr "Bereit"
-
-#: src/document_manager.cpp:867
-#, c-format
-msgid "line %ld, character %ld, reading %d%%"
-msgstr "Zeile %ld, Zeichen %ld, Lesefortschritt %d%%"
-
-#: src/document_manager.cpp:931
-msgid "Previous heading\tShift+H"
-msgstr "Vorherige Überschrift\tShift+H"
-
-#: src/document_manager.cpp:932
-msgid "Next heading\tH"
-msgstr "Nächste Überschrift\tH"
-
-#: src/document_manager.cpp:935
-#, c-format
-msgid "Previous heading level %d\tShift+%d"
-msgstr "Vorherige Überschrift auf Ebene %d\tShift+%d"
-
-#: src/document_manager.cpp:936
-#, c-format
-msgid "Next heading level %d\t%d"
-msgstr "Nächste Überschrift auf Ebene %d\t%d"
-
-#: src/document_manager.cpp:983
+#: app/document_manager.cpp:265
 msgid "No headings."
 msgstr "Keine Überschriften."
 
-#: src/document_manager.cpp:998
-#, c-format
-msgid "No %s heading"
-msgstr "Keine %s Überschrift"
+#: app/document_manager.cpp:265
+msgid "No next heading."
+msgstr "Keine weitere Überschrift."
 
-#: src/document_manager.cpp:998
-msgid "next"
-msgstr "weitere"
+#: app/document_manager.cpp:265
+msgid "No previous heading."
+msgstr "Keine vorherige Überschrift."
 
-#: src/document_manager.cpp:998
-msgid "previous"
-msgstr "vorherige"
+#: app/document_manager.cpp:267 app/main_window.cpp:556
+msgid "No pages."
+msgstr "Keine Seiten."
 
-#: src/document_manager.cpp:998
-#, c-format
-msgid "No %s heading at level %d"
-msgstr "Keine %s Überschrift auf Ebene %d"
+#: app/document_manager.cpp:267
+msgid "No next page."
+msgstr "Keine weitere Seite."
 
-#: src/document_manager.cpp:1009
-#, c-format
-msgid "Wrapping to %s. %s Heading level %d"
-msgstr "Springe zum %s. %s Überschrift Ebene %d"
+#: app/document_manager.cpp:267
+msgid "No previous page."
+msgstr "Keine vorherige Seite."
 
-#: src/document_manager.cpp:1009
-msgid "start"
-msgstr "Anfang"
+#: app/document_manager.cpp:269
+msgid "No links."
+msgstr "Keine Links."
 
-#: src/document_manager.cpp:1009
-msgid "end"
-msgstr "Ende"
+#: app/document_manager.cpp:269
+msgid "No next link."
+msgstr "Kein weiterer Link."
 
-#: src/document_manager.cpp:1011
+#: app/document_manager.cpp:269
+msgid "No previous link."
+msgstr "Kein vorheriger Link."
+
+#: app/document_manager.cpp:271
+msgid "No lists."
+msgstr "Keine Listen."
+
+#: app/document_manager.cpp:271
+msgid "No next list."
+msgstr "Keine weitere Liste."
+
+#: app/document_manager.cpp:271
+msgid "No previous list."
+msgstr "Keine vorherige Liste."
+
+#: app/document_manager.cpp:273
+msgid "No list items."
+msgstr "Keine Listeneinträge."
+
+#: app/document_manager.cpp:273
+msgid "No next list item."
+msgstr "Kein weiterer Listeneintrag."
+
+#: app/document_manager.cpp:273
+msgid "No previous list item."
+msgstr "Kein vorheriger Listeneintrag."
+
+#: app/document_manager.cpp:275
+msgid "No tables."
+msgstr "Keine Tabellen."
+
+#: app/document_manager.cpp:275
+msgid "No next table."
+msgstr "Keine weitere Tabelle."
+
+#: app/document_manager.cpp:275
+msgid "No previous table."
+msgstr "Keine vorherige Tabelle."
+
+#: app/document_manager.cpp:277
+msgid "Not supported."
+msgstr "Nicht unterstützt."
+
+#: app/document_manager.cpp:277 app/main_window.cpp:1088
+msgid "Not found."
+msgstr "Nicht gefunden."
+
+#: app/document_manager.cpp:283 app/document_manager.cpp:394
+msgid "Wrapping to start. "
+msgstr "Springe zum Anfang. "
+
+#: app/document_manager.cpp:283 app/document_manager.cpp:394
+msgid "Wrapping to end. "
+msgstr "Springe zum Ende. "
+
+#: app/document_manager.cpp:288
 #, c-format
 msgid "%s Heading level %d"
 msgstr "%s Überschrift Ebene %d"
 
-#: src/docx_parser.cpp:111 src/odp_parser.cpp:93 src/odt_parser.cpp:69
-#: src/pptx_parser.cpp:170
+#: app/document_manager.cpp:290
 #, c-format
-msgid "XML parsing error: %s"
-msgstr "XML-Parserfehler: %s"
+msgid "Page %d: %s"
+msgstr "Seite %d: %s"
 
-#: src/docx_parser.cpp:113
+#: app/document_manager.cpp:292
+msgid " link"
+msgstr " Link"
+
+#: app/document_manager.cpp:375
+msgid "No next note"
+msgstr "Keine weitere Notiz"
+
+#: app/document_manager.cpp:375
+msgid "No previous note"
+msgstr "Keine vorherige Notiz"
+
+#: app/document_manager.cpp:377
+msgid "No next bookmark"
+msgstr "Kein weiteres Lesezeichen"
+
+#: app/document_manager.cpp:377
+msgid "No previous bookmark"
+msgstr "Kein vorheriges Lesezeichen"
+
+#: app/document_manager.cpp:387
 #, c-format
-msgid "Error parsing DOCX file: %s"
-msgstr "Fehler beim Parsen der DOCX-Datei: %s"
+msgid "%s - %s - Note %d"
+msgstr "%s - %s - Notiz %d"
 
-#: src/docx_parser.cpp:115
-msgid "Unknown error while parsing DOCX file"
-msgstr "Unbekannter Fehler beim Parsen der DOCX-Datei"
-
-#: src/epub_parser.cpp:286
+#: app/document_manager.cpp:389
 #, c-format
-msgid "Couldn't parse table of contents: %s"
-msgstr "Konnte Inhaltsverzeichnis nicht lesen: %s"
+msgid "%s - Note %d"
+msgstr "%s - Notiz %d"
 
-#: src/fb2_parser.cpp:38
-msgid "Failed to open FB2 file"
-msgstr "Öffnen der FB2-Datei fehlgeschlagen"
+#: app/document_manager.cpp:391
+#, c-format
+msgid "%s - Bookmark %d"
+msgstr "%s - Lesezeichen %d"
 
-#: src/fb2_parser.cpp:50
-msgid "FB2 file is empty or could not be read"
-msgstr "FB2-Datei ist leer oder konnte nicht gelesen werden"
+#: app/document_manager.cpp:442
+msgid "Navigated to next position."
+msgstr "Zu nächster Position navigiert."
 
-#: src/fb2_parser.cpp:70
-msgid "Failed to convert FB2 XML to text"
-msgstr "Konvertierung von FB2-XML in Text ist fehlgeschlagen"
+#: app/document_manager.cpp:442
+msgid "Navigated to previous position."
+msgstr "Zur vorherigen Position navigiert."
 
-#: src/html_parser.cpp:26
-msgid "Failed to open HTML file"
-msgstr "Öffnen der HTML-Datei fehlgeschlagen"
+#: app/document_manager.cpp:444
+msgid "No next position."
+msgstr "Keine weitere Position."
 
-#: src/html_parser.cpp:36
-msgid "Failed to convert HTML to text"
-msgstr "Konvertierung von HTML zu Text fehlgeschlagen"
+#: app/document_manager.cpp:444
+msgid "No previous position."
+msgstr "Keine vorherige Position."
 
-#: src/main_window.cpp:72
-msgid "&File"
-msgstr "&Datei"
+#: app/document_manager.cpp:465
+msgid "Opening link in default browser."
+msgstr "Link wird im Standardbrowser geöffnet."
 
-#: src/main_window.cpp:73
-msgid "&Go"
-msgstr "&Gehe zu"
+#: app/document_manager.cpp:466
+msgid "Failed to open link."
+msgstr "Link konnte nicht geöffnet werden."
 
-#: src/main_window.cpp:74
-msgid "&Tools"
-msgstr "&Werkzeuge"
+#: app/document_manager.cpp:470
+msgid "Navigated to internal link."
+msgstr "Zu internem Link navigiert."
 
-#: src/main_window.cpp:75
-msgid "&Help"
-msgstr "&Hilfe"
+#: app/document_manager.cpp:473
+msgid "Internal link target not found."
+msgstr "Internes Linkziel nicht gefunden."
 
-#: src/main_window.cpp:81
-msgid "&Open...\tCtrl+O"
-msgstr "Ö&ffnen...\tCtrl+O"
+#: app/document_manager.cpp:522
+msgid "Bookmark removed"
+msgstr "Lesezeichen entfernt"
 
-#: src/main_window.cpp:82
-msgid "Close\tCtrl+F4"
-msgstr "Schließen\tCtrl+F4"
+#: app/document_manager.cpp:522
+msgid "Bookmarked"
+msgstr "Lesezeichen gesetzt"
 
-#: src/main_window.cpp:83
-msgid "Close &All\tCtrl+Shift+F4"
-msgstr "&Alles schließen\tCtrl+Shift+F4"
+#: app/document_manager.cpp:544
+msgid "Enter bookmark note:"
+msgstr "Lesezeichennotiz eingeben:"
 
-#: src/main_window.cpp:86
-msgid "&Recent Documents"
-msgstr "&Zuletzt geöffnete Dokumente"
+#: app/document_manager.cpp:549
+msgid "Bookmark note updated"
+msgstr "Lesezeichennotiz aktualisiert"
 
-#: src/main_window.cpp:89 src/task_bar_icon.cpp:31
-msgid "E&xit"
-msgstr "&Beenden"
+#: app/document_manager.cpp:549
+msgid "Bookmarked with note"
+msgstr "Lesezeichen mit Notiz gesetzt"
 
-#: src/main_window.cpp:97
-msgid "&Find...\tCtrl+F"
-msgstr "&Suchen...\tCtrl+F"
+#: app/document_manager.cpp:558
+msgid "No bookmarks"
+msgstr "Keine Lesezeichen"
 
-#: src/main_window.cpp:98
-msgid "Find Ne&xt\tF3"
-msgstr "&Nächstes suchen\tF3"
+#: app/document_manager.cpp:573
+#, c-format
+msgid "Bookmark: %s - %s"
+msgstr "Lesezeichen: %s - %s"
 
-#: src/main_window.cpp:99
-msgid "Find P&revious\tShift+F3"
-msgstr "&Vorheriges suchen\tShift+F3"
+#: app/document_manager.cpp:574
+#, c-format
+msgid "Bookmark: %s"
+msgstr "Lesezeichen: %s"
 
-#: src/main_window.cpp:101
-msgid "Go to &line...\tCtrl+G"
-msgstr "Gehe zu &Zeile...\tCtrl+G"
+#: app/document_manager.cpp:584
+msgid "No table of contents."
+msgstr "Kein Inhaltsverzeichnis."
 
-#: src/main_window.cpp:102
-msgid "Go to &percent...\tCtrl+Shift+G"
-msgstr "Gehe zu &Prozent...\tCtrl+Shift+G"
+#: app/document_manager.cpp:589
+msgid "Table of contents is empty."
+msgstr "Inhaltsverzeichnis ist leer."
 
-#: src/main_window.cpp:106 src/main_window.cpp:136
+#: app/document_manager.cpp:634 app/document_manager.cpp:637
+#: app/main_window.cpp:32
+msgid "Ready"
+msgstr "Bereit"
+
+#: app/document_manager.cpp:640
+#, c-format
+msgid "line %lld, character %lld, reading %d%%"
+msgstr "Zeile %lld, Zeichen %lld, %d%% gelesen"
+
+#: app/document_manager.cpp:690
+msgid "Previous heading\tShift+H"
+msgstr "Vorherige Überschrift\tShift+H"
+
+#: app/document_manager.cpp:691
+msgid "Next heading\tH"
+msgstr "Nächste Überschrift\tH"
+
+#: app/document_manager.cpp:694
+#, c-format
+msgid "Previous heading level %d\tShift+%d"
+msgstr "Vorherige Überschrift auf Ebene %d\tShift+%d"
+
+#: app/document_manager.cpp:695
+#, c-format
+msgid "Next heading level %d\t%d"
+msgstr "Nächste Überschrift auf Ebene %d\t%d"
+
+#: app/document_manager.cpp:755
+msgid "Table"
+msgstr "Tabelle"
+
+#: app/main_window.cpp:60
 msgid "Previous section\t["
 msgstr "Vorheriger Abschnitt\tShift+A"
 
-#: src/main_window.cpp:107 src/main_window.cpp:137
+#: app/main_window.cpp:61
 msgid "Next section\t]"
 msgstr "Nächster Abschnitt\tA"
 
-#: src/main_window.cpp:108
-msgid "&Sections"
-msgstr "&Abschnitte"
-
-#: src/main_window.cpp:111
-msgid "&Headings"
-msgstr "Übersc&hriften"
-
-#: src/main_window.cpp:113 src/main_window.cpp:134
+#: app/main_window.cpp:66
 msgid "Go to &page...\tCtrl+P"
 msgstr "Gehe zu &Seite...\tCtrl+P"
 
-#: src/main_window.cpp:115 src/main_window.cpp:141
+#: app/main_window.cpp:67
 msgid "Previous &page\tShift+P"
 msgstr "Vorherige &Seite\tShift+P"
 
-#: src/main_window.cpp:116 src/main_window.cpp:142
+#: app/main_window.cpp:68
 msgid "&Next page\tP"
 msgstr "&Nächste Seite\tP"
 
-#: src/main_window.cpp:117
-msgid "&Pages"
-msgstr "&Seiten"
-
-#: src/main_window.cpp:119 src/main_window.cpp:144
+#: app/main_window.cpp:73
 msgid "Previous &bookmark\tShift+B"
 msgstr "Vorheriges &Lesezeichen\tShift+B"
 
-#: src/main_window.cpp:120 src/main_window.cpp:145
+#: app/main_window.cpp:74
 msgid "Next b&ookmark\tB"
 msgstr "Nächstes L&esezeichen\tB"
 
-#: src/main_window.cpp:121 src/main_window.cpp:148
-msgid "Jump to bookmark...\tCtrl+B"
-msgstr "Springe zu Lesezeichen...\tCtrl+B"
+#: app/main_window.cpp:75
+msgid "Previous &note\tShift+N"
+msgstr "Vorherige &Notiz\tShift+N"
 
-#: src/main_window.cpp:122
-msgid "&Bookmarks"
-msgstr "L&esezeichen"
+#: app/main_window.cpp:76
+msgid "Next &note\tN"
+msgstr "Nächste &Notiz\tN"
 
-#: src/main_window.cpp:124 src/main_window.cpp:150
+#: app/main_window.cpp:78
+msgid "Jump to &all...\tCtrl+B"
+msgstr "Springe zu &allen...\tCtrl+B"
+
+#: app/main_window.cpp:79
+msgid "Jump to &bookmarks...\tCtrl+Alt+B"
+msgstr "Springe zu &Lesezeichen...\tCtrl+Alt+B"
+
+#: app/main_window.cpp:80
+msgid "Jump to &notes...\tCtrl+Alt+M"
+msgstr "Springe zu &Notizen...\tCtrl+Alt+M"
+
+#: app/main_window.cpp:81
+msgid "&View note text\tCtrl+Shift+W"
+msgstr "Notiztext an&sehen\tCtrl+Shift+W"
+
+#: app/main_window.cpp:86
 msgid "Previous lin&k\tShift+K"
 msgstr "Vorheriger Lin&k\tShift+K"
 
-#: src/main_window.cpp:125 src/main_window.cpp:151
+#: app/main_window.cpp:87
 msgid "Next lin&k\tK"
 msgstr "Nächster Lin&k\tK"
 
-#: src/main_window.cpp:126
-msgid "&Links"
-msgstr "&Links"
+#: app/main_window.cpp:92
+msgid "Previous &table\tShift+T"
+msgstr "Vorherige &Tabelle\tShift+T"
 
-#: src/main_window.cpp:128 src/main_window.cpp:153
+#: app/main_window.cpp:93
+msgid "Next &table\tT"
+msgstr "Nächste &Tabelle\tT"
+
+#: app/main_window.cpp:98
 msgid "Previous lis&t\tShift+L"
 msgstr "Vorherige Lis&te\tShift+L"
 
-#: src/main_window.cpp:129 src/main_window.cpp:154
+#: app/main_window.cpp:99
 msgid "Next lis&t\tL"
 msgstr "Nächste Lis&te\tL"
 
-#: src/main_window.cpp:130 src/main_window.cpp:155
+#: app/main_window.cpp:100
 msgid "Previous list &item\tShift+I"
 msgstr "Vorheriger L&isteneintrag\tShift+I"
 
-#: src/main_window.cpp:131 src/main_window.cpp:156
+#: app/main_window.cpp:101
 msgid "Next list &item\tI"
 msgstr "Nächster L&isteneintrag\tI"
 
-#: src/main_window.cpp:132
+#: app/main_window.cpp:106
+msgid "&File"
+msgstr "&Datei"
+
+#: app/main_window.cpp:108
+msgid "&Open...\tCtrl+O"
+msgstr "Ö&ffnen...\tCtrl+O"
+
+#: app/main_window.cpp:109
+msgid "Close\tCtrl+F4"
+msgstr "Schließen\tCtrl+F4"
+
+#: app/main_window.cpp:110
+msgid "Close &All\tCtrl+Shift+F4"
+msgstr "&Alle schließen\tCtrl+Shift+F4"
+
+#: app/main_window.cpp:112
+msgid "&Recent Documents"
+msgstr "&Zuletzt geöffnete Dokumente"
+
+#: app/main_window.cpp:117 app/task_bar_icon.cpp:24
+msgid "E&xit"
+msgstr "&Beenden"
+
+#: app/main_window.cpp:122
+msgid "&Find...\tCtrl+F"
+msgstr "&Suchen...\tCtrl+F"
+
+#: app/main_window.cpp:123
+msgid "Find Ne&xt\tF3"
+msgstr "&Nächstes suchen\tF3"
+
+#: app/main_window.cpp:124
+msgid "Find P&revious\tShift+F3"
+msgstr "&Vorheriges suchen\tShift+F3"
+
+#: app/main_window.cpp:126
+msgid "Go to &line...\tCtrl+G"
+msgstr "Gehe zu &Zeile...\tCtrl+G"
+
+#: app/main_window.cpp:127
+msgid "Go to &percent...\tCtrl+Shift+G"
+msgstr "Gehe zu &Prozent...\tCtrl+Shift+G"
+
+#: app/main_window.cpp:129
+msgid "Go &Back\tAlt+Left"
+msgstr "Gehe &zurück\tAlt+Left"
+
+#: app/main_window.cpp:130
+msgid "Go &Forward\tAlt+Right"
+msgstr "Gehe &vorwärts\tAlt+Right"
+
+#: app/main_window.cpp:134
+msgid "&Sections"
+msgstr "&Abschnitte"
+
+#: app/main_window.cpp:135
+msgid "&Headings"
+msgstr "Übersc&hriften"
+
+#: app/main_window.cpp:138
+msgid "&Pages"
+msgstr "&Seiten"
+
+#: app/main_window.cpp:139
+msgid "&Bookmarks"
+msgstr "L&esezeichen"
+
+#: app/main_window.cpp:140
+msgid "&Links"
+msgstr "&Links"
+
+#: app/main_window.cpp:141
+msgid "&Tables"
+msgstr "&Tabellen"
+
+#: app/main_window.cpp:142
 msgid "&Lists"
 msgstr "&Listen"
 
-#: src/main_window.cpp:146 src/main_window.cpp:175
-msgid "Toggle bookmark\tCtrl+Shift+B"
-msgstr "Lesezeichen umschalten\tCtrl+Shift+B"
+#: app/main_window.cpp:166
+msgid "&Go"
+msgstr "&Gehe zu"
 
-#: src/main_window.cpp:147 src/main_window.cpp:176
-msgid "Bookmark with &note\tCtrl+Shift+N"
-msgstr "Lesezeichen mit &Notiz\tCtrl+Shift+N"
+#: app/main_window.cpp:169
+msgid "&Tools"
+msgstr "&Werkzeuge"
 
-#: src/main_window.cpp:163
+#: app/main_window.cpp:171
 msgid "&Word count\tCtrl+W"
 msgstr "&Wortanzahl\tCtrl+W"
 
-#: src/main_window.cpp:164
+#: app/main_window.cpp:172
 msgid "Document &info\tCtrl+I"
 msgstr "Dokument&info\tCtrl+I"
 
-#: src/main_window.cpp:166
+#: app/main_window.cpp:174
 msgid "Table of contents\tCtrl+T"
 msgstr "Inhaltsverzeichnis\tCtrl+T"
 
-#: src/main_window.cpp:168
-msgid "Open &containing folder"
-msgstr "&Zugehörigen Ordner öffnen"
+#: app/main_window.cpp:175
+msgid "&Elements List...\tF7"
+msgstr "&Elementliste...\tF7"
 
-#: src/main_window.cpp:170
-msgid "&Import document data..."
-msgstr "Dokumentdaten &importieren..."
+#: app/main_window.cpp:177
+msgid "Open &containing folder\tCtrl+Shift+C"
+msgstr "&Zugehörigen Ordner öffnen\tCtrl+Shift+C"
 
-#: src/main_window.cpp:171
-msgid "&Export document data..."
-msgstr "Dokumentdaten &exportieren..."
+#: app/main_window.cpp:178
+msgid "Open in &Web View\tCtrl+Shift+V"
+msgstr "In &Webansicht öffnen\tCtrl+Shift+V"
 
-#: src/main_window.cpp:172
-msgid "Export document to &plain text...\tCtrl+E"
-msgstr "Dokument als &Text exportieren...\tCtrl+E"
-
-#: src/main_window.cpp:173
+#: app/main_window.cpp:179
 msgid "Import/&Export"
 msgstr "Import/&Export"
 
-#: src/main_window.cpp:178
+#: app/main_window.cpp:180
+msgid "&Import document data...\tCtrl+Shift+I"
+msgstr "Dokumentdaten &importieren...\tCtrl+Shift+I"
+
+#: app/main_window.cpp:181
+msgid "&Export document data...\tCtrl+Shift+E"
+msgstr "Dokumentdaten &exportieren...\tCtrl+Shift+E"
+
+#: app/main_window.cpp:182
+msgid "Export document to &plain text...\tCtrl+E"
+msgstr "Dokument als &Text exportieren...\tCtrl+E"
+
+#: app/main_window.cpp:185
+msgid "Toggle bookmark\tCtrl+Shift+B"
+msgstr "Lesezeichen umschalten\tCtrl+Shift+B"
+
+#: app/main_window.cpp:186
+msgid "Bookmark with &note\tCtrl+Shift+N"
+msgstr "Lesezeichen mit &Notiz\tCtrl+Shift+N"
+
+#: app/main_window.cpp:188
 msgid "&Options\tCtrl+,"
 msgstr "&Optionen\tCtrl+,"
 
-#: src/main_window.cpp:179
+#: app/main_window.cpp:189
 msgid "&Sleep Timer...\tCtrl+Shift+S"
 msgstr "&Schlaftimer...\tCtrl+Shift+S"
 
-#: src/main_window.cpp:185
+#: app/main_window.cpp:193
+msgid "&Help"
+msgstr "&Hilfe"
+
+#: app/main_window.cpp:196
 #, c-format
 msgid "About %s\tCtrl+F1"
 msgstr "Über %s\tCtrl+F1"
 
-#: src/main_window.cpp:186
+#: app/main_window.cpp:197
 msgid "View &help in default browser\tF1"
 msgstr "&Hilfe im Standardbrowser anzeigen\tF1"
 
-#: src/main_window.cpp:187
+#: app/main_window.cpp:198
 #, c-format
 msgid "View Help in %s\tShift+F1"
 msgstr "Hilfe in %s anzeigen\tShift+F1"
 
-#: src/main_window.cpp:189
-msgid "Check for &Updates"
-msgstr "Suche nach &Updates"
+#: app/main_window.cpp:201
+msgid "Check for &Updates\tCtrl+Shift+U"
+msgstr "Nach &Updates suchen\tCtrl+Shift+U"
 
-#: src/main_window.cpp:191
+#: app/main_window.cpp:203
 msgid "&Donate\tCtrl+D"
 msgstr "&Spenden\tCtrl+D"
 
-#: src/main_window.cpp:361
+#: app/main_window.cpp:401
 #, c-format
 msgid " | Sleep timer: %02d:%02d"
 msgstr " | Schlaftimer: %02d:%02d"
 
-#: src/main_window.cpp:368
+#: app/main_window.cpp:408
 msgid "Select a document to read"
 msgstr "Ein Dokument zum Lesen auswählen"
 
-#: src/main_window.cpp:396
+#: app/main_window.cpp:432
 msgid "Export Document"
 msgstr "Dokument exportieren"
 
-#: src/main_window.cpp:396
+#: app/main_window.cpp:432
 msgid "Text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgstr "Textdateien (*.txt)|*.txt|Alle Dateien (*.*)|*.*"
 
-#: src/main_window.cpp:402
+#: app/main_window.cpp:436
 msgid "Failed to export document."
 msgstr "Das Dokument konnte nicht exportiert werden."
 
-#: src/main_window.cpp:412
+#: app/main_window.cpp:443
 msgid "Export notes and bookmarks"
 msgstr "Notizen und Lesezeichen exportieren"
 
-#: src/main_window.cpp:412 src/main_window.cpp:426
+#: app/main_window.cpp:443 app/main_window.cpp:453
 msgid "Paperback files (*.paperback)|*.paperback"
 msgstr "Paperback-Dateien (*.paperback)|*.paperback"
 
-#: src/main_window.cpp:417
+#: app/main_window.cpp:446
 msgid "Notes and bookmarks exported successfully."
 msgstr "Notizen und Lesezeichen wurden erfolgreich exportiert."
 
-#: src/main_window.cpp:417
+#: app/main_window.cpp:446
 msgid "Export Successful"
 msgstr "Export erfolgreich"
 
-#: src/main_window.cpp:426
+#: app/main_window.cpp:453
 msgid "Import notes and bookmarks"
 msgstr "Notizen und Lesezeichen importieren"
 
-#: src/main_window.cpp:435
+#: app/main_window.cpp:458
 msgid "Notes and bookmarks imported successfully."
 msgstr "Notizen und Lesezeichen wurden erfolgreich importiert."
 
-#: src/main_window.cpp:435
+#: app/main_window.cpp:458
 msgid "Import Successful"
 msgstr "Import erfolgreich"
 
-#: src/main_window.cpp:642
-#, c-format
-msgid "The document contains %d word"
-msgid_plural "The document contains %d words"
-msgstr[0] "Das Dokument enthält %d Wort"
-msgstr[1] "Das Dokument enthält %d Wörter"
+#: app/main_window.cpp:661
+msgid "No note at the current position."
+msgstr "Keine Notiz an der aktuellen Position."
 
-#: src/main_window.cpp:642
+#: app/main_window.cpp:732
+#, c-format
+msgid "The document contains %zu words."
+msgstr "Das Dokument enthält %zu Wörter."
+
+#: app/main_window.cpp:732
 msgid "Word count"
 msgstr "Wortanzahl"
 
-#: src/main_window.cpp:663
+#: app/main_window.cpp:767
 msgid "Failed to open containing folder."
 msgstr "Öffnen des zugehörigen Ordners fehlgeschlagen."
 
-#: src/main_window.cpp:737
+#: app/main_window.cpp:792
+msgid "Web View"
+msgstr "Webansicht"
+
+#: app/main_window.cpp:795
+msgid "Could not determine content to display in Web View."
+msgstr "Es konnte kein Inhalt für die Webansicht ermittelt werden."
+
+#: app/main_window.cpp:798
+#, c-format
+msgid "Error opening Web View: %s"
+msgstr "Fehler beim Öffnen der Webansicht: %s"
+
+#: app/main_window.cpp:866
 msgid "Failed to launch default browser."
 msgstr "Der Standardbrowser konnte nicht gestartet werden."
 
-#: src/main_window.cpp:745
+#: app/main_window.cpp:873
 msgid ""
 "readme.html not found. Please ensure the application was built properly."
 msgstr ""
 "readme.html nicht gefunden. Bitte stelle sicher, dass die Anwendung korrekt "
 "erstellt wurde."
 
-#: src/main_window.cpp:754
+#: app/main_window.cpp:882
 msgid "Failed to open donation page in browser."
 msgstr "Die Spendenseite konnte nicht im Browser geöffnet werden."
 
-#: src/main_window.cpp:767
+#: app/main_window.cpp:894
 msgid "Sleep timer canceled."
 msgstr "Schlaftimer abgebrochen."
 
-#: src/main_window.cpp:781
+#: app/main_window.cpp:906
 #, c-format
 msgid "Sleep timer set for %d minute%s."
 msgstr "Schlaftimer für %d Minute%s gesetzt."
 
-#: src/main_window.cpp:944
+#: app/main_window.cpp:1010
+msgid "No recent documents."
+msgstr "Keine zuletzt geöffneten Dokumente."
+
+#: app/main_window.cpp:1065
 msgid "(No recent documents)"
 msgstr "(Keine zuletzt geöffneten Dokumente)"
 
-#: src/main_window.cpp:948
+#: app/main_window.cpp:1067
 msgid "Show All...\tCtrl+R"
 msgstr "Zeige alle...\tCtrl+R"
 
-#: src/main_window.cpp:983
+#: app/main_window.cpp:1097
 msgid "No more results. Wrapping search."
 msgstr "Keine weiteren Ergebnisse. Beginne von vorn."
 
-#: src/main_window.cpp:987
-msgid "Not found."
-msgstr "Nicht gefunden."
+#: app/parser.cpp:22
+msgid "Password required or incorrect."
+msgstr "Passwort benötigt oder inkorrekt."
 
-#: src/markdown_parser.cpp:29
-msgid "Failed to open Markdown file"
-msgstr "Öffnen der Markdown-Datei fehlgeschlagen"
-
-#: src/markdown_parser.cpp:34
-msgid "Markdown file is empty"
-msgstr "Markdown-Datei ist leer"
-
-#: src/markdown_parser.cpp:45
-msgid "Failed to convert Markdown HTML to text"
-msgstr "Konvertierung von Markdown-HTML in Text ist fehlgeschlagen"
-
-#: src/odp_parser.cpp:45
-msgid "Failed to open ODP file"
-msgstr "Öffnen der ODP-Datei fehlgeschlagen"
-
-#: src/odp_parser.cpp:57
-msgid "ODP file does not contain content.xml or it is empty"
-msgstr "Die ODP-Datei enthält keine content.xml oder sie ist leer"
-
-#: src/odp_parser.cpp:71
-msgid "ODP file does not contain any pages"
-msgstr "ODP-Datei enthält keinerlei Seiten"
-
-#: src/odt_parser.cpp:40
-msgid "Failed to open ODT file"
-msgstr "Öffnen der ODT-Datei fehlgeschlagen"
-
-#: src/odt_parser.cpp:52
-msgid "ODT file does not contain content.xml or it is empty"
-msgstr "Die ODT-Datei enthält keine content.xml oder sie ist leer"
-
-#: src/pptx_parser.cpp:126
-msgid "Parsing of links in the document failed."
-msgstr "Das Parsen der Links im Dokument war nicht erfolgreich."
-
-#: src/pptx_parser.cpp:172
-#, c-format
-msgid "Error parsing PPTX file: %s"
-msgstr "Fehler beim Parsen der PPTX-Datei: %s"
-
-#: src/pptx_parser.cpp:174
-msgid "Unknown error while parsing PPTX file"
-msgstr "Unbekannter Fehler beim Parsen der PPTX-Datei"
-
-#: src/task_bar_icon.cpp:29
+#: app/task_bar_icon.cpp:22
 msgid "&Restore"
 msgstr "&Wiederherstellen"
 
-#: src/text_parser.cpp:27
-msgid "Failed to open text file"
-msgstr "Öffnen der Textdatei fehlgeschlagen"
+#: app/utils.cpp:46
+msgid "Unsupported format selected."
+msgstr "Ungültiges Format gewählt."
 
-#: src/text_parser.cpp:32
-msgid "Text file is empty"
-msgstr "Textdatei ist leer"
+#~ msgid "Unknown error while parsing CHM file"
+#~ msgstr "Unbekannter Fehler beim Parsen der CHM-Datei"
 
-#: src/update_checker.cpp:82
-msgid "Failed to create update request."
-msgstr "Die Update-Anforderung konnte nicht erstellt werden."
+#~ msgid "Total number of words: "
+#~ msgstr "Wortanzahl: "
 
-#: src/update_checker.cpp:106
+#~ msgid "Total number of lines: "
+#~ msgstr "Zeilen insgesamt: "
+
+#~ msgid "Total number of characters: "
+#~ msgstr "Anzahl Zeichen insgesamt: "
+
 #, c-format
-msgid "Failed to check for updates. HTTP status: %d"
-msgstr "Fehler beim Prüfen auf Updates. HTTP-Status: %d"
+#~ msgid "List with %d items"
+#~ msgstr "Liste mit %d Einträgen"
 
-#: src/update_checker.cpp:117
-msgid "Failed to parse update response."
-msgstr "Parsen der Update-Antwort fehlgeschlagen."
-
-#: src/update_checker.cpp:130
-msgid "No updates available."
-msgstr "Keine Updates verfügbar."
-
-#: src/update_checker.cpp:130
-msgid "Info"
-msgstr "Info"
-
-#: src/update_checker.cpp:157
-msgid "Update is available but download link could not be found."
-msgstr ""
-"Es ist ein Update verfügbar, doch der Downloadlink konnte nicht gefunden "
-"werden."
-
-#: src/update_checker.cpp:162
 #, c-format
-msgid ""
-"There is an update available.\n"
-"Your version: %s\n"
-"Latest version: %s\n"
-"Description:\n"
-"%s\n"
-"Do you want to open the direct download link?"
-msgstr ""
-"Es ist ein Update verfügbar.\n"
-"Installierte Version: %s\n"
-"Neueste Version: %s\n"
-"Beschreibung:\n"
-"%s\n"
-"Soll der direkte Downloadlink geöffnet werden?"
+#~ msgid "List with %d items "
+#~ msgstr "Liste mit %d Einträgen "
 
-#: src/update_checker.cpp:164
-msgid "Update available"
-msgstr "Update verfügbar"
+#, c-format
+#~ msgid "No %s heading"
+#~ msgstr "Keine %s Überschrift"
 
-#: src/update_checker.cpp:174
-msgid "Error checking for updates."
-msgstr "Fehler beim Prüfen auf Updates."
+#~ msgid "next"
+#~ msgstr "weitere"
 
-#: app/dialogs.cpp
-msgid "&Yes"
-msgstr "&Ja"
+#~ msgid "previous"
+#~ msgstr "vorherige"
 
-#: app/dialogs.cpp
-msgid "&No"
-msgstr "&Nein"
+#, c-format
+#~ msgid "Wrapping to %s. %s Heading level %d"
+#~ msgstr "Springe zum %s. %s Überschrift Ebene %d"
+
+#~ msgid "start"
+#~ msgstr "Anfang"
+
+#~ msgid "end"
+#~ msgstr "Ende"
+
+#, c-format
+#~ msgid "XML parsing error: %s"
+#~ msgstr "XML-Parserfehler: %s"
+
+#~ msgid "Unknown error while parsing DOCX file"
+#~ msgstr "Unbekannter Fehler beim Parsen der DOCX-Datei"
+
+#, c-format
+#~ msgid "Couldn't parse table of contents: %s"
+#~ msgstr "Konnte Inhaltsverzeichnis nicht lesen: %s"
+
+#~ msgid "Failed to open FB2 file"
+#~ msgstr "Öffnen der FB2-Datei fehlgeschlagen"
+
+#~ msgid "FB2 file is empty or could not be read"
+#~ msgstr "FB2-Datei ist leer oder konnte nicht gelesen werden"
+
+#~ msgid "Failed to convert FB2 XML to text"
+#~ msgstr "Konvertierung von FB2-XML in Text ist fehlgeschlagen"
+
+#~ msgid "Failed to open HTML file"
+#~ msgstr "Öffnen der HTML-Datei fehlgeschlagen"
+
+#~ msgid "Failed to convert HTML to text"
+#~ msgstr "Konvertierung von HTML zu Text fehlgeschlagen"
+
+#~ msgid "Failed to open Markdown file"
+#~ msgstr "Öffnen der Markdown-Datei fehlgeschlagen"
+
+#~ msgid "Markdown file is empty"
+#~ msgstr "Markdown-Datei ist leer"
+
+#~ msgid "Failed to convert Markdown HTML to text"
+#~ msgstr "Konvertierung von Markdown-HTML in Text ist fehlgeschlagen"
+
+#~ msgid "Failed to open ODP file"
+#~ msgstr "Öffnen der ODP-Datei fehlgeschlagen"
+
+#~ msgid "ODP file does not contain content.xml or it is empty"
+#~ msgstr "Die ODP-Datei enthält keine content.xml oder sie ist leer"
+
+#~ msgid "ODP file does not contain any pages"
+#~ msgstr "ODP-Datei enthält keinerlei Seiten"
+
+#~ msgid "Failed to open ODT file"
+#~ msgstr "Öffnen der ODT-Datei fehlgeschlagen"
+
+#~ msgid "ODT file does not contain content.xml or it is empty"
+#~ msgstr "Die ODT-Datei enthält keine content.xml oder sie ist leer"
+
+#~ msgid "Parsing of links in the document failed."
+#~ msgstr "Das Parsen der Links im Dokument war nicht erfolgreich."
+
+#, c-format
+#~ msgid "Error parsing PPTX file: %s"
+#~ msgstr "Fehler beim Parsen der PPTX-Datei: %s"
+
+#~ msgid "Unknown error while parsing PPTX file"
+#~ msgstr "Unbekannter Fehler beim Parsen der PPTX-Datei"
+
+#~ msgid "Failed to open text file"
+#~ msgstr "Öffnen der Textdatei fehlgeschlagen"
+
+#~ msgid "Text file is empty"
+#~ msgstr "Textdatei ist leer"
+
+#~ msgid "Failed to create update request."
+#~ msgstr "Die Update-Anforderung konnte nicht erstellt werden."
+
+#~ msgid "Failed to parse update response."
+#~ msgstr "Parsen der Update-Antwort fehlgeschlagen."
+
+#~ msgid "Update is available but download link could not be found."
+#~ msgstr ""
+#~ "Es ist ein Update verfügbar, doch der Downloadlink konnte nicht gefunden "
+#~ "werden."
+
+#, c-format
+#~ msgid ""
+#~ "There is an update available.\n"
+#~ "Your version: %s\n"
+#~ "Latest version: %s\n"
+#~ "Description:\n"
+#~ "%s\n"
+#~ "Do you want to open the direct download link?"
+#~ msgstr ""
+#~ "Es ist ein Update verfügbar.\n"
+#~ "Installierte Version: %s\n"
+#~ "Neueste Version: %s\n"
+#~ "Beschreibung:\n"
+#~ "%s\n"
+#~ "Soll der direkte Downloadlink geöffnet werden?"
+
+#~ msgid "Update available"
+#~ msgstr "Update verfügbar"
 
 #~ msgid "&Export...\tCtrl+E"
 #~ msgstr "&Exportieren...\tCtrl+E"
