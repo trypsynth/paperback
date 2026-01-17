@@ -249,9 +249,26 @@ impl ConfigManager {
 	}
 
 	pub fn get_opened_documents(&self) -> Vec<String> {
+		if !self.is_ready() {
+			return Vec::new();
+		}
 		let mut entries = self.iter_section(Some("opened_documents"));
 		entries.sort_by(|a, b| a.0.cmp(&b.0));
-		entries.into_iter().map(|(_, v)| v).collect()
+		if !entries.is_empty() {
+			return entries.into_iter().map(|(_, v)| v).collect();
+		}
+		let mut opened = Vec::new();
+		for path in self.get_recent_documents() {
+			if self.get_document_opened(&path) {
+				opened.push(path);
+			}
+		}
+		for path in self.get_all_documents() {
+			if self.get_document_opened(&path) && !opened.contains(&path) {
+				opened.push(path);
+			}
+		}
+		opened
 	}
 
 	pub fn get_opened_documents_existing(&self) -> Vec<String> {
