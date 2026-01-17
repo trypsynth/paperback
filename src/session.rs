@@ -8,13 +8,13 @@ use sha1::{Digest, Sha1};
 use zip::ZipArchive;
 
 use crate::{
-	bridge::ffi::{self, NavDirection, NavTarget},
 	config::ConfigManager,
 	document::{DocumentHandle, MarkerType, ParserContext, ParserFlags},
 	parser,
 	reader_core::{
 		bookmark_navigate, get_filtered_bookmarks, history_go_next, history_go_previous, reader_navigate, resolve_link,
 	},
+	ui_types::{self as ffi, NavDirection, NavTarget},
 	utils::zip as zip_utils,
 };
 

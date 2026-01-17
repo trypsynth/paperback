@@ -772,8 +772,8 @@ pub fn get_sorted_document_list(
 	config: &ConfigManager,
 	open_paths: &[String],
 	filter: &str,
-) -> Vec<crate::bridge::ffi::FfiDocumentListItem> {
-	use crate::bridge::ffi::{DocumentListStatus, FfiDocumentListItem};
+) -> Vec<crate::ui_types::FfiDocumentListItem> {
+	use crate::ui_types::{DocumentListStatus, FfiDocumentListItem};
 
 	let recent_docs = config.get_recent_documents();
 	let all_docs = config.get_all_documents();
