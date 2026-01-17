@@ -1,10 +1,15 @@
 {
 	"name": "paperback",
-	"version": "0.6.1",
+	"version": "0.7.0",
 	"dependencies": [
 		{
 			"name": "wxwidgets",
-			"features": ["webview"]
+			"features": ["webview"],
+			"platform": "windows"
+		},
+		{
+			"name": "wxwidgets",
+			"platform": "!windows"
 		}
 	]
 }

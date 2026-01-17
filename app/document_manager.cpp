@@ -1,12 +1,3 @@
-/* document_manager.cpp - manages documents and helps bridge them to the main window.
- *
- * Paperback.
- * Copyright (c) 2025 Quin Gillespie.
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
-
 #include "document_manager.hpp"
 #include "config_manager.hpp"
 #include "constants.hpp"
@@ -16,7 +7,6 @@
 #include "parser.hpp"
 #include "utils.hpp"
 #include <algorithm>
-#include <cstdint>
 #include <cstddef>
 #include <iterator>
 #include <memory>
@@ -43,88 +33,40 @@ wxString rust_to_wx(const rust::String& rust_str) {
 	return wxString::FromUTF8(std::string(rust_str).c_str());
 }
 
-bool supports_feature(uint32_t flags, uint32_t feature) {
-	return (flags & feature) != 0;
-}
-
-constexpr uint32_t PARSER_SUPPORTS_SECTIONS = 1 << 0;
-constexpr uint32_t PARSER_SUPPORTS_TOC = 1 << 1;
-constexpr uint32_t PARSER_SUPPORTS_PAGES = 1 << 2;
-constexpr uint32_t PARSER_SUPPORTS_LISTS = 1 << 3;
-
-int to_rust_marker(marker_type type) {
-	return static_cast<int>(type);
-}
-
-std::vector<long> to_long_vector(const rust::Vec<long long>& values) {
-	std::vector<long> result(values.size());
-	std::transform(values.begin(), values.end(), result.begin(), [](long long value) {
-		return static_cast<long>(value);
-	});
-	return result;
-}
-
-rust::Vec<long long> to_rust_history(const std::vector<long>& history) {
-	rust::Vec<long long> rust_history;
-	rust_history.reserve(history.size());
-	std::transform(history.begin(), history.end(), std::back_inserter(rust_history), [](long value) {
-		return static_cast<long long>(value);
-	});
-	return rust_history;
-}
-
 void populate_toc_items(std::vector<std::unique_ptr<toc_item>>& toc_items, const rust::Vec<FfiTocItemWithParent>& ffi_toc_items) {
-	if (ffi_toc_items.empty()) {
-		return;
-	}
-
-	// Track pointers to items by their index for parent lookups
+	if (ffi_toc_items.empty()) return;
 	std::vector<toc_item*> item_ptrs;
 	item_ptrs.reserve(ffi_toc_items.size());
-
 	for (const auto& rust_toc : ffi_toc_items) {
 		auto item = std::make_unique<toc_item>();
 		item->name = to_wxstring(rust_toc.name);
 		item->ref = to_wxstring(rust_toc.reference);
 		item->offset = rust_toc.offset;
-
-		toc_item* item_ptr = item.get();
-
-		// Use parent_index to find where to insert
+		toc_item* item_ptr = nullptr;
 		if (rust_toc.parent_index < 0) {
-			// Root level item
 			toc_items.push_back(std::move(item));
+			item_ptr = toc_items.back().get();
 		} else {
-			// Child item - add to parent's children
 			const auto parent_idx = static_cast<size_t>(rust_toc.parent_index);
-			if (parent_idx < item_ptrs.size()) {
+			if (parent_idx < item_ptrs.size() && item_ptrs[parent_idx] != nullptr) {
 				item_ptrs[parent_idx]->children.push_back(std::move(item));
+				item_ptr = item_ptrs[parent_idx]->children.back().get();
 			} else {
-				// Fallback to root if parent index is invalid
+				// Fallback to root if parent index is invalid.
 				toc_items.push_back(std::move(item));
+				item_ptr = toc_items.back().get();
 			}
 		}
-
 		item_ptrs.push_back(item_ptr);
 	}
 }
 
-void ensure_toc_loaded(session_document& session_doc) {
-	if (session_doc.toc_loaded) {
-		return;
-	}
-	session_doc.toc_loaded = true;
-	const DocumentHandle& handle = session_doc.get_handle();
-	populate_toc_items(session_doc.toc_items, document_toc_items_with_parents(handle));
-}
 } // namespace
 
 void session_document::ensure_toc_loaded() {
-	if (toc_loaded) {
-		return;
-	}
+	if (toc_loaded) return;
 	toc_loaded = true;
-	populate_toc_items(toc_items, document_toc_items_with_parents(get_handle()));
+	populate_toc_items(toc_items, session_toc_items_with_parents(*session));
 }
 
 document_manager::document_manager(wxNotebook* nbk, config_manager& cfg, main_window& win) : notebook{nbk}, config{cfg}, main_win{win} {
@@ -149,21 +91,14 @@ bool document_manager::open_file(const wxString& path, bool add_to_recent) {
 	if (existing_tab >= 0) {
 		notebook->SetSelection(existing_tab);
 		auto* const text_ctrl = get_active_text_ctrl();
-		if (text_ctrl != nullptr) {
-			text_ctrl->SetFocus();
-		}
+		if (text_ctrl != nullptr) text_ctrl->SetFocus();
 		return true;
 	}
-	const parser_info* parser = find_parser_by_extension(wxFileName(path).GetExt());
-	if (parser == nullptr) {
-		parser = get_parser_for_unknown_file(path, config);
-		if (parser == nullptr) {
-			return false;
-		}
+	const wxString extension = wxFileName(path).GetExt();
+	if (!is_parser_supported(extension)) {
+		if (!ensure_parser_for_unknown_file(path, config)) return false;
 	}
-	if (!create_document_tab(path, parser, true, add_to_recent)) {
-		return false;
-	}
+	if (!create_document_tab(path, true, add_to_recent)) return false;
 	auto* const text_ctrl = get_active_text_ctrl();
 	if (text_ctrl != nullptr) {
 		text_ctrl->Bind(wxEVT_KEY_UP, &main_window::on_text_cursor_changed, &main_win);
@@ -173,11 +108,7 @@ bool document_manager::open_file(const wxString& path, bool add_to_recent) {
 	return true;
 }
 
-bool document_manager::create_document_tab(const wxString& path, const parser_info* parser, bool set_focus, bool add_to_recent) {
-	if (parser == nullptr) {
-		return false;
-	}
-
+bool document_manager::create_document_tab(const wxString& path, bool set_focus, bool add_to_recent) {
 	try {
 		config.import_document_settings(path);
 		const wxString forced_extension = config.get_document_format(path);
@@ -189,7 +120,6 @@ bool document_manager::create_document_tab(const wxString& path, const parser_in
 			const std::string extension_utf8 = forced_extension.ToUTF8().data();
 			return session_new(path_utf8, password_utf8, extension_utf8);
 		};
-
 		rust::Box<DocumentSession> session = [&]() -> rust::Box<DocumentSession> {
 			try {
 				auto sess = load_session(saved_password);
@@ -197,7 +127,8 @@ bool document_manager::create_document_tab(const wxString& path, const parser_in
 				return sess;
 			} catch (const std::exception& e) {
 				const std::string error_msg = e.what();
-				if (error_msg.find("[password_required]") == 0) {
+				const auto info = parser_error_info(error_msg);
+				if (info.kind == ParserErrorKind::PasswordRequired) {
 					config.set_document_password(path, wxEmptyString);
 					password_dialog dlg(&main_win);
 					if (dlg.ShowModal() != wxID_OK) {
@@ -212,37 +143,19 @@ bool document_manager::create_document_tab(const wxString& path, const parser_in
 				throw;
 			}
 		}();
-
 		if (!password_in_use.IsEmpty()) config.set_document_password(path, password_in_use);
-		std::vector<long> history;
-		size_t history_index = 0;
-		config.get_navigation_history(path, history, history_index);
-		if (!history.empty()) {
-			rust::Vec<long long> rust_history;
-			rust_history.reserve(history.size());
-			for (long pos : history) rust_history.push_back(static_cast<long long>(pos));
-			rust::Slice<const std::int64_t> history_slice(rust_history.data(), rust_history.size());
-			session_set_history(*session, history_slice, history_index);
-		}
-
-		// Create session_document wrapper
+		const std::string path_utf8 = path.ToUTF8().data();
+		session_load_history_from_config(*session, config.backend_for_ffi(), path_utf8);
 		auto session_doc = std::make_unique<session_document>(std::move(session));
-
-		// Create tab
 		auto* tab_data = new document_tab;
 		tab_data->session_doc = std::move(session_doc);
 		tab_data->file_path = path;
-		tab_data->parser = parser;
 		wxPanel* panel = create_tab_panel(tab_data->session_doc->content, tab_data);
 		tab_data->panel = panel;
 		notebook->AddPage(panel, tab_data->session_doc->get_title(), true);
 		restore_document_position(tab_data);
-		if (set_focus) {
-			tab_data->text_ctrl->SetFocus();
-		}
-		if (add_to_recent) {
-			config.add_recent_document(path);
-		}
+		if (set_focus) tab_data->text_ctrl->SetFocus();
+		if (add_to_recent) config.add_recent_document(path);
 		config.set_document_opened(path, true);
 		return true;
 	} catch (const std::exception&) {
@@ -258,27 +171,15 @@ void document_manager::update_ui() {
 }
 
 void document_manager::close_document(int index) {
-	if (index < 0 || index >= get_tab_count()) {
-		return;
-	}
+	if (index < 0 || index >= get_tab_count()) return;
 	const document_tab* tab = get_tab(index);
 	if (tab != nullptr && tab->text_ctrl != nullptr) {
 		const int position = tab->text_ctrl->GetInsertionPoint();
 		save_document_position(tab->file_path, position);
-
-		// Save navigation history from session
 		if (tab->session_doc && tab->get_session()) {
-			const auto history_data = session_get_history(*tab->get_session());
-			if (!history_data.positions.empty()) {
-				std::vector<long> history_vec;
-				history_vec.reserve(history_data.positions.size());
-				for (const auto pos : history_data.positions) {
-					history_vec.push_back(static_cast<long>(pos));
-				}
-				config.set_navigation_history(tab->file_path, history_vec, history_data.index);
-			}
+			const std::string path_utf8 = tab->file_path.ToUTF8().data();
+			session_save_history_to_config(*tab->get_session(), config.backend_for_ffi_mut(), path_utf8);
 		}
-
 		config.set_document_opened(tab->file_path, false);
 	}
 	notebook->DeletePage(index);
@@ -288,35 +189,25 @@ void document_manager::close_all_documents() {
 	save_all_tab_positions();
 	for (int i = 0; i < get_tab_count(); ++i) {
 		const document_tab* tab = get_tab(i);
-		if (tab != nullptr) {
-			config.set_document_opened(tab->file_path, false);
-		}
+		if (tab != nullptr) 	config.set_document_opened(tab->file_path, false);
 	}
 	notebook->DeleteAllPages();
 }
 
 bool document_manager::export_document(int index, const wxString& export_path) const {
 	const document_tab* tab = get_tab(index);
-	if (tab == nullptr || tab->text_ctrl == nullptr) {
+	if (tab == nullptr || tab->session_doc == nullptr) return false;
+	try {
+		const std::string path_utf8 = export_path.ToUTF8().data();
+		session_export_content(*tab->get_session(), path_utf8);
+		return true;
+	} catch (const std::exception&) {
 		return false;
 	}
-	const wxString content = tab->text_ctrl->GetValue();
-	const wxCharBuffer buf = content.ToUTF8();
-	if (!buf.data()) {
-		return false;
-	}
-	wxFileOutputStream out(export_path);
-	if (!out.IsOk()) {
-		return false;
-	}
-	out.Write(buf.data(), buf.length());
-	return out.IsOk();
 }
 
 document_tab* document_manager::get_tab(int index) const {
-	if (index < 0 || index >= get_tab_count()) {
-		return nullptr;
-	}
+	if (index < 0 || index >= get_tab_count()) return nullptr;
 	const auto* panel = dynamic_cast<wxPanel*>(notebook->GetPage(index));
 	return dynamic_cast<document_tab*>(panel->GetClientObject());
 }
@@ -331,11 +222,6 @@ wxTextCtrl* document_manager::get_active_text_ctrl() const {
 	return tab != nullptr ? tab->text_ctrl : nullptr;
 }
 
-const parser_info* document_manager::get_active_parser() const {
-	const document_tab* tab = get_active_tab();
-	return tab != nullptr ? tab->parser : nullptr;
-}
-
 int document_manager::get_tab_count() const {
 	return static_cast<int>(notebook->GetPageCount());
 }
@@ -344,64 +230,102 @@ int document_manager::get_active_tab_index() const {
 	return notebook->GetSelection();
 }
 
-int document_manager::page_index(size_t position) const {
-	const document_tab* tab = get_active_tab();
-	if (tab == nullptr || tab->session_doc == nullptr) {
-		return -1;
-	}
-	return document_page_index(tab->session_doc->get_handle(), position);
-}
-
-size_t document_manager::marker_count(marker_type type) const {
-	const document_tab* tab = get_active_tab();
-	if (tab == nullptr || tab->session_doc == nullptr) {
-		return 0;
-	}
-	return document_count_markers(tab->session_doc->get_handle(), to_rust_marker(type));
-}
-
-size_t document_manager::marker_position_by_index(marker_type type, int index) const {
-	const document_tab* tab = get_active_tab();
-	if (tab == nullptr || tab->session_doc == nullptr) {
-		return 0;
-	}
-	return document_marker_position_by_index(tab->session_doc->get_handle(), to_rust_marker(type), index);
-}
-
 void document_manager::go_to_position(int position) const {
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (text_ctrl == nullptr) {
-		return;
-	}
+	if (text_ctrl == nullptr) return;
 	const int max_pos = text_ctrl->GetLastPosition();
 	position = std::clamp(position, 0, max_pos);
 	text_ctrl->SetInsertionPoint(position);
 	text_ctrl->ShowPosition(position);
 }
 
-void document_manager::navigate_to_section(bool next) const {
+namespace {
+struct nav_announcements {
+	wxString not_supported;
+	wxString not_found_next;
+	wxString not_found_prev;
+	// For formatting found messages - %s is context_text, %d is context_index
+	enum class found_format { text_only, text_with_index, text_with_level, page_format, link_format };
+	found_format format{found_format::text_only};
+};
+
+nav_announcements get_nav_announcements(NavTarget target, int level_filter) {
+	switch (target) {
+		case NavTarget::Section:
+			return {_("No sections."), _("No next section"), _("No previous section"), nav_announcements::found_format::text_only};
+		case NavTarget::Heading:
+			if (level_filter > 0) {
+				return {
+					wxString::Format(_("No headings at level %d."), level_filter),
+					wxString::Format(_("No next heading at level %d."), level_filter),
+					wxString::Format(_("No previous heading at level %d."), level_filter),
+					nav_announcements::found_format::text_with_level
+				};
+			}
+			return {_("No headings."), _("No next heading."), _("No previous heading."), nav_announcements::found_format::text_with_level};
+		case NavTarget::Page:
+			return {_("No pages."), _("No next page."), _("No previous page."), nav_announcements::found_format::page_format};
+		case NavTarget::Link:
+			return {_("No links."), _("No next link."), _("No previous link."), nav_announcements::found_format::link_format};
+		case NavTarget::List:
+			return {_("No lists."), _("No next list."), _("No previous list."), nav_announcements::found_format::text_only};
+		case NavTarget::ListItem:
+			return {_("No list items."), _("No next list item."), _("No previous list item."), nav_announcements::found_format::text_only};
+		case NavTarget::Table:
+			return {_("No tables."), _("No next table."), _("No previous table."), nav_announcements::found_format::text_only};
+		default:
+			return {_("Not supported."), _("Not found."), _("Not found."), nav_announcements::found_format::text_only};
+	}
+}
+
+wxString format_nav_found_message(const nav_announcements& ann, const wxString& context_text, int context_index, bool wrapped, bool next) {
+	wxString wrap_prefix;
+	if (wrapped) wrap_prefix = next ? _("Wrapping to start. ") : _("Wrapping to end. ");
+	switch (ann.format) {
+		case nav_announcements::found_format::text_only:
+			return wrap_prefix + context_text;
+		case nav_announcements::found_format::text_with_level:
+			return wrap_prefix + wxString::Format(_("%s Heading level %d"), context_text, context_index);
+		case nav_announcements::found_format::page_format:
+			return wrap_prefix + wxString::Format(_("Page %d: %s"), context_index + 1, context_text);
+		case nav_announcements::found_format::link_format:
+			return wrap_prefix + context_text + _(" link");
+		case nav_announcements::found_format::text_with_index:
+		default:
+			return wrap_prefix + context_text;
+	}
+}
+} // namespace
+
+void document_manager::navigate_to_element(NavTarget target, bool next, int level_filter) const {
 	const document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
-	const bool wrap = config.get(config_manager::navigation_wrap);
-	const auto result = session_navigate_section(*tab->get_session(), text_ctrl->GetInsertionPoint(), wrap, next);
-	if (result.not_supported) {
-		speak(_("No sections."));
-		return;
+	const auto direction = next ? NavDirection::Next : NavDirection::Previous;
+	const auto result = session_navigate_unified(*tab->get_session(), config.backend_for_ffi(), text_ctrl->GetInsertionPoint(), target, direction, level_filter);
+	const auto ann = get_nav_announcements(target, level_filter);
+	switch (result.outcome) {
+		case NavOutcome::NotSupported:
+			speak(ann.not_supported);
+			return;
+		case NavOutcome::NotFound:
+			speak(next ? ann.not_found_next : ann.not_found_prev);
+			return;
+		case NavOutcome::Found:
+		case NavOutcome::FoundWrapped: {
+			text_ctrl->SetInsertionPoint(static_cast<long>(result.offset));
+			const wxString context_text = rust_to_wx(result.context_text);
+			const bool wrapped = result.outcome == NavOutcome::FoundWrapped;
+			speak(format_nav_found_message(ann, context_text, result.context_index, wrapped, next));
+			break;
+		}
+		default:
+			break;
 	}
-	if (!result.found) {
-		speak(next ? _("No next section") : _("No previous section"));
-		return;
-	}
-	const long offset = static_cast<long>(result.offset);
-	text_ctrl->SetInsertionPoint(offset);
-	long line{0};
-	text_ctrl->PositionToXY(offset, nullptr, &line);
-	const wxString current_line = text_ctrl->GetLineText(line);
-	if (result.wrapped)
-		speak((next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + current_line);
-	else
-		speak(current_line);
+}
+
+void document_manager::navigate_to_section(bool next) const {
+	navigate_to_element(NavTarget::Section, next);
 }
 
 void document_manager::go_to_previous_section() const {
@@ -429,29 +353,7 @@ void document_manager::go_to_next_heading(int level) const {
 }
 
 void document_manager::navigate_to_page(bool next) const {
-	const document_tab* tab = get_active_tab();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
-	const bool wrap = config.get(config_manager::navigation_wrap);
-	const auto result = session_navigate_page(*tab->get_session(), text_ctrl->GetInsertionPoint(), wrap, next);
-	if (result.not_supported) {
-		speak(_("No pages."));
-		return;
-	}
-	if (!result.found) {
-		speak(next ? _("No next page.") : _("No previous page."));
-		return;
-	}
-	const long offset = static_cast<long>(result.offset);
-	text_ctrl->SetInsertionPoint(offset);
-	long line{0};
-	text_ctrl->PositionToXY(offset, nullptr, &line);
-	const wxString current_line = text_ctrl->GetLineText(line);
-	wxString message = wxString::Format(_("Page %d: %s"), result.marker_index + 1, current_line);
-	if (result.wrapped) {
-		message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
-	}
-	speak(message);
+	navigate_to_element(NavTarget::Page, next);
 }
 
 void document_manager::go_to_previous_page() const {
@@ -462,71 +364,43 @@ void document_manager::go_to_next_page() const {
 	navigate_to_page(true);
 }
 
-void document_manager::navigate_to_bookmark(bool next) const {
+void document_manager::navigate_to_bookmark_or_note(bool next, bool notes_only) const {
 	const document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr) {
+	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
+	const auto direction = next ? NavDirection::Next : NavDirection::Previous;
+	const auto result = session_navigate_bookmark_unified(*tab->get_session(), config.backend_for_ffi(), text_ctrl->GetInsertionPoint(), direction, notes_only);
+	if (result.outcome == NavOutcome::NotFound) {
+		if (notes_only)
+			speak(next ? _("No next note") : _("No previous note"));
+		else
+			speak(next ? _("No next bookmark") : _("No previous bookmark"));
 		return;
 	}
-	const bool allow_wrap = config.get(config_manager::navigation_wrap);
-	const std::string path_utf8 = std::string(tab->file_path.ToUTF8().data());
-	const auto result = bookmark_navigate(config.backend_for_ffi(), path_utf8, text_ctrl->GetInsertionPoint(), allow_wrap, next, false);
-	if (!result.found) {
-		speak(next ? _("No next bookmark") : _("No previous bookmark"));
-		return;
-	}
-	text_ctrl->SetInsertionPoint(static_cast<long>(result.start));
-	wxString text_to_speak;
-	if (result.start == result.end) {
-		long line{0};
-		text_ctrl->PositionToXY(static_cast<long>(result.start), nullptr, &line);
-		text_to_speak = text_ctrl->GetLineText(line);
+	text_ctrl->SetInsertionPoint(static_cast<long>(result.offset));
+	const wxString snippet = rust_to_wx(result.context_text);
+	const int index = result.context_index >= 0 ? result.context_index : 0;
+	wxString announcement;
+	if (notes_only) {
+		const wxString note_text = rust_to_wx(result.secondary_text);
+		if (!note_text.IsEmpty())
+			announcement = wxString::Format(_("%s - %s - Note %d"), note_text, snippet, index + 1);
+		else
+			announcement = wxString::Format(_("%s - Note %d"), snippet, index + 1);
 	} else {
-		text_to_speak = text_ctrl->GetRange(static_cast<long>(result.start), static_cast<long>(result.end));
+		announcement = wxString::Format(_("%s - Bookmark %d"), snippet, index + 1);
 	}
-	const int index = result.index >= 0 ? result.index : 0;
-	wxString announcement = wxString::Format(_("%s - Bookmark %d"), text_to_speak, index + 1);
-	if (result.wrapped) {
+	if (result.outcome == NavOutcome::FoundWrapped)
 		announcement = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + announcement;
-	}
 	speak(announcement);
 }
 
+void document_manager::navigate_to_bookmark(bool next) const {
+	navigate_to_bookmark_or_note(next, false);
+}
+
 void document_manager::navigate_to_note(bool next) const {
-	const document_tab* tab = get_active_tab();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr) {
-		return;
-	}
-	const bool allow_wrap = config.get(config_manager::navigation_wrap);
-	const std::string path_utf8 = std::string(tab->file_path.ToUTF8().data());
-	const auto result = bookmark_navigate(config.backend_for_ffi(), path_utf8, text_ctrl->GetInsertionPoint(), allow_wrap, next, true);
-	if (!result.found) {
-		speak(next ? _("No next note") : _("No previous note"));
-		return;
-	}
-	const auto start = static_cast<long>(result.start);
-	const auto end = static_cast<long>(result.end);
-	text_ctrl->SetInsertionPoint(start);
-	wxString text_to_speak;
-	if (start == end) {
-		long line{0};
-		text_ctrl->PositionToXY(start, nullptr, &line);
-		text_to_speak = text_ctrl->GetLineText(line);
-	} else {
-		text_to_speak = text_ctrl->GetRange(start, end);
-	}
-	auto note = result.note;
-	const wxString note_text = wxString::FromUTF8(note.c_str());
-	const int index = result.index >= 0 ? result.index : 0;
-	wxString announcement = wxString::Format(_("%s - Note %d"), text_to_speak, index + 1);
-	if (!note_text.IsEmpty()) {
-		announcement = wxString::Format(_("%s - %s - Note %d"), note_text, text_to_speak, index + 1);
-	}
-	if (result.wrapped) {
-		announcement = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + announcement;
-	}
-	speak(announcement);
+	navigate_to_bookmark_or_note(next, true);
 }
 
 void document_manager::go_to_previous_bookmark() const {
@@ -546,32 +420,7 @@ void document_manager::go_to_next_note() const {
 }
 
 void document_manager::navigate_to_link(bool next) const {
-	const document_tab* tab = get_active_tab();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
-	const bool wrap = config.get(config_manager::navigation_wrap);
-	const auto result = session_navigate_link(*tab->get_session(), text_ctrl->GetInsertionPoint(), wrap, next);
-	if (result.not_supported) {
-		speak(_("No links."));
-		return;
-	}
-	if (!result.found) {
-		speak(next ? _("No next link.") : _("No previous link."));
-		return;
-	}
-	const long offset = static_cast<long>(result.offset);
-	text_ctrl->SetInsertionPoint(offset);
-	wxString link_text = rust_to_wx(rust::String(result.marker_text));
-	if (link_text.IsEmpty()) {
-		long line{0};
-		text_ctrl->PositionToXY(offset, nullptr, &line);
-		link_text = text_ctrl->GetLineText(line);
-	}
-	wxString message = link_text + _(" link");
-	if (result.wrapped) {
-		message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
-	}
-	speak(message);
+	navigate_to_element(NavTarget::Link, next);
 }
 
 void document_manager::go_to_previous_link() const {
@@ -582,32 +431,26 @@ void document_manager::go_to_next_link() const {
 	navigate_to_link(true);
 }
 
-void document_manager::go_to_previous_position() const {
+void document_manager::navigate_history(bool next) const {
 	document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
-	const long actual_pos = text_ctrl->GetInsertionPoint();
-	auto result = session_history_go_back(*tab->get_session(), actual_pos);
-	if (result.found) {
+	const auto direction = next ? NavDirection::Next : NavDirection::Previous;
+	const auto result = session_history_navigate(*tab->get_session(), config.backend_for_ffi(), text_ctrl->GetInsertionPoint(), direction);
+	if (result.outcome == NavOutcome::Found) {
 		go_to_position(static_cast<long>(result.offset));
-		speak(_("Navigated to previous position."));
+		speak(next ? _("Navigated to next position.") : _("Navigated to previous position."));
 	} else {
-		speak(_("No previous position."));
+		speak(next ? _("No next position.") : _("No previous position."));
 	}
 }
 
+void document_manager::go_to_previous_position() const {
+	navigate_history(false);
+}
+
 void document_manager::go_to_next_position() const {
-	document_tab* tab = get_active_tab();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
-	const long actual_pos = text_ctrl->GetInsertionPoint();
-	auto result = session_history_go_forward(*tab->get_session(), actual_pos);
-	if (result.found) {
-		go_to_position(static_cast<long>(result.offset));
-		speak(_("Navigated to next position."));
-	} else {
-		speak(_("No next position."));
-	}
+	navigate_history(true);
 }
 
 void document_manager::activate_current_link() const {
@@ -619,10 +462,8 @@ void document_manager::activate_current_link() const {
 	if (!result.found) return;  // No link at current position
 	switch (result.action) {
 		case FfiLinkAction::External:
-			if (wxLaunchDefaultBrowser(rust_to_wx(rust::String(result.url))))
-				speak(_("Opening link in default browser."));
-			else
-				speak(_("Failed to open link."));
+			if (wxLaunchDefaultBrowser(rust_to_wx(rust::String(result.url)))) speak(_("Opening link in default browser."));
+			else speak(_("Failed to open link."));
 			break;
 		case FfiLinkAction::Internal:
 			go_to_position(static_cast<long>(result.offset));
@@ -637,29 +478,7 @@ void document_manager::activate_current_link() const {
 }
 
 void document_manager::navigate_to_list(bool next) const {
-	const document_tab* tab = get_active_tab();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
-	const bool wrap = config.get(config_manager::navigation_wrap);
-	const auto result = session_navigate_list(*tab->get_session(), text_ctrl->GetInsertionPoint(), wrap, next);
-	if (result.not_supported) {
-		speak(_("No lists."));
-		return;
-	}
-	if (!result.found) {
-		speak(next ? _("No next list.") : _("No previous list."));
-		return;
-	}
-	const long offset = static_cast<long>(result.offset);
-	text_ctrl->SetInsertionPoint(offset);
-	long line{0};
-	text_ctrl->PositionToXY(offset, nullptr, &line);
-	const wxString current_line = text_ctrl->GetLineText(line);
-	wxString message = current_line;
-	if (result.wrapped) {
-		message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
-	}
-	speak(message);
+	navigate_to_element(NavTarget::List, next);
 }
 
 void document_manager::go_to_previous_list() const {
@@ -671,29 +490,7 @@ void document_manager::go_to_next_list() const {
 }
 
 void document_manager::navigate_to_list_item(bool next) const {
-	const document_tab* tab = get_active_tab();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
-	const bool wrap = config.get(config_manager::navigation_wrap);
-	const auto result = session_navigate_list_item(*tab->get_session(), text_ctrl->GetInsertionPoint(), wrap, next);
-	if (result.not_supported) {
-		speak(_("No list items."));
-		return;
-	}
-	if (!result.found) {
-		speak(next ? _("No next list item.") : _("No previous list item."));
-		return;
-	}
-	const long offset = static_cast<long>(result.offset);
-	text_ctrl->SetInsertionPoint(offset);
-	long line{0};
-	text_ctrl->PositionToXY(offset, nullptr, &line);
-	const wxString current_line = text_ctrl->GetLineText(line);
-	wxString message = current_line;
-	if (result.wrapped) {
-		message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
-	}
-	speak(message);
+	navigate_to_element(NavTarget::ListItem, next);
 }
 
 void document_manager::go_to_previous_list_item() const {
@@ -707,9 +504,7 @@ void document_manager::go_to_next_list_item() const {
 void document_manager::toggle_bookmark() const {
 	const document_tab* tab = get_active_tab();
 	const wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr) {
-		return;
-	}
+	if (tab == nullptr || text_ctrl == nullptr) return;
 	long selection_start = 0;
 	long selection_end = 0;
 	text_ctrl->GetSelection(&selection_start, &selection_end);
@@ -722,12 +517,7 @@ void document_manager::toggle_bookmark() const {
 		bookmark_start = current_pos;
 		bookmark_end = current_pos;
 	}
-	std::vector<bookmark> bookmarks = config.get_bookmarks(tab->file_path);
-	bookmark to_toggle(bookmark_start, bookmark_end);
-	const bool was_bookmarked = std::any_of(bookmarks.begin(), bookmarks.end(), [&](const bookmark& bm) {
-		return bm == to_toggle;
-	});
-	config.toggle_bookmark(tab->file_path, bookmark_start, bookmark_end);
+	const bool was_bookmarked = config_manager_toggle_bookmark_with_result(config.backend_for_ffi_mut(), tab->file_path.ToUTF8().data(), bookmark_start, bookmark_end, "");
 	config.flush();
 	speak(was_bookmarked ? _("Bookmark removed") : _("Bookmarked"));
 }
@@ -735,9 +525,7 @@ void document_manager::toggle_bookmark() const {
 void document_manager::add_bookmark_with_note() const {
 	const document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr) {
-		return;
-	}
+	if (tab == nullptr || text_ctrl == nullptr) return;
 	long selection_start{0};
 	long selection_end{0};
 	text_ctrl->GetSelection(&selection_start, &selection_end);
@@ -750,77 +538,40 @@ void document_manager::add_bookmark_with_note() const {
 		bookmark_start = current_pos;
 		bookmark_end = current_pos;
 	}
-	std::vector<bookmark> bookmarks = config.get_bookmarks(tab->file_path);
-	bookmark existing_bookmark(bookmark_start, bookmark_end);
-	wxString existing_note;
-	bool bookmark_exists = false;
-	const auto bm_it = std::find_if(bookmarks.begin(), bookmarks.end(), [&](const bookmark& bm) {
-		return bm.start == bookmark_start && bm.end == bookmark_end;
-	});
-	if (bm_it != bookmarks.end()) {
-		bookmark_exists = true;
-		existing_note = bm_it->note;
-	}
+	auto info = bookmark_info(config.backend_for_ffi(), tab->file_path.ToUTF8().data(), bookmark_start, bookmark_end);
+	const bool bookmark_exists = info.found;
+	const wxString existing_note = wxString::FromUTF8(info.note.c_str());
 	wxString prompt = bookmark_exists ? _("Edit bookmark note:") : _("Enter bookmark note:");
 	note_entry_dialog note_dialog(nullptr, _("Bookmark Note"), prompt, existing_note);
-	if (note_dialog.ShowModal() != wxID_OK) {
-		return;
-	}
+	if (note_dialog.ShowModal() != wxID_OK) return;
 	wxString note = note_dialog.get_note();
-	if (bookmark_exists) {
-		config.update_bookmark_note(tab->file_path, bookmark_start, bookmark_end, note);
-		speak(_("Bookmark note updated"));
-	} else {
-		config.add_bookmark(tab->file_path, bookmark_start, bookmark_end, note);
-		speak(_("Bookmarked with note"));
-	}
+	const bool updated = config_manager_upsert_bookmark_note(config.backend_for_ffi_mut(), tab->file_path.ToUTF8().data(), bookmark_start, bookmark_end, note.ToUTF8().data());
+	speak(updated ? _("Bookmark note updated") : _("Bookmarked with note"));
 	config.flush();
 }
 
 void document_manager::show_bookmark_dialog(wxWindow* parent, bookmark_filter initial_filter) {
 	const document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr) {
-		return;
-	}
-	const std::vector<bookmark> bookmarks = config.get_bookmarks(tab->file_path);
-	if (bookmarks.empty()) {
+	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
+	if (bookmark_count(config.backend_for_ffi(), tab->file_path.ToUTF8().data()) == 0) {
 		speak(_("No bookmarks"));
 		return;
 	}
 	const int current_pos = text_ctrl->GetInsertionPoint();
-	bookmark_dialog dialog(parent, text_ctrl, config, tab->file_path, current_pos, initial_filter);
+	bookmark_dialog dialog(parent, tab->session_doc.get(), text_ctrl, config, tab->file_path, current_pos, initial_filter);
 	const int result = dialog.ShowModal();
-	if (result != wxID_OK) {
-		return;
-	}
+	if (result != wxID_OK) return;
 	const int pos = dialog.get_selected_position();
-	if (pos < 0) {
-		return;
-	}
+	if (pos < 0) return;
 	text_ctrl->SetInsertionPoint(pos);
 	text_ctrl->SetFocus();
-	wxString text_to_speak;
-	wxString note_to_speak;
-	const auto bm_it = std::find_if(bookmarks.begin(), bookmarks.end(), [&](const bookmark& bm) {
-		return bm.start == pos;
-	});
-	if (bm_it != bookmarks.end()) {
-		if (bm_it->is_whole_line()) {
-			long line{0};
-			text_ctrl->PositionToXY(pos, nullptr, &line);
-			text_to_speak = text_ctrl->GetLineText(line);
-		} else {
-			text_to_speak = text_ctrl->GetRange(bm_it->start, bm_it->end);
-		}
-		note_to_speak = bm_it->note;
-	}
+	auto display = session_bookmark_display_at_position(*tab->get_session(), config.backend_for_ffi(), pos);
+	const wxString text_to_speak = rust_to_wx(display.snippet);
+	const wxString note_to_speak = wxString::FromUTF8(display.note.c_str());
 	wxString announcement;
-	if (!note_to_speak.IsEmpty()) {
-		announcement = wxString::Format(_("Bookmark: %s - %s"), note_to_speak, text_to_speak);
-	} else {
-		announcement = wxString::Format(_("Bookmark: %s"), text_to_speak);
-	}
+	if (!note_to_speak.IsEmpty()) announcement = wxString::Format(_("Bookmark: %s - %s"), note_to_speak, text_to_speak);
+	else announcement = wxString::Format(_("Bookmark: %s"), text_to_speak);
 	speak(announcement);
 	update_ui();
 }
@@ -828,10 +579,8 @@ void document_manager::show_bookmark_dialog(wxWindow* parent, bookmark_filter in
 void document_manager::show_table_of_contents(wxWindow* parent) {
 	document_tab* tab = get_active_tab();
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) {
-		return;
-	}
-	if (!supports_feature(tab->session_doc->get_parser_flags(), PARSER_SUPPORTS_TOC)) {
+	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
+	if (!session_supports_toc(*tab->session_doc->session)) {
 		speak(_("No table of contents."));
 		return;
 	}
@@ -843,9 +592,7 @@ void document_manager::show_table_of_contents(wxWindow* parent) {
 	const int current_pos = text_ctrl->GetInsertionPoint();
 	const int closest_toc_offset = static_cast<int>(tab->session_doc->find_closest_toc_offset(static_cast<size_t>(current_pos)));
 	toc_dialog dlg(parent, tab->session_doc.get(), closest_toc_offset);
-	if (dlg.ShowModal() != wxID_OK) {
-		return;
-	}
+	if (dlg.ShowModal() != wxID_OK) return;
 	const int offset = dlg.get_selected_offset();
 	if (offset >= 0) {
 		go_to_position(offset);
@@ -855,14 +602,10 @@ void document_manager::show_table_of_contents(wxWindow* parent) {
 
 void document_manager::show_document_info(wxWindow* parent) {
 	const document_tab* tab = get_active_tab();
-	if (tab == nullptr) {
-		return;
-	}
+	if (tab == nullptr) return;
 	document_info_dialog dlg(parent, tab->session_doc.get(), tab->file_path, config);
 	dlg.ShowModal();
-	if (dlg.imported_position > -1) {
-		go_to_position(dlg.imported_position);
-	}
+	if (dlg.imported_position > -1) go_to_position(dlg.imported_position);
 }
 
 void document_manager::save_document_position(const wxString& path, long position) const {
@@ -870,15 +613,9 @@ void document_manager::save_document_position(const wxString& path, long positio
 	config.flush();
 }
 
-long document_manager::load_document_position(const wxString& path) const {
-	return config.get_document_position(path);
-}
-
 void document_manager::save_current_tab_position() const {
 	const document_tab* tab = get_active_tab();
-	if (tab == nullptr || tab->text_ctrl == nullptr) {
-		return;
-	}
+	if (tab == nullptr || tab->text_ctrl == nullptr) return;
 	const int position = tab->text_ctrl->GetInsertionPoint();
 	save_document_position(tab->file_path, position);
 }
@@ -894,41 +631,20 @@ void document_manager::save_all_tab_positions() const {
 }
 
 wxString document_manager::get_status_text() const {
-	if (!has_documents()) {
-		return _("Ready");
-	}
+	if (!has_documents()) return _("Ready");
+	const document_tab* tab = get_active_tab();
 	const wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (text_ctrl == nullptr) {
-		return _("Ready");
-	}
-	const int current_pos = text_ctrl->GetInsertionPoint();
-	const int total_chars = text_ctrl->GetLastPosition();
-	const int percentage = total_chars > 0 ? (current_pos * 100) / total_chars : 0;
-	long line{0};
-	text_ctrl->PositionToXY(current_pos, nullptr, &line);
-	const long line_number = line + 1;
-	const long character_number = current_pos + 1;
-	return wxString::Format(_("line %ld, character %ld, reading %d%%"), line_number, character_number, percentage);
+	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return _("Ready");
+	const long current_pos = text_ctrl->GetInsertionPoint();
+	const auto status = session_get_status_info(*tab->get_session(), current_pos);
+	return wxString::Format(_("line %lld, character %lld, reading %d%%"), status.line_number, status.character_number, status.percentage);
 }
 
 wxString document_manager::get_window_title(const wxString& app_name) const {
-	if (!has_documents()) {
-		return app_name;
-	}
+	if (!has_documents()) return app_name;
 	const document_tab* tab = get_active_tab();
-	if (tab != nullptr && tab->session_doc != nullptr) {
-		return app_name + " - " + tab->session_doc->get_title();
-	}
+	if (tab != nullptr && tab->session_doc != nullptr) return app_name + " - " + tab->session_doc->get_title();
 	return app_name;
-}
-
-int document_manager::find_text(const wxString& query, int start_pos, find_options options) const {
-	const wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (text_ctrl == nullptr) {
-		return wxNOT_FOUND;
-	}
-	const wxString& full_text = text_ctrl->GetValue();
-	return ::find_text(full_text, query, start_pos, options);
 }
 
 void document_manager::apply_word_wrap(bool word_wrap) {
@@ -962,14 +678,10 @@ int document_manager::find_tab_by_path(const wxString& path) const {
 	const wxString input_abs_path = input_file.GetFullPath();
 	for (int i = 0; i < get_tab_count(); ++i) {
 		const document_tab* tab = get_tab(i);
-		if (tab == nullptr) {
-			continue;
-		}
+		if (tab == nullptr) continue;
 		wxFileName tab_file(tab->file_path);
 		tab_file.Normalize(static_cast<unsigned>(wxPATH_NORM_ABSOLUTE) | static_cast<unsigned>(wxPATH_NORM_LONG));
-		if (tab_file.GetFullPath().IsSameAs(input_abs_path, false)) {
-			return i;
-		}
+		if (tab_file.GetFullPath().IsSameAs(input_abs_path, false)) return i;
 	}
 	return -1;
 }
@@ -991,16 +703,12 @@ void document_manager::setup_text_ctrl(wxTextCtrl* text_ctrl, const wxString& co
 }
 
 void document_manager::restore_document_position(document_tab* tab) const {
-	if (tab == nullptr || tab->text_ctrl == nullptr) {
-		return;
-	}
-	const int saved_position = load_document_position(tab->file_path);
-	if (saved_position > 0) {
-		const int max_position = tab->text_ctrl->GetLastPosition();
-		if (saved_position <= max_position) {
-			tab->text_ctrl->SetInsertionPoint(saved_position);
-			tab->text_ctrl->ShowPosition(saved_position);
-		}
+	if (tab == nullptr || tab->text_ctrl == nullptr) return;
+	const long max_position = tab->text_ctrl->GetLastPosition();
+	const long position = config.get_validated_document_position(tab->file_path, max_position);
+	if (position >= 0) {
+		tab->text_ctrl->SetInsertionPoint(position);
+		tab->text_ctrl->ShowPosition(position);
 	}
 }
 
@@ -1021,66 +729,11 @@ wxPanel* document_manager::create_tab_panel(const wxString& content, document_ta
 }
 
 void document_manager::navigate_to_heading(bool next, int specific_level) const {
-	const document_tab* tab = get_active_tab();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
-	const bool wrap = config.get(config_manager::navigation_wrap);
-	const auto result = session_navigate_heading(*tab->get_session(), text_ctrl->GetInsertionPoint(), wrap, next, specific_level);
-	if (result.not_supported) {
-		if (specific_level > 0) {
-			speak(wxString::Format(_("No level %d headings."), specific_level));
-		} else {
-			speak(_("No headings."));
-		}
-		return;
-	}
-	if (!result.found) {
-		if (specific_level > 0) {
-			speak(next ? wxString::Format(_("No next level %d heading."), specific_level) : wxString::Format(_("No previous level %d heading."), specific_level));
-		} else {
-			speak(next ? _("No next heading.") : _("No previous heading."));
-		}
-		return;
-	}
-	const long offset = static_cast<long>(result.offset);
-	text_ctrl->SetInsertionPoint(offset);
-	const wxString heading_text = rust_to_wx(rust::String(result.marker_text));
-	wxString message;
-	if (result.wrapped) {
-		message = wxString::Format(_("Wrapping to %s. %s Heading level %d"), next ? _("start") : _("end"), heading_text, result.marker_level);
-	} else {
-		message = wxString::Format(_("%s Heading level %d"), heading_text, result.marker_level);
-	}
-	speak(message);
+	navigate_to_element(NavTarget::Heading, next, specific_level);
 }
 
 void document_manager::navigate_to_table(bool next) const {
-	const document_tab* tab = get_active_tab();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
-	const bool wrap = config.get(config_manager::navigation_wrap);
-	const auto result = session_navigate_table(*tab->get_session(), text_ctrl->GetInsertionPoint(), wrap, next);
-	if (result.not_supported) {
-		speak(_("No tables."));
-		return;
-	}
-	if (!result.found) {
-		speak(next ? _("No next table.") : _("No previous table."));
-		return;
-	}
-	const long offset = static_cast<long>(result.offset);
-	text_ctrl->SetInsertionPoint(offset);
-	// Use marker_text (caption or first row) if available, otherwise use line text
-	wxString message = rust_to_wx(rust::String(result.marker_text));
-	if (message.IsEmpty()) {
-		long line{0};
-		text_ctrl->PositionToXY(offset, nullptr, &line);
-		message = text_ctrl->GetLineText(line);
-	}
-	if (result.wrapped) {
-		message = (next ? _("Wrapping to start. ") : _("Wrapping to end. ")) + message;
-	}
-	speak(message);
+	navigate_to_element(NavTarget::Table, next);
 }
 
 void document_manager::go_to_previous_table() {
@@ -1096,13 +749,9 @@ void document_manager::activate_current_table() {
 	wxTextCtrl* text_ctrl = get_active_text_ctrl();
 	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
 	const int current_pos = text_ctrl->GetInsertionPoint();
-	const auto& handle = tab->session_doc->get_handle();
-	const int table_index = document_current_marker(handle, static_cast<size_t>(current_pos), to_rust_marker(marker_type::Table));
-	if (table_index == -1) return;
-	const auto marker_result = document_marker_info(handle, table_index);
-	if (!marker_result.found) return;
-	const auto& table_marker = marker_result.marker;
-	if (static_cast<size_t>(current_pos) < table_marker.position || static_cast<size_t>(current_pos) > (table_marker.position + table_marker.length)) return;
-	web_view_dialog dlg(&main_win, _("Table"), rust_to_wx(rust::String(table_marker.reference)));
+	const rust::String table_html = session_get_table_at_position(*tab->session_doc->session, current_pos);
+	const wxString table_content = rust_to_wx(table_html);
+	if (table_content.IsEmpty()) return;
+	web_view_dialog dlg(&main_win, _("Table"), table_content);
 	dlg.ShowModal();
 }

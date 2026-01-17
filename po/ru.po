@@ -416,6 +416,14 @@ msgstr "Просмотр заметки"
 msgid "Close"
 msgstr "Закрыть"
 
+#: app/dialogs.cpp
+msgid "&Yes"
+msgstr "&Да"
+
+#: app/dialogs.cpp
+msgid "&No"
+msgstr "&Нет"
+
 #: app/document_manager.cpp
 msgid "Password is required."
 msgstr "Требуется пароль."

@@ -1,5 +1,10 @@
-use std::{fs::File, io::BufReader, path::Path};
+use std::{
+	fs::{self, File},
+	io::{BufReader, Write},
+	path::Path,
+};
 
+use sha1::{Digest, Sha1};
 use zip::ZipArchive;
 
 use crate::{
@@ -7,11 +12,26 @@ use crate::{
 	config::ConfigManager,
 	document::{DocumentHandle, MarkerType, ParserContext, ParserFlags},
 	parser,
-	reader_core::{bookmark_navigate, history_go_next, history_go_previous, reader_navigate, resolve_link},
+	reader_core::{
+		bookmark_navigate, get_filtered_bookmarks, history_go_next, history_go_previous, reader_navigate, resolve_link,
+	},
 	utils::zip as zip_utils,
 };
 
 const MAX_HISTORY_LEN: usize = 10;
+
+/// Status information for a position in a document.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct StatusInfo {
+	/// Line number (1-based)
+	pub line_number: i64,
+	/// Character number (1-based)
+	pub character_number: i64,
+	/// Reading percentage (0-100)
+	pub percentage: i32,
+	/// Total character count in the document
+	pub total_chars: i64,
+}
 
 #[derive(Debug, Clone)]
 pub struct NavigationResult {
@@ -70,17 +90,12 @@ pub struct LinkActivationResult {
 	pub url: String,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum LinkAction {
 	Internal,
 	External,
+	#[default]
 	NotFound,
-}
-
-impl Default for LinkAction {
-	fn default() -> Self {
-		Self::NotFound
-	}
 }
 
 impl LinkActivationResult {
@@ -128,7 +143,7 @@ impl DocumentSession {
 		&self.handle
 	}
 
-	pub fn handle_mut(&mut self) -> &mut DocumentHandle {
+	pub const fn handle_mut(&mut self) -> &mut DocumentHandle {
 		&mut self.handle
 	}
 
@@ -176,6 +191,7 @@ impl DocumentSession {
 		record_position_internal(&mut self.history, &mut self.history_index, position, MAX_HISTORY_LEN);
 	}
 
+	#[must_use]
 	pub fn navigate_section(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
 		if !self.parser_flags.contains(ParserFlags::SUPPORTS_SECTIONS) {
 			return NavigationResult::not_supported();
@@ -188,9 +204,14 @@ impl DocumentSession {
 			level_filter: 0,
 		};
 		let result = reader_navigate(&self.handle, &req);
-		NavigationResult::from_nav_result(&result)
+		let mut nav_result = NavigationResult::from_nav_result(&result);
+		if nav_result.found && nav_result.marker_text.is_empty() {
+			nav_result.marker_text = self.get_line_text(nav_result.offset);
+		}
+		nav_result
 	}
 
+	#[must_use]
 	pub fn navigate_heading(&self, position: i64, wrap: bool, next: bool, level: i32) -> NavigationResult {
 		if !self.has_headings(if level > 0 { Some(level) } else { None }) {
 			return NavigationResult::not_supported();
@@ -206,6 +227,7 @@ impl DocumentSession {
 		NavigationResult::from_nav_result(&result)
 	}
 
+	#[must_use]
 	pub fn navigate_page(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
 		let count = self.handle.count_markers_by_type(MarkerType::PageBreak);
 		if count == 0 {
@@ -223,10 +245,14 @@ impl DocumentSession {
 		if nav_result.found {
 			let offset = usize::try_from(nav_result.offset).unwrap_or(0);
 			nav_result.marker_index = self.handle.page_index(offset).unwrap_or(-1);
+			if nav_result.marker_text.is_empty() {
+				nav_result.marker_text = self.get_line_text(nav_result.offset);
+			}
 		}
 		nav_result
 	}
 
+	#[must_use]
 	pub fn navigate_link(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
 		let count = self.handle.count_markers_by_type(MarkerType::Link);
 		if count == 0 {
@@ -240,9 +266,14 @@ impl DocumentSession {
 			level_filter: 0,
 		};
 		let result = reader_navigate(&self.handle, &req);
-		NavigationResult::from_nav_result(&result)
+		let mut nav_result = NavigationResult::from_nav_result(&result);
+		if nav_result.found && nav_result.marker_text.is_empty() {
+			nav_result.marker_text = self.get_line_text(nav_result.offset);
+		}
+		nav_result
 	}
 
+	#[must_use]
 	pub fn navigate_list(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
 		if !self.parser_flags.contains(ParserFlags::SUPPORTS_LISTS) {
 			return NavigationResult::not_supported();
@@ -259,9 +290,14 @@ impl DocumentSession {
 			level_filter: 0,
 		};
 		let result = reader_navigate(&self.handle, &req);
-		NavigationResult::from_nav_result(&result)
+		let mut nav_result = NavigationResult::from_nav_result(&result);
+		if nav_result.found && nav_result.marker_text.is_empty() {
+			nav_result.marker_text = self.get_line_text(nav_result.offset);
+		}
+		nav_result
 	}
 
+	#[must_use]
 	pub fn navigate_list_item(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
 		if !self.parser_flags.contains(ParserFlags::SUPPORTS_LISTS) {
 			return NavigationResult::not_supported();
@@ -278,9 +314,14 @@ impl DocumentSession {
 			level_filter: 0,
 		};
 		let result = reader_navigate(&self.handle, &req);
-		NavigationResult::from_nav_result(&result)
+		let mut nav_result = NavigationResult::from_nav_result(&result);
+		if nav_result.found && nav_result.marker_text.is_empty() {
+			nav_result.marker_text = self.get_line_text(nav_result.offset);
+		}
+		nav_result
 	}
 
+	#[must_use]
 	pub fn navigate_table(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
 		let count = self.handle.count_markers_by_type(MarkerType::Table);
 		if count == 0 {
@@ -294,9 +335,14 @@ impl DocumentSession {
 			level_filter: 0,
 		};
 		let result = reader_navigate(&self.handle, &req);
-		NavigationResult::from_nav_result(&result)
+		let mut nav_result = NavigationResult::from_nav_result(&result);
+		if nav_result.found && nav_result.marker_text.is_empty() {
+			nav_result.marker_text = self.get_line_text(nav_result.offset);
+		}
+		nav_result
 	}
 
+	#[must_use]
 	pub fn navigate_bookmark(&self, config: &ConfigManager, position: i64, wrap: bool, next: bool) -> NavigationResult {
 		let result = bookmark_navigate(config, &self.file_path, position, wrap, next, false);
 		if result.found {
@@ -314,6 +360,7 @@ impl DocumentSession {
 		}
 	}
 
+	#[must_use]
 	pub fn navigate_note(&self, config: &ConfigManager, position: i64, wrap: bool, next: bool) -> NavigationResult {
 		let result = bookmark_navigate(config, &self.file_path, position, wrap, next, true);
 		if result.found {
@@ -329,6 +376,82 @@ impl DocumentSession {
 		} else {
 			NavigationResult::not_found()
 		}
+	}
+
+	#[must_use]
+	pub fn navigate_bookmark_display(
+		&self,
+		config: &ConfigManager,
+		position: i64,
+		wrap: bool,
+		next: bool,
+		notes_only: bool,
+	) -> ffi::FfiBookmarkNavDisplay {
+		let result = bookmark_navigate(config, &self.file_path, position, wrap, next, notes_only);
+		if !result.found {
+			return ffi::FfiBookmarkNavDisplay {
+				found: false,
+				wrapped: false,
+				start: -1,
+				end: -1,
+				note: String::new(),
+				snippet: String::new(),
+				index: -1,
+			};
+		}
+		let snippet = if result.start == result.end {
+			self.get_line_text(result.start)
+		} else {
+			self.get_text_range(result.start, result.end)
+		};
+		ffi::FfiBookmarkNavDisplay {
+			found: true,
+			wrapped: result.wrapped,
+			start: result.start,
+			end: result.end,
+			note: result.note,
+			snippet,
+			index: result.index,
+		}
+	}
+
+	#[must_use]
+	pub fn bookmark_display_at_position(
+		&self,
+		config: &ConfigManager,
+		position: i64,
+	) -> ffi::FfiBookmarkDisplayAtPosition {
+		let bookmark = config.get_bookmarks(&self.file_path).into_iter().find(|bm| bm.start == position);
+		let Some(bookmark) = bookmark else {
+			return ffi::FfiBookmarkDisplayAtPosition { found: false, note: String::new(), snippet: String::new() };
+		};
+		let snippet = if bookmark.start == bookmark.end {
+			self.get_line_text(bookmark.start)
+		} else {
+			self.get_text_range(bookmark.start, bookmark.end)
+		};
+		ffi::FfiBookmarkDisplayAtPosition { found: true, note: bookmark.note, snippet }
+	}
+
+	#[must_use]
+	pub fn link_list(&self, position: i64) -> ffi::FfiLinkList {
+		let pos = usize::try_from(position.max(0)).unwrap_or(0);
+		let mut closest_index = -1;
+		let mut items = Vec::new();
+		for marker in
+			self.handle.document().buffer.markers.iter().filter(|marker| marker.marker_type == MarkerType::Link)
+		{
+			let text = if marker.text.is_empty() {
+				self.get_line_text(i64::try_from(marker.position).unwrap_or(0))
+			} else {
+				marker.text.clone()
+			};
+			if marker.position <= pos {
+				closest_index = i32::try_from(items.len()).unwrap_or(-1);
+			}
+			items.push(ffi::FfiLinkListItem { offset: marker.position, text });
+		}
+		ffi::FfiLinkList { items, closest_index }
 	}
 
 	pub fn history_go_back(&mut self, current_pos: i64) -> NavigationResult {
@@ -379,13 +502,11 @@ impl DocumentSession {
 		let pos_usize = usize::try_from(position.max(0)).unwrap_or(0);
 		let href = {
 			let link_index = self.handle.current_marker_index(pos_usize, MarkerType::Link);
-			let link_index = match link_index {
-				Some(idx) => idx,
-				None => return LinkActivationResult::not_found(),
+			let Some(link_index) = link_index else {
+				return LinkActivationResult::not_found();
 			};
-			let marker = match self.handle.document().buffer.markers.get(link_index) {
-				Some(m) => m,
-				None => return LinkActivationResult::not_found(),
+			let Some(marker) = self.handle.document().buffer.markers.get(link_index) else {
+				return LinkActivationResult::not_found();
 			};
 			let link_end = marker.position + marker.text.chars().count();
 			if pos_usize < marker.position || pos_usize > link_end {
@@ -430,6 +551,7 @@ impl DocumentSession {
 		Some(marker.reference.clone())
 	}
 
+	#[must_use]
 	pub fn get_current_section_path(&self, position: i64) -> Option<String> {
 		let pos_usize = usize::try_from(position.max(0)).unwrap_or(0);
 		let section_index = self.handle.current_marker_index(pos_usize, MarkerType::SectionBreak)?;
@@ -440,6 +562,35 @@ impl DocumentSession {
 		Some(marker.reference.clone())
 	}
 
+	#[must_use]
+	pub fn webview_target_path(&self, position: i64, temp_dir: &str) -> Option<String> {
+		let section_path = self.get_current_section_path(position).filter(|path| !path.is_empty());
+		if let Some(section_path) = section_path {
+			let mut hasher = Sha1::new();
+			hasher.update(self.file_path.as_bytes());
+			let hash = format!("{:x}", hasher.finalize());
+			let doc_temp_dir = Path::new(temp_dir).join(format!("paperback_{hash}"));
+			if fs::create_dir_all(&doc_temp_dir).is_ok() {
+				let file_name = Path::new(&section_path).file_name()?.to_string_lossy().to_string();
+				let output_path = doc_temp_dir.join(file_name);
+				let output_str = output_path.to_string_lossy().to_string();
+				if self.extract_resource(&section_path, &output_str).ok() == Some(true) {
+					return Some(output_str);
+				}
+			}
+		}
+		let ext = Path::new(&self.file_path).extension().map(|ext| ext.to_string_lossy().to_ascii_lowercase());
+		match ext.as_deref() {
+			Some("html" | "htm" | "xhtml" | "md" | "markdown") => Some(self.file_path.clone()),
+			_ => None,
+		}
+	}
+
+	/// Extracts a resource to the given output path.
+	///
+	/// # Errors
+	///
+	/// Returns an error if the EPUB cannot be opened or the resource cannot be written.
 	pub fn extract_resource(&self, resource_path: &str, output_path: &str) -> anyhow::Result<bool> {
 		if self.file_path.to_lowercase().ends_with(".epub") {
 			let file = File::open(&self.file_path)?;
@@ -449,6 +600,155 @@ impl DocumentSession {
 		} else {
 			Ok(false)
 		}
+	}
+
+	/// Exports the document content to a file.
+	///
+	/// # Errors
+	///
+	/// Returns an error if the file cannot be written.
+	pub fn export_content(&self, output_path: &str) -> std::io::Result<()> {
+		let content = self.content();
+		let mut file = File::create(output_path)?;
+		file.write_all(content.as_bytes())?;
+		file.flush()?;
+		Ok(())
+	}
+
+	#[must_use]
+	pub fn get_filtered_bookmark_display_items(
+		&self,
+		config: &ConfigManager,
+		path: &str,
+		current_pos: i64,
+		filter: ffi::BookmarkFilterType,
+	) -> ffi::FfiFilteredBookmarkDisplay {
+		let filtered = get_filtered_bookmarks(config, path, current_pos, filter);
+		let items = filtered
+			.items
+			.into_iter()
+			.map(|item| {
+				let snippet = if item.is_whole_line {
+					self.get_line_text(item.start)
+				} else {
+					self.get_text_range(item.start, item.end)
+				};
+				ffi::FfiBookmarkDisplayEntry {
+					start: item.start,
+					end: item.end,
+					note: item.note,
+					snippet,
+					is_whole_line: item.is_whole_line,
+					index: item.index,
+				}
+			})
+			.collect();
+		ffi::FfiFilteredBookmarkDisplay { items, closest_index: filtered.closest_index }
+	}
+
+	#[must_use]
+	pub fn get_status_info(&self, position: i64) -> StatusInfo {
+		let content = &self.handle.document().buffer.content;
+		let total_chars = content.chars().count();
+		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
+		let line_number = content.chars().take(pos).filter(|&c| c == '\n').count() + 1;
+		let character_number = pos + 1;
+		let percentage = if total_chars > 0 { (pos * 100) / total_chars } else { 0 };
+		StatusInfo {
+			line_number: i64::try_from(line_number).unwrap_or(1),
+			character_number: i64::try_from(character_number).unwrap_or(1),
+			percentage: i32::try_from(percentage).unwrap_or(0),
+			total_chars: i64::try_from(total_chars).unwrap_or(0),
+		}
+	}
+
+	#[must_use]
+	pub fn position_from_percent(&self, percent: i32) -> i64 {
+		let content = &self.handle.document().buffer.content;
+		let total_chars = i64::try_from(content.chars().count()).unwrap_or(0);
+		let percent = i64::from(percent.clamp(0, 100));
+		if total_chars == 0 {
+			return 0;
+		}
+		// Ceiling division: (percent * total_chars + 99) / 100
+		(percent * total_chars + 99) / 100
+	}
+
+	#[must_use]
+	pub fn line_count(&self) -> i64 {
+		let content = &self.handle.document().buffer.content;
+		let newline_count = content.chars().filter(|&c| c == '\n').count();
+		// Line count is newlines + 1 (last line may not have trailing newline)
+		i64::try_from(newline_count + 1).unwrap_or(1)
+	}
+
+	#[must_use]
+	pub fn position_from_line(&self, line: i64) -> i64 {
+		if line < 1 {
+			return 0;
+		}
+		let content = &self.handle.document().buffer.content;
+		if line == 1 {
+			return 0;
+		}
+		let target_newlines = usize::try_from(line - 1).unwrap_or(0);
+		let mut newline_count = 0;
+		for (i, c) in content.chars().enumerate() {
+			if c == '\n' {
+				newline_count += 1;
+				if newline_count == target_newlines {
+					return i64::try_from(i + 1).unwrap_or(0);
+				}
+			}
+		}
+		// Line number exceeds actual lines, return end of document.
+		i64::try_from(content.chars().count()).unwrap_or(0)
+	}
+
+	#[must_use]
+	pub fn page_count(&self) -> usize {
+		self.handle.count_markers_by_type(MarkerType::PageBreak)
+	}
+
+	#[must_use]
+	pub fn current_page(&self, position: i64) -> i32 {
+		let pos = usize::try_from(position.max(0)).unwrap_or(0);
+		self.handle.page_index(pos).map_or(0, |idx| idx + 1)
+	}
+
+	#[must_use]
+	pub fn page_offset(&self, page_index: i32) -> i64 {
+		if page_index < 0 {
+			return -1;
+		}
+		self.handle
+			.get_marker_position_by_index(MarkerType::PageBreak, page_index)
+			.map_or(-1, |offset| i64::try_from(offset).unwrap_or(-1))
+	}
+
+	/// Returns the text between two positions (start inclusive, end exclusive).
+	#[must_use]
+	pub fn get_text_range(&self, start: i64, end: i64) -> String {
+		let content = &self.handle.document().buffer.content;
+		let total_chars = content.chars().count();
+		let start_pos = usize::try_from(start.max(0)).unwrap_or(0).min(total_chars);
+		let end_pos = usize::try_from(end.max(0)).unwrap_or(0).min(total_chars);
+		if start_pos >= end_pos {
+			return String::new();
+		}
+		content.chars().skip(start_pos).take(end_pos - start_pos).collect()
+	}
+
+	#[must_use]
+	pub fn get_line_text(&self, position: i64) -> String {
+		let content = &self.handle.document().buffer.content;
+		let total_chars = content.chars().count();
+		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
+		let line_start =
+			content.chars().take(pos).collect::<Vec<_>>().iter().rposition(|&c| c == '\n').map_or(0, |idx| idx + 1);
+		let chars_after_start: String = content.chars().skip(line_start).collect();
+		let line_end = chars_after_start.find('\n').map_or(chars_after_start.len(), |idx| idx);
+		chars_after_start.chars().take(line_end).collect()
 	}
 
 	fn has_headings(&self, level: Option<i32>) -> bool {
@@ -503,17 +803,14 @@ fn record_position_internal(positions: &mut Vec<i64>, index: &mut usize, current
 	*index = normalize_index(positions, *index);
 	if positions[*index] != current_pos {
 		if *index + 1 < positions.len() {
-			if positions[*index + 1] == current_pos {
-				*index += 1;
-			} else {
+			if positions[*index + 1] != current_pos {
 				positions.truncate(*index + 1);
 				positions.push(current_pos);
-				*index += 1;
 			}
 		} else {
 			positions.push(current_pos);
-			*index += 1;
 		}
+		*index += 1;
 	}
 	trim_history(positions, index, max_len);
 }

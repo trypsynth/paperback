@@ -247,6 +247,27 @@ pub fn reader_search(
 	-1
 }
 
+pub fn reader_search_with_wrap(
+	haystack: &str,
+	needle: &str,
+	start: i64,
+	forward: bool,
+	match_case: bool,
+	whole_word: bool,
+	regex: bool,
+) -> ffi::FfiSearchResult {
+	let position = reader_search(haystack, needle, start, forward, match_case, whole_word, regex);
+	if position >= 0 {
+		return ffi::FfiSearchResult { found: true, wrapped: false, position };
+	}
+	let wrap_pos = if forward { 0 } else { i64::try_from(haystack.encode_utf16().count()).unwrap_or(0) };
+	let wrapped_position = reader_search(haystack, needle, wrap_pos, forward, match_case, whole_word, regex);
+	if wrapped_position >= 0 {
+		return ffi::FfiSearchResult { found: true, wrapped: true, position: wrapped_position };
+	}
+	ffi::FfiSearchResult { found: false, wrapped: false, position: -1 }
+}
+
 pub fn bookmark_navigate(
 	manager: &RustConfigManager,
 	path: &str,
@@ -290,6 +311,28 @@ pub fn bookmark_navigate(
 	ffi::BookmarkNavResult { found: false, start: -1, end: -1, note: String::new(), index: -1, wrapped }
 }
 
+pub fn bookmark_note_at_position(manager: &RustConfigManager, path: &str, position: i64) -> String {
+	manager
+		.get_bookmarks(path)
+		.into_iter()
+		.find(|bm| bm.start == position && !bm.note.is_empty())
+		.map(|bm| bm.note)
+		.unwrap_or_default()
+}
+
+pub fn bookmark_info(manager: &RustConfigManager, path: &str, start: i64, end: i64) -> ffi::FfiBookmarkInfo {
+	let match_entry = manager.get_bookmarks(path).into_iter().find(|bm| bm.start == start && bm.end == end);
+	if let Some(bm) = match_entry {
+		ffi::FfiBookmarkInfo { found: true, note: bm.note }
+	} else {
+		ffi::FfiBookmarkInfo { found: false, note: String::new() }
+	}
+}
+
+pub fn bookmark_count(manager: &RustConfigManager, path: &str) -> usize {
+	manager.get_bookmarks(path).len()
+}
+
 pub fn get_filtered_bookmarks(
 	manager: &RustConfigManager,
 	path: &str,
@@ -306,9 +349,7 @@ pub fn get_filtered_bookmarks(
 		ffi::BookmarkFilterType::NotesOnly => {
 			bookmarks.retain(|b| !b.note.is_empty());
 		}
-		ffi::BookmarkFilterType::All | _ => {
-			// No filtering needed
-		}
+		_ => {}
 	}
 
 	// Sort by start position
@@ -377,37 +418,24 @@ fn record_position(positions: &mut Vec<i64>, index: &mut usize, current_pos: i64
 	*index = normalize_index(positions, *index);
 	if positions[*index] != current_pos {
 		if *index + 1 < positions.len() {
-			if positions[*index + 1] == current_pos {
-				*index += 1;
-			} else {
+			if positions[*index + 1] != current_pos {
 				positions.truncate(*index + 1);
 				positions.push(current_pos);
-				*index += 1;
 			}
 		} else {
 			positions.push(current_pos);
-			*index += 1;
 		}
+		*index += 1;
 	}
 	trim_history(positions, index, max_len);
 }
 
-pub fn history_normalize(history: &[i64], history_index: usize) -> ffi::FfiNavigationHistory {
-	let positions = history.to_vec();
-	let index = normalize_index(&positions, history_index);
-	ffi::FfiNavigationHistory { positions, index }
-}
-
-pub fn history_record_position(
-	history: &[i64],
-	history_index: usize,
-	current_pos: i64,
-	max_len: usize,
-) -> ffi::FfiNavigationHistory {
-	let mut positions = history.to_vec();
-	let mut index = history_index;
-	record_position(&mut positions, &mut index, current_pos, max_len);
-	ffi::FfiNavigationHistory { positions, index }
+#[derive(Debug, Clone)]
+pub struct HistoryNavResult {
+	pub found: bool,
+	pub target: i64,
+	pub positions: Vec<i64>,
+	pub index: usize,
 }
 
 pub fn history_go_previous(
@@ -415,9 +443,9 @@ pub fn history_go_previous(
 	history_index: usize,
 	current_pos: i64,
 	max_len: usize,
-) -> ffi::FfiHistoryNavResult {
+) -> HistoryNavResult {
 	if history.is_empty() {
-		return ffi::FfiHistoryNavResult { found: false, target: -1, positions: Vec::new(), index: 0 };
+		return HistoryNavResult { found: false, target: -1, positions: Vec::new(), index: 0 };
 	}
 	let mut positions = history.to_vec();
 	let mut index = history_index;
@@ -425,19 +453,14 @@ pub fn history_go_previous(
 	if index > 0 {
 		index -= 1;
 		let target = positions.get(index).copied().unwrap_or(-1);
-		return ffi::FfiHistoryNavResult { found: target >= 0, target, positions, index };
+		return HistoryNavResult { found: target >= 0, target, positions, index };
 	}
-	ffi::FfiHistoryNavResult { found: false, target: -1, positions, index }
+	HistoryNavResult { found: false, target: -1, positions, index }
 }
 
-pub fn history_go_next(
-	history: &[i64],
-	history_index: usize,
-	current_pos: i64,
-	max_len: usize,
-) -> ffi::FfiHistoryNavResult {
+pub fn history_go_next(history: &[i64], history_index: usize, current_pos: i64, max_len: usize) -> HistoryNavResult {
 	if history.is_empty() {
-		return ffi::FfiHistoryNavResult { found: false, target: -1, positions: Vec::new(), index: 0 };
+		return HistoryNavResult { found: false, target: -1, positions: Vec::new(), index: 0 };
 	}
 	let mut positions = history.to_vec();
 	let mut index = history_index;
@@ -445,9 +468,17 @@ pub fn history_go_next(
 	if index + 1 < positions.len() {
 		index += 1;
 		let target = positions.get(index).copied().unwrap_or(-1);
-		return ffi::FfiHistoryNavResult { found: target >= 0, target, positions, index };
+		return HistoryNavResult { found: target >= 0, target, positions, index };
 	}
-	ffi::FfiHistoryNavResult { found: false, target: -1, positions, index }
+	HistoryNavResult { found: false, target: -1, positions, index }
+}
+
+#[derive(Debug, Clone)]
+pub struct LinkNavigation {
+	pub found: bool,
+	pub is_external: bool,
+	pub offset: usize,
+	pub url: String,
 }
 
 fn current_section_path(doc: &DocumentHandle, position: usize) -> Option<String> {
@@ -476,9 +507,14 @@ fn find_manifest_id_for_path(doc: &DocumentHandle, path: &str) -> Option<String>
 }
 
 fn spine_section_bounds(doc: &DocumentHandle, spine_index: usize) -> (usize, usize) {
-	let start = doc.get_marker_position_by_index(MarkerType::SectionBreak, spine_index as i32).unwrap_or(0);
+	let start = i32::try_from(spine_index)
+		.ok()
+		.and_then(|idx| doc.get_marker_position_by_index(MarkerType::SectionBreak, idx))
+		.unwrap_or(0);
 	let end = if spine_index + 1 < doc.document().spine_items.len() {
-		doc.get_marker_position_by_index(MarkerType::SectionBreak, (spine_index + 1) as i32)
+		i32::try_from(spine_index + 1)
+			.ok()
+			.and_then(|idx| doc.get_marker_position_by_index(MarkerType::SectionBreak, idx))
 			.unwrap_or_else(|| doc.document().buffer.content.len())
 	} else {
 		doc.document().buffer.content.len()
@@ -486,21 +522,21 @@ fn spine_section_bounds(doc: &DocumentHandle, spine_index: usize) -> (usize, usi
 	(start, end)
 }
 
-pub fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> ffi::FfiLinkNavigation {
+pub fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> LinkNavigation {
 	let href_trimmed = href.trim();
 	if href_trimmed.is_empty() {
-		return ffi::FfiLinkNavigation { found: false, is_external: false, offset: 0, url: String::new() };
+		return LinkNavigation { found: false, is_external: false, offset: 0, url: String::new() };
 	}
 	let href_lower = href_trimmed.to_ascii_lowercase();
 	if href_lower.starts_with("http:") || href_lower.starts_with("https:") || href_lower.starts_with("mailto:") {
-		return ffi::FfiLinkNavigation { found: true, is_external: true, offset: 0, url: href_trimmed.to_string() };
+		return LinkNavigation { found: true, is_external: true, offset: 0, url: href_trimmed.to_string() };
 	}
 	let current_section = current_section_path(doc, usize::try_from(current_position.max(0)).unwrap_or(0));
-	if href_trimmed.starts_with('#') {
-		if let Some(offset) = find_fragment_offset(doc, &href_trimmed[1..], current_section.as_deref()) {
-			return ffi::FfiLinkNavigation { found: true, is_external: false, offset, url: String::new() };
+	if let Some(fragment) = href_trimmed.strip_prefix('#') {
+		if let Some(offset) = find_fragment_offset(doc, fragment, current_section.as_deref()) {
+			return LinkNavigation { found: true, is_external: false, offset, url: String::new() };
 		}
-		return ffi::FfiLinkNavigation { found: false, is_external: false, offset: 0, url: String::new() };
+		return LinkNavigation { found: false, is_external: false, offset: 0, url: String::new() };
 	}
 	let mut parts = href_trimmed.splitn(2, '#');
 	let file_path = parts.next().unwrap_or_default();
@@ -516,13 +552,13 @@ pub fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> 
 					}
 				}
 			}
-			return ffi::FfiLinkNavigation { found: true, is_external: false, offset, url: String::new() };
+			return LinkNavigation { found: true, is_external: false, offset, url: String::new() };
 		}
 	}
 	if !fragment.is_empty() {
 		if let Some(offset) = find_fragment_offset(doc, fragment, current_section.as_deref()) {
-			return ffi::FfiLinkNavigation { found: true, is_external: false, offset, url: String::new() };
+			return LinkNavigation { found: true, is_external: false, offset, url: String::new() };
 		}
 	}
-	ffi::FfiLinkNavigation { found: false, is_external: false, offset: 0, url: String::new() }
+	LinkNavigation { found: false, is_external: false, offset: 0, url: String::new() }
 }

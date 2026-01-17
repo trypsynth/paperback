@@ -718,3 +718,11 @@ msgstr ""
 #: C:/Users/Quin/git/paperback/src/task_bar_icon.cpp:29
 msgid "&Restore"
 msgstr "&Restaurer"
+
+#: app/dialogs.cpp
+msgid "&Yes"
+msgstr "&Oui"
+
+#: app/dialogs.cpp
+msgid "&No"
+msgstr "&Non"

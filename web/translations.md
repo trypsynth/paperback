@@ -16,25 +16,25 @@ All translation files live in the `po` directory. The template file is `paperbac
 
 1. Generate the `.pot` template (normally not necessary, but it keeps everything in sync):
 
-```batch
+```bash
 cmake --build build --target update-pot
 ```
 
-1. Create your language file:
+2. Create your language file:
 
-```batch
+```bash
 cp paperback.pot your-lang-code.po
 ```
 
-1. Edit the header in your `.po` file with the correct language name, your name, and email.
-2. Translate the strings using your editor of choice. Keep placeholders and shortcut markers intact (see Notes below).
-3. Verify the file compiles cleanly:
+3. Edit the header in your `.po` file with the correct language name, your name, and email.
+4. Translate the strings using your editor of choice. Keep placeholders and shortcut markers intact (see Notes below).
+5. Verify the file compiles cleanly:
 
-```batch
+```bash
 msgfmt --check --verbose es.po
 ```
 
-1. Test your translation by recompiling Paperback and selecting it from the options dialog.
+6. Test your translation by recompiling Paperback and selecting it from the options dialog.
 
 ## Updating an Existing Translation
 
@@ -42,19 +42,19 @@ When new strings are added to Paperback:
 
 1. Update the template (if not already done):
 
-```batch
+```bash
 cmake --build build --target update-pot
 ```
 
-1. Merge new strings into your translation:
+2. Merge new strings into your translation:
 
-```batch
+```bash
 msgmerge -U es.po paperback.pot
 ```
 
-1. Translate the new or fuzzy strings. Anything marked with `fuzzy` needs a review, and any empty strings are brand new.
-2. Remove fuzzy markers once done reviewing.
-3. Compile and test (same as step 6 above).
+3. Translate the new or fuzzy strings. Anything marked with `fuzzy` needs a review, and any empty strings are brand new.
+4. Remove fuzzy markers once done reviewing.
+5. Compile and test (same as step 6 above).
 
 ## Submitting Your Translation
 

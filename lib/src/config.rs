@@ -35,10 +35,23 @@ pub struct NavigationHistory {
 	pub index: usize,
 }
 
+#[derive(Clone, Copy, Debug, Default)]
+pub struct FindSettings {
+	pub match_case: bool,
+	pub whole_word: bool,
+	pub use_regex: bool,
+}
+
 pub struct ConfigManager {
 	data: Ini,
 	config_path: PathBuf,
 	initialized: bool,
+}
+
+impl Default for ConfigManager {
+	fn default() -> Self {
+		Self::new()
+	}
 }
 
 impl ConfigManager {
@@ -236,9 +249,83 @@ impl ConfigManager {
 	}
 
 	pub fn get_opened_documents(&self) -> Vec<String> {
+		if !self.is_ready() {
+			return Vec::new();
+		}
 		let mut entries = self.iter_section(Some("opened_documents"));
 		entries.sort_by(|a, b| a.0.cmp(&b.0));
-		entries.into_iter().map(|(_, v)| v).collect()
+		if !entries.is_empty() {
+			return entries.into_iter().map(|(_, v)| v).collect();
+		}
+		let mut opened = Vec::new();
+		for path in self.get_recent_documents() {
+			if self.get_document_opened(&path) {
+				opened.push(path);
+			}
+		}
+		for path in self.get_all_documents() {
+			if self.get_document_opened(&path) && !opened.contains(&path) {
+				opened.push(path);
+			}
+		}
+		opened
+	}
+
+	pub fn get_opened_documents_existing(&self) -> Vec<String> {
+		self.get_opened_documents().into_iter().filter(|path| Path::new(path).exists()).collect()
+	}
+
+	pub fn get_find_settings(&self) -> FindSettings {
+		FindSettings {
+			match_case: self.get_app_bool("find_match_case", false),
+			whole_word: self.get_app_bool("find_whole_word", false),
+			use_regex: self.get_app_bool("find_use_regex", false),
+		}
+	}
+
+	pub fn set_find_settings(&mut self, settings: FindSettings) {
+		self.set_app_bool("find_match_case", settings.match_case);
+		self.set_app_bool("find_whole_word", settings.whole_word);
+		self.set_app_bool("find_use_regex", settings.use_regex);
+	}
+
+	pub fn get_find_history(&self) -> Vec<String> {
+		if !self.is_ready() {
+			return Vec::new();
+		}
+		let mut result = Vec::new();
+		for idx in 0.. {
+			let key = format!("item{idx}");
+			let entry = match self.get_value(Some("find_history"), &key) {
+				Some(v) if !v.is_empty() => v,
+				_ => break,
+			};
+			result.push(entry);
+		}
+		result
+	}
+
+	pub fn add_find_history(&mut self, text: &str, max_len: usize) {
+		if !self.is_ready() {
+			return;
+		}
+		let trimmed = text.trim();
+		if trimmed.is_empty() {
+			return;
+		}
+		let mut history = self.get_find_history();
+		if let Some(idx) = history.iter().position(|entry| entry == trimmed) {
+			history.remove(idx);
+		}
+		history.insert(0, trimmed.to_string());
+		while history.len() > max_len {
+			history.pop();
+		}
+		self.remove_section(Some("find_history"));
+		for (idx, entry) in history.iter().enumerate() {
+			let key = format!("item{idx}");
+			self.set_value(Some("find_history"), &key, entry);
+		}
 	}
 
 	pub fn clear_opened_documents(&mut self) {
@@ -252,6 +339,14 @@ impl ConfigManager {
 	#[must_use]
 	pub fn get_document_position(&self, path: &str) -> i64 {
 		self.get_document_int(path, "last_position", 0)
+	}
+
+	/// Returns the saved document position if it's valid (> 0 and <= max_position),
+	/// otherwise returns -1.
+	#[must_use]
+	pub fn get_validated_document_position(&self, path: &str, max_position: i64) -> i64 {
+		let saved = self.get_document_position(path);
+		if saved > 0 && saved <= max_position { saved } else { -1 }
 	}
 
 	pub fn set_navigation_history(&mut self, path: &str, history: &[i64], history_index: usize) {
@@ -296,25 +391,6 @@ impl ConfigManager {
 	#[must_use]
 	pub fn get_document_opened(&self, path: &str) -> bool {
 		self.get_document_bool(path, "opened", false)
-	}
-
-	pub fn get_all_opened_documents(&self) -> Vec<String> {
-		let mut result = Vec::new();
-		for section in self.section_names() {
-			if !section.starts_with("doc_") {
-				continue;
-			}
-			if let Some(opened) = self.get_value(Some(&section), "opened") {
-				if parse_bool(&opened, false) {
-					if let Some(path) = self.get_value(Some(&section), "path") {
-						if !path.is_empty() {
-							result.push(path);
-						}
-					}
-				}
-			}
-		}
-		result
 	}
 
 	pub fn remove_document_history(&mut self, path: &str) {

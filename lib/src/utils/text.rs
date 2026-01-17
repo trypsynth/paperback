@@ -113,7 +113,8 @@ fn to_alpha(mut n: i32, uppercase: bool) -> String {
 	let base = if uppercase { b'A' } else { b'a' };
 	while n > 0 {
 		n -= 1;
-		result.insert(0, (base + (n % 26) as u8) as char);
+		let offset = u8::try_from(n % 26).unwrap_or(0);
+		result.insert(0, (base + offset) as char);
 		n /= 26;
 	}
 	result

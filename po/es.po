@@ -354,6 +354,14 @@ msgstr "Ver nota"
 msgid "Close"
 msgstr "Cerrado"
 
+#: app/dialogs.cpp
+msgid "&Yes"
+msgstr "&Sí"
+
+#: app/dialogs.cpp
+msgid "&No"
+msgstr "&No"
+
 #: src/document_manager.cpp
 #, fuzzy, c-format
 msgid "Failed to parse document: %s"

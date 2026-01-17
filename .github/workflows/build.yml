@@ -73,7 +73,6 @@ jobs:
       id: get_tag
       shell: bash
       run: |
-        git fetch --tags
         TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
         echo "tag=$TAG" >> $GITHUB_OUTPUT
     - name: Generate release notes

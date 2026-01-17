@@ -1,14 +1,4 @@
-/* config_manager.cpp - thin C++ wrapper delegating to the Rust config manager.
- *
- * Paperback.
- * Copyright (c) 2025 Quin Gillespie.
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
-
 #include "config_manager.hpp"
-#include <algorithm>
 #include <cstdint>
 #include <type_traits>
 
@@ -29,17 +19,6 @@ wxArrayString to_wx_array(const rust::Vec<rust::String>& rust_vec) {
 	return result;
 }
 
-std::vector<long> to_long_vector(const rust::Vec<long long>& values) {
-	std::vector<long> result(values.size());
-	std::transform(values.begin(), values.end(), result.begin(), [](long long value) {
-		return static_cast<long>(value);
-	});
-	return result;
-}
-
-bookmark to_bookmark(const FfiBookmark& fb) {
-	return bookmark(static_cast<long>(fb.start), static_cast<long>(fb.end), to_wx_string(fb.note));
-}
 } // namespace
 
 config_manager::~config_manager() {
@@ -93,27 +72,6 @@ void config_manager::add_recent_document(const wxString& path) {
 	if (is_initialized()) config_manager_add_recent_document(backend_mut(), to_utf8(path));
 }
 
-wxArrayString config_manager::get_recent_documents() const {
-	if (!is_initialized()) return {};
-	return to_wx_array(config_manager_get_recent_documents(backend_ref()));
-}
-
-void config_manager::clear_recent_documents() {
-	if (is_initialized()) config_manager_clear_recent_documents(backend_mut());
-}
-
-void config_manager::add_opened_document(const wxString& path) {
-	if (is_initialized()) config_manager_add_opened_document(backend_mut(), to_utf8(path));
-}
-
-void config_manager::remove_opened_document(const wxString& path) {
-	if (is_initialized()) config_manager_remove_opened_document(backend_mut(), to_utf8(path));
-}
-
-void config_manager::clear_opened_documents() {
-	if (is_initialized()) config_manager_clear_opened_documents(backend_mut());
-}
-
 void config_manager::set_document_position(const wxString& path, long position) {
 	if (is_initialized()) config_manager_set_document_position(backend_mut(), to_utf8(path), static_cast<std::int64_t>(position));
 }
@@ -123,24 +81,9 @@ long config_manager::get_document_position(const wxString& path) const {
 	return static_cast<long>(config_manager_get_document_position(backend_ref(), to_utf8(path)));
 }
 
-void config_manager::set_navigation_history(const wxString& path, const std::vector<long>& history, size_t history_index) {
-	if (!is_initialized()) return;
-	rust::Vec<long long> rust_history;
-	rust_history.reserve(history.size());
-	std::transform(history.begin(), history.end(), std::back_inserter(rust_history), [](long entry) {
-		return static_cast<long long>(entry);
-	});
-	rust::Slice<const std::int64_t> history_slice(rust_history.data(), rust_history.size());
-	config_manager_set_navigation_history(backend_mut(), to_utf8(path), history_slice, history_index);
-}
-
-void config_manager::get_navigation_history(const wxString& path, std::vector<long>& history, size_t& history_index) const {
-	history.clear();
-	history_index = 0;
-	if (!is_initialized()) return;
-	const auto nav = config_manager_get_navigation_history(backend_ref(), to_utf8(path));
-	history = to_long_vector(nav.positions);
-	history_index = nav.index;
+long config_manager::get_validated_document_position(const wxString& path, long max_position) const {
+	if (!is_initialized()) return -1;
+	return static_cast<long>(config_manager_get_validated_document_position(backend_ref(), to_utf8(path), static_cast<std::int64_t>(max_position)));
 }
 
 void config_manager::set_document_opened(const wxString& path, bool opened) {
@@ -151,17 +94,8 @@ void config_manager::remove_document_history(const wxString& path) {
 	if (is_initialized()) config_manager_remove_document_history(backend_mut(), to_utf8(path));
 }
 
-void config_manager::remove_navigation_history(const wxString& path) {
-	if (is_initialized()) config_manager_remove_navigation_history(backend_mut(), to_utf8(path));
-}
-
 bool config_manager::get_document_opened(const wxString& path) const {
 	return is_initialized() ? config_manager_get_document_opened(backend_ref(), to_utf8(path)) : false;
-}
-
-wxArrayString config_manager::get_all_opened_documents() const {
-	if (!is_initialized()) return {};
-	return to_wx_array(config_manager_get_all_opened_documents(backend_ref()));
 }
 
 wxArrayString config_manager::get_all_documents() const {
@@ -183,31 +117,6 @@ void config_manager::toggle_bookmark(const wxString& path, long start, long end,
 
 void config_manager::update_bookmark_note(const wxString& path, long start, long end, const wxString& note) {
 	if (is_initialized()) config_manager_update_bookmark_note(backend_mut(), to_utf8(path), static_cast<std::int64_t>(start), static_cast<std::int64_t>(end), to_utf8(note));
-}
-
-std::vector<bookmark> config_manager::get_bookmarks(const wxString& path) const {
-	if (!is_initialized()) return {};
-	const auto rust_bookmarks = config_manager_get_bookmarks(backend_ref(), to_utf8(path));
-	std::vector<bookmark> result;
-	result.reserve(rust_bookmarks.size());
-	std::transform(rust_bookmarks.begin(), rust_bookmarks.end(), std::back_inserter(result), [](const FfiBookmark& bm) {
-		return to_bookmark(bm);
-	});
-	return result;
-}
-
-void config_manager::clear_bookmarks(const wxString& path) {
-	if (is_initialized()) config_manager_clear_bookmarks(backend_mut(), to_utf8(path));
-}
-
-bookmark config_manager::get_next_bookmark(const wxString& path, long current_position) const {
-	if (!is_initialized()) return bookmark(-1, -1);
-	return to_bookmark(config_manager_get_next_bookmark(backend_ref(), to_utf8(path), static_cast<std::int64_t>(current_position)));
-}
-
-bookmark config_manager::get_previous_bookmark(const wxString& path, long current_position) const {
-	if (!is_initialized()) return bookmark(-1, -1);
-	return to_bookmark(config_manager_get_previous_bookmark(backend_ref(), to_utf8(path), static_cast<std::int64_t>(current_position)));
 }
 
 void config_manager::set_document_format(const wxString& path, const wxString& format) {
@@ -262,6 +171,10 @@ const ConfigManager& config_manager::backend_ref() const {
 
 const ConfigManager& config_manager::backend_for_ffi() const {
 	return backend_ref();
+}
+
+ConfigManager& config_manager::backend_for_ffi_mut() {
+	return backend_mut();
 }
 
 template <typename T>

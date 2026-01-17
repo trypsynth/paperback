@@ -1,12 +1,3 @@
-/* parser.hpp - base parser interface.
- *
- * Paperback.
- * Copyright (c) 2025 Quin Gillespie.
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
-
 #pragma once
 #include "document_data.hpp"
 #include <memory>
@@ -87,14 +78,6 @@ inline constexpr bool parser_supports(parser_flags flags, parser_flags flag) noe
 	return (flags & flag) == flag;
 }
 
-struct parser_info {
-	wxString name;
-	std::vector<wxString> extensions;
-	parser_flags flags{parser_flags::none};
-};
-
 bool initialize_parser_registry();
-[[nodiscard]] const parser_info* find_parser_by_extension(const wxString& extension);
+[[nodiscard]] bool is_parser_supported(const wxString& extension);
 [[nodiscard]] wxString get_supported_wildcards();
-// Legacy function - commented out, use session_new() instead
-// [[nodiscard]] std::unique_ptr<document> load_document_from_rust(const wxString& path, const std::optional<std::string>& password = std::nullopt, const wxString& forced_extension = wxEmptyString);

@@ -1,12 +1,3 @@
-/* app.cpp - wxApp implementation code.
- *
- * Paperback.
- * Copyright (c) 2025 Quin Gillespie.
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
-
 #include "app.hpp"
 #include "constants.hpp"
 #include "dialogs.hpp"
@@ -147,33 +138,20 @@ void app::parse_command_line() {
 		return;
 	}
 	auto* doc_manager = frame->get_doc_manager();
-	if (!doc_manager->open_file(path)) {
-		wxMessageBox(_("Failed to load document."), _("Error"), wxICON_ERROR);
-	}
+	if (!doc_manager->open_file(path)) wxMessageBox(_("Failed to load document."), _("Error"), wxICON_ERROR);
 }
 
 void app::restore_previous_documents() {
-	const wxArrayString opened_docs = config_mgr.get_all_opened_documents();
+	const auto opened_docs = config_manager_get_opened_documents_existing(config_mgr.backend_for_ffi());
 	auto* doc_manager = frame->get_doc_manager();
 	const wxString active_doc = config_mgr.get(config_manager::active_document);
 	for (const auto& path : opened_docs) {
-		if (!wxFileName::FileExists(path)) {
-			continue;
-		}
-		const int existing_tab = doc_manager->find_tab_by_path(path);
-		if (existing_tab >= 0) {
-			continue;
-		}
-		const auto* parser = find_parser_by_extension(wxFileName(path).GetExt());
-		if (parser == nullptr) {
-			parser = get_parser_for_unknown_file(path, config_mgr);
-			if (parser == nullptr) {
-				continue;
-			}
-		}
-		if (!doc_manager->create_document_tab(path, parser, false, false)) {
-			continue;
-		}
+		const wxString wx_path = to_wxstring(path);
+		const int existing_tab = doc_manager->find_tab_by_path(wx_path);
+		if (existing_tab >= 0) continue;
+		const wxString extension = wxFileName(wx_path).GetExt();
+		if (!is_parser_supported(extension) && !ensure_parser_for_unknown_file(wx_path, config_mgr)) continue;
+		if (!doc_manager->create_document_tab(wx_path, false, false)) continue;
 	}
 	doc_manager->update_ui();
 	if (!active_doc.IsEmpty() && wxFileName::FileExists(active_doc)) {
@@ -181,15 +159,11 @@ void app::restore_previous_documents() {
 		if (active_tab >= 0) {
 			frame->get_notebook()->SetSelection(active_tab);
 			auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-			if (text_ctrl != nullptr) {
-				text_ctrl->SetFocus();
-			}
+			if (text_ctrl != nullptr) text_ctrl->SetFocus();
 		}
 	} else if (doc_manager->has_documents()) {
 		auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-		if (text_ctrl != nullptr) {
-			text_ctrl->SetFocus();
-		}
+		if (text_ctrl != nullptr) text_ctrl->SetFocus();
 	}
 }
 
@@ -231,9 +205,7 @@ void app::check_for_updates(bool silent) {
 			payload.error_message = std::string(e.what());
 		}
 		auto* wx_app = wxTheApp;
-		if (wx_app == nullptr || !wx_app->IsMainLoopRunning()) {
-			return;
-		}
+		if (wx_app == nullptr || !wx_app->IsMainLoopRunning()) return;
 		wx_app->CallAfter([silent, payload = std::move(payload)]() {
 			present_update_result(payload, silent);
 		});

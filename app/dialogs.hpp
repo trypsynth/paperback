@@ -1,12 +1,3 @@
-/* dialogs.hpp - dialog header file.
- *
- * Paperback.
- * Copyright (c) 2025 Quin Gillespie.
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
-
 #pragma once
 #include "config_manager.hpp"
 #include "controls.hpp"
@@ -94,7 +85,7 @@ enum class bookmark_filter {
 
 class bookmark_dialog : public dialog {
 public:
-	bookmark_dialog(wxWindow* parent, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos = -1, bookmark_filter initial_filter = bookmark_filter::all);
+	bookmark_dialog(wxWindow* parent, session_document* session_doc, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos = -1, bookmark_filter initial_filter = bookmark_filter::all);
 	~bookmark_dialog() override = default;
 	bookmark_dialog(const bookmark_dialog&) = delete;
 	bookmark_dialog& operator=(const bookmark_dialog&) = delete;
@@ -113,6 +104,7 @@ private:
 	config_manager& config;
 	wxString file_path;
 	wxTextCtrl* text_ctrl;
+	session_document* session_doc_{nullptr};
 	wxButton* jump_button{nullptr};
 	wxButton* delete_button{nullptr};
 	wxButton* edit_note_button{nullptr};
@@ -207,20 +199,24 @@ private:
 	void on_cancel(wxCommandEvent& event);
 	void on_find_text_enter(wxCommandEvent& event);
 	void on_close(wxCloseEvent& event);
+	void reload_history();
+	void save_settings();
 };
 
 class go_to_line_dialog : public dialog {
 public:
-	go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl);
+	go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl, DocumentSession* session);
 	~go_to_line_dialog() override = default;
 	go_to_line_dialog(const go_to_line_dialog&) = delete;
 	go_to_line_dialog& operator=(const go_to_line_dialog&) = delete;
 	go_to_line_dialog(go_to_line_dialog&&) = delete;
 	go_to_line_dialog& operator=(go_to_line_dialog&&) = delete;
 	[[nodiscard]] long get_position() const;
+	[[nodiscard]] long get_line() const;
 
 private:
 	wxTextCtrl* textbox{nullptr};
+	DocumentSession* doc_session{nullptr};
 	wxSpinCtrl* input_ctrl{nullptr};
 };
 
@@ -243,16 +239,18 @@ private:
 
 class go_to_percent_dialog : public dialog {
 public:
-	go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ctrl);
+	go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ctrl, DocumentSession* session);
 	~go_to_percent_dialog() override = default;
 	go_to_percent_dialog(const go_to_percent_dialog&) = delete;
 	go_to_percent_dialog& operator=(const go_to_percent_dialog&) = delete;
 	go_to_percent_dialog(go_to_percent_dialog&&) = delete;
 	go_to_percent_dialog& operator=(go_to_percent_dialog&&) = delete;
 	[[nodiscard]] long get_position() const;
+	[[nodiscard]] int get_percent() const;
 
 private:
 	wxTextCtrl* textbox{nullptr};
+	DocumentSession* doc_session{nullptr};
 	accessible_slider* percent_slider{nullptr};
 	wxSpinCtrl* input_ctrl{nullptr};
 

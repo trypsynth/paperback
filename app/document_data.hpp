@@ -1,12 +1,3 @@
-/* document_data.hpp - plain document data shared with the Rust bridge.
- *
- * Paperback.
- * Copyright (c) 2025 Quin Gillespie.
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
-
 #pragma once
 #include "libpaperback/src/bridge.rs.h"
 #include <map>
@@ -17,15 +8,6 @@
 #include <wx/string.h>
 
 using marker_type = MarkerKind;
-
-struct marker {
-	size_t pos;
-	marker_type type;
-	wxString text;
-	wxString ref;
-	int level;
-	size_t length{0};
-};
 
 struct toc_item {
 	wxString name;
@@ -56,10 +38,8 @@ struct session_document {
 	session_document& operator=(session_document&&) = default;
 	[[nodiscard]] wxString get_title() const { return wxString::FromUTF8(session_title(*session).c_str()); }
 	[[nodiscard]] wxString get_author() const { return wxString::FromUTF8(session_author(*session).c_str()); }
-	[[nodiscard]] const DocumentHandle& get_handle() const { return session_handle(*session); }
-	[[nodiscard]] uint32_t get_parser_flags() const { return session_parser_flags(*session); }
 	void ensure_toc_loaded();
-	[[nodiscard]] size_t find_closest_toc_offset(size_t position) const { return document_find_closest_toc_offset(get_handle(), position); }
+	[[nodiscard]] size_t find_closest_toc_offset(size_t position) const { return session_find_closest_toc_offset(*session, position); }
 };
 
 // Legacy type - kept for compilation compatibility during migration

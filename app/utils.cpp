@@ -1,12 +1,3 @@
-/* utils.cpp - miscellaneous helpers shared across Paperback.
- *
- * Paperback.
- * Copyright (c) 2025 Quin Gillespie.
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
-
 #include "utils.hpp"
 #include "app.hpp"
 #include "config_manager.hpp"
@@ -29,29 +20,34 @@
 #include <wx/strconv.h>
 #include <wx/string.h>
 
-long find_text(const wxString& haystack, const wxString& needle, long start, find_options options) {
-	if (needle.empty()) return wxNOT_FOUND;
+search_result find_text_with_wrap(const wxString& haystack, const wxString& needle, long start, find_options options) {
+	search_result result{};
+	if (needle.empty()) return result;
 	const bool forward = has_option(options, find_options::forward);
 	const bool match_case = has_option(options, find_options::match_case);
 	const bool match_whole_word = has_option(options, find_options::match_whole_word);
 	const bool use_regex = has_option(options, find_options::use_regex);
 	const std::string hay = std::string(haystack.ToUTF8());
 	const std::string ned = std::string(needle.ToUTF8());
-	const auto result = reader_search(hay, ned, start, forward, match_case, match_whole_word, use_regex);
-	return result < 0 ? wxNOT_FOUND : static_cast<long>(result);
+	const auto search = reader_search_with_wrap(hay, ned, start, forward, match_case, match_whole_word, use_regex);
+	result.found = search.found;
+	result.wrapped = search.wrapped;
+	result.position = search.found ? static_cast<long>(search.position) : wxNOT_FOUND;
+	return result;
 }
 
-const parser_info* get_parser_for_unknown_file(const wxString& path, config_manager& config) {
+bool ensure_parser_for_unknown_file(const wxString& path, config_manager& config) {
 	const wxString saved_format = config.get_document_format(path);
-	if (!saved_format.IsEmpty()) {
-		const auto* par = find_parser_by_extension(saved_format);
-		if (par != nullptr) return par;
-	}
+	if (!saved_format.IsEmpty() && is_parser_supported(saved_format)) return true;
 	open_as_dialog dlg(nullptr, path);
-	if (dlg.ShowModal() != wxID_OK) return nullptr;
+	if (dlg.ShowModal() != wxID_OK) return false;
 	const wxString format = dlg.get_selected_format();
+	if (!is_parser_supported(format)) {
+		wxMessageBox(_("Unsupported format selected."), _("Error"), wxICON_ERROR);
+		return false;
+	}
 	config.set_document_format(path, format);
-	return find_parser_by_extension(format);
+	return true;
 }
 
 void speak(const wxString& message) {
@@ -67,29 +63,4 @@ void speak(const wxString& message) {
 wxString to_wxstring(const rust::String& rust_str) {
 	const std::string utf8 = std::string(rust_str);
 	return wxString::FromUTF8(utf8.c_str());
-}
-
-marker to_marker(const FfiMarker& ffi_marker) {
-	return marker{
-		ffi_marker.position,
-		static_cast<marker_type>(ffi_marker.marker_type),
-		to_wxstring(ffi_marker.text),
-		to_wxstring(ffi_marker.reference),
-		ffi_marker.level,
-		ffi_marker.length,
-	};
-}
-
-bool is_heading_marker(marker_type type) {
-	switch (type) {
-		case marker_type::Heading1:
-		case marker_type::Heading2:
-		case marker_type::Heading3:
-		case marker_type::Heading4:
-		case marker_type::Heading5:
-		case marker_type::Heading6:
-			return true;
-		default:
-			return false;
-	}
 }

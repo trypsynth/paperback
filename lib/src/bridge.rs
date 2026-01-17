@@ -62,6 +62,22 @@ pub mod ffi {
 		Table,
 	}
 
+	#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+	pub enum NavOutcome {
+		Found,
+		FoundWrapped,
+		NotFound,
+		NotSupported,
+	}
+
+	pub struct FfiUnifiedNavResult {
+		pub outcome: NavOutcome,
+		pub offset: i64,
+		pub context_text: String,
+		pub context_index: i32,
+		pub secondary_text: String,
+	}
+
 	pub struct NavRequest {
 		pub position: i64,
 		pub wrap: bool,
@@ -87,6 +103,44 @@ pub mod ffi {
 		pub wrapped: bool,
 	}
 
+	pub struct FfiBookmarkNavDisplay {
+		pub found: bool,
+		pub wrapped: bool,
+		pub start: i64,
+		pub end: i64,
+		pub note: String,
+		pub snippet: String,
+		pub index: i32,
+	}
+
+	pub struct FfiBookmarkDisplayAtPosition {
+		pub found: bool,
+		pub note: String,
+		pub snippet: String,
+	}
+
+	pub struct FfiBookmarkInfo {
+		pub found: bool,
+		pub note: String,
+	}
+
+	#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+	pub enum ParserErrorKind {
+		Generic,
+		PasswordRequired,
+	}
+
+	pub struct ParserErrorInfo {
+		pub kind: ParserErrorKind,
+		pub detail: String,
+	}
+
+	pub struct FfiSearchResult {
+		pub found: bool,
+		pub wrapped: bool,
+		pub position: i64,
+	}
+
 	#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 	pub enum BookmarkFilterType {
 		All,
@@ -102,8 +156,22 @@ pub mod ffi {
 		pub index: usize,
 	}
 
+	pub struct FfiBookmarkDisplayEntry {
+		pub start: i64,
+		pub end: i64,
+		pub note: String,
+		pub snippet: String,
+		pub is_whole_line: bool,
+		pub index: usize,
+	}
+
 	pub struct FfiFilteredBookmarks {
 		pub items: Vec<FfiBookmarkDisplayItem>,
+		pub closest_index: i32,
+	}
+
+	pub struct FfiFilteredBookmarkDisplay {
+		pub items: Vec<FfiBookmarkDisplayEntry>,
 		pub closest_index: i32,
 	}
 
@@ -120,25 +188,19 @@ pub mod ffi {
 		pub status: DocumentListStatus,
 	}
 
-	pub struct FfiMarker {
-		pub marker_type: i32,
-		pub position: usize,
-		pub text: String,
-		pub reference: String,
-		pub level: i32,
-		pub length: usize,
+	pub struct FfiRecentDocument {
+		pub path: String,
+		pub filename: String,
 	}
 
-	pub struct FfiMarkerResult {
-		pub found: bool,
-		pub marker: FfiMarker,
-	}
-
-	pub struct FfiTocItem {
-		pub name: String,
-		pub reference: String,
+	pub struct FfiLinkListItem {
 		pub offset: usize,
-		pub depth: i32,
+		pub text: String,
+	}
+
+	pub struct FfiLinkList {
+		pub items: Vec<FfiLinkListItem>,
+		pub closest_index: i32,
 	}
 
 	pub struct FfiTocItemWithParent {
@@ -156,64 +218,16 @@ pub mod ffi {
 		pub char_count_no_whitespace: usize,
 	}
 
-	pub struct FfiIdPosition {
-		pub id: String,
-		pub offset: usize,
-	}
-
-	pub struct FfiManifestItem {
-		pub id: String,
-		pub path: String,
-	}
-
-	pub struct FfiHeadingInfo {
+	pub struct FfiHeadingTreeItem {
 		pub offset: usize,
 		pub level: i32,
 		pub text: String,
+		pub parent_index: i32,
 	}
 
-	pub struct FfiXmlConversion {
-		pub text: String,
-		pub headings: Vec<FfiHeadingInfo>,
-		pub section_offsets: Vec<usize>,
-		pub id_positions: Vec<FfiIdPosition>,
-	}
-
-	pub struct FfiDocument {
-		pub title: String,
-		pub author: String,
-		pub content: String,
-		pub markers: Vec<FfiMarker>,
-		pub toc_items: Vec<FfiTocItem>,
-		pub stats: FfiDocumentStats,
-		pub id_positions: Vec<FfiIdPosition>,
-		pub spine_items: Vec<String>,
-		pub manifest_items: Vec<FfiManifestItem>,
-	}
-
-	pub struct FfiBookmark {
-		pub start: i64,
-		pub end: i64,
-		pub note: String,
-	}
-
-	pub struct FfiNavigationHistory {
-		pub positions: Vec<i64>,
-		pub index: usize,
-	}
-
-	pub struct FfiHistoryNavResult {
-		pub found: bool,
-		pub target: i64,
-		pub positions: Vec<i64>,
-		pub index: usize,
-	}
-
-	pub struct FfiLinkNavigation {
-		pub found: bool,
-		pub is_external: bool,
-		pub offset: usize,
-		pub url: String,
+	pub struct FfiHeadingTree {
+		pub items: Vec<FfiHeadingTreeItem>,
+		pub closest_index: i32,
 	}
 
 	pub struct FfiSessionNavResult {
@@ -240,9 +254,26 @@ pub mod ffi {
 		pub url: String,
 	}
 
+	pub struct FfiStatusInfo {
+		pub line_number: i64,
+		pub character_number: i64,
+		pub percentage: i32,
+		pub total_chars: i64,
+	}
+
+	pub struct FfiFindSettings {
+		pub match_case: bool,
+		pub whole_word: bool,
+		pub use_regex: bool,
+	}
+
+	pub struct FfiWebViewTarget {
+		pub found: bool,
+		pub path: String,
+	}
+
 	extern "Rust" {
 		type ConfigManager;
-		type DocumentHandle;
 		type DocumentSession;
 
 		fn config_manager_new() -> Box<ConfigManager>;
@@ -269,29 +300,40 @@ pub mod ffi {
 		fn config_manager_set_doc_bool(manager: &mut ConfigManager, path: &str, key: &str, value: bool);
 		fn config_manager_set_doc_int(manager: &mut ConfigManager, path: &str, key: &str, value: i64);
 		fn config_manager_add_recent_document(manager: &mut ConfigManager, path: &str);
-		fn config_manager_get_recent_documents(manager: &ConfigManager) -> Vec<String>;
-		fn config_manager_clear_recent_documents(manager: &mut ConfigManager);
-		fn config_manager_add_opened_document(manager: &mut ConfigManager, path: &str);
-		fn config_manager_remove_opened_document(manager: &mut ConfigManager, path: &str);
-		fn config_manager_clear_opened_documents(manager: &mut ConfigManager);
 		fn config_manager_set_document_position(manager: &mut ConfigManager, path: &str, position: i64);
 		fn config_manager_get_document_position(manager: &ConfigManager, path: &str) -> i64;
-		fn config_manager_set_navigation_history(
-			manager: &mut ConfigManager,
-			path: &str,
-			history: &[i64],
-			history_index: usize,
-		);
-		fn config_manager_get_navigation_history(manager: &ConfigManager, path: &str) -> FfiNavigationHistory;
+		fn config_manager_get_validated_document_position(manager: &ConfigManager, path: &str, max_position: i64) -> i64;
 		fn config_manager_set_document_opened(manager: &mut ConfigManager, path: &str, opened: bool);
 		fn config_manager_get_document_opened(manager: &ConfigManager, path: &str) -> bool;
 		fn config_manager_remove_document_history(manager: &mut ConfigManager, path: &str);
-		fn config_manager_remove_navigation_history(manager: &mut ConfigManager, path: &str);
-		fn config_manager_get_all_opened_documents(manager: &ConfigManager) -> Vec<String>;
+		fn config_manager_get_opened_documents_existing(manager: &ConfigManager) -> Vec<String>;
+		fn config_manager_get_find_settings(manager: &ConfigManager) -> FfiFindSettings;
+		fn config_manager_set_find_settings(
+			manager: &mut ConfigManager,
+			match_case: bool,
+			whole_word: bool,
+			use_regex: bool,
+		);
+		fn config_manager_get_find_history(manager: &ConfigManager) -> Vec<String>;
+		fn config_manager_add_find_history(manager: &mut ConfigManager, text: &str, max_len: usize);
 		fn config_manager_get_all_documents(manager: &ConfigManager) -> Vec<String>;
 		fn config_manager_add_bookmark(manager: &mut ConfigManager, path: &str, start: i64, end: i64, note: &str);
 		fn config_manager_remove_bookmark(manager: &mut ConfigManager, path: &str, start: i64, end: i64);
 		fn config_manager_toggle_bookmark(manager: &mut ConfigManager, path: &str, start: i64, end: i64, note: &str);
+		fn config_manager_toggle_bookmark_with_result(
+			manager: &mut ConfigManager,
+			path: &str,
+			start: i64,
+			end: i64,
+			note: &str,
+		) -> bool;
+		fn config_manager_upsert_bookmark_note(
+			manager: &mut ConfigManager,
+			path: &str,
+			start: i64,
+			end: i64,
+			note: &str,
+		) -> bool;
 		fn config_manager_update_bookmark_note(
 			manager: &mut ConfigManager,
 			path: &str,
@@ -299,14 +341,6 @@ pub mod ffi {
 			end: i64,
 			note: &str,
 		);
-		fn config_manager_get_bookmarks(manager: &ConfigManager, path: &str) -> Vec<FfiBookmark>;
-		fn config_manager_clear_bookmarks(manager: &mut ConfigManager, path: &str);
-		fn config_manager_get_next_bookmark(manager: &ConfigManager, path: &str, current_position: i64) -> FfiBookmark;
-		fn config_manager_get_previous_bookmark(
-			manager: &ConfigManager,
-			path: &str,
-			current_position: i64,
-		) -> FfiBookmark;
 		fn config_manager_set_document_format(manager: &mut ConfigManager, path: &str, format: &str);
 		fn config_manager_get_document_format(manager: &ConfigManager, path: &str) -> String;
 		fn config_manager_set_document_password(manager: &mut ConfigManager, path: &str, password: &str);
@@ -316,52 +350,13 @@ pub mod ffi {
 		fn config_manager_export_document_settings(manager: &ConfigManager, doc_path: &str, export_path: &str);
 		fn config_manager_import_document_settings(manager: &mut ConfigManager, path: &str);
 		fn config_manager_import_settings_from_file(manager: &mut ConfigManager, doc_path: &str, import_path: &str);
-		fn parse_document_handle(
-			file_path: &str,
-			password: &str,
-			forced_extension: &str,
-		) -> Result<Box<DocumentHandle>>;
-		fn document_title(doc: &DocumentHandle) -> String;
-		fn document_author(doc: &DocumentHandle) -> String;
-		fn document_content(doc: &DocumentHandle) -> String;
-		fn document_length(doc: &DocumentHandle) -> usize;
-		fn document_stats(doc: &DocumentHandle) -> FfiDocumentStats;
-		fn document_toc_items(doc: &DocumentHandle) -> Vec<FfiTocItem>;
-		fn document_toc_items_with_parents(doc: &DocumentHandle) -> Vec<FfiTocItemWithParent>;
-		fn document_markers(doc: &DocumentHandle) -> Vec<FfiMarker>;
-		fn document_marker_info(doc: &DocumentHandle, marker_index: i32) -> FfiMarkerResult;
-		fn document_markers_by_type(doc: &DocumentHandle, marker_type: i32) -> Vec<FfiMarker>;
-		fn document_find_closest_toc_offset(doc: &DocumentHandle, position: usize) -> usize;
-		fn document_next_marker(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32;
-		fn document_previous_marker(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32;
-		fn document_current_marker(doc: &DocumentHandle, position: usize, marker_type: i32) -> i32;
-		fn document_find_first_marker_after(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32;
-		fn document_marker_position(doc: &DocumentHandle, marker_index: i32) -> usize;
-		fn document_count_markers(doc: &DocumentHandle, marker_type: i32) -> usize;
-		fn document_marker_position_by_index(doc: &DocumentHandle, marker_type: i32, index: i32) -> usize;
-		fn document_next_heading(doc: &DocumentHandle, position: i64, level: i32) -> i32;
-		fn document_previous_heading(doc: &DocumentHandle, position: i64, level: i32) -> i32;
-		fn document_heading_info(doc: &DocumentHandle, index: i32) -> FfiHeadingInfo;
-		fn document_section_index(doc: &DocumentHandle, position: usize) -> i32;
-		fn document_page_index(doc: &DocumentHandle, position: usize) -> i32;
-		fn document_id_positions(doc: &DocumentHandle) -> Vec<FfiIdPosition>;
-		fn document_spine_items(doc: &DocumentHandle) -> Vec<String>;
-		fn document_manifest_items(doc: &DocumentHandle) -> Vec<FfiManifestItem>;
 		fn check_for_updates(current_version: &str, is_installer: bool) -> UpdateResult;
-		fn remove_soft_hyphens(input: &str) -> String;
-		fn url_decode(encoded: &str) -> String;
-		fn collapse_whitespace(input: &str) -> String;
-		fn trim_string(input: &str) -> String;
-		fn convert_to_utf8(input: &[u8]) -> String;
-		fn read_zip_entry(zip_path: &str, entry_name: &str) -> Result<String>;
-		fn find_zip_entry(zip_path: &str, entry_name: &str) -> Result<usize>;
 		fn get_available_parsers() -> Vec<ParserInfo>;
-		fn parse_document(file_path: &str, password: &str) -> Result<FfiDocument>;
-		fn get_parser_for_extension(extension: &str) -> Result<String>;
-		fn convert_xml_to_text(content: &str) -> Result<FfiXmlConversion>;
+		fn parser_supported_wildcards() -> String;
+		fn parser_supports_extension(extension: &str) -> bool;
+		fn parser_error_info(message: &str) -> ParserErrorInfo;
 		fn markdown_to_text(input: &str) -> String;
-		fn reader_navigate(doc: &DocumentHandle, req: &NavRequest) -> NavResult;
-		fn reader_search(
+		fn reader_search_with_wrap(
 			req: &str,
 			needle: &str,
 			start: i64,
@@ -369,7 +364,7 @@ pub mod ffi {
 			match_case: bool,
 			whole_word: bool,
 			regex: bool,
-		) -> i64;
+		) -> FfiSearchResult;
 		fn bookmark_navigate(
 			manager: &ConfigManager,
 			path: &str,
@@ -378,46 +373,35 @@ pub mod ffi {
 			next: bool,
 			notes_only: bool,
 		) -> BookmarkNavResult;
+		fn bookmark_info(manager: &ConfigManager, path: &str, start: i64, end: i64) -> FfiBookmarkInfo;
+		fn bookmark_count(manager: &ConfigManager, path: &str) -> usize;
+		fn bookmark_note_at_position(manager: &ConfigManager, path: &str, position: i64) -> String;
 		fn get_filtered_bookmarks(
 			manager: &ConfigManager,
 			path: &str,
 			current_pos: i64,
 			filter: BookmarkFilterType,
 		) -> FfiFilteredBookmarks;
+		fn get_filtered_bookmark_display_items(
+			session: &DocumentSession,
+			manager: &ConfigManager,
+			path: &str,
+			current_pos: i64,
+			filter: BookmarkFilterType,
+		) -> FfiFilteredBookmarkDisplay;
 		fn get_sorted_document_list(
 			config: &ConfigManager,
 			open_paths: &[String],
 			filter: &str,
 		) -> Vec<FfiDocumentListItem>;
-		fn history_normalize(history: &[i64], history_index: usize) -> FfiNavigationHistory;
-		fn history_record_position(
-			history: &[i64],
-			history_index: usize,
-			current_pos: i64,
-			max_len: usize,
-		) -> FfiNavigationHistory;
-		fn history_go_previous(
-			history: &[i64],
-			history_index: usize,
-			current_pos: i64,
-			max_len: usize,
-		) -> FfiHistoryNavResult;
-		fn history_go_next(
-			history: &[i64],
-			history_index: usize,
-			current_pos: i64,
-			max_len: usize,
-		) -> FfiHistoryNavResult;
-		fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> FfiLinkNavigation;
+		fn get_recent_documents_for_menu(config: &ConfigManager, limit: usize) -> Vec<FfiRecentDocument>;
 		fn session_new(file_path: &str, password: &str, forced_extension: &str) -> Result<Box<DocumentSession>>;
 		fn session_title(session: &DocumentSession) -> String;
 		fn session_author(session: &DocumentSession) -> String;
 		fn session_content(session: &DocumentSession) -> String;
-		fn session_file_path(session: &DocumentSession) -> String;
 		fn session_parser_flags(session: &DocumentSession) -> u32;
-		fn session_get_history(session: &DocumentSession) -> FfiNavigationHistory;
-		fn session_set_history(session: &mut DocumentSession, positions: &[i64], index: usize);
-		fn session_record_position(session: &mut DocumentSession, position: i64);
+		fn session_load_history_from_config(session: &mut DocumentSession, config: &ConfigManager, path: &str);
+		fn session_save_history_to_config(session: &DocumentSession, config: &mut ConfigManager, path: &str);
 		fn session_navigate_section(
 			session: &DocumentSession,
 			position: i64,
@@ -461,6 +445,27 @@ pub mod ffi {
 			wrap: bool,
 			next: bool,
 		) -> FfiSessionNavResult;
+		fn session_navigate_unified(
+			session: &DocumentSession,
+			config: &ConfigManager,
+			position: i64,
+			target: NavTarget,
+			direction: NavDirection,
+			level_filter: i32,
+		) -> FfiUnifiedNavResult;
+		fn session_navigate_bookmark_unified(
+			session: &DocumentSession,
+			config: &ConfigManager,
+			position: i64,
+			direction: NavDirection,
+			notes_only: bool,
+		) -> FfiUnifiedNavResult;
+		fn session_history_navigate(
+			session: &mut DocumentSession,
+			config: &ConfigManager,
+			position: i64,
+			direction: NavDirection,
+		) -> FfiUnifiedNavResult;
 		fn session_navigate_bookmark(
 			session: &DocumentSession,
 			config: &ConfigManager,
@@ -468,6 +473,19 @@ pub mod ffi {
 			wrap: bool,
 			next: bool,
 		) -> FfiSessionNavResult;
+		fn session_navigate_bookmark_display(
+			session: &DocumentSession,
+			config: &ConfigManager,
+			position: i64,
+			wrap: bool,
+			next: bool,
+			notes_only: bool,
+		) -> FfiBookmarkNavDisplay;
+		fn session_bookmark_display_at_position(
+			session: &DocumentSession,
+			config: &ConfigManager,
+			position: i64,
+		) -> FfiBookmarkDisplayAtPosition;
 		fn session_navigate_note(
 			session: &DocumentSession,
 			config: &ConfigManager,
@@ -475,25 +493,37 @@ pub mod ffi {
 			wrap: bool,
 			next: bool,
 		) -> FfiSessionNavResult;
+		fn session_link_list(session: &DocumentSession, position: i64) -> FfiLinkList;
 		fn session_history_go_back(session: &mut DocumentSession, current_pos: i64) -> FfiSessionNavResult;
 		fn session_history_go_forward(session: &mut DocumentSession, current_pos: i64) -> FfiSessionNavResult;
 		fn session_activate_link(session: &mut DocumentSession, position: i64) -> FfiLinkActivationResult;
 		fn session_get_table_at_position(session: &DocumentSession, position: i64) -> String;
-		fn session_get_current_section_path(session: &DocumentSession, position: i64) -> String;
-		fn session_extract_resource(session: &DocumentSession, resource_path: &str, output_path: &str) -> Result<bool>;
-		fn session_handle(session: &DocumentSession) -> &DocumentHandle;
+		fn session_webview_target(session: &DocumentSession, position: i64, temp_dir: &str) -> FfiWebViewTarget;
+		fn session_get_status_info(session: &DocumentSession, position: i64) -> FfiStatusInfo;
+		fn session_position_from_percent(session: &DocumentSession, percent: i32) -> i64;
+		fn session_line_count(session: &DocumentSession) -> i64;
+		fn session_position_from_line(session: &DocumentSession, line: i64) -> i64;
+		fn session_stats(session: &DocumentSession) -> FfiDocumentStats;
+		fn session_page_count(session: &DocumentSession) -> usize;
+		fn session_current_page(session: &DocumentSession, position: i64) -> i32;
+		fn session_page_offset(session: &DocumentSession, page_index: i32) -> i64;
+		fn session_export_content(session: &DocumentSession, output_path: &str) -> Result<()>;
+		fn session_toc_items_with_parents(session: &DocumentSession) -> Vec<FfiTocItemWithParent>;
+		fn session_find_closest_toc_offset(session: &DocumentSession, position: usize) -> usize;
+		fn session_heading_tree(session: &DocumentSession, position: i64) -> FfiHeadingTree;
+		fn session_supports_toc(session: &DocumentSession) -> bool;
+		fn is_heading_marker_type(marker_type: i32) -> bool;
 	}
 }
 
-use std::fs::File;
+use std::path::Path;
 
 use self::ffi::UpdateStatus;
 use crate::{
-	config::{Bookmark, ConfigManager as RustConfigManager, NavigationHistory},
-	document::{DocumentHandle, MarkerType, ParserContext, TocItem},
+	config::ConfigManager as RustConfigManager,
+	document::{DocumentHandle, TocItem},
 	parser, update as update_module,
-	utils::{encoding, text, zip as zip_module},
-	xml_to_text::XmlToText,
+	utils::text,
 };
 
 type ConfigManager = crate::config::ConfigManager;
@@ -570,33 +600,36 @@ fn config_manager_set_doc_int(manager: &mut RustConfigManager, path: &str, key: 
 }
 
 ffi_wrapper!(mut config_manager_add_recent_document, add_recent_document(path: &str));
-ffi_wrapper!(config_manager_get_recent_documents, get_recent_documents -> Vec<String>);
-ffi_wrapper!(mut config_manager_clear_recent_documents, clear_recent_documents);
-ffi_wrapper!(mut config_manager_add_opened_document, add_opened_document(path: &str));
-ffi_wrapper!(mut config_manager_remove_opened_document, remove_opened_document(path: &str));
-ffi_wrapper!(mut config_manager_clear_opened_documents, clear_opened_documents);
 ffi_wrapper!(mut config_manager_set_document_position, set_document_position(path: &str, position: i64));
 ffi_wrapper!(config_manager_get_document_position, get_document_position(path: &str) -> i64);
 
-fn config_manager_set_navigation_history(
-	manager: &mut RustConfigManager,
-	path: &str,
-	history: &[i64],
-	history_index: usize,
-) {
-	manager.set_navigation_history(path, history, history_index);
-}
-
-fn config_manager_get_navigation_history(manager: &RustConfigManager, path: &str) -> ffi::FfiNavigationHistory {
-	let history: NavigationHistory = manager.get_navigation_history(path);
-	ffi::FfiNavigationHistory { positions: history.positions, index: history.index }
+fn config_manager_get_validated_document_position(manager: &RustConfigManager, path: &str, max_position: i64) -> i64 {
+	manager.get_validated_document_position(path, max_position)
 }
 
 ffi_wrapper!(mut config_manager_set_document_opened, set_document_opened(path: &str, opened: bool));
 ffi_wrapper!(config_manager_get_document_opened, get_document_opened(path: &str) -> bool);
 ffi_wrapper!(mut config_manager_remove_document_history, remove_document_history(path: &str));
-ffi_wrapper!(mut config_manager_remove_navigation_history, remove_navigation_history(path: &str));
-ffi_wrapper!(config_manager_get_all_opened_documents, get_all_opened_documents -> Vec<String>);
+ffi_wrapper!(config_manager_get_opened_documents_existing, get_opened_documents_existing -> Vec<String>);
+fn config_manager_get_find_settings(manager: &RustConfigManager) -> ffi::FfiFindSettings {
+	let settings = manager.get_find_settings();
+	ffi::FfiFindSettings {
+		match_case: settings.match_case,
+		whole_word: settings.whole_word,
+		use_regex: settings.use_regex,
+	}
+}
+
+fn config_manager_set_find_settings(
+	manager: &mut RustConfigManager,
+	match_case: bool,
+	whole_word: bool,
+	use_regex: bool,
+) {
+	manager.set_find_settings(crate::config::FindSettings { match_case, whole_word, use_regex });
+}
+ffi_wrapper!(config_manager_get_find_history, get_find_history -> Vec<String>);
+ffi_wrapper!(mut config_manager_add_find_history, add_find_history(text: &str, max_len: usize));
 ffi_wrapper!(config_manager_get_all_documents, get_all_documents -> Vec<String>);
 
 fn config_manager_add_bookmark(manager: &mut RustConfigManager, path: &str, start: i64, end: i64, note: &str) {
@@ -611,30 +644,36 @@ fn config_manager_toggle_bookmark(manager: &mut RustConfigManager, path: &str, s
 	manager.toggle_bookmark(path, start, end, note);
 }
 
+fn config_manager_toggle_bookmark_with_result(
+	manager: &mut RustConfigManager,
+	path: &str,
+	start: i64,
+	end: i64,
+	note: &str,
+) -> bool {
+	let was_bookmarked = manager.get_bookmarks(path).iter().any(|bm| bm.start == start && bm.end == end);
+	manager.toggle_bookmark(path, start, end, note);
+	was_bookmarked
+}
+
+fn config_manager_upsert_bookmark_note(
+	manager: &mut RustConfigManager,
+	path: &str,
+	start: i64,
+	end: i64,
+	note: &str,
+) -> bool {
+	let exists = manager.get_bookmarks(path).iter().any(|bm| bm.start == start && bm.end == end);
+	if exists {
+		manager.update_bookmark_note(path, start, end, note);
+	} else {
+		manager.add_bookmark(path, start, end, note);
+	}
+	exists
+}
+
 fn config_manager_update_bookmark_note(manager: &mut RustConfigManager, path: &str, start: i64, end: i64, note: &str) {
 	manager.update_bookmark_note(path, start, end, note);
-}
-
-fn config_manager_get_bookmarks(manager: &RustConfigManager, path: &str) -> Vec<ffi::FfiBookmark> {
-	manager.get_bookmarks(path).into_iter().map(Into::into).collect()
-}
-
-ffi_wrapper!(mut config_manager_clear_bookmarks, clear_bookmarks(path: &str));
-
-fn config_manager_get_next_bookmark(
-	manager: &RustConfigManager,
-	path: &str,
-	current_position: i64,
-) -> ffi::FfiBookmark {
-	manager.get_next_bookmark(path, current_position).into()
-}
-
-fn config_manager_get_previous_bookmark(
-	manager: &RustConfigManager,
-	path: &str,
-	current_position: i64,
-) -> ffi::FfiBookmark {
-	manager.get_previous_bookmark(path, current_position).into()
 }
 
 ffi_wrapper!(mut config_manager_set_document_format, set_document_format(path: &str, format: &str));
@@ -646,12 +685,6 @@ ffi_wrapper!(mut config_manager_migrate_config, migrate_config -> bool);
 ffi_wrapper!(config_manager_export_document_settings, export_document_settings(doc_path: &str, export_path: &str));
 ffi_wrapper!(mut config_manager_import_document_settings, import_document_settings(path: &str));
 ffi_wrapper!(mut config_manager_import_settings_from_file, import_settings_from_file(doc_path: &str, import_path: &str));
-
-impl From<Bookmark> for ffi::FfiBookmark {
-	fn from(bookmark: Bookmark) -> Self {
-		Self { start: bookmark.start, end: bookmark.end, note: bookmark.note }
-	}
-}
 
 fn check_for_updates(current_version: &str, is_installer: bool) -> ffi::UpdateResult {
 	match update_module::check_for_updates(current_version, is_installer) {
@@ -693,41 +726,8 @@ fn check_for_updates(current_version: &str, is_installer: bool) -> ffi::UpdateRe
 	}
 }
 
-fn remove_soft_hyphens(input: &str) -> String {
-	text::remove_soft_hyphens(input)
-}
-
-fn url_decode(encoded: &str) -> String {
-	text::url_decode(encoded)
-}
-
-fn collapse_whitespace(input: &str) -> String {
-	text::collapse_whitespace(input)
-}
-
-fn trim_string(input: &str) -> String {
-	text::trim_string(input)
-}
-
 fn markdown_to_text(input: &str) -> String {
 	text::markdown_to_text(input)
-}
-
-fn convert_to_utf8(input: &[u8]) -> String {
-	encoding::convert_to_utf8(input)
-}
-
-fn read_zip_entry(zip_path: &str, entry_name: &str) -> Result<String, String> {
-	let file = File::open(zip_path).map_err(|e| format!("Failed to open ZIP file: {e}"))?;
-	let mut archive = zip::ZipArchive::new(file).map_err(|e| format!("Failed to read ZIP archive: {e}"))?;
-	zip_module::read_zip_entry_by_name(&mut archive, entry_name).map_err(|e| e.to_string())
-}
-
-fn find_zip_entry(zip_path: &str, entry_name: &str) -> Result<usize, String> {
-	let file = File::open(zip_path).map_err(|e| format!("Failed to open ZIP file: {e}"))?;
-	let mut archive = zip::ZipArchive::new(file).map_err(|e| format!("Failed to read ZIP archive: {e}"))?;
-	zip_module::find_zip_entry(&mut archive, entry_name)
-		.ok_or_else(|| format!("Entry '{entry_name}' not found in ZIP archive"))
 }
 
 fn get_available_parsers() -> Vec<ffi::ParserInfo> {
@@ -738,74 +738,20 @@ fn get_available_parsers() -> Vec<ffi::ParserInfo> {
 		.collect()
 }
 
-fn parse_document(file_path: &str, password: &str) -> Result<ffi::FfiDocument, String> {
-	let mut context = ParserContext::new(file_path.to_string());
-	if !password.is_empty() {
-		context = context.with_password(password.to_string());
+fn parser_supported_wildcards() -> String {
+	parser::build_file_filter_string()
+}
+
+fn parser_supports_extension(extension: &str) -> bool {
+	parser::parser_supports_extension(extension)
+}
+
+fn parser_error_info(message: &str) -> ffi::ParserErrorInfo {
+	let prefix = parser::PASSWORD_REQUIRED_ERROR_PREFIX;
+	if let Some(rest) = message.strip_prefix(prefix) {
+		return ffi::ParserErrorInfo { kind: ffi::ParserErrorKind::PasswordRequired, detail: rest.to_string() };
 	}
-	let mut doc = parser::parse_document(&context).map_err(|e| e.to_string())?;
-	doc.compute_stats();
-	// Convert TOC items to flat list (cxx doesn't support recursive types easily)
-	let toc_items = flatten_toc_items(&doc.toc_items);
-	Ok(ffi::FfiDocument {
-		title: doc.title,
-		author: doc.author,
-		content: doc.buffer.content,
-		markers: doc
-			.buffer
-			.markers
-			.into_iter()
-			.map(|m| ffi::FfiMarker {
-				marker_type: m.marker_type.into(),
-				position: m.position,
-				text: m.text,
-				reference: m.reference,
-				level: m.level,
-				length: m.length,
-			})
-			.collect(),
-		toc_items,
-		stats: ffi::FfiDocumentStats {
-			word_count: doc.stats.word_count,
-			line_count: doc.stats.line_count,
-			char_count: doc.stats.char_count,
-			char_count_no_whitespace: doc.stats.char_count_no_whitespace,
-		},
-		id_positions: doc
-			.id_positions
-			.iter()
-			.map(|(id, offset)| ffi::FfiIdPosition { id: id.clone(), offset: *offset })
-			.collect(),
-		spine_items: doc.spine_items.clone(),
-		manifest_items: doc
-			.manifest_items
-			.iter()
-			.map(|(id, path)| ffi::FfiManifestItem { id: id.clone(), path: path.clone() })
-			.collect(),
-	})
-}
-
-fn get_parser_for_extension(extension: &str) -> Result<String, String> {
-	parser::get_parser_name_for_extension(extension)
-		.ok_or_else(|| format!("No parser found for extension: .{extension}"))
-}
-
-fn flatten_recursive(items: &[TocItem], depth: i32, result: &mut Vec<ffi::FfiTocItem>) {
-	for item in items {
-		result.push(ffi::FfiTocItem {
-			name: item.name.clone(),
-			reference: item.reference.clone(),
-			offset: item.offset,
-			depth,
-		});
-		flatten_recursive(&item.children, depth + 1, result);
-	}
-}
-
-fn flatten_toc_items(items: &[TocItem]) -> Vec<ffi::FfiTocItem> {
-	let mut result = Vec::new();
-	flatten_recursive(items, 0, &mut result);
-	result
+	ffi::ParserErrorInfo { kind: ffi::ParserErrorKind::Generic, detail: message.to_string() }
 }
 
 fn flatten_recursive_with_parents(
@@ -833,48 +779,6 @@ fn flatten_toc_items_with_parents(items: &[TocItem]) -> Vec<ffi::FfiTocItemWithP
 	result
 }
 
-fn convert_xml_to_text(content: &str) -> Result<ffi::FfiXmlConversion, String> {
-	let mut converter = XmlToText::new();
-	if !converter.convert(content) {
-		return Err("Failed to parse XML content".to_string());
-	}
-	let headings = converter
-		.get_headings()
-		.iter()
-		.map(|heading| ffi::FfiHeadingInfo { offset: heading.offset, level: heading.level, text: heading.text.clone() })
-		.collect();
-	let id_positions = converter
-		.get_id_positions()
-		.iter()
-		.map(|(id, offset)| ffi::FfiIdPosition { id: id.clone(), offset: *offset })
-		.collect();
-	Ok(ffi::FfiXmlConversion {
-		text: converter.get_text(),
-		headings,
-		section_offsets: converter.get_section_offsets().to_vec(),
-		id_positions,
-	})
-}
-
-fn marker_type_from_i32(value: i32) -> Option<MarkerType> {
-	MarkerType::try_from(value).ok()
-}
-
-fn document_marker_to_ffi(marker: &crate::document::Marker) -> ffi::FfiMarker {
-	ffi::FfiMarker {
-		marker_type: marker.marker_type.into(),
-		position: marker.position,
-		text: marker.text.clone(),
-		reference: marker.reference.clone(),
-		level: marker.level,
-		length: marker.length,
-	}
-}
-
-const fn empty_ffi_marker() -> ffi::FfiMarker {
-	ffi::FfiMarker { marker_type: -1, position: 0, text: String::new(), reference: String::new(), level: 0, length: 0 }
-}
-
 const fn document_stats_to_ffi(stats: &crate::document::DocumentStats) -> ffi::FfiDocumentStats {
 	ffi::FfiDocumentStats {
 		word_count: stats.word_count,
@@ -884,166 +788,35 @@ const fn document_stats_to_ffi(stats: &crate::document::DocumentStats) -> ffi::F
 	}
 }
 
-fn opt_usize_to_i32(value: Option<usize>) -> i32 {
-	value.and_then(|v| i32::try_from(v).ok()).unwrap_or(-1)
-}
-
-fn parse_document_handle(
-	file_path: &str,
-	password: &str,
-	forced_extension: &str,
-) -> Result<Box<DocumentHandle>, String> {
-	let mut context = ParserContext::new(file_path.to_string());
-	if !password.is_empty() {
-		context = context.with_password(password.to_string());
+fn document_heading_tree(doc: &DocumentHandle, position: i64) -> ffi::FfiHeadingTree {
+	let pos = usize::try_from(position.max(0)).unwrap_or(0);
+	let mut last_indices = [-1; 7];
+	let mut closest_index = -1;
+	let mut items = Vec::new();
+	for marker in
+		doc.document().buffer.markers.iter().filter(|marker| crate::document::is_heading_marker(marker.marker_type))
+	{
+		let level = marker.level;
+		if !(1..=6).contains(&level) {
+			continue;
+		}
+		let Ok(level_usize) = usize::try_from(level) else {
+			continue;
+		};
+		let parent_index = last_indices[level_usize - 1];
+		let current_index = i32::try_from(items.len()).unwrap_or(-1);
+		if marker.position <= pos {
+			closest_index = current_index;
+		}
+		items.push(ffi::FfiHeadingTreeItem { offset: marker.position, level, text: marker.text.clone(), parent_index });
+		for entry in last_indices.iter_mut().skip(level_usize) {
+			*entry = current_index;
+		}
 	}
-	if !forced_extension.is_empty() {
-		context = context.with_forced_extension(forced_extension.to_string());
-	}
-	let mut doc = parser::parse_document(&context).map_err(|e| e.to_string())?;
-	doc.compute_stats();
-	Ok(Box::new(DocumentHandle::new(doc)))
+	ffi::FfiHeadingTree { items, closest_index }
 }
 
-fn document_title(doc: &DocumentHandle) -> String {
-	doc.document().title.clone()
-}
-
-fn document_author(doc: &DocumentHandle) -> String {
-	doc.document().author.clone()
-}
-
-fn document_content(doc: &DocumentHandle) -> String {
-	doc.document().buffer.content.clone()
-}
-
-fn document_length(doc: &DocumentHandle) -> usize {
-	doc.document().buffer.content.chars().count()
-}
-
-const fn document_stats(doc: &DocumentHandle) -> ffi::FfiDocumentStats {
-	document_stats_to_ffi(&doc.document().stats)
-}
-
-fn document_toc_items(doc: &DocumentHandle) -> Vec<ffi::FfiTocItem> {
-	flatten_toc_items(&doc.document().toc_items)
-}
-
-fn document_toc_items_with_parents(doc: &DocumentHandle) -> Vec<ffi::FfiTocItemWithParent> {
-	flatten_toc_items_with_parents(&doc.document().toc_items)
-}
-
-fn document_markers(doc: &DocumentHandle) -> Vec<ffi::FfiMarker> {
-	doc.document().buffer.markers.iter().map(document_marker_to_ffi).collect()
-}
-
-fn document_marker_info(doc: &DocumentHandle, marker_index: i32) -> ffi::FfiMarkerResult {
-	let idx = usize::try_from(marker_index).ok();
-	let marker = idx.and_then(|idx| doc.document().buffer.markers.get(idx));
-	if let Some(marker) = marker {
-		return ffi::FfiMarkerResult { found: true, marker: document_marker_to_ffi(marker) };
-	}
-	ffi::FfiMarkerResult { found: false, marker: empty_ffi_marker() }
-}
-
-fn document_markers_by_type(doc: &DocumentHandle, marker_type: i32) -> Vec<ffi::FfiMarker> {
-	let Some(marker_type) = marker_type_from_i32(marker_type) else { return Vec::new() };
-	doc.document()
-		.buffer
-		.markers
-		.iter()
-		.filter(|marker| marker.marker_type == marker_type)
-		.map(document_marker_to_ffi)
-		.collect()
-}
-
-fn document_find_closest_toc_offset(doc: &DocumentHandle, position: usize) -> usize {
-	doc.find_closest_toc_offset(position)
-}
-
-fn document_next_marker(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32 {
-	let Some(marker_type) = marker_type_from_i32(marker_type) else { return -1 };
-	opt_usize_to_i32(doc.next_marker_index(position, marker_type))
-}
-
-fn document_previous_marker(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32 {
-	let Some(marker_type) = marker_type_from_i32(marker_type) else { return -1 };
-	opt_usize_to_i32(doc.previous_marker_index(position, marker_type))
-}
-
-fn document_current_marker(doc: &DocumentHandle, position: usize, marker_type: i32) -> i32 {
-	let Some(marker_type) = marker_type_from_i32(marker_type) else { return -1 };
-	opt_usize_to_i32(doc.current_marker_index(position, marker_type))
-}
-
-fn document_find_first_marker_after(doc: &DocumentHandle, position: i64, marker_type: i32) -> i32 {
-	let Some(marker_type) = marker_type_from_i32(marker_type) else { return -1 };
-	opt_usize_to_i32(doc.find_first_marker_after(position, marker_type))
-}
-
-fn document_marker_position(doc: &DocumentHandle, marker_index: i32) -> usize {
-	doc.marker_position(marker_index).unwrap_or(0)
-}
-
-fn document_count_markers(doc: &DocumentHandle, marker_type: i32) -> usize {
-	let Some(marker_type) = marker_type_from_i32(marker_type) else { return 0 };
-	doc.count_markers_by_type(marker_type)
-}
-
-fn document_marker_position_by_index(doc: &DocumentHandle, marker_type: i32, index: i32) -> usize {
-	let Some(marker_type) = marker_type_from_i32(marker_type) else { return 0 };
-	doc.get_marker_position_by_index(marker_type, index).unwrap_or(0)
-}
-
-fn document_next_heading(doc: &DocumentHandle, position: i64, level: i32) -> i32 {
-	let level_filter = if level > 0 { Some(level) } else { None };
-	doc.next_heading_index(position, level_filter).unwrap_or(-1)
-}
-
-fn document_previous_heading(doc: &DocumentHandle, position: i64, level: i32) -> i32 {
-	let level_filter = if level > 0 { Some(level) } else { None };
-	doc.previous_heading_index(position, level_filter).unwrap_or(-1)
-}
-
-fn document_heading_info(doc: &DocumentHandle, index: i32) -> ffi::FfiHeadingInfo {
-	doc.heading_info(index).map_or(ffi::FfiHeadingInfo { offset: 0, level: 0, text: String::new() }, |info| {
-		ffi::FfiHeadingInfo { offset: info.offset, level: info.level, text: info.text }
-	})
-}
-
-fn document_section_index(doc: &DocumentHandle, position: usize) -> i32 {
-	doc.section_index(position).unwrap_or(-1)
-}
-
-fn document_page_index(doc: &DocumentHandle, position: usize) -> i32 {
-	doc.page_index(position).unwrap_or(-1)
-}
-
-fn document_id_positions(doc: &DocumentHandle) -> Vec<ffi::FfiIdPosition> {
-	doc.document()
-		.id_positions
-		.iter()
-		.map(|(id, offset)| ffi::FfiIdPosition { id: id.clone(), offset: *offset })
-		.collect()
-}
-
-fn document_spine_items(doc: &DocumentHandle) -> Vec<String> {
-	doc.document().spine_items.clone()
-}
-
-fn document_manifest_items(doc: &DocumentHandle) -> Vec<ffi::FfiManifestItem> {
-	doc.document()
-		.manifest_items
-		.iter()
-		.map(|(id, path)| ffi::FfiManifestItem { id: id.clone(), path: path.clone() })
-		.collect()
-}
-
-fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavResult {
-	crate::reader_core::reader_navigate(doc, req)
-}
-
-fn reader_search(
+fn reader_search_with_wrap(
 	req: &str,
 	needle: &str,
 	start: i64,
@@ -1051,8 +824,8 @@ fn reader_search(
 	match_case: bool,
 	whole_word: bool,
 	regex: bool,
-) -> i64 {
-	crate::reader_core::reader_search(req, needle, start, forward, match_case, whole_word, regex)
+) -> ffi::FfiSearchResult {
+	crate::reader_core::reader_search_with_wrap(req, needle, start, forward, match_case, whole_word, regex)
 }
 
 fn bookmark_navigate(
@@ -1066,6 +839,18 @@ fn bookmark_navigate(
 	crate::reader_core::bookmark_navigate(manager, path, position, wrap, next, notes_only)
 }
 
+fn bookmark_note_at_position(manager: &ConfigManager, path: &str, position: i64) -> String {
+	crate::reader_core::bookmark_note_at_position(manager, path, position)
+}
+
+fn bookmark_info(manager: &ConfigManager, path: &str, start: i64, end: i64) -> ffi::FfiBookmarkInfo {
+	crate::reader_core::bookmark_info(manager, path, start, end)
+}
+
+fn bookmark_count(manager: &ConfigManager, path: &str) -> usize {
+	crate::reader_core::bookmark_count(manager, path)
+}
+
 fn get_filtered_bookmarks(
 	manager: &ConfigManager,
 	path: &str,
@@ -1073,6 +858,16 @@ fn get_filtered_bookmarks(
 	filter: ffi::BookmarkFilterType,
 ) -> ffi::FfiFilteredBookmarks {
 	crate::reader_core::get_filtered_bookmarks(manager, path, current_pos, filter)
+}
+
+fn get_filtered_bookmark_display_items(
+	session: &DocumentSession,
+	manager: &ConfigManager,
+	path: &str,
+	current_pos: i64,
+	filter: ffi::BookmarkFilterType,
+) -> ffi::FfiFilteredBookmarkDisplay {
+	session.get_filtered_bookmark_display_items(manager, path, current_pos, filter)
 }
 
 fn get_sorted_document_list(
@@ -1083,39 +878,15 @@ fn get_sorted_document_list(
 	crate::config::get_sorted_document_list(config, open_paths, filter)
 }
 
-fn history_normalize(history: &[i64], history_index: usize) -> ffi::FfiNavigationHistory {
-	crate::reader_core::history_normalize(history, history_index)
-}
-
-fn history_record_position(
-	history: &[i64],
-	history_index: usize,
-	current_pos: i64,
-	max_len: usize,
-) -> ffi::FfiNavigationHistory {
-	crate::reader_core::history_record_position(history, history_index, current_pos, max_len)
-}
-
-fn history_go_previous(
-	history: &[i64],
-	history_index: usize,
-	current_pos: i64,
-	max_len: usize,
-) -> ffi::FfiHistoryNavResult {
-	crate::reader_core::history_go_previous(history, history_index, current_pos, max_len)
-}
-
-fn history_go_next(
-	history: &[i64],
-	history_index: usize,
-	current_pos: i64,
-	max_len: usize,
-) -> ffi::FfiHistoryNavResult {
-	crate::reader_core::history_go_next(history, history_index, current_pos, max_len)
-}
-
-fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> ffi::FfiLinkNavigation {
-	crate::reader_core::resolve_link(doc, href, current_position)
+fn get_recent_documents_for_menu(config: &ConfigManager, limit: usize) -> Vec<ffi::FfiRecentDocument> {
+	let docs = config.get_recent_documents();
+	docs.into_iter()
+		.take(limit)
+		.map(|path| {
+			let filename = Path::new(&path).file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default();
+			ffi::FfiRecentDocument { path, filename }
+		})
+		.collect()
 }
 
 use crate::session::{DocumentSession, LinkAction, NavigationResult};
@@ -1148,25 +919,23 @@ fn session_content(session: &DocumentSession) -> String {
 	session.content()
 }
 
-fn session_file_path(session: &DocumentSession) -> String {
-	session.file_path().to_string()
-}
-
-fn session_parser_flags(session: &DocumentSession) -> u32 {
+const fn session_parser_flags(session: &DocumentSession) -> u32 {
 	session.parser_flags().bits()
 }
 
-fn session_get_history(session: &DocumentSession) -> ffi::FfiNavigationHistory {
+fn session_load_history_from_config(session: &mut DocumentSession, config: &RustConfigManager, path: &str) {
+	let history = config.get_navigation_history(path);
+	if !history.positions.is_empty() {
+		session.set_history(&history.positions, history.index);
+	}
+}
+
+fn session_save_history_to_config(session: &DocumentSession, config: &mut RustConfigManager, path: &str) {
 	let (positions, index) = session.get_history();
-	ffi::FfiNavigationHistory { positions: positions.to_vec(), index }
-}
-
-fn session_set_history(session: &mut DocumentSession, positions: &[i64], index: usize) {
-	session.set_history(positions, index);
-}
-
-fn session_record_position(session: &mut DocumentSession, position: i64) {
-	session.record_position(position);
+	if positions.is_empty() {
+		return;
+	}
+	config.set_navigation_history(path, positions, index);
 }
 
 fn session_navigate_section(
@@ -1218,6 +987,109 @@ fn session_navigate_table(
 	nav_result_to_ffi(session.navigate_table(position, wrap, next))
 }
 
+fn session_navigate_unified(
+	session: &DocumentSession,
+	config: &ConfigManager,
+	position: i64,
+	target: ffi::NavTarget,
+	direction: ffi::NavDirection,
+	level_filter: i32,
+) -> ffi::FfiUnifiedNavResult {
+	let wrap = config.get_app_bool("navigation_wrap", false);
+	let next = direction == ffi::NavDirection::Next;
+	let result = match target {
+		ffi::NavTarget::Section => session.navigate_section(position, wrap, next),
+		ffi::NavTarget::Heading => session.navigate_heading(position, wrap, next, level_filter),
+		ffi::NavTarget::Page => session.navigate_page(position, wrap, next),
+		ffi::NavTarget::Link => session.navigate_link(position, wrap, next),
+		ffi::NavTarget::List => session.navigate_list(position, wrap, next),
+		ffi::NavTarget::ListItem => session.navigate_list_item(position, wrap, next),
+		ffi::NavTarget::Table => session.navigate_table(position, wrap, next),
+		_ => {
+			return ffi::FfiUnifiedNavResult {
+				outcome: ffi::NavOutcome::NotSupported,
+				offset: 0,
+				context_text: String::new(),
+				context_index: 0,
+				secondary_text: String::new(),
+			};
+		}
+	};
+	let outcome = if result.not_supported {
+		ffi::NavOutcome::NotSupported
+	} else if !result.found {
+		ffi::NavOutcome::NotFound
+	} else if result.wrapped {
+		ffi::NavOutcome::FoundWrapped
+	} else {
+		ffi::NavOutcome::Found
+	};
+	let context_index = if target == ffi::NavTarget::Heading { result.marker_level } else { result.marker_index };
+	ffi::FfiUnifiedNavResult {
+		outcome,
+		offset: result.offset,
+		context_text: result.marker_text,
+		context_index,
+		secondary_text: String::new(),
+	}
+}
+
+fn session_navigate_bookmark_unified(
+	session: &DocumentSession,
+	config: &ConfigManager,
+	position: i64,
+	direction: ffi::NavDirection,
+	notes_only: bool,
+) -> ffi::FfiUnifiedNavResult {
+	let wrap = config.get_app_bool("navigation_wrap", false);
+	let next = direction == ffi::NavDirection::Next;
+	let result = session.navigate_bookmark_display(config, position, wrap, next, notes_only);
+	let outcome = if !result.found {
+		ffi::NavOutcome::NotFound
+	} else if result.wrapped {
+		ffi::NavOutcome::FoundWrapped
+	} else {
+		ffi::NavOutcome::Found
+	};
+	ffi::FfiUnifiedNavResult {
+		outcome,
+		offset: result.start,
+		context_text: result.snippet,
+		context_index: result.index,
+		secondary_text: result.note,
+	}
+}
+
+fn session_history_navigate(
+	session: &mut DocumentSession,
+	config: &ConfigManager,
+	position: i64,
+	direction: ffi::NavDirection,
+) -> ffi::FfiUnifiedNavResult {
+	let _ = config; // config not needed for history navigation, but kept for API consistency
+	let result = match direction {
+		ffi::NavDirection::Next => session.history_go_forward(position),
+		ffi::NavDirection::Previous => session.history_go_back(position),
+		_ => {
+			return ffi::FfiUnifiedNavResult {
+				outcome: ffi::NavOutcome::NotFound,
+				offset: 0,
+				context_text: String::new(),
+				context_index: 0,
+				secondary_text: String::new(),
+			};
+		}
+	};
+	let outcome = if result.found { ffi::NavOutcome::Found } else { ffi::NavOutcome::NotFound };
+	ffi::FfiUnifiedNavResult {
+		outcome,
+		offset: result.offset,
+		context_text: String::new(),
+		context_index: 0,
+		secondary_text: String::new(),
+	}
+}
+
 fn session_navigate_bookmark(
 	session: &DocumentSession,
 	config: &ConfigManager,
@@ -1228,6 +1100,25 @@ fn session_navigate_bookmark(
 	nav_result_to_ffi(session.navigate_bookmark(config, position, wrap, next))
 }
 
+fn session_navigate_bookmark_display(
+	session: &DocumentSession,
+	config: &ConfigManager,
+	position: i64,
+	wrap: bool,
+	next: bool,
+	notes_only: bool,
+) -> ffi::FfiBookmarkNavDisplay {
+	session.navigate_bookmark_display(config, position, wrap, next, notes_only)
+}
+
+fn session_bookmark_display_at_position(
+	session: &DocumentSession,
+	config: &ConfigManager,
+	position: i64,
+) -> ffi::FfiBookmarkDisplayAtPosition {
+	session.bookmark_display_at_position(config, position)
+}
+
 fn session_navigate_note(
 	session: &DocumentSession,
 	config: &ConfigManager,
@@ -1236,6 +1127,10 @@ fn session_navigate_note(
 	next: bool,
 ) -> ffi::FfiSessionNavResult {
 	nav_result_to_ffi(session.navigate_note(config, position, wrap, next))
+}
+
+fn session_link_list(session: &DocumentSession, position: i64) -> ffi::FfiLinkList {
+	session.link_list(position)
 }
 
 fn session_history_go_back(session: &mut DocumentSession, current_pos: i64) -> ffi::FfiSessionNavResult {
@@ -1264,14 +1159,69 @@ fn session_get_table_at_position(session: &DocumentSession, position: i64) -> St
 	session.get_table_at_position(position).unwrap_or_default()
 }
 
-fn session_get_current_section_path(session: &DocumentSession, position: i64) -> String {
-	session.get_current_section_path(position).unwrap_or_default()
+fn session_webview_target(session: &DocumentSession, position: i64, temp_dir: &str) -> ffi::FfiWebViewTarget {
+	let path = session.webview_target_path(position, temp_dir);
+	ffi::FfiWebViewTarget { found: path.is_some(), path: path.unwrap_or_default() }
 }
 
-fn session_extract_resource(session: &DocumentSession, resource_path: &str, output_path: &str) -> Result<bool, String> {
-	session.extract_resource(resource_path, output_path).map_err(|e| e.to_string())
+fn session_get_status_info(session: &DocumentSession, position: i64) -> ffi::FfiStatusInfo {
+	let info = session.get_status_info(position);
+	ffi::FfiStatusInfo {
+		line_number: info.line_number,
+		character_number: info.character_number,
+		percentage: info.percentage,
+		total_chars: info.total_chars,
+	}
 }
 
-fn session_handle(session: &DocumentSession) -> &DocumentHandle {
-	session.handle()
+fn session_position_from_percent(session: &DocumentSession, percent: i32) -> i64 {
+	session.position_from_percent(percent)
+}
+
+fn session_line_count(session: &DocumentSession) -> i64 {
+	session.line_count()
+}
+
+fn session_position_from_line(session: &DocumentSession, line: i64) -> i64 {
+	session.position_from_line(line)
+}
+
+const fn session_stats(session: &DocumentSession) -> ffi::FfiDocumentStats {
+	document_stats_to_ffi(session.stats())
+}
+
+fn session_page_count(session: &DocumentSession) -> usize {
+	session.page_count()
+}
+
+fn session_current_page(session: &DocumentSession, position: i64) -> i32 {
+	session.current_page(position)
+}
+
+fn session_page_offset(session: &DocumentSession, page_index: i32) -> i64 {
+	session.page_offset(page_index)
+}
+
+fn session_export_content(session: &DocumentSession, output_path: &str) -> Result<(), String> {
+	session.export_content(output_path).map_err(|e| e.to_string())
+}
+
+fn session_toc_items_with_parents(session: &DocumentSession) -> Vec<ffi::FfiTocItemWithParent> {
+	flatten_toc_items_with_parents(&session.handle().document().toc_items)
+}
+
+fn session_find_closest_toc_offset(session: &DocumentSession, position: usize) -> usize {
+	session.handle().find_closest_toc_offset(position)
+}
+
+fn session_heading_tree(session: &DocumentSession, position: i64) -> ffi::FfiHeadingTree {
+	document_heading_tree(session.handle(), position)
+}
+
+fn session_supports_toc(session: &DocumentSession) -> bool {
+	session.parser_flags().contains(crate::document::ParserFlags::SUPPORTS_TOC)
+}
+
+fn is_heading_marker_type(marker_type: i32) -> bool {
+	crate::document::MarkerType::try_from(marker_type).map(crate::document::is_heading_marker).unwrap_or(false)
 }

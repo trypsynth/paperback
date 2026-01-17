@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Write};
 
 use bitflags::bitflags;
 use ego_tree::NodeRef;
@@ -340,7 +340,6 @@ impl HtmlToText {
 			if let Some(style) = self.list_style_stack.last_mut() {
 				if style.ordered {
 					let item_text = format_list_item(style.item_number, &style.list_type);
-					use std::fmt::Write;
 					let _ = write!(&mut self.current_line, "{item_text}. ");
 					style.item_number += 1;
 				} else {

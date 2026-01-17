@@ -1,12 +1,3 @@
-/* main_window.cpp - primary user interface file.
- *
- * Paperback.
- * Copyright (c) 2025 Quin Gillespie.
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
-
 #include "main_window.hpp"
 #include "app.hpp"
 #include "constants.hpp"
@@ -40,9 +31,7 @@ main_window::main_window() : wxFrame(nullptr, wxID_ANY, APP_NAME), task_bar_icon
 	status_bar = CreateStatusBar(1);
 	status_bar->SetStatusText(_("Ready"));
 	bind_events();
-	if (wxGetApp().get_config_manager().get(config_manager::start_maximized)) {
-		Maximize();
-	}
+	if (wxGetApp().get_config_manager().get(config_manager::start_maximized)) Maximize();
 	update_ui();
 	notebook->Bind(wxEVT_KEY_DOWN, &main_window::on_notebook_key_down, this);
 }
@@ -52,18 +41,10 @@ main_window::~main_window() {
 		task_bar_icon_->Destroy();
 		task_bar_icon_ = nullptr;
 	}
-	if (position_save_timer) {
-		position_save_timer->Stop();
-	}
-	if (status_update_timer) {
-		status_update_timer->Stop();
-	}
-	if (sleep_timer) {
-		sleep_timer->Stop();
-	}
-	if (sleep_status_update_timer) {
-		sleep_status_update_timer->Stop();
-	}
+	if (position_save_timer) position_save_timer->Stop();
+	if (status_update_timer) status_update_timer->Stop();
+	if (sleep_timer) sleep_timer->Stop();
+	if (sleep_status_update_timer) sleep_status_update_timer->Stop();
 	if (find_dlg != nullptr) {
 		find_dlg->Destroy();
 		find_dlg = nullptr;
@@ -129,12 +110,13 @@ void main_window::create_menus() {
 			menu_item::item(wxID_CLOSE_ALL, _("Close &All\tCtrl+Shift+F4")),
 			menu_item::sep(),
 			menu_item::submenu_populate(_("&Recent Documents"), [this](wxMenu* sub) {
-		recent_documents_menu = sub;
-		update_recent_documents_menu();
-	}),
+				recent_documents_menu = sub;
+				update_recent_documents_menu();
+			}),
 			menu_item::sep(),
 			menu_item::item(wxID_EXIT, _("E&xit")),
-		}});
+		}
+	});
 	{
 		std::vector<menu_item> go_items = {
 			menu_item::item(wxID_FIND, _("&Find...\tCtrl+F")),
@@ -195,30 +177,32 @@ void main_window::create_menus() {
 			menu_item::item(ID_OPEN_CONTAINING_FOLDER, _("Open &containing folder\tCtrl+Shift+C")),
 			menu_item::item(ID_OPEN_IN_WEBVIEW, _("Open in &Web View\tCtrl+Shift+V")),
 			menu_item::submenu(_("Import/&Export"), {
-														menu_item::item(ID_IMPORT, _("&Import document data...\tCtrl+Shift+I")),
-														menu_item::item(ID_EXPORT_DOCUMENT_DATA, _("&Export document data...\tCtrl+Shift+E")),
-														menu_item::item(ID_EXPORT_TO_TEXT, _("Export document to &plain text...\tCtrl+E")),
-													}),
+				menu_item::item(ID_IMPORT, _("&Import document data...\tCtrl+Shift+I")),
+				menu_item::item(ID_EXPORT_DOCUMENT_DATA, _("&Export document data...\tCtrl+Shift+E")),
+				menu_item::item(ID_EXPORT_TO_TEXT, _("Export document to &plain text...\tCtrl+E")),
+			}),
 			menu_item::sep(),
 			menu_item::item(ID_TOGGLE_BOOKMARK, _("Toggle bookmark\tCtrl+Shift+B")),
 			menu_item::item(ID_BOOKMARK_WITH_NOTE, _("Bookmark with &note\tCtrl+Shift+N")),
 			menu_item::sep(),
 			menu_item::item(ID_OPTIONS, _("&Options\tCtrl+,")),
 			menu_item::item(ID_SLEEP_TIMER, _("&Sleep Timer...\tCtrl+Shift+S")),
-		}});
+		}
+	});
 	menus.push_back(menu{
 		_("&Help"),
 		{
 			menu_item::populate([](wxMenu* parent) {
-		parent->Append(wxID_ABOUT, wxString::Format(_("About %s\tCtrl+F1"), APP_NAME));
-		parent->Append(wxID_HELP, _("View &help in default browser\tF1"));
-		parent->Append(ID_HELP_INTERNAL, wxString::Format(_("View Help in %s\tShift+F1"), APP_NAME));
-	}),
+				parent->Append(wxID_ABOUT, wxString::Format(_("About %s\tCtrl+F1"), APP_NAME));
+				parent->Append(wxID_HELP, _("View &help in default browser\tF1"));
+				parent->Append(ID_HELP_INTERNAL, wxString::Format(_("View Help in %s\tShift+F1"), APP_NAME));
+			}),
 			menu_item::sep(),
 			menu_item::item(ID_CHECK_FOR_UPDATES, _("Check for &Updates\tCtrl+Shift+U")),
 			menu_item::sep(),
 			menu_item::item(ID_DONATE, _("&Donate\tCtrl+D")),
-		}});
+		}
+	});
 	auto* const menu_bar = new wxMenuBar();
 	for (const auto& def : menus) {
 		auto* const menu = new wxMenu();
@@ -292,9 +276,7 @@ void main_window::bind_events() {
 		{ID_DONATE, &main_window::on_donate},
 		{ID_CHECK_FOR_UPDATES, &main_window::on_check_for_updates},
 	};
-	for (const auto& [id, handler] : menu_bindings) {
-		Bind(wxEVT_MENU, handler, this, id);
-	}
+	for (const auto& [id, handler] : menu_bindings) Bind(wxEVT_MENU, handler, this, id);
 	for (int level = 1; level <= MAX_HEADING_LEVELS; ++level) {
 		const int prev_id = ID_PREVIOUS_HEADING_1 + ((level - 1) * 2);
 		const int next_id = ID_NEXT_HEADING_1 + ((level - 1) * 2);
@@ -342,9 +324,7 @@ void main_window::on_activate(wxActivateEvent& event) {
 void main_window::update_ui() {
 	const bool has_doc = doc_manager->has_documents();
 	const auto enable = [this](const int id, const bool state) noexcept {
-		if (auto* item = GetMenuBar()->FindItem(id)) {
-			item->Enable(state);
-		}
+		if (auto* item = GetMenuBar()->FindItem(id)) item->Enable(state);
 	};
 	constexpr int doc_items[] = {
 		wxID_CLOSE,
@@ -403,9 +383,7 @@ void main_window::update_ui() {
 		ID_EXPORT_DOCUMENT_DATA,
 		ID_EXPORT_TO_TEXT,
 	};
-	for (const auto id : doc_items) {
-		enable(id, has_doc);
-	}
+	for (const auto id : doc_items) enable(id, has_doc);
 }
 
 void main_window::update_title() {
@@ -417,9 +395,7 @@ void main_window::update_status_bar() {
 	if (sleep_timer->IsRunning()) {
 		wxLongLong elapsed_ms = wxGetLocalTimeMillis() - sleep_timer_start_time;
 		int remaining_seconds = sleep_timer_duration_minutes * 60 - elapsed_ms.ToLong() / 1000;
-		if (remaining_seconds < 0) {
-			remaining_seconds = 0;
-		}
+		if (remaining_seconds < 0) remaining_seconds = 0;
 		int minutes = remaining_seconds / 60;
 		int seconds = remaining_seconds % 60;
 		status_text += wxString::Format(_(" | Sleep timer: %02d:%02d"), minutes, seconds);
@@ -430,9 +406,7 @@ void main_window::update_status_bar() {
 void main_window::on_open(wxCommandEvent&) {
 	const long flags = wxFD_OPEN | wxFD_FILE_MUST_EXIST;
 	wxFileDialog dlg(this, _("Select a document to read"), "", "", get_supported_wildcards(), flags);
-	if (dlg.ShowModal() != wxID_OK) {
-		return;
-	}
+	if (dlg.ShowModal() != wxID_OK) return;
 	const auto path = dlg.GetPath();
 	[[maybe_unused]] const bool success = doc_manager->open_file(path);
 }
@@ -453,49 +427,34 @@ void main_window::on_close_all(wxCommandEvent&) {
 
 void main_window::on_export(wxCommandEvent&) {
 	const auto* tab = doc_manager->get_active_tab();
-	if (tab == nullptr || tab->session_doc == nullptr) {
-		return;
-	}
+	if (tab == nullptr || tab->session_doc == nullptr) return;
 	const long flags = wxFD_SAVE | wxFD_OVERWRITE_PROMPT;
 	wxFileDialog save_dialog(this, _("Export Document"), "", tab->session_doc->get_title() + ".txt", _("Text files (*.txt)|*.txt|All files (*.*)|*.*"), flags);
-	if (save_dialog.ShowModal() != wxID_OK) {
-		return;
-	}
+	if (save_dialog.ShowModal() != wxID_OK) return;
 	const auto file_path = save_dialog.GetPath();
-	if (!doc_manager->export_document(doc_manager->get_active_tab_index(), file_path)) {
+	if (!doc_manager->export_document(doc_manager->get_active_tab_index(), file_path))
 		wxMessageBox(_("Failed to export document."), _("Error"), wxICON_ERROR);
-	}
 }
 
 void main_window::on_export_document_data(wxCommandEvent&) {
 	const auto* tab = doc_manager->get_active_tab();
-	if (tab == nullptr) {
-		return;
-	}
+	if (tab == nullptr) return;
 	wxFileName fn(tab->file_path);
 	wxFileDialog save_dialog(this, _("Export notes and bookmarks"), fn.GetPath(), fn.GetFullName() + ".paperback", _("Paperback files (*.paperback)|*.paperback"), wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
-	if (save_dialog.ShowModal() != wxID_OK) {
-		return;
-	}
+	if (save_dialog.ShowModal() != wxID_OK) return;
 	wxGetApp().get_config_manager().export_document_settings(tab->file_path, save_dialog.GetPath());
 	wxMessageBox(_("Notes and bookmarks exported successfully."), _("Export Successful"), wxOK | wxICON_INFORMATION);
 }
 
 void main_window::on_import_document_data(wxCommandEvent&) {
 	const auto* tab = doc_manager->get_active_tab();
-	if (tab == nullptr) {
-		return;
-	}
+	if (tab == nullptr) return;
 	wxFileName fn(tab->file_path);
 	wxFileDialog open_dialog(this, _("Import notes and bookmarks"), fn.GetPath(), "", _("Paperback files (*.paperback)|*.paperback"), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-	if (open_dialog.ShowModal() != wxID_OK) {
-		return;
-	}
+	if (open_dialog.ShowModal() != wxID_OK) return;
 	wxGetApp().get_config_manager().import_settings_from_file(tab->file_path, open_dialog.GetPath());
 	const long imported_position = wxGetApp().get_config_manager().get_document_position(tab->file_path);
-	if (imported_position >= 0) {
-		doc_manager->go_to_position(imported_position);
-	}
+	if (imported_position >= 0) doc_manager->go_to_position(imported_position);
 	wxMessageBox(_("Notes and bookmarks imported successfully."), _("Import Successful"), wxOK | wxICON_INFORMATION);
 }
 
@@ -504,9 +463,7 @@ void main_window::on_exit(wxCommandEvent&) {
 }
 
 void main_window::on_find(wxCommandEvent&) {
-	if (find_dlg == nullptr) {
-		find_dlg = new find_dialog(this);
-	}
+	if (find_dlg == nullptr) find_dlg = new find_dialog(this);
 	// If there's selected text, use it as the initial search term.
 	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
 	if (text_ctrl != nullptr) {
@@ -524,16 +481,12 @@ void main_window::on_find(wxCommandEvent&) {
 }
 
 void main_window::on_find_next(wxCommandEvent&) {
-	if (find_dlg == nullptr) {
-		find_dlg = new find_dialog(this);
-	}
+	if (find_dlg == nullptr) find_dlg = new find_dialog(this);
 	if (find_dlg->get_find_text().IsEmpty()) {
 		if (auto* const text_ctrl = doc_manager->get_active_text_ctrl(); text_ctrl != nullptr) {
 			long start{0}, end{0};
 			text_ctrl->GetSelection(&start, &end);
-			if (start != end) {
-				find_dlg->set_find_text(text_ctrl->GetStringSelection());
-			}
+			if (start != end) find_dlg->set_find_text(text_ctrl->GetStringSelection());
 		}
 	}
 	if (!find_dlg->get_find_text().IsEmpty()) {
@@ -545,16 +498,12 @@ void main_window::on_find_next(wxCommandEvent&) {
 }
 
 void main_window::on_find_previous(wxCommandEvent&) {
-	if (find_dlg == nullptr) {
-		find_dlg = new find_dialog(this);
-	}
+	if (find_dlg == nullptr) find_dlg = new find_dialog(this);
 	if (find_dlg->get_find_text().IsEmpty()) {
 		if (auto* const text_ctrl = doc_manager->get_active_text_ctrl(); text_ctrl != nullptr) {
 			long start{0}, end{0};
 			text_ctrl->GetSelection(&start, &end);
-			if (start != end) {
-				find_dlg->set_find_text(text_ctrl->GetStringSelection());
-			}
+			if (start != end) find_dlg->set_find_text(text_ctrl->GetStringSelection());
 		}
 	}
 	if (!find_dlg->get_find_text().IsEmpty()) {
@@ -566,14 +515,10 @@ void main_window::on_find_previous(wxCommandEvent&) {
 }
 
 void main_window::on_go_to_line(wxCommandEvent&) {
-	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-	if (text_ctrl == nullptr) {
-		return;
-	}
-	go_to_line_dialog dlg(this, text_ctrl);
-	if (dlg.ShowModal() != wxID_OK) {
-		return;
-	}
+	auto* const tab = doc_manager->get_active_tab();
+	if (tab == nullptr || tab->text_ctrl == nullptr || tab->get_session() == nullptr) return;
+	go_to_line_dialog dlg(this, tab->text_ctrl, tab->get_session());
+	if (dlg.ShowModal() != wxID_OK) return;
 	const auto pos = dlg.get_position();
 	doc_manager->go_to_position(pos);
 	update_status_bar();
@@ -581,14 +526,10 @@ void main_window::on_go_to_line(wxCommandEvent&) {
 }
 
 void main_window::on_go_to_percent(wxCommandEvent&) {
-	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-	if (text_ctrl == nullptr) {
-		return;
-	}
-	go_to_percent_dialog dlg(this, text_ctrl);
-	if (dlg.ShowModal() != wxID_OK) {
-		return;
-	}
+	auto* const tab = doc_manager->get_active_tab();
+	if (tab == nullptr || tab->text_ctrl == nullptr || tab->get_session() == nullptr) return;
+	go_to_percent_dialog dlg(this, tab->text_ctrl, tab->get_session());
+	if (dlg.ShowModal() != wxID_OK) return;
 	const auto pos = dlg.get_position();
 	doc_manager->go_to_position(pos);
 	update_status_bar();
@@ -609,34 +550,28 @@ void main_window::on_go_forward(wxCommandEvent&) {
 
 void main_window::on_go_to_page(wxCommandEvent&) {
 	auto* const tab = doc_manager->get_active_tab();
-	if (tab == nullptr || tab->session_doc == nullptr) {
-		return;
-	}
-	const size_t total_pages = doc_manager->marker_count(marker_type::PageBreak);
+	if (tab == nullptr || tab->session_doc == nullptr) return;
+	const size_t total_pages = session_page_count(*tab->session_doc->session);
 	if (total_pages == 0) {
 		speak(_("No pages."));
 		return;
 	}
 	int current_page = 1;
 	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-	if (text_ctrl == nullptr) {
-		return;
-	}
+	if (text_ctrl == nullptr) return;
 	const size_t current_pos = text_ctrl->GetInsertionPoint();
-	const int current_page_idx = doc_manager->page_index(current_pos);
-	if (current_page_idx >= 0) {
-		current_page = current_page_idx + 1; // Convert to 1-based index
-	}
+	const int session_page = session_current_page(*tab->session_doc->session, static_cast<long>(current_pos));
+	if (session_page > 0) current_page = session_page;
 	go_to_page_dialog dlg(this, tab->session_doc.get(), current_page);
-	if (dlg.ShowModal() != wxID_OK) {
-		return;
-	}
+	if (dlg.ShowModal() != wxID_OK) return;
 	const int page = dlg.get_page_number();
 	if (page >= 1 && std::cmp_less_equal(static_cast<size_t>(page), total_pages)) {
-		const size_t offset = doc_manager->marker_position_by_index(marker_type::PageBreak, page - 1); // Convert to 0-based index
-		doc_manager->go_to_position(static_cast<long>(offset));
-		update_status_bar();
-		save_position_immediately();
+		const auto offset = session_page_offset(*tab->session_doc->session, page - 1); // Convert to 0-based index
+		if (offset >= 0) {
+			doc_manager->go_to_position(static_cast<long>(offset));
+			update_status_bar();
+			save_position_immediately();
+		}
 	}
 }
 
@@ -717,19 +652,15 @@ void main_window::on_jump_to_notes(wxCommandEvent&) {
 void main_window::on_view_note_text(wxCommandEvent&) {
 	auto* tab = doc_manager->get_active_tab();
 	auto* text_ctrl = doc_manager->get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr) {
-		return;
-	}
+	if (tab == nullptr || text_ctrl == nullptr) return;
 	const long current_pos = text_ctrl->GetInsertionPoint();
-	const auto bookmarks = wxGetApp().get_config_manager().get_bookmarks(tab->file_path);
-	const auto bm_it = std::find_if(bookmarks.begin(), bookmarks.end(), [&](const bookmark& bm) {
-		return bm.start == current_pos && bm.has_note();
-	});
-	if (bm_it == bookmarks.end()) {
+	auto& config_mgr = wxGetApp().get_config_manager();
+	const std::string note_utf8 = std::string(bookmark_note_at_position(config_mgr.backend_for_ffi(), tab->file_path.ToUTF8().data(), current_pos));
+	const wxString note_text = wxString::FromUTF8(note_utf8.c_str());
+	if (note_text.IsEmpty()) {
 		wxMessageBox(_("No note at the current position."), _("View Note"), wxOK | wxICON_INFORMATION);
 		return;
 	}
-	const wxString note_text = bm_it->note;
 	view_note_dialog dlg(this, note_text);
 	dlg.ShowModal();
 }
@@ -793,19 +724,12 @@ void main_window::on_next_list_item(wxCommandEvent&) {
 	update_status_bar();
 	trigger_throttled_position_save();
 }
+
 void main_window::on_word_count(wxCommandEvent&) {
 	auto* const tab = doc_manager->get_active_tab();
-	if (tab == nullptr || tab->session_doc == nullptr) {
-		return;
-	}
-
-	const auto stats = document_stats(tab->session_doc->get_handle());
-	wxString msg = wxString::Format(
-		_("Words: %zu\nLines: %zu\nCharacters: %zu\nCharacters (no spaces): %zu"),
-		stats.word_count, stats.line_count,
-		stats.char_count, stats.char_count_no_whitespace
-	);
-	wxMessageBox(msg, _("Word count"), wxICON_INFORMATION);
+	if (tab == nullptr || tab->session_doc == nullptr) return;
+	const auto stats = session_stats(*tab->session_doc->session);
+	wxMessageBox(wxString::Format(_("The document contains %zu words."), stats.word_count), _("Word count"), wxICON_INFORMATION);
 }
 
 void main_window::on_doc_info(wxCommandEvent&) {
@@ -820,40 +744,27 @@ void main_window::on_toc(wxCommandEvent&) {
 
 void main_window::on_list_elements(wxCommandEvent&) {
 	auto* const tab = doc_manager->get_active_tab();
-	if (tab == nullptr || tab->session_doc == nullptr) {
-		return;
-	}
+	if (tab == nullptr || tab->session_doc == nullptr) return;
 	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-	if (text_ctrl == nullptr) {
-		return;
-	}
+	if (text_ctrl == nullptr) return;
 	const long current_pos = text_ctrl->GetInsertionPoint();
 	elements_dialog dlg(this, tab->session_doc.get(), current_pos);
-	if (dlg.ShowModal() != wxID_OK) {
-		return;
-	}
+	if (dlg.ShowModal() != wxID_OK) return;
 	const int offset = dlg.get_selected_offset();
-	if (offset < 0) {
-		return;
-	}
+	if (offset < 0) return;
 	doc_manager->go_to_position(offset);
-	if (dlg.get_selected_view() == 1) {
-		doc_manager->activate_current_link();
-	}
+	if (dlg.get_selected_view() == 1) doc_manager->activate_current_link();
 	update_status_bar();
 	save_position_immediately();
 }
 
 void main_window::on_open_containing_folder(wxCommandEvent&) {
 	const auto* tab = doc_manager->get_active_tab();
-	if (tab == nullptr) {
-		return;
-	}
+	if (tab == nullptr) return;
 	const wxString path = tab->file_path;
 	const wxString dir = wxFileName(path).GetPath();
-	if (!wxLaunchDefaultBrowser("file://" + dir)) {
+	if (!wxLaunchDefaultBrowser("file://" + dir))
 		wxMessageBox(_("Failed to open containing folder."), _("Error"), wxICON_ERROR);
-	}
 }
 
 void main_window::on_open_in_webview(wxCommandEvent&) {
@@ -863,23 +774,12 @@ void main_window::on_open_in_webview(wxCommandEvent&) {
 	if (text_ctrl == nullptr) return;
 	const long pos = text_ctrl->GetInsertionPoint();
 	try {
-		rust::String section_path = session_get_current_section_path(*tab->session_doc->session, pos);
+		const std::string temp_dir_utf8 = std::string(wxStandardPaths::Get().GetTempDir().ToUTF8());
+		auto target = session_webview_target(*tab->session_doc->session, pos, temp_dir_utf8);
 		wxString url_to_load;
-		wxString section_path_wx = wxString::FromUTF8(section_path.c_str());
-		wxString temp_base = wxStandardPaths::Get().GetTempDir();
-		size_t path_hash = std::hash<std::string>{}(std::string(tab->file_path.ToUTF8().data())); 
-		wxString doc_temp_dir = temp_base + wxFileName::GetPathSeparator() + "paperback_" + std::to_string(path_hash);
-		if (!wxDirExists(doc_temp_dir)) wxFileName::Mkdir(doc_temp_dir, wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
-		if (!section_path.empty()) {
-			wxFileName temp_file(doc_temp_dir, wxFileName(section_path_wx).GetFullName());
-			bool success = session_extract_resource(*tab->session_doc->session, section_path, temp_file.GetFullPath().ToStdString());
-			if (success) url_to_load = wxFileSystem::FileNameToURL(temp_file);
-		} 
-		if (url_to_load.IsEmpty()) {
-			wxFileName fn(tab->file_path);
-			wxString ext = fn.GetExt().Lower();
-			if (ext == "html" || ext == "htm" || ext == "xhtml" || ext == "md" || ext == "markdown")
-				url_to_load = wxFileSystem::FileNameToURL(fn);
+		if (target.found) {
+			const wxString path_wx = wxString::FromUTF8(target.path.c_str());
+			url_to_load = wxFileSystem::FileNameToURL(path_wx);
 		}
 		auto navigation_handler = [](const wxString& url) -> bool {
 			if (url.Lower().StartsWith("http://") || url.Lower().StartsWith("https://") || url.Lower().StartsWith("mailto:")) {
@@ -913,9 +813,7 @@ void main_window::on_options(wxCommandEvent&) {
 	dlg.set_recent_documents_to_show(config_mgr.get(config_manager::recent_documents_to_show));
 	const wxString current_language = translation_manager::instance().get_current_language();
 	dlg.set_language(current_language);
-	if (dlg.ShowModal() != wxID_OK) {
-		return;
-	}
+	if (dlg.ShowModal() != wxID_OK) return;
 	const bool old_word_wrap = config_mgr.get(config_manager::word_wrap);
 	const bool new_word_wrap = dlg.get_word_wrap();
 	const bool old_compact_menu = config_mgr.get(config_manager::compact_go_menu);
@@ -932,14 +830,10 @@ void main_window::on_options(wxCommandEvent&) {
 	config_mgr.set(config_manager::language, new_language);
 	if (old_word_wrap != new_word_wrap) {
 		doc_manager->apply_word_wrap(new_word_wrap);
-		if (active_text_ctrl != nullptr && doc_manager->get_active_text_ctrl() != nullptr) {
-			doc_manager->get_active_text_ctrl()->SetFocus();
-		}
+		if (active_text_ctrl != nullptr && doc_manager->get_active_text_ctrl() != nullptr) doc_manager->get_active_text_ctrl()->SetFocus();
 	}
 	if (current_language != new_language || old_compact_menu != new_compact_menu) {
-		if (current_language != new_language) {
-			translation_manager::instance().set_language(new_language);
-		}
+		if (current_language != new_language) translation_manager::instance().set_language(new_language);
 		refresh_ui_language();
 	}
 	config_mgr.flush();
@@ -953,9 +847,7 @@ void main_window::restore_focus_to_text() {
 		return;
 	}
 	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-	if (text_ctrl != nullptr) {
-		text_ctrl->SetFocus();
-	}
+	if (text_ctrl != nullptr) text_ctrl->SetFocus();
 }
 
 void main_window::on_about(wxCommandEvent&) {
@@ -970,9 +862,8 @@ void main_window::on_about(wxCommandEvent&) {
 void main_window::on_help(wxCommandEvent&) {
 	const auto path = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath();
 	const auto url = "file://" + wxFileName(path, "readme.html").GetFullPath();
-	if (!wxLaunchDefaultBrowser(url)) {
+	if (!wxLaunchDefaultBrowser(url))
 		wxMessageBox(_("Failed to launch default browser."), _("Error"), wxICON_ERROR);
-	}
 }
 
 void main_window::on_help_internal(wxCommandEvent&) {
@@ -987,9 +878,8 @@ void main_window::on_help_internal(wxCommandEvent&) {
 
 void main_window::on_donate(wxCommandEvent&) {
 	const wxString url = "https://paypal.me/tygillespie05";
-	if (!wxLaunchDefaultBrowser(url)) {
+	if (!wxLaunchDefaultBrowser(url))
 		wxMessageBox(_("Failed to open donation page in browser."), _("Error"), wxICON_ERROR);
-	}
 }
 
 void main_window::on_check_for_updates(wxCommandEvent&) {
@@ -1006,9 +896,7 @@ void main_window::on_sleep_timer(wxCommandEvent&) {
 	}
 	auto& config_mgr = wxGetApp().get_config_manager();
 	sleep_timer_dialog dlg(this, config_mgr.get(config_manager::sleep_timer_duration));
-	if (dlg.ShowModal() != wxID_OK) {
-		return;
-	}
+	if (dlg.ShowModal() != wxID_OK) return;
 	sleep_timer_duration_minutes = dlg.get_duration();
 	config_mgr.set(config_manager::sleep_timer_duration, sleep_timer_duration_minutes);
 	sleep_timer_start_time = wxGetLocalTimeMillis();
@@ -1061,9 +949,7 @@ void main_window::on_text_char(wxKeyEvent& event) {
 }
 
 void main_window::trigger_throttled_position_save() {
-	if (position_save_timer->IsRunning()) {
-		position_save_timer->Stop();
-	}
+	if (position_save_timer->IsRunning()) position_save_timer->Stop();
 	position_save_timer->StartOnce(POSITION_SAVE_THROTTLE_MS);
 }
 
@@ -1075,9 +961,7 @@ void main_window::trigger_throttled_status_update() {
 		update_status_bar();
 		last_status_update_time = current_time;
 	} else {
-		if (status_update_timer->IsRunning()) {
-			status_update_timer->Stop();
-		}
+		if (status_update_timer->IsRunning()) status_update_timer->Stop();
 		const int delay = min_update_interval_ms - time_since_last_update.ToLong();
 		status_update_timer->StartOnce(delay);
 	}
@@ -1112,9 +996,9 @@ void main_window::on_recent_document(wxCommandEvent& event) {
 	const int id = event.GetId();
 	const int index = id - ID_RECENT_DOCUMENTS_BASE;
 	auto& config_mgr = wxGetApp().get_config_manager();
-	const wxArrayString recent_docs = config_mgr.get_recent_documents();
-	if (index >= 0 && index < static_cast<int>(recent_docs.GetCount())) {
-		const wxString& path = recent_docs[index];
+	auto recent_docs = get_recent_documents_for_menu(config_mgr.backend_for_ffi(), config_mgr.get(config_manager::recent_documents_to_show));
+	if (index >= 0 && index < static_cast<int>(recent_docs.size())) {
+		const wxString path = wxString::FromUTF8(recent_docs[static_cast<size_t>(index)].path.c_str());
 		[[maybe_unused]] const bool success = doc_manager->open_file(path);
 	}
 }
@@ -1128,17 +1012,14 @@ void main_window::on_show_all_documents(wxCommandEvent&) {
 	}
 	wxArrayString open_docs;
 	for (size_t i = 0; i < doc_manager->get_tab_count(); ++i) {
-		if (doc_manager->get_tab(static_cast<int>(i)) != nullptr) {
+		if (doc_manager->get_tab(static_cast<int>(i)) != nullptr)
 			open_docs.Add(doc_manager->get_tab(static_cast<int>(i))->file_path);
-		}
 	}
 	all_documents_dialog dlg(this, config_mgr, open_docs);
 	if (dlg.ShowModal() == wxID_OK) {
 		const wxString path = dlg.get_selected_path();
-		if (!path.IsEmpty() && wxFileName::FileExists(path)) {
-			[[maybe_unused]]
-			const bool success = doc_manager->open_file(path);
-		}
+		if (!path.IsEmpty() && wxFileName::FileExists(path))
+			[[maybe_unused]] const bool success = doc_manager->open_file(path);
 	}
 	update_recent_documents_menu();
 }
@@ -1161,9 +1042,7 @@ void main_window::on_notebook_key_down(wxKeyEvent& event) {
 }
 
 void main_window::update_recent_documents_menu() {
-	if (recent_documents_menu == nullptr) {
-		return;
-	}
+	if (recent_documents_menu == nullptr) return;
 	while (recent_documents_menu->GetMenuItemCount() > 0) {
 		wxMenuItem* item = recent_documents_menu->FindItemByPosition(0);
 		if (item != nullptr) {
@@ -1172,71 +1051,52 @@ void main_window::update_recent_documents_menu() {
 		}
 	}
 	auto& config_mgr = wxGetApp().get_config_manager();
-	const wxArrayString recent_docs = config_mgr.get_recent_documents();
+	auto recent_docs = get_recent_documents_for_menu(config_mgr.backend_for_ffi(), config_mgr.get(config_manager::recent_documents_to_show));
 	size_t menu_count = 0;
-	for (size_t i = 0; i < recent_docs.GetCount() && menu_count < config_mgr.get(config_manager::recent_documents_to_show); ++i) {
-		const wxString& path = recent_docs[i];
-		const wxString filename = wxFileName(path).GetFullName();
+	for (size_t i = 0; i < recent_docs.size(); ++i) {
+		const wxString path = wxString::FromUTF8(recent_docs[i].path.c_str());
+		const wxString filename = wxString::FromUTF8(recent_docs[i].filename.c_str());
 		const wxString menu_text = wxString::Format("&%zu %s", menu_count + 1, filename);
 		const int id = ID_RECENT_DOCUMENTS_BASE + static_cast<int>(i);
 		recent_documents_menu->Append(id, menu_text, path);
 		Bind(wxEVT_MENU, &main_window::on_recent_document, this, id);
 		++menu_count;
 	}
-	if (menu_count == 0) {
-		recent_documents_menu->Append(wxID_ANY, _("(No recent documents)"))->Enable(false);
-	}
+	if (menu_count == 0) recent_documents_menu->Append(wxID_ANY, _("(No recent documents)"))->Enable(false);
 	recent_documents_menu->AppendSeparator();
 	recent_documents_menu->Append(ID_SHOW_ALL_DOCUMENTS, _("Show All...\tCtrl+R"));
 	Bind(wxEVT_MENU, &main_window::on_show_all_documents, this, ID_SHOW_ALL_DOCUMENTS);
 }
 
 void main_window::do_find(bool forward) {
-	if (find_dlg == nullptr) {
-		return;
-	}
+	if (find_dlg == nullptr) return;
 	auto* const text_ctrl = doc_manager->get_active_text_ctrl();
-	if (text_ctrl == nullptr) {
-		return;
-	}
+	if (text_ctrl == nullptr) return;
 	const auto& query = find_dlg->get_find_text();
-	if (query.IsEmpty()) {
-		return;
-	}
+	if (query.IsEmpty()) return;
 	find_options options = find_options::none;
-	if (forward) {
-		options |= find_options::forward;
-	}
-	if (find_dlg->get_match_case()) {
-		options |= find_options::match_case;
-	}
-	if (find_dlg->get_match_whole_word()) {
-		options |= find_options::match_whole_word;
-	}
-	if (find_dlg->get_use_regex()) {
-		options |= find_options::use_regex;
-	}
+	if (forward) options |= find_options::forward;
+	if (find_dlg->get_match_case()) options |= find_options::match_case;
+	if (find_dlg->get_match_whole_word()) options |= find_options::match_whole_word;
+	if (find_dlg->get_use_regex()) options |= find_options::use_regex;
 	long sel_start{0};
 	long sel_end{0};
 	text_ctrl->GetSelection(&sel_start, &sel_end);
 	const long start_pos = forward ? sel_end : sel_start;
-	long found_pos = doc_manager->find_text(query, start_pos, options);
-	if (found_pos == wxNOT_FOUND) {
-		const auto wrap_pos = forward ? 0 : text_ctrl->GetLastPosition();
-		const long wrapped_pos = doc_manager->find_text(query, wrap_pos, options);
-		if (wrapped_pos == wxNOT_FOUND) {
-			speak(_("Not found."));
-			if (find_dlg != nullptr) {
-				find_dlg->Show();
-				find_dlg->Raise();
-				find_dlg->focus_find_text();
-			}
-			return;
-		} else {
-			speak(_("No more results. Wrapping search."));
-			found_pos = wrapped_pos;
+	const auto result = find_text_with_wrap(text_ctrl->GetValue(), query, start_pos, options);
+	if (!result.found) {
+		speak(_("Not found."));
+		if (find_dlg != nullptr) {
+			find_dlg->Show();
+			find_dlg->Raise();
+			find_dlg->focus_find_text();
 		}
+		return;
 	}
+	if (result.wrapped) {
+		speak(_("No more results. Wrapping search."));
+	}
+	const long found_pos = result.position;
 	text_ctrl->SetFocus();
 	text_ctrl->SetSelection(found_pos, static_cast<long>(found_pos + query.Length()));
 	text_ctrl->ShowPosition(found_pos);
