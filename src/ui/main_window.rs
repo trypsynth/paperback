@@ -1,331 +1,347 @@
-use std::cell::RefCell;
-use std::path::Path;
-use std::rc::Rc;
+use std::{cell::RefCell, path::Path, rc::Rc};
 
 use wxdragon::prelude::*;
 
-use super::document_manager::DocumentManager;
-use super::menu_ids;
+use super::{document_manager::DocumentManager, menu_ids};
 
 /// Main application window
 pub struct MainWindow {
-    frame: Frame,
-    doc_manager: Rc<RefCell<DocumentManager>>,
+	frame: Frame,
+	doc_manager: Rc<RefCell<DocumentManager>>,
 }
 
 impl MainWindow {
-    /// Create a new main window
-    pub fn new() -> Self {
-        let frame = Frame::builder()
-            .with_title("Paperback")
-            .with_size(Size::new(800, 600))
-            .build();
+	/// Create a new main window
+	pub fn new() -> Self {
+		let frame = Frame::builder().with_title("Paperback").with_size(Size::new(800, 600)).build();
 
-        // Create status bar
-        frame.create_status_bar(1, 0, -1, "statusbar");
-        frame.set_status_text("Ready", 0);
+		// Create status bar
+		frame.create_status_bar(1, 0, -1, "statusbar");
+		frame.set_status_text("Ready", 0);
 
-        // Create menu bar
-        let menu_bar = Self::create_menu_bar();
-        frame.set_menu_bar(menu_bar);
+		// Create menu bar
+		let menu_bar = Self::create_menu_bar();
+		frame.set_menu_bar(menu_bar);
 
-        // Create main panel and sizer
-        let panel = Panel::builder(&frame).build();
-        let sizer = BoxSizer::builder(Orientation::Vertical).build();
+		// Create main panel and sizer
+		let panel = Panel::builder(&frame).build();
+		let sizer = BoxSizer::builder(Orientation::Vertical).build();
 
-        // Create notebook for document tabs
-        let notebook = Notebook::builder(&panel)
-            .with_style(NotebookStyle::Top)
-            .build();
+		// Create notebook for document tabs
+		let notebook = Notebook::builder(&panel).with_style(NotebookStyle::Top).build();
 
-        sizer.add(&notebook, 1, SizerFlag::Expand | SizerFlag::All, 0);
-        panel.set_sizer(sizer, true);
+		sizer.add(&notebook, 1, SizerFlag::Expand | SizerFlag::All, 0);
+		panel.set_sizer(sizer, true);
 
-        // Create document manager
-        let doc_manager = Rc::new(RefCell::new(DocumentManager::new(notebook)));
+		// Create document manager
+		let doc_manager = Rc::new(RefCell::new(DocumentManager::new(notebook)));
 
-        // Bind menu events
-        Self::bind_menu_events(&frame, Rc::clone(&doc_manager));
+		// Bind menu events
+		Self::bind_menu_events(&frame, Rc::clone(&doc_manager));
 
-        // Bind notebook events
-        let dm = Rc::clone(&doc_manager);
-        let frame_copy = frame;
-        doc_manager.borrow().notebook().on_page_changed(move |event| {
-            if let Some(selection) = event.get_selection() {
-                // Update title bar with document name
-                if let Some(tab) = dm.borrow().get_tab(selection as usize) {
-                    let title = tab.session.title();
-                    let display_title = if title.is_empty() {
-                        tab.file_path
-                            .file_name()
-                            .map(|s| s.to_string_lossy().to_string())
-                            .unwrap_or_else(|| "Untitled".to_string())
-                    } else {
-                        title
-                    };
-                    frame_copy.set_title(&format!("{display_title} - Paperback"));
-                }
-            }
-        });
+		// Bind notebook events
+		let dm = Rc::clone(&doc_manager);
+		let frame_copy = frame;
+		doc_manager.borrow().notebook().on_page_changed(move |event| {
+			if let Some(selection) = event.get_selection() {
+				// Update title bar with document name
+				if let Some(tab) = dm.borrow().get_tab(selection as usize) {
+					let title = tab.session.title();
+					let display_title = if title.is_empty() {
+						tab.file_path
+							.file_name()
+							.map(|s| s.to_string_lossy().to_string())
+							.unwrap_or_else(|| "Untitled".to_string())
+					} else {
+						title
+					};
+					frame_copy.set_title(&format!("{display_title} - Paperback"));
+				}
+			}
+		});
 
-        Self { frame, doc_manager }
-    }
+		Self { frame, doc_manager }
+	}
 
-    /// Show the main window
-    pub fn show(&self) {
-        self.frame.show(true);
-        self.frame.centre();
-    }
+	/// Show the main window
+	pub fn show(&self) {
+		self.frame.show(true);
+		self.frame.centre();
+	}
 
-    /// Open a file
-    pub fn open_file(&self, path: &Path) -> bool {
-        let result = self.doc_manager.borrow_mut().open_file(path);
-        if result {
-            self.update_title();
-        }
-        result
-    }
+	/// Open a file
+	pub fn open_file(&self, path: &Path) -> bool {
+		let result = self.doc_manager.borrow_mut().open_file(path);
+		if result {
+			self.update_title();
+		}
+		result
+	}
 
-    /// Update the title bar based on active document
-    fn update_title(&self) {
-        let dm = self.doc_manager.borrow();
-        if let Some(tab) = dm.active_tab() {
-            let title = tab.session.title();
-            let display_title = if title.is_empty() {
-                tab.file_path
-                    .file_name()
-                    .map(|s| s.to_string_lossy().to_string())
-                    .unwrap_or_else(|| "Untitled".to_string())
-            } else {
-                title
-            };
-            self.frame.set_title(&format!("{display_title} - Paperback"));
-            self.frame.set_status_text(&format!("{} chars", tab.session.content().len()), 0);
-        } else {
-            self.frame.set_title("Paperback");
-            self.frame.set_status_text("Ready", 0);
-        }
-    }
+	/// Update the title bar based on active document
+	fn update_title(&self) {
+		let dm = self.doc_manager.borrow();
+		if let Some(tab) = dm.active_tab() {
+			let title = tab.session.title();
+			let display_title = if title.is_empty() {
+				tab.file_path
+					.file_name()
+					.map(|s| s.to_string_lossy().to_string())
+					.unwrap_or_else(|| "Untitled".to_string())
+			} else {
+				title
+			};
+			self.frame.set_title(&format!("{display_title} - Paperback"));
+			self.frame.set_status_text(&format!("{} chars", tab.session.content().len()), 0);
+		} else {
+			self.frame.set_title("Paperback");
+			self.frame.set_status_text("Ready", 0);
+		}
+	}
 
-    /// Create the menu bar with all menus
-    fn create_menu_bar() -> MenuBar {
-        let file_menu = Self::create_file_menu();
-        let go_menu = Self::create_go_menu();
-        let tools_menu = Self::create_tools_menu();
-        let help_menu = Self::create_help_menu();
+	/// Create the menu bar with all menus
+	fn create_menu_bar() -> MenuBar {
+		let file_menu = Self::create_file_menu();
+		let go_menu = Self::create_go_menu();
+		let tools_menu = Self::create_tools_menu();
+		let help_menu = Self::create_help_menu();
 
-        MenuBar::builder()
-            .append(file_menu, "&File")
-            .append(go_menu, "&Go")
-            .append(tools_menu, "&Tools")
-            .append(help_menu, "&Help")
-            .build()
-    }
+		MenuBar::builder()
+			.append(file_menu, "&File")
+			.append(go_menu, "&Go")
+			.append(tools_menu, "&Tools")
+			.append(help_menu, "&Help")
+			.build()
+	}
 
-    /// Create the File menu
-    fn create_file_menu() -> Menu {
-        Menu::builder()
-            .append_item(menu_ids::OPEN, "&Open...\tCtrl+O", "Open a document")
-            .append_item(menu_ids::CLOSE, "&Close\tCtrl+F4", "Close the current document")
-            .append_item(menu_ids::CLOSE_ALL, "Close &All\tCtrl+Shift+F4", "Close all documents")
-            .append_separator()
-            .append_item(menu_ids::SHOW_ALL_DOCUMENTS, "Show All...\tCtrl+R", "Show all recent documents")
-            .append_separator()
-            .append_item(menu_ids::EXIT, "E&xit", "Exit the application")
-            .build()
-    }
+	/// Create the File menu
+	fn create_file_menu() -> Menu {
+		Menu::builder()
+			.append_item(menu_ids::OPEN, "&Open...\tCtrl+O", "Open a document")
+			.append_item(menu_ids::CLOSE, "&Close\tCtrl+F4", "Close the current document")
+			.append_item(menu_ids::CLOSE_ALL, "Close &All\tCtrl+Shift+F4", "Close all documents")
+			.append_separator()
+			.append_item(menu_ids::SHOW_ALL_DOCUMENTS, "Show All...\tCtrl+R", "Show all recent documents")
+			.append_separator()
+			.append_item(menu_ids::EXIT, "E&xit", "Exit the application")
+			.build()
+	}
 
-    /// Create the Go menu
-    fn create_go_menu() -> Menu {
-        let headings_menu = Self::create_headings_submenu();
-        let bookmarks_menu = Self::create_bookmarks_submenu();
+	/// Create the Go menu
+	fn create_go_menu() -> Menu {
+		let headings_menu = Self::create_headings_submenu();
+		let bookmarks_menu = Self::create_bookmarks_submenu();
 
-        let menu = Menu::builder()
-            .append_item(menu_ids::FIND, "&Find...\tCtrl+F", "Find text in the document")
-            .append_item(menu_ids::FIND_NEXT, "Find &Next\tF3", "Find next occurrence")
-            .append_item(menu_ids::FIND_PREVIOUS, "Find &Previous\tShift+F3", "Find previous occurrence")
-            .append_separator()
-            .append_item(menu_ids::GO_TO_LINE, "Go to &line...\tCtrl+G", "Go to a specific line")
-            .append_item(menu_ids::GO_TO_PERCENT, "Go to &percent...\tCtrl+Shift+G", "Go to a percentage of the document")
-            .append_separator()
-            .append_item(menu_ids::GO_BACK, "Go &Back\tAlt+Left", "Go back in history")
-            .append_item(menu_ids::GO_FORWARD, "Go &Forward\tAlt+Right", "Go forward in history")
-            .append_separator()
-            .append_item(menu_ids::PREVIOUS_SECTION, "Previous Section\t[", "Go to previous section")
-            .append_item(menu_ids::NEXT_SECTION, "Next Section\t]", "Go to next section")
-            .append_separator()
-            .build();
+		let menu = Menu::builder()
+			.append_item(menu_ids::FIND, "&Find...\tCtrl+F", "Find text in the document")
+			.append_item(menu_ids::FIND_NEXT, "Find &Next\tF3", "Find next occurrence")
+			.append_item(menu_ids::FIND_PREVIOUS, "Find &Previous\tShift+F3", "Find previous occurrence")
+			.append_separator()
+			.append_item(menu_ids::GO_TO_LINE, "Go to &line...\tCtrl+G", "Go to a specific line")
+			.append_item(
+				menu_ids::GO_TO_PERCENT,
+				"Go to &percent...\tCtrl+Shift+G",
+				"Go to a percentage of the document",
+			)
+			.append_separator()
+			.append_item(menu_ids::GO_BACK, "Go &Back\tAlt+Left", "Go back in history")
+			.append_item(menu_ids::GO_FORWARD, "Go &Forward\tAlt+Right", "Go forward in history")
+			.append_separator()
+			.append_item(menu_ids::PREVIOUS_SECTION, "Previous Section\t[", "Go to previous section")
+			.append_item(menu_ids::NEXT_SECTION, "Next Section\t]", "Go to next section")
+			.append_separator()
+			.build();
 
-        menu.append_submenu(headings_menu, "&Headings", "Navigate by headings");
-        menu.append_submenu(bookmarks_menu, "&Bookmarks", "Navigate by bookmarks");
+		menu.append_submenu(headings_menu, "&Headings", "Navigate by headings");
+		menu.append_submenu(bookmarks_menu, "&Bookmarks", "Navigate by bookmarks");
 
-        menu.append_separator();
-        menu.append(menu_ids::GO_TO_PAGE, "Go to &Page\tCtrl+P", "", ItemKind::Normal);
-        menu.append(menu_ids::PREVIOUS_PAGE, "Previous Pa&ge\tShift+P", "", ItemKind::Normal);
-        menu.append(menu_ids::NEXT_PAGE, "Next Pag&e\tP", "", ItemKind::Normal);
-        menu.append_separator();
-        menu.append(menu_ids::PREVIOUS_LINK, "Previous Lin&k\tShift+K", "", ItemKind::Normal);
-        menu.append(menu_ids::NEXT_LINK, "Next Lin&k\tK", "", ItemKind::Normal);
-        menu.append_separator();
-        menu.append(menu_ids::PREVIOUS_TABLE, "Previous &Table\tShift+T", "", ItemKind::Normal);
-        menu.append(menu_ids::NEXT_TABLE, "Next &Table\tT", "", ItemKind::Normal);
-        menu.append_separator();
-        menu.append(menu_ids::PREVIOUS_LIST, "Previous L&ist\tShift+L", "", ItemKind::Normal);
-        menu.append(menu_ids::NEXT_LIST, "Next L&ist\tL", "", ItemKind::Normal);
-        menu.append(menu_ids::PREVIOUS_LIST_ITEM, "Previous List &Item\tShift+I", "", ItemKind::Normal);
-        menu.append(menu_ids::NEXT_LIST_ITEM, "Next List I&tem\tI", "", ItemKind::Normal);
+		menu.append_separator();
+		menu.append(menu_ids::GO_TO_PAGE, "Go to &Page\tCtrl+P", "", ItemKind::Normal);
+		menu.append(menu_ids::PREVIOUS_PAGE, "Previous Pa&ge\tShift+P", "", ItemKind::Normal);
+		menu.append(menu_ids::NEXT_PAGE, "Next Pag&e\tP", "", ItemKind::Normal);
+		menu.append_separator();
+		menu.append(menu_ids::PREVIOUS_LINK, "Previous Lin&k\tShift+K", "", ItemKind::Normal);
+		menu.append(menu_ids::NEXT_LINK, "Next Lin&k\tK", "", ItemKind::Normal);
+		menu.append_separator();
+		menu.append(menu_ids::PREVIOUS_TABLE, "Previous &Table\tShift+T", "", ItemKind::Normal);
+		menu.append(menu_ids::NEXT_TABLE, "Next &Table\tT", "", ItemKind::Normal);
+		menu.append_separator();
+		menu.append(menu_ids::PREVIOUS_LIST, "Previous L&ist\tShift+L", "", ItemKind::Normal);
+		menu.append(menu_ids::NEXT_LIST, "Next L&ist\tL", "", ItemKind::Normal);
+		menu.append(menu_ids::PREVIOUS_LIST_ITEM, "Previous List &Item\tShift+I", "", ItemKind::Normal);
+		menu.append(menu_ids::NEXT_LIST_ITEM, "Next List I&tem\tI", "", ItemKind::Normal);
 
-        menu
-    }
+		menu
+	}
 
-    fn create_headings_submenu() -> Menu {
-        Menu::builder()
-            .append_item(menu_ids::PREVIOUS_HEADING, "&Previous Heading\tShift+H", "Go to previous heading")
-            .append_item(menu_ids::NEXT_HEADING, "&Next Heading\tH", "Go to next heading")
-            .append_separator()
-            .append_item(menu_ids::PREVIOUS_HEADING_1, "Previous Heading &1\tShift+1", "")
-            .append_item(menu_ids::NEXT_HEADING_1, "Next Heading 1\t1", "")
-            .append_item(menu_ids::PREVIOUS_HEADING_2, "Previous Heading &2\tShift+2", "")
-            .append_item(menu_ids::NEXT_HEADING_2, "Next Heading 2\t2", "")
-            .append_item(menu_ids::PREVIOUS_HEADING_3, "Previous Heading &3\tShift+3", "")
-            .append_item(menu_ids::NEXT_HEADING_3, "Next Heading 3\t3", "")
-            .append_item(menu_ids::PREVIOUS_HEADING_4, "Previous Heading &4\tShift+4", "")
-            .append_item(menu_ids::NEXT_HEADING_4, "Next Heading 4\t4", "")
-            .append_item(menu_ids::PREVIOUS_HEADING_5, "Previous Heading &5\tShift+5", "")
-            .append_item(menu_ids::NEXT_HEADING_5, "Next Heading 5\t5", "")
-            .append_item(menu_ids::PREVIOUS_HEADING_6, "Previous Heading &6\tShift+6", "")
-            .append_item(menu_ids::NEXT_HEADING_6, "Next Heading 6\t6", "")
-            .build()
-    }
+	fn create_headings_submenu() -> Menu {
+		Menu::builder()
+			.append_item(menu_ids::PREVIOUS_HEADING, "&Previous Heading\tShift+H", "Go to previous heading")
+			.append_item(menu_ids::NEXT_HEADING, "&Next Heading\tH", "Go to next heading")
+			.append_separator()
+			.append_item(menu_ids::PREVIOUS_HEADING_1, "Previous Heading &1\tShift+1", "")
+			.append_item(menu_ids::NEXT_HEADING_1, "Next Heading 1\t1", "")
+			.append_item(menu_ids::PREVIOUS_HEADING_2, "Previous Heading &2\tShift+2", "")
+			.append_item(menu_ids::NEXT_HEADING_2, "Next Heading 2\t2", "")
+			.append_item(menu_ids::PREVIOUS_HEADING_3, "Previous Heading &3\tShift+3", "")
+			.append_item(menu_ids::NEXT_HEADING_3, "Next Heading 3\t3", "")
+			.append_item(menu_ids::PREVIOUS_HEADING_4, "Previous Heading &4\tShift+4", "")
+			.append_item(menu_ids::NEXT_HEADING_4, "Next Heading 4\t4", "")
+			.append_item(menu_ids::PREVIOUS_HEADING_5, "Previous Heading &5\tShift+5", "")
+			.append_item(menu_ids::NEXT_HEADING_5, "Next Heading 5\t5", "")
+			.append_item(menu_ids::PREVIOUS_HEADING_6, "Previous Heading &6\tShift+6", "")
+			.append_item(menu_ids::NEXT_HEADING_6, "Next Heading 6\t6", "")
+			.build()
+	}
 
-    fn create_bookmarks_submenu() -> Menu {
-        Menu::builder()
-            .append_item(menu_ids::PREVIOUS_BOOKMARK, "&Previous Bookmark\tShift+B", "Go to previous bookmark")
-            .append_item(menu_ids::NEXT_BOOKMARK, "&Next Bookmark\tB", "Go to next bookmark")
-            .append_item(menu_ids::PREVIOUS_NOTE, "Previous &Note\tShift+N", "Go to previous note")
-            .append_item(menu_ids::NEXT_NOTE, "Next N&ote\tN", "Go to next note")
-            .append_separator()
-            .append_item(menu_ids::JUMP_TO_ALL_BOOKMARKS, "Jump to &All...\tCtrl+B", "Show all bookmarks and notes")
-            .append_item(menu_ids::JUMP_TO_BOOKMARKS_ONLY, "Jump to &Bookmarks Only...\tCtrl+Alt+B", "Show bookmarks only")
-            .append_item(menu_ids::JUMP_TO_NOTES_ONLY, "Jump to Notes &Only...\tCtrl+Alt+M", "Show notes only")
-            .append_item(menu_ids::VIEW_NOTE_TEXT, "&View Note Text\tCtrl+Shift+W", "View the note at current position")
-            .build()
-    }
+	fn create_bookmarks_submenu() -> Menu {
+		Menu::builder()
+			.append_item(menu_ids::PREVIOUS_BOOKMARK, "&Previous Bookmark\tShift+B", "Go to previous bookmark")
+			.append_item(menu_ids::NEXT_BOOKMARK, "&Next Bookmark\tB", "Go to next bookmark")
+			.append_item(menu_ids::PREVIOUS_NOTE, "Previous &Note\tShift+N", "Go to previous note")
+			.append_item(menu_ids::NEXT_NOTE, "Next N&ote\tN", "Go to next note")
+			.append_separator()
+			.append_item(menu_ids::JUMP_TO_ALL_BOOKMARKS, "Jump to &All...\tCtrl+B", "Show all bookmarks and notes")
+			.append_item(
+				menu_ids::JUMP_TO_BOOKMARKS_ONLY,
+				"Jump to &Bookmarks Only...\tCtrl+Alt+B",
+				"Show bookmarks only",
+			)
+			.append_item(menu_ids::JUMP_TO_NOTES_ONLY, "Jump to Notes &Only...\tCtrl+Alt+M", "Show notes only")
+			.append_item(menu_ids::VIEW_NOTE_TEXT, "&View Note Text\tCtrl+Shift+W", "View the note at current position")
+			.build()
+	}
 
-    fn create_tools_menu() -> Menu {
-        let import_export_menu = Menu::builder()
-            .append_item(menu_ids::IMPORT_DOCUMENT_DATA, "&Import Document Data...\tCtrl+Shift+I", "Import bookmarks and position")
-            .append_item(menu_ids::EXPORT_DOCUMENT_DATA, "&Export Document Data...\tCtrl+Shift+E", "Export bookmarks and position")
-            .append_item(menu_ids::EXPORT_TO_PLAIN_TEXT, "Export to &Plain Text...\tCtrl+E", "Export document as plain text")
-            .build();
+	fn create_tools_menu() -> Menu {
+		let import_export_menu = Menu::builder()
+			.append_item(
+				menu_ids::IMPORT_DOCUMENT_DATA,
+				"&Import Document Data...\tCtrl+Shift+I",
+				"Import bookmarks and position",
+			)
+			.append_item(
+				menu_ids::EXPORT_DOCUMENT_DATA,
+				"&Export Document Data...\tCtrl+Shift+E",
+				"Export bookmarks and position",
+			)
+			.append_item(
+				menu_ids::EXPORT_TO_PLAIN_TEXT,
+				"Export to &Plain Text...\tCtrl+E",
+				"Export document as plain text",
+			)
+			.build();
 
-        let menu = Menu::builder()
-            .append_item(menu_ids::WORD_COUNT, "&Word Count\tCtrl+W", "Show word count")
-            .append_item(menu_ids::DOCUMENT_INFO, "Document &Info\tCtrl+I", "Show document information")
-            .append_separator()
-            .append_item(menu_ids::TABLE_OF_CONTENTS, "&Table of Contents\tCtrl+T", "Show table of contents")
-            .append_item(menu_ids::ELEMENTS_LIST, "&Elements List...\tF7", "Show elements list")
-            .append_separator()
-            .append_item(menu_ids::OPEN_CONTAINING_FOLDER, "Open &Containing Folder\tCtrl+Shift+C", "Open folder containing the document")
-            .append_item(menu_ids::OPEN_IN_WEB_VIEW, "Open in &Web View\tCtrl+Shift+V", "Open document in web view")
-            .append_separator()
-            .build();
+		let menu = Menu::builder()
+			.append_item(menu_ids::WORD_COUNT, "&Word Count\tCtrl+W", "Show word count")
+			.append_item(menu_ids::DOCUMENT_INFO, "Document &Info\tCtrl+I", "Show document information")
+			.append_separator()
+			.append_item(menu_ids::TABLE_OF_CONTENTS, "&Table of Contents\tCtrl+T", "Show table of contents")
+			.append_item(menu_ids::ELEMENTS_LIST, "&Elements List...\tF7", "Show elements list")
+			.append_separator()
+			.append_item(
+				menu_ids::OPEN_CONTAINING_FOLDER,
+				"Open &Containing Folder\tCtrl+Shift+C",
+				"Open folder containing the document",
+			)
+			.append_item(menu_ids::OPEN_IN_WEB_VIEW, "Open in &Web View\tCtrl+Shift+V", "Open document in web view")
+			.append_separator()
+			.build();
 
-        menu.append_submenu(import_export_menu, "I&mport/Export", "Import and export options");
+		menu.append_submenu(import_export_menu, "I&mport/Export", "Import and export options");
 
-        menu.append_separator();
-        menu.append(menu_ids::TOGGLE_BOOKMARK, "Toggle &Bookmark\tCtrl+Shift+B", "", ItemKind::Normal);
-        menu.append(menu_ids::BOOKMARK_WITH_NOTE, "Bookmark with &Note\tCtrl+Shift+N", "", ItemKind::Normal);
-        menu.append_separator();
-        menu.append(menu_ids::OPTIONS, "&Options\tCtrl+,", "", ItemKind::Normal);
-        menu.append(menu_ids::SLEEP_TIMER, "&Sleep Timer...\tCtrl+Shift+S", "", ItemKind::Normal);
+		menu.append_separator();
+		menu.append(menu_ids::TOGGLE_BOOKMARK, "Toggle &Bookmark\tCtrl+Shift+B", "", ItemKind::Normal);
+		menu.append(menu_ids::BOOKMARK_WITH_NOTE, "Bookmark with &Note\tCtrl+Shift+N", "", ItemKind::Normal);
+		menu.append_separator();
+		menu.append(menu_ids::OPTIONS, "&Options\tCtrl+,", "", ItemKind::Normal);
+		menu.append(menu_ids::SLEEP_TIMER, "&Sleep Timer...\tCtrl+Shift+S", "", ItemKind::Normal);
 
-        menu
-    }
+		menu
+	}
 
-    fn create_help_menu() -> Menu {
-        Menu::builder()
-            .append_item(menu_ids::ABOUT, "&About Paperback\tCtrl+F1", "About this application")
-            .append_item(menu_ids::VIEW_HELP_BROWSER, "View Help in &Browser\tF1", "View help in default browser")
-            .append_item(menu_ids::VIEW_HELP_PAPERBACK, "View Help in &Paperback\tShift+F1", "View help in Paperback")
-            .append_separator()
-            .append_item(menu_ids::CHECK_FOR_UPDATES, "Check for &Updates\tCtrl+Shift+U", "Check for updates")
-            .append_separator()
-            .append_item(menu_ids::DONATE, "&Donate\tCtrl+D", "Support Paperback development")
-            .build()
-    }
+	fn create_help_menu() -> Menu {
+		Menu::builder()
+			.append_item(menu_ids::ABOUT, "&About Paperback\tCtrl+F1", "About this application")
+			.append_item(menu_ids::VIEW_HELP_BROWSER, "View Help in &Browser\tF1", "View help in default browser")
+			.append_item(menu_ids::VIEW_HELP_PAPERBACK, "View Help in &Paperback\tShift+F1", "View help in Paperback")
+			.append_separator()
+			.append_item(menu_ids::CHECK_FOR_UPDATES, "Check for &Updates\tCtrl+Shift+U", "Check for updates")
+			.append_separator()
+			.append_item(menu_ids::DONATE, "&Donate\tCtrl+D", "Support Paperback development")
+			.build()
+	}
 
-    /// Bind menu event handlers
-    fn bind_menu_events(frame: &Frame, doc_manager: Rc<RefCell<DocumentManager>>) {
-        let frame_copy = *frame;
-        let dm = Rc::clone(&doc_manager);
+	/// Bind menu event handlers
+	fn bind_menu_events(frame: &Frame, doc_manager: Rc<RefCell<DocumentManager>>) {
+		let frame_copy = *frame;
+		let dm = Rc::clone(&doc_manager);
 
-        frame.on_menu(move |event| {
-            let id = event.get_id();
-            match id {
-                menu_ids::OPEN => {
-                    Self::handle_open(&frame_copy, &dm);
-                }
-                menu_ids::CLOSE => {
-                    let mut dm = dm.borrow_mut();
-                    if let Some(index) = dm.active_tab_index() {
-                        dm.close_document(index);
-                    }
-                }
-                menu_ids::CLOSE_ALL => {
-                    dm.borrow_mut().close_all_documents();
-                    frame_copy.set_title("Paperback");
-                    frame_copy.set_status_text("Ready", 0);
-                }
-                menu_ids::EXIT => {
-                    std::process::exit(0);
-                }
+		frame.on_menu(move |event| {
+			let id = event.get_id();
+			match id {
+				menu_ids::OPEN => {
+					Self::handle_open(&frame_copy, &dm);
+				}
+				menu_ids::CLOSE => {
+					let mut dm = dm.borrow_mut();
+					if let Some(index) = dm.active_tab_index() {
+						dm.close_document(index);
+					}
+				}
+				menu_ids::CLOSE_ALL => {
+					dm.borrow_mut().close_all_documents();
+					frame_copy.set_title("Paperback");
+					frame_copy.set_status_text("Ready", 0);
+				}
+				menu_ids::EXIT => {
+					std::process::exit(0);
+				}
 
-                // Navigation commands would go here
-                menu_ids::FIND => println!("Find requested"),
-                menu_ids::FIND_NEXT => println!("Find next requested"),
-                menu_ids::FIND_PREVIOUS => println!("Find previous requested"),
-                menu_ids::GO_TO_LINE => println!("Go to line requested"),
-                menu_ids::GO_TO_PERCENT => println!("Go to percent requested"),
-                menu_ids::GO_BACK => println!("Go back requested"),
-                menu_ids::GO_FORWARD => println!("Go forward requested"),
+				// Navigation commands would go here
+				menu_ids::FIND => println!("Find requested"),
+				menu_ids::FIND_NEXT => println!("Find next requested"),
+				menu_ids::FIND_PREVIOUS => println!("Find previous requested"),
+				menu_ids::GO_TO_LINE => println!("Go to line requested"),
+				menu_ids::GO_TO_PERCENT => println!("Go to percent requested"),
+				menu_ids::GO_BACK => println!("Go back requested"),
+				menu_ids::GO_FORWARD => println!("Go forward requested"),
 
-                // Tools
-                menu_ids::WORD_COUNT => {
-                    if let Some(tab) = dm.borrow().active_tab() {
-                        let stats = tab.session.stats();
-                        let msg = format!(
-                            "Words: {}\nCharacters: {}\nLines: {}",
-                            stats.word_count, stats.char_count, stats.line_count
-                        );
-                        println!("{msg}");
-                        // TODO: Show message dialog
-                    }
-                }
-                menu_ids::DOCUMENT_INFO => println!("Document info requested"),
-                menu_ids::TABLE_OF_CONTENTS => println!("TOC requested"),
-                menu_ids::OPTIONS => println!("Options requested"),
+				// Tools
+				menu_ids::WORD_COUNT => {
+					if let Some(tab) = dm.borrow().active_tab() {
+						let stats = tab.session.stats();
+						let msg = format!(
+							"Words: {}\nCharacters: {}\nLines: {}",
+							stats.word_count, stats.char_count, stats.line_count
+						);
+						println!("{msg}");
+						// TODO: Show message dialog
+					}
+				}
+				menu_ids::DOCUMENT_INFO => println!("Document info requested"),
+				menu_ids::TABLE_OF_CONTENTS => println!("TOC requested"),
+				menu_ids::OPTIONS => println!("Options requested"),
 
-                // Help
-                menu_ids::ABOUT => {
-                    println!("Paperback 0.8.0 - An accessible ebook reader");
-                    // TODO: Show about dialog
-                }
-                menu_ids::CHECK_FOR_UPDATES => println!("Check for updates requested"),
+				// Help
+				menu_ids::ABOUT => {
+					println!("Paperback 0.8.0 - An accessible ebook reader");
+					// TODO: Show about dialog
+				}
+				menu_ids::CHECK_FOR_UPDATES => println!("Check for updates requested"),
 
-                _ => {
-                    if id >= menu_ids::RECENT_DOCUMENT_BASE && id <= menu_ids::RECENT_DOCUMENT_MAX {
-                        let doc_index = id - menu_ids::RECENT_DOCUMENT_BASE;
-                        println!("Recent document {doc_index} requested");
-                    }
-                }
-            }
-        });
-    }
+				_ => {
+					if id >= menu_ids::RECENT_DOCUMENT_BASE && id <= menu_ids::RECENT_DOCUMENT_MAX {
+						let doc_index = id - menu_ids::RECENT_DOCUMENT_BASE;
+						println!("Recent document {doc_index} requested");
+					}
+				}
+			}
+		});
+	}
 
-    /// Handle the Open menu command
-    fn handle_open(frame: &Frame, doc_manager: &Rc<RefCell<DocumentManager>>) {
-        let wildcard = "All supported files|*.epub;*.pdf;*.txt;*.md;*.html;*.htm;*.docx;*.odt;*.fb2;*.chm;*.pptx;*.odp|\
+	/// Handle the Open menu command
+	fn handle_open(frame: &Frame, doc_manager: &Rc<RefCell<DocumentManager>>) {
+		let wildcard = "All supported files|*.epub;*.pdf;*.txt;*.md;*.html;*.htm;*.docx;*.odt;*.fb2;*.chm;*.pptx;*.odp|\
                         EPUB files (*.epub)|*.epub|\
                         PDF files (*.pdf)|*.pdf|\
                         Text files (*.txt)|*.txt|\
@@ -339,50 +355,50 @@ impl MainWindow {
                         OpenDocument Presentation (*.odp)|*.odp|\
                         All files (*.*)|*.*";
 
-        let dialog = FileDialog::builder(frame)
-            .with_message("Open Document")
-            .with_wildcard(wildcard)
-            .with_style(FileDialogStyle::Open | FileDialogStyle::FileMustExist)
-            .build();
+		let dialog = FileDialog::builder(frame)
+			.with_message("Open Document")
+			.with_wildcard(wildcard)
+			.with_style(FileDialogStyle::Open | FileDialogStyle::FileMustExist)
+			.build();
 
-        if dialog.show_modal() == wxdragon::id::ID_OK {
-            if let Some(path) = dialog.get_path() {
-                let path = std::path::Path::new(&path);
-                if doc_manager.borrow_mut().open_file(path) {
-                    // Update title
-                    if let Some(tab) = doc_manager.borrow().active_tab() {
-                        let title = tab.session.title();
-                        let display_title = if title.is_empty() {
-                            tab.file_path
-                                .file_name()
-                                .map(|s| s.to_string_lossy().to_string())
-                                .unwrap_or_else(|| "Untitled".to_string())
-                        } else {
-                            title
-                        };
-                        frame.set_title(&format!("{display_title} - Paperback"));
-                        frame.set_status_text(&format!("{} chars", tab.session.content().len()), 0);
-                    }
-                }
-            }
-        }
-    }
+		if dialog.show_modal() == wxdragon::id::ID_OK {
+			if let Some(path) = dialog.get_path() {
+				let path = std::path::Path::new(&path);
+				if doc_manager.borrow_mut().open_file(path) {
+					// Update title
+					if let Some(tab) = doc_manager.borrow().active_tab() {
+						let title = tab.session.title();
+						let display_title = if title.is_empty() {
+							tab.file_path
+								.file_name()
+								.map(|s| s.to_string_lossy().to_string())
+								.unwrap_or_else(|| "Untitled".to_string())
+						} else {
+							title
+						};
+						frame.set_title(&format!("{display_title} - Paperback"));
+						frame.set_status_text(&format!("{} chars", tab.session.content().len()), 0);
+					}
+				}
+			}
+		}
+	}
 
-    /// Get the frame
-    #[allow(dead_code)]
-    pub fn frame(&self) -> &Frame {
-        &self.frame
-    }
+	/// Get the frame
+	#[allow(dead_code)]
+	pub fn frame(&self) -> &Frame {
+		&self.frame
+	}
 
-    /// Get the document manager
-    #[allow(dead_code)]
-    pub fn doc_manager(&self) -> &Rc<RefCell<DocumentManager>> {
-        &self.doc_manager
-    }
+	/// Get the document manager
+	#[allow(dead_code)]
+	pub fn doc_manager(&self) -> &Rc<RefCell<DocumentManager>> {
+		&self.doc_manager
+	}
 }
 
 impl Default for MainWindow {
-    fn default() -> Self {
-        Self::new()
-    }
+	fn default() -> Self {
+		Self::new()
+	}
 }
