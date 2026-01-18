@@ -2,10 +2,9 @@ use std::sync::Arc;
 
 use anyhow::{Result, anyhow};
 use hayro_interpret::{
-	BlendMode, ClipPath, Context, Device, GlyphDrawMode, Image, InterpreterSettings, Paint, PathDrawMode, SoftMask,
-	interpret_page, PageExt, RectExt,
+	BlendMode, ClipPath, Context, Device, GlyphDrawMode, Image, InterpreterSettings, PageExt, Paint, PathDrawMode,
+	RectExt, SoftMask, font::Glyph, interpret_page,
 };
-use hayro_interpret::font::Glyph;
 use hayro_syntax::{LoadPdfError, Pdf};
 use kurbo::{Affine, BezPath, Point};
 

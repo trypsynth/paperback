@@ -1,5 +1,5 @@
+#![windows_subsystem = "windows"]
 #![warn(clippy::all, clippy::nursery, clippy::pedantic)]
-#![allow(clippy::too_many_lines)]
 
 mod ui;
 
