@@ -4,7 +4,6 @@ pub mod config;
 pub mod document;
 mod html_to_text;
 pub mod parser;
-mod pdfium;
 pub mod reader_core;
 pub mod session;
 pub mod ui_types;
