@@ -1,20 +1,23 @@
-use std::{cell::RefCell, path::Path, rc::Rc};
+use std::{
+	path::Path,
+	rc::Rc,
+	sync::Mutex,
+};
 
 use wxdragon::prelude::*;
-
 use super::{document_manager::DocumentManager, menu_ids};
 use crate::config::ConfigManager;
 
 /// Main application window
 pub struct MainWindow {
 	frame: Frame,
-	doc_manager: Rc<RefCell<DocumentManager>>,
-	_config: Rc<RefCell<ConfigManager>>,
+	doc_manager: Rc<Mutex<DocumentManager>>,
+	_config: Rc<Mutex<ConfigManager>>,
 }
 
 impl MainWindow {
 	/// Create a new main window
-	pub fn new(config: Rc<RefCell<ConfigManager>>) -> Self {
+	pub fn new(config: Rc<Mutex<ConfigManager>>) -> Self {
 		let frame = Frame::builder().with_title("Paperback").with_size(Size::new(800, 600)).build();
 
 		// Create status bar
@@ -36,7 +39,7 @@ impl MainWindow {
 		panel.set_sizer(sizer, true);
 
 		// Create document manager
-		let doc_manager = Rc::new(RefCell::new(DocumentManager::new(notebook)));
+		let doc_manager = Rc::new(Mutex::new(DocumentManager::new(notebook, Rc::clone(&config))));
 
 		// Bind menu events
 		Self::bind_menu_events(&frame, Rc::clone(&doc_manager));
@@ -44,10 +47,15 @@ impl MainWindow {
 		// Bind notebook events
 		let dm = Rc::clone(&doc_manager);
 		let frame_copy = frame;
-		doc_manager.borrow().notebook().on_page_changed(move |event| {
+		let notebook = *doc_manager.lock().unwrap().notebook();
+		notebook.on_page_changed(move |event| {
 			if let Some(selection) = event.get_selection() {
 				// Update title bar with document name
-				if let Some(tab) = dm.borrow().get_tab(selection as usize) {
+				let dm_ref = match dm.try_lock() {
+					Ok(dm_ref) => dm_ref,
+					Err(_) => return,
+				};
+				if let Some(tab) = dm_ref.get_tab(selection as usize) {
 					let title = tab.session.title();
 					let display_title = if title.is_empty() {
 						tab.file_path
@@ -73,16 +81,20 @@ impl MainWindow {
 
 	/// Open a file
 	pub fn open_file(&self, path: &Path) -> bool {
-		let result = self.doc_manager.borrow_mut().open_file(path);
+		let result = self.doc_manager.lock().unwrap().open_file(path);
 		if result {
 			self.update_title();
+			self.doc_manager.lock().unwrap().restore_focus();
 		}
 		result
 	}
 
 	/// Update the title bar based on active document
 	fn update_title(&self) {
-		let dm = self.doc_manager.borrow();
+		let dm = match self.doc_manager.try_lock() {
+			Ok(dm) => dm,
+			Err(_) => return,
+		};
 		if let Some(tab) = dm.active_tab() {
 			let title = tab.session.title();
 			let display_title = if title.is_empty() {
@@ -274,7 +286,7 @@ impl MainWindow {
 	}
 
 	/// Bind menu event handlers
-	fn bind_menu_events(frame: &Frame, doc_manager: Rc<RefCell<DocumentManager>>) {
+	fn bind_menu_events(frame: &Frame, doc_manager: Rc<Mutex<DocumentManager>>) {
 		let frame_copy = *frame;
 		let dm = Rc::clone(&doc_manager);
 
@@ -285,13 +297,15 @@ impl MainWindow {
 					Self::handle_open(&frame_copy, &dm);
 				}
 				menu_ids::CLOSE => {
-					let mut dm = dm.borrow_mut();
+					let mut dm = dm.lock().unwrap();
 					if let Some(index) = dm.active_tab_index() {
 						dm.close_document(index);
+						update_title_from_manager(&frame_copy, &dm);
+						dm.restore_focus();
 					}
 				}
 				menu_ids::CLOSE_ALL => {
-					dm.borrow_mut().close_all_documents();
+					dm.lock().unwrap().close_all_documents();
 					frame_copy.set_title("Paperback");
 					frame_copy.set_status_text("Ready", 0);
 				}
@@ -310,7 +324,11 @@ impl MainWindow {
 
 				// Tools
 				menu_ids::WORD_COUNT => {
-					if let Some(tab) = dm.borrow().active_tab() {
+					let dm_ref = match dm.try_lock() {
+						Ok(dm_ref) => dm_ref,
+						Err(_) => return,
+					};
+					if let Some(tab) = dm_ref.active_tab() {
 						let stats = tab.session.stats();
 						let msg = format!(
 							"Words: {}\nCharacters: {}\nLines: {}",
@@ -342,7 +360,7 @@ impl MainWindow {
 	}
 
 	/// Handle the Open menu command
-	fn handle_open(frame: &Frame, doc_manager: &Rc<RefCell<DocumentManager>>) {
+	fn handle_open(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) {
 		let wildcard = "All supported files|*.epub;*.pdf;*.txt;*.md;*.html;*.htm;*.docx;*.odt;*.fb2;*.chm;*.pptx;*.odp|\
                         EPUB files (*.epub)|*.epub|\
                         PDF files (*.pdf)|*.pdf|\
@@ -366,21 +384,13 @@ impl MainWindow {
 		if dialog.show_modal() == wxdragon::id::ID_OK {
 			if let Some(path) = dialog.get_path() {
 				let path = std::path::Path::new(&path);
-				if doc_manager.borrow_mut().open_file(path) {
-					// Update title
-					if let Some(tab) = doc_manager.borrow().active_tab() {
-						let title = tab.session.title();
-						let display_title = if title.is_empty() {
-							tab.file_path
-								.file_name()
-								.map(|s| s.to_string_lossy().to_string())
-								.unwrap_or_else(|| "Untitled".to_string())
-						} else {
-							title
-						};
-						frame.set_title(&format!("{display_title} - Paperback"));
-						frame.set_status_text(&format!("{} chars", tab.session.content().len()), 0);
-					}
+				if doc_manager.lock().unwrap().open_file(path) {
+					let dm_ref = match doc_manager.try_lock() {
+						Ok(dm_ref) => dm_ref,
+						Err(_) => return,
+					};
+					update_title_from_manager(frame, &dm_ref);
+					dm_ref.restore_focus();
 				}
 			}
 		}
@@ -394,7 +404,26 @@ impl MainWindow {
 
 	/// Get the document manager
 	#[allow(dead_code)]
-	pub fn doc_manager(&self) -> &Rc<RefCell<DocumentManager>> {
+	pub fn doc_manager(&self) -> &Rc<Mutex<DocumentManager>> {
 		&self.doc_manager
+	}
+}
+
+fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
+	if let Some(tab) = dm.active_tab() {
+		let title = tab.session.title();
+		let display_title = if title.is_empty() {
+			tab.file_path
+				.file_name()
+				.map(|s| s.to_string_lossy().to_string())
+				.unwrap_or_else(|| "Untitled".to_string())
+		} else {
+			title
+		};
+		frame.set_title(&format!("{display_title} - Paperback"));
+		frame.set_status_text(&format!("{} chars", tab.session.content().len()), 0);
+	} else {
+		frame.set_title("Paperback");
+		frame.set_status_text("Ready", 0);
 	}
 }

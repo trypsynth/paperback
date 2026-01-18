@@ -1,7 +1,13 @@
-use std::path::{Path, PathBuf};
+use std::{
+	path::{Path, PathBuf},
+	rc::Rc,
+	sync::Mutex,
+};
 
 use wxdragon::prelude::*;
 
+use crate::config::ConfigManager;
+use crate::parser::PASSWORD_REQUIRED_ERROR_PREFIX;
 use crate::session::DocumentSession;
 
 /// Data associated with each document tab
@@ -20,32 +26,57 @@ pub struct DocumentTab {
 pub struct DocumentManager {
 	notebook: Notebook,
 	tabs: Vec<DocumentTab>,
+	config: Rc<Mutex<ConfigManager>>,
 }
 
 impl DocumentManager {
 	/// Create a new document manager
-	pub fn new(notebook: Notebook) -> Self {
-		Self { notebook, tabs: Vec::new() }
+	pub fn new(notebook: Notebook, config: Rc<Mutex<ConfigManager>>) -> Self {
+		Self { notebook, tabs: Vec::new(), config }
 	}
 
 	/// Open a file and create a new tab for it
 	/// Returns true if successful
 	pub fn open_file(&mut self, path: &Path) -> bool {
-		// Check if file is already open
+		if !path.exists() {
+			eprintln!("File not found: {}", path.display());
+			return false;
+		}
 		if let Some(index) = self.find_tab_by_path(path) {
-			// Switch to existing tab
 			self.notebook.set_selection(index);
 			return true;
 		}
-
-		// Try to create a document session
-		let session = match DocumentSession::new(path.to_string_lossy().as_ref(), "", "") {
+		let (password, forced_extension) = {
+			let mut config = self.config.lock().unwrap();
+			let path_str = path.to_string_lossy();
+			config.import_document_settings(&path_str);
+			let forced_extension = config.get_document_format(&path_str);
+			let password = config.get_document_password(&path_str);
+			(password, forced_extension)
+		};
+		eprintln!("Loading document session: {}", path.display());
+		let session = match DocumentSession::new(path.to_string_lossy().as_ref(), &password, &forced_extension) {
 			Ok(s) => s,
 			Err(e) => {
-				eprintln!("Failed to open document: {e}");
+				if e.starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
+					eprintln!("Password required for {}", path.display());
+				} else {
+					eprintln!("Failed to open document: {e}");
+				}
 				return false;
 			}
 		};
+		eprintln!("Session loaded: {}", path.display());
+		self.add_session_tab(path, session, &password)
+	}
+
+	/// Add a tab for an already loaded session
+	/// Returns true if successful
+	pub fn add_session_tab(&mut self, path: &Path, session: DocumentSession, password: &str) -> bool {
+		if let Some(index) = self.find_tab_by_path(path) {
+			self.notebook.set_selection(index);
+			return true;
+		}
 
 		// Get document title for tab
 		let title = session.title();
@@ -59,11 +90,15 @@ impl DocumentManager {
 		let panel = Panel::builder(&self.notebook).build();
 
 		// Create text control with multiline, readonly, rich text, word wrap
-		let text_ctrl = TextCtrl::builder(&panel)
-			.with_style(
-				TextCtrlStyle::MultiLine | TextCtrlStyle::ReadOnly | TextCtrlStyle::Rich2 | TextCtrlStyle::WordWrap,
-			)
-			.build();
+		let mut config = self.config.lock().unwrap();
+		let word_wrap = config.get_app_bool("word_wrap", false);
+		let style =
+			TextCtrlStyle::MultiLine | TextCtrlStyle::ReadOnly | TextCtrlStyle::Rich2 | if word_wrap {
+				TextCtrlStyle::WordWrap
+			} else {
+				TextCtrlStyle::DontWrap
+			};
+		let text_ctrl = TextCtrl::builder(&panel).with_style(style).build();
 
 		// Set up layout
 		let sizer = BoxSizer::builder(Orientation::Vertical).build();
@@ -72,14 +107,30 @@ impl DocumentManager {
 
 		// Get document content and set it
 		let content = session.content();
-		text_ctrl.set_value(&content);
+		eprintln!("Populating text control ({} chars)", content.chars().count());
+		fill_text_ctrl(&text_ctrl, &content);
 
 		// Add the page to the notebook
-		let _tab_index = self.tabs.len();
 		self.notebook.add_page(&panel, &title, true, None);
 
 		// Store tab data
 		self.tabs.push(DocumentTab { panel, text_ctrl, session, file_path: path.to_path_buf() });
+
+		let path_str = path.to_string_lossy();
+		if !password.is_empty() {
+			config.set_document_password(&path_str, password);
+		}
+		let tab_index = self.tabs.len() - 1;
+		let max_pos = self.tabs[tab_index].text_ctrl.get_last_position();
+		let saved_pos = config.get_validated_document_position(&path_str, max_pos);
+		if saved_pos >= 0 {
+			self.tabs[tab_index].text_ctrl.set_insertion_point(saved_pos);
+			self.tabs[tab_index].text_ctrl.show_position(saved_pos);
+		}
+		config.add_recent_document(&path_str);
+		config.set_document_opened(&path_str, true);
+		config.add_opened_document(&path_str);
+		config.flush();
 
 		println!("Opened document: {} ({} chars)", title, content.len());
 		true
@@ -94,7 +145,12 @@ impl DocumentManager {
 		// Save position before closing
 		if let Some(tab) = self.tabs.get(index) {
 			let position = tab.text_ctrl.get_insertion_point();
-			// TODO: Save position to config
+			let path_str = tab.file_path.to_string_lossy();
+			let mut config = self.config.lock().unwrap();
+			config.set_document_position(&path_str, position);
+			config.set_document_opened(&path_str, false);
+			config.remove_opened_document(&path_str);
+			config.flush();
 			println!("Saving position {} for {}", position, tab.file_path.display());
 		}
 
@@ -141,7 +197,7 @@ impl DocumentManager {
 	}
 
 	/// Find tab index by file path
-	fn find_tab_by_path(&self, path: &Path) -> Option<usize> {
+	pub fn find_tab_by_path(&self, path: &Path) -> Option<usize> {
 		self.tabs.iter().position(|tab| tab.file_path == path)
 	}
 
@@ -149,7 +205,10 @@ impl DocumentManager {
 	pub fn save_current_tab_position(&self) {
 		if let Some(tab) = self.active_tab() {
 			let position = tab.text_ctrl.get_insertion_point();
-			// TODO: Save to config via session
+			let path_str = tab.file_path.to_string_lossy();
+			let mut config = self.config.lock().unwrap();
+			config.set_document_position(&path_str, position);
+			config.flush();
 			println!("Position saved: {} for {}", position, tab.file_path.display());
 		}
 	}
@@ -164,5 +223,21 @@ impl DocumentManager {
 	/// Get the notebook
 	pub fn notebook(&self) -> &Notebook {
 		&self.notebook
+	}
+}
+
+fn fill_text_ctrl(text_ctrl: &TextCtrl, content: &str) {
+	text_ctrl.clear();
+	const CHUNK_SIZE: usize = 32 * 1024;
+	let mut buf = String::new();
+	for ch in content.chars() {
+		buf.push(ch);
+		if buf.len() >= CHUNK_SIZE {
+			text_ctrl.append_text(&buf);
+			buf.clear();
+		}
+	}
+	if !buf.is_empty() {
+		text_ctrl.append_text(&buf);
 	}
 }

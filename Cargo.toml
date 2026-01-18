@@ -1,15 +1,11 @@
 [package]
 name = "paperback"
-description = "An accessible, light-weight, fast ebook and document reader"
 version = "0.8.0"
+description = "An accessible, light-weight, fast ebook and document reader"
 license = "MIT"
 repository = "https://github.com/trypsynth/paperback"
 edition = "2024"
 rust-version = "1.87.0"
-
-[[bin]]
-name = "paperback"
-path = "src/main.rs"
 
 [dependencies]
 anyhow = "1.0.100"
