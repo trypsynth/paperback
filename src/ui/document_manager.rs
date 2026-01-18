@@ -126,6 +126,9 @@ impl DocumentManager {
 		if saved_pos >= 0 {
 			self.tabs[tab_index].text_ctrl.set_insertion_point(saved_pos);
 			self.tabs[tab_index].text_ctrl.show_position(saved_pos);
+		} else {
+			self.tabs[tab_index].text_ctrl.set_insertion_point(0);
+			self.tabs[tab_index].text_ctrl.show_position(0);
 		}
 		config.add_recent_document(&path_str);
 		config.set_document_opened(&path_str, true);
@@ -154,11 +157,20 @@ impl DocumentManager {
 			println!("Saving position {} for {}", position, tab.file_path.display());
 		}
 
-		// Remove the page from notebook
+		// Remove the page from notebook and destroy the window.
+		let page = self.notebook.get_page(index);
 		self.notebook.remove_page(index);
+		if let Some(page) = page {
+			page.destroy();
+		}
 
 		// Remove tab data
 		self.tabs.remove(index);
+		let count = self.tabs.len();
+		if count > 0 {
+			let new_index = index.min(count - 1);
+			self.notebook.set_selection(new_index);
+		}
 
 		true
 	}
@@ -217,6 +229,8 @@ impl DocumentManager {
 	pub fn restore_focus(&self) {
 		if let Some(tab) = self.active_tab() {
 			tab.text_ctrl.set_focus();
+		} else {
+			self.notebook.set_focus();
 		}
 	}
 
