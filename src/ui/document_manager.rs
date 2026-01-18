@@ -1,7 +1,8 @@
 use std::path::{Path, PathBuf};
 
-use crate::session::DocumentSession;
 use wxdragon::prelude::*;
+
+use crate::session::DocumentSession;
 
 /// Data associated with each document tab
 pub struct DocumentTab {
