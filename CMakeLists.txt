@@ -12,7 +12,7 @@ elseif(APPLE)
 else()
 	set(VCPKG_TARGET_TRIPLET "x64-linux" CACHE STRING "Vcpkg triplet")
 endif()
-project(paperback VERSION 0.6.1 LANGUAGES CXX)
+project(paperback VERSION 0.7.0 LANGUAGES CXX)
 
 if("${PROJECT_VERSION_TWEAK}" STREQUAL "")
 	set(PROJECT_VERSION_TWEAK 0)

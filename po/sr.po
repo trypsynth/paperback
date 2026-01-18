@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.5\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2025-12-30 15:14+0100\n"
-"PO-Revision-Date: 2025-12-31 13:19+0100\n"
+"POT-Creation-Date: 2026-01-17 14:47+0100\n"
+"PO-Revision-Date: 2026-01-17 14:49+0100\n"
 "Last-Translator: Nikola Jović <wwenikola123@gmail.com>\n"
 "Language-Team: \n"
 "Language: sr\n"
@@ -19,102 +19,102 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 "X-Generator: Poedit 3.8\n"
-"X-Poedit-Basepath: ..\n"
+"X-Poedit-Basepath: ../app\n"
 "X-Poedit-KeywordsList: _;wxTRANSLATE;wxPLURAL:1,2\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Poedit-SearchPath-0: src\n"
-"X-Poedit-SearchPathExcluded-0: build\n"
-"X-Poedit-SearchPathExcluded-1: vcpkg\n"
-"X-Poedit-SearchPathExcluded-2: web\n"
-"X-Poedit-SearchPathExcluded-3: po\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: ../build\n"
+"X-Poedit-SearchPathExcluded-1: ../vcpkg\n"
+"X-Poedit-SearchPathExcluded-2: ../web\n"
 
-#: app.cpp:58
+#: app.cpp:49
 msgid "No release notes were provided."
 msgstr "Informacije o verziji nisu ponuđene."
 
-#: app.cpp:65
+#: app.cpp:56
 msgid "No updates available."
 msgstr "Nema dostupnih ažuriranja."
 
-#: app.cpp:65
+#: app.cpp:56
 msgid "Info"
 msgstr "Informacija"
 
-#: app.cpp:69
+#: app.cpp:60
 msgid "Error checking for updates."
 msgstr "Greška pri proveri ažuriranja."
 
-#: app.cpp:70
+#: app.cpp:61
 #, c-format
 msgid "Failed to check for updates. HTTP status: %d"
 msgstr "Provera ažuriranja nije uspela. HTTP status: %d"
 
-#: app.cpp:71 app.cpp:94 app.cpp:146 app.cpp:151 app.cpp:209 app.cpp:214
-#: dialogs.cpp:360 document_manager.cpp:259 document_manager.cpp:266
-#: document_manager.cpp:331 document_manager.cpp:339 main_window.cpp:462
-#: main_window.cpp:842 main_window.cpp:918 main_window.cpp:926
-#: main_window.cpp:935 parser.cpp:92
+#: app.cpp:62 app.cpp:85 app.cpp:137 app.cpp:141 app.cpp:183 app.cpp:188
+#: dialogs.cpp:304 document_manager.cpp:80 document_manager.cpp:87
+#: document_manager.cpp:135 document_manager.cpp:142 main_window.cpp:436
+#: main_window.cpp:767 main_window.cpp:795 main_window.cpp:798
+#: main_window.cpp:866 main_window.cpp:873 main_window.cpp:882 parser.cpp:34
+#: utils.cpp:46
 msgid "Error"
 msgstr "Greška"
 
-#: app.cpp:94
+#: app.cpp:85
 msgid "Failed to initialize configuration"
 msgstr "Učitavanje podešavanja nije uspelo"
 
-#: app.cpp:126
+#: app.cpp:117
 msgid "Failed to create IPC server"
 msgstr "Nemoguće napraviti IPC server"
 
-#: app.cpp:126 document_manager.cpp:259
+#: app.cpp:117 document_manager.cpp:80
 msgid "Warning"
 msgstr "Upozorenje"
 
-#: app.cpp:146 app.cpp:209 document_manager.cpp:266
+#: app.cpp:137 app.cpp:183 document_manager.cpp:87
 #, c-format
 msgid "File not found: %s"
 msgstr "Datoteka nije pronađena: %s"
 
-#: app.cpp:151 app.cpp:214
+#: app.cpp:141 app.cpp:188
 msgid "Failed to load document."
 msgstr "Učitavanje dokumenta nije uspelo."
 
-#: dialogs.cpp:118
+#: dialogs.cpp:65
 msgid "All Documents"
 msgstr "Svi dokumenti"
 
-#: dialogs.cpp:121
+#: dialogs.cpp:68
 msgid "&search"
 msgstr "&Pretraga"
 
-#: dialogs.cpp:132
+#: dialogs.cpp:79
 msgid "File Name"
 msgstr "Ime datoteke"
 
-#: dialogs.cpp:133
+#: dialogs.cpp:80
 msgid "Status"
 msgstr "Status"
 
-#: dialogs.cpp:134
+#: dialogs.cpp:81
 msgid "Path"
 msgstr "Putanja"
 
-#: dialogs.cpp:139
+#: dialogs.cpp:86
 msgid "&Open"
 msgstr "&Otvori"
 
-#: dialogs.cpp:140
+#: dialogs.cpp:87
 msgid "&Remove"
 msgstr "&Ukloni"
 
-#: dialogs.cpp:141
+#: dialogs.cpp:88
 msgid "&Clear All"
 msgstr "&Očisti sve"
 
-#: dialogs.cpp:159 dialogs.cpp:223 dialogs.cpp:263 dialogs.cpp:276
+#: dialogs.cpp:106 dialogs.cpp:173 dialogs.cpp:209 dialogs.cpp:220
 msgid "Missing"
 msgstr "Nedostaje"
 
-#: dialogs.cpp:182
+#: dialogs.cpp:129
 msgid ""
 "Are you sure you want to remove this document from the list? This will also "
 "remove its reading position."
@@ -122,14 +122,19 @@ msgstr ""
 "Da li ste sigurni da želite da uklonite ovaj dokument sa liste? Ovo će "
 "takođe ukloniti njegovu poziciju čitanja."
 
-#: dialogs.cpp:182 dialogs.cpp:199
+#: dialogs.cpp:129 dialogs.cpp:147
 msgid "Confirm"
 msgstr "Potvrdi"
 
-#: dialogs.cpp:199
-#| msgid ""
-#| "Are you sure you want to remove this document from the list? This will "
-#| "also remove its reading position."
+#: dialogs.cpp:130 dialogs.cpp:148 dialogs.cpp:1097
+msgid "&Yes"
+msgstr "&Da"
+
+#: dialogs.cpp:130 dialogs.cpp:148 dialogs.cpp:1099
+msgid "&No"
+msgstr "&Ne"
+
+#: dialogs.cpp:147
 msgid ""
 "Are you sure you want to remove all documents from the list? This will also "
 "remove all reading positions and bookmarks."
@@ -137,192 +142,192 @@ msgstr ""
 "Da li ste sigurni da želite da uklonite sve dokumente iz liste? Ovo će "
 "takođe ukloniti sve pozicije čitanja i knjižne oznake."
 
-#: dialogs.cpp:265
+#: dialogs.cpp:203
 msgid "Open"
 msgstr "Otvori"
 
-#: dialogs.cpp:267
+#: dialogs.cpp:206
 msgid "Closed"
 msgstr "Zatvori"
 
-#: dialogs.cpp:287
+#: dialogs.cpp:231
 msgid "Jump to Bookmark"
 msgstr "Skoči na knjižnu oznaku"
 
-#: dialogs.cpp:289
+#: dialogs.cpp:233
 msgid "&Filter:"
 msgstr "&Filter:"
 
-#: dialogs.cpp:291
+#: dialogs.cpp:235
 msgid "All"
 msgstr "Sve"
 
-#: dialogs.cpp:292
+#: dialogs.cpp:236
 msgid "Bookmarks"
 msgstr "Knjižne oznake"
 
-#: dialogs.cpp:293
+#: dialogs.cpp:237
 msgid "Notes"
 msgstr "Napomene"
 
-#: dialogs.cpp:314
+#: dialogs.cpp:258
 msgid "&Edit Note"
 msgstr "&Uredi napomenu"
 
-#: dialogs.cpp:315
+#: dialogs.cpp:259
 msgid "&Delete"
 msgstr "&Obriši"
 
-#: dialogs.cpp:316
+#: dialogs.cpp:260
 msgid "&Jump"
 msgstr "&Skoči"
 
-#: dialogs.cpp:317
+#: dialogs.cpp:261
 msgid "&Cancel"
 msgstr "&Otkaži"
 
-#: dialogs.cpp:360
+#: dialogs.cpp:304
 msgid "Please select a bookmark to jump to."
 msgstr "Molimo izaberite knjižnu oznaku na koju želite da skočite."
 
-#: dialogs.cpp:390 document_manager.cpp:955
+#: dialogs.cpp:330 document_manager.cpp:545
 msgid "Bookmark Note"
 msgstr "Napomena knjižne oznake"
 
-#: dialogs.cpp:390 document_manager.cpp:954
+#: dialogs.cpp:330 document_manager.cpp:544
 msgid "Edit bookmark note:"
 msgstr "Uredi napomenu knjižne oznake:"
 
-#: dialogs.cpp:427
+#: dialogs.cpp:363
 msgid "blank"
 msgstr "prazno"
 
-#: dialogs.cpp:475
+#: dialogs.cpp:404
 msgid "Document Info"
 msgstr "Informacije o dokumentu"
 
-#: dialogs.cpp:480
-msgid "Title: "
-msgstr "Naslov: "
-
-#: dialogs.cpp:481
-msgid "Author: "
-msgstr "Autor: "
-
-#: dialogs.cpp:482
+#: dialogs.cpp:409
 msgid "Path: "
 msgstr "Putanja: "
 
-#: dialogs.cpp:483
-msgid "Total number of words: "
-msgstr "Ukupan broj reči: "
+#: dialogs.cpp:414
+msgid "Title: "
+msgstr "Naslov: "
 
-#: dialogs.cpp:484
-msgid "Total number of lines: "
-msgstr "Ukupan broj redova: "
+#: dialogs.cpp:415
+msgid "Author: "
+msgstr "Autor: "
 
-#: dialogs.cpp:485
-msgid "Total number of characters: "
-msgstr "Ukupan broj znakova: "
+#: dialogs.cpp:416
+msgid "Words: "
+msgstr "Reči: "
 
-#: dialogs.cpp:486
-msgid "Total number of characters (excluding whitespace): "
-msgstr "Ukupan broj znakova (bez razmaka): "
+#: dialogs.cpp:417
+msgid "Lines: "
+msgstr "Redovi: "
 
-#: dialogs.cpp:494
+#: dialogs.cpp:418
+msgid "Characters: "
+msgstr "Znakovi: "
+
+#: dialogs.cpp:419
+msgid "Characters (excluding spaces): "
+msgstr "Znakovi (bez razmaka): "
+
+#: dialogs.cpp:428
 msgid "Elements"
 msgstr "Elementi"
 
-#: dialogs.cpp:497
+#: dialogs.cpp:431
 msgid "&View:"
 msgstr "&Prikaži:"
 
-#: dialogs.cpp:499
+#: dialogs.cpp:433
 msgid "Headings"
 msgstr "Naslovi"
 
-#: dialogs.cpp:500
+#: dialogs.cpp:434
 msgid "Links"
 msgstr "Linkovi"
 
-#: dialogs.cpp:550 dialogs.cpp:1079
+#: dialogs.cpp:474 dialogs.cpp:980
 msgid "Root"
 msgstr "Koren"
 
-#: dialogs.cpp:558 dialogs.cpp:1095
+#: dialogs.cpp:485 dialogs.cpp:999
 msgid "Untitled"
 msgstr "Nenaslovljeno"
 
-#: dialogs.cpp:621
+#: dialogs.cpp:547
 msgid "Find"
 msgstr "Pronađi"
 
-#: dialogs.cpp:627
+#: dialogs.cpp:553
 msgid "Find &what:"
 msgstr "&Šta pronaći:"
 
-#: dialogs.cpp:631 dialogs.cpp:869
+#: dialogs.cpp:557 dialogs.cpp:816
 msgid "Options"
 msgstr "Podešavanja"
 
-#: dialogs.cpp:632
+#: dialogs.cpp:558
 msgid "&Match case"
 msgstr "&Osetljiva na veličinu slova"
 
-#: dialogs.cpp:633
+#: dialogs.cpp:559
 msgid "Match &whole word"
 msgstr "Samo &cele reči"
 
-#: dialogs.cpp:634
+#: dialogs.cpp:560
 msgid "Use &regular expressions"
 msgstr "Koristi &regularne izraze"
 
-#: dialogs.cpp:639
+#: dialogs.cpp:565
 msgid "Find &Previous"
 msgstr "Pronađi &prethodno"
 
-#: dialogs.cpp:640
+#: dialogs.cpp:566
 msgid "Find &Next"
 msgstr "Pronađi &sledeće"
 
-#: dialogs.cpp:641
+#: dialogs.cpp:567
 msgid "Cancel"
 msgstr "Otkaži"
 
-#: dialogs.cpp:731
+#: dialogs.cpp:683
 msgid "Go to Line"
 msgstr "Pređi na red"
 
-#: dialogs.cpp:734
+#: dialogs.cpp:686
 msgid "&Line number:"
 msgstr "&Broj reda:"
 
-#: dialogs.cpp:750
+#: dialogs.cpp:704
 msgid "Go to page"
 msgstr "Pređi na stranicu"
 
-#: dialogs.cpp:753
+#: dialogs.cpp:707
 #, c-format
 msgid "Go to page (1/%d):"
 msgstr "Pređi na stranicu (1/%d):"
 
-#: dialogs.cpp:773
+#: dialogs.cpp:726
 msgid "Go to Percent"
 msgstr "Pređi na procenat"
 
-#: dialogs.cpp:779
+#: dialogs.cpp:731
 msgid "P&ercent:"
 msgstr "P&rocenat:"
 
-#: dialogs.cpp:781
+#: dialogs.cpp:733
 msgid "&Percent"
 msgstr "&procenat"
 
-#: dialogs.cpp:812
+#: dialogs.cpp:765
 msgid "Open As"
 msgstr "Otvori kao"
 
-#: dialogs.cpp:815
+#: dialogs.cpp:768
 #, c-format
 msgid ""
 "No suitable parser was found for %s.\n"
@@ -331,780 +336,867 @@ msgstr ""
 "Nije pronađen nijedan odgovarajući čitač za %s.\n"
 "Kako želite da otvorite ovu datoteku?"
 
-#: dialogs.cpp:818
+#: dialogs.cpp:771
 msgid "Open &as:"
 msgstr "Otvori &kao:"
 
-#: dialogs.cpp:820
+#: dialogs.cpp:773
 msgid "Plain Text"
 msgstr "Običan tekst"
 
-#: dialogs.cpp:821
+#: dialogs.cpp:774
 msgid "HTML"
 msgstr "HTML"
 
-#: dialogs.cpp:822
+#: dialogs.cpp:775
 msgid "Markdown"
 msgstr "Markdown"
 
-#: dialogs.cpp:873
+#: dialogs.cpp:820
 msgid "General"
 msgstr "Oppšta"
 
-#: dialogs.cpp:874
+#: dialogs.cpp:821
 msgid "&Restore previously opened documents on startup"
 msgstr "&Vrati prethodno otvorene dokumente pri pokretanju"
 
-#: dialogs.cpp:876
+#: dialogs.cpp:823
 msgid "&Word wrap"
 msgstr "&Prelamanje reči"
 
-#: dialogs.cpp:878
+#: dialogs.cpp:825
 msgid "&Minimize to system tray"
 msgstr "&Umanji u sistemsku traku"
 
-#: dialogs.cpp:880
+#: dialogs.cpp:827
 msgid "&Start maximized"
 msgstr "&Pokreni kao maksimizovan"
 
-#: dialogs.cpp:882
+#: dialogs.cpp:829
 msgid "Show compact &go menu"
 msgstr "Prikaži kompaktan meni &kretanja"
 
-#: dialogs.cpp:884
+#: dialogs.cpp:831
 msgid "&Wrap navigation"
 msgstr "&Kružna navigacija"
 
-#: dialogs.cpp:886
+#: dialogs.cpp:833
 msgid "Check for &updates on startup"
 msgstr "Proveri &ažuriranja pri pokretanju"
 
-#: dialogs.cpp:889
+#: dialogs.cpp:836
 msgid "Number of &recent documents to show:"
 msgstr "Broj &nedavnih dokumenata za prikazivanje:"
 
-#: dialogs.cpp:895
+#: dialogs.cpp:842
 msgid "&Language:"
 msgstr "&Jezik:"
 
-#: dialogs.cpp:1000
+#: dialogs.cpp:947
 msgid "Document Password"
 msgstr "Lozinka dokumenta"
 
-#: dialogs.cpp:1002
+#: dialogs.cpp:949
 msgid "&Password"
 msgstr "&Lozinka"
 
-#: dialogs.cpp:1015
+#: dialogs.cpp:962
 msgid "Sleep Timer"
 msgstr "Tajmer pre spavanja"
 
-#: dialogs.cpp:1018
+#: dialogs.cpp:965
 msgid "&Minutes:"
 msgstr "&Minuti:"
 
-#: dialogs.cpp:1076
+#: dialogs.cpp:977
 msgid "Table of Contents"
 msgstr "Sadržaj"
 
-#: dialogs.cpp:1133
+#: dialogs.cpp:1037
 msgid "Please select a section from the table of contents."
 msgstr "Molimo izaberite odeljak iz sadržaja."
 
-#: dialogs.cpp:1133
+#: dialogs.cpp:1037
 msgid "No Selection"
 msgstr "Bez izbora"
 
-#: dialogs.cpp:1184
+#: dialogs.cpp:1088
 #, c-format
 msgid "Update to %s"
 msgstr "Ažuriraj na %s"
 
-#: dialogs.cpp:1186
+#: dialogs.cpp:1090
 msgid "A new version of Paperback is available. Here's what's new:"
 msgstr "Dostupna je nova verzija Paperbacka. Evo šta je novo:"
 
-#: dialogs.cpp:1193
-msgid "&Yes"
-msgstr "&Da"
-
-#: dialogs.cpp:1195
-msgid "&No"
-msgstr "&Ne"
-
-#: dialogs.cpp:1199 main_window.cpp:726
+#: dialogs.cpp:1103 main_window.cpp:661
 msgid "View Note"
 msgstr "Prikaži napomenu"
 
-#: dialogs.cpp:1205
+#: dialogs.cpp:1109
 msgid "Close"
 msgstr "Zatvori"
 
-#: document_manager.cpp:321
+#: document_manager.cpp:135
 msgid "Password is required."
 msgstr "Lozinka je obavezna."
 
-#: document_manager.cpp:331 document_manager.cpp:339
+#: document_manager.cpp:142
 #, c-format
 msgid "Failed to parse document: %s"
 msgstr "Obrada dokumenta nije uspela: %s"
 
-#: document_manager.cpp:492
+#: document_manager.cpp:255
 msgid "No sections."
 msgstr "Nema odeljaka."
 
-#: document_manager.cpp:498
+#: document_manager.cpp:255
 msgid "No next section"
 msgstr "Nema narednog odeljka"
 
-#: document_manager.cpp:498
+#: document_manager.cpp:255
 msgid "No previous section"
 msgstr "Nema prethodnog odeljka"
 
-#: document_manager.cpp:507 document_manager.cpp:561 document_manager.cpp:599
-#: document_manager.cpp:636 document_manager.cpp:677 document_manager.cpp:837
-#: document_manager.cpp:884 document_manager.cpp:1275
-msgid "Wrapping to start. "
-msgstr "Vraćanje na početak. "
-
-#: document_manager.cpp:507 document_manager.cpp:561 document_manager.cpp:599
-#: document_manager.cpp:636 document_manager.cpp:677 document_manager.cpp:837
-#: document_manager.cpp:884 document_manager.cpp:1275
-msgid "Wrapping to end. "
-msgstr "Vraćanje na dno. "
-
-#: document_manager.cpp:544 main_window.cpp:613
-msgid "No pages."
-msgstr "Nema stranica."
-
-#: document_manager.cpp:550
-msgid "No next page."
-msgstr "Nema naredne stranice."
-
-#: document_manager.cpp:550
-msgid "No previous page."
-msgstr "Nema prethodne stranice."
-
-#: document_manager.cpp:559
+#: document_manager.cpp:259
 #, c-format
-msgid "Page %d: %s"
-msgstr "Stranica %d: %s"
-
-#: document_manager.cpp:584
-msgid "No next bookmark"
-msgstr "Nema naredne knjižne oznake"
-
-#: document_manager.cpp:584
-msgid "No previous bookmark"
-msgstr "Nema prethodne knjižne oznake"
-
-#: document_manager.cpp:597
-#, c-format
-msgid "%s - Bookmark %d"
-msgstr "%s - knjižna oznaka %d"
-
-#: document_manager.cpp:614
-msgid "No next note"
-msgstr "Nema naredne napomene"
-
-#: document_manager.cpp:614
-msgid "No previous note"
-msgstr "Nema prethodne napomene"
-
-#: document_manager.cpp:631
-#, c-format
-msgid "%s - Note %d"
-msgstr "%s - napomena %d"
-
-#: document_manager.cpp:633
-#, c-format
-msgid "%s - %s - Note %d"
-msgstr "%s - %s - napomena %d"
-
-#: document_manager.cpp:664
-msgid "No links."
-msgstr "Nema linkova."
-
-#: document_manager.cpp:670
-msgid "No next link."
-msgstr "Nema narednog linka."
-
-#: document_manager.cpp:670
-msgid "No previous link."
-msgstr "Nema prethodnog linka."
-
-#: document_manager.cpp:675
-msgid " link"
-msgstr " link"
-
-#: document_manager.cpp:697 document_manager.cpp:711
-msgid "No previous position."
-msgstr "Nema prethodne pozicije."
-
-#: document_manager.cpp:709
-msgid "Navigated to previous position."
-msgstr "Prebačeno na prethodnu poziciju."
-
-#: document_manager.cpp:722 document_manager.cpp:736
-msgid "No next position."
-msgstr "Nema naredne pozicije."
-
-#: document_manager.cpp:734
-msgid "Navigated to next position."
-msgstr "Prebačeno na narednu poziciju."
-
-#: document_manager.cpp:772 document_manager.cpp:784
-msgid "Opening link in default browser."
-msgstr "Otvaranje linka u podrazumevanom pretraživaču."
-
-#: document_manager.cpp:774 document_manager.cpp:786
-msgid "Failed to open link."
-msgstr "Otvaranje linka nije uspelo."
-
-#: document_manager.cpp:779
-msgid "Internal link target not found."
-msgstr "Odredište unutrašnjeg linka nije pronađeno."
-
-#: document_manager.cpp:791
-msgid "Navigated to internal link."
-msgstr "Prebačen do unutrašnjeg linka."
-
-#: document_manager.cpp:803 document_manager.cpp:807 document_manager.cpp:858
-msgid "No lists."
-msgstr "Nema lista."
-
-#: document_manager.cpp:813
-msgid "No next list."
-msgstr "Nema naredne liste."
-
-#: document_manager.cpp:813
-msgid "No previous list."
-msgstr "Nema prethodne liste."
-
-#: document_manager.cpp:823
-#, c-format
-msgid "List with %d items"
-msgstr "Lista sa %d stavki"
-
-#: document_manager.cpp:862
-msgid "No list items."
-msgstr "Nema stavki liste."
-
-#: document_manager.cpp:870
-msgid "No next list item."
-msgstr "Nema naredne stavke liste."
-
-#: document_manager.cpp:870
-msgid "No previous list item."
-msgstr "Nema prethodne stavke liste."
-
-#: document_manager.cpp:881
-#, c-format
-msgid "List with %d items "
-msgstr "Lista sa %d stavki "
-
-#: document_manager.cpp:922
-msgid "Bookmark removed"
-msgstr "Knjižna oznaka uklonjena"
-
-#: document_manager.cpp:922
-msgid "Bookmarked"
-msgstr "Knjižna oznaka dodata"
-
-#: document_manager.cpp:954
-msgid "Enter bookmark note:"
-msgstr "Upišite napomenu za knjižnu oznaku:"
-
-#: document_manager.cpp:962
-msgid "Bookmark note updated"
-msgstr "Napomena knjižne oznake ažurirana"
-
-#: document_manager.cpp:965
-msgid "Bookmarked with note"
-msgstr "Knjižna oznaka dodata sa napomenom"
-
-#: document_manager.cpp:978
-msgid "No bookmarks"
-msgstr "Nema knjižnih oznaka"
-
-#: document_manager.cpp:1010
-#, c-format
-msgid "Bookmark: %s - %s"
-msgstr "Knjižna oznaka: %s - %s"
-
-#: document_manager.cpp:1012
-#, c-format
-msgid "Bookmark: %s"
-msgstr "Knjižna oznaka: %s"
-
-#: document_manager.cpp:1026
-msgid "No table of contents."
-msgstr "Nema sadržaja."
-
-#: document_manager.cpp:1031
-msgid "Table of contents is empty."
-msgstr "Sadržaj je prazan."
-
-#: document_manager.cpp:1102 document_manager.cpp:1106 main_window.cpp:40
-msgid "Ready"
-msgstr "Spreman"
-
-#: document_manager.cpp:1115
-#, c-format
-msgid "line %ld, character %ld, reading %d%%"
-msgstr "red %ld, znak %ld, čitanje %d%%"
-
-#: document_manager.cpp:1179
-msgid "Previous heading\tShift+H"
-msgstr "Prethodni naslov\tShift+H"
-
-#: document_manager.cpp:1180
-msgid "Next heading\tH"
-msgstr "Naredni naslov \tH"
-
-#: document_manager.cpp:1183
-#, c-format
-msgid "Previous heading level %d\tShift+%d"
-msgstr "Prethodni naslov na nivou %d\tShift+%d"
-
-#: document_manager.cpp:1184
-#, c-format
-msgid "Next heading level %d\t%d"
-msgstr "Naredni naslov na nivou %d\t%d"
-
-#: document_manager.cpp:1232
-msgid "No headings."
-msgstr "Nema naslova."
-
-#: document_manager.cpp:1234
-#, c-format
-#| msgid "No %s heading at level %d"
 msgid "No headings at level %d."
 msgstr "Nema naslova na nivou %d."
 
-#: document_manager.cpp:1241
+#: document_manager.cpp:260
 #, c-format
-msgid "No %s heading"
-msgstr "Ne postoji %s naslov"
+msgid "No next heading at level %d."
+msgstr "Nema narednog naslova na nivou %d."
 
-#: document_manager.cpp:1241
-msgid "next"
-msgstr "naredni"
-
-#: document_manager.cpp:1241
-msgid "previous"
-msgstr "prethodni"
-
-#: document_manager.cpp:1241
+#: document_manager.cpp:261
 #, c-format
-msgid "No %s heading at level %d"
-msgstr "Ne postoji %s naslov na nivou %d"
+msgid "No previous heading at level %d."
+msgstr "Nema prethodnog naslova na nivou %d."
 
-#: document_manager.cpp:1251
-#, c-format
-msgid "Wrapping to %s. %s Heading level %d"
-msgstr "Vraćanje na %s. %s naslov nivoa %d"
+#: document_manager.cpp:265
+msgid "No headings."
+msgstr "Nema naslova."
 
-#: document_manager.cpp:1251
-msgid "start"
-msgstr "početak"
+#: document_manager.cpp:265
+msgid "No next heading."
+msgstr "Nema narednog naslova."
 
-#: document_manager.cpp:1251
-msgid "end"
-msgstr "kraj"
+#: document_manager.cpp:265
+msgid "No previous heading."
+msgstr "Nema prethodnog naslova."
 
-#: document_manager.cpp:1253
+#: document_manager.cpp:267 main_window.cpp:556
+msgid "No pages."
+msgstr "Nema stranica."
+
+#: document_manager.cpp:267
+msgid "No next page."
+msgstr "Nema naredne stranice."
+
+#: document_manager.cpp:267
+msgid "No previous page."
+msgstr "Nema prethodne stranice."
+
+#: document_manager.cpp:269
+msgid "No links."
+msgstr "Nema linkova."
+
+#: document_manager.cpp:269
+msgid "No next link."
+msgstr "Nema narednog linka."
+
+#: document_manager.cpp:269
+msgid "No previous link."
+msgstr "Nema prethodnog linka."
+
+#: document_manager.cpp:271
+msgid "No lists."
+msgstr "Nema lista."
+
+#: document_manager.cpp:271
+msgid "No next list."
+msgstr "Nema naredne liste."
+
+#: document_manager.cpp:271
+msgid "No previous list."
+msgstr "Nema prethodne liste."
+
+#: document_manager.cpp:273
+msgid "No list items."
+msgstr "Nema stavki liste."
+
+#: document_manager.cpp:273
+msgid "No next list item."
+msgstr "Nema naredne stavke liste."
+
+#: document_manager.cpp:273
+msgid "No previous list item."
+msgstr "Nema prethodne stavke liste."
+
+#: document_manager.cpp:275
+msgid "No tables."
+msgstr "Nema tabela."
+
+#: document_manager.cpp:275
+msgid "No next table."
+msgstr "Nema naredne tabele."
+
+#: document_manager.cpp:275
+msgid "No previous table."
+msgstr "Nema prethodne tabele."
+
+#: document_manager.cpp:277
+msgid "Not supported."
+msgstr "Nije podržano."
+
+#: document_manager.cpp:277 main_window.cpp:1088
+msgid "Not found."
+msgstr "Nije pronađeno."
+
+#: document_manager.cpp:283 document_manager.cpp:394
+msgid "Wrapping to start. "
+msgstr "Vraćanje na početak. "
+
+#: document_manager.cpp:283 document_manager.cpp:394
+msgid "Wrapping to end. "
+msgstr "Vraćanje na dno. "
+
+#: document_manager.cpp:288
 #, c-format
 msgid "%s Heading level %d"
 msgstr "%s naslov nivo %d"
 
-#: document_manager.cpp:1263
-msgid "No tables."
-msgstr "Nema tabela."
+#: document_manager.cpp:290
+#, c-format
+msgid "Page %d: %s"
+msgstr "Stranica %d: %s"
 
-#: document_manager.cpp:1269
-msgid "No next table."
-msgstr "Nema naredne tabele."
+#: document_manager.cpp:292
+msgid " link"
+msgstr " link"
 
-#: document_manager.cpp:1269
-msgid "No previous table."
-msgstr "Nema prethodne tabele."
+#: document_manager.cpp:375
+msgid "No next note"
+msgstr "Nema naredne napomene"
 
-#: document_manager.cpp:1297
+#: document_manager.cpp:375
+msgid "No previous note"
+msgstr "Nema prethodne napomene"
+
+#: document_manager.cpp:377
+msgid "No next bookmark"
+msgstr "Nema naredne knjižne oznake"
+
+#: document_manager.cpp:377
+msgid "No previous bookmark"
+msgstr "Nema prethodne knjižne oznake"
+
+#: document_manager.cpp:387
+#, c-format
+msgid "%s - %s - Note %d"
+msgstr "%s - %s - napomena %d"
+
+#: document_manager.cpp:389
+#, c-format
+msgid "%s - Note %d"
+msgstr "%s - napomena %d"
+
+#: document_manager.cpp:391
+#, c-format
+msgid "%s - Bookmark %d"
+msgstr "%s - knjižna oznaka %d"
+
+#: document_manager.cpp:442
+msgid "Navigated to next position."
+msgstr "Prebačeno na narednu poziciju."
+
+#: document_manager.cpp:442
+msgid "Navigated to previous position."
+msgstr "Prebačeno na prethodnu poziciju."
+
+#: document_manager.cpp:444
+msgid "No next position."
+msgstr "Nema naredne pozicije."
+
+#: document_manager.cpp:444
+msgid "No previous position."
+msgstr "Nema prethodne pozicije."
+
+#: document_manager.cpp:465
+msgid "Opening link in default browser."
+msgstr "Otvaranje linka u podrazumevanom pretraživaču."
+
+#: document_manager.cpp:466
+msgid "Failed to open link."
+msgstr "Otvaranje linka nije uspelo."
+
+#: document_manager.cpp:470
+msgid "Navigated to internal link."
+msgstr "Prebačen do unutrašnjeg linka."
+
+#: document_manager.cpp:473
+msgid "Internal link target not found."
+msgstr "Odredište unutrašnjeg linka nije pronađeno."
+
+#: document_manager.cpp:522
+msgid "Bookmark removed"
+msgstr "Knjižna oznaka uklonjena"
+
+#: document_manager.cpp:522
+msgid "Bookmarked"
+msgstr "Knjižna oznaka dodata"
+
+#: document_manager.cpp:544
+msgid "Enter bookmark note:"
+msgstr "Upišite napomenu za knjižnu oznaku:"
+
+#: document_manager.cpp:549
+msgid "Bookmark note updated"
+msgstr "Napomena knjižne oznake ažurirana"
+
+#: document_manager.cpp:549
+msgid "Bookmarked with note"
+msgstr "Knjižna oznaka dodata sa napomenom"
+
+#: document_manager.cpp:558
+msgid "No bookmarks"
+msgstr "Nema knjižnih oznaka"
+
+#: document_manager.cpp:573
+#, c-format
+msgid "Bookmark: %s - %s"
+msgstr "Knjižna oznaka: %s - %s"
+
+#: document_manager.cpp:574
+#, c-format
+msgid "Bookmark: %s"
+msgstr "Knjižna oznaka: %s"
+
+#: document_manager.cpp:584
+msgid "No table of contents."
+msgstr "Nema sadržaja."
+
+#: document_manager.cpp:589
+msgid "Table of contents is empty."
+msgstr "Sadržaj je prazan."
+
+#: document_manager.cpp:634 document_manager.cpp:637 main_window.cpp:32
+msgid "Ready"
+msgstr "Spreman"
+
+#: document_manager.cpp:640
+#, c-format
+msgid "line %lld, character %lld, reading %d%%"
+msgstr "red %lld, znak %lld, čitanje %d%%"
+
+#: document_manager.cpp:690
+msgid "Previous heading\tShift+H"
+msgstr "Prethodni naslov\tShift+H"
+
+#: document_manager.cpp:691
+msgid "Next heading\tH"
+msgstr "Naredni naslov \tH"
+
+#: document_manager.cpp:694
+#, c-format
+msgid "Previous heading level %d\tShift+%d"
+msgstr "Prethodni naslov na nivou %d\tShift+%d"
+
+#: document_manager.cpp:695
+#, c-format
+msgid "Next heading level %d\t%d"
+msgstr "Naredni naslov na nivou %d\t%d"
+
+#: document_manager.cpp:755
 msgid "Table"
 msgstr "Tabela"
 
-#: main_window.cpp:78
+#: main_window.cpp:60
 msgid "Previous section\t["
 msgstr "Prethodni odeljak\t["
 
-#: main_window.cpp:79
+#: main_window.cpp:61
 msgid "Next section\t]"
 msgstr "Naredni odeljak\t]"
 
-#: main_window.cpp:84
+#: main_window.cpp:66
 msgid "Go to &page...\tCtrl+P"
 msgstr "Pređi na &stranicu...\tCtrl+P"
 
-#: main_window.cpp:85
+#: main_window.cpp:67
 msgid "Previous &page\tShift+P"
 msgstr "Prethodna &stranica\tShift+P"
 
-#: main_window.cpp:86
+#: main_window.cpp:68
 msgid "&Next page\tP"
 msgstr "&Naredna stranica\tP"
 
-#: main_window.cpp:91
+#: main_window.cpp:73
 msgid "Previous &bookmark\tShift+B"
 msgstr "Prethodna &knjižna oznaka\tShift+B"
 
-#: main_window.cpp:92
+#: main_window.cpp:74
 msgid "Next b&ookmark\tB"
 msgstr "Naredna k&njižna oznaka\tB"
 
-#: main_window.cpp:93
+#: main_window.cpp:75
 msgid "Previous &note\tShift+N"
 msgstr "Prethodna &napomena \tShift+N"
 
-#: main_window.cpp:94
+#: main_window.cpp:76
 msgid "Next &note\tN"
 msgstr "Naredna &napomena \tN"
 
-#: main_window.cpp:96
+#: main_window.cpp:78
 msgid "Jump to &all...\tCtrl+B"
 msgstr "Skoči na &sve...\tCtrl+B"
 
-#: main_window.cpp:97
+#: main_window.cpp:79
 msgid "Jump to &bookmarks...\tCtrl+Alt+B"
 msgstr "Skoči na &knjižne oznake...\tCtrl+Alt+B"
 
-#: main_window.cpp:98
+#: main_window.cpp:80
 msgid "Jump to &notes...\tCtrl+Alt+M"
 msgstr "Skoči na &napomene...\tCtrl+Alt+M"
 
-#: main_window.cpp:99
+#: main_window.cpp:81
 msgid "&View note text\tCtrl+Shift+W"
 msgstr "&Prikaži tekst napomene\tCtrl+Shift+W"
 
-#: main_window.cpp:104
+#: main_window.cpp:86
 msgid "Previous lin&k\tShift+K"
 msgstr "Prethodni Lin&k\tShift+K"
 
-#: main_window.cpp:105
+#: main_window.cpp:87
 msgid "Next lin&k\tK"
 msgstr "Naredni lin&k\tK"
 
-#: main_window.cpp:110
+#: main_window.cpp:92
 msgid "Previous &table\tShift+T"
 msgstr "Prethodna &tabela\tShift+T"
 
-#: main_window.cpp:111
+#: main_window.cpp:93
 msgid "Next &table\tT"
 msgstr "Naredna &tabela\tT"
 
-#: main_window.cpp:116
+#: main_window.cpp:98
 msgid "Previous lis&t\tShift+L"
 msgstr "Prethodna lis&ta\tShift+L"
 
-#: main_window.cpp:117
+#: main_window.cpp:99
 msgid "Next lis&t\tL"
 msgstr "Naredna lis&ta\tL"
 
-#: main_window.cpp:118
+#: main_window.cpp:100
 msgid "Previous list &item\tShift+I"
 msgstr "Prethodna &stavka liste\tShift+I"
 
-#: main_window.cpp:119
+#: main_window.cpp:101
 msgid "Next list &item\tI"
 msgstr "Naredna &stavka liste\tI"
 
-#: main_window.cpp:124
+#: main_window.cpp:106
 msgid "&File"
 msgstr "&Datoteka"
 
-#: main_window.cpp:126
+#: main_window.cpp:108
 msgid "&Open...\tCtrl+O"
 msgstr "&Otvori...\tCtrl+O"
 
-#: main_window.cpp:127
+#: main_window.cpp:109
 msgid "Close\tCtrl+F4"
 msgstr "Zatvori\tCtrl+F4"
 
-#: main_window.cpp:128
+#: main_window.cpp:110
 msgid "Close &All\tCtrl+Shift+F4"
 msgstr "Zatvori &sve\tCtrl+Shift+F4"
 
-#: main_window.cpp:130
+#: main_window.cpp:112
 msgid "&Recent Documents"
 msgstr "&Nedavni dokumenti"
 
-#: main_window.cpp:135 task_bar_icon.cpp:33
+#: main_window.cpp:117 task_bar_icon.cpp:24
 msgid "E&xit"
 msgstr "I&zlaz"
 
-#: main_window.cpp:139
+#: main_window.cpp:122
 msgid "&Find...\tCtrl+F"
 msgstr "&Pronađi...\tCtrl+F"
 
-#: main_window.cpp:140
+#: main_window.cpp:123
 msgid "Find Ne&xt\tF3"
 msgstr "Pronađi sl&edeće\tF3"
 
-#: main_window.cpp:141
+#: main_window.cpp:124
 msgid "Find P&revious\tShift+F3"
 msgstr "Pronađi p&rethodno\tShift+F3"
 
-#: main_window.cpp:143
+#: main_window.cpp:126
 msgid "Go to &line...\tCtrl+G"
 msgstr "Pređi na &red...\tCtrl+G"
 
-#: main_window.cpp:144
+#: main_window.cpp:127
 msgid "Go to &percent...\tCtrl+Shift+G"
 msgstr "Pređi na &procenat...\tCtrl+Shift+G"
 
-#: main_window.cpp:146
+#: main_window.cpp:129
 msgid "Go &Back\tAlt+Left"
 msgstr "Vrati se &nazad\tAlt+Left"
 
-#: main_window.cpp:147
+#: main_window.cpp:130
 msgid "Go &Forward\tAlt+Right"
 msgstr "Idi &napred\tAlt+Right"
 
-#: main_window.cpp:151
+#: main_window.cpp:134
 msgid "&Sections"
 msgstr "&odeljci"
 
-#: main_window.cpp:152
+#: main_window.cpp:135
 msgid "&Headings"
 msgstr "&naslovi"
 
-#: main_window.cpp:155
+#: main_window.cpp:138
 msgid "&Pages"
 msgstr "&stranice"
 
-#: main_window.cpp:156
+#: main_window.cpp:139
 msgid "&Bookmarks"
 msgstr "&knjižne oznake"
 
-#: main_window.cpp:157
+#: main_window.cpp:140
 msgid "&Links"
 msgstr "&linkovi"
 
-#: main_window.cpp:158
+#: main_window.cpp:141
 msgid "&Tables"
 msgstr "&Tabele"
 
-#: main_window.cpp:159
+#: main_window.cpp:142
 msgid "&Lists"
 msgstr "&Liste"
 
-#: main_window.cpp:183
+#: main_window.cpp:166
 msgid "&Go"
 msgstr "&Kretanje"
 
-#: main_window.cpp:186
+#: main_window.cpp:169
 msgid "&Tools"
 msgstr "&Alati"
 
-#: main_window.cpp:188
+#: main_window.cpp:171
 msgid "&Word count\tCtrl+W"
 msgstr "&Broj reči\tCtrl+W"
 
-#: main_window.cpp:189
+#: main_window.cpp:172
 msgid "Document &info\tCtrl+I"
 msgstr "&Informacije o dokumentu\tCtrl+I"
 
-#: main_window.cpp:191
+#: main_window.cpp:174
 msgid "Table of contents\tCtrl+T"
 msgstr "Sadržaj\tCtrl+T"
 
-#: main_window.cpp:192
+#: main_window.cpp:175
 msgid "&Elements List...\tF7"
 msgstr "&Lista elemenata...\tF7"
 
-#: main_window.cpp:194
+#: main_window.cpp:177
 msgid "Open &containing folder\tCtrl+Shift+C"
 msgstr "Otvori &izvorni folder\tCtrl+Shift+C"
 
-#: main_window.cpp:195
+#: main_window.cpp:178
+msgid "Open in &Web View\tCtrl+Shift+V"
+msgstr "Otvori u &Web prikazu\tCtrl+Shift+V"
+
+#: main_window.cpp:179
 msgid "Import/&Export"
 msgstr "Uvezi/&izvezi"
 
-#: main_window.cpp:196
+#: main_window.cpp:180
 msgid "&Import document data...\tCtrl+Shift+I"
 msgstr "&Uvezi podatke dokumenta...\tCtrl+Shift+I"
 
-#: main_window.cpp:197
+#: main_window.cpp:181
 msgid "&Export document data...\tCtrl+Shift+E"
 msgstr "&Izvezi podatke dokumenta...\tCtrl+Shift+E"
 
-#: main_window.cpp:198
+#: main_window.cpp:182
 msgid "Export document to &plain text...\tCtrl+E"
 msgstr "Izvezi dokument kao &običan tekst...\tCtrl+E"
 
-#: main_window.cpp:201
+#: main_window.cpp:185
 msgid "Toggle bookmark\tCtrl+Shift+B"
 msgstr "Dodaj ili ukloni knjižnu oznaku\tCtrl+Shift+B"
 
-#: main_window.cpp:202
+#: main_window.cpp:186
 msgid "Bookmark with &note\tCtrl+Shift+N"
 msgstr "Dodaj knjižnu oznaku sa &napomenom\tCtrl+Shift+N"
 
-#: main_window.cpp:204
+#: main_window.cpp:188
 msgid "&Options\tCtrl+,"
 msgstr "&Podešavanja\tCtrl+,"
 
-#: main_window.cpp:205
+#: main_window.cpp:189
 msgid "&Sleep Timer...\tCtrl+Shift+S"
 msgstr "Tajmer pre &spavanja...\tCtrl+Shift+S"
 
-#: main_window.cpp:208
+#: main_window.cpp:193
 msgid "&Help"
 msgstr "&Pomoć"
 
-#: main_window.cpp:211
+#: main_window.cpp:196
 #, c-format
 msgid "About %s\tCtrl+F1"
 msgstr "O programu %s\tCtrl+F1"
 
-#: main_window.cpp:212
+#: main_window.cpp:197
 msgid "View &help in default browser\tF1"
 msgstr "Prikaži &pomoć u podrazumevanom pretraživaču\tF1"
 
-#: main_window.cpp:213
+#: main_window.cpp:198
 #, c-format
 msgid "View Help in %s\tShift+F1"
 msgstr "Prikaži pomoć u programu %s\tShift+F1"
 
-#: main_window.cpp:216
+#: main_window.cpp:201
 msgid "Check for &Updates\tCtrl+Shift+U"
 msgstr "Proveri &ažuriranja\tCtrl+Shift+U"
 
-#: main_window.cpp:218
+#: main_window.cpp:203
 msgid "&Donate\tCtrl+D"
 msgstr "&Doniraj\tCtrl+D"
 
-#: main_window.cpp:421
+#: main_window.cpp:401
 #, c-format
 msgid " | Sleep timer: %02d:%02d"
 msgstr " | Tajmer pre spavanja: %02d:%02d"
 
-#: main_window.cpp:428
+#: main_window.cpp:408
 msgid "Select a document to read"
 msgstr "Izaberite dokument za čitanje"
 
-#: main_window.cpp:456
+#: main_window.cpp:432
 msgid "Export Document"
 msgstr "Izvezi dokument"
 
-#: main_window.cpp:456
+#: main_window.cpp:432
 msgid "Text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgstr "Tekstualne datoteke (*.txt)|*.txt|Sve datoteke (*.*)|*.*"
 
-#: main_window.cpp:462
+#: main_window.cpp:436
 msgid "Failed to export document."
 msgstr "Izvoz dokumenta nije uspeo."
 
-#: main_window.cpp:472
+#: main_window.cpp:443
 msgid "Export notes and bookmarks"
 msgstr "Izvezi napomene i knjižne oznake"
 
-#: main_window.cpp:472 main_window.cpp:486
+#: main_window.cpp:443 main_window.cpp:453
 msgid "Paperback files (*.paperback)|*.paperback"
 msgstr "Paperback datoteke (*.paperback)|*.paperback"
 
-#: main_window.cpp:477
+#: main_window.cpp:446
 msgid "Notes and bookmarks exported successfully."
 msgstr "Uspešan izvoz napomena i knjižnih oznaka."
 
-#: main_window.cpp:477
+#: main_window.cpp:446
 msgid "Export Successful"
 msgstr "Izvoz uspešan"
 
-#: main_window.cpp:486
+#: main_window.cpp:453
 msgid "Import notes and bookmarks"
 msgstr "Uvezi napomene i knjižne oznake"
 
-#: main_window.cpp:495
+#: main_window.cpp:458
 msgid "Notes and bookmarks imported successfully."
 msgstr "Uspešan uvoz napomena i knjižnih oznaka."
 
-#: main_window.cpp:495
+#: main_window.cpp:458
 msgid "Import Successful"
 msgstr "Uvoz uspešan"
 
-#: main_window.cpp:726
+#: main_window.cpp:661
 msgid "No note at the current position."
 msgstr "Nema napomene na trenutnoj poziciji."
 
-#: main_window.cpp:795
+#: main_window.cpp:732
 #, c-format
-msgid "The document contains %d word"
-msgid_plural "The document contains %d words"
-msgstr[0] "Dokument sadrži %d reč"
-msgstr[1] "Dokument sadrži %d reči"
-msgstr[2] "Dokument sadrži %d reči"
+msgid "The document contains %zu words."
+msgstr "Dokument sadrži %zu reči."
 
-#: main_window.cpp:795
+#: main_window.cpp:732
 msgid "Word count"
 msgstr "Broj reči"
 
-#: main_window.cpp:842
+#: main_window.cpp:767
 msgid "Failed to open containing folder."
 msgstr "Otvaranje izvornog foldera nije uspelo."
 
-#: main_window.cpp:918
+#: main_window.cpp:792
+msgid "Web View"
+msgstr "Web prikaz"
+
+#: main_window.cpp:795
+msgid "Could not determine content to display in Web View."
+msgstr "Nemoguće odrediti sadržaj koji će se prikazati u Web prikazu."
+
+#: main_window.cpp:798
+#, c-format
+msgid "Error opening Web View: %s"
+msgstr "Greška pri otvaranju Web prikaza: %s"
+
+#: main_window.cpp:866
 msgid "Failed to launch default browser."
 msgstr "Otvaranje podrazumevanog pretraživača nije uspelo."
 
-#: main_window.cpp:926
+#: main_window.cpp:873
 msgid ""
 "readme.html not found. Please ensure the application was built properly."
 msgstr ""
 "readme.html nije pronađen. Molimo uverite se da je aplikacija ispravno "
 "spakovana."
 
-#: main_window.cpp:935
+#: main_window.cpp:882
 msgid "Failed to open donation page in browser."
 msgstr ""
 "Otvaranje stranice za doniranje u podrazumevanom pretraživaču nije uspelo."
 
-#: main_window.cpp:948
+#: main_window.cpp:894
 msgid "Sleep timer canceled."
 msgstr "Tajmer pre spavanja otkazan."
 
-#: main_window.cpp:962
-#, c-format
-msgid "Sleep timer set for %d minute%s."
-msgstr "Tajmer pre spavanja podešen na %d minut %s."
+#: main_window.cpp:906
+#, fuzzy, c-format
+msgid "Sleep timer set for %d minute."
+msgid_plural "Sleep timer set for %d minutes."
+msgstr[0] "Tajmer pre spavanja podešen na %d minut."
+msgstr[1] "Tajmer pre spavanja podešen na %d minuta."
+msgstr[2] "Tajmer pre spavanja podešen na %d minuta."
 
-#: main_window.cpp:1070
+#: main_window.cpp:1010
 msgid "No recent documents."
 msgstr "Nema nedavnih dokumenata."
 
-#: main_window.cpp:1131
+#: main_window.cpp:1065
 msgid "(No recent documents)"
 msgstr "(nema nedavnih dokumenata)"
 
-#: main_window.cpp:1134
+#: main_window.cpp:1067
 msgid "Show All...\tCtrl+R"
 msgstr "Prikaži sve...\tCtrl+R"
 
-#: main_window.cpp:1172
-msgid "Not found."
-msgstr "Nije pronađeno."
-
-#: main_window.cpp:1180
+#: main_window.cpp:1097
 msgid "No more results. Wrapping search."
 msgstr "Nema više rezultata. Vraćanje pretrage na početak."
 
-#: parser.cpp:67
+#: parser.cpp:22
 msgid "Password required or incorrect."
 msgstr "Lozinka je obavezna ili je netačna."
 
-#: task_bar_icon.cpp:31
+#: task_bar_icon.cpp:22
 msgid "&Restore"
 msgstr "&Vrati"
+
+#: utils.cpp:46
+msgid "Unsupported format selected."
+msgstr "Izabran je format koji nije podržan."
+
+#, c-format
+#~ msgid "No level %d headings."
+#~ msgstr "Nema naslova na nivou %d."
+
+#, c-format
+#~ msgid "No next level %d heading."
+#~ msgstr "Nema narednog naslova na nivou %d."
+
+#, c-format
+#~ msgid "No previous level %d heading."
+#~ msgstr "Nema prethodnog naslova na nivou %d."
+
+#, c-format
+#~ msgid "Wrapping to %s. %s Heading level %d"
+#~ msgstr "Vraćanje na %s. %s naslov nivoa %d"
+
+#~ msgid "start"
+#~ msgstr "početak"
+
+#~ msgid "end"
+#~ msgstr "kraj"
+
+#, c-format
+#~ msgid ""
+#~ "Words: %zu\n"
+#~ "Lines: %zu\n"
+#~ "Characters: %zu\n"
+#~ "Characters (no spaces): %zu"
+#~ msgstr ""
+#~ "Reči: %zu\n"
+#~ "Redovi: %zu\n"
+#~ "Znakovi: %zu\n"
+#~ "Znakovi (bez razmaka): %zu"
+
+#~ msgid ""
+#~ "\n"
+#~ "(Document info temporarily unavailable during migration)"
+#~ msgstr ""
+#~ "\n"
+#~ "(Informacije o dokumentu su privremeno nedostupne tokom prebacivanja)"
+
+#~ msgid "Page navigation temporarily unavailable."
+#~ msgstr "Navigacija po stranicama je privremeno nedostupna."
+
+#~ msgid "Link navigation temporarily unavailable."
+#~ msgstr "Navigacija po linkovima je privremeno nedostupna."
+
+#~ msgid "List navigation temporarily unavailable."
+#~ msgstr "Navigacija po listama je privremeno nedostupna."
+
+#~ msgid "List item navigation temporarily unavailable."
+#~ msgstr "Navigacija po stavkama liste je privremeno nedostupna."
+
+#~ msgid "Table of contents temporarily unavailable."
+#~ msgstr "Sadržaj je privremeno nedostupan."
+
+#~ msgid "Heading navigation temporarily unavailable."
+#~ msgstr "Navigacija po naslovima je privremeno nedostupna."
+
+#~ msgid "Table navigation temporarily unavailable."
+#~ msgstr "Navigacija po tabelama je privremeno nedostupna."
+
+#~ msgid "Table activation temporarily unavailable."
+#~ msgstr "Aktiviranje tabela je privremeno nedostupno."
+
+#~ msgid "Word count temporarily unavailable during migration."
+#~ msgstr "Broj reči je privremeno nedostupan tokom prebacivanja."
+
+#~ msgid "Total number of words: "
+#~ msgstr "Ukupan broj reči: "
+
+#~ msgid "Total number of lines: "
+#~ msgstr "Ukupan broj redova: "
+
+#~ msgid "Total number of characters: "
+#~ msgstr "Ukupan broj znakova: "
+
+#~ msgid "Total number of characters (excluding whitespace): "
+#~ msgstr "Ukupan broj znakova (bez razmaka): "
+
+#, c-format
+#~ msgid "List with %d items"
+#~ msgstr "Lista sa %d stavki"
+
+#, c-format
+#~ msgid "List with %d items "
+#~ msgstr "Lista sa %d stavki "
+
+#, c-format
+#~ msgid "No %s heading"
+#~ msgstr "Ne postoji %s naslov"
+
+#~ msgid "next"
+#~ msgstr "naredni"
+
+#~ msgid "previous"
+#~ msgstr "prethodni"
 
 #, c-format
 #~ msgid ""
@@ -1149,10 +1241,6 @@ msgstr "&Vrati"
 #~ msgid "Update is available but download link could not be found."
 #~ msgstr ""
 #~ "Ažuriranje je dostupno ali link za preuzimanje nije mogao biti pronađen."
-
-#, c-format
-#~ msgid "Error checking for updates: %s"
-#~ msgstr "Greška pri proveri ažuriranja: %s"
 
 #~ msgid ""
 #~ "This book contains malformed content. Some files claim to be XML but "

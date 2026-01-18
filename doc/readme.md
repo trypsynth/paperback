@@ -1,4 +1,4 @@
-# Paperback - version 0.6.1
+# Paperback - version 0.7.0
 ## Introduction
 Paperback is a lightweight, fast, and accessible ebook/document reader designed to make reading fun and seamless, regardless of the file format being used or the user's preferences.
 
