@@ -40,3 +40,6 @@ opt-level = "z"
 lto = true
 panic = "abort"
 codegen-units = 1
+
+[build-dependencies]
+embed-manifest = "1.5.0"

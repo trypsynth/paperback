@@ -74,7 +74,7 @@ impl DocumentManager {
 		text_ctrl.set_value(&content);
 
 		// Add the page to the notebook
-		let tab_index = self.tabs.len();
+		let _tab_index = self.tabs.len();
 		self.notebook.add_page(&panel, &title, true, None);
 
 		// Store tab data
