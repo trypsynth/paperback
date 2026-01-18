@@ -3,16 +3,18 @@ use std::{cell::RefCell, path::Path, rc::Rc};
 use wxdragon::prelude::*;
 
 use super::{document_manager::DocumentManager, menu_ids};
+use crate::config::ConfigManager;
 
 /// Main application window
 pub struct MainWindow {
 	frame: Frame,
 	doc_manager: Rc<RefCell<DocumentManager>>,
+	_config: Rc<RefCell<ConfigManager>>,
 }
 
 impl MainWindow {
 	/// Create a new main window
-	pub fn new() -> Self {
+	pub fn new(config: Rc<RefCell<ConfigManager>>) -> Self {
 		let frame = Frame::builder().with_title("Paperback").with_size(Size::new(800, 600)).build();
 
 		// Create status bar
@@ -60,7 +62,7 @@ impl MainWindow {
 			}
 		});
 
-		Self { frame, doc_manager }
+		Self { frame, doc_manager, _config: config }
 	}
 
 	/// Show the main window
@@ -394,11 +396,5 @@ impl MainWindow {
 	#[allow(dead_code)]
 	pub fn doc_manager(&self) -> &Rc<RefCell<DocumentManager>> {
 		&self.doc_manager
-	}
-}
-
-impl Default for MainWindow {
-	fn default() -> Self {
-		Self::new()
 	}
 }
