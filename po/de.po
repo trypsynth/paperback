@@ -1067,9 +1067,11 @@ msgid "Sleep timer canceled."
 msgstr "Schlaftimer abgebrochen."
 
 #: app/main_window.cpp:906
-#, c-format
-msgid "Sleep timer set for %d minute%s."
-msgstr "Schlaftimer für %d Minute%s gesetzt."
+#, fuzzy, c-format
+msgid "Sleep timer set for %d minute."
+msgid_plural "Sleep timer set for %d minutes."
+msgstr[0] "Schlaftimer für %d Minute gesetzt."
+msgstr[1] "Schlaftimer für %d Minuten gesetzt."
 
 #: app/main_window.cpp:1010
 msgid "No recent documents."

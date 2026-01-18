@@ -1025,9 +1025,12 @@ msgid "Sleep timer canceled."
 msgstr "Таймер сна отменён."
 
 #: app/main_window.cpp
-#, c-format
-msgid "Sleep timer set for %d minute%s."
-msgstr "Таймер сна установлен на %d минут %s."
+#, fuzzy, c-format
+msgid "Sleep timer set for %d minute."
+msgid_plural "Sleep timer set for %d minutes."
+msgstr[0] "Таймер сна установлен на %d минуту."
+msgstr[1] "Таймер сна установлен на %d минуты."
+msgstr[2] "Таймер сна установлен на %d минут."
 
 #: app/main_window.cpp
 msgid "No recent documents."

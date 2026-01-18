@@ -1007,8 +1007,10 @@ msgstr ""
 
 #: app/main_window.cpp
 #, c-format
-msgid "Sleep timer set for %d minute%s."
-msgstr ""
+msgid "Sleep timer set for %d minute."
+msgid_plural "Sleep timer set for %d minutes."
+msgstr[0] ""
+msgstr[1] ""
 
 #: app/main_window.cpp
 msgid "No recent documents."

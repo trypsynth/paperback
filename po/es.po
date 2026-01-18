@@ -986,9 +986,11 @@ msgid "Sleep timer canceled."
 msgstr "Temporizador de suspensión cancelado."
 
 #: src/main_window.cpp
-#, c-format
-msgid "Sleep timer set for %d minute%s."
-msgstr "Temporizador de suspensión configurado para %d minuto%s."
+#, fuzzy, c-format
+msgid "Sleep timer set for %d minute."
+msgid_plural "Sleep timer set for %d minutes."
+msgstr[0] "Temporizador de suspensión configurado para %d minuto."
+msgstr[1] "Temporizador de suspensión configurado para %d minutos."
 
 #: src/main_window.cpp
 msgid "(No recent documents)"

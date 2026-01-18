@@ -1065,9 +1065,12 @@ msgid "Sleep timer canceled."
 msgstr "Tajmer pre spavanja otkazan."
 
 #: main_window.cpp:906
-#, c-format
-msgid "Sleep timer set for %d minute%s."
-msgstr "Tajmer pre spavanja podešen na %d minut %s."
+#, fuzzy, c-format
+msgid "Sleep timer set for %d minute."
+msgid_plural "Sleep timer set for %d minutes."
+msgstr[0] "Tajmer pre spavanja podešen na %d minut."
+msgstr[1] "Tajmer pre spavanja podešen na %d minuta."
+msgstr[2] "Tajmer pre spavanja podešen na %d minuta."
 
 #: main_window.cpp:1010
 msgid "No recent documents."

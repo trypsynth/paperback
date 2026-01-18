@@ -903,7 +903,7 @@ void main_window::on_sleep_timer(wxCommandEvent&) {
 	sleep_timer->StartOnce(sleep_timer_duration_minutes * 60 * 1000);
 	sleep_status_update_timer->Start(1000);
 	update_status_bar();
-	speak(wxString::Format(_("Sleep timer set for %d minute%s."), sleep_timer_duration_minutes, sleep_timer_duration_minutes == 1 ? "" : "s"));
+	speak(wxString::Format(wxPLURAL("Sleep timer set for %d minute.", "Sleep timer set for %d minutes.", sleep_timer_duration_minutes), sleep_timer_duration_minutes));
 }
 
 void main_window::on_sleep_timer_tick(wxTimerEvent&) {
