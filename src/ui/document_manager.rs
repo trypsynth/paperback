@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use paperback::session::DocumentSession;
+use crate::session::DocumentSession;
 use wxdragon::prelude::*;
 
 /// Data associated with each document tab
