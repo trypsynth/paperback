@@ -515,14 +515,28 @@ impl MainWindow {
 		if !restore {
 			return;
 		}
-		let did_restore = Rc::new(Mutex::new(false));
-		let did_restore_flag = Rc::clone(&did_restore);
+		#[derive(Default)]
+		struct RestoreState {
+			restored: bool,
+			closing: bool,
+		}
+		let state = Rc::new(Mutex::new(RestoreState::default()));
+		let state_for_close = Rc::clone(&state);
+		frame.on_close(move |_event| {
+			state_for_close.lock().unwrap().closing = true;
+		});
+		let state_for_destroy = Rc::clone(&state);
+		frame.on_destroy(move |_event| {
+			state_for_destroy.lock().unwrap().closing = true;
+		});
+		let state_for_idle = Rc::clone(&state);
 		frame.on_idle(move |_event| {
-			let mut flag = did_restore_flag.lock().unwrap();
-			if *flag {
+			let mut state = state_for_idle.lock().unwrap();
+			if state.restored || state.closing {
 				return;
 			}
-			*flag = true;
+			state.restored = true;
+			drop(state);
 			let paths = config.lock().unwrap().get_opened_documents_existing();
 			for path in paths {
 				let _ = doc_manager.lock().unwrap().open_file(Path::new(&path));
