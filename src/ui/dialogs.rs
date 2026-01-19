@@ -24,7 +24,7 @@ pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, autho
 		.build();
 
 	let mut info = String::new();
-	info.push_str(&format!("Path: {}\n\n", path.display()));
+	info.push_str(&format!("Path: {}\n", path.display()));
 	if !title.is_empty() {
 		info.push_str(&format!("Title: {title}\n"));
 	}
