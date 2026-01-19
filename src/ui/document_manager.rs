@@ -158,11 +158,8 @@ impl DocumentManager {
 		}
 
 		// Remove the page from notebook and destroy the window.
-		let page = self.notebook.get_page(index);
+		let _page = self.notebook.get_page(index);
 		self.notebook.remove_page(index);
-		if let Some(page) = page {
-			page.destroy();
-		}
 
 		// Remove tab data
 		self.tabs.remove(index);

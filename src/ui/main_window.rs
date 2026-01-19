@@ -48,26 +48,13 @@ impl MainWindow {
 		let dm = Rc::clone(&doc_manager);
 		let frame_copy = frame;
 		let notebook = *doc_manager.lock().unwrap().notebook();
-		notebook.on_page_changed(move |event| {
-			if let Some(selection) = event.get_selection() {
-				// Update title bar with document name
-				let dm_ref = match dm.try_lock() {
-					Ok(dm_ref) => dm_ref,
-					Err(_) => return,
-				};
-				if let Some(tab) = dm_ref.get_tab(selection as usize) {
-					let title = tab.session.title();
-					let display_title = if title.is_empty() {
-						tab.file_path
-							.file_name()
-							.map(|s| s.to_string_lossy().to_string())
-							.unwrap_or_else(|| "Untitled".to_string())
-					} else {
-						title
-					};
-					frame_copy.set_title(&format!("{display_title} - Paperback"));
-				}
-			}
+		notebook.on_page_changed(move |_event| {
+			// Update title bar with document name
+			let dm_ref = match dm.try_lock() {
+				Ok(dm_ref) => dm_ref,
+				Err(_) => return,
+			};
+			update_title_from_manager(&frame_copy, &dm_ref);
 		});
 
 		Self { frame, doc_manager, _config: config }
@@ -95,6 +82,11 @@ impl MainWindow {
 			Ok(dm) => dm,
 			Err(_) => return,
 		};
+		if dm.tab_count() == 0 {
+			self.frame.set_title("Paperback");
+			self.frame.set_status_text("Ready", 0);
+			return;
+		}
 		if let Some(tab) = dm.active_tab() {
 			let title = tab.session.title();
 			let display_title = if title.is_empty() {
@@ -105,11 +97,8 @@ impl MainWindow {
 			} else {
 				title
 			};
-			self.frame.set_title(&format!("{display_title} - Paperback"));
+			self.frame.set_title(&format!("Paperback - {display_title}"));
 			self.frame.set_status_text(&format!("{} chars", tab.session.content().len()), 0);
-		} else {
-			self.frame.set_title("Paperback");
-			self.frame.set_status_text("Ready", 0);
 		}
 	}
 
@@ -300,14 +289,19 @@ impl MainWindow {
 					let mut dm = dm.lock().unwrap();
 					if let Some(index) = dm.active_tab_index() {
 						dm.close_document(index);
-						update_title_from_manager(&frame_copy, &dm);
+					}
+					update_title_from_manager(&frame_copy, &dm);
+					if dm.tab_count() == 0 {
+						frame_copy.set_focus();
+					} else {
 						dm.restore_focus();
 					}
 				}
 				menu_ids::CLOSE_ALL => {
-					dm.lock().unwrap().close_all_documents();
-					frame_copy.set_title("Paperback");
-					frame_copy.set_status_text("Ready", 0);
+					let mut dm = dm.lock().unwrap();
+					dm.close_all_documents();
+					update_title_from_manager(&frame_copy, &dm);
+					frame_copy.set_focus();
 				}
 				menu_ids::EXIT => {
 					std::process::exit(0);
@@ -410,6 +404,11 @@ impl MainWindow {
 }
 
 fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
+	if dm.tab_count() == 0 {
+		frame.set_title("Paperback");
+		frame.set_status_text("Ready", 0);
+		return;
+	}
 	if let Some(tab) = dm.active_tab() {
 		let title = tab.session.title();
 		let display_title = if title.is_empty() {
@@ -420,10 +419,7 @@ fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 		} else {
 			title
 		};
-		frame.set_title(&format!("{display_title} - Paperback"));
+		frame.set_title(&format!("Paperback - {display_title}"));
 		frame.set_status_text(&format!("{} chars", tab.session.content().len()), 0);
-	} else {
-		frame.set_title("Paperback");
-		frame.set_status_text("Ready", 0);
 	}
 }
