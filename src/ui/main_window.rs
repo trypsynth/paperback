@@ -292,7 +292,7 @@ impl MainWindow {
 					}
 					update_title_from_manager(&frame_copy, &dm);
 					if dm.tab_count() == 0 {
-						frame_copy.set_focus();
+						dm.notebook().set_focus();
 					} else {
 						dm.restore_focus();
 					}
@@ -301,7 +301,7 @@ impl MainWindow {
 					let mut dm = dm.lock().unwrap();
 					dm.close_all_documents();
 					update_title_from_manager(&frame_copy, &dm);
-					frame_copy.set_focus();
+					dm.notebook().set_focus();
 				}
 				menu_ids::EXIT => {
 					std::process::exit(0);
