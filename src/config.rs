@@ -787,8 +787,8 @@ pub fn get_sorted_document_list(
 	config: &ConfigManager,
 	open_paths: &[String],
 	filter: &str,
-) -> Vec<crate::ui_types::FfiDocumentListItem> {
-	use crate::ui_types::{DocumentListStatus, FfiDocumentListItem};
+) -> Vec<crate::ui_types::DocumentListItem> {
+	use crate::ui_types::{DocumentListItem, DocumentListStatus};
 
 	let recent_docs = config.get_recent_documents();
 	let all_docs = config.get_all_documents();
@@ -827,7 +827,7 @@ pub fn get_sorted_document_list(
 			} else {
 				DocumentListStatus::Closed
 			};
-			Some(FfiDocumentListItem { path, filename, status })
+			Some(DocumentListItem { path, filename, status })
 		})
 		.collect()
 }

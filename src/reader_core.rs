@@ -255,17 +255,17 @@ pub fn reader_search_with_wrap(
 	match_case: bool,
 	whole_word: bool,
 	regex: bool,
-) -> ffi::FfiSearchResult {
+) -> ffi::SearchResult {
 	let position = reader_search(haystack, needle, start, forward, match_case, whole_word, regex);
 	if position >= 0 {
-		return ffi::FfiSearchResult { found: true, wrapped: false, position };
+		return ffi::SearchResult { found: true, wrapped: false, position };
 	}
 	let wrap_pos = if forward { 0 } else { i64::try_from(haystack.encode_utf16().count()).unwrap_or(0) };
 	let wrapped_position = reader_search(haystack, needle, wrap_pos, forward, match_case, whole_word, regex);
 	if wrapped_position >= 0 {
-		return ffi::FfiSearchResult { found: true, wrapped: true, position: wrapped_position };
+		return ffi::SearchResult { found: true, wrapped: true, position: wrapped_position };
 	}
-	ffi::FfiSearchResult { found: false, wrapped: false, position: -1 }
+	ffi::SearchResult { found: false, wrapped: false, position: -1 }
 }
 
 pub fn bookmark_navigate(
@@ -320,12 +320,12 @@ pub fn bookmark_note_at_position(manager: &RustConfigManager, path: &str, positi
 		.unwrap_or_default()
 }
 
-pub fn bookmark_info(manager: &RustConfigManager, path: &str, start: i64, end: i64) -> ffi::FfiBookmarkInfo {
+pub fn bookmark_info(manager: &RustConfigManager, path: &str, start: i64, end: i64) -> ffi::BookmarkInfo {
 	let match_entry = manager.get_bookmarks(path).into_iter().find(|bm| bm.start == start && bm.end == end);
 	if let Some(bm) = match_entry {
-		ffi::FfiBookmarkInfo { found: true, note: bm.note }
+		ffi::BookmarkInfo { found: true, note: bm.note }
 	} else {
-		ffi::FfiBookmarkInfo { found: false, note: String::new() }
+		ffi::BookmarkInfo { found: false, note: String::new() }
 	}
 }
 
@@ -338,7 +338,7 @@ pub fn get_filtered_bookmarks(
 	path: &str,
 	current_pos: i64,
 	filter: ffi::BookmarkFilterType,
-) -> ffi::FfiFilteredBookmarks {
+) -> ffi::FilteredBookmarks {
 	let mut bookmarks: Vec<Bookmark> = manager.get_bookmarks(path);
 	match filter {
 		ffi::BookmarkFilterType::BookmarksOnly => {
@@ -350,10 +350,10 @@ pub fn get_filtered_bookmarks(
 		_ => {}
 	}
 	bookmarks.sort_by_key(|b| b.start);
-	let items: Vec<ffi::FfiBookmarkDisplayItem> = bookmarks
+	let items: Vec<ffi::BookmarkDisplayItem> = bookmarks
 		.iter()
 		.enumerate()
-		.map(|(idx, b)| ffi::FfiBookmarkDisplayItem {
+		.map(|(idx, b)| ffi::BookmarkDisplayItem {
 			start: b.start,
 			end: b.end,
 			note: b.note.clone(),
@@ -375,7 +375,7 @@ pub fn get_filtered_bookmarks(
 		}
 		i32::try_from(closest_idx).unwrap_or(-1)
 	};
-	ffi::FfiFilteredBookmarks { items, closest_index }
+	ffi::FilteredBookmarks { items, closest_index }
 }
 
 fn normalize_index(positions: &[i64], index: usize) -> usize {

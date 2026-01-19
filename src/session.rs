@@ -379,10 +379,10 @@ impl DocumentSession {
 		wrap: bool,
 		next: bool,
 		notes_only: bool,
-	) -> ffi::FfiBookmarkNavDisplay {
+	) -> ffi::BookmarkNavDisplay {
 		let result = bookmark_navigate(config, &self.file_path, position, wrap, next, notes_only);
 		if !result.found {
-			return ffi::FfiBookmarkNavDisplay {
+			return ffi::BookmarkNavDisplay {
 				found: false,
 				wrapped: false,
 				start: -1,
@@ -397,7 +397,7 @@ impl DocumentSession {
 		} else {
 			self.get_text_range(result.start, result.end)
 		};
-		ffi::FfiBookmarkNavDisplay {
+		ffi::BookmarkNavDisplay {
 			found: true,
 			wrapped: result.wrapped,
 			start: result.start,
@@ -413,21 +413,21 @@ impl DocumentSession {
 		&self,
 		config: &ConfigManager,
 		position: i64,
-	) -> ffi::FfiBookmarkDisplayAtPosition {
+	) -> ffi::BookmarkDisplayAtPosition {
 		let bookmark = config.get_bookmarks(&self.file_path).into_iter().find(|bm| bm.start == position);
 		let Some(bookmark) = bookmark else {
-			return ffi::FfiBookmarkDisplayAtPosition { found: false, note: String::new(), snippet: String::new() };
+			return ffi::BookmarkDisplayAtPosition { found: false, note: String::new(), snippet: String::new() };
 		};
 		let snippet = if bookmark.start == bookmark.end {
 			self.get_line_text(bookmark.start)
 		} else {
 			self.get_text_range(bookmark.start, bookmark.end)
 		};
-		ffi::FfiBookmarkDisplayAtPosition { found: true, note: bookmark.note, snippet }
+		ffi::BookmarkDisplayAtPosition { found: true, note: bookmark.note, snippet }
 	}
 
 	#[must_use]
-	pub fn link_list(&self, position: i64) -> ffi::FfiLinkList {
+	pub fn link_list(&self, position: i64) -> ffi::LinkList {
 		let pos = usize::try_from(position.max(0)).unwrap_or(0);
 		let mut closest_index = -1;
 		let mut items = Vec::new();
@@ -442,9 +442,9 @@ impl DocumentSession {
 			if marker.position <= pos {
 				closest_index = i32::try_from(items.len()).unwrap_or(-1);
 			}
-			items.push(ffi::FfiLinkListItem { offset: marker.position, text });
+			items.push(ffi::LinkListItem { offset: marker.position, text });
 		}
-		ffi::FfiLinkList { items, closest_index }
+		ffi::LinkList { items, closest_index }
 	}
 
 	pub fn history_go_back(&mut self, current_pos: i64) -> NavigationResult {
@@ -611,7 +611,7 @@ impl DocumentSession {
 		path: &str,
 		current_pos: i64,
 		filter: ffi::BookmarkFilterType,
-	) -> ffi::FfiFilteredBookmarkDisplay {
+	) -> ffi::FilteredBookmarkDisplay {
 		let filtered = get_filtered_bookmarks(config, path, current_pos, filter);
 		let items = filtered
 			.items
@@ -622,7 +622,7 @@ impl DocumentSession {
 				} else {
 					self.get_text_range(item.start, item.end)
 				};
-				ffi::FfiBookmarkDisplayEntry {
+				ffi::BookmarkDisplayEntry {
 					start: item.start,
 					end: item.end,
 					note: item.note,
@@ -632,7 +632,7 @@ impl DocumentSession {
 				}
 			})
 			.collect();
-		ffi::FfiFilteredBookmarkDisplay { items, closest_index: filtered.closest_index }
+		ffi::FilteredBookmarkDisplay { items, closest_index: filtered.closest_index }
 	}
 
 	#[must_use]

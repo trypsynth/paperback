@@ -36,7 +36,7 @@ pub struct NavResult {
 }
 
 #[derive(Debug, Clone)]
-pub struct FfiSearchResult {
+pub struct SearchResult {
 	pub found: bool,
 	pub wrapped: bool,
 	pub position: i64,
@@ -60,13 +60,13 @@ pub struct BookmarkNavResult {
 }
 
 #[derive(Debug, Clone)]
-pub struct FfiBookmarkInfo {
+pub struct BookmarkInfo {
 	pub found: bool,
 	pub note: String,
 }
 
 #[derive(Debug, Clone)]
-pub struct FfiBookmarkDisplayItem {
+pub struct BookmarkDisplayItem {
 	pub start: i64,
 	pub end: i64,
 	pub note: String,
@@ -75,13 +75,13 @@ pub struct FfiBookmarkDisplayItem {
 }
 
 #[derive(Debug, Clone)]
-pub struct FfiFilteredBookmarks {
-	pub items: Vec<FfiBookmarkDisplayItem>,
+pub struct FilteredBookmarks {
+	pub items: Vec<BookmarkDisplayItem>,
 	pub closest_index: i32,
 }
 
 #[derive(Debug, Clone)]
-pub struct FfiBookmarkNavDisplay {
+pub struct BookmarkNavDisplay {
 	pub found: bool,
 	pub wrapped: bool,
 	pub start: i64,
@@ -92,26 +92,26 @@ pub struct FfiBookmarkNavDisplay {
 }
 
 #[derive(Debug, Clone)]
-pub struct FfiBookmarkDisplayAtPosition {
+pub struct BookmarkDisplayAtPosition {
 	pub found: bool,
 	pub note: String,
 	pub snippet: String,
 }
 
 #[derive(Debug, Clone)]
-pub struct FfiLinkListItem {
+pub struct LinkListItem {
 	pub offset: usize,
 	pub text: String,
 }
 
 #[derive(Debug, Clone)]
-pub struct FfiLinkList {
-	pub items: Vec<FfiLinkListItem>,
+pub struct LinkList {
+	pub items: Vec<LinkListItem>,
 	pub closest_index: i32,
 }
 
 #[derive(Debug, Clone)]
-pub struct FfiBookmarkDisplayEntry {
+pub struct BookmarkDisplayEntry {
 	pub start: i64,
 	pub end: i64,
 	pub note: String,
@@ -121,8 +121,8 @@ pub struct FfiBookmarkDisplayEntry {
 }
 
 #[derive(Debug, Clone)]
-pub struct FfiFilteredBookmarkDisplay {
-	pub items: Vec<FfiBookmarkDisplayEntry>,
+pub struct FilteredBookmarkDisplay {
+	pub items: Vec<BookmarkDisplayEntry>,
 	pub closest_index: i32,
 }
 
@@ -134,7 +134,7 @@ pub enum DocumentListStatus {
 }
 
 #[derive(Debug, Clone)]
-pub struct FfiDocumentListItem {
+pub struct DocumentListItem {
 	pub path: String,
 	pub filename: String,
 	pub status: DocumentListStatus,
