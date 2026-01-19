@@ -2,7 +2,7 @@ use std::{path::Path, rc::Rc, sync::Mutex};
 
 use wxdragon::prelude::*;
 
-use super::{document_manager::DocumentManager, menu_ids};
+use super::{dialogs, document_manager::DocumentManager, menu_ids};
 use crate::config::ConfigManager;
 
 /// Main application window
@@ -342,24 +342,7 @@ impl MainWindow {
 						let stats = tab.session.stats();
 						let title = tab.session.title();
 						let author = tab.session.author();
-						let mut info = String::new();
-						info.push_str(&format!("Path: {}\n\n", tab.file_path.display()));
-						if !title.is_empty() {
-							info.push_str(&format!("Title: {title}\n"));
-						}
-						if !author.is_empty() {
-							info.push_str(&format!("Author: {author}\n"));
-						}
-						info.push_str(&format!("Words: {}\n", stats.word_count));
-						info.push_str(&format!("Lines: {}\n", stats.line_count));
-						info.push_str(&format!("Characters: {}\n", stats.char_count));
-						info.push_str(&format!(
-							"Characters (excluding spaces): {}\n",
-							stats.char_count_no_whitespace
-						));
-						let dialog =
-							MessageDialog::builder(&frame_copy, &info, "Document Info").with_style(MessageDialogStyle::OK).build();
-						dialog.show_modal();
+						dialogs::show_document_info_dialog(&frame_copy, &tab.file_path, &title, &author, stats);
 					}
 				}
 				menu_ids::TABLE_OF_CONTENTS => println!("TOC requested"),
@@ -391,49 +374,20 @@ impl MainWindow {
 						}
 					} else if id == menu_ids::SHOW_ALL_DOCUMENTS {
 						let open_paths = dm.lock().unwrap().open_paths();
-						let items = {
-							let config_guard = config.lock().unwrap();
-							crate::config::get_sorted_document_list(&config_guard, &open_paths, "")
-						};
-						if items.is_empty() {
-							let dialog = MessageDialog::builder(&frame_copy, "No recent documents.", "Recent Documents")
-								.with_style(MessageDialogStyle::OK)
-								.build();
-							dialog.show_modal();
-							return;
-						}
-						let mut labels: Vec<String> = Vec::with_capacity(items.len());
-						for item in &items {
-							let status = match item.status {
-								crate::ui_types::DocumentListStatus::Missing => "Missing",
-								crate::ui_types::DocumentListStatus::Open => "Open",
-								crate::ui_types::DocumentListStatus::Closed => "Closed",
-							};
-							labels.push(format!("[{status}] {}", item.filename));
-						}
-						let label_refs: Vec<&str> = labels.iter().map(|s| s.as_str()).collect();
-						let dialog = SingleChoiceDialog::builder(
-							&frame_copy,
-							"Select a document to open:",
-							"Recent Documents",
-							&label_refs,
-						)
-						.build();
-						if dialog.show_modal() == wxdragon::id::ID_OK {
-							let selection = dialog.get_selection();
-							if selection >= 0 {
-								let index = selection as usize;
-								if let Some(item) = items.get(index) {
-									let path = Path::new(&item.path);
-									if dm.lock().unwrap().open_file(path) {
-										let dm_ref = dm.lock().unwrap();
-										update_title_from_manager(&frame_copy, &dm_ref);
-										dm_ref.restore_focus();
-										let menu_bar = Self::create_menu_bar(&config.lock().unwrap());
-										frame_copy.set_menu_bar(menu_bar);
-									}
-								}
+						let config_for_dialog = Rc::clone(&config);
+						let selection = dialogs::show_all_documents_dialog(&frame_copy, config_for_dialog, open_paths);
+						if let Some(path) = selection {
+							let path = Path::new(&path);
+							if dm.lock().unwrap().open_file(path) {
+								let dm_ref = dm.lock().unwrap();
+								update_title_from_manager(&frame_copy, &dm_ref);
+								dm_ref.restore_focus();
+								let menu_bar = Self::create_menu_bar(&config.lock().unwrap());
+								frame_copy.set_menu_bar(menu_bar);
 							}
+						} else {
+							let menu_bar = Self::create_menu_bar(&config.lock().unwrap());
+							frame_copy.set_menu_bar(menu_bar);
 						}
 					}
 				}

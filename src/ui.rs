@@ -1,4 +1,5 @@
 mod app;
+mod dialogs;
 mod document_manager;
 mod main_window;
 mod menu_ids;
