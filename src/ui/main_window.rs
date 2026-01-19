@@ -5,6 +5,9 @@ use wxdragon::prelude::*;
 use super::{dialogs, document_manager::DocumentManager, menu_ids};
 use crate::config::ConfigManager;
 
+const KEY_DELETE: i32 = 127;
+const KEY_NUMPAD_DELETE: i32 = 330;
+
 /// Main application window
 pub struct MainWindow {
 	frame: Frame,
@@ -52,6 +55,29 @@ impl MainWindow {
 				Err(_) => return,
 			};
 			update_title_from_manager(&frame_copy, &dm_ref);
+		});
+		let dm = Rc::clone(&doc_manager);
+		let frame_copy = frame;
+		notebook.on_key_down(move |event| {
+			if let wxdragon::event::WindowEventData::Keyboard(key_event) = &event {
+				if let Some(key) = key_event.get_key_code() {
+					if key == KEY_DELETE || key == KEY_NUMPAD_DELETE {
+						let mut dm = dm.lock().unwrap();
+						if let Some(index) = dm.active_tab_index() {
+							dm.close_document(index);
+						}
+						update_title_from_manager(&frame_copy, &dm);
+						if dm.tab_count() == 0 {
+							dm.notebook().set_focus();
+						} else {
+							dm.restore_focus();
+						}
+						event.skip(false);
+						return;
+					}
+				}
+			}
+			event.skip(true);
 		});
 
 		Self { frame, doc_manager, _config: config }

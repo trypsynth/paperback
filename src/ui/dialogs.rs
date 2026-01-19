@@ -15,6 +15,8 @@ const DOC_INFO_HEIGHT: i32 = 400;
 const KEY_DELETE: i32 = 127;
 const KEY_NUMPAD_DELETE: i32 = 330;
 const KEY_ESCAPE: i32 = 27;
+const KEY_RETURN: i32 = 13;
+const KEY_NUMPAD_ENTER: i32 = 370;
 
 pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, author: &str, stats: &DocumentStats) {
 	let dialog = Dialog::builder(parent, "Document Info").build();
@@ -23,7 +25,7 @@ pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, autho
 		.with_size(Size::new(DOC_INFO_WIDTH, DOC_INFO_HEIGHT))
 		.build();
 	let mut info = String::new();
-	info.push_str(&format!("Path: {}\n", path.display()));
+	info.push_str(&format!("Path: {}\n\n", path.display()));
 	if !title.is_empty() {
 		info.push_str(&format!("Title: {title}\n"));
 	}
@@ -122,13 +124,17 @@ pub fn show_all_documents_dialog(
 	let dialog_for_open = dialog;
 	let list_for_open = doc_list;
 	let selected_for_open = Rc::clone(&selected_path);
-	open_button.on_click(move |_| {
+	let open_action = Rc::new(move || {
 		if let Some(path) = get_selected_path(&list_for_open) {
 			if Path::new(&path).exists() {
 				*selected_for_open.lock().unwrap() = Some(path);
 				dialog_for_open.end_modal(wxdragon::id::ID_OK);
 			}
 		}
+	});
+	let open_action_for_button = Rc::clone(&open_action);
+	open_button.on_click(move |_| {
+		open_action_for_button();
 	});
 	let config_for_remove = Rc::clone(&config);
 	let list_for_remove = doc_list;
@@ -235,6 +241,7 @@ pub fn show_all_documents_dialog(
 	bind_escape_to_close(&search_ctrl, dialog);
 	bind_escape_to_close(&doc_list, dialog);
 	let remove_action_for_keys = Rc::clone(&remove_action);
+	let open_action_for_keys = Rc::clone(&open_action);
 	doc_list.bind_internal(EventType::LIST_KEY_DOWN, move |event| {
 		if let Some(key) = event.get_key_code() {
 			if key == KEY_DELETE || key == KEY_NUMPAD_DELETE {
@@ -242,8 +249,8 @@ pub fn show_all_documents_dialog(
 				event.skip(false);
 				return;
 			}
-			if key == KEY_ESCAPE {
-				dialog.end_modal(wxdragon::id::ID_CANCEL);
+			if key == KEY_RETURN || key == KEY_NUMPAD_ENTER {
+				open_action_for_keys();
 				event.skip(false);
 				return;
 			}
