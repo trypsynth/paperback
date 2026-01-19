@@ -14,6 +14,7 @@ const DOC_INFO_WIDTH: i32 = 600;
 const DOC_INFO_HEIGHT: i32 = 400;
 const KEY_DELETE: i32 = 127;
 const KEY_NUMPAD_DELETE: i32 = 330;
+const KEY_ESCAPE: i32 = 27;
 
 pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, author: &str, stats: &DocumentStats) {
 	let dialog = Dialog::builder(parent, "Document Info").build();
@@ -37,7 +38,11 @@ pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, autho
 	info.push_str(&format!("Characters (excluding spaces): {}\n", stats.char_count_no_whitespace));
 	info_ctrl.set_value(&info);
 
+	bind_escape_to_close(&dialog, dialog);
+	bind_escape_to_close(&info_ctrl, dialog);
+
 	let ok_button = Button::builder(&dialog).with_label("OK").build();
+	bind_escape_to_close(&ok_button, dialog);
 	let dialog_copy = dialog;
 	ok_button.on_click(move |_| {
 		dialog_copy.end_modal(wxdragon::id::ID_OK);
@@ -79,6 +84,9 @@ pub fn show_all_documents_dialog(
 	let open_button = Button::builder(&dialog).with_label("&Open").build();
 	let remove_button = Button::builder(&dialog).with_label("&Remove").build();
 	let clear_all_button = Button::builder(&dialog).with_label("&Clear All").build();
+	bind_escape_to_close(&open_button, dialog);
+	bind_escape_to_close(&remove_button, dialog);
+	bind_escape_to_close(&clear_all_button, dialog);
 
 	populate_document_list(
 		&doc_list,
@@ -96,6 +104,20 @@ pub fn show_all_documents_dialog(
 	doc_list.on_item_selected(move |event| {
 		let index = event.get_item_index();
 		update_open_button_for_index(&list_for_select, &open_button_for_select, index);
+	});
+
+	let list_for_focus = doc_list;
+	let open_button_for_focus = open_button;
+	doc_list.on_item_focused(move |event| {
+		let index = event.get_item_index();
+		if index >= 0 {
+			list_for_focus.set_item_state(
+				index as i64,
+				ListItemState::Selected | ListItemState::Focused,
+				ListItemState::Selected | ListItemState::Focused,
+			);
+			update_open_button_for_index(&list_for_focus, &open_button_for_focus, index);
+		}
 	});
 
 	let dialog_for_activate = dialog;
@@ -116,9 +138,7 @@ pub fn show_all_documents_dialog(
 	let list_for_open = doc_list;
 	let selected_for_open = Rc::clone(&selected_path);
 	open_button.on_click(move |_| {
-		let index = list_for_open.get_first_selected_item();
-		if index >= 0 {
-			let path = list_for_open.get_item_text(index as i64, 2);
+		if let Some(path) = get_selected_path(&list_for_open) {
 			if Path::new(&path).exists() {
 				*selected_for_open.lock().unwrap() = Some(path);
 				dialog_for_open.end_modal(wxdragon::id::ID_OK);
@@ -133,7 +153,7 @@ pub fn show_all_documents_dialog(
 	let clear_button_for_remove = clear_all_button;
 	let open_paths_for_remove = Rc::clone(&open_paths);
 	let remove_action = Rc::new(move || {
-		let index = list_for_remove.get_first_selected_item();
+		let index = get_selected_index(&list_for_remove);
 		if index < 0 {
 			return;
 		}
@@ -147,7 +167,9 @@ pub fn show_all_documents_dialog(
 		if confirm.show_modal() != wxdragon::id::ID_YES {
 			return;
 		}
-		let path_to_remove = list_for_remove.get_item_text(index as i64, 2);
+		let Some(path_to_remove) = get_path_for_index(&list_for_remove, index) else {
+			return;
+		};
 		{
 			let mut cfg = config_for_remove.lock().unwrap();
 			cfg.remove_document_history(&path_to_remove);
@@ -228,6 +250,10 @@ pub fn show_all_documents_dialog(
 		);
 	});
 
+	bind_escape_to_close(&dialog, dialog);
+	bind_escape_to_close(&search_ctrl, dialog);
+	bind_escape_to_close(&doc_list, dialog);
+
 	let remove_action_for_keys = Rc::clone(&remove_action);
 	doc_list.bind_internal(EventType::LIST_KEY_DOWN, move |event| {
 		if let Some(key) = event.get_key_code() {
@@ -236,11 +262,17 @@ pub fn show_all_documents_dialog(
 				event.skip(false);
 				return;
 			}
+			if key == KEY_ESCAPE {
+				dialog.end_modal(wxdragon::id::ID_CANCEL);
+				event.skip(false);
+				return;
+			}
 		}
 		event.skip(true);
 	});
 
 	let ok_button = Button::builder(&dialog).with_label("OK").build();
+	bind_escape_to_close(&ok_button, dialog);
 	let dialog_for_ok = dialog;
 	ok_button.on_click(move |_| {
 		dialog_for_ok.end_modal(wxdragon::id::ID_OK);
@@ -289,6 +321,7 @@ fn populate_document_list(
 	filter: &str,
 	selection: Option<i32>,
 ) {
+	list.cleanup_all_custom_data();
 	list.delete_all_items();
 
 	let items = {
@@ -299,6 +332,7 @@ fn populate_document_list(
 	for item in items {
 		let index = list.get_item_count() as i64;
 		list.insert_item(index, &item.filename, None);
+		list.set_custom_data(index as u64, item.path.clone());
 		let status = match item.status {
 			DocumentListStatus::Open => "Open",
 			DocumentListStatus::Closed => "Closed",
@@ -336,4 +370,55 @@ fn update_open_button_for_index(list: &ListCtrl, open_button: &Button, index: i3
 	}
 	let status = list.get_item_text(index as i64, 1);
 	open_button.enable(status != "Missing");
+}
+
+fn bind_escape_to_close(handler: &impl WxEvtHandler, dialog: Dialog) {
+	let dialog_for_escape = dialog;
+	handler.bind_internal(EventType::KEY_DOWN, move |event| {
+		if let Some(key) = event.get_key_code() {
+			if key == KEY_ESCAPE {
+				dialog_for_escape.end_modal(wxdragon::id::ID_CANCEL);
+				event.skip(false);
+				return;
+			}
+		}
+		event.skip(true);
+	});
+	let dialog_for_escape = dialog;
+	handler.bind_internal(EventType::CHAR, move |event| {
+		if let Some(key) = event.get_key_code() {
+			if key == KEY_ESCAPE {
+				dialog_for_escape.end_modal(wxdragon::id::ID_CANCEL);
+				event.skip(false);
+				return;
+			}
+		}
+		event.skip(true);
+	});
+}
+
+fn get_selected_index(list: &ListCtrl) -> i32 {
+	let selected = list.get_first_selected_item();
+	if selected >= 0 {
+		return selected;
+	}
+	list.get_next_item(-1, ListNextItemFlag::All, ListItemState::Focused)
+}
+
+fn get_path_for_index(list: &ListCtrl, index: i32) -> Option<String> {
+	if index < 0 {
+		return None;
+	}
+	if let Some(data) = list.get_custom_data(index as u64) {
+		if let Some(path) = data.as_ref().downcast_ref::<String>() {
+			return Some(path.clone());
+		}
+	}
+	let path = list.get_item_text(index as i64, 2);
+	if path.is_empty() { None } else { Some(path) }
+}
+
+fn get_selected_path(list: &ListCtrl) -> Option<String> {
+	let index = get_selected_index(list);
+	get_path_for_index(list, index)
 }
