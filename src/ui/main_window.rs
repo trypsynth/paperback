@@ -328,8 +328,9 @@ impl MainWindow {
 					if let Some(tab) = dm_ref.active_tab() {
 						let stats = tab.session.stats();
 						let msg = format!("The document contains {} words.", stats.word_count);
-						let dialog =
-							MessageDialog::builder(&frame_copy, &msg, "Word count").with_style(MessageDialogStyle::OK).build();
+						let dialog = MessageDialog::builder(&frame_copy, &msg, "Word count")
+							.with_style(MessageDialogStyle::OK)
+							.build();
 						dialog.show_modal();
 					}
 				}
@@ -452,7 +453,9 @@ impl MainWindow {
 	fn populate_recent_documents_menu(menu: &Menu, config: &ConfigManager) {
 		let recent_docs = Self::recent_documents_for_menu_static(config);
 		if recent_docs.is_empty() {
-			if let Some(item) = menu.append(wxdragon::id::ID_ANY.try_into().unwrap(), "(No recent documents)", "", ItemKind::Normal) {
+			if let Some(item) =
+				menu.append(wxdragon::id::ID_ANY.try_into().unwrap(), "(No recent documents)", "", ItemKind::Normal)
+			{
 				item.enable(false);
 			}
 		} else {

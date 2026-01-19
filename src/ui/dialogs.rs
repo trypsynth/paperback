@@ -15,13 +15,7 @@ const DOC_INFO_HEIGHT: i32 = 400;
 const KEY_DELETE: i32 = 127;
 const KEY_NUMPAD_DELETE: i32 = 330;
 
-pub fn show_document_info_dialog(
-	parent: &Frame,
-	path: &Path,
-	title: &str,
-	author: &str,
-	stats: &DocumentStats,
-) {
+pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, author: &str, stats: &DocumentStats) {
 	let dialog = Dialog::builder(parent, "Document Info").build();
 
 	let info_ctrl = TextCtrl::builder(&dialog)
@@ -43,7 +37,7 @@ pub fn show_document_info_dialog(
 	info.push_str(&format!("Characters (excluding spaces): {}\n", stats.char_count_no_whitespace));
 	info_ctrl.set_value(&info);
 
-    let ok_button = Button::builder(&dialog).with_label("OK").build();
+	let ok_button = Button::builder(&dialog).with_label("OK").build();
 	let dialog_copy = dialog;
 	ok_button.on_click(move |_| {
 		dialog_copy.end_modal(wxdragon::id::ID_OK);
@@ -71,7 +65,7 @@ pub fn show_all_documents_dialog(
 	let dialog = Dialog::builder(parent, "All Documents").build();
 	let selected_path = Rc::new(Mutex::new(None));
 
-    let search_label = StaticText::builder(&dialog).with_label("&search").build();
+	let search_label = StaticText::builder(&dialog).with_label("&search").build();
 	let search_ctrl = TextCtrl::builder(&dialog).with_size(Size::new(300, -1)).build();
 
 	let doc_list = ListCtrl::builder(&dialog)
@@ -82,9 +76,9 @@ pub fn show_all_documents_dialog(
 	doc_list.insert_column(1, "Status", ListColumnFormat::Left, RECENT_DOCS_STATUS_WIDTH);
 	doc_list.insert_column(2, "Path", ListColumnFormat::Left, RECENT_DOCS_PATH_WIDTH);
 
-    let open_button = Button::builder(&dialog).with_label("&Open").build();
-    let remove_button = Button::builder(&dialog).with_label("&Remove").build();
-    let clear_all_button = Button::builder(&dialog).with_label("&Clear All").build();
+	let open_button = Button::builder(&dialog).with_label("&Open").build();
+	let remove_button = Button::builder(&dialog).with_label("&Remove").build();
+	let clear_all_button = Button::builder(&dialog).with_label("&Clear All").build();
 
 	populate_document_list(
 		&doc_list,
@@ -246,7 +240,7 @@ pub fn show_all_documents_dialog(
 		event.skip(true);
 	});
 
-    let ok_button = Button::builder(&dialog).with_label("OK").build();
+	let ok_button = Button::builder(&dialog).with_label("OK").build();
 	let dialog_for_ok = dialog;
 	ok_button.on_click(move |_| {
 		dialog_for_ok.end_modal(wxdragon::id::ID_OK);
@@ -282,11 +276,7 @@ pub fn show_all_documents_dialog(
 	dialog.centre();
 
 	let result = dialog.show_modal();
-	if result == wxdragon::id::ID_OK {
-		selected_path.lock().unwrap().clone()
-	} else {
-		None
-	}
+	if result == wxdragon::id::ID_OK { selected_path.lock().unwrap().clone() } else { None }
 }
 
 fn populate_document_list(
