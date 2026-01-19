@@ -20,16 +20,11 @@ use crate::{
 
 const MAX_HISTORY_LEN: usize = 10;
 
-/// Status information for a position in a document.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct StatusInfo {
-	/// Line number (1-based)
 	pub line_number: i64,
-	/// Character number (1-based)
 	pub character_number: i64,
-	/// Reading percentage (0-100)
 	pub percentage: i32,
-	/// Total character count in the document
 	pub total_chars: i64,
 }
 
@@ -113,8 +108,6 @@ pub struct DocumentSession {
 }
 
 impl DocumentSession {
-	/// Creates a new document session by parsing the document at the given path.
-	///
 	/// # Errors
 	///
 	/// Returns an error if the document cannot be parsed.
@@ -534,8 +527,6 @@ impl DocumentSession {
 		}
 	}
 
-	/// Gets the table marker at the current position.
-	/// Returns None if no table marker is found at the position.
 	#[must_use]
 	pub fn get_table_at_position(&self, position: i64) -> Option<String> {
 		let pos_usize = usize::try_from(position.max(0)).unwrap_or(0);
@@ -586,8 +577,6 @@ impl DocumentSession {
 		}
 	}
 
-	/// Extracts a resource to the given output path.
-	///
 	/// # Errors
 	///
 	/// Returns an error if the EPUB cannot be opened or the resource cannot be written.

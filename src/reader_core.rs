@@ -340,8 +340,6 @@ pub fn get_filtered_bookmarks(
 	filter: ffi::BookmarkFilterType,
 ) -> ffi::FfiFilteredBookmarks {
 	let mut bookmarks: Vec<Bookmark> = manager.get_bookmarks(path);
-
-	// Apply filter
 	match filter {
 		ffi::BookmarkFilterType::BookmarksOnly => {
 			bookmarks.retain(|b| b.note.is_empty());
@@ -351,11 +349,7 @@ pub fn get_filtered_bookmarks(
 		}
 		_ => {}
 	}
-
-	// Sort by start position
 	bookmarks.sort_by_key(|b| b.start);
-
-	// Convert to display items
 	let items: Vec<ffi::FfiBookmarkDisplayItem> = bookmarks
 		.iter()
 		.enumerate()
@@ -367,14 +361,11 @@ pub fn get_filtered_bookmarks(
 			index: idx,
 		})
 		.collect();
-
-	// Find closest bookmark to current position
 	let closest_index = if bookmarks.is_empty() {
 		-1
 	} else {
 		let mut closest_idx = 0;
 		let mut min_distance = i64::MAX;
-
 		for (idx, b) in bookmarks.iter().enumerate() {
 			let distance = (b.start - current_pos).abs();
 			if distance < min_distance {
@@ -382,10 +373,8 @@ pub fn get_filtered_bookmarks(
 				closest_idx = idx;
 			}
 		}
-
 		i32::try_from(closest_idx).unwrap_or(-1)
 	};
-
 	ffi::FfiFilteredBookmarks { items, closest_index }
 }
 

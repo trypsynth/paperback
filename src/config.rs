@@ -792,50 +792,34 @@ pub fn get_sorted_document_list(
 
 	let recent_docs = config.get_recent_documents();
 	let all_docs = config.get_all_documents();
-
-	// Start with recent documents
 	let mut doc_paths: Vec<String> = Vec::new();
 	for path in &recent_docs {
 		if !doc_paths.contains(path) {
 			doc_paths.push(path.clone());
 		}
 	}
-
-	// Add remaining documents, sorted alphabetically
 	let mut rest: Vec<String> = all_docs.iter().filter(|path| !doc_paths.contains(path)).cloned().collect();
-
 	rest.sort_by(|a, b| {
 		let a_path = Path::new(a);
 		let b_path = Path::new(b);
 		let a_name = a_path.file_name().and_then(|n| n.to_str()).unwrap_or(a);
 		let b_name = b_path.file_name().and_then(|n| n.to_str()).unwrap_or(b);
-
-		// Compare filenames case-insensitively
 		let name_cmp = a_name.to_lowercase().cmp(&b_name.to_lowercase());
 		if name_cmp != std::cmp::Ordering::Equal {
 			return name_cmp;
 		}
-
-		// If filenames are equal, compare full paths
 		a.to_lowercase().cmp(&b.to_lowercase())
 	});
-
 	doc_paths.extend(rest);
-
-	// Convert to FfiDocumentListItem, applying filter
 	let filter_lower = filter.to_lowercase();
 	doc_paths
 		.into_iter()
 		.filter_map(|path| {
 			let path_obj = Path::new(&path);
 			let filename = path_obj.file_name().and_then(|n| n.to_str()).unwrap_or("").to_string();
-
-			// Apply filter if specified
 			if !filter.is_empty() && !filename.to_lowercase().contains(&filter_lower) {
 				return None;
 			}
-
-			// Determine status
 			let status = if !path_obj.exists() {
 				DocumentListStatus::Missing
 			} else if open_paths.contains(&path) {
@@ -843,7 +827,6 @@ pub fn get_sorted_document_list(
 			} else {
 				DocumentListStatus::Closed
 			};
-
 			Some(FfiDocumentListItem { path, filename, status })
 		})
 		.collect()
