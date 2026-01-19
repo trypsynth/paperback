@@ -15,13 +15,11 @@ impl PaperbackApp {
 		let mut config = ConfigManager::new();
 		config.initialize();
 		let config = Rc::new(Mutex::new(config));
-
 		let main_window = MainWindow::new(Rc::clone(&config));
 		wxdragon::app::set_top_window(main_window.frame());
 		main_window.show();
 		restore_previous_documents(&main_window, &config);
 		open_from_command_line(&main_window);
-
 		Self { _config: config, _main_window: main_window }
 	}
 }

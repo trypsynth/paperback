@@ -22,7 +22,7 @@ impl MainWindow {
 		frame.set_status_text("Ready", 0);
 
 		// Create menu bar
-		let menu_bar = Self::create_menu_bar();
+		let menu_bar = Self::create_menu_bar(&config.lock().unwrap());
 		frame.set_menu_bar(menu_bar);
 
 		// Create main panel and sizer
@@ -39,7 +39,7 @@ impl MainWindow {
 		let doc_manager = Rc::new(Mutex::new(DocumentManager::new(notebook, Rc::clone(&config))));
 
 		// Bind menu events
-		Self::bind_menu_events(&frame, Rc::clone(&doc_manager));
+		Self::bind_menu_events(&frame, Rc::clone(&doc_manager), Rc::clone(&config));
 
 		// Bind notebook events
 		let dm = Rc::clone(&doc_manager);
@@ -68,6 +68,7 @@ impl MainWindow {
 		let result = self.doc_manager.lock().unwrap().open_file(path);
 		if result {
 			self.update_title();
+			self.update_recent_documents_menu();
 			self.doc_manager.lock().unwrap().restore_focus();
 		}
 		result
@@ -100,8 +101,8 @@ impl MainWindow {
 	}
 
 	/// Create the menu bar with all menus
-	fn create_menu_bar() -> MenuBar {
-		let file_menu = Self::create_file_menu();
+	fn create_menu_bar(config: &ConfigManager) -> MenuBar {
+		let file_menu = Self::create_file_menu(config);
 		let go_menu = Self::create_go_menu();
 		let tools_menu = Self::create_tools_menu();
 		let help_menu = Self::create_help_menu();
@@ -115,16 +116,20 @@ impl MainWindow {
 	}
 
 	/// Create the File menu
-	fn create_file_menu() -> Menu {
-		Menu::builder()
+	fn create_file_menu(config: &ConfigManager) -> Menu {
+		let file_menu = Menu::builder()
 			.append_item(menu_ids::OPEN, "&Open...\tCtrl+O", "Open a document")
 			.append_item(menu_ids::CLOSE, "&Close\tCtrl+F4", "Close the current document")
 			.append_item(menu_ids::CLOSE_ALL, "Close &All\tCtrl+Shift+F4", "Close all documents")
 			.append_separator()
-			.append_item(menu_ids::SHOW_ALL_DOCUMENTS, "Show All...\tCtrl+R", "Show all recent documents")
-			.append_separator()
 			.append_item(menu_ids::EXIT, "E&xit", "Exit the application")
-			.build()
+			.build();
+
+		let recent_menu = Menu::builder().build();
+		Self::populate_recent_documents_menu(&recent_menu, config);
+		let _ = file_menu.append_submenu(recent_menu, "&Recent Documents", "Open a recent document");
+
+		file_menu
 	}
 
 	/// Create the Go menu
@@ -272,9 +277,10 @@ impl MainWindow {
 	}
 
 	/// Bind menu event handlers
-	fn bind_menu_events(frame: &Frame, doc_manager: Rc<Mutex<DocumentManager>>) {
+	fn bind_menu_events(frame: &Frame, doc_manager: Rc<Mutex<DocumentManager>>, config: Rc<Mutex<ConfigManager>>) {
 		let frame_copy = *frame;
 		let dm = Rc::clone(&doc_manager);
+		let config = Rc::clone(&config);
 
 		frame.on_menu(move |event| {
 			let id = event.get_id();
@@ -321,15 +327,41 @@ impl MainWindow {
 					};
 					if let Some(tab) = dm_ref.active_tab() {
 						let stats = tab.session.stats();
-						let msg = format!(
-							"Words: {}\nCharacters: {}\nLines: {}",
-							stats.word_count, stats.char_count, stats.line_count
-						);
-						println!("{msg}");
-						// TODO: Show message dialog
+						let msg = format!("The document contains {} words.", stats.word_count);
+						let dialog =
+							MessageDialog::builder(&frame_copy, &msg, "Word count").with_style(MessageDialogStyle::OK).build();
+						dialog.show_modal();
 					}
 				}
-				menu_ids::DOCUMENT_INFO => println!("Document info requested"),
+				menu_ids::DOCUMENT_INFO => {
+					let dm_ref = match dm.try_lock() {
+						Ok(dm_ref) => dm_ref,
+						Err(_) => return,
+					};
+					if let Some(tab) = dm_ref.active_tab() {
+						let stats = tab.session.stats();
+						let title = tab.session.title();
+						let author = tab.session.author();
+						let mut info = String::new();
+						info.push_str(&format!("Path: {}\n\n", tab.file_path.display()));
+						if !title.is_empty() {
+							info.push_str(&format!("Title: {title}\n"));
+						}
+						if !author.is_empty() {
+							info.push_str(&format!("Author: {author}\n"));
+						}
+						info.push_str(&format!("Words: {}\n", stats.word_count));
+						info.push_str(&format!("Lines: {}\n", stats.line_count));
+						info.push_str(&format!("Characters: {}\n", stats.char_count));
+						info.push_str(&format!(
+							"Characters (excluding spaces): {}\n",
+							stats.char_count_no_whitespace
+						));
+						let dialog =
+							MessageDialog::builder(&frame_copy, &info, "Document Info").with_style(MessageDialogStyle::OK).build();
+						dialog.show_modal();
+					}
+				}
 				menu_ids::TABLE_OF_CONTENTS => println!("TOC requested"),
 				menu_ids::OPTIONS => println!("Options requested"),
 
@@ -343,7 +375,66 @@ impl MainWindow {
 				_ => {
 					if id >= menu_ids::RECENT_DOCUMENT_BASE && id <= menu_ids::RECENT_DOCUMENT_MAX {
 						let doc_index = id - menu_ids::RECENT_DOCUMENT_BASE;
-						println!("Recent document {doc_index} requested");
+						let recent_docs = {
+							let config_guard = config.lock().unwrap();
+							Self::recent_documents_for_menu_static(&config_guard)
+						};
+						if let Some(path) = recent_docs.get(doc_index as usize) {
+							let path = Path::new(path);
+							if dm.lock().unwrap().open_file(path) {
+								let dm_ref = dm.lock().unwrap();
+								update_title_from_manager(&frame_copy, &dm_ref);
+								dm_ref.restore_focus();
+								let menu_bar = Self::create_menu_bar(&config.lock().unwrap());
+								frame_copy.set_menu_bar(menu_bar);
+							}
+						}
+					} else if id == menu_ids::SHOW_ALL_DOCUMENTS {
+						let open_paths = dm.lock().unwrap().open_paths();
+						let items = {
+							let config_guard = config.lock().unwrap();
+							crate::config::get_sorted_document_list(&config_guard, &open_paths, "")
+						};
+						if items.is_empty() {
+							let dialog = MessageDialog::builder(&frame_copy, "No recent documents.", "Recent Documents")
+								.with_style(MessageDialogStyle::OK)
+								.build();
+							dialog.show_modal();
+							return;
+						}
+						let mut labels: Vec<String> = Vec::with_capacity(items.len());
+						for item in &items {
+							let status = match item.status {
+								crate::ui_types::DocumentListStatus::Missing => "Missing",
+								crate::ui_types::DocumentListStatus::Open => "Open",
+								crate::ui_types::DocumentListStatus::Closed => "Closed",
+							};
+							labels.push(format!("[{status}] {}", item.filename));
+						}
+						let label_refs: Vec<&str> = labels.iter().map(|s| s.as_str()).collect();
+						let dialog = SingleChoiceDialog::builder(
+							&frame_copy,
+							"Select a document to open:",
+							"Recent Documents",
+							&label_refs,
+						)
+						.build();
+						if dialog.show_modal() == wxdragon::id::ID_OK {
+							let selection = dialog.get_selection();
+							if selection >= 0 {
+								let index = selection as usize;
+								if let Some(item) = items.get(index) {
+									let path = Path::new(&item.path);
+									if dm.lock().unwrap().open_file(path) {
+										let dm_ref = dm.lock().unwrap();
+										update_title_from_manager(&frame_copy, &dm_ref);
+										dm_ref.restore_focus();
+										let menu_bar = Self::create_menu_bar(&config.lock().unwrap());
+										frame_copy.set_menu_bar(menu_bar);
+									}
+								}
+							}
+						}
 					}
 				}
 			}
@@ -397,6 +488,41 @@ impl MainWindow {
 	#[allow(dead_code)]
 	pub fn doc_manager(&self) -> &Rc<Mutex<DocumentManager>> {
 		&self.doc_manager
+	}
+
+	fn update_recent_documents_menu(&self) {
+		let menu_bar = Self::create_menu_bar(&self._config.lock().unwrap());
+		self.frame.set_menu_bar(menu_bar);
+	}
+
+	fn populate_recent_documents_menu(menu: &Menu, config: &ConfigManager) {
+		let recent_docs = Self::recent_documents_for_menu_static(config);
+		if recent_docs.is_empty() {
+			if let Some(item) = menu.append(wxdragon::id::ID_ANY.try_into().unwrap(), "(No recent documents)", "", ItemKind::Normal) {
+				item.enable(false);
+			}
+		} else {
+			for (index, path) in recent_docs.iter().enumerate() {
+				let filename = Path::new(path)
+					.file_name()
+					.map(|s| s.to_string_lossy().to_string())
+					.unwrap_or_else(|| path.clone());
+				let label = format!("&{} {}", index + 1, filename);
+				let id = menu_ids::RECENT_DOCUMENT_BASE + index as i32;
+				let _ = menu.append(id, &label, path, ItemKind::Normal);
+			}
+		}
+		menu.append_separator();
+		let _ = menu.append(menu_ids::SHOW_ALL_DOCUMENTS, "Show All...\tCtrl+R", "", ItemKind::Normal);
+	}
+
+	fn recent_documents_for_menu_static(config: &ConfigManager) -> Vec<String> {
+		let limit = config.get_app_int("recent_documents_to_show", 25).max(0) as usize;
+		let mut docs = config.get_recent_documents();
+		if docs.len() > limit {
+			docs.truncate(limit);
+		}
+		docs
 	}
 }
 

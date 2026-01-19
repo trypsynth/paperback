@@ -1,6 +1,3 @@
-// Menu IDs for Paperback
-// Using wxID_HIGHEST + N to avoid conflicts with standard IDs
-
 use wxdragon::id::{ID_ABOUT, ID_EXIT};
 
 // Re-export standard IDs
@@ -20,28 +17,19 @@ pub const SHOW_ALL_DOCUMENTS: i32 = BASE + 3;
 pub const RECENT_DOCUMENT_BASE: i32 = BASE + 100;
 pub const RECENT_DOCUMENT_MAX: i32 = BASE + 199;
 
-// Go menu - Find
+// Go menu
 pub const FIND: i32 = BASE + 200;
 pub const FIND_NEXT: i32 = BASE + 201;
 pub const FIND_PREVIOUS: i32 = BASE + 202;
-
-// Go menu - Go to
 pub const GO_TO_LINE: i32 = BASE + 210;
 pub const GO_TO_PERCENT: i32 = BASE + 211;
 pub const GO_TO_PAGE: i32 = BASE + 212;
-
-// Go menu - History
 pub const GO_BACK: i32 = BASE + 220;
 pub const GO_FORWARD: i32 = BASE + 221;
-
-// Go menu - Sections
 pub const PREVIOUS_SECTION: i32 = BASE + 230;
 pub const NEXT_SECTION: i32 = BASE + 231;
-
-// Go menu - Headings
 pub const PREVIOUS_HEADING: i32 = BASE + 240;
 pub const NEXT_HEADING: i32 = BASE + 241;
-// Heading levels (1-6)
 pub const PREVIOUS_HEADING_1: i32 = BASE + 250;
 pub const NEXT_HEADING_1: i32 = BASE + 251;
 pub const PREVIOUS_HEADING_2: i32 = BASE + 252;
@@ -54,12 +42,8 @@ pub const PREVIOUS_HEADING_5: i32 = BASE + 258;
 pub const NEXT_HEADING_5: i32 = BASE + 259;
 pub const PREVIOUS_HEADING_6: i32 = BASE + 260;
 pub const NEXT_HEADING_6: i32 = BASE + 261;
-
-// Go menu - Pages
 pub const PREVIOUS_PAGE: i32 = BASE + 270;
 pub const NEXT_PAGE: i32 = BASE + 271;
-
-// Go menu - Bookmarks
 pub const PREVIOUS_BOOKMARK: i32 = BASE + 280;
 pub const NEXT_BOOKMARK: i32 = BASE + 281;
 pub const PREVIOUS_NOTE: i32 = BASE + 282;
@@ -68,16 +52,10 @@ pub const JUMP_TO_ALL_BOOKMARKS: i32 = BASE + 284;
 pub const JUMP_TO_BOOKMARKS_ONLY: i32 = BASE + 285;
 pub const JUMP_TO_NOTES_ONLY: i32 = BASE + 286;
 pub const VIEW_NOTE_TEXT: i32 = BASE + 287;
-
-// Go menu - Links
 pub const PREVIOUS_LINK: i32 = BASE + 290;
 pub const NEXT_LINK: i32 = BASE + 291;
-
-// Go menu - Tables
 pub const PREVIOUS_TABLE: i32 = BASE + 300;
 pub const NEXT_TABLE: i32 = BASE + 301;
-
-// Go menu - Lists
 pub const PREVIOUS_LIST: i32 = BASE + 310;
 pub const NEXT_LIST: i32 = BASE + 311;
 pub const PREVIOUS_LIST_ITEM: i32 = BASE + 312;

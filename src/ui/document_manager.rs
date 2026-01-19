@@ -201,6 +201,11 @@ impl DocumentManager {
 		self.tabs.len()
 	}
 
+	/// Get the file paths for open documents
+	pub fn open_paths(&self) -> Vec<String> {
+		self.tabs.iter().map(|tab| tab.file_path.to_string_lossy().to_string()).collect()
+	}
+
 	/// Find tab index by file path
 	pub fn find_tab_by_path(&self, path: &Path) -> Option<usize> {
 		self.tabs.iter().position(|tab| tab.file_path == path)
