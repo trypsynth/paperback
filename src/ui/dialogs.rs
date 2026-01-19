@@ -242,7 +242,7 @@ pub fn show_all_documents_dialog(
 	bind_escape_to_close(&doc_list, dialog);
 	let remove_action_for_keys = Rc::clone(&remove_action);
 	let open_action_for_keys = Rc::clone(&open_action);
-	doc_list.bind_internal(EventType::LIST_KEY_DOWN, move |event| {
+	doc_list.bind_internal(EventType::KEY_DOWN, move |event| {
 		if let Some(key) = event.get_key_code() {
 			if key == KEY_DELETE || key == KEY_NUMPAD_DELETE {
 				remove_action_for_keys();
@@ -251,6 +251,17 @@ pub fn show_all_documents_dialog(
 			}
 			if key == KEY_RETURN || key == KEY_NUMPAD_ENTER {
 				open_action_for_keys();
+				event.skip(false);
+				return;
+			}
+		}
+		event.skip(true);
+	});
+	let open_action_for_char = Rc::clone(&open_action);
+	doc_list.bind_internal(EventType::CHAR, move |event| {
+		if let Some(key) = event.get_key_code() {
+			if key == KEY_RETURN || key == KEY_NUMPAD_ENTER {
+				open_action_for_char();
 				event.skip(false);
 				return;
 			}
