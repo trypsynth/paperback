@@ -1,10 +1,7 @@
-use std::{
-	path::Path,
-	rc::Rc,
-	sync::Mutex,
-};
+use std::{path::Path, rc::Rc, sync::Mutex};
 
 use wxdragon::prelude::*;
+
 use super::{document_manager::DocumentManager, menu_ids};
 use crate::config::ConfigManager;
 
@@ -412,10 +409,7 @@ fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 	if let Some(tab) = dm.active_tab() {
 		let title = tab.session.title();
 		let display_title = if title.is_empty() {
-			tab.file_path
-				.file_name()
-				.map(|s| s.to_string_lossy().to_string())
-				.unwrap_or_else(|| "Untitled".to_string())
+			tab.file_path.file_name().map(|s| s.to_string_lossy().to_string()).unwrap_or_else(|| "Untitled".to_string())
 		} else {
 			title
 		};

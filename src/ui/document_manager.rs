@@ -6,9 +6,7 @@ use std::{
 
 use wxdragon::prelude::*;
 
-use crate::config::ConfigManager;
-use crate::parser::PASSWORD_REQUIRED_ERROR_PREFIX;
-use crate::session::DocumentSession;
+use crate::{config::ConfigManager, parser::PASSWORD_REQUIRED_ERROR_PREFIX, session::DocumentSession};
 
 /// Data associated with each document tab
 pub struct DocumentTab {
@@ -92,12 +90,10 @@ impl DocumentManager {
 		// Create text control with multiline, readonly, rich text, word wrap
 		let mut config = self.config.lock().unwrap();
 		let word_wrap = config.get_app_bool("word_wrap", false);
-		let style =
-			TextCtrlStyle::MultiLine | TextCtrlStyle::ReadOnly | TextCtrlStyle::Rich2 | if word_wrap {
-				TextCtrlStyle::WordWrap
-			} else {
-				TextCtrlStyle::DontWrap
-			};
+		let style = TextCtrlStyle::MultiLine
+			| TextCtrlStyle::ReadOnly
+			| TextCtrlStyle::Rich2
+			| if word_wrap { TextCtrlStyle::WordWrap } else { TextCtrlStyle::DontWrap };
 		let text_ctrl = TextCtrl::builder(&panel).with_style(style).build();
 
 		// Set up layout
