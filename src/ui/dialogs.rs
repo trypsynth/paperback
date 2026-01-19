@@ -18,12 +18,10 @@ const KEY_ESCAPE: i32 = 27;
 
 pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, author: &str, stats: &DocumentStats) {
 	let dialog = Dialog::builder(parent, "Document Info").build();
-
 	let info_ctrl = TextCtrl::builder(&dialog)
 		.with_style(TextCtrlStyle::MultiLine | TextCtrlStyle::ReadOnly)
 		.with_size(Size::new(DOC_INFO_WIDTH, DOC_INFO_HEIGHT))
 		.build();
-
 	let mut info = String::new();
 	info.push_str(&format!("Path: {}\n", path.display()));
 	if !title.is_empty() {
@@ -37,25 +35,20 @@ pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, autho
 	info.push_str(&format!("Characters: {}\n", stats.char_count));
 	info.push_str(&format!("Characters (excluding spaces): {}\n", stats.char_count_no_whitespace));
 	info_ctrl.set_value(&info);
-
 	bind_escape_to_close(&dialog, dialog);
 	bind_escape_to_close(&info_ctrl, dialog);
-
 	let ok_button = Button::builder(&dialog).with_label("OK").build();
 	bind_escape_to_close(&ok_button, dialog);
 	let dialog_copy = dialog;
 	ok_button.on_click(move |_| {
 		dialog_copy.end_modal(wxdragon::id::ID_OK);
 	});
-
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add(&info_ctrl, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
-
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	button_sizer.add_stretch_spacer(1);
 	button_sizer.add(&ok_button, 0, SizerFlag::All, DIALOG_PADDING);
 	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
-
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
 	dialog.show_modal();
@@ -69,10 +62,8 @@ pub fn show_all_documents_dialog(
 	let open_paths = Rc::new(open_paths);
 	let dialog = Dialog::builder(parent, "All Documents").build();
 	let selected_path = Rc::new(Mutex::new(None));
-
 	let search_label = StaticText::builder(&dialog).with_label("&search").build();
 	let search_ctrl = TextCtrl::builder(&dialog).with_size(Size::new(300, -1)).build();
-
 	let doc_list = ListCtrl::builder(&dialog)
 		.with_style(ListCtrlStyle::Report | ListCtrlStyle::SingleSel)
 		.with_size(Size::new(RECENT_DOCS_LIST_WIDTH, RECENT_DOCS_LIST_HEIGHT))
@@ -80,14 +71,12 @@ pub fn show_all_documents_dialog(
 	doc_list.insert_column(0, "File Name", ListColumnFormat::Left, RECENT_DOCS_FILENAME_WIDTH);
 	doc_list.insert_column(1, "Status", ListColumnFormat::Left, RECENT_DOCS_STATUS_WIDTH);
 	doc_list.insert_column(2, "Path", ListColumnFormat::Left, RECENT_DOCS_PATH_WIDTH);
-
 	let open_button = Button::builder(&dialog).with_label("&Open").build();
 	let remove_button = Button::builder(&dialog).with_label("&Remove").build();
 	let clear_all_button = Button::builder(&dialog).with_label("&Clear All").build();
 	bind_escape_to_close(&open_button, dialog);
 	bind_escape_to_close(&remove_button, dialog);
 	bind_escape_to_close(&clear_all_button, dialog);
-
 	populate_document_list(
 		&doc_list,
 		&open_button,
@@ -98,14 +87,12 @@ pub fn show_all_documents_dialog(
 		"",
 		None,
 	);
-
 	let list_for_select = doc_list;
 	let open_button_for_select = open_button;
 	doc_list.on_item_selected(move |event| {
 		let index = event.get_item_index();
 		update_open_button_for_index(&list_for_select, &open_button_for_select, index);
 	});
-
 	let list_for_focus = doc_list;
 	let open_button_for_focus = open_button;
 	doc_list.on_item_focused(move |event| {
@@ -119,7 +106,6 @@ pub fn show_all_documents_dialog(
 			update_open_button_for_index(&list_for_focus, &open_button_for_focus, index);
 		}
 	});
-
 	let dialog_for_activate = dialog;
 	let list_for_activate = doc_list;
 	let selected_for_activate = Rc::clone(&selected_path);
@@ -133,7 +119,6 @@ pub fn show_all_documents_dialog(
 			}
 		}
 	});
-
 	let dialog_for_open = dialog;
 	let list_for_open = doc_list;
 	let selected_for_open = Rc::clone(&selected_path);
@@ -145,7 +130,6 @@ pub fn show_all_documents_dialog(
 			}
 		}
 	});
-
 	let config_for_remove = Rc::clone(&config);
 	let list_for_remove = doc_list;
 	let open_button_for_remove = open_button;
@@ -190,7 +174,6 @@ pub fn show_all_documents_dialog(
 	remove_button.on_click(move |_| {
 		remove_action_for_button();
 	});
-
 	let config_for_clear = Rc::clone(&config);
 	let list_for_clear = doc_list;
 	let open_button_for_clear = open_button;
@@ -229,7 +212,6 @@ pub fn show_all_documents_dialog(
 			None,
 		);
 	});
-
 	let list_for_search = doc_list;
 	let open_button_for_search = open_button;
 	let remove_button_for_search = remove_button;
@@ -249,11 +231,9 @@ pub fn show_all_documents_dialog(
 			None,
 		);
 	});
-
 	bind_escape_to_close(&dialog, dialog);
 	bind_escape_to_close(&search_ctrl, dialog);
 	bind_escape_to_close(&doc_list, dialog);
-
 	let remove_action_for_keys = Rc::clone(&remove_action);
 	doc_list.bind_internal(EventType::LIST_KEY_DOWN, move |event| {
 		if let Some(key) = event.get_key_code() {
@@ -270,24 +250,19 @@ pub fn show_all_documents_dialog(
 		}
 		event.skip(true);
 	});
-
 	let ok_button = Button::builder(&dialog).with_label("OK").build();
 	bind_escape_to_close(&ok_button, dialog);
 	let dialog_for_ok = dialog;
 	ok_button.on_click(move |_| {
 		dialog_for_ok.end_modal(wxdragon::id::ID_OK);
 	});
-
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-
 	let search_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	search_sizer.add(&search_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	search_sizer.add(&search_ctrl, 1, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING / 2);
 	content_sizer.add_sizer(&search_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
-
 	content_sizer.add(&doc_list, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
 	doc_list.set_focus();
-
 	let action_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	action_sizer.add(&open_button, 0, SizerFlag::Right, DIALOG_PADDING);
 	action_sizer.add(&remove_button, 0, SizerFlag::Right, DIALOG_PADDING);
