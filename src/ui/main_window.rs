@@ -80,6 +80,8 @@ impl MainWindow {
 			event.skip(true);
 		});
 
+		Self::schedule_restore_documents(frame, Rc::clone(&doc_manager), Rc::clone(&config));
+
 		Self { frame, doc_manager, _config: config }
 	}
 
@@ -506,6 +508,31 @@ impl MainWindow {
 			docs.truncate(limit);
 		}
 		docs
+	}
+
+	fn schedule_restore_documents(frame: Frame, doc_manager: Rc<Mutex<DocumentManager>>, config: Rc<Mutex<ConfigManager>>) {
+		let restore = config.lock().unwrap().get_app_bool("restore_previous_documents", true);
+		if !restore {
+			return;
+		}
+		let did_restore = Rc::new(Mutex::new(false));
+		let did_restore_flag = Rc::clone(&did_restore);
+		frame.on_idle(move |_event| {
+			let mut flag = did_restore_flag.lock().unwrap();
+			if *flag {
+				return;
+			}
+			*flag = true;
+			let paths = config.lock().unwrap().get_opened_documents_existing();
+			for path in paths {
+				let _ = doc_manager.lock().unwrap().open_file(Path::new(&path));
+			}
+			let dm_ref = doc_manager.lock().unwrap();
+			update_title_from_manager(&frame, &dm_ref);
+			let menu_bar = Self::create_menu_bar(&config.lock().unwrap());
+			frame.set_menu_bar(menu_bar);
+			dm_ref.restore_focus();
+		});
 	}
 }
 
