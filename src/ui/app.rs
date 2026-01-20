@@ -13,7 +13,7 @@ pub struct PaperbackApp {
 impl PaperbackApp {
 	pub fn new(_app: App) -> Self {
 		let mut config = ConfigManager::new();
-		config.initialize();
+		let _ = config.initialize();
 		{
 			let mut translations = TranslationManager::instance().lock().unwrap();
 			translations.initialize();

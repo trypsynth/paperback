@@ -2,9 +2,10 @@ use std::{path::Path, rc::Rc, sync::Mutex};
 
 use wxdragon::{prelude::*, translations::translate as t};
 
-use super::{dialogs, document_manager::DocumentManager, menu_ids};
+use super::{dialogs, document_manager::DocumentManager, menu_ids, utils};
 use crate::{
 	config::ConfigManager,
+	parser::parser_supports_extension,
 	live_region::{self, LiveRegionMode},
 };
 
@@ -105,6 +106,9 @@ impl MainWindow {
 
 	/// Open a file
 	pub fn open_file(&self, path: &Path) -> bool {
+		if !self.ensure_parser_ready(path) {
+			return false;
+		}
 		let result = self.doc_manager.lock().unwrap().open_file(path);
 		if result {
 			self.update_title();
@@ -414,7 +418,7 @@ impl MainWindow {
 			let id = event.get_id();
 			match id {
 				menu_ids::OPEN => {
-					Self::handle_open(&frame_copy, &dm);
+					Self::handle_open(&frame_copy, &dm, &config);
 				}
 				menu_ids::CLOSE => {
 					let mut dm = dm.lock().unwrap();
@@ -495,6 +499,9 @@ impl MainWindow {
 						};
 						if let Some(path) = recent_docs.get(doc_index as usize) {
 							let path = Path::new(path);
+							if !ensure_parser_ready_for_path(&frame_copy, path, &config) {
+								return;
+							}
 							if dm.lock().unwrap().open_file(path) {
 								let dm_ref = dm.lock().unwrap();
 								update_title_from_manager(&frame_copy, &dm_ref);
@@ -509,6 +516,9 @@ impl MainWindow {
 						let selection = dialogs::show_all_documents_dialog(&frame_copy, config_for_dialog, open_paths);
 						if let Some(path) = selection {
 							let path = Path::new(&path);
+							if !ensure_parser_ready_for_path(&frame_copy, path, &config) {
+								return;
+							}
 							if dm.lock().unwrap().open_file(path) {
 								let dm_ref = dm.lock().unwrap();
 								update_title_from_manager(&frame_copy, &dm_ref);
@@ -527,7 +537,7 @@ impl MainWindow {
 	}
 
 	/// Handle the Open menu command
-	fn handle_open(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) {
+	fn handle_open(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) {
 		let wildcard = "All supported files|*.epub;*.pdf;*.txt;*.md;*.html;*.htm;*.docx;*.odt;*.fb2;*.chm;*.pptx;*.odp|\
                         EPUB files (*.epub)|*.epub|\
                         PDF files (*.pdf)|*.pdf|\
@@ -552,6 +562,9 @@ impl MainWindow {
 		if dialog.show_modal() == wxdragon::id::ID_OK {
 			if let Some(path) = dialog.get_path() {
 				let path = std::path::Path::new(&path);
+				if !ensure_parser_ready_for_path(frame, path, config) {
+					return;
+				}
 				if doc_manager.lock().unwrap().open_file(path) {
 					let dm_ref = match doc_manager.try_lock() {
 						Ok(dm_ref) => dm_ref,
@@ -578,6 +591,10 @@ impl MainWindow {
 
 	pub fn live_region_label(&self) -> StaticText {
 		self.live_region_label
+	}
+
+	fn ensure_parser_ready(&self, path: &Path) -> bool {
+		ensure_parser_ready_for_path(&self.frame, path, &self._config)
 	}
 
 	fn update_recent_documents_menu(&self) {
@@ -652,7 +669,11 @@ impl MainWindow {
 			drop(state);
 			let paths = config.lock().unwrap().get_opened_documents_existing();
 			for path in paths {
-				let _ = doc_manager.lock().unwrap().open_file(Path::new(&path));
+				let path = Path::new(&path);
+				if !ensure_parser_ready_for_path(&frame, path, &config) {
+					continue;
+				}
+				let _ = doc_manager.lock().unwrap().open_file(path);
 			}
 			let dm_ref = doc_manager.lock().unwrap();
 			update_title_from_manager(&frame, &dm_ref);
@@ -714,6 +735,15 @@ impl MainWindow {
 			frame_for_idle.show(false);
 		});
 	}
+}
+
+fn ensure_parser_ready_for_path(frame: &Frame, path: &Path, config: &Rc<Mutex<ConfigManager>>) -> bool {
+	let extension = path.extension().and_then(|ext| ext.to_str()).unwrap_or_default();
+	if extension.is_empty() || parser_supports_extension(extension) {
+		return true;
+	}
+	let mut cfg = config.lock().unwrap();
+	utils::ensure_parser_for_unknown_file(frame, path, &mut cfg)
 }
 
 fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
