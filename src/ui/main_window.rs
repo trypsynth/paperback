@@ -1,6 +1,6 @@
 use std::{path::Path, rc::Rc, sync::Mutex};
 
-use wxdragon::{prelude::*, translations::translate};
+use wxdragon::{prelude::*, translations::translate as t};
 
 use super::{dialogs, document_manager::DocumentManager, menu_ids};
 use crate::{
@@ -10,10 +10,6 @@ use crate::{
 
 const KEY_DELETE: i32 = 127;
 const KEY_NUMPAD_DELETE: i32 = 330;
-
-fn t(value: &str) -> String {
-	translate(value)
-}
 
 /// Main application window
 pub struct MainWindow {
@@ -27,11 +23,12 @@ pub struct MainWindow {
 impl MainWindow {
 	/// Create a new main window
 	pub fn new(config: Rc<Mutex<ConfigManager>>) -> Self {
-		let frame = Frame::builder().with_title("Paperback").with_size(Size::new(800, 600)).build();
+		let app_title = t("Paperback");
+		let frame = Frame::builder().with_title(&app_title).with_size(Size::new(800, 600)).build();
 
 		// Create status bar
 		frame.create_status_bar(1, 0, -1, "statusbar");
-		frame.set_status_text("Ready", 0);
+		frame.set_status_text(&t("Ready"), 0);
 
 		// Create menu bar
 		let menu_bar = Self::create_menu_bar(&config.lock().unwrap());
@@ -124,8 +121,8 @@ impl MainWindow {
 			Err(_) => return,
 		};
 		if dm.tab_count() == 0 {
-			self.frame.set_title("Paperback");
-			self.frame.set_status_text("Ready", 0);
+			self.frame.set_title(&t("Paperback"));
+			self.frame.set_status_text(&t("Ready"), 0);
 			return;
 		}
 		if let Some(tab) = dm.active_tab() {
@@ -134,12 +131,14 @@ impl MainWindow {
 				tab.file_path
 					.file_name()
 					.map(|s| s.to_string_lossy().to_string())
-					.unwrap_or_else(|| "Untitled".to_string())
+					.unwrap_or_else(|| t("Untitled"))
 			} else {
 				title
 			};
-			self.frame.set_title(&format!("Paperback - {display_title}"));
-			self.frame.set_status_text(&format!("{} chars", tab.session.content().len()), 0);
+			let template = t("Paperback - {}");
+			self.frame.set_title(&template.replace("{}", &display_title));
+			let chars_label = t("{} chars");
+			self.frame.set_status_text(&chars_label.replace("{}", &tab.session.content().len().to_string()), 0);
 		}
 	}
 
@@ -720,7 +719,7 @@ impl MainWindow {
 
 fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 	if dm.tab_count() == 0 {
-		frame.set_title("Paperback");
+		frame.set_title(&t("Paperback"));
 		frame.set_status_text(&t("Ready"), 0);
 		return;
 	}
@@ -734,7 +733,8 @@ fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 		} else {
 			title
 		};
-		frame.set_title(&format!("Paperback - {display_title}"));
+		let template = t("Paperback - {}");
+		frame.set_title(&template.replace("{}", &display_title));
 		let chars_label = t("{} chars");
 		frame.set_status_text(&chars_label.replace("{}", &tab.session.content().len().to_string()), 0);
 	}

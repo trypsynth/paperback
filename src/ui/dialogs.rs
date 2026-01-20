@@ -1,6 +1,6 @@
 use std::{path::Path, rc::Rc, sync::Mutex};
 
-use wxdragon::{prelude::*, translations::translate};
+use wxdragon::{prelude::*, translations::translate as t};
 
 use crate::{config::ConfigManager, document::DocumentStats, ui_types::DocumentListStatus};
 
@@ -19,19 +19,19 @@ const KEY_RETURN: i32 = 13;
 const KEY_NUMPAD_ENTER: i32 = 370;
 
 pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, author: &str, stats: &DocumentStats) {
-	let dialog_title = translate("Document Info");
+	let dialog_title = t("Document Info");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
 	let info_ctrl = TextCtrl::builder(&dialog)
 		.with_style(TextCtrlStyle::MultiLine | TextCtrlStyle::ReadOnly)
 		.with_size(Size::new(DOC_INFO_WIDTH, DOC_INFO_HEIGHT))
 		.build();
-	let path_label = translate("Path:");
-	let title_label = translate("Title:");
-	let author_label = translate("Author:");
-	let words_label = translate("Words:");
-	let lines_label = translate("Lines:");
-	let characters_label = translate("Characters:");
-	let characters_no_spaces_label = translate("Characters (excluding spaces):");
+	let path_label = t("Path:");
+	let title_label = t("Title:");
+	let author_label = t("Author:");
+	let words_label = t("Words:");
+	let lines_label = t("Lines:");
+	let characters_label = t("Characters:");
+	let characters_no_spaces_label = t("Characters (excluding spaces):");
 	let mut info = String::new();
 	info.push_str(&format!("{path_label} {}\n\n", path.display()));
 	if !title.is_empty() {
@@ -47,7 +47,7 @@ pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, autho
 	info_ctrl.set_value(&info);
 	bind_escape_to_close(&dialog, dialog);
 	bind_escape_to_close(&info_ctrl, dialog);
-	let ok_label = translate("OK");
+	let ok_label = t("OK");
 	let ok_button = Button::builder(&dialog).with_label(&ok_label).build();
 	bind_escape_to_close(&ok_button, dialog);
 	let dialog_copy = dialog;
@@ -71,25 +71,25 @@ pub fn show_all_documents_dialog(
 	open_paths: Vec<String>,
 ) -> Option<String> {
 	let open_paths = Rc::new(open_paths);
-	let dialog_title = translate("All Documents");
+	let dialog_title = t("All Documents");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
 	let selected_path = Rc::new(Mutex::new(None));
-	let search_label_text = translate("&search");
+	let search_label_text = t("&search");
 	let search_label = StaticText::builder(&dialog).with_label(&search_label_text).build();
 	let search_ctrl = TextCtrl::builder(&dialog).with_size(Size::new(300, -1)).build();
 	let doc_list = ListCtrl::builder(&dialog)
 		.with_style(ListCtrlStyle::Report | ListCtrlStyle::SingleSel)
 		.with_size(Size::new(RECENT_DOCS_LIST_WIDTH, RECENT_DOCS_LIST_HEIGHT))
 		.build();
-	let file_name_label = translate("File Name");
-	let status_label = translate("Status");
-	let path_label = translate("Path");
+	let file_name_label = t("File Name");
+	let status_label = t("Status");
+	let path_label = t("Path");
 	doc_list.insert_column(0, &file_name_label, ListColumnFormat::Left, RECENT_DOCS_FILENAME_WIDTH);
 	doc_list.insert_column(1, &status_label, ListColumnFormat::Left, RECENT_DOCS_STATUS_WIDTH);
 	doc_list.insert_column(2, &path_label, ListColumnFormat::Left, RECENT_DOCS_PATH_WIDTH);
-	let open_label = translate("&Open");
-	let remove_label = translate("&Remove");
-	let clear_all_label = translate("&Clear All");
+	let open_label = t("&Open");
+	let remove_label = t("&Remove");
+	let clear_all_label = t("&Clear All");
 	let open_button = Button::builder(&dialog).with_label(&open_label).build();
 	let remove_button = Button::builder(&dialog).with_label(&remove_label).build();
 	let clear_all_button = Button::builder(&dialog).with_label(&clear_all_label).build();
@@ -166,10 +166,8 @@ pub fn show_all_documents_dialog(
 		}
 		let confirm = MessageDialog::builder(
 			&dialog,
-			&translate(
-				"Are you sure you want to remove this document from the list? This will also remove its reading position.",
-			),
-			&translate("Confirm"),
+			&t("Are you sure you want to remove this document from the list? This will also remove its reading position."),
+			&t("Confirm"),
 		)
 		.with_style(MessageDialogStyle::YesNo | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre)
 		.build();
@@ -211,10 +209,8 @@ pub fn show_all_documents_dialog(
 		}
 		let confirm = MessageDialog::builder(
 			&dialog,
-			&translate(
-				"Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks.",
-			),
-			&translate("Confirm"),
+			&t("Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks."),
+			&t("Confirm"),
 		)
 		.with_style(MessageDialogStyle::YesNo | MessageDialogStyle::IconWarning | MessageDialogStyle::Centre)
 		.build();
@@ -289,7 +285,7 @@ pub fn show_all_documents_dialog(
 		}
 		event.skip(true);
 	});
-	let ok_label = translate("OK");
+	let ok_label = t("OK");
 	let ok_button = Button::builder(&dialog).with_label(&ok_label).build();
 	bind_escape_to_close(&ok_button, dialog);
 	let dialog_for_ok = dialog;
@@ -349,9 +345,9 @@ fn populate_document_list(
 		list.insert_item(index, &item.filename, None);
 		list.set_custom_data(index as u64, item.path.clone());
 		let status = match item.status {
-			DocumentListStatus::Open => translate("Open"),
-			DocumentListStatus::Closed => translate("Closed"),
-			DocumentListStatus::Missing => translate("Missing"),
+			DocumentListStatus::Open => t("Open"),
+			DocumentListStatus::Closed => t("Closed"),
+			DocumentListStatus::Missing => t("Missing"),
 		};
 		list.set_item_text_by_column(index, 1, &status);
 		list.set_item_text_by_column(index, 2, &item.path);
@@ -384,7 +380,7 @@ fn update_open_button_for_index(list: &ListCtrl, open_button: &Button, index: i3
 		return;
 	}
 	let status = list.get_item_text(index as i64, 1);
-	open_button.enable(status != translate("Missing"));
+	open_button.enable(status != t("Missing"));
 }
 
 fn bind_escape_to_close(handler: &impl WxEvtHandler, dialog: Dialog) {

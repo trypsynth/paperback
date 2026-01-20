@@ -4,7 +4,7 @@ use std::{
 	sync::Mutex,
 };
 
-use wxdragon::prelude::*;
+use wxdragon::{prelude::*, translations::translate as t};
 
 use crate::{config::ConfigManager, parser::PASSWORD_REQUIRED_ERROR_PREFIX, session::DocumentSession};
 
@@ -64,7 +64,7 @@ impl DocumentManager {
 		}
 		let title = session.title();
 		let title = if title.is_empty() {
-			path.file_name().map(|s| s.to_string_lossy().to_string()).unwrap_or_else(|| "Untitled".to_string())
+			path.file_name().map(|s| s.to_string_lossy().to_string()).unwrap_or_else(|| t("Untitled"))
 		} else {
 			title
 		};
