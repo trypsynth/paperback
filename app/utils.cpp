@@ -58,9 +58,3 @@ void speak(const wxString& message) {
 	label->SetLabel(message);
 	notify_live_region_changed(label);
 }
-
-// FFI helper functions
-wxString to_wxstring(const rust::String& rust_str) {
-	const std::string utf8 = std::string(rust_str);
-	return wxString::FromUTF8(utf8.c_str());
-}

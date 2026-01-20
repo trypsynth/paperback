@@ -46,6 +46,3 @@ struct search_result {
 [[nodiscard]] search_result find_text_with_wrap(const wxString& haystack, const wxString& needle, long start, find_options options = find_options::forward);
 [[nodiscard]] bool ensure_parser_for_unknown_file(const wxString& path, config_manager& config);
 void speak(const wxString& message);
-
-// FFI helper functions
-[[nodiscard]] wxString to_wxstring(const rust::String& rust_str);

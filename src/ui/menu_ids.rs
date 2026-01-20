@@ -81,3 +81,6 @@ pub const VIEW_HELP_BROWSER: i32 = BASE + 500;
 pub const VIEW_HELP_PAPERBACK: i32 = BASE + 501;
 pub const CHECK_FOR_UPDATES: i32 = BASE + 502;
 pub const DONATE: i32 = BASE + 503;
+
+// System tray
+pub const RESTORE: i32 = BASE + 900;
