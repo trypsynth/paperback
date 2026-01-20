@@ -7,11 +7,12 @@ mod html_to_text;
 pub mod parser;
 pub mod reader_core;
 pub mod session;
-pub mod version;
+pub mod translation_manager;
 mod ui;
 pub mod ui_types;
 pub mod update;
 mod utils;
+pub mod version;
 mod xml_to_text;
 
 use ui::PaperbackApp;

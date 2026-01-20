@@ -3,7 +3,7 @@ use std::{env, path::Path, rc::Rc, sync::Mutex};
 use wxdragon::prelude::*;
 
 use super::MainWindow;
-use crate::config::ConfigManager;
+use crate::{config::ConfigManager, translation_manager::TranslationManager};
 
 pub struct PaperbackApp {
 	_config: Rc<Mutex<ConfigManager>>,
@@ -14,6 +14,14 @@ impl PaperbackApp {
 	pub fn new(_app: App) -> Self {
 		let mut config = ConfigManager::new();
 		config.initialize();
+		{
+			let mut translations = TranslationManager::instance().lock().unwrap();
+			translations.initialize();
+			let preferred_language = config.get_app_string("language", "");
+			if !preferred_language.is_empty() {
+				translations.set_language(&preferred_language);
+			}
+		}
 		let config = Rc::new(Mutex::new(config));
 		let main_window = MainWindow::new(Rc::clone(&config));
 		wxdragon::app::set_top_window(main_window.frame());

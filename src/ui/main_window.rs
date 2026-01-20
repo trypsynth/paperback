@@ -510,7 +510,11 @@ impl MainWindow {
 		docs
 	}
 
-	fn schedule_restore_documents(frame: Frame, doc_manager: Rc<Mutex<DocumentManager>>, config: Rc<Mutex<ConfigManager>>) {
+	fn schedule_restore_documents(
+		frame: Frame,
+		doc_manager: Rc<Mutex<DocumentManager>>,
+		config: Rc<Mutex<ConfigManager>>,
+	) {
 		let restore = config.lock().unwrap().get_app_bool("restore_previous_documents", true);
 		if !restore {
 			return;
