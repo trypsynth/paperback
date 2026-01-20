@@ -166,7 +166,9 @@ pub fn show_all_documents_dialog(
 		}
 		let confirm = MessageDialog::builder(
 			&dialog,
-			&t("Are you sure you want to remove this document from the list? This will also remove its reading position."),
+			&t(
+				"Are you sure you want to remove this document from the list? This will also remove its reading position.",
+			),
 			&t("Confirm"),
 		)
 		.with_style(MessageDialogStyle::YesNo | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre)

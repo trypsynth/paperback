@@ -29,7 +29,7 @@ impl TranslationManager {
 		if self.initialized {
 			return true;
 		}
-		let mut translations = Translations::new();
+		let translations = Translations::new();
 		if let Some(langs_dir) = langs_directory() {
 			add_catalog_lookup_path_prefix(langs_dir.to_string_lossy().as_ref());
 		}

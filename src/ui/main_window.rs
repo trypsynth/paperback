@@ -128,10 +128,7 @@ impl MainWindow {
 		if let Some(tab) = dm.active_tab() {
 			let title = tab.session.title();
 			let display_title = if title.is_empty() {
-				tab.file_path
-					.file_name()
-					.map(|s| s.to_string_lossy().to_string())
-					.unwrap_or_else(|| t("Untitled"))
+				tab.file_path.file_name().map(|s| s.to_string_lossy().to_string()).unwrap_or_else(|| t("Untitled"))
 			} else {
 				title
 			};
@@ -592,7 +589,9 @@ impl MainWindow {
 		let recent_docs = Self::recent_documents_for_menu_static(config);
 		if recent_docs.is_empty() {
 			let empty_label = t("(No recent documents)");
-			if let Some(item) = menu.append(wxdragon::id::ID_ANY.try_into().unwrap(), &empty_label, "", ItemKind::Normal) {
+			if let Some(item) =
+				menu.append(wxdragon::id::ID_ANY.try_into().unwrap(), &empty_label, "", ItemKind::Normal)
+			{
 				item.enable(false);
 			}
 		} else {
@@ -726,10 +725,7 @@ fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 	if let Some(tab) = dm.active_tab() {
 		let title = tab.session.title();
 		let display_title = if title.is_empty() {
-			tab.file_path
-				.file_name()
-				.map(|s| s.to_string_lossy().to_string())
-				.unwrap_or_else(|| t("Untitled"))
+			tab.file_path.file_name().map(|s| s.to_string_lossy().to_string()).unwrap_or_else(|| t("Untitled"))
 		} else {
 			title
 		};
