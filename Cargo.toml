@@ -28,7 +28,7 @@ serde = { version = "1.0.228", default-features = false, features = ["derive", "
 sha1 = "0.10.6"
 ureq = { version = "3.1.4", default-features = false, features = ["json", "rustls"] }
 windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_System_Com", "Win32_UI_WindowsAndMessaging", "Win32_Foundation", "Win32_System_Ole", "Win32_System_Variant"] }
-wxdragon = "0.9"
+wxdragon = "0.9.8"
 zip = { version = "7.0.0", default-features = false, features = ["deflate"] }
 
 [profile.release]

@@ -1,8 +1,10 @@
 use std::{
-	env, fs,
+	env,
 	path::PathBuf,
 	sync::{Mutex, OnceLock},
 };
+
+use wxdragon::translations::{Translations, add_catalog_lookup_path_prefix};
 
 #[derive(Clone, Debug)]
 pub struct LanguageInfo {
@@ -27,8 +29,29 @@ impl TranslationManager {
 		if self.initialized {
 			return true;
 		}
-		self.scan_available_languages();
+		let mut translations = Translations::new();
+		if let Some(langs_dir) = langs_directory() {
+			add_catalog_lookup_path_prefix(langs_dir.to_string_lossy().as_ref());
+		}
 		let system_lang = system_language();
+		translations.set_language_str(&system_lang);
+		let _loaded = translations.add_catalog("paperback");
+		translations.add_std_catalog();
+		Translations::set_global(translations);
+		self.available_languages = Translations::get()
+			.map(|translations| translations.get_available_translations("paperback"))
+			.unwrap_or_default()
+			.into_iter()
+			.filter(|code| !code.is_empty())
+			.map(|code| LanguageInfo { code: code.clone(), name: code.clone(), native_name: code })
+			.collect();
+		if self.available_languages.iter().all(|lang| lang.code != "en") {
+			self.available_languages.push(LanguageInfo {
+				code: "en".to_string(),
+				name: "English".to_string(),
+				native_name: "English".to_string(),
+			});
+		}
 		if self.is_language_available(&system_lang) {
 			self.current_language = system_lang;
 		}
@@ -42,6 +65,9 @@ impl TranslationManager {
 		}
 		if !self.is_language_available(language_code) {
 			return false;
+		}
+		if let Some(translations) = Translations::get() {
+			translations.set_language_str(language_code);
 		}
 		self.current_language = language_code.to_string();
 		true
@@ -76,38 +102,6 @@ impl TranslationManager {
 				native_name: "English".to_string(),
 			}],
 			initialized: false,
-		}
-	}
-
-	fn scan_available_languages(&mut self) {
-		let langs_dir = match langs_directory() {
-			Some(dir) => dir,
-			None => return,
-		};
-		if !langs_dir.exists() {
-			return;
-		}
-		let entries = match fs::read_dir(&langs_dir) {
-			Ok(entries) => entries,
-			Err(_) => return,
-		};
-		for entry in entries.flatten() {
-			let path = entry.path();
-			if !path.is_dir() {
-				continue;
-			}
-			let code = match path.file_name().and_then(|name| name.to_str()) {
-				Some(name) if !name.is_empty() => name.to_string(),
-				_ => continue,
-			};
-			if self.is_language_available(&code) {
-				continue;
-			}
-			let catalog = path.join("LC_MESSAGES").join("paperback.mo");
-			if !catalog.exists() {
-				continue;
-			}
-			self.available_languages.push(LanguageInfo { code: code.clone(), name: code.clone(), native_name: code });
 		}
 	}
 }
