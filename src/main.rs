@@ -4,6 +4,7 @@
 pub mod config;
 pub mod document;
 mod html_to_text;
+pub mod live_region;
 pub mod parser;
 pub mod reader_core;
 pub mod session;

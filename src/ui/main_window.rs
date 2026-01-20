@@ -3,7 +3,10 @@ use std::{path::Path, rc::Rc, sync::Mutex};
 use wxdragon::prelude::*;
 
 use super::{dialogs, document_manager::DocumentManager, menu_ids};
-use crate::config::ConfigManager;
+use crate::{
+	config::ConfigManager,
+	live_region::{self, LiveRegionMode},
+};
 
 const KEY_DELETE: i32 = 127;
 const KEY_NUMPAD_DELETE: i32 = 330;
@@ -14,6 +17,7 @@ pub struct MainWindow {
 	doc_manager: Rc<Mutex<DocumentManager>>,
 	_config: Rc<Mutex<ConfigManager>>,
 	tray_state: Rc<Mutex<Option<TrayState>>>,
+	live_region_label: StaticText,
 }
 
 impl MainWindow {
@@ -32,6 +36,10 @@ impl MainWindow {
 		// Create main panel and sizer
 		let panel = Panel::builder(&frame).build();
 		let sizer = BoxSizer::builder(Orientation::Vertical).build();
+
+		let live_region_label = StaticText::builder(&panel).with_label("").with_size(Size::new(0, 0)).build();
+		live_region_label.show(false);
+		let _ = live_region::set_live_region(&live_region_label, LiveRegionMode::Polite);
 
 		// Create notebook for document tabs
 		let notebook = Notebook::builder(&panel).with_style(NotebookStyle::Top).build();
@@ -85,7 +93,7 @@ impl MainWindow {
 		Self::bind_tray_events(frame, Rc::clone(&doc_manager), Rc::clone(&config), Rc::clone(&tray_state));
 		Self::schedule_restore_documents(frame, Rc::clone(&doc_manager), Rc::clone(&config));
 
-		Self { frame, doc_manager, _config: config, tray_state }
+		Self { frame, doc_manager, _config: config, tray_state, live_region_label }
 	}
 
 	/// Show the main window
@@ -474,6 +482,10 @@ impl MainWindow {
 	#[allow(dead_code)]
 	pub fn doc_manager(&self) -> &Rc<Mutex<DocumentManager>> {
 		&self.doc_manager
+	}
+
+	pub fn live_region_label(&self) -> StaticText {
+		self.live_region_label
 	}
 
 	fn update_recent_documents_menu(&self) {
