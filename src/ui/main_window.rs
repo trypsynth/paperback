@@ -5,12 +5,15 @@ use wxdragon::{prelude::*, translations::translate as t};
 use super::{dialogs, document_manager::DocumentManager, menu_ids, utils};
 use crate::{
 	config::ConfigManager,
-	parser::parser_supports_extension,
 	live_region::{self, LiveRegionMode},
+	parser::parser_supports_extension,
+	utils::text::display_len,
 };
 
 const KEY_DELETE: i32 = 127;
 const KEY_NUMPAD_DELETE: i32 = 330;
+const DIALOG_PADDING: i32 = 10;
+const MAX_FIND_HISTORY_SIZE: usize = 10;
 
 /// Main application window
 pub struct MainWindow {
@@ -19,6 +22,7 @@ pub struct MainWindow {
 	_config: Rc<Mutex<ConfigManager>>,
 	tray_state: Rc<Mutex<Option<TrayState>>>,
 	live_region_label: StaticText,
+	find_dialog: Rc<Mutex<Option<FindDialogState>>>,
 }
 
 impl MainWindow {
@@ -52,8 +56,16 @@ impl MainWindow {
 		// Create document manager
 		let doc_manager = Rc::new(Mutex::new(DocumentManager::new(notebook, Rc::clone(&config))));
 
+		let find_dialog = Rc::new(Mutex::new(None));
+
 		// Bind menu events
-		Self::bind_menu_events(&frame, Rc::clone(&doc_manager), Rc::clone(&config));
+		Self::bind_menu_events(
+			&frame,
+			Rc::clone(&doc_manager),
+			Rc::clone(&config),
+			Rc::clone(&find_dialog),
+			live_region_label,
+		);
 
 		// Bind notebook events
 		let dm = Rc::clone(&doc_manager);
@@ -95,7 +107,7 @@ impl MainWindow {
 		Self::bind_tray_events(frame, Rc::clone(&doc_manager), Rc::clone(&config), Rc::clone(&tray_state));
 		Self::schedule_restore_documents(frame, Rc::clone(&doc_manager), Rc::clone(&config));
 
-		Self { frame, doc_manager, _config: config, tray_state, live_region_label }
+		Self { frame, doc_manager, _config: config, tray_state, live_region_label, find_dialog }
 	}
 
 	/// Show the main window
@@ -409,10 +421,18 @@ impl MainWindow {
 	}
 
 	/// Bind menu event handlers
-	fn bind_menu_events(frame: &Frame, doc_manager: Rc<Mutex<DocumentManager>>, config: Rc<Mutex<ConfigManager>>) {
+	fn bind_menu_events(
+		frame: &Frame,
+		doc_manager: Rc<Mutex<DocumentManager>>,
+		config: Rc<Mutex<ConfigManager>>,
+		find_dialog: Rc<Mutex<Option<FindDialogState>>>,
+		live_region_label: StaticText,
+	) {
 		let frame_copy = *frame;
 		let dm = Rc::clone(&doc_manager);
 		let config = Rc::clone(&config);
+		let find_dialog = Rc::clone(&find_dialog);
+		let live_region_label = live_region_label;
 
 		frame.on_menu(move |event| {
 			let id = event.get_id();
@@ -443,9 +463,15 @@ impl MainWindow {
 				}
 
 				// Navigation commands would go here
-				menu_ids::FIND => println!("Find requested"),
-				menu_ids::FIND_NEXT => println!("Find next requested"),
-				menu_ids::FIND_PREVIOUS => println!("Find previous requested"),
+				menu_ids::FIND => {
+					show_find_dialog(&frame_copy, &dm, &config, &find_dialog, live_region_label);
+				}
+				menu_ids::FIND_NEXT => {
+					handle_find_action(&frame_copy, &dm, &config, &find_dialog, live_region_label, true);
+				}
+				menu_ids::FIND_PREVIOUS => {
+					handle_find_action(&frame_copy, &dm, &config, &find_dialog, live_region_label, false);
+				}
 				menu_ids::GO_TO_LINE => println!("Go to line requested"),
 				menu_ids::GO_TO_PERCENT => println!("Go to percent requested"),
 				menu_ids::GO_BACK => println!("Go back requested"),
@@ -744,6 +770,327 @@ fn ensure_parser_ready_for_path(frame: &Frame, path: &Path, config: &Rc<Mutex<Co
 	}
 	let mut cfg = config.lock().unwrap();
 	utils::ensure_parser_for_unknown_file(frame, path, &mut cfg)
+}
+
+struct FindDialogState {
+	dialog: Dialog,
+	find_combo: ComboBox,
+	match_case: CheckBox,
+	whole_word: CheckBox,
+	use_regex: CheckBox,
+}
+
+impl FindDialogState {
+	fn new(
+		frame: &Frame,
+		config: &Rc<Mutex<ConfigManager>>,
+		doc_manager: &Rc<Mutex<DocumentManager>>,
+		find_dialog: &Rc<Mutex<Option<FindDialogState>>>,
+		live_region_label: StaticText,
+	) -> Self {
+		let dialog = Dialog::builder(frame, &t("Find")).build();
+		let combo_width = 250;
+		let option_padding = 2;
+		let button_spacing = 5;
+
+		let find_label = StaticText::builder(&dialog).with_label(&t("Find &what:")).build();
+		let find_combo = ComboBox::builder(&dialog)
+			.with_style(ComboBoxStyle::ProcessEnter)
+			.with_size(Size::new(combo_width, -1))
+			.build();
+
+		let options_box = StaticBoxSizerBuilder::new_with_label(Orientation::Vertical, &dialog, &t("Options")).build();
+		let match_case = CheckBox::builder(&dialog).with_label(&t("&Match case")).build();
+		let whole_word = CheckBox::builder(&dialog).with_label(&t("Match &whole word")).build();
+		let use_regex = CheckBox::builder(&dialog).with_label(&t("Use &regular expressions")).build();
+		options_box.add(&match_case, 0, SizerFlag::All, option_padding);
+		options_box.add(&whole_word, 0, SizerFlag::All, option_padding);
+		options_box.add(&use_regex, 0, SizerFlag::All, option_padding);
+
+		let find_prev_btn = Button::builder(&dialog).with_label(&t("Find &Previous")).build();
+		let find_next_btn = Button::builder(&dialog).with_label(&t("Find &Next")).build();
+		let cancel_btn =
+			Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
+		dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+
+		let find_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+		find_sizer.add(&find_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
+		find_sizer.add(&find_combo, 1, SizerFlag::Expand, 0);
+
+		let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+		button_sizer.add(&find_prev_btn, 0, SizerFlag::Right, button_spacing);
+		button_sizer.add(&find_next_btn, 0, SizerFlag::Right, button_spacing);
+		button_sizer.add_stretch_spacer(1);
+		button_sizer.add(&cancel_btn, 0, SizerFlag::All, 0);
+
+		let main_sizer = BoxSizer::builder(Orientation::Vertical).build();
+		main_sizer.add_sizer(&find_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
+		main_sizer.add_sizer(
+			&options_box,
+			0,
+			SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
+			DIALOG_PADDING,
+		);
+		main_sizer.add_sizer(
+			&button_sizer,
+			0,
+			SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
+			DIALOG_PADDING,
+		);
+
+		dialog.set_sizer_and_fit(main_sizer, true);
+		dialog.centre();
+
+		let frame_for_next = *frame;
+		let find_dialog_for_next = Rc::clone(find_dialog);
+		let doc_manager_for_next = Rc::clone(doc_manager);
+		let config_for_next = Rc::clone(config);
+		find_next_btn.on_click(move |_| {
+			handle_find_action(
+				&frame_for_next,
+				&doc_manager_for_next,
+				&config_for_next,
+				&find_dialog_for_next,
+				live_region_label,
+				true,
+			);
+		});
+
+		let frame_for_prev = *frame;
+		let find_dialog_for_prev = Rc::clone(find_dialog);
+		let doc_manager_for_prev = Rc::clone(doc_manager);
+		let config_for_prev = Rc::clone(config);
+		find_prev_btn.on_click(move |_| {
+			handle_find_action(
+				&frame_for_prev,
+				&doc_manager_for_prev,
+				&config_for_prev,
+				&find_dialog_for_prev,
+				live_region_label,
+				false,
+			);
+		});
+
+		let dialog_for_cancel = dialog;
+		let find_dialog_for_cancel = Rc::clone(find_dialog);
+		let config_for_cancel = Rc::clone(config);
+		cancel_btn.on_click(move |_| {
+			if let Some(state) = find_dialog_for_cancel.lock().unwrap().as_ref() {
+				state.save_settings(&config_for_cancel);
+				dialog_for_cancel.show(false);
+			}
+		});
+
+		let frame_for_enter = *frame;
+		let find_dialog_for_enter = Rc::clone(find_dialog);
+		let doc_manager_for_enter = Rc::clone(doc_manager);
+		let config_for_enter = Rc::clone(config);
+		find_combo.bind_internal(EventType::TEXT_ENTER, move |_event| {
+			handle_find_action(
+				&frame_for_enter,
+				&doc_manager_for_enter,
+				&config_for_enter,
+				&find_dialog_for_enter,
+				live_region_label,
+				true,
+			);
+		});
+
+		let dialog_for_close = dialog;
+		let find_dialog_for_close = Rc::clone(find_dialog);
+		let config_for_close = Rc::clone(config);
+		dialog.on_close(move |_event| {
+			if let Some(state) = find_dialog_for_close.lock().unwrap().as_ref() {
+				state.save_settings(&config_for_close);
+			}
+			dialog_for_close.show(false);
+		});
+
+		let state = FindDialogState { dialog, find_combo, match_case, whole_word, use_regex };
+		state.reload_history(config);
+		state.save_settings(config);
+		state
+	}
+
+	fn reload_history(&self, config: &Rc<Mutex<ConfigManager>>) {
+		self.find_combo.clear();
+		let settings = {
+			let cfg = config.lock().unwrap();
+			for entry in cfg.get_find_history() {
+				self.find_combo.append(&entry);
+			}
+			cfg.get_find_settings()
+		};
+		self.match_case.set_value(settings.match_case);
+		self.whole_word.set_value(settings.whole_word);
+		self.use_regex.set_value(settings.use_regex);
+	}
+
+	fn save_settings(&self, config: &Rc<Mutex<ConfigManager>>) {
+		let settings = crate::config::FindSettings {
+			match_case: self.match_case.is_checked(),
+			whole_word: self.whole_word.is_checked(),
+			use_regex: self.use_regex.is_checked(),
+		};
+		config.lock().unwrap().set_find_settings(settings);
+	}
+
+	fn add_to_history(&self, config: &Rc<Mutex<ConfigManager>>, text: &str) {
+		config.lock().unwrap().add_find_history(text, MAX_FIND_HISTORY_SIZE);
+		self.reload_history(config);
+		self.find_combo.set_value(text);
+	}
+
+	fn find_text(&self) -> String {
+		self.find_combo.get_value()
+	}
+
+	fn set_find_text(&self, text: &str) {
+		self.find_combo.set_value(text);
+		let len = self.find_combo.get_last_position();
+		self.find_combo.set_text_selection(0, len);
+	}
+
+	fn focus_find_text(&self) {
+		self.find_combo.set_focus();
+		let len = self.find_combo.get_last_position();
+		self.find_combo.set_text_selection(0, len);
+	}
+}
+
+fn ensure_find_dialog(
+	frame: &Frame,
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+	find_dialog: &Rc<Mutex<Option<FindDialogState>>>,
+	live_region_label: StaticText,
+) {
+	let mut dialog_guard = find_dialog.lock().unwrap();
+	if dialog_guard.is_some() {
+		return;
+	}
+	let state = FindDialogState::new(frame, config, doc_manager, find_dialog, live_region_label);
+	*dialog_guard = Some(state);
+}
+
+fn show_find_dialog(
+	frame: &Frame,
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+	find_dialog: &Rc<Mutex<Option<FindDialogState>>>,
+	live_region_label: StaticText,
+) {
+	ensure_find_dialog(frame, doc_manager, config, find_dialog, live_region_label);
+	let dialog_state = find_dialog.lock().unwrap();
+	let Some(state) = dialog_state.as_ref() else {
+		return;
+	};
+	let text_ctrl = {
+		let dm = doc_manager.lock().unwrap();
+		dm.active_tab().map(|tab| tab.text_ctrl)
+	};
+	if let Some(text_ctrl) = text_ctrl {
+		let (start, end) = text_ctrl.get_selection();
+		if start != end {
+			let selection = text_ctrl.get_string_selection();
+			state.set_find_text(&selection);
+		}
+	}
+	state.dialog.show(true);
+	state.dialog.raise();
+	state.focus_find_text();
+}
+
+fn handle_find_action(
+	frame: &Frame,
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+	find_dialog: &Rc<Mutex<Option<FindDialogState>>>,
+	live_region_label: StaticText,
+	forward: bool,
+) {
+	ensure_find_dialog(frame, doc_manager, config, find_dialog, live_region_label);
+	let dialog_state = find_dialog.lock().unwrap();
+	let Some(state) = dialog_state.as_ref() else {
+		return;
+	};
+	if state.find_text().trim().is_empty() {
+		let text_ctrl = {
+			let dm = doc_manager.lock().unwrap();
+			dm.active_tab().map(|tab| tab.text_ctrl)
+		};
+		if let Some(text_ctrl) = text_ctrl {
+			let (start, end) = text_ctrl.get_selection();
+			if start != end {
+				let selection = text_ctrl.get_string_selection();
+				state.set_find_text(&selection);
+			}
+		}
+	}
+	if state.find_text().trim().is_empty() {
+		show_find_dialog(frame, doc_manager, config, find_dialog, live_region_label);
+		return;
+	}
+	do_find(forward, state, doc_manager, config, live_region_label);
+}
+
+fn do_find(
+	forward: bool,
+	state: &FindDialogState,
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+	live_region_label: StaticText,
+) {
+	let text_ctrl = {
+		let dm = doc_manager.lock().unwrap();
+		match dm.active_tab() {
+			Some(tab) => tab.text_ctrl,
+			None => return,
+		}
+	};
+	let query = state.find_text();
+	if query.trim().is_empty() {
+		return;
+	}
+	state.save_settings(config);
+	state.add_to_history(config, &query);
+	let mut options = utils::FindOptions::default();
+	if forward {
+		options |= utils::FindOptions::FORWARD;
+	}
+	if state.match_case.is_checked() {
+		options |= utils::FindOptions::MATCH_CASE;
+	}
+	if state.whole_word.is_checked() {
+		options |= utils::FindOptions::MATCH_WHOLE_WORD;
+	}
+	if state.use_regex.is_checked() {
+		options |= utils::FindOptions::USE_REGEX;
+	}
+	let (sel_start, sel_end) = text_ctrl.get_selection();
+	let start_pos = if forward { sel_end } else { sel_start };
+	let result = utils::find_text_with_wrap(&text_ctrl.get_value(), &query, start_pos, options);
+	if !result.found {
+		live_region::announce(&live_region_label, &t("Not found."));
+		state.dialog.show(true);
+		state.dialog.raise();
+		state.focus_find_text();
+		return;
+	}
+	if result.wrapped {
+		live_region::announce(&live_region_label, &t("No more results. Wrapping search."));
+	}
+	if result.position < 0 {
+		return;
+	}
+	let len = display_len(&query) as i64;
+	let last_pos = text_ctrl.get_last_position();
+	let start = result.position.clamp(0, last_pos);
+	let end = (start + len).min(last_pos);
+	text_ctrl.set_focus();
+	text_ctrl.set_selection(start, end);
+	text_ctrl.set_insertion_point(start);
+	state.dialog.show(false);
 }
 
 fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {

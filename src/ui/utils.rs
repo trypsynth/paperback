@@ -3,12 +3,7 @@ use std::path::Path;
 use bitflags::bitflags;
 use wxdragon::{prelude::*, translations::translate as t};
 
-use crate::{
-	config::ConfigManager,
-	parser::parser_supports_extension,
-	reader_core,
-	ui::dialogs,
-};
+use crate::{config::ConfigManager, parser::parser_supports_extension, reader_core, ui::dialogs};
 
 #[derive(Clone, Debug, Default)]
 pub struct SearchResult {
