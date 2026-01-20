@@ -1,6 +1,6 @@
 use std::{path::Path, rc::Rc, sync::Mutex};
 
-use wxdragon::prelude::*;
+use wxdragon::{prelude::*, translations::translate};
 
 use super::{dialogs, document_manager::DocumentManager, menu_ids};
 use crate::{
@@ -10,6 +10,10 @@ use crate::{
 
 const KEY_DELETE: i32 = 127;
 const KEY_NUMPAD_DELETE: i32 = 330;
+
+fn t(value: &str) -> String {
+	translate(value)
+}
 
 /// Main application window
 pub struct MainWindow {
@@ -145,28 +149,42 @@ impl MainWindow {
 		let go_menu = Self::create_go_menu();
 		let tools_menu = Self::create_tools_menu();
 		let help_menu = Self::create_help_menu();
+		let file_label = t("&File");
+		let go_label = t("&Go");
+		let tools_label = t("&Tools");
+		let help_label = t("&Help");
 
 		MenuBar::builder()
-			.append(file_menu, "&File")
-			.append(go_menu, "&Go")
-			.append(tools_menu, "&Tools")
-			.append(help_menu, "&Help")
+			.append(file_menu, &file_label)
+			.append(go_menu, &go_label)
+			.append(tools_menu, &tools_label)
+			.append(help_menu, &help_label)
 			.build()
 	}
 
 	/// Create the File menu
 	fn create_file_menu(config: &ConfigManager) -> Menu {
+		let open_label = t("&Open...\tCtrl+O");
+		let open_help = t("Open a document");
+		let close_label = t("&Close\tCtrl+F4");
+		let close_help = t("Close the current document");
+		let close_all_label = t("Close &All\tCtrl+Shift+F4");
+		let close_all_help = t("Close all documents");
+		let exit_label = t("E&xit");
+		let exit_help = t("Exit the application");
 		let file_menu = Menu::builder()
-			.append_item(menu_ids::OPEN, "&Open...\tCtrl+O", "Open a document")
-			.append_item(menu_ids::CLOSE, "&Close\tCtrl+F4", "Close the current document")
-			.append_item(menu_ids::CLOSE_ALL, "Close &All\tCtrl+Shift+F4", "Close all documents")
+			.append_item(menu_ids::OPEN, &open_label, &open_help)
+			.append_item(menu_ids::CLOSE, &close_label, &close_help)
+			.append_item(menu_ids::CLOSE_ALL, &close_all_label, &close_all_help)
 			.append_separator()
-			.append_item(menu_ids::EXIT, "E&xit", "Exit the application")
+			.append_item(menu_ids::EXIT, &exit_label, &exit_help)
 			.build();
 
 		let recent_menu = Menu::builder().build();
 		Self::populate_recent_documents_menu(&recent_menu, config);
-		let _ = file_menu.append_submenu(recent_menu, "&Recent Documents", "Open a recent document");
+		let recent_label = t("&Recent Documents");
+		let recent_help = t("Open a recent document");
+		let _ = file_menu.append_submenu(recent_menu, &recent_label, &recent_help);
 
 		file_menu
 	}
@@ -176,142 +194,217 @@ impl MainWindow {
 		let headings_menu = Self::create_headings_submenu();
 		let bookmarks_menu = Self::create_bookmarks_submenu();
 
+		let find_label = t("&Find...\tCtrl+F");
+		let find_help = t("Find text in the document");
+		let find_next_label = t("Find &Next\tF3");
+		let find_next_help = t("Find next occurrence");
+		let find_prev_label = t("Find &Previous\tShift+F3");
+		let find_prev_help = t("Find previous occurrence");
+		let goto_line_label = t("Go to &line...\tCtrl+G");
+		let goto_line_help = t("Go to a specific line");
+		let goto_percent_label = t("Go to &percent...\tCtrl+Shift+G");
+		let goto_percent_help = t("Go to a percentage of the document");
+		let go_back_label = t("Go &Back\tAlt+Left");
+		let go_back_help = t("Go back in history");
+		let go_forward_label = t("Go &Forward\tAlt+Right");
+		let go_forward_help = t("Go forward in history");
+		let prev_section_label = t("Previous Section\t[");
+		let prev_section_help = t("Go to previous section");
+		let next_section_label = t("Next Section\t]");
+		let next_section_help = t("Go to next section");
 		let menu = Menu::builder()
-			.append_item(menu_ids::FIND, "&Find...\tCtrl+F", "Find text in the document")
-			.append_item(menu_ids::FIND_NEXT, "Find &Next\tF3", "Find next occurrence")
-			.append_item(menu_ids::FIND_PREVIOUS, "Find &Previous\tShift+F3", "Find previous occurrence")
+			.append_item(menu_ids::FIND, &find_label, &find_help)
+			.append_item(menu_ids::FIND_NEXT, &find_next_label, &find_next_help)
+			.append_item(menu_ids::FIND_PREVIOUS, &find_prev_label, &find_prev_help)
 			.append_separator()
-			.append_item(menu_ids::GO_TO_LINE, "Go to &line...\tCtrl+G", "Go to a specific line")
-			.append_item(
-				menu_ids::GO_TO_PERCENT,
-				"Go to &percent...\tCtrl+Shift+G",
-				"Go to a percentage of the document",
-			)
+			.append_item(menu_ids::GO_TO_LINE, &goto_line_label, &goto_line_help)
+			.append_item(menu_ids::GO_TO_PERCENT, &goto_percent_label, &goto_percent_help)
 			.append_separator()
-			.append_item(menu_ids::GO_BACK, "Go &Back\tAlt+Left", "Go back in history")
-			.append_item(menu_ids::GO_FORWARD, "Go &Forward\tAlt+Right", "Go forward in history")
+			.append_item(menu_ids::GO_BACK, &go_back_label, &go_back_help)
+			.append_item(menu_ids::GO_FORWARD, &go_forward_label, &go_forward_help)
 			.append_separator()
-			.append_item(menu_ids::PREVIOUS_SECTION, "Previous Section\t[", "Go to previous section")
-			.append_item(menu_ids::NEXT_SECTION, "Next Section\t]", "Go to next section")
+			.append_item(menu_ids::PREVIOUS_SECTION, &prev_section_label, &prev_section_help)
+			.append_item(menu_ids::NEXT_SECTION, &next_section_label, &next_section_help)
 			.append_separator()
 			.build();
 
-		menu.append_submenu(headings_menu, "&Headings", "Navigate by headings");
-		menu.append_submenu(bookmarks_menu, "&Bookmarks", "Navigate by bookmarks");
+		let headings_label = t("&Headings");
+		let headings_help = t("Navigate by headings");
+		let bookmarks_label = t("&Bookmarks");
+		let bookmarks_help = t("Navigate by bookmarks");
+		menu.append_submenu(headings_menu, &headings_label, &headings_help);
+		menu.append_submenu(bookmarks_menu, &bookmarks_label, &bookmarks_help);
 
 		menu.append_separator();
-		menu.append(menu_ids::GO_TO_PAGE, "Go to &Page\tCtrl+P", "", ItemKind::Normal);
-		menu.append(menu_ids::PREVIOUS_PAGE, "Previous Pa&ge\tShift+P", "", ItemKind::Normal);
-		menu.append(menu_ids::NEXT_PAGE, "Next Pag&e\tP", "", ItemKind::Normal);
+		let goto_page_label = t("Go to &Page\tCtrl+P");
+		let prev_page_label = t("Previous Pa&ge\tShift+P");
+		let next_page_label = t("Next Pag&e\tP");
+		menu.append(menu_ids::GO_TO_PAGE, &goto_page_label, "", ItemKind::Normal);
+		menu.append(menu_ids::PREVIOUS_PAGE, &prev_page_label, "", ItemKind::Normal);
+		menu.append(menu_ids::NEXT_PAGE, &next_page_label, "", ItemKind::Normal);
 		menu.append_separator();
-		menu.append(menu_ids::PREVIOUS_LINK, "Previous Lin&k\tShift+K", "", ItemKind::Normal);
-		menu.append(menu_ids::NEXT_LINK, "Next Lin&k\tK", "", ItemKind::Normal);
+		let prev_link_label = t("Previous Lin&k\tShift+K");
+		let next_link_label = t("Next Lin&k\tK");
+		menu.append(menu_ids::PREVIOUS_LINK, &prev_link_label, "", ItemKind::Normal);
+		menu.append(menu_ids::NEXT_LINK, &next_link_label, "", ItemKind::Normal);
 		menu.append_separator();
-		menu.append(menu_ids::PREVIOUS_TABLE, "Previous &Table\tShift+T", "", ItemKind::Normal);
-		menu.append(menu_ids::NEXT_TABLE, "Next &Table\tT", "", ItemKind::Normal);
+		let prev_table_label = t("Previous &Table\tShift+T");
+		let next_table_label = t("Next &Table\tT");
+		menu.append(menu_ids::PREVIOUS_TABLE, &prev_table_label, "", ItemKind::Normal);
+		menu.append(menu_ids::NEXT_TABLE, &next_table_label, "", ItemKind::Normal);
 		menu.append_separator();
-		menu.append(menu_ids::PREVIOUS_LIST, "Previous L&ist\tShift+L", "", ItemKind::Normal);
-		menu.append(menu_ids::NEXT_LIST, "Next L&ist\tL", "", ItemKind::Normal);
-		menu.append(menu_ids::PREVIOUS_LIST_ITEM, "Previous List &Item\tShift+I", "", ItemKind::Normal);
-		menu.append(menu_ids::NEXT_LIST_ITEM, "Next List I&tem\tI", "", ItemKind::Normal);
+		let prev_list_label = t("Previous L&ist\tShift+L");
+		let next_list_label = t("Next L&ist\tL");
+		let prev_list_item_label = t("Previous List &Item\tShift+I");
+		let next_list_item_label = t("Next List I&tem\tI");
+		menu.append(menu_ids::PREVIOUS_LIST, &prev_list_label, "", ItemKind::Normal);
+		menu.append(menu_ids::NEXT_LIST, &next_list_label, "", ItemKind::Normal);
+		menu.append(menu_ids::PREVIOUS_LIST_ITEM, &prev_list_item_label, "", ItemKind::Normal);
+		menu.append(menu_ids::NEXT_LIST_ITEM, &next_list_item_label, "", ItemKind::Normal);
 
 		menu
 	}
 
 	fn create_headings_submenu() -> Menu {
+		let prev_heading_label = t("&Previous Heading\tShift+H");
+		let prev_heading_help = t("Go to previous heading");
+		let next_heading_label = t("&Next Heading\tH");
+		let next_heading_help = t("Go to next heading");
+		let prev_heading1_label = t("Previous Heading &1\tShift+1");
+		let next_heading1_label = t("Next Heading 1\t1");
+		let prev_heading2_label = t("Previous Heading &2\tShift+2");
+		let next_heading2_label = t("Next Heading 2\t2");
+		let prev_heading3_label = t("Previous Heading &3\tShift+3");
+		let next_heading3_label = t("Next Heading 3\t3");
+		let prev_heading4_label = t("Previous Heading &4\tShift+4");
+		let next_heading4_label = t("Next Heading 4\t4");
+		let prev_heading5_label = t("Previous Heading &5\tShift+5");
+		let next_heading5_label = t("Next Heading 5\t5");
+		let prev_heading6_label = t("Previous Heading &6\tShift+6");
+		let next_heading6_label = t("Next Heading 6\t6");
 		Menu::builder()
-			.append_item(menu_ids::PREVIOUS_HEADING, "&Previous Heading\tShift+H", "Go to previous heading")
-			.append_item(menu_ids::NEXT_HEADING, "&Next Heading\tH", "Go to next heading")
+			.append_item(menu_ids::PREVIOUS_HEADING, &prev_heading_label, &prev_heading_help)
+			.append_item(menu_ids::NEXT_HEADING, &next_heading_label, &next_heading_help)
 			.append_separator()
-			.append_item(menu_ids::PREVIOUS_HEADING_1, "Previous Heading &1\tShift+1", "")
-			.append_item(menu_ids::NEXT_HEADING_1, "Next Heading 1\t1", "")
-			.append_item(menu_ids::PREVIOUS_HEADING_2, "Previous Heading &2\tShift+2", "")
-			.append_item(menu_ids::NEXT_HEADING_2, "Next Heading 2\t2", "")
-			.append_item(menu_ids::PREVIOUS_HEADING_3, "Previous Heading &3\tShift+3", "")
-			.append_item(menu_ids::NEXT_HEADING_3, "Next Heading 3\t3", "")
-			.append_item(menu_ids::PREVIOUS_HEADING_4, "Previous Heading &4\tShift+4", "")
-			.append_item(menu_ids::NEXT_HEADING_4, "Next Heading 4\t4", "")
-			.append_item(menu_ids::PREVIOUS_HEADING_5, "Previous Heading &5\tShift+5", "")
-			.append_item(menu_ids::NEXT_HEADING_5, "Next Heading 5\t5", "")
-			.append_item(menu_ids::PREVIOUS_HEADING_6, "Previous Heading &6\tShift+6", "")
-			.append_item(menu_ids::NEXT_HEADING_6, "Next Heading 6\t6", "")
+			.append_item(menu_ids::PREVIOUS_HEADING_1, &prev_heading1_label, "")
+			.append_item(menu_ids::NEXT_HEADING_1, &next_heading1_label, "")
+			.append_item(menu_ids::PREVIOUS_HEADING_2, &prev_heading2_label, "")
+			.append_item(menu_ids::NEXT_HEADING_2, &next_heading2_label, "")
+			.append_item(menu_ids::PREVIOUS_HEADING_3, &prev_heading3_label, "")
+			.append_item(menu_ids::NEXT_HEADING_3, &next_heading3_label, "")
+			.append_item(menu_ids::PREVIOUS_HEADING_4, &prev_heading4_label, "")
+			.append_item(menu_ids::NEXT_HEADING_4, &next_heading4_label, "")
+			.append_item(menu_ids::PREVIOUS_HEADING_5, &prev_heading5_label, "")
+			.append_item(menu_ids::NEXT_HEADING_5, &next_heading5_label, "")
+			.append_item(menu_ids::PREVIOUS_HEADING_6, &prev_heading6_label, "")
+			.append_item(menu_ids::NEXT_HEADING_6, &next_heading6_label, "")
 			.build()
 	}
 
 	fn create_bookmarks_submenu() -> Menu {
+		let prev_bookmark_label = t("&Previous Bookmark\tShift+B");
+		let prev_bookmark_help = t("Go to previous bookmark");
+		let next_bookmark_label = t("&Next Bookmark\tB");
+		let next_bookmark_help = t("Go to next bookmark");
+		let prev_note_label = t("Previous &Note\tShift+N");
+		let prev_note_help = t("Go to previous note");
+		let next_note_label = t("Next N&ote\tN");
+		let next_note_help = t("Go to next note");
+		let all_bookmarks_label = t("Jump to &All...\tCtrl+B");
+		let all_bookmarks_help = t("Show all bookmarks and notes");
+		let bookmarks_only_label = t("Jump to &Bookmarks Only...\tCtrl+Alt+B");
+		let bookmarks_only_help = t("Show bookmarks only");
+		let notes_only_label = t("Jump to Notes &Only...\tCtrl+Alt+M");
+		let notes_only_help = t("Show notes only");
+		let view_note_label = t("&View Note Text\tCtrl+Shift+W");
+		let view_note_help = t("View the note at current position");
 		Menu::builder()
-			.append_item(menu_ids::PREVIOUS_BOOKMARK, "&Previous Bookmark\tShift+B", "Go to previous bookmark")
-			.append_item(menu_ids::NEXT_BOOKMARK, "&Next Bookmark\tB", "Go to next bookmark")
-			.append_item(menu_ids::PREVIOUS_NOTE, "Previous &Note\tShift+N", "Go to previous note")
-			.append_item(menu_ids::NEXT_NOTE, "Next N&ote\tN", "Go to next note")
+			.append_item(menu_ids::PREVIOUS_BOOKMARK, &prev_bookmark_label, &prev_bookmark_help)
+			.append_item(menu_ids::NEXT_BOOKMARK, &next_bookmark_label, &next_bookmark_help)
+			.append_item(menu_ids::PREVIOUS_NOTE, &prev_note_label, &prev_note_help)
+			.append_item(menu_ids::NEXT_NOTE, &next_note_label, &next_note_help)
 			.append_separator()
-			.append_item(menu_ids::JUMP_TO_ALL_BOOKMARKS, "Jump to &All...\tCtrl+B", "Show all bookmarks and notes")
-			.append_item(
-				menu_ids::JUMP_TO_BOOKMARKS_ONLY,
-				"Jump to &Bookmarks Only...\tCtrl+Alt+B",
-				"Show bookmarks only",
-			)
-			.append_item(menu_ids::JUMP_TO_NOTES_ONLY, "Jump to Notes &Only...\tCtrl+Alt+M", "Show notes only")
-			.append_item(menu_ids::VIEW_NOTE_TEXT, "&View Note Text\tCtrl+Shift+W", "View the note at current position")
+			.append_item(menu_ids::JUMP_TO_ALL_BOOKMARKS, &all_bookmarks_label, &all_bookmarks_help)
+			.append_item(menu_ids::JUMP_TO_BOOKMARKS_ONLY, &bookmarks_only_label, &bookmarks_only_help)
+			.append_item(menu_ids::JUMP_TO_NOTES_ONLY, &notes_only_label, &notes_only_help)
+			.append_item(menu_ids::VIEW_NOTE_TEXT, &view_note_label, &view_note_help)
 			.build()
 	}
 
 	fn create_tools_menu() -> Menu {
+		let import_label = t("&Import Document Data...\tCtrl+Shift+I");
+		let import_help = t("Import bookmarks and position");
+		let export_label = t("&Export Document Data...\tCtrl+Shift+E");
+		let export_help = t("Export bookmarks and position");
+		let export_text_label = t("Export to &Plain Text...\tCtrl+E");
+		let export_text_help = t("Export document as plain text");
 		let import_export_menu = Menu::builder()
-			.append_item(
-				menu_ids::IMPORT_DOCUMENT_DATA,
-				"&Import Document Data...\tCtrl+Shift+I",
-				"Import bookmarks and position",
-			)
-			.append_item(
-				menu_ids::EXPORT_DOCUMENT_DATA,
-				"&Export Document Data...\tCtrl+Shift+E",
-				"Export bookmarks and position",
-			)
-			.append_item(
-				menu_ids::EXPORT_TO_PLAIN_TEXT,
-				"Export to &Plain Text...\tCtrl+E",
-				"Export document as plain text",
-			)
+			.append_item(menu_ids::IMPORT_DOCUMENT_DATA, &import_label, &import_help)
+			.append_item(menu_ids::EXPORT_DOCUMENT_DATA, &export_label, &export_help)
+			.append_item(menu_ids::EXPORT_TO_PLAIN_TEXT, &export_text_label, &export_text_help)
 			.build();
 
+		let word_count_label = t("&Word Count\tCtrl+W");
+		let word_count_help = t("Show word count");
+		let doc_info_label = t("Document &Info\tCtrl+I");
+		let doc_info_help = t("Show document information");
+		let toc_label = t("&Table of Contents\tCtrl+T");
+		let toc_help = t("Show table of contents");
+		let elements_label = t("&Elements List...\tF7");
+		let elements_help = t("Show elements list");
+		let open_folder_label = t("Open &Containing Folder\tCtrl+Shift+C");
+		let open_folder_help = t("Open folder containing the document");
+		let web_view_label = t("Open in &Web View\tCtrl+Shift+V");
+		let web_view_help = t("Open document in web view");
 		let menu = Menu::builder()
-			.append_item(menu_ids::WORD_COUNT, "&Word Count\tCtrl+W", "Show word count")
-			.append_item(menu_ids::DOCUMENT_INFO, "Document &Info\tCtrl+I", "Show document information")
+			.append_item(menu_ids::WORD_COUNT, &word_count_label, &word_count_help)
+			.append_item(menu_ids::DOCUMENT_INFO, &doc_info_label, &doc_info_help)
 			.append_separator()
-			.append_item(menu_ids::TABLE_OF_CONTENTS, "&Table of Contents\tCtrl+T", "Show table of contents")
-			.append_item(menu_ids::ELEMENTS_LIST, "&Elements List...\tF7", "Show elements list")
+			.append_item(menu_ids::TABLE_OF_CONTENTS, &toc_label, &toc_help)
+			.append_item(menu_ids::ELEMENTS_LIST, &elements_label, &elements_help)
 			.append_separator()
-			.append_item(
-				menu_ids::OPEN_CONTAINING_FOLDER,
-				"Open &Containing Folder\tCtrl+Shift+C",
-				"Open folder containing the document",
-			)
-			.append_item(menu_ids::OPEN_IN_WEB_VIEW, "Open in &Web View\tCtrl+Shift+V", "Open document in web view")
+			.append_item(menu_ids::OPEN_CONTAINING_FOLDER, &open_folder_label, &open_folder_help)
+			.append_item(menu_ids::OPEN_IN_WEB_VIEW, &web_view_label, &web_view_help)
 			.append_separator()
 			.build();
 
-		menu.append_submenu(import_export_menu, "I&mport/Export", "Import and export options");
+		let import_export_label = t("I&mport/Export");
+		let import_export_help = t("Import and export options");
+		menu.append_submenu(import_export_menu, &import_export_label, &import_export_help);
 
 		menu.append_separator();
-		menu.append(menu_ids::TOGGLE_BOOKMARK, "Toggle &Bookmark\tCtrl+Shift+B", "", ItemKind::Normal);
-		menu.append(menu_ids::BOOKMARK_WITH_NOTE, "Bookmark with &Note\tCtrl+Shift+N", "", ItemKind::Normal);
+		let toggle_bookmark_label = t("Toggle &Bookmark\tCtrl+Shift+B");
+		let bookmark_note_label = t("Bookmark with &Note\tCtrl+Shift+N");
+		menu.append(menu_ids::TOGGLE_BOOKMARK, &toggle_bookmark_label, "", ItemKind::Normal);
+		menu.append(menu_ids::BOOKMARK_WITH_NOTE, &bookmark_note_label, "", ItemKind::Normal);
 		menu.append_separator();
-		menu.append(menu_ids::OPTIONS, "&Options\tCtrl+,", "", ItemKind::Normal);
-		menu.append(menu_ids::SLEEP_TIMER, "&Sleep Timer...\tCtrl+Shift+S", "", ItemKind::Normal);
+		let options_label = t("&Options\tCtrl+,");
+		let sleep_label = t("&Sleep Timer...\tCtrl+Shift+S");
+		menu.append(menu_ids::OPTIONS, &options_label, "", ItemKind::Normal);
+		menu.append(menu_ids::SLEEP_TIMER, &sleep_label, "", ItemKind::Normal);
 
 		menu
 	}
 
 	fn create_help_menu() -> Menu {
+		let about_label = t("&About Paperback\tCtrl+F1");
+		let about_help = t("About this application");
+		let help_browser_label = t("View Help in &Browser\tF1");
+		let help_browser_help = t("View help in default browser");
+		let help_paperback_label = t("View Help in &Paperback\tShift+F1");
+		let help_paperback_help = t("View help in Paperback");
+		let updates_label = t("Check for &Updates\tCtrl+Shift+U");
+		let updates_help = t("Check for updates");
+		let donate_label = t("&Donate\tCtrl+D");
+		let donate_help = t("Support Paperback development");
 		Menu::builder()
-			.append_item(menu_ids::ABOUT, "&About Paperback\tCtrl+F1", "About this application")
-			.append_item(menu_ids::VIEW_HELP_BROWSER, "View Help in &Browser\tF1", "View help in default browser")
-			.append_item(menu_ids::VIEW_HELP_PAPERBACK, "View Help in &Paperback\tShift+F1", "View help in Paperback")
+			.append_item(menu_ids::ABOUT, &about_label, &about_help)
+			.append_item(menu_ids::VIEW_HELP_BROWSER, &help_browser_label, &help_browser_help)
+			.append_item(menu_ids::VIEW_HELP_PAPERBACK, &help_paperback_label, &help_paperback_help)
 			.append_separator()
-			.append_item(menu_ids::CHECK_FOR_UPDATES, "Check for &Updates\tCtrl+Shift+U", "Check for updates")
+			.append_item(menu_ids::CHECK_FOR_UPDATES, &updates_label, &updates_help)
 			.append_separator()
-			.append_item(menu_ids::DONATE, "&Donate\tCtrl+D", "Support Paperback development")
+			.append_item(menu_ids::DONATE, &donate_label, &donate_help)
 			.build()
 	}
 
@@ -366,8 +459,10 @@ impl MainWindow {
 					};
 					if let Some(tab) = dm_ref.active_tab() {
 						let stats = tab.session.stats();
-						let msg = format!("The document contains {} words.", stats.word_count);
-						let dialog = MessageDialog::builder(&frame_copy, &msg, "Word count")
+						let msg_template = t("The document contains {} words.");
+						let msg = msg_template.replace("{}", &stats.word_count.to_string());
+						let title = t("Word count");
+						let dialog = MessageDialog::builder(&frame_copy, &msg, &title)
 							.with_style(MessageDialogStyle::OK)
 							.build();
 						dialog.show_modal();
@@ -451,8 +546,9 @@ impl MainWindow {
                         OpenDocument Presentation (*.odp)|*.odp|\
                         All files (*.*)|*.*";
 
+		let dialog_title = t("Open Document");
 		let dialog = FileDialog::builder(frame)
-			.with_message("Open Document")
+			.with_message(&dialog_title)
 			.with_wildcard(wildcard)
 			.with_style(FileDialogStyle::Open | FileDialogStyle::FileMustExist)
 			.build();
@@ -496,9 +592,8 @@ impl MainWindow {
 	fn populate_recent_documents_menu(menu: &Menu, config: &ConfigManager) {
 		let recent_docs = Self::recent_documents_for_menu_static(config);
 		if recent_docs.is_empty() {
-			if let Some(item) =
-				menu.append(wxdragon::id::ID_ANY.try_into().unwrap(), "(No recent documents)", "", ItemKind::Normal)
-			{
+			let empty_label = t("(No recent documents)");
+			if let Some(item) = menu.append(wxdragon::id::ID_ANY.try_into().unwrap(), &empty_label, "", ItemKind::Normal) {
 				item.enable(false);
 			}
 		} else {
@@ -513,7 +608,8 @@ impl MainWindow {
 			}
 		}
 		menu.append_separator();
-		let _ = menu.append(menu_ids::SHOW_ALL_DOCUMENTS, "Show All...\tCtrl+R", "", ItemKind::Normal);
+		let show_all_label = t("Show All...\tCtrl+R");
+		let _ = menu.append(menu_ids::SHOW_ALL_DOCUMENTS, &show_all_label, "", ItemKind::Normal);
 	}
 
 	fn recent_documents_for_menu_static(config: &ConfigManager) -> Vec<String> {
@@ -625,18 +721,22 @@ impl MainWindow {
 fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 	if dm.tab_count() == 0 {
 		frame.set_title("Paperback");
-		frame.set_status_text("Ready", 0);
+		frame.set_status_text(&t("Ready"), 0);
 		return;
 	}
 	if let Some(tab) = dm.active_tab() {
 		let title = tab.session.title();
 		let display_title = if title.is_empty() {
-			tab.file_path.file_name().map(|s| s.to_string_lossy().to_string()).unwrap_or_else(|| "Untitled".to_string())
+			tab.file_path
+				.file_name()
+				.map(|s| s.to_string_lossy().to_string())
+				.unwrap_or_else(|| t("Untitled"))
 		} else {
 			title
 		};
 		frame.set_title(&format!("Paperback - {display_title}"));
-		frame.set_status_text(&format!("{} chars", tab.session.content().len()), 0);
+		let chars_label = t("{} chars");
+		frame.set_status_text(&chars_label.replace("{}", &tab.session.content().len().to_string()), 0);
 	}
 }
 
@@ -650,10 +750,14 @@ fn create_tray_state(
 	doc_manager: Rc<Mutex<DocumentManager>>,
 	tray_state: Rc<Mutex<Option<TrayState>>>,
 ) -> Option<TrayState> {
+	let restore_label = t("&Restore");
+	let restore_help = t("Restore Paperback");
+	let exit_label = t("E&xit");
+	let exit_help = t("Exit Paperback");
 	let mut menu = Menu::builder()
-		.append_item(menu_ids::RESTORE, "&Restore", "Restore Paperback")
+		.append_item(menu_ids::RESTORE, &restore_label, &restore_help)
 		.append_separator()
-		.append_item(menu_ids::EXIT, "E&xit", "Exit Paperback")
+		.append_item(menu_ids::EXIT, &exit_label, &exit_help)
 		.build();
 
 	let icon = TaskBarIcon::builder().build();
