@@ -7,6 +7,7 @@ mod html_to_text;
 pub mod parser;
 pub mod reader_core;
 pub mod session;
+pub mod version;
 mod ui;
 pub mod ui_types;
 pub mod update;

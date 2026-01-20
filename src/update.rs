@@ -7,6 +7,8 @@ use std::{
 use serde::Deserialize;
 use ureq::{Agent, config::Config};
 
+use crate::version;
+
 const RELEASE_URL: &str = "https://api.github.com/repos/trypsynth/paperback/releases/latest";
 
 #[derive(Debug, Deserialize)]
@@ -83,7 +85,7 @@ fn pick_download_url(is_installer: bool, assets: &[ReleaseAsset]) -> Option<Stri
 }
 
 fn fetch_latest_release() -> Result<GithubRelease, UpdateError> {
-	let user_agent = format!("libpaperback/{}", env!("CARGO_PKG_VERSION"));
+	let user_agent = version::user_agent();
 	let config = Config::builder().timeout_global(Some(Duration::from_secs(15))).build();
 	let agent = Agent::new_with_config(config);
 	let mut resp = agent
