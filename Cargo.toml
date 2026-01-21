@@ -27,9 +27,14 @@ scraper = "0.25.0"
 serde = { version = "1.0.228", default-features = false, features = ["derive", "std"] }
 sha1 = "0.10.6"
 ureq = { version = "3.1.4", default-features = false, features = ["json", "rustls"] }
+webbrowser = "1.0.6"
 windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_System_Com", "Win32_UI_WindowsAndMessaging", "Win32_Foundation", "Win32_System_Ole", "Win32_System_Variant"] }
 wxdragon = "0.9.8"
+wxdragon-sys = "0.9.8"
 zip = { version = "7.0.0", default-features = false, features = ["deflate"] }
+
+[build-dependencies]
+embed-manifest = "1.5.0"
 
 [profile.release]
 strip = true
@@ -37,6 +42,3 @@ opt-level = "z"
 lto = true
 panic = "abort"
 codegen-units = 1
-
-[build-dependencies]
-embed-manifest = "1.5.0"

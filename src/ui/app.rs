@@ -27,6 +27,9 @@ impl PaperbackApp {
 		wxdragon::app::set_top_window(main_window.frame());
 		main_window.show();
 		open_from_command_line(&main_window);
+		if config.lock().unwrap().get_app_bool("check_for_updates_on_startup", true) {
+			main_window.check_for_updates(true);
+		}
 		Self { _config: config, _main_window: main_window }
 	}
 }

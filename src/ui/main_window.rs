@@ -1,6 +1,16 @@
-use std::{cell::Cell, path::Path, rc::Rc, sync::Mutex};
+use std::{
+	cell::Cell,
+	path::Path,
+	rc::Rc,
+	sync::{
+		Mutex,
+		atomic::{AtomicUsize, Ordering},
+	},
+	thread,
+};
 
 use wxdragon::{prelude::*, scrollable::WxScrollable, translations::translate as t};
+use wxdragon_sys as ffi;
 
 use super::{
 	dialogs,
@@ -11,13 +21,15 @@ use crate::{
 	config::ConfigManager,
 	live_region::{self, LiveRegionMode},
 	parser::parser_supports_extension,
-	utils::text::display_len,
+	update::{self, UpdateCheckOutcome, UpdateError},
+	utils::text::{display_len, markdown_to_text},
 };
 
 const KEY_DELETE: i32 = 127;
 const KEY_NUMPAD_DELETE: i32 = 330;
 const DIALOG_PADDING: i32 = 10;
 const MAX_FIND_HISTORY_SIZE: usize = 10;
+static MAIN_WINDOW_PTR: AtomicUsize = AtomicUsize::new(0);
 
 /// Main application window
 pub struct MainWindow {
@@ -34,6 +46,7 @@ impl MainWindow {
 	pub fn new(config: Rc<Mutex<ConfigManager>>) -> Self {
 		let app_title = t("Paperback");
 		let frame = Frame::builder().with_title(&app_title).with_size(Size::new(800, 600)).build();
+		MAIN_WINDOW_PTR.store(frame.handle_ptr() as usize, Ordering::SeqCst);
 
 		// Create status bar
 		frame.create_status_bar(1, 0, -1, "statusbar");
@@ -118,6 +131,10 @@ impl MainWindow {
 	pub fn show(&self) {
 		self.frame.show(true);
 		self.frame.centre();
+	}
+
+	pub fn check_for_updates(&self, silent: bool) {
+		run_update_check(silent);
 	}
 
 	/// Open a file
@@ -600,7 +617,9 @@ impl MainWindow {
 					println!("Paperback 0.8.0 - An accessible ebook reader");
 					// TODO: Show about dialog
 				}
-				menu_ids::CHECK_FOR_UPDATES => println!("Check for updates requested"),
+				menu_ids::CHECK_FOR_UPDATES => {
+					run_update_check(false);
+				}
 
 				_ => {
 					if id >= menu_ids::RECENT_DOCUMENT_BASE && id <= menu_ids::RECENT_DOCUMENT_MAX {
@@ -1437,6 +1456,104 @@ fn handle_marker_navigation(
 		let mut cfg = config.lock().unwrap();
 		cfg.set_navigation_history(&path_str, history, history_index);
 	}
+}
+
+fn run_update_check(silent: bool) {
+	let current_version = env!("CARGO_PKG_VERSION").to_string();
+	let is_installer = is_installer_distribution();
+	thread::spawn(move || {
+		let outcome = update::check_for_updates(&current_version, is_installer);
+		wxdragon::call_after(Box::new(move || {
+			present_update_result(outcome, silent, &current_version);
+		}));
+	});
+}
+
+fn is_installer_distribution() -> bool {
+	let Ok(exe_path) = std::env::current_exe() else {
+		return false;
+	};
+	let Some(exe_dir) = exe_path.parent() else {
+		return false;
+	};
+	exe_dir.join("unins000.exe").exists()
+}
+
+fn present_update_result(outcome: Result<UpdateCheckOutcome, UpdateError>, silent: bool, current_version: &str) {
+	let parent_window = main_window_parent();
+	match outcome {
+		Ok(UpdateCheckOutcome::UpdateAvailable(result)) => {
+			let latest_version =
+				if result.latest_version.is_empty() { current_version.to_string() } else { result.latest_version };
+			let plain_notes = markdown_to_text(&result.release_notes);
+			let release_notes =
+				if plain_notes.trim().is_empty() { t("No release notes were provided.") } else { plain_notes };
+			if let Some(parent) = parent_window.as_ref() {
+				if dialogs::show_update_dialog(parent, &latest_version, &release_notes)
+					&& !result.download_url.is_empty()
+				{
+					let _ = webbrowser::open(&result.download_url);
+				}
+			}
+		}
+		Ok(UpdateCheckOutcome::UpToDate(_)) => {
+			if silent {
+				return;
+			}
+			let message = t("No updates available.");
+			let title = t("Info");
+			if let Some(parent) = parent_window.as_ref() {
+				let dialog = MessageDialog::builder(parent, &message, &title)
+					.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre)
+					.build();
+				dialog.show_modal();
+			}
+		}
+		Err(err) => {
+			if silent {
+				return;
+			}
+			let (message, title) = match err {
+				UpdateError::HttpError(code) if code > 0 => {
+					let template = t("Failed to check for updates. HTTP status: %d");
+					(template.replacen("%d", &code.to_string(), 1), t("Error"))
+				}
+				_ => {
+					let msg = err.to_string();
+					let fallback = t("Error checking for updates.");
+					(if msg.is_empty() { fallback } else { msg }, t("Error"))
+				}
+			};
+			if let Some(parent) = parent_window.as_ref() {
+				let dialog = MessageDialog::builder(parent, &message, &title)
+					.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
+					.build();
+				dialog.show_modal();
+			}
+		}
+	}
+}
+
+struct ParentWindow {
+	handle: *mut ffi::wxd_Window_t,
+}
+
+impl wxdragon::window::WxWidget for ParentWindow {
+	fn handle_ptr(&self) -> *mut ffi::wxd_Window_t {
+		self.handle
+	}
+}
+
+fn main_window_parent() -> Option<ParentWindow> {
+	let ptr = MAIN_WINDOW_PTR.load(Ordering::SeqCst);
+	if ptr == 0 {
+		return None;
+	}
+	let handle = ptr as *mut ffi::wxd_Window_t;
+	if handle.is_null() {
+		return None;
+	}
+	Some(ParentWindow { handle })
 }
 
 fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
