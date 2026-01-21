@@ -1,4 +1,4 @@
-use std::{path::Path, rc::Rc, sync::Mutex};
+use std::{cell::Cell, path::Path, rc::Rc, sync::Mutex};
 
 use wxdragon::{prelude::*, scrollable::WxScrollable, translations::translate as t};
 
@@ -772,12 +772,14 @@ fn ensure_parser_ready_for_path(frame: &Frame, path: &Path, config: &Rc<Mutex<Co
 	utils::ensure_parser_for_unknown_file(frame, path, &mut cfg)
 }
 
+#[derive(Clone)]
 struct FindDialogState {
 	dialog: Dialog,
 	find_combo: ComboBox,
 	match_case: CheckBox,
 	whole_word: CheckBox,
 	use_regex: CheckBox,
+	in_progress: Rc<Cell<bool>>,
 }
 
 impl FindDialogState {
@@ -808,10 +810,8 @@ impl FindDialogState {
 		options_box.add(&use_regex, 0, SizerFlag::All, option_padding);
 
 		let find_prev_btn = Button::builder(&dialog).with_label(&t("Find &Previous")).build();
-		let find_next_btn =
-			Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("Find &Next")).build();
-		let cancel_btn =
-			Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
+		let find_next_btn = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("Find &Next")).build();
+		let cancel_btn = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
 		dialog.set_escape_id(wxdragon::id::ID_CANCEL);
 		dialog.set_affirmative_id(wxdragon::id::ID_OK);
 
@@ -902,14 +902,22 @@ impl FindDialogState {
 		let dialog_for_close = dialog;
 		let find_dialog_for_close = Rc::clone(find_dialog);
 		let config_for_close = Rc::clone(config);
-		dialog.on_close(move |_event| {
+		dialog.on_close(move |event| {
 			if let Some(state) = find_dialog_for_close.lock().unwrap().as_ref() {
 				state.save_settings(&config_for_close);
 			}
 			dialog_for_close.show(false);
+			event.skip(false);
 		});
 
-		let state = FindDialogState { dialog, find_combo, match_case, whole_word, use_regex };
+		let state = FindDialogState {
+			dialog,
+			find_combo,
+			match_case,
+			whole_word,
+			use_regex,
+			in_progress: Rc::new(Cell::new(false)),
+		};
 		state.reload_history(config);
 		state.save_settings(config);
 		state
@@ -959,6 +967,23 @@ impl FindDialogState {
 		let len = self.find_combo.get_last_position();
 		self.find_combo.set_text_selection(0, len);
 	}
+
+	fn try_begin_find(&self) -> Option<FindInProgressGuard> {
+		if self.in_progress.replace(true) {
+			return None;
+		}
+		Some(FindInProgressGuard { flag: Rc::clone(&self.in_progress) })
+	}
+}
+
+struct FindInProgressGuard {
+	flag: Rc<std::cell::Cell<bool>>,
+}
+
+impl Drop for FindInProgressGuard {
+	fn drop(&mut self) {
+		self.flag.set(false);
+	}
 }
 
 fn ensure_find_dialog(
@@ -984,8 +1009,11 @@ fn show_find_dialog(
 	live_region_label: StaticText,
 ) {
 	ensure_find_dialog(frame, doc_manager, config, find_dialog, live_region_label);
-	let dialog_state = find_dialog.lock().unwrap();
-	let Some(state) = dialog_state.as_ref() else {
+	let state = {
+		let dialog_state = find_dialog.lock().unwrap();
+		dialog_state.as_ref().cloned()
+	};
+	let Some(state) = state else {
 		return;
 	};
 	let text_ctrl = {
@@ -1013,8 +1041,11 @@ fn handle_find_action(
 	forward: bool,
 ) {
 	ensure_find_dialog(frame, doc_manager, config, find_dialog, live_region_label);
-	let dialog_state = find_dialog.lock().unwrap();
-	let Some(state) = dialog_state.as_ref() else {
+	let state = {
+		let dialog_state = find_dialog.lock().unwrap();
+		dialog_state.as_ref().cloned()
+	};
+	let Some(state) = state else {
 		return;
 	};
 	if state.find_text().trim().is_empty() {
@@ -1034,7 +1065,7 @@ fn handle_find_action(
 		show_find_dialog(frame, doc_manager, config, find_dialog, live_region_label);
 		return;
 	}
-	do_find(forward, state, doc_manager, config, live_region_label);
+	do_find(forward, &state, doc_manager, config, live_region_label);
 }
 
 fn do_find(
@@ -1051,10 +1082,17 @@ fn do_find(
 			None => return,
 		}
 	};
+	if !text_ctrl.is_valid() {
+		return;
+	}
 	let query = state.find_text();
 	if query.trim().is_empty() {
 		return;
 	}
+	let _find_guard = match state.try_begin_find() {
+		Some(guard) => guard,
+		None => return,
+	};
 	state.save_settings(config);
 	state.add_to_history(config, &query);
 	let mut options = utils::FindOptions::default();
@@ -1088,6 +1126,9 @@ fn do_find(
 	}
 	let len = display_len(&query) as i64;
 	let last_pos = text_ctrl.get_last_position();
+	if last_pos <= 0 {
+		return;
+	}
 	let start = result.position.clamp(0, last_pos);
 	let end = (start + len).min(last_pos);
 	text_ctrl.set_focus();
