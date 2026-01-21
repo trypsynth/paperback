@@ -70,6 +70,7 @@ impl DocumentManager {
 		};
 		let panel = Panel::builder(&self.notebook).build();
 		let mut config = self.config.lock().unwrap();
+		let mut session = session;
 		let word_wrap = config.get_app_bool("word_wrap", false);
 		let style = TextCtrlStyle::MultiLine
 			| TextCtrlStyle::ReadOnly
@@ -82,8 +83,10 @@ impl DocumentManager {
 		let content = session.content();
 		fill_text_ctrl(&text_ctrl, &content);
 		self.notebook.add_page(&panel, &title, true, None);
-		self.tabs.push(DocumentTab { panel, text_ctrl, session, file_path: path.to_path_buf() });
 		let path_str = path.to_string_lossy();
+		let nav_history = config.get_navigation_history(&path_str);
+		session.set_history(&nav_history.positions, nav_history.index);
+		self.tabs.push(DocumentTab { panel, text_ctrl, session, file_path: path.to_path_buf() });
 		if !password.is_empty() {
 			config.set_document_password(&path_str, password);
 		}
@@ -113,6 +116,8 @@ impl DocumentManager {
 			let path_str = tab.file_path.to_string_lossy();
 			let mut config = self.config.lock().unwrap();
 			config.set_document_position(&path_str, position);
+			let (history, history_index) = tab.session.get_history();
+			config.set_navigation_history(&path_str, history, history_index);
 			config.set_document_opened(&path_str, false);
 			config.remove_opened_document(&path_str);
 			config.flush();
@@ -169,6 +174,8 @@ impl DocumentManager {
 			let path_str = tab.file_path.to_string_lossy();
 			let mut config = self.config.lock().unwrap();
 			config.set_document_position(&path_str, position);
+			let (history, history_index) = tab.session.get_history();
+			config.set_navigation_history(&path_str, history, history_index);
 			config.flush();
 		}
 	}

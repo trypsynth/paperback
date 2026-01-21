@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::Write};
+use std::{collections::HashMap, fmt::Write, mem};
 
 use bitflags::bitflags;
 use ego_tree::NodeRef;
@@ -550,7 +550,7 @@ impl HtmlToText {
 	}
 
 	fn finalize_current_line(&mut self) {
-		let line = std::mem::take(&mut self.current_line);
+		let line = mem::take(&mut self.current_line);
 		self.add_line(line);
 	}
 

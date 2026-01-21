@@ -2,7 +2,11 @@ use std::{cell::Cell, path::Path, rc::Rc, sync::Mutex};
 
 use wxdragon::{prelude::*, scrollable::WxScrollable, translations::translate as t};
 
-use super::{dialogs, document_manager::DocumentManager, menu_ids, utils};
+use super::{
+	dialogs,
+	document_manager::{DocumentManager, DocumentTab},
+	menu_ids, utils,
+};
 use crate::{
 	config::ConfigManager,
 	live_region::{self, LiveRegionMode},
@@ -474,8 +478,90 @@ impl MainWindow {
 				}
 				menu_ids::GO_TO_LINE => println!("Go to line requested"),
 				menu_ids::GO_TO_PERCENT => println!("Go to percent requested"),
-				menu_ids::GO_BACK => println!("Go back requested"),
-				menu_ids::GO_FORWARD => println!("Go forward requested"),
+				menu_ids::GO_BACK => {
+					handle_history_navigation(&dm, &config, live_region_label, false);
+				}
+				menu_ids::GO_FORWARD => {
+					handle_history_navigation(&dm, &config, live_region_label, true);
+				}
+				menu_ids::PREVIOUS_SECTION => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Section, false);
+				}
+				menu_ids::NEXT_SECTION => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Section, true);
+				}
+				menu_ids::PREVIOUS_HEADING => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Heading(0), false);
+				}
+				menu_ids::NEXT_HEADING => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Heading(0), true);
+				}
+				menu_ids::PREVIOUS_HEADING_1 => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Heading(1), false);
+				}
+				menu_ids::NEXT_HEADING_1 => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Heading(1), true);
+				}
+				menu_ids::PREVIOUS_HEADING_2 => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Heading(2), false);
+				}
+				menu_ids::NEXT_HEADING_2 => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Heading(2), true);
+				}
+				menu_ids::PREVIOUS_HEADING_3 => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Heading(3), false);
+				}
+				menu_ids::NEXT_HEADING_3 => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Heading(3), true);
+				}
+				menu_ids::PREVIOUS_HEADING_4 => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Heading(4), false);
+				}
+				menu_ids::NEXT_HEADING_4 => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Heading(4), true);
+				}
+				menu_ids::PREVIOUS_HEADING_5 => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Heading(5), false);
+				}
+				menu_ids::NEXT_HEADING_5 => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Heading(5), true);
+				}
+				menu_ids::PREVIOUS_HEADING_6 => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Heading(6), false);
+				}
+				menu_ids::NEXT_HEADING_6 => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Heading(6), true);
+				}
+				menu_ids::PREVIOUS_PAGE => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Page, false);
+				}
+				menu_ids::NEXT_PAGE => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Page, true);
+				}
+				menu_ids::PREVIOUS_LINK => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Link, false);
+				}
+				menu_ids::NEXT_LINK => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Link, true);
+				}
+				menu_ids::PREVIOUS_TABLE => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Table, false);
+				}
+				menu_ids::NEXT_TABLE => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Table, true);
+				}
+				menu_ids::PREVIOUS_LIST => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::List, false);
+				}
+				menu_ids::NEXT_LIST => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::List, true);
+				}
+				menu_ids::PREVIOUS_LIST_ITEM => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::ListItem, false);
+				}
+				menu_ids::NEXT_LIST_ITEM => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::ListItem, true);
+				}
 
 				// Tools
 				menu_ids::WORD_COUNT => {
@@ -1135,6 +1221,222 @@ fn do_find(
 	text_ctrl.set_selection(start, end);
 	text_ctrl.show_position(start);
 	state.dialog.show(false);
+}
+
+#[derive(Clone, Copy)]
+enum MarkerNavTarget {
+	Section,
+	Page,
+	Heading(i32),
+	Link,
+	Table,
+	List,
+	ListItem,
+}
+
+enum NavFoundFormat {
+	TextOnly,
+	TextWithLevel,
+	PageFormat,
+	LinkFormat,
+}
+
+struct NavAnnouncements {
+	not_supported: String,
+	not_found_next: String,
+	not_found_prev: String,
+	format: NavFoundFormat,
+}
+
+fn nav_announcements(target: MarkerNavTarget, level_filter: i32) -> NavAnnouncements {
+	match target {
+		MarkerNavTarget::Section => NavAnnouncements {
+			not_supported: t("No sections."),
+			not_found_next: t("No next section"),
+			not_found_prev: t("No previous section"),
+			format: NavFoundFormat::TextOnly,
+		},
+		MarkerNavTarget::Heading(level) => {
+			if level_filter > 0 {
+				let no_headings = t("No headings at level %d.");
+				let no_next = t("No next heading at level %d.");
+				let no_prev = t("No previous heading at level %d.");
+				NavAnnouncements {
+					not_supported: no_headings.replacen("%d", &level.to_string(), 1),
+					not_found_next: no_next.replacen("%d", &level.to_string(), 1),
+					not_found_prev: no_prev.replacen("%d", &level.to_string(), 1),
+					format: NavFoundFormat::TextWithLevel,
+				}
+			} else {
+				NavAnnouncements {
+					not_supported: t("No headings."),
+					not_found_next: t("No next heading."),
+					not_found_prev: t("No previous heading."),
+					format: NavFoundFormat::TextWithLevel,
+				}
+			}
+		}
+		MarkerNavTarget::Page => NavAnnouncements {
+			not_supported: t("No pages."),
+			not_found_next: t("No next page."),
+			not_found_prev: t("No previous page."),
+			format: NavFoundFormat::PageFormat,
+		},
+		MarkerNavTarget::Link => NavAnnouncements {
+			not_supported: t("No links."),
+			not_found_next: t("No next link."),
+			not_found_prev: t("No previous link."),
+			format: NavFoundFormat::LinkFormat,
+		},
+		MarkerNavTarget::List => NavAnnouncements {
+			not_supported: t("No lists."),
+			not_found_next: t("No next list."),
+			not_found_prev: t("No previous list."),
+			format: NavFoundFormat::TextOnly,
+		},
+		MarkerNavTarget::ListItem => NavAnnouncements {
+			not_supported: t("No list items."),
+			not_found_next: t("No next list item."),
+			not_found_prev: t("No previous list item."),
+			format: NavFoundFormat::TextOnly,
+		},
+		MarkerNavTarget::Table => NavAnnouncements {
+			not_supported: t("No tables."),
+			not_found_next: t("No next table."),
+			not_found_prev: t("No previous table."),
+			format: NavFoundFormat::TextOnly,
+		},
+	}
+}
+
+fn format_nav_found_message(
+	ann: &NavAnnouncements,
+	context_text: &str,
+	context_index: i32,
+	wrapped: bool,
+	next: bool,
+) -> String {
+	let wrap_prefix =
+		if wrapped { if next { t("Wrapping to start. ") } else { t("Wrapping to end. ") } } else { String::new() };
+	match ann.format {
+		NavFoundFormat::TextOnly => format!("{wrap_prefix}{context_text}"),
+		NavFoundFormat::TextWithLevel => {
+			let template = t("%s Heading level %d");
+			let message = template.replacen("%s", context_text, 1).replacen("%d", &context_index.to_string(), 1);
+			format!("{wrap_prefix}{message}")
+		}
+		NavFoundFormat::PageFormat => {
+			let template = t("Page %d: %s");
+			let page_text = (context_index + 1).to_string();
+			let message = template.replacen("%d", &page_text, 1).replacen("%s", context_text, 1);
+			format!("{wrap_prefix}{message}")
+		}
+		NavFoundFormat::LinkFormat => {
+			let message = format!("{context_text}{}", t(" link"));
+			format!("{wrap_prefix}{message}")
+		}
+	}
+}
+
+fn apply_navigation_result(
+	tab: &mut DocumentTab,
+	result: crate::session::NavigationResult,
+	target: MarkerNavTarget,
+	next: bool,
+	live_region_label: StaticText,
+) -> bool {
+	let level_filter = match target {
+		MarkerNavTarget::Heading(level) => level,
+		_ => 0,
+	};
+	let ann = nav_announcements(target, level_filter);
+	if result.not_supported {
+		live_region::announce(&live_region_label, &ann.not_supported);
+		return false;
+	}
+	if !result.found {
+		let message = if next { &ann.not_found_next } else { &ann.not_found_prev };
+		live_region::announce(&live_region_label, message);
+		return false;
+	}
+	let mut context_text = result.marker_text.clone();
+	if context_text.is_empty() {
+		context_text = tab.session.get_line_text(result.offset);
+	}
+	let context_index = match target {
+		MarkerNavTarget::Heading(_) => result.marker_level,
+		MarkerNavTarget::Page => result.marker_index,
+		_ => 0,
+	};
+	let message = format_nav_found_message(&ann, &context_text, context_index, result.wrapped, next);
+	live_region::announce(&live_region_label, &message);
+	let offset = result.offset;
+	tab.text_ctrl.set_focus();
+	tab.text_ctrl.set_insertion_point(offset);
+	tab.text_ctrl.show_position(offset);
+	true
+}
+
+fn handle_history_navigation(
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+	live_region_label: StaticText,
+	forward: bool,
+) {
+	let mut dm = doc_manager.lock().unwrap();
+	let Some(tab) = dm.active_tab_mut() else {
+		return;
+	};
+	let current_pos = tab.text_ctrl.get_insertion_point();
+	let result =
+		if forward { tab.session.history_go_forward(current_pos) } else { tab.session.history_go_back(current_pos) };
+	if result.found {
+		let message = if forward { t("Navigated to next position.") } else { t("Navigated to previous position.") };
+		live_region::announce(&live_region_label, &message);
+		tab.text_ctrl.set_focus();
+		tab.text_ctrl.set_insertion_point(result.offset);
+		tab.text_ctrl.show_position(result.offset);
+		let (history, history_index) = tab.session.get_history();
+		let path_str = tab.file_path.to_string_lossy();
+		let mut cfg = config.lock().unwrap();
+		cfg.set_navigation_history(&path_str, history, history_index);
+	} else {
+		let message = if forward { t("No next position.") } else { t("No previous position.") };
+		live_region::announce(&live_region_label, &message);
+	}
+}
+
+fn handle_marker_navigation(
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+	live_region_label: StaticText,
+	target: MarkerNavTarget,
+	next: bool,
+) {
+	let wrap = config.lock().unwrap().get_app_bool("navigation_wrap", false);
+	let mut dm = doc_manager.lock().unwrap();
+	let Some(tab) = dm.active_tab_mut() else {
+		return;
+	};
+	let current_pos = tab.text_ctrl.get_insertion_point();
+	let result = match target {
+		MarkerNavTarget::Section => tab.session.navigate_section(current_pos, wrap, next),
+		MarkerNavTarget::Page => tab.session.navigate_page(current_pos, wrap, next),
+		MarkerNavTarget::Heading(level) => tab.session.navigate_heading(current_pos, wrap, next, level),
+		MarkerNavTarget::Link => tab.session.navigate_link(current_pos, wrap, next),
+		MarkerNavTarget::Table => tab.session.navigate_table(current_pos, wrap, next),
+		MarkerNavTarget::List => tab.session.navigate_list(current_pos, wrap, next),
+		MarkerNavTarget::ListItem => tab.session.navigate_list_item(current_pos, wrap, next),
+	};
+	if result.found && !result.not_supported {
+		tab.session.record_position(current_pos);
+	}
+	if apply_navigation_result(tab, result, target, next, live_region_label) {
+		let (history, history_index) = tab.session.get_history();
+		let path_str = tab.file_path.to_string_lossy();
+		let mut cfg = config.lock().unwrap();
+		cfg.set_navigation_history(&path_str, history, history_index);
+	}
 }
 
 fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {

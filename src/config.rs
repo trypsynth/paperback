@@ -1,4 +1,5 @@
 use std::{
+	cmp::Ordering,
 	env,
 	fmt::Write,
 	fs::{self, OpenOptions},
@@ -805,7 +806,7 @@ pub fn get_sorted_document_list(
 		let a_name = a_path.file_name().and_then(|n| n.to_str()).unwrap_or(a);
 		let b_name = b_path.file_name().and_then(|n| n.to_str()).unwrap_or(b);
 		let name_cmp = a_name.to_lowercase().cmp(&b_name.to_lowercase());
-		if name_cmp != std::cmp::Ordering::Equal {
+		if name_cmp != Ordering::Equal {
 			return name_cmp;
 		}
 		a.to_lowercase().cmp(&b.to_lowercase())
