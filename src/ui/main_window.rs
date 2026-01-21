@@ -1,6 +1,6 @@
 use std::{path::Path, rc::Rc, sync::Mutex};
 
-use wxdragon::{prelude::*, translations::translate as t};
+use wxdragon::{prelude::*, scrollable::WxScrollable, translations::translate as t};
 
 use super::{dialogs, document_manager::DocumentManager, menu_ids, utils};
 use crate::{
@@ -808,10 +808,12 @@ impl FindDialogState {
 		options_box.add(&use_regex, 0, SizerFlag::All, option_padding);
 
 		let find_prev_btn = Button::builder(&dialog).with_label(&t("Find &Previous")).build();
-		let find_next_btn = Button::builder(&dialog).with_label(&t("Find &Next")).build();
+		let find_next_btn =
+			Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("Find &Next")).build();
 		let cancel_btn =
 			Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
 		dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+		dialog.set_affirmative_id(wxdragon::id::ID_OK);
 
 		let find_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 		find_sizer.add(&find_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
@@ -885,7 +887,7 @@ impl FindDialogState {
 		let find_dialog_for_enter = Rc::clone(find_dialog);
 		let doc_manager_for_enter = Rc::clone(doc_manager);
 		let config_for_enter = Rc::clone(config);
-		find_combo.bind_internal(EventType::TEXT_ENTER, move |_event| {
+		find_combo.bind_internal(EventType::TEXT_ENTER, move |event| {
 			handle_find_action(
 				&frame_for_enter,
 				&doc_manager_for_enter,
@@ -894,6 +896,7 @@ impl FindDialogState {
 				live_region_label,
 				true,
 			);
+			event.skip(false);
 		});
 
 		let dialog_for_close = dialog;
@@ -1089,7 +1092,7 @@ fn do_find(
 	let end = (start + len).min(last_pos);
 	text_ctrl.set_focus();
 	text_ctrl.set_selection(start, end);
-	text_ctrl.set_insertion_point(start);
+	text_ctrl.show_position(start);
 	state.dialog.show(false);
 }
 
