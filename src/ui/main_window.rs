@@ -609,7 +609,28 @@ impl MainWindow {
 						dialogs::show_document_info_dialog(&frame_copy, &tab.file_path, &title, &author, stats);
 					}
 				}
-				menu_ids::TABLE_OF_CONTENTS => println!("TOC requested"),
+				menu_ids::TABLE_OF_CONTENTS => {
+					let mut dm_guard = dm.lock().unwrap();
+					if let Some(tab) = dm_guard.active_tab_mut() {
+						let current_pos = tab.text_ctrl.get_insertion_point();
+						let current_toc_offset = tab.session.handle().find_closest_toc_offset(current_pos as usize);
+						if let Some(offset) = dialogs::show_toc_dialog(
+							&frame_copy,
+							&tab.session.handle().document().toc_items,
+							current_toc_offset as i32,
+						) {
+							tab.session.record_position(current_pos);
+							tab.text_ctrl.set_focus();
+							tab.text_ctrl.set_insertion_point(offset as i64);
+							tab.text_ctrl.show_position(offset as i64);
+
+							let (history, history_index) = tab.session.get_history();
+							let path_str = tab.file_path.to_string_lossy();
+							let mut cfg = config.lock().unwrap();
+							cfg.set_navigation_history(&path_str, history, history_index);
+						}
+					}
+				}
 				menu_ids::OPTIONS => println!("Options requested"),
 
 				// Help
@@ -1504,7 +1525,9 @@ fn present_update_result(outcome: Result<UpdateCheckOutcome, UpdateError>, silen
 			let title = t("Info");
 			if let Some(parent) = parent_window.as_ref() {
 				let dialog = MessageDialog::builder(parent, &message, &title)
-					.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre)
+					.with_style(
+						MessageDialogStyle::OK | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre,
+					)
 					.build();
 				dialog.show_modal();
 			}
