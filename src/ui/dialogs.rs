@@ -89,6 +89,11 @@ pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i3
 			}
 			let c = std::char::from_u32(key as u32).unwrap_or('\0');
 			let mut s = search_string_for_search.borrow_mut();
+
+			if s.is_empty() && key == KEY_SPACE {
+				return;
+			}
+
 			let mut new_search = s.clone();
 			new_search.push(c.to_ascii_lowercase());
 			if let Some(root) = tree_for_search.get_root_item() {
