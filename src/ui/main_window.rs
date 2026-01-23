@@ -74,8 +74,6 @@ impl MainWindow {
 		let doc_manager = Rc::new(Mutex::new(DocumentManager::new(notebook, Rc::clone(&config))));
 
 		let find_dialog = Rc::new(Mutex::new(None));
-
-		// Bind menu events
 		Self::bind_menu_events(
 			&frame,
 			Rc::clone(&doc_manager),
@@ -83,8 +81,6 @@ impl MainWindow {
 			Rc::clone(&find_dialog),
 			live_region_label,
 		);
-
-		// Bind notebook events
 		let dm = Rc::clone(&doc_manager);
 		let frame_copy = frame;
 		let notebook = *doc_manager.lock().unwrap().notebook();
@@ -123,11 +119,9 @@ impl MainWindow {
 		let tray_state = Rc::new(Mutex::new(None));
 		Self::bind_tray_events(frame, Rc::clone(&doc_manager), Rc::clone(&config), Rc::clone(&tray_state));
 		Self::schedule_restore_documents(frame, Rc::clone(&doc_manager), Rc::clone(&config));
-
 		Self { frame, doc_manager, _config: config, tray_state, live_region_label, find_dialog }
 	}
 
-	/// Show the main window
 	pub fn show(&self) {
 		self.frame.show(true);
 		self.frame.centre();
@@ -137,7 +131,6 @@ impl MainWindow {
 		run_update_check(silent);
 	}
 
-	/// Open a file
 	pub fn open_file(&self, path: &Path) -> bool {
 		if !self.ensure_parser_ready(path) {
 			return false;
@@ -151,7 +144,6 @@ impl MainWindow {
 		result
 	}
 
-	/// Update the title bar based on active document
 	fn update_title(&self) {
 		let dm = match self.doc_manager.try_lock() {
 			Ok(dm) => dm,
@@ -415,7 +407,6 @@ impl MainWindow {
 		let sleep_label = t("&Sleep Timer...\tCtrl+Shift+S");
 		menu.append(menu_ids::OPTIONS, &options_label, "", ItemKind::Normal);
 		menu.append(menu_ids::SLEEP_TIMER, &sleep_label, "", ItemKind::Normal);
-
 		menu
 	}
 
@@ -579,8 +570,6 @@ impl MainWindow {
 				menu_ids::NEXT_LIST_ITEM => {
 					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::ListItem, true);
 				}
-
-				// Tools
 				menu_ids::WORD_COUNT => {
 					let dm_ref = match dm.try_lock() {
 						Ok(dm_ref) => dm_ref,
@@ -609,10 +598,28 @@ impl MainWindow {
 						dialogs::show_document_info_dialog(&frame_copy, &tab.file_path, &title, &author, stats);
 					}
 				}
-				menu_ids::TABLE_OF_CONTENTS => println!("TOC requested"),
+				menu_ids::TABLE_OF_CONTENTS => {
+					let mut dm_guard = dm.lock().unwrap();
+					if let Some(tab) = dm_guard.active_tab_mut() {
+						let current_pos = tab.text_ctrl.get_insertion_point();
+						let current_toc_offset = tab.session.handle().find_closest_toc_offset(current_pos as usize);
+						if let Some(offset) = dialogs::show_toc_dialog(
+							&frame_copy,
+							&tab.session.handle().document().toc_items,
+							current_toc_offset as i32,
+						) {
+							tab.session.record_position(current_pos);
+							tab.text_ctrl.set_focus();
+							tab.text_ctrl.set_insertion_point(offset as i64);
+							tab.text_ctrl.show_position(offset as i64);
+							let (history, history_index) = tab.session.get_history();
+							let path_str = tab.file_path.to_string_lossy();
+							let mut cfg = config.lock().unwrap();
+							cfg.set_navigation_history(&path_str, history, history_index);
+						}
+					}
+				}
 				menu_ids::OPTIONS => println!("Options requested"),
-
-				// Help
 				menu_ids::ABOUT => {
 					println!("Paperback 0.8.0 - An accessible ebook reader");
 					// TODO: Show about dialog
@@ -1504,7 +1511,9 @@ fn present_update_result(outcome: Result<UpdateCheckOutcome, UpdateError>, silen
 			let title = t("Info");
 			if let Some(parent) = parent_window.as_ref() {
 				let dialog = MessageDialog::builder(parent, &message, &title)
-					.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre)
+					.with_style(
+						MessageDialogStyle::OK | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre,
+					)
 					.build();
 				dialog.show_modal();
 			}

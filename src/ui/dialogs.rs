@@ -1,8 +1,17 @@
-use std::{path::Path, rc::Rc, sync::Mutex};
+use std::{
+	cell::{Cell, RefCell},
+	path::Path,
+	rc::Rc,
+	sync::Mutex,
+};
 
-use wxdragon::{prelude::*, translations::translate as t};
+use wxdragon::{prelude::*, timer::Timer, translations::translate as t};
 
-use crate::{config::ConfigManager, document::DocumentStats, ui_types::DocumentListStatus};
+use crate::{
+	config::ConfigManager,
+	document::{DocumentStats, TocItem},
+	ui_types::DocumentListStatus,
+};
 
 const DIALOG_PADDING: i32 = 10;
 const RECENT_DOCS_LIST_WIDTH: i32 = 800;
@@ -14,9 +23,213 @@ const DOC_INFO_WIDTH: i32 = 600;
 const DOC_INFO_HEIGHT: i32 = 400;
 const KEY_DELETE: i32 = 127;
 const KEY_NUMPAD_DELETE: i32 = 330;
+const KEY_SPACE: i32 = 32;
 const KEY_ESCAPE: i32 = 27;
 const KEY_RETURN: i32 = 13;
 const KEY_NUMPAD_ENTER: i32 = 370;
+
+pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i32) -> Option<i32> {
+	let dialog_title = t("Table of Contents");
+	let dialog = Dialog::builder(parent, &dialog_title).build();
+	let selected_offset = Rc::new(Cell::new(-1));
+	let tree = TreeCtrl::builder(&dialog)
+		.with_style(TreeCtrlStyle::Default | TreeCtrlStyle::HideRoot)
+		.with_size(Size::new(400, 500))
+		.build();
+	let root = tree.add_root(&t("Root"), None, None).unwrap();
+	populate_toc_tree(&tree, &root, toc_items);
+	if current_offset != -1 {
+		find_and_select_item(&tree, &root, current_offset);
+	}
+	let search_string = Rc::new(RefCell::new(String::new()));
+	let search_timer = Rc::new(Timer::new(&dialog));
+	let search_string_for_timer = Rc::clone(&search_string);
+	search_timer.on_tick(move |_| {
+		search_string_for_timer.borrow_mut().clear();
+	});
+	let tree_for_sel = tree;
+	let selected_offset_for_sel = Rc::clone(&selected_offset);
+	tree.on_selection_changed(move |event| {
+		if let Some(item) = event.get_item() {
+			if let Some(data) = tree_for_sel.get_custom_data(&item) {
+				if let Some(offset) = data.downcast_ref::<i32>() {
+					selected_offset_for_sel.set(*offset);
+				}
+			}
+		}
+	});
+	let dialog_for_activate = dialog;
+	let tree_for_activate = tree;
+	let selected_offset_for_activate = Rc::clone(&selected_offset);
+	tree.on_item_activated(move |event| {
+		if let Some(item) = event.get_item() {
+			if let Some(data) = tree_for_activate.get_custom_data(&item) {
+				if let Some(offset) = data.downcast_ref::<i32>() {
+					selected_offset_for_activate.set(*offset);
+					dialog_for_activate.end_modal(wxdragon::id::ID_OK);
+				}
+			}
+		}
+	});
+	let tree_for_search_keydown = tree;
+	let search_string_for_search_keydown = Rc::clone(&search_string);
+	let search_timer_for_search_keydown = Rc::clone(&search_timer);
+	tree.bind_internal(EventType::KEY_DOWN, move |event| {
+		if let Some(key) = event.get_key_code() {
+			if key == KEY_SPACE {
+				let mut s = search_string_for_search_keydown.borrow_mut();
+				if !s.is_empty() {
+					let mut new_search = s.clone();
+					new_search.push(' ');
+					if let Some(root) = tree_for_search_keydown.get_root_item() {
+						if find_and_select_item_by_name(&tree_for_search_keydown, &root, &new_search) {
+							*s = new_search;
+							search_timer_for_search_keydown.start(500, true);
+							event.skip(false);
+						} else {
+							bell();
+							event.skip(false);
+						}
+					} else {
+						event.skip(false);
+					}
+					return;
+				}
+			}
+		}
+		event.skip(true);
+	});
+	let tree_for_search = tree;
+	let search_string_for_search = Rc::clone(&search_string);
+	let search_timer_for_search = Rc::clone(&search_timer);
+	tree.bind_internal(EventType::CHAR, move |event| {
+		if let Some(key) = event.get_unicode_key() {
+			if key <= KEY_SPACE || key == KEY_DELETE {
+				event.skip(true);
+				return;
+			}
+			let c = std::char::from_u32(key as u32).unwrap_or('\0');
+			let mut s = search_string_for_search.borrow_mut();
+			if s.is_empty() {
+				s.push(c.to_ascii_lowercase());
+				search_timer_for_search.start(500, true);
+				event.skip(true); // First char, let native handle it too (cycle to first A)
+				return;
+			}
+			if s.chars().last() == Some(c.to_ascii_lowercase()) {
+				search_timer_for_search.start(500, true);
+				event.skip(true); // Let native handle cycling
+				return;
+			}
+			let mut new_search = s.clone();
+			new_search.push(c.to_ascii_lowercase());
+			if let Some(root) = tree_for_search.get_root_item() {
+				if find_and_select_item_by_name(&tree_for_search, &root, &new_search) {
+					*s = new_search;
+					search_timer_for_search.start(500, true);
+					event.skip(false);
+				} else {
+					bell();
+					event.skip(false);
+				}
+			} else {
+				event.skip(false);
+			}
+		} else {
+			event.skip(true);
+		}
+	});
+	let ok_button = Button::builder(&dialog).with_label(&t("OK")).build();
+	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
+	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+	let dialog_for_ok = dialog;
+	let selected_offset_for_ok = Rc::clone(&selected_offset);
+	ok_button.on_click(move |_| {
+		if selected_offset_for_ok.get() >= 0 {
+			dialog_for_ok.end_modal(wxdragon::id::ID_OK);
+		} else {
+			MessageDialog::builder(
+				&dialog_for_ok,
+				&t("Please select a section from the table of contents."),
+				&t("No Selection"),
+			)
+			.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre)
+			.build()
+			.show_modal();
+		}
+	});
+	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
+	content_sizer.add(&tree, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
+	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	button_sizer.add_stretch_spacer(1);
+	button_sizer.add(&ok_button, 0, SizerFlag::Right, DIALOG_PADDING);
+	button_sizer.add(&cancel_button, 0, SizerFlag::Right, DIALOG_PADDING);
+	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand | SizerFlag::Bottom | SizerFlag::Right, DIALOG_PADDING);
+	dialog.set_sizer_and_fit(content_sizer, true);
+	dialog.centre();
+	tree.set_focus();
+	if dialog.show_modal() == wxdragon::id::ID_OK {
+		let offset = selected_offset.get();
+		if offset >= 0 { Some(offset) } else { None }
+	} else {
+		None
+	}
+}
+
+fn populate_toc_tree(tree: &TreeCtrl, parent: &TreeItemId, items: &[TocItem]) {
+	for item in items {
+		let display_text = if item.name.is_empty() { t("Untitled") } else { item.name.clone() };
+		if let Some(id) = tree.append_item_with_data(parent, &display_text, item.offset as i32, None, None) {
+			if !item.children.is_empty() {
+				populate_toc_tree(tree, &id, &item.children);
+			}
+		}
+	}
+}
+
+fn find_and_select_item(tree: &TreeCtrl, parent: &TreeItemId, offset: i32) -> bool {
+	if let Some((child, mut cookie)) = tree.get_first_child(parent) {
+		let mut current_child = Some(child);
+		while let Some(item) = current_child {
+			if let Some(data) = tree.get_custom_data(&item) {
+				if let Some(item_offset) = data.downcast_ref::<i32>() {
+					if *item_offset == offset {
+						tree.select_item(&item);
+						tree.set_focused_item(&item);
+						tree.ensure_visible(&item);
+						return true;
+					}
+				}
+			}
+			if find_and_select_item(tree, &item, offset) {
+				return true;
+			}
+			current_child = tree.get_next_child(parent, &mut cookie);
+		}
+	}
+	false
+}
+
+fn find_and_select_item_by_name(tree: &TreeCtrl, parent: &TreeItemId, name: &str) -> bool {
+	if let Some((child, mut cookie)) = tree.get_first_child(parent) {
+		let mut current_child = Some(child);
+		while let Some(item) = current_child {
+			if let Some(text) = tree.get_item_text(&item) {
+				if text.to_lowercase().starts_with(name) {
+					tree.select_item(&item);
+					tree.set_focused_item(&item);
+					tree.ensure_visible(&item);
+					return true;
+				}
+			}
+			if find_and_select_item_by_name(tree, &item, name) {
+				return true;
+			}
+			current_child = tree.get_next_child(parent, &mut cookie);
+		}
+	}
+	false
+}
 
 pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, author: &str, stats: &DocumentStats) {
 	let dialog_title = t("Document Info");
@@ -33,7 +246,7 @@ pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, autho
 	let characters_label = t("Characters:");
 	let characters_no_spaces_label = t("Characters (excluding spaces):");
 	let mut info = String::new();
-	info.push_str(&format!("{path_label} {}\n\n", path.display()));
+	info.push_str(&format!("{path_label} {}\n", path.display()));
 	if !title.is_empty() {
 		info.push_str(&format!("{title_label} {title}\n"));
 	}
