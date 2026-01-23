@@ -1499,7 +1499,10 @@ fn present_update_result(outcome: Result<UpdateCheckOutcome, UpdateError>, silen
 				if dialogs::show_update_dialog(parent, &latest_version, &release_notes)
 					&& !result.download_url.is_empty()
 				{
-					let _ = webbrowser::open(&result.download_url);
+					wxdragon::utils::launch_default_browser(
+						&result.download_url,
+						wxdragon::utils::BrowserLaunchFlags::Default,
+					);
 				}
 			}
 		}
