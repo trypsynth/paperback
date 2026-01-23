@@ -484,7 +484,24 @@ impl MainWindow {
 				menu_ids::FIND_PREVIOUS => {
 					handle_find_action(&frame_copy, &dm, &config, &find_dialog, live_region_label, false);
 				}
-				menu_ids::GO_TO_LINE => println!("Go to line requested"),
+				menu_ids::GO_TO_LINE => {
+					let mut dm_guard = dm.lock().unwrap();
+					let Some(tab) = dm_guard.active_tab_mut() else {
+						return;
+					};
+					let current_pos = tab.text_ctrl.get_insertion_point();
+					if let Some(line) = dialogs::show_go_to_line_dialog(&frame_copy, &tab.session, current_pos) {
+						let target_pos = tab.session.position_from_line(line);
+						tab.session.record_position(current_pos);
+						tab.text_ctrl.set_focus();
+						tab.text_ctrl.set_insertion_point(target_pos);
+						tab.text_ctrl.show_position(target_pos);
+						let (history, history_index) = tab.session.get_history();
+						let path_str = tab.file_path.to_string_lossy();
+						let cfg = config.lock().unwrap();
+						cfg.set_navigation_history(&path_str, history, history_index);
+					}
+				}
 				menu_ids::GO_TO_PERCENT => println!("Go to percent requested"),
 				menu_ids::GO_BACK => {
 					handle_history_navigation(&dm, &config, live_region_label, false);
@@ -649,6 +666,14 @@ impl MainWindow {
 							}
 						}
 					} else if id == menu_ids::SHOW_ALL_DOCUMENTS {
+						let has_documents = {
+							let config_guard = config.lock().unwrap();
+							!config_guard.get_all_documents().is_empty()
+						};
+						if !has_documents {
+							live_region::announce(&live_region_label, &t("No recent documents."));
+							return;
+						}
 						let open_paths = dm.lock().unwrap().open_paths();
 						let config_for_dialog = Rc::clone(&config);
 						let selection = dialogs::show_all_documents_dialog(&frame_copy, config_for_dialog, open_paths);

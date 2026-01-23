@@ -10,6 +10,7 @@ use wxdragon::{prelude::*, timer::Timer, translations::translate as t};
 use crate::{
 	config::ConfigManager,
 	document::{DocumentStats, TocItem},
+	session::DocumentSession,
 	ui_types::DocumentListStatus,
 };
 
@@ -276,6 +277,52 @@ pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, autho
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
 	dialog.show_modal();
+}
+
+pub fn show_go_to_line_dialog(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<i64> {
+	let dialog_title = t("Go to Line");
+	let dialog = Dialog::builder(parent, &dialog_title).build();
+	let label_text = t("&Line number:");
+	let label = StaticText::builder(&dialog).with_label(&label_text).build();
+	let status = session.get_status_info(current_pos);
+	let total_lines = session.line_count().max(1);
+	let max_lines = total_lines.min(i64::from(i32::MAX)) as i32;
+	let current_line = status
+		.line_number
+		.clamp(1, total_lines)
+		.min(i64::from(i32::MAX)) as i32;
+	let line_ctrl = SpinCtrl::builder(&dialog).with_range(1, max_lines).build();
+	line_ctrl.set_value(current_line);
+	let line_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	line_sizer.add(&label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 5);
+	line_sizer.add(&line_ctrl, 1, SizerFlag::Expand, 0);
+
+	let ok_label = t("OK");
+	let ok_button = Button::builder(&dialog).with_label(&ok_label).build();
+	let cancel_label = t("Cancel");
+	let cancel_button = Button::builder(&dialog).with_label(&cancel_label).build();
+	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+	let dialog_for_ok = dialog;
+	ok_button.on_click(move |_| {
+		dialog_for_ok.end_modal(wxdragon::id::ID_OK);
+	});
+	let dialog_for_cancel = dialog;
+	cancel_button.on_click(move |_| {
+		dialog_for_cancel.end_modal(wxdragon::id::ID_CANCEL);
+	});
+
+	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
+	content_sizer.add_sizer(&line_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
+	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	button_sizer.add_stretch_spacer(1);
+	button_sizer.add(&ok_button, 0, SizerFlag::All, DIALOG_PADDING);
+	button_sizer.add(&cancel_button, 0, SizerFlag::All, DIALOG_PADDING);
+	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
+	dialog.set_sizer_and_fit(content_sizer, true);
+	dialog.centre();
+	line_ctrl.set_focus();
+
+	if dialog.show_modal() == wxdragon::id::ID_OK { Some(i64::from(line_ctrl.value())) } else { None }
 }
 
 pub fn show_update_dialog(parent: &dyn WxWidget, new_version: &str, changelog: &str) -> bool {
