@@ -28,7 +28,9 @@ impl DocumentManager {
 
 	pub fn open_file(&mut self, path: &Path) -> bool {
 		if !path.exists() {
-			eprintln!("File not found: {}", path.display());
+			let template = t("File not found: {}");
+			let message = template.replace("{}", &path.to_string_lossy());
+			show_error_dialog(&self.notebook, &message, &t("Error"));
 			return false;
 		}
 		if let Some(index) = self.find_tab_by_path(path) {
@@ -43,18 +45,32 @@ impl DocumentManager {
 			let password = config.get_document_password(&path_str);
 			(password, forced_extension)
 		};
-		let session = match DocumentSession::new(path.to_string_lossy().as_ref(), &password, &forced_extension) {
-			Ok(s) => s,
-			Err(e) => {
-				if e.starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
-					eprintln!("Password required for {}", path.display());
+		let path_str = path.to_string_lossy().to_string();
+		match DocumentSession::new(&path_str, &password, &forced_extension) {
+			Ok(session) => self.add_session_tab(path, session, &password),
+			Err(err) => {
+				if err.starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
+					let mut config = self.config.lock().unwrap();
+					config.set_document_password(&path_str, "");
+					drop(config);
+					let password = prompt_for_password(&self.notebook);
+					let Some(password) = password else {
+						show_error_dialog(&self.notebook, &t("Password is required."), &t("Error"));
+						return false;
+					};
+					match DocumentSession::new(&path_str, &password, &forced_extension) {
+						Ok(session) => self.add_session_tab(path, session, &password),
+						Err(_) => {
+							show_error_dialog(&self.notebook, &t("Failed to load document."), &t("Error"));
+							false
+						}
+					}
 				} else {
-					eprintln!("Failed to open document: {e}");
+					show_error_dialog(&self.notebook, &t("Failed to load document."), &t("Error"));
+					false
 				}
-				return false;
 			}
-		};
-		self.add_session_tab(path, session, &password)
+		}
 	}
 
 	pub fn add_session_tab(&mut self, path: &Path, session: DocumentSession, password: &str) -> bool {
@@ -165,7 +181,8 @@ impl DocumentManager {
 	}
 
 	pub fn find_tab_by_path(&self, path: &Path) -> Option<usize> {
-		self.tabs.iter().position(|tab| tab.file_path == path)
+		let target = normalized_path_key(path);
+		self.tabs.iter().position(|tab| normalized_path_key(&tab.file_path) == target)
 	}
 
 	pub fn save_current_tab_position(&self) {
@@ -191,6 +208,43 @@ impl DocumentManager {
 	pub fn notebook(&self) -> &Notebook {
 		&self.notebook
 	}
+
+	pub fn export_document(&self, index: usize, export_path: &Path) -> bool {
+		let tab = match self.tabs.get(index) {
+			Some(tab) => tab,
+			None => return false,
+		};
+		let export_path = export_path.to_string_lossy();
+		tab.session.export_content(export_path.as_ref()).is_ok()
+	}
+}
+
+fn normalized_path_key(path: &Path) -> String {
+	let normalized = std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
+	let value = normalized.to_string_lossy().to_string();
+	#[cfg(target_os = "windows")]
+	{
+		value.to_ascii_lowercase()
+	}
+	#[cfg(not(target_os = "windows"))]
+	{
+		value
+	}
+}
+
+fn prompt_for_password(parent: &dyn WxWidget) -> Option<String> {
+	let dialog = TextEntryDialog::builder(parent, &t("Password is required."), &t("Password")).password().build();
+	if dialog.show_modal() != wxdragon::id::ID_OK {
+		return None;
+	}
+	dialog.get_value().filter(|value| !value.trim().is_empty())
+}
+
+fn show_error_dialog(parent: &dyn WxWidget, message: &str, title: &str) {
+	let dialog = MessageDialog::builder(parent, message, title)
+		.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
+		.build();
+	dialog.show_modal();
 }
 
 fn fill_text_ctrl(text_ctrl: &TextCtrl, content: &str) {

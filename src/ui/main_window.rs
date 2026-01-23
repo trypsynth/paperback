@@ -530,7 +530,8 @@ impl MainWindow {
 						return;
 					};
 					let current_pos = tab.text_ctrl.get_insertion_point();
-					if let Some(target_pos) = dialogs::show_go_to_percent_dialog(&frame_copy, &tab.session, current_pos) {
+					if let Some(target_pos) = dialogs::show_go_to_percent_dialog(&frame_copy, &tab.session, current_pos)
+					{
 						tab.session.record_position(current_pos);
 						tab.text_ctrl.set_focus();
 						tab.text_ctrl.set_insertion_point(target_pos);
@@ -624,6 +625,115 @@ impl MainWindow {
 				}
 				menu_ids::NEXT_LIST_ITEM => {
 					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::ListItem, true);
+				}
+				menu_ids::EXPORT_TO_PLAIN_TEXT => {
+					let dm_ref = match dm.try_lock() {
+						Ok(dm_ref) => dm_ref,
+						Err(_) => return,
+					};
+					let Some(tab) = dm_ref.active_tab() else {
+						return;
+					};
+					let default_name = tab
+						.file_path
+						.file_stem()
+						.map(|s| s.to_string_lossy().to_string())
+						.unwrap_or_else(|| t("document"));
+					let default_file = format!("{default_name}.txt");
+					let wildcard = t("Plain text files (*.txt)|*.txt|All files (*.*)|*.*");
+					let dialog = FileDialog::builder(&frame_copy)
+						.with_message(&t("Export document to plain text"))
+						.with_default_file(&default_file)
+						.with_wildcard(&wildcard)
+						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
+						.build();
+					if dialog.show_modal() == wxdragon::id::ID_OK {
+						if let Some(path) = dialog.get_path() {
+							if tab.session.export_content(&path).is_err() {
+								let dialog =
+									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
+										.with_style(
+											MessageDialogStyle::OK
+												| MessageDialogStyle::IconError | MessageDialogStyle::Centre,
+										)
+										.build();
+								dialog.show_modal();
+							}
+						}
+					}
+				}
+				menu_ids::EXPORT_DOCUMENT_DATA => {
+					let dm_ref = match dm.try_lock() {
+						Ok(dm_ref) => dm_ref,
+						Err(_) => return,
+					};
+					let Some(tab) = dm_ref.active_tab() else {
+						return;
+					};
+					let default_name = tab
+						.file_path
+						.file_stem()
+						.map(|s| s.to_string_lossy().to_string())
+						.unwrap_or_else(|| t("document"));
+					let default_file = format!("{default_name}.paperback");
+					let wildcard = t("Paperback files (*.paperback)|*.paperback");
+					let dialog = FileDialog::builder(&frame_copy)
+						.with_message(&t("Export notes and bookmarks"))
+						.with_default_file(&default_file)
+						.with_wildcard(&wildcard)
+						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
+						.build();
+					if dialog.show_modal() == wxdragon::id::ID_OK {
+						if let Some(path) = dialog.get_path() {
+							let path_str = tab.file_path.to_string_lossy();
+							config.lock().unwrap().export_document_settings(&path_str, &path);
+							let dialog = MessageDialog::builder(
+								&frame_copy,
+								&t("Notes and bookmarks exported successfully."),
+								&t("Export Successful"),
+							)
+							.with_style(
+								MessageDialogStyle::OK
+									| MessageDialogStyle::IconInformation
+									| MessageDialogStyle::Centre,
+							)
+							.build();
+							dialog.show_modal();
+						}
+					}
+				}
+				menu_ids::IMPORT_DOCUMENT_DATA => {
+					let dm_ref = match dm.try_lock() {
+						Ok(dm_ref) => dm_ref,
+						Err(_) => return,
+					};
+					let Some(tab) = dm_ref.active_tab() else {
+						return;
+					};
+					let wildcard = t("Paperback files (*.paperback)|*.paperback");
+					let dialog = FileDialog::builder(&frame_copy)
+						.with_message(&t("Import notes and bookmarks"))
+						.with_wildcard(&wildcard)
+						.with_style(FileDialogStyle::Open | FileDialogStyle::FileMustExist)
+						.build();
+					if dialog.show_modal() == wxdragon::id::ID_OK {
+						if let Some(path) = dialog.get_path() {
+							let path_str = tab.file_path.to_string_lossy();
+							config.lock().unwrap().import_settings_from_file(&path_str, &path);
+							let dialog = MessageDialog::builder(
+								&frame_copy,
+								&t("Notes and bookmarks imported successfully."),
+								&t("Import Successful"),
+							)
+							.with_style(
+								MessageDialogStyle::OK
+									| MessageDialogStyle::IconInformation
+									| MessageDialogStyle::Centre,
+							)
+							.build();
+							dialog.show_modal();
+						}
+					}
 				}
 				menu_ids::WORD_COUNT => {
 					let dm_ref = match dm.try_lock() {

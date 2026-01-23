@@ -295,10 +295,7 @@ pub fn show_go_to_line_dialog(parent: &Frame, session: &DocumentSession, current
 	let status = session.get_status_info(current_pos);
 	let total_lines = session.line_count().max(1);
 	let max_lines = total_lines.min(i64::from(i32::MAX)) as i32;
-	let current_line = status
-		.line_number
-		.clamp(1, total_lines)
-		.min(i64::from(i32::MAX)) as i32;
+	let current_line = status.line_number.clamp(1, total_lines).min(i64::from(i32::MAX)) as i32;
 	let line_ctrl = SpinCtrl::builder(&dialog)
 		.with_range(1, max_lines)
 		.with_style(SpinCtrlStyle::Default | SpinCtrlStyle::ProcessEnter)
@@ -377,11 +374,8 @@ pub fn show_go_to_percent_dialog(parent: &Frame, session: &DocumentSession, curr
 	let status = session.get_status_info(current_pos);
 	let current_percent = status.percentage.clamp(0, 100);
 	let slider_label = StaticText::builder(&dialog).with_label(&t("&Percent")).build();
-	let percent_slider = Slider::builder(&dialog)
-		.with_value(current_percent)
-		.with_min_value(0)
-		.with_max_value(100)
-		.build();
+	let percent_slider =
+		Slider::builder(&dialog).with_value(current_percent).with_min_value(0).with_max_value(100).build();
 	let input_label = StaticText::builder(&dialog).with_label(&t("P&ercent:")).build();
 	let input_ctrl = SpinCtrl::builder(&dialog)
 		.with_range(0, 100)
