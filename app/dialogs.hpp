@@ -1,6 +1,5 @@
 #pragma once
 #include "config_manager.hpp"
-#include "controls.hpp"
 #include "document_data.hpp"
 #include "parser.hpp"
 #include <wx/arrstr.h>
@@ -203,60 +202,9 @@ private:
 	void save_settings();
 };
 
-class go_to_line_dialog : public dialog {
-public:
-	go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl, DocumentSession* session);
-	~go_to_line_dialog() override = default;
-	go_to_line_dialog(const go_to_line_dialog&) = delete;
-	go_to_line_dialog& operator=(const go_to_line_dialog&) = delete;
-	go_to_line_dialog(go_to_line_dialog&&) = delete;
-	go_to_line_dialog& operator=(go_to_line_dialog&&) = delete;
-	[[nodiscard]] long get_position() const;
-	[[nodiscard]] long get_line() const;
-
-private:
-	wxTextCtrl* textbox{nullptr};
-	DocumentSession* doc_session{nullptr};
-	wxSpinCtrl* input_ctrl{nullptr};
-};
-
-class go_to_page_dialog : public dialog {
-public:
-	go_to_page_dialog(wxWindow* parent, session_document* session_doc, int current_page = 1);
-	~go_to_page_dialog() override = default;
-	go_to_page_dialog(const go_to_page_dialog&) = delete;
-	go_to_page_dialog& operator=(const go_to_page_dialog&) = delete;
-	go_to_page_dialog(go_to_page_dialog&&) = delete;
-	go_to_page_dialog& operator=(go_to_page_dialog&&) = delete;
-	[[nodiscard]] int get_page_number() const;
-
-private:
-	session_document* session_doc_{nullptr};
-	wxSpinCtrl* input_ctrl{nullptr};
-
-	[[nodiscard]] int get_max_page() const;
-};
-
-class go_to_percent_dialog : public dialog {
-public:
-	go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ctrl, DocumentSession* session);
-	~go_to_percent_dialog() override = default;
-	go_to_percent_dialog(const go_to_percent_dialog&) = delete;
-	go_to_percent_dialog& operator=(const go_to_percent_dialog&) = delete;
-	go_to_percent_dialog(go_to_percent_dialog&&) = delete;
-	go_to_percent_dialog& operator=(go_to_percent_dialog&&) = delete;
-	[[nodiscard]] long get_position() const;
-	[[nodiscard]] int get_percent() const;
-
-private:
-	wxTextCtrl* textbox{nullptr};
-	DocumentSession* doc_session{nullptr};
-	accessible_slider* percent_slider{nullptr};
-	wxSpinCtrl* input_ctrl{nullptr};
-
-	void on_slider_changed(wxCommandEvent& event);
-	void on_spin_changed(wxSpinEvent& event);
-};
+// go_to_line_dialog has been ported to Rust (src/ui/dialogs.rs::show_go_to_line_dialog)
+// go_to_page_dialog has been ported to Rust (src/ui/dialogs.rs::show_go_to_page_dialog)
+// go_to_percent_dialog has been ported to Rust (src/ui/dialogs.rs::show_go_to_percent_dialog)
 
 class note_entry_dialog : public dialog {
 public:

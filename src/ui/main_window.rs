@@ -502,7 +502,45 @@ impl MainWindow {
 						cfg.set_navigation_history(&path_str, history, history_index);
 					}
 				}
-				menu_ids::GO_TO_PERCENT => println!("Go to percent requested"),
+				menu_ids::GO_TO_PAGE => {
+					let mut dm_guard = dm.lock().unwrap();
+					let Some(tab) = dm_guard.active_tab_mut() else {
+						return;
+					};
+					if tab.session.page_count() == 0 {
+						live_region::announce(&live_region_label, &t("No pages."));
+						return;
+					}
+					let current_pos = tab.text_ctrl.get_insertion_point();
+					let current_page = tab.session.current_page(current_pos);
+					if let Some(target_pos) = dialogs::show_go_to_page_dialog(&frame_copy, &tab.session, current_page) {
+						tab.session.record_position(current_pos);
+						tab.text_ctrl.set_focus();
+						tab.text_ctrl.set_insertion_point(target_pos);
+						tab.text_ctrl.show_position(target_pos);
+						let (history, history_index) = tab.session.get_history();
+						let path_str = tab.file_path.to_string_lossy();
+						let cfg = config.lock().unwrap();
+						cfg.set_navigation_history(&path_str, history, history_index);
+					}
+				}
+				menu_ids::GO_TO_PERCENT => {
+					let mut dm_guard = dm.lock().unwrap();
+					let Some(tab) = dm_guard.active_tab_mut() else {
+						return;
+					};
+					let current_pos = tab.text_ctrl.get_insertion_point();
+					if let Some(target_pos) = dialogs::show_go_to_percent_dialog(&frame_copy, &tab.session, current_pos) {
+						tab.session.record_position(current_pos);
+						tab.text_ctrl.set_focus();
+						tab.text_ctrl.set_insertion_point(target_pos);
+						tab.text_ctrl.show_position(target_pos);
+						let (history, history_index) = tab.session.get_history();
+						let path_str = tab.file_path.to_string_lossy();
+						let cfg = config.lock().unwrap();
+						cfg.set_navigation_history(&path_str, history, history_index);
+					}
+				}
 				menu_ids::GO_BACK => {
 					handle_history_navigation(&dm, &config, live_region_label, false);
 				}

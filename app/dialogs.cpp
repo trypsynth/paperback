@@ -680,88 +680,9 @@ void find_dialog::save_settings() {
 	);
 }
 
-go_to_line_dialog::go_to_line_dialog(wxWindow* parent, wxTextCtrl* text_ctrl, DocumentSession* session) : dialog(parent, _("Go to Line")), textbox{text_ctrl}, doc_session{session} {
-	constexpr int label_spacing = 5;
-	auto* line_sizer = new wxBoxSizer(wxHORIZONTAL);
-	auto* label = new wxStaticText(this, wxID_ANY, _("&Line number:"));
-	const auto status = session_get_status_info(*doc_session, textbox->GetInsertionPoint());
-	const int total_lines = static_cast<int>(session_line_count(*doc_session));
-	input_ctrl = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, total_lines, static_cast<int>(status.line_number));
-	line_sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, label_spacing);
-	line_sizer->Add(input_ctrl, 1, wxEXPAND);
-	set_content(line_sizer);
-	finalize_layout();
-}
-
-long go_to_line_dialog::get_position() const {
-	return static_cast<long>(session_position_from_line(*doc_session, get_line()));
-}
-
-long go_to_line_dialog::get_line() const {
-	return input_ctrl->GetValue();
-}
-
-go_to_page_dialog::go_to_page_dialog(wxWindow* parent, session_document* session_doc, int current_page) : dialog(parent, _("Go to page")), session_doc_{session_doc} {
-	constexpr int label_spacing = 5;
-	auto* page_sizer = new wxBoxSizer(wxHORIZONTAL);
-	auto* label = new wxStaticText(this, wxID_ANY, wxString::Format(_("Go to page (1/%d):"), get_max_page()));
-	input_ctrl = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, get_max_page(), current_page);
-	page_sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, label_spacing);
-	page_sizer->Add(input_ctrl, 1, wxEXPAND);
-	set_content(page_sizer);
-	finalize_layout();
-}
-
-int go_to_page_dialog::get_page_number() const {
-	const long page = input_ctrl->GetValue();
-	if (page >= 1 && page <= get_max_page()) return static_cast<int>(page);
-	return 1;
-}
-
-int go_to_page_dialog::get_max_page() const {
-	if (session_doc_ == nullptr) return 1;
-	return static_cast<int>(session_page_count(*session_doc_->session));
-}
-
-go_to_percent_dialog::go_to_percent_dialog(wxWindow* parent, wxTextCtrl* text_ctrl, DocumentSession* session) : dialog(parent, _("Go to Percent")), textbox{text_ctrl}, doc_session{session} {
-	constexpr int percent_max = 100;
-	constexpr int label_spacing = 5;
-	const auto status = session_get_status_info(*doc_session, textbox->GetInsertionPoint());
-	const int current_percent = status.percentage;
-	auto* input_label = new wxStaticText(this, wxID_ANY, _("P&ercent:"));
-	input_ctrl = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, percent_max, current_percent);
-	auto* slider_label = new wxStaticText(this, wxID_ANY, _("&Percent"));
-	percent_slider = new accessible_slider(this, wxID_ANY, current_percent, 0, percent_max);
-	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
-	content_sizer->Add(slider_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, label_spacing);
-	content_sizer->Add(percent_slider, 0, wxEXPAND | wxBOTTOM, label_spacing);
-	content_sizer->Add(input_label, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, label_spacing);
-	content_sizer->Add(input_ctrl, 0, wxEXPAND);
-	percent_slider->Bind(wxEVT_SLIDER, &go_to_percent_dialog::on_slider_changed, this);
-	input_ctrl->Bind(wxEVT_SPINCTRL, &go_to_percent_dialog::on_spin_changed, this);
-	set_content(content_sizer);
-	finalize_layout();
-	percent_slider->SetFocus();
-}
-
-long go_to_percent_dialog::get_position() const {
-	return static_cast<long>(session_position_from_percent(*doc_session, get_percent()));
-}
-
-int go_to_percent_dialog::get_percent() const {
-	return input_ctrl->GetValue();
-}
-
-void go_to_percent_dialog::on_slider_changed(wxCommandEvent& /*event*/) {
-	const int slider_value = percent_slider->GetValue();
-	input_ctrl->SetValue(slider_value);
-}
-
-void go_to_percent_dialog::on_spin_changed(wxSpinEvent& /*event*/) {
-	const int spin_value = input_ctrl->GetValue();
-	percent_slider->SetValue(spin_value);
-}
-
+// go_to_line_dialog has been ported to Rust (src/ui/dialogs.rs::show_go_to_line_dialog)
+// go_to_page_dialog has been ported to Rust (src/ui/dialogs.rs::show_go_to_page_dialog)
+// go_to_percent_dialog has been ported to Rust (src/ui/dialogs.rs::show_go_to_percent_dialog)
 // open_as_dialog has been ported to Rust (src/ui/dialogs.rs::show_open_as_dialog)
 
 note_entry_dialog::note_entry_dialog(wxWindow* parent, const wxString& title, const wxString& message, const wxString& existing_note) : dialog(parent, title) {
