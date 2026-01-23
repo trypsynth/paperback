@@ -36,7 +36,7 @@ impl DocumentManager {
 			return true;
 		}
 		let (password, forced_extension) = {
-			let mut config = self.config.lock().unwrap();
+			let config = self.config.lock().unwrap();
 			let path_str = path.to_string_lossy();
 			config.import_document_settings(&path_str);
 			let forced_extension = config.get_document_format(&path_str);
@@ -69,7 +69,7 @@ impl DocumentManager {
 			title
 		};
 		let panel = Panel::builder(&self.notebook).build();
-		let mut config = self.config.lock().unwrap();
+		let config = self.config.lock().unwrap();
 		let mut session = session;
 		let word_wrap = config.get_app_bool("word_wrap", false);
 		let style = TextCtrlStyle::MultiLine
@@ -114,7 +114,7 @@ impl DocumentManager {
 		if let Some(tab) = self.tabs.get(index) {
 			let position = tab.text_ctrl.get_insertion_point();
 			let path_str = tab.file_path.to_string_lossy();
-			let mut config = self.config.lock().unwrap();
+			let config = self.config.lock().unwrap();
 			config.set_document_position(&path_str, position);
 			let (history, history_index) = tab.session.get_history();
 			config.set_navigation_history(&path_str, history, history_index);
@@ -172,7 +172,7 @@ impl DocumentManager {
 		if let Some(tab) = self.active_tab() {
 			let position = tab.text_ctrl.get_insertion_point();
 			let path_str = tab.file_path.to_string_lossy();
-			let mut config = self.config.lock().unwrap();
+			let config = self.config.lock().unwrap();
 			config.set_document_position(&path_str, position);
 			let (history, history_index) = tab.session.get_history();
 			config.set_navigation_history(&path_str, history, history_index);

@@ -427,7 +427,7 @@ pub fn show_all_documents_dialog(
 			return;
 		};
 		{
-			let mut cfg = config_for_remove.lock().unwrap();
+			let cfg = config_for_remove.lock().unwrap();
 			cfg.remove_document_history(&path_to_remove);
 			cfg.flush();
 		}
@@ -467,7 +467,7 @@ pub fn show_all_documents_dialog(
 			return;
 		}
 		{
-			let mut cfg = config_for_clear.lock().unwrap();
+			let cfg = config_for_clear.lock().unwrap();
 			for path in cfg.get_all_documents() {
 				cfg.remove_document_history(&path);
 			}

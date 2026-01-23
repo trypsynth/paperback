@@ -614,7 +614,7 @@ impl MainWindow {
 							tab.text_ctrl.show_position(offset as i64);
 							let (history, history_index) = tab.session.get_history();
 							let path_str = tab.file_path.to_string_lossy();
-							let mut cfg = config.lock().unwrap();
+							let cfg = config.lock().unwrap();
 							cfg.set_navigation_history(&path_str, history, history_index);
 						}
 					}
@@ -1424,7 +1424,7 @@ fn handle_history_navigation(
 		tab.text_ctrl.show_position(result.offset);
 		let (history, history_index) = tab.session.get_history();
 		let path_str = tab.file_path.to_string_lossy();
-		let mut cfg = config.lock().unwrap();
+		let cfg = config.lock().unwrap();
 		cfg.set_navigation_history(&path_str, history, history_index);
 	} else {
 		let message = if forward { t("No next position.") } else { t("No previous position.") };
@@ -1460,7 +1460,7 @@ fn handle_marker_navigation(
 	if apply_navigation_result(tab, result, target, next, live_region_label) {
 		let (history, history_index) = tab.session.get_history();
 		let path_str = tab.file_path.to_string_lossy();
-		let mut cfg = config.lock().unwrap();
+		let cfg = config.lock().unwrap();
 		cfg.set_navigation_history(&path_str, history, history_index);
 	}
 }

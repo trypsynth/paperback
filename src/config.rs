@@ -1,27 +1,18 @@
-use std::{
-	cmp::Ordering,
-	env,
-	fmt::Write,
-	fs::{self, OpenOptions},
-	path::{Path, PathBuf},
-	string::ToString,
-};
+use std::{cmp::Ordering, fmt::Write, path::Path};
 
 use base64::{
 	Engine,
 	engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD},
 };
-use configparser::ini::Ini;
 use sha1::{Digest, Sha1};
+use wxdragon::config::{Config, ConfigStyle};
 
-const CONFIG_VERSION_LEGACY: i32 = 0;
-const CONFIG_VERSION_1: i32 = 1;
-const CONFIG_VERSION_2: i32 = 2;
-const CONFIG_VERSION_CURRENT: i32 = CONFIG_VERSION_2;
-const DEFAULT_RECENT_DOCUMENTS_TO_SHOW: i32 = 25;
+const CONFIG_VERSION_LEGACY: i64 = 0;
+const CONFIG_VERSION_1: i64 = 1;
+const CONFIG_VERSION_2: i64 = 2;
+const CONFIG_VERSION_CURRENT: i64 = CONFIG_VERSION_2;
+const DEFAULT_RECENT_DOCUMENTS_TO_SHOW: i64 = 25;
 const MAX_RECENT_DOCUMENTS_TO_SHOW: usize = 100;
-const CONFIG_DIRECTORY: &str = "paperback";
-const CONFIG_FILENAME: &str = "paperback.ini";
 
 #[derive(Clone, Debug, Default)]
 pub struct Bookmark {
@@ -44,8 +35,7 @@ pub struct FindSettings {
 }
 
 pub struct ConfigManager {
-	data: Ini,
-	config_path: PathBuf,
+	config: Option<Config>,
 	initialized: bool,
 }
 
@@ -58,30 +48,21 @@ impl Default for ConfigManager {
 impl ConfigManager {
 	#[must_use]
 	pub fn new() -> Self {
-		Self { data: Ini::new(), config_path: PathBuf::new(), initialized: false }
+		Self { config: None, initialized: false }
 	}
 
 	#[must_use]
 	pub fn initialize(&mut self) -> bool {
-		self.config_path = get_config_path();
-		if let Some(parent) = self.config_path.parent() {
-			let _ = fs::create_dir_all(parent);
-		}
-		let loaded = self.data.load(&self.config_path);
-		if loaded.is_err() {
-			self.data = Ini::new();
-		}
+		let config = Config::new("Paperback", Some("Paperback"), None, None, ConfigStyle::USE_LOCAL_FILE);
+		self.config = Some(config);
 		self.initialized = true;
 		self.load_defaults();
 		true
 	}
 
 	pub fn flush(&self) {
-		if self.initialized {
-			if let Some(parent) = self.config_path.parent() {
-				let _ = fs::create_dir_all(parent);
-			}
-			let _ = self.data.write(&self.config_path);
+		if let Some(ref config) = self.config {
+			config.flush(false);
 		}
 	}
 
@@ -90,7 +71,7 @@ impl ConfigManager {
 			return;
 		}
 		self.flush();
-		self.data = Ini::new();
+		self.config = None;
 		self.initialized = false;
 	}
 
@@ -98,88 +79,162 @@ impl ConfigManager {
 		self.initialized
 	}
 
+	fn config(&self) -> Option<&Config> {
+		if self.initialized { self.config.as_ref() } else { None }
+	}
+
 	pub fn get_string(&self, key: &str, default_value: &str) -> String {
-		self.get_value(None, key).unwrap_or_else(|| default_value.to_string())
+		self.config().map_or_else(|| default_value.to_string(), |c| c.read_string(key, default_value))
 	}
 
 	pub fn get_bool(&self, key: &str, default_value: bool) -> bool {
-		self.get_value(None, key).map_or(default_value, |v| parse_bool(&v, default_value))
+		self.config().map_or(default_value, |c| c.read_bool(key, default_value))
 	}
 
 	pub fn get_int(&self, key: &str, default_value: i32) -> i32 {
-		self.get_value(None, key).and_then(|v| v.parse::<i32>().ok()).unwrap_or(default_value)
+		self.config().map_or(default_value, |c| c.read_long(key, i64::from(default_value)) as i32)
 	}
 
-	pub fn set_string(&mut self, key: &str, value: &str) {
-		self.set_value(None, key, value);
+	pub fn set_string(&self, key: &str, value: &str) {
+		if let Some(config) = self.config() {
+			config.write_string(key, value);
+		}
 	}
 
-	pub fn set_bool(&mut self, key: &str, value: bool) {
-		self.set_value(None, key, &format_bool(value));
+	pub fn set_bool(&self, key: &str, value: bool) {
+		if let Some(config) = self.config() {
+			config.write_bool(key, value);
+		}
 	}
 
-	pub fn set_int(&mut self, key: &str, value: i32) {
-		self.set_value(None, key, &value.to_string());
+	pub fn set_int(&self, key: &str, value: i32) {
+		if let Some(config) = self.config() {
+			config.write_long(key, i64::from(value));
+		}
 	}
 
 	pub fn get_app_string(&self, key: &str, default_value: &str) -> String {
-		self.get_value(Some("app"), key).unwrap_or_else(|| default_value.to_string())
+		let Some(config) = self.config() else { return default_value.to_string() };
+		config.set_path("/app");
+		let result = config.read_string(key, default_value);
+		config.set_path("/");
+		result
 	}
 
 	pub fn get_app_bool(&self, key: &str, default_value: bool) -> bool {
-		self.get_value(Some("app"), key).map_or(default_value, |v| parse_bool(&v, default_value))
+		let Some(config) = self.config() else { return default_value };
+		config.set_path("/app");
+		let result = config.read_bool(key, default_value);
+		config.set_path("/");
+		result
 	}
 
 	pub fn get_app_int(&self, key: &str, default_value: i32) -> i32 {
-		self.get_value(Some("app"), key).and_then(|v| v.parse::<i32>().ok()).unwrap_or(default_value)
+		let Some(config) = self.config() else { return default_value };
+		config.set_path("/app");
+		let result = config.read_long(key, i64::from(default_value)) as i32;
+		config.set_path("/");
+		result
 	}
 
-	pub fn set_app_string(&mut self, key: &str, value: &str) {
-		self.set_value(Some("app"), key, value);
+	fn get_app_long(&self, key: &str, default_value: i64) -> i64 {
+		let Some(config) = self.config() else { return default_value };
+		config.set_path("/app");
+		let result = config.read_long(key, default_value);
+		config.set_path("/");
+		result
 	}
 
-	pub fn set_app_bool(&mut self, key: &str, value: bool) {
-		self.set_value(Some("app"), key, &format_bool(value));
+	pub fn set_app_string(&self, key: &str, value: &str) {
+		if let Some(config) = self.config() {
+			config.set_path("/app");
+			config.write_string(key, value);
+			config.set_path("/");
+		}
 	}
 
-	pub fn set_app_int(&mut self, key: &str, value: i32) {
-		self.set_value(Some("app"), key, &value.to_string());
+	pub fn set_app_bool(&self, key: &str, value: bool) {
+		if let Some(config) = self.config() {
+			config.set_path("/app");
+			config.write_bool(key, value);
+			config.set_path("/");
+		}
+	}
+
+	pub fn set_app_int(&self, key: &str, value: i32) {
+		if let Some(config) = self.config() {
+			config.set_path("/app");
+			config.write_long(key, i64::from(value));
+			config.set_path("/");
+		}
+	}
+
+	fn set_app_long(&self, key: &str, value: i64) {
+		if let Some(config) = self.config() {
+			config.set_path("/app");
+			config.write_long(key, value);
+			config.set_path("/");
+		}
 	}
 
 	pub fn get_document_string(&self, path: &str, key: &str, default_value: &str) -> String {
+		let Some(config) = self.config() else { return default_value.to_string() };
 		let section = get_document_section(path);
-		self.get_value(Some(&section), key).unwrap_or_else(|| default_value.to_string())
+		config.set_path(&format!("/{section}"));
+		let result = config.read_string(key, default_value);
+		config.set_path("/");
+		result
 	}
 
 	pub fn get_document_bool(&self, path: &str, key: &str, default_value: bool) -> bool {
+		let Some(config) = self.config() else { return default_value };
 		let section = get_document_section(path);
-		self.get_value(Some(&section), key).map_or(default_value, |v| parse_bool(&v, default_value))
+		config.set_path(&format!("/{section}"));
+		let result = config.read_bool(key, default_value);
+		config.set_path("/");
+		result
 	}
 
 	pub fn get_document_int(&self, path: &str, key: &str, default_value: i64) -> i64 {
+		let Some(config) = self.config() else { return default_value };
 		let section = get_document_section(path);
-		self.get_value(Some(&section), key).and_then(|v| v.parse::<i64>().ok()).unwrap_or(default_value)
+		config.set_path(&format!("/{section}"));
+		let result = config.read_long(key, default_value);
+		config.set_path("/");
+		result
 	}
 
-	pub fn set_document_string(&mut self, path: &str, key: &str, value: &str) {
-		let section = get_document_section(path);
-		self.set_value(Some(&section), "path", path);
-		self.set_value(Some(&section), key, value);
+	pub fn set_document_string(&self, path: &str, key: &str, value: &str) {
+		if let Some(config) = self.config() {
+			let section = get_document_section(path);
+			config.set_path(&format!("/{section}"));
+			config.write_string("path", path);
+			config.write_string(key, value);
+			config.set_path("/");
+		}
 	}
 
-	pub fn set_document_bool(&mut self, path: &str, key: &str, value: bool) {
-		let section = get_document_section(path);
-		self.set_value(Some(&section), "path", path);
-		self.set_value(Some(&section), key, &format_bool(value));
+	pub fn set_document_bool(&self, path: &str, key: &str, value: bool) {
+		if let Some(config) = self.config() {
+			let section = get_document_section(path);
+			config.set_path(&format!("/{section}"));
+			config.write_string("path", path);
+			config.write_bool(key, value);
+			config.set_path("/");
+		}
 	}
 
-	pub fn set_document_int(&mut self, path: &str, key: &str, value: i64) {
-		let section = get_document_section(path);
-		self.set_value(Some(&section), "path", path);
-		self.set_value(Some(&section), key, &value.to_string());
+	pub fn set_document_int(&self, path: &str, key: &str, value: i64) {
+		if let Some(config) = self.config() {
+			let section = get_document_section(path);
+			config.set_path(&format!("/{section}"));
+			config.write_string("path", path);
+			config.write_long(key, value);
+			config.set_path("/");
+		}
 	}
 
-	pub fn add_recent_document(&mut self, path: &str) {
+	pub fn add_recent_document(&self, path: &str) {
 		if !self.is_ready() {
 			return;
 		}
@@ -199,28 +254,40 @@ impl ConfigManager {
 		if !self.is_ready() {
 			return Vec::new();
 		}
+		let Some(config) = self.config() else { return Vec::new() };
+		config.set_path("/recent_documents");
 		let mut result = Vec::new();
 		for idx in 0.. {
 			let key = format!("doc{idx}");
-			let doc_id = match self.get_value(Some("recent_documents"), &key) {
-				Some(v) if !v.is_empty() => v,
-				_ => break,
-			};
-			if let Some(path) = self.get_value(Some(&doc_id), "path") {
-				if !path.is_empty() {
-					result.push(path);
-				}
+			if !config.has_entry(&key) {
+				break;
 			}
+			let doc_id = config.read_string(&key, "");
+			if doc_id.is_empty() {
+				break;
+			}
+			config.set_path("/");
+			config.set_path(&format!("/{doc_id}"));
+			let path = config.read_string("path", "");
+			if !path.is_empty() {
+				result.push(path);
+			}
+			config.set_path("/recent_documents");
 		}
+		config.set_path("/");
 		result
 	}
 
-	pub fn clear_recent_documents(&mut self) {
-		self.remove_section(Some("recent_documents"));
+	pub fn clear_recent_documents(&self) {
+		if let Some(config) = self.config() {
+			config.delete_group("recent_documents");
+		}
 	}
 
-	pub fn rebuild_recent_documents(&mut self) {
-		if self.data.get_map_ref().contains_key("recent_documents") {
+	pub fn rebuild_recent_documents(&self) {
+		let Some(config) = self.config() else { return };
+		config.set_path("/");
+		if config.has_group("recent_documents") {
 			return;
 		}
 		let mut combined = self.get_recent_documents();
@@ -232,7 +299,7 @@ impl ConfigManager {
 		self.write_recent_documents(&combined);
 	}
 
-	pub fn add_opened_document(&mut self, path: &str) {
+	pub fn add_opened_document(&self, path: &str) {
 		let mut opened = self.get_opened_documents();
 		if opened.iter().any(|p| p == path) {
 			return;
@@ -241,7 +308,7 @@ impl ConfigManager {
 		self.write_opened_documents(&opened);
 	}
 
-	pub fn remove_opened_document(&mut self, path: &str) {
+	pub fn remove_opened_document(&self, path: &str) {
 		let mut opened = self.get_opened_documents();
 		if let Some(idx) = opened.iter().position(|p| p == path) {
 			opened.remove(idx);
@@ -253,11 +320,20 @@ impl ConfigManager {
 		if !self.is_ready() {
 			return Vec::new();
 		}
-		let mut entries = self.iter_section(Some("opened_documents"));
-		entries.sort_by(|a, b| a.0.cmp(&b.0));
+		let Some(config) = self.config() else { return Vec::new() };
+		config.set_path("/opened_documents");
+		let entries = config.get_entries();
+		config.set_path("/");
 		if !entries.is_empty() {
-			return entries.into_iter().map(|(_, v)| v).collect();
+			let mut sorted_entries: Vec<_> = entries.into_iter().collect();
+			sorted_entries.sort();
+			config.set_path("/opened_documents");
+			let result: Vec<String> =
+				sorted_entries.iter().map(|key| config.read_string(key, "")).filter(|v| !v.is_empty()).collect();
+			config.set_path("/");
+			return result;
 		}
+		// Fallback: check old-style opened flag on documents
 		let mut opened = Vec::new();
 		for path in self.get_recent_documents() {
 			if self.get_document_opened(&path) {
@@ -284,7 +360,7 @@ impl ConfigManager {
 		}
 	}
 
-	pub fn set_find_settings(&mut self, settings: FindSettings) {
+	pub fn set_find_settings(&self, settings: FindSettings) {
 		self.set_app_bool("find_match_case", settings.match_case);
 		self.set_app_bool("find_whole_word", settings.whole_word);
 		self.set_app_bool("find_use_regex", settings.use_regex);
@@ -294,19 +370,25 @@ impl ConfigManager {
 		if !self.is_ready() {
 			return Vec::new();
 		}
+		let Some(config) = self.config() else { return Vec::new() };
+		config.set_path("/find_history");
 		let mut result = Vec::new();
 		for idx in 0.. {
 			let key = format!("item{idx}");
-			let entry = match self.get_value(Some("find_history"), &key) {
-				Some(v) if !v.is_empty() => v,
-				_ => break,
-			};
+			if !config.has_entry(&key) {
+				break;
+			}
+			let entry = config.read_string(&key, "");
+			if entry.is_empty() {
+				break;
+			}
 			result.push(entry);
 		}
+		config.set_path("/");
 		result
 	}
 
-	pub fn add_find_history(&mut self, text: &str, max_len: usize) {
+	pub fn add_find_history(&self, text: &str, max_len: usize) {
 		if !self.is_ready() {
 			return;
 		}
@@ -322,18 +404,24 @@ impl ConfigManager {
 		while history.len() > max_len {
 			history.pop();
 		}
-		self.remove_section(Some("find_history"));
-		for (idx, entry) in history.iter().enumerate() {
-			let key = format!("item{idx}");
-			self.set_value(Some("find_history"), &key, entry);
+		if let Some(config) = self.config() {
+			config.delete_group("find_history");
+			config.set_path("/find_history");
+			for (idx, entry) in history.iter().enumerate() {
+				let key = format!("item{idx}");
+				config.write_string(&key, entry);
+			}
+			config.set_path("/");
 		}
 	}
 
-	pub fn clear_opened_documents(&mut self) {
-		self.remove_section(Some("opened_documents"));
+	pub fn clear_opened_documents(&self) {
+		if let Some(config) = self.config() {
+			config.delete_group("opened_documents");
+		}
 	}
 
-	pub fn set_document_position(&mut self, path: &str, position: i64) {
+	pub fn set_document_position(&self, path: &str, position: i64) {
 		self.set_document_int(path, "last_position", position);
 	}
 
@@ -348,23 +436,29 @@ impl ConfigManager {
 		if saved > 0 && saved <= max_position { saved } else { -1 }
 	}
 
-	pub fn set_navigation_history(&mut self, path: &str, history: &[i64], history_index: usize) {
+	pub fn set_navigation_history(&self, path: &str, history: &[i64], history_index: usize) {
+		let Some(config) = self.config() else { return };
 		let section = get_document_section(path);
+		config.set_path(&format!("/{section}"));
 		if history.is_empty() {
-			self.remove_entry(Some(&section), "navigation_history");
-			self.remove_entry(Some(&section), "navigation_history_index");
-			return;
+			config.delete_entry("navigation_history", false);
+			config.delete_entry("navigation_history_index", false);
+		} else {
+			let history_string = history.iter().map(ToString::to_string).collect::<Vec<_>>().join(",");
+			config.write_string("path", path);
+			config.write_string("navigation_history", &history_string);
+			config.write_long("navigation_history_index", history_index as i64);
 		}
-		let history_string = history.iter().map(ToString::to_string).collect::<Vec<_>>().join(",");
-		self.set_value(Some(&section), "path", path);
-		self.set_value(Some(&section), "navigation_history", &history_string);
-		self.set_value(Some(&section), "navigation_history_index", &history_index.to_string());
+		config.set_path("/");
 	}
 
 	pub fn get_navigation_history(&self, path: &str) -> NavigationHistory {
 		let mut nav = NavigationHistory::default();
+		let Some(config) = self.config() else { return nav };
 		let section = get_document_section(path);
-		if let Some(history) = self.get_value(Some(&section), "navigation_history") {
+		config.set_path(&format!("/{section}"));
+		let history = config.read_string("navigation_history", "");
+		if !history.is_empty() {
 			for token in history.split(',') {
 				let trimmed = token.trim();
 				if trimmed.is_empty() {
@@ -375,15 +469,12 @@ impl ConfigManager {
 				}
 			}
 		}
-		if let Some(index) = self.get_value(Some(&section), "navigation_history_index") {
-			if let Ok(idx) = index.parse::<usize>() {
-				nav.index = idx;
-			}
-		}
+		nav.index = config.read_long("navigation_history_index", 0) as usize;
+		config.set_path("/");
 		nav
 	}
 
-	pub fn set_document_opened(&mut self, path: &str, opened: bool) {
+	pub fn set_document_opened(&self, path: &str, opened: bool) {
 		self.set_document_bool(path, "opened", opened);
 	}
 
@@ -392,37 +483,46 @@ impl ConfigManager {
 		self.get_document_bool(path, "opened", false)
 	}
 
-	pub fn remove_document_history(&mut self, path: &str) {
+	pub fn remove_document_history(&self, path: &str) {
 		let mut recent = self.get_recent_documents();
 		if let Some(idx) = recent.iter().position(|p| p == path) {
 			recent.remove(idx);
 		}
 		self.write_recent_documents(&recent);
 		let section = get_document_section(path);
-		self.remove_section(Some(&section));
+		if let Some(config) = self.config() {
+			config.delete_group(&section);
+		}
 	}
 
-	pub fn remove_navigation_history(&mut self, path: &str) {
+	pub fn remove_navigation_history(&self, path: &str) {
+		let Some(config) = self.config() else { return };
 		let section = get_document_section(path);
-		self.remove_entry(Some(&section), "navigation_history");
-		self.remove_entry(Some(&section), "navigation_history_index");
+		config.set_path(&format!("/{section}"));
+		config.delete_entry("navigation_history", false);
+		config.delete_entry("navigation_history_index", false);
+		config.set_path("/");
 	}
 
 	pub fn get_all_documents(&self) -> Vec<String> {
+		let Some(config) = self.config() else { return Vec::new() };
+		config.set_path("/");
+		let groups = config.get_groups();
 		let mut docs = Vec::new();
-		for section in self.section_names() {
-			if section.starts_with("doc_") {
-				if let Some(path) = self.get_value(Some(&section), "path") {
-					if !path.is_empty() {
-						docs.push(path);
-					}
+		for group in groups {
+			if group.starts_with("doc_") {
+				config.set_path(&format!("/{group}"));
+				let path = config.read_string("path", "");
+				if !path.is_empty() {
+					docs.push(path);
 				}
+				config.set_path("/");
 			}
 		}
 		docs
 	}
 
-	pub fn add_bookmark(&mut self, path: &str, start: i64, end: i64, note: &str) {
+	pub fn add_bookmark(&self, path: &str, start: i64, end: i64, note: &str) {
 		let mut bookmarks = self.get_bookmarks(path);
 		if bookmarks.iter().any(|bm| bm.start == start && bm.end == end) {
 			return;
@@ -432,7 +532,7 @@ impl ConfigManager {
 		self.write_bookmarks(path, &bookmarks);
 	}
 
-	pub fn remove_bookmark(&mut self, path: &str, start: i64, end: i64) {
+	pub fn remove_bookmark(&self, path: &str, start: i64, end: i64) {
 		let mut bookmarks = self.get_bookmarks(path);
 		if let Some(idx) = bookmarks.iter().position(|bm| bm.start == start && bm.end == end) {
 			bookmarks.remove(idx);
@@ -440,7 +540,7 @@ impl ConfigManager {
 		}
 	}
 
-	pub fn toggle_bookmark(&mut self, path: &str, start: i64, end: i64, note: &str) {
+	pub fn toggle_bookmark(&self, path: &str, start: i64, end: i64, note: &str) {
 		if self.get_bookmarks(path).iter().any(|bm| bm.start == start && bm.end == end) {
 			self.remove_bookmark(path, start, end);
 		} else {
@@ -448,7 +548,7 @@ impl ConfigManager {
 		}
 	}
 
-	pub fn update_bookmark_note(&mut self, path: &str, start: i64, end: i64, note: &str) {
+	pub fn update_bookmark_note(&self, path: &str, start: i64, end: i64, note: &str) {
 		let mut bookmarks = self.get_bookmarks(path);
 		if let Some(item) = bookmarks.iter_mut().find(|bm| bm.start == start && bm.end == end) {
 			item.note = note.to_string();
@@ -457,8 +557,12 @@ impl ConfigManager {
 	}
 
 	pub fn get_bookmarks(&self, path: &str) -> Vec<Bookmark> {
+		let Some(config) = self.config() else { return Vec::new() };
 		let section = get_document_section(path);
-		let bookmark_string = self.get_value(Some(&section), "bookmarks").unwrap_or_default();
+		config.set_path(&format!("/{section}"));
+		let bookmark_string = config.read_string("bookmarks", "");
+		config.set_path("/");
+
 		if bookmark_string.is_empty() {
 			return Vec::new();
 		}
@@ -485,9 +589,12 @@ impl ConfigManager {
 		results
 	}
 
-	pub fn clear_bookmarks(&mut self, path: &str) {
+	pub fn clear_bookmarks(&self, path: &str) {
+		let Some(config) = self.config() else { return };
 		let section = get_document_section(path);
-		self.remove_entry(Some(&section), "bookmarks");
+		config.set_path(&format!("/{section}"));
+		config.delete_entry("bookmarks", false);
+		config.set_path("/");
 	}
 
 	pub fn get_next_bookmark(&self, path: &str, current_position: i64) -> Bookmark {
@@ -510,7 +617,7 @@ impl ConfigManager {
 		Bookmark { start: -1, end: -1, note: String::new() }
 	}
 
-	pub fn set_document_format(&mut self, path: &str, format: &str) {
+	pub fn set_document_format(&self, path: &str, format: &str) {
 		self.set_document_string(path, "format", format);
 	}
 
@@ -518,10 +625,13 @@ impl ConfigManager {
 		self.get_document_string(path, "format", "")
 	}
 
-	pub fn set_document_password(&mut self, path: &str, password: &str) {
+	pub fn set_document_password(&self, path: &str, password: &str) {
 		if password.is_empty() {
+			let Some(config) = self.config() else { return };
 			let section = get_document_section(path);
-			self.remove_entry(Some(&section), "password");
+			config.set_path(&format!("/{section}"));
+			config.delete_entry("password", false);
+			config.set_path("/");
 		} else {
 			self.set_document_string(path, "password", password);
 		}
@@ -531,72 +641,138 @@ impl ConfigManager {
 		self.get_document_string(path, "password", "")
 	}
 
+	/// Import document settings from a .paperback sidecar file if it exists.
+	/// This is a simplified version that only imports bookmarks and position.
+	pub fn import_document_settings(&self, path: &str) {
+		let import_path = format!("{path}.paperback");
+		if Path::new(&import_path).exists() {
+			self.import_settings_from_file(path, &import_path);
+		}
+	}
+
+	/// Import document settings from a specified file.
+	/// Parses simple key=value format from the import file.
+	pub fn import_settings_from_file(&self, doc_path: &str, import_path: &str) {
+		if !self.is_ready() || !Path::new(import_path).exists() {
+			return;
+		}
+		let Ok(content) = std::fs::read_to_string(import_path) else { return };
+		for line in content.lines() {
+			let line = line.trim();
+			if line.is_empty() || line.starts_with('#') || line.starts_with('[') {
+				continue;
+			}
+			if let Some((key, value)) = line.split_once('=') {
+				let key = key.trim();
+				let value = value.trim();
+				match key {
+					"last_position" => {
+						if let Ok(pos) = value.parse::<i64>() {
+							self.set_document_position(doc_path, pos);
+						}
+					}
+					"bookmarks" => {
+						self.set_document_string(doc_path, "bookmarks", value);
+					}
+					"format" => {
+						self.set_document_format(doc_path, value);
+					}
+					_ => {}
+				}
+			}
+		}
+	}
+
+	/// Export document settings to a .paperback sidecar file.
+	pub fn export_document_settings(&self, doc_path: &str, export_path: &str) {
+		if !self.is_ready() {
+			return;
+		}
+		let mut content = String::new();
+		content.push_str("# Paperback document settings\n");
+		let position = self.get_document_position(doc_path);
+		if position > 0 {
+			content.push_str(&format!("last_position={position}\n"));
+		}
+		let format = self.get_document_format(doc_path);
+		if !format.is_empty() {
+			content.push_str(&format!("format={format}\n"));
+		}
+		let bookmarks = self.get_bookmarks(doc_path);
+		if !bookmarks.is_empty() {
+			let encoded = bookmarks
+				.iter()
+				.map(|bm| format!("{}:{}:{}", bm.start, bm.end, encode_note(&bm.note)))
+				.collect::<Vec<_>>()
+				.join(",");
+			content.push_str(&format!("bookmarks={encoded}\n"));
+		}
+		let _ = std::fs::write(export_path, content);
+	}
+
 	pub fn needs_migration(&self) -> bool {
 		if !self.is_ready() {
 			return false;
 		}
-		let version = self.get_app_int("version", CONFIG_VERSION_LEGACY);
+		let version = self.get_app_long("version", CONFIG_VERSION_LEGACY);
 		if version == CONFIG_VERSION_CURRENT {
 			return false;
 		}
-		let has_old_positions = !self.iter_section(Some("positions")).is_empty();
-		let has_old_globals =
-			self.get_value(None, "restore_previous_documents").is_some() || self.get_value(None, "word_wrap").is_some();
-		let has_old_opened = self.section_names().iter().any(|s| s == "opened_documents");
+		let Some(config) = self.config() else { return false };
+		config.set_path("/");
+		let has_old_positions = config.has_group("positions");
+		let has_old_globals = config.has_entry("restore_previous_documents") || config.has_entry("word_wrap");
+		let has_old_opened = config.has_group("opened_documents");
 		let needs_v1_to_v2 = version == CONFIG_VERSION_1;
 		has_old_positions || has_old_globals || has_old_opened || needs_v1_to_v2
 	}
 
-	pub fn migrate_config(&mut self) -> bool {
+	pub fn migrate_config(&self) -> bool {
 		if !self.is_ready() {
 			return false;
 		}
-		let version = self.get_app_int("version", CONFIG_VERSION_LEGACY);
+		let Some(config) = self.config() else { return false };
+		let version = self.get_app_long("version", CONFIG_VERSION_LEGACY);
 		if version == CONFIG_VERSION_LEGACY {
-			let restore_docs = self.get_bool("restore_previous_documents", true);
-			let word_wrap = self.get_bool("word_wrap", false);
-			if self.get_value(Some("app"), "restore_previous_documents").is_none() {
+			// Migrate old root-level settings to /app
+			config.set_path("/");
+			let restore_docs = config.read_bool("restore_previous_documents", true);
+			let word_wrap = config.read_bool("word_wrap", false);
+			if !self.has_app_entry("restore_previous_documents") {
 				self.set_app_bool("restore_previous_documents", restore_docs);
 			}
-			if self.get_value(Some("app"), "word_wrap").is_none() {
+			if !self.has_app_entry("word_wrap") {
 				self.set_app_bool("word_wrap", word_wrap);
 			}
-			let old_recent: Vec<String> = self
-				.iter_section(Some("recent_documents"))
-				.into_iter()
-				.filter_map(|(_, v)| if v.is_empty() { None } else { Some(v) })
-				.collect();
-			for (path, position) in self.iter_section(Some("positions")) {
-				if let Ok(pos) = position.parse::<i64>() {
+			// Migrate old positions section
+			config.set_path("/positions");
+			let entries = config.get_entries();
+			for path in entries {
+				let position_str = config.read_string(&path, "");
+				if let Ok(pos) = position_str.parse::<i64>() {
 					if pos > 0 {
+						config.set_path("/");
 						self.set_document_position(&path, pos);
+						config.set_path("/positions");
 					}
 				}
 			}
-			self.remove_section(Some("recent_documents"));
-			for path in old_recent {
-				self.add_recent_document(&path);
-			}
-			let opened_paths: Vec<String> = self
-				.iter_section(Some("opened_documents"))
-				.into_iter()
-				.filter_map(|(_, v)| if v.is_empty() { None } else { Some(v) })
-				.collect();
-			for path in opened_paths {
-				self.set_document_opened(&path, true);
-			}
-			self.remove_section(Some("positions"));
-			self.remove_entry(None, "restore_previous_documents");
-			self.remove_entry(None, "word_wrap");
-			self.remove_section(Some("opened_documents"));
+			config.set_path("/");
+			config.delete_group("positions");
+			// Clean up old root entries
+			config.delete_entry("restore_previous_documents", false);
+			config.delete_entry("word_wrap", false);
 		} else if version == CONFIG_VERSION_1 {
-			let sections = self.section_names();
-			for section in sections {
-				if !section.starts_with("doc_") {
+			// V1 to V2: migrate bookmark format (add end position)
+			let groups = config.get_groups();
+			for group in groups {
+				if !group.starts_with("doc_") {
 					continue;
 				}
-				let old_bookmarks = self.get_value(Some(&section), "bookmarks").unwrap_or_default();
+				config.set_path(&format!("/{group}"));
+				let old_bookmarks = config.read_string("bookmarks", "");
 				if old_bookmarks.is_empty() {
+					config.set_path("/");
 					continue;
 				}
 				let mut new_bookmarks = String::new();
@@ -623,164 +799,117 @@ impl ConfigManager {
 					first = false;
 				}
 				if !new_bookmarks.is_empty() {
-					self.set_value(Some(&section), "bookmarks", &new_bookmarks);
+					config.write_string("bookmarks", &new_bookmarks);
 				}
+				config.set_path("/");
 			}
 		}
-		self.set_app_int("version", CONFIG_VERSION_CURRENT);
+		self.set_app_long("version", CONFIG_VERSION_CURRENT);
 		true
 	}
 
-	pub fn export_document_settings(&self, doc_path: &str, export_path: &str) {
-		if !self.is_ready() {
-			return;
-		}
-		let mut export_data = Ini::new();
-		let section = get_document_section(doc_path);
-		for (key, value) in self.iter_section(Some(&section)) {
-			if key == "path" {
-				continue;
-			}
-			export_data.set("DEFAULT", &key, Some(value));
-		}
-		let _ = export_data.write(export_path);
+	fn has_app_entry(&self, key: &str) -> bool {
+		let Some(config) = self.config() else { return false };
+		config.set_path("/app");
+		let result = config.has_entry(key);
+		config.set_path("/");
+		result
 	}
 
-	pub fn import_document_settings(&mut self, path: &str) {
-		let import_path = format!("{path}.paperback");
-		if Path::new(&import_path).exists() {
-			self.import_settings_from_file(path, &import_path);
-		}
-	}
-
-	pub fn import_settings_from_file(&mut self, doc_path: &str, import_path: &str) {
-		if !self.is_ready() || !Path::new(import_path).exists() {
-			return;
-		}
-		let mut import_data = Ini::new();
-		if import_data.load(import_path).is_err() {
-			return;
-		}
-		let section = get_document_section(doc_path);
-		for props in import_data.get_map_ref().values() {
-			for (key, value) in props {
-				if let Some(value) = value {
-					self.set_value(Some(&section), key, value);
-				}
-			}
-		}
-		self.set_value(Some(&section), "path", doc_path);
-		let _ = self.data.write(&self.config_path);
-	}
-
-	fn load_defaults(&mut self) {
+	fn load_defaults(&self) {
 		if self.needs_migration() {
 			self.migrate_config();
 		}
-		let defaults = [
-			("restore_previous_documents", format_bool(true)),
-			("word_wrap", format_bool(false)),
-			("minimize_to_tray", format_bool(false)),
-			("start_maximized", format_bool(false)),
-			("compact_go_menu", format_bool(true)),
-			("navigation_wrap", format_bool(false)),
-			("check_for_updates_on_startup", format_bool(true)),
-			("recent_documents_to_show", DEFAULT_RECENT_DOCUMENTS_TO_SHOW.to_string()),
-			("sleep_timer_duration", "30".to_string()),
-			("language", String::new()),
-			("active_document", String::new()),
+		let defaults: &[(&str, bool, Option<i64>, Option<&str>)] = &[
+			("restore_previous_documents", true, None, None),
+			("word_wrap", false, None, None),
+			("minimize_to_tray", false, None, None),
+			("start_maximized", false, None, None),
+			("compact_go_menu", true, None, None),
+			("navigation_wrap", false, None, None),
+			("check_for_updates_on_startup", true, None, None),
+			("recent_documents_to_show", false, Some(DEFAULT_RECENT_DOCUMENTS_TO_SHOW), None),
+			("sleep_timer_duration", false, Some(30), None),
+			("language", false, None, Some("")),
+			("active_document", false, None, Some("")),
 		];
-		for (key, value) in &defaults {
-			if self.get_value(Some("app"), key).is_none() {
-				self.set_value(Some("app"), key, value);
+
+		for (key, is_bool, int_val, str_val) in defaults {
+			if !self.has_app_entry(key) {
+				if *is_bool {
+					// Default bool values are the second element when is_bool is true
+					// Defaults: restore_previous_documents=true, word_wrap=false, etc.
+					let default_val = matches!(
+						*key,
+						"restore_previous_documents" | "compact_go_menu" | "check_for_updates_on_startup"
+					);
+					self.set_app_bool(key, default_val);
+				} else if let Some(val) = int_val {
+					self.set_app_long(key, *val);
+				} else if let Some(val) = str_val {
+					self.set_app_string(key, val);
+				}
 			}
 		}
-		if self.get_app_int("version", CONFIG_VERSION_LEGACY) != CONFIG_VERSION_CURRENT {
-			self.set_app_int("version", CONFIG_VERSION_CURRENT);
+
+		if self.get_app_long("version", CONFIG_VERSION_LEGACY) != CONFIG_VERSION_CURRENT {
+			self.set_app_long("version", CONFIG_VERSION_CURRENT);
 		}
 		self.rebuild_recent_documents();
 	}
 
-	fn write_recent_documents(&mut self, documents: &[String]) {
-		self.remove_section(Some("recent_documents"));
+	fn write_recent_documents(&self, documents: &[String]) {
+		let Some(config) = self.config() else { return };
+		config.delete_group("recent_documents");
 		for doc in documents {
 			self.ensure_document_path(doc);
 		}
+		config.set_path("/recent_documents");
 		for (idx, doc) in documents.iter().enumerate() {
 			let doc_id = escape_document_path(doc);
 			let key = format!("doc{idx}");
-			self.set_value(Some("recent_documents"), &key, &doc_id);
+			config.write_string(&key, &doc_id);
 		}
+		config.set_path("/");
 	}
 
-	fn write_opened_documents(&mut self, documents: &[String]) {
-		self.remove_section(Some("opened_documents"));
+	fn write_opened_documents(&self, documents: &[String]) {
+		let Some(config) = self.config() else { return };
+		config.delete_group("opened_documents");
+		config.set_path("/opened_documents");
 		for (idx, doc) in documents.iter().enumerate() {
 			let key = format!("File{idx}");
-			self.set_value(Some("opened_documents"), &key, doc);
+			config.write_string(&key, doc);
 		}
+		config.set_path("/");
 	}
 
-	fn write_bookmarks(&mut self, path: &str, bookmarks: &[Bookmark]) {
+	fn write_bookmarks(&self, path: &str, bookmarks: &[Bookmark]) {
+		let Some(config) = self.config() else { return };
 		let section = get_document_section(path);
+		config.set_path(&format!("/{section}"));
 		if bookmarks.is_empty() {
-			self.remove_entry(Some(&section), "bookmarks");
-			return;
+			config.delete_entry("bookmarks", false);
+		} else {
+			let encoded = bookmarks
+				.iter()
+				.map(|bm| format!("{}:{}:{}", bm.start, bm.end, encode_note(&bm.note)))
+				.collect::<Vec<_>>()
+				.join(",");
+			config.write_string("path", path);
+			config.write_string("bookmarks", &encoded);
 		}
-		let encoded = bookmarks
-			.iter()
-			.map(|bm| format!("{}:{}:{}", bm.start, bm.end, encode_note(&bm.note)))
-			.collect::<Vec<_>>()
-			.join(",");
-		self.set_value(Some(&section), "path", path);
-		self.set_value(Some(&section), "bookmarks", &encoded);
+		config.set_path("/");
 	}
 
-	fn ensure_document_path(&mut self, path: &str) {
+	fn ensure_document_path(&self, path: &str) {
+		let Some(config) = self.config() else { return };
 		let section = get_document_section(path);
-		if self.get_value(Some(&section), "path").is_none() {
-			self.set_value(Some(&section), "path", path);
+		config.set_path(&format!("/{section}"));
+		if !config.has_entry("path") {
+			config.write_string("path", path);
 		}
-	}
-
-	fn get_value(&self, section: Option<&str>, key: &str) -> Option<String> {
-		if !self.is_ready() {
-			return None;
-		}
-		let sec = section.unwrap_or("DEFAULT");
-		self.data.get(sec, key)
-	}
-
-	fn set_value(&mut self, section: Option<&str>, key: &str, value: &str) {
-		if !self.is_ready() {
-			return;
-		}
-		let sec = section.unwrap_or("DEFAULT");
-		self.data.set(sec, key, Some(value.to_string()));
-	}
-
-	fn remove_entry(&mut self, section: Option<&str>, key: &str) {
-		let sec_name = section.unwrap_or("DEFAULT");
-		let _ = self.data.remove_key(sec_name, key);
-	}
-
-	fn remove_section(&mut self, section: Option<&str>) {
-		if let Some(sec) = section {
-			let _ = self.data.remove_section(sec);
-		}
-	}
-
-	fn iter_section(&self, section: Option<&str>) -> Vec<(String, String)> {
-		let sec_name = section.unwrap_or("DEFAULT").to_string();
-		self.data
-			.get_map_ref()
-			.get(&sec_name)
-			.map(|props| props.iter().filter_map(|(k, v)| v.as_ref().map(|v| (k.clone(), v.clone()))).collect())
-			.unwrap_or_default()
-	}
-
-	fn section_names(&self) -> Vec<String> {
-		self.data.sections()
+		config.set_path("/");
 	}
 }
 
@@ -833,18 +962,6 @@ pub fn get_sorted_document_list(
 		.collect()
 }
 
-fn format_bool(value: bool) -> String {
-	if value { "1".to_string() } else { "0".to_string() }
-}
-
-fn parse_bool(value: &str, default_value: bool) -> bool {
-	match value.trim().to_ascii_lowercase().as_str() {
-		"1" | "true" | "yes" | "on" => true,
-		"0" | "false" | "no" | "off" => false,
-		_ => default_value,
-	}
-}
-
 fn get_document_section(path: &str) -> String {
 	escape_document_path(path)
 }
@@ -869,58 +986,4 @@ fn decode_note(encoded: &str) -> String {
 		return String::new();
 	}
 	STANDARD.decode(encoded).map(|bytes| String::from_utf8_lossy(&bytes).to_string()).unwrap_or_default()
-}
-
-fn get_config_path() -> PathBuf {
-	let exe_path = env::current_exe().unwrap_or_else(|_| PathBuf::from("."));
-	let exe_dir = exe_path.parent().map_or_else(|| PathBuf::from("."), Path::to_path_buf);
-	let mut force_appdata = false;
-	#[cfg(windows)]
-	{
-		if let Ok(program_files) = env::var("ProgramFiles") {
-			if exe_path.starts_with(&program_files) {
-				force_appdata = true;
-			}
-		}
-		if let Ok(program_files_x86) = env::var("ProgramFiles(x86)") {
-			if exe_path.starts_with(&program_files_x86) {
-				force_appdata = true;
-			}
-		}
-		if !force_appdata && is_directory_writable(&exe_dir) {
-			return exe_dir.join(CONFIG_FILENAME);
-		}
-	}
-	#[cfg(not(windows))]
-	if is_directory_writable(&exe_dir) {
-		return exe_dir.join(CONFIG_FILENAME);
-	}
-	let base_dir = config_root_dir().unwrap_or(exe_dir);
-	let appdata_dir = base_dir.join(CONFIG_DIRECTORY);
-	if !appdata_dir.exists() {
-		let _ = fs::create_dir_all(&appdata_dir);
-	}
-	appdata_dir.join(CONFIG_FILENAME)
-}
-
-fn is_directory_writable(path: &Path) -> bool {
-	if !path.is_dir() {
-		return false;
-	}
-	let file = path.join(".write_test_tmp");
-	OpenOptions::new().write(true).create_new(true).open(&file).and_then(|_| fs::remove_file(&file)).is_ok()
-}
-
-fn config_root_dir() -> Option<PathBuf> {
-	#[cfg(windows)]
-	{
-		env::var("APPDATA").or_else(|_| env::var("LOCALAPPDATA")).ok().map(PathBuf::from)
-	}
-	#[cfg(not(windows))]
-	{
-		env::var("XDG_CONFIG_HOME")
-			.map(PathBuf::from)
-			.or_else(|_| env::var("HOME").map(|home| PathBuf::from(home).join(".config")))
-			.ok()
-	}
 }
