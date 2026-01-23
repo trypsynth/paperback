@@ -46,7 +46,7 @@ pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i3
 	}
 
 	let search_string = Rc::new(RefCell::new(String::new()));
-	let search_timer = Timer::new(&dialog);
+	let search_timer = Rc::new(Timer::new(&dialog));
 	let search_string_for_timer = Rc::clone(&search_string);
 	search_timer.on_tick(move |_| {
 		search_string_for_timer.borrow_mut().clear();
@@ -78,12 +78,41 @@ pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i3
 		}
 	});
 
+	let tree_for_search_keydown = tree;
+	let search_string_for_search_keydown = Rc::clone(&search_string);
+	let search_timer_for_search_keydown = Rc::clone(&search_timer);
+	tree.bind_internal(EventType::KEY_DOWN, move |event| {
+		if let Some(key) = event.get_key_code() {
+			if key == KEY_SPACE {
+				let mut s = search_string_for_search_keydown.borrow_mut();
+				if !s.is_empty() {
+					let mut new_search = s.clone();
+					new_search.push(' ');
+					if let Some(root) = tree_for_search_keydown.get_root_item() {
+						if find_and_select_item_by_name(&tree_for_search_keydown, &root, &new_search) {
+							*s = new_search;
+							search_timer_for_search_keydown.start(500, true);
+							event.skip(false);
+						} else {
+							bell();
+							event.skip(false);
+						}
+					} else {
+						event.skip(false);
+					}
+					return;
+				}
+			}
+		}
+		event.skip(true);
+	});
+
 	let tree_for_search = tree;
 	let search_string_for_search = Rc::clone(&search_string);
-	let search_timer_for_search = search_timer;
+	let search_timer_for_search = Rc::clone(&search_timer);
 	tree.bind_internal(EventType::CHAR, move |event| {
 		if let Some(key) = event.get_unicode_key() {
-			if key < KEY_SPACE || key == KEY_DELETE {
+			if key <= KEY_SPACE || key == KEY_DELETE {
 				event.skip(true);
 				return;
 			}
@@ -91,9 +120,6 @@ pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i3
 			let mut s = search_string_for_search.borrow_mut();
 
 			if s.is_empty() {
-				if key == KEY_SPACE {
-					return;
-				}
 				s.push(c.to_ascii_lowercase());
 				search_timer_for_search.start(500, true);
 				event.skip(true); // First char, let native handle it too (cycle to first A)
@@ -125,10 +151,26 @@ pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i3
 		}
 	});
 
-	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
+	let ok_button = Button::builder(&dialog).with_label(&t("OK")).build();
 	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
-	dialog.set_affirmative_id(wxdragon::id::ID_OK);
 	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+
+	let dialog_for_ok = dialog;
+	let selected_offset_for_ok = Rc::clone(&selected_offset);
+	ok_button.on_click(move |_| {
+		if selected_offset_for_ok.get() >= 0 {
+			dialog_for_ok.end_modal(wxdragon::id::ID_OK);
+		} else {
+			MessageDialog::builder(
+				&dialog_for_ok,
+				&t("Please select a section from the table of contents."),
+				&t("No Selection"),
+			)
+			.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre)
+			.build()
+			.show_modal();
+		}
+	});
 
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add(&tree, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
