@@ -762,34 +762,7 @@ void go_to_percent_dialog::on_spin_changed(wxSpinEvent& /*event*/) {
 	percent_slider->SetValue(spin_value);
 }
 
-open_as_dialog::open_as_dialog(wxWindow* parent, const wxString& path) : dialog(parent, _("Open As")) {
-	constexpr int label_padding = 5;
-	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
-	auto* label = new wxStaticText(this, wxID_ANY, wxString::Format(_("No suitable parser was found for %s.\nHow would you like to open this file?"), path));
-	content_sizer->Add(label, 0, wxALL, label_padding);
-	auto* format_sizer = new wxBoxSizer(wxHORIZONTAL);
-	auto* format_label = new wxStaticText(this, wxID_ANY, _("Open &as:"));
-	format_combo = new wxComboBox(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, 0, nullptr, wxCB_READONLY);
-	format_combo->Append(_("Plain Text"));
-	format_combo->Append(_("HTML"));
-	format_combo->Append(_("Markdown"));
-	format_combo->SetSelection(0);
-	format_sizer->Add(format_label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, DIALOG_PADDING);
-	format_sizer->Add(format_combo, 1, wxEXPAND);
-	content_sizer->Add(format_sizer, 0, wxEXPAND | wxALL, label_padding);
-	set_content(content_sizer);
-	finalize_layout();
-	format_combo->SetFocus();
-}
-
-wxString open_as_dialog::get_selected_format() const {
-	const int selection = format_combo->GetSelection();
-	switch (selection) {
-		case 1: return "html";
-		case 2: return "md";
-		default: return "txt";
-	}
-}
+// open_as_dialog has been ported to Rust (src/ui/dialogs.rs::show_open_as_dialog)
 
 note_entry_dialog::note_entry_dialog(wxWindow* parent, const wxString& title, const wxString& message, const wxString& existing_note) : dialog(parent, title) {
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
@@ -974,131 +947,9 @@ int sleep_timer_dialog::get_duration() const {
 	return input_ctrl->GetValue();
 }
 
-toc_dialog::toc_dialog(wxWindow* parent, session_document* session_doc, int current_offset) : dialog(parent, _("Table of Contents")), selected_offset{-1} {
-	search_timer_ = new wxTimer(this);
-	tree = new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTR_HIDE_ROOT);
-	const wxTreeItemId root = tree->AddRoot(_("Root"));
-	if (session_doc != nullptr) {
-		session_doc->ensure_toc_loaded();
-		populate_tree(session_doc->toc_items, root);
-	}
-	if (current_offset != -1) find_and_select_item(root, current_offset);
-	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
-	content_sizer->Add(tree, 1, wxEXPAND);
-	set_content(content_sizer);
-	Bind(wxEVT_TREE_SEL_CHANGED, &toc_dialog::on_tree_selection_changed, this);
-	Bind(wxEVT_TREE_ITEM_ACTIVATED, &toc_dialog::on_tree_item_activated, this, wxID_ANY);
-	Bind(wxEVT_BUTTON, &toc_dialog::on_ok, this, wxID_OK);
-	Bind(wxEVT_CHAR_HOOK, &toc_dialog::on_char_hook, this);
-	Bind(wxEVT_TIMER, &toc_dialog::on_search_timer, this, search_timer_->GetId());
-	finalize_layout();
-}
+// toc_dialog has been ported to Rust (src/ui/dialogs.rs::show_toc_dialog)
 
-void toc_dialog::populate_tree(const std::vector<std::unique_ptr<toc_item>>& items, const wxTreeItemId& parent) {
-	for (const auto& item : items) {
-		const wxString display_text = item->name.IsEmpty() ? wxString(_("Untitled")) : item->name;
-		const wxTreeItemId item_id = tree->AppendItem(parent, display_text);
-		tree->SetItemData(item_id, new toc_tree_item_data(item->offset));
-		if (!item->children.empty()) populate_tree(item->children, item_id);
-	}
-}
-
-void toc_dialog::find_and_select_item(const wxTreeItemId& parent, int offset) {
-	wxTreeItemIdValue cookie{};
-	for (wxTreeItemId item_id = tree->GetFirstChild(parent, cookie); item_id.IsOk(); item_id = tree->GetNextChild(parent, cookie)) {
-		const auto* data = dynamic_cast<toc_tree_item_data*>(tree->GetItemData(item_id));
-		if (data != nullptr && data->offset == offset) {
-			tree->SelectItem(item_id);
-			tree->SetFocusedItem(item_id);
-			tree->EnsureVisible(item_id);
-			selected_offset = data->offset;
-			return;
-		}
-		if (tree->ItemHasChildren(item_id)) find_and_select_item(item_id, offset);
-	}
-}
-
-void toc_dialog::on_tree_selection_changed(wxTreeEvent& event) {
-	const wxTreeItemId item = event.GetItem();
-	if (!item.IsOk()) return;
-	const auto* data = dynamic_cast<toc_tree_item_data*>(tree->GetItemData(item));
-	if (data == nullptr) return;
-	selected_offset = data->offset;
-}
-
-void toc_dialog::on_tree_item_activated(wxTreeEvent& /*event*/) {
-	if (selected_offset >= 0) EndModal(wxID_OK);
-}
-
-void toc_dialog::on_ok(wxCommandEvent& /*event*/) {
-	if (selected_offset >= 0)
-		EndModal(wxID_OK);
-	else
-		wxMessageBox(_("Please select a section from the table of contents."), _("No Selection"), wxOK | wxICON_INFORMATION, this);
-}
-
-void toc_dialog::on_char_hook(wxKeyEvent& event) {
-	const int key_code = event.GetKeyCode();
-	wxWindow* focused = wxWindow::FindFocus();
-	if (focused != tree || key_code < WXK_SPACE || key_code >= WXK_DELETE) {
-		event.Skip();
-		return;
-	}
-	const wxChar current_char = static_cast<wxChar>(event.GetUnicodeKey());
-	if (search_string_.IsEmpty()) {
-		if (current_char == ' ') return;
-		search_string_ = current_char;
-		search_timer_->StartOnce(500);
-		event.Skip();
-		return;
-	}
-	if (search_string_.Last() != current_char) {
-		search_string_ += current_char;
-		search_timer_->StartOnce(500);
-		if (!find_and_select_item_by_name(search_string_, tree->GetRootItem())) {
-			search_string_.RemoveLast();
-			wxBell();
-		}
-	} else {
-		search_timer_->StartOnce(500);
-		event.Skip();
-	}
-}
-
-void toc_dialog::on_search_timer(wxTimerEvent&) {
-	search_string_.Clear();
-}
-
-bool toc_dialog::find_and_select_item_by_name(const wxString& name, const wxTreeItemId& parent) {
-	wxTreeItemIdValue cookie{};
-	for (wxTreeItemId item_id = tree->GetFirstChild(parent, cookie); item_id.IsOk(); item_id = tree->GetNextChild(parent, cookie)) {
-		if (tree->GetItemText(item_id).Lower().StartsWith(name.Lower())) {
-			tree->SelectItem(item_id);
-			tree->SetFocusedItem(item_id);
-			tree->EnsureVisible(item_id);
-			return true;
-		}
-		if (tree->ItemHasChildren(item_id)) {
-			if (find_and_select_item_by_name(name, item_id)) return true;
-		}
-	}
-	return false;
-}
-
-update_dialog::update_dialog(wxWindow* parent, const wxString& new_version, const wxString& changelog) : dialog(parent, wxString::Format(_("Update to %s"), new_version), dialog_button_config::ok_cancel) {
-	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
-	auto* message = new wxStaticText(this, wxID_ANY, _("A new version of Paperback is available. Here's what's new:"));
-	content_sizer->Add(message, 0, wxALL, DIALOG_PADDING);
-	changelog_ctrl = new wxTextCtrl(this, wxID_ANY, changelog, wxDefaultPosition, wxSize(500, 300), wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2);
-	content_sizer->Add(changelog_ctrl, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);
-	set_content(content_sizer);
-	finalize_layout();
-	auto* ok_button = FindWindow(wxID_OK);
-	if (ok_button) ok_button->SetLabel(_("&Yes"));
-	auto* cancel_button = FindWindow(wxID_CANCEL);
-	if (cancel_button) cancel_button->SetLabel(_("&No"));
-	changelog_ctrl->SetFocus();
-}
+// update_dialog has been ported to Rust (src/ui/dialogs.rs::show_update_dialog)
 
 view_note_dialog::view_note_dialog(wxWindow* parent, const wxString& note_text) : dialog(parent, _("View Note"), dialog_button_config::ok_only) {
 	auto* content_sizer = new wxBoxSizer(wxVERTICAL);

@@ -274,19 +274,7 @@ private:
 	void on_key_down(wxKeyEvent& event);
 };
 
-class open_as_dialog : public dialog {
-public:
-	open_as_dialog(wxWindow* parent, const wxString& path);
-	~open_as_dialog() override = default;
-	open_as_dialog(const open_as_dialog&) = delete;
-	open_as_dialog& operator=(const open_as_dialog&) = delete;
-	open_as_dialog(open_as_dialog&&) = delete;
-	open_as_dialog& operator=(open_as_dialog&&) = delete;
-	[[nodiscard]] wxString get_selected_format() const;
-
-private:
-	wxComboBox* format_combo{nullptr};
-};
+// open_as_dialog has been ported to Rust (src/ui/dialogs.rs::show_open_as_dialog)
 
 class options_dialog : public dialog {
 public:
@@ -368,47 +356,9 @@ public:
 	int offset{0};
 };
 
-class toc_dialog : public dialog {
-public:
-	toc_dialog(wxWindow* parent, session_document* session_doc, int current_offset = -1);
-	~toc_dialog() override = default;
-	toc_dialog(const toc_dialog&) = delete;
-	toc_dialog& operator=(const toc_dialog&) = delete;
-	toc_dialog(toc_dialog&&) = delete;
-	toc_dialog& operator=(toc_dialog&&) = delete;
+// toc_dialog has been ported to Rust (src/ui/dialogs.rs::show_toc_dialog)
 
-	[[nodiscard]] int get_selected_offset() const {
-		return selected_offset;
-	}
-
-private:
-	wxTreeCtrl* tree{nullptr};
-	int selected_offset{0};
-	wxString search_string_;
-	wxTimer* search_timer_{nullptr};
-
-	void populate_tree(const std::vector<std::unique_ptr<toc_item>>& items, const wxTreeItemId& parent);
-	void find_and_select_item(const wxTreeItemId& parent, int offset);
-	void on_tree_selection_changed(wxTreeEvent& event);
-	void on_tree_item_activated(wxTreeEvent& event);
-	void on_ok(wxCommandEvent& event);
-	void on_char_hook(wxKeyEvent& event);
-	void on_search_timer(wxTimerEvent& event);
-	bool find_and_select_item_by_name(const wxString& name, const wxTreeItemId& parent);
-};
-
-class update_dialog : public dialog {
-public:
-	update_dialog(wxWindow* parent, const wxString& new_version, const wxString& changelog);
-	~update_dialog() override = default;
-	update_dialog(const update_dialog&) = delete;
-	update_dialog& operator=(const update_dialog&) = delete;
-	update_dialog(update_dialog&&) = delete;
-	update_dialog& operator=(update_dialog&&) = delete;
-
-private:
-	wxTextCtrl* changelog_ctrl{nullptr};
-};
+// update_dialog has been ported to Rust (src/ui/dialogs.rs::show_update_dialog)
 
 class view_note_dialog : public dialog {
 public:

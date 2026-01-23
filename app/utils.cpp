@@ -36,18 +36,13 @@ search_result find_text_with_wrap(const wxString& haystack, const wxString& need
 	return result;
 }
 
+// open_as_dialog has been ported to Rust - see src/ui/dialogs.rs::show_open_as_dialog
+// This function is now unused as document opening is handled by src/ui/utils.rs::ensure_parser_for_unknown_file
 bool ensure_parser_for_unknown_file(const wxString& path, config_manager& config) {
-	const wxString saved_format = config.get_document_format(path);
-	if (!saved_format.IsEmpty() && is_parser_supported(saved_format)) return true;
-	open_as_dialog dlg(nullptr, path);
-	if (dlg.ShowModal() != wxID_OK) return false;
-	const wxString format = dlg.get_selected_format();
-	if (!is_parser_supported(format)) {
-		wxMessageBox(_("Unsupported format selected."), _("Error"), wxICON_ERROR);
-		return false;
-	}
-	config.set_document_format(path, format);
-	return true;
+	// Legacy C++ implementation removed
+	(void)path;
+	(void)config;
+	return false;
 }
 
 void speak(const wxString& message) {

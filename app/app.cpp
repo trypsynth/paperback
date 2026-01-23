@@ -41,27 +41,12 @@ bool is_installer_distribution() {
 	return wxFileName::FileExists(uninstaller_path);
 }
 
+// update_dialog has been ported to Rust - this function is now unused
+// Update checking is handled by src/ui/main_window.rs::run_update_check()
 void present_update_result(const update_result_payload& payload, bool silent) {
-	switch (payload.status) {
-		case UpdateStatus::Available: {
-			const wxString latest_version = payload.latest_version.empty() ? APP_VERSION : wxString::FromUTF8(payload.latest_version.c_str());
-			const std::string plain_text_notes = std::string(::markdown_to_text(payload.release_notes));
-			const wxString release_notes = plain_text_notes.empty() ? _("No release notes were provided.") : wxString::FromUTF8(plain_text_notes.c_str());
-			update_dialog dlg(nullptr, latest_version, release_notes);
-			if (dlg.ShowModal() == wxID_OK && !payload.download_url.empty())
-				wxLaunchDefaultBrowser(wxString::FromUTF8(payload.download_url.c_str()));
-			break;
-		}
-		case UpdateStatus::UpToDate:
-			if (!silent) wxMessageBox(_("No updates available."), _("Info"), wxICON_INFORMATION);
-			break;
-		default:
-			if (silent) break;
-			wxString details = payload.error_message.empty() ? _("Error checking for updates.") : wxString::FromUTF8(payload.error_message.c_str());
-			if (payload.status == UpdateStatus::HttpError && payload.http_status > 0) details = wxString::Format(_("Failed to check for updates. HTTP status: %d"), payload.http_status);
-			wxMessageBox(details, _("Error"), wxICON_ERROR);
-			break;
-	}
+	// Legacy C++ update dialog removed - see src/ui/dialogs.rs::show_update_dialog
+	(void)payload;
+	(void)silent;
 }
 } // namespace
 

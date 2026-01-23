@@ -576,28 +576,12 @@ void document_manager::show_bookmark_dialog(wxWindow* parent, bookmark_filter in
 	update_ui();
 }
 
+// toc_dialog has been ported to Rust - see src/ui/dialogs.rs::show_toc_dialog
+// TOC display is now handled by src/ui/main_window.rs (ID_TOC handler)
 void document_manager::show_table_of_contents(wxWindow* parent) {
-	document_tab* tab = get_active_tab();
-	wxTextCtrl* text_ctrl = get_active_text_ctrl();
-	if (tab == nullptr || text_ctrl == nullptr || tab->session_doc == nullptr) return;
-	if (!session_supports_toc(*tab->session_doc->session)) {
-		speak(_("No table of contents."));
-		return;
-	}
-	tab->session_doc->ensure_toc_loaded();
-	if (tab->session_doc->toc_items.empty()) {
-		speak(_("Table of contents is empty."));
-		return;
-	}
-	const int current_pos = text_ctrl->GetInsertionPoint();
-	const int closest_toc_offset = static_cast<int>(tab->session_doc->find_closest_toc_offset(static_cast<size_t>(current_pos)));
-	toc_dialog dlg(parent, tab->session_doc.get(), closest_toc_offset);
-	if (dlg.ShowModal() != wxID_OK) return;
-	const int offset = dlg.get_selected_offset();
-	if (offset >= 0) {
-		go_to_position(offset);
-		text_ctrl->SetFocus();
-	}
+	// Legacy C++ implementation removed
+	(void)parent;
+	speak(_("Table of contents is now handled by the Rust UI."));
 }
 
 void document_manager::show_document_info(wxWindow* parent) {
