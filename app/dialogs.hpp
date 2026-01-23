@@ -42,40 +42,6 @@ private:
 	void create_buttons();
 };
 
-class all_documents_dialog : public dialog {
-public:
-	all_documents_dialog(wxWindow* parent, config_manager& cfg_mgr, const wxArrayString& open_docs);
-	~all_documents_dialog() override = default;
-	all_documents_dialog(const all_documents_dialog&) = delete;
-	all_documents_dialog& operator=(const all_documents_dialog&) = delete;
-	all_documents_dialog(all_documents_dialog&&) = delete;
-	all_documents_dialog& operator=(all_documents_dialog&&) = delete;
-
-	[[nodiscard]] wxString get_selected_path() const {
-		return selected_path;
-	}
-
-private:
-	wxTextCtrl* search_ctrl{nullptr};
-	wxListView* doc_list{nullptr};
-	wxButton* open_button{nullptr};
-	wxButton* remove_button{nullptr};
-	wxButton* clear_all_button{nullptr};
-	config_manager& config_mgr;
-	wxArrayString doc_paths;
-	wxArrayString open_doc_paths;
-	wxString selected_path;
-
-	void on_open(wxCommandEvent& event);
-	void on_remove(wxCommandEvent& event);
-	void on_clear_all(wxCommandEvent& event);
-	void on_search(wxCommandEvent& event);
-	void on_list_item_activated(wxListEvent& event);
-	void on_list_item_selected(wxListEvent& event);
-	void on_key_down(wxKeyEvent&);
-	void populate_document_list(const wxString& filter = wxEmptyString);
-};
-
 enum class bookmark_filter {
 	all,
 	bookmarks_only,
@@ -117,23 +83,6 @@ private:
 	void repopulate_list(long current_pos = -1);
 };
 
-class document_info_dialog : public dialog {
-public:
-	document_info_dialog(wxWindow* parent, session_document* session_doc, const wxString& file_path, config_manager& cfg_mgr);
-	~document_info_dialog() override = default;
-	document_info_dialog(const document_info_dialog&) = delete;
-	document_info_dialog& operator=(const document_info_dialog&) = delete;
-	document_info_dialog(document_info_dialog&&) = delete;
-	document_info_dialog& operator=(document_info_dialog&&) = delete;
-
-	long imported_position{-1};
-
-private:
-	wxTextCtrl* info_text_ctrl{nullptr};
-	config_manager& config_mgr;
-	wxString doc_path;
-};
-
 class elements_dialog : public dialog {
 public:
 	elements_dialog(wxWindow* parent, session_document* session_doc, long current_pos);
@@ -167,44 +116,6 @@ private:
 	void on_heading_activated(wxTreeEvent& event);
 	void on_ok(wxCommandEvent&);
 };
-
-class find_dialog : public wxDialog {
-public:
-	explicit find_dialog(wxWindow* parent);
-	~find_dialog() = default;
-	find_dialog(const find_dialog&) = delete;
-	find_dialog& operator=(const find_dialog&) = delete;
-	find_dialog(find_dialog&&) = delete;
-	find_dialog& operator=(find_dialog&&) = delete;
-	[[nodiscard]] wxString get_find_text() const;
-	[[nodiscard]] bool get_match_case() const noexcept;
-	[[nodiscard]] bool get_match_whole_word() const noexcept;
-	[[nodiscard]] bool get_use_regex() const noexcept;
-	void set_find_text(const wxString& text);
-	void add_to_history(const wxString& text);
-	void focus_find_text();
-
-private:
-	wxComboBox* find_what_combo{nullptr};
-	wxCheckBox* match_case_check{nullptr};
-	wxCheckBox* match_whole_word_check{nullptr};
-	wxCheckBox* use_regex_check{nullptr};
-	wxButton* find_previous_btn{nullptr};
-	wxButton* find_next_btn{nullptr};
-	wxButton* cancel_btn{nullptr};
-
-	void on_find_previous(wxCommandEvent& event);
-	void on_find_next(wxCommandEvent& event);
-	void on_cancel(wxCommandEvent& event);
-	void on_find_text_enter(wxCommandEvent& event);
-	void on_close(wxCloseEvent& event);
-	void reload_history();
-	void save_settings();
-};
-
-// go_to_line_dialog has been ported to Rust (src/ui/dialogs.rs::show_go_to_line_dialog)
-// go_to_page_dialog has been ported to Rust (src/ui/dialogs.rs::show_go_to_page_dialog)
-// go_to_percent_dialog has been ported to Rust (src/ui/dialogs.rs::show_go_to_percent_dialog)
 
 class note_entry_dialog : public dialog {
 public:
