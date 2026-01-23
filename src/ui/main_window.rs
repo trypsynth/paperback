@@ -719,7 +719,16 @@ impl MainWindow {
 					if dialog.show_modal() == wxdragon::id::ID_OK {
 						if let Some(path) = dialog.get_path() {
 							let path_str = tab.file_path.to_string_lossy();
-							config.lock().unwrap().import_settings_from_file(&path_str, &path);
+							{
+								let config = config.lock().unwrap();
+								config.import_settings_from_file(&path_str, &path);
+								let max_pos = tab.text_ctrl.get_last_position();
+								let pos = config.get_validated_document_position(&path_str, max_pos);
+								if pos >= 0 {
+									tab.text_ctrl.set_insertion_point(pos);
+									tab.text_ctrl.show_position(pos);
+								}
+							}
 							let dialog = MessageDialog::builder(
 								&frame_copy,
 								&t("Notes and bookmarks imported successfully."),

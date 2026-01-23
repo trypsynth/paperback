@@ -222,7 +222,6 @@ private:
 	void on_key_down(wxKeyEvent& event);
 };
 
-// open_as_dialog has been ported to Rust (src/ui/dialogs.rs::show_open_as_dialog)
 
 class options_dialog : public dialog {
 public:
@@ -303,10 +302,6 @@ public:
 
 	int offset{0};
 };
-
-// toc_dialog has been ported to Rust (src/ui/dialogs.rs::show_toc_dialog)
-
-// update_dialog has been ported to Rust (src/ui/dialogs.rs::show_update_dialog)
 
 class view_note_dialog : public dialog {
 public:
