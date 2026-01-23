@@ -90,7 +90,19 @@ pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i3
 			let c = std::char::from_u32(key as u32).unwrap_or('\0');
 			let mut s = search_string_for_search.borrow_mut();
 
-			if s.is_empty() && key == KEY_SPACE {
+			if s.is_empty() {
+				if key == KEY_SPACE {
+					return;
+				}
+				s.push(c.to_ascii_lowercase());
+				search_timer_for_search.start(500, true);
+				event.skip(true); // First char, let native handle it too (cycle to first A)
+				return;
+			}
+
+			if s.chars().last() == Some(c.to_ascii_lowercase()) {
+				search_timer_for_search.start(500, true);
+				event.skip(true); // Let native handle cycling
 				return;
 			}
 
@@ -101,10 +113,13 @@ pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i3
 					*s = new_search;
 					search_timer_for_search.start(500, true);
 					event.skip(false);
-					return;
+				} else {
+					bell();
+					event.skip(false);
 				}
+			} else {
+				event.skip(false);
 			}
-			event.skip(false);
 		} else {
 			event.skip(true);
 		}
@@ -154,6 +169,8 @@ fn find_and_select_item(tree: &TreeCtrl, parent: &TreeItemId, offset: i32) -> bo
 				if let Some(item_offset) = data.downcast_ref::<i32>() {
 					if *item_offset == offset {
 						tree.select_item(&item);
+						tree.set_focused_item(&item);
+						tree.ensure_visible(&item);
 						return true;
 					}
 				}
@@ -171,6 +188,14 @@ fn find_and_select_item_by_name(tree: &TreeCtrl, parent: &TreeItemId, name: &str
 	if let Some((child, mut cookie)) = tree.get_first_child(parent) {
 		let mut current_child = Some(child);
 		while let Some(item) = current_child {
+			if let Some(text) = tree.get_item_text(&item) {
+				if text.to_lowercase().starts_with(name) {
+					tree.select_item(&item);
+					tree.set_focused_item(&item);
+					tree.ensure_visible(&item);
+					return true;
+				}
+			}
 			if find_and_select_item_by_name(tree, &item, name) {
 				return true;
 			}
