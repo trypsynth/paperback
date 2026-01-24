@@ -447,6 +447,50 @@ impl DocumentSession {
 		ffi::LinkList { items, closest_index }
 	}
 
+	#[must_use]
+	pub fn heading_tree(&self, position: i64) -> ffi::HeadingTree {
+		let pos = usize::try_from(position.max(0)).unwrap_or(0);
+		let mut items = Vec::new();
+		let mut closest_index = -1;
+		let mut min_distance = usize::MAX;
+
+		let markers = &self.handle.document().buffer.markers;
+		let mut item_stack: Vec<(i32, i32)> = Vec::new(); // (level, index)
+
+		for marker in markers {
+			if !crate::document::is_heading_marker(marker.marker_type) {
+				continue;
+			}
+
+			let level = marker.level;
+			while item_stack.last().map_or(false, |(l, _)| *l >= level) {
+				item_stack.pop();
+			}
+
+			let parent_index = item_stack.last().map_or(-1, |(_, idx)| *idx);
+			let current_index = i32::try_from(items.len()).unwrap_or(-1);
+
+			let text = if marker.text.is_empty() {
+				self.get_line_text(i64::try_from(marker.position).unwrap_or(0))
+			} else {
+				marker.text.clone()
+			};
+
+			items.push(ffi::HeadingTreeItem { offset: marker.position, text, level, parent_index });
+
+			item_stack.push((level, current_index));
+
+			if marker.position <= pos {
+				let dist = pos - marker.position;
+				if dist < min_distance {
+					min_distance = dist;
+					closest_index = current_index;
+				}
+			}
+		}
+		ffi::HeadingTree { items, closest_index }
+	}
+
 	pub fn history_go_back(&mut self, current_pos: i64) -> NavigationResult {
 		if self.history.is_empty() {
 			return NavigationResult::not_found();

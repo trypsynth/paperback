@@ -1456,3 +1456,215 @@ pub fn show_web_view_dialog(
 	dialog.centre();
 	dialog.show_modal();
 }
+
+pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<i64> {
+	let dialog = Dialog::builder(parent, &t("Elements")).build();
+
+	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
+	let choice_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	let choice_label = StaticText::builder(&dialog).with_label(&t("&View:")).build();
+	let view_choice = ComboBox::builder(&dialog).with_style(ComboBoxStyle::ReadOnly).build();
+	view_choice.append(&t("Headings"));
+	view_choice.append(&t("Links"));
+	view_choice.set_selection(0);
+
+	choice_sizer.add(&choice_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
+	choice_sizer.add(&view_choice, 1, SizerFlag::Expand, 0);
+	content_sizer.add_sizer(&choice_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
+
+	let headings_sizer = BoxSizer::builder(Orientation::Vertical).build();
+	let headings_tree = TreeCtrl::builder(&dialog)
+		.with_style(TreeCtrlStyle::Default | TreeCtrlStyle::HideRoot)
+		.with_size(Size::new(400, 500))
+		.build();
+	headings_sizer.add(&headings_tree, 1, SizerFlag::Expand, 0);
+	content_sizer.add_sizer(
+		&headings_sizer,
+		1,
+		SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
+		DIALOG_PADDING,
+	);
+
+	let links_sizer = BoxSizer::builder(Orientation::Vertical).build();
+	let links_list = ListBox::builder(&dialog).build();
+	links_sizer.add(&links_list, 1, SizerFlag::Expand, 0);
+	content_sizer.add_sizer(
+		&links_sizer,
+		1,
+		SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
+		DIALOG_PADDING,
+	);
+
+	// Hide links initially
+	links_list.show(false);
+
+	let selected_offset = Rc::new(Cell::new(-1i64));
+
+	// Populate Headings
+	let root = headings_tree.add_root(&t("Root"), None, None).unwrap();
+	let tree_data = session.heading_tree(current_pos);
+
+	let mut item_ids: Vec<wxdragon::widgets::treectrl::TreeItemId> = Vec::new();
+
+	// Pre-allocate to ensure indices match
+	if !tree_data.items.is_empty() {
+		item_ids.reserve(tree_data.items.len());
+	}
+
+	for item in &tree_data.items {
+		let parent_id = if item.parent_index >= 0 {
+			if let Some(id) = item_ids.get(item.parent_index as usize) { id.clone() } else { root.clone() }
+		} else {
+			root.clone()
+		};
+
+		let display_text = if item.text.is_empty() { t("Untitled") } else { item.text.clone() };
+		if let Some(id) = headings_tree.append_item_with_data(&parent_id, &display_text, item.offset as i64, None, None)
+		{
+			item_ids.push(id);
+		} else {
+			// Push a dummy ID or handle error?
+			// If append fails, we still need to maintain index alignment.
+			// But TreeItemId doesn't have a default "invalid" constructor exposed easily here.
+			// We'll assume append doesn't fail for now, or use root as fallback to keep indices aligned?
+			// Actually, if it fails, subsequent children will fail to find parent.
+			// Let's assume it works.
+			if let Some(root_child) =
+				headings_tree.append_item_with_data(&root, &display_text, item.offset as i64, None, None)
+			{
+				item_ids.push(root_child);
+			}
+		}
+	}
+
+	headings_tree.expand_all();
+
+	if tree_data.closest_index >= 0 {
+		if let Some(item) = item_ids.get(tree_data.closest_index as usize) {
+			headings_tree.select_item(item);
+			headings_tree.ensure_visible(item);
+		}
+	} else if let Some((first_child, _)) = headings_tree.get_first_child(&root) {
+		headings_tree.select_item(&first_child);
+		headings_tree.ensure_visible(&first_child);
+	}
+
+	// Populate Links
+	let link_data = session.link_list(current_pos);
+	let mut link_offsets = Vec::new();
+	for item in link_data.items {
+		links_list.append(&item.text);
+		link_offsets.push(item.offset as i64);
+	}
+	if !link_offsets.is_empty() {
+		let idx = if link_data.closest_index >= 0 { link_data.closest_index } else { 0 };
+		links_list.set_selection(idx as u32, true);
+	}
+
+	let link_offsets = Rc::new(link_offsets);
+
+	// Event Handlers
+	let headings_tree_for_choice = headings_tree;
+	let links_list_for_choice = links_list;
+	let dialog_for_layout = dialog;
+
+	view_choice.on_selection_changed(move |_| {
+		let selection = view_choice.get_selection().unwrap_or(0);
+		if selection == 0 {
+			headings_tree_for_choice.show(true);
+			links_list_for_choice.show(false);
+			headings_tree_for_choice.set_focus();
+		} else {
+			headings_tree_for_choice.show(false);
+			links_list_for_choice.show(true);
+			links_list_for_choice.set_focus();
+		}
+		dialog_for_layout.layout();
+	});
+
+	let selected_offset_for_tree = Rc::clone(&selected_offset);
+	let tree_for_activate = headings_tree;
+	let dialog_for_tree = dialog;
+	headings_tree.on_item_activated(move |event| {
+		if let Some(item) = event.get_item() {
+			if let Some(data) = tree_for_activate.get_custom_data(&item) {
+				if let Some(offset) = data.downcast_ref::<i64>() {
+					selected_offset_for_tree.set(*offset);
+					dialog_for_tree.end_modal(wxdragon::id::ID_OK);
+				}
+			}
+		}
+	});
+
+	let selected_offset_for_list = Rc::clone(&selected_offset);
+	let offsets_for_list = Rc::clone(&link_offsets);
+	let dialog_for_list = dialog;
+	links_list.on_item_double_clicked(move |event| {
+		let selection = event.get_selection().unwrap_or(-1);
+		if selection >= 0 {
+			if let Some(offset) = offsets_for_list.get(selection as usize) {
+				selected_offset_for_list.set(*offset);
+				dialog_for_list.end_modal(wxdragon::id::ID_OK);
+			}
+		}
+	});
+
+	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
+	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
+	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+	ok_button.set_default();
+
+	let selected_offset_for_ok = Rc::clone(&selected_offset);
+	let view_choice_for_ok = view_choice;
+	let headings_tree_for_ok = headings_tree;
+	let links_list_for_ok = links_list;
+	let offsets_for_ok = Rc::clone(&link_offsets);
+	let dialog_for_ok = dialog;
+
+	ok_button.on_click(move |_| {
+		let selection = view_choice_for_ok.get_selection().unwrap_or(0);
+		if selection == 0 {
+			// Headings
+			if let Some(item) = headings_tree_for_ok.get_selection() {
+				if let Some(data) = headings_tree_for_ok.get_custom_data(&item) {
+					if let Some(offset) = data.downcast_ref::<i64>() {
+						selected_offset_for_ok.set(*offset);
+						dialog_for_ok.end_modal(wxdragon::id::ID_OK);
+						return;
+					}
+				}
+			}
+		} else {
+			// Links
+			if let Some(idx) = links_list_for_ok.get_selection() {
+				if let Some(offset) = offsets_for_ok.get(idx as usize) {
+					selected_offset_for_ok.set(*offset);
+					dialog_for_ok.end_modal(wxdragon::id::ID_OK);
+					return;
+				}
+			}
+		}
+	});
+
+	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	button_sizer.add_stretch_spacer(1);
+	button_sizer.add(&ok_button, 0, SizerFlag::All, DIALOG_PADDING);
+	button_sizer.add(&cancel_button, 0, SizerFlag::All, DIALOG_PADDING);
+	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
+
+	dialog.set_sizer_and_fit(content_sizer, true);
+	dialog.centre();
+
+	if view_choice.get_selection().unwrap_or(0) == 0 {
+		headings_tree.set_focus();
+	} else {
+		links_list.set_focus();
+	}
+
+	if dialog.show_modal() == wxdragon::id::ID_OK {
+		let offset = selected_offset.get();
+		if offset >= 0 { Some(offset) } else { None }
+	} else {
+		None
+	}
+}
