@@ -1572,7 +1572,6 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 		links_list.set_selection(idx as u32, true);
 	}
 	let link_offsets = Rc::new(link_offsets);
-
 	let headings_tree_for_choice = headings_tree;
 	let links_list_for_choice = links_list;
 	let dialog_for_layout = dialog;
@@ -1646,22 +1645,18 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 			}
 		}
 	});
-
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	button_sizer.add_stretch_spacer(1);
 	button_sizer.add(&ok_button, 0, SizerFlag::All, DIALOG_PADDING);
 	button_sizer.add(&cancel_button, 0, SizerFlag::All, DIALOG_PADDING);
 	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
-
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
-
 	if view_choice.get_selection().unwrap_or(0) == 0 {
 		headings_tree.set_focus();
 	} else {
 		links_list.set_focus();
 	}
-
 	if dialog.show_modal() == wxdragon::id::ID_OK {
 		let offset = selected_offset.get();
 		if offset >= 0 { Some(offset) } else { None }
@@ -1669,6 +1664,7 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 		None
 	}
 }
+
 pub fn show_about_dialog(parent: &Frame) {
 	let name = CString::new("Paperback").unwrap_or_else(|_| CString::new("").unwrap());
 	let version = CString::new(env!("CARGO_PKG_VERSION")).unwrap_or_else(|_| CString::new("").unwrap());

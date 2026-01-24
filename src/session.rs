@@ -9,7 +9,7 @@ use zip::ZipArchive;
 
 use crate::{
 	config::ConfigManager,
-	document::{DocumentHandle, MarkerType, ParserContext, ParserFlags},
+	document::{self, DocumentHandle, MarkerType, ParserContext, ParserFlags},
 	parser,
 	reader_core::{
 		bookmark_navigate, get_filtered_bookmarks, history_go_next, history_go_previous, reader_navigate, resolve_link,
@@ -453,33 +453,25 @@ impl DocumentSession {
 		let mut items = Vec::new();
 		let mut closest_index = -1;
 		let mut min_distance = usize::MAX;
-
 		let markers = &self.handle.document().buffer.markers;
 		let mut item_stack: Vec<(i32, i32)> = Vec::new(); // (level, index)
-
 		for marker in markers {
-			if !crate::document::is_heading_marker(marker.marker_type) {
+			if !document::is_heading_marker(marker.marker_type) {
 				continue;
 			}
-
 			let level = marker.level;
 			while item_stack.last().map_or(false, |(l, _)| *l >= level) {
 				item_stack.pop();
 			}
-
 			let parent_index = item_stack.last().map_or(-1, |(_, idx)| *idx);
 			let current_index = i32::try_from(items.len()).unwrap_or(-1);
-
 			let text = if marker.text.is_empty() {
 				self.get_line_text(i64::try_from(marker.position).unwrap_or(0))
 			} else {
 				marker.text.clone()
 			};
-
 			items.push(ffi::HeadingTreeItem { offset: marker.position, text, level, parent_index });
-
 			item_stack.push((level, current_index));
-
 			if marker.position <= pos {
 				let dist = pos - marker.position;
 				if dist < min_distance {
