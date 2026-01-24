@@ -9,7 +9,7 @@ use std::{
 	thread,
 };
 
-use wxdragon::{prelude::*, scrollable::WxScrollable, translations::translate as t};
+use wxdragon::{prelude::*, scrollable::WxScrollable, timer::Timer, translations::translate as t};
 use wxdragon_sys as ffi;
 
 use super::{
@@ -29,7 +29,6 @@ use crate::{
 
 const KEY_DELETE: i32 = 127;
 const KEY_NUMPAD_DELETE: i32 = 330;
-const KEY_RETURN: i32 = 13;
 const DIALOG_PADDING: i32 = 10;
 const MAX_FIND_HISTORY_SIZE: usize = 10;
 static MAIN_WINDOW_PTR: AtomicUsize = AtomicUsize::new(0);
@@ -593,7 +592,32 @@ impl MainWindow {
 		let config = Rc::clone(&config);
 		let find_dialog = Rc::clone(&find_dialog);
 		let live_region_label = live_region_label;
-
+		let sleep_timer = Rc::new(Timer::new(frame));
+		let sleep_timer_running = Rc::new(Cell::new(false));
+		let sleep_timer_for_tick = Rc::clone(&sleep_timer);
+		let sleep_timer_running_for_tick = Rc::clone(&sleep_timer_running);
+		let frame_for_timer = *frame;
+		let dm_for_timer = Rc::clone(&doc_manager);
+		let config_for_timer = Rc::clone(&config);
+		sleep_timer.on_tick(move |_| {
+			sleep_timer_running_for_tick.set(false);
+			sleep_timer_for_tick.stop();
+			{
+				let dm = dm_for_timer.lock().unwrap();
+				let cfg = config_for_timer.lock().unwrap();
+				for i in 0..dm.tab_count() {
+					if let Some(tab) = dm.get_tab(i) {
+						let current_pos = tab.text_ctrl.get_insertion_point();
+						let path_str = tab.file_path.to_string_lossy();
+						cfg.set_document_position(&path_str, current_pos);
+					}
+				}
+				cfg.flush();
+			}
+			frame_for_timer.close(true);
+		});
+		let sleep_timer_for_menu = Rc::clone(&sleep_timer);
+		let sleep_timer_running_for_menu = Rc::clone(&sleep_timer_running);
 		frame.on_menu(move |event| {
 			let id = event.get_id();
 			match id {
@@ -1059,6 +1083,31 @@ impl MainWindow {
 					}
 					let menu_bar = Self::create_menu_bar(&config.lock().unwrap());
 					frame_copy.set_menu_bar(menu_bar);
+				}
+				menu_ids::SLEEP_TIMER => {
+					if sleep_timer_running_for_menu.get() {
+						sleep_timer_for_menu.stop();
+						sleep_timer_running_for_menu.set(false);
+						live_region::announce(&live_region_label, &t("Sleep timer cancelled."));
+						return;
+					}
+					let initial_duration = config.lock().unwrap().get_app_int("sleep_timer_duration", 30);
+					if let Some(duration) = dialogs::show_sleep_timer_dialog(&frame_copy, initial_duration) {
+						{
+							let cfg = config.lock().unwrap();
+							cfg.set_app_int("sleep_timer_duration", duration);
+							cfg.flush();
+						}
+						let duration_ms = duration as u64 * 60 * 1000;
+						sleep_timer_for_menu.start(duration_ms as i32, true);
+						sleep_timer_running_for_menu.set(true);
+						let msg = if duration == 1 {
+							t("Sleep timer set for 1 minute.")
+						} else {
+							t("Sleep timer set for %d minutes.").replace("%d", &duration.to_string())
+						};
+						live_region::announce(&live_region_label, &msg);
+					}
 				}
 				menu_ids::ABOUT => {
 					println!("Paperback 0.8.0 - An accessible ebook reader");
