@@ -949,10 +949,7 @@ impl MainWindow {
 					};
 					let (old_word_wrap, old_compact_menu) = {
 						let cfg = config.lock().unwrap();
-						(
-							cfg.get_app_bool("word_wrap", false),
-							cfg.get_app_bool("compact_go_menu", true),
-						)
+						(cfg.get_app_bool("word_wrap", false), cfg.get_app_bool("compact_go_menu", true))
 					};
 					let mut cfg = config.lock().unwrap();
 					cfg.set_app_bool("restore_previous_documents", options.restore_previous_documents);

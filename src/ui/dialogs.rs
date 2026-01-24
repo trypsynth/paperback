@@ -71,9 +71,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 	general_box.add(&compact_go_menu_check, 0, SizerFlag::All, option_padding);
 	general_box.add(&navigation_wrap_check, 0, SizerFlag::All, option_padding);
 	general_box.add(&check_for_updates_check, 0, SizerFlag::All, option_padding);
-	let recent_docs_label = StaticText::builder(&dialog)
-		.with_label(&t("Number of &recent documents to show:"))
-		.build();
+	let recent_docs_label = StaticText::builder(&dialog).with_label(&t("Number of &recent documents to show:")).build();
 	let recent_docs_ctrl = SpinCtrl::builder(&dialog).with_range(0, max_recent_docs).build();
 	let recent_docs_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	recent_docs_sizer.add(&recent_docs_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
