@@ -1,6 +1,7 @@
 use std::{
 	cell::Cell,
-	path::Path,
+	env,
+	path::{Path, PathBuf},
 	rc::Rc,
 	sync::{
 		Mutex,
@@ -124,6 +125,18 @@ impl MainWindow {
 
 		let tray_state = Rc::new(Mutex::new(None));
 		Self::bind_tray_events(frame, Rc::clone(&doc_manager), Rc::clone(&config), Rc::clone(&tray_state));
+		{
+			let dm_for_close = Rc::clone(&doc_manager);
+			let config_for_close = Rc::clone(&config);
+			frame.on_close(move |_event| {
+				if let Some(tab) = dm_for_close.lock().unwrap().active_tab() {
+					let path = tab.file_path.to_string_lossy();
+					let cfg = config_for_close.lock().unwrap();
+					cfg.set_app_string("active_document", &path);
+					cfg.flush();
+				}
+			});
+		}
 		Self::schedule_restore_documents(frame, Rc::clone(&doc_manager), Rc::clone(&config));
 		Self { frame, doc_manager, _config: config, tray_state, live_region_label, find_dialog }
 	}
@@ -1061,7 +1074,7 @@ impl MainWindow {
 						return;
 					};
 					let current_pos = tab.text_ctrl.get_insertion_point();
-					let temp_dir = std::env::temp_dir().to_string_lossy().to_string();
+					let temp_dir = env::temp_dir().to_string_lossy().to_string();
 					if let Some(target_path) = tab.session.webview_target_path(current_pos, &temp_dir) {
 						let url = format!("file:///{}", target_path.replace("\\", "/"));
 						dialogs::show_web_view_dialog(
@@ -1094,6 +1107,9 @@ impl MainWindow {
 						.build();
 						dialog.show_modal();
 					}
+				}
+				menu_ids::OPEN_CONTAINING_FOLDER => {
+					handle_open_containing_folder(&frame_copy, &dm);
 				}
 				menu_ids::OPTIONS => {
 					let current_language = TranslationManager::instance().lock().unwrap().current_language();
@@ -1178,8 +1194,17 @@ impl MainWindow {
 				menu_ids::ABOUT => {
 					dialogs::show_about_dialog(&frame_copy);
 				}
+				menu_ids::VIEW_HELP_BROWSER => {
+					handle_view_help_browser(&frame_copy);
+				}
+				menu_ids::VIEW_HELP_PAPERBACK => {
+					handle_view_help_paperback(&frame_copy, &dm, &config);
+				}
 				menu_ids::CHECK_FOR_UPDATES => {
 					run_update_check(false);
+				}
+				menu_ids::DONATE => {
+					handle_donate(&frame_copy);
 				}
 
 				_ => {
@@ -2221,13 +2246,98 @@ fn run_update_check(silent: bool) {
 }
 
 fn is_installer_distribution() -> bool {
-	let Ok(exe_path) = std::env::current_exe() else {
+	let Ok(exe_path) = env::current_exe() else {
 		return false;
 	};
 	let Some(exe_dir) = exe_path.parent() else {
 		return false;
 	};
 	exe_dir.join("unins000.exe").exists()
+}
+
+fn readme_path() -> Option<PathBuf> {
+	let exe = env::current_exe().ok()?;
+	let dir = exe.parent()?;
+	Some(dir.join("readme.html"))
+}
+
+fn show_error_message(frame: &Frame, message: &str, title: &str) {
+	let dialog = MessageDialog::builder(frame, message, title)
+		.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
+		.build();
+	dialog.show_modal();
+}
+
+fn handle_open_containing_folder(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) {
+	let dm_ref = doc_manager.lock().unwrap();
+	let Some(tab) = dm_ref.active_tab() else {
+		return;
+	};
+	let Some(dir) = tab.file_path.parent() else {
+		show_error_message(frame, &t("Failed to open containing folder."), &t("Error"));
+		return;
+	};
+	let url = format!("file://{}", dir.to_string_lossy());
+	if !wxdragon::utils::launch_default_browser(&url, wxdragon::utils::BrowserLaunchFlags::Default) {
+		show_error_message(frame, &t("Failed to open containing folder."), &t("Error"));
+	}
+}
+
+fn handle_view_help_browser(frame: &Frame) {
+	let Some(path) = readme_path() else {
+		show_error_message(
+			frame,
+			&t("readme.html not found. Please ensure the application was built properly."),
+			&t("Error"),
+		);
+		return;
+	};
+	if !path.exists() {
+		show_error_message(
+			frame,
+			&t("readme.html not found. Please ensure the application was built properly."),
+			&t("Error"),
+		);
+		return;
+	}
+	let url = format!("file://{}", path.to_string_lossy());
+	if !wxdragon::utils::launch_default_browser(&url, wxdragon::utils::BrowserLaunchFlags::Default) {
+		show_error_message(frame, &t("Failed to launch default browser."), &t("Error"));
+	}
+}
+
+fn handle_view_help_paperback(
+	frame: &Frame,
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+) {
+	let Some(path) = readme_path() else {
+		show_error_message(
+			frame,
+			&t("readme.html not found. Please ensure the application was built properly."),
+			&t("Error"),
+		);
+		return;
+	};
+	if !path.exists() {
+		show_error_message(
+			frame,
+			&t("readme.html not found. Please ensure the application was built properly."),
+			&t("Error"),
+		);
+		return;
+	}
+	if !ensure_parser_ready_for_path(frame, &path, config) {
+		return;
+	}
+	let _ = doc_manager.lock().unwrap().open_file(Rc::clone(doc_manager), &path);
+}
+
+fn handle_donate(frame: &Frame) {
+	let url = "https://paypal.me/tygillespie05";
+	if !wxdragon::utils::launch_default_browser(url, wxdragon::utils::BrowserLaunchFlags::Default) {
+		show_error_message(frame, &t("Failed to open donation page in browser."), &t("Error"));
+	}
 }
 
 fn present_update_result(outcome: Result<UpdateCheckOutcome, UpdateError>, silent: bool, current_version: &str) {

@@ -1,4 +1,9 @@
-use std::{env, path::Path, rc::Rc, sync::Mutex};
+use std::{
+	env,
+	path::{Path, PathBuf},
+	rc::Rc,
+	sync::Mutex,
+};
 
 use wxdragon::prelude::*;
 
@@ -36,6 +41,17 @@ impl PaperbackApp {
 
 fn open_from_command_line(main_window: &MainWindow) {
 	if let Some(path) = env::args().nth(1) {
-		main_window.open_file(Path::new(&path));
+		let normalized = normalize_cli_path(Path::new(&path));
+		main_window.open_file(&normalized);
 	}
+}
+
+fn normalize_cli_path(path: &Path) -> PathBuf {
+	if let Ok(normalized) = path.canonicalize() {
+		return normalized;
+	}
+	if path.is_absolute() {
+		return path.to_path_buf();
+	}
+	env::current_dir().map(|cwd| cwd.join(path)).unwrap_or_else(|_| path.to_path_buf())
 }
