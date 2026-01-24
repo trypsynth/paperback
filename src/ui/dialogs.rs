@@ -1031,14 +1031,12 @@ pub fn show_web_view_dialog(
 	let dialog = Dialog::builder(parent, title).build();
 	let web_view = WebView::builder(&dialog).build();
 	web_view.add_script_message_handler("wx");
-
 	let dialog_for_close = dialog;
 	web_view.on_script_message_received(move |event| {
 		if event.get_string() == Some("close_dialog".to_string()) {
 			dialog_for_close.end_modal(wxdragon::id::ID_CANCEL);
 		}
 	});
-
 	if let Some(handler) = navigation_handler {
 		web_view.on_navigating(move |event| {
 			if let Some(url) = event.get_string() {
@@ -1049,7 +1047,6 @@ pub fn show_web_view_dialog(
 			}
 		});
 	}
-
 	if is_url {
 		web_view.load_url(url_or_content);
 	} else {
@@ -1060,7 +1057,6 @@ pub fn show_web_view_dialog(
 		};
 		web_view.set_page(&full_html, "");
 	}
-
 	let web_view_for_load = web_view;
 	let timer = Rc::new(Timer::new(&dialog));
 	let timer_copy = Rc::clone(&timer);
@@ -1076,7 +1072,6 @@ pub fn show_web_view_dialog(
 			sim.mouse_click(MouseButton::Left);
 		});
 		timer_copy.start(100, true);
-
 		web_view_for_load.run_script(
 			"document.addEventListener('keydown', function(event) { \
              if (event.key === 'Escape' || event.keyCode === 27) { \
@@ -1085,21 +1080,18 @@ pub fn show_web_view_dialog(
              });",
 		);
 	});
-
 	let close_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Close")).build();
 	let dialog_for_ok = dialog;
 	close_button.on_click(move |_| {
 		dialog_for_ok.end_modal(wxdragon::id::ID_OK);
 	});
 	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
-
 	let sizer = BoxSizer::builder(Orientation::Vertical).build();
 	sizer.add(&web_view, 1, SizerFlag::Expand | SizerFlag::All, 5);
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	button_sizer.add_stretch_spacer(1);
 	button_sizer.add(&close_button, 0, SizerFlag::All, 5);
 	sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
-
 	dialog.set_sizer_and_fit(sizer, true);
 	dialog.centre();
 	dialog.show_modal();

@@ -106,7 +106,6 @@ impl DocumentManager {
 			| TextCtrlStyle::Rich2
 			| if word_wrap { TextCtrlStyle::WordWrap } else { TextCtrlStyle::DontWrap };
 		let text_ctrl = TextCtrl::builder(&panel).with_style(style).build();
-
 		let dm_for_enter = Rc::clone(&self_rc);
 		text_ctrl.on_char(move |event| {
 			if let WindowEventData::Keyboard(kbd) = event {
@@ -120,7 +119,6 @@ impl DocumentManager {
 				}
 			}
 		});
-
 		let sizer = BoxSizer::builder(Orientation::Vertical).build();
 		sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
 		panel.set_sizer(sizer, true);
@@ -270,7 +268,6 @@ impl DocumentManager {
 				None
 			}
 		};
-
 		if let Some(html) = table_html {
 			super::dialogs::show_web_view_dialog(&self.frame, &t("Table View"), &html, false, None);
 		}
