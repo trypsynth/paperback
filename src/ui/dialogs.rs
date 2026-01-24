@@ -1,5 +1,6 @@
 use std::{
 	cell::{Cell, RefCell},
+	ffi::CString,
 	path::Path,
 	rc::Rc,
 	sync::Mutex,
@@ -7,6 +8,7 @@ use std::{
 
 use wxdragon::{
 	event::WebViewEvents,
+	ffi,
 	prelude::*,
 	timer::Timer,
 	translations::translate as t,
@@ -1490,44 +1492,25 @@ pub fn show_web_view_dialog(
 	dialog.show_modal();
 }
 
-/// Show the About dialog with application information
 pub fn show_about_dialog(parent: &Frame) {
-	let dialog = Dialog::builder(parent, &t("About Paperback")).build();
-
-	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-
-	// Application name
-	let name_label = StaticText::builder(&dialog).with_label("Paperback").build();
-	content_sizer.add(&name_label, 0, SizerFlag::AlignCenterHorizontal | SizerFlag::All, DIALOG_PADDING);
-
-	// Version
-	let version = env!("CARGO_PKG_VERSION");
-	let version_text = format!("Version {}", version);
-	let version_label = StaticText::builder(&dialog).with_label(&version_text).build();
-	content_sizer.add(&version_label, 0, SizerFlag::AlignCenterHorizontal | SizerFlag::All, 5);
-
-	// Description
-	let description = t("An accessible, lightweight, fast ebook and document reader");
-	let desc_label = StaticText::builder(&dialog).with_label(&description).build();
-	content_sizer.add(&desc_label, 0, SizerFlag::AlignCenterHorizontal | SizerFlag::All, DIALOG_PADDING);
-
-	// Copyright
-	let copyright = "Copyright (C) 2025-2026 Quin Gillespie. All rights reserved.";
-	let copyright_label = StaticText::builder(&dialog).with_label(copyright).build();
-	content_sizer.add(&copyright_label, 0, SizerFlag::AlignCenterHorizontal | SizerFlag::All, 5);
-
-	// Website
-	let website = "https://github.com/trypsynth/paperback";
-	let website_label = StaticText::builder(&dialog).with_label(website).build();
-	content_sizer.add(&website_label, 0, SizerFlag::AlignCenterHorizontal | SizerFlag::All, 5);
-
-	// OK button
-	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
-	ok_button.set_default();
-	content_sizer.add(&ok_button, 0, SizerFlag::AlignCenterHorizontal | SizerFlag::All, DIALOG_PADDING);
-
-	dialog.set_escape_id(wxdragon::id::ID_OK);
-	dialog.set_sizer_and_fit(content_sizer, true);
-	dialog.centre();
-	dialog.show_modal();
+	let name = CString::new("Paperback").unwrap_or_else(|_| CString::new("").unwrap());
+	let version = CString::new(env!("CARGO_PKG_VERSION")).unwrap_or_else(|_| CString::new("").unwrap());
+	let description =
+		CString::new(t("An accessible, lightweight, fast ebook and document reader")).unwrap_or_else(|_| CString::new("").unwrap());
+	let copyright =
+		CString::new("Copyright (C) 2025-2026 Quin Gillespie. All rights reserved.").unwrap_or_else(|_| CString::new("").unwrap());
+	let website = CString::new("https://paperback.dev").unwrap_or_else(|_| CString::new("").unwrap());
+	unsafe {
+		let info = ffi::wxd_AboutDialogInfo_Create();
+		if info.is_null() {
+			return;
+		}
+		ffi::wxd_AboutDialogInfo_SetName(info, name.as_ptr());
+		ffi::wxd_AboutDialogInfo_SetVersion(info, version.as_ptr());
+		ffi::wxd_AboutDialogInfo_SetDescription(info, description.as_ptr());
+		ffi::wxd_AboutDialogInfo_SetCopyright(info, copyright.as_ptr());
+		ffi::wxd_AboutDialogInfo_SetWebSite(info, website.as_ptr());
+		ffi::wxd_AboutBox(info, parent.handle_ptr());
+		ffi::wxd_AboutDialogInfo_Destroy(info);
+	}
 }
