@@ -106,6 +106,8 @@ These C++ handlers still need porting:
 
 ## How to Build
 
+**IMPORTANT: Always use `--release` flag for builds.**
+
 ### Rust (Active)
 
 ```bash

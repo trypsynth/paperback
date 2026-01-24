@@ -4,9 +4,10 @@ use std::{
 	rc::Rc,
 	sync::{
 		Mutex,
-		atomic::{AtomicUsize, Ordering},
+		atomic::{AtomicI32, AtomicI64, AtomicUsize, Ordering},
 	},
 	thread,
+	time::{self, SystemTime},
 };
 
 use wxdragon::{prelude::*, scrollable::WxScrollable, timer::Timer, translations::translate as t};
@@ -32,6 +33,8 @@ const KEY_NUMPAD_DELETE: i32 = 330;
 const DIALOG_PADDING: i32 = 10;
 const MAX_FIND_HISTORY_SIZE: usize = 10;
 static MAIN_WINDOW_PTR: AtomicUsize = AtomicUsize::new(0);
+pub static SLEEP_TIMER_START_MS: AtomicI64 = AtomicI64::new(0);
+pub static SLEEP_TIMER_DURATION_MINUTES: AtomicI32 = AtomicI32::new(0);
 
 /// Main application window
 pub struct MainWindow {
@@ -604,6 +607,8 @@ impl MainWindow {
 		sleep_timer.on_tick(move |_| {
 			sleep_timer_running_for_tick.set(false);
 			sleep_timer_for_tick.stop();
+			SLEEP_TIMER_START_MS.store(0, Ordering::SeqCst);
+			SLEEP_TIMER_DURATION_MINUTES.store(0, Ordering::SeqCst);
 			{
 				let dm = dm_for_timer.lock().unwrap();
 				let cfg = config_for_timer.lock().unwrap();
@@ -1120,7 +1125,8 @@ impl MainWindow {
 						sleep_timer_running_for_menu.set(false);
 						sleep_timer_start_for_menu.set(0);
 						sleep_timer_duration_for_menu.set(0);
-						// Update status bar to remove sleep timer display
+						SLEEP_TIMER_START_MS.store(0, Ordering::SeqCst);
+						SLEEP_TIMER_DURATION_MINUTES.store(0, Ordering::SeqCst);
 						let dm_ref = dm.lock().unwrap();
 						update_title_from_manager(&frame_copy, &dm_ref);
 						live_region::announce(&live_region_label, &t("Sleep timer cancelled."));
@@ -1143,6 +1149,8 @@ impl MainWindow {
 							.unwrap_or(0);
 						sleep_timer_start_for_menu.set(now);
 						sleep_timer_duration_for_menu.set(duration);
+						SLEEP_TIMER_START_MS.store(now, Ordering::SeqCst);
+						SLEEP_TIMER_DURATION_MINUTES.store(duration, Ordering::SeqCst);
 						let msg = if duration == 1 {
 							t("Sleep timer set for 1 minute.")
 						} else {
@@ -2289,9 +2297,18 @@ fn main_window_parent() -> Option<ParentWindow> {
 }
 
 fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
+	let sleep_start = SLEEP_TIMER_START_MS.load(Ordering::SeqCst);
+	let sleep_duration = SLEEP_TIMER_DURATION_MINUTES.load(Ordering::SeqCst);
 	if dm.tab_count() == 0 {
 		frame.set_title(&t("Paperback"));
-		frame.set_status_text(&t("Ready"), 0);
+		let mut status_text = t("Ready");
+		if sleep_start > 0 {
+			let remaining = calculate_sleep_timer_remaining(sleep_start, sleep_duration);
+			if remaining > 0 {
+				status_text = format_sleep_timer_status(&status_text, remaining);
+			}
+		}
+		frame.set_status_text(&status_text, 0);
 		return;
 	}
 	if let Some(tab) = dm.active_tab() {
@@ -2303,18 +2320,20 @@ fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 		};
 		let template = t("Paperback - {}");
 		frame.set_title(&template.replace("{}", &display_title));
-
-		// Get cursor position and generate status text
 		let position = tab.text_ctrl.get_insertion_point();
 		let status_info = tab.session.get_status_info(position);
-		let status_text = format_status_text(&status_info);
+		let mut status_text = format_status_text(&status_info);
+		if sleep_start > 0 {
+			let remaining = calculate_sleep_timer_remaining(sleep_start, sleep_duration);
+			if remaining > 0 {
+				status_text = format_sleep_timer_status(&status_text, remaining);
+			}
+		}
 		frame.set_status_text(&status_text, 0);
 	}
 }
 
-/// Format status information for the status bar
 fn format_status_text(info: &crate::session::StatusInfo) -> String {
-	// Format: "Line X, Character Y, Reading Z%"
 	let line_label = t("Line");
 	let char_label = t("Character");
 	let reading_label = t("Reading");
@@ -2324,7 +2343,6 @@ fn format_status_text(info: &crate::session::StatusInfo) -> String {
 	)
 }
 
-/// Update status bar including sleep timer countdown if active
 fn update_status_bar_with_sleep_timer(
 	frame: &Frame,
 	dm: &DocumentManager,
@@ -2347,8 +2365,6 @@ fn update_status_bar_with_sleep_timer(
 		let position = tab.text_ctrl.get_insertion_point();
 		let status_info = tab.session.get_status_info(position);
 		let mut status_text = format_status_text(&status_info);
-
-		// Add sleep timer countdown if active
 		if sleep_timer_start_ms > 0 {
 			let remaining = calculate_sleep_timer_remaining(sleep_timer_start_ms, sleep_timer_duration_minutes);
 			if remaining > 0 {
@@ -2359,23 +2375,14 @@ fn update_status_bar_with_sleep_timer(
 	}
 }
 
-/// Calculate remaining seconds for sleep timer
 fn calculate_sleep_timer_remaining(start_ms: i64, duration_minutes: i32) -> i32 {
-	let now = std::time::SystemTime::now()
-		.duration_since(std::time::UNIX_EPOCH)
-		.map(|d| d.as_millis() as i64)
-		.unwrap_or(0);
+	let now = SystemTime::now().duration_since(time::UNIX_EPOCH).map(|d| d.as_millis() as i64).unwrap_or(0);
 	let elapsed_ms = now - start_ms;
 	let duration_ms = i64::from(duration_minutes) * 60 * 1000;
 	let remaining_ms = duration_ms - elapsed_ms;
-	if remaining_ms < 0 {
-		0
-	} else {
-		(remaining_ms / 1000) as i32
-	}
+	if remaining_ms < 0 { 0 } else { (remaining_ms / 1000) as i32 }
 }
 
-/// Format sleep timer countdown text
 fn format_sleep_timer_status(base_status: &str, remaining_seconds: i32) -> String {
 	let minutes = remaining_seconds / 60;
 	let seconds = remaining_seconds % 60;

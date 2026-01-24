@@ -1,11 +1,13 @@
 use std::{
 	path::{Path, PathBuf},
 	rc::Rc,
-	sync::Mutex,
+	sync::{Mutex, atomic::Ordering},
+	time::{self, SystemTime},
 };
 
 use wxdragon::{prelude::*, translations::translate as t};
 
+use super::main_window::{SLEEP_TIMER_DURATION_MINUTES, SLEEP_TIMER_START_MS};
 use crate::{config::ConfigManager, live_region, parser::PASSWORD_REQUIRED_ERROR_PREFIX, session::DocumentSession};
 
 pub struct DocumentTab {
@@ -117,6 +119,20 @@ impl DocumentManager {
 				} else {
 					kbd.event.skip(true);
 				}
+			}
+		});
+		let dm_for_key_up = Rc::clone(&self_rc);
+		text_ctrl.bind_internal(wxdragon::event::EventType::KEY_UP, move |event| {
+			event.skip(true);
+			if let Ok(dm) = dm_for_key_up.try_lock() {
+				dm.update_status_bar();
+			}
+		});
+		let dm_for_mouse = Rc::clone(&self_rc);
+		text_ctrl.bind_internal(wxdragon::event::EventType::LEFT_UP, move |event| {
+			event.skip(true);
+			if let Ok(dm) = dm_for_mouse.try_lock() {
+				dm.update_status_bar();
 			}
 		});
 		let sizer = BoxSizer::builder(Orientation::Vertical).build();
@@ -282,6 +298,34 @@ impl DocumentManager {
 		tab.session.export_content(export_path.as_ref()).is_ok()
 	}
 
+	pub fn update_status_bar(&self) {
+		let sleep_start = SLEEP_TIMER_START_MS.load(Ordering::SeqCst);
+		let sleep_duration = SLEEP_TIMER_DURATION_MINUTES.load(Ordering::SeqCst);
+		if self.tabs.is_empty() {
+			let mut status_text = t("Ready");
+			if sleep_start > 0 {
+				let remaining = calculate_sleep_timer_remaining(sleep_start, sleep_duration);
+				if remaining > 0 {
+					status_text = format_sleep_timer_status(&status_text, remaining);
+				}
+			}
+			self.frame.set_status_text(&status_text, 0);
+			return;
+		}
+		if let Some(tab) = self.active_tab() {
+			let position = tab.text_ctrl.get_insertion_point();
+			let status_info = tab.session.get_status_info(position);
+			let mut status_text = format_status_text(&status_info);
+			if sleep_start > 0 {
+				let remaining = calculate_sleep_timer_remaining(sleep_start, sleep_duration);
+				if remaining > 0 {
+					status_text = format_sleep_timer_status(&status_text, remaining);
+				}
+			}
+			self.frame.set_status_text(&status_text, 0);
+		}
+	}
+
 	pub fn apply_word_wrap(&mut self, word_wrap: bool) {
 		for tab in &mut self.tabs {
 			let old_ctrl = tab.text_ctrl;
@@ -349,4 +393,29 @@ fn fill_text_ctrl(text_ctrl: &TextCtrl, content: &str) {
 	if !buf.is_empty() {
 		text_ctrl.append_text(&buf);
 	}
+}
+
+fn format_status_text(info: &crate::session::StatusInfo) -> String {
+	let line_label = t("Line");
+	let char_label = t("Character");
+	let reading_label = t("Reading");
+	format!(
+		"{} {}, {} {}, {} {}%",
+		line_label, info.line_number, char_label, info.character_number, reading_label, info.percentage
+	)
+}
+
+fn calculate_sleep_timer_remaining(start_ms: i64, duration_minutes: i32) -> i32 {
+	let now = SystemTime::now().duration_since(time::UNIX_EPOCH).map(|d| d.as_millis() as i64).unwrap_or(0);
+	let elapsed_ms = now - start_ms;
+	let total_ms = i64::from(duration_minutes) * 60 * 1000;
+	let remaining_ms = total_ms - elapsed_ms;
+	if remaining_ms <= 0 { 0 } else { (remaining_ms / 1000) as i32 }
+}
+
+fn format_sleep_timer_status(base_status: &str, remaining_seconds: i32) -> String {
+	let minutes = remaining_seconds / 60;
+	let seconds = remaining_seconds % 60;
+	let sleep_label = t("Sleep timer");
+	format!("{} | {}: {:02}:{:02}", base_status, sleep_label, minutes, seconds)
 }
