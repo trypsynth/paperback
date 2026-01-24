@@ -12,6 +12,11 @@ use embed_manifest::{
 
 fn main() {
 	build_translations();
+	build_docs();
+	configure_installer();
+	if env::var("UPDATE_POT").is_ok() {
+		generate_pot();
+	}
 	let target = env::var("TARGET").unwrap_or_default();
 	if target.contains("windows") {
 		let manifest = new_manifest("Fedra")
@@ -110,4 +115,119 @@ fn target_profile_dir() -> Option<PathBuf> {
 	}
 	let out_dir = PathBuf::from(env::var("OUT_DIR").ok()?);
 	out_dir.ancestors().nth(3).map(Path::to_path_buf)
+}
+
+fn build_docs() {
+	let target_dir = match target_profile_dir() {
+		Some(dir) => dir,
+		None => {
+			println!("cargo:warning=Could not determine target directory for docs.");
+			return;
+		}
+	};
+	let doc_dir = PathBuf::from("doc");
+	let readme = doc_dir.join("readme.md");
+	let config = doc_dir.join("pandoc.yaml");
+	println!("cargo:rerun-if-changed={}", readme.display());
+	println!("cargo:rerun-if-changed={}", config.display());
+	let pandoc_check = Command::new("pandoc").arg("--version").output();
+	if pandoc_check.is_err() {
+		println!("cargo:warning=Pandoc not found. Documentation will not be generated.");
+		return;
+	}
+	let output = target_dir.join("readme.html");
+	let status = Command::new("pandoc")
+		.arg(format!("--defaults={}", config.display()))
+		.arg(&readme)
+		.arg("-o")
+		.arg(&output)
+		.status();
+	match status {
+		Ok(s) if s.success() => {}
+		_ => println!("cargo:warning=Failed to generate documentation."),
+	}
+}
+
+fn configure_installer() {
+	let target_dir = match target_profile_dir() {
+		Some(dir) => dir,
+		None => return,
+	};
+	let input_path = PathBuf::from("paperback.iss.in");
+	println!("cargo:rerun-if-changed={}", input_path.display());
+	if !input_path.exists() {
+		return;
+	}
+	let content = match fs::read_to_string(&input_path) {
+		Ok(c) => c,
+		Err(e) => {
+			println!("cargo:warning=Failed to read installer script: {}", e);
+			return;
+		}
+	};
+	let version = env::var("CARGO_PKG_VERSION").unwrap_or_else(|_| "0.0.0".to_string());
+	let new_content = content.replace("@PROJECT_VERSION@", &version);
+	let output_path = target_dir.join("paperback.iss");
+	if let Err(e) = fs::write(&output_path, new_content) {
+		println!("cargo:warning=Failed to write installer script: {}", e);
+	}
+}
+
+fn generate_pot() {
+	let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap_or_default());
+	let po_dir = manifest_dir.join("po");
+	if !po_dir.exists() {
+		let _ = fs::create_dir(&po_dir);
+	}
+	let xgettext_check = Command::new("xgettext").arg("--version").output();
+	if xgettext_check.is_err() {
+		println!("cargo:warning=xgettext not found. Translation template (.pot) generation will not be available.");
+		return;
+	}
+	let app_dir = manifest_dir.join("app");
+	let mut files = Vec::new();
+	let _ = collect_translatable_files(&app_dir, &mut files);
+	if files.is_empty() {
+		return;
+	}
+	let version = env::var("CARGO_PKG_VERSION").unwrap_or_else(|_| "0.0.0".to_string());
+	let output_file = po_dir.join("paperback.pot");
+	let mut cmd = Command::new("xgettext");
+	cmd.arg("--keyword=_")
+		.arg("--keyword=wxPLURAL:1,2")
+		.arg("--keyword=wxTRANSLATE")
+		.arg("--language=C++")
+		.arg("--from-code=UTF-8")
+		.arg("--add-comments=TRANSLATORS")
+		.arg("--add-location=file")
+		.arg("--package-name=paperback")
+		.arg(format!("--package-version={}", version))
+		.arg("--msgid-bugs-address=https://github.com/trypsynth/paperback/issues")
+		.arg("--copyright-holder=Quin Gillespie")
+		.arg(format!("--output={}", output_file.display()));
+	for file in files {
+		cmd.arg(file);
+	}
+	let status = cmd.status();
+	match status {
+		Ok(s) if s.success() => {}
+		_ => println!("cargo:warning=Failed to generate POT file."),
+	}
+}
+
+fn collect_translatable_files(dir: &Path, files: &mut Vec<PathBuf>) -> std::io::Result<()> {
+	if dir.is_dir() {
+		for entry in fs::read_dir(dir)? {
+			let entry = entry?;
+			let path = entry.path();
+			if path.is_dir() {
+				collect_translatable_files(&path, files)?;
+			} else if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
+				if matches!(ext, "cpp" | "hpp" | "h") {
+					files.push(path);
+				}
+			}
+		}
+	}
+	Ok(())
 }
