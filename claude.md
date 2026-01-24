@@ -28,8 +28,8 @@ paperback/
 │   ├── main.rs             # Entry point
 │   ├── ui/                 # UI components
 │   │   ├── app.rs          # PaperbackApp main struct
-│   │   ├── main_window.rs  # Main window (~1,666 lines)
-│   │   ├── dialogs.rs      # Ported dialogs (~25,824 lines)
+│   │   ├── main_window.rs  # Main window (~2,035 lines)
+│   │   ├── dialogs.rs      # Ported dialogs (~1,015 lines)
 │   │   ├── document_manager.rs
 │   │   ├── menu_ids.rs
 │   │   └── utils.rs
@@ -38,7 +38,7 @@ paperback/
 │   │   ├── odt.rs, pptx.rs, odp.rs, html.rs
 │   │   ├── markdown.rs, text.rs
 │   │   └── utils.rs
-│   ├── config.rs           # Configuration management
+│   ├── config.rs           # Configuration management (uses wxConfig)
 │   ├── session.rs          # Document session state
 │   ├── document.rs         # Document data structures
 │   ├── reader_core.rs      # Navigation logic
@@ -47,11 +47,10 @@ paperback/
 │   ├── translation_manager.rs
 │   └── utils/              # Text, encoding, zip utilities
 ├── app/                    # C++ source (LEGACY - being removed)
-│   ├── dialogs.cpp/hpp     # Legacy dialogs (most ported)
-│   ├── main_window.cpp/hpp # Legacy main window
-│   ├── document_manager.cpp/hpp
-│   ├── app.cpp/hpp         # Legacy app entry
-│   └── ...
+│   ├── dialogs.cpp/hpp     # Legacy dialogs (~477 lines impl)
+│   ├── main_window.cpp/hpp # Legacy main window (~1,100 lines)
+│   ├── app.cpp/hpp         # Legacy app entry (IPC only)
+│   └── constants.hpp       # Shared constants
 ├── Cargo.toml              # Rust build config
 └── CMakeLists.txt          # C++ build (non-functional)
 ```
@@ -62,52 +61,51 @@ These C++ features have been ported to Rust (their C++ implementations have been
 
 | Feature | Rust Location | Commit |
 |---------|---------------|--------|
+| Options Dialog | `src/ui/dialogs.rs::show_options_dialog` | e7cec99 |
+| Import/Export Document Data | `src/config.rs::import/export_*`, `src/ui/main_window.rs` | b087a5b |
+| Go to Page Dialog | `src/ui/dialogs.rs::show_go_to_page_dialog` | d391cde |
+| Go to Percent Dialog | `src/ui/dialogs.rs::show_go_to_percent_dialog` | d391cde |
+| Go to Line Dialog | `src/ui/dialogs.rs::show_go_to_line_dialog` | 0210374 |
+| Config (wxConfig) | `src/config.rs::ConfigManager` | 083426a |
+| Live Region (A11y) | `src/live_region.rs` | 55bd02f |
+| System Tray | `src/ui/main_window.rs` | 65de287 |
 | Table of Contents Dialog | `src/ui/dialogs.rs::show_toc_dialog` | 4037e04 |
 | Update Dialog | `src/ui/dialogs.rs::show_update_dialog` | bf11ea3 |
 | Navigation Logic | `src/reader_core.rs::reader_navigate` | 51c25bc |
-| Open As Dialog | `src/ui/dialogs.rs::show_open_as_dialog` | - |
-| Find Dialog | `src/ui/main_window.rs::FindDialogState` | - |
+| Find Dialog | `src/ui/main_window.rs::FindDialogState` | c6e47e8 |
+| Open As Dialog | `src/ui/dialogs.rs::show_open_as_dialog` | c7c7adb |
 | Document Info Dialog | `src/ui/dialogs.rs::show_document_info_dialog` | - |
 | All Documents Dialog | `src/ui/dialogs.rs::show_all_documents_dialog` | - |
+| Translation API | `src/translation_manager.rs` | 2022894 |
 
 ## C++ Features Still Needing Port
 
-### Dialogs (app/dialogs.cpp)
+### Dialogs (app/dialogs.cpp) - ~477 lines remaining
 
 | Dialog | Purpose | Complexity | Notes |
 |--------|---------|------------|-------|
-| `bookmark_dialog` | Jump to/manage bookmarks | Medium | Has filter, edit note, delete |
-| `elements_dialog` | View headings/links tree | Medium | Dual view (tree + list) |
-| `go_to_line_dialog` | Navigate to line number | Low | Simple spin control |
-| `go_to_page_dialog` | Navigate to page | Low | Simple spin control |
-| `go_to_percent_dialog` | Navigate by percentage | Low | Slider + spin control |
-| `note_entry_dialog` | Add/edit bookmark notes | Low | Multiline text entry |
-| `options_dialog` | Application preferences | Medium | Multiple settings checkboxes |
-| `password_dialog` | Password entry for encrypted docs | Low | Password text control |
-| `sleep_timer_dialog` | Configure sleep timer | Low | Simple spin control |
-| `view_note_dialog` | Display note content | Low | Read-only text display |
-| `web_view_dialog` | Display tables as HTML | Medium | Uses wxWebView |
-
-### Controls (app/controls.cpp)
-
-| Control | Purpose | Notes |
-|---------|---------|-------|
-| `accessible_slider` | Screen reader accessible slider | Used by go_to_percent_dialog |
+| `bookmark_dialog` | Jump to/manage bookmarks | Medium | Has filter, edit note, delete (~170 lines) |
+| `elements_dialog` | View headings/links tree | Medium | Dual view with tree + list (~120 lines) |
+| `note_entry_dialog` | Add/edit bookmark notes | Low | Multiline text entry (~20 lines) |
+| `password_dialog` | Password entry for encrypted docs | Low | Simple password text control (~15 lines) |
+| `sleep_timer_dialog` | Configure sleep timer | Low | Simple spin control (~15 lines) |
+| `view_note_dialog` | Display note content | Low | Read-only text display (~10 lines) |
+| `web_view_dialog` | Display tables as HTML | Medium | Uses wxWebView (~60 lines) |
 
 ### App Infrastructure (app/app.cpp)
 
 | Feature | Purpose | Notes |
 |---------|---------|-------|
-| IPC Server/Client | Single instance checking | Uses wxIPC |
-| Document restoration | Restore previous documents on startup | Already in Rust but C++ has fallback |
+| IPC Server/Client | Single instance checking | Uses wxIPC, prevents multiple instances |
 
 ### Main Window Handlers (app/main_window.cpp)
 
-Many menu handlers still call C++ document_manager methods. These need review:
+These C++ handlers still need porting:
 
-- Sleep timer functionality
-- Some bookmark operations
-- Some navigation that still uses C++ paths
+- `bookmark_dialog` calls via document_manager
+- `elements_dialog` handler
+- `sleep_timer_dialog` handler
+- `options_dialog` handler (still references C++ version at line 805)
 
 ## How to Build
 
@@ -183,19 +181,17 @@ The application is designed for accessibility with screen readers:
 ## Porting Priority Recommendations
 
 1. **High Priority** (used frequently):
-   - `bookmark_dialog` - Core reading feature
-   - `options_dialog` - User configuration
+   - `bookmark_dialog` - Core reading feature, enables jump to/manage bookmarks
    - `password_dialog` - Required for encrypted PDFs
 
 2. **Medium Priority** (useful but not critical):
-   - `go_to_*` dialogs - Navigation helpers
-   - `elements_dialog` - Document structure view
-   - `note_entry_dialog` - Bookmark notes
+   - `elements_dialog` - Document structure view (headings/links)
+   - `note_entry_dialog` - Required by bookmark_dialog for editing notes
 
 3. **Lower Priority** (less common use):
    - `sleep_timer_dialog` - Niche feature
-   - `view_note_dialog` - Simple display
-   - `web_view_dialog` - Table display
+   - `view_note_dialog` - Simple read-only display
+   - `web_view_dialog` - Table display (uses wxWebView, may be complex)
 
 ## C++ Code Removal Checklist
 
