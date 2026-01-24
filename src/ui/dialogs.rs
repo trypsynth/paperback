@@ -10,9 +10,10 @@ use wxdragon::{prelude::*, timer::Timer, translations::translate as t};
 use crate::{
 	config::ConfigManager,
 	document::{DocumentStats, TocItem},
+	reader_core,
 	session::DocumentSession,
 	translation_manager::TranslationManager,
-	ui_types::DocumentListStatus,
+	ui_types::{BookmarkDisplayEntry, BookmarkFilterType, DocumentListStatus},
 };
 
 const DIALOG_PADDING: i32 = 10;
@@ -49,6 +50,12 @@ pub struct OptionsDialogResult {
 	pub check_for_updates_on_startup: bool,
 	pub recent_documents_to_show: i32,
 	pub language: String,
+}
+
+#[derive(Clone, Debug)]
+pub struct BookmarkDialogResult {
+	pub start: i64,
+	pub end: i64,
 }
 
 pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<OptionsDialogResult> {
@@ -137,6 +144,359 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		recent_documents_to_show: recent_docs_ctrl.value(),
 		language,
 	})
+}
+
+pub fn show_bookmark_dialog(
+	parent: &Frame,
+	session: &DocumentSession,
+	config: Rc<Mutex<ConfigManager>>,
+	current_pos: i64,
+	initial_filter: BookmarkFilterType,
+) -> Option<BookmarkDialogResult> {
+	let file_path = session.file_path().to_string();
+	let content = Rc::new(session.content());
+	let dialog = Dialog::builder(parent, &t("Jump to Bookmark")).build();
+	let filter_label = StaticText::builder(&dialog).with_label(&t("&Filter:")).build();
+	let filter_choice = ComboBox::builder(&dialog).with_style(ComboBoxStyle::ReadOnly).build();
+	filter_choice.append(&t("All"));
+	filter_choice.append(&t("Bookmarks"));
+	filter_choice.append(&t("Notes"));
+	let initial_index = match initial_filter {
+		BookmarkFilterType::BookmarksOnly => 1,
+		BookmarkFilterType::NotesOnly => 2,
+		BookmarkFilterType::All => 0,
+	};
+	filter_choice.set_selection(initial_index);
+	let filter_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	filter_sizer.add(&filter_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 6);
+	filter_sizer.add(&filter_choice, 1, SizerFlag::Expand, 0);
+	let bookmark_list = ListBox::builder(&dialog).build();
+	let edit_button = Button::builder(&dialog).with_label(&t("&Edit Note")).build();
+	let delete_button = Button::builder(&dialog).with_label(&t("&Delete")).build();
+	let jump_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("&Jump")).build();
+	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("&Cancel")).build();
+	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+	let entries: Rc<RefCell<Vec<BookmarkDisplayEntry>>> = Rc::new(RefCell::new(Vec::new()));
+	let selected_start = Rc::new(Cell::new(-1i64));
+	let selected_end = Rc::new(Cell::new(-1i64));
+	let jump_button_for_state = jump_button;
+	let delete_button_for_state = delete_button;
+	let edit_button_for_state = edit_button;
+	let set_buttons_enabled = move |enabled: bool| {
+		jump_button_for_state.enable(enabled);
+		delete_button_for_state.enable(enabled);
+		edit_button_for_state.enable(enabled);
+	};
+	set_buttons_enabled(false);
+	let list_for_repopulate = bookmark_list;
+	let config_for_repopulate = Rc::clone(&config);
+	let file_path_for_repopulate = file_path.clone();
+	let content_for_repopulate = Rc::clone(&content);
+	let entries_for_repopulate = Rc::clone(&entries);
+	let selected_start_for_repopulate = Rc::clone(&selected_start);
+	let selected_end_for_repopulate = Rc::clone(&selected_end);
+	let filter_choice_for_repopulate = filter_choice;
+	let set_buttons_enabled = Rc::new(set_buttons_enabled);
+	let set_buttons_for_repopulate = Rc::clone(&set_buttons_enabled);
+	let repopulate = Rc::new(move |pos: i64| {
+		let filter_index = filter_choice_for_repopulate.get_selection().unwrap_or(0);
+		let filter = match filter_index {
+			1 => BookmarkFilterType::BookmarksOnly,
+			2 => BookmarkFilterType::NotesOnly,
+			_ => BookmarkFilterType::All,
+		};
+		let content_for_snippet = Rc::clone(&content_for_repopulate);
+		let get_text_range = move |start: i64, end: i64| -> String {
+			let content = content_for_snippet.as_str();
+			let total_chars = content.chars().count();
+			let start_pos = usize::try_from(start.max(0)).unwrap_or(0).min(total_chars);
+			let end_pos = usize::try_from(end.max(0)).unwrap_or(0).min(total_chars);
+			if start_pos >= end_pos {
+				return String::new();
+			}
+			content.chars().skip(start_pos).take(end_pos - start_pos).collect()
+		};
+		let content_for_line = Rc::clone(&content_for_repopulate);
+		let get_line_text = move |position: i64| -> String {
+			let content = content_for_line.as_str();
+			let total_chars = content.chars().count();
+			let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
+			let line_start =
+				content.chars().take(pos).collect::<Vec<_>>().iter().rposition(|&c| c == '\n').map_or(0, |idx| idx + 1);
+			let chars_after_start: String = content.chars().skip(line_start).collect();
+			let line_end = chars_after_start.find('\n').map_or(chars_after_start.len(), |idx| idx);
+			chars_after_start.chars().take(line_end).collect()
+		};
+		let previous_selected = selected_start_for_repopulate.get();
+		list_for_repopulate.clear();
+		entries_for_repopulate.borrow_mut().clear();
+		let filtered = {
+			let cfg = config_for_repopulate.lock().unwrap();
+			reader_core::get_filtered_bookmarks(&cfg, &file_path_for_repopulate, pos, filter)
+		};
+		for item in filtered.items {
+			let snippet =
+				if item.is_whole_line { get_line_text(item.start) } else { get_text_range(item.start, item.end) };
+			let mut snippet = snippet.trim().to_string();
+			if snippet.is_empty() {
+				snippet = t("blank");
+			}
+			let display = if item.note.is_empty() { snippet.clone() } else { format!("{} - {}", item.note, snippet) };
+			entries_for_repopulate.borrow_mut().push(BookmarkDisplayEntry {
+				start: item.start,
+				end: item.end,
+				note: item.note,
+				snippet,
+				is_whole_line: item.is_whole_line,
+				index: item.index,
+			});
+			list_for_repopulate.append(&display);
+		}
+		selected_start_for_repopulate.set(-1);
+		selected_end_for_repopulate.set(-1);
+		set_buttons_for_repopulate(false);
+		let entries_ref = entries_for_repopulate.borrow();
+		if previous_selected >= 0 {
+			if let Some((idx, entry)) =
+				entries_ref.iter().enumerate().find(|(_, entry)| entry.start == previous_selected)
+			{
+				list_for_repopulate.set_selection(idx as u32, true);
+				selected_start_for_repopulate.set(entry.start);
+				selected_end_for_repopulate.set(entry.end);
+				set_buttons_for_repopulate(true);
+				return;
+			}
+		}
+		if filtered.closest_index >= 0 {
+			let idx = filtered.closest_index as usize;
+			if let Some(entry) = entries_ref.get(idx) {
+				list_for_repopulate.set_selection(idx as u32, true);
+				selected_start_for_repopulate.set(entry.start);
+				selected_end_for_repopulate.set(entry.end);
+				set_buttons_for_repopulate(true);
+			}
+		}
+	});
+	repopulate(current_pos);
+	let entries_for_selection = Rc::clone(&entries);
+	let selected_start_for_selection = Rc::clone(&selected_start);
+	let selected_end_for_selection = Rc::clone(&selected_end);
+	let set_buttons_for_selection = Rc::clone(&set_buttons_enabled);
+	bookmark_list.on_selection_changed(move |event| {
+		let selection = event.get_selection().unwrap_or(-1);
+		if selection >= 0 {
+			let entries_ref = entries_for_selection.borrow();
+			if let Some(entry) = entries_ref.get(selection as usize) {
+				selected_start_for_selection.set(entry.start);
+				selected_end_for_selection.set(entry.end);
+				set_buttons_for_selection(true);
+				return;
+			}
+		}
+		selected_start_for_selection.set(-1);
+		selected_end_for_selection.set(-1);
+		set_buttons_for_selection(false);
+	});
+	let dialog_for_jump = dialog;
+	let selected_start_for_jump = Rc::clone(&selected_start);
+	jump_button.on_click(move |_| {
+		if selected_start_for_jump.get() >= 0 {
+			dialog_for_jump.end_modal(wxdragon::id::ID_OK);
+		} else {
+			MessageDialog::builder(&dialog_for_jump, &t("Please select a bookmark to jump to."), &t("Error"))
+				.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
+				.build()
+				.show_modal();
+		}
+	});
+	let dialog_for_cancel = dialog;
+	cancel_button.on_click(move |_| {
+		dialog_for_cancel.end_modal(wxdragon::id::ID_CANCEL);
+	});
+	let repopulate_for_filter = Rc::clone(&repopulate);
+	filter_choice.on_selection_changed(move |_event| {
+		repopulate_for_filter(current_pos);
+	});
+	let repopulate_for_delete = Rc::clone(&repopulate);
+	let selected_start_for_delete = Rc::clone(&selected_start);
+	let selected_end_for_delete = Rc::clone(&selected_end);
+	let config_for_delete = Rc::clone(&config);
+	let file_path_for_delete = file_path.clone();
+	delete_button.on_click(move |_| {
+		let start = selected_start_for_delete.get();
+		let end = selected_end_for_delete.get();
+		if start < 0 {
+			return;
+		}
+		let cfg = config_for_delete.lock().unwrap();
+		cfg.remove_bookmark(&file_path_for_delete, start, end);
+		cfg.flush();
+		repopulate_for_delete(current_pos);
+	});
+	let repopulate_for_edit = Rc::clone(&repopulate);
+	let selected_start_for_edit = Rc::clone(&selected_start);
+	let selected_end_for_edit = Rc::clone(&selected_end);
+	let config_for_edit = Rc::clone(&config);
+	let file_path_for_edit = file_path.clone();
+	edit_button.on_click(move |_| {
+		let start = selected_start_for_edit.get();
+		let end = selected_end_for_edit.get();
+		if start < 0 {
+			return;
+		}
+		let existing_note = {
+			let cfg = config_for_edit.lock().unwrap();
+			cfg.get_bookmarks(&file_path_for_edit)
+				.into_iter()
+				.find(|bm| bm.start == start && bm.end == end)
+				.map(|bm| bm.note)
+				.unwrap_or_default()
+		};
+		let Some(note) =
+			show_note_entry_dialog(&dialog, &t("Bookmark Note"), &t("Edit bookmark note:"), &existing_note)
+		else {
+			return;
+		};
+		let cfg = config_for_edit.lock().unwrap();
+		cfg.update_bookmark_note(&file_path_for_edit, start, end, &note);
+		cfg.flush();
+		repopulate_for_edit(current_pos);
+	});
+	let repopulate_for_key = Rc::clone(&repopulate);
+	let selected_start_for_key = Rc::clone(&selected_start);
+	let selected_end_for_key = Rc::clone(&selected_end);
+	let config_for_key = Rc::clone(&config);
+	let file_path_for_key = file_path.clone();
+	bookmark_list.bind_internal(EventType::KEY_DOWN, move |event| {
+		let key = event.get_key_code().unwrap_or(0);
+		if key == KEY_DELETE || key == KEY_NUMPAD_DELETE {
+			let start = selected_start_for_key.get();
+			let end = selected_end_for_key.get();
+			if start >= 0 {
+				let cfg = config_for_key.lock().unwrap();
+				cfg.remove_bookmark(&file_path_for_key, start, end);
+				cfg.flush();
+				repopulate_for_key(current_pos);
+			}
+			event.skip(false);
+			return;
+		}
+		event.skip(true);
+	});
+	let selected_start_for_double = Rc::clone(&selected_start);
+	let dialog_for_double = dialog;
+	bookmark_list.on_item_double_clicked(move |_| {
+		if selected_start_for_double.get() >= 0 {
+			dialog_for_double.end_modal(wxdragon::id::ID_OK);
+		}
+	});
+	let action_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	action_sizer.add(&edit_button, 0, SizerFlag::Right, DIALOG_PADDING);
+	action_sizer.add(&delete_button, 0, SizerFlag::Right, DIALOG_PADDING);
+	action_sizer.add(&jump_button, 0, SizerFlag::Right, DIALOG_PADDING);
+	action_sizer.add(&cancel_button, 0, SizerFlag::Right, DIALOG_PADDING);
+	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
+	content_sizer.add_sizer(&filter_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
+	content_sizer.add(
+		&bookmark_list,
+		1,
+		SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
+		DIALOG_PADDING,
+	);
+	content_sizer.add_sizer(&action_sizer, 0, SizerFlag::AlignRight | SizerFlag::All, DIALOG_PADDING);
+	dialog.set_sizer_and_fit(content_sizer, true);
+	dialog.centre();
+	bookmark_list.set_focus();
+	if dialog.show_modal() != wxdragon::id::ID_OK {
+		return None;
+	}
+	let start = selected_start.get();
+	let end = selected_end.get();
+	if start >= 0 { Some(BookmarkDialogResult { start, end }) } else { None }
+}
+
+pub fn show_note_entry_dialog(
+	parent: &dyn WxWidget,
+	title: &str,
+	message: &str,
+	existing_note: &str,
+) -> Option<String> {
+	let dialog = Dialog::builder(parent, title).build();
+	let message_label = StaticText::builder(&dialog).with_label(message).build();
+	let note_ctrl = TextCtrl::builder(&dialog)
+		.with_value(existing_note)
+		.with_style(TextCtrlStyle::MultiLine)
+		.with_size(Size::new(400, 200))
+		.build();
+	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
+	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
+	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+	dialog.set_affirmative_id(wxdragon::id::ID_OK);
+	let dialog_for_ok = dialog;
+	ok_button.on_click(move |_| {
+		dialog_for_ok.end_modal(wxdragon::id::ID_OK);
+	});
+	let dialog_for_cancel = dialog;
+	cancel_button.on_click(move |_| {
+		dialog_for_cancel.end_modal(wxdragon::id::ID_CANCEL);
+	});
+	let dialog_for_key = dialog;
+	note_ctrl.bind_internal(EventType::KEY_DOWN, move |event| {
+		if let Some(key) = event.get_key_code() {
+			if key == KEY_RETURN {
+				if event.shift_down() {
+					event.skip(true);
+				} else {
+					dialog_for_key.end_modal(wxdragon::id::ID_OK);
+					event.skip(false);
+				}
+				return;
+			}
+		}
+		event.skip(true);
+	});
+	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
+	content_sizer.add(&message_label, 0, SizerFlag::All, DIALOG_PADDING);
+	content_sizer.add(
+		&note_ctrl,
+		1,
+		SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
+		DIALOG_PADDING,
+	);
+	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	button_sizer.add_stretch_spacer(1);
+	button_sizer.add(&ok_button, 0, SizerFlag::All, DIALOG_PADDING);
+	button_sizer.add(&cancel_button, 0, SizerFlag::All, DIALOG_PADDING);
+	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
+	dialog.set_sizer_and_fit(content_sizer, true);
+	dialog.centre();
+	note_ctrl.set_focus();
+	if dialog.show_modal() == wxdragon::id::ID_OK { Some(note_ctrl.get_value()) } else { None }
+}
+
+pub fn show_view_note_dialog(parent: &dyn WxWidget, note_text: &str) {
+	let dialog = Dialog::builder(parent, &t("View Note")).build();
+	let note_ctrl = TextCtrl::builder(&dialog)
+		.with_value(note_text)
+		.with_style(TextCtrlStyle::MultiLine | TextCtrlStyle::ReadOnly | TextCtrlStyle::Rich2)
+		.with_size(Size::new(400, 200))
+		.build();
+	let close_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("Close")).build();
+	dialog.set_affirmative_id(wxdragon::id::ID_OK);
+	let dialog_for_close = dialog;
+	close_button.on_click(move |_| {
+		dialog_for_close.end_modal(wxdragon::id::ID_OK);
+	});
+	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
+	content_sizer.add(&note_ctrl, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
+	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	button_sizer.add_stretch_spacer(1);
+	button_sizer.add(&close_button, 0, SizerFlag::All, DIALOG_PADDING);
+	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
+	dialog.set_sizer_and_fit(content_sizer, true);
+	dialog.centre();
+	note_ctrl.set_focus();
+	dialog.show_modal();
 }
 
 pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i32) -> Option<i32> {

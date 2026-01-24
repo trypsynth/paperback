@@ -22,6 +22,7 @@ use crate::{
 	live_region::{self, LiveRegionMode},
 	parser::parser_supports_extension,
 	translation_manager::TranslationManager,
+	ui_types::BookmarkFilterType,
 	update::{self, UpdateCheckOutcome, UpdateError},
 	utils::text::{display_len, markdown_to_text},
 };
@@ -747,6 +748,42 @@ impl MainWindow {
 				menu_ids::NEXT_PAGE => {
 					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Page, true);
 				}
+				menu_ids::PREVIOUS_BOOKMARK => {
+					handle_bookmark_navigation(&dm, &config, live_region_label, false, false);
+				}
+				menu_ids::NEXT_BOOKMARK => {
+					handle_bookmark_navigation(&dm, &config, live_region_label, true, false);
+				}
+				menu_ids::PREVIOUS_NOTE => {
+					handle_bookmark_navigation(&dm, &config, live_region_label, false, true);
+				}
+				menu_ids::NEXT_NOTE => {
+					handle_bookmark_navigation(&dm, &config, live_region_label, true, true);
+				}
+				menu_ids::JUMP_TO_ALL_BOOKMARKS => {
+					handle_bookmark_dialog(&frame_copy, &dm, &config, live_region_label, BookmarkFilterType::All);
+				}
+				menu_ids::JUMP_TO_BOOKMARKS_ONLY => {
+					handle_bookmark_dialog(
+						&frame_copy,
+						&dm,
+						&config,
+						live_region_label,
+						BookmarkFilterType::BookmarksOnly,
+					);
+				}
+				menu_ids::JUMP_TO_NOTES_ONLY => {
+					handle_bookmark_dialog(&frame_copy, &dm, &config, live_region_label, BookmarkFilterType::NotesOnly);
+				}
+				menu_ids::TOGGLE_BOOKMARK => {
+					handle_toggle_bookmark(&dm, &config, live_region_label);
+				}
+				menu_ids::BOOKMARK_WITH_NOTE => {
+					handle_bookmark_with_note(&frame_copy, &dm, &config, live_region_label);
+				}
+				menu_ids::VIEW_NOTE_TEXT => {
+					handle_view_note_text(&frame_copy, &dm, &config);
+				}
 				menu_ids::PREVIOUS_LINK => {
 					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Link, false);
 				}
@@ -951,7 +988,7 @@ impl MainWindow {
 						let cfg = config.lock().unwrap();
 						(cfg.get_app_bool("word_wrap", false), cfg.get_app_bool("compact_go_menu", true))
 					};
-					let mut cfg = config.lock().unwrap();
+					let cfg = config.lock().unwrap();
 					cfg.set_app_bool("restore_previous_documents", options.restore_previous_documents);
 					cfg.set_app_bool("word_wrap", options.word_wrap);
 					cfg.set_app_bool("minimize_to_tray", options.minimize_to_tray);
@@ -1829,6 +1866,188 @@ fn handle_marker_navigation(
 		let cfg = config.lock().unwrap();
 		cfg.set_navigation_history(&path_str, history, history_index);
 	}
+}
+
+fn selected_range(text_ctrl: &TextCtrl) -> (i64, i64) {
+	let (start, end) = text_ctrl.get_selection();
+	if start == end {
+		let pos = text_ctrl.get_insertion_point();
+		(pos, pos)
+	} else if start <= end {
+		(start, end)
+	} else {
+		(end, start)
+	}
+}
+
+fn handle_bookmark_navigation(
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+	live_region_label: StaticText,
+	next: bool,
+	notes_only: bool,
+) {
+	let wrap = config.lock().unwrap().get_app_bool("navigation_wrap", false);
+	let mut dm = doc_manager.lock().unwrap();
+	let Some(tab) = dm.active_tab_mut() else {
+		return;
+	};
+	let current_pos = tab.text_ctrl.get_insertion_point();
+	let path_str = tab.file_path.to_string_lossy().to_string();
+	let (result, has_items) = {
+		let cfg = config.lock().unwrap();
+		let bookmarks = cfg.get_bookmarks(&path_str);
+		let has_items = if notes_only { bookmarks.iter().any(|bm| !bm.note.is_empty()) } else { !bookmarks.is_empty() };
+		let result = if notes_only {
+			tab.session.navigate_note(&cfg, current_pos, wrap, next)
+		} else {
+			tab.session.navigate_bookmark(&cfg, current_pos, wrap, next)
+		};
+		(result, has_items)
+	};
+	if !result.found {
+		let message = if !has_items {
+			if notes_only { t("No notes.") } else { t("No bookmarks.") }
+		} else if next {
+			if notes_only { t("No next note.") } else { t("No next bookmark.") }
+		} else if notes_only {
+			t("No previous note.")
+		} else {
+			t("No previous bookmark.")
+		};
+		live_region::announce(&live_region_label, &message);
+		return;
+	}
+	tab.session.record_position(current_pos);
+	tab.text_ctrl.set_focus();
+	tab.text_ctrl.set_insertion_point(result.offset);
+	tab.text_ctrl.show_position(result.offset);
+	let mut context_text = result.marker_text;
+	if context_text.is_empty() {
+		context_text = tab.session.get_line_text(result.offset);
+	}
+	let wrap_prefix = if result.wrapped {
+		if next { t("Wrapping to start. ") } else { t("Wrapping to end. ") }
+	} else {
+		String::new()
+	};
+	let message = format!("{wrap_prefix}{context_text}");
+	live_region::announce(&live_region_label, &message);
+	let (history, history_index) = tab.session.get_history();
+	let cfg = config.lock().unwrap();
+	cfg.set_navigation_history(&path_str, history, history_index);
+}
+
+fn handle_bookmark_dialog(
+	frame: &Frame,
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+	live_region_label: StaticText,
+	filter: BookmarkFilterType,
+) {
+	let mut dm = doc_manager.lock().unwrap();
+	let Some(tab) = dm.active_tab_mut() else {
+		return;
+	};
+	let current_pos = tab.text_ctrl.get_insertion_point();
+	let selection = dialogs::show_bookmark_dialog(frame, &tab.session, Rc::clone(config), current_pos, filter);
+	let Some(selection) = selection else {
+		return;
+	};
+	tab.session.record_position(current_pos);
+	tab.text_ctrl.set_focus();
+	tab.text_ctrl.set_insertion_point(selection.start);
+	tab.text_ctrl.show_position(selection.start);
+	let message = {
+		let cfg = config.lock().unwrap();
+		let info = tab.session.bookmark_display_at_position(&cfg, selection.start);
+		if info.found {
+			let mut text = info.note;
+			if text.is_empty() {
+				text = info.snippet;
+			}
+			if text.is_empty() { t("Bookmark.") } else { text }
+		} else {
+			t("Bookmark.")
+		}
+	};
+	live_region::announce(&live_region_label, &message);
+	let (history, history_index) = tab.session.get_history();
+	let path_str = tab.file_path.to_string_lossy();
+	let cfg = config.lock().unwrap();
+	cfg.set_navigation_history(&path_str, history, history_index);
+}
+
+fn handle_toggle_bookmark(
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+	live_region_label: StaticText,
+) {
+	let mut dm = doc_manager.lock().unwrap();
+	let Some(tab) = dm.active_tab_mut() else {
+		return;
+	};
+	let (start, end) = selected_range(&tab.text_ctrl);
+	let path_str = tab.file_path.to_string_lossy().to_string();
+	let cfg = config.lock().unwrap();
+	let existed = cfg.get_bookmarks(&path_str).iter().any(|bm| bm.start == start && bm.end == end);
+	cfg.toggle_bookmark(&path_str, start, end, "");
+	cfg.flush();
+	let message = if existed { t("Bookmark removed.") } else { t("Bookmark added.") };
+	live_region::announce(&live_region_label, &message);
+}
+
+fn handle_bookmark_with_note(
+	frame: &Frame,
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+	live_region_label: StaticText,
+) {
+	let mut dm = doc_manager.lock().unwrap();
+	let Some(tab) = dm.active_tab_mut() else {
+		return;
+	};
+	let (start, end) = selected_range(&tab.text_ctrl);
+	let path_str = tab.file_path.to_string_lossy().to_string();
+	let existing = {
+		let cfg = config.lock().unwrap();
+		cfg.get_bookmarks(&path_str).into_iter().find(|bm| bm.start == start && bm.end == end)
+	};
+	let existing_note = existing.as_ref().map(|bm| bm.note.clone()).unwrap_or_default();
+	let Some(note) =
+		dialogs::show_note_entry_dialog(frame, &t("Bookmark Note"), &t("Enter bookmark note:"), &existing_note)
+	else {
+		return;
+	};
+	let cfg = config.lock().unwrap();
+	if existing.is_some() {
+		cfg.update_bookmark_note(&path_str, start, end, &note);
+	} else {
+		cfg.add_bookmark(&path_str, start, end, &note);
+	}
+	cfg.flush();
+	live_region::announce(&live_region_label, &t("Bookmark saved."));
+}
+
+fn handle_view_note_text(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) {
+	let dm = doc_manager.lock().unwrap();
+	let Some(tab) = dm.active_tab() else {
+		return;
+	};
+	let current_pos = tab.text_ctrl.get_insertion_point();
+	let path_str = tab.file_path.to_string_lossy();
+	let note = {
+		let cfg = config.lock().unwrap();
+		crate::reader_core::bookmark_note_at_position(&cfg, &path_str, current_pos)
+	};
+	if note.is_empty() {
+		let dialog = MessageDialog::builder(frame, &t("No note at the current position."), &t("View Note"))
+			.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre)
+			.build();
+		dialog.show_modal();
+		return;
+	}
+	dialogs::show_view_note_dialog(frame, &note);
 }
 
 fn run_update_check(silent: bool) {

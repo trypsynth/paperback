@@ -42,47 +42,6 @@ private:
 	void create_buttons();
 };
 
-enum class bookmark_filter {
-	all,
-	bookmarks_only,
-	notes_only
-};
-
-class bookmark_dialog : public dialog {
-public:
-	bookmark_dialog(wxWindow* parent, session_document* session_doc, wxTextCtrl* text_ctrl, config_manager& config, const wxString& file_path, long current_pos = -1, bookmark_filter initial_filter = bookmark_filter::all);
-	~bookmark_dialog() override = default;
-	bookmark_dialog(const bookmark_dialog&) = delete;
-	bookmark_dialog& operator=(const bookmark_dialog&) = delete;
-	bookmark_dialog(bookmark_dialog&&) = delete;
-	bookmark_dialog& operator=(bookmark_dialog&&) = delete;
-
-	[[nodiscard]] long get_selected_position() const {
-		return selected_position;
-	}
-
-private:
-	wxChoice* filter_choice{nullptr};
-	wxListBox* bookmark_list{nullptr};
-	std::vector<bookmark> bookmark_positions;
-	long selected_position;
-	config_manager& config;
-	wxString file_path;
-	wxTextCtrl* text_ctrl;
-	session_document* session_doc_{nullptr};
-	wxButton* jump_button{nullptr};
-	wxButton* delete_button{nullptr};
-	wxButton* edit_note_button{nullptr};
-
-	void on_list_selection_changed(wxCommandEvent& event);
-	void on_ok(wxCommandEvent& event);
-	void on_key_down(wxKeyEvent&);
-	void on_delete(wxCommandEvent& event);
-	void on_edit_note(wxCommandEvent& event);
-	void on_filter_changed(wxCommandEvent& event);
-	void repopulate_list(long current_pos = -1);
-};
-
 class elements_dialog : public dialog {
 public:
 	elements_dialog(wxWindow* parent, session_document* session_doc, long current_pos);
@@ -116,23 +75,6 @@ private:
 	void on_heading_activated(wxTreeEvent& event);
 	void on_ok(wxCommandEvent&);
 };
-
-class note_entry_dialog : public dialog {
-public:
-	note_entry_dialog(wxWindow* parent, const wxString& title, const wxString& message, const wxString& existing_note);
-	~note_entry_dialog() override = default;
-	note_entry_dialog(const note_entry_dialog&) = delete;
-	note_entry_dialog& operator=(const note_entry_dialog&) = delete;
-	note_entry_dialog(note_entry_dialog&&) = delete;
-	note_entry_dialog& operator=(note_entry_dialog&&) = delete;
-
-	[[nodiscard]] wxString get_note() const;
-
-private:
-	wxTextCtrl* note_ctrl{nullptr};
-	void on_key_down(wxKeyEvent& event);
-};
-
 
 class password_dialog : public dialog {
 public:
@@ -170,19 +112,6 @@ public:
 	}
 
 	int offset{0};
-};
-
-class view_note_dialog : public dialog {
-public:
-	view_note_dialog(wxWindow* parent, const wxString& note_text);
-	~view_note_dialog() override = default;
-	view_note_dialog(const view_note_dialog&) = delete;
-	view_note_dialog& operator=(const view_note_dialog&) = delete;
-	view_note_dialog(view_note_dialog&&) = delete;
-	view_note_dialog& operator=(view_note_dialog&&) = delete;
-
-private:
-	wxTextCtrl* note_ctrl{nullptr};
 };
 
 class web_view_dialog : public wxDialog {
