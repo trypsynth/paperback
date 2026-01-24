@@ -10,10 +10,9 @@ use embed_manifest::{
 	manifest::{ActiveCodePage, DpiAwareness, HeapType, Setting, SupportedOS::*},
 	new_manifest,
 };
-use flate2::{write::GzEncoder, Compression};
+use flate2::{Compression, write::GzEncoder};
 use tar::Builder as TarBuilder;
-use zip::write::SimpleFileOptions;
-use zip::{CompressionMethod, ZipWriter};
+use zip::{CompressionMethod, ZipWriter, write::SimpleFileOptions};
 
 fn main() {
 	build_translations();
@@ -51,17 +50,10 @@ fn maybe_build_release_artifacts() {
 		}
 	};
 	let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap_or_default();
-	let exe_name = if target_os == "windows" {
-		"paperback.exe"
-	} else {
-		"paperback"
-	};
+	let exe_name = if target_os == "windows" { "paperback.exe" } else { "paperback" };
 	let exe_path = target_dir.join(exe_name);
 	if !exe_path.exists() {
-		println!(
-			"cargo:warning=Release packaging skipped because {} is missing.",
-			exe_path.display()
-		);
+		println!("cargo:warning=Release packaging skipped because {} is missing.", exe_path.display());
 		return;
 	}
 	let readme_path = target_dir.join("readme.html");
@@ -82,12 +74,7 @@ fn maybe_build_release_artifacts() {
 	}
 }
 
-fn build_zip_package(
-	target_dir: &Path,
-	exe_path: &Path,
-	readme_path: &Path,
-	langs_dir: &Path,
-) -> io::Result<()> {
+fn build_zip_package(target_dir: &Path, exe_path: &Path, readme_path: &Path, langs_dir: &Path) -> io::Result<()> {
 	let package_name = if env::var("CARGO_CFG_TARGET_OS").ok().as_deref() == Some("macos") {
 		"paperback_mac.zip"
 	} else {
@@ -103,10 +90,7 @@ fn build_zip_package(
 		let readme_rel = readme_path.strip_prefix(target_dir).unwrap_or(readme_path);
 		add_file_to_zip(&mut zip, readme_path, readme_rel, options)?;
 	} else {
-		println!(
-			"cargo:warning=readme.html missing; skipping for {}.",
-			package_name
-		);
+		println!("cargo:warning=readme.html missing; skipping for {}.", package_name);
 	}
 	if langs_dir.exists() {
 		add_dir_to_zip(&mut zip, target_dir, langs_dir, options)?;
@@ -117,12 +101,7 @@ fn build_zip_package(
 	Ok(())
 }
 
-fn build_tar_package(
-	target_dir: &Path,
-	exe_path: &Path,
-	readme_path: &Path,
-	langs_dir: &Path,
-) -> io::Result<()> {
+fn build_tar_package(target_dir: &Path, exe_path: &Path, readme_path: &Path, langs_dir: &Path) -> io::Result<()> {
 	let package_path = target_dir.join("paperback.tar.gz");
 	let file = fs::File::create(&package_path)?;
 	let encoder = GzEncoder::new(file, Compression::default());
@@ -131,10 +110,7 @@ fn build_tar_package(
 	if readme_path.exists() {
 		append_file_to_tar(&mut tar, target_dir, readme_path)?;
 	} else {
-		println!(
-			"cargo:warning=readme.html missing; skipping for {}.",
-			package_path.display()
-		);
+		println!("cargo:warning=readme.html missing; skipping for {}.", package_path.display());
 	}
 	if langs_dir.exists() {
 		let rel = langs_dir.strip_prefix(target_dir).unwrap_or(langs_dir);
@@ -178,11 +154,7 @@ fn add_dir_to_zip<W: Write + io::Seek>(
 	Ok(())
 }
 
-fn append_file_to_tar<W: Write>(
-	tar: &mut TarBuilder<W>,
-	base: &Path,
-	path: &Path,
-) -> io::Result<()> {
+fn append_file_to_tar<W: Write>(tar: &mut TarBuilder<W>, base: &Path, path: &Path) -> io::Result<()> {
 	let rel = path.strip_prefix(base).unwrap_or(path);
 	tar.append_path_with_name(path, rel)?;
 	Ok(())
@@ -204,10 +176,7 @@ fn build_windows_installer(target_dir: &Path) -> io::Result<()> {
 			return Ok(());
 		}
 	};
-	let status = Command::new(iscc)
-		.arg(&script_path)
-		.current_dir(target_dir)
-		.status();
+	let status = Command::new(iscc).arg(&script_path).current_dir(target_dir).status();
 	match status {
 		Ok(s) if s.success() => Ok(()),
 		Ok(s) => {

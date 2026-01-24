@@ -22,7 +22,6 @@
 
 [Files]
 	Source: "paperback.exe"; DestDir: "{app}"; Flags: ignoreversion
-	Source: "*.dll"; DestDir: "{app}"; Flags: ignoreversion
 	Source: "readme.html"; DestDir: "{app}"; Flags: ignoreversion
 	Source: "langs\*"; DestDir: "{app}\langs"; Flags: ignoreversion recursesubdirs createallsubdirs
 
