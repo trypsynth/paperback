@@ -75,17 +75,3 @@ private:
 	void on_heading_activated(wxTreeEvent& event);
 	void on_ok(wxCommandEvent&);
 };
-
-class sleep_timer_dialog : public dialog {
-public:
-	sleep_timer_dialog(wxWindow* parent, int initial_duration);
-	~sleep_timer_dialog() override = default;
-	sleep_timer_dialog(const sleep_timer_dialog&) = delete;
-	sleep_timer_dialog& operator=(const sleep_timer_dialog&) = delete;
-	sleep_timer_dialog(sleep_timer_dialog&&) = delete;
-	sleep_timer_dialog& operator=(sleep_timer_dialog&&) = delete;
-	[[nodiscard]] int get_duration() const;
-
-private:
-	wxSpinCtrl* input_ctrl{nullptr};
-};

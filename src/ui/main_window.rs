@@ -594,6 +594,8 @@ impl MainWindow {
 		let live_region_label = live_region_label;
 		let sleep_timer = Rc::new(Timer::new(frame));
 		let sleep_timer_running = Rc::new(Cell::new(false));
+		let sleep_timer_start_time = Rc::new(Cell::new(0i64));
+		let sleep_timer_duration_minutes = Rc::new(Cell::new(0i32));
 		let sleep_timer_for_tick = Rc::clone(&sleep_timer);
 		let sleep_timer_running_for_tick = Rc::clone(&sleep_timer_running);
 		let frame_for_timer = *frame;
@@ -616,8 +618,36 @@ impl MainWindow {
 			}
 			frame_for_timer.close(true);
 		});
+
+		// Create a status update timer for sleep countdown display
+		let status_update_timer = Rc::new(Timer::new(frame));
+		let sleep_timer_running_for_status = Rc::clone(&sleep_timer_running);
+		let sleep_timer_start_for_status = Rc::clone(&sleep_timer_start_time);
+		let sleep_timer_duration_for_status = Rc::clone(&sleep_timer_duration_minutes);
+		let dm_for_status = Rc::clone(&doc_manager);
+		let frame_for_status = *frame;
+		status_update_timer.on_tick(move |_| {
+			if !sleep_timer_running_for_status.get() {
+				return;
+			}
+			let dm = match dm_for_status.try_lock() {
+				Ok(dm) => dm,
+				Err(_) => return,
+			};
+			update_status_bar_with_sleep_timer(
+				&frame_for_status,
+				&dm,
+				sleep_timer_start_for_status.get(),
+				sleep_timer_duration_for_status.get(),
+			);
+		});
+		// Start the status update timer (runs every second)
+		status_update_timer.start(1000, false);
+
 		let sleep_timer_for_menu = Rc::clone(&sleep_timer);
 		let sleep_timer_running_for_menu = Rc::clone(&sleep_timer_running);
+		let sleep_timer_start_for_menu = Rc::clone(&sleep_timer_start_time);
+		let sleep_timer_duration_for_menu = Rc::clone(&sleep_timer_duration_minutes);
 		frame.on_menu(move |event| {
 			let id = event.get_id();
 			match id {
@@ -1088,6 +1118,11 @@ impl MainWindow {
 					if sleep_timer_running_for_menu.get() {
 						sleep_timer_for_menu.stop();
 						sleep_timer_running_for_menu.set(false);
+						sleep_timer_start_for_menu.set(0);
+						sleep_timer_duration_for_menu.set(0);
+						// Update status bar to remove sleep timer display
+						let dm_ref = dm.lock().unwrap();
+						update_title_from_manager(&frame_copy, &dm_ref);
 						live_region::announce(&live_region_label, &t("Sleep timer cancelled."));
 						return;
 					}
@@ -1101,6 +1136,13 @@ impl MainWindow {
 						let duration_ms = duration as u64 * 60 * 1000;
 						sleep_timer_for_menu.start(duration_ms as i32, true);
 						sleep_timer_running_for_menu.set(true);
+						// Track start time and duration for countdown display
+						let now = std::time::SystemTime::now()
+							.duration_since(std::time::UNIX_EPOCH)
+							.map(|d| d.as_millis() as i64)
+							.unwrap_or(0);
+						sleep_timer_start_for_menu.set(now);
+						sleep_timer_duration_for_menu.set(duration);
 						let msg = if duration == 1 {
 							t("Sleep timer set for 1 minute.")
 						} else {
@@ -1110,8 +1152,7 @@ impl MainWindow {
 					}
 				}
 				menu_ids::ABOUT => {
-					println!("Paperback 0.8.0 - An accessible ebook reader");
-					// TODO: Show about dialog
+					dialogs::show_about_dialog(&frame_copy);
 				}
 				menu_ids::CHECK_FOR_UPDATES => {
 					run_update_check(false);
@@ -2262,9 +2303,84 @@ fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 		};
 		let template = t("Paperback - {}");
 		frame.set_title(&template.replace("{}", &display_title));
-		let chars_label = t("{} chars");
-		frame.set_status_text(&chars_label.replace("{}", &tab.session.content().len().to_string()), 0);
+
+		// Get cursor position and generate status text
+		let position = tab.text_ctrl.get_insertion_point();
+		let status_info = tab.session.get_status_info(position);
+		let status_text = format_status_text(&status_info);
+		frame.set_status_text(&status_text, 0);
 	}
+}
+
+/// Format status information for the status bar
+fn format_status_text(info: &crate::session::StatusInfo) -> String {
+	// Format: "Line X, Character Y, Reading Z%"
+	let line_label = t("Line");
+	let char_label = t("Character");
+	let reading_label = t("Reading");
+	format!(
+		"{} {}, {} {}, {} {}%",
+		line_label, info.line_number, char_label, info.character_number, reading_label, info.percentage
+	)
+}
+
+/// Update status bar including sleep timer countdown if active
+fn update_status_bar_with_sleep_timer(
+	frame: &Frame,
+	dm: &DocumentManager,
+	sleep_timer_start_ms: i64,
+	sleep_timer_duration_minutes: i32,
+) {
+	if dm.tab_count() == 0 {
+		if sleep_timer_start_ms > 0 {
+			let remaining = calculate_sleep_timer_remaining(sleep_timer_start_ms, sleep_timer_duration_minutes);
+			if remaining > 0 {
+				let status_text = format_sleep_timer_status(&t("Ready"), remaining);
+				frame.set_status_text(&status_text, 0);
+				return;
+			}
+		}
+		frame.set_status_text(&t("Ready"), 0);
+		return;
+	}
+	if let Some(tab) = dm.active_tab() {
+		let position = tab.text_ctrl.get_insertion_point();
+		let status_info = tab.session.get_status_info(position);
+		let mut status_text = format_status_text(&status_info);
+
+		// Add sleep timer countdown if active
+		if sleep_timer_start_ms > 0 {
+			let remaining = calculate_sleep_timer_remaining(sleep_timer_start_ms, sleep_timer_duration_minutes);
+			if remaining > 0 {
+				status_text = format_sleep_timer_status(&status_text, remaining);
+			}
+		}
+		frame.set_status_text(&status_text, 0);
+	}
+}
+
+/// Calculate remaining seconds for sleep timer
+fn calculate_sleep_timer_remaining(start_ms: i64, duration_minutes: i32) -> i32 {
+	let now = std::time::SystemTime::now()
+		.duration_since(std::time::UNIX_EPOCH)
+		.map(|d| d.as_millis() as i64)
+		.unwrap_or(0);
+	let elapsed_ms = now - start_ms;
+	let duration_ms = i64::from(duration_minutes) * 60 * 1000;
+	let remaining_ms = duration_ms - elapsed_ms;
+	if remaining_ms < 0 {
+		0
+	} else {
+		(remaining_ms / 1000) as i32
+	}
+}
+
+/// Format sleep timer countdown text
+fn format_sleep_timer_status(base_status: &str, remaining_seconds: i32) -> String {
+	let minutes = remaining_seconds / 60;
+	let seconds = remaining_seconds % 60;
+	let sleep_label = t("Sleep timer");
+	format!("{} | {}: {:02}:{:02}", base_status, sleep_label, minutes, seconds)
 }
 
 struct TrayState {

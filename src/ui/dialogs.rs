@@ -1489,3 +1489,45 @@ pub fn show_web_view_dialog(
 	dialog.centre();
 	dialog.show_modal();
 }
+
+/// Show the About dialog with application information
+pub fn show_about_dialog(parent: &Frame) {
+	let dialog = Dialog::builder(parent, &t("About Paperback")).build();
+
+	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
+
+	// Application name
+	let name_label = StaticText::builder(&dialog).with_label("Paperback").build();
+	content_sizer.add(&name_label, 0, SizerFlag::AlignCenterHorizontal | SizerFlag::All, DIALOG_PADDING);
+
+	// Version
+	let version = env!("CARGO_PKG_VERSION");
+	let version_text = format!("Version {}", version);
+	let version_label = StaticText::builder(&dialog).with_label(&version_text).build();
+	content_sizer.add(&version_label, 0, SizerFlag::AlignCenterHorizontal | SizerFlag::All, 5);
+
+	// Description
+	let description = t("An accessible, lightweight, fast ebook and document reader");
+	let desc_label = StaticText::builder(&dialog).with_label(&description).build();
+	content_sizer.add(&desc_label, 0, SizerFlag::AlignCenterHorizontal | SizerFlag::All, DIALOG_PADDING);
+
+	// Copyright
+	let copyright = "Copyright (C) 2025-2026 Quin Gillespie. All rights reserved.";
+	let copyright_label = StaticText::builder(&dialog).with_label(copyright).build();
+	content_sizer.add(&copyright_label, 0, SizerFlag::AlignCenterHorizontal | SizerFlag::All, 5);
+
+	// Website
+	let website = "https://github.com/trypsynth/paperback";
+	let website_label = StaticText::builder(&dialog).with_label(website).build();
+	content_sizer.add(&website_label, 0, SizerFlag::AlignCenterHorizontal | SizerFlag::All, 5);
+
+	// OK button
+	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
+	ok_button.set_default();
+	content_sizer.add(&ok_button, 0, SizerFlag::AlignCenterHorizontal | SizerFlag::All, DIALOG_PADDING);
+
+	dialog.set_escape_id(wxdragon::id::ID_OK);
+	dialog.set_sizer_and_fit(content_sizer, true);
+	dialog.centre();
+	dialog.show_modal();
+}
