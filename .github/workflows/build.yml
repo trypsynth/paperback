@@ -24,17 +24,6 @@ jobs:
       with:
         toolchain: stable
         components: rustfmt, clippy
-    - name: Cache VCPKG packages
-      uses: actions/cache@v4
-      with:
-        path: |
-          vcpkg/bin/downloads
-          vcpkg/bin/packages
-          vcpkg/bin/buildtrees
-          build/vcpkg_installed
-        key: ${{ runner.os }}-vcpkg-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
-        restore-keys: |
-          ${{ runner.os }}-vcpkg-
     - name: Install CMake, Ninja, and Pandoc
       run: |
         choco install cmake ninja pandoc -y
@@ -46,30 +35,16 @@ jobs:
         install: >-
           gettext
           mingw-w64-ucrt-x86_64-gettext-tools
-    - name: Configure CMake
-      run: |
-        if (-not (Test-Path build)) {
-          New-Item -ItemType Directory -Path build
-        }
-        cd build
-        $env:PATH = "$env:PATH;C:\msys64\ucrt64\bin;C:\msys64\usr\bin"
-        cmake .. -GNinja `
-          -DGettext_ROOT=C:/msys64 `
-          -DGETTEXT_MSGFMT_EXECUTABLE=C:/msys64/usr/bin/msgfmt.exe `
-          -DGETTEXT_XGETTEXT_EXECUTABLE=C:/msys64/usr/bin/xgettext.exe `
-          -DGETTEXT_MSGMERGE_EXECUTABLE=C:/msys64/usr/bin/msgmerge.exe
     - name: Build
       run: |
-        cd build
-        $env:PATH = "$env:PATH;C:\msys64\ucrt64\bin;C:\msys64\usr\bin"
-        cmake --build . --target release
+        cargo build --release
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: paperback-build
         path: |
-          build/paperback.zip
-          build/paperback_setup.exe
+          target/release/paperback.zip
+          target/release/paperback_setup.exe
         retention-days: 30
     - name: Get latest tag reachable from HEAD
       id: get_tag
@@ -100,8 +75,8 @@ jobs:
           ## Commits since last release
           ${{ steps.release_notes.outputs.commits }}
         files: |
-          build/paperback.zip
-          build/paperback_setup.exe
+          target/release/paperback.zip
+          target/release/paperback_setup.exe
         prerelease: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
