@@ -6,7 +6,7 @@ use std::{
 
 use wxdragon::{prelude::*, translations::translate as t};
 
-use crate::{config::ConfigManager, parser::PASSWORD_REQUIRED_ERROR_PREFIX, session::DocumentSession};
+use crate::{config::ConfigManager, live_region, parser::PASSWORD_REQUIRED_ERROR_PREFIX, session::DocumentSession};
 
 pub struct DocumentTab {
 	pub panel: Panel,
@@ -16,17 +16,24 @@ pub struct DocumentTab {
 }
 
 pub struct DocumentManager {
+	frame: Frame,
 	notebook: Notebook,
 	tabs: Vec<DocumentTab>,
 	config: Rc<Mutex<ConfigManager>>,
+	live_region_label: StaticText,
 }
 
 impl DocumentManager {
-	pub fn new(notebook: Notebook, config: Rc<Mutex<ConfigManager>>) -> Self {
-		Self { notebook, tabs: Vec::new(), config }
+	pub fn new(
+		frame: Frame,
+		notebook: Notebook,
+		config: Rc<Mutex<ConfigManager>>,
+		live_region_label: StaticText,
+	) -> Self {
+		Self { frame, notebook, tabs: Vec::new(), config, live_region_label }
 	}
 
-	pub fn open_file(&mut self, path: &Path) -> bool {
+	pub fn open_file(&mut self, self_rc: Rc<Mutex<DocumentManager>>, path: &Path) -> bool {
 		if !path.exists() {
 			let template = t("File not found: {}");
 			let message = template.replace("{}", &path.to_string_lossy());
@@ -47,7 +54,7 @@ impl DocumentManager {
 		};
 		let path_str = path.to_string_lossy().to_string();
 		match DocumentSession::new(&path_str, &password, &forced_extension) {
-			Ok(session) => self.add_session_tab(path, session, &password),
+			Ok(session) => self.add_session_tab(self_rc, path, session, &password),
 			Err(err) => {
 				if err.starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
 					let config = self.config.lock().unwrap();
@@ -59,7 +66,7 @@ impl DocumentManager {
 						return false;
 					};
 					match DocumentSession::new(&path_str, &password, &forced_extension) {
-						Ok(session) => self.add_session_tab(path, session, &password),
+						Ok(session) => self.add_session_tab(self_rc, path, session, &password),
 						Err(_) => {
 							show_error_dialog(&self.notebook, &t("Failed to load document."), &t("Error"));
 							false
@@ -73,7 +80,13 @@ impl DocumentManager {
 		}
 	}
 
-	pub fn add_session_tab(&mut self, path: &Path, session: DocumentSession, password: &str) -> bool {
+	pub fn add_session_tab(
+		&mut self,
+		self_rc: Rc<Mutex<DocumentManager>>,
+		path: &Path,
+		session: DocumentSession,
+		password: &str,
+	) -> bool {
 		if let Some(index) = self.find_tab_by_path(path) {
 			self.notebook.set_selection(index);
 			return true;
@@ -93,6 +106,21 @@ impl DocumentManager {
 			| TextCtrlStyle::Rich2
 			| if word_wrap { TextCtrlStyle::WordWrap } else { TextCtrlStyle::DontWrap };
 		let text_ctrl = TextCtrl::builder(&panel).with_style(style).build();
+
+		let dm_for_enter = Rc::clone(&self_rc);
+		text_ctrl.on_char(move |event| {
+			if let WindowEventData::Keyboard(kbd) = event {
+				if kbd.get_key_code() == Some(13) {
+					// 13 is KEY_RETURN
+					let mut dm = dm_for_enter.lock().unwrap();
+					dm.activate_current_table();
+					dm.activate_current_link();
+				} else {
+					kbd.event.skip(true);
+				}
+			}
+		});
+
 		let sizer = BoxSizer::builder(Orientation::Vertical).build();
 		sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
 		panel.set_sizer(sizer, true);
@@ -207,6 +235,45 @@ impl DocumentManager {
 
 	pub fn notebook(&self) -> &Notebook {
 		&self.notebook
+	}
+
+	pub fn activate_current_link(&mut self) {
+		if let Some(tab) = self.active_tab_mut() {
+			let pos = tab.text_ctrl.get_insertion_point();
+			let result = tab.session.activate_link(pos);
+			if result.found {
+				match result.action {
+					crate::session::LinkAction::Internal => {
+						tab.text_ctrl.set_focus();
+						tab.text_ctrl.set_insertion_point(result.offset);
+						tab.text_ctrl.show_position(result.offset);
+						live_region::announce(&self.live_region_label, &t("Navigated to internal link."));
+					}
+					crate::session::LinkAction::External => {
+						wxdragon::utils::launch_default_browser(
+							&result.url,
+							wxdragon::utils::BrowserLaunchFlags::Default,
+						);
+					}
+					_ => {}
+				}
+			}
+		}
+	}
+
+	pub fn activate_current_table(&mut self) {
+		let table_html = {
+			if let Some(tab) = self.active_tab() {
+				let pos = tab.text_ctrl.get_insertion_point();
+				tab.session.get_table_at_position(pos)
+			} else {
+				None
+			}
+		};
+
+		if let Some(html) = table_html {
+			super::dialogs::show_web_view_dialog(&self.frame, &t("Table View"), &html, false, None);
+		}
 	}
 
 	pub fn export_document(&self, index: usize, export_path: &Path) -> bool {

@@ -28,6 +28,7 @@ use crate::{
 
 const KEY_DELETE: i32 = 127;
 const KEY_NUMPAD_DELETE: i32 = 330;
+const KEY_RETURN: i32 = 13;
 const DIALOG_PADDING: i32 = 10;
 const MAX_FIND_HISTORY_SIZE: usize = 10;
 static MAIN_WINDOW_PTR: AtomicUsize = AtomicUsize::new(0);
@@ -72,7 +73,8 @@ impl MainWindow {
 		panel.set_sizer(sizer, true);
 
 		// Create document manager
-		let doc_manager = Rc::new(Mutex::new(DocumentManager::new(notebook, Rc::clone(&config))));
+		let doc_manager =
+			Rc::new(Mutex::new(DocumentManager::new(frame, notebook, Rc::clone(&config), live_region_label)));
 
 		let find_dialog = Rc::new(Mutex::new(None));
 		Self::bind_menu_events(
@@ -136,7 +138,7 @@ impl MainWindow {
 		if !self.ensure_parser_ready(path) {
 			return false;
 		}
-		let result = self.doc_manager.lock().unwrap().open_file(path);
+		let result = self.doc_manager.lock().unwrap().open_file(Rc::clone(&self.doc_manager), path);
 		if result {
 			self.update_title();
 			self.update_recent_documents_menu();
@@ -938,6 +940,49 @@ impl MainWindow {
 						}
 					}
 				}
+				menu_ids::OPEN_IN_WEB_VIEW => {
+					let dm_ref = match dm.try_lock() {
+						Ok(dm_ref) => dm_ref,
+						Err(_) => return,
+					};
+					let Some(tab) = dm_ref.active_tab() else {
+						return;
+					};
+					let current_pos = tab.text_ctrl.get_insertion_point();
+					let temp_dir = std::env::temp_dir().to_string_lossy().to_string();
+					if let Some(target_path) = tab.session.webview_target_path(current_pos, &temp_dir) {
+						let url = format!("file:///{}", target_path.replace("\\", "/"));
+						dialogs::show_web_view_dialog(
+							&frame_copy,
+							&t("Web View"),
+							&url,
+							true,
+							Some(Box::new(|url| {
+								if url.to_lowercase().starts_with("http://")
+									|| url.to_lowercase().starts_with("https://")
+									|| url.to_lowercase().starts_with("mailto:")
+								{
+									wxdragon::utils::launch_default_browser(
+										url,
+										wxdragon::utils::BrowserLaunchFlags::Default,
+									);
+									false
+								} else {
+									true
+								}
+							})),
+						);
+					} else {
+						let dialog = MessageDialog::builder(
+							&frame_copy,
+							&t("Could not determine content to display in Web View."),
+							&t("Error"),
+						)
+						.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
+						.build();
+						dialog.show_modal();
+					}
+				}
 				menu_ids::OPTIONS => {
 					let current_language = TranslationManager::instance().lock().unwrap().current_language();
 					let options = {
@@ -951,7 +996,7 @@ impl MainWindow {
 						let cfg = config.lock().unwrap();
 						(cfg.get_app_bool("word_wrap", false), cfg.get_app_bool("compact_go_menu", true))
 					};
-					let mut cfg = config.lock().unwrap();
+					let cfg = config.lock().unwrap();
 					cfg.set_app_bool("restore_previous_documents", options.restore_previous_documents);
 					cfg.set_app_bool("word_wrap", options.word_wrap);
 					cfg.set_app_bool("minimize_to_tray", options.minimize_to_tray);
@@ -998,7 +1043,7 @@ impl MainWindow {
 							if !ensure_parser_ready_for_path(&frame_copy, path, &config) {
 								return;
 							}
-							if dm.lock().unwrap().open_file(path) {
+							if dm.lock().unwrap().open_file(Rc::clone(&dm), path) {
 								let dm_ref = dm.lock().unwrap();
 								update_title_from_manager(&frame_copy, &dm_ref);
 								dm_ref.restore_focus();
@@ -1023,7 +1068,7 @@ impl MainWindow {
 							if !ensure_parser_ready_for_path(&frame_copy, path, &config) {
 								return;
 							}
-							if dm.lock().unwrap().open_file(path) {
+							if dm.lock().unwrap().open_file(Rc::clone(&dm), path) {
 								let dm_ref = dm.lock().unwrap();
 								update_title_from_manager(&frame_copy, &dm_ref);
 								dm_ref.restore_focus();
@@ -1069,7 +1114,7 @@ impl MainWindow {
 				if !ensure_parser_ready_for_path(frame, path, config) {
 					return;
 				}
-				if doc_manager.lock().unwrap().open_file(path) {
+				if doc_manager.lock().unwrap().open_file(Rc::clone(doc_manager), path) {
 					let dm_ref = match doc_manager.try_lock() {
 						Ok(dm_ref) => dm_ref,
 						Err(_) => return,
@@ -1177,7 +1222,7 @@ impl MainWindow {
 				if !ensure_parser_ready_for_path(&frame, path, &config) {
 					continue;
 				}
-				let _ = doc_manager.lock().unwrap().open_file(path);
+				let _ = doc_manager.lock().unwrap().open_file(Rc::clone(&doc_manager), path);
 			}
 			let dm_ref = doc_manager.lock().unwrap();
 			update_title_from_manager(&frame, &dm_ref);
