@@ -1,5 +1,6 @@
 use std::{
 	cell::{Cell, RefCell},
+	ffi::CString,
 	path::Path,
 	rc::Rc,
 	sync::Mutex,
@@ -7,6 +8,7 @@ use std::{
 
 use wxdragon::{
 	event::WebViewEvents,
+	ffi,
 	prelude::*,
 	timer::Timer,
 	translations::translate as t,
@@ -1381,6 +1383,39 @@ fn get_selected_path(list: &ListCtrl) -> Option<String> {
 	get_path_for_index(list, index)
 }
 
+pub fn show_sleep_timer_dialog(parent: &Frame, initial_duration: i32) -> Option<i32> {
+	let dialog = Dialog::builder(parent, &t("Sleep Timer")).build();
+	let label = StaticText::builder(&dialog).with_label(&t("&Minutes:")).build();
+	let input_ctrl = SpinCtrl::builder(&dialog)
+		.with_range(1, 999)
+		.with_style(SpinCtrlStyle::Default | SpinCtrlStyle::ProcessEnter)
+		.build();
+	input_ctrl.set_value(initial_duration.clamp(1, 999));
+	let dialog_for_enter = dialog;
+	input_ctrl.bind_internal(EventType::TEXT_ENTER, move |event| {
+		event.skip(false);
+		dialog_for_enter.end_modal(wxdragon::id::ID_OK);
+	});
+	let input_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	input_sizer.add(&label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 5);
+	input_sizer.add(&input_ctrl, 1, SizerFlag::Expand, 0);
+	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
+	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
+	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+	ok_button.set_default();
+	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
+	content_sizer.add_sizer(&input_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
+	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	button_sizer.add_stretch_spacer(1);
+	button_sizer.add(&ok_button, 0, SizerFlag::All, DIALOG_PADDING);
+	button_sizer.add(&cancel_button, 0, SizerFlag::All, DIALOG_PADDING);
+	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
+	dialog.set_sizer_and_fit(content_sizer, true);
+	dialog.centre();
+	input_ctrl.set_focus();
+	if dialog.show_modal() == wxdragon::id::ID_OK { Some(input_ctrl.value()) } else { None }
+}
+
 pub fn show_web_view_dialog(
 	parent: &Frame,
 	title: &str,
@@ -1459,7 +1494,6 @@ pub fn show_web_view_dialog(
 
 pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<i64> {
 	let dialog = Dialog::builder(parent, &t("Elements")).build();
-
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let choice_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	let choice_label = StaticText::builder(&dialog).with_label(&t("&View:")).build();
@@ -1467,11 +1501,9 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 	view_choice.append(&t("Headings"));
 	view_choice.append(&t("Links"));
 	view_choice.set_selection(0);
-
 	choice_sizer.add(&choice_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	choice_sizer.add(&view_choice, 1, SizerFlag::Expand, 0);
 	content_sizer.add_sizer(&choice_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
-
 	let headings_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let headings_tree = TreeCtrl::builder(&dialog)
 		.with_style(TreeCtrlStyle::Default | TreeCtrlStyle::HideRoot)
@@ -1484,7 +1516,6 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 		SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
 		DIALOG_PADDING,
 	);
-
 	let links_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let links_list = ListBox::builder(&dialog).build();
 	links_sizer.add(&links_list, 1, SizerFlag::Expand, 0);
@@ -1494,41 +1525,25 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 		SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
 		DIALOG_PADDING,
 	);
-
-	// Hide links initially
 	links_list.show(false);
-
 	let selected_offset = Rc::new(Cell::new(-1i64));
-
-	// Populate Headings
 	let root = headings_tree.add_root(&t("Root"), None, None).unwrap();
 	let tree_data = session.heading_tree(current_pos);
-
 	let mut item_ids: Vec<wxdragon::widgets::treectrl::TreeItemId> = Vec::new();
-
-	// Pre-allocate to ensure indices match
 	if !tree_data.items.is_empty() {
 		item_ids.reserve(tree_data.items.len());
 	}
-
 	for item in &tree_data.items {
 		let parent_id = if item.parent_index >= 0 {
 			if let Some(id) = item_ids.get(item.parent_index as usize) { id.clone() } else { root.clone() }
 		} else {
 			root.clone()
 		};
-
 		let display_text = if item.text.is_empty() { t("Untitled") } else { item.text.clone() };
 		if let Some(id) = headings_tree.append_item_with_data(&parent_id, &display_text, item.offset as i64, None, None)
 		{
 			item_ids.push(id);
 		} else {
-			// Push a dummy ID or handle error?
-			// If append fails, we still need to maintain index alignment.
-			// But TreeItemId doesn't have a default "invalid" constructor exposed easily here.
-			// We'll assume append doesn't fail for now, or use root as fallback to keep indices aligned?
-			// Actually, if it fails, subsequent children will fail to find parent.
-			// Let's assume it works.
 			if let Some(root_child) =
 				headings_tree.append_item_with_data(&root, &display_text, item.offset as i64, None, None)
 			{
@@ -1536,9 +1551,7 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 			}
 		}
 	}
-
 	headings_tree.expand_all();
-
 	if tree_data.closest_index >= 0 {
 		if let Some(item) = item_ids.get(tree_data.closest_index as usize) {
 			headings_tree.select_item(item);
@@ -1548,8 +1561,6 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 		headings_tree.select_item(&first_child);
 		headings_tree.ensure_visible(&first_child);
 	}
-
-	// Populate Links
 	let link_data = session.link_list(current_pos);
 	let mut link_offsets = Vec::new();
 	for item in link_data.items {
@@ -1560,14 +1571,11 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 		let idx = if link_data.closest_index >= 0 { link_data.closest_index } else { 0 };
 		links_list.set_selection(idx as u32, true);
 	}
-
 	let link_offsets = Rc::new(link_offsets);
 
-	// Event Handlers
 	let headings_tree_for_choice = headings_tree;
 	let links_list_for_choice = links_list;
 	let dialog_for_layout = dialog;
-
 	view_choice.on_selection_changed(move |_| {
 		let selection = view_choice.get_selection().unwrap_or(0);
 		if selection == 0 {
@@ -1581,7 +1589,6 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 		}
 		dialog_for_layout.layout();
 	});
-
 	let selected_offset_for_tree = Rc::clone(&selected_offset);
 	let tree_for_activate = headings_tree;
 	let dialog_for_tree = dialog;
@@ -1595,7 +1602,6 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 			}
 		}
 	});
-
 	let selected_offset_for_list = Rc::clone(&selected_offset);
 	let offsets_for_list = Rc::clone(&link_offsets);
 	let dialog_for_list = dialog;
@@ -1608,23 +1614,19 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 			}
 		}
 	});
-
 	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
 	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
 	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
 	ok_button.set_default();
-
 	let selected_offset_for_ok = Rc::clone(&selected_offset);
 	let view_choice_for_ok = view_choice;
 	let headings_tree_for_ok = headings_tree;
 	let links_list_for_ok = links_list;
 	let offsets_for_ok = Rc::clone(&link_offsets);
 	let dialog_for_ok = dialog;
-
 	ok_button.on_click(move |_| {
 		let selection = view_choice_for_ok.get_selection().unwrap_or(0);
 		if selection == 0 {
-			// Headings
 			if let Some(item) = headings_tree_for_ok.get_selection() {
 				if let Some(data) = headings_tree_for_ok.get_custom_data(&item) {
 					if let Some(offset) = data.downcast_ref::<i64>() {
@@ -1635,7 +1637,6 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 				}
 			}
 		} else {
-			// Links
 			if let Some(idx) = links_list_for_ok.get_selection() {
 				if let Some(offset) = offsets_for_ok.get(idx as usize) {
 					selected_offset_for_ok.set(*offset);
@@ -1666,5 +1667,27 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 		if offset >= 0 { Some(offset) } else { None }
 	} else {
 		None
+	}
+}
+pub fn show_about_dialog(parent: &Frame) {
+	let name = CString::new("Paperback").unwrap_or_else(|_| CString::new("").unwrap());
+	let version = CString::new(env!("CARGO_PKG_VERSION")).unwrap_or_else(|_| CString::new("").unwrap());
+	let description = CString::new(t("An accessible, lightweight, fast ebook and document reader"))
+		.unwrap_or_else(|_| CString::new("").unwrap());
+	let copyright = CString::new("Copyright (C) 2025-2026 Quin Gillespie. All rights reserved.")
+		.unwrap_or_else(|_| CString::new("").unwrap());
+	let website = CString::new("https://paperback.dev").unwrap_or_else(|_| CString::new("").unwrap());
+	unsafe {
+		let info = ffi::wxd_AboutDialogInfo_Create();
+		if info.is_null() {
+			return;
+		}
+		ffi::wxd_AboutDialogInfo_SetName(info, name.as_ptr());
+		ffi::wxd_AboutDialogInfo_SetVersion(info, version.as_ptr());
+		ffi::wxd_AboutDialogInfo_SetDescription(info, description.as_ptr());
+		ffi::wxd_AboutDialogInfo_SetCopyright(info, copyright.as_ptr());
+		ffi::wxd_AboutDialogInfo_SetWebSite(info, website.as_ptr());
+		ffi::wxd_AboutBox(info, parent.handle_ptr());
+		ffi::wxd_AboutDialogInfo_Destroy(info);
 	}
 }

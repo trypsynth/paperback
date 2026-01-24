@@ -180,18 +180,3 @@ void elements_dialog::on_ok(wxCommandEvent& /*event*/) {
 		}
 	}
 }
-
-sleep_timer_dialog::sleep_timer_dialog(wxWindow* parent, int initial_duration) : dialog(parent, _("Sleep Timer")) {
-	constexpr int label_spacing = 5;
-	auto* sizer = new wxBoxSizer(wxHORIZONTAL);
-	auto* label = new wxStaticText(this, wxID_ANY, _("&Minutes:"));
-	input_ctrl = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 999, initial_duration);
-	sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, label_spacing);
-	sizer->Add(input_ctrl, 1, wxEXPAND);
-	set_content(sizer);
-	finalize_layout();
-}
-
-int sleep_timer_dialog::get_duration() const {
-	return input_ctrl->GetValue();
-}

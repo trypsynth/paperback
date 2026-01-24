@@ -4,12 +4,13 @@ use std::{
 	rc::Rc,
 	sync::{
 		Mutex,
-		atomic::{AtomicUsize, Ordering},
+		atomic::{AtomicI32, AtomicI64, AtomicUsize, Ordering},
 	},
 	thread,
+	time::{self, SystemTime},
 };
 
-use wxdragon::{prelude::*, scrollable::WxScrollable, translations::translate as t};
+use wxdragon::{prelude::*, scrollable::WxScrollable, timer::Timer, translations::translate as t};
 use wxdragon_sys as ffi;
 
 use super::{
@@ -29,10 +30,11 @@ use crate::{
 
 const KEY_DELETE: i32 = 127;
 const KEY_NUMPAD_DELETE: i32 = 330;
-const KEY_RETURN: i32 = 13;
 const DIALOG_PADDING: i32 = 10;
 const MAX_FIND_HISTORY_SIZE: usize = 10;
 static MAIN_WINDOW_PTR: AtomicUsize = AtomicUsize::new(0);
+pub static SLEEP_TIMER_START_MS: AtomicI64 = AtomicI64::new(0);
+pub static SLEEP_TIMER_DURATION_MINUTES: AtomicI32 = AtomicI32::new(0);
 
 /// Main application window
 pub struct MainWindow {
@@ -593,7 +595,64 @@ impl MainWindow {
 		let config = Rc::clone(&config);
 		let find_dialog = Rc::clone(&find_dialog);
 		let live_region_label = live_region_label;
+		let sleep_timer = Rc::new(Timer::new(frame));
+		let sleep_timer_running = Rc::new(Cell::new(false));
+		let sleep_timer_start_time = Rc::new(Cell::new(0i64));
+		let sleep_timer_duration_minutes = Rc::new(Cell::new(0i32));
+		let sleep_timer_for_tick = Rc::clone(&sleep_timer);
+		let sleep_timer_running_for_tick = Rc::clone(&sleep_timer_running);
+		let frame_for_timer = *frame;
+		let dm_for_timer = Rc::clone(&doc_manager);
+		let config_for_timer = Rc::clone(&config);
+		sleep_timer.on_tick(move |_| {
+			sleep_timer_running_for_tick.set(false);
+			sleep_timer_for_tick.stop();
+			SLEEP_TIMER_START_MS.store(0, Ordering::SeqCst);
+			SLEEP_TIMER_DURATION_MINUTES.store(0, Ordering::SeqCst);
+			{
+				let dm = dm_for_timer.lock().unwrap();
+				let cfg = config_for_timer.lock().unwrap();
+				for i in 0..dm.tab_count() {
+					if let Some(tab) = dm.get_tab(i) {
+						let current_pos = tab.text_ctrl.get_insertion_point();
+						let path_str = tab.file_path.to_string_lossy();
+						cfg.set_document_position(&path_str, current_pos);
+					}
+				}
+				cfg.flush();
+			}
+			frame_for_timer.close(true);
+		});
 
+		// Create a status update timer for sleep countdown display
+		let status_update_timer = Rc::new(Timer::new(frame));
+		let sleep_timer_running_for_status = Rc::clone(&sleep_timer_running);
+		let sleep_timer_start_for_status = Rc::clone(&sleep_timer_start_time);
+		let sleep_timer_duration_for_status = Rc::clone(&sleep_timer_duration_minutes);
+		let dm_for_status = Rc::clone(&doc_manager);
+		let frame_for_status = *frame;
+		status_update_timer.on_tick(move |_| {
+			if !sleep_timer_running_for_status.get() {
+				return;
+			}
+			let dm = match dm_for_status.try_lock() {
+				Ok(dm) => dm,
+				Err(_) => return,
+			};
+			update_status_bar_with_sleep_timer(
+				&frame_for_status,
+				&dm,
+				sleep_timer_start_for_status.get(),
+				sleep_timer_duration_for_status.get(),
+			);
+		});
+		// Start the status update timer (runs every second)
+		status_update_timer.start(1000, false);
+
+		let sleep_timer_for_menu = Rc::clone(&sleep_timer);
+		let sleep_timer_running_for_menu = Rc::clone(&sleep_timer_running);
+		let sleep_timer_start_for_menu = Rc::clone(&sleep_timer_start_time);
+		let sleep_timer_duration_for_menu = Rc::clone(&sleep_timer_duration_minutes);
 		frame.on_menu(move |event| {
 			let id = event.get_id();
 			match id {
@@ -1076,9 +1135,48 @@ impl MainWindow {
 					let menu_bar = Self::create_menu_bar(&config.lock().unwrap());
 					frame_copy.set_menu_bar(menu_bar);
 				}
+				menu_ids::SLEEP_TIMER => {
+					if sleep_timer_running_for_menu.get() {
+						sleep_timer_for_menu.stop();
+						sleep_timer_running_for_menu.set(false);
+						sleep_timer_start_for_menu.set(0);
+						sleep_timer_duration_for_menu.set(0);
+						SLEEP_TIMER_START_MS.store(0, Ordering::SeqCst);
+						SLEEP_TIMER_DURATION_MINUTES.store(0, Ordering::SeqCst);
+						let dm_ref = dm.lock().unwrap();
+						update_title_from_manager(&frame_copy, &dm_ref);
+						live_region::announce(&live_region_label, &t("Sleep timer cancelled."));
+						return;
+					}
+					let initial_duration = config.lock().unwrap().get_app_int("sleep_timer_duration", 30);
+					if let Some(duration) = dialogs::show_sleep_timer_dialog(&frame_copy, initial_duration) {
+						{
+							let cfg = config.lock().unwrap();
+							cfg.set_app_int("sleep_timer_duration", duration);
+							cfg.flush();
+						}
+						let duration_ms = duration as u64 * 60 * 1000;
+						sleep_timer_for_menu.start(duration_ms as i32, true);
+						sleep_timer_running_for_menu.set(true);
+						// Track start time and duration for countdown display
+						let now = std::time::SystemTime::now()
+							.duration_since(std::time::UNIX_EPOCH)
+							.map(|d| d.as_millis() as i64)
+							.unwrap_or(0);
+						sleep_timer_start_for_menu.set(now);
+						sleep_timer_duration_for_menu.set(duration);
+						SLEEP_TIMER_START_MS.store(now, Ordering::SeqCst);
+						SLEEP_TIMER_DURATION_MINUTES.store(duration, Ordering::SeqCst);
+						let msg = if duration == 1 {
+							t("Sleep timer set for 1 minute.")
+						} else {
+							t("Sleep timer set for %d minutes.").replace("%d", &duration.to_string())
+						};
+						live_region::announce(&live_region_label, &msg);
+					}
+				}
 				menu_ids::ABOUT => {
-					println!("Paperback 0.8.0 - An accessible ebook reader");
-					// TODO: Show about dialog
+					dialogs::show_about_dialog(&frame_copy);
 				}
 				menu_ids::CHECK_FOR_UPDATES => {
 					run_update_check(false);
@@ -2215,9 +2313,18 @@ fn main_window_parent() -> Option<ParentWindow> {
 }
 
 fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
+	let sleep_start = SLEEP_TIMER_START_MS.load(Ordering::SeqCst);
+	let sleep_duration = SLEEP_TIMER_DURATION_MINUTES.load(Ordering::SeqCst);
 	if dm.tab_count() == 0 {
 		frame.set_title(&t("Paperback"));
-		frame.set_status_text(&t("Ready"), 0);
+		let mut status_text = t("Ready");
+		if sleep_start > 0 {
+			let remaining = calculate_sleep_timer_remaining(sleep_start, sleep_duration);
+			if remaining > 0 {
+				status_text = format_sleep_timer_status(&status_text, remaining);
+			}
+		}
+		frame.set_status_text(&status_text, 0);
 		return;
 	}
 	if let Some(tab) = dm.active_tab() {
@@ -2229,9 +2336,74 @@ fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 		};
 		let template = t("Paperback - {}");
 		frame.set_title(&template.replace("{}", &display_title));
-		let chars_label = t("{} chars");
-		frame.set_status_text(&chars_label.replace("{}", &tab.session.content().len().to_string()), 0);
+		let position = tab.text_ctrl.get_insertion_point();
+		let status_info = tab.session.get_status_info(position);
+		let mut status_text = format_status_text(&status_info);
+		if sleep_start > 0 {
+			let remaining = calculate_sleep_timer_remaining(sleep_start, sleep_duration);
+			if remaining > 0 {
+				status_text = format_sleep_timer_status(&status_text, remaining);
+			}
+		}
+		frame.set_status_text(&status_text, 0);
 	}
+}
+
+fn format_status_text(info: &crate::session::StatusInfo) -> String {
+	let line_label = t("Line");
+	let char_label = t("Character");
+	let reading_label = t("Reading");
+	format!(
+		"{} {}, {} {}, {} {}%",
+		line_label, info.line_number, char_label, info.character_number, reading_label, info.percentage
+	)
+}
+
+fn update_status_bar_with_sleep_timer(
+	frame: &Frame,
+	dm: &DocumentManager,
+	sleep_timer_start_ms: i64,
+	sleep_timer_duration_minutes: i32,
+) {
+	if dm.tab_count() == 0 {
+		if sleep_timer_start_ms > 0 {
+			let remaining = calculate_sleep_timer_remaining(sleep_timer_start_ms, sleep_timer_duration_minutes);
+			if remaining > 0 {
+				let status_text = format_sleep_timer_status(&t("Ready"), remaining);
+				frame.set_status_text(&status_text, 0);
+				return;
+			}
+		}
+		frame.set_status_text(&t("Ready"), 0);
+		return;
+	}
+	if let Some(tab) = dm.active_tab() {
+		let position = tab.text_ctrl.get_insertion_point();
+		let status_info = tab.session.get_status_info(position);
+		let mut status_text = format_status_text(&status_info);
+		if sleep_timer_start_ms > 0 {
+			let remaining = calculate_sleep_timer_remaining(sleep_timer_start_ms, sleep_timer_duration_minutes);
+			if remaining > 0 {
+				status_text = format_sleep_timer_status(&status_text, remaining);
+			}
+		}
+		frame.set_status_text(&status_text, 0);
+	}
+}
+
+fn calculate_sleep_timer_remaining(start_ms: i64, duration_minutes: i32) -> i32 {
+	let now = SystemTime::now().duration_since(time::UNIX_EPOCH).map(|d| d.as_millis() as i64).unwrap_or(0);
+	let elapsed_ms = now - start_ms;
+	let duration_ms = i64::from(duration_minutes) * 60 * 1000;
+	let remaining_ms = duration_ms - elapsed_ms;
+	if remaining_ms < 0 { 0 } else { (remaining_ms / 1000) as i32 }
+}
+
+fn format_sleep_timer_status(base_status: &str, remaining_seconds: i32) -> String {
+	let minutes = remaining_seconds / 60;
+	let seconds = remaining_seconds % 60;
+	let sleep_label = t("Sleep timer");
+	format!("{} | {}: {:02}:{:02}", base_status, sleep_label, minutes, seconds)
 }
 
 struct TrayState {

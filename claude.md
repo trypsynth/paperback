@@ -79,18 +79,18 @@ These C++ features have been ported to Rust (their C++ implementations have been
 | Translation API | `src/translation_manager.rs` | 2022894 |
 | Password Dialog | `src/ui/document_manager.rs::prompt_for_password` | - |
 | Bookmarks Dialog | `src/ui/dialogs.rs::show_bookmarks_dialog` | - |
+| Sleep Timer Dialog | `src/ui/dialogs.rs::show_sleep_timer_dialog`, `src/ui/main_window.rs` | - |
+| Note Entry Dialog | `src/ui/dialogs.rs::show_note_entry_dialog` | - |
+| View Note Dialog | `src/ui/dialogs.rs::show_view_note_dialog` | - |
+| `web_view_dialog` | `src/ui/dialogs.rs::show_web_view_dialog` | - |
 
 ## C++ Features Still Needing Port
 
-### Dialogs (app/dialogs.cpp) - ~290 lines remaining
+### Dialogs (app/dialogs.cpp) - ~180 lines remaining
 
 | Dialog | Purpose | Complexity | Notes |
 |--------|---------|------------|-------|
 | `elements_dialog` | View headings/links tree | Medium | Dual view with tree + list (~120 lines) |
-| `note_entry_dialog` | Add/edit bookmark notes | Low | Multiline text entry (~20 lines) |
-| `sleep_timer_dialog` | Configure sleep timer | Low | Simple spin control (~15 lines) |
-| `view_note_dialog` | Display note content | Low | Read-only text display (~10 lines) |
-| `web_view_dialog` | Display tables as HTML | Medium | Uses wxWebView (~60 lines) |
 
 ### App Infrastructure (app/app.cpp)
 
@@ -102,12 +102,11 @@ These C++ features have been ported to Rust (their C++ implementations have been
 
 These C++ handlers still need porting:
 
-- `bookmark_dialog` calls via document_manager
 - `elements_dialog` handler
-- `sleep_timer_dialog` handler
-- `options_dialog` handler (still references C++ version at line 805)
 
 ## How to Build
+
+**IMPORTANT: Always use `--release` flag for builds.**
 
 ### Rust (Active)
 
@@ -182,14 +181,6 @@ The application is designed for accessibility with screen readers:
 
 1. **High Priority** (used frequently):
    - `elements_dialog` - Document structure view (headings/links), useful for navigation
-
-2. **Medium Priority** (useful but not critical):
-   - `note_entry_dialog` - Add/edit bookmark notes
-   - `view_note_dialog` - Simple read-only display for bookmark notes
-   - `sleep_timer_dialog` - Configure auto-close timer
-
-3. **Lower Priority** (less common use):
-   - `web_view_dialog` - Table display (uses wxWebView, may be complex)
 
 ## C++ Code Removal Checklist
 
