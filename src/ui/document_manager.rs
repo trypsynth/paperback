@@ -50,7 +50,7 @@ impl DocumentManager {
 			Ok(session) => self.add_session_tab(path, session, &password),
 			Err(err) => {
 				if err.starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
-					let mut config = self.config.lock().unwrap();
+					let config = self.config.lock().unwrap();
 					config.set_document_password(&path_str, "");
 					drop(config);
 					let password = prompt_for_password(&self.notebook);
@@ -257,7 +257,7 @@ fn normalized_path_key(path: &Path) -> String {
 }
 
 fn prompt_for_password(parent: &dyn WxWidget) -> Option<String> {
-	let dialog = TextEntryDialog::builder(parent, &t("Password is required."), &t("Password")).password().build();
+	let dialog = TextEntryDialog::builder(parent, &t("&Password:"), &t("Document Password")).password().build();
 	if dialog.show_modal() != wxdragon::id::ID_OK {
 		return None;
 	}

@@ -77,17 +77,17 @@ These C++ features have been ported to Rust (their C++ implementations have been
 | Document Info Dialog | `src/ui/dialogs.rs::show_document_info_dialog` | - |
 | All Documents Dialog | `src/ui/dialogs.rs::show_all_documents_dialog` | - |
 | Translation API | `src/translation_manager.rs` | 2022894 |
+| Password Dialog | `src/ui/document_manager.rs::prompt_for_password` | - |
 
 ## C++ Features Still Needing Port
 
-### Dialogs (app/dialogs.cpp) - ~477 lines remaining
+### Dialogs (app/dialogs.cpp) - ~460 lines remaining
 
 | Dialog | Purpose | Complexity | Notes |
 |--------|---------|------------|-------|
 | `bookmark_dialog` | Jump to/manage bookmarks | Medium | Has filter, edit note, delete (~170 lines) |
 | `elements_dialog` | View headings/links tree | Medium | Dual view with tree + list (~120 lines) |
 | `note_entry_dialog` | Add/edit bookmark notes | Low | Multiline text entry (~20 lines) |
-| `password_dialog` | Password entry for encrypted docs | Low | Simple password text control (~15 lines) |
 | `sleep_timer_dialog` | Configure sleep timer | Low | Simple spin control (~15 lines) |
 | `view_note_dialog` | Display note content | Low | Read-only text display (~10 lines) |
 | `web_view_dialog` | Display tables as HTML | Medium | Uses wxWebView (~60 lines) |
@@ -182,15 +182,14 @@ The application is designed for accessibility with screen readers:
 
 1. **High Priority** (used frequently):
    - `bookmark_dialog` - Core reading feature, enables jump to/manage bookmarks
-   - `password_dialog` - Required for encrypted PDFs
+   - `note_entry_dialog` - Required by bookmark_dialog for editing notes
 
 2. **Medium Priority** (useful but not critical):
    - `elements_dialog` - Document structure view (headings/links)
-   - `note_entry_dialog` - Required by bookmark_dialog for editing notes
+   - `view_note_dialog` - Simple read-only display for bookmark notes
 
 3. **Lower Priority** (less common use):
    - `sleep_timer_dialog` - Niche feature
-   - `view_note_dialog` - Simple read-only display
    - `web_view_dialog` - Table display (uses wxWebView, may be complex)
 
 ## C++ Code Removal Checklist
