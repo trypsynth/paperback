@@ -1036,6 +1036,22 @@ impl MainWindow {
 						}
 					}
 				}
+				menu_ids::ELEMENTS_LIST => {
+					let mut dm_guard = dm.lock().unwrap();
+					if let Some(tab) = dm_guard.active_tab_mut() {
+						let current_pos = tab.text_ctrl.get_insertion_point();
+						if let Some(offset) = dialogs::show_elements_dialog(&frame_copy, &tab.session, current_pos) {
+							tab.session.record_position(current_pos);
+							tab.text_ctrl.set_focus();
+							tab.text_ctrl.set_insertion_point(offset);
+							tab.text_ctrl.show_position(offset);
+							let (history, history_index) = tab.session.get_history();
+							let path_str = tab.file_path.to_string_lossy();
+							let cfg = config.lock().unwrap();
+							cfg.set_navigation_history(&path_str, history, history_index);
+						}
+					}
+				}
 				menu_ids::OPEN_IN_WEB_VIEW => {
 					let dm_ref = match dm.try_lock() {
 						Ok(dm_ref) => dm_ref,

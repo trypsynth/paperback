@@ -111,6 +111,20 @@ pub struct LinkList {
 }
 
 #[derive(Debug, Clone)]
+pub struct HeadingTreeItem {
+	pub offset: usize,
+	pub text: String,
+	pub level: i32,
+	pub parent_index: i32,
+}
+
+#[derive(Debug, Clone)]
+pub struct HeadingTree {
+	pub items: Vec<HeadingTreeItem>,
+	pub closest_index: i32,
+}
+
+#[derive(Debug, Clone)]
 pub struct BookmarkDisplayEntry {
 	pub start: i64,
 	pub end: i64,
