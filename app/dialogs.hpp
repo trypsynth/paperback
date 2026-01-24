@@ -76,21 +76,6 @@ private:
 	void on_ok(wxCommandEvent&);
 };
 
-class password_dialog : public dialog {
-public:
-	explicit password_dialog(wxWindow* parent);
-	~password_dialog() override = default;
-	password_dialog(const password_dialog&) = delete;
-	password_dialog& operator=(const password_dialog&) = delete;
-	password_dialog(password_dialog&&) = delete;
-	password_dialog& operator=(password_dialog&&) = delete;
-
-	[[nodiscard]] wxString get_password() const;
-
-private:
-	wxTextCtrl* password_ctrl{nullptr};
-};
-
 class sleep_timer_dialog : public dialog {
 public:
 	sleep_timer_dialog(wxWindow* parent, int initial_duration);
@@ -103,27 +88,4 @@ public:
 
 private:
 	wxSpinCtrl* input_ctrl{nullptr};
-};
-
-
-class toc_tree_item_data : public wxTreeItemData {
-public:
-	explicit toc_tree_item_data(int offset_) : offset{offset_} {
-	}
-
-	int offset{0};
-};
-
-class web_view_dialog : public wxDialog {
-public:
-	web_view_dialog(wxWindow* parent, const wxString& title, const wxString& url_or_content, bool is_url = false, std::function<bool(const wxString&)> navigation_handler = nullptr);
-
-private:
-	wxWebView* web_view;
-	std::function<bool(const wxString&)> navigation_handler_;
-
-	void on_webview_loaded(wxWebViewEvent& event);
-	void on_webview_navigating(wxWebViewEvent& event);
-	void on_script_message(wxWebViewEvent& event);
-	void simulate_click();
 };

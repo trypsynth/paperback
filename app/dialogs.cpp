@@ -181,21 +181,6 @@ void elements_dialog::on_ok(wxCommandEvent& /*event*/) {
 	}
 }
 
-password_dialog::password_dialog(wxWindow* parent) : dialog(parent, _("Document Password")) {
-	auto* content_sizer = new wxBoxSizer(wxVERTICAL);
-	auto* message_label = new wxStaticText(this, wxID_ANY, _("&Password"));
-	content_sizer->Add(message_label, 0, wxALL, DIALOG_PADDING);
-	password_ctrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(300, -1), wxTE_PASSWORD);
-	content_sizer->Add(password_ctrl, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, DIALOG_PADDING);
-	set_content(content_sizer);
-	finalize_layout();
-	password_ctrl->SetFocus();
-}
-
-wxString password_dialog::get_password() const {
-	return password_ctrl->GetValue();
-}
-
 sleep_timer_dialog::sleep_timer_dialog(wxWindow* parent, int initial_duration) : dialog(parent, _("Sleep Timer")) {
 	constexpr int label_spacing = 5;
 	auto* sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -209,63 +194,4 @@ sleep_timer_dialog::sleep_timer_dialog(wxWindow* parent, int initial_duration) :
 
 int sleep_timer_dialog::get_duration() const {
 	return input_ctrl->GetValue();
-}
-
-web_view_dialog::web_view_dialog(wxWindow* parent, const wxString& title, const wxString& url_or_content, bool is_url, std::function<bool(const wxString&)> navigation_handler) : wxDialog(parent, wxID_ANY, title), navigation_handler_{navigation_handler} {
-	web_view = wxWebView::New(this, wxID_ANY);
-	web_view->AddScriptMessageHandler("wx");
-	Bind(wxEVT_WEBVIEW_LOADED, &web_view_dialog::on_webview_loaded, this, web_view->GetId());
-	Bind(wxEVT_WEBVIEW_SCRIPT_MESSAGE_RECEIVED, &web_view_dialog::on_script_message, this, web_view->GetId());
-	Bind(wxEVT_WEBVIEW_NAVIGATING, &web_view_dialog::on_webview_navigating, this, web_view->GetId());
-	if (is_url) {
-		web_view->LoadURL(url_or_content);
-	} else {
-		wxString full_html;
-		if (url_or_content.Lower().Contains("<html"))
-			full_html = url_or_content;
-		else
-			full_html << "<html><head><title>" << title << "</title></head><body>" << url_or_content << "</body></html>";
-		web_view->SetPage(full_html, "");
-	}
-	auto* sizer = new wxBoxSizer(wxVERTICAL);
-	sizer->Add(web_view, 1, wxEXPAND | wxALL, 5);
-	auto* button_sizer = CreateStdDialogButtonSizer(wxCLOSE);
-	sizer->Add(button_sizer, 0, wxALIGN_RIGHT | wxALL, 5);
-	SetSizerAndFit(sizer);
-	Centre();
-}
-
-void web_view_dialog::on_webview_navigating(wxWebViewEvent& event) {
-	if (navigation_handler_ && !navigation_handler_(event.GetURL())) event.Veto();
-}
-
-void web_view_dialog::simulate_click() {
-	wxPoint pos = web_view->GetScreenPosition();
-	wxSize size = web_view->GetSize();
-	int x = pos.x + size.x / 2;
-	int y = pos.y + size.y / 2;
-	wxUIActionSimulator sim;
-	sim.MouseMove(x, y);
-	sim.MouseClick();
-}
-
-void web_view_dialog::on_webview_loaded([[maybe_unused]] wxWebViewEvent& event) {
-	wxTimer* timer = new wxTimer();
-	timer->Bind(wxEVT_TIMER, [this, timer](wxTimerEvent&) {
-		simulate_click();
-		timer->Stop();
-		delete timer;
-	});
-	timer->StartOnce(100);
-	web_view->RunScript(
-		"document.addEventListener('keydown', function(event) {"
-		"    if (event.key === 'Escape' || event.keyCode === 27) {"
-		"        window.wx.postMessage('close_dialog');"
-		"    }"
-		"});"
-	);
-}
-
-void web_view_dialog::on_script_message(wxWebViewEvent& event) {
-	if (event.GetString() == "close_dialog") EndModal(wxID_CANCEL);
 }

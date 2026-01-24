@@ -1,13 +1,3 @@
-cmake_minimum_required(VERSION 3.21)
-project(paperback VERSION 0.7.0 LANGUAGES CXX)
-
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_BUILD_TYPE Release)
-if(MSVC)
-	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif()
-
 if(GETTEXT_FOUND)
 	find_program(XGETTEXT_EXECUTABLE NAMES xgettext)
 	if(XGETTEXT_EXECUTABLE)
@@ -53,52 +43,6 @@ if(GETTEXT_FOUND)
 	if(MO_FILES)
 		add_custom_target(translations ALL DEPENDS ${MO_FILES})
 	endif()
-endif()
-
-find_program(CARGO_BIN cargo)
-if(NOT CARGO_BIN)
-	message(FATAL_ERROR "cargo not found. Install Rust to build libpaperback.")
-endif()
-file(GLOB_RECURSE LIBPAPERBACK_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/lib/src/*.rs ${CMAKE_SOURCE_DIR}/lib/Cargo.toml ${CMAKE_SOURCE_DIR}/lib/build.rs)
-set(RUST_TARGET_DIR ${CMAKE_BINARY_DIR}/lib)
-set(RUST_PROFILE_DIR $<IF:$<CONFIG:Debug>,debug,release>)
-if(WIN32)
-	set(RUST_LIB_NAME paperback.lib)
-	set(CXX_BRIDGE_LIB cxxbridge1.lib)
-else()
-	set(RUST_LIB_NAME libpaperback.a)
-	set(CXX_BRIDGE_LIB libcxxbridge1.a)
-endif()
-set(RUST_LIB_OUTPUT ${RUST_TARGET_DIR}/${RUST_PROFILE_DIR}/${RUST_LIB_NAME})
-set(CXX_BRIDGE_OUTPUT ${RUST_TARGET_DIR}/${RUST_PROFILE_DIR}/build/libpaperback-*/out/${CXX_BRIDGE_LIB})
-
-add_custom_command(OUTPUT ${RUST_LIB_OUTPUT} COMMAND ${CARGO_BIN} build --manifest-path ${CMAKE_SOURCE_DIR}/lib/Cargo.toml --target-dir ${RUST_TARGET_DIR} $<$<NOT:$<CONFIG:Debug>>:--release> WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/lib DEPENDS ${LIBPAPERBACK_SOURCES})
-add_custom_target(libpaperback_rust DEPENDS ${RUST_LIB_OUTPUT})
-
-file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS app/*.cpp)
-if(WIN32)
-	add_executable(paperback WIN32 ${SRC_FILES} app/paperback.rc)
-else()
-	add_executable(paperback ${SRC_FILES})
-endif()
-add_dependencies(paperback libpaperback_rust)
-target_include_directories(paperback PRIVATE ${CMAKE_SOURCE_DIR}/app ${CMAKE_SOURCE_DIR} ${PAPERBACK_GENERATED_DIR} ${RUST_TARGET_DIR}/cxxbridge)
-target_link_directories(paperback PRIVATE "${CMAKE_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/lib")
-target_link_libraries(paperback PRIVATE
-	${RUST_LIB_OUTPUT}
-	wx::base
-	wx::core
-	wx::net
-	wx::webview
-)
-if (WIN32)
-	target_link_libraries(paperback PRIVATE bcrypt ntdll)
-endif()
-
-if (MSVC)
-	target_compile_options(paperback PRIVATE /W4 /permissive- /WX)
-else()
-	target_compile_options(paperback PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 find_program(PANDOC_EXECUTABLE pandoc)
