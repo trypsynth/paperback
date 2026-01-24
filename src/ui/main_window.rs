@@ -21,6 +21,7 @@ use crate::{
 	config::ConfigManager,
 	live_region::{self, LiveRegionMode},
 	parser::parser_supports_extension,
+	translation_manager::TranslationManager,
 	update::{self, UpdateCheckOutcome, UpdateError},
 	utils::text::{display_len, markdown_to_text},
 };
@@ -171,7 +172,8 @@ impl MainWindow {
 	/// Create the menu bar with all menus
 	fn create_menu_bar(config: &ConfigManager) -> MenuBar {
 		let file_menu = Self::create_file_menu(config);
-		let go_menu = Self::create_go_menu();
+		let compact_go_menu = config.get_app_bool("compact_go_menu", true);
+		let go_menu = Self::create_go_menu(compact_go_menu);
 		let tools_menu = Self::create_tools_menu();
 		let help_menu = Self::create_help_menu();
 		let file_label = t("&File");
@@ -215,7 +217,7 @@ impl MainWindow {
 	}
 
 	/// Create the Go menu
-	fn create_go_menu() -> Menu {
+	fn create_go_menu(compact: bool) -> Menu {
 		let headings_menu = Self::create_headings_submenu();
 		let bookmarks_menu = Self::create_bookmarks_submenu();
 
@@ -233,10 +235,6 @@ impl MainWindow {
 		let go_back_help = t("Go back in history");
 		let go_forward_label = t("Go &Forward\tAlt+Right");
 		let go_forward_help = t("Go forward in history");
-		let prev_section_label = t("Previous Section\t[");
-		let prev_section_help = t("Go to previous section");
-		let next_section_label = t("Next Section\t]");
-		let next_section_help = t("Go to next section");
 		let menu = Menu::builder()
 			.append_item(menu_ids::FIND, &find_label, &find_help)
 			.append_item(menu_ids::FIND_NEXT, &find_next_label, &find_next_help)
@@ -248,36 +246,133 @@ impl MainWindow {
 			.append_item(menu_ids::GO_BACK, &go_back_label, &go_back_help)
 			.append_item(menu_ids::GO_FORWARD, &go_forward_label, &go_forward_help)
 			.append_separator()
-			.append_item(menu_ids::PREVIOUS_SECTION, &prev_section_label, &prev_section_help)
-			.append_item(menu_ids::NEXT_SECTION, &next_section_label, &next_section_help)
-			.append_separator()
 			.build();
 
-		let headings_label = t("&Headings");
-		let headings_help = t("Navigate by headings");
-		let bookmarks_label = t("&Bookmarks");
-		let bookmarks_help = t("Navigate by bookmarks");
-		menu.append_submenu(headings_menu, &headings_label, &headings_help);
-		menu.append_submenu(bookmarks_menu, &bookmarks_label, &bookmarks_help);
+		if compact {
+			let sections_label = t("&Sections");
+			let sections_help = t("Navigate by sections");
+			menu.append_submenu(Self::create_sections_submenu(), &sections_label, &sections_help);
+			let headings_label = t("&Headings");
+			let headings_help = t("Navigate by headings");
+			menu.append_submenu(headings_menu, &headings_label, &headings_help);
+			let pages_label = t("&Pages");
+			let pages_help = t("Navigate by pages");
+			menu.append_submenu(Self::create_pages_submenu(), &pages_label, &pages_help);
+			let bookmarks_label = t("&Bookmarks");
+			let bookmarks_help = t("Navigate by bookmarks");
+			menu.append_submenu(bookmarks_menu, &bookmarks_label, &bookmarks_help);
+			let links_label = t("&Links");
+			let links_help = t("Navigate by links");
+			menu.append_submenu(Self::create_links_submenu(), &links_label, &links_help);
+			let tables_label = t("&Tables");
+			let tables_help = t("Navigate by tables");
+			menu.append_submenu(Self::create_tables_submenu(), &tables_label, &tables_help);
+			let lists_label = t("&Lists");
+			let lists_help = t("Navigate by lists");
+			menu.append_submenu(Self::create_lists_submenu(), &lists_label, &lists_help);
+		} else {
+			Self::append_sections_items(&menu);
+			menu.append_separator();
+			Self::append_headings_items(&menu);
+			menu.append_separator();
+			Self::append_pages_items(&menu);
+			menu.append_separator();
+			Self::append_bookmarks_items(&menu);
+			menu.append_separator();
+			Self::append_links_items(&menu);
+			menu.append_separator();
+			Self::append_tables_items(&menu);
+			menu.append_separator();
+			Self::append_lists_items(&menu);
+		}
 
-		menu.append_separator();
+		menu
+	}
+
+	fn create_sections_submenu() -> Menu {
+		let prev_section_label = t("Previous Section\t[");
+		let prev_section_help = t("Go to previous section");
+		let next_section_label = t("Next Section\t]");
+		let next_section_help = t("Go to next section");
+		Menu::builder()
+			.append_item(menu_ids::PREVIOUS_SECTION, &prev_section_label, &prev_section_help)
+			.append_item(menu_ids::NEXT_SECTION, &next_section_label, &next_section_help)
+			.build()
+	}
+
+	fn append_sections_items(menu: &Menu) {
+		let prev_section_label = t("Previous Section\t[");
+		let next_section_label = t("Next Section\t]");
+		menu.append(menu_ids::PREVIOUS_SECTION, &prev_section_label, "", ItemKind::Normal);
+		menu.append(menu_ids::NEXT_SECTION, &next_section_label, "", ItemKind::Normal);
+	}
+
+	fn create_pages_submenu() -> Menu {
+		let goto_page_label = t("Go to &Page\tCtrl+P");
+		let prev_page_label = t("Previous Pa&ge\tShift+P");
+		let next_page_label = t("Next Pag&e\tP");
+		Menu::builder()
+			.append_item(menu_ids::GO_TO_PAGE, &goto_page_label, "")
+			.append_item(menu_ids::PREVIOUS_PAGE, &prev_page_label, "")
+			.append_item(menu_ids::NEXT_PAGE, &next_page_label, "")
+			.build()
+	}
+
+	fn append_pages_items(menu: &Menu) {
 		let goto_page_label = t("Go to &Page\tCtrl+P");
 		let prev_page_label = t("Previous Pa&ge\tShift+P");
 		let next_page_label = t("Next Pag&e\tP");
 		menu.append(menu_ids::GO_TO_PAGE, &goto_page_label, "", ItemKind::Normal);
 		menu.append(menu_ids::PREVIOUS_PAGE, &prev_page_label, "", ItemKind::Normal);
 		menu.append(menu_ids::NEXT_PAGE, &next_page_label, "", ItemKind::Normal);
-		menu.append_separator();
+	}
+
+	fn create_links_submenu() -> Menu {
+		let prev_link_label = t("Previous Lin&k\tShift+K");
+		let next_link_label = t("Next Lin&k\tK");
+		Menu::builder()
+			.append_item(menu_ids::PREVIOUS_LINK, &prev_link_label, "")
+			.append_item(menu_ids::NEXT_LINK, &next_link_label, "")
+			.build()
+	}
+
+	fn append_links_items(menu: &Menu) {
 		let prev_link_label = t("Previous Lin&k\tShift+K");
 		let next_link_label = t("Next Lin&k\tK");
 		menu.append(menu_ids::PREVIOUS_LINK, &prev_link_label, "", ItemKind::Normal);
 		menu.append(menu_ids::NEXT_LINK, &next_link_label, "", ItemKind::Normal);
-		menu.append_separator();
+	}
+
+	fn create_tables_submenu() -> Menu {
+		let prev_table_label = t("Previous &Table\tShift+T");
+		let next_table_label = t("Next &Table\tT");
+		Menu::builder()
+			.append_item(menu_ids::PREVIOUS_TABLE, &prev_table_label, "")
+			.append_item(menu_ids::NEXT_TABLE, &next_table_label, "")
+			.build()
+	}
+
+	fn append_tables_items(menu: &Menu) {
 		let prev_table_label = t("Previous &Table\tShift+T");
 		let next_table_label = t("Next &Table\tT");
 		menu.append(menu_ids::PREVIOUS_TABLE, &prev_table_label, "", ItemKind::Normal);
 		menu.append(menu_ids::NEXT_TABLE, &next_table_label, "", ItemKind::Normal);
-		menu.append_separator();
+	}
+
+	fn create_lists_submenu() -> Menu {
+		let prev_list_label = t("Previous L&ist\tShift+L");
+		let next_list_label = t("Next L&ist\tL");
+		let prev_list_item_label = t("Previous List &Item\tShift+I");
+		let next_list_item_label = t("Next List I&tem\tI");
+		Menu::builder()
+			.append_item(menu_ids::PREVIOUS_LIST, &prev_list_label, "")
+			.append_item(menu_ids::NEXT_LIST, &next_list_label, "")
+			.append_item(menu_ids::PREVIOUS_LIST_ITEM, &prev_list_item_label, "")
+			.append_item(menu_ids::NEXT_LIST_ITEM, &next_list_item_label, "")
+			.build()
+	}
+
+	fn append_lists_items(menu: &Menu) {
 		let prev_list_label = t("Previous L&ist\tShift+L");
 		let next_list_label = t("Next L&ist\tL");
 		let prev_list_item_label = t("Previous List &Item\tShift+I");
@@ -286,8 +381,6 @@ impl MainWindow {
 		menu.append(menu_ids::NEXT_LIST, &next_list_label, "", ItemKind::Normal);
 		menu.append(menu_ids::PREVIOUS_LIST_ITEM, &prev_list_item_label, "", ItemKind::Normal);
 		menu.append(menu_ids::NEXT_LIST_ITEM, &next_list_item_label, "", ItemKind::Normal);
-
-		menu
 	}
 
 	fn create_headings_submenu() -> Menu {
@@ -326,6 +419,38 @@ impl MainWindow {
 			.build()
 	}
 
+	fn append_headings_items(menu: &Menu) {
+		let prev_heading_label = t("&Previous Heading\tShift+H");
+		let next_heading_label = t("&Next Heading\tH");
+		let prev_heading1_label = t("Previous Heading &1\tShift+1");
+		let next_heading1_label = t("Next Heading 1\t1");
+		let prev_heading2_label = t("Previous Heading &2\tShift+2");
+		let next_heading2_label = t("Next Heading 2\t2");
+		let prev_heading3_label = t("Previous Heading &3\tShift+3");
+		let next_heading3_label = t("Next Heading 3\t3");
+		let prev_heading4_label = t("Previous Heading &4\tShift+4");
+		let next_heading4_label = t("Next Heading 4\t4");
+		let prev_heading5_label = t("Previous Heading &5\tShift+5");
+		let next_heading5_label = t("Next Heading 5\t5");
+		let prev_heading6_label = t("Previous Heading &6\tShift+6");
+		let next_heading6_label = t("Next Heading 6\t6");
+		menu.append(menu_ids::PREVIOUS_HEADING, &prev_heading_label, "", ItemKind::Normal);
+		menu.append(menu_ids::NEXT_HEADING, &next_heading_label, "", ItemKind::Normal);
+		menu.append_separator();
+		menu.append(menu_ids::PREVIOUS_HEADING_1, &prev_heading1_label, "", ItemKind::Normal);
+		menu.append(menu_ids::NEXT_HEADING_1, &next_heading1_label, "", ItemKind::Normal);
+		menu.append(menu_ids::PREVIOUS_HEADING_2, &prev_heading2_label, "", ItemKind::Normal);
+		menu.append(menu_ids::NEXT_HEADING_2, &next_heading2_label, "", ItemKind::Normal);
+		menu.append(menu_ids::PREVIOUS_HEADING_3, &prev_heading3_label, "", ItemKind::Normal);
+		menu.append(menu_ids::NEXT_HEADING_3, &next_heading3_label, "", ItemKind::Normal);
+		menu.append(menu_ids::PREVIOUS_HEADING_4, &prev_heading4_label, "", ItemKind::Normal);
+		menu.append(menu_ids::NEXT_HEADING_4, &next_heading4_label, "", ItemKind::Normal);
+		menu.append(menu_ids::PREVIOUS_HEADING_5, &prev_heading5_label, "", ItemKind::Normal);
+		menu.append(menu_ids::NEXT_HEADING_5, &next_heading5_label, "", ItemKind::Normal);
+		menu.append(menu_ids::PREVIOUS_HEADING_6, &prev_heading6_label, "", ItemKind::Normal);
+		menu.append(menu_ids::NEXT_HEADING_6, &next_heading6_label, "", ItemKind::Normal);
+	}
+
 	fn create_bookmarks_submenu() -> Menu {
 		let prev_bookmark_label = t("&Previous Bookmark\tShift+B");
 		let prev_bookmark_help = t("Go to previous bookmark");
@@ -354,6 +479,26 @@ impl MainWindow {
 			.append_item(menu_ids::JUMP_TO_NOTES_ONLY, &notes_only_label, &notes_only_help)
 			.append_item(menu_ids::VIEW_NOTE_TEXT, &view_note_label, &view_note_help)
 			.build()
+	}
+
+	fn append_bookmarks_items(menu: &Menu) {
+		let prev_bookmark_label = t("&Previous Bookmark\tShift+B");
+		let next_bookmark_label = t("&Next Bookmark\tB");
+		let prev_note_label = t("Previous &Note\tShift+N");
+		let next_note_label = t("Next N&ote\tN");
+		let all_bookmarks_label = t("Jump to &All...\tCtrl+B");
+		let bookmarks_only_label = t("Jump to &Bookmarks Only...\tCtrl+Alt+B");
+		let notes_only_label = t("Jump to Notes &Only...\tCtrl+Alt+M");
+		let view_note_label = t("&View Note Text\tCtrl+Shift+W");
+		menu.append(menu_ids::PREVIOUS_BOOKMARK, &prev_bookmark_label, "", ItemKind::Normal);
+		menu.append(menu_ids::NEXT_BOOKMARK, &next_bookmark_label, "", ItemKind::Normal);
+		menu.append(menu_ids::PREVIOUS_NOTE, &prev_note_label, "", ItemKind::Normal);
+		menu.append(menu_ids::NEXT_NOTE, &next_note_label, "", ItemKind::Normal);
+		menu.append_separator();
+		menu.append(menu_ids::JUMP_TO_ALL_BOOKMARKS, &all_bookmarks_label, "", ItemKind::Normal);
+		menu.append(menu_ids::JUMP_TO_BOOKMARKS_ONLY, &bookmarks_only_label, "", ItemKind::Normal);
+		menu.append(menu_ids::JUMP_TO_NOTES_ONLY, &notes_only_label, "", ItemKind::Normal);
+		menu.append(menu_ids::VIEW_NOTE_TEXT, &view_note_label, "", ItemKind::Normal);
 	}
 
 	fn create_tools_menu() -> Menu {
@@ -793,7 +938,49 @@ impl MainWindow {
 						}
 					}
 				}
-				menu_ids::OPTIONS => println!("Options requested"),
+				menu_ids::OPTIONS => {
+					let current_language = TranslationManager::instance().lock().unwrap().current_language();
+					let options = {
+						let cfg = config.lock().unwrap();
+						dialogs::show_options_dialog(&frame_copy, &cfg)
+					};
+					let Some(options) = options else {
+						return;
+					};
+					let (old_word_wrap, old_compact_menu) = {
+						let cfg = config.lock().unwrap();
+						(
+							cfg.get_app_bool("word_wrap", false),
+							cfg.get_app_bool("compact_go_menu", true),
+						)
+					};
+					let mut cfg = config.lock().unwrap();
+					cfg.set_app_bool("restore_previous_documents", options.restore_previous_documents);
+					cfg.set_app_bool("word_wrap", options.word_wrap);
+					cfg.set_app_bool("minimize_to_tray", options.minimize_to_tray);
+					cfg.set_app_bool("start_maximized", options.start_maximized);
+					cfg.set_app_bool("compact_go_menu", options.compact_go_menu);
+					cfg.set_app_bool("navigation_wrap", options.navigation_wrap);
+					cfg.set_app_bool("check_for_updates_on_startup", options.check_for_updates_on_startup);
+					cfg.set_app_int("recent_documents_to_show", options.recent_documents_to_show);
+					cfg.set_app_string("language", &options.language);
+					cfg.flush();
+					drop(cfg);
+					if old_word_wrap != options.word_wrap {
+						let mut dm_ref = dm.lock().unwrap();
+						dm_ref.apply_word_wrap(options.word_wrap);
+						dm_ref.restore_focus();
+					}
+					if current_language != options.language || old_compact_menu != options.compact_go_menu {
+						if current_language != options.language {
+							let _ = TranslationManager::instance().lock().unwrap().set_language(&options.language);
+						}
+						let dm_ref = dm.lock().unwrap();
+						update_title_from_manager(&frame_copy, &dm_ref);
+					}
+					let menu_bar = Self::create_menu_bar(&config.lock().unwrap());
+					frame_copy.set_menu_bar(menu_bar);
+				}
 				menu_ids::ABOUT => {
 					println!("Paperback 0.8.0 - An accessible ebook reader");
 					// TODO: Show about dialog

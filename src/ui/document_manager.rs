@@ -217,6 +217,30 @@ impl DocumentManager {
 		let export_path = export_path.to_string_lossy();
 		tab.session.export_content(export_path.as_ref()).is_ok()
 	}
+
+	pub fn apply_word_wrap(&mut self, word_wrap: bool) {
+		for tab in &mut self.tabs {
+			let old_ctrl = tab.text_ctrl;
+			let current_pos = old_ctrl.get_insertion_point();
+			let content = old_ctrl.get_value();
+			let style = TextCtrlStyle::MultiLine
+				| TextCtrlStyle::ReadOnly
+				| TextCtrlStyle::Rich2
+				| if word_wrap { TextCtrlStyle::WordWrap } else { TextCtrlStyle::DontWrap };
+			let text_ctrl = TextCtrl::builder(&tab.panel).with_style(style).build();
+			let sizer = BoxSizer::builder(Orientation::Vertical).build();
+			sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
+			tab.panel.set_sizer(sizer, true);
+			fill_text_ctrl(&text_ctrl, &content);
+			let max_pos = text_ctrl.get_last_position();
+			let pos = current_pos.clamp(0, max_pos);
+			text_ctrl.set_insertion_point(pos);
+			text_ctrl.show_position(pos);
+			tab.panel.layout();
+			old_ctrl.destroy();
+			tab.text_ctrl = text_ctrl;
+		}
+	}
 }
 
 fn normalized_path_key(path: &Path) -> String {

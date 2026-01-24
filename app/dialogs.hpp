@@ -134,48 +134,6 @@ private:
 };
 
 
-class options_dialog : public dialog {
-public:
-	explicit options_dialog(wxWindow* parent);
-	~options_dialog() override = default;
-	options_dialog(const options_dialog&) = delete;
-	options_dialog& operator=(const options_dialog&) = delete;
-	options_dialog(options_dialog&&) = delete;
-	options_dialog& operator=(options_dialog&&) = delete;
-	bool get_restore_previous_documents() const;
-	void set_restore_previous_documents(bool restore);
-	bool get_word_wrap() const;
-	void set_word_wrap(bool word_wrap);
-	bool get_minimize_to_tray() const;
-	void set_minimize_to_tray(bool minimize);
-	bool get_start_maximized() const;
-	void set_start_maximized(bool maximized);
-	bool get_compact_go_menu() const;
-	void set_compact_go_menu(bool compact);
-	bool get_navigation_wrap() const;
-	void set_navigation_wrap(bool value);
-	bool get_check_for_updates_on_startup() const;
-	void set_check_for_updates_on_startup(bool check);
-	int get_recent_documents_to_show() const;
-	void set_recent_documents_to_show(int count);
-	wxString get_language() const;
-	void set_language(const wxString& language);
-
-private:
-	wxCheckBox* restore_docs_check{nullptr};
-	wxCheckBox* word_wrap_check{nullptr};
-	wxCheckBox* minimize_to_tray_check{nullptr};
-	wxCheckBox* start_maximized_check{nullptr};
-	wxCheckBox* compact_go_menu_check{nullptr};
-	wxCheckBox* navigation_wrap_check{nullptr};
-	wxCheckBox* check_for_updates_on_startup_check{nullptr};
-	wxSpinCtrl* recent_docs_count_spin{nullptr};
-	wxComboBox* language_combo{nullptr};
-
-	void on_ok(wxCommandEvent& event);
-	void on_cancel(wxCommandEvent& event);
-};
-
 class password_dialog : public dialog {
 public:
 	explicit password_dialog(wxWindow* parent);

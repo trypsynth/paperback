@@ -11,6 +11,7 @@ use crate::{
 	config::ConfigManager,
 	document::{DocumentStats, TocItem},
 	session::DocumentSession,
+	translation_manager::TranslationManager,
 	ui_types::DocumentListStatus,
 };
 
@@ -36,6 +37,109 @@ const WXK_RIGHT: i32 = 316;
 const WXK_DOWN: i32 = 317;
 const WXK_PAGEUP: i32 = 366;
 const WXK_PAGEDOWN: i32 = 367;
+
+#[derive(Clone, Debug)]
+pub struct OptionsDialogResult {
+	pub restore_previous_documents: bool,
+	pub word_wrap: bool,
+	pub minimize_to_tray: bool,
+	pub start_maximized: bool,
+	pub compact_go_menu: bool,
+	pub navigation_wrap: bool,
+	pub check_for_updates_on_startup: bool,
+	pub recent_documents_to_show: i32,
+	pub language: String,
+}
+
+pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<OptionsDialogResult> {
+	let dialog = Dialog::builder(parent, &t("Options")).build();
+	let option_padding = 5;
+	let max_recent_docs = 100;
+	let general_box = StaticBoxSizerBuilder::new_with_label(Orientation::Vertical, &dialog, &t("General")).build();
+	let restore_docs_check =
+		CheckBox::builder(&dialog).with_label(&t("&Restore previously opened documents on startup")).build();
+	let word_wrap_check = CheckBox::builder(&dialog).with_label(&t("&Word wrap")).build();
+	let minimize_to_tray_check = CheckBox::builder(&dialog).with_label(&t("&Minimize to system tray")).build();
+	let start_maximized_check = CheckBox::builder(&dialog).with_label(&t("&Start maximized")).build();
+	let compact_go_menu_check = CheckBox::builder(&dialog).with_label(&t("Show compact &go menu")).build();
+	let navigation_wrap_check = CheckBox::builder(&dialog).with_label(&t("&Wrap navigation")).build();
+	let check_for_updates_check = CheckBox::builder(&dialog).with_label(&t("Check for &updates on startup")).build();
+	general_box.add(&restore_docs_check, 0, SizerFlag::All, option_padding);
+	general_box.add(&word_wrap_check, 0, SizerFlag::All, option_padding);
+	general_box.add(&minimize_to_tray_check, 0, SizerFlag::All, option_padding);
+	general_box.add(&start_maximized_check, 0, SizerFlag::All, option_padding);
+	general_box.add(&compact_go_menu_check, 0, SizerFlag::All, option_padding);
+	general_box.add(&navigation_wrap_check, 0, SizerFlag::All, option_padding);
+	general_box.add(&check_for_updates_check, 0, SizerFlag::All, option_padding);
+	let recent_docs_label = StaticText::builder(&dialog)
+		.with_label(&t("Number of &recent documents to show:"))
+		.build();
+	let recent_docs_ctrl = SpinCtrl::builder(&dialog).with_range(0, max_recent_docs).build();
+	let recent_docs_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	recent_docs_sizer.add(&recent_docs_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
+	recent_docs_sizer.add(&recent_docs_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
+	general_box.add_sizer(&recent_docs_sizer, 0, SizerFlag::All, option_padding);
+	let language_label = StaticText::builder(&dialog).with_label(&t("&Language:")).build();
+	let language_combo = ComboBox::builder(&dialog).with_style(ComboBoxStyle::ReadOnly).build();
+	let languages = TranslationManager::instance().lock().unwrap().available_languages();
+	let mut language_codes = Vec::new();
+	for lang in &languages {
+		language_combo.append(&lang.native_name);
+		language_codes.push(lang.code.clone());
+	}
+	let language_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	language_sizer.add(&language_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
+	language_sizer.add(&language_combo, 0, SizerFlag::AlignCenterVertical, 0);
+	general_box.add_sizer(&language_sizer, 0, SizerFlag::All, option_padding);
+	restore_docs_check.set_value(config.get_app_bool("restore_previous_documents", true));
+	word_wrap_check.set_value(config.get_app_bool("word_wrap", false));
+	minimize_to_tray_check.set_value(config.get_app_bool("minimize_to_tray", false));
+	start_maximized_check.set_value(config.get_app_bool("start_maximized", false));
+	compact_go_menu_check.set_value(config.get_app_bool("compact_go_menu", true));
+	navigation_wrap_check.set_value(config.get_app_bool("navigation_wrap", false));
+	check_for_updates_check.set_value(config.get_app_bool("check_for_updates_on_startup", true));
+	recent_docs_ctrl.set_value(config.get_app_int("recent_documents_to_show", 25).clamp(0, max_recent_docs));
+	let stored_language = config.get_app_string("language", "");
+	let current_language = if stored_language.is_empty() {
+		TranslationManager::instance().lock().unwrap().current_language()
+	} else {
+		stored_language
+	};
+	if let Some(index) = language_codes.iter().position(|code| code == &current_language) {
+		language_combo.set_selection(index as u32);
+	}
+	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
+	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
+	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+	dialog.set_affirmative_id(wxdragon::id::ID_OK);
+	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	button_sizer.add_stretch_spacer(1);
+	button_sizer.add(&ok_button, 0, SizerFlag::All, DIALOG_PADDING);
+	button_sizer.add(&cancel_button, 0, SizerFlag::All, DIALOG_PADDING);
+	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
+	content_sizer.add_sizer(&general_box, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
+	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
+	dialog.set_sizer_and_fit(content_sizer, true);
+	dialog.centre();
+	if dialog.show_modal() != wxdragon::id::ID_OK {
+		return None;
+	}
+	let language = language_combo
+		.get_selection()
+		.and_then(|index| language_codes.get(index as usize).cloned())
+		.unwrap_or_else(|| current_language.clone());
+	Some(OptionsDialogResult {
+		restore_previous_documents: restore_docs_check.is_checked(),
+		word_wrap: word_wrap_check.is_checked(),
+		minimize_to_tray: minimize_to_tray_check.is_checked(),
+		start_maximized: start_maximized_check.is_checked(),
+		compact_go_menu: compact_go_menu_check.is_checked(),
+		navigation_wrap: navigation_wrap_check.is_checked(),
+		check_for_updates_on_startup: check_for_updates_check.is_checked(),
+		recent_documents_to_show: recent_docs_ctrl.value(),
+		language,
+	})
+}
 
 pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i32) -> Option<i32> {
 	let dialog_title = t("Table of Contents");
