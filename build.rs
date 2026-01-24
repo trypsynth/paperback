@@ -15,6 +15,7 @@ use tar::Builder as TarBuilder;
 use zip::{CompressionMethod, ZipWriter, write::SimpleFileOptions};
 
 fn main() {
+	track_packaging_inputs();
 	build_translations();
 	build_docs();
 	configure_installer();
@@ -36,6 +37,15 @@ fn main() {
 		}
 		println!("cargo:rerun-if-changed=build.rs");
 	}
+}
+
+fn track_packaging_inputs() {
+	println!("cargo:rerun-if-changed=build.rs");
+	println!("cargo:rerun-if-changed=Cargo.toml");
+	println!("cargo:rerun-if-changed=Cargo.lock");
+	println!("cargo:rerun-if-changed=src");
+	println!("cargo:rerun-if-changed=app");
+	println!("cargo:rerun-if-changed=paperback.iss.in");
 }
 
 fn maybe_build_release_artifacts() {
