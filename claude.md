@@ -78,14 +78,14 @@ These C++ features have been ported to Rust (their C++ implementations have been
 | All Documents Dialog | `src/ui/dialogs.rs::show_all_documents_dialog` | - |
 | Translation API | `src/translation_manager.rs` | 2022894 |
 | Password Dialog | `src/ui/document_manager.rs::prompt_for_password` | - |
+| Bookmarks Dialog | `src/ui/dialogs.rs::show_bookmarks_dialog` | - |
 
 ## C++ Features Still Needing Port
 
-### Dialogs (app/dialogs.cpp) - ~460 lines remaining
+### Dialogs (app/dialogs.cpp) - ~290 lines remaining
 
 | Dialog | Purpose | Complexity | Notes |
 |--------|---------|------------|-------|
-| `bookmark_dialog` | Jump to/manage bookmarks | Medium | Has filter, edit note, delete (~170 lines) |
 | `elements_dialog` | View headings/links tree | Medium | Dual view with tree + list (~120 lines) |
 | `note_entry_dialog` | Add/edit bookmark notes | Low | Multiline text entry (~20 lines) |
 | `sleep_timer_dialog` | Configure sleep timer | Low | Simple spin control (~15 lines) |
@@ -181,15 +181,14 @@ The application is designed for accessibility with screen readers:
 ## Porting Priority Recommendations
 
 1. **High Priority** (used frequently):
-   - `bookmark_dialog` - Core reading feature, enables jump to/manage bookmarks
-   - `note_entry_dialog` - Required by bookmark_dialog for editing notes
+   - `elements_dialog` - Document structure view (headings/links), useful for navigation
 
 2. **Medium Priority** (useful but not critical):
-   - `elements_dialog` - Document structure view (headings/links)
+   - `note_entry_dialog` - Add/edit bookmark notes
    - `view_note_dialog` - Simple read-only display for bookmark notes
+   - `sleep_timer_dialog` - Configure auto-close timer
 
 3. **Lower Priority** (less common use):
-   - `sleep_timer_dialog` - Niche feature
    - `web_view_dialog` - Table display (uses wxWebView, may be complex)
 
 ## C++ Code Removal Checklist

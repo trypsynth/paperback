@@ -176,6 +176,7 @@ pub fn show_bookmark_dialog(
 	let jump_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("&Jump")).build();
 	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("&Cancel")).build();
 	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+	jump_button.set_default();
 	let entries: Rc<RefCell<Vec<BookmarkDisplayEntry>>> = Rc::new(RefCell::new(Vec::new()));
 	let selected_start = Rc::new(Cell::new(-1i64));
 	let selected_end = Rc::new(Cell::new(-1i64));
@@ -774,7 +775,7 @@ pub fn show_go_to_line_dialog(parent: &Frame, session: &DocumentSession, current
 	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
 	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
 	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
-	dialog.set_affirmative_id(wxdragon::id::ID_OK);
+	ok_button.set_default();
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add_sizer(&line_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
