@@ -33,6 +33,9 @@ zip = { version = "7.2.0", default-features = false, features = ["deflate"] }
 
 [build-dependencies]
 embed-manifest = "1.5.0"
+flate2 = { version = "1.1.0", default-features = false }
+tar = "0.4.44"
+zip = { version = "7.2.0", default-features = false, features = ["deflate"] }
 
 [profile.release]
 strip = true

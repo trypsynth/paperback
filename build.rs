@@ -1,5 +1,6 @@
 use std::{
 	env, fs,
+	io::{self, Write},
 	path::{Path, PathBuf},
 	process::Command,
 };
@@ -9,11 +10,16 @@ use embed_manifest::{
 	manifest::{ActiveCodePage, DpiAwareness, HeapType, Setting, SupportedOS::*},
 	new_manifest,
 };
+use flate2::{write::GzEncoder, Compression};
+use tar::Builder as TarBuilder;
+use zip::write::SimpleFileOptions;
+use zip::{CompressionMethod, ZipWriter};
 
 fn main() {
 	build_translations();
 	build_docs();
 	configure_installer();
+	maybe_build_release_artifacts();
 	if env::var("UPDATE_POT").is_ok() {
 		generate_pot();
 	}
@@ -31,6 +37,208 @@ fn main() {
 		}
 		println!("cargo:rerun-if-changed=build.rs");
 	}
+}
+
+fn maybe_build_release_artifacts() {
+	if env::var("PROFILE").ok().as_deref() != Some("release") {
+		return;
+	}
+	let target_dir = match target_profile_dir() {
+		Some(dir) => dir,
+		None => {
+			println!("cargo:warning=Could not determine target directory for packaging.");
+			return;
+		}
+	};
+	let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap_or_default();
+	let exe_name = if target_os == "windows" {
+		"paperback.exe"
+	} else {
+		"paperback"
+	};
+	let exe_path = target_dir.join(exe_name);
+	if !exe_path.exists() {
+		println!(
+			"cargo:warning=Release packaging skipped because {} is missing.",
+			exe_path.display()
+		);
+		return;
+	}
+	let readme_path = target_dir.join("readme.html");
+	let langs_dir = target_dir.join("langs");
+	if target_os == "windows" {
+		if let Err(err) = build_zip_package(&target_dir, &exe_path, &readme_path, &langs_dir) {
+			println!("cargo:warning=Failed to build zip package: {}", err);
+		}
+		if let Err(err) = build_windows_installer(&target_dir) {
+			println!("cargo:warning=Failed to build installer: {}", err);
+		}
+	} else if target_os == "macos" {
+		if let Err(err) = build_zip_package(&target_dir, &exe_path, &readme_path, &langs_dir) {
+			println!("cargo:warning=Failed to build zip package: {}", err);
+		}
+	} else if let Err(err) = build_tar_package(&target_dir, &exe_path, &readme_path, &langs_dir) {
+		println!("cargo:warning=Failed to build tar package: {}", err);
+	}
+}
+
+fn build_zip_package(
+	target_dir: &Path,
+	exe_path: &Path,
+	readme_path: &Path,
+	langs_dir: &Path,
+) -> io::Result<()> {
+	let package_name = if env::var("CARGO_CFG_TARGET_OS").ok().as_deref() == Some("macos") {
+		"paperback_mac.zip"
+	} else {
+		"paperback.zip"
+	};
+	let package_path = target_dir.join(package_name);
+	let file = fs::File::create(&package_path)?;
+	let mut zip = ZipWriter::new(file);
+	let options = SimpleFileOptions::default().compression_method(CompressionMethod::Deflated);
+	let exe_rel = exe_path.strip_prefix(target_dir).unwrap_or(exe_path);
+	add_file_to_zip(&mut zip, exe_path, exe_rel, options)?;
+	if readme_path.exists() {
+		let readme_rel = readme_path.strip_prefix(target_dir).unwrap_or(readme_path);
+		add_file_to_zip(&mut zip, readme_path, readme_rel, options)?;
+	} else {
+		println!(
+			"cargo:warning=readme.html missing; skipping for {}.",
+			package_name
+		);
+	}
+	if langs_dir.exists() {
+		add_dir_to_zip(&mut zip, target_dir, langs_dir, options)?;
+	} else {
+		println!("cargo:warning=langs directory missing; skipping translations.");
+	}
+	zip.finish()?;
+	Ok(())
+}
+
+fn build_tar_package(
+	target_dir: &Path,
+	exe_path: &Path,
+	readme_path: &Path,
+	langs_dir: &Path,
+) -> io::Result<()> {
+	let package_path = target_dir.join("paperback.tar.gz");
+	let file = fs::File::create(&package_path)?;
+	let encoder = GzEncoder::new(file, Compression::default());
+	let mut tar = TarBuilder::new(encoder);
+	append_file_to_tar(&mut tar, target_dir, exe_path)?;
+	if readme_path.exists() {
+		append_file_to_tar(&mut tar, target_dir, readme_path)?;
+	} else {
+		println!(
+			"cargo:warning=readme.html missing; skipping for {}.",
+			package_path.display()
+		);
+	}
+	if langs_dir.exists() {
+		let rel = langs_dir.strip_prefix(target_dir).unwrap_or(langs_dir);
+		tar.append_dir_all(rel, langs_dir)?;
+	} else {
+		println!("cargo:warning=langs directory missing; skipping translations.");
+	}
+	tar.finish()?;
+	Ok(())
+}
+
+fn add_file_to_zip<W: Write + io::Seek>(
+	zip: &mut ZipWriter<W>,
+	path: &Path,
+	name: &Path,
+	options: SimpleFileOptions,
+) -> io::Result<()> {
+	let mut file = fs::File::open(path)?;
+	let name = name.to_string_lossy().replace('\\', "/");
+	zip.start_file(name, options)?;
+	io::copy(&mut file, zip)?;
+	Ok(())
+}
+
+fn add_dir_to_zip<W: Write + io::Seek>(
+	zip: &mut ZipWriter<W>,
+	base: &Path,
+	dir: &Path,
+	options: SimpleFileOptions,
+) -> io::Result<()> {
+	for entry in fs::read_dir(dir)? {
+		let entry = entry?;
+		let path = entry.path();
+		if path.is_dir() {
+			add_dir_to_zip(zip, base, &path, options)?;
+		} else {
+			let rel = path.strip_prefix(base).unwrap_or(&path);
+			add_file_to_zip(zip, &path, rel, options)?;
+		}
+	}
+	Ok(())
+}
+
+fn append_file_to_tar<W: Write>(
+	tar: &mut TarBuilder<W>,
+	base: &Path,
+	path: &Path,
+) -> io::Result<()> {
+	let rel = path.strip_prefix(base).unwrap_or(path);
+	tar.append_path_with_name(path, rel)?;
+	Ok(())
+}
+
+fn build_windows_installer(target_dir: &Path) -> io::Result<()> {
+	if env::var("CARGO_CFG_TARGET_OS").ok().as_deref() != Some("windows") {
+		return Ok(());
+	}
+	let script_path = target_dir.join("paperback.iss");
+	if !script_path.exists() {
+		println!("cargo:warning=Installer script not found; skipping.");
+		return Ok(());
+	}
+	let iscc = match find_inno_setup() {
+		Some(path) => path,
+		None => {
+			println!("cargo:warning=Inno Setup not found; skipping installer.");
+			return Ok(());
+		}
+	};
+	let status = Command::new(iscc)
+		.arg(&script_path)
+		.current_dir(target_dir)
+		.status();
+	match status {
+		Ok(s) if s.success() => Ok(()),
+		Ok(s) => {
+			println!("cargo:warning=Inno Setup exited with status {}", s);
+			Ok(())
+		}
+		Err(err) => {
+			println!("cargo:warning=Failed to run Inno Setup: {}", err);
+			Ok(())
+		}
+	}
+}
+
+fn find_inno_setup() -> Option<PathBuf> {
+	let candidates = [
+		("ProgramFiles(x86)", "Inno Setup 6\\ISCC.exe"),
+		("LOCALAPPDATA", "Programs\\Inno Setup 6\\ISCC.exe"),
+		("ProgramFiles", "Inno Setup 6\\ISCC.exe"),
+	];
+	for (env_var, suffix) in candidates {
+		if let Ok(root) = env::var(env_var) {
+			let path = PathBuf::from(root).join(suffix);
+			if path.exists() {
+				return Some(path);
+			}
+		}
+	}
+	if Command::new("ISCC.exe").arg("/?").output().is_ok() {
+		return Some(PathBuf::from("ISCC.exe"));
+	}
+	None
 }
 
 fn build_translations() {
@@ -215,7 +423,7 @@ fn generate_pot() {
 	}
 }
 
-fn collect_translatable_files(dir: &Path, files: &mut Vec<PathBuf>) -> std::io::Result<()> {
+fn collect_translatable_files(dir: &Path, files: &mut Vec<PathBuf>) -> io::Result<()> {
 	if dir.is_dir() {
 		for entry in fs::read_dir(dir)? {
 			let entry = entry?;
