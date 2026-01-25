@@ -145,8 +145,7 @@ pub fn reader_search(
 		return -1;
 	}
 	let start_utf16 = usize::try_from(start.clamp(0, i64::MAX)).unwrap_or(0);
-	let haystack = if match_case { haystack.to_string() } else { haystack.to_lowercase() };
-	let needle = if match_case { needle.to_string() } else { needle.to_lowercase() };
+
 	let utf16_to_byte_index = |s: &str, utf16_idx: usize| -> usize {
 		let mut utf16_count = 0usize;
 		for (byte_idx, ch) in s.char_indices() {
@@ -168,79 +167,33 @@ pub fn reader_search(
 		}
 		utf16_count
 	};
-	let start_byte = utf16_to_byte_index(&haystack, start_utf16);
-	if regex {
-		let mut pattern = needle;
-		if whole_word {
-			pattern = format!(r"\b{pattern}\b");
-		}
-		let mut builder = RegexBuilder::new(&pattern);
-		if !match_case {
-			builder.case_insensitive(true);
-		}
-		let Ok(re) = builder.build() else { return -1 };
-		if forward {
-			if let Some(m) = re.find(&haystack[start_byte..]) {
-				let byte_pos = start_byte + m.start();
-				let utf16_pos = byte_to_utf16_index(&haystack, byte_pos);
-				return i64::try_from(utf16_pos).unwrap_or(-1);
-			}
-		} else {
-			let mut last: Option<usize> = None;
-			let end_byte = start_byte.min(haystack.len());
-			for m in re.find_iter(&haystack[..end_byte]) {
-				last = Some(m.start());
-			}
-			if let Some(pos) = last {
-				let utf16_pos = byte_to_utf16_index(&haystack, pos);
-				return i64::try_from(utf16_pos).unwrap_or(-1);
-			}
-		}
-		return -1;
+	let start_byte = utf16_to_byte_index(haystack, start_utf16);
+
+	// Build regex for search - this avoids copying/lowercasing the entire haystack
+	let escaped_needle = if regex { needle.to_string() } else { regex::escape(needle) };
+	let pattern = if whole_word { format!(r"\b{escaped_needle}\b") } else { escaped_needle };
+	let mut builder = RegexBuilder::new(&pattern);
+	if !match_case {
+		builder.case_insensitive(true);
 	}
-	let check_whole_word = |base: &str, pos: usize, len: usize| -> bool {
-		let prev = if pos == 0 { None } else { base[..pos].chars().last() };
-		let next = base[pos + len..].chars().next();
-		let boundary_before = prev.is_none_or(|c| !c.is_alphanumeric());
-		let boundary_after = next.is_none_or(|c| !c.is_alphanumeric());
-		boundary_before && boundary_after
+	let Ok(re) = builder.build() else {
+		return -1;
 	};
+
 	if forward {
-		let slice = &haystack[start_byte..];
-		if let Some(idx) = slice.find(&needle) {
-			let global = start_byte + idx;
-			if !whole_word || check_whole_word(&haystack, global, needle.len()) {
-				let utf16_pos = byte_to_utf16_index(&haystack, global);
-				return i64::try_from(utf16_pos).unwrap_or(-1);
-			}
-			// Keep searching forward for the next occurrence that matches whole word
-			let mut cursor = global + 1;
-			while cursor <= haystack.len() {
-				if let Some(next_idx) = haystack[cursor..].find(&needle) {
-					let candidate = cursor + next_idx;
-					if !whole_word || check_whole_word(&haystack, candidate, needle.len()) {
-						let utf16_pos = byte_to_utf16_index(&haystack, candidate);
-						return i64::try_from(utf16_pos).unwrap_or(-1);
-					}
-					cursor = candidate + 1;
-				} else {
-					break;
-				}
-			}
+		if let Some(m) = re.find(&haystack[start_byte..]) {
+			let byte_pos = start_byte + m.start();
+			let utf16_pos = byte_to_utf16_index(haystack, byte_pos);
+			return i64::try_from(utf16_pos).unwrap_or(-1);
 		}
 	} else {
-		let slice = &haystack[..start_byte];
-		let mut last = None;
-		let mut search_start = 0;
-		while let Some(idx) = slice[search_start..].find(&needle) {
-			let candidate = search_start + idx;
-			if !whole_word || check_whole_word(&haystack, candidate, needle.len()) {
-				last = Some(candidate);
-			}
-			search_start = candidate + 1;
+		let mut last: Option<usize> = None;
+		let end_byte = start_byte.min(haystack.len());
+		for m in re.find_iter(&haystack[..end_byte]) {
+			last = Some(m.start());
 		}
 		if let Some(pos) = last {
-			let utf16_pos = byte_to_utf16_index(&haystack, pos);
+			let utf16_pos = byte_to_utf16_index(haystack, pos);
 			return i64::try_from(utf16_pos).unwrap_or(-1);
 		}
 	}

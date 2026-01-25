@@ -1829,10 +1829,11 @@ fn do_find(
 	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
 ) {
-	let text_ctrl = {
+	// Get text_ctrl and session content together while holding the lock
+	let (text_ctrl, text) = {
 		let dm = doc_manager.lock().unwrap();
 		match dm.active_tab() {
-			Some(tab) => tab.text_ctrl,
+			Some(tab) => (tab.text_ctrl, tab.session.content()),
 			None => return,
 		}
 	};
@@ -1862,9 +1863,10 @@ fn do_find(
 	if state.use_regex.is_checked() {
 		options |= FindOptions::USE_REGEX;
 	}
+
 	let (sel_start, sel_end) = text_ctrl.get_selection();
 	let start_pos = if forward { sel_end } else { sel_start };
-	let result = find_text_with_wrap(&text_ctrl.get_value(), &query, start_pos, options);
+	let result = find_text_with_wrap(&text, &query, start_pos, options);
 	if !result.found {
 		live_region::announce(&live_region_label, &t("Not found."));
 		state.dialog.show(true);
