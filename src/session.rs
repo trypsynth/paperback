@@ -12,7 +12,8 @@ use crate::{
 	document::{self, DocumentHandle, MarkerType, ParserContext, ParserFlags},
 	parser,
 	reader_core::{
-		bookmark_navigate, get_filtered_bookmarks, history_go_next, history_go_previous, reader_navigate, resolve_link,
+		bookmark_navigate, get_filtered_bookmarks, history_go_next, history_go_previous, reader_navigate,
+		record_history_position, resolve_link,
 	},
 	ui_types::{self as ffi, NavDirection, NavTarget},
 	utils::zip as zip_utils,
@@ -180,7 +181,7 @@ impl DocumentSession {
 	}
 
 	pub fn record_position(&mut self, position: i64) {
-		record_position_internal(&mut self.history, &mut self.history_index, position, MAX_HISTORY_LEN);
+		record_history_position(&mut self.history, &mut self.history_index, position, MAX_HISTORY_LEN);
 	}
 
 	#[must_use]
@@ -796,45 +797,4 @@ impl DocumentSession {
 				|| self.handle.count_markers_by_type(MarkerType::Heading6) > 0
 		}
 	}
-}
-
-fn normalize_index(positions: &[i64], index: usize) -> usize {
-	if positions.is_empty() {
-		return 0;
-	}
-	index.min(positions.len().saturating_sub(1))
-}
-
-fn trim_history(positions: &mut Vec<i64>, index: &mut usize, max_len: usize) {
-	if max_len == 0 {
-		return;
-	}
-	while positions.len() > max_len {
-		positions.remove(0);
-		if *index > 0 {
-			*index -= 1;
-		}
-	}
-}
-
-fn record_position_internal(positions: &mut Vec<i64>, index: &mut usize, current_pos: i64, max_len: usize) {
-	if positions.is_empty() {
-		positions.push(current_pos);
-		*index = 0;
-		trim_history(positions, index, max_len);
-		return;
-	}
-	*index = normalize_index(positions, *index);
-	if positions[*index] != current_pos {
-		if *index + 1 < positions.len() {
-			if positions[*index + 1] != current_pos {
-				positions.truncate(*index + 1);
-				positions.push(current_pos);
-			}
-		} else {
-			positions.push(current_pos);
-		}
-		*index += 1;
-	}
-	trim_history(positions, index, max_len);
 }
