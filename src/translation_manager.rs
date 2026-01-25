@@ -29,24 +29,20 @@ impl TranslationManager {
 		if self.initialized {
 			return true;
 		}
-
 		let translations = Translations::new();
 		Translations::set_global(translations);
-
 		if let Some(langs_dir) = langs_directory() {
 			add_catalog_lookup_path_prefix(langs_dir.to_string_lossy().as_ref());
 			self.scan_available_languages(&langs_dir);
 		} else {
 			self.ensure_english_available();
 		}
-
 		let system_lang = system_language();
 		if self.is_language_available(&system_lang) {
 			self.current_language = system_lang;
 		} else {
 			self.current_language = "en".to_string();
 		}
-
 		self.apply_language_settings(&self.current_language.clone());
 		self.initialized = true;
 		true
@@ -59,7 +55,6 @@ impl TranslationManager {
 		if !self.is_language_available(language_code) {
 			return false;
 		}
-
 		self.current_language = language_code.to_string();
 		self.apply_language_settings(language_code)
 	}
@@ -85,7 +80,6 @@ impl TranslationManager {
 	fn scan_available_languages(&mut self, langs_dir: &Path) {
 		self.available_languages.clear();
 		self.ensure_english_available();
-
 		if let Ok(entries) = fs::read_dir(langs_dir) {
 			for entry in entries.flatten() {
 				if let Ok(file_type) = entry.file_type() {
@@ -93,7 +87,6 @@ impl TranslationManager {
 						let path = entry.path();
 						let dir_name = path.file_name().unwrap_or_default().to_string_lossy().to_string();
 						let mo_path = path.join("LC_MESSAGES").join("paperback.mo");
-
 						if mo_path.exists() {
 							let native_name = get_native_name(&dir_name);
 							let name = native_name.clone();
