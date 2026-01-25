@@ -11,9 +11,10 @@ use crate::{
 		Parser,
 		utils::{
 			build_toc_from_buffer, collect_ooxml_run_text, extract_title_from_path, find_child_element,
-			heading_level_to_marker_type, read_ooxml_relationships, read_zip_entry,
+			heading_level_to_marker_type, read_ooxml_relationships,
 		},
 	},
+	utils::zip::read_zip_entry_by_name,
 };
 
 pub struct DocxParser;
@@ -37,7 +38,7 @@ impl Parser for DocxParser {
 		let mut archive = ZipArchive::new(BufReader::new(file))
 			.with_context(|| format!("Failed to read DOCX as zip '{}'", context.file_path))?;
 		let rels = read_ooxml_relationships(&mut archive, "word/_rels/document.xml.rels");
-		let doc_content = read_zip_entry(&mut archive, "word/document.xml")?;
+		let doc_content = read_zip_entry_by_name(&mut archive, "word/document.xml")?;
 		let doc_xml = XmlDocument::parse(&doc_content).context("Failed to parse word/document.xml")?;
 		let mut buffer = DocumentBuffer::new();
 		let mut id_positions = HashMap::new();

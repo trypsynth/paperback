@@ -227,18 +227,6 @@ impl DocumentManager {
 		self.tabs.iter().position(|tab| normalized_path_key(&tab.file_path) == target)
 	}
 
-	pub fn save_current_tab_position(&self) {
-		if let Some(tab) = self.active_tab() {
-			let position = tab.text_ctrl.get_insertion_point();
-			let path_str = tab.file_path.to_string_lossy();
-			let config = self.config.lock().unwrap();
-			config.set_document_position(&path_str, position);
-			let (history, history_index) = tab.session.get_history();
-			config.set_navigation_history(&path_str, history, history_index);
-			config.flush();
-		}
-	}
-
 	pub fn restore_focus(&self) {
 		if let Some(tab) = self.active_tab() {
 			tab.text_ctrl.set_focus();
@@ -287,15 +275,6 @@ impl DocumentManager {
 		if let Some(html) = table_html {
 			super::dialogs::show_web_view_dialog(&self.frame, &t("Table View"), &html, false, None);
 		}
-	}
-
-	pub fn export_document(&self, index: usize, export_path: &Path) -> bool {
-		let tab = match self.tabs.get(index) {
-			Some(tab) => tab,
-			None => return false,
-		};
-		let export_path = export_path.to_string_lossy();
-		tab.session.export_content(export_path.as_ref()).is_ok()
 	}
 
 	pub fn update_status_bar(&self) {

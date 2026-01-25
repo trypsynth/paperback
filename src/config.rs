@@ -1,4 +1,10 @@
-use std::{cmp::Ordering, fmt::Write, path::Path};
+use std::{
+	cmp::Ordering,
+	env,
+	fmt::Write,
+	fs,
+	path::{Path, PathBuf},
+};
 
 use base64::{
 	Engine,
@@ -53,7 +59,14 @@ impl ConfigManager {
 
 	#[must_use]
 	pub fn initialize(&mut self) -> bool {
-		let config = Config::new("Paperback", Some("Paperback"), None, None, ConfigStyle::USE_LOCAL_FILE);
+		let config_path = get_config_path();
+		let config = Config::new(
+			"Paperback",
+			Some("Paperback"),
+			Some(&config_path),
+			None,
+			ConfigStyle::USE_LOCAL_FILE | ConfigStyle::USE_NO_ESCAPE_CHARACTERS,
+		);
 		self.config = Some(config);
 		self.initialized = true;
 		self.load_defaults();
@@ -960,6 +973,23 @@ pub fn get_sorted_document_list(
 			Some(DocumentListItem { path, filename, status })
 		})
 		.collect()
+}
+
+fn get_config_path() -> String {
+	let exe_dir = get_exe_directory();
+	let is_installed = (0..10).any(|i| exe_dir.join(format!("unins{i:03}.exe")).exists());
+	if is_installed {
+		if let Some(appdata) = env::var_os("APPDATA") {
+			let config_dir = PathBuf::from(appdata).join("Paperback");
+			let _ = fs::create_dir_all(&config_dir);
+			return config_dir.join("Paperback.ini").to_string_lossy().to_string();
+		}
+	}
+	exe_dir.join("Paperback.ini").to_string_lossy().to_string()
+}
+
+fn get_exe_directory() -> PathBuf {
+	env::current_exe().ok().and_then(|p| p.parent().map(|p| p.to_path_buf())).unwrap_or_else(|| PathBuf::from("."))
 }
 
 fn get_document_section(path: &str) -> String {

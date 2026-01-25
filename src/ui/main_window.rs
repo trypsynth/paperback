@@ -11,23 +11,82 @@ use std::{
 	time::{self, SystemTime},
 };
 
+use bitflags::bitflags;
 use wxdragon::{prelude::*, scrollable::WxScrollable, timer::Timer, translations::translate as t};
 use wxdragon_sys as ffi;
 
 use super::{
 	dialogs,
 	document_manager::{DocumentManager, DocumentTab},
-	menu_ids, utils,
+	menu_ids,
 };
 use crate::{
 	config::ConfigManager,
 	live_region::{self, LiveRegionMode},
 	parser::parser_supports_extension,
+	reader_core,
 	translation_manager::TranslationManager,
 	ui_types::BookmarkFilterType,
 	update::{self, UpdateCheckOutcome, UpdateError},
 	utils::text::{display_len, markdown_to_text},
 };
+
+// Search types and functions (inlined from ui/utils.rs)
+#[derive(Clone, Debug, Default)]
+struct SearchResult {
+	found: bool,
+	wrapped: bool,
+	position: i64,
+}
+
+bitflags! {
+	#[derive(Default)]
+	struct FindOptions: u8 {
+		const NONE = 0;
+		const FORWARD = 1 << 0;
+		const MATCH_CASE = 1 << 1;
+		const MATCH_WHOLE_WORD = 1 << 2;
+		const USE_REGEX = 1 << 3;
+	}
+}
+
+fn find_text_with_wrap(haystack: &str, needle: &str, start: i64, options: FindOptions) -> SearchResult {
+	if needle.is_empty() {
+		return SearchResult::default();
+	}
+	let result = reader_core::reader_search_with_wrap(
+		haystack,
+		needle,
+		start,
+		options.contains(FindOptions::FORWARD),
+		options.contains(FindOptions::MATCH_CASE),
+		options.contains(FindOptions::MATCH_WHOLE_WORD),
+		options.contains(FindOptions::USE_REGEX),
+	);
+	SearchResult { found: result.found, wrapped: result.wrapped, position: result.position }
+}
+
+fn ensure_parser_for_unknown_file(parent: &Frame, path: &Path, config: &mut ConfigManager) -> bool {
+	let path_str = path.to_string_lossy();
+	let saved_format = config.get_document_format(&path_str);
+	if !saved_format.is_empty() && parser_supports_extension(&saved_format) {
+		return true;
+	}
+	let Some(format) = dialogs::show_open_as_dialog(parent, path) else {
+		return false;
+	};
+	if !parser_supports_extension(&format) {
+		let message = t("Unsupported format selected.");
+		let title = t("Error");
+		let dialog = MessageDialog::builder(parent, &message, &title)
+			.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
+			.build();
+		dialog.show_modal();
+		return false;
+	}
+	config.set_document_format(&path_str, &format);
+	true
+}
 
 const KEY_DELETE: i32 = 127;
 const KEY_NUMPAD_DELETE: i32 = 330;
@@ -1314,10 +1373,6 @@ impl MainWindow {
 		&self.doc_manager
 	}
 
-	pub fn live_region_label(&self) -> StaticText {
-		self.live_region_label
-	}
-
 	fn ensure_parser_ready(&self, path: &Path) -> bool {
 		ensure_parser_ready_for_path(&self.frame, path, &self._config)
 	}
@@ -1468,7 +1523,7 @@ fn ensure_parser_ready_for_path(frame: &Frame, path: &Path, config: &Rc<Mutex<Co
 		return true;
 	}
 	let mut cfg = config.lock().unwrap();
-	utils::ensure_parser_for_unknown_file(frame, path, &mut cfg)
+	ensure_parser_for_unknown_file(frame, path, &mut cfg)
 }
 
 #[derive(Clone)]
@@ -1794,22 +1849,22 @@ fn do_find(
 	};
 	state.save_settings(config);
 	state.add_to_history(config, &query);
-	let mut options = utils::FindOptions::default();
+	let mut options = FindOptions::default();
 	if forward {
-		options |= utils::FindOptions::FORWARD;
+		options |= FindOptions::FORWARD;
 	}
 	if state.match_case.is_checked() {
-		options |= utils::FindOptions::MATCH_CASE;
+		options |= FindOptions::MATCH_CASE;
 	}
 	if state.whole_word.is_checked() {
-		options |= utils::FindOptions::MATCH_WHOLE_WORD;
+		options |= FindOptions::MATCH_WHOLE_WORD;
 	}
 	if state.use_regex.is_checked() {
-		options |= utils::FindOptions::USE_REGEX;
+		options |= FindOptions::USE_REGEX;
 	}
 	let (sel_start, sel_end) = text_ctrl.get_selection();
 	let start_pos = if forward { sel_end } else { sel_start };
-	let result = utils::find_text_with_wrap(&text_ctrl.get_value(), &query, start_pos, options);
+	let result = find_text_with_wrap(&text_ctrl.get_value(), &query, start_pos, options);
 	if !result.found {
 		live_region::announce(&live_region_label, &t("Not found."));
 		state.dialog.show(true);
