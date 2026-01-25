@@ -8,7 +8,6 @@ use std::{
 		atomic::{AtomicI32, AtomicI64, AtomicUsize, Ordering},
 	},
 	thread,
-	time::{self, SystemTime},
 };
 
 use bitflags::bitflags;
@@ -18,7 +17,7 @@ use wxdragon_sys as ffi;
 use super::{
 	dialogs,
 	document_manager::{DocumentManager, DocumentTab},
-	menu_ids,
+	menu_ids, status,
 };
 use crate::{
 	config::ConfigManager,
@@ -2486,9 +2485,9 @@ fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 		frame.set_title(&t("Paperback"));
 		let mut status_text = t("Ready");
 		if sleep_start > 0 {
-			let remaining = calculate_sleep_timer_remaining(sleep_start, sleep_duration);
+			let remaining = status::calculate_sleep_timer_remaining(sleep_start, sleep_duration);
 			if remaining > 0 {
-				status_text = format_sleep_timer_status(&status_text, remaining);
+				status_text = status::format_sleep_timer_status(&status_text, remaining);
 			}
 		}
 		frame.set_status_text(&status_text, 0);
@@ -2505,25 +2504,15 @@ fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 		frame.set_title(&template.replace("{}", &display_title));
 		let position = tab.text_ctrl.get_insertion_point();
 		let status_info = tab.session.get_status_info(position);
-		let mut status_text = format_status_text(&status_info);
+		let mut status_text = status::format_status_text(&status_info);
 		if sleep_start > 0 {
-			let remaining = calculate_sleep_timer_remaining(sleep_start, sleep_duration);
+			let remaining = status::calculate_sleep_timer_remaining(sleep_start, sleep_duration);
 			if remaining > 0 {
-				status_text = format_sleep_timer_status(&status_text, remaining);
+				status_text = status::format_sleep_timer_status(&status_text, remaining);
 			}
 		}
 		frame.set_status_text(&status_text, 0);
 	}
-}
-
-fn format_status_text(info: &crate::session::StatusInfo) -> String {
-	let line_label = t("Line");
-	let char_label = t("Character");
-	let reading_label = t("Reading");
-	format!(
-		"{} {}, {} {}, {} {}%",
-		line_label, info.line_number, char_label, info.character_number, reading_label, info.percentage
-	)
 }
 
 fn update_status_bar_with_sleep_timer(
@@ -2534,9 +2523,9 @@ fn update_status_bar_with_sleep_timer(
 ) {
 	if dm.tab_count() == 0 {
 		if sleep_timer_start_ms > 0 {
-			let remaining = calculate_sleep_timer_remaining(sleep_timer_start_ms, sleep_timer_duration_minutes);
+			let remaining = status::calculate_sleep_timer_remaining(sleep_timer_start_ms, sleep_timer_duration_minutes);
 			if remaining > 0 {
-				let status_text = format_sleep_timer_status(&t("Ready"), remaining);
+				let status_text = status::format_sleep_timer_status(&t("Ready"), remaining);
 				frame.set_status_text(&status_text, 0);
 				return;
 			}
@@ -2547,30 +2536,15 @@ fn update_status_bar_with_sleep_timer(
 	if let Some(tab) = dm.active_tab() {
 		let position = tab.text_ctrl.get_insertion_point();
 		let status_info = tab.session.get_status_info(position);
-		let mut status_text = format_status_text(&status_info);
+		let mut status_text = status::format_status_text(&status_info);
 		if sleep_timer_start_ms > 0 {
-			let remaining = calculate_sleep_timer_remaining(sleep_timer_start_ms, sleep_timer_duration_minutes);
+			let remaining = status::calculate_sleep_timer_remaining(sleep_timer_start_ms, sleep_timer_duration_minutes);
 			if remaining > 0 {
-				status_text = format_sleep_timer_status(&status_text, remaining);
+				status_text = status::format_sleep_timer_status(&status_text, remaining);
 			}
 		}
 		frame.set_status_text(&status_text, 0);
 	}
-}
-
-fn calculate_sleep_timer_remaining(start_ms: i64, duration_minutes: i32) -> i32 {
-	let now = SystemTime::now().duration_since(time::UNIX_EPOCH).map(|d| d.as_millis() as i64).unwrap_or(0);
-	let elapsed_ms = now - start_ms;
-	let duration_ms = i64::from(duration_minutes) * 60 * 1000;
-	let remaining_ms = duration_ms - elapsed_ms;
-	if remaining_ms < 0 { 0 } else { (remaining_ms / 1000) as i32 }
-}
-
-fn format_sleep_timer_status(base_status: &str, remaining_seconds: i32) -> String {
-	let minutes = remaining_seconds / 60;
-	let seconds = remaining_seconds % 60;
-	let sleep_label = t("Sleep timer");
-	format!("{} | {}: {:02}:{:02}", base_status, sleep_label, minutes, seconds)
 }
 
 struct TrayState {

@@ -164,21 +164,7 @@ fn join_extensions<'a, I>(exts: I) -> String
 where
 	I: IntoIterator<Item = &'a str>,
 {
-	let mut result = String::new();
-	let mut first = true;
-	for ext in exts {
-		if ext.is_empty() {
-			continue;
-		}
-		if first {
-			first = false;
-		} else {
-			result.push(';');
-		}
-		result.push_str("*.");
-		result.push_str(ext);
-	}
-	result
+	exts.into_iter().filter(|ext| !ext.is_empty()).map(|ext| format!("*.{ext}")).collect::<Vec<_>>().join(";")
 }
 
 #[must_use]

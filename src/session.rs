@@ -120,8 +120,7 @@ impl DocumentSession {
 			context = context.with_forced_extension(forced_extension.to_string());
 		}
 		let parser_flags = parser::get_parser_flags_for_context(&context);
-		let mut doc = parser::parse_document(&context).map_err(|e| e.to_string())?;
-		doc.compute_stats();
+		let doc = parser::parse_document(&context).map_err(|e| e.to_string())?;
 		Ok(Self {
 			handle: DocumentHandle::new(doc),
 			file_path: file_path.to_string(),

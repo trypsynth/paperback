@@ -8,9 +8,8 @@ edition = "2024"
 rust-version = "1.87.0"
 
 [workspace]
-members = [
-	"xtask",
-]
+members = ["xtask"]
+
 [dependencies]
 anyhow = "1.0.100"
 base64 = "0.22.1"

@@ -15,7 +15,6 @@ fn main() {
 	build_translations();
 	build_docs();
 	configure_installer();
-
 	if env::var("UPDATE_POT").is_ok() {
 		generate_pot();
 	}
