@@ -145,10 +145,6 @@ impl TocItem {
 	pub const fn new(name: String, reference: String, offset: usize) -> Self {
 		Self { name, reference, offset, children: Vec::new() }
 	}
-
-	pub fn add_child(&mut self, child: Self) {
-		self.children.push(child);
-	}
 }
 
 #[derive(Debug, Clone, Default)]
@@ -254,11 +250,6 @@ impl DocumentHandle {
 		&self.doc
 	}
 
-	#[must_use]
-	pub const fn document_mut(&mut self) -> &mut Document {
-		&mut self.doc
-	}
-
 	fn markers_by_type(&self, marker_type: MarkerType) -> impl Iterator<Item = (usize, &Marker)> {
 		self.doc.buffer.markers.iter().enumerate().filter(move |(_, m)| m.marker_type == marker_type)
 	}
@@ -316,19 +307,6 @@ impl DocumentHandle {
 			}
 		}
 		result
-	}
-
-	#[must_use]
-	pub fn find_first_marker_after(&self, position: i64, marker_type: MarkerType) -> Option<usize> {
-		self.doc
-			.buffer
-			.markers
-			.iter()
-			.enumerate()
-			.find(|(_, marker)| {
-				marker.marker_type == marker_type && i64::try_from(marker.position).unwrap_or(i64::MAX) >= position
-			})
-			.map(|(idx, _)| idx)
 	}
 
 	#[must_use]
@@ -402,28 +380,8 @@ impl DocumentHandle {
 	}
 
 	#[must_use]
-	pub fn next_section_index(&self, position: i64) -> Option<i32> {
-		self.next_marker_index(position, MarkerType::SectionBreak).and_then(|idx| i32::try_from(idx).ok())
-	}
-
-	#[must_use]
-	pub fn previous_section_index(&self, position: i64) -> Option<i32> {
-		self.previous_marker_index(position, MarkerType::SectionBreak).and_then(|idx| i32::try_from(idx).ok())
-	}
-
-	#[must_use]
 	pub fn section_index(&self, position: usize) -> Option<i32> {
 		self.current_marker_index(position, MarkerType::SectionBreak).and_then(|idx| i32::try_from(idx).ok())
-	}
-
-	#[must_use]
-	pub fn next_page_index(&self, position: i64) -> Option<i32> {
-		self.next_marker_index(position, MarkerType::PageBreak).and_then(|idx| i32::try_from(idx).ok())
-	}
-
-	#[must_use]
-	pub fn previous_page_index(&self, position: i64) -> Option<i32> {
-		self.previous_marker_index(position, MarkerType::PageBreak).and_then(|idx| i32::try_from(idx).ok())
 	}
 
 	#[must_use]

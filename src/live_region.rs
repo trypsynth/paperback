@@ -1,12 +1,5 @@
 use wxdragon::prelude::WxWidget;
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum LiveRegionMode {
-	Off = 0,
-	Polite = 1,
-	Assertive = 2,
-}
-
 #[cfg(target_os = "windows")]
 mod windows_impl {
 	use std::{cell::RefCell, mem::ManuallyDrop};
@@ -24,13 +17,13 @@ mod windows_impl {
 	};
 	use wxdragon::prelude::WxWidget;
 
-	use super::LiveRegionMode;
-
 	thread_local! {
 		static ACC_PROP_SERVICES: RefCell<Option<IAccPropServices>> = RefCell::new(None);
 	}
 
-	pub(super) fn set_live_region(window: &impl WxWidget, mode: LiveRegionMode) -> bool {
+	const LIVE_REGION_POLITE: u32 = 1;
+
+	pub(super) fn set_live_region(window: &impl WxWidget) -> bool {
 		let acc_prop = match acc_prop_services() {
 			Some(acc_prop) => acc_prop,
 			None => return false,
@@ -46,7 +39,7 @@ mod windows_impl {
 					wReserved1: 0,
 					wReserved2: 0,
 					wReserved3: 0,
-					Anonymous: VARIANT_0_0_0 { lVal: mode as i32 },
+					Anonymous: VARIANT_0_0_0 { lVal: LIVE_REGION_POLITE as i32 },
 				}),
 			},
 		};
@@ -100,9 +93,7 @@ mod windows_impl {
 mod windows_impl {
 	use wxdragon::prelude::WxWidget;
 
-	use super::LiveRegionMode;
-
-	pub(super) fn set_live_region(_window: &impl WxWidget, _mode: LiveRegionMode) -> bool {
+	pub(super) fn set_live_region(_window: &impl WxWidget) -> bool {
 		false
 	}
 
@@ -111,8 +102,8 @@ mod windows_impl {
 	}
 }
 
-pub fn set_live_region(window: &impl WxWidget, mode: LiveRegionMode) -> bool {
-	windows_impl::set_live_region(window, mode)
+pub fn set_live_region(window: &impl WxWidget) -> bool {
+	windows_impl::set_live_region(window)
 }
 
 pub fn notify_live_region_changed(window: &impl WxWidget) -> bool {

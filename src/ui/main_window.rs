@@ -2,6 +2,7 @@ use std::{
 	cell::Cell,
 	env,
 	path::{Path, PathBuf},
+	process,
 	rc::Rc,
 	sync::{
 		Mutex,
@@ -21,7 +22,7 @@ use super::{
 };
 use crate::{
 	config::ConfigManager,
-	live_region::{self, LiveRegionMode},
+	live_region,
 	parser::parser_supports_extension,
 	reader_core,
 	translation_manager::TranslationManager,
@@ -30,7 +31,6 @@ use crate::{
 	utils::text::{display_len, markdown_to_text},
 };
 
-// Search types and functions (inlined from ui/utils.rs)
 #[derive(Clone, Debug, Default)]
 struct SearchResult {
 	found: bool,
@@ -106,7 +106,6 @@ enum MenuEntry {
 	Separator,
 }
 
-/// Main application window
 pub struct MainWindow {
 	frame: Frame,
 	doc_manager: Rc<Mutex<DocumentManager>>,
@@ -117,38 +116,24 @@ pub struct MainWindow {
 }
 
 impl MainWindow {
-	/// Create a new main window
 	pub fn new(config: Rc<Mutex<ConfigManager>>) -> Self {
 		let app_title = t("Paperback");
 		let frame = Frame::builder().with_title(&app_title).with_size(Size::new(800, 600)).build();
 		MAIN_WINDOW_PTR.store(frame.handle_ptr() as usize, Ordering::SeqCst);
-
-		// Create status bar
 		frame.create_status_bar(1, 0, -1, "statusbar");
 		frame.set_status_text(&t("Ready"), 0);
-
-		// Create menu bar
 		let menu_bar = Self::create_menu_bar(&config.lock().unwrap());
 		frame.set_menu_bar(menu_bar);
-
-		// Create main panel and sizer
 		let panel = Panel::builder(&frame).build();
 		let sizer = BoxSizer::builder(Orientation::Vertical).build();
-
 		let live_region_label = StaticText::builder(&panel).with_label("").with_size(Size::new(0, 0)).build();
 		live_region_label.show(false);
-		let _ = live_region::set_live_region(&live_region_label, LiveRegionMode::Polite);
-
-		// Create notebook for document tabs
+		let _ = live_region::set_live_region(&live_region_label);
 		let notebook = Notebook::builder(&panel).with_style(NotebookStyle::Top).build();
-
 		sizer.add(&notebook, 1, SizerFlag::Expand | SizerFlag::All, 0);
 		panel.set_sizer(sizer, true);
-
-		// Create document manager
 		let doc_manager =
 			Rc::new(Mutex::new(DocumentManager::new(frame, notebook, Rc::clone(&config), live_region_label)));
-
 		let find_dialog = Rc::new(Mutex::new(None));
 		Self::bind_menu_events(
 			&frame,
@@ -161,7 +146,6 @@ impl MainWindow {
 		let frame_copy = frame;
 		let notebook = *doc_manager.lock().unwrap().notebook();
 		notebook.on_page_changed(move |_event| {
-			// Update title bar with document name
 			let dm_ref = match dm.try_lock() {
 				Ok(dm_ref) => dm_ref,
 				Err(_) => return,
@@ -191,7 +175,6 @@ impl MainWindow {
 			}
 			event.skip(true);
 		});
-
 		let tray_state = Rc::new(Mutex::new(None));
 		tray::bind_tray_events(frame, Rc::clone(&doc_manager), Rc::clone(&config), Rc::clone(&tray_state));
 		{
@@ -263,7 +246,6 @@ impl MainWindow {
 		}
 	}
 
-	/// Create the menu bar with all menus
 	fn create_menu_bar(config: &ConfigManager) -> MenuBar {
 		let file_menu = Self::create_file_menu(config);
 		let compact_go_menu = config.get_app_bool("compact_go_menu", true);
@@ -274,7 +256,6 @@ impl MainWindow {
 		let go_label = t("&Go");
 		let tools_label = t("&Tools");
 		let help_label = t("&Help");
-
 		MenuBar::builder()
 			.append(file_menu, &file_label)
 			.append(go_menu, &go_label)
@@ -283,7 +264,6 @@ impl MainWindow {
 			.build()
 	}
 
-	/// Create the File menu
 	fn create_file_menu(config: &ConfigManager) -> Menu {
 		let open_label = t("&Open...\tCtrl+O");
 		let open_help = t("Open a document");
@@ -300,21 +280,17 @@ impl MainWindow {
 			.append_separator()
 			.append_item(menu_ids::EXIT, &exit_label, &exit_help)
 			.build();
-
 		let recent_menu = Menu::builder().build();
 		Self::populate_recent_documents_menu(&recent_menu, config);
 		let recent_label = t("&Recent Documents");
 		let recent_help = t("Open a recent document");
 		let _ = file_menu.append_submenu(recent_menu, &recent_label, &recent_help);
-
 		file_menu
 	}
 
-	/// Create the Go menu
 	fn create_go_menu(compact: bool) -> Menu {
 		let headings_menu = Self::create_headings_submenu();
 		let bookmarks_menu = Self::create_bookmarks_submenu();
-
 		let find_label = t("&Find...\tCtrl+F");
 		let find_help = t("Find text in the document");
 		let find_next_label = t("Find &Next\tF3");
@@ -341,7 +317,6 @@ impl MainWindow {
 			.append_item(menu_ids::GO_FORWARD, &go_forward_label, &go_forward_help)
 			.append_separator()
 			.build();
-
 		if compact {
 			let sections_label = t("&Sections");
 			let sections_help = t("Navigate by sections");
@@ -379,7 +354,6 @@ impl MainWindow {
 			menu.append_separator();
 			Self::append_lists_items(&menu);
 		}
-
 		menu
 	}
 
@@ -672,7 +646,6 @@ impl MainWindow {
 			.build()
 	}
 
-	/// Bind menu event handlers
 	fn bind_menu_events(
 		frame: &Frame,
 		doc_manager: Rc<Mutex<DocumentManager>>,
@@ -713,8 +686,6 @@ impl MainWindow {
 			}
 			frame_for_timer.close(true);
 		});
-
-		// Create a status update timer for sleep countdown display
 		let status_update_timer = Rc::new(Timer::new(frame));
 		let sleep_timer_running_for_status = Rc::clone(&sleep_timer_running);
 		let sleep_timer_start_for_status = Rc::clone(&sleep_timer_start_time);
@@ -736,9 +707,7 @@ impl MainWindow {
 				sleep_timer_duration_for_status.get(),
 			);
 		});
-		// Start the status update timer (runs every second)
 		status_update_timer.start(1000, false);
-
 		let sleep_timer_for_menu = Rc::clone(&sleep_timer);
 		let sleep_timer_running_for_menu = Rc::clone(&sleep_timer_running);
 		let sleep_timer_start_for_menu = Rc::clone(&sleep_timer_start_time);
@@ -768,10 +737,8 @@ impl MainWindow {
 					dm.notebook().set_focus();
 				}
 				menu_ids::EXIT => {
-					std::process::exit(0);
+					process::exit(0);
 				}
-
-				// Navigation commands would go here
 				menu_ids::FIND => {
 					show_find_dialog(&frame_copy, &dm, &config, &find_dialog, live_region_label);
 				}
@@ -1251,7 +1218,6 @@ impl MainWindow {
 						let duration_ms = duration as u64 * 60 * 1000;
 						sleep_timer_for_menu.start(duration_ms as i32, true);
 						sleep_timer_running_for_menu.set(true);
-						// Track start time and duration for countdown display
 						let now = std::time::SystemTime::now()
 							.duration_since(std::time::UNIX_EPOCH)
 							.map(|d| d.as_millis() as i64)
@@ -1283,7 +1249,6 @@ impl MainWindow {
 				menu_ids::DONATE => {
 					handle_donate(&frame_copy);
 				}
-
 				_ => {
 					if id >= menu_ids::RECENT_DOCUMENT_BASE && id <= menu_ids::RECENT_DOCUMENT_MAX {
 						let doc_index = id - menu_ids::RECENT_DOCUMENT_BASE;
@@ -1338,7 +1303,6 @@ impl MainWindow {
 		});
 	}
 
-	/// Handle the Open menu command
 	fn handle_open(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) {
 		let wildcard = "All supported files|*.epub;*.pdf;*.txt;*.md;*.html;*.htm;*.docx;*.odt;*.fb2;*.chm;*.pptx;*.odp|\
                         EPUB files (*.epub)|*.epub|\
@@ -1353,14 +1317,12 @@ impl MainWindow {
                         PowerPoint (*.pptx)|*.pptx|\
                         OpenDocument Presentation (*.odp)|*.odp|\
                         All files (*.*)|*.*";
-
 		let dialog_title = t("Open Document");
 		let dialog = FileDialog::builder(frame)
 			.with_message(&dialog_title)
 			.with_wildcard(wildcard)
 			.with_style(FileDialogStyle::Open | FileDialogStyle::FileMustExist)
 			.build();
-
 		if dialog.show_modal() == wxdragon::id::ID_OK {
 			if let Some(path) = dialog.get_path() {
 				let path = std::path::Path::new(&path);
@@ -1513,7 +1475,6 @@ impl FindDialogState {
 		let combo_width = 250;
 		let option_padding = 2;
 		let button_spacing = 5;
-
 		let find_label = StaticText::builder(&dialog).with_label(&t("Find &what:")).build();
 		let find_combo = ComboBox::builder(&dialog)
 			.with_style(ComboBoxStyle::ProcessEnter)

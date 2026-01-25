@@ -79,15 +79,6 @@ impl ConfigManager {
 		}
 	}
 
-	pub fn shutdown(&mut self) {
-		if !self.initialized {
-			return;
-		}
-		self.flush();
-		self.config = None;
-		self.initialized = false;
-	}
-
 	const fn is_ready(&self) -> bool {
 		self.initialized
 	}
@@ -102,36 +93,6 @@ impl ConfigManager {
 		let result = f(config);
 		config.set_path("/");
 		Some(result)
-	}
-
-	pub fn get_string(&self, key: &str, default_value: &str) -> String {
-		self.config().map_or_else(|| default_value.to_string(), |c| c.read_string(key, default_value))
-	}
-
-	pub fn get_bool(&self, key: &str, default_value: bool) -> bool {
-		self.config().map_or(default_value, |c| c.read_bool(key, default_value))
-	}
-
-	pub fn get_int(&self, key: &str, default_value: i32) -> i32 {
-		self.config().map_or(default_value, |c| c.read_long(key, i64::from(default_value)) as i32)
-	}
-
-	pub fn set_string(&self, key: &str, value: &str) {
-		if let Some(config) = self.config() {
-			config.write_string(key, value);
-		}
-	}
-
-	pub fn set_bool(&self, key: &str, value: bool) {
-		if let Some(config) = self.config() {
-			config.write_bool(key, value);
-		}
-	}
-
-	pub fn set_int(&self, key: &str, value: i32) {
-		if let Some(config) = self.config() {
-			config.write_long(key, i64::from(value));
-		}
 	}
 
 	pub fn get_app_string(&self, key: &str, default_value: &str) -> String {
@@ -896,6 +857,17 @@ impl ConfigManager {
 			config.write_string("path", path);
 		}
 		config.set_path("/");
+	}
+}
+
+impl Drop for ConfigManager {
+	fn drop(&mut self) {
+		if !self.initialized {
+			return;
+		}
+		self.flush();
+		self.config = None;
+		self.initialized = false;
 	}
 }
 
