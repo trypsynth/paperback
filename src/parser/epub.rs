@@ -14,9 +14,12 @@ use crate::{
 	html_to_text::{HeadingInfo, HtmlSourceMode, HtmlToText, LinkInfo, ListInfo, ListItemInfo, TableInfo},
 	parser::{
 		Parser,
-		utils::{extract_title_from_path, heading_level_to_marker_type, read_zip_entry},
+		utils::{extract_title_from_path, heading_level_to_marker_type},
 	},
-	utils::text::{collapse_whitespace, trim_string, url_decode},
+	utils::{
+		text::{collapse_whitespace, trim_string, url_decode},
+		zip::read_zip_entry_by_name,
+	},
 	xml_to_text::XmlToText,
 };
 
@@ -65,7 +68,7 @@ impl Parser for EpubParser {
 		let mut archive = ZipArchive::new(BufReader::new(file))
 			.with_context(|| format!("Failed to read EPUB as zip '{}'", context.file_path))?;
 		let container_path = find_container_path(&mut archive)?;
-		let opf_content = read_zip_entry(&mut archive, &container_path)?;
+		let opf_content = read_zip_entry_by_name(&mut archive, &container_path)?;
 		let opf_dir = Path::new(&container_path).parent().unwrap_or_else(|| Path::new("")).to_path_buf();
 		let opf_doc = XmlDocument::parse_with_options(
 			&opf_content,
@@ -86,7 +89,7 @@ impl Parser for EpubParser {
 				conversion_errors.push(format!("missing manifest item for {idref}"));
 				continue;
 			};
-			let section_data = match read_zip_entry(&mut archive, &item.path) {
+			let section_data = match read_zip_entry_by_name(&mut archive, &item.path) {
 				Ok(v) => v,
 				Err(err) => {
 					conversion_errors.push(format!("{} ({err})", item.path));
@@ -195,8 +198,8 @@ impl Parser for EpubParser {
 }
 
 fn find_container_path<R: Read + Seek>(archive: &mut ZipArchive<R>) -> Result<String> {
-	let container_xml =
-		read_zip_entry(archive, "META-INF/container.xml").context("Failed to read META-INF/container.xml in EPUB")?;
+	let container_xml = read_zip_entry_by_name(archive, "META-INF/container.xml")
+		.context("Failed to read META-INF/container.xml in EPUB")?;
 	let doc = XmlDocument::parse_with_options(
 		&container_xml,
 		ParsingOptions { allow_dtd: true, ..ParsingOptions::default() },
@@ -369,7 +372,7 @@ fn build_toc_from_nav_document<R: Read + Seek>(
 	sections: &[SectionMeta],
 	id_positions: &HashMap<String, usize>,
 ) -> Option<Vec<TocItem>> {
-	let nav_content = read_zip_entry(archive, nav_path).ok()?;
+	let nav_content = read_zip_entry_by_name(archive, nav_path).ok()?;
 	let nav_doc =
 		XmlDocument::parse_with_options(&nav_content, ParsingOptions { allow_dtd: true, ..ParsingOptions::default() })
 			.ok()?;
@@ -519,7 +522,7 @@ fn build_toc_from_ncx<R: Read + Seek>(
 	sections: &[SectionMeta],
 	id_positions: &HashMap<String, usize>,
 ) -> Option<Vec<TocItem>> {
-	let ncx_content = read_zip_entry(archive, ncx_path).ok()?;
+	let ncx_content = read_zip_entry_by_name(archive, ncx_path).ok()?;
 	let ncx_doc =
 		XmlDocument::parse_with_options(&ncx_content, ParsingOptions { allow_dtd: true, ..ParsingOptions::default() })
 			.ok()?;

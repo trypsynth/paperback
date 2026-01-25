@@ -9,8 +9,9 @@ use crate::{
 	html_to_text::LinkInfo,
 	parser::{
 		Parser,
-		utils::{collect_text_from_tagged_elements, extract_title_from_path, read_ooxml_relationships, read_zip_entry},
+		utils::{collect_text_from_tagged_elements, extract_title_from_path, read_ooxml_relationships},
 	},
+	utils::zip::read_zip_entry_by_name,
 };
 
 pub struct PptxParser;
@@ -49,7 +50,7 @@ impl Parser for PptxParser {
 		let id_positions = HashMap::new();
 		let mut toc_items = Vec::new();
 		for (index, slide_name) in slides.iter().enumerate() {
-			let slide_content = read_zip_entry(&mut archive, slide_name)?;
+			let slide_content = read_zip_entry_by_name(&mut archive, slide_name)?;
 			let slide_doc =
 				XmlDocument::parse(&slide_content).with_context(|| format!("Failed to parse slide '{slide_name}'"))?;
 			let slide_base = slide_name.rsplit('/').next().unwrap_or("");

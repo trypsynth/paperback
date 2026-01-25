@@ -1,17 +1,12 @@
-use std::{
-	collections::HashMap,
-	fs::File,
-	io::{BufReader, Read, Seek},
-	path::Path,
-};
+use std::{collections::HashMap, fs::File, io::BufReader, path::Path};
 
-use anyhow::{Context, Result};
 use roxmltree::{Node, NodeType};
 use zip::ZipArchive;
 
 use crate::{
 	document::{DocumentBuffer, MarkerType, TocItem},
 	html_to_text::HeadingInfo,
+	utils::zip::read_zip_entry_by_name,
 };
 
 fn children_at_mut<'a>(toc: &'a mut Vec<TocItem>, path: &[usize]) -> &'a mut Vec<TocItem> {
@@ -146,16 +141,9 @@ pub fn find_child_element<'a, 'input>(node: Node<'a, 'input>, name: &str) -> Opt
 	node.children().find(|child| child.node_type() == NodeType::Element && child.tag_name().name() == name)
 }
 
-pub fn read_zip_entry<R: Read + Seek>(archive: &mut ZipArchive<R>, name: &str) -> Result<String> {
-	let mut entry = archive.by_name(name).with_context(|| format!("Failed to get zip entry '{name}'"))?;
-	let mut contents = String::new();
-	Read::read_to_string(&mut entry, &mut contents).with_context(|| format!("Failed to read zip entry '{name}'"))?;
-	Ok(contents)
-}
-
 pub fn read_ooxml_relationships(archive: &mut ZipArchive<BufReader<File>>, rels_path: &str) -> HashMap<String, String> {
 	let mut rels = HashMap::new();
-	if let Ok(rels_content) = read_zip_entry(archive, rels_path) {
+	if let Ok(rels_content) = read_zip_entry_by_name(archive, rels_path) {
 		if let Ok(rels_doc) = roxmltree::Document::parse(&rels_content) {
 			for node in rels_doc.descendants() {
 				if node.node_type() == NodeType::Element && node.tag_name().name() == "Relationship" {
