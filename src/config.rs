@@ -360,12 +360,6 @@ impl ConfigManager {
 		}
 	}
 
-	pub fn clear_opened_documents(&self) {
-		if let Some(config) = self.config() {
-			config.delete_group("opened_documents");
-		}
-	}
-
 	pub fn set_document_position(&self, path: &str, position: i64) {
 		self.set_document_int(path, "last_position", position);
 	}

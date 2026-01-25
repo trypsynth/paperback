@@ -335,9 +335,11 @@ pub fn show_bookmark_dialog(
 		if start < 0 {
 			return;
 		}
-		let cfg = config_for_delete.lock().unwrap();
-		cfg.remove_bookmark(&file_path_for_delete, start, end);
-		cfg.flush();
+		{
+			let cfg = config_for_delete.lock().unwrap();
+			cfg.remove_bookmark(&file_path_for_delete, start, end);
+			cfg.flush();
+		}
 		repopulate_for_delete(current_pos);
 	});
 	let repopulate_for_edit = Rc::clone(&repopulate);
@@ -364,9 +366,11 @@ pub fn show_bookmark_dialog(
 		else {
 			return;
 		};
-		let cfg = config_for_edit.lock().unwrap();
-		cfg.update_bookmark_note(&file_path_for_edit, start, end, &note);
-		cfg.flush();
+		{
+			let cfg = config_for_edit.lock().unwrap();
+			cfg.update_bookmark_note(&file_path_for_edit, start, end, &note);
+			cfg.flush();
+		}
 		repopulate_for_edit(current_pos);
 	});
 	let repopulate_for_key = Rc::clone(&repopulate);
@@ -380,9 +384,11 @@ pub fn show_bookmark_dialog(
 			let start = selected_start_for_key.get();
 			let end = selected_end_for_key.get();
 			if start >= 0 {
-				let cfg = config_for_key.lock().unwrap();
-				cfg.remove_bookmark(&file_path_for_key, start, end);
-				cfg.flush();
+				{
+					let cfg = config_for_key.lock().unwrap();
+					cfg.remove_bookmark(&file_path_for_key, start, end);
+					cfg.flush();
+				}
 				repopulate_for_key(current_pos);
 			}
 			event.skip(false);
