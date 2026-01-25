@@ -1,0 +1,1049 @@
+# Vietnamese translation
+# Copyright (C) 2026 Nguyen Anh Duc
+# This file is distributed under the same license as the paperback package.
+# Nguyen Anh Duc <ducn98224@gmail.com>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: paperback 0.6.1\n"
+"Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
+"POT-Creation-Date: 2025-11-23 13:29-0700\n"
+"PO-Revision-Date: 2026-01-25 15:00+0700\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: vi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Poedit 3.6\n"
+
+#: app/app.cpp
+msgid "No release notes were provided."
+msgstr "Không có ghi chú phát hành nào."
+
+#: app/app.cpp
+#, c-format
+msgid ""
+"There is an update available.\n"
+"Your version: %s\n"
+"Latest version: %s\n"
+"Description:\n"
+"%s\n"
+"Do you want to open the direct download link?"
+msgstr ""
+"Đã có bản cập nhật mới.\n"
+"Phiên bản hiện tại: %s\n"
+"Phiên bản mới nhất: %s\n"
+"Mô tả:\n"
+"%s\n"
+"Bạn có muốn mở liên kết tải về trực tiếp không?"
+
+#: app/app.cpp
+msgid "Update available"
+msgstr "Có bản cập nhật mới"
+
+#: app/app.cpp
+msgid "No updates available."
+msgstr "Không có bản cập nhật nào."
+
+#: app/app.cpp
+msgid "Info"
+msgstr "Thông tin"
+
+#: app/app.cpp
+msgid "Error checking for updates."
+msgstr "Lỗi khi kiểm tra cập nhật."
+
+#: app/app.cpp
+#, c-format
+msgid "Failed to check for updates. HTTP status: %d"
+msgstr "Kiểm tra cập nhật thất bại. Mã lỗi HTTP: %d"
+
+#: app/app.cpp app/dialogs.cpp app/document_manager.cpp app/main_window.cpp
+#: app/parser.cpp
+msgid "Error"
+msgstr "Lỗi"
+
+#: app/app.cpp
+msgid "Failed to initialize configuration"
+msgstr "Không thể khởi tạo cấu hình"
+
+#: app/app.cpp
+msgid "Failed to create IPC server"
+msgstr "Không thể tạo máy chủ IPC"
+
+#: app/app.cpp app/document_manager.cpp
+msgid "Warning"
+msgstr "Cảnh báo"
+
+#: app/app.cpp app/document_manager.cpp
+#, c-format
+msgid "File not found: %s"
+msgstr "Không tìm thấy tệp: %s"
+
+#: app/app.cpp
+msgid "Failed to load document."
+msgstr "Tải tài liệu thất bại."
+
+#: app/dialogs.cpp
+msgid "All Documents"
+msgstr "Tất cả tài liệu"
+
+#: app/dialogs.cpp
+msgid "&search"
+msgstr "&Tìm kiếm"
+
+#: app/dialogs.cpp
+msgid "File Name"
+msgstr "Tên tệp"
+
+#: app/dialogs.cpp
+msgid "Status"
+msgstr "Trạng thái"
+
+#: app/dialogs.cpp
+msgid "Path"
+msgstr "Đường dẫn"
+
+#: app/dialogs.cpp
+msgid "&Open"
+msgstr "&Mở"
+
+#: app/dialogs.cpp
+msgid "&Remove"
+msgstr "&Gỡ bỏ"
+
+#: app/dialogs.cpp
+msgid "Missing"
+msgstr "Thất lạc"
+
+#: app/dialogs.cpp
+msgid ""
+"Are you sure you want to remove this document from the list? This will also remove "
+"its reading position."
+msgstr ""
+"Bạn có chắc muốn xóa tài liệu này khỏi danh sách? Thao tác này cũng sẽ xóa vị trí "
+"đọc hiện tại của bạn."
+
+#: app/dialogs.cpp
+msgid "Confirm"
+msgstr "Xác nhận"
+
+#: app/dialogs.cpp
+msgid "Open"
+msgstr "Mở"
+
+#: app/dialogs.cpp
+msgid "Closed"
+msgstr "Đã đóng"
+
+#: app/dialogs.cpp
+msgid "Jump to Bookmark"
+msgstr "Nhảy đến dấu trang"
+
+#: app/dialogs.cpp
+msgid "&Filter:"
+msgstr "&Bộ lọc:"
+
+#: app/dialogs.cpp
+msgid "All"
+msgstr "Tất cả"
+
+#: app/dialogs.cpp
+msgid "Bookmarks"
+msgstr "Dấu trang"
+
+#: app/dialogs.cpp
+msgid "Notes"
+msgstr "Ghi chú"
+
+#: app/dialogs.cpp
+msgid "&Edit Note"
+msgstr "&Sửa ghi chú"
+
+#: app/dialogs.cpp
+msgid "&Delete"
+msgstr "&Xóa"
+
+#: app/dialogs.cpp
+msgid "&Jump"
+msgstr "&Nhảy đến"
+
+#: app/dialogs.cpp
+msgid "&Cancel"
+msgstr "&Hủy"
+
+#: app/dialogs.cpp
+msgid "Please select a bookmark to jump to."
+msgstr "Vui lòng chọn một dấu trang để nhảy đến."
+
+#: app/dialogs.cpp app/document_manager.cpp
+msgid "Bookmark Note"
+msgstr "Ghi chú dấu trang"
+
+#: app/dialogs.cpp app/document_manager.cpp
+msgid "Edit bookmark note:"
+msgstr "Sửa ghi chú dấu trang:"
+
+#: app/dialogs.cpp
+msgid "blank"
+msgstr "trống"
+
+#: app/dialogs.cpp
+msgid "Document Info"
+msgstr "Thông tin tài liệu"
+
+#: app/dialogs.cpp
+msgid "Title: "
+msgstr "Tiêu đề: "
+
+#: app/dialogs.cpp
+msgid "Author: "
+msgstr "Tác giả: "
+
+#: app/dialogs.cpp
+msgid "Path: "
+msgstr "Đường dẫn: "
+
+#: app/dialogs.cpp
+msgid "Total number of words: "
+msgstr "Tổng số từ: "
+
+#: app/dialogs.cpp
+msgid "Total number of lines: "
+msgstr "Tổng số dòng: "
+
+#: app/dialogs.cpp
+msgid "Total number of characters: "
+msgstr "Tổng số ký tự: "
+
+#: app/dialogs.cpp
+msgid "Total number of characters (excluding whitespace): "
+msgstr "Tổng số ký tự (không tính khoảng trắng): "
+
+#: app/dialogs.cpp
+msgid "Elements"
+msgstr "Thành phần"
+
+#: app/dialogs.cpp
+msgid "&View:"
+msgstr "&Xem:"
+
+#: app/dialogs.cpp
+msgid "Headings"
+msgstr "Tiêu đề mục"
+
+#: app/dialogs.cpp
+msgid "Links"
+msgstr "Liên kết"
+
+#: app/dialogs.cpp
+msgid "Root"
+msgstr "Gốc"
+
+#: app/dialogs.cpp
+msgid "Untitled"
+msgstr "Chưa đặt tên"
+
+#: app/dialogs.cpp
+msgid "Find"
+msgstr "Tìm"
+
+#: app/dialogs.cpp
+msgid "Find &what:"
+msgstr "Tìm &gì:"
+
+#: app/dialogs.cpp
+msgid "Options"
+msgstr "Tùy chọn"
+
+#: app/dialogs.cpp
+msgid "&Match case"
+msgstr "&Khớp chữ hoa thường"
+
+#: app/dialogs.cpp
+msgid "Match &whole word"
+msgstr "Khớp &toàn bộ từ"
+
+#: app/dialogs.cpp
+msgid "Use &regular expressions"
+msgstr "Sử dụng biểu thức &chính quy"
+
+#: app/dialogs.cpp
+msgid "Find &Previous"
+msgstr "Tìm từ &trước"
+
+#: app/dialogs.cpp
+msgid "Find &Next"
+msgstr "Tìm từ &tiếp theo"
+
+#: app/dialogs.cpp
+msgid "Cancel"
+msgstr "Hủy"
+
+#: app/dialogs.cpp
+msgid "Go to Line"
+msgstr "Đi đến dòng"
+
+#: app/dialogs.cpp
+msgid "&Line number:"
+msgstr "Số &dòng:"
+
+#: app/dialogs.cpp
+msgid "Go to page"
+msgstr "Đi đến trang"
+
+#: app/dialogs.cpp
+#, c-format
+msgid "Go to page (1/%d):"
+msgstr "Đi đến trang (1/%d):"
+
+#: app/dialogs.cpp
+msgid "Go to Percent"
+msgstr "Đi đến phần trăm"
+
+#: app/dialogs.cpp
+msgid "P&ercent:"
+msgstr "&Phần trăm:"
+
+#: app/dialogs.cpp
+msgid "&Percent"
+msgstr "&Phần trăm"
+
+#: app/dialogs.cpp
+msgid "Open As"
+msgstr "Mở dưới dạng"
+
+#: app/dialogs.cpp
+#, c-format
+msgid ""
+"No suitable parser was found for %s.\n"
+"How would you like to open this file?"
+msgstr ""
+"Không tìm thấy trình phân tích phù hợp cho %s.\n"
+"Bạn muốn mở tệp này dưới định dạng nào?"
+
+#: app/dialogs.cpp
+msgid "Open &as:"
+msgstr "Mở &dưới dạng:"
+
+#: app/dialogs.cpp
+msgid "Plain Text"
+msgstr "Văn bản thuần"
+
+#: app/dialogs.cpp
+msgid "HTML"
+msgstr "HTML"
+
+#: app/dialogs.cpp
+msgid "Markdown"
+msgstr "Markdown"
+
+#: app/dialogs.cpp
+msgid "General"
+msgstr "Chung"
+
+#: app/dialogs.cpp
+msgid "&Restore previously opened documents on startup"
+msgstr "&Khôi phục các tài liệu đã mở khi khởi động"
+
+#: app/dialogs.cpp
+msgid "&Word wrap"
+msgstr "&Tự động ngắt dòng"
+
+#: app/dialogs.cpp
+msgid "&Minimize to system tray"
+msgstr "&Thu nhỏ xuống khay hệ thống"
+
+#: app/dialogs.cpp
+msgid "&Start maximized"
+msgstr "&Khởi động ở chế độ toàn màn hình"
+
+#: app/dialogs.cpp
+msgid "Show compact &go menu"
+msgstr "Hiển thị menu &điều hướng thu gọn"
+
+#: app/dialogs.cpp
+msgid "&Wrap navigation"
+msgstr "Điều hướng &xoay vòng"
+
+#: app/dialogs.cpp
+msgid "Check for &updates on startup"
+msgstr "&Kiểm tra cập nhật khi khởi động"
+
+#: app/dialogs.cpp
+msgid "Number of &recent documents to show:"
+msgstr "Số lượng tài liệu &gần đây hiển thị:"
+
+#: app/dialogs.cpp
+msgid "&Language:"
+msgstr "&Ngôn ngữ:"
+
+#: app/dialogs.cpp
+msgid "Document Password"
+msgstr "Mật khẩu tài liệu"
+
+#: app/dialogs.cpp
+msgid "&Password"
+msgstr "&Mật khẩu"
+
+#: app/dialogs.cpp
+msgid "Sleep Timer"
+msgstr "Hẹn giờ ngủ"
+
+#: app/dialogs.cpp
+msgid "&Minutes:"
+msgstr "&Phút:"
+
+#: app/dialogs.cpp
+msgid "Table of Contents"
+msgstr "Mục lục"
+
+#: app/dialogs.cpp
+msgid "Please select a section from the table of contents."
+msgstr "Vui lòng chọn một phần trong mục lục."
+
+#: app/dialogs.cpp
+msgid "No Selection"
+msgstr "Chưa chọn"
+
+#: app/dialogs.cpp app/main_window.cpp
+msgid "View Note"
+msgstr "Xem ghi chú"
+
+#: app/dialogs.cpp
+msgid "Close"
+msgstr "Đóng"
+
+#: app/document_manager.cpp
+msgid "Password is required."
+msgstr "Yêu cầu mật khẩu."
+
+#: app/document_manager.cpp
+#, c-format
+msgid "Failed to parse document: %s"
+msgstr "Không thể phân tích tài liệu: %s"
+
+#: app/document_manager.cpp
+msgid "No sections."
+msgstr "Không có phần nào."
+
+#: app/document_manager.cpp
+msgid "No next section"
+msgstr "Không có phần tiếp theo"
+
+#: app/document_manager.cpp
+msgid "No previous section"
+msgstr "Không có phần phía trước"
+
+#: app/document_manager.cpp
+msgid "Wrapping to start. "
+msgstr "Quay lại từ đầu. "
+
+#: app/document_manager.cpp
+msgid "Wrapping to end. "
+msgstr "Quay lại cuối trang. "
+
+#: app/document_manager.cpp app/main_window.cpp
+msgid "No pages."
+msgstr "Không có trang nào."
+
+#: app/document_manager.cpp
+msgid "No next page."
+msgstr "Không có trang tiếp theo."
+
+#: app/document_manager.cpp
+msgid "No previous page."
+msgstr "Không có trang phía trước."
+
+#: app/document_manager.cpp
+#, c-format
+msgid "Page %d: %s"
+msgstr "Trang %d: %s"
+
+#: app/document_manager.cpp
+msgid "No bookmarks."
+msgstr "Không có dấu trang nào."
+
+#: app/document_manager.cpp
+msgid "No next bookmark"
+msgstr "Không có dấu trang tiếp theo"
+
+#: app/document_manager.cpp
+msgid "No previous bookmark"
+msgstr "Không có dấu trang phía trước"
+
+#: app/document_manager.cpp
+#, c-format
+msgid "%s - Bookmark %d"
+msgstr "%s - Dấu trang %d"
+
+#: app/document_manager.cpp
+msgid "No notes."
+msgstr "Không có ghi chú nào."
+
+#: app/document_manager.cpp
+msgid "No next note"
+msgstr "Không có ghi chú tiếp theo"
+
+#: app/document_manager.cpp
+msgid "No previous note"
+msgstr "Không có ghi chú trước"
+
+#: app/document_manager.cpp
+#, c-format
+msgid "%s - %s - Note %d"
+msgstr "%s - %s - Ghi chú %d"
+
+#: app/document_manager.cpp
+#, c-format
+msgid "%s - Note %d"
+msgstr "%s - Ghi chú %d"
+
+#: app/document_manager.cpp
+msgid "No links."
+msgstr "Không có liên kết nào."
+
+#: app/document_manager.cpp
+msgid "No next link."
+msgstr "Không có liên kết tiếp theo."
+
+#: app/document_manager.cpp
+msgid "No previous link."
+msgstr "Không có liên kết trước."
+
+#: app/document_manager.cpp
+msgid " link"
+msgstr " liên kết"
+
+#: app/document_manager.cpp
+msgid "No previous position."
+msgstr "Không có vị trí trước đó."
+
+#: app/document_manager.cpp
+msgid "Navigated to previous position."
+msgstr "Đã quay về vị trí trước."
+
+#: app/document_manager.cpp
+msgid "No next position."
+msgstr "Không có vị trí tiếp theo."
+
+#: app/document_manager.cpp
+msgid "Navigated to next position."
+msgstr "Đã tới vị trí tiếp theo."
+
+#: app/document_manager.cpp
+msgid "Opening link in default browser."
+msgstr "Đang mở liên kết bằng trình duyệt mặc định."
+
+#: app/document_manager.cpp
+msgid "Failed to open link."
+msgstr "Không thể mở liên kết."
+
+#: app/document_manager.cpp
+msgid "Navigated to internal link."
+msgstr "Đã chuyển tới liên kết nội bộ."
+
+#: app/document_manager.cpp
+msgid "Internal link target not found."
+msgstr "Không tìm thấy đích đến của liên kết nội bộ."
+
+#: app/document_manager.cpp
+msgid "No lists."
+msgstr "Không có danh sách nào."
+
+#: app/document_manager.cpp
+msgid "No next list."
+msgstr "Không có danh sách tiếp theo."
+
+#: app/document_manager.cpp
+msgid "No previous list."
+msgstr "Không có danh sách trước."
+
+#: app/document_manager.cpp
+#, c-format
+msgid "List with %d items"
+msgstr "Danh sách có %d mục"
+
+#: app/document_manager.cpp
+msgid "No list items."
+msgstr "Không có mục danh sách nào."
+
+#: app/document_manager.cpp
+msgid "No next list item."
+msgstr "Không có mục danh sách tiếp theo."
+
+#: app/document_manager.cpp
+msgid "No previous list item."
+msgstr "Không có mục danh sách trước."
+
+#: app/document_manager.cpp
+#, c-format
+msgid "List with %d items "
+msgstr "Danh sách có %d mục "
+
+#: app/document_manager.cpp
+msgid "Bookmark removed"
+msgstr "Đã xóa dấu trang"
+
+#: app/document_manager.cpp
+msgid "Bookmarked"
+msgstr "Đã đánh dấu trang"
+
+#: app/document_manager.cpp
+msgid "Enter bookmark note:"
+msgstr "Nhập ghi chú dấu trang:"
+
+#: app/document_manager.cpp
+msgid "Bookmark note updated"
+msgstr "Đã cập nhật ghi chú dấu trang"
+
+#: app/document_manager.cpp
+msgid "Bookmarked with note"
+msgstr "Đã đánh dấu kèm ghi chú"
+
+#: app/document_manager.cpp
+msgid "No bookmarks"
+msgstr "Không có dấu trang"
+
+#: app/document_manager.cpp
+#, c-format
+msgid "Bookmark: %s - %s"
+msgstr "Dấu trang: %s - %s"
+
+#: app/document_manager.cpp
+#, c-format
+msgid "Bookmark: %s"
+msgstr "Dấu trang: %s"
+
+#: app/document_manager.cpp
+msgid "No table of contents."
+msgstr "Không có mục lục."
+
+#: app/document_manager.cpp
+msgid "Table of contents is empty."
+msgstr "Mục lục trống."
+
+#: app/document_manager.cpp app/main_window.cpp
+msgid "Ready"
+msgstr "Sẵn sàng"
+
+#: app/document_manager.cpp
+#, c-format
+msgid "line %ld, character %ld, reading %d%%"
+msgstr "dòng %ld, ký tự %ld, đang đọc %d%%"
+
+#: app/document_manager.cpp
+msgid "Previous heading\tShift+H"
+msgstr "Tiêu đề mục trước\tShift+H"
+
+#: app/document_manager.cpp
+msgid "Next heading\tH"
+msgstr "Tiêu đề mục tiếp theo\tH"
+
+#: app/document_manager.cpp
+#, c-format
+msgid "Previous heading level %d\tShift+%d"
+msgstr "Tiêu đề mục cấp %d trước\tShift+%d"
+
+#: app/document_manager.cpp
+#, c-format
+msgid "Next heading level %d\t%d"
+msgstr "Tiêu đề mục cấp %d tiếp theo\t%d"
+
+#: app/document_manager.cpp
+msgid "No headings."
+msgstr "Không có tiêu đề mục."
+
+#: app/document_manager.cpp
+#, c-format
+msgid "No %s heading"
+msgstr "Không có tiêu đề mục %s"
+
+#: app/document_manager.cpp
+msgid "next"
+msgstr "tiếp theo"
+
+#: app/document_manager.cpp
+msgid "previous"
+msgstr "phía trước"
+
+#: app/document_manager.cpp
+#, c-format
+msgid "No %s heading at level %d"
+msgstr "Không có tiêu đề mục cấp %2$d %1$s"
+
+#: app/document_manager.cpp
+#, c-format
+msgid "Wrapping to %s. %s Heading level %d"
+msgstr "Quay lại %s. %s tiêu đề mục cấp %d"
+
+#: app/document_manager.cpp
+msgid "start"
+msgstr "đầu trang"
+
+#: app/document_manager.cpp
+msgid "end"
+msgstr "cuối trang"
+
+#: app/document_manager.cpp
+#, c-format
+msgid "%s Heading level %d"
+msgstr "%s tiêu đề mục cấp %d"
+
+#: app/main_window.cpp
+msgid "Previous section\t["
+msgstr "Phần trước\t["
+
+#: app/main_window.cpp
+msgid "Next section\t]"
+msgstr "Phần tiếp theo\t]"
+
+#: app/main_window.cpp
+msgid "Go to &page...\tCtrl+P"
+msgstr "Đi đến &trang...\tCtrl+P"
+
+#: app/main_window.cpp
+msgid "Previous &page\tShift+P"
+msgstr "Trang &trước\tShift+P"
+
+#: app/main_window.cpp
+msgid "&Next page\tP"
+msgstr "Trang &tiếp theo\tP"
+
+#: app/main_window.cpp
+msgid "Previous &bookmark\tShift+B"
+msgstr "Dấu trang &trước\tShift+B"
+
+#: app/main_window.cpp
+msgid "Next b&ookmark\tB"
+msgstr "Dấu trang &tiếp theo\tB"
+
+#: app/main_window.cpp
+msgid "Previous &note\tShift+N"
+msgstr "Ghi chú &trước\tShift+N"
+
+#: app/main_window.cpp
+msgid "Next &note\tN"
+msgstr "Ghi chú &tiếp theo\tN"
+
+#: app/main_window.cpp
+msgid "Jump to &all...\tCtrl+B"
+msgstr "Nhảy đến &tất cả...\tCtrl+B"
+
+#: app/main_window.cpp
+msgid "Jump to &bookmarks...\tCtrl+Alt+B"
+msgstr "Nhảy đến &dấu trang...\tCtrl+Alt+B"
+
+#: app/main_window.cpp
+msgid "Jump to &notes...\tCtrl+Alt+M"
+msgstr "Nhảy đến &ghi chú...\tCtrl+Alt+M"
+
+#: app/main_window.cpp
+msgid "&View note text\tCtrl+Shift+W"
+msgstr "&Xem nội dung ghi chú\tCtrl+Shift+W"
+
+#: app/main_window.cpp
+msgid "Previous lin&k\tShift+K"
+msgstr "Liên &kết trước\tShift+K"
+
+#: app/main_window.cpp
+msgid "Next lin&k\tK"
+msgstr "Liên &kết tiếp theo\tK"
+
+#: app/main_window.cpp
+msgid "Previous lis&t\tShift+L"
+msgstr "Danh &sách trước\tShift+L"
+
+#: app/main_window.cpp
+msgid "Next lis&t\tL"
+msgstr "Danh &sách tiếp theo\tL"
+
+#: app/main_window.cpp
+msgid "Previous list &item\tShift+I"
+msgstr "&Mục danh sách trước\tShift+I"
+
+#: app/main_window.cpp
+msgid "Next list &item\tI"
+msgstr "&Mục danh sách tiếp theo\tI"
+
+#: app/main_window.cpp
+msgid "&File"
+msgstr "&Tệp"
+
+#: app/main_window.cpp
+msgid "&Open...\tCtrl+O"
+msgstr "&Mở...\tCtrl+O"
+
+#: app/main_window.cpp
+msgid "Close\tCtrl+F4"
+msgstr "Đóng\tCtrl+F4"
+
+#: app/main_window.cpp
+msgid "Close &All\tCtrl+Shift+F4"
+msgstr "Đóng &Tất cả\tCtrl+Shift+F4"
+
+#: app/main_window.cpp
+msgid "&Recent Documents"
+msgstr "Tài liệu &gần đây"
+
+#: app/main_window.cpp app/task_bar_icon.cpp
+msgid "E&xit"
+msgstr "&Thoát"
+
+#: app/main_window.cpp
+msgid "&Find...\tCtrl+F"
+msgstr "&Tìm kiếm...\tCtrl+F"
+
+#: app/main_window.cpp
+msgid "Find Ne&xt\tF3"
+msgstr "Tìm &tiếp theo\tF3"
+
+#: app/main_window.cpp
+msgid "Find P&revious\tShift+F3"
+msgstr "Tìm &trước đó\tShift+F3"
+
+#: app/main_window.cpp
+msgid "Go to &line...\tCtrl+G"
+msgstr "Đi đến &dòng...\tCtrl+G"
+
+#: app/main_window.cpp
+msgid "Go to &percent...\tCtrl+Shift+G"
+msgstr "Đi đến &phần trăm...\tCtrl+Shift+G"
+
+#: app/main_window.cpp
+msgid "Go &Back\tAlt+Left"
+msgstr "Quay &lại\tAlt+Trái"
+
+#: app/main_window.cpp
+msgid "Go &Forward\tAlt+Right"
+msgstr "Tiến &về trước\tAlt+Phải"
+
+#: app/main_window.cpp
+msgid "&Sections"
+msgstr "&Phần"
+
+#: app/main_window.cpp
+msgid "&Headings"
+msgstr "&Tiêu đề mục"
+
+#: app/main_window.cpp
+msgid "&Pages"
+msgstr "&Trang"
+
+#: app/main_window.cpp
+msgid "&Bookmarks"
+msgstr "&Dấu trang"
+
+#: app/main_window.cpp
+msgid "&Links"
+msgstr "&Liên kết"
+
+#: app/main_window.cpp
+msgid "&Lists"
+msgstr "&Danh sách"
+
+#: app/main_window.cpp
+msgid "&Go"
+msgstr "&Điều hướng"
+
+#: app/main_window.cpp
+msgid "&Tools"
+msgstr "&Công cụ"
+
+#: app/main_window.cpp
+msgid "&Word count\tCtrl+W"
+msgstr "Đếm &số từ\tCtrl+W"
+
+#: app/main_window.cpp
+msgid "Document &info\tCtrl+I"
+msgstr "&Thông tin tài liệu\tCtrl+I"
+
+#: app/main_window.cpp
+msgid "Table of contents\tCtrl+T"
+msgstr "Mục &lục\tCtrl+T"
+
+#: app/main_window.cpp
+msgid "&Elements List...\tF7"
+msgstr "Danh sách &thành phần...\tF7"
+
+#: app/main_window.cpp
+msgid "Open &containing folder\tCtrl+Shift+C"
+msgstr "Mở &thư mục chứa tệp\tCtrl+Shift+C"
+
+#: app/main_window.cpp
+msgid "Import/&Export"
+msgstr "Nhập/&Xuất"
+
+#: app/main_window.cpp
+msgid "&Import document data...\tCtrl+Shift+I"
+msgstr "&Nhập dữ liệu tài liệu...\tCtrl+Shift+I"
+
+#: app/main_window.cpp
+msgid "&Export document data...\tCtrl+Shift+E"
+msgstr "&Xuất dữ liệu tài liệu...\tCtrl+Shift+E"
+
+#: app/main_window.cpp
+msgid "Export document to &plain text...\tCtrl+E"
+msgstr "Xuất tài liệu sang văn bản &thuần túy...\tCtrl+E"
+
+#: app/main_window.cpp
+msgid "Toggle bookmark\tCtrl+Shift+B"
+msgstr "Bật/Tắt dấu trang\tCtrl+Shift+B"
+
+#: app/main_window.cpp
+msgid "Bookmark with &note\tCtrl+Shift+N"
+msgstr "Đánh dấu kèm &ghi chú\tCtrl+Shift+N"
+
+#: app/main_window.cpp
+msgid "&Options\tCtrl+,"
+msgstr "&Tùy chọn\tCtrl+,"
+
+#: app/main_window.cpp
+msgid "&Sleep Timer...\tCtrl+Shift+S"
+msgstr "&Hẹn giờ ngủ...\tCtrl+Shift+S"
+
+#: app/main_window.cpp
+msgid "&Help"
+msgstr "&Trợ giúp"
+
+#: app/main_window.cpp
+#, c-format
+msgid "About %s\tCtrl+F1"
+msgstr "Thông tin về %s\tCtrl+F1"
+
+#: app/main_window.cpp
+msgid "View &help in default browser\tF1"
+msgstr "Xem &trợ giúp trên trình duyệt mặc định\tF1"
+
+#: app/main_window.cpp
+#, c-format
+msgid "View Help in %s\tShift+F1"
+msgstr "Xem trợ giúp trong %s\tShift+F1"
+
+#: app/main_window.cpp
+msgid "Check for &Updates\tCtrl+Shift+U"
+msgstr "Kiểm tra &cập nhật\tCtrl+Shift+U"
+
+#: app/main_window.cpp
+msgid "&Donate\tCtrl+D"
+msgstr "&Ủng hộ\tCtrl+D"
+
+#: app/main_window.cpp
+#, c-format
+msgid " | Sleep timer: %02d:%02d"
+msgstr " | Hẹn giờ ngủ: %02d:%02d"
+
+#: app/main_window.cpp
+msgid "Select a document to read"
+msgstr "Chọn một tài liệu để đọc"
+
+#: app/main_window.cpp
+msgid "Export Document"
+msgstr "Xuất tài liệu"
+
+#: app/main_window.cpp
+msgid "Text files (*.txt)|*.txt|All files (*.*)|*.*"
+msgstr "Tệp văn bản (*.txt)|*.txt|Tất cả các tệp (*.*)|*.*"
+
+#: app/main_window.cpp
+msgid "Failed to export document."
+msgstr "Xuất tài liệu thất bại."
+
+#: app/main_window.cpp
+msgid "Export notes and bookmarks"
+msgstr "Xuất ghi chú và dấu trang"
+
+#: app/main_window.cpp
+msgid "Paperback files (*.paperback)|*.paperback"
+msgstr "Tệp Paperback (*.paperback)|*.paperback"
+
+#: app/main_window.cpp
+msgid "Notes and bookmarks exported successfully."
+msgstr "Đã xuất ghi chú và dấu trang thành công."
+
+#: app/main_window.cpp
+msgid "Export Successful"
+msgstr "Xuất thành công"
+
+#: app/main_window.cpp
+msgid "Import notes and bookmarks"
+msgstr "Nhập ghi chú và dấu trang"
+
+#: app/main_window.cpp
+msgid "Notes and bookmarks imported successfully."
+msgstr "Đã nhập ghi chú và dấu trang thành công."
+
+#: app/main_window.cpp
+msgid "Import Successful"
+msgstr "Nhập thành công"
+
+#: app/main_window.cpp
+msgid "No note at the current position."
+msgstr "Không có ghi chú nào tại vị trí hiện tại."
+
+#: app/main_window.cpp
+#, c-format
+msgid "The document contains %d word"
+msgid_plural "The document contains %d words"
+msgstr[0] "Tài liệu này chứa %d từ"
+
+#: app/main_window.cpp
+msgid "Word count"
+msgstr "Số từ"
+
+#: app/main_window.cpp
+msgid "Failed to open containing folder."
+msgstr "Không thể mở thư mục chứa tệp."
+
+#: app/main_window.cpp
+msgid "Failed to launch default browser."
+msgstr "Không thể khởi chạy trình duyệt mặc định."
+
+#: app/main_window.cpp
+msgid "readme.html not found. Please ensure the application was built properly."
+msgstr ""
+"không tìm thấy tệp readme.html. Vui lòng đảm bảo ứng dụng đã được cài đặt đúng cách."
+
+#: app/main_window.cpp
+msgid "Failed to open donation page in browser."
+msgstr "Không thể mở trang ủng hộ trên trình duyệt."
+
+#: app/main_window.cpp
+msgid "Sleep timer canceled."
+msgstr "Đã hủy hẹn giờ ngủ."
+
+#: app/main_window.cpp
+#, c-format
+msgid "Sleep timer set for %d minute."
+msgid_plural "Sleep timer set for %d minutes."
+msgstr[0] "Đã hẹn giờ ngủ sau %d phút."
+
+#: app/main_window.cpp
+msgid "No recent documents."
+msgstr "Không có tài liệu gần đây."
+
+#: app/main_window.cpp
+msgid "(No recent documents)"
+msgstr "(Không có tài liệu gần đây)"
+
+#: app/main_window.cpp
+msgid "Show All...\tCtrl+R"
+msgstr "Hiển thị tất cả...\tCtrl+R"
+
+#: app/main_window.cpp
+msgid "Not found."
+msgstr "Không tìm thấy."
+
+#: app/main_window.cpp
+msgid "No more results. Wrapping search."
+msgstr "Không còn kết quả nào khác. Đang tìm lại từ đầu."
+
+#: app/parser.cpp
+msgid "Password required or incorrect."
+msgstr "Yêu cầu mật khẩu hoặc mật khẩu không chính xác."
+
+#: app/task_bar_icon.cpp
+msgid "&Restore"
+msgstr "&Khôi phục"
