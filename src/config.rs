@@ -96,6 +96,14 @@ impl ConfigManager {
 		if self.initialized { self.config.as_ref() } else { None }
 	}
 
+	fn with_path<T>(&self, path: &str, f: impl FnOnce(&Config) -> T) -> Option<T> {
+		let config = self.config()?;
+		config.set_path(path);
+		let result = f(config);
+		config.set_path("/");
+		Some(result)
+	}
+
 	pub fn get_string(&self, key: &str, default_value: &str) -> String {
 		self.config().map_or_else(|| default_value.to_string(), |c| c.read_string(key, default_value))
 	}
@@ -127,67 +135,36 @@ impl ConfigManager {
 	}
 
 	pub fn get_app_string(&self, key: &str, default_value: &str) -> String {
-		let Some(config) = self.config() else { return default_value.to_string() };
-		config.set_path("/app");
-		let result = config.read_string(key, default_value);
-		config.set_path("/");
-		result
+		self.with_path("/app", |config| config.read_string(key, default_value))
+			.unwrap_or_else(|| default_value.to_string())
 	}
 
 	pub fn get_app_bool(&self, key: &str, default_value: bool) -> bool {
-		let Some(config) = self.config() else { return default_value };
-		config.set_path("/app");
-		let result = config.read_bool(key, default_value);
-		config.set_path("/");
-		result
+		self.with_path("/app", |config| config.read_bool(key, default_value)).unwrap_or(default_value)
 	}
 
 	pub fn get_app_int(&self, key: &str, default_value: i32) -> i32 {
-		let Some(config) = self.config() else { return default_value };
-		config.set_path("/app");
-		let result = config.read_long(key, i64::from(default_value)) as i32;
-		config.set_path("/");
-		result
+		self.with_path("/app", |config| config.read_long(key, i64::from(default_value)) as i32).unwrap_or(default_value)
 	}
 
 	fn get_app_long(&self, key: &str, default_value: i64) -> i64 {
-		let Some(config) = self.config() else { return default_value };
-		config.set_path("/app");
-		let result = config.read_long(key, default_value);
-		config.set_path("/");
-		result
+		self.with_path("/app", |config| config.read_long(key, default_value)).unwrap_or(default_value)
 	}
 
 	pub fn set_app_string(&self, key: &str, value: &str) {
-		if let Some(config) = self.config() {
-			config.set_path("/app");
-			config.write_string(key, value);
-			config.set_path("/");
-		}
+		let _ = self.with_path("/app", |config| config.write_string(key, value));
 	}
 
 	pub fn set_app_bool(&self, key: &str, value: bool) {
-		if let Some(config) = self.config() {
-			config.set_path("/app");
-			config.write_bool(key, value);
-			config.set_path("/");
-		}
+		let _ = self.with_path("/app", |config| config.write_bool(key, value));
 	}
 
 	pub fn set_app_int(&self, key: &str, value: i32) {
-		if let Some(config) = self.config() {
-			config.set_path("/app");
-			config.write_long(key, i64::from(value));
-			config.set_path("/");
-		}
+		let _ = self.with_path("/app", |config| config.write_long(key, i64::from(value)));
 	}
 
 	fn set_app_long(&self, key: &str, value: i64) {
-		if let Some(config) = self.config() {
-			config.set_path("/app");
-			config.write_long(key, value);
-			config.set_path("/");
-		}
+		let _ = self.with_path("/app", |config| config.write_long(key, value));
 	}
 
 	pub fn get_document_string(&self, path: &str, key: &str, default_value: &str) -> String {
@@ -822,11 +799,7 @@ impl ConfigManager {
 	}
 
 	fn has_app_entry(&self, key: &str) -> bool {
-		let Some(config) = self.config() else { return false };
-		config.set_path("/app");
-		let result = config.has_entry(key);
-		config.set_path("/");
-		result
+		self.with_path("/app", |config| config.has_entry(key)).unwrap_or(false)
 	}
 
 	fn load_defaults(&self) {
