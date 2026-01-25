@@ -2077,16 +2077,22 @@ fn handle_bookmark_navigation(
 	tab.text_ctrl.set_focus();
 	tab.text_ctrl.set_insertion_point(result.offset);
 	tab.text_ctrl.show_position(result.offset);
-	let mut context_text = result.marker_text;
-	if context_text.is_empty() {
-		context_text = tab.session.get_line_text(result.offset);
-	}
+	let note_text = result.marker_text;
+	let line_text = tab.session.get_line_text(result.offset);
+	let content_text = if note_text.is_empty() {
+		line_text
+	} else {
+		format!("{}, {}", note_text, line_text)
+	};
 	let wrap_prefix = if result.wrapped {
 		if next { t("Wrapping to start. ") } else { t("Wrapping to end. ") }
 	} else {
 		String::new()
 	};
-	let message = format!("{wrap_prefix}{context_text}");
+	let bookmark_text = t("%s - Bookmark %d")
+		.replacen("%s", &content_text, 1)
+		.replacen("%d", &(result.marker_index + 1).to_string(), 1);
+	let message = format!("{wrap_prefix}{bookmark_text}");
 	live_region::announce(&live_region_label, &message);
 	let (history, history_index) = tab.session.get_history();
 	let cfg = config.lock().unwrap();
