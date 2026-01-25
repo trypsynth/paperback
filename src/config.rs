@@ -229,12 +229,6 @@ impl ConfigManager {
 		result
 	}
 
-	pub fn clear_recent_documents(&self) {
-		if let Some(config) = self.config() {
-			config.delete_group("recent_documents");
-		}
-	}
-
 	pub fn rebuild_recent_documents(&self) {
 		let Some(config) = self.config() else { return };
 		config.set_path("/");

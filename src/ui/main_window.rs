@@ -23,7 +23,7 @@ use super::{
 use crate::{
 	config::ConfigManager,
 	live_region,
-	parser::parser_supports_extension,
+	parser::{build_file_filter_string, parser_supports_extension},
 	reader_core,
 	translation_manager::TranslationManager,
 	ui_types::BookmarkFilterType,
@@ -277,14 +277,14 @@ impl MainWindow {
 			.append_item(menu_ids::OPEN, &open_label, &open_help)
 			.append_item(menu_ids::CLOSE, &close_label, &close_help)
 			.append_item(menu_ids::CLOSE_ALL, &close_all_label, &close_all_help)
-			.append_separator()
-			.append_item(menu_ids::EXIT, &exit_label, &exit_help)
 			.build();
 		let recent_menu = Menu::builder().build();
 		Self::populate_recent_documents_menu(&recent_menu, config);
 		let recent_label = t("&Recent Documents");
 		let recent_help = t("Open a recent document");
 		let _ = file_menu.append_submenu(recent_menu, &recent_label, &recent_help);
+		file_menu.append_separator();
+		let _ = file_menu.append(menu_ids::EXIT, &exit_label, &exit_help, ItemKind::Normal);
 		file_menu
 	}
 
@@ -1304,23 +1304,11 @@ impl MainWindow {
 	}
 
 	fn handle_open(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) {
-		let wildcard = "All supported files|*.epub;*.pdf;*.txt;*.md;*.html;*.htm;*.docx;*.odt;*.fb2;*.chm;*.pptx;*.odp|\
-                        EPUB files (*.epub)|*.epub|\
-                        PDF files (*.pdf)|*.pdf|\
-                        Text files (*.txt)|*.txt|\
-                        Markdown files (*.md)|*.md|\
-                        HTML files (*.html;*.htm)|*.html;*.htm|\
-                        Word documents (*.docx)|*.docx|\
-                        OpenDocument Text (*.odt)|*.odt|\
-                        FictionBook2 (*.fb2)|*.fb2|\
-                        CHM files (*.chm)|*.chm|\
-                        PowerPoint (*.pptx)|*.pptx|\
-                        OpenDocument Presentation (*.odp)|*.odp|\
-                        All files (*.*)|*.*";
+		let wildcard = build_file_filter_string();
 		let dialog_title = t("Open Document");
 		let dialog = FileDialog::builder(frame)
 			.with_message(&dialog_title)
-			.with_wildcard(wildcard)
+			.with_wildcard(&wildcard)
 			.with_style(FileDialogStyle::Open | FileDialogStyle::FileMustExist)
 			.build();
 		if dialog.show_modal() == wxdragon::id::ID_OK {
