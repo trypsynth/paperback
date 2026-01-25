@@ -37,6 +37,7 @@ jobs:
           mingw-w64-ucrt-x86_64-gettext-tools
     - name: Build
       run: |
+        $env:PATH = "$env:PATH;C:\msys64\ucrt64\bin;C:\msys64\usr\bin"
         cargo release
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
