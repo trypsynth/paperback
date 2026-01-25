@@ -1,6 +1,6 @@
 use std::{
-	env,
-	path::PathBuf,
+	env, fs,
+	path::{Path, PathBuf},
 	sync::{Mutex, OnceLock},
 };
 
@@ -30,31 +30,20 @@ impl TranslationManager {
 			return true;
 		}
 		let translations = Translations::new();
+		Translations::set_global(translations);
 		if let Some(langs_dir) = langs_directory() {
 			add_catalog_lookup_path_prefix(langs_dir.to_string_lossy().as_ref());
+			self.scan_available_languages(&langs_dir);
+		} else {
+			self.ensure_english_available();
 		}
 		let system_lang = system_language();
-		translations.set_language_str(&system_lang);
-		let _loaded = translations.add_catalog("paperback");
-		translations.add_std_catalog();
-		Translations::set_global(translations);
-		self.available_languages = Translations::get()
-			.map(|translations| translations.get_available_translations("paperback"))
-			.unwrap_or_default()
-			.into_iter()
-			.filter(|code| !code.is_empty())
-			.map(|code| LanguageInfo { code: code.clone(), name: code.clone(), native_name: code })
-			.collect();
-		if self.available_languages.iter().all(|lang| lang.code != "en") {
-			self.available_languages.push(LanguageInfo {
-				code: "en".to_string(),
-				name: "English".to_string(),
-				native_name: "English".to_string(),
-			});
-		}
 		if self.is_language_available(&system_lang) {
 			self.current_language = system_lang;
+		} else {
+			self.current_language = "en".to_string();
 		}
+		self.apply_language_settings(&self.current_language.clone());
 		self.initialized = true;
 		true
 	}
@@ -66,11 +55,57 @@ impl TranslationManager {
 		if !self.is_language_available(language_code) {
 			return false;
 		}
-		if let Some(translations) = Translations::get() {
-			translations.set_language_str(language_code);
-		}
 		self.current_language = language_code.to_string();
-		true
+		self.apply_language_settings(language_code)
+	}
+
+	fn apply_language_settings(&self, language_code: &str) -> bool {
+		let translations = Translations::new();
+		Translations::set_global(translations);
+		if let Some(langs_dir) = langs_directory() {
+			add_catalog_lookup_path_prefix(langs_dir.to_string_lossy().as_ref());
+		}
+		if let Some(t) = Translations::get() {
+			t.set_language_str(language_code);
+			t.add_std_catalog();
+			if language_code != "en" {
+				t.add_catalog("paperback");
+			}
+			true
+		} else {
+			false
+		}
+	}
+
+	fn scan_available_languages(&mut self, langs_dir: &Path) {
+		self.available_languages.clear();
+		self.ensure_english_available();
+		if let Ok(entries) = fs::read_dir(langs_dir) {
+			for entry in entries.flatten() {
+				if let Ok(file_type) = entry.file_type() {
+					if file_type.is_dir() {
+						let path = entry.path();
+						let dir_name = path.file_name().unwrap_or_default().to_string_lossy().to_string();
+						let mo_path = path.join("LC_MESSAGES").join("paperback.mo");
+						if mo_path.exists() {
+							let native_name = get_native_name(&dir_name);
+							let name = native_name.clone();
+							self.available_languages.push(LanguageInfo { code: dir_name, name, native_name });
+						}
+					}
+				}
+			}
+		}
+	}
+
+	fn ensure_english_available(&mut self) {
+		if !self.available_languages.iter().any(|l| l.code == "en") {
+			self.available_languages.push(LanguageInfo {
+				code: "en".to_string(),
+				name: "English".to_string(),
+				native_name: "English".to_string(),
+			});
+		}
 	}
 
 	pub fn current_language(&self) -> String {
@@ -94,15 +129,21 @@ impl TranslationManager {
 	}
 
 	fn new() -> Self {
-		Self {
-			current_language: "en".to_string(),
-			available_languages: vec![LanguageInfo {
-				code: "en".to_string(),
-				name: "English".to_string(),
-				native_name: "English".to_string(),
-			}],
-			initialized: false,
-		}
+		Self { current_language: "en".to_string(), available_languages: Vec::new(), initialized: false }
+	}
+}
+
+fn get_native_name(code: &str) -> String {
+	match code {
+		"bs" => "Bosanski".to_string(),
+		"de" => "Deutsch".to_string(),
+		"es" => "Español".to_string(),
+		"fr" => "Français".to_string(),
+		"ru" => "Русский".to_string(),
+		"sr" => "Српски".to_string(),
+		"vi" => "Tiếng Việt".to_string(),
+		"en" => "English".to_string(),
+		_ => code.to_string(),
 	}
 }
 
