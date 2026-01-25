@@ -184,155 +184,108 @@ impl DocumentSession {
 		record_history_position(&mut self.history, &mut self.history_index, position, MAX_HISTORY_LEN);
 	}
 
-	#[must_use]
-	pub fn navigate_section(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
-		if !self.parser_flags.contains(ParserFlags::SUPPORTS_SECTIONS) {
-			return NavigationResult::not_supported();
-		}
-		let req = ffi::NavRequest {
-			position,
-			wrap,
-			direction: if next { NavDirection::Next } else { NavDirection::Previous },
-			target: NavTarget::Section,
-			level_filter: 0,
-		};
-		let result = reader_navigate(&self.handle, &req);
-		let mut nav_result = NavigationResult::from_nav_result(&result);
+	fn nav_direction(next: bool) -> NavDirection {
+		if next { NavDirection::Next } else { NavDirection::Previous }
+	}
+
+	fn nav_request(
+		&self,
+		position: i64,
+		wrap: bool,
+		next: bool,
+		target: NavTarget,
+		level_filter: i32,
+	) -> ffi::NavRequest {
+		ffi::NavRequest { position, wrap, direction: Self::nav_direction(next), target, level_filter }
+	}
+
+	fn has_marker(&self, marker_type: MarkerType) -> bool {
+		self.handle.count_markers_by_type(marker_type) > 0
+	}
+
+	fn fill_marker_text_if_empty(&self, nav_result: &mut NavigationResult) {
 		if nav_result.found && nav_result.marker_text.is_empty() {
 			nav_result.marker_text = self.get_line_text(nav_result.offset);
 		}
+	}
+
+	fn navigate_with_post(
+		&self,
+		position: i64,
+		wrap: bool,
+		next: bool,
+		target: NavTarget,
+		level_filter: i32,
+		is_supported: bool,
+		post: impl FnOnce(&Self, &mut NavigationResult),
+	) -> NavigationResult {
+		if !is_supported {
+			return NavigationResult::not_supported();
+		}
+		let req = self.nav_request(position, wrap, next, target, level_filter);
+		let result = reader_navigate(&self.handle, &req);
+		let mut nav_result = NavigationResult::from_nav_result(&result);
+		post(self, &mut nav_result);
 		nav_result
+	}
+
+	#[must_use]
+	pub fn navigate_section(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
+		let is_supported = self.parser_flags.contains(ParserFlags::SUPPORTS_SECTIONS);
+		self.navigate_with_post(position, wrap, next, NavTarget::Section, 0, is_supported, |s, nav_result| {
+			s.fill_marker_text_if_empty(nav_result);
+		})
 	}
 
 	#[must_use]
 	pub fn navigate_heading(&self, position: i64, wrap: bool, next: bool, level: i32) -> NavigationResult {
-		if !self.has_headings(if level > 0 { Some(level) } else { None }) {
-			return NavigationResult::not_supported();
-		}
-		let req = ffi::NavRequest {
-			position,
-			wrap,
-			direction: if next { NavDirection::Next } else { NavDirection::Previous },
-			target: NavTarget::Heading,
-			level_filter: level,
-		};
-		let result = reader_navigate(&self.handle, &req);
-		NavigationResult::from_nav_result(&result)
+		let is_supported = self.has_headings(if level > 0 { Some(level) } else { None });
+		self.navigate_with_post(position, wrap, next, NavTarget::Heading, level, is_supported, |_s, _nav_result| {})
 	}
 
 	#[must_use]
 	pub fn navigate_page(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
-		let count = self.handle.count_markers_by_type(MarkerType::PageBreak);
-		if count == 0 {
-			return NavigationResult::not_supported();
-		}
-		let req = ffi::NavRequest {
-			position,
-			wrap,
-			direction: if next { NavDirection::Next } else { NavDirection::Previous },
-			target: NavTarget::Page,
-			level_filter: 0,
-		};
-		let result = reader_navigate(&self.handle, &req);
-		let mut nav_result = NavigationResult::from_nav_result(&result);
-		if nav_result.found {
-			let offset = usize::try_from(nav_result.offset).unwrap_or(0);
-			nav_result.marker_index = self.handle.page_index(offset).unwrap_or(-1);
-			if nav_result.marker_text.is_empty() {
-				nav_result.marker_text = self.get_line_text(nav_result.offset);
+		let is_supported = self.has_marker(MarkerType::PageBreak);
+		self.navigate_with_post(position, wrap, next, NavTarget::Page, 0, is_supported, |s, nav_result| {
+			if nav_result.found {
+				let offset = usize::try_from(nav_result.offset).unwrap_or(0);
+				nav_result.marker_index = s.handle.page_index(offset).unwrap_or(-1);
 			}
-		}
-		nav_result
+			s.fill_marker_text_if_empty(nav_result);
+		})
 	}
 
 	#[must_use]
 	pub fn navigate_link(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
-		let count = self.handle.count_markers_by_type(MarkerType::Link);
-		if count == 0 {
-			return NavigationResult::not_supported();
-		}
-		let req = ffi::NavRequest {
-			position,
-			wrap,
-			direction: if next { NavDirection::Next } else { NavDirection::Previous },
-			target: NavTarget::Link,
-			level_filter: 0,
-		};
-		let result = reader_navigate(&self.handle, &req);
-		let mut nav_result = NavigationResult::from_nav_result(&result);
-		if nav_result.found && nav_result.marker_text.is_empty() {
-			nav_result.marker_text = self.get_line_text(nav_result.offset);
-		}
-		nav_result
+		let is_supported = self.has_marker(MarkerType::Link);
+		self.navigate_with_post(position, wrap, next, NavTarget::Link, 0, is_supported, |s, nav_result| {
+			s.fill_marker_text_if_empty(nav_result);
+		})
 	}
 
 	#[must_use]
 	pub fn navigate_list(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
-		if !self.parser_flags.contains(ParserFlags::SUPPORTS_LISTS) {
-			return NavigationResult::not_supported();
-		}
-		let count = self.handle.count_markers_by_type(MarkerType::List);
-		if count == 0 {
-			return NavigationResult::not_supported();
-		}
-		let req = ffi::NavRequest {
-			position,
-			wrap,
-			direction: if next { NavDirection::Next } else { NavDirection::Previous },
-			target: NavTarget::List,
-			level_filter: 0,
-		};
-		let result = reader_navigate(&self.handle, &req);
-		let mut nav_result = NavigationResult::from_nav_result(&result);
-		if nav_result.found && nav_result.marker_text.is_empty() {
-			nav_result.marker_text = self.get_line_text(nav_result.offset);
-		}
-		nav_result
+		let is_supported = self.parser_flags.contains(ParserFlags::SUPPORTS_LISTS) && self.has_marker(MarkerType::List);
+		self.navigate_with_post(position, wrap, next, NavTarget::List, 0, is_supported, |s, nav_result| {
+			s.fill_marker_text_if_empty(nav_result);
+		})
 	}
 
 	#[must_use]
 	pub fn navigate_list_item(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
-		if !self.parser_flags.contains(ParserFlags::SUPPORTS_LISTS) {
-			return NavigationResult::not_supported();
-		}
-		let count = self.handle.count_markers_by_type(MarkerType::ListItem);
-		if count == 0 {
-			return NavigationResult::not_supported();
-		}
-		let req = ffi::NavRequest {
-			position,
-			wrap,
-			direction: if next { NavDirection::Next } else { NavDirection::Previous },
-			target: NavTarget::ListItem,
-			level_filter: 0,
-		};
-		let result = reader_navigate(&self.handle, &req);
-		let mut nav_result = NavigationResult::from_nav_result(&result);
-		if nav_result.found && nav_result.marker_text.is_empty() {
-			nav_result.marker_text = self.get_line_text(nav_result.offset);
-		}
-		nav_result
+		let is_supported =
+			self.parser_flags.contains(ParserFlags::SUPPORTS_LISTS) && self.has_marker(MarkerType::ListItem);
+		self.navigate_with_post(position, wrap, next, NavTarget::ListItem, 0, is_supported, |s, nav_result| {
+			s.fill_marker_text_if_empty(nav_result);
+		})
 	}
 
 	#[must_use]
 	pub fn navigate_table(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
-		let count = self.handle.count_markers_by_type(MarkerType::Table);
-		if count == 0 {
-			return NavigationResult::not_supported();
-		}
-		let req = ffi::NavRequest {
-			position,
-			wrap,
-			direction: if next { NavDirection::Next } else { NavDirection::Previous },
-			target: NavTarget::Table,
-			level_filter: 0,
-		};
-		let result = reader_navigate(&self.handle, &req);
-		let mut nav_result = NavigationResult::from_nav_result(&result);
-		if nav_result.found && nav_result.marker_text.is_empty() {
-			nav_result.marker_text = self.get_line_text(nav_result.offset);
-		}
-		nav_result
+		let is_supported = self.has_marker(MarkerType::Table);
+		self.navigate_with_post(position, wrap, next, NavTarget::Table, 0, is_supported, |s, nav_result| {
+			s.fill_marker_text_if_empty(nav_result);
+		})
 	}
 
 	#[must_use]

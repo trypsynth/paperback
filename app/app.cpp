@@ -176,25 +176,3 @@ void app::open_file(const wxString& filename) {
 	frame->Raise();
 	frame->RequestUserAttention();
 }
-
-void app::check_for_updates(bool silent) {
-	const bool installer_build = is_installer_distribution();
-	const std::string current_version = std::string(APP_VERSION.ToUTF8());
-	std::thread([silent, installer_build, current_version]() {
-		update_result_payload payload;
-		try {
-			UpdateResult result = ::check_for_updates(current_version, installer_build);
-			payload = convert_result(result);
-		} catch (const std::exception& e) {
-			payload.status = UpdateStatus::InternalError;
-			payload.error_message = std::string(e.what());
-		}
-		auto* wx_app = wxTheApp;
-		if (wx_app == nullptr || !wx_app->IsMainLoopRunning()) return;
-		wx_app->CallAfter([silent, payload = std::move(payload)]() {
-			present_update_result(payload, silent);
-		});
-	}).detach();
-}
-
-wxIMPLEMENT_APP(app);
