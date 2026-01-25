@@ -34,7 +34,6 @@ pub trait Parser: Send + Sync {
 	fn parse(&self, context: &ParserContext) -> Result<Document>;
 }
 
-#[derive(Clone)]
 pub struct ParserInfo {
 	pub name: String,
 	pub extensions: Vec<String>,
@@ -57,11 +56,6 @@ impl ParserRegistry {
 			self.extension_map.insert(ext.to_ascii_lowercase(), name.clone());
 		}
 		self.parsers.insert(name, Box::new(parser));
-	}
-
-	#[must_use]
-	pub fn get_parser(&self, name: &str) -> Option<&dyn Parser> {
-		self.parsers.get(name).map(|p| &**p)
 	}
 
 	#[must_use]
@@ -126,16 +120,6 @@ pub fn parse_document(context: &ParserContext) -> Result<Document> {
 	let mut doc = parser.parse(context)?;
 	doc.compute_stats();
 	Ok(doc)
-}
-
-#[must_use]
-pub fn get_all_parsers() -> Vec<ParserInfo> {
-	ParserRegistry::global().all_parsers()
-}
-
-#[must_use]
-pub fn get_parser_name_for_extension(extension: &str) -> Option<String> {
-	ParserRegistry::global().get_parser_for_extension(extension).map(|p| p.name().to_string())
 }
 
 #[must_use]
@@ -207,25 +191,4 @@ pub fn build_file_filter_string() -> String {
 	}
 	parts.push_str("All Files (*.*)|*.*");
 	parts
-}
-
-#[cfg(test)]
-mod tests {
-	use super::*;
-
-	#[test]
-	fn registry_has_parsers() {
-		let parsers = get_all_parsers();
-		assert!(!parsers.is_empty(), "Registry should have parsers");
-	}
-
-	#[test]
-	fn test_extension_lookup() {
-		assert!(get_parser_name_for_extension("epub").is_some());
-		assert!(get_parser_name_for_extension("html").is_some());
-		assert!(get_parser_name_for_extension("md").is_some());
-		assert!(get_parser_name_for_extension("txt").is_some());
-		assert!(get_parser_name_for_extension("zizzy").is_none());
-		assert!(get_parser_name_for_extension("").is_none());
-	}
 }

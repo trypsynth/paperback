@@ -2,7 +2,6 @@
 pub enum NavDirection {
 	Next,
 	Previous,
-	None,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -14,7 +13,6 @@ pub enum NavTarget {
 	ListItem,
 	Link,
 	Table,
-	Unknown,
 }
 
 #[derive(Debug, Clone)]

@@ -116,14 +116,6 @@ impl TranslationManager {
 		self.available_languages.clone()
 	}
 
-	pub fn language_display_name(&self, language_code: &str) -> String {
-		self.available_languages
-			.iter()
-			.find(|lang| lang.code == language_code)
-			.map(|lang| lang.native_name.clone())
-			.unwrap_or_else(|| language_code.to_string())
-	}
-
 	pub fn is_language_available(&self, language_code: &str) -> bool {
 		self.available_languages.iter().any(|lang| lang.code == language_code)
 	}

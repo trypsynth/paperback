@@ -273,19 +273,6 @@ pub fn bookmark_note_at_position(manager: &RustConfigManager, path: &str, positi
 		.unwrap_or_default()
 }
 
-pub fn bookmark_info(manager: &RustConfigManager, path: &str, start: i64, end: i64) -> ffi::BookmarkInfo {
-	let match_entry = manager.get_bookmarks(path).into_iter().find(|bm| bm.start == start && bm.end == end);
-	if let Some(bm) = match_entry {
-		ffi::BookmarkInfo { found: true, note: bm.note }
-	} else {
-		ffi::BookmarkInfo { found: false, note: String::new() }
-	}
-}
-
-pub fn bookmark_count(manager: &RustConfigManager, path: &str) -> usize {
-	manager.get_bookmarks(path).len()
-}
-
 pub fn get_filtered_bookmarks(
 	manager: &RustConfigManager,
 	path: &str,

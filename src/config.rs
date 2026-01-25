@@ -434,15 +434,6 @@ impl ConfigManager {
 		}
 	}
 
-	pub fn remove_navigation_history(&self, path: &str) {
-		let Some(config) = self.config() else { return };
-		let section = get_document_section(path);
-		config.set_path(&format!("/{section}"));
-		config.delete_entry("navigation_history", false);
-		config.delete_entry("navigation_history_index", false);
-		config.set_path("/");
-	}
-
 	pub fn get_all_documents(&self) -> Vec<String> {
 		let Some(config) = self.config() else { return Vec::new() };
 		config.set_path("/");
@@ -526,34 +517,6 @@ impl ConfigManager {
 		}
 		results.sort_by(|a, b| a.start.cmp(&b.start));
 		results
-	}
-
-	pub fn clear_bookmarks(&self, path: &str) {
-		let Some(config) = self.config() else { return };
-		let section = get_document_section(path);
-		config.set_path(&format!("/{section}"));
-		config.delete_entry("bookmarks", false);
-		config.set_path("/");
-	}
-
-	pub fn get_next_bookmark(&self, path: &str, current_position: i64) -> Bookmark {
-		for bm in self.get_bookmarks(path) {
-			if bm.start > current_position {
-				return bm;
-			}
-		}
-		Bookmark { start: -1, end: -1, note: String::new() }
-	}
-
-	pub fn get_previous_bookmark(&self, path: &str, current_position: i64) -> Bookmark {
-		let mut bookmarks = self.get_bookmarks(path);
-		bookmarks.reverse();
-		for bm in bookmarks {
-			if bm.start < current_position {
-				return bm;
-			}
-		}
-		Bookmark { start: -1, end: -1, note: String::new() }
 	}
 
 	pub fn set_document_format(&self, path: &str, format: &str) {

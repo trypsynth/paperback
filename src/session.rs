@@ -12,7 +12,7 @@ use crate::{
 	document::{self, DocumentHandle, MarkerType, ParserContext, ParserFlags},
 	parser,
 	reader_core::{
-		bookmark_navigate, get_filtered_bookmarks, history_go_next, history_go_previous, reader_navigate,
+		bookmark_navigate, history_go_next, history_go_previous, reader_navigate,
 		record_history_position, resolve_link,
 	},
 	ui_types::{self as ffi, NavDirection, NavTarget},
@@ -136,10 +136,6 @@ impl DocumentSession {
 		&self.handle
 	}
 
-	pub const fn handle_mut(&mut self) -> &mut DocumentHandle {
-		&mut self.handle
-	}
-
 	#[must_use]
 	pub fn file_path(&self) -> &str {
 		&self.file_path
@@ -163,11 +159,6 @@ impl DocumentSession {
 	#[must_use]
 	pub const fn stats(&self) -> &crate::document::DocumentStats {
 		&self.handle.document().stats
-	}
-
-	#[must_use]
-	pub const fn parser_flags(&self) -> ParserFlags {
-		self.parser_flags
 	}
 
 	#[must_use]
@@ -321,43 +312,6 @@ impl DocumentSession {
 			}
 		} else {
 			NavigationResult::not_found()
-		}
-	}
-
-	#[must_use]
-	pub fn navigate_bookmark_display(
-		&self,
-		config: &ConfigManager,
-		position: i64,
-		wrap: bool,
-		next: bool,
-		notes_only: bool,
-	) -> ffi::BookmarkNavDisplay {
-		let result = bookmark_navigate(config, &self.file_path, position, wrap, next, notes_only);
-		if !result.found {
-			return ffi::BookmarkNavDisplay {
-				found: false,
-				wrapped: false,
-				start: -1,
-				end: -1,
-				note: String::new(),
-				snippet: String::new(),
-				index: -1,
-			};
-		}
-		let snippet = if result.start == result.end {
-			self.get_line_text(result.start)
-		} else {
-			self.get_text_range(result.start, result.end)
-		};
-		ffi::BookmarkNavDisplay {
-			found: true,
-			wrapped: result.wrapped,
-			start: result.start,
-			end: result.end,
-			note: result.note,
-			snippet,
-			index: result.index,
 		}
 	}
 
@@ -591,37 +545,6 @@ impl DocumentSession {
 		file.write_all(content.as_bytes())?;
 		file.flush()?;
 		Ok(())
-	}
-
-	#[must_use]
-	pub fn get_filtered_bookmark_display_items(
-		&self,
-		config: &ConfigManager,
-		path: &str,
-		current_pos: i64,
-		filter: ffi::BookmarkFilterType,
-	) -> ffi::FilteredBookmarkDisplay {
-		let filtered = get_filtered_bookmarks(config, path, current_pos, filter);
-		let items = filtered
-			.items
-			.into_iter()
-			.map(|item| {
-				let snippet = if item.is_whole_line {
-					self.get_line_text(item.start)
-				} else {
-					self.get_text_range(item.start, item.end)
-				};
-				ffi::BookmarkDisplayEntry {
-					start: item.start,
-					end: item.end,
-					note: item.note,
-					snippet,
-					is_whole_line: item.is_whole_line,
-					index: item.index,
-				}
-			})
-			.collect();
-		ffi::FilteredBookmarkDisplay { items, closest_index: filtered.closest_index }
 	}
 
 	#[must_use]
