@@ -61,10 +61,8 @@ pub struct OptionsDialogResult {
 	pub language: String,
 }
 
-#[derive(Clone, Debug)]
 pub struct BookmarkDialogResult {
 	pub start: i64,
-	pub end: i64,
 }
 
 pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<OptionsDialogResult> {
@@ -420,8 +418,7 @@ pub fn show_bookmark_dialog(
 		return None;
 	}
 	let start = selected_start.get();
-	let end = selected_end.get();
-	if start >= 0 { Some(BookmarkDialogResult { start, end }) } else { None }
+	if start >= 0 { Some(BookmarkDialogResult { start }) } else { None }
 }
 
 pub fn show_note_entry_dialog(

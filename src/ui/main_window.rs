@@ -1314,10 +1314,6 @@ impl MainWindow {
 		&self.doc_manager
 	}
 
-	pub fn live_region_label(&self) -> StaticText {
-		self.live_region_label
-	}
-
 	fn ensure_parser_ready(&self, path: &Path) -> bool {
 		ensure_parser_ready_for_path(&self.frame, path, &self._config)
 	}
