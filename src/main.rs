@@ -1,19 +1,19 @@
 #![windows_subsystem = "windows"]
 #![warn(clippy::all, clippy::nursery, clippy::pedantic)]
 
-pub mod config;
-pub mod document;
+mod config;
+mod document;
 mod html_to_text;
-pub mod live_region;
-pub mod parser;
-pub mod reader_core;
-pub mod session;
-pub mod translation_manager;
+mod live_region;
+mod parser;
+mod reader_core;
+mod session;
+mod translation_manager;
 mod ui;
-pub mod ui_types;
-pub mod update;
+mod ui_types;
+mod update;
 mod utils;
-pub mod version;
+mod version;
 mod xml_to_text;
 
 use ui::PaperbackApp;

@@ -111,9 +111,9 @@ pub struct MainWindow {
 	frame: Frame,
 	doc_manager: Rc<Mutex<DocumentManager>>,
 	_config: Rc<Mutex<ConfigManager>>,
-	tray_state: Rc<Mutex<Option<tray::TrayState>>>,
-	live_region_label: StaticText,
-	find_dialog: Rc<Mutex<Option<FindDialogState>>>,
+	_tray_state: Rc<Mutex<Option<tray::TrayState>>>,
+	_live_region_label: StaticText,
+	_find_dialog: Rc<Mutex<Option<FindDialogState>>>,
 }
 
 impl MainWindow {
@@ -207,7 +207,14 @@ impl MainWindow {
 			});
 		}
 		Self::schedule_restore_documents(frame, Rc::clone(&doc_manager), Rc::clone(&config));
-		Self { frame, doc_manager, _config: config, tray_state, live_region_label, find_dialog }
+		Self {
+			frame,
+			doc_manager,
+			_config: config,
+			_tray_state: tray_state,
+			_live_region_label: live_region_label,
+			_find_dialog: find_dialog,
+		}
 	}
 
 	pub fn show(&self) {
@@ -1473,7 +1480,6 @@ impl MainWindow {
 			dm_ref.restore_focus();
 		});
 	}
-
 }
 
 fn ensure_parser_ready_for_path(frame: &Frame, path: &Path, config: &Rc<Mutex<ConfigManager>>) -> bool {

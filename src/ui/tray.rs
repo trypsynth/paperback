@@ -122,7 +122,11 @@ fn create_tray_state(
 	Some(TrayState { _icon: icon, _menu: menu })
 }
 
-fn restore_from_tray(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>, tray_state: &Rc<Mutex<Option<TrayState>>>) {
+fn restore_from_tray(
+	frame: &Frame,
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	tray_state: &Rc<Mutex<Option<TrayState>>>,
+) {
 	frame.iconize(false);
 	frame.show(true);
 	frame.raise();
@@ -133,4 +137,3 @@ fn restore_from_tray(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>, tr
 		state._icon.remove_icon();
 	}
 }
-
