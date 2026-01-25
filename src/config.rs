@@ -60,7 +60,13 @@ impl ConfigManager {
 	#[must_use]
 	pub fn initialize(&mut self) -> bool {
 		let config_path = get_config_path();
-		let config = Config::new("Paperback", Some("Paperback"), Some(&config_path), None, ConfigStyle::USE_LOCAL_FILE);
+		let config = Config::new(
+			"Paperback",
+			Some("Paperback"),
+			Some(&config_path),
+			None,
+			ConfigStyle::USE_LOCAL_FILE | ConfigStyle::USE_NO_ESCAPE_CHARACTERS,
+		);
 		self.config = Some(config);
 		self.initialized = true;
 		self.load_defaults();
