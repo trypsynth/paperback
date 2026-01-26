@@ -107,7 +107,6 @@ impl TranslationManager {
 					let path = entry.path();
 					if path.is_dir() {
 						let dirname = path.file_name().and_then(|n| n.to_str()).unwrap_or_default().to_string();
-
 						let catalog_path = path.join("LC_MESSAGES").join("paperback.mo");
 						if catalog_path.exists() {
 							let mut native_name = dirname.clone();
