@@ -181,12 +181,14 @@ impl MainWindow {
 			let dm_for_close = Rc::clone(&doc_manager);
 			let config_for_close = Rc::clone(&config);
 			frame.on_close(move |_event| {
-				if let Some(tab) = dm_for_close.lock().unwrap().active_tab() {
+				let dm = dm_for_close.lock().unwrap();
+				if let Some(tab) = dm.active_tab() {
 					let path = tab.file_path.to_string_lossy();
 					let cfg = config_for_close.lock().unwrap();
 					cfg.set_app_string("active_document", &path);
 					cfg.flush();
 				}
+				dm.save_all_positions();
 			});
 		}
 		Self::schedule_restore_documents(frame, Rc::clone(&doc_manager), Rc::clone(&config));
@@ -737,6 +739,7 @@ impl MainWindow {
 					dm.notebook().set_focus();
 				}
 				menu_ids::EXIT => {
+					dm.lock().unwrap().save_all_positions();
 					process::exit(0);
 				}
 				menu_ids::FIND => {
@@ -2079,19 +2082,17 @@ fn handle_bookmark_navigation(
 	tab.text_ctrl.show_position(result.offset);
 	let note_text = result.marker_text;
 	let line_text = tab.session.get_line_text(result.offset);
-	let content_text = if note_text.is_empty() {
-		line_text
-	} else {
-		format!("{}, {}", note_text, line_text)
-	};
+	let content_text = if note_text.is_empty() { line_text } else { format!("{}, {}", note_text, line_text) };
 	let wrap_prefix = if result.wrapped {
 		if next { t("Wrapping to start. ") } else { t("Wrapping to end. ") }
 	} else {
 		String::new()
 	};
-	let bookmark_text = t("%s - Bookmark %d")
-		.replacen("%s", &content_text, 1)
-		.replacen("%d", &(result.marker_index + 1).to_string(), 1);
+	let bookmark_text = t("%s - Bookmark %d").replacen("%s", &content_text, 1).replacen(
+		"%d",
+		&(result.marker_index + 1).to_string(),
+		1,
+	);
 	let message = format!("{wrap_prefix}{bookmark_text}");
 	live_region::announce(&live_region_label, &message);
 	let (history, history_index) = tab.session.get_history();

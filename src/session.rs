@@ -12,8 +12,7 @@ use crate::{
 	document::{self, DocumentHandle, MarkerType, ParserContext, ParserFlags},
 	parser,
 	reader_core::{
-		bookmark_navigate, history_go_next, history_go_previous, reader_navigate,
-		record_history_position, resolve_link,
+		bookmark_navigate, history_go_next, history_go_previous, reader_navigate, record_history_position, resolve_link,
 	},
 	ui_types::{self as ffi, NavDirection, NavTarget},
 	utils::zip as zip_utils,

@@ -1,7 +1,9 @@
 use std::{
+	cell::Cell,
 	path::{Path, PathBuf},
 	rc::Rc,
 	sync::{Mutex, atomic::Ordering},
+	time::Instant,
 };
 
 use wxdragon::{prelude::*, translations::translate as t};
@@ -19,12 +21,15 @@ pub struct DocumentTab {
 	pub file_path: PathBuf,
 }
 
+const POSITION_SAVE_INTERVAL_SECS: u64 = 3;
+
 pub struct DocumentManager {
 	frame: Frame,
 	notebook: Notebook,
 	tabs: Vec<DocumentTab>,
 	config: Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
+	last_position_save: Cell<Option<Instant>>,
 }
 
 impl DocumentManager {
@@ -34,7 +39,7 @@ impl DocumentManager {
 		config: Rc<Mutex<ConfigManager>>,
 		live_region_label: StaticText,
 	) -> Self {
-		Self { frame, notebook, tabs: Vec::new(), config, live_region_label }
+		Self { frame, notebook, tabs: Vec::new(), config, live_region_label, last_position_save: Cell::new(None) }
 	}
 
 	pub fn open_file(&mut self, self_rc: Rc<Mutex<DocumentManager>>, path: &Path) -> bool {
@@ -128,6 +133,7 @@ impl DocumentManager {
 			event.skip(true);
 			if let Ok(dm) = dm_for_key_up.try_lock() {
 				dm.update_status_bar();
+				dm.save_position_throttled();
 			}
 		});
 		let dm_for_mouse = Rc::clone(&self_rc);
@@ -135,6 +141,7 @@ impl DocumentManager {
 			event.skip(true);
 			if let Ok(dm) = dm_for_mouse.try_lock() {
 				dm.update_status_bar();
+				dm.save_position_throttled();
 			}
 		});
 		let sizer = BoxSizer::builder(Orientation::Vertical).build();
@@ -197,6 +204,35 @@ impl DocumentManager {
 		while !self.tabs.is_empty() {
 			self.close_document(0);
 		}
+	}
+
+	pub fn save_all_positions(&self) {
+		let config = self.config.lock().unwrap();
+		for tab in &self.tabs {
+			let position = tab.text_ctrl.get_insertion_point();
+			let path_str = tab.file_path.to_string_lossy();
+			config.set_document_position(&path_str, position);
+			let (history, history_index) = tab.session.get_history();
+			config.set_navigation_history(&path_str, history, history_index);
+		}
+		config.flush();
+	}
+
+	pub fn save_position_throttled(&self) {
+		let now = Instant::now();
+		if let Some(last_save) = self.last_position_save.get() {
+			if now.duration_since(last_save).as_secs() < POSITION_SAVE_INTERVAL_SECS {
+				return;
+			}
+		}
+		if let Some(tab) = self.active_tab() {
+			let position = tab.text_ctrl.get_insertion_point();
+			let path_str = tab.file_path.to_string_lossy();
+			let config = self.config.lock().unwrap();
+			config.set_document_position(&path_str, position);
+			config.flush();
+		}
+		self.last_position_save.set(Some(now));
 	}
 
 	pub fn active_tab_index(&self) -> Option<usize> {
