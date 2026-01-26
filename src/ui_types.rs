@@ -13,6 +13,7 @@ pub enum NavTarget {
 	ListItem,
 	Link,
 	Table,
+	Separator,
 }
 
 #[derive(Debug, Clone)]

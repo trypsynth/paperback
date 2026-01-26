@@ -76,6 +76,13 @@ impl Parser for HtmlParser {
 					.with_length(table.length),
 			);
 		}
+		for separator in converter.get_separators() {
+			buffer.add_marker(
+				Marker::new(MarkerType::Separator, separator.offset)
+					.with_text("Separator".to_string())
+					.with_length(separator.length),
+			);
+		}
 		let toc_items = build_toc_from_headings(converter.get_headings());
 		let mut doc = Document::new().with_title(title);
 		doc.set_buffer(buffer);

@@ -338,6 +338,9 @@ impl MainWindow {
 			let tables_label = t("&Tables");
 			let tables_help = t("Navigate by tables");
 			menu.append_submenu(Self::create_tables_submenu(), &tables_label, &tables_help);
+			let separators_label = t("&Separators");
+			let separators_help = t("Navigate by separators");
+			menu.append_submenu(Self::create_separators_submenu(), &separators_label, &separators_help);
 			let lists_label = t("&Lists");
 			let lists_help = t("Navigate by lists");
 			menu.append_submenu(Self::create_lists_submenu(), &lists_label, &lists_help);
@@ -353,6 +356,8 @@ impl MainWindow {
 			Self::append_links_items(&menu);
 			menu.append_separator();
 			Self::append_tables_items(&menu);
+			menu.append_separator();
+			Self::append_separators_items(&menu);
 			menu.append_separator();
 			Self::append_lists_items(&menu);
 		}
@@ -421,6 +426,15 @@ impl MainWindow {
 		let prev_table_label = t("Previous &Table\tShift+T");
 		let next_table_label = t("Next &Table\tT");
 		vec![Self::item(menu_ids::PREVIOUS_TABLE, prev_table_label), Self::item(menu_ids::NEXT_TABLE, next_table_label)]
+	}
+
+	fn separators_entries() -> Vec<MenuEntry> {
+		let prev_separator_label = t("Previous Se&parator\tShift+S");
+		let next_separator_label = t("Next Se&parator\tS");
+		vec![
+			Self::item(menu_ids::PREVIOUS_SEPARATOR, prev_separator_label),
+			Self::item(menu_ids::NEXT_SEPARATOR, next_separator_label),
+		]
 	}
 
 	fn lists_entries() -> Vec<MenuEntry> {
@@ -539,6 +553,16 @@ impl MainWindow {
 
 	fn append_tables_items(menu: &Menu) {
 		let entries = Self::tables_entries();
+		Self::append_menu_entries(menu, &entries);
+	}
+
+	fn create_separators_submenu() -> Menu {
+		let entries = Self::separators_entries();
+		Self::build_menu(&entries)
+	}
+
+	fn append_separators_items(menu: &Menu) {
+		let entries = Self::separators_entries();
 		Self::append_menu_entries(menu, &entries);
 	}
 
@@ -916,6 +940,12 @@ impl MainWindow {
 				}
 				menu_ids::NEXT_TABLE => {
 					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Table, true);
+				}
+				menu_ids::PREVIOUS_SEPARATOR => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Separator, false);
+				}
+				menu_ids::NEXT_SEPARATOR => {
+					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Separator, true);
 				}
 				menu_ids::PREVIOUS_LIST => {
 					handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::List, false);
@@ -1817,6 +1847,7 @@ enum MarkerNavTarget {
 	Heading(i32),
 	Link,
 	Table,
+	Separator,
 	List,
 	ListItem,
 }
@@ -1891,6 +1922,12 @@ fn nav_announcements(target: MarkerNavTarget, level_filter: i32) -> NavAnnouncem
 			not_supported: t("No tables."),
 			not_found_next: t("No next table."),
 			not_found_prev: t("No previous table."),
+			format: NavFoundFormat::TextOnly,
+		},
+		MarkerNavTarget::Separator => NavAnnouncements {
+			not_supported: t("No separators."),
+			not_found_next: t("No next separator."),
+			not_found_prev: t("No previous separator."),
 			format: NavFoundFormat::TextOnly,
 		},
 	}
@@ -2012,6 +2049,7 @@ fn handle_marker_navigation(
 		MarkerNavTarget::Heading(level) => tab.session.navigate_heading(current_pos, wrap, next, level),
 		MarkerNavTarget::Link => tab.session.navigate_link(current_pos, wrap, next),
 		MarkerNavTarget::Table => tab.session.navigate_table(current_pos, wrap, next),
+		MarkerNavTarget::Separator => tab.session.navigate_separator(current_pos, wrap, next),
 		MarkerNavTarget::List => tab.session.navigate_list(current_pos, wrap, next),
 		MarkerNavTarget::ListItem => tab.session.navigate_list_item(current_pos, wrap, next),
 	};

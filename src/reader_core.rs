@@ -110,13 +110,14 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 			}
 			build_nav_result(false, wrapped_final, 0, 0, String::new())
 		}
-		NavTarget::List | NavTarget::ListItem | NavTarget::Link | NavTarget::Table => {
+		NavTarget::List | NavTarget::ListItem | NavTarget::Link | NavTarget::Table | NavTarget::Separator => {
 			let kind = match req.target {
 				NavTarget::List => MarkerType::List,
 				NavTarget::ListItem => MarkerType::ListItem,
 				NavTarget::Link => MarkerType::Link,
 				NavTarget::Table => MarkerType::Table,
-				_ => unreachable!("NavTarget should only be List, ListItem, Link, or Table in this branch"),
+				NavTarget::Separator => MarkerType::Separator,
+				_ => unreachable!("NavTarget should only be List, ListItem, Link, Table, or Separator in this branch"),
 			};
 			let (idx_opt, wrapped) = select_marker_index(doc, req.position, req.wrap, req.direction, kind);
 			if let Some(idx) = idx_opt {

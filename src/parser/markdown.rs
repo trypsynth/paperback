@@ -1,7 +1,7 @@
 use std::fs;
 
 use anyhow::{Context, Result};
-use pulldown_cmark::html::push_html;
+use pulldown_cmark::{Options, Parser as MarkdownParserImpl, html::push_html};
 
 use super::utils::{build_toc_from_headings, extract_title_from_path, heading_level_to_marker_type};
 use crate::{
@@ -30,7 +30,9 @@ impl Parser for MarkdownParser {
 		let bytes = fs::read(&context.file_path)
 			.with_context(|| format!("Failed to open Markdown file '{}'", context.file_path))?;
 		let markdown_content = convert_to_utf8(&bytes);
-		let parser = pulldown_cmark::Parser::new(&markdown_content);
+		let mut options = Options::empty();
+		options.insert(Options::ENABLE_TABLES);
+		let parser = MarkdownParserImpl::new_ext(&markdown_content, options);
 		let mut html_content = String::new();
 		push_html(&mut html_content, parser);
 		let mut converter = HtmlToText::new();
@@ -60,6 +62,13 @@ impl Parser for MarkdownParser {
 					.with_text(table.text.clone())
 					.with_reference(table.html_content.clone())
 					.with_length(table.length),
+			);
+		}
+		for separator in converter.get_separators() {
+			buffer.add_marker(
+				Marker::new(MarkerType::Separator, separator.offset)
+					.with_text("Separator".to_string())
+					.with_length(separator.length),
 			);
 		}
 		for list in converter.get_lists() {

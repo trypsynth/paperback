@@ -101,6 +101,13 @@ impl Parser for ChmParser {
 						.with_length(table.length),
 				);
 			}
+			for separator in converter.get_separators() {
+				buffer.add_marker(
+					Marker::new(MarkerType::Separator, section_start + separator.offset)
+						.with_text("Separator".to_string())
+						.with_length(separator.length),
+				);
+			}
 			if !buffer.content.ends_with('\n') {
 				buffer.append("\n");
 			}

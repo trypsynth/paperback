@@ -279,6 +279,14 @@ impl DocumentSession {
 	}
 
 	#[must_use]
+	pub fn navigate_separator(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
+		let is_supported = self.has_marker(MarkerType::Separator);
+		self.navigate_with_post(position, wrap, next, NavTarget::Separator, 0, is_supported, |s, nav_result| {
+			s.fill_marker_text_if_empty(nav_result);
+		})
+	}
+
+	#[must_use]
 	pub fn navigate_bookmark(&self, config: &ConfigManager, position: i64, wrap: bool, next: bool) -> NavigationResult {
 		let result = bookmark_navigate(config, &self.file_path, position, wrap, next, false);
 		if result.found {
