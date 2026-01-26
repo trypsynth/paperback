@@ -20,6 +20,7 @@ pub enum MarkerType {
 	List = 10,
 	ListItem = 11,
 	Table = 12,
+	Separator = 13,
 }
 
 impl From<MarkerType> for i32 {
@@ -46,6 +47,7 @@ impl TryFrom<i32> for MarkerType {
 			10 => Ok(Self::List),
 			11 => Ok(Self::ListItem),
 			12 => Ok(Self::Table),
+			13 => Ok(Self::Separator),
 			_ => Err(()),
 		}
 	}

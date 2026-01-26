@@ -58,6 +58,12 @@ pub struct TableInfo {
 }
 
 #[derive(Debug, Clone)]
+pub struct SeparatorInfo {
+	pub offset: usize,
+	pub length: usize,
+}
+
+#[derive(Debug, Clone)]
 struct ListStyle {
 	ordered: bool,
 	item_number: i32,
@@ -77,6 +83,7 @@ pub struct HtmlToText {
 	headings: Vec<HeadingInfo>,
 	links: Vec<LinkInfo>,
 	tables: Vec<TableInfo>,
+	separators: Vec<SeparatorInfo>,
 	lists: Vec<ListInfo>,
 	list_items: Vec<ListItemInfo>,
 	title: String,
@@ -101,6 +108,7 @@ impl HtmlToText {
 			headings: Vec::new(),
 			links: Vec::new(),
 			tables: Vec::new(),
+			separators: Vec::new(),
 			lists: Vec::new(),
 			list_items: Vec::new(),
 			title: String::new(),
@@ -152,6 +160,11 @@ impl HtmlToText {
 	}
 
 	#[must_use]
+	pub fn get_separators(&self) -> &[SeparatorInfo] {
+		&self.separators
+	}
+
+	#[must_use]
 	pub fn get_lists(&self) -> &[ListInfo] {
 		&self.lists
 	}
@@ -173,6 +186,7 @@ impl HtmlToText {
 		self.headings.clear();
 		self.links.clear();
 		self.tables.clear();
+		self.separators.clear();
 		self.lists.clear();
 		self.list_items.clear();
 		self.title.clear();
@@ -317,6 +331,13 @@ impl HtmlToText {
 		} else if tag_name == "pre" {
 			self.finalize_current_line();
 			self.start_preserve_whitespace();
+		} else if tag_name == "hr" && self.flags.contains(ProcessingFlags::IN_BODY) {
+			self.finalize_current_line();
+			let offset = self.get_current_text_position();
+			let line = Self::separator_line();
+			self.current_line.push_str(line);
+			self.finalize_current_line();
+			self.separators.push(SeparatorInfo { offset, length: display_len(line) });
 		} else if tag_name == "code" {
 			self.flags.insert(ProcessingFlags::IN_CODE);
 			self.start_preserve_whitespace();
@@ -547,6 +568,10 @@ impl HtmlToText {
 			self.cached_char_length += display_len(&processed_line) + 1; // +1 for newline
 			self.lines.push(processed_line);
 		}
+	}
+
+	const fn separator_line() -> &'static str {
+		"----------------------------------------"
 	}
 
 	fn finalize_current_line(&mut self) {

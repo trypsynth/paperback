@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use roxmltree::{Document, Node, NodeType, ParsingOptions};
 
 use crate::{
-	html_to_text::{HeadingInfo, LinkInfo, ListInfo, ListItemInfo, TableInfo},
+	html_to_text::{HeadingInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
 	parser::utils::collect_element_text,
 	utils::text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string},
 };
@@ -29,6 +29,7 @@ pub struct XmlToText {
 	headings: Vec<HeadingInfo>,
 	links: Vec<LinkInfo>,
 	tables: Vec<TableInfo>,
+	separators: Vec<SeparatorInfo>,
 	lists: Vec<ListInfo>,
 	list_items: Vec<ListItemInfo>,
 	section_offsets: Vec<usize>,
@@ -84,6 +85,11 @@ impl XmlToText {
 	}
 
 	#[must_use]
+	pub fn get_separators(&self) -> &[SeparatorInfo] {
+		&self.separators
+	}
+
+	#[must_use]
 	pub fn get_lists(&self) -> &[ListInfo] {
 		&self.lists
 	}
@@ -105,6 +111,7 @@ impl XmlToText {
 		self.headings.clear();
 		self.links.clear();
 		self.tables.clear();
+		self.separators.clear();
 		self.lists.clear();
 		self.list_items.clear();
 		self.section_offsets.clear();
@@ -146,6 +153,15 @@ impl XmlToText {
 		let mut skip_children = false;
 		if Self::tag_is(tag_name, "table") {
 			self.handle_table_xml(node);
+			return true;
+		}
+		if Self::tag_is(tag_name, "hr") && self.in_body {
+			self.finalize_current_line();
+			let offset = self.get_current_text_position();
+			let line = Self::separator_line();
+			self.current_line.push_str(line);
+			self.finalize_current_line();
+			self.separators.push(SeparatorInfo { offset, length: display_len(line) });
 			return true;
 		}
 		if Self::tag_is(tag_name, "section") {
@@ -394,6 +410,10 @@ impl XmlToText {
 			self.cached_char_length += display_len(&collapsed) + 1;
 			self.lines.push(collapsed);
 		}
+	}
+
+	const fn separator_line() -> &'static str {
+		"----------------------------------------"
 	}
 
 	fn finalize_current_line(&mut self) {
