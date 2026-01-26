@@ -32,16 +32,13 @@ impl TranslationManager {
 		if let Some(langs_dir) = langs_directory() {
 			add_catalog_lookup_path_prefix(langs_dir.to_string_lossy().as_ref());
 		}
-
 		self.scan_available_languages();
-
 		let system_lang_id = Locale::get_system_language();
 		let raw_sys_lang = if let Some(info) = Locale::get_language_info(system_lang_id) {
 			info.canonical_name()
 		} else {
 			"en".to_string()
 		};
-
 		let sys_lang = raw_sys_lang
 			.split('_')
 			.next()
@@ -50,13 +47,11 @@ impl TranslationManager {
 			.next()
 			.unwrap_or(&raw_sys_lang)
 			.to_string();
-
 		if self.is_language_available(&sys_lang) {
 			self.current_language = sys_lang;
 		} else {
 			self.current_language = "en".to_string();
 		}
-
 		if self.current_language != "en" {
 			translations.set_language_str(&self.current_language);
 		}
@@ -65,7 +60,6 @@ impl TranslationManager {
 			translations.add_catalog("paperback");
 		}
 		Translations::set_global(translations);
-
 		self.initialized = true;
 		true
 	}
