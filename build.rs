@@ -20,7 +20,7 @@ fn main() {
 	}
 	let target = env::var("TARGET").unwrap_or_default();
 	if target.contains("windows") {
-		let manifest = new_manifest("Fedra")
+		let manifest = new_manifest("Paperback")
 			.supported_os(Windows7..=Windows10)
 			.active_code_page(ActiveCodePage::Utf8)
 			.heap_type(HeapType::SegmentHeap)
