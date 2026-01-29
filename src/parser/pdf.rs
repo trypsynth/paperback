@@ -98,6 +98,7 @@ fn extract_page_text(document: &Pdf, page: &hayro_syntax::page::Page<'_>) -> Str
 struct TextExtractor {
 	text: String,
 	last_pos: Option<(f64, f64)>,
+	avg_dx: Option<f64>,
 }
 
 impl Device<'_> for TextExtractor {
@@ -127,9 +128,17 @@ impl Device<'_> for TextExtractor {
 			// Simple heuristics to separate lines/words without full layout reconstruction.
 			if dy > 7.0 {
 				self.text.push('\n');
-			} else if dx > 4.0 {
+				self.avg_dx = None;
+		} else if dx > 0.0 {
+			let avg = self.avg_dx.unwrap_or(dx);
+			let gap_threshold = (avg * 1.6).max(3.0);
+			if dx > gap_threshold && !self.text.ends_with([' ', '\n', '\r', '\t']) && unicode_char != ' ' {
 				self.text.push(' ');
 			}
+			if dx < avg * 2.5 {
+				self.avg_dx = Some(avg * 0.8 + dx * 0.2);
+			}
+		}
 		}
 		self.text.push(unicode_char);
 		self.last_pos = Some((position.x, position.y));
