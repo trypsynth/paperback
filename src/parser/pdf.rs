@@ -131,11 +131,13 @@ impl Device<'_> for TextExtractor {
 				self.avg_dx = None;
 		} else if dx > 0.0 {
 			let avg = self.avg_dx.unwrap_or(dx);
-			let gap_threshold = (avg * 1.6).max(3.0);
+			let last_char = self.text.chars().last();
+			let alnum_pair = last_char.is_some_and(|c| c.is_alphanumeric()) && unicode_char.is_alphanumeric();
+			let gap_threshold = if alnum_pair { (avg * 2.4).max(4.0) } else { (avg * 1.6).max(3.0) };
 			if dx > gap_threshold && !self.text.ends_with([' ', '\n', '\r', '\t']) && unicode_char != ' ' {
 				self.text.push(' ');
 			}
-			if dx < avg * 2.5 {
+			if dx < avg * 2.8 {
 				self.avg_dx = Some(avg * 0.8 + dx * 0.2);
 			}
 		}
