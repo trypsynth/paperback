@@ -797,7 +797,12 @@ pub fn show_go_to_page_dialog(parent: &Frame, session: &DocumentSession, current
 	let max_page = session.page_count().max(1) as i32;
 	let dialog_title = t("Go to page");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
-	let label_text = t("Go to page (1/%d):").replace("%d", &max_page.to_string());
+	let label_template = t("Go to page (%d/%d):");
+	let label_text = label_template.replacen("%d", &current_page.clamp(1, max_page).to_string(), 1).replacen(
+		"%d",
+		&max_page.to_string(),
+		1,
+	);
 	let label = StaticText::builder(&dialog).with_label(&label_text).build();
 	let current = current_page.clamp(1, max_page);
 	let page_ctrl = SpinCtrl::builder(&dialog)
@@ -809,6 +814,16 @@ pub fn show_go_to_page_dialog(parent: &Frame, session: &DocumentSession, current
 	page_ctrl.bind_internal(EventType::TEXT_ENTER, move |event| {
 		event.skip(false);
 		dialog_for_enter.end_modal(wxdragon::id::ID_OK);
+	});
+	let label_for_update = label.clone();
+	let label_template_for_update = label_template.clone();
+	page_ctrl.on_value_changed(move |event| {
+		let text = label_template_for_update.replacen("%d", &event.get_value().to_string(), 1).replacen(
+			"%d",
+			&max_page.to_string(),
+			1,
+		);
+		label_for_update.set_label(&text);
 	});
 	let page_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	page_sizer.add(&label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 5);
