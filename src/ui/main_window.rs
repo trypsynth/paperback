@@ -130,6 +130,8 @@ impl MainWindow {
 		live_region_label.show(false);
 		let _ = live_region::set_live_region(&live_region_label);
 		let notebook = Notebook::builder(&panel).with_style(NotebookStyle::Top).build();
+		#[cfg(windows)]
+		notebook.msw_disable_composited();
 		sizer.add(&notebook, 1, SizerFlag::Expand | SizerFlag::All, 0);
 		panel.set_sizer(sizer, true);
 		let doc_manager =
