@@ -249,14 +249,7 @@ pub fn show_bookmark_dialog(
 				snippet = t("blank");
 			}
 			let display = if item.note.is_empty() { snippet.clone() } else { format!("{} - {}", item.note, snippet) };
-			entries_for_repopulate.borrow_mut().push(BookmarkDisplayEntry {
-				start: item.start,
-				end: item.end,
-				note: item.note,
-				snippet,
-				is_whole_line: item.is_whole_line,
-				index: item.index,
-			});
+			entries_for_repopulate.borrow_mut().push(BookmarkDisplayEntry { start: item.start, end: item.end });
 			list_for_repopulate.append(&display);
 		}
 		selected_start_for_repopulate.set(-1);

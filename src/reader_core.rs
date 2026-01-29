@@ -21,7 +21,6 @@ fn select_marker_index(
 	let initial = match direction {
 		ffi::NavDirection::Next => doc.next_marker_index(position, kind),
 		ffi::NavDirection::Previous => doc.previous_marker_index(position, kind),
-		_ => None,
 	};
 	if initial.is_some() {
 		return (initial, false);
@@ -37,7 +36,6 @@ fn select_marker_index(
 		match direction {
 			ffi::NavDirection::Next => doc.next_marker_index(alt_pos, kind),
 			ffi::NavDirection::Previous => doc.previous_marker_index(alt_pos, kind),
-			_ => None,
 		},
 		true,
 	)
@@ -79,7 +77,6 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 			let (idx_opt, wrapped) = match req.direction {
 				ffi::NavDirection::Next => doc.next_heading_index(req.position, level_filter),
 				ffi::NavDirection::Previous => doc.previous_heading_index(req.position, level_filter),
-				_ => None,
 			}
 			.map_or((None, false), |idx| (usize::try_from(idx).ok(), false));
 			let (idx_final, wrapped_final) = if idx_opt.is_none() && req.wrap {
@@ -90,7 +87,6 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 				let retry = match req.direction {
 					ffi::NavDirection::Next => doc.next_heading_index(alt_pos, level_filter),
 					ffi::NavDirection::Previous => doc.previous_heading_index(alt_pos, level_filter),
-					_ => None,
 				};
 				let retry_idx = retry.and_then(|i| usize::try_from(i).ok());
 				(retry_idx, retry.is_some())
@@ -129,7 +125,6 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 			}
 			build_nav_result(false, wrapped, 0, 0, String::new())
 		}
-		_ => build_nav_result(false, false, 0, 0, String::new()),
 	}
 }
 
@@ -235,14 +230,7 @@ pub fn bookmark_navigate(
 		bookmarks.retain(|b| !b.note.is_empty());
 	}
 	if bookmarks.is_empty() {
-		return ffi::BookmarkNavResult {
-			found: false,
-			start: -1,
-			end: -1,
-			note: String::new(),
-			index: -1,
-			wrapped: false,
-		};
+		return ffi::BookmarkNavResult { found: false, start: -1, note: String::new(), index: -1, wrapped: false };
 	}
 	bookmarks.sort_by_key(|b| b.start);
 	let find_from = |from: i64, forward: bool, list: &[Bookmark]| -> Option<(usize, Bookmark)> {
@@ -260,9 +248,9 @@ pub fn bookmark_navigate(
 	}
 	if let Some((idx, bm)) = hit {
 		let index = i32::try_from(idx).unwrap_or(-1);
-		return ffi::BookmarkNavResult { found: true, start: bm.start, end: bm.end, note: bm.note, index, wrapped };
+		return ffi::BookmarkNavResult { found: true, start: bm.start, note: bm.note, index, wrapped };
 	}
-	ffi::BookmarkNavResult { found: false, start: -1, end: -1, note: String::new(), index: -1, wrapped }
+	ffi::BookmarkNavResult { found: false, start: -1, note: String::new(), index: -1, wrapped }
 }
 
 pub fn bookmark_note_at_position(manager: &RustConfigManager, path: &str, position: i64) -> String {
@@ -293,13 +281,11 @@ pub fn get_filtered_bookmarks(
 	bookmarks.sort_by_key(|b| b.start);
 	let items: Vec<ffi::BookmarkDisplayItem> = bookmarks
 		.iter()
-		.enumerate()
-		.map(|(idx, b)| ffi::BookmarkDisplayItem {
+		.map(|b| ffi::BookmarkDisplayItem {
 			start: b.start,
 			end: b.end,
 			note: b.note.clone(),
 			is_whole_line: b.start == b.end,
-			index: idx,
 		})
 		.collect();
 	let closest_index = if bookmarks.is_empty() {

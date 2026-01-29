@@ -37,7 +37,6 @@ pub trait Parser: Send + Sync {
 pub struct ParserInfo {
 	pub name: String,
 	pub extensions: Vec<String>,
-	pub flags: ParserFlags,
 }
 
 pub struct ParserRegistry {
@@ -71,7 +70,6 @@ impl ParserRegistry {
 			.map(|p| ParserInfo {
 				name: p.name().to_string(),
 				extensions: p.extensions().iter().map(|s| (*s).to_string()).collect(),
-				flags: p.supported_flags(),
 			})
 			.collect()
 	}

@@ -26,7 +26,6 @@ struct GithubRelease {
 
 #[derive(Debug)]
 pub struct UpdateAvailableResult {
-	pub http_status: i32,
 	pub latest_version: String,
 	pub download_url: String,
 	pub release_notes: String,
@@ -119,7 +118,6 @@ pub fn check_for_updates(current_version: &str, is_installer: bool) -> Result<Up
 		_ => return Err(UpdateError::NoDownload("Latest release does not include downloadable assets.".to_string())),
 	};
 	Ok(UpdateCheckOutcome::UpdateAvailable(UpdateAvailableResult {
-		http_status: 0,
 		latest_version: release.tag_name,
 		download_url,
 		release_notes: release.body.unwrap_or_default(),

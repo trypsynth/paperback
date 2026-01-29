@@ -52,16 +52,9 @@ pub enum BookmarkFilterType {
 pub struct BookmarkNavResult {
 	pub found: bool,
 	pub start: i64,
-	pub end: i64,
 	pub note: String,
 	pub index: i32,
 	pub wrapped: bool,
-}
-
-#[derive(Debug, Clone)]
-pub struct BookmarkInfo {
-	pub found: bool,
-	pub note: String,
 }
 
 #[derive(Debug, Clone)]
@@ -70,24 +63,12 @@ pub struct BookmarkDisplayItem {
 	pub end: i64,
 	pub note: String,
 	pub is_whole_line: bool,
-	pub index: usize,
 }
 
 #[derive(Debug, Clone)]
 pub struct FilteredBookmarks {
 	pub items: Vec<BookmarkDisplayItem>,
 	pub closest_index: i32,
-}
-
-#[derive(Debug, Clone)]
-pub struct BookmarkNavDisplay {
-	pub found: bool,
-	pub wrapped: bool,
-	pub start: i64,
-	pub end: i64,
-	pub note: String,
-	pub snippet: String,
-	pub index: i32,
 }
 
 #[derive(Debug, Clone)]
@@ -113,7 +94,6 @@ pub struct LinkList {
 pub struct HeadingTreeItem {
 	pub offset: usize,
 	pub text: String,
-	pub level: i32,
 	pub parent_index: i32,
 }
 
@@ -127,16 +107,6 @@ pub struct HeadingTree {
 pub struct BookmarkDisplayEntry {
 	pub start: i64,
 	pub end: i64,
-	pub note: String,
-	pub snippet: String,
-	pub is_whole_line: bool,
-	pub index: usize,
-}
-
-#[derive(Debug, Clone)]
-pub struct FilteredBookmarkDisplay {
-	pub items: Vec<BookmarkDisplayEntry>,
-	pub closest_index: i32,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

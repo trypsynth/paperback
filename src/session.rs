@@ -25,7 +25,6 @@ pub struct StatusInfo {
 	pub line_number: i64,
 	pub character_number: i64,
 	pub percentage: i32,
-	pub total_chars: i64,
 }
 
 #[derive(Debug, Clone)]
@@ -384,7 +383,7 @@ impl DocumentSession {
 			} else {
 				marker.text.clone()
 			};
-			items.push(ffi::HeadingTreeItem { offset: marker.position, text, level, parent_index });
+			items.push(ffi::HeadingTreeItem { offset: marker.position, text, parent_index });
 			item_stack.push((level, current_index));
 			if marker.position <= pos {
 				let dist = pos - marker.position;
@@ -566,7 +565,6 @@ impl DocumentSession {
 			line_number: i64::try_from(line_number).unwrap_or(1),
 			character_number: i64::try_from(character_number).unwrap_or(1),
 			percentage: i32::try_from(percentage).unwrap_or(0),
-			total_chars: i64::try_from(total_chars).unwrap_or(0),
 		}
 	}
 

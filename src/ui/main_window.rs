@@ -2378,11 +2378,16 @@ fn present_update_result(outcome: Result<UpdateCheckOutcome, UpdateError>, silen
 				}
 			}
 		}
-		Ok(UpdateCheckOutcome::UpToDate(_)) => {
+		Ok(UpdateCheckOutcome::UpToDate(latest_version)) => {
 			if silent {
 				return;
 			}
-			let message = t("No updates available.");
+			let message = if latest_version.trim().is_empty() {
+				t("No updates available.")
+			} else {
+				let template = t("No updates available. Latest version: {}");
+				template.replace("{}", &latest_version)
+			};
 			let title = t("Info");
 			if let Some(parent) = parent_window.as_ref() {
 				let dialog = MessageDialog::builder(parent, &message, &title)
