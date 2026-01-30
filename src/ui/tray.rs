@@ -127,7 +127,9 @@ fn restore_from_tray(
 	doc_manager: &Rc<Mutex<DocumentManager>>,
 	tray_state: &Rc<Mutex<Option<TrayState>>>,
 ) {
-	frame.iconize(false);
+	if frame.is_iconized() {
+		frame.maximize(false);
+	}
 	frame.show(true);
 	frame.raise();
 	let dm = doc_manager.lock().unwrap();

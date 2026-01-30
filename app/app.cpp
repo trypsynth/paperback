@@ -14,42 +14,6 @@
 #include <wx/stdpaths.h>
 #include <wx/utils.h>
 
-namespace {
-struct update_result_payload {
-	UpdateStatus status{UpdateStatus::InternalError};
-	int http_status{0};
-	std::string latest_version;
-	std::string download_url;
-	std::string release_notes;
-	std::string error_message;
-};
-
-update_result_payload convert_result(const UpdateResult& native_result) {
-	update_result_payload payload;
-	payload.status = native_result.status;
-	payload.http_status = native_result.http_status;
-	payload.latest_version = std::string(native_result.latest_version);
-	payload.download_url = std::string(native_result.download_url);
-	payload.release_notes = std::string(native_result.release_notes);
-	payload.error_message = std::string(native_result.error_message);
-	return payload;
-}
-
-bool is_installer_distribution() {
-	wxFileName exe_path(wxStandardPaths::Get().GetExecutablePath());
-	const wxString uninstaller_path = exe_path.GetPath() + wxFileName::GetPathSeparator() + "unins000.exe";
-	return wxFileName::FileExists(uninstaller_path);
-}
-
-// update_dialog has been ported to Rust - this function is now unused
-// Update checking is handled by src/ui/main_window.rs::run_update_check()
-void present_update_result(const update_result_payload& payload, bool silent) {
-	// Legacy C++ update dialog removed - see src/ui/dialogs.rs::show_update_dialog
-	(void)payload;
-	(void)silent;
-}
-} // namespace
-
 bool paperback_connection::OnExec(const wxString& topic, const wxString& data) {
 	if (topic == IPC_TOPIC_OPEN_FILE) {
 		wxGetApp().CallAfter([data]() {
