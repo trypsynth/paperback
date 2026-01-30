@@ -178,7 +178,7 @@ impl MainWindow {
 			event.skip(true);
 		});
 		let tray_state = Rc::new(Mutex::new(None));
-		tray::bind_tray_events(frame, Rc::clone(&doc_manager), Rc::clone(&config), Rc::clone(&tray_state));
+		tray::bind_tray_events(frame, &doc_manager, &config, &tray_state);
 		{
 			let dm_for_close = Rc::clone(&doc_manager);
 			let config_for_close = Rc::clone(&config);
