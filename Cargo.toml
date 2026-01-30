@@ -38,6 +38,7 @@ windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_Sys
 
 [build-dependencies]
 embed-manifest = "1.5.0"
+winres = "0.1.12"
 
 [profile.release]
 strip = true

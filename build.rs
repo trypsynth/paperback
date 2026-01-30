@@ -9,6 +9,7 @@ use embed_manifest::{
 	manifest::{ActiveCodePage, DpiAwareness, HeapType, Setting, SupportedOS::*},
 	new_manifest,
 };
+use winres::WindowsResource;
 
 fn main() {
 	track_packaging_inputs();
@@ -28,7 +29,24 @@ fn main() {
 			println!("cargo:warning=Failed to embed manifest: {}", e);
 			println!("cargo:warning=The application will still work but may lack optimal Windows theming");
 		}
+		embed_version_info();
 		println!("cargo:rerun-if-changed=build.rs");
+	}
+}
+
+fn embed_version_info() {
+	let version = env::var("CARGO_PKG_VERSION").unwrap_or_else(|_| "0.0.0".to_string());
+	let description = env::var("CARGO_PKG_DESCRIPTION").unwrap_or_default();
+	let mut res = WindowsResource::new();
+	res.set("ProductName", "Paperback")
+		.set("FileDescription", &description)
+		.set("LegalCopyright", "Copyright © 2025 Quin Gillespie")
+		.set("CompanyName", "Quin Gillespie")
+		.set("OriginalFilename", "paperback.exe")
+		.set("ProductVersion", &version)
+		.set("FileVersion", &version);
+	if let Err(e) = res.compile() {
+		println!("cargo:warning=Failed to embed version info: {}", e);
 	}
 }
 
@@ -237,11 +255,7 @@ fn generate_pot() {
 /// Returns true if the files differ in meaningful content.
 fn pot_content_changed(old_path: &Path, new_path: &Path) -> bool {
 	let strip_date = |content: &str| -> String {
-		content
-			.lines()
-			.filter(|line| !line.starts_with("\"POT-Creation-Date:"))
-			.collect::<Vec<_>>()
-			.join("\n")
+		content.lines().filter(|line| !line.starts_with("\"POT-Creation-Date:")).collect::<Vec<_>>().join("\n")
 	};
 	let old_content = fs::read_to_string(old_path).unwrap_or_default();
 	let new_content = match fs::read_to_string(new_path) {
