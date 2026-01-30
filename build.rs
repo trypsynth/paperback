@@ -201,6 +201,7 @@ fn generate_pot() {
 	}
 	let version = env::var("CARGO_PKG_VERSION").unwrap_or_else(|_| "0.0.0".to_string());
 	let output_file = po_dir.join("paperback.pot");
+	let temp_file = po_dir.join("paperback.pot.new");
 	let mut cmd = Command::new("xgettext");
 	cmd.arg("--keyword=t")
 		.arg("--language=C")
@@ -211,15 +212,43 @@ fn generate_pot() {
 		.arg(format!("--package-version={}", version))
 		.arg("--msgid-bugs-address=https://github.com/trypsynth/paperback/issues")
 		.arg("--copyright-holder=Quin Gillespie")
-		.arg(format!("--output={}", output_file.display()));
+		.arg(format!("--output={}", temp_file.display()));
 	for file in files {
 		cmd.arg(file);
 	}
 	let status = cmd.status();
 	match status {
-		Ok(s) if s.success() => {}
-		_ => println!("cargo:warning=Failed to generate POT file."),
+		Ok(s) if s.success() => {
+			// Only update the pot file if the content (excluding dates) has changed
+			if pot_content_changed(&output_file, &temp_file) {
+				let _ = fs::rename(&temp_file, &output_file);
+			} else {
+				let _ = fs::remove_file(&temp_file);
+			}
+		}
+		_ => {
+			println!("cargo:warning=Failed to generate POT file.");
+			let _ = fs::remove_file(&temp_file);
+		}
 	}
+}
+
+/// Compare two POT files, ignoring the POT-Creation-Date header.
+/// Returns true if the files differ in meaningful content.
+fn pot_content_changed(old_path: &Path, new_path: &Path) -> bool {
+	let strip_date = |content: &str| -> String {
+		content
+			.lines()
+			.filter(|line| !line.starts_with("\"POT-Creation-Date:"))
+			.collect::<Vec<_>>()
+			.join("\n")
+	};
+	let old_content = fs::read_to_string(old_path).unwrap_or_default();
+	let new_content = match fs::read_to_string(new_path) {
+		Ok(c) => c,
+		Err(_) => return true,
+	};
+	strip_date(&old_content) != strip_date(&new_content)
 }
 
 fn collect_translatable_rust_files(dir: &Path, files: &mut Vec<PathBuf>) -> io::Result<()> {
