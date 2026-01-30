@@ -160,13 +160,16 @@ impl DocumentManager {
 		let tab_index = self.tabs.len() - 1;
 		let max_pos = self.tabs[tab_index].text_ctrl.get_last_position();
 		let saved_pos = config.get_validated_document_position(&path_str, max_pos);
-		if saved_pos >= 0 {
+		let initial_pos = if saved_pos >= 0 {
 			self.tabs[tab_index].text_ctrl.set_insertion_point(saved_pos);
 			self.tabs[tab_index].text_ctrl.show_position(saved_pos);
+			saved_pos
 		} else {
 			self.tabs[tab_index].text_ctrl.set_insertion_point(0);
 			self.tabs[tab_index].text_ctrl.show_position(0);
-		}
+			0
+		};
+		self.tabs[tab_index].session.set_stable_position(initial_pos);
 		config.add_recent_document(&path_str);
 		config.set_document_opened(&path_str, true);
 		config.add_opened_document(&path_str);
@@ -287,6 +290,7 @@ impl DocumentManager {
 						tab.text_ctrl.set_focus();
 						tab.text_ctrl.set_insertion_point(result.offset);
 						tab.text_ctrl.show_position(result.offset);
+						tab.session.check_and_record_history(result.offset);
 						live_region::announce(&self.live_region_label, &t("Navigated to internal link."));
 					}
 					crate::session::LinkAction::External => {

@@ -785,10 +785,10 @@ impl MainWindow {
 					let current_pos = tab.text_ctrl.get_insertion_point();
 					if let Some(line) = dialogs::show_go_to_line_dialog(&frame_copy, &tab.session, current_pos) {
 						let target_pos = tab.session.position_from_line(line);
-						tab.session.record_position(current_pos);
 						tab.text_ctrl.set_focus();
 						tab.text_ctrl.set_insertion_point(target_pos);
 						tab.text_ctrl.show_position(target_pos);
+						tab.session.check_and_record_history(target_pos);
 						let (history, history_index) = tab.session.get_history();
 						let path_str = tab.file_path.to_string_lossy();
 						let cfg = config.lock().unwrap();
@@ -807,10 +807,10 @@ impl MainWindow {
 					let current_pos = tab.text_ctrl.get_insertion_point();
 					let current_page = tab.session.current_page(current_pos);
 					if let Some(target_pos) = dialogs::show_go_to_page_dialog(&frame_copy, &tab.session, current_page) {
-						tab.session.record_position(current_pos);
 						tab.text_ctrl.set_focus();
 						tab.text_ctrl.set_insertion_point(target_pos);
 						tab.text_ctrl.show_position(target_pos);
+						tab.session.check_and_record_history(target_pos);
 						let (history, history_index) = tab.session.get_history();
 						let path_str = tab.file_path.to_string_lossy();
 						let cfg = config.lock().unwrap();
@@ -825,10 +825,10 @@ impl MainWindow {
 					let current_pos = tab.text_ctrl.get_insertion_point();
 					if let Some(target_pos) = dialogs::show_go_to_percent_dialog(&frame_copy, &tab.session, current_pos)
 					{
-						tab.session.record_position(current_pos);
 						tab.text_ctrl.set_focus();
 						tab.text_ctrl.set_insertion_point(target_pos);
 						tab.text_ctrl.show_position(target_pos);
+						tab.session.check_and_record_history(target_pos);
 						let (history, history_index) = tab.session.get_history();
 						let path_str = tab.file_path.to_string_lossy();
 						let cfg = config.lock().unwrap();
@@ -1117,10 +1117,10 @@ impl MainWindow {
 							&tab.session.handle().document().toc_items,
 							current_toc_offset as i32,
 						) {
-							tab.session.record_position(current_pos);
 							tab.text_ctrl.set_focus();
 							tab.text_ctrl.set_insertion_point(offset as i64);
 							tab.text_ctrl.show_position(offset as i64);
+							tab.session.check_and_record_history(offset as i64);
 							let (history, history_index) = tab.session.get_history();
 							let path_str = tab.file_path.to_string_lossy();
 							let cfg = config.lock().unwrap();
@@ -1133,10 +1133,10 @@ impl MainWindow {
 					if let Some(tab) = dm_guard.active_tab_mut() {
 						let current_pos = tab.text_ctrl.get_insertion_point();
 						if let Some(offset) = dialogs::show_elements_dialog(&frame_copy, &tab.session, current_pos) {
-							tab.session.record_position(current_pos);
 							tab.text_ctrl.set_focus();
 							tab.text_ctrl.set_insertion_point(offset);
 							tab.text_ctrl.show_position(offset);
+							tab.session.check_and_record_history(offset);
 							let (history, history_index) = tab.session.get_history();
 							let path_str = tab.file_path.to_string_lossy();
 							let cfg = config.lock().unwrap();
@@ -2022,6 +2022,7 @@ fn handle_history_navigation(
 		tab.text_ctrl.set_focus();
 		tab.text_ctrl.set_insertion_point(result.offset);
 		tab.text_ctrl.show_position(result.offset);
+		tab.session.set_stable_position(result.offset);
 		let (history, history_index) = tab.session.get_history();
 		let path_str = tab.file_path.to_string_lossy();
 		let cfg = config.lock().unwrap();
@@ -2055,10 +2056,9 @@ fn handle_marker_navigation(
 		MarkerNavTarget::List => tab.session.navigate_list(current_pos, wrap, next),
 		MarkerNavTarget::ListItem => tab.session.navigate_list_item(current_pos, wrap, next),
 	};
-	if result.found && !result.not_supported {
-		tab.session.record_position(current_pos);
-	}
+	let target_offset = result.offset;
 	if apply_navigation_result(tab, result, target, next, live_region_label) {
+		tab.session.check_and_record_history(target_offset);
 		let (history, history_index) = tab.session.get_history();
 		let path_str = tab.file_path.to_string_lossy();
 		let cfg = config.lock().unwrap();
@@ -2116,10 +2116,10 @@ fn handle_bookmark_navigation(
 		live_region::announce(&live_region_label, &message);
 		return;
 	}
-	tab.session.record_position(current_pos);
 	tab.text_ctrl.set_focus();
 	tab.text_ctrl.set_insertion_point(result.offset);
 	tab.text_ctrl.show_position(result.offset);
+	tab.session.check_and_record_history(result.offset);
 	let note_text = result.marker_text;
 	let line_text = tab.session.get_line_text(result.offset);
 	let content_text = if note_text.is_empty() { line_text } else { format!("{}, {}", note_text, line_text) };
@@ -2156,10 +2156,10 @@ fn handle_bookmark_dialog(
 	let Some(selection) = selection else {
 		return;
 	};
-	tab.session.record_position(current_pos);
 	tab.text_ctrl.set_focus();
 	tab.text_ctrl.set_insertion_point(selection.start);
 	tab.text_ctrl.show_position(selection.start);
+	tab.session.check_and_record_history(selection.start);
 	let message = {
 		let cfg = config.lock().unwrap();
 		let info = tab.session.bookmark_display_at_position(&cfg, selection.start);

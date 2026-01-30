@@ -19,6 +19,7 @@ use crate::{
 };
 
 const MAX_HISTORY_LEN: usize = 10;
+const HISTORY_DISTANCE_THRESHOLD: i64 = 300;
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct StatusInfo {
@@ -104,6 +105,7 @@ pub struct DocumentSession {
 	history: Vec<i64>,
 	history_index: usize,
 	parser_flags: ParserFlags,
+	last_stable_position: Option<i64>,
 }
 
 impl DocumentSession {
@@ -126,6 +128,7 @@ impl DocumentSession {
 			history: Vec::new(),
 			history_index: 0,
 			parser_flags,
+			last_stable_position: None,
 		})
 	}
 
@@ -169,8 +172,20 @@ impl DocumentSession {
 		self.history_index = index.min(self.history.len().saturating_sub(1));
 	}
 
-	pub fn record_position(&mut self, position: i64) {
-		record_history_position(&mut self.history, &mut self.history_index, position, MAX_HISTORY_LEN);
+	pub fn check_and_record_history(&mut self, new_position: i64) {
+		if let Some(last_pos) = self.last_stable_position {
+			let distance = (new_position - last_pos).abs();
+			if distance >= HISTORY_DISTANCE_THRESHOLD {
+				record_history_position(&mut self.history, &mut self.history_index, last_pos, MAX_HISTORY_LEN);
+				self.last_stable_position = Some(new_position);
+			}
+		} else {
+			self.last_stable_position = Some(new_position);
+		}
+	}
+
+	pub fn set_stable_position(&mut self, position: i64) {
+		self.last_stable_position = Some(position);
 	}
 
 	fn nav_direction(next: bool) -> NavDirection {
@@ -460,7 +475,6 @@ impl DocumentSession {
 			// Clone the href so we can drop the borrow on self.handle.
 			marker.reference.clone()
 		};
-		self.record_position(position);
 		let resolution = resolve_link(&self.handle, &href, position);
 		if !resolution.found {
 			LinkActivationResult::not_found()
