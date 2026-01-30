@@ -15,9 +15,7 @@ fn main() {
 	build_translations();
 	build_docs();
 	configure_installer();
-	if env::var("UPDATE_POT").is_ok() {
-		generate_pot();
-	}
+	generate_pot();
 	let target = env::var("TARGET").unwrap_or_default();
 	if target.contains("windows") {
 		let manifest = new_manifest("Paperback")
@@ -194,19 +192,18 @@ fn generate_pot() {
 		println!("cargo:warning=xgettext not found. Translation template (.pot) generation will not be available.");
 		return;
 	}
-	let app_dir = manifest_dir.join("app");
+	let src_dir = manifest_dir.join("src");
 	let mut files = Vec::new();
-	let _ = collect_translatable_files(&app_dir, &mut files);
+	let _ = collect_translatable_rust_files(&src_dir, &mut files);
 	if files.is_empty() {
+		println!("cargo:warning=No Rust source files found for POT generation.");
 		return;
 	}
 	let version = env::var("CARGO_PKG_VERSION").unwrap_or_else(|_| "0.0.0".to_string());
 	let output_file = po_dir.join("paperback.pot");
 	let mut cmd = Command::new("xgettext");
-	cmd.arg("--keyword=_")
-		.arg("--keyword=wxPLURAL:1,2")
-		.arg("--keyword=wxTRANSLATE")
-		.arg("--language=C++")
+	cmd.arg("--keyword=t")
+		.arg("--language=C")
 		.arg("--from-code=UTF-8")
 		.arg("--add-comments=TRANSLATORS")
 		.arg("--add-location=file")
@@ -225,15 +222,15 @@ fn generate_pot() {
 	}
 }
 
-fn collect_translatable_files(dir: &Path, files: &mut Vec<PathBuf>) -> io::Result<()> {
+fn collect_translatable_rust_files(dir: &Path, files: &mut Vec<PathBuf>) -> io::Result<()> {
 	if dir.is_dir() {
 		for entry in fs::read_dir(dir)? {
 			let entry = entry?;
 			let path = entry.path();
 			if path.is_dir() {
-				collect_translatable_files(&path, files)?;
+				collect_translatable_rust_files(&path, files)?;
 			} else if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
-				if matches!(ext, "cpp" | "hpp" | "h") {
+				if ext == "rs" {
 					files.push(path);
 				}
 			}
