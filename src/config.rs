@@ -105,7 +105,11 @@ impl ConfigManager {
 	}
 
 	pub fn get_app_int(&self, key: &str, default_value: i32) -> i32 {
-		self.with_path("/app", |config| config.read_long(key, i64::from(default_value)) as i32).unwrap_or(default_value)
+		self.with_path("/app", |config| {
+			let value: i64 = config.read_long(key, i64::from(default_value));
+			value.try_into().unwrap_or(default_value)
+		})
+		.unwrap_or(default_value)
 	}
 
 	fn get_app_long(&self, key: &str, default_value: i64) -> i64 {
@@ -386,7 +390,10 @@ impl ConfigManager {
 			let history_string = history.iter().map(ToString::to_string).collect::<Vec<_>>().join(",");
 			config.write_string("path", path);
 			config.write_string("navigation_history", &history_string);
-			config.write_long("navigation_history_index", history_index as i64);
+			let index: i64 = history_index
+				.try_into()
+				.expect("navigation_history_index does not fit into i64");
+			config.write_long("navigation_history_index", index);
 		}
 		config.set_path("/");
 	}
@@ -408,7 +415,8 @@ impl ConfigManager {
 				}
 			}
 		}
-		nav.index = config.read_long("navigation_history_index", 0) as usize;
+		let value = config.read_long("navigation_history_index", 0);
+		nav.index = usize::try_from(value).unwrap_or(0);
 		config.set_path("/");
 		nav
 	}
@@ -594,7 +602,7 @@ impl ConfigManager {
 		content.push_str("# Paperback document settings\n");
 		let position = self.get_document_position(doc_path);
 		if position > 0 {
-			content.push_str(&format!("last_position={position}\n"));
+			let _ = write!("last_position={position}\n"));
 		}
 		let format = self.get_document_format(doc_path);
 		if !format.is_empty() {
