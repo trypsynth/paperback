@@ -42,7 +42,7 @@ impl DocumentManager {
 		Self { frame, notebook, tabs: Vec::new(), config, live_region_label, last_position_save: Cell::new(None) }
 	}
 
-	pub fn open_file(&mut self, self_rc: Rc<Mutex<Self>>, path: &Path) -> bool {
+	pub fn open_file(&mut self, self_rc: &Rc<Mutex<Self>>, path: &Path) -> bool {
 		if !path.exists() {
 			let template = t("File not found: {}");
 			let message = template.replace("{}", &path.to_string_lossy());
@@ -91,7 +91,7 @@ impl DocumentManager {
 
 	pub fn add_session_tab(
 		&mut self,
-		self_rc: Rc<Mutex<Self>>,
+		self_rc: &Rc<Mutex<Self>>,
 		path: &Path,
 		session: DocumentSession,
 		password: &str,
@@ -115,7 +115,7 @@ impl DocumentManager {
 			| TextCtrlStyle::Rich2
 			| if word_wrap { TextCtrlStyle::WordWrap } else { TextCtrlStyle::DontWrap };
 		let text_ctrl = TextCtrl::builder(&panel).with_style(style).build();
-		let dm_for_enter = Rc::clone(&self_rc);
+		let dm_for_enter = Rc::clone(self_rc);
 		text_ctrl.on_char(move |event| {
 			if let WindowEventData::Keyboard(kbd) = event {
 				if kbd.get_key_code() == Some(13) {
@@ -128,7 +128,7 @@ impl DocumentManager {
 				}
 			}
 		});
-		let dm_for_key_up = Rc::clone(&self_rc);
+		let dm_for_key_up = Rc::clone(self_rc);
 		text_ctrl.bind_internal(wxdragon::event::EventType::KEY_UP, move |event| {
 			event.skip(true);
 			if let Ok(dm) = dm_for_key_up.try_lock() {
@@ -136,7 +136,7 @@ impl DocumentManager {
 				dm.save_position_throttled();
 			}
 		});
-		let dm_for_mouse = Rc::clone(&self_rc);
+		let dm_for_mouse = Rc::clone(self_rc);
 		text_ctrl.bind_internal(wxdragon::event::EventType::LEFT_UP, move |event| {
 			event.skip(true);
 			if let Ok(dm) = dm_for_mouse.try_lock() {
@@ -148,7 +148,7 @@ impl DocumentManager {
 		sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
 		panel.set_sizer(sizer, true);
 		let content = session.content();
-		fill_text_ctrl(&text_ctrl, &content);
+		fill_text_ctrl(text_ctrl, &content);
 		self.notebook.add_page(&panel, &title, true, None);
 		let path_str = path.to_string_lossy();
 		let nav_history = config.get_navigation_history(&path_str);
@@ -356,7 +356,7 @@ impl DocumentManager {
 			let sizer = BoxSizer::builder(Orientation::Vertical).build();
 			sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
 			tab.panel.set_sizer(sizer, true);
-			fill_text_ctrl(&text_ctrl, &content);
+			fill_text_ctrl(text_ctrl, &content);
 			let max_pos = text_ctrl.get_last_position();
 			let pos = current_pos.clamp(0, max_pos);
 			text_ctrl.set_insertion_point(pos);
@@ -396,7 +396,7 @@ fn show_error_dialog(parent: &dyn WxWidget, message: &str, title: &str) {
 	dialog.show_modal();
 }
 
-fn fill_text_ctrl(text_ctrl: &TextCtrl, content: &str) {
+fn fill_text_ctrl(text_ctrl: TextCtrl, content: &str) {
 	text_ctrl.clear();
 	const CHUNK_SIZE: usize = 32 * 1024;
 	let mut buf = String::new();

@@ -68,20 +68,13 @@ impl MainWindow {
 		let doc_manager =
 			Rc::new(Mutex::new(DocumentManager::new(frame, notebook, Rc::clone(&config), live_region_label)));
 		let find_dialog = Rc::new(Mutex::new(None));
-		Self::bind_menu_events(
-			&frame,
-			Rc::clone(&doc_manager),
-			Rc::clone(&config),
-			Rc::clone(&find_dialog),
-			live_region_label,
-		);
+		Self::bind_menu_events(&frame, &doc_manager, &config, &find_dialog, live_region_label);
 		let dm = Rc::clone(&doc_manager);
 		let frame_copy = frame;
 		let notebook = *doc_manager.lock().unwrap().notebook();
 		notebook.on_page_changed(move |_event| {
-			let dm_ref = match dm.try_lock() {
-				Ok(dm_ref) => dm_ref,
-				Err(_) => return,
+			let Ok(dm_ref) = dm.try_lock() else {
+				return;
 			};
 			update_title_from_manager(&frame_copy, &dm_ref);
 		});
@@ -148,7 +141,7 @@ impl MainWindow {
 		if !self.ensure_parser_ready(path) {
 			return false;
 		}
-		let result = self.doc_manager.lock().unwrap().open_file(Rc::clone(&self.doc_manager), path);
+		let result = self.doc_manager.lock().unwrap().open_file(&self.doc_manager, path);
 		if result {
 			self.update_title();
 			self.update_recent_documents_menu();
@@ -158,9 +151,8 @@ impl MainWindow {
 	}
 
 	fn update_title(&self) {
-		let dm = match self.doc_manager.try_lock() {
-			Ok(dm) => dm,
-			Err(_) => return,
+		let Ok(dm) = self.doc_manager.try_lock() else {
+			return;
 		};
 		if dm.tab_count() == 0 {
 			self.frame.set_title(&t("Paperback"));
@@ -232,7 +224,7 @@ impl MainWindow {
 				if !ensure_parser_ready_for_path(&frame, path, &config) {
 					continue;
 				}
-				let _ = doc_manager.lock().unwrap().open_file(Rc::clone(&doc_manager), path);
+				let _ = doc_manager.lock().unwrap().open_file(&doc_manager, path);
 			}
 			let dm_ref = doc_manager.lock().unwrap();
 			update_title_from_manager(&frame, &dm_ref);
@@ -256,10 +248,9 @@ impl MainWindow {
 				if !ensure_parser_ready_for_path(frame, path, config) {
 					return;
 				}
-				if doc_manager.lock().unwrap().open_file(Rc::clone(doc_manager), path) {
-					let dm_ref = match doc_manager.try_lock() {
-						Ok(dm_ref) => dm_ref,
-						Err(_) => return,
+				if doc_manager.lock().unwrap().open_file(doc_manager, path) {
+					let Ok(dm_ref) = doc_manager.try_lock() else {
+						return;
 					};
 					update_title_from_manager(frame, &dm_ref);
 					dm_ref.restore_focus();
@@ -271,15 +262,15 @@ impl MainWindow {
 	#[allow(clippy::too_many_lines)]
 	fn bind_menu_events(
 		frame: &Frame,
-		doc_manager: Rc<Mutex<DocumentManager>>,
-		config: Rc<Mutex<ConfigManager>>,
-		find_dialog: Rc<Mutex<Option<FindDialogState>>>,
+		doc_manager: &Rc<Mutex<DocumentManager>>,
+		config: &Rc<Mutex<ConfigManager>>,
+		find_dialog: &Rc<Mutex<Option<FindDialogState>>>,
 		live_region_label: StaticText,
 	) {
 		let frame_copy = *frame;
-		let dm = Rc::clone(&doc_manager);
-		let config = Rc::clone(&config);
-		let find_dialog = Rc::clone(&find_dialog);
+		let dm = Rc::clone(doc_manager);
+		let config = Rc::clone(config);
+		let find_dialog = Rc::clone(find_dialog);
 		let sleep_timer = Rc::new(Timer::new(frame));
 		let sleep_timer_running = Rc::new(Cell::new(false));
 		let sleep_timer_start_time = Rc::new(Cell::new(0i64));
@@ -287,7 +278,7 @@ impl MainWindow {
 		let sleep_timer_for_tick = Rc::clone(&sleep_timer);
 		let sleep_timer_running_for_tick = Rc::clone(&sleep_timer_running);
 		let frame_for_timer = *frame;
-		let dm_for_timer = Rc::clone(&doc_manager);
+		let dm_for_timer = Rc::clone(doc_manager);
 		let config_for_timer = Rc::clone(&config);
 		sleep_timer.on_tick(move |_| {
 			sleep_timer_running_for_tick.set(false);
@@ -312,15 +303,14 @@ impl MainWindow {
 		let sleep_timer_running_for_status = Rc::clone(&sleep_timer_running);
 		let sleep_timer_start_for_status = Rc::clone(&sleep_timer_start_time);
 		let sleep_timer_duration_for_status = Rc::clone(&sleep_timer_duration_minutes);
-		let dm_for_status = Rc::clone(&doc_manager);
+		let dm_for_status = Rc::clone(doc_manager);
 		let frame_for_status = *frame;
 		status_update_timer.on_tick(move |_| {
 			if !sleep_timer_running_for_status.get() {
 				return;
 			}
-			let dm = match dm_for_status.try_lock() {
-				Ok(dm) => dm,
-				Err(_) => return,
+			let Ok(dm) = dm_for_status.try_lock() else {
+				return;
 			};
 			status::update_status_bar_with_sleep_timer(
 				&frame_for_status,
@@ -694,9 +684,8 @@ impl MainWindow {
 					);
 				}
 				menu_ids::EXPORT_TO_PLAIN_TEXT => {
-					let dm_ref = match dm.try_lock() {
-						Ok(dm_ref) => dm_ref,
-						Err(_) => return,
+					let Ok(dm_ref) = dm.try_lock() else {
+						return;
 					};
 					let Some(tab) = dm_ref.active_tab() else {
 						return;
@@ -727,9 +716,8 @@ impl MainWindow {
 					}
 				}
 				menu_ids::EXPORT_DOCUMENT_DATA => {
-					let dm_ref = match dm.try_lock() {
-						Ok(dm_ref) => dm_ref,
-						Err(_) => return,
+					let Ok(dm_ref) = dm.try_lock() else {
+						return;
 					};
 					let Some(tab) = dm_ref.active_tab() else {
 						return;
@@ -764,9 +752,8 @@ impl MainWindow {
 					}
 				}
 				menu_ids::IMPORT_DOCUMENT_DATA => {
-					let dm_ref = match dm.try_lock() {
-						Ok(dm_ref) => dm_ref,
-						Err(_) => return,
+					let Ok(dm_ref) = dm.try_lock() else {
+						return;
 					};
 					let Some(tab) = dm_ref.active_tab() else {
 						return;
@@ -806,9 +793,8 @@ impl MainWindow {
 					}
 				}
 				menu_ids::WORD_COUNT => {
-					let dm_ref = match dm.try_lock() {
-						Ok(dm_ref) => dm_ref,
-						Err(_) => return,
+					let Ok(dm_ref) = dm.try_lock() else {
+						return;
 					};
 					if let Some(tab) = dm_ref.active_tab() {
 						let stats = tab.session.stats();
@@ -822,9 +808,8 @@ impl MainWindow {
 					}
 				}
 				menu_ids::DOCUMENT_INFO => {
-					let dm_ref = match dm.try_lock() {
-						Ok(dm_ref) => dm_ref,
-						Err(_) => return,
+					let Ok(dm_ref) = dm.try_lock() else {
+						return;
 					};
 					if let Some(tab) = dm_ref.active_tab() {
 						let stats = tab.session.stats();
@@ -872,9 +857,8 @@ impl MainWindow {
 					}
 				}
 				menu_ids::OPEN_IN_WEB_VIEW => {
-					let dm_ref = match dm.try_lock() {
-						Ok(dm_ref) => dm_ref,
-						Err(_) => return,
+					let Ok(dm_ref) = dm.try_lock() else {
+						return;
 					};
 					let Some(tab) = dm_ref.active_tab() else {
 						return;
@@ -1025,7 +1009,7 @@ impl MainWindow {
 								if !ensure_parser_ready_for_path(&frame_copy, path, &config) {
 									return;
 								}
-								if dm.lock().unwrap().open_file(Rc::clone(&dm), path) {
+								if dm.lock().unwrap().open_file(&dm, path) {
 									let dm_ref = dm.lock().unwrap();
 									update_title_from_manager(&frame_copy, &dm_ref);
 									dm_ref.restore_focus();
@@ -1045,13 +1029,13 @@ impl MainWindow {
 						}
 						let open_paths = dm.lock().unwrap().open_paths();
 						let config_for_dialog = Rc::clone(&config);
-						let selection = dialogs::show_all_documents_dialog(&frame_copy, config_for_dialog, open_paths);
+						let selection = dialogs::show_all_documents_dialog(&frame_copy, &config_for_dialog, open_paths);
 						if let Some(path) = selection {
 							let path = Path::new(&path);
 							if !ensure_parser_ready_for_path(&frame_copy, path, &config) {
 								return;
 							}
-							if dm.lock().unwrap().open_file(Rc::clone(&dm), path) {
+							if dm.lock().unwrap().open_file(&dm, path) {
 								let dm_ref = dm.lock().unwrap();
 								update_title_from_manager(&frame_copy, &dm_ref);
 								dm_ref.restore_focus();

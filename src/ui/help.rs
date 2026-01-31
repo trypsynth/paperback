@@ -120,7 +120,7 @@ pub fn handle_view_help_paperback(
 	if !ensure_parser_ready_for_path(frame, &path, config) {
 		return;
 	}
-	let _ = doc_manager.lock().unwrap().open_file(Rc::clone(doc_manager), &path);
+	let _ = doc_manager.lock().unwrap().open_file(doc_manager, &path);
 }
 
 pub fn handle_donate(frame: &Frame) {

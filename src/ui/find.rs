@@ -17,7 +17,7 @@ pub struct SearchResult {
 }
 
 bitflags! {
-	#[derive(Default)]
+	#[derive(Copy, Clone, Default)]
 	pub struct FindOptions: u8 {
 		const NONE = 0;
 		const FORWARD = 1 << 0;
@@ -341,9 +341,8 @@ fn do_find(
 	if query.trim().is_empty() {
 		return;
 	}
-	let _find_guard = match state.try_begin_find() {
-		Some(guard) => guard,
-		None => return,
+	let Some(_find_guard) = state.try_begin_find() else {
+		return;
 	};
 	state.save_settings(config);
 	state.add_to_history(config, &query);

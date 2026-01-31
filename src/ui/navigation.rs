@@ -129,7 +129,7 @@ fn format_nav_found_message(
 
 fn apply_navigation_result(
 	tab: &super::document_manager::DocumentTab,
-	result: NavigationResult,
+	result: &NavigationResult,
 	target: MarkerNavTarget,
 	next: bool,
 	live_region_label: StaticText,
@@ -220,7 +220,7 @@ pub fn handle_marker_navigation(
 		MarkerNavTarget::ListItem => tab.session.navigate_list_item(current_pos, wrap, next),
 	};
 	let target_offset = result.offset;
-	if apply_navigation_result(tab, result, target, next, live_region_label) {
+	if apply_navigation_result(tab, &result, target, next, live_region_label) {
 		tab.session.check_and_record_history(target_offset);
 		let (history, history_index) = tab.session.get_history();
 		let path_str = tab.file_path.to_string_lossy();
@@ -229,7 +229,7 @@ pub fn handle_marker_navigation(
 	}
 }
 
-pub fn selected_range(text_ctrl: &TextCtrl) -> (i64, i64) {
+pub fn selected_range(text_ctrl: TextCtrl) -> (i64, i64) {
 	let (start, end) = text_ctrl.get_selection();
 	if start == end {
 		let pos = text_ctrl.get_insertion_point();
@@ -352,7 +352,7 @@ pub fn handle_toggle_bookmark(
 	let Some(tab) = dm.active_tab_mut() else {
 		return;
 	};
-	let (start, end) = selected_range(&tab.text_ctrl);
+	let (start, end) = selected_range(tab.text_ctrl);
 	let path_str = tab.file_path.to_string_lossy().to_string();
 	let cfg = config.lock().unwrap();
 	let existed = cfg.get_bookmarks(&path_str).iter().any(|bm| bm.start == start && bm.end == end);
@@ -372,7 +372,7 @@ pub fn handle_bookmark_with_note(
 	let Some(tab) = dm.active_tab_mut() else {
 		return;
 	};
-	let (start, end) = selected_range(&tab.text_ctrl);
+	let (start, end) = selected_range(tab.text_ctrl);
 	let path_str = tab.file_path.to_string_lossy().to_string();
 	let existing = {
 		let cfg = config.lock().unwrap();

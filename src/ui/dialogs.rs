@@ -980,7 +980,7 @@ pub fn show_update_dialog(parent: &dyn WxWidget, new_version: &str, changelog: &
 
 pub fn show_all_documents_dialog(
 	parent: &Frame,
-	config: Rc<Mutex<ConfigManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
 	open_paths: Vec<String>,
 ) -> Option<String> {
 	let open_paths = Rc::new(open_paths);
@@ -1010,11 +1010,11 @@ pub fn show_all_documents_dialog(
 	bind_escape_to_close(&remove_button, dialog);
 	bind_escape_to_close(&clear_all_button, dialog);
 	populate_document_list(
-		&doc_list,
-		&open_button,
-		&remove_button,
-		&clear_all_button,
-		&config,
+		doc_list,
+		open_button,
+		remove_button,
+		clear_all_button,
+		config,
 		open_paths.as_ref(),
 		"",
 		None,
@@ -1023,7 +1023,7 @@ pub fn show_all_documents_dialog(
 	let open_button_for_select = open_button;
 	doc_list.on_item_selected(move |event| {
 		let index = event.get_item_index();
-		update_open_button_for_index(&list_for_select, &open_button_for_select, index);
+		update_open_button_for_index(list_for_select, open_button_for_select, index);
 	});
 	let list_for_focus = doc_list;
 	let open_button_for_focus = open_button;
@@ -1035,7 +1035,7 @@ pub fn show_all_documents_dialog(
 				ListItemState::Selected | ListItemState::Focused,
 				ListItemState::Selected | ListItemState::Focused,
 			);
-			update_open_button_for_index(&list_for_focus, &open_button_for_focus, index);
+			update_open_button_for_index(list_for_focus, open_button_for_focus, index);
 		}
 	});
 	let dialog_for_activate = dialog;
@@ -1055,7 +1055,7 @@ pub fn show_all_documents_dialog(
 	let list_for_open = doc_list;
 	let selected_for_open = Rc::clone(&selected_path);
 	let open_action = Rc::new(move || {
-		if let Some(path) = get_selected_path(&list_for_open) {
+		if let Some(path) = get_selected_path(list_for_open) {
 			if Path::new(&path).exists() {
 				*selected_for_open.lock().unwrap() = Some(path);
 				dialog_for_open.end_modal(wxdragon::id::ID_OK);
@@ -1066,14 +1066,14 @@ pub fn show_all_documents_dialog(
 	open_button.on_click(move |_| {
 		open_action_for_button();
 	});
-	let config_for_remove = Rc::clone(&config);
+	let config_for_remove = Rc::clone(config);
 	let list_for_remove = doc_list;
 	let open_button_for_remove = open_button;
 	let remove_button_for_remove = remove_button;
 	let clear_button_for_remove = clear_all_button;
 	let open_paths_for_remove = Rc::clone(&open_paths);
 	let remove_action = Rc::new(move || {
-		let index = get_selected_index(&list_for_remove);
+		let index = get_selected_index(list_for_remove);
 		if index < 0 {
 			return;
 		}
@@ -1089,7 +1089,7 @@ pub fn show_all_documents_dialog(
 		if confirm.show_modal() != wxdragon::id::ID_YES {
 			return;
 		}
-		let Some(path_to_remove) = get_path_for_index(&list_for_remove, index) else {
+		let Some(path_to_remove) = get_path_for_index(list_for_remove, index) else {
 			return;
 		};
 		{
@@ -1098,10 +1098,10 @@ pub fn show_all_documents_dialog(
 			cfg.flush();
 		}
 		populate_document_list(
-			&list_for_remove,
-			&open_button_for_remove,
-			&remove_button_for_remove,
-			&clear_button_for_remove,
+			list_for_remove,
+			open_button_for_remove,
+			remove_button_for_remove,
+			clear_button_for_remove,
 			&config_for_remove,
 			open_paths_for_remove.as_ref(),
 			"",
@@ -1112,7 +1112,7 @@ pub fn show_all_documents_dialog(
 	remove_button.on_click(move |_| {
 		remove_action_for_button();
 	});
-	let config_for_clear = Rc::clone(&config);
+	let config_for_clear = Rc::clone(config);
 	let list_for_clear = doc_list;
 	let open_button_for_clear = open_button;
 	let remove_button_for_clear = remove_button;
@@ -1140,10 +1140,10 @@ pub fn show_all_documents_dialog(
 			cfg.flush();
 		}
 		populate_document_list(
-			&list_for_clear,
-			&open_button_for_clear,
-			&remove_button_for_clear,
-			&clear_button_for_clear,
+			list_for_clear,
+			open_button_for_clear,
+			remove_button_for_clear,
+			clear_button_for_clear,
 			&config_for_clear,
 			open_paths_for_clear.as_ref(),
 			"",
@@ -1154,15 +1154,15 @@ pub fn show_all_documents_dialog(
 	let open_button_for_search = open_button;
 	let remove_button_for_search = remove_button;
 	let clear_button_for_search = clear_all_button;
-	let config_for_search = Rc::clone(&config);
+	let config_for_search = Rc::clone(config);
 	let open_paths_for_search = Rc::clone(&open_paths);
 	search_ctrl.on_text_updated(move |_event| {
 		let filter = search_ctrl.get_value();
 		populate_document_list(
-			&list_for_search,
-			&open_button_for_search,
-			&remove_button_for_search,
-			&clear_button_for_search,
+			list_for_search,
+			open_button_for_search,
+			remove_button_for_search,
+			clear_button_for_search,
 			&config_for_search,
 			open_paths_for_search.as_ref(),
 			&filter,
@@ -1289,10 +1289,10 @@ pub fn show_open_as_dialog(parent: &Frame, path: &Path) -> Option<String> {
 }
 
 fn populate_document_list(
-	list: &ListCtrl,
-	open_button: &Button,
-	remove_button: &Button,
-	clear_all_button: &Button,
+	list: ListCtrl,
+	open_button: Button,
+	remove_button: Button,
+	clear_all_button: Button,
 	config: &Rc<Mutex<ConfigManager>>,
 	open_paths: &[String],
 	filter: &str,
@@ -1342,7 +1342,7 @@ fn populate_document_list(
 	}
 }
 
-fn update_open_button_for_index(list: &ListCtrl, open_button: &Button, index: i32) {
+fn update_open_button_for_index(list: ListCtrl, open_button: Button, index: i32) {
 	if index < 0 {
 		open_button.enable(false);
 		return;
@@ -1376,7 +1376,7 @@ fn bind_escape_to_close(handler: &impl WxEvtHandler, dialog: Dialog) {
 	});
 }
 
-fn get_selected_index(list: &ListCtrl) -> i32 {
+fn get_selected_index(list: ListCtrl) -> i32 {
 	let selected = list.get_first_selected_item();
 	if selected >= 0 {
 		return selected;
@@ -1384,7 +1384,7 @@ fn get_selected_index(list: &ListCtrl) -> i32 {
 	list.get_next_item(-1, ListNextItemFlag::All, ListItemState::Focused)
 }
 
-fn get_path_for_index(list: &ListCtrl, index: i32) -> Option<String> {
+fn get_path_for_index(list: ListCtrl, index: i32) -> Option<String> {
 	if index < 0 {
 		return None;
 	}
@@ -1399,7 +1399,7 @@ fn get_path_for_index(list: &ListCtrl, index: i32) -> Option<String> {
 	if path.is_empty() { None } else { Some(path) }
 }
 
-fn get_selected_path(list: &ListCtrl) -> Option<String> {
+fn get_selected_path(list: ListCtrl) -> Option<String> {
 	let index = get_selected_index(list);
 	get_path_for_index(list, index)
 }
