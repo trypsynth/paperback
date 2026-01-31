@@ -74,10 +74,37 @@ pub struct BookmarkDialogResult {
 	pub start: i64,
 }
 
+struct OptionsDialogUi {
+	dialog: Dialog,
+	general_box: StaticBoxSizer,
+	restore_docs_check: CheckBox,
+	word_wrap_check: CheckBox,
+	minimize_to_tray_check: CheckBox,
+	start_maximized_check: CheckBox,
+	compact_go_menu_check: CheckBox,
+	navigation_wrap_check: CheckBox,
+	check_for_updates_check: CheckBox,
+	recent_docs_ctrl: SpinCtrl,
+	language_combo: ComboBox,
+	language_codes: Vec<String>,
+	current_language: String,
+	ok_button: Button,
+	cancel_button: Button,
+}
+
 pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<OptionsDialogResult> {
+	let ui = build_options_dialog_ui(parent, config);
+	finalize_options_dialog_layout(&ui);
+	if ui.dialog.show_modal() != wxdragon::id::ID_OK {
+		return None;
+	}
+	let language = resolve_options_language(&ui);
+	let flags = build_options_dialog_flags(&ui);
+	Some(OptionsDialogResult { flags, recent_documents_to_show: ui.recent_docs_ctrl.value(), language })
+}
+
+fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDialogUi {
 	let dialog = Dialog::builder(parent, &t("Options")).build();
-	let option_padding = 5;
-	let max_recent_docs = 100;
 	let general_box = StaticBoxSizerBuilder::new_with_label(Orientation::Vertical, &dialog, &t("General")).build();
 	let restore_docs_check =
 		CheckBox::builder(&dialog).with_label(&t("&Restore previously opened documents on startup")).build();
@@ -87,13 +114,19 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 	let compact_go_menu_check = CheckBox::builder(&dialog).with_label(&t("Show compact &go menu")).build();
 	let navigation_wrap_check = CheckBox::builder(&dialog).with_label(&t("&Wrap navigation")).build();
 	let check_for_updates_check = CheckBox::builder(&dialog).with_label(&t("Check for &updates on startup")).build();
-	general_box.add(&restore_docs_check, 0, SizerFlag::All, option_padding);
-	general_box.add(&word_wrap_check, 0, SizerFlag::All, option_padding);
-	general_box.add(&minimize_to_tray_check, 0, SizerFlag::All, option_padding);
-	general_box.add(&start_maximized_check, 0, SizerFlag::All, option_padding);
-	general_box.add(&compact_go_menu_check, 0, SizerFlag::All, option_padding);
-	general_box.add(&navigation_wrap_check, 0, SizerFlag::All, option_padding);
-	general_box.add(&check_for_updates_check, 0, SizerFlag::All, option_padding);
+	let option_padding = 5;
+	for check in [
+		&restore_docs_check,
+		&word_wrap_check,
+		&minimize_to_tray_check,
+		&start_maximized_check,
+		&compact_go_menu_check,
+		&navigation_wrap_check,
+		&check_for_updates_check,
+	] {
+		general_box.add(check, 0, SizerFlag::All, option_padding);
+	}
+	let max_recent_docs = 100;
 	let recent_docs_label = StaticText::builder(&dialog).with_label(&t("Number of &recent documents to show:")).build();
 	let recent_docs_ctrl = SpinCtrl::builder(&dialog).with_range(0, max_recent_docs).build();
 	let recent_docs_sizer = BoxSizer::builder(Orientation::Horizontal).build();
@@ -132,46 +165,69 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
 	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
 	ok_button.set_default();
+	OptionsDialogUi {
+		dialog,
+		general_box,
+		restore_docs_check,
+		word_wrap_check,
+		minimize_to_tray_check,
+		start_maximized_check,
+		compact_go_menu_check,
+		navigation_wrap_check,
+		check_for_updates_check,
+		recent_docs_ctrl,
+		language_combo,
+		language_codes,
+		current_language,
+		ok_button,
+		cancel_button,
+	}
+}
+
+fn finalize_options_dialog_layout(ui: &OptionsDialogUi) {
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&ok_button, 0, SizerFlag::All, DIALOG_PADDING);
-	button_sizer.add(&cancel_button, 0, SizerFlag::All, DIALOG_PADDING);
+	button_sizer.add(&ui.ok_button, 0, SizerFlag::All, DIALOG_PADDING);
+	button_sizer.add(&ui.cancel_button, 0, SizerFlag::All, DIALOG_PADDING);
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	content_sizer.add_sizer(&general_box, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
+	content_sizer.add_sizer(&ui.general_box, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
 	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
-	dialog.set_sizer_and_fit(content_sizer, true);
-	dialog.centre();
-	if dialog.show_modal() != wxdragon::id::ID_OK {
-		return None;
-	}
-	let language = language_combo
+	ui.dialog.set_sizer_and_fit(content_sizer, true);
+	ui.dialog.centre();
+}
+
+fn resolve_options_language(ui: &OptionsDialogUi) -> String {
+	ui.language_combo
 		.get_selection()
 		.and_then(|index| usize::try_from(index).ok())
-		.and_then(|index| language_codes.get(index).cloned())
-		.unwrap_or_else(|| current_language.clone());
+		.and_then(|index| ui.language_codes.get(index).cloned())
+		.unwrap_or_else(|| ui.current_language.clone())
+}
+
+fn build_options_dialog_flags(ui: &OptionsDialogUi) -> OptionsDialogFlags {
 	let mut flags = OptionsDialogFlags::empty();
-	if restore_docs_check.is_checked() {
+	if ui.restore_docs_check.is_checked() {
 		flags.insert(OptionsDialogFlags::RESTORE_PREVIOUS_DOCUMENTS);
 	}
-	if word_wrap_check.is_checked() {
+	if ui.word_wrap_check.is_checked() {
 		flags.insert(OptionsDialogFlags::WORD_WRAP);
 	}
-	if minimize_to_tray_check.is_checked() {
+	if ui.minimize_to_tray_check.is_checked() {
 		flags.insert(OptionsDialogFlags::MINIMIZE_TO_TRAY);
 	}
-	if start_maximized_check.is_checked() {
+	if ui.start_maximized_check.is_checked() {
 		flags.insert(OptionsDialogFlags::START_MAXIMIZED);
 	}
-	if compact_go_menu_check.is_checked() {
+	if ui.compact_go_menu_check.is_checked() {
 		flags.insert(OptionsDialogFlags::COMPACT_GO_MENU);
 	}
-	if navigation_wrap_check.is_checked() {
+	if ui.navigation_wrap_check.is_checked() {
 		flags.insert(OptionsDialogFlags::NAVIGATION_WRAP);
 	}
-	if check_for_updates_check.is_checked() {
+	if ui.check_for_updates_check.is_checked() {
 		flags.insert(OptionsDialogFlags::CHECK_FOR_UPDATES_ON_STARTUP);
 	}
-	Some(OptionsDialogResult { flags, recent_documents_to_show: recent_docs_ctrl.value(), language })
+	flags
 }
 
 pub fn show_bookmark_dialog(
