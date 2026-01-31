@@ -290,7 +290,7 @@ impl DocumentManager {
 						tab.text_ctrl.set_insertion_point(result.offset);
 						tab.text_ctrl.show_position(result.offset);
 						tab.session.check_and_record_history(result.offset);
-						live_region::announce(&self.live_region_label, &t("Navigated to internal link."));
+						live_region::announce(self.live_region_label, &t("Navigated to internal link."));
 					}
 					crate::session::LinkAction::External => {
 						wxdragon::utils::launch_default_browser(

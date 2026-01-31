@@ -193,7 +193,6 @@ impl DocumentSession {
 	}
 
 	const fn nav_request(
-		&self,
 		position: i64,
 		wrap: bool,
 		next: bool,
@@ -226,7 +225,7 @@ impl DocumentSession {
 		if !is_supported {
 			return NavigationResult::not_supported();
 		}
-		let req = self.nav_request(position, wrap, next, target, level_filter);
+		let req = Self::nav_request(position, wrap, next, target, level_filter);
 		let result = reader_navigate(&self.handle, &req);
 		let mut nav_result = NavigationResult::from_nav_result(&result);
 		post(self, &mut nav_result);

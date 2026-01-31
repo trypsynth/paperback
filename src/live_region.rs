@@ -106,7 +106,7 @@ pub fn set_live_region(window: &impl WxWidget) -> bool {
 	windows_impl::set_live_region(window)
 }
 
-pub fn announce(label: &StaticText, message: &str) {
+pub fn announce(label: StaticText, message: &str) {
 	label.set_label(message);
-	let _ = windows_impl::notify_live_region_changed(label);
+	let _ = windows_impl::notify_live_region_changed(&label);
 }

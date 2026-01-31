@@ -800,7 +800,7 @@ impl MainWindow {
 						return;
 					};
 					if tab.session.page_count() == 0 {
-						live_region::announce(&live_region_label, &t("No pages."));
+						live_region::announce(live_region_label, &t("No pages."));
 						return;
 					}
 					let current_pos = tab.text_ctrl.get_insertion_point();
@@ -1233,7 +1233,7 @@ impl MainWindow {
 						SLEEP_TIMER_DURATION_MINUTES.store(0, Ordering::SeqCst);
 						let dm_ref = dm.lock().unwrap();
 						update_title_from_manager(&frame_copy, &dm_ref);
-						live_region::announce(&live_region_label, &t("Sleep timer cancelled."));
+						live_region::announce(live_region_label, &t("Sleep timer cancelled."));
 						return;
 					}
 					let initial_duration = config.lock().unwrap().get_app_int("sleep_timer_duration", 30);
@@ -1259,7 +1259,7 @@ impl MainWindow {
 						} else {
 							t("Sleep timer set for %d minutes.").replace("%d", &duration.to_string())
 						};
-						live_region::announce(&live_region_label, &msg);
+						live_region::announce(live_region_label, &msg);
 					}
 				}
 				menu_ids::ABOUT => {
@@ -1303,7 +1303,7 @@ impl MainWindow {
 							!config_guard.get_all_documents().is_empty()
 						};
 						if !has_documents {
-							live_region::announce(&live_region_label, &t("No recent documents."));
+							live_region::announce(live_region_label, &t("No recent documents."));
 							return;
 						}
 						let open_paths = dm.lock().unwrap().open_paths();
@@ -1795,14 +1795,14 @@ fn do_find(
 	let start_pos = if forward { sel_end } else { sel_start };
 	let result = find_text_with_wrap(&text, &query, start_pos, options);
 	if !result.found {
-		live_region::announce(&live_region_label, &t("Not found."));
+		live_region::announce(live_region_label, &t("Not found."));
 		state.dialog.show(true);
 		state.dialog.raise();
 		state.focus_find_text();
 		return;
 	}
 	if result.wrapped {
-		live_region::announce(&live_region_label, &t("No more results. Wrapping search."));
+		live_region::announce(live_region_label, &t("No more results. Wrapping search."));
 	}
 	if result.position < 0 {
 		return;
@@ -1955,12 +1955,12 @@ fn apply_navigation_result(
 	};
 	let ann = nav_announcements(target, level_filter);
 	if result.not_supported {
-		live_region::announce(&live_region_label, &ann.not_supported);
+		live_region::announce(live_region_label, &ann.not_supported);
 		return false;
 	}
 	if !result.found {
 		let message = if next { &ann.not_found_next } else { &ann.not_found_prev };
-		live_region::announce(&live_region_label, message);
+		live_region::announce(live_region_label, message);
 		return false;
 	}
 	let mut context_text = result.marker_text.clone();
@@ -1973,7 +1973,7 @@ fn apply_navigation_result(
 		_ => 0,
 	};
 	let message = format_nav_found_message(&ann, &context_text, context_index, result.wrapped, next);
-	live_region::announce(&live_region_label, &message);
+	live_region::announce(live_region_label, &message);
 	let offset = result.offset;
 	tab.text_ctrl.set_focus();
 	tab.text_ctrl.set_insertion_point(offset);
@@ -1996,7 +1996,7 @@ fn handle_history_navigation(
 		if forward { tab.session.history_go_forward(current_pos) } else { tab.session.history_go_back(current_pos) };
 	if result.found {
 		let message = if forward { t("Navigated to next position.") } else { t("Navigated to previous position.") };
-		live_region::announce(&live_region_label, &message);
+		live_region::announce(live_region_label, &message);
 		tab.text_ctrl.set_focus();
 		tab.text_ctrl.set_insertion_point(result.offset);
 		tab.text_ctrl.show_position(result.offset);
@@ -2007,7 +2007,7 @@ fn handle_history_navigation(
 		cfg.set_navigation_history(&path_str, history, history_index);
 	} else {
 		let message = if forward { t("No next position.") } else { t("No previous position.") };
-		live_region::announce(&live_region_label, &message);
+		live_region::announce(live_region_label, &message);
 	}
 }
 
@@ -2091,7 +2091,7 @@ fn handle_bookmark_navigation(
 		} else {
 			t("No previous bookmark.")
 		};
-		live_region::announce(&live_region_label, &message);
+		live_region::announce(live_region_label, &message);
 		return;
 	}
 	tab.text_ctrl.set_focus();
@@ -2112,7 +2112,7 @@ fn handle_bookmark_navigation(
 		1,
 	);
 	let message = format!("{wrap_prefix}{bookmark_text}");
-	live_region::announce(&live_region_label, &message);
+	live_region::announce(live_region_label, &message);
 	let (history, history_index) = tab.session.get_history();
 	let cfg = config.lock().unwrap();
 	cfg.set_navigation_history(&path_str, history, history_index);
@@ -2151,7 +2151,7 @@ fn handle_bookmark_dialog(
 			t("Bookmark.")
 		}
 	};
-	live_region::announce(&live_region_label, &message);
+	live_region::announce(live_region_label, &message);
 	let (history, history_index) = tab.session.get_history();
 	let path_str = tab.file_path.to_string_lossy();
 	let cfg = config.lock().unwrap();
@@ -2174,7 +2174,7 @@ fn handle_toggle_bookmark(
 	cfg.toggle_bookmark(&path_str, start, end, "");
 	cfg.flush();
 	let message = if existed { t("Bookmark removed.") } else { t("Bookmark added.") };
-	live_region::announce(&live_region_label, &message);
+	live_region::announce(live_region_label, &message);
 }
 
 fn handle_bookmark_with_note(
@@ -2206,7 +2206,7 @@ fn handle_bookmark_with_note(
 		cfg.add_bookmark(&path_str, start, end, &note);
 	}
 	cfg.flush();
-	live_region::announce(&live_region_label, &t("Bookmark saved."));
+	live_region::announce(live_region_label, &t("Bookmark saved."));
 }
 
 fn handle_view_note_text(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) {

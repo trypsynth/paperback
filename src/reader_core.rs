@@ -30,7 +30,7 @@ fn select_marker_index(
 	}
 	let alt_pos = match direction {
 		ffi::NavDirection::Previous => i64::try_from(doc.document().buffer.content.len()).unwrap_or(0) + 1,
-		_ => -1,
+		ffi::NavDirection::Next => -1,
 	};
 	(
 		match direction {
@@ -82,7 +82,7 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 			let (idx_final, wrapped_final) = if idx_opt.is_none() && req.wrap {
 				let alt_pos = match req.direction {
 					ffi::NavDirection::Previous => i64::try_from(doc.document().buffer.content.len()).unwrap_or(0) + 1,
-					_ => -1,
+					ffi::NavDirection::Next => -1,
 				};
 				let retry = match req.direction {
 					ffi::NavDirection::Next => doc.next_heading_index(alt_pos, level_filter),
@@ -276,7 +276,7 @@ pub fn get_filtered_bookmarks(
 		ffi::BookmarkFilterType::NotesOnly => {
 			bookmarks.retain(|b| !b.note.is_empty());
 		}
-		_ => {}
+		ffi::BookmarkFilterType::All => {}
 	}
 	bookmarks.sort_by_key(|b| b.start);
 	let items: Vec<ffi::BookmarkDisplayItem> = bookmarks
