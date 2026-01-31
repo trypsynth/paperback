@@ -1563,12 +1563,10 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 			root.clone()
 		};
 		let display_text = if item.text.is_empty() { t("Untitled") } else { item.text.clone() };
-		if let Some(id) = headings_tree.append_item_with_data(&parent_id, &display_text, item.offset as i64, None, None)
-		{
+		let offset = i64::try_from(item.offset).unwrap_or(i64::MAX);
+		if let Some(id) = headings_tree.append_item_with_data(&parent_id, &display_text, offset, None, None) {
 			item_ids.push(id);
-		} else if let Some(root_child) =
-			headings_tree.append_item_with_data(&root, &display_text, item.offset as i64, None, None)
-		{
+		} else if let Some(root_child) = headings_tree.append_item_with_data(&root, &display_text, offset, None, None) {
 			item_ids.push(root_child);
 		}
 	}
@@ -1588,7 +1586,7 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 	let mut link_offsets = Vec::new();
 	for item in link_data.items {
 		links_list.append(&item.text);
-		link_offsets.push(item.offset as i64);
+		link_offsets.push(i64::try_from(item.offset).unwrap_or(i64::MAX));
 	}
 	if !link_offsets.is_empty() {
 		let idx = if link_data.closest_index >= 0 { link_data.closest_index } else { 0 };

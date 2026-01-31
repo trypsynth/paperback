@@ -59,6 +59,7 @@ impl DocumentManager {
 			config.import_document_settings(&path_str);
 			let forced_extension = config.get_document_format(&path_str);
 			let password = config.get_document_password(&path_str);
+			drop(config);
 			(password, forced_extension)
 		};
 		let path_str = path.to_string_lossy().to_string();
@@ -239,7 +240,7 @@ impl DocumentManager {
 
 	pub fn active_tab_index(&self) -> Option<usize> {
 		let selection = self.notebook.selection();
-		if selection >= 0 { Some(selection as usize) } else { None }
+		if selection >= 0 { usize::try_from(selection).ok() } else { None }
 	}
 
 	pub fn active_tab(&self) -> Option<&DocumentTab> {
@@ -298,21 +299,17 @@ impl DocumentManager {
 							wxdragon::utils::BrowserLaunchFlags::Default,
 						);
 					}
-					_ => {}
+					crate::session::LinkAction::NotFound => {}
 				}
 			}
 		}
 	}
 
 	pub fn activate_current_table(&self) {
-		let table_html = {
-			if let Some(tab) = self.active_tab() {
-				let pos = tab.text_ctrl.get_insertion_point();
-				tab.session.get_table_at_position(pos)
-			} else {
-				None
-			}
-		};
+		let table_html = self.active_tab().and_then(|tab| {
+			let pos = tab.text_ctrl.get_insertion_point();
+			tab.session.get_table_at_position(pos)
+		});
 		if let Some(html) = table_html {
 			super::dialogs::show_web_view_dialog(&self.frame, &t("Table View"), &html, false, None);
 		}

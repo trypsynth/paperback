@@ -1104,11 +1104,12 @@ impl MainWindow {
 					let mut dm_guard = dm.lock().unwrap();
 					if let Some(tab) = dm_guard.active_tab_mut() {
 						let current_pos = tab.text_ctrl.get_insertion_point();
-						let current_toc_offset = tab.session.handle().find_closest_toc_offset(current_pos as usize);
+						let current_pos_usize = usize::try_from(current_pos).unwrap_or(0);
+						let current_toc_offset = tab.session.handle().find_closest_toc_offset(current_pos_usize);
 						if let Some(offset) = dialogs::show_toc_dialog(
 							&frame_copy,
 							&tab.session.handle().document().toc_items,
-							current_toc_offset as i32,
+							i32::try_from(current_toc_offset).unwrap_or(i32::MAX),
 						) {
 							tab.text_ctrl.set_focus();
 							tab.text_ctrl.set_insertion_point(i64::from(offset));
@@ -1243,12 +1244,13 @@ impl MainWindow {
 							cfg.set_app_int("sleep_timer_duration", duration);
 							cfg.flush();
 						}
-						let duration_ms = duration as u64 * 60 * 1000;
-						sleep_timer_for_menu.start(duration_ms as i32, true);
+						let duration_ms = u64::try_from(duration).unwrap_or(0) * 60 * 1000;
+						sleep_timer_for_menu.start(i32::try_from(duration_ms).unwrap_or(i32::MAX), true);
 						sleep_timer_running_for_menu.set(true);
 						let now = std::time::SystemTime::now()
 							.duration_since(std::time::UNIX_EPOCH)
-							.map(|d| d.as_millis() as i64)
+							.ok()
+							.and_then(|d| i64::try_from(d.as_millis()).ok())
 							.unwrap_or(0);
 						sleep_timer_start_for_menu.set(now);
 						sleep_timer_duration_for_menu.set(duration);
@@ -1284,17 +1286,19 @@ impl MainWindow {
 							let config_guard = config.lock().unwrap();
 							Self::recent_documents_for_menu_static(&config_guard)
 						};
-						if let Some(path) = recent_docs.get(doc_index as usize) {
-							let path = Path::new(path);
-							if !ensure_parser_ready_for_path(&frame_copy, path, &config) {
-								return;
-							}
-							if dm.lock().unwrap().open_file(Rc::clone(&dm), path) {
-								let dm_ref = dm.lock().unwrap();
-								update_title_from_manager(&frame_copy, &dm_ref);
-								dm_ref.restore_focus();
-								let menu_bar = Self::create_menu_bar(&config.lock().unwrap());
-								frame_copy.set_menu_bar(menu_bar);
+						if let Ok(doc_index) = usize::try_from(doc_index) {
+							if let Some(path) = recent_docs.get(doc_index) {
+								let path = Path::new(path);
+								if !ensure_parser_ready_for_path(&frame_copy, path, &config) {
+									return;
+								}
+								if dm.lock().unwrap().open_file(Rc::clone(&dm), path) {
+									let dm_ref = dm.lock().unwrap();
+									update_title_from_manager(&frame_copy, &dm_ref);
+									dm_ref.restore_focus();
+									let menu_bar = Self::create_menu_bar(&config.lock().unwrap());
+									frame_copy.set_menu_bar(menu_bar);
+								}
 							}
 						}
 					} else if id == menu_ids::SHOW_ALL_DOCUMENTS {
@@ -1385,8 +1389,10 @@ impl MainWindow {
 				let filename =
 					Path::new(path).file_name().map_or_else(|| path.clone(), |s| s.to_string_lossy().to_string());
 				let label = format!("&{} {}", index + 1, filename);
-				let id = menu_ids::RECENT_DOCUMENT_BASE + index as i32;
-				let _ = menu.append(id, &label, path, ItemKind::Normal);
+				if let Ok(offset) = i32::try_from(index) {
+					let id = menu_ids::RECENT_DOCUMENT_BASE + offset;
+					let _ = menu.append(id, &label, path, ItemKind::Normal);
+				}
 			}
 		}
 		menu.append_separator();
@@ -1395,7 +1401,7 @@ impl MainWindow {
 	}
 
 	fn recent_documents_for_menu_static(config: &ConfigManager) -> Vec<String> {
-		let limit = config.get_app_int("recent_documents_to_show", 25).max(0) as usize;
+		let limit = usize::try_from(config.get_app_int("recent_documents_to_show", 25).max(0)).unwrap_or(0);
 		let mut docs = config.get_recent_documents();
 		if docs.len() > limit {
 			docs.truncate(limit);
@@ -1807,7 +1813,7 @@ fn do_find(
 	if result.position < 0 {
 		return;
 	}
-	let len = display_len(&query) as i64;
+	let len = i64::try_from(display_len(&query)).unwrap_or(i64::MAX);
 	let last_pos = text_ctrl.get_last_position();
 	if last_pos <= 0 {
 		return;
