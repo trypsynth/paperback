@@ -164,6 +164,119 @@ pub fn show_bookmark_dialog(
 	let file_path = session.file_path().to_string();
 	let content = Rc::new(session.content());
 	let dialog = Dialog::builder(parent, &t("Jump to Bookmark")).build();
+	let BookmarkDialogUi {
+		filter_choice,
+		filter_sizer,
+		bookmark_list,
+		edit_button,
+		delete_button,
+		jump_button,
+		cancel_button,
+	} = build_bookmark_dialog_ui(dialog, initial_filter);
+	let state = build_bookmark_dialog_state(jump_button, delete_button, edit_button);
+	let repopulate = build_bookmark_repopulate(BookmarkRepopulateParams {
+		list: bookmark_list,
+		config: Rc::clone(config),
+		file_path: file_path.clone(),
+		content: Rc::clone(&content),
+		entries: Rc::clone(&state.entries),
+		selected_start: Rc::clone(&state.selected_start),
+		selected_end: Rc::clone(&state.selected_end),
+		filter_choice,
+		set_buttons_enabled: Rc::clone(&state.set_buttons_enabled),
+	});
+	repopulate(current_pos);
+	bind_bookmark_selection(BookmarkSelectionParams {
+		list: bookmark_list,
+		entries: Rc::clone(&state.entries),
+		selected_start: Rc::clone(&state.selected_start),
+		selected_end: Rc::clone(&state.selected_end),
+		set_buttons_enabled: Rc::clone(&state.set_buttons_enabled),
+	});
+	bind_bookmark_jump(dialog, jump_button, &state.selected_start);
+	bind_bookmark_actions(BookmarkDialogActions {
+		dialog,
+		filter_choice,
+		bookmark_list,
+		edit_button,
+		delete_button,
+		cancel_button,
+		repopulate: Rc::clone(&repopulate),
+		selected_start: Rc::clone(&state.selected_start),
+		selected_end: Rc::clone(&state.selected_end),
+		config: Rc::clone(config),
+		file_path,
+		current_pos,
+	});
+	finalize_bookmark_dialog_layout(
+		dialog,
+		filter_sizer,
+		bookmark_list,
+		edit_button,
+		delete_button,
+		jump_button,
+		cancel_button,
+	);
+	if dialog.show_modal() != wxdragon::id::ID_OK {
+		return None;
+	}
+	let start = state.selected_start.get();
+	if start >= 0 { Some(BookmarkDialogResult { start }) } else { None }
+}
+
+struct BookmarkDialogUi {
+	filter_choice: ComboBox,
+	filter_sizer: BoxSizer,
+	bookmark_list: ListBox,
+	edit_button: Button,
+	delete_button: Button,
+	jump_button: Button,
+	cancel_button: Button,
+}
+
+struct BookmarkDialogState {
+	entries: Rc<RefCell<Vec<BookmarkDisplayEntry>>>,
+	selected_start: Rc<Cell<i64>>,
+	selected_end: Rc<Cell<i64>>,
+	set_buttons_enabled: Rc<dyn Fn(bool)>,
+}
+
+struct BookmarkRepopulateParams {
+	list: ListBox,
+	config: Rc<Mutex<ConfigManager>>,
+	file_path: String,
+	content: Rc<String>,
+	entries: Rc<RefCell<Vec<BookmarkDisplayEntry>>>,
+	selected_start: Rc<Cell<i64>>,
+	selected_end: Rc<Cell<i64>>,
+	filter_choice: ComboBox,
+	set_buttons_enabled: Rc<dyn Fn(bool)>,
+}
+
+struct BookmarkSelectionParams {
+	list: ListBox,
+	entries: Rc<RefCell<Vec<BookmarkDisplayEntry>>>,
+	selected_start: Rc<Cell<i64>>,
+	selected_end: Rc<Cell<i64>>,
+	set_buttons_enabled: Rc<dyn Fn(bool)>,
+}
+
+struct BookmarkDialogActions {
+	dialog: Dialog,
+	filter_choice: ComboBox,
+	bookmark_list: ListBox,
+	edit_button: Button,
+	delete_button: Button,
+	cancel_button: Button,
+	repopulate: Rc<dyn Fn(i64)>,
+	selected_start: Rc<Cell<i64>>,
+	selected_end: Rc<Cell<i64>>,
+	config: Rc<Mutex<ConfigManager>>,
+	file_path: String,
+	current_pos: i64,
+}
+
+fn build_bookmark_dialog_ui(dialog: Dialog, initial_filter: BookmarkFilterType) -> BookmarkDialogUi {
 	let filter_label = StaticText::builder(&dialog).with_label(&t("&Filter:")).build();
 	let filter_choice = ComboBox::builder(&dialog).with_style(ComboBoxStyle::ReadOnly).build();
 	filter_choice.append(&t("All"));
@@ -185,36 +298,53 @@ pub fn show_bookmark_dialog(
 	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("&Cancel")).build();
 	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
 	jump_button.set_default();
+	BookmarkDialogUi {
+		filter_choice,
+		filter_sizer,
+		bookmark_list,
+		edit_button,
+		delete_button,
+		jump_button,
+		cancel_button,
+	}
+}
+
+fn build_bookmark_dialog_state(jump_button: Button, delete_button: Button, edit_button: Button) -> BookmarkDialogState {
 	let entries: Rc<RefCell<Vec<BookmarkDisplayEntry>>> = Rc::new(RefCell::new(Vec::new()));
 	let selected_start = Rc::new(Cell::new(-1i64));
 	let selected_end = Rc::new(Cell::new(-1i64));
 	let jump_button_for_state = jump_button;
 	let delete_button_for_state = delete_button;
 	let edit_button_for_state = edit_button;
-	let set_buttons_enabled = move |enabled: bool| {
+	let set_buttons_enabled = Rc::new(move |enabled: bool| {
 		jump_button_for_state.enable(enabled);
 		delete_button_for_state.enable(enabled);
 		edit_button_for_state.enable(enabled);
-	};
+	});
 	set_buttons_enabled(false);
-	let list_for_repopulate = bookmark_list;
-	let config_for_repopulate = Rc::clone(config);
-	let file_path_for_repopulate = file_path.clone();
-	let content_for_repopulate = Rc::clone(&content);
-	let entries_for_repopulate = Rc::clone(&entries);
-	let selected_start_for_repopulate = Rc::clone(&selected_start);
-	let selected_end_for_repopulate = Rc::clone(&selected_end);
-	let filter_choice_for_repopulate = filter_choice;
-	let set_buttons_enabled = Rc::new(set_buttons_enabled);
-	let set_buttons_for_repopulate = Rc::clone(&set_buttons_enabled);
-	let repopulate = Rc::new(move |pos: i64| {
-		let filter_index = filter_choice_for_repopulate.get_selection().unwrap_or(0);
+	BookmarkDialogState { entries, selected_start, selected_end, set_buttons_enabled }
+}
+
+fn build_bookmark_repopulate(params: BookmarkRepopulateParams) -> Rc<dyn Fn(i64)> {
+	let BookmarkRepopulateParams {
+		list,
+		config,
+		file_path,
+		content,
+		entries,
+		selected_start,
+		selected_end,
+		filter_choice,
+		set_buttons_enabled,
+	} = params;
+	Rc::new(move |pos: i64| {
+		let filter_index = filter_choice.get_selection().unwrap_or(0);
 		let filter = match filter_index {
 			1 => BookmarkFilterType::BookmarksOnly,
 			2 => BookmarkFilterType::NotesOnly,
 			_ => BookmarkFilterType::All,
 		};
-		let content_for_snippet = Rc::clone(&content_for_repopulate);
+		let content_for_snippet = Rc::clone(&content);
 		let get_text_range = move |start: i64, end: i64| -> String {
 			let content = content_for_snippet.as_str();
 			let total_chars = content.chars().count();
@@ -225,7 +355,7 @@ pub fn show_bookmark_dialog(
 			}
 			content.chars().skip(start_pos).take(end_pos - start_pos).collect()
 		};
-		let content_for_line = Rc::clone(&content_for_repopulate);
+		let content_for_line = Rc::clone(&content);
 		let get_line_text = move |position: i64| -> String {
 			let content = content_for_line.as_str();
 			let total_chars = content.chars().count();
@@ -236,12 +366,12 @@ pub fn show_bookmark_dialog(
 			let line_end = chars_after_start.find('\n').map_or(chars_after_start.len(), |idx| idx);
 			chars_after_start.chars().take(line_end).collect()
 		};
-		let previous_selected = selected_start_for_repopulate.get();
-		list_for_repopulate.clear();
-		entries_for_repopulate.borrow_mut().clear();
+		let previous_selected = selected_start.get();
+		list.clear();
+		entries.borrow_mut().clear();
 		let filtered = {
-			let cfg = config_for_repopulate.lock().unwrap();
-			reader_core::get_filtered_bookmarks(&cfg, &file_path_for_repopulate, pos, filter)
+			let cfg = config.lock().unwrap();
+			reader_core::get_filtered_bookmarks(&cfg, &file_path, pos, filter)
 		};
 		for item in filtered.items {
 			let snippet =
@@ -251,23 +381,23 @@ pub fn show_bookmark_dialog(
 				snippet = t("blank");
 			}
 			let display = if item.note.is_empty() { snippet.clone() } else { format!("{} - {}", item.note, snippet) };
-			entries_for_repopulate.borrow_mut().push(BookmarkDisplayEntry { start: item.start, end: item.end });
-			list_for_repopulate.append(&display);
+			entries.borrow_mut().push(BookmarkDisplayEntry { start: item.start, end: item.end });
+			list.append(&display);
 		}
-		selected_start_for_repopulate.set(-1);
-		selected_end_for_repopulate.set(-1);
-		set_buttons_for_repopulate(false);
-		let entries_ref = entries_for_repopulate.borrow();
+		selected_start.set(-1);
+		selected_end.set(-1);
+		set_buttons_enabled(false);
+		let entries_ref = entries.borrow();
 		if previous_selected >= 0 {
 			if let Some((idx, entry)) =
 				entries_ref.iter().enumerate().find(|(_, entry)| entry.start == previous_selected)
 			{
 				if let Ok(idx_u32) = u32::try_from(idx) {
-					list_for_repopulate.set_selection(idx_u32, true);
+					list.set_selection(idx_u32, true);
 				}
-				selected_start_for_repopulate.set(entry.start);
-				selected_end_for_repopulate.set(entry.end);
-				set_buttons_for_repopulate(true);
+				selected_start.set(entry.start);
+				selected_end.set(entry.end);
+				set_buttons_enabled(true);
 				return;
 			}
 		}
@@ -275,39 +405,41 @@ pub fn show_bookmark_dialog(
 			if let Ok(idx) = usize::try_from(filtered.closest_index) {
 				if let Some(entry) = entries_ref.get(idx) {
 					if let Ok(idx_u32) = u32::try_from(idx) {
-						list_for_repopulate.set_selection(idx_u32, true);
+						list.set_selection(idx_u32, true);
 					}
-					selected_start_for_repopulate.set(entry.start);
-					selected_end_for_repopulate.set(entry.end);
-					set_buttons_for_repopulate(true);
+					selected_start.set(entry.start);
+					selected_end.set(entry.end);
+					set_buttons_enabled(true);
 				}
 			}
 		}
-	});
-	repopulate(current_pos);
-	let entries_for_selection = Rc::clone(&entries);
-	let selected_start_for_selection = Rc::clone(&selected_start);
-	let selected_end_for_selection = Rc::clone(&selected_end);
-	let set_buttons_for_selection = Rc::clone(&set_buttons_enabled);
-	bookmark_list.on_selection_changed(move |event| {
+	})
+}
+
+fn bind_bookmark_selection(params: BookmarkSelectionParams) {
+	let BookmarkSelectionParams { list, entries, selected_start, selected_end, set_buttons_enabled } = params;
+	list.on_selection_changed(move |event| {
 		let selection = event.get_selection().unwrap_or(-1);
 		if selection >= 0 {
-			let entries_ref = entries_for_selection.borrow();
+			let entries_ref = entries.borrow();
 			if let Ok(index) = usize::try_from(selection) {
 				if let Some(entry) = entries_ref.get(index) {
-					selected_start_for_selection.set(entry.start);
-					selected_end_for_selection.set(entry.end);
-					set_buttons_for_selection(true);
+					selected_start.set(entry.start);
+					selected_end.set(entry.end);
+					set_buttons_enabled(true);
 					return;
 				}
 			}
 		}
-		selected_start_for_selection.set(-1);
-		selected_end_for_selection.set(-1);
-		set_buttons_for_selection(false);
+		selected_start.set(-1);
+		selected_end.set(-1);
+		set_buttons_enabled(false);
 	});
+}
+
+fn bind_bookmark_jump(dialog: Dialog, jump_button: Button, selected_start: &Rc<Cell<i64>>) {
 	let dialog_for_jump = dialog;
-	let selected_start_for_jump = Rc::clone(&selected_start);
+	let selected_start_for_jump = Rc::clone(selected_start);
 	jump_button.on_click(move |_| {
 		if selected_start_for_jump.get() >= 0 {
 			dialog_for_jump.end_modal(wxdragon::id::ID_OK);
@@ -318,6 +450,23 @@ pub fn show_bookmark_dialog(
 				.show_modal();
 		}
 	});
+}
+
+fn bind_bookmark_actions(actions: BookmarkDialogActions) {
+	let BookmarkDialogActions {
+		dialog,
+		filter_choice,
+		bookmark_list,
+		edit_button,
+		delete_button,
+		cancel_button,
+		repopulate,
+		selected_start,
+		selected_end,
+		config,
+		file_path,
+		current_pos,
+	} = actions;
 	let dialog_for_cancel = dialog;
 	cancel_button.on_click(move |_| {
 		dialog_for_cancel.end_modal(wxdragon::id::ID_CANCEL);
@@ -329,7 +478,7 @@ pub fn show_bookmark_dialog(
 	let repopulate_for_delete = Rc::clone(&repopulate);
 	let selected_start_for_delete = Rc::clone(&selected_start);
 	let selected_end_for_delete = Rc::clone(&selected_end);
-	let config_for_delete = Rc::clone(config);
+	let config_for_delete = Rc::clone(&config);
 	let file_path_for_delete = file_path.clone();
 	delete_button.on_click(move |_| {
 		let start = selected_start_for_delete.get();
@@ -347,7 +496,7 @@ pub fn show_bookmark_dialog(
 	let repopulate_for_edit = Rc::clone(&repopulate);
 	let selected_start_for_edit = Rc::clone(&selected_start);
 	let selected_end_for_edit = Rc::clone(&selected_end);
-	let config_for_edit = Rc::clone(config);
+	let config_for_edit = Rc::clone(&config);
 	let file_path_for_edit = file_path.clone();
 	edit_button.on_click(move |_| {
 		let start = selected_start_for_edit.get();
@@ -378,7 +527,7 @@ pub fn show_bookmark_dialog(
 	let repopulate_for_key = Rc::clone(&repopulate);
 	let selected_start_for_key = Rc::clone(&selected_start);
 	let selected_end_for_key = Rc::clone(&selected_end);
-	let config_for_key = Rc::clone(config);
+	let config_for_key = Rc::clone(&config);
 	let file_path_for_key = file_path;
 	bookmark_list.bind_internal(EventType::KEY_DOWN, move |event| {
 		let key = event.get_key_code().unwrap_or(0);
@@ -405,6 +554,17 @@ pub fn show_bookmark_dialog(
 			dialog_for_double.end_modal(wxdragon::id::ID_OK);
 		}
 	});
+}
+
+fn finalize_bookmark_dialog_layout(
+	dialog: Dialog,
+	filter_sizer: BoxSizer,
+	bookmark_list: ListBox,
+	edit_button: Button,
+	delete_button: Button,
+	jump_button: Button,
+	cancel_button: Button,
+) {
 	let action_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	action_sizer.add(&edit_button, 0, SizerFlag::Right, DIALOG_PADDING);
 	action_sizer.add(&delete_button, 0, SizerFlag::Right, DIALOG_PADDING);
@@ -422,11 +582,6 @@ pub fn show_bookmark_dialog(
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
 	bookmark_list.set_focus();
-	if dialog.show_modal() != wxdragon::id::ID_OK {
-		return None;
-	}
-	let start = selected_start.get();
-	if start >= 0 { Some(BookmarkDialogResult { start }) } else { None }
 }
 
 pub fn show_note_entry_dialog(
@@ -517,6 +672,25 @@ pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i3
 	let dialog_title = t("Table of Contents");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
 	let selected_offset = Rc::new(Cell::new(-1));
+	let (tree, root) = build_toc_tree(dialog, toc_items, current_offset);
+	bind_toc_selection(tree, Rc::clone(&selected_offset));
+	bind_toc_activation(dialog, tree, Rc::clone(&selected_offset));
+	let search_string = Rc::new(RefCell::new(String::new()));
+	let search_timer = Rc::new(Timer::new(&dialog));
+	bind_toc_search(tree, root, &search_string, &search_timer);
+	let (ok_button, cancel_button) = build_toc_buttons(dialog);
+	bind_toc_ok(dialog, ok_button, Rc::clone(&selected_offset));
+	bind_toc_layout(dialog, tree, ok_button, cancel_button);
+	tree.set_focus();
+	if dialog.show_modal() == wxdragon::id::ID_OK {
+		let offset = selected_offset.get();
+		if offset >= 0 { Some(offset) } else { None }
+	} else {
+		None
+	}
+}
+
+fn build_toc_tree(dialog: Dialog, toc_items: &[TocItem], current_offset: i32) -> (TreeCtrl, TreeItemId) {
 	let tree = TreeCtrl::builder(&dialog)
 		.with_style(TreeCtrlStyle::Default | TreeCtrlStyle::HideRoot)
 		.with_size(Size::new(400, 500))
@@ -526,39 +700,51 @@ pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i3
 	if current_offset != -1 {
 		find_and_select_item(tree, &root, current_offset);
 	}
-	let search_string = Rc::new(RefCell::new(String::new()));
-	let search_timer = Rc::new(Timer::new(&dialog));
-	let search_string_for_timer = Rc::clone(&search_string);
-	search_timer.on_tick(move |_| {
-		search_string_for_timer.borrow_mut().clear();
-	});
+	(tree, root)
+}
+
+fn bind_toc_selection(tree: TreeCtrl, selected_offset: Rc<Cell<i32>>) {
 	let tree_for_sel = tree;
-	let selected_offset_for_sel = Rc::clone(&selected_offset);
 	tree.on_selection_changed(move |event| {
 		if let Some(item) = event.get_item() {
 			if let Some(data) = tree_for_sel.get_custom_data(&item) {
 				if let Some(offset) = data.downcast_ref::<i32>() {
-					selected_offset_for_sel.set(*offset);
+					selected_offset.set(*offset);
 				}
 			}
 		}
 	});
+}
+
+fn bind_toc_activation(dialog: Dialog, tree: TreeCtrl, selected_offset: Rc<Cell<i32>>) {
 	let dialog_for_activate = dialog;
 	let tree_for_activate = tree;
-	let selected_offset_for_activate = Rc::clone(&selected_offset);
 	tree.on_item_activated(move |event| {
 		if let Some(item) = event.get_item() {
 			if let Some(data) = tree_for_activate.get_custom_data(&item) {
 				if let Some(offset) = data.downcast_ref::<i32>() {
-					selected_offset_for_activate.set(*offset);
+					selected_offset.set(*offset);
 					dialog_for_activate.end_modal(wxdragon::id::ID_OK);
 				}
 			}
 		}
 	});
+}
+
+fn bind_toc_search(
+	tree: TreeCtrl,
+	root: TreeItemId,
+	search_string: &Rc<RefCell<String>>,
+	search_timer: &Rc<Timer<Dialog>>,
+) {
+	let search_string_for_timer = Rc::clone(search_string);
+	search_timer.on_tick(move |_| {
+		search_string_for_timer.borrow_mut().clear();
+	});
 	let tree_for_search_keydown = tree;
-	let search_string_for_search_keydown = Rc::clone(&search_string);
-	let search_timer_for_search_keydown = Rc::clone(&search_timer);
+	let root_for_keydown = root.clone();
+	let search_string_for_search_keydown = Rc::clone(search_string);
+	let search_timer_for_search_keydown = Rc::clone(search_timer);
 	tree.bind_internal(EventType::KEY_DOWN, move |event| {
 		if let Some(key) = event.get_key_code() {
 			if key == KEY_SPACE {
@@ -566,13 +752,11 @@ pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i3
 				if !s.is_empty() {
 					let mut new_search = s.clone();
 					new_search.push(' ');
-					if let Some(root) = tree_for_search_keydown.get_root_item() {
-						if find_and_select_item_by_name(tree_for_search_keydown, &root, &new_search) {
-							*s = new_search;
-							search_timer_for_search_keydown.start(500, true);
-						} else {
-							bell();
-						}
+					if find_and_select_item_by_name(tree_for_search_keydown, &root_for_keydown, &new_search) {
+						*s = new_search;
+						search_timer_for_search_keydown.start(500, true);
+					} else {
+						bell();
 					}
 					event.skip(false);
 					return;
@@ -582,8 +766,9 @@ pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i3
 		event.skip(true);
 	});
 	let tree_for_search = tree;
-	let search_string_for_search = Rc::clone(&search_string);
-	let search_timer_for_search = Rc::clone(&search_timer);
+	let root_for_search = root;
+	let search_string_for_search = Rc::clone(search_string);
+	let search_timer_for_search = Rc::clone(search_timer);
 	tree.bind_internal(EventType::CHAR, move |event| {
 		if let Some(key) = event.get_unicode_key() {
 			if key <= KEY_SPACE || key == KEY_DELETE {
@@ -605,26 +790,30 @@ pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i3
 			}
 			let mut new_search = s.clone();
 			new_search.push(c.to_ascii_lowercase());
-			if let Some(root) = tree_for_search.get_root_item() {
-				if find_and_select_item_by_name(tree_for_search, &root, &new_search) {
-					*s = new_search;
-					search_timer_for_search.start(500, true);
-				} else {
-					bell();
-				}
+			if find_and_select_item_by_name(tree_for_search, &root_for_search, &new_search) {
+				*s = new_search;
+				search_timer_for_search.start(500, true);
+			} else {
+				bell();
 			}
 			event.skip(false);
 		} else {
 			event.skip(true);
 		}
 	});
+}
+
+fn build_toc_buttons(dialog: Dialog) -> (Button, Button) {
 	let ok_button = Button::builder(&dialog).with_label(&t("OK")).build();
 	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
+	(ok_button, cancel_button)
+}
+
+fn bind_toc_ok(dialog: Dialog, ok_button: Button, selected_offset: Rc<Cell<i32>>) {
 	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
 	let dialog_for_ok = dialog;
-	let selected_offset_for_ok = Rc::clone(&selected_offset);
 	ok_button.on_click(move |_| {
-		if selected_offset_for_ok.get() >= 0 {
+		if selected_offset.get() >= 0 {
 			dialog_for_ok.end_modal(wxdragon::id::ID_OK);
 		} else {
 			MessageDialog::builder(
@@ -637,6 +826,9 @@ pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i3
 			.show_modal();
 		}
 	});
+}
+
+fn bind_toc_layout(dialog: Dialog, tree: TreeCtrl, ok_button: Button, cancel_button: Button) {
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add(&tree, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
@@ -646,13 +838,6 @@ pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i3
 	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand | SizerFlag::Bottom | SizerFlag::Right, DIALOG_PADDING);
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
-	tree.set_focus();
-	if dialog.show_modal() == wxdragon::id::ID_OK {
-		let offset = selected_offset.get();
-		if offset >= 0 { Some(offset) } else { None }
-	} else {
-		None
-	}
 }
 
 fn populate_toc_tree(tree: TreeCtrl, parent: &TreeItemId, items: &[TocItem]) {
@@ -1034,18 +1219,18 @@ pub fn show_all_documents_dialog(
 		Rc::clone(&open_paths),
 	);
 	bind_all_documents_keys(doc_list, &open_action, &remove_action);
-    bind_all_documents_layout(
-        dialog,
-        AllDocumentsLayout {
-            search_label,
-            search_ctrl,
-            doc_list,
-            open_button,
-            remove_button,
-            clear_all_button,
-            ok_button,
-        },
-    );
+	bind_all_documents_layout(
+		dialog,
+		AllDocumentsLayout {
+			search_label,
+			search_ctrl,
+			doc_list,
+			open_button,
+			remove_button,
+			clear_all_button,
+			ok_button,
+		},
+	);
 
 	let result = dialog.show_modal();
 	if result == wxdragon::id::ID_OK { selected_path.lock().unwrap().clone() } else { None }
@@ -1260,25 +1445,25 @@ fn bind_all_documents_keys(list: ListCtrl, open_action: &Rc<dyn Fn()>, remove_ac
 
 #[derive(Copy, Clone)]
 struct AllDocumentsLayout {
-    search_label: StaticText,
-    search_ctrl: TextCtrl,
-    doc_list: ListCtrl,
-    open_button: Button,
-    remove_button: Button,
-    clear_all_button: Button,
-    ok_button: Button,
+	search_label: StaticText,
+	search_ctrl: TextCtrl,
+	doc_list: ListCtrl,
+	open_button: Button,
+	remove_button: Button,
+	clear_all_button: Button,
+	ok_button: Button,
 }
 
 fn bind_all_documents_layout(dialog: Dialog, layout: AllDocumentsLayout) {
-    let AllDocumentsLayout {
-        search_label,
-        search_ctrl,
-        doc_list,
-        open_button,
-        remove_button,
-        clear_all_button,
-        ok_button,
-    } = layout;
+	let AllDocumentsLayout {
+		search_label,
+		search_ctrl,
+		doc_list,
+		open_button,
+		remove_button,
+		clear_all_button,
+		ok_button,
+	} = layout;
 	let dialog_for_ok = dialog;
 	ok_button.on_click(move |_| {
 		dialog_for_ok.end_modal(wxdragon::id::ID_OK);
@@ -1586,6 +1771,34 @@ pub fn show_web_view_dialog(
 
 pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<i64> {
 	let dialog = Dialog::builder(parent, &t("Elements")).build();
+	let ElementsDialogUi { content_sizer, view_choice, headings_tree, links_list } = build_elements_dialog_ui(dialog);
+	let (selected_offset, link_offsets) = populate_elements_dialog(session, current_pos, headings_tree, links_list);
+	bind_elements_view_toggle(view_choice, headings_tree, links_list, dialog);
+	bind_elements_activation(dialog, headings_tree, links_list, &selected_offset, &link_offsets);
+	let (ok_button, cancel_button) = build_elements_buttons(dialog);
+	bind_elements_ok_action(dialog, view_choice, headings_tree, links_list, &link_offsets, &selected_offset, ok_button);
+	finalize_elements_layout(dialog, content_sizer, ok_button, cancel_button);
+	if view_choice.get_selection().unwrap_or(0) == 0 {
+		headings_tree.set_focus();
+	} else {
+		links_list.set_focus();
+	}
+	if dialog.show_modal() == wxdragon::id::ID_OK {
+		let offset = selected_offset.get();
+		if offset >= 0 { Some(offset) } else { None }
+	} else {
+		None
+	}
+}
+
+struct ElementsDialogUi {
+	content_sizer: BoxSizer,
+	view_choice: ComboBox,
+	headings_tree: TreeCtrl,
+	links_list: ListBox,
+}
+
+fn build_elements_dialog_ui(dialog: Dialog) -> ElementsDialogUi {
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let choice_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	let choice_label = StaticText::builder(&dialog).with_label(&t("&View:")).build();
@@ -1618,6 +1831,15 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 		DIALOG_PADDING,
 	);
 	links_list.show(false);
+	ElementsDialogUi { content_sizer, view_choice, headings_tree, links_list }
+}
+
+fn populate_elements_dialog(
+	session: &DocumentSession,
+	current_pos: i64,
+	headings_tree: TreeCtrl,
+	links_list: ListBox,
+) -> (Rc<Cell<i64>>, Rc<Vec<i64>>) {
 	let selected_offset = Rc::new(Cell::new(-1i64));
 	let root = headings_tree.add_root(&t("Root"), None, None).unwrap();
 	let tree_data = session.heading_tree(current_pos);
@@ -1666,7 +1888,10 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 			links_list.set_selection(idx_u32, true);
 		}
 	}
-	let link_offsets = Rc::new(link_offsets);
+	(selected_offset, Rc::new(link_offsets))
+}
+
+fn bind_elements_view_toggle(view_choice: ComboBox, headings_tree: TreeCtrl, links_list: ListBox, dialog: Dialog) {
 	let headings_tree_for_choice = headings_tree;
 	let links_list_for_choice = links_list;
 	let dialog_for_layout = dialog;
@@ -1683,7 +1908,16 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 		}
 		dialog_for_layout.layout();
 	});
-	let selected_offset_for_tree = Rc::clone(&selected_offset);
+}
+
+fn bind_elements_activation(
+	dialog: Dialog,
+	headings_tree: TreeCtrl,
+	links_list: ListBox,
+	selected_offset: &Rc<Cell<i64>>,
+	link_offsets: &Rc<Vec<i64>>,
+) {
+	let selected_offset_for_tree = Rc::clone(selected_offset);
 	let tree_for_activate = headings_tree;
 	let dialog_for_tree = dialog;
 	headings_tree.on_item_activated(move |event| {
@@ -1696,8 +1930,8 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 			}
 		}
 	});
-	let selected_offset_for_list = Rc::clone(&selected_offset);
-	let offsets_for_list = Rc::clone(&link_offsets);
+	let selected_offset_for_list = Rc::clone(selected_offset);
+	let offsets_for_list = Rc::clone(link_offsets);
 	let dialog_for_list = dialog;
 	links_list.on_item_double_clicked(move |event| {
 		let selection = event.get_selection().unwrap_or(-1);
@@ -1710,28 +1944,40 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 			}
 		}
 	});
+}
+
+fn build_elements_buttons(dialog: Dialog) -> (Button, Button) {
 	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
 	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
 	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
 	ok_button.set_default();
-	let selected_offset_for_ok = Rc::clone(&selected_offset);
-	let view_choice_for_ok = view_choice;
-	let headings_tree_for_ok = headings_tree;
-	let links_list_for_ok = links_list;
-	let offsets_for_ok = Rc::clone(&link_offsets);
+	(ok_button, cancel_button)
+}
+
+fn bind_elements_ok_action(
+	dialog: Dialog,
+	view_choice: ComboBox,
+	headings_tree: TreeCtrl,
+	links_list: ListBox,
+	link_offsets: &Rc<Vec<i64>>,
+	selected_offset: &Rc<Cell<i64>>,
+	ok_button: Button,
+) {
+	let offsets_for_ok = Rc::clone(link_offsets);
+	let selected_offset_for_ok = Rc::clone(selected_offset);
 	let dialog_for_ok = dialog;
 	ok_button.on_click(move |_| {
-		let selection = view_choice_for_ok.get_selection().unwrap_or(0);
+		let selection = view_choice.get_selection().unwrap_or(0);
 		if selection == 0 {
-			if let Some(item) = headings_tree_for_ok.get_selection() {
-				if let Some(data) = headings_tree_for_ok.get_custom_data(&item) {
+			if let Some(item) = headings_tree.get_selection() {
+				if let Some(data) = headings_tree.get_custom_data(&item) {
 					if let Some(offset) = data.downcast_ref::<i64>() {
 						selected_offset_for_ok.set(*offset);
 						dialog_for_ok.end_modal(wxdragon::id::ID_OK);
 					}
 				}
 			}
-		} else if let Some(idx) = links_list_for_ok.get_selection() {
+		} else if let Some(idx) = links_list.get_selection() {
 			if let Ok(index) = usize::try_from(idx) {
 				if let Some(offset) = offsets_for_ok.get(index) {
 					selected_offset_for_ok.set(*offset);
@@ -1740,6 +1986,9 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 			}
 		}
 	});
+}
+
+fn finalize_elements_layout(dialog: Dialog, content_sizer: BoxSizer, ok_button: Button, cancel_button: Button) {
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	button_sizer.add_stretch_spacer(1);
 	button_sizer.add(&ok_button, 0, SizerFlag::All, DIALOG_PADDING);
@@ -1747,17 +1996,6 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
-	if view_choice.get_selection().unwrap_or(0) == 0 {
-		headings_tree.set_focus();
-	} else {
-		links_list.set_focus();
-	}
-	if dialog.show_modal() == wxdragon::id::ID_OK {
-		let offset = selected_offset.get();
-		if offset >= 0 { Some(offset) } else { None }
-	} else {
-		None
-	}
 }
 
 pub fn show_about_dialog(parent: &Frame) {

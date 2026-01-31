@@ -49,6 +49,13 @@ struct ManifestItem {
 	properties: Vec<String>,
 }
 
+struct SpineConversionResult {
+	buffer: DocumentBuffer,
+	id_positions: HashMap<String, usize>,
+	sections: Vec<SectionMeta>,
+	conversion_errors: Vec<String>,
+}
+
 pub struct EpubParser;
 
 impl Parser for EpubParser {
@@ -82,99 +89,12 @@ impl Parser for EpubParser {
 			.find(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "package")
 			.ok_or_else(|| anyhow::anyhow!("OPF package element missing"))?;
 		let (manifest, spine, nav_path, ncx_path, metadata) = parse_package(package_node, &opf_dir);
-		let mut buffer = DocumentBuffer::new();
-		let mut id_positions = HashMap::new();
-		let mut sections = Vec::new();
-		let mut conversion_errors = Vec::new();
-		for (idx, idref) in spine.iter().enumerate() {
-			let Some(item) = manifest.get(idref) else {
-				conversion_errors.push(format!("missing manifest item for {idref}"));
-				continue;
-			};
-			let section_data = match read_zip_entry_by_name(&mut archive, &item.path) {
-				Ok(v) => v,
-				Err(err) => {
-					conversion_errors.push(format!("{} ({err})", item.path));
-					continue;
-				}
-			};
-			let section_start = buffer.current_position();
-			let section_label = format!("Section {}", idx + 1);
-			buffer.add_marker(
-				Marker::new(MarkerType::SectionBreak, section_start)
-					.with_text(section_label)
-					.with_reference(item.path.clone()),
-			);
-			match convert_section(&section_data) {
-				Ok(section) => {
-					for (id, relative) in section.id_positions {
-						let absolute = section_start + relative;
-						// Keep the first occurrence for bare ids to avoid later sections overwriting earlier ones.
-						id_positions.entry(id.clone()).or_insert(absolute);
-						id_positions.insert(format!("{}#{id}", item.path), absolute);
-					}
-					for heading in section.headings {
-						let marker_type = heading_level_to_marker_type(heading.level);
-						buffer.add_marker(
-							Marker::new(marker_type, section_start + heading.offset)
-								.with_text(heading.text.clone())
-								.with_level(heading.level),
-						);
-					}
-					for link in section.links {
-						let resolved = resolve_href(&item.path, &link.reference);
-						buffer.add_marker(
-							Marker::new(MarkerType::Link, section_start + link.offset)
-								.with_text(link.text.clone())
-								.with_reference(resolved),
-						);
-					}
-					for table in section.tables {
-						buffer.add_marker(
-							Marker::new(MarkerType::Table, section_start + table.offset)
-								.with_text(table.text)
-								.with_reference(table.html_content)
-								.with_length(table.length),
-						);
-					}
-					for separator in section.separators {
-						buffer.add_marker(
-							Marker::new(MarkerType::Separator, section_start + separator.offset)
-								.with_text("Separator".to_string())
-								.with_length(separator.length),
-						);
-					}
-					for list in section.lists {
-						buffer.add_marker(
-							Marker::new(MarkerType::List, section_start + list.offset).with_level(list.item_count),
-						);
-					}
-					for list_item in section.list_items {
-						buffer.add_marker(
-							Marker::new(MarkerType::ListItem, section_start + list_item.offset)
-								.with_text(list_item.text.clone())
-								.with_level(list_item.level),
-						);
-					}
-					if !section.text.is_empty() {
-						buffer.append(&section.text);
-						if !buffer.content.ends_with('\n') {
-							buffer.append("\n");
-						}
-					}
-					let section_end = buffer.current_position();
-					sections.push(SectionMeta { path: item.path.clone(), start: section_start, end: section_end });
-				}
-				Err(err) => {
-					conversion_errors.push(format!("{} ({err})", item.path));
-				}
-			}
-		}
-		if sections.is_empty() {
-			let reason = if conversion_errors.is_empty() {
+		let conversion = convert_spine_items(&mut archive, &manifest, &spine);
+		if conversion.sections.is_empty() {
+			let reason = if conversion.conversion_errors.is_empty() {
 				String::from("no readable spine items")
 			} else {
-				format!("failed to convert spine items: {}", conversion_errors.join(", "))
+				format!("failed to convert spine items: {}", conversion.conversion_errors.join(", "))
 			};
 			anyhow::bail!("EPUB has no readable content ({reason})");
 		}
@@ -183,26 +103,136 @@ impl Parser for EpubParser {
 			.filter(|t| !t.trim().is_empty())
 			.unwrap_or_else(|| extract_title_from_path(&context.file_path));
 		let author = metadata.author.unwrap_or_default();
-		let toc_items = if let Some(nav_path) = nav_path {
-			build_toc_from_nav_document(&mut archive, &nav_path, &sections, &id_positions)
-				.or_else(|| {
-					ncx_path.as_deref().and_then(|p| build_toc_from_ncx(&mut archive, p, &sections, &id_positions))
-				})
-				.unwrap_or_else(Vec::new)
-		} else if let Some(ncx) = ncx_path {
-			build_toc_from_ncx(&mut archive, &ncx, &sections, &id_positions).unwrap_or_default()
-		} else {
-			Vec::new()
-		};
+		let toc_items = build_epub_toc(
+			&mut archive,
+			nav_path.as_deref(),
+			ncx_path.as_deref(),
+			&conversion.sections,
+			&conversion.id_positions,
+		);
 		let manifest_items: HashMap<String, String> =
 			manifest.values().map(|item| (item.id.clone(), item.path.clone())).collect();
 		let mut document = Document::new().with_title(title).with_author(author);
-		document.set_buffer(buffer);
-		document.id_positions = id_positions;
+		document.set_buffer(conversion.buffer);
+		document.id_positions = conversion.id_positions;
 		document.spine_items = spine;
 		document.manifest_items = manifest_items;
 		document.toc_items = toc_items;
 		Ok(document)
+	}
+}
+
+fn convert_spine_items<R: Read + Seek>(
+	archive: &mut ZipArchive<R>,
+	manifest: &HashMap<String, ManifestItem>,
+	spine: &[String],
+) -> SpineConversionResult {
+	let mut buffer = DocumentBuffer::new();
+	let mut id_positions = HashMap::new();
+	let mut sections = Vec::new();
+	let mut conversion_errors = Vec::new();
+	for (idx, idref) in spine.iter().enumerate() {
+		let Some(item) = manifest.get(idref) else {
+			conversion_errors.push(format!("missing manifest item for {idref}"));
+			continue;
+		};
+		let section_data = match read_zip_entry_by_name(archive, &item.path) {
+			Ok(v) => v,
+			Err(err) => {
+				conversion_errors.push(format!("{} ({err})", item.path));
+				continue;
+			}
+		};
+		let section_start = buffer.current_position();
+		let section_label = format!("Section {}", idx + 1);
+		buffer.add_marker(
+			Marker::new(MarkerType::SectionBreak, section_start)
+				.with_text(section_label)
+				.with_reference(item.path.clone()),
+		);
+		match convert_section(&section_data) {
+			Ok(section) => {
+				for (id, relative) in section.id_positions {
+					let absolute = section_start + relative;
+					// Keep the first occurrence for bare ids to avoid later sections overwriting earlier ones.
+					id_positions.entry(id.clone()).or_insert(absolute);
+					id_positions.insert(format!("{}#{id}", item.path), absolute);
+				}
+				for heading in section.headings {
+					let marker_type = heading_level_to_marker_type(heading.level);
+					buffer.add_marker(
+						Marker::new(marker_type, section_start + heading.offset)
+							.with_text(heading.text.clone())
+							.with_level(heading.level),
+					);
+				}
+				for link in section.links {
+					let resolved = resolve_href(&item.path, &link.reference);
+					buffer.add_marker(
+						Marker::new(MarkerType::Link, section_start + link.offset)
+							.with_text(link.text.clone())
+							.with_reference(resolved),
+					);
+				}
+				for table in section.tables {
+					buffer.add_marker(
+						Marker::new(MarkerType::Table, section_start + table.offset)
+							.with_text(table.text)
+							.with_reference(table.html_content)
+							.with_length(table.length),
+					);
+				}
+				for separator in section.separators {
+					buffer.add_marker(
+						Marker::new(MarkerType::Separator, section_start + separator.offset)
+							.with_text("Separator".to_string())
+							.with_length(separator.length),
+					);
+				}
+				for list in section.lists {
+					buffer.add_marker(
+						Marker::new(MarkerType::List, section_start + list.offset).with_level(list.item_count),
+					);
+				}
+				for list_item in section.list_items {
+					buffer.add_marker(
+						Marker::new(MarkerType::ListItem, section_start + list_item.offset)
+							.with_text(list_item.text.clone())
+							.with_level(list_item.level),
+					);
+				}
+				if !section.text.is_empty() {
+					buffer.append(&section.text);
+					if !buffer.content.ends_with('\n') {
+						buffer.append("\n");
+					}
+				}
+				let section_end = buffer.current_position();
+				sections.push(SectionMeta { path: item.path.clone(), start: section_start, end: section_end });
+			}
+			Err(err) => {
+				conversion_errors.push(format!("{} ({err})", item.path));
+			}
+		}
+	}
+	SpineConversionResult { buffer, id_positions, sections, conversion_errors }
+}
+
+fn build_epub_toc<R: Read + Seek>(
+	archive: &mut ZipArchive<R>,
+	nav_path: Option<&str>,
+	ncx_path: Option<&str>,
+	sections: &[SectionMeta],
+	id_positions: &HashMap<String, usize>,
+) -> Vec<TocItem> {
+	if let Some(nav_path) = nav_path {
+		build_toc_from_nav_document(archive, nav_path, sections, id_positions)
+			.or_else(|| ncx_path.and_then(|p| build_toc_from_ncx(archive, p, sections, id_positions)))
+			.unwrap_or_else(Vec::new)
+	} else if let Some(ncx) = ncx_path {
+		build_toc_from_ncx(archive, ncx, sections, id_positions).unwrap_or_default()
+	} else {
+		Vec::new()
 	}
 }
 

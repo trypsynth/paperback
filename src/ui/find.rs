@@ -62,111 +62,26 @@ impl FindDialogState {
 		live_region_label: StaticText,
 	) -> Self {
 		let dialog = Dialog::builder(frame, &t("Find")).build();
-		let combo_width = 250;
-		let option_padding = 2;
-		let button_spacing = 5;
-		let find_label = StaticText::builder(&dialog).with_label(&t("Find &what:")).build();
-		let find_combo = ComboBox::builder(&dialog)
-			.with_style(ComboBoxStyle::ProcessEnter)
-			.with_size(Size::new(combo_width, -1))
-			.build();
-		let options_box = StaticBoxSizerBuilder::new_with_label(Orientation::Vertical, &dialog, &t("Options")).build();
-		let match_case = CheckBox::builder(&dialog).with_label(&t("&Match case")).build();
-		let whole_word = CheckBox::builder(&dialog).with_label(&t("Match &whole word")).build();
-		let use_regex = CheckBox::builder(&dialog).with_label(&t("Use &regular expressions")).build();
-		options_box.add(&match_case, 0, SizerFlag::All, option_padding);
-		options_box.add(&whole_word, 0, SizerFlag::All, option_padding);
-		options_box.add(&use_regex, 0, SizerFlag::All, option_padding);
-		let find_prev_btn = Button::builder(&dialog).with_label(&t("Find &Previous")).build();
-		let find_next_btn = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("Find &Next")).build();
-		let cancel_btn = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
-		dialog.set_escape_id(wxdragon::id::ID_CANCEL);
-		dialog.set_affirmative_id(wxdragon::id::ID_OK);
-		let find_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-		find_sizer.add(&find_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
-		find_sizer.add(&find_combo, 1, SizerFlag::Expand, 0);
-		let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-		button_sizer.add(&find_prev_btn, 0, SizerFlag::Right, button_spacing);
-		button_sizer.add(&find_next_btn, 0, SizerFlag::Right, button_spacing);
-		button_sizer.add_stretch_spacer(1);
-		button_sizer.add(&cancel_btn, 0, SizerFlag::All, 0);
-		let main_sizer = BoxSizer::builder(Orientation::Vertical).build();
-		main_sizer.add_sizer(&find_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
-		main_sizer.add_sizer(
-			&options_box,
-			0,
-			SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
-			DIALOG_PADDING,
-		);
-		main_sizer.add_sizer(
-			&button_sizer,
-			0,
-			SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
-			DIALOG_PADDING,
-		);
-		dialog.set_sizer_and_fit(main_sizer, true);
-		dialog.centre();
-		let frame_for_next = *frame;
-		let find_dialog_for_next = Rc::clone(find_dialog);
-		let doc_manager_for_next = Rc::clone(doc_manager);
-		let config_for_next = Rc::clone(config);
-		find_next_btn.on_click(move |_| {
-			handle_find_action(
-				&frame_for_next,
-				&doc_manager_for_next,
-				&config_for_next,
-				&find_dialog_for_next,
-				live_region_label,
-				true,
-			);
-		});
-		let frame_for_prev = *frame;
-		let find_dialog_for_prev = Rc::clone(find_dialog);
-		let doc_manager_for_prev = Rc::clone(doc_manager);
-		let config_for_prev = Rc::clone(config);
-		find_prev_btn.on_click(move |_| {
-			handle_find_action(
-				&frame_for_prev,
-				&doc_manager_for_prev,
-				&config_for_prev,
-				&find_dialog_for_prev,
-				live_region_label,
-				false,
-			);
-		});
-		let dialog_for_cancel = dialog;
-		let find_dialog_for_cancel = Rc::clone(find_dialog);
-		let config_for_cancel = Rc::clone(config);
-		cancel_btn.on_click(move |_| {
-			if let Some(state) = find_dialog_for_cancel.lock().unwrap().as_ref() {
-				state.save_settings(&config_for_cancel);
-				dialog_for_cancel.show(false);
-			}
-		});
-		let frame_for_enter = *frame;
-		let find_dialog_for_enter = Rc::clone(find_dialog);
-		let doc_manager_for_enter = Rc::clone(doc_manager);
-		let config_for_enter = Rc::clone(config);
-		find_combo.bind_internal(EventType::TEXT_ENTER, move |event| {
-			handle_find_action(
-				&frame_for_enter,
-				&doc_manager_for_enter,
-				&config_for_enter,
-				&find_dialog_for_enter,
-				live_region_label,
-				true,
-			);
-			event.skip(false);
-		});
-		let dialog_for_close = dialog;
-		let find_dialog_for_close = Rc::clone(find_dialog);
-		let config_for_close = Rc::clone(config);
-		dialog.on_close(move |event| {
-			if let Some(state) = find_dialog_for_close.lock().unwrap().as_ref() {
-				state.save_settings(&config_for_close);
-			}
-			dialog_for_close.show(false);
-			event.skip(false);
+		let FindDialogWidgets {
+			find_combo,
+			match_case,
+			whole_word,
+			use_regex,
+			find_prev_btn,
+			find_next_btn,
+			cancel_btn,
+		} = build_find_dialog_ui(dialog);
+		bind_find_dialog_actions(FindDialogActionParams {
+			frame: *frame,
+			dialog,
+			find_combo,
+			find_prev_btn,
+			find_next_btn,
+			cancel_btn,
+			config: Rc::clone(config),
+			doc_manager: Rc::clone(doc_manager),
+			find_dialog: Rc::clone(find_dialog),
+			live_region_label,
 		});
 		let state =
 			Self { dialog, find_combo, match_case, whole_word, use_regex, in_progress: Rc::new(Cell::new(false)) };
@@ -226,6 +141,154 @@ impl FindDialogState {
 		}
 		Some(FindInProgressGuard { flag: Rc::clone(&self.in_progress) })
 	}
+}
+
+struct FindDialogWidgets {
+	find_combo: ComboBox,
+	match_case: CheckBox,
+	whole_word: CheckBox,
+	use_regex: CheckBox,
+	find_prev_btn: Button,
+	find_next_btn: Button,
+	cancel_btn: Button,
+}
+
+struct FindDialogActionParams {
+	frame: Frame,
+	dialog: Dialog,
+	find_combo: ComboBox,
+	find_prev_btn: Button,
+	find_next_btn: Button,
+	cancel_btn: Button,
+	config: Rc<Mutex<ConfigManager>>,
+	doc_manager: Rc<Mutex<DocumentManager>>,
+	find_dialog: Rc<Mutex<Option<FindDialogState>>>,
+	live_region_label: StaticText,
+}
+
+fn build_find_dialog_ui(dialog: Dialog) -> FindDialogWidgets {
+	let combo_width = 250;
+	let option_padding = 2;
+	let button_spacing = 5;
+	let find_label = StaticText::builder(&dialog).with_label(&t("Find &what:")).build();
+	let find_combo = ComboBox::builder(&dialog)
+		.with_style(ComboBoxStyle::ProcessEnter)
+		.with_size(Size::new(combo_width, -1))
+		.build();
+	let options_box = StaticBoxSizerBuilder::new_with_label(Orientation::Vertical, &dialog, &t("Options")).build();
+	let match_case = CheckBox::builder(&dialog).with_label(&t("&Match case")).build();
+	let whole_word = CheckBox::builder(&dialog).with_label(&t("Match &whole word")).build();
+	let use_regex = CheckBox::builder(&dialog).with_label(&t("Use &regular expressions")).build();
+	options_box.add(&match_case, 0, SizerFlag::All, option_padding);
+	options_box.add(&whole_word, 0, SizerFlag::All, option_padding);
+	options_box.add(&use_regex, 0, SizerFlag::All, option_padding);
+	let find_prev_btn = Button::builder(&dialog).with_label(&t("Find &Previous")).build();
+	let find_next_btn = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("Find &Next")).build();
+	let cancel_btn = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
+	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+	dialog.set_affirmative_id(wxdragon::id::ID_OK);
+	let find_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	find_sizer.add(&find_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
+	find_sizer.add(&find_combo, 1, SizerFlag::Expand, 0);
+	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	button_sizer.add(&find_prev_btn, 0, SizerFlag::Right, button_spacing);
+	button_sizer.add(&find_next_btn, 0, SizerFlag::Right, button_spacing);
+	button_sizer.add_stretch_spacer(1);
+	button_sizer.add(&cancel_btn, 0, SizerFlag::All, 0);
+	let main_sizer = BoxSizer::builder(Orientation::Vertical).build();
+	main_sizer.add_sizer(&find_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
+	main_sizer.add_sizer(
+		&options_box,
+		0,
+		SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
+		DIALOG_PADDING,
+	);
+	main_sizer.add_sizer(
+		&button_sizer,
+		0,
+		SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
+		DIALOG_PADDING,
+	);
+	dialog.set_sizer_and_fit(main_sizer, true);
+	dialog.centre();
+	FindDialogWidgets { find_combo, match_case, whole_word, use_regex, find_prev_btn, find_next_btn, cancel_btn }
+}
+
+fn bind_find_dialog_actions(params: FindDialogActionParams) {
+	let FindDialogActionParams {
+		frame,
+		dialog,
+		find_combo,
+		find_prev_btn,
+		find_next_btn,
+		cancel_btn,
+		config,
+		doc_manager,
+		find_dialog,
+		live_region_label,
+	} = params;
+	let frame_for_next = frame;
+	let find_dialog_for_next = Rc::clone(&find_dialog);
+	let doc_manager_for_next = Rc::clone(&doc_manager);
+	let config_for_next = Rc::clone(&config);
+	find_next_btn.on_click(move |_| {
+		handle_find_action(
+			&frame_for_next,
+			&doc_manager_for_next,
+			&config_for_next,
+			&find_dialog_for_next,
+			live_region_label,
+			true,
+		);
+	});
+	let frame_for_prev = frame;
+	let find_dialog_for_prev = Rc::clone(&find_dialog);
+	let doc_manager_for_prev = Rc::clone(&doc_manager);
+	let config_for_prev = Rc::clone(&config);
+	find_prev_btn.on_click(move |_| {
+		handle_find_action(
+			&frame_for_prev,
+			&doc_manager_for_prev,
+			&config_for_prev,
+			&find_dialog_for_prev,
+			live_region_label,
+			false,
+		);
+	});
+	let dialog_for_cancel = dialog;
+	let find_dialog_for_cancel = Rc::clone(&find_dialog);
+	let config_for_cancel = Rc::clone(&config);
+	cancel_btn.on_click(move |_| {
+		if let Some(state) = find_dialog_for_cancel.lock().unwrap().as_ref() {
+			state.save_settings(&config_for_cancel);
+			dialog_for_cancel.show(false);
+		}
+	});
+	let frame_for_enter = frame;
+	let find_dialog_for_enter = Rc::clone(&find_dialog);
+	let doc_manager_for_enter = Rc::clone(&doc_manager);
+	let config_for_enter = Rc::clone(&config);
+	find_combo.bind_internal(EventType::TEXT_ENTER, move |event| {
+		handle_find_action(
+			&frame_for_enter,
+			&doc_manager_for_enter,
+			&config_for_enter,
+			&find_dialog_for_enter,
+			live_region_label,
+			true,
+		);
+		event.skip(false);
+	});
+	let dialog_for_close = dialog;
+	let find_dialog_for_close = Rc::clone(&find_dialog);
+	let config_for_close = Rc::clone(&config);
+	dialog.on_close(move |event| {
+		if let Some(state) = find_dialog_for_close.lock().unwrap().as_ref() {
+			state.save_settings(&config_for_close);
+		}
+		dialog_for_close.show(false);
+		event.skip(false);
+	});
 }
 
 pub struct FindInProgressGuard {
