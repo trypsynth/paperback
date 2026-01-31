@@ -1,8 +1,9 @@
 use std::time::{self, SystemTime};
 
-use wxdragon::translations::translate as t;
+use wxdragon::{prelude::*, translations::translate as t};
 
 use crate::session::StatusInfo;
+use super::document_manager::DocumentManager;
 
 pub fn format_status_text(info: &StatusInfo) -> String {
 	let line_label = t("Line");
@@ -31,4 +32,36 @@ pub fn format_sleep_timer_status(base_status: &str, remaining_seconds: i32) -> S
 	let seconds = remaining_seconds % 60;
 	let sleep_label = t("Sleep timer");
 	format!("{base_status} | {sleep_label}: {minutes:02}:{seconds:02}")
+}
+
+pub fn update_status_bar_with_sleep_timer(
+	frame: &Frame,
+	dm: &DocumentManager,
+	sleep_timer_start_ms: i64,
+	sleep_timer_duration_minutes: i32,
+) {
+	if dm.tab_count() == 0 {
+		if sleep_timer_start_ms > 0 {
+			let remaining = calculate_sleep_timer_remaining(sleep_timer_start_ms, sleep_timer_duration_minutes);
+			if remaining > 0 {
+				let status_text = format_sleep_timer_status(&t("Ready"), remaining);
+				frame.set_status_text(&status_text, 0);
+				return;
+			}
+		}
+		frame.set_status_text(&t("Ready"), 0);
+		return;
+	}
+	if let Some(tab) = dm.active_tab() {
+		let position = tab.text_ctrl.get_insertion_point();
+		let status_info = tab.session.get_status_info(position);
+		let mut status_text = format_status_text(&status_info);
+		if sleep_timer_start_ms > 0 {
+			let remaining = calculate_sleep_timer_remaining(sleep_timer_start_ms, sleep_timer_duration_minutes);
+			if remaining > 0 {
+				status_text = format_sleep_timer_status(&status_text, remaining);
+			}
+		}
+		frame.set_status_text(&status_text, 0);
+	}
 }

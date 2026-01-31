@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.0\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-01-30 22:37-0700\n"
+"POT-Creation-Date: 2026-01-31 10:21-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: C:\Users\Quin\git\paperback\src\ui\dialogs.rs
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\find.rs
 msgid "Options"
 msgstr ""
 
@@ -67,7 +67,7 @@ msgid "OK"
 msgstr ""
 
 #: C:\Users\Quin\git\paperback\src\ui\dialogs.rs
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\find.rs
 msgid "Cancel"
 msgstr ""
 
@@ -117,12 +117,13 @@ msgstr ""
 
 #: C:\Users\Quin\git\paperback\src\ui\dialogs.rs
 #: C:\Users\Quin\git\paperback\src\ui\document_manager.rs
+#: C:\Users\Quin\git\paperback\src\ui\help.rs
 #: C:\Users\Quin\git\paperback\src\ui\main_window.rs
 msgid "Error"
 msgstr ""
 
 #: C:\Users\Quin\git\paperback\src\ui\dialogs.rs
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "Bookmark Note"
 msgstr ""
 
@@ -131,7 +132,7 @@ msgid "Edit bookmark note:"
 msgstr ""
 
 #: C:\Users\Quin\git\paperback\src\ui\dialogs.rs
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "View Note"
 msgstr ""
 
@@ -375,6 +376,7 @@ msgstr ""
 
 #: C:\Users\Quin\git\paperback\src\ui\document_manager.rs
 #: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\status.rs
 msgid "Ready"
 msgstr ""
 
@@ -386,6 +388,85 @@ msgstr ""
 msgid "Document Password"
 msgstr ""
 
+#: C:\Users\Quin\git\paperback\src\ui\find.rs
+msgid "Find"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\find.rs
+msgid "Find &what:"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\find.rs
+msgid "&Match case"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\find.rs
+msgid "Match &whole word"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\find.rs
+msgid "Use &regular expressions"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\find.rs
+msgid "Find &Previous"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\find.rs
+msgid "Find &Next"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\find.rs
+msgid "Not found."
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\find.rs
+msgid "No more results. Wrapping search."
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\help.rs
+msgid "Failed to open containing folder."
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\help.rs
+msgid ""
+"readme.html not found. Please ensure the application was built properly."
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\help.rs
+msgid "Failed to launch default browser."
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\help.rs
+msgid "Failed to open donation page in browser."
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\help.rs
+msgid "No release notes were provided."
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\help.rs
+msgid "No updates available."
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\help.rs
+msgid "No updates available. Latest version: {}"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\help.rs
+msgid "Info"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\help.rs
+#, c-format
+msgid "Failed to check for updates. HTTP status: %d"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\help.rs
+msgid "Error checking for updates."
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\help.rs
 #: C:\Users\Quin\git\paperback\src\ui\main_window.rs
 msgid "Unsupported format selected."
 msgstr ""
@@ -403,515 +484,11 @@ msgid "{} chars"
 msgstr ""
 
 #: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&File"
+msgid "Open Document"
 msgstr ""
 
 #: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Go"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Tools"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Help"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Open...\tCtrl+O"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Open a document"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Close\tCtrl+F4"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Close the current document"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Close &All\tCtrl+Shift+F4"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Close all documents"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-#: C:\Users\Quin\git\paperback\src\ui\tray.rs
-msgid "E&xit"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Exit the application"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Recent Documents"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Open a recent document"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Find...\tCtrl+F"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Find text in the document"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Find &Next\tF3"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Find next occurrence"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Find &Previous\tShift+F3"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Find previous occurrence"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Go to &line...\tCtrl+G"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Go to a specific line"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Go to &percent...\tCtrl+Shift+G"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Go to a percentage of the document"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Go &Back\tAlt+Left"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Go back in history"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Go &Forward\tAlt+Right"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Go forward in history"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Sections"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Navigate by sections"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Headings"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Navigate by headings"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Pages"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Navigate by pages"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Bookmarks"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Navigate by bookmarks"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Links"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Navigate by links"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Tables"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Navigate by tables"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Separators"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Navigate by separators"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Lists"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Navigate by lists"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Previous Section\t["
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Go to previous section"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Next Section\t]"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Go to next section"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Go to &Page\tCtrl+P"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Previous Pa&ge\tShift+P"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Next Pag&e\tP"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Previous Lin&k\tShift+K"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Next Lin&k\tK"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Previous &Table\tShift+T"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Next &Table\tT"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Previous Se&parator\tShift+S"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Next Se&parator\tS"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Previous L&ist\tShift+L"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Next L&ist\tL"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Previous List &Item\tShift+I"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Next List I&tem\tI"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Next Heading Level 1\t1"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Previous Heading Level &2\tShift+2"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Next Heading Level 2\t2"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Previous Heading Level &3\tShift+3"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Next Heading Level 3\t3"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Previous Heading Level &4\tShift+4"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Next Heading Level 4\t4"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Previous Heading Level &5\tShift+5"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Next Heading Level 5\t5"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Previous Heading Level &6\tShift+6"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Next Heading Level 6\t6"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Previous Heading\tShift+H"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Go to previous heading"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Next Heading\tH"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Go to next heading"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Previous Heading Level &1\tShift+1"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Previous Bookmark\tShift+B"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Go to previous bookmark"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Next Bookmark\tB"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Go to next bookmark"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Previous &Note\tShift+N"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Go to previous note"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Next N&ote\tN"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Go to next note"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Jump to &All...\tCtrl+B"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Show all bookmarks and notes"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Show bookmarks only"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Jump to Notes &Only...\tCtrl+Alt+M"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Show notes only"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&View Note Text\tCtrl+Shift+W"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "View the note at current position"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Import Document Data...\tCtrl+Shift+I"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Import bookmarks and position"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Export Document Data...\tCtrl+Shift+E"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Export bookmarks and position"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Export to &Plain Text...\tCtrl+E"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Export document as plain text"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Word Count\tCtrl+W"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Show word count"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Document &Info\tCtrl+I"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Show document information"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Table of Contents\tCtrl+T"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Show table of contents"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Elements List...\tF7"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Show elements list"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Open &Containing Folder\tCtrl+Shift+C"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Open folder containing the document"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Open in &Web View\tCtrl+Shift+V"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Open document in web view"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "I&mport/Export"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Import and export options"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Toggle &Bookmark\tCtrl+Shift+B"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Bookmark with &Note\tCtrl+Shift+N"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Options\tCtrl+,"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Sleep Timer...\tCtrl+Shift+S"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&About Paperback\tCtrl+F1"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "About this application"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "View Help in &Browser\tF1"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "View help in default browser"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "View Help in &Paperback\tShift+F1"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "View help in Paperback"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Check for &Updates\tCtrl+Shift+U"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Check for updates"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Donate\tCtrl+D"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Support Paperback development"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No pages."
 msgstr ""
 
@@ -992,292 +569,719 @@ msgstr ""
 msgid "No recent documents."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Open Document"
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Previous Section\t["
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Go to previous section"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Next Section\t]"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Go to next section"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Go to &Page\tCtrl+P"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Previous Pa&ge\tShift+P"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Next Pag&e\tP"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Previous Lin&k\tShift+K"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Next Lin&k\tK"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Previous &Table\tShift+T"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Next &Table\tT"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Previous Se&parator\tShift+S"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Next Se&parator\tS"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Previous L&ist\tShift+L"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Next L&ist\tL"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Previous List &Item\tShift+I"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Next List I&tem\tI"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Next Heading Level 1\t1"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Previous Heading Level &2\tShift+2"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Next Heading Level 2\t2"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Previous Heading Level &3\tShift+3"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Next Heading Level 3\t3"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Previous Heading Level &4\tShift+4"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Next Heading Level 4\t4"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Previous Heading Level &5\tShift+5"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Next Heading Level 5\t5"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Previous Heading Level &6\tShift+6"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Next Heading Level 6\t6"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Previous Heading\tShift+H"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Go to previous heading"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Next Heading\tH"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Go to next heading"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Previous Heading Level &1\tShift+1"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Previous Bookmark\tShift+B"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Go to previous bookmark"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Next Bookmark\tB"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Go to next bookmark"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Previous &Note\tShift+N"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Go to previous note"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Next N&ote\tN"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Go to next note"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Jump to &All...\tCtrl+B"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Show all bookmarks and notes"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Show bookmarks only"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Jump to Notes &Only...\tCtrl+Alt+M"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Show notes only"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&View Note Text\tCtrl+Shift+W"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "View the note at current position"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&File"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Go"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Tools"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Help"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Open...\tCtrl+O"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Open a document"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Close\tCtrl+F4"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Close the current document"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Close &All\tCtrl+Shift+F4"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Close all documents"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+#: C:\Users\Quin\git\paperback\src\ui\tray.rs
+msgid "E&xit"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Exit the application"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Recent Documents"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Open a recent document"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Find...\tCtrl+F"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Find text in the document"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Find &Next\tF3"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Find next occurrence"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Find &Previous\tShift+F3"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Find previous occurrence"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Go to &line...\tCtrl+G"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Go to a specific line"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Go to &percent...\tCtrl+Shift+G"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Go to a percentage of the document"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Go &Back\tAlt+Left"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Go back in history"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Go &Forward\tAlt+Right"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Go forward in history"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Sections"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Navigate by sections"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Headings"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Navigate by headings"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Pages"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Navigate by pages"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Bookmarks"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Navigate by bookmarks"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Links"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Navigate by links"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Tables"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Navigate by tables"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Separators"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Navigate by separators"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Lists"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Navigate by lists"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Import Document Data...\tCtrl+Shift+I"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Import bookmarks and position"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Export Document Data...\tCtrl+Shift+E"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Export bookmarks and position"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Export to &Plain Text...\tCtrl+E"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Export document as plain text"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Word Count\tCtrl+W"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Show word count"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Document &Info\tCtrl+I"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Show document information"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Table of Contents\tCtrl+T"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Show table of contents"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Elements List...\tF7"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Show elements list"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Open &Containing Folder\tCtrl+Shift+C"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Open folder containing the document"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Open in &Web View\tCtrl+Shift+V"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Open document in web view"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "I&mport/Export"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Import and export options"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Toggle &Bookmark\tCtrl+Shift+B"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Bookmark with &Note\tCtrl+Shift+N"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Options\tCtrl+,"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Sleep Timer...\tCtrl+Shift+S"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&About Paperback\tCtrl+F1"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "About this application"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "View Help in &Browser\tF1"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "View help in default browser"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "View Help in &Paperback\tShift+F1"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "View help in Paperback"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Check for &Updates\tCtrl+Shift+U"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Check for updates"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "&Donate\tCtrl+D"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
+msgid "Support Paperback development"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
 msgid "(No recent documents)"
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\menu.rs
 msgid "Show All...\tCtrl+R"
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Find"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Find &what:"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Match case"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Match &whole word"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Use &regular expressions"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Find &Previous"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Find &Next"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Not found."
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "No more results. Wrapping search."
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No sections."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No next section"
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No previous section"
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 #, c-format
 msgid "No headings at level %d."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 #, c-format
 msgid "No next heading at level %d."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 #, c-format
 msgid "No previous heading at level %d."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No headings."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No next heading."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No previous heading."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No next page."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No previous page."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No links."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No next link."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No previous link."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No lists."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No next list."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No previous list."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No list items."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No next list item."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No previous list item."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No tables."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No next table."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No previous table."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No separators."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No next separator."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No previous separator."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "Wrapping to start. "
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "Wrapping to end. "
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 #, c-format
 msgid "%s Heading level %d"
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 #, c-format
 msgid "Page %d: %s"
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid " link"
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "Navigated to next position."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "Navigated to previous position."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No next position."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No previous position."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No notes."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No bookmarks."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No next note."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No next bookmark."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No previous note."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No previous bookmark."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 #, c-format
 msgid "%s - Bookmark %d"
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "Bookmark."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "Bookmark removed."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "Bookmark added."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "Enter bookmark note:"
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "Bookmark saved."
 msgstr ""
 
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No note at the current position."
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Failed to open containing folder."
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid ""
-"readme.html not found. Please ensure the application was built properly."
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Failed to launch default browser."
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Failed to open donation page in browser."
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "No release notes were provided."
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "No updates available."
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "No updates available. Latest version: {}"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Info"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-#, c-format
-msgid "Failed to check for updates. HTTP status: %d"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Error checking for updates."
 msgstr ""
 
 #: C:\Users\Quin\git\paperback\src\ui\status.rs
