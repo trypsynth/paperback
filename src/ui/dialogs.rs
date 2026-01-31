@@ -792,11 +792,7 @@ pub fn show_go_to_line_dialog(parent: &Frame, current_line: i32, max_lines: i32)
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
 	line_ctrl.set_focus();
-	if dialog.show_modal() == wxdragon::id::ID_OK {
-		Some(line_ctrl.value().clamp(1, max_lines))
-	} else {
-		None
-	}
+	if dialog.show_modal() == wxdragon::id::ID_OK { Some(line_ctrl.value().clamp(1, max_lines)) } else { None }
 }
 
 pub fn show_go_to_page_dialog(parent: &Frame, current_page: i32, max_page: i32) -> Option<i32> {
@@ -848,11 +844,7 @@ pub fn show_go_to_page_dialog(parent: &Frame, current_page: i32, max_page: i32) 
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
 	page_ctrl.set_focus();
-	if dialog.show_modal() == wxdragon::id::ID_OK {
-		Some(page_ctrl.value().clamp(1, max_page))
-	} else {
-		None
-	}
+	if dialog.show_modal() == wxdragon::id::ID_OK { Some(page_ctrl.value().clamp(1, max_page)) } else { None }
 }
 
 pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32) -> Option<i32> {
@@ -935,11 +927,7 @@ pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32) -> Option
 	dialog.set_sizer_and_fit(main_sizer, true);
 	dialog.centre();
 	percent_slider.set_focus();
-	if dialog.show_modal() == wxdragon::id::ID_OK {
-		Some(input_ctrl.value().clamp(0, 100))
-	} else {
-		None
-	}
+	if dialog.show_modal() == wxdragon::id::ID_OK { Some(input_ctrl.value().clamp(0, 100)) } else { None }
 }
 
 pub fn show_update_dialog(parent: &dyn WxWidget, new_version: &str, changelog: &str) -> bool {

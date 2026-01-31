@@ -178,11 +178,13 @@ pub fn handle_history_navigation(
 			return;
 		};
 		let current_pos = tab.text_ctrl.get_insertion_point();
-		let result =
-			if forward { tab.session.history_go_forward(current_pos) } else { tab.session.history_go_back(current_pos) };
+		let result = if forward {
+			tab.session.history_go_forward(current_pos)
+		} else {
+			tab.session.history_go_back(current_pos)
+		};
 		if result.found {
-			let message =
-				if forward { t("Navigated to next position.") } else { t("Navigated to previous position.") };
+			let message = if forward { t("Navigated to next position.") } else { t("Navigated to previous position.") };
 			tab.text_ctrl.set_focus();
 			tab.text_ctrl.set_insertion_point(result.offset);
 			tab.text_ctrl.show_position(result.offset);
