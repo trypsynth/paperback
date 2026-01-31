@@ -1191,7 +1191,7 @@ pub fn show_all_documents_dialog(
 	bind_escape_to_close(&search_ctrl, dialog);
 	bind_escape_to_close(&doc_list, dialog);
 
-	populate_document_list(DocumentListParams {
+	populate_document_list(&DocumentListParams {
 		list: doc_list,
 		open_button,
 		remove_button,
@@ -1359,7 +1359,7 @@ fn make_all_documents_remove_action(
 			cfg.remove_document_history(&path_to_remove);
 			cfg.flush();
 		}
-		populate_document_list(DocumentListParams {
+		populate_document_list(&DocumentListParams {
 			list,
 			open_button,
 			remove_button,
@@ -1404,7 +1404,7 @@ fn bind_all_documents_clear(
 			}
 			cfg.flush();
 		}
-		populate_document_list(DocumentListParams {
+		populate_document_list(&DocumentListParams {
 			list,
 			open_button,
 			remove_button,
@@ -1428,7 +1428,7 @@ fn bind_all_documents_search(
 ) {
 	search_ctrl.on_text_updated(move |_event| {
 		let filter = search_ctrl.get_value();
-		populate_document_list(DocumentListParams {
+		populate_document_list(&DocumentListParams {
 			list,
 			open_button,
 			remove_button,
@@ -1584,7 +1584,7 @@ struct DocumentListParams<'a> {
 	selection: Option<i32>,
 }
 
-fn populate_document_list(params: DocumentListParams<'_>) {
+fn populate_document_list(params: &DocumentListParams<'_>) {
 	let DocumentListParams {
 		list,
 		open_button,
@@ -1594,7 +1594,7 @@ fn populate_document_list(params: DocumentListParams<'_>) {
 		open_paths,
 		filter,
 		selection,
-	} = params;
+	} = *params;
 	list.cleanup_all_custom_data();
 	list.delete_all_items();
 
