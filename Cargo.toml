@@ -25,6 +25,7 @@ pulldown-cmark = { version = "0.13.0", default-features = false, features = ["ht
 regex = "1.12.2"
 roman = "0.1"
 roxmltree = "0.21.1"
+rtf-parser = "0.4.2"
 scraper = "0.25.0"
 serde = { version = "1.0.228", default-features = false, features = ["derive", "std"] }
 sha1 = "0.10.6"

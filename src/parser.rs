@@ -17,6 +17,7 @@ pub mod odp;
 pub mod odt;
 pub mod pdf;
 pub mod pptx;
+pub mod rtf;
 pub mod text;
 pub(crate) mod utils;
 
@@ -88,6 +89,7 @@ impl ParserRegistry {
 			registry.register(odp::OdpParser);
 			registry.register(odt::OdtParser);
 			registry.register(pptx::PptxParser);
+			registry.register(rtf::RtfParser);
 			registry.register(text::TextParser);
 			registry
 		})
