@@ -758,16 +758,13 @@ pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, autho
 	dialog.show_modal();
 }
 
-pub fn show_go_to_line_dialog(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<i64> {
+pub fn show_go_to_line_dialog(parent: &Frame, current_line: i32, max_lines: i32) -> Option<i32> {
 	let dialog_title = t("Go to Line");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
 	let label_text = t("&Line number:");
 	let label = StaticText::builder(&dialog).with_label(&label_text).build();
-	let status = session.get_status_info(current_pos);
-	let total_lines = session.line_count().max(1);
-	let max_lines = i32::try_from(total_lines.min(i64::from(i32::MAX))).unwrap_or(i32::MAX);
-	let current_line =
-		i32::try_from(status.line_number.clamp(1, total_lines).min(i64::from(i32::MAX))).unwrap_or(i32::MAX);
+	let max_lines = max_lines.max(1);
+	let current_line = current_line.clamp(1, max_lines);
 	let line_ctrl = SpinCtrl::builder(&dialog)
 		.with_range(1, max_lines)
 		.with_style(SpinCtrlStyle::Default | SpinCtrlStyle::ProcessEnter)
@@ -795,11 +792,15 @@ pub fn show_go_to_line_dialog(parent: &Frame, session: &DocumentSession, current
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
 	line_ctrl.set_focus();
-	if dialog.show_modal() == wxdragon::id::ID_OK { Some(i64::from(line_ctrl.value())) } else { None }
+	if dialog.show_modal() == wxdragon::id::ID_OK {
+		Some(line_ctrl.value().clamp(1, max_lines))
+	} else {
+		None
+	}
 }
 
-pub fn show_go_to_page_dialog(parent: &Frame, session: &DocumentSession, current_page: i32) -> Option<i64> {
-	let max_page = i32::try_from(session.page_count().max(1)).unwrap_or(i32::MAX);
+pub fn show_go_to_page_dialog(parent: &Frame, current_page: i32, max_page: i32) -> Option<i32> {
+	let max_page = max_page.max(1);
 	let dialog_title = t("Go to page");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
 	let label_template = t("Go to page (%d/%d):");
@@ -848,18 +849,16 @@ pub fn show_go_to_page_dialog(parent: &Frame, session: &DocumentSession, current
 	dialog.centre();
 	page_ctrl.set_focus();
 	if dialog.show_modal() == wxdragon::id::ID_OK {
-		let page = page_ctrl.value().clamp(1, max_page);
-		Some(session.page_offset(page))
+		Some(page_ctrl.value().clamp(1, max_page))
 	} else {
 		None
 	}
 }
 
-pub fn show_go_to_percent_dialog(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<i64> {
+pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32) -> Option<i32> {
 	let dialog_title = t("Go to Percent");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
-	let status = session.get_status_info(current_pos);
-	let current_percent = status.percentage.clamp(0, 100);
+	let current_percent = current_percent.clamp(0, 100);
 	let slider_label = StaticText::builder(&dialog).with_label(&t("&Percent")).build();
 	let percent_slider =
 		Slider::builder(&dialog).with_value(current_percent).with_min_value(0).with_max_value(100).build();
@@ -937,8 +936,7 @@ pub fn show_go_to_percent_dialog(parent: &Frame, session: &DocumentSession, curr
 	dialog.centre();
 	percent_slider.set_focus();
 	if dialog.show_modal() == wxdragon::id::ID_OK {
-		let percent = input_ctrl.value().clamp(0, 100);
-		Some(session.position_from_percent(percent))
+		Some(input_ctrl.value().clamp(0, 100))
 	} else {
 		None
 	}

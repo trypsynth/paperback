@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.0\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-01-31 10:21-0700\n"
+"POT-Creation-Date: 2026-01-31 11:48-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1232,6 +1232,11 @@ msgid "No previous position."
 msgstr ""
 
 #: C:\Users\Quin\git\paperback\src\ui\navigation.rs
+#, c-format
+msgid "%s - Bookmark %d"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No notes."
 msgstr ""
 
@@ -1253,11 +1258,6 @@ msgstr ""
 
 #: C:\Users\Quin\git\paperback\src\ui\navigation.rs
 msgid "No previous bookmark."
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\navigation.rs
-#, c-format
-msgid "%s - Bookmark %d"
 msgstr ""
 
 #: C:\Users\Quin\git\paperback\src\ui\navigation.rs

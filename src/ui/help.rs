@@ -59,11 +59,13 @@ pub fn show_error_message(frame: &Frame, message: &str, title: &str) {
 }
 
 pub fn handle_open_containing_folder(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) {
-	let dm_ref = doc_manager.lock().unwrap();
-	let Some(tab) = dm_ref.active_tab() else {
-		return;
-	};
-	let Some(dir) = tab.file_path.parent() else {
+	let dir = doc_manager
+		.lock()
+		.unwrap()
+		.active_tab()
+		.and_then(|tab| tab.file_path.parent())
+		.map(std::path::Path::to_path_buf);
+	let Some(dir) = dir else {
 		show_error_message(frame, &t("Failed to open containing folder."), &t("Error"));
 		return;
 	};

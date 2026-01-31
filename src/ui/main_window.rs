@@ -94,6 +94,7 @@ impl MainWindow {
 						} else {
 							dm.restore_focus();
 						}
+						drop(dm);
 						event.skip(false);
 						return;
 					}
@@ -362,61 +363,128 @@ impl MainWindow {
 					find::handle_find_action(&frame_copy, &dm, &config, &find_dialog, live_region_label, false);
 				}
 				menu_ids::GO_TO_LINE => {
-					let mut dm_guard = dm.lock().unwrap();
-					let Some(tab) = dm_guard.active_tab_mut() else {
-						return;
+					let (current_line, max_lines) = {
+						let mut dm_guard = dm.lock().unwrap();
+						let (current_line, max_lines) = {
+							let Some(tab) = dm_guard.active_tab_mut() else {
+								return;
+							};
+							let current_pos = tab.text_ctrl.get_insertion_point();
+							let status = tab.session.get_status_info(current_pos);
+							let total_lines = tab.session.line_count().max(1);
+							let max_lines = i32::try_from(total_lines.min(i64::from(i32::MAX))).unwrap_or(i32::MAX);
+							let current_line =
+								i32::try_from(status.line_number.clamp(1, total_lines).min(i64::from(i32::MAX)))
+									.unwrap_or(i32::MAX);
+							(current_line, max_lines)
+						};
+						drop(dm_guard);
+						(current_line, max_lines)
 					};
-					let current_pos = tab.text_ctrl.get_insertion_point();
-					if let Some(line) = dialogs::show_go_to_line_dialog(&frame_copy, &tab.session, current_pos) {
-						let target_pos = tab.session.position_from_line(line);
-						tab.text_ctrl.set_focus();
-						tab.text_ctrl.set_insertion_point(target_pos);
-						tab.text_ctrl.show_position(target_pos);
-						tab.session.check_and_record_history(target_pos);
-						let (history, history_index) = tab.session.get_history();
-						let path_str = tab.file_path.to_string_lossy();
+					if let Some(line) = dialogs::show_go_to_line_dialog(&frame_copy, current_line, max_lines) {
+						let (history, history_index, path_str) = {
+							let mut dm_guard = dm.lock().unwrap();
+							let (history, history_index, path_str) = {
+								let Some(tab) = dm_guard.active_tab_mut() else {
+									return;
+								};
+								let target_pos = tab.session.position_from_line(i64::from(line));
+								tab.text_ctrl.set_focus();
+								tab.text_ctrl.set_insertion_point(target_pos);
+								tab.text_ctrl.show_position(target_pos);
+								tab.session.check_and_record_history(target_pos);
+								let (history, history_index) = tab.session.get_history();
+								let history = history.to_vec();
+								let path_str = tab.file_path.to_string_lossy().to_string();
+								(history, history_index, path_str)
+							};
+							drop(dm_guard);
+							(history, history_index, path_str)
+						};
 						let cfg = config.lock().unwrap();
-						cfg.set_navigation_history(&path_str, history, history_index);
+						cfg.set_navigation_history(&path_str, &history, history_index);
 					}
 				}
 				menu_ids::GO_TO_PAGE => {
-					let mut dm_guard = dm.lock().unwrap();
-					let Some(tab) = dm_guard.active_tab_mut() else {
-						return;
+					let (current_page, max_page) = {
+						let mut dm_guard = dm.lock().unwrap();
+						let (current_page, max_page) = {
+							let Some(tab) = dm_guard.active_tab_mut() else {
+								return;
+							};
+							let page_count = tab.session.page_count();
+							if page_count == 0 {
+								live_region::announce(live_region_label, &t("No pages."));
+								return;
+							}
+							let current_pos = tab.text_ctrl.get_insertion_point();
+							let current_page = tab.session.current_page(current_pos);
+							let max_page = i32::try_from(page_count.max(1)).unwrap_or(i32::MAX);
+							(current_page, max_page)
+						};
+						drop(dm_guard);
+						(current_page, max_page)
 					};
-					if tab.session.page_count() == 0 {
-						live_region::announce(live_region_label, &t("No pages."));
-						return;
-					}
-					let current_pos = tab.text_ctrl.get_insertion_point();
-					let current_page = tab.session.current_page(current_pos);
-					if let Some(target_pos) = dialogs::show_go_to_page_dialog(&frame_copy, &tab.session, current_page) {
-						tab.text_ctrl.set_focus();
-						tab.text_ctrl.set_insertion_point(target_pos);
-						tab.text_ctrl.show_position(target_pos);
-						tab.session.check_and_record_history(target_pos);
-						let (history, history_index) = tab.session.get_history();
-						let path_str = tab.file_path.to_string_lossy();
+					if let Some(page) = dialogs::show_go_to_page_dialog(&frame_copy, current_page, max_page) {
+						let (history, history_index, path_str) = {
+							let mut dm_guard = dm.lock().unwrap();
+							let (history, history_index, path_str) = {
+								let Some(tab) = dm_guard.active_tab_mut() else {
+									return;
+								};
+								let target_pos = tab.session.page_offset(page);
+								tab.text_ctrl.set_focus();
+								tab.text_ctrl.set_insertion_point(target_pos);
+								tab.text_ctrl.show_position(target_pos);
+								tab.session.check_and_record_history(target_pos);
+								let (history, history_index) = tab.session.get_history();
+								let history = history.to_vec();
+								let path_str = tab.file_path.to_string_lossy().to_string();
+								(history, history_index, path_str)
+							};
+							drop(dm_guard);
+							(history, history_index, path_str)
+						};
 						let cfg = config.lock().unwrap();
-						cfg.set_navigation_history(&path_str, history, history_index);
+						cfg.set_navigation_history(&path_str, &history, history_index);
 					}
 				}
 				menu_ids::GO_TO_PERCENT => {
-					let mut dm_guard = dm.lock().unwrap();
-					let Some(tab) = dm_guard.active_tab_mut() else {
-						return;
+					let current_percent = {
+						let mut dm_guard = dm.lock().unwrap();
+						let current_percent = {
+							let Some(tab) = dm_guard.active_tab_mut() else {
+								return;
+							};
+							let current_pos = tab.text_ctrl.get_insertion_point();
+							let status = tab.session.get_status_info(current_pos);
+							status.percentage.clamp(0, 100)
+						};
+						drop(dm_guard);
+						current_percent
 					};
-					let current_pos = tab.text_ctrl.get_insertion_point();
-					if let Some(target_pos) = dialogs::show_go_to_percent_dialog(&frame_copy, &tab.session, current_pos)
-					{
-						tab.text_ctrl.set_focus();
-						tab.text_ctrl.set_insertion_point(target_pos);
-						tab.text_ctrl.show_position(target_pos);
-						tab.session.check_and_record_history(target_pos);
-						let (history, history_index) = tab.session.get_history();
-						let path_str = tab.file_path.to_string_lossy();
+					if let Some(percent) = dialogs::show_go_to_percent_dialog(&frame_copy, current_percent) {
+						let (history, history_index, path_str) = {
+							let mut dm_guard = dm.lock().unwrap();
+							let (history, history_index, path_str) = {
+								let Some(tab) = dm_guard.active_tab_mut() else {
+									return;
+								};
+								let target_pos = tab.session.position_from_percent(percent);
+								tab.text_ctrl.set_focus();
+								tab.text_ctrl.set_insertion_point(target_pos);
+								tab.text_ctrl.show_position(target_pos);
+								tab.session.check_and_record_history(target_pos);
+								let (history, history_index) = tab.session.get_history();
+								let history = history.to_vec();
+								let path_str = tab.file_path.to_string_lossy().to_string();
+								(history, history_index, path_str)
+							};
+							drop(dm_guard);
+							(history, history_index, path_str)
+						};
 						let cfg = config.lock().unwrap();
-						cfg.set_navigation_history(&path_str, history, history_index);
+						cfg.set_navigation_history(&path_str, &history, history_index);
 					}
 				}
 				menu_ids::GO_BACK => {
@@ -767,15 +835,15 @@ impl MainWindow {
 					if dialog.show_modal() == wxdragon::id::ID_OK {
 						if let Some(path) = dialog.get_path() {
 							let path_str = tab.file_path.to_string_lossy();
-							{
+							let pos = {
 								let config = config.lock().unwrap();
 								config.import_settings_from_file(&path_str, &path);
 								let max_pos = tab.text_ctrl.get_last_position();
-								let pos = config.get_validated_document_position(&path_str, max_pos);
-								if pos >= 0 {
-									tab.text_ctrl.set_insertion_point(pos);
-									tab.text_ctrl.show_position(pos);
-								}
+								config.get_validated_document_position(&path_str, max_pos)
+							};
+							if pos >= 0 {
+								tab.text_ctrl.set_insertion_point(pos);
+								tab.text_ctrl.show_position(pos);
 							}
 							let dialog = MessageDialog::builder(
 								&frame_copy,
@@ -1010,9 +1078,11 @@ impl MainWindow {
 									return;
 								}
 								if dm.lock().unwrap().open_file(&dm, path) {
-									let dm_ref = dm.lock().unwrap();
-									update_title_from_manager(&frame_copy, &dm_ref);
-									dm_ref.restore_focus();
+									{
+										let dm_ref = dm.lock().unwrap();
+										update_title_from_manager(&frame_copy, &dm_ref);
+										dm_ref.restore_focus();
+									}
 									let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 									frame_copy.set_menu_bar(menu_bar);
 								}
@@ -1036,9 +1106,11 @@ impl MainWindow {
 								return;
 							}
 							if dm.lock().unwrap().open_file(&dm, path) {
-								let dm_ref = dm.lock().unwrap();
-								update_title_from_manager(&frame_copy, &dm_ref);
-								dm_ref.restore_focus();
+								{
+									let dm_ref = dm.lock().unwrap();
+									update_title_from_manager(&frame_copy, &dm_ref);
+									dm_ref.restore_focus();
+								}
 								let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 								frame_copy.set_menu_bar(menu_bar);
 							}
