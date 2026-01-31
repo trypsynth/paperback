@@ -324,7 +324,7 @@ fn trim_history(positions: &mut Vec<i64>, index: &mut usize, max_len: usize) {
 	}
 }
 
-pub(crate) fn record_history_position(positions: &mut Vec<i64>, index: &mut usize, current_pos: i64, max_len: usize) {
+pub fn record_history_position(positions: &mut Vec<i64>, index: &mut usize, current_pos: i64, max_len: usize) {
 	if positions.is_empty() {
 		positions.push(current_pos);
 		*index = 0;

@@ -48,11 +48,8 @@ impl Parser for PdfParser {
 			}
 		}
 		let metadata = document.metadata();
-		let title = metadata
-			.title
-			.as_deref()
-			.map(decode_pdf_string)
-			.unwrap_or_else(|| extract_title_from_path(&context.file_path));
+		let title =
+			metadata.title.as_deref().map_or_else(|| extract_title_from_path(&context.file_path), decode_pdf_string);
 		let author = metadata.author.as_deref().map(decode_pdf_string).unwrap_or_default();
 		let toc_items = Vec::new();
 		let mut doc = Document::new();
@@ -132,7 +129,7 @@ impl Device<'_> for TextExtractor {
 			} else if dx > 0.0 {
 				let avg = self.avg_dx.unwrap_or(dx);
 				let last_char = self.text.chars().last();
-				let alnum_pair = last_char.is_some_and(|c| c.is_alphanumeric()) && unicode_char.is_alphanumeric();
+				let alnum_pair = last_char.is_some_and(char::is_alphanumeric) && unicode_char.is_alphanumeric();
 				let gap_threshold = if alnum_pair { (avg * 2.4).max(4.0) } else { (avg * 1.6).max(3.0) };
 				if dx > gap_threshold && !self.text.ends_with([' ', '\n', '\r', '\t']) && unicode_char != ' ' {
 					self.text.push(' ');

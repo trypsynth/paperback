@@ -26,5 +26,5 @@ pub fn format_sleep_timer_status(base_status: &str, remaining_seconds: i32) -> S
 	let minutes = remaining_seconds / 60;
 	let seconds = remaining_seconds % 60;
 	let sleep_label = t("Sleep timer");
-	format!("{} | {}: {:02}:{:02}", base_status, sleep_label, minutes, seconds)
+	format!("{base_status} | {sleep_label}: {minutes:02}:{seconds:02}")
 }

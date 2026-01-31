@@ -33,7 +33,7 @@ pub struct DocumentManager {
 }
 
 impl DocumentManager {
-	pub fn new(
+	pub const fn new(
 		frame: Frame,
 		notebook: Notebook,
 		config: Rc<Mutex<ConfigManager>>,
@@ -42,7 +42,7 @@ impl DocumentManager {
 		Self { frame, notebook, tabs: Vec::new(), config, live_region_label, last_position_save: Cell::new(None) }
 	}
 
-	pub fn open_file(&mut self, self_rc: Rc<Mutex<DocumentManager>>, path: &Path) -> bool {
+	pub fn open_file(&mut self, self_rc: Rc<Mutex<Self>>, path: &Path) -> bool {
 		if !path.exists() {
 			let template = t("File not found: {}");
 			let message = template.replace("{}", &path.to_string_lossy());
@@ -74,12 +74,11 @@ impl DocumentManager {
 						show_error_dialog(&self.notebook, &t("Password is required."), &t("Error"));
 						return false;
 					};
-					match DocumentSession::new(&path_str, &password, &forced_extension) {
-						Ok(session) => self.add_session_tab(self_rc, path, session, &password),
-						Err(_) => {
-							show_error_dialog(&self.notebook, &t("Failed to load document."), &t("Error"));
-							false
-						}
+					if let Ok(session) = DocumentSession::new(&path_str, &password, &forced_extension) {
+						self.add_session_tab(self_rc, path, session, &password)
+					} else {
+						show_error_dialog(&self.notebook, &t("Failed to load document."), &t("Error"));
+						false
 					}
 				} else {
 					show_error_dialog(&self.notebook, &t("Failed to load document."), &t("Error"));
@@ -91,7 +90,7 @@ impl DocumentManager {
 
 	pub fn add_session_tab(
 		&mut self,
-		self_rc: Rc<Mutex<DocumentManager>>,
+		self_rc: Rc<Mutex<Self>>,
 		path: &Path,
 		session: DocumentSession,
 		password: &str,
@@ -102,7 +101,7 @@ impl DocumentManager {
 		}
 		let title = session.title();
 		let title = if title.is_empty() {
-			path.file_name().map(|s| s.to_string_lossy().to_string()).unwrap_or_else(|| t("Untitled"))
+			path.file_name().map_or_else(|| t("Untitled"), |s| s.to_string_lossy().to_string())
 		} else {
 			title
 		};
@@ -255,7 +254,7 @@ impl DocumentManager {
 		self.tabs.get(index)
 	}
 
-	pub fn tab_count(&self) -> usize {
+	pub const fn tab_count(&self) -> usize {
 		self.tabs.len()
 	}
 
@@ -276,7 +275,7 @@ impl DocumentManager {
 		}
 	}
 
-	pub fn notebook(&self) -> &Notebook {
+	pub const fn notebook(&self) -> &Notebook {
 		&self.notebook
 	}
 

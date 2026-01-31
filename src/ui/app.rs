@@ -53,5 +53,5 @@ fn normalize_cli_path(path: &Path) -> PathBuf {
 	if path.is_absolute() {
 		return path.to_path_buf();
 	}
-	env::current_dir().map(|cwd| cwd.join(path)).unwrap_or_else(|_| path.to_path_buf())
+	env::current_dir().map_or_else(|_| path.to_path_buf(), |cwd| cwd.join(path))
 }

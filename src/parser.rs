@@ -19,7 +19,7 @@ pub mod pdf;
 pub mod pptx;
 pub mod rtf;
 pub mod text;
-pub(crate) mod utils;
+pub mod utils;
 
 pub const PASSWORD_REQUIRED_ERROR_PREFIX: &str = "[password_required]";
 

@@ -184,15 +184,15 @@ impl DocumentSession {
 		}
 	}
 
-	pub fn set_stable_position(&mut self, position: i64) {
+	pub const fn set_stable_position(&mut self, position: i64) {
 		self.last_stable_position = Some(position);
 	}
 
-	fn nav_direction(next: bool) -> NavDirection {
+	const fn nav_direction(next: bool) -> NavDirection {
 		if next { NavDirection::Next } else { NavDirection::Previous }
 	}
 
-	fn nav_request(
+	const fn nav_request(
 		&self,
 		position: i64,
 		wrap: bool,
@@ -388,7 +388,7 @@ impl DocumentSession {
 				continue;
 			}
 			let level = marker.level;
-			while item_stack.last().map_or(false, |(l, _)| *l >= level) {
+			while item_stack.last().is_some_and(|(l, _)| *l >= level) {
 				item_stack.pop();
 			}
 			let parent_index = item_stack.last().map_or(-1, |(_, idx)| *idx);

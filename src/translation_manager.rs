@@ -19,9 +19,9 @@ pub struct TranslationManager {
 }
 
 impl TranslationManager {
-	pub fn instance() -> &'static Mutex<TranslationManager> {
+	pub fn instance() -> &'static Mutex<Self> {
 		static INSTANCE: OnceLock<Mutex<TranslationManager>> = OnceLock::new();
-		INSTANCE.get_or_init(|| Mutex::new(TranslationManager::new()))
+		INSTANCE.get_or_init(|| Mutex::new(Self::new()))
 	}
 
 	pub fn initialize(&mut self) -> bool {

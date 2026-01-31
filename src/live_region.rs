@@ -18,7 +18,7 @@ mod windows_impl {
 	use wxdragon::prelude::WxWidget;
 
 	thread_local! {
-		static ACC_PROP_SERVICES: RefCell<Option<IAccPropServices>> = RefCell::new(None);
+		static ACC_PROP_SERVICES: RefCell<Option<IAccPropServices>> = const { RefCell::new(None) };
 	}
 
 	const LIVE_REGION_POLITE: u32 = 1;
@@ -85,7 +85,7 @@ mod windows_impl {
 		if handle.is_null() {
 			return None;
 		}
-		Some(HWND(handle as *mut std::ffi::c_void))
+		Some(HWND(handle.cast::<std::ffi::c_void>()))
 	}
 }
 

@@ -239,7 +239,7 @@ impl MainWindow {
 		if let Some(tab) = dm.active_tab() {
 			let title = tab.session.title();
 			let display_title = if title.is_empty() {
-				tab.file_path.file_name().map(|s| s.to_string_lossy().to_string()).unwrap_or_else(|| t("Untitled"))
+				tab.file_path.file_name().map_or_else(|| t("Untitled"), |s| s.to_string_lossy().to_string())
 			} else {
 				title
 			};
@@ -366,11 +366,11 @@ impl MainWindow {
 		menu
 	}
 
-	fn item(id: i32, label: String) -> MenuEntry {
+	const fn item(id: i32, label: String) -> MenuEntry {
 		MenuEntry::Item(MenuItemSpec { id, label, help: None })
 	}
 
-	fn item_with_help(id: i32, label: String, help: String) -> MenuEntry {
+	const fn item_with_help(id: i32, label: String, help: String) -> MenuEntry {
 		MenuEntry::Item(MenuItemSpec { id, label, help: Some(help) })
 	}
 
@@ -969,11 +969,8 @@ impl MainWindow {
 					let Some(tab) = dm_ref.active_tab() else {
 						return;
 					};
-					let default_name = tab
-						.file_path
-						.file_stem()
-						.map(|s| s.to_string_lossy().to_string())
-						.unwrap_or_else(|| t("document"));
+					let default_name =
+						tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
 					let default_file = format!("{default_name}.txt");
 					let wildcard = t("Plain text files (*.txt)|*.txt|All files (*.*)|*.*");
 					let dialog = FileDialog::builder(&frame_copy)
@@ -1005,11 +1002,8 @@ impl MainWindow {
 					let Some(tab) = dm_ref.active_tab() else {
 						return;
 					};
-					let default_name = tab
-						.file_path
-						.file_stem()
-						.map(|s| s.to_string_lossy().to_string())
-						.unwrap_or_else(|| t("document"));
+					let default_name =
+						tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
 					let default_file = format!("{default_name}.paperback");
 					let wildcard = t("Paperback files (*.paperback)|*.paperback");
 					let dialog = FileDialog::builder(&frame_copy)
@@ -1118,9 +1112,9 @@ impl MainWindow {
 							current_toc_offset as i32,
 						) {
 							tab.text_ctrl.set_focus();
-							tab.text_ctrl.set_insertion_point(offset as i64);
-							tab.text_ctrl.show_position(offset as i64);
-							tab.session.check_and_record_history(offset as i64);
+							tab.text_ctrl.set_insertion_point(i64::from(offset));
+							tab.text_ctrl.show_position(i64::from(offset));
+							tab.session.check_and_record_history(i64::from(offset));
 							let (history, history_index) = tab.session.get_history();
 							let path_str = tab.file_path.to_string_lossy();
 							let cfg = config.lock().unwrap();
@@ -1155,7 +1149,7 @@ impl MainWindow {
 					let current_pos = tab.text_ctrl.get_insertion_point();
 					let temp_dir = env::temp_dir().to_string_lossy().to_string();
 					if let Some(target_path) = tab.session.webview_target_path(current_pos, &temp_dir) {
-						let url = format!("file:///{}", target_path.replace("\\", "/"));
+						let url = format!("file:///{}", target_path.replace('\\', "/"));
 						dialogs::show_web_view_dialog(
 							&frame_copy,
 							&t("Web View"),
@@ -1285,7 +1279,7 @@ impl MainWindow {
 					handle_donate(&frame_copy);
 				}
 				_ => {
-					if id >= menu_ids::RECENT_DOCUMENT_BASE && id <= menu_ids::RECENT_DOCUMENT_MAX {
+					if (menu_ids::RECENT_DOCUMENT_BASE..=menu_ids::RECENT_DOCUMENT_MAX).contains(&id) {
 						let doc_index = id - menu_ids::RECENT_DOCUMENT_BASE;
 						let recent_docs = {
 							let config_guard = config.lock().unwrap();
@@ -1366,13 +1360,13 @@ impl MainWindow {
 
 	/// Get the frame
 	#[allow(dead_code)]
-	pub fn frame(&self) -> &Frame {
+	pub const fn frame(&self) -> &Frame {
 		&self.frame
 	}
 
 	/// Get the document manager
 	#[allow(dead_code)]
-	pub fn doc_manager(&self) -> &Rc<Mutex<DocumentManager>> {
+	pub const fn doc_manager(&self) -> &Rc<Mutex<DocumentManager>> {
 		&self.doc_manager
 	}
 
@@ -1396,10 +1390,8 @@ impl MainWindow {
 			}
 		} else {
 			for (index, path) in recent_docs.iter().enumerate() {
-				let filename = Path::new(path)
-					.file_name()
-					.map(|s| s.to_string_lossy().to_string())
-					.unwrap_or_else(|| path.clone());
+				let filename =
+					Path::new(path).file_name().map_or_else(|| path.clone(), |s| s.to_string_lossy().to_string());
 				let label = format!("&{} {}", index + 1, filename);
 				let id = menu_ids::RECENT_DOCUMENT_BASE + index as i32;
 				let _ = menu.append(id, &label, path, ItemKind::Normal);
@@ -1491,7 +1483,7 @@ impl FindDialogState {
 		frame: &Frame,
 		config: &Rc<Mutex<ConfigManager>>,
 		doc_manager: &Rc<Mutex<DocumentManager>>,
-		find_dialog: &Rc<Mutex<Option<FindDialogState>>>,
+		find_dialog: &Rc<Mutex<Option<Self>>>,
 		live_region_label: StaticText,
 	) -> Self {
 		let dialog = Dialog::builder(frame, &t("Find")).build();
@@ -1613,14 +1605,8 @@ impl FindDialogState {
 			event.skip(false);
 		});
 
-		let state = FindDialogState {
-			dialog,
-			find_combo,
-			match_case,
-			whole_word,
-			use_regex,
-			in_progress: Rc::new(Cell::new(false)),
-		};
+		let state =
+			Self { dialog, find_combo, match_case, whole_word, use_regex, in_progress: Rc::new(Cell::new(false)) };
 		state.reload_history(config);
 		state.save_settings(config);
 		state
@@ -2122,7 +2108,7 @@ fn handle_bookmark_navigation(
 	tab.session.check_and_record_history(result.offset);
 	let note_text = result.marker_text;
 	let line_text = tab.session.get_line_text(result.offset);
-	let content_text = if note_text.is_empty() { line_text } else { format!("{}, {}", note_text, line_text) };
+	let content_text = if note_text.is_empty() { line_text } else { format!("{note_text}, {line_text}") };
 	let wrap_prefix = if result.wrapped {
 		if next { t("Wrapping to start. ") } else { t("Wrapping to end. ") }
 	} else {
@@ -2463,7 +2449,7 @@ fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 	if let Some(tab) = dm.active_tab() {
 		let title = tab.session.title();
 		let display_title = if title.is_empty() {
-			tab.file_path.file_name().map(|s| s.to_string_lossy().to_string()).unwrap_or_else(|| t("Untitled"))
+			tab.file_path.file_name().map_or_else(|| t("Untitled"), |s| s.to_string_lossy().to_string())
 		} else {
 			title
 		};

@@ -370,7 +370,7 @@ pub fn show_bookmark_dialog(
 	let selected_start_for_key = Rc::clone(&selected_start);
 	let selected_end_for_key = Rc::clone(&selected_end);
 	let config_for_key = Rc::clone(&config);
-	let file_path_for_key = file_path.clone();
+	let file_path_for_key = file_path;
 	bookmark_list.bind_internal(EventType::KEY_DOWN, move |event| {
 		let key = event.get_key_code().unwrap_or(0);
 		if key == KEY_DELETE || key == KEY_NUMPAD_DELETE {
@@ -592,7 +592,7 @@ pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i3
 				event.skip(true); // First char, let native handle it too (cycle to first A)
 				return;
 			}
-			if s.chars().last() == Some(c.to_ascii_lowercase()) {
+			if s.ends_with(c.to_ascii_lowercase()) {
 				search_timer_for_search.start(500, true);
 				event.skip(true); // Let native handle cycling
 				return;
@@ -815,8 +815,8 @@ pub fn show_go_to_page_dialog(parent: &Frame, session: &DocumentSession, current
 		event.skip(false);
 		dialog_for_enter.end_modal(wxdragon::id::ID_OK);
 	});
-	let label_for_update = label.clone();
-	let label_template_for_update = label_template.clone();
+	let label_for_update = label;
+	let label_template_for_update = label_template;
 	page_ctrl.on_value_changed(move |event| {
 		let text = label_template_for_update.replacen("%d", &event.get_value().to_string(), 1).replacen(
 			"%d",
@@ -1025,7 +1025,7 @@ pub fn show_all_documents_dialog(
 		let index = event.get_item_index();
 		if index >= 0 {
 			list_for_focus.set_item_state(
-				index as i64,
+				i64::from(index),
 				ListItemState::Selected | ListItemState::Focused,
 				ListItemState::Selected | ListItemState::Focused,
 			);
@@ -1038,7 +1038,7 @@ pub fn show_all_documents_dialog(
 	doc_list.on_item_activated(move |event| {
 		let index = event.get_item_index();
 		if index >= 0 {
-			let path = list_for_activate.get_item_text(index as i64, 2);
+			let path = list_for_activate.get_item_text(i64::from(index), 2);
 			if Path::new(&path).exists() {
 				*selected_for_activate.lock().unwrap() = Some(path);
 				dialog_for_activate.end_modal(wxdragon::id::ID_OK);
@@ -1301,7 +1301,7 @@ fn populate_document_list(
 	};
 
 	for item in items {
-		let index = list.get_item_count() as i64;
+		let index = i64::from(list.get_item_count());
 		list.insert_item(index, &item.filename, None);
 		list.set_custom_data(index as u64, item.path.clone());
 		let status = match item.status {
@@ -1319,11 +1319,11 @@ fn populate_document_list(
 			select_index = list.get_item_count() - 1;
 		}
 		list.set_item_state(
-			select_index as i64,
+			i64::from(select_index),
 			ListItemState::Selected | ListItemState::Focused,
 			ListItemState::Selected | ListItemState::Focused,
 		);
-		list.ensure_visible(select_index as i64);
+		list.ensure_visible(i64::from(select_index));
 		update_open_button_for_index(list, open_button, select_index);
 		remove_button.enable(true);
 		clear_all_button.enable(true);
@@ -1339,7 +1339,7 @@ fn update_open_button_for_index(list: &ListCtrl, open_button: &Button, index: i3
 		open_button.enable(false);
 		return;
 	}
-	let status = list.get_item_text(index as i64, 1);
+	let status = list.get_item_text(i64::from(index), 1);
 	open_button.enable(status != t("Missing"));
 }
 
@@ -1385,7 +1385,7 @@ fn get_path_for_index(list: &ListCtrl, index: i32) -> Option<String> {
 			return Some(path.clone());
 		}
 	}
-	let path = list.get_item_text(index as i64, 2);
+	let path = list.get_item_text(i64::from(index), 2);
 	if path.is_empty() { None } else { Some(path) }
 }
 
@@ -1459,7 +1459,7 @@ pub fn show_web_view_dialog(
 		let full_html = if url_or_content.to_lowercase().contains("<html") {
 			url_or_content.to_string()
 		} else {
-			format!("<html><head><title>{}</title></head><body>{}</body></html>", title, url_or_content)
+			format!("<html><head><title>{title}</title></head><body>{url_or_content}</body></html>")
 		};
 		web_view.set_page(&full_html, "");
 	}
@@ -1554,12 +1554,10 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 		if let Some(id) = headings_tree.append_item_with_data(&parent_id, &display_text, item.offset as i64, None, None)
 		{
 			item_ids.push(id);
-		} else {
-			if let Some(root_child) =
-				headings_tree.append_item_with_data(&root, &display_text, item.offset as i64, None, None)
-			{
-				item_ids.push(root_child);
-			}
+		} else if let Some(root_child) =
+			headings_tree.append_item_with_data(&root, &display_text, item.offset as i64, None, None)
+		{
+			item_ids.push(root_child);
 		}
 	}
 	headings_tree.expand_all();
@@ -1642,17 +1640,13 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 					if let Some(offset) = data.downcast_ref::<i64>() {
 						selected_offset_for_ok.set(*offset);
 						dialog_for_ok.end_modal(wxdragon::id::ID_OK);
-						return;
 					}
 				}
 			}
-		} else {
-			if let Some(idx) = links_list_for_ok.get_selection() {
-				if let Some(offset) = offsets_for_ok.get(idx as usize) {
-					selected_offset_for_ok.set(*offset);
-					dialog_for_ok.end_modal(wxdragon::id::ID_OK);
-					return;
-				}
+		} else if let Some(idx) = links_list_for_ok.get_selection() {
+			if let Some(offset) = offsets_for_ok.get(idx as usize) {
+				selected_offset_for_ok.set(*offset);
+				dialog_for_ok.end_modal(wxdragon::id::ID_OK);
 			}
 		}
 	});

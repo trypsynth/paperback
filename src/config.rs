@@ -53,7 +53,7 @@ impl Default for ConfigManager {
 
 impl ConfigManager {
 	#[must_use]
-	pub fn new() -> Self {
+	pub const fn new() -> Self {
 		Self { config: None, initialized: false }
 	}
 
@@ -83,7 +83,7 @@ impl ConfigManager {
 		self.initialized
 	}
 
-	fn config(&self) -> Option<&Config> {
+	const fn config(&self) -> Option<&Config> {
 		if self.initialized { self.config.as_ref() } else { None }
 	}
 
@@ -885,7 +885,10 @@ fn get_config_path() -> String {
 }
 
 fn get_exe_directory() -> PathBuf {
-	env::current_exe().ok().and_then(|p| p.parent().map(|p| p.to_path_buf())).unwrap_or_else(|| PathBuf::from("."))
+	env::current_exe()
+		.ok()
+		.and_then(|p| p.parent().map(std::path::Path::to_path_buf))
+		.unwrap_or_else(|| PathBuf::from("."))
 }
 
 fn get_document_section(path: &str) -> String {
