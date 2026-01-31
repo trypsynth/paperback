@@ -2,8 +2,8 @@ use std::time::{self, SystemTime};
 
 use wxdragon::{prelude::*, translations::translate as t};
 
-use crate::session::StatusInfo;
 use super::document_manager::DocumentManager;
+use crate::session::StatusInfo;
 
 pub fn format_status_text(info: &StatusInfo) -> String {
 	let line_label = t("Line");

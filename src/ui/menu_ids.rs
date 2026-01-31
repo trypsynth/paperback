@@ -1,5 +1,19 @@
 use wxdragon::id::{ID_ABOUT, ID_EXIT};
 
+/// Generates sequential menu ID constants starting from a base value.
+macro_rules! menu_ids {
+	($base:expr => $($name:ident),+ $(,)?) => {
+		menu_ids!(@inner $base, $($name),+);
+	};
+	(@inner $n:expr, $name:ident) => {
+		pub const $name: i32 = $n;
+	};
+	(@inner $n:expr, $name:ident, $($rest:ident),+) => {
+		pub const $name: i32 = $n;
+		menu_ids!(@inner $n + 1, $($rest),+);
+	};
+}
+
 // Re-export standard IDs
 pub const EXIT: i32 = ID_EXIT;
 pub const ABOUT: i32 = ID_ABOUT;
@@ -7,82 +21,71 @@ pub const ABOUT: i32 = ID_ABOUT;
 // Base for custom IDs
 const BASE: i32 = 5000;
 
-// File menu
-pub const OPEN: i32 = BASE;
-pub const CLOSE: i32 = BASE + 1;
-pub const CLOSE_ALL: i32 = BASE + 2;
-pub const SHOW_ALL_DOCUMENTS: i32 = BASE + 3;
+// File menu (BASE + 0..99)
+menu_ids!(BASE => OPEN, CLOSE, CLOSE_ALL, SHOW_ALL_DOCUMENTS);
 
-// Recent documents (reserve 100 IDs)
+// Recent documents - reserved range (BASE + 100..199)
 pub const RECENT_DOCUMENT_BASE: i32 = BASE + 100;
 pub const RECENT_DOCUMENT_MAX: i32 = BASE + 199;
 
-// Go menu
-pub const FIND: i32 = BASE + 200;
-pub const FIND_NEXT: i32 = BASE + 201;
-pub const FIND_PREVIOUS: i32 = BASE + 202;
-pub const GO_TO_LINE: i32 = BASE + 210;
-pub const GO_TO_PERCENT: i32 = BASE + 211;
-pub const GO_TO_PAGE: i32 = BASE + 212;
-pub const GO_BACK: i32 = BASE + 220;
-pub const GO_FORWARD: i32 = BASE + 221;
-pub const PREVIOUS_SECTION: i32 = BASE + 230;
-pub const NEXT_SECTION: i32 = BASE + 231;
-pub const PREVIOUS_HEADING: i32 = BASE + 240;
-pub const NEXT_HEADING: i32 = BASE + 241;
-pub const PREVIOUS_HEADING_1: i32 = BASE + 250;
-pub const NEXT_HEADING_1: i32 = BASE + 251;
-pub const PREVIOUS_HEADING_2: i32 = BASE + 252;
-pub const NEXT_HEADING_2: i32 = BASE + 253;
-pub const PREVIOUS_HEADING_3: i32 = BASE + 254;
-pub const NEXT_HEADING_3: i32 = BASE + 255;
-pub const PREVIOUS_HEADING_4: i32 = BASE + 256;
-pub const NEXT_HEADING_4: i32 = BASE + 257;
-pub const PREVIOUS_HEADING_5: i32 = BASE + 258;
-pub const NEXT_HEADING_5: i32 = BASE + 259;
-pub const PREVIOUS_HEADING_6: i32 = BASE + 260;
-pub const NEXT_HEADING_6: i32 = BASE + 261;
-pub const PREVIOUS_PAGE: i32 = BASE + 270;
-pub const NEXT_PAGE: i32 = BASE + 271;
-pub const PREVIOUS_BOOKMARK: i32 = BASE + 280;
-pub const NEXT_BOOKMARK: i32 = BASE + 281;
-pub const PREVIOUS_NOTE: i32 = BASE + 282;
-pub const NEXT_NOTE: i32 = BASE + 283;
-pub const JUMP_TO_ALL_BOOKMARKS: i32 = BASE + 284;
-pub const JUMP_TO_BOOKMARKS_ONLY: i32 = BASE + 285;
-pub const JUMP_TO_NOTES_ONLY: i32 = BASE + 286;
-pub const VIEW_NOTE_TEXT: i32 = BASE + 287;
-pub const PREVIOUS_LINK: i32 = BASE + 290;
-pub const NEXT_LINK: i32 = BASE + 291;
-pub const PREVIOUS_TABLE: i32 = BASE + 300;
-pub const NEXT_TABLE: i32 = BASE + 301;
-pub const PREVIOUS_SEPARATOR: i32 = BASE + 302;
-pub const NEXT_SEPARATOR: i32 = BASE + 303;
-pub const PREVIOUS_LIST: i32 = BASE + 310;
-pub const NEXT_LIST: i32 = BASE + 311;
-pub const PREVIOUS_LIST_ITEM: i32 = BASE + 312;
-pub const NEXT_LIST_ITEM: i32 = BASE + 313;
+// Go menu: Find (BASE + 200..209)
+menu_ids!(BASE + 200 => FIND, FIND_NEXT, FIND_PREVIOUS);
 
-// Tools menu
-pub const WORD_COUNT: i32 = BASE + 400;
-pub const DOCUMENT_INFO: i32 = BASE + 401;
-pub const TABLE_OF_CONTENTS: i32 = BASE + 402;
-pub const ELEMENTS_LIST: i32 = BASE + 403;
-pub const OPEN_CONTAINING_FOLDER: i32 = BASE + 404;
-pub const OPEN_IN_WEB_VIEW: i32 = BASE + 405;
-pub const IMPORT_DOCUMENT_DATA: i32 = BASE + 410;
-pub const EXPORT_DOCUMENT_DATA: i32 = BASE + 411;
-pub const EXPORT_TO_PLAIN_TEXT: i32 = BASE + 412;
-pub const TOGGLE_BOOKMARK: i32 = BASE + 420;
-pub const BOOKMARK_WITH_NOTE: i32 = BASE + 421;
-pub const OPTIONS: i32 = BASE + 430;
-pub const SLEEP_TIMER: i32 = BASE + 431;
+// Go menu: Go to (BASE + 210..219)
+menu_ids!(BASE + 210 => GO_TO_LINE, GO_TO_PERCENT, GO_TO_PAGE);
 
-// Help menu
-pub const VIEW_HELP_BROWSER: i32 = BASE + 500;
-pub const VIEW_HELP_PAPERBACK: i32 = BASE + 501;
-pub const CHECK_FOR_UPDATES: i32 = BASE + 502;
-pub const DONATE: i32 = BASE + 503;
+// Go menu: History (BASE + 220..229)
+menu_ids!(BASE + 220 => GO_BACK, GO_FORWARD);
 
-// System tray
-pub const RESTORE: i32 = BASE + 900;
+// Go menu: Section navigation (BASE + 230..239)
+menu_ids!(BASE + 230 => PREVIOUS_SECTION, NEXT_SECTION);
+
+// Go menu: Heading navigation (BASE + 240..269)
+menu_ids!(BASE + 240 => PREVIOUS_HEADING, NEXT_HEADING);
+menu_ids!(BASE + 250 =>
+	PREVIOUS_HEADING_1, NEXT_HEADING_1,
+	PREVIOUS_HEADING_2, NEXT_HEADING_2,
+	PREVIOUS_HEADING_3, NEXT_HEADING_3,
+	PREVIOUS_HEADING_4, NEXT_HEADING_4,
+	PREVIOUS_HEADING_5, NEXT_HEADING_5,
+	PREVIOUS_HEADING_6, NEXT_HEADING_6,
+);
+
+// Go menu: Page navigation (BASE + 270..279)
+menu_ids!(BASE + 270 => PREVIOUS_PAGE, NEXT_PAGE);
+
+// Go menu: Bookmarks and notes (BASE + 280..289)
+menu_ids!(BASE + 280 =>
+	PREVIOUS_BOOKMARK, NEXT_BOOKMARK,
+	PREVIOUS_NOTE, NEXT_NOTE,
+	JUMP_TO_ALL_BOOKMARKS, JUMP_TO_BOOKMARKS_ONLY, JUMP_TO_NOTES_ONLY,
+	VIEW_NOTE_TEXT,
+);
+
+// Go menu: Link navigation (BASE + 290..299)
+menu_ids!(BASE + 290 => PREVIOUS_LINK, NEXT_LINK);
+
+// Go menu: Element navigation (BASE + 300..319)
+menu_ids!(BASE + 300 => PREVIOUS_TABLE, NEXT_TABLE, PREVIOUS_SEPARATOR, NEXT_SEPARATOR);
+menu_ids!(BASE + 310 => PREVIOUS_LIST, NEXT_LIST, PREVIOUS_LIST_ITEM, NEXT_LIST_ITEM);
+
+// Tools menu: Document info (BASE + 400..409)
+menu_ids!(BASE + 400 =>
+	WORD_COUNT, DOCUMENT_INFO, TABLE_OF_CONTENTS, ELEMENTS_LIST,
+	OPEN_CONTAINING_FOLDER, OPEN_IN_WEB_VIEW,
+);
+
+// Tools menu: Import/Export (BASE + 410..419)
+menu_ids!(BASE + 410 => IMPORT_DOCUMENT_DATA, EXPORT_DOCUMENT_DATA, EXPORT_TO_PLAIN_TEXT);
+
+// Tools menu: Bookmarks (BASE + 420..429)
+menu_ids!(BASE + 420 => TOGGLE_BOOKMARK, BOOKMARK_WITH_NOTE);
+
+// Tools menu: Settings (BASE + 430..439)
+menu_ids!(BASE + 430 => OPTIONS, SLEEP_TIMER);
+
+// Help menu (BASE + 500..599)
+menu_ids!(BASE + 500 => VIEW_HELP_BROWSER, VIEW_HELP_PAPERBACK, CHECK_FOR_UPDATES, DONATE);
+
+// System tray (BASE + 900..999)
+menu_ids!(BASE + 900 => RESTORE);
