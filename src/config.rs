@@ -602,7 +602,7 @@ impl ConfigManager {
 		content.push_str("# Paperback document settings\n");
 		let position = self.get_document_position(doc_path);
 		if position > 0 {
-			let _ = write!("last_position={position}\n"));
+			let _ = write!(content, "last_position={}\n", position);
 		}
 		let format = self.get_document_format(doc_path);
 		if !format.is_empty() {
