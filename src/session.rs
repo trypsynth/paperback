@@ -359,9 +359,7 @@ impl DocumentSession {
 		let pos = usize::try_from(position.max(0)).unwrap_or(0);
 		let mut closest_index = -1;
 		let mut items = Vec::new();
-		for marker in
-			self.handle.document().buffer.markers.iter().filter(|marker| marker.marker_type == MarkerType::Link)
-		{
+		for marker in self.handle.document().buffer.markers.iter().filter(|marker| marker.mtype == MarkerType::Link) {
 			let text = if marker.text.is_empty() {
 				self.get_line_text(i64::try_from(marker.position).unwrap_or(0))
 			} else {
@@ -384,7 +382,7 @@ impl DocumentSession {
 		let markers = &self.handle.document().buffer.markers;
 		let mut item_stack: Vec<(i32, i32)> = Vec::new(); // (level, index)
 		for marker in markers {
-			if !document::is_heading_marker(marker.marker_type) {
+			if !document::is_heading_marker(marker.mtype) {
 				continue;
 			}
 			let level = marker.level;

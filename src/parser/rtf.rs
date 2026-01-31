@@ -123,7 +123,7 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 	for marker in buffer.markers {
 		let adjusted_pos = marker.position.saturating_sub(leading_trim);
 		result.add_marker(
-			Marker::new(marker.marker_type, adjusted_pos)
+			Marker::new(marker.mtype, adjusted_pos)
 				.with_text(marker.text)
 				.with_reference(marker.reference)
 				.with_length(marker.length)

@@ -390,9 +390,7 @@ impl ConfigManager {
 			let history_string = history.iter().map(ToString::to_string).collect::<Vec<_>>().join(",");
 			config.write_string("path", path);
 			config.write_string("navigation_history", &history_string);
-			let index: i64 = history_index
-				.try_into()
-				.expect("navigation_history_index does not fit into i64");
+			let index: i64 = history_index.try_into().expect("navigation_history_index does not fit into i64");
 			config.write_long("navigation_history_index", index);
 		}
 		config.set_path("/");
@@ -602,11 +600,11 @@ impl ConfigManager {
 		content.push_str("# Paperback document settings\n");
 		let position = self.get_document_position(doc_path);
 		if position > 0 {
-			let _ = write!(content, "last_position={}\n", position);
+			let _ = writeln!(content, "last_position={position}");
 		}
 		let format = self.get_document_format(doc_path);
 		if !format.is_empty() {
-			content.push_str(&format!("format={format}\n"));
+			let _ = writeln!(content, "format={format}");
 		}
 		let bookmarks = self.get_bookmarks(doc_path);
 		if !bookmarks.is_empty() {
@@ -615,9 +613,9 @@ impl ConfigManager {
 				.map(|bm| format!("{}:{}:{}", bm.start, bm.end, encode_note(&bm.note)))
 				.collect::<Vec<_>>()
 				.join(",");
-			content.push_str(&format!("bookmarks={encoded}\n"));
+			let _ = writeln!(content, "bookmarks={encoded}");
 		}
-		let _ = std::fs::write(export_path, content);
+		let _ = fs::write(export_path, content);
 	}
 
 	pub fn needs_migration(&self) -> bool {

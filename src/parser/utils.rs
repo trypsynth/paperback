@@ -22,7 +22,7 @@ pub fn build_toc_from_buffer(buffer: &DocumentBuffer) -> Vec<TocItem> {
 		.markers
 		.iter()
 		.filter_map(|marker| {
-			let level = marker_type_to_heading_level(marker.marker_type);
+			let level = marker_type_to_heading_level(marker.mtype);
 			if level > 0 {
 				Some(HeadingInfo { offset: marker.position, level, text: marker.text.clone() })
 			} else {

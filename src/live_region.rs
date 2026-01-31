@@ -1,4 +1,4 @@
-use wxdragon::prelude::WxWidget;
+use wxdragon::prelude::{StaticText, WxWidget};
 
 #[cfg(target_os = "windows")]
 mod windows_impl {
@@ -23,14 +23,13 @@ mod windows_impl {
 
 	const LIVE_REGION_POLITE: u32 = 1;
 
-	pub(super) fn set_live_region(window: &impl WxWidget) -> bool {
-		let acc_prop = match acc_prop_services() {
-			Some(acc_prop) => acc_prop,
-			None => return false,
+	/// Note: this function initializes COM in STA mode on first use.
+	pub fn set_live_region(window: &impl WxWidget) -> bool {
+		let Some(acc_prop) = acc_prop_services() else {
+			return false;
 		};
-		let hwnd = match hwnd_from_widget(window) {
-			Some(hwnd) => hwnd,
-			None => return false,
+		let Some(hwnd) = hwnd_from_widget(window) else {
+			return false;
 		};
 		let variant = VARIANT {
 			Anonymous: VARIANT_0 {
@@ -39,32 +38,33 @@ mod windows_impl {
 					wReserved1: 0,
 					wReserved2: 0,
 					wReserved3: 0,
-					Anonymous: VARIANT_0_0_0 { lVal: LIVE_REGION_POLITE as i32 },
+					Anonymous: VARIANT_0_0_0 { lVal: LIVE_REGION_POLITE.cast_signed() },
 				}),
 			},
 		};
 		unsafe {
-			acc_prop.SetHwndProp(hwnd, OBJID_CLIENT.0 as u32, CHILDID_SELF, LiveSetting_Property_GUID, &variant).is_ok()
+			acc_prop
+				.SetHwndProp(hwnd, OBJID_CLIENT.0.cast_unsigned(), CHILDID_SELF, LiveSetting_Property_GUID, &variant)
+				.is_ok()
 		}
 	}
 
-	pub(super) fn notify_live_region_changed(window: &impl WxWidget) -> bool {
-		let hwnd = match hwnd_from_widget(window) {
-			Some(hwnd) => hwnd,
-			None => return false,
+	pub fn notify_live_region_changed(window: &impl WxWidget) -> bool {
+		let Some(hwnd) = hwnd_from_widget(window) else {
+			return false;
 		};
 		unsafe {
-			NotifyWinEvent(EVENT_OBJECT_LIVEREGIONCHANGED, hwnd, OBJID_CLIENT.0, CHILDID_SELF as i32);
+			NotifyWinEvent(EVENT_OBJECT_LIVEREGIONCHANGED, hwnd, OBJID_CLIENT.0, CHILDID_SELF.cast_signed());
 		}
 		true
 	}
 
 	fn acc_prop_services() -> Option<IAccPropServices> {
 		ACC_PROP_SERVICES.with(|cell| {
-			if cell.borrow().is_none() {
-				if let Some(service) = init_acc_prop_services() {
-					*cell.borrow_mut() = Some(service);
-				}
+			if cell.borrow().is_none()
+				&& let Some(service) = init_acc_prop_services()
+			{
+				*cell.borrow_mut() = Some(service);
 			}
 			cell.borrow().clone()
 		})
@@ -85,19 +85,19 @@ mod windows_impl {
 		if handle.is_null() {
 			return None;
 		}
-		Some(HWND(handle.cast::<std::ffi::c_void>()))
+		Some(HWND(handle))
 	}
 }
 
 #[cfg(not(target_os = "windows"))]
 mod windows_impl {
-	use wxdragon::prelude::WxWidget;
+	use wxdragon::prelude::wxWidget;
 
-	pub(super) fn set_live_region(_window: &impl WxWidget) -> bool {
+	pub fn set_live_region(_window: &impl WxWidget) -> bool {
 		false
 	}
 
-	pub(super) fn notify_live_region_changed(_window: &impl WxWidget) -> bool {
+	pub fn notify_live_region_changed(_window: &impl WxWidget) -> bool {
 		false
 	}
 }
@@ -106,11 +106,7 @@ pub fn set_live_region(window: &impl WxWidget) -> bool {
 	windows_impl::set_live_region(window)
 }
 
-pub fn notify_live_region_changed(window: &impl WxWidget) -> bool {
-	windows_impl::notify_live_region_changed(window)
-}
-
-pub fn announce(label: &wxdragon::prelude::StaticText, message: &str) {
+pub fn announce(label: &StaticText, message: &str) {
 	label.set_label(message);
-	let _ = notify_live_region_changed(label);
+	let _ = windows_impl::notify_live_region_changed(label);
 }

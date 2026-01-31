@@ -55,7 +55,7 @@ impl TryFrom<i32> for MarkerType {
 
 #[derive(Debug, Clone)]
 pub struct Marker {
-	pub marker_type: MarkerType,
+	pub mtype: MarkerType,
 	pub position: usize,
 	pub text: String,
 	pub reference: String,
@@ -65,8 +65,8 @@ pub struct Marker {
 
 impl Marker {
 	#[must_use]
-	pub const fn new(marker_type: MarkerType, position: usize) -> Self {
-		Self { marker_type, position, text: String::new(), reference: String::new(), level: 0, length: 0 }
+	pub const fn new(mtype: MarkerType, position: usize) -> Self {
+		Self { mtype, position, text: String::new(), reference: String::new(), level: 0, length: 0 }
 	}
 
 	#[must_use]
@@ -253,7 +253,7 @@ impl DocumentHandle {
 	}
 
 	fn markers_by_type(&self, marker_type: MarkerType) -> impl Iterator<Item = (usize, &Marker)> {
-		self.doc.buffer.markers.iter().enumerate().filter(move |(_, m)| m.marker_type == marker_type)
+		self.doc.buffer.markers.iter().enumerate().filter(move |(_, m)| m.mtype == marker_type)
 	}
 
 	fn heading_markers(&self, level: Option<i32>) -> Vec<(usize, &Marker)> {
@@ -263,7 +263,7 @@ impl DocumentHandle {
 			.markers
 			.iter()
 			.enumerate()
-			.filter(|(_, marker)| is_heading_marker(marker.marker_type))
+			.filter(|(_, marker)| is_heading_marker(marker.mtype))
 			.filter(|(_, marker)| level.is_none_or(|lvl| marker.level == lvl))
 			.collect();
 		result.sort_by_key(|(_, marker)| marker.position);
@@ -278,7 +278,7 @@ impl DocumentHandle {
 			.iter()
 			.enumerate()
 			.filter(|(_, marker)| {
-				marker.marker_type == marker_type && i64::try_from(marker.position).unwrap_or(i64::MAX) > position
+				marker.mtype == marker_type && i64::try_from(marker.position).unwrap_or(i64::MAX) > position
 			})
 			.map(|(idx, _)| idx)
 			.next()
@@ -292,7 +292,7 @@ impl DocumentHandle {
 			.iter()
 			.enumerate()
 			.filter(|(_, marker)| {
-				marker.marker_type == marker_type && i64::try_from(marker.position).unwrap_or(i64::MAX) < position
+				marker.mtype == marker_type && i64::try_from(marker.position).unwrap_or(i64::MAX) < position
 			})
 			.map(|(idx, _)| idx)
 			.next_back()
@@ -302,7 +302,7 @@ impl DocumentHandle {
 	pub fn current_marker_index(&self, position: usize, marker_type: MarkerType) -> Option<usize> {
 		let mut result = None;
 		for (idx, marker) in self.doc.buffer.markers.iter().enumerate() {
-			if marker.marker_type == marker_type && marker.position <= position {
+			if marker.mtype == marker_type && marker.position <= position {
 				result = Some(idx);
 			} else if marker.position > position {
 				break;
@@ -372,7 +372,7 @@ impl DocumentHandle {
 
 	#[must_use]
 	pub fn count_markers_by_type(&self, marker_type: MarkerType) -> usize {
-		self.doc.buffer.markers.iter().filter(|m| m.marker_type == marker_type).count()
+		self.doc.buffer.markers.iter().filter(|m| m.mtype == marker_type).count()
 	}
 
 	#[must_use]
