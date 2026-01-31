@@ -34,11 +34,8 @@ impl TranslationManager {
 		}
 		self.scan_available_languages();
 		let system_lang_id = Locale::get_system_language();
-		let raw_sys_lang = if let Some(info) = Locale::get_language_info(system_lang_id) {
-			info.canonical_name()
-		} else {
-			"en".to_string()
-		};
+		let raw_sys_lang =
+			Locale::get_language_info(system_lang_id).map_or_else(|| "en".to_string(), |info| info.canonical_name());
 		let sys_lang = raw_sys_lang
 			.split('_')
 			.next()

@@ -64,7 +64,13 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 					ControlWord::Unicode => {
 						if !in_header {
 							if let Property::Value(code) = property {
-								let code: u16 = (*code as u32 & 0xFFFF) as u16;
+								let code = if *code < 0 {
+									let adjusted = i64::from(*code) + 0x10000;
+									let adjusted = u64::try_from(adjusted).unwrap_or(0) & 0xFFFF;
+									u16::try_from(adjusted).unwrap_or(0)
+								} else {
+									u16::try_from(*code).unwrap_or(0)
+								};
 								// Check for surrogate pairs
 								if (0xD800..=0xDBFF).contains(&code) {
 									pending_high_surrogate = Some(code);

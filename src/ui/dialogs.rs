@@ -1,6 +1,7 @@
 use std::{
 	cell::{Cell, RefCell},
 	ffi::CString,
+	fmt::Write,
 	path::Path,
 	rc::Rc,
 	sync::Mutex,
@@ -118,7 +119,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		stored_language
 	};
 	if let Some(index) = language_codes.iter().position(|code| code == &current_language) {
-		language_combo.set_selection(index as u32);
+		language_combo.set_selection(u32::try_from(index).unwrap_or(0));
 	}
 	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
 	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
@@ -137,7 +138,8 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 	}
 	let language = language_combo
 		.get_selection()
-		.and_then(|index| language_codes.get(index as usize).cloned())
+		.and_then(|index| usize::try_from(index).ok())
+		.and_then(|index| language_codes.get(index).cloned())
 		.unwrap_or_else(|| current_language.clone());
 	Some(OptionsDialogResult {
 		restore_previous_documents: restore_docs_check.is_checked(),
@@ -155,7 +157,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 pub fn show_bookmark_dialog(
 	parent: &Frame,
 	session: &DocumentSession,
-	config: Rc<Mutex<ConfigManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
 	current_pos: i64,
 	initial_filter: BookmarkFilterType,
 ) -> Option<BookmarkDialogResult> {
@@ -196,7 +198,7 @@ pub fn show_bookmark_dialog(
 	};
 	set_buttons_enabled(false);
 	let list_for_repopulate = bookmark_list;
-	let config_for_repopulate = Rc::clone(&config);
+	let config_for_repopulate = Rc::clone(config);
 	let file_path_for_repopulate = file_path.clone();
 	let content_for_repopulate = Rc::clone(&content);
 	let entries_for_repopulate = Rc::clone(&entries);
@@ -260,7 +262,9 @@ pub fn show_bookmark_dialog(
 			if let Some((idx, entry)) =
 				entries_ref.iter().enumerate().find(|(_, entry)| entry.start == previous_selected)
 			{
-				list_for_repopulate.set_selection(idx as u32, true);
+				if let Ok(idx_u32) = u32::try_from(idx) {
+					list_for_repopulate.set_selection(idx_u32, true);
+				}
 				selected_start_for_repopulate.set(entry.start);
 				selected_end_for_repopulate.set(entry.end);
 				set_buttons_for_repopulate(true);
@@ -268,12 +272,15 @@ pub fn show_bookmark_dialog(
 			}
 		}
 		if filtered.closest_index >= 0 {
-			let idx = filtered.closest_index as usize;
-			if let Some(entry) = entries_ref.get(idx) {
-				list_for_repopulate.set_selection(idx as u32, true);
-				selected_start_for_repopulate.set(entry.start);
-				selected_end_for_repopulate.set(entry.end);
-				set_buttons_for_repopulate(true);
+			if let Ok(idx) = usize::try_from(filtered.closest_index) {
+				if let Some(entry) = entries_ref.get(idx) {
+					if let Ok(idx_u32) = u32::try_from(idx) {
+						list_for_repopulate.set_selection(idx_u32, true);
+					}
+					selected_start_for_repopulate.set(entry.start);
+					selected_end_for_repopulate.set(entry.end);
+					set_buttons_for_repopulate(true);
+				}
 			}
 		}
 	});
@@ -286,11 +293,13 @@ pub fn show_bookmark_dialog(
 		let selection = event.get_selection().unwrap_or(-1);
 		if selection >= 0 {
 			let entries_ref = entries_for_selection.borrow();
-			if let Some(entry) = entries_ref.get(selection as usize) {
-				selected_start_for_selection.set(entry.start);
-				selected_end_for_selection.set(entry.end);
-				set_buttons_for_selection(true);
-				return;
+			if let Ok(index) = usize::try_from(selection) {
+				if let Some(entry) = entries_ref.get(index) {
+					selected_start_for_selection.set(entry.start);
+					selected_end_for_selection.set(entry.end);
+					set_buttons_for_selection(true);
+					return;
+				}
 			}
 		}
 		selected_start_for_selection.set(-1);
@@ -320,7 +329,7 @@ pub fn show_bookmark_dialog(
 	let repopulate_for_delete = Rc::clone(&repopulate);
 	let selected_start_for_delete = Rc::clone(&selected_start);
 	let selected_end_for_delete = Rc::clone(&selected_end);
-	let config_for_delete = Rc::clone(&config);
+	let config_for_delete = Rc::clone(config);
 	let file_path_for_delete = file_path.clone();
 	delete_button.on_click(move |_| {
 		let start = selected_start_for_delete.get();
@@ -338,7 +347,7 @@ pub fn show_bookmark_dialog(
 	let repopulate_for_edit = Rc::clone(&repopulate);
 	let selected_start_for_edit = Rc::clone(&selected_start);
 	let selected_end_for_edit = Rc::clone(&selected_end);
-	let config_for_edit = Rc::clone(&config);
+	let config_for_edit = Rc::clone(config);
 	let file_path_for_edit = file_path.clone();
 	edit_button.on_click(move |_| {
 		let start = selected_start_for_edit.get();
@@ -369,7 +378,7 @@ pub fn show_bookmark_dialog(
 	let repopulate_for_key = Rc::clone(&repopulate);
 	let selected_start_for_key = Rc::clone(&selected_start);
 	let selected_end_for_key = Rc::clone(&selected_end);
-	let config_for_key = Rc::clone(&config);
+	let config_for_key = Rc::clone(config);
 	let file_path_for_key = file_path;
 	bookmark_list.bind_internal(EventType::KEY_DOWN, move |event| {
 		let key = event.get_key_code().unwrap_or(0);
@@ -513,9 +522,9 @@ pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i3
 		.with_size(Size::new(400, 500))
 		.build();
 	let root = tree.add_root(&t("Root"), None, None).unwrap();
-	populate_toc_tree(&tree, &root, toc_items);
+	populate_toc_tree(tree, &root, toc_items);
 	if current_offset != -1 {
-		find_and_select_item(&tree, &root, current_offset);
+		find_and_select_item(tree, &root, current_offset);
 	}
 	let search_string = Rc::new(RefCell::new(String::new()));
 	let search_timer = Rc::new(Timer::new(&dialog));
@@ -558,17 +567,14 @@ pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i3
 					let mut new_search = s.clone();
 					new_search.push(' ');
 					if let Some(root) = tree_for_search_keydown.get_root_item() {
-						if find_and_select_item_by_name(&tree_for_search_keydown, &root, &new_search) {
+						if find_and_select_item_by_name(tree_for_search_keydown, &root, &new_search) {
 							*s = new_search;
 							search_timer_for_search_keydown.start(500, true);
-							event.skip(false);
 						} else {
 							bell();
-							event.skip(false);
 						}
-					} else {
-						event.skip(false);
 					}
+					event.skip(false);
 					return;
 				}
 			}
@@ -584,7 +590,7 @@ pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i3
 				event.skip(true);
 				return;
 			}
-			let c = std::char::from_u32(key as u32).unwrap_or('\0');
+			let c = u32::try_from(key).ok().and_then(std::char::from_u32).unwrap_or('\0');
 			let mut s = search_string_for_search.borrow_mut();
 			if s.is_empty() {
 				s.push(c.to_ascii_lowercase());
@@ -600,17 +606,14 @@ pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i3
 			let mut new_search = s.clone();
 			new_search.push(c.to_ascii_lowercase());
 			if let Some(root) = tree_for_search.get_root_item() {
-				if find_and_select_item_by_name(&tree_for_search, &root, &new_search) {
+				if find_and_select_item_by_name(tree_for_search, &root, &new_search) {
 					*s = new_search;
 					search_timer_for_search.start(500, true);
-					event.skip(false);
 				} else {
 					bell();
-					event.skip(false);
 				}
-			} else {
-				event.skip(false);
 			}
+			event.skip(false);
 		} else {
 			event.skip(true);
 		}
@@ -652,10 +655,11 @@ pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i3
 	}
 }
 
-fn populate_toc_tree(tree: &TreeCtrl, parent: &TreeItemId, items: &[TocItem]) {
+fn populate_toc_tree(tree: TreeCtrl, parent: &TreeItemId, items: &[TocItem]) {
 	for item in items {
 		let display_text = if item.name.is_empty() { t("Untitled") } else { item.name.clone() };
-		if let Some(id) = tree.append_item_with_data(parent, &display_text, item.offset as i32, None, None) {
+		let offset = i32::try_from(item.offset).unwrap_or(i32::MAX);
+		if let Some(id) = tree.append_item_with_data(parent, &display_text, offset, None, None) {
 			if !item.children.is_empty() {
 				populate_toc_tree(tree, &id, &item.children);
 			}
@@ -663,7 +667,7 @@ fn populate_toc_tree(tree: &TreeCtrl, parent: &TreeItemId, items: &[TocItem]) {
 	}
 }
 
-fn find_and_select_item(tree: &TreeCtrl, parent: &TreeItemId, offset: i32) -> bool {
+fn find_and_select_item(tree: TreeCtrl, parent: &TreeItemId, offset: i32) -> bool {
 	if let Some((child, mut cookie)) = tree.get_first_child(parent) {
 		let mut current_child = Some(child);
 		while let Some(item) = current_child {
@@ -686,7 +690,7 @@ fn find_and_select_item(tree: &TreeCtrl, parent: &TreeItemId, offset: i32) -> bo
 	false
 }
 
-fn find_and_select_item_by_name(tree: &TreeCtrl, parent: &TreeItemId, name: &str) -> bool {
+fn find_and_select_item_by_name(tree: TreeCtrl, parent: &TreeItemId, name: &str) -> bool {
 	if let Some((child, mut cookie)) = tree.get_first_child(parent) {
 		let mut current_child = Some(child);
 		while let Some(item) = current_child {
@@ -722,17 +726,17 @@ pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, autho
 	let characters_label = t("Characters:");
 	let characters_no_spaces_label = t("Characters (excluding spaces):");
 	let mut info = String::new();
-	info.push_str(&format!("{path_label} {}\n", path.display()));
+	let _ = writeln!(info, "{path_label} {}", path.display());
 	if !title.is_empty() {
-		info.push_str(&format!("{title_label} {title}\n"));
+		let _ = writeln!(info, "{title_label} {title}");
 	}
 	if !author.is_empty() {
-		info.push_str(&format!("{author_label} {author}\n"));
+		let _ = writeln!(info, "{author_label} {author}");
 	}
-	info.push_str(&format!("{words_label} {}\n", stats.word_count));
-	info.push_str(&format!("{lines_label} {}\n", stats.line_count));
-	info.push_str(&format!("{characters_label} {}\n", stats.char_count));
-	info.push_str(&format!("{characters_no_spaces_label} {}\n", stats.char_count_no_whitespace));
+	let _ = writeln!(info, "{} {}", words_label, stats.word_count);
+	let _ = writeln!(info, "{lines_label} {}", stats.line_count);
+	let _ = writeln!(info, "{characters_label} {}", stats.char_count);
+	let _ = writeln!(info, "{characters_no_spaces_label} {}", stats.char_count_no_whitespace);
 	info_ctrl.set_value(&info);
 	bind_escape_to_close(&dialog, dialog);
 	bind_escape_to_close(&info_ctrl, dialog);
@@ -761,8 +765,9 @@ pub fn show_go_to_line_dialog(parent: &Frame, session: &DocumentSession, current
 	let label = StaticText::builder(&dialog).with_label(&label_text).build();
 	let status = session.get_status_info(current_pos);
 	let total_lines = session.line_count().max(1);
-	let max_lines = total_lines.min(i64::from(i32::MAX)) as i32;
-	let current_line = status.line_number.clamp(1, total_lines).min(i64::from(i32::MAX)) as i32;
+	let max_lines = i32::try_from(total_lines.min(i64::from(i32::MAX))).unwrap_or(i32::MAX);
+	let current_line =
+		i32::try_from(status.line_number.clamp(1, total_lines).min(i64::from(i32::MAX))).unwrap_or(i32::MAX);
 	let line_ctrl = SpinCtrl::builder(&dialog)
 		.with_range(1, max_lines)
 		.with_style(SpinCtrlStyle::Default | SpinCtrlStyle::ProcessEnter)
@@ -794,7 +799,7 @@ pub fn show_go_to_line_dialog(parent: &Frame, session: &DocumentSession, current
 }
 
 pub fn show_go_to_page_dialog(parent: &Frame, session: &DocumentSession, current_page: i32) -> Option<i64> {
-	let max_page = session.page_count().max(1) as i32;
+	let max_page = i32::try_from(session.page_count().max(1)).unwrap_or(i32::MAX);
 	let dialog_title = t("Go to page");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
 	let label_template = t("Go to page (%d/%d):");
@@ -1303,7 +1308,9 @@ fn populate_document_list(
 	for item in items {
 		let index = i64::from(list.get_item_count());
 		list.insert_item(index, &item.filename, None);
-		list.set_custom_data(index as u64, item.path.clone());
+		if let Ok(index_u64) = u64::try_from(index) {
+			list.set_custom_data(index_u64, item.path.clone());
+		}
 		let status = match item.status {
 			DocumentListStatus::Open => t("Open"),
 			DocumentListStatus::Closed => t("Closed"),
@@ -1380,9 +1387,11 @@ fn get_path_for_index(list: &ListCtrl, index: i32) -> Option<String> {
 	if index < 0 {
 		return None;
 	}
-	if let Some(data) = list.get_custom_data(index as u64) {
-		if let Some(path) = data.as_ref().downcast_ref::<String>() {
-			return Some(path.clone());
+	if let Ok(index_u64) = u64::try_from(index) {
+		if let Some(data) = list.get_custom_data(index_u64) {
+			if let Some(path) = data.as_ref().downcast_ref::<String>() {
+				return Some(path.clone());
+			}
 		}
 	}
 	let path = list.get_item_text(i64::from(index), 2);
@@ -1546,7 +1555,10 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 	}
 	for item in &tree_data.items {
 		let parent_id = if item.parent_index >= 0 {
-			if let Some(id) = item_ids.get(item.parent_index as usize) { id.clone() } else { root.clone() }
+			usize::try_from(item.parent_index)
+				.ok()
+				.and_then(|idx| item_ids.get(idx).cloned())
+				.unwrap_or_else(|| root.clone())
 		} else {
 			root.clone()
 		};
@@ -1562,9 +1574,11 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 	}
 	headings_tree.expand_all();
 	if tree_data.closest_index >= 0 {
-		if let Some(item) = item_ids.get(tree_data.closest_index as usize) {
-			headings_tree.select_item(item);
-			headings_tree.ensure_visible(item);
+		if let Ok(index) = usize::try_from(tree_data.closest_index) {
+			if let Some(item) = item_ids.get(index) {
+				headings_tree.select_item(item);
+				headings_tree.ensure_visible(item);
+			}
 		}
 	} else if let Some((first_child, _)) = headings_tree.get_first_child(&root) {
 		headings_tree.select_item(&first_child);
@@ -1578,7 +1592,9 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 	}
 	if !link_offsets.is_empty() {
 		let idx = if link_data.closest_index >= 0 { link_data.closest_index } else { 0 };
-		links_list.set_selection(idx as u32, true);
+		if let Ok(idx_u32) = u32::try_from(idx) {
+			links_list.set_selection(idx_u32, true);
+		}
 	}
 	let link_offsets = Rc::new(link_offsets);
 	let headings_tree_for_choice = headings_tree;
@@ -1616,9 +1632,11 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 	links_list.on_item_double_clicked(move |event| {
 		let selection = event.get_selection().unwrap_or(-1);
 		if selection >= 0 {
-			if let Some(offset) = offsets_for_list.get(selection as usize) {
-				selected_offset_for_list.set(*offset);
-				dialog_for_list.end_modal(wxdragon::id::ID_OK);
+			if let Ok(index) = usize::try_from(selection) {
+				if let Some(offset) = offsets_for_list.get(index) {
+					selected_offset_for_list.set(*offset);
+					dialog_for_list.end_modal(wxdragon::id::ID_OK);
+				}
 			}
 		}
 	});
@@ -1644,9 +1662,11 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 				}
 			}
 		} else if let Some(idx) = links_list_for_ok.get_selection() {
-			if let Some(offset) = offsets_for_ok.get(idx as usize) {
-				selected_offset_for_ok.set(*offset);
-				dialog_for_ok.end_modal(wxdragon::id::ID_OK);
+			if let Ok(index) = usize::try_from(idx) {
+				if let Some(offset) = offsets_for_ok.get(index) {
+					selected_offset_for_ok.set(*offset);
+					dialog_for_ok.end_modal(wxdragon::id::ID_OK);
+				}
 			}
 		}
 	});

@@ -15,11 +15,15 @@ pub fn format_status_text(info: &StatusInfo) -> String {
 }
 
 pub fn calculate_sleep_timer_remaining(start_ms: i64, duration_minutes: i32) -> i32 {
-	let now = SystemTime::now().duration_since(time::UNIX_EPOCH).map(|d| d.as_millis() as i64).unwrap_or(0);
+	let now = SystemTime::now()
+		.duration_since(time::UNIX_EPOCH)
+		.ok()
+		.and_then(|d| i64::try_from(d.as_millis()).ok())
+		.unwrap_or(0);
 	let elapsed_ms = now - start_ms;
 	let duration_ms = i64::from(duration_minutes) * 60 * 1000;
 	let remaining_ms = duration_ms - elapsed_ms;
-	if remaining_ms < 0 { 0 } else { (remaining_ms / 1000) as i32 }
+	if remaining_ms < 0 { 0 } else { i32::try_from(remaining_ms / 1000).unwrap_or(i32::MAX) }
 }
 
 pub fn format_sleep_timer_status(base_status: &str, remaining_seconds: i32) -> String {

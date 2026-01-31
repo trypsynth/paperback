@@ -2130,7 +2130,7 @@ fn handle_bookmark_dialog(
 		return;
 	};
 	let current_pos = tab.text_ctrl.get_insertion_point();
-	let selection = dialogs::show_bookmark_dialog(frame, &tab.session, Rc::clone(config), current_pos, filter);
+	let selection = dialogs::show_bookmark_dialog(frame, &tab.session, &Rc::clone(config), current_pos, filter);
 	let Some(selection) = selection else {
 		return;
 	};
