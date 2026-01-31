@@ -15,7 +15,7 @@ use std::{
 use wxdragon::{prelude::*, timer::Timer, translations::translate as t};
 
 use super::{
-	dialogs,
+	dialogs::{self, OptionsDialogFlags},
 	document_manager::DocumentManager,
 	find::{self, FindDialogState},
 	help::{self, MAIN_WINDOW_PTR},
@@ -983,23 +983,31 @@ impl MainWindow {
 						(cfg.get_app_bool("word_wrap", false), cfg.get_app_bool("compact_go_menu", true))
 					};
 					let cfg = config.lock().unwrap();
-					cfg.set_app_bool("restore_previous_documents", options.restore_previous_documents);
-					cfg.set_app_bool("word_wrap", options.word_wrap);
-					cfg.set_app_bool("minimize_to_tray", options.minimize_to_tray);
-					cfg.set_app_bool("start_maximized", options.start_maximized);
-					cfg.set_app_bool("compact_go_menu", options.compact_go_menu);
-					cfg.set_app_bool("navigation_wrap", options.navigation_wrap);
-					cfg.set_app_bool("check_for_updates_on_startup", options.check_for_updates_on_startup);
+					cfg.set_app_bool(
+						"restore_previous_documents",
+						options.flags.contains(OptionsDialogFlags::RESTORE_PREVIOUS_DOCUMENTS),
+					);
+					cfg.set_app_bool("word_wrap", options.flags.contains(OptionsDialogFlags::WORD_WRAP));
+					cfg.set_app_bool("minimize_to_tray", options.flags.contains(OptionsDialogFlags::MINIMIZE_TO_TRAY));
+					cfg.set_app_bool("start_maximized", options.flags.contains(OptionsDialogFlags::START_MAXIMIZED));
+					cfg.set_app_bool("compact_go_menu", options.flags.contains(OptionsDialogFlags::COMPACT_GO_MENU));
+					cfg.set_app_bool("navigation_wrap", options.flags.contains(OptionsDialogFlags::NAVIGATION_WRAP));
+					cfg.set_app_bool(
+						"check_for_updates_on_startup",
+						options.flags.contains(OptionsDialogFlags::CHECK_FOR_UPDATES_ON_STARTUP),
+					);
 					cfg.set_app_int("recent_documents_to_show", options.recent_documents_to_show);
 					cfg.set_app_string("language", &options.language);
 					cfg.flush();
 					drop(cfg);
-					if old_word_wrap != options.word_wrap {
+					let options_word_wrap = options.flags.contains(OptionsDialogFlags::WORD_WRAP);
+					if old_word_wrap != options_word_wrap {
 						let mut dm_ref = dm.lock().unwrap();
-						dm_ref.apply_word_wrap(options.word_wrap);
+						dm_ref.apply_word_wrap(options_word_wrap);
 						dm_ref.restore_focus();
 					}
-					if current_language != options.language || old_compact_menu != options.compact_go_menu {
+					let options_compact_menu = options.flags.contains(OptionsDialogFlags::COMPACT_GO_MENU);
+					if current_language != options.language || old_compact_menu != options_compact_menu {
 						if current_language != options.language {
 							let _ = TranslationManager::instance().lock().unwrap().set_language(&options.language);
 						}

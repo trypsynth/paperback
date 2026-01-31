@@ -7,6 +7,7 @@ use std::{
 	sync::Mutex,
 };
 
+use bitflags::bitflags;
 use wxdragon::{
 	event::WebViewEvents,
 	ffi,
@@ -51,15 +52,22 @@ const WXK_PAGEDOWN: i32 = 367;
 
 #[derive(Clone, Debug)]
 pub struct OptionsDialogResult {
-	pub restore_previous_documents: bool,
-	pub word_wrap: bool,
-	pub minimize_to_tray: bool,
-	pub start_maximized: bool,
-	pub compact_go_menu: bool,
-	pub navigation_wrap: bool,
-	pub check_for_updates_on_startup: bool,
+	pub flags: OptionsDialogFlags,
 	pub recent_documents_to_show: i32,
 	pub language: String,
+}
+
+bitflags! {
+	#[derive(Clone, Copy, Debug)]
+	pub struct OptionsDialogFlags: u16 {
+		const RESTORE_PREVIOUS_DOCUMENTS = 1 << 0;
+		const WORD_WRAP = 1 << 1;
+		const MINIMIZE_TO_TRAY = 1 << 2;
+		const START_MAXIMIZED = 1 << 3;
+		const COMPACT_GO_MENU = 1 << 4;
+		const NAVIGATION_WRAP = 1 << 5;
+		const CHECK_FOR_UPDATES_ON_STARTUP = 1 << 6;
+	}
 }
 
 pub struct BookmarkDialogResult {
@@ -141,17 +149,29 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		.and_then(|index| usize::try_from(index).ok())
 		.and_then(|index| language_codes.get(index).cloned())
 		.unwrap_or_else(|| current_language.clone());
-	Some(OptionsDialogResult {
-		restore_previous_documents: restore_docs_check.is_checked(),
-		word_wrap: word_wrap_check.is_checked(),
-		minimize_to_tray: minimize_to_tray_check.is_checked(),
-		start_maximized: start_maximized_check.is_checked(),
-		compact_go_menu: compact_go_menu_check.is_checked(),
-		navigation_wrap: navigation_wrap_check.is_checked(),
-		check_for_updates_on_startup: check_for_updates_check.is_checked(),
-		recent_documents_to_show: recent_docs_ctrl.value(),
-		language,
-	})
+	let mut flags = OptionsDialogFlags::empty();
+	if restore_docs_check.is_checked() {
+		flags.insert(OptionsDialogFlags::RESTORE_PREVIOUS_DOCUMENTS);
+	}
+	if word_wrap_check.is_checked() {
+		flags.insert(OptionsDialogFlags::WORD_WRAP);
+	}
+	if minimize_to_tray_check.is_checked() {
+		flags.insert(OptionsDialogFlags::MINIMIZE_TO_TRAY);
+	}
+	if start_maximized_check.is_checked() {
+		flags.insert(OptionsDialogFlags::START_MAXIMIZED);
+	}
+	if compact_go_menu_check.is_checked() {
+		flags.insert(OptionsDialogFlags::COMPACT_GO_MENU);
+	}
+	if navigation_wrap_check.is_checked() {
+		flags.insert(OptionsDialogFlags::NAVIGATION_WRAP);
+	}
+	if check_for_updates_check.is_checked() {
+		flags.insert(OptionsDialogFlags::CHECK_FOR_UPDATES_ON_STARTUP);
+	}
+	Some(OptionsDialogResult { flags, recent_documents_to_show: recent_docs_ctrl.value(), language })
 }
 
 pub fn show_bookmark_dialog(
@@ -1171,16 +1191,16 @@ pub fn show_all_documents_dialog(
 	bind_escape_to_close(&search_ctrl, dialog);
 	bind_escape_to_close(&doc_list, dialog);
 
-	populate_document_list(
-		doc_list,
+	populate_document_list(DocumentListParams {
+		list: doc_list,
 		open_button,
 		remove_button,
 		clear_all_button,
 		config,
-		open_paths.as_ref(),
-		"",
-		None,
-	);
+		open_paths: open_paths.as_ref(),
+		filter: "",
+		selection: None,
+	});
 
 	bind_all_documents_selection(doc_list, open_button);
 	let open_action = make_all_documents_open_action(dialog, doc_list, Rc::clone(&selected_path));
@@ -1339,16 +1359,16 @@ fn make_all_documents_remove_action(
 			cfg.remove_document_history(&path_to_remove);
 			cfg.flush();
 		}
-		populate_document_list(
+		populate_document_list(DocumentListParams {
 			list,
 			open_button,
 			remove_button,
-			clear_button,
-			&config,
-			open_paths.as_ref(),
-			"",
-			Some(index),
-		);
+			clear_all_button: clear_button,
+			config: &config,
+			open_paths: open_paths.as_ref(),
+			filter: "",
+			selection: Some(index),
+		});
 	})
 }
 
@@ -1384,7 +1404,16 @@ fn bind_all_documents_clear(
 			}
 			cfg.flush();
 		}
-		populate_document_list(list, open_button, remove_button, clear_button, &config, open_paths.as_ref(), "", None);
+		populate_document_list(DocumentListParams {
+			list,
+			open_button,
+			remove_button,
+			clear_all_button: clear_button,
+			config: &config,
+			open_paths: open_paths.as_ref(),
+			filter: "",
+			selection: None,
+		});
 	});
 }
 
@@ -1399,16 +1428,16 @@ fn bind_all_documents_search(
 ) {
 	search_ctrl.on_text_updated(move |_event| {
 		let filter = search_ctrl.get_value();
-		populate_document_list(
+		populate_document_list(DocumentListParams {
 			list,
 			open_button,
 			remove_button,
-			clear_button,
-			&config,
-			open_paths.as_ref(),
-			&filter,
-			None,
-		);
+			clear_all_button: clear_button,
+			config: &config,
+			open_paths: open_paths.as_ref(),
+			filter: &filter,
+			selection: None,
+		});
 	});
 }
 
