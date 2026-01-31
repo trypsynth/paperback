@@ -922,6 +922,7 @@ pub fn show_go_to_percent_dialog(parent: &Frame, session: &DocumentSession, curr
 	content_sizer.add(&input_label, 0, SizerFlag::Left, 5);
 	content_sizer.add(&input_ctrl, 0, SizerFlag::Expand, 0);
 	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
+	ok_button.set_default();
 	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
 	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
 	dialog.set_affirmative_id(wxdragon::id::ID_OK);
