@@ -108,6 +108,15 @@ pub struct DocumentSession {
 	last_stable_position: Option<i64>,
 }
 
+#[derive(Copy, Clone)]
+struct NavigateParams {
+	position: i64,
+	wrap: bool,
+	next: bool,
+	target: NavTarget,
+	level_filter: i32,
+}
+
 impl DocumentSession {
 	/// # Errors
 	///
@@ -214,18 +223,14 @@ impl DocumentSession {
 
 	fn navigate_with_post(
 		&self,
-		position: i64,
-		wrap: bool,
-		next: bool,
-		target: NavTarget,
-		level_filter: i32,
+		params: NavigateParams,
 		is_supported: bool,
 		post: impl FnOnce(&Self, &mut NavigationResult),
 	) -> NavigationResult {
 		if !is_supported {
 			return NavigationResult::not_supported();
 		}
-		let req = Self::nav_request(position, wrap, next, target, level_filter);
+		let req = Self::nav_request(params.position, params.wrap, params.next, params.target, params.level_filter);
 		let result = reader_navigate(&self.handle, &req);
 		let mut nav_result = NavigationResult::from_nav_result(&result);
 		post(self, &mut nav_result);
@@ -235,68 +240,100 @@ impl DocumentSession {
 	#[must_use]
 	pub fn navigate_section(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
 		let is_supported = self.parser_flags.contains(ParserFlags::SUPPORTS_SECTIONS);
-		self.navigate_with_post(position, wrap, next, NavTarget::Section, 0, is_supported, |s, nav_result| {
-			s.fill_marker_text_if_empty(nav_result);
-		})
+		self.navigate_with_post(
+			NavigateParams { position, wrap, next, target: NavTarget::Section, level_filter: 0 },
+			is_supported,
+			|s, nav_result| {
+				s.fill_marker_text_if_empty(nav_result);
+			},
+		)
 	}
 
 	#[must_use]
 	pub fn navigate_heading(&self, position: i64, wrap: bool, next: bool, level: i32) -> NavigationResult {
 		let is_supported = self.has_headings(if level > 0 { Some(level) } else { None });
-		self.navigate_with_post(position, wrap, next, NavTarget::Heading, level, is_supported, |_s, _nav_result| {})
+		self.navigate_with_post(
+			NavigateParams { position, wrap, next, target: NavTarget::Heading, level_filter: level },
+			is_supported,
+			|_s, _nav_result| {},
+		)
 	}
 
 	#[must_use]
 	pub fn navigate_page(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
 		let is_supported = self.has_marker(MarkerType::PageBreak);
-		self.navigate_with_post(position, wrap, next, NavTarget::Page, 0, is_supported, |s, nav_result| {
-			if nav_result.found {
-				let offset = usize::try_from(nav_result.offset).unwrap_or(0);
-				nav_result.marker_index = s.handle.page_index(offset).unwrap_or(-1);
-			}
-			s.fill_marker_text_if_empty(nav_result);
-		})
+		self.navigate_with_post(
+			NavigateParams { position, wrap, next, target: NavTarget::Page, level_filter: 0 },
+			is_supported,
+			|s, nav_result| {
+				if nav_result.found {
+					let offset = usize::try_from(nav_result.offset).unwrap_or(0);
+					nav_result.marker_index = s.handle.page_index(offset).unwrap_or(-1);
+				}
+				s.fill_marker_text_if_empty(nav_result);
+			},
+		)
 	}
 
 	#[must_use]
 	pub fn navigate_link(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
 		let is_supported = self.has_marker(MarkerType::Link);
-		self.navigate_with_post(position, wrap, next, NavTarget::Link, 0, is_supported, |s, nav_result| {
-			s.fill_marker_text_if_empty(nav_result);
-		})
+		self.navigate_with_post(
+			NavigateParams { position, wrap, next, target: NavTarget::Link, level_filter: 0 },
+			is_supported,
+			|s, nav_result| {
+				s.fill_marker_text_if_empty(nav_result);
+			},
+		)
 	}
 
 	#[must_use]
 	pub fn navigate_list(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
 		let is_supported = self.parser_flags.contains(ParserFlags::SUPPORTS_LISTS) && self.has_marker(MarkerType::List);
-		self.navigate_with_post(position, wrap, next, NavTarget::List, 0, is_supported, |s, nav_result| {
-			s.fill_marker_text_if_empty(nav_result);
-		})
+		self.navigate_with_post(
+			NavigateParams { position, wrap, next, target: NavTarget::List, level_filter: 0 },
+			is_supported,
+			|s, nav_result| {
+				s.fill_marker_text_if_empty(nav_result);
+			},
+		)
 	}
 
 	#[must_use]
 	pub fn navigate_list_item(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
 		let is_supported =
 			self.parser_flags.contains(ParserFlags::SUPPORTS_LISTS) && self.has_marker(MarkerType::ListItem);
-		self.navigate_with_post(position, wrap, next, NavTarget::ListItem, 0, is_supported, |s, nav_result| {
-			s.fill_marker_text_if_empty(nav_result);
-		})
+		self.navigate_with_post(
+			NavigateParams { position, wrap, next, target: NavTarget::ListItem, level_filter: 0 },
+			is_supported,
+			|s, nav_result| {
+				s.fill_marker_text_if_empty(nav_result);
+			},
+		)
 	}
 
 	#[must_use]
 	pub fn navigate_table(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
 		let is_supported = self.has_marker(MarkerType::Table);
-		self.navigate_with_post(position, wrap, next, NavTarget::Table, 0, is_supported, |s, nav_result| {
-			s.fill_marker_text_if_empty(nav_result);
-		})
+		self.navigate_with_post(
+			NavigateParams { position, wrap, next, target: NavTarget::Table, level_filter: 0 },
+			is_supported,
+			|s, nav_result| {
+				s.fill_marker_text_if_empty(nav_result);
+			},
+		)
 	}
 
 	#[must_use]
 	pub fn navigate_separator(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
 		let is_supported = self.has_marker(MarkerType::Separator);
-		self.navigate_with_post(position, wrap, next, NavTarget::Separator, 0, is_supported, |s, nav_result| {
-			s.fill_marker_text_if_empty(nav_result);
-		})
+		self.navigate_with_post(
+			NavigateParams { position, wrap, next, target: NavTarget::Separator, level_filter: 0 },
+			is_supported,
+			|s, nav_result| {
+				s.fill_marker_text_if_empty(nav_result);
+			},
+		)
 	}
 
 	#[must_use]

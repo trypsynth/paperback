@@ -1,3 +1,4 @@
+use bitflags::bitflags;
 use regex::RegexBuilder;
 
 use crate::{
@@ -132,10 +133,7 @@ pub fn reader_search(
 	haystack: &str,
 	needle: &str,
 	start: i64,
-	forward: bool,
-	match_case: bool,
-	whole_word: bool,
-	regex: bool,
+	options: SearchOptions,
 ) -> i64 {
 	if needle.is_empty() {
 		return -1;
@@ -166,17 +164,17 @@ pub fn reader_search(
 	let start_byte = utf16_to_byte_index(haystack, start_utf16);
 
 	// Build regex for search - this avoids copying/lowercasing the entire haystack
-	let escaped_needle = if regex { needle.to_string() } else { regex::escape(needle) };
-	let pattern = if whole_word { format!(r"\b{escaped_needle}\b") } else { escaped_needle };
+	let escaped_needle = if options.contains(SearchOptions::REGEX) { needle.to_string() } else { regex::escape(needle) };
+	let pattern = if options.contains(SearchOptions::WHOLE_WORD) { format!(r"\b{escaped_needle}\b") } else { escaped_needle };
 	let mut builder = RegexBuilder::new(&pattern);
-	if !match_case {
+	if !options.contains(SearchOptions::MATCH_CASE) {
 		builder.case_insensitive(true);
 	}
 	let Ok(re) = builder.build() else {
 		return -1;
 	};
 
-	if forward {
+	if options.contains(SearchOptions::FORWARD) {
 		if let Some(m) = re.find(&haystack[start_byte..]) {
 			let byte_pos = start_byte + m.start();
 			let utf16_pos = byte_to_utf16_index(haystack, byte_pos);
@@ -200,21 +198,29 @@ pub fn reader_search_with_wrap(
 	haystack: &str,
 	needle: &str,
 	start: i64,
-	forward: bool,
-	match_case: bool,
-	whole_word: bool,
-	regex: bool,
+	options: SearchOptions,
 ) -> ffi::SearchResult {
-	let position = reader_search(haystack, needle, start, forward, match_case, whole_word, regex);
+	let position = reader_search(haystack, needle, start, options);
 	if position >= 0 {
 		return ffi::SearchResult { found: true, wrapped: false, position };
 	}
-	let wrap_pos = if forward { 0 } else { i64::try_from(haystack.encode_utf16().count()).unwrap_or(0) };
-	let wrapped_position = reader_search(haystack, needle, wrap_pos, forward, match_case, whole_word, regex);
+	let wrap_pos =
+		if options.contains(SearchOptions::FORWARD) { 0 } else { i64::try_from(haystack.encode_utf16().count()).unwrap_or(0) };
+	let wrapped_position = reader_search(haystack, needle, wrap_pos, options);
 	if wrapped_position >= 0 {
 		return ffi::SearchResult { found: true, wrapped: true, position: wrapped_position };
 	}
 	ffi::SearchResult { found: false, wrapped: false, position: -1 }
+}
+
+bitflags! {
+	#[derive(Copy, Clone)]
+	pub struct SearchOptions: u8 {
+		const FORWARD = 1 << 0;
+		const MATCH_CASE = 1 << 1;
+		const WHOLE_WORD = 1 << 2;
+		const REGEX = 1 << 3;
+	}
 }
 
 pub fn bookmark_navigate(

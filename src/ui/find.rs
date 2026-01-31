@@ -31,15 +31,20 @@ pub fn find_text_with_wrap(haystack: &str, needle: &str, start: i64, options: Fi
 	if needle.is_empty() {
 		return SearchResult::default();
 	}
-	let result = reader_core::reader_search_with_wrap(
-		haystack,
-		needle,
-		start,
-		options.contains(FindOptions::FORWARD),
-		options.contains(FindOptions::MATCH_CASE),
-		options.contains(FindOptions::MATCH_WHOLE_WORD),
-		options.contains(FindOptions::USE_REGEX),
-	);
+	let mut search_options = reader_core::SearchOptions::empty();
+	if options.contains(FindOptions::FORWARD) {
+		search_options |= reader_core::SearchOptions::FORWARD;
+	}
+	if options.contains(FindOptions::MATCH_CASE) {
+		search_options |= reader_core::SearchOptions::MATCH_CASE;
+	}
+	if options.contains(FindOptions::MATCH_WHOLE_WORD) {
+		search_options |= reader_core::SearchOptions::WHOLE_WORD;
+	}
+	if options.contains(FindOptions::USE_REGEX) {
+		search_options |= reader_core::SearchOptions::REGEX;
+	}
+	let result = reader_core::reader_search_with_wrap(haystack, needle, start, search_options);
 	SearchResult { found: result.found, wrapped: result.wrapped, position: result.position }
 }
 

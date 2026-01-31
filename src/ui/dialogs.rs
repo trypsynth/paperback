@@ -1544,16 +1544,28 @@ pub fn show_open_as_dialog(parent: &Frame, path: &Path) -> Option<String> {
 	Some(format.to_string())
 }
 
-fn populate_document_list(
+struct DocumentListParams<'a> {
 	list: ListCtrl,
 	open_button: Button,
 	remove_button: Button,
 	clear_all_button: Button,
-	config: &Rc<Mutex<ConfigManager>>,
-	open_paths: &[String],
-	filter: &str,
+	config: &'a Rc<Mutex<ConfigManager>>,
+	open_paths: &'a [String],
+	filter: &'a str,
 	selection: Option<i32>,
-) {
+}
+
+fn populate_document_list(params: DocumentListParams<'_>) {
+	let DocumentListParams {
+		list,
+		open_button,
+		remove_button,
+		clear_all_button,
+		config,
+		open_paths,
+		filter,
+		selection,
+	} = params;
 	list.cleanup_all_custom_data();
 	list.delete_all_items();
 
