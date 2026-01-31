@@ -543,46 +543,106 @@ fn bind_bookmark_actions(actions: BookmarkDialogActions) {
 		file_path,
 		current_pos,
 	} = actions;
-	let dialog_for_cancel = dialog;
+	bind_bookmark_cancel(dialog, cancel_button);
+	bind_bookmark_filter(filter_choice, Rc::clone(&repopulate), current_pos);
+	bind_bookmark_delete(
+		delete_button,
+		Rc::clone(&repopulate),
+		Rc::clone(&selected_start),
+		Rc::clone(&selected_end),
+		Rc::clone(&config),
+		file_path.clone(),
+		current_pos,
+	);
+	bind_bookmark_edit(BookmarkEditParams {
+		dialog,
+		edit_button,
+		repopulate: Rc::clone(&repopulate),
+		selected_start: Rc::clone(&selected_start),
+		selected_end: Rc::clone(&selected_end),
+		config: Rc::clone(&config),
+		file_path: file_path.clone(),
+		current_pos,
+	});
+	bind_bookmark_key_actions(
+		bookmark_list,
+		Rc::clone(&repopulate),
+		Rc::clone(&selected_start),
+		Rc::clone(&selected_end),
+		Rc::clone(&config),
+		file_path,
+		current_pos,
+	);
+	bind_bookmark_double_click(bookmark_list, dialog, selected_start);
+}
+
+fn bind_bookmark_cancel(dialog: Dialog, cancel_button: Button) {
 	cancel_button.on_click(move |_| {
-		dialog_for_cancel.end_modal(wxdragon::id::ID_CANCEL);
+		dialog.end_modal(wxdragon::id::ID_CANCEL);
 	});
-	let repopulate_for_filter = Rc::clone(&repopulate);
+}
+
+fn bind_bookmark_filter(filter_choice: ComboBox, repopulate: Rc<dyn Fn(i64)>, current_pos: i64) {
 	filter_choice.on_selection_changed(move |_event| {
-		repopulate_for_filter(current_pos);
+		repopulate(current_pos);
 	});
-	let repopulate_for_delete = Rc::clone(&repopulate);
-	let selected_start_for_delete = Rc::clone(&selected_start);
-	let selected_end_for_delete = Rc::clone(&selected_end);
-	let config_for_delete = Rc::clone(&config);
-	let file_path_for_delete = file_path.clone();
+}
+
+fn bind_bookmark_delete(
+	delete_button: Button,
+	repopulate: Rc<dyn Fn(i64)>,
+	selected_start: Rc<Cell<i64>>,
+	selected_end: Rc<Cell<i64>>,
+	config: Rc<Mutex<ConfigManager>>,
+	file_path: String,
+	current_pos: i64,
+) {
 	delete_button.on_click(move |_| {
-		let start = selected_start_for_delete.get();
-		let end = selected_end_for_delete.get();
+		let start = selected_start.get();
+		let end = selected_end.get();
 		if start < 0 {
 			return;
 		}
 		{
-			let cfg = config_for_delete.lock().unwrap();
-			cfg.remove_bookmark(&file_path_for_delete, start, end);
+			let cfg = config.lock().unwrap();
+			cfg.remove_bookmark(&file_path, start, end);
 			cfg.flush();
 		}
-		repopulate_for_delete(current_pos);
+		repopulate(current_pos);
 	});
-	let repopulate_for_edit = Rc::clone(&repopulate);
-	let selected_start_for_edit = Rc::clone(&selected_start);
-	let selected_end_for_edit = Rc::clone(&selected_end);
-	let config_for_edit = Rc::clone(&config);
-	let file_path_for_edit = file_path.clone();
+}
+
+struct BookmarkEditParams {
+	dialog: Dialog,
+	edit_button: Button,
+	repopulate: Rc<dyn Fn(i64)>,
+	selected_start: Rc<Cell<i64>>,
+	selected_end: Rc<Cell<i64>>,
+	config: Rc<Mutex<ConfigManager>>,
+	file_path: String,
+	current_pos: i64,
+}
+
+fn bind_bookmark_edit(params: BookmarkEditParams) {
+	let BookmarkEditParams {
+		dialog,
+		edit_button,
+		repopulate,
+		selected_start,
+		selected_end,
+		config,
+		file_path,
+		current_pos,
+	} = params;
 	edit_button.on_click(move |_| {
-		let start = selected_start_for_edit.get();
-		let end = selected_end_for_edit.get();
+		let start = selected_start.get();
+		let end = selected_end.get();
 		if start < 0 {
 			return;
 		}
 		let existing_note = {
-			let cfg = config_for_edit.lock().unwrap();
-			cfg.get_bookmarks(&file_path_for_edit)
+			let cfg = config.lock().unwrap();
+			cfg.get_bookmarks(&file_path)
 				.into_iter()
 				.find(|bm| bm.start == start && bm.end == end)
 				.map(|bm| bm.note)
@@ -594,40 +654,47 @@ fn bind_bookmark_actions(actions: BookmarkDialogActions) {
 			return;
 		};
 		{
-			let cfg = config_for_edit.lock().unwrap();
-			cfg.update_bookmark_note(&file_path_for_edit, start, end, &note);
+			let cfg = config.lock().unwrap();
+			cfg.update_bookmark_note(&file_path, start, end, &note);
 			cfg.flush();
 		}
-		repopulate_for_edit(current_pos);
+		repopulate(current_pos);
 	});
-	let repopulate_for_key = Rc::clone(&repopulate);
-	let selected_start_for_key = Rc::clone(&selected_start);
-	let selected_end_for_key = Rc::clone(&selected_end);
-	let config_for_key = Rc::clone(&config);
-	let file_path_for_key = file_path;
+}
+
+fn bind_bookmark_key_actions(
+	bookmark_list: ListBox,
+	repopulate: Rc<dyn Fn(i64)>,
+	selected_start: Rc<Cell<i64>>,
+	selected_end: Rc<Cell<i64>>,
+	config: Rc<Mutex<ConfigManager>>,
+	file_path: String,
+	current_pos: i64,
+) {
 	bookmark_list.bind_internal(EventType::KEY_DOWN, move |event| {
 		let key = event.get_key_code().unwrap_or(0);
 		if key == KEY_DELETE || key == KEY_NUMPAD_DELETE {
-			let start = selected_start_for_key.get();
-			let end = selected_end_for_key.get();
+			let start = selected_start.get();
+			let end = selected_end.get();
 			if start >= 0 {
 				{
-					let cfg = config_for_key.lock().unwrap();
-					cfg.remove_bookmark(&file_path_for_key, start, end);
+					let cfg = config.lock().unwrap();
+					cfg.remove_bookmark(&file_path, start, end);
 					cfg.flush();
 				}
-				repopulate_for_key(current_pos);
+				repopulate(current_pos);
 			}
 			event.skip(false);
 			return;
 		}
 		event.skip(true);
 	});
-	let selected_start_for_double = Rc::clone(&selected_start);
-	let dialog_for_double = dialog;
+}
+
+fn bind_bookmark_double_click(bookmark_list: ListBox, dialog: Dialog, selected_start: Rc<Cell<i64>>) {
 	bookmark_list.on_item_double_clicked(move |_| {
-		if selected_start_for_double.get() >= 0 {
-			dialog_for_double.end_modal(wxdragon::id::ID_OK);
+		if selected_start.get() >= 0 {
+			dialog.end_modal(wxdragon::id::ID_OK);
 		}
 	});
 }
