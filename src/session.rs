@@ -455,7 +455,7 @@ impl DocumentSession {
 		}
 	}
 
-	pub fn activate_link(&mut self, position: i64) -> LinkActivationResult {
+	pub fn activate_link(&self, position: i64) -> LinkActivationResult {
 		let pos_usize = usize::try_from(position.max(0)).unwrap_or(0);
 		let href = {
 			let link_index = self.handle.current_marker_index(pos_usize, MarkerType::Link);

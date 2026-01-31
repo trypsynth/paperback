@@ -65,7 +65,7 @@ fn find_text_with_wrap(haystack: &str, needle: &str, start: i64, options: FindOp
 	SearchResult { found: result.found, wrapped: result.wrapped, position: result.position }
 }
 
-fn ensure_parser_for_unknown_file(parent: &Frame, path: &Path, config: &mut ConfigManager) -> bool {
+fn ensure_parser_for_unknown_file(parent: &Frame, path: &Path, config: &ConfigManager) -> bool {
 	let path_str = path.to_string_lossy();
 	let saved_format = config.get_document_format(&path_str);
 	if !saved_format.is_empty() && parser_supports_extension(&saved_format) {
@@ -453,11 +453,6 @@ impl MainWindow {
 	}
 
 	fn headings_entries() -> Vec<MenuEntry> {
-		let prev_heading_label = t("&Previous Heading\tShift+H");
-		let prev_heading_help = t("Go to previous heading");
-		let next_heading_label = t("&Next Heading\tH");
-		let next_heading_help = t("Go to next heading");
-		let prev_heading1_label = t("Previous Heading Level &1\tShift+1");
 		let next_heading1_label = t("Next Heading Level 1\t1");
 		let prev_heading2_label = t("Previous Heading Level &2\tShift+2");
 		let next_heading2_label = t("Next Heading Level 2\t2");
@@ -470,10 +465,14 @@ impl MainWindow {
 		let prev_heading6_label = t("Previous Heading Level &6\tShift+6");
 		let next_heading6_label = t("Next Heading Level 6\t6");
 		vec![
-			Self::item_with_help(menu_ids::PREVIOUS_HEADING, prev_heading_label, prev_heading_help),
-			Self::item_with_help(menu_ids::NEXT_HEADING, next_heading_label, next_heading_help),
+			Self::item_with_help(
+				menu_ids::PREVIOUS_HEADING,
+				t("&Previous Heading\tShift+H"),
+				t("Go to previous heading"),
+			),
+			Self::item_with_help(menu_ids::NEXT_HEADING, t("&Next Heading\tH"), t("Go to next heading")),
 			MenuEntry::Separator,
-			Self::item(menu_ids::PREVIOUS_HEADING_1, prev_heading1_label),
+			Self::item(menu_ids::PREVIOUS_HEADING_1, t("Previous Heading Level &1\tShift+1")),
 			Self::item(menu_ids::NEXT_HEADING_1, next_heading1_label),
 			Self::item(menu_ids::PREVIOUS_HEADING_2, prev_heading2_label),
 			Self::item(menu_ids::NEXT_HEADING_2, next_heading2_label),
@@ -1359,15 +1358,8 @@ impl MainWindow {
 	}
 
 	/// Get the frame
-	#[allow(dead_code)]
 	pub const fn frame(&self) -> &Frame {
 		&self.frame
-	}
-
-	/// Get the document manager
-	#[allow(dead_code)]
-	pub const fn doc_manager(&self) -> &Rc<Mutex<DocumentManager>> {
-		&self.doc_manager
 	}
 
 	fn ensure_parser_ready(&self, path: &Path) -> bool {
@@ -1464,8 +1456,8 @@ fn ensure_parser_ready_for_path(frame: &Frame, path: &Path, config: &Rc<Mutex<Co
 	if extension.is_empty() || parser_supports_extension(extension) {
 		return true;
 	}
-	let mut cfg = config.lock().unwrap();
-	ensure_parser_for_unknown_file(frame, path, &mut cfg)
+	let cfg = config.lock().unwrap();
+	ensure_parser_for_unknown_file(frame, path, &cfg)
 }
 
 #[derive(Clone)]
@@ -1951,7 +1943,7 @@ fn format_nav_found_message(
 }
 
 fn apply_navigation_result(
-	tab: &mut DocumentTab,
+	tab: &DocumentTab,
 	result: crate::session::NavigationResult,
 	target: MarkerNavTarget,
 	next: bool,

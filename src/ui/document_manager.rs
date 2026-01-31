@@ -304,7 +304,7 @@ impl DocumentManager {
 		}
 	}
 
-	pub fn activate_current_table(&mut self) {
+	pub fn activate_current_table(&self) {
 		let table_html = {
 			if let Some(tab) = self.active_tab() {
 				let pos = tab.text_ctrl.get_insertion_point();

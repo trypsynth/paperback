@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.0\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-01-30 07:27-0700\n"
+"POT-Creation-Date: 2026-01-30 22:37-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -648,26 +648,6 @@ msgid "Next List I&tem\tI"
 msgstr ""
 
 #: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Previous Heading\tShift+H"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Go to previous heading"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "&Next Heading\tH"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Go to next heading"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
-msgid "Previous Heading Level &1\tShift+1"
-msgstr ""
-
-#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
 msgid "Next Heading Level 1\t1"
 msgstr ""
 
@@ -709,6 +689,26 @@ msgstr ""
 
 #: C:\Users\Quin\git\paperback\src\ui\main_window.rs
 msgid "Next Heading Level 6\t6"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+msgid "&Previous Heading\tShift+H"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+msgid "Go to previous heading"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+msgid "&Next Heading\tH"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+msgid "Go to next heading"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\main_window.rs
+msgid "Previous Heading Level &1\tShift+1"
 msgstr ""
 
 #: C:\Users\Quin\git\paperback\src\ui\main_window.rs

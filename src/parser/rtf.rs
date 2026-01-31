@@ -29,10 +29,10 @@ impl Parser for RtfParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		let bytes =
 			fs::read(&context.file_path).with_context(|| format!("Failed to open RTF file '{}'", context.file_path))?;
-		let content = String::from_utf8_lossy(&bytes);
+		let content_str = String::from_utf8_lossy(&bytes);
 		// Some RTF files have garbage at the end
-		let content = content.trim_end_matches(|c: char| c == '\0' || c.is_whitespace());
-		let tokens = Lexer::scan(content).map_err(|e| anyhow::anyhow!("Failed to parse RTF document: {e}"))?;
+		let content_str = content_str.trim_end_matches(|c: char| c == '\0' || c.is_whitespace());
+		let tokens = Lexer::scan(content_str).map_err(|e| anyhow::anyhow!("Failed to parse RTF document: {e}"))?;
 		let buffer = extract_content_from_tokens(&tokens);
 		let title = extract_title_from_path(&context.file_path);
 		let mut doc = Document::new().with_title(title);

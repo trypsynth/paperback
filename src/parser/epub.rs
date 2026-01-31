@@ -64,7 +64,6 @@ impl Parser for EpubParser {
 		ParserFlags::SUPPORTS_SECTIONS | ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_LISTS
 	}
 
-	#[allow(clippy::too_many_lines)]
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		let file = File::open(&context.file_path)
 			.with_context(|| format!("Failed to open EPUB file '{}'", context.file_path))?;
