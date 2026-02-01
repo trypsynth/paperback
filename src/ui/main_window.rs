@@ -37,10 +37,16 @@ const KEY_NUMPAD_DELETE: i32 = 330;
 pub static SLEEP_TIMER_START_MS: AtomicI64 = AtomicI64::new(0);
 pub static SLEEP_TIMER_DURATION_MINUTES: AtomicI32 = AtomicI32::new(0);
 
+#[derive(Default)]
+struct RestoreState {
+	restored: bool,
+	closing: bool,
+}
+
 pub struct MainWindow {
 	frame: Frame,
 	doc_manager: Rc<Mutex<DocumentManager>>,
-	_config: Rc<Mutex<ConfigManager>>,
+	config: Rc<Mutex<ConfigManager>>,
 	_tray_state: Rc<Mutex<Option<tray::TrayState>>>,
 	_live_region_label: StaticText,
 	_find_dialog: Rc<Mutex<Option<FindDialogState>>>,
@@ -122,7 +128,7 @@ impl MainWindow {
 		Self {
 			frame,
 			doc_manager,
-			_config: config,
+			config,
 			_tray_state: tray_state,
 			_live_region_label: live_region_label,
 			_find_dialog: find_dialog,
@@ -134,7 +140,7 @@ impl MainWindow {
 		self.frame.centre();
 	}
 
-	pub fn check_for_updates(&self, silent: bool) {
+	pub fn check_for_updates(silent: bool) {
 		help::run_update_check(silent);
 	}
 
@@ -180,11 +186,11 @@ impl MainWindow {
 	}
 
 	fn ensure_parser_ready(&self, path: &Path) -> bool {
-		ensure_parser_ready_for_path(&self.frame, path, &self._config)
+		ensure_parser_ready_for_path(&self.frame, path, &self.config)
 	}
 
 	fn update_recent_documents_menu(&self) {
-		let menu_bar = menu::create_menu_bar(&self._config.lock().unwrap());
+		let menu_bar = menu::create_menu_bar(&self.config.lock().unwrap());
 		self.frame.set_menu_bar(menu_bar);
 	}
 
@@ -196,11 +202,6 @@ impl MainWindow {
 		let restore = config.lock().unwrap().get_app_bool("restore_previous_documents", true);
 		if !restore {
 			return;
-		}
-		#[derive(Default)]
-		struct RestoreState {
-			restored: bool,
-			closing: bool,
 		}
 		let state = Rc::new(Mutex::new(RestoreState::default()));
 		let state_for_close = Rc::clone(&state);

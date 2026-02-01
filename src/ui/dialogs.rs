@@ -50,6 +50,8 @@ const WXK_DOWN: i32 = 317;
 const WXK_PAGEUP: i32 = 366;
 const WXK_PAGEDOWN: i32 = 367;
 
+type NavigationHandler = Box<dyn Fn(&str) -> bool>;
+
 #[derive(Clone, Debug)]
 pub struct OptionsDialogResult {
 	pub flags: OptionsDialogFlags,
@@ -1862,7 +1864,7 @@ pub fn show_web_view_dialog(
 	title: &str,
 	url_or_content: &str,
 	is_url: bool,
-	navigation_handler: Option<Box<dyn Fn(&str) -> bool>>,
+	navigation_handler: Option<NavigationHandler>,
 ) {
 	let dialog = Dialog::builder(parent, title).build();
 	let web_view = WebView::builder(&dialog).build();

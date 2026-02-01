@@ -397,8 +397,8 @@ fn show_error_dialog(parent: &dyn WxWidget, message: &str, title: &str) {
 }
 
 fn fill_text_ctrl(text_ctrl: TextCtrl, content: &str) {
-	text_ctrl.clear();
 	const CHUNK_SIZE: usize = 32 * 1024;
+	text_ctrl.clear();
 	let mut buf = String::new();
 	for ch in content.chars() {
 		buf.push(ch);
