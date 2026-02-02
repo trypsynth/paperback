@@ -1,4 +1,5 @@
 .claude/
 /target
-vcpkg/bin/
 web/_site/
+*.epub
+*.pdf

@@ -38,6 +38,7 @@
 	Name: "assoc_odt"; Description: "Associate with OpenDocument text files (*.odt)"; Flags: unchecked
 	Name: "assoc_pdf"; Description: "Associate with PDF Documents (*.pdf)"
 	Name: "assoc_pptx"; Description: "Associate with PowerPoint Presentations (*.pptx, *.pptm)"; Flags: unchecked
+	Name: "assoc_rtf"; Description: "Associate with RTF files (*.rtf)"
 	Name: "assoc_text"; Description: "Associate with Text Files (*.txt, *.log)"; Flags: unchecked
 
 [Icons]
@@ -81,6 +82,8 @@
 	; PowerPoint Presentations.
 	Root: HKCR; Subkey: ".pptx\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_pptx
 	Root: HKCR; Subkey: ".pptm\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_pptx
+	; RTF files.
+	Root: HKCR; Subkey: ".rtf\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_rtf
 	; Text Files.
 	Root: HKCR; Subkey: ".log\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_text
 	Root: HKCR; Subkey: ".txt\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_text
