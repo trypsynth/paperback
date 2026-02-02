@@ -8,6 +8,8 @@ Paperback is a lightweight, fast, and accessible ebook and document reader for e
 
 Paperback currently runs on Windows 10 and 11, with support for macOS and Linux in the pipeline.
 
+**Linux:** Any modern distribution with glibc 2.38+ (e.g., Ubuntu 24.04+, Fedora 39+, Arch Linux). Alternatively, use the Flatpak version for broader compatibility with older distributions.
+
 ## Features
 
 * Completely standalone, not requiring any software to be installed on your computer to start reading.
