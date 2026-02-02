@@ -17,9 +17,13 @@ mod version;
 mod xml_to_text;
 
 use ui::PaperbackApp;
+use wxdragon::prelude::{Appearance, SystemOptions, set_appearance};
 
 fn main() {
+	SystemOptions::set_option_by_int("msw.no-manifest-check", 1);
 	let _ = wxdragon::main(|app| {
+		// Allow the app to follow the OS dark/light mode setting.
+		let _ = set_appearance(Appearance::System);
 		let app_state = PaperbackApp::new(app);
 		let _ = Box::leak(Box::new(app_state));
 	});
