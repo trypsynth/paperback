@@ -118,6 +118,9 @@ impl Device<'_> for TextExtractor {
 		_: &GlyphDrawMode,
 	) {
 		let Some(unicode_char) = glyph.as_unicode() else { return };
+		if unicode_char == '\0' {
+			return;
+		}
 		let position = transform * glyph_transform * Point::new(0.0, 0.0);
 		if let Some((last_x, last_y)) = self.last_pos {
 			let dy = (position.y - last_y).abs();
