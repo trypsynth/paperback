@@ -32,7 +32,7 @@ sha1 = "0.10.6"
 ureq = { version = "3.1.4", default-features = false, features = ["json", "rustls"] }
 wxdragon = { git = "https://github.com/AllenDang/wxDragon", branch = "main", version = "0.9.8", features = ["webview"] }
 wxdragon-sys = { git = "https://github.com/AllenDang/wxDragon", branch = "main", version = "0.9.8" }
-zip = { version = "7.2.0", default-features = false, features = ["deflate"] }
+zip = { version = "7.3.0", default-features = false, features = ["deflate"] }
 
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_System_Com", "Win32_UI_WindowsAndMessaging", "Win32_Foundation", "Win32_System_Ole", "Win32_System_Variant"] }
