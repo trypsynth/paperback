@@ -29,7 +29,7 @@ rtf-parser = "0.4.2"
 scraper = "0.25.0"
 serde = { version = "1.0.228", default-features = false, features = ["derive", "std"] }
 sha1 = "0.10.6"
-ureq = { version = "3.1.4", default-features = false, features = ["json", "rustls"] }
+ureq = { version = "3.2.0", default-features = false, features = ["json", "rustls"] }
 wxdragon = { git = "https://github.com/AllenDang/wxDragon", branch = "main", version = "0.9.8", features = ["webview"] }
 wxdragon-sys = { git = "https://github.com/AllenDang/wxDragon", branch = "main", version = "0.9.8" }
 zip = { version = "7.3.0", default-features = false, features = ["deflate"] }
