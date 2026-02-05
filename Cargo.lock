@@ -1058,6 +1058,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "11d3d7f243d5c5a8b9bb5d6dd2b1602c0cb0b9db1621bafc7ed66e35ff9fe092"
 
 [[package]]
+name = "live-region"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "215e1a0260684d4eb81c28abdfd38bdeba4840a68698b81a533893f1b66238c2"
+dependencies = [
+ "windows",
+ "wxdragon",
+]
+
+[[package]]
 name = "lock_api"
 version = "0.4.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1256,6 +1266,7 @@ dependencies = [
  "hayro-syntax",
  "kurbo",
  "libchm",
+ "live-region",
  "percent-encoding",
  "pulldown-cmark",
  "regex",
@@ -1516,7 +1527,7 @@ dependencies = [
  "once_cell",
  "socket2",
  "tracing",
- "windows-sys 0.52.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]

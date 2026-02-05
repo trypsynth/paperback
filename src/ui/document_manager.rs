@@ -12,7 +12,7 @@ use super::{
 	main_window::{SLEEP_TIMER_DURATION_MINUTES, SLEEP_TIMER_START_MS},
 	status,
 };
-use crate::{config::ConfigManager, live_region, parser::PASSWORD_REQUIRED_ERROR_PREFIX, session::DocumentSession};
+use crate::{config::ConfigManager, parser::PASSWORD_REQUIRED_ERROR_PREFIX, session::DocumentSession};
 
 pub struct DocumentTab {
 	pub panel: Panel,

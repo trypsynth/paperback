@@ -3,7 +3,7 @@ use std::{rc::Rc, sync::Mutex};
 use wxdragon::{prelude::*, translations::translate as t};
 
 use super::{dialogs, document_manager::DocumentManager};
-use crate::{config::ConfigManager, live_region, reader_core, session::NavigationResult, ui_types::BookmarkFilterType};
+use crate::{config::ConfigManager, reader_core, session::NavigationResult, ui_types::BookmarkFilterType};
 
 #[derive(Clone, Copy)]
 pub enum MarkerNavTarget {

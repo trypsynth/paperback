@@ -25,7 +25,6 @@ use super::{
 };
 use crate::{
 	config::ConfigManager,
-	live_region,
 	parser::{build_file_filter_string, parser_supports_extension},
 	translation_manager::TranslationManager,
 	ui_types::BookmarkFilterType,

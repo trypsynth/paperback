@@ -4,7 +4,7 @@ use bitflags::bitflags;
 use wxdragon::{prelude::*, translations::translate as t};
 
 use super::document_manager::DocumentManager;
-use crate::{config::ConfigManager, live_region, reader_core, utils::text::display_len};
+use crate::{config::ConfigManager, reader_core, utils::text::display_len};
 
 const DIALOG_PADDING: i32 = 10;
 const MAX_FIND_HISTORY_SIZE: usize = 10;
