@@ -7,6 +7,7 @@ use hayro_interpret::{
 };
 use hayro_syntax::{LoadPdfError, Pdf};
 use kurbo::{Affine, BezPath, Point};
+use wxdragon::translations::translate as t;
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
@@ -35,17 +36,29 @@ impl Parser for PdfParser {
 		let password = context.password.as_deref().unwrap_or_default();
 		let document = Pdf::new_with_password(Arc::new(data), password).map_err(map_load_error)?;
 		let mut buffer = DocumentBuffer::new();
+		let mut has_any_text = false;
+		let mut has_any_images = false;
 		for (page_index, page) in document.pages().iter().enumerate() {
 			let marker_position = buffer.current_position();
 			buffer.add_marker(
 				Marker::new(MarkerType::PageBreak, marker_position).with_text(format!("Page {}", page_index + 1)),
 			);
-			let raw_text = extract_page_text(&document, page);
-			let lines = process_text_lines(&raw_text);
+			let result = extract_page_text(&document, page);
+			has_any_images |= result.has_images;
+			let lines = process_text_lines(&result.text);
+			if !lines.is_empty() {
+				has_any_text = true;
+			}
 			for line in lines {
 				buffer.append(&line);
 				buffer.append("\n");
 			}
+		}
+		if !has_any_text && has_any_images {
+			let marker_position = buffer.current_position();
+			buffer.add_marker(Marker::new(MarkerType::PageBreak, marker_position).with_text(String::new()));
+			buffer.append(&t("This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."));
+			buffer.append("\n");
 		}
 		let metadata = document.metadata();
 		let title =
@@ -81,14 +94,19 @@ fn map_load_error(err: LoadPdfError) -> anyhow::Error {
 	}
 }
 
-fn extract_page_text(document: &Pdf, page: &hayro_syntax::page::Page<'_>) -> String {
+struct PageResult {
+	text: String,
+	has_images: bool,
+}
+
+fn extract_page_text(document: &Pdf, page: &hayro_syntax::page::Page<'_>) -> PageResult {
 	let settings = InterpreterSettings::default();
 	let bbox = page.intersected_crop_box().to_kurbo();
 	let initial_transform = page.initial_transform(true);
 	let mut context = Context::new(initial_transform, bbox, document.xref(), settings);
 	let mut extractor = TextExtractor::default();
 	interpret_page(page, &mut context, &mut extractor);
-	extractor.text
+	PageResult { text: extractor.text, has_images: extractor.has_images }
 }
 
 #[derive(Default)]
@@ -96,6 +114,7 @@ struct TextExtractor {
 	text: String,
 	last_pos: Option<(f64, f64)>,
 	avg_dx: Option<f64>,
+	has_images: bool,
 }
 
 impl Device<'_> for TextExtractor {
@@ -146,7 +165,9 @@ impl Device<'_> for TextExtractor {
 		self.last_pos = Some((position.x, position.y));
 	}
 
-	fn draw_image(&mut self, _: Image<'_, '_>, _: Affine) {}
+	fn draw_image(&mut self, _: Image<'_, '_>, _: Affine) {
+		self.has_images = true;
+	}
 
 	fn pop_clip_path(&mut self) {}
 

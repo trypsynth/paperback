@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.0\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-02-05 17:28-0700\n"
+"POT-Creation-Date: 2026-02-06 16:25-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,12 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#: C:\Users\Quin\git\paperback\src\parser\pdf.rs
+msgid ""
+"This PDF contains images only, with no extractable text. You may need to run "
+"it through OCR software to read its contents."
+msgstr ""
 
 #: C:\Users\Quin\git\paperback\src\ui\app.rs
 msgid "Failed to create IPC server"
@@ -211,6 +217,7 @@ msgid "&Line number:"
 msgstr ""
 
 #: C:\Users\Quin\git\paperback\src\ui\dialogs.rs
+#: C:\Users\Quin\git\paperback\src\ui\document_manager.rs
 msgid "Go to page"
 msgstr ""
 
@@ -394,6 +401,66 @@ msgstr ""
 
 #: C:\Users\Quin\git\paperback\src\ui\document_manager.rs
 msgid "Document Password"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\document_manager.rs
+msgid "Create &bookmark"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\document_manager.rs
+msgid "Create bookmark"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\document_manager.rs
+msgid "Bookmark with &note"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\document_manager.rs
+msgid "Create bookmark with note"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\document_manager.rs
+msgid "&Find"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\document_manager.rs
+msgid "Find text"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\document_manager.rs
+msgid "Find &next"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\document_manager.rs
+msgid "Find next match"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\document_manager.rs
+msgid "Find &previous"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\document_manager.rs
+msgid "Find previous match"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\document_manager.rs
+msgid "Go to &page"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\document_manager.rs
+msgid "Go to &line"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\document_manager.rs
+msgid "Go to line"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\document_manager.rs
+msgid "Go to &percent"
+msgstr ""
+
+#: C:\Users\Quin\git\paperback\src\ui\document_manager.rs
+msgid "Go to percent"
 msgstr ""
 
 #: C:\Users\Quin\git\paperback\src\ui\find.rs
