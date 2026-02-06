@@ -6,11 +6,15 @@ use std::{
 	time::Instant,
 };
 
-use wxdragon::{prelude::*, translations::translate as t};
+use wxdragon::{
+	event::{EventType, WindowEventData},
+	prelude::*,
+	translations::translate as t,
+};
 
 use super::{
 	main_window::{SLEEP_TIMER_DURATION_MINUTES, SLEEP_TIMER_START_MS},
-	status,
+	menu_ids, status,
 };
 use crate::{config::ConfigManager, parser::PASSWORD_REQUIRED_ERROR_PREFIX, session::DocumentSession};
 
@@ -22,6 +26,7 @@ pub struct DocumentTab {
 }
 
 const POSITION_SAVE_INTERVAL_SECS: u64 = 3;
+const WXK_F10: i32 = 349;
 
 pub struct DocumentManager {
 	frame: Frame,
@@ -316,6 +321,9 @@ impl DocumentManager {
 			let current_pos = old_ctrl.get_insertion_point();
 			let content = old_ctrl.get_value();
 			let text_ctrl = Self::build_text_ctrl(&tab.panel, word_wrap, self_rc);
+			let sizer = BoxSizer::builder(Orientation::Vertical).build();
+			sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
+			tab.panel.set_sizer(sizer, true);
 			fill_text_ctrl(text_ctrl, &content);
 			let max_pos = text_ctrl.get_last_position();
 			let pos = current_pos.clamp(0, max_pos);
@@ -347,7 +355,7 @@ impl DocumentManager {
 			}
 		});
 		let dm_for_key_up = Rc::clone(self_rc);
-		text_ctrl.bind_internal(wxdragon::event::EventType::KEY_UP, move |event| {
+		text_ctrl.bind_internal(EventType::KEY_UP, move |event| {
 			event.skip(true);
 			if let Ok(dm) = dm_for_key_up.try_lock() {
 				dm.update_status_bar();
@@ -362,9 +370,24 @@ impl DocumentManager {
 				dm.save_position_throttled();
 			}
 		});
-		let sizer = BoxSizer::builder(Orientation::Vertical).build();
-		sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
-		panel.set_sizer(sizer, true);
+		let text_ctrl_for_menu = text_ctrl;
+		text_ctrl.on_key_down(move |event| {
+			if let WindowEventData::Keyboard(kbd) = &event {
+				if let Some(key) = kbd.get_key_code() {
+					if key == WXK_F10 && kbd.shift_down() {
+						kbd.event.skip(false);
+						show_reader_context_menu(&text_ctrl_for_menu);
+						return;
+					}
+				}
+			}
+			event.skip(true);
+		});
+		let text_ctrl_for_menu = text_ctrl;
+		text_ctrl.bind_internal(EventType::CONTEXT_MENU, move |event| {
+			event.skip(false);
+			show_reader_context_menu(&text_ctrl_for_menu);
+		});
 		text_ctrl
 	}
 }
@@ -411,4 +434,21 @@ fn fill_text_ctrl(text_ctrl: TextCtrl, content: &str) {
 	if !buf.is_empty() {
 		text_ctrl.append_text(&buf);
 	}
+}
+
+fn show_reader_context_menu(text_ctrl: &TextCtrl) {
+	text_ctrl.set_focus();
+	let mut menu = Menu::builder()
+		.append_item(menu_ids::TOGGLE_BOOKMARK, &t("Create &bookmark"), &t("Create bookmark"))
+		.append_item(menu_ids::BOOKMARK_WITH_NOTE, &t("Bookmark with &note"), &t("Create bookmark with note"))
+		.append_separator()
+		.append_item(menu_ids::FIND, &t("&Find"), &t("Find text"))
+		.append_item(menu_ids::FIND_NEXT, &t("Find &next"), &t("Find next match"))
+		.append_item(menu_ids::FIND_PREVIOUS, &t("Find &previous"), &t("Find previous match"))
+		.append_separator()
+		.append_item(menu_ids::GO_TO_PAGE, &t("Go to &page"), &t("Go to page"))
+		.append_item(menu_ids::GO_TO_LINE, &t("Go to &line"), &t("Go to line"))
+		.append_item(menu_ids::GO_TO_PERCENT, &t("Go to &percent"), &t("Go to percent"))
+		.build();
+	text_ctrl.popup_menu(&mut menu, None);
 }
