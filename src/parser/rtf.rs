@@ -8,7 +8,7 @@ use rtf_parser::{
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
-	parser::{Parser, utils::extract_title_from_path},
+	parser::{Parser, path::extract_title_from_path},
 };
 
 pub struct RtfParser;

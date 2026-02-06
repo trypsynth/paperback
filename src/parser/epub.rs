@@ -14,15 +14,10 @@ use crate::{
 	html_to_text::{
 		HeadingInfo, HtmlSourceMode, HtmlToText, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo,
 	},
-	parser::{
-		Parser,
-		utils::{extract_title_from_path, heading_level_to_marker_type},
-	},
-	utils::{
-		text::{collapse_whitespace, trim_string, url_decode},
-		zip::read_zip_entry_by_name,
-	},
+	parser::{Parser, path::extract_title_from_path, toc::heading_level_to_marker_type},
+	text::{collapse_whitespace, trim_string, url_decode},
 	xml_to_text::XmlToText,
+	zip::read_zip_entry_by_name,
 };
 
 struct SectionContent {

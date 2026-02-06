@@ -28,7 +28,7 @@ use crate::{
 	ipc::IpcCommand,
 	parser::{build_file_filter_string, parser_supports_extension},
 	translation_manager::TranslationManager,
-	ui_types::BookmarkFilterType,
+	types::BookmarkFilterType,
 };
 
 const KEY_DELETE: i32 = 127;
@@ -1023,8 +1023,9 @@ impl MainWindow {
 					drop(cfg);
 					let options_word_wrap = options.flags.contains(OptionsDialogFlags::WORD_WRAP);
 					if old_word_wrap != options_word_wrap {
+						let dm_for_wrap = Rc::clone(&dm);
 						let mut dm_ref = dm.lock().unwrap();
-						dm_ref.apply_word_wrap(options_word_wrap);
+						dm_ref.apply_word_wrap(&dm_for_wrap, options_word_wrap);
 						dm_ref.restore_focus();
 					}
 					let options_compact_menu = options.flags.contains(OptionsDialogFlags::COMPACT_GO_MENU);

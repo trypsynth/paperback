@@ -18,8 +18,8 @@ use super::{dialogs, document_manager::DocumentManager};
 use crate::{
 	config::ConfigManager,
 	parser,
+	text::markdown_to_text,
 	update::{self, UpdateCheckOutcome, UpdateError},
-	utils::text::markdown_to_text,
 };
 
 pub static MAIN_WINDOW_PTR: AtomicUsize = AtomicUsize::new(0);

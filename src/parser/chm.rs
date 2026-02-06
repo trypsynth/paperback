@@ -6,12 +6,9 @@ use scraper::{ElementRef, Html, Selector};
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
+	encoding::convert_to_utf8,
 	html_to_text::{HtmlSourceMode, HtmlToText},
-	parser::{
-		Parser,
-		utils::{extract_title_from_path, heading_level_to_marker_type},
-	},
-	utils::encoding::convert_to_utf8,
+	parser::{Parser, path::extract_title_from_path, toc::heading_level_to_marker_type},
 };
 
 pub struct ChmParser;

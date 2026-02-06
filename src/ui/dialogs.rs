@@ -24,7 +24,7 @@ use crate::{
 	reader_core,
 	session::DocumentSession,
 	translation_manager::TranslationManager,
-	ui_types::{BookmarkDisplayEntry, BookmarkFilterType, DocumentListStatus},
+	types::{BookmarkDisplayEntry, BookmarkFilterType, DocumentListStatus},
 };
 
 const DIALOG_PADDING: i32 = 10;

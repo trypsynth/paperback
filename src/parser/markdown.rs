@@ -3,12 +3,15 @@ use std::fs;
 use anyhow::{Context, Result};
 use pulldown_cmark::{Options, Parser as MarkdownParserImpl, html::push_html};
 
-use super::utils::{build_toc_from_headings, extract_title_from_path, heading_level_to_marker_type};
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
+	encoding::convert_to_utf8,
 	html_to_text::{HtmlSourceMode, HtmlToText},
-	parser::Parser,
-	utils::encoding::convert_to_utf8,
+	parser::{
+		Parser,
+		path::extract_title_from_path,
+		toc::{build_toc_from_headings, heading_level_to_marker_type},
+	},
 };
 
 pub struct MarkdownParser;

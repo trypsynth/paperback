@@ -4,7 +4,7 @@ use bitflags::bitflags;
 use ego_tree::NodeRef;
 use scraper::{ElementRef, Html, Node, node};
 
-use crate::utils::text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string};
+use crate::text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string};
 
 bitflags! {
 	#[derive(Default, Clone, Copy)]

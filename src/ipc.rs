@@ -1,4 +1,7 @@
-use std::{env, path::{Path, PathBuf}};
+use std::{
+	env,
+	path::{Path, PathBuf},
+};
 
 pub const IPC_SERVICE: &str = "4242";
 pub const IPC_TOPIC_OPEN_FILE: &str = "open_file";

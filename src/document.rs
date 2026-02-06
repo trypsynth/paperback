@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use bitflags::bitflags;
 
-use crate::utils::text::{display_len, is_space_like};
+use crate::text::{display_len, is_space_like};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(i32)]

@@ -13,6 +13,8 @@ use base64::{
 use sha1::{Digest, Sha1};
 use wxdragon::config::{Config, ConfigStyle};
 
+use crate::types::DocumentListItem;
+
 const CONFIG_VERSION_LEGACY: i64 = 0;
 const CONFIG_VERSION_1: i64 = 1;
 const CONFIG_VERSION_2: i64 = 2;
@@ -828,12 +830,8 @@ impl Drop for ConfigManager {
 	}
 }
 
-pub fn get_sorted_document_list(
-	config: &ConfigManager,
-	open_paths: &[String],
-	filter: &str,
-) -> Vec<crate::ui_types::DocumentListItem> {
-	use crate::ui_types::{DocumentListItem, DocumentListStatus};
+pub fn get_sorted_document_list(config: &ConfigManager, open_paths: &[String], filter: &str) -> Vec<DocumentListItem> {
+	use crate::types::{DocumentListItem, DocumentListStatus};
 
 	let recent_docs = config.get_recent_documents();
 	let all_docs = config.get_all_documents();

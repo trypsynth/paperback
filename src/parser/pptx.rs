@@ -8,10 +8,9 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
 	html_to_text::LinkInfo,
 	parser::{
-		Parser,
-		utils::{collect_text_from_tagged_elements, extract_title_from_path, read_ooxml_relationships},
+		Parser, ooxml::read_ooxml_relationships, path::extract_title_from_path, xml::collect_text_from_tagged_elements,
 	},
-	utils::zip::read_zip_entry_by_name,
+	zip::read_zip_entry_by_name,
 };
 
 pub struct PptxParser;

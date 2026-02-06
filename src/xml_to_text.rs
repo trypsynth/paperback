@@ -4,8 +4,8 @@ use roxmltree::{Document, Node, NodeType, ParsingOptions};
 
 use crate::{
 	html_to_text::{HeadingInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
-	parser::utils::collect_element_text,
-	utils::text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string},
+	parser::xml::collect_element_text,
+	text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string},
 };
 
 #[derive(Clone)]

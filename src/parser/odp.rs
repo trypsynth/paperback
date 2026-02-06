@@ -7,11 +7,8 @@ use zip::ZipArchive;
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
 	html_to_text::LinkInfo,
-	parser::{
-		Parser,
-		utils::{collect_element_text, extract_title_from_path},
-	},
-	utils::zip::read_zip_entry_by_name,
+	parser::{Parser, path::extract_title_from_path, xml::collect_element_text},
+	zip::read_zip_entry_by_name,
 };
 
 pub struct OdpParser;

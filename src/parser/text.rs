@@ -4,8 +4,9 @@ use anyhow::{Context, Result};
 
 use crate::{
 	document::{Document, DocumentBuffer, ParserContext, ParserFlags},
-	parser::{Parser, utils::extract_title_from_path},
-	utils::{encoding::convert_to_utf8, text::remove_soft_hyphens},
+	encoding::convert_to_utf8,
+	parser::{Parser, path::extract_title_from_path},
+	text::remove_soft_hyphens,
 };
 
 pub struct TextParser;

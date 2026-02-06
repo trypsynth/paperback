@@ -5,7 +5,7 @@ use crate::{
 	config::{Bookmark, ConfigManager as RustConfigManager},
 	document::{DocumentHandle, MarkerType},
 	html_to_text::HeadingInfo,
-	ui_types as ffi,
+	types as ffi,
 };
 
 fn heading_info(doc: &DocumentHandle, idx: i32) -> Option<HeadingInfo> {

@@ -10,8 +10,8 @@ use kurbo::{Affine, BezPath, Point};
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
-	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, Parser, utils::extract_title_from_path},
-	utils::text::{collapse_whitespace, trim_string},
+	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, Parser, path::extract_title_from_path},
+	text::{collapse_whitespace, trim_string},
 };
 
 pub struct PdfParser;

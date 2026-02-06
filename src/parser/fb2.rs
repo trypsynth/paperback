@@ -7,7 +7,8 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
 	parser::{
 		Parser,
-		utils::{collect_element_text, find_child_element, heading_level_to_marker_type},
+		toc::heading_level_to_marker_type,
+		xml::{collect_element_text, find_child_element},
 	},
 	xml_to_text::XmlToText,
 };

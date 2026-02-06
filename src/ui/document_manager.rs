@@ -110,40 +110,7 @@ impl DocumentManager {
 		let config = self.config.lock().unwrap();
 		let mut session = session;
 		let word_wrap = config.get_app_bool("word_wrap", false);
-		let style = TextCtrlStyle::MultiLine
-			| TextCtrlStyle::ReadOnly
-			| TextCtrlStyle::Rich2
-			| if word_wrap { TextCtrlStyle::WordWrap } else { TextCtrlStyle::DontWrap };
-		let text_ctrl = TextCtrl::builder(&panel).with_style(style).build();
-		let dm_for_enter = Rc::clone(self_rc);
-		text_ctrl.on_char(move |event| {
-			if let WindowEventData::Keyboard(kbd) = event {
-				if kbd.get_key_code() == Some(13) {
-					// 13 is KEY_RETURN
-					let mut dm = dm_for_enter.lock().unwrap();
-					dm.activate_current_table();
-					dm.activate_current_link();
-				} else {
-					kbd.event.skip(true);
-				}
-			}
-		});
-		let dm_for_key_up = Rc::clone(self_rc);
-		text_ctrl.bind_internal(wxdragon::event::EventType::KEY_UP, move |event| {
-			event.skip(true);
-			if let Ok(dm) = dm_for_key_up.try_lock() {
-				dm.update_status_bar();
-				dm.save_position_throttled();
-			}
-		});
-		let dm_for_mouse = Rc::clone(self_rc);
-		text_ctrl.bind_internal(wxdragon::event::EventType::LEFT_UP, move |event| {
-			event.skip(true);
-			if let Ok(dm) = dm_for_mouse.try_lock() {
-				dm.update_status_bar();
-				dm.save_position_throttled();
-			}
-		});
+		let text_ctrl = Self::build_text_ctrl(&panel, word_wrap, self_rc);
 		let sizer = BoxSizer::builder(Orientation::Vertical).build();
 		sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
 		panel.set_sizer(sizer, true);
@@ -343,19 +310,12 @@ impl DocumentManager {
 		}
 	}
 
-	pub fn apply_word_wrap(&mut self, word_wrap: bool) {
+	pub fn apply_word_wrap(&mut self, self_rc: &Rc<Mutex<Self>>, word_wrap: bool) {
 		for tab in &mut self.tabs {
 			let old_ctrl = tab.text_ctrl;
 			let current_pos = old_ctrl.get_insertion_point();
 			let content = old_ctrl.get_value();
-			let style = TextCtrlStyle::MultiLine
-				| TextCtrlStyle::ReadOnly
-				| TextCtrlStyle::Rich2
-				| if word_wrap { TextCtrlStyle::WordWrap } else { TextCtrlStyle::DontWrap };
-			let text_ctrl = TextCtrl::builder(&tab.panel).with_style(style).build();
-			let sizer = BoxSizer::builder(Orientation::Vertical).build();
-			sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
-			tab.panel.set_sizer(sizer, true);
+			let text_ctrl = Self::build_text_ctrl(&tab.panel, word_wrap, self_rc);
 			fill_text_ctrl(text_ctrl, &content);
 			let max_pos = text_ctrl.get_last_position();
 			let pos = current_pos.clamp(0, max_pos);
@@ -365,6 +325,47 @@ impl DocumentManager {
 			old_ctrl.destroy();
 			tab.text_ctrl = text_ctrl;
 		}
+	}
+
+	fn build_text_ctrl(panel: &Panel, word_wrap: bool, self_rc: &Rc<Mutex<Self>>) -> TextCtrl {
+		let style = TextCtrlStyle::MultiLine
+			| TextCtrlStyle::ReadOnly
+			| TextCtrlStyle::Rich2
+			| if word_wrap { TextCtrlStyle::WordWrap } else { TextCtrlStyle::DontWrap };
+		let text_ctrl = TextCtrl::builder(panel).with_style(style).build();
+		let dm_for_enter = Rc::clone(self_rc);
+		text_ctrl.on_char(move |event| {
+			if let WindowEventData::Keyboard(kbd) = event {
+				if kbd.get_key_code() == Some(13) {
+					// 13 is KEY_RETURN
+					let mut dm = dm_for_enter.lock().unwrap();
+					dm.activate_current_table();
+					dm.activate_current_link();
+				} else {
+					kbd.event.skip(true);
+				}
+			}
+		});
+		let dm_for_key_up = Rc::clone(self_rc);
+		text_ctrl.bind_internal(wxdragon::event::EventType::KEY_UP, move |event| {
+			event.skip(true);
+			if let Ok(dm) = dm_for_key_up.try_lock() {
+				dm.update_status_bar();
+				dm.save_position_throttled();
+			}
+		});
+		let dm_for_mouse = Rc::clone(self_rc);
+		text_ctrl.bind_internal(wxdragon::event::EventType::LEFT_UP, move |event| {
+			event.skip(true);
+			if let Ok(dm) = dm_for_mouse.try_lock() {
+				dm.update_status_bar();
+				dm.save_position_throttled();
+			}
+		});
+		let sizer = BoxSizer::builder(Orientation::Vertical).build();
+		sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
+		panel.set_sizer(sizer, true);
+		text_ctrl
 	}
 }
 
