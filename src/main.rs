@@ -4,6 +4,7 @@
 mod config;
 mod document;
 mod html_to_text;
+mod ipc;
 mod parser;
 mod reader_core;
 mod session;

@@ -25,6 +25,7 @@ use super::{
 };
 use crate::{
 	config::ConfigManager,
+	ipc::IpcCommand,
 	parser::{build_file_filter_string, parser_supports_extension},
 	translation_manager::TranslationManager,
 	ui_types::BookmarkFilterType,
@@ -154,6 +155,26 @@ impl MainWindow {
 			self.doc_manager.lock().unwrap().restore_focus();
 		}
 		result
+	}
+
+	pub fn handle_ipc_command(&self, command: IpcCommand) {
+		match command {
+			IpcCommand::Activate => {
+				self.activate_from_ipc();
+			}
+			IpcCommand::OpenFile(path) => {
+				if self.open_file(&path) {
+					self.activate_from_ipc();
+				}
+			}
+		}
+	}
+
+	fn activate_from_ipc(&self) {
+		self.frame.show(true);
+		self.frame.iconize(false);
+		self.frame.raise();
+		self.doc_manager.lock().unwrap().restore_focus();
 	}
 
 	fn update_title(&self) {
