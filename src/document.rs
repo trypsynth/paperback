@@ -341,11 +341,7 @@ impl DocumentHandle {
 		let idx = usize::try_from(heading_index).ok()?;
 		let heading_markers = self.heading_markers(None);
 		let (_, marker) = heading_markers.get(idx)?;
-		Some(crate::types::HeadingInfo {
-			offset: marker.position,
-			level: marker.level,
-			text: marker.text.clone(),
-		})
+		Some(crate::types::HeadingInfo { offset: marker.position, level: marker.level, text: marker.text.clone() })
 	}
 
 	#[must_use]
