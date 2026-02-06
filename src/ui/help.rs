@@ -5,7 +5,7 @@ use std::{
 	env,
 	os::windows::process::CommandExt,
 	path::{Path, PathBuf},
-	process::Command,
+	process::{self, Command},
 	rc::Rc,
 	sync::{
 		Arc, Mutex,
@@ -72,7 +72,7 @@ pub fn handle_open_containing_folder(frame: &Frame, doc_manager: &Rc<Mutex<Docum
 		.unwrap()
 		.active_tab()
 		.and_then(|tab| tab.file_path.parent())
-		.map(std::path::Path::to_path_buf);
+		.map(Path::to_path_buf);
 	let Some(dir) = dir else {
 		show_error_message(frame, &t("Failed to open containing folder."), &t("Error"));
 		return;
@@ -162,15 +162,12 @@ fn present_update_result(outcome: Result<UpdateCheckOutcome, UpdateError>, silen
 									| ProgressDialogStyle::RemainingTime,
 							)
 							.build();
-
 					ACTIVE_PROGRESS.with(|p| {
 						*p.borrow_mut() = Some(progress);
 					});
-
 					let downloaded = Arc::new(AtomicU64::new(0));
 					let total = Arc::new(AtomicU64::new(0));
 					let is_running = Arc::new(AtomicBool::new(true));
-
 					// Heartbeat thread to keep UI alive
 					let hb_downloaded = downloaded.clone();
 					let hb_total = total.clone();
@@ -194,7 +191,6 @@ fn present_update_result(outcome: Result<UpdateCheckOutcome, UpdateError>, silen
 							thread::sleep(Duration::from_millis(200));
 						}
 					});
-
 					// Download thread
 					let d_downloaded = downloaded;
 					let d_total = total;
@@ -204,7 +200,6 @@ fn present_update_result(outcome: Result<UpdateCheckOutcome, UpdateError>, silen
 							d_downloaded.store(d, Ordering::Relaxed);
 							d_total.store(t, Ordering::Relaxed);
 						});
-
 						d_is_running.store(false, Ordering::Relaxed);
 						wxdragon::call_after(Box::new(move || {
 							ACTIVE_PROGRESS.with(|p| {
@@ -261,12 +256,11 @@ fn present_update_result(outcome: Result<UpdateCheckOutcome, UpdateError>, silen
 	}
 }
 
-fn execute_update(result: Result<std::path::PathBuf, UpdateError>) {
+fn execute_update(result: Result<PathBuf, UpdateError>) {
 	let parent_window = main_window_parent();
 	let Some(parent) = parent_window.as_ref() else {
 		return;
 	};
-
 	match result {
 		Ok(path) => {
 			let path_str = path.to_string_lossy();
@@ -282,9 +276,9 @@ fn execute_update(result: Result<std::path::PathBuf, UpdateError>) {
 					dlg.show_modal();
 					return;
 				}
-				std::process::exit(0);
+				process::exit(0);
 			} else if path_str.ends_with(".zip") {
-				let current_exe = match std::env::current_exe() {
+				let current_exe = match env::current_exe() {
 					Ok(p) => p,
 					Err(e) => {
 						let dlg = MessageDialog::builder(
@@ -299,8 +293,7 @@ fn execute_update(result: Result<std::path::PathBuf, UpdateError>) {
 					}
 				};
 				let exe_dir = current_exe.parent().unwrap_or(&current_exe);
-
-				let pid = std::process::id();
+				let pid = process::id();
 				let script = format!(
 					"Start-Sleep -Seconds 1; Wait-Process -Id {}; Expand-Archive -Path '{}' -DestinationPath '{}' -Force; Remove-Item -Path '{}' -Force; Start-Process '{}'",
 					pid,
@@ -309,7 +302,6 @@ fn execute_update(result: Result<std::path::PathBuf, UpdateError>) {
 					path.display(),
 					current_exe.display()
 				);
-
 				if let Err(e) = Command::new("powershell.exe")
 					.arg("-NoProfile")
 					.arg("-ExecutionPolicy")
@@ -329,7 +321,7 @@ fn execute_update(result: Result<std::path::PathBuf, UpdateError>) {
 					dlg.show_modal();
 					return;
 				}
-				std::process::exit(0);
+				process::exit(0);
 			} else {
 				let dlg = MessageDialog::builder(parent, &t("Unknown update file format."), &t("Error"))
 					.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError)

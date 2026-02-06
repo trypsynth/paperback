@@ -321,12 +321,10 @@ impl DocumentManager {
 			let pos = current_pos.clamp(0, max_pos);
 			text_ctrl.set_insertion_point(pos);
 			text_ctrl.show_position(pos);
-
 			let sizer = BoxSizer::builder(Orientation::Vertical).build();
 			sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
 			tab.panel.set_sizer(sizer, true);
 			tab.panel.layout();
-
 			old_ctrl.destroy();
 			tab.text_ctrl = text_ctrl;
 		}
