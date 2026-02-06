@@ -1,6 +1,8 @@
 use std::{
 	error::Error,
 	fmt::{Display, Formatter, Result as FmtResult},
+	fs::File,
+	io::Read,
 	time::Duration,
 };
 
@@ -59,6 +61,64 @@ impl Display for UpdateError {
 }
 
 impl Error for UpdateError {}
+
+pub fn download_update_file(
+	url: &str,
+	mut progress_callback: impl FnMut(u64, u64),
+) -> Result<std::path::PathBuf, UpdateError> {
+	let user_agent = version::user_agent();
+	let config = Config::builder()
+		.timeout_connect(Some(Duration::from_secs(30)))
+		.timeout_global(Some(Duration::from_secs(600)))
+		.build();
+	let agent = Agent::new_with_config(config);
+	let resp = agent.get(url).header("User-Agent", &user_agent).call().map_err(|err| match err {
+		ureq::Error::StatusCode(code) => UpdateError::HttpError(i32::from(code)),
+		_ => UpdateError::NetworkError(format!("Network error: {err}")),
+	})?;
+
+	let total_size = resp
+		.headers()
+		.get("Content-Length")
+		.and_then(|v| v.to_str().ok())
+		.and_then(|v| v.parse::<u64>().ok())
+		.unwrap_or(0);
+	let fname = url.rsplit('/').next().unwrap_or("update.bin");
+	let mut dest_path = if fname.ends_with(".exe") {
+		std::env::temp_dir()
+	} else if fname.ends_with(".zip") {
+		std::env::current_exe()
+			.map_err(|e| UpdateError::NoDownload(format!("Failed to determine exe path: {e}")))?
+			.parent()
+			.ok_or_else(|| UpdateError::NoDownload("Failed to get exe directory".to_string()))?
+			.to_path_buf()
+	} else {
+		std::env::temp_dir()
+	};
+
+	dest_path.push(fname);
+
+	let mut file =
+		File::create(&dest_path).map_err(|e| UpdateError::NoDownload(format!("Failed to create file: {e}")))?;
+
+	let mut downloaded: u64 = 0;
+	let mut buffer = [0; 8192];
+	let mut body = resp.into_body();
+	let mut reader = body.as_reader();
+
+	loop {
+		let n = reader.read(&mut buffer).map_err(|e| UpdateError::NetworkError(e.to_string()))?;
+		if n == 0 {
+			break;
+		}
+		std::io::Write::write_all(&mut file, &buffer[..n])
+			.map_err(|e| UpdateError::NoDownload(format!("Failed to write to file: {e}")))?;
+		downloaded += n as u64;
+		progress_callback(downloaded, total_size);
+	}
+
+	Ok(dest_path)
+}
 
 fn parse_semver_value(value: &str) -> Option<(u64, u64, u64)> {
 	let trimmed = value.trim();
