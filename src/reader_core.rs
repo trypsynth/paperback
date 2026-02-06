@@ -4,8 +4,7 @@ use regex::RegexBuilder;
 use crate::{
 	config::{Bookmark, ConfigManager as RustConfigManager},
 	document::{DocumentHandle, MarkerType},
-	html_to_text::HeadingInfo,
-	types as ffi,
+	types::{self as ffi, HeadingInfo},
 };
 
 fn heading_info(doc: &DocumentHandle, idx: i32) -> Option<HeadingInfo> {

@@ -17,6 +17,47 @@ pub enum NavTarget {
 }
 
 #[derive(Debug, Clone)]
+pub struct HeadingInfo {
+	pub offset: usize,
+	pub level: i32,
+	pub text: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct LinkInfo {
+	pub offset: usize,
+	pub text: String,
+	pub reference: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct ListInfo {
+	pub offset: usize,
+	pub item_count: i32,
+}
+
+#[derive(Debug, Clone)]
+pub struct ListItemInfo {
+	pub offset: usize,
+	pub level: i32,
+	pub text: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct TableInfo {
+	pub offset: usize,
+	pub text: String,
+	pub html_content: String,
+	pub length: usize,
+}
+
+#[derive(Debug, Clone)]
+pub struct SeparatorInfo {
+	pub offset: usize,
+	pub length: usize,
+}
+
+#[derive(Debug, Clone)]
 pub struct NavRequest {
 	pub position: i64,
 	pub wrap: bool,

@@ -337,11 +337,11 @@ impl DocumentHandle {
 	}
 
 	#[must_use]
-	pub fn heading_info(&self, heading_index: i32) -> Option<crate::html_to_text::HeadingInfo> {
+	pub fn heading_info(&self, heading_index: i32) -> Option<crate::types::HeadingInfo> {
 		let idx = usize::try_from(heading_index).ok()?;
 		let heading_markers = self.heading_markers(None);
 		let (_, marker) = heading_markers.get(idx)?;
-		Some(crate::html_to_text::HeadingInfo {
+		Some(crate::types::HeadingInfo {
 			offset: marker.position,
 			level: marker.level,
 			text: marker.text.clone(),

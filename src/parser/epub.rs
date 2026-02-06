@@ -11,11 +11,10 @@ use zip::ZipArchive;
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
-	html_to_text::{
-		HeadingInfo, HtmlSourceMode, HtmlToText, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo,
-	},
+	html_to_text::{HtmlSourceMode, HtmlToText},
 	parser::{Parser, path::extract_title_from_path, toc::heading_level_to_marker_type},
 	text::{collapse_whitespace, trim_string, url_decode},
+	types::{HeadingInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
 	xml_to_text::XmlToText,
 	zip::read_zip_entry_by_name,
 };

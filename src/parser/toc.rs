@@ -1,6 +1,6 @@
 use crate::{
 	document::{DocumentBuffer, MarkerType, TocItem},
-	html_to_text::HeadingInfo,
+	types::HeadingInfo,
 };
 
 fn children_at_mut<'a>(toc: &'a mut Vec<TocItem>, path: &[usize]) -> &'a mut Vec<TocItem> {

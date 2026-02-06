@@ -6,7 +6,6 @@ use zip::ZipArchive;
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
-	html_to_text::HeadingInfo,
 	parser::{
 		Parser,
 		ooxml::{collect_ooxml_run_text, read_ooxml_relationships},
@@ -14,6 +13,7 @@ use crate::{
 		toc::{build_toc_from_buffer, heading_level_to_marker_type},
 		xml::find_child_element,
 	},
+	types::HeadingInfo,
 	zip::read_zip_entry_by_name,
 };
 

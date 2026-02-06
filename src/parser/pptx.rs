@@ -6,10 +6,10 @@ use zip::ZipArchive;
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
-	html_to_text::LinkInfo,
 	parser::{
 		Parser, ooxml::read_ooxml_relationships, path::extract_title_from_path, xml::collect_text_from_tagged_elements,
 	},
+	types::LinkInfo,
 	zip::read_zip_entry_by_name,
 };
 
