@@ -509,3 +509,46 @@ impl crate::parser::ConverterOutput for XmlToText {
 		&self.list_items
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn test_link_collection() {
+		let xml = "<root><body><a href=\"https://example.com\">Hello   world</a></body></root>";
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(xml));
+		let links = converter.get_links();
+		assert_eq!(links.len(), 1);
+		assert_eq!(links[0].text, "Hello world");
+		assert_eq!(links[0].reference, "https://example.com");
+		assert_eq!(converter.get_text(), "Hello world");
+	}
+
+	#[test]
+	fn test_heading_normalization() {
+		let xml = "<root><body><h2>  Hello \n world </h2></body></root>";
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(xml));
+		let headings = converter.get_headings();
+		assert_eq!(headings.len(), 1);
+		assert_eq!(headings[0].level, 2);
+		assert_eq!(headings[0].text, "Hello world");
+	}
+
+	#[test]
+	fn test_ordered_list_metadata() {
+		let xml = "<root><body><ol start=\"2\"><li>One</li><li>Two</li></ol></body></root>";
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(xml));
+		let lists = converter.get_lists();
+		let items = converter.get_list_items();
+		assert_eq!(lists.len(), 1);
+		assert_eq!(lists[0].item_count, 2);
+		assert_eq!(items.len(), 2);
+		assert_eq!(items[0].level, 1);
+		assert_eq!(items[0].text, "One");
+		assert_eq!(items[1].text, "Two");
+	}
+}

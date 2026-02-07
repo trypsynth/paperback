@@ -21,6 +21,8 @@ mod tests {
 		assert_eq!(extract_title_from_path("/home/quin/books/worm.epub"), "worm");
 		assert_eq!(extract_title_from_path("C:\\Users\\Quin\\Desktop\\file.log"), "file");
 		assert_eq!(extract_title_from_path("/path/with/trailing/slash/"), "Untitled");
+		assert_eq!(extract_title_from_path("C:\\path\\with\\trailing\\slash\\"), "Untitled");
+		assert_eq!(extract_title_from_path("  spaced.txt  "), "spaced");
 		assert_eq!(extract_title_from_path(""), "Untitled");
 	}
 }

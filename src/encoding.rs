@@ -140,4 +140,22 @@ mod tests {
 		assert!(result.contains("Test"));
 		assert!(result.contains("String"));
 	}
+
+	#[test]
+	fn test_utf32le_with_bom() {
+		let input = b"\xFF\xFE\x00\x00H\x00\x00\x00i\x00\x00\x00";
+		assert_eq!(convert_to_utf8(input), "Hi");
+	}
+
+	#[test]
+	fn test_utf32be_with_bom() {
+		let input = b"\x00\x00\xFE\xFF\x00\x00\x00H\x00\x00\x00i";
+		assert_eq!(convert_to_utf8(input), "Hi");
+	}
+
+	#[test]
+	fn test_empty_input() {
+		let input = b"";
+		assert_eq!(convert_to_utf8(input), "");
+	}
 }

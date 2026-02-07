@@ -606,3 +606,54 @@ impl crate::parser::ConverterOutput for HtmlToText {
 		&self.list_items
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn test_title_and_text() {
+		let html = "<html><head><title>  Hello   World </title></head><body><p>Hi</p></body></html>";
+		let mut converter = HtmlToText::new();
+		assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
+		assert_eq!(converter.get_title(), "Hello World");
+		assert_eq!(converter.get_text(), "Hi");
+	}
+
+	#[test]
+	fn test_link_collection() {
+		let html = "<html><body><a href=\"https://example.com\">Hello   world</a></body></html>";
+		let mut converter = HtmlToText::new();
+		assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
+		let links = converter.get_links();
+		assert_eq!(links.len(), 1);
+		assert_eq!(links[0].text, "Hello world");
+		assert_eq!(links[0].reference, "https://example.com");
+		assert_eq!(converter.get_text(), "Hello world");
+	}
+
+	#[test]
+	fn test_ordered_list_metadata() {
+		let html = "<html><body><ol start=\"3\" type=\"a\"><li>First</li><li>Second</li></ol></body></html>";
+		let mut converter = HtmlToText::new();
+		assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
+		let lists = converter.get_lists();
+		let items = converter.get_list_items();
+		assert_eq!(lists.len(), 1);
+		assert_eq!(lists[0].item_count, 2);
+		assert_eq!(items.len(), 2);
+		assert_eq!(items[0].level, 1);
+		assert_eq!(items[0].text, "First");
+		assert_eq!(items[1].text, "Second");
+	}
+
+	#[test]
+	fn test_table_caption_fallback() {
+		let html = "<html><body><table><tr><td>Header</td></tr></table></body></html>";
+		let mut converter = HtmlToText::new();
+		assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
+		let tables = converter.get_tables();
+		assert_eq!(tables.len(), 1);
+		assert_eq!(tables[0].text, "Header");
+	}
+}
