@@ -3,6 +3,91 @@ use wxdragon::{prelude::*, translations::translate as t};
 use super::menu_ids;
 use crate::config::ConfigManager;
 
+/// IDs of menu items that require an open document.
+const DOCUMENT_DEPENDENT_IDS: &[i32] = &[
+	// File
+	menu_ids::CLOSE,
+	menu_ids::CLOSE_ALL,
+	// Find
+	menu_ids::FIND,
+	menu_ids::FIND_NEXT,
+	menu_ids::FIND_PREVIOUS,
+	// Navigation
+	menu_ids::GO_TO_LINE,
+	menu_ids::GO_TO_PERCENT,
+	menu_ids::GO_TO_PAGE,
+	menu_ids::GO_BACK,
+	menu_ids::GO_FORWARD,
+	// Sections
+	menu_ids::PREVIOUS_SECTION,
+	menu_ids::NEXT_SECTION,
+	// Headings
+	menu_ids::PREVIOUS_HEADING,
+	menu_ids::NEXT_HEADING,
+	menu_ids::PREVIOUS_HEADING_1,
+	menu_ids::NEXT_HEADING_1,
+	menu_ids::PREVIOUS_HEADING_2,
+	menu_ids::NEXT_HEADING_2,
+	menu_ids::PREVIOUS_HEADING_3,
+	menu_ids::NEXT_HEADING_3,
+	menu_ids::PREVIOUS_HEADING_4,
+	menu_ids::NEXT_HEADING_4,
+	menu_ids::PREVIOUS_HEADING_5,
+	menu_ids::NEXT_HEADING_5,
+	menu_ids::PREVIOUS_HEADING_6,
+	menu_ids::NEXT_HEADING_6,
+	// Pages
+	menu_ids::PREVIOUS_PAGE,
+	menu_ids::NEXT_PAGE,
+	// Bookmarks / Notes
+	menu_ids::PREVIOUS_BOOKMARK,
+	menu_ids::NEXT_BOOKMARK,
+	menu_ids::PREVIOUS_NOTE,
+	menu_ids::NEXT_NOTE,
+	menu_ids::JUMP_TO_ALL_BOOKMARKS,
+	menu_ids::JUMP_TO_BOOKMARKS_ONLY,
+	menu_ids::JUMP_TO_NOTES_ONLY,
+	menu_ids::VIEW_NOTE_TEXT,
+	// Links
+	menu_ids::PREVIOUS_LINK,
+	menu_ids::NEXT_LINK,
+	// Tables
+	menu_ids::PREVIOUS_TABLE,
+	menu_ids::NEXT_TABLE,
+	// Separators
+	menu_ids::PREVIOUS_SEPARATOR,
+	menu_ids::NEXT_SEPARATOR,
+	// Lists
+	menu_ids::PREVIOUS_LIST,
+	menu_ids::NEXT_LIST,
+	menu_ids::PREVIOUS_LIST_ITEM,
+	menu_ids::NEXT_LIST_ITEM,
+	// Tools
+	menu_ids::WORD_COUNT,
+	menu_ids::DOCUMENT_INFO,
+	menu_ids::TABLE_OF_CONTENTS,
+	menu_ids::ELEMENTS_LIST,
+	menu_ids::OPEN_CONTAINING_FOLDER,
+	menu_ids::OPEN_IN_WEB_VIEW,
+	// Import/Export
+	menu_ids::IMPORT_DOCUMENT_DATA,
+	menu_ids::EXPORT_DOCUMENT_DATA,
+	menu_ids::EXPORT_TO_PLAIN_TEXT,
+	// Bookmark tools
+	menu_ids::TOGGLE_BOOKMARK,
+	menu_ids::BOOKMARK_WITH_NOTE,
+];
+
+/// Enable or disable all document-dependent menu items.
+pub fn update_menu_item_states(frame: &Frame, has_document: bool) {
+	let Some(menu_bar) = frame.get_menu_bar() else {
+		return;
+	};
+	for &id in DOCUMENT_DEPENDENT_IDS {
+		menu_bar.enable_item(id, has_document);
+	}
+}
+
 pub struct MenuItemSpec {
 	pub id: i32,
 	pub label: String,

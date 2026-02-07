@@ -61,6 +61,7 @@ impl MainWindow {
 		frame.set_status_text(&t("Ready"), 0);
 		let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 		frame.set_menu_bar(menu_bar);
+		menu::update_menu_item_states(&frame, false);
 		let panel = Panel::builder(&frame).build();
 		let sizer = BoxSizer::builder(Orientation::Vertical).build();
 		let live_region_label = StaticText::builder(&panel).with_label("").with_size(Size::new(0, 0)).build();
@@ -95,12 +96,14 @@ impl MainWindow {
 							dm.close_document(index);
 						}
 						update_title_from_manager(&frame_copy, &dm);
-						if dm.tab_count() == 0 {
+						let has_docs = dm.tab_count() > 0;
+						if !has_docs {
 							dm.notebook().set_focus();
 						} else {
 							dm.restore_focus();
 						}
 						drop(dm);
+						menu::update_menu_item_states(&frame_copy, has_docs);
 						event.skip(false);
 						return;
 					}
@@ -215,6 +218,8 @@ impl MainWindow {
 	fn update_recent_documents_menu(&self) {
 		let menu_bar = menu::create_menu_bar(&self.config.lock().unwrap());
 		self.frame.set_menu_bar(menu_bar);
+		let has_docs = self.doc_manager.lock().unwrap().tab_count() > 0;
+		menu::update_menu_item_states(&self.frame, has_docs);
 	}
 
 	fn schedule_restore_documents(
@@ -253,8 +258,10 @@ impl MainWindow {
 			}
 			let dm_ref = doc_manager.lock().unwrap();
 			update_title_from_manager(&frame, &dm_ref);
+			let has_docs = dm_ref.tab_count() > 0;
 			let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 			frame.set_menu_bar(menu_bar);
+			menu::update_menu_item_states(&frame, has_docs);
 			dm_ref.restore_focus();
 		});
 	}
@@ -279,6 +286,8 @@ impl MainWindow {
 					};
 					update_title_from_manager(frame, &dm_ref);
 					dm_ref.restore_focus();
+					drop(dm_ref);
+					menu::update_menu_item_states(frame, true);
 				}
 			}
 		}
@@ -361,17 +370,22 @@ impl MainWindow {
 						dm.close_document(index);
 					}
 					update_title_from_manager(&frame_copy, &dm);
-					if dm.tab_count() == 0 {
+					let has_docs = dm.tab_count() > 0;
+					if !has_docs {
 						dm.notebook().set_focus();
 					} else {
 						dm.restore_focus();
 					}
+					drop(dm);
+					menu::update_menu_item_states(&frame_copy, has_docs);
 				}
 				menu_ids::CLOSE_ALL => {
 					let mut dm = dm.lock().unwrap();
 					dm.close_all_documents();
 					update_title_from_manager(&frame_copy, &dm);
 					dm.notebook().set_focus();
+					drop(dm);
+					menu::update_menu_item_states(&frame_copy, false);
 				}
 				menu_ids::EXIT => {
 					dm.lock().unwrap().save_all_positions();
@@ -1041,6 +1055,8 @@ impl MainWindow {
 					}
 					let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 					frame_copy.set_menu_bar(menu_bar);
+					let has_docs = dm.lock().unwrap().tab_count() > 0;
+					menu::update_menu_item_states(&frame_copy, has_docs);
 				}
 				menu_ids::SLEEP_TIMER => {
 					if sleep_timer_running_for_menu.get() {
@@ -1118,6 +1134,7 @@ impl MainWindow {
 									}
 									let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 									frame_copy.set_menu_bar(menu_bar);
+									menu::update_menu_item_states(&frame_copy, true);
 								}
 							}
 						}
@@ -1146,10 +1163,13 @@ impl MainWindow {
 								}
 								let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 								frame_copy.set_menu_bar(menu_bar);
+								menu::update_menu_item_states(&frame_copy, true);
 							}
 						} else {
 							let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 							frame_copy.set_menu_bar(menu_bar);
+							let has_docs = dm.lock().unwrap().tab_count() > 0;
+							menu::update_menu_item_states(&frame_copy, has_docs);
 						}
 					}
 				}
