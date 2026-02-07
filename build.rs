@@ -26,6 +26,7 @@ fn main() {
 		if Path::new(&iconv_lib).exists() {
 			println!("cargo:rustc-link-search=native={}", iconv_lib);
 		}
+		generate_app_bundle();
 	}
 	if target.contains("windows") {
 		let manifest = new_manifest("Paperback")
@@ -272,6 +273,105 @@ fn pot_content_changed(old_path: &Path, new_path: &Path) -> bool {
 		Err(_) => return true,
 	};
 	strip_date(&old_content) != strip_date(&new_content)
+}
+
+fn generate_app_bundle() {
+	let target_dir = match target_profile_dir() {
+		Some(dir) => dir,
+		None => {
+			println!("cargo:warning=Could not determine target directory for macOS app bundle.");
+			return;
+		}
+	};
+	let version = env::var("CARGO_PKG_VERSION").unwrap_or_else(|_| "0.0.0".to_string());
+	let bundle_dir = target_dir.join("Paperback.app/Contents");
+	let macos_dir = bundle_dir.join("MacOS");
+	let _ = fs::create_dir_all(&macos_dir);
+	let _ = fs::create_dir_all(bundle_dir.join("Resources"));
+	let plist = format!(
+		r#"<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleName</key>
+	<string>Paperback</string>
+	<key>CFBundleDisplayName</key>
+	<string>Paperback</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.trypsynth.paperback</string>
+	<key>CFBundleVersion</key>
+	<string>{version}</string>
+	<key>CFBundleShortVersionString</key>
+	<string>{version}</string>
+	<key>CFBundleExecutable</key>
+	<string>paperback</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>NSHighResolutionCapable</key>
+	<true/>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>epub</string>
+				<string>pdf</string>
+				<string>docx</string>
+				<string>odt</string>
+				<string>pptx</string>
+				<string>odp</string>
+				<string>chm</string>
+				<string>fb2</string>
+				<string>html</string>
+				<string>htm</string>
+				<string>md</string>
+				<string>txt</string>
+				<string>rtf</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Document</string>
+		</dict>
+	</array>
+</dict>
+</plist>"#
+	);
+	let plist_path = bundle_dir.join("Info.plist");
+	if let Err(e) = fs::write(&plist_path, plist) {
+		println!("cargo:warning=Failed to write Info.plist: {}", e);
+		return;
+	}
+	// Copy the binary into the bundle if it exists (from a previous build)
+	let exe_path = target_dir.join("paperback");
+	let bundle_exe = macos_dir.join("paperback");
+	if exe_path.exists() {
+		let _ = fs::copy(&exe_path, &bundle_exe);
+	}
+	// Copy readme.html and langs into Resources if they exist
+	let readme = target_dir.join("readme.html");
+	if readme.exists() {
+		let _ = fs::copy(&readme, bundle_dir.join("Resources/readme.html"));
+	}
+	let langs = target_dir.join("langs");
+	if langs.exists() {
+		let _ = copy_dir_recursive(&langs, &bundle_dir.join("Resources/langs"));
+	}
+}
+
+fn copy_dir_recursive(src: &Path, dst: &Path) -> io::Result<()> {
+	fs::create_dir_all(dst)?;
+	for entry in fs::read_dir(src)? {
+		let entry = entry?;
+		let src_path = entry.path();
+		let dst_path = dst.join(entry.file_name());
+		if src_path.is_dir() {
+			copy_dir_recursive(&src_path, &dst_path)?;
+		} else {
+			fs::copy(&src_path, &dst_path)?;
+		}
+	}
+	Ok(())
 }
 
 fn collect_translatable_rust_files(dir: &Path, files: &mut Vec<PathBuf>) -> io::Result<()> {

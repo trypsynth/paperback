@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.0\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-02-07 06:14-0700\n"
+"POT-Creation-Date: 2026-02-07 10:41-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,15 +17,113 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-msgid ""
-"This PDF contains images only, with no extractable text. You may need to run "
-"it through OCR software to read its contents."
+msgid "&Restore"
 msgstr ""
 
-msgid "Failed to create IPC server"
+msgid "Restore Paperback"
 msgstr ""
 
-msgid "Warning"
+msgid "E&xit"
+msgstr ""
+
+msgid "Exit Paperback"
+msgstr ""
+
+msgid "Paperback"
+msgstr ""
+
+msgid "Ready"
+msgstr ""
+
+msgid "Untitled"
+msgstr ""
+
+msgid "Paperback - {}"
+msgstr ""
+
+msgid "{} chars"
+msgstr ""
+
+msgid "Open Document"
+msgstr ""
+
+msgid "No pages."
+msgstr ""
+
+msgid "document"
+msgstr ""
+
+msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
+msgstr ""
+
+msgid "Export document to plain text"
+msgstr ""
+
+msgid "Failed to export document."
+msgstr ""
+
+msgid "Error"
+msgstr ""
+
+msgid "Paperback files (*.paperback)|*.paperback"
+msgstr ""
+
+msgid "Export notes and bookmarks"
+msgstr ""
+
+msgid "Notes and bookmarks exported successfully."
+msgstr ""
+
+msgid "Export Successful"
+msgstr ""
+
+msgid "Import notes and bookmarks"
+msgstr ""
+
+msgid "Notes and bookmarks imported successfully."
+msgstr ""
+
+msgid "Import Successful"
+msgstr ""
+
+msgid "The document contains {} words."
+msgstr ""
+
+msgid "Word count"
+msgstr ""
+
+msgid "Web View"
+msgstr ""
+
+msgid "Could not determine content to display in Web View."
+msgstr ""
+
+msgid "Sleep timer cancelled."
+msgstr ""
+
+msgid "Sleep timer set for 1 minute."
+msgstr ""
+
+#, c-format
+msgid "Sleep timer set for %d minutes."
+msgstr ""
+
+msgid "No recent documents."
+msgstr ""
+
+msgid "Unsupported format selected."
+msgstr ""
+
+msgid "Line"
+msgstr ""
+
+msgid "Character"
+msgstr ""
+
+msgid "Reading"
+msgstr ""
+
+msgid "Sleep timer"
 msgstr ""
 
 msgid "Options"
@@ -59,9 +157,6 @@ msgid "&Language:"
 msgstr ""
 
 msgid "General"
-msgstr ""
-
-msgid "Reading"
 msgstr ""
 
 msgid "OK"
@@ -103,9 +198,6 @@ msgstr ""
 msgid "Please select a bookmark to jump to."
 msgstr ""
 
-msgid "Error"
-msgstr ""
-
 msgid "Bookmark Note"
 msgstr ""
 
@@ -128,9 +220,6 @@ msgid "Please select a section from the table of contents."
 msgstr ""
 
 msgid "No Selection"
-msgstr ""
-
-msgid "Untitled"
 msgstr ""
 
 msgid "Document Info"
@@ -279,6 +368,209 @@ msgstr ""
 msgid "An accessible, lightweight, fast ebook and document reader"
 msgstr ""
 
+msgid "No sections."
+msgstr ""
+
+msgid "No next section"
+msgstr ""
+
+msgid "No previous section"
+msgstr ""
+
+#, c-format
+msgid "No headings at level %d."
+msgstr ""
+
+#, c-format
+msgid "No next heading at level %d."
+msgstr ""
+
+#, c-format
+msgid "No previous heading at level %d."
+msgstr ""
+
+msgid "No headings."
+msgstr ""
+
+msgid "No next heading."
+msgstr ""
+
+msgid "No previous heading."
+msgstr ""
+
+msgid "No next page."
+msgstr ""
+
+msgid "No previous page."
+msgstr ""
+
+msgid "No links."
+msgstr ""
+
+msgid "No next link."
+msgstr ""
+
+msgid "No previous link."
+msgstr ""
+
+msgid "No lists."
+msgstr ""
+
+msgid "No next list."
+msgstr ""
+
+msgid "No previous list."
+msgstr ""
+
+msgid "No list items."
+msgstr ""
+
+msgid "No next list item."
+msgstr ""
+
+msgid "No previous list item."
+msgstr ""
+
+msgid "No tables."
+msgstr ""
+
+msgid "No next table."
+msgstr ""
+
+msgid "No previous table."
+msgstr ""
+
+msgid "No separators."
+msgstr ""
+
+msgid "No next separator."
+msgstr ""
+
+msgid "No previous separator."
+msgstr ""
+
+msgid "Wrapping to start. "
+msgstr ""
+
+msgid "Wrapping to end. "
+msgstr ""
+
+#, c-format
+msgid "%s Heading level %d"
+msgstr ""
+
+#, c-format
+msgid "Page %d: %s"
+msgstr ""
+
+msgid " link"
+msgstr ""
+
+msgid "Navigated to next position."
+msgstr ""
+
+msgid "Navigated to previous position."
+msgstr ""
+
+msgid "No next position."
+msgstr ""
+
+msgid "No previous position."
+msgstr ""
+
+#, c-format
+msgid "%s - Bookmark %d"
+msgstr ""
+
+msgid "No notes."
+msgstr ""
+
+msgid "No bookmarks."
+msgstr ""
+
+msgid "No next note."
+msgstr ""
+
+msgid "No next bookmark."
+msgstr ""
+
+msgid "No previous note."
+msgstr ""
+
+msgid "No previous bookmark."
+msgstr ""
+
+msgid "Bookmark."
+msgstr ""
+
+msgid "Bookmark removed."
+msgstr ""
+
+msgid "Bookmark added."
+msgstr ""
+
+msgid "Enter bookmark note:"
+msgstr ""
+
+msgid "Bookmark saved."
+msgstr ""
+
+msgid "No note at the current position."
+msgstr ""
+
+msgid "Failed to open containing folder."
+msgstr ""
+
+msgid ""
+"readme.html not found. Please ensure the application was built properly."
+msgstr ""
+
+msgid "Failed to launch default browser."
+msgstr ""
+
+msgid "Failed to open donation page in browser."
+msgstr ""
+
+msgid "No release notes were provided."
+msgstr ""
+
+msgid "Paperback Update"
+msgstr ""
+
+msgid "Downloading update..."
+msgstr ""
+
+msgid "No updates available."
+msgstr ""
+
+msgid "No updates available. Latest version: {}"
+msgstr ""
+
+msgid "Info"
+msgstr ""
+
+#, c-format
+msgid "Failed to check for updates. HTTP status: %d"
+msgstr ""
+
+msgid "Error checking for updates."
+msgstr ""
+
+msgid "Failed to launch installer"
+msgstr ""
+
+msgid "Failed to get current exe path"
+msgstr ""
+
+msgid "Failed to launch update script"
+msgstr ""
+
+msgid "Unknown update file format."
+msgstr ""
+
+msgid "Update failed"
+msgstr ""
+
 msgid "File not found: {}"
 msgstr ""
 
@@ -292,9 +584,6 @@ msgid "Navigated to internal link."
 msgstr ""
 
 msgid "Table View"
-msgstr ""
-
-msgid "Ready"
 msgstr ""
 
 msgid "&Password:"
@@ -375,133 +664,10 @@ msgstr ""
 msgid "No more results. Wrapping search."
 msgstr ""
 
-msgid "Failed to open containing folder."
+msgid "Failed to create IPC server"
 msgstr ""
 
-msgid ""
-"readme.html not found. Please ensure the application was built properly."
-msgstr ""
-
-msgid "Failed to launch default browser."
-msgstr ""
-
-msgid "Failed to open donation page in browser."
-msgstr ""
-
-msgid "No release notes were provided."
-msgstr ""
-
-msgid "Paperback Update"
-msgstr ""
-
-msgid "Downloading update..."
-msgstr ""
-
-msgid "No updates available."
-msgstr ""
-
-msgid "No updates available. Latest version: {}"
-msgstr ""
-
-msgid "Info"
-msgstr ""
-
-#, c-format
-msgid "Failed to check for updates. HTTP status: %d"
-msgstr ""
-
-msgid "Error checking for updates."
-msgstr ""
-
-msgid "Failed to launch installer"
-msgstr ""
-
-msgid "Failed to get current exe path"
-msgstr ""
-
-msgid "Failed to launch update script"
-msgstr ""
-
-msgid "Unknown update file format."
-msgstr ""
-
-msgid "Update failed"
-msgstr ""
-
-msgid "Unsupported format selected."
-msgstr ""
-
-msgid "Paperback"
-msgstr ""
-
-msgid "Paperback - {}"
-msgstr ""
-
-msgid "{} chars"
-msgstr ""
-
-msgid "Open Document"
-msgstr ""
-
-msgid "No pages."
-msgstr ""
-
-msgid "document"
-msgstr ""
-
-msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
-msgstr ""
-
-msgid "Export document to plain text"
-msgstr ""
-
-msgid "Failed to export document."
-msgstr ""
-
-msgid "Paperback files (*.paperback)|*.paperback"
-msgstr ""
-
-msgid "Export notes and bookmarks"
-msgstr ""
-
-msgid "Notes and bookmarks exported successfully."
-msgstr ""
-
-msgid "Export Successful"
-msgstr ""
-
-msgid "Import notes and bookmarks"
-msgstr ""
-
-msgid "Notes and bookmarks imported successfully."
-msgstr ""
-
-msgid "Import Successful"
-msgstr ""
-
-msgid "The document contains {} words."
-msgstr ""
-
-msgid "Word count"
-msgstr ""
-
-msgid "Web View"
-msgstr ""
-
-msgid "Could not determine content to display in Web View."
-msgstr ""
-
-msgid "Sleep timer cancelled."
-msgstr ""
-
-msgid "Sleep timer set for 1 minute."
-msgstr ""
-
-#, c-format
-msgid "Sleep timer set for %d minutes."
-msgstr ""
-
-msgid "No recent documents."
+msgid "Warning"
 msgstr ""
 
 msgid "Previous Section\t["
@@ -679,9 +845,6 @@ msgid "Close &All\tCtrl+Shift+F4"
 msgstr ""
 
 msgid "Close all documents"
-msgstr ""
-
-msgid "E&xit"
 msgstr ""
 
 msgid "Exit the application"
@@ -891,170 +1054,7 @@ msgstr ""
 msgid "Show All...\tCtrl+R"
 msgstr ""
 
-msgid "No sections."
-msgstr ""
-
-msgid "No next section"
-msgstr ""
-
-msgid "No previous section"
-msgstr ""
-
-#, c-format
-msgid "No headings at level %d."
-msgstr ""
-
-#, c-format
-msgid "No next heading at level %d."
-msgstr ""
-
-#, c-format
-msgid "No previous heading at level %d."
-msgstr ""
-
-msgid "No headings."
-msgstr ""
-
-msgid "No next heading."
-msgstr ""
-
-msgid "No previous heading."
-msgstr ""
-
-msgid "No next page."
-msgstr ""
-
-msgid "No previous page."
-msgstr ""
-
-msgid "No links."
-msgstr ""
-
-msgid "No next link."
-msgstr ""
-
-msgid "No previous link."
-msgstr ""
-
-msgid "No lists."
-msgstr ""
-
-msgid "No next list."
-msgstr ""
-
-msgid "No previous list."
-msgstr ""
-
-msgid "No list items."
-msgstr ""
-
-msgid "No next list item."
-msgstr ""
-
-msgid "No previous list item."
-msgstr ""
-
-msgid "No tables."
-msgstr ""
-
-msgid "No next table."
-msgstr ""
-
-msgid "No previous table."
-msgstr ""
-
-msgid "No separators."
-msgstr ""
-
-msgid "No next separator."
-msgstr ""
-
-msgid "No previous separator."
-msgstr ""
-
-msgid "Wrapping to start. "
-msgstr ""
-
-msgid "Wrapping to end. "
-msgstr ""
-
-#, c-format
-msgid "%s Heading level %d"
-msgstr ""
-
-#, c-format
-msgid "Page %d: %s"
-msgstr ""
-
-msgid " link"
-msgstr ""
-
-msgid "Navigated to next position."
-msgstr ""
-
-msgid "Navigated to previous position."
-msgstr ""
-
-msgid "No next position."
-msgstr ""
-
-msgid "No previous position."
-msgstr ""
-
-#, c-format
-msgid "%s - Bookmark %d"
-msgstr ""
-
-msgid "No notes."
-msgstr ""
-
-msgid "No bookmarks."
-msgstr ""
-
-msgid "No next note."
-msgstr ""
-
-msgid "No next bookmark."
-msgstr ""
-
-msgid "No previous note."
-msgstr ""
-
-msgid "No previous bookmark."
-msgstr ""
-
-msgid "Bookmark."
-msgstr ""
-
-msgid "Bookmark removed."
-msgstr ""
-
-msgid "Bookmark added."
-msgstr ""
-
-msgid "Enter bookmark note:"
-msgstr ""
-
-msgid "Bookmark saved."
-msgstr ""
-
-msgid "No note at the current position."
-msgstr ""
-
-msgid "Line"
-msgstr ""
-
-msgid "Character"
-msgstr ""
-
-msgid "Sleep timer"
-msgstr ""
-
-msgid "&Restore"
-msgstr ""
-
-msgid "Restore Paperback"
-msgstr ""
-
-msgid "Exit Paperback"
+msgid ""
+"This PDF contains images only, with no extractable text. You may need to run "
+"it through OCR software to read its contents."
 msgstr ""
