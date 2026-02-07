@@ -197,7 +197,17 @@ pub fn build_file_filter_string() -> String {
 		parts.push_str(&ext_part);
 		parts.push('|');
 	}
+	// On macOS, NSOpenPanel treats *.*  as "allow everything", which disables
+	// filtering for all groups.  Only add the catch-all on other platforms.
+	#[cfg(not(target_os = "macos"))]
 	parts.push_str("All Files (*.*)|*.*");
+	#[cfg(target_os = "macos")]
+	{
+		// Remove the trailing '|' left by the last per-parser entry.
+		if parts.ends_with('|') {
+			parts.pop();
+		}
+	}
 	parts
 }
 
