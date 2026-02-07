@@ -225,7 +225,7 @@ fn generate_pot() {
 		.arg("--language=C")
 		.arg("--from-code=UTF-8")
 		.arg("--add-comments=TRANSLATORS")
-		.arg("--add-location=file")
+		.arg("--no-location")
 		.arg("--package-name=paperback")
 		.arg(format!("--package-version={}", version))
 		.arg("--msgid-bugs-address=https://github.com/trypsynth/paperback/issues")
