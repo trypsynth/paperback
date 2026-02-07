@@ -585,3 +585,24 @@ impl Default for HtmlToText {
 		Self::new()
 	}
 }
+
+impl crate::parser::ConverterOutput for HtmlToText {
+	fn get_headings(&self) -> &[HeadingInfo] {
+		&self.headings
+	}
+	fn get_links(&self) -> &[LinkInfo] {
+		&self.links
+	}
+	fn get_tables(&self) -> &[TableInfo] {
+		&self.tables
+	}
+	fn get_separators(&self) -> &[SeparatorInfo] {
+		&self.separators
+	}
+	fn get_lists(&self) -> &[ListInfo] {
+		&self.lists
+	}
+	fn get_list_items(&self) -> &[ListItemInfo] {
+		&self.list_items
+	}
+}

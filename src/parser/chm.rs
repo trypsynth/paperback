@@ -8,7 +8,7 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
 	encoding::convert_to_utf8,
 	html_to_text::{HtmlSourceMode, HtmlToText},
-	parser::{Parser, path::extract_title_from_path, toc::heading_level_to_marker_type},
+	parser::{Parser, add_converter_markers_excluding_links, is_external_url, path::extract_title_from_path},
 };
 
 pub struct ChmParser;
@@ -64,8 +64,6 @@ impl Parser for ChmParser {
 				continue;
 			}
 			let text = converter.get_text();
-			let headings = converter.get_headings();
-			let links = converter.get_links();
 			let section_id_positions = converter.get_id_positions();
 			let normalized_path = normalize_path(&file_path);
 			file_positions.insert(normalized_path.clone(), section_start);
@@ -74,35 +72,13 @@ impl Parser for ChmParser {
 				id_positions.insert(format!("{normalized_path}#{id}"), absolute_pos);
 			}
 			buffer.append(&text);
-			for heading in headings {
-				let marker_type = heading_level_to_marker_type(heading.level);
-				buffer.add_marker(
-					Marker::new(marker_type, section_start + heading.offset)
-						.with_text(heading.text.clone())
-						.with_level(heading.level),
-				);
-			}
-			for link in links {
+			add_converter_markers_excluding_links(&mut buffer, &converter, section_start);
+			for link in converter.get_links() {
 				let resolved_href = resolve_link(&file_path, &link.reference);
 				buffer.add_marker(
 					Marker::new(MarkerType::Link, section_start + link.offset)
 						.with_text(link.text.clone())
 						.with_reference(resolved_href),
-				);
-			}
-			for table in converter.get_tables() {
-				buffer.add_marker(
-					Marker::new(MarkerType::Table, section_start + table.offset)
-						.with_text(table.text.clone())
-						.with_reference(table.html_content.clone())
-						.with_length(table.length),
-				);
-			}
-			for separator in converter.get_separators() {
-				buffer.add_marker(
-					Marker::new(MarkerType::Separator, section_start + separator.offset)
-						.with_text("Separator".to_string())
-						.with_length(separator.length),
 				);
 			}
 			if !buffer.content.ends_with('\n') {
@@ -293,8 +269,7 @@ fn normalize_path(path: &str) -> String {
 }
 
 fn resolve_link(current_file: &str, href: &str) -> String {
-	let href_lower = href.to_lowercase();
-	if href_lower.starts_with("http:") || href_lower.starts_with("https:") || href_lower.starts_with("mailto:") {
+	if is_external_url(href) {
 		return href.to_string();
 	}
 	let current_path = std::path::Path::new(current_file);

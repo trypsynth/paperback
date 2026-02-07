@@ -4,14 +4,10 @@ use anyhow::{Context, Result};
 use pulldown_cmark::{Options, Parser as MarkdownParserImpl, html::push_html};
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
+	document::{Document, DocumentBuffer, ParserContext, ParserFlags},
 	encoding::convert_to_utf8,
 	html_to_text::{HtmlSourceMode, HtmlToText},
-	parser::{
-		Parser,
-		path::extract_title_from_path,
-		toc::{build_toc_from_headings, heading_level_to_marker_type},
-	},
+	parser::{Parser, add_converter_markers, path::extract_title_from_path, toc::build_toc_from_headings},
 };
 
 pub struct MarkdownParser;
@@ -46,44 +42,7 @@ impl Parser for MarkdownParser {
 		let text = converter.get_text();
 		let mut buffer = DocumentBuffer::with_content(text);
 		let id_positions = converter.get_id_positions().clone();
-		for heading in converter.get_headings() {
-			let marker_type = heading_level_to_marker_type(heading.level);
-			buffer.add_marker(
-				Marker::new(marker_type, heading.offset).with_text(heading.text.clone()).with_level(heading.level),
-			);
-		}
-		for link in converter.get_links() {
-			buffer.add_marker(
-				Marker::new(MarkerType::Link, link.offset)
-					.with_text(link.text.clone())
-					.with_reference(link.reference.clone()),
-			);
-		}
-		for table in converter.get_tables() {
-			buffer.add_marker(
-				Marker::new(MarkerType::Table, table.offset)
-					.with_text(table.text.clone())
-					.with_reference(table.html_content.clone())
-					.with_length(table.length),
-			);
-		}
-		for separator in converter.get_separators() {
-			buffer.add_marker(
-				Marker::new(MarkerType::Separator, separator.offset)
-					.with_text("Separator".to_string())
-					.with_length(separator.length),
-			);
-		}
-		for list in converter.get_lists() {
-			buffer.add_marker(Marker::new(MarkerType::List, list.offset).with_level(list.item_count));
-		}
-		for list_item in converter.get_list_items() {
-			buffer.add_marker(
-				Marker::new(MarkerType::ListItem, list_item.offset)
-					.with_text(list_item.text.clone())
-					.with_level(list_item.level),
-			);
-		}
+		add_converter_markers(&mut buffer, &converter, 0);
 		let toc_items = build_toc_from_headings(converter.get_headings());
 		let mut doc = Document::new().with_title(title);
 		doc.set_buffer(buffer);

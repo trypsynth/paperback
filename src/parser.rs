@@ -5,7 +5,10 @@ use std::{
 
 use anyhow::Result;
 
-use crate::document::{Document, ParserContext, ParserFlags};
+use crate::{
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
+	types::{HeadingInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
+};
 
 pub mod chm;
 pub mod docx;
@@ -196,4 +199,84 @@ pub fn build_file_filter_string() -> String {
 	}
 	parts.push_str("All Files (*.*)|*.*");
 	parts
+}
+
+pub trait ConverterOutput {
+	fn get_headings(&self) -> &[HeadingInfo];
+	fn get_links(&self) -> &[LinkInfo];
+	fn get_tables(&self) -> &[TableInfo];
+	fn get_separators(&self) -> &[SeparatorInfo];
+	fn get_lists(&self) -> &[ListInfo];
+	fn get_list_items(&self) -> &[ListItemInfo];
+}
+
+fn add_headings(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
+	for heading in converter.get_headings() {
+		let marker_type = toc::heading_level_to_marker_type(heading.level);
+		buffer.add_marker(
+			Marker::new(marker_type, offset + heading.offset).with_text(heading.text.clone()).with_level(heading.level),
+		);
+	}
+}
+
+fn add_links(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
+	for link in converter.get_links() {
+		buffer.add_marker(
+			Marker::new(MarkerType::Link, offset + link.offset)
+				.with_text(link.text.clone())
+				.with_reference(link.reference.clone()),
+		);
+	}
+}
+
+fn add_tables_separators_lists(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
+	for table in converter.get_tables() {
+		buffer.add_marker(
+			Marker::new(MarkerType::Table, offset + table.offset)
+				.with_text(table.text.clone())
+				.with_reference(table.html_content.clone())
+				.with_length(table.length),
+		);
+	}
+	for separator in converter.get_separators() {
+		buffer.add_marker(
+			Marker::new(MarkerType::Separator, offset + separator.offset)
+				.with_text("Separator".to_string())
+				.with_length(separator.length),
+		);
+	}
+	for list in converter.get_lists() {
+		buffer.add_marker(Marker::new(MarkerType::List, offset + list.offset).with_level(list.item_count));
+	}
+	for list_item in converter.get_list_items() {
+		buffer.add_marker(
+			Marker::new(MarkerType::ListItem, offset + list_item.offset)
+				.with_text(list_item.text.clone())
+				.with_level(list_item.level),
+		);
+	}
+}
+
+/// Transfer all converter markers to a `DocumentBuffer`.
+/// `offset` is added to each marker position (for multi-section parsers like CHM/EPUB).
+pub fn add_converter_markers(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
+	add_headings(buffer, converter, offset);
+	add_links(buffer, converter, offset);
+	add_tables_separators_lists(buffer, converter, offset);
+}
+
+/// Like `add_converter_markers` but excludes links, for parsers that resolve link hrefs specially.
+pub fn add_converter_markers_excluding_links(
+	buffer: &mut DocumentBuffer,
+	converter: &dyn ConverterOutput,
+	offset: usize,
+) {
+	add_headings(buffer, converter, offset);
+	add_tables_separators_lists(buffer, converter, offset);
+}
+
+#[must_use]
+pub fn is_external_url(url: &str) -> bool {
+	let lower = url.to_ascii_lowercase();
+	lower.starts_with("http:") || lower.starts_with("https:") || lower.starts_with("mailto:")
 }

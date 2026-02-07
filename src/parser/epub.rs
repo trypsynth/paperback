@@ -12,7 +12,9 @@ use zip::ZipArchive;
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
 	html_to_text::{HtmlSourceMode, HtmlToText},
-	parser::{Parser, path::extract_title_from_path, toc::heading_level_to_marker_type},
+	parser::{
+		ConverterOutput, Parser, add_converter_markers_excluding_links, is_external_url, path::extract_title_from_path,
+	},
 	text::{collapse_whitespace, trim_string, url_decode},
 	types::{HeadingInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
 	xml_to_text::XmlToText,
@@ -28,6 +30,27 @@ struct SectionContent {
 	lists: Vec<ListInfo>,
 	list_items: Vec<ListItemInfo>,
 	id_positions: HashMap<String, usize>,
+}
+
+impl ConverterOutput for SectionContent {
+	fn get_headings(&self) -> &[HeadingInfo] {
+		&self.headings
+	}
+	fn get_links(&self) -> &[LinkInfo] {
+		&self.links
+	}
+	fn get_tables(&self) -> &[TableInfo] {
+		&self.tables
+	}
+	fn get_separators(&self) -> &[SeparatorInfo] {
+		&self.separators
+	}
+	fn get_lists(&self) -> &[ListInfo] {
+		&self.lists
+	}
+	fn get_list_items(&self) -> &[ListItemInfo] {
+		&self.list_items
+	}
 }
 
 struct SectionMeta {
@@ -146,53 +169,19 @@ fn convert_spine_items<R: Read + Seek>(
 		);
 		match convert_section(&section_data) {
 			Ok(section) => {
-				for (id, relative) in section.id_positions {
+				for (id, relative) in &section.id_positions {
 					let absolute = section_start + relative;
 					// Keep the first occurrence for bare ids to avoid later sections overwriting earlier ones.
 					id_positions.entry(id.clone()).or_insert(absolute);
 					id_positions.insert(format!("{}#{id}", item.path), absolute);
 				}
-				for heading in section.headings {
-					let marker_type = heading_level_to_marker_type(heading.level);
-					buffer.add_marker(
-						Marker::new(marker_type, section_start + heading.offset)
-							.with_text(heading.text.clone())
-							.with_level(heading.level),
-					);
-				}
-				for link in section.links {
+				add_converter_markers_excluding_links(&mut buffer, &section, section_start);
+				for link in &section.links {
 					let resolved = resolve_href(&item.path, &link.reference);
 					buffer.add_marker(
 						Marker::new(MarkerType::Link, section_start + link.offset)
 							.with_text(link.text.clone())
 							.with_reference(resolved),
-					);
-				}
-				for table in section.tables {
-					buffer.add_marker(
-						Marker::new(MarkerType::Table, section_start + table.offset)
-							.with_text(table.text)
-							.with_reference(table.html_content)
-							.with_length(table.length),
-					);
-				}
-				for separator in section.separators {
-					buffer.add_marker(
-						Marker::new(MarkerType::Separator, section_start + separator.offset)
-							.with_text("Separator".to_string())
-							.with_length(separator.length),
-					);
-				}
-				for list in section.lists {
-					buffer.add_marker(
-						Marker::new(MarkerType::List, section_start + list.offset).with_level(list.item_count),
-					);
-				}
-				for list_item in section.list_items {
-					buffer.add_marker(
-						Marker::new(MarkerType::ListItem, section_start + list_item.offset)
-							.with_text(list_item.text.clone())
-							.with_level(list_item.level),
 					);
 				}
 				if !section.text.is_empty() {
@@ -350,8 +339,7 @@ fn convert_section(content: &str) -> Result<SectionContent> {
 }
 
 fn resolve_href(current_path: &str, target: &str) -> String {
-	let lower = target.to_ascii_lowercase();
-	if lower.starts_with("http:") || lower.starts_with("https:") || lower.starts_with("mailto:") {
+	if is_external_url(target) {
 		return target.to_string();
 	}
 	if target.starts_with('#') {

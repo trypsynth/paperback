@@ -336,9 +336,15 @@ impl DocumentSession {
 		)
 	}
 
-	#[must_use]
-	pub fn navigate_bookmark(&self, config: &ConfigManager, position: i64, wrap: bool, next: bool) -> NavigationResult {
-		let result = bookmark_navigate(config, &self.file_path, position, wrap, next, false);
+	fn navigate_bookmark_inner(
+		&self,
+		config: &ConfigManager,
+		position: i64,
+		wrap: bool,
+		next: bool,
+		notes_only: bool,
+	) -> NavigationResult {
+		let result = bookmark_navigate(config, &self.file_path, position, wrap, next, notes_only);
 		if result.found {
 			NavigationResult {
 				found: true,
@@ -355,21 +361,13 @@ impl DocumentSession {
 	}
 
 	#[must_use]
+	pub fn navigate_bookmark(&self, config: &ConfigManager, position: i64, wrap: bool, next: bool) -> NavigationResult {
+		self.navigate_bookmark_inner(config, position, wrap, next, false)
+	}
+
+	#[must_use]
 	pub fn navigate_note(&self, config: &ConfigManager, position: i64, wrap: bool, next: bool) -> NavigationResult {
-		let result = bookmark_navigate(config, &self.file_path, position, wrap, next, true);
-		if result.found {
-			NavigationResult {
-				found: true,
-				wrapped: result.wrapped,
-				offset: result.start,
-				marker_text: result.note.clone(),
-				marker_level: 0,
-				marker_index: result.index,
-				not_supported: false,
-			}
-		} else {
-			NavigationResult::not_found()
-		}
+		self.navigate_bookmark_inner(config, position, wrap, next, true)
 	}
 
 	#[must_use]
@@ -445,11 +443,15 @@ impl DocumentSession {
 		ffi::HeadingTree { items, closest_index }
 	}
 
-	pub fn history_go_back(&mut self, current_pos: i64) -> NavigationResult {
+	fn history_navigate(&mut self, current_pos: i64, forward: bool) -> NavigationResult {
 		if self.history.is_empty() {
 			return NavigationResult::not_found();
 		}
-		let result = history_go_previous(&self.history, self.history_index, current_pos, MAX_HISTORY_LEN);
+		let result = if forward {
+			history_go_next(&self.history, self.history_index, current_pos, MAX_HISTORY_LEN)
+		} else {
+			history_go_previous(&self.history, self.history_index, current_pos, MAX_HISTORY_LEN)
+		};
 		self.history = result.positions;
 		self.history_index = result.index;
 		if result.found {
@@ -467,26 +469,12 @@ impl DocumentSession {
 		}
 	}
 
+	pub fn history_go_back(&mut self, current_pos: i64) -> NavigationResult {
+		self.history_navigate(current_pos, false)
+	}
+
 	pub fn history_go_forward(&mut self, current_pos: i64) -> NavigationResult {
-		if self.history.is_empty() {
-			return NavigationResult::not_found();
-		}
-		let result = history_go_next(&self.history, self.history_index, current_pos, MAX_HISTORY_LEN);
-		self.history = result.positions;
-		self.history_index = result.index;
-		if result.found {
-			NavigationResult {
-				found: true,
-				wrapped: false,
-				offset: result.target,
-				marker_text: String::new(),
-				marker_level: 0,
-				marker_index: -1,
-				not_supported: false,
-			}
-		} else {
-			NavigationResult::not_found()
-		}
+		self.history_navigate(current_pos, true)
 	}
 
 	pub fn activate_link(&self, position: i64) -> LinkActivationResult {

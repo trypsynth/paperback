@@ -6,8 +6,7 @@ use roxmltree::{Document as XmlDocument, Node, NodeType};
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
 	parser::{
-		Parser,
-		toc::heading_level_to_marker_type,
+		Parser, add_converter_markers,
 		xml::{collect_element_text, find_child_element},
 	},
 	xml_to_text::XmlToText,
@@ -50,29 +49,9 @@ impl Parser for Fb2Parser {
 		}
 		let mut buffer = DocumentBuffer::new();
 		buffer.append(&converter.get_text());
-		for heading in converter.get_headings() {
-			let marker_type = heading_level_to_marker_type(heading.level);
-			buffer.add_marker(
-				Marker::new(marker_type, heading.offset).with_text(heading.text.clone()).with_level(heading.level),
-			);
-		}
+		add_converter_markers(&mut buffer, &converter, 0);
 		for offset in converter.get_section_offsets() {
 			buffer.add_marker(Marker::new(MarkerType::SectionBreak, *offset));
-		}
-		for table in converter.get_tables() {
-			buffer.add_marker(
-				Marker::new(MarkerType::Table, table.offset)
-					.with_text(table.text.clone())
-					.with_reference(table.html_content.clone())
-					.with_length(table.length),
-			);
-		}
-		for link in converter.get_links() {
-			buffer.add_marker(
-				Marker::new(MarkerType::Link, link.offset)
-					.with_text(link.text.clone())
-					.with_reference(link.reference.clone()),
-			);
 		}
 		let id_positions: HashMap<String, usize> = converter.get_id_positions().clone();
 		let mut document = Document::new().with_title(title).with_author(author);

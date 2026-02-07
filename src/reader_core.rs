@@ -4,6 +4,7 @@ use regex::RegexBuilder;
 use crate::{
 	config::{Bookmark, ConfigManager as RustConfigManager},
 	document::{DocumentHandle, MarkerType},
+	parser::is_external_url,
 	types::{self as ffi, HeadingInfo},
 };
 
@@ -48,21 +49,9 @@ const fn build_nav_result(found: bool, wrapped: bool, offset: usize, level: i32,
 pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavResult {
 	use ffi::NavTarget;
 	match req.target {
-		NavTarget::Section => {
-			let (idx_opt, wrapped) =
-				select_marker_index(doc, req.position, req.wrap, req.direction, MarkerType::SectionBreak);
-			if let Some(idx) = idx_opt {
-				let Ok(idx_i32) = i32::try_from(idx) else {
-					return build_nav_result(false, wrapped, 0, 0, String::new());
-				};
-				let offset = doc.marker_position(idx_i32).unwrap_or(0);
-				return build_nav_result(true, wrapped, offset, 0, String::new());
-			}
-			build_nav_result(false, wrapped, 0, 0, String::new())
-		}
-		NavTarget::Page => {
-			let (idx_opt, wrapped) =
-				select_marker_index(doc, req.position, req.wrap, req.direction, MarkerType::PageBreak);
+		NavTarget::Section | NavTarget::Page => {
+			let kind = if req.target == NavTarget::Section { MarkerType::SectionBreak } else { MarkerType::PageBreak };
+			let (idx_opt, wrapped) = select_marker_index(doc, req.position, req.wrap, req.direction, kind);
 			if let Some(idx) = idx_opt {
 				let Ok(idx_i32) = i32::try_from(idx) else {
 					return build_nav_result(false, wrapped, 0, 0, String::new());
@@ -443,8 +432,7 @@ pub fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> 
 	if href_trimmed.is_empty() {
 		return LinkNavigation { found: false, is_external: false, offset: 0, url: String::new() };
 	}
-	let href_lower = href_trimmed.to_ascii_lowercase();
-	if href_lower.starts_with("http:") || href_lower.starts_with("https:") || href_lower.starts_with("mailto:") {
+	if is_external_url(href_trimmed) {
 		return LinkNavigation { found: true, is_external: true, offset: 0, url: href_trimmed.to_string() };
 	}
 	let current_section = current_section_path(doc, usize::try_from(current_position.max(0)).unwrap_or(0));

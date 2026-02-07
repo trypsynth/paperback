@@ -19,10 +19,9 @@ mod xml_to_text;
 mod zip;
 
 use ui::PaperbackApp;
-use wxdragon::prelude::{Appearance, SystemOptions, set_appearance};
+use wxdragon::prelude::{Appearance, set_appearance};
 
 fn main() {
-	SystemOptions::set_option_by_int("msw.no-manifest-check", 1);
 	let _ = wxdragon::main(|app| {
 		// Allow the app to follow the OS dark/light mode setting.
 		let _ = set_appearance(Appearance::System);
