@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"]
+#![cfg_attr(not(test), windows_subsystem = "windows")]
 #![warn(clippy::all, clippy::nursery, clippy::pedantic)]
 
 mod config;

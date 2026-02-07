@@ -36,15 +36,16 @@ pub fn convert_to_utf8(input: &[u8]) -> String {
 	if let Ok(s) = str::from_utf8(input) {
 		return s.to_string();
 	}
-	// UTF-16 LE without BOM
-	let (decoded, encoding, had_errors) = UTF_16LE.decode(input);
-	if !had_errors && encoding == UTF_16LE {
-		return decoded.to_string();
-	}
-	// UTF-16 BE without BOM
-	let (decoded, encoding, had_errors) = UTF_16BE.decode(input);
-	if !had_errors && encoding == UTF_16BE {
-		return decoded.to_string();
+	// UTF-16 without BOM (only if data looks like UTF-16)
+	if looks_like_utf16(input) {
+		let (decoded, encoding, had_errors) = UTF_16LE.decode(input);
+		if !had_errors && encoding == UTF_16LE {
+			return decoded.to_string();
+		}
+		let (decoded, encoding, had_errors) = UTF_16BE.decode(input);
+		if !had_errors && encoding == UTF_16BE {
+			return decoded.to_string();
+		}
 	}
 	// Windows-1252
 	let (decoded, _, _) = WINDOWS_1252.decode(input);
@@ -73,6 +74,29 @@ fn decode_utf32_be(input: &[u8]) -> String {
 			char::from_u32(code_point)
 		})
 		.collect()
+}
+
+fn looks_like_utf16(input: &[u8]) -> bool {
+	if input.len() < 2 {
+		return false;
+	}
+	let mut even_nulls = 0usize;
+	let mut odd_nulls = 0usize;
+	for (idx, byte) in input.iter().enumerate() {
+		if *byte == 0 {
+			if idx % 2 == 0 {
+				even_nulls += 1;
+			} else {
+				odd_nulls += 1;
+			}
+		}
+	}
+	let total_nulls = even_nulls + odd_nulls;
+	if total_nulls == 0 {
+		return false;
+	}
+	let pairs = input.len() / 2;
+	total_nulls >= pairs
 }
 
 #[cfg(test)]

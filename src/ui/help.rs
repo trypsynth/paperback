@@ -1,5 +1,9 @@
 //! Help, update, and utility functions. maybe clean this up eventually.
 
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
+#[cfg(target_os = "windows")]
+use std::process::{self, Command};
 use std::{
 	cell::RefCell,
 	env,
@@ -12,10 +16,6 @@ use std::{
 	thread,
 	time::Duration,
 };
-#[cfg(target_os = "windows")]
-use std::os::windows::process::CommandExt;
-#[cfg(target_os = "windows")]
-use std::process::{self, Command};
 
 use wxdragon::{prelude::*, translations::translate as t};
 use wxdragon_sys as ffi;

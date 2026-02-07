@@ -57,19 +57,31 @@ pub fn url_decode(input: &str) -> String {
 
 #[must_use]
 pub fn collapse_whitespace(input: &str) -> String {
+	let chars: Vec<char> = input.chars().collect();
+	let leading = chars.iter().take_while(|ch| is_space_like(**ch)).count();
+	let trailing = chars.iter().rev().take_while(|ch| is_space_like(**ch)).count();
 	let mut result = String::with_capacity(input.len());
+	if leading > 0 {
+		result.extend(std::iter::repeat(' ').take(leading));
+	}
 	let mut prev_was_space = false;
-	for ch in input.chars() {
-		let is_space = is_space_like(ch);
+	let mut seen_non_space = false;
+	let end = chars.len().saturating_sub(trailing);
+	for ch in chars.iter().take(end).skip(leading) {
+		let is_space = is_space_like(*ch);
 		if is_space {
-			if !prev_was_space {
+			if seen_non_space && !prev_was_space {
 				result.push(' ');
 				prev_was_space = true;
 			}
 		} else {
-			result.push(ch);
+			result.push(*ch);
 			prev_was_space = false;
+			seen_non_space = true;
 		}
+	}
+	if trailing > 0 {
+		result.push(' ');
 	}
 	result
 }

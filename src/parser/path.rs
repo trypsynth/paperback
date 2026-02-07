@@ -1,7 +1,14 @@
 use std::path::Path;
 
 pub fn extract_title_from_path(path: &str) -> String {
-	Path::new(path).file_stem().and_then(|s| s.to_str()).unwrap_or("Untitled").to_string()
+	let trimmed = path.trim();
+	if trimmed.is_empty() {
+		return "Untitled".to_string();
+	}
+	if trimmed.ends_with('/') || trimmed.ends_with('\\') {
+		return "Untitled".to_string();
+	}
+	Path::new(trimmed).file_stem().and_then(|s| s.to_str()).unwrap_or("Untitled").to_string()
 }
 
 #[cfg(test)]
