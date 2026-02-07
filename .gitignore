@@ -3,3 +3,4 @@
 web/_site/
 *.epub
 *.pdf
+.DS_Store

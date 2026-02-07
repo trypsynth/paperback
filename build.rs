@@ -18,6 +18,15 @@ fn main() {
 	configure_installer();
 	generate_pot();
 	let target = env::var("TARGET").unwrap_or_default();
+	if target.contains("apple") {
+		// Homebrew's libiconv is keg-only and not on the default search path.
+		// wxWidgets links against it, so we need to tell the linker where to find it.
+		let homebrew_prefix = if target.contains("aarch64") { "/opt/homebrew" } else { "/usr/local" };
+		let iconv_lib = format!("{}/opt/libiconv/lib", homebrew_prefix);
+		if Path::new(&iconv_lib).exists() {
+			println!("cargo:rustc-link-search=native={}", iconv_lib);
+		}
+	}
 	if target.contains("windows") {
 		let manifest = new_manifest("Paperback")
 			.supported_os(Windows7..=Windows10)

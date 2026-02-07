@@ -3,9 +3,7 @@
 use std::{
 	cell::RefCell,
 	env,
-	os::windows::process::CommandExt,
 	path::{Path, PathBuf},
-	process::{self, Command},
 	rc::Rc,
 	sync::{
 		Arc, Mutex,
@@ -14,6 +12,10 @@ use std::{
 	thread,
 	time::Duration,
 };
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
+#[cfg(target_os = "windows")]
+use std::process::{self, Command};
 
 use wxdragon::{prelude::*, translations::translate as t};
 use wxdragon_sys as ffi;
@@ -191,7 +193,7 @@ fn present_update_result(outcome: Result<UpdateCheckOutcome, UpdateError>, silen
 					let d_total = total;
 					let d_is_running = is_running;
 					thread::spawn(move || {
-						let res = update::download_update_file(&download_url, |d, t| {
+						let _res = update::download_update_file(&download_url, |d, t| {
 							d_downloaded.store(d, Ordering::Relaxed);
 							d_total.store(t, Ordering::Relaxed);
 						});
@@ -200,7 +202,8 @@ fn present_update_result(outcome: Result<UpdateCheckOutcome, UpdateError>, silen
 							ACTIVE_PROGRESS.with(|p| {
 								*p.borrow_mut() = None;
 							});
-							execute_update(res);
+							#[cfg(target_os = "windows")]
+							execute_update(_res);
 						}));
 					});
 				}
@@ -251,6 +254,7 @@ fn present_update_result(outcome: Result<UpdateCheckOutcome, UpdateError>, silen
 	}
 }
 
+#[cfg(target_os = "windows")]
 fn execute_update(result: Result<PathBuf, UpdateError>) {
 	let parent_window = main_window_parent();
 	let Some(parent) = parent_window.as_ref() else {
