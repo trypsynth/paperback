@@ -143,7 +143,11 @@ pub fn bookmarks_entries() -> Vec<MenuEntry> {
 	let bookmarks_only_help = t("Show bookmarks only");
 	let notes_only_label = t("Jump to Notes &Only...\tCtrl+Alt+M");
 	let notes_only_help = t("Show notes only");
-	let view_note_label = t("&View Note Text\tCtrl+Shift+W");
+	let view_note_label = if cfg!(target_os = "macos") {
+		t("&View Note Text\tRawCtrl+Shift+W")
+	} else {
+		t("&View Note Text\tCtrl+Shift+W")
+	};
 	let view_note_help = t("View the note at current position");
 	vec![
 		item_with_help(menu_ids::PREVIOUS_BOOKMARK, prev_bookmark_label, prev_bookmark_help),
@@ -259,12 +263,20 @@ pub fn create_menu_bar(config: &ConfigManager) -> MenuBar {
 pub fn create_file_menu(config: &ConfigManager) -> Menu {
 	let open_label = t("&Open...\tCtrl+O");
 	let open_help = t("Open a document");
-	let close_label = t("&Close\tCtrl+F4");
+	// On macOS, Ctrl+ maps to Cmd+, so use Cmd+W / Cmd+Shift+W for close.
+	// On Windows/Linux, keep Ctrl+F4 / Ctrl+Shift+F4.
+	let close_label = if cfg!(target_os = "macos") {
+		t("&Close\tCtrl+W")
+	} else {
+		t("&Close\tCtrl+F4")
+	};
 	let close_help = t("Close the current document");
-	let close_all_label = t("Close &All\tCtrl+Shift+F4");
+	let close_all_label = if cfg!(target_os = "macos") {
+		t("Close &All\tCtrl+Shift+W")
+	} else {
+		t("Close &All\tCtrl+Shift+F4")
+	};
 	let close_all_help = t("Close all documents");
-	let exit_label = t("E&xit");
-	let exit_help = t("Exit the application");
 	let file_menu = Menu::builder()
 		.append_item(menu_ids::OPEN, &open_label, &open_help)
 		.append_item(menu_ids::CLOSE, &close_label, &close_help)
@@ -275,8 +287,14 @@ pub fn create_file_menu(config: &ConfigManager) -> Menu {
 	let recent_label = t("&Recent Documents");
 	let recent_help = t("Open a recent document");
 	let _ = file_menu.append_submenu(recent_menu, &recent_label, &recent_help);
-	file_menu.append_separator();
-	let _ = file_menu.append(menu_ids::EXIT, &exit_label, &exit_help, ItemKind::Normal);
+	// On macOS, wxWidgets auto-moves wxID_EXIT to the app menu, so skip the
+	// explicit Exit item to avoid a duplicate.
+	if !cfg!(target_os = "macos") {
+		file_menu.append_separator();
+		let exit_label = t("E&xit");
+		let exit_help = t("Exit the application");
+		let _ = file_menu.append(menu_ids::EXIT, &exit_label, &exit_help, ItemKind::Normal);
+	}
 	file_menu
 }
 
@@ -366,7 +384,12 @@ pub fn create_tools_menu() -> Menu {
 		.append_item(menu_ids::EXPORT_DOCUMENT_DATA, &export_label, &export_help)
 		.append_item(menu_ids::EXPORT_TO_PLAIN_TEXT, &export_text_label, &export_text_help)
 		.build();
-	let word_count_label = t("&Word Count\tCtrl+W");
+	// On macOS, Cmd+W is close, so use Ctrl+W (raw Control key) for word count.
+	let word_count_label = if cfg!(target_os = "macos") {
+		t("&Word Count\tRawCtrl+W")
+	} else {
+		t("&Word Count\tCtrl+W")
+	};
 	let word_count_help = t("Show word count");
 	let doc_info_label = t("Document &Info\tCtrl+I");
 	let doc_info_help = t("Show document information");
@@ -400,7 +423,9 @@ pub fn create_tools_menu() -> Menu {
 	menu.append_separator();
 	let options_label = t("&Options\tCtrl+,");
 	let sleep_label = t("&Sleep Timer...\tCtrl+Shift+S");
-	menu.append(menu_ids::OPTIONS, &options_label, "", ItemKind::Normal);
+	// On macOS, use wxID_PREFERENCES so wxWidgets puts it in the app menu.
+	let options_id = if cfg!(target_os = "macos") { menu_ids::PREFERENCES } else { menu_ids::OPTIONS };
+	menu.append(options_id, &options_label, "", ItemKind::Normal);
 	menu.append(menu_ids::SLEEP_TIMER, &sleep_label, "", ItemKind::Normal);
 	menu
 }

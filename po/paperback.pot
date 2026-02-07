@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.0\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-02-07 10:41-0700\n"
+"POT-Creation-Date: 2026-02-07 11:08-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -811,6 +811,9 @@ msgstr ""
 msgid "Show notes only"
 msgstr ""
 
+msgid "&View Note Text\tRawCtrl+Shift+W"
+msgstr ""
+
 msgid "&View Note Text\tCtrl+Shift+W"
 msgstr ""
 
@@ -835,10 +838,16 @@ msgstr ""
 msgid "Open a document"
 msgstr ""
 
+msgid "&Close\tCtrl+W"
+msgstr ""
+
 msgid "&Close\tCtrl+F4"
 msgstr ""
 
 msgid "Close the current document"
+msgstr ""
+
+msgid "Close &All\tCtrl+Shift+W"
 msgstr ""
 
 msgid "Close &All\tCtrl+Shift+F4"
@@ -847,13 +856,13 @@ msgstr ""
 msgid "Close all documents"
 msgstr ""
 
-msgid "Exit the application"
-msgstr ""
-
 msgid "&Recent Documents"
 msgstr ""
 
 msgid "Open a recent document"
+msgstr ""
+
+msgid "Exit the application"
 msgstr ""
 
 msgid "&Find...\tCtrl+F"
@@ -962,6 +971,9 @@ msgid "Export to &Plain Text...\tCtrl+E"
 msgstr ""
 
 msgid "Export document as plain text"
+msgstr ""
+
+msgid "&Word Count\tRawCtrl+W"
 msgstr ""
 
 msgid "&Word Count\tCtrl+W"

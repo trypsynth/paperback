@@ -993,7 +993,7 @@ impl MainWindow {
 				menu_ids::OPEN_CONTAINING_FOLDER => {
 					help::handle_open_containing_folder(&frame_copy, &dm);
 				}
-				menu_ids::OPTIONS => {
+				menu_ids::OPTIONS | menu_ids::PREFERENCES => {
 					let current_language = TranslationManager::instance().lock().unwrap().current_language();
 					let options = {
 						let cfg = config.lock().unwrap();
