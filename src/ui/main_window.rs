@@ -136,6 +136,9 @@ impl MainWindow {
 	}
 
 	pub fn show(&self) {
+		if self.config.lock().unwrap().get_app_bool("start_maximized", false) {
+			self.frame.maximize(true);
+		}
 		self.frame.show(true);
 		self.frame.centre();
 	}
