@@ -78,7 +78,7 @@ pub struct BookmarkDialogResult {
 
 struct OptionsDialogUi {
 	dialog: Dialog,
-	general_box: StaticBoxSizer,
+	notebook: Notebook,
 	restore_docs_check: CheckBox,
 	word_wrap_check: CheckBox,
 	minimize_to_tray_check: CheckBox,
@@ -107,36 +107,37 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 
 fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDialogUi {
 	let dialog = Dialog::builder(parent, &t("Options")).build();
-	let general_box = StaticBoxSizerBuilder::new_with_label(Orientation::Vertical, &dialog, &t("General")).build();
+	let notebook = Notebook::builder(&dialog).with_style(NotebookStyle::Top).build();
+	let general_panel = Panel::builder(&notebook).build();
+	let reading_panel = Panel::builder(&notebook).build();
+	let general_sizer = BoxSizer::builder(Orientation::Vertical).build();
+	let reading_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let restore_docs_check =
-		CheckBox::builder(&dialog).with_label(&t("&Restore previously opened documents on startup")).build();
-	let word_wrap_check = CheckBox::builder(&dialog).with_label(&t("&Word wrap")).build();
-	let minimize_to_tray_check = CheckBox::builder(&dialog).with_label(&t("&Minimize to system tray")).build();
-	let start_maximized_check = CheckBox::builder(&dialog).with_label(&t("&Start maximized")).build();
-	let compact_go_menu_check = CheckBox::builder(&dialog).with_label(&t("Show compact &go menu")).build();
-	let navigation_wrap_check = CheckBox::builder(&dialog).with_label(&t("&Wrap navigation")).build();
-	let check_for_updates_check = CheckBox::builder(&dialog).with_label(&t("Check for &updates on startup")).build();
+		CheckBox::builder(&general_panel).with_label(&t("&Restore previously opened documents on startup")).build();
+	let word_wrap_check = CheckBox::builder(&reading_panel).with_label(&t("&Word wrap")).build();
+	let minimize_to_tray_check = CheckBox::builder(&general_panel).with_label(&t("&Minimize to system tray")).build();
+	let start_maximized_check = CheckBox::builder(&general_panel).with_label(&t("&Start maximized")).build();
+	let compact_go_menu_check = CheckBox::builder(&reading_panel).with_label(&t("Show compact &go menu")).build();
+	let navigation_wrap_check = CheckBox::builder(&reading_panel).with_label(&t("&Wrap navigation")).build();
+	let check_for_updates_check =
+		CheckBox::builder(&general_panel).with_label(&t("Check for &updates on startup")).build();
 	let option_padding = 5;
-	for check in [
-		&restore_docs_check,
-		&word_wrap_check,
-		&minimize_to_tray_check,
-		&start_maximized_check,
-		&compact_go_menu_check,
-		&navigation_wrap_check,
-		&check_for_updates_check,
-	] {
-		general_box.add(check, 0, SizerFlag::All, option_padding);
+	for check in [&restore_docs_check, &start_maximized_check, &minimize_to_tray_check, &check_for_updates_check] {
+		general_sizer.add(check, 0, SizerFlag::All, option_padding);
+	}
+	for check in [&word_wrap_check, &navigation_wrap_check, &compact_go_menu_check] {
+		reading_sizer.add(check, 0, SizerFlag::All, option_padding);
 	}
 	let max_recent_docs = 100;
-	let recent_docs_label = StaticText::builder(&dialog).with_label(&t("Number of &recent documents to show:")).build();
-	let recent_docs_ctrl = SpinCtrl::builder(&dialog).with_range(0, max_recent_docs).build();
+	let recent_docs_label =
+		StaticText::builder(&general_panel).with_label(&t("Number of &recent documents to show:")).build();
+	let recent_docs_ctrl = SpinCtrl::builder(&general_panel).with_range(0, max_recent_docs).build();
 	let recent_docs_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	recent_docs_sizer.add(&recent_docs_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	recent_docs_sizer.add(&recent_docs_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
-	general_box.add_sizer(&recent_docs_sizer, 0, SizerFlag::All, option_padding);
-	let language_label = StaticText::builder(&dialog).with_label(&t("&Language:")).build();
-	let language_combo = ComboBox::builder(&dialog).with_style(ComboBoxStyle::ReadOnly).build();
+	general_sizer.add_sizer(&recent_docs_sizer, 0, SizerFlag::All, option_padding);
+	let language_label = StaticText::builder(&general_panel).with_label(&t("&Language:")).build();
+	let language_combo = ComboBox::builder(&general_panel).with_style(ComboBoxStyle::ReadOnly).build();
 	let languages = TranslationManager::instance().lock().unwrap().available_languages();
 	let mut language_codes = Vec::new();
 	for lang in &languages {
@@ -146,7 +147,11 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let language_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	language_sizer.add(&language_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	language_sizer.add(&language_combo, 0, SizerFlag::AlignCenterVertical, 0);
-	general_box.add_sizer(&language_sizer, 0, SizerFlag::All, option_padding);
+	general_sizer.add_sizer(&language_sizer, 0, SizerFlag::All, option_padding);
+	general_panel.set_sizer(general_sizer, true);
+	reading_panel.set_sizer(reading_sizer, true);
+	notebook.add_page(&general_panel, &t("General"), true, None);
+	notebook.add_page(&reading_panel, &t("Reading"), false, None);
 	restore_docs_check.set_value(config.get_app_bool("restore_previous_documents", true));
 	word_wrap_check.set_value(config.get_app_bool("word_wrap", false));
 	minimize_to_tray_check.set_value(config.get_app_bool("minimize_to_tray", false));
@@ -169,7 +174,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	ok_button.set_default();
 	OptionsDialogUi {
 		dialog,
-		general_box,
+		notebook,
 		restore_docs_check,
 		word_wrap_check,
 		minimize_to_tray_check,
@@ -192,7 +197,7 @@ fn finalize_options_dialog_layout(ui: &OptionsDialogUi) {
 	button_sizer.add(&ui.ok_button, 0, SizerFlag::All, DIALOG_PADDING);
 	button_sizer.add(&ui.cancel_button, 0, SizerFlag::All, DIALOG_PADDING);
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	content_sizer.add_sizer(&ui.general_box, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
+	content_sizer.add(&ui.notebook, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
 	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
 	ui.dialog.set_sizer_and_fit(content_sizer, true);
 	ui.dialog.centre();

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.0\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-02-07 05:24-0700\n"
+"POT-Creation-Date: 2026-02-07 06:14-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -29,9 +29,6 @@ msgid "Warning"
 msgstr ""
 
 msgid "Options"
-msgstr ""
-
-msgid "General"
 msgstr ""
 
 msgid "&Restore previously opened documents on startup"
@@ -59,6 +56,12 @@ msgid "Number of &recent documents to show:"
 msgstr ""
 
 msgid "&Language:"
+msgstr ""
+
+msgid "General"
+msgstr ""
+
+msgid "Reading"
 msgstr ""
 
 msgid "OK"
@@ -1042,9 +1045,6 @@ msgid "Line"
 msgstr ""
 
 msgid "Character"
-msgstr ""
-
-msgid "Reading"
 msgstr ""
 
 msgid "Sleep timer"
