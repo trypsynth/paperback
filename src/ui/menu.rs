@@ -350,17 +350,10 @@ pub fn create_file_menu(config: &ConfigManager) -> Menu {
 	let open_help = t("Open a document");
 	// On macOS, Ctrl+ maps to Cmd+, so use Cmd+W / Cmd+Shift+W for close.
 	// On Windows/Linux, keep Ctrl+F4 / Ctrl+Shift+F4.
-	let close_label = if cfg!(target_os = "macos") {
-		t("&Close\tCtrl+W")
-	} else {
-		t("&Close\tCtrl+F4")
-	};
+	let close_label = if cfg!(target_os = "macos") { t("&Close\tCtrl+W") } else { t("&Close\tCtrl+F4") };
 	let close_help = t("Close the current document");
-	let close_all_label = if cfg!(target_os = "macos") {
-		t("Close &All\tCtrl+Shift+W")
-	} else {
-		t("Close &All\tCtrl+Shift+F4")
-	};
+	let close_all_label =
+		if cfg!(target_os = "macos") { t("Close &All\tCtrl+Shift+W") } else { t("Close &All\tCtrl+Shift+F4") };
 	let close_all_help = t("Close all documents");
 	let file_menu = Menu::builder()
 		.append_item(menu_ids::OPEN, &open_label, &open_help)
@@ -470,11 +463,8 @@ pub fn create_tools_menu() -> Menu {
 		.append_item(menu_ids::EXPORT_TO_PLAIN_TEXT, &export_text_label, &export_text_help)
 		.build();
 	// On macOS, Cmd+W is close, so use Ctrl+W (raw Control key) for word count.
-	let word_count_label = if cfg!(target_os = "macos") {
-		t("&Word Count\tRawCtrl+W")
-	} else {
-		t("&Word Count\tCtrl+W")
-	};
+	let word_count_label =
+		if cfg!(target_os = "macos") { t("&Word Count\tRawCtrl+W") } else { t("&Word Count\tCtrl+W") };
 	let word_count_help = t("Show word count");
 	let doc_info_label = t("Document &Info\tCtrl+I");
 	let doc_info_help = t("Show document information");
