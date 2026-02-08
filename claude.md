@@ -2,26 +2,23 @@
 
 ## Project Overview
 
-Paperback is an accessible, lightweight, fast ebook and document reader for desktop. The project has been migrated from C++ (wxWidgets) to Rust (using wxdragon bindings). The migration is nearly complete, with only IPC/single-instance logic remaining in C++ (awaiting wxDragon IPC bindings).
+Paperback is an accessible, lightweight, fast ebook and document reader for desktop. Written entirely in Rust using wxdragon bindings for the GUI.
 
 ## Architecture
-
-### Current State
 
 The project is a **pure Rust application** built with `cargo build`:
 
 - Entry point: `src/main.rs`
 - Uses wxdragon for wxWidgets bindings
-- All UI, dialogs, config, and document handling are in Rust
-
-The only remaining C++ code (`app/app.cpp`, `app/app.hpp`) contains IPC logic for single-instance checking. This will be ported once wxDragon provides IPC bindings.
+- All UI, dialogs, config, document handling, and IPC are in Rust
 
 ### Directory Structure
 
 ```
 paperback/
-├── src/                    # Rust source (ACTIVE)
+├── src/                    # Rust source
 │   ├── main.rs             # Entry point
+│   ├── ipc.rs              # IPC for single-instance support
 │   ├── ui/                 # UI components
 │   │   ├── app.rs          # PaperbackApp main struct
 │   │   ├── main_window.rs  # Main window
@@ -42,23 +39,8 @@ paperback/
 │   ├── live_region.rs      # Accessibility
 │   ├── translation_manager.rs
 │   └── utils/              # Text, encoding, zip utilities
-├── app/                    # C++ source (IPC only - awaiting wxDragon bindings)
-│   ├── app.cpp             # IPC server/client, single instance checking
-│   └── app.hpp             # IPC class declarations
 └── Cargo.toml              # Rust build config
 ```
-
-## Remaining C++ Code
-
-Only `app/app.cpp` and `app/app.hpp` remain. They contain:
-
-| Feature | Purpose | Notes |
-|---------|---------|-------|
-| `paperback_server` / `paperback_client` | IPC for single instance | Uses wxIPC |
-| `wxSingleInstanceChecker` | Prevents multiple instances | |
-| `open_file()` via IPC | Opens files in existing instance | |
-
-This will be ported once wxDragon provides IPC bindings (`wxServer`, `wxClient`, `wxConnection`, `wxSingleInstanceChecker`).
 
 ## How to Build
 
@@ -76,7 +58,7 @@ cargo run --release
 
 ## Key Patterns
 
-### Dialog Implementation Pattern (Rust)
+### Dialog Implementation Pattern
 
 ```rust
 pub fn show_example_dialog(parent: &Frame, ...) -> Option<Result> {
@@ -133,6 +115,4 @@ The application is designed for accessibility with screen readers:
 
 ## Notes
 
-- All active development targets the Rust codebase
-- The remaining C++ code is minimal (IPC only) and will be removed once wxDragon provides IPC bindings
 - Translations use `.po` files - ensure translation keys match
