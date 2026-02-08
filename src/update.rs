@@ -4,7 +4,7 @@ use std::{
 	fmt::{Display, Formatter, Result as FmtResult},
 	fs::File,
 	io::{Read, Write},
-	path::PathBuf,
+	path::{Path, PathBuf},
 	time::Duration,
 };
 
@@ -82,9 +82,11 @@ pub fn download_update_file(url: &str, mut progress_callback: impl FnMut(u64, u6
 		.and_then(|v| v.parse::<u64>().ok())
 		.unwrap_or(0);
 	let fname = url.rsplit('/').next().unwrap_or("update.bin");
-	let mut dest_path = if fname.ends_with(".exe") {
+	let is_exe = Path::new(fname).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("exe"));
+	let is_zip = Path::new(fname).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("zip"));
+	let mut dest_path = if is_exe {
 		env::temp_dir()
-	} else if fname.ends_with(".zip") {
+	} else if is_zip {
 		env::current_exe()
 			.map_err(|e| UpdateError::NoDownload(format!("Failed to determine exe path: {e}")))?
 			.parent()

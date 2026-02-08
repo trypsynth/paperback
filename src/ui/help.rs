@@ -139,119 +139,130 @@ pub fn handle_donate(frame: &Frame) {
 
 fn present_update_result(outcome: Result<UpdateCheckOutcome, UpdateError>, silent: bool, current_version: &str) {
 	let parent_window = main_window_parent();
+	let parent = parent_window.as_ref();
 	match outcome {
 		Ok(UpdateCheckOutcome::UpdateAvailable(result)) => {
-			let latest_version =
-				if result.latest_version.is_empty() { current_version.to_string() } else { result.latest_version };
-			let plain_notes = markdown_to_text(&result.release_notes);
-			let release_notes =
-				if plain_notes.trim().is_empty() { t("No release notes were provided.") } else { plain_notes };
-			if let Some(parent) = parent_window.as_ref() {
-				if dialogs::show_update_dialog(parent, &latest_version, &release_notes)
-					&& !result.download_url.is_empty()
-				{
-					let download_url = result.download_url;
-					let progress =
-						ProgressDialog::builder(parent, &t("Paperback Update"), &t("Downloading update..."), 100)
-							.with_style(
-								ProgressDialogStyle::AutoHide
-									| ProgressDialogStyle::AppModal
-									| ProgressDialogStyle::RemainingTime,
-							)
-							.build();
-					ACTIVE_PROGRESS.with(|p| {
-						*p.borrow_mut() = Some(progress);
-					});
-					let downloaded = Arc::new(AtomicU64::new(0));
-					let total = Arc::new(AtomicU64::new(0));
-					let is_running = Arc::new(AtomicBool::new(true));
-					// Heartbeat thread to keep UI alive
-					let hb_downloaded = downloaded.clone();
-					let hb_total = total.clone();
-					let hb_is_running = is_running.clone();
-					thread::spawn(move || {
-						while hb_is_running.load(Ordering::Relaxed) {
-							let d = hb_downloaded.load(Ordering::Relaxed);
-							let t = hb_total.load(Ordering::Relaxed);
-							wxdragon::call_after(Box::new(move || {
-								ACTIVE_PROGRESS.with(|p| {
-									if let Some(dialog) = p.borrow().as_ref() {
-										if t > 0 {
-											let percent = (d * 100 / t) as i32;
-											dialog.update(percent, None);
-										} else {
-											dialog.pulse(None);
-										}
-									}
-								});
-							}));
-							thread::sleep(Duration::from_millis(200));
-						}
-					});
-					// Download thread
-					let d_downloaded = downloaded;
-					let d_total = total;
-					let d_is_running = is_running;
-					thread::spawn(move || {
-						let _res = update::download_update_file(&download_url, |d, t| {
-							d_downloaded.store(d, Ordering::Relaxed);
-							d_total.store(t, Ordering::Relaxed);
-						});
-						d_is_running.store(false, Ordering::Relaxed);
-						wxdragon::call_after(Box::new(move || {
-							ACTIVE_PROGRESS.with(|p| {
-								*p.borrow_mut() = None;
-							});
-							#[cfg(target_os = "windows")]
-							execute_update(_res);
-						}));
-					});
-				}
-			}
+			handle_update_available(parent, result, current_version);
 		}
 		Ok(UpdateCheckOutcome::UpToDate(latest_version)) => {
-			if silent {
-				return;
-			}
-			let message = if latest_version.trim().is_empty() {
-				t("No updates available.")
-			} else {
-				let template = t("No updates available. Latest version: {}");
-				template.replace("{}", &latest_version)
-			};
-			let title = t("Info");
-			if let Some(parent) = parent_window.as_ref() {
-				let dialog = MessageDialog::builder(parent, &message, &title)
-					.with_style(
-						MessageDialogStyle::OK | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre,
-					)
-					.build();
-				dialog.show_modal();
-			}
+			handle_update_up_to_date(parent, silent, &latest_version);
 		}
 		Err(err) => {
-			if silent {
-				return;
-			}
-			let (message, title) = match err {
-				UpdateError::HttpError(code) if code > 0 => {
-					let template = t("Failed to check for updates. HTTP status: %d");
-					(template.replacen("%d", &code.to_string(), 1), t("Error"))
-				}
-				_ => {
-					let msg = err.to_string();
-					let fallback = t("Error checking for updates.");
-					(if msg.is_empty() { fallback } else { msg }, t("Error"))
-				}
-			};
-			if let Some(parent) = parent_window.as_ref() {
-				let dialog = MessageDialog::builder(parent, &message, &title)
-					.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
-					.build();
-				dialog.show_modal();
-			}
+			handle_update_error(parent, silent, &err);
 		}
 	}
+}
+
+fn handle_update_available(
+	parent: Option<&ParentWindow>,
+	result: update::UpdateAvailableResult,
+	current_version: &str,
+) {
+	let latest_version =
+		if result.latest_version.is_empty() { current_version.to_string() } else { result.latest_version };
+	let plain_notes = markdown_to_text(&result.release_notes);
+	let release_notes = if plain_notes.trim().is_empty() { t("No release notes were provided.") } else { plain_notes };
+	let Some(parent) = parent else {
+		return;
+	};
+	if !dialogs::show_update_dialog(parent, &latest_version, &release_notes) || result.download_url.is_empty() {
+		return;
+	}
+	let download_url = result.download_url;
+	let progress = ProgressDialog::builder(parent, &t("Paperback Update"), &t("Downloading update..."), 100)
+		.with_style(ProgressDialogStyle::AutoHide | ProgressDialogStyle::AppModal | ProgressDialogStyle::RemainingTime)
+		.build();
+	ACTIVE_PROGRESS.with(|p| {
+		*p.borrow_mut() = Some(progress);
+	});
+	let downloaded = Arc::new(AtomicU64::new(0));
+	let total = Arc::new(AtomicU64::new(0));
+	let is_running = Arc::new(AtomicBool::new(true));
+	// Heartbeat thread to keep UI alive
+	let hb_downloaded = downloaded.clone();
+	let hb_total = total.clone();
+	let hb_is_running = is_running.clone();
+	thread::spawn(move || {
+		while hb_is_running.load(Ordering::Relaxed) {
+			let d = hb_downloaded.load(Ordering::Relaxed);
+			let t = hb_total.load(Ordering::Relaxed);
+			wxdragon::call_after(Box::new(move || {
+				ACTIVE_PROGRESS.with(|p| {
+					if let Some(dialog) = p.borrow().as_ref() {
+						if t > 0 {
+							let percent = i32::try_from(d.saturating_mul(100) / t).unwrap_or(i32::MAX);
+							dialog.update(percent, None);
+						} else {
+							dialog.pulse(None);
+						}
+					}
+				});
+			}));
+			thread::sleep(Duration::from_millis(200));
+		}
+	});
+	// Download thread
+	let d_downloaded = downloaded;
+	let d_total = total;
+	let d_is_running = is_running;
+	thread::spawn(move || {
+		let res = update::download_update_file(&download_url, |d, t| {
+			d_downloaded.store(d, Ordering::Relaxed);
+			d_total.store(t, Ordering::Relaxed);
+		});
+		d_is_running.store(false, Ordering::Relaxed);
+		wxdragon::call_after(Box::new(move || {
+			ACTIVE_PROGRESS.with(|p| {
+				*p.borrow_mut() = None;
+			});
+			#[cfg(target_os = "windows")]
+			execute_update(res);
+		}));
+	});
+}
+
+fn handle_update_up_to_date(parent: Option<&ParentWindow>, silent: bool, latest_version: &str) {
+	if silent {
+		return;
+	}
+	let message = if latest_version.trim().is_empty() {
+		t("No updates available.")
+	} else {
+		let template = t("No updates available. Latest version: {}");
+		template.replace("{}", latest_version)
+	};
+	let title = t("Info");
+	let Some(parent) = parent else {
+		return;
+	};
+	let dialog = MessageDialog::builder(parent, &message, &title)
+		.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre)
+		.build();
+	dialog.show_modal();
+}
+
+fn handle_update_error(parent: Option<&ParentWindow>, silent: bool, err: &UpdateError) {
+	if silent {
+		return;
+	}
+	let (message, title) = match err {
+		UpdateError::HttpError(code) if *code > 0 => {
+			let template = t("Failed to check for updates. HTTP status: %d");
+			(template.replacen("%d", &code.to_string(), 1), t("Error"))
+		}
+		_ => {
+			let msg = err.to_string();
+			let fallback = t("Error checking for updates.");
+			(if msg.is_empty() { fallback } else { msg }, t("Error"))
+		}
+	};
+	let Some(parent) = parent else {
+		return;
+	};
+	let dialog = MessageDialog::builder(parent, &message, &title)
+		.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
+		.build();
+	dialog.show_modal();
 }
 
 #[cfg(target_os = "windows")]
@@ -262,8 +273,9 @@ fn execute_update(result: Result<PathBuf, UpdateError>) {
 	};
 	match result {
 		Ok(path) => {
-			let path_str = path.to_string_lossy();
-			if path_str.ends_with(".exe") {
+			let is_exe = path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("exe"));
+			let is_zip = path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("zip"));
+			if is_exe {
 				if let Err(e) = Command::new(&path).spawn() {
 					let dlg = MessageDialog::builder(
 						parent,
@@ -276,7 +288,7 @@ fn execute_update(result: Result<PathBuf, UpdateError>) {
 					return;
 				}
 				process::exit(0);
-			} else if path_str.ends_with(".zip") {
+			} else if is_zip {
 				let current_exe = match env::current_exe() {
 					Ok(p) => p,
 					Err(e) => {
