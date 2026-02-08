@@ -178,3 +178,54 @@ pub fn check_for_updates(current_version: &str, is_installer: bool) -> Result<Up
 		release_notes: release.body.unwrap_or_default(),
 	}))
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn parse_semver_accepts_prefixes_and_suffixes() {
+		assert_eq!(parse_semver_value("v1.2.3"), Some((1, 2, 3)));
+		assert_eq!(parse_semver_value("V4.5.6"), Some((4, 5, 6)));
+		assert_eq!(parse_semver_value("1.2.3-beta.1"), Some((1, 2, 3)));
+	}
+
+	#[test]
+	fn parse_semver_defaults_missing_parts() {
+		assert_eq!(parse_semver_value("1"), Some((1, 0, 0)));
+		assert_eq!(parse_semver_value("1.2"), Some((1, 2, 0)));
+	}
+
+	#[test]
+	fn parse_semver_rejects_empty_or_invalid() {
+		assert_eq!(parse_semver_value(""), None);
+		assert_eq!(parse_semver_value("not-a-version"), None);
+		assert_eq!(parse_semver_value("v"), None);
+	}
+
+	#[test]
+	fn pick_download_url_prefers_installer() {
+		let assets = vec![
+			ReleaseAsset {
+				name: "paperback.zip".to_string(),
+				browser_download_url: "https://example.com/paperback.zip".to_string(),
+			},
+			ReleaseAsset {
+				name: "paperback_setup.exe".to_string(),
+				browser_download_url: "https://example.com/paperback_setup.exe".to_string(),
+			},
+		];
+		let url = pick_download_url(true, &assets);
+		assert_eq!(url.as_deref(), Some("https://example.com/paperback_setup.exe"));
+	}
+
+	#[test]
+	fn pick_download_url_accepts_case_insensitive_matches() {
+		let assets = vec![ReleaseAsset {
+			name: "PAPERBACK.ZIP".to_string(),
+			browser_download_url: "https://example.com/PAPERBACK.ZIP".to_string(),
+		}];
+		let url = pick_download_url(false, &assets);
+		assert_eq!(url.as_deref(), Some("https://example.com/PAPERBACK.ZIP"));
+	}
+}
