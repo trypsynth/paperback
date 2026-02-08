@@ -24,7 +24,7 @@ use crate::{
 pub struct PaperbackApp {
 	_config: Rc<Mutex<ConfigManager>>,
 	_main_window: Rc<MainWindow>,
-	_ipc_server: Option<IPCServer>,
+	_ipc_server: IPCServer,
 	_single_instance_checker: Option<SingleInstanceChecker>,
 }
 
@@ -53,7 +53,7 @@ impl PaperbackApp {
 		let main_window = Rc::new(MainWindow::new(Rc::clone(&config)));
 		MAIN_WINDOW_PTR.store(Rc::as_ptr(&main_window) as usize, Ordering::SeqCst);
 		wxdragon::app::set_top_window(main_window.frame());
-		let ipc_server = start_ipc_server(Rc::clone(&main_window));
+		let ipc_server = start_ipc_server(&Rc::clone(&main_window));
 		main_window.show();
 		open_from_command_line(&main_window);
 		if config.lock().unwrap().get_app_bool("check_for_updates_on_startup", true) {
@@ -104,7 +104,7 @@ fn send_ipc_command(command: IpcCommand) {
 	let _ = conn.disconnect();
 }
 
-fn start_ipc_server(main_window: Rc<MainWindow>) -> Option<IPCServer> {
+fn start_ipc_server(main_window: &Rc<MainWindow>) -> IPCServer {
 	let server = IPCServer::new(move |topic| {
 		if topic != IPC_TOPIC_OPEN_FILE {
 			return None;
@@ -133,5 +133,5 @@ fn start_ipc_server(main_window: Rc<MainWindow>) -> Option<IPCServer> {
 			.build();
 		dialog.show_modal();
 	}
-	Some(server)
+	server
 }

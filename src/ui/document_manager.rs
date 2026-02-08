@@ -115,7 +115,7 @@ impl DocumentManager {
 		let config = self.config.lock().unwrap();
 		let mut session = session;
 		let word_wrap = config.get_app_bool("word_wrap", false);
-		let text_ctrl = Self::build_text_ctrl(&panel, word_wrap, self_rc);
+		let text_ctrl = Self::build_text_ctrl(panel, word_wrap, self_rc);
 		let sizer = BoxSizer::builder(Orientation::Vertical).build();
 		sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
 		panel.set_sizer(sizer, true);
@@ -320,7 +320,7 @@ impl DocumentManager {
 			let old_ctrl = tab.text_ctrl;
 			let current_pos = old_ctrl.get_insertion_point();
 			let content = old_ctrl.get_value();
-			let text_ctrl = Self::build_text_ctrl(&tab.panel, word_wrap, self_rc);
+			let text_ctrl = Self::build_text_ctrl(tab.panel, word_wrap, self_rc);
 			let sizer = BoxSizer::builder(Orientation::Vertical).build();
 			sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
 			tab.panel.set_sizer(sizer, true);
@@ -335,12 +335,12 @@ impl DocumentManager {
 		}
 	}
 
-	fn build_text_ctrl(panel: &Panel, word_wrap: bool, self_rc: &Rc<Mutex<Self>>) -> TextCtrl {
+	fn build_text_ctrl(panel: Panel, word_wrap: bool, self_rc: &Rc<Mutex<Self>>) -> TextCtrl {
 		let style = TextCtrlStyle::MultiLine
 			| TextCtrlStyle::ReadOnly
 			| TextCtrlStyle::Rich2
 			| if word_wrap { TextCtrlStyle::WordWrap } else { TextCtrlStyle::DontWrap };
-		let text_ctrl = TextCtrl::builder(panel).with_style(style).build();
+		let text_ctrl = TextCtrl::builder(&panel).with_style(style).build();
 		let dm_for_enter = Rc::clone(self_rc);
 		text_ctrl.on_char(move |event| {
 			if let WindowEventData::Keyboard(kbd) = event {
@@ -376,7 +376,7 @@ impl DocumentManager {
 				if let Some(key) = kbd.get_key_code() {
 					if key == WXK_F10 && kbd.shift_down() {
 						kbd.event.skip(false);
-						show_reader_context_menu(&text_ctrl_for_menu);
+						show_reader_context_menu(text_ctrl_for_menu);
 						return;
 					}
 				}
@@ -386,7 +386,7 @@ impl DocumentManager {
 		let text_ctrl_for_menu = text_ctrl;
 		text_ctrl.bind_internal(EventType::CONTEXT_MENU, move |event| {
 			event.skip(false);
-			show_reader_context_menu(&text_ctrl_for_menu);
+			show_reader_context_menu(text_ctrl_for_menu);
 		});
 		text_ctrl
 	}
@@ -436,7 +436,7 @@ fn fill_text_ctrl(text_ctrl: TextCtrl, content: &str) {
 	}
 }
 
-fn show_reader_context_menu(text_ctrl: &TextCtrl) {
+fn show_reader_context_menu(text_ctrl: TextCtrl) {
 	text_ctrl.set_focus();
 	let mut menu = Menu::builder()
 		.append_item(menu_ids::TOGGLE_BOOKMARK, &t("Create &bookmark"), &t("Create bookmark"))
