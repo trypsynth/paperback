@@ -1,36 +1,44 @@
-# Paperback - version 0.7.0
+# Paperback - version 0.8.0
+
 ## Introduction
-Paperback is a lightweight, fast, and accessible ebook/document reader designed to make reading fun and seamless, regardless of the file format being used or the user's preferences.
+
+Paperback is a lightweight, fast, and accessible ebook and document reader for everyone, from casual readers to heavy power users. It's designed for screen reader accessibility, fast speeds, and a bloat-free experience.
 
 ## System Requirements
-Paperback currently runs on Windows 7 through Windows 11. It's possible it runs on earlier versions of Windows too and/or can be built in such a way that it will, but this hasn't been tested yet. Support for other platforms is planned for a future version.
+
+Paperback currently runs on Windows 10 and 11, with support for macOS and Linux in the pipeline.
 
 ## Features
-* Incredibly fast and standalone.
+
+* Completely standalone, not requiring any software to be installed on your computer to start reading.
+* Incredibly fast, even on old hardware.
 * Simple tabbed interface, allowing you to open as many documents as you want side-by-side.
 * Saves your cursor position across every document you open.
 * Optionally remembers what documents you had open when you closed the program, and restores them on next launch.
-* Designed with screen reader users in mind.
-* Ability to navigate by various navigation units, including HTML headings, PDF pages, and epub sections.
-* Robust find dialog, including features such as history and regular expression support.
+* Designed by a screen reader user for screen reader users.
+* Includes navigation functionality similar to that found in the web browsing mode of many screen readers to quickly and easily navigate through documents.
+* Includes a robust find dialog, including features such as history and regular expression support.
 * Can be ran entirely portably, or installed with file associations automatically set up.
 
 ## Currently supported filetypes
-Paperback supports several common file formats, with more planned for future releases.
+
+Paperback supports a large number of common file formats. The full list follows:
 
 * CHM help files
-* microsoft Word documents
-* Epub books (version 2 and 3)
+* Epub books
 * FB2 ebooks
 * HTML documents
 * Markdown documents
+* microsoft Word documents
 * OpenDocument presentations
 * OpenDocument text files
 * PDF documents
 * PowerPoint presentations
+* RTF documents
 * Text documents
 
 ## Hotkeys
+
 Paperback's user interface was designed specifically with keyboard and screen reader users in mind. As such, every action has an associated hotkey. Below, you'll find a list of all of them, grouped by menu structure.
 
 ### File menu
