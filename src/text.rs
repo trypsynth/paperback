@@ -1,3 +1,5 @@
+use std::iter;
+
 use pulldown_cmark::{Event, Parser, TagEnd};
 use roman::to;
 
@@ -62,7 +64,7 @@ pub fn collapse_whitespace(input: &str) -> String {
 	let trailing = chars.iter().rev().take_while(|ch| is_space_like(**ch)).count();
 	let mut result = String::with_capacity(input.len());
 	if leading > 0 {
-		result.extend(std::iter::repeat(' ').take(leading));
+		result.extend(iter::repeat_n(' ', leading));
 	}
 	let mut prev_was_space = false;
 	let mut seen_non_space = false;

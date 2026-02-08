@@ -97,11 +97,11 @@ impl MainWindow {
 						}
 						update_title_from_manager(&frame_copy, &dm);
 						let has_docs = dm.tab_count() > 0;
-						if !has_docs {
-							dm.notebook().set_focus();
-						} else {
-							dm.restore_focus();
-						}
+						if has_docs {
+      							dm.restore_focus();
+      						} else {
+      							dm.notebook().set_focus();
+      						}
 						drop(dm);
 						menu::update_menu_item_states(&frame_copy, has_docs);
 						event.skip(false);
@@ -371,11 +371,11 @@ impl MainWindow {
 					}
 					update_title_from_manager(&frame_copy, &dm);
 					let has_docs = dm.tab_count() > 0;
-					if !has_docs {
-						dm.notebook().set_focus();
-					} else {
-						dm.restore_focus();
-					}
+					if has_docs {
+     						dm.restore_focus();
+     					} else {
+     						dm.notebook().set_focus();
+     					}
 					drop(dm);
 					menu::update_menu_item_states(&frame_copy, has_docs);
 				}

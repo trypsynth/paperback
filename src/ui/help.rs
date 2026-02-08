@@ -150,7 +150,7 @@ fn present_update_result(outcome: Result<UpdateCheckOutcome, UpdateError>, silen
 				if dialogs::show_update_dialog(parent, &latest_version, &release_notes)
 					&& !result.download_url.is_empty()
 				{
-					let download_url = result.download_url.clone();
+					let download_url = result.download_url;
 					let progress =
 						ProgressDialog::builder(parent, &t("Paperback Update"), &t("Downloading update..."), 100)
 							.with_style(
