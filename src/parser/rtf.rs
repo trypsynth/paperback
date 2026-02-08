@@ -46,6 +46,45 @@ struct PendingLink {
 	start_position: usize,
 }
 
+/// Maps Windows-1252 bytes 0x80-0x9F to their Unicode code points.
+/// The `rtf_parser` crate represents both `\uN` (Unicode) and `\'xx` (codepage hex) escapes
+/// as `ControlWord::Unicode`. For `\'xx`, the value is a raw codepage byte, not a Unicode
+/// code point. In the 0x80-0x9F range, Windows-1252 maps to typographic characters (smart
+/// quotes, dashes, etc.) while Unicode has invisible C1 control characters. Since C1 controls
+/// never appear in document text, values in this range are always codepage bytes.
+const fn win1252_to_unicode(byte: u32) -> u32 {
+	match byte {
+		0x80 => 0x20AC, // €
+		0x82 => 0x201A, // ‚
+		0x83 => 0x0192, // ƒ
+		0x84 => 0x201E, // „
+		0x85 => 0x2026, // …
+		0x86 => 0x2020, // †
+		0x87 => 0x2021, // ‡
+		0x88 => 0x02C6, // ˆ
+		0x89 => 0x2030, // ‰
+		0x8A => 0x0160, // Š
+		0x8B => 0x2039, // ‹
+		0x8C => 0x0152, // Œ
+		0x8E => 0x017D, // Ž
+		0x91 => 0x2018, // '
+		0x92 => 0x2019, // '
+		0x93 => 0x201C, // "
+		0x94 => 0x201D, // "
+		0x95 => 0x2022, // •
+		0x96 => 0x2013, // –
+		0x97 => 0x2014, // —
+		0x98 => 0x02DC, // ˜
+		0x99 => 0x2122, // ™
+		0x9A => 0x0161, // š
+		0x9B => 0x203A, // ›
+		0x9C => 0x0153, // œ
+		0x9E => 0x017E, // ž
+		0x9F => 0x0178, // Ÿ
+		other => other, // 0x81, 0x8D, 0x8F, 0x90 are undefined; pass through everything else
+	}
+}
+
 fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 	let mut buffer = DocumentBuffer::new();
 	let mut in_header = true;
@@ -85,7 +124,8 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 								} else {
 									// Regular BMP character
 									pending_high_surrogate = None;
-									if let Some(ch) = char::from_u32(u32::from(code)) {
+									let codepoint = win1252_to_unicode(u32::from(code));
+									if let Some(ch) = char::from_u32(codepoint) {
 										buffer.append(&ch.to_string());
 									}
 								}
