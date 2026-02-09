@@ -76,3 +76,46 @@ pub const fn marker_type_to_heading_level(marker_type: MarkerType) -> i32 {
 		_ => 0,
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn build_toc_from_headings_creates_tree() {
+		let headings = vec![
+			HeadingInfo { offset: 0, level: 1, text: "A".to_string() },
+			HeadingInfo { offset: 10, level: 2, text: "A.1".to_string() },
+			HeadingInfo { offset: 20, level: 2, text: "A.2".to_string() },
+			HeadingInfo { offset: 30, level: 1, text: "B".to_string() },
+			HeadingInfo { offset: 40, level: 3, text: "B.1.a".to_string() },
+		];
+		let toc = build_toc_from_headings(&headings);
+		assert_eq!(toc.len(), 2);
+		assert_eq!(toc[0].name, "A");
+		assert_eq!(toc[0].children.len(), 2);
+		assert_eq!(toc[0].children[0].name, "A.1");
+		assert_eq!(toc[1].name, "B");
+		assert_eq!(toc[1].children.len(), 1);
+		assert_eq!(toc[1].children[0].name, "B.1.a");
+	}
+
+	#[test]
+	fn build_toc_from_headings_ignores_invalid_levels() {
+		let headings = vec![
+			HeadingInfo { offset: 0, level: 0, text: "Skip".to_string() },
+			HeadingInfo { offset: 5, level: -1, text: "Skip".to_string() },
+			HeadingInfo { offset: 10, level: 1, text: "Keep".to_string() },
+		];
+		let toc = build_toc_from_headings(&headings);
+		assert_eq!(toc.len(), 1);
+		assert_eq!(toc[0].name, "Keep");
+	}
+
+	#[test]
+	fn heading_level_round_trip() {
+		assert_eq!(marker_type_to_heading_level(heading_level_to_marker_type(1)), 1);
+		assert_eq!(marker_type_to_heading_level(heading_level_to_marker_type(3)), 3);
+		assert_eq!(marker_type_to_heading_level(heading_level_to_marker_type(6)), 6);
+	}
+}

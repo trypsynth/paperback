@@ -20,7 +20,7 @@ pub fn decode_execute_payload(data: &[u8]) -> Option<IpcCommand> {
 		return None;
 	}
 	let payload = String::from_utf8_lossy(data);
-	let payload = payload.trim_end_matches('\0');
+	let payload = payload.trim_end_matches('\0').trim();
 	if payload.is_empty() {
 		return None;
 	}
@@ -38,4 +38,45 @@ pub fn normalize_cli_path(path: &Path) -> PathBuf {
 		return path.to_path_buf();
 	}
 	env::current_dir().map_or_else(|_| path.to_path_buf(), |cwd| cwd.join(path))
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn decode_execute_payload_handles_empty_and_nulls() {
+		assert!(decode_execute_payload(b"").is_none());
+		assert!(decode_execute_payload(b"\0\0").is_none());
+		assert!(decode_execute_payload(b" \0").is_none());
+	}
+
+	#[test]
+	fn decode_execute_payload_handles_activate() {
+		let cmd = decode_execute_payload(b"ACTIVATE\0").expect("expected command");
+		match cmd {
+			IpcCommand::Activate => {}
+			_ => panic!("expected Activate"),
+		}
+	}
+
+	#[test]
+	fn decode_execute_payload_handles_open_file() {
+		let cmd = decode_execute_payload(b"C:\\test\\file.txt\0").expect("expected command");
+		match cmd {
+			IpcCommand::OpenFile(path) => {
+				assert_eq!(path, PathBuf::from("C:\\test\\file.txt"));
+			}
+			_ => panic!("expected OpenFile"),
+		}
+	}
+
+	#[test]
+	fn normalize_cli_path_handles_absolute_and_relative() {
+		let abs = Path::new("C:\\nonexistent_abs_path");
+		assert_eq!(normalize_cli_path(abs), PathBuf::from("C:\\nonexistent_abs_path"));
+		let rel = Path::new("nonexistent_rel_path");
+		let expected = env::current_dir().unwrap().join(rel);
+		assert_eq!(normalize_cli_path(rel), expected);
+	}
 }

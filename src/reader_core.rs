@@ -466,3 +466,66 @@ pub fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> 
 	}
 	LinkNavigation { found: false, is_external: false, offset: 0, url: String::new() }
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn reader_search_handles_basic_and_whole_word() {
+		let haystack = "Hello world";
+		let options = SearchOptions::FORWARD;
+		assert_eq!(reader_search(haystack, "hello", 0, options), 0);
+		let haystack = "hello_world";
+		let options = SearchOptions::FORWARD | SearchOptions::WHOLE_WORD;
+		assert_eq!(reader_search(haystack, "hello", 0, options), -1);
+	}
+
+	#[test]
+	fn reader_search_handles_utf16_offsets() {
+		let haystack = "a😀b";
+		let options = SearchOptions::FORWARD;
+		assert_eq!(reader_search(haystack, "b", 0, options), 3);
+	}
+
+	#[test]
+	fn reader_search_with_wrap_wraps_forward() {
+		let haystack = "abc";
+		let options = SearchOptions::FORWARD;
+		let result = reader_search_with_wrap(haystack, "a", 1, options);
+		assert!(result.found);
+		assert!(result.wrapped);
+		assert_eq!(result.position, 0);
+	}
+
+	#[test]
+	fn record_history_position_appends_and_trims() {
+		let mut positions = vec![1, 2, 3];
+		let mut index = 2;
+		record_history_position(&mut positions, &mut index, 4, 3);
+		assert_eq!(positions, vec![2, 3, 4]);
+		assert_eq!(index, 2);
+	}
+
+	#[test]
+	fn record_history_position_truncates_forward_history() {
+		let mut positions = vec![10, 20, 30];
+		let mut index = 1;
+		record_history_position(&mut positions, &mut index, 25, 10);
+		assert_eq!(positions, vec![10, 20, 25]);
+		assert_eq!(index, 2);
+	}
+
+	#[test]
+	fn history_go_previous_and_next() {
+		let history = vec![10, 20, 30];
+		let prev = history_go_previous(&history, 2, 30, 10);
+		assert!(prev.found);
+		assert_eq!(prev.target, 20);
+		assert_eq!(prev.index, 1);
+		let next = history_go_next(&history, 0, 10, 10);
+		assert!(next.found);
+		assert_eq!(next.target, 20);
+		assert_eq!(next.index, 1);
+	}
+}
