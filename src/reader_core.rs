@@ -489,6 +489,16 @@ mod tests {
 	}
 
 	#[test]
+	fn reader_search_handles_match_case() {
+		let haystack = "Hello hello";
+		let options = SearchOptions::FORWARD | SearchOptions::MATCH_CASE;
+		assert_eq!(reader_search(haystack, "hello", 0, options), 6);
+		assert_eq!(reader_search(haystack, "Hello", 0, options), 0);
+		let options = SearchOptions::FORWARD;
+		assert_eq!(reader_search(haystack, "HELLO", 0, options), 0);
+	}
+
+	#[test]
 	fn reader_search_with_wrap_wraps_forward() {
 		let haystack = "abc";
 		let options = SearchOptions::FORWARD;
