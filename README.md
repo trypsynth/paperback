@@ -19,15 +19,23 @@
 
 To build, you'll need cargo, as well as CMake and Ninja for building wxDragon.
 
-```batch
+On Linux, you will also need clang/libclang (for bindgen), GTK3, WebKitGTK, Expat, and TIFF development packages (for example `clang`, `libclang-dev`, `libgtk-3-dev`, `libwebkit2gtk-4.1-dev`, `libexpat1-dev`, and `libtiff-dev` on Debian/Ubuntu).
+
+```bash
 cargo build --release
 ```
 
 to generate the binary in the release folder, and
 
-```batch
+```bash
 cargo release
 ```
+
+`cargo release` produces platform-specific archives:
+
+* Windows: `paperback_windows.zip` and `paperback_setup.exe`
+* Linux: `paperback_linux.zip`
+* macOS: `paperback_mac.zip`
 
 ### Optional tools:
 
