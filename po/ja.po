@@ -1,0 +1,1068 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Quin Gillespie
+# This file is distributed under the same license as the paperback package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: paperback 0.8.0\n"
+"Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
+"POT-Creation-Date: 2026-02-07 11:18-0700\n"
+"PO-Revision-Date: 2026-02-11 20:48+0900\n"
+"Last-Translator: Kazto Kitabatake <contact@kitabatake1013.jp>\n"
+"Language-Team: \n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.5\n"
+
+msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."
+msgstr "このPDFには画像のみが含まれ、抽出可能なテキストがありません。内容を読むにはOCRソフトウェアが必要です。"
+
+msgid "Failed to create IPC server"
+msgstr "IPCサーバーの作成に失敗しました"
+
+msgid "Warning"
+msgstr "警告"
+
+msgid "Options"
+msgstr "オプション"
+
+msgid "&Restore previously opened documents on startup"
+msgstr "起動時に前回の文書を開く(&R)"
+
+msgid "&Word wrap"
+msgstr "折り返し(&W)"
+
+msgid "&Minimize to system tray"
+msgstr "システムトレーに最小化(&M)"
+
+msgid "&Start maximized"
+msgstr "最大化して起動(&S)"
+
+msgid "Show compact &go menu"
+msgstr "[移動]メニューをコンパクト表示(&G)"
+
+msgid "&Wrap navigation"
+msgstr "ナビゲーションの折り返し(&W)"
+
+msgid "Check for &updates on startup"
+msgstr "起動時に更新を確認(&U)"
+
+msgid "Number of &recent documents to show:"
+msgstr "最近開いた文書の表示件数(&R):"
+
+msgid "&Language:"
+msgstr "言語(&L):"
+
+msgid "General"
+msgstr "一般"
+
+msgid "Reading"
+msgstr "閲覧"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Cancel"
+msgstr "キャンセル"
+
+msgid "Jump to Bookmark"
+msgstr "しおりへ移動"
+
+msgid "&Filter:"
+msgstr "フィルター(&F):"
+
+msgid "All"
+msgstr "すべて"
+
+msgid "Bookmarks"
+msgstr "しおり"
+
+msgid "Notes"
+msgstr "メモ"
+
+msgid "&Edit Note"
+msgstr "メモの編集(&E)"
+
+msgid "&Delete"
+msgstr "削除(&D)"
+
+msgid "&Jump"
+msgstr "移動(&J)"
+
+msgid "&Cancel"
+msgstr "キャンセル(&C)"
+
+msgid "blank"
+msgstr "空白"
+
+msgid "Please select a bookmark to jump to."
+msgstr "移動先のしおりを選択してください。"
+
+msgid "Error"
+msgstr "エラー"
+
+msgid "Bookmark Note"
+msgstr "しおりのメモ"
+
+msgid "Edit bookmark note:"
+msgstr "しおりのメモを編集:"
+
+msgid "View Note"
+msgstr "メモの表示"
+
+msgid "Close"
+msgstr "閉じる"
+
+msgid "Table of Contents"
+msgstr "目次"
+
+msgid "Root"
+msgstr "ルート"
+
+msgid "Please select a section from the table of contents."
+msgstr "目次からセクションを選択してください。"
+
+msgid "No Selection"
+msgstr "選択なし"
+
+msgid "Untitled"
+msgstr "無題"
+
+msgid "Document Info"
+msgstr "文書情報"
+
+msgid "Path:"
+msgstr "パス:"
+
+msgid "Title:"
+msgstr "タイトル:"
+
+msgid "Author:"
+msgstr "著者:"
+
+msgid "Words:"
+msgstr "単語数:"
+
+msgid "Lines:"
+msgstr "行数:"
+
+msgid "Characters:"
+msgstr "文字数:"
+
+msgid "Characters (excluding spaces):"
+msgstr "文字数(スペースを除く):"
+
+msgid "Go to Line"
+msgstr "指定行へ移動"
+
+msgid "&Line number:"
+msgstr "行番号(&L):"
+
+msgid "Go to page"
+msgstr "指定ページへ移動"
+
+#, c-format
+msgid "Go to page (%d/%d):"
+msgstr "ページ数(%d/%d):"
+
+msgid "Go to Percent"
+msgstr "パーセント移動"
+
+msgid "&Percent"
+msgstr "パーセント(&P)"
+
+msgid "P&ercent:"
+msgstr "パーセント(&E):"
+
+#, c-format
+msgid "Update to %s"
+msgstr "%sに更新"
+
+msgid "A new version of Paperback is available. Here's what's new:"
+msgstr "Paperbackの新しいバージョンが利用可能です。新機能:"
+
+msgid "&Yes"
+msgstr "はい(&Y)"
+
+msgid "&No"
+msgstr "いいえ(&N)"
+
+msgid "All Documents"
+msgstr "すべての文書"
+
+msgid "&search"
+msgstr "検索(&S)"
+
+msgid "File Name"
+msgstr "ファイル名"
+
+msgid "Status"
+msgstr "状態"
+
+msgid "Path"
+msgstr "パス"
+
+msgid "&Open"
+msgstr "開く(&O)"
+
+msgid "&Remove"
+msgstr "削除(&R)"
+
+msgid "&Clear All"
+msgstr "すべて削除(&C)"
+
+msgid "Are you sure you want to remove this document from the list? This will also remove its reading position."
+msgstr "リストからこの文書を削除しますか？これにより、文書の読み上げ位置の情報も削除されます。"
+
+msgid "Confirm"
+msgstr "確認"
+
+msgid "Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks."
+msgstr "リストからすべての文書を削除しますか？これにより、すべての文書の読み上げ位置としおりも削除されます。"
+
+msgid "Open As"
+msgstr "読み込み形式の指定"
+
+msgid ""
+"No suitable parser was found for {}.\n"
+"How would you like to open this file?"
+msgstr ""
+"{}に対応したパーサーが見つかりませんでした。\n"
+"このファイルをどのように開きますか？"
+
+msgid "Open &as:"
+msgstr "読み込み形式(&A):"
+
+msgid "Plain Text"
+msgstr "プレーンテキスト"
+
+msgid "HTML"
+msgstr "HTML"
+
+msgid "Markdown"
+msgstr "Markdown"
+
+msgid "Open"
+msgstr "オープン"
+
+msgid "Closed"
+msgstr "クローズ"
+
+msgid "Missing"
+msgstr "見つかりません"
+
+msgid "Sleep Timer"
+msgstr "スリープタイマー"
+
+msgid "&Minutes:"
+msgstr "分(&M):"
+
+msgid "Elements"
+msgstr "要素"
+
+msgid "&View:"
+msgstr "表示(&V):"
+
+msgid "Headings"
+msgstr "見出し"
+
+msgid "Links"
+msgstr "リンク"
+
+msgid "An accessible, lightweight, fast ebook and document reader"
+msgstr "アクセシブル、軽量、高速な電子書籍・文書リーダー"
+
+msgid "File not found: {}"
+msgstr "ファイルが見つかりません: {}"
+
+msgid "Password is required."
+msgstr "パスワードが必要です。"
+
+msgid "Failed to load document."
+msgstr "文書の読み込みに失敗しました。"
+
+msgid "Navigated to internal link."
+msgstr "リンク先へ移動しました。"
+
+msgid "Table View"
+msgstr "テーブルビュー"
+
+msgid "Ready"
+msgstr "準備完了"
+
+msgid "&Password:"
+msgstr "パスワード(&P):"
+
+msgid "Document Password"
+msgstr "文書のパスワード"
+
+msgid "Create &bookmark"
+msgstr "しおりの作成(&B)"
+
+msgid "Create bookmark"
+msgstr "しおりを作成します"
+
+msgid "Bookmark with &note"
+msgstr "メモ付きのしおりを作成(&N)"
+
+msgid "Create bookmark with note"
+msgstr "メモ付きのしおりを作成します"
+
+msgid "&Find"
+msgstr "検索(&F)"
+
+msgid "Find text"
+msgstr "テキストを検索します"
+
+msgid "Find &next"
+msgstr "次を検索(&N)"
+
+msgid "Find next match"
+msgstr "次のテキストを検索します"
+
+msgid "Find &previous"
+msgstr "前を検索(&P)"
+
+msgid "Find previous match"
+msgstr "前のテキストを検索します"
+
+msgid "Go to &page"
+msgstr "指定ページへ移動(&P)"
+
+msgid "Go to &line"
+msgstr "指定行へ移動(&L)"
+
+msgid "Go to line"
+msgstr "指定した行へ移動します"
+
+msgid "Go to &percent"
+msgstr "パーセント移動(&P)"
+
+msgid "Go to percent"
+msgstr "パーセントを指定して移動します"
+
+msgid "Find"
+msgstr "検索"
+
+msgid "Find &what:"
+msgstr "検索文字列(&W):"
+
+msgid "&Match case"
+msgstr "大文字/小文字を区別(&M)"
+
+msgid "Match &whole word"
+msgstr "単語単位で検索(&W)"
+
+msgid "Use &regular expressions"
+msgstr "正規表現を使用(&R)"
+
+msgid "Find &Previous"
+msgstr "前を検索(&P)"
+
+msgid "Find &Next"
+msgstr "次を検索(&N)"
+
+msgid "Not found."
+msgstr "見つかりません。"
+
+msgid "No more results. Wrapping search."
+msgstr "これ以上見つかりません。折り返して検索します。"
+
+msgid "Failed to open containing folder."
+msgstr "保存先フォルダーを開けません。"
+
+msgid "readme.html not found. Please ensure the application was built properly."
+msgstr "readme.htmlが見つかりません。アプリケーションが正しくビルドされていることをご確認ください。"
+
+msgid "Failed to launch default browser."
+msgstr "既定のブラウザーを起動できません。"
+
+msgid "Failed to open donation page in browser."
+msgstr "ブラウザーで寄付ページを開けません。"
+
+msgid "No release notes were provided."
+msgstr "リリースノートがありません。"
+
+msgid "Paperback Update"
+msgstr "Paperbackの更新"
+
+msgid "Downloading update..."
+msgstr "更新をダウンロード中..."
+
+msgid "No updates available."
+msgstr "更新がありません。"
+
+msgid "No updates available. Latest version: {}"
+msgstr "更新がありません。最新バージョン: {}"
+
+msgid "Info"
+msgstr "情報"
+
+#, c-format
+msgid "Failed to check for updates. HTTP status: %d"
+msgstr "更新を確認できません。HTTPステータス: %d"
+
+msgid "Error checking for updates."
+msgstr "更新の確認中にエラーが発生しました。"
+
+msgid "Failed to launch installer"
+msgstr "インストーラーを起動できません"
+
+msgid "Failed to get current exe path"
+msgstr "現在のexeのパスを取得できません"
+
+msgid "Failed to launch update script"
+msgstr "更新スクリプトを起動できません"
+
+msgid "Unknown update file format."
+msgstr "更新ファイルが不明な形式です。"
+
+msgid "Update failed"
+msgstr "アップデート失敗"
+
+msgid "Unsupported format selected."
+msgstr "選択した形式には対応していません。"
+
+msgid "Paperback"
+msgstr "Paperback"
+
+msgid "Paperback - {}"
+msgstr "Paperback - {}"
+
+msgid "{} chars"
+msgstr "{}文字"
+
+msgid "Open Document"
+msgstr "文書を開く"
+
+msgid "No pages."
+msgstr "ページがありません。"
+
+msgid "document"
+msgstr "文書"
+
+msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
+msgstr "プレーンテキストファイル(*.txt)|*.txt|すべてのファイル(*.*)|*.*"
+
+msgid "Export document to plain text"
+msgstr "文書をプレーンテキストにエクスポート"
+
+msgid "Failed to export document."
+msgstr "文書のエクスポートに失敗しました。"
+
+msgid "Paperback files (*.paperback)|*.paperback"
+msgstr "Paperbackファイル(*.paperback)|*.paperback"
+
+msgid "Export notes and bookmarks"
+msgstr "メモとしおりのエクスポート"
+
+msgid "Notes and bookmarks exported successfully."
+msgstr "メモとしおりをエクスポートしました。"
+
+msgid "Export Successful"
+msgstr "エクスポート完了"
+
+msgid "Import notes and bookmarks"
+msgstr "メモとしおりのインポート"
+
+msgid "Notes and bookmarks imported successfully."
+msgstr "メモとしおりをインポートしました。"
+
+msgid "Import Successful"
+msgstr "インポート完了"
+
+msgid "The document contains {} words."
+msgstr "この文書の単語数は{}です。"
+
+msgid "Word count"
+msgstr "単語数の確認"
+
+msgid "Web View"
+msgstr "Webビュー"
+
+msgid "Could not determine content to display in Web View."
+msgstr "Webビューに表示する内容を特定できません。"
+
+msgid "Sleep timer cancelled."
+msgstr "スリープタイマーをキャンセルしました。"
+
+msgid "Sleep timer set for 1 minute."
+msgstr "スリープタイマーを1分に設定しました。"
+
+#, c-format
+msgid "Sleep timer set for %d minutes."
+msgstr "スリープタイマーを%d分に設定しました。"
+
+msgid "No recent documents."
+msgstr "最近開いた文書はありません。"
+
+msgid "Previous Section\t["
+msgstr "前のセクション\t["
+
+msgid "Go to previous section"
+msgstr "前のセクションへ移動"
+
+msgid "Next Section\t]"
+msgstr "次のセクション\t]"
+
+msgid "Go to next section"
+msgstr "次のセクションへ移動"
+
+msgid "Go to &Page\tCtrl+P"
+msgstr "指定ページへ移動(&P)\tCtrl+P"
+
+msgid "Previous Pa&ge\tShift+P"
+msgstr "前のページ(&g)\tShift+P"
+
+msgid "Next Pag&e\tP"
+msgstr "次のページ(&e)\tP"
+
+msgid "Previous Lin&k\tShift+K"
+msgstr "前のリンク(&k)\tShift+K"
+
+msgid "Next Lin&k\tK"
+msgstr "次のリンク(&k)\tK"
+
+msgid "Previous &Table\tShift+T"
+msgstr "前のテーブル(&T)\tShift+T"
+
+msgid "Next &Table\tT"
+msgstr "次のテーブル(&T)\tT"
+
+msgid "Previous Se&parator\tShift+S"
+msgstr "前の区切り線(&p)\tShift+S"
+
+msgid "Next Se&parator\tS"
+msgstr "次の区切り線(&p)\tS"
+
+msgid "Previous L&ist\tShift+L"
+msgstr "前のリスト(&i)\tShift+L"
+
+msgid "Next L&ist\tL"
+msgstr "次のリスト(&i)\tL"
+
+msgid "Previous List &Item\tShift+I"
+msgstr "前のリスト項目(&I)\tShift+I"
+
+msgid "Next List I&tem\tI"
+msgstr "次のリスト項目(&t)\tI"
+
+msgid "Next Heading Level 1\t1"
+msgstr "次の見出しレベル1\t1"
+
+msgid "Previous Heading Level &2\tShift+2"
+msgstr "前の見出しレベル&2\tShift+2"
+
+msgid "Next Heading Level 2\t2"
+msgstr "次の見出しレベル2\t2"
+
+msgid "Previous Heading Level &3\tShift+3"
+msgstr "前の見出しレベル&3\tShift+3"
+
+msgid "Next Heading Level 3\t3"
+msgstr "次の見出しレベル3\t3"
+
+msgid "Previous Heading Level &4\tShift+4"
+msgstr "前の見出しレベル&4\tShift+4"
+
+msgid "Next Heading Level 4\t4"
+msgstr "次の見出しレベル4\t4"
+
+msgid "Previous Heading Level &5\tShift+5"
+msgstr "前の見出しレベル&5\tShift+5"
+
+msgid "Next Heading Level 5\t5"
+msgstr "次の見出しレベル5\t5"
+
+msgid "Previous Heading Level &6\tShift+6"
+msgstr "前の見出しレベル&6\tShift+6"
+
+msgid "Next Heading Level 6\t6"
+msgstr "次の見出しレベル6\t6"
+
+msgid "&Previous Heading\tShift+H"
+msgstr "前の見出し(&P)\tShift+H"
+
+msgid "Go to previous heading"
+msgstr "前の見出しへ移動します"
+
+msgid "&Next Heading\tH"
+msgstr "次の見出し(&N)\tH"
+
+msgid "Go to next heading"
+msgstr "次の見出しへ移動します"
+
+msgid "Previous Heading Level &1\tShift+1"
+msgstr "前の見出しレベル&1\tShift+1"
+
+msgid "&Previous Bookmark\tShift+B"
+msgstr "前のしおり(&P)\tShift+B"
+
+msgid "Go to previous bookmark"
+msgstr "前のしおりへ移動します"
+
+msgid "&Next Bookmark\tB"
+msgstr "次のしおり(&N)\tB"
+
+msgid "Go to next bookmark"
+msgstr "次のしおりへ移動します"
+
+msgid "Previous &Note\tShift+N"
+msgstr "前のメモ(&N)\tShift+N"
+
+msgid "Go to previous note"
+msgstr "前のメモへ移動します"
+
+msgid "Next N&ote\tN"
+msgstr "次のメモ(&o)\tN"
+
+msgid "Go to next note"
+msgstr "次のメモへ移動します"
+
+msgid "Jump to &All...\tCtrl+B"
+msgstr "しおりまたはメモへ移動(&A)...\tCtrl+B"
+
+msgid "Show all bookmarks and notes"
+msgstr "すべてのしおりとメモを表示します"
+
+msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
+msgstr "しおりへ移動(&B)...\tCtrl+Alt+B"
+
+msgid "Show bookmarks only"
+msgstr "すべてのしおりを表示します"
+
+msgid "Jump to Notes &Only...\tCtrl+Alt+M"
+msgstr "メモへ移動(&O)...\tCtrl+Alt+M"
+
+msgid "Show notes only"
+msgstr "すべてのメモを表示します"
+
+msgid "&View Note Text\tRawCtrl+Shift+W"
+msgstr "メモの内容を表示(&V)\tRawCtrl+Shift+W"
+
+msgid "&View Note Text\tCtrl+Shift+W"
+msgstr "メモの内容を表示(&V)\tCtrl+Shift+W"
+
+msgid "View the note at current position"
+msgstr "現在位置のメモを表示します"
+
+msgid "&File"
+msgstr "ファイル(&F)"
+
+msgid "&Go"
+msgstr "移動(&G)"
+
+msgid "&Tools"
+msgstr "ツール(&T)"
+
+msgid "&Help"
+msgstr "ヘルプ(&H)"
+
+msgid "&Open...\tCtrl+O"
+msgstr "開く(&O)...\tCtrl+O"
+
+msgid "Open a document"
+msgstr "文書を開きます"
+
+msgid "&Close\tCtrl+W"
+msgstr "閉じる(&C)\tCtrl+W"
+
+msgid "&Close\tCtrl+F4"
+msgstr "閉じる(&C)\tCtrl+F4"
+
+msgid "Close the current document"
+msgstr "現在の文書を閉じます"
+
+msgid "Close &All\tCtrl+Shift+W"
+msgstr "すべて閉じる(&A)\tCtrl+Shift+W"
+
+msgid "Close &All\tCtrl+Shift+F4"
+msgstr "すべて閉じる(&A)\tCtrl+Shift+F4"
+
+msgid "Close all documents"
+msgstr "すべての文書を閉じます"
+
+msgid "&Recent Documents"
+msgstr "最近開いた文書(&R)"
+
+msgid "Open a recent document"
+msgstr "最近開いた文書を開きます"
+
+msgid "E&xit"
+msgstr "終了(&x)"
+
+msgid "Exit the application"
+msgstr "アプリケーションを終了します"
+
+msgid "&Find...\tCtrl+F"
+msgstr "検索(&F)...\tCtrl+F"
+
+msgid "Find text in the document"
+msgstr "文書内のテキストを検索します"
+
+msgid "Find &Next\tF3"
+msgstr "次を検索(&N)\tF3"
+
+msgid "Find next occurrence"
+msgstr "次のテキストを検索します"
+
+msgid "Find &Previous\tShift+F3"
+msgstr "前を検索(&P)\tShift+F3"
+
+msgid "Find previous occurrence"
+msgstr "前のテキストを検索します"
+
+msgid "Go to &line...\tCtrl+G"
+msgstr "指定行へ移動(&l)...\tCtrl+G"
+
+msgid "Go to a specific line"
+msgstr "指定した行へ移動します"
+
+msgid "Go to &percent...\tCtrl+Shift+G"
+msgstr "パーセント移動(&p)...\tCtrl+Shift+G"
+
+msgid "Go to a percentage of the document"
+msgstr "文書内のパーセンテージを指定して移動します"
+
+msgid "Go &Back\tAlt+Left"
+msgstr "戻る(&B)\tAlt+Left"
+
+msgid "Go back in history"
+msgstr "履歴を戻ります"
+
+msgid "Go &Forward\tAlt+Right"
+msgstr "進む(&F)\tAlt+Right"
+
+msgid "Go forward in history"
+msgstr "履歴を進みます"
+
+msgid "&Sections"
+msgstr "セクション(&S)"
+
+msgid "Navigate by sections"
+msgstr "セクション単位で移動します"
+
+msgid "&Headings"
+msgstr "見出し(&H)"
+
+msgid "Navigate by headings"
+msgstr "見出し単位で移動します"
+
+msgid "&Pages"
+msgstr "ページ(&P)"
+
+msgid "Navigate by pages"
+msgstr "ページ単位で移動します"
+
+msgid "&Bookmarks"
+msgstr "しおり(&B)"
+
+msgid "Navigate by bookmarks"
+msgstr "しおり単位で移動します"
+
+msgid "&Links"
+msgstr "リンク(&L)"
+
+msgid "Navigate by links"
+msgstr "リンク単位で移動します"
+
+msgid "&Tables"
+msgstr "テーブル(&T)"
+
+msgid "Navigate by tables"
+msgstr "テーブル単位で移動します"
+
+msgid "&Separators"
+msgstr "区切り線(&S)"
+
+msgid "Navigate by separators"
+msgstr "区切り線単位で移動します"
+
+msgid "&Lists"
+msgstr "リスト(&L)"
+
+msgid "Navigate by lists"
+msgstr "リスト単位で移動します"
+
+msgid "&Import Document Data...\tCtrl+Shift+I"
+msgstr "文書データのインポート(&I)...\tCtrl+Shift+I"
+
+msgid "Import bookmarks and position"
+msgstr "しおりと位置情報をインポートします"
+
+msgid "&Export Document Data...\tCtrl+Shift+E"
+msgstr "文書データのエクスポート(&E)...\tCtrl+Shift+E"
+
+msgid "Export bookmarks and position"
+msgstr "しおりと位置情報をエクスポートします"
+
+msgid "Export to &Plain Text...\tCtrl+E"
+msgstr "プレーンテキストにエクスポート(&P)...\tCtrl+E"
+
+msgid "Export document as plain text"
+msgstr "文書をプレーンテキストにエクスポートします"
+
+msgid "&Word Count\tRawCtrl+W"
+msgstr "単語数の確認(&W)\tRawCtrl+W"
+
+msgid "&Word Count\tCtrl+W"
+msgstr "単語数の確認(&W)\tCtrl+W"
+
+msgid "Show word count"
+msgstr "単語数を表示します"
+
+msgid "Document &Info\tCtrl+I"
+msgstr "文書情報(&I)\tCtrl+I"
+
+msgid "Show document information"
+msgstr "文書の情報を表示します"
+
+msgid "&Table of Contents\tCtrl+T"
+msgstr "目次(&T)\tCtrl+T"
+
+msgid "Show table of contents"
+msgstr "目次を表示します"
+
+msgid "&Elements List...\tF7"
+msgstr "要素リスト(&E)...\tF7"
+
+msgid "Show elements list"
+msgstr "要素リストを表示します"
+
+msgid "Open &Containing Folder\tCtrl+Shift+C"
+msgstr "保存先フォルダーを開く(&C)\tCtrl+Shift+C"
+
+msgid "Open folder containing the document"
+msgstr "文書が保存されているフォルダーを開きます"
+
+msgid "Open in &Web View\tCtrl+Shift+V"
+msgstr "&Webビューで開く\tCtrl+Shift+V"
+
+msgid "Open document in web view"
+msgstr "文書をWebビューで開きます"
+
+msgid "I&mport/Export"
+msgstr "インポート/エクスポート(&M)"
+
+msgid "Import and export options"
+msgstr "インポート/エクスポートオプション"
+
+msgid "Toggle &Bookmark\tCtrl+Shift+B"
+msgstr "しおりの切り替え(&B)\tCtrl+Shift+B"
+
+msgid "Bookmark with &Note\tCtrl+Shift+N"
+msgstr "メモ付きのしおりを設定(&N)\tCtrl+Shift+N"
+
+msgid "&Options\tCtrl+,"
+msgstr "オプション(&O)\tCtrl+,"
+
+msgid "&Sleep Timer...\tCtrl+Shift+S"
+msgstr "スリープタイマー(&S)...\tCtrl+Shift+S"
+
+msgid "&About Paperback\tCtrl+F1"
+msgstr "Paperbackについて(&A)\tCtrl+F1"
+
+msgid "About this application"
+msgstr "このアプリケーションについて"
+
+msgid "View Help in &Browser\tF1"
+msgstr "ブラウザーでヘルプを表示(&B)\tF1"
+
+msgid "View help in default browser"
+msgstr "既定のブラウザーでヘルプを表示します"
+
+msgid "View Help in &Paperback\tShift+F1"
+msgstr "&Paperbackでヘルプを表示\tShift+F1"
+
+msgid "View help in Paperback"
+msgstr "Paperbackでヘルプを表示します"
+
+msgid "Check for &Updates\tCtrl+Shift+U"
+msgstr "更新の確認(&U)\tCtrl+Shift+U"
+
+msgid "Check for updates"
+msgstr "更新を確認します"
+
+msgid "&Donate\tCtrl+D"
+msgstr "寄付(&D)\tCtrl+D"
+
+msgid "Support Paperback development"
+msgstr "Paperbackの開発を支援します"
+
+msgid "(No recent documents)"
+msgstr "(最近開いた文書なし)"
+
+msgid "Show All...\tCtrl+R"
+msgstr "すべて表示...\tCtrl+R"
+
+msgid "No sections."
+msgstr "セクションがありません。"
+
+msgid "No next section"
+msgstr "次のセクションがありません"
+
+msgid "No previous section"
+msgstr "前のセクションがありません"
+
+#, c-format
+msgid "No headings at level %d."
+msgstr "レベル%dの見出しがありません。"
+
+#, c-format
+msgid "No next heading at level %d."
+msgstr "次の見出しレベル%dがありません。"
+
+#, c-format
+msgid "No previous heading at level %d."
+msgstr "前の見出しレベル%dがありません。"
+
+msgid "No headings."
+msgstr "見出しがありません。"
+
+msgid "No next heading."
+msgstr "次の見出しがありません。"
+
+msgid "No previous heading."
+msgstr "前の見出しがありません。"
+
+msgid "No next page."
+msgstr "次のページがありません。"
+
+msgid "No previous page."
+msgstr "前のページがありません。"
+
+msgid "No links."
+msgstr "リンクがありません。"
+
+msgid "No next link."
+msgstr "次のリンクがありません。"
+
+msgid "No previous link."
+msgstr "前のリンクがありません。"
+
+msgid "No lists."
+msgstr "リストがありません。"
+
+msgid "No next list."
+msgstr "次のリストがありません。"
+
+msgid "No previous list."
+msgstr "前のリストがありません。"
+
+msgid "No list items."
+msgstr "リスト項目がありません。"
+
+msgid "No next list item."
+msgstr "次のリスト項目がありません。"
+
+msgid "No previous list item."
+msgstr "前のリスト項目がありません。"
+
+msgid "No tables."
+msgstr "テーブルがありません。"
+
+msgid "No next table."
+msgstr "次のテーブルがありません。"
+
+msgid "No previous table."
+msgstr "前のテーブルがありません。"
+
+msgid "No separators."
+msgstr "区切り線がありません。"
+
+msgid "No next separator."
+msgstr "次の区切り線がありません。"
+
+msgid "No previous separator."
+msgstr "前の区切り線がありません。"
+
+msgid "Wrapping to start. "
+msgstr "先頭に戻ります。"
+
+msgid "Wrapping to end. "
+msgstr "最後に戻ります。"
+
+#, c-format
+msgid "%s Heading level %d"
+msgstr "%s 見出しレベル%d"
+
+#, c-format
+msgid "Page %d: %s"
+msgstr "ページ%d: %s"
+
+msgid " link"
+msgstr "リンク"
+
+msgid "Navigated to next position."
+msgstr "次の位置へ移動します。"
+
+msgid "Navigated to previous position."
+msgstr "前の位置へ移動します。"
+
+msgid "No next position."
+msgstr "次の位置がありません。"
+
+msgid "No previous position."
+msgstr "前の位置がありません。"
+
+#, c-format
+msgid "%s - Bookmark %d"
+msgstr "%s - しおり%d"
+
+msgid "No notes."
+msgstr "メモがありません。"
+
+msgid "No bookmarks."
+msgstr "しおりがありません。"
+
+msgid "No next note."
+msgstr "次のメモがありません。"
+
+msgid "No next bookmark."
+msgstr "次のしおりがありません。"
+
+msgid "No previous note."
+msgstr "前のメモがありません。"
+
+msgid "No previous bookmark."
+msgstr "前のしおりがありません。"
+
+msgid "Bookmark."
+msgstr "しおり。"
+
+msgid "Bookmark removed."
+msgstr "しおりを削除しました。"
+
+msgid "Bookmark added."
+msgstr "しおりを追加しました。"
+
+msgid "Enter bookmark note:"
+msgstr "しおりのメモを入力:"
+
+msgid "Bookmark saved."
+msgstr "しおりを保存しました。"
+
+msgid "No note at the current position."
+msgstr "現在位置にメモはありません。"
+
+msgid "Line"
+msgstr "行"
+
+msgid "Character"
+msgstr "文字"
+
+msgid "Sleep timer"
+msgstr "スリープタイマー"
+
+msgid "&Restore"
+msgstr "再表示(&R)"
+
+msgid "Restore Paperback"
+msgstr "Paperbackを再度表示します"
+
+msgid "Exit Paperback"
+msgstr "Paperbackの終了"
