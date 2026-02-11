@@ -93,7 +93,7 @@ fn create_tray_state(
 	{
 		let doc_manager_click = Rc::clone(&doc_manager);
 		let tray_state_click = Rc::clone(&tray_state);
-		icon.on_left_up(move |_event| {
+		icon.on_left_down(move |_event| {
 			restore_from_tray(frame, &doc_manager_click, &tray_state_click);
 		});
 		icon.on_left_double_click(move |_event| {

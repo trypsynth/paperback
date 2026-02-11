@@ -14,6 +14,17 @@ use ureq::{Agent, config::Config};
 use crate::version;
 
 const RELEASE_URL: &str = "https://api.github.com/repos/trypsynth/paperback/releases/latest";
+const WINDOWS_INSTALLER_ASSETS: &[&str] = &["paperback_setup.exe"];
+const WINDOWS_PORTABLE_ASSETS: &[&str] = &["paperback_windows.zip", "paperback.zip"];
+const MACOS_ASSETS: &[&str] = &["paperback_mac.zip", "paperback_macos.zip"];
+const LINUX_ASSETS: &[&str] = &[
+	"paperback_linux.zip",
+	"paperback-linux.zip",
+	"paperback_linux.tar.gz",
+	"paperback-linux.tar.gz",
+	"paperback.appimage",
+];
+const GENERIC_ASSETS: &[&str] = &["paperback.zip"];
 
 #[derive(Debug, Deserialize)]
 struct ReleaseAsset {
@@ -64,6 +75,28 @@ impl Display for UpdateError {
 
 impl Error for UpdateError {}
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum UpdateTarget {
+	Windows,
+	MacOs,
+	Linux,
+	Other,
+}
+
+impl UpdateTarget {
+	const fn current() -> Self {
+		if cfg!(target_os = "windows") {
+			Self::Windows
+		} else if cfg!(target_os = "macos") {
+			Self::MacOs
+		} else if cfg!(target_os = "linux") {
+			Self::Linux
+		} else {
+			Self::Other
+		}
+	}
+}
+
 pub fn download_update_file(url: &str, mut progress_callback: impl FnMut(u64, u64)) -> Result<PathBuf, UpdateError> {
 	let user_agent = version::user_agent();
 	let config = Config::builder()
@@ -82,11 +115,8 @@ pub fn download_update_file(url: &str, mut progress_callback: impl FnMut(u64, u6
 		.and_then(|v| v.parse::<u64>().ok())
 		.unwrap_or(0);
 	let fname = url.rsplit('/').next().unwrap_or("update.bin");
-	let is_exe = Path::new(fname).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("exe"));
 	let is_zip = Path::new(fname).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("zip"));
-	let mut dest_path = if is_exe {
-		env::temp_dir()
-	} else if is_zip {
+	let mut dest_path = if matches!(UpdateTarget::current(), UpdateTarget::Windows) && is_zip {
 		env::current_exe()
 			.map_err(|e| UpdateError::NoDownload(format!("Failed to determine exe path: {e}")))?
 			.parent()
@@ -128,14 +158,112 @@ fn parse_semver_value(value: &str) -> Option<(u64, u64, u64)> {
 	Some((major, minor, patch))
 }
 
-fn pick_download_url(is_installer: bool, assets: &[ReleaseAsset]) -> Option<String> {
-	let preferred_name = if is_installer { "paperback_setup.exe" } else { "paperback.zip" };
-	for asset in assets {
-		if asset.name.eq_ignore_ascii_case(preferred_name) {
-			return Some(asset.browser_download_url.clone());
+fn preferred_assets(target: UpdateTarget, is_installer: bool) -> &'static [&'static str] {
+	match (target, is_installer) {
+		(UpdateTarget::Windows, true) => WINDOWS_INSTALLER_ASSETS,
+		(UpdateTarget::Windows, false) => WINDOWS_PORTABLE_ASSETS,
+		(UpdateTarget::MacOs, _) => MACOS_ASSETS,
+		(UpdateTarget::Linux, _) => LINUX_ASSETS,
+		(UpdateTarget::Other, _) => GENERIC_ASSETS,
+	}
+}
+
+fn is_tar_gz(name: &str) -> bool {
+	name.ends_with(".tar.gz")
+}
+
+fn is_archive(name: &str) -> bool {
+	name.ends_with(".zip") || is_tar_gz(name)
+}
+
+fn is_linux_package(name: &str) -> bool {
+	is_archive(name) || name.ends_with(".appimage") || name.ends_with(".deb") || name.ends_with(".rpm")
+}
+
+fn pick_fallback_asset(target: UpdateTarget, is_installer: bool, assets: &[ReleaseAsset]) -> Option<String> {
+	match target {
+		UpdateTarget::Windows if is_installer => {
+			for asset in assets {
+				let name = asset.name.to_ascii_lowercase();
+				if name.contains("setup") && name.ends_with(".exe") {
+					return Some(asset.browser_download_url.clone());
+				}
+			}
+			for asset in assets {
+				let name = asset.name.to_ascii_lowercase();
+				if name.ends_with(".exe") {
+					return Some(asset.browser_download_url.clone());
+				}
+			}
+		}
+		UpdateTarget::Windows => {
+			for asset in assets {
+				let name = asset.name.to_ascii_lowercase();
+				if name.contains("windows") && is_archive(&name) {
+					return Some(asset.browser_download_url.clone());
+				}
+			}
+			for asset in assets {
+				let name = asset.name.to_ascii_lowercase();
+				if name == "paperback.zip" {
+					return Some(asset.browser_download_url.clone());
+				}
+			}
+			for asset in assets {
+				let name = asset.name.to_ascii_lowercase();
+				if is_archive(&name) {
+					return Some(asset.browser_download_url.clone());
+				}
+			}
+		}
+		UpdateTarget::MacOs => {
+			for asset in assets {
+				let name = asset.name.to_ascii_lowercase();
+				if name.contains("mac") && (is_archive(&name) || name.ends_with(".dmg")) {
+					return Some(asset.browser_download_url.clone());
+				}
+			}
+			for asset in assets {
+				let name = asset.name.to_ascii_lowercase();
+				if name.ends_with(".dmg") || is_archive(&name) {
+					return Some(asset.browser_download_url.clone());
+				}
+			}
+		}
+		UpdateTarget::Linux => {
+			for asset in assets {
+				let name = asset.name.to_ascii_lowercase();
+				if name.contains("linux") && is_linux_package(&name) {
+					return Some(asset.browser_download_url.clone());
+				}
+			}
+			for asset in assets {
+				let name = asset.name.to_ascii_lowercase();
+				if is_linux_package(&name) {
+					return Some(asset.browser_download_url.clone());
+				}
+			}
+		}
+		UpdateTarget::Other => {
+			for asset in assets {
+				let name = asset.name.to_ascii_lowercase();
+				if name.ends_with(".zip") {
+					return Some(asset.browser_download_url.clone());
+				}
+			}
 		}
 	}
 	None
+}
+
+fn pick_download_url(target: UpdateTarget, is_installer: bool, assets: &[ReleaseAsset]) -> Option<String> {
+	let preferred_names = preferred_assets(target, is_installer);
+	for asset in assets {
+		if preferred_names.iter().any(|name| asset.name.eq_ignore_ascii_case(name)) {
+			return Some(asset.browser_download_url.clone());
+		}
+	}
+	pick_fallback_asset(target, is_installer, assets)
 }
 
 fn fetch_latest_release() -> Result<GithubRelease, UpdateError> {
@@ -159,6 +287,7 @@ fn fetch_latest_release() -> Result<GithubRelease, UpdateError> {
 pub fn check_for_updates(current_version: &str, is_installer: bool) -> Result<UpdateCheckOutcome, UpdateError> {
 	let current = parse_semver_value(current_version)
 		.ok_or_else(|| UpdateError::InvalidVersion("Current version was not a valid semantic version.".to_string()))?;
+	let target = UpdateTarget::current();
 	let release = fetch_latest_release()?;
 	let latest_semver = parse_semver_value(&release.tag_name).ok_or_else(|| {
 		UpdateError::InvalidResponse("Latest release tag does not contain a valid semantic version.".to_string())
@@ -167,7 +296,7 @@ pub fn check_for_updates(current_version: &str, is_installer: bool) -> Result<Up
 		return Ok(UpdateCheckOutcome::UpToDate(release.tag_name));
 	}
 	let download_url = match release.assets.as_ref() {
-		Some(list) if !list.is_empty() => pick_download_url(is_installer, list).ok_or_else(|| {
+		Some(list) if !list.is_empty() => pick_download_url(target, is_installer, list).ok_or_else(|| {
 			UpdateError::NoDownload("Update is available but no matching download asset was found.".to_string())
 		})?,
 		_ => return Err(UpdateError::NoDownload("Latest release does not include downloadable assets.".to_string())),
@@ -215,7 +344,7 @@ mod tests {
 				browser_download_url: "https://example.com/paperback_setup.exe".to_string(),
 			},
 		];
-		let url = pick_download_url(true, &assets);
+		let url = pick_download_url(UpdateTarget::Windows, true, &assets);
 		assert_eq!(url.as_deref(), Some("https://example.com/paperback_setup.exe"));
 	}
 
@@ -225,7 +354,49 @@ mod tests {
 			name: "PAPERBACK.ZIP".to_string(),
 			browser_download_url: "https://example.com/PAPERBACK.ZIP".to_string(),
 		}];
-		let url = pick_download_url(false, &assets);
+		let url = pick_download_url(UpdateTarget::Windows, false, &assets);
 		assert_eq!(url.as_deref(), Some("https://example.com/PAPERBACK.ZIP"));
+	}
+
+	#[test]
+	fn pick_download_url_prefers_linux_assets() {
+		let assets = vec![
+			ReleaseAsset {
+				name: "paperback.zip".to_string(),
+				browser_download_url: "https://example.com/paperback.zip".to_string(),
+			},
+			ReleaseAsset {
+				name: "paperback_linux.zip".to_string(),
+				browser_download_url: "https://example.com/paperback_linux.zip".to_string(),
+			},
+		];
+		let url = pick_download_url(UpdateTarget::Linux, false, &assets);
+		assert_eq!(url.as_deref(), Some("https://example.com/paperback_linux.zip"));
+	}
+
+	#[test]
+	fn pick_download_url_prefers_macos_assets() {
+		let assets = vec![
+			ReleaseAsset {
+				name: "paperback_windows.zip".to_string(),
+				browser_download_url: "https://example.com/paperback_windows.zip".to_string(),
+			},
+			ReleaseAsset {
+				name: "paperback_mac.zip".to_string(),
+				browser_download_url: "https://example.com/paperback_mac.zip".to_string(),
+			},
+		];
+		let url = pick_download_url(UpdateTarget::MacOs, false, &assets);
+		assert_eq!(url.as_deref(), Some("https://example.com/paperback_mac.zip"));
+	}
+
+	#[test]
+	fn pick_download_url_linux_falls_back_to_generic_zip() {
+		let assets = vec![ReleaseAsset {
+			name: "paperback.zip".to_string(),
+			browser_download_url: "https://example.com/paperback.zip".to_string(),
+		}];
+		let url = pick_download_url(UpdateTarget::Linux, false, &assets);
+		assert_eq!(url.as_deref(), Some("https://example.com/paperback.zip"));
 	}
 }

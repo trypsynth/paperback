@@ -15,6 +15,7 @@ use std::{
 use wxdragon::{prelude::*, timer::Timer, translations::translate as t};
 
 use super::{
+	accessibility,
 	dialogs::{self, OptionsDialogFlags},
 	document_manager::DocumentManager,
 	find::{self, FindDialogState},
@@ -452,7 +453,7 @@ impl MainWindow {
 							};
 							let page_count = tab.session.page_count();
 							if page_count == 0 {
-								live_region::announce(live_region_label, &t("No pages."));
+								accessibility::announce(live_region_label, &t("No pages."));
 								return;
 							}
 							let current_pos = tab.text_ctrl.get_insertion_point();
@@ -1068,7 +1069,7 @@ impl MainWindow {
 						SLEEP_TIMER_DURATION_MINUTES.store(0, Ordering::SeqCst);
 						let dm_ref = dm.lock().unwrap();
 						update_title_from_manager(&frame_copy, &dm_ref);
-						live_region::announce(live_region_label, &t("Sleep timer cancelled."));
+						accessibility::announce(live_region_label, &t("Sleep timer cancelled."));
 						return;
 					}
 					let initial_duration = config.lock().unwrap().get_app_int("sleep_timer_duration", 30);
@@ -1095,7 +1096,7 @@ impl MainWindow {
 						} else {
 							t("Sleep timer set for %d minutes.").replace("%d", &duration.to_string())
 						};
-						live_region::announce(live_region_label, &msg);
+						accessibility::announce(live_region_label, &msg);
 					}
 				}
 				menu_ids::ABOUT => {
@@ -1144,7 +1145,7 @@ impl MainWindow {
 							!config_guard.get_all_documents().is_empty()
 						};
 						if !has_documents {
-							live_region::announce(live_region_label, &t("No recent documents."));
+							accessibility::announce(live_region_label, &t("No recent documents."));
 							return;
 						}
 						let open_paths = dm.lock().unwrap().open_paths();

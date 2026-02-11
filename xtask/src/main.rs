@@ -56,7 +56,15 @@ fn build_zip_package(
 	readme_path: &Path,
 	langs_dir: &Path,
 ) -> Result<(), Box<dyn Error>> {
-	let package_name = if cfg!(target_os = "macos") { "paperback_mac.zip" } else { "paperback.zip" };
+	let package_name = if cfg!(target_os = "windows") {
+		"paperback_windows.zip"
+	} else if cfg!(target_os = "macos") {
+		"paperback_mac.zip"
+	} else if cfg!(target_os = "linux") {
+		"paperback_linux.zip"
+	} else {
+		"paperback.zip"
+	};
 	let package_path = target_dir.join(package_name);
 	let file = File::create(&package_path)?;
 	let mut zip = ZipWriter::new(file);

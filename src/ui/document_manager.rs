@@ -13,8 +13,9 @@ use wxdragon::{
 };
 
 use super::{
+	accessibility,
 	main_window::{SLEEP_TIMER_DURATION_MINUTES, SLEEP_TIMER_START_MS},
-	menu_ids, status,
+	menu_ids, navigation, status,
 };
 use crate::{config::ConfigManager, parser::PASSWORD_REQUIRED_ERROR_PREFIX, session::DocumentSession};
 
@@ -27,6 +28,128 @@ pub struct DocumentTab {
 
 const POSITION_SAVE_INTERVAL_SECS: u64 = 3;
 const WXK_F10: i32 = 349;
+
+fn reader_navigation_command(
+	unicode_key: Option<i32>,
+	key_code: Option<i32>,
+	shift: bool,
+	ctrl_or_cmd: bool,
+	alt: bool,
+	meta: bool,
+) -> Option<i32> {
+	if ctrl_or_cmd || alt || meta {
+		return None;
+	}
+	let key = unicode_key.or(key_code)?;
+	let ch = u32::try_from(key).ok().and_then(char::from_u32)?;
+	if matches!(ch, '[' | '{') {
+		return Some(menu_ids::PREVIOUS_SECTION);
+	}
+	if matches!(ch, ']' | '}') {
+		return Some(menu_ids::NEXT_SECTION);
+	}
+	if let Some(level) = heading_level_key(ch) {
+		return Some(match (level, shift) {
+			(1, true) => menu_ids::PREVIOUS_HEADING_1,
+			(1, false) => menu_ids::NEXT_HEADING_1,
+			(2, true) => menu_ids::PREVIOUS_HEADING_2,
+			(2, false) => menu_ids::NEXT_HEADING_2,
+			(3, true) => menu_ids::PREVIOUS_HEADING_3,
+			(3, false) => menu_ids::NEXT_HEADING_3,
+			(4, true) => menu_ids::PREVIOUS_HEADING_4,
+			(4, false) => menu_ids::NEXT_HEADING_4,
+			(5, true) => menu_ids::PREVIOUS_HEADING_5,
+			(5, false) => menu_ids::NEXT_HEADING_5,
+			(6, true) => menu_ids::PREVIOUS_HEADING_6,
+			(6, false) => menu_ids::NEXT_HEADING_6,
+			_ => return None,
+		});
+	}
+	if ch.eq_ignore_ascii_case(&'h') {
+		return Some(if shift { menu_ids::PREVIOUS_HEADING } else { menu_ids::NEXT_HEADING });
+	}
+	if ch.eq_ignore_ascii_case(&'p') {
+		return Some(if shift { menu_ids::PREVIOUS_PAGE } else { menu_ids::NEXT_PAGE });
+	}
+	if ch.eq_ignore_ascii_case(&'k') {
+		return Some(if shift { menu_ids::PREVIOUS_LINK } else { menu_ids::NEXT_LINK });
+	}
+	if ch.eq_ignore_ascii_case(&'t') {
+		return Some(if shift { menu_ids::PREVIOUS_TABLE } else { menu_ids::NEXT_TABLE });
+	}
+	if ch.eq_ignore_ascii_case(&'s') {
+		return Some(if shift { menu_ids::PREVIOUS_SEPARATOR } else { menu_ids::NEXT_SEPARATOR });
+	}
+	if ch.eq_ignore_ascii_case(&'l') {
+		return Some(if shift { menu_ids::PREVIOUS_LIST } else { menu_ids::NEXT_LIST });
+	}
+	if ch.eq_ignore_ascii_case(&'i') {
+		return Some(if shift { menu_ids::PREVIOUS_LIST_ITEM } else { menu_ids::NEXT_LIST_ITEM });
+	}
+	if ch.eq_ignore_ascii_case(&'b') {
+		return Some(if shift { menu_ids::PREVIOUS_BOOKMARK } else { menu_ids::NEXT_BOOKMARK });
+	}
+	if ch.eq_ignore_ascii_case(&'n') {
+		return Some(if shift { menu_ids::PREVIOUS_NOTE } else { menu_ids::NEXT_NOTE });
+	}
+	None
+}
+
+fn heading_level_key(ch: char) -> Option<i32> {
+	match ch {
+		'1' | '!' => Some(1),
+		'2' | '@' => Some(2),
+		'3' | '#' => Some(3),
+		'4' | '$' => Some(4),
+		'5' | '%' => Some(5),
+		'6' | '^' => Some(6),
+		_ => None,
+	}
+}
+
+fn marker_navigation_for_command(command_id: i32) -> Option<(navigation::MarkerNavTarget, bool)> {
+	match command_id {
+		menu_ids::PREVIOUS_SECTION => Some((navigation::MarkerNavTarget::Section, false)),
+		menu_ids::NEXT_SECTION => Some((navigation::MarkerNavTarget::Section, true)),
+		menu_ids::PREVIOUS_HEADING => Some((navigation::MarkerNavTarget::Heading(0), false)),
+		menu_ids::NEXT_HEADING => Some((navigation::MarkerNavTarget::Heading(0), true)),
+		menu_ids::PREVIOUS_HEADING_1 => Some((navigation::MarkerNavTarget::Heading(1), false)),
+		menu_ids::NEXT_HEADING_1 => Some((navigation::MarkerNavTarget::Heading(1), true)),
+		menu_ids::PREVIOUS_HEADING_2 => Some((navigation::MarkerNavTarget::Heading(2), false)),
+		menu_ids::NEXT_HEADING_2 => Some((navigation::MarkerNavTarget::Heading(2), true)),
+		menu_ids::PREVIOUS_HEADING_3 => Some((navigation::MarkerNavTarget::Heading(3), false)),
+		menu_ids::NEXT_HEADING_3 => Some((navigation::MarkerNavTarget::Heading(3), true)),
+		menu_ids::PREVIOUS_HEADING_4 => Some((navigation::MarkerNavTarget::Heading(4), false)),
+		menu_ids::NEXT_HEADING_4 => Some((navigation::MarkerNavTarget::Heading(4), true)),
+		menu_ids::PREVIOUS_HEADING_5 => Some((navigation::MarkerNavTarget::Heading(5), false)),
+		menu_ids::NEXT_HEADING_5 => Some((navigation::MarkerNavTarget::Heading(5), true)),
+		menu_ids::PREVIOUS_HEADING_6 => Some((navigation::MarkerNavTarget::Heading(6), false)),
+		menu_ids::NEXT_HEADING_6 => Some((navigation::MarkerNavTarget::Heading(6), true)),
+		menu_ids::PREVIOUS_PAGE => Some((navigation::MarkerNavTarget::Page, false)),
+		menu_ids::NEXT_PAGE => Some((navigation::MarkerNavTarget::Page, true)),
+		menu_ids::PREVIOUS_LINK => Some((navigation::MarkerNavTarget::Link, false)),
+		menu_ids::NEXT_LINK => Some((navigation::MarkerNavTarget::Link, true)),
+		menu_ids::PREVIOUS_TABLE => Some((navigation::MarkerNavTarget::Table, false)),
+		menu_ids::NEXT_TABLE => Some((navigation::MarkerNavTarget::Table, true)),
+		menu_ids::PREVIOUS_SEPARATOR => Some((navigation::MarkerNavTarget::Separator, false)),
+		menu_ids::NEXT_SEPARATOR => Some((navigation::MarkerNavTarget::Separator, true)),
+		menu_ids::PREVIOUS_LIST => Some((navigation::MarkerNavTarget::List, false)),
+		menu_ids::NEXT_LIST => Some((navigation::MarkerNavTarget::List, true)),
+		menu_ids::PREVIOUS_LIST_ITEM => Some((navigation::MarkerNavTarget::ListItem, false)),
+		menu_ids::NEXT_LIST_ITEM => Some((navigation::MarkerNavTarget::ListItem, true)),
+		_ => None,
+	}
+}
+
+fn bookmark_navigation_for_command(command_id: i32) -> Option<(bool, bool)> {
+	match command_id {
+		menu_ids::PREVIOUS_BOOKMARK => Some((false, false)),
+		menu_ids::NEXT_BOOKMARK => Some((false, true)),
+		menu_ids::PREVIOUS_NOTE => Some((true, false)),
+		menu_ids::NEXT_NOTE => Some((true, true)),
+		_ => None,
+	}
+}
 
 pub struct DocumentManager {
 	frame: Frame,
@@ -115,7 +238,8 @@ impl DocumentManager {
 		let config = self.config.lock().unwrap();
 		let mut session = session;
 		let word_wrap = config.get_app_bool("word_wrap", false);
-		let text_ctrl = Self::build_text_ctrl(panel, word_wrap, self_rc);
+		let text_ctrl =
+			Self::build_text_ctrl(panel, word_wrap, self_rc, Rc::clone(&self.config), self.live_region_label);
 		let sizer = BoxSizer::builder(Orientation::Vertical).build();
 		sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
 		panel.set_sizer(sizer, true);
@@ -263,7 +387,7 @@ impl DocumentManager {
 						tab.text_ctrl.set_insertion_point(result.offset);
 						tab.text_ctrl.show_position(result.offset);
 						tab.session.check_and_record_history(result.offset);
-						live_region::announce(self.live_region_label, &t("Navigated to internal link."));
+						accessibility::announce(self.live_region_label, &t("Navigated to internal link."));
 					}
 					crate::session::LinkAction::External => {
 						wxdragon::utils::launch_default_browser(
@@ -320,7 +444,8 @@ impl DocumentManager {
 			let old_ctrl = tab.text_ctrl;
 			let current_pos = old_ctrl.get_insertion_point();
 			let content = old_ctrl.get_value();
-			let text_ctrl = Self::build_text_ctrl(tab.panel, word_wrap, self_rc);
+			let text_ctrl =
+				Self::build_text_ctrl(tab.panel, word_wrap, self_rc, Rc::clone(&self.config), self.live_region_label);
 			let sizer = BoxSizer::builder(Orientation::Vertical).build();
 			sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
 			tab.panel.set_sizer(sizer, true);
@@ -335,7 +460,13 @@ impl DocumentManager {
 		}
 	}
 
-	fn build_text_ctrl(panel: Panel, word_wrap: bool, self_rc: &Rc<Mutex<Self>>) -> TextCtrl {
+	fn build_text_ctrl(
+		panel: Panel,
+		word_wrap: bool,
+		self_rc: &Rc<Mutex<Self>>,
+		config: Rc<Mutex<ConfigManager>>,
+		live_region_label: StaticText,
+	) -> TextCtrl {
 		let style = TextCtrlStyle::MultiLine
 			| TextCtrlStyle::ReadOnly
 			| TextCtrlStyle::Rich2
@@ -370,10 +501,49 @@ impl DocumentManager {
 				dm.save_position_throttled();
 			}
 		});
+		let dm_for_nav = Rc::clone(self_rc);
+		let config_for_nav = Rc::clone(&config);
 		let text_ctrl_for_menu = text_ctrl;
 		text_ctrl.on_key_down(move |event| {
 			if let WindowEventData::Keyboard(kbd) = &event {
+				if let Some(command_id) = reader_navigation_command(
+					kbd.get_unicode_key(),
+					kbd.get_key_code(),
+					kbd.shift_down(),
+					kbd.cmd_down() || kbd.control_down(),
+					kbd.alt_down(),
+					kbd.meta_down(),
+				) {
+					if let Some((target, next)) = marker_navigation_for_command(command_id) {
+						navigation::handle_marker_navigation(
+							&dm_for_nav,
+							&config_for_nav,
+							live_region_label,
+							target,
+							next,
+						);
+					} else if let Some((notes_only, next)) = bookmark_navigation_for_command(command_id) {
+						navigation::handle_bookmark_navigation(
+							&dm_for_nav,
+							&config_for_nav,
+							live_region_label,
+							next,
+							notes_only,
+						);
+					}
+					kbd.event.skip(false);
+					return;
+				}
 				if let Some(key) = kbd.get_key_code() {
+					if key == WXK_F10
+						&& !kbd.shift_down()
+						&& !kbd.cmd_down() && !kbd.control_down()
+						&& !kbd.alt_down() && !kbd.meta_down()
+					{
+						accessibility::announce(live_region_label, &t("File menu"));
+						kbd.event.skip(true);
+						return;
+					}
 					if key == WXK_F10 && kbd.shift_down() {
 						kbd.event.skip(false);
 						show_reader_context_menu(text_ctrl_for_menu);
@@ -451,4 +621,85 @@ fn show_reader_context_menu(text_ctrl: TextCtrl) {
 		.append_item(menu_ids::GO_TO_PERCENT, &t("Go to &percent"), &t("Go to percent"))
 		.build();
 	text_ctrl.popup_menu(&mut menu, None);
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn reader_navigation_command_maps_next_heading() {
+		assert_eq!(
+			reader_navigation_command(Some(i32::from(b'h')), Some(i32::from(b'H')), false, false, false, false),
+			Some(menu_ids::NEXT_HEADING),
+		);
+	}
+
+	#[test]
+	fn reader_navigation_command_maps_previous_heading() {
+		assert_eq!(
+			reader_navigation_command(Some(i32::from(b'H')), Some(i32::from(b'H')), true, false, false, false),
+			Some(menu_ids::PREVIOUS_HEADING),
+		);
+	}
+
+	#[test]
+	fn reader_navigation_command_maps_heading_levels() {
+		assert_eq!(
+			reader_navigation_command(Some(i32::from(b'1')), Some(i32::from(b'1')), false, false, false, false),
+			Some(menu_ids::NEXT_HEADING_1),
+		);
+		assert_eq!(
+			reader_navigation_command(Some(i32::from(b'!')), Some(i32::from(b'1')), true, false, false, false),
+			Some(menu_ids::PREVIOUS_HEADING_1),
+		);
+		assert_eq!(
+			reader_navigation_command(Some(i32::from(b'6')), Some(i32::from(b'6')), false, false, false, false),
+			Some(menu_ids::NEXT_HEADING_6),
+		);
+		assert_eq!(
+			reader_navigation_command(Some(i32::from(b'^')), Some(i32::from(b'6')), true, false, false, false),
+			Some(menu_ids::PREVIOUS_HEADING_6),
+		);
+	}
+
+	#[test]
+	fn reader_navigation_command_maps_other_single_key_shortcuts() {
+		assert_eq!(
+			reader_navigation_command(Some(i32::from(b']')), Some(i32::from(b']')), false, false, false, false),
+			Some(menu_ids::NEXT_SECTION),
+		);
+		assert_eq!(
+			reader_navigation_command(Some(i32::from(b'[')), Some(i32::from(b'[')), false, false, false, false),
+			Some(menu_ids::PREVIOUS_SECTION),
+		);
+		assert_eq!(
+			reader_navigation_command(Some(i32::from(b'k')), Some(i32::from(b'K')), false, false, false, false),
+			Some(menu_ids::NEXT_LINK),
+		);
+		assert_eq!(
+			reader_navigation_command(Some(i32::from(b'K')), Some(i32::from(b'K')), true, false, false, false),
+			Some(menu_ids::PREVIOUS_LINK),
+		);
+		assert_eq!(
+			reader_navigation_command(Some(i32::from(b'b')), Some(i32::from(b'B')), false, false, false, false),
+			Some(menu_ids::NEXT_BOOKMARK),
+		);
+		assert_eq!(
+			reader_navigation_command(Some(i32::from(b'N')), Some(i32::from(b'N')), true, false, false, false),
+			Some(menu_ids::PREVIOUS_NOTE),
+		);
+	}
+
+	#[test]
+	fn reader_navigation_command_ignores_modifier_chords() {
+		assert_eq!(
+			reader_navigation_command(Some(i32::from(b'h')), Some(i32::from(b'H')), false, true, false, false),
+			None,
+		);
+		assert_eq!(
+			reader_navigation_command(Some(i32::from(b'h')), Some(i32::from(b'H')), false, false, true, false),
+			None,
+		);
+	}
 }

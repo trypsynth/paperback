@@ -73,8 +73,11 @@ mod tests {
 
 	#[test]
 	fn normalize_cli_path_handles_absolute_and_relative() {
+		#[cfg(windows)]
 		let abs = Path::new("C:\\nonexistent_abs_path");
-		assert_eq!(normalize_cli_path(abs), PathBuf::from("C:\\nonexistent_abs_path"));
+		#[cfg(not(windows))]
+		let abs = Path::new("/nonexistent_abs_path");
+		assert_eq!(normalize_cli_path(abs), PathBuf::from(abs));
 		let rel = Path::new("nonexistent_rel_path");
 		let expected = env::current_dir().unwrap().join(rel);
 		assert_eq!(normalize_cli_path(rel), expected);

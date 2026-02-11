@@ -19,10 +19,21 @@ mod tests {
 	fn extracts_title_from_path() {
 		assert_eq!(extract_title_from_path("foo.txt"), "foo");
 		assert_eq!(extract_title_from_path("/home/quin/books/worm.epub"), "worm");
-		assert_eq!(extract_title_from_path("C:\\Users\\Quin\\Desktop\\file.log"), "file");
 		assert_eq!(extract_title_from_path("/path/with/trailing/slash/"), "Untitled");
 		assert_eq!(extract_title_from_path("C:\\path\\with\\trailing\\slash\\"), "Untitled");
 		assert_eq!(extract_title_from_path("  spaced.txt  "), "spaced");
 		assert_eq!(extract_title_from_path(""), "Untitled");
+	}
+
+	#[cfg(windows)]
+	#[test]
+	fn extracts_title_from_windows_path() {
+		assert_eq!(extract_title_from_path("C:\\Users\\Quin\\Desktop\\file.log"), "file");
+	}
+
+	#[cfg(not(windows))]
+	#[test]
+	fn extracts_title_from_windows_like_path_non_windows() {
+		assert_eq!(extract_title_from_path("C:\\Users\\Quin\\Desktop\\file.log"), "C:\\Users\\Quin\\Desktop\\file");
 	}
 }

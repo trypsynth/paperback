@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.0\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-02-07 11:18-0700\n"
+"POT-Creation-Date: 2026-02-11 12:18-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -297,6 +297,9 @@ msgstr ""
 msgid "Ready"
 msgstr ""
 
+msgid "File menu"
+msgstr ""
+
 msgid "&Password:"
 msgstr ""
 
@@ -426,6 +429,21 @@ msgid "Unknown update file format."
 msgstr ""
 
 msgid "Update failed"
+msgstr ""
+
+msgid ""
+"Update downloaded to:\n"
+"{}\n"
+"Open it to finish installing."
+msgstr ""
+
+msgid ""
+"Update downloaded to:\n"
+"{}\n"
+"Please open it manually to finish installing."
+msgstr ""
+
+msgid "Update Downloaded"
 msgstr ""
 
 msgid "Unsupported format selected."
@@ -991,7 +1009,7 @@ msgid "Wrapping to end. "
 msgstr ""
 
 #, c-format
-msgid "%s Heading level %d"
+msgid "Heading level %d: %s"
 msgstr ""
 
 #, c-format

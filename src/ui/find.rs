@@ -3,7 +3,7 @@ use std::{cell::Cell, rc::Rc, sync::Mutex};
 use bitflags::bitflags;
 use wxdragon::{prelude::*, translations::translate as t};
 
-use super::document_manager::DocumentManager;
+use super::{accessibility, document_manager::DocumentManager};
 use crate::{config::ConfigManager, reader_core, text::display_len};
 
 const DIALOG_PADDING: i32 = 10;
@@ -431,14 +431,14 @@ fn do_find(
 	let start_pos = if forward { sel_end } else { sel_start };
 	let result = find_text_with_wrap(&text, &query, start_pos, options);
 	if !result.found {
-		live_region::announce(live_region_label, &t("Not found."));
+		accessibility::announce(live_region_label, &t("Not found."));
 		state.dialog.show(true);
 		state.dialog.raise();
 		state.focus_find_text();
 		return;
 	}
 	if result.wrapped {
-		live_region::announce(live_region_label, &t("No more results. Wrapping search."));
+		accessibility::announce(live_region_label, &t("No more results. Wrapping search."));
 	}
 	if result.position < 0 {
 		return;

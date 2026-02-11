@@ -2,7 +2,7 @@ use std::{rc::Rc, sync::Mutex};
 
 use wxdragon::{prelude::*, translations::translate as t};
 
-use super::{dialogs, document_manager::DocumentManager};
+use super::{accessibility, dialogs, document_manager::DocumentManager};
 use crate::{config::ConfigManager, reader_core, session::NavigationResult, types::BookmarkFilterType};
 
 #[derive(Clone, Copy)]
@@ -110,8 +110,8 @@ fn format_nav_found_message(
 	match ann.format {
 		NavFoundFormat::TextOnly => format!("{wrap_prefix}{context_text}"),
 		NavFoundFormat::TextWithLevel => {
-			let template = t("%s Heading level %d");
-			let message = template.replacen("%s", context_text, 1).replacen("%d", &context_index.to_string(), 1);
+			let template = t("Heading level %d: %s");
+			let message = template.replacen("%d", &context_index.to_string(), 1).replacen("%s", context_text, 1);
 			format!("{wrap_prefix}{message}")
 		}
 		NavFoundFormat::PageFormat => {
@@ -127,6 +127,15 @@ fn format_nav_found_message(
 	}
 }
 
+fn sanitize_announcement(message: &str) -> String {
+	let filtered: String = message.chars().filter(|ch| !ch.is_control() || matches!(ch, '\n' | '\t')).collect();
+	let mut truncated = String::new();
+	for ch in filtered.chars().take(512) {
+		truncated.push(ch);
+	}
+	truncated
+}
+
 fn apply_navigation_result(
 	tab: &super::document_manager::DocumentTab,
 	result: &NavigationResult,
@@ -140,25 +149,38 @@ fn apply_navigation_result(
 	};
 	let ann = nav_announcements(target, level_filter);
 	if result.not_supported {
-		live_region::announce(live_region_label, &ann.not_supported);
+		accessibility::announce(live_region_label, &ann.not_supported);
 		return false;
 	}
 	if !result.found {
 		let message = if next { &ann.not_found_next } else { &ann.not_found_prev };
-		live_region::announce(live_region_label, message);
+		accessibility::announce(live_region_label, message);
 		return false;
 	}
 	let mut context_text = result.marker_text.clone();
 	if context_text.is_empty() {
 		context_text = tab.session.get_line_text(result.offset);
 	}
+	context_text = context_text.replace('\n', " ").trim().to_string();
+	if context_text.chars().count() > 200 {
+		context_text = context_text.chars().take(200).collect();
+	}
 	let context_index = match target {
-		MarkerNavTarget::Heading(_) => result.marker_level,
+		MarkerNavTarget::Heading(requested_level) => {
+			if result.marker_level > 0 {
+				result.marker_level
+			} else if requested_level > 0 {
+				requested_level
+			} else {
+				1
+			}
+		}
 		MarkerNavTarget::Page => result.marker_index,
 		_ => 0,
 	};
 	let message = format_nav_found_message(&ann, &context_text, context_index, result.wrapped, next);
-	live_region::announce(live_region_label, &message);
+	let message = sanitize_announcement(&message);
+	accessibility::announce(live_region_label, &message);
 	let offset = result.offset;
 	tab.text_ctrl.set_focus();
 	tab.text_ctrl.set_insertion_point(offset);
@@ -199,7 +221,7 @@ pub fn handle_history_navigation(
 		}
 	};
 	drop(dm);
-	live_region::announce(live_region_label, &message);
+	accessibility::announce(live_region_label, &message);
 	if let Some((path_str, history, history_index)) = history_update {
 		let cfg = config.lock().unwrap();
 		cfg.set_navigation_history(&path_str, &history, history_index);
@@ -324,7 +346,7 @@ pub fn handle_bookmark_navigation(
 		}
 	};
 	drop(dm);
-	live_region::announce(live_region_label, &message);
+	accessibility::announce(live_region_label, &message);
 	if let Some((path_str, history, history_index)) = history_update {
 		let cfg = config.lock().unwrap();
 		cfg.set_navigation_history(&path_str, &history, history_index);
@@ -371,7 +393,7 @@ pub fn handle_bookmark_dialog(
 		(message, Some((path_str, history, history_index)))
 	};
 	drop(dm);
-	live_region::announce(live_region_label, &message);
+	accessibility::announce(live_region_label, &message);
 	if let Some((path_str, history, history_index)) = history_update {
 		let cfg = config.lock().unwrap();
 		cfg.set_navigation_history(&path_str, &history, history_index);
@@ -402,7 +424,7 @@ pub fn handle_toggle_bookmark(
 	cfg.flush();
 	drop(cfg);
 	let message = if existed { t("Bookmark removed.") } else { t("Bookmark added.") };
-	live_region::announce(live_region_label, &message);
+	accessibility::announce(live_region_label, &message);
 }
 
 pub fn handle_bookmark_with_note(
@@ -442,7 +464,7 @@ pub fn handle_bookmark_with_note(
 	}
 	cfg.flush();
 	drop(cfg);
-	live_region::announce(live_region_label, &t("Bookmark saved."));
+	accessibility::announce(live_region_label, &t("Bookmark saved."));
 }
 
 pub fn handle_view_note_text(

@@ -877,15 +877,46 @@ pub fn get_sorted_document_list(config: &ConfigManager, open_paths: &[String], f
 
 fn get_config_path() -> String {
 	let exe_dir = get_exe_directory();
-	let is_installed = (0..10).any(|i| exe_dir.join(format!("unins{i:03}.exe")).exists());
-	if is_installed {
-		if let Some(appdata) = env::var_os("APPDATA") {
-			let config_dir = PathBuf::from(appdata).join("Paperback");
-			let _ = fs::create_dir_all(&config_dir);
-			return config_dir.join("Paperback.ini").to_string_lossy().to_string();
-		}
+	let exe_config = exe_dir.join("Paperback.ini");
+	if exe_config.exists() {
+		return exe_config.to_string_lossy().to_string();
 	}
-	exe_dir.join("Paperback.ini").to_string_lossy().to_string()
+	#[cfg(target_os = "windows")]
+	{
+		let is_installed = (0..10).any(|i| exe_dir.join(format!("unins{i:03}.exe")).exists());
+		if is_installed {
+			if let Some(appdata) = env::var_os("APPDATA") {
+				let config_dir = PathBuf::from(appdata).join("Paperback");
+				if fs::create_dir_all(&config_dir).is_ok() {
+					return config_dir.join("Paperback.ini").to_string_lossy().to_string();
+				}
+			}
+		}
+		return exe_config.to_string_lossy().to_string();
+	}
+	#[cfg(target_os = "macos")]
+	{
+		if let Some(home) = env::var_os("HOME") {
+			let config_dir = PathBuf::from(home).join("Library").join("Application Support").join("Paperback");
+			if fs::create_dir_all(&config_dir).is_ok() {
+				return config_dir.join("Paperback.ini").to_string_lossy().to_string();
+			}
+		}
+		return exe_config.to_string_lossy().to_string();
+	}
+	#[cfg(not(any(target_os = "windows", target_os = "macos")))]
+	{
+		let config_root = env::var_os("XDG_CONFIG_HOME")
+			.map(PathBuf::from)
+			.or_else(|| env::var_os("HOME").map(|home| PathBuf::from(home).join(".config")));
+		if let Some(root) = config_root {
+			let config_dir = root.join("paperback");
+			if fs::create_dir_all(&config_dir).is_ok() {
+				return config_dir.join("Paperback.ini").to_string_lossy().to_string();
+			}
+		}
+		exe_config.to_string_lossy().to_string()
+	}
 }
 
 fn get_exe_directory() -> PathBuf {
