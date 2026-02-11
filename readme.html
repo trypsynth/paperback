@@ -174,15 +174,19 @@
 <li><a href="#system-requirements" id="toc-system-requirements">System
 Requirements</a></li>
 <li><a href="#features" id="toc-features">Features</a></li>
-<li><a href="#currently-supported-filetypes"
-id="toc-currently-supported-filetypes">Currently supported
-filetypes</a></li>
-<li><a href="#hotkeys" id="toc-hotkeys">Hotkeys</a>
+<li><a href="#currently-supported-file-types"
+id="toc-currently-supported-file-types">Currently supported file
+types</a></li>
+<li><a href="#keyboard-shortcuts" id="toc-keyboard-shortcuts">Keyboard
+shortcuts</a>
 <ul>
 <li><a href="#file-menu" id="toc-file-menu">File menu</a></li>
 <li><a href="#go-menu" id="toc-go-menu">Go menu</a></li>
 <li><a href="#tools-menu" id="toc-tools-menu">Tools menu</a></li>
 <li><a href="#help-menu" id="toc-help-menu">Help menu</a></li>
+<li><a href="#additional-document-view-keys"
+id="toc-additional-document-view-keys">Additional document-view
+keys</a></li>
 </ul></li>
 <li><a href="#credits" id="toc-credits">Credits</a>
 <ul>
@@ -239,113 +243,123 @@ browsing mode of many screen readers to quickly and easily navigate
 through documents.</li>
 <li>Includes a robust find dialog, including features such as history
 and regular expression support.</li>
-<li>Can be ran entirely portably, or installed with file associations
+<li>Can be run entirely portably, or installed with file associations
 automatically set up.</li>
 </ul>
-<h1 id="currently-supported-filetypes">Currently supported
-filetypes</h1>
-<p>Paperback supports a large number of common file formats. The full
-list follows:</p>
+<h1 id="currently-supported-file-types">Currently supported file
+types</h1>
+<p>Paperback supports the following formats and extensions:</p>
 <ul>
-<li>CHM help files</li>
-<li>Epub books</li>
-<li>FB2 ebooks</li>
-<li>HTML documents</li>
-<li>Markdown documents</li>
-<li>microsoft Word documents</li>
-<li>OpenDocument presentations</li>
-<li>OpenDocument text files</li>
-<li>PDF documents</li>
-<li>PowerPoint presentations</li>
-<li>RTF documents</li>
-<li>Text documents</li>
+<li>CHM help files (<code>.chm</code>)</li>
+<li>EPUB books (<code>.epub</code>)</li>
+<li>FB2 ebooks (<code>.fb2</code>)</li>
+<li>HTML documents (<code>.htm</code>, <code>.html</code>,
+<code>.xhtml</code>)</li>
+<li>Markdown documents (<code>.md</code>, <code>.markdown</code>,
+<code>.mdx</code>, <code>.mdown</code>, <code>.mdwn</code>,
+<code>.mkd</code>, <code>.mkdn</code>, <code>.mkdown</code>,
+<code>.ronn</code>)</li>
+<li>Microsoft Word documents (<code>.docx</code>,
+<code>.docm</code>)</li>
+<li>OpenDocument presentations (<code>.odp</code>)</li>
+<li>OpenDocument text files (<code>.odt</code>)</li>
+<li>PDF documents (<code>.pdf</code>)</li>
+<li>PowerPoint presentations (<code>.pptx</code>,
+<code>.pptm</code>)</li>
+<li>RTF documents (<code>.rtf</code>)</li>
+<li>Plain text and log files (<code>.txt</code>, <code>.log</code>)</li>
+<li>XML documents (<code>.xml</code>)</li>
 </ul>
-<h1 id="hotkeys">Hotkeys</h1>
-<p>Paperback’s user interface was designed specifically with keyboard
-and screen reader users in mind. As such, every action has an associated
-hotkey. Below, you’ll find a list of all of them, grouped by menu
-structure.</p>
+<h1 id="keyboard-shortcuts">Keyboard shortcuts</h1>
+<p>Paperback is designed for keyboard-first and screen reader-first use.
+Here are the current shortcuts.</p>
 <h2 id="file-menu">File menu</h2>
 <ul>
-<li>Ctrl+O: open a document.</li>
-<li>Ctrl+F4: close the currently focused document.</li>
-<li>Ctrl+Shift+F4: close all currently opened documents.</li>
-<li>Ctrl+R: bring up the all documents dialog.</li>
+<li><code>Ctrl+O</code>: Open a document.</li>
+<li><code>Ctrl+F4</code>: Close the current document.</li>
+<li><code>Ctrl+Shift+F4</code>: Close all open documents.</li>
+<li><code>Ctrl+R</code>: Show the “All Documents” dialog (from Recent
+Documents).</li>
 </ul>
 <h2 id="go-menu">Go menu</h2>
 <ul>
-<li>Ctrl+F: show the find dialog.</li>
-<li>F3: find next.</li>
-<li>Shift+F3: find previous.</li>
-<li>Ctrl+G: bring up the go to line dialog.</li>
-<li>Ctrl+Shift+G: bring up the go to percent dialog.</li>
-<li>Ctrl+P: Bring up the go to page dialog, if supported in your focused
-document.</li>
-<li>Alt+left: go to the previous item in the navigation history.</li>
-<li>Alt+right: go to the next item in the navigation history.</li>
-<li>Left bracket: go to the previous section.</li>
-<li>Right bracket: go to the next section.</li>
-<li>Shift+H: go to the previous heading.</li>
-<li>H: Go to the next heading.</li>
-<li>Shift+1: go to the previous heading level 1.</li>
-<li>1: go to the next heading level 1.</li>
-<li>Shift+2: go to the previous heading level 2.</li>
-<li>2: go to the next heading level 2.</li>
-<li>Shift+3: go to the previous heading level 3.</li>
-<li>3: go to the next heading level 3.</li>
-<li>Shift+4: go to the previous heading level 4.</li>
-<li>4: go to the next heading level 4.</li>
-<li>Shift+5: go to the previous heading level 5.</li>
-<li>5: go to the next heading level 5.</li>
-<li>Shift+6: go to the previous heading level 6.</li>
-<li>6: go to the next heading level 6.</li>
-<li>Shift+P: go to the previous page.</li>
-<li>P: go to the next page.</li>
-<li>Shift+B: go to the previous bookmark.</li>
-<li>B: go to the next bookmark.</li>
-<li>Shift+N: go to the previous note.</li>
-<li>N: go to the next note.</li>
-<li>Ctrl+B: bring up the jump to bookmark dialog, with both bookmarks
-and notes selected.</li>
-<li>Ctrl+Alt+B: bring up the jump to bookmark dialog, with only
-bookmarks selected.</li>
-<li>Ctrl+Alt+M: bring up the jump to bookmark dialog, with only notes
-selected.</li>
-<li>Ctrl+Shift+W: view the currently focused note in a read-only text
-field.</li>
-<li>Shift+K:” go to the previous link.</li>
-<li>K: go to the next link.</li>
-<li>Shift+L: go to the previous list.</li>
-<li>L: go to the next list.</li>
-<li>Shift+I: go to the previous list item.</li>
-<li>I: go to the next list item.</li>
+<li><code>Ctrl+F</code>: Show the Find dialog.</li>
+<li><code>F3</code>: Find next.</li>
+<li><code>Shift+F3</code>: Find previous.</li>
+<li><code>Ctrl+G</code>: Go to line.</li>
+<li><code>Ctrl+Shift+G</code>: Go to percent.</li>
+<li><code>Ctrl+P</code>: Go to page (when supported by the current
+document).</li>
+<li><code>Alt+Left</code>: Go back in navigation history.</li>
+<li><code>Alt+Right</code>: Go forward in navigation history.</li>
+<li><code>[</code>: Previous section.</li>
+<li><code>]</code>: Next section.</li>
+<li><code>Shift+H</code>: Previous heading.</li>
+<li><code>H</code>: Next heading.</li>
+<li><code>Shift+1</code> through <code>Shift+6</code>: Previous heading
+at level 1-6.</li>
+<li><code>1</code> through <code>6</code>: Next heading at level
+1-6.</li>
+<li><code>Shift+P</code>: Previous page.</li>
+<li><code>P</code>: Next page.</li>
+<li><code>Shift+B</code>: Previous bookmark.</li>
+<li><code>B</code>: Next bookmark.</li>
+<li><code>Shift+N</code>: Previous note.</li>
+<li><code>N</code>: Next note.</li>
+<li><code>Ctrl+B</code>: Jump to all bookmarks and notes.</li>
+<li><code>Ctrl+Alt+B</code>: Jump to bookmarks only.</li>
+<li><code>Ctrl+Alt+M</code>: Jump to notes only.</li>
+<li><code>Ctrl+Shift+W</code>: View note text at the current
+position.</li>
+<li><code>Shift+K</code>: Previous link.</li>
+<li><code>K</code>: Next link.</li>
+<li><code>Shift+T</code>: Previous table.</li>
+<li><code>T</code>: Next table.</li>
+<li><code>Shift+S</code>: Previous separator.</li>
+<li><code>S</code>: Next separator.</li>
+<li><code>Shift+L</code>: Previous list.</li>
+<li><code>L</code>: Next list.</li>
+<li><code>Shift+I</code>: Previous list item.</li>
+<li><code>I</code>: Next list item.</li>
 </ul>
 <h2 id="tools-menu">Tools menu</h2>
 <ul>
-<li>Ctrl+W: view the word count of the currently focused document.</li>
-<li>Ctrl+I: bring up the document info dialog.</li>
-<li>Ctrl+T: show the table of contents.</li>
-<li>F7: bring up the elements list.</li>
-<li>Ctrl+Shift+E: export your currently focused document’s bookmarks and
-reading position to a file for easy sharing.</li>
-<li>Ctrl+Shift+I: import metadata about a book from a .paperback
-file.</li>
-<li>Ctrl+E: export your focused document’s contents to a text file.</li>
-<li>Ctrl+Shift+B: toggle a bookmark at your current cursor
-position.</li>
-<li>Ctrl+Shift+N: add/edit a bookmarked note at your current cursor
-position.</li>
-<li>Ctrl+Comma: bring up the options dialog.</li>
-<li>Ctrl+Shift+S: toggle the sleep timer.</li>
+<li><code>Ctrl+W</code>: Show word count for the current document.</li>
+<li><code>Ctrl+I</code>: Show document info.</li>
+<li><code>Ctrl+T</code>: Show table of contents.</li>
+<li><code>F7</code>: Show elements list.</li>
+<li><code>Ctrl+Shift+C</code>: Open containing folder.</li>
+<li><code>Ctrl+Shift+V</code>: Open current content in Web View.</li>
+<li><code>Ctrl+Shift+E</code>: Export document data
+(<code>.paperback</code>).</li>
+<li><code>Ctrl+Shift+I</code>: Import document data
+(<code>.paperback</code>).</li>
+<li><code>Ctrl+E</code>: Export the current document to plain text.</li>
+<li><code>Ctrl+Shift+B</code>: Toggle bookmark at the current
+selection/cursor.</li>
+<li><code>Ctrl+Shift+N</code>: Add or edit bookmark note at the current
+selection/cursor.</li>
+<li><code>Ctrl+,</code>: Open options.</li>
+<li><code>Ctrl+Shift+S</code>: Toggle sleep timer.</li>
 </ul>
 <h2 id="help-menu">Help menu</h2>
 <ul>
-<li>Ctrl+F1: show the about dialog.</li>
-<li>F1: pop up this readme file in your default web browser.</li>
-<li>Shift+F1: pop up this readme file in Paperback itself.</li>
-<li>Ctrl+Shift+U: check for updates.</li>
-<li>Ctrl+D: open my PayPal donations page in your default web
+<li><code>Ctrl+F1</code>: Show About dialog.</li>
+<li><code>F1</code>: View help in your default browser.</li>
+<li><code>Shift+F1</code>: View help in Paperback.</li>
+<li><code>Ctrl+Shift+U</code>: Check for updates.</li>
+<li><code>Ctrl+D</code>: Open the donation page in your default
 browser.</li>
+</ul>
+<h2 id="additional-document-view-keys">Additional document-view
+keys</h2>
+<ul>
+<li><code>Delete</code> / <code>Numpad Delete</code> on the tab control:
+Close the selected document tab.</li>
+<li><code>Enter</code> in the document text: Activate link at cursor, or
+open a table view when on a table marker.</li>
+<li><code>Shift+F10</code> in the document text: Open the context
+menu.</li>
 </ul>
 <h1 id="credits">Credits</h1>
 <h2 id="development">Development</h2>
