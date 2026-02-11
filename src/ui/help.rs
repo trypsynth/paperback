@@ -215,7 +215,6 @@ fn handle_update_available(
 			ACTIVE_PROGRESS.with(|p| {
 				*p.borrow_mut() = None;
 			});
-			#[cfg(target_os = "windows")]
 			execute_update(res);
 		}));
 	});
@@ -339,6 +338,36 @@ fn execute_update(result: Result<PathBuf, UpdateError>) {
 					.build();
 				dlg.show_modal();
 			}
+		}
+		Err(e) => {
+			let dlg = MessageDialog::builder(parent, &format!("{}: {e}", t("Update failed")), &t("Error"))
+				.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError)
+				.build();
+			dlg.show_modal();
+		}
+	}
+}
+
+#[cfg(not(target_os = "windows"))]
+fn execute_update(result: Result<PathBuf, UpdateError>) {
+	let parent_window = main_window_parent();
+	let Some(parent) = parent_window.as_ref() else {
+		return;
+	};
+	match result {
+		Ok(path) => {
+			let url = format!("file://{}", path.to_string_lossy());
+			let opened = wxdragon::utils::launch_default_browser(&url, wxdragon::utils::BrowserLaunchFlags::Default);
+			let template = if opened {
+				t("Update downloaded to:\n{}\nOpen it to finish installing.")
+			} else {
+				t("Update downloaded to:\n{}\nPlease open it manually to finish installing.")
+			};
+			let message = template.replacen("{}", &path.to_string_lossy(), 1);
+			let dlg = MessageDialog::builder(parent, &message, &t("Update Downloaded"))
+				.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconInformation)
+				.build();
+			dlg.show_modal();
 		}
 		Err(e) => {
 			let dlg = MessageDialog::builder(parent, &format!("{}: {e}", t("Update failed")), &t("Error"))

@@ -8,76 +8,133 @@ permissions:
   contents: write
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artifact_name: paperback-windows
+            artifact_paths: |
+              target/release/paperback_windows.zip
+              target/release/paperback_setup.exe
+          - os: ubuntu-latest
+            artifact_name: paperback-linux
+            artifact_paths: target/release/paperback_linux.zip
+          - os: macos-latest
+            artifact_name: paperback-macos
+            artifact_paths: target/release/paperback_mac.zip
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
-        fetch-depth: 0
-    - name: Setup MSVC
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: x64
-    - name: Install Rust
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        toolchain: stable
-        components: rustfmt, clippy
-    - name: Install CMake, Ninja, and Pandoc
-      run: |
-        choco install cmake ninja pandoc -y
-    - name: Install Gettext via MSYS2
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: UCRT64
-        update: true
-        install: >-
-          gettext
-          mingw-w64-ucrt-x86_64-gettext-tools
-    - name: Build
-      run: |
-        $env:PATH = "$env:PATH;C:\msys64\ucrt64\bin;C:\msys64\usr\bin"
-        cargo release
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: paperback-build
-        path: |
-          target/release/paperback.zip
-          target/release/paperback_setup.exe
-        retention-days: 30
-    - name: Get latest tag reachable from HEAD
-      id: get_tag
-      shell: bash
-      run: |
-        TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-        echo "tag=$TAG" >> $GITHUB_OUTPUT
-    - name: Generate release notes
-      id: release_notes
-      shell: bash
-      run: |
-        PREV_TAG="${{ steps.get_tag.outputs.tag }}"
-        if [ -z "$PREV_TAG" ]; then
-          COMMITS=$(git log -1 --pretty=format:"- %h: %s" HEAD)
-        else
-          COMMITS=$(git log --pretty=format:"- %h: %s" "$PREV_TAG"..HEAD)
-        fi
-        COMMITS="${COMMITS//'%'/'%25'}"
-        echo "commits<<EOF" >> $GITHUB_OUTPUT
-        echo "$COMMITS" >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
-    - name: Create or update latest release
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: latest
-        name: Development Build
-        body: |
-          ## Commits since last release
-          ${{ steps.release_notes.outputs.commits }}
-        files: |
-          target/release/paperback.zip
-          target/release/paperback_setup.exe
-        prerelease: true
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Setup MSVC
+        if: matrix.os == 'windows-latest'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+
+      - name: Install Windows build dependencies
+        if: matrix.os == 'windows-latest'
+        run: |
+          choco install cmake ninja pandoc -y
+
+      - name: Install Gettext via MSYS2
+        if: matrix.os == 'windows-latest'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            gettext
+            mingw-w64-ucrt-x86_64-gettext-tools
+
+      - name: Install Linux build dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build pandoc gettext pkg-config libgtk-3-dev libexpat1-dev libtiff-dev
+          sudo apt-get install -y libwebkit2gtk-4.1-dev || sudo apt-get install -y libwebkit2gtk-4.0-dev
+
+      - name: Install macOS build dependencies
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install cmake ninja pandoc gettext
+          echo "$(brew --prefix gettext)/bin" >> "$GITHUB_PATH"
+
+      - name: Build (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          $env:PATH = "$env:PATH;C:\msys64\ucrt64\bin;C:\msys64\usr\bin"
+          cargo release
+
+      - name: Build (Linux/macOS)
+        if: matrix.os != 'windows-latest'
+        run: cargo release
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.artifact_paths }}
+          retention-days: 30
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: paperback-*
+          path: dist
+          merge-multiple: true
+
+      - name: Get latest tag reachable from HEAD
+        id: get_tag
+        shell: bash
+        run: |
+          TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Generate release notes
+        id: release_notes
+        shell: bash
+        run: |
+          PREV_TAG="${{ steps.get_tag.outputs.tag }}"
+          if [ -z "$PREV_TAG" ]; then
+            COMMITS=$(git log -1 --pretty=format:"- %h: %s" HEAD)
+          else
+            COMMITS=$(git log --pretty=format:"- %h: %s" "$PREV_TAG"..HEAD)
+          fi
+          COMMITS="${COMMITS//'%'/'%25'}"
+          echo "commits<<EOF" >> $GITHUB_OUTPUT
+          echo "$COMMITS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create or update latest release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: latest
+          name: Development Build
+          body: |
+            ## Commits since last release
+            ${{ steps.release_notes.outputs.commits }}
+          files: dist/**
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
