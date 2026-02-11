@@ -79,4 +79,45 @@ mod tests {
 		let expected = env::current_dir().unwrap().join(rel);
 		assert_eq!(normalize_cli_path(rel), expected);
 	}
+
+	#[test]
+	fn decode_execute_payload_trims_whitespace_for_activate() {
+		let cmd = decode_execute_payload(b"  ACTIVATE  ").expect("expected command");
+		match cmd {
+			IpcCommand::Activate => {}
+			_ => panic!("expected Activate"),
+		}
+	}
+
+	#[test]
+	fn decode_execute_payload_allows_spaced_open_file_paths() {
+		let cmd = decode_execute_payload(b"  C:\\My Docs\\book.txt  ").expect("expected command");
+		match cmd {
+			IpcCommand::OpenFile(path) => assert_eq!(path, PathBuf::from("C:\\My Docs\\book.txt")),
+			_ => panic!("expected OpenFile"),
+		}
+	}
+
+	#[test]
+	fn decode_execute_payload_handles_non_utf8_bytes_lossy() {
+		let cmd = decode_execute_payload(&[0xFF, 0xFE, b'a']).expect("expected command");
+		match cmd {
+			IpcCommand::OpenFile(path) => assert!(path.to_string_lossy().contains('a')),
+			_ => panic!("expected OpenFile"),
+		}
+	}
+
+	#[test]
+	fn normalize_cli_path_canonicalizes_existing_path() {
+		let cwd = env::current_dir().expect("cwd").canonicalize().expect("canonical cwd");
+		let normalized = normalize_cli_path(Path::new("."));
+		assert_eq!(normalized, cwd);
+	}
+
+	#[test]
+	fn normalize_cli_path_preserves_existing_absolute_files() {
+		let abs = env::current_exe().expect("current exe").canonicalize().expect("canonical exe");
+		let normalized = normalize_cli_path(&abs);
+		assert_eq!(normalized, abs);
+	}
 }

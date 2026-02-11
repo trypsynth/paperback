@@ -118,4 +118,73 @@ mod tests {
 		assert_eq!(marker_type_to_heading_level(heading_level_to_marker_type(3)), 3);
 		assert_eq!(marker_type_to_heading_level(heading_level_to_marker_type(6)), 6);
 	}
+
+	#[test]
+	fn build_toc_from_headings_empty_returns_empty() {
+		let toc = build_toc_from_headings(&[]);
+		assert!(toc.is_empty());
+	}
+
+	#[test]
+	fn build_toc_from_buffer_uses_only_heading_markers() {
+		let mut buffer = DocumentBuffer::new();
+		buffer.add_marker(crate::document::Marker::new(MarkerType::Link, 5).with_text("ignored".to_string()));
+		buffer.add_marker(crate::document::Marker::new(MarkerType::Heading1, 10).with_text("Root".to_string()));
+		buffer.add_marker(crate::document::Marker::new(MarkerType::Heading2, 20).with_text("Child".to_string()));
+		let toc = build_toc_from_buffer(&buffer);
+		assert_eq!(toc.len(), 1);
+		assert_eq!(toc[0].name, "Root");
+		assert_eq!(toc[0].children.len(), 1);
+		assert_eq!(toc[0].children[0].name, "Child");
+	}
+
+	#[test]
+	fn build_toc_from_headings_handles_level_drops_to_root() {
+		let headings = vec![
+			HeadingInfo { offset: 1, level: 1, text: "A".to_string() },
+			HeadingInfo { offset: 2, level: 3, text: "A.1.1".to_string() },
+			HeadingInfo { offset: 3, level: 1, text: "B".to_string() },
+		];
+		let toc = build_toc_from_headings(&headings);
+		assert_eq!(toc.len(), 2);
+		assert_eq!(toc[0].children[0].name, "A.1.1");
+		assert_eq!(toc[1].name, "B");
+	}
+
+	#[test]
+	fn build_toc_from_headings_preserves_offsets() {
+		let headings = vec![
+			HeadingInfo { offset: 7, level: 1, text: "One".to_string() },
+			HeadingInfo { offset: 11, level: 2, text: "Two".to_string() },
+		];
+		let toc = build_toc_from_headings(&headings);
+		assert_eq!(toc[0].offset, 7);
+		assert_eq!(toc[0].children[0].offset, 11);
+	}
+
+	#[test]
+	fn heading_level_to_marker_type_maps_out_of_range_to_heading6() {
+		assert_eq!(heading_level_to_marker_type(0), MarkerType::Heading6);
+		assert_eq!(heading_level_to_marker_type(7), MarkerType::Heading6);
+	}
+
+	#[test]
+	fn marker_type_to_heading_level_non_heading_is_zero() {
+		assert_eq!(marker_type_to_heading_level(MarkerType::Link), 0);
+		assert_eq!(marker_type_to_heading_level(MarkerType::SectionBreak), 0);
+	}
+
+	#[test]
+	fn build_toc_from_headings_with_same_level_creates_siblings() {
+		let headings = vec![
+			HeadingInfo { offset: 1, level: 2, text: "A".to_string() },
+			HeadingInfo { offset: 2, level: 2, text: "B".to_string() },
+			HeadingInfo { offset: 3, level: 2, text: "C".to_string() },
+		];
+		let toc = build_toc_from_headings(&headings);
+		assert_eq!(toc.len(), 3);
+		assert_eq!(toc[0].name, "A");
+		assert_eq!(toc[1].name, "B");
+		assert_eq!(toc[2].name, "C");
+	}
 }

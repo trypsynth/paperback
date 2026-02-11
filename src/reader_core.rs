@@ -469,7 +469,10 @@ pub fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> 
 
 #[cfg(test)]
 mod tests {
+	use std::collections::HashMap;
+
 	use super::*;
+	use crate::document::{Document, DocumentBuffer, DocumentHandle, Marker, MarkerType};
 
 	#[test]
 	fn reader_search_handles_basic_and_whole_word() {
@@ -537,5 +540,147 @@ mod tests {
 		assert!(next.found);
 		assert_eq!(next.target, 20);
 		assert_eq!(next.index, 1);
+	}
+
+	#[test]
+	fn reader_search_backward_finds_previous_match() {
+		let haystack = "one two one";
+		let options = SearchOptions::empty();
+		assert_eq!(reader_search(haystack, "one", 11, options), 8);
+	}
+
+	#[test]
+	fn reader_search_with_regex_invalid_pattern_returns_not_found() {
+		let haystack = "abc";
+		let options = SearchOptions::FORWARD | SearchOptions::REGEX;
+		assert_eq!(reader_search(haystack, "(", 0, options), -1);
+	}
+
+	#[test]
+	fn reader_search_whole_word_positive_case() {
+		let haystack = "alpha beta gamma";
+		let options = SearchOptions::FORWARD | SearchOptions::WHOLE_WORD;
+		assert_eq!(reader_search(haystack, "beta", 0, options), 6);
+	}
+
+	#[test]
+	fn reader_search_clamps_negative_start_to_zero() {
+		let haystack = "abc";
+		let options = SearchOptions::FORWARD;
+		assert_eq!(reader_search(haystack, "a", -500, options), 0);
+	}
+
+	#[test]
+	fn reader_search_with_wrap_wraps_backward() {
+		let haystack = "abca";
+		let options = SearchOptions::empty();
+		let result = reader_search_with_wrap(haystack, "a", 0, options);
+		assert!(result.found);
+		assert!(result.wrapped);
+		assert_eq!(result.position, 3);
+	}
+
+	#[test]
+	fn record_history_position_does_not_duplicate_current_position() {
+		let mut positions = vec![10, 20, 30];
+		let mut index = 2;
+		record_history_position(&mut positions, &mut index, 30, 10);
+		assert_eq!(positions, vec![10, 20, 30]);
+		assert_eq!(index, 2);
+	}
+
+	#[test]
+	fn history_go_previous_returns_not_found_for_empty_history() {
+		let result = history_go_previous(&[], 0, 0, 10);
+		assert!(!result.found);
+		assert_eq!(result.target, -1);
+		assert_eq!(result.positions, Vec::<i64>::new());
+	}
+
+	#[test]
+	fn history_go_next_returns_not_found_at_end() {
+		let history = vec![10, 20];
+		let result = history_go_next(&history, 1, 20, 10);
+		assert!(!result.found);
+		assert_eq!(result.target, -1);
+		assert_eq!(result.index, 1);
+	}
+
+	fn sample_link_doc_handle() -> DocumentHandle {
+		let mut buffer = DocumentBuffer::with_content("x".repeat(220));
+		buffer.add_marker(Marker::new(MarkerType::SectionBreak, 0));
+		buffer.add_marker(Marker::new(MarkerType::SectionBreak, 100));
+		let mut manifest_items = HashMap::new();
+		manifest_items.insert("id1".to_string(), "chapter1.xhtml".to_string());
+		manifest_items.insert("id2".to_string(), "chapter2.xhtml".to_string());
+		let mut id_positions = HashMap::new();
+		id_positions.insert("chapter1.xhtml#intro".to_string(), 10);
+		id_positions.insert("chapter2.xhtml#target".to_string(), 120);
+		id_positions.insert("global".to_string(), 180);
+		let mut doc = Document::new();
+		doc.set_buffer(buffer);
+		doc.spine_items = vec!["id1".to_string(), "id2".to_string()];
+		doc.manifest_items = manifest_items;
+		doc.id_positions = id_positions;
+		DocumentHandle::new(doc)
+	}
+
+	#[test]
+	fn resolve_link_handles_empty_and_external_hrefs() {
+		let doc = sample_link_doc_handle();
+		let empty = resolve_link(&doc, "  ", 0);
+		assert!(!empty.found);
+		let ext = resolve_link(&doc, "https://example.com", 0);
+		assert!(ext.found);
+		assert!(ext.is_external);
+		assert_eq!(ext.url, "https://example.com");
+	}
+
+	#[test]
+	fn resolve_link_fragment_prefers_current_section_scoped_id() {
+		let doc = sample_link_doc_handle();
+		let result = resolve_link(&doc, "#target", 150);
+		assert!(result.found);
+		assert!(!result.is_external);
+		assert_eq!(result.offset, 120);
+	}
+
+	#[test]
+	fn resolve_link_fragment_falls_back_to_global_id() {
+		let doc = sample_link_doc_handle();
+		let result = resolve_link(&doc, "#global", 150);
+		assert!(result.found);
+		assert_eq!(result.offset, 180);
+	}
+
+	#[test]
+	fn resolve_link_file_path_uses_section_start_when_no_fragment() {
+		let doc = sample_link_doc_handle();
+		let result = resolve_link(&doc, "chapter2.xhtml", 0);
+		assert!(result.found);
+		assert_eq!(result.offset, 100);
+	}
+
+	#[test]
+	fn resolve_link_file_path_uses_fragment_within_section_bounds() {
+		let doc = sample_link_doc_handle();
+		let result = resolve_link(&doc, "chapter2.xhtml#target", 0);
+		assert!(result.found);
+		assert_eq!(result.offset, 120);
+	}
+
+	#[test]
+	fn resolve_link_file_path_ignores_fragment_outside_section_bounds() {
+		let doc = sample_link_doc_handle();
+		let result = resolve_link(&doc, "chapter2.xhtml#intro", 0);
+		assert!(result.found);
+		assert_eq!(result.offset, 100);
+	}
+
+	#[test]
+	fn resolve_link_returns_not_found_for_unknown_targets() {
+		let doc = sample_link_doc_handle();
+		let result = resolve_link(&doc, "missing.xhtml#none", 0);
+		assert!(!result.found);
 	}
 }

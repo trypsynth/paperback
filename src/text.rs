@@ -209,4 +209,62 @@ mod tests {
 		assert_eq!(format_list_item(0, "a"), "0");
 		assert_eq!(format_list_item(-5, "i"), "-5");
 	}
+
+	#[test]
+	fn test_markdown_to_text_paragraphs_and_lists() {
+		let md = "# Title\n\nFirst paragraph.\n\n- One\n- Two";
+		let text = markdown_to_text(md);
+		assert!(text.contains("Title"));
+		assert!(text.contains("First paragraph."));
+		assert!(text.contains("One\nTwo"));
+	}
+
+	#[test]
+	fn test_markdown_to_text_removes_numeric_hash_references() {
+		let md = "A quote #12, and another #7.";
+		let text = markdown_to_text(md);
+		assert_eq!(text, "A quote and another.");
+	}
+
+	#[test]
+	fn test_markdown_to_text_keeps_non_numeric_hash_tokens() {
+		let md = "Topic #rust and issue #x1";
+		let text = markdown_to_text(md);
+		assert_eq!(text, "Topic #rust and issue #x1");
+	}
+
+	#[test]
+	fn test_url_decode_invalid_sequences_are_left_as_is() {
+		assert_eq!(url_decode("bad%ZZvalue"), "bad%ZZvalue");
+		assert_eq!(url_decode("%"), "%");
+	}
+
+	#[test]
+	fn test_collapse_whitespace_handles_mixed_space_types() {
+		let input = "\u{00A0}\u{200B}alpha\t \n beta\u{00A0}";
+		assert_eq!(collapse_whitespace(input), "  alpha beta ");
+	}
+
+	#[test]
+	fn test_trim_string_handles_mixed_space_like_chars() {
+		let input = "\u{200B}\u{00A0}  hello  \u{00A0}\u{200B}";
+		assert_eq!(trim_string(input), "hello");
+	}
+
+	#[test]
+	fn test_is_space_like_variants() {
+		assert!(is_space_like(' '));
+		assert!(is_space_like('\n'));
+		assert!(is_space_like('\u{00A0}'));
+		assert!(is_space_like('\u{200B}'));
+		assert!(!is_space_like('x'));
+	}
+
+	#[test]
+	fn test_format_list_item_alpha_boundaries() {
+		assert_eq!(format_list_item(52, "a"), "az");
+		assert_eq!(format_list_item(53, "a"), "ba");
+		assert_eq!(format_list_item(52, "A"), "AZ");
+		assert_eq!(format_list_item(53, "A"), "BA");
+	}
 }
