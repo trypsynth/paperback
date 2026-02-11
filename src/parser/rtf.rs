@@ -33,7 +33,9 @@ impl Parser for RtfParser {
 		let content_str = String::from_utf8_lossy(&bytes);
 		// Some RTF files have garbage at the end
 		let content_str = content_str.trim_end_matches(|c: char| c == '\0' || c.is_whitespace());
-		let tokens = Lexer::scan(content_str).map_err(|e| anyhow::anyhow!("Failed to parse RTF document: {e}"))?;
+		let encoding = extract_codepage(content_str);
+		let content_str = resolve_hex_escapes(content_str, encoding);
+		let tokens = Lexer::scan(&content_str).map_err(|e| anyhow::anyhow!("Failed to parse RTF document: {e}"))?;
 		let buffer = extract_content_from_tokens(&tokens);
 		let title = extract_title_from_path(&context.file_path);
 		let mut doc = Document::new().with_title(title);
@@ -63,14 +65,66 @@ fn encoding_for_codepage(cpg: i32) -> &'static Encoding {
 	}
 }
 
-/// Decodes a single codepage byte (from an RTF `\'xx` hex escape) to a Unicode character
-/// using the given encoding. The `rtf_parser` crate conflates `\uN` (Unicode) and `\'xx`
-/// (codepage hex) escapes into the same `ControlWord::Unicode` token. For values 0-255,
-/// we decode through the document's codepage to get the correct Unicode character.
-fn decode_codepage_byte(byte: u8, encoding: &'static Encoding) -> Option<char> {
-	let buf = [byte];
-	let (decoded, _, _) = encoding.decode(&buf);
-	decoded.chars().next()
+/// Extracts the `\ansicpg` codepage number from the raw RTF text and returns
+/// the corresponding encoding. Defaults to Windows-1252 if not found.
+fn extract_codepage(rtf: &str) -> &'static Encoding {
+	if let Some(pos) = rtf.find("\\ansicpg") {
+		let after = &rtf[pos + 8..];
+		let num_str: String = after.chars().take_while(char::is_ascii_digit).collect();
+		if let Ok(cpg) = num_str.parse::<i32>() {
+			return encoding_for_codepage(cpg);
+		}
+	}
+	encoding_rs::WINDOWS_1252
+}
+
+/// Pre-processes RTF text by replacing `\'xx` hex escapes (bytes >= 0x80) with
+/// their correctly decoded UTF-8 characters. This resolves the ambiguity between
+/// `\'xx` (codepage byte) and `\uN` (Unicode) escapes before the lexer sees them,
+/// since the `rtf_parser` crate conflates both into `ControlWord::Unicode`.
+///
+/// Bytes < 0x80 are left as escapes since they're ASCII (identical across all
+/// codepages) and some (`\'7b`, `\'7d`, `\'5c`) are structural RTF characters
+/// that the lexer must process as escapes.
+fn resolve_hex_escapes(rtf: &str, encoding: &'static Encoding) -> String {
+	let mut result = String::with_capacity(rtf.len());
+	let bytes = rtf.as_bytes();
+	let len = bytes.len();
+	let mut i = 0;
+	while i < len {
+		if bytes[i] == b'\\' && i + 3 < len && bytes[i + 1] == b'\'' {
+			let h1 = bytes[i + 2];
+			let h2 = bytes[i + 3];
+			if let Some(byte) = parse_hex_pair(h1, h2) {
+				if byte >= 0x80 {
+					let buf = [byte];
+					let (decoded, _, _) = encoding.decode(&buf);
+					result.push_str(&decoded);
+					i += 4;
+					continue;
+				}
+			}
+		}
+		result.push(bytes[i] as char);
+		i += 1;
+	}
+	result
+}
+
+/// Parses two ASCII hex digit bytes into a `u8`.
+fn parse_hex_pair(h1: u8, h2: u8) -> Option<u8> {
+	let d1 = hex_digit(h1)?;
+	let d2 = hex_digit(h2)?;
+	Some(d1 << 4 | d2)
+}
+
+const fn hex_digit(b: u8) -> Option<u8> {
+	match b {
+		b'0'..=b'9' => Some(b - b'0'),
+		b'a'..=b'f' => Some(b - b'a' + 10),
+		b'A'..=b'F' => Some(b - b'A' + 10),
+		_ => None,
+	}
 }
 
 #[allow(clippy::too_many_lines)]
@@ -79,16 +133,6 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 	let mut in_header = true;
 	let mut pending_high_surrogate: Option<u16> = None;
 	let mut pending_link: Option<PendingLink> = None;
-	// Extract codepage from \ansicpg in the token stream; default to 1252
-	let encoding = tokens
-		.iter()
-		.find_map(|t| match t {
-			Token::ControlSymbol((ControlWord::Unknown("\\ansicpg"), Property::Value(cpg))) => {
-				Some(encoding_for_codepage(*cpg))
-			}
-			_ => None,
-		})
-		.unwrap_or(encoding_rs::WINDOWS_1252);
 	for token in tokens {
 		match token {
 			Token::ControlSymbol((ctrl, property)) => {
@@ -122,14 +166,7 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 									}
 								} else {
 									pending_high_surrogate = None;
-									// Values 0-255 may be codepage bytes from \'xx escapes.
-									// Decode through the document's codepage encoding.
-									let ch = if let Ok(byte) = u8::try_from(code) {
-										decode_codepage_byte(byte, encoding)
-									} else {
-										char::from_u32(u32::from(code))
-									};
-									if let Some(ch) = ch {
+									if let Some(ch) = char::from_u32(u32::from(code)) {
 										buffer.append(&ch.to_string());
 									}
 								}
