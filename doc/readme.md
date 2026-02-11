@@ -18,96 +18,103 @@ Paperback currently runs on Windows 10 and 11, with support for macOS and Linux 
 * Designed by a screen reader user for screen reader users.
 * Includes navigation functionality similar to that found in the web browsing mode of many screen readers to quickly and easily navigate through documents.
 * Includes a robust find dialog, including features such as history and regular expression support.
-* Can be ran entirely portably, or installed with file associations automatically set up.
+* Can be run entirely portably, or installed with file associations automatically set up.
 
-## Currently supported filetypes
+## Currently supported file types
 
-Paperback supports a large number of common file formats. The full list follows:
+Paperback supports the following formats and extensions:
 
-* CHM help files
-* Epub books
-* FB2 ebooks
-* HTML documents
-* Markdown documents
-* microsoft Word documents
-* OpenDocument presentations
-* OpenDocument text files
-* PDF documents
-* PowerPoint presentations
-* RTF documents
-* Text documents
+* CHM help files (`.chm`)
+* EPUB books (`.epub`)
+* FB2 ebooks (`.fb2`)
+* HTML documents (`.htm`, `.html`, `.xhtml`)
+* Markdown documents (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
+* Microsoft Word documents (`.docx`, `.docm`)
+* OpenDocument presentations (`.odp`)
+* OpenDocument text files (`.odt`)
+* PDF documents (`.pdf`)
+* PowerPoint presentations (`.pptx`, `.pptm`)
+* RTF documents (`.rtf`)
+* Plain text and log files (`.txt`, `.log`)
+* XML documents (`.xml`)
 
-## Hotkeys
+## Keyboard shortcuts
 
-Paperback's user interface was designed specifically with keyboard and screen reader users in mind. As such, every action has an associated hotkey. Below, you'll find a list of all of them, grouped by menu structure.
+Paperback is designed for keyboard-first and screen reader-first use. Here are the current shortcuts.
 
 ### File menu
-* Ctrl+O: open a document.
-* Ctrl+F4: close the currently focused document.
-* Ctrl+Shift+F4: close all currently opened documents.
-* Ctrl+R: bring up the all documents dialog.
+
+* `Ctrl+O`: Open a document.
+* `Ctrl+F4`: Close the current document.
+* `Ctrl+Shift+F4`: Close all open documents.
+* `Ctrl+R`: Show the "All Documents" dialog (from Recent Documents).
 
 ### Go menu
-* Ctrl+F: show the find dialog.
-* F3: find next.
-* Shift+F3: find previous.
-* Ctrl+G: bring up the go to line dialog.
-* Ctrl+Shift+G: bring up the go to percent dialog.
-* Ctrl+P: Bring up the go to page dialog, if supported in your focused document.
-* Alt+left: go to the previous item in the navigation history.
-* Alt+right: go to the next item in the navigation history.
-* Left bracket: go to the previous section.
-* Right bracket: go to the next section.
-* Shift+H: go to the previous heading.
-* H: Go to the next heading.
-* Shift+1: go to the previous heading level 1.
-* 1: go to the next heading level 1.
-* Shift+2: go to the previous heading level 2.
-* 2: go to the next heading level 2.
-* Shift+3: go to the previous heading level 3.
-* 3: go to the next heading level 3.
-* Shift+4: go to the previous heading level 4.
-* 4: go to the next heading level 4.
-* Shift+5: go to the previous heading level 5.
-* 5: go to the next heading level 5.
-* Shift+6: go to the previous heading level 6.
-* 6: go to the next heading level 6.
-* Shift+P: go to the previous page.
-* P: go to the next page.
-* Shift+B: go to the previous bookmark.
-* B: go to the next bookmark.
-* Shift+N: go to the previous note.
-* N: go to the next note.
-* Ctrl+B: bring up the jump to bookmark dialog, with both bookmarks and notes selected.
-* Ctrl+Alt+B: bring up the jump to bookmark dialog, with only bookmarks selected.
-* Ctrl+Alt+M: bring up the jump to bookmark dialog, with only notes selected.
-* Ctrl+Shift+W: view the currently focused note in a read-only text field.
-* Shift+K:" go to the previous link.
-* K: go to the next link.
-* Shift+L: go to the previous list.
-* L: go to the next list.
-* Shift+I: go to the previous list item.
-* I: go to the next list item.
+
+* `Ctrl+F`: Show the Find dialog.
+* `F3`: Find next.
+* `Shift+F3`: Find previous.
+* `Ctrl+G`: Go to line.
+* `Ctrl+Shift+G`: Go to percent.
+* `Ctrl+P`: Go to page (when supported by the current document).
+* `Alt+Left`: Go back in navigation history.
+* `Alt+Right`: Go forward in navigation history.
+* `[`: Previous section.
+* `]`: Next section.
+* `Shift+H`: Previous heading.
+* `H`: Next heading.
+* `Shift+1` through `Shift+6`: Previous heading at level 1-6.
+* `1` through `6`: Next heading at level 1-6.
+* `Shift+P`: Previous page.
+* `P`: Next page.
+* `Shift+B`: Previous bookmark.
+* `B`: Next bookmark.
+* `Shift+N`: Previous note.
+* `N`: Next note.
+* `Ctrl+B`: Jump to all bookmarks and notes.
+* `Ctrl+Alt+B`: Jump to bookmarks only.
+* `Ctrl+Alt+M`: Jump to notes only.
+* `Ctrl+Shift+W`: View note text at the current position.
+* `Shift+K`: Previous link.
+* `K`: Next link.
+* `Shift+T`: Previous table.
+* `T`: Next table.
+* `Shift+S`: Previous separator.
+* `S`: Next separator.
+* `Shift+L`: Previous list.
+* `L`: Next list.
+* `Shift+I`: Previous list item.
+* `I`: Next list item.
 
 ### Tools menu
-* Ctrl+W: view the word count of the currently focused document.
-* Ctrl+I: bring up the document info dialog.
-* Ctrl+T: show the table of contents.
-* F7: bring up the elements list.
-* Ctrl+Shift+E: export your currently focused document's bookmarks and reading position to a file for easy sharing.
-* Ctrl+Shift+I: import metadata about a book from a .paperback file.
-* Ctrl+E: export your focused document's contents to a text file.
-* Ctrl+Shift+B: toggle a bookmark at your current cursor position.
-* Ctrl+Shift+N: add/edit a bookmarked note at your current cursor position.
-* Ctrl+Comma: bring up the options dialog.
-* Ctrl+Shift+S: toggle the sleep timer.
+
+* `Ctrl+W`: Show word count for the current document.
+* `Ctrl+I`: Show document info.
+* `Ctrl+T`: Show table of contents.
+* `F7`: Show elements list.
+* `Ctrl+Shift+C`: Open containing folder.
+* `Ctrl+Shift+V`: Open current content in Web View.
+* `Ctrl+Shift+E`: Export document data (`.paperback`).
+* `Ctrl+Shift+I`: Import document data (`.paperback`).
+* `Ctrl+E`: Export the current document to plain text.
+* `Ctrl+Shift+B`: Toggle bookmark at the current selection/cursor.
+* `Ctrl+Shift+N`: Add or edit bookmark note at the current selection/cursor.
+* `Ctrl+,`: Open options.
+* `Ctrl+Shift+S`: Toggle sleep timer.
 
 ### Help menu
-* Ctrl+F1: show the about dialog.
-* F1: pop up this readme file in your default web browser.
-* Shift+F1: pop up this readme file in Paperback itself.
-* Ctrl+Shift+U: check for updates.
-* Ctrl+D: open my PayPal donations page in your default web browser.
+
+* `Ctrl+F1`: Show About dialog.
+* `F1`: View help in your default browser.
+* `Shift+F1`: View help in Paperback.
+* `Ctrl+Shift+U`: Check for updates.
+* `Ctrl+D`: Open the donation page in your default browser.
+
+### Additional document-view keys
+
+* `Delete` / `Numpad Delete` on the tab control: Close the selected document tab.
+* `Enter` in the document text: Activate link at cursor, or open a table view when on a table marker.
+* `Shift+F10` in the document text: Open the context menu.
 
 ## Credits
 ### Development
