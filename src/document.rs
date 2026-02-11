@@ -434,3 +434,164 @@ impl ParserContext {
 		self
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	fn sample_handle() -> DocumentHandle {
+		let mut buffer = DocumentBuffer::new();
+		let text = "x".repeat(120);
+		buffer.append(&text);
+		buffer.add_marker(Marker::new(MarkerType::Link, 40));
+		buffer.add_marker(Marker::new(MarkerType::Heading2, 30).with_level(2).with_text("H2".to_string()));
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, 20));
+		buffer.add_marker(Marker::new(MarkerType::Heading1, 10).with_level(1).with_text("H1".to_string()));
+		buffer.add_marker(Marker::new(MarkerType::SectionBreak, 60));
+		buffer.add_marker(Marker::new(MarkerType::SectionBreak, 5));
+		let mut parent = TocItem::new("Part 1".to_string(), "p1".to_string(), 10);
+		parent.children.push(TocItem::new("Chapter 1".to_string(), "c1".to_string(), 26));
+		let mut doc = Document::new().with_title("Sample".to_string()).with_author("Author".to_string());
+		doc.set_buffer(buffer);
+		doc.toc_items = vec![parent, TocItem::new("Part 2".to_string(), "p2".to_string(), 50)];
+		DocumentHandle::new(doc)
+	}
+
+	#[test]
+	fn marker_type_round_trip_for_all_known_values() {
+		for raw in 0..=13 {
+			let marker = MarkerType::try_from(raw).unwrap();
+			assert_eq!(i32::from(marker), raw);
+		}
+		assert!(MarkerType::try_from(14).is_err());
+		assert!(MarkerType::try_from(-1).is_err());
+	}
+
+	#[test]
+	fn marker_builder_helpers_set_all_fields() {
+		let marker = Marker::new(MarkerType::Table, 42)
+			.with_text("Title".to_string())
+			.with_reference("ref".to_string())
+			.with_level(3)
+			.with_length(9);
+		assert_eq!(marker.position, 42);
+		assert_eq!(marker.text, "Title");
+		assert_eq!(marker.reference, "ref");
+		assert_eq!(marker.level, 3);
+		assert_eq!(marker.length, 9);
+	}
+
+	#[test]
+	fn document_buffer_append_updates_position() {
+		let mut buffer = DocumentBuffer::new();
+		assert_eq!(buffer.current_position(), 0);
+		buffer.append("abc");
+		buffer.append("de");
+		assert_eq!(buffer.current_position(), 5);
+	}
+
+	#[test]
+	fn document_stats_counts_words_lines_and_chars() {
+		let stats = DocumentStats::from_text("a b\nc");
+		assert_eq!(stats.word_count, 3);
+		assert_eq!(stats.line_count, 2);
+		assert_eq!(stats.char_count, 5);
+		assert_eq!(stats.char_count_no_whitespace, 3);
+	}
+
+	#[test]
+	fn document_compute_stats_uses_buffer_content() {
+		let mut doc = Document::new();
+		doc.set_buffer(DocumentBuffer::with_content("one two".to_string()));
+		doc.compute_stats();
+		assert_eq!(doc.stats.word_count, 2);
+		assert_eq!(doc.stats.line_count, 1);
+	}
+
+	#[test]
+	fn heading_marker_helper_matches_heading_types_only() {
+		assert!(is_heading_marker(MarkerType::Heading1));
+		assert!(is_heading_marker(MarkerType::Heading6));
+		assert!(!is_heading_marker(MarkerType::Link));
+		assert!(!is_heading_marker(MarkerType::SectionBreak));
+	}
+
+	#[test]
+	fn document_handle_sorts_markers_on_creation() {
+		let handle = sample_handle();
+		let positions: Vec<usize> = handle.document().buffer.markers.iter().map(|m| m.position).collect();
+		assert_eq!(positions, vec![5, 10, 20, 30, 40, 60]);
+	}
+
+	#[test]
+	fn marker_index_navigation_works_for_next_previous_and_current() {
+		let handle = sample_handle();
+		assert_eq!(handle.next_marker_index(5, MarkerType::Heading2), Some(3));
+		assert_eq!(handle.previous_marker_index(25, MarkerType::Heading1), Some(1));
+		assert_eq!(handle.current_marker_index(25, MarkerType::PageBreak), Some(2));
+		assert_eq!(handle.current_marker_index(15, MarkerType::PageBreak), None);
+	}
+
+	#[test]
+	fn heading_navigation_respects_level_filter() {
+		let handle = sample_handle();
+		assert_eq!(handle.next_heading_marker_index(0, None), Some(1));
+		assert_eq!(handle.next_heading_marker_index(0, Some(2)), Some(3));
+		assert_eq!(handle.next_heading_marker_index(10, Some(1)), None);
+		assert_eq!(handle.previous_heading_marker_index(35, None), Some(3));
+		assert_eq!(handle.previous_heading_marker_index(35, Some(1)), Some(1));
+	}
+
+	#[test]
+	fn marker_position_and_marker_type_lookup_work() {
+		let handle = sample_handle();
+		assert_eq!(handle.marker_position(2), Some(20));
+		assert_eq!(handle.marker_position(-1), None);
+		assert_eq!(handle.get_marker_position_by_index(MarkerType::SectionBreak, 0), Some(5));
+		assert_eq!(handle.get_marker_position_by_index(MarkerType::SectionBreak, 1), Some(60));
+		assert_eq!(handle.get_marker_position_by_index(MarkerType::SectionBreak, 2), None);
+	}
+
+	#[test]
+	fn heading_info_returns_sorted_heading_entries() {
+		let handle = sample_handle();
+		let first = handle.heading_info(0).unwrap();
+		assert_eq!(first.offset, 10);
+		assert_eq!(first.level, 1);
+		assert_eq!(first.text, "H1");
+		let second = handle.heading_info(1).unwrap();
+		assert_eq!(second.offset, 30);
+		assert_eq!(second.level, 2);
+		assert_eq!(second.text, "H2");
+		assert!(handle.heading_info(2).is_none());
+		assert!(handle.heading_info(-1).is_none());
+	}
+
+	#[test]
+	fn find_closest_toc_offset_uses_nested_items() {
+		let handle = sample_handle();
+		assert_eq!(handle.find_closest_toc_offset(9), 0);
+		assert_eq!(handle.find_closest_toc_offset(27), 26);
+		assert_eq!(handle.find_closest_toc_offset(49), 26);
+		assert_eq!(handle.find_closest_toc_offset(52), 50);
+	}
+
+	#[test]
+	fn index_helpers_return_expected_indices() {
+		let handle = sample_handle();
+		assert_eq!(handle.section_index(61), Some(5));
+		assert_eq!(handle.page_index(25), Some(2));
+		assert_eq!(handle.next_heading_index(0, None), Some(1));
+		assert_eq!(handle.previous_heading_index(100, None), Some(3));
+	}
+
+	#[test]
+	fn parser_context_builder_sets_optional_fields() {
+		let context = ParserContext::new("book.epub".to_string())
+			.with_password("secret".to_string())
+			.with_forced_extension("txt".to_string());
+		assert_eq!(context.file_path, "book.epub");
+		assert_eq!(context.password.as_deref(), Some("secret"));
+		assert_eq!(context.forced_extension.as_deref(), Some("txt"));
+	}
+}

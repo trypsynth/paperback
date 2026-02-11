@@ -290,3 +290,126 @@ pub fn is_external_url(url: &str) -> bool {
 	let lower = url.to_ascii_lowercase();
 	lower.starts_with("http:") || lower.starts_with("https:") || lower.starts_with("mailto:")
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::types::{HeadingInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo};
+
+	struct MockConverter {
+		headings: Vec<HeadingInfo>,
+		links: Vec<LinkInfo>,
+		tables: Vec<TableInfo>,
+		separators: Vec<SeparatorInfo>,
+		lists: Vec<ListInfo>,
+		list_items: Vec<ListItemInfo>,
+	}
+
+	impl ConverterOutput for MockConverter {
+		fn get_headings(&self) -> &[HeadingInfo] {
+			&self.headings
+		}
+
+		fn get_links(&self) -> &[LinkInfo] {
+			&self.links
+		}
+
+		fn get_tables(&self) -> &[TableInfo] {
+			&self.tables
+		}
+
+		fn get_separators(&self) -> &[SeparatorInfo] {
+			&self.separators
+		}
+
+		fn get_lists(&self) -> &[ListInfo] {
+			&self.lists
+		}
+
+		fn get_list_items(&self) -> &[ListItemInfo] {
+			&self.list_items
+		}
+	}
+
+	fn sample_converter() -> MockConverter {
+		MockConverter {
+			headings: vec![HeadingInfo { offset: 1, level: 2, text: "Heading".to_string() }],
+			links: vec![LinkInfo { offset: 2, text: "Link".to_string(), reference: "#a".to_string() }],
+			tables: vec![TableInfo {
+				offset: 3,
+				text: "T".to_string(),
+				html_content: "<table/>".to_string(),
+				length: 11,
+			}],
+			separators: vec![SeparatorInfo { offset: 4, length: 7 }],
+			lists: vec![ListInfo { offset: 5, item_count: 3 }],
+			list_items: vec![ListItemInfo { offset: 6, level: 1, text: "Item".to_string() }],
+		}
+	}
+
+	#[test]
+	fn join_extensions_formats_and_skips_empty_entries() {
+		let joined = join_extensions(["txt", "", "md"]);
+		assert_eq!(joined, "*.txt;*.md");
+	}
+
+	#[test]
+	fn is_external_url_accepts_supported_schemes_case_insensitively() {
+		assert!(is_external_url("http://example.com"));
+		assert!(is_external_url("HTTPS://example.com"));
+		assert!(is_external_url("MailTo:test@example.com"));
+		assert!(!is_external_url("ftp://example.com"));
+		assert!(!is_external_url("#local"));
+	}
+
+	#[test]
+	fn parser_supports_extension_handles_dot_case_and_empty_values() {
+		assert!(parser_supports_extension("txt"));
+		assert!(parser_supports_extension(".TXT"));
+		assert!(parser_supports_extension("log"));
+		assert!(!parser_supports_extension(""));
+		assert!(!parser_supports_extension("."));
+		assert!(!parser_supports_extension("notarealextension"));
+	}
+
+	#[test]
+	fn file_filter_string_contains_supported_and_fallback_groups() {
+		let filter = build_file_filter_string();
+		assert!(filter.contains("All Supported Files ("));
+		assert!(filter.contains("*.txt"));
+		assert!(filter.contains("*.epub"));
+		#[cfg(not(target_os = "macos"))]
+		assert!(filter.ends_with("All Files (*.*)|*.*"));
+	}
+
+	#[test]
+	fn add_converter_markers_transfers_all_marker_types_with_offset() {
+		let converter = sample_converter();
+		let mut buffer = DocumentBuffer::new();
+		add_converter_markers(&mut buffer, &converter, 100);
+		assert_eq!(buffer.markers.len(), 6);
+		assert_eq!(buffer.markers[0].mtype, MarkerType::Heading2);
+		assert_eq!(buffer.markers[0].position, 101);
+		assert_eq!(buffer.markers[0].text, "Heading");
+		assert_eq!(buffer.markers[1].mtype, MarkerType::Link);
+		assert_eq!(buffer.markers[1].position, 102);
+		assert_eq!(buffer.markers[1].reference, "#a");
+		assert_eq!(buffer.markers[2].mtype, MarkerType::Table);
+		assert_eq!(buffer.markers[2].length, 11);
+		assert_eq!(buffer.markers[3].mtype, MarkerType::Separator);
+		assert_eq!(buffer.markers[3].length, 7);
+		assert_eq!(buffer.markers[4].mtype, MarkerType::List);
+		assert_eq!(buffer.markers[4].level, 3);
+		assert_eq!(buffer.markers[5].mtype, MarkerType::ListItem);
+		assert_eq!(buffer.markers[5].level, 1);
+	}
+
+	#[test]
+	fn add_converter_markers_excluding_links_skips_link_markers() {
+		let converter = sample_converter();
+		let mut buffer = DocumentBuffer::new();
+		add_converter_markers_excluding_links(&mut buffer, &converter, 10);
+		assert_eq!(buffer.markers.len(), 5);
+		assert!(buffer.markers.iter().all(|marker| marker.mtype != MarkerType::Link));
+	}
+}

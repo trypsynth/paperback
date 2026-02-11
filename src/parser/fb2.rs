@@ -33,9 +33,6 @@ impl Parser for Fb2Parser {
 		const CLOSING_TAG: &str = "</FictionBook>";
 		let mut xml_content = fs::read_to_string(&context.file_path)
 			.with_context(|| format!("Failed to read FB2 file '{}'", context.file_path))?;
-		if xml_content.is_empty() {
-			anyhow::bail!("FB2 file is empty");
-		}
 		if let Some(pos) = xml_content.rfind(CLOSING_TAG) {
 			xml_content.truncate(pos + CLOSING_TAG.len());
 		}
