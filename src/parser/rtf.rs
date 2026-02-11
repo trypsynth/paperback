@@ -1,6 +1,7 @@
 use std::fs;
 
 use anyhow::{Context, Result};
+use encoding_rs::Encoding;
 use rtf_parser::{
 	lexer::Lexer,
 	tokens::{ControlWord, Property, Token},
@@ -46,50 +47,48 @@ struct PendingLink {
 	start_position: usize,
 }
 
-/// Maps Windows-1252 bytes 0x80-0x9F to their Unicode code points.
-/// The `rtf_parser` crate represents both `\uN` (Unicode) and `\'xx` (codepage hex) escapes
-/// as `ControlWord::Unicode`. For `\'xx`, the value is a raw codepage byte, not a Unicode
-/// code point. In the 0x80-0x9F range, Windows-1252 maps to typographic characters (smart
-/// quotes, dashes, etc.) while Unicode has invisible C1 control characters. Since C1 controls
-/// never appear in document text, values in this range are always codepage bytes.
-const fn win1252_to_unicode(byte: u32) -> u32 {
-	match byte {
-		0x80 => 0x20AC, // €
-		0x82 => 0x201A, // ‚
-		0x83 => 0x0192, // ƒ
-		0x84 => 0x201E, // „
-		0x85 => 0x2026, // …
-		0x86 => 0x2020, // †
-		0x87 => 0x2021, // ‡
-		0x88 => 0x02C6, // ˆ
-		0x89 => 0x2030, // ‰
-		0x8A => 0x0160, // Š
-		0x8B => 0x2039, // ‹
-		0x8C => 0x0152, // Œ
-		0x8E => 0x017D, // Ž
-		0x91 => 0x2018, // '
-		0x92 => 0x2019, // '
-		0x93 => 0x201C, // "
-		0x94 => 0x201D, // "
-		0x95 => 0x2022, // •
-		0x96 => 0x2013, // –
-		0x97 => 0x2014, // —
-		0x98 => 0x02DC, // ˜
-		0x99 => 0x2122, // ™
-		0x9A => 0x0161, // š
-		0x9B => 0x203A, // ›
-		0x9C => 0x0153, // œ
-		0x9E => 0x017E, // ž
-		0x9F => 0x0178, // Ÿ
-		other => other, // 0x81, 0x8D, 0x8F, 0x90 are undefined; pass through everything else
+/// Resolves the `encoding_rs` encoding for an RTF `\ansicpg` codepage number.
+fn encoding_for_codepage(cpg: i32) -> &'static Encoding {
+	match cpg {
+		874 => encoding_rs::WINDOWS_874,
+		1250 => encoding_rs::WINDOWS_1250,
+		1251 => encoding_rs::WINDOWS_1251,
+		1253 => encoding_rs::WINDOWS_1253,
+		1254 => encoding_rs::WINDOWS_1254,
+		1255 => encoding_rs::WINDOWS_1255,
+		1256 => encoding_rs::WINDOWS_1256,
+		1257 => encoding_rs::WINDOWS_1257,
+		1258 => encoding_rs::WINDOWS_1258,
+		_ => encoding_rs::WINDOWS_1252, // Default per RTF spec
 	}
 }
 
+/// Decodes a single codepage byte (from an RTF `\'xx` hex escape) to a Unicode character
+/// using the given encoding. The `rtf_parser` crate conflates `\uN` (Unicode) and `\'xx`
+/// (codepage hex) escapes into the same `ControlWord::Unicode` token. For values 0-255,
+/// we decode through the document's codepage to get the correct Unicode character.
+fn decode_codepage_byte(byte: u8, encoding: &'static Encoding) -> Option<char> {
+	let buf = [byte];
+	let (decoded, _, _) = encoding.decode(&buf);
+	decoded.chars().next()
+}
+
+#[allow(clippy::too_many_lines)]
 fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 	let mut buffer = DocumentBuffer::new();
 	let mut in_header = true;
 	let mut pending_high_surrogate: Option<u16> = None;
 	let mut pending_link: Option<PendingLink> = None;
+	// Extract codepage from \ansicpg in the token stream; default to 1252
+	let encoding = tokens
+		.iter()
+		.find_map(|t| match t {
+			Token::ControlSymbol((ControlWord::Unknown("\\ansicpg"), Property::Value(cpg))) => {
+				Some(encoding_for_codepage(*cpg))
+			}
+			_ => None,
+		})
+		.unwrap_or(encoding_rs::WINDOWS_1252);
 	for token in tokens {
 		match token {
 			Token::ControlSymbol((ctrl, property)) => {
@@ -122,10 +121,15 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 										}
 									}
 								} else {
-									// Regular BMP character
 									pending_high_surrogate = None;
-									let codepoint = win1252_to_unicode(u32::from(code));
-									if let Some(ch) = char::from_u32(codepoint) {
+									// Values 0-255 may be codepage bytes from \'xx escapes.
+									// Decode through the document's codepage encoding.
+									let ch = if let Ok(byte) = u8::try_from(code) {
+										decode_codepage_byte(byte, encoding)
+									} else {
+										char::from_u32(u32::from(code))
+									};
+									if let Some(ch) = ch {
 										buffer.append(&ch.to_string());
 									}
 								}
