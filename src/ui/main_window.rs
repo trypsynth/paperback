@@ -927,12 +927,17 @@ impl MainWindow {
 				menu_ids::TABLE_OF_CONTENTS => {
 					let mut dm_guard = dm.lock().unwrap();
 					if let Some(tab) = dm_guard.active_tab_mut() {
+						let toc_items = &tab.session.handle().document().toc_items;
+						if toc_items.is_empty() {
+							live_region::announce(live_region_label, &t("No table of contents."));
+							return;
+						}
 						let current_pos = tab.text_ctrl.get_insertion_point();
 						let current_pos_usize = usize::try_from(current_pos).unwrap_or(0);
 						let current_toc_offset = tab.session.handle().find_closest_toc_offset(current_pos_usize);
 						if let Some(offset) = dialogs::show_toc_dialog(
 							&frame_copy,
-							&tab.session.handle().document().toc_items,
+							toc_items,
 							i32::try_from(current_toc_offset).unwrap_or(i32::MAX),
 						) {
 							tab.text_ctrl.set_focus();

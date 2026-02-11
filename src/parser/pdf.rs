@@ -1,16 +1,25 @@
-use std::sync::Arc;
+use std::{
+	collections::{HashMap, HashSet},
+	sync::Arc,
+};
 
 use anyhow::{Result, anyhow};
 use hayro_interpret::{
 	BlendMode, ClipPath, Context, Device, GlyphDrawMode, Image, InterpreterSettings, PageExt, Paint, PathDrawMode,
 	RectExt, SoftMask, font::Glyph, interpret_page,
 };
-use hayro_syntax::{LoadPdfError, Pdf};
+use hayro_syntax::{
+	LoadPdfError, Pdf,
+	object::{
+		Array, Dict, MaybeRef, Name, Object, ObjectIdentifier, String as PdfObjectString,
+		dict::keys::{A, D, DEST, DESTS, FIRST, KIDS, NAMES, NEXT, OUTLINES, S, TITLE},
+	},
+};
 use kurbo::{Affine, BezPath, Point};
 use wxdragon::translations::translate as t;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
 	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, Parser, path::extract_title_from_path},
 	text::{collapse_whitespace, trim_string},
 };
@@ -36,10 +45,12 @@ impl Parser for PdfParser {
 		let password = context.password.as_deref().unwrap_or_default();
 		let document = Pdf::new_with_password(Arc::new(data), password).map_err(map_load_error)?;
 		let mut buffer = DocumentBuffer::new();
+		let mut page_offsets = Vec::new();
 		let mut has_any_text = false;
 		let mut has_any_images = false;
 		for (page_index, page) in document.pages().iter().enumerate() {
 			let marker_position = buffer.current_position();
+			page_offsets.push(marker_position);
 			buffer.add_marker(
 				Marker::new(MarkerType::PageBreak, marker_position).with_text(format!("Page {}", page_index + 1)),
 			);
@@ -64,7 +75,7 @@ impl Parser for PdfParser {
 		let title =
 			metadata.title.as_deref().map_or_else(|| extract_title_from_path(&context.file_path), decode_pdf_string);
 		let author = metadata.author.as_deref().map(decode_pdf_string).unwrap_or_default();
-		let toc_items = Vec::new();
+		let toc_items = extract_pdf_toc(&document, &page_offsets);
 		let mut doc = Document::new();
 		doc.set_buffer(buffer);
 		doc.title = title;
@@ -198,4 +209,225 @@ fn decode_utf16(bytes: &[u8], big_endian: bool) -> String {
 		units.push(value);
 	}
 	String::from_utf16_lossy(&units)
+}
+
+#[derive(Debug, Clone)]
+struct OutlineEntry {
+	level: i32,
+	title: String,
+	offset: usize,
+}
+
+fn extract_pdf_toc(document: &Pdf, page_offsets: &[usize]) -> Vec<TocItem> {
+	let page_by_obj_id = build_page_object_index(document);
+	let Some(catalog) = document.xref().get::<Dict<'_>>(document.xref().root_id()) else {
+		return Vec::new();
+	};
+	let Some(outlines) = catalog.get::<Dict<'_>>(OUTLINES) else {
+		return Vec::new();
+	};
+	let Some(first) = outlines.get::<Dict<'_>>(FIRST) else {
+		return Vec::new();
+	};
+	let mut entries = Vec::new();
+	let mut visited_items = HashSet::new();
+	let mut visited_name_tree = HashSet::new();
+	collect_outline_entries(
+		&catalog,
+		&page_by_obj_id,
+		page_offsets,
+		&first,
+		1,
+		&mut visited_items,
+		&mut visited_name_tree,
+		&mut entries,
+	);
+	build_toc_tree(&entries)
+}
+
+fn build_page_object_index(document: &Pdf) -> HashMap<ObjectIdentifier, usize> {
+	document.pages().iter().enumerate().filter_map(|(idx, page)| page.raw().obj_id().map(|id| (id, idx))).collect()
+}
+
+fn collect_outline_entries(
+	catalog: &Dict<'_>,
+	page_by_obj_id: &HashMap<ObjectIdentifier, usize>,
+	page_offsets: &[usize],
+	start_item: &Dict<'_>,
+	level: i32,
+	visited_items: &mut HashSet<ObjectIdentifier>,
+	visited_name_tree: &mut HashSet<ObjectIdentifier>,
+	out: &mut Vec<OutlineEntry>,
+) {
+	let mut current = Some(start_item.clone());
+	let mut sibling_count = 0usize;
+	while let Some(item) = current {
+		sibling_count += 1;
+		if sibling_count > 10_000 {
+			break;
+		}
+		if let Some(item_id) = item.obj_id()
+			&& !visited_items.insert(item_id)
+		{
+			break;
+		}
+		let title =
+			item.get::<PdfObjectString<'_>>(TITLE).map(|s| decode_pdf_string(s.get().as_ref())).unwrap_or_default();
+		if !title.is_empty()
+			&& let Some(page_index) = resolve_outline_page_index(catalog, page_by_obj_id, &item, visited_name_tree)
+			&& let Some(&offset) = page_offsets.get(page_index)
+		{
+			out.push(OutlineEntry { level, title, offset });
+		}
+		if let Some(first_child) = item.get::<Dict<'_>>(FIRST) {
+			collect_outline_entries(
+				catalog,
+				page_by_obj_id,
+				page_offsets,
+				&first_child,
+				level + 1,
+				visited_items,
+				visited_name_tree,
+				out,
+			);
+		}
+		current = item.get::<Dict<'_>>(NEXT);
+	}
+}
+
+fn resolve_outline_page_index(
+	catalog: &Dict<'_>,
+	page_by_obj_id: &HashMap<ObjectIdentifier, usize>,
+	item: &Dict<'_>,
+	visited_name_tree: &mut HashSet<ObjectIdentifier>,
+) -> Option<usize> {
+	if let Some(dest_obj) = item.get::<Object<'_>>(DEST)
+		&& let Some(page) = resolve_destination_object(catalog, page_by_obj_id, dest_obj, visited_name_tree)
+	{
+		return Some(page);
+	}
+	let action = item.get::<Dict<'_>>(A)?;
+	let action_kind = action.get::<Name<'_>>(S)?;
+	if &*action_kind != b"GoTo" {
+		return None;
+	}
+	let dest_obj = action.get::<Object<'_>>(D)?;
+	resolve_destination_object(catalog, page_by_obj_id, dest_obj, visited_name_tree)
+}
+
+fn resolve_destination_object(
+	catalog: &Dict<'_>,
+	page_by_obj_id: &HashMap<ObjectIdentifier, usize>,
+	dest_obj: Object<'_>,
+	visited_name_tree: &mut HashSet<ObjectIdentifier>,
+) -> Option<usize> {
+	match dest_obj {
+		Object::Array(arr) => resolve_page_from_destination_array(page_by_obj_id, &arr),
+		Object::Name(name) => resolve_named_destination(catalog, page_by_obj_id, name.as_ref(), visited_name_tree),
+		Object::String(name) => {
+			resolve_named_destination(catalog, page_by_obj_id, name.get().as_ref(), visited_name_tree)
+		}
+		Object::Dict(dict) => dict
+			.get::<Object<'_>>(D)
+			.and_then(|inner| resolve_destination_object(catalog, page_by_obj_id, inner, visited_name_tree)),
+		_ => None,
+	}
+}
+
+fn resolve_page_from_destination_array(
+	page_by_obj_id: &HashMap<ObjectIdentifier, usize>,
+	dest_array: &Array<'_>,
+) -> Option<usize> {
+	let first = dest_array.raw_iter().next()?;
+	match first {
+		MaybeRef::Ref(obj_ref) => page_by_obj_id.get(&obj_ref.into()).copied(),
+		MaybeRef::NotRef(Object::Dict(dict)) => dict.obj_id().and_then(|id| page_by_obj_id.get(&id).copied()),
+		_ => None,
+	}
+}
+
+fn resolve_named_destination(
+	catalog: &Dict<'_>,
+	page_by_obj_id: &HashMap<ObjectIdentifier, usize>,
+	name: &[u8],
+	visited_name_tree: &mut HashSet<ObjectIdentifier>,
+) -> Option<usize> {
+	if let Some(dests) = catalog.get::<Dict<'_>>(DESTS)
+		&& let Some(dest_obj) = dests.get::<Object<'_>>(name)
+	{
+		return resolve_destination_object(catalog, page_by_obj_id, dest_obj, visited_name_tree);
+	}
+	let names_root = catalog.get::<Dict<'_>>(NAMES)?.get::<Dict<'_>>(DESTS)?;
+	resolve_named_destination_in_tree(catalog, page_by_obj_id, &names_root, name, visited_name_tree)
+}
+
+fn resolve_named_destination_in_tree(
+	catalog: &Dict<'_>,
+	page_by_obj_id: &HashMap<ObjectIdentifier, usize>,
+	node: &Dict<'_>,
+	target_name: &[u8],
+	visited_name_tree: &mut HashSet<ObjectIdentifier>,
+) -> Option<usize> {
+	if let Some(node_id) = node.obj_id()
+		&& !visited_name_tree.insert(node_id)
+	{
+		return None;
+	}
+	if let Some(names) = node.get::<Array<'_>>(NAMES) {
+		let mut iter = names.flex_iter();
+		loop {
+			let Some(name_obj) = iter.next::<Object<'_>>() else {
+				break;
+			};
+			let Some(value_obj) = iter.next::<Object<'_>>() else {
+				break;
+			};
+			let key = match name_obj {
+				Object::String(s) => s.get().to_vec(),
+				Object::Name(n) => n.as_ref().to_vec(),
+				_ => continue,
+			};
+			if key.as_slice() == target_name {
+				return resolve_destination_object(catalog, page_by_obj_id, value_obj, visited_name_tree);
+			}
+		}
+	}
+	if let Some(kids) = node.get::<Array<'_>>(KIDS) {
+		for child in kids.iter::<Dict<'_>>() {
+			if let Some(found) =
+				resolve_named_destination_in_tree(catalog, page_by_obj_id, &child, target_name, visited_name_tree)
+			{
+				return Some(found);
+			}
+		}
+	}
+	None
+}
+
+fn build_toc_tree(entries: &[OutlineEntry]) -> Vec<TocItem> {
+	let mut toc = Vec::new();
+	let mut stack: Vec<usize> = Vec::new();
+	let mut levels: Vec<i32> = Vec::new();
+	for entry in entries {
+		while let Some(&last_level) = levels.last() {
+			if last_level < entry.level {
+				break;
+			}
+			stack.pop();
+			levels.pop();
+		}
+		let siblings = children_at_mut(&mut toc, &stack);
+		siblings.push(TocItem::new(entry.title.clone(), String::new(), entry.offset));
+		stack.push(siblings.len() - 1);
+		levels.push(entry.level);
+	}
+	toc
+}
+
+fn children_at_mut<'a>(toc: &'a mut Vec<TocItem>, path: &[usize]) -> &'a mut Vec<TocItem> {
+	let mut current = toc;
+	for &idx in path {
+		current = &mut current[idx].children;
+	}
+	current
 }
