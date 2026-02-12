@@ -726,9 +726,11 @@ mod tests {
 		buffer.add_marker(Marker::new(MarkerType::SectionBreak, 0).with_reference("chapter1.xhtml".to_string()));
 		buffer.add_marker(Marker::new(MarkerType::PageBreak, 0));
 		buffer.add_marker(Marker::new(MarkerType::Heading1, 0).with_level(1).with_text("H1".to_string()));
-		buffer.add_marker(Marker::new(MarkerType::Link, 6).with_text("line2".to_string()).with_reference(
-			"https://example.com".to_string(),
-		));
+		buffer.add_marker(
+			Marker::new(MarkerType::Link, 6)
+				.with_text("line2".to_string())
+				.with_reference("https://example.com".to_string()),
+		);
 		buffer.add_marker(Marker::new(MarkerType::List, 6).with_level(1));
 		buffer.add_marker(Marker::new(MarkerType::ListItem, 6).with_level(1).with_text("item".to_string()));
 		buffer.add_marker(Marker::new(MarkerType::PageBreak, 8));
@@ -903,5 +905,90 @@ mod tests {
 		assert!(result.found);
 		assert_eq!(result.action, LinkAction::External);
 		assert_eq!(result.url, "https://example.com");
+	}
+
+	#[test]
+	fn link_list_reports_closest_index_and_text() {
+		let session = sample_session(ParserFlags::NONE);
+		let list = session.link_list(7);
+		assert_eq!(list.items.len(), 1);
+		assert_eq!(list.items[0].offset, 6);
+		assert_eq!(list.items[0].text, "line2");
+		assert_eq!(list.closest_index, 0);
+	}
+
+	#[test]
+	fn heading_tree_builds_parent_links_and_closest_index() {
+		let mut buffer = DocumentBuffer::with_content("a\nb\nc".to_string());
+		buffer.add_marker(Marker::new(MarkerType::Heading1, 0).with_level(1).with_text("H1".to_string()));
+		buffer.add_marker(Marker::new(MarkerType::Heading2, 2).with_level(2).with_text("H2".to_string()));
+		buffer.add_marker(Marker::new(MarkerType::Heading1, 4).with_level(1).with_text("H1b".to_string()));
+		let mut doc = Document::new();
+		doc.set_buffer(buffer);
+		let session = DocumentSession {
+			handle: DocumentHandle::new(doc),
+			file_path: "book.epub".to_string(),
+			history: Vec::new(),
+			history_index: 0,
+			parser_flags: ParserFlags::NONE,
+			last_stable_position: None,
+		};
+		let tree = session.heading_tree(3);
+		assert_eq!(tree.items.len(), 3);
+		assert_eq!(tree.items[0].parent_index, -1);
+		assert_eq!(tree.items[1].parent_index, 0);
+		assert_eq!(tree.items[2].parent_index, -1);
+		assert_eq!(tree.closest_index, 1);
+	}
+
+	#[test]
+	fn history_navigation_returns_not_found_when_empty() {
+		let mut session = sample_session(ParserFlags::NONE);
+		assert!(!session.history_go_back(0).found);
+		assert!(!session.history_go_forward(0).found);
+	}
+
+	#[test]
+	fn history_navigation_updates_index_and_returns_targets() {
+		let mut session = sample_session(ParserFlags::NONE);
+		session.set_history(&[10, 20, 30], 2);
+		let back = session.history_go_back(30);
+		assert!(back.found);
+		assert_eq!(back.offset, 20);
+		let forward = session.history_go_forward(20);
+		assert!(forward.found);
+		assert_eq!(forward.offset, 30);
+	}
+
+	#[test]
+	fn webview_target_path_falls_back_for_html_like_extensions() {
+		let session = DocumentSession {
+			handle: sample_session(ParserFlags::NONE).handle.clone(),
+			file_path: "C:\\docs\\chapter.md".to_string(),
+			history: Vec::new(),
+			history_index: 0,
+			parser_flags: ParserFlags::NONE,
+			last_stable_position: None,
+		};
+		assert_eq!(session.webview_target_path(0, "C:\\temp").as_deref(), Some("C:\\docs\\chapter.md"));
+	}
+
+	#[test]
+	fn webview_target_path_returns_none_for_non_webview_extensions() {
+		let session = sample_session(ParserFlags::NONE);
+		assert!(session.webview_target_path(0, "C:\\temp").is_none());
+	}
+
+	#[test]
+	fn extract_resource_returns_false_for_non_epub_files() {
+		let session = DocumentSession {
+			handle: sample_session(ParserFlags::NONE).handle.clone(),
+			file_path: "C:\\docs\\chapter.txt".to_string(),
+			history: Vec::new(),
+			history_index: 0,
+			parser_flags: ParserFlags::NONE,
+			last_stable_position: None,
+		};
+		assert_eq!(session.extract_resource("anything", "out.file").ok(), Some(false));
 	}
 }
