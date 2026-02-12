@@ -991,4 +991,120 @@ mod tests {
 		};
 		assert_eq!(session.extract_resource("anything", "out.file").ok(), Some(false));
 	}
+
+	#[test]
+	fn navigate_page_returns_found_and_page_marker_index() {
+		let session = sample_session(ParserFlags::NONE);
+		let result = session.navigate_page(0, false, true);
+		assert!(result.found);
+		assert!(!result.not_supported);
+		assert_eq!(result.offset, 8);
+		assert!(result.marker_index >= 0);
+	}
+
+	#[test]
+	fn navigate_link_returns_found_when_link_exists() {
+		let session = sample_session(ParserFlags::NONE);
+		let result = session.navigate_link(0, false, true);
+		assert!(result.found);
+		assert!(!result.not_supported);
+		assert_eq!(result.offset, 6);
+	}
+
+	#[test]
+	fn navigate_table_and_separator_return_found() {
+		let session = sample_session(ParserFlags::NONE);
+		let table = session.navigate_table(0, false, true);
+		assert!(table.found);
+		assert_eq!(table.offset, 12);
+		let separator = session.navigate_separator(0, false, true);
+		assert!(separator.found);
+		assert_eq!(separator.offset, 5);
+	}
+
+	#[test]
+	fn navigate_heading_respects_level_support() {
+		let session = sample_session(ParserFlags::NONE);
+		let any_level = session.navigate_heading(-1, false, true, 0);
+		assert!(!any_level.not_supported);
+		assert!(any_level.found);
+		let missing_level = session.navigate_heading(-1, false, true, 2);
+		assert!(missing_level.not_supported);
+		assert!(!missing_level.found);
+	}
+
+	#[test]
+	fn navigate_section_returns_found_when_flag_enabled() {
+		let session = sample_session(ParserFlags::SUPPORTS_SECTIONS);
+		let result = session.navigate_section(-1, false, true);
+		assert!(result.found);
+		assert!(!result.not_supported);
+	}
+
+	#[test]
+	fn navigate_bookmark_and_note_return_not_found_with_empty_config() {
+		let session = sample_session(ParserFlags::NONE);
+		let config = ConfigManager::new();
+		assert!(!session.navigate_bookmark(&config, 0, false, true).found);
+		assert!(!session.navigate_note(&config, 0, false, true).found);
+	}
+
+	#[test]
+	fn bookmark_display_at_position_returns_not_found_without_data() {
+		let session = sample_session(ParserFlags::NONE);
+		let config = ConfigManager::new();
+		let display = session.bookmark_display_at_position(&config, 0);
+		assert!(!display.found);
+		assert_eq!(display.note, "");
+		assert_eq!(display.snippet, "");
+	}
+
+	#[test]
+	fn get_current_section_path_returns_none_when_reference_empty() {
+		let mut buffer = DocumentBuffer::with_content("line".to_string());
+		buffer.add_marker(Marker::new(MarkerType::SectionBreak, 0));
+		let mut doc = Document::new();
+		doc.set_buffer(buffer);
+		let session = DocumentSession {
+			handle: DocumentHandle::new(doc),
+			file_path: "book.epub".to_string(),
+			history: Vec::new(),
+			history_index: 0,
+			parser_flags: ParserFlags::NONE,
+			last_stable_position: None,
+		};
+		assert!(session.get_current_section_path(0).is_none());
+	}
+
+	#[test]
+	fn extract_resource_for_missing_epub_returns_error() {
+		let session = DocumentSession {
+			handle: sample_session(ParserFlags::NONE).handle.clone(),
+			file_path: "C:\\path\\does\\not\\exist.epub".to_string(),
+			history: Vec::new(),
+			history_index: 0,
+			parser_flags: ParserFlags::NONE,
+			last_stable_position: None,
+		};
+		assert!(session.extract_resource("x", "y").is_err());
+	}
+
+	#[test]
+	fn activate_link_returns_not_found_when_reference_missing() {
+		let mut buffer = DocumentBuffer::with_content("line1\nline2".to_string());
+		buffer.add_marker(Marker::new(MarkerType::Link, 6).with_text("line2".to_string()));
+		let mut doc = Document::new();
+		doc.set_buffer(buffer);
+		let session = DocumentSession {
+			handle: DocumentHandle::new(doc),
+			file_path: "book.epub".to_string(),
+			history: Vec::new(),
+			history_index: 0,
+			parser_flags: ParserFlags::NONE,
+			last_stable_position: None,
+		};
+		let result = session.activate_link(7);
+		assert!(!result.found);
+		assert_eq!(result.action, LinkAction::NotFound);
+	}
 }

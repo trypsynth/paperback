@@ -594,4 +594,33 @@ mod tests {
 		assert_eq!(context.password.as_deref(), Some("secret"));
 		assert_eq!(context.forced_extension.as_deref(), Some("txt"));
 	}
+
+	#[test]
+	fn find_closest_toc_offset_returns_zero_when_no_toc_items() {
+		let doc = Document::new();
+		let handle = DocumentHandle::new(doc);
+		assert_eq!(handle.find_closest_toc_offset(100), 0);
+	}
+
+	#[test]
+	fn count_markers_by_type_counts_only_matching_markers() {
+		let handle = sample_handle();
+		assert_eq!(handle.count_markers_by_type(MarkerType::SectionBreak), 2);
+		assert_eq!(handle.count_markers_by_type(MarkerType::Link), 1);
+		assert_eq!(handle.count_markers_by_type(MarkerType::Table), 0);
+	}
+
+	#[test]
+	fn section_and_page_index_are_none_before_first_marker() {
+		let handle = sample_handle();
+		assert_eq!(handle.section_index(0), None);
+		assert_eq!(handle.page_index(0), None);
+	}
+
+	#[test]
+	fn heading_index_helpers_return_none_when_filtered_level_missing() {
+		let handle = sample_handle();
+		assert_eq!(handle.next_heading_index(0, Some(6)), None);
+		assert_eq!(handle.previous_heading_index(100, Some(6)), None);
+	}
 }

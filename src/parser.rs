@@ -446,4 +446,36 @@ mod tests {
 		add_converter_markers(&mut buffer, &converter, 0);
 		assert!(buffer.markers.is_empty());
 	}
+
+	#[test]
+	fn parse_document_errors_when_missing_extension() {
+		let context = ParserContext::new("no_extension".to_string());
+		let err = parse_document(&context).expect_err("expected missing extension error");
+		assert!(err.to_string().contains("No file extension found"));
+	}
+
+	#[test]
+	fn parse_document_errors_for_unknown_forced_extension() {
+		let context = ParserContext::new("anything".to_string()).with_forced_extension("unknown_ext".to_string());
+		let err = parse_document(&context).expect_err("expected unknown parser error");
+		assert!(err.to_string().contains("No parser found for extension"));
+	}
+
+	#[test]
+	fn get_parser_flags_for_context_returns_none_for_unknown_extension() {
+		let context = ParserContext::new("doc.unknown_ext".to_string());
+		assert_eq!(get_parser_flags_for_context(&context), ParserFlags::NONE);
+	}
+
+	#[test]
+	fn parser_supports_extension_handles_multiple_leading_dots() {
+		assert!(parser_supports_extension("..txt"));
+		assert!(parser_supports_extension("...log"));
+	}
+
+	#[test]
+	fn file_filter_string_contains_text_files_group_name() {
+		let filter = build_file_filter_string();
+		assert!(filter.contains("Text Files ("));
+	}
 }
