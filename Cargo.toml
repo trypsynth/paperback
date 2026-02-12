@@ -42,6 +42,9 @@ windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_Sys
 embed-manifest = "1.5.0"
 winres = "0.1.12"
 
+[dev-dependencies]
+rstest = "0.26.1"
+
 [profile.release]
 strip = true
 opt-level = "z"

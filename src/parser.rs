@@ -293,6 +293,8 @@ pub fn is_external_url(url: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
+	use rstest::rstest;
+
 	use super::*;
 	use crate::types::{HeadingInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo};
 
@@ -359,36 +361,32 @@ mod tests {
 		assert_eq!(joined, "");
 	}
 
-	#[test]
-	fn is_external_url_accepts_supported_schemes_case_insensitively() {
-		assert!(is_external_url("http://example.com"));
-		assert!(is_external_url("HTTPS://example.com"));
-		assert!(is_external_url("MailTo:test@example.com"));
-		assert!(!is_external_url("ftp://example.com"));
-		assert!(!is_external_url("#local"));
+	#[rstest]
+	#[case("http://example.com", true)]
+	#[case("HTTPS://example.com", true)]
+	#[case("MailTo:test@example.com", true)]
+	#[case("ftp://example.com", false)]
+	#[case("#local", false)]
+	#[case("https//example.com", false)]
+	#[case("mailtox:test@example.com", false)]
+	#[case("httpx://example.com", false)]
+	fn is_external_url_classifies_schemes(#[case] url: &str, #[case] expected: bool) {
+		assert_eq!(is_external_url(url), expected);
 	}
 
-	#[test]
-	fn is_external_url_rejects_lookalike_prefixes() {
-		assert!(!is_external_url("https//example.com"));
-		assert!(!is_external_url("mailtox:test@example.com"));
-		assert!(!is_external_url("httpx://example.com"));
-	}
-
-	#[test]
-	fn parser_supports_extension_handles_dot_case_and_empty_values() {
-		assert!(parser_supports_extension("txt"));
-		assert!(parser_supports_extension(".TXT"));
-		assert!(parser_supports_extension("log"));
-		assert!(!parser_supports_extension(""));
-		assert!(!parser_supports_extension("."));
-		assert!(!parser_supports_extension("notarealextension"));
-	}
-
-	#[test]
-	fn parser_supports_extension_rejects_whitespace_padded_values() {
-		assert!(!parser_supports_extension(" txt"));
-		assert!(!parser_supports_extension("txt "));
+	#[rstest]
+	#[case("txt", true)]
+	#[case(".TXT", true)]
+	#[case("log", true)]
+	#[case("", false)]
+	#[case(".", false)]
+	#[case("notarealextension", false)]
+	#[case(" txt", false)]
+	#[case("txt ", false)]
+	#[case("..txt", true)]
+	#[case("...log", true)]
+	fn parser_supports_extension_classifies_inputs(#[case] extension: &str, #[case] expected: bool) {
+		assert_eq!(parser_supports_extension(extension), expected);
 	}
 
 	#[test]
@@ -465,12 +463,6 @@ mod tests {
 	fn get_parser_flags_for_context_returns_none_for_unknown_extension() {
 		let context = ParserContext::new("doc.unknown_ext".to_string());
 		assert_eq!(get_parser_flags_for_context(&context), ParserFlags::NONE);
-	}
-
-	#[test]
-	fn parser_supports_extension_handles_multiple_leading_dots() {
-		assert!(parser_supports_extension("..txt"));
-		assert!(parser_supports_extension("...log"));
 	}
 
 	#[test]
