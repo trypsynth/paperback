@@ -25,4 +25,21 @@ mod tests {
 		assert_eq!(extract_title_from_path("  spaced.txt  "), "spaced");
 		assert_eq!(extract_title_from_path(""), "Untitled");
 	}
+
+	#[test]
+	fn extracts_title_from_paths_without_extension() {
+		assert_eq!(extract_title_from_path("README"), "README");
+		assert_eq!(extract_title_from_path("/var/log/system"), "system");
+	}
+
+	#[test]
+	fn returns_untitled_for_whitespace_only_or_trailing_separator() {
+		assert_eq!(extract_title_from_path("   "), "Untitled");
+		assert_eq!(extract_title_from_path(" /tmp/dir/ "), "Untitled");
+	}
+
+	#[test]
+	fn extracts_title_from_multi_dot_filename() {
+		assert_eq!(extract_title_from_path("archive.tar.gz"), "archive.tar");
+	}
 }

@@ -83,4 +83,31 @@ mod tests {
 		let contents = fs::read_to_string(&output_path).expect("read output");
 		assert_eq!(contents, "nested");
 	}
+
+	#[test]
+	fn extract_zip_entry_to_file_reports_missing_entry() {
+		let mut archive = build_test_archive();
+		let output_path = unique_temp_path("nested/missing.txt");
+		assert!(extract_zip_entry_to_file(&mut archive, "does-not-exist.txt", &output_path).is_err());
+	}
+
+	#[test]
+	fn extract_zip_entry_to_file_overwrites_existing_file_contents() {
+		let mut archive = build_test_archive();
+		let output_path = unique_temp_path("nested/overwrite.txt");
+		if let Some(parent) = output_path.parent() {
+			fs::create_dir_all(parent).expect("create parent");
+		}
+		fs::write(&output_path, "old").expect("seed file");
+		extract_zip_entry_to_file(&mut archive, "foo.txt", &output_path).expect("extract entry");
+		let contents = fs::read_to_string(&output_path).expect("read output");
+		assert_eq!(contents, "hello world");
+	}
+
+	#[test]
+	fn read_zip_entry_by_name_reads_nested_entry() {
+		let mut archive = build_test_archive();
+		let contents = read_zip_entry_by_name(&mut archive, "nested/bar.txt").expect("read nested entry");
+		assert_eq!(contents, "nested");
+	}
 }

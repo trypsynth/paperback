@@ -204,6 +204,21 @@ mod tests {
 	}
 
 	#[test]
+	fn parse_semver_trims_whitespace() {
+		assert_eq!(parse_semver_value("  v2.3.4  "), Some((2, 3, 4)));
+	}
+
+	#[test]
+	fn parse_semver_ignores_extra_segments_after_patch() {
+		assert_eq!(parse_semver_value("1.2.3.99"), Some((1, 2, 3)));
+	}
+
+	#[test]
+	fn parse_semver_rejects_missing_major_component() {
+		assert_eq!(parse_semver_value(".2.3"), None);
+	}
+
+	#[test]
 	fn pick_download_url_prefers_installer() {
 		let assets = vec![
 			ReleaseAsset {
@@ -227,5 +242,31 @@ mod tests {
 		}];
 		let url = pick_download_url(false, &assets);
 		assert_eq!(url.as_deref(), Some("https://example.com/PAPERBACK.ZIP"));
+	}
+
+	#[test]
+	fn pick_download_url_returns_none_when_preferred_asset_missing() {
+		let assets = vec![ReleaseAsset {
+			name: "notes.txt".to_string(),
+			browser_download_url: "https://example.com/notes.txt".to_string(),
+		}];
+		assert!(pick_download_url(true, &assets).is_none());
+		assert!(pick_download_url(false, &assets).is_none());
+	}
+
+	#[test]
+	fn pick_download_url_uses_flag_to_choose_between_exe_and_zip() {
+		let assets = vec![
+			ReleaseAsset {
+				name: "paperback.zip".to_string(),
+				browser_download_url: "https://example.com/paperback.zip".to_string(),
+			},
+			ReleaseAsset {
+				name: "paperback_setup.exe".to_string(),
+				browser_download_url: "https://example.com/paperback_setup.exe".to_string(),
+			},
+		];
+		assert_eq!(pick_download_url(false, &assets).as_deref(), Some("https://example.com/paperback.zip"));
+		assert_eq!(pick_download_url(true, &assets).as_deref(), Some("https://example.com/paperback_setup.exe"));
 	}
 }
