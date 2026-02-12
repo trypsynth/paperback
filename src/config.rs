@@ -920,3 +920,45 @@ fn decode_note(encoded: &str) -> String {
 	}
 	STANDARD.decode(encoded).map(|bytes| String::from_utf8_lossy(&bytes).to_string()).unwrap_or_default()
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn escape_document_path_is_stable_and_prefixed() {
+		let a = escape_document_path("C:\\books\\a.epub");
+		let b = escape_document_path("C:\\books\\a.epub");
+		assert_eq!(a, b);
+		assert!(a.starts_with("doc_"));
+		assert!(!a.contains('/'));
+	}
+
+	#[test]
+	fn escape_document_path_differs_for_different_inputs() {
+		let a = escape_document_path("book-a.epub");
+		let b = escape_document_path("book-b.epub");
+		assert_ne!(a, b);
+	}
+
+	#[test]
+	fn document_section_uses_escaped_path() {
+		let path = "/tmp/file.txt";
+		assert_eq!(get_document_section(path), escape_document_path(path));
+	}
+
+	#[test]
+	fn encode_decode_note_round_trip_with_unicode() {
+		let original = "note with unicode: cafe\u{0301} and \u{1F600}";
+		let encoded = encode_note(original);
+		assert!(!encoded.is_empty());
+		assert_eq!(decode_note(&encoded), original);
+	}
+
+	#[test]
+	fn encode_decode_note_handles_empty_and_invalid_input() {
+		assert_eq!(encode_note(""), "");
+		assert_eq!(decode_note(""), "");
+		assert_eq!(decode_note("%%%not-base64%%%"), "");
+	}
+}

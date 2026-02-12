@@ -135,3 +135,37 @@ fn langs_directory() -> Option<PathBuf> {
 	let exe_dir = exe_path.parent()?;
 	Some(exe_dir.join("langs"))
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn new_manager_has_english_available_by_default() {
+		let manager = TranslationManager::new();
+		assert_eq!(manager.current_language(), "en");
+		assert!(manager.is_language_available("en"));
+		assert!(!manager.is_language_available("zz"));
+	}
+
+	#[test]
+	fn set_language_fails_when_not_initialized() {
+		let mut manager = TranslationManager::new();
+		assert!(!manager.set_language("en"));
+		assert_eq!(manager.current_language(), "en");
+	}
+
+	#[test]
+	fn available_languages_returns_clone() {
+		let manager = TranslationManager::new();
+		let mut langs = manager.available_languages();
+		langs.push(LanguageInfo { code: "xx".to_string(), native_name: "Fake".to_string() });
+		assert!(!manager.is_language_available("xx"));
+	}
+
+	#[test]
+	fn langs_directory_points_inside_exe_dir() {
+		let langs = langs_directory().expect("langs dir");
+		assert_eq!(langs.file_name().and_then(|n| n.to_str()), Some("langs"));
+	}
+}
