@@ -158,4 +158,42 @@ mod tests {
 		let input = b"";
 		assert_eq!(convert_to_utf8(input), "");
 	}
+
+	#[test]
+	fn test_utf16le_without_bom_when_pattern_matches() {
+		let input = b"H\x00i\x00";
+		assert_eq!(convert_to_utf8(input), "H\0i\0");
+	}
+
+	#[test]
+	fn test_utf32le_ignores_incomplete_trailing_bytes() {
+		let input = b"\xFF\xFE\x00\x00A\x00\x00\x00\x99";
+		assert_eq!(convert_to_utf8(input), "A");
+	}
+
+	#[test]
+	fn test_decode_utf32_le_skips_invalid_code_points() {
+		let input = [0x00, 0xD8, 0x00, 0x00, 0x41, 0x00, 0x00, 0x00];
+		assert_eq!(decode_utf32_le(&input), "A");
+	}
+
+	#[test]
+	fn test_decode_utf32_be_ignores_incomplete_chunks() {
+		let input = [0x00, 0x00, 0x00, 0x41, 0x99];
+		assert_eq!(decode_utf32_be(&input), "A");
+	}
+
+	#[test]
+	fn test_looks_like_utf16_heuristic() {
+		assert!(looks_like_utf16(b"H\x00i\x00"));
+		assert!(looks_like_utf16(b"\x00H\x00i"));
+		assert!(!looks_like_utf16(b"Hello"));
+		assert!(!looks_like_utf16(b""));
+	}
+
+	#[test]
+	fn test_convert_to_utf8_falls_back_to_lossy_when_no_viable_decode() {
+		let input = b"\x81\x8D";
+		assert_eq!(convert_to_utf8(input), "\u{FFFD}\u{FFFD}");
+	}
 }

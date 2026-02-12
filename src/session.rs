@@ -715,3 +715,193 @@ impl DocumentSession {
 		}
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::document::{Document, DocumentBuffer, Marker};
+
+	fn sample_session(parser_flags: ParserFlags) -> DocumentSession {
+		let mut buffer = DocumentBuffer::with_content("line1\nline2\nline3".to_string());
+		buffer.add_marker(Marker::new(MarkerType::SectionBreak, 0).with_reference("chapter1.xhtml".to_string()));
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, 0));
+		buffer.add_marker(Marker::new(MarkerType::Heading1, 0).with_level(1).with_text("H1".to_string()));
+		buffer.add_marker(Marker::new(MarkerType::Link, 6).with_text("line2".to_string()).with_reference(
+			"https://example.com".to_string(),
+		));
+		buffer.add_marker(Marker::new(MarkerType::List, 6).with_level(1));
+		buffer.add_marker(Marker::new(MarkerType::ListItem, 6).with_level(1).with_text("item".to_string()));
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, 8));
+		buffer.add_marker(
+			Marker::new(MarkerType::Table, 12).with_text("line3".to_string()).with_reference("<table/>".to_string()),
+		);
+		buffer.add_marker(Marker::new(MarkerType::Separator, 5).with_length(1));
+		let mut doc = Document::new().with_title("Title".to_string()).with_author("Author".to_string());
+		doc.set_buffer(buffer);
+		DocumentSession {
+			handle: DocumentHandle::new(doc),
+			file_path: "book.epub".to_string(),
+			history: Vec::new(),
+			history_index: 0,
+			parser_flags,
+			last_stable_position: None,
+		}
+	}
+
+	#[test]
+	fn navigation_result_constructors_have_expected_flags() {
+		let not_found = NavigationResult::not_found();
+		assert!(!not_found.found);
+		assert!(!not_found.not_supported);
+		let not_supported = NavigationResult::not_supported();
+		assert!(!not_supported.found);
+		assert!(not_supported.not_supported);
+	}
+
+	#[test]
+	fn link_activation_result_not_found_defaults() {
+		let result = LinkActivationResult::not_found();
+		assert!(!result.found);
+		assert_eq!(result.action, LinkAction::NotFound);
+		assert_eq!(result.offset, 0);
+		assert_eq!(result.url, "");
+	}
+
+	#[test]
+	fn set_history_clamps_out_of_range_index() {
+		let mut session = sample_session(ParserFlags::NONE);
+		session.set_history(&[10, 20], 99);
+		let (history, index) = session.get_history();
+		assert_eq!(history, &[10, 20]);
+		assert_eq!(index, 1);
+	}
+
+	#[test]
+	fn set_history_empty_resets_index_to_zero() {
+		let mut session = sample_session(ParserFlags::NONE);
+		session.set_history(&[], 99);
+		let (history, index) = session.get_history();
+		assert!(history.is_empty());
+		assert_eq!(index, 0);
+	}
+
+	#[test]
+	fn check_and_record_history_records_only_after_threshold() {
+		let mut session = sample_session(ParserFlags::NONE);
+		session.check_and_record_history(100);
+		session.check_and_record_history(200);
+		session.check_and_record_history(450);
+		session.check_and_record_history(900);
+		let (history, index) = session.get_history();
+		assert_eq!(history, &[100, 450]);
+		assert_eq!(index, 1);
+	}
+
+	#[test]
+	fn nav_helpers_build_expected_request() {
+		assert_eq!(DocumentSession::nav_direction(true), NavDirection::Next);
+		assert_eq!(DocumentSession::nav_direction(false), NavDirection::Previous);
+		let req = DocumentSession::nav_request(7, true, false, NavTarget::Heading, 2);
+		assert_eq!(req.position, 7);
+		assert!(req.wrap);
+		assert_eq!(req.direction, NavDirection::Previous);
+		assert_eq!(req.target, NavTarget::Heading);
+		assert_eq!(req.level_filter, 2);
+	}
+
+	#[test]
+	fn navigate_section_returns_not_supported_without_flag() {
+		let session = sample_session(ParserFlags::NONE);
+		let result = session.navigate_section(0, false, true);
+		assert!(!result.found);
+		assert!(result.not_supported);
+	}
+
+	#[test]
+	fn navigate_list_and_list_item_require_support_flag() {
+		let session = sample_session(ParserFlags::NONE);
+		assert!(session.navigate_list(0, false, true).not_supported);
+		assert!(session.navigate_list_item(0, false, true).not_supported);
+		let session = sample_session(ParserFlags::SUPPORTS_LISTS);
+		assert!(!session.navigate_list(0, false, true).not_supported);
+		assert!(!session.navigate_list_item(0, false, true).not_supported);
+	}
+
+	#[test]
+	fn status_and_percent_helpers_handle_bounds() {
+		let session = sample_session(ParserFlags::NONE);
+		let start = session.get_status_info(-5);
+		assert_eq!(start.line_number, 1);
+		assert_eq!(start.character_number, 1);
+		assert_eq!(start.percentage, 0);
+		let end = session.get_status_info(999);
+		assert_eq!(end.percentage, 100);
+		assert_eq!(session.position_from_percent(-10), 0);
+		assert_eq!(session.position_from_percent(101), 17);
+		assert_eq!(session.position_from_percent(1), 1);
+	}
+
+	#[test]
+	fn line_and_position_helpers_are_consistent() {
+		let session = sample_session(ParserFlags::NONE);
+		assert_eq!(session.line_count(), 3);
+		assert_eq!(session.position_from_line(1), 0);
+		assert_eq!(session.position_from_line(2), 6);
+		assert_eq!(session.position_from_line(999), 17);
+	}
+
+	#[test]
+	fn page_helpers_report_counts_and_offsets() {
+		let session = sample_session(ParserFlags::NONE);
+		assert_eq!(session.page_count(), 2);
+		assert!(session.current_page(0) > 0);
+		assert!(session.current_page(8) >= session.current_page(0));
+		assert_eq!(session.page_offset(0), 0);
+		assert_eq!(session.page_offset(1), 8);
+		assert_eq!(session.page_offset(-1), -1);
+	}
+
+	#[test]
+	fn text_range_and_line_text_extract_expected_content() {
+		let session = sample_session(ParserFlags::NONE);
+		assert_eq!(session.get_text_range(0, 5), "line1");
+		assert_eq!(session.get_text_range(5, 5), "");
+		assert_eq!(session.get_line_text(0), "line1");
+		assert_eq!(session.get_line_text(7), "line2");
+		assert_eq!(session.get_line_text(999), "line3");
+	}
+
+	#[test]
+	fn has_headings_checks_specific_and_any_levels() {
+		let session = sample_session(ParserFlags::NONE);
+		assert!(session.has_headings(None));
+		assert!(session.has_headings(Some(1)));
+		assert!(!session.has_headings(Some(2)));
+		assert!(!session.has_headings(Some(99)));
+	}
+
+	#[test]
+	fn table_and_section_accessors_require_in_range_and_reference() {
+		let session = sample_session(ParserFlags::NONE);
+		assert_eq!(session.get_table_at_position(13).as_deref(), Some("<table/>"));
+		assert!(session.get_table_at_position(2).is_none());
+		assert_eq!(session.get_current_section_path(0).as_deref(), Some("chapter1.xhtml"));
+	}
+
+	#[test]
+	fn activate_link_returns_not_found_outside_link_text() {
+		let session = sample_session(ParserFlags::NONE);
+		let result = session.activate_link(2);
+		assert!(!result.found);
+		assert_eq!(result.action, LinkAction::NotFound);
+	}
+
+	#[test]
+	fn activate_link_resolves_external_links() {
+		let session = sample_session(ParserFlags::NONE);
+		let result = session.activate_link(7);
+		assert!(result.found);
+		assert_eq!(result.action, LinkAction::External);
+		assert_eq!(result.url, "https://example.com");
+	}
+}

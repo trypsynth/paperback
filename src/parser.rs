@@ -354,12 +354,25 @@ mod tests {
 	}
 
 	#[test]
+	fn join_extensions_returns_empty_for_empty_input() {
+		let joined = join_extensions(std::iter::empty::<&str>());
+		assert_eq!(joined, "");
+	}
+
+	#[test]
 	fn is_external_url_accepts_supported_schemes_case_insensitively() {
 		assert!(is_external_url("http://example.com"));
 		assert!(is_external_url("HTTPS://example.com"));
 		assert!(is_external_url("MailTo:test@example.com"));
 		assert!(!is_external_url("ftp://example.com"));
 		assert!(!is_external_url("#local"));
+	}
+
+	#[test]
+	fn is_external_url_rejects_lookalike_prefixes() {
+		assert!(!is_external_url("https//example.com"));
+		assert!(!is_external_url("mailtox:test@example.com"));
+		assert!(!is_external_url("httpx://example.com"));
 	}
 
 	#[test]
@@ -370,6 +383,12 @@ mod tests {
 		assert!(!parser_supports_extension(""));
 		assert!(!parser_supports_extension("."));
 		assert!(!parser_supports_extension("notarealextension"));
+	}
+
+	#[test]
+	fn parser_supports_extension_rejects_whitespace_padded_values() {
+		assert!(!parser_supports_extension(" txt"));
+		assert!(!parser_supports_extension("txt "));
 	}
 
 	#[test]
@@ -411,5 +430,20 @@ mod tests {
 		add_converter_markers_excluding_links(&mut buffer, &converter, 10);
 		assert_eq!(buffer.markers.len(), 5);
 		assert!(buffer.markers.iter().all(|marker| marker.mtype != MarkerType::Link));
+	}
+
+	#[test]
+	fn add_converter_markers_handles_empty_converter_output() {
+		let converter = MockConverter {
+			headings: vec![],
+			links: vec![],
+			tables: vec![],
+			separators: vec![],
+			lists: vec![],
+			list_items: vec![],
+		};
+		let mut buffer = DocumentBuffer::new();
+		add_converter_markers(&mut buffer, &converter, 0);
+		assert!(buffer.markers.is_empty());
 	}
 }

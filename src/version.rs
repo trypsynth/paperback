@@ -17,4 +17,10 @@ mod tests {
 	fn user_agent_contains_package_version() {
 		assert_eq!(user_agent(), format!("paperback/{}", env!("CARGO_PKG_VERSION")));
 	}
+
+	#[test]
+	fn user_agent_has_no_surrounding_whitespace() {
+		let ua = user_agent();
+		assert_eq!(ua.trim(), ua);
+	}
 }
