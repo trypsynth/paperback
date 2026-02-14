@@ -20,7 +20,8 @@ pub fn decode_execute_payload(data: &[u8]) -> Option<IpcCommand> {
 		return None;
 	}
 	let payload = String::from_utf8_lossy(data);
-	let payload = payload.trim_end_matches('\0').trim();
+	let payload = payload.replace('\0', "");
+	let payload = payload.trim();
 	if payload.is_empty() {
 		return None;
 	}
@@ -103,6 +104,15 @@ mod tests {
 		let cmd = decode_execute_payload(&[0xFF, 0xFE, b'a']).expect("expected command");
 		match cmd {
 			IpcCommand::OpenFile(path) => assert!(path.to_string_lossy().contains('a')),
+			_ => panic!("expected OpenFile"),
+		}
+	}
+
+	#[test]
+	fn decode_execute_payload_strips_embedded_nulls() {
+		let cmd = decode_execute_payload(b"C:\\Books\\novel.epub\0\0").expect("expected command");
+		match cmd {
+			IpcCommand::OpenFile(path) => assert_eq!(path, PathBuf::from("C:\\Books\\novel.epub")),
 			_ => panic!("expected OpenFile"),
 		}
 	}

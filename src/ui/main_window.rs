@@ -179,6 +179,7 @@ impl MainWindow {
 	fn activate_from_ipc(&self) {
 		self.frame.show(true);
 		self.frame.iconize(false);
+		self.frame.request_user_attention(UserAttentionFlag::Info);
 		self.frame.raise();
 		self.doc_manager.lock().unwrap().restore_focus();
 	}
@@ -1184,12 +1185,35 @@ impl MainWindow {
 }
 
 fn ensure_parser_ready_for_path(frame: &Frame, path: &Path, config: &Rc<Mutex<ConfigManager>>) -> bool {
-	let extension = path.extension().and_then(|ext| ext.to_str()).unwrap_or_default();
-	if extension.is_empty() || parser_supports_extension(extension) {
+	let extension = parser_extension_for_path(path);
+	if extension.is_empty() || parser_supports_extension(&extension) {
 		return true;
 	}
 	let cfg = config.lock().unwrap();
 	ensure_parser_for_unknown_file(frame, path, &cfg)
+}
+
+fn parser_extension_for_path(path: &Path) -> String {
+	let from_path =
+		path.extension().and_then(|ext| ext.to_str()).map(clean_extension_token).unwrap_or_default().to_string();
+	if !from_path.is_empty() {
+		return from_path;
+	}
+	// Fallback for odd IPC/CLI strings that may contain trailing quotes or whitespace.
+	let raw = path.to_string_lossy();
+	let cleaned = raw.trim().trim_matches(['"', '\'', '\0']);
+	let candidate = cleaned
+		.rsplit_once(['/', '\\'])
+		.map_or(cleaned, |(_, file_name)| file_name)
+		.rsplit_once('.')
+		.map_or("", |(_, ext)| ext)
+		.trim();
+	clean_extension_token(candidate)
+}
+
+fn clean_extension_token(raw: &str) -> String {
+	let trimmed = raw.trim().trim_matches(['"', '\'', '\0']);
+	trimmed.chars().take_while(|c| c.is_ascii_alphanumeric()).collect()
 }
 
 fn ensure_parser_for_unknown_file(parent: &Frame, path: &Path, config: &ConfigManager) -> bool {
@@ -1248,5 +1272,35 @@ fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 			}
 		}
 		frame.set_status_text(&status_text, 0);
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use std::path::Path;
+
+	use super::parser_extension_for_path;
+
+	#[test]
+	fn parser_extension_for_path_handles_normal_paths() {
+		assert_eq!(parser_extension_for_path(Path::new("book.epub")), "epub");
+		assert_eq!(parser_extension_for_path(Path::new("C:\\docs\\book.PDF")), "PDF");
+	}
+
+	#[test]
+	fn parser_extension_for_path_strips_quotes_and_whitespace() {
+		assert_eq!(parser_extension_for_path(Path::new("  \"book.epub\"  ")), "epub");
+		assert_eq!(parser_extension_for_path(Path::new("'book.txt'")), "txt");
+	}
+
+	#[test]
+	fn parser_extension_for_path_returns_empty_for_no_extension() {
+		assert_eq!(parser_extension_for_path(Path::new("README")), "");
+	}
+
+	#[test]
+	fn parser_extension_for_path_handles_ipc_artifacts() {
+		assert_eq!(parser_extension_for_path(Path::new("book.epub\u{0}")), "epub");
+		assert_eq!(parser_extension_for_path(Path::new(" \"book.epub\u{0}\" ")), "epub");
 	}
 }
