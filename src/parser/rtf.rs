@@ -35,6 +35,8 @@ impl Parser for RtfParser {
 		let content_str = content_str.trim_end_matches(|c: char| c == '\0' || c.is_whitespace());
 		let encoding = extract_codepage(content_str);
 		let content_str = resolve_hex_escapes(content_str, encoding);
+		// Strip \r so that \r\n line endings don't leave stray carriage returns in text tokens
+		let content_str = content_str.replace('\r', "");
 		let tokens = Lexer::scan(&content_str).map_err(|e| anyhow::anyhow!("Failed to parse RTF document: {e}"))?;
 		let buffer = extract_content_from_tokens(&tokens);
 		let title = extract_title_from_path(&context.file_path);
