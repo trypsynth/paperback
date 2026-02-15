@@ -17,8 +17,7 @@ use std::{
 	time::Duration,
 };
 
-use wxdragon::{prelude::*, translations::translate as t};
-use wxdragon_sys as ffi;
+use wxdragon::{ffi, prelude::*, translations::translate as t};
 
 use super::{dialogs, document_manager::DocumentManager};
 use crate::{

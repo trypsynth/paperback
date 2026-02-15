@@ -18,7 +18,7 @@ macro_rules! menu_ids {
 pub const EXIT: i32 = ID_EXIT;
 pub const ABOUT: i32 = ID_ABOUT;
 #[allow(clippy::cast_possible_truncation)]
-pub const PREFERENCES: i32 = wxdragon_sys::WXD_ID_PREFERENCES as i32;
+pub const PREFERENCES: i32 = wxdragon::ffi::WXD_ID_PREFERENCES as i32;
 
 // Base for custom IDs
 const BASE: i32 = 5000;
