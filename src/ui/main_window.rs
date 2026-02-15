@@ -84,6 +84,7 @@ impl MainWindow {
 				return;
 			};
 			update_title_from_manager(&frame_copy, &dm_ref);
+			dm_ref.reset_sound_line();
 		});
 		let dm = Rc::clone(&doc_manager);
 		let frame_copy = frame;
@@ -1040,6 +1041,7 @@ impl MainWindow {
 						"check_for_updates_on_startup",
 						options.flags.contains(OptionsDialogFlags::CHECK_FOR_UPDATES_ON_STARTUP),
 					);
+					cfg.set_app_bool("bookmark_sounds", options.flags.contains(OptionsDialogFlags::BOOKMARK_SOUNDS));
 					cfg.set_app_int("recent_documents_to_show", options.recent_documents_to_show);
 					cfg.set_app_string("language", &options.language);
 					cfg.flush();

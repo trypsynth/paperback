@@ -7,6 +7,7 @@ mod main_window;
 mod menu;
 mod menu_ids;
 mod navigation;
+mod sounds;
 mod status;
 mod tray;
 

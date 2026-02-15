@@ -293,6 +293,9 @@ pub fn handle_bookmark_navigation(
 			tab.text_ctrl.set_insertion_point(result.offset);
 			tab.text_ctrl.show_position(result.offset);
 			tab.session.check_and_record_history(result.offset);
+			if config.lock().unwrap().get_app_bool("bookmark_sounds", true) {
+				super::sounds::play_bookmark_sound(!result.marker_text.is_empty());
+			}
 			let note_text = result.marker_text;
 			let line_text = tab.session.get_line_text(result.offset);
 			let content_text = if note_text.is_empty() { line_text } else { format!("{note_text}, {line_text}") };

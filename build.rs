@@ -14,6 +14,7 @@ use winres::WindowsResource;
 fn main() {
 	track_packaging_inputs();
 	build_translations();
+	copy_sounds();
 	build_docs();
 	configure_installer();
 	generate_pot();
@@ -138,6 +139,44 @@ fn run_msgfmt(input: &Path, output: &Path) -> bool {
 		Err(err) => {
 			println!("cargo:warning=Failed to run msgfmt: {}", err);
 			false
+		}
+	}
+}
+
+fn copy_sounds() {
+	let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap_or_default());
+	let sounds_src = manifest_dir.join("sounds");
+	println!("cargo:rerun-if-changed={}", sounds_src.display());
+	if !sounds_src.exists() {
+		return;
+	}
+	let target_dir = match target_profile_dir() {
+		Some(dir) => dir,
+		None => {
+			println!("cargo:warning=Could not determine target output directory for sounds.");
+			return;
+		}
+	};
+	let sounds_dst = target_dir.join("sounds");
+	if let Err(err) = fs::create_dir_all(&sounds_dst) {
+		println!("cargo:warning=Failed to create sounds directory: {}", err);
+		return;
+	}
+	let entries = match fs::read_dir(&sounds_src) {
+		Ok(entries) => entries,
+		Err(err) => {
+			println!("cargo:warning=Failed to read sounds directory: {}", err);
+			return;
+		}
+	};
+	for entry in entries {
+		let Ok(entry) = entry else { continue };
+		let path = entry.path();
+		if path.is_file() {
+			let dest = sounds_dst.join(entry.file_name());
+			if let Err(err) = fs::copy(&path, &dest) {
+				println!("cargo:warning=Failed to copy sound file: {}", err);
+			}
 		}
 	}
 }

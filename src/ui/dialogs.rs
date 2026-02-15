@@ -69,6 +69,7 @@ bitflags! {
 		const COMPACT_GO_MENU = 1 << 4;
 		const NAVIGATION_WRAP = 1 << 5;
 		const CHECK_FOR_UPDATES_ON_STARTUP = 1 << 6;
+		const BOOKMARK_SOUNDS = 1 << 7;
 	}
 }
 
@@ -86,6 +87,7 @@ struct OptionsDialogUi {
 	compact_go_menu_check: CheckBox,
 	navigation_wrap_check: CheckBox,
 	check_for_updates_check: CheckBox,
+	bookmark_sounds_check: CheckBox,
 	recent_docs_ctrl: SpinCtrl,
 	language_combo: ComboBox,
 	language_codes: Vec<String>,
@@ -119,13 +121,15 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let start_maximized_check = CheckBox::builder(&general_panel).with_label(&t("&Start maximized")).build();
 	let compact_go_menu_check = CheckBox::builder(&reading_panel).with_label(&t("Show compact &go menu")).build();
 	let navigation_wrap_check = CheckBox::builder(&reading_panel).with_label(&t("&Wrap navigation")).build();
+	let bookmark_sounds_check =
+		CheckBox::builder(&reading_panel).with_label(&t("Play &sounds on bookmarks and notes")).build();
 	let check_for_updates_check =
 		CheckBox::builder(&general_panel).with_label(&t("Check for &updates on startup")).build();
 	let option_padding = 5;
 	for check in [&restore_docs_check, &start_maximized_check, &minimize_to_tray_check, &check_for_updates_check] {
 		general_sizer.add(check, 0, SizerFlag::All, option_padding);
 	}
-	for check in [&word_wrap_check, &navigation_wrap_check, &compact_go_menu_check] {
+	for check in [&word_wrap_check, &navigation_wrap_check, &compact_go_menu_check, &bookmark_sounds_check] {
 		reading_sizer.add(check, 0, SizerFlag::All, option_padding);
 	}
 	let max_recent_docs = 100;
@@ -158,6 +162,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	start_maximized_check.set_value(config.get_app_bool("start_maximized", false));
 	compact_go_menu_check.set_value(config.get_app_bool("compact_go_menu", true));
 	navigation_wrap_check.set_value(config.get_app_bool("navigation_wrap", false));
+	bookmark_sounds_check.set_value(config.get_app_bool("bookmark_sounds", true));
 	check_for_updates_check.set_value(config.get_app_bool("check_for_updates_on_startup", true));
 	recent_docs_ctrl.set_value(config.get_app_int("recent_documents_to_show", 25).clamp(0, max_recent_docs));
 	let stored_language = config.get_app_string("language", "");
@@ -182,6 +187,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		compact_go_menu_check,
 		navigation_wrap_check,
 		check_for_updates_check,
+		bookmark_sounds_check,
 		recent_docs_ctrl,
 		language_combo,
 		language_codes,
@@ -233,6 +239,9 @@ fn build_options_dialog_flags(ui: &OptionsDialogUi) -> OptionsDialogFlags {
 	}
 	if ui.check_for_updates_check.is_checked() {
 		flags.insert(OptionsDialogFlags::CHECK_FOR_UPDATES_ON_STARTUP);
+	}
+	if ui.bookmark_sounds_check.is_checked() {
+		flags.insert(OptionsDialogFlags::BOOKMARK_SOUNDS);
 	}
 	flags
 }

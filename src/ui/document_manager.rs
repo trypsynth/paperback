@@ -35,6 +35,7 @@ pub struct DocumentManager {
 	config: Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
 	last_position_save: Cell<Option<Instant>>,
+	last_sound_line: Cell<Option<i64>>,
 }
 
 impl DocumentManager {
@@ -44,7 +45,15 @@ impl DocumentManager {
 		config: Rc<Mutex<ConfigManager>>,
 		live_region_label: StaticText,
 	) -> Self {
-		Self { frame, notebook, tabs: Vec::new(), config, live_region_label, last_position_save: Cell::new(None) }
+		Self {
+			frame,
+			notebook,
+			tabs: Vec::new(),
+			config,
+			live_region_label,
+			last_position_save: Cell::new(None),
+			last_sound_line: Cell::new(None),
+		}
 	}
 
 	pub fn open_file(&mut self, self_rc: &Rc<Mutex<Self>>, path: &Path) -> bool {
@@ -315,6 +324,38 @@ impl DocumentManager {
 		}
 	}
 
+	fn check_bookmark_sounds(&self) {
+		let config = self.config.lock().unwrap();
+		if !config.get_app_bool("bookmark_sounds", true) {
+			return;
+		}
+		let Some(tab) = self.active_tab() else {
+			return;
+		};
+		let position = tab.text_ctrl.get_insertion_point();
+		let content = &tab.session.content();
+		let total_chars = content.chars().count();
+		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
+		let current_line = i64::try_from(content.chars().take(pos).filter(|&c| c == '\n').count()).unwrap_or(0);
+		if self.last_sound_line.get() == Some(current_line) {
+			return;
+		}
+		self.last_sound_line.set(Some(current_line));
+		let path_str = tab.file_path.to_string_lossy().to_string();
+		let bookmarks = config.get_bookmarks(&path_str);
+		drop(config);
+		for bm in &bookmarks {
+			if bm.start <= position && position <= bm.end {
+				super::sounds::play_bookmark_sound(!bm.note.is_empty());
+				return;
+			}
+		}
+	}
+
+	pub fn reset_sound_line(&self) {
+		self.last_sound_line.set(None);
+	}
+
 	pub fn apply_word_wrap(&mut self, self_rc: &Rc<Mutex<Self>>, word_wrap: bool) {
 		for tab in &mut self.tabs {
 			let old_ctrl = tab.text_ctrl;
@@ -360,6 +401,7 @@ impl DocumentManager {
 			if let Ok(dm) = dm_for_key_up.try_lock() {
 				dm.update_status_bar();
 				dm.save_position_throttled();
+				dm.check_bookmark_sounds();
 			}
 		});
 		let dm_for_mouse = Rc::clone(self_rc);
@@ -368,6 +410,7 @@ impl DocumentManager {
 			if let Ok(dm) = dm_for_mouse.try_lock() {
 				dm.update_status_bar();
 				dm.save_position_throttled();
+				dm.check_bookmark_sounds();
 			}
 		});
 		let text_ctrl_for_menu = text_ctrl;
