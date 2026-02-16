@@ -221,3 +221,78 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 	}
 	result
 }
+
+#[cfg(test)]
+mod tests {
+	use encoding_rs::Encoding;
+	use rstest::rstest;
+
+	use super::{encoding_for_codepage, extract_codepage, hex_digit, parse_hex_pair, resolve_hex_escapes};
+
+	fn enc_name(enc: &'static Encoding) -> &'static str {
+		enc.name()
+	}
+
+	#[rstest]
+	#[case(1252, "windows-1252")]
+	#[case(1251, "windows-1251")]
+	#[case(1258, "windows-1258")]
+	#[case(874, "windows-874")]
+	#[case(9999, "windows-1252")]
+	fn encoding_for_codepage_maps_supported_and_defaults(#[case] codepage: i32, #[case] expected: &str) {
+		assert_eq!(enc_name(encoding_for_codepage(codepage)), expected);
+	}
+
+	#[rstest]
+	#[case("{\\rtf1\\ansi\\ansicpg1251 hello}", "windows-1251")]
+	#[case("{\\rtf1\\ansi\\ansicpg1258 hello}", "windows-1258")]
+	#[case("{\\rtf1\\ansi\\ansicpgNOTNUM hello}", "windows-1252")]
+	#[case("{\\rtf1\\ansi hello}", "windows-1252")]
+	fn extract_codepage_reads_ansicpg_when_present(#[case] rtf: &str, #[case] expected: &str) {
+		assert_eq!(enc_name(extract_codepage(rtf)), expected);
+	}
+
+	#[rstest]
+	#[case(b'0', Some(0))]
+	#[case(b'9', Some(9))]
+	#[case(b'a', Some(10))]
+	#[case(b'f', Some(15))]
+	#[case(b'A', Some(10))]
+	#[case(b'F', Some(15))]
+	#[case(b'g', None)]
+	#[case(b'/', None)]
+	fn hex_digit_classifies_ascii_hex(#[case] input: u8, #[case] expected: Option<u8>) {
+		assert_eq!(hex_digit(input), expected);
+	}
+
+	#[rstest]
+	#[case(b'4', b'1', Some(0x41))]
+	#[case(b'e', b'9', Some(0xE9))]
+	#[case(b'E', b'9', Some(0xE9))]
+	#[case(b'Z', b'9', None)]
+	#[case(b'1', b'X', None)]
+	fn parse_hex_pair_parses_and_rejects_invalid(#[case] h1: u8, #[case] h2: u8, #[case] expected: Option<u8>) {
+		assert_eq!(parse_hex_pair(h1, h2), expected);
+	}
+
+	#[test]
+	fn resolve_hex_escapes_decodes_high_bytes_only() {
+		let input = "Cafe\\'e9 and plain";
+		let output = resolve_hex_escapes(input, encoding_rs::WINDOWS_1252);
+		assert_eq!(output, "Cafeé and plain");
+	}
+
+	#[test]
+	fn resolve_hex_escapes_keeps_ascii_escape_sequences() {
+		let input = "Escaped brace: \\'7b and slash: \\'5c";
+		let output = resolve_hex_escapes(input, encoding_rs::WINDOWS_1252);
+		assert_eq!(output, input);
+	}
+
+	#[test]
+	fn resolve_hex_escapes_ignores_invalid_hex_sequences() {
+		let input = "Broken: \\'zz and mixed: \\'G1";
+		let output = resolve_hex_escapes(input, encoding_rs::WINDOWS_1252);
+		assert_eq!(output, input);
+	}
+}
