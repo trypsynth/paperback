@@ -6,5 +6,5 @@ edition = "2024"
 [dependencies]
 flate2 = { version = "1.1.9", default-features = false }
 tar = "0.4.44"
-zip = { version = "7.4.0", default-features = false, features = ["deflate"] }
+zip = { version = "8.0.0", default-features = false, features = ["deflate"] }
 walkdir = "2.5.0"
