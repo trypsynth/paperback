@@ -24,7 +24,7 @@ use super::{
 	status, tray,
 };
 use crate::{
-	config::ConfigManager,
+	config::{ConfigManager, UpdateChannel},
 	ipc::IpcCommand,
 	parser::{build_file_filter_string, parser_supports_extension},
 	translation_manager::TranslationManager,
@@ -147,8 +147,8 @@ impl MainWindow {
 		self.frame.centre();
 	}
 
-	pub fn check_for_updates(silent: bool) {
-		help::run_update_check(silent);
+	pub fn check_for_updates(silent: bool, channel: UpdateChannel) {
+		help::run_update_check(silent, channel);
 	}
 
 	pub fn open_file(&self, path: &Path) -> bool {
@@ -1044,6 +1044,7 @@ impl MainWindow {
 					cfg.set_app_bool("bookmark_sounds", options.flags.contains(OptionsDialogFlags::BOOKMARK_SOUNDS));
 					cfg.set_app_int("recent_documents_to_show", options.recent_documents_to_show);
 					cfg.set_app_string("language", &options.language);
+					cfg.set_update_channel(options.update_channel);
 					cfg.flush();
 					drop(cfg);
 					let options_word_wrap = options.flags.contains(OptionsDialogFlags::WORD_WRAP);
@@ -1116,7 +1117,8 @@ impl MainWindow {
 					help::handle_view_help_paperback(&frame_copy, &dm, &config);
 				}
 				menu_ids::CHECK_FOR_UPDATES => {
-					help::run_update_check(false);
+					let channel = config.lock().unwrap().get_update_channel();
+					help::run_update_check(false, channel);
 				}
 				menu_ids::DONATE => {
 					help::handle_donate(&frame_copy);

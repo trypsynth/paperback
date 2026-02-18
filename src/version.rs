@@ -1,4 +1,5 @@
 const VERSION: &str = env!("CARGO_PKG_VERSION");
+pub const COMMIT_HASH: &str = env!("PAPERBACK_COMMIT_HASH");
 
 pub fn user_agent() -> String {
 	format!("paperback/{VERSION}")
