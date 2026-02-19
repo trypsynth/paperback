@@ -372,6 +372,7 @@ fn generate_app_bundle() {
 				<string>fodt</string>
 				<string>pptx</string>
 				<string>odp</string>
+				<string>fodp</string>
 				<string>chm</string>
 				<string>fb2</string>
 				<string>html</string>

@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fs::File, io::BufReader};
+use std::{collections::HashMap, fs, fs::File, io::BufReader};
 
 use anyhow::{Context, Result};
 use roxmltree::{Document as XmlDocument, Node, NodeType};
@@ -39,6 +39,58 @@ impl Parser for OdpParser {
 		let pages = find_all_pages(xml_doc.root());
 		if pages.is_empty() {
 			anyhow::bail!("ODP file does not contain any pages");
+		}
+		for (index, page_node) in pages.iter().enumerate() {
+			let slide_start = buffer.current_position();
+			let mut links = Vec::new();
+			let slide_text = get_page_text(*page_node, &mut links, slide_start);
+			if !slide_text.trim().is_empty() {
+				buffer.append(&slide_text);
+				if !buffer.content.ends_with('\n') {
+					buffer.append("\n");
+				}
+				buffer.add_marker(
+					Marker::new(MarkerType::PageBreak, slide_start).with_text(format!("Slide {}", index + 1)),
+				);
+				for link in links {
+					buffer.add_marker(
+						Marker::new(MarkerType::Link, link.offset).with_text(link.text).with_reference(link.reference),
+					);
+				}
+			}
+		}
+		let title = extract_title_from_path(&context.file_path);
+		let mut document = Document::new().with_title(title);
+		document.set_buffer(buffer);
+		document.id_positions = id_positions;
+		Ok(document)
+	}
+}
+
+pub struct FodpParser;
+
+impl Parser for FodpParser {
+	fn name(&self) -> &'static str {
+		"Flat OpenDocument Presentations"
+	}
+
+	fn extensions(&self) -> &[&str] {
+		&["fodp"]
+	}
+
+	fn supported_flags(&self) -> ParserFlags {
+		ParserFlags::empty()
+	}
+
+	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		let content_str = fs::read_to_string(&context.file_path)
+			.with_context(|| format!("Failed to open FODP file '{}'", context.file_path))?;
+		let xml_doc = XmlDocument::parse(&content_str).context("Invalid FODP document")?;
+		let mut buffer = DocumentBuffer::new();
+		let id_positions = HashMap::new();
+		let pages = find_all_pages(xml_doc.root());
+		if pages.is_empty() {
+			anyhow::bail!("FODP file does not contain any pages");
 		}
 		for (index, page_node) in pages.iter().enumerate() {
 			let slide_start = buffer.current_position();
