@@ -95,6 +95,7 @@ impl ParserRegistry {
 			registry.register(pdf::PdfParser);
 			registry.register(markdown::MarkdownParser);
 			registry.register(odp::OdpParser);
+			registry.register(odt::FodtParser);
 			registry.register(odt::OdtParser);
 			registry.register(pptx::PptxParser);
 			registry.register(rtf::RtfParser);

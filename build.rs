@@ -369,6 +369,7 @@ fn generate_app_bundle() {
 				<string>pdf</string>
 				<string>docx</string>
 				<string>odt</string>
+				<string>fodt</string>
 				<string>pptx</string>
 				<string>odp</string>
 				<string>chm</string>

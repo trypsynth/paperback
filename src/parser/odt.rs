@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fs::File, io::BufReader};
+use std::{collections::HashMap, fs, fs::File, io::BufReader};
 
 use anyhow::{Context, Result};
 use roxmltree::{Document as XmlDocument, Node, NodeType};
@@ -38,6 +38,38 @@ impl Parser for OdtParser {
 		let content_str = read_zip_entry_by_name(&mut archive, "content.xml")
 			.context("ODT file does not contain content.xml or it is empty")?;
 		let xml_doc = XmlDocument::parse(&content_str).context("Invalid ODT content.xml")?;
+		let mut buffer = DocumentBuffer::new();
+		let mut id_positions = HashMap::new();
+		traverse(xml_doc.root(), &mut buffer, &mut id_positions);
+		let title = extract_title_from_path(&context.file_path);
+		let toc_items = build_toc_from_buffer(&buffer);
+		let mut document = Document::new().with_title(title);
+		document.set_buffer(buffer);
+		document.id_positions = id_positions;
+		document.toc_items = toc_items;
+		Ok(document)
+	}
+}
+
+pub struct FodtParser;
+
+impl Parser for FodtParser {
+	fn name(&self) -> &'static str {
+		"Flat OpenDocument Text Files"
+	}
+
+	fn extensions(&self) -> &[&str] {
+		&["fodt"]
+	}
+
+	fn supported_flags(&self) -> ParserFlags {
+		ParserFlags::SUPPORTS_TOC
+	}
+
+	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		let content_str = fs::read_to_string(&context.file_path)
+			.with_context(|| format!("Failed to open FODT file '{}'", context.file_path))?;
+		let xml_doc = XmlDocument::parse(&content_str).context("Invalid FODT document")?;
 		let mut buffer = DocumentBuffer::new();
 		let mut id_positions = HashMap::new();
 		traverse(xml_doc.root(), &mut buffer, &mut id_positions);
