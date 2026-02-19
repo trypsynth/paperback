@@ -57,6 +57,7 @@ pub struct OptionsDialogResult {
 	pub flags: OptionsDialogFlags,
 	pub recent_documents_to_show: i32,
 	pub language: String,
+	pub update_channel: crate::config::UpdateChannel,
 }
 
 bitflags! {
@@ -90,6 +91,7 @@ struct OptionsDialogUi {
 	bookmark_sounds_check: CheckBox,
 	recent_docs_ctrl: SpinCtrl,
 	language_combo: ComboBox,
+	update_channel_combo: ComboBox,
 	language_codes: Vec<String>,
 	current_language: String,
 	ok_button: Button,
@@ -104,7 +106,11 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 	}
 	let language = resolve_options_language(&ui);
 	let flags = build_options_dialog_flags(&ui);
-	Some(OptionsDialogResult { flags, recent_documents_to_show: ui.recent_docs_ctrl.value(), language })
+	let update_channel = match ui.update_channel_combo.get_selection() {
+		Some(1) => crate::config::UpdateChannel::Dev,
+		_ => crate::config::UpdateChannel::Stable,
+	};
+	Some(OptionsDialogResult { flags, recent_documents_to_show: ui.recent_docs_ctrl.value(), language, update_channel })
 }
 
 fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDialogUi {
@@ -152,6 +158,16 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	language_sizer.add(&language_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	language_sizer.add(&language_combo, 0, SizerFlag::AlignCenterVertical, 0);
 	general_sizer.add_sizer(&language_sizer, 0, SizerFlag::All, option_padding);
+
+	let channel_label = StaticText::builder(&general_panel).with_label(&t("Update Channel:")).build();
+	let update_channel_combo = ComboBox::builder(&general_panel).with_style(ComboBoxStyle::ReadOnly).build();
+	update_channel_combo.append(&t("Stable"));
+	update_channel_combo.append(&t("Dev"));
+	let channel_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	channel_sizer.add(&channel_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
+	channel_sizer.add(&update_channel_combo, 0, SizerFlag::AlignCenterVertical, 0);
+	general_sizer.add_sizer(&channel_sizer, 0, SizerFlag::All, option_padding);
+
 	general_panel.set_sizer(general_sizer, true);
 	reading_panel.set_sizer(reading_sizer, true);
 	notebook.add_page(&general_panel, &t("General"), true, None);
@@ -174,6 +190,13 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	if let Some(index) = language_codes.iter().position(|code| code == &current_language) {
 		language_combo.set_selection(u32::try_from(index).unwrap_or(0));
 	}
+	let current_channel = config.get_update_channel();
+	let channel_index = match current_channel {
+		crate::config::UpdateChannel::Stable => 0,
+		crate::config::UpdateChannel::Dev => 1,
+	};
+	update_channel_combo.set_selection(channel_index);
+
 	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
 	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
 	ok_button.set_default();
@@ -190,6 +213,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		bookmark_sounds_check,
 		recent_docs_ctrl,
 		language_combo,
+		update_channel_combo,
 		language_codes,
 		current_language,
 		ok_button,

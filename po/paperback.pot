@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.0\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-02-14 16:48-0700\n"
+"POT-Creation-Date: 2026-02-19 04:36+0530\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -59,6 +59,15 @@ msgid "Number of &recent documents to show:"
 msgstr ""
 
 msgid "&Language:"
+msgstr ""
+
+msgid "Update Channel:"
+msgstr ""
+
+msgid "Stable"
+msgstr ""
+
+msgid "Dev"
 msgstr ""
 
 msgid "General"

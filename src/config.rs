@@ -22,6 +22,39 @@ const CONFIG_VERSION_CURRENT: i64 = CONFIG_VERSION_2;
 const DEFAULT_RECENT_DOCUMENTS_TO_SHOW: i64 = 25;
 const MAX_RECENT_DOCUMENTS_TO_SHOW: usize = 100;
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum UpdateChannel {
+	Stable,
+	Dev,
+}
+
+impl Default for UpdateChannel {
+	fn default() -> Self {
+		Self::Stable
+	}
+}
+
+impl std::fmt::Display for UpdateChannel {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		match self {
+			Self::Stable => write!(f, "stable"),
+			Self::Dev => write!(f, "dev"),
+		}
+	}
+}
+
+impl std::str::FromStr for UpdateChannel {
+	type Err = ();
+
+	fn from_str(s: &str) -> Result<Self, Self::Err> {
+		match s.to_lowercase().as_str() {
+			"stable" => Ok(Self::Stable),
+			"dev" => Ok(Self::Dev),
+			_ => Err(()),
+		}
+	}
+}
+
 #[derive(Clone, Debug, Default)]
 pub struct Bookmark {
 	pub start: i64,
@@ -132,6 +165,15 @@ impl ConfigManager {
 
 	fn set_app_long(&self, key: &str, value: i64) {
 		let _ = self.with_path("/app", |config| config.write_long(key, value));
+	}
+
+	pub fn get_update_channel(&self) -> UpdateChannel {
+		let s = self.get_app_string("update_channel", "stable");
+		s.parse().unwrap_or_default()
+	}
+
+	pub fn set_update_channel(&self, channel: UpdateChannel) {
+		self.set_app_string("update_channel", &channel.to_string());
 	}
 
 	pub fn get_document_string(&self, path: &str, key: &str, default_value: &str) -> String {

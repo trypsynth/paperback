@@ -56,8 +56,12 @@ impl PaperbackApp {
 		let ipc_server = start_ipc_server(&Rc::clone(&main_window));
 		main_window.show();
 		open_from_command_line(&main_window);
-		if config.lock().unwrap().get_app_bool("check_for_updates_on_startup", true) {
-			MainWindow::check_for_updates(true);
+		let (check_updates, channel) = {
+			let cfg = config.lock().unwrap();
+			(cfg.get_app_bool("check_for_updates_on_startup", true), cfg.get_update_channel())
+		};
+		if check_updates {
+			MainWindow::check_for_updates(true, channel);
 		}
 		Self {
 			_config: config,

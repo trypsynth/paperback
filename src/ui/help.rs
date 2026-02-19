@@ -21,10 +21,11 @@ use wxdragon::{ffi, prelude::*, translations::translate as t};
 
 use super::{dialogs, document_manager::DocumentManager};
 use crate::{
-	config::ConfigManager,
+	config::{ConfigManager, UpdateChannel},
 	parser,
 	text::markdown_to_text,
 	update::{self, UpdateCheckOutcome, UpdateError},
+	version,
 };
 
 pub static MAIN_WINDOW_PTR: AtomicUsize = AtomicUsize::new(0);
@@ -33,11 +34,12 @@ thread_local! {
 	static ACTIVE_PROGRESS: RefCell<Option<ProgressDialog>> = const { RefCell::new(None) };
 }
 
-pub fn run_update_check(silent: bool) {
+pub fn run_update_check(silent: bool, channel: UpdateChannel) {
 	let current_version = env!("CARGO_PKG_VERSION").to_string();
+	let current_commit = version::COMMIT_HASH;
 	let is_installer = is_installer_distribution();
 	thread::spawn(move || {
-		let outcome = update::check_for_updates(&current_version, is_installer);
+		let outcome = update::check_for_updates(&current_version, current_commit, is_installer, channel);
 		wxdragon::call_after(Box::new(move || {
 			present_update_result(outcome, silent, &current_version);
 		}));
