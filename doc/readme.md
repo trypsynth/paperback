@@ -136,6 +136,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * James Scholes
 * Jayson Smith
 * Jonathan Schuster
+* Keao Wright
 * Pratik Patel
 * Roberto Perez
 * Sean Randall
