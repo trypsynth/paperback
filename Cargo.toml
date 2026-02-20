@@ -11,7 +11,7 @@ rust-version = "1.87.0"
 members = ["xtask"]
 
 [dependencies]
-anyhow = "1.0.101"
+anyhow = "1.0.102"
 base64 = "0.22.1"
 bitflags = "2.11.0"
 ego-tree = "0.10.0"
