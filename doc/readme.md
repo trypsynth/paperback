@@ -135,6 +135,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Hamish Mackenzie
 * James Scholes
 * Jayson Smith
+* Jonathan Rodriguez
 * Jonathan Schuster
 * Keao Wright
 * Pratik Patel
