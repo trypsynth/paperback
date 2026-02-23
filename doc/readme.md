@@ -177,7 +177,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * It is now possible to check for new dev builds instead of stable releases when checking for updates. [#333](https://github.com/trypsynth/paperback/pull/333).
 * Properly embed version information in the Paperback executable. [#204](https://github.com/trypsynth/paperback/issues/204).
 * Split the options dialog into tabs for ease of use and navigation.
-* Switched to Hayro for parsing PDFs, leading to more reliability, speed, and less DLLs.
+* Switched to Hayro for parsing PDFs, leading to more reliability, speed, and fewer DLLs.
 * Rewrote the entire app in Rust. The new codebase is safer, loads documents faster, and is easier to maintain and extend.
 * The text control's context menu will now include reader-specific actions instead of geneirc items such as cut and paste. [#114](https://github.com/trypsynth/paperback/issues/114).
 
