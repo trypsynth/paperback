@@ -188,14 +188,17 @@ shortcuts</a>
 id="toc-additional-document-view-keys">Additional document-view
 keys</a></li>
 </ul></li>
+<li><a href="#supported-languages"
+id="toc-supported-languages">Supported languages</a></li>
 <li><a href="#credits" id="toc-credits">Credits</a>
 <ul>
 <li><a href="#development" id="toc-development">Development</a></li>
 <li><a href="#donations" id="toc-donations">Donations</a></li>
-<li><a href="#translations" id="toc-translations">Translations</a></li>
 </ul></li>
 <li><a href="#changelog" id="toc-changelog">Changelog</a>
 <ul>
+<li><a href="#version-0.8.0" id="toc-version-0.8.0">Version
+0.8.0</a></li>
 <li><a href="#version-0.7.0" id="toc-version-0.7.0">Version
 0.7.0</a></li>
 <li><a href="#version-0.6.1" id="toc-version-0.6.1">Version
@@ -361,12 +364,25 @@ open a table view when on a table marker.</li>
 <li><code>Shift+F10</code> in the document text: Open the context
 menu.</li>
 </ul>
+<h1 id="supported-languages">Supported languages</h1>
+<p>Paperback is translated into many different languages, with more
+being added all the time. A complete list follows:</p>
+<ul>
+<li>Bosnian</li>
+<li>French</li>
+<li>German</li>
+<li>Japanese</li>
+<li>Russian</li>
+<li>Simplified Chinese</li>
+<li>Serbian</li>
+<li>Spanish</li>
+<li>Vietnamese</li>
+</ul>
 <h1 id="credits">Credits</h1>
 <h2 id="development">Development</h2>
 <ul>
 <li>Quin Gillespie: primary developer and project founder.</li>
-<li>Aryan Choudhary: added multiple new document formats, link and list
-support, more.</li>
+<li>Aryan Choudhary: primary contributor.</li>
 </ul>
 <h2 id="donations">Donations</h2>
 <p>The following people have made donations of some size to Paperback
@@ -392,15 +408,53 @@ inclusion in this list.</p>
 <li>Sean Randall</li>
 <li>Timothy Wynn</li>
 </ul>
-<h2 id="translations">Translations</h2>
-<ul>
-<li>Tarik Hadžirović: Bosnian translation</li>
-<li>Martin Courcelles: French translation</li>
-<li>Ruslan Gulmagomedov: Russian translation</li>
-<li>Nikola Jović: Serbian translation</li>
-<li>Steffen Schultz: German translation</li>
-</ul>
 <h1 id="changelog">Changelog</h1>
+<h2 id="version-0.8.0">Version 0.8.0</h2>
+<ul>
+<li>Added a Japanese translation! <a
+href="https://github.com/trypsynth/paperback/pull/326">#326</a>.</li>
+<li>Added a very basic, but fully functional, automatic updater! <a
+href="https://github.com/trypsynth/paperback/pull/323">#323</a>.</li>
+<li>Added a simplified Chinese translation. <a
+href="https://github.com/trypsynth/paperback/pull/335">#335</a>.</li>
+<li>Added a Vietnamese translation! <a
+href="https://github.com/trypsynth/paperback/pull/300">#300</a>.</li>
+<li>Added optional sound feeddback for reaching a bookmark or a note,
+thanks Andre Louis for the sounds! <a
+href="https://github.com/trypsynth/paperback/issues/110">#110</a>.</li>
+<li>Added RTF document support! <a
+href="https://github.com/trypsynth/paperback/issues/26">#26</a>.</li>
+<li>Added support for DAISY XML documents. <a
+href="https://github.com/trypsynth/paperback/issues/136">#136</a>.</li>
+<li>Added support for Flat Open Document Text files!</li>
+<li>Added support for Flat Open Document presentations!</li>
+<li>Added support for seperators with s and shift+s. <a
+href="https://github.com/trypsynth/paperback/issues/294">#294</a>.</li>
+<li>Any movement of greater than 300 characters will now automatically
+add to your navigation history. <a
+href="https://github.com/trypsynth/paperback/issues/179">#179</a>.</li>
+<li>Fixed restoring Paperback’s window from the system tray. <a
+href="https://github.com/trypsynth/paperback/issues/284">#284</a>.</li>
+<li>Fixed tables not rendering properly in Markdown files. <a
+href="https://github.com/trypsynth/paperback/issues/303">#303</a>.</li>
+<li>Image only PDFs will now warn you of their existence when you
+attempt to load one. <a
+href="https://github.com/trypsynth/paperback/issues/89">#89</a>.</li>
+<li>It is now possible to check for new dev builds instead of stable
+releases when checking for updates. <a
+href="https://github.com/trypsynth/paperback/pull/333">#333</a>.</li>
+<li>Properly embed version information in the Paperback executable. <a
+href="https://github.com/trypsynth/paperback/issues/204">#204</a>.</li>
+<li>Split the options dialog into tabs for ease of use and
+navigation.</li>
+<li>Switched to Hayro for parsing PDFs, leading to more reliability,
+speed, and less DLLs.</li>
+<li>Rewrote the entire app in Rust. The new codebase is safer, loads
+documents faster, and is easier to maintain and extend.</li>
+<li>The text control’s context menu will now include reader-specific
+actions instead of geneirc items such as cut and paste. <a
+href="https://github.com/trypsynth/paperback/issues/114">#114</a>.</li>
+</ul>
 <h2 id="version-0.7.0">Version 0.7.0</h2>
 <ul>
 <li>Added table support for HTML and XHTML-based documents! Navigate
