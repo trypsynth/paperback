@@ -164,12 +164,12 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Added a very basic, but fully functional, automatic updater! [#323](https://github.com/trypsynth/paperback/pull/323).
 * Added a simplified Chinese translation. [#335](https://github.com/trypsynth/paperback/pull/335).
 * Added a Vietnamese translation! [#300](https://github.com/trypsynth/paperback/pull/300).
-* Added optional sound feeddback for reaching a bookmark or a note, thanks Andre Louis for the sounds! [#110](https://github.com/trypsynth/paperback/issues/110).
+* Added optional sound feedback for reaching a bookmark or a note, thanks Andre Louis for the sounds! [#110](https://github.com/trypsynth/paperback/issues/110).
 * Added RTF document support! [#26](https://github.com/trypsynth/paperback/issues/26).
 * Added support for DAISY XML documents. [#136](https://github.com/trypsynth/paperback/issues/136).
 * Added support for Flat Open Document Text files!
 * Added support for Flat Open Document presentations!
-* Added support for seperators with s and shift+s. [#294](https://github.com/trypsynth/paperback/issues/294).
+* Added support for separators with s and shift+s. [#294](https://github.com/trypsynth/paperback/issues/294).
 * Any movement of greater than 300 characters will now automatically add to your navigation history. [#179](https://github.com/trypsynth/paperback/issues/179).
 * Fixed restoring Paperback's window from the system tray. [#284](https://github.com/trypsynth/paperback/issues/284).
 * Fixed tables not rendering properly in Markdown files. [#303](https://github.com/trypsynth/paperback/issues/303).
@@ -179,7 +179,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Split the options dialog into tabs for ease of use and navigation.
 * Switched to Hayro for parsing PDFs, leading to more reliability, speed, and fewer DLLs.
 * Rewrote the entire app in Rust. The new codebase is safer, loads documents faster, and is easier to maintain and extend.
-* The text control's context menu will now include reader-specific actions instead of geneirc items such as cut and paste. [#114](https://github.com/trypsynth/paperback/issues/114).
+* The text control's context menu will now include reader-specific actions instead of generic items such as cut and paste. [#114](https://github.com/trypsynth/paperback/issues/114).
 
 ### Version 0.7.0
 * Added table support for HTML and XHTML-based documents! Navigate between tables using T and Shift+T, and press Enter to view one in a webview. [#81](https://github.com/trypsynth/paperback/issues/81), [#98](https://github.com/trypsynth/paperback/pull/98), [#226](https://github.com/trypsynth/paperback/pull/226), [#228](https://github.com/trypsynth/paperback/pull/228).
@@ -234,7 +234,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Bookmarks in the bookmarks dialog will no longer have an annoying "bookmark x" prefix. [#86](https://github.com/trypsynth/paperback/issues/86).
 * Epub books containing HTML content pretending to be XML will now be handled properly. [#96](https://github.com/trypsynth/paperback/issues/96).
 * Fixed loading large Markdown documents. [#97](https://github.com/trypsynth/paperback/issues/97).
-* Fixd pressing space in the table of contents tree view activating the OK button. [#121](https://github.com/trypsynth/paperback/issues/121), [#123](https://github.com/trypsynth/paperback/pull/123).
+* Fixed pressing space in the table of contents tree view activating the OK button. [#121](https://github.com/trypsynth/paperback/issues/121), [#123](https://github.com/trypsynth/paperback/pull/123).
 * Fixed whitespace handling at the beginning of pre tags in both HTML and XHTML documents.
 * Fixed the text control not regaining focus sometimes when returning to Paperback's window. [#138](https://github.com/trypsynth/paperback/issues/138).
 * Fixed the text field in the go to percent dialog not updating the slider's value.
