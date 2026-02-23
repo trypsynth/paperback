@@ -277,7 +277,7 @@ fn execute_update(result: Result<PathBuf, UpdateError>) {
 			let is_exe = path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("exe"));
 			let is_zip = path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("zip"));
 			if is_exe {
-				if let Err(e) = Command::new(&path).spawn() {
+				if let Err(e) = Command::new(&path).arg("/silent").spawn() {
 					let dlg = MessageDialog::builder(
 						parent,
 						&format!("{}: {e}", t("Failed to launch installer")),
