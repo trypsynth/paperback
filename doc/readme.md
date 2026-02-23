@@ -116,10 +116,24 @@ Paperback is designed for keyboard-first and screen reader-first use. Here are t
 * `Enter` in the document text: Activate link at cursor, or open a table view when on a table marker.
 * `Shift+F10` in the document text: Open the context menu.
 
+## Supported languages
+
+Paperback is translated into many different languages, with more being added all the time. A complete list follows:
+
+* Bosnian
+* French
+* German
+* Japanese
+* Russian
+* Simplified Chinese
+* Serbian
+* Spanish
+* Vietnamese
+
 ## Credits
 ### Development
 * Quin Gillespie: primary developer and project founder.
-* Aryan Choudhary: added multiple new document formats, link and list support, more.
+* Aryan Choudhary: primary contributor.
 
 ### Donations
 The following people have made donations of some size to Paperback development. If you make a donation your name won't automatically be added here, I only add people who want their donation made public.
@@ -143,14 +157,29 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Sean Randall
 * Timothy Wynn
 
-### Translations
-* Tarik Hadžirović: Bosnian translation
-* Martin Courcelles: French translation
-* Ruslan Gulmagomedov: Russian translation
-* Nikola Jović: Serbian translation
-* Steffen Schultz: German translation
-
 ## Changelog
+
+### Version 0.8.0
+* Added a Japanese translation! [#326](https://github.com/trypsynth/paperback/pull/326).
+* Added a very basic, but fully functional, automatic updater! [#323](https://github.com/trypsynth/paperback/pull/323).
+* Added a simplified Chinese translation. [#335](https://github.com/trypsynth/paperback/pull/335).
+* Added a Vietnamese translation! [#300](https://github.com/trypsynth/paperback/pull/300).
+* Added optional sound feeddback for reaching a bookmark or a note, thanks Andre Louis for the sounds! [#110](https://github.com/trypsynth/paperback/issues/110).
+* Added RTF document support! [#26](https://github.com/trypsynth/paperback/issues/26).
+* Added support for DAISY XML documents. [#136](https://github.com/trypsynth/paperback/issues/136).
+* Added support for Flat Open Document Text files!
+* Added support for Flat Open Document presentations!
+* Added support for seperators with s and shift+s. [#294](https://github.com/trypsynth/paperback/issues/294).
+* Any movement of greater than 300 characters will now automatically add to your navigation history. [#179](https://github.com/trypsynth/paperback/issues/179).
+* Fixed restoring Paperback's window from the system tray. [#284](https://github.com/trypsynth/paperback/issues/284).
+* Fixed tables not rendering properly in Markdown files. [#303](https://github.com/trypsynth/paperback/issues/303).
+* Image only PDFs will now warn you of their existence when you attempt to load one. [#89](https://github.com/trypsynth/paperback/issues/89).
+* It is now possible to check for new dev builds instead of stable releases when checking for updates. [#333](https://github.com/trypsynth/paperback/pull/333).
+* Properly embed version information in the Paperback executable. [#204](https://github.com/trypsynth/paperback/issues/204).
+* Split the options dialog into tabs for ease of use and navigation.
+* Switched to Hayro for parsing PDFs, leading to more reliability, speed, and less DLLs.
+* Rewrote the entire app in Rust. The new codebase is safer, loads documents faster, and is easier to maintain and extend.
+* The text control's context menu will now include reader-specific actions instead of geneirc items such as cut and paste. [#114](https://github.com/trypsynth/paperback/issues/114).
 
 ### Version 0.7.0
 * Added table support for HTML and XHTML-based documents! Navigate between tables using T and Shift+T, and press Enter to view one in a webview. [#81](https://github.com/trypsynth/paperback/issues/81), [#98](https://github.com/trypsynth/paperback/pull/98), [#226](https://github.com/trypsynth/paperback/pull/226), [#228](https://github.com/trypsynth/paperback/pull/228).
