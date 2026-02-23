@@ -1,0 +1,1089 @@
+# Simplified Chinese translation
+# Copyright (C) 2026 YongQuan Yang
+# This file is distributed under the same license as the paperback package.
+# YongQuan Yang <qt06.com@gmail.com>, 2026.
+#
+# partial written by AI
+msgid ""
+msgstr ""
+"Project-Id-Version: paperback 0.8.0\n"
+"Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues \n"
+"POT-Creation-Date: 2026-02-19 04:36+0530\n"
+"PO-Revision-Date: 2026-02-20 16:00+0800\n"
+"Last-Translator: Yongquan Yang <qt06.com@gmail.com>\n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.8\n"
+
+msgid ""
+"This PDF contains images only, with no extractable text. You may need to run "
+"it through OCR software to read its contents."
+msgstr "此 PDF 仅包含图像，没有可提取的文本。您可能需要使用 OCR 软件来读取其内容。"
+
+msgid "Failed to create IPC server"
+msgstr "创建 IPC 服务器失败"
+
+msgid "Warning"
+msgstr "警告"
+
+msgid "Options"
+msgstr "选项"
+
+msgid "&Restore previously opened documents on startup"
+msgstr "启动时恢复先前打开的文档(&R)"
+
+msgid "&Word wrap"
+msgstr "自动换行(&W)"
+
+msgid "&Minimize to system tray"
+msgstr "最小化到系统托盘(&M)"
+
+msgid "&Start maximized"
+msgstr "启动时最大化(&S)"
+
+msgid "Show compact &go menu"
+msgstr "显示紧凑的转到菜单(&G)"
+
+msgid "&Wrap navigation"
+msgstr "循环导航(&W)"
+
+msgid "Play &sounds on bookmarks and notes"
+msgstr "在书签和笔记上播放声音(&S)"
+
+msgid "Check for &updates on startup"
+msgstr "启动时检查更新(&U)"
+
+msgid "Number of &recent documents to show:"
+msgstr "显示的最近文档数量(&R)："
+
+msgid "&Language:"
+msgstr "语言(&L)："
+
+msgid "Update Channel:"
+msgstr "更新通道："
+
+msgid "Stable"
+msgstr "稳定版"
+
+msgid "Dev"
+msgstr "开发版"
+
+msgid "General"
+msgstr "常规"
+
+msgid "Reading"
+msgstr "阅读"
+
+msgid "OK"
+msgstr "确定"
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "Jump to Bookmark"
+msgstr "跳转到书签"
+
+msgid "&Filter:"
+msgstr "筛选(&F)："
+
+msgid "All"
+msgstr "全部"
+
+msgid "Bookmarks"
+msgstr "书签"
+
+msgid "Notes"
+msgstr "笔记"
+
+msgid "&Edit Note"
+msgstr "编辑笔记(&E)"
+
+msgid "&Delete"
+msgstr "删除(&D)"
+
+msgid "&Jump"
+msgstr "跳转(&J)"
+
+msgid "&Cancel"
+msgstr "取消(&C)"
+
+msgid "blank"
+msgstr "空白"
+
+msgid "Please select a bookmark to jump to."
+msgstr "请选择一个要跳转的书签。"
+
+msgid "Error"
+msgstr "错误"
+
+msgid "Bookmark Note"
+msgstr "书签笔记"
+
+msgid "Edit bookmark note:"
+msgstr "编辑书签笔记："
+
+msgid "View Note"
+msgstr "查看笔记"
+
+msgid "Close"
+msgstr "关闭"
+
+msgid "Table of Contents"
+msgstr "目录"
+
+msgid "Root"
+msgstr "根目录"
+
+msgid "Please select a section from the table of contents."
+msgstr "请从目录中选择一个章节。"
+
+msgid "No Selection"
+msgstr "未选择"
+
+msgid "Untitled"
+msgstr "无标题"
+
+msgid "Document Info"
+msgstr "文档信息"
+
+msgid "Path:"
+msgstr "路径："
+
+msgid "Title:"
+msgstr "标题："
+
+msgid "Author:"
+msgstr "作者："
+
+msgid "Words:"
+msgstr "字数："
+
+msgid "Lines:"
+msgstr "行数："
+
+msgid "Characters:"
+msgstr "字符数："
+
+msgid "Characters (excluding spaces):"
+msgstr "字符数（不含空格）："
+
+msgid "Go to Line"
+msgstr "跳转到行"
+
+msgid "&Line number:"
+msgstr "行号(&L)："
+
+msgid "Go to page"
+msgstr "跳转到页"
+
+#, c-format
+msgid "Go to page (%d/%d):"
+msgstr "跳转到页（%d/%d）："
+
+msgid "Go to Percent"
+msgstr "跳转到百分比"
+
+msgid "&Percent"
+msgstr "百分比(&P)"
+
+msgid "P&ercent:"
+msgstr "百分比(&E)："
+
+#, c-format
+msgid "Update to %s"
+msgstr "更新到 %s"
+
+msgid "A new version of Paperback is available. Here's what's new:"
+msgstr "Paperback 有新版本可用。以下是新功能："
+
+msgid "&Yes"
+msgstr "是(&Y)"
+
+msgid "&No"
+msgstr "否(&N)"
+
+msgid "All Documents"
+msgstr "所有文档"
+
+msgid "&search"
+msgstr "搜索(&S)"
+
+msgid "File Name"
+msgstr "文件名"
+
+msgid "Status"
+msgstr "状态"
+
+msgid "Path"
+msgstr "路径"
+
+msgid "&Open"
+msgstr "打开(&O)"
+
+msgid "&Remove"
+msgstr "移除(&R)"
+
+msgid "&Clear All"
+msgstr "全部清除(&C)"
+
+msgid ""
+"Are you sure you want to remove this document from the list? This will also "
+"remove its reading position."
+msgstr "您确定要从列表中移除此文档吗？这也会删除其阅读位置。"
+
+msgid "Confirm"
+msgstr "确认"
+
+msgid ""
+"Are you sure you want to remove all documents from the list? This will also "
+"remove all reading positions and bookmarks."
+msgstr "您确定要从列表中移除所有文档吗？这也会删除所有阅读位置和书签。"
+
+msgid "Open As"
+msgstr "打开为"
+
+msgid ""
+"No suitable parser was found for {}.\n"
+"How would you like to open this file?"
+msgstr "未找到适合 {} 的解析器。\n"
+"您希望如何打开此文件？"
+
+msgid "Open &as:"
+msgstr "打开为(&A)："
+
+msgid "Plain Text"
+msgstr "纯文本"
+
+msgid "HTML"
+msgstr "HTML"
+
+msgid "Markdown"
+msgstr "Markdown"
+
+msgid "Open"
+msgstr "打开"
+
+msgid "Closed"
+msgstr "已关闭"
+
+msgid "Missing"
+msgstr "缺失"
+
+msgid "Sleep Timer"
+msgstr "睡眠定时器"
+
+msgid "&Minutes:"
+msgstr "分钟(&M)："
+
+msgid "Elements"
+msgstr "元素"
+
+msgid "&View:"
+msgstr "视图(&V)："
+
+msgid "Headings"
+msgstr "标题"
+
+msgid "Links"
+msgstr "链接"
+
+msgid "An accessible, lightweight, fast ebook and document reader"
+msgstr "一款无障碍、轻量、快速的电子书和文档阅读器"
+
+msgid "File not found: {}"
+msgstr "未找到文件：{}"
+
+msgid "Password is required."
+msgstr "需要密码。"
+
+msgid "Failed to load document."
+msgstr "加载文档失败。"
+
+msgid "Navigated to internal link."
+msgstr "已导航到内部链接。"
+
+msgid "Table View"
+msgstr "表格视图"
+
+msgid "Ready"
+msgstr "就绪"
+
+msgid "&Password:"
+msgstr "密码(&P)："
+
+msgid "Document Password"
+msgstr "文档密码"
+
+msgid "Create &bookmark"
+msgstr "创建书签(&B)"
+
+msgid "Create bookmark"
+msgstr "创建书签"
+
+msgid "Bookmark with &note"
+msgstr "带笔记的书签(&N)"
+
+msgid "Create bookmark with note"
+msgstr "创建带笔记的书签"
+
+msgid "&Find"
+msgstr "查找(&F)"
+
+msgid "Find text"
+msgstr "查找文本"
+
+msgid "Find &next"
+msgstr "查找下一个(&N)"
+
+msgid "Find next match"
+msgstr "查找下一个匹配项"
+
+msgid "Find &previous"
+msgstr "查找上一个(&P)"
+
+msgid "Find previous match"
+msgstr "查找上一个匹配项"
+
+msgid "Go to &page"
+msgstr "跳转到页(&P)"
+
+msgid "Go to &line"
+msgstr "跳转到行(&L)"
+
+msgid "Go to line"
+msgstr "跳转到行"
+
+msgid "Go to &percent"
+msgstr "跳转到百分比(&P)"
+
+msgid "Go to percent"
+msgstr "跳转到百分比"
+
+msgid "Find"
+msgstr "查找"
+
+msgid "Find &what:"
+msgstr "查找内容(&W)："
+
+msgid "&Match case"
+msgstr "区分大小写(&M)"
+
+msgid "Match &whole word"
+msgstr "全字匹配(&W)"
+
+msgid "Use &regular expressions"
+msgstr "使用正则表达式(&R)"
+
+msgid "Find &Previous"
+msgstr "查找上一个(&P)"
+
+msgid "Find &Next"
+msgstr "查找下一个(&N)"
+
+msgid "Not found."
+msgstr "未找到。"
+
+msgid "No more results. Wrapping search."
+msgstr "没有更多结果。正在循环搜索。"
+
+msgid "Failed to open containing folder."
+msgstr "打开所在文件夹失败。"
+
+msgid ""
+"readme.html not found. Please ensure the application was built properly."
+msgstr "未找到 readme.html。请确保应用程序已正确构建。"
+
+msgid "Failed to launch default browser."
+msgstr "启动默认浏览器失败。"
+
+msgid "Failed to open donation page in browser."
+msgstr "在浏览器中打开捐赠页面失败。"
+
+msgid "No release notes were provided."
+msgstr "未提供发行说明。"
+
+msgid "Paperback Update"
+msgstr "Paperback 更新"
+
+msgid "Downloading update..."
+msgstr "正在下载更新..."
+
+msgid "No updates available."
+msgstr "没有可用更新。"
+
+msgid "No updates available. Latest version: {}"
+msgstr "没有可用更新。最新版本：{}"
+
+msgid "Info"
+msgstr "信息"
+
+#, c-format
+msgid "Failed to check for updates. HTTP status: %d"
+msgstr "检查更新失败。HTTP 状态：%d"
+
+msgid "Error checking for updates."
+msgstr "检查更新时出错。"
+
+msgid "Failed to launch installer"
+msgstr "启动安装程序失败"
+
+msgid "Failed to get current exe path"
+msgstr "获取当前可执行文件路径失败"
+
+msgid "Failed to launch update script"
+msgstr "启动更新脚本失败"
+
+msgid "Unknown update file format."
+msgstr "未知的更新文件格式。"
+
+msgid "Update failed"
+msgstr "更新失败"
+
+msgid "Unsupported format selected."
+msgstr "选择了不支持的格式。"
+
+msgid "Paperback"
+msgstr "Paperback"
+
+msgid "Paperback - {}"
+msgstr "Paperback - {}"
+
+msgid "{} chars"
+msgstr "{} 个字符"
+
+msgid "Open Document"
+msgstr "打开文档"
+
+msgid "No pages."
+msgstr "没有页面。"
+
+msgid "document"
+msgstr "文档"
+
+msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
+msgstr "纯文本文件 (*.txt)|*.txt|所有文件 (*.*)|*.*"
+
+msgid "Export document to plain text"
+msgstr "将文档导出为纯文本"
+
+msgid "Failed to export document."
+msgstr "导出文档失败。"
+
+msgid "Paperback files (*.paperback)|*.paperback"
+msgstr "Paperback 文件 (*.paperback)|*.paperback"
+
+msgid "Export notes and bookmarks"
+msgstr "导出笔记和书签"
+
+msgid "Notes and bookmarks exported successfully."
+msgstr "笔记和书签导出成功。"
+
+msgid "Export Successful"
+msgstr "导出成功"
+
+msgid "Import notes and bookmarks"
+msgstr "导入笔记和书签"
+
+msgid "Notes and bookmarks imported successfully."
+msgstr "笔记和书签导入成功。"
+
+msgid "Import Successful"
+msgstr "导入成功"
+
+msgid "The document contains {} words."
+msgstr "该文档包含 {} 个字。"
+
+msgid "Word count"
+msgstr "字数统计"
+
+msgid "No table of contents."
+msgstr "没有目录。"
+
+msgid "Web View"
+msgstr "网页视图"
+
+msgid "Could not determine content to display in Web View."
+msgstr "无法确定要在网页视图中显示的内容。"
+
+msgid "Sleep timer cancelled."
+msgstr "睡眠定时器已取消。"
+
+msgid "Sleep timer set for 1 minute."
+msgstr "睡眠定时器已设置为 1 分钟。"
+
+#, c-format
+msgid "Sleep timer set for %d minutes."
+msgstr "睡眠定时器已设置为 %d 分钟。"
+
+msgid "No recent documents."
+msgstr "没有最近文档。"
+
+msgid "Previous Section\t["
+msgstr "上一章节\t["
+
+msgid "Go to previous section"
+msgstr "跳转到上一章节"
+
+msgid "Next Section\t]"
+msgstr "下一章节\t]"
+
+msgid "Go to next section"
+msgstr "跳转到下一章节"
+
+msgid "Go to &Page\tCtrl+P"
+msgstr "跳转到页(&P)\tCtrl+P"
+
+msgid "Previous Pa&ge\tShift+P"
+msgstr "上一页(&G)\tShift+P"
+
+msgid "Next Pag&e\tP"
+msgstr "下一页(&E)\tP"
+
+msgid "Previous Lin&k\tShift+K"
+msgstr "上一个链接(&K)\tShift+K"
+
+msgid "Next Lin&k\tK"
+msgstr "下一个链接(&K)\tK"
+
+msgid "Previous &Table\tShift+T"
+msgstr "上一个表格(&T)\tShift+T"
+
+msgid "Next &Table\tT"
+msgstr "下一个表格(&T)\tT"
+
+msgid "Previous Se&parator\tShift+S"
+msgstr "上一个分隔符(&P)\tShift+S"
+
+msgid "Next Se&parator\tS"
+msgstr "下一个分隔符(&P)\tS"
+
+msgid "Previous L&ist\tShift+L"
+msgstr "上一个列表(&I)\tShift+L"
+
+msgid "Next L&ist\tL"
+msgstr "下一个列表(&I)\tL"
+
+msgid "Previous List &Item\tShift+I"
+msgstr "上一个列表项(&I)\tShift+I"
+
+msgid "Next List I&tem\tI"
+msgstr "下一个列表项(&T)\tI"
+
+msgid "Next Heading Level 1\t1"
+msgstr "下一级标题 1\t1"
+
+msgid "Previous Heading Level &2\tShift+2"
+msgstr "上一级标题 2(&2)\tShift+2"
+
+msgid "Next Heading Level 2\t2"
+msgstr "下一级标题 2\t2"
+
+msgid "Previous Heading Level &3\tShift+3"
+msgstr "上一级标题 3(&3)\tShift+3"
+
+msgid "Next Heading Level 3\t3"
+msgstr "下一级标题 3\t3"
+
+msgid "Previous Heading Level &4\tShift+4"
+msgstr "上一级标题 4(&4)\tShift+4"
+
+msgid "Next Heading Level 4\t4"
+msgstr "下一级标题 4\t4"
+
+msgid "Previous Heading Level &5\tShift+5"
+msgstr "上一级标题 5(&5)\tShift+5"
+
+msgid "Next Heading Level 5\t5"
+msgstr "下一级标题 5\t5"
+
+msgid "Previous Heading Level &6\tShift+6"
+msgstr "上一级标题 6(&6)\tShift+6"
+
+msgid "Next Heading Level 6\t6"
+msgstr "下一级标题 6\t6"
+
+msgid "&Previous Heading\tShift+H"
+msgstr "上一个标题(&P)\tShift+H"
+
+msgid "Go to previous heading"
+msgstr "跳转到上一个标题"
+
+msgid "&Next Heading\tH"
+msgstr "下一个标题(&N)\tH"
+
+msgid "Go to next heading"
+msgstr "跳转到下一个标题"
+
+msgid "Previous Heading Level &1\tShift+1"
+msgstr "上一级标题 1(&1)\tShift+1"
+
+msgid "&Previous Bookmark\tShift+B"
+msgstr "上一个书签(&P)\tShift+B"
+
+msgid "Go to previous bookmark"
+msgstr "跳转到上一个书签"
+
+msgid "&Next Bookmark\tB"
+msgstr "下一个书签(&N)\tB"
+
+msgid "Go to next bookmark"
+msgstr "跳转到下一个书签"
+
+msgid "Previous &Note\tShift+N"
+msgstr "上一个笔记(&N)\tShift+N"
+
+msgid "Go to previous note"
+msgstr "跳转到上一个笔记"
+
+msgid "Next N&ote\tN"
+msgstr "下一个笔记(&O)\tN"
+
+msgid "Go to next note"
+msgstr "跳转到下一个笔记"
+
+msgid "Jump to &All...\tCtrl+B"
+msgstr "跳转到全部(&A)...\tCtrl+B"
+
+msgid "Show all bookmarks and notes"
+msgstr "显示所有书签和笔记"
+
+msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
+msgstr "仅跳转到书签(&B)...\tCtrl+Alt+B"
+
+msgid "Show bookmarks only"
+msgstr "仅显示书签"
+
+msgid "Jump to Notes &Only...\tCtrl+Alt+M"
+msgstr "仅跳转到笔记(&O)...\tCtrl+Alt+M"
+
+msgid "Show notes only"
+msgstr "仅显示笔记"
+
+msgid "&View Note Text\tRawCtrl+Shift+W"
+msgstr "查看笔记文本(&V)\tRawCtrl+Shift+W"
+
+msgid "&View Note Text\tCtrl+Shift+W"
+msgstr "查看笔记文本(&V)\tCtrl+Shift+W"
+
+msgid "View the note at current position"
+msgstr "查看当前位置的笔记"
+
+msgid "&File"
+msgstr "文件(&F)"
+
+msgid "&Go"
+msgstr "转到(&G)"
+
+msgid "&Tools"
+msgstr "工具(&T)"
+
+msgid "&Help"
+msgstr "帮助(&H)"
+
+msgid "&Open...\tCtrl+O"
+msgstr "打开(&O)...\tCtrl+O"
+
+msgid "Open a document"
+msgstr "打开文档"
+
+msgid "&Close\tCtrl+W"
+msgstr "关闭(&C)\tCtrl+W"
+
+msgid "&Close\tCtrl+F4"
+msgstr "关闭(&C)\tCtrl+F4"
+
+msgid "Close the current document"
+msgstr "关闭当前文档"
+
+msgid "Close &All\tCtrl+Shift+W"
+msgstr "全部关闭(&A)\tCtrl+Shift+W"
+
+msgid "Close &All\tCtrl+Shift+F4"
+msgstr "全部关闭(&A)\tCtrl+Shift+F4"
+
+msgid "Close all documents"
+msgstr "关闭所有文档"
+
+msgid "&Recent Documents"
+msgstr "最近文档(&R)"
+
+msgid "Open a recent document"
+msgstr "打开最近文档"
+
+msgid "E&xit"
+msgstr "退出(&X)"
+
+msgid "Exit the application"
+msgstr "退出应用程序"
+
+msgid "&Find...\tCtrl+F"
+msgstr "查找(&F)...\tCtrl+F"
+
+msgid "Find text in the document"
+msgstr "在文档中查找文本"
+
+msgid "Find &Next\tF3"
+msgstr "查找下一个(&N)\tF3"
+
+msgid "Find next occurrence"
+msgstr "查找下一个出现位置"
+
+msgid "Find &Previous\tShift+F3"
+msgstr "查找上一个(&P)\tShift+F3"
+
+msgid "Find previous occurrence"
+msgstr "查找上一个出现位置"
+
+msgid "Go to &line...\tCtrl+G"
+msgstr "跳转到行(&L)...\tCtrl+G"
+
+msgid "Go to a specific line"
+msgstr "跳转到指定行"
+
+msgid "Go to &percent...\tCtrl+Shift+G"
+msgstr "跳转到百分比(&P)...\tCtrl+Shift+G"
+
+msgid "Go to a percentage of the document"
+msgstr "跳转到文档的百分比位置"
+
+msgid "Go &Back\tAlt+Left"
+msgstr "后退(&B)\tAlt+Left"
+
+msgid "Go back in history"
+msgstr "在历史记录中后退"
+
+msgid "Go &Forward\tAlt+Right"
+msgstr "前进(&F)\tAlt+Right"
+
+msgid "Go forward in history"
+msgstr "在历史记录中前进"
+
+msgid "&Sections"
+msgstr "章节(&S)"
+
+msgid "Navigate by sections"
+msgstr "按章节导航"
+
+msgid "&Headings"
+msgstr "标题(&H)"
+
+msgid "Navigate by headings"
+msgstr "按标题导航"
+
+msgid "&Pages"
+msgstr "页(&P)"
+
+msgid "Navigate by pages"
+msgstr "按页导航"
+
+msgid "&Bookmarks"
+msgstr "书签(&B)"
+
+msgid "Navigate by bookmarks"
+msgstr "按书签导航"
+
+msgid "&Links"
+msgstr "链接(&L)"
+
+msgid "Navigate by links"
+msgstr "按链接导航"
+
+msgid "&Tables"
+msgstr "表格(&T)"
+
+msgid "Navigate by tables"
+msgstr "按表格导航"
+
+msgid "&Separators"
+msgstr "分隔符(&S)"
+
+msgid "Navigate by separators"
+msgstr "按分隔符导航"
+
+msgid "&Lists"
+msgstr "列表(&L)"
+
+msgid "Navigate by lists"
+msgstr "按列表导航"
+
+msgid "&Import Document Data...\tCtrl+Shift+I"
+msgstr "导入文档数据(&I)...\tCtrl+Shift+I"
+
+msgid "Import bookmarks and position"
+msgstr "导入书签和位置"
+
+msgid "&Export Document Data...\tCtrl+Shift+E"
+msgstr "导出文档数据(&E)...\tCtrl+Shift+E"
+
+msgid "Export bookmarks and position"
+msgstr "导出书签和位置"
+
+msgid "Export to &Plain Text...\tCtrl+E"
+msgstr "导出为纯文本(&P)...\tCtrl+E"
+
+msgid "Export document as plain text"
+msgstr "将文档导出为纯文本"
+
+msgid "&Word Count\tRawCtrl+W"
+msgstr "字数统计(&W)\tRawCtrl+W"
+
+msgid "&Word Count\tCtrl+W"
+msgstr "字数统计(&W)\tCtrl+W"
+
+msgid "Show word count"
+msgstr "显示字数统计"
+
+msgid "Document &Info\tCtrl+I"
+msgstr "文档信息(&I)\tCtrl+I"
+
+msgid "Show document information"
+msgstr "显示文档信息"
+
+msgid "&Table of Contents\tCtrl+T"
+msgstr "目录(&T)\tCtrl+T"
+
+msgid "Show table of contents"
+msgstr "显示目录"
+
+msgid "&Elements List...\tF7"
+msgstr "元素列表(&E)...\tF7"
+
+msgid "Show elements list"
+msgstr "显示元素列表"
+
+msgid "Open &Containing Folder\tCtrl+Shift+C"
+msgstr "打开所在文件夹(&C)\tCtrl+Shift+C"
+
+msgid "Open folder containing the document"
+msgstr "打开包含文档的文件夹"
+
+msgid "Open in &Web View\tCtrl+Shift+V"
+msgstr "在网页视图中打开(&W)\tCtrl+Shift+V"
+
+msgid "Open document in web view"
+msgstr "在网页视图中打开文档"
+
+msgid "I&mport/Export"
+msgstr "导入/导出(&M)"
+
+msgid "Import and export options"
+msgstr "导入和导出选项"
+
+msgid "Toggle &Bookmark\tCtrl+Shift+B"
+msgstr "切换书签(&B)\tCtrl+Shift+B"
+
+msgid "Bookmark with &Note\tCtrl+Shift+N"
+msgstr "带笔记的书签(&N)\tCtrl+Shift+N"
+
+msgid "&Options\tCtrl+,"
+msgstr "选项(&O)\tCtrl+,"
+
+msgid "&Sleep Timer...\tCtrl+Shift+S"
+msgstr "睡眠定时器(&S)...\tCtrl+Shift+S"
+
+msgid "&About Paperback\tCtrl+F1"
+msgstr "关于 Paperback(&A)\tCtrl+F1"
+
+msgid "About this application"
+msgstr "关于此应用程序"
+
+msgid "View Help in &Browser\tF1"
+msgstr "在浏览器中查看帮助(&B)\tF1"
+
+msgid "View help in default browser"
+msgstr "在默认浏览器中查看帮助"
+
+msgid "View Help in &Paperback\tShift+F1"
+msgstr "在 Paperback 中查看帮助(&P)\tShift+F1"
+
+msgid "View help in Paperback"
+msgstr "在 Paperback 中查看帮助"
+
+msgid "Check for &Updates\tCtrl+Shift+U"
+msgstr "检查更新(&U)\tCtrl+Shift+U"
+
+msgid "Check for updates"
+msgstr "检查更新"
+
+msgid "&Donate\tCtrl+D"
+msgstr "捐赠(&D)\tCtrl+D"
+
+msgid "Support Paperback development"
+msgstr "支持 Paperback 开发"
+
+msgid "(No recent documents)"
+msgstr "（无最近文档）"
+
+msgid "Show All...\tCtrl+R"
+msgstr "显示全部...\tCtrl+R"
+
+msgid "No sections."
+msgstr "没有章节。"
+
+msgid "No next section"
+msgstr "没有下一章节"
+
+msgid "No previous section"
+msgstr "没有上一章节"
+
+#, c-format
+msgid "No headings at level %d."
+msgstr "没有级别为 %d 的标题。"
+
+#, c-format
+msgid "No next heading at level %d."
+msgstr "没有级别为 %d 的下一个标题。"
+
+#, c-format
+msgid "No previous heading at level %d."
+msgstr "没有级别为 %d 的上一个标题。"
+
+msgid "No headings."
+msgstr "没有标题。"
+
+msgid "No next heading."
+msgstr "没有下一个标题。"
+
+msgid "No previous heading."
+msgstr "没有上一个标题。"
+
+msgid "No next page."
+msgstr "没有下一页。"
+
+msgid "No previous page."
+msgstr "没有上一页。"
+
+msgid "No links."
+msgstr "没有链接。"
+
+msgid "No next link."
+msgstr "没有下一个链接。"
+
+msgid "No previous link."
+msgstr "没有上一个链接。"
+
+msgid "No lists."
+msgstr "没有列表。"
+
+msgid "No next list."
+msgstr "没有下一个列表。"
+
+msgid "No previous list."
+msgstr "没有上一个列表。"
+
+msgid "No list items."
+msgstr "没有列表项。"
+
+msgid "No next list item."
+msgstr "没有下一个列表项。"
+
+msgid "No previous list item."
+msgstr "没有上一个列表项。"
+
+msgid "No tables."
+msgstr "没有表格。"
+
+msgid "No next table."
+msgstr "没有下一个表格。"
+
+msgid "No previous table."
+msgstr "没有上一个表格。"
+
+msgid "No separators."
+msgstr "没有分隔符。"
+
+msgid "No next separator."
+msgstr "没有下一个分隔符。"
+
+msgid "No previous separator."
+msgstr "没有上一个分隔符。"
+
+msgid "Wrapping to start. "
+msgstr "循环到开头。"
+
+msgid "Wrapping to end. "
+msgstr "循环到结尾。"
+
+#, c-format
+msgid "%s Heading level %d"
+msgstr "%s 标题级别 %d"
+
+#, c-format
+msgid "Page %d: %s"
+msgstr "第 %d 页：%s"
+
+msgid " link"
+msgstr " 链接"
+
+msgid "Navigated to next position."
+msgstr "已导航到下一个位置。"
+
+msgid "Navigated to previous position."
+msgstr "已导航到上一个位置。"
+
+msgid "No next position."
+msgstr "没有下一个位置。"
+
+msgid "No previous position."
+msgstr "没有上一个位置。"
+
+#, c-format
+msgid "%s - Bookmark %d"
+msgstr "%s - 书签 %d"
+
+msgid "No notes."
+msgstr "没有笔记。"
+
+msgid "No bookmarks."
+msgstr "没有书签。"
+
+msgid "No next note."
+msgstr "没有下一个笔记。"
+
+msgid "No next bookmark."
+msgstr "没有下一个书签。"
+
+msgid "No previous note."
+msgstr "没有上一个笔记。"
+
+msgid "No previous bookmark."
+msgstr "没有上一个书签。"
+
+msgid "Bookmark."
+msgstr "书签。"
+
+msgid "Bookmark removed."
+msgstr "书签已移除。"
+
+msgid "Bookmark added."
+msgstr "书签已添加。"
+
+msgid "Enter bookmark note:"
+msgstr "输入书签笔记："
+
+msgid "Bookmark saved."
+msgstr "书签已保存。"
+
+msgid "No note at the current position."
+msgstr "当前位置没有笔记。"
+
+msgid "Line"
+msgstr "行"
+
+msgid "Character"
+msgstr "字符"
+
+msgid "Sleep timer"
+msgstr "睡眠定时器"
+
+msgid "&Restore"
+msgstr "恢复(&R)"
+
+msgid "Restore Paperback"
+msgstr "恢复 Paperback"
+
+msgid "Exit Paperback"
+msgstr "退出 Paperback"
