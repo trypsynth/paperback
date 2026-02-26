@@ -609,6 +609,8 @@ impl crate::parser::ConverterOutput for HtmlToText {
 
 #[cfg(test)]
 mod tests {
+	use rstest::rstest;
+
 	use super::*;
 
 	#[test]
@@ -655,5 +657,72 @@ mod tests {
 		let tables = converter.get_tables();
 		assert_eq!(tables.len(), 1);
 		assert_eq!(tables[0].text, "Header");
+	}
+
+	#[rstest]
+	#[case("h1", 1)]
+	#[case("h2", 2)]
+	#[case("h3", 3)]
+	#[case("h4", 4)]
+	#[case("h5", 5)]
+	#[case("h6", 6)]
+	fn heading_levels_h1_to_h6(#[case] tag: &str, #[case] expected_level: i32) {
+		let html = format!("<html><body><{tag}>Title</{tag}></body></html>");
+		let mut converter = HtmlToText::new();
+		assert!(converter.convert(&html, HtmlSourceMode::NativeHtml));
+		let headings = converter.get_headings();
+		assert_eq!(headings.len(), 1);
+		assert_eq!(headings[0].level, expected_level);
+		assert_eq!(headings[0].text, "Title");
+	}
+
+	#[test]
+	fn hr_produces_separator() {
+		let html = "<html><body><p>Before</p><hr/><p>After</p></body></html>";
+		let mut converter = HtmlToText::new();
+		assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
+		assert_eq!(converter.get_separators().len(), 1);
+	}
+
+	#[test]
+	fn nested_ul_increments_list_level() {
+		let html =
+			"<html><body><ul><li>Outer<ul><li>Inner</li></ul></li></ul></body></html>";
+		let mut converter = HtmlToText::new();
+		assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
+		let items = converter.get_list_items();
+		assert!(items.len() >= 2, "expected at least two list items");
+		let outer_level = items.iter().find(|i| i.text == "Outer").map(|i| i.level).unwrap_or(0);
+		let inner_level = items.iter().find(|i| i.text == "Inner").map(|i| i.level).unwrap_or(0);
+		assert!(inner_level > outer_level, "nested item should have a higher level");
+	}
+
+	#[test]
+	fn element_id_is_indexed() {
+		let html = "<html><body><p id=\"anchor\">Content</p></body></html>";
+		let mut converter = HtmlToText::new();
+		assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
+		assert!(converter.get_id_positions().contains_key("anchor"));
+	}
+
+	#[test]
+	fn pre_block_preserves_whitespace_characters() {
+		let html = "<html><body><pre>  spaced  </pre></body></html>";
+		let mut converter = HtmlToText::new();
+		assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
+		assert!(converter.get_text().contains("  spaced  "));
+	}
+
+	#[test]
+	fn clear_resets_converter_state() {
+		let html1 = "<html><head><title>First</title></head><body><h1>One</h1></body></html>";
+		let html2 = "<html><head><title>Second</title></head><body><p>Two</p></body></html>";
+		let mut converter = HtmlToText::new();
+		converter.convert(html1, HtmlSourceMode::NativeHtml);
+		converter.clear();
+		assert!(converter.convert(html2, HtmlSourceMode::NativeHtml));
+		assert_eq!(converter.get_title(), "Second");
+		assert_eq!(converter.get_text(), "Two");
+		assert!(converter.get_headings().is_empty());
 	}
 }
