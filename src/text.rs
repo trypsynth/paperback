@@ -256,4 +256,31 @@ mod tests {
 	fn test_is_space_like_variants(#[case] ch: char, #[case] expected: bool) {
 		assert_eq!(is_space_like(ch), expected);
 	}
+
+	#[test]
+	fn collapse_whitespace_empty_returns_empty() {
+		assert_eq!(collapse_whitespace(""), "");
+	}
+
+	#[test]
+	fn collapse_whitespace_no_whitespace_unchanged() {
+		assert_eq!(collapse_whitespace("hello"), "hello");
+	}
+
+	#[test]
+	fn display_len_empty_string_is_zero() {
+		assert_eq!(display_len(""), 0);
+	}
+
+	// \r and \n are each one code unit on every platform, so \r\n counts as 2.
+	// This property underlies the find-navigation coordinate system.
+	#[test]
+	fn display_len_crlf_counts_as_two_units() {
+		assert_eq!(display_len("\r\n"), 2);
+	}
+
+	#[test]
+	fn display_len_plain_newline_counts_as_one_unit() {
+		assert_eq!(display_len("\n"), 1);
+	}
 }

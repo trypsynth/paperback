@@ -958,6 +958,8 @@ fn decode_note(encoded: &str) -> String {
 
 #[cfg(test)]
 mod tests {
+	use rstest::rstest;
+
 	use super::*;
 
 	#[test]
@@ -995,5 +997,36 @@ mod tests {
 		assert_eq!(encode_note(""), "");
 		assert_eq!(decode_note(""), "");
 		assert_eq!(decode_note("%%%not-base64%%%"), "");
+	}
+
+	#[test]
+	fn update_channel_default_is_stable() {
+		assert_eq!(UpdateChannel::default(), UpdateChannel::Stable);
+	}
+
+	#[rstest]
+	#[case(UpdateChannel::Stable, "stable")]
+	#[case(UpdateChannel::Dev, "dev")]
+	fn update_channel_display(#[case] channel: UpdateChannel, #[case] expected: &str) {
+		assert_eq!(channel.to_string(), expected);
+	}
+
+	#[rstest]
+	#[case("stable", UpdateChannel::Stable)]
+	#[case("dev", UpdateChannel::Dev)]
+	#[case("STABLE", UpdateChannel::Stable)]
+	#[case("DEV", UpdateChannel::Dev)]
+	#[case("Stable", UpdateChannel::Stable)]
+	fn update_channel_from_str_valid(#[case] input: &str, #[case] expected: UpdateChannel) {
+		assert_eq!(input.parse::<UpdateChannel>(), Ok(expected));
+	}
+
+	#[rstest]
+	#[case("")]
+	#[case("unknown")]
+	#[case("stab le")]
+	#[case("stable ")]
+	fn update_channel_from_str_invalid(#[case] input: &str) {
+		assert!(input.parse::<UpdateChannel>().is_err());
 	}
 }
