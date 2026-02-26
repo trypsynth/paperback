@@ -3,10 +3,6 @@ on:
   push:
     tags:
       - 'rc-*'
-    paths:
-      - 'app/**/*.cpp'
-      - 'app/**/*.hpp'
-      - 'app/**/*.h'
   workflow_dispatch:
 permissions:
   contents: read
