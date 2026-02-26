@@ -395,13 +395,20 @@ fn do_find(
 	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
 ) {
-	let (text_ctrl, text) = {
+	let (text_ctrl, raw_text) = {
 		let dm = doc_manager.lock().unwrap();
 		match dm.active_tab() {
 			Some(tab) => (tab.text_ctrl, tab.session.content()),
 			None => return,
 		}
 	};
+	// On Windows the Rich Edit control normalizes line endings to \n, so
+	// positions from get_selection() / set_selection() are in \n-only space.
+	// session.content() may contain raw \r\n (e.g. Windows .txt files), which
+	// would cause search positions to drift by one per newline after the first
+	// match.  Normalize to \n so the haystack coordinate system matches the
+	// text control's coordinate system.
+	let text = if raw_text.contains('\r') { raw_text.replace("\r\n", "\n").replace('\r', "\n") } else { raw_text };
 	if !text_ctrl.is_valid() {
 		return;
 	}
