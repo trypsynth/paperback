@@ -6,7 +6,6 @@ on:
   pull_request:
     branches:
       - master
-
 jobs:
   fmt:
     name: Format check
@@ -17,11 +16,10 @@ jobs:
           submodules: recursive
       - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
+          toolchain: nightly
           components: rustfmt
       - name: Check formatting
-        run: cargo fmt --check
-
+        run: cargo +nightly fmt --check
   test:
     name: Tests and clippy
     runs-on: windows-latest
