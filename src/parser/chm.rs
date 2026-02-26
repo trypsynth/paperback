@@ -1,4 +1,7 @@
-use std::collections::{HashMap, HashSet};
+use std::{
+	collections::{HashMap, HashSet},
+	path::Path,
+};
 
 use anyhow::{Context, Result};
 use libchm::{CHM_ENUMERATE_ALL, ChmHandle, unit_info_path};
@@ -223,7 +226,7 @@ fn build_ordered_file_list(html_files: &[String], toc_items: &[TocItem]) -> Vec<
 		return html_files.to_vec();
 	}
 	let mut ordered = Vec::new();
-	let mut seen = std::collections::HashSet::new();
+	let mut seen = HashSet::new();
 	let mut path_map = HashMap::new();
 	for file in html_files {
 		let normalized = normalize_path(file);
@@ -272,8 +275,8 @@ fn resolve_link(current_file: &str, href: &str) -> String {
 	if is_external_url(href) {
 		return href.to_string();
 	}
-	let current_path = std::path::Path::new(current_file);
-	let current_dir = current_path.parent().unwrap_or_else(|| std::path::Path::new("/"));
+	let current_path = Path::new(current_file);
+	let current_dir = current_path.parent().unwrap_or_else(|| Path::new("/"));
 	let resolved = current_dir.join(href);
 	resolved.to_string_lossy().replace('\\', "/")
 }

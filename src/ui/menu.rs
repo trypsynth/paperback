@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use wxdragon::{prelude::*, translations::translate as t};
 
 use super::menu_ids;
@@ -536,9 +538,8 @@ pub fn populate_recent_documents_menu(menu: &Menu, config: &ConfigManager) {
 		}
 	} else {
 		for (index, path) in recent_docs.iter().enumerate() {
-			let filename = std::path::Path::new(path)
-				.file_name()
-				.map_or_else(|| path.clone(), |s| s.to_string_lossy().to_string());
+			let filename =
+				Path::new(path).file_name().map_or_else(|| path.clone(), |s| s.to_string_lossy().to_string());
 			let label = format!("&{} {}", index + 1, filename);
 			if let Ok(offset) = i32::try_from(index) {
 				let id = menu_ids::RECENT_DOCUMENT_BASE + offset;

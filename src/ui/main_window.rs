@@ -1,5 +1,3 @@
-//! Main window implementation for Paperback.
-
 use std::{
 	cell::Cell,
 	env,
@@ -10,6 +8,7 @@ use std::{
 		Mutex,
 		atomic::{AtomicI32, AtomicI64, Ordering},
 	},
+	time::{SystemTime, UNIX_EPOCH},
 };
 
 use wxdragon::{prelude::*, timer::Timer, translations::translate as t};
@@ -278,7 +277,7 @@ impl MainWindow {
 			.build();
 		if dialog.show_modal() == wxdragon::id::ID_OK {
 			if let Some(path) = dialog.get_path() {
-				let path = std::path::Path::new(&path);
+				let path = Path::new(&path);
 				if !ensure_parser_ready_for_path(frame, path, config) {
 					return;
 				}
@@ -1090,8 +1089,8 @@ impl MainWindow {
 						let duration_ms = u64::try_from(duration).unwrap_or(0) * 60 * 1000;
 						sleep_timer_for_menu.start(i32::try_from(duration_ms).unwrap_or(i32::MAX), true);
 						sleep_timer_running_for_menu.set(true);
-						let now = std::time::SystemTime::now()
-							.duration_since(std::time::UNIX_EPOCH)
+						let now = SystemTime::now()
+							.duration_since(UNIX_EPOCH)
 							.ok()
 							.and_then(|d| i64::try_from(d.as_millis()).ok())
 							.unwrap_or(0);

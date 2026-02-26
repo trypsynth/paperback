@@ -1,5 +1,6 @@
 use std::{
 	cell::Cell,
+	fs,
 	path::{Path, PathBuf},
 	rc::Rc,
 	sync::{Mutex, atomic::Ordering},
@@ -436,7 +437,7 @@ impl DocumentManager {
 }
 
 fn normalized_path_key(path: &Path) -> String {
-	let normalized = std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
+	let normalized = fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
 	let value = normalized.to_string_lossy().to_string();
 	#[cfg(target_os = "windows")]
 	{

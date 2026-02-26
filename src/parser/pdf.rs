@@ -1,5 +1,6 @@
 use std::{
 	collections::{HashMap, HashSet},
+	fs, str,
 	sync::Arc,
 };
 
@@ -40,8 +41,8 @@ impl Parser for PdfParser {
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
-		let data = std::fs::read(&context.file_path)
-			.map_err(|err| anyhow!("Failed to read PDF {}: {err}", context.file_path))?;
+		let data =
+			fs::read(&context.file_path).map_err(|err| anyhow!("Failed to read PDF {}: {err}", context.file_path))?;
 		let password = context.password.as_deref().unwrap_or_default();
 		let document = Pdf::new_with_password(Arc::new(data), password).map_err(map_load_error)?;
 		let mut buffer = DocumentBuffer::new();
@@ -192,7 +193,7 @@ fn decode_pdf_string(bytes: &[u8]) -> String {
 	if bytes.starts_with(&[0xFF, 0xFE]) {
 		return decode_utf16(bytes.get(2..).unwrap_or_default(), false);
 	}
-	if let Ok(text) = std::str::from_utf8(bytes) {
+	if let Ok(text) = str::from_utf8(bytes) {
 		return text.to_string();
 	}
 	bytes.iter().map(|byte| char::from(*byte)).collect()
