@@ -23,16 +23,13 @@ const DEFAULT_RECENT_DOCUMENTS_TO_SHOW: i64 = 25;
 const MAX_RECENT_DOCUMENTS_TO_SHOW: usize = 100;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Default)]
 pub enum UpdateChannel {
-	Stable,
+	#[default]
+ Stable,
 	Dev,
 }
 
-impl Default for UpdateChannel {
-	fn default() -> Self {
-		Self::Stable
-	}
-}
 
 impl std::fmt::Display for UpdateChannel {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

@@ -1199,7 +1199,7 @@ fn ensure_parser_ready_for_path(frame: &Frame, path: &Path, config: &Rc<Mutex<Co
 
 fn parser_extension_for_path(path: &Path) -> String {
 	let from_path =
-		path.extension().and_then(|ext| ext.to_str()).map(clean_extension_token).unwrap_or_default().to_string();
+		path.extension().and_then(|ext| ext.to_str()).map(clean_extension_token).unwrap_or_default();
 	if !from_path.is_empty() {
 		return from_path;
 	}
@@ -1217,7 +1217,7 @@ fn parser_extension_for_path(path: &Path) -> String {
 
 fn clean_extension_token(raw: &str) -> String {
 	let trimmed = raw.trim().trim_matches(['"', '\'', '\0']);
-	trimmed.chars().take_while(|c| c.is_ascii_alphanumeric()).collect()
+	trimmed.chars().take_while(char::is_ascii_alphanumeric).collect()
 }
 
 fn ensure_parser_for_unknown_file(parent: &Frame, path: &Path, config: &ConfigManager) -> bool {
