@@ -1,9 +1,10 @@
 use std::{
 	cmp::Ordering,
 	env,
-	fmt::Write,
+	fmt::{self, Display, Formatter, Write},
 	fs,
 	path::{Path, PathBuf},
+	str::FromStr,
 };
 
 use base64::{
@@ -22,17 +23,15 @@ const CONFIG_VERSION_CURRENT: i64 = CONFIG_VERSION_2;
 const DEFAULT_RECENT_DOCUMENTS_TO_SHOW: i64 = 25;
 const MAX_RECENT_DOCUMENTS_TO_SHOW: usize = 100;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-#[derive(Default)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
 pub enum UpdateChannel {
 	#[default]
- Stable,
+	Stable,
 	Dev,
 }
 
-
-impl std::fmt::Display for UpdateChannel {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl Display for UpdateChannel {
+	fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
 		match self {
 			Self::Stable => write!(f, "stable"),
 			Self::Dev => write!(f, "dev"),
@@ -40,7 +39,7 @@ impl std::fmt::Display for UpdateChannel {
 	}
 }
 
-impl std::str::FromStr for UpdateChannel {
+impl FromStr for UpdateChannel {
 	type Err = ();
 
 	fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -605,7 +604,7 @@ impl ConfigManager {
 		if !self.is_ready() || !Path::new(import_path).exists() {
 			return;
 		}
-		let Ok(content) = std::fs::read_to_string(import_path) else { return };
+		let Ok(content) = fs::read_to_string(import_path) else { return };
 		for line in content.lines() {
 			let line = line.trim();
 			if line.is_empty() || line.starts_with('#') || line.starts_with('[') {
@@ -928,10 +927,7 @@ fn get_config_path() -> String {
 }
 
 fn get_exe_directory() -> PathBuf {
-	env::current_exe()
-		.ok()
-		.and_then(|p| p.parent().map(std::path::Path::to_path_buf))
-		.unwrap_or_else(|| PathBuf::from("."))
+	env::current_exe().ok().and_then(|p| p.parent().map(Path::to_path_buf)).unwrap_or_else(|| PathBuf::from("."))
 }
 
 fn get_document_section(path: &str) -> String {

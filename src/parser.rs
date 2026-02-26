@@ -1,5 +1,7 @@
 use std::{
 	collections::{BTreeSet, HashMap},
+	path::Path,
+	string::String,
 	sync::OnceLock,
 };
 
@@ -115,7 +117,7 @@ impl ParserRegistry {
 /// - No parser is available for the file extension
 /// - The parser fails to parse the file
 pub fn parse_document(context: &ParserContext) -> Result<Document> {
-	let path = std::path::Path::new(&context.file_path);
+	let path = Path::new(&context.file_path);
 	let extension = context.forced_extension.as_ref().map_or_else(
 		|| {
 			path.extension()
@@ -134,7 +136,7 @@ pub fn parse_document(context: &ParserContext) -> Result<Document> {
 
 #[must_use]
 pub fn get_parser_flags_for_context(context: &ParserContext) -> ParserFlags {
-	let path = std::path::Path::new(&context.file_path);
+	let path = Path::new(&context.file_path);
 	let extension = context
 		.forced_extension
 		.as_ref()
@@ -176,7 +178,7 @@ pub fn build_file_filter_string() -> String {
 		}
 	}
 	let mut parts = String::new();
-	let all_ext_part = join_extensions(all_extensions.iter().map(std::string::String::as_str));
+	let all_ext_part = join_extensions(all_extensions.iter().map(String::as_str));
 	if !all_ext_part.is_empty() {
 		parts.push_str("All Supported Files (");
 		parts.push_str(&all_ext_part);
@@ -188,7 +190,7 @@ pub fn build_file_filter_string() -> String {
 		if parser.extensions.is_empty() {
 			continue;
 		}
-		let ext_part = join_extensions(parser.extensions.iter().map(std::string::String::as_str));
+		let ext_part = join_extensions(parser.extensions.iter().map(String::as_str));
 		if ext_part.is_empty() {
 			continue;
 		}
@@ -359,7 +361,7 @@ mod tests {
 
 	#[test]
 	fn join_extensions_returns_empty_for_empty_input() {
-		let joined = join_extensions(std::iter::empty::<&str>());
+		let joined = join_extensions(iter::empty::<&str>());
 		assert_eq!(joined, "");
 	}
 

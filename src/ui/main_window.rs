@@ -1198,8 +1198,7 @@ fn ensure_parser_ready_for_path(frame: &Frame, path: &Path, config: &Rc<Mutex<Co
 }
 
 fn parser_extension_for_path(path: &Path) -> String {
-	let from_path =
-		path.extension().and_then(|ext| ext.to_str()).map(clean_extension_token).unwrap_or_default();
+	let from_path = path.extension().and_then(|ext| ext.to_str()).map(clean_extension_token).unwrap_or_default();
 	if !from_path.is_empty() {
 		return from_path;
 	}

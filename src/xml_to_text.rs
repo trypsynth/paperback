@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, mem};
 
 use roxmltree::{Document, Node, NodeType, ParsingOptions};
 
@@ -417,7 +417,7 @@ impl XmlToText {
 	}
 
 	fn finalize_current_line(&mut self) {
-		let line = std::mem::take(&mut self.current_line);
+		let line = mem::take(&mut self.current_line);
 		self.add_line(line);
 	}
 

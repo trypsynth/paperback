@@ -32,7 +32,9 @@ pub fn extract_zip_entry_to_file<R: Read + Seek>(
 #[cfg(test)]
 mod tests {
 	use std::{
+		env,
 		io::{Cursor, Write},
+		path::PathBuf,
 		time::{SystemTime, UNIX_EPOCH},
 	};
 
@@ -54,9 +56,9 @@ mod tests {
 		ZipArchive::new(cursor).expect("open zip")
 	}
 
-	fn unique_temp_path(suffix: &str) -> std::path::PathBuf {
+	fn unique_temp_path(suffix: &str) -> PathBuf {
 		let nanos = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
-		let mut path = std::env::temp_dir();
+		let mut path = env::temp_dir();
 		path.push(format!("paperback_test_{nanos}"));
 		path.push(suffix);
 		path
