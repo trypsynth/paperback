@@ -160,10 +160,8 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 ## Changelog
 
 ### Version 0.8.0
-* Added a Japanese translation! [#326](https://github.com/trypsynth/paperback/pull/326).
-* Added a very basic, but fully functional, automatic updater! [#323](https://github.com/trypsynth/paperback/pull/323).
-* Added a simplified Chinese translation. [#335](https://github.com/trypsynth/paperback/pull/335).
-* Added a Vietnamese translation! [#300](https://github.com/trypsynth/paperback/pull/300).
+* Added Japanese, simplified Chinese, and Vietnamese translations! [#300](https://github.com/trypsynth/paperback/pull/300), [#326](https://github.com/trypsynth/paperback/pull/326), [#335](https://github.com/trypsynth/paperback/pull/335).
+* Added an automatic updater that will now replace your currently installed version of Paperback instead of just downloading the new version! [#323](https://github.com/trypsynth/paperback/pull/323).
 * Added optional sound feedback for reaching a bookmark or a note, thanks Andre Louis for the sounds! [#110](https://github.com/trypsynth/paperback/issues/110).
 * Added RTF document support! [#26](https://github.com/trypsynth/paperback/issues/26).
 * Added support for DAISY XML documents. [#136](https://github.com/trypsynth/paperback/issues/136).
