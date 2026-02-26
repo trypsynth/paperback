@@ -13,85 +13,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Install gettext
-        run: sudo apt-get update && sudo apt-get install -y gettext
-      - name: Generate fresh POT file
-        run: |
-          find app -name '*.cpp' -o -name '*.hpp' -o -name '*.h' | sort > /tmp/source_files.txt
-          xgettext \
-            --files-from=/tmp/source_files.txt \
-            --keyword=_ \
-            --keyword=wxPLURAL:1,2 \
-            --keyword=wxTRANSLATE \
-            --language=C++ \
-            --from-code=UTF-8 \
-            --add-comments=TRANSLATORS \
-            --add-location=file \
-            --package-name=paperback \
-            --output=/tmp/paperback_new.pot
-      - name: Compare strings
-        id: compare
-        run: |
-          extract_msgids() {
-            awk '
-              /^msgid "/ {
-                in_msgid = 1
-                msgid = $0
-                sub(/^msgid /, "", msgid)
-                next
-              }
-              in_msgid && /^"/ {
-                msgid = msgid $0
-                next
-              }
-              in_msgid && /^msgstr/ {
-                in_msgid = 0
-                if (msgid != "\"\"") {
-                  print msgid
-                }
-              }
-            ' "$1" | sort
-          }
-          extract_msgids po/paperback.pot > /tmp/old_strings.txt
-          extract_msgids /tmp/paperback_new.pot > /tmp/new_strings.txt
-          comm -13 /tmp/old_strings.txt /tmp/new_strings.txt > /tmp/added.txt
-          comm -23 /tmp/old_strings.txt /tmp/new_strings.txt > /tmp/removed.txt
-          ADDED_COUNT=$(wc -l < /tmp/added.txt | tr -d ' ')
-          REMOVED_COUNT=$(wc -l < /tmp/removed.txt | tr -d ' ')
-          echo "added_count=$ADDED_COUNT" >> $GITHUB_OUTPUT
-          echo "removed_count=$REMOVED_COUNT" >> $GITHUB_OUTPUT
-          if [ "$ADDED_COUNT" -gt 0 ] || [ "$REMOVED_COUNT" -gt 0 ]; then
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-          fi
-          printf '%s\n' "## Translation Freeze for Upcoming Release" > /tmp/body.md
-          printf '\n' >> /tmp/body.md
-          printf '%s\n' "The \`rc\` branch has been created or updated. Translatable strings are now frozen for this release." >> /tmp/body.md
-          printf '\n' >> /tmp/body.md
-          printf '%s\n' "**$ADDED_COUNT** string(s) added, **$REMOVED_COUNT** string(s) removed since the previous template." >> /tmp/body.md
-          printf '\n' >> /tmp/body.md
-          if [ "$ADDED_COUNT" -gt 0 ]; then
-            printf '%s\n\n```' "### New strings:" >> /tmp/body.md
-            cat /tmp/added.txt >> /tmp/body.md
-            printf '\n```\n' >> /tmp/body.md
-          fi
-          if [ "$REMOVED_COUNT" -gt 0 ]; then
-            printf '%s\n\n```' "### Removed strings:" >> /tmp/body.md
-            cat /tmp/removed.txt >> /tmp/body.md
-            printf '\n```\n' >> /tmp/body.md
-          fi
-          printf '%s\n' "---" >> /tmp/body.md
-          printf '%s\n' "**Translators:** Please update your `.po` files against the `rc` branch using `msgmerge`." >> /tmp/body.md
-          printf '%s\n' "This notification is sent once per release, when strings are considered stable." >> /tmp/body.md
-          printf '\n' >> /tmp/body.md
-          printf '%s\n' "Commit: ${{ github.sha }}" >> /tmp/body.md
-          DELIMITER="BODY_$(openssl rand -hex 8)"
-          echo "body<<$DELIMITER" >> $GITHUB_OUTPUT
-          cat /tmp/body.md >> $GITHUB_OUTPUT
-          echo "$DELIMITER" >> $GITHUB_OUTPUT
       - name: Close previous translation discussions
-        if: steps.compare.outputs.has_changes == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -118,7 +40,6 @@ jobs:
             ' -f id="$ID"
           done
       - name: Create translation discussion
-        if: steps.compare.outputs.has_changes == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -153,4 +74,6 @@ jobs:
             -f repositoryId="$REPO_ID" \
             -f categoryId="$CATEGORY_ID" \
             -f title="Translation Freeze – $(date +%Y-%m-%d)" \
-            -f body="${{ steps.compare.outputs.body }}"
+            -f body="## Translation Freeze for Upcoming Release
+
+The \`rc\` branch has been merged. Please update your \`.po\` files."
