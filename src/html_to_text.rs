@@ -686,8 +686,7 @@ mod tests {
 
 	#[test]
 	fn nested_ul_increments_list_level() {
-		let html =
-			"<html><body><ul><li>Outer<ul><li>Inner</li></ul></li></ul></body></html>";
+		let html = "<html><body><ul><li>Outer<ul><li>Inner</li></ul></li></ul></body></html>";
 		let mut converter = HtmlToText::new();
 		assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
 		let items = converter.get_list_items();
