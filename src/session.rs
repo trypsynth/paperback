@@ -574,9 +574,8 @@ impl DocumentSession {
 						let md_parser = MdParser::new_ext(&markdown_text, opts);
 						let mut html_body = String::new();
 						md_push_html(&mut html_body, md_parser);
-						let full_html = format!(
-							"<html><head><meta charset=\"utf-8\"></head><body>{html_body}</body></html>"
-						);
+						let full_html =
+							format!("<html><head><meta charset=\"utf-8\"></head><body>{html_body}</body></html>");
 						if fs::write(&html_path, full_html.as_bytes()).is_ok() {
 							return Some(html_path.to_string_lossy().to_string());
 						}
