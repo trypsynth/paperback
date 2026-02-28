@@ -126,11 +126,18 @@ impl MainWindow {
 					cfg.flush();
 				}
 				dm.save_all_positions();
-				if let Some(state) = tray_for_close.lock().unwrap().take() {
+				if let Some(state) = tray_for_close.lock().unwrap().as_ref() {
 					state.icon.remove_icon();
-					state.icon.destroy();
 				}
 				event.skip(true);
+			});
+		}
+		{
+			let tray_for_destroy = Rc::clone(&tray_state);
+			frame.on_destroy(move |_event| {
+				if let Some(state) = tray_for_destroy.lock().unwrap().take() {
+					state.icon.destroy();
+				}
 			});
 		}
 		Self::schedule_restore_documents(frame, Rc::clone(&doc_manager), Rc::clone(&config));
