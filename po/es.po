@@ -1,9 +1,13 @@
+# Spanish translation
+# Copyright (C) 2026 Quin Gillespie
+# This file is distributed under the same license as the paperback package.
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: paperback 0.5\n"
+"Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2025-11-08 09:26-0700\n"
-"PO-Revision-Date: 2025-10-16 23:59-0600\n"
+"POT-Creation-Date: 2026-02-28 00:00-0700\n"
+"PO-Revision-Date: 2026-02-28 00:00-0700\n"
 "Last-Translator: Quin Gillespie <trypsynth@gmail.com>\n"
 "Language-Team: Español <es@example.com>\n"
 "Language: es\n"
@@ -12,77 +16,310 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-Basepath: ..\n"
+"X-Poedit-KeywordsList: _;t;wxTRANSLATE;wxPLURAL:1,2\n"
+"X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-SearchPath-0: src\n"
 "X-Poedit-SearchPathExcluded-0: build\n"
 "X-Poedit-SearchPathExcluded-1: vcpkg\n"
 "X-Poedit-SearchPathExcluded-2: web\n"
 "X-Poedit-SearchPathExcluded-3: po\n"
-"X-Poedit-KeywordsList: _;wxTRANSLATE;wxPLURAL:1,2\n"
-"X-Poedit-SourceCharset: UTF-8\n"
 
-#: src/app.cpp
-msgid "Failed to initialize configuration"
-msgstr "No se pudo inicializar la configuración"
+#: src/parser/pdf.rs:71
+msgid ""
+"This PDF contains images only, with no extractable text. You may need to run "
+"it through OCR software to read its contents."
+msgstr ""
+"Este PDF contiene solo imágenes, sin texto extraíble. Es posible que necesite "
+"procesarlo con software OCR para leer su contenido."
 
-#: src/app.cpp src/dialogs.cpp src/document_manager.cpp src/main_window.cpp
-#: src/update_checker.cpp
-msgid "Error"
-msgstr "Error"
-
-#: src/app.cpp
+#: src/ui/app.rs:135
 msgid "Failed to create IPC server"
 msgstr "No se pudo crear el servidor IPC"
 
-#: src/app.cpp src/document_manager.cpp
+#: src/ui/app.rs:135
 msgid "Warning"
 msgstr "Advertencia"
 
-#: src/app.cpp src/document_manager.cpp
-#, c-format
-msgid "File not found: %s"
-msgstr "Archivo no encontrado: %s"
+#: src/ui/dialogs.rs:117 src/ui/find.rs:183
+msgid "Options"
+msgstr "Opciones"
 
-#: src/app.cpp
-msgid "Failed to load document."
-msgstr "No se pudo cargar el documento."
+#: src/ui/dialogs.rs:124
+msgid "&Restore previously opened documents on startup"
+msgstr "&Restaurar documentos abiertos anteriormente al iniciar"
 
-#: src/chm_parser.cpp
-msgid "Unknown error while parsing CHM file"
-msgstr "Error desconocido al analizar el archivo CHM"
+#: src/ui/dialogs.rs:125
+msgid "&Word wrap"
+msgstr "&Ajuste de texto"
 
-#: src/dialogs.cpp
+#: src/ui/dialogs.rs:126
+msgid "&Minimize to system tray"
+msgstr "&Minimizar a la bandeja del sistema"
+
+#: src/ui/dialogs.rs:127
+msgid "&Start maximized"
+msgstr "&Iniciar maximizado"
+
+#: src/ui/dialogs.rs:128
+msgid "Show compact &go menu"
+msgstr "Mostrar menú compacto de &ir"
+
+#: src/ui/dialogs.rs:129
+msgid "&Wrap navigation"
+msgstr "&Navegación cíclica"
+
+#: src/ui/dialogs.rs:131
+msgid "Play &sounds on bookmarks and notes"
+msgstr "Reproducir &sonidos en marcadores y notas"
+
+#: src/ui/dialogs.rs:133
+msgid "Check for &updates on startup"
+msgstr "Buscar &actualizaciones al iniciar"
+
+#: src/ui/dialogs.rs:143
+msgid "Number of &recent documents to show:"
+msgstr "Número de documentos &recientes a mostrar:"
+
+#: src/ui/dialogs.rs:149
+msgid "&Language:"
+msgstr "&Idioma:"
+
+#: src/ui/dialogs.rs:162
+msgid "Update Channel:"
+msgstr "Canal de actualización:"
+
+#: src/ui/dialogs.rs:164
+msgid "Stable"
+msgstr "Estable"
+
+#: src/ui/dialogs.rs:165
+msgid "Dev"
+msgstr "Dev"
+
+#: src/ui/dialogs.rs:173
+msgid "General"
+msgstr "General"
+
+#: src/ui/dialogs.rs:174 src/ui/status.rs:11
+msgid "Reading"
+msgstr "Leyendo"
+
+#: src/ui/dialogs.rs:200 src/ui/dialogs.rs:783 src/ui/dialogs.rs:990
+#: src/ui/dialogs.rs:1111 src/ui/dialogs.rs:1149 src/ui/dialogs.rs:1201
+#: src/ui/dialogs.rs:1283 src/ui/dialogs.rs:1442 src/ui/dialogs.rs:1706
+#: src/ui/dialogs.rs:1888 src/ui/dialogs.rs:2159
+msgid "OK"
+msgstr "Aceptar"
+
+#: src/ui/dialogs.rs:201 src/ui/dialogs.rs:784 src/ui/dialogs.rs:991
+#: src/ui/dialogs.rs:1150 src/ui/dialogs.rs:1202 src/ui/dialogs.rs:1285
+#: src/ui/dialogs.rs:1708 src/ui/dialogs.rs:1889 src/ui/dialogs.rs:2160
+#: src/ui/find.rs:192
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: src/ui/dialogs.rs:282
+msgid "Jump to Bookmark"
+msgstr "Ir al marcador"
+
+#: src/ui/dialogs.rs:396
+msgid "&Filter:"
+msgstr "&Filtro:"
+
+#: src/ui/dialogs.rs:398
+msgid "All"
+msgstr "Todos"
+
+#: src/ui/dialogs.rs:399
+msgid "Bookmarks"
+msgstr "Marcadores"
+
+#: src/ui/dialogs.rs:400
+msgid "Notes"
+msgstr "Notas"
+
+#: src/ui/dialogs.rs:411
+msgid "&Edit Note"
+msgstr "&Editar nota"
+
+#: src/ui/dialogs.rs:412
+msgid "&Delete"
+msgstr "&Eliminar"
+
+#: src/ui/dialogs.rs:413
+msgid "&Jump"
+msgstr "&Ir"
+
+#: src/ui/dialogs.rs:414
+msgid "&Cancel"
+msgstr "&Cancelar"
+
+#: src/ui/dialogs.rs:497
+msgid "blank"
+msgstr "vacío"
+
+#: src/ui/dialogs.rs:563
+msgid "Please select a bookmark to jump to."
+msgstr "Seleccione un marcador al que ir."
+
+#: src/ui/dialogs.rs:563 src/ui/document_manager.rs:63
+#: src/ui/document_manager.rs:89 src/ui/document_manager.rs:95
+#: src/ui/document_manager.rs:99 src/ui/help.rs:75 src/ui/help.rs:80
+#: src/ui/help.rs:89 src/ui/help.rs:97 src/ui/help.rs:103 src/ui/help.rs:116
+#: src/ui/help.rs:124 src/ui/help.rs:137 src/ui/help.rs:252 src/ui/help.rs:257
+#: src/ui/help.rs:284 src/ui/help.rs:299 src/ui/help.rs:329 src/ui/help.rs:338
+#: src/ui/help.rs:345 src/ui/help.rs:395 src/ui/main_window.rs:815
+#: src/ui/main_window.rs:1007 src/ui/main_window.rs:1234
+msgid "Error"
+msgstr "Error"
+
+#: src/ui/dialogs.rs:692 src/ui/navigation.rs:436
+msgid "Bookmark Note"
+msgstr "Nota del marcador"
+
+#: src/ui/dialogs.rs:692
+msgid "Edit bookmark note:"
+msgstr "Editar nota del marcador:"
+
+#: src/ui/dialogs.rs:830 src/ui/navigation.rs:474
+msgid "View Note"
+msgstr "Ver nota"
+
+#: src/ui/dialogs.rs:836 src/ui/dialogs.rs:1964
+msgid "Close"
+msgstr "Cerrar"
+
+#: src/ui/dialogs.rs:855
+msgid "Table of Contents"
+msgstr "Tabla de contenidos"
+
+#: src/ui/dialogs.rs:881 src/ui/dialogs.rs:2053
+msgid "Root"
+msgstr "Raíz"
+
+#: src/ui/dialogs.rs:1004
+msgid "Please select a section from the table of contents."
+msgstr "Seleccione una sección de la tabla de contenidos."
+
+#: src/ui/dialogs.rs:1005
+msgid "No Selection"
+msgstr "Sin selección"
+
+#: src/ui/dialogs.rs:1028 src/ui/dialogs.rs:2068 src/ui/document_manager.rs:119
+#: src/ui/main_window.rs:200 src/ui/main_window.rs:1263
+msgid "Untitled"
+msgstr "Sin título"
+
+#: src/ui/dialogs.rs:1083
+msgid "Document Info"
+msgstr "Información del documento"
+
+#: src/ui/dialogs.rs:1089
+msgid "Path:"
+msgstr "Ruta:"
+
+#: src/ui/dialogs.rs:1090
+msgid "Title:"
+msgstr "Título:"
+
+#: src/ui/dialogs.rs:1091
+msgid "Author:"
+msgstr "Autor:"
+
+#: src/ui/dialogs.rs:1092
+msgid "Words:"
+msgstr "Palabras:"
+
+#: src/ui/dialogs.rs:1093
+msgid "Lines:"
+msgstr "Líneas:"
+
+#: src/ui/dialogs.rs:1094
+msgid "Characters:"
+msgstr "Caracteres:"
+
+#: src/ui/dialogs.rs:1095
+msgid "Characters (excluding spaces):"
+msgstr "Caracteres (sin espacios):"
+
+#: src/ui/dialogs.rs:1130
+msgid "Go to Line"
+msgstr "Ir a la línea"
+
+#: src/ui/dialogs.rs:1132
+msgid "&Line number:"
+msgstr "Número de &línea:"
+
+#: src/ui/dialogs.rs:1168 src/ui/document_manager.rs:492
+msgid "Go to page"
+msgstr "Ir a la página"
+
+#: src/ui/dialogs.rs:1170
+msgid "Go to page (%d/%d):"
+msgstr "Ir a la página (%d/%d):"
+
+#: src/ui/dialogs.rs:1219
+msgid "Go to Percent"
+msgstr "Ir al porcentaje"
+
+#: src/ui/dialogs.rs:1222
+msgid "&Percent"
+msgstr "&Porcentaje"
+
+#: src/ui/dialogs.rs:1225
+msgid "P&ercent:"
+msgstr "P&orcentaje:"
+
+#: src/ui/dialogs.rs:1302
+#, rust-format
+msgid "Update to %s"
+msgstr "Actualizar a %s"
+
+#: src/ui/dialogs.rs:1306
+msgid "A new version of Paperback is available. Here's what's new:"
+msgstr "Hay una nueva versión de Paperback disponible. Novedades:"
+
+#: src/ui/dialogs.rs:1313
+msgid "&Yes"
+msgstr "&Sí"
+
+#: src/ui/dialogs.rs:1314
+msgid "&No"
+msgstr "&No"
+
+#: src/ui/dialogs.rs:1346
 msgid "All Documents"
 msgstr "Todos los documentos"
 
-#: src/dialogs.cpp
+#: src/ui/dialogs.rs:1349
 msgid "&search"
 msgstr "&Buscar"
 
-#: src/dialogs.cpp
+#: src/ui/dialogs.rs:1432
 msgid "File Name"
 msgstr "Nombre del archivo"
 
-#: src/dialogs.cpp
+#: src/ui/dialogs.rs:1433
 msgid "Status"
 msgstr "Estado"
 
-#: src/dialogs.cpp
+#: src/ui/dialogs.rs:1434
 msgid "Path"
 msgstr "Ruta"
 
-#: src/dialogs.cpp
+#: src/ui/dialogs.rs:1439
 msgid "&Open"
 msgstr "&Abrir"
 
-#: src/dialogs.cpp
+#: src/ui/dialogs.rs:1440
 msgid "&Remove"
 msgstr "&Eliminar"
 
-#: src/dialogs.cpp
-msgid "Missing"
-msgstr "Faltante"
+#: src/ui/dialogs.rs:1441
+msgid "&Clear All"
+msgstr "Borrar &todo"
 
-#: src/dialogs.cpp
+#: src/ui/dialogs.rs:1513
 msgid ""
 "Are you sure you want to remove this document from the list? This will also "
 "remove its reading position."
@@ -90,1039 +327,1142 @@ msgstr ""
 "¿Seguro que desea eliminar este documento de la lista? Esto también borrará "
 "su posición de lectura."
 
-#: src/dialogs.cpp
+#: src/ui/dialogs.rs:1515 src/ui/dialogs.rs:1561
 msgid "Confirm"
 msgstr "Confirmar"
 
-#: src/dialogs.cpp
-msgid "Open"
-msgstr "Abierto"
+#: src/ui/dialogs.rs:1559
+msgid ""
+"Are you sure you want to remove all documents from the list? This will also "
+"remove all reading positions and bookmarks."
+msgstr ""
+"¿Seguro que desea eliminar todos los documentos de la lista? Esto también "
+"borrará todas las posiciones de lectura y los marcadores."
 
-#: src/dialogs.cpp
-msgid "Closed"
-msgstr "Cerrado"
-
-#: src/dialogs.cpp
-msgid "Jump to Bookmark"
-msgstr "Ir al marcador"
-
-#: src/dialogs.cpp
-msgid "&Filter:"
-msgstr "&Filtro:"
-
-#: src/dialogs.cpp
-msgid "All"
-msgstr "Todos"
-
-#: src/dialogs.cpp
-msgid "Bookmarks"
-msgstr "Marcadores"
-
-#: src/dialogs.cpp
-msgid "Notes"
-msgstr "Notas"
-
-#: src/dialogs.cpp
-msgid "&Edit Note"
-msgstr "&Editar nota"
-
-#: src/dialogs.cpp
-msgid "&Delete"
-msgstr "&Eliminar"
-
-#: src/dialogs.cpp
-msgid "&Jump"
-msgstr "&Ir"
-
-#: src/dialogs.cpp
-msgid "&Cancel"
-msgstr "&Cancelar"
-
-#: src/dialogs.cpp
-msgid "Please select a bookmark to jump to."
-msgstr "Seleccione un marcador al que ir."
-
-#: src/dialogs.cpp src/document_manager.cpp
-msgid "Bookmark Note"
-msgstr "Nota del marcador"
-
-#: src/dialogs.cpp src/document_manager.cpp
-msgid "Edit bookmark note:"
-msgstr "Editar nota del marcador:"
-
-#: src/dialogs.cpp
-msgid "blank"
-msgstr "vacío"
-
-#: src/dialogs.cpp
-msgid "Document Info"
-msgstr "Información del documento"
-
-#: src/dialogs.cpp
-msgid "Title: "
-msgstr "Título: "
-
-#: src/dialogs.cpp
-msgid "Author: "
-msgstr "Autor: "
-
-#: src/dialogs.cpp
-#, fuzzy
-msgid "Path: "
-msgstr "Ruta"
-
-#: src/dialogs.cpp
-msgid "Total number of words: "
-msgstr "Número total de palabras: "
-
-#: src/dialogs.cpp
-msgid "Total number of lines: "
-msgstr "Número total de líneas: "
-
-#: src/dialogs.cpp
-msgid "Total number of characters: "
-msgstr "Número total de caracteres: "
-
-#: src/dialogs.cpp
-msgid "Total number of characters (excluding whitespace): "
-msgstr "Número total de caracteres (sin espacios en blanco): "
-
-#: src/dialogs.cpp
-msgid "Find"
-msgstr "Buscar"
-
-#: src/dialogs.cpp
-msgid "Find &what:"
-msgstr "Buscar &qué:"
-
-#: src/dialogs.cpp
-msgid "Options"
-msgstr "Opciones"
-
-#: src/dialogs.cpp
-msgid "&Match case"
-msgstr "&Coincidir mayúsculas/minúsculas"
-
-#: src/dialogs.cpp
-msgid "Match &whole word"
-msgstr "Coincidir palabra &completa"
-
-#: src/dialogs.cpp
-msgid "Use &regular expressions"
-msgstr "Usar expresiones &regulares"
-
-#: src/dialogs.cpp
-msgid "Find &Previous"
-msgstr "Buscar &anterior"
-
-#: src/dialogs.cpp
-msgid "Find &Next"
-msgstr "Buscar &siguiente"
-
-#: src/dialogs.cpp
-msgid "Cancel"
-msgstr "Cancelar"
-
-#: src/dialogs.cpp
-msgid "Go to Line"
-msgstr "Ir a la línea"
-
-#: src/dialogs.cpp
-msgid "&Line number:"
-msgstr "Número de &línea:"
-
-#: src/dialogs.cpp
-msgid "Go to page"
-msgstr "Ir a la página"
-
-#: src/dialogs.cpp
-#, c-format
-msgid "Go to page (1/%d):"
-msgstr "Ir a la página (1/%d):"
-
-#: src/dialogs.cpp
-msgid "Go to Percent"
-msgstr "Ir al porcentaje"
-
-#: src/dialogs.cpp
-msgid "P&ercent:"
-msgstr "P&orcentaje:"
-
-#: src/dialogs.cpp
-msgid "&Percent"
-msgstr "&Porcentaje"
-
-#: src/dialogs.cpp
+#: src/ui/dialogs.rs:1694
 msgid "Open As"
 msgstr "Abrir como"
 
-#: src/dialogs.cpp
-#, c-format
+#: src/ui/dialogs.rs:1696
+#, rust-format
 msgid ""
-"No suitable parser was found for %s.\n"
+"No suitable parser was found for {}.\n"
 "How would you like to open this file?"
 msgstr ""
-"No se encontró un analizador adecuado para %s.\n"
+"No se encontró un analizador adecuado para {}.\n"
 "¿Cómo desea abrir este archivo?"
 
-#: src/dialogs.cpp
+#: src/ui/dialogs.rs:1699
 msgid "Open &as:"
 msgstr "Abrir &como:"
 
-#: src/dialogs.cpp
+#: src/ui/dialogs.rs:1702
 msgid "Plain Text"
 msgstr "Texto plano"
 
-#: src/dialogs.cpp
+#: src/ui/dialogs.rs:1703
 msgid "HTML"
 msgstr "HTML"
 
-#: src/dialogs.cpp
+#: src/ui/dialogs.rs:1704
 msgid "Markdown"
 msgstr "Markdown"
 
-#: src/dialogs.cpp
-msgid "General"
-msgstr "General"
+#: src/ui/dialogs.rs:1781
+msgid "Open"
+msgstr "Abierto"
 
-#: src/dialogs.cpp
-msgid "&Restore previously opened documents on startup"
-msgstr "&Restaurar documentos abiertos anteriormente al iniciar"
+#: src/ui/dialogs.rs:1782
+msgid "Closed"
+msgstr "Cerrado"
 
-#: src/dialogs.cpp
-msgid "&Word wrap"
-msgstr "&Ajuste de texto"
+#: src/ui/dialogs.rs:1783 src/ui/dialogs.rs:1816
+msgid "Missing"
+msgstr "Faltante"
 
-#: src/dialogs.cpp
-msgid "&Minimize to system tray"
-msgstr "&Minimizar a la bandeja del sistema"
-
-#: src/dialogs.cpp
-msgid "Show compact &go menu"
-msgstr "Mostrar menú compacto de &ir"
-
-#: src/dialogs.cpp
-msgid "&Wrap navigation"
-msgstr "&Navegación cíclica"
-
-#: src/dialogs.cpp
-msgid "Check for &updates on startup"
-msgstr "Buscar &actualizaciones al iniciar"
-
-#: src/dialogs.cpp
-msgid "Number of &recent documents to show:"
-msgstr "Número de documentos &recientes a mostrar:"
-
-#: src/dialogs.cpp
-msgid "&Language:"
-msgstr "&Idioma:"
-
-#: src/dialogs.cpp
+#: src/ui/dialogs.rs:1873
 msgid "Sleep Timer"
 msgstr "Temporizador de suspensión"
 
-#: src/dialogs.cpp
+#: src/ui/dialogs.rs:1874
 msgid "&Minutes:"
 msgstr "&Minutos:"
 
-#: src/dialogs.cpp
-msgid "Table of Contents"
-msgstr "Tabla de contenidos"
+#: src/ui/dialogs.rs:1982
+msgid "Elements"
+msgstr "Elementos"
 
-#: src/dialogs.cpp
-msgid "Root"
-msgstr "Raíz"
+#: src/ui/dialogs.rs:2013
+msgid "&View:"
+msgstr "&Vista:"
 
-#: src/dialogs.cpp
-msgid "Untitled"
-msgstr "Sin título"
+#: src/ui/dialogs.rs:2015
+msgid "Headings"
+msgstr "Encabezados"
 
-#: src/dialogs.cpp
-msgid "Please select a section from the table of contents."
-msgstr "Seleccione una sección de la tabla de contenidos."
+#: src/ui/dialogs.rs:2016
+msgid "Links"
+msgstr "Enlaces"
 
-#: src/dialogs.cpp
-msgid "No Selection"
-msgstr "Sin selección"
+#: src/ui/dialogs.rs:2213
+msgid "An accessible, lightweight, fast ebook and document reader"
+msgstr "Un lector de libros electrónicos y documentos accesible, ligero y rápido"
 
-#: src/dialogs.cpp src/main_window.cpp
-msgid "View Note"
-msgstr "Ver nota"
+#: src/ui/document_manager.rs:61
+#, rust-format
+msgid "File not found: {}"
+msgstr "Archivo no encontrado: {}"
 
-#: src/dialogs.cpp
-#, fuzzy
-msgid "Close"
-msgstr "Cerrado"
+#: src/ui/document_manager.rs:89
+msgid "Password is required."
+msgstr "Se requiere contraseña."
 
-#: app/dialogs.cpp
-msgid "&Yes"
-msgstr "&Sí"
-
-#: app/dialogs.cpp
-msgid "&No"
-msgstr "&No"
-
-#: src/document_manager.cpp
-#, fuzzy, c-format
-msgid "Failed to parse document: %s"
-msgstr "No se pudo exportar el documento."
-
-#: src/document_manager.cpp
-msgid "No sections."
-msgstr "Sin secciones."
-
-#: src/document_manager.cpp
-msgid "No next section"
-msgstr "No hay siguiente sección"
-
-#: src/document_manager.cpp
-msgid "No previous section"
-msgstr "No hay sección anterior"
-
-#: src/document_manager.cpp
-msgid "Wrapping to start. "
-msgstr "Volviendo al inicio. "
-
-#: src/document_manager.cpp
-msgid "Wrapping to end. "
-msgstr "Volviendo al final. "
-
-#: src/document_manager.cpp src/main_window.cpp
-msgid "No pages."
-msgstr "Sin páginas."
-
-#: src/document_manager.cpp
-msgid "No next page."
-msgstr "No hay siguiente página."
-
-#: src/document_manager.cpp
-msgid "No previous page."
-msgstr "No hay página anterior."
-
-#: src/document_manager.cpp
-#, c-format
-msgid "Page %d: %s"
-msgstr "Página %d: %s"
-
-#: src/document_manager.cpp
-#, fuzzy
-msgid "No bookmarks."
-msgstr "Sin marcadores"
-
-#: src/document_manager.cpp
-msgid "No next bookmark"
-msgstr "No hay siguiente marcador"
-
-#: src/document_manager.cpp
-msgid "No previous bookmark"
-msgstr "No hay marcador anterior"
-
-#: src/document_manager.cpp
-#, fuzzy, c-format
-msgid "%s - Bookmark %d"
-msgstr "Marcador: %s"
-
-#: src/document_manager.cpp
-#, fuzzy
-msgid "No notes."
-msgstr "No hay siguiente página."
-
-#: src/document_manager.cpp
-#, fuzzy
-msgid "No next note"
-msgstr "No hay siguiente página."
-
-#: src/document_manager.cpp
-#, fuzzy
-msgid "No previous note"
-msgstr "No hay página anterior."
-
-#: src/document_manager.cpp
-#, c-format
-msgid "%s - %s - Note %d"
-msgstr "%s - %s - Nota %d"
-
-#: src/document_manager.cpp
-#, c-format
-msgid "%s - Note %d"
-msgstr "%s - Nota %d"
-
-#: src/document_manager.cpp
-msgid "No links."
-msgstr "Sin enlaces."
-
-#: src/document_manager.cpp
-msgid "No next link."
-msgstr "No hay siguiente enlace."
-
-#: src/document_manager.cpp
-msgid "No previous link."
-msgstr "No hay sección anterior."
-
-#: src/document_manager.cpp
-msgid " link"
-msgstr " enlace"
-
-#: src/document_manager.cpp
-msgid "Opening link in default browser."
-msgstr "Ver &ayuda en el navegador predeterminado\tF1"
-
-#: src/document_manager.cpp
-msgid "Failed to open link."
+#: src/ui/document_manager.rs:95 src/ui/document_manager.rs:99
+msgid "Failed to load document."
 msgstr "No se pudo cargar el documento."
 
-#: src/document_manager.cpp
+#: src/ui/document_manager.rs:275
 msgid "Navigated to internal link."
 msgstr "Navegó a un enlace interno."
 
-#: src/document_manager.cpp
-msgid "Internal link target not found."
-msgstr "Destino del enlace interno no encontrado."
+#: src/ui/document_manager.rs:295
+msgid "Table View"
+msgstr "Vista de tabla"
 
-#: src/document_manager.cpp
-#, fuzzy
-msgid "No lists."
-msgstr "Sin enlaces."
-
-#: src/document_manager.cpp
-#, fuzzy
-msgid "No next list."
-msgstr "No hay siguiente enlace."
-
-#: src/document_manager.cpp
-#, fuzzy
-msgid "No previous list."
-msgstr "No hay sección anterior."
-
-#: src/document_manager.cpp
-#, c-format
-msgid "List with %d items"
-msgstr "Lista con %d elementos"
-
-#: src/document_manager.cpp
-#, fuzzy
-msgid "No list items."
-msgstr "Sin enlaces."
-
-#: src/document_manager.cpp
-#, fuzzy
-msgid "No next list item."
-msgstr "No hay siguiente enlace."
-
-#: src/document_manager.cpp
-#, fuzzy
-msgid "No previous list item."
-msgstr "No hay sección anterior."
-
-#: src/document_manager.cpp
-#, c-format
-msgid "List with %d items "
-msgstr "Lista con %d elementos "
-
-#: src/document_manager.cpp
-msgid "Bookmark removed"
-msgstr "Marcador eliminado"
-
-#: src/document_manager.cpp
-msgid "Bookmarked"
-msgstr "Marcado"
-
-#: src/document_manager.cpp
-#, fuzzy
-msgid "Enter bookmark note:"
-msgstr "No hay siguiente marcador"
-
-#: src/document_manager.cpp
-#, fuzzy
-msgid "Bookmark note updated"
-msgstr "Marcador eliminado"
-
-#: src/document_manager.cpp
-#, fuzzy
-msgid "Bookmarked with note"
-msgstr "Marcado"
-
-#: src/document_manager.cpp
-msgid "No bookmarks"
-msgstr "Sin marcadores"
-
-#: src/document_manager.cpp
-#, fuzzy, c-format
-msgid "Bookmark: %s - %s"
-msgstr "Marcador: %s"
-
-#: src/document_manager.cpp
-#, c-format
-msgid "Bookmark: %s"
-msgstr "Marcador: %s"
-
-#: src/document_manager.cpp
-msgid "No table of contents."
-msgstr "Sin tabla de contenidos."
-
-#: src/document_manager.cpp
-msgid "Table of contents is empty."
-msgstr "La tabla de contenidos está vacía."
-
-#: src/document_manager.cpp src/main_window.cpp
+#: src/ui/document_manager.rs:303 src/ui/main_window.rs:61
+#: src/ui/main_window.rs:194 src/ui/main_window.rs:1250 src/ui/status.rs:47
+#: src/ui/status.rs:52
 msgid "Ready"
 msgstr "Listo"
 
-#: src/document_manager.cpp
-#, c-format
-msgid "line %ld, character %ld, reading %d%%"
-msgstr "línea %ld, carácter %ld, lectura %d%%"
-
-#: src/document_manager.cpp
-msgid "Previous heading\tShift+H"
-msgstr "Encabezado anterior\tShift+H"
-
-#: src/document_manager.cpp
-msgid "Next heading\tH"
-msgstr "Siguiente encabezado\tH"
-
-#: src/document_manager.cpp
-#, c-format
-msgid "Previous heading level %d\tShift+%d"
-msgstr "Nivel de encabezado anterior %d\tShift+%d"
-
-#: src/document_manager.cpp
-#, c-format
-msgid "Next heading level %d\t%d"
-msgstr "Nivel de encabezado siguiente %d\t%d"
-
-#: src/document_manager.cpp
-msgid "No headings."
-msgstr "Sin encabezados."
-
-#: src/document_manager.cpp
-#, c-format
-msgid "No %s heading"
-msgstr "No hay encabezado %s"
-
-#: src/document_manager.cpp
-msgid "next"
-msgstr "siguiente"
-
-#: src/document_manager.cpp
-msgid "previous"
-msgstr "anterior"
-
-#: src/document_manager.cpp
-#, c-format
-msgid "No %s heading at level %d"
-msgstr "No hay encabezado %s en el nivel %d"
-
-#: src/document_manager.cpp
-#, fuzzy, c-format
-msgid "Wrapping to %s. %s Heading level %d"
-msgstr "Encabezado %s nivel %d"
-
-#: src/document_manager.cpp
-msgid "start"
-msgstr "inicio"
-
-#: src/document_manager.cpp
-msgid "end"
-msgstr "fin"
-
-#: src/document_manager.cpp
-#, c-format
-msgid "%s Heading level %d"
-msgstr "Encabezado %s nivel %d"
-
-#: src/epub_parser.cpp
-#, fuzzy
-msgid "Couldn't parse table of contents"
-msgstr "Sin tabla de contenidos."
-
-#: src/fb2_parser.cpp
-#, fuzzy
-msgid "Failed to open FB2 file"
-msgstr "No se pudo cargar el documento."
-
-#: src/fb2_parser.cpp
-msgid "FB2 file is empty or could not be read"
-msgstr "El archivo FB2 está vacío o no se pudo leer"
-
-#: src/fb2_parser.cpp
-msgid "Failed to convert FB2 XML to text"
-msgstr "No se pudo convertir el XML de FB2 a texto"
-
-#: src/html_parser.cpp
-msgid "Failed to open HTML file"
-msgstr "No se pudo abrir el archivo HTML"
-
-#: src/html_parser.cpp
-#, fuzzy
-msgid "Failed to convert HTML to text"
-msgstr "No se pudo exportar el documento."
-
-#: src/main_window.cpp
-msgid "Previous section\t["
-msgstr "Sección anterior\t["
-
-#: src/main_window.cpp
-msgid "Next section\t]"
-msgstr "Siguiente sección\t]"
-
-#: src/main_window.cpp
-msgid "Go to &page...\tCtrl+P"
-msgstr "Ir a la &página...\tCtrl+P"
-
-#: src/main_window.cpp
-msgid "Previous &page\tShift+P"
-msgstr "&Página anterior\tShift+P"
-
-#: src/main_window.cpp
-msgid "&Next page\tP"
-msgstr "&Siguiente página\tP"
-
-#: src/main_window.cpp
-msgid "Previous &bookmark\tShift+B"
-msgstr "&Marcador anterior\tShift+B"
-
-#: src/main_window.cpp
-msgid "Next b&ookmark\tB"
-msgstr "Siguiente m&arcador\tB"
-
-#: src/main_window.cpp
-#, fuzzy
-msgid "Previous &note\tShift+N"
-msgstr "&Página anterior\tShift+P"
-
-#: src/main_window.cpp
-msgid "Next &note\tN"
-msgstr "Siguiente &nota\tN"
-
-#: src/main_window.cpp
-#, fuzzy
-msgid "Jump to &all...\tCtrl+B"
-msgstr "Ir a &todos...\tCtrl+B"
-
-#: src/main_window.cpp
-#, fuzzy
-msgid "Jump to &bookmarks...\tCtrl+Alt+B"
-msgstr "Ir al marcador...\tCtrl+B"
-
-#: src/main_window.cpp
-#, fuzzy
-msgid "Jump to &notes...\tCtrl+Alt+M"
-msgstr "Ir al marcador...\tCtrl+B"
-
-#: src/main_window.cpp
-msgid "&View note text\tCtrl+Shift+W"
-msgstr "&Ver texto de la nota\tCtrl+Shift+W"
-
-#: src/main_window.cpp
-msgid "Previous lin&k\tShift+K"
-msgstr "Enlace anterior\tShift+K"
-
-#: src/main_window.cpp
-msgid "Next lin&k\tK"
-msgstr "Siguiente encabezado\tH"
-
-#: src/main_window.cpp
-#, fuzzy
-msgid "Previous lis&t\tShift+L"
-msgstr "Encabezado anterior\tShift+H"
-
-#: src/main_window.cpp
-#, fuzzy
-msgid "Next lis&t\tL"
-msgstr "Siguiente encabezado\tH"
-
-#: src/main_window.cpp
-#, fuzzy
-msgid "Previous list &item\tShift+I"
-msgstr "Encabezado anterior\tShift+H"
-
-#: src/main_window.cpp
-#, fuzzy
-msgid "Next list &item\tI"
-msgstr "Siguiente encabezado\tH"
-
-#: src/main_window.cpp
-msgid "&File"
-msgstr "&Archivo"
-
-#: src/main_window.cpp
-msgid "&Open...\tCtrl+O"
-msgstr "&Abrir...\tCtrl+O"
-
-#: src/main_window.cpp
-msgid "Close\tCtrl+F4"
-msgstr "Cerrar\tCtrl+F4"
-
-#: src/main_window.cpp
-msgid "Close &All\tCtrl+Shift+F4"
-msgstr "Cerrar &todo\tCtrl+Shift+F4"
-
-#: src/main_window.cpp
-msgid "&Recent Documents"
-msgstr "Documentos &recientes"
-
-#: src/main_window.cpp src/task_bar_icon.cpp
-msgid "E&xit"
-msgstr "&Salir"
-
-#: src/main_window.cpp
-msgid "&Find...\tCtrl+F"
-msgstr "&Buscar...\tCtrl+F"
-
-#: src/main_window.cpp
-msgid "Find Ne&xt\tF3"
-msgstr "Buscar si&guiente\tF3"
-
-#: src/main_window.cpp
-msgid "Find P&revious\tShift+F3"
-msgstr "Buscar &anterior\tShift+F3"
-
-#: src/main_window.cpp
-msgid "Go to &line...\tCtrl+G"
-msgstr "Ir a la &línea...\tCtrl+G"
-
-#: src/main_window.cpp
-msgid "Go to &percent...\tCtrl+Shift+G"
-msgstr "Ir al &porcentaje...\tCtrl+Shift+G"
-
-#: src/main_window.cpp
-msgid "&Sections"
-msgstr "Sin secciones."
-
-#: src/main_window.cpp
-msgid "&Headings"
-msgstr "Sin encabezados."
-
-#: src/main_window.cpp
-msgid "&Pages"
-msgstr "&Páginas"
-
-#: src/main_window.cpp
-msgid "&Bookmarks"
-msgstr "&Marcadores"
-
-#: src/main_window.cpp
-msgid "&Links"
-msgstr "&Enlaces"
-
-#: src/main_window.cpp
-msgid "&Lists"
-msgstr "&Listas"
-
-#: src/main_window.cpp
-msgid "&Go"
-msgstr "&Ir"
-
-#: src/main_window.cpp
-msgid "&Tools"
-msgstr "&Herramientas"
-
-#: src/main_window.cpp
-msgid "&Word count\tCtrl+W"
-msgstr "Contar &palabras\tCtrl+W"
-
-#: src/main_window.cpp
-msgid "Document &info\tCtrl+I"
-msgstr "&Información del documento\tCtrl+I"
-
-#: src/main_window.cpp
-msgid "Table of contents\tCtrl+T"
-msgstr "Tabla de contenidos\tCtrl+T"
-
-#: src/main_window.cpp
-msgid "Open &containing folder\tCtrl+Shift+C"
-msgstr "Abrir carpeta &contenedora\tCtrl+Shift+C"
-
-#: src/main_window.cpp
-msgid "Import/&Export"
-msgstr "Importar/&Exportar"
-
-#: src/main_window.cpp
-msgid "&Import document data...\tCtrl+Shift+I"
-msgstr "&Importar datos del documento...\tCtrl+Shift+I"
-
-#: src/main_window.cpp
-msgid "&Export document data...\tCtrl+Shift+E"
-msgstr "&Exportar datos del documento...\tCtrl+Shift+E"
-
-#: src/main_window.cpp
-#, fuzzy
-msgid "Export document to &plain text...\tCtrl+E"
-msgstr "Ir a la &línea...\tCtrl+G"
-
-#: src/main_window.cpp
-msgid "Toggle bookmark\tCtrl+Shift+B"
-msgstr "Alternar marcador\tCtrl+Shift+B"
-
-#: src/main_window.cpp
-#, fuzzy
-msgid "Bookmark with &note\tCtrl+Shift+N"
-msgstr "Alternar marcador\tCtrl+Shift+B"
-
-#: src/main_window.cpp
-msgid "&Options\tCtrl+,"
-msgstr "&Opciones\tCtrl+,"
-
-#: src/main_window.cpp
-#, fuzzy
-msgid "&Sleep Timer...\tCtrl+Shift+S"
-msgstr "Ir al &porcentaje...\tCtrl+Shift+G"
-
-#: src/main_window.cpp
-msgid "&Help"
-msgstr "&Ayuda"
-
-#: src/main_window.cpp
-#, c-format
-msgid "About %s\tCtrl+F1"
-msgstr "Acerca de %s\tCtrl+F1"
-
-#: src/main_window.cpp
-msgid "View &help in default browser\tF1"
-msgstr "Ver &ayuda en el navegador predeterminado\tF1"
-
-#: src/main_window.cpp
-#, c-format
-msgid "View Help in %s\tShift+F1"
-msgstr "Ver ayuda en %s\tShift+F1"
-
-#: src/main_window.cpp
-msgid "Check for &Updates"
-msgstr "Buscar &actualizaciones"
-
-#: src/main_window.cpp
-msgid "&Donate\tCtrl+D"
-msgstr "&Donar\tCtrl+D"
-
-#: src/main_window.cpp
-#, c-format
-msgid " | Sleep timer: %02d:%02d"
-msgstr " | Temporizador de suspensión: %02d:%02d"
-
-#: src/main_window.cpp
-msgid "Select a document to read"
-msgstr "Seleccione un documento para leer"
-
-#: src/main_window.cpp
-msgid "Export Document"
-msgstr "Exportar documento"
-
-#: src/main_window.cpp
-msgid "Text files (*.txt)|*.txt|All files (*.*)|*.*"
-msgstr "Archivos de texto (*.txt)|*.txt|Todos los archivos (*.*)|*.*"
-
-#: src/main_window.cpp
-msgid "Failed to export document."
-msgstr "No se pudo exportar el documento."
-
-#: src/main_window.cpp
-#, fuzzy
-msgid "Export notes and bookmarks"
-msgstr "No hay siguiente marcador"
-
-#: src/main_window.cpp
-msgid "Paperback files (*.paperback)|*.paperback"
-msgstr "Archivos de Paperback (*.paperback)|*.paperback"
-
-#: src/main_window.cpp
-msgid "Notes and bookmarks exported successfully."
-msgstr "Notas y marcadores exportados correctamente."
-
-#: src/main_window.cpp
-msgid "Export Successful"
-msgstr "Exportación correcta"
-
-#: src/main_window.cpp
-#, fuzzy
-msgid "Import notes and bookmarks"
-msgstr "No hay siguiente marcador"
-
-#: src/main_window.cpp
-msgid "Notes and bookmarks imported successfully."
-msgstr "Notas y marcadores importados correctamente."
-
-#: src/main_window.cpp
-msgid "Import Successful"
-msgstr "Importación correcta"
-
-#: src/main_window.cpp
-msgid "No note at the current position."
-msgstr "No hay nota en la posición actual."
-
-#: src/main_window.cpp
-#, c-format
-msgid "The document contains %d word"
-msgid_plural "The document contains %d words"
-msgstr[0] "El documento contiene %d palabra"
-msgstr[1] "El documento contiene %d palabras"
-
-#: src/main_window.cpp
-msgid "Word count"
-msgstr "Conteo de palabras"
-
-#: src/main_window.cpp
-#, fuzzy
+#: src/ui/document_manager.rs:452
+msgid "&Password:"
+msgstr "&Contraseña:"
+
+#: src/ui/document_manager.rs:452
+msgid "Document Password"
+msgstr "Contraseña del documento"
+
+#: src/ui/document_manager.rs:485
+msgid "Create &bookmark"
+msgstr "Crear &marcador"
+
+#: src/ui/document_manager.rs:485
+msgid "Create bookmark"
+msgstr "Crear marcador"
+
+#: src/ui/document_manager.rs:486
+msgid "Bookmark with &note"
+msgstr "Marcador con &nota"
+
+#: src/ui/document_manager.rs:486
+msgid "Create bookmark with note"
+msgstr "Crear marcador con nota"
+
+#: src/ui/document_manager.rs:488
+msgid "&Find"
+msgstr "&Buscar"
+
+#: src/ui/document_manager.rs:488
+msgid "Find text"
+msgstr "Buscar texto"
+
+#: src/ui/document_manager.rs:489
+msgid "Find &next"
+msgstr "Buscar &siguiente"
+
+#: src/ui/document_manager.rs:489
+msgid "Find next match"
+msgstr "Buscar la siguiente coincidencia"
+
+#: src/ui/document_manager.rs:490
+msgid "Find &previous"
+msgstr "Buscar &anterior"
+
+#: src/ui/document_manager.rs:490
+msgid "Find previous match"
+msgstr "Buscar la coincidencia anterior"
+
+#: src/ui/document_manager.rs:492
+msgid "Go to &page"
+msgstr "Ir a la &página"
+
+#: src/ui/document_manager.rs:493
+msgid "Go to &line"
+msgstr "Ir a la &línea"
+
+#: src/ui/document_manager.rs:493
+msgid "Go to line"
+msgstr "Ir a la línea"
+
+#: src/ui/document_manager.rs:494
+msgid "Go to &percent"
+msgstr "Ir al &porcentaje"
+
+#: src/ui/document_manager.rs:494
+msgid "Go to percent"
+msgstr "Ir al porcentaje"
+
+#: src/ui/find.rs:69
+msgid "Find"
+msgstr "Buscar"
+
+#: src/ui/find.rs:178
+msgid "Find &what:"
+msgstr "Buscar &qué:"
+
+#: src/ui/find.rs:184
+msgid "&Match case"
+msgstr "&Coincidir mayúsculas/minúsculas"
+
+#: src/ui/find.rs:185
+msgid "Match &whole word"
+msgstr "Coincidir palabra &completa"
+
+#: src/ui/find.rs:186
+msgid "Use &regular expressions"
+msgstr "Usar expresiones &regulares"
+
+#: src/ui/find.rs:190
+msgid "Find &Previous"
+msgstr "Buscar &anterior"
+
+#: src/ui/find.rs:191
+msgid "Find &Next"
+msgstr "Buscar &siguiente"
+
+#: src/ui/find.rs:441
+msgid "Not found."
+msgstr "No encontrado."
+
+#: src/ui/find.rs:448
+msgid "No more results. Wrapping search."
+msgstr "No hay más resultados. Volviendo al inicio."
+
+#: src/ui/help.rs:75 src/ui/help.rs:80
 msgid "Failed to open containing folder."
-msgstr "No se pudo abrir la página de donaciones en el navegador."
+msgstr "No se pudo abrir la carpeta contenedora."
 
-#: src/main_window.cpp
-msgid "Failed to launch default browser."
-msgstr "No se pudo abrir el navegador predeterminado."
-
-#: src/main_window.cpp
+#: src/ui/help.rs:88 src/ui/help.rs:96 src/ui/help.rs:115 src/ui/help.rs:123
 msgid ""
 "readme.html not found. Please ensure the application was built properly."
 msgstr ""
 "No se encontró readme.html. Asegúrese de que la aplicación se haya compilado "
 "correctamente."
 
-#: src/main_window.cpp
+#: src/ui/help.rs:103
+msgid "Failed to launch default browser."
+msgstr "No se pudo abrir el navegador predeterminado."
+
+#: src/ui/help.rs:137
 msgid "Failed to open donation page in browser."
 msgstr "No se pudo abrir la página de donaciones en el navegador."
 
-#: src/main_window.cpp
-msgid "Sleep timer canceled."
-msgstr "Temporizador de suspensión cancelado."
+#: src/ui/help.rs:165
+msgid "No release notes were provided."
+msgstr "No se proporcionaron notas de la versión."
 
-#: src/main_window.cpp
-#, fuzzy, c-format
-msgid "Sleep timer set for %d minute."
-msgid_plural "Sleep timer set for %d minutes."
-msgstr[0] "Temporizador de suspensión configurado para %d minuto."
-msgstr[1] "Temporizador de suspensión configurado para %d minutos."
+#: src/ui/help.rs:173
+msgid "Paperback Update"
+msgstr "Actualización de Paperback"
 
-#: src/main_window.cpp
-msgid "(No recent documents)"
-msgstr "(Sin documentos recientes)"
+#: src/ui/help.rs:173
+msgid "Downloading update..."
+msgstr "Descargando actualización..."
 
-#: src/main_window.cpp
-#, fuzzy
-msgid "Show All...\tCtrl+R"
-msgstr "Mostrar todo..."
-
-#: src/main_window.cpp
-msgid "No more results. Wrapping search."
-msgstr "No hay más resultados. Volviendo al inicio."
-
-#: src/main_window.cpp
-msgid "Not found."
-msgstr "No encontrado."
-
-#: src/markdown_parser.cpp
-#, fuzzy
-msgid "Failed to open Markdown file"
-msgstr "No se pudo cargar el documento."
-
-#: src/markdown_parser.cpp
-msgid "Markdown file is empty"
-msgstr "El archivo Markdown está vacío"
-
-#: src/markdown_parser.cpp
-msgid "Failed to convert Markdown HTML to text"
-msgstr "No se pudo convertir el HTML de Markdown a texto"
-
-#: src/odp_parser.cpp
-msgid "Failed to open ODP file"
-msgstr "No se pudo abrir el archivo ODP"
-
-#: src/odp_parser.cpp
-msgid "ODP file does not contain content.xml or it is empty"
-msgstr "El archivo ODP no contiene content.xml o está vacío"
-
-#: src/odp_parser.cpp
-msgid "ODP file does not contain any pages"
-msgstr "El archivo ODP no contiene ninguna página"
-
-#: src/odt_parser.cpp
-msgid "Failed to open ODT file"
-msgstr "No se pudo abrir el archivo ODT"
-
-#: src/odt_parser.cpp
-msgid "ODT file does not contain content.xml or it is empty"
-msgstr "El archivo ODT no contiene content.xml o está vacío"
-
-#: src/pptx_parser.cpp
-msgid "Parsing of links in the document failed."
-msgstr "Error al analizar los enlaces en el documento."
-
-#: src/pptx_parser.cpp
-#, c-format
-msgid "Error parsing PPTX file: %s"
-msgstr "Error al analizar el archivo PPTX: %s"
-
-#: src/pptx_parser.cpp
-msgid "Unknown error while parsing PPTX file"
-msgstr "Error desconocido al analizar el archivo PPTX"
-
-#: src/task_bar_icon.cpp
-msgid "&Restore"
-msgstr "&Restaurar"
-
-#: src/text_parser.cpp
-#, fuzzy
-msgid "Failed to open text file"
-msgstr "No se pudo cargar el documento."
-
-#: src/text_parser.cpp
-#, fuzzy
-msgid "Text file is empty"
-msgstr "La tabla de contenidos está vacía."
-
-#: src/update_checker.cpp
-#, fuzzy
-msgid "Failed to create update request."
-msgstr "No se pudo crear el servidor IPC"
-
-#: src/update_checker.cpp
-#, c-format
-msgid "Failed to check for updates. HTTP status: %d"
-msgstr "No se pudo comprobar actualizaciones. Estado HTTP: %d"
-
-#: src/update_checker.cpp
-msgid "Failed to parse update response."
-msgstr "No se pudo analizar la respuesta de actualización."
-
-#: src/update_checker.cpp
+#: src/ui/help.rs:230
 msgid "No updates available."
 msgstr "No hay actualizaciones disponibles."
 
-#: src/update_checker.cpp
+#: src/ui/help.rs:232
+#, rust-format
+msgid "No updates available. Latest version: {}"
+msgstr "No hay actualizaciones disponibles. Última versión: {}"
+
+#: src/ui/help.rs:235
 msgid "Info"
 msgstr "Información"
 
-#: src/update_checker.cpp
-msgid "Update is available but download link could not be found."
-msgstr "Hay una actualización disponible, pero no se pudo encontrar el enlace de descarga."
+#: src/ui/help.rs:251
+msgid "Failed to check for updates. HTTP status: %d"
+msgstr "No se pudo comprobar actualizaciones. Estado HTTP: %d"
 
-#: src/update_checker.cpp
-#, c-format
-msgid ""
-"There is an update available.\n"
-"Your version: %s\n"
-"Latest version: %s\n"
-"Description:\n"
-"%s\n"
-"Do you want to open the direct download link?"
-msgstr ""
-"Hay una actualización disponible.\n"
-"Su versión: %s\n"
-"Última versión: %s\n"
-"Descripción:\n"
-"%s\n"
-"¿Desea abrir el enlace de descarga directa?"
-
-#: src/update_checker.cpp
-msgid "Update available"
-msgstr "Actualización disponible"
-
-#: src/update_checker.cpp
+#: src/ui/help.rs:256
 msgid "Error checking for updates."
 msgstr "Error al comprobar actualizaciones."
 
-#, c-format
-#~ msgid "Bookmark %d: %s"
-#~ msgstr "Marcador %d: %s"
+#: src/ui/help.rs:283
+msgid "Failed to launch installer"
+msgstr "No se pudo ejecutar el instalador"
 
-#~ msgid "&Export...\tCtrl+E"
-#~ msgstr "&Exportar...\tCtrl+E"
+#: src/ui/help.rs:298
+msgid "Failed to get current exe path"
+msgstr "No se pudo obtener la ruta del ejecutable actual"
+
+#: src/ui/help.rs:328
+msgid "Failed to launch update script"
+msgstr "No se pudo ejecutar el script de actualización"
+
+#: src/ui/help.rs:338
+msgid "Unknown update file format."
+msgstr "Formato de archivo de actualización desconocido."
+
+#: src/ui/help.rs:345
+msgid "Update failed"
+msgstr "Error de actualización"
+
+#: src/ui/help.rs:394 src/ui/main_window.rs:1233
+msgid "Unsupported format selected."
+msgstr "Formato no compatible seleccionado."
+
+#: src/ui/main_window.rs:57 src/ui/main_window.rs:193
+#: src/ui/main_window.rs:1249
+msgid "Paperback"
+msgstr "Paperback"
+
+#: src/ui/main_window.rs:204 src/ui/main_window.rs:1267
+#, rust-format
+msgid "Paperback - {}"
+msgstr "Paperback - {}"
+
+#: src/ui/main_window.rs:206
+#, rust-format
+msgid "{} chars"
+msgstr "{} caracteres"
+
+#: src/ui/main_window.rs:273
+msgid "Open Document"
+msgstr "Abrir documento"
+
+#: src/ui/main_window.rs:457 src/ui/navigation.rs:63
+msgid "No pages."
+msgstr "Sin páginas."
+
+#: src/ui/main_window.rs:802 src/ui/main_window.rs:834
+msgid "document"
+msgstr "documento"
+
+#: src/ui/main_window.rs:804
+msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
+msgstr "Archivos de texto (*.txt)|*.txt|Todos los archivos (*.*)|*.*"
+
+#: src/ui/main_window.rs:806
+msgid "Export document to plain text"
+msgstr "Exportar documento a texto plano"
+
+#: src/ui/main_window.rs:815
+msgid "Failed to export document."
+msgstr "No se pudo exportar el documento."
+
+#: src/ui/main_window.rs:836 src/ui/main_window.rs:869
+msgid "Paperback files (*.paperback)|*.paperback"
+msgstr "Archivos de Paperback (*.paperback)|*.paperback"
+
+#: src/ui/main_window.rs:838
+msgid "Export notes and bookmarks"
+msgstr "Exportar notas y marcadores"
+
+#: src/ui/main_window.rs:849
+msgid "Notes and bookmarks exported successfully."
+msgstr "Notas y marcadores exportados correctamente."
+
+#: src/ui/main_window.rs:850
+msgid "Export Successful"
+msgstr "Exportación correcta"
+
+#: src/ui/main_window.rs:871
+msgid "Import notes and bookmarks"
+msgstr "Importar notas y marcadores"
+
+#: src/ui/main_window.rs:890
+msgid "Notes and bookmarks imported successfully."
+msgstr "Notas y marcadores importados correctamente."
+
+#: src/ui/main_window.rs:891
+msgid "Import Successful"
+msgstr "Importación correcta"
+
+#: src/ui/main_window.rs:909
+#, rust-format
+msgid "The document contains {} words."
+msgstr "El documento contiene {} palabras."
+
+#: src/ui/main_window.rs:911
+msgid "Word count"
+msgstr "Conteo de palabras"
+
+#: src/ui/main_window.rs:934
+msgid "No table of contents."
+msgstr "Sin tabla de contenidos."
+
+#: src/ui/main_window.rs:985
+msgid "Web View"
+msgstr "Vista web"
+
+#: src/ui/main_window.rs:1006
+msgid "Could not determine content to display in Web View."
+msgstr "No se pudo determinar el contenido para mostrar en la vista web."
+
+#: src/ui/main_window.rs:1080
+msgid "Sleep timer cancelled."
+msgstr "Temporizador de suspensión cancelado."
+
+#: src/ui/main_window.rs:1103
+msgid "Sleep timer set for 1 minute."
+msgstr "Temporizador de suspensión configurado para 1 minuto."
+
+#: src/ui/main_window.rs:1105
+msgid "Sleep timer set for %d minutes."
+msgstr "Temporizador de suspensión configurado para %d minutos."
+
+#: src/ui/main_window.rs:1157
+msgid "No recent documents."
+msgstr "Sin documentos recientes."
+
+#: src/ui/menu.rs:133
+msgid "Previous Section\t["
+msgstr "Sección anterior\t["
+
+#: src/ui/menu.rs:134
+msgid "Go to previous section"
+msgstr "Ir a la sección anterior"
+
+#: src/ui/menu.rs:135
+msgid "Next Section\t]"
+msgstr "Siguiente sección\t]"
+
+#: src/ui/menu.rs:136
+msgid "Go to next section"
+msgstr "Ir a la siguiente sección"
+
+#: src/ui/menu.rs:144
+msgid "Go to &Page\tCtrl+P"
+msgstr "Ir a la &página\tCtrl+P"
+
+#: src/ui/menu.rs:145
+msgid "Previous Pa&ge\tShift+P"
+msgstr "Págin&a anterior\tShift+P"
+
+#: src/ui/menu.rs:146
+msgid "Next Pag&e\tP"
+msgstr "Siguiente págin&a\tP"
+
+#: src/ui/menu.rs:155
+msgid "Previous Lin&k\tShift+K"
+msgstr "Enlace anterio&r\tShift+K"
+
+#: src/ui/menu.rs:156
+msgid "Next Lin&k\tK"
+msgstr "Siguiente enlac&e\tK"
+
+#: src/ui/menu.rs:161
+msgid "Previous &Table\tShift+T"
+msgstr "&Tabla anterior\tShift+T"
+
+#: src/ui/menu.rs:162
+msgid "Next &Table\tT"
+msgstr "Siguiente &tabla\tT"
+
+#: src/ui/menu.rs:167
+msgid "Previous Se&parator\tShift+S"
+msgstr "Se&parador anterior\tShift+S"
+
+#: src/ui/menu.rs:168
+msgid "Next Se&parator\tS"
+msgstr "Siguiente se&parador\tS"
+
+#: src/ui/menu.rs:173
+msgid "Previous L&ist\tShift+L"
+msgstr "L&ista anterior\tShift+L"
+
+#: src/ui/menu.rs:174
+msgid "Next L&ist\tL"
+msgstr "Siguiente l&ista\tL"
+
+#: src/ui/menu.rs:175
+msgid "Previous List &Item\tShift+I"
+msgstr "Elemento de lista &anterior\tShift+I"
+
+#: src/ui/menu.rs:176
+msgid "Next List I&tem\tI"
+msgstr "Siguiente elemento de lis&ta\tI"
+
+#: src/ui/menu.rs:186
+msgid "Next Heading Level 1\t1"
+msgstr "Siguiente encabezado nivel 1\t1"
+
+#: src/ui/menu.rs:187
+msgid "Previous Heading Level &2\tShift+2"
+msgstr "Encabezado nivel &2 anterior\tShift+2"
+
+#: src/ui/menu.rs:188
+msgid "Next Heading Level 2\t2"
+msgstr "Siguiente encabezado nivel 2\t2"
+
+#: src/ui/menu.rs:189
+msgid "Previous Heading Level &3\tShift+3"
+msgstr "Encabezado nivel &3 anterior\tShift+3"
+
+#: src/ui/menu.rs:190
+msgid "Next Heading Level 3\t3"
+msgstr "Siguiente encabezado nivel 3\t3"
+
+#: src/ui/menu.rs:191
+msgid "Previous Heading Level &4\tShift+4"
+msgstr "Encabezado nivel &4 anterior\tShift+4"
+
+#: src/ui/menu.rs:192
+msgid "Next Heading Level 4\t4"
+msgstr "Siguiente encabezado nivel 4\t4"
+
+#: src/ui/menu.rs:193
+msgid "Previous Heading Level &5\tShift+5"
+msgstr "Encabezado nivel &5 anterior\tShift+5"
+
+#: src/ui/menu.rs:194
+msgid "Next Heading Level 5\t5"
+msgstr "Siguiente encabezado nivel 5\t5"
+
+#: src/ui/menu.rs:195
+msgid "Previous Heading Level &6\tShift+6"
+msgstr "Encabezado nivel &6 anterior\tShift+6"
+
+#: src/ui/menu.rs:196
+msgid "Next Heading Level 6\t6"
+msgstr "Siguiente encabezado nivel 6\t6"
+
+#: src/ui/menu.rs:198
+msgid "&Previous Heading\tShift+H"
+msgstr "Encabezado &anterior\tShift+H"
+
+#: src/ui/menu.rs:198
+msgid "Go to previous heading"
+msgstr "Ir al encabezado anterior"
+
+#: src/ui/menu.rs:199
+msgid "&Next Heading\tH"
+msgstr "Encabezado &siguiente\tH"
+
+#: src/ui/menu.rs:199
+msgid "Go to next heading"
+msgstr "Ir al encabezado siguiente"
+
+#: src/ui/menu.rs:201
+msgid "Previous Heading Level &1\tShift+1"
+msgstr "Encabezado nivel &1 anterior\tShift+1"
+
+#: src/ui/menu.rs:217
+msgid "&Previous Bookmark\tShift+B"
+msgstr "&Marcador anterior\tShift+B"
+
+#: src/ui/menu.rs:218
+msgid "Go to previous bookmark"
+msgstr "Ir al marcador anterior"
+
+#: src/ui/menu.rs:219
+msgid "&Next Bookmark\tB"
+msgstr "&Siguiente marcador\tB"
+
+#: src/ui/menu.rs:220
+msgid "Go to next bookmark"
+msgstr "Ir al siguiente marcador"
+
+#: src/ui/menu.rs:221
+msgid "Previous &Note\tShift+N"
+msgstr "&Nota anterior\tShift+N"
+
+#: src/ui/menu.rs:222
+msgid "Go to previous note"
+msgstr "Ir a la nota anterior"
+
+#: src/ui/menu.rs:223
+msgid "Next N&ote\tN"
+msgstr "Siguiente n&ota\tN"
+
+#: src/ui/menu.rs:224
+msgid "Go to next note"
+msgstr "Ir a la siguiente nota"
+
+#: src/ui/menu.rs:225
+msgid "Jump to &All...\tCtrl+B"
+msgstr "Ir a &todos...\tCtrl+B"
+
+#: src/ui/menu.rs:226
+msgid "Show all bookmarks and notes"
+msgstr "Mostrar todos los marcadores y notas"
+
+#: src/ui/menu.rs:227
+msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
+msgstr "Ir solo a &marcadores...\tCtrl+Alt+B"
+
+#: src/ui/menu.rs:228
+msgid "Show bookmarks only"
+msgstr "Mostrar solo marcadores"
+
+#: src/ui/menu.rs:229
+msgid "Jump to Notes &Only...\tCtrl+Alt+M"
+msgstr "Ir &solo a notas...\tCtrl+Alt+M"
+
+#: src/ui/menu.rs:230
+msgid "Show notes only"
+msgstr "Mostrar solo notas"
+
+#: src/ui/menu.rs:232
+msgid "&View Note Text\tRawCtrl+Shift+W"
+msgstr "&Ver texto de la nota\tRawCtrl+Shift+W"
+
+#: src/ui/menu.rs:234
+msgid "&View Note Text\tCtrl+Shift+W"
+msgstr "&Ver texto de la nota\tCtrl+Shift+W"
+
+#: src/ui/menu.rs:236
+msgid "View the note at current position"
+msgstr "Ver la nota en la posición actual"
+
+#: src/ui/menu.rs:336
+msgid "&File"
+msgstr "&Archivo"
+
+#: src/ui/menu.rs:337
+msgid "&Go"
+msgstr "&Ir"
+
+#: src/ui/menu.rs:338
+msgid "&Tools"
+msgstr "&Herramientas"
+
+#: src/ui/menu.rs:339
+msgid "&Help"
+msgstr "&Ayuda"
+
+#: src/ui/menu.rs:349
+msgid "&Open...\tCtrl+O"
+msgstr "&Abrir...\tCtrl+O"
+
+#: src/ui/menu.rs:350
+msgid "Open a document"
+msgstr "Abrir un documento"
+
+#: src/ui/menu.rs:353
+msgid "&Close\tCtrl+W"
+msgstr "&Cerrar\tCtrl+W"
+
+#: src/ui/menu.rs:353
+msgid "&Close\tCtrl+F4"
+msgstr "&Cerrar\tCtrl+F4"
+
+#: src/ui/menu.rs:354
+msgid "Close the current document"
+msgstr "Cerrar el documento actual"
+
+#: src/ui/menu.rs:356
+msgid "Close &All\tCtrl+Shift+W"
+msgstr "Cerrar &todo\tCtrl+Shift+W"
+
+#: src/ui/menu.rs:356
+msgid "Close &All\tCtrl+Shift+F4"
+msgstr "Cerrar &todo\tCtrl+Shift+F4"
+
+#: src/ui/menu.rs:357
+msgid "Close all documents"
+msgstr "Cerrar todos los documentos"
+
+#: src/ui/menu.rs:365
+msgid "&Recent Documents"
+msgstr "Documentos &recientes"
+
+#: src/ui/menu.rs:366
+msgid "Open a recent document"
+msgstr "Abrir un documento reciente"
+
+#: src/ui/menu.rs:372 src/ui/tray.rs:63
+msgid "E&xit"
+msgstr "&Salir"
+
+#: src/ui/menu.rs:373
+msgid "Exit the application"
+msgstr "Salir de la aplicación"
+
+#: src/ui/menu.rs:382
+msgid "&Find...\tCtrl+F"
+msgstr "&Buscar...\tCtrl+F"
+
+#: src/ui/menu.rs:383
+msgid "Find text in the document"
+msgstr "Buscar texto en el documento"
+
+#: src/ui/menu.rs:384
+msgid "Find &Next\tF3"
+msgstr "Buscar si&guiente\tF3"
+
+#: src/ui/menu.rs:385
+msgid "Find next occurrence"
+msgstr "Buscar la siguiente aparición"
+
+#: src/ui/menu.rs:386
+msgid "Find &Previous\tShift+F3"
+msgstr "Buscar &anterior\tShift+F3"
+
+#: src/ui/menu.rs:387
+msgid "Find previous occurrence"
+msgstr "Buscar la aparición anterior"
+
+#: src/ui/menu.rs:388
+msgid "Go to &line...\tCtrl+G"
+msgstr "Ir a la &línea...\tCtrl+G"
+
+#: src/ui/menu.rs:389
+msgid "Go to a specific line"
+msgstr "Ir a una línea específica"
+
+#: src/ui/menu.rs:390
+msgid "Go to &percent...\tCtrl+Shift+G"
+msgstr "Ir al &porcentaje...\tCtrl+Shift+G"
+
+#: src/ui/menu.rs:391
+msgid "Go to a percentage of the document"
+msgstr "Ir a un porcentaje del documento"
+
+#: src/ui/menu.rs:392
+msgid "Go &Back\tAlt+Left"
+msgstr "Ir &atrás\tAlt+Left"
+
+#: src/ui/menu.rs:393
+msgid "Go back in history"
+msgstr "Volver en el historial"
+
+#: src/ui/menu.rs:394
+msgid "Go &Forward\tAlt+Right"
+msgstr "Ir &adelante\tAlt+Right"
+
+#: src/ui/menu.rs:395
+msgid "Go forward in history"
+msgstr "Avanzar en el historial"
+
+#: src/ui/menu.rs:409
+msgid "&Sections"
+msgstr "&Secciones"
+
+#: src/ui/menu.rs:410
+msgid "Navigate by sections"
+msgstr "Navegar por secciones"
+
+#: src/ui/menu.rs:412
+msgid "&Headings"
+msgstr "&Encabezados"
+
+#: src/ui/menu.rs:413
+msgid "Navigate by headings"
+msgstr "Navegar por encabezados"
+
+#: src/ui/menu.rs:415
+msgid "&Pages"
+msgstr "&Páginas"
+
+#: src/ui/menu.rs:416
+msgid "Navigate by pages"
+msgstr "Navegar por páginas"
+
+#: src/ui/menu.rs:418
+msgid "&Bookmarks"
+msgstr "&Marcadores"
+
+#: src/ui/menu.rs:419
+msgid "Navigate by bookmarks"
+msgstr "Navegar por marcadores"
+
+#: src/ui/menu.rs:421
+msgid "&Links"
+msgstr "&Enlaces"
+
+#: src/ui/menu.rs:422
+msgid "Navigate by links"
+msgstr "Navegar por enlaces"
+
+#: src/ui/menu.rs:424
+msgid "&Tables"
+msgstr "&Tablas"
+
+#: src/ui/menu.rs:425
+msgid "Navigate by tables"
+msgstr "Navegar por tablas"
+
+#: src/ui/menu.rs:427
+msgid "&Separators"
+msgstr "&Separadores"
+
+#: src/ui/menu.rs:428
+msgid "Navigate by separators"
+msgstr "Navegar por separadores"
+
+#: src/ui/menu.rs:430
+msgid "&Lists"
+msgstr "&Listas"
+
+#: src/ui/menu.rs:431
+msgid "Navigate by lists"
+msgstr "Navegar por listas"
+
+#: src/ui/menu.rs:454
+msgid "&Import Document Data...\tCtrl+Shift+I"
+msgstr "&Importar datos del documento...\tCtrl+Shift+I"
+
+#: src/ui/menu.rs:455
+msgid "Import bookmarks and position"
+msgstr "Importar marcadores y posición"
+
+#: src/ui/menu.rs:456
+msgid "&Export Document Data...\tCtrl+Shift+E"
+msgstr "&Exportar datos del documento...\tCtrl+Shift+E"
+
+#: src/ui/menu.rs:457
+msgid "Export bookmarks and position"
+msgstr "Exportar marcadores y posición"
+
+#: src/ui/menu.rs:458
+msgid "Export to &Plain Text...\tCtrl+E"
+msgstr "Exportar a texto &plano...\tCtrl+E"
+
+#: src/ui/menu.rs:459
+msgid "Export document as plain text"
+msgstr "Exportar documento como texto plano"
+
+#: src/ui/menu.rs:467
+msgid "&Word Count\tRawCtrl+W"
+msgstr "Contar &palabras\tRawCtrl+W"
+
+#: src/ui/menu.rs:467
+msgid "&Word Count\tCtrl+W"
+msgstr "Contar &palabras\tCtrl+W"
+
+#: src/ui/menu.rs:468
+msgid "Show word count"
+msgstr "Mostrar conteo de palabras"
+
+#: src/ui/menu.rs:469
+msgid "Document &Info\tCtrl+I"
+msgstr "&Información del documento\tCtrl+I"
+
+#: src/ui/menu.rs:470
+msgid "Show document information"
+msgstr "Mostrar información del documento"
+
+#: src/ui/menu.rs:471
+msgid "&Table of Contents\tCtrl+T"
+msgstr "&Tabla de contenidos\tCtrl+T"
+
+#: src/ui/menu.rs:472
+msgid "Show table of contents"
+msgstr "Mostrar tabla de contenidos"
+
+#: src/ui/menu.rs:473
+msgid "&Elements List...\tF7"
+msgstr "&Lista de elementos...\tF7"
+
+#: src/ui/menu.rs:474
+msgid "Show elements list"
+msgstr "Mostrar lista de elementos"
+
+#: src/ui/menu.rs:475
+msgid "Open &Containing Folder\tCtrl+Shift+C"
+msgstr "Abrir carpeta &contenedora\tCtrl+Shift+C"
+
+#: src/ui/menu.rs:476
+msgid "Open folder containing the document"
+msgstr "Abrir la carpeta que contiene el documento"
+
+#: src/ui/menu.rs:477
+msgid "Open in &Web View\tCtrl+Shift+V"
+msgstr "Abrir en &vista web\tCtrl+Shift+V"
+
+#: src/ui/menu.rs:478
+msgid "Open document in web view"
+msgstr "Abrir documento en vista web"
+
+#: src/ui/menu.rs:490
+msgid "I&mport/Export"
+msgstr "I&mportar/Exportar"
+
+#: src/ui/menu.rs:491
+msgid "Import and export options"
+msgstr "Opciones de importación y exportación"
+
+#: src/ui/menu.rs:494
+msgid "Toggle &Bookmark\tCtrl+Shift+B"
+msgstr "Alternar &marcador\tCtrl+Shift+B"
+
+#: src/ui/menu.rs:495
+msgid "Bookmark with &Note\tCtrl+Shift+N"
+msgstr "Marcador con &nota\tCtrl+Shift+N"
+
+#: src/ui/menu.rs:499
+msgid "&Options\tCtrl+,"
+msgstr "&Opciones\tCtrl+,"
+
+#: src/ui/menu.rs:500
+msgid "&Sleep Timer...\tCtrl+Shift+S"
+msgstr "&Temporizador de suspensión...\tCtrl+Shift+S"
+
+#: src/ui/menu.rs:509
+msgid "&About Paperback\tCtrl+F1"
+msgstr "&Acerca de Paperback\tCtrl+F1"
+
+#: src/ui/menu.rs:510
+msgid "About this application"
+msgstr "Acerca de esta aplicación"
+
+#: src/ui/menu.rs:511
+msgid "View Help in &Browser\tF1"
+msgstr "Ver ayuda en el &navegador\tF1"
+
+#: src/ui/menu.rs:512
+msgid "View help in default browser"
+msgstr "Ver ayuda en el navegador predeterminado"
+
+#: src/ui/menu.rs:513
+msgid "View Help in &Paperback\tShift+F1"
+msgstr "Ver ayuda en &Paperback\tShift+F1"
+
+#: src/ui/menu.rs:514
+msgid "View help in Paperback"
+msgstr "Ver ayuda en Paperback"
+
+#: src/ui/menu.rs:515
+msgid "Check for &Updates\tCtrl+Shift+U"
+msgstr "Buscar &actualizaciones\tCtrl+Shift+U"
+
+#: src/ui/menu.rs:516
+msgid "Check for updates"
+msgstr "Buscar actualizaciones"
+
+#: src/ui/menu.rs:517
+msgid "&Donate\tCtrl+D"
+msgstr "&Donar\tCtrl+D"
+
+#: src/ui/menu.rs:518
+msgid "Support Paperback development"
+msgstr "Apoyar el desarrollo de Paperback"
+
+#: src/ui/menu.rs:533
+msgid "(No recent documents)"
+msgstr "(Sin documentos recientes)"
+
+#: src/ui/menu.rs:550
+msgid "Show All...\tCtrl+R"
+msgstr "Mostrar todo...\tCtrl+R"
+
+#: src/ui/navigation.rs:37
+msgid "No sections."
+msgstr "Sin secciones."
+
+#: src/ui/navigation.rs:38
+msgid "No next section"
+msgstr "No hay siguiente sección"
+
+#: src/ui/navigation.rs:39
+msgid "No previous section"
+msgstr "No hay sección anterior"
+
+#: src/ui/navigation.rs:44
+msgid "No headings at level %d."
+msgstr "Sin encabezados en el nivel %d."
+
+#: src/ui/navigation.rs:45
+msgid "No next heading at level %d."
+msgstr "No hay siguiente encabezado en el nivel %d."
+
+#: src/ui/navigation.rs:46
+msgid "No previous heading at level %d."
+msgstr "No hay encabezado anterior en el nivel %d."
+
+#: src/ui/navigation.rs:55
+msgid "No headings."
+msgstr "Sin encabezados."
+
+#: src/ui/navigation.rs:56
+msgid "No next heading."
+msgstr "No hay siguiente encabezado."
+
+#: src/ui/navigation.rs:57
+msgid "No previous heading."
+msgstr "No hay encabezado anterior."
+
+#: src/ui/navigation.rs:64
+msgid "No next page."
+msgstr "No hay siguiente página."
+
+#: src/ui/navigation.rs:65
+msgid "No previous page."
+msgstr "No hay página anterior."
+
+#: src/ui/navigation.rs:69
+msgid "No links."
+msgstr "Sin enlaces."
+
+#: src/ui/navigation.rs:70
+msgid "No next link."
+msgstr "No hay siguiente enlace."
+
+#: src/ui/navigation.rs:71
+msgid "No previous link."
+msgstr "No hay enlace anterior."
+
+#: src/ui/navigation.rs:75
+msgid "No lists."
+msgstr "Sin listas."
+
+#: src/ui/navigation.rs:76
+msgid "No next list."
+msgstr "No hay siguiente lista."
+
+#: src/ui/navigation.rs:77
+msgid "No previous list."
+msgstr "No hay lista anterior."
+
+#: src/ui/navigation.rs:81
+msgid "No list items."
+msgstr "Sin elementos de lista."
+
+#: src/ui/navigation.rs:82
+msgid "No next list item."
+msgstr "No hay siguiente elemento de lista."
+
+#: src/ui/navigation.rs:83
+msgid "No previous list item."
+msgstr "No hay elemento de lista anterior."
+
+#: src/ui/navigation.rs:87
+msgid "No tables."
+msgstr "Sin tablas."
+
+#: src/ui/navigation.rs:88
+msgid "No next table."
+msgstr "No hay siguiente tabla."
+
+#: src/ui/navigation.rs:89
+msgid "No previous table."
+msgstr "No hay tabla anterior."
+
+#: src/ui/navigation.rs:93
+msgid "No separators."
+msgstr "Sin separadores."
+
+#: src/ui/navigation.rs:94
+msgid "No next separator."
+msgstr "No hay siguiente separador."
+
+#: src/ui/navigation.rs:95
+msgid "No previous separator."
+msgstr "No hay separador anterior."
+
+#: src/ui/navigation.rs:109 src/ui/navigation.rs:303
+msgid "Wrapping to start. "
+msgstr "Volviendo al inicio. "
+
+#: src/ui/navigation.rs:109 src/ui/navigation.rs:303
+msgid "Wrapping to end. "
+msgstr "Volviendo al final. "
+
+#: src/ui/navigation.rs:113
+msgid "%s Heading level %d"
+msgstr "%s Encabezado nivel %d"
+
+#: src/ui/navigation.rs:118
+msgid "Page %d: %s"
+msgstr "Página %d: %s"
+
+#: src/ui/navigation.rs:124
+msgid " link"
+msgstr " enlace"
+
+#: src/ui/navigation.rs:187
+msgid "Navigated to next position."
+msgstr "Navegó a la siguiente posición."
+
+#: src/ui/navigation.rs:187
+msgid "Navigated to previous position."
+msgstr "Navegó a la posición anterior."
+
+#: src/ui/navigation.rs:197
+msgid "No next position."
+msgstr "No hay siguiente posición."
+
+#: src/ui/navigation.rs:197
+msgid "No previous position."
+msgstr "No hay posición anterior."
+
+#: src/ui/navigation.rs:307
+msgid "%s - Bookmark %d"
+msgstr "%s - Marcador %d"
+
+#: src/ui/navigation.rs:318
+msgid "No notes."
+msgstr "Sin notas."
+
+#: src/ui/navigation.rs:318
+msgid "No bookmarks."
+msgstr "Sin marcadores."
+
+#: src/ui/navigation.rs:320
+msgid "No next note."
+msgstr "No hay siguiente nota."
+
+#: src/ui/navigation.rs:320
+msgid "No next bookmark."
+msgstr "No hay siguiente marcador."
+
+#: src/ui/navigation.rs:322
+msgid "No previous note."
+msgstr "No hay nota anterior."
+
+#: src/ui/navigation.rs:324
+msgid "No previous bookmark."
+msgstr "No hay marcador anterior."
+
+#: src/ui/navigation.rs:367 src/ui/navigation.rs:369
+msgid "Bookmark."
+msgstr "Marcador."
+
+#: src/ui/navigation.rs:407
+msgid "Bookmark removed."
+msgstr "Marcador eliminado."
+
+#: src/ui/navigation.rs:407
+msgid "Bookmark added."
+msgstr "Marcador añadido."
+
+#: src/ui/navigation.rs:436
+msgid "Enter bookmark note:"
+msgstr "Escriba una nota para el marcador:"
+
+#: src/ui/navigation.rs:448
+msgid "Bookmark saved."
+msgstr "Marcador guardado."
+
+#: src/ui/navigation.rs:474
+msgid "No note at the current position."
+msgstr "No hay nota en la posición actual."
+
+#: src/ui/status.rs:9
+msgid "Line"
+msgstr "Línea"
+
+#: src/ui/status.rs:10
+msgid "Character"
+msgstr "Carácter"
+
+#: src/ui/status.rs:33
+msgid "Sleep timer"
+msgstr "Temporizador de suspensión"
+
+#: src/ui/tray.rs:61
+msgid "&Restore"
+msgstr "&Restaurar"
+
+#: src/ui/tray.rs:62
+msgid "Restore Paperback"
+msgstr "Restaurar Paperback"
+
+#: src/ui/tray.rs:64
+msgid "Exit Paperback"
+msgstr "Salir de Paperback"
