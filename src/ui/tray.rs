@@ -1,4 +1,4 @@
-use std::{rc::Rc, sync::Mutex};
+use std::{process, rc::Rc, sync::Mutex};
 
 use wxdragon::{prelude::*, translations::translate as t};
 
@@ -6,7 +6,7 @@ use super::{document_manager::DocumentManager, menu_ids};
 use crate::config::ConfigManager;
 
 pub struct TrayState {
-	icon: TaskBarIcon,
+	pub icon: TaskBarIcon,
 	#[allow(dead_code)] // Menu must stay alive for the tray popup
 	menu: Menu,
 }
@@ -23,8 +23,9 @@ pub fn bind_tray_events(
 			let config = Rc::clone(config);
 			let doc_manager = Rc::clone(doc_manager);
 			let tray_state = Rc::clone(tray_state);
-			frame.$method(move |_event| {
+			frame.$method(move |event| {
 				handle_minimize_to_tray(frame, &config, &doc_manager, &tray_state);
+				event.skip(true);
 			});
 		}};
 	}
@@ -46,8 +47,19 @@ fn handle_minimize_to_tray(
 	}
 	let mut tray_state_guard = tray_state.lock().unwrap();
 	if tray_state_guard.is_none() {
-		let state = create_tray_state(frame, Rc::clone(doc_manager), Rc::clone(tray_state));
+		let state = create_tray_state(frame, Rc::clone(doc_manager), Rc::clone(tray_state), Rc::clone(config));
 		*tray_state_guard = Some(state);
+	} else {
+		let state = tray_state_guard.as_mut().unwrap();
+		if let Some(bundle) =
+			ArtProvider::get_bitmap_bundle(ArtId::Information, ArtClient::MessageBox, Some(Size::new(32, 32)))
+		{
+			state.icon.set_icon_bundle(&bundle, "Paperback");
+		} else if let Some(bitmap) =
+			ArtProvider::get_bitmap(ArtId::Information, ArtClient::MessageBox, Some(Size::new(32, 32)))
+		{
+			state.icon.set_icon(&bitmap, "Paperback");
+		}
 	}
 	drop(tray_state_guard);
 	frame.show(false);
@@ -57,6 +69,7 @@ fn create_tray_state(
 	frame: Frame,
 	doc_manager: Rc<Mutex<DocumentManager>>,
 	tray_state: Rc<Mutex<Option<TrayState>>>,
+	config: Rc<Mutex<ConfigManager>>,
 ) -> TrayState {
 	let restore_label = t("&Restore");
 	let restore_help = t("Restore Paperback");
@@ -82,9 +95,20 @@ fn create_tray_state(
 	{
 		let doc_manager = Rc::clone(&doc_manager);
 		let tray_state = Rc::clone(&tray_state);
+		let config = Rc::clone(&config);
 		icon.on_menu(move |event| match event.get_id() {
 			menu_ids::RESTORE => restore_from_tray(frame, &doc_manager, &tray_state),
-			menu_ids::EXIT => frame.close(true),
+			menu_ids::EXIT => {
+				let dm = doc_manager.lock().unwrap();
+				if let Some(tab) = dm.active_tab() {
+					let path = tab.file_path.to_string_lossy();
+					let cfg = config.lock().unwrap();
+					cfg.set_app_string("active_document", &path);
+					cfg.flush();
+				}
+				dm.save_all_positions();
+				process::exit(0);
+			}
 			_ => {}
 		});
 	}
@@ -109,13 +133,13 @@ fn restore_from_tray(
 	tray_state: &Rc<Mutex<Option<TrayState>>>,
 ) {
 	if frame.is_iconized() {
-		frame.maximize(false);
+		frame.iconize(false);
 	}
 	frame.show(true);
 	frame.raise();
 	doc_manager.lock().unwrap().restore_focus();
-	let state = tray_state.lock().unwrap().take();
-	if let Some(state) = state {
+	let mut state_guard = tray_state.lock().unwrap();
+	if let Some(state) = state_guard.as_mut() {
 		state.icon.remove_icon();
 	}
 }

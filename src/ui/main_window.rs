@@ -116,7 +116,8 @@ impl MainWindow {
 		{
 			let dm_for_close = Rc::clone(&doc_manager);
 			let config_for_close = Rc::clone(&config);
-			frame.on_close(move |_event| {
+			let tray_for_close = Rc::clone(&tray_state);
+			frame.on_close(move |event| {
 				let dm = dm_for_close.lock().unwrap();
 				if let Some(tab) = dm.active_tab() {
 					let path = tab.file_path.to_string_lossy();
@@ -125,6 +126,11 @@ impl MainWindow {
 					cfg.flush();
 				}
 				dm.save_all_positions();
+				if let Some(state) = tray_for_close.lock().unwrap().take() {
+					state.icon.remove_icon();
+					state.icon.destroy();
+				}
+				event.skip(true);
 			});
 		}
 		Self::schedule_restore_documents(frame, Rc::clone(&doc_manager), Rc::clone(&config));
@@ -182,6 +188,9 @@ impl MainWindow {
 		self.frame.request_user_attention(UserAttentionFlag::Info);
 		self.frame.raise();
 		self.doc_manager.lock().unwrap().restore_focus();
+		if let Some(state) = self._tray_state.lock().unwrap().as_mut() {
+			state.icon.remove_icon();
+		}
 	}
 
 	fn update_title(&self) {
