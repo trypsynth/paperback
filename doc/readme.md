@@ -170,6 +170,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Added support for separators with s and shift+s. [#294](https://github.com/trypsynth/paperback/issues/294).
 * Any movement of greater than 300 characters will now automatically add to your navigation history. [#179](https://github.com/trypsynth/paperback/issues/179).
 * Fixed restoring Paperback's window from the system tray. [#284](https://github.com/trypsynth/paperback/issues/284).
+* Fixed Markdown documents showing raw text instead of rendered HTML in the Web View.
 * Fixed tables not rendering properly in Markdown files. [#303](https://github.com/trypsynth/paperback/issues/303).
 * Image only PDFs will now warn you of their existence when you attempt to load one. [#89](https://github.com/trypsynth/paperback/issues/89).
 * It is now possible to check for new dev builds instead of stable releases when checking for updates. [#333](https://github.com/trypsynth/paperback/pull/333).
