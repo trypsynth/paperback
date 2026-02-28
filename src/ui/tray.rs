@@ -1,4 +1,4 @@
-use std::{process, rc::Rc, sync::Mutex};
+use std::{rc::Rc, sync::Mutex};
 
 use wxdragon::{prelude::*, translations::translate as t};
 
@@ -47,7 +47,7 @@ fn handle_minimize_to_tray(
 	}
 	let mut tray_state_guard = tray_state.lock().unwrap();
 	if tray_state_guard.is_none() {
-		let state = create_tray_state(frame, Rc::clone(doc_manager), Rc::clone(tray_state), Rc::clone(config));
+		let state = create_tray_state(frame, Rc::clone(doc_manager), Rc::clone(tray_state));
 		*tray_state_guard = Some(state);
 	} else {
 		let state = tray_state_guard.as_mut().unwrap();
@@ -69,7 +69,6 @@ fn create_tray_state(
 	frame: Frame,
 	doc_manager: Rc<Mutex<DocumentManager>>,
 	tray_state: Rc<Mutex<Option<TrayState>>>,
-	config: Rc<Mutex<ConfigManager>>,
 ) -> TrayState {
 	let restore_label = t("&Restore");
 	let restore_help = t("Restore Paperback");
@@ -95,19 +94,10 @@ fn create_tray_state(
 	{
 		let doc_manager = Rc::clone(&doc_manager);
 		let tray_state = Rc::clone(&tray_state);
-		let config = Rc::clone(&config);
 		icon.on_menu(move |event| match event.get_id() {
 			menu_ids::RESTORE => restore_from_tray(frame, &doc_manager, &tray_state),
 			menu_ids::EXIT => {
-				let dm = doc_manager.lock().unwrap();
-				if let Some(tab) = dm.active_tab() {
-					let path = tab.file_path.to_string_lossy();
-					let cfg = config.lock().unwrap();
-					cfg.set_app_string("active_document", &path);
-					cfg.flush();
-				}
-				dm.save_all_positions();
-				process::exit(0);
+				frame.close(true);
 			}
 			_ => {}
 		});
