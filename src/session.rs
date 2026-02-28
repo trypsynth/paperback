@@ -4,12 +4,14 @@ use std::{
 	path::Path,
 };
 
+use pulldown_cmark::{Options as MdOptions, Parser as MdParser, html::push_html as md_push_html};
 use sha1::{Digest, Sha1};
 use zip::ZipArchive;
 
 use crate::{
 	config::ConfigManager,
 	document::{self, DocumentHandle, MarkerType, ParserContext, ParserFlags},
+	encoding::convert_to_utf8,
 	parser,
 	reader_core::{
 		bookmark_navigate, history_go_next, history_go_previous, reader_navigate, record_history_position, resolve_link,
@@ -557,7 +559,31 @@ impl DocumentSession {
 		}
 		let ext = Path::new(&self.file_path).extension().map(|ext| ext.to_string_lossy().to_ascii_lowercase());
 		match ext.as_deref() {
-			Some("html" | "htm" | "xhtml" | "md" | "markdown") => Some(self.file_path.clone()),
+			Some("html" | "htm" | "xhtml") => Some(self.file_path.clone()),
+			Some("md" | "markdown") => {
+				let mut hasher = Sha1::new();
+				hasher.update(self.file_path.as_bytes());
+				let hash = format!("{:x}", hasher.finalize());
+				let doc_temp_dir = Path::new(temp_dir).join(format!("paperback_{hash}"));
+				if fs::create_dir_all(&doc_temp_dir).is_ok() {
+					let html_path = doc_temp_dir.join("document.html");
+					if let Ok(bytes) = fs::read(&self.file_path) {
+						let markdown_text = convert_to_utf8(&bytes);
+						let mut opts = MdOptions::empty();
+						opts.insert(MdOptions::ENABLE_TABLES);
+						let md_parser = MdParser::new_ext(&markdown_text, opts);
+						let mut html_body = String::new();
+						md_push_html(&mut html_body, md_parser);
+						let full_html = format!(
+							"<html><head><meta charset=\"utf-8\"></head><body>{html_body}</body></html>"
+						);
+						if fs::write(&html_path, full_html.as_bytes()).is_ok() {
+							return Some(html_path.to_string_lossy().to_string());
+						}
+					}
+				}
+				None
+			}
 			_ => None,
 		}
 	}
@@ -961,7 +987,7 @@ mod tests {
 	}
 
 	#[test]
-	fn webview_target_path_falls_back_for_html_like_extensions() {
+	fn webview_target_path_returns_none_for_missing_markdown_file() {
 		let session = DocumentSession {
 			handle: sample_session(ParserFlags::NONE).handle.clone(),
 			file_path: "C:\\docs\\chapter.md".to_string(),
@@ -970,7 +996,7 @@ mod tests {
 			parser_flags: ParserFlags::NONE,
 			last_stable_position: None,
 		};
-		assert_eq!(session.webview_target_path(0, "C:\\temp").as_deref(), Some("C:\\docs\\chapter.md"));
+		assert_eq!(session.webview_target_path(0, "C:\\temp").as_deref(), None);
 	}
 
 	#[test]
