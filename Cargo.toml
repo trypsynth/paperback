@@ -31,7 +31,7 @@ scraper = "0.25.0"
 serde = { version = "1.0.228", default-features = false, features = ["derive", "std"] }
 sha1 = "0.10.6"
 ureq = { version = "3.2.0", default-features = false, features = ["json", "rustls"] }
-wxdragon = { version = "0.9.10", features = ["webview"] }
+wxdragon = { version = "0.9.12", features = ["webview"] }
 zip = { version = "8.1.0", default-features = false, features = ["deflate"] }
 
 [target.'cfg(windows)'.dependencies]
