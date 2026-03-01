@@ -1526,16 +1526,19 @@ fn make_all_documents_remove_action(
 			return;
 		}
 		let confirm_message = if indices.len() == 1 {
-			t("Are you sure you want to remove this document from the list? This will also remove its reading position.")
+			t(
+				"Are you sure you want to remove this document from the list? This will also remove its reading position.",
+			)
 		} else {
-			let template = t("Are you sure you want to remove these {} documents from the list? This will also remove their reading positions.");
+			let template = t(
+				"Are you sure you want to remove these {} documents from the list? This will also remove their reading positions.",
+			);
 			template.replace("{}", &indices.len().to_string())
 		};
 		if !show_yes_no_dialog(&dialog, &confirm_message, &t("Confirm")) {
 			return;
 		}
-		let paths_to_remove: Vec<String> =
-			indices.iter().filter_map(|&i| get_path_for_index(list, i)).collect();
+		let paths_to_remove: Vec<String> = indices.iter().filter_map(|&i| get_path_for_index(list, i)).collect();
 		{
 			let cfg = config.lock().unwrap();
 			for path in &paths_to_remove {
