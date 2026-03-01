@@ -291,8 +291,10 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 mod tests {
 	use encoding_rs::Encoding;
 	use rstest::rstest;
-	use rtf_parser::lexer::Lexer;
-	use rtf_parser::tokens::{ControlWord, Property, Token};
+	use rtf_parser::{
+		lexer::Lexer,
+		tokens::{ControlWord, Property, Token},
+	};
 
 	use super::{
 		encoding_for_codepage, extract_codepage, extract_content_from_tokens, hex_digit, is_unicode_fallback_escape,
