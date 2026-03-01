@@ -1449,7 +1449,7 @@ pub fn show_all_documents_dialog(
 
 fn build_all_documents_list(dialog: Dialog) -> ListCtrl {
 	let doc_list = ListCtrl::builder(&dialog)
-		.with_style(ListCtrlStyle::Report | ListCtrlStyle::SingleSel)
+		.with_style(ListCtrlStyle::Report)
 		.with_size(Size::new(RECENT_DOCS_LIST_WIDTH, RECENT_DOCS_LIST_HEIGHT))
 		.build();
 	doc_list.insert_column(0, &t("File Name"), ListColumnFormat::Left, RECENT_DOCS_FILENAME_WIDTH);
@@ -1478,11 +1478,6 @@ fn bind_all_documents_selection(list: ListCtrl, open_button: Button) {
 	list.on_item_focused(move |event| {
 		let index = event.get_item_index();
 		if index >= 0 {
-			list_for_focus.set_item_state(
-				i64::from(index),
-				ListItemState::Selected | ListItemState::Focused,
-				ListItemState::Selected | ListItemState::Focused,
-			);
 			update_open_button_for_index(list_for_focus, open_button_for_focus, index);
 		}
 	});
@@ -1526,27 +1521,29 @@ fn make_all_documents_remove_action(
 	open_paths: Rc<Vec<String>>,
 ) -> Rc<dyn Fn()> {
 	Rc::new(move || {
-		let index = get_selected_index(list);
-		if index < 0 {
+		let indices = get_selected_indices(list);
+		if indices.is_empty() {
 			return;
 		}
-		if !show_yes_no_dialog(
-			&dialog,
-			&t(
-				"Are you sure you want to remove this document from the list? This will also remove its reading position.",
-			),
-			&t("Confirm"),
-		) {
-			return;
-		}
-		let Some(path_to_remove) = get_path_for_index(list, index) else {
-			return;
+		let confirm_message = if indices.len() == 1 {
+			t("Are you sure you want to remove this document from the list? This will also remove its reading position.")
+		} else {
+			let template = t("Are you sure you want to remove these {} documents from the list? This will also remove their reading positions.");
+			template.replace("{}", &indices.len().to_string())
 		};
+		if !show_yes_no_dialog(&dialog, &confirm_message, &t("Confirm")) {
+			return;
+		}
+		let paths_to_remove: Vec<String> =
+			indices.iter().filter_map(|&i| get_path_for_index(list, i)).collect();
 		{
 			let cfg = config.lock().unwrap();
-			cfg.remove_document_history(&path_to_remove);
+			for path in &paths_to_remove {
+				cfg.remove_document_history(path);
+			}
 			cfg.flush();
 		}
+		let new_selection = indices.iter().copied().max();
 		populate_document_list(&DocumentListParams {
 			list,
 			open_button,
@@ -1555,7 +1552,7 @@ fn make_all_documents_remove_action(
 			config: &config,
 			open_paths: open_paths.as_ref(),
 			filter: "",
-			selection: Some(index),
+			selection: new_selection,
 		});
 	})
 }
@@ -1627,6 +1624,7 @@ fn bind_all_documents_search(
 fn bind_all_documents_keys(list: ListCtrl, open_action: &Rc<dyn Fn()>, remove_action: &Rc<dyn Fn()>) {
 	let remove_action_for_keys = Rc::clone(remove_action);
 	let open_action_for_keys = Rc::clone(open_action);
+	let list_for_keys = list;
 	list.bind_internal(EventType::KEY_DOWN, move |event| {
 		if let Some(key) = event.get_key_code() {
 			if key == KEY_DELETE || key == KEY_NUMPAD_DELETE {
@@ -1636,6 +1634,11 @@ fn bind_all_documents_keys(list: ListCtrl, open_action: &Rc<dyn Fn()>, remove_ac
 			}
 			if key == KEY_RETURN || key == KEY_NUMPAD_ENTER {
 				open_action_for_keys();
+				event.skip(false);
+				return;
+			}
+			if key == i32::from(b'A') && event.control_down() {
+				list_for_keys.set_item_state(-1, ListItemState::Selected, ListItemState::Selected);
 				event.skip(false);
 				return;
 			}
@@ -1862,6 +1865,16 @@ fn get_selected_index(list: ListCtrl) -> i32 {
 		return selected;
 	}
 	list.get_next_item(-1, ListNextItemFlag::All, ListItemState::Focused)
+}
+
+fn get_selected_indices(list: ListCtrl) -> Vec<i32> {
+	let mut indices = Vec::new();
+	let mut next = list.get_first_selected_item();
+	while next >= 0 {
+		indices.push(next);
+		next = list.get_next_item(i64::from(next), ListNextItemFlag::All, ListItemState::Selected);
+	}
+	indices
 }
 
 fn get_path_for_index(list: ListCtrl, index: i32) -> Option<String> {
