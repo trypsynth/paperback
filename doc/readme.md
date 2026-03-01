@@ -156,6 +156,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Roberto Perez
 * Sean Randall
 * Timothy Wynn
+* Tyler Rodick
 
 ## Changelog
 
@@ -165,6 +166,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Fixed slow document loading when opening large files.
 * Fixed PDF text being read in the wrong order, and incorrect spacing around capitalized words. [#44](https://github.com/trypsynth/paperback/issues/44).
 * Fixed file paths containing non-ASCII characters (such as Bosnian š, č, ć, ž) becoming corrupted when opening a file via a second Paperback instance. [#346](https://github.com/trypsynth/paperback/issues/346).
+* Fixed the localization of the Yes/No buttons in confirmation dialogs. [#285](https://github.com/trypsynth/paperback/issues/285).
 
 ### Version 0.8.0
 * Added Japanese, simplified Chinese, and Vietnamese translations! [#300](https://github.com/trypsynth/paperback/pull/300), [#326](https://github.com/trypsynth/paperback/pull/326), [#335](https://github.com/trypsynth/paperback/pull/335).
