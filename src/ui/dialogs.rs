@@ -1532,7 +1532,9 @@ fn make_all_documents_remove_action(
 		}
 		if !show_yes_no_dialog(
 			&dialog,
-			&t("Are you sure you want to remove this document from the list? This will also remove its reading position."),
+			&t(
+				"Are you sure you want to remove this document from the list? This will also remove its reading position.",
+			),
 			&t("Confirm"),
 		) {
 			return;
