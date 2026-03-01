@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-02-26 13:50+0100\n"
-"PO-Revision-Date: 2026-02-26 17:05+0100\n"
+"POT-Creation-Date: 2026-03-01 21:29+0100\n"
+"PO-Revision-Date: 2026-03-01 21:37+0100\n"
 "Last-Translator: Steffen Schultz <steffenschultz@mailbox.org>\n"
 "Language-Team: Steffen Schultz <steffenschultz@mailbox.org>\n"
 "Language: de\n"
@@ -27,7 +27,7 @@ msgstr ""
 "X-Poedit-SearchPathExcluded-2: web\n"
 "X-Poedit-SearchPathExcluded-3: po\n"
 
-#: src/parser/pdf.rs:71
+#: src/parser/pdf.rs:72
 msgid ""
 "This PDF contains images only, with no extractable text. You may need to run "
 "it through OCR software to read its contents."
@@ -109,14 +109,14 @@ msgstr "Lese"
 
 #: src/ui/dialogs.rs:200 src/ui/dialogs.rs:783 src/ui/dialogs.rs:990
 #: src/ui/dialogs.rs:1111 src/ui/dialogs.rs:1149 src/ui/dialogs.rs:1201
-#: src/ui/dialogs.rs:1283 src/ui/dialogs.rs:1442 src/ui/dialogs.rs:1706
-#: src/ui/dialogs.rs:1888 src/ui/dialogs.rs:2159
+#: src/ui/dialogs.rs:1283 src/ui/dialogs.rs:1465 src/ui/dialogs.rs:1727
+#: src/ui/dialogs.rs:1919 src/ui/dialogs.rs:2190
 msgid "OK"
 msgstr "OK"
 
 #: src/ui/dialogs.rs:201 src/ui/dialogs.rs:784 src/ui/dialogs.rs:991
 #: src/ui/dialogs.rs:1150 src/ui/dialogs.rs:1202 src/ui/dialogs.rs:1285
-#: src/ui/dialogs.rs:1708 src/ui/dialogs.rs:1889 src/ui/dialogs.rs:2160
+#: src/ui/dialogs.rs:1729 src/ui/dialogs.rs:1920 src/ui/dialogs.rs:2191
 #: src/ui/find.rs:192
 msgid "Cancel"
 msgstr "Abbrechen"
@@ -165,14 +165,15 @@ msgstr "leer"
 msgid "Please select a bookmark to jump to."
 msgstr "Bitte ein Lesezeichen zum Anspringen auswählen."
 
-#: src/ui/dialogs.rs:563 src/ui/document_manager.rs:63
-#: src/ui/document_manager.rs:89 src/ui/document_manager.rs:95
-#: src/ui/document_manager.rs:99 src/ui/help.rs:75 src/ui/help.rs:80
+#: src/ui/dialogs.rs:563 src/ui/document_manager.rs:66
+#: src/ui/document_manager.rs:92 src/ui/document_manager.rs:98
+#: src/ui/document_manager.rs:102 src/ui/help.rs:75 src/ui/help.rs:80
 #: src/ui/help.rs:89 src/ui/help.rs:97 src/ui/help.rs:103 src/ui/help.rs:116
 #: src/ui/help.rs:124 src/ui/help.rs:137 src/ui/help.rs:252 src/ui/help.rs:257
-#: src/ui/help.rs:284 src/ui/help.rs:299 src/ui/help.rs:329 src/ui/help.rs:338
-#: src/ui/help.rs:345 src/ui/help.rs:395 src/ui/main_window.rs:815
-#: src/ui/main_window.rs:1007 src/ui/main_window.rs:1234
+#: src/ui/help.rs:286 src/ui/help.rs:313 src/ui/help.rs:328 src/ui/help.rs:358
+#: src/ui/help.rs:367 src/ui/help.rs:374 src/ui/help.rs:424
+#: src/ui/main_window.rs:860 src/ui/main_window.rs:1052
+#: src/ui/main_window.rs:1290
 msgid "Error"
 msgstr "Fehler"
 
@@ -188,7 +189,7 @@ msgstr "Lesezeichennotiz bearbeiten:"
 msgid "View Note"
 msgstr "Notiz ansehen"
 
-#: src/ui/dialogs.rs:836 src/ui/dialogs.rs:1964
+#: src/ui/dialogs.rs:836 src/ui/dialogs.rs:1995
 msgid "Close"
 msgstr "Schließen"
 
@@ -196,7 +197,7 @@ msgstr "Schließen"
 msgid "Table of Contents"
 msgstr "Inhaltsverzeichnis"
 
-#: src/ui/dialogs.rs:881 src/ui/dialogs.rs:2053
+#: src/ui/dialogs.rs:881 src/ui/dialogs.rs:2084
 msgid "Root"
 msgstr "Wurzel"
 
@@ -208,8 +209,8 @@ msgstr "Bitte einen Abschnitt aus dem Inhaltsverzeichnis wählen."
 msgid "No Selection"
 msgstr "Keine Auswahl"
 
-#: src/ui/dialogs.rs:1028 src/ui/dialogs.rs:2068 src/ui/document_manager.rs:119
-#: src/ui/main_window.rs:200 src/ui/main_window.rs:1263
+#: src/ui/dialogs.rs:1028 src/ui/dialogs.rs:2099 src/ui/document_manager.rs:122
+#: src/ui/main_window.rs:218 src/ui/main_window.rs:1319
 msgid "Untitled"
 msgstr "Unbenannt"
 
@@ -253,7 +254,7 @@ msgstr "Gehe zu Zeile"
 msgid "&Line number:"
 msgstr "&Zeilennummer:"
 
-#: src/ui/dialogs.rs:1168 src/ui/document_manager.rs:492
+#: src/ui/dialogs.rs:1168 src/ui/document_manager.rs:496
 msgid "Go to page"
 msgstr "Gehe zu Seite"
 
@@ -273,55 +274,55 @@ msgstr "&Prozent"
 msgid "P&ercent:"
 msgstr "Pr&ozent:"
 
-#: src/ui/dialogs.rs:1302
-msgid "Update to %s"
-msgstr "Update auf %s"
-
-#: src/ui/dialogs.rs:1306
-msgid "A new version of Paperback is available. Here's what's new:"
-msgstr "Es gibt eine neue Version von Paperback. Hier sind die Neuerungen:"
-
-#: src/ui/dialogs.rs:1313
+#: src/ui/dialogs.rs:1305 src/ui/dialogs.rs:1336
 msgid "&Yes"
 msgstr "&Ja"
 
-#: src/ui/dialogs.rs:1314
+#: src/ui/dialogs.rs:1306 src/ui/dialogs.rs:1337
 msgid "&No"
 msgstr "&Nein"
 
-#: src/ui/dialogs.rs:1346
+#: src/ui/dialogs.rs:1325
+msgid "Update to %s"
+msgstr "Update auf %s"
+
+#: src/ui/dialogs.rs:1329
+msgid "A new version of Paperback is available. Here's what's new:"
+msgstr "Es gibt eine neue Version von Paperback. Hier sind die Neuerungen:"
+
+#: src/ui/dialogs.rs:1369
 msgid "All Documents"
 msgstr "Alle Dokumente"
 
-#: src/ui/dialogs.rs:1349
+#: src/ui/dialogs.rs:1372
 msgid "&search"
 msgstr "&Suchen"
 
-#: src/ui/dialogs.rs:1432
+#: src/ui/dialogs.rs:1455
 msgid "File Name"
 msgstr "Dateiname"
 
-#: src/ui/dialogs.rs:1433
+#: src/ui/dialogs.rs:1456
 msgid "Status"
 msgstr "Status"
 
-#: src/ui/dialogs.rs:1434
+#: src/ui/dialogs.rs:1457
 msgid "Path"
 msgstr "Pfad"
 
-#: src/ui/dialogs.rs:1439
+#: src/ui/dialogs.rs:1462
 msgid "&Open"
 msgstr "Ö&ffnen"
 
-#: src/ui/dialogs.rs:1440
+#: src/ui/dialogs.rs:1463
 msgid "&Remove"
 msgstr "Entfe&rnen"
 
-#: src/ui/dialogs.rs:1441
+#: src/ui/dialogs.rs:1464
 msgid "&Clear All"
 msgstr "Alle &löschen"
 
-#: src/ui/dialogs.rs:1513
+#: src/ui/dialogs.rs:1530
 msgid ""
 "Are you sure you want to remove this document from the list? This will also "
 "remove its reading position."
@@ -329,11 +330,20 @@ msgstr ""
 "Soll dieses Dokument wirklich aus der Liste entfernt werden? Dadurch wird "
 "auch die Leseposition gelöscht."
 
-#: src/ui/dialogs.rs:1515 src/ui/dialogs.rs:1561
+#: src/ui/dialogs.rs:1534
+#, rust-format
+msgid ""
+"Are you sure you want to remove these {} documents from the list? This will "
+"also remove their reading positions."
+msgstr ""
+"Sollen diese {} Dokumente wirklich aus der Liste entfernt werden? Dadurch "
+"werden auch deren Lesepositionen gelöscht."
+
+#: src/ui/dialogs.rs:1538 src/ui/dialogs.rs:1579
 msgid "Confirm"
 msgstr "Bestätigen"
 
-#: src/ui/dialogs.rs:1559
+#: src/ui/dialogs.rs:1578
 msgid ""
 "Are you sure you want to remove all documents from the list? This will also "
 "remove all reading positions and bookmarks."
@@ -341,11 +351,11 @@ msgstr ""
 "Sollen wirklich alle Dokumente aus der Liste gelöscht werden? Dabei werden "
 "auch alle Lesezeichen und Lesepositionen gelöscht."
 
-#: src/ui/dialogs.rs:1694
+#: src/ui/dialogs.rs:1715
 msgid "Open As"
 msgstr "Öffnen als"
 
-#: src/ui/dialogs.rs:1696
+#: src/ui/dialogs.rs:1717
 #, rust-format
 msgid ""
 "No suitable parser was found for {}.\n"
@@ -354,155 +364,155 @@ msgstr ""
 "Es wurde kein passender Parser für {} gefunden.\n"
 "Wie soll diese Datei geöffnet werden?"
 
-#: src/ui/dialogs.rs:1699
+#: src/ui/dialogs.rs:1720
 msgid "Open &as:"
 msgstr "Öffnen &als:"
 
-#: src/ui/dialogs.rs:1702
+#: src/ui/dialogs.rs:1723
 msgid "Plain Text"
 msgstr "Nur Text"
 
-#: src/ui/dialogs.rs:1703
+#: src/ui/dialogs.rs:1724
 msgid "HTML"
 msgstr "HTML"
 
-#: src/ui/dialogs.rs:1704
+#: src/ui/dialogs.rs:1725
 msgid "Markdown"
 msgstr "Markdown"
 
-#: src/ui/dialogs.rs:1781
+#: src/ui/dialogs.rs:1802
 msgid "Open"
 msgstr "Geöffnet"
 
-#: src/ui/dialogs.rs:1782
+#: src/ui/dialogs.rs:1803
 msgid "Closed"
 msgstr "Geschlossen"
 
-#: src/ui/dialogs.rs:1783 src/ui/dialogs.rs:1816
+#: src/ui/dialogs.rs:1804 src/ui/dialogs.rs:1837
 msgid "Missing"
 msgstr "Nicht vorhanden"
 
-#: src/ui/dialogs.rs:1873
+#: src/ui/dialogs.rs:1904
 msgid "Sleep Timer"
 msgstr "Einschlaftimer"
 
-#: src/ui/dialogs.rs:1874
+#: src/ui/dialogs.rs:1905
 msgid "&Minutes:"
 msgstr "&Minuten:"
 
-#: src/ui/dialogs.rs:1982
+#: src/ui/dialogs.rs:2013
 msgid "Elements"
 msgstr "Elemente"
 
-#: src/ui/dialogs.rs:2013
+#: src/ui/dialogs.rs:2044
 msgid "&View:"
 msgstr "An&sehen:"
 
-#: src/ui/dialogs.rs:2015
+#: src/ui/dialogs.rs:2046
 msgid "Headings"
 msgstr "Überschriften"
 
-#: src/ui/dialogs.rs:2016
+#: src/ui/dialogs.rs:2047
 msgid "Links"
 msgstr "Links"
 
-#: src/ui/dialogs.rs:2213
+#: src/ui/dialogs.rs:2244
 msgid "An accessible, lightweight, fast ebook and document reader"
 msgstr ""
 "Ein barrierefreier, schlanker und schneller E-Book- und Dokumentenleser"
 
-#: src/ui/document_manager.rs:61
+#: src/ui/document_manager.rs:64
 #, rust-format
 msgid "File not found: {}"
 msgstr "Datei nicht gefunden: {}"
 
-#: src/ui/document_manager.rs:89
+#: src/ui/document_manager.rs:92
 msgid "Password is required."
 msgstr "Passwort wird benötigt."
 
-#: src/ui/document_manager.rs:95 src/ui/document_manager.rs:99
+#: src/ui/document_manager.rs:98 src/ui/document_manager.rs:102
 msgid "Failed to load document."
 msgstr "Das Dokument konnte nicht geladen werden."
 
-#: src/ui/document_manager.rs:275
+#: src/ui/document_manager.rs:291
 msgid "Navigated to internal link."
 msgstr "Zu internem Link navigiert."
 
-#: src/ui/document_manager.rs:295
+#: src/ui/document_manager.rs:311
 msgid "Table View"
 msgstr "Tabellenansicht"
 
-#: src/ui/document_manager.rs:303 src/ui/main_window.rs:61
-#: src/ui/main_window.rs:194 src/ui/main_window.rs:1250 src/ui/status.rs:47
+#: src/ui/document_manager.rs:319 src/ui/main_window.rs:60
+#: src/ui/main_window.rs:212 src/ui/main_window.rs:1306 src/ui/status.rs:47
 #: src/ui/status.rs:52
 msgid "Ready"
 msgstr "Bereit"
 
-#: src/ui/document_manager.rs:452
+#: src/ui/document_manager.rs:468
 msgid "&Password:"
 msgstr "&Passwort:"
 
-#: src/ui/document_manager.rs:452
+#: src/ui/document_manager.rs:468
 msgid "Document Password"
 msgstr "Dokumentpasswort"
 
-#: src/ui/document_manager.rs:485
+#: src/ui/document_manager.rs:489
 msgid "Create &bookmark"
 msgstr "&Lesezeichen erstellen"
 
-#: src/ui/document_manager.rs:485
+#: src/ui/document_manager.rs:489
 msgid "Create bookmark"
 msgstr "Lesezeichen erstellen"
 
-#: src/ui/document_manager.rs:486
+#: src/ui/document_manager.rs:490
 msgid "Bookmark with &note"
 msgstr "Lesezeichen mit &Notiz"
 
-#: src/ui/document_manager.rs:486
+#: src/ui/document_manager.rs:490
 msgid "Create bookmark with note"
 msgstr "Lesezeichen mit Notiz erstellen"
 
-#: src/ui/document_manager.rs:488
+#: src/ui/document_manager.rs:492
 msgid "&Find"
 msgstr "&suchen"
 
-#: src/ui/document_manager.rs:488
+#: src/ui/document_manager.rs:492
 msgid "Find text"
 msgstr "Text finden"
 
-#: src/ui/document_manager.rs:489
+#: src/ui/document_manager.rs:493
 msgid "Find &next"
 msgstr "&Nächstes finden"
 
-#: src/ui/document_manager.rs:489
+#: src/ui/document_manager.rs:493
 msgid "Find next match"
 msgstr "Nächsten Treffer finden"
 
-#: src/ui/document_manager.rs:490
+#: src/ui/document_manager.rs:494
 msgid "Find &previous"
 msgstr "&Vorheriges finden"
 
-#: src/ui/document_manager.rs:490
+#: src/ui/document_manager.rs:494
 msgid "Find previous match"
 msgstr "Vorherigen Treffer finden"
 
-#: src/ui/document_manager.rs:492
+#: src/ui/document_manager.rs:496
 msgid "Go to &page"
 msgstr "Gehe zu &Seite"
 
-#: src/ui/document_manager.rs:493
+#: src/ui/document_manager.rs:497
 msgid "Go to &line"
 msgstr "Gehe zu &Zeile"
 
-#: src/ui/document_manager.rs:493
+#: src/ui/document_manager.rs:497
 msgid "Go to line"
 msgstr "Gehe zu Zeile"
 
-#: src/ui/document_manager.rs:494
+#: src/ui/document_manager.rs:498
 msgid "Go to &percent"
 msgstr "Gehe zu &Prozent"
 
-#: src/ui/document_manager.rs:494
+#: src/ui/document_manager.rs:498
 msgid "Go to percent"
 msgstr "Gehe zu Prozent"
 
@@ -594,663 +604,671 @@ msgstr "Fehler beim Prüfen auf Updates. HTTP-Status: %d"
 msgid "Error checking for updates."
 msgstr "Fehler beim Prüfen auf Updates."
 
-#: src/ui/help.rs:283
-msgid "Failed to launch installer"
-msgstr "Fehler beim Starten des Installers"
-
-#: src/ui/help.rs:298
+#: src/ui/help.rs:285 src/ui/help.rs:327
 msgid "Failed to get current exe path"
 msgstr "Fehler beim Abrufen des aktuellen Exe-Pfads"
 
-#: src/ui/help.rs:328
+#: src/ui/help.rs:312
+msgid "Failed to launch installer script"
+msgstr "Fehler beim Starten des Installationsskripts"
+
+#: src/ui/help.rs:357
 msgid "Failed to launch update script"
 msgstr "Fehler beim Starten des Update-Skripts"
 
-#: src/ui/help.rs:338
+#: src/ui/help.rs:367
 msgid "Unknown update file format."
 msgstr "Unbekanntes Update-Dateiformat."
 
-#: src/ui/help.rs:345
+#: src/ui/help.rs:374
 msgid "Update failed"
 msgstr "Update fehlgeschlagen"
 
-#: src/ui/help.rs:394 src/ui/main_window.rs:1233
+#: src/ui/help.rs:423 src/ui/main_window.rs:1289
 msgid "Unsupported format selected."
 msgstr "Ungültiges Format gewählt."
 
-#: src/ui/main_window.rs:57 src/ui/main_window.rs:193
-#: src/ui/main_window.rs:1249
+#: src/ui/main_window.rs:56 src/ui/main_window.rs:211
+#: src/ui/main_window.rs:1305
 msgid "Paperback"
 msgstr "Paperback"
 
-#: src/ui/main_window.rs:204 src/ui/main_window.rs:1267
+#: src/ui/main_window.rs:222 src/ui/main_window.rs:1323
 #, rust-format
 msgid "Paperback - {}"
 msgstr "Paperback - {}"
 
-#: src/ui/main_window.rs:206
+#: src/ui/main_window.rs:224
 #, rust-format
 msgid "{} chars"
 msgstr "{} Zeichen"
 
-#: src/ui/main_window.rs:273
+#: src/ui/main_window.rs:296
 msgid "Open Document"
 msgstr "Dokument öffnen"
 
-#: src/ui/main_window.rs:457 src/ui/navigation.rs:63
+#: src/ui/main_window.rs:502 src/ui/navigation.rs:63
 msgid "No pages."
 msgstr "Keine Seiten."
 
-#: src/ui/main_window.rs:802 src/ui/main_window.rs:834
+#: src/ui/main_window.rs:847 src/ui/main_window.rs:879
 msgid "document"
 msgstr "Dokument"
 
-#: src/ui/main_window.rs:804
+#: src/ui/main_window.rs:849
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgstr "Textdateien (*.txt)|*.txt|Alle Dateien (*.*)|*.*"
 
-#: src/ui/main_window.rs:806
+#: src/ui/main_window.rs:851
 msgid "Export document to plain text"
 msgstr "Dokument als Text exportieren"
 
-#: src/ui/main_window.rs:815
+#: src/ui/main_window.rs:860
 msgid "Failed to export document."
 msgstr "Das Dokument konnte nicht exportiert werden."
 
-#: src/ui/main_window.rs:836 src/ui/main_window.rs:869
+#: src/ui/main_window.rs:881 src/ui/main_window.rs:914
 msgid "Paperback files (*.paperback)|*.paperback"
 msgstr "Paperback-Dateien (*.paperback)|*.paperback"
 
-#: src/ui/main_window.rs:838
+#: src/ui/main_window.rs:883
 msgid "Export notes and bookmarks"
 msgstr "Notizen und Lesezeichen exportieren"
 
-#: src/ui/main_window.rs:849
+#: src/ui/main_window.rs:894
 msgid "Notes and bookmarks exported successfully."
 msgstr "Notizen und Lesezeichen wurden erfolgreich exportiert."
 
-#: src/ui/main_window.rs:850
+#: src/ui/main_window.rs:895
 msgid "Export Successful"
 msgstr "Export erfolgreich"
 
-#: src/ui/main_window.rs:871
+#: src/ui/main_window.rs:916
 msgid "Import notes and bookmarks"
 msgstr "Notizen und Lesezeichen importieren"
 
-#: src/ui/main_window.rs:890
+#: src/ui/main_window.rs:935
 msgid "Notes and bookmarks imported successfully."
 msgstr "Notizen und Lesezeichen wurden erfolgreich importiert."
 
-#: src/ui/main_window.rs:891
+#: src/ui/main_window.rs:936
 msgid "Import Successful"
 msgstr "Import erfolgreich"
 
-#: src/ui/main_window.rs:909
+#: src/ui/main_window.rs:954
 #, rust-format
 msgid "The document contains {} words."
 msgstr "Das Dokument enthält {} Worte."
 
-#: src/ui/main_window.rs:911
+#: src/ui/main_window.rs:956
 msgid "Word count"
 msgstr "Wortanzahl"
 
-#: src/ui/main_window.rs:934
+#: src/ui/main_window.rs:979
 msgid "No table of contents."
 msgstr "Kein Inhaltsverzeichnis."
 
-#: src/ui/main_window.rs:985
+#: src/ui/main_window.rs:1030
 msgid "Web View"
 msgstr "Webansicht"
 
-#: src/ui/main_window.rs:1006
+#: src/ui/main_window.rs:1051
 msgid "Could not determine content to display in Web View."
 msgstr "Es konnte kein Inhalt für die Webansicht ermittelt werden."
 
-#: src/ui/main_window.rs:1080
+#: src/ui/main_window.rs:1129
 msgid "Sleep timer cancelled."
 msgstr "Einschlaftimer abgebrochen."
 
-#: src/ui/main_window.rs:1103
+#: src/ui/main_window.rs:1152
 msgid "Sleep timer set for 1 minute."
 msgstr "Einschlaftimer auf 1 Minute gesetzt."
 
-#: src/ui/main_window.rs:1105
+#: src/ui/main_window.rs:1154
 msgid "Sleep timer set for %d minutes."
 msgstr "Einschlaftimer auf %d Minuten gesetzt."
 
-#: src/ui/main_window.rs:1157
+#: src/ui/main_window.rs:1208
 msgid "No recent documents."
 msgstr "Keine zuletzt geöffneten Dokumente."
 
-#: src/ui/menu.rs:133
+#: src/ui/menu.rs:143
 msgid "Previous Section\t["
 msgstr "Vorheriger Abschnitt\tShift+A"
 
-#: src/ui/menu.rs:134
+#: src/ui/menu.rs:144
 msgid "Go to previous section"
 msgstr "Gehe zu vorherigem Abschnitt"
 
-#: src/ui/menu.rs:135
+#: src/ui/menu.rs:145
 msgid "Next Section\t]"
 msgstr "Nächster Abschnitt\tA"
 
-#: src/ui/menu.rs:136
+#: src/ui/menu.rs:146
 msgid "Go to next section"
 msgstr "Gehe zum nächsten Abschnitt"
 
-#: src/ui/menu.rs:144
+#: src/ui/menu.rs:154
 msgid "Go to &Page\tCtrl+P"
 msgstr "Gehe zu &Seite\tCtrl+P"
 
-#: src/ui/menu.rs:145
+#: src/ui/menu.rs:155
 msgid "Previous Pa&ge\tShift+P"
 msgstr "Vorherige &Seite\tShift+P"
 
-#: src/ui/menu.rs:146
+#: src/ui/menu.rs:156
 msgid "Next Pag&e\tP"
 msgstr "Nächste Seit&e\tP"
 
-#: src/ui/menu.rs:155
+#: src/ui/menu.rs:165
 msgid "Previous Lin&k\tShift+K"
 msgstr "Vorheriger Lin&k\tShift+K"
 
-#: src/ui/menu.rs:156
+#: src/ui/menu.rs:166
 msgid "Next Lin&k\tK"
 msgstr "Nächster Lin&k\tK"
 
-#: src/ui/menu.rs:161
+#: src/ui/menu.rs:171
 msgid "Previous &Table\tShift+T"
 msgstr "Vorherige &Tabelle\tShift+T"
 
-#: src/ui/menu.rs:162
+#: src/ui/menu.rs:172
 msgid "Next &Table\tT"
 msgstr "Nächste &Tabelle\tT"
 
-#: src/ui/menu.rs:167
+#: src/ui/menu.rs:177
 msgid "Previous Se&parator\tShift+S"
 msgstr "Vorherige Trenn&linie\tShift+S"
 
-#: src/ui/menu.rs:168
+#: src/ui/menu.rs:178
 msgid "Next Se&parator\tS"
 msgstr "Nächste &Trennlinie\tS"
 
-#: src/ui/menu.rs:173
+#: src/ui/menu.rs:183
 msgid "Previous L&ist\tShift+L"
 msgstr "Vorherige L&iste\tShift+L"
 
-#: src/ui/menu.rs:174
+#: src/ui/menu.rs:184
 msgid "Next L&ist\tL"
 msgstr "Nächste L&iste\tL"
 
-#: src/ui/menu.rs:175
+#: src/ui/menu.rs:185
 msgid "Previous List &Item\tShift+I"
 msgstr "Vorheriger L&isteneintrag\tShift+I"
 
-#: src/ui/menu.rs:176
+#: src/ui/menu.rs:186
 msgid "Next List I&tem\tI"
 msgstr "Nächster Lis&teneintrag\tI"
 
-#: src/ui/menu.rs:186
+#: src/ui/menu.rs:196
 msgid "Next Heading Level 1\t1"
 msgstr "Nächste Überschrift auf Ebene 1\t1"
 
-#: src/ui/menu.rs:187
+#: src/ui/menu.rs:197
 msgid "Previous Heading Level &2\tShift+2"
 msgstr "Vorherige Überschrift auf Ebene &2\tShift+2"
 
-#: src/ui/menu.rs:188
+#: src/ui/menu.rs:198
 msgid "Next Heading Level 2\t2"
 msgstr "Nächste Überschrift auf Ebene 2\t2"
 
-#: src/ui/menu.rs:189
+#: src/ui/menu.rs:199
 msgid "Previous Heading Level &3\tShift+3"
 msgstr "Vorherige Überschrift auf Ebene &3\tShift+3"
 
-#: src/ui/menu.rs:190
+#: src/ui/menu.rs:200
 msgid "Next Heading Level 3\t3"
 msgstr "Nächste Überschrift auf Ebene 3\t3"
 
-#: src/ui/menu.rs:191
+#: src/ui/menu.rs:201
 msgid "Previous Heading Level &4\tShift+4"
 msgstr "Vorherige Überschrift auf Ebene &4\tShift+4"
 
-#: src/ui/menu.rs:192
+#: src/ui/menu.rs:202
 msgid "Next Heading Level 4\t4"
 msgstr "Nächste Überschrift auf Ebene 4\t4"
 
-#: src/ui/menu.rs:193
+#: src/ui/menu.rs:203
 msgid "Previous Heading Level &5\tShift+5"
 msgstr "Vorherige Überschrift auf Ebene &5\tShift+5"
 
-#: src/ui/menu.rs:194
+#: src/ui/menu.rs:204
 msgid "Next Heading Level 5\t5"
 msgstr "Nächste Überschrift auf Ebene 5\t5"
 
-#: src/ui/menu.rs:195
+#: src/ui/menu.rs:205
 msgid "Previous Heading Level &6\tShift+6"
 msgstr "Vorherige Überschrift auf Ebene &6\tShift+6"
 
-#: src/ui/menu.rs:196
+#: src/ui/menu.rs:206
 msgid "Next Heading Level 6\t6"
 msgstr "Nächste Überschrift auf Ebene 6\t6"
 
-#: src/ui/menu.rs:198
+#: src/ui/menu.rs:208
 msgid "&Previous Heading\tShift+H"
 msgstr "&Vorherige Überschrift\tShift+H"
 
-#: src/ui/menu.rs:198
+#: src/ui/menu.rs:208
 msgid "Go to previous heading"
 msgstr "Gehe zur vorherigen Überschrift"
 
-#: src/ui/menu.rs:199
+#: src/ui/menu.rs:209
 msgid "&Next Heading\tH"
 msgstr "&Nächste Überschrift\tH"
 
-#: src/ui/menu.rs:199
+#: src/ui/menu.rs:209
 msgid "Go to next heading"
 msgstr "Gehe zur nächsten Überschrift"
 
-#: src/ui/menu.rs:201
+#: src/ui/menu.rs:211
 msgid "Previous Heading Level &1\tShift+1"
 msgstr "Vorherige Überschrift auf Ebene &1\tShift+1"
 
-#: src/ui/menu.rs:217
+#: src/ui/menu.rs:227
 msgid "&Previous Bookmark\tShift+B"
 msgstr "&Vorheriges Lesezeichen\tShift+B"
 
-#: src/ui/menu.rs:218
+#: src/ui/menu.rs:228
 msgid "Go to previous bookmark"
 msgstr "Gehe zu vorherigem Lesezeichen"
 
-#: src/ui/menu.rs:219
+#: src/ui/menu.rs:229
 msgid "&Next Bookmark\tB"
 msgstr "&Nächstes Lesezeichen\tB"
 
-#: src/ui/menu.rs:220
+#: src/ui/menu.rs:230
 msgid "Go to next bookmark"
 msgstr "Gehe zum nächsten Lesezeichen"
 
-#: src/ui/menu.rs:221
+#: src/ui/menu.rs:231
 msgid "Previous &Note\tShift+N"
 msgstr "Vorherige &Notiz\tShift+N"
 
-#: src/ui/menu.rs:222
+#: src/ui/menu.rs:232
 msgid "Go to previous note"
 msgstr "Gehe zur vorherigen Notiz"
 
-#: src/ui/menu.rs:223
+#: src/ui/menu.rs:233
 msgid "Next N&ote\tN"
 msgstr "Nächste N&otiz\tN"
 
-#: src/ui/menu.rs:224
+#: src/ui/menu.rs:234
 msgid "Go to next note"
 msgstr "Gehe zur nächsten Notiz"
 
-#: src/ui/menu.rs:225
+#: src/ui/menu.rs:235
 msgid "Jump to &All...\tCtrl+B"
 msgstr "Springe zu &allen...\tCtrl+B"
 
-#: src/ui/menu.rs:226
+#: src/ui/menu.rs:236
 msgid "Show all bookmarks and notes"
 msgstr "Alle Lesezeichen und Notizen anzeigen"
 
-#: src/ui/menu.rs:227
+#: src/ui/menu.rs:237
 msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
 msgstr "Springe nur zu &Lesezeichen...\tCtrl+Alt+B"
 
-#: src/ui/menu.rs:228
+#: src/ui/menu.rs:238
 msgid "Show bookmarks only"
 msgstr "Nur Lesezeichen anzeigen"
 
-#: src/ui/menu.rs:229
+#: src/ui/menu.rs:239
 msgid "Jump to Notes &Only...\tCtrl+Alt+M"
 msgstr "Springe nur zu N&otizen...\tCtrl+Alt+M"
 
-#: src/ui/menu.rs:230
+#: src/ui/menu.rs:240
 msgid "Show notes only"
 msgstr "Nur Notizen anzeigen"
 
-#: src/ui/menu.rs:232
+#: src/ui/menu.rs:242
 msgid "&View Note Text\tRawCtrl+Shift+W"
 msgstr "Notiztext an&sehen\tRawCtrl+Shift+W"
 
-#: src/ui/menu.rs:234
+#: src/ui/menu.rs:244
 msgid "&View Note Text\tCtrl+Shift+W"
 msgstr "Notiztext an&sehen\tCtrl+Shift+W"
 
-#: src/ui/menu.rs:236
+#: src/ui/menu.rs:246
 msgid "View the note at current position"
 msgstr "Notiz an aktueller Position ansehen"
 
-#: src/ui/menu.rs:336
+#: src/ui/menu.rs:346
 msgid "&File"
 msgstr "&Datei"
 
-#: src/ui/menu.rs:337
+#: src/ui/menu.rs:347
 msgid "&Go"
 msgstr "&Gehe zu"
 
-#: src/ui/menu.rs:338
+#: src/ui/menu.rs:348
 msgid "&Tools"
 msgstr "&Werkzeuge"
 
-#: src/ui/menu.rs:339
+#: src/ui/menu.rs:349
 msgid "&Help"
 msgstr "&Hilfe"
 
-#: src/ui/menu.rs:349
+#: src/ui/menu.rs:359
 msgid "&Open...\tCtrl+O"
 msgstr "Ö&ffnen...\tCtrl+O"
 
-#: src/ui/menu.rs:350
+#: src/ui/menu.rs:360
 msgid "Open a document"
 msgstr "Ein Dokument öffnen"
 
-#: src/ui/menu.rs:353
+#: src/ui/menu.rs:363
 msgid "&Close\tCtrl+W"
 msgstr "S&chließen\tCtrl+W"
 
-#: src/ui/menu.rs:353
+#: src/ui/menu.rs:363
 msgid "&Close\tCtrl+F4"
 msgstr "S&chließen\tCtrl+W"
 
-#: src/ui/menu.rs:354
+#: src/ui/menu.rs:364
 msgid "Close the current document"
 msgstr "Das aktuelle Dokument schließen"
 
-#: src/ui/menu.rs:356
+#: src/ui/menu.rs:366
 msgid "Close &All\tCtrl+Shift+W"
 msgstr "&Alle schließen\tCtrl+Shift+W"
 
-#: src/ui/menu.rs:356
+#: src/ui/menu.rs:366
 msgid "Close &All\tCtrl+Shift+F4"
 msgstr "&Alle schließen\tCtrl+Shift+F4"
 
-#: src/ui/menu.rs:357
+#: src/ui/menu.rs:367
 msgid "Close all documents"
 msgstr "Alle Dokumente schließen"
 
-#: src/ui/menu.rs:365
+#: src/ui/menu.rs:368
+msgid "Reopen &Last Closed\tCtrl+Shift+T"
+msgstr "&Letztes Dokument öffnen\tCtrl+Shift+T"
+
+#: src/ui/menu.rs:369
+msgid "Reopen the last closed document"
+msgstr "Das zuletzt geladene Dokument öffnen"
+
+#: src/ui/menu.rs:378
 msgid "&Recent Documents"
 msgstr "&Zuletzt geöffnete Dokumente"
 
-#: src/ui/menu.rs:366
+#: src/ui/menu.rs:379
 msgid "Open a recent document"
 msgstr "Ein zuvor geladenes Dokument öffnen"
 
-#: src/ui/menu.rs:372 src/ui/tray.rs:63
+#: src/ui/menu.rs:385 src/ui/tray.rs:75
 msgid "E&xit"
 msgstr "&Beenden"
 
-#: src/ui/menu.rs:373
+#: src/ui/menu.rs:386
 msgid "Exit the application"
 msgstr "Anwendung beenden"
 
-#: src/ui/menu.rs:382
+#: src/ui/menu.rs:395
 msgid "&Find...\tCtrl+F"
 msgstr "&Suchen...\tCtrl+F"
 
-#: src/ui/menu.rs:383
+#: src/ui/menu.rs:396
 msgid "Find text in the document"
 msgstr "Text im Dokument finden"
 
-#: src/ui/menu.rs:384
+#: src/ui/menu.rs:397
 msgid "Find &Next\tF3"
 msgstr "&Nächstes finden\tF3"
 
-#: src/ui/menu.rs:385
+#: src/ui/menu.rs:398
 msgid "Find next occurrence"
 msgstr "Nächstes Vorkommen finden"
 
-#: src/ui/menu.rs:386
+#: src/ui/menu.rs:399
 msgid "Find &Previous\tShift+F3"
 msgstr "&Vorheriges finden\tShift+F3"
 
-#: src/ui/menu.rs:387
+#: src/ui/menu.rs:400
 msgid "Find previous occurrence"
 msgstr "Vorheriges Vorkommen finden"
 
-#: src/ui/menu.rs:388
+#: src/ui/menu.rs:401
 msgid "Go to &line...\tCtrl+G"
 msgstr "Gehe zu &Zeile...\tCtrl+G"
 
-#: src/ui/menu.rs:389
+#: src/ui/menu.rs:402
 msgid "Go to a specific line"
 msgstr "Zu einer bestimmten Zeile gehen"
 
-#: src/ui/menu.rs:390
+#: src/ui/menu.rs:403
 msgid "Go to &percent...\tCtrl+Shift+G"
 msgstr "Gehe zu &Prozent...\tCtrl+Shift+G"
 
-#: src/ui/menu.rs:391
+#: src/ui/menu.rs:404
 msgid "Go to a percentage of the document"
 msgstr "Zu einem bestimmten Prozentsatz des Dokuments gehen"
 
-#: src/ui/menu.rs:392
+#: src/ui/menu.rs:405
 msgid "Go &Back\tAlt+Left"
 msgstr "Gehe &zurück\tAlt+Left"
 
-#: src/ui/menu.rs:393
+#: src/ui/menu.rs:406
 msgid "Go back in history"
 msgstr "Rückwärts im Verlauf"
 
-#: src/ui/menu.rs:394
+#: src/ui/menu.rs:407
 msgid "Go &Forward\tAlt+Right"
 msgstr "Gehe &vorwärts\tAlt+Right"
 
-#: src/ui/menu.rs:395
+#: src/ui/menu.rs:408
 msgid "Go forward in history"
 msgstr "Vorwärts im Verlauf"
 
-#: src/ui/menu.rs:409
+#: src/ui/menu.rs:422
 msgid "&Sections"
 msgstr "&Abschnitte"
 
-#: src/ui/menu.rs:410
+#: src/ui/menu.rs:423
 msgid "Navigate by sections"
 msgstr "Durch Abschnitte navigieren"
 
-#: src/ui/menu.rs:412
+#: src/ui/menu.rs:425
 msgid "&Headings"
 msgstr "Übersc&hriften"
 
-#: src/ui/menu.rs:413
+#: src/ui/menu.rs:426
 msgid "Navigate by headings"
 msgstr "Durch Überschriften navigieren"
 
-#: src/ui/menu.rs:415
+#: src/ui/menu.rs:428
 msgid "&Pages"
 msgstr "&Seiten"
 
-#: src/ui/menu.rs:416
+#: src/ui/menu.rs:429
 msgid "Navigate by pages"
 msgstr "Durch Seiten navigieren"
 
-#: src/ui/menu.rs:418
+#: src/ui/menu.rs:431
 msgid "&Bookmarks"
 msgstr "L&esezeichen"
 
-#: src/ui/menu.rs:419
+#: src/ui/menu.rs:432
 msgid "Navigate by bookmarks"
 msgstr "Durch Lesezeichen navigieren"
 
-#: src/ui/menu.rs:421
+#: src/ui/menu.rs:434
 msgid "&Links"
 msgstr "&Links"
 
-#: src/ui/menu.rs:422
+#: src/ui/menu.rs:435
 msgid "Navigate by links"
 msgstr "Durch Links navigieren"
 
-#: src/ui/menu.rs:424
+#: src/ui/menu.rs:437
 msgid "&Tables"
 msgstr "&Tabellen"
 
-#: src/ui/menu.rs:425
+#: src/ui/menu.rs:438
 msgid "Navigate by tables"
 msgstr "Durch Tabellen navigieren"
 
-#: src/ui/menu.rs:427
+#: src/ui/menu.rs:440
 msgid "&Separators"
 msgstr "&Trennlinien"
 
-#: src/ui/menu.rs:428
+#: src/ui/menu.rs:441
 msgid "Navigate by separators"
 msgstr "Durch Trennlinien navigieren"
 
-#: src/ui/menu.rs:430
+#: src/ui/menu.rs:443
 msgid "&Lists"
 msgstr "&Listen"
 
-#: src/ui/menu.rs:431
+#: src/ui/menu.rs:444
 msgid "Navigate by lists"
 msgstr "Durch Listen navigieren"
 
-#: src/ui/menu.rs:454
+#: src/ui/menu.rs:467
 msgid "&Import Document Data...\tCtrl+Shift+I"
 msgstr "Dokumentdaten &importieren...\tCtrl+Shift+I"
 
-#: src/ui/menu.rs:455
+#: src/ui/menu.rs:468
 msgid "Import bookmarks and position"
 msgstr "Lesezeichen und Position importieren"
 
-#: src/ui/menu.rs:456
+#: src/ui/menu.rs:469
 msgid "&Export Document Data...\tCtrl+Shift+E"
 msgstr "Dokumentdaten &exportieren...\tCtrl+Shift+E"
 
-#: src/ui/menu.rs:457
+#: src/ui/menu.rs:470
 msgid "Export bookmarks and position"
 msgstr "Lesezeichen und Position exportieren"
 
-#: src/ui/menu.rs:458
+#: src/ui/menu.rs:471
 msgid "Export to &Plain Text...\tCtrl+E"
 msgstr "Als &Text exportieren...\tCtrl+E"
 
-#: src/ui/menu.rs:459
+#: src/ui/menu.rs:472
 msgid "Export document as plain text"
 msgstr "Dokument als Text exportieren"
 
-#: src/ui/menu.rs:467
+#: src/ui/menu.rs:480
 msgid "&Word Count\tRawCtrl+W"
 msgstr "&Wortanzahl\tRawCtrl+W"
 
-#: src/ui/menu.rs:467
+#: src/ui/menu.rs:480
 msgid "&Word Count\tCtrl+W"
 msgstr "&Wortanzahl\tCtrl+W"
 
-#: src/ui/menu.rs:468
+#: src/ui/menu.rs:481
 msgid "Show word count"
 msgstr "Wortanzahl zeigen"
 
-#: src/ui/menu.rs:469
+#: src/ui/menu.rs:482
 msgid "Document &Info\tCtrl+I"
 msgstr "Dokument&info\tCtrl+I"
 
-#: src/ui/menu.rs:470
+#: src/ui/menu.rs:483
 msgid "Show document information"
 msgstr "Dokumentinformation anzeigen"
 
-#: src/ui/menu.rs:471
+#: src/ui/menu.rs:484
 msgid "&Table of Contents\tCtrl+T"
 msgstr "Inhal&tsverzeichnis\tCtrl+T"
 
-#: src/ui/menu.rs:472
+#: src/ui/menu.rs:485
 msgid "Show table of contents"
 msgstr "Inhaltsverzeichnis anzeigen"
 
-#: src/ui/menu.rs:473
+#: src/ui/menu.rs:486
 msgid "&Elements List...\tF7"
 msgstr "&Elementliste...\tF7"
 
-#: src/ui/menu.rs:474
+#: src/ui/menu.rs:487
 msgid "Show elements list"
 msgstr "Elementliste anzeigen"
 
-#: src/ui/menu.rs:475
+#: src/ui/menu.rs:488
 msgid "Open &Containing Folder\tCtrl+Shift+C"
 msgstr "&Zugehörigen Ordner öffnen\tCtrl+Shift+C"
 
-#: src/ui/menu.rs:476
+#: src/ui/menu.rs:489
 msgid "Open folder containing the document"
 msgstr "Ordner des Dokuments öffnen"
 
-#: src/ui/menu.rs:477
+#: src/ui/menu.rs:490
 msgid "Open in &Web View\tCtrl+Shift+V"
 msgstr "In &Webansicht öffnen\tCtrl+Shift+V"
 
-#: src/ui/menu.rs:478
+#: src/ui/menu.rs:491
 msgid "Open document in web view"
 msgstr "Dokument in Webansicht öffnen"
 
-#: src/ui/menu.rs:490
+#: src/ui/menu.rs:503
 msgid "I&mport/Export"
 msgstr "I&mport/Export"
 
-#: src/ui/menu.rs:491
+#: src/ui/menu.rs:504
 msgid "Import and export options"
 msgstr "Import- und Exportoptionen"
 
-#: src/ui/menu.rs:494
+#: src/ui/menu.rs:507
 msgid "Toggle &Bookmark\tCtrl+Shift+B"
 msgstr "&Lesezeichen umschalten\tCtrl+Shift+B"
 
-#: src/ui/menu.rs:495
+#: src/ui/menu.rs:508
 msgid "Bookmark with &Note\tCtrl+Shift+N"
 msgstr "Lesezeichen mit &Notiz\tCtrl+Shift+N"
 
-#: src/ui/menu.rs:499
+#: src/ui/menu.rs:512
 msgid "&Options\tCtrl+,"
 msgstr "&Optionen\tCtrl+,"
 
-#: src/ui/menu.rs:500
+#: src/ui/menu.rs:513
 msgid "&Sleep Timer...\tCtrl+Shift+S"
 msgstr "Ein&schlaftimer...\tCtrl+Shift+S"
 
-#: src/ui/menu.rs:509
+#: src/ui/menu.rs:522
 msgid "&About Paperback\tCtrl+F1"
 msgstr "Über P&aperback\tCtrl+F1"
 
-#: src/ui/menu.rs:510
+#: src/ui/menu.rs:523
 msgid "About this application"
 msgstr "Über diese Anwendung"
 
-#: src/ui/menu.rs:511
+#: src/ui/menu.rs:524
 msgid "View Help in &Browser\tF1"
 msgstr "Hilfe im &Browser ansehen\tF1"
 
-#: src/ui/menu.rs:512
+#: src/ui/menu.rs:525
 msgid "View help in default browser"
 msgstr "Hilfe im Standardbrowser ansehen"
 
-#: src/ui/menu.rs:513
+#: src/ui/menu.rs:526
 msgid "View Help in &Paperback\tShift+F1"
 msgstr "Hilfe in &Paperback ansehen\tShift+F1"
 
-#: src/ui/menu.rs:514
+#: src/ui/menu.rs:527
 msgid "View help in Paperback"
 msgstr "Hilfe in Paperback ansehen"
 
-#: src/ui/menu.rs:515
+#: src/ui/menu.rs:528
 msgid "Check for &Updates\tCtrl+Shift+U"
 msgstr "Nach &Updates suchen\tCtrl+Shift+U"
 
-#: src/ui/menu.rs:516
+#: src/ui/menu.rs:529
 msgid "Check for updates"
 msgstr "Auf Updates prüfen"
 
-#: src/ui/menu.rs:517
+#: src/ui/menu.rs:530
 msgid "&Donate\tCtrl+D"
 msgstr "&Spenden\tCtrl+D"
 
-#: src/ui/menu.rs:518
+#: src/ui/menu.rs:531
 msgid "Support Paperback development"
 msgstr "Paperback-Entwicklung unterstützen"
 
-#: src/ui/menu.rs:533
+#: src/ui/menu.rs:546
 msgid "(No recent documents)"
 msgstr "(Keine zuletzt geöffneten Dokumente)"
 
-#: src/ui/menu.rs:550
+#: src/ui/menu.rs:562
 msgid "Show All...\tCtrl+R"
 msgstr "Zeige alle...\tCtrl+R"
 
@@ -1458,14 +1476,14 @@ msgstr "Zeichen"
 msgid "Sleep timer"
 msgstr "Einschlaftimer"
 
-#: src/ui/tray.rs:61
+#: src/ui/tray.rs:73
 msgid "&Restore"
 msgstr "&Wiederherstellen"
 
-#: src/ui/tray.rs:62
+#: src/ui/tray.rs:74
 msgid "Restore Paperback"
 msgstr "Paperback wiederherstellen"
 
-#: src/ui/tray.rs:64
+#: src/ui/tray.rs:76
 msgid "Exit Paperback"
 msgstr "Paperback beenden"
