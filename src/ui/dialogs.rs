@@ -1298,6 +1298,29 @@ pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32) -> Option
 	if dialog.show_modal() == wxdragon::id::ID_OK { Some(input_ctrl.value().clamp(0, 100)) } else { None }
 }
 
+fn show_yes_no_dialog(parent: &dyn WxWidget, message: &str, title: &str) -> bool {
+	let dialog = Dialog::builder(parent, title).build();
+	let panel = Panel::builder(&dialog).build();
+	let message_label = StaticText::builder(&panel).with_label(message).build();
+	let yes_button = Button::builder(&panel).with_id(wxdragon::id::ID_OK).with_label(&t("&Yes")).build();
+	let no_button = Button::builder(&panel).with_id(wxdragon::id::ID_CANCEL).with_label(&t("&No")).build();
+	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+	dialog.set_affirmative_id(wxdragon::id::ID_OK);
+	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
+	content_sizer.add(&message_label, 0, SizerFlag::All, DIALOG_PADDING);
+	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	button_sizer.add_stretch_spacer(1);
+	button_sizer.add(&yes_button, 0, SizerFlag::Right, DIALOG_PADDING);
+	button_sizer.add(&no_button, 0, SizerFlag::Right, DIALOG_PADDING);
+	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand | SizerFlag::All, 0);
+	panel.set_sizer(content_sizer, true);
+	let dialog_sizer = BoxSizer::builder(Orientation::Vertical).build();
+	dialog_sizer.add(&panel, 1, SizerFlag::Expand, 0);
+	dialog.set_sizer_and_fit(dialog_sizer, true);
+	dialog.centre();
+	dialog.show_modal() == wxdragon::id::ID_OK
+}
+
 pub fn show_update_dialog(parent: &dyn WxWidget, new_version: &str, changelog: &str) -> bool {
 	let dialog_title = t("Update to %s").replace("%s", new_version);
 	let dialog = Dialog::builder(parent, &dialog_title).build();
@@ -1507,16 +1530,11 @@ fn make_all_documents_remove_action(
 		if index < 0 {
 			return;
 		}
-		let confirm = MessageDialog::builder(
+		if !show_yes_no_dialog(
 			&dialog,
-			&t(
-				"Are you sure you want to remove this document from the list? This will also remove its reading position.",
-			),
+			&t("Are you sure you want to remove this document from the list? This will also remove its reading position."),
 			&t("Confirm"),
-		)
-		.with_style(MessageDialogStyle::YesNo | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre)
-		.build();
-		if confirm.show_modal() != wxdragon::id::ID_YES {
+		) {
 			return;
 		}
 		let Some(path_to_remove) = get_path_for_index(list, index) else {
@@ -1553,16 +1571,11 @@ fn bind_all_documents_clear(
 		if list.get_item_count() == 0 {
 			return;
 		}
-		let confirm = MessageDialog::builder(
+		if !show_yes_no_dialog(
 			&dialog,
-			&t(
-				"Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks.",
-			),
+			&t("Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks."),
 			&t("Confirm"),
-		)
-		.with_style(MessageDialogStyle::YesNo | MessageDialogStyle::IconWarning | MessageDialogStyle::Centre)
-		.build();
-		if confirm.show_modal() != wxdragon::id::ID_YES {
+		) {
 			return;
 		}
 		{
