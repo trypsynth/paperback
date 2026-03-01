@@ -465,19 +465,7 @@ fn show_error_dialog(parent: &dyn WxWidget, message: &str, title: &str) {
 }
 
 fn fill_text_ctrl(text_ctrl: TextCtrl, content: &str) {
-	const CHUNK_SIZE: usize = 32 * 1024;
-	text_ctrl.clear();
-	let mut buf = String::new();
-	for ch in content.chars() {
-		buf.push(ch);
-		if buf.len() >= CHUNK_SIZE {
-			text_ctrl.append_text(&buf);
-			buf.clear();
-		}
-	}
-	if !buf.is_empty() {
-		text_ctrl.append_text(&buf);
-	}
+	text_ctrl.set_value(content);
 }
 
 fn show_reader_context_menu(text_ctrl: TextCtrl) {
