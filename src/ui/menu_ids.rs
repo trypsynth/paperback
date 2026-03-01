@@ -24,7 +24,7 @@ pub const PREFERENCES: i32 = wxdragon::ffi::WXD_ID_PREFERENCES as i32;
 const BASE: i32 = 5000;
 
 // File menu (BASE + 0..99)
-menu_ids!(BASE => OPEN, CLOSE, CLOSE_ALL, SHOW_ALL_DOCUMENTS);
+menu_ids!(BASE => OPEN, CLOSE, CLOSE_ALL, SHOW_ALL_DOCUMENTS, REOPEN_LAST_CLOSED);
 
 // Recent documents - reserved range (BASE + 100..199)
 pub const RECENT_DOCUMENT_BASE: i32 = BASE + 100;

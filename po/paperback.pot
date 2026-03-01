@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.0\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-02-28 21:25-0700\n"
+"POT-Creation-Date: 2026-03-01 08:31-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -703,6 +703,12 @@ msgid "Close &All\tCtrl+Shift+F4"
 msgstr ""
 
 msgid "Close all documents"
+msgstr ""
+
+msgid "Reopen &Last Closed\tCtrl+Shift+T"
+msgstr ""
+
+msgid "Reopen the last closed document"
 msgstr ""
 
 msgid "&Recent Documents"
