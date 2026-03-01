@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.5\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-02-19 04:36+0530\n"
-"PO-Revision-Date: 2026-02-26 16:26+0100\n"
+"POT-Creation-Date: 2026-03-01 13:08-0700\n"
+"PO-Revision-Date: 2026-03-02 00:31+0100\n"
 "Last-Translator: Nikola Jović <wwenikola123@gmail.com>\n"
 "Language-Team: \n"
 "Language: sr\n"
@@ -192,7 +192,6 @@ msgid "Go to page"
 msgstr "Pređi na stranicu"
 
 #, c-format
-#| msgid "Go to page (1/%d):"
 msgid "Go to page (%d/%d):"
 msgstr "Pređi na stranicu (%d/%d):"
 
@@ -205,18 +204,18 @@ msgstr "&procenat"
 msgid "P&ercent:"
 msgstr "P&rocenat:"
 
+msgid "&Yes"
+msgstr "&Da"
+
+msgid "&No"
+msgstr "&Ne"
+
 #, c-format
 msgid "Update to %s"
 msgstr "Ažuriraj na %s"
 
 msgid "A new version of Paperback is available. Here's what's new:"
 msgstr "Dostupna je nova verzija Paperbacka. Evo šta je novo:"
-
-msgid "&Yes"
-msgstr "&Da"
-
-msgid "&No"
-msgstr "&Ne"
 
 msgid "All Documents"
 msgstr "Svi dokumenti"
@@ -248,6 +247,16 @@ msgid ""
 msgstr ""
 "Da li ste sigurni da želite da uklonite ovaj dokument sa liste? Ovo će "
 "takođe ukloniti njegovu poziciju čitanja."
+
+#| msgid ""
+#| "Are you sure you want to remove this document from the list? This will "
+#| "also remove its reading position."
+msgid ""
+"Are you sure you want to remove these {} documents from the list? This will "
+"also remove their reading positions."
+msgstr ""
+"Da li ste sigurni da želite da uklonite ovih {} iz liste? Ovo će takođe "
+"ukloniti njihove pozicije čitanja."
 
 msgid "Confirm"
 msgstr "Potvrdi"
@@ -335,7 +344,6 @@ msgstr "&Lozinka:"
 msgid "Document Password"
 msgstr "Lozinka dokumenta"
 
-#| msgid "No next bookmark"
 msgid "Create &bookmark"
 msgstr "Napravi &knjižnu oznaku"
 
@@ -436,7 +444,6 @@ msgstr "Preuzimanje ažuriranja..."
 msgid "No updates available."
 msgstr "Nema dostupnih ažuriranja."
 
-#| msgid "No updates available."
 msgid "No updates available. Latest version: {}"
 msgstr "Nema dostupnih ažuriranja. Najnovija verzija: {}"
 
@@ -450,13 +457,12 @@ msgstr "Provera ažuriranja nije uspela. HTTP status: %d"
 msgid "Error checking for updates."
 msgstr "Greška pri proveri ažuriranja."
 
-#| msgid "Failed to launch default browser."
-msgid "Failed to launch installer"
-msgstr "Otvaranje instalacione datoteke nije uspelo"
-
-#| msgid "Failed to export document."
 msgid "Failed to get current exe path"
 msgstr "Pribavljanje putanje do trenutne izvršne datoteke nije uspelo"
+
+#| msgid "Failed to launch installer"
+msgid "Failed to launch installer script"
+msgstr "Pokretanje instalacione skripte nije uspelo"
 
 msgid "Failed to launch update script"
 msgstr "Pokretanje skripte ažuriranja nije uspelo"
@@ -488,7 +494,6 @@ msgstr "Nema stranica."
 msgid "document"
 msgstr "dokument"
 
-#| msgid "Text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgstr "Datoteke običnog teksta (*.txt)|*.txt|Sve datoteke (*.*)|*.*"
 
@@ -580,107 +585,84 @@ msgstr "Prethodna &tabela\tShift+T"
 msgid "Next &Table\tT"
 msgstr "Naredna &tabela\tT"
 
-#| msgid "Previous &page\tShift+P"
 msgid "Previous Se&parator\tShift+S"
 msgstr "Prethodni se&parator\tShift+S"
 
 msgid "Next Se&parator\tS"
 msgstr "Sledeći Se&parator\tS"
 
-#| msgid "Previous lis&t\tShift+L"
 msgid "Previous L&ist\tShift+L"
 msgstr "Prethodna l&ista\tShift+L"
 
-#| msgid "Next lis&t\tL"
 msgid "Next L&ist\tL"
 msgstr "Naredna l&ista\tL"
 
-#| msgid "Previous list &item\tShift+I"
 msgid "Previous List &Item\tShift+I"
 msgstr "Prethodna stavka l&iste\tShift+I"
 
-#| msgid "Next list &item\tI"
 msgid "Next List I&tem\tI"
 msgstr "Naredna stavka li&ste\tI"
 
-#| msgid "Next heading level %d\t%d"
 msgid "Next Heading Level 1\t1"
 msgstr "Naredni naslov na nivou 1\t1"
 
-#| msgid "Previous heading level %d\tShift+%d"
 msgid "Previous Heading Level &2\tShift+2"
 msgstr "Prethodni naslov na nivou &2\tShift+2"
 
-#| msgid "Next heading level %d\t%d"
 msgid "Next Heading Level 2\t2"
 msgstr "Naredni naslov na nivou 2\t2"
 
-#| msgid "Previous heading level %d\tShift+%d"
 msgid "Previous Heading Level &3\tShift+3"
 msgstr "Prethodni naslov na nivou &3\tShift+3"
 
-#| msgid "Next heading level %d\t%d"
 msgid "Next Heading Level 3\t3"
 msgstr "Naredni naslov na nivou 3\t3"
 
-#| msgid "Previous heading level %d\tShift+%d"
 msgid "Previous Heading Level &4\tShift+4"
 msgstr "Prethodni naslov na nivou &4\tShift+4"
 
-#| msgid "Next heading level %d\t%d"
 msgid "Next Heading Level 4\t4"
 msgstr "Naredni naslov na nivou 4\t4"
 
-#| msgid "Previous heading level %d\tShift+%d"
 msgid "Previous Heading Level &5\tShift+5"
 msgstr "Prethodni naslov na nivou &5\tShift+5"
 
-#| msgid "Next heading level %d\t%d"
 msgid "Next Heading Level 5\t5"
 msgstr "Naredni naslov na nivou 5\t5"
 
-#| msgid "Previous heading level %d\tShift+%d"
 msgid "Previous Heading Level &6\tShift+6"
 msgstr "Prethodni naslov na nivou &6\tShift+6"
 
-#| msgid "Next heading level %d\t%d"
 msgid "Next Heading Level 6\t6"
 msgstr "Naredni naslov na nivou 6\t6"
 
-#| msgid "Previous heading\tShift+H"
 msgid "&Previous Heading\tShift+H"
 msgstr "&Prethodni naslov\tShift+H"
 
-#| msgid "No previous heading."
 msgid "Go to previous heading"
 msgstr "Pređi na prethodni naslov"
 
-#| msgid "Next heading\tH"
 msgid "&Next Heading\tH"
 msgstr "&Naredni naslov\tH"
 
 msgid "Go to next heading"
 msgstr "Pređi na naredni naslov"
 
-#| msgid "Previous heading level %d\tShift+%d"
 msgid "Previous Heading Level &1\tShift+1"
 msgstr "Prethodni naslov na nivou &1\tShift+1"
 
-#| msgid "Previous &bookmark\tShift+B"
 msgid "&Previous Bookmark\tShift+B"
 msgstr "&Prethodna knjižna oznaka\tShift+B"
 
 msgid "Go to previous bookmark"
 msgstr "Pređi na prethodnu knjižnu oznaku"
 
-#| msgid "Next b&ookmark\tB"
 msgid "&Next Bookmark\tB"
 msgstr "&Naredna knjižna oznaka\tB"
 
 msgid "Go to next bookmark"
 msgstr "Pređi na narednu knjižnu oznaku"
 
-#| msgid "Previous &note\tShift+N"
 msgid "Previous &Note\tShift+N"
 msgstr "Prethodna &napomena\tShift+N"
 
@@ -711,11 +693,9 @@ msgstr "Skoči sam&o na napomene...\tCtrl+Alt+M"
 msgid "Show notes only"
 msgstr "Prikaži samo napomene"
 
-#| msgid "&View note text\tCtrl+Shift+W"
 msgid "&View Note Text\tRawCtrl+Shift+W"
 msgstr "&Prikaži tekst napomene\tRawCtrl+Shift+W"
 
-#| msgid "&View note text\tCtrl+Shift+W"
 msgid "&View Note Text\tCtrl+Shift+W"
 msgstr "&Prikaži tekst napomene\tCtrl+Shift+W"
 
@@ -740,18 +720,15 @@ msgstr "&Otvori...\tCtrl+O"
 msgid "Open a document"
 msgstr "Otvori dokument"
 
-#| msgid "Close\tCtrl+F4"
 msgid "&Close\tCtrl+W"
 msgstr "&Zatvori\tCtrl+W"
 
-#| msgid "Close\tCtrl+F4"
 msgid "&Close\tCtrl+F4"
 msgstr "&Zatvori\tCtrl+F4"
 
 msgid "Close the current document"
 msgstr "Zatvori trenutni dokument"
 
-#| msgid "Close &All\tCtrl+Shift+F4"
 msgid "Close &All\tCtrl+Shift+W"
 msgstr "Zatvori &sve\tCtrl+Shift+W"
 
@@ -760,6 +737,13 @@ msgstr "Zatvori &sve\tCtrl+Shift+F4"
 
 msgid "Close all documents"
 msgstr "Zatvori sve dokumente"
+
+#| msgid "Close &All\tCtrl+Shift+W"
+msgid "Reopen &Last Closed\tCtrl+Shift+T"
+msgstr "Ponovo otvori pos&lednje zatvoreno\tCtrl+Shift+T"
+
+msgid "Reopen the last closed document"
+msgstr "Ponovo otvori poslednji zatvoreni dokument"
 
 msgid "&Recent Documents"
 msgstr "&Nedavni dokumenti"
@@ -779,14 +763,12 @@ msgstr "&Pronađi...\tCtrl+F"
 msgid "Find text in the document"
 msgstr "Pronađi tekst u dokumentu"
 
-#| msgid "Find Ne&xt\tF3"
 msgid "Find &Next\tF3"
 msgstr "Pro&nađi sledeće\tF3"
 
 msgid "Find next occurrence"
 msgstr "Pronađi sledeću pojavu"
 
-#| msgid "Find P&revious\tShift+F3"
 msgid "Find &Previous\tShift+F3"
 msgstr "&Pronađi prethodno\tShift+F3"
 
@@ -865,46 +847,39 @@ msgstr "&Liste"
 msgid "Navigate by lists"
 msgstr "Kreći se po listama"
 
-#| msgid "&Import document data...\tCtrl+Shift+I"
 msgid "&Import Document Data...\tCtrl+Shift+I"
 msgstr "Uvez&i podatke o dokumentu...\tCtrl+Shift+I"
 
 msgid "Import bookmarks and position"
 msgstr "Uvezi knjižne oznake i poziciju"
 
-#| msgid "&Export document data...\tCtrl+Shift+E"
 msgid "&Export Document Data...\tCtrl+Shift+E"
 msgstr "Izv&ezi podatke o dokumentu...\tCtrl+Shift+E"
 
 msgid "Export bookmarks and position"
 msgstr "Izvezi knjižne oznake i poziciju"
 
-#| msgid "Export document to &plain text...\tCtrl+E"
 msgid "Export to &Plain Text...\tCtrl+E"
 msgstr "Izvezi kao &običan tekst...\tCtrl+E"
 
 msgid "Export document as plain text"
 msgstr "Izvezi dokument kao običan tekst"
 
-#| msgid "&Word count\tCtrl+W"
 msgid "&Word Count\tRawCtrl+W"
 msgstr "Broj &reči\tRawCtrl+W"
 
-#| msgid "&Word count\tCtrl+W"
 msgid "&Word Count\tCtrl+W"
 msgstr "Broj &reči\tCtrl+W"
 
 msgid "Show word count"
 msgstr "Prikaži broj reči"
 
-#| msgid "Document &info\tCtrl+I"
 msgid "Document &Info\tCtrl+I"
 msgstr "&Informacije o dokumentu\tCtrl+I"
 
 msgid "Show document information"
 msgstr "Prikaži informacije o dokumentu"
 
-#| msgid "Table of contents\tCtrl+T"
 msgid "&Table of Contents\tCtrl+T"
 msgstr "&Sadržaj\tCtrl+T"
 
@@ -917,7 +892,6 @@ msgstr "&Lista elemenata...\tF7"
 msgid "Show elements list"
 msgstr "Prikaži listu elemenata"
 
-#| msgid "Open &containing folder\tCtrl+Shift+C"
 msgid "Open &Containing Folder\tCtrl+Shift+C"
 msgstr "Otvori &izvorni folder\tCtrl+Shift+C"
 
@@ -930,18 +904,15 @@ msgstr "Otvori u &Web prikazu\tCtrl+Shift+V"
 msgid "Open document in web view"
 msgstr "Otvori dokument u Web prikazu"
 
-#| msgid "Import/&Export"
 msgid "I&mport/Export"
 msgstr "U&vezi ili izvezi"
 
 msgid "Import and export options"
 msgstr "Opcije uvoza i izvoza"
 
-#| msgid "Toggle bookmark\tCtrl+Shift+B"
 msgid "Toggle &Bookmark\tCtrl+Shift+B"
 msgstr "Dodaj ili ukloni &knjižnu oznaku\tCtrl+Shift+B"
 
-#| msgid "Bookmark with &note\tCtrl+Shift+N"
 msgid "Bookmark with &Note\tCtrl+Shift+N"
 msgstr "Knjižna oznaka sa &napomenom\tCtrl+Shift+N"
 
@@ -951,21 +922,18 @@ msgstr "&Podešavanja\tCtrl+,"
 msgid "&Sleep Timer...\tCtrl+Shift+S"
 msgstr "Tajmer pre &spavanja...\tCtrl+Shift+S"
 
-#| msgid "About %s\tCtrl+F1"
 msgid "&About Paperback\tCtrl+F1"
 msgstr "O P&aperbacku\tCtrl+F1"
 
 msgid "About this application"
 msgstr "O ovoj aplikaciji"
 
-#| msgid "View &help in default browser\tF1"
 msgid "View Help in &Browser\tF1"
 msgstr "Prikaži pomoć u &pretraživaču\tF1"
 
 msgid "View help in default browser"
 msgstr "Prikaži pomoć u podrazumevanom pretraživaču"
 
-#| msgid "View Help in %s\tShift+F1"
 msgid "View Help in &Paperback\tShift+F1"
 msgstr "Prikaži pomoć u &Paperbacku\tShift+F1"
 
