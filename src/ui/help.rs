@@ -277,10 +277,39 @@ fn execute_update(result: Result<PathBuf, UpdateError>) {
 			let is_exe = path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("exe"));
 			let is_zip = path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("zip"));
 			if is_exe {
-				if let Err(e) = Command::new(&path).arg("/silent").spawn() {
+				let current_exe = match env::current_exe() {
+					Ok(p) => p,
+					Err(e) => {
+						let dlg = MessageDialog::builder(
+							parent,
+							&format!("{}: {e}", t("Failed to get current exe path")),
+							&t("Error"),
+						)
+						.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError)
+						.build();
+						dlg.show_modal();
+						return;
+					}
+				};
+				let pid = process::id();
+				let script = format!(
+					"Start-Sleep -Seconds 1; Wait-Process -Id {} -ErrorAction SilentlyContinue; Start-Process -FilePath '{}' -ArgumentList '/silent' -Wait; Start-Process -FilePath '{}'",
+					pid,
+					path.display(),
+					current_exe.display()
+				);
+				if let Err(e) = Command::new("powershell.exe")
+					.arg("-NoProfile")
+					.arg("-ExecutionPolicy")
+					.arg("Bypass")
+					.arg("-Command")
+					.arg(&script)
+					.creation_flags(0x0800_0000) // CREATE_NO_WINDOW
+					.spawn()
+				{
 					let dlg = MessageDialog::builder(
 						parent,
-						&format!("{}: {e}", t("Failed to launch installer")),
+						&format!("{}: {e}", t("Failed to launch installer script")),
 						&t("Error"),
 					)
 					.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError)

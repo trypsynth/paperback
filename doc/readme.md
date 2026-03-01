@@ -1,4 +1,4 @@
-# Paperback - version 0.8.0
+# Paperback - version 0.8.1
 
 ## Introduction
 
@@ -156,8 +156,17 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Roberto Perez
 * Sean Randall
 * Timothy Wynn
+* Tyler Rodick
 
 ## Changelog
+
+### Version 0.8.1
+* Added Ctrl+Shift+T to reopen the last closed document. [#343](https://github.com/trypsynth/paperback/issues/343).
+* The All Documents dialog now supports selecting multiple documents to open at once. [#344](https://github.com/trypsynth/paperback/issues/344).
+* Fixed slow document loading when opening large files.
+* Fixed PDF text being read in the wrong order, and incorrect spacing around capitalized words. [#44](https://github.com/trypsynth/paperback/issues/44).
+* Fixed file paths containing non-ASCII characters (such as Bosnian š, č, ć, ž) becoming corrupted when opening a file via a second Paperback instance. [#346](https://github.com/trypsynth/paperback/issues/346).
+* Fixed the localization of the Yes/No buttons in confirmation dialogs. [#285](https://github.com/trypsynth/paperback/issues/285).
 
 ### Version 0.8.0
 * Added Japanese, simplified Chinese, and Vietnamese translations! [#300](https://github.com/trypsynth/paperback/pull/300), [#326](https://github.com/trypsynth/paperback/pull/326), [#335](https://github.com/trypsynth/paperback/pull/335).
@@ -170,6 +179,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Added support for separators with s and shift+s. [#294](https://github.com/trypsynth/paperback/issues/294).
 * Any movement of greater than 300 characters will now automatically add to your navigation history. [#179](https://github.com/trypsynth/paperback/issues/179).
 * Fixed restoring Paperback's window from the system tray. [#284](https://github.com/trypsynth/paperback/issues/284).
+* Fixed Markdown documents showing raw text instead of rendered HTML in the Web View.
 * Fixed tables not rendering properly in Markdown files. [#303](https://github.com/trypsynth/paperback/issues/303).
 * Image only PDFs will now warn you of their existence when you attempt to load one. [#89](https://github.com/trypsynth/paperback/issues/89).
 * It is now possible to check for new dev builds instead of stable releases when checking for updates. [#333](https://github.com/trypsynth/paperback/pull/333).

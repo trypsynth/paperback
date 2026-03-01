@@ -37,6 +37,7 @@ pub struct DocumentManager {
 	live_region_label: StaticText,
 	last_position_save: Cell<Option<Instant>>,
 	last_sound_line: Cell<Option<i64>>,
+	recently_closed: Vec<PathBuf>,
 }
 
 impl DocumentManager {
@@ -54,6 +55,7 @@ impl DocumentManager {
 			live_region_label,
 			last_position_save: Cell::new(None),
 			last_sound_line: Cell::new(None),
+			recently_closed: Vec::new(),
 		}
 	}
 
@@ -164,6 +166,7 @@ impl DocumentManager {
 			return false;
 		}
 		if let Some(tab) = self.tabs.get(index) {
+			self.recently_closed.push(tab.file_path.clone());
 			let position = tab.text_ctrl.get_insertion_point();
 			let path_str = tab.file_path.to_string_lossy();
 			let config = self.config.lock().unwrap();
@@ -256,6 +259,18 @@ impl DocumentManager {
 		} else {
 			self.notebook.set_focus();
 		}
+	}
+
+	pub fn pop_recently_closed(&mut self) -> Option<PathBuf> {
+		self.recently_closed.pop()
+	}
+
+	pub fn push_recently_closed(&mut self, path: PathBuf) {
+		self.recently_closed.push(path);
+	}
+
+	pub const fn has_recently_closed(&self) -> bool {
+		!self.recently_closed.is_empty()
 	}
 
 	pub const fn notebook(&self) -> &Notebook {
@@ -465,19 +480,7 @@ fn show_error_dialog(parent: &dyn WxWidget, message: &str, title: &str) {
 }
 
 fn fill_text_ctrl(text_ctrl: TextCtrl, content: &str) {
-	const CHUNK_SIZE: usize = 32 * 1024;
-	text_ctrl.clear();
-	let mut buf = String::new();
-	for ch in content.chars() {
-		buf.push(ch);
-		if buf.len() >= CHUNK_SIZE {
-			text_ctrl.append_text(&buf);
-			buf.clear();
-		}
-	}
-	if !buf.is_empty() {
-		text_ctrl.append_text(&buf);
-	}
+	text_ctrl.set_value(content);
 }
 
 fn show_reader_context_menu(text_ctrl: TextCtrl) {

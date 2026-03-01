@@ -80,25 +80,53 @@ fn extract_codepage(rtf: &str) -> &'static Encoding {
 	encoding_rs::WINDOWS_1252
 }
 
-/// Pre-processes RTF text by replacing `\'xx` hex escapes (bytes >= 0x80) with
-/// their correctly decoded UTF-8 characters. This resolves the ambiguity between
+/// Pre-processes RTF text by replacing `\'xx` hex escapes with their correctly
+/// decoded UTF-8 characters. This resolves the ambiguity between
 /// `\'xx` (codepage byte) and `\uN` (Unicode) escapes before the lexer sees them,
 /// since the `rtf_parser` crate conflates both into `ControlWord::Unicode`.
 ///
-/// Bytes < 0x80 are left as escapes since they're ASCII (identical across all
-/// codepages) and some (`\'7b`, `\'7d`, `\'5c`) are structural RTF characters
-/// that the lexer must process as escapes.
+/// Structural ASCII escapes (`\'7b`, `\'7d`, `\'5c`) are left intact so the lexer
+/// still handles escaped `{`, `}`, and `\` correctly.
 fn resolve_hex_escapes(rtf: &str, encoding: &'static Encoding) -> String {
 	let mut result = String::with_capacity(rtf.len());
 	let bytes = rtf.as_bytes();
 	let len = bytes.len();
 	let mut i = 0;
 	while i < len {
+		if bytes[i] == b'\\' && i + 1 < len {
+			match bytes[i + 1] {
+				// RTF non-breaking space
+				b'~' => {
+					result.push(' ');
+					i += 2;
+					continue;
+				}
+				// Optional / non-breaking hyphen
+				b'-' | b'_' => {
+					result.push('-');
+					i += 2;
+					continue;
+				}
+				_ => {}
+			}
+		}
+
 		if bytes[i] == b'\\' && i + 3 < len && bytes[i + 1] == b'\'' {
 			let h1 = bytes[i + 2];
 			let h2 = bytes[i + 3];
 			if let Some(byte) = parse_hex_pair(h1, h2) {
-				if byte >= 0x80 {
+				// Normalize fallback bytes after \uN (e.g. \u237\'ed) so token
+				// boundaries remain valid and characters are not duplicated.
+				if is_unicode_fallback_escape(bytes, i) {
+					// Drop fallback bytes and inject a delimiter so `\uN` remains a
+					// valid standalone control word for the lexer.
+					if !result.ends_with(' ') {
+						result.push(' ');
+					}
+					i += 4;
+					continue;
+				}
+				if !matches!(byte, 0x7B | 0x7D | 0x5C) {
 					let buf = [byte];
 					let (decoded, _, _) = encoding.decode(&buf);
 					result.push_str(&decoded);
@@ -111,6 +139,30 @@ fn resolve_hex_escapes(rtf: &str, encoding: &'static Encoding) -> String {
 		i += 1;
 	}
 	result
+}
+
+fn is_unicode_fallback_escape(bytes: &[u8], index: usize) -> bool {
+	if index == 0 {
+		return false;
+	}
+
+	let mut j = index;
+	while j > 0 && bytes[j - 1] == b' ' {
+		j -= 1;
+	}
+
+	let digit_end = j;
+	while j > 0 && bytes[j - 1].is_ascii_digit() {
+		j -= 1;
+	}
+	if j == digit_end {
+		return false;
+	}
+	if j > 0 && bytes[j - 1] == b'-' {
+		j -= 1;
+	}
+
+	j >= 2 && bytes[j - 1] == b'u' && bytes[j - 2] == b'\\'
 }
 
 /// Parses two ASCII hex digit bytes into a `u8`.
@@ -175,6 +227,19 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 							}
 						}
 					}
+					ControlWord::Unknown(name) => {
+						if !in_header {
+							match *name {
+								r"\rquote" => buffer.append("\u{2019}"),
+								r"\lquote" => buffer.append("\u{2018}"),
+								r"\rdblquote" => buffer.append("\u{201D}"),
+								r"\ldblquote" => buffer.append("\u{201C}"),
+								r"\emdash" => buffer.append("\u{2014}"),
+								r"\endash" => buffer.append("\u{2013}"),
+								_ => {}
+							}
+						}
+					}
 					_ => {}
 				}
 			}
@@ -226,8 +291,13 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 mod tests {
 	use encoding_rs::Encoding;
 	use rstest::rstest;
+	use rtf_parser::lexer::Lexer;
+	use rtf_parser::tokens::{ControlWord, Property, Token};
 
-	use super::{encoding_for_codepage, extract_codepage, hex_digit, parse_hex_pair, resolve_hex_escapes};
+	use super::{
+		encoding_for_codepage, extract_codepage, extract_content_from_tokens, hex_digit, is_unicode_fallback_escape,
+		parse_hex_pair, resolve_hex_escapes,
+	};
 
 	fn enc_name(enc: &'static Encoding) -> &'static str {
 		enc.name()
@@ -276,10 +346,10 @@ mod tests {
 	}
 
 	#[test]
-	fn resolve_hex_escapes_decodes_high_bytes_only() {
-		let input = "Cafe\\'e9 and plain";
+	fn resolve_hex_escapes_decodes_non_structural_escapes() {
+		let input = "Don\\'27t say Caf\\'e9";
 		let output = resolve_hex_escapes(input, encoding_rs::WINDOWS_1252);
-		assert_eq!(output, "Cafeé and plain");
+		assert_eq!(output, "Don't say Café");
 	}
 
 	#[test]
@@ -294,5 +364,62 @@ mod tests {
 		let input = "Broken: \\'zz and mixed: \\'G1";
 		let output = resolve_hex_escapes(input, encoding_rs::WINDOWS_1252);
 		assert_eq!(output, input);
+	}
+	#[test]
+	fn resolve_hex_escapes_keeps_u_fallback_hex_sequences() {
+		let input = "Ju\\u237\\'edzo";
+		let output = resolve_hex_escapes(input, encoding_rs::WINDOWS_1252);
+		assert_eq!(output, "Ju\\u237 zo");
+	}
+
+	#[test]
+	fn resolve_hex_escapes_maps_nonbreaking_space_and_hyphen_symbols() {
+		let input = "A\\~B C\\_D E\\-F";
+		let output = resolve_hex_escapes(input, encoding_rs::WINDOWS_1252);
+		assert_eq!(output, "A B C-D E-F");
+	}
+
+	#[test]
+	fn is_unicode_fallback_escape_detects_after_u_control_word() {
+		let bytes = br"Ju\\u237\\'edzo";
+		assert!(is_unicode_fallback_escape(bytes, 7));
+	}
+
+	#[test]
+	fn is_unicode_fallback_escape_rejects_plain_hex_escape() {
+		let bytes = br"Don\\'27t";
+		assert!(!is_unicode_fallback_escape(bytes, 3));
+	}
+
+	#[test]
+	fn extract_content_maps_quote_unknown_control_words_to_typographic_quotes() {
+		let tokens = vec![
+			Token::ControlSymbol((ControlWord::Pard, Property::None)),
+			Token::ControlSymbol((ControlWord::Unknown(r"\ldblquote"), Property::None)),
+			Token::PlainText("ship"),
+			Token::ControlSymbol((ControlWord::Unknown(r"\rquote"), Property::None)),
+			Token::PlainText("s"),
+			Token::ControlSymbol((ControlWord::Unknown(r"\rdblquote"), Property::None)),
+			Token::PlainText(" and "),
+			Token::ControlSymbol((ControlWord::Unknown(r"\lquote"), Property::None)),
+			Token::PlainText("captain"),
+			Token::ControlSymbol((ControlWord::Unknown(r"\rquote"), Property::None)),
+		];
+		let buffer = extract_content_from_tokens(&tokens);
+		assert_eq!(buffer.content, "\u{201C}ship\u{2019}s\u{201D} and \u{2018}captain\u{2019}");
+	}
+
+	#[test]
+	fn extract_content_handles_libreoffice_unicode_fallback_and_nbsp_symbols() {
+		let rtf = r"{\rtf1\ansi\pard AGRAVANTE:\~ Pedro da Silva\par O Ju\u237\'edzo da Vara, pela decis\u227\'e3o e execu\u231\'e7\u227\'e3o contra a 2\u170\'aa executada\par}";
+		let normalized = resolve_hex_escapes(rtf, encoding_rs::WINDOWS_1252).replace('\r', "");
+		let tokens = Lexer::scan(&normalized).expect("RTF tokenization should succeed");
+		let buffer = extract_content_from_tokens(&tokens);
+		assert!(buffer.content.contains("AGRAVANTE:"));
+		assert!(buffer.content.contains("Pedro da Silva"));
+		assert!(buffer.content.contains("Juízo"));
+		assert!(buffer.content.contains("decisão"));
+		assert!(buffer.content.contains("execução"));
+		assert!(buffer.content.contains("2ª executada"));
 	}
 }

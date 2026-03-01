@@ -297,6 +297,8 @@ pub fn is_external_url(url: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
+	use std::iter;
+
 	use rstest::rstest;
 
 	use super::*;

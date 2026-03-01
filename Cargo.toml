@@ -1,6 +1,6 @@
 [package]
 name = "paperback"
-version = "0.8.0"
+version = "0.8.1"
 description = "An accessible, light-weight, fast ebook and document reader"
 license = "MIT"
 repository = "https://github.com/trypsynth/paperback"
@@ -31,7 +31,7 @@ scraper = "0.25.0"
 serde = { version = "1.0.228", default-features = false, features = ["derive", "std"] }
 sha1 = "0.10.6"
 ureq = { version = "3.2.0", default-features = false, features = ["json", "rustls"] }
-wxdragon = { version = "0.9.10", features = ["webview"] }
+wxdragon = { version = "0.9.12", features = ["webview"] }
 zip = { version = "8.1.0", default-features = false, features = ["deflate"] }
 
 [target.'cfg(windows)'.dependencies]
@@ -50,7 +50,3 @@ opt-level = "z"
 lto = true
 panic = "abort"
 codegen-units = 1
-
-[patch.crates-io]
-wxdragon = { git = "https://github.com/AllenDang/wxdragon" }
-wxdragon-sys = { git = "https://github.com/AllenDang/wxdragon" }

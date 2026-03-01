@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: paperback 0.8.0\n"
+"Project-Id-Version: paperback 0.8.1\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-02-19 04:36+0530\n"
+"POT-Creation-Date: 2026-03-01 13:08-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -191,17 +191,17 @@ msgstr ""
 msgid "P&ercent:"
 msgstr ""
 
+msgid "&Yes"
+msgstr ""
+
+msgid "&No"
+msgstr ""
+
 #, c-format
 msgid "Update to %s"
 msgstr ""
 
 msgid "A new version of Paperback is available. Here's what's new:"
-msgstr ""
-
-msgid "&Yes"
-msgstr ""
-
-msgid "&No"
 msgstr ""
 
 msgid "All Documents"
@@ -231,6 +231,11 @@ msgstr ""
 msgid ""
 "Are you sure you want to remove this document from the list? This will also "
 "remove its reading position."
+msgstr ""
+
+msgid ""
+"Are you sure you want to remove these {} documents from the list? This will "
+"also remove their reading positions."
 msgstr ""
 
 msgid "Confirm"
@@ -425,10 +430,10 @@ msgstr ""
 msgid "Error checking for updates."
 msgstr ""
 
-msgid "Failed to launch installer"
+msgid "Failed to get current exe path"
 msgstr ""
 
-msgid "Failed to get current exe path"
+msgid "Failed to launch installer script"
 msgstr ""
 
 msgid "Failed to launch update script"
@@ -703,6 +708,12 @@ msgid "Close &All\tCtrl+Shift+F4"
 msgstr ""
 
 msgid "Close all documents"
+msgstr ""
+
+msgid "Reopen &Last Closed\tCtrl+Shift+T"
+msgstr ""
+
+msgid "Reopen the last closed document"
 msgstr ""
 
 msgid "&Recent Documents"

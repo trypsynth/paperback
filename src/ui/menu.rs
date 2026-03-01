@@ -90,6 +90,14 @@ pub fn update_menu_item_states(frame: &Frame, has_document: bool) {
 	}
 }
 
+/// Enable or disable the "Reopen Last Closed" menu item.
+pub fn update_reopen_state(frame: &Frame, has_recently_closed: bool) {
+	let Some(menu_bar) = frame.get_menu_bar() else {
+		return;
+	};
+	menu_bar.enable_item(menu_ids::REOPEN_LAST_CLOSED, has_recently_closed);
+}
+
 pub struct MenuItemSpec {
 	pub id: i32,
 	pub label: String,
@@ -357,10 +365,13 @@ pub fn create_file_menu(config: &ConfigManager) -> Menu {
 	let close_all_label =
 		if cfg!(target_os = "macos") { t("Close &All\tCtrl+Shift+W") } else { t("Close &All\tCtrl+Shift+F4") };
 	let close_all_help = t("Close all documents");
+	let reopen_label = t("Reopen &Last Closed\tCtrl+Shift+T");
+	let reopen_help = t("Reopen the last closed document");
 	let file_menu = Menu::builder()
 		.append_item(menu_ids::OPEN, &open_label, &open_help)
 		.append_item(menu_ids::CLOSE, &close_label, &close_help)
 		.append_item(menu_ids::CLOSE_ALL, &close_all_label, &close_all_help)
+		.append_item(menu_ids::REOPEN_LAST_CLOSED, &reopen_label, &reopen_help)
 		.build();
 	let recent_menu = Menu::builder().build();
 	populate_recent_documents_menu(&recent_menu, config);

@@ -118,14 +118,19 @@ fn extract_page_text(document: &Pdf, page: &hayro_syntax::page::Page<'_>) -> Pag
 	let mut context = Context::new(initial_transform, bbox, document.xref(), settings);
 	let mut extractor = TextExtractor::default();
 	interpret_page(page, &mut context, &mut extractor);
-	PageResult { text: extractor.text, has_images: extractor.has_images }
+	let text = assemble_glyphs_to_text(&extractor.glyphs);
+	PageResult { text, has_images: extractor.has_images }
+}
+
+struct GlyphEntry {
+	x: f64,
+	y: f64,
+	ch: char,
 }
 
 #[derive(Default)]
 struct TextExtractor {
-	text: String,
-	last_pos: Option<(f64, f64)>,
-	avg_dx: Option<f64>,
+	glyphs: Vec<GlyphEntry>,
 	has_images: bool,
 }
 
@@ -148,33 +153,12 @@ impl Device<'_> for TextExtractor {
 		_: &Paint<'_>,
 		_: &GlyphDrawMode,
 	) {
-		let Some(unicode_char) = glyph.as_unicode() else { return };
-		if unicode_char == '\0' {
+		let Some(ch) = glyph.as_unicode() else { return };
+		if ch == '\0' {
 			return;
 		}
 		let position = transform * glyph_transform * Point::new(0.0, 0.0);
-		if let Some((last_x, last_y)) = self.last_pos {
-			let dy = (position.y - last_y).abs();
-			let dx = position.x - last_x;
-			// Simple heuristics to separate lines/words without full layout reconstruction.
-			if dy > 7.0 {
-				self.text.push('\n');
-				self.avg_dx = None;
-			} else if dx > 0.0 {
-				let avg = self.avg_dx.unwrap_or(dx);
-				let last_char = self.text.chars().last();
-				let alnum_pair = last_char.is_some_and(char::is_alphanumeric) && unicode_char.is_alphanumeric();
-				let gap_threshold = if alnum_pair { (avg * 2.4).max(4.0) } else { (avg * 1.6).max(3.0) };
-				if dx > gap_threshold && !self.text.ends_with([' ', '\n', '\r', '\t']) && unicode_char != ' ' {
-					self.text.push(' ');
-				}
-				if dx < avg * 2.8 {
-					self.avg_dx = Some(avg * 0.8 + dx * 0.2);
-				}
-			}
-		}
-		self.text.push(unicode_char);
-		self.last_pos = Some((position.x, position.y));
+		self.glyphs.push(GlyphEntry { x: position.x, y: position.y, ch });
 	}
 
 	fn draw_image(&mut self, _: Image<'_, '_>, _: Affine) {
@@ -184,6 +168,121 @@ impl Device<'_> for TextExtractor {
 	fn pop_clip_path(&mut self) {}
 
 	fn pop_transparency_group(&mut self) {}
+}
+
+/// Reorders PDF text into visual reading order by splitting the draw-order glyph
+/// sequence at large vertical jumps and sorting those sections by their topmost
+/// y-coordinate, then applying the original sequential space/line-break heuristics
+/// within each section.
+///
+/// PDFs may draw sections of a page out of reading order (e.g. the bottom half of a
+/// form before the top half). Sorting every individual glyph by position fixes that
+/// but destroys word/line order within compact table headers and multi-line form
+/// fields. This approach is more conservative: only the coarse section order changes;
+/// the original draw order is preserved within each section.
+fn assemble_glyphs_to_text(glyphs: &[GlyphEntry]) -> String {
+	// A y-jump larger than this between consecutive glyphs (in draw order) indicates
+	// the renderer has moved to a different region of the page, i.e. sections are
+	// drawn out of top-to-bottom order.
+	const SECTION_GAP: f64 = 200.0;
+	// Sentinel used instead of a plain ' ' for heuristically-detected spaces so that
+	// remove_cap_advance_spaces() can later distinguish them from real PDF spaces.
+	const DETECTED_SPACE: char = '\u{E000}';
+
+	if glyphs.is_empty() {
+		return String::new();
+	}
+
+	// Split the draw-order sequence into sections at large y-jumps.
+	let mut sections: Vec<&[GlyphEntry]> = Vec::new();
+	let mut start = 0;
+	for i in 1..glyphs.len() {
+		if (glyphs[i].y - glyphs[i - 1].y).abs() > SECTION_GAP {
+			sections.push(&glyphs[start..i]);
+			start = i;
+		}
+	}
+	sections.push(&glyphs[start..]);
+
+	// Sort sections by their topmost (minimum) y so that sections higher on the page
+	// are read first. Use a stable sort to keep sections at equal y in draw order.
+	sections.sort_by(|a, b| {
+		let min_y = |s: &&[GlyphEntry]| s.iter().map(|g| g.y).fold(f64::INFINITY, f64::min);
+		min_y(a).partial_cmp(&min_y(b)).unwrap_or(std::cmp::Ordering::Equal)
+	});
+
+	// Assemble text using the same sequential space/newline heuristics as the
+	// original single-pass extractor, applied within each section independently.
+	let mut text = String::new();
+	for section in &sections {
+		if !text.is_empty() && !text.ends_with('\n') {
+			text.push('\n');
+		}
+		let mut last_pos: Option<(f64, f64)> = None;
+		let mut avg_dx: Option<f64> = None;
+		for glyph in *section {
+			if let Some((last_x, last_y)) = last_pos {
+				let dy = (glyph.y - last_y).abs();
+				let dx = glyph.x - last_x;
+				if dy > 7.0 {
+					text.push('\n');
+					avg_dx = None;
+				} else if dx > 0.0 {
+					let avg = avg_dx.unwrap_or(dx);
+					let last_char = text.chars().last();
+					let alnum_pair = last_char.is_some_and(char::is_alphanumeric) && glyph.ch.is_alphanumeric();
+					let gap_threshold = if alnum_pair { (avg * 2.4).max(4.0) } else { (avg * 1.6).max(3.0) };
+					if dx > gap_threshold && !text.ends_with([' ', '\n', '\r', '\t', DETECTED_SPACE]) && glyph.ch != ' '
+					{
+						text.push(DETECTED_SPACE);
+					}
+					if dx < avg * 2.8 {
+						avg_dx = Some(avg.mul_add(0.8, dx * 0.2));
+					}
+				}
+			}
+			text.push(glyph.ch);
+			last_pos = Some((glyph.x, glyph.y));
+		}
+	}
+	remove_cap_advance_spaces(&text, DETECTED_SPACE)
+}
+
+/// Remove spurious heuristic spaces inserted between a word-initial uppercase letter
+/// and the lowercase continuation of the same word.
+///
+/// Some PDFs encode capital letters in a different font with a wider advance width
+/// than lowercase, causing the gap-based space detector to fire mid-word, e.g.
+/// "M iddle" instead of "Middle". We use a sentinel for detected spaces so that real
+/// PDF space characters (' ') are never touched.
+fn remove_cap_advance_spaces(text: &str, sentinel: char) -> String {
+	let chars: Vec<char> = text.chars().collect();
+	let n = chars.len();
+	let mut result = String::with_capacity(text.len());
+	let mut i = 0;
+	while i < n {
+		let ch = chars[i];
+		if ch == sentinel {
+			let prev = if i > 0 { chars[i - 1] } else { '\n' };
+			let next = if i + 1 < n { chars[i + 1] } else { '\n' };
+			// Remove the space only when:
+			//  - the preceding character is an uppercase letter (the split capital), AND
+			//  - the following character is a lowercase letter (the word continuation), AND
+			//  - the uppercase letter is at a word boundary (preceded by whitespace or
+			//    start-of-text), so standalone capitals like "I" are not accidentally joined
+			//    to the next word.
+			let at_word_boundary = i < 2 || chars[i - 2].is_whitespace();
+			if prev.is_uppercase() && next.is_lowercase() && at_word_boundary {
+				i += 1;
+				continue; // drop this sentinel
+			}
+			result.push(' '); // keep as regular space
+		} else {
+			result.push(ch);
+		}
+		i += 1;
+	}
+	result
 }
 
 fn decode_pdf_string(bytes: &[u8]) -> String {

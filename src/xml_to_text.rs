@@ -512,6 +512,8 @@ impl crate::parser::ConverterOutput for XmlToText {
 
 #[cfg(test)]
 mod tests {
+	use rstest::rstest;
+
 	use super::*;
 
 	#[test]
@@ -550,5 +552,62 @@ mod tests {
 		assert_eq!(items[0].level, 1);
 		assert_eq!(items[0].text, "One");
 		assert_eq!(items[1].text, "Two");
+	}
+
+	#[rstest]
+	#[case("h1", 1)]
+	#[case("h2", 2)]
+	#[case("h3", 3)]
+	#[case("h4", 4)]
+	#[case("h5", 5)]
+	#[case("h6", 6)]
+	fn heading_levels_h1_to_h6(#[case] tag: &str, #[case] expected_level: i32) {
+		let xml = format!("<root><body><{tag}>Title</{tag}></body></root>");
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(&xml));
+		let headings = converter.get_headings();
+		assert_eq!(headings.len(), 1);
+		assert_eq!(headings[0].level, expected_level);
+		assert_eq!(headings[0].text, "Title");
+	}
+
+	#[test]
+	fn hr_produces_separator() {
+		let xml = "<root><body><p>Before</p><hr/><p>After</p></body></root>";
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(xml));
+		assert_eq!(converter.get_separators().len(), 1);
+	}
+
+	#[test]
+	fn unordered_list_items_have_level_one() {
+		let xml = "<root><body><ul><li>First</li><li>Second</li></ul></body></root>";
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(xml));
+		let items = converter.get_list_items();
+		assert_eq!(items.len(), 2);
+		assert_eq!(items[0].level, 1);
+		assert_eq!(items[1].level, 1);
+		assert_eq!(items[0].text, "First");
+	}
+
+	#[test]
+	fn nested_list_increments_level() {
+		let xml = "<root><body><ul><li>A</li><ul><li>B</li></ul></ul></body></root>";
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(xml));
+		let items = converter.get_list_items();
+		assert!(items.len() >= 2, "expected at least two list items");
+		let level_a = items.iter().find(|i| i.text == "A").map(|i| i.level).unwrap_or(0);
+		let level_b = items.iter().find(|i| i.text == "B").map(|i| i.level).unwrap_or(0);
+		assert!(level_b > level_a, "nested item should have a higher level");
+	}
+
+	#[test]
+	fn table_is_detected() {
+		let xml = "<root><body><table><tr><td>Cell</td></tr></table></body></root>";
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(xml));
+		assert_eq!(converter.get_tables().len(), 1);
 	}
 }
