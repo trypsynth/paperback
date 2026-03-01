@@ -104,7 +104,7 @@ fn send_ipc_command(command: IpcCommand) {
 		IpcCommand::Activate => IPC_COMMAND_ACTIVATE.to_string(),
 		IpcCommand::OpenFile(path) => path.to_string_lossy().to_string(),
 	};
-	let _ = conn.execute(payload.as_bytes(), wxdragon::ipc::IPCFormat::Private);
+	let _ = conn.execute_string(&payload);
 	let _ = conn.disconnect();
 }
 
@@ -116,8 +116,19 @@ fn start_ipc_server(main_window: &Rc<MainWindow>) -> IPCServer {
 		Some(
 			IPCConnection::builder()
 				.on_execute({
-					move |_topic, data, _format| {
-						let Some(command) = decode_execute_payload(data) else {
+					move |_topic, data, format| {
+						// wxWidgets DDE sends strings as UTF-16 LE (wxIPC_UNICODETEXT).
+						// Decode to UTF-8 before processing so non-ASCII paths are preserved.
+						let owned;
+						let bytes: &[u8] = if format == wxdragon::ipc::IPCFormat::UnicodeText {
+							let utf16: Vec<u16> =
+								data.chunks_exact(2).map(|c| u16::from_le_bytes([c[0], c[1]])).collect();
+							owned = String::from_utf16_lossy(&utf16).into_bytes();
+							&owned
+						} else {
+							data
+						};
+						let Some(command) = decode_execute_payload(bytes) else {
 							return false;
 						};
 						wxdragon::call_after(Box::new(move || {
