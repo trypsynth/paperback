@@ -104,7 +104,7 @@ fn send_ipc_command(command: IpcCommand) {
 		IpcCommand::Activate => IPC_COMMAND_ACTIVATE.to_string(),
 		IpcCommand::OpenFile(path) => path.to_string_lossy().to_string(),
 	};
-	let _ = conn.execute_string(&payload);
+	let _ = conn.execute(payload.as_bytes(), wxdragon::ipc::IPCFormat::Private);
 	let _ = conn.disconnect();
 }
 
