@@ -1,6 +1,6 @@
 [package]
 name = "paperback"
-version = "0.8.0"
+version = "0.8.1"
 description = "An accessible, light-weight, fast ebook and document reader"
 license = "MIT"
 repository = "https://github.com/trypsynth/paperback"
