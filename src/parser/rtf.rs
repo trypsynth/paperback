@@ -80,14 +80,13 @@ fn extract_codepage(rtf: &str) -> &'static Encoding {
 	encoding_rs::WINDOWS_1252
 }
 
-/// Pre-processes RTF text by replacing `\'xx` hex escapes (bytes >= 0x80) with
-/// their correctly decoded UTF-8 characters. This resolves the ambiguity between
+/// Pre-processes RTF text by replacing `\'xx` hex escapes with their correctly
+/// decoded UTF-8 characters. This resolves the ambiguity between
 /// `\'xx` (codepage byte) and `\uN` (Unicode) escapes before the lexer sees them,
 /// since the `rtf_parser` crate conflates both into `ControlWord::Unicode`.
 ///
-/// Bytes < 0x80 are left as escapes since they're ASCII (identical across all
-/// codepages) and some (`\'7b`, `\'7d`, `\'5c`) are structural RTF characters
-/// that the lexer must process as escapes.
+/// Structural ASCII escapes (`\'7b`, `\'7d`, `\'5c`) are left intact so the lexer
+/// still handles escaped `{`, `}`, and `\` correctly.
 fn resolve_hex_escapes(rtf: &str, encoding: &'static Encoding) -> String {
 	let mut result = String::with_capacity(rtf.len());
 	let bytes = rtf.as_bytes();
@@ -98,7 +97,7 @@ fn resolve_hex_escapes(rtf: &str, encoding: &'static Encoding) -> String {
 			let h1 = bytes[i + 2];
 			let h2 = bytes[i + 3];
 			if let Some(byte) = parse_hex_pair(h1, h2) {
-				if byte >= 0x80 {
+				if !matches!(byte, 0x7B | 0x7D | 0x5C) {
 					let buf = [byte];
 					let (decoded, _, _) = encoding.decode(&buf);
 					result.push_str(&decoded);
@@ -175,6 +174,17 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 							}
 						}
 					}
+					ControlWord::Unknown(name) => {
+						if !in_header {
+							match *name {
+								r"\rquote" | r"\lquote" => buffer.append("'"),
+								r"\rdblquote" | r"\ldblquote" => buffer.append("\""),
+								r"\emdash" => buffer.append("—"),
+								r"\endash" => buffer.append("–"),
+								_ => {}
+							}
+						}
+					}
 					_ => {}
 				}
 			}
@@ -226,8 +236,12 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 mod tests {
 	use encoding_rs::Encoding;
 	use rstest::rstest;
+	use rtf_parser::tokens::{ControlWord, Property, Token};
 
-	use super::{encoding_for_codepage, extract_codepage, hex_digit, parse_hex_pair, resolve_hex_escapes};
+	use super::{
+		encoding_for_codepage, extract_codepage, extract_content_from_tokens, hex_digit, parse_hex_pair,
+		resolve_hex_escapes,
+	};
 
 	fn enc_name(enc: &'static Encoding) -> &'static str {
 		enc.name()
@@ -276,10 +290,10 @@ mod tests {
 	}
 
 	#[test]
-	fn resolve_hex_escapes_decodes_high_bytes_only() {
-		let input = "Cafe\\'e9 and plain";
+	fn resolve_hex_escapes_decodes_non_structural_escapes() {
+		let input = "Don\\'27t say Caf\\'e9";
 		let output = resolve_hex_escapes(input, encoding_rs::WINDOWS_1252);
-		assert_eq!(output, "Cafeé and plain");
+		assert_eq!(output, "Don't say Café");
 	}
 
 	#[test]
@@ -294,5 +308,17 @@ mod tests {
 		let input = "Broken: \\'zz and mixed: \\'G1";
 		let output = resolve_hex_escapes(input, encoding_rs::WINDOWS_1252);
 		assert_eq!(output, input);
+	}
+
+	#[test]
+	fn extract_content_maps_rquote_unknown_control_word_to_apostrophe() {
+		let tokens = vec![
+			Token::ControlSymbol((ControlWord::Pard, Property::None)),
+			Token::PlainText("ship"),
+			Token::ControlSymbol((ControlWord::Unknown(r"\rquote"), Property::None)),
+			Token::PlainText("s log"),
+		];
+		let buffer = extract_content_from_tokens(&tokens);
+		assert_eq!(buffer.content, "ship's log");
 	}
 }
