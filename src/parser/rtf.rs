@@ -288,7 +288,8 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 								r"\line" => buffer.append("\n"),
 								r"\tab" => buffer.append("\t"),
 								r"\page" => {
-									let ends_with_ws = buffer.content.chars().next_back().is_some_and(char::is_whitespace);
+									let ends_with_ws =
+										buffer.content.chars().next_back().is_some_and(char::is_whitespace);
 									if !ends_with_ws && !buffer.content.is_empty() {
 										buffer.append(" ");
 									}
