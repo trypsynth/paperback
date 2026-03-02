@@ -163,9 +163,10 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 ### Version 0.8.1
 * Added Ctrl+Shift+T to reopen the last closed document. [#343](https://github.com/trypsynth/paperback/issues/343).
 * The All Documents dialog now supports selecting multiple documents to open at once. [#344](https://github.com/trypsynth/paperback/issues/344).
-* Fixed slow document loading when opening large files.
-* Fixed PDF text being read in the wrong order, and incorrect spacing around capitalized words. [#44](https://github.com/trypsynth/paperback/issues/44).
+* Fixed a few bugs with the RTF parser. [#345](https://github.com/trypsynth/paperback/issues/345).
 * Fixed file paths containing non-ASCII characters (such as Bosnian š, č, ć, ž) becoming corrupted when opening a file via a second Paperback instance. [#346](https://github.com/trypsynth/paperback/issues/346).
+* Fixed PDF text being read in the wrong order, and incorrect spacing around capitalized words. [#44](https://github.com/trypsynth/paperback/issues/44).
+* Fixed slow document loading when opening large files.
 * Fixed the localization of the Yes/No buttons in confirmation dialogs. [#285](https://github.com/trypsynth/paperback/issues/285).
 
 ### Version 0.8.0
