@@ -285,6 +285,8 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 					ControlWord::Unknown(name) => {
 						if !in_header {
 							match *name {
+								r"\line" => buffer.append("\n"),
+								r"\tab" => buffer.append("\t"),
 								r"\rquote" => buffer.append("\u{2019}"),
 								r"\lquote" => buffer.append("\u{2018}"),
 								r"\rdblquote" => buffer.append("\u{201D}"),
@@ -470,6 +472,15 @@ mod tests {
 		];
 		let buffer = extract_content_from_tokens(&tokens);
 		assert_eq!(buffer.content, "\u{201C}ship\u{2019}s\u{201D} and \u{2018}captain\u{2019}");
+	}
+
+	#[test]
+	fn extract_content_preserves_line_and_tab_unknown_controls() {
+		let rtf = r"{\rtf1\ansi\pard delay.\line \tab next}";
+		let normalized = resolve_hex_escapes(rtf, encoding_rs::WINDOWS_1252).replace('\r', "");
+		let tokens = Lexer::scan(&normalized).expect("RTF tokenization should succeed");
+		let buffer = extract_content_from_tokens(&tokens);
+		assert_eq!(buffer.content, "delay.\n\tnext");
 	}
 
 	#[test]
