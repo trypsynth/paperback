@@ -24,7 +24,7 @@ impl Parser for RtfParser {
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::NONE
+		ParserFlags::SUPPORTS_PAGES
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
@@ -287,6 +287,9 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 							match *name {
 								r"\line" => buffer.append("\n"),
 								r"\tab" => buffer.append("\t"),
+								r"\page" => {
+									buffer.add_marker(Marker::new(MarkerType::PageBreak, buffer.current_position()));
+								}
 								r"\rquote" => buffer.append("\u{2019}"),
 								r"\lquote" => buffer.append("\u{2018}"),
 								r"\rdblquote" => buffer.append("\u{201D}"),
@@ -341,6 +344,11 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 				.with_level(marker.level),
 		);
 	}
+	let has_pages = result.markers.iter().any(|m| m.mtype == MarkerType::PageBreak);
+	let has_start_page = result.markers.iter().any(|m| m.mtype == MarkerType::PageBreak && m.position == 0);
+	if has_pages && !has_start_page {
+		result.add_marker(Marker::new(MarkerType::PageBreak, 0));
+	}
 	result
 }
 
@@ -357,6 +365,7 @@ mod tests {
 		encoding_for_codepage, extract_codepage, extract_content_from_tokens, hex_digit, is_unicode_fallback_escape,
 		normalize_wrapped_space_lines, parse_hex_pair, resolve_hex_escapes,
 	};
+	use crate::document::MarkerType;
 
 	fn enc_name(enc: &'static Encoding) -> &'static str {
 		enc.name()
@@ -481,6 +490,19 @@ mod tests {
 		let tokens = Lexer::scan(&normalized).expect("RTF tokenization should succeed");
 		let buffer = extract_content_from_tokens(&tokens);
 		assert_eq!(buffer.content, "delay.\n\tnext");
+	}
+
+	#[test]
+	fn extract_content_maps_page_control_to_marker_and_separator() {
+		let rtf = r"{\rtf1\ansi\pard chapter one\page chapter two}";
+		let normalized = resolve_hex_escapes(rtf, encoding_rs::WINDOWS_1252).replace('\r', "");
+		let tokens = Lexer::scan(&normalized).expect("RTF tokenization should succeed");
+		let buffer = extract_content_from_tokens(&tokens);
+		assert_eq!(buffer.content, "chapter one chapter two");
+		let page_markers: Vec<_> = buffer.markers.iter().filter(|m| m.mtype == MarkerType::PageBreak).collect();
+		assert_eq!(page_markers.len(), 2);
+		assert_eq!(page_markers[0].position, "chapter one ".chars().count());
+		assert_eq!(page_markers[1].position, 0);
 	}
 
 	#[test]
