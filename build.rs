@@ -15,6 +15,7 @@ fn main() {
 	track_packaging_inputs();
 	build_translations();
 	copy_sounds();
+	copy_pdfium_dll();
 	build_docs();
 	configure_installer();
 	generate_pot();
@@ -189,6 +190,85 @@ fn copy_sounds() {
 			}
 		}
 	}
+}
+
+fn copy_pdfium_dll() {
+	let target = env::var("TARGET").unwrap_or_default();
+	if !target.contains("windows") {
+		return;
+	}
+	println!("cargo:rerun-if-env-changed=PDFIUM_DLL_PATH");
+	println!("cargo:rerun-if-env-changed=PAPERBACK_PDFIUM_DLL");
+	let target_dir = match target_profile_dir() {
+		Some(dir) => dir,
+		None => {
+			println!("cargo:warning=Could not determine target output directory for pdfium.dll.");
+			return;
+		}
+	};
+	let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap_or_default());
+	let mut candidates = Vec::new();
+	if let Ok(path) = env::var("PAPERBACK_PDFIUM_DLL") {
+		push_dll_candidates_from_path(&mut candidates, PathBuf::from(path));
+	}
+	if let Ok(path) = env::var("PDFIUM_DLL_PATH") {
+		push_dll_candidates_from_path(&mut candidates, PathBuf::from(path));
+	}
+	if let Some(path) = vendored_pdfium_dll(&manifest_dir) {
+		candidates.push(path);
+	}
+	candidates.push(manifest_dir.join("pdfium.dll"));
+	candidates.push(manifest_dir.join("bin").join("pdfium.dll"));
+	candidates.push(manifest_dir.join("vendor").join("pdfium.dll"));
+	candidates.push(manifest_dir.join("third_party").join("pdfium").join("pdfium.dll"));
+	candidates.extend(find_pdfium_dll_in_path());
+	let source = candidates.into_iter().find(|path| path.is_file());
+	let Some(source) = source else {
+		println!(
+			"cargo:warning=pdfium.dll not found. Run `cargo pdfium` to vendor it (preferred), set PDFIUM_DLL_PATH (or PAPERBACK_PDFIUM_DLL), install pdfium.dll on PATH, or place it in the project root."
+		);
+		return;
+	};
+	println!("cargo:rerun-if-changed={}", source.display());
+	let dest = target_dir.join("pdfium.dll");
+	if let Err(err) = fs::copy(&source, &dest) {
+		println!("cargo:warning=Failed to copy pdfium.dll from {}: {}", source.display(), err);
+	}
+}
+
+fn vendored_pdfium_dll(manifest_dir: &Path) -> Option<PathBuf> {
+	let arch = env::var("CARGO_CFG_TARGET_ARCH").ok()?;
+	let target_dir = match arch.as_str() {
+		"x86_64" => "win-x64",
+		"x86" => "win-x86",
+		"aarch64" => "win-arm64",
+		_ => return None,
+	};
+	let vendor_root = manifest_dir.join("vendor").join("pdfium");
+	println!("cargo:rerun-if-changed={}", vendor_root.display());
+	Some(vendor_root.join(target_dir).join("pdfium.dll"))
+}
+
+fn push_dll_candidates_from_path(candidates: &mut Vec<PathBuf>, path: PathBuf) {
+	if path.is_dir() {
+		candidates.push(path.join("pdfium.dll"));
+	} else {
+		candidates.push(path);
+	}
+}
+
+fn find_pdfium_dll_in_path() -> Vec<PathBuf> {
+	let mut candidates = Vec::new();
+	let Ok(path_var) = env::var("PATH") else {
+		return candidates;
+	};
+	for dir in env::split_paths(&path_var) {
+		if dir.as_os_str().is_empty() {
+			continue;
+		}
+		candidates.push(dir.join("pdfium.dll"));
+	}
+	candidates
 }
 
 fn target_profile_dir() -> Option<PathBuf> {
