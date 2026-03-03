@@ -1,25 +1,19 @@
 use std::{
 	env,
 	error::Error,
-	fs::{self, File},
-	io::{self, Cursor, Read},
+	fs::File,
+	io,
 	path::{Path, PathBuf},
 	process::Command,
 };
 
-use flate2::read::GzDecoder;
-use tar::Archive;
 use walkdir::WalkDir;
 use zip::{CompressionMethod, ZipWriter, write::SimpleFileOptions};
-
-const PDFIUM_WIN_X64_URL: &str =
-	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-win-x64.tgz";
 
 fn main() -> Result<(), Box<dyn Error>> {
 	let task = env::args().nth(1);
 	match task.as_deref() {
 		Some("release") => release()?,
-		Some("pdfium") => sync_pdfium_win_x64()?,
 		_ => print_help(),
 	}
 	Ok(())
@@ -28,7 +22,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 fn print_help() {
 	println!("Tasks:");
 	println!("	release	Build release binaries and package them");
-	println!("	pdfium	Download latest pdfium.dll (Windows x64) into vendor/");
 }
 
 fn release() -> Result<(), Box<dyn Error>> {
@@ -52,39 +45,6 @@ fn release() -> Result<(), Box<dyn Error>> {
 	if cfg!(windows) {
 		build_windows_installer(&target_dir)?;
 	}
-	Ok(())
-}
-
-fn sync_pdfium_win_x64() -> Result<(), Box<dyn Error>> {
-	let vendor_dir = project_root().join("vendor").join("pdfium").join("win-x64");
-	fs::create_dir_all(&vendor_dir)?;
-	let dest_dll = vendor_dir.join("pdfium.dll");
-	println!("Downloading {}", PDFIUM_WIN_X64_URL);
-	let mut response = ureq::get(PDFIUM_WIN_X64_URL).call()?.into_body();
-	let mut archive_bytes = Vec::new();
-	response.as_reader().read_to_end(&mut archive_bytes)?;
-	let decoder = GzDecoder::new(Cursor::new(archive_bytes));
-	let mut archive = Archive::new(decoder);
-	let mut found = false;
-	for entry in archive.entries()? {
-		let mut entry = entry?;
-		let path = entry.path()?;
-		let file_name = path.file_name().and_then(|name| name.to_str());
-		if file_name == Some("pdfium.dll") {
-			let tmp_path = dest_dll.with_extension("dll.tmp");
-			entry.unpack(&tmp_path)?;
-			if dest_dll.exists() {
-				fs::remove_file(&dest_dll)?;
-			}
-			fs::rename(tmp_path, &dest_dll)?;
-			found = true;
-			break;
-		}
-	}
-	if !found {
-		return Err("pdfium.dll was not found inside the downloaded archive".into());
-	}
-	println!("Saved {}", dest_dll.display());
 	Ok(())
 }
 
