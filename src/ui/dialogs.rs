@@ -1983,6 +1983,35 @@ pub fn show_web_view_dialog(
 			sim.mouse_move(x, y);
 			sim.mouse_click(MouseButton::Left);
 		});
+		web_view_for_load.run_script(
+			"(() => { \
+				const existing = document.getElementById('paperback-focus-shield'); \
+				if (existing) existing.remove(); \
+				const shield = document.createElement('div'); \
+				shield.id = 'paperback-focus-shield'; \
+				shield.setAttribute('aria-hidden', 'true'); \
+				shield.style.position = 'fixed'; \
+				shield.style.left = '0'; \
+				shield.style.top = '0'; \
+				shield.style.width = '100vw'; \
+				shield.style.height = '100vh'; \
+				shield.style.zIndex = '2147483647'; \
+				shield.style.background = 'transparent'; \
+				shield.style.pointerEvents = 'auto'; \
+				const consume = (event) => { \
+					event.preventDefault(); \
+					event.stopPropagation(); \
+					event.stopImmediatePropagation(); \
+					shield.remove(); \
+				}; \
+				shield.addEventListener('click', consume, true); \
+				document.documentElement.appendChild(shield); \
+				setTimeout(() => { \
+					const node = document.getElementById('paperback-focus-shield'); \
+					if (node) node.remove(); \
+				}, 400); \
+			})();",
+		);
 		timer_copy.start(100, true);
 		web_view_for_load.run_script(
 			"document.addEventListener('keydown', function(event) { \
