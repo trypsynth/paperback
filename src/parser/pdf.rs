@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use anyhow::{Result, anyhow};
 use pdfium::{PdfiumDocument, PdfiumError, lib};
@@ -49,22 +49,18 @@ impl Parser for PdfParser {
 			};
 			let raw_text = text_page.full();
 			let lines = process_text_lines(&raw_text);
-
 			let page_start_offset = buffer.current_position();
 			let mut page_display_text = String::new();
 			let mut current_lines_info = Vec::new();
 			let mut current_offset = page_start_offset;
-
 			for line in lines {
 				current_lines_info.push((current_offset, line.clone()));
 				current_offset += display_len(&line) + 1;
-
 				buffer.append(&line);
 				buffer.append("\n");
 				page_display_text.push_str(&line);
 				page_display_text.push('\n');
 			}
-
 			// Load implicit web links
 			if let Ok(links) = text_page.load_web_links() {
 				let count = lib().FPDFLink_CountWebLinks(&links);
@@ -78,7 +74,6 @@ impl Parser for PdfParser {
 						if trimmed_link.is_empty() {
 							continue;
 						}
-
 						let mut url_buffer = vec![0u16; 2048];
 						let len = lib().FPDFLink_GetURL(&links, i, &mut url_buffer[0], 2048);
 						if len > 0 {
@@ -101,7 +96,6 @@ impl Parser for PdfParser {
 					}
 				}
 			}
-
 			// Load explicit annotations (internal and external links)
 			let annot_count = lib().FPDFPage_GetAnnotCount(&page);
 			let mut last_search_pos = 0;
@@ -126,7 +120,6 @@ impl Parser for PdfParser {
 								if trimmed_link.is_empty() {
 									continue;
 								}
-
 								let mut url = String::new();
 								if let Ok(link) = lib().FPDFAnnot_GetLink(&annot) {
 									if let Ok(action) = lib().FPDFLink_GetAction(&link) {
@@ -162,7 +155,6 @@ impl Parser for PdfParser {
 										}
 									}
 								}
-
 								if !url.is_empty() {
 									if let Some(pos) = page_display_text[last_search_pos..].find(&trimmed_link) {
 										let text_before = &page_display_text[last_search_pos..last_search_pos + pos];
@@ -184,16 +176,12 @@ impl Parser for PdfParser {
 					}
 				}
 			}
-
 			page_lines_info.push(current_lines_info);
 		}
-
 		let title = metadata_value(&document, "Title").unwrap_or_else(|| extract_title_from_path(&context.file_path));
 		let author = metadata_value(&document, "Author").unwrap_or_default();
 		let toc_items = extract_toc(&document, &page_offsets, &page_lines_info);
-
 		add_heading_markers(&mut buffer, &toc_items, 1);
-
 		let mut doc = Document::new();
 		doc.set_buffer(buffer);
 		doc.title = title;
@@ -253,10 +241,8 @@ fn extract_toc(
 	if bookmarks.is_empty() {
 		return Vec::new();
 	}
-
 	let mut items = Vec::<(u32, TocItem)>::new();
-	let mut used_offsets = std::collections::HashSet::new();
-
+	let mut used_offsets = HashSet::new();
 	for bookmark in &bookmarks {
 		let Some(level) = bookmark.level() else {
 			continue;
@@ -280,18 +266,15 @@ fn extract_toc(
 		let Some(&page_start_offset) = page_offsets.get(page_index) else {
 			continue;
 		};
-
 		let mut actual_offset = page_start_offset;
 		let mut actual_title = title.clone();
 		if let Some(lines) = page_lines_info.get(page_index) {
 			let title_alpha: String = title.to_lowercase().chars().filter(|c| c.is_alphabetic()).collect();
 			for (line_offset, line) in lines {
 				let line_alpha: String = line.to_lowercase().chars().filter(|c| c.is_alphabetic()).collect();
-
 				let ends_with_number = line.chars().last().unwrap_or(' ').is_ascii_digit();
 				let is_all_caps = line.chars().filter(|c| c.is_alphabetic()).all(char::is_uppercase);
 				let is_page_header = ends_with_number && is_all_caps;
-
 				if (line_alpha == title_alpha
 					|| line_alpha.starts_with(&title_alpha)
 					|| line_alpha.ends_with(&title_alpha))
@@ -306,15 +289,12 @@ fn extract_toc(
 				}
 			}
 		}
-
 		while used_offsets.contains(&actual_offset) {
 			actual_offset += 1;
 		}
 		used_offsets.insert(actual_offset);
-
 		items.push((level, TocItem::new(actual_title, String::new(), actual_offset)));
 	}
-
 	build_toc_tree(items)
 }
 
@@ -322,7 +302,6 @@ fn build_toc_tree(flat_items: Vec<(u32, TocItem)>) -> Vec<TocItem> {
 	let mut root = Vec::<TocItem>::new();
 	let mut path = Vec::<usize>::new();
 	let mut level_stack = Vec::<u32>::new();
-
 	for (level, item) in flat_items {
 		while let Some(&last_level) = level_stack.last() {
 			if last_level < level {
@@ -331,13 +310,11 @@ fn build_toc_tree(flat_items: Vec<(u32, TocItem)>) -> Vec<TocItem> {
 			level_stack.pop();
 			path.pop();
 		}
-
 		let siblings = children_at_path_mut(&mut root, &path);
 		siblings.push(item);
 		path.push(siblings.len() - 1);
 		level_stack.push(level);
 	}
-
 	root
 }
 
