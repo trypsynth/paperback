@@ -31,7 +31,6 @@ impl Parser for PdfParser {
 		let mut page_offsets = Vec::new();
 		let mut id_positions = HashMap::new();
 		let mut page_lines_info: Vec<Vec<(usize, String)>> = Vec::new();
-		let mut heuristic_headings: Vec<(usize, String, f64, f64)> = Vec::new(); // offset, line text, font_size, font_weight
 		let page_count = document.page_count();
 		for page_index in 0..page_count {
 			let marker_position = buffer.current_position();
@@ -55,43 +54,8 @@ impl Parser for PdfParser {
 			let mut page_display_text = String::new();
 			let mut current_lines_info = Vec::new();
 			let mut current_offset = page_start_offset;
-			let mut last_search_pos = 0;
-			let mut last_utf16_pos = 0;
 
 			for line in lines {
-				let first_word = line.split_whitespace().next().unwrap_or("");
-				let mut line_font_size = 0.0;
-				let mut line_font_weight = 400.0;
-				if !first_word.is_empty() {
-					// Search for the word boundary to prevent partial matches like "In" inside "Index"
-					let mut search_idx = last_search_pos;
-					while let Some(pos) = raw_text[search_idx..].find(first_word) {
-						let char_idx = search_idx + pos;
-
-						// Basic word boundary check: is the preceding character whitespace (or start of text)?
-						let is_valid_start =
-							char_idx == 0 || raw_text[..char_idx].ends_with(|c: char| c.is_whitespace());
-
-						if is_valid_start {
-							// Update UTF-16 index efficiently without O(N^2) recount
-							let utf16_chunk_len = raw_text[last_search_pos..char_idx].encode_utf16().count();
-							last_utf16_pos += utf16_chunk_len;
-
-							line_font_size = text_page.get_font_size(last_utf16_pos as i32);
-							line_font_weight = text_page.get_font_weight(last_utf16_pos as i32).unwrap_or(400) as f64;
-
-							last_search_pos = char_idx + first_word.len();
-							last_utf16_pos += first_word.encode_utf16().count();
-							break;
-						}
-						search_idx = char_idx + first_word.len();
-					}
-				}
-
-				if line_font_size > 0.0 {
-					heuristic_headings.push((current_offset, line.clone(), line_font_size, line_font_weight));
-				}
-
 				current_lines_info.push((current_offset, line.clone()));
 				current_offset += display_len(&line) + 1;
 
@@ -228,88 +192,7 @@ impl Parser for PdfParser {
 		let author = metadata_value(&document, "Author").unwrap_or_default();
 		let toc_items = extract_toc(&document, &page_offsets, &page_lines_info);
 
-		let mut median_font_size = 0.0;
-		if !heuristic_headings.is_empty() {
-			let mut sizes: Vec<f64> = heuristic_headings.iter().map(|(_, _, size, _)| *size).collect();
-			sizes.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
-			median_font_size = sizes[sizes.len() / 2];
-		}
-
-		let mut median_font_weight = 400.0;
-		if !heuristic_headings.is_empty() {
-			let mut weights: Vec<f64> = heuristic_headings.iter().map(|(_, _, _, weight)| *weight).collect();
-			weights.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
-			median_font_weight = weights[weights.len() / 2];
-		}
-
 		add_heading_markers(&mut buffer, &toc_items, 1);
-
-		let mut toc_offsets = std::collections::HashSet::new();
-		fn collect_toc_offsets(items: &[TocItem], offsets: &mut std::collections::HashSet<usize>) {
-			for item in items {
-				for i in 0..=50 {
-					offsets.insert(item.offset + i);
-					offsets.insert(item.offset.saturating_sub(i));
-				}
-				collect_toc_offsets(&item.children, offsets);
-			}
-		}
-		collect_toc_offsets(&toc_items, &mut toc_offsets);
-
-		for (offset, line, size, weight) in heuristic_headings {
-			if toc_offsets.contains(&offset) {
-				continue;
-			}
-
-			if line.len() < 100
-				&& (size > median_font_size + 1.0 || (weight > median_font_weight + 200.0 && size >= median_font_size))
-			{
-				let has_sentence_punctuation = line.contains(". ")
-					|| line.contains("? ")
-					|| line.contains("! ")
-					|| line.contains(": ")
-					|| line.ends_with('.')
-					|| line.ends_with('?')
-					|| line.ends_with('!');
-				let ends_with_continuation = line.ends_with(',')
-					|| line.ends_with("and")
-					|| line.ends_with("or")
-					|| line.ends_with("by")
-					|| line.ends_with("the");
-				let ends_with_number = line.chars().last().unwrap_or(' ').is_ascii_digit();
-				let first_char = line.chars().next().unwrap_or(' ');
-				let has_url_indicators = line.contains("http")
-					|| line.contains("://")
-					|| line.contains(".com")
-					|| line.contains(".org")
-					|| line.contains(".html")
-					|| line.contains('/');
-
-				let is_likely_heading = (first_char.is_uppercase() || first_char.is_ascii_digit())
-					&& !has_sentence_punctuation
-					&& !ends_with_continuation
-					&& !ends_with_number
-					&& !has_url_indicators;
-
-				if is_likely_heading {
-					let has_marker = buffer.markers.iter().any(|m| {
-						m.position == offset
-							&& matches!(
-								m.mtype,
-								MarkerType::Heading1
-									| MarkerType::Heading2 | MarkerType::Heading3
-									| MarkerType::Heading4 | MarkerType::Heading5
-									| MarkerType::Heading6
-							)
-					});
-					if !has_marker {
-						buffer.add_marker(
-							Marker::new(MarkerType::Heading3, offset).with_text(line.clone()).with_level(3),
-						);
-					}
-				}
-			}
-		}
 
 		let mut doc = Document::new();
 		doc.set_buffer(buffer);
