@@ -25,9 +25,9 @@ const PPT_REC_TEXT_CHARS_ATOM: u16 = 4000;
 const PPT_REC_TEXT_BYTES_ATOM: u16 = 4008;
 const PPT_REC_CSTRING: u16 = 4026;
 
-pub struct PptxParser;
+pub struct PowerpointParser;
 
-impl Parser for PptxParser {
+impl Parser for PowerpointParser {
 	fn name(&self) -> &'static str {
 		"PowerPoint Presentations"
 	}

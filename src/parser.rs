@@ -23,7 +23,7 @@ pub mod odt;
 pub mod ooxml;
 pub mod path;
 pub mod pdf;
-pub mod pptx;
+pub mod powerpoint;
 pub mod rtf;
 pub mod text;
 pub mod toc;
@@ -100,7 +100,7 @@ impl ParserRegistry {
 			registry.register(odp::OdpParser);
 			registry.register(odt::FodtParser);
 			registry.register(odt::OdtParser);
-			registry.register(pptx::PptxParser);
+			registry.register(powerpoint::PowerpointParser);
 			registry.register(rtf::RtfParser);
 			registry.register(text::TextParser);
 			registry
