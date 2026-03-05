@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>Paperback - version 0.8.1</title>
+  <title>Paperback - version 0.8.2</title>
   <style>
     html {
       color: #1a1a1a;
@@ -166,7 +166,7 @@
 </head>
 <body>
 <header id="title-block-header">
-<h1 class="title">Paperback - version 0.8.1</h1>
+<h1 class="title">Paperback - version 0.8.2</h1>
 </header>
 <nav id="TOC" role="doc-toc">
 <ul>
@@ -197,6 +197,8 @@ id="toc-supported-languages">Supported languages</a></li>
 </ul></li>
 <li><a href="#changelog" id="toc-changelog">Changelog</a>
 <ul>
+<li><a href="#version-0.8.2" id="toc-version-0.8.2">Version
+0.8.2</a></li>
 <li><a href="#version-0.8.1" id="toc-version-0.8.1">Version
 0.8.1</a></li>
 <li><a href="#version-0.8.0" id="toc-version-0.8.0">Version
@@ -413,6 +415,26 @@ inclusion in this list.</p>
 <li>Tyler Rodick</li>
 </ul>
 <h1 id="changelog">Changelog</h1>
+<h2 id="version-0.8.2">Version 0.8.2</h2>
+<ul>
+<li>Added page support to RTF documents!</li>
+<li>Fixed a bug where opening the webview in epubs containing external
+links would automatically activate them.</li>
+<li>Fixed a bug where the RTF parser wouldn’t put a space between words
+in rare cases.</li>
+<li>Fixed paragraphs being split into multiple short lines in some PDF
+documents. <a
+href="https://github.com/trypsynth/paperback/issues/101">#101</a>, <a
+href="https://github.com/trypsynth/paperback/pull/355">#355</a>.</li>
+<li>PDF documents now have basic link and heading navigation support! <a
+href="https://github.com/trypsynth/paperback/issues/291">#291</a>, <a
+href="https://github.com/trypsynth/paperback/pull/353">#353</a>, <a
+href="https://github.com/trypsynth/paperback/pull/354">#354</a>.</li>
+<li>RTF tabs and line feeds are now rendered exactly as they appear in
+the document.</li>
+<li>Switched back to the tried and true pdfium library for parsing
+PDF’s, making PDF rendering much more reliable once again.</li>
+</ul>
 <h2 id="version-0.8.1">Version 0.8.1</h2>
 <ul>
 <li>Added Ctrl+Shift+T to reopen the last closed document. <a
