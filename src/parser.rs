@@ -13,7 +13,7 @@ use crate::{
 };
 
 pub mod chm;
-pub mod docx;
+pub mod word;
 pub mod epub;
 pub mod fb2;
 pub mod html;
@@ -89,7 +89,7 @@ impl ParserRegistry {
 		REGISTRY.get_or_init(|| {
 			let mut registry = Self::new();
 			registry.register(chm::ChmParser);
-			registry.register(docx::DocxParser);
+			registry.register(word::WordParser);
 			registry.register(epub::EpubParser);
 			registry.register(fb2::Fb2Parser);
 			registry.register(html::HtmlParser);

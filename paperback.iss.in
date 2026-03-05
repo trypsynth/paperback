@@ -31,7 +31,7 @@
 	Name: "desktopicon"; Description: "Desktop Shortcut"
 	Name: "startmenuicon"; Description: "Start Menu Shortcut"; Flags: unchecked
 	Name: "assoc_chm"; Description: "Associate with Compiled HTML Help files (*.chm)"; Flags: unchecked
-	Name: "assoc_docx"; Description: "Associate with Word Documents (*.docx, *.docm)"; Flags: unchecked
+	Name: "assoc_word"; Description: "Associate with Word Documents (*.doc, *.docx, *.docm)"; Flags: unchecked
 	Name: "assoc_epub"; Description: "Associate with Epub Books (*.epub)"
 	Name: "assoc_fb2"; Description: "Associate with FB2 Books (*.fb2)"; Flags: unchecked
 	Name: "assoc_html"; Description: "Associate with HTML Documents (*.htm, *.html, *.xhtml)"; Flags: unchecked
@@ -56,8 +56,9 @@
 	; Compiled HTML Help files.
 	Root: HKCR; Subkey: ".chm\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_chm
 	; Word Documents.
-	Root: HKCR; Subkey: ".docx\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_docx
-	Root: HKCR; Subkey: ".docm\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_docx
+	Root: HKCR; Subkey: ".doc\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_word
+	Root: HKCR; Subkey: ".docx\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_word
+	Root: HKCR; Subkey: ".docm\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_word
 	; Epub Books.
 	Root: HKCR; Subkey: ".epub"; ValueType: string; ValueName: ""; ValueData: "Paperback.Document"; Flags: uninsdeletevalue; Tasks: assoc_epub
 	; FB2 Books.
