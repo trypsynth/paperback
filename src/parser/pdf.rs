@@ -207,16 +207,95 @@ fn add_heading_markers(buffer: &mut DocumentBuffer, items: &[TocItem], level: i3
 	}
 }
 
+fn is_cjk(c: char) -> bool {
+	let u = c as u32;
+	(0x4E00..=0x9FFF).contains(&u) || // CJK Unified Ideographs
+	(0x3400..=0x4DBF).contains(&u) || // CJK Extension A
+	(0x20000..=0x2A6DF).contains(&u) || // CJK Extension B
+	(0x3040..=0x309F).contains(&u) || // Hiragana
+	(0x30A0..=0x30FF).contains(&u) || // Katakana
+	(0xAC00..=0xD7AF).contains(&u) // Hangul
+}
+
 fn process_text_lines(raw_text: &str) -> Vec<String> {
 	let clean_text = raw_text.replace('\r', "");
-	clean_text
-		.lines()
-		.filter_map(|line| {
-			let collapsed = collapse_whitespace(line);
-			let trimmed = trim_string(&collapsed);
-			if trimmed.is_empty() { None } else { Some(trimmed) }
-		})
-		.collect()
+	let lines: Vec<String> = clean_text.lines().map(|line| trim_string(&collapse_whitespace(line))).collect();
+
+	let mut max_len = 0;
+	for line in &lines {
+		let len = display_len(line);
+		if len > max_len {
+			max_len = len;
+		}
+	}
+	let short_line_threshold = (max_len as f32 * 0.75) as usize;
+
+	let mut paragraphs = Vec::new();
+	let mut current_paragraph = String::new();
+	let mut last_line_len = 0;
+	let mut last_line_ends_with_punctuation = false;
+
+	for line in lines {
+		if line.is_empty() {
+			if !current_paragraph.is_empty() {
+				paragraphs.push(current_paragraph.clone());
+				current_paragraph.clear();
+			}
+			continue;
+		}
+
+		let is_list_item = line.starts_with("- ") || line.starts_with("* ") || line.starts_with("• ");
+		let starts_with_uppercase = line.chars().next().map_or(false, |c| c.is_uppercase());
+		let len = display_len(&line);
+
+		if current_paragraph.is_empty() {
+			current_paragraph = line.clone();
+		} else {
+			let break_paragraph = if is_list_item {
+				true
+			} else if last_line_ends_with_punctuation && last_line_len < short_line_threshold {
+				true
+			} else if last_line_len < short_line_threshold && starts_with_uppercase {
+				true
+			} else {
+				false
+			};
+
+			if break_paragraph {
+				paragraphs.push(current_paragraph.clone());
+				current_paragraph = line.clone();
+			} else {
+				let last_char = current_paragraph.chars().last().unwrap_or(' ');
+				if current_paragraph.ends_with('-') {
+					current_paragraph.pop();
+					current_paragraph.push_str(&line);
+				} else if is_cjk(last_char) && line.chars().next().map_or(false, is_cjk) {
+					current_paragraph.push_str(&line);
+				} else {
+					current_paragraph.push(' ');
+					current_paragraph.push_str(&line);
+				}
+			}
+		}
+
+		last_line_len = len;
+		last_line_ends_with_punctuation = line.ends_with('.')
+			|| line.ends_with('?')
+			|| line.ends_with('!')
+			|| line.ends_with(':')
+			|| line.ends_with('”')
+			|| line.ends_with('"')
+			|| line.ends_with('。')
+			|| line.ends_with('？')
+			|| line.ends_with('！')
+			|| line.ends_with('：');
+	}
+
+	if !current_paragraph.is_empty() {
+		paragraphs.push(current_paragraph);
+	}
+
+	paragraphs
 }
 
 fn map_load_error(err: PdfiumError) -> anyhow::Error {
