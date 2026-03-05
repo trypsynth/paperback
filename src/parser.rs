@@ -13,7 +13,6 @@ use crate::{
 };
 
 pub mod chm;
-pub mod word;
 pub mod epub;
 pub mod fb2;
 pub mod html;
@@ -27,6 +26,7 @@ pub mod powerpoint;
 pub mod rtf;
 pub mod text;
 pub mod toc;
+pub mod word;
 pub mod xml;
 pub mod xml_doc;
 
