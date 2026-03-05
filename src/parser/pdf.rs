@@ -220,7 +220,6 @@ fn is_cjk(c: char) -> bool {
 fn process_text_lines(raw_text: &str) -> Vec<String> {
 	let clean_text = raw_text.replace('\r', "");
 	let lines: Vec<String> = clean_text.lines().map(|line| trim_string(&collapse_whitespace(line))).collect();
-
 	let mut max_len = 0;
 	for line in &lines {
 		let len = display_len(line);
@@ -229,12 +228,10 @@ fn process_text_lines(raw_text: &str) -> Vec<String> {
 		}
 	}
 	let short_line_threshold = (max_len as f32 * 0.75) as usize;
-
 	let mut paragraphs = Vec::new();
 	let mut current_paragraph = String::new();
 	let mut last_line_len = 0;
 	let mut last_line_ends_with_punctuation = false;
-
 	for line in lines {
 		if line.is_empty() {
 			if !current_paragraph.is_empty() {
@@ -243,11 +240,9 @@ fn process_text_lines(raw_text: &str) -> Vec<String> {
 			}
 			continue;
 		}
-
 		let is_list_item = line.starts_with("- ") || line.starts_with("* ") || line.starts_with("• ");
 		let starts_with_uppercase = line.chars().next().map_or(false, |c| c.is_uppercase());
 		let len = display_len(&line);
-
 		if current_paragraph.is_empty() {
 			current_paragraph = line.clone();
 		} else {
@@ -260,7 +255,6 @@ fn process_text_lines(raw_text: &str) -> Vec<String> {
 			} else {
 				false
 			};
-
 			if break_paragraph {
 				paragraphs.push(current_paragraph.clone());
 				current_paragraph = line.clone();
@@ -277,7 +271,6 @@ fn process_text_lines(raw_text: &str) -> Vec<String> {
 				}
 			}
 		}
-
 		last_line_len = len;
 		last_line_ends_with_punctuation = line.ends_with('.')
 			|| line.ends_with('?')
@@ -290,11 +283,9 @@ fn process_text_lines(raw_text: &str) -> Vec<String> {
 			|| line.ends_with('！')
 			|| line.ends_with('：');
 	}
-
 	if !current_paragraph.is_empty() {
 		paragraphs.push(current_paragraph);
 	}
-
 	paragraphs
 }
 
