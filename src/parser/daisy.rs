@@ -51,7 +51,10 @@ impl Parser for DaisyParser {
 			let file = File::open(path).context("Failed to open zip file")?;
 			let mut archive = ZipArchive::new(BufReader::new(file)).context("Failed to read zip archive")?;
 
-			let opf_path = archive.file_names().find(|n| n.ends_with(".opf")).map(String::from);
+			let opf_path = archive
+				.file_names()
+				.find(|n| Path::new(n).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("opf")))
+				.map(String::from);
 
 			if let Some(opf_name) = opf_path {
 				let (manifest_xml, metadata) = {
@@ -101,7 +104,10 @@ impl Parser for DaisyParser {
 
 					let mut toc_items = None;
 
-					let ncx_path = archive.file_names().find(|n| n.ends_with(".ncx")).map(String::from);
+					let ncx_path = archive
+						.file_names()
+						.find(|n| Path::new(n).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("ncx")))
+						.map(String::from);
 
 					if let Some(ncx_name) = ncx_path {
 						if let Ok(ncx_content) =
@@ -179,65 +185,67 @@ impl Parser for DaisyParser {
 			}
 
 			anyhow::bail!("ZIP archive does not appear to be a valid DAISY 3 or DAISY 2.02 book");
-		} else {
-			let content = std::fs::read_to_string(path)?;
-			let (manifest_xml, metadata) = parse_opf_metadata_and_manifest(&content)?;
-			if let Some(t) = metadata.0 {
-				title = t;
-			}
-			if let Some(a) = metadata.1 {
-				author = a;
-			}
+		}
 
-			if let Some(dtbook_path) = manifest_xml {
-				let base_dir = path.parent().unwrap_or_else(|| Path::new(""));
-				let xml_full_path = base_dir.join(&dtbook_path);
+		let file_content = std::fs::read_to_string(path)?;
+		let (manifest_xml, metadata) = parse_opf_metadata_and_manifest(&file_content)?;
+		if let Some(t) = metadata.0 {
+			title = t;
+		}
+		if let Some(a) = metadata.1 {
+			author = a;
+		}
 
-				let xml_content = std::fs::read_to_string(&xml_full_path)
-					.with_context(|| format!("Failed to read DTBook XML file at {xml_full_path:?}"))?;
+		if let Some(dtbook_path) = manifest_xml {
+			let base_dir = path.parent().unwrap_or_else(|| Path::new(""));
+			let xml_full_path = base_dir.join(&dtbook_path);
 
-				let mut converter = XmlToText::new();
-				if converter.convert(&xml_content) {
-					buffer.content = converter.get_text();
-					add_converter_markers(&mut buffer, &converter, 0);
+			let xml_content = std::fs::read_to_string(&xml_full_path)
+				.with_context(|| format!("Failed to read DTBook XML file at {}", xml_full_path.display()))?;
 
-					let mut toc_items = None;
+			let mut converter = XmlToText::new();
+			if converter.convert(&xml_content) {
+				buffer.content = converter.get_text();
+				add_converter_markers(&mut buffer, &converter, 0);
 
-					if let Ok(entries) = std::fs::read_dir(base_dir) {
-						for entry in entries.flatten() {
-							let path = entry.path();
-							if path.is_file() && path.extension().is_some_and(|e| e.eq_ignore_ascii_case("ncx")) {
-								if let Ok(ncx_content) = std::fs::read_to_string(&path) {
-									if let Some(ncx_toc) = parse_daisy_ncx(&ncx_content, converter.get_id_positions()) {
-										if !ncx_toc.is_empty() {
-											toc_items = Some(ncx_toc);
-											break;
-										}
+				let mut toc_items = None;
+
+				if let Ok(entries) = std::fs::read_dir(base_dir) {
+					for entry in entries.flatten() {
+						let path = entry.path();
+						if path.is_file() && path.extension().is_some_and(|e| e.eq_ignore_ascii_case("ncx")) {
+							if let Ok(ncx_content) = std::fs::read_to_string(&path) {
+								if let Some(ncx_toc) = parse_daisy_ncx(&ncx_content, converter.get_id_positions()) {
+									if !ncx_toc.is_empty() {
+										toc_items = Some(ncx_toc);
+										break;
 									}
 								}
 							}
 						}
 					}
-
-					let toc_items = toc_items.unwrap_or_else(|| build_toc_from_headings(converter.get_headings()));
-
-					return Ok(Document {
-						title,
-						author,
-						buffer,
-						toc_items,
-						id_positions: converter.get_id_positions().clone(),
-						..Document::default()
-					});
 				}
-			}
 
-			anyhow::bail!("Invalid DAISY .opf file or could not find DTBook XML in manifest");
+				let toc_items = toc_items.unwrap_or_else(|| build_toc_from_headings(converter.get_headings()));
+
+				return Ok(Document {
+					title,
+					author,
+					buffer,
+					toc_items,
+					id_positions: converter.get_id_positions().clone(),
+					..Document::default()
+				});
+			}
 		}
+
+		anyhow::bail!("Invalid DAISY .opf file or could not find DTBook XML in manifest");
 	}
 }
 
-fn parse_opf_metadata_and_manifest(opf_content: &str) -> Result<(Option<String>, (Option<String>, Option<String>))> {
+type OpfMetadataResult = Result<(Option<String>, (Option<String>, Option<String>))>;
+
+fn parse_opf_metadata_and_manifest(opf_content: &str) -> OpfMetadataResult {
 	let doc =
 		XmlDocument::parse_with_options(opf_content, ParsingOptions { allow_dtd: true, ..ParsingOptions::default() })
 			.context("Failed to parse OPF XML")?;
@@ -283,7 +291,10 @@ fn parse_opf_metadata_and_manifest(opf_content: &str) -> Result<(Option<String>,
 								if media_type == "application/x-dtbook+xml" {
 									dtbook_href = href;
 									break;
-								} else if dtbook_href.is_none() && href.as_ref().is_some_and(|h| h.ends_with(".xml")) {
+								} else if dtbook_href.is_none()
+									&& href.as_ref().is_some_and(|h| {
+										Path::new(h).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("xml"))
+									}) {
 									dtbook_href = href;
 								}
 							}
@@ -360,11 +371,8 @@ fn convert_daisy_navpoint(
 		return None;
 	}
 
-	let target_id = if let Some(idx) = content_src.find('#') {
-		&content_src[idx + 1..]
-	} else {
-		nav.attribute("id").unwrap_or(content_src)
-	};
+	let target_id =
+		content_src.find('#').map_or_else(|| nav.attribute("id").unwrap_or(content_src), |idx| &content_src[idx + 1..]);
 
 	let offset = id_positions
 		.get(target_id)

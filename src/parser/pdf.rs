@@ -100,7 +100,8 @@ impl Parser for PdfParser {
 			let annot_count = lib().FPDFPage_GetAnnotCount(&page);
 			let mut last_search_pos = 0;
 			for i in 0..annot_count {
-				if let Ok(annot) = lib().FPDFPage_GetAnnot(&page, i) {
+				let annot_result = lib().FPDFPage_GetAnnot(&page, i);
+				if let Ok(annot) = annot_result {
 					if lib().FPDFAnnot_GetSubtype(&annot) == pdfium::pdfium_constants::FPDF_ANNOT_LINK {
 						let mut rect = pdfium::pdfium_types::FS_RECTF { left: 0.0, top: 0.0, right: 0.0, bottom: 0.0 };
 						if lib().FPDFAnnot_GetRect(&annot, &mut rect).is_ok() {
@@ -121,8 +122,10 @@ impl Parser for PdfParser {
 									continue;
 								}
 								let mut url = String::new();
-								if let Ok(link) = lib().FPDFAnnot_GetLink(&annot) {
-									if let Ok(action) = lib().FPDFLink_GetAction(&link) {
+								let link_result = lib().FPDFAnnot_GetLink(&annot);
+								if let Ok(link) = link_result {
+									let action_result = lib().FPDFLink_GetAction(&link);
+									if let Ok(action) = action_result {
 										let action_type = lib().FPDFAction_GetType(&action);
 										// PDFACTION_URI is 3
 										if action_type == 3 {
