@@ -29,7 +29,6 @@ pub mod text;
 pub mod toc;
 pub mod word;
 pub mod xml;
-pub mod xml_doc;
 
 pub const PASSWORD_REQUIRED_ERROR_PREFIX: &str = "[password_required]";
 
@@ -95,7 +94,7 @@ impl ParserRegistry {
 			registry.register(epub::EpubParser);
 			registry.register(fb2::Fb2Parser);
 			registry.register(html::HtmlParser);
-			registry.register(xml_doc::XmlParser);
+
 			registry.register(pdf::PdfParser);
 			registry.register(markdown::MarkdownParser);
 			registry.register(odp::FodpParser);
