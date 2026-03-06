@@ -36,7 +36,6 @@ impl Parser for DaisyParser {
 		let mut title = extract_title_from_path(&context.file_path);
 		let mut author = String::new();
 		let mut buffer = DocumentBuffer::new();
-
 		let is_zip = path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("zip"))
 			|| File::open(path)
 				.and_then(|f| {
@@ -46,16 +45,13 @@ impl Parser for DaisyParser {
 					Ok(header == [0x50, 0x4b, 0x03, 0x04])
 				})
 				.unwrap_or(false);
-
 		if is_zip {
 			let file = File::open(path).context("Failed to open zip file")?;
 			let mut archive = ZipArchive::new(BufReader::new(file)).context("Failed to read zip archive")?;
-
 			let opf_path = archive
 				.file_names()
 				.find(|n| Path::new(n).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("opf")))
 				.map(String::from);
-
 			if let Some(opf_name) = opf_path {
 				let (manifest_xml, metadata) = {
 					let opf_content =
@@ -75,7 +71,6 @@ impl Parser for DaisyParser {
 				if let Some(a) = metadata.1 {
 					author = a;
 				}
-
 				if let Some(dtbook_path) = manifest_xml {
 					let base_dir = Path::new(&opf_name).parent().unwrap_or_else(|| Path::new(""));
 					let xml_full_path = if base_dir.as_os_str().is_empty() {
@@ -83,7 +78,6 @@ impl Parser for DaisyParser {
 					} else {
 						base_dir.join(&dtbook_path).to_string_lossy().to_string().replace('\\', "/")
 					};
-
 					let xml_content =
 						read_zip_entry_by_name_with_password(&mut archive, &xml_full_path, context.password.as_deref())
 							.map_err(|e| {
@@ -93,7 +87,6 @@ impl Parser for DaisyParser {
 									e.context("Failed to read XML file from zip")
 								}
 							})?;
-
 					let mut converter = XmlToText::new();
 					if converter.convert(&xml_content) {
 						buffer.content = converter.get_text();
@@ -101,14 +94,11 @@ impl Parser for DaisyParser {
 					} else {
 						anyhow::bail!("Failed to convert DTBook XML to text");
 					}
-
 					let mut toc_items = None;
-
 					let ncx_path = archive
 						.file_names()
 						.find(|n| Path::new(n).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("ncx")))
 						.map(String::from);
-
 					if let Some(ncx_name) = ncx_path {
 						if let Ok(ncx_content) =
 							read_zip_entry_by_name_with_password(&mut archive, &ncx_name, context.password.as_deref())
@@ -122,9 +112,7 @@ impl Parser for DaisyParser {
 							}
 						}
 					}
-
 					let toc_items = toc_items.unwrap_or_else(|| build_toc_from_headings(converter.get_headings()));
-
 					return Ok(Document {
 						title,
 						author,
@@ -135,10 +123,8 @@ impl Parser for DaisyParser {
 					});
 				}
 			}
-
 			let ncc_path =
 				archive.file_names().find(|n| n.ends_with("ncc.html") || n.ends_with("NCC.html")).map(String::from);
-
 			if let Some(ncc_name) = ncc_path {
 				let ncc_content =
 					read_zip_entry_by_name_with_password(&mut archive, &ncc_name, context.password.as_deref())
@@ -149,11 +135,9 @@ impl Parser for DaisyParser {
 								e.context("Failed to read ncc.html")
 							}
 						})?;
-
 				let links = extract_daisy2_links(&ncc_content);
 				let mut combined_html = String::new();
 				let base_dir = Path::new(&ncc_name).parent().unwrap_or_else(|| Path::new(""));
-
 				for link in links {
 					let link_path = if base_dir.as_os_str().is_empty() {
 						link.clone()
@@ -167,7 +151,6 @@ impl Parser for DaisyParser {
 						combined_html.push_str("\n\n");
 					}
 				}
-
 				let mut converter = HtmlToText::new();
 				if converter.convert(&combined_html, HtmlSourceMode::NativeHtml) {
 					buffer.content = converter.get_text();
@@ -183,10 +166,8 @@ impl Parser for DaisyParser {
 					});
 				}
 			}
-
 			anyhow::bail!("ZIP archive does not appear to be a valid DAISY 3 or DAISY 2.02 book");
 		}
-
 		let file_content = std::fs::read_to_string(path)?;
 		let (manifest_xml, metadata) = parse_opf_metadata_and_manifest(&file_content)?;
 		if let Some(t) = metadata.0 {
@@ -195,21 +176,16 @@ impl Parser for DaisyParser {
 		if let Some(a) = metadata.1 {
 			author = a;
 		}
-
 		if let Some(dtbook_path) = manifest_xml {
 			let base_dir = path.parent().unwrap_or_else(|| Path::new(""));
 			let xml_full_path = base_dir.join(&dtbook_path);
-
 			let xml_content = std::fs::read_to_string(&xml_full_path)
 				.with_context(|| format!("Failed to read DTBook XML file at {}", xml_full_path.display()))?;
-
 			let mut converter = XmlToText::new();
 			if converter.convert(&xml_content) {
 				buffer.content = converter.get_text();
 				add_converter_markers(&mut buffer, &converter, 0);
-
 				let mut toc_items = None;
-
 				if let Ok(entries) = std::fs::read_dir(base_dir) {
 					for entry in entries.flatten() {
 						let path = entry.path();
@@ -225,9 +201,7 @@ impl Parser for DaisyParser {
 						}
 					}
 				}
-
 				let toc_items = toc_items.unwrap_or_else(|| build_toc_from_headings(converter.get_headings()));
-
 				return Ok(Document {
 					title,
 					author,
@@ -238,7 +212,6 @@ impl Parser for DaisyParser {
 				});
 			}
 		}
-
 		anyhow::bail!("Invalid DAISY .opf file or could not find DTBook XML in manifest");
 	}
 }
@@ -249,11 +222,9 @@ fn parse_opf_metadata_and_manifest(opf_content: &str) -> OpfMetadataResult {
 	let doc =
 		XmlDocument::parse_with_options(opf_content, ParsingOptions { allow_dtd: true, ..ParsingOptions::default() })
 			.context("Failed to parse OPF XML")?;
-
 	let mut dtbook_href = None;
 	let mut title = None;
 	let mut author = None;
-
 	if let Some(package) =
 		doc.descendants().find(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "package")
 	{
@@ -304,7 +275,6 @@ fn parse_opf_metadata_and_manifest(opf_content: &str) -> OpfMetadataResult {
 			}
 		}
 	}
-
 	Ok((dtbook_href, (title, author)))
 }
 
@@ -330,11 +300,9 @@ fn parse_daisy_ncx(
 	let ncx_doc =
 		XmlDocument::parse_with_options(ncx_content, ParsingOptions { allow_dtd: true, ..ParsingOptions::default() })
 			.ok()?;
-
 	let nav_map =
 		ncx_doc.descendants().find(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "navMap")?;
 	let mut items = Vec::new();
-
 	for navpoint in nav_map.children() {
 		if navpoint.node_type() == NodeType::Element && navpoint.tag_name().name() == "navPoint" {
 			if let Some(item) = convert_daisy_navpoint(navpoint, id_positions) {
@@ -342,7 +310,6 @@ fn parse_daisy_ncx(
 			}
 		}
 	}
-
 	if items.is_empty() { None } else { Some(items) }
 }
 
@@ -361,25 +328,20 @@ fn convert_daisy_navpoint(
 		})
 		.unwrap_or("")
 		.to_string();
-
 	let content_src = nav
 		.children()
 		.find(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "content")
 		.and_then(|c| c.attribute("src"))?;
-
 	if label.trim().is_empty() {
 		return None;
 	}
-
 	let target_id =
 		content_src.find('#').map_or_else(|| nav.attribute("id").unwrap_or(content_src), |idx| &content_src[idx + 1..]);
-
 	let offset = id_positions
 		.get(target_id)
 		.or_else(|| nav.attribute("id").and_then(|id| id_positions.get(id)))
 		.copied()
 		.unwrap_or(0);
-
 	let mut item = crate::document::TocItem::new(label, target_id.to_string(), offset);
 	for child in nav.children() {
 		if child.node_type() == NodeType::Element && child.tag_name().name() == "navPoint" {
