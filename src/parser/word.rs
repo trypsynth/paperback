@@ -251,7 +251,7 @@ fn extract_doc_text_simple(word_document: &[u8]) -> String {
 
 fn normalize_doc_text(text: &str) -> String {
 	let mut normalized = text.replace("\r\n", "\n").replace('\r', "\n");
-	normalized = normalized.replace('\u{13}', "").replace('\u{14}', "").replace('\u{15}', "");
+	normalized = normalized.replace(['\u{13}', '\u{14}', '\u{15}'], "");
 	let mut out = String::with_capacity(normalized.len());
 	let mut previous_was_newline = false;
 	let mut newline_run = 0usize;

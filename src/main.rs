@@ -19,7 +19,7 @@ mod xml_to_text;
 mod zip;
 
 use ui::PaperbackApp;
-use wxdragon::prelude::{set_appearance, Appearance};
+use wxdragon::prelude::{Appearance, set_appearance};
 
 fn main() {
 	let _ = wxdragon::main(|app| {

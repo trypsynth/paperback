@@ -1,11 +1,13 @@
-use std::fs;
+use std::{fs, path::Path};
 
 use anyhow::{Context, Result};
 
 use crate::{
 	document::{Document, DocumentBuffer, ParserContext, ParserFlags},
 	encoding::convert_to_utf8,
-	parser::{Parser, add_converter_markers, path::extract_title_from_path, toc::build_toc_from_headings},
+	parser::{
+		Parser, add_converter_markers, daisy::DaisyParser, path::extract_title_from_path, toc::build_toc_from_headings,
+	},
 	xml_to_text::XmlToText,
 };
 
@@ -25,6 +27,22 @@ impl Parser for XmlParser {
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		if let Some(base_dir) = Path::new(&context.file_path).parent() {
+			if let Ok(entries) = fs::read_dir(base_dir) {
+				for entry in entries.flatten() {
+					let path = entry.path();
+					if path.is_file() && path.extension().is_some_and(|e| e.eq_ignore_ascii_case("opf")) {
+						let mut daisy_context = context.clone();
+						daisy_context.file_path = path.to_string_lossy().to_string();
+						let daisy_parser = DaisyParser;
+						if let Ok(doc) = daisy_parser.parse(&daisy_context) {
+							return Ok(doc);
+						}
+					}
+				}
+			}
+		}
+
 		let bytes =
 			fs::read(&context.file_path).with_context(|| format!("Failed to open XML file '{}'", context.file_path))?;
 		if bytes.is_empty() {
