@@ -14,7 +14,7 @@ use zip::ZipArchive;
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
 	parser::{
-		Parser, PASSWORD_REQUIRED_ERROR_PREFIX,
+		PASSWORD_REQUIRED_ERROR_PREFIX, Parser,
 		ooxml::{collect_ooxml_run_text, read_ooxml_relationships},
 		path::extract_title_from_path,
 		toc::{build_toc_from_buffer, heading_level_to_marker_type},
@@ -66,8 +66,10 @@ impl Parser for WordParser {
 }
 
 fn parse_ooxml_doc(context: &ParserContext) -> Result<Document> {
-	let file = File::open(&context.file_path).with_context(|| format!("Failed to open DOCX file '{}'", context.file_path))?;
-	let mut archive = ZipArchive::new(BufReader::new(file)).with_context(|| format!("Failed to read DOCX as zip '{}'", context.file_path))?;
+	let file =
+		File::open(&context.file_path).with_context(|| format!("Failed to open DOCX file '{}'", context.file_path))?;
+	let mut archive = ZipArchive::new(BufReader::new(file))
+		.with_context(|| format!("Failed to read DOCX as zip '{}'", context.file_path))?;
 	let rels = read_ooxml_relationships(&mut archive, "word/_rels/document.xml.rels");
 	let doc_content = read_zip_entry_by_name(&mut archive, "word/document.xml")?;
 	let doc_xml = XmlDocument::parse(&doc_content).context("Failed to parse word/document.xml")?;
@@ -85,9 +87,12 @@ fn parse_ooxml_doc(context: &ParserContext) -> Result<Document> {
 }
 
 fn parse_legacy_doc(context: &ParserContext) -> Result<Document> {
-	let file = File::open(&context.file_path).with_context(|| format!("Failed to open DOC file '{}'", context.file_path))?;
-	let mut compound = CompoundFile::open(file).with_context(|| format!("Failed to parse OLE container '{}'", context.file_path))?;
-	let word_document = read_stream(&mut compound, "WordDocument").or_else(|_| read_stream(&mut compound, "/WordDocument"))?;
+	let file =
+		File::open(&context.file_path).with_context(|| format!("Failed to open DOC file '{}'", context.file_path))?;
+	let mut compound =
+		CompoundFile::open(file).with_context(|| format!("Failed to parse OLE container '{}'", context.file_path))?;
+	let word_document =
+		read_stream(&mut compound, "WordDocument").or_else(|_| read_stream(&mut compound, "/WordDocument"))?;
 	if word_document.len() < FIB_LCBCLX_OFFSET + 4 {
 		anyhow::bail!("DOC file is missing required FIB fields");
 	}
@@ -103,7 +108,8 @@ fn parse_legacy_doc(context: &ParserContext) -> Result<Document> {
 	let table_stream = read_stream(&mut compound, table_stream_name)
 		.or_else(|_| read_stream(&mut compound, &format!("/{table_stream_name}")))
 		.with_context(|| format!("Failed to open DOC table stream '{table_stream_name}'"))?;
-	let mut text = extract_doc_text_from_piece_table(&word_document, &table_stream).unwrap_or_else(|| extract_doc_text_simple(&word_document));
+	let mut text = extract_doc_text_from_piece_table(&word_document, &table_stream)
+		.unwrap_or_else(|| extract_doc_text_simple(&word_document));
 	if text.trim().is_empty() {
 		text = extract_doc_text_simple(&word_document);
 	}

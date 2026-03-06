@@ -177,7 +177,12 @@ impl XmlToText {
 				self.links.push(LinkInfo { offset: link_offset, text: processed_link_text, reference: href });
 				skip_children = true;
 			}
-		} else if Self::tag_is(tag_name, "body") {
+		} else if Self::tag_is(tag_name, "body")
+			|| Self::tag_is(tag_name, "book")
+			|| Self::tag_is(tag_name, "frontmatter")
+			|| Self::tag_is(tag_name, "bodymatter")
+			|| Self::tag_is(tag_name, "rearmatter")
+		{
 			self.in_body = true;
 		} else if Self::tag_is(tag_name, "pre") {
 			self.finalize_current_line();
@@ -188,7 +193,7 @@ impl XmlToText {
 			self.finalize_current_line();
 		} else if Self::tag_is(tag_name, "li") {
 			self.handle_list_item_xml(node);
-		} else if Self::tag_is(tag_name, "ul") || Self::tag_is(tag_name, "ol") {
+		} else if Self::tag_is(tag_name, "ul") || Self::tag_is(tag_name, "ol") || Self::tag_is(tag_name, "list") {
 			self.handle_list_start_xml(tag_name, node);
 		}
 		if self.in_body {
@@ -448,6 +453,7 @@ impl XmlToText {
 			"blockquote",
 			"ul",
 			"ol",
+			"list",
 			"li",
 			"section",
 			"article",
@@ -467,6 +473,17 @@ impl XmlToText {
 			"tr",
 			"td",
 			"th",
+			"level1",
+			"level2",
+			"level3",
+			"level4",
+			"level5",
+			"level6",
+			"frontmatter",
+			"bodymatter",
+			"rearmatter",
+			"doctitle",
+			"docauthor",
 		]
 		.iter()
 		.any(|t| Self::tag_is(tag_name, t))
