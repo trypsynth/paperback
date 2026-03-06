@@ -122,8 +122,6 @@ fn parse_word_zip(context: &ParserContext) -> Result<Document> {
 	let title = extract_title_from_path(&context.file_path);
 	let toc_items = build_toc_from_buffer(&buffer);
 	let mut document = Document::new().with_title(title);
-	document.spine_items.clone_from(&docx_names);
-	document.manifest_items = docx_names.into_iter().map(|n| (n.clone(), n)).collect();
 	document.set_buffer(buffer);
 	document.id_positions = id_positions;
 	document.toc_items = toc_items;

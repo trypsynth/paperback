@@ -43,6 +43,7 @@
 	Name: "assoc_rtf"; Description: "Associate with RTF files (*.rtf)"
 	Name: "assoc_text"; Description: "Associate with Text Files (*.txt, *.log)"; Flags: unchecked
 	Name: "assoc_xml"; Description: "Associate with XML documents (*.xml)"; Flags: unchecked
+	Name: "assoc_zip"; Description: "Associate with ZIP archives (*.zip)"; Flags: unchecked
 
 [Icons]
 	Name: "{autodesktop}\Paperback"; Filename: "{app}\paperback.exe"; Tasks: desktopicon
@@ -96,6 +97,8 @@
 	Root: HKCR; Subkey: ".txt\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_text
 	; XML documents.
 	Root: HKCR; Subkey: ".xml\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_xml
+	; ZIP archives.
+	Root: HKCR; Subkey: ".zip\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_zip
 
 [Run]
 	Filename: "{app}\paperback.exe"; Description: "Launch Paperback"; Flags: nowait postinstall skipifsilent
