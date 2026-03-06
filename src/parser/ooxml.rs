@@ -1,11 +1,14 @@
-use std::{collections::HashMap, fs::File, io::BufReader};
+use std::collections::HashMap;
 
 use roxmltree::{Node, NodeType};
 use zip::ZipArchive;
 
 use crate::zip::read_zip_entry_by_name;
 
-pub fn read_ooxml_relationships(archive: &mut ZipArchive<BufReader<File>>, rels_path: &str) -> HashMap<String, String> {
+pub fn read_ooxml_relationships<R: std::io::Read + std::io::Seek>(
+	archive: &mut ZipArchive<R>,
+	rels_path: &str,
+) -> HashMap<String, String> {
 	let mut rels = HashMap::new();
 	if let Ok(rels_content) = read_zip_entry_by_name(archive, rels_path) {
 		if let Ok(rels_doc) = roxmltree::Document::parse(&rels_content) {
