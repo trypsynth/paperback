@@ -216,7 +216,7 @@ fn walk_ppt_records(data: &[u8], visit: &mut impl FnMut(u16, u16, &[u8])) {
 	}
 }
 
-fn is_ppt_container_record(header_flags: u16, record_type: u16) -> bool {
+const fn is_ppt_container_record(header_flags: u16, record_type: u16) -> bool {
 	(header_flags & 0x000F) == 0x000F
 		|| matches!(record_type, 1000 | 1006 | 1007 | 1008 | 1010 | 1016 | 1033 | 4057 | 4080 | 4082 | 4116)
 }

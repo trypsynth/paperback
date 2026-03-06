@@ -5,10 +5,38 @@ use std::{
 };
 
 use anyhow::{Context, Result};
-use zip::ZipArchive;
+use zip::{ZipArchive, result::ZipError};
+
+use crate::parser::PASSWORD_REQUIRED_ERROR_PREFIX;
 
 pub fn read_zip_entry_by_name<R: Read + Seek>(archive: &mut ZipArchive<R>, name: &str) -> Result<String> {
-	let mut entry = archive.by_name(name).with_context(|| format!("Failed to get entry '{name}'"))?;
+	read_zip_entry_by_name_with_password(archive, name, None)
+}
+
+pub fn read_zip_entry_by_name_with_password<R: Read + Seek>(
+	archive: &mut ZipArchive<R>,
+	name: &str,
+	password: Option<&str>,
+) -> Result<String> {
+	let mut entry = match password {
+		Some(pass) => match archive.by_name_decrypt(name, pass.as_bytes()) {
+			Ok(e) => e,
+			Err(ZipError::UnsupportedArchive(msg)) if msg == ZipError::PASSWORD_REQUIRED => {
+				anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX}Password required");
+			}
+			Err(ZipError::InvalidPassword) => {
+				anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX}Password incorrect");
+			}
+			Err(e) => return Err(e.into()),
+		},
+		None => match archive.by_name(name) {
+			Ok(e) => e,
+			Err(ZipError::UnsupportedArchive(msg)) if msg == ZipError::PASSWORD_REQUIRED => {
+				anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX}Password required");
+			}
+			Err(e) => return Err(e.into()),
+		},
+	};
 	let mut contents = String::new();
 	entry.read_to_string(&mut contents).with_context(|| format!("Failed to read entry '{name}'"))?;
 	Ok(contents)

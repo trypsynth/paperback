@@ -13,6 +13,7 @@ use crate::{
 	html_to_text::{HtmlSourceMode, HtmlToText},
 	parser::{Parser, add_converter_markers, path::extract_title_from_path, toc::build_toc_from_headings},
 	xml_to_text::XmlToText,
+	zip::read_zip_entry_by_name_with_password,
 };
 
 pub struct DaisyParser;
@@ -50,21 +51,19 @@ impl Parser for DaisyParser {
 			let file = File::open(path).context("Failed to open zip file")?;
 			let mut archive = ZipArchive::new(BufReader::new(file)).context("Failed to read zip archive")?;
 
-			let mut opf_path = None;
-			for i in 0..archive.len() {
-				if let Ok(file) = archive.by_index(i) {
-					if file.name().ends_with(".opf") {
-						opf_path = Some(file.name().to_string());
-						break;
-					}
-				}
-			}
+			let opf_path = archive.file_names().find(|n| n.ends_with(".opf")).map(String::from);
 
 			if let Some(opf_name) = opf_path {
 				let (manifest_xml, metadata) = {
-					let mut opf_file = archive.by_name(&opf_name).context("Failed to read OPF file")?;
-					let mut opf_content = String::new();
-					opf_file.read_to_string(&mut opf_content)?;
+					let opf_content =
+						read_zip_entry_by_name_with_password(&mut archive, &opf_name, context.password.as_deref())
+							.map_err(|e| {
+								if e.to_string().starts_with(crate::parser::PASSWORD_REQUIRED_ERROR_PREFIX) {
+									e
+								} else {
+									e.context("Failed to read OPF file")
+								}
+							})?;
 					parse_opf_metadata_and_manifest(&opf_content)?
 				};
 				if let Some(t) = metadata.0 {
@@ -77,16 +76,20 @@ impl Parser for DaisyParser {
 				if let Some(dtbook_path) = manifest_xml {
 					let base_dir = Path::new(&opf_name).parent().unwrap_or_else(|| Path::new(""));
 					let xml_full_path = if base_dir.as_os_str().is_empty() {
-						dtbook_path.clone()
+						dtbook_path
 					} else {
 						base_dir.join(&dtbook_path).to_string_lossy().to_string().replace('\\', "/")
 					};
-					let mut xml_content = String::new();
-					{
-						let mut xml_file =
-							archive.by_name(&xml_full_path).context("Failed to read XML file from zip")?;
-						xml_file.read_to_string(&mut xml_content)?;
-					}
+
+					let xml_content =
+						read_zip_entry_by_name_with_password(&mut archive, &xml_full_path, context.password.as_deref())
+							.map_err(|e| {
+								if e.to_string().starts_with(crate::parser::PASSWORD_REQUIRED_ERROR_PREFIX) {
+									e
+								} else {
+									e.context("Failed to read XML file from zip")
+								}
+							})?;
 
 					let mut converter = XmlToText::new();
 					if converter.convert(&xml_content) {
@@ -98,25 +101,17 @@ impl Parser for DaisyParser {
 
 					let mut toc_items = None;
 
-					let mut ncx_path = None;
-					for i in 0..archive.len() {
-						if let Ok(file) = archive.by_index(i) {
-							if file.name().ends_with(".ncx") {
-								ncx_path = Some(file.name().to_string());
-								break;
-							}
-						}
-					}
+					let ncx_path = archive.file_names().find(|n| n.ends_with(".ncx")).map(String::from);
 
 					if let Some(ncx_name) = ncx_path {
-						let mut ncx_content = String::new();
-						if let Ok(mut ncx_file) = archive.by_name(&ncx_name) {
-							let _ = ncx_file.read_to_string(&mut ncx_content);
-						}
-						if !ncx_content.is_empty() {
-							if let Some(ncx_toc) = parse_daisy_ncx(&ncx_content, &converter.get_id_positions()) {
-								if !ncx_toc.is_empty() {
-									toc_items = Some(ncx_toc);
+						if let Ok(ncx_content) =
+							read_zip_entry_by_name_with_password(&mut archive, &ncx_name, context.password.as_deref())
+						{
+							if !ncx_content.is_empty() {
+								if let Some(ncx_toc) = parse_daisy_ncx(&ncx_content, converter.get_id_positions()) {
+									if !ncx_toc.is_empty() {
+										toc_items = Some(ncx_toc);
+									}
 								}
 							}
 						}
@@ -135,23 +130,19 @@ impl Parser for DaisyParser {
 				}
 			}
 
-			let mut ncc_path = None;
-			for i in 0..archive.len() {
-				if let Ok(file) = archive.by_index(i) {
-					if file.name().ends_with("ncc.html") || file.name().ends_with("NCC.html") {
-						ncc_path = Some(file.name().to_string());
-						break;
-					}
-				}
-			}
+			let ncc_path =
+				archive.file_names().find(|n| n.ends_with("ncc.html") || n.ends_with("NCC.html")).map(String::from);
 
 			if let Some(ncc_name) = ncc_path {
-				let ncc_content = {
-					let mut ncc_file = archive.by_name(&ncc_name).context("Failed to read ncc.html")?;
-					let mut content = String::new();
-					ncc_file.read_to_string(&mut content)?;
-					content
-				};
+				let ncc_content =
+					read_zip_entry_by_name_with_password(&mut archive, &ncc_name, context.password.as_deref())
+						.map_err(|e| {
+							if e.to_string().starts_with(crate::parser::PASSWORD_REQUIRED_ERROR_PREFIX) {
+								e
+							} else {
+								e.context("Failed to read ncc.html")
+							}
+						})?;
 
 				let links = extract_daisy2_links(&ncc_content);
 				let mut combined_html = String::new();
@@ -163,12 +154,11 @@ impl Parser for DaisyParser {
 					} else {
 						base_dir.join(&link).to_string_lossy().to_string().replace('\\', "/")
 					};
-					if let Ok(mut html_file) = archive.by_name(&link_path) {
-						let mut c = String::new();
-						if html_file.read_to_string(&mut c).is_ok() {
-							combined_html.push_str(&c);
-							combined_html.push_str("\n\n");
-						}
+					if let Ok(c) =
+						read_zip_entry_by_name_with_password(&mut archive, &link_path, context.password.as_deref())
+					{
+						combined_html.push_str(&c);
+						combined_html.push_str("\n\n");
 					}
 				}
 
@@ -204,7 +194,7 @@ impl Parser for DaisyParser {
 				let xml_full_path = base_dir.join(&dtbook_path);
 
 				let xml_content = std::fs::read_to_string(&xml_full_path)
-					.with_context(|| format!("Failed to read DTBook XML file at {:?}", xml_full_path))?;
+					.with_context(|| format!("Failed to read DTBook XML file at {xml_full_path:?}"))?;
 
 				let mut converter = XmlToText::new();
 				if converter.convert(&xml_content) {
@@ -218,8 +208,7 @@ impl Parser for DaisyParser {
 							let path = entry.path();
 							if path.is_file() && path.extension().is_some_and(|e| e.eq_ignore_ascii_case("ncx")) {
 								if let Ok(ncx_content) = std::fs::read_to_string(&path) {
-									if let Some(ncx_toc) = parse_daisy_ncx(&ncx_content, &converter.get_id_positions())
-									{
+									if let Some(ncx_toc) = parse_daisy_ncx(&ncx_content, converter.get_id_positions()) {
 										if !ncx_toc.is_empty() {
 											toc_items = Some(ncx_toc);
 											break;
@@ -280,10 +269,8 @@ fn parse_opf_metadata_and_manifest(opf_content: &str) -> Result<(Option<String>,
 								if title.is_none() {
 									title = meta_child.text().map(|s| s.trim().to_string());
 								}
-							} else if name == "Creator" || name == "creator" {
-								if author.is_none() {
-									author = meta_child.text().map(|s| s.trim().to_string());
-								}
+							} else if (name == "Creator" || name == "creator") && author.is_none() {
+								author = meta_child.text().map(|s| s.trim().to_string());
 							}
 						}
 					}
@@ -292,7 +279,7 @@ fn parse_opf_metadata_and_manifest(opf_content: &str) -> Result<(Option<String>,
 						if item.is_element() && item.tag_name().name() == "item" {
 							let media_type = item.attribute("media-type").unwrap_or("");
 							if media_type == "application/x-dtbook+xml" || media_type == "text/xml" {
-								let href = item.attribute("href").map(|s| s.to_string());
+								let href = item.attribute("href").map(std::string::ToString::to_string);
 								if media_type == "application/x-dtbook+xml" {
 									dtbook_href = href;
 									break;
