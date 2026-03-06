@@ -13,6 +13,7 @@ use zip::ZipArchive;
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
+	encoding::convert_to_utf8,
 	parser::{
 		PASSWORD_REQUIRED_ERROR_PREFIX, Parser,
 		ooxml::{collect_ooxml_run_text, read_ooxml_relationships},
@@ -59,7 +60,20 @@ impl Parser for WordParser {
 			|ext| ext.to_ascii_lowercase(),
 		);
 		if extension == "doc" {
-			return parse_legacy_doc(context);
+			match parse_legacy_doc(context) {
+				Ok(document) => return Ok(document),
+				Err(legacy_err) => match parse_ooxml_doc(context) {
+					Ok(document) => return Ok(document),
+					Err(ooxml_err) => {
+						if let Ok(document) = parse_text_like_doc(context) {
+							return Ok(document);
+						}
+						return Err(anyhow::anyhow!(
+							"Legacy DOC parse failed: {legacy_err}. OOXML fallback failed: {ooxml_err}"
+						));
+					}
+				},
+			}
 		}
 		parse_ooxml_doc(context)
 	}
@@ -262,6 +276,41 @@ fn normalize_doc_text(text: &str) -> String {
 		out.push(ch);
 	}
 	out.trim().to_string()
+}
+
+fn parse_text_like_doc(context: &ParserContext) -> Result<Document> {
+	let bytes = std::fs::read(&context.file_path)
+		.with_context(|| format!("Failed to read potential text DOC '{}'", context.file_path))?;
+	let decoded = convert_to_utf8(&bytes);
+	if !looks_like_text_content(&decoded) {
+		anyhow::bail!("File content does not look like plain text");
+	}
+	let normalized = normalize_doc_text(&decoded);
+	if normalized.trim().is_empty() {
+		anyhow::bail!("No readable text content found");
+	}
+	let mut buffer = DocumentBuffer::new();
+	buffer.append(&normalized);
+	if !buffer.content.ends_with('\n') {
+		buffer.append("\n");
+	}
+	let title = extract_title_from_path(&context.file_path);
+	let mut document = Document::new().with_title(title);
+	document.set_buffer(buffer);
+	Ok(document)
+}
+
+fn looks_like_text_content(content: &str) -> bool {
+	let sample: String = content.chars().take(4096).collect();
+	if sample.trim().is_empty() {
+		return false;
+	}
+	let total = sample.chars().count();
+	if total == 0 {
+		return false;
+	}
+	let printable = sample.chars().filter(|c| !c.is_control() || *c == '\n' || *c == '\r' || *c == '\t').count();
+	(printable as f32) / (total as f32) >= 0.85
 }
 
 fn read_u16_le(data: &[u8], offset: usize) -> u16 {
@@ -586,7 +635,7 @@ fn extract_number_from_string(s: &str) -> Option<i32> {
 
 #[cfg(test)]
 mod tests {
-	use super::{normalize_doc_text, parse_doc_clx, parse_doc_piece_table};
+	use super::{looks_like_text_content, normalize_doc_text, parse_doc_clx, parse_doc_piece_table};
 
 	#[test]
 	fn parse_doc_piece_table_extracts_ansi_text() {
@@ -626,5 +675,11 @@ mod tests {
 	fn normalize_doc_text_cleans_control_markers() {
 		let text = "A\r\nB\u{13}C\u{14}\u{15}\n\n\nD";
 		assert_eq!(normalize_doc_text(text), "A\nBC\n\nD");
+	}
+
+	#[test]
+	fn looks_like_text_content_detects_textual_data() {
+		assert!(looks_like_text_content("Manual Title\nLine 2\nLine 3"));
+		assert!(!looks_like_text_content("\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}"));
 	}
 }
