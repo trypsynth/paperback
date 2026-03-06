@@ -92,14 +92,17 @@ impl DocumentManager {
 						show_error_dialog(&self.notebook, &t("Password is required."), &t("Error"));
 						return false;
 					};
-					if let Ok(session) = DocumentSession::new(&path_str, &password, &forced_extension) {
-						self.add_session_tab(self_rc, path, session, &password)
-					} else {
-						show_error_dialog(&self.notebook, &t("Failed to load document."), &t("Error"));
-						false
+					match DocumentSession::new(&path_str, &password, &forced_extension) {
+						Ok(session) => self.add_session_tab(self_rc, path, session, &password),
+						Err(retry_error) => {
+							let message = build_document_load_error_message(path, &retry_error);
+							show_error_dialog(&self.notebook, &message, &t("Error"));
+							false
+						}
 					}
 				} else {
-					show_error_dialog(&self.notebook, &t("Failed to load document."), &t("Error"));
+					let message = build_document_load_error_message(path, &err);
+					show_error_dialog(&self.notebook, &message, &t("Error"));
 					false
 				}
 			}
@@ -477,6 +480,14 @@ fn show_error_dialog(parent: &dyn WxWidget, message: &str, title: &str) {
 		.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
 		.build();
 	dialog.show_modal();
+}
+
+fn build_document_load_error_message(path: &Path, error: &str) -> String {
+	let details = error.trim().strip_prefix(PASSWORD_REQUIRED_ERROR_PREFIX).map_or_else(|| error.trim(), str::trim);
+	if details.is_empty() {
+		return t("Failed to load document.");
+	}
+	format!("{}\n\nFile: {}\nDetails: {}", t("Failed to load document."), path.display(), details)
 }
 
 fn fill_text_ctrl(text_ctrl: TextCtrl, content: &str) {
