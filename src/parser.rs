@@ -51,7 +51,7 @@ pub struct ParserInfo {
 
 pub struct ParserRegistry {
 	parsers: HashMap<String, Box<dyn Parser>>,
-	extension_map: HashMap<String, String>,
+	extension_map: HashMap<String, Vec<String>>,
 }
 
 impl ParserRegistry {
@@ -62,15 +62,18 @@ impl ParserRegistry {
 	pub fn register<P: Parser + 'static>(&mut self, parser: P) {
 		let name = parser.name().to_string();
 		for ext in parser.extensions() {
-			self.extension_map.insert(ext.to_ascii_lowercase(), name.clone());
+			self.extension_map.entry(ext.to_ascii_lowercase()).or_default().push(name.clone());
 		}
 		self.parsers.insert(name, Box::new(parser));
 	}
 
 	#[must_use]
-	pub fn get_parser_for_extension(&self, extension: &str) -> Option<&dyn Parser> {
+	pub fn get_parsers_for_extension(&self, extension: &str) -> Vec<&dyn Parser> {
 		let ext = extension.to_ascii_lowercase();
-		self.extension_map.get(&ext).and_then(|name| self.parsers.get(name)).map(|parser| &**parser)
+		self.extension_map
+			.get(&ext)
+			.map(|names| names.iter().filter_map(|name| self.parsers.get(name)).map(|p| &**p).collect())
+			.unwrap_or_default()
 	}
 
 	#[must_use]
@@ -127,12 +130,26 @@ pub fn parse_document(context: &ParserContext) -> Result<Document> {
 		},
 		|ext| Ok(ext.as_str()),
 	)?;
-	let parser = ParserRegistry::global()
-		.get_parser_for_extension(extension)
-		.ok_or_else(|| anyhow::anyhow!("No parser found for extension: .{extension}"))?;
-	let mut doc = parser.parse(context)?;
-	doc.compute_stats();
-	Ok(doc)
+	let parsers = ParserRegistry::global().get_parsers_for_extension(extension);
+	if parsers.is_empty() {
+		return Err(anyhow::anyhow!("No parser found for extension: .{extension}"));
+	}
+	let mut last_error = None;
+	for parser in parsers {
+		match parser.parse(context) {
+			Ok(mut doc) => {
+				doc.compute_stats();
+				return Ok(doc);
+			}
+			Err(e) => {
+				if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
+					return Err(e);
+				}
+				last_error = Some(e);
+			}
+		}
+	}
+	Err(last_error.unwrap_or_else(|| anyhow::anyhow!("All parsers failed for extension: .{extension}")))
 }
 
 #[must_use]
@@ -142,7 +159,10 @@ pub fn get_parser_flags_for_context(context: &ParserContext) -> ParserFlags {
 		.forced_extension
 		.as_ref()
 		.map_or_else(|| path.extension().and_then(|e| e.to_str()).unwrap_or(""), |ext| ext.as_str());
-	ParserRegistry::global().get_parser_for_extension(extension).map_or(ParserFlags::NONE, Parser::supported_flags)
+	ParserRegistry::global()
+		.get_parsers_for_extension(extension)
+		.iter()
+		.fold(ParserFlags::NONE, |acc, p| acc | p.supported_flags())
 }
 
 #[must_use]
@@ -154,7 +174,7 @@ pub fn parser_supports_extension(extension: &str) -> bool {
 	if normalized.is_empty() {
 		return false;
 	}
-	ParserRegistry::global().get_parser_for_extension(&normalized).is_some()
+	!ParserRegistry::global().get_parsers_for_extension(&normalized).is_empty()
 }
 
 fn join_extensions<'a, I>(exts: I) -> String

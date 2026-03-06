@@ -1,7 +1,7 @@
 use std::{
 	collections::HashMap,
 	fs::File,
-	io::{BufReader, Read},
+	io::{BufReader, Cursor, Read},
 	path::Path,
 };
 
@@ -41,11 +41,11 @@ impl Parser for WordParser {
 	}
 
 	fn extensions(&self) -> &[&str] {
-		&["docx", "docm", "doc"]
+		&["docx", "docm", "doc", "zip"]
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_TOC
+		ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_SECTIONS
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
@@ -59,6 +59,9 @@ impl Parser for WordParser {
 			},
 			|ext| ext.to_ascii_lowercase(),
 		);
+		if extension == "zip" {
+			return parse_word_zip(context);
+		}
 		if extension == "doc" {
 			match parse_legacy_doc(context) {
 				Ok(document) => return Ok(document),
@@ -79,18 +82,43 @@ impl Parser for WordParser {
 	}
 }
 
-fn parse_ooxml_doc(context: &ParserContext) -> Result<Document> {
+fn parse_word_zip(context: &ParserContext) -> Result<Document> {
 	let file =
-		File::open(&context.file_path).with_context(|| format!("Failed to open DOCX file '{}'", context.file_path))?;
+		File::open(&context.file_path).with_context(|| format!("Failed to open ZIP file '{}'", context.file_path))?;
 	let mut archive = ZipArchive::new(BufReader::new(file))
-		.with_context(|| format!("Failed to read DOCX as zip '{}'", context.file_path))?;
-	let rels = read_ooxml_relationships(&mut archive, "word/_rels/document.xml.rels");
-	let doc_content = read_zip_entry_by_name(&mut archive, "word/document.xml")?;
-	let doc_xml = XmlDocument::parse(&doc_content).context("Failed to parse word/document.xml")?;
+		.with_context(|| format!("Failed to read ZIP archive '{}'", context.file_path))?;
+
+	let mut docx_names: Vec<String> =
+		archive.file_names().filter(|name| name.to_ascii_lowercase().ends_with(".docx")).map(String::from).collect();
+
+	if docx_names.is_empty() {
+		anyhow::bail!("No readable content found in the ZIP archive");
+	}
+
+	docx_names.sort();
+
 	let mut buffer = DocumentBuffer::new();
 	let mut id_positions = HashMap::new();
 	let mut headings = Vec::new();
-	traverse(doc_xml.root(), &mut buffer, &mut headings, &mut id_positions, &rels);
+
+	for docx_name in &docx_names {
+		let mut inner_file_data = Vec::new();
+		{
+			let mut inner_file = archive.by_name(docx_name)?;
+			inner_file.read_to_end(&mut inner_file_data)?;
+		}
+
+		if !buffer.content.is_empty() {
+			buffer.add_marker(Marker::new(MarkerType::SectionBreak, buffer.current_position()));
+		}
+
+		let mut inner_archive = ZipArchive::new(Cursor::new(inner_file_data))
+			.with_context(|| format!("Failed to parse inner DOCX '{docx_name}' as zip"))?;
+
+		parse_ooxml_from_archive(&mut inner_archive, &mut buffer, &mut id_positions, &mut headings)
+			.with_context(|| format!("Failed to parse DOCX contents of '{docx_name}'"))?;
+	}
+
 	let title = extract_title_from_path(&context.file_path);
 	let toc_items = build_toc_from_buffer(&buffer);
 	let mut document = Document::new().with_title(title);
@@ -98,6 +126,39 @@ fn parse_ooxml_doc(context: &ParserContext) -> Result<Document> {
 	document.id_positions = id_positions;
 	document.toc_items = toc_items;
 	Ok(document)
+}
+
+fn parse_ooxml_doc(context: &ParserContext) -> Result<Document> {
+	let file =
+		File::open(&context.file_path).with_context(|| format!("Failed to open DOCX file '{}'", context.file_path))?;
+	let mut archive = ZipArchive::new(BufReader::new(file))
+		.with_context(|| format!("Failed to read DOCX as zip '{}'", context.file_path))?;
+	let mut buffer = DocumentBuffer::new();
+	let mut id_positions = HashMap::new();
+	let mut headings = Vec::new();
+
+	parse_ooxml_from_archive(&mut archive, &mut buffer, &mut id_positions, &mut headings)?;
+
+	let title = extract_title_from_path(&context.file_path);
+	let toc_items = build_toc_from_buffer(&buffer);
+	let mut document = Document::new().with_title(title);
+	document.set_buffer(buffer);
+	document.id_positions = id_positions;
+	document.toc_items = toc_items;
+	Ok(document)
+}
+
+pub fn parse_ooxml_from_archive<R: std::io::Read + std::io::Seek>(
+	archive: &mut zip::ZipArchive<R>,
+	buffer: &mut DocumentBuffer,
+	id_positions: &mut HashMap<String, usize>,
+	headings: &mut Vec<HeadingInfo>,
+) -> Result<()> {
+	let rels = read_ooxml_relationships(archive, "word/_rels/document.xml.rels");
+	let doc_content = read_zip_entry_by_name(archive, "word/document.xml")?;
+	let doc_xml = XmlDocument::parse(&doc_content).context("Failed to parse word/document.xml")?;
+	traverse(doc_xml.root(), buffer, headings, id_positions, &rels);
+	Ok(())
 }
 
 fn parse_legacy_doc(context: &ParserContext) -> Result<Document> {
