@@ -52,3 +52,6 @@ opt-level = "z"
 lto = true
 panic = "abort"
 codegen-units = 1
+
+[patch.crates-io]
+wxdragon = { git = "https://github.com/AllenDang/wxDragon" }
