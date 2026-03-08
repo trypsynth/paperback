@@ -63,6 +63,9 @@ impl Parser for PdfParser {
 						for i in 0..char_count {
 							let unicode = text_page.get_unicode(i);
 							if let Some(ch) = char::from_u32(unicode) {
+								if ch.is_control() && !matches!(ch, '\n' | '\r' | '\t') {
+									continue;
+								}
 								let is_generated = text_page.is_generated(i).unwrap_or(false);
 								let mut char_mcid = -1;
 								if !is_generated {
@@ -104,7 +107,7 @@ impl Parser for PdfParser {
 				}
 			}
 			if !tags_processed {
-				let raw_text = text_page.full();
+				let raw_text = sanitize_pdf_text(&text_page.full());
 				let lines = process_text_lines(&raw_text);
 				let mut current_offset = buffer.current_position();
 				for line in lines {
@@ -124,7 +127,7 @@ impl Parser for PdfParser {
 					let mut start = 0;
 					let mut char_count = 0;
 					if lib().FPDFLink_GetTextRange(&links, i, &mut start, &mut char_count).is_ok() {
-						let link_text = text_page.extract(start, char_count);
+						let link_text = sanitize_pdf_text(&text_page.extract(start, char_count));
 						let trimmed_link = trim_string(&collapse_whitespace(&link_text));
 						if trimmed_link.is_empty() {
 							continue;
@@ -171,7 +174,8 @@ impl Parser for PdfParser {
 								2048,
 							);
 							if len > 0 {
-								let text = String::from_utf16_lossy(&text_buffer[..(len as usize - 1)]);
+								let text =
+									sanitize_pdf_text(&String::from_utf16_lossy(&text_buffer[..(len as usize - 1)]));
 								let trimmed_link = trim_string(&collapse_whitespace(&text));
 								if trimmed_link.is_empty() {
 									continue;
@@ -283,8 +287,12 @@ fn is_cjk(c: char) -> bool {
 	(0xAC00..=0xD7AF).contains(&u) // Hangul
 }
 
+fn sanitize_pdf_text(input: &str) -> String {
+	input.chars().filter(|ch| !ch.is_control() || matches!(ch, '\n' | '\r' | '\t')).collect()
+}
+
 fn process_text_lines(raw_text: &str) -> Vec<String> {
-	let clean_text = raw_text.replace('\r', "");
+	let clean_text = sanitize_pdf_text(raw_text).replace('\r', "");
 	let lines: Vec<String> = clean_text.lines().map(|line| trim_string(&collapse_whitespace(line))).collect();
 	let mut max_len = 0;
 	for line in &lines {
@@ -657,4 +665,21 @@ fn collect_text(elem: &pdfium::PdfiumStructElement, mcid_to_text: &HashMap<i32, 
 
 fn html_escape(s: &str) -> String {
 	s.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;")
+}
+
+#[cfg(test)]
+mod tests {
+	use super::{process_text_lines, sanitize_pdf_text};
+
+	#[test]
+	fn sanitize_pdf_text_removes_embedded_control_characters() {
+		let input = "sugges\u{0002}tion\tline\r\nnext";
+		assert_eq!(sanitize_pdf_text(input), "suggestion\tline\r\nnext");
+	}
+
+	#[test]
+	fn process_text_lines_removes_control_characters() {
+		let lines = process_text_lines("The sug\u{0002}gestion appears here.\nAnd here.");
+		assert_eq!(lines[0], "The suggestion appears here. And here.");
+	}
 }
