@@ -1071,14 +1071,7 @@ fn find_and_select_item_by_name(tree: TreeCtrl, parent: &TreeItemId, name: &str)
 	false
 }
 
-pub fn show_document_info_dialog(
-	parent: &Frame,
-	path: &Path,
-	title: &str,
-	author: &str,
-	stats: &DocumentStats,
-	metadata: &std::collections::HashMap<String, String>,
-) {
+pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, author: &str, stats: &DocumentStats) {
 	let dialog_title = t("Document Info");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
 	let info_ctrl = TextCtrl::builder(&dialog)
@@ -1099,9 +1092,6 @@ pub fn show_document_info_dialog(
 	}
 	if !author.is_empty() {
 		let _ = writeln!(info, "{author_label} {author}");
-	}
-	for (key, value) in metadata {
-		let _ = writeln!(info, "{key}: {value}");
 	}
 	let _ = writeln!(info, "{} {}", words_label, stats.word_count);
 	let _ = writeln!(info, "{lines_label} {}", stats.line_count);
