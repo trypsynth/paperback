@@ -37,7 +37,7 @@ impl Parser for PdfParser {
 		for page_index in 0..page_count {
 			let marker_position = buffer.current_position();
 			page_offsets.push(marker_position);
-			id_positions.insert(format!("page_{}", page_index), marker_position);
+			id_positions.insert(format!("page_{page_index}"), marker_position);
 			buffer.add_marker(
 				Marker::new(MarkerType::PageBreak, marker_position).with_text(format!("Page {}", page_index + 1)),
 			);
@@ -155,17 +155,18 @@ impl Parser for PdfParser {
 			let annot_count = lib().FPDFPage_GetAnnotCount(&page);
 			let mut last_search_pos = 0;
 			for i in 0..annot_count {
-				if let Ok(annot) = lib().FPDFPage_GetAnnot(&page, i) {
+				let annot_result = lib().FPDFPage_GetAnnot(&page, i);
+				if let Ok(annot) = annot_result {
 					if lib().FPDFAnnot_GetSubtype(&annot) == pdfium::pdfium_constants::FPDF_ANNOT_LINK {
 						let mut rect = pdfium::pdfium_types::FS_RECTF { left: 0.0, top: 0.0, right: 0.0, bottom: 0.0 };
 						if lib().FPDFAnnot_GetRect(&annot, &mut rect).is_ok() {
 							let mut text_buffer = vec![0u16; 2048];
 							let len = lib().FPDFText_GetBoundedText(
 								&text_page,
-								rect.left as f64,
-								rect.top as f64,
-								rect.right as f64,
-								rect.bottom as f64,
+								f64::from(rect.left),
+								f64::from(rect.top),
+								f64::from(rect.right),
+								f64::from(rect.bottom),
 								&mut text_buffer[0],
 								2048,
 							);
@@ -176,8 +177,10 @@ impl Parser for PdfParser {
 									continue;
 								}
 								let mut url = String::new();
-								if let Ok(link) = lib().FPDFAnnot_GetLink(&annot) {
-									if let Ok(action) = lib().FPDFLink_GetAction(&link) {
+								let link_result = lib().FPDFAnnot_GetLink(&annot);
+								if let Ok(link) = link_result {
+									let action_result = lib().FPDFLink_GetAction(&link);
+									if let Ok(action) = action_result {
 										let action_type = lib().FPDFAction_GetType(&action);
 										// PDFACTION_URI is 3
 										if action_type == 3 {
@@ -205,7 +208,7 @@ impl Parser for PdfParser {
 										if let Some(dest) = dest {
 											let dest_page = lib().FPDFDest_GetDestPageIndex(&document, &dest);
 											if dest_page >= 0 {
-												url = format!("#page_{}", dest_page);
+												url = format!("#page_{dest_page}");
 											}
 										}
 									}
@@ -310,7 +313,7 @@ fn process_text_lines(raw_text: &str) -> Vec<String> {
 			continue;
 		}
 		let is_list_item = line.starts_with("- ") || line.starts_with("* ") || line.starts_with("• ");
-		let starts_with_uppercase = line.chars().next().map_or(false, |c| c.is_uppercase());
+		let starts_with_uppercase = line.chars().next().is_some_and(char::is_uppercase);
 		let len = display_len(&line);
 		if current_paragraph.is_empty() {
 			current_paragraph = line.clone();
@@ -338,10 +341,8 @@ fn process_text_lines(raw_text: &str) -> Vec<String> {
 				true
 			} else if last_line_ends_with_punctuation && last_line_len < short_line_threshold {
 				true
-			} else if last_line_len < short_line_threshold && starts_with_uppercase {
-				true
 			} else {
-				false
+				last_line_len < short_line_threshold && starts_with_uppercase
 			};
 			if break_paragraph {
 				paragraphs.push(current_paragraph.clone());
@@ -351,7 +352,7 @@ fn process_text_lines(raw_text: &str) -> Vec<String> {
 				if current_paragraph.ends_with('-') {
 					current_paragraph.pop();
 					current_paragraph.push_str(&line);
-				} else if is_cjk(last_char) && line.chars().next().map_or(false, is_cjk) {
+				} else if is_cjk(last_char) && line.chars().next().is_some_and(is_cjk) {
 					current_paragraph.push_str(&line);
 				} else {
 					current_paragraph.push(' ');

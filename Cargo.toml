@@ -1,6 +1,6 @@
 [package]
 name = "paperback"
-version = "0.8.1"
+version = "0.8.2"
 description = "An accessible, light-weight, fast ebook and document reader"
 license = "MIT"
 repository = "https://github.com/trypsynth/paperback"
@@ -14,11 +14,12 @@ members = ["xtask"]
 anyhow = "1.0.102"
 base64 = "0.22.1"
 bitflags = "2.11.0"
+cfb = "0.14.0"
 ego-tree = "0.10.0"
 encoding_rs = "0.8.35"
 libchm = "0.1.0"
 live-region = "0.1.4"
-pdfium = { git = "https://github.com/aryanchoudharypro/PDFium-rs" }
+pdfium = { git = "https://github.com/aryanchoudharypro/PDFium-rs", branch = "feature/tagged-pdf-support" }
 percent-encoding = "2.3.2"
 pulldown-cmark = { version = "0.13.1", default-features = false, features = ["html"] }
 regex = "1.12.3"
@@ -29,7 +30,7 @@ scraper = "0.25.0"
 serde = { version = "1.0.228", default-features = false, features = ["derive", "std"] }
 sha1 = "0.10.6"
 ureq = { version = "3.2.0", default-features = false, features = ["json", "rustls"] }
-wxdragon = { version = "0.9.12", features = ["webview"] }
+wxdragon = { version = "0.9.13", features = ["webview"] }
 zip = { version = "8.2.0", default-features = false, features = ["deflate"] }
 
 [target.'cfg(windows)'.dependencies]
@@ -51,3 +52,6 @@ opt-level = "z"
 lto = true
 panic = "abort"
 codegen-units = 1
+
+[patch.crates-io]
+wxdragon = { git = "https://github.com/AllenDang/wxDragon" }

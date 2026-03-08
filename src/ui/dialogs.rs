@@ -8,15 +8,7 @@ use std::{
 };
 
 use bitflags::bitflags;
-use wxdragon::{
-	event::WebViewEvents,
-	ffi,
-	prelude::*,
-	timer::Timer,
-	translations::translate as t,
-	uiactionsimulator::{MouseButton, UIActionSimulator},
-	widgets::WebView,
-};
+use wxdragon::{event::WebViewEvents, ffi, prelude::*, timer::Timer, translations::translate as t, widgets::WebView};
 
 use crate::{
 	config::ConfigManager,
@@ -1980,49 +1972,7 @@ pub fn show_web_view_dialog(
 		web_view.set_page(&full_html, "");
 	}
 	let web_view_for_load = web_view;
-	let timer = Rc::new(Timer::new(&dialog));
-	let timer_copy = Rc::clone(&timer);
 	web_view.on_loaded(move |_| {
-		let web_view_for_timer = web_view_for_load;
-		timer_copy.on_tick(move |_| {
-			let pos = web_view_for_timer.client_to_screen(Point::new(0, 0));
-			let size = web_view_for_timer.get_size();
-			let x = pos.x + size.width / 2;
-			let y = pos.y + size.height / 2;
-			let sim = UIActionSimulator::new();
-			sim.mouse_move(x, y);
-			sim.mouse_click(MouseButton::Left);
-		});
-		web_view_for_load.run_script(
-			"(() => { \
-				const existing = document.getElementById('paperback-focus-shield'); \
-				if (existing) existing.remove(); \
-				const shield = document.createElement('div'); \
-				shield.id = 'paperback-focus-shield'; \
-				shield.setAttribute('aria-hidden', 'true'); \
-				shield.style.position = 'fixed'; \
-				shield.style.left = '0'; \
-				shield.style.top = '0'; \
-				shield.style.width = '100vw'; \
-				shield.style.height = '100vh'; \
-				shield.style.zIndex = '2147483647'; \
-				shield.style.background = 'transparent'; \
-				shield.style.pointerEvents = 'auto'; \
-				const consume = (event) => { \
-					event.preventDefault(); \
-					event.stopPropagation(); \
-					event.stopImmediatePropagation(); \
-					shield.remove(); \
-				}; \
-				shield.addEventListener('click', consume, true); \
-				document.documentElement.appendChild(shield); \
-				setTimeout(() => { \
-					const node = document.getElementById('paperback-focus-shield'); \
-					if (node) node.remove(); \
-				}, 400); \
-			})();",
-		);
-		timer_copy.start(100, true);
 		web_view_for_load.run_script(
 			"document.addEventListener('keydown', function(event) { \
              if (event.key === 'Escape' || event.keyCode === 27) { \

@@ -1,4 +1,4 @@
-# Paperback - version 0.8.1
+# Paperback - version 0.8.2
 
 ## Introduction
 
@@ -159,6 +159,15 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Tyler Rodick
 
 ## Changelog
+
+### Version 0.8.2
+* Added page support to RTF documents!
+* Fixed a bug where opening the webview in epubs containing external links would automatically activate them.
+* Fixed a bug where the RTF parser wouldn't put a space between words in rare cases.
+* Fixed paragraphs being split into multiple short lines in some PDF documents. [#101](https://github.com/trypsynth/paperback/issues/101), [#355](https://github.com/trypsynth/paperback/pull/355).
+* PDF documents now have basic link and heading navigation support! [#291](https://github.com/trypsynth/paperback/issues/291), [#353](https://github.com/trypsynth/paperback/pull/353), [#354](https://github.com/trypsynth/paperback/pull/354).
+* RTF tabs and line feeds are now rendered exactly as they appear in the document.
+* Switched back to the tried and true pdfium library for parsing PDF's, making PDF rendering much more reliable once again.
 
 ### Version 0.8.1
 * Added Ctrl+Shift+T to reopen the last closed document. [#343](https://github.com/trypsynth/paperback/issues/343).

@@ -36,7 +36,7 @@ pub struct DocumentManager {
 	config: Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
 	last_position_save: Cell<Option<Instant>>,
-	last_sound_line: Cell<Option<i64>>,
+	last_sound_position: Cell<Option<i64>>,
 	recently_closed: Vec<PathBuf>,
 }
 
@@ -54,7 +54,7 @@ impl DocumentManager {
 			config,
 			live_region_label,
 			last_position_save: Cell::new(None),
-			last_sound_line: Cell::new(None),
+			last_sound_position: Cell::new(None),
 			recently_closed: Vec::new(),
 		}
 	}
@@ -92,14 +92,17 @@ impl DocumentManager {
 						show_error_dialog(&self.notebook, &t("Password is required."), &t("Error"));
 						return false;
 					};
-					if let Ok(session) = DocumentSession::new(&path_str, &password, &forced_extension) {
-						self.add_session_tab(self_rc, path, session, &password)
-					} else {
-						show_error_dialog(&self.notebook, &t("Failed to load document."), &t("Error"));
-						false
+					match DocumentSession::new(&path_str, &password, &forced_extension) {
+						Ok(session) => self.add_session_tab(self_rc, path, session, &password),
+						Err(retry_error) => {
+							let message = build_document_load_error_message(path, &retry_error);
+							show_error_dialog(&self.notebook, &message, &t("Error"));
+							false
+						}
 					}
 				} else {
-					show_error_dialog(&self.notebook, &t("Failed to load document."), &t("Error"));
+					let message = build_document_load_error_message(path, &err);
+					show_error_dialog(&self.notebook, &message, &t("Error"));
 					false
 				}
 			}
@@ -349,27 +352,37 @@ impl DocumentManager {
 			return;
 		};
 		let position = tab.text_ctrl.get_insertion_point();
-		let content = &tab.session.content();
-		let total_chars = content.chars().count();
-		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
-		let current_line = i64::try_from(content.chars().take(pos).filter(|&c| c == '\n').count()).unwrap_or(0);
-		if self.last_sound_line.get() == Some(current_line) {
+		let prev = self.last_sound_position.get().unwrap_or(position);
+		self.last_sound_position.set(Some(position));
+		if prev == position {
 			return;
 		}
-		self.last_sound_line.set(Some(current_line));
 		let path_str = tab.file_path.to_string_lossy().to_string();
 		let bookmarks = config.get_bookmarks(&path_str);
 		drop(config);
+		let mut has_note = false;
+		let mut has_bookmark = false;
 		for bm in &bookmarks {
-			if bm.start <= position && position <= bm.end {
-				super::sounds::play_bookmark_sound(!bm.note.is_empty());
-				return;
+			let crossed = if position > prev {
+				bm.start > prev && bm.start <= position
+			} else {
+				bm.start >= position && bm.start < prev
+			};
+			if crossed {
+				if !bm.note.is_empty() {
+					has_note = true;
+				} else {
+					has_bookmark = true;
+				}
 			}
+		}
+		if has_note || has_bookmark {
+			super::sounds::play_bookmark_sound(has_note);
 		}
 	}
 
 	pub fn reset_sound_line(&self) {
-		self.last_sound_line.set(None);
+		self.last_sound_position.set(None);
 	}
 
 	pub fn apply_word_wrap(&mut self, self_rc: &Rc<Mutex<Self>>, word_wrap: bool) {
@@ -477,6 +490,14 @@ fn show_error_dialog(parent: &dyn WxWidget, message: &str, title: &str) {
 		.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
 		.build();
 	dialog.show_modal();
+}
+
+fn build_document_load_error_message(path: &Path, error: &str) -> String {
+	let details = error.trim().strip_prefix(PASSWORD_REQUIRED_ERROR_PREFIX).map_or_else(|| error.trim(), str::trim);
+	if details.is_empty() {
+		return t("Failed to load document.");
+	}
+	format!("{}\n\nFile: {}\nDetails: {}", t("Failed to load document."), path.display(), details)
 }
 
 fn fill_text_ctrl(text_ctrl: TextCtrl, content: &str) {

@@ -40,7 +40,13 @@ jobs:
         run: choco install cmake ninja -y
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
+      - name: Clone wxWidgets
+        run: git clone --recurse-submodules https://github.com/wxWidgets/wxWidgets.git
       - name: Run tests
-        run: cargo test
+        run: |
+          $env:WXWIDGETS_DIR = "${{ github.workspace }}\wxWidgets"
+          cargo test
       - name: Run clippy
-        run: cargo clippy --release
+        run: |
+          $env:WXWIDGETS_DIR = "${{ github.workspace }}\wxWidgets"
+          cargo clippy --release
