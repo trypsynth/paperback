@@ -28,6 +28,7 @@ pub struct DocumentTab {
 
 const POSITION_SAVE_INTERVAL_SECS: u64 = 3;
 const WXK_F10: i32 = 349;
+const WXK_WINDOWS_MENU: i32 = 395;
 
 pub struct DocumentManager {
 	frame: Frame,
@@ -446,7 +447,7 @@ impl DocumentManager {
 		text_ctrl.on_key_down(move |event| {
 			if let WindowEventData::Keyboard(kbd) = &event {
 				if let Some(key) = kbd.get_key_code() {
-					if key == WXK_F10 && kbd.shift_down() {
+					if (key == WXK_F10 && kbd.shift_down()) || key == WXK_WINDOWS_MENU {
 						kbd.event.skip(false);
 						show_reader_context_menu(text_ctrl_for_menu);
 						return;
@@ -455,10 +456,10 @@ impl DocumentManager {
 			}
 			event.skip(true);
 		});
-		let text_ctrl_for_menu = text_ctrl;
-		text_ctrl.bind_internal(EventType::CONTEXT_MENU, move |event| {
+		let text_ctrl_for_right_click = text_ctrl;
+		text_ctrl.bind_internal(EventType::RIGHT_UP, move |event| {
 			event.skip(false);
-			show_reader_context_menu(text_ctrl_for_menu);
+			show_reader_context_menu(text_ctrl_for_right_click);
 		});
 		text_ctrl
 	}
