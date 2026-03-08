@@ -968,7 +968,15 @@ impl MainWindow {
 						let stats = tab.session.stats();
 						let title = tab.session.title();
 						let author = tab.session.author();
-						dialogs::show_document_info_dialog(&frame_copy, &tab.file_path, &title, &author, stats);
+						let metadata = &tab.session.handle().document().metadata;
+						dialogs::show_document_info_dialog(
+							&frame_copy,
+							&tab.file_path,
+							&title,
+							&author,
+							stats,
+							metadata,
+						);
 					}
 				}
 				menu_ids::TABLE_OF_CONTENTS => {

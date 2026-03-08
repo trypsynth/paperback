@@ -1312,8 +1312,7 @@ checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 [[package]]
 name = "pdfium"
 version = "0.10.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "06b175256b456274c54cc83309e6894c4e7a69501d1e88f68ebbcf82ebcdf957"
+source = "git+https://github.com/aryanchoudharypro/PDFium-rs#4056e0031ec843a8d3ab40ef7ee2c2b37f2fa2c7"
 dependencies = [
  "bitflags",
  "image",

@@ -178,6 +178,7 @@ pub struct Document {
 	pub spine_items: Vec<String>,
 	pub manifest_items: HashMap<String, String>,
 	pub stats: DocumentStats,
+	pub metadata: HashMap<String, String>,
 }
 
 impl Document {
@@ -192,6 +193,7 @@ impl Document {
 			spine_items: Vec::new(),
 			manifest_items: HashMap::new(),
 			stats: DocumentStats::default(),
+			metadata: HashMap::new(),
 		}
 	}
 
