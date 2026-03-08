@@ -52,7 +52,6 @@ impl Parser for PdfParser {
 			let page_start_offset = buffer.current_position();
 			let mut page_display_text = String::new();
 			let mut current_lines_info = Vec::new();
-
 			let mut tags_processed = false;
 			if let Some(struct_tree) = page.struct_tree() {
 				let child_count = struct_tree.count_children();
@@ -81,7 +80,6 @@ impl Parser for PdfParser {
 							mcid_to_text.entry(current_mcid).or_default().push_str(&current_text);
 						}
 					}
-
 					let mut current_block = String::new();
 					for i in 0..child_count {
 						if let Ok(child) = struct_tree.get_child(i) {
@@ -101,7 +99,6 @@ impl Parser for PdfParser {
 					any_tags_processed = true;
 				}
 			}
-
 			if !tags_processed {
 				let raw_text = text_page.full();
 				let lines = process_text_lines(&raw_text);
@@ -115,7 +112,6 @@ impl Parser for PdfParser {
 					page_display_text.push('\n');
 				}
 			}
-
 			// Load implicit web links
 			if let Ok(links) = text_page.load_web_links() {
 				let count = lib().FPDFLink_CountWebLinks(&links);
@@ -238,7 +234,6 @@ impl Parser for PdfParser {
 		}
 		let title = metadata_value(&document, "Title").unwrap_or_else(|| extract_title_from_path(&context.file_path));
 		let author = metadata_value(&document, "Author").unwrap_or_default();
-
 		let mut toc_items = extract_toc(&document, &page_offsets, &page_lines_info);
 		if any_tags_processed {
 			if toc_items.is_empty() {
@@ -249,14 +244,12 @@ impl Parser for PdfParser {
 		} else {
 			add_heading_markers(&mut buffer, &toc_items, 1);
 		}
-
 		let mut doc = Document::new();
 		doc.set_buffer(buffer);
 		doc.title = title;
 		doc.author = author;
 		doc.toc_items = toc_items;
 		doc.id_positions = id_positions;
-
 		Ok(doc)
 	}
 }
@@ -333,7 +326,6 @@ fn process_text_lines(raw_text: &str) -> Vec<String> {
 					is_numbered = found_space;
 				}
 			}
-
 			let break_paragraph = if is_list_item || is_numbered {
 				true
 			} else if last_line_ends_with_punctuation && last_line_len < short_line_threshold {
@@ -510,7 +502,6 @@ fn process_struct_element(
 	toc_items: &mut Vec<(u32, TocItem)>,
 ) {
 	let elem_type = elem.element_type().unwrap_or_default();
-
 	if elem_type == "Table" {
 		flush_block(current_block, buffer, page_display_text, current_lines_info);
 		let html = build_html_table(elem, mcid_to_text);
@@ -524,7 +515,6 @@ fn process_struct_element(
 		page_display_text.push('\n');
 		return;
 	}
-
 	let is_block = matches!(
 		elem_type.as_str(),
 		"P" | "H"
@@ -536,11 +526,9 @@ fn process_struct_element(
 			| "Part" | "Art"
 			| "TOC" | "TOCI"
 	);
-
 	if is_block {
 		flush_block(current_block, buffer, page_display_text, current_lines_info);
 	}
-
 	let block_start_pos = buffer.current_position() + display_len(current_block);
 
 	let count = elem.count_children();
@@ -564,10 +552,8 @@ fn process_struct_element(
 			}
 		}
 	}
-
 	if is_block {
 		flush_block(current_block, buffer, page_display_text, current_lines_info);
-
 		let heading_level = match elem_type.as_str() {
 			"H1" => Some(1),
 			"H2" => Some(2),
@@ -578,7 +564,6 @@ fn process_struct_element(
 			"H" => Some(1), // Fallback generic heading to H1
 			_ => None,
 		};
-
 		if let Some(level) = heading_level {
 			let mut title = String::new();
 			collect_text(elem, mcid_to_text, &mut title);
@@ -596,12 +581,10 @@ fn process_struct_element(
 				toc_items.push((level as u32, TocItem::new(title, String::new(), block_start_pos)));
 			}
 		}
-
 		if elem_type == "L" || elem_type == "TOC" {
 			let child_count = elem.count_children();
 			buffer.add_marker(Marker::new(MarkerType::List, block_start_pos).with_level(child_count));
 		}
-
 		if elem_type == "LI" || elem_type == "TOCI" {
 			let mut li_text = String::new();
 			collect_text(elem, mcid_to_text, &mut li_text);
@@ -613,7 +596,6 @@ fn process_struct_element(
 
 fn build_html_table(elem: &pdfium::PdfiumStructElement, mcid_to_text: &HashMap<i32, String>) -> String {
 	let elem_type = elem.element_type().unwrap_or_default();
-
 	if elem_type == "Table" {
 		let mut html = String::from("<table border=\"1\">\n");
 		let count = elem.count_children();
