@@ -32,6 +32,8 @@ impl Parser for PdfParser {
 		let mut id_positions = HashMap::new();
 		let mut page_lines_info: Vec<Vec<(usize, String)>> = Vec::new();
 		let page_count = document.page_count();
+		let mut any_tags_processed = false;
+		let mut flat_toc_items = Vec::new();
 		for page_index in 0..page_count {
 			let marker_position = buffer.current_position();
 			page_offsets.push(marker_position);
@@ -47,19 +49,68 @@ impl Parser for PdfParser {
 				page_lines_info.push(Vec::new());
 				continue;
 			};
-			let raw_text = text_page.full();
-			let lines = process_text_lines(&raw_text);
 			let page_start_offset = buffer.current_position();
 			let mut page_display_text = String::new();
 			let mut current_lines_info = Vec::new();
-			let mut current_offset = page_start_offset;
-			for line in lines {
-				current_lines_info.push((current_offset, line.clone()));
-				current_offset += display_len(&line) + 1;
-				buffer.append(&line);
-				buffer.append("\n");
-				page_display_text.push_str(&line);
-				page_display_text.push('\n');
+			let mut tags_processed = false;
+			if let Some(struct_tree) = page.struct_tree() {
+				let child_count = struct_tree.count_children();
+				if child_count > 0 {
+					let mut mcid_to_text: HashMap<i32, String> = HashMap::new();
+					if let Ok(char_count) = text_page.char_count() {
+						let mut current_mcid = -1;
+						let mut current_text = String::new();
+						for i in 0..char_count {
+							if let Ok(obj) = text_page.get_text_object(i) {
+								let mcid = obj.get_marked_content_id();
+								let unicode = text_page.get_unicode(i);
+								if let Some(ch) = char::from_u32(unicode) {
+									if mcid != current_mcid {
+										if current_mcid >= 0 && !current_text.is_empty() {
+											mcid_to_text.entry(current_mcid).or_default().push_str(&current_text);
+										}
+										current_mcid = mcid;
+										current_text.clear();
+									}
+									current_text.push(ch);
+								}
+							}
+						}
+						if current_mcid >= 0 && !current_text.is_empty() {
+							mcid_to_text.entry(current_mcid).or_default().push_str(&current_text);
+						}
+					}
+					let mut current_block = String::new();
+					for i in 0..child_count {
+						if let Ok(child) = struct_tree.get_child(i) {
+							process_struct_element(
+								&child,
+								&mcid_to_text,
+								&mut buffer,
+								&mut page_display_text,
+								&mut current_block,
+								&mut current_lines_info,
+								&mut flat_toc_items,
+							);
+						}
+					}
+					flush_block(&mut current_block, &mut buffer, &mut page_display_text, &mut current_lines_info);
+					tags_processed = true;
+					any_tags_processed = true;
+				}
+			}
+			if !tags_processed {
+				let raw_text = text_page.full();
+				let lines = process_text_lines(&raw_text);
+				let mut current_offset = buffer.current_position();
+				for line in lines {
+					current_lines_info.push((current_offset, line.clone()));
+					current_offset += display_len(&line) + 1;
+					buffer.append(&line);
+					buffer.append("\n");
+					page_display_text.push_str(&line);
+					page_display_text.push('\n');
+				}
 			}
 			// Load implicit web links
 			if let Ok(links) = text_page.load_web_links() {
@@ -183,8 +234,16 @@ impl Parser for PdfParser {
 		}
 		let title = metadata_value(&document, "Title").unwrap_or_else(|| extract_title_from_path(&context.file_path));
 		let author = metadata_value(&document, "Author").unwrap_or_default();
-		let toc_items = extract_toc(&document, &page_offsets, &page_lines_info);
-		add_heading_markers(&mut buffer, &toc_items, 1);
+		let mut toc_items = extract_toc(&document, &page_offsets, &page_lines_info);
+		if any_tags_processed {
+			if toc_items.is_empty() {
+				toc_items = build_toc_tree(flat_toc_items);
+			} else if flat_toc_items.is_empty() {
+				add_heading_markers(&mut buffer, &toc_items, 1);
+			}
+		} else {
+			add_heading_markers(&mut buffer, &toc_items, 1);
+		}
 		let mut doc = Document::new();
 		doc.set_buffer(buffer);
 		doc.title = title;
@@ -249,7 +308,25 @@ fn process_text_lines(raw_text: &str) -> Vec<String> {
 		if current_paragraph.is_empty() {
 			current_paragraph = line.clone();
 		} else {
-			let break_paragraph = if is_list_item {
+			let mut is_numbered = false;
+			let mut chars = line.chars();
+			if let Some(first_char) = chars.next() {
+				if first_char.is_ascii_digit() {
+					let mut found_space = false;
+					for c in chars {
+						if c.is_ascii_digit() || c == '.' || c == ')' {
+							continue;
+						} else if c.is_whitespace() {
+							found_space = true;
+							break;
+						} else {
+							break;
+						}
+					}
+					is_numbered = found_space;
+				}
+			}
+			let break_paragraph = if is_list_item || is_numbered {
 				true
 			} else if last_line_ends_with_punctuation && last_line_len < short_line_threshold {
 				true
@@ -395,4 +472,185 @@ fn children_at_path_mut<'a>(nodes: &'a mut Vec<TocItem>, path: &[usize]) -> &'a 
 		current = &mut current[index].children;
 	}
 	current
+}
+
+fn flush_block(
+	current_block: &mut String,
+	buffer: &mut DocumentBuffer,
+	page_display_text: &mut String,
+	current_lines_info: &mut Vec<(usize, String)>,
+) {
+	let trimmed = trim_string(&collapse_whitespace(current_block));
+	if !trimmed.is_empty() {
+		let offset = buffer.current_position();
+		current_lines_info.push((offset, trimmed.clone()));
+		buffer.append(&trimmed);
+		buffer.append("\n");
+		page_display_text.push_str(&trimmed);
+		page_display_text.push('\n');
+	}
+	current_block.clear();
+}
+
+fn process_struct_element(
+	elem: &pdfium::PdfiumStructElement,
+	mcid_to_text: &HashMap<i32, String>,
+	buffer: &mut DocumentBuffer,
+	page_display_text: &mut String,
+	current_block: &mut String,
+	current_lines_info: &mut Vec<(usize, String)>,
+	toc_items: &mut Vec<(u32, TocItem)>,
+) {
+	let elem_type = elem.element_type().unwrap_or_default();
+	if elem_type == "Table" {
+		flush_block(current_block, buffer, page_display_text, current_lines_info);
+		let html = build_html_table(elem, mcid_to_text);
+		let pos = buffer.current_position();
+		buffer.add_marker(Marker::new(MarkerType::Table, pos).with_reference(html));
+		let table_placeholder = "[Table]";
+		current_lines_info.push((pos, table_placeholder.to_string()));
+		buffer.append(table_placeholder);
+		buffer.append("\n");
+		page_display_text.push_str(table_placeholder);
+		page_display_text.push('\n');
+		return;
+	}
+	let is_block = matches!(
+		elem_type.as_str(),
+		"P" | "H"
+			| "H1" | "H2"
+			| "H3" | "H4"
+			| "H5" | "H6"
+			| "L" | "LI"
+			| "Div" | "Sect"
+			| "Part" | "Art"
+			| "TOC" | "TOCI"
+	);
+	if is_block {
+		flush_block(current_block, buffer, page_display_text, current_lines_info);
+	}
+	let block_start_pos = buffer.current_position() + display_len(current_block);
+
+	let count = elem.count_children();
+	for i in 0..count {
+		if let Ok(child) = elem.get_child(i) {
+			process_struct_element(
+				&child,
+				mcid_to_text,
+				buffer,
+				page_display_text,
+				current_block,
+				current_lines_info,
+				toc_items,
+			);
+		} else {
+			let mcid = elem.child_marked_content_id(i);
+			if mcid >= 0 {
+				if let Some(text) = mcid_to_text.get(&mcid) {
+					current_block.push_str(text);
+				}
+			}
+		}
+	}
+	if is_block {
+		flush_block(current_block, buffer, page_display_text, current_lines_info);
+		let heading_level = match elem_type.as_str() {
+			"H1" => Some(1),
+			"H2" => Some(2),
+			"H3" => Some(3),
+			"H4" => Some(4),
+			"H5" => Some(5),
+			"H6" => Some(6),
+			"H" => Some(1), // Fallback generic heading to H1
+			_ => None,
+		};
+		if let Some(level) = heading_level {
+			let mut title = String::new();
+			collect_text(elem, mcid_to_text, &mut title);
+			let title = trim_string(&collapse_whitespace(&title));
+			if !title.is_empty() {
+				let marker_type = match level {
+					1 => MarkerType::Heading1,
+					2 => MarkerType::Heading2,
+					3 => MarkerType::Heading3,
+					4 => MarkerType::Heading4,
+					5 => MarkerType::Heading5,
+					_ => MarkerType::Heading6,
+				};
+				buffer.add_marker(Marker::new(marker_type, block_start_pos).with_text(title.clone()).with_level(level));
+				toc_items.push((level as u32, TocItem::new(title, String::new(), block_start_pos)));
+			}
+		}
+		if elem_type == "L" || elem_type == "TOC" {
+			let child_count = elem.count_children();
+			buffer.add_marker(Marker::new(MarkerType::List, block_start_pos).with_level(child_count));
+		}
+		if elem_type == "LI" || elem_type == "TOCI" {
+			let mut li_text = String::new();
+			collect_text(elem, mcid_to_text, &mut li_text);
+			let li_text = trim_string(&collapse_whitespace(&li_text));
+			buffer.add_marker(Marker::new(MarkerType::ListItem, block_start_pos).with_text(li_text));
+		}
+	}
+}
+
+fn build_html_table(elem: &pdfium::PdfiumStructElement, mcid_to_text: &HashMap<i32, String>) -> String {
+	let elem_type = elem.element_type().unwrap_or_default();
+	if elem_type == "Table" {
+		let mut html = String::from("<table border=\"1\">\n");
+		let count = elem.count_children();
+		for i in 0..count {
+			if let Ok(child) = elem.get_child(i) {
+				html.push_str(&build_html_table(&child, mcid_to_text));
+			}
+		}
+		html.push_str("</table>\n");
+		html
+	} else if elem_type == "TR" {
+		let mut html = String::from("<tr>\n");
+		let count = elem.count_children();
+		for i in 0..count {
+			if let Ok(child) = elem.get_child(i) {
+				html.push_str(&build_html_table(&child, mcid_to_text));
+			}
+		}
+		html.push_str("</tr>\n");
+		html
+	} else if elem_type == "TH" || elem_type == "TD" {
+		let mut html = format!("<{}>", elem_type.to_lowercase());
+		let mut cell_text = String::new();
+		collect_text(elem, mcid_to_text, &mut cell_text);
+		html.push_str(&html_escape(&trim_string(&collapse_whitespace(&cell_text))));
+		html.push_str(&format!("</{}>\n", elem_type.to_lowercase()));
+		html
+	} else {
+		let mut html = String::new();
+		let count = elem.count_children();
+		for i in 0..count {
+			if let Ok(child) = elem.get_child(i) {
+				html.push_str(&build_html_table(&child, mcid_to_text));
+			}
+		}
+		html
+	}
+}
+
+fn collect_text(elem: &pdfium::PdfiumStructElement, mcid_to_text: &HashMap<i32, String>, out: &mut String) {
+	let count = elem.count_children();
+	for i in 0..count {
+		if let Ok(child) = elem.get_child(i) {
+			collect_text(&child, mcid_to_text, out);
+		} else {
+			let mcid = elem.child_marked_content_id(i);
+			if mcid >= 0 {
+				if let Some(text) = mcid_to_text.get(&mcid) {
+					out.push_str(text);
+				}
+			}
+		}
+	}
+}
+
+fn html_escape(s: &str) -> String {
+	s.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;")
 }
