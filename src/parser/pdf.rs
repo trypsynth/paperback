@@ -256,10 +256,7 @@ impl Parser for PdfParser {
 		doc.author = author;
 		doc.toc_items = toc_items;
 		doc.id_positions = id_positions;
-		doc.metadata.insert(
-			"System".to_string(),
-			if any_tags_processed { "Tagged PDF".to_string() } else { "Legacy PDF".to_string() },
-		);
+
 		Ok(doc)
 	}
 }
