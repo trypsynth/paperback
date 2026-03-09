@@ -504,6 +504,29 @@ fn flush_block(
 	current_block.clear();
 }
 
+/// Like `flush_block`, but preserves line breaks within the content instead of
+/// collapsing them. Used for preformatted elements like `Code`.
+fn flush_block_lines(
+	current_block: &mut String,
+	buffer: &mut DocumentBuffer,
+	page_display_text: &mut String,
+	current_lines_info: &mut Vec<(usize, String)>,
+) {
+	let text = current_block.clone();
+	current_block.clear();
+	for line in text.split('\n') {
+		let trimmed = trim_string(&collapse_whitespace(line));
+		if !trimmed.is_empty() {
+			let offset = buffer.current_position();
+			current_lines_info.push((offset, trimmed.clone()));
+			buffer.append(&trimmed);
+			buffer.append("\n");
+			page_display_text.push_str(&trimmed);
+			page_display_text.push('\n');
+		}
+	}
+}
+
 fn process_struct_element(
 	elem: &pdfium::PdfiumStructElement,
 	mcid_to_text: &HashMap<i32, String>,
@@ -537,7 +560,9 @@ fn process_struct_element(
 			| "Div" | "Sect"
 			| "Part" | "Art"
 			| "TOC" | "TOCI"
+			| "Code"
 	);
+	let preserve_lines = elem_type == "Code";
 	if is_block {
 		flush_block(current_block, buffer, page_display_text, current_lines_info);
 	}
@@ -565,7 +590,11 @@ fn process_struct_element(
 		}
 	}
 	if is_block {
-		flush_block(current_block, buffer, page_display_text, current_lines_info);
+		if preserve_lines {
+			flush_block_lines(current_block, buffer, page_display_text, current_lines_info);
+		} else {
+			flush_block(current_block, buffer, page_display_text, current_lines_info);
+		}
 		let heading_level = match elem_type.as_str() {
 			"H1" => Some(1),
 			"H2" => Some(2),
