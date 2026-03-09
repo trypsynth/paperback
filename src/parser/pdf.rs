@@ -315,7 +315,9 @@ fn process_text_lines(raw_text: &str) -> Vec<String> {
 			continue;
 		}
 		let is_list_item = line.starts_with("- ") || line.starts_with("* ") || line.starts_with("• ");
-		let starts_with_uppercase = line.chars().next().is_some_and(char::is_uppercase);
+		let first_char = line.chars().next();
+		let starts_with_uppercase = first_char.is_some_and(char::is_uppercase);
+		let starts_with_alpha = first_char.is_some_and(char::is_alphabetic);
 		let len = display_len(&line);
 		if current_paragraph.is_empty() {
 			current_paragraph = line.clone();
@@ -343,7 +345,7 @@ fn process_text_lines(raw_text: &str) -> Vec<String> {
 			} else if last_line_ends_with_punctuation && last_line_len < short_line_threshold {
 				true
 			} else {
-				last_line_len < short_line_threshold && starts_with_uppercase
+				last_line_len < short_line_threshold && (starts_with_uppercase || !starts_with_alpha)
 			};
 			if break_paragraph {
 				paragraphs.push(current_paragraph.clone());
