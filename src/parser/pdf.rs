@@ -76,8 +76,8 @@ impl Parser for PdfParser {
 								if char_mcid >= 0 && char_mcid != current_mcid {
 									if current_mcid >= 0 && !current_text.is_empty() {
 										mcid_to_text.entry(current_mcid).or_default().push_str(&current_text);
-										current_text.clear();
 									}
+									current_text.clear();
 									current_mcid = char_mcid;
 								}
 								current_text.push(ch);
