@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
 "POT-Creation-Date: 2026-03-05 20:09-0700\n"
-"PO-Revision-Date: 2026-03-11 21:38+0100\n"
+"PO-Revision-Date: 2026-03-11 23:44+0100\n"
 "Last-Translator: 4Sense Gaming <lukas@4sensegaming.cz>\n"
 "Language-Team: Lukáš Hosnedl <lukas@4sensegaming.cz>\n"
 "Language: cs\n"
@@ -133,7 +133,7 @@ msgid "Root"
 msgstr "Začátek"
 
 msgid "Please select a section from the table of contents."
-msgstr "Prosím, vyberte požadovanou sekci v obsahu."
+msgstr "Prosím, vyberte požadovaný oddíl z obsahu."
 
 msgid "No Selection"
 msgstr "Žádný výběr"
@@ -531,16 +531,16 @@ msgid "No recent documents."
 msgstr "Žádné nedávné dokumenty."
 
 msgid "Previous Section\t["
-msgstr "Předchozí sekce\t["
+msgstr "Předchozí oddíl\t["
 
 msgid "Go to previous section"
-msgstr "Přejít na předchozí sekci"
+msgstr "Přejít na předchozí oddíl"
 
 msgid "Next Section\t]"
-msgstr "Další sekce\t]"
+msgstr "Další oddíl\t]"
 
 msgid "Go to next section"
-msgstr "Přejít na další sekci"
+msgstr "Přejít na další oddíl"
 
 msgid "Go to &Page\tCtrl+P"
 msgstr "Přejít na &stránku\tCtrl+P"
@@ -777,10 +777,10 @@ msgid "Go forward in history"
 msgstr "Přejít vpřed v historii"
 
 msgid "&Sections"
-msgstr "&Sekce"
+msgstr "&Oddíl"
 
 msgid "Navigate by sections"
-msgstr "Navigovat po sekcích"
+msgstr "Navigovat po oddílech"
 
 msgid "&Headings"
 msgstr "&Nadpisy"
@@ -936,13 +936,13 @@ msgid "Show All...\tCtrl+R"
 msgstr "Zobrazit všechny...\tCtrl+R"
 
 msgid "No sections."
-msgstr "Žádné sekce."
+msgstr "Žádné oddíly."
 
 msgid "No next section"
-msgstr "Žádná další sekce"
+msgstr "Žádný další oddíl"
 
 msgid "No previous section"
-msgstr "Žádná předchozí sekce"
+msgstr "Žádný předchozí oddíl"
 
 #, c-format
 msgid "No headings at level %d."
