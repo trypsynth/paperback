@@ -8,7 +8,7 @@ use std::{
 };
 
 use bitflags::bitflags;
-use wxdragon::{event::WebViewEvents, ffi, prelude::*, timer::Timer, translations::translate as t, widgets::WebView};
+use wxdragon::{event::WebViewEvents, ffi, prelude::*, translations::translate as t, widgets::WebView};
 
 use crate::{
 	config::ConfigManager,
@@ -847,12 +847,10 @@ pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i3
 	let dialog_title = t("Table of Contents");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
 	let selected_offset = Rc::new(Cell::new(-1));
-	let (tree, root) = build_toc_tree(dialog, toc_items, current_offset);
+	let (tree, _root) = build_toc_tree(dialog, toc_items, current_offset);
 	bind_toc_selection(tree, Rc::clone(&selected_offset));
 	bind_toc_activation(dialog, tree, Rc::clone(&selected_offset));
-	let search_string = Rc::new(RefCell::new(String::new()));
-	let search_timer = Rc::new(Timer::new(&dialog));
-	bind_toc_search(tree, root, &search_string, &search_timer);
+	bind_toc_search(tree);
 	let (ok_button, cancel_button) = build_toc_buttons(dialog);
 	bind_toc_ok(dialog, ok_button, Rc::clone(&selected_offset));
 	bind_toc_layout(dialog, tree, ok_button, cancel_button);
@@ -906,75 +904,18 @@ fn bind_toc_activation(dialog: Dialog, tree: TreeCtrl, selected_offset: Rc<Cell<
 	});
 }
 
-fn bind_toc_search(
-	tree: TreeCtrl,
-	root: TreeItemId,
-	search_string: &Rc<RefCell<String>>,
-	search_timer: &Rc<Timer<Dialog>>,
-) {
-	let search_string_for_timer = Rc::clone(search_string);
-	search_timer.on_tick(move |_| {
-		search_string_for_timer.borrow_mut().clear();
-	});
-	let tree_for_search_keydown = tree;
-	let root_for_keydown = root.clone();
-	let search_string_for_search_keydown = Rc::clone(search_string);
-	let search_timer_for_search_keydown = Rc::clone(search_timer);
+fn bind_toc_search(tree: TreeCtrl) {
+	// Native Win32 first-letter navigation is used as-is. The only tweak needed is
+	// preventing space from activating the OK button (space fires item_activated on
+	// the tree, which our activation handler maps to OK).
 	tree.bind_internal(EventType::KEY_DOWN, move |event| {
 		if let Some(key) = event.get_key_code() {
 			if key == KEY_SPACE {
-				let mut s = search_string_for_search_keydown.borrow_mut();
-				if !s.is_empty() {
-					let mut new_search = s.clone();
-					new_search.push(' ');
-					if find_and_select_item_by_name(tree_for_search_keydown, &root_for_keydown, &new_search) {
-						*s = new_search;
-						search_timer_for_search_keydown.start(500, true);
-					} else {
-						bell();
-					}
-					event.skip(false);
-					return;
-				}
+				event.skip(false);
+				return;
 			}
 		}
 		event.skip(true);
-	});
-	let tree_for_search = tree;
-	let root_for_search = root;
-	let search_string_for_search = Rc::clone(search_string);
-	let search_timer_for_search = Rc::clone(search_timer);
-	tree.bind_internal(EventType::CHAR, move |event| {
-		if let Some(key) = event.get_unicode_key() {
-			if key <= KEY_SPACE || key == KEY_DELETE {
-				event.skip(true);
-				return;
-			}
-			let c = u32::try_from(key).ok().and_then(std::char::from_u32).unwrap_or('\0');
-			let mut s = search_string_for_search.borrow_mut();
-			if s.is_empty() {
-				s.push(c.to_ascii_lowercase());
-				search_timer_for_search.start(500, true);
-				event.skip(true); // First char, let native handle it too (cycle to first A)
-				return;
-			}
-			if s.ends_with(c.to_ascii_lowercase()) {
-				search_timer_for_search.start(500, true);
-				event.skip(true); // Let native handle cycling
-				return;
-			}
-			let mut new_search = s.clone();
-			new_search.push(c.to_ascii_lowercase());
-			if find_and_select_item_by_name(tree_for_search, &root_for_search, &new_search) {
-				*s = new_search;
-				search_timer_for_search.start(500, true);
-			} else {
-				bell();
-			}
-			event.skip(false);
-		} else {
-			event.skip(true);
-		}
 	});
 }
 
@@ -1042,27 +983,6 @@ fn find_and_select_item(tree: TreeCtrl, parent: &TreeItemId, offset: i32) -> boo
 				}
 			}
 			if find_and_select_item(tree, &item, offset) {
-				return true;
-			}
-			current_child = tree.get_next_child(parent, &mut cookie);
-		}
-	}
-	false
-}
-
-fn find_and_select_item_by_name(tree: TreeCtrl, parent: &TreeItemId, name: &str) -> bool {
-	if let Some((child, mut cookie)) = tree.get_first_child(parent) {
-		let mut current_child = Some(child);
-		while let Some(item) = current_child {
-			if let Some(text) = tree.get_item_text(&item) {
-				if text.to_lowercase().starts_with(name) {
-					tree.select_item(&item);
-					tree.set_focused_item(&item);
-					tree.ensure_visible(&item);
-					return true;
-				}
-			}
-			if find_and_select_item_by_name(tree, &item, name) {
 				return true;
 			}
 			current_child = tree.get_next_child(parent, &mut cookie);
