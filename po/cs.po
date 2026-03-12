@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
 "POT-Creation-Date: 2026-03-05 20:09-0700\n"
-"PO-Revision-Date: 2026-03-11 23:44+0100\n"
+"PO-Revision-Date: 2026-03-12 09:59+0100\n"
 "Last-Translator: 4Sense Gaming <lukas@4sensegaming.cz>\n"
 "Language-Team: Lukáš Hosnedl <lukas@4sensegaming.cz>\n"
 "Language: cs\n"
@@ -31,19 +31,19 @@ msgid "&Restore previously opened documents on startup"
 msgstr "Při spuštění &načíst naposledy otevřené dokumenty"
 
 msgid "&Word wrap"
-msgstr "Zalamování &řádků"
+msgstr "Zalamovat &řádky"
 
 msgid "&Minimize to system tray"
 msgstr "&Minimalizovat do systémové lišty"
 
 msgid "&Start maximized"
-msgstr "&Spustit v maximalizovaném okně"
+msgstr "&Spouštět v maximalizovaném okně"
 
 msgid "Show compact &go menu"
-msgstr "Zobrazovat kompaktní nabídku &Přejít na"
+msgstr "Zobrazovat kompaktní nabídku &Přejít"
 
 msgid "&Wrap navigation"
-msgstr "&Cyklická navigace"
+msgstr "&Cyklická rychlá navigace"
 
 msgid "Play &sounds on bookmarks and notes"
 msgstr "Přehrávat &zvuky na záložkách a poznámkách"
@@ -58,7 +58,7 @@ msgid "&Language:"
 msgstr "&Jazyk:"
 
 msgid "Update Channel:"
-msgstr "Kanál aktualizace:"
+msgstr "Kanál aktualizací:"
 
 msgid "Stable"
 msgstr "Stabilní"
@@ -142,7 +142,7 @@ msgid "Untitled"
 msgstr "Bez názvu"
 
 msgid "Document Info"
-msgstr "Info o dokumentu"
+msgstr "Informace o dokumentu"
 
 msgid "Path:"
 msgstr "Cesta:"
@@ -229,14 +229,14 @@ msgid ""
 "remove its reading position."
 msgstr ""
 "Chcete opravdu odstranit tento dokument ze seznamu? Přijdete tak i o místo, "
-"kde jste dočetli."
+"kde jste přestali číst."
 
 msgid ""
 "Are you sure you want to remove these {} documents from the list? This will "
 "also remove their reading positions."
 msgstr ""
 "Chcete opravdu odstranit tyto {} dokumenty ze seznamu? Přijdete tak i o "
-"místo, kde jste v každém dokumentu dočetli."
+"místo, kde jste v každém dokumentu přestali číst."
 
 msgid "Confirm"
 msgstr "Potvrdit"
@@ -246,7 +246,7 @@ msgid ""
 "remove all reading positions and bookmarks."
 msgstr ""
 "Chcete opravdu odstranit všechny dokumenty ze seznamu? Přijdete tak ve "
-"všech dokumentech i o místo, kde jste dočetli, a o záložky."
+"všech dokumentech i o místo, kde jste přestali číst, a o záložky."
 
 msgid "Open As"
 msgstr "Otevřít jako"
@@ -298,7 +298,7 @@ msgid "Links"
 msgstr "Odkazy"
 
 msgid "An accessible, lightweight, fast ebook and document reader"
-msgstr "Přístupná, nenáročná a rychlá čtečka e-knih"
+msgstr "Přístupná, nenáročná a rychlá čtečka e-knih a dokumentů"
 
 msgid "File not found: {}"
 msgstr "Soubor nenalezen: {}"
@@ -409,10 +409,10 @@ msgid "Failed to launch default browser."
 msgstr "Nepodařilo se spustit výchozí prohlížeč."
 
 msgid "Failed to open donation page in browser."
-msgstr "Nepodařilo se otevřít stránku podpory v prohlížeči."
+msgstr "Nepodařilo se otevřít stránku Přispět v prohlížeči."
 
 msgid "No release notes were provided."
-msgstr "Nejsou uvedeny žádné poznámky k vydání."
+msgstr "Nejsou uvedeny žádné poznámky k verzi."
 
 msgid "Paperback Update"
 msgstr "Aktualizace Paperbacku"
@@ -427,7 +427,7 @@ msgid "No updates available. Latest version: {}"
 msgstr "Žádné aktualizace nejsou dostupné. Poslední verze: {}"
 
 msgid "Info"
-msgstr "Info"
+msgstr "Informace"
 
 #, c-format
 msgid "Failed to check for updates. HTTP status: %d"
@@ -479,7 +479,7 @@ msgid "Export document to plain text"
 msgstr "Exportovat dokument do prostého textu"
 
 msgid "Failed to export document."
-msgstr "Export dokumentu se nezdařil."
+msgstr "Export dokumentu selhal."
 
 msgid "Paperback files (*.paperback)|*.paperback"
 msgstr "Soubory Paperbacku (*.paperback)|*.paperback"
@@ -552,7 +552,7 @@ msgid "Next Pag&e\tP"
 msgstr "&Další stránka\tP"
 
 msgid "Previous Lin&k\tShift+K"
-msgstr "Předchozí &řádek\tShift+K"
+msgstr "Předchozí &odkaz\tShift+K"
 
 msgid "Next Lin&k\tK"
 msgstr "Další &odkaz\tK"
@@ -654,22 +654,22 @@ msgid "Go to next note"
 msgstr "Přejít na další poznámku"
 
 msgid "Jump to &All...\tCtrl+B"
-msgstr "Přejít na &všechny...\tCtrl+B"
+msgstr "Přejít na &vše...\tCtrl+B"
 
 msgid "Show all bookmarks and notes"
-msgstr "Zobrazit všechny záložky a poznámky"
+msgstr "Zobrazovat všechny záložky a poznámky"
 
 msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
 msgstr "Přejít pouze na &záložky...\tCtrl+Alt+B"
 
 msgid "Show bookmarks only"
-msgstr "Zobrazit pouze záložky"
+msgstr "Zobrazovat pouze záložky"
 
 msgid "Jump to Notes &Only...\tCtrl+Alt+M"
 msgstr "Přejít pouze na po&známky...\tCtrl+Alt+M"
 
 msgid "Show notes only"
-msgstr "Zobrazit pouze poznámky"
+msgstr "Zobrazovat pouze poznámky"
 
 msgid "&View Note Text\tRawCtrl+Shift+W"
 msgstr "&Zobrazit text poznámky\tRawCtrl+Shift+W"
@@ -777,7 +777,7 @@ msgid "Go forward in history"
 msgstr "Přejít vpřed v historii"
 
 msgid "&Sections"
-msgstr "&Oddíl"
+msgstr "&Oddíly"
 
 msgid "Navigate by sections"
 msgstr "Navigovat po oddílech"
@@ -852,7 +852,7 @@ msgid "Show word count"
 msgstr "Zobrazit počet slov"
 
 msgid "Document &Info\tCtrl+I"
-msgstr "&Info o dokumentu\tCtrl+I"
+msgstr "&Informace o dokumentu\tCtrl+I"
 
 msgid "Show document information"
 msgstr "Zobrazit informace o dokumentu"
@@ -873,7 +873,7 @@ msgid "Open &Containing Folder\tCtrl+Shift+C"
 msgstr "Otevřít &nadřazenou složku\tCtrl+Shift+C"
 
 msgid "Open folder containing the document"
-msgstr "Otevřít složku, kde je dokument uložen"
+msgstr "Otevřít složku, kde je dokument uložený"
 
 msgid "Open in &Web View\tCtrl+Shift+V"
 msgstr "Otevřít ve &webovém zobrazení\tCtrl+Shift+V"
@@ -918,10 +918,10 @@ msgid "View help in Paperback"
 msgstr "Zobrazit nápovědu v Paperbacku"
 
 msgid "Check for &Updates\tCtrl+Shift+U"
-msgstr "Zkontrolovat &aktualizace\tCtrl+Shift+U"
+msgstr "Vyhledat &aktualizace\tCtrl+Shift+U"
 
 msgid "Check for updates"
-msgstr "Zkontrolovat aktualizace"
+msgstr "Vyhledat aktualizace"
 
 msgid "&Donate\tCtrl+D"
 msgstr "&Přispět\tCtrl+D"
