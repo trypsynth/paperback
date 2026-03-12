@@ -12,7 +12,7 @@
 * Robust find functionality for quick document searches.
 * Seamless navigation between EPUB sections, headings, pages, links, lists, tables, and more via hotkeys similar to what you find in a screen reader.
 * Precise navigation to specific lines or percentages within documents.
-* Seemless and light-weight installer that automatically sets up file associations for you.
+* Seamless and light-weight installer that automatically sets up file associations for you.
 * Translated into numerous different languages for the widest possible user support.
 
 ## Building
