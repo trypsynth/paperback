@@ -726,8 +726,7 @@ impl DocumentSession {
 		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
 		let line_start =
 			content.chars().take(pos).collect::<Vec<_>>().iter().rposition(|&c| c == '\n').map_or(0, |idx| idx + 1);
-		let line_len =
-			content.chars().skip(line_start).position(|c| c == '\n').unwrap_or(total_chars - line_start);
+		let line_len = content.chars().skip(line_start).position(|c| c == '\n').unwrap_or(total_chars - line_start);
 		let line_end = line_start + line_len;
 		(i64::try_from(line_start).unwrap_or(0), i64::try_from(line_end).unwrap_or(i64::MAX))
 	}
