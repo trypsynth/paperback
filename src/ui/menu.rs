@@ -382,7 +382,7 @@ pub fn create_file_menu(config: &ConfigManager) -> Menu {
 	// explicit Exit item to avoid a duplicate.
 	if !cfg!(target_os = "macos") {
 		file_menu.append_separator();
-		let exit_label = t("E&xit");
+		let exit_label = t("E&xit\tCtrl+Q");
 		let exit_help = t("Exit the application");
 		let _ = file_menu.append(menu_ids::EXIT, &exit_label, &exit_help, ItemKind::Normal);
 	}
