@@ -2,6 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use anyhow::{Result, anyhow};
 use pdfium::{PdfiumDocument, PdfiumError, lib};
+use wxdragon::translations::translate as t;
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
@@ -34,6 +35,8 @@ impl Parser for PdfParser {
 		let page_count = document.page_count();
 		let mut any_tags_processed = false;
 		let mut flat_toc_items = Vec::new();
+		let mut has_any_text = false;
+		let mut has_any_images = false;
 		for page_index in 0..page_count {
 			let marker_position = buffer.current_position();
 			page_offsets.push(marker_position);
@@ -109,6 +112,9 @@ impl Parser for PdfParser {
 			if !tags_processed {
 				let raw_text = sanitize_pdf_text(&text_page.full());
 				let lines = process_text_lines(&raw_text);
+				if !lines.is_empty() {
+					has_any_text = true;
+				}
 				let mut current_offset = buffer.current_position();
 				for line in lines {
 					current_lines_info.push((current_offset, line.clone()));
@@ -117,6 +123,20 @@ impl Parser for PdfParser {
 					buffer.append("\n");
 					page_display_text.push_str(&line);
 					page_display_text.push('\n');
+				}
+			} else {
+				has_any_text = true;
+			}
+			// Check for image objects on this page
+			if !has_any_images {
+				let obj_count = lib().FPDFPage_CountObjects(&page);
+				for i in 0..obj_count {
+					if let Ok(obj) = lib().FPDFPage_GetObject(&page, i) {
+						if lib().FPDFPageObj_GetType(&obj) == pdfium::pdfium_constants::FPDF_PAGEOBJ_IMAGE {
+							has_any_images = true;
+							break;
+						}
+					}
 				}
 			}
 			// Load implicit web links
@@ -239,6 +259,12 @@ impl Parser for PdfParser {
 				}
 			}
 			page_lines_info.push(current_lines_info);
+		}
+		if !has_any_text && has_any_images {
+			let marker_position = buffer.current_position();
+			buffer.add_marker(Marker::new(MarkerType::PageBreak, marker_position).with_text(String::new()));
+			buffer.append(&t("This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."));
+			buffer.append("\n");
 		}
 		let title = metadata_value(&document, "Title").unwrap_or_else(|| extract_title_from_path(&context.file_path));
 		let author = metadata_value(&document, "Author").unwrap_or_default();
