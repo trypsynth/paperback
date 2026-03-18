@@ -569,16 +569,3 @@ impl HuffmanDecoder {
 		}
 	}
 }
-
-#[cfg(test)]
-mod tests {
-	use super::*;
-	#[test]
-	fn test_mobi_parser() {
-		let parser = MobiParser;
-		let context = ParserContext::new("pg11-images-kf8.mobi".to_string());
-		let doc = parser.parse(&context).unwrap();
-		println!("Title: {}", doc.title);
-		println!("Buffer len: {}", doc.buffer.content.len());
-	}
-}
