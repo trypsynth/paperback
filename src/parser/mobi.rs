@@ -139,18 +139,18 @@ impl Parser for MobiParser {
 		}
 		let mut huff_decoder = None;
 		if compression == 17480 {
-			if header_length >= 116 && mobi_header_offset + 116 <= rec0.len() {
+			if header_length >= 104 && mobi_header_offset + 104 <= rec0.len() {
 				let huff_record_index = u32::from_be_bytes([
-					rec0[mobi_header_offset + 108],
-					rec0[mobi_header_offset + 109],
-					rec0[mobi_header_offset + 110],
-					rec0[mobi_header_offset + 111],
+					rec0[mobi_header_offset + 96],
+					rec0[mobi_header_offset + 97],
+					rec0[mobi_header_offset + 98],
+					rec0[mobi_header_offset + 99],
 				]) as usize;
 				let huff_record_count = u32::from_be_bytes([
-					rec0[mobi_header_offset + 112],
-					rec0[mobi_header_offset + 113],
-					rec0[mobi_header_offset + 114],
-					rec0[mobi_header_offset + 115],
+					rec0[mobi_header_offset + 100],
+					rec0[mobi_header_offset + 101],
+					rec0[mobi_header_offset + 102],
+					rec0[mobi_header_offset + 103],
 				]) as usize;
 				if huff_record_index > 0
 					&& huff_record_count > 0
