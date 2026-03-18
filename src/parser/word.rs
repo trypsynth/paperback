@@ -8,6 +8,7 @@ use std::{
 use anyhow::{Context, Result};
 use cfb::CompoundFile;
 use encoding_rs::WINDOWS_1252;
+use office_crypto::decrypt_from_file;
 use roxmltree::{Document as XmlDocument, Node, NodeType};
 use zip::ZipArchive;
 
@@ -129,16 +130,13 @@ fn parse_word_zip(context: &ParserContext) -> Result<Document> {
 }
 
 fn parse_ooxml_doc(context: &ParserContext) -> Result<Document> {
-	let file =
-		File::open(&context.file_path).with_context(|| format!("Failed to open DOCX file '{}'", context.file_path))?;
-	let mut archive = ZipArchive::new(BufReader::new(file))
+	let bytes = load_ooxml_bytes(&context.file_path, context.password.as_deref())?;
+	let mut archive = ZipArchive::new(Cursor::new(bytes))
 		.with_context(|| format!("Failed to read DOCX as zip '{}'", context.file_path))?;
 	let mut buffer = DocumentBuffer::new();
 	let mut id_positions = HashMap::new();
 	let mut headings = Vec::new();
-
 	parse_ooxml_from_archive(&mut archive, &mut buffer, &mut id_positions, &mut headings)?;
-
 	let title = extract_title_from_path(&context.file_path);
 	let toc_items = build_toc_from_buffer(&buffer);
 	let mut document = Document::new().with_title(title);
@@ -146,6 +144,14 @@ fn parse_ooxml_doc(context: &ParserContext) -> Result<Document> {
 	document.id_positions = id_positions;
 	document.toc_items = toc_items;
 	Ok(document)
+}
+
+/// Read a DOCX/OOXML file's raw bytes, decrypting first if the file is an encrypted OLE container.
+fn load_ooxml_bytes(path: &str, password: Option<&str>) -> Result<Vec<u8>> {
+	match try_decrypt_office_file(path, password)? {
+		Some(decrypted) => Ok(decrypted),
+		None => std::fs::read(path).with_context(|| format!("Failed to read '{path}'")),
+	}
 }
 
 pub fn parse_ooxml_from_archive<R: std::io::Read + std::io::Seek>(
@@ -177,7 +183,36 @@ fn parse_legacy_doc(context: &ParserContext) -> Result<Document> {
 	}
 	let fib_flags = read_u16_le(&word_document, FIB_FLAGS_OFFSET);
 	if (fib_flags & FIB_FLAG_ENCRYPTED) != 0 {
-		anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX} DOC file is encrypted and requires a password");
+		let Some(password) = context.password.as_deref() else {
+			anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX} DOC file is encrypted and requires a password");
+		};
+		let decrypted = decrypt_from_file(&context.file_path, password)
+			.map_err(|e| anyhow::anyhow!("{PASSWORD_REQUIRED_ERROR_PREFIX} DOC decryption failed (wrong password?): {e}"))?;
+		let mut dec_compound = CompoundFile::open(Cursor::new(decrypted))
+			.context("Decrypted DOC data is not a valid compound file")?;
+		let word_document = read_stream(&mut dec_compound, "WordDocument")
+			.or_else(|_| read_stream(&mut dec_compound, "/WordDocument"))?;
+		let fib_flags2 = read_u16_le(&word_document, FIB_FLAGS_OFFSET);
+		let table_stream_name2 = if (fib_flags2 & FIB_FLAG_USE_1_TABLE) != 0 { "1Table" } else { "0Table" };
+		let table_stream2 = read_stream(&mut dec_compound, table_stream_name2)
+			.or_else(|_| read_stream(&mut dec_compound, &format!("/{table_stream_name2}")))?;
+		let mut text = extract_doc_text_from_piece_table(&word_document, &table_stream2)
+			.unwrap_or_else(|| extract_doc_text_simple(&word_document));
+		if text.trim().is_empty() {
+			text = extract_doc_text_simple(&word_document);
+		}
+		let normalized = normalize_doc_text(&text);
+		let mut buffer = DocumentBuffer::new();
+		if !normalized.is_empty() {
+			buffer.append(&normalized);
+			if !buffer.content.ends_with('\n') {
+				buffer.append("\n");
+			}
+		}
+		let title = extract_title_from_path(&context.file_path);
+		let mut document = Document::new().with_title(title);
+		document.set_buffer(buffer);
+		return Ok(document);
 	}
 	let table_stream_name = if (fib_flags & FIB_FLAG_USE_1_TABLE) != 0 { "1Table" } else { "0Table" };
 	let table_stream = read_stream(&mut compound, table_stream_name)
@@ -202,7 +237,7 @@ fn parse_legacy_doc(context: &ParserContext) -> Result<Document> {
 	Ok(document)
 }
 
-fn read_stream(compound: &mut CompoundFile<File>, path: &str) -> Result<Vec<u8>> {
+fn read_stream<R: std::io::Read + std::io::Seek>(compound: &mut CompoundFile<R>, path: &str) -> Result<Vec<u8>> {
 	let mut stream = compound.open_stream(path).with_context(|| format!("Stream not found: {path}"))?;
 	let mut bytes = Vec::new();
 	stream.read_to_end(&mut bytes)?;
@@ -692,6 +727,29 @@ fn extract_field_display_text(paragraph: Node, instr_run: Node) -> (String, bool
 fn extract_number_from_string(s: &str) -> Option<i32> {
 	let digits: String = s.chars().filter(char::is_ascii_digit).collect();
 	digits.parse().ok()
+}
+
+/// If `path` looks like an encrypted OLE compound file (has an `EncryptionInfo` stream),
+/// attempts to decrypt it with `password` and returns the decrypted bytes.
+/// Returns `None` if the file is not a compound file or is not encrypted.
+/// Returns an error if it is encrypted but decryption fails (wrong password, etc.).
+pub fn try_decrypt_office_file(path: &str, password: Option<&str>) -> Result<Option<Vec<u8>>> {
+	// Try opening as a CFB compound file. Plain ZIPs will fail here.
+	let file = File::open(path).with_context(|| format!("Failed to open '{path}'"))?;
+	let compound = match CompoundFile::open(file) {
+		Ok(c) => c,
+		Err(_) => return Ok(None), // Not a compound file at all
+	};
+	// Encrypted OOXML files always contain an EncryptionInfo stream.
+	if compound.entry("/EncryptionInfo").is_err() {
+		return Ok(None); // Compound file but not encrypted Office format
+	}
+	let Some(password) = password else {
+		anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX} File is encrypted and requires a password");
+	};
+	let decrypted = decrypt_from_file(path, password)
+		.map_err(|e| anyhow::anyhow!("Decryption failed (wrong password?): {e}"))?;
+	Ok(Some(decrypted))
 }
 
 #[cfg(test)]

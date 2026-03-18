@@ -1,7 +1,7 @@
 use std::{
 	collections::HashMap,
 	fs::File,
-	io::{BufReader, Read},
+	io::{Cursor, Read},
 	path::Path,
 };
 
@@ -13,7 +13,8 @@ use zip::ZipArchive;
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
 	parser::{
-		Parser, ooxml::read_ooxml_relationships, path::extract_title_from_path, xml::collect_text_from_tagged_elements,
+		Parser, ooxml::read_ooxml_relationships, path::extract_title_from_path, word::try_decrypt_office_file,
+		xml::collect_text_from_tagged_elements,
 	},
 	types::LinkInfo,
 	zip::read_zip_entry_by_name,
@@ -59,9 +60,12 @@ impl Parser for PowerpointParser {
 }
 
 fn parse_pptx(context: &ParserContext) -> Result<Document> {
-	let file =
-		File::open(&context.file_path).with_context(|| format!("Failed to open PPTX file '{}'", context.file_path))?;
-	let mut archive = ZipArchive::new(BufReader::new(file))
+	let bytes = match try_decrypt_office_file(&context.file_path, context.password.as_deref())? {
+		Some(decrypted) => decrypted,
+		None => std::fs::read(&context.file_path)
+			.with_context(|| format!("Failed to read PPTX file '{}'", context.file_path))?,
+	};
+	let mut archive = ZipArchive::new(Cursor::new(bytes))
 		.with_context(|| format!("Failed to read PPTX as zip '{}'", context.file_path))?;
 	let mut slides = (0..archive.len())
 		.filter_map(|i| archive.by_index(i).ok().map(|entry| entry.name().to_string()))
@@ -121,6 +125,12 @@ fn parse_legacy_ppt(context: &ParserContext) -> Result<Document> {
 		File::open(&context.file_path).with_context(|| format!("Failed to open PPT file '{}'", context.file_path))?;
 	let mut compound =
 		CompoundFile::open(file).with_context(|| format!("Failed to parse OLE container '{}'", context.file_path))?;
+
+	// Encrypted PPT files have an EncryptionInfo stream. We can detect but not decrypt them.
+	if compound.entry("/EncryptionInfo").is_ok() {
+		anyhow::bail!("Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead.");
+	}
+
 	let ppt_document_stream = read_ppt_document_stream(&mut compound)
 		.with_context(|| format!("Failed to read PowerPoint Document stream from '{}'", context.file_path))?;
 	let slide_texts = collect_legacy_slide_texts(&ppt_document_stream);
