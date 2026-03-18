@@ -128,7 +128,9 @@ fn parse_legacy_ppt(context: &ParserContext) -> Result<Document> {
 
 	// Encrypted PPT files have an EncryptionInfo stream. We can detect but not decrypt them.
 	if compound.entry("/EncryptionInfo").is_ok() {
-		anyhow::bail!("Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead.");
+		anyhow::bail!(
+			"Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
+		);
 	}
 
 	let ppt_document_stream = read_ppt_document_stream(&mut compound)

@@ -186,10 +186,11 @@ fn parse_legacy_doc(context: &ParserContext) -> Result<Document> {
 		let Some(password) = context.password.as_deref() else {
 			anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX} DOC file is encrypted and requires a password");
 		};
-		let decrypted = decrypt_from_file(&context.file_path, password)
-			.map_err(|e| anyhow::anyhow!("{PASSWORD_REQUIRED_ERROR_PREFIX} DOC decryption failed (wrong password?): {e}"))?;
-		let mut dec_compound = CompoundFile::open(Cursor::new(decrypted))
-			.context("Decrypted DOC data is not a valid compound file")?;
+		let decrypted = decrypt_from_file(&context.file_path, password).map_err(|e| {
+			anyhow::anyhow!("{PASSWORD_REQUIRED_ERROR_PREFIX} DOC decryption failed (wrong password?): {e}")
+		})?;
+		let mut dec_compound =
+			CompoundFile::open(Cursor::new(decrypted)).context("Decrypted DOC data is not a valid compound file")?;
 		let word_document = read_stream(&mut dec_compound, "WordDocument")
 			.or_else(|_| read_stream(&mut dec_compound, "/WordDocument"))?;
 		let fib_flags2 = read_u16_le(&word_document, FIB_FLAGS_OFFSET);
@@ -747,8 +748,8 @@ pub fn try_decrypt_office_file(path: &str, password: Option<&str>) -> Result<Opt
 	let Some(password) = password else {
 		anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX} File is encrypted and requires a password");
 	};
-	let decrypted = decrypt_from_file(path, password)
-		.map_err(|e| anyhow::anyhow!("Decryption failed (wrong password?): {e}"))?;
+	let decrypted =
+		decrypt_from_file(path, password).map_err(|e| anyhow::anyhow!("Decryption failed (wrong password?): {e}"))?;
 	Ok(Some(decrypted))
 }
 
