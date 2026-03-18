@@ -18,6 +18,7 @@ pub mod epub;
 pub mod fb2;
 pub mod html;
 pub mod markdown;
+pub mod mobi;
 pub mod odp;
 pub mod odt;
 pub mod ooxml;
@@ -100,6 +101,7 @@ impl ParserRegistry {
 
 			registry.register(pdf::PdfParser);
 			registry.register(markdown::MarkdownParser);
+			registry.register(mobi::MobiParser);
 			registry.register(odp::FodpParser);
 			registry.register(odp::OdpParser);
 			registry.register(odt::FodtParser);
