@@ -73,18 +73,18 @@ impl Parser for MobiParser {
 		]);
 		let mut name_offset = 0usize;
 		let mut name_length = 0usize;
-		if header_length >= 80 && mobi_header_offset + 80 <= rec0.len() {
+		if header_length >= 76 && mobi_header_offset + 76 <= rec0.len() {
 			name_offset = u32::from_be_bytes([
+				rec0[mobi_header_offset + 68],
+				rec0[mobi_header_offset + 69],
+				rec0[mobi_header_offset + 70],
+				rec0[mobi_header_offset + 71],
+			]) as usize;
+			name_length = u32::from_be_bytes([
 				rec0[mobi_header_offset + 72],
 				rec0[mobi_header_offset + 73],
 				rec0[mobi_header_offset + 74],
 				rec0[mobi_header_offset + 75],
-			]) as usize;
-			name_length = u32::from_be_bytes([
-				rec0[mobi_header_offset + 76],
-				rec0[mobi_header_offset + 77],
-				rec0[mobi_header_offset + 78],
-				rec0[mobi_header_offset + 79],
 			]) as usize;
 		}
 		let first_content_record = 1;
