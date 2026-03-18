@@ -16,7 +16,7 @@ impl Parser for MobiParser {
 		"MOBI Books"
 	}
 	fn extensions(&self) -> &[&str] {
-		&["mobi", "prc", "azw"]
+		&["mobi", "prc", "azw", "azw3"]
 	}
 	fn supported_flags(&self) -> ParserFlags {
 		ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_LISTS
