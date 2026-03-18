@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-03-16 08:59-0600\n"
+"POT-Creation-Date: 2026-03-16 09:10-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -722,7 +722,7 @@ msgstr ""
 msgid "Open a recent document"
 msgstr ""
 
-msgid "E&xit"
+msgid "E&xit\tCtrl+Q"
 msgstr ""
 
 msgid "Exit the application"
@@ -1092,6 +1092,9 @@ msgid "&Restore"
 msgstr ""
 
 msgid "Restore Paperback"
+msgstr ""
+
+msgid "E&xit"
 msgstr ""
 
 msgid "Exit Paperback"
