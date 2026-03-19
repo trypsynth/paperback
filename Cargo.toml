@@ -15,7 +15,7 @@ anyhow = "1.0.102"
 base64 = "0.22.1"
 bitflags = "2.11.0"
 cfb = "0.14.0"
-ego-tree = "0.10.0"
+ego-tree = "0.11.0"
 encoding_rs = "0.8.35"
 libchm = "0.1.0"
 live-region = "0.1.4"
@@ -31,8 +31,8 @@ scraper = "0.26.0"
 serde = { version = "1.0.228", default-features = false, features = ["derive", "std"] }
 sha1 = "0.10.6"
 ureq = { version = "3.2.0", default-features = false, features = ["json", "rustls"] }
-wxdragon = { version = "0.9.13", features = ["webview"] }
-zip = { version = "8.2.0", default-features = false, features = ["deflate"] }
+wxdragon = { version = "0.9.14", features = ["webview"] }
+zip = { version = "7.2.0", default-features = false, features = ["deflate"] }
 
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_System_Com", "Win32_UI_WindowsAndMessaging", "Win32_Foundation", "Win32_System_Ole", "Win32_System_Variant"] }
