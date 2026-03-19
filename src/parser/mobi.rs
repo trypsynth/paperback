@@ -211,7 +211,8 @@ impl Parser for MobiParser {
 				2 => content.extend_from_slice(&decompress_palmdoc(record_data)),
 				17480 => {
 					if let Some(ref mut decoder) = huff_decoder {
-						content.extend_from_slice(&decoder.decode(record_data)?);
+						let decoded_tmp = decoder.decode(record_data)?;
+						content.extend_from_slice(&decoded_tmp);
 					}
 				}
 				other => anyhow::bail!("Unsupported compression mode ({})", other),
@@ -254,6 +255,12 @@ impl Parser for MobiParser {
 
 fn get_trailing_size(data: &[u8]) -> usize {
 	if data.is_empty() {
+		return 0;
+	}
+	// If the last byte doesn't have bit 7 set it's not a valid VLQ terminator —
+	// this happens when the trailing-entry count from extra_data_flags exceeds the
+	// entries actually present (common in AZW3 files). Treat the entry as absent.
+	if data[data.len() - 1] & 0x80 == 0 {
 		return 0;
 	}
 	let mut size = 0usize;
@@ -384,14 +391,17 @@ impl HuffmanDecoder {
 			max_code = ((max_code + 1) << (32u8.saturating_sub(code_len))).saturating_sub(1);
 			self.code_dict[i] = (code_len, term, max_code);
 		}
-		if base_offset + 32 * 4 > huff.len() {
+		// Base table has 64 interleaved entries: [min1, max1, min2, max2, ... min32, max32]
+		if base_offset + 64 * 4 > huff.len() {
 			anyhow::bail!("Invalid HUFF base offset");
 		}
 		for i in 1..=32usize {
-			let off = base_offset + (i - 1) * 4;
-			let val = u32::from_be_bytes([huff[off], huff[off + 1], huff[off + 2], huff[off + 3]]);
-			self.min_codes[i] = val << (32 - i);
-			self.max_codes[i] = ((val + 1) << (32 - i)).saturating_sub(1);
+			let min_off = base_offset + (2 * (i - 1)) * 4;
+			let max_off = base_offset + (2 * (i - 1) + 1) * 4;
+			let min_val = u32::from_be_bytes([huff[min_off], huff[min_off + 1], huff[min_off + 2], huff[min_off + 3]]);
+			let max_val = u32::from_be_bytes([huff[max_off], huff[max_off + 1], huff[max_off + 2], huff[max_off + 3]]);
+			self.min_codes[i] = min_val << (32 - i);
+			self.max_codes[i] = ((max_val + 1) << (32 - i)).saturating_sub(1);
 		}
 		Ok(())
 	}
@@ -405,7 +415,9 @@ impl HuffmanDecoder {
 			}
 			let num_phrases = u32::from_be_bytes([cdic[8], cdic[9], cdic[10], cdic[11]]);
 			let bits = u32::from_be_bytes([cdic[12], cdic[13], cdic[14], cdic[15]]);
-			let n = (1u32 << bits).min(num_phrases.saturating_sub(self.dictionary.len() as u32));
+			let _dict_start_idx = self.dictionary.len();
+			let h = 1usize << bits;
+			let n = (h as u32).min(num_phrases.saturating_sub(self.dictionary.len() as u32));
 			let mut offsets = Vec::with_capacity(n as usize);
 			for i in 0..n as usize {
 				let off = 16 + i * 2;
@@ -414,8 +426,8 @@ impl HuffmanDecoder {
 				}
 				offsets.push(u16::from_be_bytes([cdic[off], cdic[off + 1]]));
 			}
-			for offset in offsets {
-				let off = 16 + offset as usize;
+			for stored in offsets {
+				let off = 16 + stored as usize;
 				if off + 2 > cdic.len() {
 					anyhow::bail!("Invalid CDIC phrase offset");
 				}
@@ -432,38 +444,37 @@ impl HuffmanDecoder {
 	}
 	fn decode(&mut self, data: &[u8]) -> Result<Vec<u8>> {
 		let mut stack: Vec<DecodeFrame> = Vec::with_capacity(32);
-		let mut current = if data.len() < 8 {
-			DecodeFrame {
-				data: data.to_vec(),
-				pos: data.len(),
-				bits_left: 0,
-				x: 0,
-				n: 0,
-				out: data.to_vec(),
-				target_dict_index: None,
+		let make_frame = |raw: &[u8], target_dict_index: Option<usize>| -> DecodeFrame {
+			if raw.len() < 8 {
+				let mut padded = [0u8; 8];
+				padded[..raw.len()].copy_from_slice(raw);
+				DecodeFrame {
+					data: raw.to_vec(),
+					pos: raw.len(),
+					bits_left: raw.len() * 8,
+					x: u64::from_be_bytes(padded),
+					n: 32,
+					out: Vec::new(),
+					target_dict_index,
+				}
+			} else {
+				DecodeFrame {
+					data: raw.to_vec(),
+					pos: 8,
+					bits_left: raw.len() * 8,
+					x: u64::from_be_bytes([raw[0], raw[1], raw[2], raw[3], raw[4], raw[5], raw[6], raw[7]]),
+					n: 32,
+					out: Vec::new(),
+					target_dict_index,
+				}
 			}
+		};
+		let mut current = if data.is_empty() {
+			return Ok(Vec::new());
+		} else if data.len() < 8 {
+			make_frame(data, None)
 		} else {
-			let mut pos = 0;
-			let x = u64::from_be_bytes([
-				data[pos],
-				data[pos + 1],
-				data[pos + 2],
-				data[pos + 3],
-				data[pos + 4],
-				data[pos + 5],
-				data[pos + 6],
-				data[pos + 7],
-			]);
-			pos += 8;
-			DecodeFrame {
-				data: data.to_vec(),
-				pos,
-				bits_left: data.len() * 8,
-				x,
-				n: 32,
-				out: Vec::new(),
-				target_dict_index: None,
-			}
+			make_frame(data, None)
 		};
 		loop {
 			if current.bits_left == 0 {
@@ -500,6 +511,15 @@ impl HuffmanDecoder {
 					]);
 					current.x = (current.x << 32) | u64::from(v);
 					current.pos += 4;
+				} else if current.pos < current.data.len() {
+					// 1-3 remaining bytes: load zero-padded to 4 bytes
+					let remaining = current.data.len() - current.pos;
+					let mut v = 0u32;
+					for j in 0..remaining {
+						v |= u32::from(current.data[current.pos + j]) << ((3 - j) * 8);
+					}
+					current.x = (current.x << 32) | u64::from(v);
+					current.pos = current.data.len();
 				}
 				current.n += 32;
 			}
@@ -517,54 +537,23 @@ impl HuffmanDecoder {
 			if index >= self.dictionary.len() {
 				anyhow::bail!("Invalid dict index {}", index);
 			}
-			let (slice, flag) = std::mem::take(&mut self.dictionary[index])
-				.ok_or_else(|| anyhow::anyhow!("Dictionary entry {} already consumed", index))?;
+			let (slice, flag) = self.dictionary[index]
+				.as_ref()
+				.map(|(b, f)| (b.clone(), *f))
+				.ok_or_else(|| anyhow::anyhow!("Dictionary entry {} missing", index))?;
 			current.n -= code_len as i32;
 			current.bits_left = current.bits_left.saturating_sub(code_len);
 			if flag {
-				self.dictionary[index] = Some((slice.clone(), true));
 				current.out.extend_from_slice(&slice);
+			} else if stack.iter().any(|f| f.target_dict_index == Some(index)) {
+				// Cycle detected: this entry is already being decoded up the stack.
+				// Break the cycle by emitting nothing for this reference.
 			} else {
-				self.dictionary[index] = Some((slice.clone(), false));
-				let (raw, _) = std::mem::take(&mut self.dictionary[index]).unwrap();
 				stack.push(current);
 				if stack.len() > 1024 {
 					anyhow::bail!("Decode stack overflow");
 				}
-				current = if raw.len() < 8 {
-					DecodeFrame {
-						data: raw.clone(),
-						pos: raw.len(),
-						bits_left: 0,
-						x: 0,
-						n: 0,
-						out: raw,
-						target_dict_index: Some(index),
-					}
-				} else {
-					let mut pos = 0;
-					let x = u64::from_be_bytes([
-						raw[pos],
-						raw[pos + 1],
-						raw[pos + 2],
-						raw[pos + 3],
-						raw[pos + 4],
-						raw[pos + 5],
-						raw[pos + 6],
-						raw[pos + 7],
-					]);
-					pos += 8;
-					let bits = raw.len() * 8;
-					DecodeFrame {
-						data: raw,
-						pos,
-						bits_left: bits,
-						x,
-						n: 32,
-						out: Vec::new(),
-						target_dict_index: Some(index),
-					}
-				};
+				current = make_frame(&slice, Some(index));
 			}
 		}
 	}
