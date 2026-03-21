@@ -85,7 +85,10 @@ impl Parser for EpubParser {
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_SECTIONS | ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_LISTS
+		ParserFlags::SUPPORTS_SECTIONS
+			| ParserFlags::SUPPORTS_TOC
+			| ParserFlags::SUPPORTS_LISTS
+			| ParserFlags::SUPPORTS_PAGES
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
@@ -106,7 +109,7 @@ impl Parser for EpubParser {
 			.find(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "package")
 			.ok_or_else(|| anyhow::anyhow!("OPF package element missing"))?;
 		let (manifest, spine, nav_path, ncx_path, metadata) = parse_package(package_node, &opf_dir);
-		let conversion = convert_spine_items(&mut archive, &manifest, &spine);
+		let mut conversion = convert_spine_items(&mut archive, &manifest, &spine);
 		if conversion.sections.is_empty() {
 			let reason = if conversion.conversion_errors.is_empty() {
 				String::from("no readable spine items")
@@ -127,6 +130,16 @@ impl Parser for EpubParser {
 			&conversion.sections,
 			&conversion.id_positions,
 		);
+		let page_items = build_epub_pages(
+			&mut archive,
+			nav_path.as_deref(),
+			ncx_path.as_deref(),
+			&conversion.sections,
+			&conversion.id_positions,
+		);
+		for page in page_items {
+			conversion.buffer.add_marker(Marker::new(MarkerType::PageBreak, page.offset).with_text(page.name));
+		}
 		let manifest_items: HashMap<String, String> =
 			manifest.values().map(|item| (item.id.clone(), item.path.clone())).collect();
 		let mut document = Document::new().with_title(title).with_author(author);
@@ -597,4 +610,93 @@ fn convert_navpoint(
 		}
 	}
 	Some(item)
+}
+
+fn build_epub_pages<R: Read + Seek>(
+	archive: &mut ZipArchive<R>,
+	nav_path: Option<&str>,
+	ncx_path: Option<&str>,
+	sections: &[SectionMeta],
+	id_positions: &HashMap<String, usize>,
+) -> Vec<TocItem> {
+	if let Some(nav_path) = nav_path {
+		build_pages_from_nav_document(archive, nav_path, sections, id_positions)
+			.or_else(|| ncx_path.and_then(|p| build_pages_from_ncx(archive, p, sections, id_positions)))
+			.unwrap_or_else(Vec::new)
+	} else if let Some(ncx) = ncx_path {
+		build_pages_from_ncx(archive, ncx, sections, id_positions).unwrap_or_default()
+	} else {
+		Vec::new()
+	}
+}
+
+fn build_pages_from_nav_document<R: Read + Seek>(
+	archive: &mut ZipArchive<R>,
+	nav_path: &str,
+	sections: &[SectionMeta],
+	id_positions: &HashMap<String, usize>,
+) -> Option<Vec<TocItem>> {
+	let nav_content = read_zip_entry_by_name(archive, nav_path).ok()?;
+	let nav_doc =
+		XmlDocument::parse_with_options(&nav_content, ParsingOptions { allow_dtd: true, ..ParsingOptions::default() })
+			.ok()?;
+	let nav_node = nav_doc.descendants().find(|node| {
+		if node.node_type() != NodeType::Element || node.tag_name().name() != "nav" {
+			return false;
+		}
+		node.attributes().any(|attr| {
+			let attr_name = attr.name();
+			let matches_name = attr_name.eq_ignore_ascii_case("epub:type")
+				|| attr_name.eq_ignore_ascii_case("type")
+				|| attr_name.eq_ignore_ascii_case("role");
+			matches_name
+				&& attr
+					.value()
+					.split_ascii_whitespace()
+					.any(|part| part.eq_ignore_ascii_case("page-list") || part.eq_ignore_ascii_case("doc-pagelist"))
+		})
+	});
+	let nav_node = nav_node?;
+	let mut items = Vec::new();
+	for child in nav_node.children() {
+		if child.node_type() != NodeType::Element {
+			continue;
+		}
+		match child.tag_name().name() {
+			"ol" | "ul" => items.extend(parse_nav_list(child, nav_path, sections, id_positions)),
+			"li" => {
+				if let Some(item) = parse_nav_item(child, nav_path, sections, id_positions) {
+					items.push(item);
+				}
+			}
+			_ => {}
+		}
+	}
+	if items.is_empty() {
+		items = parse_nav_list(nav_node, nav_path, sections, id_positions);
+	}
+	if items.is_empty() { None } else { Some(items) }
+}
+
+fn build_pages_from_ncx<R: Read + Seek>(
+	archive: &mut ZipArchive<R>,
+	ncx_path: &str,
+	sections: &[SectionMeta],
+	id_positions: &HashMap<String, usize>,
+) -> Option<Vec<TocItem>> {
+	let ncx_content = read_zip_entry_by_name(archive, ncx_path).ok()?;
+	let ncx_doc =
+		XmlDocument::parse_with_options(&ncx_content, ParsingOptions { allow_dtd: true, ..ParsingOptions::default() })
+			.ok()?;
+	let page_list =
+		ncx_doc.descendants().find(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "pageList")?;
+	let mut items = Vec::new();
+	for page_target in page_list.children() {
+		if page_target.node_type() == NodeType::Element && page_target.tag_name().name() == "pageTarget" {
+			if let Some(item) = convert_navpoint(page_target, sections, id_positions, ncx_path) {
+				items.push(item);
+			}
+		}
+	}
+	if items.is_empty() { None } else { Some(items) }
 }
