@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.0\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-02-07 11:18-0700\n"
-"PO-Revision-Date: 2026-02-11 20:48+0900\n"
+"POT-Creation-Date: 2026-03-16 09:10-0600\n"
+"PO-Revision-Date: 2026-03-22 05:30+0900\n"
 "Last-Translator: Kazto Kitabatake <contact@kitabatake1013.jp>\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -48,6 +48,9 @@ msgstr "[移動]メニューをコンパクト表示(&G)"
 msgid "&Wrap navigation"
 msgstr "ナビゲーションの折り返し(&W)"
 
+msgid "Play &sounds on bookmarks and notes"
+msgstr "しおりとメモでサウンドを再生(&S)"
+
 msgid "Check for &updates on startup"
 msgstr "起動時に更新を確認(&U)"
 
@@ -56,6 +59,15 @@ msgstr "最近開いた文書の表示件数(&R):"
 
 msgid "&Language:"
 msgstr "言語(&L):"
+
+msgid "Update Channel:"
+msgstr "アップデートチャンネル:"
+
+msgid "Stable"
+msgstr "安定版"
+
+msgid "Dev"
+msgstr "開発版"
 
 msgid "General"
 msgstr "一般"
@@ -178,18 +190,18 @@ msgstr "パーセント(&P)"
 msgid "P&ercent:"
 msgstr "パーセント(&E):"
 
+msgid "&Yes"
+msgstr "はい(&Y)"
+
+msgid "&No"
+msgstr "いいえ(&N)"
+
 #, c-format
 msgid "Update to %s"
 msgstr "%sに更新"
 
 msgid "A new version of Paperback is available. Here's what's new:"
 msgstr "Paperbackの新しいバージョンが利用可能です。新機能:"
-
-msgid "&Yes"
-msgstr "はい(&Y)"
-
-msgid "&No"
-msgstr "いいえ(&N)"
 
 msgid "All Documents"
 msgstr "すべての文書"
@@ -217,6 +229,9 @@ msgstr "すべて削除(&C)"
 
 msgid "Are you sure you want to remove this document from the list? This will also remove its reading position."
 msgstr "リストからこの文書を削除しますか？これにより、文書の読み上げ位置の情報も削除されます。"
+
+msgid "Are you sure you want to remove these {} documents from the list? This will also remove their reading positions."
+msgstr "リストから文書「{}」を削除しますか？これにより、文書の読み上げ位置の情報も削除されます。"
 
 msgid "Confirm"
 msgstr "確認"
@@ -282,9 +297,6 @@ msgstr "ファイルが見つかりません: {}"
 msgid "Password is required."
 msgstr "パスワードが必要です。"
 
-msgid "Failed to load document."
-msgstr "文書の読み込みに失敗しました。"
-
 msgid "Navigated to internal link."
 msgstr "リンク先へ移動しました。"
 
@@ -299,6 +311,9 @@ msgstr "パスワード(&P):"
 
 msgid "Document Password"
 msgstr "文書のパスワード"
+
+msgid "Failed to load document."
+msgstr "文書の読み込みに失敗しました。"
 
 msgid "Create &bookmark"
 msgstr "しおりの作成(&B)"
@@ -409,11 +424,11 @@ msgstr "更新を確認できません。HTTPステータス: %d"
 msgid "Error checking for updates."
 msgstr "更新の確認中にエラーが発生しました。"
 
-msgid "Failed to launch installer"
-msgstr "インストーラーを起動できません"
-
 msgid "Failed to get current exe path"
 msgstr "現在のexeのパスを取得できません"
+
+msgid "Failed to launch installer script"
+msgstr "インストーラースクリプトを起動できません"
 
 msgid "Failed to launch update script"
 msgstr "更新スクリプトを起動できません"
@@ -480,6 +495,9 @@ msgstr "この文書の単語数は{}です。"
 
 msgid "Word count"
 msgstr "単語数の確認"
+
+msgid "No table of contents."
+msgstr "目次がありません。"
 
 msgid "Web View"
 msgstr "Webビュー"
@@ -686,14 +704,22 @@ msgstr "すべて閉じる(&A)\tCtrl+Shift+F4"
 msgid "Close all documents"
 msgstr "すべての文書を閉じます"
 
+#| msgid "Close &All\tCtrl+Shift+W"
+msgid "Reopen &Last Closed\tCtrl+Shift+T"
+msgstr "最後に閉じた文書を開く(&L)\tCtrl+Shift+T"
+
+msgid "Reopen the last closed document"
+msgstr "最後に閉じた文書を開きます"
+
 msgid "&Recent Documents"
 msgstr "最近開いた文書(&R)"
 
 msgid "Open a recent document"
 msgstr "最近開いた文書を開きます"
 
-msgid "E&xit"
-msgstr "終了(&x)"
+#| msgid "&Donate\tCtrl+D"
+msgid "E&xit\tCtrl+Q"
+msgstr "終了(&X)\tCtrl+Q"
 
 msgid "Exit the application"
 msgstr "アプリケーションを終了します"
@@ -1063,6 +1089,9 @@ msgstr "再表示(&R)"
 
 msgid "Restore Paperback"
 msgstr "Paperbackを再度表示します"
+
+msgid "E&xit"
+msgstr "終了(&x)"
 
 msgid "Exit Paperback"
 msgstr "Paperbackの終了"
