@@ -431,7 +431,10 @@ impl XmlToText {
 			return display_len(&self.current_line);
 		}
 		let collapsed = collapse_whitespace(&self.current_line);
-		let trimmed = collapsed.trim();
+		// Use trim_start() not trim(): trailing whitespace before an inline element IS
+		// preserved in the output line, so including it in the position count keeps
+		// link/anchor offsets correctly aligned with the final text.
+		let trimmed = collapsed.trim_start();
 		display_len(trimmed)
 	}
 

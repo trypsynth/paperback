@@ -459,6 +459,16 @@ pub fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> 
 			return LinkNavigation { found: true, is_external: false, offset, url: String::new() };
 		}
 	}
+	// Fallback for formats like CHM that store id_positions with "{path}#{id}" keys.
+	if !fragment.is_empty() {
+		if let Some(offset) = find_fragment_offset(doc, fragment, Some(file_path)) {
+			return LinkNavigation { found: true, is_external: false, offset, url: String::new() };
+		}
+	}
+	// Direct file-path lookup (covers fragment-less CHM links and fallback for fragment misses).
+	if let Some(&offset) = doc.document().id_positions.get(file_path) {
+		return LinkNavigation { found: true, is_external: false, offset, url: String::new() };
+	}
 	if !fragment.is_empty() {
 		if let Some(offset) = find_fragment_offset(doc, fragment, current_section.as_deref()) {
 			return LinkNavigation { found: true, is_external: false, offset, url: String::new() };
