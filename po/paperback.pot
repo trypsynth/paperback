@@ -1,0 +1,1149 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Quin Gillespie
+# This file is distributed under the same license as the paperback package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: paperback 0.8.2\n"
+"Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
+"POT-Creation-Date: 2026-03-22 01:14+0530\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Figure"
+msgstr ""
+
+msgid "Image"
+msgstr ""
+
+msgid ""
+"This PDF contains images only, with no extractable text. You may need to run "
+"it through OCR software to read its contents."
+msgstr ""
+
+msgid "Failed to create IPC server"
+msgstr ""
+
+msgid "Warning"
+msgstr ""
+
+msgid "Options"
+msgstr ""
+
+msgid "&Restore previously opened documents on startup"
+msgstr ""
+
+msgid "&Word wrap"
+msgstr ""
+
+msgid "&Minimize to system tray"
+msgstr ""
+
+msgid "&Start maximized"
+msgstr ""
+
+msgid "Show compact &go menu"
+msgstr ""
+
+msgid "&Wrap navigation"
+msgstr ""
+
+msgid "Play &sounds on bookmarks and notes"
+msgstr ""
+
+msgid "Check for &updates on startup"
+msgstr ""
+
+msgid "Number of &recent documents to show:"
+msgstr ""
+
+msgid "&Language:"
+msgstr ""
+
+msgid "Update Channel:"
+msgstr ""
+
+msgid "Stable"
+msgstr ""
+
+msgid "Dev"
+msgstr ""
+
+msgid "General"
+msgstr ""
+
+msgid "Reading"
+msgstr ""
+
+msgid "OK"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Jump to Bookmark"
+msgstr ""
+
+msgid "&Filter:"
+msgstr ""
+
+msgid "All"
+msgstr ""
+
+msgid "Bookmarks"
+msgstr ""
+
+msgid "Notes"
+msgstr ""
+
+msgid "&Edit Note"
+msgstr ""
+
+msgid "&Delete"
+msgstr ""
+
+msgid "&Jump"
+msgstr ""
+
+msgid "&Cancel"
+msgstr ""
+
+msgid "blank"
+msgstr ""
+
+msgid "Please select a bookmark to jump to."
+msgstr ""
+
+msgid "Error"
+msgstr ""
+
+msgid "Bookmark Note"
+msgstr ""
+
+msgid "Edit bookmark note:"
+msgstr ""
+
+msgid "View Note"
+msgstr ""
+
+msgid "Close"
+msgstr ""
+
+msgid "Table of Contents"
+msgstr ""
+
+msgid "Root"
+msgstr ""
+
+msgid "Please select a section from the table of contents."
+msgstr ""
+
+msgid "No Selection"
+msgstr ""
+
+msgid "Untitled"
+msgstr ""
+
+msgid "Document Info"
+msgstr ""
+
+msgid "Path:"
+msgstr ""
+
+msgid "Title:"
+msgstr ""
+
+msgid "Author:"
+msgstr ""
+
+msgid "Words:"
+msgstr ""
+
+msgid "Lines:"
+msgstr ""
+
+msgid "Characters:"
+msgstr ""
+
+msgid "Characters (excluding spaces):"
+msgstr ""
+
+msgid "Go to Line"
+msgstr ""
+
+msgid "&Line number:"
+msgstr ""
+
+msgid "Go to page"
+msgstr ""
+
+#, c-format
+msgid "Go to page (%d/%d):"
+msgstr ""
+
+msgid "Go to Percent"
+msgstr ""
+
+msgid "&Percent"
+msgstr ""
+
+msgid "P&ercent:"
+msgstr ""
+
+msgid "&Yes"
+msgstr ""
+
+msgid "&No"
+msgstr ""
+
+#, c-format
+msgid "Update to %s"
+msgstr ""
+
+msgid "A new version of Paperback is available. Here's what's new:"
+msgstr ""
+
+msgid "All Documents"
+msgstr ""
+
+msgid "&search"
+msgstr ""
+
+msgid "File Name"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "Path"
+msgstr ""
+
+msgid "&Open"
+msgstr ""
+
+msgid "&Remove"
+msgstr ""
+
+msgid "&Clear All"
+msgstr ""
+
+msgid ""
+"Are you sure you want to remove this document from the list? This will also "
+"remove its reading position."
+msgstr ""
+
+msgid ""
+"Are you sure you want to remove these {} documents from the list? This will "
+"also remove their reading positions."
+msgstr ""
+
+msgid "Confirm"
+msgstr ""
+
+msgid ""
+"Are you sure you want to remove all documents from the list? This will also "
+"remove all reading positions and bookmarks."
+msgstr ""
+
+msgid "Open As"
+msgstr ""
+
+msgid ""
+"No suitable parser was found for {}.\n"
+"How would you like to open this file?"
+msgstr ""
+
+msgid "Open &as:"
+msgstr ""
+
+msgid "Plain Text"
+msgstr ""
+
+msgid "HTML"
+msgstr ""
+
+msgid "Markdown"
+msgstr ""
+
+msgid "Open"
+msgstr ""
+
+msgid "Closed"
+msgstr ""
+
+msgid "Missing"
+msgstr ""
+
+msgid "Sleep Timer"
+msgstr ""
+
+msgid "&Minutes:"
+msgstr ""
+
+msgid "Elements"
+msgstr ""
+
+msgid "&View:"
+msgstr ""
+
+msgid "Headings"
+msgstr ""
+
+msgid "Links"
+msgstr ""
+
+msgid "An accessible, lightweight, fast ebook and document reader"
+msgstr ""
+
+msgid "File not found: {}"
+msgstr ""
+
+msgid "Password is required."
+msgstr ""
+
+msgid "Navigated to internal link."
+msgstr ""
+
+msgid "Table View"
+msgstr ""
+
+msgid "Ready"
+msgstr ""
+
+msgid "&Password:"
+msgstr ""
+
+msgid "Document Password"
+msgstr ""
+
+msgid "Failed to load document."
+msgstr ""
+
+msgid "Create &bookmark"
+msgstr ""
+
+msgid "Create bookmark"
+msgstr ""
+
+msgid "Bookmark with &note"
+msgstr ""
+
+msgid "Create bookmark with note"
+msgstr ""
+
+msgid "&Find"
+msgstr ""
+
+msgid "Find text"
+msgstr ""
+
+msgid "Find &next"
+msgstr ""
+
+msgid "Find next match"
+msgstr ""
+
+msgid "Find &previous"
+msgstr ""
+
+msgid "Find previous match"
+msgstr ""
+
+msgid "Go to &page"
+msgstr ""
+
+msgid "Go to &line"
+msgstr ""
+
+msgid "Go to line"
+msgstr ""
+
+msgid "Go to &percent"
+msgstr ""
+
+msgid "Go to percent"
+msgstr ""
+
+msgid "Find"
+msgstr ""
+
+msgid "Find &what:"
+msgstr ""
+
+msgid "&Match case"
+msgstr ""
+
+msgid "Match &whole word"
+msgstr ""
+
+msgid "Use &regular expressions"
+msgstr ""
+
+msgid "Find &Previous"
+msgstr ""
+
+msgid "Find &Next"
+msgstr ""
+
+msgid "Not found."
+msgstr ""
+
+msgid "No more results. Wrapping search."
+msgstr ""
+
+msgid "Failed to open containing folder."
+msgstr ""
+
+msgid ""
+"readme.html not found. Please ensure the application was built properly."
+msgstr ""
+
+msgid "Failed to launch default browser."
+msgstr ""
+
+msgid "Failed to open donation page in browser."
+msgstr ""
+
+msgid "No release notes were provided."
+msgstr ""
+
+msgid "Paperback Update"
+msgstr ""
+
+msgid "Downloading update..."
+msgstr ""
+
+msgid "No updates available."
+msgstr ""
+
+msgid "No updates available. Latest version: {}"
+msgstr ""
+
+msgid "Info"
+msgstr ""
+
+#, c-format
+msgid "Failed to check for updates. HTTP status: %d"
+msgstr ""
+
+msgid "Error checking for updates."
+msgstr ""
+
+msgid "Failed to get current exe path"
+msgstr ""
+
+msgid "Failed to launch installer script"
+msgstr ""
+
+msgid "Failed to launch update script"
+msgstr ""
+
+msgid "Unknown update file format."
+msgstr ""
+
+msgid "Update failed"
+msgstr ""
+
+msgid "Unsupported format selected."
+msgstr ""
+
+msgid "Paperback"
+msgstr ""
+
+msgid "Paperback - {}"
+msgstr ""
+
+msgid "{} chars"
+msgstr ""
+
+msgid "Open Document"
+msgstr ""
+
+msgid "No pages."
+msgstr ""
+
+msgid "document"
+msgstr ""
+
+msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
+msgstr ""
+
+msgid "Export document to plain text"
+msgstr ""
+
+msgid "Failed to export document."
+msgstr ""
+
+msgid "Paperback files (*.paperback)|*.paperback"
+msgstr ""
+
+msgid "Export notes and bookmarks"
+msgstr ""
+
+msgid "Notes and bookmarks exported successfully."
+msgstr ""
+
+msgid "Export Successful"
+msgstr ""
+
+msgid "Import notes and bookmarks"
+msgstr ""
+
+msgid "Notes and bookmarks imported successfully."
+msgstr ""
+
+msgid "Import Successful"
+msgstr ""
+
+msgid "The document contains {} words."
+msgstr ""
+
+msgid "Word count"
+msgstr ""
+
+msgid "No table of contents."
+msgstr ""
+
+msgid "Web View"
+msgstr ""
+
+msgid "Could not determine content to display in Web View."
+msgstr ""
+
+msgid "Sleep timer cancelled."
+msgstr ""
+
+msgid "Sleep timer set for 1 minute."
+msgstr ""
+
+#, c-format
+msgid "Sleep timer set for %d minutes."
+msgstr ""
+
+msgid "No recent documents."
+msgstr ""
+
+msgid "Previous Section\t["
+msgstr ""
+
+msgid "Go to previous section"
+msgstr ""
+
+msgid "Next Section\t]"
+msgstr ""
+
+msgid "Go to next section"
+msgstr ""
+
+msgid "Go to &Page\tCtrl+P"
+msgstr ""
+
+msgid "Previous Pa&ge\tShift+P"
+msgstr ""
+
+msgid "Next Pag&e\tP"
+msgstr ""
+
+msgid "Previous Lin&k\tShift+K"
+msgstr ""
+
+msgid "Next Lin&k\tK"
+msgstr ""
+
+msgid "Previous Ima&ge\tShift+G"
+msgstr ""
+
+msgid "Next Ima&ge\tG"
+msgstr ""
+
+msgid "Previous Figu&re\tShift+F"
+msgstr ""
+
+msgid "Next Figu&re\tF"
+msgstr ""
+
+msgid "Previous &Table\tShift+T"
+msgstr ""
+
+msgid "Next &Table\tT"
+msgstr ""
+
+msgid "Previous Se&parator\tShift+S"
+msgstr ""
+
+msgid "Next Se&parator\tS"
+msgstr ""
+
+msgid "Previous L&ist\tShift+L"
+msgstr ""
+
+msgid "Next L&ist\tL"
+msgstr ""
+
+msgid "Previous List &Item\tShift+I"
+msgstr ""
+
+msgid "Next List I&tem\tI"
+msgstr ""
+
+msgid "Next Heading Level 1\t1"
+msgstr ""
+
+msgid "Previous Heading Level &2\tShift+2"
+msgstr ""
+
+msgid "Next Heading Level 2\t2"
+msgstr ""
+
+msgid "Previous Heading Level &3\tShift+3"
+msgstr ""
+
+msgid "Next Heading Level 3\t3"
+msgstr ""
+
+msgid "Previous Heading Level &4\tShift+4"
+msgstr ""
+
+msgid "Next Heading Level 4\t4"
+msgstr ""
+
+msgid "Previous Heading Level &5\tShift+5"
+msgstr ""
+
+msgid "Next Heading Level 5\t5"
+msgstr ""
+
+msgid "Previous Heading Level &6\tShift+6"
+msgstr ""
+
+msgid "Next Heading Level 6\t6"
+msgstr ""
+
+msgid "&Previous Heading\tShift+H"
+msgstr ""
+
+msgid "Go to previous heading"
+msgstr ""
+
+msgid "&Next Heading\tH"
+msgstr ""
+
+msgid "Go to next heading"
+msgstr ""
+
+msgid "Previous Heading Level &1\tShift+1"
+msgstr ""
+
+msgid "&Previous Bookmark\tShift+B"
+msgstr ""
+
+msgid "Go to previous bookmark"
+msgstr ""
+
+msgid "&Next Bookmark\tB"
+msgstr ""
+
+msgid "Go to next bookmark"
+msgstr ""
+
+msgid "Previous &Note\tShift+N"
+msgstr ""
+
+msgid "Go to previous note"
+msgstr ""
+
+msgid "Next N&ote\tN"
+msgstr ""
+
+msgid "Go to next note"
+msgstr ""
+
+msgid "Jump to &All...\tCtrl+B"
+msgstr ""
+
+msgid "Show all bookmarks and notes"
+msgstr ""
+
+msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
+msgstr ""
+
+msgid "Show bookmarks only"
+msgstr ""
+
+msgid "Jump to Notes &Only...\tCtrl+Alt+M"
+msgstr ""
+
+msgid "Show notes only"
+msgstr ""
+
+msgid "&View Note Text\tRawCtrl+Shift+W"
+msgstr ""
+
+msgid "&View Note Text\tCtrl+Shift+W"
+msgstr ""
+
+msgid "View the note at current position"
+msgstr ""
+
+msgid "&File"
+msgstr ""
+
+msgid "&Go"
+msgstr ""
+
+msgid "&Tools"
+msgstr ""
+
+msgid "&Help"
+msgstr ""
+
+msgid "&Open...\tCtrl+O"
+msgstr ""
+
+msgid "Open a document"
+msgstr ""
+
+msgid "&Close\tCtrl+W"
+msgstr ""
+
+msgid "&Close\tCtrl+F4"
+msgstr ""
+
+msgid "Close the current document"
+msgstr ""
+
+msgid "Close &All\tCtrl+Shift+W"
+msgstr ""
+
+msgid "Close &All\tCtrl+Shift+F4"
+msgstr ""
+
+msgid "Close all documents"
+msgstr ""
+
+msgid "Reopen &Last Closed\tCtrl+Shift+T"
+msgstr ""
+
+msgid "Reopen the last closed document"
+msgstr ""
+
+msgid "&Recent Documents"
+msgstr ""
+
+msgid "Open a recent document"
+msgstr ""
+
+msgid "E&xit\tCtrl+Q"
+msgstr ""
+
+msgid "Exit the application"
+msgstr ""
+
+msgid "&Find...\tCtrl+F"
+msgstr ""
+
+msgid "Find text in the document"
+msgstr ""
+
+msgid "Find &Next\tF3"
+msgstr ""
+
+msgid "Find next occurrence"
+msgstr ""
+
+msgid "Find &Previous\tShift+F3"
+msgstr ""
+
+msgid "Find previous occurrence"
+msgstr ""
+
+msgid "Go to &line...\tCtrl+G"
+msgstr ""
+
+msgid "Go to a specific line"
+msgstr ""
+
+msgid "Go to &percent...\tCtrl+Shift+G"
+msgstr ""
+
+msgid "Go to a percentage of the document"
+msgstr ""
+
+msgid "Go &Back\tAlt+Left"
+msgstr ""
+
+msgid "Go back in history"
+msgstr ""
+
+msgid "Go &Forward\tAlt+Right"
+msgstr ""
+
+msgid "Go forward in history"
+msgstr ""
+
+msgid "&Sections"
+msgstr ""
+
+msgid "Navigate by sections"
+msgstr ""
+
+msgid "&Headings"
+msgstr ""
+
+msgid "Navigate by headings"
+msgstr ""
+
+msgid "&Pages"
+msgstr ""
+
+msgid "Navigate by pages"
+msgstr ""
+
+msgid "&Bookmarks"
+msgstr ""
+
+msgid "Navigate by bookmarks"
+msgstr ""
+
+msgid "&Links"
+msgstr ""
+
+msgid "Navigate by links"
+msgstr ""
+
+msgid "&Images"
+msgstr ""
+
+msgid "Navigate by images"
+msgstr ""
+
+msgid "&Figures"
+msgstr ""
+
+msgid "Navigate by figures"
+msgstr ""
+
+msgid "&Tables"
+msgstr ""
+
+msgid "Navigate by tables"
+msgstr ""
+
+msgid "&Separators"
+msgstr ""
+
+msgid "Navigate by separators"
+msgstr ""
+
+msgid "&Lists"
+msgstr ""
+
+msgid "Navigate by lists"
+msgstr ""
+
+msgid "&Import Document Data...\tCtrl+Shift+I"
+msgstr ""
+
+msgid "Import bookmarks and position"
+msgstr ""
+
+msgid "&Export Document Data...\tCtrl+Shift+E"
+msgstr ""
+
+msgid "Export bookmarks and position"
+msgstr ""
+
+msgid "Export to &Plain Text...\tCtrl+E"
+msgstr ""
+
+msgid "Export document as plain text"
+msgstr ""
+
+msgid "&Word Count\tRawCtrl+W"
+msgstr ""
+
+msgid "&Word Count\tCtrl+W"
+msgstr ""
+
+msgid "Show word count"
+msgstr ""
+
+msgid "Document &Info\tCtrl+I"
+msgstr ""
+
+msgid "Show document information"
+msgstr ""
+
+msgid "&Table of Contents\tCtrl+T"
+msgstr ""
+
+msgid "Show table of contents"
+msgstr ""
+
+msgid "&Elements List...\tF7"
+msgstr ""
+
+msgid "Show elements list"
+msgstr ""
+
+msgid "Open &Containing Folder\tCtrl+Shift+C"
+msgstr ""
+
+msgid "Open folder containing the document"
+msgstr ""
+
+msgid "Open in &Web View\tCtrl+Shift+V"
+msgstr ""
+
+msgid "Open document in web view"
+msgstr ""
+
+msgid "I&mport/Export"
+msgstr ""
+
+msgid "Import and export options"
+msgstr ""
+
+msgid "Toggle &Bookmark\tCtrl+Shift+B"
+msgstr ""
+
+msgid "Bookmark with &Note\tCtrl+Shift+N"
+msgstr ""
+
+msgid "&Options\tCtrl+,"
+msgstr ""
+
+msgid "&Sleep Timer...\tCtrl+Shift+S"
+msgstr ""
+
+msgid "&About Paperback\tCtrl+F1"
+msgstr ""
+
+msgid "About this application"
+msgstr ""
+
+msgid "View Help in &Browser\tF1"
+msgstr ""
+
+msgid "View help in default browser"
+msgstr ""
+
+msgid "View Help in &Paperback\tShift+F1"
+msgstr ""
+
+msgid "View help in Paperback"
+msgstr ""
+
+msgid "Check for &Updates\tCtrl+Shift+U"
+msgstr ""
+
+msgid "Check for updates"
+msgstr ""
+
+msgid "&Donate\tCtrl+D"
+msgstr ""
+
+msgid "Support Paperback development"
+msgstr ""
+
+msgid "(No recent documents)"
+msgstr ""
+
+msgid "Show All...\tCtrl+R"
+msgstr ""
+
+msgid "No sections."
+msgstr ""
+
+msgid "No next section"
+msgstr ""
+
+msgid "No previous section"
+msgstr ""
+
+#, c-format
+msgid "No headings at level %d."
+msgstr ""
+
+#, c-format
+msgid "No next heading at level %d."
+msgstr ""
+
+#, c-format
+msgid "No previous heading at level %d."
+msgstr ""
+
+msgid "No headings."
+msgstr ""
+
+msgid "No next heading."
+msgstr ""
+
+msgid "No previous heading."
+msgstr ""
+
+msgid "No next page."
+msgstr ""
+
+msgid "No previous page."
+msgstr ""
+
+msgid "No links."
+msgstr ""
+
+msgid "No next link."
+msgstr ""
+
+msgid "No previous link."
+msgstr ""
+
+msgid "No lists."
+msgstr ""
+
+msgid "No next list."
+msgstr ""
+
+msgid "No previous list."
+msgstr ""
+
+msgid "No list items."
+msgstr ""
+
+msgid "No next list item."
+msgstr ""
+
+msgid "No previous list item."
+msgstr ""
+
+msgid "No tables."
+msgstr ""
+
+msgid "No next table."
+msgstr ""
+
+msgid "No previous table."
+msgstr ""
+
+msgid "No separators."
+msgstr ""
+
+msgid "No next separator."
+msgstr ""
+
+msgid "No previous separator."
+msgstr ""
+
+msgid "No images."
+msgstr ""
+
+msgid "No next image."
+msgstr ""
+
+msgid "No previous image."
+msgstr ""
+
+msgid "No figures."
+msgstr ""
+
+msgid "No next figure."
+msgstr ""
+
+msgid "No previous figure."
+msgstr ""
+
+msgid "Wrapping to start. "
+msgstr ""
+
+msgid "Wrapping to end. "
+msgstr ""
+
+#, c-format
+msgid "%s Heading level %d"
+msgstr ""
+
+#, c-format
+msgid "Page %d: %s"
+msgstr ""
+
+msgid " link"
+msgstr ""
+
+msgid "Navigated to next position."
+msgstr ""
+
+msgid "Navigated to previous position."
+msgstr ""
+
+msgid "No next position."
+msgstr ""
+
+msgid "No previous position."
+msgstr ""
+
+#, c-format
+msgid "%s - Bookmark %d"
+msgstr ""
+
+msgid "No notes."
+msgstr ""
+
+msgid "No bookmarks."
+msgstr ""
+
+msgid "No next note."
+msgstr ""
+
+msgid "No next bookmark."
+msgstr ""
+
+msgid "No previous note."
+msgstr ""
+
+msgid "No previous bookmark."
+msgstr ""
+
+msgid "Bookmark."
+msgstr ""
+
+msgid "Bookmark removed."
+msgstr ""
+
+msgid "Bookmark added."
+msgstr ""
+
+msgid "Enter bookmark note:"
+msgstr ""
+
+msgid "Bookmark saved."
+msgstr ""
+
+msgid "No note at the current position."
+msgstr ""
+
+msgid "Line"
+msgstr ""
+
+msgid "Character"
+msgstr ""
+
+msgid "Sleep timer"
+msgstr ""
+
+msgid "&Restore"
+msgstr ""
+
+msgid "Restore Paperback"
+msgstr ""
+
+msgid "E&xit"
+msgstr ""
+
+msgid "Exit Paperback"
+msgstr ""

@@ -1,0 +1,11 @@
+edition = "2024"
+max_width = 120
+hard_tabs = true
+use_small_heuristics = "Max"
+match_arm_leading_pipes = "Preserve"
+remove_nested_parens = true
+group_imports = "StdExternalCrate"
+imports_granularity = "Crate"
+merge_derives = true
+use_field_init_shorthand = true
+force_explicit_abi = true

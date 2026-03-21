@@ -1,0 +1,60 @@
+name: CI
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+jobs:
+  fmt:
+    name: Format check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: nightly
+          components: rustfmt
+      - name: Check formatting
+        run: cargo +nightly fmt --check
+  test:
+    name: Tests and clippy
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          components: clippy
+      - name: Install CMake and Ninja
+        run: choco install cmake ninja -y
+    - name: Install Gettext via MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: UCRT64
+        update: true
+        install: >-
+          gettext
+          mingw-w64-ucrt-x86_64-gettext-tools
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+      - name: Clone wxWidgets
+        run: git clone --recurse-submodules https://github.com/wxWidgets/wxWidgets.git
+      - name: Run tests
+        run: |
+          $env:WXWIDGETS_DIR = "${{ github.workspace }}\wxWidgets"
+          cargo test
+      - name: Run clippy
+        run: |
+          $env:WXWIDGETS_DIR = "${{ github.workspace }}\wxWidgets"
+          cargo clippy --release

@@ -1,0 +1,1104 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Quin Gillespie
+# This file is distributed under the same license as the paperback package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: paperback 0.8.2\n"
+"Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
+"POT-Creation-Date: 2026-03-05 20:09-0700\n"
+"PO-Revision-Date: 2026-03-12 09:59+0100\n"
+"Last-Translator: 4Sense Gaming <lukas@4sensegaming.cz>\n"
+"Language-Team: Lukáš Hosnedl <lukas@4sensegaming.cz>\n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.8\n"
+
+msgid "Failed to create IPC server"
+msgstr "Nepodařilo se vytvořit IPC server"
+
+msgid "Warning"
+msgstr "Varování"
+
+msgid "Options"
+msgstr "Možnosti"
+
+msgid "&Restore previously opened documents on startup"
+msgstr "Při spuštění &načíst naposledy otevřené dokumenty"
+
+msgid "&Word wrap"
+msgstr "Zalamovat &řádky"
+
+msgid "&Minimize to system tray"
+msgstr "&Minimalizovat do systémové lišty"
+
+msgid "&Start maximized"
+msgstr "&Spouštět v maximalizovaném okně"
+
+msgid "Show compact &go menu"
+msgstr "Zobrazovat kompaktní nabídku &Přejít"
+
+msgid "&Wrap navigation"
+msgstr "&Cyklická rychlá navigace"
+
+msgid "Play &sounds on bookmarks and notes"
+msgstr "Přehrávat &zvuky na záložkách a poznámkách"
+
+msgid "Check for &updates on startup"
+msgstr "Při spuštění kontrolovat &aktualizace"
+
+msgid "Number of &recent documents to show:"
+msgstr "Počet &nedávných dokumentů k zobrazení:"
+
+msgid "&Language:"
+msgstr "&Jazyk:"
+
+msgid "Update Channel:"
+msgstr "Kanál aktualizací:"
+
+msgid "Stable"
+msgstr "Stabilní"
+
+msgid "Dev"
+msgstr "Vývojový"
+
+msgid "General"
+msgstr "Obecné"
+
+msgid "Reading"
+msgstr "Čtení"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Cancel"
+msgstr "Zrušit"
+
+msgid "Jump to Bookmark"
+msgstr "Přejít na záložku"
+
+msgid "&Filter:"
+msgstr "&Filtrovat:"
+
+msgid "All"
+msgstr "Vše"
+
+msgid "Bookmarks"
+msgstr "Záložky"
+
+msgid "Notes"
+msgstr "Poznámky"
+
+msgid "&Edit Note"
+msgstr "&Upravit poznámku"
+
+msgid "&Delete"
+msgstr "&Smazat"
+
+msgid "&Jump"
+msgstr "&Přejít"
+
+msgid "&Cancel"
+msgstr "&Zrušit"
+
+msgid "blank"
+msgstr "prázdné"
+
+msgid "Please select a bookmark to jump to."
+msgstr "Prosím, vyberte záložku, na kterou chcete přejít."
+
+msgid "Error"
+msgstr "Chyba"
+
+msgid "Bookmark Note"
+msgstr "Poznámka k záložce"
+
+msgid "Edit bookmark note:"
+msgstr "Upravit poznámku k záložce:"
+
+msgid "View Note"
+msgstr "Zobrazit poznámku"
+
+msgid "Close"
+msgstr "Zavřít"
+
+msgid "Table of Contents"
+msgstr "Obsah"
+
+msgid "Root"
+msgstr "Začátek"
+
+msgid "Please select a section from the table of contents."
+msgstr "Prosím, vyberte požadovaný oddíl z obsahu."
+
+msgid "No Selection"
+msgstr "Žádný výběr"
+
+msgid "Untitled"
+msgstr "Bez názvu"
+
+msgid "Document Info"
+msgstr "Informace o dokumentu"
+
+msgid "Path:"
+msgstr "Cesta:"
+
+msgid "Title:"
+msgstr "Název:"
+
+msgid "Author:"
+msgstr "Autor:"
+
+msgid "Words:"
+msgstr "Slova:"
+
+msgid "Lines:"
+msgstr "Řádky:"
+
+msgid "Characters:"
+msgstr "Znaky:"
+
+msgid "Characters (excluding spaces):"
+msgstr "Znaky bez mezer:"
+
+msgid "Go to Line"
+msgstr "Přejít na řádek"
+
+msgid "&Line number:"
+msgstr "Číslo &řádku:"
+
+msgid "Go to page"
+msgstr "Přejít na stránku"
+
+#, c-format
+msgid "Go to page (%d/%d):"
+msgstr "Přejít na stránku (%d/%d):"
+
+msgid "Go to Percent"
+msgstr "Přejít na procenta"
+
+msgid "&Percent"
+msgstr "&Procenta"
+
+msgid "P&ercent:"
+msgstr "&Procenta:"
+
+msgid "&Yes"
+msgstr "&Ano"
+
+msgid "&No"
+msgstr "&Ne"
+
+#, c-format
+msgid "Update to %s"
+msgstr "Aktualizovat na verzi %s"
+
+msgid "A new version of Paperback is available. Here's what's new:"
+msgstr "Je k dispozici nová verze Paperbacku. Toto jsou novinky:"
+
+msgid "All Documents"
+msgstr "Všechny dokumenty"
+
+msgid "&search"
+msgstr "&Hledat"
+
+msgid "File Name"
+msgstr "Název souboru"
+
+msgid "Status"
+msgstr "Stav"
+
+msgid "Path"
+msgstr "Cesta"
+
+msgid "&Open"
+msgstr "&Otevřít"
+
+msgid "&Remove"
+msgstr "&Odstranit"
+
+msgid "&Clear All"
+msgstr "&Smazat vše"
+
+msgid ""
+"Are you sure you want to remove this document from the list? This will also "
+"remove its reading position."
+msgstr ""
+"Chcete opravdu odstranit tento dokument ze seznamu? Přijdete tak i o místo, "
+"kde jste přestali číst."
+
+msgid ""
+"Are you sure you want to remove these {} documents from the list? This will "
+"also remove their reading positions."
+msgstr ""
+"Chcete opravdu odstranit tyto {} dokumenty ze seznamu? Přijdete tak i o "
+"místo, kde jste v každém dokumentu přestali číst."
+
+msgid "Confirm"
+msgstr "Potvrdit"
+
+msgid ""
+"Are you sure you want to remove all documents from the list? This will also "
+"remove all reading positions and bookmarks."
+msgstr ""
+"Chcete opravdu odstranit všechny dokumenty ze seznamu? Přijdete tak ve "
+"všech dokumentech i o místo, kde jste přestali číst, a o záložky."
+
+msgid "Open As"
+msgstr "Otevřít jako"
+
+msgid ""
+"No suitable parser was found for {}.\n"
+"How would you like to open this file?"
+msgstr ""
+"Nebyl nalezen žádný vhodný parser pro {}.\n"
+"Jak chcete tento soubor otevřít?"
+
+msgid "Open &as:"
+msgstr "Otevřít &jako:"
+
+msgid "Plain Text"
+msgstr "Prostý text"
+
+msgid "HTML"
+msgstr "HTML"
+
+msgid "Markdown"
+msgstr "Markdown"
+
+msgid "Open"
+msgstr "Otevřít"
+
+msgid "Closed"
+msgstr "Zavřeno"
+
+msgid "Missing"
+msgstr "Chybí"
+
+msgid "Sleep Timer"
+msgstr "Časovač spánku"
+
+msgid "&Minutes:"
+msgstr "&Minuty:"
+
+msgid "Elements"
+msgstr "Prvky"
+
+msgid "&View:"
+msgstr "&Zobrazit:"
+
+msgid "Headings"
+msgstr "Nadpisy"
+
+msgid "Links"
+msgstr "Odkazy"
+
+msgid "An accessible, lightweight, fast ebook and document reader"
+msgstr "Přístupná, nenáročná a rychlá čtečka e-knih a dokumentů"
+
+msgid "File not found: {}"
+msgstr "Soubor nenalezen: {}"
+
+msgid "Password is required."
+msgstr "Je vyžadováno heslo."
+
+msgid "Navigated to internal link."
+msgstr "Přesunuto na vnitřní odkaz."
+
+msgid "Table View"
+msgstr "Zobrazení tabulky"
+
+msgid "Ready"
+msgstr "Připraveno"
+
+msgid "&Password:"
+msgstr "&Heslo:"
+
+msgid "Document Password"
+msgstr "Heslo dokumentu"
+
+msgid "Failed to load document."
+msgstr "Dokument se nepodařilo načíst."
+
+msgid "Create &bookmark"
+msgstr "Vytvořit &záložku"
+
+msgid "Create bookmark"
+msgstr "Vytvořit záložku"
+
+msgid "Bookmark with &note"
+msgstr "Záložka s &poznámkou"
+
+msgid "Create bookmark with note"
+msgstr "Vytvořit záložku s poznámkou"
+
+msgid "&Find"
+msgstr "&Najít"
+
+msgid "Find text"
+msgstr "Najít text"
+
+msgid "Find &next"
+msgstr "Najít &další"
+
+msgid "Find next match"
+msgstr "Najít další shodu"
+
+msgid "Find &previous"
+msgstr "Najít &Předchozí"
+
+msgid "Find previous match"
+msgstr "Najít předchozí shodu"
+
+msgid "Go to &page"
+msgstr "Přejít na &stránku"
+
+msgid "Go to &line"
+msgstr "Přejít na &řádek"
+
+msgid "Go to line"
+msgstr "Přejít na řádek"
+
+msgid "Go to &percent"
+msgstr "Přejít na &procenta"
+
+msgid "Go to percent"
+msgstr "Přejít na procenta"
+
+msgid "Find"
+msgstr "Najít"
+
+msgid "Find &what:"
+msgstr "&Co mám najít:"
+
+msgid "&Match case"
+msgstr "Rozlišovat &velikost písmen"
+
+msgid "Match &whole word"
+msgstr "Pouze &celá slova"
+
+msgid "Use &regular expressions"
+msgstr "Používat &regulární výrazy"
+
+msgid "Find &Previous"
+msgstr "Najít &předchozí"
+
+msgid "Find &Next"
+msgstr "Najít &další"
+
+msgid "Not found."
+msgstr "Nenalezeno."
+
+msgid "No more results. Wrapping search."
+msgstr "Žádné další výsledky. Vyhledávám od začátku."
+
+msgid "Failed to open containing folder."
+msgstr "Nepodařilo se otevřít nadřazenou složku."
+
+msgid ""
+"readme.html not found. Please ensure the application was built properly."
+msgstr ""
+"Nebyl nalezen soubor readme.html. Prosím, ujistěte se, že aplikace je "
+"správně sestavená."
+
+msgid "Failed to launch default browser."
+msgstr "Nepodařilo se spustit výchozí prohlížeč."
+
+msgid "Failed to open donation page in browser."
+msgstr "Nepodařilo se otevřít stránku Přispět v prohlížeči."
+
+msgid "No release notes were provided."
+msgstr "Nejsou uvedeny žádné poznámky k verzi."
+
+msgid "Paperback Update"
+msgstr "Aktualizace Paperbacku"
+
+msgid "Downloading update..."
+msgstr "Stahuje se aktualizace..."
+
+msgid "No updates available."
+msgstr "Žádné aktualizace nejsou dostupné."
+
+msgid "No updates available. Latest version: {}"
+msgstr "Žádné aktualizace nejsou dostupné. Poslední verze: {}"
+
+msgid "Info"
+msgstr "Informace"
+
+#, c-format
+msgid "Failed to check for updates. HTTP status: %d"
+msgstr "Kontrola aktualizací selhala. HTTP status: %d"
+
+msgid "Error checking for updates."
+msgstr "Chyba při kontrole aktualizací."
+
+msgid "Failed to get current exe path"
+msgstr "Nepodařilo se zjistit cestu k aktuálnímu spustitelnému souboru"
+
+msgid "Failed to launch installer script"
+msgstr "Nepodařilo se spustit instalační skript"
+
+msgid "Failed to launch update script"
+msgstr "Nepodařilo se spustit aktualizační skript"
+
+msgid "Unknown update file format."
+msgstr "Neznámý formát souboru aktualizace."
+
+msgid "Update failed"
+msgstr "Aktualizace selhala"
+
+msgid "Unsupported format selected."
+msgstr "Je vybrán nepodporovaný formát."
+
+msgid "Paperback"
+msgstr "Paperback"
+
+msgid "Paperback - {}"
+msgstr "Paperback - {}"
+
+msgid "{} chars"
+msgstr "{} znaků"
+
+msgid "Open Document"
+msgstr "Otevřít dokument"
+
+msgid "No pages."
+msgstr "Žádné stránky."
+
+msgid "document"
+msgstr "dokument"
+
+msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
+msgstr "Soubory v prostém textu (*.txt)|*.txt|Všechny soubory (*.*)|*.*"
+
+msgid "Export document to plain text"
+msgstr "Exportovat dokument do prostého textu"
+
+msgid "Failed to export document."
+msgstr "Export dokumentu selhal."
+
+msgid "Paperback files (*.paperback)|*.paperback"
+msgstr "Soubory Paperbacku (*.paperback)|*.paperback"
+
+msgid "Export notes and bookmarks"
+msgstr "Exportovat poznámky a záložky"
+
+msgid "Notes and bookmarks exported successfully."
+msgstr "Poznnámky a záložky úspěšně exportovány."
+
+msgid "Export Successful"
+msgstr "Export úspěšný"
+
+msgid "Import notes and bookmarks"
+msgstr "Importovat poznámky a záložky"
+
+msgid "Notes and bookmarks imported successfully."
+msgstr "Poznámky a záložky úspěšně importovány."
+
+msgid "Import Successful"
+msgstr "Import úspěšný"
+
+msgid "The document contains {} words."
+msgstr "Dokument obsahuje {} slov."
+
+msgid "Word count"
+msgstr "Počet slov"
+
+msgid "No table of contents."
+msgstr "Žádný obsah."
+
+msgid "Web View"
+msgstr "Webové zobrazení"
+
+msgid "Could not determine content to display in Web View."
+msgstr "Nepodařilo se rozpoznat žádný obsah pro webové zobrazení."
+
+msgid "Sleep timer cancelled."
+msgstr "Časovač spánku zrušen."
+
+msgid "Sleep timer set for 1 minute."
+msgstr "Časovač spánku nastaven na jednu minutu."
+
+#, c-format
+msgid "Sleep timer set for %d minutes."
+msgstr "Časovač spánku nastaven na %d minut."
+
+msgid "No recent documents."
+msgstr "Žádné nedávné dokumenty."
+
+msgid "Previous Section\t["
+msgstr "Předchozí oddíl\t["
+
+msgid "Go to previous section"
+msgstr "Přejít na předchozí oddíl"
+
+msgid "Next Section\t]"
+msgstr "Další oddíl\t]"
+
+msgid "Go to next section"
+msgstr "Přejít na další oddíl"
+
+msgid "Go to &Page\tCtrl+P"
+msgstr "Přejít na &stránku\tCtrl+P"
+
+msgid "Previous Pa&ge\tShift+P"
+msgstr "P&ředchozí stránka\tShift+P"
+
+msgid "Next Pag&e\tP"
+msgstr "&Další stránka\tP"
+
+msgid "Previous Lin&k\tShift+K"
+msgstr "Předchozí &odkaz\tShift+K"
+
+msgid "Next Lin&k\tK"
+msgstr "Další &odkaz\tK"
+
+msgid "Previous &Table\tShift+T"
+msgstr "Předchozí &tabulka\tShift+T"
+
+msgid "Next &Table\tT"
+msgstr "Další &tabulka\tT"
+
+msgid "Previous Se&parator\tShift+S"
+msgstr "Předchozí &oddělovač\tShift+S"
+
+msgid "Next Se&parator\tS"
+msgstr "Další o&ddělovač\tS"
+
+msgid "Previous L&ist\tShift+L"
+msgstr "Předchozí &seznam\tShift+L"
+
+msgid "Next L&ist\tL"
+msgstr "Další s&eznam\tL"
+
+msgid "Previous List &Item\tShift+I"
+msgstr "Předchozí &položka seznamu\tShift+I"
+
+msgid "Next List I&tem\tI"
+msgstr "Další p&oložka seznamu\tI"
+
+msgid "Next Heading Level 1\t1"
+msgstr "Další nadpis úrovně 1\t1"
+
+msgid "Previous Heading Level &2\tShift+2"
+msgstr "Předchozí nadpis úrovně &2\tShift+2"
+
+msgid "Next Heading Level 2\t2"
+msgstr "Další nadpis úrovně 2\t2"
+
+msgid "Previous Heading Level &3\tShift+3"
+msgstr "Předchozí nadpis úrovně &3\tShift+3"
+
+msgid "Next Heading Level 3\t3"
+msgstr "Další nadpis úrovně 3\t3"
+
+msgid "Previous Heading Level &4\tShift+4"
+msgstr "Předchozí nadpis úrovně &4\tShift+4"
+
+msgid "Next Heading Level 4\t4"
+msgstr "Další nadpis úrovně 4\t4"
+
+msgid "Previous Heading Level &5\tShift+5"
+msgstr "Předchozí nadpis úrovně &5\tShift+5"
+
+msgid "Next Heading Level 5\t5"
+msgstr "Další nadpis úrovně 5\t5"
+
+msgid "Previous Heading Level &6\tShift+6"
+msgstr "Předchozí nadpis úrovně &6\tShift+6"
+
+msgid "Next Heading Level 6\t6"
+msgstr "Další nadpis úrovně 6\t6"
+
+msgid "&Previous Heading\tShift+H"
+msgstr "&Předchozí nadpis\tShift+H"
+
+msgid "Go to previous heading"
+msgstr "Přejít na předchozí nadpis"
+
+msgid "&Next Heading\tH"
+msgstr "&Další nadpis\tH"
+
+msgid "Go to next heading"
+msgstr "Přejít na další nadpis"
+
+msgid "Previous Heading Level &1\tShift+1"
+msgstr "Předchozí nadpis úrovně &1\tShift+1"
+
+msgid "&Previous Bookmark\tShift+B"
+msgstr "&Předchozí záložka\tShift+B"
+
+msgid "Go to previous bookmark"
+msgstr "Přejít na předchozí záložku"
+
+msgid "&Next Bookmark\tB"
+msgstr "&Další záložka\tB"
+
+msgid "Go to next bookmark"
+msgstr "Přejít na další záložku"
+
+msgid "Previous &Note\tShift+N"
+msgstr "Předchozí &poznámka\tShift+N"
+
+msgid "Go to previous note"
+msgstr "Přejít na předchozí poznámku"
+
+msgid "Next N&ote\tN"
+msgstr "Další po&známka\tN"
+
+msgid "Go to next note"
+msgstr "Přejít na další poznámku"
+
+msgid "Jump to &All...\tCtrl+B"
+msgstr "Přejít na &vše...\tCtrl+B"
+
+msgid "Show all bookmarks and notes"
+msgstr "Zobrazovat všechny záložky a poznámky"
+
+msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
+msgstr "Přejít pouze na &záložky...\tCtrl+Alt+B"
+
+msgid "Show bookmarks only"
+msgstr "Zobrazovat pouze záložky"
+
+msgid "Jump to Notes &Only...\tCtrl+Alt+M"
+msgstr "Přejít pouze na po&známky...\tCtrl+Alt+M"
+
+msgid "Show notes only"
+msgstr "Zobrazovat pouze poznámky"
+
+msgid "&View Note Text\tRawCtrl+Shift+W"
+msgstr "&Zobrazit text poznámky\tRawCtrl+Shift+W"
+
+msgid "&View Note Text\tCtrl+Shift+W"
+msgstr "&Zobrazit text poznámky\tCtrl+Shift+W"
+
+msgid "View the note at current position"
+msgstr "Zobrazit poznámku na aktuállní pozici"
+
+msgid "&File"
+msgstr "&Soubor"
+
+msgid "&Go"
+msgstr "&Přejít"
+
+msgid "&Tools"
+msgstr "&Nástroje"
+
+msgid "&Help"
+msgstr "&Nápověda"
+
+msgid "&Open...\tCtrl+O"
+msgstr "&Otevřít...\tCtrl+O"
+
+msgid "Open a document"
+msgstr "Otevřít dokumentt"
+
+msgid "&Close\tCtrl+W"
+msgstr "&Zavřít\tCtrl+W"
+
+msgid "&Close\tCtrl+F4"
+msgstr "&Zavřít\tCtrl+F4"
+
+msgid "Close the current document"
+msgstr "Zavřít aktuální dokument"
+
+msgid "Close &All\tCtrl+Shift+W"
+msgstr "Zavřít &vše\tCtrl+Shift+W"
+
+msgid "Close &All\tCtrl+Shift+F4"
+msgstr "Zavřít &vše\tCtrl+Shift+F4"
+
+msgid "Close all documents"
+msgstr "Zavřít všechny dokumenty"
+
+msgid "Reopen &Last Closed\tCtrl+Shift+T"
+msgstr "Znovu otevřít &naposledy zavřený\tCtrl+Shift+T"
+
+msgid "Reopen the last closed document"
+msgstr "Znovu otevřít naposledy zavřený dokument"
+
+msgid "&Recent Documents"
+msgstr "&Nedávné dokumenty"
+
+msgid "Open a recent document"
+msgstr "Otevřít nedávný dokument"
+
+msgid "E&xit"
+msgstr "&Ukončit"
+
+msgid "Exit the application"
+msgstr "Ukončit aplikaci"
+
+msgid "&Find...\tCtrl+F"
+msgstr "&Najít...\tCtrl+F"
+
+msgid "Find text in the document"
+msgstr "Najít text v dokumentu"
+
+msgid "Find &Next\tF3"
+msgstr "Najít &další\tF3"
+
+msgid "Find next occurrence"
+msgstr "Najít další výskyt"
+
+msgid "Find &Previous\tShift+F3"
+msgstr "Najít &předchozí\tShift+F3"
+
+msgid "Find previous occurrence"
+msgstr "Najít předchozí výskyt"
+
+msgid "Go to &line...\tCtrl+G"
+msgstr "Přejít na &řádek...\tCtrl+G"
+
+msgid "Go to a specific line"
+msgstr "Přejít na konkrétní řádek"
+
+msgid "Go to &percent...\tCtrl+Shift+G"
+msgstr "Přejít na &procenta...\tCtrl+Shift+G"
+
+msgid "Go to a percentage of the document"
+msgstr "Přejít na určité procento z délky dokumentu"
+
+msgid "Go &Back\tAlt+Left"
+msgstr "Přejít &zpět\tAlt+šipka doleva"
+
+msgid "Go back in history"
+msgstr "Přejít zpět v historii"
+
+msgid "Go &Forward\tAlt+Right"
+msgstr "Přejít &vpřed\tAlt+šipka doprava"
+
+msgid "Go forward in history"
+msgstr "Přejít vpřed v historii"
+
+msgid "&Sections"
+msgstr "&Oddíly"
+
+msgid "Navigate by sections"
+msgstr "Navigovat po oddílech"
+
+msgid "&Headings"
+msgstr "&Nadpisy"
+
+msgid "Navigate by headings"
+msgstr "Navigovat po nadpisech"
+
+msgid "&Pages"
+msgstr "&Stránky"
+
+msgid "Navigate by pages"
+msgstr "Navigovat po stránkách"
+
+msgid "&Bookmarks"
+msgstr "&Záložky"
+
+msgid "Navigate by bookmarks"
+msgstr "Navigovat po záložkách"
+
+msgid "&Links"
+msgstr "&Odkazy"
+
+msgid "Navigate by links"
+msgstr "Navigovat po odkazech"
+
+msgid "&Tables"
+msgstr "&Tabulky"
+
+msgid "Navigate by tables"
+msgstr "Navigovat po tabulkách"
+
+msgid "&Separators"
+msgstr "&Oddělovače"
+
+msgid "Navigate by separators"
+msgstr "Navigovat po oddělovačích"
+
+msgid "&Lists"
+msgstr "&Seznamy"
+
+msgid "Navigate by lists"
+msgstr "Navigovat po seznamech"
+
+msgid "&Import Document Data...\tCtrl+Shift+I"
+msgstr "&Importovat data dokumentu...\tCtrl+Shift+I"
+
+msgid "Import bookmarks and position"
+msgstr "Importovat záložky a pozici"
+
+msgid "&Export Document Data...\tCtrl+Shift+E"
+msgstr "&Exportovat data dokumentu...\tCtrl+Shift+E"
+
+msgid "Export bookmarks and position"
+msgstr "Exportovat záložky a pozici"
+
+msgid "Export to &Plain Text...\tCtrl+E"
+msgstr "Exportovat do &prostého textu...\tCtrl+E"
+
+msgid "Export document as plain text"
+msgstr "Exportovat dokument jako prostý text"
+
+msgid "&Word Count\tRawCtrl+W"
+msgstr "&Počet slov\tRawCtrl+W"
+
+msgid "&Word Count\tCtrl+W"
+msgstr "&Počet slov\tCtrl+W"
+
+msgid "Show word count"
+msgstr "Zobrazit počet slov"
+
+msgid "Document &Info\tCtrl+I"
+msgstr "&Informace o dokumentu\tCtrl+I"
+
+msgid "Show document information"
+msgstr "Zobrazit informace o dokumentu"
+
+msgid "&Table of Contents\tCtrl+T"
+msgstr "&Obsah\tCtrl+T"
+
+msgid "Show table of contents"
+msgstr "Zobrazit obsah"
+
+msgid "&Elements List...\tF7"
+msgstr "Seznam &prvků...\tF7"
+
+msgid "Show elements list"
+msgstr "Zobrazit seznam prvků"
+
+msgid "Open &Containing Folder\tCtrl+Shift+C"
+msgstr "Otevřít &nadřazenou složku\tCtrl+Shift+C"
+
+msgid "Open folder containing the document"
+msgstr "Otevřít složku, kde je dokument uložený"
+
+msgid "Open in &Web View\tCtrl+Shift+V"
+msgstr "Otevřít ve &webovém zobrazení\tCtrl+Shift+V"
+
+msgid "Open document in web view"
+msgstr "Otevřít dokument ve webovém zobrazení"
+
+msgid "I&mport/Export"
+msgstr "I&mport/Export"
+
+msgid "Import and export options"
+msgstr "Možnosti importu a exportu"
+
+msgid "Toggle &Bookmark\tCtrl+Shift+B"
+msgstr "Přepnout &záložku\tCtrl+Shift+B"
+
+msgid "Bookmark with &Note\tCtrl+Shift+N"
+msgstr "Záložka s &poznámkou\tCtrl+Shift+N"
+
+msgid "&Options\tCtrl+,"
+msgstr "&Možnosti\tCtrl+,"
+
+msgid "&Sleep Timer...\tCtrl+Shift+S"
+msgstr "Časovač &spánku...\tCtrl+Shift+S"
+
+msgid "&About Paperback\tCtrl+F1"
+msgstr "&O Paperbacku\tCtrl+F1"
+
+msgid "About this application"
+msgstr "O této aplikaci"
+
+msgid "View Help in &Browser\tF1"
+msgstr "Zobrazit nápovědu v &prohlížeči\tF1"
+
+msgid "View help in default browser"
+msgstr "Zobrazit nápovědu ve výchozím prohlížeči"
+
+msgid "View Help in &Paperback\tShift+F1"
+msgstr "Zobrazit nápovědu v &Paperbacku\tShift+F1"
+
+msgid "View help in Paperback"
+msgstr "Zobrazit nápovědu v Paperbacku"
+
+msgid "Check for &Updates\tCtrl+Shift+U"
+msgstr "Vyhledat &aktualizace\tCtrl+Shift+U"
+
+msgid "Check for updates"
+msgstr "Vyhledat aktualizace"
+
+msgid "&Donate\tCtrl+D"
+msgstr "&Přispět\tCtrl+D"
+
+msgid "Support Paperback development"
+msgstr "Podpořit vývoj Paperbacku"
+
+msgid "(No recent documents)"
+msgstr "(Žádné nedávné dokumenty)"
+
+msgid "Show All...\tCtrl+R"
+msgstr "Zobrazit všechny...\tCtrl+R"
+
+msgid "No sections."
+msgstr "Žádné oddíly."
+
+msgid "No next section"
+msgstr "Žádný další oddíl"
+
+msgid "No previous section"
+msgstr "Žádný předchozí oddíl"
+
+#, c-format
+msgid "No headings at level %d."
+msgstr "Žádné nadpisy úrovně %d."
+
+#, c-format
+msgid "No next heading at level %d."
+msgstr "Žádný další nadpis úrovně %d."
+
+#, c-format
+msgid "No previous heading at level %d."
+msgstr "Žádný předchozí nadpis úrovně %d."
+
+msgid "No headings."
+msgstr "Žádné nadpisy."
+
+msgid "No next heading."
+msgstr "Žádný další nadpis."
+
+msgid "No previous heading."
+msgstr "Žádný předchozí nadpis."
+
+msgid "No next page."
+msgstr "Žádná další stránka."
+
+msgid "No previous page."
+msgstr "Žádná předchozí stránka."
+
+msgid "No links."
+msgstr "Žádné odkazy."
+
+msgid "No next link."
+msgstr "Žádný další odkaz."
+
+msgid "No previous link."
+msgstr "Žádný předchozí odkaz."
+
+msgid "No lists."
+msgstr "Žádné seznamy."
+
+msgid "No next list."
+msgstr "Žádný další seznam."
+
+msgid "No previous list."
+msgstr "Žádný předchozí seznam."
+
+msgid "No list items."
+msgstr "Žádné položky seznamu."
+
+msgid "No next list item."
+msgstr "Žádná další položka seznamu."
+
+msgid "No previous list item."
+msgstr "Žádná předchozí položka seznamu."
+
+msgid "No tables."
+msgstr "Žádné tabulky."
+
+msgid "No next table."
+msgstr "Žádná další tabulka."
+
+msgid "No previous table."
+msgstr "Žádná předchozí tabulka."
+
+msgid "No separators."
+msgstr "Žádné oddělovače."
+
+msgid "No next separator."
+msgstr "Žádný další oddělovač."
+
+msgid "No previous separator."
+msgstr "Žádný předchozí oddělovač."
+
+msgid "Wrapping to start. "
+msgstr "Přecházím na začátek. "
+
+msgid "Wrapping to end. "
+msgstr "Přecházím na konec. "
+
+#, c-format
+msgid "%s Heading level %d"
+msgstr "%s nadpis úrovně %d"
+
+#, c-format
+msgid "Page %d: %s"
+msgstr "Stránka %d: %s"
+
+msgid " link"
+msgstr " odkaz"
+
+msgid "Navigated to next position."
+msgstr "Přesunuto na další pozici."
+
+msgid "Navigated to previous position."
+msgstr "Přesunuto na předchozí pozici."
+
+msgid "No next position."
+msgstr "Žádná další pozice."
+
+msgid "No previous position."
+msgstr "Žádná předchozí pozice."
+
+#, c-format
+msgid "%s - Bookmark %d"
+msgstr "%s - záložka %d"
+
+msgid "No notes."
+msgstr "Žádné poznámky."
+
+msgid "No bookmarks."
+msgstr "Žádné záložky."
+
+msgid "No next note."
+msgstr "Žádná další poznámka."
+
+msgid "No next bookmark."
+msgstr "Žádná další záložka."
+
+msgid "No previous note."
+msgstr "Žádná předchozí poznámka."
+
+msgid "No previous bookmark."
+msgstr "Žádná předchozí záložka."
+
+msgid "Bookmark."
+msgstr "Záložka."
+
+msgid "Bookmark removed."
+msgstr "Záložka odstraněna."
+
+msgid "Bookmark added."
+msgstr "Záložka přidána."
+
+msgid "Enter bookmark note:"
+msgstr "Zadejte poznámku k záložce:"
+
+msgid "Bookmark saved."
+msgstr "Záložka uložena."
+
+msgid "No note at the current position."
+msgstr "Žádná poznámka na aktuální pozici."
+
+msgid "Line"
+msgstr "Řádek"
+
+msgid "Character"
+msgstr "Znak"
+
+msgid "Sleep timer"
+msgstr "Časovač spánku"
+
+msgid "&Restore"
+msgstr "&Obnovit"
+
+msgid "Restore Paperback"
+msgstr "Obnovit Paperback"
+
+msgid "Exit Paperback"
+msgstr "Ukončit Paperback"

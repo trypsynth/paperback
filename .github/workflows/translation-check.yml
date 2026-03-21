@@ -1,0 +1,79 @@
+name: Check for New Translatable Strings
+on:
+  push:
+    tags:
+      - 'rc-*'
+  workflow_dispatch:
+permissions:
+  contents: read
+  discussions: write
+jobs:
+  check-strings:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Close previous translation discussions
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          DISCUSSIONS=$(gh api graphql -f query='
+            query($owner: String!, $name: String!) {
+              repository(owner: $owner, name: $name) {
+                discussions(first: 50, states: OPEN) {
+                  nodes { id title }
+                }
+              }
+            }
+          ' -f owner="${{ github.repository_owner }}" -f name="${{ github.event.repository.name }}")
+          echo "$DISCUSSIONS" | jq -r '
+            .data.repository.discussions.nodes[]
+            | select(.title | startswith("Translation Freeze"))
+            | .id
+          ' | while read -r ID; do
+            gh api graphql -f query='
+              mutation($id: ID!) {
+                closeDiscussion(input: { discussionId: $id, reason: OUTDATED }) {
+                  discussion { id }
+                }
+              }
+            ' -f id="$ID"
+          done
+      - name: Create translation discussion
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REPO_DATA=$(gh api graphql -f query='
+            query($owner: String!, $name: String!) {
+              repository(owner: $owner, name: $name) {
+                id
+                discussionCategories(first: 10) {
+                  nodes { id name }
+                }
+              }
+            }
+          ' -f owner="${{ github.repository_owner }}" -f name="${{ github.event.repository.name }}")
+          REPO_ID=$(echo "$REPO_DATA" | jq -r '.data.repository.id')
+          CATEGORY_ID=$(echo "$REPO_DATA" | jq -r '
+            .data.repository.discussionCategories.nodes[]
+            | select(.name=="Announcements")
+            | .id
+          ')
+          gh api graphql -f query='
+            mutation($repositoryId: ID!, $categoryId: ID!, $title: String!, $body: String!) {
+              createDiscussion(input: {
+                repositoryId: $repositoryId,
+                categoryId: $categoryId,
+                title: $title,
+                body: $body
+              }) {
+                discussion { url }
+              }
+            }
+          ' \
+            -f repositoryId="$REPO_ID" \
+            -f categoryId="$CATEGORY_ID" \
+            -f title="Translation Freeze – $(date +%Y-%m-%d)" \
+            -f body="## Translation Freeze for Upcoming Release
+
+            The \`rc\` branch has been merged. Please update your \`.po\` files."

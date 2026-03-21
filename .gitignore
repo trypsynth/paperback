@@ -1,0 +1,8 @@
+.claude/
+/target
+web/_site/
+*.epub
+*.pdf
+*.rtf
+.DS_Store
+*.mo 
