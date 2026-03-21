@@ -522,6 +522,8 @@ fn generate_app_bundle() {
 				<string>html</string>
 				<string>htm</string>
 				<string>md</string>
+				<string>mobi</string>
+				<string>azw3</string>
 				<string>txt</string>
 				<string>rtf</string>
 			</array>
