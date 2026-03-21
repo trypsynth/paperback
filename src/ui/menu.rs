@@ -53,6 +53,12 @@ const DOCUMENT_DEPENDENT_IDS: &[i32] = &[
 	// Links
 	menu_ids::PREVIOUS_LINK,
 	menu_ids::NEXT_LINK,
+	// Images
+	menu_ids::PREVIOUS_IMAGE,
+	menu_ids::NEXT_IMAGE,
+	// Figures
+	menu_ids::PREVIOUS_FIGURE,
+	menu_ids::NEXT_FIGURE,
 	// Tables
 	menu_ids::PREVIOUS_TABLE,
 	menu_ids::NEXT_TABLE,
@@ -165,6 +171,18 @@ pub fn links_entries() -> Vec<MenuEntry> {
 	let prev_link_label = t("Previous Lin&k\tShift+K");
 	let next_link_label = t("Next Lin&k\tK");
 	vec![item(menu_ids::PREVIOUS_LINK, prev_link_label), item(menu_ids::NEXT_LINK, next_link_label)]
+}
+
+pub fn images_entries() -> Vec<MenuEntry> {
+	let prev_image_label = t("Previous Ima&ge\tShift+G");
+	let next_image_label = t("Next Ima&ge\tG");
+	vec![item(menu_ids::PREVIOUS_IMAGE, prev_image_label), item(menu_ids::NEXT_IMAGE, next_image_label)]
+}
+
+pub fn figures_entries() -> Vec<MenuEntry> {
+	let prev_figure_label = t("Previous Figu&re\tShift+F");
+	let next_figure_label = t("Next Figu&re\tF");
+	vec![item(menu_ids::PREVIOUS_FIGURE, prev_figure_label), item(menu_ids::NEXT_FIGURE, next_figure_label)]
 }
 
 pub fn tables_entries() -> Vec<MenuEntry> {
@@ -287,6 +305,26 @@ pub fn append_links_items(menu: &Menu) {
 	append_menu_entries(menu, &entries);
 }
 
+pub fn create_images_submenu() -> Menu {
+	let entries = images_entries();
+	build_menu(&entries)
+}
+
+pub fn append_images_items(menu: &Menu) {
+	let entries = images_entries();
+	append_menu_entries(menu, &entries);
+}
+
+pub fn create_figures_submenu() -> Menu {
+	let entries = figures_entries();
+	build_menu(&entries)
+}
+
+pub fn append_figures_items(menu: &Menu) {
+	let entries = figures_entries();
+	append_menu_entries(menu, &entries);
+}
+
 pub fn create_tables_submenu() -> Menu {
 	let entries = tables_entries();
 	build_menu(&entries)
@@ -382,7 +420,7 @@ pub fn create_file_menu(config: &ConfigManager) -> Menu {
 	// explicit Exit item to avoid a duplicate.
 	if !cfg!(target_os = "macos") {
 		file_menu.append_separator();
-		let exit_label = t("E&xit");
+		let exit_label = t("E&xit\tCtrl+Q");
 		let exit_help = t("Exit the application");
 		let _ = file_menu.append(menu_ids::EXIT, &exit_label, &exit_help, ItemKind::Normal);
 	}
@@ -434,6 +472,12 @@ pub fn create_go_menu(compact: bool) -> Menu {
 		let links_label = t("&Links");
 		let links_help = t("Navigate by links");
 		menu.append_submenu(create_links_submenu(), &links_label, &links_help);
+		let images_label = t("&Images");
+		let images_help = t("Navigate by images");
+		menu.append_submenu(create_images_submenu(), &images_label, &images_help);
+		let figures_label = t("&Figures");
+		let figures_help = t("Navigate by figures");
+		menu.append_submenu(create_figures_submenu(), &figures_label, &figures_help);
 		let tables_label = t("&Tables");
 		let tables_help = t("Navigate by tables");
 		menu.append_submenu(create_tables_submenu(), &tables_label, &tables_help);
@@ -453,6 +497,10 @@ pub fn create_go_menu(compact: bool) -> Menu {
 		append_bookmarks_items(&menu);
 		menu.append_separator();
 		append_links_items(&menu);
+		menu.append_separator();
+		append_images_items(&menu);
+		menu.append_separator();
+		append_figures_items(&menu);
 		menu.append_separator();
 		append_tables_items(&menu);
 		menu.append_separator();

@@ -9,26 +9,27 @@ use anyhow::Result;
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
-	types::{HeadingInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
+	types::{HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
 };
 
 pub mod chm;
-pub mod docx;
+pub mod daisy;
 pub mod epub;
 pub mod fb2;
 pub mod html;
 pub mod markdown;
+pub mod mobi;
 pub mod odp;
 pub mod odt;
 pub mod ooxml;
 pub mod path;
 pub mod pdf;
-pub mod pptx;
+pub mod powerpoint;
 pub mod rtf;
 pub mod text;
 pub mod toc;
+pub mod word;
 pub mod xml;
-pub mod xml_doc;
 
 pub const PASSWORD_REQUIRED_ERROR_PREFIX: &str = "[password_required]";
 
@@ -51,7 +52,7 @@ pub struct ParserInfo {
 
 pub struct ParserRegistry {
 	parsers: HashMap<String, Box<dyn Parser>>,
-	extension_map: HashMap<String, String>,
+	extension_map: HashMap<String, Vec<String>>,
 }
 
 impl ParserRegistry {
@@ -62,15 +63,18 @@ impl ParserRegistry {
 	pub fn register<P: Parser + 'static>(&mut self, parser: P) {
 		let name = parser.name().to_string();
 		for ext in parser.extensions() {
-			self.extension_map.insert(ext.to_ascii_lowercase(), name.clone());
+			self.extension_map.entry(ext.to_ascii_lowercase()).or_default().push(name.clone());
 		}
 		self.parsers.insert(name, Box::new(parser));
 	}
 
 	#[must_use]
-	pub fn get_parser_for_extension(&self, extension: &str) -> Option<&dyn Parser> {
+	pub fn get_parsers_for_extension(&self, extension: &str) -> Vec<&dyn Parser> {
 		let ext = extension.to_ascii_lowercase();
-		self.extension_map.get(&ext).and_then(|name| self.parsers.get(name)).map(|parser| &**parser)
+		self.extension_map
+			.get(&ext)
+			.map(|names| names.iter().filter_map(|name| self.parsers.get(name)).map(|p| &**p).collect())
+			.unwrap_or_default()
 	}
 
 	#[must_use]
@@ -89,18 +93,20 @@ impl ParserRegistry {
 		REGISTRY.get_or_init(|| {
 			let mut registry = Self::new();
 			registry.register(chm::ChmParser);
-			registry.register(docx::DocxParser);
+			registry.register(daisy::DaisyParser);
+			registry.register(word::WordParser);
 			registry.register(epub::EpubParser);
 			registry.register(fb2::Fb2Parser);
 			registry.register(html::HtmlParser);
-			registry.register(xml_doc::XmlParser);
+
 			registry.register(pdf::PdfParser);
 			registry.register(markdown::MarkdownParser);
+			registry.register(mobi::MobiParser);
 			registry.register(odp::FodpParser);
 			registry.register(odp::OdpParser);
 			registry.register(odt::FodtParser);
 			registry.register(odt::OdtParser);
-			registry.register(pptx::PptxParser);
+			registry.register(powerpoint::PowerpointParser);
 			registry.register(rtf::RtfParser);
 			registry.register(text::TextParser);
 			registry
@@ -126,12 +132,26 @@ pub fn parse_document(context: &ParserContext) -> Result<Document> {
 		},
 		|ext| Ok(ext.as_str()),
 	)?;
-	let parser = ParserRegistry::global()
-		.get_parser_for_extension(extension)
-		.ok_or_else(|| anyhow::anyhow!("No parser found for extension: .{extension}"))?;
-	let mut doc = parser.parse(context)?;
-	doc.compute_stats();
-	Ok(doc)
+	let parsers = ParserRegistry::global().get_parsers_for_extension(extension);
+	if parsers.is_empty() {
+		return Err(anyhow::anyhow!("No parser found for extension: .{extension}"));
+	}
+	let mut last_error = None;
+	for parser in parsers {
+		match parser.parse(context) {
+			Ok(mut doc) => {
+				doc.compute_stats();
+				return Ok(doc);
+			}
+			Err(e) => {
+				if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
+					return Err(e);
+				}
+				last_error = Some(e);
+			}
+		}
+	}
+	Err(last_error.unwrap_or_else(|| anyhow::anyhow!("All parsers failed for extension: .{extension}")))
 }
 
 #[must_use]
@@ -141,7 +161,10 @@ pub fn get_parser_flags_for_context(context: &ParserContext) -> ParserFlags {
 		.forced_extension
 		.as_ref()
 		.map_or_else(|| path.extension().and_then(|e| e.to_str()).unwrap_or(""), |ext| ext.as_str());
-	ParserRegistry::global().get_parser_for_extension(extension).map_or(ParserFlags::NONE, Parser::supported_flags)
+	ParserRegistry::global()
+		.get_parsers_for_extension(extension)
+		.iter()
+		.fold(ParserFlags::NONE, |acc, p| acc | p.supported_flags())
 }
 
 #[must_use]
@@ -153,7 +176,7 @@ pub fn parser_supports_extension(extension: &str) -> bool {
 	if normalized.is_empty() {
 		return false;
 	}
-	ParserRegistry::global().get_parser_for_extension(&normalized).is_some()
+	!ParserRegistry::global().get_parsers_for_extension(&normalized).is_empty()
 }
 
 fn join_extensions<'a, I>(exts: I) -> String
@@ -218,6 +241,8 @@ pub fn build_file_filter_string() -> String {
 pub trait ConverterOutput {
 	fn get_headings(&self) -> &[HeadingInfo];
 	fn get_links(&self) -> &[LinkInfo];
+	fn get_images(&self) -> &[ImageInfo];
+	fn get_figures(&self) -> &[ImageInfo];
 	fn get_tables(&self) -> &[TableInfo];
 	fn get_separators(&self) -> &[SeparatorInfo];
 	fn get_lists(&self) -> &[ListInfo];
@@ -240,6 +265,18 @@ fn add_links(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offse
 				.with_text(link.text.clone())
 				.with_reference(link.reference.clone()),
 		);
+	}
+}
+
+fn add_images(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
+	for image in converter.get_images() {
+		buffer.add_marker(Marker::new(MarkerType::Image, offset + image.offset).with_text(image.alt_text.clone()));
+	}
+}
+
+fn add_figures(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
+	for figure in converter.get_figures() {
+		buffer.add_marker(Marker::new(MarkerType::Figure, offset + figure.offset).with_text(figure.alt_text.clone()));
 	}
 }
 
@@ -276,6 +313,8 @@ fn add_tables_separators_lists(buffer: &mut DocumentBuffer, converter: &dyn Conv
 pub fn add_converter_markers(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
 	add_headings(buffer, converter, offset);
 	add_links(buffer, converter, offset);
+	add_images(buffer, converter, offset);
+	add_figures(buffer, converter, offset);
 	add_tables_separators_lists(buffer, converter, offset);
 }
 
@@ -286,6 +325,8 @@ pub fn add_converter_markers_excluding_links(
 	offset: usize,
 ) {
 	add_headings(buffer, converter, offset);
+	add_images(buffer, converter, offset);
+	add_figures(buffer, converter, offset);
 	add_tables_separators_lists(buffer, converter, offset);
 }
 
@@ -307,6 +348,8 @@ mod tests {
 	struct MockConverter {
 		headings: Vec<HeadingInfo>,
 		links: Vec<LinkInfo>,
+		images: Vec<ImageInfo>,
+		figures: Vec<ImageInfo>,
 		tables: Vec<TableInfo>,
 		separators: Vec<SeparatorInfo>,
 		lists: Vec<ListInfo>,
@@ -320,6 +363,14 @@ mod tests {
 
 		fn get_links(&self) -> &[LinkInfo] {
 			&self.links
+		}
+
+		fn get_images(&self) -> &[ImageInfo] {
+			&self.images
+		}
+
+		fn get_figures(&self) -> &[ImageInfo] {
+			&self.figures
 		}
 
 		fn get_tables(&self) -> &[TableInfo] {
@@ -338,11 +389,12 @@ mod tests {
 			&self.list_items
 		}
 	}
-
 	fn sample_converter() -> MockConverter {
 		MockConverter {
 			headings: vec![HeadingInfo { offset: 1, level: 2, text: "Heading".to_string() }],
 			links: vec![LinkInfo { offset: 2, text: "Link".to_string(), reference: "#a".to_string() }],
+			images: vec![],
+			figures: vec![],
 			tables: vec![TableInfo {
 				offset: 3,
 				text: "T".to_string(),
@@ -441,6 +493,8 @@ mod tests {
 		let converter = MockConverter {
 			headings: vec![],
 			links: vec![],
+			images: vec![],
+			figures: vec![],
 			tables: vec![],
 			separators: vec![],
 			lists: vec![],

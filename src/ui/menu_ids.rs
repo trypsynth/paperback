@@ -67,8 +67,14 @@ menu_ids!(BASE + 280 =>
 // Go menu: Link navigation (BASE + 290..299)
 menu_ids!(BASE + 290 => PREVIOUS_LINK, NEXT_LINK);
 
-// Go menu: Element navigation (BASE + 300..319)
-menu_ids!(BASE + 300 => PREVIOUS_TABLE, NEXT_TABLE, PREVIOUS_SEPARATOR, NEXT_SEPARATOR);
+// Go menu: Image navigation (BASE + 295..299)
+menu_ids!(BASE + 295 => PREVIOUS_IMAGE, NEXT_IMAGE);
+
+// Go menu: Figure navigation (BASE + 300..304)
+menu_ids!(BASE + 300 => PREVIOUS_FIGURE, NEXT_FIGURE);
+
+// Go menu: Element navigation (BASE + 305..319)
+menu_ids!(BASE + 305 => PREVIOUS_TABLE, NEXT_TABLE, PREVIOUS_SEPARATOR, NEXT_SEPARATOR);
 menu_ids!(BASE + 310 => PREVIOUS_LIST, NEXT_LIST, PREVIOUS_LIST_ITEM, NEXT_LIST_ITEM);
 
 // Tools menu: Document info (BASE + 400..409)

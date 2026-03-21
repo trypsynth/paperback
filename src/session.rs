@@ -338,6 +338,30 @@ impl DocumentSession {
 		)
 	}
 
+	#[must_use]
+	pub fn navigate_image(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
+		let is_supported = self.has_marker(MarkerType::Image);
+		self.navigate_with_post(
+			NavigateParams { position, wrap, next, target: NavTarget::Image, level_filter: 0 },
+			is_supported,
+			|s, nav_result| {
+				s.fill_marker_text_if_empty(nav_result);
+			},
+		)
+	}
+
+	#[must_use]
+	pub fn navigate_figure(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
+		let is_supported = self.has_marker(MarkerType::Figure);
+		self.navigate_with_post(
+			NavigateParams { position, wrap, next, target: NavTarget::Figure, level_filter: 0 },
+			is_supported,
+			|s, nav_result| {
+				s.fill_marker_text_if_empty(nav_result);
+			},
+		)
+	}
+
 	fn navigate_bookmark_inner(
 		&self,
 		config: &ConfigManager,
@@ -716,6 +740,19 @@ impl DocumentSession {
 		let chars_after_start: String = content.chars().skip(line_start).collect();
 		let line_end = chars_after_start.find('\n').map_or(chars_after_start.len(), |idx| idx);
 		chars_after_start.chars().take(line_end).collect()
+	}
+
+	/// Returns the (start, end) char positions of the content line (delimited by `\n`) containing `position`.
+	#[must_use]
+	pub fn get_line_bounds(&self, position: i64) -> (i64, i64) {
+		let content = &self.handle.document().buffer.content;
+		let total_chars = content.chars().count();
+		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
+		let line_start =
+			content.chars().take(pos).collect::<Vec<_>>().iter().rposition(|&c| c == '\n').map_or(0, |idx| idx + 1);
+		let line_len = content.chars().skip(line_start).position(|c| c == '\n').unwrap_or(total_chars - line_start);
+		let line_end = line_start + line_len;
+		(i64::try_from(line_start).unwrap_or(0), i64::try_from(line_end).unwrap_or(i64::MAX))
 	}
 
 	fn has_headings(&self, level: Option<i32>) -> bool {

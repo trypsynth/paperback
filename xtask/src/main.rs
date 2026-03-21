@@ -36,11 +36,12 @@ fn release() -> Result<(), Box<dyn Error>> {
 	let readme_path = target_dir.join("readme.html");
 	let langs_path = target_dir.join("langs");
 	let sounds_path = target_dir.join("sounds");
+	let pdfium_dll_path = target_dir.join("pdfium.dll");
 	if !exe_path.exists() {
 		return Err("Executable not found".into());
 	}
 	println!("Packaging binaries, docs, and translations...");
-	build_zip_package(&target_dir, &exe_path, &readme_path, &langs_path, &sounds_path)?;
+	build_zip_package(&target_dir, &exe_path, &readme_path, &langs_path, &sounds_path, &pdfium_dll_path)?;
 	if cfg!(windows) {
 		build_windows_installer(&target_dir)?;
 	}
@@ -57,6 +58,7 @@ fn build_zip_package(
 	readme_path: &Path,
 	langs_dir: &Path,
 	sounds_dir: &Path,
+	pdfium_dll_path: &Path,
 ) -> Result<(), Box<dyn Error>> {
 	let package_name = if cfg!(target_os = "macos") { "paperback_mac.zip" } else { "paperback.zip" };
 	let package_path = target_dir.join(package_name);
@@ -67,6 +69,17 @@ fn build_zip_package(
 	zip.start_file(exe_filename.to_string_lossy(), options)?;
 	let mut f = File::open(exe_path)?;
 	io::copy(&mut f, &mut zip)?;
+	if cfg!(windows) {
+		if !pdfium_dll_path.exists() {
+			return Err(
+				"pdfium.dll not found in target directory. Set PDFIUM_DLL_PATH (or PAPERBACK_PDFIUM_DLL) before building."
+					.into(),
+			);
+		}
+		zip.start_file("pdfium.dll", options)?;
+		let mut f = File::open(pdfium_dll_path)?;
+		io::copy(&mut f, &mut zip)?;
+	}
 	if readme_path.exists() {
 		zip.start_file("readme.html", options)?;
 		let mut f = File::open(readme_path)?;

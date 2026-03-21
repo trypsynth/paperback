@@ -3,10 +3,11 @@ use std::{collections::HashMap, fmt::Write, mem};
 use bitflags::bitflags;
 use ego_tree::NodeRef;
 use scraper::{ElementRef, Html, Node, node};
+use wxdragon::translations::translate as t;
 
 use crate::{
 	text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string},
-	types::{HeadingInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
+	types::{HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
 };
 
 bitflags! {
@@ -44,6 +45,8 @@ pub struct HtmlToText {
 	id_positions: HashMap<String, usize>,
 	headings: Vec<HeadingInfo>,
 	links: Vec<LinkInfo>,
+	images: Vec<ImageInfo>,
+	figures: Vec<ImageInfo>,
 	tables: Vec<TableInfo>,
 	separators: Vec<SeparatorInfo>,
 	lists: Vec<ListInfo>,
@@ -69,6 +72,8 @@ impl HtmlToText {
 			id_positions: HashMap::new(),
 			headings: Vec::new(),
 			links: Vec::new(),
+			images: Vec::new(),
+			figures: Vec::new(),
 			tables: Vec::new(),
 			separators: Vec::new(),
 			lists: Vec::new(),
@@ -147,6 +152,8 @@ impl HtmlToText {
 		self.id_positions.clear();
 		self.headings.clear();
 		self.links.clear();
+		self.images.clear();
+		self.figures.clear();
 		self.tables.clear();
 		self.separators.clear();
 		self.lists.clear();
@@ -275,6 +282,40 @@ impl HtmlToText {
 			if self.flags.contains(ProcessingFlags::IN_BODY) {
 				if let Some(id) = element.attr("id").or_else(|| element.attr("name")) {
 					self.id_positions.insert(id.to_string(), self.get_current_text_position());
+				}
+				if tag_name == "img" || tag_name == "image" || tag_name == "figure" {
+					let mut description = element
+						.attr("alt")
+						.or_else(|| element.attr("aria-label"))
+						.or_else(|| element.attr("aria-description"))
+						.or_else(|| element.attr("title"))
+						.map(collapse_whitespace)
+						.unwrap_or_default();
+
+					if description.is_empty() && tag_name == "figure" {
+						for child in node.children() {
+							if let Node::Element(child_elem) = child.value() {
+								if child_elem.name() == "figcaption" {
+									description = collapse_whitespace(&Self::collect_text(child));
+									break;
+								}
+							}
+						}
+					}
+
+					if !description.is_empty() {
+						let is_figure = tag_name == "figure";
+						let label = if is_figure { t("Figure") } else { t("Image") };
+						let image_text = format!("[{label}: {description}]");
+						let offset = self.get_current_text_position();
+						self.current_line.push_str(&image_text);
+						let info = crate::types::ImageInfo { offset, alt_text: description };
+						if is_figure {
+							self.figures.push(info);
+						} else {
+							self.images.push(info);
+						}
+					}
 				}
 			}
 			if tag_name == "a" && !self.flags.contains(ProcessingFlags::IN_LINK) {
@@ -546,7 +587,10 @@ impl HtmlToText {
 			return display_len(&self.current_line);
 		}
 		let collapsed = collapse_whitespace(&self.current_line);
-		let trimmed = collapsed.trim();
+		// Use trim_start() not trim(): trailing whitespace before an inline element (e.g. a
+		// space before <a>) IS preserved in the output line, so including it in the position
+		// count keeps link/anchor offsets correctly aligned with the final text.
+		let trimmed = collapsed.trim_start();
 		display_len(trimmed)
 	}
 
@@ -592,6 +636,12 @@ impl crate::parser::ConverterOutput for HtmlToText {
 	}
 	fn get_links(&self) -> &[LinkInfo] {
 		&self.links
+	}
+	fn get_images(&self) -> &[crate::types::ImageInfo] {
+		&self.images
+	}
+	fn get_figures(&self) -> &[crate::types::ImageInfo] {
+		&self.figures
 	}
 	fn get_tables(&self) -> &[TableInfo] {
 		&self.tables

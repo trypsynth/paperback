@@ -191,21 +191,16 @@ fn check_for_dev_updates(current_commit: &str, is_installer: bool) -> Result<Upd
 	let release = fetch_release_by_tag("latest")?;
 	let raw_notes = release.body.unwrap_or_default();
 	let commit_lines: Vec<&str> = raw_notes.lines().filter(|line| line.trim().starts_with("- ")).collect();
-
 	if commit_lines.is_empty() {
 		let short_local_hash = if current_commit.len() > 7 { &current_commit[..7] } else { current_commit };
 		return Ok(UpdateCheckOutcome::UpToDate(format!("dev-{short_local_hash}")));
 	}
-
 	let latest_remote_hash = commit_lines.first().and_then(|line| line.split_whitespace().nth(1)).unwrap_or("latest");
-
 	let short_current_commit = if current_commit.len() > 7 { &current_commit[..7] } else { current_commit };
 	if short_current_commit == latest_remote_hash {
 		return Ok(UpdateCheckOutcome::UpToDate(format!("dev-{latest_remote_hash}")));
 	}
-
 	let current_commit_position = commit_lines.iter().position(|line| line.contains(short_current_commit));
-
 	if let Some(position) = current_commit_position {
 		if position > 0 {
 			let new_notes = commit_lines[..position].join("\n");

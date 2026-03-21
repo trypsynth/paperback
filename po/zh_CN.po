@@ -6,10 +6,10 @@
 # partial written by AI
 msgid ""
 msgstr ""
-"Project-Id-Version: paperback 0.8.0\n"
-"Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues \n"
-"POT-Creation-Date: 2026-02-19 04:36+0530\n"
-"PO-Revision-Date: 2026-02-20 16:00+0800\n"
+"Project-Id-Version: paperback 0.8.2\n"
+"Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
+"POT-Creation-Date: 2026-03-05 20:09-0700\n"
+"PO-Revision-Date: 2026-03-13 16:51+0800\n"
 "Last-Translator: Yongquan Yang <qt06.com@gmail.com>\n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -17,11 +17,6 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.8\n"
-
-msgid ""
-"This PDF contains images only, with no extractable text. You may need to run "
-"it through OCR software to read its contents."
-msgstr "此 PDF 仅包含图像，没有可提取的文本。您可能需要使用 OCR 软件来读取其内容。"
 
 msgid "Failed to create IPC server"
 msgstr "创建 IPC 服务器失败"
@@ -192,18 +187,18 @@ msgstr "百分比(&P)"
 msgid "P&ercent:"
 msgstr "百分比(&E)："
 
+msgid "&Yes"
+msgstr "是(&Y)"
+
+msgid "&No"
+msgstr "否(&N)"
+
 #, c-format
 msgid "Update to %s"
 msgstr "更新到 %s"
 
 msgid "A new version of Paperback is available. Here's what's new:"
 msgstr "Paperback 有新版本可用。以下是新功能："
-
-msgid "&Yes"
-msgstr "是(&Y)"
-
-msgid "&No"
-msgstr "否(&N)"
 
 msgid "All Documents"
 msgstr "所有文档"
@@ -234,6 +229,11 @@ msgid ""
 "remove its reading position."
 msgstr "您确定要从列表中移除此文档吗？这也会删除其阅读位置。"
 
+msgid ""
+"Are you sure you want to remove these {} documents from the list? This will "
+"also remove their reading positions."
+msgstr "您确定要从列表中删除这些｛｝文档吗？这也将删除他们的阅读位置。"
+
 msgid "Confirm"
 msgstr "确认"
 
@@ -248,7 +248,8 @@ msgstr "打开为"
 msgid ""
 "No suitable parser was found for {}.\n"
 "How would you like to open this file?"
-msgstr "未找到适合 {} 的解析器。\n"
+msgstr ""
+"未找到适合 {} 的解析器。\n"
 "您希望如何打开此文件？"
 
 msgid "Open &as:"
@@ -299,9 +300,6 @@ msgstr "未找到文件：{}"
 msgid "Password is required."
 msgstr "需要密码。"
 
-msgid "Failed to load document."
-msgstr "加载文档失败。"
-
 msgid "Navigated to internal link."
 msgstr "已导航到内部链接。"
 
@@ -316,6 +314,9 @@ msgstr "密码(&P)："
 
 msgid "Document Password"
 msgstr "文档密码"
+
+msgid "Failed to load document."
+msgstr "加载文档失败。"
 
 msgid "Create &bookmark"
 msgstr "创建书签(&B)"
@@ -427,11 +428,11 @@ msgstr "检查更新失败。HTTP 状态：%d"
 msgid "Error checking for updates."
 msgstr "检查更新时出错。"
 
-msgid "Failed to launch installer"
-msgstr "启动安装程序失败"
-
 msgid "Failed to get current exe path"
 msgstr "获取当前可执行文件路径失败"
+
+msgid "Failed to launch installer script"
+msgstr "安装程序启动失败"
 
 msgid "Failed to launch update script"
 msgstr "启动更新脚本失败"
@@ -706,6 +707,12 @@ msgstr "全部关闭(&A)\tCtrl+Shift+F4"
 
 msgid "Close all documents"
 msgstr "关闭所有文档"
+
+msgid "Reopen &Last Closed\tCtrl+Shift+T"
+msgstr "重新打开上次关闭的(&L)\tCtrl+Shift+T"
+
+msgid "Reopen the last closed document"
+msgstr "重新打开上次关闭的文档"
 
 msgid "&Recent Documents"
 msgstr "最近文档(&R)"
@@ -1087,3 +1094,10 @@ msgstr "恢复 Paperback"
 
 msgid "Exit Paperback"
 msgstr "退出 Paperback"
+
+#~ msgid ""
+#~ "This PDF contains images only, with no extractable text. You may need to "
+#~ "run it through OCR software to read its contents."
+#~ msgstr ""
+#~ "此 PDF 仅包含图像，没有可提取的文本。您可能需要使用 OCR 软件来读取其内"
+#~ "容。"

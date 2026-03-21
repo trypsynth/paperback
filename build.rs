@@ -1,5 +1,6 @@
 use std::{
 	env, fs, io,
+	io::{Cursor, Read},
 	path::{Path, PathBuf},
 	process::Command,
 };
@@ -9,12 +10,22 @@ use embed_manifest::{
 	manifest::{ActiveCodePage, DpiAwareness, HeapType, Setting, SupportedOS::*},
 	new_manifest,
 };
+use flate2::read::GzDecoder;
+use tar::Archive;
 use winres::WindowsResource;
+
+const PDFIUM_WIN_X64_URL: &str =
+	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-win-x64.tgz";
+const PDFIUM_WIN_X86_URL: &str =
+	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-win-x86.tgz";
+const PDFIUM_WIN_ARM64_URL: &str =
+	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-win-arm64.tgz";
 
 fn main() {
 	track_packaging_inputs();
 	build_translations();
 	copy_sounds();
+	copy_pdfium_dll();
 	build_docs();
 	configure_installer();
 	generate_pot();
@@ -189,6 +200,139 @@ fn copy_sounds() {
 			}
 		}
 	}
+}
+
+fn copy_pdfium_dll() {
+	let target = env::var("TARGET").unwrap_or_default();
+	if !target.contains("windows") {
+		return;
+	}
+	println!("cargo:rerun-if-env-changed=PDFIUM_DLL_PATH");
+	println!("cargo:rerun-if-env-changed=PAPERBACK_PDFIUM_DLL");
+	println!("cargo:rerun-if-env-changed=PAPERBACK_SKIP_PDFIUM_DOWNLOAD");
+	println!("cargo:rerun-if-env-changed=PAPERBACK_REFRESH_PDFIUM");
+	let refresh = env::var("PAPERBACK_REFRESH_PDFIUM")
+		.map(|value| value == "1" || value.eq_ignore_ascii_case("true"))
+		.unwrap_or(false);
+	let target_dir = match target_profile_dir() {
+		Some(dir) => dir,
+		None => {
+			println!("cargo:warning=Could not determine target output directory for pdfium.dll.");
+			return;
+		}
+	};
+	let dest = target_dir.join("pdfium.dll");
+	let mut candidates = Vec::new();
+	if let Ok(path) = env::var("PAPERBACK_PDFIUM_DLL") {
+		push_dll_candidates_from_path(&mut candidates, PathBuf::from(path));
+	}
+	if let Ok(path) = env::var("PDFIUM_DLL_PATH") {
+		push_dll_candidates_from_path(&mut candidates, PathBuf::from(path));
+	}
+	let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap_or_default());
+	candidates.push(manifest_dir.join("pdfium.dll"));
+	candidates.push(manifest_dir.join("bin").join("pdfium.dll"));
+	candidates.extend(find_pdfium_dll_in_path());
+	if let Some(source) = candidates.into_iter().find(|path| path.is_file()) {
+		println!("cargo:rerun-if-changed={}", source.display());
+		if source != dest {
+			if let Err(err) = fs::copy(&source, &dest) {
+				println!("cargo:warning=Failed to copy pdfium.dll from {}: {}", source.display(), err);
+			}
+			return;
+		}
+		if !refresh {
+			return;
+		}
+	}
+	if let Err(err) = ensure_pdfium_dll(&dest) {
+		println!(
+			"cargo:warning=pdfium.dll not found. Automatic download failed: {}. Set PDFIUM_DLL_PATH (or PAPERBACK_PDFIUM_DLL), install pdfium.dll on PATH, or place it in the project root.",
+			err
+		);
+	} else if dest.exists() {
+		println!("cargo:rerun-if-changed={}", dest.display());
+	}
+}
+
+fn ensure_pdfium_dll(dest_dll: &Path) -> io::Result<()> {
+	let skip_download = env::var("PAPERBACK_SKIP_PDFIUM_DOWNLOAD")
+		.map(|value| value == "1" || value.eq_ignore_ascii_case("true"))
+		.unwrap_or(false);
+	if skip_download {
+		return Err(io::Error::other("download disabled by PAPERBACK_SKIP_PDFIUM_DOWNLOAD"));
+	}
+	let refresh = env::var("PAPERBACK_REFRESH_PDFIUM")
+		.map(|value| value == "1" || value.eq_ignore_ascii_case("true"))
+		.unwrap_or(false);
+	if dest_dll.exists() && !refresh {
+		return Ok(());
+	}
+	let Some(url) = pdfium_download_url_for_target() else {
+		return Err(io::Error::other("no PDFium URL configured for this target architecture"));
+	};
+	download_pdfium_dll(url, dest_dll)
+}
+
+fn pdfium_download_url_for_target() -> Option<&'static str> {
+	let arch = env::var("CARGO_CFG_TARGET_ARCH").ok()?;
+	match arch.as_str() {
+		"x86_64" => Some(PDFIUM_WIN_X64_URL),
+		"x86" => Some(PDFIUM_WIN_X86_URL),
+		"aarch64" => Some(PDFIUM_WIN_ARM64_URL),
+		_ => None,
+	}
+}
+
+fn download_pdfium_dll(url: &str, dest_dll: &Path) -> io::Result<()> {
+	if let Some(parent) = dest_dll.parent() {
+		fs::create_dir_all(parent)?;
+	}
+	println!("cargo:warning=Downloading pdfium.dll from {}", url);
+	let response = ureq::get(url).call().map_err(|err| io::Error::other(format!("request failed: {err}")))?;
+	let mut body = response.into_body();
+	let mut archive_bytes = Vec::new();
+	body.as_reader()
+		.read_to_end(&mut archive_bytes)
+		.map_err(|err| io::Error::other(format!("failed to read response body: {err}")))?;
+	let decoder = GzDecoder::new(Cursor::new(archive_bytes));
+	let mut archive = Archive::new(decoder);
+	for entry in archive.entries()? {
+		let mut entry = entry?;
+		let path = entry.path()?;
+		if path.file_name().and_then(|name| name.to_str()) == Some("pdfium.dll") {
+			let temp_path = dest_dll.with_extension("dll.tmp");
+			entry.unpack(&temp_path)?;
+			if dest_dll.exists() {
+				fs::remove_file(dest_dll)?;
+			}
+			fs::rename(temp_path, dest_dll)?;
+			return Ok(());
+		}
+	}
+	Err(io::Error::other("pdfium.dll not found inside downloaded archive"))
+}
+
+fn push_dll_candidates_from_path(candidates: &mut Vec<PathBuf>, path: PathBuf) {
+	if path.is_dir() {
+		candidates.push(path.join("pdfium.dll"));
+	} else {
+		candidates.push(path);
+	}
+}
+
+fn find_pdfium_dll_in_path() -> Vec<PathBuf> {
+	let mut candidates = Vec::new();
+	let Ok(path_var) = env::var("PATH") else {
+		return candidates;
+	};
+	for dir in env::split_paths(&path_var) {
+		if dir.as_os_str().is_empty() {
+			continue;
+		}
+		candidates.push(dir.join("pdfium.dll"));
+	}
+	candidates
 }
 
 fn target_profile_dir() -> Option<PathBuf> {
@@ -378,6 +522,8 @@ fn generate_app_bundle() {
 				<string>html</string>
 				<string>htm</string>
 				<string>md</string>
+				<string>mobi</string>
+				<string>azw3</string>
 				<string>txt</string>
 				<string>rtf</string>
 			</array>

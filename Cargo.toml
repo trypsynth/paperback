@@ -1,6 +1,6 @@
 [package]
 name = "paperback"
-version = "0.8.1"
+version = "0.8.2"
 description = "An accessible, light-weight, fast ebook and document reader"
 license = "MIT"
 repository = "https://github.com/trypsynth/paperback"
@@ -14,31 +14,34 @@ members = ["xtask"]
 anyhow = "1.0.102"
 base64 = "0.22.1"
 bitflags = "2.11.0"
-ego-tree = "0.10.0"
+cfb = "0.14.0"
+ego-tree = "0.11.0"
 encoding_rs = "0.8.35"
-hayro-interpret = "0.5.0"
-hayro-syntax = "0.5.0"
-kurbo = "0.12.0"
 libchm = "0.1.0"
 live-region = "0.1.4"
+office-crypto = "0.2.0"
+pdfium = { git = "https://github.com/aryanchoudharypro/PDFium-rs", branch = "feature/tagged-pdf-support" }
 percent-encoding = "2.3.2"
 pulldown-cmark = { version = "0.13.1", default-features = false, features = ["html"] }
 regex = "1.12.3"
 roman = "0.1"
 roxmltree = "0.21.1"
 rtf-parser = "0.4.2"
-scraper = "0.25.0"
+scraper = "0.26.0"
 serde = { version = "1.0.228", default-features = false, features = ["derive", "std"] }
 sha1 = "0.10.6"
 ureq = { version = "3.2.0", default-features = false, features = ["json", "rustls"] }
-wxdragon = { version = "0.9.12", features = ["webview"] }
-zip = { version = "8.1.0", default-features = false, features = ["deflate"] }
+wxdragon = { version = "0.9.14", features = ["webview"] }
+zip = { version = "8.2.0", default-features = false, features = ["deflate"] }
 
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_System_Com", "Win32_UI_WindowsAndMessaging", "Win32_Foundation", "Win32_System_Ole", "Win32_System_Variant"] }
 
 [build-dependencies]
 embed-manifest = "1.5.0"
+flate2 = { version = "1.1.9", default-features = false }
+tar = "0.4.45"
+ureq = { version = "3.2.0", default-features = false, features = ["rustls"] }
 winres = "0.1.12"
 
 [dev-dependencies]
@@ -50,3 +53,6 @@ opt-level = "z"
 lto = true
 panic = "abort"
 codegen-units = 1
+
+[patch.crates-io]
+wxdragon = { git = "https://github.com/AllenDang/wxDragon" }

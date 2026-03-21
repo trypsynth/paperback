@@ -19,10 +19,11 @@ mod xml_to_text;
 mod zip;
 
 use ui::PaperbackApp;
+use wxdragon::prelude::{Appearance, set_appearance};
 
 fn main() {
 	let _ = wxdragon::main(|app| {
-		// let _ = set_appearance(Appearance::System);
+		let _ = set_appearance(Appearance::System);
 		let app_state = PaperbackApp::new(app);
 		let _ = Box::leak(Box::new(app_state));
 	});

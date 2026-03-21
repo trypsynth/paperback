@@ -272,6 +272,7 @@ impl MainWindow {
 			}
 			state.restored = true;
 			drop(state);
+			let pre_restore_active = doc_manager.lock().unwrap().active_tab_index();
 			let paths = config.lock().unwrap().get_opened_documents_existing();
 			for path in paths {
 				let path = Path::new(&path);
@@ -279,6 +280,9 @@ impl MainWindow {
 					continue;
 				}
 				let _ = doc_manager.lock().unwrap().open_file(&doc_manager, path);
+			}
+			if let Some(idx) = pre_restore_active {
+				doc_manager.lock().unwrap().notebook().set_selection(idx);
 			}
 			let dm_ref = doc_manager.lock().unwrap();
 			update_title_from_manager(&frame, &dm_ref);
@@ -781,6 +785,36 @@ impl MainWindow {
 				}
 				menu_ids::NEXT_LINK => {
 					navigation::handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Link, true);
+				}
+				menu_ids::PREVIOUS_IMAGE => {
+					navigation::handle_marker_navigation(
+						&dm,
+						&config,
+						live_region_label,
+						MarkerNavTarget::Image,
+						false,
+					);
+				}
+				menu_ids::NEXT_IMAGE => {
+					navigation::handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Image, true);
+				}
+				menu_ids::PREVIOUS_FIGURE => {
+					navigation::handle_marker_navigation(
+						&dm,
+						&config,
+						live_region_label,
+						MarkerNavTarget::Figure,
+						false,
+					);
+				}
+				menu_ids::NEXT_FIGURE => {
+					navigation::handle_marker_navigation(
+						&dm,
+						&config,
+						live_region_label,
+						MarkerNavTarget::Figure,
+						true,
+					);
 				}
 				menu_ids::PREVIOUS_TABLE => {
 					navigation::handle_marker_navigation(

@@ -1,28 +1,13 @@
-use std::{
-	collections::{HashMap, HashSet},
-	fs, str,
-	sync::Arc,
-};
+use std::collections::{HashMap, HashSet};
 
 use anyhow::{Result, anyhow};
-use hayro_interpret::{
-	BlendMode, ClipPath, Context, Device, GlyphDrawMode, Image, InterpreterSettings, PageExt, Paint, PathDrawMode,
-	RectExt, SoftMask, font::Glyph, interpret_page,
-};
-use hayro_syntax::{
-	LoadPdfError, Pdf,
-	object::{
-		Array, Dict, MaybeRef, Name, Object, ObjectIdentifier, String as PdfObjectString,
-		dict::keys::{A, D, DEST, DESTS, FIRST, KIDS, NAMES, NEXT, OUTLINES, S, TITLE},
-	},
-};
-use kurbo::{Affine, BezPath, Point};
+use pdfium::{PdfiumDocument, PdfiumError, lib};
 use wxdragon::translations::translate as t;
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
 	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, Parser, path::extract_title_from_path},
-	text::{collapse_whitespace, trim_string},
+	text::{collapse_whitespace, display_len, trim_string},
 };
 
 pub struct PdfParser;
@@ -37,34 +22,243 @@ impl Parser for PdfParser {
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_PAGES
+		ParserFlags::SUPPORTS_PAGES | ParserFlags::SUPPORTS_TOC
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
-		let data =
-			fs::read(&context.file_path).map_err(|err| anyhow!("Failed to read PDF {}: {err}", context.file_path))?;
-		let password = context.password.as_deref().unwrap_or_default();
-		let document = Pdf::new_with_password(Arc::new(data), password).map_err(map_load_error)?;
+		let document =
+			PdfiumDocument::new_from_path(&context.file_path, context.password.as_deref()).map_err(map_load_error)?;
 		let mut buffer = DocumentBuffer::new();
 		let mut page_offsets = Vec::new();
+		let mut id_positions = HashMap::new();
+		let mut page_lines_info: Vec<Vec<(usize, String)>> = Vec::new();
+		let page_count = document.page_count();
+		let mut any_tags_processed = false;
+		let mut flat_toc_items = Vec::new();
 		let mut has_any_text = false;
 		let mut has_any_images = false;
-		for (page_index, page) in document.pages().iter().enumerate() {
+		for page_index in 0..page_count {
 			let marker_position = buffer.current_position();
 			page_offsets.push(marker_position);
+			id_positions.insert(format!("page_{page_index}"), marker_position);
 			buffer.add_marker(
 				Marker::new(MarkerType::PageBreak, marker_position).with_text(format!("Page {}", page_index + 1)),
 			);
-			let result = extract_page_text(&document, page);
-			has_any_images |= result.has_images;
-			let lines = process_text_lines(&result.text);
-			if !lines.is_empty() {
+			let Ok(page) = document.page(page_index) else {
+				page_lines_info.push(Vec::new());
+				continue;
+			};
+			let Ok(text_page) = page.text() else {
+				page_lines_info.push(Vec::new());
+				continue;
+			};
+			let page_start_offset = buffer.current_position();
+			let mut page_display_text = String::new();
+			let mut current_lines_info = Vec::new();
+			let mut tags_processed = false;
+			if let Some(struct_tree) = page.struct_tree() {
+				let child_count = struct_tree.count_children();
+				if child_count > 0 {
+					let mut mcid_to_text: HashMap<i32, String> = HashMap::new();
+					if let Ok(char_count) = text_page.char_count() {
+						let mut current_mcid = -1;
+						let mut current_text = String::new();
+						for i in 0..char_count {
+							let unicode = text_page.get_unicode(i);
+							if let Some(ch) = char::from_u32(unicode) {
+								if ch.is_control() && !matches!(ch, '\n' | '\r' | '\t') {
+									continue;
+								}
+								let is_generated = text_page.is_generated(i).unwrap_or(false);
+								let mut char_mcid = -1;
+								if !is_generated {
+									if let Ok(obj) = text_page.get_text_object(i) {
+										char_mcid = obj.get_marked_content_id();
+									}
+								}
+								if char_mcid >= 0 && char_mcid != current_mcid {
+									if current_mcid >= 0 && !current_text.is_empty() {
+										mcid_to_text.entry(current_mcid).or_default().push_str(&current_text);
+									}
+									current_text.clear();
+									current_mcid = char_mcid;
+								}
+								current_text.push(ch);
+							}
+						}
+						if current_mcid >= 0 && !current_text.is_empty() {
+							mcid_to_text.entry(current_mcid).or_default().push_str(&current_text);
+						}
+					}
+					let mut current_block = String::new();
+					for i in 0..child_count {
+						if let Ok(child) = struct_tree.get_child(i) {
+							process_struct_element(
+								&child,
+								&mcid_to_text,
+								&mut buffer,
+								&mut page_display_text,
+								&mut current_block,
+								&mut current_lines_info,
+								&mut flat_toc_items,
+							);
+						}
+					}
+					flush_block(&mut current_block, &mut buffer, &mut page_display_text, &mut current_lines_info);
+					tags_processed = true;
+					any_tags_processed = true;
+				}
+			}
+			if !tags_processed {
+				let raw_text = sanitize_pdf_text(&text_page.full());
+				let lines = process_text_lines(&raw_text);
+				if !lines.is_empty() {
+					has_any_text = true;
+				}
+				let mut current_offset = buffer.current_position();
+				for line in lines {
+					current_lines_info.push((current_offset, line.clone()));
+					current_offset += display_len(&line) + 1;
+					buffer.append(&line);
+					buffer.append("\n");
+					page_display_text.push_str(&line);
+					page_display_text.push('\n');
+				}
+			} else {
 				has_any_text = true;
 			}
-			for line in lines {
-				buffer.append(&line);
-				buffer.append("\n");
+			// Check for image objects on this page
+			if !has_any_images {
+				let obj_count = lib().FPDFPage_CountObjects(&page);
+				for i in 0..obj_count {
+					if let Ok(obj) = lib().FPDFPage_GetObject(&page, i) {
+						if lib().FPDFPageObj_GetType(&obj) == pdfium::pdfium_constants::FPDF_PAGEOBJ_IMAGE {
+							has_any_images = true;
+							break;
+						}
+					}
+				}
 			}
+			// Load implicit web links
+			if let Ok(links) = text_page.load_web_links() {
+				let count = lib().FPDFLink_CountWebLinks(&links);
+				let mut last_search_pos = 0;
+				for i in 0..count {
+					let mut start = 0;
+					let mut char_count = 0;
+					if lib().FPDFLink_GetTextRange(&links, i, &mut start, &mut char_count).is_ok() {
+						let link_text = sanitize_pdf_text(&text_page.extract(start, char_count));
+						let trimmed_link = trim_string(&collapse_whitespace(&link_text));
+						if trimmed_link.is_empty() {
+							continue;
+						}
+						let mut url_buffer = vec![0u16; 2048];
+						let len = lib().FPDFLink_GetURL(&links, i, &mut url_buffer[0], 2048);
+						if len > 0 {
+							let url = String::from_utf16_lossy(&url_buffer[..(len as usize - 1)]);
+							if let Some(pos) = page_display_text[last_search_pos..].find(&trimmed_link) {
+								let text_before = &page_display_text[last_search_pos..last_search_pos + pos];
+								let marker_pos = page_start_offset
+									+ display_len(&page_display_text[..last_search_pos])
+									+ display_len(text_before);
+								let link_len = display_len(&trimmed_link);
+								buffer.add_marker(
+									Marker::new(MarkerType::Link, marker_pos)
+										.with_text(trimmed_link.clone())
+										.with_reference(url)
+										.with_length(link_len),
+								);
+								last_search_pos += pos + trimmed_link.len();
+							}
+						}
+					}
+				}
+			}
+			// Load explicit annotations (internal and external links)
+			let annot_count = lib().FPDFPage_GetAnnotCount(&page);
+			let mut last_search_pos = 0;
+			for i in 0..annot_count {
+				let annot_result = lib().FPDFPage_GetAnnot(&page, i);
+				if let Ok(annot) = annot_result {
+					if lib().FPDFAnnot_GetSubtype(&annot) == pdfium::pdfium_constants::FPDF_ANNOT_LINK {
+						let mut rect = pdfium::pdfium_types::FS_RECTF { left: 0.0, top: 0.0, right: 0.0, bottom: 0.0 };
+						if lib().FPDFAnnot_GetRect(&annot, &mut rect).is_ok() {
+							let mut text_buffer = vec![0u16; 2048];
+							let len = lib().FPDFText_GetBoundedText(
+								&text_page,
+								f64::from(rect.left),
+								f64::from(rect.top),
+								f64::from(rect.right),
+								f64::from(rect.bottom),
+								&mut text_buffer[0],
+								2048,
+							);
+							if len > 0 {
+								let text =
+									sanitize_pdf_text(&String::from_utf16_lossy(&text_buffer[..(len as usize - 1)]));
+								let trimmed_link = trim_string(&collapse_whitespace(&text));
+								if trimmed_link.is_empty() {
+									continue;
+								}
+								let mut url = String::new();
+								let link_result = lib().FPDFAnnot_GetLink(&annot);
+								if let Ok(link) = link_result {
+									let action_result = lib().FPDFLink_GetAction(&link);
+									if let Ok(action) = action_result {
+										let action_type = lib().FPDFAction_GetType(&action);
+										// PDFACTION_URI is 3
+										if action_type == 3 {
+											let mut uri_buffer = vec![0u8; 2048];
+											let uri_len = lib().FPDFAction_GetURIPath(
+												&document,
+												&action,
+												Some(&mut uri_buffer),
+												2048,
+											);
+											if uri_len > 0 {
+												url = String::from_utf8_lossy(&uri_buffer[..(uri_len as usize - 1)])
+													.to_string();
+											}
+										}
+									}
+									if url.is_empty() {
+										let dest_result = lib().FPDFLink_GetDest(&document, &link);
+										let dest = dest_result.ok().or_else(|| {
+											lib()
+												.FPDFLink_GetAction(&link)
+												.ok()
+												.and_then(|action| lib().FPDFAction_GetDest(&document, &action).ok())
+										});
+										if let Some(dest) = dest {
+											let dest_page = lib().FPDFDest_GetDestPageIndex(&document, &dest);
+											if dest_page >= 0 {
+												url = format!("#page_{dest_page}");
+											}
+										}
+									}
+								}
+								if !url.is_empty() {
+									if let Some(pos) = page_display_text[last_search_pos..].find(&trimmed_link) {
+										let text_before = &page_display_text[last_search_pos..last_search_pos + pos];
+										let marker_pos = page_start_offset
+											+ display_len(&page_display_text[..last_search_pos])
+											+ display_len(text_before);
+										let link_len = display_len(&trimmed_link);
+										buffer.add_marker(
+											Marker::new(MarkerType::Link, marker_pos)
+												.with_text(trimmed_link.clone())
+												.with_reference(url)
+												.with_length(link_len),
+										);
+										last_search_pos += pos + trimmed_link.len();
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			page_lines_info.push(current_lines_info);
 		}
 		if !has_any_text && has_any_images {
 			let marker_position = buffer.current_position();
@@ -72,462 +266,477 @@ impl Parser for PdfParser {
 			buffer.append(&t("This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."));
 			buffer.append("\n");
 		}
-		let metadata = document.metadata();
-		let title =
-			metadata.title.as_deref().map_or_else(|| extract_title_from_path(&context.file_path), decode_pdf_string);
-		let author = metadata.author.as_deref().map(decode_pdf_string).unwrap_or_default();
-		let toc_items = extract_pdf_toc(&document, &page_offsets);
+		let title = metadata_value(&document, "Title").unwrap_or_else(|| extract_title_from_path(&context.file_path));
+		let author = metadata_value(&document, "Author").unwrap_or_default();
+		let mut toc_items = extract_toc(&document, &page_offsets, &page_lines_info);
+		if any_tags_processed {
+			if toc_items.is_empty() {
+				toc_items = build_toc_tree(flat_toc_items);
+			} else if flat_toc_items.is_empty() {
+				add_heading_markers(&mut buffer, &toc_items, 1);
+			}
+		} else {
+			add_heading_markers(&mut buffer, &toc_items, 1);
+		}
 		let mut doc = Document::new();
 		doc.set_buffer(buffer);
 		doc.title = title;
 		doc.author = author;
 		doc.toc_items = toc_items;
+		doc.id_positions = id_positions;
 		Ok(doc)
 	}
 }
 
+fn add_heading_markers(buffer: &mut DocumentBuffer, items: &[TocItem], level: i32) {
+	for item in items {
+		let marker_type = match level {
+			1 => MarkerType::Heading1,
+			2 => MarkerType::Heading2,
+			3 => MarkerType::Heading3,
+			4 => MarkerType::Heading4,
+			5 => MarkerType::Heading5,
+			_ => MarkerType::Heading6,
+		};
+		buffer.add_marker(Marker::new(marker_type, item.offset).with_text(item.name.clone()).with_level(level));
+		add_heading_markers(buffer, &item.children, level + 1);
+	}
+}
+
+fn is_cjk(c: char) -> bool {
+	let u = c as u32;
+	(0x4E00..=0x9FFF).contains(&u) || // CJK Unified Ideographs
+	(0x3400..=0x4DBF).contains(&u) || // CJK Extension A
+	(0x20000..=0x2A6DF).contains(&u) || // CJK Extension B
+	(0x3040..=0x309F).contains(&u) || // Hiragana
+	(0x30A0..=0x30FF).contains(&u) || // Katakana
+	(0xAC00..=0xD7AF).contains(&u) // Hangul
+}
+
+fn sanitize_pdf_text(input: &str) -> String {
+	input.chars().filter(|ch| !ch.is_control() || matches!(ch, '\n' | '\r' | '\t')).collect()
+}
+
 fn process_text_lines(raw_text: &str) -> Vec<String> {
-	raw_text
-		.lines()
-		.filter_map(|line| {
-			let collapsed = collapse_whitespace(line);
-			let trimmed = trim_string(&collapsed);
-			if trimmed.is_empty() { None } else { Some(trimmed) }
-		})
-		.collect()
-}
-
-fn map_load_error(err: LoadPdfError) -> anyhow::Error {
-	match err {
-		LoadPdfError::Decryption(_) => {
-			anyhow!("{PASSWORD_REQUIRED_ERROR_PREFIX}Password required or incorrect")
-		}
-		LoadPdfError::Invalid => anyhow!("Failed to open PDF document"),
-	}
-}
-
-struct PageResult {
-	text: String,
-	has_images: bool,
-}
-
-fn extract_page_text(document: &Pdf, page: &hayro_syntax::page::Page<'_>) -> PageResult {
-	let settings = InterpreterSettings::default();
-	let bbox = page.intersected_crop_box().to_kurbo();
-	let initial_transform = page.initial_transform(true);
-	let mut context = Context::new(initial_transform, bbox, document.xref(), settings);
-	let mut extractor = TextExtractor::default();
-	interpret_page(page, &mut context, &mut extractor);
-	let text = assemble_glyphs_to_text(&extractor.glyphs);
-	PageResult { text, has_images: extractor.has_images }
-}
-
-struct GlyphEntry {
-	x: f64,
-	y: f64,
-	ch: char,
-}
-
-#[derive(Default)]
-struct TextExtractor {
-	glyphs: Vec<GlyphEntry>,
-	has_images: bool,
-}
-
-impl Device<'_> for TextExtractor {
-	fn set_soft_mask(&mut self, _: Option<SoftMask<'_>>) {}
-
-	fn set_blend_mode(&mut self, _: BlendMode) {}
-
-	fn draw_path(&mut self, _: &BezPath, _: Affine, _: &Paint<'_>, _: &PathDrawMode) {}
-
-	fn push_clip_path(&mut self, _: &ClipPath) {}
-
-	fn push_transparency_group(&mut self, _: f32, _: Option<SoftMask<'_>>, _: BlendMode) {}
-
-	fn draw_glyph(
-		&mut self,
-		glyph: &Glyph<'_>,
-		transform: Affine,
-		glyph_transform: Affine,
-		_: &Paint<'_>,
-		_: &GlyphDrawMode,
-	) {
-		let Some(ch) = glyph.as_unicode() else { return };
-		if ch == '\0' {
-			return;
-		}
-		let position = transform * glyph_transform * Point::new(0.0, 0.0);
-		self.glyphs.push(GlyphEntry { x: position.x, y: position.y, ch });
-	}
-
-	fn draw_image(&mut self, _: Image<'_, '_>, _: Affine) {
-		self.has_images = true;
-	}
-
-	fn pop_clip_path(&mut self) {}
-
-	fn pop_transparency_group(&mut self) {}
-}
-
-/// Reorders PDF text into visual reading order by splitting the draw-order glyph
-/// sequence at large vertical jumps and sorting those sections by their topmost
-/// y-coordinate, then applying the original sequential space/line-break heuristics
-/// within each section.
-///
-/// PDFs may draw sections of a page out of reading order (e.g. the bottom half of a
-/// form before the top half). Sorting every individual glyph by position fixes that
-/// but destroys word/line order within compact table headers and multi-line form
-/// fields. This approach is more conservative: only the coarse section order changes;
-/// the original draw order is preserved within each section.
-fn assemble_glyphs_to_text(glyphs: &[GlyphEntry]) -> String {
-	// A y-jump larger than this between consecutive glyphs (in draw order) indicates
-	// the renderer has moved to a different region of the page, i.e. sections are
-	// drawn out of top-to-bottom order.
-	const SECTION_GAP: f64 = 200.0;
-	// Sentinel used instead of a plain ' ' for heuristically-detected spaces so that
-	// remove_cap_advance_spaces() can later distinguish them from real PDF spaces.
-	const DETECTED_SPACE: char = '\u{E000}';
-
-	if glyphs.is_empty() {
-		return String::new();
-	}
-
-	// Split the draw-order sequence into sections at large y-jumps.
-	let mut sections: Vec<&[GlyphEntry]> = Vec::new();
-	let mut start = 0;
-	for i in 1..glyphs.len() {
-		if (glyphs[i].y - glyphs[i - 1].y).abs() > SECTION_GAP {
-			sections.push(&glyphs[start..i]);
-			start = i;
+	let clean_text = sanitize_pdf_text(raw_text).replace('\r', "");
+	let lines: Vec<String> = clean_text.lines().map(|line| trim_string(&collapse_whitespace(line))).collect();
+	let mut max_len = 0;
+	for line in &lines {
+		let len = display_len(line);
+		if len > max_len {
+			max_len = len;
 		}
 	}
-	sections.push(&glyphs[start..]);
-
-	// Sort sections by their topmost (minimum) y so that sections higher on the page
-	// are read first. Use a stable sort to keep sections at equal y in draw order.
-	sections.sort_by(|a, b| {
-		let min_y = |s: &&[GlyphEntry]| s.iter().map(|g| g.y).fold(f64::INFINITY, f64::min);
-		min_y(a).partial_cmp(&min_y(b)).unwrap_or(std::cmp::Ordering::Equal)
-	});
-
-	// Assemble text using the same sequential space/newline heuristics as the
-	// original single-pass extractor, applied within each section independently.
-	let mut text = String::new();
-	for section in &sections {
-		if !text.is_empty() && !text.ends_with('\n') {
-			text.push('\n');
+	let short_line_threshold = (max_len as f32 * 0.75) as usize;
+	let mut paragraphs = Vec::new();
+	let mut current_paragraph = String::new();
+	let mut last_line_len = 0;
+	let mut last_line_ends_with_punctuation = false;
+	for line in lines {
+		if line.is_empty() {
+			if !current_paragraph.is_empty() {
+				paragraphs.push(current_paragraph.clone());
+				current_paragraph.clear();
+			}
+			continue;
 		}
-		let mut last_pos: Option<(f64, f64)> = None;
-		let mut avg_dx: Option<f64> = None;
-		for glyph in *section {
-			if let Some((last_x, last_y)) = last_pos {
-				let dy = (glyph.y - last_y).abs();
-				let dx = glyph.x - last_x;
-				if dy > 7.0 {
-					text.push('\n');
-					avg_dx = None;
-				} else if dx > 0.0 {
-					let avg = avg_dx.unwrap_or(dx);
-					let last_char = text.chars().last();
-					let alnum_pair = last_char.is_some_and(char::is_alphanumeric) && glyph.ch.is_alphanumeric();
-					let gap_threshold = if alnum_pair { (avg * 2.4).max(4.0) } else { (avg * 1.6).max(3.0) };
-					if dx > gap_threshold && !text.ends_with([' ', '\n', '\r', '\t', DETECTED_SPACE]) && glyph.ch != ' '
-					{
-						text.push(DETECTED_SPACE);
+		let is_list_item = line.starts_with("- ") || line.starts_with("* ") || line.starts_with("• ");
+		let first_char = line.chars().next();
+		let starts_with_uppercase = first_char.is_some_and(char::is_uppercase);
+		let starts_with_alpha = first_char.is_some_and(char::is_alphabetic);
+		let len = display_len(&line);
+		if current_paragraph.is_empty() {
+			current_paragraph = line.clone();
+		} else {
+			let mut is_numbered = false;
+			let mut chars = line.chars();
+			if let Some(first_char) = chars.next() {
+				if first_char.is_ascii_digit() {
+					let mut found_space = false;
+					for c in chars {
+						if c.is_ascii_digit() || c == '.' || c == ')' {
+							continue;
+						} else if c.is_whitespace() {
+							found_space = true;
+							break;
+						} else {
+							break;
+						}
 					}
-					if dx < avg * 2.8 {
-						avg_dx = Some(avg.mul_add(0.8, dx * 0.2));
-					}
+					is_numbered = found_space;
 				}
 			}
-			text.push(glyph.ch);
-			last_pos = Some((glyph.x, glyph.y));
-		}
-	}
-	remove_cap_advance_spaces(&text, DETECTED_SPACE)
-}
-
-/// Remove spurious heuristic spaces inserted between a word-initial uppercase letter
-/// and the lowercase continuation of the same word.
-///
-/// Some PDFs encode capital letters in a different font with a wider advance width
-/// than lowercase, causing the gap-based space detector to fire mid-word, e.g.
-/// "M iddle" instead of "Middle". We use a sentinel for detected spaces so that real
-/// PDF space characters (' ') are never touched.
-fn remove_cap_advance_spaces(text: &str, sentinel: char) -> String {
-	let chars: Vec<char> = text.chars().collect();
-	let n = chars.len();
-	let mut result = String::with_capacity(text.len());
-	let mut i = 0;
-	while i < n {
-		let ch = chars[i];
-		if ch == sentinel {
-			let prev = if i > 0 { chars[i - 1] } else { '\n' };
-			let next = if i + 1 < n { chars[i + 1] } else { '\n' };
-			// Remove the space only when:
-			//  - the preceding character is an uppercase letter (the split capital), AND
-			//  - the following character is a lowercase letter (the word continuation), AND
-			//  - the uppercase letter is at a word boundary (preceded by whitespace or
-			//    start-of-text), so standalone capitals like "I" are not accidentally joined
-			//    to the next word.
-			let at_word_boundary = i < 2 || chars[i - 2].is_whitespace();
-			if prev.is_uppercase() && next.is_lowercase() && at_word_boundary {
-				i += 1;
-				continue; // drop this sentinel
+			let break_paragraph = if is_list_item || is_numbered {
+				true
+			} else if last_line_ends_with_punctuation && last_line_len < short_line_threshold {
+				true
+			} else {
+				last_line_len < short_line_threshold && (starts_with_uppercase || !starts_with_alpha)
+			};
+			if break_paragraph {
+				paragraphs.push(current_paragraph.clone());
+				current_paragraph = line.clone();
+			} else {
+				let last_char = current_paragraph.chars().last().unwrap_or(' ');
+				if current_paragraph.ends_with('-') {
+					current_paragraph.pop();
+					current_paragraph.push_str(&line);
+				} else if is_cjk(last_char) && line.chars().next().is_some_and(is_cjk) {
+					current_paragraph.push_str(&line);
+				} else {
+					current_paragraph.push(' ');
+					current_paragraph.push_str(&line);
+				}
 			}
-			result.push(' '); // keep as regular space
-		} else {
-			result.push(ch);
 		}
-		i += 1;
+		last_line_len = len;
+		last_line_ends_with_punctuation = line.ends_with('.')
+			|| line.ends_with('?')
+			|| line.ends_with('!')
+			|| line.ends_with(':')
+			|| line.ends_with('”')
+			|| line.ends_with('"')
+			|| line.ends_with('。')
+			|| line.ends_with('？')
+			|| line.ends_with('！')
+			|| line.ends_with('：');
 	}
-	result
-}
-
-fn decode_pdf_string(bytes: &[u8]) -> String {
-	if bytes.starts_with(&[0xFE, 0xFF]) {
-		return decode_utf16(bytes.get(2..).unwrap_or_default(), true);
+	if !current_paragraph.is_empty() {
+		paragraphs.push(current_paragraph);
 	}
-	if bytes.starts_with(&[0xFF, 0xFE]) {
-		return decode_utf16(bytes.get(2..).unwrap_or_default(), false);
+	paragraphs
+}
+
+fn map_load_error(err: PdfiumError) -> anyhow::Error {
+	match err {
+		PdfiumError::PasswordError => anyhow!("{PASSWORD_REQUIRED_ERROR_PREFIX}Password required or incorrect"),
+		other => anyhow!("Failed to open PDF document: {other}"),
 	}
-	if let Ok(text) = str::from_utf8(bytes) {
-		return text.to_string();
-	}
-	bytes.iter().map(|byte| char::from(*byte)).collect()
 }
 
-fn decode_utf16(bytes: &[u8], big_endian: bool) -> String {
-	let mut units = Vec::with_capacity(bytes.len() / 2);
-	for chunk in bytes.chunks_exact(2) {
-		let value = if big_endian {
-			u16::from_be_bytes([chunk[0], chunk[1]])
-		} else {
-			u16::from_le_bytes([chunk[0], chunk[1]])
-		};
-		units.push(value);
-	}
-	String::from_utf16_lossy(&units)
+fn metadata_value(document: &PdfiumDocument, key: &str) -> Option<String> {
+	document.metadata_value(key).ok().map(|value| trim_string(&value)).filter(|value| !value.is_empty())
 }
 
-#[derive(Debug, Clone)]
-struct OutlineEntry {
-	level: i32,
-	title: String,
-	offset: usize,
-}
-
-fn extract_pdf_toc(document: &Pdf, page_offsets: &[usize]) -> Vec<TocItem> {
-	let page_by_obj_id = build_page_object_index(document);
-	let Some(catalog) = document.xref().get::<Dict<'_>>(document.xref().root_id()) else {
-		return Vec::new();
-	};
-	let Some(outlines) = catalog.get::<Dict<'_>>(OUTLINES) else {
-		return Vec::new();
-	};
-	let Some(first) = outlines.get::<Dict<'_>>(FIRST) else {
-		return Vec::new();
-	};
-	let mut entries = Vec::new();
-	let mut visited_items = HashSet::new();
-	let mut visited_name_tree = HashSet::new();
-	collect_outline_entries(
-		&catalog,
-		&page_by_obj_id,
-		page_offsets,
-		&first,
-		1,
-		&mut visited_items,
-		&mut visited_name_tree,
-		&mut entries,
-	);
-	build_toc_tree(&entries)
-}
-
-fn build_page_object_index(document: &Pdf) -> HashMap<ObjectIdentifier, usize> {
-	document.pages().iter().enumerate().filter_map(|(idx, page)| page.raw().obj_id().map(|id| (id, idx))).collect()
-}
-
-fn collect_outline_entries(
-	catalog: &Dict<'_>,
-	page_by_obj_id: &HashMap<ObjectIdentifier, usize>,
+fn extract_toc(
+	document: &PdfiumDocument,
 	page_offsets: &[usize],
-	start_item: &Dict<'_>,
-	level: i32,
-	visited_items: &mut HashSet<ObjectIdentifier>,
-	visited_name_tree: &mut HashSet<ObjectIdentifier>,
-	out: &mut Vec<OutlineEntry>,
-) {
-	let mut current = Some(start_item.clone());
-	let mut sibling_count = 0usize;
-	while let Some(item) = current {
-		sibling_count += 1;
-		if sibling_count > 10_000 {
-			break;
+	page_lines_info: &[Vec<(usize, String)>],
+) -> Vec<TocItem> {
+	let Ok(bookmarks) = document.toc(16) else {
+		return Vec::new();
+	};
+	if bookmarks.is_empty() {
+		return Vec::new();
+	}
+	let mut items = Vec::<(u32, TocItem)>::new();
+	let mut used_offsets = HashSet::new();
+	for bookmark in &bookmarks {
+		let Some(level) = bookmark.level() else {
+			continue;
+		};
+		let Ok(raw_title) = bookmark.title() else {
+			continue;
+		};
+		let title = trim_string(&collapse_whitespace(&raw_title));
+		if title.is_empty() {
+			continue;
 		}
-		if let Some(item_id) = item.obj_id()
-			&& !visited_items.insert(item_id)
-		{
-			break;
-		}
-		let title =
-			item.get::<PdfObjectString<'_>>(TITLE).map(|s| decode_pdf_string(s.get().as_ref())).unwrap_or_default();
-		if !title.is_empty()
-			&& let Some(page_index) = resolve_outline_page_index(catalog, page_by_obj_id, &item, visited_name_tree)
-			&& let Some(&offset) = page_offsets.get(page_index)
-		{
-			out.push(OutlineEntry { level, title, offset });
-		}
-		if let Some(first_child) = item.get::<Dict<'_>>(FIRST) {
-			collect_outline_entries(
-				catalog,
-				page_by_obj_id,
-				page_offsets,
-				&first_child,
-				level + 1,
-				visited_items,
-				visited_name_tree,
-				out,
-			);
-		}
-		current = item.get::<Dict<'_>>(NEXT);
-	}
-}
-
-fn resolve_outline_page_index(
-	catalog: &Dict<'_>,
-	page_by_obj_id: &HashMap<ObjectIdentifier, usize>,
-	item: &Dict<'_>,
-	visited_name_tree: &mut HashSet<ObjectIdentifier>,
-) -> Option<usize> {
-	if let Some(dest_obj) = item.get::<Object<'_>>(DEST)
-		&& let Some(page) = resolve_destination_object(catalog, page_by_obj_id, dest_obj, visited_name_tree)
-	{
-		return Some(page);
-	}
-	let action = item.get::<Dict<'_>>(A)?;
-	let action_kind = action.get::<Name<'_>>(S)?;
-	if &*action_kind != b"GoTo" {
-		return None;
-	}
-	let dest_obj = action.get::<Object<'_>>(D)?;
-	resolve_destination_object(catalog, page_by_obj_id, dest_obj, visited_name_tree)
-}
-
-fn resolve_destination_object(
-	catalog: &Dict<'_>,
-	page_by_obj_id: &HashMap<ObjectIdentifier, usize>,
-	dest_obj: Object<'_>,
-	visited_name_tree: &mut HashSet<ObjectIdentifier>,
-) -> Option<usize> {
-	match dest_obj {
-		Object::Array(arr) => resolve_page_from_destination_array(page_by_obj_id, &arr),
-		Object::Name(name) => resolve_named_destination(catalog, page_by_obj_id, name.as_ref(), visited_name_tree),
-		Object::String(name) => {
-			resolve_named_destination(catalog, page_by_obj_id, name.get().as_ref(), visited_name_tree)
-		}
-		Object::Dict(dict) => dict
-			.get::<Object<'_>>(D)
-			.and_then(|inner| resolve_destination_object(catalog, page_by_obj_id, inner, visited_name_tree)),
-		_ => None,
-	}
-}
-
-fn resolve_page_from_destination_array(
-	page_by_obj_id: &HashMap<ObjectIdentifier, usize>,
-	dest_array: &Array<'_>,
-) -> Option<usize> {
-	let first = dest_array.raw_iter().next()?;
-	match first {
-		MaybeRef::Ref(obj_ref) => page_by_obj_id.get(&obj_ref.into()).copied(),
-		MaybeRef::NotRef(Object::Dict(dict)) => dict.obj_id().and_then(|id| page_by_obj_id.get(&id).copied()),
-		_ => None,
-	}
-}
-
-fn resolve_named_destination(
-	catalog: &Dict<'_>,
-	page_by_obj_id: &HashMap<ObjectIdentifier, usize>,
-	name: &[u8],
-	visited_name_tree: &mut HashSet<ObjectIdentifier>,
-) -> Option<usize> {
-	if let Some(dests) = catalog.get::<Dict<'_>>(DESTS)
-		&& let Some(dest_obj) = dests.get::<Object<'_>>(name)
-	{
-		return resolve_destination_object(catalog, page_by_obj_id, dest_obj, visited_name_tree);
-	}
-	let names_root = catalog.get::<Dict<'_>>(NAMES)?.get::<Dict<'_>>(DESTS)?;
-	resolve_named_destination_in_tree(catalog, page_by_obj_id, &names_root, name, visited_name_tree)
-}
-
-fn resolve_named_destination_in_tree(
-	catalog: &Dict<'_>,
-	page_by_obj_id: &HashMap<ObjectIdentifier, usize>,
-	node: &Dict<'_>,
-	target_name: &[u8],
-	visited_name_tree: &mut HashSet<ObjectIdentifier>,
-) -> Option<usize> {
-	if let Some(node_id) = node.obj_id()
-		&& !visited_name_tree.insert(node_id)
-	{
-		return None;
-	}
-	if let Some(names) = node.get::<Array<'_>>(NAMES) {
-		let mut iter = names.flex_iter();
-		loop {
-			let Some(name_obj) = iter.next::<Object<'_>>() else {
-				break;
-			};
-			let Some(value_obj) = iter.next::<Object<'_>>() else {
-				break;
-			};
-			let key = match name_obj {
-				Object::String(s) => s.get().to_vec(),
-				Object::Name(n) => n.as_ref().to_vec(),
-				_ => continue,
-			};
-			if key.as_slice() == target_name {
-				return resolve_destination_object(catalog, page_by_obj_id, value_obj, visited_name_tree);
+		let Ok(dest) = bookmark.dest(document) else {
+			continue;
+		};
+		let Some(page_index) = dest.index(document) else {
+			continue;
+		};
+		let Ok(page_index) = usize::try_from(page_index) else {
+			continue;
+		};
+		let Some(&page_start_offset) = page_offsets.get(page_index) else {
+			continue;
+		};
+		let mut actual_offset = page_start_offset;
+		let mut actual_title = title.clone();
+		if let Some(lines) = page_lines_info.get(page_index) {
+			let title_alpha: String = title.to_lowercase().chars().filter(|c| c.is_alphabetic()).collect();
+			for (line_offset, line) in lines {
+				let line_alpha: String = line.to_lowercase().chars().filter(|c| c.is_alphabetic()).collect();
+				let ends_with_number = line.chars().last().unwrap_or(' ').is_ascii_digit();
+				let is_all_caps = line.chars().filter(|c| c.is_alphabetic()).all(char::is_uppercase);
+				let is_page_header = ends_with_number && is_all_caps;
+				if (line_alpha == title_alpha
+					|| line_alpha.starts_with(&title_alpha)
+					|| line_alpha.ends_with(&title_alpha))
+					&& !title_alpha.is_empty()
+					&& !is_page_header
+				{
+					actual_offset = *line_offset;
+					if line.len() < 150 {
+						actual_title.clone_from(line);
+					}
+					break;
+				}
 			}
 		}
-	}
-	if let Some(kids) = node.get::<Array<'_>>(KIDS) {
-		for child in kids.iter::<Dict<'_>>() {
-			if let Some(found) =
-				resolve_named_destination_in_tree(catalog, page_by_obj_id, &child, target_name, visited_name_tree)
-			{
-				return Some(found);
-			}
+		while used_offsets.contains(&actual_offset) {
+			actual_offset += 1;
 		}
+		used_offsets.insert(actual_offset);
+		items.push((level, TocItem::new(actual_title, String::new(), actual_offset)));
 	}
-	None
+	build_toc_tree(items)
 }
 
-fn build_toc_tree(entries: &[OutlineEntry]) -> Vec<TocItem> {
-	let mut toc = Vec::new();
-	let mut stack: Vec<usize> = Vec::new();
-	let mut levels: Vec<i32> = Vec::new();
-	for entry in entries {
-		while let Some(&last_level) = levels.last() {
-			if last_level < entry.level {
+fn build_toc_tree(flat_items: Vec<(u32, TocItem)>) -> Vec<TocItem> {
+	let mut root = Vec::<TocItem>::new();
+	let mut path = Vec::<usize>::new();
+	let mut level_stack = Vec::<u32>::new();
+	for (level, item) in flat_items {
+		while let Some(&last_level) = level_stack.last() {
+			if last_level < level {
 				break;
 			}
-			stack.pop();
-			levels.pop();
+			level_stack.pop();
+			path.pop();
 		}
-		let siblings = children_at_mut(&mut toc, &stack);
-		siblings.push(TocItem::new(entry.title.clone(), String::new(), entry.offset));
-		stack.push(siblings.len() - 1);
-		levels.push(entry.level);
+		let siblings = children_at_path_mut(&mut root, &path);
+		siblings.push(item);
+		path.push(siblings.len() - 1);
+		level_stack.push(level);
 	}
-	toc
+	root
 }
 
-fn children_at_mut<'a>(toc: &'a mut Vec<TocItem>, path: &[usize]) -> &'a mut Vec<TocItem> {
-	let mut current = toc;
-	for &idx in path {
-		current = &mut current[idx].children;
+fn children_at_path_mut<'a>(nodes: &'a mut Vec<TocItem>, path: &[usize]) -> &'a mut Vec<TocItem> {
+	let mut current = nodes;
+	for &index in path {
+		current = &mut current[index].children;
 	}
 	current
+}
+
+fn flush_block(
+	current_block: &mut String,
+	buffer: &mut DocumentBuffer,
+	page_display_text: &mut String,
+	current_lines_info: &mut Vec<(usize, String)>,
+) {
+	let trimmed = trim_string(&collapse_whitespace(current_block));
+	if !trimmed.is_empty() {
+		let offset = buffer.current_position();
+		current_lines_info.push((offset, trimmed.clone()));
+		buffer.append(&trimmed);
+		buffer.append("\n");
+		page_display_text.push_str(&trimmed);
+		page_display_text.push('\n');
+	}
+	current_block.clear();
+}
+
+/// Like `flush_block`, but preserves line breaks within the content instead of
+/// collapsing them. Used for preformatted elements like `Code`.
+fn flush_block_lines(
+	current_block: &mut String,
+	buffer: &mut DocumentBuffer,
+	page_display_text: &mut String,
+	current_lines_info: &mut Vec<(usize, String)>,
+) {
+	let text = current_block.clone();
+	current_block.clear();
+	for line in text.split('\n') {
+		let trimmed = trim_string(&collapse_whitespace(line));
+		if !trimmed.is_empty() {
+			let offset = buffer.current_position();
+			current_lines_info.push((offset, trimmed.clone()));
+			buffer.append(&trimmed);
+			buffer.append("\n");
+			page_display_text.push_str(&trimmed);
+			page_display_text.push('\n');
+		}
+	}
+}
+
+fn process_struct_element(
+	elem: &pdfium::PdfiumStructElement,
+	mcid_to_text: &HashMap<i32, String>,
+	buffer: &mut DocumentBuffer,
+	page_display_text: &mut String,
+	current_block: &mut String,
+	current_lines_info: &mut Vec<(usize, String)>,
+	toc_items: &mut Vec<(u32, TocItem)>,
+) {
+	let elem_type = elem.element_type().unwrap_or_default();
+	if elem_type == "Table" {
+		flush_block(current_block, buffer, page_display_text, current_lines_info);
+		let html = build_html_table(elem, mcid_to_text);
+		let pos = buffer.current_position();
+		buffer.add_marker(Marker::new(MarkerType::Table, pos).with_reference(html));
+		let table_placeholder = "[Table]";
+		current_lines_info.push((pos, table_placeholder.to_string()));
+		buffer.append(table_placeholder);
+		buffer.append("\n");
+		page_display_text.push_str(table_placeholder);
+		page_display_text.push('\n');
+		return;
+	}
+	let is_block = matches!(
+		elem_type.as_str(),
+		"P" | "H"
+			| "H1" | "H2"
+			| "H3" | "H4"
+			| "H5" | "H6"
+			| "L" | "LI"
+			| "Div" | "Sect"
+			| "Part" | "Art"
+			| "TOC" | "TOCI"
+			| "Code"
+	);
+	let preserve_lines = elem_type == "Code";
+	if is_block {
+		flush_block(current_block, buffer, page_display_text, current_lines_info);
+	}
+	let block_start_pos = buffer.current_position() + display_len(current_block);
+
+	let count = elem.count_children();
+	for i in 0..count {
+		if let Ok(child) = elem.get_child(i) {
+			process_struct_element(
+				&child,
+				mcid_to_text,
+				buffer,
+				page_display_text,
+				current_block,
+				current_lines_info,
+				toc_items,
+			);
+		} else {
+			let mcid = elem.child_marked_content_id(i);
+			if mcid >= 0 {
+				if let Some(text) = mcid_to_text.get(&mcid) {
+					current_block.push_str(text);
+				}
+			}
+		}
+	}
+	if is_block {
+		if preserve_lines {
+			flush_block_lines(current_block, buffer, page_display_text, current_lines_info);
+		} else {
+			flush_block(current_block, buffer, page_display_text, current_lines_info);
+		}
+		let heading_level = match elem_type.as_str() {
+			"H1" => Some(1),
+			"H2" => Some(2),
+			"H3" => Some(3),
+			"H4" => Some(4),
+			"H5" => Some(5),
+			"H6" => Some(6),
+			"H" => Some(1), // Fallback generic heading to H1
+			_ => None,
+		};
+		if let Some(level) = heading_level {
+			let mut title = String::new();
+			collect_text(elem, mcid_to_text, &mut title);
+			let title = trim_string(&collapse_whitespace(&title));
+			if !title.is_empty() {
+				let marker_type = match level {
+					1 => MarkerType::Heading1,
+					2 => MarkerType::Heading2,
+					3 => MarkerType::Heading3,
+					4 => MarkerType::Heading4,
+					5 => MarkerType::Heading5,
+					_ => MarkerType::Heading6,
+				};
+				buffer.add_marker(Marker::new(marker_type, block_start_pos).with_text(title.clone()).with_level(level));
+				toc_items.push((level as u32, TocItem::new(title, String::new(), block_start_pos)));
+			}
+		}
+		if elem_type == "L" || elem_type == "TOC" {
+			let child_count = elem.count_children();
+			buffer.add_marker(Marker::new(MarkerType::List, block_start_pos).with_level(child_count));
+		}
+		if elem_type == "LI" || elem_type == "TOCI" {
+			let mut li_text = String::new();
+			collect_text(elem, mcid_to_text, &mut li_text);
+			let li_text = trim_string(&collapse_whitespace(&li_text));
+			buffer.add_marker(Marker::new(MarkerType::ListItem, block_start_pos).with_text(li_text));
+		}
+	}
+}
+
+fn build_html_table(elem: &pdfium::PdfiumStructElement, mcid_to_text: &HashMap<i32, String>) -> String {
+	let elem_type = elem.element_type().unwrap_or_default();
+	if elem_type == "Table" {
+		let mut html = String::from("<table border=\"1\">\n");
+		let count = elem.count_children();
+		for i in 0..count {
+			if let Ok(child) = elem.get_child(i) {
+				html.push_str(&build_html_table(&child, mcid_to_text));
+			}
+		}
+		html.push_str("</table>\n");
+		html
+	} else if elem_type == "TR" {
+		let mut html = String::from("<tr>\n");
+		let count = elem.count_children();
+		for i in 0..count {
+			if let Ok(child) = elem.get_child(i) {
+				html.push_str(&build_html_table(&child, mcid_to_text));
+			}
+		}
+		html.push_str("</tr>\n");
+		html
+	} else if elem_type == "TH" || elem_type == "TD" {
+		let mut html = format!("<{}>", elem_type.to_lowercase());
+		let mut cell_text = String::new();
+		collect_text(elem, mcid_to_text, &mut cell_text);
+		html.push_str(&html_escape(&trim_string(&collapse_whitespace(&cell_text))));
+		html.push_str(&format!("</{}>\n", elem_type.to_lowercase()));
+		html
+	} else {
+		let mut html = String::new();
+		let count = elem.count_children();
+		for i in 0..count {
+			if let Ok(child) = elem.get_child(i) {
+				html.push_str(&build_html_table(&child, mcid_to_text));
+			}
+		}
+		html
+	}
+}
+
+fn collect_text(elem: &pdfium::PdfiumStructElement, mcid_to_text: &HashMap<i32, String>, out: &mut String) {
+	let count = elem.count_children();
+	for i in 0..count {
+		if let Ok(child) = elem.get_child(i) {
+			collect_text(&child, mcid_to_text, out);
+		} else {
+			let mcid = elem.child_marked_content_id(i);
+			if mcid >= 0 {
+				if let Some(text) = mcid_to_text.get(&mcid) {
+					out.push_str(text);
+				}
+			}
+		}
+	}
+}
+
+fn html_escape(s: &str) -> String {
+	s.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;")
+}
+
+#[cfg(test)]
+mod tests {
+	use super::{process_text_lines, sanitize_pdf_text};
+
+	#[test]
+	fn sanitize_pdf_text_removes_embedded_control_characters() {
+		let input = "sugges\u{0002}tion\tline\r\nnext";
+		assert_eq!(sanitize_pdf_text(input), "suggestion\tline\r\nnext");
+	}
+
+	#[test]
+	fn process_text_lines_removes_control_characters() {
+		let lines = process_text_lines("The sug\u{0002}gestion appears here.\nAnd here.");
+		assert_eq!(lines[0], "The suggestion appears here. And here.");
+	}
 }

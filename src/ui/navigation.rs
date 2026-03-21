@@ -15,6 +15,8 @@ pub enum MarkerNavTarget {
 	Separator,
 	List,
 	ListItem,
+	Image,
+	Figure,
 }
 
 enum NavFoundFormat {
@@ -22,6 +24,7 @@ enum NavFoundFormat {
 	TextWithLevel,
 	PageFormat,
 	LinkFormat,
+	ImageFormat,
 }
 
 struct NavAnnouncements {
@@ -95,6 +98,18 @@ fn nav_announcements(target: MarkerNavTarget, level_filter: i32) -> NavAnnouncem
 			not_found_prev: t("No previous separator."),
 			format: NavFoundFormat::TextOnly,
 		},
+		MarkerNavTarget::Image => NavAnnouncements {
+			not_supported: t("No images."),
+			not_found_next: t("No next image."),
+			not_found_prev: t("No previous image."),
+			format: NavFoundFormat::ImageFormat,
+		},
+		MarkerNavTarget::Figure => NavAnnouncements {
+			not_supported: t("No figures."),
+			not_found_next: t("No next figure."),
+			not_found_prev: t("No previous figure."),
+			format: NavFoundFormat::ImageFormat,
+		},
 	}
 }
 
@@ -122,6 +137,10 @@ fn format_nav_found_message(
 		}
 		NavFoundFormat::LinkFormat => {
 			let message = format!("{context_text}{}", t(" link"));
+			format!("{wrap_prefix}{message}")
+		}
+		NavFoundFormat::ImageFormat => {
+			let message = format!("{context_text}");
 			format!("{wrap_prefix}{message}")
 		}
 	}
@@ -155,6 +174,8 @@ fn apply_navigation_result(
 	let context_index = match target {
 		MarkerNavTarget::Heading(_) => result.marker_level,
 		MarkerNavTarget::Page => result.marker_index,
+		MarkerNavTarget::Image => result.marker_index,
+		MarkerNavTarget::Figure => result.marker_index,
 		_ => 0,
 	};
 	let message = format_nav_found_message(&ann, &context_text, context_index, result.wrapped, next);
@@ -229,6 +250,8 @@ pub fn handle_marker_navigation(
 			MarkerNavTarget::Separator => tab.session.navigate_separator(current_pos, wrap, next),
 			MarkerNavTarget::List => tab.session.navigate_list(current_pos, wrap, next),
 			MarkerNavTarget::ListItem => tab.session.navigate_list_item(current_pos, wrap, next),
+			MarkerNavTarget::Image => tab.session.navigate_image(current_pos, wrap, next),
+			MarkerNavTarget::Figure => tab.session.navigate_figure(current_pos, wrap, next),
 		};
 		let target_offset = result.offset;
 		if apply_navigation_result(tab, &result, target, next, live_region_label) {

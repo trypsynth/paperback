@@ -28,6 +28,7 @@ pub struct DocumentTab {
 
 const POSITION_SAVE_INTERVAL_SECS: u64 = 3;
 const WXK_F10: i32 = 349;
+const WXK_WINDOWS_MENU: i32 = 395;
 
 pub struct DocumentManager {
 	frame: Frame,
@@ -36,7 +37,7 @@ pub struct DocumentManager {
 	config: Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
 	last_position_save: Cell<Option<Instant>>,
-	last_sound_line: Cell<Option<i64>>,
+	last_sound_position: Cell<Option<i64>>,
 	recently_closed: Vec<PathBuf>,
 }
 
@@ -54,7 +55,7 @@ impl DocumentManager {
 			config,
 			live_region_label,
 			last_position_save: Cell::new(None),
-			last_sound_line: Cell::new(None),
+			last_sound_position: Cell::new(None),
 			recently_closed: Vec::new(),
 		}
 	}
@@ -92,14 +93,17 @@ impl DocumentManager {
 						show_error_dialog(&self.notebook, &t("Password is required."), &t("Error"));
 						return false;
 					};
-					if let Ok(session) = DocumentSession::new(&path_str, &password, &forced_extension) {
-						self.add_session_tab(self_rc, path, session, &password)
-					} else {
-						show_error_dialog(&self.notebook, &t("Failed to load document."), &t("Error"));
-						false
+					match DocumentSession::new(&path_str, &password, &forced_extension) {
+						Ok(session) => self.add_session_tab(self_rc, path, session, &password),
+						Err(retry_error) => {
+							let message = build_document_load_error_message(path, &retry_error);
+							show_error_dialog(&self.notebook, &message, &t("Error"));
+							false
+						}
 					}
 				} else {
-					show_error_dialog(&self.notebook, &t("Failed to load document."), &t("Error"));
+					let message = build_document_load_error_message(path, &err);
+					show_error_dialog(&self.notebook, &message, &t("Error"));
 					false
 				}
 			}
@@ -349,27 +353,47 @@ impl DocumentManager {
 			return;
 		};
 		let position = tab.text_ctrl.get_insertion_point();
-		let content = &tab.session.content();
-		let total_chars = content.chars().count();
-		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
-		let current_line = i64::try_from(content.chars().take(pos).filter(|&c| c == '\n').count()).unwrap_or(0);
-		if self.last_sound_line.get() == Some(current_line) {
+		let prev = self.last_sound_position.get().unwrap_or(position);
+		self.last_sound_position.set(Some(position));
+		if prev == position {
 			return;
 		}
-		self.last_sound_line.set(Some(current_line));
 		let path_str = tab.file_path.to_string_lossy().to_string();
 		let bookmarks = config.get_bookmarks(&path_str);
 		drop(config);
+		let (prev_line_start, _) = tab.session.get_line_bounds(prev);
+		let (line_start, line_end) = tab.session.get_line_bounds(position);
+		let same_line = prev_line_start == line_start;
+		let mut has_note = false;
+		let mut has_bookmark = false;
 		for bm in &bookmarks {
-			if bm.start <= position && position <= bm.end {
-				super::sounds::play_bookmark_sound(!bm.note.is_empty());
-				return;
+			let triggered = if same_line {
+				// Within the same content line: use precise range crossing (for Ctrl+Left/Right).
+				if position > prev {
+					bm.start > prev && bm.start <= position
+				} else {
+					bm.start >= position && bm.start < prev
+				}
+			} else {
+				// Crossed a line boundary (Up/Down): fire only if a bookmark is on the
+				// current line. This prevents false positives when jumping over bookmarks.
+				bm.start >= line_start && bm.start <= line_end
+			};
+			if triggered {
+				if !bm.note.is_empty() {
+					has_note = true;
+				} else {
+					has_bookmark = true;
+				}
 			}
+		}
+		if has_note || has_bookmark {
+			super::sounds::play_bookmark_sound(has_note);
 		}
 	}
 
 	pub fn reset_sound_line(&self) {
-		self.last_sound_line.set(None);
+		self.last_sound_position.set(None);
 	}
 
 	pub fn apply_word_wrap(&mut self, self_rc: &Rc<Mutex<Self>>, word_wrap: bool) {
@@ -433,7 +457,7 @@ impl DocumentManager {
 		text_ctrl.on_key_down(move |event| {
 			if let WindowEventData::Keyboard(kbd) = &event {
 				if let Some(key) = kbd.get_key_code() {
-					if key == WXK_F10 && kbd.shift_down() {
+					if (key == WXK_F10 && kbd.shift_down()) || key == WXK_WINDOWS_MENU {
 						kbd.event.skip(false);
 						show_reader_context_menu(text_ctrl_for_menu);
 						return;
@@ -442,10 +466,10 @@ impl DocumentManager {
 			}
 			event.skip(true);
 		});
-		let text_ctrl_for_menu = text_ctrl;
-		text_ctrl.bind_internal(EventType::CONTEXT_MENU, move |event| {
+		let text_ctrl_for_right_click = text_ctrl;
+		text_ctrl.bind_internal(EventType::RIGHT_UP, move |event| {
 			event.skip(false);
-			show_reader_context_menu(text_ctrl_for_menu);
+			show_reader_context_menu(text_ctrl_for_right_click);
 		});
 		text_ctrl
 	}
@@ -477,6 +501,14 @@ fn show_error_dialog(parent: &dyn WxWidget, message: &str, title: &str) {
 		.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
 		.build();
 	dialog.show_modal();
+}
+
+fn build_document_load_error_message(path: &Path, error: &str) -> String {
+	let details = error.trim().strip_prefix(PASSWORD_REQUIRED_ERROR_PREFIX).map_or_else(|| error.trim(), str::trim);
+	if details.is_empty() {
+		return t("Failed to load document.");
+	}
+	format!("{}\n\nFile: {}\nDetails: {}", t("Failed to load document."), path.display(), details)
 }
 
 fn fill_text_ctrl(text_ctrl: TextCtrl, content: &str) {

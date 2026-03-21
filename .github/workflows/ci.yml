@@ -38,9 +38,23 @@ jobs:
           components: clippy
       - name: Install CMake and Ninja
         run: choco install cmake ninja -y
+    - name: Install Gettext via MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: UCRT64
+        update: true
+        install: >-
+          gettext
+          mingw-w64-ucrt-x86_64-gettext-tools
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
+      - name: Clone wxWidgets
+        run: git clone --recurse-submodules https://github.com/wxWidgets/wxWidgets.git
       - name: Run tests
-        run: cargo test
+        run: |
+          $env:WXWIDGETS_DIR = "${{ github.workspace }}\wxWidgets"
+          cargo test
       - name: Run clippy
-        run: cargo clippy --release
+        run: |
+          $env:WXWIDGETS_DIR = "${{ github.workspace }}\wxWidgets"
+          cargo clippy --release

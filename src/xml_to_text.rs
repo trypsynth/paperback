@@ -1,6 +1,7 @@
 use std::{collections::HashMap, mem};
 
 use roxmltree::{Document, Node, NodeType, ParsingOptions};
+use wxdragon::translations::translate as t;
 
 use crate::{
 	parser::xml::collect_element_text,
@@ -28,6 +29,8 @@ pub struct XmlToText {
 	id_positions: HashMap<String, usize>,
 	headings: Vec<HeadingInfo>,
 	links: Vec<LinkInfo>,
+	images: Vec<crate::types::ImageInfo>,
+	figures: Vec<crate::types::ImageInfo>,
 	tables: Vec<TableInfo>,
 	separators: Vec<SeparatorInfo>,
 	lists: Vec<ListInfo>,
@@ -80,6 +83,11 @@ impl XmlToText {
 	}
 
 	#[must_use]
+	pub fn get_images(&self) -> &[crate::types::ImageInfo] {
+		&self.images
+	}
+
+	#[must_use]
 	pub fn get_tables(&self) -> &[TableInfo] {
 		&self.tables
 	}
@@ -110,6 +118,8 @@ impl XmlToText {
 		self.id_positions.clear();
 		self.headings.clear();
 		self.links.clear();
+		self.images.clear();
+		self.figures.clear();
 		self.tables.clear();
 		self.separators.clear();
 		self.lists.clear();
@@ -177,7 +187,12 @@ impl XmlToText {
 				self.links.push(LinkInfo { offset: link_offset, text: processed_link_text, reference: href });
 				skip_children = true;
 			}
-		} else if Self::tag_is(tag_name, "body") {
+		} else if Self::tag_is(tag_name, "body")
+			|| Self::tag_is(tag_name, "book")
+			|| Self::tag_is(tag_name, "frontmatter")
+			|| Self::tag_is(tag_name, "bodymatter")
+			|| Self::tag_is(tag_name, "rearmatter")
+		{
 			self.in_body = true;
 		} else if Self::tag_is(tag_name, "pre") {
 			self.finalize_current_line();
@@ -188,12 +203,44 @@ impl XmlToText {
 			self.finalize_current_line();
 		} else if Self::tag_is(tag_name, "li") {
 			self.handle_list_item_xml(node);
-		} else if Self::tag_is(tag_name, "ul") || Self::tag_is(tag_name, "ol") {
+		} else if Self::tag_is(tag_name, "ul") || Self::tag_is(tag_name, "ol") || Self::tag_is(tag_name, "list") {
 			self.handle_list_start_xml(tag_name, node);
 		}
 		if self.in_body {
 			if let Some(id) = node.attribute("id").or_else(|| node.attribute("name")) {
 				self.id_positions.insert(id.to_string(), self.get_current_text_position());
+			}
+			if Self::tag_is(tag_name, "img") || Self::tag_is(tag_name, "image") || Self::tag_is(tag_name, "figure") {
+				let mut description = node
+					.attribute("alt")
+					.or_else(|| node.attribute("aria-label"))
+					.or_else(|| node.attribute("aria-description"))
+					.or_else(|| node.attribute("title"))
+					.map(collapse_whitespace)
+					.unwrap_or_default();
+
+				if description.is_empty() && Self::tag_is(tag_name, "figure") {
+					for child in node.children() {
+						if child.is_element() && Self::tag_is(child.tag_name().name(), "figcaption") {
+							description = collapse_whitespace(&collect_element_text(child));
+							break;
+						}
+					}
+				}
+
+				if !description.is_empty() {
+					let is_figure = Self::tag_is(tag_name, "figure");
+					let label = if is_figure { t("Figure") } else { t("Image") };
+					let image_text = format!("[{label}: {description}]");
+					let offset = self.get_current_text_position();
+					self.current_line.push_str(&image_text);
+					let info = crate::types::ImageInfo { offset, alt_text: description };
+					if is_figure {
+						self.figures.push(info);
+					} else {
+						self.images.push(info);
+					}
+				}
 			}
 		}
 		skip_children
@@ -426,7 +473,10 @@ impl XmlToText {
 			return display_len(&self.current_line);
 		}
 		let collapsed = collapse_whitespace(&self.current_line);
-		let trimmed = collapsed.trim();
+		// Use trim_start() not trim(): trailing whitespace before an inline element IS
+		// preserved in the output line, so including it in the position count keeps
+		// link/anchor offsets correctly aligned with the final text.
+		let trimmed = collapsed.trim_start();
 		display_len(trimmed)
 	}
 
@@ -448,6 +498,7 @@ impl XmlToText {
 			"blockquote",
 			"ul",
 			"ol",
+			"list",
 			"li",
 			"section",
 			"article",
@@ -467,6 +518,17 @@ impl XmlToText {
 			"tr",
 			"td",
 			"th",
+			"level1",
+			"level2",
+			"level3",
+			"level4",
+			"level5",
+			"level6",
+			"frontmatter",
+			"bodymatter",
+			"rearmatter",
+			"doctitle",
+			"docauthor",
 		]
 		.iter()
 		.any(|t| Self::tag_is(tag_name, t))
@@ -495,6 +557,12 @@ impl crate::parser::ConverterOutput for XmlToText {
 	}
 	fn get_links(&self) -> &[LinkInfo] {
 		&self.links
+	}
+	fn get_images(&self) -> &[crate::types::ImageInfo] {
+		&self.images
+	}
+	fn get_figures(&self) -> &[crate::types::ImageInfo] {
+		&self.figures
 	}
 	fn get_tables(&self) -> &[TableInfo] {
 		&self.tables

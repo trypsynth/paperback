@@ -14,6 +14,8 @@ pub enum NavTarget {
 	Link,
 	Table,
 	Separator,
+	Image,
+	Figure,
 }
 
 #[derive(Debug, Clone)]
@@ -28,6 +30,12 @@ pub struct LinkInfo {
 	pub offset: usize,
 	pub text: String,
 	pub reference: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct ImageInfo {
+	pub offset: usize,
+	pub alt_text: String,
 }
 
 #[derive(Debug, Clone)]
