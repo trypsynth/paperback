@@ -66,6 +66,12 @@ pub struct SeparatorInfo {
 }
 
 #[derive(Debug, Clone)]
+pub struct PageBreakInfo {
+	pub offset: usize,
+	pub text: String,
+}
+
+#[derive(Debug, Clone)]
 pub struct NavRequest {
 	pub position: i64,
 	pub wrap: bool,

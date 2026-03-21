@@ -6,7 +6,7 @@ use wxdragon::translations::translate as t;
 use crate::{
 	parser::xml::collect_element_text,
 	text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string},
-	types::{HeadingInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
+	types::{HeadingInfo, LinkInfo, ListInfo, ListItemInfo, PageBreakInfo, SeparatorInfo, TableInfo},
 };
 
 #[derive(Clone)]
@@ -33,6 +33,7 @@ pub struct XmlToText {
 	figures: Vec<crate::types::ImageInfo>,
 	tables: Vec<TableInfo>,
 	separators: Vec<SeparatorInfo>,
+	page_breaks: Vec<PageBreakInfo>,
 	lists: Vec<ListInfo>,
 	list_items: Vec<ListItemInfo>,
 	section_offsets: Vec<usize>,
@@ -88,6 +89,11 @@ impl XmlToText {
 	}
 
 	#[must_use]
+	pub fn get_page_breaks(&self) -> &[PageBreakInfo] {
+		&self.page_breaks
+	}
+
+	#[must_use]
 	pub fn get_tables(&self) -> &[TableInfo] {
 		&self.tables
 	}
@@ -122,6 +128,7 @@ impl XmlToText {
 		self.figures.clear();
 		self.tables.clear();
 		self.separators.clear();
+		self.page_breaks.clear();
 		self.lists.clear();
 		self.list_items.clear();
 		self.section_offsets.clear();
@@ -172,6 +179,11 @@ impl XmlToText {
 			self.current_line.push_str(line);
 			self.finalize_current_line();
 			self.separators.push(SeparatorInfo { offset, length: display_len(line) });
+			return true;
+		}
+		if Self::tag_is(tag_name, "pagenum") {
+			let text = collapse_whitespace(&collect_element_text(node)).trim().to_string();
+			self.page_breaks.push(PageBreakInfo { offset: self.get_current_text_position(), text });
 			return true;
 		}
 		if Self::tag_is(tag_name, "section") {
@@ -535,7 +547,7 @@ impl XmlToText {
 	}
 
 	fn is_ignored_element(tag_name: &str) -> bool {
-		["script", "style", "noscript", "iframe", "object", "embed", "pagenum"].iter().any(|t| Self::tag_is(tag_name, t))
+		["script", "style", "noscript", "iframe", "object", "embed"].iter().any(|t| Self::tag_is(tag_name, t))
 	}
 
 	fn tag_is(tag_name: &str, expected: &str) -> bool {
