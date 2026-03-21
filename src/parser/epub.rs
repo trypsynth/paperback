@@ -25,6 +25,8 @@ struct SectionContent {
 	text: String,
 	headings: Vec<HeadingInfo>,
 	links: Vec<LinkInfo>,
+	images: Vec<crate::types::ImageInfo>,
+	figures: Vec<crate::types::ImageInfo>,
 	tables: Vec<TableInfo>,
 	separators: Vec<SeparatorInfo>,
 	lists: Vec<ListInfo>,
@@ -38,6 +40,12 @@ impl ConverterOutput for SectionContent {
 	}
 	fn get_links(&self) -> &[LinkInfo] {
 		&self.links
+	}
+	fn get_images(&self) -> &[crate::types::ImageInfo] {
+		&self.images
+	}
+	fn get_figures(&self) -> &[crate::types::ImageInfo] {
+		&self.figures
 	}
 	fn get_tables(&self) -> &[TableInfo] {
 		&self.tables
@@ -89,6 +97,8 @@ impl Parser for EpubParser {
 			| ParserFlags::SUPPORTS_TOC
 			| ParserFlags::SUPPORTS_LISTS
 			| ParserFlags::SUPPORTS_PAGES
+			| ParserFlags::SUPPORTS_IMAGES
+			| ParserFlags::SUPPORTS_FIGURES
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
@@ -328,6 +338,8 @@ fn convert_section(content: &str) -> Result<SectionContent> {
 			text: xml_converter.get_text(),
 			headings: xml_converter.get_headings().to_vec(),
 			links: xml_converter.get_links().to_vec(),
+			images: xml_converter.get_images().to_vec(),
+			figures: xml_converter.get_figures().to_vec(),
 			tables: xml_converter.get_tables().to_vec(),
 			separators: xml_converter.get_separators().to_vec(),
 			lists: xml_converter.get_lists().to_vec(),
@@ -341,6 +353,8 @@ fn convert_section(content: &str) -> Result<SectionContent> {
 			text: html_converter.get_text(),
 			headings: html_converter.get_headings().to_vec(),
 			links: html_converter.get_links().to_vec(),
+			images: html_converter.get_images().to_vec(),
+			figures: html_converter.get_figures().to_vec(),
 			tables: html_converter.get_tables().to_vec(),
 			separators: html_converter.get_separators().to_vec(),
 			lists: html_converter.get_lists().to_vec(),

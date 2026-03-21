@@ -338,6 +338,30 @@ impl DocumentSession {
 		)
 	}
 
+	#[must_use]
+	pub fn navigate_image(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
+		let is_supported = self.has_marker(MarkerType::Image);
+		self.navigate_with_post(
+			NavigateParams { position, wrap, next, target: NavTarget::Image, level_filter: 0 },
+			is_supported,
+			|s, nav_result| {
+				s.fill_marker_text_if_empty(nav_result);
+			},
+		)
+	}
+
+	#[must_use]
+	pub fn navigate_figure(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
+		let is_supported = self.has_marker(MarkerType::Figure);
+		self.navigate_with_post(
+			NavigateParams { position, wrap, next, target: NavTarget::Figure, level_filter: 0 },
+			is_supported,
+			|s, nav_result| {
+				s.fill_marker_text_if_empty(nav_result);
+			},
+		)
+	}
+
 	fn navigate_bookmark_inner(
 		&self,
 		config: &ConfigManager,
