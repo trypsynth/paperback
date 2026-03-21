@@ -85,7 +85,10 @@ impl Parser for EpubParser {
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_SECTIONS | ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_LISTS | ParserFlags::SUPPORTS_PAGES
+		ParserFlags::SUPPORTS_SECTIONS
+			| ParserFlags::SUPPORTS_TOC
+			| ParserFlags::SUPPORTS_LISTS
+			| ParserFlags::SUPPORTS_PAGES
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
