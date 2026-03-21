@@ -108,9 +108,9 @@ Git will provide a link to create a pull request, which you can follow if you wi
 5. Fill out the template and ensure all information is correct:
 
 * **base repository:** the original project;
-* **base branch:** `master`;
-* **compare repository:** your fork of the original project;
-* **compare branch:** your branch (e.g., `danish-translation`).
+* **base:** `master` (the main branch where all completed translations are merged);
+* **head repository:** your fork of the original project;
+* **compare:** your branch (e.g., `danish-translation`).
 
 **Note:** If you are working with a fork and want to pull new changes from the original project, add the "upstream" remote:
 
