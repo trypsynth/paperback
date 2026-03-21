@@ -379,12 +379,26 @@ impl DocumentHandle {
 
 	#[must_use]
 	pub fn section_index(&self, position: usize) -> Option<i32> {
-		self.current_marker_index(position, MarkerType::SectionBreak).and_then(|idx| i32::try_from(idx).ok())
+		let count = self
+			.doc
+			.buffer
+			.markers
+			.iter()
+			.filter(|m| m.mtype == MarkerType::SectionBreak && m.position <= position)
+			.count();
+		if count == 0 { None } else { i32::try_from(count - 1).ok() }
 	}
 
 	#[must_use]
 	pub fn page_index(&self, position: usize) -> Option<i32> {
-		self.current_marker_index(position, MarkerType::PageBreak).and_then(|idx| i32::try_from(idx).ok())
+		let count = self
+			.doc
+			.buffer
+			.markers
+			.iter()
+			.filter(|m| m.mtype == MarkerType::PageBreak && m.position <= position)
+			.count();
+		if count == 0 { None } else { i32::try_from(count - 1).ok() }
 	}
 
 	#[must_use]
@@ -579,8 +593,8 @@ mod tests {
 	#[test]
 	fn index_helpers_return_expected_indices() {
 		let handle = sample_handle();
-		assert_eq!(handle.section_index(61), Some(5));
-		assert_eq!(handle.page_index(25), Some(2));
+		assert_eq!(handle.section_index(61), Some(1));
+		assert_eq!(handle.page_index(25), Some(0));
 		assert_eq!(handle.next_heading_index(0, None), Some(1));
 		assert_eq!(handle.previous_heading_index(100, None), Some(3));
 	}
