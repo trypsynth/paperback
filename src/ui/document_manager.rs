@@ -425,8 +425,8 @@ impl DocumentManager {
 		let dm_for_enter = Rc::clone(self_rc);
 		text_ctrl.on_char(move |event| {
 			if let WindowEventData::Keyboard(kbd) = event {
-				if kbd.get_key_code() == Some(13) {
-					// 13 is KEY_RETURN
+				if kbd.get_key_code() == Some(13) || kbd.get_key_code() == Some(32) {
+					// 13 is KEY_RETURN, 32 is space
 					let mut dm = dm_for_enter.lock().unwrap();
 					dm.activate_current_table();
 					dm.activate_current_link();
