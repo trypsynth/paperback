@@ -786,6 +786,36 @@ impl MainWindow {
 				menu_ids::NEXT_LINK => {
 					navigation::handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Link, true);
 				}
+				menu_ids::PREVIOUS_IMAGE => {
+					navigation::handle_marker_navigation(
+						&dm,
+						&config,
+						live_region_label,
+						MarkerNavTarget::Image,
+						false,
+					);
+				}
+				menu_ids::NEXT_IMAGE => {
+					navigation::handle_marker_navigation(&dm, &config, live_region_label, MarkerNavTarget::Image, true);
+				}
+				menu_ids::PREVIOUS_FIGURE => {
+					navigation::handle_marker_navigation(
+						&dm,
+						&config,
+						live_region_label,
+						MarkerNavTarget::Figure,
+						false,
+					);
+				}
+				menu_ids::NEXT_FIGURE => {
+					navigation::handle_marker_navigation(
+						&dm,
+						&config,
+						live_region_label,
+						MarkerNavTarget::Figure,
+						true,
+					);
+				}
 				menu_ids::PREVIOUS_TABLE => {
 					navigation::handle_marker_navigation(
 						&dm,

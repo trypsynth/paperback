@@ -21,6 +21,8 @@ pub enum MarkerType {
 	ListItem = 11,
 	Table = 12,
 	Separator = 13,
+	Image = 14,
+	Figure = 15,
 }
 
 impl From<MarkerType> for i32 {
@@ -48,6 +50,8 @@ impl TryFrom<i32> for MarkerType {
 			11 => Ok(Self::ListItem),
 			12 => Ok(Self::Table),
 			13 => Ok(Self::Separator),
+			14 => Ok(Self::Image),
+			15 => Ok(Self::Figure),
 			_ => Err(()),
 		}
 	}
@@ -420,6 +424,8 @@ bitflags! {
 		const SUPPORTS_TOC = 1 << 1;
 		const SUPPORTS_PAGES = 1 << 2;
 		const SUPPORTS_LISTS = 1 << 3;
+		const SUPPORTS_IMAGES = 1 << 4;
+		const SUPPORTS_FIGURES = 1 << 5;
 	}
 }
 
@@ -473,11 +479,11 @@ mod tests {
 
 	#[test]
 	fn marker_type_round_trip_for_all_known_values() {
-		for raw in 0..=13 {
+		for raw in 0..=15 {
 			let marker = MarkerType::try_from(raw).unwrap();
 			assert_eq!(i32::from(marker), raw);
 		}
-		assert!(MarkerType::try_from(14).is_err());
+		assert!(MarkerType::try_from(16).is_err());
 		assert!(MarkerType::try_from(-1).is_err());
 	}
 

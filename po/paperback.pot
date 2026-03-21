@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-03-16 09:10-0600\n"
+"POT-Creation-Date: 2026-03-22 01:14+0530\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,12 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+msgid "Figure"
+msgstr ""
+
+msgid "Image"
+msgstr ""
 
 msgid ""
 "This PDF contains images only, with no extractable text. You may need to run "
@@ -551,6 +557,18 @@ msgstr ""
 msgid "Next Lin&k\tK"
 msgstr ""
 
+msgid "Previous Ima&ge\tShift+G"
+msgstr ""
+
+msgid "Next Ima&ge\tG"
+msgstr ""
+
+msgid "Previous Figu&re\tShift+F"
+msgstr ""
+
+msgid "Next Figu&re\tF"
+msgstr ""
+
 msgid "Previous &Table\tShift+T"
 msgstr ""
 
@@ -800,6 +818,18 @@ msgstr ""
 msgid "Navigate by links"
 msgstr ""
 
+msgid "&Images"
+msgstr ""
+
+msgid "Navigate by images"
+msgstr ""
+
+msgid "&Figures"
+msgstr ""
+
+msgid "Navigate by figures"
+msgstr ""
+
 msgid "&Tables"
 msgstr ""
 
@@ -1008,6 +1038,24 @@ msgid "No next separator."
 msgstr ""
 
 msgid "No previous separator."
+msgstr ""
+
+msgid "No images."
+msgstr ""
+
+msgid "No next image."
+msgstr ""
+
+msgid "No previous image."
+msgstr ""
+
+msgid "No figures."
+msgstr ""
+
+msgid "No next figure."
+msgstr ""
+
+msgid "No previous figure."
 msgstr ""
 
 msgid "Wrapping to start. "
