@@ -535,7 +535,7 @@ impl XmlToText {
 	}
 
 	fn is_ignored_element(tag_name: &str) -> bool {
-		["script", "style", "noscript", "iframe", "object", "embed"].iter().any(|t| Self::tag_is(tag_name, t))
+		["script", "style", "noscript", "iframe", "object", "embed", "pagenum"].iter().any(|t| Self::tag_is(tag_name, t))
 	}
 
 	fn tag_is(tag_name: &str, expected: &str) -> bool {
