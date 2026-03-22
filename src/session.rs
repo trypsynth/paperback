@@ -708,12 +708,13 @@ impl DocumentSession {
 	}
 
 	#[must_use]
-	pub fn page_offset(&self, page_index: i32) -> i64 {
-		if page_index < 0 {
+	pub fn page_offset(&self, page_number: i32) -> i64 {
+		let index = page_number - 1;
+		if index < 0 {
 			return -1;
 		}
 		self.handle
-			.get_marker_position_by_index(MarkerType::PageBreak, page_index)
+			.get_marker_position_by_index(MarkerType::PageBreak, index)
 			.map_or(-1, |offset| i64::try_from(offset).unwrap_or(-1))
 	}
 
@@ -920,8 +921,9 @@ mod tests {
 		assert_eq!(session.page_count(), 2);
 		assert!(session.current_page(0) > 0);
 		assert!(session.current_page(8) >= session.current_page(0));
-		assert_eq!(session.page_offset(0), 0);
-		assert_eq!(session.page_offset(1), 8);
+		assert_eq!(session.page_offset(1), 0);
+		assert_eq!(session.page_offset(2), 8);
+		assert_eq!(session.page_offset(0), -1);
 		assert_eq!(session.page_offset(-1), -1);
 	}
 
