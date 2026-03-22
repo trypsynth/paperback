@@ -164,11 +164,25 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 ## Changelog
 
 ### Version 0.8.5
+* Added basic support for tagged PDF files! [#364](https://github.com/trypsynth/paperback/pull/364), [#365](https://github.com/trypsynth/paperback/pull/365).
+* Added page support to epub books. [#379](https://github.com/trypsynth/paperback/issues/379), [#380](https://github.com/trypsynth/paperback/pull/380).
 * Added support for legacy Powerpoint presentations (*.ppt)!
 * Added support for legacy Microsoft Word documents (*.doc)!
+* Added support for mobi and AZW3 books! [#369](https://github.com/trypsynth/pull/369), [#378](https://github.com/trypsynth/pull/378).
+* Added support for encrypted Microsoft Office documents. Currently Legacy word, modern Word and modern Powerpoint are supported, with legacy Powerpoint planned for the future.
+* Added the ctrl+q shortcut to exit the app. [#368](https://github.com/trypsynth/paperback/issues/368).
 * Added support for zipped books from Bookshare (both DAISY and Word)! [#36](https://github.com/trypsynth/paperback/issues/36), [#358](https://github.com/trypsynth/paperback/pull/358), [#360](https://github.com/trypsynth/paperback/pull/360).
+* Alt text for embedded images should now be properly shown.
+* CHM documents now properly support internal link navigation.
+* Fixed bookmark sounds triggering at paragraph start instead of the bookmark's position. [#363](https://github.com/trypsynth/paperback/issues/363).
+* Fixed the escape key not working to close the open as dialog.
+* Fixed the reader context menu not showing up on right-click or the Applications key. [#362](https://github.com/trypsynth/paperback/issues/362).
+* Fixed the wrong document sometimes being focused when opening documents from the command line.
+* Image only PDFs are once again detected and alert you of their existence.
+* It is now possible to navigate through images and figures with g/shift+g and f/shift+f, respectively.
 * Paperback will now respect your application dark mode setting.
 * Removed DAISY XML support, as its no longer needed.
+* Switched back to the native Win32 first letter navigation in the table of contents tree.
 * The error loading dialog now shows more detailed error messages.
 * The webview will now open much faster and smoother. [#359](https://github.com/trypsynth/paperback/pull/359).
 
