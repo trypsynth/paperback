@@ -175,6 +175,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Alt text for embedded images should now be properly shown.
 * CHM documents now properly support internal link navigation.
 * Fixed bookmark sounds triggering at paragraph start instead of the bookmark's position. [#363](https://github.com/trypsynth/paperback/issues/363).
+* Fixed go to page being off by 1. [#389](https://github.com/trypsynth/paperback/pull/389).
 * Fixed the escape key not working to close the open as dialog.
 * Fixed the reader context menu not showing up on right-click or the Applications key. [#362](https://github.com/trypsynth/paperback/issues/362).
 * Fixed the wrong document sometimes being focused when opening documents from the command line.
