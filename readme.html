@@ -422,14 +422,45 @@ inclusion in this list.</p>
 <h1 id="changelog">Changelog</h1>
 <h2 id="version-0.8.5">Version 0.8.5</h2>
 <ul>
+<li>Added basic support for tagged PDF files! <a
+href="https://github.com/trypsynth/paperback/pull/364">#364</a>, <a
+href="https://github.com/trypsynth/paperback/pull/365">#365</a>.</li>
+<li>Added page support to epub books. <a
+href="https://github.com/trypsynth/paperback/issues/379">#379</a>, <a
+href="https://github.com/trypsynth/paperback/pull/380">#380</a>.</li>
 <li>Added support for legacy Powerpoint presentations (*.ppt)!</li>
 <li>Added support for legacy Microsoft Word documents (*.doc)!</li>
+<li>Added support for mobi and AZW3 books! <a
+href="https://github.com/trypsynth/pull/369">#369</a>, <a
+href="https://github.com/trypsynth/pull/378">#378</a>.</li>
+<li>Added support for encrypted Microsoft Office documents. Currently
+Legacy word, modern Word and modern Powerpoint are supported, with
+legacy Powerpoint planned for the future.</li>
+<li>Added the ctrl+q shortcut to exit the app. <a
+href="https://github.com/trypsynth/paperback/issues/368">#368</a>.</li>
 <li>Added support for zipped books from Bookshare (both DAISY and Word)!
 <a href="https://github.com/trypsynth/paperback/issues/36">#36</a>, <a
 href="https://github.com/trypsynth/paperback/pull/358">#358</a>, <a
 href="https://github.com/trypsynth/paperback/pull/360">#360</a>.</li>
+<li>Alt text for embedded images should now be properly shown.</li>
+<li>CHM documents now properly support internal link navigation.</li>
+<li>Fixed bookmark sounds triggering at paragraph start instead of the
+bookmark’s position. <a
+href="https://github.com/trypsynth/paperback/issues/363">#363</a>.</li>
+<li>Fixed the escape key not working to close the open as dialog.</li>
+<li>Fixed the reader context menu not showing up on right-click or the
+Applications key. <a
+href="https://github.com/trypsynth/paperback/issues/362">#362</a>.</li>
+<li>Fixed the wrong document sometimes being focused when opening
+documents from the command line.</li>
+<li>Image only PDFs are once again detected and alert you of their
+existence.</li>
+<li>It is now possible to navigate through images and figures with
+g/shift+g and f/shift+f, respectively.</li>
 <li>Paperback will now respect your application dark mode setting.</li>
 <li>Removed DAISY XML support, as its no longer needed.</li>
+<li>Switched back to the native Win32 first letter navigation in the
+table of contents tree.</li>
 <li>The error loading dialog now shows more detailed error
 messages.</li>
 <li>The webview will now open much faster and smoother. <a
