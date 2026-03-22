@@ -121,6 +121,7 @@ Paperback is designed for keyboard-first and screen reader-first use. Here are t
 Paperback is translated into many different languages, with more being added all the time. A complete list follows:
 
 * Bosnian
+* Czech
 * French
 * German
 * Japanese
