@@ -1385,7 +1385,7 @@ dependencies = [
 
 [[package]]
 name = "paperback"
-version = "0.8.2"
+version = "0.8.5"
 dependencies = [
  "anyhow",
  "base64",
