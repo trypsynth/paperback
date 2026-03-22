@@ -9,7 +9,7 @@ use roxmltree::{Document as XmlDocument, Node, NodeType, ParsingOptions};
 use zip::ZipArchive;
 
 use crate::{
-	document::{Document, DocumentBuffer, ParserContext, ParserFlags},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
 	html_to_text::{HtmlSourceMode, HtmlToText},
 	parser::{Parser, add_converter_markers, path::extract_title_from_path, toc::build_toc_from_headings},
 	xml_to_text::XmlToText,
@@ -28,7 +28,10 @@ impl Parser for DaisyParser {
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_SECTIONS | ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_LISTS
+		ParserFlags::SUPPORTS_SECTIONS
+			| ParserFlags::SUPPORTS_TOC
+			| ParserFlags::SUPPORTS_LISTS
+			| ParserFlags::SUPPORTS_PAGES
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
@@ -91,6 +94,9 @@ impl Parser for DaisyParser {
 					if converter.convert(&xml_content) {
 						buffer.content = converter.get_text();
 						add_converter_markers(&mut buffer, &converter, 0);
+						for pb in converter.get_page_breaks() {
+							buffer.add_marker(Marker::new(MarkerType::PageBreak, pb.offset).with_text(pb.text.clone()));
+						}
 					} else {
 						anyhow::bail!("Failed to convert DTBook XML to text");
 					}
@@ -185,6 +191,9 @@ impl Parser for DaisyParser {
 			if converter.convert(&xml_content) {
 				buffer.content = converter.get_text();
 				add_converter_markers(&mut buffer, &converter, 0);
+				for pb in converter.get_page_breaks() {
+					buffer.add_marker(Marker::new(MarkerType::PageBreak, pb.offset).with_text(pb.text.clone()));
+				}
 				let mut toc_items = None;
 				if let Ok(entries) = std::fs::read_dir(base_dir) {
 					for entry in entries.flatten() {

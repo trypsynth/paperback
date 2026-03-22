@@ -95,14 +95,24 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 			}
 			build_nav_result(false, wrapped_final, 0, 0, String::new())
 		}
-		NavTarget::List | NavTarget::ListItem | NavTarget::Link | NavTarget::Table | NavTarget::Separator => {
+		NavTarget::List
+		| NavTarget::ListItem
+		| NavTarget::Link
+		| NavTarget::Table
+		| NavTarget::Separator
+		| NavTarget::Image
+		| NavTarget::Figure => {
 			let kind = match req.target {
 				NavTarget::List => MarkerType::List,
 				NavTarget::ListItem => MarkerType::ListItem,
 				NavTarget::Link => MarkerType::Link,
 				NavTarget::Table => MarkerType::Table,
 				NavTarget::Separator => MarkerType::Separator,
-				_ => unreachable!("NavTarget should only be List, ListItem, Link, Table, or Separator in this branch"),
+				NavTarget::Image => MarkerType::Image,
+				NavTarget::Figure => MarkerType::Figure,
+				_ => unreachable!(
+					"NavTarget should only be List, ListItem, Link, Table, Separator, Image, or Figure in this branch"
+				),
 			};
 			let (idx_opt, wrapped) = select_marker_index(doc, req.position, req.wrap, req.direction, kind);
 			if let Some(idx) = idx_opt {
@@ -458,6 +468,16 @@ pub fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> 
 			}
 			return LinkNavigation { found: true, is_external: false, offset, url: String::new() };
 		}
+	}
+	// Fallback for formats like CHM that store id_positions with "{path}#{id}" keys.
+	if !fragment.is_empty() {
+		if let Some(offset) = find_fragment_offset(doc, fragment, Some(file_path)) {
+			return LinkNavigation { found: true, is_external: false, offset, url: String::new() };
+		}
+	}
+	// Direct file-path lookup (covers fragment-less CHM links and fallback for fragment misses).
+	if let Some(&offset) = doc.document().id_positions.get(file_path) {
+		return LinkNavigation { found: true, is_external: false, offset, url: String::new() };
 	}
 	if !fragment.is_empty() {
 		if let Some(offset) = find_fragment_offset(doc, fragment, current_section.as_deref()) {

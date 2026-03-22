@@ -1,4 +1,4 @@
-# Paperback - version 0.8.2
+# Paperback - version 0.8.5
 
 ## Introduction
 
@@ -159,6 +159,15 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Tyler Rodick
 
 ## Changelog
+
+### Version 0.8.5
+* Added support for legacy Powerpoint presentations (*.ppt)!
+* Added support for legacy Microsoft Word documents (*.doc)!
+* Added support for zipped books from Bookshare (both DAISY and Word)! [#36](https://github.com/trypsynth/paperback/issues/36), [#358](https://github.com/trypsynth/paperback/pull/358), [#360](https://github.com/trypsynth/paperback/pull/360).
+* Paperback will now respect your application dark mode setting.
+* Removed DAISY XML support, as its no longer needed.
+* The error loading dialog now shows more detailed error messages.
+* The webview will now open much faster and smoother. [#359](https://github.com/trypsynth/paperback/pull/359).
 
 ### Version 0.8.2
 * Added page support to RTF documents!

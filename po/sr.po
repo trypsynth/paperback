@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.5\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-03-01 13:08-0700\n"
-"PO-Revision-Date: 2026-03-02 00:31+0100\n"
+"POT-Creation-Date: 2026-03-22 01:14+0530\n"
+"PO-Revision-Date: 2026-03-21 21:47+0100\n"
 "Last-Translator: Nikola Jović <wwenikola123@gmail.com>\n"
 "Language-Team: \n"
 "Language: sr\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
-"X-Generator: Poedit 3.8\n"
+"X-Generator: Poedit 3.9\n"
 "X-Poedit-Basepath: ../src\n"
 "X-Poedit-KeywordsList: _;wxTRANSLATE;wxPLURAL:1,2\n"
 "X-Poedit-SourceCharset: UTF-8\n"
@@ -26,6 +26,12 @@ msgstr ""
 "X-Poedit-SearchPathExcluded-0: ../build\n"
 "X-Poedit-SearchPathExcluded-1: ../vcpkg\n"
 "X-Poedit-SearchPathExcluded-2: ../web\n"
+
+msgid "Figure"
+msgstr "Figura"
+
+msgid "Image"
+msgstr "Slika"
 
 msgid ""
 "This PDF contains images only, with no extractable text. You may need to run "
@@ -248,9 +254,6 @@ msgstr ""
 "Da li ste sigurni da želite da uklonite ovaj dokument sa liste? Ovo će "
 "takođe ukloniti njegovu poziciju čitanja."
 
-#| msgid ""
-#| "Are you sure you want to remove this document from the list? This will "
-#| "also remove its reading position."
 msgid ""
 "Are you sure you want to remove these {} documents from the list? This will "
 "also remove their reading positions."
@@ -326,9 +329,6 @@ msgstr "Datoteka nije pronađena: {}"
 msgid "Password is required."
 msgstr "Lozinka je obavezna."
 
-msgid "Failed to load document."
-msgstr "Učitavanje dokumenta nije uspelo."
-
 msgid "Navigated to internal link."
 msgstr "Prebačen do unutrašnjeg linka."
 
@@ -343,6 +343,9 @@ msgstr "&Lozinka:"
 
 msgid "Document Password"
 msgstr "Lozinka dokumenta"
+
+msgid "Failed to load document."
+msgstr "Učitavanje dokumenta nije uspelo."
 
 msgid "Create &bookmark"
 msgstr "Napravi &knjižnu oznaku"
@@ -460,7 +463,6 @@ msgstr "Greška pri proveri ažuriranja."
 msgid "Failed to get current exe path"
 msgstr "Pribavljanje putanje do trenutne izvršne datoteke nije uspelo"
 
-#| msgid "Failed to launch installer"
 msgid "Failed to launch installer script"
 msgstr "Pokretanje instalacione skripte nije uspelo"
 
@@ -578,6 +580,22 @@ msgstr "Prethodni Lin&k\tShift+K"
 
 msgid "Next Lin&k\tK"
 msgstr "Naredni lin&k\tK"
+
+#| msgid "Previous Pa&ge\tShift+P"
+msgid "Previous Ima&ge\tShift+G"
+msgstr "Prethodna &slika\tShift+G"
+
+#| msgid "Next Pag&e\tP"
+msgid "Next Ima&ge\tG"
+msgstr "Naredna &slika\tG"
+
+#| msgid "Previous Pa&ge\tShift+P"
+msgid "Previous Figu&re\tShift+F"
+msgstr "Prethodna figu&ra\tShift+F"
+
+#| msgid "Next Pag&e\tP"
+msgid "Next Figu&re\tF"
+msgstr "Naredna figu&ra\tF"
 
 msgid "Previous &Table\tShift+T"
 msgstr "Prethodna &tabela\tShift+T"
@@ -738,7 +756,6 @@ msgstr "Zatvori &sve\tCtrl+Shift+F4"
 msgid "Close all documents"
 msgstr "Zatvori sve dokumente"
 
-#| msgid "Close &All\tCtrl+Shift+W"
 msgid "Reopen &Last Closed\tCtrl+Shift+T"
 msgstr "Ponovo otvori pos&lednje zatvoreno\tCtrl+Shift+T"
 
@@ -751,8 +768,9 @@ msgstr "&Nedavni dokumenti"
 msgid "Open a recent document"
 msgstr "Otvori nedavni dokument"
 
-msgid "E&xit"
-msgstr "I&zlaz"
+#| msgid "&Export...\tCtrl+E"
+msgid "E&xit\tCtrl+Q"
+msgstr "&Izlaz\tCtrl+Q"
 
 msgid "Exit the application"
 msgstr "Zatvori aplikaciju"
@@ -828,6 +846,19 @@ msgstr "&linkovi"
 
 msgid "Navigate by links"
 msgstr "Kreći se po linkovima"
+
+#| msgid "&Pages"
+msgid "&Images"
+msgstr "Sl&ike"
+
+msgid "Navigate by images"
+msgstr "Kreći se po slikama"
+
+msgid "&Figures"
+msgstr "&Figure"
+
+msgid "Navigate by figures"
+msgstr "Kreći se po figurama"
 
 msgid "&Tables"
 msgstr "&Tabele"
@@ -1039,6 +1070,24 @@ msgstr "Nema narednog separatora."
 msgid "No previous separator."
 msgstr "Nema prethodnog separatora."
 
+msgid "No images."
+msgstr "Nema slika."
+
+msgid "No next image."
+msgstr "Nema naredne slike."
+
+msgid "No previous image."
+msgstr "Nema prethodne slike."
+
+msgid "No figures."
+msgstr "Nema figura."
+
+msgid "No next figure."
+msgstr "Nema naredne figure."
+
+msgid "No previous figure."
+msgstr "Nema prethodne figure."
+
 msgid "Wrapping to start. "
 msgstr "Vraćanje na početak. "
 
@@ -1122,6 +1171,9 @@ msgstr "&Vrati"
 
 msgid "Restore Paperback"
 msgstr "Vrati Paperback"
+
+msgid "E&xit"
+msgstr "I&zlaz"
 
 msgid "Exit Paperback"
 msgstr "Zatvori Paperback"
@@ -1302,9 +1354,6 @@ msgstr "Zatvori Paperback"
 #~| msgid "No table of contents."
 #~ msgid "Couldn't parse table of contents: %s"
 #~ msgstr "Nemoguće obraditi sadržaj: %s"
-
-#~ msgid "&Export...\tCtrl+E"
-#~ msgstr "&Izvezi...\tCtrl+E"
 
 #~ msgid "Parsing of links in the document failed."
 #~ msgstr "Obrada linkova u dokumentu nije uspela."

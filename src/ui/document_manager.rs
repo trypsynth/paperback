@@ -361,15 +361,25 @@ impl DocumentManager {
 		let path_str = tab.file_path.to_string_lossy().to_string();
 		let bookmarks = config.get_bookmarks(&path_str);
 		drop(config);
+		let (prev_line_start, _) = tab.session.get_line_bounds(prev);
+		let (line_start, line_end) = tab.session.get_line_bounds(position);
+		let same_line = prev_line_start == line_start;
 		let mut has_note = false;
 		let mut has_bookmark = false;
 		for bm in &bookmarks {
-			let crossed = if position > prev {
-				bm.start > prev && bm.start <= position
+			let triggered = if same_line {
+				// Within the same content line: use precise range crossing (for Ctrl+Left/Right).
+				if position > prev {
+					bm.start > prev && bm.start <= position
+				} else {
+					bm.start >= position && bm.start < prev
+				}
 			} else {
-				bm.start >= position && bm.start < prev
+				// Crossed a line boundary (Up/Down): fire only if a bookmark is on the
+				// current line. This prevents false positives when jumping over bookmarks.
+				bm.start >= line_start && bm.start <= line_end
 			};
-			if crossed {
+			if triggered {
 				if !bm.note.is_empty() {
 					has_note = true;
 				} else {
@@ -415,8 +425,8 @@ impl DocumentManager {
 		let dm_for_enter = Rc::clone(self_rc);
 		text_ctrl.on_char(move |event| {
 			if let WindowEventData::Keyboard(kbd) = event {
-				if kbd.get_key_code() == Some(13) {
-					// 13 is KEY_RETURN
+				if kbd.get_key_code() == Some(13) || kbd.get_key_code() == Some(32) {
+					// 13 is KEY_RETURN, 32 is space
 					let mut dm = dm_for_enter.lock().unwrap();
 					dm.activate_current_table();
 					dm.activate_current_link();

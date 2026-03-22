@@ -9,7 +9,7 @@ use anyhow::Result;
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
-	types::{HeadingInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
+	types::{HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
 };
 
 pub mod chm;
@@ -18,6 +18,7 @@ pub mod epub;
 pub mod fb2;
 pub mod html;
 pub mod markdown;
+pub mod mobi;
 pub mod odp;
 pub mod odt;
 pub mod ooxml;
@@ -100,6 +101,7 @@ impl ParserRegistry {
 
 			registry.register(pdf::PdfParser);
 			registry.register(markdown::MarkdownParser);
+			registry.register(mobi::MobiParser);
 			registry.register(odp::FodpParser);
 			registry.register(odp::OdpParser);
 			registry.register(odt::FodtParser);
@@ -239,6 +241,8 @@ pub fn build_file_filter_string() -> String {
 pub trait ConverterOutput {
 	fn get_headings(&self) -> &[HeadingInfo];
 	fn get_links(&self) -> &[LinkInfo];
+	fn get_images(&self) -> &[ImageInfo];
+	fn get_figures(&self) -> &[ImageInfo];
 	fn get_tables(&self) -> &[TableInfo];
 	fn get_separators(&self) -> &[SeparatorInfo];
 	fn get_lists(&self) -> &[ListInfo];
@@ -261,6 +265,18 @@ fn add_links(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offse
 				.with_text(link.text.clone())
 				.with_reference(link.reference.clone()),
 		);
+	}
+}
+
+fn add_images(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
+	for image in converter.get_images() {
+		buffer.add_marker(Marker::new(MarkerType::Image, offset + image.offset).with_text(image.alt_text.clone()));
+	}
+}
+
+fn add_figures(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
+	for figure in converter.get_figures() {
+		buffer.add_marker(Marker::new(MarkerType::Figure, offset + figure.offset).with_text(figure.alt_text.clone()));
 	}
 }
 
@@ -297,6 +313,8 @@ fn add_tables_separators_lists(buffer: &mut DocumentBuffer, converter: &dyn Conv
 pub fn add_converter_markers(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
 	add_headings(buffer, converter, offset);
 	add_links(buffer, converter, offset);
+	add_images(buffer, converter, offset);
+	add_figures(buffer, converter, offset);
 	add_tables_separators_lists(buffer, converter, offset);
 }
 
@@ -307,6 +325,8 @@ pub fn add_converter_markers_excluding_links(
 	offset: usize,
 ) {
 	add_headings(buffer, converter, offset);
+	add_images(buffer, converter, offset);
+	add_figures(buffer, converter, offset);
 	add_tables_separators_lists(buffer, converter, offset);
 }
 
@@ -328,6 +348,8 @@ mod tests {
 	struct MockConverter {
 		headings: Vec<HeadingInfo>,
 		links: Vec<LinkInfo>,
+		images: Vec<ImageInfo>,
+		figures: Vec<ImageInfo>,
 		tables: Vec<TableInfo>,
 		separators: Vec<SeparatorInfo>,
 		lists: Vec<ListInfo>,
@@ -341,6 +363,14 @@ mod tests {
 
 		fn get_links(&self) -> &[LinkInfo] {
 			&self.links
+		}
+
+		fn get_images(&self) -> &[ImageInfo] {
+			&self.images
+		}
+
+		fn get_figures(&self) -> &[ImageInfo] {
+			&self.figures
 		}
 
 		fn get_tables(&self) -> &[TableInfo] {
@@ -359,11 +389,12 @@ mod tests {
 			&self.list_items
 		}
 	}
-
 	fn sample_converter() -> MockConverter {
 		MockConverter {
 			headings: vec![HeadingInfo { offset: 1, level: 2, text: "Heading".to_string() }],
 			links: vec![LinkInfo { offset: 2, text: "Link".to_string(), reference: "#a".to_string() }],
+			images: vec![],
+			figures: vec![],
 			tables: vec![TableInfo {
 				offset: 3,
 				text: "T".to_string(),
@@ -462,6 +493,8 @@ mod tests {
 		let converter = MockConverter {
 			headings: vec![],
 			links: vec![],
+			images: vec![],
+			figures: vec![],
 			tables: vec![],
 			separators: vec![],
 			lists: vec![],

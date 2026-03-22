@@ -1,7 +1,4 @@
-use std::{
-	collections::{HashMap, HashSet},
-	path::Path,
-};
+use std::collections::{HashMap, HashSet};
 
 use anyhow::{Context, Result};
 use libchm::{CHM_ENUMERATE_ALL, ChmHandle, unit_info_path};
@@ -70,6 +67,8 @@ impl Parser for ChmParser {
 			let section_id_positions = converter.get_id_positions();
 			let normalized_path = normalize_path(&file_path);
 			file_positions.insert(normalized_path.clone(), section_start);
+			// Store file-level position so fragment-less internal links can be resolved.
+			id_positions.insert(normalized_path.clone(), section_start);
 			for (id, relative_pos) in section_id_positions {
 				let absolute_pos = section_start + relative_pos;
 				id_positions.insert(format!("{normalized_path}#{id}"), absolute_pos);
@@ -77,7 +76,7 @@ impl Parser for ChmParser {
 			buffer.append(&text);
 			add_converter_markers_excluding_links(&mut buffer, &converter, section_start);
 			for link in converter.get_links() {
-				let resolved_href = resolve_link(&file_path, &link.reference);
+				let resolved_href = resolve_chm_href(&file_path, &link.reference);
 				buffer.add_marker(
 					Marker::new(MarkerType::Link, section_start + link.offset)
 						.with_text(link.text.clone())
@@ -271,14 +270,37 @@ fn normalize_path(path: &str) -> String {
 	result
 }
 
-fn resolve_link(current_file: &str, href: &str) -> String {
+fn resolve_chm_href(current_file: &str, href: &str) -> String {
 	if is_external_url(href) {
 		return href.to_string();
 	}
-	let current_path = Path::new(current_file);
-	let current_dir = current_path.parent().unwrap_or_else(|| Path::new("/"));
-	let resolved = current_dir.join(href);
-	resolved.to_string_lossy().replace('\\', "/")
+	let (path_part, fragment) = href.split_once('#').map_or((href, None), |(p, f)| (p, Some(f)));
+	let resolved_path = if path_part.is_empty() {
+		normalize_path(current_file)
+	} else {
+		let current_normalized = normalize_path(current_file);
+		let current_dir = current_normalized.rfind('/').map_or("", |i| &current_normalized[..i]);
+		let path_normalized = path_part.replace('\\', "/");
+		let mut parts: Vec<&str> = if path_part.starts_with('/') {
+			Vec::new()
+		} else {
+			current_dir.split('/').filter(|s| !s.is_empty()).collect()
+		};
+		for part in path_normalized.split('/') {
+			match part {
+				".." => {
+					parts.pop();
+				}
+				"." | "" => {}
+				p => parts.push(p),
+			}
+		}
+		format!("/{}", parts.join("/")).to_lowercase()
+	};
+	match fragment {
+		Some(frag) if !frag.is_empty() => format!("{resolved_path}#{frag}"),
+		_ => resolved_path,
+	}
 }
 
 fn calculate_toc_offsets(

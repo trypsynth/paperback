@@ -2,6 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use anyhow::{Result, anyhow};
 use pdfium::{PdfiumDocument, PdfiumError, lib};
+use wxdragon::translations::translate as t;
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
@@ -34,6 +35,8 @@ impl Parser for PdfParser {
 		let page_count = document.page_count();
 		let mut any_tags_processed = false;
 		let mut flat_toc_items = Vec::new();
+		let mut has_any_text = false;
+		let mut has_any_images = false;
 		for page_index in 0..page_count {
 			let marker_position = buffer.current_position();
 			page_offsets.push(marker_position);
@@ -109,6 +112,9 @@ impl Parser for PdfParser {
 			if !tags_processed {
 				let raw_text = sanitize_pdf_text(&text_page.full());
 				let lines = process_text_lines(&raw_text);
+				if !lines.is_empty() {
+					has_any_text = true;
+				}
 				let mut current_offset = buffer.current_position();
 				for line in lines {
 					current_lines_info.push((current_offset, line.clone()));
@@ -117,6 +123,20 @@ impl Parser for PdfParser {
 					buffer.append("\n");
 					page_display_text.push_str(&line);
 					page_display_text.push('\n');
+				}
+			} else {
+				has_any_text = true;
+			}
+			// Check for image objects on this page
+			if !has_any_images {
+				let obj_count = lib().FPDFPage_CountObjects(&page);
+				for i in 0..obj_count {
+					if let Ok(obj) = lib().FPDFPage_GetObject(&page, i) {
+						if lib().FPDFPageObj_GetType(&obj) == pdfium::pdfium_constants::FPDF_PAGEOBJ_IMAGE {
+							has_any_images = true;
+							break;
+						}
+					}
 				}
 			}
 			// Load implicit web links
@@ -240,6 +260,12 @@ impl Parser for PdfParser {
 			}
 			page_lines_info.push(current_lines_info);
 		}
+		if !has_any_text && has_any_images {
+			let marker_position = buffer.current_position();
+			buffer.add_marker(Marker::new(MarkerType::PageBreak, marker_position).with_text(String::new()));
+			buffer.append(&t("This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."));
+			buffer.append("\n");
+		}
 		let title = metadata_value(&document, "Title").unwrap_or_else(|| extract_title_from_path(&context.file_path));
 		let author = metadata_value(&document, "Author").unwrap_or_default();
 		let mut toc_items = extract_toc(&document, &page_offsets, &page_lines_info);
@@ -315,7 +341,9 @@ fn process_text_lines(raw_text: &str) -> Vec<String> {
 			continue;
 		}
 		let is_list_item = line.starts_with("- ") || line.starts_with("* ") || line.starts_with("• ");
-		let starts_with_uppercase = line.chars().next().is_some_and(char::is_uppercase);
+		let first_char = line.chars().next();
+		let starts_with_uppercase = first_char.is_some_and(char::is_uppercase);
+		let starts_with_alpha = first_char.is_some_and(char::is_alphabetic);
 		let len = display_len(&line);
 		if current_paragraph.is_empty() {
 			current_paragraph = line.clone();
@@ -343,7 +371,7 @@ fn process_text_lines(raw_text: &str) -> Vec<String> {
 			} else if last_line_ends_with_punctuation && last_line_len < short_line_threshold {
 				true
 			} else {
-				last_line_len < short_line_threshold && starts_with_uppercase
+				last_line_len < short_line_threshold && (starts_with_uppercase || !starts_with_alpha)
 			};
 			if break_paragraph {
 				paragraphs.push(current_paragraph.clone());
@@ -504,6 +532,29 @@ fn flush_block(
 	current_block.clear();
 }
 
+/// Like `flush_block`, but preserves line breaks within the content instead of
+/// collapsing them. Used for preformatted elements like `Code`.
+fn flush_block_lines(
+	current_block: &mut String,
+	buffer: &mut DocumentBuffer,
+	page_display_text: &mut String,
+	current_lines_info: &mut Vec<(usize, String)>,
+) {
+	let text = current_block.clone();
+	current_block.clear();
+	for line in text.split('\n') {
+		let trimmed = trim_string(&collapse_whitespace(line));
+		if !trimmed.is_empty() {
+			let offset = buffer.current_position();
+			current_lines_info.push((offset, trimmed.clone()));
+			buffer.append(&trimmed);
+			buffer.append("\n");
+			page_display_text.push_str(&trimmed);
+			page_display_text.push('\n');
+		}
+	}
+}
+
 fn process_struct_element(
 	elem: &pdfium::PdfiumStructElement,
 	mcid_to_text: &HashMap<i32, String>,
@@ -537,7 +588,9 @@ fn process_struct_element(
 			| "Div" | "Sect"
 			| "Part" | "Art"
 			| "TOC" | "TOCI"
+			| "Code"
 	);
+	let preserve_lines = elem_type == "Code";
 	if is_block {
 		flush_block(current_block, buffer, page_display_text, current_lines_info);
 	}
@@ -565,7 +618,11 @@ fn process_struct_element(
 		}
 	}
 	if is_block {
-		flush_block(current_block, buffer, page_display_text, current_lines_info);
+		if preserve_lines {
+			flush_block_lines(current_block, buffer, page_display_text, current_lines_info);
+		} else {
+			flush_block(current_block, buffer, page_display_text, current_lines_info);
+		}
 		let heading_level = match elem_type.as_str() {
 			"H1" => Some(1),
 			"H2" => Some(2),

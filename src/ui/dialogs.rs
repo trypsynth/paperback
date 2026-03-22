@@ -1639,7 +1639,7 @@ pub fn show_open_as_dialog(parent: &Frame, path: &Path) -> Option<String> {
 	let ok_label = t("OK");
 	let ok_button = Button::builder(&dialog).with_label(&ok_label).build();
 	let cancel_label = t("Cancel");
-	let cancel_button = Button::builder(&dialog).with_label(&cancel_label).build();
+	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&cancel_label).build();
 	let dialog_for_ok = dialog;
 	ok_button.on_click(move |_| {
 		dialog_for_ok.end_modal(wxdragon::id::ID_OK);

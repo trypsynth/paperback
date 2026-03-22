@@ -21,6 +21,8 @@ pub enum MarkerType {
 	ListItem = 11,
 	Table = 12,
 	Separator = 13,
+	Image = 14,
+	Figure = 15,
 }
 
 impl From<MarkerType> for i32 {
@@ -48,6 +50,8 @@ impl TryFrom<i32> for MarkerType {
 			11 => Ok(Self::ListItem),
 			12 => Ok(Self::Table),
 			13 => Ok(Self::Separator),
+			14 => Ok(Self::Image),
+			15 => Ok(Self::Figure),
 			_ => Err(()),
 		}
 	}
@@ -379,12 +383,26 @@ impl DocumentHandle {
 
 	#[must_use]
 	pub fn section_index(&self, position: usize) -> Option<i32> {
-		self.current_marker_index(position, MarkerType::SectionBreak).and_then(|idx| i32::try_from(idx).ok())
+		let count = self
+			.doc
+			.buffer
+			.markers
+			.iter()
+			.filter(|m| m.mtype == MarkerType::SectionBreak && m.position <= position)
+			.count();
+		if count == 0 { None } else { i32::try_from(count - 1).ok() }
 	}
 
 	#[must_use]
 	pub fn page_index(&self, position: usize) -> Option<i32> {
-		self.current_marker_index(position, MarkerType::PageBreak).and_then(|idx| i32::try_from(idx).ok())
+		let count = self
+			.doc
+			.buffer
+			.markers
+			.iter()
+			.filter(|m| m.mtype == MarkerType::PageBreak && m.position <= position)
+			.count();
+		if count == 0 { None } else { i32::try_from(count - 1).ok() }
 	}
 
 	#[must_use]
@@ -406,6 +424,8 @@ bitflags! {
 		const SUPPORTS_TOC = 1 << 1;
 		const SUPPORTS_PAGES = 1 << 2;
 		const SUPPORTS_LISTS = 1 << 3;
+		const SUPPORTS_IMAGES = 1 << 4;
+		const SUPPORTS_FIGURES = 1 << 5;
 	}
 }
 
@@ -459,11 +479,11 @@ mod tests {
 
 	#[test]
 	fn marker_type_round_trip_for_all_known_values() {
-		for raw in 0..=13 {
+		for raw in 0..=15 {
 			let marker = MarkerType::try_from(raw).unwrap();
 			assert_eq!(i32::from(marker), raw);
 		}
-		assert!(MarkerType::try_from(14).is_err());
+		assert!(MarkerType::try_from(16).is_err());
 		assert!(MarkerType::try_from(-1).is_err());
 	}
 
@@ -579,8 +599,8 @@ mod tests {
 	#[test]
 	fn index_helpers_return_expected_indices() {
 		let handle = sample_handle();
-		assert_eq!(handle.section_index(61), Some(5));
-		assert_eq!(handle.page_index(25), Some(2));
+		assert_eq!(handle.section_index(61), Some(1));
+		assert_eq!(handle.page_index(25), Some(0));
 		assert_eq!(handle.next_heading_index(0, None), Some(1));
 		assert_eq!(handle.previous_heading_index(100, None), Some(3));
 	}
