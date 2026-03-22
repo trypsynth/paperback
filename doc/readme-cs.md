@@ -162,11 +162,26 @@ Upozornění: Veřejné sponzory na GitHubu automaticky považuji za určené ke
 ## Historie změn
 
 ### Verze 0.8.5
+* Přidána základní podpora tagovaných PDF souborů! [#364](https://github.com/trypsynth/paperback/pull/364), [#365](https://github.com/trypsynth/paperback/pull/365).
+* Přidána podpora stránek pro knihy ve formátu epub. [#379](https://github.com/trypsynth/paperback/issues/379), [#380](https://github.com/trypsynth/paperback/pull/380).
 * Přidána podpora PowerPointových prezentací ve starém formátu (*.ppt)!
 * Přidána podpora starého formátu dokumentů Microsoft Wordu (*.doc)!
+* Přidána podpora knih ve formátu mobi a AZW3! [#369](https://github.com/trypsynth/pull/369), [#378](https://github.com/trypsynth/pull/378).
+* Přidána podpora šifrovaných dokumentů Microsoft Office. Aktuálně jsou podporovány formáty starého Wordu, moderního Wordu a moderního PowerPointu. Starý PowerPoint je plánován do budoucna.
+* Přidána klávesová zkratka ctrl+q pro ukončení aplikace. [#368](https://github.com/trypsynth/paperback/issues/368).
 * Přidána podpora zazipovaných knih z Bookshare (DAISY i Word)! [#36](https://github.com/trypsynth/paperback/issues/36), [#358](https://github.com/trypsynth/paperback/pull/358), [#360](https://github.com/trypsynth/paperback/pull/360).
+* U obrázků v dokumentech by se nyní měl správně zobrazovat alt text.
+* Soubory CHM nyní správně podporují navigaci po vnitřních odkazech.
+* Opravena chyba, kdy se zvuky záložek přehrávaly na začátku odstavce místo skutečné pozice záložky. [#363](https://github.com/trypsynth/paperback/issues/363).
+* Opravena chyba, kdy přechod na konkrétní číslo stránky byl vždycky mimo o 1. [#389](https://github.com/trypsynth/paperback/pull/389).
+* Opravena chyba, kdy se dialog Otevřít jako nedal zavřít klávesou escape.
+* Opravena chyba, kdy se kontextové menu ve čtečce nezobrazovalo při kliknutí pravým tlačítkem myši nebo stisknutí klávesové zkratky shift+F10. [#362](https://github.com/trypsynth/paperback/issues/362).
+* Opravena chyba, kdy se při otevírání dokumentů z příkazové řádky někdy fokusoval nesprávný dokument.
+* PDF, která jsou pouze obrázková, jsou nyní znovu správně detekována a upozorní vás na tuto skutečnost.
+* Nyní je možné navigovat po obrázcích a ilustracích pomocí zkratek G/shift+G a F/shift+F.
 * Paperback bude nyní respektovat vaše nastavení tmavého režimu pro aplikace.
 * Odstraněna podpora DAISY XML, protože už není potřeba.
+* Ve stromovém zobrazení obsahu dokumentu jsem přešel zpátky na nativní Win32 navigaci prvními písmeny.
 * Dialog o chybě při spuštění nyní zobrazuje podrobnější chybové hlášky.
 * Webové zobrazení se nyní bude načítat mnohem rychleji a hladčeji. [#359](https://github.com/trypsynth/paperback/pull/359).
 
