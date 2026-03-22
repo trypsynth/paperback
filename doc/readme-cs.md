@@ -1,4 +1,4 @@
-# Paperback - verze 0.8.2
+# Paperback - verze 0.8.5
 
 ## Představení
 
@@ -121,6 +121,7 @@ Paperback je navržen především pro použití s klávesnicí a s odečítače
 Paperback je přeložen do mnoha různých jazyků a další neustále přibývají. Následuje kompletní výčet:
 
 * Bosenština
+* Čeština
 * Francouzština
 * Němčina
 * Japonština
@@ -129,7 +130,6 @@ Paperback je přeložen do mnoha různých jazyků a další neustále přibýva
 * Srbština
 * Španělština
 * Vietnamština
-* Čeština
 
 ## Poděkování
 ### Vývoj
@@ -160,6 +160,15 @@ Upozornění: Veřejné sponzory na GitHubu automaticky považuji za určené ke
 * Tyler Rodick
 
 ## Historie změn
+
+### Verze 0.8.5
+* Přidána podpora PowerPointových prezentací ve starém formátu (*.ppt)!
+* Přidána podpora starého formátu dokumentů Microsoft Wordu (*.doc)!
+* Přidána podpora zazipovaných knih z Bookshare (DAISY i Word)! [#36](https://github.com/trypsynth/paperback/issues/36), [#358](https://github.com/trypsynth/paperback/pull/358), [#360](https://github.com/trypsynth/paperback/pull/360).
+* Paperback bude nyní respektovat vaše nastavení tmavého režimu pro aplikace.
+* Odstraněna podpora DAISY XML, protože už není potřeba.
+* Dialog o chybě při spuštění nyní zobrazuje podrobnější chybové hlášky.
+* Webové zobrazení se nyní bude načítat mnohem rychleji a hladčeji. [#359](https://github.com/trypsynth/paperback/pull/359).
 
 ### Verze 0.8.2
 * Přidána podpora stránek pro RTF dokumenty!

@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-03-05 20:09-0700\n"
-"PO-Revision-Date: 2026-03-12 09:59+0100\n"
+"POT-Creation-Date: 2026-03-22 01:14+0530\n"
+"PO-Revision-Date: 2026-03-22 09:26+0100\n"
 "Last-Translator: 4Sense Gaming <lukas@4sensegaming.cz>\n"
 "Language-Team: Lukáš Hosnedl <lukas@4sensegaming.cz>\n"
 "Language: cs\n"
@@ -17,6 +17,19 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.8\n"
+
+msgid "Figure"
+msgstr "Ilustrace"
+
+msgid "Image"
+msgstr "Obrázek"
+
+msgid ""
+"This PDF contains images only, with no extractable text. You may need to run "
+"it through OCR software to read its contents."
+msgstr ""
+"Tento soubor PDF obsahuje pouze obrázky a žádný extrahovatelný text. Pro "
+"přečtení jeho obsahu bude zřejmě potřeba aplikovat na něj OCR."
 
 msgid "Failed to create IPC server"
 msgstr "Nepodařilo se vytvořit IPC server"
@@ -245,8 +258,8 @@ msgid ""
 "Are you sure you want to remove all documents from the list? This will also "
 "remove all reading positions and bookmarks."
 msgstr ""
-"Chcete opravdu odstranit všechny dokumenty ze seznamu? Přijdete tak ve "
-"všech dokumentech i o místo, kde jste přestali číst, a o záložky."
+"Chcete opravdu odstranit všechny dokumenty ze seznamu? Přijdete tak ve všech "
+"dokumentech i o místo, kde jste přestali číst, a o záložky."
 
 msgid "Open As"
 msgstr "Otevřít jako"
@@ -557,6 +570,19 @@ msgstr "Předchozí &odkaz\tShift+K"
 msgid "Next Lin&k\tK"
 msgstr "Další &odkaz\tK"
 
+#| msgid "Previous Pa&ge\tShift+P"
+msgid "Previous Ima&ge\tShift+G"
+msgstr "Předchozí &obrázek\tShift+G"
+
+msgid "Next Ima&ge\tG"
+msgstr "Další &obrázek\tG"
+
+msgid "Previous Figu&re\tShift+F"
+msgstr "Předchozí &ilustrace\tShift+F"
+
+msgid "Next Figu&re\tF"
+msgstr "Další &ilustrace\tF"
+
 msgid "Previous &Table\tShift+T"
 msgstr "Předchozí &tabulka\tShift+T"
 
@@ -728,8 +754,8 @@ msgstr "&Nedávné dokumenty"
 msgid "Open a recent document"
 msgstr "Otevřít nedávný dokument"
 
-msgid "E&xit"
-msgstr "&Ukončit"
+msgid "E&xit\tCtrl+Q"
+msgstr "&Ukončit\tCtrl+Q"
 
 msgid "Exit the application"
 msgstr "Ukončit aplikaci"
@@ -805,6 +831,18 @@ msgstr "&Odkazy"
 
 msgid "Navigate by links"
 msgstr "Navigovat po odkazech"
+
+msgid "&Images"
+msgstr "&Obrázky"
+
+msgid "Navigate by images"
+msgstr "Navigovat po obrázcích"
+
+msgid "&Figures"
+msgstr "&Ilustrace"
+
+msgid "Navigate by figures"
+msgstr "Navigovat po ilustracích"
 
 msgid "&Tables"
 msgstr "&Tabulky"
@@ -1016,6 +1054,24 @@ msgstr "Žádný další oddělovač."
 msgid "No previous separator."
 msgstr "Žádný předchozí oddělovač."
 
+msgid "No images."
+msgstr "Žádné obrázky."
+
+msgid "No next image."
+msgstr "Žádný další obrázek."
+
+msgid "No previous image."
+msgstr "Žádný předchozí obrázek."
+
+msgid "No figures."
+msgstr "Žádné ilustrace."
+
+msgid "No next figure."
+msgstr "Žádná další ilustrace."
+
+msgid "No previous figure."
+msgstr "Žádná předchozí ilustrace."
+
 msgid "Wrapping to start. "
 msgstr "Přecházím na začátek. "
 
@@ -1099,6 +1155,9 @@ msgstr "&Obnovit"
 
 msgid "Restore Paperback"
 msgstr "Obnovit Paperback"
+
+msgid "E&xit"
+msgstr "&Ukončit"
 
 msgid "Exit Paperback"
 msgstr "Ukončit Paperback"
