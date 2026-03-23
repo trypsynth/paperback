@@ -130,7 +130,13 @@ impl DocumentBuffer {
 			}
 			char_count += 1;
 		}
-		Self { content, markers: Vec::new(), content_display_len: display, content_char_count: char_count, newline_char_positions }
+		Self {
+			content,
+			markers: Vec::new(),
+			content_display_len: display,
+			content_char_count: char_count,
+			newline_char_positions,
+		}
 	}
 
 	pub fn add_marker(&mut self, marker: Marker) {
