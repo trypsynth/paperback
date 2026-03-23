@@ -1852,7 +1852,10 @@ pub fn show_web_view_dialog(
 	is_url: bool,
 	navigation_handler: Option<NavigationHandler>,
 ) {
-	let dialog = Dialog::builder(parent, title).build();
+	let dialog = Dialog::builder(parent, title)
+		.with_style(DialogStyle::DefaultDialogStyle | DialogStyle::ResizeBorder)
+		.with_size(800, 600)
+		.build();
 	let web_view = WebView::builder(&dialog).build();
 	web_view.add_script_message_handler("wx");
 	let dialog_for_close = dialog;
@@ -1903,7 +1906,7 @@ pub fn show_web_view_dialog(
 	button_sizer.add_stretch_spacer(1);
 	button_sizer.add(&close_button, 0, SizerFlag::All, 5);
 	sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
-	dialog.set_sizer_and_fit(sizer, true);
+	dialog.set_sizer(sizer, true);
 	dialog.centre();
 	dialog.show_modal();
 }
