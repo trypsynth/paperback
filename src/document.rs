@@ -103,18 +103,34 @@ pub struct DocumentBuffer {
 	pub content: String,
 	pub markers: Vec<Marker>,
 	content_display_len: usize,
+	content_char_count: usize,
+	newline_char_positions: Vec<usize>,
 }
 
 impl DocumentBuffer {
 	#[must_use]
 	pub const fn new() -> Self {
-		Self { content: String::new(), markers: Vec::new(), content_display_len: 0 }
+		Self {
+			content: String::new(),
+			markers: Vec::new(),
+			content_display_len: 0,
+			content_char_count: 0,
+			newline_char_positions: Vec::new(),
+		}
 	}
 
 	#[must_use]
 	pub fn with_content(content: String) -> Self {
-		let len = display_len(&content);
-		Self { content, markers: Vec::new(), content_display_len: len }
+		let display = display_len(&content);
+		let mut char_count = 0usize;
+		let mut newline_char_positions = Vec::new();
+		for c in content.chars() {
+			if c == '\n' {
+				newline_char_positions.push(char_count);
+			}
+			char_count += 1;
+		}
+		Self { content, markers: Vec::new(), content_display_len: display, content_char_count: char_count, newline_char_positions }
 	}
 
 	pub fn add_marker(&mut self, marker: Marker) {
@@ -122,13 +138,32 @@ impl DocumentBuffer {
 	}
 
 	pub fn append(&mut self, text: &str) {
+		let base = self.content_char_count;
+		let mut count = 0usize;
+		for c in text.chars() {
+			if c == '\n' {
+				self.newline_char_positions.push(base + count);
+			}
+			count += 1;
+		}
 		self.content.push_str(text);
 		self.content_display_len += display_len(text);
+		self.content_char_count += count;
 	}
 
 	#[must_use]
 	pub const fn current_position(&self) -> usize {
 		self.content_display_len
+	}
+
+	#[must_use]
+	pub const fn char_count(&self) -> usize {
+		self.content_char_count
+	}
+
+	#[must_use]
+	pub fn newline_positions(&self) -> &[usize] {
+		&self.newline_char_positions
 	}
 }
 

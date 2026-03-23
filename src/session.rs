@@ -640,10 +640,10 @@ impl DocumentSession {
 
 	#[must_use]
 	pub fn get_status_info(&self, position: i64) -> StatusInfo {
-		let content = &self.handle.document().buffer.content;
-		let total_chars = content.chars().count();
+		let buf = &self.handle.document().buffer;
+		let total_chars = buf.char_count();
 		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
-		let line_number = content.chars().take(pos).filter(|&c| c == '\n').count() + 1;
+		let line_number = buf.newline_positions().partition_point(|&p| p < pos) + 1;
 		let character_number = pos + 1;
 		let percentage = if total_chars > 0 { (pos * 100) / total_chars } else { 0 };
 		StatusInfo {
@@ -667,8 +667,7 @@ impl DocumentSession {
 
 	#[must_use]
 	pub fn line_count(&self) -> i64 {
-		let content = &self.handle.document().buffer.content;
-		let newline_count = content.chars().filter(|&c| c == '\n').count();
+		let newline_count = self.handle.document().buffer.newline_positions().len();
 		// Line count is newlines + 1 (last line may not have trailing newline)
 		i64::try_from(newline_count + 1).unwrap_or(1)
 	}
