@@ -22,7 +22,7 @@ live-region = "0.1.4"
 office-crypto = "0.2.0"
 pdfium = { git = "https://github.com/aryanchoudharypro/PDFium-rs", branch = "feature/tagged-pdf-support" }
 percent-encoding = "2.3.2"
-pulldown-cmark = { version = "0.13.2", default-features = false, features = ["html"] }
+pulldown-cmark = { version = "0.13.3", default-features = false, features = ["html"] }
 regex = "1.12.3"
 roman = "0.1"
 roxmltree = "0.21.1"
