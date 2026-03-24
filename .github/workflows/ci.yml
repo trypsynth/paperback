@@ -38,7 +38,7 @@ jobs:
           components: clippy
       - name: Install CMake and Ninja
         run: choco install cmake ninja -y
-    - name: Install Gettext via MSYS2
+      - name: Install Gettext via MSYS2
       uses: msys2/setup-msys2@v2
       with:
         msystem: UCRT64
