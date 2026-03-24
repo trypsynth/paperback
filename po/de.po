@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
 "POT-Creation-Date: 2026-03-24 14:12+0100\n"
-"PO-Revision-Date: 2026-03-24 14:19+0100\n"
+"PO-Revision-Date: 2026-03-24 14:46+0100\n"
 "Last-Translator: Steffen Schultz <steffenschultz@mailbox.org>\n"
 "Language-Team: Steffen Schultz <steffenschultz@mailbox.org>\n"
 "Language: de\n"
@@ -113,7 +113,7 @@ msgstr "Allgemein"
 
 #: src/ui/dialogs.rs:166 src/ui/status.rs:11
 msgid "Reading"
-msgstr "Lese"
+msgstr "Lesen"
 
 #: src/ui/dialogs.rs:192 src/ui/dialogs.rs:775 src/ui/dialogs.rs:923
 #: src/ui/dialogs.rs:1023 src/ui/dialogs.rs:1061 src/ui/dialogs.rs:1113
@@ -777,22 +777,18 @@ msgid "Next Lin&k\tK"
 msgstr "Nächster Lin&k\tK"
 
 #: src/ui/menu.rs:177
-#| msgid "Previous Pa&ge\tShift+P"
 msgid "Previous Ima&ge\tShift+G"
 msgstr "Vorheriges B&ild\tShift+G"
 
 #: src/ui/menu.rs:178
-#| msgid "Next Pag&e\tP"
 msgid "Next Ima&ge\tG"
 msgstr "Nächstes &Bild\tG"
 
 #: src/ui/menu.rs:183
-#| msgid "Previous Pa&ge\tShift+P"
 msgid "Previous Figu&re\tShift+F"
 msgstr "Vorherige Abbi&ldung\tShift+F"
 
 #: src/ui/menu.rs:184
-#| msgid "Next Pag&e\tP"
 msgid "Next Figu&re\tF"
 msgstr "Nächste Abb&ildung\tF"
 
@@ -990,7 +986,7 @@ msgstr "S&chließen\tCtrl+W"
 
 #: src/ui/menu.rs:401
 msgid "&Close\tCtrl+F4"
-msgstr "S&chließen\tCtrl+W"
+msgstr "S&chließen\tCtrl+F4"
 
 #: src/ui/menu.rs:402
 msgid "Close the current document"
@@ -1025,7 +1021,6 @@ msgid "Open a recent document"
 msgstr "Ein zuvor geladenes Dokument öffnen"
 
 #: src/ui/menu.rs:423
-#| msgid "&Donate\tCtrl+D"
 msgid "E&xit\tCtrl+Q"
 msgstr "&Beenden\tCtrl+Q"
 
@@ -1131,7 +1126,7 @@ msgstr "Durch Links navigieren"
 
 #: src/ui/menu.rs:475
 msgid "&Images"
-msgstr "&Bilder"
+msgstr "B&ilder"
 
 #: src/ui/menu.rs:476
 msgid "Navigate by images"
@@ -1155,7 +1150,7 @@ msgstr "Durch Tabellen navigieren"
 
 #: src/ui/menu.rs:484
 msgid "&Separators"
-msgstr "&Trennlinien"
+msgstr "T&rennlinien"
 
 #: src/ui/menu.rs:485
 msgid "Navigate by separators"
