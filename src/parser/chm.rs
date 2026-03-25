@@ -24,6 +24,10 @@ impl Parser for ChmParser {
 
 	fn supported_flags(&self) -> ParserFlags {
 		ParserFlags::SUPPORTS_TOC
+			| ParserFlags::SUPPORTS_LISTS
+			| ParserFlags::SUPPORTS_SECTIONS
+			| ParserFlags::SUPPORTS_IMAGES
+			| ParserFlags::SUPPORTS_FIGURES
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
@@ -52,9 +56,9 @@ impl Parser for ChmParser {
 		let mut buffer = DocumentBuffer::new();
 		let mut id_positions = HashMap::new();
 		let mut file_positions = HashMap::new();
-		for file_path in ordered_files {
+		for (idx, file_path) in ordered_files.iter().enumerate() {
 			let section_start = buffer.current_position();
-			let Ok(content_bytes) = chm.read_file(&file_path) else { continue };
+			let Ok(content_bytes) = chm.read_file(file_path) else { continue };
 			if content_bytes.is_empty() {
 				continue;
 			}
@@ -65,7 +69,7 @@ impl Parser for ChmParser {
 			}
 			let text = converter.get_text();
 			let section_id_positions = converter.get_id_positions();
-			let normalized_path = normalize_path(&file_path);
+			let normalized_path = normalize_path(file_path);
 			file_positions.insert(normalized_path.clone(), section_start);
 			// Store file-level position so fragment-less internal links can be resolved.
 			id_positions.insert(normalized_path.clone(), section_start);
@@ -74,9 +78,14 @@ impl Parser for ChmParser {
 				id_positions.insert(format!("{normalized_path}#{id}"), absolute_pos);
 			}
 			buffer.append(&text);
+			buffer.add_marker(
+				Marker::new(MarkerType::SectionBreak, section_start)
+					.with_text(format!("Section {}", idx + 1))
+					.with_reference(file_path.clone()),
+			);
 			add_converter_markers_excluding_links(&mut buffer, &converter, section_start);
 			for link in converter.get_links() {
-				let resolved_href = resolve_chm_href(&file_path, &link.reference);
+				let resolved_href = resolve_chm_href(file_path, &link.reference);
 				buffer.add_marker(
 					Marker::new(MarkerType::Link, section_start + link.offset)
 						.with_text(link.text.clone())
