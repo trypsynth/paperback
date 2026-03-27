@@ -164,20 +164,20 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 ## Changelog
 
 ### Version 0.8.5
-* Added basic support for tagged PDF files! [#364](https://github.com/trypsynth/paperback/pull/364), [#365](https://github.com/trypsynth/paperback/pull/365).
-* Added page support to epub books. [#379](https://github.com/trypsynth/paperback/issues/379), [#380](https://github.com/trypsynth/paperback/pull/380).
-* Added support for legacy Powerpoint presentations (*.ppt)!
-* Added support for legacy Microsoft Word documents (*.doc)!
-* Added support for mobi and AZW3 books! [#369](https://github.com/trypsynth/pull/369), [#378](https://github.com/trypsynth/pull/378).
+* Added page support to epub books.
 * Added support for encrypted Microsoft Office documents. Currently Legacy word, modern Word and modern Powerpoint are supported, with legacy Powerpoint planned for the future.
-* Added the ctrl+q shortcut to exit the app. [#368](https://github.com/trypsynth/paperback/issues/368).
-* Added support for zipped books from Bookshare (both DAISY and Word)! [#36](https://github.com/trypsynth/paperback/issues/36), [#358](https://github.com/trypsynth/paperback/pull/358), [#360](https://github.com/trypsynth/paperback/pull/360).
+* Added support for legacy Microsoft Word documents (*.doc)!
+* Added support for legacy Powerpoint presentations (*.ppt)!
+* Added support for mobi and AZW3 books!
+* Added support for tagged PDF files!
+* Added the ctrl+q shortcut to exit the app.
+* Added support for zipped books from Bookshare (both DAISY and Word)!
 * Alt text for embedded images should now be properly shown.
 * CHM documents now properly support internal link navigation.
-* Fixed bookmark sounds triggering at paragraph start instead of the bookmark's position. [#363](https://github.com/trypsynth/paperback/issues/363).
-* Fixed go to page being off by 1. [#389](https://github.com/trypsynth/paperback/pull/389).
+* Fixed bookmark sounds triggering at paragraph start instead of the bookmark's position.
+* Fixed go to page being off by 1.
 * Fixed the escape key not working to close the open as dialog.
-* Fixed the reader context menu not showing up on right-click or the Applications key. [#362](https://github.com/trypsynth/paperback/issues/362).
+* Fixed the reader context menu not showing up on right-click or the Applications key.
 * Fixed the wrong document sometimes being focused when opening documents from the command line.
 * Image only PDFs are once again detected and alert you of their existence.
 * It is now possible to navigate through images and figures with g/shift+g and f/shift+f, respectively.
@@ -185,25 +185,25 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Removed DAISY XML support, as its no longer needed.
 * Switched back to the native Win32 first letter navigation in the table of contents tree.
 * The error loading dialog now shows more detailed error messages.
-* The webview will now open much faster and smoother. [#359](https://github.com/trypsynth/paperback/pull/359).
+* The webview will now open much faster and smoother.
 
 ### Version 0.8.2
 * Added page support to RTF documents!
 * Fixed a bug where opening the webview in epubs containing external links would automatically activate them.
 * Fixed a bug where the RTF parser wouldn't put a space between words in rare cases.
-* Fixed paragraphs being split into multiple short lines in some PDF documents. [#101](https://github.com/trypsynth/paperback/issues/101), [#355](https://github.com/trypsynth/paperback/pull/355).
-* PDF documents now have basic link and heading navigation support! [#291](https://github.com/trypsynth/paperback/issues/291), [#353](https://github.com/trypsynth/paperback/pull/353), [#354](https://github.com/trypsynth/paperback/pull/354).
+* Fixed paragraphs being split into multiple short lines in some PDF documents.
+* PDF documents now have basic link and heading navigation support!
 * RTF tabs and line feeds are now rendered exactly as they appear in the document.
 * Switched back to the tried and true pdfium library for parsing PDF's, making PDF rendering much more reliable once again.
 
 ### Version 0.8.1
-* Added Ctrl+Shift+T to reopen the last closed document. [#343](https://github.com/trypsynth/paperback/issues/343).
-* The All Documents dialog now supports selecting multiple documents to open at once. [#344](https://github.com/trypsynth/paperback/issues/344).
-* Fixed a few bugs with the RTF parser. [#345](https://github.com/trypsynth/paperback/issues/345).
-* Fixed file paths containing non-ASCII characters (such as Bosnian š, č, ć, ž) becoming corrupted when opening a file via a second Paperback instance. [#346](https://github.com/trypsynth/paperback/issues/346).
-* Fixed PDF text being read in the wrong order, and incorrect spacing around capitalized words. [#44](https://github.com/trypsynth/paperback/issues/44).
+* Added Ctrl+Shift+T to reopen the last closed document.
+* The All Documents dialog now supports selecting multiple documents to open at once.
+* Fixed a few bugs with the RTF parser.
+* Fixed file paths containing non-ASCII characters (such as Bosnian š, č, ć, ž) becoming corrupted when opening a file via a second Paperback instance.
+* Fixed PDF text being read in the wrong order, and incorrect spacing around capitalized words.
 * Fixed slow document loading when opening large files.
-* Fixed the localization of the Yes/No buttons in confirmation dialogs. [#285](https://github.com/trypsynth/paperback/issues/285).
+* Fixed the localization of the Yes/No buttons in confirmation dialogs.
 
 ### Version 0.8.0
 * Added Japanese, simplified Chinese, and Vietnamese translations! [#300](https://github.com/trypsynth/paperback/pull/300), [#326](https://github.com/trypsynth/paperback/pull/326), [#335](https://github.com/trypsynth/paperback/pull/335).
