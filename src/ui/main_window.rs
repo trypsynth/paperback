@@ -1244,9 +1244,19 @@ impl MainWindow {
 						}
 						let open_paths = dm.lock().unwrap().open_paths();
 						let config_for_dialog = Rc::clone(&config);
-						let selection = dialogs::show_all_documents_dialog(&frame_copy, &config_for_dialog, open_paths);
-						if let Some(path) = selection {
-							let path = Path::new(&path);
+						let result = dialogs::show_all_documents_dialog(&frame_copy, &config_for_dialog, open_paths);
+						{
+							let mut dm_ref = dm.lock().unwrap();
+							for path_str in &result.paths_to_close {
+								let path = Path::new(path_str);
+								if let Some(index) = dm_ref.find_tab_by_path(path) {
+									dm_ref.close_document(index);
+								}
+							}
+						}
+						if let Some(path) = result.open {
+							let path_buf = Path::new(&path).to_path_buf();
+							let path = path_buf.as_path();
 							if !ensure_parser_ready_for_path(&frame_copy, path, &config) {
 								return;
 							}
@@ -1260,6 +1270,15 @@ impl MainWindow {
 								frame_copy.set_menu_bar(menu_bar);
 								menu::update_menu_item_states(&frame_copy, true);
 								let has_reopen = dm.lock().unwrap().has_recently_closed();
+								menu::update_reopen_state(&frame_copy, has_reopen);
+							} else {
+								let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
+								frame_copy.set_menu_bar(menu_bar);
+								let dm_ref = dm.lock().unwrap();
+								let has_docs = dm_ref.tab_count() > 0;
+								let has_reopen = dm_ref.has_recently_closed();
+								drop(dm_ref);
+								menu::update_menu_item_states(&frame_copy, has_docs);
 								menu::update_reopen_state(&frame_copy, has_reopen);
 							}
 						} else {

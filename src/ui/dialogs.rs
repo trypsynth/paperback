@@ -1272,15 +1272,21 @@ pub fn show_update_dialog(parent: &dyn WxWidget, new_version: &str, changelog: &
 	dialog.show_modal() == wxdragon::id::ID_OK
 }
 
+pub struct AllDocumentsResult {
+	pub open: Option<String>,
+	pub paths_to_close: Vec<String>,
+}
+
 pub fn show_all_documents_dialog(
 	parent: &Frame,
 	config: &Rc<Mutex<ConfigManager>>,
 	open_paths: Vec<String>,
-) -> Option<String> {
+) -> AllDocumentsResult {
 	let open_paths = Rc::new(open_paths);
 	let dialog_title = t("All Documents");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
 	let selected_path = Rc::new(Mutex::new(None));
+	let paths_to_close: Rc<Mutex<Vec<String>>> = Rc::new(Mutex::new(Vec::new()));
 	let search_label = StaticText::builder(&dialog).with_label(&t("&search")).build();
 	let search_ctrl = TextCtrl::builder(&dialog).with_size(Size::new(300, -1)).build();
 	let doc_list = build_all_documents_list(dialog);
@@ -1317,6 +1323,7 @@ pub fn show_all_documents_dialog(
 		clear_all_button,
 		Rc::clone(config),
 		Rc::clone(&open_paths),
+		Rc::clone(&paths_to_close),
 	);
 	remove_button.on_click({
 		let remove_action = Rc::clone(&remove_action);
@@ -1331,6 +1338,7 @@ pub fn show_all_documents_dialog(
 		clear_all_button,
 		Rc::clone(config),
 		Rc::clone(&open_paths),
+		Rc::clone(&paths_to_close),
 	);
 	bind_all_documents_search(
 		search_ctrl,
@@ -1355,8 +1363,11 @@ pub fn show_all_documents_dialog(
 		},
 	);
 
-	let result = dialog.show_modal();
-	if result == wxdragon::id::ID_OK { selected_path.lock().unwrap().clone() } else { None }
+	dialog.show_modal();
+	AllDocumentsResult {
+		open: selected_path.lock().unwrap().clone(),
+		paths_to_close: paths_to_close.lock().unwrap().clone(),
+	}
 }
 
 fn build_all_documents_list(dialog: Dialog) -> ListCtrl {
@@ -1431,6 +1442,7 @@ fn make_all_documents_remove_action(
 	clear_button: Button,
 	config: Rc<Mutex<ConfigManager>>,
 	open_paths: Rc<Vec<String>>,
+	paths_to_close: Rc<Mutex<Vec<String>>>,
 ) -> Rc<dyn Fn()> {
 	Rc::new(move || {
 		let indices = get_selected_indices(list);
@@ -1458,6 +1470,14 @@ fn make_all_documents_remove_action(
 			}
 			cfg.flush();
 		}
+		{
+			let mut to_close = paths_to_close.lock().unwrap();
+			for path in &paths_to_remove {
+				if open_paths.contains(path) && !to_close.contains(path) {
+					to_close.push(path.clone());
+				}
+			}
+		}
 		let new_selection = indices.iter().copied().max();
 		populate_document_list(&DocumentListParams {
 			list,
@@ -1480,6 +1500,7 @@ fn bind_all_documents_clear(
 	clear_button: Button,
 	config: Rc<Mutex<ConfigManager>>,
 	open_paths: Rc<Vec<String>>,
+	paths_to_close: Rc<Mutex<Vec<String>>>,
 ) {
 	clear_button.on_click(move |_| {
 		if list.get_item_count() == 0 {
@@ -1494,8 +1515,17 @@ fn bind_all_documents_clear(
 		}
 		{
 			let cfg = config.lock().unwrap();
-			for path in cfg.get_all_documents() {
-				cfg.remove_document_history(&path);
+			let all_docs = cfg.get_all_documents();
+			{
+				let mut to_close = paths_to_close.lock().unwrap();
+				for path in &all_docs {
+					if open_paths.contains(path) && !to_close.contains(path) {
+						to_close.push(path.clone());
+					}
+				}
+			}
+			for path in &all_docs {
+				cfg.remove_document_history(path);
 			}
 			cfg.flush();
 		}
