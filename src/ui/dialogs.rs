@@ -1318,6 +1318,7 @@ pub fn show_all_documents_dialog(
 	let remove_action = make_all_documents_remove_action(
 		dialog,
 		doc_list,
+		search_ctrl,
 		open_button,
 		remove_button,
 		clear_all_button,
@@ -1333,6 +1334,7 @@ pub fn show_all_documents_dialog(
 	bind_all_documents_clear(
 		dialog,
 		doc_list,
+		search_ctrl,
 		open_button,
 		remove_button,
 		clear_all_button,
@@ -1437,6 +1439,7 @@ fn bind_all_documents_open(list: ListCtrl, open_button: Button, open_action: &Rc
 fn make_all_documents_remove_action(
 	dialog: Dialog,
 	list: ListCtrl,
+	search_ctrl: TextCtrl,
 	open_button: Button,
 	remove_button: Button,
 	clear_button: Button,
@@ -1479,6 +1482,7 @@ fn make_all_documents_remove_action(
 			}
 		}
 		let new_selection = indices.iter().copied().max();
+		let filter = search_ctrl.get_value();
 		populate_document_list(&DocumentListParams {
 			list,
 			open_button,
@@ -1486,7 +1490,7 @@ fn make_all_documents_remove_action(
 			clear_all_button: clear_button,
 			config: &config,
 			open_paths: open_paths.as_ref(),
-			filter: "",
+			filter: &filter,
 			selection: new_selection,
 		});
 	})
@@ -1495,6 +1499,7 @@ fn make_all_documents_remove_action(
 fn bind_all_documents_clear(
 	dialog: Dialog,
 	list: ListCtrl,
+	search_ctrl: TextCtrl,
 	open_button: Button,
 	remove_button: Button,
 	clear_button: Button,
@@ -1529,6 +1534,7 @@ fn bind_all_documents_clear(
 			}
 			cfg.flush();
 		}
+		search_ctrl.set_value("");
 		populate_document_list(&DocumentListParams {
 			list,
 			open_button,
