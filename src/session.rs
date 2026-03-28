@@ -570,7 +570,7 @@ impl DocumentSession {
 		if let Some(section_path) = section_path {
 			let mut hasher = Sha1::new();
 			hasher.update(self.file_path.as_bytes());
-			let hash = format!("{:x}", hasher.finalize());
+			let hash: String = hasher.finalize().iter().map(|b| format!("{b:02x}")).collect();
 			let doc_temp_dir = Path::new(temp_dir).join(format!("paperback_{hash}"));
 			if fs::create_dir_all(&doc_temp_dir).is_ok() {
 				let file_name = Path::new(&section_path).file_name()?.to_string_lossy().to_string();
@@ -587,7 +587,7 @@ impl DocumentSession {
 			Some("md" | "markdown") => {
 				let mut hasher = Sha1::new();
 				hasher.update(self.file_path.as_bytes());
-				let hash = format!("{:x}", hasher.finalize());
+				let hash: String = hasher.finalize().iter().map(|b| format!("{b:02x}")).collect();
 				let doc_temp_dir = Path::new(temp_dir).join(format!("paperback_{hash}"));
 				if fs::create_dir_all(&doc_temp_dir).is_ok() {
 					let html_path = doc_temp_dir.join("document.html");
