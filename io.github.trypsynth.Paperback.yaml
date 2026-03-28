@@ -1,0 +1,200 @@
+app-id: io.github.trypsynth.Paperback
+runtime: org.gnome.Platform
+runtime-version: '49'
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+  - org.freedesktop.Sdk.Extension.llvm21
+command: paperback
+
+finish-args:
+  # Filesystem access to open documents
+  - --filesystem=home
+  - --filesystem=xdg-documents
+  - --filesystem=xdg-download
+  # X11 and Wayland display
+  - --socket=x11
+  - --socket=wayland
+  # GPU acceleration
+  - --device=dri
+  # Access to network for update checks and external links
+  - --share=network
+  # IPC for accessibility
+  - --share=ipc
+
+cleanup:
+  - /include
+  - /lib/cmake
+  - /lib/pkgconfig
+  - /share/bakefile
+  - /share/man
+  - /bin/wx-config
+  - '*.la'
+  - '*.a'
+
+modules:
+  # wxWidgets 3.3.2 - GUI toolkit (required by wxDragon 0.9.14)
+  - name: wxwidgets
+    sources:
+      - type: archive
+        url: https://github.com/wxWidgets/wxWidgets/releases/download/v3.3.2/wxWidgets-3.3.2.tar.bz2
+        sha256: 50a28cb668de47b0e006cd6ebed8cf4f76c1cac6116fb3c978c44478219103f2
+    config-opts:
+      - --enable-shared
+      - --with-gtk=3
+      - --without-opengl
+      - --enable-display
+      - --enable-propgrid
+      - --enable-stc
+      - --with-libjpeg
+      - --with-libpng
+      - --with-zlib
+      - --enable-webview
+      - --disable-ribbon
+    cleanup:
+      - /bin/wxrc*
+
+  # pandoc - Documentation build tool (build-time only)
+  - name: pandoc
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 pandoc-3.8.2.1/bin/pandoc /app/bin/pandoc
+    cleanup:
+      - /bin/pandoc
+    sources:
+      - type: archive
+        url: https://github.com/jgm/pandoc/releases/download/3.8.2.1/pandoc-3.8.2.1-linux-amd64.tar.gz
+        sha256: b362815e21d8ad3629c124aa92baf54558da086ad72374b4f6fdd97b9f3275b0
+        strip-components: 0
+
+  # pdfium - PDF rendering library (pre-built binaries)
+  - name: pdfium
+    buildsystem: simple
+    sources:
+      - type: archive
+        url: https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7749/pdfium-linux-x64.tgz
+        sha256: 735abb28af7deab720dc54c8df3673a0a2a57bae9a0b16288842695fbd90a4b9
+    build-commands:
+      - install -Dm644 lib/libpdfium.so -t /app/lib/
+
+  # paperback - Main application
+  - name: paperback
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/llvm21/bin:/app/bin
+      env:
+        CARGO_HOME: /run/build/paperback/cargo
+        CHMLIB_TARBALL: /run/build/paperback/chmlib-0.40.tar.bz2
+        WXWIDGETS_DIR: /run/build/paperback/wxWidgets-extracted
+        LIBCLANG_PATH: /usr/lib/sdk/llvm21/lib
+    build-commands:
+      # Patch libchm's build.rs to use local chmlib tarball instead of downloading
+      - |
+        cat > cargo/vendor/libchm-0.1.0/build.rs << 'PATCHEOF'
+        use std::{
+          env, fs,
+          io::Cursor,
+          path::{Path, PathBuf},
+        };
+
+        use bzip2::read::BzDecoder;
+        use cc::Build;
+        use tar::Archive;
+
+        fn main() {
+          let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
+          let chmlib_dir = out_dir.join("chmlib-0.40");
+          let src_dir = chmlib_dir.join("src");
+          if !chmlib_dir.exists() {
+            extract_chmlib(&out_dir);
+          }
+          apply_patches(&src_dir);
+          let mut build = Build::new();
+          build.file(src_dir.join("chm_lib.c")).file(src_dir.join("lzx.c")).include(&src_dir).warnings(false);
+          if cfg!(target_os = "windows") {
+            build.define("WIN32", None);
+            build.define("_WINDOWS", None);
+          } else {
+            build.define("CHMLIB_HAVE_STRINGS_H", None);
+          }
+          build.compile("chm");
+          println!("cargo:rustc-link-lib=static=chm");
+        }
+
+        fn extract_chmlib(out_dir: &Path) {
+          let tarball_path = env::var("CHMLIB_TARBALL").expect("CHMLIB_TARBALL env var must be set for offline build");
+          let buf = fs::read(&tarball_path).expect("Failed to read chmlib tarball");
+          let decompressor = BzDecoder::new(Cursor::new(buf));
+          let mut archive = Archive::new(decompressor);
+          archive.unpack(out_dir).expect("Failed to extract chmlib");
+        }
+
+        fn apply_patches(src_dir: &Path) {
+          let chm_lib_path = src_dir.join("chm_lib.c");
+          let mut contents = fs::read_to_string(&chm_lib_path).expect("Failed to read chm_lib.c");
+          contents = contents.replace("/* yielding an error is preferable to yielding incorrect behavior */\n#error \"Please define the sized types for your platform in chm_lib.c\"", "typedef unsigned char           UChar;\ntypedef int16_t                 Int16;\ntypedef uint16_t                UInt16;\ntypedef int32_t                 Int32;\ntypedef uint32_t                UInt32;\ntypedef int64_t                 Int64;\ntypedef uint64_t                UInt64;");
+          contents = contents
+            .replace("#if __sun || __sgi\n#include <strings.h>", "#ifdef CHMLIB_HAVE_STRINGS_H\n#include <strings.h>");
+          fs::write(&chm_lib_path, contents).expect("Failed to write patched chm_lib.c");
+        }
+        PATCHEOF
+      # Update .cargo-checksum.json for libchm
+      - |
+        python3 -c "
+        import json
+        with open('cargo/vendor/libchm-0.1.0/.cargo-checksum.json', 'r') as f:
+            data = json.load(f)
+        data['files'] = {}
+        with open('cargo/vendor/libchm-0.1.0/.cargo-checksum.json', 'w') as f:
+            json.dump(data, f)
+        "
+      # wxdragon-sys 0.9.14 natively respects WXWIDGETS_DIR env var, no patching needed
+      # Build with cargo
+      - cargo build --release --offline
+      # Install binary
+      - install -Dm755 target/release/paperback /app/bin/paperback
+      # Install translations (remove conflicting files from wxWidgets first)
+      - |
+        if [ -d target/release/langs ]; then
+          mkdir -p /app/share/locale
+          for lang in target/release/langs/*; do
+            langname=$(basename "$lang")
+            rm -rf "/app/share/locale/$langname"
+            cp -r "$lang" "/app/share/locale/"
+          done
+        fi
+      # Install desktop file
+      - install -Dm644 paperback.desktop /app/share/applications/io.github.trypsynth.Paperback.desktop
+      # Update Icon field in desktop file to use app-id
+      - sed -i 's/Icon=paperback/Icon=io.github.trypsynth.Paperback/' /app/share/applications/io.github.trypsynth.Paperback.desktop
+      # Install icons
+      - for size in 16 32 48 64 128 256; do if [ -f icons/hicolor/${size}x${size}/apps/paperback.png ]; then install -Dm644 icons/hicolor/${size}x${size}/apps/paperback.png /app/share/icons/hicolor/${size}x${size}/apps/io.github.trypsynth.Paperback.png; fi; done
+    sources:
+      - type: dir
+        path: .
+        skip:
+          - .beads
+      - cargo-sources.json
+      - type: inline
+        contents: |
+          [source.crates-io]
+          replace-with = "vendored-sources"
+
+          [source."git+https://github.com/aryanchoudharypro/PDFium-rs?branch=feature/tagged-pdf-support"]
+          git = "https://github.com/aryanchoudharypro/PDFium-rs"
+          branch = "feature/tagged-pdf-support"
+          replace-with = "vendored-sources"
+
+          [source.vendored-sources]
+          directory = "cargo/vendor"
+        dest: cargo
+        dest-filename: config.toml
+      # chmlib tarball for offline build (libchm crate normally downloads this)
+      - type: file
+        url: http://www.jedrea.com/chmlib/chmlib-0.40.tar.bz2
+        sha256: 3449d64b0cf71578b2c7e3ddc048d4af3661f44a83941ea074a7813f3a59ffa3
+      # wxWidgets source for wxdragon-sys (normally downloads at build time)
+      - type: archive
+        url: https://github.com/wxWidgets/wxWidgets/releases/download/v3.3.2/wxWidgets-3.3.2.zip
+        sha256: f6a56de6d8fb55317230fba4ef64f81a646ad6f8c439d2710d98750493a8a569
+        dest: wxWidgets-extracted

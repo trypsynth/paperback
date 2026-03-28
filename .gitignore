@@ -5,3 +5,9 @@ web/_site/
 *.pdf
 *.rtf
 .DS_Store
+result
+.direnv/
+.flatpak-builder/
+*.flatpak
+repo-flatpak/
+cargo-sources.json

@@ -37,6 +37,46 @@ The following tools aren't required to build a functioning Paperback on a basic 
 * `gettext` tools (`xgettext`, `msgfmt`, `msgmerge`) on your `PATH` to generate the translation template and compile translations.
 * InnoSetup installed to create the installer.
 
+### Linux
+
+Building on Linux requires wxWidgets 3.2+ with GTK3 backend. The wxDragon build system will handle compiling the wxWidgets bindings.
+
+```bash
+cargo build --release
+```
+
+Optional tools:
+- `pandoc` for HTML readme generation
+- `gettext` tools for translations
+
+### Linux (Nix)
+
+**Run directly:**
+```bash
+nix run github:trypsynth/paperback
+```
+
+**Install to profile:**
+```bash
+nix profile install github:trypsynth/paperback
+```
+
+**Build from source:**
+```bash
+# Clone repository
+git clone https://github.com/trypsynth/paperback
+cd paperback
+
+# Build and run
+nix run
+
+# Or build without running:
+nix build
+
+# Build Flatpak:
+flatpak-builder --force-clean --repo=repo build io.github.trypsynth.Paperback.yaml
+```
+
 ## Contributing
 
 Contributions are welcome! Whether through issues, pull requests, discussions, or other means, your interest is most certainly appreciated. Thanks for using Paperback!
