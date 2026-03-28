@@ -29,7 +29,7 @@ roxmltree = "0.21.1"
 rtf-parser = "0.4.2"
 scraper = "0.26.0"
 serde = { version = "1.0.228", default-features = false, features = ["derive", "std"] }
-sha1 = "0.10.6"
+sha1 = "0.11.0"
 ureq = { version = "3.3.0", default-features = false, features = ["json", "rustls"] }
 wxdragon = { version = "0.9.14", features = ["webview"] }
 zip = { version = "8.4.0", default-features = false, features = ["deflate"] }
