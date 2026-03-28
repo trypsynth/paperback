@@ -773,6 +773,7 @@ impl ConfigManager {
 			("navigation_wrap", false, None, None),
 			("check_for_updates_on_startup", true, None, None),
 			("recent_documents_to_show", false, Some(DEFAULT_RECENT_DOCUMENTS_TO_SHOW), None),
+			("max_line_length", false, Some(0), None),
 			("sleep_timer_duration", false, Some(30), None),
 			("language", false, None, Some("")),
 			("active_document", false, None, Some("")),
