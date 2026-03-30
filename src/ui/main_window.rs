@@ -1253,6 +1253,9 @@ impl MainWindow {
 									dm_ref.close_document(index);
 								}
 							}
+							if !result.paths_to_close.is_empty() {
+								update_title_from_manager(&frame_copy, &dm_ref);
+							}
 						}
 						if let Some(path) = result.open {
 							let path_buf = Path::new(&path).to_path_buf();
