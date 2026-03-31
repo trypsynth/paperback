@@ -20,8 +20,10 @@ use super::{
 	help::{self, MAIN_WINDOW_PTR},
 	menu, menu_ids,
 	navigation::{self, MarkerNavTarget},
-	status, tray,
+	status,
 };
+#[cfg(not(target_os = "linux"))]
+use super::tray;
 use crate::{
 	config::{ConfigManager, UpdateChannel},
 	ipc::IpcCommand,
@@ -46,6 +48,7 @@ pub struct MainWindow {
 	frame: Frame,
 	doc_manager: Rc<Mutex<DocumentManager>>,
 	config: Rc<Mutex<ConfigManager>>,
+	#[cfg(not(target_os = "linux"))]
 	_tray_state: Rc<Mutex<Option<tray::TrayState>>>,
 	_live_region_label: StaticText,
 	_find_dialog: Rc<Mutex<Option<FindDialogState>>>,
@@ -114,11 +117,14 @@ impl MainWindow {
 			}
 			event.skip(true);
 		});
+		#[cfg(not(target_os = "linux"))]
 		let tray_state = Rc::new(Mutex::new(None));
+		#[cfg(not(target_os = "linux"))]
 		tray::bind_tray_events(frame, &doc_manager, &config, &tray_state);
 		{
 			let dm_for_close = Rc::clone(&doc_manager);
 			let config_for_close = Rc::clone(&config);
+			#[cfg(not(target_os = "linux"))]
 			let tray_for_close = Rc::clone(&tray_state);
 			frame.on_close(move |event| {
 				let dm = dm_for_close.lock().unwrap();
@@ -129,12 +135,14 @@ impl MainWindow {
 					cfg.flush();
 				}
 				dm.save_all_positions();
+				#[cfg(not(target_os = "linux"))]
 				if let Some(state) = tray_for_close.lock().unwrap().as_ref() {
 					state.icon.remove_icon();
 				}
 				event.skip(true);
 			});
 		}
+		#[cfg(not(target_os = "linux"))]
 		{
 			let tray_for_destroy = Rc::clone(&tray_state);
 			frame.on_destroy(move |_event| {
@@ -148,6 +156,7 @@ impl MainWindow {
 			frame,
 			doc_manager,
 			config,
+			#[cfg(not(target_os = "linux"))]
 			_tray_state: tray_state,
 			_live_region_label: live_region_label,
 			_find_dialog: find_dialog,
@@ -198,6 +207,7 @@ impl MainWindow {
 		self.frame.request_user_attention(UserAttentionFlag::Info);
 		self.frame.raise();
 		self.doc_manager.lock().unwrap().restore_focus();
+		#[cfg(not(target_os = "linux"))]
 		if let Some(state) = self._tray_state.lock().unwrap().as_mut() {
 			state.icon.remove_icon();
 		}

@@ -10,6 +10,13 @@ use std::{
 use bitflags::bitflags;
 use wxdragon::{event::WebViewEvents, ffi, prelude::*, translations::translate as t, widgets::WebView};
 
+#[cfg(target_os = "linux")]
+mod accessible_tree;
+#[cfg(target_os = "linux")]
+mod elements_gtk;
+#[cfg(target_os = "linux")]
+mod toc_gtk;
+
 use crate::{
 	config::ConfigManager,
 	document::{DocumentStats, TocItem},
@@ -29,6 +36,7 @@ const DOC_INFO_WIDTH: i32 = 600;
 const DOC_INFO_HEIGHT: i32 = 400;
 const KEY_DELETE: i32 = 127;
 const KEY_NUMPAD_DELETE: i32 = 330;
+#[cfg(not(target_os = "linux"))]
 const KEY_SPACE: i32 = 32;
 const KEY_ESCAPE: i32 = 27;
 const KEY_RETURN: i32 = 13;
@@ -844,6 +852,14 @@ pub fn show_view_note_dialog(parent: &dyn WxWidget, note_text: &str) {
 }
 
 pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i32) -> Option<i32> {
+	#[cfg(target_os = "linux")]
+	return toc_gtk::show_toc_dialog(parent, toc_items, current_offset);
+	#[cfg(not(target_os = "linux"))]
+	return show_toc_dialog_wx(parent, toc_items, current_offset);
+}
+
+#[cfg(not(target_os = "linux"))]
+fn show_toc_dialog_wx(parent: &Frame, toc_items: &[TocItem], current_offset: i32) -> Option<i32> {
 	let dialog_title = t("Table of Contents");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
 	let selected_offset = Rc::new(Cell::new(-1));
@@ -863,6 +879,7 @@ pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i3
 	}
 }
 
+#[cfg(not(target_os = "linux"))]
 fn build_toc_tree(dialog: Dialog, toc_items: &[TocItem], current_offset: i32) -> (TreeCtrl, TreeItemId) {
 	let tree = TreeCtrl::builder(&dialog)
 		.with_style(TreeCtrlStyle::Default | TreeCtrlStyle::HideRoot)
@@ -876,6 +893,7 @@ fn build_toc_tree(dialog: Dialog, toc_items: &[TocItem], current_offset: i32) ->
 	(tree, root)
 }
 
+#[cfg(not(target_os = "linux"))]
 fn bind_toc_selection(tree: TreeCtrl, selected_offset: Rc<Cell<i32>>) {
 	let tree_for_sel = tree;
 	tree.on_selection_changed(move |event| {
@@ -889,6 +907,7 @@ fn bind_toc_selection(tree: TreeCtrl, selected_offset: Rc<Cell<i32>>) {
 	});
 }
 
+#[cfg(not(target_os = "linux"))]
 fn bind_toc_activation(dialog: Dialog, tree: TreeCtrl, selected_offset: Rc<Cell<i32>>) {
 	let dialog_for_activate = dialog;
 	let tree_for_activate = tree;
@@ -904,6 +923,7 @@ fn bind_toc_activation(dialog: Dialog, tree: TreeCtrl, selected_offset: Rc<Cell<
 	});
 }
 
+#[cfg(not(target_os = "linux"))]
 fn bind_toc_search(tree: TreeCtrl) {
 	// Native Win32 first-letter navigation is used as-is. The only tweak needed is
 	// preventing space from activating the OK button (space fires item_activated on
@@ -919,12 +939,14 @@ fn bind_toc_search(tree: TreeCtrl) {
 	});
 }
 
+#[cfg(not(target_os = "linux"))]
 fn build_toc_buttons(dialog: Dialog) -> (Button, Button) {
 	let ok_button = Button::builder(&dialog).with_label(&t("OK")).build();
 	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
 	(ok_button, cancel_button)
 }
 
+#[cfg(not(target_os = "linux"))]
 fn bind_toc_ok(dialog: Dialog, ok_button: Button, selected_offset: Rc<Cell<i32>>) {
 	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
 	let dialog_for_ok = dialog;
@@ -944,6 +966,7 @@ fn bind_toc_ok(dialog: Dialog, ok_button: Button, selected_offset: Rc<Cell<i32>>
 	});
 }
 
+#[cfg(not(target_os = "linux"))]
 fn bind_toc_layout(dialog: Dialog, tree: TreeCtrl, ok_button: Button, cancel_button: Button) {
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add(&tree, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
@@ -956,6 +979,7 @@ fn bind_toc_layout(dialog: Dialog, tree: TreeCtrl, ok_button: Button, cancel_but
 	dialog.centre();
 }
 
+#[cfg(not(target_os = "linux"))]
 fn populate_toc_tree(tree: TreeCtrl, parent: &TreeItemId, items: &[TocItem]) {
 	for item in items {
 		let display_text = if item.name.is_empty() { t("Untitled") } else { item.name.clone() };
@@ -968,6 +992,7 @@ fn populate_toc_tree(tree: TreeCtrl, parent: &TreeItemId, items: &[TocItem]) {
 	}
 }
 
+#[cfg(not(target_os = "linux"))]
 fn find_and_select_item(tree: TreeCtrl, parent: &TreeItemId, offset: i32) -> bool {
 	if let Some((child, mut cookie)) = tree.get_first_child(parent) {
 		let mut current_child = Some(child);
@@ -1948,6 +1973,14 @@ pub fn show_web_view_dialog(
 }
 
 pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<i64> {
+	#[cfg(target_os = "linux")]
+	return elements_gtk::show_elements_dialog(parent, session, current_pos);
+	#[cfg(not(target_os = "linux"))]
+	return show_elements_dialog_wx(parent, session, current_pos);
+}
+
+#[cfg(not(target_os = "linux"))]
+fn show_elements_dialog_wx(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<i64> {
 	let dialog = Dialog::builder(parent, &t("Elements")).build();
 	let ElementsDialogUi { content_sizer, view_choice, headings_tree, links_list } = build_elements_dialog_ui(dialog);
 	let (selected_offset, link_offsets) = populate_elements_dialog(session, current_pos, headings_tree, links_list);
@@ -1969,6 +2002,7 @@ pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_p
 	}
 }
 
+#[cfg(not(target_os = "linux"))]
 struct ElementsDialogUi {
 	content_sizer: BoxSizer,
 	view_choice: ComboBox,
@@ -1976,6 +2010,7 @@ struct ElementsDialogUi {
 	links_list: ListBox,
 }
 
+#[cfg(not(target_os = "linux"))]
 fn build_elements_dialog_ui(dialog: Dialog) -> ElementsDialogUi {
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let choice_sizer = BoxSizer::builder(Orientation::Horizontal).build();
@@ -2012,6 +2047,7 @@ fn build_elements_dialog_ui(dialog: Dialog) -> ElementsDialogUi {
 	ElementsDialogUi { content_sizer, view_choice, headings_tree, links_list }
 }
 
+#[cfg(not(target_os = "linux"))]
 fn populate_elements_dialog(
 	session: &DocumentSession,
 	current_pos: i64,
@@ -2069,6 +2105,7 @@ fn populate_elements_dialog(
 	(selected_offset, Rc::new(link_offsets))
 }
 
+#[cfg(not(target_os = "linux"))]
 fn bind_elements_view_toggle(view_choice: ComboBox, headings_tree: TreeCtrl, links_list: ListBox, dialog: Dialog) {
 	let headings_tree_for_choice = headings_tree;
 	let links_list_for_choice = links_list;
@@ -2088,6 +2125,7 @@ fn bind_elements_view_toggle(view_choice: ComboBox, headings_tree: TreeCtrl, lin
 	});
 }
 
+#[cfg(not(target_os = "linux"))]
 fn bind_elements_activation(
 	dialog: Dialog,
 	headings_tree: TreeCtrl,
@@ -2124,6 +2162,7 @@ fn bind_elements_activation(
 	});
 }
 
+#[cfg(not(target_os = "linux"))]
 fn build_elements_buttons(dialog: Dialog) -> (Button, Button) {
 	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
 	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
@@ -2132,6 +2171,7 @@ fn build_elements_buttons(dialog: Dialog) -> (Button, Button) {
 	(ok_button, cancel_button)
 }
 
+#[cfg(not(target_os = "linux"))]
 fn bind_elements_ok_action(
 	dialog: Dialog,
 	view_choice: ComboBox,
@@ -2166,6 +2206,7 @@ fn bind_elements_ok_action(
 	});
 }
 
+#[cfg(not(target_os = "linux"))]
 fn finalize_elements_layout(dialog: Dialog, content_sizer: BoxSizer, ok_button: Button, cancel_button: Button) {
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	button_sizer.add_stretch_spacer(1);

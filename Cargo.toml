@@ -34,6 +34,9 @@ ureq = { version = "3.3.0", default-features = false, features = ["json", "rustl
 wxdragon = { version = "0.9.14", features = ["webview"] }
 zip = { version = "8.4.0", default-features = false, features = ["deflate"] }
 
+[target.'cfg(target_os = "linux")'.dependencies]
+gtk = { version = "0.18", default-features = false }
+
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_System_Com", "Win32_UI_WindowsAndMessaging", "Win32_Foundation", "Win32_System_Ole", "Win32_System_Variant"] }
 
