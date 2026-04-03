@@ -171,6 +171,17 @@ impl DocumentBuffer {
 	pub fn newline_positions(&self) -> &[usize] {
 		&self.newline_char_positions
 	}
+
+	pub fn apply_line_wrapping(&mut self, max_width: usize) {
+		use crate::text::wrap_content;
+		self.content = wrap_content(&self.content, max_width);
+		self.newline_char_positions.clear();
+		for (i, c) in self.content.chars().enumerate() {
+			if c == '\n' {
+				self.newline_char_positions.push(i);
+			}
+		}
+	}
 }
 
 impl Default for DocumentBuffer {

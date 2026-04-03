@@ -71,17 +71,18 @@ impl DocumentManager {
 			self.notebook.set_selection(index);
 			return true;
 		}
-		let (password, forced_extension) = {
+		let (password, forced_extension, max_line_length) = {
 			let config = self.config.lock().unwrap();
 			let path_str = path.to_string_lossy();
 			config.import_document_settings(&path_str);
 			let forced_extension = config.get_document_format(&path_str);
 			let password = config.get_document_password(&path_str);
+			let max_line_length = usize::try_from(config.get_app_int("max_line_length", 0)).unwrap_or(0);
 			drop(config);
-			(password, forced_extension)
+			(password, forced_extension, max_line_length)
 		};
 		let path_str = path.to_string_lossy().to_string();
-		match DocumentSession::new(&path_str, &password, &forced_extension) {
+		match DocumentSession::new(&path_str, &password, &forced_extension, max_line_length) {
 			Ok(session) => self.add_session_tab(self_rc, path, session, &password),
 			Err(err) => {
 				if err.starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
@@ -93,7 +94,7 @@ impl DocumentManager {
 						show_error_dialog(&self.notebook, &t("Password is required."), &t("Error"));
 						return false;
 					};
-					match DocumentSession::new(&path_str, &password, &forced_extension) {
+					match DocumentSession::new(&path_str, &password, &forced_extension, max_line_length) {
 						Ok(session) => self.add_session_tab(self_rc, path, session, &password),
 						Err(retry_error) => {
 							let message = build_document_load_error_message(path, &retry_error);
@@ -413,6 +414,19 @@ impl DocumentManager {
 			tab.panel.layout();
 			old_ctrl.destroy();
 			tab.text_ctrl = text_ctrl;
+		}
+	}
+
+	pub fn apply_max_line_length(&mut self, self_rc: &Rc<Mutex<Self>>) {
+		let paths: Vec<PathBuf> = self.tabs.iter().map(|tab| tab.file_path.clone()).collect();
+		self.save_all_positions();
+		while !self.tabs.is_empty() {
+			let _page = self.notebook.get_page(0);
+			self.notebook.remove_page(0);
+			self.tabs.remove(0);
+		}
+		for path in &paths {
+			self.open_file(self_rc, path);
 		}
 	}
 

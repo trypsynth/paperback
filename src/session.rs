@@ -123,7 +123,7 @@ impl DocumentSession {
 	/// # Errors
 	///
 	/// Returns an error if the document cannot be parsed.
-	pub fn new(file_path: &str, password: &str, forced_extension: &str) -> Result<Self, String> {
+	pub fn new(file_path: &str, password: &str, forced_extension: &str, max_line_length: usize) -> Result<Self, String> {
 		let mut context = ParserContext::new(file_path.to_string());
 		if !password.is_empty() {
 			context = context.with_password(password.to_string());
@@ -132,7 +132,11 @@ impl DocumentSession {
 			context = context.with_forced_extension(forced_extension.to_string());
 		}
 		let parser_flags = parser::get_parser_flags_for_context(&context);
-		let doc = parser::parse_document(&context).map_err(|e| e.to_string())?;
+		let mut doc = parser::parse_document(&context).map_err(|e| e.to_string())?;
+		if max_line_length > 0 {
+			doc.buffer.apply_line_wrapping(max_line_length);
+			doc.compute_stats();
+		}
 		Ok(Self {
 			handle: DocumentHandle::new(doc),
 			file_path: file_path.to_string(),

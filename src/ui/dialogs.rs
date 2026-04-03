@@ -48,6 +48,7 @@ type NavigationHandler = Box<dyn Fn(&str) -> bool>;
 pub struct OptionsDialogResult {
 	pub flags: OptionsDialogFlags,
 	pub recent_documents_to_show: i32,
+	pub max_line_length: i32,
 	pub language: String,
 	pub update_channel: crate::config::UpdateChannel,
 }
@@ -82,6 +83,7 @@ struct OptionsDialogUi {
 	check_for_updates_check: CheckBox,
 	bookmark_sounds_check: CheckBox,
 	recent_docs_ctrl: SpinCtrl,
+	max_line_length_ctrl: SpinCtrl,
 	language_combo: ComboBox,
 	update_channel_combo: ComboBox,
 	language_codes: Vec<String>,
@@ -102,7 +104,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		Some(1) => crate::config::UpdateChannel::Dev,
 		_ => crate::config::UpdateChannel::Stable,
 	};
-	Some(OptionsDialogResult { flags, recent_documents_to_show: ui.recent_docs_ctrl.value(), language, update_channel })
+	Some(OptionsDialogResult { flags, recent_documents_to_show: ui.recent_docs_ctrl.value(), max_line_length: ui.max_line_length_ctrl.value(), language, update_channel })
 }
 
 fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDialogUi {
@@ -114,15 +116,23 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let reading_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let restore_docs_check =
 		CheckBox::builder(&general_panel).with_label(&t("&Restore previously opened documents on startup")).build();
+	restore_docs_check.set_name(&t("Restore previously opened documents on startup"));
 	let word_wrap_check = CheckBox::builder(&reading_panel).with_label(&t("&Word wrap")).build();
+	word_wrap_check.set_name(&t("Word wrap"));
 	let minimize_to_tray_check = CheckBox::builder(&general_panel).with_label(&t("&Minimize to system tray")).build();
+	minimize_to_tray_check.set_name(&t("Minimize to system tray"));
 	let start_maximized_check = CheckBox::builder(&general_panel).with_label(&t("&Start maximized")).build();
+	start_maximized_check.set_name(&t("Start maximized"));
 	let compact_go_menu_check = CheckBox::builder(&reading_panel).with_label(&t("Show compact &go menu")).build();
+	compact_go_menu_check.set_name(&t("Show compact go menu"));
 	let navigation_wrap_check = CheckBox::builder(&reading_panel).with_label(&t("&Wrap navigation")).build();
+	navigation_wrap_check.set_name(&t("Wrap navigation"));
 	let bookmark_sounds_check =
 		CheckBox::builder(&reading_panel).with_label(&t("Play &sounds on bookmarks and notes")).build();
+	bookmark_sounds_check.set_name(&t("Play sounds on bookmarks and notes"));
 	let check_for_updates_check =
 		CheckBox::builder(&general_panel).with_label(&t("Check for &updates on startup")).build();
+	check_for_updates_check.set_name(&t("Check for updates on startup"));
 	let option_padding = 5;
 	for check in [&restore_docs_check, &start_maximized_check, &minimize_to_tray_check, &check_for_updates_check] {
 		general_sizer.add(check, 0, SizerFlag::All, option_padding);
@@ -130,6 +140,14 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	for check in [&word_wrap_check, &navigation_wrap_check, &compact_go_menu_check, &bookmark_sounds_check] {
 		reading_sizer.add(check, 0, SizerFlag::All, option_padding);
 	}
+	let max_line_length_label =
+		StaticText::builder(&reading_panel).with_label(&t("Ma&ximum line length (0 for entire line):")).build();
+	let max_line_length_ctrl = SpinCtrl::builder(&reading_panel).with_range(0, 500).build();
+	max_line_length_ctrl.set_name(&t("Maximum line length (0 for entire line)"));
+	let max_line_length_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	max_line_length_sizer.add(&max_line_length_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
+	max_line_length_sizer.add(&max_line_length_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
+	reading_sizer.add_sizer(&max_line_length_sizer, 0, SizerFlag::All, option_padding);
 	let max_recent_docs = 100;
 	let recent_docs_label =
 		StaticText::builder(&general_panel).with_label(&t("Number of &recent documents to show:")).build();
@@ -173,6 +191,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	bookmark_sounds_check.set_value(config.get_app_bool("bookmark_sounds", true));
 	check_for_updates_check.set_value(config.get_app_bool("check_for_updates_on_startup", true));
 	recent_docs_ctrl.set_value(config.get_app_int("recent_documents_to_show", 25).clamp(0, max_recent_docs));
+	max_line_length_ctrl.set_value(config.get_app_int("max_line_length", 0).clamp(0, 500));
 	let stored_language = config.get_app_string("language", "");
 	let current_language = if stored_language.is_empty() {
 		TranslationManager::instance().lock().unwrap().current_language()
@@ -204,6 +223,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		check_for_updates_check,
 		bookmark_sounds_check,
 		recent_docs_ctrl,
+		max_line_length_ctrl,
 		language_combo,
 		update_channel_combo,
 		language_codes,

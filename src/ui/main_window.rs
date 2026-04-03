@@ -1102,9 +1102,9 @@ impl MainWindow {
 					let Some(options) = options else {
 						return;
 					};
-					let (old_word_wrap, old_compact_menu) = {
+					let (old_word_wrap, old_compact_menu, old_max_line_length) = {
 						let cfg = config.lock().unwrap();
-						(cfg.get_app_bool("word_wrap", false), cfg.get_app_bool("compact_go_menu", true))
+						(cfg.get_app_bool("word_wrap", false), cfg.get_app_bool("compact_go_menu", true), cfg.get_app_int("max_line_length", 0))
 					};
 					let cfg = config.lock().unwrap();
 					cfg.set_app_bool(
@@ -1122,6 +1122,7 @@ impl MainWindow {
 					);
 					cfg.set_app_bool("bookmark_sounds", options.flags.contains(OptionsDialogFlags::BOOKMARK_SOUNDS));
 					cfg.set_app_int("recent_documents_to_show", options.recent_documents_to_show);
+					cfg.set_app_int("max_line_length", options.max_line_length);
 					cfg.set_app_string("language", &options.language);
 					cfg.set_update_channel(options.update_channel);
 					cfg.flush();
@@ -1131,6 +1132,12 @@ impl MainWindow {
 						let dm_for_wrap = Rc::clone(&dm);
 						let mut dm_ref = dm.lock().unwrap();
 						dm_ref.apply_word_wrap(&dm_for_wrap, options_word_wrap);
+						dm_ref.restore_focus();
+					}
+					if old_max_line_length != options.max_line_length {
+						let dm_for_wrap = Rc::clone(&dm);
+						let mut dm_ref = dm.lock().unwrap();
+						dm_ref.apply_max_line_length(&dm_for_wrap);
 						dm_ref.restore_focus();
 					}
 					let options_compact_menu = options.flags.contains(OptionsDialogFlags::COMPACT_GO_MENU);

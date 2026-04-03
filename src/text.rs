@@ -109,6 +109,39 @@ pub const fn is_space_like(ch: char) -> bool {
 	ch.is_whitespace() || matches!(ch, '\u{00A0}' | '\u{200B}')
 }
 
+#[must_use]
+pub fn wrap_content(content: &str, max_width: usize) -> String {
+	let mut result = String::with_capacity(content.len());
+	for (i, line) in content.split('\n').enumerate() {
+		if i > 0 {
+			result.push('\n');
+		}
+		if line.chars().count() <= max_width {
+			result.push_str(line);
+			continue;
+		}
+		let mut current_len = 0usize;
+		let mut first_word = true;
+		for word in line.split(' ') {
+			let word_len = word.chars().count();
+			if first_word {
+				result.push_str(word);
+				current_len = word_len;
+				first_word = false;
+			} else if current_len + 1 + word_len <= max_width {
+				result.push(' ');
+				result.push_str(word);
+				current_len += 1 + word_len;
+			} else {
+				result.push('\n');
+				result.push_str(word);
+				current_len = word_len;
+			}
+		}
+	}
+	result
+}
+
 pub fn format_list_item(number: i32, list_type: &str) -> String {
 	match list_type {
 		"a" => to_alpha(number, false),
@@ -282,5 +315,62 @@ mod tests {
 	#[test]
 	fn display_len_plain_newline_counts_as_one_unit() {
 		assert_eq!(display_len("\n"), 1);
+	}
+
+	#[test]
+	fn wrap_content_short_line_unchanged() {
+		assert_eq!(wrap_content("Hello world", 20), "Hello world");
+	}
+
+	#[test]
+	fn wrap_content_exact_width_unchanged() {
+		assert_eq!(wrap_content("Hello world", 11), "Hello world");
+	}
+
+	#[test]
+	fn wrap_content_breaks_at_word_boundary() {
+		assert_eq!(wrap_content("Hello world, this is a test", 15), "Hello world,\nthis is a test");
+	}
+
+	#[test]
+	fn wrap_content_preserves_existing_newlines() {
+		assert_eq!(wrap_content("Short\nAlso short", 20), "Short\nAlso short");
+	}
+
+	#[test]
+	fn wrap_content_wraps_each_paragraph_independently() {
+		let input = "Hello world, this is long\nAnother long paragraph here";
+		let expected = "Hello world,\nthis is long\nAnother long\nparagraph here";
+		assert_eq!(wrap_content(input, 15), expected);
+	}
+
+	#[test]
+	fn wrap_content_long_word_kept_intact() {
+		assert_eq!(wrap_content("Supercalifragilisticexpialidocious end", 10), "Supercalifragilisticexpialidocious\nend");
+	}
+
+	#[test]
+	fn wrap_content_preserves_char_count() {
+		let input = "Hello world, this is a very long line that should be wrapped at some point";
+		let result = wrap_content(input, 30);
+		assert_eq!(input.chars().count(), result.chars().count());
+	}
+
+	#[test]
+	fn wrap_content_empty_string() {
+		assert_eq!(wrap_content("", 100), "");
+	}
+
+	#[test]
+	fn wrap_content_multiple_wraps() {
+		let input = "one two three four five six seven eight nine ten";
+		let result = wrap_content(input, 15);
+		for line in result.split('\n') {
+			// Each line should be <= 15 chars, unless a single word exceeds it
+			let words: Vec<&str> = line.split(' ').collect();
+			if words.len() > 1 {
+				assert!(line.chars().count() <= 15, "Line too long: {line}");
+			}
+		}
 	}
 }
