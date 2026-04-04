@@ -38,6 +38,12 @@ jobs:
           components: clippy
       - name: Install CMake and Ninja
         run: choco install cmake ninja -y
+      - name: Install WebView2 SDK
+        run: |
+          nuget install Microsoft.Web.WebView2 -OutputDirectory packages
+          $pkg = Get-ChildItem "packages" -Filter "Microsoft.Web.WebView2.*" -Directory | Select-Object -First 1
+          $libPath = Join-Path $pkg.FullName "build\native\x64"
+          echo "LIB=$env:LIB;$libPath" >> $env:GITHUB_ENV
       - name: Install Gettext via MSYS2
         uses: msys2/setup-msys2@v2
         with:
