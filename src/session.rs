@@ -655,8 +655,7 @@ impl DocumentSession {
 
 	#[must_use]
 	pub fn position_from_percent(&self, percent: i32) -> i64 {
-		let content = &self.handle.document().buffer.content;
-		let total_chars = i64::try_from(content.chars().count()).unwrap_or(0);
+		let total_chars = i64::try_from(self.handle.document().buffer.char_count()).unwrap_or(0);
 		let percent = i64::from(percent.clamp(0, 100));
 		if total_chars == 0 {
 			return 0;
@@ -674,25 +673,17 @@ impl DocumentSession {
 
 	#[must_use]
 	pub fn position_from_line(&self, line: i64) -> i64 {
-		if line < 1 {
+		if line <= 1 {
 			return 0;
 		}
-		let content = &self.handle.document().buffer.content;
-		if line == 1 {
-			return 0;
-		}
+		let buf = &self.handle.document().buffer;
 		let target_newlines = usize::try_from(line - 1).unwrap_or(0);
-		let mut newline_count = 0;
-		for (i, c) in content.chars().enumerate() {
-			if c == '\n' {
-				newline_count += 1;
-				if newline_count == target_newlines {
-					return i64::try_from(i + 1).unwrap_or(0);
-				}
-			}
+		let newlines = buf.newline_positions();
+		if target_newlines <= newlines.len() {
+			i64::try_from(newlines[target_newlines - 1] + 1).unwrap_or(0)
+		} else {
+			i64::try_from(buf.char_count()).unwrap_or(0)
 		}
-		// Line number exceeds actual lines, return end of document.
-		i64::try_from(content.chars().count()).unwrap_or(0)
 	}
 
 	#[must_use]
@@ -745,13 +736,13 @@ impl DocumentSession {
 	/// Returns the (start, end) char positions of the content line (delimited by `\n`) containing `position`.
 	#[must_use]
 	pub fn get_line_bounds(&self, position: i64) -> (i64, i64) {
-		let content = &self.handle.document().buffer.content;
-		let total_chars = content.chars().count();
+		let buf = &self.handle.document().buffer;
+		let total_chars = buf.char_count();
 		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
-		let line_start =
-			content.chars().take(pos).collect::<Vec<_>>().iter().rposition(|&c| c == '\n').map_or(0, |idx| idx + 1);
-		let line_len = content.chars().skip(line_start).position(|c| c == '\n').unwrap_or(total_chars - line_start);
-		let line_end = line_start + line_len;
+		let newlines = buf.newline_positions();
+		let idx = newlines.partition_point(|&p| p < pos);
+		let line_start = if idx > 0 { newlines[idx - 1] + 1 } else { 0 };
+		let line_end = if idx < newlines.len() { newlines[idx] } else { total_chars };
 		(i64::try_from(line_start).unwrap_or(0), i64::try_from(line_end).unwrap_or(i64::MAX))
 	}
 
