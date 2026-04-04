@@ -1,7 +1,9 @@
 use std::{
+	cell::{Cell, RefCell},
 	cmp::Ordering,
+	collections::HashMap,
 	env,
-	fmt::{self, Display, Formatter, Write},
+	fmt::{self, Display, Formatter},
 	fs,
 	path::{Path, PathBuf},
 	str::FromStr,
@@ -11,15 +13,12 @@ use base64::{
 	Engine,
 	engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD},
 };
+use serde::{Deserialize, Serialize};
 use sha1::{Digest, Sha1};
-use wxdragon::config::{Config, ConfigStyle};
 
 use crate::types::DocumentListItem;
 
-const CONFIG_VERSION_LEGACY: i64 = 0;
-const CONFIG_VERSION_1: i64 = 1;
-const CONFIG_VERSION_2: i64 = 2;
-const CONFIG_VERSION_CURRENT: i64 = CONFIG_VERSION_2;
+const CONFIG_VERSION: u32 = 3;
 const DEFAULT_RECENT_DOCUMENTS_TO_SHOW: i64 = 25;
 const MAX_RECENT_DOCUMENTS_TO_SHOW: usize = 100;
 
@@ -71,8 +70,144 @@ pub struct FindSettings {
 	pub use_regex: bool,
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+struct StoredBookmark {
+	start: i64,
+	end: i64,
+	#[serde(default)]
+	note: String,
+}
+
+fn default_true() -> bool {
+	true
+}
+fn default_recent_documents_to_show() -> i64 {
+	DEFAULT_RECENT_DOCUMENTS_TO_SHOW
+}
+fn default_sleep_timer() -> i64 {
+	30
+}
+fn default_update_channel() -> String {
+	"stable".to_string()
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+struct AppSettings {
+	#[serde(default = "default_true")]
+	restore_previous_documents: bool,
+	#[serde(default)]
+	word_wrap: bool,
+	#[serde(default)]
+	minimize_to_tray: bool,
+	#[serde(default)]
+	start_maximized: bool,
+	#[serde(default = "default_true")]
+	compact_go_menu: bool,
+	#[serde(default)]
+	navigation_wrap: bool,
+	#[serde(default = "default_true")]
+	check_for_updates_on_startup: bool,
+	#[serde(default)]
+	find_match_case: bool,
+	#[serde(default)]
+	find_whole_word: bool,
+	#[serde(default)]
+	find_use_regex: bool,
+	#[serde(default = "default_recent_documents_to_show")]
+	recent_documents_to_show: i64,
+	#[serde(default = "default_sleep_timer")]
+	sleep_timer_duration: i64,
+	#[serde(default)]
+	language: String,
+	#[serde(default)]
+	active_document: String,
+	#[serde(default = "default_update_channel")]
+	update_channel: String,
+}
+
+impl Default for AppSettings {
+	fn default() -> Self {
+		Self {
+			restore_previous_documents: true,
+			word_wrap: false,
+			minimize_to_tray: false,
+			start_maximized: false,
+			compact_go_menu: true,
+			navigation_wrap: false,
+			check_for_updates_on_startup: true,
+			find_match_case: false,
+			find_whole_word: false,
+			find_use_regex: false,
+			recent_documents_to_show: DEFAULT_RECENT_DOCUMENTS_TO_SHOW,
+			sleep_timer_duration: 30,
+			language: String::new(),
+			active_document: String::new(),
+			update_channel: "stable".to_string(),
+		}
+	}
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+struct DocumentConfig {
+	path: String,
+	#[serde(default)]
+	last_position: i64,
+	#[serde(default)]
+	navigation_history: Vec<i64>,
+	#[serde(default)]
+	navigation_history_index: usize,
+	#[serde(default)]
+	bookmarks: Vec<StoredBookmark>,
+	#[serde(default, skip_serializing_if = "String::is_empty")]
+	format: String,
+	#[serde(default, skip_serializing_if = "String::is_empty")]
+	password: String,
+	#[serde(default)]
+	opened: bool,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+struct SidecarData {
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	last_position: Option<i64>,
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	format: Option<String>,
+	#[serde(default, skip_serializing_if = "Vec::is_empty")]
+	bookmarks: Vec<StoredBookmark>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+struct ConfigData {
+	version: u32,
+	#[serde(default)]
+	app: AppSettings,
+	#[serde(default)]
+	recent_documents: Vec<String>,
+	#[serde(default)]
+	opened_documents: Vec<String>,
+	#[serde(default)]
+	find_history: Vec<String>,
+	#[serde(default)]
+	documents: HashMap<String, DocumentConfig>,
+}
+
+impl Default for ConfigData {
+	fn default() -> Self {
+		Self {
+			version: CONFIG_VERSION,
+			app: AppSettings::default(),
+			recent_documents: Vec::new(),
+			opened_documents: Vec::new(),
+			find_history: Vec::new(),
+			documents: HashMap::new(),
+		}
+	}
+}
+
 pub struct ConfigManager {
-	config: Option<Config>,
+	data: RefCell<ConfigData>,
+	config_path: PathBuf,
+	dirty: Cell<bool>,
 	initialized: bool,
 }
 
@@ -84,83 +219,151 @@ impl Default for ConfigManager {
 
 impl ConfigManager {
 	#[must_use]
-	pub const fn new() -> Self {
-		Self { config: None, initialized: false }
+	pub fn new() -> Self {
+		Self {
+			data: RefCell::new(ConfigData::default()),
+			config_path: PathBuf::new(),
+			dirty: Cell::new(false),
+			initialized: false,
+		}
 	}
 
-	#[must_use]
 	pub fn initialize(&mut self) -> bool {
-		let config_path = get_config_path();
-		let config = Config::new(
-			"Paperback",
-			Some("Paperback"),
-			Some(&config_path),
-			None,
-			ConfigStyle::USE_LOCAL_FILE | ConfigStyle::USE_NO_ESCAPE_CHARACTERS,
-		);
-		self.config = Some(config);
+		let toml_path = get_config_path();
+		let ini_path = toml_path.with_extension("ini");
+
+		let (data, needs_save) = if toml_path.exists() {
+			match fs::read_to_string(&toml_path).ok().and_then(|s| toml::from_str::<ConfigData>(&s).ok()) {
+				Some(d) => (d, false),
+				None => (ConfigData::default(), true),
+			}
+		} else if ini_path.exists() {
+			(migrate_from_ini(&ini_path), true)
+		} else {
+			(ConfigData::default(), true)
+		};
+
+		self.config_path = toml_path;
 		self.initialized = true;
-		self.load_defaults();
+		*self.data.borrow_mut() = data;
+
+		if needs_save {
+			self.dirty.set(true);
+			self.flush();
+		}
+
 		true
 	}
 
 	pub fn flush(&self) {
-		if let Some(ref config) = self.config {
-			config.flush(false);
+		if !self.initialized || !self.dirty.get() {
+			return;
+		}
+		let data = self.data.borrow();
+		if let Ok(s) = toml::to_string_pretty(&*data) {
+			let _ = fs::write(&self.config_path, s);
+			self.dirty.set(false);
 		}
 	}
 
-	const fn is_ready(&self) -> bool {
-		self.initialized
-	}
-
-	const fn config(&self) -> Option<&Config> {
-		if self.initialized { self.config.as_ref() } else { None }
-	}
-
-	fn with_path<T>(&self, path: &str, f: impl FnOnce(&Config) -> T) -> Option<T> {
-		let config = self.config()?;
-		config.set_path(path);
-		let result = f(config);
-		config.set_path("/");
-		Some(result)
-	}
-
 	pub fn get_app_string(&self, key: &str, default_value: &str) -> String {
-		self.with_path("/app", |config| config.read_string(key, default_value))
-			.unwrap_or_else(|| default_value.to_string())
+		if !self.initialized {
+			return default_value.to_string();
+		}
+		let data = self.data.borrow();
+		match key {
+			"language" => data.app.language.clone(),
+			"active_document" => data.app.active_document.clone(),
+			"update_channel" => data.app.update_channel.clone(),
+			_ => default_value.to_string(),
+		}
 	}
 
 	pub fn get_app_bool(&self, key: &str, default_value: bool) -> bool {
-		self.with_path("/app", |config| config.read_bool(key, default_value)).unwrap_or(default_value)
+		if !self.initialized {
+			return default_value;
+		}
+		let data = self.data.borrow();
+		match key {
+			"restore_previous_documents" => data.app.restore_previous_documents,
+			"word_wrap" => data.app.word_wrap,
+			"minimize_to_tray" => data.app.minimize_to_tray,
+			"start_maximized" => data.app.start_maximized,
+			"compact_go_menu" => data.app.compact_go_menu,
+			"navigation_wrap" => data.app.navigation_wrap,
+			"check_for_updates_on_startup" => data.app.check_for_updates_on_startup,
+			"find_match_case" => data.app.find_match_case,
+			"find_whole_word" => data.app.find_whole_word,
+			"find_use_regex" => data.app.find_use_regex,
+			_ => default_value,
+		}
 	}
 
 	pub fn get_app_int(&self, key: &str, default_value: i32) -> i32 {
-		self.with_path("/app", |config| {
-			let value: i64 = config.read_long(key, i64::from(default_value));
-			value.try_into().unwrap_or(default_value)
-		})
-		.unwrap_or(default_value)
-	}
-
-	fn get_app_long(&self, key: &str, default_value: i64) -> i64 {
-		self.with_path("/app", |config| config.read_long(key, default_value)).unwrap_or(default_value)
+		if !self.initialized {
+			return default_value;
+		}
+		let data = self.data.borrow();
+		let v: i64 = match key {
+			"recent_documents_to_show" => data.app.recent_documents_to_show,
+			"sleep_timer_duration" => data.app.sleep_timer_duration,
+			_ => return default_value,
+		};
+		v.try_into().unwrap_or(default_value)
 	}
 
 	pub fn set_app_string(&self, key: &str, value: &str) {
-		let _ = self.with_path("/app", |config| config.write_string(key, value));
+		if !self.initialized {
+			return;
+		}
+		{
+			let mut data = self.data.borrow_mut();
+			match key {
+				"language" => data.app.language = value.to_string(),
+				"active_document" => data.app.active_document = value.to_string(),
+				"update_channel" => data.app.update_channel = value.to_string(),
+				_ => return,
+			}
+		}
+		self.dirty.set(true);
 	}
 
 	pub fn set_app_bool(&self, key: &str, value: bool) {
-		let _ = self.with_path("/app", |config| config.write_bool(key, value));
+		if !self.initialized {
+			return;
+		}
+		{
+			let mut data = self.data.borrow_mut();
+			match key {
+				"restore_previous_documents" => data.app.restore_previous_documents = value,
+				"word_wrap" => data.app.word_wrap = value,
+				"minimize_to_tray" => data.app.minimize_to_tray = value,
+				"start_maximized" => data.app.start_maximized = value,
+				"compact_go_menu" => data.app.compact_go_menu = value,
+				"navigation_wrap" => data.app.navigation_wrap = value,
+				"check_for_updates_on_startup" => data.app.check_for_updates_on_startup = value,
+				"find_match_case" => data.app.find_match_case = value,
+				"find_whole_word" => data.app.find_whole_word = value,
+				"find_use_regex" => data.app.find_use_regex = value,
+				_ => return,
+			}
+		}
+		self.dirty.set(true);
 	}
 
 	pub fn set_app_int(&self, key: &str, value: i32) {
-		let _ = self.with_path("/app", |config| config.write_long(key, i64::from(value)));
-	}
-
-	fn set_app_long(&self, key: &str, value: i64) {
-		let _ = self.with_path("/app", |config| config.write_long(key, value));
+		if !self.initialized {
+			return;
+		}
+		{
+			let mut data = self.data.borrow_mut();
+			match key {
+				"recent_documents_to_show" => data.app.recent_documents_to_show = i64::from(value),
+				"sleep_timer_duration" => data.app.sleep_timer_duration = i64::from(value),
+				_ => return,
+			}
+		}
+		self.dirty.set(true);
 	}
 
 	pub fn get_update_channel(&self) -> UpdateChannel {
@@ -172,169 +375,62 @@ impl ConfigManager {
 		self.set_app_string("update_channel", &channel.to_string());
 	}
 
-	pub fn get_document_string(&self, path: &str, key: &str, default_value: &str) -> String {
-		let Some(config) = self.config() else { return default_value.to_string() };
-		let section = get_document_section(path);
-		config.set_path(&format!("/{section}"));
-		let result = config.read_string(key, default_value);
-		config.set_path("/");
-		result
-	}
-
-	pub fn get_document_bool(&self, path: &str, key: &str, default_value: bool) -> bool {
-		let Some(config) = self.config() else { return default_value };
-		let section = get_document_section(path);
-		config.set_path(&format!("/{section}"));
-		let result = config.read_bool(key, default_value);
-		config.set_path("/");
-		result
-	}
-
-	pub fn get_document_int(&self, path: &str, key: &str, default_value: i64) -> i64 {
-		let Some(config) = self.config() else { return default_value };
-		let section = get_document_section(path);
-		config.set_path(&format!("/{section}"));
-		let result = config.read_long(key, default_value);
-		config.set_path("/");
-		result
-	}
-
-	pub fn set_document_string(&self, path: &str, key: &str, value: &str) {
-		if let Some(config) = self.config() {
-			let section = get_document_section(path);
-			config.set_path(&format!("/{section}"));
-			config.write_string("path", path);
-			config.write_string(key, value);
-			config.set_path("/");
-		}
-	}
-
-	pub fn set_document_bool(&self, path: &str, key: &str, value: bool) {
-		if let Some(config) = self.config() {
-			let section = get_document_section(path);
-			config.set_path(&format!("/{section}"));
-			config.write_string("path", path);
-			config.write_bool(key, value);
-			config.set_path("/");
-		}
-	}
-
-	pub fn set_document_int(&self, path: &str, key: &str, value: i64) {
-		if let Some(config) = self.config() {
-			let section = get_document_section(path);
-			config.set_path(&format!("/{section}"));
-			config.write_string("path", path);
-			config.write_long(key, value);
-			config.set_path("/");
-		}
-	}
-
 	pub fn add_recent_document(&self, path: &str) {
-		if !self.is_ready() {
+		if !self.initialized {
 			return;
 		}
-		self.ensure_document_path(path);
-		let mut recent = self.get_recent_documents();
-		if let Some(idx) = recent.iter().position(|p| p == path) {
-			recent.remove(idx);
+		{
+			let mut data = self.data.borrow_mut();
+			Self::doc_entry_mut(&mut data, path);
+			if let Some(idx) = data.recent_documents.iter().position(|p| p == path) {
+				data.recent_documents.remove(idx);
+			}
+			data.recent_documents.insert(0, path.to_string());
+			while data.recent_documents.len() > MAX_RECENT_DOCUMENTS_TO_SHOW {
+				data.recent_documents.pop();
+			}
 		}
-		recent.insert(0, path.to_string());
-		while recent.len() > MAX_RECENT_DOCUMENTS_TO_SHOW {
-			recent.pop();
-		}
-		self.write_recent_documents(&recent);
+		self.dirty.set(true);
 	}
 
 	pub fn get_recent_documents(&self) -> Vec<String> {
-		if !self.is_ready() {
+		if !self.initialized {
 			return Vec::new();
 		}
-		let Some(config) = self.config() else { return Vec::new() };
-		config.set_path("/recent_documents");
-		let mut result = Vec::new();
-		for idx in 0.. {
-			let key = format!("doc{idx}");
-			if !config.has_entry(&key) {
-				break;
-			}
-			let doc_id = config.read_string(&key, "");
-			if doc_id.is_empty() {
-				break;
-			}
-			config.set_path("/");
-			config.set_path(&format!("/{doc_id}"));
-			let path = config.read_string("path", "");
-			if !path.is_empty() {
-				result.push(path);
-			}
-			config.set_path("/recent_documents");
-		}
-		config.set_path("/");
-		result
-	}
-
-	pub fn rebuild_recent_documents(&self) {
-		let Some(config) = self.config() else { return };
-		config.set_path("/");
-		if config.has_group("recent_documents") {
-			return;
-		}
-		let mut combined = self.get_recent_documents();
-		for doc in self.get_all_documents() {
-			if !combined.iter().any(|existing| existing == &doc) {
-				combined.push(doc);
-			}
-		}
-		self.write_recent_documents(&combined);
+		self.data.borrow().recent_documents.clone()
 	}
 
 	pub fn add_opened_document(&self, path: &str) {
-		let mut opened = self.get_opened_documents();
-		if opened.iter().any(|p| p == path) {
+		if !self.initialized {
 			return;
 		}
-		opened.push(path.to_string());
-		self.write_opened_documents(&opened);
+		{
+			let mut data = self.data.borrow_mut();
+			if !data.opened_documents.iter().any(|p| p == path) {
+				data.opened_documents.push(path.to_string());
+			}
+		}
+		self.dirty.set(true);
 	}
 
 	pub fn remove_opened_document(&self, path: &str) {
-		let mut opened = self.get_opened_documents();
-		if let Some(idx) = opened.iter().position(|p| p == path) {
-			opened.remove(idx);
-			self.write_opened_documents(&opened);
+		if !self.initialized {
+			return;
 		}
+		{
+			let mut data = self.data.borrow_mut();
+			if let Some(idx) = data.opened_documents.iter().position(|p| p == path) {
+				data.opened_documents.remove(idx);
+			}
+		}
+		self.dirty.set(true);
 	}
 
 	pub fn get_opened_documents(&self) -> Vec<String> {
-		if !self.is_ready() {
+		if !self.initialized {
 			return Vec::new();
 		}
-		let Some(config) = self.config() else { return Vec::new() };
-		config.set_path("/opened_documents");
-		let entries = config.get_entries();
-		config.set_path("/");
-		if !entries.is_empty() {
-			let mut sorted_entries: Vec<_> = entries.into_iter().collect();
-			sorted_entries.sort();
-			config.set_path("/opened_documents");
-			let result: Vec<String> =
-				sorted_entries.iter().map(|key| config.read_string(key, "")).filter(|v| !v.is_empty()).collect();
-			config.set_path("/");
-			return result;
-		}
-		// Fallback: check old-style opened flag on documents
-		let mut opened = Vec::new();
-		for path in self.get_recent_documents() {
-			if self.get_document_opened(&path) {
-				opened.push(path);
-			}
-		}
-		for path in self.get_all_documents() {
-			if self.get_document_opened(&path) && !opened.contains(&path) {
-				opened.push(path);
-			}
-		}
-		opened
+		self.data.borrow().opened_documents.clone()
 	}
 
 	pub fn get_opened_documents_existing(&self) -> Vec<String> {
@@ -356,61 +452,50 @@ impl ConfigManager {
 	}
 
 	pub fn get_find_history(&self) -> Vec<String> {
-		if !self.is_ready() {
+		if !self.initialized {
 			return Vec::new();
 		}
-		let Some(config) = self.config() else { return Vec::new() };
-		config.set_path("/find_history");
-		let mut result = Vec::new();
-		for idx in 0.. {
-			let key = format!("item{idx}");
-			if !config.has_entry(&key) {
-				break;
-			}
-			let entry = config.read_string(&key, "");
-			if entry.is_empty() {
-				break;
-			}
-			result.push(entry);
-		}
-		config.set_path("/");
-		result
+		self.data.borrow().find_history.clone()
 	}
 
 	pub fn add_find_history(&self, text: &str, max_len: usize) {
-		if !self.is_ready() {
+		if !self.initialized {
 			return;
 		}
-		let trimmed = text.trim();
+		let trimmed = text.trim().to_string();
 		if trimmed.is_empty() {
 			return;
 		}
-		let mut history = self.get_find_history();
-		if let Some(idx) = history.iter().position(|entry| entry == trimmed) {
-			history.remove(idx);
-		}
-		history.insert(0, trimmed.to_string());
-		while history.len() > max_len {
-			history.pop();
-		}
-		if let Some(config) = self.config() {
-			config.delete_group("find_history");
-			config.set_path("/find_history");
-			for (idx, entry) in history.iter().enumerate() {
-				let key = format!("item{idx}");
-				config.write_string(&key, entry);
+		{
+			let mut data = self.data.borrow_mut();
+			if let Some(idx) = data.find_history.iter().position(|e| e == &trimmed) {
+				data.find_history.remove(idx);
 			}
-			config.set_path("/");
+			data.find_history.insert(0, trimmed);
+			while data.find_history.len() > max_len {
+				data.find_history.pop();
+			}
 		}
+		self.dirty.set(true);
 	}
 
 	pub fn set_document_position(&self, path: &str, position: i64) {
-		self.set_document_int(path, "last_position", position);
+		if !self.initialized {
+			return;
+		}
+		{
+			let mut data = self.data.borrow_mut();
+			Self::doc_entry_mut(&mut data, path).last_position = position;
+		}
+		self.dirty.set(true);
 	}
 
 	#[must_use]
 	pub fn get_document_position(&self, path: &str) -> i64 {
-		self.get_document_int(path, "last_position", 0)
+		if !self.initialized {
+			return 0;
+		}
+		self.data.borrow().documents.get(&doc_key(path)).map_or(0, |d| d.last_position)
 	}
 
 	#[must_use]
@@ -420,100 +505,91 @@ impl ConfigManager {
 	}
 
 	pub fn set_navigation_history(&self, path: &str, history: &[i64], history_index: usize) {
-		let Some(config) = self.config() else { return };
-		let section = get_document_section(path);
-		config.set_path(&format!("/{section}"));
-		if history.is_empty() {
-			config.delete_entry("navigation_history", false);
-			config.delete_entry("navigation_history_index", false);
-		} else {
-			let history_string = history.iter().map(ToString::to_string).collect::<Vec<_>>().join(",");
-			config.write_string("path", path);
-			config.write_string("navigation_history", &history_string);
-			let index: i64 = history_index.try_into().expect("navigation_history_index does not fit into i64");
-			config.write_long("navigation_history_index", index);
+		if !self.initialized {
+			return;
 		}
-		config.set_path("/");
+		{
+			let mut data = self.data.borrow_mut();
+			let doc = Self::doc_entry_mut(&mut data, path);
+			doc.navigation_history = history.to_vec();
+			doc.navigation_history_index = history_index;
+		}
+		self.dirty.set(true);
 	}
 
 	pub fn get_navigation_history(&self, path: &str) -> NavigationHistory {
 		let mut nav = NavigationHistory::default();
-		let Some(config) = self.config() else { return nav };
-		let section = get_document_section(path);
-		config.set_path(&format!("/{section}"));
-		let history = config.read_string("navigation_history", "");
-		if !history.is_empty() {
-			for token in history.split(',') {
-				let trimmed = token.trim();
-				if trimmed.is_empty() {
-					continue;
-				}
-				if let Ok(pos) = trimmed.parse::<i64>() {
-					nav.positions.push(pos);
-				}
-			}
+		if !self.initialized {
+			return nav;
 		}
-		let value = config.read_long("navigation_history_index", 0);
-		nav.index = usize::try_from(value).unwrap_or(0);
-		config.set_path("/");
+		if let Some(doc) = self.data.borrow().documents.get(&doc_key(path)) {
+			nav.positions = doc.navigation_history.clone();
+			nav.index = doc.navigation_history_index;
+		}
 		nav
 	}
 
+	/// Sets the per-document opened flag. Prefer `add_opened_document` /`remove_opened_document` for maintaining the opened-documents list.
 	pub fn set_document_opened(&self, path: &str, opened: bool) {
-		self.set_document_bool(path, "opened", opened);
-	}
-
-	#[must_use]
-	pub fn get_document_opened(&self, path: &str) -> bool {
-		self.get_document_bool(path, "opened", false)
+		if !self.initialized {
+			return;
+		}
+		{
+			let mut data = self.data.borrow_mut();
+			Self::doc_entry_mut(&mut data, path).opened = opened;
+		}
+		self.dirty.set(true);
 	}
 
 	pub fn remove_document_history(&self, path: &str) {
-		let mut recent = self.get_recent_documents();
-		if let Some(idx) = recent.iter().position(|p| p == path) {
-			recent.remove(idx);
+		if !self.initialized {
+			return;
 		}
-		self.write_recent_documents(&recent);
-		let section = get_document_section(path);
-		if let Some(config) = self.config() {
-			config.delete_group(&section);
+		{
+			let mut data = self.data.borrow_mut();
+			if let Some(idx) = data.recent_documents.iter().position(|p| p == path) {
+				data.recent_documents.remove(idx);
+			}
+			data.documents.remove(&doc_key(path));
 		}
+		self.dirty.set(true);
 	}
 
 	pub fn get_all_documents(&self) -> Vec<String> {
-		let Some(config) = self.config() else { return Vec::new() };
-		config.set_path("/");
-		let groups = config.get_groups();
-		let mut docs = Vec::new();
-		for group in groups {
-			if group.starts_with("doc_") {
-				config.set_path(&format!("/{group}"));
-				let path = config.read_string("path", "");
-				if !path.is_empty() {
-					docs.push(path);
-				}
-				config.set_path("/");
-			}
+		if !self.initialized {
+			return Vec::new();
 		}
-		docs
+		self.data.borrow().documents.values().map(|d| d.path.clone()).filter(|p| !p.is_empty()).collect()
 	}
 
 	pub fn add_bookmark(&self, path: &str, start: i64, end: i64, note: &str) {
-		let mut bookmarks = self.get_bookmarks(path);
-		if bookmarks.iter().any(|bm| bm.start == start && bm.end == end) {
+		if !self.initialized {
 			return;
 		}
-		bookmarks.push(Bookmark { start, end, note: note.to_string() });
-		bookmarks.sort_by(|a, b| a.start.cmp(&b.start));
-		self.write_bookmarks(path, &bookmarks);
+		{
+			let mut data = self.data.borrow_mut();
+			let doc = Self::doc_entry_mut(&mut data, path);
+			if doc.bookmarks.iter().any(|bm| bm.start == start && bm.end == end) {
+				return;
+			}
+			doc.bookmarks.push(StoredBookmark { start, end, note: note.to_string() });
+			doc.bookmarks.sort_by(|a, b| a.start.cmp(&b.start));
+		}
+		self.dirty.set(true);
 	}
 
 	pub fn remove_bookmark(&self, path: &str, start: i64, end: i64) {
-		let mut bookmarks = self.get_bookmarks(path);
-		if let Some(idx) = bookmarks.iter().position(|bm| bm.start == start && bm.end == end) {
-			bookmarks.remove(idx);
-			self.write_bookmarks(path, &bookmarks);
+		if !self.initialized {
+			return;
 		}
+		{
+			let mut data = self.data.borrow_mut();
+			let doc = Self::doc_entry_mut(&mut data, path);
+			if let Some(idx) = doc.bookmarks.iter().position(|bm| bm.start == start && bm.end == end) {
+				doc.bookmarks.remove(idx);
+			}
+		}
+		self.dirty.set(true);
 	}
 
 	pub fn toggle_bookmark(&self, path: &str, start: i64, end: i64, note: &str) {
@@ -525,72 +601,70 @@ impl ConfigManager {
 	}
 
 	pub fn update_bookmark_note(&self, path: &str, start: i64, end: i64, note: &str) {
-		let mut bookmarks = self.get_bookmarks(path);
-		if let Some(item) = bookmarks.iter_mut().find(|bm| bm.start == start && bm.end == end) {
-			item.note = note.to_string();
-			self.write_bookmarks(path, &bookmarks);
+		if !self.initialized {
+			return;
 		}
+		{
+			let mut data = self.data.borrow_mut();
+			let doc = Self::doc_entry_mut(&mut data, path);
+			if let Some(bm) = doc.bookmarks.iter_mut().find(|bm| bm.start == start && bm.end == end) {
+				bm.note = note.to_string();
+			}
+		}
+		self.dirty.set(true);
 	}
 
 	pub fn get_bookmarks(&self, path: &str) -> Vec<Bookmark> {
-		let Some(config) = self.config() else { return Vec::new() };
-		let section = get_document_section(path);
-		config.set_path(&format!("/{section}"));
-		let bookmark_string = config.read_string("bookmarks", "");
-		config.set_path("/");
-
-		if bookmark_string.is_empty() {
+		if !self.initialized {
 			return Vec::new();
 		}
-		let mut results = Vec::new();
-		for token in bookmark_string.split(',') {
-			let trimmed = token.trim();
-			if trimmed.is_empty() {
-				continue;
-			}
-			if trimmed.contains(':') {
-				let mut parts = trimmed.splitn(3, ':');
-				let start_str = parts.next().unwrap_or_default();
-				let end_str = parts.next().unwrap_or_default();
-				let note_str = parts.next().unwrap_or_default();
-				if let (Ok(start), Ok(end)) = (start_str.parse::<i64>(), end_str.parse::<i64>()) {
-					let decoded_note = decode_note(note_str);
-					results.push(Bookmark { start, end, note: decoded_note });
-				}
-			} else if let Ok(position) = trimmed.parse::<i64>() {
-				results.push(Bookmark { start: position, end: position, note: String::new() });
-			}
-		}
-		results.sort_by(|a, b| a.start.cmp(&b.start));
-		results
+		self.data
+			.borrow()
+			.documents
+			.get(&doc_key(path))
+			.map(|d| {
+				d.bookmarks.iter().map(|bm| Bookmark { start: bm.start, end: bm.end, note: bm.note.clone() }).collect()
+			})
+			.unwrap_or_default()
 	}
 
 	pub fn set_document_format(&self, path: &str, format: &str) {
-		self.set_document_string(path, "format", format);
+		if !self.initialized {
+			return;
+		}
+		{
+			let mut data = self.data.borrow_mut();
+			Self::doc_entry_mut(&mut data, path).format = format.to_string();
+		}
+		self.dirty.set(true);
 	}
 
 	pub fn get_document_format(&self, path: &str) -> String {
-		self.get_document_string(path, "format", "")
+		if !self.initialized {
+			return String::new();
+		}
+		self.data.borrow().documents.get(&doc_key(path)).map(|d| d.format.clone()).unwrap_or_default()
 	}
 
 	pub fn set_document_password(&self, path: &str, password: &str) {
-		if password.is_empty() {
-			let Some(config) = self.config() else { return };
-			let section = get_document_section(path);
-			config.set_path(&format!("/{section}"));
-			config.delete_entry("password", false);
-			config.set_path("/");
-		} else {
-			self.set_document_string(path, "password", password);
+		if !self.initialized {
+			return;
 		}
+		{
+			let mut data = self.data.borrow_mut();
+			Self::doc_entry_mut(&mut data, path).password = password.to_string();
+		}
+		self.dirty.set(true);
 	}
 
 	pub fn get_document_password(&self, path: &str) -> String {
-		self.get_document_string(path, "password", "")
+		if !self.initialized {
+			return String::new();
+		}
+		self.data.borrow().documents.get(&doc_key(path)).map(|d| d.password.clone()).unwrap_or_default()
 	}
 
-	/// Import document settings from a .paperback sidecar file if it exists.
-	/// This is a simplified version that only imports bookmarks and position.
+	/// Import document settings from a `.paperback` sidecar file if it exists.
 	pub fn import_document_settings(&self, path: &str) {
 		let import_path = format!("{path}.paperback");
 		if Path::new(&import_path).exists() {
@@ -598,262 +672,50 @@ impl ConfigManager {
 		}
 	}
 
-	/// Import document settings from a specified file.
-	/// Parses simple key=value format from the import file.
+	/// Import document settings from a specified TOML sidecar file.
 	pub fn import_settings_from_file(&self, doc_path: &str, import_path: &str) {
-		if !self.is_ready() || !Path::new(import_path).exists() {
+		if !self.initialized || !Path::new(import_path).exists() {
 			return;
 		}
 		let Ok(content) = fs::read_to_string(import_path) else { return };
-		for line in content.lines() {
-			let line = line.trim();
-			if line.is_empty() || line.starts_with('#') || line.starts_with('[') {
-				continue;
-			}
-			if let Some((key, value)) = line.split_once('=') {
-				let key = key.trim();
-				let value = value.trim();
-				match key {
-					"last_position" => {
-						if let Ok(pos) = value.parse::<i64>() {
-							self.set_document_position(doc_path, pos);
-						}
-					}
-					"bookmarks" => {
-						self.set_document_string(doc_path, "bookmarks", value);
-					}
-					"format" => {
-						self.set_document_format(doc_path, value);
-					}
-					_ => {}
-				}
-			}
+		let Ok(sidecar) = toml::from_str::<SidecarData>(&content) else { return };
+		if let Some(pos) = sidecar.last_position {
+			self.set_document_position(doc_path, pos);
+		}
+		if let Some(format) = sidecar.format {
+			self.set_document_format(doc_path, &format);
+		}
+		if !sidecar.bookmarks.is_empty() {
+			let mut data = self.data.borrow_mut();
+			Self::doc_entry_mut(&mut data, doc_path).bookmarks = sidecar.bookmarks;
+			self.dirty.set(true);
 		}
 	}
 
-	/// Export document settings to a .paperback sidecar file.
+	/// Export document settings to a `.paperback` sidecar TOML file.
 	pub fn export_document_settings(&self, doc_path: &str, export_path: &str) {
-		if !self.is_ready() {
+		if !self.initialized {
 			return;
 		}
-		let mut content = String::new();
-		content.push_str("# Paperback document settings\n");
-		let position = self.get_document_position(doc_path);
-		if position > 0 {
-			let _ = writeln!(content, "last_position={position}");
+		let data = self.data.borrow();
+		let doc = data.documents.get(&doc_key(doc_path));
+		let sidecar = SidecarData {
+			last_position: doc.map(|d| d.last_position).filter(|&p| p > 0),
+			format: doc.and_then(|d| if d.format.is_empty() { None } else { Some(d.format.clone()) }),
+			bookmarks: doc.map(|d| d.bookmarks.clone()).unwrap_or_default(),
+		};
+		if let Ok(s) = toml::to_string_pretty(&sidecar) {
+			let _ = fs::write(export_path, s);
 		}
-		let format = self.get_document_format(doc_path);
-		if !format.is_empty() {
-			let _ = writeln!(content, "format={format}");
-		}
-		let bookmarks = self.get_bookmarks(doc_path);
-		if !bookmarks.is_empty() {
-			let encoded = bookmarks
-				.iter()
-				.map(|bm| format!("{}:{}:{}", bm.start, bm.end, encode_note(&bm.note)))
-				.collect::<Vec<_>>()
-				.join(",");
-			let _ = writeln!(content, "bookmarks={encoded}");
-		}
-		let _ = fs::write(export_path, content);
 	}
 
-	pub fn needs_migration(&self) -> bool {
-		if !self.is_ready() {
-			return false;
+	fn doc_entry_mut<'a>(data: &'a mut ConfigData, path: &str) -> &'a mut DocumentConfig {
+		let key = doc_key(path);
+		let entry = data.documents.entry(key).or_insert_with(DocumentConfig::default);
+		if entry.path.is_empty() {
+			entry.path = path.to_string();
 		}
-		let version = self.get_app_long("version", CONFIG_VERSION_LEGACY);
-		if version == CONFIG_VERSION_CURRENT {
-			return false;
-		}
-		let Some(config) = self.config() else { return false };
-		config.set_path("/");
-		let has_old_positions = config.has_group("positions");
-		let has_old_globals = config.has_entry("restore_previous_documents") || config.has_entry("word_wrap");
-		let has_old_opened = config.has_group("opened_documents");
-		let needs_v1_to_v2 = version == CONFIG_VERSION_1;
-		has_old_positions || has_old_globals || has_old_opened || needs_v1_to_v2
-	}
-
-	pub fn migrate_config(&self) -> bool {
-		if !self.is_ready() {
-			return false;
-		}
-		let Some(config) = self.config() else { return false };
-		let version = self.get_app_long("version", CONFIG_VERSION_LEGACY);
-		if version == CONFIG_VERSION_LEGACY {
-			// Migrate old root-level settings to /app
-			config.set_path("/");
-			let restore_docs = config.read_bool("restore_previous_documents", true);
-			let word_wrap = config.read_bool("word_wrap", false);
-			if !self.has_app_entry("restore_previous_documents") {
-				self.set_app_bool("restore_previous_documents", restore_docs);
-			}
-			if !self.has_app_entry("word_wrap") {
-				self.set_app_bool("word_wrap", word_wrap);
-			}
-			// Migrate old positions section
-			config.set_path("/positions");
-			let entries = config.get_entries();
-			for path in entries {
-				let position_str = config.read_string(&path, "");
-				if let Ok(pos) = position_str.parse::<i64>() {
-					if pos > 0 {
-						config.set_path("/");
-						self.set_document_position(&path, pos);
-						config.set_path("/positions");
-					}
-				}
-			}
-			config.set_path("/");
-			config.delete_group("positions");
-			// Clean up old root entries
-			config.delete_entry("restore_previous_documents", false);
-			config.delete_entry("word_wrap", false);
-		} else if version == CONFIG_VERSION_1 {
-			// V1 to V2: migrate bookmark format (add end position)
-			let groups = config.get_groups();
-			for group in groups {
-				if !group.starts_with("doc_") {
-					continue;
-				}
-				config.set_path(&format!("/{group}"));
-				let old_bookmarks = config.read_string("bookmarks", "");
-				if old_bookmarks.is_empty() {
-					config.set_path("/");
-					continue;
-				}
-				let mut new_bookmarks = String::new();
-				let mut first = true;
-				for token in old_bookmarks.split(',') {
-					let trimmed = token.trim();
-					if trimmed.is_empty() {
-						continue;
-					}
-					if !first {
-						new_bookmarks.push(',');
-					}
-					let colon_count = trimmed.matches(':').count();
-					if colon_count == 0 {
-						if let Ok(pos) = trimmed.parse::<i64>() {
-							let _ = write!(&mut new_bookmarks, "{pos}:{pos}:");
-						}
-					} else if colon_count == 1 {
-						new_bookmarks.push_str(trimmed);
-						new_bookmarks.push(':');
-					} else {
-						new_bookmarks.push_str(trimmed);
-					}
-					first = false;
-				}
-				if !new_bookmarks.is_empty() {
-					config.write_string("bookmarks", &new_bookmarks);
-				}
-				config.set_path("/");
-			}
-		}
-		self.set_app_long("version", CONFIG_VERSION_CURRENT);
-		true
-	}
-
-	fn has_app_entry(&self, key: &str) -> bool {
-		self.with_path("/app", |config| config.has_entry(key)).unwrap_or(false)
-	}
-
-	fn load_defaults(&self) {
-		if self.needs_migration() {
-			self.migrate_config();
-		}
-		let defaults: &[(&str, bool, Option<i64>, Option<&str>)] = &[
-			("restore_previous_documents", true, None, None),
-			("word_wrap", false, None, None),
-			("minimize_to_tray", false, None, None),
-			("start_maximized", false, None, None),
-			("compact_go_menu", true, None, None),
-			("navigation_wrap", false, None, None),
-			("check_for_updates_on_startup", true, None, None),
-			("recent_documents_to_show", false, Some(DEFAULT_RECENT_DOCUMENTS_TO_SHOW), None),
-			("sleep_timer_duration", false, Some(30), None),
-			("language", false, None, Some("")),
-			("active_document", false, None, Some("")),
-		];
-
-		for (key, is_bool, int_val, str_val) in defaults {
-			if !self.has_app_entry(key) {
-				if *is_bool {
-					// Default bool values are the second element when is_bool is true
-					// Defaults: restore_previous_documents=true, word_wrap=false, etc.
-					let default_val = matches!(
-						*key,
-						"restore_previous_documents" | "compact_go_menu" | "check_for_updates_on_startup"
-					);
-					self.set_app_bool(key, default_val);
-				} else if let Some(val) = int_val {
-					self.set_app_long(key, *val);
-				} else if let Some(val) = str_val {
-					self.set_app_string(key, val);
-				}
-			}
-		}
-
-		if self.get_app_long("version", CONFIG_VERSION_LEGACY) != CONFIG_VERSION_CURRENT {
-			self.set_app_long("version", CONFIG_VERSION_CURRENT);
-		}
-		self.rebuild_recent_documents();
-	}
-
-	fn write_recent_documents(&self, documents: &[String]) {
-		let Some(config) = self.config() else { return };
-		config.delete_group("recent_documents");
-		for doc in documents {
-			self.ensure_document_path(doc);
-		}
-		config.set_path("/recent_documents");
-		for (idx, doc) in documents.iter().enumerate() {
-			let doc_id = escape_document_path(doc);
-			let key = format!("doc{idx}");
-			config.write_string(&key, &doc_id);
-		}
-		config.set_path("/");
-	}
-
-	fn write_opened_documents(&self, documents: &[String]) {
-		let Some(config) = self.config() else { return };
-		config.delete_group("opened_documents");
-		config.set_path("/opened_documents");
-		for (idx, doc) in documents.iter().enumerate() {
-			let key = format!("File{idx}");
-			config.write_string(&key, doc);
-		}
-		config.set_path("/");
-	}
-
-	fn write_bookmarks(&self, path: &str, bookmarks: &[Bookmark]) {
-		let Some(config) = self.config() else { return };
-		let section = get_document_section(path);
-		config.set_path(&format!("/{section}"));
-		if bookmarks.is_empty() {
-			config.delete_entry("bookmarks", false);
-		} else {
-			let encoded = bookmarks
-				.iter()
-				.map(|bm| format!("{}:{}:{}", bm.start, bm.end, encode_note(&bm.note)))
-				.collect::<Vec<_>>()
-				.join(",");
-			config.write_string("path", path);
-			config.write_string("bookmarks", &encoded);
-		}
-		config.set_path("/");
-	}
-
-	fn ensure_document_path(&self, path: &str) {
-		let Some(config) = self.config() else { return };
-		let section = get_document_section(path);
-		config.set_path(&format!("/{section}"));
-		if !config.has_entry("path") {
-			config.write_string("path", path);
-		}
-		config.set_path("/");
+		entry
 	}
 }
 
@@ -863,8 +725,6 @@ impl Drop for ConfigManager {
 			return;
 		}
 		self.flush();
-		self.config = None;
-		self.initialized = false;
 	}
 }
 
@@ -913,28 +773,24 @@ pub fn get_sorted_document_list(config: &ConfigManager, open_paths: &[String], f
 		.collect()
 }
 
-fn get_config_path() -> String {
+fn get_config_path() -> PathBuf {
 	let exe_dir = get_exe_directory();
 	let is_installed = (0..10).any(|i| exe_dir.join(format!("unins{i:03}.exe")).exists());
 	if is_installed {
 		if let Some(appdata) = env::var_os("APPDATA") {
 			let config_dir = PathBuf::from(appdata).join("Paperback");
 			let _ = fs::create_dir_all(&config_dir);
-			return config_dir.join("Paperback.ini").to_string_lossy().to_string();
+			return config_dir.join("Paperback.toml");
 		}
 	}
-	exe_dir.join("Paperback.ini").to_string_lossy().to_string()
+	exe_dir.join("Paperback.toml")
 }
 
 fn get_exe_directory() -> PathBuf {
 	env::current_exe().ok().and_then(|p| p.parent().map(Path::to_path_buf)).unwrap_or_else(|| PathBuf::from("."))
 }
 
-fn get_document_section(path: &str) -> String {
-	escape_document_path(path)
-}
-
-fn escape_document_path(path: &str) -> String {
+fn doc_key(path: &str) -> String {
 	let mut hasher = Sha1::new();
 	hasher.update(path.as_bytes());
 	let digest = hasher.finalize();
@@ -942,11 +798,129 @@ fn escape_document_path(path: &str) -> String {
 	format!("doc_{encoded}")
 }
 
-fn encode_note(note: &str) -> String {
-	if note.is_empty() {
-		return String::new();
+fn migrate_from_ini(ini_path: &Path) -> ConfigData {
+	use wxdragon::config::{Config, ConfigStyle};
+
+	let config = Config::new(
+		"Paperback",
+		Some("Paperback"),
+		Some(&ini_path.to_string_lossy()),
+		None,
+		ConfigStyle::USE_LOCAL_FILE | ConfigStyle::USE_NO_ESCAPE_CHARACTERS,
+	);
+	let mut data = ConfigData::default();
+	config.set_path("/app");
+	data.app.restore_previous_documents = config.read_bool("restore_previous_documents", true);
+	data.app.word_wrap = config.read_bool("word_wrap", false);
+	data.app.minimize_to_tray = config.read_bool("minimize_to_tray", false);
+	data.app.start_maximized = config.read_bool("start_maximized", false);
+	data.app.compact_go_menu = config.read_bool("compact_go_menu", true);
+	data.app.navigation_wrap = config.read_bool("navigation_wrap", false);
+	data.app.check_for_updates_on_startup = config.read_bool("check_for_updates_on_startup", true);
+	data.app.find_match_case = config.read_bool("find_match_case", false);
+	data.app.find_whole_word = config.read_bool("find_whole_word", false);
+	data.app.find_use_regex = config.read_bool("find_use_regex", false);
+	data.app.recent_documents_to_show = config.read_long("recent_documents_to_show", DEFAULT_RECENT_DOCUMENTS_TO_SHOW);
+	data.app.sleep_timer_duration = config.read_long("sleep_timer_duration", 30);
+	data.app.language = config.read_string("language", "");
+	data.app.active_document = config.read_string("active_document", "");
+	data.app.update_channel = config.read_string("update_channel", "stable");
+	config.set_path("/");
+	config.set_path("/recent_documents");
+	for idx in 0.. {
+		let key = format!("doc{idx}");
+		if !config.has_entry(&key) {
+			break;
+		}
+		let doc_id = config.read_string(&key, "");
+		if doc_id.is_empty() {
+			break;
+		}
+		config.set_path("/");
+		config.set_path(&format!("/{doc_id}"));
+		let path = config.read_string("path", "");
+		if !path.is_empty() {
+			data.recent_documents.push(path);
+		}
+		config.set_path("/recent_documents");
 	}
-	STANDARD.encode(note.as_bytes())
+	config.set_path("/");
+	config.set_path("/opened_documents");
+	let entries = config.get_entries();
+	if !entries.is_empty() {
+		let mut sorted_entries: Vec<_> = entries.into_iter().collect();
+		sorted_entries.sort();
+		for key in &sorted_entries {
+			let path = config.read_string(key, "");
+			if !path.is_empty() {
+				data.opened_documents.push(path);
+			}
+		}
+	}
+	config.set_path("/");
+	config.set_path("/find_history");
+	for idx in 0.. {
+		let key = format!("item{idx}");
+		if !config.has_entry(&key) {
+			break;
+		}
+		let entry = config.read_string(&key, "");
+		if entry.is_empty() {
+			break;
+		}
+		data.find_history.push(entry);
+	}
+	config.set_path("/");
+	config.set_path("/");
+	let groups = config.get_groups();
+	for group in groups {
+		if !group.starts_with("doc_") {
+			continue;
+		}
+		config.set_path(&format!("/{group}"));
+		let path = config.read_string("path", "");
+		if path.is_empty() {
+			config.set_path("/");
+			continue;
+		}
+		let mut doc = DocumentConfig::default();
+		doc.path = path.clone();
+		doc.last_position = config.read_long("last_position", 0);
+		doc.opened = config.read_bool("opened", false);
+		doc.format = config.read_string("format", "");
+		doc.password = config.read_string("password", "");
+		let history_str = config.read_string("navigation_history", "");
+		if !history_str.is_empty() {
+			doc.navigation_history = history_str.split(',').filter_map(|t| t.trim().parse::<i64>().ok()).collect();
+		}
+		let history_index = config.read_long("navigation_history_index", 0);
+		doc.navigation_history_index = usize::try_from(history_index).unwrap_or(0);
+		// Parse old CSV bookmark format: `start:end:base64note,...`
+		let bookmark_str = config.read_string("bookmarks", "");
+		if !bookmark_str.is_empty() {
+			for token in bookmark_str.split(',') {
+				let trimmed = token.trim();
+				if trimmed.is_empty() {
+					continue;
+				}
+				if trimmed.contains(':') {
+					let mut parts = trimmed.splitn(3, ':');
+					let start_str = parts.next().unwrap_or_default();
+					let end_str = parts.next().unwrap_or_default();
+					let note_str = parts.next().unwrap_or_default();
+					if let (Ok(start), Ok(end)) = (start_str.parse::<i64>(), end_str.parse::<i64>()) {
+						doc.bookmarks.push(StoredBookmark { start, end, note: decode_note(note_str) });
+					}
+				} else if let Ok(pos) = trimmed.parse::<i64>() {
+					doc.bookmarks.push(StoredBookmark { start: pos, end: pos, note: String::new() });
+				}
+			}
+			doc.bookmarks.sort_by(|a, b| a.start.cmp(&b.start));
+		}
+		data.documents.insert(group, doc);
+		config.set_path("/");
+	}
+	data
 }
 
 fn decode_note(encoded: &str) -> String {
@@ -963,38 +937,32 @@ mod tests {
 	use super::*;
 
 	#[test]
-	fn escape_document_path_is_stable_and_prefixed() {
-		let a = escape_document_path("C:\\books\\a.epub");
-		let b = escape_document_path("C:\\books\\a.epub");
+	fn doc_key_is_stable_and_prefixed() {
+		let a = doc_key("C:\\books\\a.epub");
+		let b = doc_key("C:\\books\\a.epub");
 		assert_eq!(a, b);
 		assert!(a.starts_with("doc_"));
 		assert!(!a.contains('/'));
 	}
 
 	#[test]
-	fn escape_document_path_differs_for_different_inputs() {
-		let a = escape_document_path("book-a.epub");
-		let b = escape_document_path("book-b.epub");
+	fn doc_key_differs_for_different_inputs() {
+		let a = doc_key("book-a.epub");
+		let b = doc_key("book-b.epub");
 		assert_ne!(a, b);
 	}
 
 	#[test]
-	fn document_section_uses_escaped_path() {
-		let path = "/tmp/file.txt";
-		assert_eq!(get_document_section(path), escape_document_path(path));
-	}
-
-	#[test]
-	fn encode_decode_note_round_trip_with_unicode() {
+	fn decode_note_round_trip_with_unicode() {
+		use base64::{Engine, engine::general_purpose::STANDARD};
 		let original = "note with unicode: cafe\u{0301} and \u{1F600}";
-		let encoded = encode_note(original);
+		let encoded = STANDARD.encode(original.as_bytes());
 		assert!(!encoded.is_empty());
 		assert_eq!(decode_note(&encoded), original);
 	}
 
 	#[test]
-	fn encode_decode_note_handles_empty_and_invalid_input() {
-		assert_eq!(encode_note(""), "");
+	fn decode_note_handles_empty_and_invalid_input() {
 		assert_eq!(decode_note(""), "");
 		assert_eq!(decode_note("%%%not-base64%%%"), "");
 	}
