@@ -512,6 +512,9 @@ impl XmlToText {
 			"ol",
 			"list",
 			"li",
+			"dl",
+			"dt",
+			"dd",
 			"section",
 			"article",
 			"header",
@@ -689,5 +692,16 @@ mod tests {
 		let mut converter = XmlToText::new();
 		assert!(converter.convert(xml));
 		assert_eq!(converter.get_tables().len(), 1);
+	}
+
+	#[test]
+	fn dl_dt_dd_produce_separate_lines() {
+		let xml = "<root><body><dl><dt>Term</dt><dd>Definition</dd></dl></body></root>";
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(xml));
+		let text = converter.get_text();
+		let lines: Vec<&str> = text.lines().collect();
+		assert!(lines.iter().any(|l| *l == "Term"), "dt content should be on its own line");
+		assert!(lines.iter().any(|l| *l == "Definition"), "dd content should be on its own line");
 	}
 }
