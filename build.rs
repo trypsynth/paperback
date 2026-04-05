@@ -30,6 +30,7 @@ fn main() {
 	configure_installer();
 	generate_pot();
 	let target = env::var("TARGET").unwrap_or_default();
+	embed_commit_hash();
 	if target.contains("apple") {
 		// Homebrew's libiconv is keg-only and not on the default search path.
 		// wxWidgets links against it, so we need to tell the linker where to find it.
@@ -52,7 +53,6 @@ fn main() {
 			println!("cargo:warning=The application will still work but may lack optimal Windows theming");
 		}
 		embed_version_info();
-		embed_commit_hash();
 		println!("cargo:rerun-if-changed=build.rs");
 	}
 }

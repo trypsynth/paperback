@@ -207,7 +207,7 @@ fn handle_update_available(
 	let d_total = total;
 	let d_is_running = is_running;
 	thread::spawn(move || {
-		let res = update::download_update_file(&download_url, |d, t| {
+		let _res = update::download_update_file(&download_url, |d, t| {
 			d_downloaded.store(d, Ordering::Relaxed);
 			d_total.store(t, Ordering::Relaxed);
 		});
@@ -217,7 +217,7 @@ fn handle_update_available(
 				*p.borrow_mut() = None;
 			});
 			#[cfg(target_os = "windows")]
-			execute_update(res);
+			execute_update(_res);
 		}));
 	});
 }
