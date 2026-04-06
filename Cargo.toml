@@ -30,10 +30,10 @@ rtf-parser = "0.4.2"
 scraper = "0.26.0"
 serde = { version = "1.0.228", default-features = false, features = ["derive", "std"] }
 sha1 = "0.11.0"
-toml = { version = "0.8", default-features = false, features = ["parse", "display"] }
+toml = "1.1"
 ureq = { version = "3.3.0", default-features = false, features = ["json", "rustls"] }
 wxdragon = { version = "0.9.14", features = ["webview"] }
-zip = { version = "8.5.0", default-features = false, features = ["deflate"] }
+zip = { version = "7.2.0", default-features = false, features = ["deflate"] }
 
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_System_Com", "Win32_UI_WindowsAndMessaging", "Win32_Foundation", "Win32_System_Ole", "Win32_System_Variant"] }
