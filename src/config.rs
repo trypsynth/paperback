@@ -70,6 +70,21 @@ pub struct FindSettings {
 	pub use_regex: bool,
 }
 
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct ReadabilityFont {
+	pub face_name: String,
+	pub point_size: i32,
+	pub style: i32,
+	pub weight: i32,
+	pub underlined: bool,
+}
+
+impl ReadabilityFont {
+	pub fn is_default(&self) -> bool {
+		self.face_name.is_empty() && self.point_size == 0
+	}
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 struct StoredBookmark {
 	start: i64,
@@ -123,6 +138,16 @@ struct AppSettings {
 	active_document: String,
 	#[serde(default = "default_update_channel")]
 	update_channel: String,
+	#[serde(default)]
+	font_face_name: String,
+	#[serde(default)]
+	font_point_size: i64,
+	#[serde(default)]
+	font_style: i64,
+	#[serde(default)]
+	font_weight: i64,
+	#[serde(default)]
+	font_underlined: bool,
 }
 
 impl Default for AppSettings {
@@ -143,6 +168,11 @@ impl Default for AppSettings {
 			language: String::new(),
 			active_document: String::new(),
 			update_channel: "stable".to_string(),
+			font_face_name: String::new(),
+			font_point_size: 0,
+			font_style: 0,
+			font_weight: 0,
+			font_underlined: false,
 		}
 	}
 }
@@ -373,6 +403,35 @@ impl ConfigManager {
 
 	pub fn set_update_channel(&self, channel: UpdateChannel) {
 		self.set_app_string("update_channel", &channel.to_string());
+	}
+
+	pub fn get_readability_font(&self) -> ReadabilityFont {
+		if !self.initialized {
+			return ReadabilityFont::default();
+		}
+		let data = self.data.borrow();
+		ReadabilityFont {
+			face_name: data.app.font_face_name.clone(),
+			point_size: data.app.font_point_size.try_into().unwrap_or(0),
+			style: data.app.font_style.try_into().unwrap_or(0),
+			weight: data.app.font_weight.try_into().unwrap_or(0),
+			underlined: data.app.font_underlined,
+		}
+	}
+
+	pub fn set_readability_font(&self, font: &ReadabilityFont) {
+		if !self.initialized {
+			return;
+		}
+		{
+			let mut data = self.data.borrow_mut();
+			data.app.font_face_name = font.face_name.clone();
+			data.app.font_point_size = i64::from(font.point_size);
+			data.app.font_style = i64::from(font.style);
+			data.app.font_weight = i64::from(font.weight);
+			data.app.font_underlined = font.underlined;
+		}
+		self.dirty.set(true);
 	}
 
 	pub fn add_recent_document(&self, path: &str) {

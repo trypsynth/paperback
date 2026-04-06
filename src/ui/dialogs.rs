@@ -11,7 +11,7 @@ use bitflags::bitflags;
 use wxdragon::{event::WebViewEvents, ffi, prelude::*, translations::translate as t, widgets::WebView};
 
 use crate::{
-	config::ConfigManager,
+	config::{ConfigManager, ReadabilityFont},
 	document::{DocumentStats, TocItem},
 	reader_core,
 	session::DocumentSession,
@@ -50,6 +50,7 @@ pub struct OptionsDialogResult {
 	pub recent_documents_to_show: i32,
 	pub language: String,
 	pub update_channel: crate::config::UpdateChannel,
+	pub readability_font: ReadabilityFont,
 }
 
 bitflags! {
@@ -88,6 +89,7 @@ struct OptionsDialogUi {
 	current_language: String,
 	ok_button: Button,
 	cancel_button: Button,
+	readability_font: Rc<RefCell<ReadabilityFont>>,
 }
 
 pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<OptionsDialogResult> {
@@ -102,7 +104,14 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		Some(1) => crate::config::UpdateChannel::Dev,
 		_ => crate::config::UpdateChannel::Stable,
 	};
-	Some(OptionsDialogResult { flags, recent_documents_to_show: ui.recent_docs_ctrl.value(), language, update_channel })
+	let readability_font = ui.readability_font.borrow().clone();
+	Some(OptionsDialogResult {
+		flags,
+		recent_documents_to_show: ui.recent_docs_ctrl.value(),
+		language,
+		update_channel,
+		readability_font,
+	})
 }
 
 fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDialogUi {
@@ -160,10 +169,25 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	channel_sizer.add(&update_channel_combo, 0, SizerFlag::AlignCenterVertical, 0);
 	general_sizer.add_sizer(&channel_sizer, 0, SizerFlag::All, option_padding);
 
+	// Readability tab
+	let readability_panel = Panel::builder(&notebook).build();
+	let readability_sizer = BoxSizer::builder(Orientation::Vertical).build();
+	let font_group_box = StaticBox::builder(&readability_panel).with_label(&t("Font")).build();
+	let font_group_sizer = StaticBoxSizerBuilder::new_with_box(&font_group_box, Orientation::Vertical).build();
+	let font_preview_label = StaticText::builder(&readability_panel).with_label("").build();
+	let choose_font_button = Button::builder(&readability_panel).with_label(&t("Choose &Font...")).build();
+	let reset_font_button = Button::builder(&readability_panel).with_label(&t("&Reset to Default Font")).build();
+	font_group_sizer.add(&font_preview_label, 0, SizerFlag::All, option_padding);
+	font_group_sizer.add(&choose_font_button, 0, SizerFlag::All, option_padding);
+	font_group_sizer.add(&reset_font_button, 0, SizerFlag::All, option_padding);
+	readability_sizer.add_sizer(&font_group_sizer, 0, SizerFlag::Expand | SizerFlag::All, option_padding);
+	readability_panel.set_sizer(readability_sizer, true);
+
 	general_panel.set_sizer(general_sizer, true);
 	reading_panel.set_sizer(reading_sizer, true);
 	notebook.add_page(&general_panel, &t("General"), true, None);
 	notebook.add_page(&reading_panel, &t("Reading"), false, None);
+	notebook.add_page(&readability_panel, &t("Readability"), false, None);
 	restore_docs_check.set_value(config.get_app_bool("restore_previous_documents", true));
 	word_wrap_check.set_value(config.get_app_bool("word_wrap", false));
 	minimize_to_tray_check.set_value(config.get_app_bool("minimize_to_tray", false));
@@ -189,11 +213,37 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	};
 	update_channel_combo.set_selection(channel_index);
 
-	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
-	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
+	// Initialize readability font state from config
+	let initial_font = config.get_readability_font();
+	font_preview_label.set_label(&font_description(&initial_font));
+	let readability_font = Rc::new(RefCell::new(initial_font));
+
+	// "Choose Font..." button handler
+	let font_state = Rc::clone(&readability_font);
+	let preview_label = font_preview_label;
+	let dialog_ref = dialog;
+	choose_font_button.on_click(move |_| {
+		let current = font_state.borrow().clone();
+		if let Some(selected) = show_font_picker(dialog_ref, &current) {
+			preview_label.set_label(&font_description(&selected));
+			*font_state.borrow_mut() = selected;
+		}
+	});
+
+	// "Reset to Default Font" button handler
+	let font_state_reset = Rc::clone(&readability_font);
+	let preview_label_reset = preview_label;
+	reset_font_button.on_click(move |_| {
+		let default_font = ReadabilityFont::default();
+		preview_label_reset.set_label(&font_description(&default_font));
+		*font_state_reset.borrow_mut() = default_font;
+	});
+
+	let ok_button = Button::builder(&dialog_ref).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
+	let cancel_button = Button::builder(&dialog_ref).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
 	ok_button.set_default();
 	OptionsDialogUi {
-		dialog,
+		dialog: dialog_ref,
 		notebook,
 		restore_docs_check,
 		word_wrap_check,
@@ -210,6 +260,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		current_language,
 		ok_button,
 		cancel_button,
+		readability_font,
 	}
 }
 
@@ -260,6 +311,67 @@ fn build_options_dialog_flags(ui: &OptionsDialogUi) -> OptionsDialogFlags {
 		flags.insert(OptionsDialogFlags::BOOKMARK_SOUNDS);
 	}
 	flags
+}
+
+fn font_description(rf: &ReadabilityFont) -> String {
+	if rf.is_default() {
+		return t("Font: Default");
+	}
+	let face = if rf.face_name.is_empty() { t("Default") } else { rf.face_name.clone() };
+	let mut desc = format!("Font: {face}");
+	if rf.point_size > 0 {
+		let _ = write!(desc, ", {}pt", rf.point_size);
+	}
+	if rf.weight >= FontWeight::Bold as i32 {
+		let _ = write!(desc, ", {}", t("Bold"));
+	}
+	if rf.style == FontStyle::Italic as i32 || rf.style == FontStyle::Slant as i32 {
+		let _ = write!(desc, ", {}", t("Italic"));
+	}
+	desc
+}
+
+fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Option<ReadabilityFont> {
+	let mut font_data = FontData::new();
+	// Disable effects (strikethrough, color) — wxdragon doesn't expose those
+	// properties on Font, so showing them would let the user pick settings we
+	// can't save. Face, size, style (italic), and weight (bold) are all we need.
+	font_data.set_enable_effects(false);
+	if !current.is_default() {
+		let style = match current.style {
+			s if s == FontStyle::Italic as i32 => FontStyle::Italic,
+			s if s == FontStyle::Slant as i32 => FontStyle::Slant,
+			_ => FontStyle::Normal,
+		};
+		let weight = match current.weight {
+			w if w == FontWeight::Bold as i32 => FontWeight::Bold,
+			w if w == FontWeight::Light as i32 => FontWeight::Light,
+			w if w == FontWeight::ExtraBold as i32 => FontWeight::ExtraBold,
+			_ => FontWeight::Normal,
+		};
+		let point_size = if current.point_size > 0 { current.point_size } else { 10 };
+		if let Some(font) = Font::builder()
+			.with_face_name(&current.face_name)
+			.with_point_size(point_size)
+			.with_style(style)
+			.with_weight(weight)
+			.build()
+		{
+			font_data.set_initial_font(&font);
+		}
+	}
+	let dlg = FontDialog::builder(&parent).with_font_data(&font_data).build();
+	if dlg.show_modal() != wxdragon::id::ID_OK {
+		return None;
+	}
+	let font = dlg.get_font()?;
+	Some(ReadabilityFont {
+		face_name: font.get_face_name(),
+		point_size: font.get_point_size(),
+		style: font.get_style() as i32,
+		weight: font.get_weight() as i32,
+		underlined: false,
+	})
 }
 
 pub fn show_bookmark_dialog(

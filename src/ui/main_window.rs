@@ -15,7 +15,7 @@ use wxdragon::{prelude::*, timer::Timer, translations::translate as t};
 
 use super::{
 	dialogs::{self, OptionsDialogFlags},
-	document_manager::DocumentManager,
+	document_manager::{DocumentManager, build_font_from_readability},
 	find::{self, FindDialogState},
 	help::{self, MAIN_WINDOW_PTR},
 	menu, menu_ids,
@@ -1124,6 +1124,7 @@ impl MainWindow {
 					cfg.set_app_int("recent_documents_to_show", options.recent_documents_to_show);
 					cfg.set_app_string("language", &options.language);
 					cfg.set_update_channel(options.update_channel);
+					cfg.set_readability_font(&options.readability_font);
 					cfg.flush();
 					drop(cfg);
 					let options_word_wrap = options.flags.contains(OptionsDialogFlags::WORD_WRAP);
@@ -1132,6 +1133,13 @@ impl MainWindow {
 						let mut dm_ref = dm.lock().unwrap();
 						dm_ref.apply_word_wrap(&dm_for_wrap, options_word_wrap);
 						dm_ref.restore_focus();
+					}
+					if let Some(font) = build_font_from_readability(&options.readability_font) {
+						dm.lock().unwrap().apply_font(&font);
+					} else {
+						// Font reset to default: apply system default font
+						let default_font = Font::new();
+						dm.lock().unwrap().apply_font(&default_font);
 					}
 					let options_compact_menu = options.flags.contains(OptionsDialogFlags::COMPACT_GO_MENU);
 					if current_language != options.language || old_compact_menu != options_compact_menu {

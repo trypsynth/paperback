@@ -17,7 +17,11 @@ use super::{
 	main_window::{SLEEP_TIMER_DURATION_MINUTES, SLEEP_TIMER_START_MS},
 	menu_ids, status,
 };
-use crate::{config::ConfigManager, parser::PASSWORD_REQUIRED_ERROR_PREFIX, session::DocumentSession};
+use crate::{
+	config::{ConfigManager, ReadabilityFont},
+	parser::PASSWORD_REQUIRED_ERROR_PREFIX,
+	session::DocumentSession,
+};
 
 pub struct DocumentTab {
 	pub panel: Panel,
@@ -132,6 +136,9 @@ impl DocumentManager {
 		let mut session = session;
 		let word_wrap = config.get_app_bool("word_wrap", false);
 		let text_ctrl = Self::build_text_ctrl(panel, word_wrap, self_rc);
+		if let Some(font) = build_font_from_readability(&config.get_readability_font()) {
+			text_ctrl.set_font(&font);
+		}
 		let sizer = BoxSizer::builder(Orientation::Vertical).build();
 		sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
 		panel.set_sizer(sizer, true);
@@ -396,6 +403,13 @@ impl DocumentManager {
 		self.last_sound_position.set(None);
 	}
 
+	pub fn apply_font(&self, font: &Font) {
+		for tab in &self.tabs {
+			tab.text_ctrl.set_font(font);
+			tab.text_ctrl.refresh(true, None);
+		}
+	}
+
 	pub fn apply_word_wrap(&mut self, self_rc: &Rc<Mutex<Self>>, word_wrap: bool) {
 		for tab in &mut self.tabs {
 			let old_ctrl = tab.text_ctrl;
@@ -513,6 +527,14 @@ fn build_document_load_error_message(path: &Path, error: &str) -> String {
 
 fn fill_text_ctrl(text_ctrl: TextCtrl, content: &str) {
 	text_ctrl.set_value(content);
+}
+
+pub fn build_font_from_readability(rf: &ReadabilityFont) -> Option<Font> {
+	if rf.is_default() {
+		return None;
+	}
+	let point_size = if rf.point_size > 0 { rf.point_size } else { 10 };
+	Font::new_with_details(point_size, FontFamily::Default.as_i32(), rf.style, rf.weight, rf.underlined, &rf.face_name)
 }
 
 fn show_reader_context_menu(text_ctrl: TextCtrl) {
