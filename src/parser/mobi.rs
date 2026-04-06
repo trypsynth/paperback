@@ -17,7 +17,7 @@ impl Parser for MobiParser {
 	}
 
 	fn extensions(&self) -> &[&str] {
-		&["mobi", "azw3"]
+		&["mobi"]
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
@@ -261,7 +261,7 @@ fn get_trailing_size(data: &[u8]) -> usize {
 	}
 	// If the last byte doesn't have bit 7 set it's not a valid VLQ terminator —
 	// this happens when the trailing-entry count from extra_data_flags exceeds the
-	// entries actually present (common in AZW3 files). Treat the entry as absent.
+	// entries actually present. Treat the entry as absent.
 	if data[data.len() - 1] & 0x80 == 0 {
 		return 0;
 	}

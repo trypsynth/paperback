@@ -536,7 +536,6 @@ fn generate_app_bundle() {
 				<string>mkdown</string>
 				<string>ronn</string>
 				<string>mobi</string>
-				<string>azw3</string>
 				<string>txt</string>
 				<string>log</string>
 				<string>rtf</string>
