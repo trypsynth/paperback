@@ -541,9 +541,13 @@ fn fill_text_ctrl(text_ctrl: TextCtrl, content: &str) {
 
 #[cfg(target_os = "windows")]
 pub fn apply_line_spacing_to_ctrl(text_ctrl: TextCtrl, line_spacing: i32) {
-	use windows::Win32::Foundation::{HWND, LPARAM, WPARAM};
-	use windows::Win32::UI::Controls::RichEdit::{PARAFORMAT2, PFM_LINESPACING};
-	use windows::Win32::UI::WindowsAndMessaging::SendMessageW;
+	use windows::Win32::{
+		Foundation::{HWND, LPARAM, WPARAM},
+		UI::{
+			Controls::RichEdit::{PARAFORMAT2, PFM_LINESPACING},
+			WindowsAndMessaging::SendMessageW,
+		},
+	};
 	const EM_SETSEL: u32 = 177;
 	const EM_SETPARAFORMAT: u32 = 1095;
 	let hwnd_ptr = text_ctrl.get_handle();
