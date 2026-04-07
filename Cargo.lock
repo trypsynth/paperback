@@ -1470,7 +1470,7 @@ dependencies = [
  "windows",
  "winres",
  "wxdragon",
- "zip 7.2.0",
+ "zip",
 ]
 
 [[package]]
@@ -3483,7 +3483,7 @@ name = "xtask"
 version = "0.1.0"
 dependencies = [
  "walkdir",
- "zip 8.5.0",
+ "zip",
 ]
 
 [[package]]
@@ -3587,20 +3587,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.117",
-]
-
-[[package]]
-name = "zip"
-version = "7.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c42e33efc22a0650c311c2ef19115ce232583abbe80850bc8b66509ebef02de0"
-dependencies = [
- "crc32fast",
- "flate2",
- "indexmap",
- "memchr",
- "typed-path",
- "zopfli",
 ]
 
 [[package]]
