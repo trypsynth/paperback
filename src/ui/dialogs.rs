@@ -52,6 +52,7 @@ pub struct OptionsDialogResult {
 	pub language: String,
 	pub update_channel: crate::config::UpdateChannel,
 	pub readability_font: ReadabilityFont,
+	pub line_spacing: i32,
 }
 
 bitflags! {
@@ -92,6 +93,7 @@ struct OptionsDialogUi {
 	ok_button: Button,
 	cancel_button: Button,
 	readability_font: Rc<RefCell<ReadabilityFont>>,
+	line_spacing_ctrl: Choice,
 }
 
 pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<OptionsDialogResult> {
@@ -107,6 +109,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		_ => crate::config::UpdateChannel::Stable,
 	};
 	let readability_font = ui.readability_font.borrow().clone();
+	let line_spacing = ui.line_spacing_ctrl.get_selection().unwrap_or(0) as i32;
 	Some(OptionsDialogResult {
 		flags,
 		recent_documents_to_show: ui.recent_docs_ctrl.value(),
@@ -114,6 +117,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		language,
 		update_channel,
 		readability_font,
+		line_spacing,
 	})
 }
 
@@ -122,11 +126,13 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let notebook = Notebook::builder(&dialog).with_style(NotebookStyle::Top).build();
 	let general_panel = Panel::builder(&notebook).build();
 	let reading_panel = Panel::builder(&notebook).build();
+	let readability_panel = Panel::builder(&notebook).build();
 	let general_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let reading_sizer = BoxSizer::builder(Orientation::Vertical).build();
+	let readability_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let restore_docs_check =
 		CheckBox::builder(&general_panel).with_label(&t("&Restore previously opened documents on startup")).build();
-	let word_wrap_check = CheckBox::builder(&reading_panel).with_label(&t("&Word wrap")).build();
+	let word_wrap_check = CheckBox::builder(&readability_panel).with_label(&t("&Word wrap")).build();
 	let minimize_to_tray_check = CheckBox::builder(&general_panel).with_label(&t("&Minimize to system tray")).build();
 	let start_maximized_check = CheckBox::builder(&general_panel).with_label(&t("&Start maximized")).build();
 	let compact_go_menu_check = CheckBox::builder(&reading_panel).with_label(&t("Show compact &go menu")).build();
@@ -139,7 +145,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	for check in [&restore_docs_check, &start_maximized_check, &minimize_to_tray_check, &check_for_updates_check] {
 		general_sizer.add(check, 0, SizerFlag::All, option_padding);
 	}
-	for check in [&word_wrap_check, &navigation_wrap_check, &compact_go_menu_check, &bookmark_sounds_check] {
+	for check in [&navigation_wrap_check, &compact_go_menu_check, &bookmark_sounds_check] {
 		reading_sizer.add(check, 0, SizerFlag::All, option_padding);
 	}
 	let reading_speed_label =
@@ -180,8 +186,6 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	general_sizer.add_sizer(&channel_sizer, 0, SizerFlag::All, option_padding);
 
 	// Readability tab
-	let readability_panel = Panel::builder(&notebook).build();
-	let readability_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let font_group_box = StaticBox::builder(&readability_panel).with_label(&t("Font")).build();
 	let font_group_sizer = StaticBoxSizerBuilder::new_with_box(&font_group_box, Orientation::Vertical).build();
 	let font_preview_label = StaticText::builder(&readability_panel).with_label("").build();
@@ -191,6 +195,16 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	font_group_sizer.add(&choose_font_button, 0, SizerFlag::All, option_padding);
 	font_group_sizer.add(&reset_font_button, 0, SizerFlag::All, option_padding);
 	readability_sizer.add_sizer(&font_group_sizer, 0, SizerFlag::Expand | SizerFlag::All, option_padding);
+	let line_spacing_label = StaticText::builder(&readability_panel).with_label(&t("&Line spacing:")).build();
+	let line_spacing_ctrl = Choice::builder(&readability_panel).build();
+	line_spacing_ctrl.append(&t("Normal"));
+	line_spacing_ctrl.append(&t("1.5\u{00d7}"));
+	line_spacing_ctrl.append(&t("Double"));
+	let line_spacing_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	line_spacing_sizer.add(&line_spacing_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
+	line_spacing_sizer.add(&line_spacing_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
+	readability_sizer.add(&word_wrap_check, 0, SizerFlag::All, option_padding);
+	readability_sizer.add_sizer(&line_spacing_sizer, 0, SizerFlag::All, option_padding);
 	readability_panel.set_sizer(readability_sizer, true);
 
 	general_panel.set_sizer(general_sizer, true);
@@ -228,6 +242,8 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let initial_font = config.get_readability_font();
 	font_preview_label.set_label(&font_description(&initial_font));
 	let readability_font = Rc::new(RefCell::new(initial_font));
+	let stored_line_spacing = config.get_line_spacing().clamp(0, 2) as u32;
+	line_spacing_ctrl.set_selection(stored_line_spacing);
 
 	// "Choose Font..." button handler
 	let font_state = Rc::clone(&readability_font);
@@ -273,6 +289,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		ok_button,
 		cancel_button,
 		readability_font,
+		line_spacing_ctrl,
 	}
 }
 

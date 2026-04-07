@@ -1121,6 +1121,7 @@ impl MainWindow {
 					cfg.set_app_string("language", &options.language);
 					cfg.set_update_channel(options.update_channel);
 					cfg.set_readability_font(&options.readability_font);
+					cfg.set_line_spacing(options.line_spacing);
 					cfg.flush();
 					drop(cfg);
 					let options_word_wrap = options.flags.contains(OptionsDialogFlags::WORD_WRAP);
@@ -1137,6 +1138,7 @@ impl MainWindow {
 						let default_font = Font::new();
 						dm.lock().unwrap().apply_font(&default_font);
 					}
+					dm.lock().unwrap().apply_line_spacing(options.line_spacing);
 					let options_compact_menu = options.flags.contains(OptionsDialogFlags::COMPACT_GO_MENU);
 					if current_language != options.language || old_compact_menu != options_compact_menu {
 						if current_language != options.language {

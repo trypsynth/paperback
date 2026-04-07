@@ -153,6 +153,8 @@ struct AppSettings {
 	font_underlined: bool,
 	#[serde(default = "default_reading_speed_wpm")]
 	reading_speed_wpm: i64,
+	#[serde(default)]
+	line_spacing: i64,
 }
 
 impl Default for AppSettings {
@@ -179,6 +181,7 @@ impl Default for AppSettings {
 			font_weight: 0,
 			font_underlined: false,
 			reading_speed_wpm: 150,
+			line_spacing: 0,
 		}
 	}
 }
@@ -439,6 +442,21 @@ impl ConfigManager {
 			data.app.font_weight = i64::from(font.weight);
 			data.app.font_underlined = font.underlined;
 		}
+		self.dirty.set(true);
+	}
+
+	pub fn get_line_spacing(&self) -> i32 {
+		if !self.initialized {
+			return 0;
+		}
+		self.data.borrow().app.line_spacing.try_into().unwrap_or(0)
+	}
+
+	pub fn set_line_spacing(&self, value: i32) {
+		if !self.initialized {
+			return;
+		}
+		self.data.borrow_mut().app.line_spacing = i64::from(value);
 		self.dirty.set(true);
 	}
 

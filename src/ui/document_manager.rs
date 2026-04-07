@@ -144,6 +144,7 @@ impl DocumentManager {
 		panel.set_sizer(sizer, true);
 		let content = session.content();
 		fill_text_ctrl(text_ctrl, &content);
+		apply_line_spacing_to_ctrl(text_ctrl, config.get_line_spacing());
 		self.notebook.add_page(&panel, &title, true, None);
 		let path_str = path.to_string_lossy();
 		let nav_history = config.get_navigation_history(&path_str);
@@ -410,7 +411,15 @@ impl DocumentManager {
 		}
 	}
 
+	pub fn apply_line_spacing(&self, line_spacing: i32) {
+		for tab in &self.tabs {
+			apply_line_spacing_to_ctrl(tab.text_ctrl, line_spacing);
+			tab.text_ctrl.refresh(true, None);
+		}
+	}
+
 	pub fn apply_word_wrap(&mut self, self_rc: &Rc<Mutex<Self>>, word_wrap: bool) {
+		let line_spacing = self.config.lock().unwrap().get_line_spacing();
 		for tab in &mut self.tabs {
 			let old_ctrl = tab.text_ctrl;
 			let current_pos = old_ctrl.get_insertion_point();
@@ -420,6 +429,7 @@ impl DocumentManager {
 			sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
 			tab.panel.set_sizer(sizer, true);
 			fill_text_ctrl(text_ctrl, &content);
+			apply_line_spacing_to_ctrl(text_ctrl, line_spacing);
 			let max_pos = text_ctrl.get_last_position();
 			let pos = current_pos.clamp(0, max_pos);
 			text_ctrl.set_insertion_point(pos);
@@ -528,6 +538,32 @@ fn build_document_load_error_message(path: &Path, error: &str) -> String {
 fn fill_text_ctrl(text_ctrl: TextCtrl, content: &str) {
 	text_ctrl.set_value(content);
 }
+
+#[cfg(target_os = "windows")]
+pub fn apply_line_spacing_to_ctrl(text_ctrl: TextCtrl, line_spacing: i32) {
+	use windows::Win32::Foundation::{HWND, LPARAM, WPARAM};
+	use windows::Win32::UI::Controls::RichEdit::{PARAFORMAT2, PFM_LINESPACING};
+	use windows::Win32::UI::WindowsAndMessaging::SendMessageW;
+	const EM_SETSEL: u32 = 177;
+	const EM_SETPARAFORMAT: u32 = 1095;
+	let hwnd_ptr = text_ctrl.get_handle();
+	if hwnd_ptr.is_null() {
+		return;
+	}
+	let hwnd = HWND(hwnd_ptr);
+	unsafe {
+		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(-1_isize)));
+		let mut pf = PARAFORMAT2::default();
+		pf.Base.cbSize = std::mem::size_of::<PARAFORMAT2>() as u32;
+		pf.Base.dwMask = PFM_LINESPACING;
+		pf.bLineSpacingRule = line_spacing.clamp(0, 2) as u8;
+		SendMessageW(hwnd, EM_SETPARAFORMAT, None, Some(LPARAM(&raw const pf as isize)));
+		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(0)));
+	}
+}
+
+#[cfg(not(target_os = "windows"))]
+pub fn apply_line_spacing_to_ctrl(_text_ctrl: TextCtrl, _line_spacing: i32) {}
 
 pub fn build_font_from_readability(rf: &ReadabilityFont) -> Option<Font> {
 	if rf.is_default() {
