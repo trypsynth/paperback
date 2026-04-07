@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-04-06 10:33-0600\n"
+"POT-Creation-Date: 2026-04-06 18:55-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -59,6 +59,9 @@ msgid "Play &sounds on bookmarks and notes"
 msgstr ""
 
 msgid "Check for &updates on startup"
+msgstr ""
+
+msgid "&Reading speed (words per minute):"
 msgstr ""
 
 msgid "Number of &recent documents to show:"
@@ -173,6 +176,33 @@ msgid "No Selection"
 msgstr ""
 
 msgid "Untitled"
+msgstr ""
+
+msgid "1 hour"
+msgstr ""
+
+msgid "hours"
+msgstr ""
+
+msgid "1 minute"
+msgstr ""
+
+msgid "minutes"
+msgstr ""
+
+msgid "1 second"
+msgstr ""
+
+msgid "seconds"
+msgstr ""
+
+msgid "Estimated reading time: {}"
+msgstr ""
+
+msgid "This document contains {} words."
+msgstr ""
+
+msgid "Word Count"
 msgstr ""
 
 msgid "Document Info"
@@ -524,12 +554,6 @@ msgid "Notes and bookmarks imported successfully."
 msgstr ""
 
 msgid "Import Successful"
-msgstr ""
-
-msgid "The document contains {} words."
-msgstr ""
-
-msgid "Word count"
 msgstr ""
 
 msgid "No table of contents."

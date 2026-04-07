@@ -984,14 +984,9 @@ impl MainWindow {
 						return;
 					};
 					if let Some(tab) = dm_ref.active_tab() {
-						let stats = tab.session.stats();
-						let msg_template = t("The document contains {} words.");
-						let msg = msg_template.replace("{}", &stats.word_count.to_string());
-						let title = t("Word count");
-						let dialog = MessageDialog::builder(&frame_copy, &msg, &title)
-							.with_style(MessageDialogStyle::OK)
-							.build();
-						dialog.show_modal();
+						let word_count = tab.session.stats().word_count;
+						let wpm = config.lock().unwrap().get_app_int("reading_speed_wpm", 150);
+						dialogs::show_word_count_dialog(&frame_copy, word_count, wpm);
 					}
 				}
 				menu_ids::DOCUMENT_INFO => {
@@ -1122,6 +1117,7 @@ impl MainWindow {
 					);
 					cfg.set_app_bool("bookmark_sounds", options.flags.contains(OptionsDialogFlags::BOOKMARK_SOUNDS));
 					cfg.set_app_int("recent_documents_to_show", options.recent_documents_to_show);
+					cfg.set_app_int("reading_speed_wpm", options.reading_speed_wpm);
 					cfg.set_app_string("language", &options.language);
 					cfg.set_update_channel(options.update_channel);
 					cfg.set_readability_font(&options.readability_font);

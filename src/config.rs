@@ -102,6 +102,9 @@ fn default_recent_documents_to_show() -> i64 {
 fn default_sleep_timer() -> i64 {
 	30
 }
+fn default_reading_speed_wpm() -> i64 {
+	150
+}
 fn default_update_channel() -> String {
 	"stable".to_string()
 }
@@ -148,6 +151,8 @@ struct AppSettings {
 	font_weight: i64,
 	#[serde(default)]
 	font_underlined: bool,
+	#[serde(default = "default_reading_speed_wpm")]
+	reading_speed_wpm: i64,
 }
 
 impl Default for AppSettings {
@@ -173,6 +178,7 @@ impl Default for AppSettings {
 			font_style: 0,
 			font_weight: 0,
 			font_underlined: false,
+			reading_speed_wpm: 150,
 		}
 	}
 }
@@ -337,6 +343,7 @@ impl ConfigManager {
 		let v: i64 = match key {
 			"recent_documents_to_show" => data.app.recent_documents_to_show,
 			"sleep_timer_duration" => data.app.sleep_timer_duration,
+			"reading_speed_wpm" => data.app.reading_speed_wpm,
 			_ => return default_value,
 		};
 		v.try_into().unwrap_or(default_value)
@@ -390,6 +397,7 @@ impl ConfigManager {
 			match key {
 				"recent_documents_to_show" => data.app.recent_documents_to_show = i64::from(value),
 				"sleep_timer_duration" => data.app.sleep_timer_duration = i64::from(value),
+				"reading_speed_wpm" => data.app.reading_speed_wpm = i64::from(value),
 				_ => return,
 			}
 		}

@@ -48,6 +48,7 @@ type NavigationHandler = Box<dyn Fn(&str) -> bool>;
 pub struct OptionsDialogResult {
 	pub flags: OptionsDialogFlags,
 	pub recent_documents_to_show: i32,
+	pub reading_speed_wpm: i32,
 	pub language: String,
 	pub update_channel: crate::config::UpdateChannel,
 	pub readability_font: ReadabilityFont,
@@ -83,6 +84,7 @@ struct OptionsDialogUi {
 	check_for_updates_check: CheckBox,
 	bookmark_sounds_check: CheckBox,
 	recent_docs_ctrl: SpinCtrl,
+	reading_speed_ctrl: SpinCtrl,
 	language_combo: ComboBox,
 	update_channel_combo: ComboBox,
 	language_codes: Vec<String>,
@@ -108,6 +110,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 	Some(OptionsDialogResult {
 		flags,
 		recent_documents_to_show: ui.recent_docs_ctrl.value(),
+		reading_speed_wpm: ui.reading_speed_ctrl.value(),
 		language,
 		update_channel,
 		readability_font,
@@ -139,6 +142,13 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	for check in [&word_wrap_check, &navigation_wrap_check, &compact_go_menu_check, &bookmark_sounds_check] {
 		reading_sizer.add(check, 0, SizerFlag::All, option_padding);
 	}
+	let reading_speed_label =
+		StaticText::builder(&reading_panel).with_label(&t("&Reading speed (words per minute):")).build();
+	let reading_speed_ctrl = SpinCtrl::builder(&reading_panel).with_range(1, 2000).build();
+	let reading_speed_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	reading_speed_sizer.add(&reading_speed_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
+	reading_speed_sizer.add(&reading_speed_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
+	reading_sizer.add_sizer(&reading_speed_sizer, 0, SizerFlag::All, option_padding);
 	let max_recent_docs = 100;
 	let recent_docs_label =
 		StaticText::builder(&general_panel).with_label(&t("Number of &recent documents to show:")).build();
@@ -197,6 +207,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	bookmark_sounds_check.set_value(config.get_app_bool("bookmark_sounds", true));
 	check_for_updates_check.set_value(config.get_app_bool("check_for_updates_on_startup", true));
 	recent_docs_ctrl.set_value(config.get_app_int("recent_documents_to_show", 25).clamp(0, max_recent_docs));
+	reading_speed_ctrl.set_value(config.get_app_int("reading_speed_wpm", 150).clamp(1, 2000));
 	let stored_language = config.get_app_string("language", "");
 	let current_language = if stored_language.is_empty() {
 		TranslationManager::instance().lock().unwrap().current_language()
@@ -254,6 +265,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		check_for_updates_check,
 		bookmark_sounds_check,
 		recent_docs_ctrl,
+		reading_speed_ctrl,
 		language_combo,
 		update_channel_combo,
 		language_codes,
@@ -1101,6 +1113,48 @@ fn find_and_select_item(tree: TreeCtrl, parent: &TreeItemId, offset: i32) -> boo
 		}
 	}
 	false
+}
+
+fn format_reading_time(word_count: usize, wpm: i32) -> String {
+	if wpm <= 0 {
+		return String::new();
+	}
+	let total_seconds = (word_count as f64 / wpm as f64 * 60.0).round() as u64;
+	let hours = total_seconds / 3600;
+	let minutes = (total_seconds % 3600) / 60;
+	let seconds = total_seconds % 60;
+	let mut parts: Vec<String> = Vec::new();
+	if hours == 1 {
+		parts.push(t("1 hour"));
+	} else if hours > 1 {
+		parts.push(format!("{} {}", hours, t("hours")));
+	}
+	if minutes == 1 {
+		parts.push(t("1 minute"));
+	} else if minutes > 1 {
+		parts.push(format!("{} {}", minutes, t("minutes")));
+	}
+	if seconds == 1 {
+		parts.push(t("1 second"));
+	} else if seconds > 1 || total_seconds == 0 {
+		parts.push(format!("{} {}", seconds, t("seconds")));
+	}
+	let time_str = parts.join(", ");
+	let template = t("Estimated reading time: {}");
+	template.replace("{}", &time_str)
+}
+
+pub fn show_word_count_dialog(parent: &Frame, word_count: usize, reading_speed_wpm: i32) {
+	let words_template = t("This document contains {} words.");
+	let mut msg = words_template.replace("{}", &word_count.to_string());
+	let reading_time = format_reading_time(word_count, reading_speed_wpm);
+	if !reading_time.is_empty() {
+		msg.push('\n');
+		msg.push_str(&reading_time);
+	}
+	let title = t("Word Count");
+	let dialog = MessageDialog::builder(parent, &msg, &title).with_style(MessageDialogStyle::OK).build();
+	dialog.show_modal();
 }
 
 pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, author: &str, stats: &DocumentStats) {
