@@ -3424,7 +3424,7 @@ checksum = "1ffae5123b2d3fc086436f8834ae3ab053a283cfac8fe0a0b8eaae044768a4c4"
 [[package]]
 name = "wxdragon"
 version = "0.9.14"
-source = "git+https://github.com/AllenDang/wxDragon#902fdf13c9fa2f1c40a1b67d1b753386184cc11d"
+source = "git+https://github.com/AllenDang/wxDragon#a755b68acdf6f7df23972dfc884a3e9795289c28"
 dependencies = [
  "bitflags",
  "log",
@@ -3436,7 +3436,7 @@ dependencies = [
 [[package]]
 name = "wxdragon-macros"
 version = "0.9.14"
-source = "git+https://github.com/AllenDang/wxDragon#902fdf13c9fa2f1c40a1b67d1b753386184cc11d"
+source = "git+https://github.com/AllenDang/wxDragon#a755b68acdf6f7df23972dfc884a3e9795289c28"
 dependencies = [
  "proc-macro2",
  "quick-xml",
@@ -3447,7 +3447,7 @@ dependencies = [
 [[package]]
 name = "wxdragon-sys"
 version = "0.9.14"
-source = "git+https://github.com/AllenDang/wxDragon#902fdf13c9fa2f1c40a1b67d1b753386184cc11d"
+source = "git+https://github.com/AllenDang/wxDragon#a755b68acdf6f7df23972dfc884a3e9795289c28"
 dependencies = [
  "bindgen",
  "cmake",

@@ -1125,20 +1125,23 @@ impl MainWindow {
 					cfg.flush();
 					drop(cfg);
 					let options_word_wrap = options.flags.contains(OptionsDialogFlags::WORD_WRAP);
-					if old_word_wrap != options_word_wrap {
+					if let Some(font) = build_font_from_readability(&options.readability_font) {
+						if old_word_wrap != options_word_wrap {
+							let dm_for_wrap = Rc::clone(&dm);
+							let mut dm_ref = dm.lock().unwrap();
+							dm_ref.apply_word_wrap(&dm_for_wrap, options_word_wrap);
+							dm_ref.restore_focus();
+						}
+						dm.lock().unwrap().apply_font(&font);
+						dm.lock().unwrap().apply_line_spacing(options.line_spacing);
+					} else {
+						// Font is default/reset: rebuild text controls so they inherit
+						// the system default font. apply_word_wrap also re-applies line spacing.
 						let dm_for_wrap = Rc::clone(&dm);
 						let mut dm_ref = dm.lock().unwrap();
 						dm_ref.apply_word_wrap(&dm_for_wrap, options_word_wrap);
 						dm_ref.restore_focus();
 					}
-					if let Some(font) = build_font_from_readability(&options.readability_font) {
-						dm.lock().unwrap().apply_font(&font);
-					} else {
-						// Font reset to default: apply system default font
-						let default_font = Font::new();
-						dm.lock().unwrap().apply_font(&default_font);
-					}
-					dm.lock().unwrap().apply_line_spacing(options.line_spacing);
 					let options_compact_menu = options.flags.contains(OptionsDialogFlags::COMPACT_GO_MENU);
 					if current_language != options.language || old_compact_menu != options_compact_menu {
 						if current_language != options.language {

@@ -357,15 +357,17 @@ fn font_description(rf: &ReadabilityFont) -> String {
 	if rf.style == FontStyle::Italic as i32 || rf.style == FontStyle::Slant as i32 {
 		let _ = write!(desc, ", {}", t("Italic"));
 	}
+	if rf.underlined {
+		let _ = write!(desc, ", {}", t("Underlined"));
+	}
+	if rf.strikethrough {
+		let _ = write!(desc, ", {}", t("Strikethrough"));
+	}
 	desc
 }
 
 fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Option<ReadabilityFont> {
 	let mut font_data = FontData::new();
-	// Disable effects (strikethrough, color) — wxdragon doesn't expose those
-	// properties on Font, so showing them would let the user pick settings we
-	// can't save. Face, size, style (italic), and weight (bold) are all we need.
-	font_data.set_enable_effects(false);
 	if !current.is_default() {
 		let style = match current.style {
 			s if s == FontStyle::Italic as i32 => FontStyle::Italic,
@@ -384,6 +386,8 @@ fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Option<Readabi
 			.with_point_size(point_size)
 			.with_style(style)
 			.with_weight(weight)
+			.with_underline(current.underlined)
+			.with_strikethrough(current.strikethrough)
 			.build()
 		{
 			font_data.set_initial_font(&font);
@@ -399,7 +403,8 @@ fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Option<Readabi
 		point_size: font.get_point_size(),
 		style: font.get_style() as i32,
 		weight: font.get_weight() as i32,
-		underlined: false,
+		underlined: font.is_underlined(),
+		strikethrough: font.is_strikethrough(),
 	})
 }
 

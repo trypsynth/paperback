@@ -77,6 +77,7 @@ pub struct ReadabilityFont {
 	pub style: i32,
 	pub weight: i32,
 	pub underlined: bool,
+	pub strikethrough: bool,
 }
 
 impl ReadabilityFont {
@@ -151,6 +152,8 @@ struct AppSettings {
 	font_weight: i64,
 	#[serde(default)]
 	font_underlined: bool,
+	#[serde(default)]
+	font_strikethrough: bool,
 	#[serde(default = "default_reading_speed_wpm")]
 	reading_speed_wpm: i64,
 	#[serde(default)]
@@ -180,6 +183,7 @@ impl Default for AppSettings {
 			font_style: 0,
 			font_weight: 0,
 			font_underlined: false,
+			font_strikethrough: false,
 			reading_speed_wpm: 150,
 			line_spacing: 0,
 		}
@@ -427,6 +431,7 @@ impl ConfigManager {
 			style: data.app.font_style.try_into().unwrap_or(0),
 			weight: data.app.font_weight.try_into().unwrap_or(0),
 			underlined: data.app.font_underlined,
+			strikethrough: data.app.font_strikethrough,
 		}
 	}
 
@@ -441,6 +446,7 @@ impl ConfigManager {
 			data.app.font_style = i64::from(font.style);
 			data.app.font_weight = i64::from(font.weight);
 			data.app.font_underlined = font.underlined;
+			data.app.font_strikethrough = font.strikethrough;
 		}
 		self.dirty.set(true);
 	}
