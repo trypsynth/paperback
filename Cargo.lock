@@ -1505,7 +1505,7 @@ checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 [[package]]
 name = "pdfium"
 version = "0.10.3"
-source = "git+https://github.com/aryanchoudharypro/PDFium-rs?branch=feature%2Ftagged-pdf-support#012577e7efc99bbf5c36a6566037d90e7cebe006"
+source = "git+https://github.com/aryanchoudharypro/PDFium-rs?branch=feature%2Ftagged-pdf-support#969d3b7807f924bf6f67a9294cae1d7666a78df5"
 dependencies = [
  "bitflags",
  "image",
