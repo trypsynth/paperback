@@ -411,8 +411,7 @@ fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Option<Readabi
 		let c = fd.get_chosen_colour();
 		// Prevent double-free: this FontData pointer is owned by the dialog, not by us
 		std::mem::forget(fd);
-		c.map(|col| ((col.r as i32) << 16) | ((col.g as i32) << 8) | col.b as i32)
-			.unwrap_or(-1)
+		c.map(|col| ((col.r as i32) << 16) | ((col.g as i32) << 8) | col.b as i32).unwrap_or(-1)
 	} else {
 		-1
 	};

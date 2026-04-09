@@ -589,7 +589,14 @@ pub fn build_font_from_readability(rf: &ReadabilityFont) -> Option<Font> {
 		return None;
 	}
 	let point_size = if rf.point_size > 0 { rf.point_size } else { 10 };
-	let mut font = Font::new_with_details(point_size, FontFamily::Default.as_i32(), rf.style, rf.weight, rf.underlined, &rf.face_name)?;
+	let mut font = Font::new_with_details(
+		point_size,
+		FontFamily::Default.as_i32(),
+		rf.style,
+		rf.weight,
+		rf.underlined,
+		&rf.face_name,
+	)?;
 	if rf.strikethrough {
 		font.set_strikethrough(true);
 	}
