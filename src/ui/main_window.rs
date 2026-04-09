@@ -1133,6 +1133,7 @@ impl MainWindow {
 							dm_ref.restore_focus();
 						}
 						dm.lock().unwrap().apply_font(&font);
+						dm.lock().unwrap().apply_color(options.readability_font.color);
 						dm.lock().unwrap().apply_line_spacing(options.line_spacing);
 					} else {
 						// Font is default/reset: rebuild text controls so they inherit
@@ -1141,6 +1142,9 @@ impl MainWindow {
 						let mut dm_ref = dm.lock().unwrap();
 						dm_ref.apply_word_wrap(&dm_for_wrap, options_word_wrap);
 						dm_ref.restore_focus();
+						// apply_word_wrap already handles color via build_font_from_readability flow,
+						// but if only color is set (default font), apply it explicitly here.
+						dm_ref.apply_color(options.readability_font.color);
 					}
 					let options_compact_menu = options.flags.contains(OptionsDialogFlags::COMPACT_GO_MENU);
 					if current_language != options.language || old_compact_menu != options_compact_menu {

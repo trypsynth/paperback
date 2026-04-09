@@ -70,7 +70,7 @@ pub struct FindSettings {
 	pub use_regex: bool,
 }
 
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct ReadabilityFont {
 	pub face_name: String,
 	pub point_size: i32,
@@ -78,6 +78,25 @@ pub struct ReadabilityFont {
 	pub weight: i32,
 	pub underlined: bool,
 	pub strikethrough: bool,
+	/// RGB color packed as 0xRRGGBB, or -1 for default (no override)
+	pub color: i32,
+	/// wxFontEncoding value, 0 for default
+	pub encoding: i32,
+}
+
+impl Default for ReadabilityFont {
+	fn default() -> Self {
+		Self {
+			face_name: String::new(),
+			point_size: 0,
+			style: 0,
+			weight: 0,
+			underlined: false,
+			strikethrough: false,
+			color: -1,
+			encoding: 0,
+		}
+	}
 }
 
 impl ReadabilityFont {
@@ -108,6 +127,9 @@ fn default_reading_speed_wpm() -> i64 {
 }
 fn default_update_channel() -> String {
 	"stable".to_string()
+}
+fn default_font_color() -> i64 {
+	-1
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -154,6 +176,10 @@ struct AppSettings {
 	font_underlined: bool,
 	#[serde(default)]
 	font_strikethrough: bool,
+	#[serde(default = "default_font_color")]
+	font_color: i64,
+	#[serde(default)]
+	font_encoding: i64,
 	#[serde(default = "default_reading_speed_wpm")]
 	reading_speed_wpm: i64,
 	#[serde(default)]
@@ -184,6 +210,8 @@ impl Default for AppSettings {
 			font_weight: 0,
 			font_underlined: false,
 			font_strikethrough: false,
+			font_color: -1,
+			font_encoding: 0,
 			reading_speed_wpm: 150,
 			line_spacing: 0,
 		}
@@ -432,6 +460,8 @@ impl ConfigManager {
 			weight: data.app.font_weight.try_into().unwrap_or(0),
 			underlined: data.app.font_underlined,
 			strikethrough: data.app.font_strikethrough,
+			color: data.app.font_color.try_into().unwrap_or(-1),
+			encoding: data.app.font_encoding.try_into().unwrap_or(0),
 		}
 	}
 
@@ -447,6 +477,8 @@ impl ConfigManager {
 			data.app.font_weight = i64::from(font.weight);
 			data.app.font_underlined = font.underlined;
 			data.app.font_strikethrough = font.strikethrough;
+			data.app.font_color = i64::from(font.color);
+			data.app.font_encoding = i64::from(font.encoding);
 		}
 		self.dirty.set(true);
 	}

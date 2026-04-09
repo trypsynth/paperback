@@ -8,6 +8,7 @@ use std::{
 };
 
 use wxdragon::{
+	color::Colour,
 	event::{EventType, WindowEventData},
 	prelude::*,
 	translations::translate as t,
@@ -136,9 +137,11 @@ impl DocumentManager {
 		let mut session = session;
 		let word_wrap = config.get_app_bool("word_wrap", false);
 		let text_ctrl = Self::build_text_ctrl(panel, word_wrap, self_rc);
-		if let Some(font) = build_font_from_readability(&config.get_readability_font()) {
+		let rf = config.get_readability_font();
+		if let Some(font) = build_font_from_readability(&rf) {
 			text_ctrl.set_font(&font);
 		}
+		apply_foreground_color_to_ctrl(text_ctrl, rf.color);
 		let sizer = BoxSizer::builder(Orientation::Vertical).build();
 		sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
 		panel.set_sizer(sizer, true);
@@ -411,6 +414,13 @@ impl DocumentManager {
 		}
 	}
 
+	pub fn apply_color(&self, color: i32) {
+		for tab in &self.tabs {
+			apply_foreground_color_to_ctrl(tab.text_ctrl, color);
+			tab.text_ctrl.refresh(true, None);
+		}
+	}
+
 	pub fn apply_line_spacing(&self, line_spacing: i32) {
 		for tab in &self.tabs {
 			apply_line_spacing_to_ctrl(tab.text_ctrl, line_spacing);
@@ -419,6 +429,7 @@ impl DocumentManager {
 	}
 
 	pub fn apply_word_wrap(&mut self, self_rc: &Rc<Mutex<Self>>, word_wrap: bool) {
+		let rf = self.config.lock().unwrap().get_readability_font();
 		let line_spacing = self.config.lock().unwrap().get_line_spacing();
 		for tab in &mut self.tabs {
 			let old_ctrl = tab.text_ctrl;
@@ -429,6 +440,10 @@ impl DocumentManager {
 			sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
 			tab.panel.set_sizer(sizer, true);
 			fill_text_ctrl(text_ctrl, &content);
+			if let Some(font) = build_font_from_readability(&rf) {
+				text_ctrl.set_font(&font);
+			}
+			apply_foreground_color_to_ctrl(text_ctrl, rf.color);
 			apply_line_spacing_to_ctrl(text_ctrl, line_spacing);
 			let max_pos = text_ctrl.get_last_position();
 			let pos = current_pos.clamp(0, max_pos);
@@ -578,7 +593,19 @@ pub fn build_font_from_readability(rf: &ReadabilityFont) -> Option<Font> {
 	if rf.strikethrough {
 		font.set_strikethrough(true);
 	}
+	if rf.encoding != 0 {
+		font.set_encoding(rf.encoding);
+	}
 	Some(font)
+}
+
+pub fn apply_foreground_color_to_ctrl(text_ctrl: TextCtrl, color: i32) {
+	if color >= 0 {
+		let r = ((color >> 16) & 0xFF) as u8;
+		let g = ((color >> 8) & 0xFF) as u8;
+		let b = (color & 0xFF) as u8;
+		text_ctrl.set_foreground_color(Colour::rgb(r, g, b));
+	}
 }
 
 fn show_reader_context_menu(text_ctrl: TextCtrl) {

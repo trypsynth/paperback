@@ -368,6 +368,12 @@ fn font_description(rf: &ReadabilityFont) -> String {
 
 fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Option<ReadabilityFont> {
 	let mut font_data = FontData::new();
+	if current.color >= 0 {
+		let r = ((current.color >> 16) & 0xFF) as u8;
+		let g = ((current.color >> 8) & 0xFF) as u8;
+		let b = (current.color & 0xFF) as u8;
+		font_data.set_colour(&Colour::rgb(r, g, b));
+	}
 	if !current.is_default() {
 		let style = match current.style {
 			s if s == FontStyle::Italic as i32 => FontStyle::Italic,
@@ -381,7 +387,7 @@ fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Option<Readabi
 			_ => FontWeight::Normal,
 		};
 		let point_size = if current.point_size > 0 { current.point_size } else { 10 };
-		if let Some(font) = Font::builder()
+		if let Some(mut font) = Font::builder()
 			.with_face_name(&current.face_name)
 			.with_point_size(point_size)
 			.with_style(style)
@@ -390,6 +396,9 @@ fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Option<Readabi
 			.with_strikethrough(current.strikethrough)
 			.build()
 		{
+			if current.encoding != 0 {
+				font.set_encoding(current.encoding);
+			}
 			font_data.set_initial_font(&font);
 		}
 	}
@@ -398,6 +407,15 @@ fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Option<Readabi
 		return None;
 	}
 	let font = dlg.get_font()?;
+	let chosen_color = if let Some(fd) = dlg.get_font_data() {
+		let c = fd.get_chosen_colour();
+		// Prevent double-free: this FontData pointer is owned by the dialog, not by us
+		std::mem::forget(fd);
+		c.map(|col| ((col.r as i32) << 16) | ((col.g as i32) << 8) | col.b as i32)
+			.unwrap_or(-1)
+	} else {
+		-1
+	};
 	Some(ReadabilityFont {
 		face_name: font.get_face_name(),
 		point_size: font.get_point_size(),
@@ -405,6 +423,8 @@ fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Option<Readabi
 		weight: font.get_weight() as i32,
 		underlined: font.is_underlined(),
 		strikethrough: font.is_strikethrough(),
+		color: chosen_color,
+		encoding: font.get_encoding(),
 	})
 }
 
