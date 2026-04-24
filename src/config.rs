@@ -18,7 +18,7 @@ use sha1::{Digest, Sha1};
 
 use crate::types::DocumentListItem;
 
-const CONFIG_VERSION: u32 = 3;
+const CONFIG_VERSION: u32 = 4;
 const DEFAULT_RECENT_DOCUMENTS_TO_SHOW: i64 = 25;
 const MAX_RECENT_DOCUMENTS_TO_SHOW: usize = 100;
 
@@ -318,7 +318,7 @@ impl ConfigManager {
 		let toml_path = get_config_path();
 		let ini_path = toml_path.with_extension("ini");
 
-		let (data, needs_save) = if toml_path.exists() {
+		let (mut data, mut needs_save) = if toml_path.exists() {
 			match fs::read_to_string(&toml_path).ok().and_then(|s| toml::from_str::<ConfigData>(&s).ok()) {
 				Some(d) => (d, false),
 				None => (ConfigData::default(), true),
@@ -328,6 +328,17 @@ impl ConfigManager {
 		} else {
 			(ConfigData::default(), true)
 		};
+
+		if data.version < 4 {
+			let mut migrated_docs = HashMap::new();
+			for (_old_key, doc) in data.documents.drain() {
+				let new_key = doc_key(&doc.path);
+				migrated_docs.insert(new_key, doc);
+			}
+			data.documents = migrated_docs;
+			data.version = 4;
+			needs_save = true;
+		}
 
 		self.config_path = toml_path;
 		self.initialized = true;
@@ -988,10 +999,68 @@ fn get_exe_directory() -> PathBuf {
 	env::current_exe().ok().and_then(|p| p.parent().map(Path::to_path_buf)).unwrap_or_else(|| PathBuf::from("."))
 }
 
-fn doc_key(path: &str) -> String {
+pub fn compute_document_hash(path: &str) -> [u8; 20] {
+	use std::sync::{Mutex, OnceLock};
+	static CACHE: OnceLock<Mutex<HashMap<String, [u8; 20]>>> = OnceLock::new();
+	let cache = CACHE.get_or_init(|| Mutex::new(HashMap::new()));
+	if let Ok(guard) = cache.lock() {
+		if let Some(cached) = guard.get(path) {
+			return *cached;
+		}
+	}
 	let mut hasher = Sha1::new();
-	hasher.update(path.as_bytes());
-	let digest = hasher.finalize();
+	if let Ok(mut file) = fs::File::open(path) {
+		use std::io::{Read, Seek, SeekFrom};
+		let mut buffer = [0; 65536];
+		let mut total_read = 0;
+		let max_read = 1024 * 1024;
+		while total_read < max_read {
+			let to_read = std::cmp::min(buffer.len(), max_read - total_read);
+			if let Ok(n) = file.read(&mut buffer[..to_read]) {
+				if n == 0 {
+					break;
+				}
+				hasher.update(&buffer[..n]);
+				total_read += n;
+			} else {
+				break;
+			}
+		}
+		if let Ok(metadata) = file.metadata() {
+			let file_size = metadata.len();
+			hasher.update(&file_size.to_le_bytes());
+			if file_size > max_read as u64 {
+				let seek_pos = std::cmp::max(file_size.saturating_sub(max_read as u64), max_read as u64);
+				if file.seek(SeekFrom::Start(seek_pos)).is_ok() {
+					let mut end_read = 0;
+					let end_max = (file_size - seek_pos) as usize;
+					while end_read < end_max {
+						let to_read = std::cmp::min(buffer.len(), end_max - end_read);
+						if let Ok(n) = file.read(&mut buffer[..to_read]) {
+							if n == 0 {
+								break;
+							}
+							hasher.update(&buffer[..n]);
+							end_read += n;
+						} else {
+							break;
+						}
+					}
+				}
+			}
+		}
+	} else {
+		hasher.update(path.as_bytes());
+	}
+	let digest: [u8; 20] = hasher.finalize().into();
+	if let Ok(mut guard) = cache.lock() {
+		guard.insert(path.to_string(), digest);
+	}
+	digest
+}
+
+fn doc_key(path: &str) -> String {
+	let digest = compute_document_hash(path);
 	let encoded = URL_SAFE_NO_PAD.encode(digest);
 	format!("doc_{encoded}")
 }

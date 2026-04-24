@@ -568,9 +568,8 @@ impl DocumentSession {
 	pub fn webview_target_path(&self, position: i64, temp_dir: &str) -> Option<String> {
 		let section_path = self.get_current_section_path(position).filter(|path| !path.is_empty());
 		if let Some(section_path) = section_path {
-			let mut hasher = Sha1::new();
-			hasher.update(self.file_path.as_bytes());
-			let hash: String = hasher.finalize().iter().map(|b| format!("{b:02x}")).collect();
+			let digest = crate::config::compute_document_hash(&self.file_path);
+			let hash: String = digest.iter().map(|b| format!("{b:02x}")).collect();
 			let doc_temp_dir = Path::new(temp_dir).join(format!("paperback_{hash}"));
 			if fs::create_dir_all(&doc_temp_dir).is_ok() {
 				let file_name = Path::new(&section_path).file_name()?.to_string_lossy().to_string();

@@ -273,6 +273,7 @@ impl MainWindow {
 			state.restored = true;
 			drop(state);
 			let pre_restore_active = doc_manager.lock().unwrap().active_tab_index();
+			let active_path = config.lock().unwrap().get_app_string("active_document", "");
 			let paths = config.lock().unwrap().get_opened_documents_existing();
 			for path in paths {
 				let path = Path::new(&path);
@@ -281,7 +282,11 @@ impl MainWindow {
 				}
 				let _ = doc_manager.lock().unwrap().open_file(&doc_manager, path);
 			}
-			if let Some(idx) = pre_restore_active {
+			let mut target_idx = pre_restore_active;
+			if target_idx.is_none() && !active_path.is_empty() {
+				target_idx = doc_manager.lock().unwrap().find_tab_by_path(Path::new(&active_path));
+			}
+			if let Some(idx) = target_idx {
 				doc_manager.lock().unwrap().notebook().set_selection(idx);
 			}
 			let dm_ref = doc_manager.lock().unwrap();
