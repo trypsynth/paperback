@@ -4,8 +4,8 @@ use std::{
 	path::Path,
 };
 
+use base64::Engine;
 use pulldown_cmark::{Options as MdOptions, Parser as MdParser, html::push_html as md_push_html};
-use sha1::{Digest, Sha1};
 use zip::ZipArchive;
 
 use crate::{
@@ -569,7 +569,7 @@ impl DocumentSession {
 		let section_path = self.get_current_section_path(position).filter(|path| !path.is_empty());
 		if let Some(section_path) = section_path {
 			let digest = crate::config::compute_document_hash(&self.file_path);
-			let hash: String = digest.iter().map(|b| format!("{b:02x}")).collect();
+			let hash = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(digest);
 			let doc_temp_dir = Path::new(temp_dir).join(format!("paperback_{hash}"));
 			if fs::create_dir_all(&doc_temp_dir).is_ok() {
 				let file_name = Path::new(&section_path).file_name()?.to_string_lossy().to_string();
@@ -584,9 +584,8 @@ impl DocumentSession {
 		match ext.as_deref() {
 			Some("html" | "htm" | "xhtml") => Some(self.file_path.clone()),
 			Some("md" | "markdown") => {
-				let mut hasher = Sha1::new();
-				hasher.update(self.file_path.as_bytes());
-				let hash: String = hasher.finalize().iter().map(|b| format!("{b:02x}")).collect();
+				let digest = crate::config::compute_document_hash(&self.file_path);
+				let hash = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(digest);
 				let doc_temp_dir = Path::new(temp_dir).join(format!("paperback_{hash}"));
 				if fs::create_dir_all(&doc_temp_dir).is_ok() {
 					let html_path = doc_temp_dir.join("document.html");

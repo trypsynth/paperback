@@ -275,6 +275,8 @@ struct ConfigData {
 	find_history: Vec<String>,
 	#[serde(default)]
 	documents: HashMap<String, DocumentConfig>,
+	#[serde(default)]
+	path_hashes: HashMap<String, String>,
 }
 
 impl Default for ConfigData {
@@ -286,6 +288,7 @@ impl Default for ConfigData {
 			opened_documents: Vec::new(),
 			find_history: Vec::new(),
 			documents: HashMap::new(),
+			path_hashes: HashMap::new(),
 		}
 	}
 }
@@ -318,7 +321,7 @@ impl ConfigManager {
 		let toml_path = get_config_path();
 		let ini_path = toml_path.with_extension("ini");
 
-		let (mut data, mut needs_save) = if toml_path.exists() {
+		let (data, needs_save) = if toml_path.exists() {
 			match fs::read_to_string(&toml_path).ok().and_then(|s| toml::from_str::<ConfigData>(&s).ok()) {
 				Some(d) => (d, false),
 				None => (ConfigData::default(), true),
@@ -328,17 +331,6 @@ impl ConfigManager {
 		} else {
 			(ConfigData::default(), true)
 		};
-
-		if data.version < 4 {
-			let mut migrated_docs = HashMap::new();
-			for (_old_key, doc) in data.documents.drain() {
-				let new_key = doc_key(&doc.path);
-				migrated_docs.insert(new_key, doc);
-			}
-			data.documents = migrated_docs;
-			data.version = 4;
-			needs_save = true;
-		}
 
 		self.config_path = toml_path;
 		self.initialized = true;
@@ -350,6 +342,71 @@ impl ConfigManager {
 		}
 
 		true
+	}
+
+	pub fn refresh_document_hash(&self, path: &str) {
+		if !self.initialized {
+			return;
+		}
+
+		let digest = compute_document_hash(path);
+		let encoded = URL_SAFE_NO_PAD.encode(digest);
+		let new_key = format!("doc_{encoded}");
+
+		let mut data = self.data.borrow_mut();
+		if let Some(old_key) = data.path_hashes.get(path).cloned() {
+			if old_key != new_key {
+				if let Some(mut doc) = data.documents.remove(&old_key) {
+					doc.path = path.to_string();
+					data.documents.insert(new_key.clone(), doc);
+				}
+				data.path_hashes.insert(path.to_string(), new_key);
+				self.dirty.set(true);
+			}
+		} else {
+			if !data.documents.contains_key(&new_key) {
+				let mut old_hasher = Sha1::new();
+				old_hasher.update(path.as_bytes());
+				let old_encoded = URL_SAFE_NO_PAD.encode(old_hasher.finalize());
+				let old_key = format!("doc_{old_encoded}");
+
+				if let Some(mut doc) = data.documents.remove(&old_key) {
+					doc.path = path.to_string();
+					data.documents.insert(new_key.clone(), doc);
+				}
+			}
+			data.path_hashes.insert(path.to_string(), new_key);
+			self.dirty.set(true);
+		}
+	}
+
+	pub fn get_doc_key(&self, path: &str) -> String {
+		{
+			let data = self.data.borrow();
+			if let Some(hash) = data.path_hashes.get(path) {
+				return hash.clone();
+			}
+		}
+
+		let digest = compute_document_hash(path);
+		let encoded = URL_SAFE_NO_PAD.encode(digest);
+		let new_key = format!("doc_{encoded}");
+
+		let mut data = self.data.borrow_mut();
+		if !data.documents.contains_key(&new_key) {
+			let mut old_hasher = Sha1::new();
+			old_hasher.update(path.as_bytes());
+			let old_encoded = URL_SAFE_NO_PAD.encode(old_hasher.finalize());
+			let old_key = format!("doc_{old_encoded}");
+
+			if let Some(doc) = data.documents.remove(&old_key) {
+				data.documents.insert(new_key.clone(), doc);
+			}
+		}
+
+		data.path_hashes.insert(path.to_string(), new_key.clone());
+		self.dirty.set(true);
+		new_key
 	}
 
 	pub fn flush(&self) {
@@ -589,8 +646,9 @@ impl ConfigManager {
 			return;
 		}
 		{
+			let key = self.get_doc_key(path);
 			let mut data = self.data.borrow_mut();
-			Self::doc_entry_mut(&mut data, path);
+			Self::doc_entry_mut(&mut data, key, path);
 			if let Some(idx) = data.recent_documents.iter().position(|p| p == path) {
 				data.recent_documents.remove(idx);
 			}
@@ -693,8 +751,9 @@ impl ConfigManager {
 			return;
 		}
 		{
+			let key = self.get_doc_key(path);
 			let mut data = self.data.borrow_mut();
-			Self::doc_entry_mut(&mut data, path).last_position = position;
+			Self::doc_entry_mut(&mut data, key, path).last_position = position;
 		}
 		self.dirty.set(true);
 	}
@@ -704,7 +763,7 @@ impl ConfigManager {
 		if !self.initialized {
 			return 0;
 		}
-		self.data.borrow().documents.get(&doc_key(path)).map_or(0, |d| d.last_position)
+		self.data.borrow().documents.get(&self.get_doc_key(path)).map_or(0, |d| d.last_position)
 	}
 
 	#[must_use]
@@ -718,8 +777,9 @@ impl ConfigManager {
 			return;
 		}
 		{
+			let key = self.get_doc_key(path);
 			let mut data = self.data.borrow_mut();
-			let doc = Self::doc_entry_mut(&mut data, path);
+			let doc = Self::doc_entry_mut(&mut data, key, path);
 			doc.navigation_history = history.to_vec();
 			doc.navigation_history_index = history_index;
 		}
@@ -731,7 +791,7 @@ impl ConfigManager {
 		if !self.initialized {
 			return nav;
 		}
-		if let Some(doc) = self.data.borrow().documents.get(&doc_key(path)) {
+		if let Some(doc) = self.data.borrow().documents.get(&self.get_doc_key(path)) {
 			nav.positions = doc.navigation_history.clone();
 			nav.index = doc.navigation_history_index;
 		}
@@ -744,8 +804,9 @@ impl ConfigManager {
 			return;
 		}
 		{
+			let key = self.get_doc_key(path);
 			let mut data = self.data.borrow_mut();
-			Self::doc_entry_mut(&mut data, path).opened = opened;
+			Self::doc_entry_mut(&mut data, key, path).opened = opened;
 		}
 		self.dirty.set(true);
 	}
@@ -759,7 +820,7 @@ impl ConfigManager {
 			if let Some(idx) = data.recent_documents.iter().position(|p| p == path) {
 				data.recent_documents.remove(idx);
 			}
-			data.documents.remove(&doc_key(path));
+			data.documents.remove(&self.get_doc_key(path));
 		}
 		self.dirty.set(true);
 	}
@@ -776,8 +837,9 @@ impl ConfigManager {
 			return;
 		}
 		{
+			let key = self.get_doc_key(path);
 			let mut data = self.data.borrow_mut();
-			let doc = Self::doc_entry_mut(&mut data, path);
+			let doc = Self::doc_entry_mut(&mut data, key, path);
 			if doc.bookmarks.iter().any(|bm| bm.start == start && bm.end == end) {
 				return;
 			}
@@ -792,8 +854,9 @@ impl ConfigManager {
 			return;
 		}
 		{
+			let key = self.get_doc_key(path);
 			let mut data = self.data.borrow_mut();
-			let doc = Self::doc_entry_mut(&mut data, path);
+			let doc = Self::doc_entry_mut(&mut data, key, path);
 			if let Some(idx) = doc.bookmarks.iter().position(|bm| bm.start == start && bm.end == end) {
 				doc.bookmarks.remove(idx);
 			}
@@ -814,8 +877,9 @@ impl ConfigManager {
 			return;
 		}
 		{
+			let key = self.get_doc_key(path);
 			let mut data = self.data.borrow_mut();
-			let doc = Self::doc_entry_mut(&mut data, path);
+			let doc = Self::doc_entry_mut(&mut data, key, path);
 			if let Some(bm) = doc.bookmarks.iter_mut().find(|bm| bm.start == start && bm.end == end) {
 				bm.note = note.to_string();
 			}
@@ -830,7 +894,7 @@ impl ConfigManager {
 		self.data
 			.borrow()
 			.documents
-			.get(&doc_key(path))
+			.get(&self.get_doc_key(path))
 			.map(|d| {
 				d.bookmarks.iter().map(|bm| Bookmark { start: bm.start, end: bm.end, note: bm.note.clone() }).collect()
 			})
@@ -842,8 +906,9 @@ impl ConfigManager {
 			return;
 		}
 		{
+			let key = self.get_doc_key(path);
 			let mut data = self.data.borrow_mut();
-			Self::doc_entry_mut(&mut data, path).format = format.to_string();
+			Self::doc_entry_mut(&mut data, key, path).format = format.to_string();
 		}
 		self.dirty.set(true);
 	}
@@ -852,7 +917,7 @@ impl ConfigManager {
 		if !self.initialized {
 			return String::new();
 		}
-		self.data.borrow().documents.get(&doc_key(path)).map(|d| d.format.clone()).unwrap_or_default()
+		self.data.borrow().documents.get(&self.get_doc_key(path)).map(|d| d.format.clone()).unwrap_or_default()
 	}
 
 	pub fn set_document_password(&self, path: &str, password: &str) {
@@ -860,8 +925,9 @@ impl ConfigManager {
 			return;
 		}
 		{
+			let key = self.get_doc_key(path);
 			let mut data = self.data.borrow_mut();
-			Self::doc_entry_mut(&mut data, path).password = password.to_string();
+			Self::doc_entry_mut(&mut data, key, path).password = password.to_string();
 		}
 		self.dirty.set(true);
 	}
@@ -870,7 +936,7 @@ impl ConfigManager {
 		if !self.initialized {
 			return String::new();
 		}
-		self.data.borrow().documents.get(&doc_key(path)).map(|d| d.password.clone()).unwrap_or_default()
+		self.data.borrow().documents.get(&self.get_doc_key(path)).map(|d| d.password.clone()).unwrap_or_default()
 	}
 
 	/// Import document settings from a `.paperback` sidecar file if it exists.
@@ -895,8 +961,9 @@ impl ConfigManager {
 			self.set_document_format(doc_path, &format);
 		}
 		if !sidecar.bookmarks.is_empty() {
+			let key = self.get_doc_key(doc_path);
 			let mut data = self.data.borrow_mut();
-			Self::doc_entry_mut(&mut data, doc_path).bookmarks = sidecar.bookmarks;
+			Self::doc_entry_mut(&mut data, key, doc_path).bookmarks = sidecar.bookmarks;
 			self.dirty.set(true);
 		}
 	}
@@ -906,8 +973,9 @@ impl ConfigManager {
 		if !self.initialized {
 			return;
 		}
+		let key = self.get_doc_key(doc_path);
 		let data = self.data.borrow();
-		let doc = data.documents.get(&doc_key(doc_path));
+		let doc = data.documents.get(&key);
 		let sidecar = SidecarData {
 			last_position: doc.map(|d| d.last_position).filter(|&p| p > 0),
 			format: doc.and_then(|d| if d.format.is_empty() { None } else { Some(d.format.clone()) }),
@@ -918,8 +986,7 @@ impl ConfigManager {
 		}
 	}
 
-	fn doc_entry_mut<'a>(data: &'a mut ConfigData, path: &str) -> &'a mut DocumentConfig {
-		let key = doc_key(path);
+	fn doc_entry_mut<'a>(data: &'a mut ConfigData, key: String, path: &str) -> &'a mut DocumentConfig {
 		let entry = data.documents.entry(key).or_insert_with(DocumentConfig::default);
 		if entry.path.is_empty() {
 			entry.path = path.to_string();
@@ -1000,14 +1067,6 @@ fn get_exe_directory() -> PathBuf {
 }
 
 pub fn compute_document_hash(path: &str) -> [u8; 20] {
-	use std::sync::{Mutex, OnceLock};
-	static CACHE: OnceLock<Mutex<HashMap<String, [u8; 20]>>> = OnceLock::new();
-	let cache = CACHE.get_or_init(|| Mutex::new(HashMap::new()));
-	if let Ok(guard) = cache.lock() {
-		if let Some(cached) = guard.get(path) {
-			return *cached;
-		}
-	}
 	let mut hasher = Sha1::new();
 	if let Ok(mut file) = fs::File::open(path) {
 		use std::io::{Read, Seek, SeekFrom};
@@ -1052,17 +1111,7 @@ pub fn compute_document_hash(path: &str) -> [u8; 20] {
 	} else {
 		hasher.update(path.as_bytes());
 	}
-	let digest: [u8; 20] = hasher.finalize().into();
-	if let Ok(mut guard) = cache.lock() {
-		guard.insert(path.to_string(), digest);
-	}
-	digest
-}
-
-fn doc_key(path: &str) -> String {
-	let digest = compute_document_hash(path);
-	let encoded = URL_SAFE_NO_PAD.encode(digest);
-	format!("doc_{encoded}")
+	hasher.finalize().into()
 }
 
 fn migrate_from_ini(ini_path: &Path) -> ConfigData {
@@ -1205,8 +1254,10 @@ mod tests {
 
 	#[test]
 	fn doc_key_is_stable_and_prefixed() {
-		let a = doc_key("C:\\books\\a.epub");
-		let b = doc_key("C:\\books\\a.epub");
+		let mut config = ConfigManager::new();
+		config.initialized = true;
+		let a = config.get_doc_key("C:\\books\\a.epub");
+		let b = config.get_doc_key("C:\\books\\a.epub");
 		assert_eq!(a, b);
 		assert!(a.starts_with("doc_"));
 		assert!(!a.contains('/'));
@@ -1214,8 +1265,10 @@ mod tests {
 
 	#[test]
 	fn doc_key_differs_for_different_inputs() {
-		let a = doc_key("book-a.epub");
-		let b = doc_key("book-b.epub");
+		let mut config = ConfigManager::new();
+		config.initialized = true;
+		let a = config.get_doc_key("book-a.epub");
+		let b = config.get_doc_key("book-b.epub");
 		assert_ne!(a, b);
 	}
 
