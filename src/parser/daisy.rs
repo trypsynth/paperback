@@ -38,7 +38,7 @@ impl Parser for DaisyParser {
 		let path = Path::new(&context.file_path);
 		let mut title = extract_title_from_path(&context.file_path);
 		let mut author = String::new();
-		let mut buffer = DocumentBuffer::new();
+		let mut buffer;
 		let is_zip = path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("zip"))
 			|| File::open(path)
 				.and_then(|f| {
@@ -92,7 +92,7 @@ impl Parser for DaisyParser {
 							})?;
 					let mut converter = XmlToText::new();
 					if converter.convert(&xml_content) {
-						buffer.content = converter.get_text();
+						buffer = DocumentBuffer::with_content(converter.get_text());
 						add_converter_markers(&mut buffer, &converter, 0);
 						for pb in converter.get_page_breaks() {
 							buffer.add_marker(Marker::new(MarkerType::PageBreak, pb.offset).with_text(pb.text.clone()));
@@ -159,7 +159,7 @@ impl Parser for DaisyParser {
 				}
 				let mut converter = HtmlToText::new();
 				if converter.convert(&combined_html, HtmlSourceMode::NativeHtml) {
-					buffer.content = converter.get_text();
+					buffer = DocumentBuffer::with_content(converter.get_text());
 					add_converter_markers(&mut buffer, &converter, 0);
 					let toc_items = build_toc_from_headings(converter.get_headings());
 					return Ok(Document {
@@ -189,7 +189,7 @@ impl Parser for DaisyParser {
 				.with_context(|| format!("Failed to read DTBook XML file at {}", xml_full_path.display()))?;
 			let mut converter = XmlToText::new();
 			if converter.convert(&xml_content) {
-				buffer.content = converter.get_text();
+				buffer = DocumentBuffer::with_content(converter.get_text());
 				add_converter_markers(&mut buffer, &converter, 0);
 				for pb in converter.get_page_breaks() {
 					buffer.add_marker(Marker::new(MarkerType::PageBreak, pb.offset).with_text(pb.text.clone()));
