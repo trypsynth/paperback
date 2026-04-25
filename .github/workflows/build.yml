@@ -48,6 +48,8 @@ jobs:
         $env:WXWIDGETS_DIR = "${{ github.workspace }}\wxWidgets"
         $env:PATH = "$env:PATH;C:\msys64\ucrt64\bin;C:\msys64\usr\bin"
         cargo release
+    - name: Setup Minisign
+      uses: jedisct1/setup-minisign@main
     - name: Sign artifacts
       shell: pwsh
       env:
