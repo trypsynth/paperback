@@ -348,7 +348,12 @@ impl ConfigManager {
 		if !self.initialized {
 			return;
 		}
-
+		{
+			let data = self.data.borrow();
+			if data.path_hashes.contains_key(path) {
+				return;
+			}
+		}
 		let digest = compute_document_hash(path);
 		let encoded = URL_SAFE_NO_PAD.encode(digest);
 		let new_key = format!("doc_{encoded}");
