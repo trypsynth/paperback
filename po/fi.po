@@ -1,0 +1,1460 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Quin Gillespie
+# This file is distributed under the same license as the paperback package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Paperback 0.8.5\n"
+"Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
+"POT-Creation-Date: 2026-04-13 15:24-0600\n"
+"PO-Revision-Date: 2026-04-26 03:04+0300\n"
+"Last-Translator: \n"
+"Language-Team: Jani Kinnunen\n"
+"Language: fi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.9\n"
+
+msgid "Figure"
+msgstr "Kuvituskuva"
+
+msgid "Image"
+msgstr "Kuva"
+
+msgid ""
+"This PDF contains images only, with no extractable text. You may need to run "
+"it through OCR software to read its contents."
+msgstr ""
+"Tämä PDF sisältää pelkkiä kuvia, eikä siinä ole poimittavaa tekstiä. "
+"Sisällön lukeminen saattaa edellyttää tekstintunnistusohjelman käyttöä."
+
+msgid "Failed to create IPC server"
+msgstr "IPC-palvelimen luonti epäonnistui"
+
+msgid "Warning"
+msgstr "Varoitus"
+
+msgid "Options"
+msgstr "Asetukset"
+
+msgid "&Restore previously opened documents on startup"
+msgstr "Pala&uta aiemmin avatut asiakirjat käynnistettäessä"
+
+msgid "&Word wrap"
+msgstr "Rivit&ys"
+
+msgid "&Minimize to system tray"
+msgstr "&Pienennä ilmaisinalueelle"
+
+msgid "&Start maximized"
+msgstr "&Käynnistä suurennettuna"
+
+msgid "Show compact &go menu"
+msgstr "Näytä tiivis &Siirry-valikko"
+
+msgid "&Wrap navigation"
+msgstr "Siirry a&lkuun asiakirjan lopussa"
+
+msgid "Play &sounds on bookmarks and notes"
+msgstr "Toista &äänet kirjanmerkeille ja muistiinpanoille"
+
+msgid "Check for &updates on startup"
+msgstr "Tarkista &päivitykset käynnistettäessä"
+
+msgid "&Reading speed (words per minute):"
+msgstr "&Lukunopeus (sanaa minuutissa):"
+
+msgid "Number of &recent documents to show:"
+msgstr "V&iimeisimpien asiakirjojen määrä:"
+
+msgid "&Language:"
+msgstr "&Kieli:"
+
+msgid "Update Channel:"
+msgstr "Päivityskanava:"
+
+msgid "Stable"
+msgstr "Vakaa"
+
+msgid "Dev"
+msgstr "Kehitys"
+
+msgid "Font"
+msgstr "Fontti"
+
+msgid "Choose &Font..."
+msgstr "Valitse &fontti..."
+
+msgid "&Reset to Default Font"
+msgstr "&Palauta oletusfontti"
+
+msgid "Background Color"
+msgstr "Taustaväri"
+
+#| msgid "Choose &Font..."
+msgid "Choose &Background Color..."
+msgstr "Valitse ta&ustaväri..."
+
+#| msgid "&Reset to Default Font"
+msgid "Reset to &Default Background"
+msgstr "Palauta &oletustausta"
+
+msgid "&Line spacing:"
+msgstr "R&iviväli:"
+
+msgid "Normal"
+msgstr "Normaali"
+
+msgid "1.5\\u{00d7}"
+msgstr "1,5\\u{00d7}"
+
+msgid "Double"
+msgstr "Kaksinkertainen"
+
+msgid "&Paragraph spacing:"
+msgstr "&Kappaleväli:"
+
+msgid "Relaxed"
+msgstr "Väljä"
+
+msgid "Wide"
+msgstr "Leveä"
+
+#| msgid "&Line spacing:"
+msgid "L&etter spacing:"
+msgstr "K&irjainväli:"
+
+msgid "Very Wide"
+msgstr "Erittäin leveä"
+
+msgid "Text &alignment:"
+msgstr "Tekstin t&asaus:"
+
+msgid "Left"
+msgstr "Vasemmalla"
+
+msgid "Center"
+msgstr "Keskellä"
+
+msgid "Right"
+msgstr "Oikealla"
+
+msgid "Justify"
+msgstr "Molemmissa reunoissa"
+
+msgid "General"
+msgstr "Yleiset"
+
+msgid "Reading"
+msgstr "Lukeminen"
+
+msgid "Readability"
+msgstr "Luettavuus"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Cancel"
+msgstr "Peruuta"
+
+#| msgid "Font: Default"
+msgid "Background: Default"
+msgstr "Tausta: Oletus"
+
+msgid "Font: Default"
+msgstr "Fontti: Oletus"
+
+msgid "Default"
+msgstr "Oletus"
+
+msgid "Bold"
+msgstr "Lihavoitu"
+
+msgid "Italic"
+msgstr "Kursivoitu"
+
+msgid "Underlined"
+msgstr "Alleviivattu"
+
+msgid "Strikethrough"
+msgstr "Yliviivattu"
+
+msgid "Jump to Bookmark"
+msgstr "Siirry kirjanmerkkiin"
+
+msgid "&Filter:"
+msgstr "Su&odata:"
+
+msgid "All"
+msgstr "Kaikki"
+
+msgid "Bookmarks"
+msgstr "Kirjanmerkit"
+
+msgid "Notes"
+msgstr "Muistiinpanot"
+
+msgid "&Edit Note"
+msgstr "&Muokkaa muistiinpanoa"
+
+msgid "&Delete"
+msgstr "&Poista"
+
+msgid "&Jump"
+msgstr "&Siirry"
+
+msgid "&Cancel"
+msgstr "&Peruuta"
+
+msgid "blank"
+msgstr "tyhjä"
+
+msgid "Please select a bookmark to jump to."
+msgstr "Valitse kirjanmerkki, johon siirrytään."
+
+msgid "Error"
+msgstr "Virhe"
+
+msgid "Bookmark Note"
+msgstr "Kirjanmerkin muistiinpano"
+
+msgid "Edit bookmark note:"
+msgstr "Muokkaa kirjanmerkin muistiinpanoa:"
+
+msgid "View Note"
+msgstr "Näytä muistiinpano"
+
+msgid "Close"
+msgstr "Sulje"
+
+msgid "Table of Contents"
+msgstr "Sisällysluettelo"
+
+msgid "Root"
+msgstr "Juuri"
+
+msgid "Please select a section from the table of contents."
+msgstr "Valitse osio sisällysluettelosta."
+
+msgid "No Selection"
+msgstr "Ei valintaa"
+
+msgid "Untitled"
+msgstr "Nimetön"
+
+msgid "1 hour"
+msgstr "1 tunti"
+
+msgid "hours"
+msgstr "tuntia"
+
+msgid "1 minute"
+msgstr "1 minuutti"
+
+msgid "minutes"
+msgstr "minuuttia"
+
+msgid "1 second"
+msgstr "1 sekunti"
+
+msgid "seconds"
+msgstr "sekuntia"
+
+msgid "Estimated reading time: {}"
+msgstr "Arvioitu lukuaika: {}"
+
+msgid "This document contains {} words."
+msgstr "Asiakirjassa on {} sanaa."
+
+msgid "Word Count"
+msgstr "Sanamäärä"
+
+msgid "Document Info"
+msgstr "Asiakirjan tiedot"
+
+msgid "Path:"
+msgstr "Polku:"
+
+msgid "Title:"
+msgstr "Nimi:"
+
+msgid "Author:"
+msgstr "Tekijä:"
+
+msgid "Words:"
+msgstr "Sanojen määrä:"
+
+msgid "Lines:"
+msgstr "Rivien määrä:"
+
+msgid "Characters:"
+msgstr "Merkkien määrä:"
+
+msgid "Characters (excluding spaces):"
+msgstr "Merkkien määrä (ilman välilyöntejä):"
+
+msgid "Go to Line"
+msgstr "Siirry riville"
+
+msgid "&Line number:"
+msgstr "R&ivinumero:"
+
+msgid "Go to page"
+msgstr "Siirry sivulle"
+
+#, c-format
+msgid "Go to page (%d/%d):"
+msgstr "Siirry sivulle (%d/%d):"
+
+msgid "Go to Percent"
+msgstr "Siirry prosenttiin"
+
+msgid "&Percent"
+msgstr "&Prosentti"
+
+msgid "P&ercent:"
+msgstr "Pr&osentti:"
+
+msgid "&Yes"
+msgstr "&Kyllä"
+
+msgid "&No"
+msgstr "&Ei"
+
+#, c-format
+msgid "Update to %s"
+msgstr "Päivitä versioon %s"
+
+msgid "A new version of Paperback is available. Here's what's new:"
+msgstr "Paperbackista on saatavilla uusi versio. Sen uusia ominaisuuksia ovat:"
+
+msgid "All Documents"
+msgstr "Kaikki asiakirjat"
+
+msgid "&search"
+msgstr "&Haku"
+
+msgid "File Name"
+msgstr "Tiedostonimi"
+
+msgid "Status"
+msgstr "Tila"
+
+msgid "Path"
+msgstr "Polku"
+
+msgid "&Open"
+msgstr "&Avaa"
+
+msgid "&Remove"
+msgstr "&Poista"
+
+msgid "&Clear All"
+msgstr "P&oista kaikki"
+
+msgid ""
+"Are you sure you want to remove this document from the list? This will also "
+"remove its reading position."
+msgstr ""
+"Haluatko varmasti poistaa luettelosta tämän asiakirjan? Myös lukukohta "
+"poistetaan."
+
+msgid ""
+"Are you sure you want to remove these {} documents from the list? This will "
+"also remove their reading positions."
+msgstr ""
+"Haluatko varmasti poistaa luettelosta nämä asiakirjat? Myös niiden "
+"lukukohdat poistetaan."
+
+msgid "Confirm"
+msgstr "Vahvista"
+
+msgid ""
+"Are you sure you want to remove all documents from the list? This will also "
+"remove all reading positions and bookmarks."
+msgstr ""
+"Haluatko varmasti poistaa luettelosta kaikki asiakirjat? Myös lukukohdat ja "
+"kirjanmerkit poistetaan."
+
+msgid "Open As"
+msgstr "Avaa muodossa"
+
+msgid ""
+"No suitable parser was found for {}.\n"
+"How would you like to open this file?"
+msgstr ""
+"Tiedostolle {} ei löytynyt sopivaa jäsentäjää.\n"
+"Miten haluat avata tämän tiedoston?"
+
+msgid "Open &as:"
+msgstr "Avaa &muodossa:"
+
+msgid "Plain Text"
+msgstr "Pelkkä teksti"
+
+msgid "HTML"
+msgstr "HTML"
+
+msgid "Markdown"
+msgstr "Markdown"
+
+msgid "Open"
+msgstr "Avaa"
+
+msgid "Closed"
+msgstr "Suljettu"
+
+msgid "Missing"
+msgstr "Ei löydy"
+
+msgid "Sleep Timer"
+msgstr "Uniajastin"
+
+msgid "&Minutes:"
+msgstr "&Minuuttia:"
+
+msgid "Elements"
+msgstr "Elementit"
+
+msgid "&View:"
+msgstr "&Näytä:"
+
+msgid "Headings"
+msgstr "Otsikot"
+
+msgid "Links"
+msgstr "Linkit"
+
+msgid "An accessible, lightweight, fast ebook and document reader"
+msgstr "Saavutettava, kevyt ja nopea e- ja asiakirjanlukija"
+
+msgid "File not found: {}"
+msgstr "Tiedostoa ei löydy: {}"
+
+msgid "Password is required."
+msgstr "Tarvitaan salasana."
+
+msgid "Navigated to internal link."
+msgstr "Siirrytty sisäiseen linkkiin."
+
+msgid "Table View"
+msgstr "Taulukkonäkymä"
+
+msgid "Ready"
+msgstr "Valmis"
+
+msgid "&Password:"
+msgstr "&Salasana:"
+
+msgid "Document Password"
+msgstr "Asiakirjan salasana"
+
+msgid "Failed to load document."
+msgstr "Asiakirjan avaus epäonnistui."
+
+msgid "Create &bookmark"
+msgstr "Luo &kirjanmerkki"
+
+msgid "Create bookmark"
+msgstr "Luo kirjanmerkki"
+
+msgid "Bookmark with &note"
+msgstr "Kirjanmerkki &muistiinpanolla"
+
+msgid "Create bookmark with note"
+msgstr "Luo kirjanmerkki muistiinpanolla"
+
+msgid "&Find"
+msgstr "&Etsi"
+
+msgid "Find text"
+msgstr "Etsi tekstiä"
+
+msgid "Find &next"
+msgstr "Etsi se&uraava"
+
+msgid "Find next match"
+msgstr "Etsi seuraava osuma"
+
+msgid "Find &previous"
+msgstr "Etsi ede&llinen"
+
+msgid "Find previous match"
+msgstr "Etsi edellinen osuma"
+
+msgid "Go to &page"
+msgstr "Siirry s&ivulle"
+
+msgid "Go to &line"
+msgstr "Siirry rivi&lle"
+
+msgid "Go to line"
+msgstr "Siirry riville"
+
+msgid "Go to &percent"
+msgstr "Siirry &prosenttiin"
+
+msgid "Go to percent"
+msgstr "Siirry prosenttiin"
+
+msgid "Find"
+msgstr "Etsi"
+
+msgid "Find &what:"
+msgstr "Ets&ittävä:"
+
+msgid "&Match case"
+msgstr "Sama &kirjainkoko"
+
+msgid "Match &whole word"
+msgstr "Kokonainen sa&na"
+
+msgid "Use &regular expressions"
+msgstr "Kä&ytä sääntölausekkeita"
+
+msgid "Find &Previous"
+msgstr "Etsi edell&inen"
+
+msgid "Find &Next"
+msgstr "Etsi se&uraava"
+
+msgid "Not found."
+msgstr "Ei löydy."
+
+msgid "No more results. Wrapping search."
+msgstr "Ei enempää tuloksia. Aloitetaan alusta."
+
+msgid "Failed to open containing folder."
+msgstr "Asiakirjakansion avaaminen epäonnistui."
+
+msgid ""
+"readme.html not found. Please ensure the application was built properly."
+msgstr ""
+"Tiedostoa readme.html ei löydy. Varmista, että sovellus on koontikäännetty "
+"oikein."
+
+msgid "Failed to launch default browser."
+msgstr "Oletusselaimen käynnistys epäonnistui."
+
+msgid "Failed to open donation page in browser."
+msgstr "Lahjoitussivun avaaminen selaimessa epäonnistui."
+
+msgid "No release notes were provided."
+msgstr "Julkaisutietoja ei saatavilla."
+
+msgid "Paperback Update"
+msgstr "Paperbackin päivitys"
+
+msgid "Downloading update..."
+msgstr "Päivitystä ladataan..."
+
+msgid "No updates available."
+msgstr "Päivityksiä ei saatavilla."
+
+msgid "No updates available. Latest version: {}"
+msgstr "Päivityksiä ei saatavilla. Uusin versio: {}"
+
+msgid "Info"
+msgstr "Tiedot"
+
+#, c-format
+msgid "Failed to check for updates. HTTP status: %d"
+msgstr "Päivitysten tarkistus epäonnistui. HTTP-tila: %d"
+
+msgid ""
+"Security verification failed. The update might have been tampered with: {}"
+msgstr "Tietoturvatarkistus epäonnistui. Päivitystä on saatettu peukaloida: {}"
+
+msgid "Security Error"
+msgstr "Suojausvirhe"
+
+msgid "Error checking for updates."
+msgstr "Virhe päivityksiä tarkistettaessa."
+
+msgid "Failed to get current exe path"
+msgstr "Sovelluksen exe-tiedoston sijaintia ei voitu määrittää"
+
+msgid "Failed to launch installer script"
+msgstr "Asennusohjelmaskriptin käynnistys epäonnistui"
+
+msgid "Failed to launch update script"
+msgstr "Päivitysskriptin käynnistys epäonnistui"
+
+msgid "Unknown update file format."
+msgstr "Tuntematon päivitystiedoston muoto."
+
+msgid "Update failed"
+msgstr "Päivitys epäonnistui"
+
+msgid "Unsupported format selected."
+msgstr "Valittua tiedostomuotoa ei tueta."
+
+msgid "Paperback"
+msgstr "Paperback"
+
+msgid "Paperback - {}"
+msgstr "Paperback - {}"
+
+msgid "{} chars"
+msgstr "{} merkkiä"
+
+msgid "Open Document"
+msgstr "Avaa asiakirja"
+
+msgid "No pages."
+msgstr "Ei sivuja."
+
+msgid "document"
+msgstr "asiakirja"
+
+msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
+msgstr "Tekstitiedostot (*.txt)|*.txt|Kaikki tiedostot (*.*)|*.*"
+
+msgid "Export document to plain text"
+msgstr "Vie asiakirja tekstimuotoon"
+
+msgid "Failed to export document."
+msgstr "Asiakirjan vienti epäonnistui."
+
+msgid "Paperback files (*.paperback)|*.paperback"
+msgstr "Paperback-tiedostot (*.paperback)|*.paperback"
+
+msgid "Export notes and bookmarks"
+msgstr "Vie muistiinpanot ja kirjanmerkit"
+
+msgid "Notes and bookmarks exported successfully."
+msgstr "Muistiinpanot ja kirjanmerkit viety onnistuneesti."
+
+msgid "Export Successful"
+msgstr "Vienti onnistui"
+
+msgid "Import notes and bookmarks"
+msgstr "Tuo muistiinpanot ja kirjanmerkit"
+
+msgid "Notes and bookmarks imported successfully."
+msgstr "Muistiinpanot ja kirjanmerkit tuotu onnistuneesti."
+
+msgid "Import Successful"
+msgstr "Tuonti onnistui"
+
+msgid "No table of contents."
+msgstr "Ei sisällysluetteloa."
+
+msgid "Web View"
+msgstr "Verkkonäkymä"
+
+msgid "Could not determine content to display in Web View."
+msgstr "Verkkonäkymässä näytettävää sisältöä ei voitu määrittää."
+
+msgid "Sleep timer cancelled."
+msgstr "Uniajastin peruutettu."
+
+msgid "Sleep timer set for 1 minute."
+msgstr "Uniajastimen ajaksi asetettu 1 minuutti."
+
+#, c-format
+msgid "Sleep timer set for %d minutes."
+msgstr "Uniajastimen ajaksi asetettu %d minuuttia."
+
+msgid "No recent documents."
+msgstr "Ei viimeisimpiä asiakirjoja."
+
+msgid "Previous Section\t["
+msgstr "Edellinen osio\t["
+
+msgid "Go to previous section"
+msgstr "Siirry edelliseen osioon"
+
+msgid "Next Section\t]"
+msgstr "Seuraava osio\t]"
+
+msgid "Go to next section"
+msgstr "Siirry seuraavaan osioon"
+
+msgid "Go to &Page\tCtrl+P"
+msgstr "S&iirry sivulle\tCtrl+P"
+
+msgid "Previous Pa&ge\tShift+P"
+msgstr "Ede&llinen sivu\tShift+P"
+
+msgid "Next Pag&e\tP"
+msgstr "&Seuraava sivu\tP"
+
+msgid "Previous Lin&k\tShift+K"
+msgstr "Edellinen lin&kki\tShift+K"
+
+msgid "Next Lin&k\tK"
+msgstr "Seuraava li&nkki\tK"
+
+msgid "Previous Ima&ge\tShift+G"
+msgstr "Edellinen &kuva\tShift+G"
+
+msgid "Next Ima&ge\tG"
+msgstr "Seuraava k&uva\tG"
+
+msgid "Previous Figu&re\tShift+F"
+msgstr "Edellinen ku&vituskuva\tShift+F"
+
+msgid "Next Figu&re\tF"
+msgstr "Seuraava kuv&ituskuva\tF"
+
+msgid "Previous &Table\tShift+T"
+msgstr "Edellinen t&aulukko\tShift+T"
+
+msgid "Next &Table\tT"
+msgstr "Seuraava ta&ulukko\tT"
+
+msgid "Previous Se&parator\tShift+S"
+msgstr "Edellinen e&rotin\tShift+S"
+
+msgid "Next Se&parator\tS"
+msgstr "Seuraava er&otin\tS"
+
+msgid "Previous L&ist\tShift+L"
+msgstr "Edellinen l&uettelo\tShift+L"
+
+msgid "Next L&ist\tL"
+msgstr "Seuraava lue&ttelo\tL"
+
+msgid "Previous List &Item\tShift+I"
+msgstr "Edellinen luettelok&ohde\tShift+I"
+
+msgid "Next List I&tem\tI"
+msgstr "Seuraava luetteloko&hde\tI"
+
+msgid "Next Heading Level 1\t1"
+msgstr "Seuraava otsikkotaso 1\t1"
+
+msgid "Previous Heading Level &2\tShift+2"
+msgstr "Edellinen otsikkotaso &2\tShift+2"
+
+msgid "Next Heading Level 2\t2"
+msgstr "Seuraava otsikkotaso 2\t2"
+
+msgid "Previous Heading Level &3\tShift+3"
+msgstr "Edellinen otsikkotaso &3\tShift+3"
+
+msgid "Next Heading Level 3\t3"
+msgstr "Seuraava otsikkotaso 3\t3"
+
+msgid "Previous Heading Level &4\tShift+4"
+msgstr "Edellinen otsikkotaso &4\tShift+4"
+
+msgid "Next Heading Level 4\t4"
+msgstr "Seuraava otsikkotaso 4\t4"
+
+msgid "Previous Heading Level &5\tShift+5"
+msgstr "Edellinen otsikkotaso &5\tShift+5"
+
+msgid "Next Heading Level 5\t5"
+msgstr "Seuraava otsikkotaso 5\t5"
+
+msgid "Previous Heading Level &6\tShift+6"
+msgstr "Edellinen otsikkotaso &6\tShift+6"
+
+msgid "Next Heading Level 6\t6"
+msgstr "Seuraava otsikkotaso 6\t6"
+
+msgid "&Previous Heading\tShift+H"
+msgstr "Edellinen &otsikko\tShift+H"
+
+msgid "Go to previous heading"
+msgstr "Siirry edelliseen otsikkoon"
+
+msgid "&Next Heading\tH"
+msgstr "Seuraava o&tsikko\tH"
+
+msgid "Go to next heading"
+msgstr "Siirry seuraavaan otsikkoon"
+
+msgid "Previous Heading Level &1\tShift+1"
+msgstr "Edellinen otsikkotaso &1\tShift+1"
+
+msgid "&Previous Bookmark\tShift+B"
+msgstr "Edellinen &kirjanmerkki\tShift+B"
+
+msgid "Go to previous bookmark"
+msgstr "Siirry edelliseen kirjanmerkkiin"
+
+msgid "&Next Bookmark\tB"
+msgstr "Seuraava ki&rjanmerkki\tB"
+
+msgid "Go to next bookmark"
+msgstr "Siirry seuraavaan kirjanmerkkiin"
+
+msgid "Previous &Note\tShift+N"
+msgstr "Edellinen &muistiinpano\tShift+N"
+
+msgid "Go to previous note"
+msgstr "Siirry edelliseen muistiinpanoon"
+
+msgid "Next N&ote\tN"
+msgstr "Seuraava m&uistiinpano\tN"
+
+msgid "Go to next note"
+msgstr "Siirry seuraavaan  muistiinpanoon"
+
+msgid "Jump to &All...\tCtrl+B"
+msgstr "Siirry k&aikkiin...\tCtrl+B"
+
+msgid "Show all bookmarks and notes"
+msgstr "Näytä kaikki kirjanmerkit ja muistiinpanot"
+
+msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
+msgstr "Siirry vain &kirjanmerkkeihin...\tCtrl+Alt+B"
+
+msgid "Show bookmarks only"
+msgstr "Näytä vain kirjanmerkit"
+
+msgid "Jump to Notes &Only...\tCtrl+Alt+M"
+msgstr "Siirry vain mu&istiinpanoihin...\tCtrl+Alt+M"
+
+msgid "Show notes only"
+msgstr "Näytä vain muistiinpanot"
+
+msgid "&View Note Text\tRawCtrl+Shift+W"
+msgstr "&Näytä muistiinpanon teksti\tRawCtrl+Shift+W"
+
+msgid "&View Note Text\tCtrl+Shift+W"
+msgstr "&Näytä muistiinpanon teksti\tCtrl+Shift+W"
+
+msgid "View the note at current position"
+msgstr "Näytä nykyisen sijainnin muistiinpano"
+
+msgid "&File"
+msgstr "&Tiedosto"
+
+msgid "&Go"
+msgstr "S&iirry"
+
+msgid "&Tools"
+msgstr "T&yökalut"
+
+msgid "&Help"
+msgstr "&Ohje"
+
+msgid "&Open...\tCtrl+O"
+msgstr "&Avaa...\tCtrl+O"
+
+msgid "Open a document"
+msgstr "Avaa asiakirja"
+
+msgid "&Close\tCtrl+W"
+msgstr "&Sulje\tCtrl+W"
+
+msgid "&Close\tCtrl+F4"
+msgstr "&Sulje\tCtrl+F4"
+
+msgid "Close the current document"
+msgstr "Sulje nykyinen asiakirja"
+
+msgid "Close &All\tCtrl+Shift+W"
+msgstr "Sulje k&aikki\tCtrl+Shift+W"
+
+msgid "Close &All\tCtrl+Shift+F4"
+msgstr "Sulje k&aikki\tCtrl+Shift+F4"
+
+msgid "Close all documents"
+msgstr "Sulje kaikki asiakirjat"
+
+msgid "Reopen &Last Closed\tCtrl+Shift+T"
+msgstr "Avaa uudelleen &viimeksi suljettu\tCtrl+Shift+T"
+
+msgid "Reopen the last closed document"
+msgstr "Avaa uudelleen viimeksi suljettu asiakirja"
+
+msgid "&Recent Documents"
+msgstr "&Viimeisimmät asiakirjat"
+
+msgid "Open a recent document"
+msgstr "Avaa viimeksi avattu asiakirja"
+
+msgid "E&xit\tCtrl+Q"
+msgstr "&Sulje\tCtrl+Q"
+
+msgid "Exit the application"
+msgstr "Sulje sovellus"
+
+msgid "&Find...\tCtrl+F"
+msgstr "&Etsi...\tCtrl+F"
+
+msgid "Find text in the document"
+msgstr "Etsi tekstiä asiakirjasta"
+
+msgid "Find &Next\tF3"
+msgstr "Etsi &seuraava\tF3"
+
+msgid "Find next occurrence"
+msgstr "Etsi seuraava esiintymä"
+
+msgid "Find &Previous\tShift+F3"
+msgstr "Etsi e&dellinen\tShift+F3"
+
+msgid "Find previous occurrence"
+msgstr "Etsi edellinen esiintymä"
+
+msgid "Go to &line...\tCtrl+G"
+msgstr "Siirry &riville...\tCtrl+G"
+
+msgid "Go to a specific line"
+msgstr "Siirry tietylle riville"
+
+msgid "Go to &percent...\tCtrl+Shift+G"
+msgstr "Siirry &prosenttiin...\tCtrl+Shift+G"
+
+msgid "Go to a percentage of the document"
+msgstr "Siirry prosenttiin"
+
+msgid "Go &Back\tAlt+Left"
+msgstr "Siirry t&aaksepäin\tAlt+Vasen"
+
+msgid "Go back in history"
+msgstr "Siirry historiassa taaksepäin"
+
+msgid "Go &Forward\tAlt+Right"
+msgstr "Siirry &eteenpäin\tAlt+Oikea"
+
+msgid "Go forward in history"
+msgstr "Siirry historiassa eteenpäin"
+
+msgid "&Sections"
+msgstr "&Osiot"
+
+msgid "Navigate by sections"
+msgstr "Siirry osioittain"
+
+msgid "&Headings"
+msgstr "&Otsikot"
+
+msgid "Navigate by headings"
+msgstr "Siirry otsikoittain"
+
+msgid "&Pages"
+msgstr "&Sivut"
+
+msgid "Navigate by pages"
+msgstr "Siirry sivuittain"
+
+msgid "&Bookmarks"
+msgstr "&Kirjanmerkit"
+
+msgid "Navigate by bookmarks"
+msgstr "Siirry kirjanmerkeittäin"
+
+msgid "&Links"
+msgstr "&Linkit"
+
+msgid "Navigate by links"
+msgstr "Siirry linkeittäin"
+
+msgid "&Images"
+msgstr "&Kuvat"
+
+msgid "Navigate by images"
+msgstr "Siirry kuvittain"
+
+msgid "&Figures"
+msgstr "K&uvituskuvat"
+
+msgid "Navigate by figures"
+msgstr "Siirry kuvituskuvittain"
+
+msgid "&Tables"
+msgstr "T&aulukot"
+
+msgid "Navigate by tables"
+msgstr "Siirry taulukoittain"
+
+msgid "&Separators"
+msgstr "&Erottimet"
+
+msgid "Navigate by separators"
+msgstr "Siirry erottimittain"
+
+msgid "&Lists"
+msgstr "&Luettelot"
+
+msgid "Navigate by lists"
+msgstr "Siirry luetteloittain"
+
+msgid "&Import Document Data...\tCtrl+Shift+I"
+msgstr "Tu&o asiakirjan tiedot...\tCtrl+Shift+I"
+
+msgid "Import bookmarks and position"
+msgstr "Tuo kirjanmerkit ja sijainti"
+
+msgid "&Export Document Data...\tCtrl+Shift+E"
+msgstr "V&ie asiakirjan tiedot...\tCtrl+Shift+E"
+
+msgid "Export bookmarks and position"
+msgstr "Vie kirjanmerkit ja sijainti"
+
+msgid "Export to &Plain Text...\tCtrl+E"
+msgstr "Vie te&kstimuotoon...\tCtrl+E"
+
+msgid "Export document as plain text"
+msgstr "Vie asiakirja tekstimuotoon"
+
+msgid "&Word Count\tRawCtrl+W"
+msgstr "Sana&määrä\tRawCtrl+W"
+
+msgid "&Word Count\tCtrl+W"
+msgstr "Sana&määrä\tCtrl+W"
+
+msgid "Show word count"
+msgstr "Näytä sanamäärä"
+
+msgid "Document &Info\tCtrl+I"
+msgstr "Asiakirjan t&iedot\tCtrl+I"
+
+msgid "Show document information"
+msgstr "Näytä asiakirjan tiedot"
+
+msgid "&Table of Contents\tCtrl+T"
+msgstr "&Sisällysluettelo\tCtrl+T"
+
+msgid "Show table of contents"
+msgstr "Näytä sisällysluettelo"
+
+msgid "&Elements List...\tF7"
+msgstr "&Elementtiluettelo...\tF7"
+
+msgid "Show elements list"
+msgstr "Näytä elementtiluettelo"
+
+msgid "Open &Containing Folder\tCtrl+Shift+C"
+msgstr "Avaa &asiakirjan kansio\tCtrl+Shift+C"
+
+msgid "Open folder containing the document"
+msgstr "Avaa asiakirjan kansio"
+
+msgid "Open in &Web View\tCtrl+Shift+V"
+msgstr "Avaa &verkkonäkymässä\tCtrl+Shift+V"
+
+msgid "Open document in web view"
+msgstr "Avaa asiakirja verkkonäkymässä"
+
+msgid "I&mport/Export"
+msgstr "T&uo/vie"
+
+msgid "Import and export options"
+msgstr "Tuonnin ja viennin asetukset"
+
+msgid "Toggle &Bookmark\tCtrl+Shift+B"
+msgstr "Lisää/poista &kirjanmerkki\tCtrl+Shift+B"
+
+msgid "Bookmark with &Note\tCtrl+Shift+N"
+msgstr "Lisää kirjanmerkki &muistiinpanolla\tCtrl+Shift+N"
+
+msgid "&Options\tCtrl+,"
+msgstr "&Asetukset\tCtrl+,"
+
+msgid "&Sleep Timer...\tCtrl+Shift+S"
+msgstr "&Uniajastin...\tCtrl+Shift+S"
+
+msgid "&About Paperback\tCtrl+F1"
+msgstr "&Tietoa Paperbackista\tCtrl+F1"
+
+msgid "About this application"
+msgstr "Tietoa sovelluksesta"
+
+msgid "View Help in &Browser\tF1"
+msgstr "Näytä &ohje selaimessa\tF1"
+
+msgid "View help in default browser"
+msgstr "Näytä ohje oletusselaimessa"
+
+msgid "View Help in &Paperback\tShift+F1"
+msgstr "Näytä ohje &Paperbackissa\tShift+F1"
+
+msgid "View help in Paperback"
+msgstr "Näytä ohje Paperbackissa"
+
+msgid "Check for &Updates\tCtrl+Shift+U"
+msgstr "Tarkista &päivitykset\tCtrl+Shift+U"
+
+msgid "Check for updates"
+msgstr "Tarkista päivitykset"
+
+msgid "&Donate\tCtrl+D"
+msgstr "&Lahjoita\tCtrl+D"
+
+msgid "Support Paperback development"
+msgstr "Tue Paperbackin kehitystä"
+
+msgid "(No recent documents)"
+msgstr "(Ei viimeisimpiä asiakirjoja)"
+
+msgid "Show All...\tCtrl+R"
+msgstr "Näytä kaikki...\tCtrl+R"
+
+msgid "No sections."
+msgstr "Ei osioita."
+
+msgid "No next section"
+msgstr "Ei seuraavaa osiota"
+
+msgid "No previous section"
+msgstr "Ei edellistä osiota"
+
+#, c-format
+msgid "No headings at level %d."
+msgstr "Ei otsikoita tasolla %d."
+
+#, c-format
+msgid "No next heading at level %d."
+msgstr "Ei seuraavaa otsikkoa tasolla %d."
+
+#, c-format
+msgid "No previous heading at level %d."
+msgstr "Ei edellistä otsikkoa tasolla %d."
+
+msgid "No headings."
+msgstr "Ei otsikoita."
+
+msgid "No next heading."
+msgstr "Ei seuraavaa otsikkoa."
+
+msgid "No previous heading."
+msgstr "Ei edellistä otsikkoa."
+
+msgid "No next page."
+msgstr "Ei seuraavaa sivua."
+
+msgid "No previous page."
+msgstr "Ei edellistä sivua."
+
+msgid "No links."
+msgstr "Ei linkkejä."
+
+msgid "No next link."
+msgstr "Ei seuraavaa linkkiä."
+
+msgid "No previous link."
+msgstr "Ei edellistä linkkiä."
+
+msgid "No lists."
+msgstr "Ei luetteloita."
+
+msgid "No next list."
+msgstr "Ei seuraavaa luetteloa."
+
+msgid "No previous list."
+msgstr "Ei edellistä luetteloa."
+
+msgid "No list items."
+msgstr "Ei luettelokohteita."
+
+msgid "No next list item."
+msgstr "Ei seuraavaa luettelokohdetta."
+
+msgid "No previous list item."
+msgstr "Ei edellistä luettelokohdetta."
+
+msgid "No tables."
+msgstr "Ei taulukoita."
+
+msgid "No next table."
+msgstr "Ei seuraavaa taulukkoa."
+
+msgid "No previous table."
+msgstr "Ei edellistä taulukkoa."
+
+msgid "No separators."
+msgstr "Ei erottimia."
+
+msgid "No next separator."
+msgstr "Ei seuraavaa erotinta."
+
+msgid "No previous separator."
+msgstr "Ei edellistä erotinta."
+
+msgid "No images."
+msgstr "Ei kuvia."
+
+msgid "No next image."
+msgstr "Ei seuraavaa kuvaa."
+
+msgid "No previous image."
+msgstr "Ei edellistä kuvaa."
+
+msgid "No figures."
+msgstr "Ei kuvituskuvia."
+
+msgid "No next figure."
+msgstr "Ei seuraavaa kuvituskuvaa."
+
+msgid "No previous figure."
+msgstr "Ei edellistä kuvituskuvaa."
+
+msgid "Wrapping to start. "
+msgstr "Siirrytään alkuun. "
+
+msgid "Wrapping to end. "
+msgstr "Siirrytään loppuun. "
+
+#, c-format
+msgid "%s Heading level %d"
+msgstr "%s - otsikkotaso %d"
+
+#, c-format
+msgid "Page %d: %s"
+msgstr "Sivu %d: %s"
+
+msgid " link"
+msgstr " linkki"
+
+msgid "Navigated to next position."
+msgstr "Siirrytty seuraavaan sijaintiin."
+
+msgid "Navigated to previous position."
+msgstr "Siirrytty edelliseen sijaintiin."
+
+msgid "No next position."
+msgstr "Ei seuraavaa sijaintia."
+
+msgid "No previous position."
+msgstr "Ei edellistä sijaintia."
+
+#, c-format
+msgid "%s - Bookmark %d"
+msgstr "%s - kirjanmerkki %d"
+
+msgid "No notes."
+msgstr "Ei muistiinpanoja."
+
+msgid "No bookmarks."
+msgstr "Ei kirjanmerkkejä."
+
+msgid "No next note."
+msgstr "Ei seuraavaa muistiinpanoa."
+
+msgid "No next bookmark."
+msgstr "Ei seuraavaa kirjanmerkkiä."
+
+msgid "No previous note."
+msgstr "Ei edellistä muistiinpanoa."
+
+msgid "No previous bookmark."
+msgstr "Ei edellistä kirjanmerkkiä."
+
+msgid "Bookmark."
+msgstr "Kirjanmerkki."
+
+msgid "Bookmark removed."
+msgstr "Kirjanmerkki poistettu."
+
+msgid "Bookmark added."
+msgstr "Kirjanmerkki lisätty."
+
+msgid "Enter bookmark note:"
+msgstr "Kirjoita kirjanmerkin muistiinpano:"
+
+msgid "Bookmark saved."
+msgstr "Kirjanmerkki tallennettu."
+
+msgid "No note at the current position."
+msgstr "Ei muistiinpanoa nykyisessä sijainnissa."
+
+msgid "Line"
+msgstr "Rivi"
+
+msgid "Character"
+msgstr "Merkki"
+
+msgid "Sleep timer"
+msgstr "Uniajastin"
+
+msgid "&Restore"
+msgstr "&Palauta"
+
+msgid "Restore Paperback"
+msgstr "Palauta Paperback"
+
+msgid "E&xit"
+msgstr "&Sulje"
+
+msgid "Exit Paperback"
+msgstr "Sulje Paperback"
+
+#, c-format
+#~ msgid ""
+#~ "There is an update available.\n"
+#~ "Your version: %s\n"
+#~ "Latest version: %s\n"
+#~ "Description:\n"
+#~ "%s\n"
+#~ "Do you want to open the direct download link?"
+#~ msgstr ""
+#~ "Päivitys on saatavilla.\n"
+#~ "Nykyinen versio: %s\n"
+#~ "Uusin versio: %s\n"
+#~ "Kuvaus:\n"
+#~ "%s\n"
+#~ "Haluatko avata suoran latauslinkin?"
+
+#~ msgid "Failed to initialize configuration"
+#~ msgstr "Asetusten alustus epäonnistui"
+
+#~ msgid "Total number of words: "
+#~ msgstr "Sanojen kokonaismäärä: "
+
+#~ msgid "Total number of lines: "
+#~ msgstr "Rivien kokonaismäärä: "
+
+#~ msgid "Total number of characters: "
+#~ msgstr "Merkkien kokonaismäärä: "
+
+#, c-format
+#~ msgid "Failed to parse document: %s"
+#~ msgstr "Dokumentin jäsennys epäonnistui: %s"
+
+#, c-format
+#~ msgid "%s - %s - Note %d"
+#~ msgstr "%s - %s - muistiinpano %d"
+
+#, c-format
+#~ msgid "%s - Note %d"
+#~ msgstr "%s - muistiinpano %d"
+
+#~ msgid "Opening link in default browser."
+#~ msgstr "Avataan linkki oletusselaimessa."
+
+#~ msgid "Failed to open link."
+#~ msgstr "Linkin avaus epäonnistui."
+
+#~ msgid "Internal link target not found."
+#~ msgstr "Sisäisen linkin kohdetta ei löydy."
+
+#, c-format
+#~ msgid "List with %d items"
+#~ msgstr "Luettelo, jossa %d kohdetta"
+
+#, c-format
+#~ msgid "List with %d items "
+#~ msgstr "Luettelo, jossa %d kohdetta "
+
+#~ msgid "Bookmark note updated"
+#~ msgstr "Kirjanmerkin muistiinpano päivitetty"
+
+#, c-format
+#~ msgid "Bookmark: %s - %s"
+#~ msgstr "Kirjanmerkki: %s - %s"
+
+#, c-format
+#~ msgid "Bookmark: %s"
+#~ msgstr "Kirjanmerkki: %s"
+
+#~ msgid "Table of contents is empty."
+#~ msgstr "Sisällysluettelo on tyhjä."
+
+#, c-format
+#~ msgid "line %ld, character %ld, reading %d%%"
+#~ msgstr "rivi %ld, merkki %ld, luetaan %d %%"
+
+#, c-format
+#~ msgid "No %s heading"
+#~ msgstr "Ei otsikkoa %s"
+
+#~ msgid "next"
+#~ msgstr "seuraava"
+
+#~ msgid "previous"
+#~ msgstr "edellinen"
+
+#, c-format
+#~ msgid "Wrapping to %s. %s Heading level %d"
+#~ msgstr "Siirrytään %s. %s otsikkotaso %d"
+
+#~ msgid "start"
+#~ msgstr "alkuun"
+
+#~ msgid "end"
+#~ msgstr "loppuun"
+
+#, c-format
+#~ msgid " | Sleep timer: %02d:%02d"
+#~ msgstr " | Uniajastin: %02d:%02d"
+
+#~ msgid "Select a document to read"
+#~ msgstr "Valitse luettava dokumentti"
+
+#~ msgid "Export Document"
+#~ msgstr "Vie dokumentti"
+
+#~ msgid "Password required or incorrect."
+#~ msgstr "Salasana tarvitaan tai se on virheellinen."
+
+#~ msgid "Unknown error while parsing CHM file"
+#~ msgstr "Tuntematon virhe jäsenneltäessä CHM-tiedostoa"
+
+#~ msgid "Couldn't parse table of contents"
+#~ msgstr "Sisällysluetteloa ei voitu jäsentää"
+
+#~ msgid "Failed to open FB2 file"
+#~ msgstr "FB2-tiedoston avaus epäonnistui"
+
+#~ msgid "FB2 file is empty or could not be read"
+#~ msgstr "FB2-tiedosto on tyhjä tai sitä ei voitu lukea"
+
+#~ msgid "Failed to convert FB2 XML to text"
+#~ msgstr "FB2 XML -muodon muuntaminen tekstiksi epäonnistui"
+
+#~ msgid "Failed to open HTML file"
+#~ msgstr "HTML-tiedoston avaus epäonnistui"
+
+#~ msgid "Failed to convert HTML to text"
+#~ msgstr "HTML-muodon muuntaminen tekstiksi epäonnistui"
+
+#~ msgid "Failed to open Markdown file"
+#~ msgstr "Markdown-tiedoston avaus epäonnistui"
+
+#~ msgid "Markdown file is empty"
+#~ msgstr "Markdown-tiedosto on tyhjä"
+
+#~ msgid "Failed to convert Markdown HTML to text"
+#~ msgstr "Markdown-HTML-muodon muuntaminen tekstiksi epäonnistui"
+
+#~ msgid "Failed to open ODP file"
+#~ msgstr "ODP-tiedoston avaus epäonnistui"
+
+#~ msgid "ODP file does not contain content.xml or it is empty"
+#~ msgstr "ODP-dokumentti ei sisällä tiedostoa content.xml tai se on tyhjä"
+
+#~ msgid "ODP file does not contain any pages"
+#~ msgstr "ODP-dokumentissa ei ole sivuja"
+
+#~ msgid "Failed to open ODT file"
+#~ msgstr "ODT-tiedoston avaus epäonnistui"
+
+#~ msgid "ODT file does not contain content.xml or it is empty"
+#~ msgstr "ODT-dokumentti ei sisällä tiedostoa content.xml tai se on tyhjä"
+
+#~ msgid "Parsing of links in the document failed."
+#~ msgstr "Dokumentin linkkien jäsennys epäonnistui."
+
+#, c-format
+#~ msgid "Error parsing PPTX file: %s"
+#~ msgstr "Virhe jäsenneltäessä PPTX-tiedostoa: %s"
+
+#~ msgid "Unknown error while parsing PPTX file"
+#~ msgstr "Tuntematon virhe jäsenneltäessä PPTX-tiedostoa"
+
+#~ msgid "Failed to open text file"
+#~ msgstr "Tekstitiedoston avaus epäonnistui"
+
+#~ msgid "Text file is empty"
+#~ msgstr "Tekstitiedosto on tyhjä"
+
+#~ msgid "Failed to create update request."
+#~ msgstr "Päivityspyynnön luonti epäonnistui."
+
+#~ msgid "Failed to parse update response."
+#~ msgstr "Päivitysvastauksen jäsennys epäonnistui."
+
+#~ msgid "Update is available but download link could not be found."
+#~ msgstr "Päivitys on saatavilla, mutta latauslinkkiä ei löytynyt."
