@@ -108,14 +108,14 @@ pub fn handle_view_help_paperback(
 	frame: &Frame,
 	doc_manager: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
-) {
+) -> bool {
 	let Some(path) = readme_path() else {
 		show_error_message(
 			frame,
 			&t("readme.html not found. Please ensure the application was built properly."),
 			&t("Error"),
 		);
-		return;
+		return false;
 	};
 	if !path.exists() {
 		show_error_message(
@@ -123,12 +123,12 @@ pub fn handle_view_help_paperback(
 			&t("readme.html not found. Please ensure the application was built properly."),
 			&t("Error"),
 		);
-		return;
+		return false;
 	}
 	if !ensure_parser_ready_for_path(frame, &path, config) {
-		return;
+		return false;
 	}
-	let _ = doc_manager.lock().unwrap().open_file(doc_manager, &path);
+	doc_manager.lock().unwrap().open_file(doc_manager, &path)
 }
 
 pub fn handle_donate(frame: &Frame) {

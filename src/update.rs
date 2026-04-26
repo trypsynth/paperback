@@ -142,7 +142,7 @@ pub fn download_update_file(
 		.map_err(|e| UpdateError::VerificationError(format!("Signature is not valid UTF-8: {e}")))?;
 	let sig =
 		Signature::decode(sig_str).map_err(|e| UpdateError::VerificationError(format!("Invalid signature: {e}")))?;
-	pk.verify(&data, &sig, false)
+	pk.verify(&data, &sig, true)
 		.map_err(|e| UpdateError::VerificationError(format!("Signature verification failed: {e}")))?;
 	let mut final_path = dest_path.clone();
 	final_path.set_file_name(fname);

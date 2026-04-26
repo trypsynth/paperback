@@ -855,7 +855,7 @@ pub fn apply_readability_format_to_ctrl(
 
 		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(0)));
 		SendMessageW(hwnd, WM_SETREDRAW, Some(WPARAM(1)), None);
-		InvalidateRect(Some(hwnd), None::<*const RECT>, true);
+		let _ = InvalidateRect(Some(hwnd), None::<*const RECT>, true);
 	}
 }
 

@@ -1222,7 +1222,18 @@ impl MainWindow {
 					help::handle_view_help_browser(&frame_copy);
 				}
 				menu_ids::VIEW_HELP_PAPERBACK => {
-					help::handle_view_help_paperback(&frame_copy, &dm, &config);
+					if help::handle_view_help_paperback(&frame_copy, &dm, &config) {
+						{
+							let dm_ref = dm.lock().unwrap();
+							update_title_from_manager(&frame_copy, &dm_ref);
+							dm_ref.restore_focus();
+						}
+						let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
+						frame_copy.set_menu_bar(menu_bar);
+						menu::update_menu_item_states(&frame_copy, true);
+						let has_reopen = dm.lock().unwrap().has_recently_closed();
+						menu::update_reopen_state(&frame_copy, has_reopen);
+					}
 				}
 				menu_ids::CHECK_FOR_UPDATES => {
 					let channel = config.lock().unwrap().get_update_channel();
