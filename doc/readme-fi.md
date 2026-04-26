@@ -170,7 +170,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Lisätty tuki vanhoille PowerPoint-esityksille (*.ppt).
 * Lisätty tuki vanhoille Microsoft Word -asiakirjoille (*.doc).
 * Lisätty tuki mobi- ja AZW3-kirjoille. [#369](https://github.com/trypsynth/pull/369), [#378](https://github.com/trypsynth/pull/378).
-* Lisätty tuki salatuille Microsoft Office -asiakirjoille. Tällä hetkellä tuetaan vanhaa Wordia, nykyaikaista Wordia ja nykyaikaista PowerPointia, ja vanhan PowerPointin tuki on suunnitteilla.
+* Lisätty tuki salatuille Microsoft Office -asiakirjoille. Tällä hetkellä tuetaan vanhaa ja uudempaa Wordia sekä uudempaa PowerPointia, ja vanhan PowerPointin tuki on tulossa myöhemmin.
 * Lisätty Ctrl+Q-näppäinkomento sovelluksen lopettamista varten. [#368](https://github.com/trypsynth/paperback/issues/368).
 * Lisätty tuki sekä DAISY- että Word-muodossa oleville Booksharen pakatuille kirjoille. [#36](https://github.com/trypsynth/paperback/issues/36), [#358](https://github.com/trypsynth/paperback/pull/358), [#360](https://github.com/trypsynth/paperback/pull/360).
 * Upotettujen kuvien vaihtoehtoisen tekstin pitäisi nyt näkyä oikein.
