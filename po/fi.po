@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
 "POT-Creation-Date: 2026-04-13 15:24-0600\n"
-"PO-Revision-Date: 2026-04-26 03:04+0300\n"
+"PO-Revision-Date: 2026-04-26 03:19+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -874,10 +874,10 @@ msgid "Open a recent document"
 msgstr "Avaa viimeksi avattu asiakirja"
 
 msgid "E&xit\tCtrl+Q"
-msgstr "&Sulje\tCtrl+Q"
+msgstr "&Lopeta\tCtrl+Q"
 
 msgid "Exit the application"
-msgstr "Sulje sovellus"
+msgstr "Lopeta sovellus"
 
 msgid "&Find...\tCtrl+F"
 msgstr "&Etsi...\tCtrl+F"
@@ -1276,10 +1276,10 @@ msgid "Restore Paperback"
 msgstr "Palauta Paperback"
 
 msgid "E&xit"
-msgstr "&Sulje"
+msgstr "&Lopeta"
 
 msgid "Exit Paperback"
-msgstr "Sulje Paperback"
+msgstr "Lopeta Paperback"
 
 #, c-format
 #~ msgid ""
