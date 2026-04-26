@@ -38,9 +38,9 @@ Paperback tukee seuraavia tiedostomuotoja ja tunnisteita:
 * Teksti- ja lokitiedostot (`.txt`, `.log`)
 * XML-asiakirjat (`.xml`)
 
-## Pikanäppäimet
+## Näppäinkomennot
 
-Paperback on suunniteltu ensisijaisesti näppäimistöllä ja ruudunlukijalla käytettäväksi. Tässä ovat nykyiset pikanäppäimet.
+Paperback on suunniteltu ensisijaisesti näppäimistöllä ja ruudunlukijalla käytettäväksi. Alla on luettelo nykyisistä Näppäinkomennoista.
 
 ### Tiedosto-valikko
 
@@ -171,7 +171,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Lisätty tuki vanhoille Microsoft Word -asiakirjoille (*.doc).
 * Lisätty tuki mobi- ja AZW3-kirjoille. [#369](https://github.com/trypsynth/pull/369), [#378](https://github.com/trypsynth/pull/378).
 * Lisätty tuki salatuille Microsoft Office -asiakirjoille. Tällä hetkellä tuetaan vanhaa Wordia, nykyaikaista Wordia ja nykyaikaista PowerPointia, ja vanhan PowerPointin tuki on suunnitteilla.
-* Lisätty ctrl+q-pikanäppäin sovelluksen sulkemista varten. [#368](https://github.com/trypsynth/paperback/issues/368).
+* Lisätty Ctrl+Q-näppäinkomento sovelluksen lopettamista varten. [#368](https://github.com/trypsynth/paperback/issues/368).
 * Lisätty tuki sekä DAISY- että Word-muodossa oleville Booksharen pakatuille kirjoille. [#36](https://github.com/trypsynth/paperback/issues/36), [#358](https://github.com/trypsynth/paperback/pull/358), [#360](https://github.com/trypsynth/paperback/pull/360).
 * Upotettujen kuvien vaihtoehtoisen tekstin pitäisi nyt näkyä oikein.
 * CHM-asiakirjoissa tuetaan nyt asianmukaisesti sisäisten linkkien navigointia.
@@ -180,7 +180,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Korjattu ongelma, jossa "Avaa muodossa" -valintaikkunaa ei voinut sulkea Esc-näppäimellä.
 * Korjattu lukijan pikavalikko, joka ei avautunut hiiren oikealla painikkeella eikä sovellusnäppäimellä. [#362](https://github.com/trypsynth/paperback/issues/362).
 * Korjattu virhe, jossa kohdistus siirtyi toisinaan väärään asiakirjaan, kun niitä avattiin komentoriviltä.
-* Pelkät kuvat sisältävät PDF:t tunnistetaan taas ja niiden olemassaolosta ilmoitetaan.
+* Pelkkiä kuvia sisältävät PDF-tiedostot tunnistetaan taas ja niiden olemassaolosta ilmoitetaan.
 * Kuvien ja kuvituskuvien välillä on nyt mahdollista liikkua G/Shift+G- ja F/Shift+F-näppäimillä.
 * Paperback noudattaa nyt sovelluksen "Tumma tila" -asetusta.
 * Poistettu DAISY XML -tuki, koska sitä ei enää tarvita.
@@ -309,7 +309,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Korjattu ePub-kirjojen sisällysluettelot, joissa oli URL-koodattuja tiedostopolkuja ja/tai fragmenttitunnuksia.
 * Korjattu ongelma, jossa XHTML-otsikoissa olevat välilyönnit poistettiin oudosti.
 * Korjattu HTML-asiakirjojen sisäkkäisten pre-tagien sisällä olevien välilyöntien käsittely.
-* HTML- ja Markdown-asiakirjat tukevat nyt sisällysluetteloa. Kun lataat HTML- tai Markdown-asiakirjan, Paperback muodostaa sisällysluettelon asiakirjan otsikkorakenteesta ja näyttää sen Ctrl+T-näppäinkomennolla avattavassa valintaikkunassa.
+* HTML- ja Markdown-asiakirjat tukevat nyt sisällysluetteloa. Kun HTML- tai Markdown-asiakirja ladataan, Paperback muodostaa sisällysluettelon asiakirjan otsikkorakenteesta ja näyttää sen Ctrl+T-näppäinkomennolla avattavassa valintaikkunassa.
 * HTML-asiakirjoissa käytetään nyt title-tagin mukaista otsikkoa, mikäli sellainen on määritetty. Muutoin käytetään edelleen tiedoston nimeä ilman päätettä.
 * Puhumiseen käytetään UniversalSpeech-kirjaston sijaan aktiivista aluetta. Tämä tarkoittaa, ettei ohjelman mukana enää toimiteta ruudunlukijoiden DLL-tiedostoja, ja nyt tuetaan useampia ruudunlukijoita, kuten Microsoft Narratoria.
 * ZIP-kirjastoja on vaihdettu, jotta voidaan avata laajempi valikoima ePub-kirjoja. [#73](https://github.com/trypsynth/paperback/issues/73).
@@ -348,7 +348,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Korjattu wxWidgetsin regressiosta johtuva korkea suorittimen käyttöaste asiakirjoissa, joilla on pitkät nimet. [#60](https://github.com/trypsynth/paperback/issues/60).
 * UTF-8-koodattujen tekstitiedostojen lataus korjattu.
 * Korjattu ePub-kirjojen sisäkkäiset sisällysluettelokohdat, jotka siirtävät kohdistimen väärään kohtaan.
-* Korjattu joissakin tilanteissa ilmenevä kaatuminen sovellusta suljettaessa. [#45](https://github.com/trypsynth/paperback/issues/45).
+* Korjattu joissakin tilanteissa ilmenevä kaatuminen sovellusta lopetettaessa. [#45](https://github.com/trypsynth/paperback/issues/45).
 * Lisätty asetusvalintaikkunaan asetus, jolla otetaan rivitys käyttöön tai poistetaan se käytöstä.
 * Paperbackin kehitystä varten lahjoittaminen on nyt mahdollista joko ohje-valikon uudella Lahjoita-vaihtoehdolla tai GitHub-koodivaraston pääsivun alalaidassa olevan "Sponsor this project" -linkin kautta.
 * Markdown-asiakirjoilla on nyt aina nimi, ja Paperbackin pitäisi nyt pystyä lataamaan käytännössä mikä tahansa Markdown-tiedosto. [#52](https://github.com/trypsynth/paperback/issues/52).
