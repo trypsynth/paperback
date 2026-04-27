@@ -118,15 +118,14 @@ Paperback on suunniteltu ensisijaisesti näppäimistöllä ja ruudunlukijalla k�
 
 ## Tuetut kielet
 
-Paperback on käännetty monille eri kielille, ja uusia lisätään koko ajan. Täydellinen luettelo on alla.
+Paperback on käännetty useille eri kielille, ja uusia lisätään jatkuvasti. Täydellinen luettelo on alla.
 
-Jos haluat osallistua kääntämiseen, lue [Translation Guide](translating.md).
+Jos haluat osallistua kääntämiseen, katso ohjeet [käännösoppaasta](translating.md).
 
 * bosnia
 * tšekki
 * ranska
 * saksa
-* suomi
 * japani
 * venäjä
 * yksinkertaistettu kiina
