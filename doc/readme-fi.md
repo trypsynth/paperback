@@ -6,7 +6,7 @@ Paperback on kevyt, nopea ja saavutettava e-kirjojen ja asiakirjojen lukuohjelma
 
 ## Järjestelmävaatimukset
 
-Paperback toimii tällä hetkellä Windows 10:ssä ja 11:ssä. MacOS- ja Linux-tuki on työn alla.
+Paperback toimii tällä hetkellä Windows 10:ssä, 11:ssä ja Linuxissa. MacOS-tuki on työn alla.
 
 ## Ominaisuudet
 
