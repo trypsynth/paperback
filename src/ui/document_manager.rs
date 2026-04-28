@@ -1,3 +1,5 @@
+#[cfg(target_os = "linux")]
+use std::collections::HashMap;
 use std::{
 	cell::Cell,
 	fs,
@@ -44,10 +46,12 @@ pub struct DocumentManager {
 	last_position_save: Cell<Option<Instant>>,
 	last_sound_position: Cell<Option<i64>>,
 	recently_closed: Vec<PathBuf>,
+	#[cfg(target_os = "linux")]
+	navigation_key_map: Rc<HashMap<(i32, bool), i32>>,
 }
 
 impl DocumentManager {
-	pub const fn new(
+	pub fn new(
 		frame: Frame,
 		notebook: Notebook,
 		config: Rc<Mutex<ConfigManager>>,
@@ -62,6 +66,8 @@ impl DocumentManager {
 			last_position_save: Cell::new(None),
 			last_sound_position: Cell::new(None),
 			recently_closed: Vec::new(),
+			#[cfg(target_os = "linux")]
+			navigation_key_map: Rc::new(build_navigation_key_map()),
 		}
 	}
 
@@ -137,6 +143,9 @@ impl DocumentManager {
 		let config = self.config.lock().unwrap();
 		let mut session = session;
 		let word_wrap = config.get_app_bool("word_wrap", false);
+		#[cfg(target_os = "linux")]
+		let text_ctrl = Self::build_text_ctrl(panel, word_wrap, self_rc, self.frame, Rc::clone(&self.navigation_key_map));
+		#[cfg(not(target_os = "linux"))]
 		let text_ctrl = Self::build_text_ctrl(panel, word_wrap, self_rc);
 		let rf = config.get_readability_font();
 		if let Some(font) = build_font_from_readability(&rf) {
@@ -380,23 +389,13 @@ impl DocumentManager {
 		let path_str = tab.file_path.to_string_lossy().to_string();
 		let bookmarks = config.get_bookmarks(&path_str);
 		drop(config);
-		let (prev_line_start, _) = tab.session.get_line_bounds(prev);
-		let (line_start, line_end) = tab.session.get_line_bounds(position);
-		let same_line = prev_line_start == line_start;
 		let mut has_note = false;
 		let mut has_bookmark = false;
 		for bm in &bookmarks {
-			let triggered = if same_line {
-				// Within the same content line: use precise range crossing (for Ctrl+Left/Right).
-				if position > prev {
-					bm.start > prev && bm.start <= position
-				} else {
-					bm.start >= position && bm.start < prev
-				}
+			let triggered = if position > prev {
+				bm.start > prev && bm.start <= position
 			} else {
-				// Crossed a line boundary (Up/Down): fire only if a bookmark is on the
-				// current line. This prevents false positives when jumping over bookmarks.
-				bm.start >= line_start && bm.start <= line_end
+				bm.start >= position && bm.start < prev
 			};
 			if triggered {
 				if !bm.note.is_empty() {
@@ -480,6 +479,10 @@ impl DocumentManager {
 			let old_ctrl = tab.text_ctrl;
 			let current_pos = old_ctrl.get_insertion_point();
 			let content = old_ctrl.get_value();
+			#[cfg(target_os = "linux")]
+			let text_ctrl =
+				Self::build_text_ctrl(tab.panel, word_wrap, self_rc, self.frame, Rc::clone(&self.navigation_key_map));
+			#[cfg(not(target_os = "linux"))]
 			let text_ctrl = Self::build_text_ctrl(tab.panel, word_wrap, self_rc);
 			let sizer = BoxSizer::builder(Orientation::Vertical).build();
 			sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
@@ -504,7 +507,13 @@ impl DocumentManager {
 		}
 	}
 
-	fn build_text_ctrl(panel: Panel, word_wrap: bool, self_rc: &Rc<Mutex<Self>>) -> TextCtrl {
+	fn build_text_ctrl(
+		panel: Panel,
+		word_wrap: bool,
+		self_rc: &Rc<Mutex<Self>>,
+		#[cfg(target_os = "linux")] frame: Frame,
+		#[cfg(target_os = "linux")] navigation_key_map: Rc<HashMap<(i32, bool), i32>>,
+	) -> TextCtrl {
 		let style = TextCtrlStyle::MultiLine
 			| TextCtrlStyle::ReadOnly
 			| TextCtrlStyle::Rich2
@@ -542,6 +551,10 @@ impl DocumentManager {
 			}
 		});
 		let text_ctrl_for_menu = text_ctrl;
+		#[cfg(target_os = "linux")]
+		let key_map = navigation_key_map;
+		#[cfg(target_os = "linux")]
+		let frame_for_keys = frame;
 		text_ctrl.on_key_down(move |event| {
 			if let WindowEventData::Keyboard(kbd) = &event {
 				if let Some(key) = kbd.get_key_code() {
@@ -549,6 +562,14 @@ impl DocumentManager {
 						kbd.event.skip(false);
 						show_reader_context_menu(text_ctrl_for_menu);
 						return;
+					}
+					#[cfg(target_os = "linux")]
+					if !kbd.control_down() && !kbd.alt_down() {
+						if let Some(&menu_id) = key_map.get(&(key, kbd.shift_down())) {
+							kbd.event.skip(false);
+							frame_for_keys.process_menu_command(menu_id);
+							return;
+						}
 					}
 				}
 			}
@@ -884,4 +905,53 @@ fn show_reader_context_menu(text_ctrl: TextCtrl) {
 		.append_item(menu_ids::GO_TO_PERCENT, &t("Go to &percent"), &t("Go to percent"))
 		.build();
 	text_ctrl.popup_menu(&mut menu, None);
+}
+
+/// Build a map from (key_code, shift) to menu ID for single-key navigation shortcuts.
+/// Parses shortcut strings from menu entry labels to stay in sync with menu definitions.
+#[cfg(target_os = "linux")]
+fn build_navigation_key_map() -> HashMap<(i32, bool), i32> {
+	use super::menu::{self, MenuEntry};
+
+	let mut map = HashMap::new();
+	let all_entries = [
+		menu::headings_entries(),
+		menu::sections_entries(),
+		menu::pages_entries(),
+		menu::links_entries(),
+		menu::tables_entries(),
+		menu::separators_entries(),
+		menu::lists_entries(),
+		menu::bookmarks_entries(),
+	];
+	for entries in &all_entries {
+		for entry in entries {
+			if let MenuEntry::Item(spec) = entry {
+				if let Some((key, shift)) = parse_single_key_shortcut(&spec.label) {
+					map.insert((key, shift), spec.id);
+				}
+			}
+		}
+	}
+	map
+}
+
+/// Parse a single-key or Shift+key shortcut from a menu label like `"&Next Heading\tH"`.
+/// Returns None for shortcuts involving Ctrl, Alt, or function keys.
+#[cfg(target_os = "linux")]
+fn parse_single_key_shortcut(label: &str) -> Option<(i32, bool)> {
+	let shortcut = label.split('\t').nth(1)?;
+	if shortcut.contains("Ctrl") || shortcut.contains("Alt") {
+		return None;
+	}
+	let shift = shortcut.contains("Shift+");
+	let key_name = shortcut.rsplit('+').next()?;
+	if key_name.starts_with('F') && key_name.len() > 1 && key_name[1..].chars().all(|c| c.is_ascii_digit()) {
+		return None;
+	}
+	if key_name.len() == 1 {
+		let key = key_name.as_bytes()[0].to_ascii_uppercase() as i32;
+		return Some((key, shift));
+	}
+	None
 }

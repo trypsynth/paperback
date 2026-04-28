@@ -6,7 +6,7 @@ Paperback is a lightweight, fast, and accessible ebook and document reader for e
 
 ## System Requirements
 
-Paperback currently runs on Windows 10 and 11, with support for macOS and Linux in the pipeline.
+Paperback currently runs on Windows 10/11 and Linux. Support for macOS is in the pipeline.
 
 ## Features
 
