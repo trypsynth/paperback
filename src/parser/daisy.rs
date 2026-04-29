@@ -10,10 +10,13 @@ use zip::ZipArchive;
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
-	html_to_text::{HtmlSourceMode, HtmlToText},
-	parser::{Parser, add_converter_markers, path::extract_title_from_path, toc::build_toc_from_headings},
-	xml_to_text::XmlToText,
-	zip::read_zip_entry_by_name_with_password,
+	parser::{
+		Parser, add_converter_markers,
+		html_to_text::{HtmlSourceMode, HtmlToText},
+		util::{path::extract_title_from_path, toc::build_toc_from_headings},
+		xml_to_text::XmlToText,
+	},
+	util::zip::read_zip_entry_by_name_with_password,
 };
 
 pub struct DaisyParser;

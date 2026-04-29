@@ -14,16 +14,17 @@ use zip::ZipArchive;
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
-	encoding::convert_to_utf8,
 	parser::{
 		PASSWORD_REQUIRED_ERROR_PREFIX, Parser,
-		ooxml::{collect_ooxml_run_text, read_ooxml_relationships},
-		path::extract_title_from_path,
-		toc::{build_toc_from_buffer, heading_level_to_marker_type},
-		xml::find_child_element,
+		util::{
+			ooxml::{collect_ooxml_run_text, read_ooxml_relationships},
+			path::extract_title_from_path,
+			toc::{build_toc_from_buffer, heading_level_to_marker_type},
+			xml::find_child_element,
+		},
 	},
 	types::HeadingInfo,
-	zip::read_zip_entry_by_name,
+	util::{encoding::convert_to_utf8, zip::read_zip_entry_by_name},
 };
 
 const FIB_MAGIC_DOC: u16 = 0xA5EC;

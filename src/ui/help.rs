@@ -23,8 +23,8 @@ use super::{dialogs, document_manager::DocumentManager};
 use crate::{
 	config::{ConfigManager, UpdateChannel},
 	parser,
-	text::markdown_to_text,
 	update::{self, UpdateCheckOutcome, UpdateError},
+	util::text::markdown_to_text,
 	version,
 };
 

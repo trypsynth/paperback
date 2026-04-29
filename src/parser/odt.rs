@@ -8,11 +8,13 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
 	parser::{
 		Parser,
-		path::extract_title_from_path,
-		toc::{build_toc_from_buffer, heading_level_to_marker_type},
-		xml::collect_element_text,
+		util::{
+			path::extract_title_from_path,
+			toc::{build_toc_from_buffer, heading_level_to_marker_type},
+			xml::collect_element_text,
+		},
 	},
-	zip::read_zip_entry_by_name,
+	util::zip::read_zip_entry_by_name,
 };
 
 pub struct OdtParser;

@@ -1,13 +1,13 @@
 use std::collections::{HashMap, HashSet};
 
 use anyhow::{Result, anyhow};
-use pdfium::{PdfiumDocument, PdfiumError, lib};
+use pdfium::{PdfiumDocument, PdfiumError, PdfiumTextPage, lib};
 use wxdragon::translations::translate as t;
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
-	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, Parser, path::extract_title_from_path},
-	text::{collapse_whitespace, display_len, trim_string},
+	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, Parser, util::path::extract_title_from_path},
+	util::text::{collapse_whitespace, display_len, trim_string},
 };
 
 pub struct PdfParser;
@@ -37,6 +37,7 @@ impl Parser for PdfParser {
 		let mut flat_toc_items = Vec::new();
 		let mut has_any_text = false;
 		let mut has_any_images = false;
+		let mut detected_heading_positions: Vec<(usize, String)> = Vec::new();
 		for page_index in 0..page_count {
 			let marker_position = buffer.current_position();
 			page_offsets.push(marker_position);
@@ -66,7 +67,7 @@ impl Parser for PdfParser {
 						for i in 0..char_count {
 							let unicode = text_page.get_unicode(i);
 							if let Some(ch) = char::from_u32(unicode) {
-								if ch.is_control() && !matches!(ch, '\n' | '\r' | '\t') {
+								if (ch.is_control() && !matches!(ch, '\n' | '\r' | '\t')) || ch == '\u{00AD}' {
 									continue;
 								}
 								let is_generated = text_page.is_generated(i).unwrap_or(false);
@@ -110,18 +111,21 @@ impl Parser for PdfParser {
 				}
 			}
 			if !tags_processed {
-				let raw_text = sanitize_pdf_text(&text_page.full());
-				let lines = process_text_lines(&raw_text);
-				if !lines.is_empty() {
+				let line_infos = extract_text_lines(&text_page);
+				let body_size = median_line_font_size(&line_infos);
+				let paragraphs = join_paragraphs(&line_infos, body_size);
+				if !paragraphs.is_empty() {
 					has_any_text = true;
 				}
-				let mut current_offset = buffer.current_position();
-				for line in lines {
-					current_lines_info.push((current_offset, line.clone()));
-					current_offset += display_len(&line) + 1;
-					buffer.append(&line);
+				for (text, is_heading) in &paragraphs {
+					let current_offset = buffer.current_position();
+					if *is_heading {
+						detected_heading_positions.push((current_offset, text.clone()));
+					}
+					current_lines_info.push((current_offset, text.clone()));
+					buffer.append(text);
 					buffer.append("\n");
-					page_display_text.push_str(&line);
+					page_display_text.push_str(text);
 					page_display_text.push('\n');
 				}
 			} else {
@@ -275,6 +279,14 @@ impl Parser for PdfParser {
 			} else if flat_toc_items.is_empty() {
 				add_heading_markers(&mut buffer, &toc_items, 1);
 			}
+		} else if toc_items.is_empty() && !detected_heading_positions.is_empty() {
+			for (pos, text) in &detected_heading_positions {
+				buffer.add_marker(Marker::new(MarkerType::Heading1, *pos).with_text(text.clone()).with_level(1));
+			}
+			toc_items = detected_heading_positions
+				.into_iter()
+				.map(|(pos, text)| TocItem::new(text, String::new(), pos))
+				.collect();
 		} else {
 			add_heading_markers(&mut buffer, &toc_items, 1);
 		}
@@ -314,44 +326,107 @@ fn is_cjk(c: char) -> bool {
 }
 
 fn sanitize_pdf_text(input: &str) -> String {
-	input.chars().filter(|ch| !ch.is_control() || matches!(ch, '\n' | '\r' | '\t')).collect()
+	input.chars().filter(|&ch| (!ch.is_control() || matches!(ch, '\n' | '\r' | '\t')) && ch != '\u{00AD}').collect()
 }
 
-fn process_text_lines(raw_text: &str) -> Vec<String> {
-	let clean_text = sanitize_pdf_text(raw_text).replace('\r', "");
-	let lines: Vec<String> = clean_text.lines().map(|line| trim_string(&collapse_whitespace(line))).collect();
-	let mut max_len = 0;
-	for line in &lines {
+fn extract_text_lines(text_page: &PdfiumTextPage) -> Vec<(String, f64)> {
+	let Ok(char_count) = text_page.char_count() else {
+		let raw = sanitize_pdf_text(&text_page.full()).replace('\r', "");
+		return raw.lines().map(|l| (l.to_string(), 0.0)).collect();
+	};
+	let mut result: Vec<(String, f64)> = Vec::new();
+	let mut current_line = String::new();
+	let mut current_sizes: Vec<f64> = Vec::new();
+	for i in 0..char_count {
+		let unicode = text_page.get_unicode(i);
+		let Some(ch) = char::from_u32(unicode) else { continue };
+		if ch == '\n' || ch == '\r' {
+			let size = sorted_median(&mut current_sizes);
+			result.push((std::mem::take(&mut current_line), size));
+			current_sizes.clear();
+		} else if (ch.is_control() && !matches!(ch, '\t')) || ch == '\u{00AD}' {
+			continue;
+		} else {
+			let size = text_page.get_font_size(i);
+			if size > 0.0 {
+				current_sizes.push(size);
+			}
+			current_line.push(ch);
+		}
+	}
+	if !current_line.is_empty() {
+		let size = sorted_median(&mut current_sizes);
+		result.push((current_line, size));
+	}
+	result
+}
+
+fn sorted_median(values: &mut Vec<f64>) -> f64 {
+	if values.is_empty() {
+		return 0.0;
+	}
+	values.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+	values[values.len() / 2]
+}
+
+fn median_line_font_size(line_infos: &[(String, f64)]) -> f64 {
+	let mut sizes: Vec<f64> = line_infos
+		.iter()
+		.filter(|(text, size)| !text.trim().is_empty() && *size > 0.0)
+		.map(|(_, size)| *size)
+		.collect();
+	sorted_median(&mut sizes)
+}
+
+fn join_paragraphs(raw_lines: &[(String, f64)], body_font_size: f64) -> Vec<(String, bool)> {
+	const HEADING_FONT_RATIO: f64 = 1.2;
+	const HEADING_MAX_LEN: usize = 150;
+	let heading_threshold = if body_font_size > 0.0 { body_font_size * HEADING_FONT_RATIO } else { f64::INFINITY };
+	let lines: Vec<(String, bool)> = raw_lines
+		.iter()
+		.map(|(text, size)| {
+			let trimmed = trim_string(&collapse_whitespace(text));
+			let len = display_len(&trimmed);
+			let is_heading_line = *size >= heading_threshold && len > 0 && len <= HEADING_MAX_LEN;
+			(trimmed, is_heading_line)
+		})
+		.collect();
+	let mut max_len = 0usize;
+	for (line, _) in &lines {
 		let len = display_len(line);
 		if len > max_len {
 			max_len = len;
 		}
 	}
 	let short_line_threshold = (max_len as f32 * 0.75) as usize;
-	let mut paragraphs = Vec::new();
+	let mut paragraphs: Vec<(String, bool)> = Vec::new();
 	let mut current_paragraph = String::new();
-	let mut last_line_len = 0;
+	let mut current_is_heading = false;
+	let mut last_line_len = 0usize;
 	let mut last_line_ends_with_punctuation = false;
-	for line in lines {
+	for (line, is_heading_line) in &lines {
 		if line.is_empty() {
 			if !current_paragraph.is_empty() {
-				paragraphs.push(current_paragraph.clone());
-				current_paragraph.clear();
+				paragraphs.push((std::mem::take(&mut current_paragraph), current_is_heading));
+				current_is_heading = false;
 			}
+			last_line_len = 0;
+			last_line_ends_with_punctuation = false;
 			continue;
 		}
 		let is_list_item = line.starts_with("- ") || line.starts_with("* ") || line.starts_with("• ");
 		let first_char = line.chars().next();
 		let starts_with_uppercase = first_char.is_some_and(char::is_uppercase);
 		let starts_with_alpha = first_char.is_some_and(char::is_alphabetic);
-		let len = display_len(&line);
+		let len = display_len(line);
 		if current_paragraph.is_empty() {
 			current_paragraph = line.clone();
+			current_is_heading = *is_heading_line;
 		} else {
 			let mut is_numbered = false;
 			let mut chars = line.chars();
-			if let Some(first_char) = chars.next() {
-				if first_char.is_ascii_digit() {
+			if let Some(first) = chars.next() {
+				if first.is_ascii_digit() {
 					let mut found_space = false;
 					for c in chars {
 						if c.is_ascii_digit() || c == '.' || c == ')' {
@@ -366,7 +441,9 @@ fn process_text_lines(raw_text: &str) -> Vec<String> {
 					is_numbered = found_space;
 				}
 			}
-			let break_paragraph = if is_list_item || is_numbered {
+			let break_paragraph = if *is_heading_line || current_is_heading {
+				true
+			} else if is_list_item || is_numbered {
 				true
 			} else if last_line_ends_with_punctuation && last_line_len < short_line_threshold {
 				true
@@ -374,18 +451,19 @@ fn process_text_lines(raw_text: &str) -> Vec<String> {
 				last_line_len < short_line_threshold && (starts_with_uppercase || !starts_with_alpha)
 			};
 			if break_paragraph {
-				paragraphs.push(current_paragraph.clone());
+				paragraphs.push((std::mem::take(&mut current_paragraph), current_is_heading));
 				current_paragraph = line.clone();
+				current_is_heading = *is_heading_line;
 			} else {
 				let last_char = current_paragraph.chars().last().unwrap_or(' ');
 				if current_paragraph.ends_with('-') {
 					current_paragraph.pop();
-					current_paragraph.push_str(&line);
+					current_paragraph.push_str(line);
 				} else if is_cjk(last_char) && line.chars().next().is_some_and(is_cjk) {
-					current_paragraph.push_str(&line);
+					current_paragraph.push_str(line);
 				} else {
 					current_paragraph.push(' ');
-					current_paragraph.push_str(&line);
+					current_paragraph.push_str(line);
 				}
 			}
 		}
@@ -394,15 +472,15 @@ fn process_text_lines(raw_text: &str) -> Vec<String> {
 			|| line.ends_with('?')
 			|| line.ends_with('!')
 			|| line.ends_with(':')
-			|| line.ends_with('”')
 			|| line.ends_with('"')
+			|| line.ends_with('\u{201D}')
 			|| line.ends_with('。')
 			|| line.ends_with('？')
 			|| line.ends_with('！')
 			|| line.ends_with('：');
 	}
 	if !current_paragraph.is_empty() {
-		paragraphs.push(current_paragraph);
+		paragraphs.push((current_paragraph, current_is_heading));
 	}
 	paragraphs
 }
@@ -726,17 +804,32 @@ fn html_escape(s: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-	use super::{process_text_lines, sanitize_pdf_text};
+	use super::{join_paragraphs, sanitize_pdf_text};
 
 	#[test]
-	fn sanitize_pdf_text_removes_embedded_control_characters() {
-		let input = "sugges\u{0002}tion\tline\r\nnext";
-		assert_eq!(sanitize_pdf_text(input), "suggestion\tline\r\nnext");
+	fn sanitize_pdf_text_strips_control_chars_and_soft_hyphens() {
+		assert_eq!(sanitize_pdf_text("sugges\u{0002}tion\tline\r\nnext"), "suggestion\tline\r\nnext");
+		assert_eq!(sanitize_pdf_text("hy\u{00AD}phen"), "hyphen");
 	}
 
 	#[test]
-	fn process_text_lines_removes_control_characters() {
-		let lines = process_text_lines("The sug\u{0002}gestion appears here.\nAnd here.");
-		assert_eq!(lines[0], "The suggestion appears here. And here.");
+	fn join_paragraphs_merges_continuation_lines() {
+		let lines = vec![("The suggestion appears here.".to_string(), 12.0), ("And here.".to_string(), 12.0)];
+		let result = join_paragraphs(&lines, 12.0);
+		assert_eq!(result.len(), 1);
+		assert_eq!(result[0].0, "The suggestion appears here. And here.");
+		assert!(!result[0].1);
+	}
+
+	#[test]
+	fn join_paragraphs_flags_large_font_lines_as_headings() {
+		let lines =
+			vec![("Chapter One".to_string(), 18.0), ("This is the body text of the document.".to_string(), 12.0)];
+		let result = join_paragraphs(&lines, 12.0);
+		assert_eq!(result.len(), 2);
+		assert_eq!(result[0].0, "Chapter One");
+		assert!(result[0].1);
+		assert_eq!(result[1].0, "This is the body text of the document.");
+		assert!(!result[1].1);
 	}
 }

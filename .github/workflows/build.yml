@@ -56,9 +56,11 @@ jobs:
       run: |
         $keyPath = Join-Path $env:RUNNER_TEMP "paperback.key"
         [IO.File]::WriteAllText($keyPath, $env:MINISIGN_KEY)
-        Write-Output $env:MINISIGN_PASSWORD | minisign -S -s $keyPath -m target/release/paperback_setup.exe
-        Write-Output $env:MINISIGN_PASSWORD | minisign -S -s $keyPath -m target/release/paperback.zip
-        Remove-Item $keyPath
+        $pwPath = Join-Path $env:RUNNER_TEMP "paperback.pw"
+        [IO.File]::WriteAllText($pwPath, $env:MINISIGN_PASSWORD)
+        Get-Content $pwPath | minisign -S -s $keyPath -m target/release/paperback_setup.exe
+        Get-Content $pwPath | minisign -S -s $keyPath -m target/release/paperback.zip
+        Remove-Item $keyPath, $pwPath
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -141,7 +143,7 @@ jobs:
           windows-build/paperback.zip
           windows-build/paperback.zip.minisig
           windows-build/paperback_setup.exe
-          windows-build/paperback_setup.exe.minigig
+          windows-build/paperback_setup.exe.minisig
           linux-build/paperback.flatpak
         prerelease: true
       env:

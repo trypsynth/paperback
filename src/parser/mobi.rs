@@ -5,8 +5,11 @@ use encoding_rs::WINDOWS_1252;
 
 use crate::{
 	document::{Document, DocumentBuffer, ParserContext, ParserFlags},
-	html_to_text::{HtmlSourceMode, HtmlToText},
-	parser::{Parser, add_converter_markers, path::extract_title_from_path, toc::build_toc_from_headings},
+	parser::{
+		Parser, add_converter_markers,
+		html_to_text::{HtmlSourceMode, HtmlToText},
+		util::{path::extract_title_from_path, toc::build_toc_from_headings},
+	},
 };
 
 pub struct MobiParser;

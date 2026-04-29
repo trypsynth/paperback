@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use roxmltree::{Node, NodeType};
 use zip::ZipArchive;
 
-use crate::zip::read_zip_entry_by_name;
+use crate::util::zip::read_zip_entry_by_name;
 
 pub fn read_ooxml_relationships<R: std::io::Read + std::io::Seek>(
 	archive: &mut ZipArchive<R>,

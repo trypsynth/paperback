@@ -3,20 +3,16 @@
 
 mod config;
 mod document;
-mod encoding;
-mod html_to_text;
 mod ipc;
 mod parser;
 mod reader_core;
 mod session;
-mod text;
 mod translation_manager;
 mod types;
 mod ui;
 mod update;
+mod util;
 mod version;
-mod xml_to_text;
-mod zip;
 
 use ui::PaperbackApp;
 use wxdragon::prelude::{Appearance, set_appearance};

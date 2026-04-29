@@ -11,14 +11,18 @@ use zip::ZipArchive;
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
-	html_to_text::{HtmlSourceMode, HtmlToText},
 	parser::{
-		ConverterOutput, Parser, add_converter_markers_excluding_links, is_external_url, path::extract_title_from_path,
+		ConverterOutput, Parser, add_converter_markers_excluding_links,
+		html_to_text::{HtmlSourceMode, HtmlToText},
+		is_external_url,
+		util::path::extract_title_from_path,
+		xml_to_text::XmlToText,
 	},
-	text::{collapse_whitespace, trim_string, url_decode},
 	types::{HeadingInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
-	xml_to_text::XmlToText,
-	zip::read_zip_entry_by_name,
+	util::{
+		text::{collapse_whitespace, trim_string, url_decode},
+		zip::read_zip_entry_by_name,
+	},
 };
 
 struct SectionContent {

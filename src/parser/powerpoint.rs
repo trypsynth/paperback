@@ -13,11 +13,14 @@ use zip::ZipArchive;
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
 	parser::{
-		Parser, ooxml::read_ooxml_relationships, path::extract_title_from_path, word::try_decrypt_office_file,
-		xml::collect_text_from_tagged_elements,
+		Parser,
+		util::{
+			ooxml::read_ooxml_relationships, path::extract_title_from_path, xml::collect_text_from_tagged_elements,
+		},
+		word::try_decrypt_office_file,
 	},
 	types::LinkInfo,
-	zip::read_zip_entry_by_name,
+	util::zip::read_zip_entry_by_name,
 };
 
 const PPT_RECORD_HEADER_SIZE: usize = 8;

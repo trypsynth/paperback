@@ -7,9 +7,9 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
 	parser::{
 		Parser, add_converter_markers,
-		xml::{collect_element_text, find_child_element},
+		util::xml::{collect_element_text, find_child_element},
+		xml_to_text::XmlToText,
 	},
-	xml_to_text::XmlToText,
 };
 
 type Metadata = (String, String);

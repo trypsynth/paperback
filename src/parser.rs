@@ -17,19 +17,18 @@ pub mod daisy;
 pub mod epub;
 pub mod fb2;
 pub mod html;
+pub mod html_to_text;
 pub mod markdown;
 pub mod mobi;
 pub mod odp;
 pub mod odt;
-pub mod ooxml;
-pub mod path;
 pub mod pdf;
 pub mod powerpoint;
 pub mod rtf;
 pub mod text;
-pub mod toc;
+pub mod util;
 pub mod word;
-pub mod xml;
+pub mod xml_to_text;
 
 pub const PASSWORD_REQUIRED_ERROR_PREFIX: &str = "[password_required]";
 
@@ -251,7 +250,7 @@ pub trait ConverterOutput {
 
 fn add_headings(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
 	for heading in converter.get_headings() {
-		let marker_type = toc::heading_level_to_marker_type(heading.level);
+		let marker_type = util::toc::heading_level_to_marker_type(heading.level);
 		buffer.add_marker(
 			Marker::new(marker_type, offset + heading.offset).with_text(heading.text.clone()).with_level(heading.level),
 		);

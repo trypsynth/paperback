@@ -11,13 +11,12 @@ use zip::ZipArchive;
 use crate::{
 	config::ConfigManager,
 	document::{self, DocumentHandle, MarkerType, ParserContext, ParserFlags},
-	encoding::convert_to_utf8,
 	parser,
 	reader_core::{
 		bookmark_navigate, history_go_next, history_go_previous, reader_navigate, record_history_position, resolve_link,
 	},
 	types::{self as ffi, NavDirection, NavTarget},
-	zip as zip_utils,
+	util::{encoding::convert_to_utf8, zip as zip_utils},
 };
 
 const MAX_HISTORY_LEN: usize = 10;
@@ -729,19 +728,6 @@ impl DocumentSession {
 		let chars_after_start: String = content.chars().skip(line_start).collect();
 		let line_end = chars_after_start.find('\n').map_or(chars_after_start.len(), |idx| idx);
 		chars_after_start.chars().take(line_end).collect()
-	}
-
-	/// Returns the (start, end) char positions of the content line (delimited by `\n`) containing `position`.
-	#[must_use]
-	pub fn get_line_bounds(&self, position: i64) -> (i64, i64) {
-		let buf = &self.handle.document().buffer;
-		let total_chars = buf.char_count();
-		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
-		let newlines = buf.newline_positions();
-		let idx = newlines.partition_point(|&p| p < pos);
-		let line_start = if idx > 0 { newlines[idx - 1] + 1 } else { 0 };
-		let line_end = if idx < newlines.len() { newlines[idx] } else { total_chars };
-		(i64::try_from(line_start).unwrap_or(0), i64::try_from(line_end).unwrap_or(i64::MAX))
 	}
 
 	fn has_headings(&self, level: Option<i32>) -> bool {

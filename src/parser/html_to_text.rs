@@ -6,8 +6,8 @@ use scraper::{ElementRef, Html, Node, node};
 use wxdragon::translations::translate as t;
 
 use crate::{
-	text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string},
 	types::{HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
+	util::text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string},
 };
 
 bitflags! {
