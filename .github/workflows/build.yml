@@ -58,8 +58,8 @@ jobs:
         [IO.File]::WriteAllText($keyPath, $env:MINISIGN_KEY)
         $pwPath = Join-Path $env:RUNNER_TEMP "paperback.pw"
         [IO.File]::WriteAllText($pwPath, $env:MINISIGN_PASSWORD)
-        minisign -S -s $keyPath -m target/release/paperback_setup.exe < $pwPath
-        minisign -S -s $keyPath -m target/release/paperback.zip < $pwPath
+        Get-Content $pwPath | minisign -S -s $keyPath -m target/release/paperback_setup.exe
+        Get-Content $pwPath | minisign -S -s $keyPath -m target/release/paperback.zip
         Remove-Item $keyPath, $pwPath
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
