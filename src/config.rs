@@ -821,11 +821,12 @@ impl ConfigManager {
 			return;
 		}
 		{
+			let key = self.get_doc_key(path);
 			let mut data = self.data.borrow_mut();
 			if let Some(idx) = data.recent_documents.iter().position(|p| p == path) {
 				data.recent_documents.remove(idx);
 			}
-			data.documents.remove(&self.get_doc_key(path));
+			data.documents.remove(&key);
 		}
 		self.dirty.set(true);
 	}
