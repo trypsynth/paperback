@@ -36,6 +36,8 @@ pub struct DocumentTab {
 const POSITION_SAVE_INTERVAL_SECS: u64 = 3;
 const WXK_F10: i32 = 349;
 const WXK_WINDOWS_MENU: i32 = 395;
+const WXK_UP: i32 = 315;
+const WXK_DOWN: i32 = 317;
 
 pub struct DocumentManager {
 	frame: Frame,
@@ -45,6 +47,7 @@ pub struct DocumentManager {
 	live_region_label: StaticText,
 	last_position_save: Cell<Option<Instant>>,
 	last_sound_position: Cell<Option<i64>>,
+	preferred_column: Cell<Option<i64>>,
 	recently_closed: Vec<PathBuf>,
 	#[cfg(target_os = "linux")]
 	navigation_key_map: Rc<HashMap<(i32, bool), i32>>,
@@ -65,6 +68,7 @@ impl DocumentManager {
 			live_region_label,
 			last_position_save: Cell::new(None),
 			last_sound_position: Cell::new(None),
+			preferred_column: Cell::new(None),
 			recently_closed: Vec::new(),
 			#[cfg(target_os = "linux")]
 			navigation_key_map: Rc::new(build_navigation_key_map()),
@@ -499,9 +503,9 @@ impl DocumentManager {
 			apply_text_alignment_to_ctrl(text_ctrl, text_alignment);
 			let max_pos = text_ctrl.get_last_position();
 			let pos = current_pos.clamp(0, max_pos);
+			tab.panel.layout();
 			text_ctrl.set_insertion_point(pos);
 			text_ctrl.show_position(pos);
-			tab.panel.layout();
 			old_ctrl.destroy();
 			tab.text_ctrl = text_ctrl;
 		}
@@ -545,12 +549,14 @@ impl DocumentManager {
 		text_ctrl.bind_internal(wxdragon::event::EventType::LEFT_UP, move |event| {
 			event.skip(true);
 			if let Ok(dm) = dm_for_mouse.try_lock() {
+				dm.preferred_column.set(None);
 				dm.update_status_bar();
 				dm.save_position_throttled();
 				dm.check_bookmark_sounds();
 			}
 		});
 		let text_ctrl_for_menu = text_ctrl;
+		let dm_for_nav = Rc::clone(self_rc);
 		#[cfg(target_os = "linux")]
 		let key_map = navigation_key_map;
 		#[cfg(target_os = "linux")]
@@ -571,6 +577,29 @@ impl DocumentManager {
 							return;
 						}
 					}
+					#[cfg(target_os = "windows")]
+					if key == WXK_DOWN || key == WXK_UP {
+						let going_down = key == WXK_DOWN;
+						let nav_result = dm_for_nav.try_lock().ok().and_then(|dm| {
+							navigate_line_by_column(text_ctrl_for_menu, going_down, dm.preferred_column.get())
+						});
+						if let Some((new_pos, new_col)) = nav_result {
+							kbd.event.skip(false);
+							text_ctrl_for_menu.set_insertion_point(new_pos);
+							text_ctrl_for_menu.show_position(new_pos);
+							if let Ok(dm) = dm_for_nav.try_lock() {
+								dm.preferred_column.set(Some(new_col));
+								dm.update_status_bar();
+							}
+						} else {
+							kbd.event.skip(true);
+						}
+						return;
+					}
+					#[cfg(target_os = "windows")]
+					if let Ok(dm) = dm_for_nav.try_lock() {
+						dm.preferred_column.set(None);
+					}
 				}
 			}
 			event.skip(true);
@@ -581,6 +610,51 @@ impl DocumentManager {
 			show_reader_context_menu(text_ctrl_for_right_click);
 		});
 		text_ctrl
+	}
+}
+
+/// Returns (new_position, preferred_column) for character-column-based vertical navigation.
+/// Uses Win32 EM_LINEFROMCHAR/EM_LINEINDEX/EM_LINELENGTH so the cursor lands on the same
+/// character column (not pixel column) on the target visual line.
+#[cfg(target_os = "windows")]
+fn navigate_line_by_column(
+	text_ctrl: TextCtrl,
+	going_down: bool,
+	pref_col: Option<i64>,
+) -> Option<(i64, i64)> {
+	use windows::Win32::Foundation::{HWND, WPARAM};
+	use windows::Win32::UI::WindowsAndMessaging::SendMessageW;
+	const EM_LINEFROMCHAR: u32 = 201;
+	const EM_LINEINDEX: u32 = 187;
+	const EM_LINELENGTH: u32 = 193;
+	let hwnd_ptr = text_ctrl.get_handle();
+	if hwnd_ptr.is_null() {
+		return None;
+	}
+	let hwnd = HWND(hwnd_ptr);
+	let current_pos = text_ctrl.get_insertion_point().max(0) as usize;
+	unsafe {
+		let current_line = SendMessageW(hwnd, EM_LINEFROMCHAR, Some(WPARAM(current_pos)), None).0 as i64;
+		let current_line_start =
+			SendMessageW(hwnd, EM_LINEINDEX, Some(WPARAM(current_line as usize)), None).0 as i64;
+		if current_line_start < 0 {
+			return None;
+		}
+		let current_col = current_pos as i64 - current_line_start;
+		let col = pref_col.unwrap_or(current_col);
+		let target_line = if going_down { current_line + 1 } else { current_line - 1 };
+		if target_line < 0 {
+			return None;
+		}
+		let target_line_start =
+			SendMessageW(hwnd, EM_LINEINDEX, Some(WPARAM(target_line as usize)), None).0 as i64;
+		if target_line_start < 0 {
+			return None;
+		}
+		let target_line_len =
+			SendMessageW(hwnd, EM_LINELENGTH, Some(WPARAM(target_line_start as usize)), None).0 as i64;
+		let new_pos = target_line_start + col.min(target_line_len);
+		Some((new_pos, col))
 	}
 }
 
