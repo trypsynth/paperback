@@ -617,13 +617,11 @@ impl DocumentManager {
 /// Uses Win32 EM_LINEFROMCHAR/EM_LINEINDEX/EM_LINELENGTH so the cursor lands on the same
 /// character column (not pixel column) on the target visual line.
 #[cfg(target_os = "windows")]
-fn navigate_line_by_column(
-	text_ctrl: TextCtrl,
-	going_down: bool,
-	pref_col: Option<i64>,
-) -> Option<(i64, i64)> {
-	use windows::Win32::Foundation::{HWND, WPARAM};
-	use windows::Win32::UI::WindowsAndMessaging::SendMessageW;
+fn navigate_line_by_column(text_ctrl: TextCtrl, going_down: bool, pref_col: Option<i64>) -> Option<(i64, i64)> {
+	use windows::Win32::{
+		Foundation::{HWND, WPARAM},
+		UI::WindowsAndMessaging::SendMessageW,
+	};
 	const EM_LINEFROMCHAR: u32 = 201;
 	const EM_LINEINDEX: u32 = 187;
 	const EM_LINELENGTH: u32 = 193;
@@ -635,8 +633,7 @@ fn navigate_line_by_column(
 	let current_pos = text_ctrl.get_insertion_point().max(0) as usize;
 	unsafe {
 		let current_line = SendMessageW(hwnd, EM_LINEFROMCHAR, Some(WPARAM(current_pos)), None).0 as i64;
-		let current_line_start =
-			SendMessageW(hwnd, EM_LINEINDEX, Some(WPARAM(current_line as usize)), None).0 as i64;
+		let current_line_start = SendMessageW(hwnd, EM_LINEINDEX, Some(WPARAM(current_line as usize)), None).0 as i64;
 		if current_line_start < 0 {
 			return None;
 		}
@@ -646,8 +643,7 @@ fn navigate_line_by_column(
 		if target_line < 0 {
 			return None;
 		}
-		let target_line_start =
-			SendMessageW(hwnd, EM_LINEINDEX, Some(WPARAM(target_line as usize)), None).0 as i64;
+		let target_line_start = SendMessageW(hwnd, EM_LINEINDEX, Some(WPARAM(target_line as usize)), None).0 as i64;
 		if target_line_start < 0 {
 			return None;
 		}
