@@ -578,7 +578,7 @@ impl DocumentManager {
 						}
 					}
 					#[cfg(target_os = "windows")]
-					if key == WXK_DOWN || key == WXK_UP {
+					if (key == WXK_DOWN || key == WXK_UP) && !kbd.shift_down() && !kbd.control_down() {
 						let going_down = key == WXK_DOWN;
 						let nav_result = dm_for_nav.try_lock().ok().and_then(|dm| {
 							navigate_line_by_column(text_ctrl_for_menu, going_down, dm.preferred_column.get())
