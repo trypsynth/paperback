@@ -703,6 +703,7 @@ pub fn apply_line_spacing_to_ctrl(text_ctrl: TextCtrl, line_spacing: i32) {
 			WindowsAndMessaging::SendMessageW,
 		},
 	};
+	const EM_GETSEL: u32 = 176;
 	const EM_SETSEL: u32 = 177;
 	const EM_SETPARAFORMAT: u32 = 1095;
 	let hwnd_ptr = text_ctrl.get_handle();
@@ -711,13 +712,15 @@ pub fn apply_line_spacing_to_ctrl(text_ctrl: TextCtrl, line_spacing: i32) {
 	}
 	let hwnd = HWND(hwnd_ptr);
 	unsafe {
+		let mut caret: u32 = 0;
+		SendMessageW(hwnd, EM_GETSEL, Some(WPARAM(std::ptr::addr_of_mut!(caret) as usize)), None);
 		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(-1_isize)));
 		let mut pf = PARAFORMAT2::default();
 		pf.Base.cbSize = std::mem::size_of::<PARAFORMAT2>() as u32;
 		pf.Base.dwMask = PFM_LINESPACING;
 		pf.bLineSpacingRule = line_spacing.clamp(0, 2) as u8;
 		SendMessageW(hwnd, EM_SETPARAFORMAT, None, Some(LPARAM(&raw const pf as isize)));
-		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(0)));
+		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(caret as usize)), Some(LPARAM(caret as isize)));
 	}
 }
 
@@ -773,6 +776,7 @@ pub fn apply_text_alignment_to_ctrl(text_ctrl: TextCtrl, alignment: i32) {
 			WindowsAndMessaging::SendMessageW,
 		},
 	};
+	const EM_GETSEL: u32 = 176;
 	const EM_SETSEL: u32 = 177;
 	const EM_SETPARAFORMAT: u32 = 1095;
 	let hwnd_ptr = text_ctrl.get_handle();
@@ -787,13 +791,15 @@ pub fn apply_text_alignment_to_ctrl(text_ctrl: TextCtrl, alignment: i32) {
 		_ => PFA_LEFT,
 	};
 	unsafe {
+		let mut caret: u32 = 0;
+		SendMessageW(hwnd, EM_GETSEL, Some(WPARAM(std::ptr::addr_of_mut!(caret) as usize)), None);
 		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(-1_isize)));
 		let mut pf = PARAFORMAT2::default();
 		pf.Base.cbSize = std::mem::size_of::<PARAFORMAT2>() as u32;
 		pf.Base.dwMask = PFM_ALIGNMENT;
 		pf.Base.wAlignment = pfa;
 		SendMessageW(hwnd, EM_SETPARAFORMAT, None, Some(LPARAM(&raw const pf as isize)));
-		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(0)));
+		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(caret as usize)), Some(LPARAM(caret as isize)));
 	}
 }
 
@@ -809,6 +815,7 @@ pub fn apply_letter_spacing_to_ctrl(text_ctrl: TextCtrl, spacing: i32) {
 			WindowsAndMessaging::SendMessageW,
 		},
 	};
+	const EM_GETSEL: u32 = 176;
 	const EM_SETSEL: u32 = 177;
 	const EM_SETCHARFORMAT: u32 = 1092;
 	const SCF_ALL: u32 = 4;
@@ -824,13 +831,15 @@ pub fn apply_letter_spacing_to_ctrl(text_ctrl: TextCtrl, spacing: i32) {
 		_ => 0,
 	};
 	unsafe {
+		let mut caret: u32 = 0;
+		SendMessageW(hwnd, EM_GETSEL, Some(WPARAM(std::ptr::addr_of_mut!(caret) as usize)), None);
 		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(-1_isize)));
 		let mut cf = std::mem::zeroed::<CHARFORMAT2W>();
 		cf.Base.cbSize = std::mem::size_of::<CHARFORMAT2W>() as u32;
 		cf.Base.dwMask = CFM_SPACING;
 		cf.sSpacing = spacing_twips;
 		SendMessageW(hwnd, EM_SETCHARFORMAT, Some(WPARAM(SCF_ALL as usize)), Some(LPARAM(&raw const cf as isize)));
-		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(0)));
+		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(caret as usize)), Some(LPARAM(caret as isize)));
 	}
 }
 
@@ -846,6 +855,7 @@ pub fn apply_paragraph_spacing_to_ctrl(text_ctrl: TextCtrl, spacing: i32) {
 			WindowsAndMessaging::SendMessageW,
 		},
 	};
+	const EM_GETSEL: u32 = 176;
 	const EM_SETSEL: u32 = 177;
 	const EM_SETPARAFORMAT: u32 = 1095;
 	let hwnd_ptr = text_ctrl.get_handle();
@@ -860,13 +870,15 @@ pub fn apply_paragraph_spacing_to_ctrl(text_ctrl: TextCtrl, spacing: i32) {
 		_ => 0,
 	};
 	unsafe {
+		let mut caret: u32 = 0;
+		SendMessageW(hwnd, EM_GETSEL, Some(WPARAM(std::ptr::addr_of_mut!(caret) as usize)), None);
 		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(-1_isize)));
 		let mut pf = PARAFORMAT2::default();
 		pf.Base.cbSize = std::mem::size_of::<PARAFORMAT2>() as u32;
 		pf.Base.dwMask = PFM_SPACEAFTER;
 		pf.dySpaceAfter = space_after;
 		SendMessageW(hwnd, EM_SETPARAFORMAT, None, Some(LPARAM(&raw const pf as isize)));
-		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(0)));
+		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(caret as usize)), Some(LPARAM(caret as isize)));
 	}
 }
 
@@ -899,6 +911,7 @@ pub fn apply_readability_format_to_ctrl(
 			WindowsAndMessaging::SendMessageW,
 		},
 	};
+	const EM_GETSEL: u32 = 176;
 	const EM_SETSEL: u32 = 177;
 	const EM_SETPARAFORMAT: u32 = 1095;
 	const EM_SETCHARFORMAT: u32 = 1092;
@@ -910,6 +923,8 @@ pub fn apply_readability_format_to_ctrl(
 	}
 	let hwnd = HWND(hwnd_ptr);
 	unsafe {
+		let mut caret: u32 = 0;
+		SendMessageW(hwnd, EM_GETSEL, Some(WPARAM(std::ptr::addr_of_mut!(caret) as usize)), None);
 		SendMessageW(hwnd, WM_SETREDRAW, Some(WPARAM(0)), None);
 		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(-1_isize)));
 
@@ -944,7 +959,7 @@ pub fn apply_readability_format_to_ctrl(
 			SendMessageW(hwnd, EM_SETCHARFORMAT, Some(WPARAM(SCF_ALL as usize)), Some(LPARAM(&raw const cf as isize)));
 		}
 
-		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(0)));
+		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(caret as usize)), Some(LPARAM(caret as isize)));
 		SendMessageW(hwnd, WM_SETREDRAW, Some(WPARAM(1)), None);
 		let _ = InvalidateRect(Some(hwnd), None::<*const RECT>, true);
 	}
