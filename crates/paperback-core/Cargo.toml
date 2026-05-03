@@ -15,25 +15,25 @@ path = "src/lib.rs"
 anyhow = { workspace = true }
 base64 = { workspace = true }
 bitflags = { workspace = true }
-cfb = { workspace = true }
-ego-tree = { workspace = true }
-encoding_rs = { workspace = true }
-libchm = { workspace = true }
-minisign-verify = { workspace = true }
-office-crypto = { workspace = true }
-pdfium = { workspace = true }
-percent-encoding = { workspace = true }
-pulldown-cmark = { workspace = true }
-regex = { workspace = true }
-roman = { workspace = true }
-roxmltree = { workspace = true }
-rtf-parser = { workspace = true }
-scraper = { workspace = true }
-serde = { workspace = true }
-sha1 = { workspace = true }
 toml = { workspace = true }
-ureq = { workspace = true }
-zip = { workspace = true }
+cfb = "0.14.0"
+ego-tree = "0.11.0"
+encoding_rs = "0.8.35"
+libchm = "0.1.0"
+minisign-verify = "0.2.5"
+office-crypto = "0.2.0"
+pdfium = { git = "https://github.com/aryanchoudharypro/PDFium-rs", branch = "feature/tagged-pdf-support" }
+percent-encoding = "2.3.2"
+pulldown-cmark = { version = "0.13.3", default-features = false, features = ["html"] }
+regex = "1.12.3"
+roman = "0.1"
+roxmltree = "0.21.1"
+rtf-parser = "0.4.2"
+scraper = "0.26.0"
+serde = { version = "1.0.228", default-features = false, features = ["derive", "std"] }
+sha1 = "0.11.0"
+ureq = { version = "3.3.0", default-features = false, features = ["json", "rustls"] }
+zip = { version = "8.6.0", default-features = false, features = ["deflate"] }
 
 [dev-dependencies]
 rstest = { workspace = true }

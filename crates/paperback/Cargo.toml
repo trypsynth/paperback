@@ -16,9 +16,9 @@ paperback-core = { path = "../paperback-core" }
 anyhow = { workspace = true }
 base64 = { workspace = true }
 bitflags = { workspace = true }
-live-region = { workspace = true }
 toml = { workspace = true }
-wxdragon = { workspace = true }
+live-region = "0.1.4"
+wxdragon = { version = "0.9.15", features = ["webview"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 gtk = { version = "0.18", default-features = false }
@@ -35,10 +35,3 @@ winres = "0.1.12"
 
 [dev-dependencies]
 rstest = { workspace = true }
-
-[profile.release]
-strip = true
-opt-level = "z"
-lto = true
-panic = "abort"
-codegen-units = 1

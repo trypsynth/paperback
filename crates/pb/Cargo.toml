@@ -14,4 +14,4 @@ path = "src/main.rs"
 [dependencies]
 paperback-core = { path = "../paperback-core" }
 anyhow = { workspace = true }
-clap = { workspace = true }
+clap = { version = "4", features = ["derive"] }
