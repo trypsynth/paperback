@@ -1,0 +1,17 @@
+[package]
+name = "pb"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Command-line tool to convert documents to text or HTML using Paperback's parsers"
+
+[[bin]]
+name = "pb"
+path = "src/main.rs"
+
+[dependencies]
+paperback-core = { path = "../paperback-core" }
+anyhow = { workspace = true }
+clap = { workspace = true }

@@ -9,6 +9,11 @@ use std::{
 	time::Instant,
 };
 
+use paperback_core::{
+	config::{ConfigManager, ReadabilityFont},
+	parser::PASSWORD_REQUIRED_ERROR_PREFIX,
+	session::DocumentSession,
+};
 use wxdragon::{
 	color::Colour,
 	event::{EventType, WindowEventData},
@@ -19,11 +24,6 @@ use wxdragon::{
 use super::{
 	main_window::{SLEEP_TIMER_DURATION_MINUTES, SLEEP_TIMER_START_MS},
 	menu_ids, status,
-};
-use crate::{
-	config::{ConfigManager, ReadabilityFont},
-	parser::PASSWORD_REQUIRED_ERROR_PREFIX,
-	session::DocumentSession,
 };
 
 pub struct DocumentTab {
@@ -319,20 +319,20 @@ impl DocumentManager {
 			let result = tab.session.activate_link(pos);
 			if result.found {
 				match result.action {
-					crate::session::LinkAction::Internal => {
+					paperback_core::session::LinkAction::Internal => {
 						tab.text_ctrl.set_focus();
 						tab.text_ctrl.set_insertion_point(result.offset);
 						tab.text_ctrl.show_position(result.offset);
 						tab.session.check_and_record_history(result.offset);
 						live_region::announce(self.live_region_label, &t("Navigated to internal link."));
 					}
-					crate::session::LinkAction::External => {
+					paperback_core::session::LinkAction::External => {
 						wxdragon::utils::launch_default_browser(
 							&result.url,
 							wxdragon::utils::BrowserLaunchFlags::Default,
 						);
 					}
-					crate::session::LinkAction::NotFound => {}
+					paperback_core::session::LinkAction::NotFound => {}
 				}
 			}
 		}

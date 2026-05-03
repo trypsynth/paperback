@@ -1,9 +1,9 @@
 use std::path::Path;
 
+use paperback_core::config::ConfigManager;
 use wxdragon::{prelude::*, translations::translate as t};
 
 use super::menu_ids;
-use crate::config::ConfigManager;
 
 /// IDs of menu items that require an open document.
 const DOCUMENT_DEPENDENT_IDS: &[i32] = &[

@@ -2,11 +2,11 @@ use std::collections::{HashMap, HashSet};
 
 use anyhow::{Result, anyhow};
 use pdfium::{PdfiumDocument, PdfiumError, PdfiumTextPage, lib};
-use wxdragon::translations::translate as t;
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
 	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, Parser, util::path::extract_title_from_path},
+	t,
 	util::text::{collapse_whitespace, display_len, trim_string},
 };
 

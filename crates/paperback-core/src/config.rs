@@ -9,10 +9,7 @@ use std::{
 	str::FromStr,
 };
 
-use base64::{
-	Engine,
-	engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD},
-};
+use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use serde::{Deserialize, Serialize};
 use sha1::{Digest, Sha1};
 
@@ -106,11 +103,11 @@ impl ReadabilityFont {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
-struct StoredBookmark {
-	start: i64,
-	end: i64,
+pub struct StoredBookmark {
+	pub start: i64,
+	pub end: i64,
 	#[serde(default)]
-	note: String,
+	pub note: String,
 }
 
 fn default_true() -> bool {
@@ -136,65 +133,65 @@ fn default_bg_color() -> i64 {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-struct AppSettings {
+pub struct AppSettings {
 	#[serde(default = "default_true")]
-	restore_previous_documents: bool,
+	pub restore_previous_documents: bool,
 	#[serde(default)]
-	word_wrap: bool,
+	pub word_wrap: bool,
 	#[serde(default)]
-	minimize_to_tray: bool,
+	pub minimize_to_tray: bool,
 	#[serde(default)]
-	start_maximized: bool,
+	pub start_maximized: bool,
 	#[serde(default = "default_true")]
-	compact_go_menu: bool,
+	pub compact_go_menu: bool,
 	#[serde(default)]
-	navigation_wrap: bool,
+	pub navigation_wrap: bool,
 	#[serde(default = "default_true")]
-	check_for_updates_on_startup: bool,
+	pub check_for_updates_on_startup: bool,
 	#[serde(default)]
-	find_match_case: bool,
+	pub find_match_case: bool,
 	#[serde(default)]
-	find_whole_word: bool,
+	pub find_whole_word: bool,
 	#[serde(default)]
-	find_use_regex: bool,
+	pub find_use_regex: bool,
 	#[serde(default = "default_recent_documents_to_show")]
-	recent_documents_to_show: i64,
+	pub recent_documents_to_show: i64,
 	#[serde(default = "default_sleep_timer")]
-	sleep_timer_duration: i64,
+	pub sleep_timer_duration: i64,
 	#[serde(default)]
-	language: String,
+	pub language: String,
 	#[serde(default)]
-	active_document: String,
+	pub active_document: String,
 	#[serde(default = "default_update_channel")]
-	update_channel: String,
+	pub update_channel: String,
 	#[serde(default)]
-	font_face_name: String,
+	pub font_face_name: String,
 	#[serde(default)]
-	font_point_size: i64,
+	pub font_point_size: i64,
 	#[serde(default)]
-	font_style: i64,
+	pub font_style: i64,
 	#[serde(default)]
-	font_weight: i64,
+	pub font_weight: i64,
 	#[serde(default)]
-	font_underlined: bool,
+	pub font_underlined: bool,
 	#[serde(default)]
-	font_strikethrough: bool,
+	pub font_strikethrough: bool,
 	#[serde(default = "default_font_color")]
-	font_color: i64,
+	pub font_color: i64,
 	#[serde(default)]
-	font_encoding: i64,
+	pub font_encoding: i64,
 	#[serde(default = "default_bg_color")]
-	bg_color: i64,
+	pub bg_color: i64,
 	#[serde(default)]
-	text_alignment: i64,
+	pub text_alignment: i64,
 	#[serde(default)]
-	letter_spacing: i64,
+	pub letter_spacing: i64,
 	#[serde(default)]
-	paragraph_spacing: i64,
+	pub paragraph_spacing: i64,
 	#[serde(default = "default_reading_speed_wpm")]
-	reading_speed_wpm: i64,
+	pub reading_speed_wpm: i64,
 	#[serde(default)]
-	line_spacing: i64,
+	pub line_spacing: i64,
 }
 
 impl Default for AppSettings {
@@ -234,22 +231,22 @@ impl Default for AppSettings {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
-struct DocumentConfig {
-	path: String,
+pub struct DocumentConfig {
+	pub path: String,
 	#[serde(default)]
-	last_position: i64,
+	pub last_position: i64,
 	#[serde(default)]
-	navigation_history: Vec<i64>,
+	pub navigation_history: Vec<i64>,
 	#[serde(default)]
-	navigation_history_index: usize,
+	pub navigation_history_index: usize,
 	#[serde(default)]
-	bookmarks: Vec<StoredBookmark>,
+	pub bookmarks: Vec<StoredBookmark>,
 	#[serde(default, skip_serializing_if = "String::is_empty")]
-	format: String,
+	pub format: String,
 	#[serde(default, skip_serializing_if = "String::is_empty")]
-	password: String,
+	pub password: String,
 	#[serde(default)]
-	opened: bool,
+	pub opened: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
@@ -263,20 +260,20 @@ struct SidecarData {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-struct ConfigData {
-	version: u32,
+pub struct ConfigData {
+	pub version: u32,
 	#[serde(default)]
-	app: AppSettings,
+	pub app: AppSettings,
 	#[serde(default)]
-	recent_documents: Vec<String>,
+	pub recent_documents: Vec<String>,
 	#[serde(default)]
-	opened_documents: Vec<String>,
+	pub opened_documents: Vec<String>,
 	#[serde(default)]
-	find_history: Vec<String>,
+	pub find_history: Vec<String>,
 	#[serde(default)]
-	documents: HashMap<String, DocumentConfig>,
+	pub documents: HashMap<String, DocumentConfig>,
 	#[serde(default)]
-	path_hashes: HashMap<String, String>,
+	pub path_hashes: HashMap<String, String>,
 }
 
 impl Default for ConfigData {
@@ -318,16 +315,13 @@ impl ConfigManager {
 	}
 
 	pub fn initialize(&mut self) -> bool {
-		let toml_path = get_config_path();
-		let ini_path = toml_path.with_extension("ini");
+		let toml_path = config_toml_path();
 
 		let (data, needs_save) = if toml_path.exists() {
 			match fs::read_to_string(&toml_path).ok().and_then(|s| toml::from_str::<ConfigData>(&s).ok()) {
 				Some(d) => (d, false),
 				None => (ConfigData::default(), true),
 			}
-		} else if ini_path.exists() {
-			(migrate_from_ini(&ini_path), true)
 		} else {
 			(ConfigData::default(), true)
 		};
@@ -1055,7 +1049,7 @@ pub fn get_sorted_document_list(config: &ConfigManager, open_paths: &[String], f
 		.collect()
 }
 
-fn get_config_path() -> PathBuf {
+pub fn config_toml_path() -> PathBuf {
 	let exe_dir = get_exe_directory();
 	let is_installed = (0..10).any(|i| exe_dir.join(format!("unins{i:03}.exe")).exists());
 	if is_installed {
@@ -1120,138 +1114,6 @@ pub fn compute_document_hash(path: &str) -> [u8; 20] {
 	hasher.finalize().into()
 }
 
-fn migrate_from_ini(ini_path: &Path) -> ConfigData {
-	use wxdragon::config::{Config, ConfigStyle};
-
-	let config = Config::new(
-		"Paperback",
-		Some("Paperback"),
-		Some(&ini_path.to_string_lossy()),
-		None,
-		ConfigStyle::USE_LOCAL_FILE | ConfigStyle::USE_NO_ESCAPE_CHARACTERS,
-	);
-	let mut data = ConfigData::default();
-	config.set_path("/app");
-	data.app.restore_previous_documents = config.read_bool("restore_previous_documents", true);
-	data.app.word_wrap = config.read_bool("word_wrap", false);
-	data.app.minimize_to_tray = config.read_bool("minimize_to_tray", false);
-	data.app.start_maximized = config.read_bool("start_maximized", false);
-	data.app.compact_go_menu = config.read_bool("compact_go_menu", true);
-	data.app.navigation_wrap = config.read_bool("navigation_wrap", false);
-	data.app.check_for_updates_on_startup = config.read_bool("check_for_updates_on_startup", true);
-	data.app.find_match_case = config.read_bool("find_match_case", false);
-	data.app.find_whole_word = config.read_bool("find_whole_word", false);
-	data.app.find_use_regex = config.read_bool("find_use_regex", false);
-	data.app.recent_documents_to_show = config.read_long("recent_documents_to_show", DEFAULT_RECENT_DOCUMENTS_TO_SHOW);
-	data.app.sleep_timer_duration = config.read_long("sleep_timer_duration", 30);
-	data.app.language = config.read_string("language", "");
-	data.app.active_document = config.read_string("active_document", "");
-	data.app.update_channel = config.read_string("update_channel", "stable");
-	config.set_path("/");
-	config.set_path("/recent_documents");
-	for idx in 0.. {
-		let key = format!("doc{idx}");
-		if !config.has_entry(&key) {
-			break;
-		}
-		let doc_id = config.read_string(&key, "");
-		if doc_id.is_empty() {
-			break;
-		}
-		config.set_path("/");
-		config.set_path(&format!("/{doc_id}"));
-		let path = config.read_string("path", "");
-		if !path.is_empty() {
-			data.recent_documents.push(path);
-		}
-		config.set_path("/recent_documents");
-	}
-	config.set_path("/");
-	config.set_path("/opened_documents");
-	let entries = config.get_entries();
-	if !entries.is_empty() {
-		let mut sorted_entries: Vec<_> = entries.into_iter().collect();
-		sorted_entries.sort();
-		for key in &sorted_entries {
-			let path = config.read_string(key, "");
-			if !path.is_empty() {
-				data.opened_documents.push(path);
-			}
-		}
-	}
-	config.set_path("/");
-	config.set_path("/find_history");
-	for idx in 0.. {
-		let key = format!("item{idx}");
-		if !config.has_entry(&key) {
-			break;
-		}
-		let entry = config.read_string(&key, "");
-		if entry.is_empty() {
-			break;
-		}
-		data.find_history.push(entry);
-	}
-	config.set_path("/");
-	config.set_path("/");
-	let groups = config.get_groups();
-	for group in groups {
-		if !group.starts_with("doc_") {
-			continue;
-		}
-		config.set_path(&format!("/{group}"));
-		let path = config.read_string("path", "");
-		if path.is_empty() {
-			config.set_path("/");
-			continue;
-		}
-		let mut doc = DocumentConfig::default();
-		doc.path = path.clone();
-		doc.last_position = config.read_long("last_position", 0);
-		doc.opened = config.read_bool("opened", false);
-		doc.format = config.read_string("format", "");
-		doc.password = config.read_string("password", "");
-		let history_str = config.read_string("navigation_history", "");
-		if !history_str.is_empty() {
-			doc.navigation_history = history_str.split(',').filter_map(|t| t.trim().parse::<i64>().ok()).collect();
-		}
-		let history_index = config.read_long("navigation_history_index", 0);
-		doc.navigation_history_index = usize::try_from(history_index).unwrap_or(0);
-		// Parse old CSV bookmark format: `start:end:base64note,...`
-		let bookmark_str = config.read_string("bookmarks", "");
-		if !bookmark_str.is_empty() {
-			for token in bookmark_str.split(',') {
-				let trimmed = token.trim();
-				if trimmed.is_empty() {
-					continue;
-				}
-				if trimmed.contains(':') {
-					let mut parts = trimmed.splitn(3, ':');
-					let start_str = parts.next().unwrap_or_default();
-					let end_str = parts.next().unwrap_or_default();
-					let note_str = parts.next().unwrap_or_default();
-					if let (Ok(start), Ok(end)) = (start_str.parse::<i64>(), end_str.parse::<i64>()) {
-						doc.bookmarks.push(StoredBookmark { start, end, note: decode_note(note_str) });
-					}
-				} else if let Ok(pos) = trimmed.parse::<i64>() {
-					doc.bookmarks.push(StoredBookmark { start: pos, end: pos, note: String::new() });
-				}
-			}
-			doc.bookmarks.sort_by(|a, b| a.start.cmp(&b.start));
-		}
-		data.documents.insert(group, doc);
-		config.set_path("/");
-	}
-	data
-}
-
-fn decode_note(encoded: &str) -> String {
-	if encoded.is_empty() {
-		return String::new();
-	}
-	STANDARD.decode(encoded).map(|bytes| String::from_utf8_lossy(&bytes).to_string()).unwrap_or_default()
-}
-
 #[cfg(test)]
 mod tests {
 	use rstest::rstest;
@@ -1276,21 +1138,6 @@ mod tests {
 		let a = config.get_doc_key("book-a.epub");
 		let b = config.get_doc_key("book-b.epub");
 		assert_ne!(a, b);
-	}
-
-	#[test]
-	fn decode_note_round_trip_with_unicode() {
-		use base64::{Engine, engine::general_purpose::STANDARD};
-		let original = "note with unicode: cafe\u{0301} and \u{1F600}";
-		let encoded = STANDARD.encode(original.as_bytes());
-		assert!(!encoded.is_empty());
-		assert_eq!(decode_note(&encoded), original);
-	}
-
-	#[test]
-	fn decode_note_handles_empty_and_invalid_input() {
-		assert_eq!(decode_note(""), "");
-		assert_eq!(decode_note("%%%not-base64%%%"), "");
 	}
 
 	#[test]

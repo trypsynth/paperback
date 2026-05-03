@@ -1,10 +1,10 @@
 use std::{cell::Cell, rc::Rc, sync::Mutex};
 
 use bitflags::bitflags;
+use paperback_core::{config::ConfigManager, reader_core, util::text::display_len};
 use wxdragon::{prelude::*, translations::translate as t};
 
 use super::document_manager::DocumentManager;
-use crate::{config::ConfigManager, reader_core, util::text::display_len};
 
 const DIALOG_PADDING: i32 = 10;
 const MAX_FIND_HISTORY_SIZE: usize = 10;
@@ -110,7 +110,7 @@ impl FindDialogState {
 	}
 
 	pub fn save_settings(&self, config: &Rc<Mutex<ConfigManager>>) {
-		let settings = crate::config::FindSettings {
+		let settings = paperback_core::config::FindSettings {
 			match_case: self.match_case.is_checked(),
 			whole_word: self.whole_word.is_checked(),
 			use_regex: self.use_regex.is_checked(),

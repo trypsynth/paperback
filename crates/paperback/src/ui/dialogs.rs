@@ -17,14 +17,15 @@ mod elements_gtk;
 #[cfg(target_os = "linux")]
 mod toc_gtk;
 
-use crate::{
+use paperback_core::{
 	config::{ConfigManager, ReadabilityFont},
 	document::{DocumentStats, TocItem},
 	reader_core,
 	session::DocumentSession,
-	translation_manager::TranslationManager,
 	types::{BookmarkDisplayEntry, BookmarkFilterType, DocumentListStatus},
 };
+
+use crate::translation_manager::TranslationManager;
 
 const DIALOG_PADDING: i32 = 10;
 const RECENT_DOCS_LIST_WIDTH: i32 = 800;
@@ -58,7 +59,7 @@ pub struct OptionsDialogResult {
 	pub recent_documents_to_show: i32,
 	pub reading_speed_wpm: i32,
 	pub language: String,
-	pub update_channel: crate::config::UpdateChannel,
+	pub update_channel: paperback_core::config::UpdateChannel,
 	pub readability_font: ReadabilityFont,
 	pub line_spacing: i32,
 	pub bg_color: i32,
@@ -121,8 +122,8 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 	let language = resolve_options_language(&ui);
 	let flags = build_options_dialog_flags(&ui);
 	let update_channel = match ui.update_channel_combo.get_selection() {
-		Some(1) => crate::config::UpdateChannel::Dev,
-		_ => crate::config::UpdateChannel::Stable,
+		Some(1) => paperback_core::config::UpdateChannel::Dev,
+		_ => paperback_core::config::UpdateChannel::Stable,
 	};
 	let readability_font = ui.readability_font.borrow().clone();
 	let line_spacing = ui.line_spacing_ctrl.get_selection().unwrap_or(0) as i32;
@@ -317,8 +318,8 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	}
 	let current_channel = config.get_update_channel();
 	let channel_index = match current_channel {
-		crate::config::UpdateChannel::Stable => 0,
-		crate::config::UpdateChannel::Dev => 1,
+		paperback_core::config::UpdateChannel::Stable => 0,
+		paperback_core::config::UpdateChannel::Dev => 1,
 	};
 	update_channel_combo.set_selection(channel_index);
 
@@ -2104,7 +2105,7 @@ fn populate_document_list(params: &DocumentListParams<'_>) {
 
 	let items = {
 		let cfg = config.lock().unwrap();
-		crate::config::get_sorted_document_list(&cfg, open_paths, filter)
+		paperback_core::config::get_sorted_document_list(&cfg, open_paths, filter)
 	};
 
 	for item in items {

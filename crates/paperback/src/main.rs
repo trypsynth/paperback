@@ -1,18 +1,9 @@
 #![cfg_attr(not(test), windows_subsystem = "windows")]
 #![warn(clippy::all, clippy::nursery, clippy::pedantic)]
 
-mod config;
-mod document;
-mod ipc;
-mod parser;
-mod reader_core;
-mod session;
+mod legacy_config;
 mod translation_manager;
-mod types;
 mod ui;
-mod update;
-mod util;
-mod version;
 
 use ui::PaperbackApp;
 use wxdragon::prelude::{Appearance, set_appearance};
