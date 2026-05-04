@@ -1,10 +1,10 @@
 use std::{collections::HashMap, mem};
 
 use roxmltree::{Document, Node, NodeType, ParsingOptions};
-use wxdragon::translations::translate as t;
 
 use crate::{
 	parser::util::xml::collect_element_text,
+	t,
 	types::{HeadingInfo, LinkInfo, ListInfo, ListItemInfo, PageBreakInfo, SeparatorInfo, TableInfo},
 	util::text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string},
 };

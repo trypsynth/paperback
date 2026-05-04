@@ -1,55 +1,20 @@
-[package]
-name = "paperback"
+[workspace]
+members = ["crates/paperback-core", "crates/paperback", "crates/pb", "xtask"]
+resolver = "2"
+
+[workspace.package]
 version = "0.8.5"
-description = "An accessible, light-weight, fast ebook and document reader"
-license = "MIT"
-repository = "https://github.com/trypsynth/paperback"
 edition = "2024"
 rust-version = "1.87.0"
+license = "MIT"
+repository = "https://github.com/trypsynth/paperback"
 
-[workspace]
-members = ["xtask"]
-
-[dependencies]
+# Deps shared by two or more crates in this workspace.
+[workspace.dependencies]
 anyhow = "1.0.102"
 base64 = "0.22.1"
 bitflags = "2.11.1"
-cfb = "0.14.0"
-ego-tree = "0.11.0"
-encoding_rs = "0.8.35"
-libchm = "0.1.0"
-live-region = "0.1.4"
-minisign-verify = "0.2.5"
-office-crypto = "0.2.0"
-pdfium = { git = "https://github.com/aryanchoudharypro/PDFium-rs", branch = "feature/tagged-pdf-support" }
-percent-encoding = "2.3.2"
-pulldown-cmark = { version = "0.13.3", default-features = false, features = ["html"] }
-regex = "1.12.3"
-roman = "0.1"
-roxmltree = "0.21.1"
-rtf-parser = "0.4.2"
-scraper = "0.26.0"
-serde = { version = "1.0.228", default-features = false, features = ["derive", "std"] }
-sha1 = "0.11.0"
 toml = "1.1"
-ureq = { version = "3.3.0", default-features = false, features = ["json", "rustls"] }
-wxdragon = { version = "0.9.15", features = ["webview"] }
-zip = { version = "8.6.0", default-features = false, features = ["deflate"] }
-
-[target.'cfg(target_os = "linux")'.dependencies]
-gtk = { version = "0.18", default-features = false }
-
-[target.'cfg(windows)'.dependencies]
-windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_System_Com", "Win32_UI_WindowsAndMessaging", "Win32_Foundation", "Win32_System_Ole", "Win32_System_Variant", "Win32_UI_Controls_RichEdit", "Win32_Graphics_Gdi"] }
-
-[build-dependencies]
-embed-manifest = "1.5.0"
-flate2 = { version = "1.1.9", default-features = false }
-tar = "0.4.45"
-ureq = { version = "3.3.0", default-features = false, features = ["rustls"] }
-winres = "0.1.12"
-
-[dev-dependencies]
 rstest = "0.26.1"
 
 [profile.release]

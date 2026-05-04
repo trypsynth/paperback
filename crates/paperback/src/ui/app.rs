@@ -9,17 +9,17 @@ use std::{
 	},
 };
 
-use wxdragon::{prelude::*, translations::translate as t};
-
-use super::MainWindow;
-use crate::{
+use paperback_core::{
 	config::ConfigManager,
 	ipc::{
 		IPC_COMMAND_ACTIVATE, IPC_HOST_LOCALHOST, IPC_SERVICE, IPC_TOPIC_OPEN_FILE, IpcCommand, SINGLE_INSTANCE_NAME,
 		decode_execute_payload, normalize_cli_path,
 	},
-	translation_manager::TranslationManager,
 };
+use wxdragon::{prelude::*, translations::translate as t};
+
+use super::MainWindow;
+use crate::translation_manager::TranslationManager;
 
 pub struct PaperbackApp {
 	_config: Rc<Mutex<ConfigManager>>,
@@ -32,6 +32,7 @@ static MAIN_WINDOW_PTR: AtomicUsize = AtomicUsize::new(0);
 
 impl PaperbackApp {
 	pub fn new(_app: App) -> Self {
+		crate::legacy_config::migrate_if_needed();
 		let mut config = ConfigManager::new();
 		let _ = config.initialize();
 		{

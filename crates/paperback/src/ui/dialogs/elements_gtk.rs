@@ -1,10 +1,10 @@
 use std::{cell::Cell, rc::Rc};
 
 use gtk::{Dialog, ListBox as GtkListBox, PolicyType, ResponseType, Widget, Window, glib::Propagation, prelude::*};
+use paperback_core::session::DocumentSession;
 use wxdragon::{prelude::Frame, translations::translate as t};
 
 use super::accessible_tree::{self, AccessibleTree};
-use crate::session::DocumentSession;
 
 pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<i64> {
 	gtk::init().ok()?;
@@ -150,7 +150,7 @@ fn connect_list_tab_handling(list_box: &GtkListBox, dialog: &Dialog, shift_tab_t
 	});
 }
 
-fn populate_headings(tree: &mut AccessibleTree, items: &[crate::types::HeadingTreeItem]) {
+fn populate_headings(tree: &mut AccessibleTree, items: &[paperback_core::types::HeadingTreeItem]) {
 	// HeadingTreeItem uses flat parent_index references. We need to convert
 	// to depth-first order with depth tracking.
 	let mut depths = Vec::with_capacity(items.len());

@@ -1,9 +1,9 @@
 use std::time::{self, SystemTime};
 
+use paperback_core::session::StatusInfo;
 use wxdragon::{prelude::*, translations::translate as t};
 
 use super::document_manager::DocumentManager;
-use crate::session::StatusInfo;
 
 pub fn format_status_text(info: &StatusInfo) -> String {
 	let line_label = t("Line");

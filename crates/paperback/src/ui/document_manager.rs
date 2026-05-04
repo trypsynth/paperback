@@ -9,6 +9,11 @@ use std::{
 	time::Instant,
 };
 
+use paperback_core::{
+	config::{ConfigManager, ReadabilityFont},
+	parser::PASSWORD_REQUIRED_ERROR_PREFIX,
+	session::DocumentSession,
+};
 use wxdragon::{
 	color::Colour,
 	event::{EventType, WindowEventData},
@@ -19,11 +24,6 @@ use wxdragon::{
 use super::{
 	main_window::{SLEEP_TIMER_DURATION_MINUTES, SLEEP_TIMER_START_MS},
 	menu_ids, status,
-};
-use crate::{
-	config::{ConfigManager, ReadabilityFont},
-	parser::PASSWORD_REQUIRED_ERROR_PREFIX,
-	session::DocumentSession,
 };
 
 pub struct DocumentTab {
@@ -36,6 +36,8 @@ pub struct DocumentTab {
 const POSITION_SAVE_INTERVAL_SECS: u64 = 3;
 const WXK_F10: i32 = 349;
 const WXK_WINDOWS_MENU: i32 = 395;
+const WXK_UP: i32 = 315;
+const WXK_DOWN: i32 = 317;
 
 pub struct DocumentManager {
 	frame: Frame,
@@ -45,6 +47,7 @@ pub struct DocumentManager {
 	live_region_label: StaticText,
 	last_position_save: Cell<Option<Instant>>,
 	last_sound_position: Cell<Option<i64>>,
+	preferred_column: Cell<Option<i64>>,
 	recently_closed: Vec<PathBuf>,
 	#[cfg(target_os = "linux")]
 	navigation_key_map: Rc<HashMap<(i32, bool), i32>>,
@@ -65,6 +68,7 @@ impl DocumentManager {
 			live_region_label,
 			last_position_save: Cell::new(None),
 			last_sound_position: Cell::new(None),
+			preferred_column: Cell::new(None),
 			recently_closed: Vec::new(),
 			#[cfg(target_os = "linux")]
 			navigation_key_map: Rc::new(build_navigation_key_map()),
@@ -315,20 +319,20 @@ impl DocumentManager {
 			let result = tab.session.activate_link(pos);
 			if result.found {
 				match result.action {
-					crate::session::LinkAction::Internal => {
+					paperback_core::session::LinkAction::Internal => {
 						tab.text_ctrl.set_focus();
 						tab.text_ctrl.set_insertion_point(result.offset);
 						tab.text_ctrl.show_position(result.offset);
 						tab.session.check_and_record_history(result.offset);
 						live_region::announce(self.live_region_label, &t("Navigated to internal link."));
 					}
-					crate::session::LinkAction::External => {
+					paperback_core::session::LinkAction::External => {
 						wxdragon::utils::launch_default_browser(
 							&result.url,
 							wxdragon::utils::BrowserLaunchFlags::Default,
 						);
 					}
-					crate::session::LinkAction::NotFound => {}
+					paperback_core::session::LinkAction::NotFound => {}
 				}
 			}
 		}
@@ -499,9 +503,9 @@ impl DocumentManager {
 			apply_text_alignment_to_ctrl(text_ctrl, text_alignment);
 			let max_pos = text_ctrl.get_last_position();
 			let pos = current_pos.clamp(0, max_pos);
+			tab.panel.layout();
 			text_ctrl.set_insertion_point(pos);
 			text_ctrl.show_position(pos);
-			tab.panel.layout();
 			old_ctrl.destroy();
 			tab.text_ctrl = text_ctrl;
 		}
@@ -545,12 +549,14 @@ impl DocumentManager {
 		text_ctrl.bind_internal(wxdragon::event::EventType::LEFT_UP, move |event| {
 			event.skip(true);
 			if let Ok(dm) = dm_for_mouse.try_lock() {
+				dm.preferred_column.set(None);
 				dm.update_status_bar();
 				dm.save_position_throttled();
 				dm.check_bookmark_sounds();
 			}
 		});
 		let text_ctrl_for_menu = text_ctrl;
+		let dm_for_nav = Rc::clone(self_rc);
 		#[cfg(target_os = "linux")]
 		let key_map = navigation_key_map;
 		#[cfg(target_os = "linux")]
@@ -571,6 +577,29 @@ impl DocumentManager {
 							return;
 						}
 					}
+					#[cfg(target_os = "windows")]
+					if (key == WXK_DOWN || key == WXK_UP) && !kbd.shift_down() && !kbd.control_down() {
+						let going_down = key == WXK_DOWN;
+						let nav_result = dm_for_nav.try_lock().ok().and_then(|dm| {
+							navigate_line_by_column(text_ctrl_for_menu, going_down, dm.preferred_column.get())
+						});
+						if let Some((new_pos, new_col)) = nav_result {
+							kbd.event.skip(false);
+							text_ctrl_for_menu.set_insertion_point(new_pos);
+							text_ctrl_for_menu.show_position(new_pos);
+							if let Ok(dm) = dm_for_nav.try_lock() {
+								dm.preferred_column.set(Some(new_col));
+								dm.update_status_bar();
+							}
+						} else {
+							kbd.event.skip(true);
+						}
+						return;
+					}
+					#[cfg(target_os = "windows")]
+					if let Ok(dm) = dm_for_nav.try_lock() {
+						dm.preferred_column.set(None);
+					}
 				}
 			}
 			event.skip(true);
@@ -581,6 +610,47 @@ impl DocumentManager {
 			show_reader_context_menu(text_ctrl_for_right_click);
 		});
 		text_ctrl
+	}
+}
+
+/// Returns (new_position, preferred_column) for character-column-based vertical navigation.
+/// Uses Win32 EM_LINEFROMCHAR/EM_LINEINDEX/EM_LINELENGTH so the cursor lands on the same
+/// character column (not pixel column) on the target visual line.
+#[cfg(target_os = "windows")]
+fn navigate_line_by_column(text_ctrl: TextCtrl, going_down: bool, pref_col: Option<i64>) -> Option<(i64, i64)> {
+	use windows::Win32::{
+		Foundation::{HWND, WPARAM},
+		UI::WindowsAndMessaging::SendMessageW,
+	};
+	const EM_LINEFROMCHAR: u32 = 201;
+	const EM_LINEINDEX: u32 = 187;
+	const EM_LINELENGTH: u32 = 193;
+	let hwnd_ptr = text_ctrl.get_handle();
+	if hwnd_ptr.is_null() {
+		return None;
+	}
+	let hwnd = HWND(hwnd_ptr);
+	let current_pos = text_ctrl.get_insertion_point().max(0) as usize;
+	unsafe {
+		let current_line = SendMessageW(hwnd, EM_LINEFROMCHAR, Some(WPARAM(current_pos)), None).0 as i64;
+		let current_line_start = SendMessageW(hwnd, EM_LINEINDEX, Some(WPARAM(current_line as usize)), None).0 as i64;
+		if current_line_start < 0 {
+			return None;
+		}
+		let current_col = current_pos as i64 - current_line_start;
+		let col = pref_col.unwrap_or(current_col);
+		let target_line = if going_down { current_line + 1 } else { current_line - 1 };
+		if target_line < 0 {
+			return None;
+		}
+		let target_line_start = SendMessageW(hwnd, EM_LINEINDEX, Some(WPARAM(target_line as usize)), None).0 as i64;
+		if target_line_start < 0 {
+			return None;
+		}
+		let target_line_len =
+			SendMessageW(hwnd, EM_LINELENGTH, Some(WPARAM(target_line_start as usize)), None).0 as i64;
+		let new_pos = target_line_start + col.min(target_line_len);
+		Some((new_pos, col))
 	}
 }
 
@@ -633,6 +703,7 @@ pub fn apply_line_spacing_to_ctrl(text_ctrl: TextCtrl, line_spacing: i32) {
 			WindowsAndMessaging::SendMessageW,
 		},
 	};
+	const EM_GETSEL: u32 = 176;
 	const EM_SETSEL: u32 = 177;
 	const EM_SETPARAFORMAT: u32 = 1095;
 	let hwnd_ptr = text_ctrl.get_handle();
@@ -641,13 +712,15 @@ pub fn apply_line_spacing_to_ctrl(text_ctrl: TextCtrl, line_spacing: i32) {
 	}
 	let hwnd = HWND(hwnd_ptr);
 	unsafe {
+		let mut caret: u32 = 0;
+		SendMessageW(hwnd, EM_GETSEL, Some(WPARAM(std::ptr::addr_of_mut!(caret) as usize)), None);
 		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(-1_isize)));
 		let mut pf = PARAFORMAT2::default();
 		pf.Base.cbSize = std::mem::size_of::<PARAFORMAT2>() as u32;
 		pf.Base.dwMask = PFM_LINESPACING;
 		pf.bLineSpacingRule = line_spacing.clamp(0, 2) as u8;
 		SendMessageW(hwnd, EM_SETPARAFORMAT, None, Some(LPARAM(&raw const pf as isize)));
-		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(0)));
+		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(caret as usize)), Some(LPARAM(caret as isize)));
 	}
 }
 
@@ -703,6 +776,7 @@ pub fn apply_text_alignment_to_ctrl(text_ctrl: TextCtrl, alignment: i32) {
 			WindowsAndMessaging::SendMessageW,
 		},
 	};
+	const EM_GETSEL: u32 = 176;
 	const EM_SETSEL: u32 = 177;
 	const EM_SETPARAFORMAT: u32 = 1095;
 	let hwnd_ptr = text_ctrl.get_handle();
@@ -717,13 +791,15 @@ pub fn apply_text_alignment_to_ctrl(text_ctrl: TextCtrl, alignment: i32) {
 		_ => PFA_LEFT,
 	};
 	unsafe {
+		let mut caret: u32 = 0;
+		SendMessageW(hwnd, EM_GETSEL, Some(WPARAM(std::ptr::addr_of_mut!(caret) as usize)), None);
 		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(-1_isize)));
 		let mut pf = PARAFORMAT2::default();
 		pf.Base.cbSize = std::mem::size_of::<PARAFORMAT2>() as u32;
 		pf.Base.dwMask = PFM_ALIGNMENT;
 		pf.Base.wAlignment = pfa;
 		SendMessageW(hwnd, EM_SETPARAFORMAT, None, Some(LPARAM(&raw const pf as isize)));
-		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(0)));
+		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(caret as usize)), Some(LPARAM(caret as isize)));
 	}
 }
 
@@ -739,6 +815,7 @@ pub fn apply_letter_spacing_to_ctrl(text_ctrl: TextCtrl, spacing: i32) {
 			WindowsAndMessaging::SendMessageW,
 		},
 	};
+	const EM_GETSEL: u32 = 176;
 	const EM_SETSEL: u32 = 177;
 	const EM_SETCHARFORMAT: u32 = 1092;
 	const SCF_ALL: u32 = 4;
@@ -754,13 +831,15 @@ pub fn apply_letter_spacing_to_ctrl(text_ctrl: TextCtrl, spacing: i32) {
 		_ => 0,
 	};
 	unsafe {
+		let mut caret: u32 = 0;
+		SendMessageW(hwnd, EM_GETSEL, Some(WPARAM(std::ptr::addr_of_mut!(caret) as usize)), None);
 		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(-1_isize)));
 		let mut cf = std::mem::zeroed::<CHARFORMAT2W>();
 		cf.Base.cbSize = std::mem::size_of::<CHARFORMAT2W>() as u32;
 		cf.Base.dwMask = CFM_SPACING;
 		cf.sSpacing = spacing_twips;
 		SendMessageW(hwnd, EM_SETCHARFORMAT, Some(WPARAM(SCF_ALL as usize)), Some(LPARAM(&raw const cf as isize)));
-		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(0)));
+		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(caret as usize)), Some(LPARAM(caret as isize)));
 	}
 }
 
@@ -776,6 +855,7 @@ pub fn apply_paragraph_spacing_to_ctrl(text_ctrl: TextCtrl, spacing: i32) {
 			WindowsAndMessaging::SendMessageW,
 		},
 	};
+	const EM_GETSEL: u32 = 176;
 	const EM_SETSEL: u32 = 177;
 	const EM_SETPARAFORMAT: u32 = 1095;
 	let hwnd_ptr = text_ctrl.get_handle();
@@ -790,13 +870,15 @@ pub fn apply_paragraph_spacing_to_ctrl(text_ctrl: TextCtrl, spacing: i32) {
 		_ => 0,
 	};
 	unsafe {
+		let mut caret: u32 = 0;
+		SendMessageW(hwnd, EM_GETSEL, Some(WPARAM(std::ptr::addr_of_mut!(caret) as usize)), None);
 		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(-1_isize)));
 		let mut pf = PARAFORMAT2::default();
 		pf.Base.cbSize = std::mem::size_of::<PARAFORMAT2>() as u32;
 		pf.Base.dwMask = PFM_SPACEAFTER;
 		pf.dySpaceAfter = space_after;
 		SendMessageW(hwnd, EM_SETPARAFORMAT, None, Some(LPARAM(&raw const pf as isize)));
-		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(0)));
+		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(caret as usize)), Some(LPARAM(caret as isize)));
 	}
 }
 
@@ -829,6 +911,7 @@ pub fn apply_readability_format_to_ctrl(
 			WindowsAndMessaging::SendMessageW,
 		},
 	};
+	const EM_GETSEL: u32 = 176;
 	const EM_SETSEL: u32 = 177;
 	const EM_SETPARAFORMAT: u32 = 1095;
 	const EM_SETCHARFORMAT: u32 = 1092;
@@ -840,6 +923,8 @@ pub fn apply_readability_format_to_ctrl(
 	}
 	let hwnd = HWND(hwnd_ptr);
 	unsafe {
+		let mut caret: u32 = 0;
+		SendMessageW(hwnd, EM_GETSEL, Some(WPARAM(std::ptr::addr_of_mut!(caret) as usize)), None);
 		SendMessageW(hwnd, WM_SETREDRAW, Some(WPARAM(0)), None);
 		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(-1_isize)));
 
@@ -874,7 +959,7 @@ pub fn apply_readability_format_to_ctrl(
 			SendMessageW(hwnd, EM_SETCHARFORMAT, Some(WPARAM(SCF_ALL as usize)), Some(LPARAM(&raw const cf as isize)));
 		}
 
-		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(0)));
+		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(caret as usize)), Some(LPARAM(caret as isize)));
 		SendMessageW(hwnd, WM_SETREDRAW, Some(WPARAM(1)), None);
 		let _ = InvalidateRect(Some(hwnd), None::<*const RECT>, true);
 	}

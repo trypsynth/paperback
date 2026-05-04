@@ -1,9 +1,9 @@
 use std::{rc::Rc, sync::Mutex};
 
+use paperback_core::config::ConfigManager;
 use wxdragon::{prelude::*, translations::translate as t};
 
 use super::{document_manager::DocumentManager, menu_ids};
-use crate::config::ConfigManager;
 
 pub struct TrayState {
 	pub icon: TaskBarIcon,

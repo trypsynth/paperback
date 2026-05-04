@@ -3,9 +3,9 @@ use std::{collections::HashMap, fmt::Write, mem};
 use bitflags::bitflags;
 use ego_tree::NodeRef;
 use scraper::{ElementRef, Html, Node, node};
-use wxdragon::translations::translate as t;
 
 use crate::{
+	t,
 	types::{HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
 	util::text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string},
 };

@@ -11,6 +11,12 @@ use std::{
 	time::{SystemTime, UNIX_EPOCH},
 };
 
+use paperback_core::{
+	config::{ConfigManager, UpdateChannel},
+	ipc::IpcCommand,
+	parser::{build_file_filter_string, parser_supports_extension},
+	types::BookmarkFilterType,
+};
 use wxdragon::{prelude::*, timer::Timer, translations::translate as t};
 
 #[cfg(not(target_os = "linux"))]
@@ -24,13 +30,7 @@ use super::{
 	navigation::{self, MarkerNavTarget},
 	status,
 };
-use crate::{
-	config::{ConfigManager, UpdateChannel},
-	ipc::IpcCommand,
-	parser::{build_file_filter_string, parser_supports_extension},
-	translation_manager::TranslationManager,
-	types::BookmarkFilterType,
-};
+use crate::translation_manager::TranslationManager;
 
 const KEY_DELETE: i32 = 127;
 const KEY_NUMPAD_DELETE: i32 = 330;

@@ -1,10 +1,10 @@
 use std::{cell::Cell, rc::Rc};
 
 use gtk::{Dialog, PolicyType, ResponseType, Window, prelude::*};
+use paperback_core::document::TocItem;
 use wxdragon::{prelude::Frame, translations::translate as t};
 
 use super::accessible_tree::{self, AccessibleTree};
-use crate::document::TocItem;
 
 pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i32) -> Option<i32> {
 	gtk::init().ok()?;

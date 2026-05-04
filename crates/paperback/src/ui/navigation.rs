@@ -1,9 +1,9 @@
 use std::{rc::Rc, sync::Mutex};
 
+use paperback_core::{config::ConfigManager, reader_core, session::NavigationResult, types::BookmarkFilterType};
 use wxdragon::{prelude::*, translations::translate as t};
 
 use super::{dialogs, document_manager::DocumentManager};
-use crate::{config::ConfigManager, reader_core, session::NavigationResult, types::BookmarkFilterType};
 
 #[derive(Clone, Copy)]
 pub enum MarkerNavTarget {
