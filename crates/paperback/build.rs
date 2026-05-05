@@ -93,7 +93,8 @@ fn track_packaging_inputs() {
 
 fn build_translations() {
 	let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap_or_default());
-	let po_dir = manifest_dir.join("po");
+	let workspace_dir = manifest_dir.parent().unwrap().parent().unwrap();
+	let po_dir = workspace_dir.join("po");
 	println!("cargo:rerun-if-changed={}", po_dir.display());
 	if !po_dir.exists() {
 		return;
@@ -166,7 +167,8 @@ fn run_msgfmt(input: &Path, output: &Path) -> bool {
 
 fn copy_sounds() {
 	let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap_or_default());
-	let sounds_src = manifest_dir.join("sounds");
+	let workspace_dir = manifest_dir.parent().unwrap().parent().unwrap();
+	let sounds_src = workspace_dir.join("sounds");
 	println!("cargo:rerun-if-changed={}", sounds_src.display());
 	if !sounds_src.exists() {
 		return;
@@ -354,7 +356,9 @@ fn build_docs() {
 			return;
 		}
 	};
-	let doc_dir = PathBuf::from("doc");
+	let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap_or_default());
+	let workspace_dir = manifest_dir.parent().unwrap().parent().unwrap();
+	let doc_dir = workspace_dir.join("doc");
 	let readme = doc_dir.join("readme.md");
 	let config = doc_dir.join("pandoc.yaml");
 	println!("cargo:rerun-if-changed={}", readme.display());
@@ -382,7 +386,9 @@ fn configure_installer() {
 		Some(dir) => dir,
 		None => return,
 	};
-	let input_path = PathBuf::from("paperback.iss.in");
+	let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap_or_default());
+	let workspace_dir = manifest_dir.parent().unwrap().parent().unwrap();
+	let input_path = workspace_dir.join("paperback.iss.in");
 	println!("cargo:rerun-if-changed={}", input_path.display());
 	if !input_path.exists() {
 		return;
@@ -404,7 +410,8 @@ fn configure_installer() {
 
 fn generate_pot() {
 	let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap_or_default());
-	let po_dir = manifest_dir.join("po");
+	let workspace_dir = manifest_dir.parent().unwrap().parent().unwrap();
+	let po_dir = workspace_dir.join("po");
 	if !po_dir.exists() {
 		let _ = fs::create_dir(&po_dir);
 	}
