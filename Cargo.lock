@@ -1961,7 +1961,7 @@ dependencies = [
 [[package]]
 name = "pdfium"
 version = "0.10.3"
-source = "git+https://github.com/aryanchoudharypro/PDFium-rs?branch=feature%2Ftagged-pdf-support#969d3b7807f924bf6f67a9294cae1d7666a78df5"
+source = "git+https://github.com/aryanchoudharypro/PDFium-rs?branch=feature%2Ftagged-pdf-support#42b6c95b1a0f10fec9d963a4999f79446e38b821"
 dependencies = [
  "bitflags",
  "image",
