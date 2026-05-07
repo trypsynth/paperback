@@ -117,6 +117,19 @@ impl MainWindow {
 			}
 			event.skip(true);
 		});
+		{
+			let dm_for_activate = Rc::clone(&doc_manager);
+			frame.on_activate(move |event| {
+				if let wxdragon::event::WindowEventData::Activate(ref activate) = event {
+					if activate.is_active() {
+						if let Ok(dm) = dm_for_activate.try_lock() {
+							dm.restore_focus();
+						}
+					}
+				}
+				event.skip(true);
+			});
+		}
 		#[cfg(not(target_os = "linux"))]
 		let tray_state = Rc::new(Mutex::new(None));
 		#[cfg(not(target_os = "linux"))]
