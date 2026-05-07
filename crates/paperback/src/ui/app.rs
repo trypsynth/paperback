@@ -100,20 +100,19 @@ fn ipc_command_from_cli() -> IpcCommand {
 // different users on the same machine never share a pipe.
 #[cfg(windows)]
 mod pipe {
-	use std::ffi::OsStr;
-	use std::os::windows::ffi::OsStrExt as _;
+	use std::{ffi::OsStr, os::windows::ffi::OsStrExt as _};
 
-	use windows::Win32::{
-		Foundation::{CloseHandle, ERROR_PIPE_CONNECTED, HANDLE},
-		Storage::FileSystem::{
-			CreateFileW, FILE_ATTRIBUTE_NORMAL, FILE_FLAGS_AND_ATTRIBUTES, FILE_SHARE_MODE, OPEN_EXISTING,
-			ReadFile, WriteFile,
+	use windows::{
+		Win32::{
+			Foundation::{CloseHandle, ERROR_PIPE_CONNECTED, HANDLE},
+			Storage::FileSystem::{
+				CreateFileW, FILE_ATTRIBUTE_NORMAL, FILE_FLAGS_AND_ATTRIBUTES, FILE_SHARE_MODE, OPEN_EXISTING,
+				ReadFile, WriteFile,
+			},
+			System::Pipes::{ConnectNamedPipe, CreateNamedPipeW, DisconnectNamedPipe, NAMED_PIPE_MODE, WaitNamedPipeW},
 		},
-		System::Pipes::{
-			ConnectNamedPipe, CreateNamedPipeW, DisconnectNamedPipe, NAMED_PIPE_MODE, WaitNamedPipeW,
-		},
+		core::PCWSTR,
 	};
-	use windows::core::PCWSTR;
 
 	const BUF: usize = 4096;
 	const GENERIC_WRITE: u32 = 0x4000_0000;
@@ -154,8 +153,8 @@ mod pipe {
 			let h = HANDLE(raw as *mut _);
 			loop {
 				let conn = unsafe { ConnectNamedPipe(h, None) };
-				let ready = conn.is_ok()
-					|| unsafe { windows::Win32::Foundation::GetLastError() } == ERROR_PIPE_CONNECTED;
+				let ready =
+					conn.is_ok() || unsafe { windows::Win32::Foundation::GetLastError() } == ERROR_PIPE_CONNECTED;
 				if ready {
 					let mut buf = vec![0u8; BUF];
 					let mut n = 0u32;
@@ -196,9 +195,11 @@ mod pipe {
 // The socket name is also suffixed with the username as belt-and-suspenders.
 #[cfg(target_os = "linux")]
 mod pipe_unix {
-	use std::io::{Read, Write};
-	use std::os::unix::net::{UnixListener, UnixStream};
-	use std::path::PathBuf;
+	use std::{
+		io::{Read, Write},
+		os::unix::net::{UnixListener, UnixStream},
+		path::PathBuf,
+	};
 
 	pub fn socket_path() -> Option<PathBuf> {
 		let dir = std::env::var("XDG_RUNTIME_DIR").ok()?;
@@ -261,13 +262,9 @@ fn start_pipe_server(main_window: &Rc<MainWindow>) -> PipeServer {
 			});
 		} else {
 			// Named pipe already exists but SingleInstanceChecker didn't catch it; show a warning so the issue is visible rather than silent.
-			let dialog = MessageDialog::builder(
-				main_window.frame(),
-				&t("Failed to create IPC server"),
-				&t("Warning"),
-			)
-			.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconWarning | MessageDialogStyle::Centre)
-			.build();
+			let dialog = MessageDialog::builder(main_window.frame(), &t("Failed to create IPC server"), &t("Warning"))
+				.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconWarning | MessageDialogStyle::Centre)
+				.build();
 			dialog.show_modal();
 		}
 	}
