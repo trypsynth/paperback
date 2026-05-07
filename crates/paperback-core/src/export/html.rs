@@ -1,12 +1,13 @@
-use paperback_core::document::{Document, MarkerType};
+use crate::{
+	document::{Document, MarkerType},
+	util::text::{ch_width, display_len},
+};
 
-use crate::util::{ch_width, str_display_len};
-
-pub fn document_to_html(doc: &Document) -> String {
+pub fn render(doc: &Document) -> String {
 	let content = &doc.buffer.content;
 	let mut html = format!(
 		"<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>{}</title>\n</head>\n<body>\n",
-		html_escape(&doc.title)
+		escape(&doc.title)
 	);
 	enum Ek {
 		BlockOpen(&'static str),
@@ -64,7 +65,7 @@ pub fn document_to_html(doc: &Document) -> String {
 				// Link length is not stored; recover it from the link text written into
 				// the content (collapse_whitespace was applied when the text was stored).
 				let text: String = marker.text.split_whitespace().collect::<Vec<_>>().join(" ");
-				let implied_len = if marker.length > 0 { marker.length } else { str_display_len(&text) };
+				let implied_len = if marker.length > 0 { marker.length } else { display_len(&text) };
 				if implied_len == 0 {
 					continue;
 				}
@@ -72,7 +73,7 @@ pub fn document_to_html(doc: &Document) -> String {
 				let open = if marker.reference.is_empty() {
 					"<a>".to_string()
 				} else {
-					format!("<a href=\"{}\">", html_escape_attr(&marker.reference))
+					format!("<a href=\"{}\">", escape_attr(&marker.reference))
 				};
 				events.push(Ev { pos, kind: Ek::InlineOpen(open) });
 				events.push(Ev { pos: end, kind: Ek::InlineClose("</a>") });
@@ -149,11 +150,9 @@ pub fn document_to_html(doc: &Document) -> String {
 				}
 				Ek::InlineOpen(tag) => {
 					if block_depth == 0 {
-						if pending_newlines >= 1 {
-							if in_para {
-								html.push_str("</p>\n");
-								in_para = false;
-							}
+						if pending_newlines >= 1 && in_para {
+							html.push_str("</p>\n");
+							in_para = false;
 						}
 						pending_newlines = 0;
 						if !in_para {
@@ -190,14 +189,7 @@ pub fn document_to_html(doc: &Document) -> String {
 		// Skip chars that belong to a replaced range (e.g. table inline text)
 		if let Some(until) = skip_until {
 			if display_pos < until {
-				#[cfg(windows)]
-				{
-					display_pos += ch.len_utf16();
-				}
-				#[cfg(not(windows))]
-				{
-					display_pos += 1;
-				}
+				display_pos += ch_width(ch);
 				continue;
 			}
 			skip_until = None;
@@ -207,11 +199,9 @@ pub fn document_to_html(doc: &Document) -> String {
 			if ch == '\n' {
 				pending_newlines += 1;
 			} else {
-				if pending_newlines >= 1 {
-					if in_para {
-						html.push_str("</p>\n");
-						in_para = false;
-					}
+				if pending_newlines >= 1 && in_para {
+					html.push_str("</p>\n");
+					in_para = false;
 				}
 				pending_newlines = 0;
 				if !in_para {
@@ -224,14 +214,7 @@ pub fn document_to_html(doc: &Document) -> String {
 			// Inside a block element: escape and emit, skip bare newlines
 			push_escaped(ch, &mut html);
 		}
-		#[cfg(windows)]
-		{
-			display_pos += ch.len_utf16();
-		}
-		#[cfg(not(windows))]
-		{
-			display_pos += 1;
-		}
+		display_pos += ch_width(ch);
 	}
 	// Flush any closing tags that extend to or past end of content
 	while event_idx < events.len() {
@@ -270,7 +253,7 @@ fn push_escaped(ch: char, out: &mut String) {
 	}
 }
 
-fn html_escape(s: &str) -> String {
+fn escape(s: &str) -> String {
 	let mut out = String::with_capacity(s.len());
 	for ch in s.chars() {
 		push_escaped(ch, &mut out);
@@ -278,7 +261,7 @@ fn html_escape(s: &str) -> String {
 	out
 }
 
-fn html_escape_attr(s: &str) -> String {
+fn escape_attr(s: &str) -> String {
 	s.replace('&', "&amp;").replace('"', "&quot;")
 }
 

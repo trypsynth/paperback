@@ -105,6 +105,19 @@ pub fn display_len(s: &str) -> usize {
 	}
 }
 
+#[must_use]
+pub const fn ch_width(ch: char) -> usize {
+	#[cfg(windows)]
+	{
+		ch.len_utf16()
+	}
+	#[cfg(not(windows))]
+	{
+		let _ = ch;
+		1
+	}
+}
+
 pub const fn is_space_like(ch: char) -> bool {
 	ch.is_whitespace() || matches!(ch, '\u{00A0}' | '\u{200B}')
 }

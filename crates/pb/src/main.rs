@@ -4,13 +4,11 @@ use anyhow::{Context, Result, bail};
 use clap::Parser;
 use paperback_core::{
 	document::{Document, ParserContext},
+	export::{self, ExportFormat},
 	parser::{self, PASSWORD_REQUIRED_ERROR_PREFIX, parse_document},
 };
 
 mod cli;
-mod html;
-mod markdown;
-mod util;
 
 use cli::{Cli, Format};
 
@@ -34,11 +32,12 @@ fn main() -> Result<()> {
 	let result = if cli.metadata {
 		metadata(&doc)
 	} else {
-		match cli.format {
-			Format::Text => doc.buffer.content.clone(),
-			Format::Html => html::document_to_html(&doc),
-			Format::Markdown => markdown::document_to_markdown(&doc),
-		}
+		let format = match cli.format {
+			Format::Text => ExportFormat::Text,
+			Format::Html => ExportFormat::Html,
+			Format::Markdown => ExportFormat::Markdown,
+		};
+		export::render(&doc, format)
 	};
 	match cli.output {
 		Some(path) => fs::write(&path, &result).with_context(|| format!("failed to write {}", path.display())),

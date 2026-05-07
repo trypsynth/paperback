@@ -1,8 +1,9 @@
-use paperback_core::document::{Document, MarkerType};
+use crate::{
+	document::{Document, MarkerType},
+	util::text::{ch_width, display_len},
+};
 
-use crate::util::{ch_width, str_display_len};
-
-pub fn document_to_markdown(doc: &Document) -> String {
+pub fn render(doc: &Document) -> String {
 	let content = &doc.buffer.content;
 	enum Mk {
 		Prefix(&'static str),
@@ -27,7 +28,7 @@ pub fn document_to_markdown(doc: &Document) -> String {
 			MarkerType::Heading6 => events.push(Ev { pos, kind: Mk::Prefix("###### ") }),
 			MarkerType::Link => {
 				let text: String = marker.text.split_whitespace().collect::<Vec<_>>().join(" ");
-				let implied_len = if marker.length > 0 { marker.length } else { str_display_len(&text) };
+				let implied_len = if marker.length > 0 { marker.length } else { display_len(&text) };
 				if implied_len == 0 {
 					continue;
 				}

@@ -2,6 +2,7 @@
 
 pub mod config;
 pub mod document;
+pub mod export;
 pub mod ipc;
 pub mod parser;
 pub mod reader_core;
