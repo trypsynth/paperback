@@ -1,5 +1,7 @@
 use paperback_core::document::{Document, MarkerType};
 
+use crate::util::{ch_width, str_display_len};
+
 pub fn document_to_html(doc: &Document) -> String {
 	let content = &doc.buffer.content;
 	let mut html = format!(
@@ -278,24 +280,6 @@ fn html_escape(s: &str) -> String {
 
 fn html_escape_attr(s: &str) -> String {
 	s.replace('&', "&amp;").replace('"', "&quot;")
-}
-
-#[cfg(windows)]
-fn ch_width(ch: char) -> usize {
-	ch.len_utf16()
-}
-#[cfg(not(windows))]
-fn ch_width(_ch: char) -> usize {
-	1
-}
-
-#[cfg(windows)]
-fn str_display_len(s: &str) -> usize {
-	s.encode_utf16().count()
-}
-#[cfg(not(windows))]
-fn str_display_len(s: &str) -> usize {
-	s.chars().count()
 }
 
 // Return the display position of the '\n' that ends the line beginning at `start`,

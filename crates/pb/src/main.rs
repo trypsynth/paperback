@@ -9,6 +9,8 @@ use paperback_core::{
 
 mod cli;
 mod html;
+mod markdown;
+mod util;
 
 use cli::{Cli, Format};
 
@@ -35,6 +37,7 @@ fn main() -> Result<()> {
 		match cli.format {
 			Format::Text => doc.buffer.content.clone(),
 			Format::Html => html::document_to_html(&doc),
+			Format::Markdown => markdown::document_to_markdown(&doc),
 		}
 	};
 	match cli.output {

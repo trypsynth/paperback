@@ -25,4 +25,5 @@ pub struct Cli {
 pub enum Format {
 	Text,
 	Html,
+	Markdown,
 }
