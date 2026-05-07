@@ -76,6 +76,37 @@ fn html_escape_attr(s: &str) -> String {
 	s.replace('&', "&amp;").replace('"', "&quot;")
 }
 
+#[cfg(windows)]
+fn ch_width(ch: char) -> usize {
+	ch.len_utf16()
+}
+#[cfg(not(windows))]
+fn ch_width(_ch: char) -> usize {
+	1
+}
+
+#[cfg(windows)]
+fn str_display_len(s: &str) -> usize {
+	s.encode_utf16().count()
+}
+#[cfg(not(windows))]
+fn str_display_len(s: &str) -> usize {
+	s.chars().count()
+}
+
+// Return the display position of the '\n' that ends the line beginning at `start`,
+// or the content end position if there is no such newline.
+fn line_end_pos(content: &str, start: usize) -> usize {
+	let mut pos = 0usize;
+	for ch in content.chars() {
+		if pos >= start && ch == '\n' {
+			return pos;
+		}
+		pos += ch_width(ch);
+	}
+	pos
+}
+
 fn document_to_html(doc: &Document) -> String {
 	let content = &doc.buffer.content;
 	let mut html = format!(
@@ -97,33 +128,53 @@ fn document_to_html(doc: &Document) -> String {
 	let mut events: Vec<Ev> = Vec::new();
 	for marker in &doc.buffer.markers {
 		let pos = marker.position;
-		let end = pos + marker.length;
+		// Markers from html_to_text carry length=0 for headings, links, and list items
+		// because those types store their span only implicitly in the content.
+		// Recover the span: for block elements scan to the next '\n'; for inline links
+		// use the display length of the link text that was written into the content.
+		let effective_end = |explicit: usize| -> usize {
+			if explicit > 0 { pos + explicit } else { line_end_pos(content, pos) }
+		};
 		match marker.mtype {
 			MarkerType::Heading1 => {
+				let end = effective_end(marker.length);
 				events.push(Ev { pos, kind: Ek::BlockOpen("<h1>") });
 				events.push(Ev { pos: end, kind: Ek::BlockClose("</h1>") });
 			}
 			MarkerType::Heading2 => {
+				let end = effective_end(marker.length);
 				events.push(Ev { pos, kind: Ek::BlockOpen("<h2>") });
 				events.push(Ev { pos: end, kind: Ek::BlockClose("</h2>") });
 			}
 			MarkerType::Heading3 => {
+				let end = effective_end(marker.length);
 				events.push(Ev { pos, kind: Ek::BlockOpen("<h3>") });
 				events.push(Ev { pos: end, kind: Ek::BlockClose("</h3>") });
 			}
 			MarkerType::Heading4 => {
+				let end = effective_end(marker.length);
 				events.push(Ev { pos, kind: Ek::BlockOpen("<h4>") });
 				events.push(Ev { pos: end, kind: Ek::BlockClose("</h4>") });
 			}
 			MarkerType::Heading5 => {
+				let end = effective_end(marker.length);
 				events.push(Ev { pos, kind: Ek::BlockOpen("<h5>") });
 				events.push(Ev { pos: end, kind: Ek::BlockClose("</h5>") });
 			}
 			MarkerType::Heading6 => {
+				let end = effective_end(marker.length);
 				events.push(Ev { pos, kind: Ek::BlockOpen("<h6>") });
 				events.push(Ev { pos: end, kind: Ek::BlockClose("</h6>") });
 			}
 			MarkerType::Link => {
+				// Link length is not stored; recover it from the link text written into
+				// the content (collapse_whitespace was applied when the text was stored).
+				let text: String = marker.text.split_whitespace().collect::<Vec<_>>().join(" ");
+				let implied_len = if marker.length > 0 { marker.length } else { str_display_len(&text) };
+				if implied_len == 0 {
+					continue;
+				}
+				let end = pos + implied_len;
 				let open = if marker.reference.is_empty() {
 					"<a>".to_string()
 				} else {
@@ -132,15 +183,20 @@ fn document_to_html(doc: &Document) -> String {
 				events.push(Ev { pos, kind: Ek::InlineOpen(open) });
 				events.push(Ev { pos: end, kind: Ek::InlineClose("</a>") });
 			}
-			MarkerType::List => {
+			MarkerType::List if marker.length > 0 => {
+				// Only emit a <ul> wrapper when an explicit length is available; without it
+				// we cannot determine where the list ends and bare <li> items are cleaner.
+				let end = pos + marker.length;
 				events.push(Ev { pos, kind: Ek::BlockOpen("<ul>") });
 				events.push(Ev { pos: end, kind: Ek::BlockClose("</ul>") });
 			}
 			MarkerType::ListItem => {
+				let end = effective_end(marker.length);
 				events.push(Ev { pos, kind: Ek::BlockOpen("<li>") });
 				events.push(Ev { pos: end, kind: Ek::BlockClose("</li>") });
 			}
 			MarkerType::Table if !marker.reference.is_empty() => {
+				let end = pos + marker.length;
 				events.push(Ev { pos, kind: Ek::Replace { until: end, content: marker.reference.clone() } });
 			}
 			MarkerType::PageBreak | MarkerType::SectionBreak | MarkerType::Separator => {
@@ -199,13 +255,11 @@ fn document_to_html(doc: &Document) -> String {
 				}
 				Ek::InlineOpen(tag) => {
 					if block_depth == 0 {
-						if pending_newlines >= 2 {
+						if pending_newlines >= 1 {
 							if in_para {
 								html.push_str("</p>\n");
 								in_para = false;
 							}
-						} else if pending_newlines == 1 && in_para {
-							html.push(' ');
 						}
 						pending_newlines = 0;
 						if !in_para {
@@ -259,13 +313,11 @@ fn document_to_html(doc: &Document) -> String {
 			if ch == '\n' {
 				pending_newlines += 1;
 			} else {
-				if pending_newlines >= 2 {
+				if pending_newlines >= 1 {
 					if in_para {
 						html.push_str("</p>\n");
 						in_para = false;
 					}
-				} else if pending_newlines == 1 && in_para {
-					html.push(' ');
 				}
 				pending_newlines = 0;
 				if !in_para {
