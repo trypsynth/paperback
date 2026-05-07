@@ -18,6 +18,12 @@ struct Cli {
 	/// Write output to a file instead of stdout
 	#[arg(short, long)]
 	output: Option<PathBuf>,
+	/// Password for encrypted documents (omit to be prompted interactively)
+	#[arg(short, long)]
+	password: Option<String>,
+	/// Print document metadata (title, author, word count) instead of content
+	#[arg(short, long)]
+	metadata: bool,
 }
 
 #[derive(Clone, ValueEnum)]
@@ -40,7 +46,7 @@ fn run() -> Result<()> {
 		bail!("unsupported file format: .{ext}");
 	}
 	let file_path = cli.input.to_string_lossy().into_owned();
-	let mut context = ParserContext { file_path, password: None, forced_extension: None };
+	let mut context = ParserContext { file_path, password: cli.password, forced_extension: None };
 	let doc = match parse_document(&context) {
 		Ok(doc) => doc,
 		Err(e) if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) => {
@@ -50,9 +56,13 @@ fn run() -> Result<()> {
 		}
 		Err(e) => return Err(e.context(format!("failed to parse {}", cli.input.display()))),
 	};
-	let result = match cli.format {
-		Format::Text => doc.buffer.content.clone(),
-		Format::Html => document_to_html(&doc),
+	let result = if cli.metadata {
+		document_metadata(&doc)
+	} else {
+		match cli.format {
+			Format::Text => doc.buffer.content.clone(),
+			Format::Html => document_to_html(&doc),
+		}
 	};
 	match cli.output {
 		Some(path) => {
@@ -113,6 +123,20 @@ fn line_end_pos(content: &str, start: usize) -> usize {
 		pos += ch_width(ch);
 	}
 	pos
+}
+
+fn document_metadata(doc: &Document) -> String {
+	let mut out = String::new();
+	if !doc.title.is_empty() {
+		out.push_str(&format!("Title: {}\n", doc.title));
+	}
+	if !doc.author.is_empty() {
+		out.push_str(&format!("Author: {}\n", doc.author));
+	}
+	out.push_str(&format!("Words: {}\n", doc.stats.word_count));
+	out.push_str(&format!("Characters: {}\n", doc.stats.char_count));
+	out.push_str(&format!("Lines: {}\n", doc.stats.line_count));
+	out
 }
 
 fn document_to_html(doc: &Document) -> String {
