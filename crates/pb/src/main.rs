@@ -132,9 +132,8 @@ fn document_to_html(doc: &Document) -> String {
 		// because those types store their span only implicitly in the content.
 		// Recover the span: for block elements scan to the next '\n'; for inline links
 		// use the display length of the link text that was written into the content.
-		let effective_end = |explicit: usize| -> usize {
-			if explicit > 0 { pos + explicit } else { line_end_pos(content, pos) }
-		};
+		let effective_end =
+			|explicit: usize| -> usize { if explicit > 0 { pos + explicit } else { line_end_pos(content, pos) } };
 		match marker.mtype {
 			MarkerType::Heading1 => {
 				let end = effective_end(marker.length);
