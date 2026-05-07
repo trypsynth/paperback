@@ -198,7 +198,7 @@ fn document_to_html(doc: &Document) -> String {
 				let end = pos + marker.length;
 				events.push(Ev { pos, kind: Ek::Replace { until: end, content: marker.reference.clone() } });
 			}
-			MarkerType::PageBreak | MarkerType::SectionBreak | MarkerType::Separator => {
+			MarkerType::PageBreak | MarkerType::Separator => {
 				events.push(Ev { pos, kind: Ek::Hr });
 			}
 			_ => {}
