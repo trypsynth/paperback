@@ -4,7 +4,7 @@ use anyhow::{Context, Result, bail};
 use clap::{Parser, ValueEnum};
 use paperback_core::{
 	document::{Document, MarkerType, ParserContext},
-	parser::{self, parse_document},
+	parser::{self, PASSWORD_REQUIRED_ERROR_PREFIX, parse_document},
 };
 
 #[derive(Parser)]
@@ -39,9 +39,17 @@ fn run() -> Result<()> {
 	if !parser::parser_supports_extension(ext) {
 		bail!("unsupported file format: .{ext}");
 	}
-	let context =
-		ParserContext { file_path: cli.input.to_string_lossy().into_owned(), password: None, forced_extension: None };
-	let doc = parse_document(&context).with_context(|| format!("failed to parse {}", cli.input.display()))?;
+	let file_path = cli.input.to_string_lossy().into_owned();
+	let mut context = ParserContext { file_path, password: None, forced_extension: None };
+	let doc = match parse_document(&context) {
+		Ok(doc) => doc,
+		Err(e) if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) => {
+			let password = rpassword::prompt_password("Password: ").context("failed to read password")?;
+			context.password = Some(password);
+			parse_document(&context).with_context(|| format!("failed to parse {}", cli.input.display()))?
+		}
+		Err(e) => return Err(e.context(format!("failed to parse {}", cli.input.display()))),
+	};
 	let result = match cli.format {
 		Format::Text => doc.buffer.content.clone(),
 		Format::Html => document_to_html(&doc),
