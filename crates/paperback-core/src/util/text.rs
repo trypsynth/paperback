@@ -8,7 +8,7 @@ pub fn markdown_to_text(markdown: &str) -> String {
 	let parser = Parser::new(markdown);
 	for event in parser {
 		match event {
-			Event::Text(t) => {
+			Event::Text(t) | Event::Code(t) => {
 				text.push_str(&t);
 			}
 			Event::End(TagEnd::Paragraph | TagEnd::Heading(_)) => {
@@ -238,6 +238,14 @@ mod tests {
 		let md = "A quote #12, and another #7.";
 		let text = markdown_to_text(md);
 		assert_eq!(text, "A quote and another.");
+	}
+
+	#[test]
+	fn test_markdown_to_text_preserves_inline_code() {
+		let md = "Bumps `pdfium` from `969d3b7` to `42b6c95`.";
+		let text = markdown_to_text(md);
+		assert!(text.contains("969d3b7"), "commit hash before 'to' was dropped");
+		assert!(text.contains("42b6c95"), "commit hash after 'to' was dropped");
 	}
 
 	#[test]
