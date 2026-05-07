@@ -270,6 +270,21 @@ fn snap_to_char_boundary(s: &str, pos: usize) -> usize {
 	p
 }
 
+// If pos falls inside an HTML tag (<...>), advance it to just after the closing '>'.
+// This prevents filepos anchors from being inserted in the middle of a tag and
+// corrupting it into a text fragment.
+fn snap_past_open_tag(html: &str, pos: usize) -> usize {
+	let pos = pos.min(html.len());
+	if let Some(tag_start) = html[..pos].rfind('<') {
+		if !html[tag_start..pos].contains('>') {
+			if let Some(rel) = html[pos..].find('>') {
+				return pos + rel + 1;
+			}
+		}
+	}
+	pos
+}
+
 fn rewrite_filepos_links(html: &str) -> String {
 	let Ok(re) = regex::Regex::new(r"(?i)<a\b[^>]*?filepos\s*=\s*(\d+)[^>]*>") else {
 		return html.to_string();
@@ -301,7 +316,10 @@ fn rewrite_filepos_links(html: &str) -> String {
 	let mut result = String::with_capacity(html.len() + targets.len() * 30);
 	let mut pos = 0usize;
 	for (event_pos, kind, end, filepos) in events {
-		let actual_pos = snap_to_char_boundary(html, event_pos);
+		let mut actual_pos = snap_to_char_boundary(html, event_pos);
+		if kind == 0 {
+			actual_pos = snap_past_open_tag(html, actual_pos);
+		}
 		if actual_pos < pos {
 			continue;
 		}
