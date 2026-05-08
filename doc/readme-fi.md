@@ -59,8 +59,8 @@ Paperback on suunniteltu ensisijaisesti näppäimistöllä ja ruudunlukijalla k�
 * `Ctrl+P`: Siirry sivulle (kun nykyinen asiakirja tukee sitä).
 * `Alt+Vasen nuoli`: Siirry taaksepäin navigointihistoriassa.
 * `Alt+Oikea nuoli`: Siirry eteenpäin navigointihistoriassa.
-* `[`: Edellinen osio.
-* `]`: Seuraava osio.
+* `[`: Edellinen luku.
+* `]`: Seuraava luku.
 * `Shift+H`: Edellinen otsikko.
 * `H`: Seuraava otsikko.
 * `Shift+1`–`Shift+6`: Edellinen otsikko tasoilla 1–6.
@@ -180,7 +180,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Korjattu lukijan pikavalikko, joka ei avautunut hiiren oikealla painikkeella eikä sovellusnäppäimellä. [#362](https://github.com/trypsynth/paperback/issues/362).
 * Korjattu virhe, jossa kohdistus siirtyi toisinaan väärään asiakirjaan, kun niitä avattiin komentoriviltä.
 * Pelkkiä kuvia sisältävät PDF-tiedostot tunnistetaan taas ja niiden olemassaolosta ilmoitetaan.
-* Kuvien ja kuvituskuvien välillä on nyt mahdollista liikkua G/Shift+G- ja F/Shift+F-näppäimillä.
+* Kuvien ja kuvioiden välillä on nyt mahdollista liikkua G/Shift+G- ja F/Shift+F-näppäimillä.
 * Paperback noudattaa nyt sovelluksen "Tumma tila" -asetusta.
 * Poistettu DAISY XML -tuki, koska sitä ei enää tarvita.
 * Palattu käyttämään alkuperäistä Win32:n ensimmäisen kirjaimen navigointia sisällysluettelopuussa.
@@ -228,7 +228,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 
 ### Versio 0.7.0
 * Lisätty taulukoiden tuki HTML- ja XHTML-pohjaisille asiakirjoille. Liiku taulukoiden välillä T:llä ja Shift+T:llä ja avaa taulukko verkkonäkymässä painamalla Enter. [#81](https://github.com/trypsynth/paperback/issues/81), [#98](https://github.com/trypsynth/paperback/pull/98), [#226](https://github.com/trypsynth/paperback/pull/226), [#228](https://github.com/trypsynth/paperback/pull/228).
-* Lisätty perustason verkkorenderöinti. Avaa asiakirjan nykyinen osio verkkopohjaisessa renderöijässä painamalla Ctrl+Shift+V. Tästä on hyötyä esimerkiksi monimutkaisessa muotoilussa tai koodiesimerkeissä. [#188](https://github.com/trypsynth/paperback/issues/188), [#239](https://github.com/trypsynth/paperback/pull/239).
+* Lisätty alkeellinen verkkorenderöinti. Avaa asiakirjan nykyinen luku verkkopohjaisessa renderöijässä painamalla Ctrl+Shift+V. Tästä on hyötyä esimerkiksi monimutkaisessa muotoilussa tai koodiesimerkeissä. [#188](https://github.com/trypsynth/paperback/issues/188), [#239](https://github.com/trypsynth/paperback/pull/239).
 * Lisätty venäjänkielinen käännös. Kiitos Ruslan Gulmagomedoville. [#211](https://github.com/trypsynth/paperback/pull/211), [#212](https://github.com/trypsynth/paperback/pull/212).
 * Lisätty "Tyhjennä kaikki" -painike Kaikki asiakirjat -valintaikkunaan. [#217](https://github.com/trypsynth/paperback/issues/217).
 * Päivitysten tarkistaja näyttää nyt julkaisutiedot, kun uusi versio on saatavilla. [#210](https://github.com/trypsynth/paperback/pull/210).
@@ -369,7 +369,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Lisätty otsikkonavigoinnin pikanäppäimet HTML-sisällölle, kuten ePub-kirjoille ja Markdown-asiakirjoille. Nämä pikanäppäimet on suunniteltu toimimaan samalla tavalla kuin ruudunlukijoissa. [#3](https://github.com/trypsynth/paperback/issues/3).
 * Korjattu ePub-tiedostojen lataus, kun manifesteissa on URL-koodattuja tiedostonimiä. [#20](https://github.com/trypsynth/paperback/issues/20).
 * Upotettua XHTML:ää sisältävien ePub 3 -kirjojen lataaminen korjattu. [#35](https://github.com/trypsynth/paperback/issues/35).
-* Jos asiakirjassa ei ole sisällysluetteloa tai osioita, vastaavia valikkokohteita ei enää vain poisteta käytöstä, vaan sen sijaan puhutaan asianmukainen ilmoitus. [#39](https://github.com/trypsynth/paperback/issues/39).
+* Jos asiakirjassa ei ole sisällysluetteloa tai lukuja, vastaavia valikkokohteita ei enää vain poisteta käytöstä, vaan sen sijaan puhutaan asianmukainen ilmoitus. [#39](https://github.com/trypsynth/paperback/issues/39).
 * Lisätty viimeisimpien asiakirjojen valikko. Se tallentaa tällä hetkellä 10 viimeksi avattua asiakirjaa, ja Enter-näppäimen painaminen jonkin kohteen kohdalla avaa kyseisen asiakirjan luettavaksi. [#32](https://github.com/trypsynth/paperback/issues/32).
 * Etsi-valintaikkuna on kirjoitettu kokonaan uudelleen, joten sitä on nyt paljon helpompi käyttää. Siihen on lisätty myös viimeisimpien 25 haun historia sekä sääntölausekkeiden tuki. [#21](https://github.com/trypsynth/paperback/issues/21).
 * Aiemmin avatut asiakirjat muistetaan nyt myös sovelluksen uudelleenkäynnistyksen jälkeen. Tämä toiminto voidaan määrittää Työkalut-valikon uudesta Asetukset-kohdasta. [#18](https://github.com/trypsynth/paperback/issues/18).
