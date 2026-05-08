@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
 "POT-Creation-Date: 2026-04-27 18:45-0600\n"
-"PO-Revision-Date: 2026-04-28 11:21+0300\n"
+"PO-Revision-Date: 2026-05-08 16:16+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -20,7 +20,7 @@ msgstr ""
 "X-Generator: Poedit 3.9\n"
 
 msgid "Figure"
-msgstr "Kuvituskuva"
+msgstr "Kuvio"
 
 msgid "Image"
 msgstr "Kuva"
@@ -252,7 +252,7 @@ msgid "Root"
 msgstr "Juuri"
 
 msgid "Please select a section from the table of contents."
-msgstr "Valitse osio sisällysluettelosta."
+msgstr "Valitse luku sisällysluettelosta."
 
 msgid "No Selection"
 msgstr "Ei valintaa"
@@ -666,16 +666,16 @@ msgid "No recent documents."
 msgstr "Ei viimeisimpiä asiakirjoja."
 
 msgid "Previous Section\t["
-msgstr "Edellinen osio\t["
+msgstr "Edellinen luku\t["
 
 msgid "Go to previous section"
-msgstr "Siirry edelliseen osioon"
+msgstr "Siirry edelliseen lukuun"
 
 msgid "Next Section\t]"
-msgstr "Seuraava osio\t]"
+msgstr "Seuraava luku\t]"
 
 msgid "Go to next section"
-msgstr "Siirry seuraavaan osioon"
+msgstr "Siirry seuraavaan lukuun"
 
 msgid "Go to &Page\tCtrl+P"
 msgstr "S&iirry sivulle\tCtrl+P"
@@ -699,10 +699,10 @@ msgid "Next Ima&ge\tG"
 msgstr "Seuraava k&uva\tG"
 
 msgid "Previous Figu&re\tShift+F"
-msgstr "Edellinen ku&vituskuva\tShift+F"
+msgstr "Edellinen ku&vio\tShift+F"
 
 msgid "Next Figu&re\tF"
-msgstr "Seuraava kuv&ituskuva\tF"
+msgstr "Seuraava kuv&io\tF"
 
 msgid "Previous &Table\tShift+T"
 msgstr "Edellinen t&aulukko\tShift+T"
@@ -924,10 +924,10 @@ msgid "Go forward in history"
 msgstr "Siirry historiassa eteenpäin"
 
 msgid "&Sections"
-msgstr "&Osiot"
+msgstr "&Luvut"
 
 msgid "Navigate by sections"
-msgstr "Siirry osioittain"
+msgstr "Siirry luvuittain"
 
 msgid "&Headings"
 msgstr "&Otsikot"
@@ -960,10 +960,10 @@ msgid "Navigate by images"
 msgstr "Siirry kuvittain"
 
 msgid "&Figures"
-msgstr "K&uvituskuvat"
+msgstr "K&uviot"
 
 msgid "Navigate by figures"
-msgstr "Siirry kuvituskuvittain"
+msgstr "Siirry kuvioittain"
 
 msgid "&Tables"
 msgstr "T&aulukot"
@@ -1095,13 +1095,13 @@ msgid "Show All...\tCtrl+R"
 msgstr "Näytä kaikki...\tCtrl+R"
 
 msgid "No sections."
-msgstr "Ei osioita."
+msgstr "Ei lukuja."
 
 msgid "No next section"
-msgstr "Ei seuraavaa osiota"
+msgstr "Ei seuraavaa lukua"
 
 msgid "No previous section"
-msgstr "Ei edellistä osiota"
+msgstr "Ei edellistä lukua"
 
 #, c-format
 msgid "No headings at level %d."
@@ -1185,13 +1185,13 @@ msgid "No previous image."
 msgstr "Ei edellistä kuvaa."
 
 msgid "No figures."
-msgstr "Ei kuvituskuvia."
+msgstr "Ei kuvioita."
 
 msgid "No next figure."
-msgstr "Ei seuraavaa kuvituskuvaa."
+msgstr "Ei seuraavaa kuviota."
 
 msgid "No previous figure."
-msgstr "Ei edellistä kuvituskuvaa."
+msgstr "Ei edellistä kuviota."
 
 msgid "Wrapping to start. "
 msgstr "Siirrytään alkuun. "
