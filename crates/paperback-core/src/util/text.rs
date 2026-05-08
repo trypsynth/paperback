@@ -20,31 +20,7 @@ pub fn markdown_to_text(markdown: &str) -> String {
 			_ => {}
 		}
 	}
-	let mut result = format!(" {}", text.trim());
-	loop {
-		let original_len = result.len();
-		if let Some(start) = result.find(" #") {
-			if let Some(substr) = result.get(start + 2..) {
-				let num_len = substr.chars().take_while(char::is_ascii_digit).count();
-				if num_len > 0 {
-					let mut end = start + 2 + num_len;
-					if let Some(after_num) = result.get(end..) {
-						if after_num.starts_with(',')
-							|| (after_num.starts_with('.')
-								&& after_num.get(1..).is_none_or(|s| s.starts_with(char::is_whitespace)))
-						{
-							end += 1;
-						}
-					}
-					result.replace_range(start..end, "");
-				}
-			}
-		}
-		if result.len() == original_len {
-			break;
-		}
-	}
-	result.trim_start().to_string()
+	text.trim().to_string()
 }
 
 #[must_use]
@@ -247,10 +223,12 @@ mod tests {
 	}
 
 	#[test]
-	fn test_markdown_to_text_removes_numeric_hash_references() {
-		let md = "A quote #12, and another #7.";
+	fn test_markdown_to_text_preserves_issue_references() {
+		let md = "Fixes #12, closes #7, and resolves #312.";
 		let text = markdown_to_text(md);
-		assert_eq!(text, "A quote and another.");
+		assert!(text.contains("#12"), "#12 was dropped");
+		assert!(text.contains("#7"), "#7 was dropped");
+		assert!(text.contains("#312"), "#312 was dropped");
 	}
 
 	#[test]
@@ -262,10 +240,12 @@ mod tests {
 	}
 
 	#[test]
-	fn test_markdown_to_text_keeps_non_numeric_hash_tokens() {
-		let md = "Topic #rust and issue #x1";
+	fn test_markdown_to_text_preserves_hash_tokens() {
+		let md = "Topic #rust and issue #x1 and number #42";
 		let text = markdown_to_text(md);
-		assert_eq!(text, "Topic #rust and issue #x1");
+		assert!(text.contains("#rust"));
+		assert!(text.contains("#x1"));
+		assert!(text.contains("#42"));
 	}
 
 	#[rstest]

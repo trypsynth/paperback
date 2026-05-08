@@ -1870,8 +1870,10 @@ dependencies = [
  "flate2",
  "gtk",
  "live-region",
+ "minisign-verify",
  "paperback-core",
  "rstest",
+ "serde",
  "tar",
  "toml 1.1.2+spec-1.1.0",
  "ureq",
@@ -1891,7 +1893,6 @@ dependencies = [
  "ego-tree",
  "encoding_rs",
  "libchm",
- "minisign-verify",
  "office-crypto",
  "pdfium",
  "percent-encoding",
@@ -1905,7 +1906,6 @@ dependencies = [
  "serde",
  "sha1 0.11.0",
  "toml 1.1.2+spec-1.1.0",
- "ureq",
  "zip",
 ]
 

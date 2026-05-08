@@ -12,8 +12,11 @@ anyhow = { workspace = true }
 base64 = { workspace = true }
 bitflags = { workspace = true }
 live-region = "0.1.4"
+minisign-verify = "0.2.5"
 paperback-core = { path = "../paperback-core" }
+serde = { version = "1.0.228", default-features = false, features = ["derive"] }
 toml = { workspace = true }
+ureq = { version = "3.3.0", default-features = false, features = ["json", "rustls"] }
 wxdragon = { version = "0.9.15", features = ["webview"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]

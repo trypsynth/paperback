@@ -9,14 +9,14 @@ use std::{
 	},
 };
 
-use paperback_core::{
-	config::ConfigManager,
-	ipc::{IPC_COMMAND_ACTIVATE, IpcCommand, SINGLE_INSTANCE_NAME, decode_execute_payload, normalize_cli_path},
-};
+use paperback_core::config::ConfigManager;
 use wxdragon::{prelude::*, translations::translate as t};
 
 use super::MainWindow;
-use crate::translation_manager::TranslationManager;
+use crate::{
+	ipc::{IPC_COMMAND_ACTIVATE, IpcCommand, SINGLE_INSTANCE_NAME, decode_execute_payload, normalize_cli_path},
+	translation_manager::TranslationManager,
+};
 
 pub struct PaperbackApp {
 	_config: Rc<Mutex<ConfigManager>>,
@@ -248,7 +248,7 @@ pub struct PipeServer {
 fn start_pipe_server(main_window: &Rc<MainWindow>) -> PipeServer {
 	#[cfg(windows)]
 	{
-		use paperback_core::ipc::named_pipe_path;
+		use crate::ipc::named_pipe_path;
 		let name = named_pipe_path();
 		if let Some(handle) = pipe::try_create_server(&name) {
 			pipe::serve_loop(handle, move |data| {
@@ -293,7 +293,7 @@ fn send_ipc_command(command: IpcCommand) {
 	};
 	#[cfg(windows)]
 	{
-		use paperback_core::ipc::named_pipe_path;
+		use crate::ipc::named_pipe_path;
 		pipe::send(&named_pipe_path(), &payload);
 	}
 	#[cfg(target_os = "linux")]

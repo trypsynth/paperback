@@ -13,7 +13,6 @@ use std::{
 
 use paperback_core::{
 	config::{ConfigManager, UpdateChannel},
-	ipc::IpcCommand,
 	parser::{build_file_filter_string, parser_supports_extension},
 	types::BookmarkFilterType,
 };
@@ -30,7 +29,7 @@ use super::{
 	navigation::{self, MarkerNavTarget},
 	status,
 };
-use crate::translation_manager::TranslationManager;
+use crate::{ipc::IpcCommand, translation_manager::TranslationManager};
 
 const KEY_DELETE: i32 = 127;
 const KEY_NUMPAD_DELETE: i32 = 330;

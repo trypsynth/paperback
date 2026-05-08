@@ -10,10 +10,9 @@ use std::{
 };
 
 use minisign_verify::{PublicKey, Signature};
+use paperback_core::{config::UpdateChannel, version};
 use serde::Deserialize;
 use ureq::{Agent, config::Config};
-
-use crate::{config::UpdateChannel, version};
 
 const RELEASE_URL: &str = "https://api.github.com/repos/trypsynth/paperback/releases/latest";
 const MINISIGN_PUBLIC_KEY: &str = "RWQasnbWXwK2dhno9ThUm8HONEIo85iiDBZvw3jlNs574QJHEkoRiGX7";
