@@ -20,13 +20,13 @@ use std::{
 use paperback_core::{
 	config::{ConfigManager, UpdateChannel},
 	parser,
-	update::{self, UpdateCheckOutcome, UpdateError},
 	util::text::markdown_to_text,
 	version,
 };
 use wxdragon::{ffi, prelude::*, translations::translate as t};
 
 use super::{dialogs, document_manager::DocumentManager};
+use crate::update::{self, UpdateCheckOutcome, UpdateError};
 
 pub static MAIN_WINDOW_PTR: AtomicUsize = AtomicUsize::new(0);
 

@@ -13,7 +13,6 @@ use std::{
 
 use paperback_core::{
 	config::{ConfigManager, UpdateChannel},
-	ipc::IpcCommand,
 	parser::{build_file_filter_string, parser_supports_extension},
 	types::BookmarkFilterType,
 };
@@ -30,7 +29,7 @@ use super::{
 	navigation::{self, MarkerNavTarget},
 	status,
 };
-use crate::translation_manager::TranslationManager;
+use crate::{ipc::IpcCommand, translation_manager::TranslationManager};
 
 const KEY_DELETE: i32 = 127;
 const KEY_NUMPAD_DELETE: i32 = 330;
@@ -117,6 +116,19 @@ impl MainWindow {
 			}
 			event.skip(true);
 		});
+		{
+			let dm_for_activate = Rc::clone(&doc_manager);
+			frame.on_activate(move |event| {
+				if let wxdragon::event::WindowEventData::Activate(ref activate) = event {
+					if activate.is_active() {
+						if let Ok(dm) = dm_for_activate.try_lock() {
+							dm.restore_focus();
+						}
+					}
+				}
+				event.skip(true);
+			});
+		}
 		#[cfg(not(target_os = "linux"))]
 		let tray_state = Rc::new(Mutex::new(None));
 		#[cfg(not(target_os = "linux"))]
@@ -904,7 +916,71 @@ impl MainWindow {
 						.build();
 					if dialog.show_modal() == wxdragon::id::ID_OK {
 						if let Some(path) = dialog.get_path() {
-							if tab.session.export_content(&path).is_err() {
+							if tab.session.export_as(&path, paperback_core::export::ExportFormat::Text).is_err() {
+								let dialog =
+									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
+										.with_style(
+											MessageDialogStyle::OK
+												| MessageDialogStyle::IconError | MessageDialogStyle::Centre,
+										)
+										.build();
+								dialog.show_modal();
+							}
+						}
+					}
+				}
+				menu_ids::EXPORT_TO_HTML => {
+					let Ok(dm_ref) = dm.try_lock() else {
+						return;
+					};
+					let Some(tab) = dm_ref.active_tab() else {
+						return;
+					};
+					let default_name =
+						tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
+					let default_file = format!("{default_name}.html");
+					let wildcard = t("HTML files (*.html)|*.html|All files (*.*)|*.*");
+					let dialog = FileDialog::builder(&frame_copy)
+						.with_message(&t("Export document to HTML"))
+						.with_default_file(&default_file)
+						.with_wildcard(&wildcard)
+						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
+						.build();
+					if dialog.show_modal() == wxdragon::id::ID_OK {
+						if let Some(path) = dialog.get_path() {
+							if tab.session.export_as(&path, paperback_core::export::ExportFormat::Html).is_err() {
+								let dialog =
+									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
+										.with_style(
+											MessageDialogStyle::OK
+												| MessageDialogStyle::IconError | MessageDialogStyle::Centre,
+										)
+										.build();
+								dialog.show_modal();
+							}
+						}
+					}
+				}
+				menu_ids::EXPORT_TO_MARKDOWN => {
+					let Ok(dm_ref) = dm.try_lock() else {
+						return;
+					};
+					let Some(tab) = dm_ref.active_tab() else {
+						return;
+					};
+					let default_name =
+						tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
+					let default_file = format!("{default_name}.md");
+					let wildcard = t("Markdown files (*.md)|*.md|All files (*.*)|*.*");
+					let dialog = FileDialog::builder(&frame_copy)
+						.with_message(&t("Export document to Markdown"))
+						.with_default_file(&default_file)
+						.with_wildcard(&wildcard)
+						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
+						.build();
+					if dialog.show_modal() == wxdragon::id::ID_OK {
+						if let Some(path) = dialog.get_path() {
+							if tab.session.export_as(&path, paperback_core::export::ExportFormat::Markdown).is_err() {
 								let dialog =
 									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
 										.with_style(

@@ -3,10 +3,7 @@ use std::{
 	path::{Path, PathBuf},
 };
 
-pub const IPC_SERVICE: &str = "4242";
-pub const IPC_TOPIC_OPEN_FILE: &str = "open_file";
 pub const IPC_COMMAND_ACTIVATE: &str = "ACTIVATE";
-pub const IPC_HOST_LOCALHOST: &str = "localhost";
 pub const SINGLE_INSTANCE_NAME: &str = "paperback_running";
 
 #[derive(Debug, Clone)]
@@ -39,6 +36,14 @@ pub fn normalize_cli_path(path: &Path) -> PathBuf {
 		return path.to_path_buf();
 	}
 	env::current_dir().map_or_else(|_| path.to_path_buf(), |cwd| cwd.join(path))
+}
+
+/// Named pipe path scoped to the current user, preventing cross-user connections.
+/// The default pipe security descriptor further enforces same-user access.
+#[cfg(windows)]
+pub fn named_pipe_path() -> String {
+	let user = env::var("USERNAME").unwrap_or_else(|_| "user".to_string());
+	format!(r"\\.\pipe\paperback_{user}")
 }
 
 #[cfg(test)]

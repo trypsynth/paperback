@@ -627,8 +627,8 @@ impl DocumentSession {
 	/// # Errors
 	///
 	/// Returns an error if the file cannot be written.
-	pub fn export_content(&self, output_path: &str) -> io::Result<()> {
-		let content = self.content();
+	pub fn export_as(&self, output_path: &str, format: crate::export::ExportFormat) -> io::Result<()> {
+		let content = crate::export::render(self.handle.document(), format);
 		let mut file = File::create(output_path)?;
 		file.write_all(content.as_bytes())?;
 		file.flush()?;

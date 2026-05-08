@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-04-27 18:45-0600\n"
+"POT-Creation-Date: 2026-05-07 15:16-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,17 +16,6 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
-
-msgid "Figure"
-msgstr ""
-
-msgid "Image"
-msgstr ""
-
-msgid ""
-"This PDF contains images only, with no extractable text. You may need to run "
-"it through OCR software to read its contents."
-msgstr ""
 
 msgid "Failed to create IPC server"
 msgstr ""
@@ -608,6 +597,18 @@ msgstr ""
 msgid "Failed to export document."
 msgstr ""
 
+msgid "HTML files (*.html)|*.html|All files (*.*)|*.*"
+msgstr ""
+
+msgid "Export document to HTML"
+msgstr ""
+
+msgid "Markdown files (*.md)|*.md|All files (*.*)|*.*"
+msgstr ""
+
+msgid "Export document to Markdown"
+msgstr ""
+
 msgid "Paperback files (*.paperback)|*.paperback"
 msgstr ""
 
@@ -985,6 +986,18 @@ msgid "Export to &Plain Text...\tCtrl+E"
 msgstr ""
 
 msgid "Export document as plain text"
+msgstr ""
+
+msgid "Export to &HTML..."
+msgstr ""
+
+msgid "Export document as HTML"
+msgstr ""
+
+msgid "Export to &Markdown..."
+msgstr ""
+
+msgid "Export document as Markdown"
 msgstr ""
 
 msgid "&Word Count\tRawCtrl+W"

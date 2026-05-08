@@ -232,6 +232,9 @@ impl Parser for MobiParser {
 		} else {
 			WINDOWS_1252.decode(&content).0.into_owned()
 		};
+		// Rewrite MOBI-style filepos links into standard href/id anchors before any
+		// content is stripped, since filepos values are byte offsets into the raw HTML.
+		text = rewrite_filepos_links(&text);
 		if let Ok(re) = regex::Regex::new(r"(?is)<title[^>]*>.*?</title>") {
 			text = re.replace_all(&text, "").into_owned();
 		}
@@ -252,10 +255,85 @@ impl Parser for MobiParser {
 		buffer.append(&html_converter.get_text());
 		add_converter_markers(&mut buffer, &html_converter, 0);
 		document.set_buffer(buffer);
+		document.id_positions = html_converter.get_id_positions().clone();
 		let toc_items = build_toc_from_headings(html_converter.get_headings());
 		document.toc_items = toc_items;
 		Ok(document)
 	}
+}
+
+fn snap_to_char_boundary(s: &str, pos: usize) -> usize {
+	let mut p = pos.min(s.len());
+	while p > 0 && !s.is_char_boundary(p) {
+		p -= 1;
+	}
+	p
+}
+
+// If pos falls inside an HTML tag (<...>), advance it to just after the closing '>'.
+// This prevents filepos anchors from being inserted in the middle of a tag and
+// corrupting it into a text fragment.
+fn snap_past_open_tag(html: &str, pos: usize) -> usize {
+	let pos = pos.min(html.len());
+	if let Some(tag_start) = html[..pos].rfind('<') {
+		if !html[tag_start..pos].contains('>') {
+			if let Some(rel) = html[pos..].find('>') {
+				return pos + rel + 1;
+			}
+		}
+	}
+	pos
+}
+
+fn rewrite_filepos_links(html: &str) -> String {
+	let Ok(re) = regex::Regex::new(r"(?i)<a\b[^>]*?filepos\s*=\s*(\d+)[^>]*>") else {
+		return html.to_string();
+	};
+	let mut links: Vec<(usize, usize, usize)> = Vec::new();
+	let mut targets = std::collections::BTreeSet::new();
+	for cap in re.captures_iter(html) {
+		let m = cap.get(0).unwrap();
+		if let Ok(filepos) = cap[1].parse::<usize>() {
+			if filepos < html.len() {
+				links.push((m.start(), m.end(), filepos));
+				targets.insert(filepos);
+			}
+		}
+	}
+	if links.is_empty() {
+		return html.to_string();
+	}
+	// Build a sorted event list: inserts (kind=0) at target positions, replaces (kind=1) at link sites.
+	// At equal positions inserts sort before replaces so the anchor lands before the link tag.
+	let mut events: Vec<(usize, u8, usize, usize)> = Vec::new();
+	for &target in &targets {
+		events.push((target, 0, target, target));
+	}
+	for (start, end, filepos) in &links {
+		events.push((*start, 1, *end, *filepos));
+	}
+	events.sort_unstable_by_key(|&(pos, kind, _, _)| (pos, kind));
+	let mut result = String::with_capacity(html.len() + targets.len() * 30);
+	let mut pos = 0usize;
+	for (event_pos, kind, end, filepos) in events {
+		let mut actual_pos = snap_to_char_boundary(html, event_pos);
+		if kind == 0 {
+			actual_pos = snap_past_open_tag(html, actual_pos);
+		}
+		if actual_pos < pos {
+			continue;
+		}
+		result.push_str(&html[pos..actual_pos]);
+		if kind == 0 {
+			result.push_str(&format!("<a id=\"fp{filepos:010}\"></a>"));
+			pos = actual_pos;
+		} else {
+			result.push_str(&format!("<a href=\"#fp{filepos:010}\">"));
+			pos = end;
+		}
+	}
+	result.push_str(&html[pos..]);
+	result
 }
 
 fn get_trailing_size(data: &[u8]) -> usize {

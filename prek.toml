@@ -1,0 +1,19 @@
+[[repos]]
+repo = "builtin"
+hooks = [
+	{ id = "trailing-whitespace" },
+	{ id = "end-of-file-fixer" }
+]
+
+[[repos]]
+repo = "local"
+hooks = [
+	{
+		id = "cargo-fmt",
+		name = "cargo fmt (nightly)",
+		entry = "cargo +nightly fmt --all --",
+		language = "system",
+		types = ["rust"],
+		pass_filenames = false
+	}
+]

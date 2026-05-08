@@ -518,10 +518,17 @@ pub fn create_tools_menu() -> Menu {
 	let export_help = t("Export bookmarks and position");
 	let export_text_label = t("Export to &Plain Text...\tCtrl+E");
 	let export_text_help = t("Export document as plain text");
+	let export_html_label = t("Export to &HTML...");
+	let export_html_help = t("Export document as HTML");
+	let export_markdown_label = t("Export to &Markdown...");
+	let export_markdown_help = t("Export document as Markdown");
 	let import_export_menu = Menu::builder()
 		.append_item(menu_ids::IMPORT_DOCUMENT_DATA, &import_label, &import_help)
 		.append_item(menu_ids::EXPORT_DOCUMENT_DATA, &export_label, &export_help)
+		.append_separator()
 		.append_item(menu_ids::EXPORT_TO_PLAIN_TEXT, &export_text_label, &export_text_help)
+		.append_item(menu_ids::EXPORT_TO_HTML, &export_html_label, &export_html_help)
+		.append_item(menu_ids::EXPORT_TO_MARKDOWN, &export_markdown_label, &export_markdown_help)
 		.build();
 	// On macOS, Cmd+W is close, so use Ctrl+W (raw Control key) for word count.
 	let word_count_label =

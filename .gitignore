@@ -11,3 +11,4 @@ result
 *.flatpak
 repo-flatpak/
 cargo-sources.json
+*.mobi
