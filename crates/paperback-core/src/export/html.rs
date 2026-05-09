@@ -1,13 +1,16 @@
+use std::collections::HashSet;
+
 use crate::{
-	document::{Document, MarkerType},
+	document::{DocumentHandle, MarkerType},
 	util::text::{ch_width, display_len},
 };
 
-pub fn render(doc: &Document) -> String {
-	let content = &doc.buffer.content;
+pub fn render(doc: &DocumentHandle) -> String {
+	let document = doc.document();
+	let content = &document.buffer.content;
 	let mut html = format!(
 		"<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>{}</title>\n</head>\n<body>\n",
-		escape(&doc.title)
+		escape(&document.title)
 	);
 	enum Ek {
 		BlockOpen(&'static str),
@@ -16,13 +19,16 @@ pub fn render(doc: &Document) -> String {
 		InlineClose(&'static str),
 		Hr,
 		Replace { until: usize, content: String },
+		Anchor(usize),
 	}
 	struct Ev {
 		pos: usize,
 		kind: Ek,
 	}
 	let mut events: Vec<Ev> = Vec::new();
-	for marker in &doc.buffer.markers {
+	let mut target_offsets = HashSet::new();
+
+	for marker in &document.buffer.markers {
 		let pos = marker.position;
 		// Markers from html_to_text carry length=0 for headings, links, and list items
 		// because those types store their span only implicitly in the content.
@@ -73,7 +79,13 @@ pub fn render(doc: &Document) -> String {
 				let open = if marker.reference.is_empty() {
 					"<a>".to_string()
 				} else {
-					format!("<a href=\"{}\">", escape_attr(&marker.reference))
+					let nav = crate::reader_core::resolve_link(doc, &marker.reference, i64::try_from(pos).unwrap_or(0));
+					if nav.found && !nav.is_external {
+						target_offsets.insert(nav.offset);
+						format!("<a href=\"#pos-{}\">", nav.offset)
+					} else {
+						format!("<a href=\"{}\">", escape_attr(&marker.reference))
+					}
 				};
 				events.push(Ev { pos, kind: Ek::InlineOpen(open) });
 				events.push(Ev { pos: end, kind: Ek::InlineClose("</a>") });
@@ -100,14 +112,20 @@ pub fn render(doc: &Document) -> String {
 			_ => {}
 		}
 	}
+
+	for offset in target_offsets {
+		events.push(Ev { pos: offset, kind: Ek::Anchor(offset) });
+	}
+
 	// Closes before opens at the same position to avoid empty elements
 	events.sort_by(|a, b| {
 		a.pos.cmp(&b.pos).then_with(|| {
 			let p = |k: &Ek| match k {
 				Ek::BlockClose(_) | Ek::InlineClose(_) => 0u8,
 				Ek::Hr | Ek::Replace { .. } => 1,
-				Ek::InlineOpen(_) => 2,
-				Ek::BlockOpen(_) => 3,
+				Ek::BlockOpen(_) => 2,
+				Ek::InlineOpen(_) => 3,
+				Ek::Anchor(_) => 4,
 			};
 			p(&a.kind).cmp(&p(&b.kind))
 		})
@@ -123,8 +141,10 @@ pub fn render(doc: &Document) -> String {
 		while event_idx < events.len() && events[event_idx].pos <= display_pos {
 			// Suppress events that fall inside an active replace range
 			if skip_until.is_some_and(|u| events[event_idx].pos < u) {
-				event_idx += 1;
-				continue;
+				if !matches!(events[event_idx].kind, Ek::Anchor(_)) {
+					event_idx += 1;
+					continue;
+				}
 			}
 			match &events[event_idx].kind {
 				Ek::BlockOpen(tag) => {
@@ -183,6 +203,9 @@ pub fn render(doc: &Document) -> String {
 					skip_until = Some(*until);
 					pending_newlines = 0;
 				}
+				Ek::Anchor(offset) => {
+					html.push_str(&format!("<a id=\"pos-{offset}\"></a>"));
+				}
 			}
 			event_idx += 1;
 		}
@@ -232,6 +255,9 @@ pub fn render(doc: &Document) -> String {
 					in_para = false;
 				}
 				html.push_str("<hr>\n");
+			}
+			Ek::Anchor(offset) => {
+				html.push_str(&format!("<a id=\"pos-{offset}\"></a>"));
 			}
 			_ => {}
 		}
