@@ -29,15 +29,16 @@ fn main() -> Result<()> {
 		}
 		Err(e) => return Err(e.context(format!("failed to parse {}", cli.input.display()))),
 	};
+	let handle = paperback_core::document::DocumentHandle::new(doc);
 	let result = if cli.metadata {
-		metadata(&doc)
+		metadata(handle.document())
 	} else {
 		let format = match cli.format {
 			Format::Text => ExportFormat::Text,
 			Format::Html => ExportFormat::Html,
 			Format::Markdown => ExportFormat::Markdown,
 		};
-		export::render(&doc, format)
+		export::render(&handle, format)
 	};
 	match cli.output {
 		Some(path) => fs::write(&path, &result).with_context(|| format!("failed to write {}", path.display())),
