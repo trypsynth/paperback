@@ -27,7 +27,6 @@ pub fn render(doc: &DocumentHandle) -> String {
 	}
 	let mut events: Vec<Ev> = Vec::new();
 	let mut target_offsets = HashSet::new();
-
 	for marker in &document.buffer.markers {
 		let pos = marker.position;
 		// Markers from html_to_text carry length=0 for headings, links, and list items
@@ -112,11 +111,9 @@ pub fn render(doc: &DocumentHandle) -> String {
 			_ => {}
 		}
 	}
-
 	for offset in target_offsets {
 		events.push(Ev { pos: offset, kind: Ek::Anchor(offset) });
 	}
-
 	// Closes before opens at the same position to avoid empty elements
 	events.sort_by(|a, b| {
 		a.pos.cmp(&b.pos).then_with(|| {
