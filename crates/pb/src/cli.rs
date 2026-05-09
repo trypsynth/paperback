@@ -25,5 +25,6 @@ pub struct Cli {
 pub enum Format {
 	Text,
 	Html,
+	#[value(alias = "md")]
 	Markdown,
 }
