@@ -614,44 +614,23 @@ impl DocumentManager {
 }
 
 /// Returns (new_position, preferred_column) for character-column-based vertical navigation.
-/// Uses Win32 EM_LINEFROMCHAR/EM_LINEINDEX/EM_LINELENGTH so the cursor lands on the same
+/// Uses wxdragon PositionToXY, XYToPosition, and GetLineLength so the cursor lands on the same
 /// character column (not pixel column) on the target visual line.
-#[cfg(target_os = "windows")]
 fn navigate_line_by_column(text_ctrl: TextCtrl, going_down: bool, pref_col: Option<i64>) -> Option<(i64, i64)> {
-	use windows::Win32::{
-		Foundation::{HWND, WPARAM},
-		UI::WindowsAndMessaging::SendMessageW,
-	};
-	const EM_LINEFROMCHAR: u32 = 201;
-	const EM_LINEINDEX: u32 = 187;
-	const EM_LINELENGTH: u32 = 193;
-	let hwnd_ptr = text_ctrl.get_handle();
-	if hwnd_ptr.is_null() {
+	let current_pos = text_ctrl.get_insertion_point().max(0);
+	let (current_col, current_line) = text_ctrl.position_to_xy(current_pos)?;
+	let col = pref_col.unwrap_or(current_col);
+	let target_line = if going_down { current_line + 1 } else { current_line - 1 };
+	if target_line < 0 {
 		return None;
 	}
-	let hwnd = HWND(hwnd_ptr);
-	let current_pos = text_ctrl.get_insertion_point().max(0) as usize;
-	unsafe {
-		let current_line = SendMessageW(hwnd, EM_LINEFROMCHAR, Some(WPARAM(current_pos)), None).0 as i64;
-		let current_line_start = SendMessageW(hwnd, EM_LINEINDEX, Some(WPARAM(current_line as usize)), None).0 as i64;
-		if current_line_start < 0 {
-			return None;
-		}
-		let current_col = current_pos as i64 - current_line_start;
-		let col = pref_col.unwrap_or(current_col);
-		let target_line = if going_down { current_line + 1 } else { current_line - 1 };
-		if target_line < 0 {
-			return None;
-		}
-		let target_line_start = SendMessageW(hwnd, EM_LINEINDEX, Some(WPARAM(target_line as usize)), None).0 as i64;
-		if target_line_start < 0 {
-			return None;
-		}
-		let target_line_len =
-			SendMessageW(hwnd, EM_LINELENGTH, Some(WPARAM(target_line_start as usize)), None).0 as i64;
-		let new_pos = target_line_start + col.min(target_line_len);
-		Some((new_pos, col))
+	let target_line_start = text_ctrl.xy_to_position(0, target_line);
+	if target_line_start < 0 {
+		return None;
 	}
+	let target_line_len = text_ctrl.get_line_length(target_line) as i64;
+	let new_pos = target_line_start + col.min(target_line_len);
+	Some((new_pos, col))
 }
 
 fn normalized_path_key(path: &Path) -> String {
@@ -694,38 +673,15 @@ fn fill_text_ctrl(text_ctrl: TextCtrl, content: &str) {
 	text_ctrl.set_value(content);
 }
 
-#[cfg(target_os = "windows")]
 pub fn apply_line_spacing_to_ctrl(text_ctrl: TextCtrl, line_spacing: i32) {
-	use windows::Win32::{
-		Foundation::{HWND, LPARAM, WPARAM},
-		UI::{
-			Controls::RichEdit::{PARAFORMAT2, PFM_LINESPACING},
-			WindowsAndMessaging::SendMessageW,
-		},
-	};
-	const EM_GETSEL: u32 = 176;
-	const EM_SETSEL: u32 = 177;
-	const EM_SETPARAFORMAT: u32 = 1095;
-	let hwnd_ptr = text_ctrl.get_handle();
-	if hwnd_ptr.is_null() {
-		return;
-	}
-	let hwnd = HWND(hwnd_ptr);
-	unsafe {
-		let mut caret: u32 = 0;
-		SendMessageW(hwnd, EM_GETSEL, Some(WPARAM(std::ptr::addr_of_mut!(caret) as usize)), None);
-		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(-1_isize)));
-		let mut pf = PARAFORMAT2::default();
-		pf.Base.cbSize = std::mem::size_of::<PARAFORMAT2>() as u32;
-		pf.Base.dwMask = PFM_LINESPACING;
-		pf.bLineSpacingRule = line_spacing.clamp(0, 2) as u8;
-		SendMessageW(hwnd, EM_SETPARAFORMAT, None, Some(LPARAM(&raw const pf as isize)));
-		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(caret as usize)), Some(LPARAM(caret as isize)));
-	}
+	let mut attr = wxdragon::widgets::textctrl::TextAttr::new();
+	attr.set_line_spacing(match line_spacing {
+		1 => 15,
+		2 => 20,
+		_ => 10,
+	});
+	text_ctrl.set_style(0, text_ctrl.get_last_position(), &attr);
 }
-
-#[cfg(not(target_os = "windows"))]
-pub fn apply_line_spacing_to_ctrl(_text_ctrl: TextCtrl, _line_spacing: i32) {}
 
 pub fn build_font_from_readability(rf: &ReadabilityFont) -> Option<Font> {
 	if rf.is_default() {
@@ -767,44 +723,16 @@ pub fn apply_bg_color_to_ctrl(text_ctrl: TextCtrl, color: i32) {
 	}
 }
 
-#[cfg(target_os = "windows")]
 pub fn apply_text_alignment_to_ctrl(text_ctrl: TextCtrl, alignment: i32) {
-	use windows::Win32::{
-		Foundation::{HWND, LPARAM, WPARAM},
-		UI::{
-			Controls::RichEdit::{PARAFORMAT2, PFA_CENTER, PFA_JUSTIFY, PFA_LEFT, PFA_RIGHT, PFM_ALIGNMENT},
-			WindowsAndMessaging::SendMessageW,
-		},
-	};
-	const EM_GETSEL: u32 = 176;
-	const EM_SETSEL: u32 = 177;
-	const EM_SETPARAFORMAT: u32 = 1095;
-	let hwnd_ptr = text_ctrl.get_handle();
-	if hwnd_ptr.is_null() {
-		return;
-	}
-	let hwnd = HWND(hwnd_ptr);
-	let pfa = match alignment {
-		1 => PFA_CENTER,
-		2 => PFA_RIGHT,
-		3 => PFA_JUSTIFY,
-		_ => PFA_LEFT,
-	};
-	unsafe {
-		let mut caret: u32 = 0;
-		SendMessageW(hwnd, EM_GETSEL, Some(WPARAM(std::ptr::addr_of_mut!(caret) as usize)), None);
-		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(-1_isize)));
-		let mut pf = PARAFORMAT2::default();
-		pf.Base.cbSize = std::mem::size_of::<PARAFORMAT2>() as u32;
-		pf.Base.dwMask = PFM_ALIGNMENT;
-		pf.Base.wAlignment = pfa;
-		SendMessageW(hwnd, EM_SETPARAFORMAT, None, Some(LPARAM(&raw const pf as isize)));
-		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(caret as usize)), Some(LPARAM(caret as isize)));
-	}
+	let mut attr = wxdragon::widgets::textctrl::TextAttr::new();
+	attr.set_alignment(match alignment {
+		1 => 2,
+		2 => 3,
+		3 => 4,
+		_ => 1,
+	});
+	text_ctrl.set_style(0, text_ctrl.get_last_position(), &attr);
 }
-
-#[cfg(not(target_os = "windows"))]
-pub fn apply_text_alignment_to_ctrl(_text_ctrl: TextCtrl, _alignment: i32) {}
 
 #[cfg(target_os = "windows")]
 pub fn apply_letter_spacing_to_ctrl(text_ctrl: TextCtrl, spacing: i32) {
@@ -834,7 +762,7 @@ pub fn apply_letter_spacing_to_ctrl(text_ctrl: TextCtrl, spacing: i32) {
 		let mut caret: u32 = 0;
 		SendMessageW(hwnd, EM_GETSEL, Some(WPARAM(std::ptr::addr_of_mut!(caret) as usize)), None);
 		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(-1_isize)));
-		let mut cf = std::mem::zeroed::<CHARFORMAT2W>();
+		let mut cf = CHARFORMAT2W::default();
 		cf.Base.cbSize = std::mem::size_of::<CHARFORMAT2W>() as u32;
 		cf.Base.dwMask = CFM_SPACING;
 		cf.sSpacing = spacing_twips;
@@ -846,50 +774,16 @@ pub fn apply_letter_spacing_to_ctrl(text_ctrl: TextCtrl, spacing: i32) {
 #[cfg(not(target_os = "windows"))]
 pub fn apply_letter_spacing_to_ctrl(_text_ctrl: TextCtrl, _spacing: i32) {}
 
-#[cfg(target_os = "windows")]
 pub fn apply_paragraph_spacing_to_ctrl(text_ctrl: TextCtrl, spacing: i32) {
-	use windows::Win32::{
-		Foundation::{HWND, LPARAM, WPARAM},
-		UI::{
-			Controls::RichEdit::{PARAFORMAT2, PFM_SPACEAFTER},
-			WindowsAndMessaging::SendMessageW,
-		},
-	};
-	const EM_GETSEL: u32 = 176;
-	const EM_SETSEL: u32 = 177;
-	const EM_SETPARAFORMAT: u32 = 1095;
-	let hwnd_ptr = text_ctrl.get_handle();
-	if hwnd_ptr.is_null() {
-		return;
-	}
-	let hwnd = HWND(hwnd_ptr);
-	// spacing in twips: 0=none, 1=120 twips (~6pt), 2=240 twips (~12pt)
-	let space_after: i32 = match spacing {
+	let mut attr = wxdragon::widgets::textctrl::TextAttr::new();
+	attr.set_paragraph_spacing_after(match spacing {
 		1 => 120,
 		2 => 240,
 		_ => 0,
-	};
-	unsafe {
-		let mut caret: u32 = 0;
-		SendMessageW(hwnd, EM_GETSEL, Some(WPARAM(std::ptr::addr_of_mut!(caret) as usize)), None);
-		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(-1_isize)));
-		let mut pf = PARAFORMAT2::default();
-		pf.Base.cbSize = std::mem::size_of::<PARAFORMAT2>() as u32;
-		pf.Base.dwMask = PFM_SPACEAFTER;
-		pf.dySpaceAfter = space_after;
-		SendMessageW(hwnd, EM_SETPARAFORMAT, None, Some(LPARAM(&raw const pf as isize)));
-		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(caret as usize)), Some(LPARAM(caret as isize)));
-	}
+	});
+	text_ctrl.set_style(0, text_ctrl.get_last_position(), &attr);
 }
 
-#[cfg(not(target_os = "windows"))]
-pub fn apply_paragraph_spacing_to_ctrl(_text_ctrl: TextCtrl, _spacing: i32) {}
-
-/// Applies all paragraph/character readability formats in one batched operation.
-/// Returns immediately with no Windows messages when all values are at their defaults (all 0).
-/// For non-default values, suppresses redraws across both format passes so the control
-/// only repaints once at the end.
-#[cfg(target_os = "windows")]
 pub fn apply_readability_format_to_ctrl(
 	text_ctrl: TextCtrl,
 	line_spacing: i32,
@@ -900,79 +794,92 @@ pub fn apply_readability_format_to_ctrl(
 	if line_spacing == 0 && para_spacing == 0 && letter_spacing == 0 && alignment == 0 {
 		return;
 	}
-	use windows::Win32::{
-		Foundation::{HWND, LPARAM, RECT, WPARAM},
-		Graphics::Gdi::InvalidateRect,
-		UI::{
-			Controls::RichEdit::{
-				CFM_SPACING, CHARFORMAT2W, PARAFORMAT2, PFA_CENTER, PFA_JUSTIFY, PFA_LEFT, PFA_RIGHT, PFM_ALIGNMENT,
-				PFM_LINESPACING, PFM_SPACEAFTER,
-			},
-			WindowsAndMessaging::SendMessageW,
-		},
+	#[cfg(not(target_os = "windows"))]
+	let _ = letter_spacing;
+	#[cfg(target_os = "windows")]
+	let windows_data = {
+		use windows::Win32::{
+			Foundation::{HWND, LPARAM, WPARAM},
+			UI::WindowsAndMessaging::SendMessageW,
+		};
+		const EM_GETSEL: u32 = 176;
+		const EM_SETSEL: u32 = 177;
+		const WM_SETREDRAW: u32 = 11;
+		let hwnd_ptr = text_ctrl.get_handle();
+		if hwnd_ptr.is_null() {
+			None
+		} else {
+			let hwnd = HWND(hwnd_ptr);
+			let mut caret: u32 = 0;
+			unsafe {
+				SendMessageW(hwnd, EM_GETSEL, Some(WPARAM(std::ptr::addr_of_mut!(caret) as usize)), None);
+				SendMessageW(hwnd, WM_SETREDRAW, Some(WPARAM(0)), None);
+				SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(-1_isize)));
+			}
+			Some((hwnd, caret))
+		}
 	};
-	const EM_GETSEL: u32 = 176;
-	const EM_SETSEL: u32 = 177;
-	const EM_SETPARAFORMAT: u32 = 1095;
-	const EM_SETCHARFORMAT: u32 = 1092;
-	const SCF_ALL: u32 = 4;
-	const WM_SETREDRAW: u32 = 11;
-	let hwnd_ptr = text_ctrl.get_handle();
-	if hwnd_ptr.is_null() {
-		return;
+	let mut attr = wxdragon::widgets::textctrl::TextAttr::new();
+	if line_spacing > 0 {
+		attr.set_line_spacing(match line_spacing {
+			1 => 15,
+			2 => 20,
+			_ => 10,
+		});
 	}
-	let hwnd = HWND(hwnd_ptr);
-	unsafe {
-		let mut caret: u32 = 0;
-		SendMessageW(hwnd, EM_GETSEL, Some(WPARAM(std::ptr::addr_of_mut!(caret) as usize)), None);
-		SendMessageW(hwnd, WM_SETREDRAW, Some(WPARAM(0)), None);
-		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(-1_isize)));
-
-		// Combine line spacing + paragraph spacing + alignment into one EM_SETPARAFORMAT
-		let mut pf = PARAFORMAT2::default();
-		pf.Base.cbSize = std::mem::size_of::<PARAFORMAT2>() as u32;
-		pf.Base.dwMask = PFM_LINESPACING | PFM_SPACEAFTER | PFM_ALIGNMENT;
-		pf.bLineSpacingRule = line_spacing.clamp(0, 2) as u8;
-		pf.dySpaceAfter = match para_spacing {
+	if para_spacing > 0 {
+		attr.set_paragraph_spacing_after(match para_spacing {
 			1 => 120,
 			2 => 240,
 			_ => 0,
-		};
-		pf.Base.wAlignment = match alignment {
-			1 => PFA_CENTER,
-			2 => PFA_RIGHT,
-			3 => PFA_JUSTIFY,
-			_ => PFA_LEFT,
-		};
-		SendMessageW(hwnd, EM_SETPARAFORMAT, None, Some(LPARAM(&raw const pf as isize)));
-
-		if letter_spacing != 0 {
-			let spacing_twips: i16 = match letter_spacing {
-				1 => 20,
-				2 => 40,
-				_ => 0,
-			};
-			let mut cf = std::mem::zeroed::<CHARFORMAT2W>();
-			cf.Base.cbSize = std::mem::size_of::<CHARFORMAT2W>() as u32;
-			cf.Base.dwMask = CFM_SPACING;
-			cf.sSpacing = spacing_twips;
-			SendMessageW(hwnd, EM_SETCHARFORMAT, Some(WPARAM(SCF_ALL as usize)), Some(LPARAM(&raw const cf as isize)));
-		}
-
-		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(caret as usize)), Some(LPARAM(caret as isize)));
-		SendMessageW(hwnd, WM_SETREDRAW, Some(WPARAM(1)), None);
-		let _ = InvalidateRect(Some(hwnd), None::<*const RECT>, true);
+		});
 	}
-}
-
-#[cfg(not(target_os = "windows"))]
-pub fn apply_readability_format_to_ctrl(
-	_text_ctrl: TextCtrl,
-	_line_spacing: i32,
-	_para_spacing: i32,
-	_letter_spacing: i32,
-	_alignment: i32,
-) {
+	if alignment > 0 {
+		attr.set_alignment(match alignment {
+			1 => 2,
+			2 => 3,
+			3 => 4,
+			_ => 1,
+		});
+	}
+	text_ctrl.set_style(0, text_ctrl.get_last_position(), &attr);
+	#[cfg(target_os = "windows")]
+	if let Some((hwnd, caret)) = windows_data {
+		unsafe {
+			use windows::Win32::{
+				Foundation::{LPARAM, RECT, WPARAM},
+				Graphics::Gdi::InvalidateRect,
+				UI::{
+					Controls::RichEdit::{CFM_SPACING, CHARFORMAT2W},
+					WindowsAndMessaging::SendMessageW,
+				},
+			};
+			const EM_SETSEL: u32 = 177;
+			const EM_SETCHARFORMAT: u32 = 1092;
+			const SCF_ALL: u32 = 4;
+			const WM_SETREDRAW: u32 = 11;
+			if letter_spacing != 0 {
+				let spacing_twips: i16 = match letter_spacing {
+					1 => 20,
+					2 => 40,
+					_ => 0,
+				};
+				let mut cf = CHARFORMAT2W::default();
+				cf.Base.cbSize = std::mem::size_of::<CHARFORMAT2W>() as u32;
+				cf.Base.dwMask = CFM_SPACING;
+				cf.sSpacing = spacing_twips;
+				SendMessageW(
+					hwnd,
+					EM_SETCHARFORMAT,
+					Some(WPARAM(SCF_ALL as usize)),
+					Some(LPARAM(&raw const cf as isize)),
+				);
+			}
+			SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(caret as usize)), Some(LPARAM(caret as isize)));
+			SendMessageW(hwnd, WM_SETREDRAW, Some(WPARAM(1)), None);
+			let _ = InvalidateRect(Some(hwnd), None::<*const RECT>, true);
+		}
+	}
 }
 
 fn show_reader_context_menu(text_ctrl: TextCtrl) {
