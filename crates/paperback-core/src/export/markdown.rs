@@ -106,5 +106,27 @@ pub fn render(doc: &Document) -> String {
 		}
 		event_idx += 1;
 	}
-	md
+	normalize_newlines(md)
+}
+
+// Expand single newlines to blank lines and collapse runs of 3+ newlines to 2.
+// Markdown ignores single newlines; a blank line is required for paragraph breaks.
+fn normalize_newlines(s: String) -> String {
+	let mut out = String::with_capacity(s.len() + s.len() / 4);
+	let mut nl_run = 0usize;
+	for ch in s.chars() {
+		if ch == '\n' {
+			nl_run += 1;
+		} else {
+			if nl_run > 0 {
+				out.push_str("\n\n");
+			}
+			nl_run = 0;
+			out.push(ch);
+		}
+	}
+	if nl_run > 0 {
+		out.push('\n');
+	}
+	out
 }
