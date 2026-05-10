@@ -81,15 +81,6 @@ impl MainWindow {
 		let dm = Rc::clone(&doc_manager);
 		let frame_copy = frame;
 		let notebook = *doc_manager.lock().unwrap().notebook();
-		// One-shot timer used to defer focus restoration after window activation (see on_activate below).
-		// Owned by the notebook so its events don't cross-fire with the frame-owned sleep/status timers.
-		let focus_restore_timer = Rc::new(Timer::new(&notebook));
-		{
-			let dm_for_focus_timer = Rc::clone(&doc_manager);
-			focus_restore_timer.on_tick(move |_| {
-				dm_for_focus_timer.lock().unwrap().restore_focus();
-			});
-		}
 		notebook.on_page_changed(move |_event| {
 			let Ok(dm_ref) = dm.try_lock() else {
 				return;
@@ -126,15 +117,13 @@ impl MainWindow {
 			event.skip(true);
 		});
 		{
-			// Defer focus restoration to after Windows finishes its own activation/focus processing.
-			// Calling set_focus() directly in EVT_ACTIVATE races with subsequent WM_SETFOCUS messages
-			// that Windows sends to the frame, occasionally leaving focus on the frame instead of the
-			// text control and causing screen readers to announce "pane" rather than book content.
-			let focus_timer = Rc::clone(&focus_restore_timer);
+			let dm_for_activate = Rc::clone(&doc_manager);
 			frame.on_activate(move |event| {
 				if let wxdragon::event::WindowEventData::Activate(ref activate) = event {
 					if activate.is_active() {
-						focus_timer.start(1, true);
+						if let Ok(dm) = dm_for_activate.try_lock() {
+							dm.restore_focus();
+						}
 					}
 				}
 				event.skip(true);
