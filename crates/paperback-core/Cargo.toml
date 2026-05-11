@@ -14,7 +14,7 @@ path = "src/lib.rs"
 [dependencies]
 anyhow = { workspace = true }
 base64 = { workspace = true }
-bitflags = { workspace = true }
+bitflags = "2.11.1"
 toml = { workspace = true }
 cfb = "0.14.0"
 ego-tree = "0.11.0"

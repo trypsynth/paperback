@@ -10,7 +10,7 @@ repository.workspace = true
 [dependencies]
 anyhow = { workspace = true }
 base64 = { workspace = true }
-bitflags = { workspace = true }
+bitflags = "2.11.1"
 live-region = "0.1.4"
 minisign-verify = "0.2.5"
 paperback-core = { path = "../paperback-core" }

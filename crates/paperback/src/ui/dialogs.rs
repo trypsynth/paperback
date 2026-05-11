@@ -6,7 +6,6 @@ use std::{
 	sync::Mutex,
 };
 
-use bitflags::bitflags;
 use wxdragon::{prelude::*, translations::translate as t};
 
 #[cfg(target_os = "linux")]
@@ -67,7 +66,14 @@ const KEY_NUMPAD_ENTER: i32 = 370;
 
 #[derive(Clone, Debug)]
 pub struct OptionsDialogResult {
-	pub flags: OptionsDialogFlags,
+	pub restore_previous_documents: bool,
+	pub word_wrap: bool,
+	pub minimize_to_tray: bool,
+	pub start_maximized: bool,
+	pub compact_go_menu: bool,
+	pub navigation_wrap: bool,
+	pub check_for_updates_on_startup: bool,
+	pub bookmark_sounds: bool,
 	pub recent_documents_to_show: i32,
 	pub reading_speed_wpm: i32,
 	pub language: String,
@@ -78,20 +84,6 @@ pub struct OptionsDialogResult {
 	pub text_alignment: i32,
 	pub letter_spacing: i32,
 	pub paragraph_spacing: i32,
-}
-
-bitflags! {
-	#[derive(Clone, Copy, Debug)]
-	pub struct OptionsDialogFlags: u16 {
-		const RESTORE_PREVIOUS_DOCUMENTS = 1 << 0;
-		const WORD_WRAP = 1 << 1;
-		const MINIMIZE_TO_TRAY = 1 << 2;
-		const START_MAXIMIZED = 1 << 3;
-		const COMPACT_GO_MENU = 1 << 4;
-		const NAVIGATION_WRAP = 1 << 5;
-		const CHECK_FOR_UPDATES_ON_STARTUP = 1 << 6;
-		const BOOKMARK_SOUNDS = 1 << 7;
-	}
 }
 
 pub struct BookmarkDialogResult {
@@ -132,7 +124,6 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		return None;
 	}
 	let language = resolve_options_language(&ui);
-	let flags = build_options_dialog_flags(&ui);
 	let update_channel = match ui.update_channel_combo.get_selection() {
 		Some(1) => paperback_core::config::UpdateChannel::Dev,
 		_ => paperback_core::config::UpdateChannel::Stable,
@@ -144,7 +135,14 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 	let letter_spacing = ui.letter_spacing_ctrl.get_selection().unwrap_or(0) as i32;
 	let paragraph_spacing = ui.paragraph_spacing_ctrl.get_selection().unwrap_or(0) as i32;
 	Some(OptionsDialogResult {
-		flags,
+		restore_previous_documents: ui.restore_docs_check.is_checked(),
+		word_wrap: ui.word_wrap_check.is_checked(),
+		minimize_to_tray: ui.minimize_to_tray_check.is_checked(),
+		start_maximized: ui.start_maximized_check.is_checked(),
+		compact_go_menu: ui.compact_go_menu_check.is_checked(),
+		navigation_wrap: ui.navigation_wrap_check.is_checked(),
+		check_for_updates_on_startup: ui.check_for_updates_check.is_checked(),
+		bookmark_sounds: ui.bookmark_sounds_check.is_checked(),
 		recent_documents_to_show: ui.recent_docs_ctrl.value(),
 		reading_speed_wpm: ui.reading_speed_ctrl.value(),
 		language,
@@ -456,35 +454,6 @@ fn resolve_options_language(ui: &OptionsDialogUi) -> String {
 		.and_then(|index| usize::try_from(index).ok())
 		.and_then(|index| ui.language_codes.get(index).cloned())
 		.unwrap_or_else(|| ui.current_language.clone())
-}
-
-fn build_options_dialog_flags(ui: &OptionsDialogUi) -> OptionsDialogFlags {
-	let mut flags = OptionsDialogFlags::empty();
-	if ui.restore_docs_check.is_checked() {
-		flags.insert(OptionsDialogFlags::RESTORE_PREVIOUS_DOCUMENTS);
-	}
-	if ui.word_wrap_check.is_checked() {
-		flags.insert(OptionsDialogFlags::WORD_WRAP);
-	}
-	if ui.minimize_to_tray_check.is_checked() {
-		flags.insert(OptionsDialogFlags::MINIMIZE_TO_TRAY);
-	}
-	if ui.start_maximized_check.is_checked() {
-		flags.insert(OptionsDialogFlags::START_MAXIMIZED);
-	}
-	if ui.compact_go_menu_check.is_checked() {
-		flags.insert(OptionsDialogFlags::COMPACT_GO_MENU);
-	}
-	if ui.navigation_wrap_check.is_checked() {
-		flags.insert(OptionsDialogFlags::NAVIGATION_WRAP);
-	}
-	if ui.check_for_updates_check.is_checked() {
-		flags.insert(OptionsDialogFlags::CHECK_FOR_UPDATES_ON_STARTUP);
-	}
-	if ui.bookmark_sounds_check.is_checked() {
-		flags.insert(OptionsDialogFlags::BOOKMARK_SOUNDS);
-	}
-	flags
 }
 
 fn color_description(color: i32) -> String {

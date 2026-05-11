@@ -21,7 +21,7 @@ use wxdragon::{prelude::*, timer::Timer, translations::translate as t};
 #[cfg(not(target_os = "linux"))]
 use super::tray;
 use super::{
-	dialogs::{self, OptionsDialogFlags},
+	dialogs,
 	document_manager::{DocumentManager, build_font_from_readability},
 	find::{self, FindDialogState},
 	help::{self, MAIN_WINDOW_PTR},
@@ -1198,20 +1198,14 @@ impl MainWindow {
 						)
 					};
 					let cfg = config.lock().unwrap();
-					cfg.set_app_bool(
-						"restore_previous_documents",
-						options.flags.contains(OptionsDialogFlags::RESTORE_PREVIOUS_DOCUMENTS),
-					);
-					cfg.set_app_bool("word_wrap", options.flags.contains(OptionsDialogFlags::WORD_WRAP));
-					cfg.set_app_bool("minimize_to_tray", options.flags.contains(OptionsDialogFlags::MINIMIZE_TO_TRAY));
-					cfg.set_app_bool("start_maximized", options.flags.contains(OptionsDialogFlags::START_MAXIMIZED));
-					cfg.set_app_bool("compact_go_menu", options.flags.contains(OptionsDialogFlags::COMPACT_GO_MENU));
-					cfg.set_app_bool("navigation_wrap", options.flags.contains(OptionsDialogFlags::NAVIGATION_WRAP));
-					cfg.set_app_bool(
-						"check_for_updates_on_startup",
-						options.flags.contains(OptionsDialogFlags::CHECK_FOR_UPDATES_ON_STARTUP),
-					);
-					cfg.set_app_bool("bookmark_sounds", options.flags.contains(OptionsDialogFlags::BOOKMARK_SOUNDS));
+					cfg.set_app_bool("restore_previous_documents", options.restore_previous_documents);
+					cfg.set_app_bool("word_wrap", options.word_wrap);
+					cfg.set_app_bool("minimize_to_tray", options.minimize_to_tray);
+					cfg.set_app_bool("start_maximized", options.start_maximized);
+					cfg.set_app_bool("compact_go_menu", options.compact_go_menu);
+					cfg.set_app_bool("navigation_wrap", options.navigation_wrap);
+					cfg.set_app_bool("check_for_updates_on_startup", options.check_for_updates_on_startup);
+					cfg.set_app_bool("bookmark_sounds", options.bookmark_sounds);
 					cfg.set_app_int("recent_documents_to_show", options.recent_documents_to_show);
 					cfg.set_app_int("reading_speed_wpm", options.reading_speed_wpm);
 					cfg.set_app_string("language", &options.language);
@@ -1224,7 +1218,7 @@ impl MainWindow {
 					cfg.set_paragraph_spacing(options.paragraph_spacing);
 					cfg.flush();
 					drop(cfg);
-					let options_word_wrap = options.flags.contains(OptionsDialogFlags::WORD_WRAP);
+					let options_word_wrap = options.word_wrap;
 					let font_changed = old_readability_font != options.readability_font;
 					let line_spacing_changed = old_line_spacing != options.line_spacing;
 					let bg_color_changed = old_bg_color != options.bg_color;
@@ -1264,7 +1258,7 @@ impl MainWindow {
 							dm_ref.apply_paragraph_spacing(options.paragraph_spacing);
 						}
 					}
-					let options_compact_menu = options.flags.contains(OptionsDialogFlags::COMPACT_GO_MENU);
+					let options_compact_menu = options.compact_go_menu;
 					if current_language != options.language || old_compact_menu != options_compact_menu {
 						if current_language != options.language {
 							let _ = TranslationManager::instance().lock().unwrap().set_language(&options.language);
