@@ -23,6 +23,10 @@ fn main() -> Result<()> {
 	let doc = match parse_document(&context) {
 		Ok(doc) => doc,
 		Err(e) if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) => {
+			if cli.no_prompt {
+				eprintln!("pb: document requires a password; skipping (use -p to supply one)");
+				std::process::exit(2);
+			}
 			let password = rpassword::prompt_password("Password: ").context("failed to read password")?;
 			context.password = Some(password);
 			parse_document(&context).with_context(|| format!("failed to parse {}", cli.input.display()))?
