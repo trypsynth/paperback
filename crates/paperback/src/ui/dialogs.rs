@@ -7,7 +7,7 @@ use std::{
 };
 
 use bitflags::bitflags;
-use wxdragon::{event::WebViewEvents, prelude::*, translations::translate as t, widgets::WebView};
+use wxdragon::{prelude::*, translations::translate as t};
 
 #[cfg(target_os = "linux")]
 mod accessible_tree;
@@ -18,7 +18,7 @@ mod toc_gtk;
 
 use paperback_core::{
 	config::{ConfigManager, ReadabilityFont},
-	document::{DocumentStats, TocItem},
+	document::TocItem,
 	reader_core,
 	session::DocumentSession,
 	types::{BookmarkDisplayEntry, BookmarkFilterType, DocumentListStatus},
@@ -28,6 +28,16 @@ use crate::translation_manager::TranslationManager;
 
 mod about;
 pub use about::show_about_dialog;
+mod document_info;
+pub use document_info::show_document_info_dialog;
+mod open_as;
+pub use open_as::show_open_as_dialog;
+mod sleep_timer;
+pub use sleep_timer::show_sleep_timer_dialog;
+mod web_view;
+pub use web_view::show_web_view_dialog;
+mod word_count;
+pub use word_count::show_word_count_dialog;
 
 const DIALOG_PADDING: i32 = 10;
 const RECENT_DOCS_LIST_WIDTH: i32 = 800;
@@ -35,8 +45,6 @@ const RECENT_DOCS_LIST_HEIGHT: i32 = 600;
 const RECENT_DOCS_FILENAME_WIDTH: i32 = 250;
 const RECENT_DOCS_STATUS_WIDTH: i32 = 100;
 const RECENT_DOCS_PATH_WIDTH: i32 = 450;
-const DOC_INFO_WIDTH: i32 = 600;
-const DOC_INFO_HEIGHT: i32 = 400;
 const KEY_DELETE: i32 = 127;
 const KEY_NUMPAD_DELETE: i32 = 330;
 #[cfg(not(target_os = "linux"))]
@@ -52,8 +60,6 @@ const WXK_RIGHT: i32 = 316;
 const WXK_DOWN: i32 = 317;
 const WXK_PAGEUP: i32 = 366;
 const WXK_PAGEDOWN: i32 = 367;
-
-type NavigationHandler = Box<dyn Fn(&str) -> bool>;
 
 #[derive(Clone, Debug)]
 pub struct OptionsDialogResult {
@@ -1319,95 +1325,6 @@ fn find_and_select_item(tree: TreeCtrl, parent: &TreeItemId, offset: i32) -> boo
 	false
 }
 
-fn format_reading_time(word_count: usize, wpm: i32) -> String {
-	if wpm <= 0 {
-		return String::new();
-	}
-	let total_seconds = (word_count as f64 / wpm as f64 * 60.0).round() as u64;
-	let hours = total_seconds / 3600;
-	let minutes = (total_seconds % 3600) / 60;
-	let seconds = total_seconds % 60;
-	let mut parts: Vec<String> = Vec::new();
-	if hours == 1 {
-		parts.push(t("1 hour"));
-	} else if hours > 1 {
-		parts.push(format!("{} {}", hours, t("hours")));
-	}
-	if minutes == 1 {
-		parts.push(t("1 minute"));
-	} else if minutes > 1 {
-		parts.push(format!("{} {}", minutes, t("minutes")));
-	}
-	if seconds == 1 {
-		parts.push(t("1 second"));
-	} else if seconds > 1 || total_seconds == 0 {
-		parts.push(format!("{} {}", seconds, t("seconds")));
-	}
-	let time_str = parts.join(", ");
-	let template = t("Estimated reading time: {}");
-	template.replace("{}", &time_str)
-}
-
-pub fn show_word_count_dialog(parent: &Frame, word_count: usize, reading_speed_wpm: i32) {
-	let words_template = t("This document contains {} words.");
-	let mut msg = words_template.replace("{}", &word_count.to_string());
-	let reading_time = format_reading_time(word_count, reading_speed_wpm);
-	if !reading_time.is_empty() {
-		msg.push('\n');
-		msg.push_str(&reading_time);
-	}
-	let title = t("Word Count");
-	let dialog = MessageDialog::builder(parent, &msg, &title).with_style(MessageDialogStyle::OK).build();
-	dialog.show_modal();
-}
-
-pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, author: &str, stats: &DocumentStats) {
-	let dialog_title = t("Document Info");
-	let dialog = Dialog::builder(parent, &dialog_title).build();
-	let info_ctrl = TextCtrl::builder(&dialog)
-		.with_style(TextCtrlStyle::MultiLine | TextCtrlStyle::ReadOnly)
-		.with_size(Size::new(DOC_INFO_WIDTH, DOC_INFO_HEIGHT))
-		.build();
-	let path_label = t("Path:");
-	let title_label = t("Title:");
-	let author_label = t("Author:");
-	let words_label = t("Words:");
-	let lines_label = t("Lines:");
-	let characters_label = t("Characters:");
-	let characters_no_spaces_label = t("Characters (excluding spaces):");
-	let mut info = String::new();
-	let _ = writeln!(info, "{path_label} {}", path.display());
-	if !title.is_empty() {
-		let _ = writeln!(info, "{title_label} {title}");
-	}
-	if !author.is_empty() {
-		let _ = writeln!(info, "{author_label} {author}");
-	}
-	let _ = writeln!(info, "{} {}", words_label, stats.word_count);
-	let _ = writeln!(info, "{lines_label} {}", stats.line_count);
-	let _ = writeln!(info, "{characters_label} {}", stats.char_count);
-	let _ = writeln!(info, "{characters_no_spaces_label} {}", stats.char_count_no_whitespace);
-	info_ctrl.set_value(&info);
-	bind_escape_to_close(&dialog, dialog);
-	bind_escape_to_close(&info_ctrl, dialog);
-	let ok_label = t("OK");
-	let ok_button = Button::builder(&dialog).with_label(&ok_label).build();
-	bind_escape_to_close(&ok_button, dialog);
-	let dialog_copy = dialog;
-	ok_button.on_click(move |_| {
-		dialog_copy.end_modal(wxdragon::id::ID_OK);
-	});
-	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	content_sizer.add(&info_ctrl, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
-	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&ok_button, 0, SizerFlag::All, DIALOG_PADDING);
-	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
-	dialog.set_sizer_and_fit(content_sizer, true);
-	dialog.centre();
-	dialog.show_modal();
-}
-
 pub fn show_go_to_line_dialog(parent: &Frame, current_line: i32, max_lines: i32) -> Option<i32> {
 	let dialog_title = t("Go to Line");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
@@ -2029,57 +1946,6 @@ fn bind_all_documents_layout(dialog: Dialog, layout: AllDocumentsLayout) {
 	dialog.centre();
 }
 
-pub fn show_open_as_dialog(parent: &Frame, path: &Path) -> Option<String> {
-	let title = t("Open As");
-	let dialog = Dialog::builder(parent, &title).build();
-	let message_template = t("No suitable parser was found for {}.\nHow would you like to open this file?");
-	let message = message_template.replace("{}", &path.display().to_string());
-	let label = StaticText::builder(&dialog).with_label(&message).build();
-	let format_label_text = t("Open &as:");
-	let format_label = StaticText::builder(&dialog).with_label(&format_label_text).build();
-	let format_combo = ComboBox::builder(&dialog).with_style(ComboBoxStyle::ReadOnly).build();
-	format_combo.append(&t("Plain Text"));
-	format_combo.append(&t("HTML"));
-	format_combo.append(&t("Markdown"));
-	format_combo.set_selection(0);
-	let ok_label = t("OK");
-	let ok_button = Button::builder(&dialog).with_label(&ok_label).build();
-	let cancel_label = t("Cancel");
-	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&cancel_label).build();
-	let dialog_for_ok = dialog;
-	ok_button.on_click(move |_| {
-		dialog_for_ok.end_modal(wxdragon::id::ID_OK);
-	});
-	let dialog_for_cancel = dialog;
-	cancel_button.on_click(move |_| {
-		dialog_for_cancel.end_modal(wxdragon::id::ID_CANCEL);
-	});
-	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	content_sizer.add(&label, 0, SizerFlag::All, DIALOG_PADDING / 2);
-	let format_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	format_sizer.add(&format_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
-	format_sizer.add(&format_combo, 1, SizerFlag::Expand, 0);
-	content_sizer.add_sizer(&format_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING / 2);
-	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&ok_button, 0, SizerFlag::All, DIALOG_PADDING);
-	button_sizer.add(&cancel_button, 0, SizerFlag::All, DIALOG_PADDING);
-	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
-	dialog.set_sizer_and_fit(content_sizer, true);
-	dialog.centre();
-	format_combo.set_focus();
-	if dialog.show_modal() != wxdragon::id::ID_OK {
-		return None;
-	}
-	let selection = format_combo.get_selection();
-	let format = match selection {
-		Some(1) => "html",
-		Some(2) => "md",
-		_ => "txt",
-	};
-	Some(format.to_string())
-}
-
 struct DocumentListParams<'a> {
 	list: ListCtrl,
 	open_button: Button,
@@ -2216,105 +2082,6 @@ fn get_path_for_index(list: ListCtrl, index: i32) -> Option<String> {
 fn get_selected_path(list: ListCtrl) -> Option<String> {
 	let index = get_selected_index(list);
 	get_path_for_index(list, index)
-}
-
-pub fn show_sleep_timer_dialog(parent: &Frame, initial_duration: i32) -> Option<i32> {
-	let dialog = Dialog::builder(parent, &t("Sleep Timer")).build();
-	let label = StaticText::builder(&dialog).with_label(&t("&Minutes:")).build();
-	let input_ctrl = SpinCtrl::builder(&dialog)
-		.with_range(1, 999)
-		.with_style(SpinCtrlStyle::Default | SpinCtrlStyle::ProcessEnter)
-		.build();
-	input_ctrl.set_value(initial_duration.clamp(1, 999));
-	let dialog_for_enter = dialog;
-	input_ctrl.bind_internal(EventType::TEXT_ENTER, move |event| {
-		event.skip(false);
-		dialog_for_enter.end_modal(wxdragon::id::ID_OK);
-	});
-	let input_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	input_sizer.add(&label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 5);
-	input_sizer.add(&input_ctrl, 1, SizerFlag::Expand, 0);
-	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
-	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
-	ok_button.set_default();
-	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	content_sizer.add_sizer(&input_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
-	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&ok_button, 0, SizerFlag::All, DIALOG_PADDING);
-	button_sizer.add(&cancel_button, 0, SizerFlag::All, DIALOG_PADDING);
-	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
-	dialog.set_sizer_and_fit(content_sizer, true);
-	dialog.centre();
-	input_ctrl.set_focus();
-	if dialog.show_modal() == wxdragon::id::ID_OK { Some(input_ctrl.value()) } else { None }
-}
-
-pub fn show_web_view_dialog(
-	parent: &Frame,
-	title: &str,
-	url_or_content: &str,
-	is_url: bool,
-	navigation_handler: Option<NavigationHandler>,
-) {
-	let dialog = Dialog::builder(parent, title)
-		.with_style(DialogStyle::DefaultDialogStyle | DialogStyle::ResizeBorder)
-		.with_size(800, 600)
-		.build();
-	let web_view = WebView::builder(&dialog).build();
-	web_view.add_script_message_handler("wx");
-	let dialog_for_close = dialog;
-	web_view.on_script_message_received(move |event| {
-		if event.get_string() == Some("close_dialog".to_string()) {
-			dialog_for_close.end_modal(wxdragon::id::ID_CANCEL);
-		}
-	});
-	if let Some(handler) = navigation_handler {
-		web_view.on_navigating(move |event| {
-			if let Some(url) = event.get_string() {
-				let url_str: String = url;
-				if !handler(&url_str) {
-					event.event.event.veto();
-				}
-			}
-		});
-	}
-	if is_url {
-		web_view.load_url(url_or_content);
-	} else {
-		let full_html = if url_or_content.to_lowercase().contains("<html") {
-			url_or_content.to_string()
-		} else {
-			format!("<html><head><title>{title}</title></head><body>{url_or_content}</body></html>")
-		};
-		web_view.set_page(&full_html, "");
-	}
-	let web_view_for_load = web_view;
-	web_view.on_loaded(move |_| {
-		web_view_for_load.run_script(
-			"document.addEventListener('keydown', function(event) { \
-             if (event.key === 'Escape' || event.keyCode === 27) { \
-             window.wx.postMessage('close_dialog'); \
-             } \
-             });",
-		);
-	});
-	let close_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Close")).build();
-	let dialog_for_ok = dialog;
-	close_button.on_click(move |_| {
-		dialog_for_ok.end_modal(wxdragon::id::ID_OK);
-	});
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
-	let sizer = BoxSizer::builder(Orientation::Vertical).build();
-	sizer.add(&web_view, 1, SizerFlag::Expand | SizerFlag::All, 5);
-	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&close_button, 0, SizerFlag::All, 5);
-	sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
-	dialog.set_sizer(sizer, true);
-	dialog.centre();
-	dialog.show_modal();
 }
 
 pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<i64> {

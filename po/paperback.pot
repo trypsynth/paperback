@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-05-10 09:42-0600\n"
+"POT-Creation-Date: 2026-05-11 09:25-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -32,10 +32,34 @@ msgstr ""
 msgid "collapsed"
 msgstr ""
 
-msgid "Elements"
+msgid "Document Info"
+msgstr ""
+
+msgid "Path:"
+msgstr ""
+
+msgid "Title:"
+msgstr ""
+
+msgid "Author:"
+msgstr ""
+
+msgid "Words:"
+msgstr ""
+
+msgid "Lines:"
+msgstr ""
+
+msgid "Characters:"
+msgstr ""
+
+msgid "Characters (excluding spaces):"
 msgstr ""
 
 msgid "OK"
+msgstr ""
+
+msgid "Elements"
 msgstr ""
 
 msgid "Cancel"
@@ -50,7 +74,63 @@ msgstr ""
 msgid "Untitled"
 msgstr ""
 
+msgid "Open As"
+msgstr ""
+
+msgid ""
+"No suitable parser was found for {}.\n"
+"How would you like to open this file?"
+msgstr ""
+
+msgid "Open &as:"
+msgstr ""
+
+msgid "Plain Text"
+msgstr ""
+
+msgid "HTML"
+msgstr ""
+
+msgid "Markdown"
+msgstr ""
+
+msgid "Sleep Timer"
+msgstr ""
+
+msgid "&Minutes:"
+msgstr ""
+
 msgid "Table of Contents"
+msgstr ""
+
+msgid "Close"
+msgstr ""
+
+msgid "1 hour"
+msgstr ""
+
+msgid "hours"
+msgstr ""
+
+msgid "1 minute"
+msgstr ""
+
+msgid "minutes"
+msgstr ""
+
+msgid "1 second"
+msgstr ""
+
+msgid "seconds"
+msgstr ""
+
+msgid "Estimated reading time: {}"
+msgstr ""
+
+msgid "This document contains {} words."
+msgstr ""
+
+msgid "Word Count"
 msgstr ""
 
 msgid "Options"
@@ -233,9 +313,6 @@ msgstr ""
 msgid "View Note"
 msgstr ""
 
-msgid "Close"
-msgstr ""
-
 msgid "Root"
 msgstr ""
 
@@ -243,57 +320,6 @@ msgid "Please select a section from the table of contents."
 msgstr ""
 
 msgid "No Selection"
-msgstr ""
-
-msgid "1 hour"
-msgstr ""
-
-msgid "hours"
-msgstr ""
-
-msgid "1 minute"
-msgstr ""
-
-msgid "minutes"
-msgstr ""
-
-msgid "1 second"
-msgstr ""
-
-msgid "seconds"
-msgstr ""
-
-msgid "Estimated reading time: {}"
-msgstr ""
-
-msgid "This document contains {} words."
-msgstr ""
-
-msgid "Word Count"
-msgstr ""
-
-msgid "Document Info"
-msgstr ""
-
-msgid "Path:"
-msgstr ""
-
-msgid "Title:"
-msgstr ""
-
-msgid "Author:"
-msgstr ""
-
-msgid "Words:"
-msgstr ""
-
-msgid "Lines:"
-msgstr ""
-
-msgid "Characters:"
-msgstr ""
-
-msgid "Characters (excluding spaces):"
 msgstr ""
 
 msgid "Go to Line"
@@ -373,26 +399,6 @@ msgid ""
 "remove all reading positions and bookmarks."
 msgstr ""
 
-msgid "Open As"
-msgstr ""
-
-msgid ""
-"No suitable parser was found for {}.\n"
-"How would you like to open this file?"
-msgstr ""
-
-msgid "Open &as:"
-msgstr ""
-
-msgid "Plain Text"
-msgstr ""
-
-msgid "HTML"
-msgstr ""
-
-msgid "Markdown"
-msgstr ""
-
 msgid "Open"
 msgstr ""
 
@@ -400,12 +406,6 @@ msgid "Closed"
 msgstr ""
 
 msgid "Missing"
-msgstr ""
-
-msgid "Sleep Timer"
-msgstr ""
-
-msgid "&Minutes:"
 msgstr ""
 
 msgid "&View:"
