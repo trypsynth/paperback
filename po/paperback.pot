@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-05-11 09:39-0600\n"
+"POT-Creation-Date: 2026-05-11 09:44-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -123,6 +123,19 @@ msgid "&Minutes:"
 msgstr ""
 
 msgid "Table of Contents"
+msgstr ""
+
+#, c-format
+msgid "Update to %s"
+msgstr ""
+
+msgid "A new version of Paperback is available. Here's what's new:"
+msgstr ""
+
+msgid "&Yes"
+msgstr ""
+
+msgid "&No"
 msgstr ""
 
 msgid "View Note"
@@ -342,19 +355,6 @@ msgid "Please select a section from the table of contents."
 msgstr ""
 
 msgid "No Selection"
-msgstr ""
-
-msgid "&Yes"
-msgstr ""
-
-msgid "&No"
-msgstr ""
-
-#, c-format
-msgid "Update to %s"
-msgstr ""
-
-msgid "A new version of Paperback is available. Here's what's new:"
 msgstr ""
 
 msgid "All Documents"
