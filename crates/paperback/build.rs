@@ -68,10 +68,9 @@ fn embed_commit_hash() {
 
 fn embed_version_info() {
 	let version = env::var("CARGO_PKG_VERSION").unwrap_or_else(|_| "0.0.0".to_string());
-	let description = env::var("CARGO_PKG_DESCRIPTION").unwrap_or_default();
 	let mut res = WindowsResource::new();
 	res.set("ProductName", "Paperback")
-		.set("FileDescription", &description)
+		.set("FileDescription", "Paperback")
 		.set("LegalCopyright", "Copyright © 2025 Quin Gillespie")
 		.set("CompanyName", "Quin Gillespie")
 		.set("OriginalFilename", "paperback.exe")
