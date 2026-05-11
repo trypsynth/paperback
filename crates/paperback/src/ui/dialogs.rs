@@ -30,10 +30,20 @@ mod about;
 pub use about::show_about_dialog;
 mod document_info;
 pub use document_info::show_document_info_dialog;
+mod go_to_line;
+pub use go_to_line::show_go_to_line_dialog;
+mod go_to_page;
+pub use go_to_page::show_go_to_page_dialog;
+mod go_to_percent;
+pub use go_to_percent::show_go_to_percent_dialog;
+mod note_entry;
+pub use note_entry::show_note_entry_dialog;
 mod open_as;
 pub use open_as::show_open_as_dialog;
 mod sleep_timer;
 pub use sleep_timer::show_sleep_timer_dialog;
+mod view_note;
+pub use view_note::show_view_note_dialog;
 mod web_view;
 pub use web_view::show_web_view_dialog;
 mod word_count;
@@ -52,14 +62,6 @@ const KEY_SPACE: i32 = 32;
 const KEY_ESCAPE: i32 = 27;
 const KEY_RETURN: i32 = 13;
 const KEY_NUMPAD_ENTER: i32 = 370;
-const WXK_END: i32 = 312;
-const WXK_HOME: i32 = 313;
-const WXK_LEFT: i32 = 314;
-const WXK_UP: i32 = 315;
-const WXK_RIGHT: i32 = 316;
-const WXK_DOWN: i32 = 317;
-const WXK_PAGEUP: i32 = 366;
-const WXK_PAGEDOWN: i32 = 367;
 
 #[derive(Clone, Debug)]
 pub struct OptionsDialogResult {
@@ -1076,90 +1078,6 @@ fn finalize_bookmark_dialog_layout(
 	bookmark_list.set_focus();
 }
 
-pub fn show_note_entry_dialog(
-	parent: &dyn WxWidget,
-	title: &str,
-	message: &str,
-	existing_note: &str,
-) -> Option<String> {
-	let dialog = Dialog::builder(parent, title).build();
-	let message_label = StaticText::builder(&dialog).with_label(message).build();
-	let note_ctrl = TextCtrl::builder(&dialog)
-		.with_value(existing_note)
-		.with_style(TextCtrlStyle::MultiLine)
-		.with_size(Size::new(400, 200))
-		.build();
-	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
-	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
-	dialog.set_affirmative_id(wxdragon::id::ID_OK);
-	let dialog_for_ok = dialog;
-	ok_button.on_click(move |_| {
-		dialog_for_ok.end_modal(wxdragon::id::ID_OK);
-	});
-	let dialog_for_cancel = dialog;
-	cancel_button.on_click(move |_| {
-		dialog_for_cancel.end_modal(wxdragon::id::ID_CANCEL);
-	});
-	let dialog_for_key = dialog;
-	note_ctrl.bind_internal(EventType::KEY_DOWN, move |event| {
-		if let Some(key) = event.get_key_code() {
-			if key == KEY_RETURN {
-				if event.shift_down() {
-					event.skip(true);
-				} else {
-					dialog_for_key.end_modal(wxdragon::id::ID_OK);
-					event.skip(false);
-				}
-				return;
-			}
-		}
-		event.skip(true);
-	});
-	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	content_sizer.add(&message_label, 0, SizerFlag::All, DIALOG_PADDING);
-	content_sizer.add(
-		&note_ctrl,
-		1,
-		SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
-		DIALOG_PADDING,
-	);
-	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&ok_button, 0, SizerFlag::All, DIALOG_PADDING);
-	button_sizer.add(&cancel_button, 0, SizerFlag::All, DIALOG_PADDING);
-	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
-	dialog.set_sizer_and_fit(content_sizer, true);
-	dialog.centre();
-	note_ctrl.set_focus();
-	if dialog.show_modal() == wxdragon::id::ID_OK { Some(note_ctrl.get_value()) } else { None }
-}
-
-pub fn show_view_note_dialog(parent: &dyn WxWidget, note_text: &str) {
-	let dialog = Dialog::builder(parent, &t("View Note")).build();
-	let note_ctrl = TextCtrl::builder(&dialog)
-		.with_value(note_text)
-		.with_style(TextCtrlStyle::MultiLine | TextCtrlStyle::ReadOnly | TextCtrlStyle::Rich2)
-		.with_size(Size::new(400, 200))
-		.build();
-	let close_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("Close")).build();
-	dialog.set_affirmative_id(wxdragon::id::ID_OK);
-	let dialog_for_close = dialog;
-	close_button.on_click(move |_| {
-		dialog_for_close.end_modal(wxdragon::id::ID_OK);
-	});
-	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	content_sizer.add(&note_ctrl, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
-	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&close_button, 0, SizerFlag::All, DIALOG_PADDING);
-	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
-	dialog.set_sizer_and_fit(content_sizer, true);
-	dialog.centre();
-	note_ctrl.set_focus();
-	dialog.show_modal();
-}
-
 pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i32) -> Option<i32> {
 	#[cfg(target_os = "linux")]
 	return toc_gtk::show_toc_dialog(parent, toc_items, current_offset);
@@ -1323,178 +1241,6 @@ fn find_and_select_item(tree: TreeCtrl, parent: &TreeItemId, offset: i32) -> boo
 		}
 	}
 	false
-}
-
-pub fn show_go_to_line_dialog(parent: &Frame, current_line: i32, max_lines: i32) -> Option<i32> {
-	let dialog_title = t("Go to Line");
-	let dialog = Dialog::builder(parent, &dialog_title).build();
-	let label_text = t("&Line number:");
-	let label = StaticText::builder(&dialog).with_label(&label_text).build();
-	let max_lines = max_lines.max(1);
-	let current_line = current_line.clamp(1, max_lines);
-	let line_ctrl = SpinCtrl::builder(&dialog)
-		.with_range(1, max_lines)
-		.with_style(SpinCtrlStyle::Default | SpinCtrlStyle::ProcessEnter)
-		.build();
-	line_ctrl.set_value(current_line);
-	let dialog_for_enter = dialog;
-	line_ctrl.bind_internal(EventType::TEXT_ENTER, move |event| {
-		event.skip(false);
-		dialog_for_enter.end_modal(wxdragon::id::ID_OK);
-	});
-	let line_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	line_sizer.add(&label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 5);
-	line_sizer.add(&line_ctrl, 1, SizerFlag::Expand, 0);
-	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
-	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
-	ok_button.set_default();
-	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	content_sizer.add_sizer(&line_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
-	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&ok_button, 0, SizerFlag::All, DIALOG_PADDING);
-	button_sizer.add(&cancel_button, 0, SizerFlag::All, DIALOG_PADDING);
-	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
-	dialog.set_sizer_and_fit(content_sizer, true);
-	dialog.centre();
-	line_ctrl.set_focus();
-	if dialog.show_modal() == wxdragon::id::ID_OK { Some(line_ctrl.value().clamp(1, max_lines)) } else { None }
-}
-
-pub fn show_go_to_page_dialog(parent: &Frame, current_page: i32, max_page: i32) -> Option<i32> {
-	let max_page = max_page.max(1);
-	let dialog_title = t("Go to page");
-	let dialog = Dialog::builder(parent, &dialog_title).build();
-	let label_template = t("Go to page (%d/%d):");
-	let label_text = label_template.replacen("%d", &current_page.clamp(1, max_page).to_string(), 1).replacen(
-		"%d",
-		&max_page.to_string(),
-		1,
-	);
-	let label = StaticText::builder(&dialog).with_label(&label_text).build();
-	let current = current_page.clamp(1, max_page);
-	let page_ctrl = SpinCtrl::builder(&dialog)
-		.with_range(1, max_page)
-		.with_style(SpinCtrlStyle::Default | SpinCtrlStyle::ProcessEnter)
-		.build();
-	page_ctrl.set_value(current);
-	let dialog_for_enter = dialog;
-	page_ctrl.bind_internal(EventType::TEXT_ENTER, move |event| {
-		event.skip(false);
-		dialog_for_enter.end_modal(wxdragon::id::ID_OK);
-	});
-	let label_for_update = label;
-	let label_template_for_update = label_template;
-	page_ctrl.on_value_changed(move |event| {
-		let text = label_template_for_update.replacen("%d", &event.get_value().to_string(), 1).replacen(
-			"%d",
-			&max_page.to_string(),
-			1,
-		);
-		label_for_update.set_label(&text);
-	});
-	let page_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	page_sizer.add(&label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 5);
-	page_sizer.add(&page_ctrl, 1, SizerFlag::Expand, 0);
-	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
-	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
-	dialog.set_affirmative_id(wxdragon::id::ID_OK);
-	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	content_sizer.add_sizer(&page_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
-	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&ok_button, 0, SizerFlag::All, DIALOG_PADDING);
-	button_sizer.add(&cancel_button, 0, SizerFlag::All, DIALOG_PADDING);
-	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
-	dialog.set_sizer_and_fit(content_sizer, true);
-	dialog.centre();
-	page_ctrl.set_focus();
-	if dialog.show_modal() == wxdragon::id::ID_OK { Some(page_ctrl.value().clamp(1, max_page)) } else { None }
-}
-
-pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32) -> Option<i32> {
-	let dialog_title = t("Go to Percent");
-	let dialog = Dialog::builder(parent, &dialog_title).build();
-	let current_percent = current_percent.clamp(0, 100);
-	let slider_label = StaticText::builder(&dialog).with_label(&t("&Percent")).build();
-	let percent_slider =
-		Slider::builder(&dialog).with_value(current_percent).with_min_value(0).with_max_value(100).build();
-	let input_label = StaticText::builder(&dialog).with_label(&t("P&ercent:")).build();
-	let input_ctrl = SpinCtrl::builder(&dialog)
-		.with_range(0, 100)
-		.with_style(SpinCtrlStyle::Default | SpinCtrlStyle::ProcessEnter)
-		.build();
-	input_ctrl.set_value(current_percent);
-	let input_ctrl_for_slider = input_ctrl;
-	percent_slider.on_slider(move |event| {
-		input_ctrl_for_slider.set_value(event.get_value());
-	});
-	let percent_slider_for_spin = percent_slider;
-	input_ctrl.on_value_changed(move |event| {
-		percent_slider_for_spin.set_value(event.get_value());
-	});
-	let dialog_for_enter = dialog;
-	input_ctrl.bind_internal(EventType::TEXT_ENTER, move |event| {
-		event.skip(false);
-		dialog_for_enter.end_modal(wxdragon::id::ID_OK);
-	});
-	let dialog_for_slider_enter = dialog;
-	percent_slider.bind_internal(EventType::KEY_DOWN, move |event| {
-		let key = event.get_key_code().unwrap_or(0);
-		if key == KEY_RETURN || key == KEY_NUMPAD_ENTER {
-			event.skip(false);
-			dialog_for_slider_enter.end_modal(wxdragon::id::ID_OK);
-			return;
-		}
-		event.skip(true);
-	});
-	let percent_slider_for_keys = percent_slider;
-	let input_ctrl_for_keys = input_ctrl;
-	percent_slider.bind_internal(EventType::CHAR, move |event| {
-		let key = event.get_key_code().unwrap_or(0);
-		let current = percent_slider_for_keys.value();
-		let min_val = percent_slider_for_keys.min();
-		let max_val = percent_slider_for_keys.max();
-		let new_value = match key {
-			WXK_UP | WXK_RIGHT => Some((current + 1).min(max_val)),
-			WXK_DOWN | WXK_LEFT => Some((current - 1).max(min_val)),
-			WXK_PAGEUP => Some((current + 10).min(max_val)),
-			WXK_PAGEDOWN => Some((current - 10).max(min_val)),
-			WXK_HOME => Some(min_val),
-			WXK_END => Some(max_val),
-			_ => None,
-		};
-		if let Some(val) = new_value {
-			percent_slider_for_keys.set_value(val);
-			input_ctrl_for_keys.set_value(val);
-			event.skip(false);
-		} else {
-			event.skip(true);
-		}
-	});
-	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	content_sizer.add(&slider_label, 0, SizerFlag::Left | SizerFlag::Top, 5);
-	content_sizer.add(&percent_slider, 0, SizerFlag::Expand | SizerFlag::Bottom, 5);
-	content_sizer.add(&input_label, 0, SizerFlag::Left, 5);
-	content_sizer.add(&input_ctrl, 0, SizerFlag::Expand, 0);
-	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
-	ok_button.set_default();
-	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
-	dialog.set_affirmative_id(wxdragon::id::ID_OK);
-	let main_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	main_sizer.add_sizer(&content_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
-	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&ok_button, 0, SizerFlag::All, DIALOG_PADDING);
-	button_sizer.add(&cancel_button, 0, SizerFlag::All, DIALOG_PADDING);
-	main_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
-	dialog.set_sizer_and_fit(main_sizer, true);
-	dialog.centre();
-	percent_slider.set_focus();
-	if dialog.show_modal() == wxdragon::id::ID_OK { Some(input_ctrl.value().clamp(0, 100)) } else { None }
 }
 
 fn show_yes_no_dialog(parent: &dyn WxWidget, message: &str, title: &str) -> bool {
