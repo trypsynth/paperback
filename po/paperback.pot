@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-05-07 15:16-0600\n"
+"POT-Creation-Date: 2026-05-10 09:42-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,6 +21,9 @@ msgid "Failed to create IPC server"
 msgstr ""
 
 msgid "Warning"
+msgstr ""
+
+msgid "An accessible, lightweight, fast ebook and document reader"
 msgstr ""
 
 msgid "expanded"
@@ -406,9 +409,6 @@ msgid "&Minutes:"
 msgstr ""
 
 msgid "&View:"
-msgstr ""
-
-msgid "An accessible, lightweight, fast ebook and document reader"
 msgstr ""
 
 msgid "File not found: {}"

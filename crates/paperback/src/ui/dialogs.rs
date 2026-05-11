@@ -1,6 +1,5 @@
 use std::{
 	cell::{Cell, RefCell},
-	ffi::CString,
 	fmt::Write,
 	path::Path,
 	rc::Rc,
@@ -8,7 +7,7 @@ use std::{
 };
 
 use bitflags::bitflags;
-use wxdragon::{event::WebViewEvents, ffi, prelude::*, translations::translate as t, widgets::WebView};
+use wxdragon::{event::WebViewEvents, prelude::*, translations::translate as t, widgets::WebView};
 
 #[cfg(target_os = "linux")]
 mod accessible_tree;
@@ -26,6 +25,9 @@ use paperback_core::{
 };
 
 use crate::translation_manager::TranslationManager;
+
+mod about;
+pub use about::show_about_dialog;
 
 const DIALOG_PADDING: i32 = 10;
 const RECENT_DOCS_LIST_WIDTH: i32 = 800;
@@ -2558,27 +2560,4 @@ fn finalize_elements_layout(dialog: Dialog, content_sizer: BoxSizer, ok_button: 
 	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
-}
-
-pub fn show_about_dialog(parent: &Frame) {
-	let name = CString::new("Paperback").unwrap_or_else(|_| CString::new("").unwrap());
-	let version = CString::new(env!("CARGO_PKG_VERSION")).unwrap_or_else(|_| CString::new("").unwrap());
-	let description = CString::new(t("An accessible, lightweight, fast ebook and document reader"))
-		.unwrap_or_else(|_| CString::new("").unwrap());
-	let copyright = CString::new("Copyright (C) 2025-2026 Quin Gillespie. All rights reserved.")
-		.unwrap_or_else(|_| CString::new("").unwrap());
-	let website = CString::new("https://paperback.dev").unwrap_or_else(|_| CString::new("").unwrap());
-	unsafe {
-		let info = ffi::wxd_AboutDialogInfo_Create();
-		if info.is_null() {
-			return;
-		}
-		ffi::wxd_AboutDialogInfo_SetName(info, name.as_ptr());
-		ffi::wxd_AboutDialogInfo_SetVersion(info, version.as_ptr());
-		ffi::wxd_AboutDialogInfo_SetDescription(info, description.as_ptr());
-		ffi::wxd_AboutDialogInfo_SetCopyright(info, copyright.as_ptr());
-		ffi::wxd_AboutDialogInfo_SetWebSite(info, website.as_ptr());
-		ffi::wxd_AboutBox(info, parent.handle_ptr());
-		ffi::wxd_AboutDialogInfo_Destroy(info);
-	}
 }
