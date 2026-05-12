@@ -14,12 +14,12 @@ path = "src/lib.rs"
 [dependencies]
 anyhow = { workspace = true }
 base64 = { workspace = true }
-bitflags = { workspace = true }
+bitflags = "2.11.1"
 toml = { workspace = true }
 cfb = "0.14.0"
 ego-tree = "0.11.0"
 encoding_rs = "0.8.35"
-libchm = "0.1.0"
+libchm = "0.1.1"
 office-crypto = "0.2.0"
 pdfium = { git = "https://github.com/aryanchoudharypro/PDFium-rs", branch = "feature/tagged-pdf-support" }
 percent-encoding = "2.3.2"
@@ -28,7 +28,7 @@ regex = "1.12.3"
 roman = "0.1"
 roxmltree = "0.21.1"
 rtf-parser = "0.4.2"
-scraper = "0.26.0"
+scraper = "0.27.0"
 serde = { version = "1.0.228", default-features = false, features = ["derive", "std"] }
 sha1 = "0.11.0"
 zip = { version = "8.6.0", default-features = false, features = ["deflate"] }

@@ -21,7 +21,7 @@ use wxdragon::{prelude::*, timer::Timer, translations::translate as t};
 #[cfg(not(target_os = "linux"))]
 use super::tray;
 use super::{
-	dialogs::{self, OptionsDialogFlags},
+	dialogs,
 	document_manager::{DocumentManager, build_font_from_readability},
 	find::{self, FindDialogState},
 	help::{self, MAIN_WINDOW_PTR},
@@ -116,19 +116,6 @@ impl MainWindow {
 			}
 			event.skip(true);
 		});
-		{
-			let dm_for_activate = Rc::clone(&doc_manager);
-			frame.on_activate(move |event| {
-				if let wxdragon::event::WindowEventData::Activate(ref activate) = event {
-					if activate.is_active() {
-						if let Ok(dm) = dm_for_activate.try_lock() {
-							dm.restore_focus();
-						}
-					}
-				}
-				event.skip(true);
-			});
-		}
 		#[cfg(not(target_os = "linux"))]
 		let tray_state = Rc::new(Mutex::new(None));
 		#[cfg(not(target_os = "linux"))]
@@ -1188,25 +1175,37 @@ impl MainWindow {
 					let Some(options) = options else {
 						return;
 					};
-					let (old_word_wrap, old_compact_menu) = {
+					let (
+						old_word_wrap,
+						old_compact_menu,
+						old_readability_font,
+						old_line_spacing,
+						old_bg_color,
+						old_text_alignment,
+						old_letter_spacing,
+						old_paragraph_spacing,
+					) = {
 						let cfg = config.lock().unwrap();
-						(cfg.get_app_bool("word_wrap", false), cfg.get_app_bool("compact_go_menu", true))
+						(
+							cfg.get_app_bool("word_wrap", false),
+							cfg.get_app_bool("compact_go_menu", true),
+							cfg.get_readability_font(),
+							cfg.get_line_spacing(),
+							cfg.get_bg_color(),
+							cfg.get_text_alignment(),
+							cfg.get_letter_spacing(),
+							cfg.get_paragraph_spacing(),
+						)
 					};
 					let cfg = config.lock().unwrap();
-					cfg.set_app_bool(
-						"restore_previous_documents",
-						options.flags.contains(OptionsDialogFlags::RESTORE_PREVIOUS_DOCUMENTS),
-					);
-					cfg.set_app_bool("word_wrap", options.flags.contains(OptionsDialogFlags::WORD_WRAP));
-					cfg.set_app_bool("minimize_to_tray", options.flags.contains(OptionsDialogFlags::MINIMIZE_TO_TRAY));
-					cfg.set_app_bool("start_maximized", options.flags.contains(OptionsDialogFlags::START_MAXIMIZED));
-					cfg.set_app_bool("compact_go_menu", options.flags.contains(OptionsDialogFlags::COMPACT_GO_MENU));
-					cfg.set_app_bool("navigation_wrap", options.flags.contains(OptionsDialogFlags::NAVIGATION_WRAP));
-					cfg.set_app_bool(
-						"check_for_updates_on_startup",
-						options.flags.contains(OptionsDialogFlags::CHECK_FOR_UPDATES_ON_STARTUP),
-					);
-					cfg.set_app_bool("bookmark_sounds", options.flags.contains(OptionsDialogFlags::BOOKMARK_SOUNDS));
+					cfg.set_app_bool("restore_previous_documents", options.restore_previous_documents);
+					cfg.set_app_bool("word_wrap", options.word_wrap);
+					cfg.set_app_bool("minimize_to_tray", options.minimize_to_tray);
+					cfg.set_app_bool("start_maximized", options.start_maximized);
+					cfg.set_app_bool("compact_go_menu", options.compact_go_menu);
+					cfg.set_app_bool("navigation_wrap", options.navigation_wrap);
+					cfg.set_app_bool("check_for_updates_on_startup", options.check_for_updates_on_startup);
+					cfg.set_app_bool("bookmark_sounds", options.bookmark_sounds);
 					cfg.set_app_int("recent_documents_to_show", options.recent_documents_to_show);
 					cfg.set_app_int("reading_speed_wpm", options.reading_speed_wpm);
 					cfg.set_app_string("language", &options.language);
@@ -1219,32 +1218,47 @@ impl MainWindow {
 					cfg.set_paragraph_spacing(options.paragraph_spacing);
 					cfg.flush();
 					drop(cfg);
-					let options_word_wrap = options.flags.contains(OptionsDialogFlags::WORD_WRAP);
-					if let Some(font) = build_font_from_readability(&options.readability_font) {
-						if old_word_wrap != options_word_wrap {
-							let dm_for_wrap = Rc::clone(&dm);
-							let mut dm_ref = dm.lock().unwrap();
-							dm_ref.apply_word_wrap(&dm_for_wrap, options_word_wrap);
-							dm_ref.restore_focus();
-						}
-						dm.lock().unwrap().apply_font(&font);
-						dm.lock().unwrap().apply_color(options.readability_font.color);
-						dm.lock().unwrap().apply_line_spacing(options.line_spacing);
-					} else {
-						// Font is default/reset: rebuild text controls so they inherit
-						// the system default font. apply_word_wrap re-applies all settings.
+					let options_word_wrap = options.word_wrap;
+					let font_changed = old_readability_font != options.readability_font;
+					let line_spacing_changed = old_line_spacing != options.line_spacing;
+					let bg_color_changed = old_bg_color != options.bg_color;
+					let text_alignment_changed = old_text_alignment != options.text_alignment;
+					let letter_spacing_changed = old_letter_spacing != options.letter_spacing;
+					let paragraph_spacing_changed = old_paragraph_spacing != options.paragraph_spacing;
+					let needs_rebuild = old_word_wrap != options_word_wrap
+						|| (font_changed && build_font_from_readability(&options.readability_font).is_none())
+						|| (bg_color_changed && options.bg_color < 0)
+						|| (font_changed && options.readability_font.color < 0);
+					if needs_rebuild {
 						let dm_for_wrap = Rc::clone(&dm);
 						let mut dm_ref = dm.lock().unwrap();
 						dm_ref.apply_word_wrap(&dm_for_wrap, options_word_wrap);
 						dm_ref.restore_focus();
-						dm_ref.apply_color(options.readability_font.color);
+					} else {
+						let dm_ref = dm.lock().unwrap();
+						if font_changed {
+							if let Some(font) = build_font_from_readability(&options.readability_font) {
+								dm_ref.apply_font(&font);
+							}
+							dm_ref.apply_color(options.readability_font.color);
+						}
+						if bg_color_changed {
+							dm_ref.apply_bg_color(options.bg_color);
+						}
+						if line_spacing_changed {
+							dm_ref.apply_line_spacing(options.line_spacing);
+						}
+						if text_alignment_changed {
+							dm_ref.apply_text_alignment(options.text_alignment);
+						}
+						if letter_spacing_changed {
+							dm_ref.apply_letter_spacing(options.letter_spacing);
+						}
+						if paragraph_spacing_changed {
+							dm_ref.apply_paragraph_spacing(options.paragraph_spacing);
+						}
 					}
-					// These apply regardless of font path
-					dm.lock().unwrap().apply_bg_color(options.bg_color);
-					dm.lock().unwrap().apply_text_alignment(options.text_alignment);
-					dm.lock().unwrap().apply_letter_spacing(options.letter_spacing);
-					dm.lock().unwrap().apply_paragraph_spacing(options.paragraph_spacing);
-					let options_compact_menu = options.flags.contains(OptionsDialogFlags::COMPACT_GO_MENU);
+					let options_compact_menu = options.compact_go_menu;
 					if current_language != options.language || old_compact_menu != options_compact_menu {
 						if current_language != options.language {
 							let _ = TranslationManager::instance().lock().unwrap().set_language(&options.language);

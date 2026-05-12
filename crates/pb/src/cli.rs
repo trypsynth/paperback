@@ -19,11 +19,15 @@ pub struct Cli {
 	/// Print document metadata (title, author, word count) instead of content
 	#[arg(short, long)]
 	pub metadata: bool,
+	/// Exit with code 2 instead of prompting for a password (useful for batch processing)
+	#[arg(long)]
+	pub no_prompt: bool,
 }
 
 #[derive(Clone, ValueEnum)]
 pub enum Format {
 	Text,
 	Html,
+	#[value(alias = "md")]
 	Markdown,
 }

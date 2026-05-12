@@ -13,7 +13,6 @@ repository = "https://github.com/trypsynth/paperback"
 [workspace.dependencies]
 anyhow = "1.0.102"
 base64 = "0.22.1"
-bitflags = "2.11.1"
 toml = "1.1"
 rstest = "0.26.1"
 
@@ -23,6 +22,3 @@ opt-level = "z"
 lto = true
 panic = "abort"
 codegen-units = 1
-
-[patch.crates-io]
-wxdragon = { git = "https://github.com/AllenDang/wxDragon" }

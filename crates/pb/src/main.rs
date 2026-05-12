@@ -23,24 +23,40 @@ fn main() -> Result<()> {
 	let doc = match parse_document(&context) {
 		Ok(doc) => doc,
 		Err(e) if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) => {
+			if cli.no_prompt {
+				eprintln!("pb: document requires a password; skipping (use -p to supply one)");
+				std::process::exit(2);
+			}
 			let password = rpassword::prompt_password("Password: ").context("failed to read password")?;
 			context.password = Some(password);
 			parse_document(&context).with_context(|| format!("failed to parse {}", cli.input.display()))?
 		}
 		Err(e) => return Err(e.context(format!("failed to parse {}", cli.input.display()))),
 	};
+	let handle = paperback_core::document::DocumentHandle::new(doc);
+	let is_markdown = !cli.metadata && matches!(cli.format, Format::Markdown);
 	let result = if cli.metadata {
-		metadata(&doc)
+		metadata(handle.document())
 	} else {
 		let format = match cli.format {
 			Format::Text => ExportFormat::Text,
 			Format::Html => ExportFormat::Html,
 			Format::Markdown => ExportFormat::Markdown,
 		};
-		export::render(&doc, format)
+		export::render(&handle, format)
 	};
 	match cli.output {
-		Some(path) => fs::write(&path, &result).with_context(|| format!("failed to write {}", path.display())),
+		Some(path) => {
+			if is_markdown {
+				// Prepend UTF-8 BOM so editors like EdSharp detect the encoding correctly
+				let mut bytes = vec![0xEF_u8, 0xBB, 0xBF];
+				bytes.extend_from_slice(result.as_bytes());
+				fs::write(&path, &bytes)
+			} else {
+				fs::write(&path, &result)
+			}
+			.with_context(|| format!("failed to write {}", path.display()))
+		}
 		None => Ok(print!("{result}")),
 	}
 }
