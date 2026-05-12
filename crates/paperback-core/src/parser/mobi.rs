@@ -244,6 +244,9 @@ impl Parser for MobiParser {
 		if let Ok(re) = regex::Regex::new(r"(?is)@page\s*\{[^<]+") {
 			text = re.replace_all(&text, "").into_owned();
 		}
+		// Old-style Mobipocket files use <font size="N"> instead of <h1>-<h6>.
+		// Rewrite them so the heading-based TOC builder can pick them up.
+		text = rewrite_font_size_headings(&text);
 		let mut html_converter = HtmlToText::new();
 		html_converter.convert(&text, HtmlSourceMode::NativeHtml);
 		if document_title.trim().is_empty() {
@@ -260,6 +263,25 @@ impl Parser for MobiParser {
 		document.toc_items = toc_items;
 		Ok(document)
 	}
+}
+
+// Old-style Mobipocket files use <font size="N"> for headings (size 7 = largest, 4-7 map to h1-h4).
+// Only activated when the document contains no semantic h1-h6 tags.
+fn rewrite_font_size_headings(html: &str) -> String {
+	if regex::Regex::new(r"(?i)<h[1-6]\b").map(|re| re.is_match(html)).unwrap_or(false) {
+		return html.to_string();
+	}
+	let mut result = html.to_string();
+	for (size, level) in [(7u8, 1u8), (6, 2), (5, 3), (4, 4)] {
+		let Ok(re) = regex::Regex::new(&format!(r#"(?is)<font\b[^>]*\bsize=["']?{size}["']?[^>]*>(.*?)</font>"#))
+		else {
+			continue;
+		};
+		result = re
+			.replace_all(&result, |caps: &regex::Captures<'_>| format!("<h{level}>{}</h{level}>", &caps[1]))
+			.into_owned();
+	}
+	result
 }
 
 fn snap_to_char_boundary(s: &str, pos: usize) -> usize {
