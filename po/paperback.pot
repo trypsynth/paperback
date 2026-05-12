@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-05-11 09:44-0600\n"
+"POT-Creation-Date: 2026-05-11 19:10-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -114,61 +114,6 @@ msgid "HTML"
 msgstr ""
 
 msgid "Markdown"
-msgstr ""
-
-msgid "Sleep Timer"
-msgstr ""
-
-msgid "&Minutes:"
-msgstr ""
-
-msgid "Table of Contents"
-msgstr ""
-
-#, c-format
-msgid "Update to %s"
-msgstr ""
-
-msgid "A new version of Paperback is available. Here's what's new:"
-msgstr ""
-
-msgid "&Yes"
-msgstr ""
-
-msgid "&No"
-msgstr ""
-
-msgid "View Note"
-msgstr ""
-
-msgid "Close"
-msgstr ""
-
-msgid "1 hour"
-msgstr ""
-
-msgid "hours"
-msgstr ""
-
-msgid "1 minute"
-msgstr ""
-
-msgid "minutes"
-msgstr ""
-
-msgid "1 second"
-msgstr ""
-
-msgid "seconds"
-msgstr ""
-
-msgid "Estimated reading time: {}"
-msgstr ""
-
-msgid "This document contains {} words."
-msgstr ""
-
-msgid "Word Count"
 msgstr ""
 
 msgid "Options"
@@ -304,6 +249,61 @@ msgid "Underlined"
 msgstr ""
 
 msgid "Strikethrough"
+msgstr ""
+
+msgid "Sleep Timer"
+msgstr ""
+
+msgid "&Minutes:"
+msgstr ""
+
+msgid "Table of Contents"
+msgstr ""
+
+#, c-format
+msgid "Update to %s"
+msgstr ""
+
+msgid "A new version of Paperback is available. Here's what's new:"
+msgstr ""
+
+msgid "&Yes"
+msgstr ""
+
+msgid "&No"
+msgstr ""
+
+msgid "View Note"
+msgstr ""
+
+msgid "Close"
+msgstr ""
+
+msgid "1 hour"
+msgstr ""
+
+msgid "hours"
+msgstr ""
+
+msgid "1 minute"
+msgstr ""
+
+msgid "minutes"
+msgstr ""
+
+msgid "1 second"
+msgstr ""
+
+msgid "seconds"
+msgstr ""
+
+msgid "Estimated reading time: {}"
+msgstr ""
+
+msgid "This document contains {} words."
+msgstr ""
+
+msgid "Word Count"
 msgstr ""
 
 msgid "Jump to Bookmark"
