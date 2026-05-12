@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-04-27 18:45-0600\n"
-"PO-Revision-Date: 2026-05-08 16:16+0300\n"
+"POT-Creation-Date: 2026-05-11 19:10-0600\n"
+"PO-Revision-Date: 2026-05-12 19:54+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -19,24 +19,14 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.9\n"
 
-msgid "Figure"
-msgstr "Kuvio"
-
-msgid "Image"
-msgstr "Kuva"
-
-msgid ""
-"This PDF contains images only, with no extractable text. You may need to run "
-"it through OCR software to read its contents."
-msgstr ""
-"Tämä PDF sisältää pelkkiä kuvia, eikä siinä ole poimittavaa tekstiä. "
-"Sisällön lukeminen saattaa edellyttää tekstintunnistusohjelman käyttöä."
-
 msgid "Failed to create IPC server"
 msgstr "IPC-palvelimen luonti epäonnistui"
 
 msgid "Warning"
 msgstr "Varoitus"
+
+msgid "An accessible, lightweight, fast ebook and document reader"
+msgstr "Saavutettava, kevyt ja nopea e- ja asiakirjanlukija"
 
 msgid "expanded"
 msgstr "laajennettu"
@@ -44,11 +34,35 @@ msgstr "laajennettu"
 msgid "collapsed"
 msgstr "kutistettu"
 
-msgid "Elements"
-msgstr "Elementit"
+msgid "Document Info"
+msgstr "Asiakirjan tiedot"
+
+msgid "Path:"
+msgstr "Polku:"
+
+msgid "Title:"
+msgstr "Nimi:"
+
+msgid "Author:"
+msgstr "Tekijä:"
+
+msgid "Words:"
+msgstr "Sanojen määrä:"
+
+msgid "Lines:"
+msgstr "Rivien määrä:"
+
+msgid "Characters:"
+msgstr "Merkkien määrä:"
+
+msgid "Characters (excluding spaces):"
+msgstr "Merkkien määrä (ilman välilyöntejä):"
 
 msgid "OK"
 msgstr "OK"
+
+msgid "Elements"
+msgstr "Elementit"
 
 msgid "Cancel"
 msgstr "Peruuta"
@@ -62,8 +76,49 @@ msgstr "Linkit"
 msgid "Untitled"
 msgstr "Nimetön"
 
-msgid "Table of Contents"
-msgstr "Sisällysluettelo"
+msgid "Go to Line"
+msgstr "Siirry riville"
+
+msgid "&Line number:"
+msgstr "R&ivinumero:"
+
+msgid "Go to page"
+msgstr "Siirry sivulle"
+
+#, c-format
+msgid "Go to page (%d/%d):"
+msgstr "Siirry sivulle (%d/%d):"
+
+msgid "Go to Percent"
+msgstr "Siirry prosenttiin"
+
+msgid "&Percent"
+msgstr "&Prosentti"
+
+msgid "P&ercent:"
+msgstr "Pr&osentti:"
+
+msgid "Open As"
+msgstr "Avaa muodossa"
+
+msgid ""
+"No suitable parser was found for {}.\n"
+"How would you like to open this file?"
+msgstr ""
+"Tiedostolle {} ei löytynyt sopivaa jäsentäjää.\n"
+"Miten haluat avata tämän tiedoston?"
+
+msgid "Open &as:"
+msgstr "Avaa &muodossa:"
+
+msgid "Plain Text"
+msgstr "Pelkkä teksti"
+
+msgid "HTML"
+msgstr "HTML"
+
+msgid "Markdown"
+msgstr "Markdown"
 
 msgid "Options"
 msgstr "Asetukset"
@@ -200,6 +255,61 @@ msgstr "Alleviivattu"
 msgid "Strikethrough"
 msgstr "Yliviivattu"
 
+msgid "Sleep Timer"
+msgstr "Uniajastin"
+
+msgid "&Minutes:"
+msgstr "&Minuuttia:"
+
+msgid "Table of Contents"
+msgstr "Sisällysluettelo"
+
+#, c-format
+msgid "Update to %s"
+msgstr "Päivitä versioon %s"
+
+msgid "A new version of Paperback is available. Here's what's new:"
+msgstr "Paperbackista on saatavilla uusi versio. Sen uusia ominaisuuksia ovat:"
+
+msgid "&Yes"
+msgstr "&Kyllä"
+
+msgid "&No"
+msgstr "&Ei"
+
+msgid "View Note"
+msgstr "Näytä muistiinpano"
+
+msgid "Close"
+msgstr "Sulje"
+
+msgid "1 hour"
+msgstr "1 tunti"
+
+msgid "hours"
+msgstr "tuntia"
+
+msgid "1 minute"
+msgstr "1 minuutti"
+
+msgid "minutes"
+msgstr "minuuttia"
+
+msgid "1 second"
+msgstr "1 sekunti"
+
+msgid "seconds"
+msgstr "sekuntia"
+
+msgid "Estimated reading time: {}"
+msgstr "Arvioitu lukuaika: {}"
+
+msgid "This document contains {} words."
+msgstr "Asiakirjassa on {} sanaa."
+
+msgid "Word Count"
+msgstr "Sanamäärä"
+
 msgid "Jump to Bookmark"
 msgstr "Siirry kirjanmerkkiin"
 
@@ -242,12 +352,6 @@ msgstr "Kirjanmerkin muistiinpano"
 msgid "Edit bookmark note:"
 msgstr "Muokkaa kirjanmerkin muistiinpanoa:"
 
-msgid "View Note"
-msgstr "Näytä muistiinpano"
-
-msgid "Close"
-msgstr "Sulje"
-
 msgid "Root"
 msgstr "Juuri"
 
@@ -256,92 +360,6 @@ msgstr "Valitse luku sisällysluettelosta."
 
 msgid "No Selection"
 msgstr "Ei valintaa"
-
-msgid "1 hour"
-msgstr "1 tunti"
-
-msgid "hours"
-msgstr "tuntia"
-
-msgid "1 minute"
-msgstr "1 minuutti"
-
-msgid "minutes"
-msgstr "minuuttia"
-
-msgid "1 second"
-msgstr "1 sekunti"
-
-msgid "seconds"
-msgstr "sekuntia"
-
-msgid "Estimated reading time: {}"
-msgstr "Arvioitu lukuaika: {}"
-
-msgid "This document contains {} words."
-msgstr "Asiakirjassa on {} sanaa."
-
-msgid "Word Count"
-msgstr "Sanamäärä"
-
-msgid "Document Info"
-msgstr "Asiakirjan tiedot"
-
-msgid "Path:"
-msgstr "Polku:"
-
-msgid "Title:"
-msgstr "Nimi:"
-
-msgid "Author:"
-msgstr "Tekijä:"
-
-msgid "Words:"
-msgstr "Sanojen määrä:"
-
-msgid "Lines:"
-msgstr "Rivien määrä:"
-
-msgid "Characters:"
-msgstr "Merkkien määrä:"
-
-msgid "Characters (excluding spaces):"
-msgstr "Merkkien määrä (ilman välilyöntejä):"
-
-msgid "Go to Line"
-msgstr "Siirry riville"
-
-msgid "&Line number:"
-msgstr "R&ivinumero:"
-
-msgid "Go to page"
-msgstr "Siirry sivulle"
-
-#, c-format
-msgid "Go to page (%d/%d):"
-msgstr "Siirry sivulle (%d/%d):"
-
-msgid "Go to Percent"
-msgstr "Siirry prosenttiin"
-
-msgid "&Percent"
-msgstr "&Prosentti"
-
-msgid "P&ercent:"
-msgstr "Pr&osentti:"
-
-msgid "&Yes"
-msgstr "&Kyllä"
-
-msgid "&No"
-msgstr "&Ei"
-
-#, c-format
-msgid "Update to %s"
-msgstr "Päivitä versioon %s"
-
-msgid "A new version of Paperback is available. Here's what's new:"
-msgstr "Paperbackista on saatavilla uusi versio. Sen uusia ominaisuuksia ovat:"
 
 msgid "All Documents"
 msgstr "Kaikki asiakirjat"
@@ -391,28 +409,6 @@ msgstr ""
 "Haluatko varmasti poistaa luettelosta kaikki asiakirjat? Myös lukukohdat ja "
 "kirjanmerkit poistetaan."
 
-msgid "Open As"
-msgstr "Avaa muodossa"
-
-msgid ""
-"No suitable parser was found for {}.\n"
-"How would you like to open this file?"
-msgstr ""
-"Tiedostolle {} ei löytynyt sopivaa jäsentäjää.\n"
-"Miten haluat avata tämän tiedoston?"
-
-msgid "Open &as:"
-msgstr "Avaa &muodossa:"
-
-msgid "Plain Text"
-msgstr "Pelkkä teksti"
-
-msgid "HTML"
-msgstr "HTML"
-
-msgid "Markdown"
-msgstr "Markdown"
-
 msgid "Open"
 msgstr "Avaa"
 
@@ -422,17 +418,8 @@ msgstr "Suljettu"
 msgid "Missing"
 msgstr "Ei löydy"
 
-msgid "Sleep Timer"
-msgstr "Uniajastin"
-
-msgid "&Minutes:"
-msgstr "&Minuuttia:"
-
 msgid "&View:"
 msgstr "&Näytä:"
-
-msgid "An accessible, lightweight, fast ebook and document reader"
-msgstr "Saavutettava, kevyt ja nopea e- ja asiakirjanlukija"
 
 msgid "File not found: {}"
 msgstr "Tiedostoa ei löydy: {}"
@@ -622,6 +609,21 @@ msgstr "Vie asiakirja tekstimuotoon"
 msgid "Failed to export document."
 msgstr "Asiakirjan vienti epäonnistui."
 
+#| msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
+msgid "HTML files (*.html)|*.html|All files (*.*)|*.*"
+msgstr "HTML-tiedostot (*.html)|*.html|Kaikki tiedostot (*.*)|*.*"
+
+#| msgid "Export Document"
+msgid "Export document to HTML"
+msgstr "Vie asiakirja HTML-muotoon"
+
+#| msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
+msgid "Markdown files (*.md)|*.md|All files (*.*)|*.*"
+msgstr "Markdown-tiedostot (*.md)|*.md|Kaikki tiedostot (*.*)|*.*"
+
+msgid "Export document to Markdown"
+msgstr "Vie asiakirja Markdown-muotoon"
+
 msgid "Paperback files (*.paperback)|*.paperback"
 msgstr "Paperback-tiedostot (*.paperback)|*.paperback"
 
@@ -656,11 +658,11 @@ msgid "Sleep timer cancelled."
 msgstr "Uniajastin peruutettu."
 
 msgid "Sleep timer set for 1 minute."
-msgstr "Uniajastimen ajaksi asetettu 1 minuutti."
+msgstr "Uniajastin: 1 minuutti."
 
 #, c-format
 msgid "Sleep timer set for %d minutes."
-msgstr "Uniajastimen ajaksi asetettu %d minuuttia."
+msgstr "Uniajastin: %d minuuttia."
 
 msgid "No recent documents."
 msgstr "Ei viimeisimpiä asiakirjoja."
@@ -1001,6 +1003,21 @@ msgstr "Vie te&kstimuotoon...\tCtrl+E"
 msgid "Export document as plain text"
 msgstr "Vie asiakirja tekstimuotoon"
 
+#| msgid "Export to &Plain Text...\tCtrl+E"
+msgid "Export to &HTML..."
+msgstr "Vie &HTML-muotoon..."
+
+msgid "Export document as HTML"
+msgstr "Vie asiakirja HTML-muodossa"
+
+#| msgid "Export to &Plain Text...\tCtrl+E"
+msgid "Export to &Markdown..."
+msgstr "Vie &Markdown-muotoon..."
+
+#| msgid "Export document as plain text"
+msgid "Export document as Markdown"
+msgstr "Vie asiakirja Markdown-muodossa"
+
 msgid "&Word Count\tRawCtrl+W"
 msgstr "Sana&määrä\tRawCtrl+W"
 
@@ -1283,6 +1300,19 @@ msgstr "&Lopeta"
 msgid "Exit Paperback"
 msgstr "Lopeta Paperback"
 
+#~ msgid "Figure"
+#~ msgstr "Kuvio"
+
+#~ msgid "Image"
+#~ msgstr "Kuva"
+
+#~ msgid ""
+#~ "This PDF contains images only, with no extractable text. You may need to "
+#~ "run it through OCR software to read its contents."
+#~ msgstr ""
+#~ "Tämä PDF sisältää pelkkiä kuvia, eikä siinä ole poimittavaa tekstiä. "
+#~ "Sisällön lukeminen saattaa edellyttää tekstintunnistusohjelman käyttöä."
+
 #, c-format
 #~ msgid ""
 #~ "There is an update available.\n"
@@ -1384,9 +1414,6 @@ msgstr "Lopeta Paperback"
 
 #~ msgid "Select a document to read"
 #~ msgstr "Valitse luettava dokumentti"
-
-#~ msgid "Export Document"
-#~ msgstr "Vie dokumentti"
 
 #~ msgid "Password required or incorrect."
 #~ msgstr "Salasana tarvitaan tai se on virheellinen."
