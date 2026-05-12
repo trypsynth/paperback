@@ -59,7 +59,6 @@ const KEY_DELETE: i32 = 127;
 const KEY_NUMPAD_DELETE: i32 = 330;
 #[cfg(not(target_os = "linux"))]
 const KEY_SPACE: i32 = 32;
-const KEY_ESCAPE: i32 = 27;
 const KEY_RETURN: i32 = 13;
 const KEY_NUMPAD_ENTER: i32 = 370;
 
@@ -772,13 +771,7 @@ pub fn show_all_documents_dialog(
 	let doc_list = build_all_documents_list(dialog);
 	let (open_button, remove_button, clear_all_button, ok_button) = build_all_documents_buttons(dialog);
 
-	bind_escape_to_close(&open_button, dialog);
-	bind_escape_to_close(&remove_button, dialog);
-	bind_escape_to_close(&clear_all_button, dialog);
-	bind_escape_to_close(&ok_button, dialog);
-	bind_escape_to_close(&dialog, dialog);
-	bind_escape_to_close(&search_ctrl, dialog);
-	bind_escape_to_close(&doc_list, dialog);
+	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
 
 	populate_document_list(&DocumentListParams {
 		list: doc_list,
@@ -1212,31 +1205,6 @@ fn update_open_button_for_index(list: ListCtrl, open_button: Button, index: i32)
 	}
 	let status = list.get_item_text(i64::from(index), 1);
 	open_button.enable(status != t("Missing"));
-}
-
-fn bind_escape_to_close(handler: &impl WxEvtHandler, dialog: Dialog) {
-	let dialog_for_escape = dialog;
-	handler.bind_internal(EventType::KEY_DOWN, move |event| {
-		if let Some(key) = event.get_key_code() {
-			if key == KEY_ESCAPE {
-				dialog_for_escape.end_modal(wxdragon::id::ID_CANCEL);
-				event.skip(false);
-				return;
-			}
-		}
-		event.skip(true);
-	});
-	let dialog_for_escape = dialog;
-	handler.bind_internal(EventType::CHAR, move |event| {
-		if let Some(key) = event.get_key_code() {
-			if key == KEY_ESCAPE {
-				dialog_for_escape.end_modal(wxdragon::id::ID_CANCEL);
-				event.skip(false);
-				return;
-			}
-		}
-		event.skip(true);
-	});
 }
 
 fn get_selected_index(list: ListCtrl) -> i32 {

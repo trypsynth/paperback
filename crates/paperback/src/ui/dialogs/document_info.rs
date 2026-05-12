@@ -3,7 +3,7 @@ use std::{fmt::Write, path::Path};
 use paperback_core::document::DocumentStats;
 use wxdragon::{prelude::*, translations::translate as t};
 
-use super::{DIALOG_PADDING, bind_escape_to_close};
+use super::DIALOG_PADDING;
 
 const DOC_INFO_WIDTH: i32 = 600;
 const DOC_INFO_HEIGHT: i32 = 400;
@@ -11,6 +11,7 @@ const DOC_INFO_HEIGHT: i32 = 400;
 pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, author: &str, stats: &DocumentStats) {
 	let dialog_title = t("Document Info");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
+	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
 	let info_ctrl = TextCtrl::builder(&dialog)
 		.with_style(TextCtrlStyle::MultiLine | TextCtrlStyle::ReadOnly)
 		.with_size(Size::new(DOC_INFO_WIDTH, DOC_INFO_HEIGHT))
@@ -35,15 +36,8 @@ pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, autho
 	let _ = writeln!(info, "{characters_label} {}", stats.char_count);
 	let _ = writeln!(info, "{characters_no_spaces_label} {}", stats.char_count_no_whitespace);
 	info_ctrl.set_value(&info);
-	bind_escape_to_close(&dialog, dialog);
-	bind_escape_to_close(&info_ctrl, dialog);
 	let ok_label = t("OK");
-	let ok_button = Button::builder(&dialog).with_label(&ok_label).build();
-	bind_escape_to_close(&ok_button, dialog);
-	let dialog_copy = dialog;
-	ok_button.on_click(move |_| {
-		dialog_copy.end_modal(wxdragon::id::ID_OK);
-	});
+	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&ok_label).build();
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add(&info_ctrl, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
