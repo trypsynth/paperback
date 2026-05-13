@@ -1861,6 +1861,7 @@ dependencies = [
  "ureq",
  "windows",
  "winres",
+ "wx-utils",
  "wxdragon",
 ]
 
@@ -4070,6 +4071,15 @@ name = "writeable"
 version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ffae5123b2d3fc086436f8834ae3ab053a283cfac8fe0a0b8eaae044768a4c4"
+
+[[package]]
+name = "wx-utils"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c2727ec4ab313b51ff9ce15636ed291db13a777cd31f927b9f51c0114f6f9031"
+dependencies = [
+ "wxdragon",
+]
 
 [[package]]
 name = "wxdragon"
