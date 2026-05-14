@@ -258,6 +258,7 @@ fn start_pipe_server(main_window: &Rc<MainWindow>) -> PipeServer {
 							window.handle_ipc_command(cmd);
 						}
 					}));
+					wake_up_idle();
 				}
 			});
 		} else {
