@@ -2,66 +2,100 @@
 
 Thank you for your interest in translating Paperback! This page walks you through how to start a brand new translation, how to keep it updated when new strings land, and how to submit your work.
 
-Prerequisites: Install the gettext tools (`xgettext`, `msgmerge`, `msgfmt`) and ensure they are available on your `PATH`.
+All translation files live in the `po` directory. The template is `paperback.pot`, and each language is stored as `po/<lang>.po` using the standard language code (for example: `es`, `pt_BR`, `de`).
 
-All translation files live in the `po` directory. The template file is `paperback.pot`, and each language is stored as `po/<lang>.po` using the standard language code (for example: `es`, `pt_BR`, `de`).
+## Prerequisites
+
+- gettext tools (`xgettext`, `msgmerge`, `msgfmt`) on your `PATH`, for merging and compiling translations.
+- [Poedit](https://poedit.net/download) (optional but recommended), a graphical editor for `.po` files. Any text editor works too.
+- Git and a GitHub account to submit your work.
 
 ## Starting a New Translation
 
-1. Generate the `.pot` template (normally not necessary, but it keeps everything in sync):
+1. Fork the repository on GitHub and clone your fork locally:
 
 ```bash
-cmake --build build --target update-pot
+git clone https://github.com/your-username/paperback.git
+cd paperback
 ```
 
-2. Create your language file:
+2. Create a branch for your translation:
 
 ```bash
-cp paperback.pot your-lang-code.po
+git checkout -b danish-translation
 ```
 
-3. Edit the header in your `.po` file with the correct language name, your name, and email.
-4. Translate the strings using your editor of choice. Keep placeholders and shortcut markers intact (see Notes below).
-5. Verify the file compiles cleanly:
+3. Copy the .pot template to create your language file:
 
 ```bash
-msgfmt --check --verbose es.po
+cp po/paperback.pot po/da.po
 ```
 
-6. Test your translation by recompiling Paperback and selecting it from the options dialog.
+4. Edit the header in your `.po` file with the correct language name, your name, and email.
+
+5. Translate the strings. Keep placeholders and shortcut markers intact (see [Notes](#notes) below). Poedit will highlight warnings and errors as you go.
+
+6. Verify the file compiles cleanly:
+
+```bash
+msgfmt --check --verbose po/da.po
+```
+
+7. Test your translation by recompiling Paperback and selecting it from the options dialog.
 
 ## Updating an Existing Translation
 
 When new strings are added to Paperback:
 
-1. Update the template (if not already done):
+1. Switch to your translation branch and pull the latest changes:
 
 ```bash
-cmake --build build --target update-pot
+git checkout danish-translation
+git pull origin danish-translation
 ```
 
-2. Merge new strings into your translation:
+2. Sync with the upstream repository if you haven't already:
 
 ```bash
-msgmerge -U es.po paperback.pot
+git remote add upstream https://github.com/trypsynth/paperback.git  # first time only
+git fetch upstream
+git merge upstream/master
 ```
 
-3. Translate the new or fuzzy strings. Anything marked with `fuzzy` needs a review, and any empty strings are brand new.
-4. Remove fuzzy markers once done reviewing.
-5. Compile and test (same as step 6 above).
+3. Merge new strings into your translation:
+
+```bash
+msgmerge -U po/da.po po/paperback.pot
+```
+
+4. Translate any new or fuzzy strings. Entries marked `fuzzy` need review; empty entries are brand new.
+
+5. Remove fuzzy markers once reviewed, then compile and test (same as steps 7 and 8 above).
 
 ## Submitting Your Translation
 
-1. Fork the repository and create a branch.
-2. Commit your updated `po/<lang>.po` file (and `paperback.pot` only if you regenerated it).
-3. Open a pull request here: [Create a pull request](https://github.com/trypsynth/paperback/compare).
+1. Commit your `.po` file (and `paperback.pot` only if you regenerated it):
 
-If you prefer not to use Git, you can also attach your `.po` file to an issue and we'll merge it for you.
+```bash
+git add po/da.po
+git commit -m "Add Danish translation"
+git push origin danish-translation
+```
+
+2. Open a pull request at [https://github.com/trypsynth/paperback/compare](https://github.com/trypsynth/paperback/compare). Make sure the fields are set correctly:
+
+   - base repository: `trypsynth/paperback`
+   - base: `master`
+   - head repository: your fork
+   - compare: your translation branch
+
+If you prefer not to use Git, attach your `.po` file to an issue and we will merge it for you.
 
 ## Notes
 
 1. Keyboard shortcuts: Keep the `\t` and key name together.
-2. Format strings: Keep the `%s`, `%d`, and similar placeholders.
-3. Ampersands (&): Used for keyboard shortcuts. Choose different letters if the same key is used twice in a menu.
+2. Format strings: Keep `%s`, `%d`, and similar placeholders exactly as they appear.
+3. Ampersands (`&`): Used for menu keyboard shortcuts. Choose different letters if the same key would appear twice in a menu.
 4. Punctuation and spacing: Match the source string for ellipses, colons, and spacing so UI alignment stays consistent.
-5. Encoding: Files should stay UTF-8 without a BOM.
+5. Encoding: Files must be UTF-8 without a BOM.
+6. `.mo` files: Do not commit `.mo` files. They are compiled at build time and are not needed in the repository.
