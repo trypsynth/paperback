@@ -1486,9 +1486,9 @@ checksum = "68ab91017fe16c622486840e4c83c9a37afeff978bd239b5293d61ece587de66"
 
 [[package]]
 name = "libchm"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd3c578573dc4f6d44fac98754e71f1d3779b9bd38dc10a51d699f9cdb15d485"
+checksum = "2598afb22bc62177a0b2fb7f2f4ad9fa9231d3d2d48998c57add7b84f1a5fac4"
 dependencies = [
  "cc",
  "thiserror 2.0.18",
