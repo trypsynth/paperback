@@ -32,8 +32,6 @@ mod sleep_timer;
 pub use sleep_timer::show_sleep_timer_dialog;
 mod toc;
 pub use toc::show_toc_dialog;
-mod update;
-pub use update::show_update_dialog;
 mod view_note;
 pub use view_note::show_view_note_dialog;
 mod web_view;

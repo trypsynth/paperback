@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-05-13 18:14-0600\n"
+"POT-Creation-Date: 2026-05-14 12:18-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -371,13 +371,6 @@ msgstr ""
 msgid "No Selection"
 msgstr ""
 
-#, c-format
-msgid "Update to %s"
-msgstr ""
-
-msgid "A new version of Paperback is available. Here's what's new:"
-msgstr ""
-
 msgid "View Note"
 msgstr ""
 
@@ -518,53 +511,6 @@ msgid "Failed to launch default browser."
 msgstr ""
 
 msgid "Failed to open donation page in browser."
-msgstr ""
-
-msgid "No release notes were provided."
-msgstr ""
-
-msgid "Paperback Update"
-msgstr ""
-
-msgid "Downloading update..."
-msgstr ""
-
-msgid "No updates available."
-msgstr ""
-
-msgid "No updates available. Latest version: {}"
-msgstr ""
-
-msgid "Info"
-msgstr ""
-
-#, c-format
-msgid "Failed to check for updates. HTTP status: %d"
-msgstr ""
-
-msgid ""
-"Security verification failed. The update might have been tampered with: {}"
-msgstr ""
-
-msgid "Security Error"
-msgstr ""
-
-msgid "Error checking for updates."
-msgstr ""
-
-msgid "Failed to get current exe path"
-msgstr ""
-
-msgid "Failed to launch installer script"
-msgstr ""
-
-msgid "Failed to launch update script"
-msgstr ""
-
-msgid "Unknown update file format."
-msgstr ""
-
-msgid "Update failed"
 msgstr ""
 
 msgid "Unsupported format selected."
@@ -1280,4 +1226,64 @@ msgid "E&xit"
 msgstr ""
 
 msgid "Exit Paperback"
+msgstr ""
+
+#, c-format
+msgid "Update to %s"
+msgstr ""
+
+#, c-format
+msgid "A new version of %s is available. Here's what's new:"
+msgstr ""
+
+msgid "No release notes provided."
+msgstr ""
+
+#, c-format
+msgid "%s Update"
+msgstr ""
+
+msgid "Downloading update..."
+msgstr ""
+
+msgid "No updates available."
+msgstr ""
+
+#, c-format
+msgid "No updates available. Latest version: %s"
+msgstr ""
+
+msgid "Info"
+msgstr ""
+
+#, c-format
+msgid ""
+"Security verification failed. The update might have been tampered with: %s"
+msgstr ""
+
+msgid "Security Error"
+msgstr ""
+
+msgid "Update failed"
+msgstr ""
+
+#, c-format
+msgid ""
+"Update downloaded to: %s\n"
+"Please install it manually."
+msgstr ""
+
+msgid "Update Ready"
+msgstr ""
+
+msgid "Failed to get current exe path"
+msgstr ""
+
+msgid "Failed to launch installer script"
+msgstr ""
+
+msgid "Failed to launch update script"
+msgstr ""
+
+msgid "Unknown update file format."
 msgstr ""

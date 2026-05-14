@@ -1839,10 +1839,9 @@ dependencies = [
  "flate2",
  "gtk",
  "live-region",
- "minisign-verify",
  "paperback-core",
  "rstest",
- "serde",
+ "ship-shape",
  "tar",
  "toml 1.1.2+spec-1.1.0",
  "ureq",
@@ -2741,6 +2740,19 @@ dependencies = [
  "cfg-if",
  "cpufeatures 0.2.17",
  "digest 0.10.7",
+]
+
+[[package]]
+name = "ship-shape"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "27d7f4799200e8f8c7b1d9d09ab5e088f3eb7a97deeb5969c2306f700ceee2ea"
+dependencies = [
+ "minisign-verify",
+ "pulldown-cmark",
+ "serde",
+ "ureq",
+ "wxdragon",
 ]
 
 [[package]]

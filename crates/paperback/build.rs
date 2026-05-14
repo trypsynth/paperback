@@ -422,6 +422,12 @@ fn generate_pot() {
 	let src_dir = manifest_dir.join("src");
 	let mut files = Vec::new();
 	let _ = collect_translatable_rust_files(&src_dir, &mut files);
+	if let Ok(path) = env::var("DEP_SHIP_SHAPE_I18N_UI_SRC") {
+		let path = PathBuf::from(path);
+		if path.exists() {
+			files.push(path);
+		}
+	}
 	if files.is_empty() {
 		println!("cargo:warning=No Rust source files found for POT generation.");
 		return;

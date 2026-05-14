@@ -12,11 +12,9 @@ anyhow = { workspace = true }
 base64 = { workspace = true }
 bitflags = "2.11.1"
 live-region = "0.1.4"
-minisign-verify = "0.2.5"
 paperback-core = { path = "../paperback-core" }
-serde = { version = "1.0.228", default-features = false, features = ["derive"] }
+ship-shape = { version = "0.1.1", features = ["ui"] }
 toml = { workspace = true }
-ureq = { version = "3.3.0", default-features = false, features = ["json", "rustls"] }
 wx-utils = "0.1.0"
 wxdragon = { version = "0.9.16", features = ["webview"] }
 
