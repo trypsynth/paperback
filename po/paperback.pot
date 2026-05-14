@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-05-13 17:54-0600\n"
+"POT-Creation-Date: 2026-05-13 18:04-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,7 +23,7 @@ msgstr ""
 msgid "Warning"
 msgstr ""
 
-msgid "An accessible, lightweight, fast ebook and document reader."
+msgid "An accessible, lightweight, fast ebook and document reader"
 msgstr ""
 
 msgid "expanded"
@@ -72,6 +72,12 @@ msgid "Links"
 msgstr ""
 
 msgid "Untitled"
+msgstr ""
+
+msgid "&View:"
+msgstr ""
+
+msgid "Root"
 msgstr ""
 
 msgid "Go to Line"
@@ -260,6 +266,12 @@ msgstr ""
 msgid "Table of Contents"
 msgstr ""
 
+msgid "Please select a section from the table of contents."
+msgstr ""
+
+msgid "No Selection"
+msgstr ""
+
 #, c-format
 msgid "Update to %s"
 msgstr ""
@@ -348,15 +360,6 @@ msgstr ""
 msgid "Edit bookmark note:"
 msgstr ""
 
-msgid "Root"
-msgstr ""
-
-msgid "Please select a section from the table of contents."
-msgstr ""
-
-msgid "No Selection"
-msgstr ""
-
 msgid "All Documents"
 msgstr ""
 
@@ -406,9 +409,6 @@ msgid "Closed"
 msgstr ""
 
 msgid "Missing"
-msgstr ""
-
-msgid "&View:"
 msgstr ""
 
 msgid "File not found: {}"
