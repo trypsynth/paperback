@@ -33,9 +33,7 @@ pub fn show_all_documents_dialog(
 	let search_ctrl = TextCtrl::builder(&dialog).with_size(Size::new(300, -1)).build();
 	let doc_list = build_all_documents_list(dialog);
 	let (open_button, remove_button, clear_all_button, ok_button) = build_all_documents_buttons(dialog);
-
 	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
-
 	populate_document_list(&DocumentListParams {
 		list: doc_list,
 		open_button,
@@ -46,11 +44,9 @@ pub fn show_all_documents_dialog(
 		filter: "",
 		selection: None,
 	});
-
 	bind_all_documents_selection(doc_list, open_button);
 	let open_action = make_all_documents_open_action(dialog, doc_list, Rc::clone(&selected_path));
 	bind_all_documents_open(doc_list, open_button, &open_action);
-
 	let remove_action = make_all_documents_remove_action(
 		dialog,
 		doc_list,
@@ -66,7 +62,6 @@ pub fn show_all_documents_dialog(
 		let remove_action = Rc::clone(&remove_action);
 		move |_| remove_action()
 	});
-
 	bind_all_documents_clear(
 		dialog,
 		doc_list,
@@ -100,7 +95,6 @@ pub fn show_all_documents_dialog(
 			ok_button,
 		},
 	);
-
 	dialog.show_modal();
 	AllDocumentsResult {
 		open: selected_path.lock().unwrap().clone(),
@@ -442,12 +436,10 @@ fn populate_document_list(params: &DocumentListParams<'_>) {
 	} = *params;
 	list.cleanup_all_custom_data();
 	list.delete_all_items();
-
 	let items = {
 		let cfg = config.lock().unwrap();
 		paperback_core::config::get_sorted_document_list(&cfg, open_paths, filter)
 	};
-
 	for item in items {
 		let index = i64::from(list.get_item_count());
 		list.insert_item(index, &item.filename, None);
@@ -462,7 +454,6 @@ fn populate_document_list(params: &DocumentListParams<'_>) {
 		list.set_item_text_by_column(index, 1, &status);
 		list.set_item_text_by_column(index, 2, &item.path);
 	}
-
 	if list.get_item_count() > 0 {
 		let mut select_index = selection.unwrap_or(0);
 		if select_index >= list.get_item_count() {
