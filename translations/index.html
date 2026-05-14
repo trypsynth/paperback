@@ -52,66 +52,111 @@
 		<div id="content-anchor"></div>
 
 <h1>Translation Guide</h1>
-<p>Thank you for your interest in translating Paperback! This page walks you through how to start a brand new translation, how to keep it updated when new strings land, and how to submit your work.</p>
-<p>Prerequisites: Install the gettext tools (<code>xgettext</code>, <code>msgmerge</code>, <code>msgfmt</code>) and ensure they are available on your <code>PATH</code>.</p>
-<p>All translation files live in the <code>po</code> directory. The template file is <code>paperback.pot</code>, and each language is stored as <code>po/&lt;lang&gt;.po</code> using the standard language code (for example: <code>es</code>, <code>pt_BR</code>, <code>de</code>).</p>
+<p>Thank you for your interest in translating Paperback! This page walks you through how to start a new translation, how to keep it updated, and how to submit your work.</p>
+<p>All translation files live in the <code>po</code> directory of the repository. The template is <code>paperback.pot</code>, and each language is stored as <code>po/&lt;lang&gt;.po</code> using the standard language code (for example: <code>es</code>, <code>pt_BR</code>, <code>de</code>).</p>
+<h2>Prerequisites</h2>
+<ul>
+<li>gettext tools (<code>xgettext</code>, <code>msgmerge</code>, <code>msgfmt</code>) on your <code>PATH</code>, for merging and compiling translations.</li>
+<li><a href="https://poedit.net/download">Poedit</a> (optional but recommended), a graphical editor for <code>.po</code> files. Any text editor works too.</li>
+<li>Git and a GitHub account to submit your work.</li>
+</ul>
 <h2>Starting a New Translation</h2>
 <ol>
-<li>Generate the <code>.pot</code> template (normally not necessary, but it keeps everything in sync):</li>
+<li>Fork the repository on GitHub and clone your fork locally:</li>
 </ol>
 <pre style="background-color:#2b303b;">
-<code><span style="color:#8fa1b3;">cmake</span><span style="color:#bf616a;"> --build</span><span style="color:#c0c5ce;"> build</span><span style="color:#bf616a;"> --target</span><span style="color:#c0c5ce;"> update-pot
+<code><span style="color:#8fa1b3;">git</span><span style="color:#c0c5ce;"> clone https://github.com/trypsynth/paperback.git
+</span><span style="color:#96b5b4;">cd</span><span style="color:#c0c5ce;"> paperback
 </span></code></pre>
 <ol start="2">
-<li>Create your language file:</li>
+<li>Create a branch for your translation:</li>
 </ol>
 <pre style="background-color:#2b303b;">
-<code><span style="color:#8fa1b3;">cp</span><span style="color:#c0c5ce;"> paperback.pot your-lang-code.po
+<code><span style="color:#8fa1b3;">git</span><span style="color:#c0c5ce;"> checkout</span><span style="color:#bf616a;"> -b</span><span style="color:#c0c5ce;"> danish-translation
 </span></code></pre>
 <ol start="3">
-<li>Edit the header in your <code>.po</code> file with the correct language name, your name, and email.</li>
-<li>Translate the strings using your editor of choice. Keep placeholders and shortcut markers intact (see Notes below).</li>
-<li>Verify the file compiles cleanly:</li>
+<li>Copy the template to create your language file:</li>
 </ol>
 <pre style="background-color:#2b303b;">
-<code><span style="color:#8fa1b3;">msgfmt</span><span style="color:#bf616a;"> --check --verbose</span><span style="color:#c0c5ce;"> es.po
+<code><span style="color:#8fa1b3;">cp</span><span style="color:#c0c5ce;"> po/paperback.pot po/da.po
 </span></code></pre>
-<ol start="6">
+<ol start="4">
+<li>
+<p>Edit the header in your <code>.po</code> file with the correct language name, your name, and email.</p>
+</li>
+<li>
+<p>Translate the strings. Keep placeholders and shortcut markers intact (see <a href="#notes">Notes</a> below). Poedit will highlight warnings and errors as you go.</p>
+</li>
+<li>
+<p>Verify the file compiles cleanly:</p>
+</li>
+</ol>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#8fa1b3;">msgfmt</span><span style="color:#bf616a;"> --check --verbose</span><span style="color:#c0c5ce;"> po/da.po
+</span></code></pre>
+<ol start="7">
 <li>Test your translation by recompiling Paperback and selecting it from the options dialog.</li>
 </ol>
 <h2>Updating an Existing Translation</h2>
 <p>When new strings are added to Paperback:</p>
 <ol>
-<li>Update the template (if not already done):</li>
+<li>Switch to your translation branch and pull the latest changes:</li>
 </ol>
 <pre style="background-color:#2b303b;">
-<code><span style="color:#8fa1b3;">cmake</span><span style="color:#bf616a;"> --build</span><span style="color:#c0c5ce;"> build</span><span style="color:#bf616a;"> --target</span><span style="color:#c0c5ce;"> update-pot
+<code><span style="color:#8fa1b3;">git</span><span style="color:#c0c5ce;"> checkout danish-translation
+</span><span style="color:#8fa1b3;">git</span><span style="color:#c0c5ce;"> pull origin danish-translation
 </span></code></pre>
 <ol start="2">
+<li>Sync with the upstream repository if you have not already:</li>
+</ol>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#8fa1b3;">git</span><span style="color:#c0c5ce;"> remote add upstream https://github.com/trypsynth/paperback.git  </span><span style="color:#65737e;"># first time only
+</span><span style="color:#8fa1b3;">git</span><span style="color:#c0c5ce;"> fetch upstream
+</span><span style="color:#8fa1b3;">git</span><span style="color:#c0c5ce;"> merge upstream/master
+</span></code></pre>
+<ol start="3">
 <li>Merge new strings into your translation:</li>
 </ol>
 <pre style="background-color:#2b303b;">
-<code><span style="color:#8fa1b3;">msgmerge</span><span style="color:#bf616a;"> -U</span><span style="color:#c0c5ce;"> es.po paperback.pot
+<code><span style="color:#8fa1b3;">msgmerge</span><span style="color:#bf616a;"> -U</span><span style="color:#c0c5ce;"> po/da.po po/paperback.pot
 </span></code></pre>
-<ol start="3">
-<li>Translate the new or fuzzy strings. Anything marked with <code>fuzzy</code> needs a review, and any empty strings are brand new.</li>
-<li>Remove fuzzy markers once done reviewing.</li>
-<li>Compile and test (same as step 6 above).</li>
+<ol start="4">
+<li>
+<p>Translate any new or fuzzy strings. Entries marked <code>fuzzy</code> need review; empty entries are brand new.</p>
+</li>
+<li>
+<p>Remove fuzzy markers once reviewed, then compile and test (same as steps 6 and 7 above).</p>
+</li>
 </ol>
 <h2>Submitting Your Translation</h2>
 <ol>
-<li>Fork the repository and create a branch.</li>
-<li>Commit your updated <code>po/&lt;lang&gt;.po</code> file (and <code>paperback.pot</code> only if you regenerated it).</li>
-<li>Open a pull request here: <a href="https://github.com/trypsynth/paperback/compare">Create a pull request</a>.</li>
+<li>Commit your <code>.po</code> file and push:</li>
 </ol>
-<p>If you prefer not to use Git, you can also attach your <code>.po</code> file to an issue and we'll merge it for you.</p>
+<pre style="background-color:#2b303b;">
+<code><span style="color:#8fa1b3;">git</span><span style="color:#c0c5ce;"> add po/da.po
+</span><span style="color:#8fa1b3;">git</span><span style="color:#c0c5ce;"> commit</span><span style="color:#bf616a;"> -m </span><span style="color:#c0c5ce;">&quot;</span><span style="color:#a3be8c;">Add Danish translation</span><span style="color:#c0c5ce;">&quot;
+</span><span style="color:#8fa1b3;">git</span><span style="color:#c0c5ce;"> push origin danish-translation
+</span></code></pre>
+<ol start="2">
+<li>
+<p>Open a pull request at <a href="https://github.com/trypsynth/paperback/compare">https://github.com/trypsynth/paperback/compare</a>. Make sure the fields are set correctly:</p>
+<ul>
+<li>base repository: <code>trypsynth/paperback</code></li>
+<li>base: <code>master</code></li>
+<li>head repository: your fork</li>
+<li>compare: your translation branch</li>
+</ul>
+</li>
+</ol>
+<p>If you prefer not to use Git, attach your <code>.po</code> file to an issue and we will merge it for you.</p>
 <h2>Notes</h2>
 <ol>
 <li>Keyboard shortcuts: Keep the <code>\t</code> and key name together.</li>
-<li>Format strings: Keep the <code>%s</code>, <code>%d</code>, and similar placeholders.</li>
-<li>Ampersands (&amp;): Used for keyboard shortcuts. Choose different letters if the same key is used twice in a menu.</li>
+<li>Format strings: Keep <code>%s</code>, <code>%d</code>, and similar placeholders exactly as they appear.</li>
+<li>Ampersands (<code>&amp;</code>): Used for menu keyboard shortcuts. Choose different letters if the same key would appear twice in a menu.</li>
 <li>Punctuation and spacing: Match the source string for ellipses, colons, and spacing so UI alignment stays consistent.</li>
-<li>Encoding: Files should stay UTF-8 without a BOM.</li>
+<li>Encoding: Files must be UTF-8 without a BOM.</li>
+<li><code>.mo</code> files: Do not commit <code>.mo</code> files. They are compiled at build time and are not needed in the repository.</li>
 </ol>
 
 	</main>
