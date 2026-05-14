@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-05-13 18:04-0600\n"
+"POT-Creation-Date: 2026-05-13 18:14-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,6 +30,108 @@ msgid "expanded"
 msgstr ""
 
 msgid "collapsed"
+msgstr ""
+
+msgid "All Documents"
+msgstr ""
+
+msgid "&search"
+msgstr ""
+
+msgid "&Yes"
+msgstr ""
+
+msgid "&No"
+msgstr ""
+
+msgid "File Name"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "Path"
+msgstr ""
+
+msgid "&Open"
+msgstr ""
+
+msgid "&Remove"
+msgstr ""
+
+msgid "&Clear All"
+msgstr ""
+
+msgid "OK"
+msgstr ""
+
+msgid ""
+"Are you sure you want to remove this document from the list? This will also "
+"remove its reading position."
+msgstr ""
+
+msgid ""
+"Are you sure you want to remove these {} documents from the list? This will "
+"also remove their reading positions."
+msgstr ""
+
+msgid "Confirm"
+msgstr ""
+
+msgid ""
+"Are you sure you want to remove all documents from the list? This will also "
+"remove all reading positions and bookmarks."
+msgstr ""
+
+msgid "Open"
+msgstr ""
+
+msgid "Closed"
+msgstr ""
+
+msgid "Missing"
+msgstr ""
+
+msgid "Jump to Bookmark"
+msgstr ""
+
+msgid "&Filter:"
+msgstr ""
+
+msgid "All"
+msgstr ""
+
+msgid "Bookmarks"
+msgstr ""
+
+msgid "Notes"
+msgstr ""
+
+msgid "&Edit Note"
+msgstr ""
+
+msgid "&Delete"
+msgstr ""
+
+msgid "&Jump"
+msgstr ""
+
+msgid "&Cancel"
+msgstr ""
+
+msgid "blank"
+msgstr ""
+
+msgid "Please select a bookmark to jump to."
+msgstr ""
+
+msgid "Error"
+msgstr ""
+
+msgid "Bookmark Note"
+msgstr ""
+
+msgid "Edit bookmark note:"
 msgstr ""
 
 msgid "Document Info"
@@ -54,9 +156,6 @@ msgid "Characters:"
 msgstr ""
 
 msgid "Characters (excluding spaces):"
-msgstr ""
-
-msgid "OK"
 msgstr ""
 
 msgid "Elements"
@@ -279,12 +378,6 @@ msgstr ""
 msgid "A new version of Paperback is available. Here's what's new:"
 msgstr ""
 
-msgid "&Yes"
-msgstr ""
-
-msgid "&No"
-msgstr ""
-
 msgid "View Note"
 msgstr ""
 
@@ -316,99 +409,6 @@ msgid "This document contains {} words."
 msgstr ""
 
 msgid "Word Count"
-msgstr ""
-
-msgid "Jump to Bookmark"
-msgstr ""
-
-msgid "&Filter:"
-msgstr ""
-
-msgid "All"
-msgstr ""
-
-msgid "Bookmarks"
-msgstr ""
-
-msgid "Notes"
-msgstr ""
-
-msgid "&Edit Note"
-msgstr ""
-
-msgid "&Delete"
-msgstr ""
-
-msgid "&Jump"
-msgstr ""
-
-msgid "&Cancel"
-msgstr ""
-
-msgid "blank"
-msgstr ""
-
-msgid "Please select a bookmark to jump to."
-msgstr ""
-
-msgid "Error"
-msgstr ""
-
-msgid "Bookmark Note"
-msgstr ""
-
-msgid "Edit bookmark note:"
-msgstr ""
-
-msgid "All Documents"
-msgstr ""
-
-msgid "&search"
-msgstr ""
-
-msgid "File Name"
-msgstr ""
-
-msgid "Status"
-msgstr ""
-
-msgid "Path"
-msgstr ""
-
-msgid "&Open"
-msgstr ""
-
-msgid "&Remove"
-msgstr ""
-
-msgid "&Clear All"
-msgstr ""
-
-msgid ""
-"Are you sure you want to remove this document from the list? This will also "
-"remove its reading position."
-msgstr ""
-
-msgid ""
-"Are you sure you want to remove these {} documents from the list? This will "
-"also remove their reading positions."
-msgstr ""
-
-msgid "Confirm"
-msgstr ""
-
-msgid ""
-"Are you sure you want to remove all documents from the list? This will also "
-"remove all reading positions and bookmarks."
-msgstr ""
-
-msgid "Open"
-msgstr ""
-
-msgid "Closed"
-msgstr ""
-
-msgid "Missing"
 msgstr ""
 
 msgid "File not found: {}"
