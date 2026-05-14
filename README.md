@@ -5,7 +5,7 @@
 ## Features
 
 - Written entirely in Rust to ensure it's modern, fast, and memory-safe
-- Supports many common document formats: HTML, EPUB, CHM, PDF, DOCX, PPTX, DOC, PPT, ODT, RTF, Markdown, and plain text
+- Supports many common document formats: HTML, EPUB, FB2, CHM, PDF, DOCX, PPTX, DOC, PPT, ODT, RTF, Markdown, and plain text
 - Intuitive tabbed interface for managing multiple documents
 - Full screen reader accessibility
 - Robust find functionality for quick document searches
