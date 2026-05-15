@@ -1,5 +1,3 @@
-//! Help, update, and utility functions. maybe clean this up eventually.
-
 use std::{
 	env,
 	path::{Path, PathBuf},
@@ -12,6 +10,7 @@ use std::{
 
 use paperback_core::{config::ConfigManager, parser, version};
 use ship_shape::{UpdateChannel as ShipChannel, UpdaterConfig};
+use wx_utils::show_error;
 use wxdragon::{prelude::*, translations::translate as t};
 
 use super::{dialogs, document_manager::DocumentManager};
@@ -61,45 +60,30 @@ pub fn readme_path() -> Option<PathBuf> {
 	Some(dir.join("readme.html"))
 }
 
-pub fn show_error_message(frame: &Frame, message: &str, title: &str) {
-	let dialog = MessageDialog::builder(frame, message, title)
-		.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
-		.build();
-	dialog.show_modal();
-}
-
 pub fn handle_open_containing_folder(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) {
 	let dir = doc_manager.lock().unwrap().active_tab().and_then(|tab| tab.file_path.parent()).map(Path::to_path_buf);
 	let Some(dir) = dir else {
-		show_error_message(frame, &t("Failed to open containing folder."), &t("Error"));
+		show_error(frame, &t("Failed to open containing folder."), &t("Error"));
 		return;
 	};
 	let url = format!("file://{}", dir.to_string_lossy());
 	if !wxdragon::utils::launch_default_browser(&url, wxdragon::utils::BrowserLaunchFlags::Default) {
-		show_error_message(frame, &t("Failed to open containing folder."), &t("Error"));
+		show_error(frame, &t("Failed to open containing folder."), &t("Error"));
 	}
 }
 
 pub fn handle_view_help_browser(frame: &Frame) {
 	let Some(path) = readme_path() else {
-		show_error_message(
-			frame,
-			&t("readme.html not found. Please ensure the application was built properly."),
-			&t("Error"),
-		);
+		show_error(frame, &t("readme.html not found. Please ensure the application was built properly."), &t("Error"));
 		return;
 	};
 	if !path.exists() {
-		show_error_message(
-			frame,
-			&t("readme.html not found. Please ensure the application was built properly."),
-			&t("Error"),
-		);
+		show_error(frame, &t("readme.html not found. Please ensure the application was built properly."), &t("Error"));
 		return;
 	}
 	let url = format!("file://{}", path.to_string_lossy());
 	if !wxdragon::utils::launch_default_browser(&url, wxdragon::utils::BrowserLaunchFlags::Default) {
-		show_error_message(frame, &t("Failed to launch default browser."), &t("Error"));
+		show_error(frame, &t("Failed to launch default browser."), &t("Error"));
 	}
 }
 
@@ -109,19 +93,11 @@ pub fn handle_view_help_paperback(
 	config: &Rc<Mutex<ConfigManager>>,
 ) -> bool {
 	let Some(path) = readme_path() else {
-		show_error_message(
-			frame,
-			&t("readme.html not found. Please ensure the application was built properly."),
-			&t("Error"),
-		);
+		show_error(frame, &t("readme.html not found. Please ensure the application was built properly."), &t("Error"));
 		return false;
 	};
 	if !path.exists() {
-		show_error_message(
-			frame,
-			&t("readme.html not found. Please ensure the application was built properly."),
-			&t("Error"),
-		);
+		show_error(frame, &t("readme.html not found. Please ensure the application was built properly."), &t("Error"));
 		return false;
 	}
 	if !ensure_parser_ready_for_path(frame, &path, config) {
@@ -133,7 +109,7 @@ pub fn handle_view_help_paperback(
 pub fn handle_donate(frame: &Frame) {
 	let url = "https://paypal.me/tygillespie05";
 	if !wxdragon::utils::launch_default_browser(url, wxdragon::utils::BrowserLaunchFlags::Default) {
-		show_error_message(frame, &t("Failed to open donation page in browser."), &t("Error"));
+		show_error(frame, &t("Failed to open donation page in browser."), &t("Error"));
 	}
 }
 
