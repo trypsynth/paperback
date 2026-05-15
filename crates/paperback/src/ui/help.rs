@@ -10,14 +10,12 @@ use std::{
 	},
 };
 
-use paperback_core::{
-	config::{ConfigManager, UpdateChannel},
-	parser, version,
-};
+use paperback_core::{config::ConfigManager, parser, version};
 use ship_shape::{UpdateChannel as ShipChannel, UpdaterConfig};
 use wxdragon::{prelude::*, translations::translate as t};
 
 use super::{dialogs, document_manager::DocumentManager};
+use crate::config_ext::UpdateChannel;
 
 pub static MAIN_WINDOW_PTR: AtomicUsize = AtomicUsize::new(0);
 

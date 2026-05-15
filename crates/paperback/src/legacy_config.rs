@@ -7,8 +7,11 @@
 use std::fs;
 
 use base64::{Engine, engine::general_purpose::STANDARD};
-use paperback_core::config::{ConfigData, DocumentConfig, StoredBookmark, config_toml_path};
+use paperback_core::config::{ConfigData, DocumentConfig, StoredBookmark};
+use toml::Value as TomlValue;
 use wxdragon::config::{Config, ConfigStyle};
+
+use crate::config_ext::config_toml_path;
 
 pub fn migrate_if_needed() {
 	let toml_path = config_toml_path();
@@ -37,19 +40,30 @@ fn read_ini(ini_path: &std::path::Path) -> ConfigData {
 	config.set_path("/app");
 	data.app.restore_previous_documents = config.read_bool("restore_previous_documents", true);
 	data.app.word_wrap = config.read_bool("word_wrap", false);
-	data.app.minimize_to_tray = config.read_bool("minimize_to_tray", false);
-	data.app.start_maximized = config.read_bool("start_maximized", false);
-	data.app.compact_go_menu = config.read_bool("compact_go_menu", true);
 	data.app.navigation_wrap = config.read_bool("navigation_wrap", false);
-	data.app.check_for_updates_on_startup = config.read_bool("check_for_updates_on_startup", true);
 	data.app.find_match_case = config.read_bool("find_match_case", false);
 	data.app.find_whole_word = config.read_bool("find_whole_word", false);
 	data.app.find_use_regex = config.read_bool("find_use_regex", false);
 	data.app.recent_documents_to_show = config.read_long("recent_documents_to_show", 25);
 	data.app.sleep_timer_duration = config.read_long("sleep_timer_duration", 30);
-	data.app.language = config.read_string("language", "");
-	data.app.active_document = config.read_string("active_document", "");
-	data.app.update_channel = config.read_string("update_channel", "stable");
+	// Desktop-only settings go into the extra passthrough map so they are preserved
+	// in the TOML file even though core's AppSettings doesn't know about them.
+	data.app
+		.extra
+		.insert("minimize_to_tray".to_string(), TomlValue::Boolean(config.read_bool("minimize_to_tray", false)));
+	data.app
+		.extra
+		.insert("start_maximized".to_string(), TomlValue::Boolean(config.read_bool("start_maximized", false)));
+	data.app.extra.insert("compact_go_menu".to_string(), TomlValue::Boolean(config.read_bool("compact_go_menu", true)));
+	data.app.extra.insert(
+		"check_for_updates_on_startup".to_string(),
+		TomlValue::Boolean(config.read_bool("check_for_updates_on_startup", true)),
+	);
+	data.app.extra.insert("language".to_string(), TomlValue::String(config.read_string("language", "")));
+	data.app.extra.insert("active_document".to_string(), TomlValue::String(config.read_string("active_document", "")));
+	data.app
+		.extra
+		.insert("update_channel".to_string(), TomlValue::String(config.read_string("update_channel", "stable")));
 	config.set_path("/");
 	config.set_path("/recent_documents");
 	for idx in 0.. {
