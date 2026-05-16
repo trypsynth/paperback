@@ -139,10 +139,10 @@ fun MainScreen(
 								}
 							},
 							onItemClick = { item ->
-								tocSheetOpen = false
 								val line = docState.session.lineFromPosition(item.position)
 								val indexToScroll = (line - 1).toInt().coerceAtLeast(0)
 								scope.launch {
+									tocSheetOpen = false
 									listState.scrollToItem(indexToScroll)
 									lineIndexToFocus = indexToScroll
 								}

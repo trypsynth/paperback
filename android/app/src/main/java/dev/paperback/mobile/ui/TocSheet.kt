@@ -6,12 +6,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import uniffi.paperback.TocEntry
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -23,6 +26,9 @@ fun TocSheet(
 	onItemClick: (TocEntry) -> Unit,
 	onDismiss: () -> Unit
 ) {
+	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+	val scope = rememberCoroutineScope()
+
 	val visibleToc = remember(toc, expandedTocIndices) {
 		val result = mutableListOf<Pair<Int, TocEntry>>()
 		var skipLevelGreaterThan = Int.MAX_VALUE
@@ -44,7 +50,10 @@ fun TocSheet(
 		result
 	}
 
-	ModalBottomSheet(onDismissRequest = onDismiss) {
+	ModalBottomSheet(
+		onDismissRequest = onDismiss,
+		sheetState = sheetState
+	) {
 		LazyColumn(contentPadding = PaddingValues(bottom = 32.dp)) {
 			item {
 				Text(
@@ -66,10 +75,14 @@ fun TocSheet(
 							if (hasChildren) {
 								onToggleExpand(originalIndex)
 							} else {
-								onItemClick(item)
+								scope.launch {
+									sheetState.hide()
+									onItemClick(item)
+								}
 							}
 						}
 						.semantics {
+							contentDescription = "${item.title}, Level ${item.level + 1}"
 							if (hasChildren) {
 								stateDescription = if (isExpanded) "Expanded" else "Collapsed"
 							}

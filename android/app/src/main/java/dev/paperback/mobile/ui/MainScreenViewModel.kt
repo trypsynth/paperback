@@ -53,7 +53,7 @@ class MainScreenViewModel : ViewModel() {
 
 				val ext = displayName.substringAfterLast('.', "epub").lowercase()
 
-				val tempFile = File(context.cacheDir, "temp_doc.$ext")
+				val tempFile = File(context.cacheDir, "doc_${java.util.UUID.randomUUID()}.$ext")
 				val outputStream = FileOutputStream(tempFile)
 				inputStream.copyTo(outputStream)
 				inputStream.close()
