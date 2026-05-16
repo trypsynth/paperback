@@ -1,0 +1,28 @@
+namespace paperback {};
+
+[Error]
+enum DocumentError {
+	"ParseError"
+};
+
+dictionary TocEntry {
+	string title;
+	i64 position;
+	i32 level;
+};
+
+interface DocumentSession {
+	[Name=new_ffi, Throws=DocumentError]
+	constructor(string file_path, string password, string forced_extension);
+
+	string title();
+	string author();
+	string content();
+
+	string get_line_text(i64 position);
+	i64 line_count();
+	i64 position_from_line(i64 line);
+	i64 line_from_position(i64 position);
+	
+	sequence<TocEntry> get_toc();
+};

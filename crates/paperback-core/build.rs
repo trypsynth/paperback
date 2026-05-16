@@ -8,4 +8,6 @@ fn main() {
 	};
 	println!("cargo:rustc-env=PAPERBACK_COMMIT_HASH={hash}");
 	println!("cargo:rerun-if-changed=.git/HEAD");
+
+	uniffi::generate_scaffolding("src/paperback.udl").expect("Building the UDL file failed");
 }
