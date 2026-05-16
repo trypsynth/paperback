@@ -28,20 +28,16 @@ fun TocSheet(
 ) {
 	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 	val scope = rememberCoroutineScope()
-
 	val visibleToc = remember(toc, expandedTocIndices) {
 		val result = mutableListOf<Pair<Int, TocEntry>>()
 		var skipLevelGreaterThan = Int.MAX_VALUE
-
 		for ((index, entry) in toc.withIndex()) {
 			if (entry.level > skipLevelGreaterThan) {
 				continue
 			} else {
 				skipLevelGreaterThan = Int.MAX_VALUE
 			}
-
 			result.add(index to entry)
-
 			val hasChildren = index + 1 < toc.size && toc[index + 1].level > entry.level
 			if (hasChildren && !expandedTocIndices.contains(index)) {
 				skipLevelGreaterThan = entry.level
@@ -49,7 +45,6 @@ fun TocSheet(
 		}
 		result
 	}
-
 	ModalBottomSheet(
 		onDismissRequest = onDismiss,
 		sheetState = sheetState
@@ -67,7 +62,6 @@ fun TocSheet(
 				val hasChildren = originalIndex + 1 < toc.size && toc[originalIndex + 1].level > item.level
 				val isExpanded = expandedTocIndices.contains(originalIndex)
 				val paddingLeft = (16 + (item.level * 16)).dp
-
 				Row(
 					modifier = Modifier
 						.fillMaxWidth()

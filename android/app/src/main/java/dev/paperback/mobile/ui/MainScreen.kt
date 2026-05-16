@@ -35,7 +35,6 @@ fun MainScreen(
 	var tocSheetOpen by remember { mutableStateOf(false) }
 	var lineIndexToFocus by remember { mutableStateOf<Int?>(null) }
 	var expandedTocIndices by remember { mutableStateOf(setOf<Int>()) }
-
 	val launcher = rememberLauncherForActivityResult(
 		contract = ActivityResultContracts.GetContent()
 	) { uri: Uri? ->
@@ -43,7 +42,6 @@ fun MainScreen(
 			viewModel.openDocument(context, uri)
 		}
 	}
-
 	Scaffold(
 		topBar = {
 			TopAppBar(
@@ -89,32 +87,27 @@ fun MainScreen(
 								if (lineText.isNotBlank()) {
 									val focusRequester = remember { FocusRequester() }
 									var isTemporaryFocusTarget by remember { mutableStateOf(lineIndexToFocus == index) }
-
 									LaunchedEffect(lineIndexToFocus) {
 										if (lineIndexToFocus == index) {
 											isTemporaryFocusTarget = true
 										}
 									}
-
 									val textModifier = if (isTemporaryFocusTarget) {
 										Modifier.focusRequester(focusRequester).focusable()
 									} else {
 										Modifier
 									}
-
 									Text(
 										text = lineText.trimEnd(),
 										style = MaterialTheme.typography.bodyLarge,
 										modifier = textModifier.padding(vertical = 4.dp)
 									)
-
 									if (isTemporaryFocusTarget) {
 										LaunchedEffect(Unit) {
 											kotlinx.coroutines.delay(700)
 											try {
 												focusRequester.requestFocus()
 											} catch (e: Exception) {}
-											
 											kotlinx.coroutines.delay(1500)
 											isTemporaryFocusTarget = false
 											if (lineIndexToFocus == index) {
@@ -126,7 +119,6 @@ fun MainScreen(
 							}
 						}
 					}
-
 					if (tocSheetOpen) {
 						TocSheet(
 							toc = docState.toc,

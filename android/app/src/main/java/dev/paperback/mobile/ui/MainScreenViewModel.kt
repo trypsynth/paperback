@@ -40,7 +40,6 @@ class MainScreenViewModel : ViewModel() {
 					_uiState.value = MainScreenUiState.Error("Failed to open file")
 					return@launch
 				}
-
 				var displayName = ""
 				context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
 					if (cursor.moveToFirst()) {
@@ -50,17 +49,13 @@ class MainScreenViewModel : ViewModel() {
 						}
 					}
 				}
-
 				val ext = displayName.substringAfterLast('.', "epub").lowercase()
-
 				val tempFile = File(context.cacheDir, "doc_${java.util.UUID.randomUUID()}.$ext")
 				val outputStream = FileOutputStream(tempFile)
 				inputStream.copyTo(outputStream)
 				inputStream.close()
 				outputStream.close()
-
 				val session = DocumentSession.newFfi(tempFile.absolutePath, "", "")
-				
 				_uiState.value = MainScreenUiState.Success(
 					session = session,
 					title = session.title(),
