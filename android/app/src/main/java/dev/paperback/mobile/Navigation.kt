@@ -13,7 +13,6 @@ import dev.paperback.mobile.ui.MainScreen
 @Composable
 fun MainNavigation() {
 	val backStack = rememberNavBackStack(Main)
-
 	NavDisplay(
 		backStack = backStack,
 		onBack = { backStack.removeLastOrNull() },
