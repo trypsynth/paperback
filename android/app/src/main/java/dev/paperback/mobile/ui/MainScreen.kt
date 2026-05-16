@@ -49,7 +49,7 @@ fun MainScreen(
 				navigationIcon = {
 					if (state is MainScreenUiState.Success) {
 						TextButton(onClick = { tocSheetOpen = true }) {
-							Text("TOC")
+							Text("Table of Contents")
 						}
 					}
 				},

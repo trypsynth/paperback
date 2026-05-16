@@ -75,7 +75,7 @@ fun TocSheet(
 								}
 							}
 						}
-						.semantics {
+						.clearAndSetSemantics {
 							contentDescription = "${item.title}, Level ${item.level + 1}"
 							if (hasChildren) {
 								stateDescription = if (isExpanded) "Expanded" else "Collapsed"
