@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-05-11 19:10-0600\n"
-"PO-Revision-Date: 2026-05-12 19:54+0300\n"
+"POT-Creation-Date: 2026-05-14 12:18-0600\n"
+"PO-Revision-Date: 2026-05-15 01:56+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -33,6 +33,114 @@ msgstr "laajennettu"
 
 msgid "collapsed"
 msgstr "kutistettu"
+
+msgid "All Documents"
+msgstr "Kaikki asiakirjat"
+
+msgid "&search"
+msgstr "&Haku"
+
+msgid "&Yes"
+msgstr "&Kyllä"
+
+msgid "&No"
+msgstr "&Ei"
+
+msgid "File Name"
+msgstr "Tiedostonimi"
+
+msgid "Status"
+msgstr "Tila"
+
+msgid "Path"
+msgstr "Polku"
+
+msgid "&Open"
+msgstr "&Avaa"
+
+msgid "&Remove"
+msgstr "&Poista"
+
+msgid "&Clear All"
+msgstr "P&oista kaikki"
+
+msgid "OK"
+msgstr "OK"
+
+msgid ""
+"Are you sure you want to remove this document from the list? This will also "
+"remove its reading position."
+msgstr ""
+"Haluatko varmasti poistaa luettelosta tämän asiakirjan? Myös lukukohta "
+"poistetaan."
+
+msgid ""
+"Are you sure you want to remove these {} documents from the list? This will "
+"also remove their reading positions."
+msgstr ""
+"Haluatko varmasti poistaa luettelosta nämä asiakirjat? Myös niiden "
+"lukukohdat poistetaan."
+
+msgid "Confirm"
+msgstr "Vahvista"
+
+msgid ""
+"Are you sure you want to remove all documents from the list? This will also "
+"remove all reading positions and bookmarks."
+msgstr ""
+"Haluatko varmasti poistaa luettelosta kaikki asiakirjat? Myös lukukohdat ja "
+"kirjanmerkit poistetaan."
+
+msgid "Open"
+msgstr "Avaa"
+
+msgid "Closed"
+msgstr "Suljettu"
+
+msgid "Missing"
+msgstr "Ei löydy"
+
+msgid "Jump to Bookmark"
+msgstr "Siirry kirjanmerkkiin"
+
+msgid "&Filter:"
+msgstr "Su&odata:"
+
+msgid "All"
+msgstr "Kaikki"
+
+msgid "Bookmarks"
+msgstr "Kirjanmerkit"
+
+msgid "Notes"
+msgstr "Muistiinpanot"
+
+msgid "&Edit Note"
+msgstr "&Muokkaa muistiinpanoa"
+
+msgid "&Delete"
+msgstr "&Poista"
+
+msgid "&Jump"
+msgstr "&Siirry"
+
+msgid "&Cancel"
+msgstr "&Peruuta"
+
+msgid "blank"
+msgstr "tyhjä"
+
+msgid "Please select a bookmark to jump to."
+msgstr "Valitse kirjanmerkki, johon siirrytään."
+
+msgid "Error"
+msgstr "Virhe"
+
+msgid "Bookmark Note"
+msgstr "Kirjanmerkin muistiinpano"
+
+msgid "Edit bookmark note:"
+msgstr "Muokkaa kirjanmerkin muistiinpanoa:"
 
 msgid "Document Info"
 msgstr "Asiakirjan tiedot"
@@ -58,9 +166,6 @@ msgstr "Merkkien määrä:"
 msgid "Characters (excluding spaces):"
 msgstr "Merkkien määrä (ilman välilyöntejä):"
 
-msgid "OK"
-msgstr "OK"
-
 msgid "Elements"
 msgstr "Elementit"
 
@@ -75,6 +180,12 @@ msgstr "Linkit"
 
 msgid "Untitled"
 msgstr "Nimetön"
+
+msgid "&View:"
+msgstr "&Näytä:"
+
+msgid "Root"
+msgstr "Juuri"
 
 msgid "Go to Line"
 msgstr "Siirry riville"
@@ -264,18 +375,11 @@ msgstr "&Minuuttia:"
 msgid "Table of Contents"
 msgstr "Sisällysluettelo"
 
-#, c-format
-msgid "Update to %s"
-msgstr "Päivitä versioon %s"
+msgid "Please select a section from the table of contents."
+msgstr "Valitse luku sisällysluettelosta."
 
-msgid "A new version of Paperback is available. Here's what's new:"
-msgstr "Paperbackista on saatavilla uusi versio. Sen uusia ominaisuuksia ovat:"
-
-msgid "&Yes"
-msgstr "&Kyllä"
-
-msgid "&No"
-msgstr "&Ei"
+msgid "No Selection"
+msgstr "Ei valintaa"
 
 msgid "View Note"
 msgstr "Näytä muistiinpano"
@@ -309,117 +413,6 @@ msgstr "Asiakirjassa on {} sanaa."
 
 msgid "Word Count"
 msgstr "Sanamäärä"
-
-msgid "Jump to Bookmark"
-msgstr "Siirry kirjanmerkkiin"
-
-msgid "&Filter:"
-msgstr "Su&odata:"
-
-msgid "All"
-msgstr "Kaikki"
-
-msgid "Bookmarks"
-msgstr "Kirjanmerkit"
-
-msgid "Notes"
-msgstr "Muistiinpanot"
-
-msgid "&Edit Note"
-msgstr "&Muokkaa muistiinpanoa"
-
-msgid "&Delete"
-msgstr "&Poista"
-
-msgid "&Jump"
-msgstr "&Siirry"
-
-msgid "&Cancel"
-msgstr "&Peruuta"
-
-msgid "blank"
-msgstr "tyhjä"
-
-msgid "Please select a bookmark to jump to."
-msgstr "Valitse kirjanmerkki, johon siirrytään."
-
-msgid "Error"
-msgstr "Virhe"
-
-msgid "Bookmark Note"
-msgstr "Kirjanmerkin muistiinpano"
-
-msgid "Edit bookmark note:"
-msgstr "Muokkaa kirjanmerkin muistiinpanoa:"
-
-msgid "Root"
-msgstr "Juuri"
-
-msgid "Please select a section from the table of contents."
-msgstr "Valitse luku sisällysluettelosta."
-
-msgid "No Selection"
-msgstr "Ei valintaa"
-
-msgid "All Documents"
-msgstr "Kaikki asiakirjat"
-
-msgid "&search"
-msgstr "&Haku"
-
-msgid "File Name"
-msgstr "Tiedostonimi"
-
-msgid "Status"
-msgstr "Tila"
-
-msgid "Path"
-msgstr "Polku"
-
-msgid "&Open"
-msgstr "&Avaa"
-
-msgid "&Remove"
-msgstr "&Poista"
-
-msgid "&Clear All"
-msgstr "P&oista kaikki"
-
-msgid ""
-"Are you sure you want to remove this document from the list? This will also "
-"remove its reading position."
-msgstr ""
-"Haluatko varmasti poistaa luettelosta tämän asiakirjan? Myös lukukohta "
-"poistetaan."
-
-msgid ""
-"Are you sure you want to remove these {} documents from the list? This will "
-"also remove their reading positions."
-msgstr ""
-"Haluatko varmasti poistaa luettelosta nämä asiakirjat? Myös niiden "
-"lukukohdat poistetaan."
-
-msgid "Confirm"
-msgstr "Vahvista"
-
-msgid ""
-"Are you sure you want to remove all documents from the list? This will also "
-"remove all reading positions and bookmarks."
-msgstr ""
-"Haluatko varmasti poistaa luettelosta kaikki asiakirjat? Myös lukukohdat ja "
-"kirjanmerkit poistetaan."
-
-msgid "Open"
-msgstr "Avaa"
-
-msgid "Closed"
-msgstr "Suljettu"
-
-msgid "Missing"
-msgstr "Ei löydy"
-
-msgid "&View:"
-msgstr "&Näytä:"
 
 msgid "File not found: {}"
 msgstr "Tiedostoa ei löydy: {}"
@@ -532,53 +525,6 @@ msgstr "Oletusselaimen käynnistys epäonnistui."
 msgid "Failed to open donation page in browser."
 msgstr "Lahjoitussivun avaaminen selaimessa epäonnistui."
 
-msgid "No release notes were provided."
-msgstr "Julkaisutietoja ei saatavilla."
-
-msgid "Paperback Update"
-msgstr "Paperbackin päivitys"
-
-msgid "Downloading update..."
-msgstr "Päivitystä ladataan..."
-
-msgid "No updates available."
-msgstr "Päivityksiä ei saatavilla."
-
-msgid "No updates available. Latest version: {}"
-msgstr "Päivityksiä ei saatavilla. Uusin versio: {}"
-
-msgid "Info"
-msgstr "Tiedot"
-
-#, c-format
-msgid "Failed to check for updates. HTTP status: %d"
-msgstr "Päivitysten tarkistus epäonnistui. HTTP-tila: %d"
-
-msgid ""
-"Security verification failed. The update might have been tampered with: {}"
-msgstr "Tietoturvatarkistus epäonnistui. Päivitystä on saatettu peukaloida: {}"
-
-msgid "Security Error"
-msgstr "Suojausvirhe"
-
-msgid "Error checking for updates."
-msgstr "Virhe päivityksiä tarkistettaessa."
-
-msgid "Failed to get current exe path"
-msgstr "Sovelluksen exe-tiedoston sijaintia ei voitu määrittää"
-
-msgid "Failed to launch installer script"
-msgstr "Asennusohjelmaskriptin käynnistys epäonnistui"
-
-msgid "Failed to launch update script"
-msgstr "Päivitysskriptin käynnistys epäonnistui"
-
-msgid "Unknown update file format."
-msgstr "Tuntematon päivitystiedoston muoto."
-
-msgid "Update failed"
-msgstr "Päivitys epäonnistui"
-
 msgid "Unsupported format selected."
 msgstr "Valittua tiedostomuotoa ei tueta."
 
@@ -609,15 +555,12 @@ msgstr "Vie asiakirja tekstimuotoon"
 msgid "Failed to export document."
 msgstr "Asiakirjan vienti epäonnistui."
 
-#| msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgid "HTML files (*.html)|*.html|All files (*.*)|*.*"
 msgstr "HTML-tiedostot (*.html)|*.html|Kaikki tiedostot (*.*)|*.*"
 
-#| msgid "Export Document"
 msgid "Export document to HTML"
 msgstr "Vie asiakirja HTML-muotoon"
 
-#| msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgid "Markdown files (*.md)|*.md|All files (*.*)|*.*"
 msgstr "Markdown-tiedostot (*.md)|*.md|Kaikki tiedostot (*.*)|*.*"
 
@@ -1003,18 +946,15 @@ msgstr "Vie te&kstimuotoon...\tCtrl+E"
 msgid "Export document as plain text"
 msgstr "Vie asiakirja tekstimuotoon"
 
-#| msgid "Export to &Plain Text...\tCtrl+E"
 msgid "Export to &HTML..."
 msgstr "Vie &HTML-muotoon..."
 
 msgid "Export document as HTML"
 msgstr "Vie asiakirja HTML-muodossa"
 
-#| msgid "Export to &Plain Text...\tCtrl+E"
 msgid "Export to &Markdown..."
 msgstr "Vie &Markdown-muotoon..."
 
-#| msgid "Export document as plain text"
 msgid "Export document as Markdown"
 msgstr "Vie asiakirja Markdown-muodossa"
 
@@ -1299,6 +1239,84 @@ msgstr "&Lopeta"
 
 msgid "Exit Paperback"
 msgstr "Lopeta Paperback"
+
+#, c-format
+msgid "Update to %s"
+msgstr "Päivitä versioon %s"
+
+#, c-format
+#| msgid "A new version of Paperback is available. Here's what's new:"
+msgid "A new version of %s is available. Here's what's new:"
+msgstr "%sista on saatavilla uusi versio. Sen uusia ominaisuuksia ovat:"
+
+#| msgid "No release notes were provided."
+msgid "No release notes provided."
+msgstr "Julkaisutietoja ei saatavilla."
+
+#, c-format
+msgid "%s Update"
+msgstr "%sin päivitys"
+
+msgid "Downloading update..."
+msgstr "Päivitystä ladataan..."
+
+msgid "No updates available."
+msgstr "Päivityksiä ei saatavilla."
+
+#, c-format
+#| msgid "No updates available. Latest version: {}"
+msgid "No updates available. Latest version: %s"
+msgstr "Päivityksiä ei saatavilla. Uusin versio: %s"
+
+msgid "Info"
+msgstr "Tiedot"
+
+#, c-format
+#| msgid ""
+#| "Security verification failed. The update might have been tampered with: {}"
+msgid ""
+"Security verification failed. The update might have been tampered with: %s"
+msgstr "Tietoturvatarkistus epäonnistui. Päivitystä on saatettu peukaloida: %s"
+
+msgid "Security Error"
+msgstr "Suojausvirhe"
+
+msgid "Update failed"
+msgstr "Päivitys epäonnistui"
+
+#, c-format
+msgid ""
+"Update downloaded to: %s\n"
+"Please install it manually."
+msgstr ""
+"Päivitys ladattu kansioon: %s\n"
+"Asenna se manuaalisesti."
+
+#| msgid "Update failed"
+msgid "Update Ready"
+msgstr "Päivitys valmiina"
+
+msgid "Failed to get current exe path"
+msgstr "Sovelluksen exe-tiedoston sijaintia ei voitu määrittää"
+
+msgid "Failed to launch installer script"
+msgstr "Asennusohjelmaskriptin käynnistys epäonnistui"
+
+msgid "Failed to launch update script"
+msgstr "Päivitysskriptin käynnistys epäonnistui"
+
+msgid "Unknown update file format."
+msgstr "Tuntematon päivitystiedoston muoto."
+
+#~ msgid "Paperback Update"
+#~ msgstr "Paperbackin päivitys"
+
+#, c-format
+#~ msgid "Failed to check for updates. HTTP status: %d"
+#~ msgstr "Päivitysten tarkistus epäonnistui. HTTP-tila: %d"
+
+#~ msgid "Error checking for updates."
+#~ msgstr "Virhe päivityksiä tarkistettaessa."
 
 #~ msgid "Figure"
 #~ msgstr "Kuvio"
