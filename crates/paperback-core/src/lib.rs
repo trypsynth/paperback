@@ -10,6 +10,10 @@ pub mod types;
 pub mod util;
 pub mod version;
 
+pub use crate::session::{DocumentError, DocumentSession, TocEntry};
+
+uniffi::include_scaffolding!("paperback");
+
 /// Minimal translation stub for library-internal strings (e.g. document content labels).
 /// The GUI binary sets up the real wxWidgets translation system independently; strings
 /// returned by this function are English only and are intended for non-GUI consumers

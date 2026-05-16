@@ -10,8 +10,11 @@ description = "Core document parsing and reading logic for Paperback"
 [lib]
 name = "paperback_core"
 path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+uniffi = { version = "0.31.1", features = ["cli"] }
+thiserror = "2.0.18"
 anyhow = { workspace = true }
 base64 = { workspace = true }
 bitflags = "2.11.1"
@@ -19,9 +22,7 @@ toml = { workspace = true }
 cfb = "0.14.0"
 ego-tree = "0.11.0"
 encoding_rs = "0.8.35"
-libchm = "0.1.2"
 office-crypto = "0.2.0"
-pdfium = { git = "https://github.com/aryanchoudharypro/PDFium-rs", branch = "feature/tagged-pdf-support" }
 percent-encoding = "2.3.2"
 pulldown-cmark = { version = "0.13.3", default-features = false, features = ["html"] }
 regex = "1.12.3"
@@ -33,5 +34,12 @@ serde = { version = "1.0.228", default-features = false, features = ["derive", "
 sha1 = "0.11.0"
 zip = { version = "8.6.0", default-features = false, features = ["deflate"] }
 
+[target.'cfg(not(target_os = "android"))'.dependencies]
+libchm = "0.1.2"
+pdfium = { git = "https://github.com/aryanchoudharypro/PDFium-rs", branch = "feature/tagged-pdf-support" }
+
 [dev-dependencies]
 rstest = { workspace = true }
+
+[build-dependencies]
+uniffi = { version = "0.31.1", features = ["build"] }

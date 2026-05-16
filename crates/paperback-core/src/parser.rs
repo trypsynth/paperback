@@ -12,6 +12,7 @@ use crate::{
 	types::{HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
 };
 
+#[cfg(not(target_os = "android"))]
 pub mod chm;
 pub mod daisy;
 pub mod epub;
@@ -22,6 +23,7 @@ pub mod markdown;
 pub mod mobi;
 pub mod odp;
 pub mod odt;
+#[cfg(not(target_os = "android"))]
 pub mod pdf;
 pub mod powerpoint;
 pub mod rtf;
@@ -91,6 +93,7 @@ impl ParserRegistry {
 		static REGISTRY: OnceLock<ParserRegistry> = OnceLock::new();
 		REGISTRY.get_or_init(|| {
 			let mut registry = Self::new();
+			#[cfg(not(target_os = "android"))]
 			registry.register(chm::ChmParser);
 			registry.register(daisy::DaisyParser);
 			registry.register(word::WordParser);
@@ -98,6 +101,7 @@ impl ParserRegistry {
 			registry.register(fb2::Fb2Parser);
 			registry.register(html::HtmlParser);
 
+			#[cfg(not(target_os = "android"))]
 			registry.register(pdf::PdfParser);
 			registry.register(markdown::MarkdownParser);
 			registry.register(mobi::MobiParser);
