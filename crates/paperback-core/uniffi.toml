@@ -1,2 +1,3 @@
 [bindings.kotlin]
 cdylib-name = "paperback_core"
+android_cleaner = true
