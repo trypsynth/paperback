@@ -52,7 +52,6 @@ fn release() -> Result<(), Box<dyn Error>> {
 
 fn android() -> Result<(), Box<dyn Error>> {
 	let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
-
 	println!("Generating Kotlin bindings via uniffi-bindgen...");
 	let status = Command::new(&cargo)
 		.current_dir(project_root())
@@ -72,7 +71,6 @@ fn android() -> Result<(), Box<dyn Error>> {
 	if !status.success() {
 		return Err("uniffi-bindgen generation failed".into());
 	}
-
 	println!("Building native libraries for arm64-v8a and armeabi-v7a...");
 	let status = Command::new(&cargo)
 		.current_dir(project_root())
@@ -93,8 +91,7 @@ fn android() -> Result<(), Box<dyn Error>> {
 	if !status.success() {
 		return Err("cargo ndk build failed".into());
 	}
-
-	println!("Android native build complete. Open android/ in Android Studio to build the APK.");
+	println!("Android native build complete. Run `gradlew.bat build` in the android directory to build the APK.");
 	Ok(())
 }
 
