@@ -14,6 +14,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 	let task = env::args().nth(1);
 	match task.as_deref() {
 		Some("release") => release()?,
+		Some("android") => android()?,
 		_ => print_help(),
 	}
 	Ok(())
@@ -22,6 +23,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 fn print_help() {
 	println!("Tasks:");
 	println!("	release	Build release binaries and package them");
+	println!("	android	Generate Kotlin bindings and build native Android libraries");
 }
 
 fn release() -> Result<(), Box<dyn Error>> {
@@ -45,6 +47,54 @@ fn release() -> Result<(), Box<dyn Error>> {
 	if cfg!(windows) {
 		build_windows_installer(&target_dir)?;
 	}
+	Ok(())
+}
+
+fn android() -> Result<(), Box<dyn Error>> {
+	let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
+
+	println!("Generating Kotlin bindings via uniffi-bindgen...");
+	let status = Command::new(&cargo)
+		.current_dir(project_root())
+		.args(&[
+			"run",
+			"--bin",
+			"uniffi-bindgen",
+			"--",
+			"generate",
+			"crates/paperback-core/src/paperback.udl",
+			"--language",
+			"kotlin",
+			"--out-dir",
+			"android/app/src/main/java",
+		])
+		.status()?;
+	if !status.success() {
+		return Err("uniffi-bindgen generation failed".into());
+	}
+
+	println!("Building native libraries for arm64-v8a and armeabi-v7a...");
+	let status = Command::new(&cargo)
+		.current_dir(project_root())
+		.args(&[
+			"ndk",
+			"-t",
+			"arm64-v8a",
+			"-t",
+			"armeabi-v7a",
+			"-o",
+			"android/app/src/main/jniLibs",
+			"build",
+			"--release",
+			"-p",
+			"paperback-core",
+		])
+		.status()?;
+	if !status.success() {
+		return Err("cargo ndk build failed".into());
+	}
+
+	println!("Android native build complete. Open android/ in Android Studio to build the APK.");
 	Ok(())
 }
 
