@@ -3,6 +3,7 @@
 pub mod config;
 pub mod document;
 pub mod export;
+pub mod ffi_config;
 pub mod parser;
 pub mod reader_core;
 pub mod session;
@@ -10,7 +11,10 @@ pub mod types;
 pub mod util;
 pub mod version;
 
-pub use crate::session::{DocumentError, DocumentSession, TocEntry};
+pub use crate::{
+	ffi_config::ConfigManagerFfi,
+	session::{DocumentError, DocumentSession, TocEntry},
+};
 
 uniffi::include_scaffolding!("paperback");
 

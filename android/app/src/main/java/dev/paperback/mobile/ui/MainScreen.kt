@@ -14,11 +14,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -29,17 +29,16 @@ fun MainScreen(
 	viewModel: MainScreenViewModel = viewModel()
 ) {
 	val state by viewModel.uiState.collectAsStateWithLifecycle()
-	val context = LocalContext.current
 	val scope = rememberCoroutineScope()
 	val listState = rememberLazyListState()
 	var tocSheetOpen by remember { mutableStateOf(false) }
 	var lineIndexToFocus by remember { mutableStateOf<Int?>(null) }
 	var expandedTocIndices by remember { mutableStateOf(setOf<Int>()) }
 	val launcher = rememberLauncherForActivityResult(
-		contract = ActivityResultContracts.GetContent()
+		contract = ActivityResultContracts.OpenDocument()
 	) { uri: Uri? ->
 		if (uri != null) {
-			viewModel.openDocument(context, uri)
+			viewModel.openDocument(uri)
 		}
 	}
 	Scaffold(
@@ -54,7 +53,7 @@ fun MainScreen(
 					}
 				},
 				actions = {
-					Button(onClick = { launcher.launch("*/*") }) {
+					Button(onClick = { launcher.launch(arrayOf("*/*")) }) {
 						Text("Open Book")
 					}
 				}
@@ -75,6 +74,21 @@ fun MainScreen(
 				}
 				is MainScreenUiState.Success -> {
 					val docState = state as MainScreenUiState.Success
+
+					// Scroll to saved position when a book first loads
+					LaunchedEffect(docState.session) {
+						if (docState.initialScrollIndex > 0) {
+							listState.scrollToItem(docState.initialScrollIndex)
+						}
+					}
+
+					// Persist scroll position as the user reads
+					LaunchedEffect(docState.session) {
+						snapshotFlow { listState.firstVisibleItemIndex }
+							.distinctUntilChanged()
+							.collect { index -> viewModel.savePosition(docState.session, docState.documentUri, index) }
+					}
+
 					SelectionContainer {
 						LazyColumn(
 							state = listState,
