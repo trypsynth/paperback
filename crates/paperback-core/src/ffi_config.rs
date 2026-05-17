@@ -33,6 +33,18 @@ impl ConfigManagerFfi {
 		self.inner.lock().unwrap().get_recent_documents()
 	}
 
+	pub fn add_opened_document(&self, path: String) {
+		self.inner.lock().unwrap().add_opened_document(&path);
+	}
+
+	pub fn remove_opened_document(&self, path: String) {
+		self.inner.lock().unwrap().remove_opened_document(&path);
+	}
+
+	pub fn get_opened_documents(&self) -> Vec<String> {
+		self.inner.lock().unwrap().get_opened_documents()
+	}
+
 	pub fn flush(&self) {
 		self.inner.lock().unwrap().flush();
 	}

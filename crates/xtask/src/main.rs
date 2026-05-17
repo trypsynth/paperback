@@ -77,6 +77,7 @@ fn android() -> Result<(), Box<dyn Error>> {
 			"kotlin",
 			"--out-dir",
 			"android/app/src/main/java",
+			"--no-format",
 		])
 		.status()?;
 	if !status.success() {

@@ -13,7 +13,9 @@ pub mod version;
 
 pub use crate::{
 	ffi_config::ConfigManagerFfi,
-	session::{DocumentError, DocumentSession, TocEntry},
+	session::{
+		DocumentError, DocumentSession, LineMarker, LinkActionFfi, LinkActivationResultFfi, MarkerTypeFfi, TocEntry,
+	},
 };
 
 uniffi::include_scaffolding!("paperback");

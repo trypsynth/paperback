@@ -2,6 +2,7 @@ plugins {
 	alias(libs.plugins.android.application)
 	alias(libs.plugins.compose.compiler)
 	alias(libs.plugins.kotlin.serialization)
+	alias(libs.plugins.ktlint)
 }
 
 android {
@@ -41,6 +42,12 @@ android {
 
 kotlin {
 	jvmToolchain(17)
+}
+
+ktlint {
+	filter {
+		exclude("**/uniffi/**")
+	}
 }
 
 dependencies {
