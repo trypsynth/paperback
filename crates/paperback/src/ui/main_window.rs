@@ -96,7 +96,7 @@ impl MainWindow {
 					if key == KEY_DELETE || key == KEY_NUMPAD_DELETE {
 						let mut dm = dm.lock().unwrap();
 						if let Some(index) = dm.active_tab_index() {
-							dm.close_document(index);
+							dm.close_document(index, true);
 						}
 						update_title_from_manager(&frame_copy, &dm);
 						let has_docs = dm.tab_count() > 0;
@@ -410,7 +410,7 @@ impl MainWindow {
 				menu_ids::CLOSE => {
 					let mut dm = dm.lock().unwrap();
 					if let Some(index) = dm.active_tab_index() {
-						dm.close_document(index);
+						dm.close_document(index, true);
 					}
 					update_title_from_manager(&frame_copy, &dm);
 					let has_docs = dm.tab_count() > 0;
@@ -1386,11 +1386,12 @@ impl MainWindow {
 							for path_str in &result.paths_to_close {
 								let path = Path::new(path_str);
 								if let Some(index) = dm_ref.find_tab_by_path(path) {
-									dm_ref.close_document(index);
+									dm_ref.close_document(index, false);
 								}
 							}
 							if !result.paths_to_close.is_empty() {
 								update_title_from_manager(&frame_copy, &dm_ref);
+								dm_ref.restore_focus();
 							}
 						}
 						if let Some(path) = result.open {
