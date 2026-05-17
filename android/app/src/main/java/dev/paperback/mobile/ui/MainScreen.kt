@@ -8,7 +8,6 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -149,18 +148,17 @@ fun MainScreen(
 								.collect { index -> viewModel.savePosition(docState.session, docState.documentUri, index) }
 						}
 
-						SelectionContainer {
-							LazyColumn(
-								state = listState,
-								modifier = Modifier.fillMaxSize(),
-								contentPadding = PaddingValues(16.dp)
-							) {
+						LazyColumn(
+							state = listState,
+							modifier = Modifier.fillMaxSize(),
+							contentPadding = PaddingValues(16.dp)
+						) {
 								items(docState.lineCount.toInt()) { index ->
 									val lineNum = (index + 1).toLong()
 									val pos = docState.session.positionFromLine(lineNum)
 									val lineText = docState.session.getLineText(pos).trimEnd()
 									val markers = docState.session.getLineMarkers(lineNum)
-									
+
 									if (lineText.isNotBlank()) {
 										val focusRequester = remember { FocusRequester() }
 										var isTemporaryFocusTarget by remember { mutableStateOf(lineIndexToFocus == index) }
@@ -169,15 +167,15 @@ fun MainScreen(
 												isTemporaryFocusTarget = true
 											}
 										}
-										
+
 										var textModifier = Modifier.padding(vertical = 4.dp)
 										var isHeading = false
 										var headingLevel = 0
-										
+
 										val annotatedString = buildAnnotatedString {
 											var currentIdx = 0
 											val sortedMarkers = markers.sortedBy { it.position }
-										
+
 											sortedMarkers.forEach { marker ->
 												when (marker.mtype) {
 													MarkerTypeFfi.HEADING1 -> {
@@ -207,16 +205,16 @@ fun MainScreen(
 													MarkerTypeFfi.LINK -> {
 														val markerStartInLine = (marker.position - pos).toInt().coerceAtLeast(0)
 														val markerTextLength = marker.text.length
-													
+
 														if (markerStartInLine > currentIdx) {
 															append(lineText.substring(currentIdx, markerStartInLine.coerceAtMost(lineText.length)))
 															currentIdx = markerStartInLine
 														}
-													
+
 														if (currentIdx < lineText.length) {
 															val linkEnd = (currentIdx + markerTextLength).coerceAtMost(lineText.length)
 															val linkText = lineText.substring(currentIdx, linkEnd)
-														
+
 															val linkAnnotation = LinkAnnotation.Clickable(
 																tag = marker.position.toString(),
 																styles = TextLinkStyles(
@@ -245,7 +243,7 @@ fun MainScreen(
 																	}
 																}
 															}
-														
+
 															withLink(linkAnnotation) {
 																append(linkText)
 															}
@@ -255,12 +253,12 @@ fun MainScreen(
 													else -> {}
 												}
 											}
-										
+
 											if (currentIdx < lineText.length) {
 												append(lineText.substring(currentIdx))
 											}
 										}
-										
+
 										if (isHeading) {
 											textModifier = textModifier.semantics {
 												heading()
@@ -273,19 +271,19 @@ fun MainScreen(
 										if (isTemporaryFocusTarget) {
 											textModifier = textModifier.focusRequester(focusRequester).focusable()
 										}
-										
+
 										val textStyle = if (isHeading) {
 											MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
 										} else {
 											MaterialTheme.typography.bodyLarge
 										}
-										
+
 										Text(
 											text = annotatedString,
 											style = textStyle,
 											modifier = textModifier
 										)
-										
+
 										if (isTemporaryFocusTarget) {
 											LaunchedEffect(Unit) {
 												kotlinx.coroutines.delay(700)
@@ -302,9 +300,8 @@ fun MainScreen(
 										}
 									}
 								}
-							}
 						}
-						
+
 						if (tocSheetOpen) {
 							TocSheet(
 								toc = docState.toc,
