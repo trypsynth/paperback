@@ -164,9 +164,22 @@ pub struct TocEntry {
 
 #[derive(Debug, Clone, Copy)]
 pub enum MarkerTypeFfi {
-	Heading1, Heading2, Heading3, Heading4, Heading5, Heading6,
-	PageBreak, SectionBreak, TocItem, Link,
-	List, ListItem, Table, Separator, Image, Figure,
+	Heading1,
+	Heading2,
+	Heading3,
+	Heading4,
+	Heading5,
+	Heading6,
+	PageBreak,
+	SectionBreak,
+	TocItem,
+	Link,
+	List,
+	ListItem,
+	Table,
+	Separator,
+	Image,
+	Figure,
 }
 
 impl From<crate::document::MarkerType> for MarkerTypeFfi {
@@ -628,12 +641,7 @@ impl DocumentSession {
 	#[must_use]
 	pub fn activate_link_ffi(&self, position: i64) -> LinkActivationResultFfi {
 		let res = self.activate_link(position);
-		LinkActivationResultFfi {
-			found: res.found,
-			action: res.action.into(),
-			offset: res.offset,
-			url: res.url,
-		}
+		LinkActivationResultFfi { found: res.found, action: res.action.into(), offset: res.offset, url: res.url }
 	}
 
 	#[must_use]
@@ -845,7 +853,7 @@ impl DocumentSession {
 		let start_usize = usize::try_from(start_pos.max(0)).unwrap_or(0);
 		// If line + 1 overflows or is the end, end_pos might be equal to start_pos
 		let end_usize = if start_pos == end_pos { usize::MAX } else { usize::try_from(end_pos.max(0)).unwrap_or(0) };
-		
+
 		let mut res = Vec::new();
 		for marker in &self.handle.document().buffer.markers {
 			if marker.position >= start_usize && marker.position < end_usize {
