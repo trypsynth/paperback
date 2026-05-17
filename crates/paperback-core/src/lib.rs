@@ -3,12 +3,20 @@
 pub mod config;
 pub mod document;
 pub mod export;
+pub mod ffi_config;
 pub mod parser;
 pub mod reader_core;
 pub mod session;
 pub mod types;
 pub mod util;
 pub mod version;
+
+pub use crate::{
+	ffi_config::ConfigManagerFfi,
+	session::{DocumentError, DocumentSession, TocEntry},
+};
+
+uniffi::include_scaffolding!("paperback");
 
 /// Minimal translation stub for library-internal strings (e.g. document content labels).
 /// The GUI binary sets up the real wxWidgets translation system independently; strings

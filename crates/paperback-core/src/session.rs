@@ -94,6 +94,18 @@ pub enum LinkAction {
 	NotFound,
 }
 
+#[derive(Debug, thiserror::Error)]
+pub enum DocumentError {
+	#[error("Parse error: {0}")]
+	ParseError(String),
+}
+
+impl From<String> for DocumentError {
+	fn from(s: String) -> Self {
+		DocumentError::ParseError(s)
+	}
+}
+
 impl LinkActivationResult {
 	const fn not_found() -> Self {
 		Self { found: false, action: LinkAction::NotFound, offset: 0, url: String::new() }
@@ -118,6 +130,13 @@ struct NavigateParams {
 	level_filter: i32,
 }
 
+#[derive(Debug, Clone)]
+pub struct TocEntry {
+	pub title: String,
+	pub position: i64,
+	pub level: i32,
+}
+
 impl DocumentSession {
 	/// # Errors
 	///
@@ -140,6 +159,10 @@ impl DocumentSession {
 			parser_flags,
 			last_stable_position: None,
 		})
+	}
+
+	pub fn new_ffi(file_path: String, password: String, forced_extension: String) -> Result<Self, DocumentError> {
+		Self::new(&file_path, &password, &forced_extension).map_err(DocumentError::ParseError)
 	}
 
 	#[must_use]
@@ -684,6 +707,15 @@ impl DocumentSession {
 	}
 
 	#[must_use]
+	pub fn line_from_position(&self, position: i64) -> i64 {
+		let buf = &self.handle.document().buffer;
+		let total_chars = buf.char_count();
+		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
+		let line_number = buf.newline_positions().partition_point(|&p| p < pos) + 1;
+		i64::try_from(line_number).unwrap_or(1)
+	}
+
+	#[must_use]
 	pub fn page_count(&self) -> usize {
 		self.handle.count_markers_by_type(MarkerType::PageBreak)
 	}
@@ -750,6 +782,23 @@ impl DocumentSession {
 				|| self.handle.count_markers_by_type(MarkerType::Heading5) > 0
 				|| self.handle.count_markers_by_type(MarkerType::Heading6) > 0
 		}
+	}
+
+	#[must_use]
+	pub fn get_toc(&self) -> Vec<TocEntry> {
+		let mut flat = Vec::new();
+		fn flatten(items: &[crate::document::TocItem], level: i32, flat: &mut Vec<TocEntry>) {
+			for item in items {
+				flat.push(TocEntry {
+					title: item.name.clone(),
+					position: i64::try_from(item.offset).unwrap_or(0),
+					level,
+				});
+				flatten(&item.children, level + 1, flat);
+			}
+		}
+		flatten(&self.handle.document().toc_items, 0, &mut flat);
+		flat
 	}
 }
 

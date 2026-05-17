@@ -31,7 +31,7 @@ impl PaperbackApp {
 	pub fn new(_app: App) -> Self {
 		crate::legacy_config::migrate_if_needed();
 		let mut config = ConfigManager::new();
-		let _ = config.initialize();
+		let _ = config.initialize(crate::config_ext::config_toml_path());
 		{
 			let mut translations = TranslationManager::instance().lock().unwrap();
 			translations.initialize();
@@ -56,7 +56,7 @@ impl PaperbackApp {
 		open_from_command_line(&main_window);
 		let (check_updates, channel) = {
 			let cfg = config.lock().unwrap();
-			(cfg.get_app_bool("check_for_updates_on_startup", true), cfg.get_update_channel())
+			(cfg.get_app_bool("check_for_updates_on_startup", true), crate::config_ext::get_update_channel(&cfg))
 		};
 		if check_updates {
 			MainWindow::check_for_updates(true, channel);

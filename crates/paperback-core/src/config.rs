@@ -2,11 +2,8 @@ use std::{
 	cell::{Cell, RefCell},
 	cmp::Ordering,
 	collections::HashMap,
-	env,
-	fmt::{self, Display, Formatter},
 	fs,
 	path::{Path, PathBuf},
-	str::FromStr,
 };
 
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
@@ -18,34 +15,6 @@ use crate::types::DocumentListItem;
 const CONFIG_VERSION: u32 = 4;
 const DEFAULT_RECENT_DOCUMENTS_TO_SHOW: i64 = 25;
 const MAX_RECENT_DOCUMENTS_TO_SHOW: usize = 100;
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
-pub enum UpdateChannel {
-	#[default]
-	Stable,
-	Dev,
-}
-
-impl Display for UpdateChannel {
-	fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-		match self {
-			Self::Stable => write!(f, "stable"),
-			Self::Dev => write!(f, "dev"),
-		}
-	}
-}
-
-impl FromStr for UpdateChannel {
-	type Err = ();
-
-	fn from_str(s: &str) -> Result<Self, Self::Err> {
-		match s.to_lowercase().as_str() {
-			"stable" => Ok(Self::Stable),
-			"dev" => Ok(Self::Dev),
-			_ => Err(()),
-		}
-	}
-}
 
 #[derive(Clone, Debug, Default)]
 pub struct Bookmark {
@@ -77,7 +46,8 @@ pub struct ReadabilityFont {
 	pub strikethrough: bool,
 	/// RGB color packed as 0xRRGGBB, or -1 for default (no override)
 	pub color: i32,
-	/// wxFontEncoding value, 0 for default
+	/// Platform-specific font encoding identifier; 0 means default. Ignored on
+	/// platforms that manage encoding themselves (e.g. Android/iOS Unicode rendering).
 	pub encoding: i32,
 }
 
@@ -122,9 +92,6 @@ fn default_sleep_timer() -> i64 {
 fn default_reading_speed_wpm() -> i64 {
 	150
 }
-fn default_update_channel() -> String {
-	"stable".to_string()
-}
 fn default_font_color() -> i64 {
 	-1
 }
@@ -139,15 +106,7 @@ pub struct AppSettings {
 	#[serde(default)]
 	pub word_wrap: bool,
 	#[serde(default)]
-	pub minimize_to_tray: bool,
-	#[serde(default)]
-	pub start_maximized: bool,
-	#[serde(default = "default_true")]
-	pub compact_go_menu: bool,
-	#[serde(default)]
 	pub navigation_wrap: bool,
-	#[serde(default = "default_true")]
-	pub check_for_updates_on_startup: bool,
 	#[serde(default)]
 	pub find_match_case: bool,
 	#[serde(default)]
@@ -158,12 +117,8 @@ pub struct AppSettings {
 	pub recent_documents_to_show: i64,
 	#[serde(default = "default_sleep_timer")]
 	pub sleep_timer_duration: i64,
-	#[serde(default)]
-	pub language: String,
-	#[serde(default)]
-	pub active_document: String,
-	#[serde(default = "default_update_channel")]
-	pub update_channel: String,
+	#[serde(default = "default_reading_speed_wpm")]
+	pub reading_speed_wpm: i64,
 	#[serde(default)]
 	pub font_face_name: String,
 	#[serde(default)]
@@ -178,8 +133,6 @@ pub struct AppSettings {
 	pub font_strikethrough: bool,
 	#[serde(default = "default_font_color")]
 	pub font_color: i64,
-	#[serde(default)]
-	pub font_encoding: i64,
 	#[serde(default = "default_bg_color")]
 	pub bg_color: i64,
 	#[serde(default)]
@@ -188,10 +141,13 @@ pub struct AppSettings {
 	pub letter_spacing: i64,
 	#[serde(default)]
 	pub paragraph_spacing: i64,
-	#[serde(default = "default_reading_speed_wpm")]
-	pub reading_speed_wpm: i64,
 	#[serde(default)]
 	pub line_spacing: i64,
+	/// Pass-through storage for host-specific settings (e.g. desktop UI preferences).
+	/// Keys written here are preserved on read/write so host consumers can store their
+	/// own fields alongside the generic ones without conflict.
+	#[serde(flatten, default)]
+	pub extra: HashMap<String, toml::Value>,
 }
 
 impl Default for AppSettings {
@@ -199,19 +155,13 @@ impl Default for AppSettings {
 		Self {
 			restore_previous_documents: true,
 			word_wrap: false,
-			minimize_to_tray: false,
-			start_maximized: false,
-			compact_go_menu: true,
 			navigation_wrap: false,
-			check_for_updates_on_startup: true,
 			find_match_case: false,
 			find_whole_word: false,
 			find_use_regex: false,
 			recent_documents_to_show: DEFAULT_RECENT_DOCUMENTS_TO_SHOW,
 			sleep_timer_duration: 30,
-			language: String::new(),
-			active_document: String::new(),
-			update_channel: "stable".to_string(),
+			reading_speed_wpm: 150,
 			font_face_name: String::new(),
 			font_point_size: 0,
 			font_style: 0,
@@ -219,13 +169,12 @@ impl Default for AppSettings {
 			font_underlined: false,
 			font_strikethrough: false,
 			font_color: -1,
-			font_encoding: 0,
 			bg_color: -1,
 			text_alignment: 0,
 			letter_spacing: 0,
 			paragraph_spacing: 0,
-			reading_speed_wpm: 150,
 			line_spacing: 0,
+			extra: HashMap::new(),
 		}
 	}
 }
@@ -314,11 +263,9 @@ impl ConfigManager {
 		}
 	}
 
-	pub fn initialize(&mut self) -> bool {
-		let toml_path = config_toml_path();
-
-		let (data, needs_save) = if toml_path.exists() {
-			match fs::read_to_string(&toml_path).ok().and_then(|s| toml::from_str::<ConfigData>(&s).ok()) {
+	pub fn initialize(&mut self, config_path: PathBuf) -> bool {
+		let (data, needs_save) = if config_path.exists() {
+			match fs::read_to_string(&config_path).ok().and_then(|s| toml::from_str::<ConfigData>(&s).ok()) {
 				Some(d) => (d, false),
 				None => (ConfigData::default(), true),
 			}
@@ -326,7 +273,7 @@ impl ConfigManager {
 			(ConfigData::default(), true)
 		};
 
-		self.config_path = toml_path;
+		self.config_path = config_path;
 		self.initialized = true;
 		*self.data.borrow_mut() = data;
 
@@ -424,12 +371,7 @@ impl ConfigManager {
 			return default_value.to_string();
 		}
 		let data = self.data.borrow();
-		match key {
-			"language" => data.app.language.clone(),
-			"active_document" => data.app.active_document.clone(),
-			"update_channel" => data.app.update_channel.clone(),
-			_ => default_value.to_string(),
-		}
+		data.app.extra.get(key).and_then(|v| v.as_str()).map_or_else(|| default_value.to_string(), str::to_string)
 	}
 
 	pub fn get_app_bool(&self, key: &str, default_value: bool) -> bool {
@@ -440,15 +382,11 @@ impl ConfigManager {
 		match key {
 			"restore_previous_documents" => data.app.restore_previous_documents,
 			"word_wrap" => data.app.word_wrap,
-			"minimize_to_tray" => data.app.minimize_to_tray,
-			"start_maximized" => data.app.start_maximized,
-			"compact_go_menu" => data.app.compact_go_menu,
 			"navigation_wrap" => data.app.navigation_wrap,
-			"check_for_updates_on_startup" => data.app.check_for_updates_on_startup,
 			"find_match_case" => data.app.find_match_case,
 			"find_whole_word" => data.app.find_whole_word,
 			"find_use_regex" => data.app.find_use_regex,
-			_ => default_value,
+			_ => data.app.extra.get(key).and_then(|v| v.as_bool()).unwrap_or(default_value),
 		}
 	}
 
@@ -461,7 +399,15 @@ impl ConfigManager {
 			"recent_documents_to_show" => data.app.recent_documents_to_show,
 			"sleep_timer_duration" => data.app.sleep_timer_duration,
 			"reading_speed_wpm" => data.app.reading_speed_wpm,
-			_ => return default_value,
+			_ => {
+				return data
+					.app
+					.extra
+					.get(key)
+					.and_then(|v| v.as_integer())
+					.and_then(|i| i32::try_from(i).ok())
+					.unwrap_or(default_value);
+			}
 		};
 		v.try_into().unwrap_or(default_value)
 	}
@@ -470,15 +416,7 @@ impl ConfigManager {
 		if !self.initialized {
 			return;
 		}
-		{
-			let mut data = self.data.borrow_mut();
-			match key {
-				"language" => data.app.language = value.to_string(),
-				"active_document" => data.app.active_document = value.to_string(),
-				"update_channel" => data.app.update_channel = value.to_string(),
-				_ => return,
-			}
-		}
+		self.data.borrow_mut().app.extra.insert(key.to_string(), toml::Value::String(value.to_string()));
 		self.dirty.set(true);
 	}
 
@@ -491,15 +429,13 @@ impl ConfigManager {
 			match key {
 				"restore_previous_documents" => data.app.restore_previous_documents = value,
 				"word_wrap" => data.app.word_wrap = value,
-				"minimize_to_tray" => data.app.minimize_to_tray = value,
-				"start_maximized" => data.app.start_maximized = value,
-				"compact_go_menu" => data.app.compact_go_menu = value,
 				"navigation_wrap" => data.app.navigation_wrap = value,
-				"check_for_updates_on_startup" => data.app.check_for_updates_on_startup = value,
 				"find_match_case" => data.app.find_match_case = value,
 				"find_whole_word" => data.app.find_whole_word = value,
 				"find_use_regex" => data.app.find_use_regex = value,
-				_ => return,
+				_ => {
+					data.app.extra.insert(key.to_string(), toml::Value::Boolean(value));
+				}
 			}
 		}
 		self.dirty.set(true);
@@ -515,19 +451,12 @@ impl ConfigManager {
 				"recent_documents_to_show" => data.app.recent_documents_to_show = i64::from(value),
 				"sleep_timer_duration" => data.app.sleep_timer_duration = i64::from(value),
 				"reading_speed_wpm" => data.app.reading_speed_wpm = i64::from(value),
-				_ => return,
+				_ => {
+					data.app.extra.insert(key.to_string(), toml::Value::Integer(i64::from(value)));
+				}
 			}
 		}
 		self.dirty.set(true);
-	}
-
-	pub fn get_update_channel(&self) -> UpdateChannel {
-		let s = self.get_app_string("update_channel", "stable");
-		s.parse().unwrap_or_default()
-	}
-
-	pub fn set_update_channel(&self, channel: UpdateChannel) {
-		self.set_app_string("update_channel", &channel.to_string());
 	}
 
 	pub fn get_readability_font(&self) -> ReadabilityFont {
@@ -543,7 +472,13 @@ impl ConfigManager {
 			underlined: data.app.font_underlined,
 			strikethrough: data.app.font_strikethrough,
 			color: data.app.font_color.try_into().unwrap_or(-1),
-			encoding: data.app.font_encoding.try_into().unwrap_or(0),
+			encoding: data
+				.app
+				.extra
+				.get("font_encoding")
+				.and_then(|v| v.as_integer())
+				.and_then(|i| i32::try_from(i).ok())
+				.unwrap_or(0),
 		}
 	}
 
@@ -560,7 +495,7 @@ impl ConfigManager {
 			data.app.font_underlined = font.underlined;
 			data.app.font_strikethrough = font.strikethrough;
 			data.app.font_color = i64::from(font.color);
-			data.app.font_encoding = i64::from(font.encoding);
+			data.app.extra.insert("font_encoding".to_string(), toml::Value::Integer(i64::from(font.encoding)));
 		}
 		self.dirty.set(true);
 	}
@@ -1049,23 +984,6 @@ pub fn get_sorted_document_list(config: &ConfigManager, open_paths: &[String], f
 		.collect()
 }
 
-pub fn config_toml_path() -> PathBuf {
-	let exe_dir = get_exe_directory();
-	let is_installed = (0..10).any(|i| exe_dir.join(format!("unins{i:03}.exe")).exists());
-	if is_installed {
-		if let Some(appdata) = env::var_os("APPDATA") {
-			let config_dir = PathBuf::from(appdata).join("Paperback");
-			let _ = fs::create_dir_all(&config_dir);
-			return config_dir.join("Paperback.toml");
-		}
-	}
-	exe_dir.join("Paperback.toml")
-}
-
-fn get_exe_directory() -> PathBuf {
-	env::current_exe().ok().and_then(|p| p.parent().map(Path::to_path_buf)).unwrap_or_else(|| PathBuf::from("."))
-}
-
 pub fn compute_document_hash(path: &str) -> [u8; 20] {
 	let mut hasher = Sha1::new();
 	if let Ok(mut file) = fs::File::open(path) {
@@ -1116,8 +1034,6 @@ pub fn compute_document_hash(path: &str) -> [u8; 20] {
 
 #[cfg(test)]
 mod tests {
-	use rstest::rstest;
-
 	use super::*;
 
 	#[test]
@@ -1138,36 +1054,5 @@ mod tests {
 		let a = config.get_doc_key("book-a.epub");
 		let b = config.get_doc_key("book-b.epub");
 		assert_ne!(a, b);
-	}
-
-	#[test]
-	fn update_channel_default_is_stable() {
-		assert_eq!(UpdateChannel::default(), UpdateChannel::Stable);
-	}
-
-	#[rstest]
-	#[case(UpdateChannel::Stable, "stable")]
-	#[case(UpdateChannel::Dev, "dev")]
-	fn update_channel_display(#[case] channel: UpdateChannel, #[case] expected: &str) {
-		assert_eq!(channel.to_string(), expected);
-	}
-
-	#[rstest]
-	#[case("stable", UpdateChannel::Stable)]
-	#[case("dev", UpdateChannel::Dev)]
-	#[case("STABLE", UpdateChannel::Stable)]
-	#[case("DEV", UpdateChannel::Dev)]
-	#[case("Stable", UpdateChannel::Stable)]
-	fn update_channel_from_str_valid(#[case] input: &str, #[case] expected: UpdateChannel) {
-		assert_eq!(input.parse::<UpdateChannel>(), Ok(expected));
-	}
-
-	#[rstest]
-	#[case("")]
-	#[case("unknown")]
-	#[case("stab le")]
-	#[case("stable ")]
-	fn update_channel_from_str_invalid(#[case] input: &str) {
-		assert!(input.parse::<UpdateChannel>().is_err());
 	}
 }

@@ -197,19 +197,21 @@ impl DocumentManager {
 		true
 	}
 
-	pub fn close_document(&mut self, index: usize) -> bool {
+	pub fn close_document(&mut self, index: usize, save_state: bool) -> bool {
 		if index >= self.tabs.len() {
 			return false;
 		}
 		if let Some(tab) = self.tabs.get(index) {
 			self.recently_closed.push(tab.file_path.clone());
-			let position = tab.text_ctrl.get_insertion_point();
 			let path_str = tab.file_path.to_string_lossy();
 			let config = self.config.lock().unwrap();
-			config.set_document_position(&path_str, position);
-			let (history, history_index) = tab.session.get_history();
-			config.set_navigation_history(&path_str, history, history_index);
-			config.set_document_opened(&path_str, false);
+			if save_state {
+				let position = tab.text_ctrl.get_insertion_point();
+				config.set_document_position(&path_str, position);
+				let (history, history_index) = tab.session.get_history();
+				config.set_navigation_history(&path_str, history, history_index);
+				config.set_document_opened(&path_str, false);
+			}
 			config.remove_opened_document(&path_str);
 			config.flush();
 		}
@@ -226,7 +228,7 @@ impl DocumentManager {
 
 	pub fn close_all_documents(&mut self) {
 		while !self.tabs.is_empty() {
-			self.close_document(0);
+			self.close_document(0, true);
 		}
 	}
 

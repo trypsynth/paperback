@@ -12,7 +12,7 @@ use std::{
 };
 
 use paperback_core::{
-	config::{ConfigManager, UpdateChannel},
+	config::ConfigManager,
 	parser::{build_file_filter_string, parser_supports_extension},
 	types::BookmarkFilterType,
 };
@@ -29,7 +29,7 @@ use super::{
 	navigation::{self, MarkerNavTarget},
 	status,
 };
-use crate::{ipc::IpcCommand, translation_manager::TranslationManager};
+use crate::{config_ext::UpdateChannel, ipc::IpcCommand, translation_manager::TranslationManager};
 
 const KEY_DELETE: i32 = 127;
 const KEY_NUMPAD_DELETE: i32 = 330;
@@ -96,7 +96,7 @@ impl MainWindow {
 					if key == KEY_DELETE || key == KEY_NUMPAD_DELETE {
 						let mut dm = dm.lock().unwrap();
 						if let Some(index) = dm.active_tab_index() {
-							dm.close_document(index);
+							dm.close_document(index, true);
 						}
 						update_title_from_manager(&frame_copy, &dm);
 						let has_docs = dm.tab_count() > 0;
@@ -410,7 +410,7 @@ impl MainWindow {
 				menu_ids::CLOSE => {
 					let mut dm = dm.lock().unwrap();
 					if let Some(index) = dm.active_tab_index() {
-						dm.close_document(index);
+						dm.close_document(index, true);
 					}
 					update_title_from_manager(&frame_copy, &dm);
 					let has_docs = dm.tab_count() > 0;
@@ -1209,7 +1209,7 @@ impl MainWindow {
 					cfg.set_app_int("recent_documents_to_show", options.recent_documents_to_show);
 					cfg.set_app_int("reading_speed_wpm", options.reading_speed_wpm);
 					cfg.set_app_string("language", &options.language);
-					cfg.set_update_channel(options.update_channel);
+					crate::config_ext::set_update_channel(&cfg, options.update_channel);
 					cfg.set_readability_font(&options.readability_font);
 					cfg.set_line_spacing(options.line_spacing);
 					cfg.set_bg_color(options.bg_color);
@@ -1336,7 +1336,7 @@ impl MainWindow {
 					}
 				}
 				menu_ids::CHECK_FOR_UPDATES => {
-					let channel = config.lock().unwrap().get_update_channel();
+					let channel = crate::config_ext::get_update_channel(&config.lock().unwrap());
 					help::run_update_check(false, channel);
 				}
 				menu_ids::DONATE => {
@@ -1386,11 +1386,12 @@ impl MainWindow {
 							for path_str in &result.paths_to_close {
 								let path = Path::new(path_str);
 								if let Some(index) = dm_ref.find_tab_by_path(path) {
-									dm_ref.close_document(index);
+									dm_ref.close_document(index, false);
 								}
 							}
 							if !result.paths_to_close.is_empty() {
 								update_title_from_manager(&frame_copy, &dm_ref);
+								dm_ref.restore_focus();
 							}
 						}
 						if let Some(path) = result.open {
