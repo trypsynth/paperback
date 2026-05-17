@@ -75,15 +75,9 @@ fun MainScreen(
 				is MainScreenUiState.Success -> {
 					val docState = state as MainScreenUiState.Success
 
-					// Scroll to saved position when a book first loads
+					// Scroll to saved position (or top for new books) then start tracking
 					LaunchedEffect(docState.session) {
-						if (docState.initialScrollIndex > 0) {
-							listState.scrollToItem(docState.initialScrollIndex)
-						}
-					}
-
-					// Persist scroll position as the user reads
-					LaunchedEffect(docState.session) {
+						listState.scrollToItem(docState.initialScrollIndex)
 						snapshotFlow { listState.firstVisibleItemIndex }
 							.distinctUntilChanged()
 							.collect { index -> viewModel.savePosition(docState.session, docState.documentUri, index) }
