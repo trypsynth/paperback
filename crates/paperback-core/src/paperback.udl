@@ -11,6 +11,32 @@ dictionary TocEntry {
 	i32 level;
 };
 
+enum MarkerTypeFfi {
+	"Heading1", "Heading2", "Heading3", "Heading4", "Heading5", "Heading6",
+	"PageBreak", "SectionBreak", "TocItem", "Link",
+	"List", "ListItem", "Table", "Separator", "Image", "Figure"
+};
+
+dictionary LineMarker {
+	MarkerTypeFfi mtype;
+	i64 position;
+	string text;
+	string reference;
+	i32 level;
+	i64 length;
+};
+
+enum LinkActionFfi {
+	"Internal", "External", "NotFound"
+};
+
+dictionary LinkActivationResultFfi {
+	boolean found;
+	LinkActionFfi action;
+	i64 offset;
+	string url;
+};
+
 interface DocumentSession {
 	[Name=new_ffi, Throws=DocumentError]
 	constructor(string file_path, string password, string forced_extension);
@@ -23,6 +49,8 @@ interface DocumentSession {
 	i64 line_count();
 	i64 position_from_line(i64 line);
 	i64 line_from_position(i64 position);
+	sequence<LineMarker> get_line_markers(i64 line);
+	LinkActivationResultFfi activate_link_ffi(i64 position);
 
 	sequence<TocEntry> get_toc();
 };
@@ -35,5 +63,8 @@ interface ConfigManagerFfi {
 	i64 get_document_position(string path);
 	void add_recent_document(string path);
 	sequence<string> get_recent_documents();
+	void add_opened_document(string path);
+	void remove_opened_document(string path);
+	sequence<string> get_opened_documents();
 	void flush();
 };

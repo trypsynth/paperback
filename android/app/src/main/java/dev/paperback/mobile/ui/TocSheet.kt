@@ -11,7 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
@@ -45,10 +44,8 @@ fun TocSheet(
 		}
 		result
 	}
-	ModalBottomSheet(
-		onDismissRequest = onDismiss,
-		sheetState = sheetState
-	) {
+	
+	ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
 		LazyColumn(contentPadding = PaddingValues(bottom = 32.dp)) {
 			item {
 				Text(
@@ -74,14 +71,12 @@ fun TocSheet(
 									onItemClick(item)
 								}
 							}
-						}
-						.clearAndSetSemantics {
+						}.clearAndSetSemantics {
 							contentDescription = "${item.title}, Level ${item.level + 1}"
 							if (hasChildren) {
 								stateDescription = if (isExpanded) "Expanded" else "Collapsed"
 							}
-						}
-						.padding(start = paddingLeft, end = 16.dp, top = 12.dp, bottom = 12.dp),
+						}.padding(start = paddingLeft, end = 16.dp, top = 12.dp, bottom = 12.dp),
 					verticalAlignment = Alignment.CenterVertically
 				) {
 					if (hasChildren) {

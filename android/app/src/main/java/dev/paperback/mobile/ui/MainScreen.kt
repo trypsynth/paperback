@@ -1,12 +1,13 @@
 package dev.paperback.mobile.ui
 
+import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -14,12 +15,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.text
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import uniffi.paperback.LinkActionFfi
+import uniffi.paperback.MarkerTypeFfi
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,34 +48,77 @@ fun MainScreen(
 ) {
 	val state by viewModel.uiState.collectAsStateWithLifecycle()
 	val scope = rememberCoroutineScope()
-	val listState = rememberLazyListState()
+	val listStates = remember { mutableStateMapOf<String, LazyListState>() }
 	var tocSheetOpen by remember { mutableStateOf(false) }
 	var lineIndexToFocus by remember { mutableStateOf<Int?>(null) }
 	var expandedTocIndices by remember { mutableStateOf(setOf<Int>()) }
-	val launcher = rememberLauncherForActivityResult(
-		contract = ActivityResultContracts.OpenDocument()
-	) { uri: Uri? ->
+	val context = LocalContext.current
+
+	val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.OpenDocument()) { uri: Uri? ->
 		if (uri != null) {
 			viewModel.openDocument(uri)
 		}
 	}
+
 	Scaffold(
 		topBar = {
-			TopAppBar(
-				title = { Text("Paperback") },
-				navigationIcon = {
-					if (state is MainScreenUiState.Success) {
-						TextButton(onClick = { tocSheetOpen = true }) {
-							Text("Table of Contents")
+			Column {
+				TopAppBar(
+					title = { Text("Paperback") },
+					navigationIcon = {
+						if (state is MainScreenUiState.Success && (state as MainScreenUiState.Success).activeTab != null) {
+							TextButton(onClick = { tocSheetOpen = true }) {
+								Text("Table of Contents")
+							}
+						}
+					},
+					actions = {
+						Button(onClick = { launcher.launch(arrayOf("*/*")) }) {
+							Text("Open Book")
 						}
 					}
-				},
-				actions = {
-					Button(onClick = { launcher.launch(arrayOf("*/*")) }) {
-						Text("Open Book")
+				)
+				if (state is MainScreenUiState.Success) {
+					val successState = state as MainScreenUiState.Success
+					if (successState.tabs.isNotEmpty()) {
+						PrimaryScrollableTabRow(
+							selectedTabIndex = successState.activeTabIndex,
+							edgePadding = 8.dp,
+							modifier = Modifier.fillMaxWidth()
+						) {
+							successState.tabs.forEachIndexed { index, tab ->
+								Tab(
+									selected = successState.activeTabIndex == index,
+									onClick = { viewModel.setActiveTab(index) },
+									modifier = Modifier.semantics {
+										customActions = listOf(
+											CustomAccessibilityAction(
+												label = "Close ${tab.title}",
+												action = {
+													viewModel.closeTab(index)
+													true
+												}
+											)
+										)
+									},
+									text = {
+										Row(verticalAlignment = Alignment.CenterVertically) {
+											Text(tab.title, maxLines = 1, modifier = Modifier.widthIn(max = 150.dp))
+											Spacer(modifier = Modifier.width(4.dp))
+											IconButton(
+												onClick = { viewModel.closeTab(index) },
+												modifier = Modifier.size(24.dp).clearAndSetSemantics { }
+											) {
+												Text("X", fontWeight = FontWeight.Bold)
+											}
+										}
+									}
+								)
+							}
+						}
 					}
 				}
-			)
+			}
 		}
 	) { padding ->
 		Column(modifier = modifier.fillMaxSize().padding(padding)) {
@@ -73,82 +134,200 @@ fun MainScreen(
 					}
 				}
 				is MainScreenUiState.Success -> {
-					val docState = state as MainScreenUiState.Success
+					val successState = state as MainScreenUiState.Success
+					val docState = successState.activeTab
 
-					// Scroll to saved position (or top for new books) then start tracking
-					LaunchedEffect(docState.session) {
-						listState.scrollToItem(docState.initialScrollIndex)
-						snapshotFlow { listState.firstVisibleItemIndex }
-							.distinctUntilChanged()
-							.collect { index -> viewModel.savePosition(docState.session, docState.documentUri, index) }
-					}
+					if (docState != null) {
+						val listState = listStates.getOrPut(docState.documentUri) {
+							LazyListState(firstVisibleItemIndex = docState.initialScrollIndex)
+						}
 
-					SelectionContainer {
-						LazyColumn(
-							state = listState,
-							modifier = Modifier.fillMaxSize(),
-							contentPadding = PaddingValues(16.dp)
-						) {
-							items(docState.lineCount.toInt()) { index ->
-								val pos = docState.session.positionFromLine((index + 1).toLong())
-								val lineText = docState.session.getLineText(pos)
-								if (lineText.isNotBlank()) {
-									val focusRequester = remember { FocusRequester() }
-									var isTemporaryFocusTarget by remember { mutableStateOf(lineIndexToFocus == index) }
-									LaunchedEffect(lineIndexToFocus) {
-										if (lineIndexToFocus == index) {
-											isTemporaryFocusTarget = true
-										}
-									}
-									val textModifier = if (isTemporaryFocusTarget) {
-										Modifier.focusRequester(focusRequester).focusable()
-									} else {
-										Modifier
-									}
-									Text(
-										text = lineText.trimEnd(),
-										style = MaterialTheme.typography.bodyLarge,
-										modifier = textModifier.padding(vertical = 4.dp)
-									)
-									if (isTemporaryFocusTarget) {
-										LaunchedEffect(Unit) {
-											kotlinx.coroutines.delay(700)
-											try {
-												focusRequester.requestFocus()
-											} catch (e: Exception) {}
-											kotlinx.coroutines.delay(1500)
-											isTemporaryFocusTarget = false
+						// Track the scroll position
+						LaunchedEffect(docState.documentUri) {
+							snapshotFlow { listState.firstVisibleItemIndex }
+								.distinctUntilChanged()
+								.collect { index -> viewModel.savePosition(docState.session, docState.documentUri, index) }
+						}
+
+						SelectionContainer {
+							LazyColumn(
+								state = listState,
+								modifier = Modifier.fillMaxSize(),
+								contentPadding = PaddingValues(16.dp)
+							) {
+								items(docState.lineCount.toInt()) { index ->
+									val lineNum = (index + 1).toLong()
+									val pos = docState.session.positionFromLine(lineNum)
+									val lineText = docState.session.getLineText(pos).trimEnd()
+									val markers = docState.session.getLineMarkers(lineNum)
+									
+									if (lineText.isNotBlank()) {
+										val focusRequester = remember { FocusRequester() }
+										var isTemporaryFocusTarget by remember { mutableStateOf(lineIndexToFocus == index) }
+										LaunchedEffect(lineIndexToFocus) {
 											if (lineIndexToFocus == index) {
-												lineIndexToFocus = null
+												isTemporaryFocusTarget = true
+											}
+										}
+										
+										var textModifier = Modifier.padding(vertical = 4.dp)
+										var isHeading = false
+										var headingLevel = 0
+										
+										val annotatedString = buildAnnotatedString {
+											var currentIdx = 0
+											val sortedMarkers = markers.sortedBy { it.position }
+										
+											sortedMarkers.forEach { marker ->
+												when (marker.mtype) {
+													MarkerTypeFfi.HEADING1 -> {
+														isHeading = true
+														headingLevel = 1
+													}
+													MarkerTypeFfi.HEADING2 -> {
+														isHeading = true
+														headingLevel = 2
+													}
+													MarkerTypeFfi.HEADING3 -> {
+														isHeading = true
+														headingLevel = 3
+													}
+													MarkerTypeFfi.HEADING4 -> {
+														isHeading = true
+														headingLevel = 4
+													}
+													MarkerTypeFfi.HEADING5 -> {
+														isHeading = true
+														headingLevel = 5
+													}
+													MarkerTypeFfi.HEADING6 -> {
+														isHeading = true
+														headingLevel = 6
+													}
+													MarkerTypeFfi.LINK -> {
+														val markerStartInLine = (marker.position - pos).toInt().coerceAtLeast(0)
+														val markerTextLength = marker.text.length
+													
+														if (markerStartInLine > currentIdx) {
+															append(lineText.substring(currentIdx, markerStartInLine.coerceAtMost(lineText.length)))
+															currentIdx = markerStartInLine
+														}
+													
+														if (currentIdx < lineText.length) {
+															val linkEnd = (currentIdx + markerTextLength).coerceAtMost(lineText.length)
+															val linkText = lineText.substring(currentIdx, linkEnd)
+														
+															val linkAnnotation = LinkAnnotation.Clickable(
+																tag = marker.position.toString(),
+																styles = TextLinkStyles(
+																	style = SpanStyle(
+																		color = MaterialTheme.colorScheme.primary,
+																		textDecoration = TextDecoration.Underline
+																	)
+																)
+															) {
+																val result = docState.session.activateLinkFfi(marker.position)
+																if (result.found) {
+																	when (result.action) {
+																		LinkActionFfi.EXTERNAL -> {
+																			val intent = Intent(Intent.ACTION_VIEW, Uri.parse(result.url))
+																			context.startActivity(intent)
+																		}
+																		LinkActionFfi.INTERNAL -> {
+																			val targetLine = docState.session.lineFromPosition(result.offset)
+																			val targetIndex = (targetLine - 1).toInt().coerceAtLeast(0)
+																			scope.launch {
+																				listState.scrollToItem(targetIndex)
+																				lineIndexToFocus = targetIndex
+																			}
+																		}
+																		else -> {}
+																	}
+																}
+															}
+														
+															withLink(linkAnnotation) {
+																append(linkText)
+															}
+															currentIdx = linkEnd
+														}
+													}
+													else -> {}
+												}
+											}
+										
+											if (currentIdx < lineText.length) {
+												append(lineText.substring(currentIdx))
+											}
+										}
+										
+										if (isHeading) {
+											textModifier = textModifier.semantics {
+												heading()
+												if (headingLevel > 0) {
+													stateDescription = "Heading $headingLevel"
+												}
+											}
+										}
+
+										if (isTemporaryFocusTarget) {
+											textModifier = textModifier.focusRequester(focusRequester).focusable()
+										}
+										
+										val textStyle = if (isHeading) {
+											MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+										} else {
+											MaterialTheme.typography.bodyLarge
+										}
+										
+										Text(
+											text = annotatedString,
+											style = textStyle,
+											modifier = textModifier
+										)
+										
+										if (isTemporaryFocusTarget) {
+											LaunchedEffect(Unit) {
+												kotlinx.coroutines.delay(700)
+												try {
+													focusRequester.requestFocus()
+												} catch (e: Exception) {
+												}
+												kotlinx.coroutines.delay(1500)
+												isTemporaryFocusTarget = false
+												if (lineIndexToFocus == index) {
+													lineIndexToFocus = null
+												}
 											}
 										}
 									}
 								}
 							}
 						}
-					}
-					if (tocSheetOpen) {
-						TocSheet(
-							toc = docState.toc,
-							expandedTocIndices = expandedTocIndices,
-							onToggleExpand = { originalIndex ->
-								expandedTocIndices = if (expandedTocIndices.contains(originalIndex)) {
-									expandedTocIndices - originalIndex
-								} else {
-									expandedTocIndices + originalIndex
-								}
-							},
-							onItemClick = { item ->
-								val line = docState.session.lineFromPosition(item.position)
-								val indexToScroll = (line - 1).toInt().coerceAtLeast(0)
-								scope.launch {
-									tocSheetOpen = false
-									listState.scrollToItem(indexToScroll)
-									lineIndexToFocus = indexToScroll
-								}
-							},
-							onDismiss = { tocSheetOpen = false }
-						)
+						
+						if (tocSheetOpen) {
+							TocSheet(
+								toc = docState.toc,
+								expandedTocIndices = expandedTocIndices,
+								onToggleExpand = { originalIndex ->
+									expandedTocIndices = if (expandedTocIndices.contains(originalIndex)) {
+										expandedTocIndices - originalIndex
+									} else {
+										expandedTocIndices + originalIndex
+									}
+								},
+								onItemClick = { item ->
+									val line = docState.session.lineFromPosition(item.position)
+									val indexToScroll = (line - 1).toInt().coerceAtLeast(0)
+									scope.launch {
+										tocSheetOpen = false
+										listState.scrollToItem(indexToScroll)
+										lineIndexToFocus = indexToScroll
+									}
+								},
+								onDismiss = { tocSheetOpen = false }
+							)
+						}
 					}
 				}
 				is MainScreenUiState.Error -> {
