@@ -22,7 +22,6 @@ pub mod markdown;
 pub mod mobi;
 pub mod odp;
 pub mod odt;
-#[cfg(not(target_os = "android"))]
 pub mod pdf;
 pub mod powerpoint;
 pub mod rtf;
@@ -99,7 +98,6 @@ impl ParserRegistry {
 			registry.register(fb2::Fb2Parser);
 			registry.register(html::HtmlParser);
 
-			#[cfg(not(target_os = "android"))]
 			registry.register(pdf::PdfParser);
 			registry.register(markdown::MarkdownParser);
 			registry.register(mobi::MobiParser);
