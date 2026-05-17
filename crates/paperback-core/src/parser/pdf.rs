@@ -93,7 +93,7 @@ impl Parser for PdfParser {
 					}
 					let mut current_block = String::new();
 					for i in 0..child_count {
-						if let Ok(child) = struct_tree.get_child(i) {
+						if let Ok(child) = struct_tree.child(i) {
 							process_struct_element(
 								&child,
 								&mcid_to_text,
@@ -676,7 +676,7 @@ fn process_struct_element(
 
 	let count = elem.count_children();
 	for i in 0..count {
-		if let Ok(child) = elem.get_child(i) {
+		if let Ok(child) = elem.child(i) {
 			process_struct_element(
 				&child,
 				mcid_to_text,
@@ -687,8 +687,7 @@ fn process_struct_element(
 				toc_items,
 			);
 		} else {
-			let mcid = elem.child_marked_content_id(i);
-			if mcid >= 0 {
+			if let Some(mcid) = elem.child_marked_content_id(i) {
 				if let Some(text) = mcid_to_text.get(&mcid) {
 					current_block.push_str(text);
 				}
@@ -747,7 +746,7 @@ fn build_html_table(elem: &pdfium::PdfiumStructElement, mcid_to_text: &HashMap<i
 		let mut html = String::from("<table border=\"1\">\n");
 		let count = elem.count_children();
 		for i in 0..count {
-			if let Ok(child) = elem.get_child(i) {
+			if let Ok(child) = elem.child(i) {
 				html.push_str(&build_html_table(&child, mcid_to_text));
 			}
 		}
@@ -757,7 +756,7 @@ fn build_html_table(elem: &pdfium::PdfiumStructElement, mcid_to_text: &HashMap<i
 		let mut html = String::from("<tr>\n");
 		let count = elem.count_children();
 		for i in 0..count {
-			if let Ok(child) = elem.get_child(i) {
+			if let Ok(child) = elem.child(i) {
 				html.push_str(&build_html_table(&child, mcid_to_text));
 			}
 		}
@@ -774,7 +773,7 @@ fn build_html_table(elem: &pdfium::PdfiumStructElement, mcid_to_text: &HashMap<i
 		let mut html = String::new();
 		let count = elem.count_children();
 		for i in 0..count {
-			if let Ok(child) = elem.get_child(i) {
+			if let Ok(child) = elem.child(i) {
 				html.push_str(&build_html_table(&child, mcid_to_text));
 			}
 		}
@@ -785,11 +784,10 @@ fn build_html_table(elem: &pdfium::PdfiumStructElement, mcid_to_text: &HashMap<i
 fn collect_text(elem: &pdfium::PdfiumStructElement, mcid_to_text: &HashMap<i32, String>, out: &mut String) {
 	let count = elem.count_children();
 	for i in 0..count {
-		if let Ok(child) = elem.get_child(i) {
+		if let Ok(child) = elem.child(i) {
 			collect_text(&child, mcid_to_text, out);
 		} else {
-			let mcid = elem.child_marked_content_id(i);
-			if mcid >= 0 {
+			if let Some(mcid) = elem.child_marked_content_id(i) {
 				if let Some(text) = mcid_to_text.get(&mcid) {
 					out.push_str(text);
 				}
