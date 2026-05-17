@@ -3663,6 +3663,7 @@ checksum = "dea7109cdcd5864d4eeb1b58a1648dc9bf520360d7af16ec26d0a9354bafcfc0"
 dependencies = [
  "base64",
  "cookie_store",
+ "flate2",
  "log",
  "percent-encoding",
  "rustls",
@@ -4455,6 +4456,9 @@ dependencies = [
 name = "xtask"
 version = "0.1.0"
 dependencies = [
+ "flate2",
+ "tar",
+ "ureq",
  "walkdir",
  "zip",
 ]
