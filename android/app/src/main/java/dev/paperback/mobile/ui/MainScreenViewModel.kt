@@ -97,6 +97,8 @@ class MainScreenViewModel(
 			val closedTab = currentTabs.removeAt(index)
 			viewModelScope.launch(Dispatchers.IO) {
 				config.removeOpenedDocument(closedTab.documentUri)
+				config.setDocumentOpened(closedTab.documentUri, false)
+				config.flush()
 			}
 			if (currentTabs.isEmpty()) {
 				currentActiveIndex = -1

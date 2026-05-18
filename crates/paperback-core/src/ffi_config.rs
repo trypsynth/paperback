@@ -41,6 +41,10 @@ impl ConfigManagerFfi {
 		self.inner.lock().unwrap().remove_opened_document(&path);
 	}
 
+	pub fn set_document_opened(&self, path: String, opened: bool) {
+		self.inner.lock().unwrap().set_document_opened(&path, opened);
+	}
+
 	pub fn get_opened_documents(&self) -> Vec<String> {
 		self.inner.lock().unwrap().get_opened_documents()
 	}

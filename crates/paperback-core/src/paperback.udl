@@ -65,6 +65,7 @@ interface ConfigManagerFfi {
 	sequence<string> get_recent_documents();
 	void add_opened_document(string path);
 	void remove_opened_document(string path);
+	void set_document_opened(string path, boolean opened);
 	sequence<string> get_opened_documents();
 	void flush();
 };
