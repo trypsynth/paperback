@@ -49,6 +49,10 @@ impl ConfigManagerFfi {
 		self.inner.lock().unwrap().get_opened_documents()
 	}
 
+	pub fn remove_document_history(&self, path: String) {
+		self.inner.lock().unwrap().remove_document_history(&path);
+	}
+
 	pub fn flush(&self) {
 		self.inner.lock().unwrap().flush();
 	}

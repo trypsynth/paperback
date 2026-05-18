@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,7 +23,6 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.semantics.text
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
@@ -34,12 +34,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import uniffi.paperback.LinkActionFfi
 import uniffi.paperback.MarkerTypeFfi
+import androidx.compose.foundation.lazy.items as lazyItems
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, kotlinx.coroutines.FlowPreview::class)
 @Composable
 fun MainScreen(
 	onItemClick: (NavKey) -> Unit = {},
@@ -50,6 +52,7 @@ fun MainScreen(
 	val scope = rememberCoroutineScope()
 	val listStates = remember { mutableStateMapOf<String, LazyListState>() }
 	var tocSheetOpen by remember { mutableStateOf(false) }
+	var recentsDialogOpen by remember { mutableStateOf(false) }
 	var lineIndexToFocus by remember { mutableStateOf<Int?>(null) }
 	var expandedTocIndices by remember { mutableStateOf(setOf<Int>()) }
 	val context = LocalContext.current
@@ -73,6 +76,11 @@ fun MainScreen(
 						}
 					},
 					actions = {
+						if (state is MainScreenUiState.Success && (state as MainScreenUiState.Success).tabs.isNotEmpty()) {
+							TextButton(onClick = { recentsDialogOpen = true }) {
+								Text("Recent Books")
+							}
+						}
 						Button(onClick = { launcher.launch(arrayOf("*/*")) }) {
 							Text("Open Book")
 						}
@@ -137,7 +145,45 @@ fun MainScreen(
 					val successState = state as MainScreenUiState.Success
 					val docState = successState.activeTab
 
-					if (docState != null) {
+					if (docState == null) {
+						Column(
+							modifier = Modifier.fillMaxSize().padding(16.dp),
+							horizontalAlignment = Alignment.CenterHorizontally,
+							verticalArrangement = Arrangement.Center
+						) {
+							Text(
+								"No document open.",
+								style = MaterialTheme.typography.titleLarge,
+								modifier = Modifier.padding(bottom = 24.dp)
+							)
+							
+							if (successState.recentDocuments.isNotEmpty()) {
+								Text(
+									"Recently Opened",
+									style = MaterialTheme.typography.titleMedium,
+									modifier = Modifier.padding(bottom = 8.dp)
+								)
+								LazyColumn(
+									modifier = Modifier.weight(1f).fillMaxWidth(),
+									contentPadding = PaddingValues(vertical = 8.dp)
+								) {
+									lazyItems(successState.recentDocuments.take(5)) { recentDoc ->
+										RecentDocumentItemRow(
+											item = recentDoc,
+											onOpen = { viewModel.openDocument(Uri.parse(recentDoc.uri)) },
+											onRemove = { viewModel.removeRecentDocument(recentDoc.uri) }
+										)
+									}
+								}
+								TextButton(
+									onClick = { recentsDialogOpen = true },
+									modifier = Modifier.padding(top = 8.dp)
+								) {
+									Text("Recent Books")
+								}
+							}
+						}
+					} else {
 						val listState = listStates.getOrPut(docState.documentUri) {
 							LazyListState(firstVisibleItemIndex = docState.initialScrollIndex)
 						}
@@ -146,6 +192,7 @@ fun MainScreen(
 						LaunchedEffect(docState.documentUri) {
 							snapshotFlow { listState.firstVisibleItemIndex }
 								.distinctUntilChanged()
+								.debounce(500)
 								.collect { index -> viewModel.savePosition(docState.session, docState.documentUri, index) }
 						}
 
@@ -330,6 +377,34 @@ fun MainScreen(
 							)
 						}
 					}
+					
+					if (recentsDialogOpen) {
+						AlertDialog(
+							onDismissRequest = { recentsDialogOpen = false },
+							title = { Text("Recent Documents") },
+							text = {
+								LazyColumn(
+									modifier = Modifier.fillMaxWidth()
+								) {
+									lazyItems(successState.recentDocuments) { recentDoc ->
+										RecentDocumentItemRow(
+											item = recentDoc,
+											onOpen = {
+												recentsDialogOpen = false
+												viewModel.openDocument(Uri.parse(recentDoc.uri))
+											},
+											onRemove = { viewModel.removeRecentDocument(recentDoc.uri) }
+										)
+									}
+								}
+							},
+							confirmButton = {
+								TextButton(onClick = { recentsDialogOpen = false }) {
+									Text("Close")
+								}
+							}
+						)
+					}
 				}
 				is MainScreenUiState.Error -> {
 					Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -337,6 +412,46 @@ fun MainScreen(
 					}
 				}
 			}
+		}
+	}
+}
+
+@Composable
+fun RecentDocumentItemRow(
+	item: RecentDocumentItem,
+	onOpen: () -> Unit,
+	onRemove: () -> Unit
+) {
+	Row(
+		modifier = Modifier
+			.fillMaxWidth()
+			.clickable(
+				onClickLabel = "open",
+				onClick = onOpen
+			).semantics {
+				customActions = listOf(
+					CustomAccessibilityAction("Remove") {
+						onRemove()
+						true
+					}
+				)
+				stateDescription = if (item.isOpen) "Open" else "Closed"
+			}.padding(vertical = 12.dp, horizontal = 8.dp),
+		verticalAlignment = Alignment.CenterVertically
+	) {
+		Column(modifier = Modifier.weight(1f)) {
+			Text(text = item.displayName, style = MaterialTheme.typography.bodyLarge)
+			Text(
+				text = if (item.isOpen) "Currently Open" else "Closed",
+				style = MaterialTheme.typography.bodySmall,
+				color = MaterialTheme.colorScheme.onSurfaceVariant
+			)
+		}
+		TextButton(
+			onClick = onRemove,
+			modifier = Modifier.clearAndSetSemantics { }
+		) {
+			Text("Remove")
 		}
 	}
 }
