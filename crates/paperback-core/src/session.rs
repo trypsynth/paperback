@@ -836,14 +836,15 @@ impl DocumentSession {
 
 	#[must_use]
 	pub fn get_line_text(&self, position: i64) -> String {
-		let content = &self.handle.document().buffer.content;
-		let total_chars = content.chars().count();
+		let buf = &self.handle.document().buffer;
+		let total_chars = buf.char_count();
 		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
-		let line_start =
-			content.chars().take(pos).collect::<Vec<_>>().iter().rposition(|&c| c == '\n').map_or(0, |idx| idx + 1);
-		let chars_after_start: String = content.chars().skip(line_start).collect();
-		let line_end = chars_after_start.find('\n').map_or(chars_after_start.len(), |idx| idx);
-		chars_after_start.chars().take(line_end).collect()
+		let newlines = buf.newline_positions();
+		let line_start = match newlines.partition_point(|&p| p < pos) {
+			0 => 0,
+			idx => newlines[idx - 1] + 1,
+		};
+		buf.content.chars().skip(line_start).take_while(|&c| c != '\n').collect()
 	}
 
 	#[must_use]
