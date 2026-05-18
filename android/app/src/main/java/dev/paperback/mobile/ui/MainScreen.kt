@@ -19,6 +19,7 @@ import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.text
@@ -150,159 +151,159 @@ fun MainScreen(
 
 						LazyColumn(
 							state = listState,
-							modifier = Modifier.fillMaxSize(),
+							modifier = Modifier.fillMaxSize().semantics { isTraversalGroup = true },
 							contentPadding = PaddingValues(16.dp)
 						) {
-								items(
-									count = docState.lineCount.toInt(),
-									key = { it }
-								) { index ->
-									val lineNum = (index + 1).toLong()
-									val pos = docState.session.positionFromLine(lineNum)
-									val lineText = docState.session.getLineText(pos).trimEnd()
-									val markers = docState.session.getLineMarkers(lineNum)
+							items(
+								count = docState.lineCount.toInt(),
+								key = { it }
+							) { index ->
+								val lineNum = (index + 1).toLong()
+								val pos = docState.session.positionFromLine(lineNum)
+								val lineText = docState.session.getLineText(pos).trimEnd()
+								val markers = docState.session.getLineMarkers(lineNum)
 
-									if (lineText.isNotBlank()) {
-										val focusRequester = remember { FocusRequester() }
-										var isTemporaryFocusTarget by remember { mutableStateOf(lineIndexToFocus == index) }
-										LaunchedEffect(lineIndexToFocus) {
-											if (lineIndexToFocus == index) {
-												isTemporaryFocusTarget = true
-											}
+								if (lineText.isNotBlank()) {
+									val focusRequester = remember { FocusRequester() }
+									var isTemporaryFocusTarget by remember { mutableStateOf(lineIndexToFocus == index) }
+									LaunchedEffect(lineIndexToFocus) {
+										if (lineIndexToFocus == index) {
+											isTemporaryFocusTarget = true
 										}
+									}
 
-										var textModifier = Modifier.padding(vertical = 4.dp).semantics(mergeDescendants = true) {}
-										var isHeading = false
-										var headingLevel = 0
+									var textModifier = Modifier.padding(vertical = 4.dp).semantics(mergeDescendants = true) {}
+									var isHeading = false
+									var headingLevel = 0
 
-										val annotatedString = buildAnnotatedString {
-											var currentIdx = 0
-											val sortedMarkers = markers.sortedBy { it.position }
+									val annotatedString = buildAnnotatedString {
+										var currentIdx = 0
+										val sortedMarkers = markers.sortedBy { it.position }
 
-											sortedMarkers.forEach { marker ->
-												when (marker.mtype) {
-													MarkerTypeFfi.HEADING1 -> {
-														isHeading = true
-														headingLevel = 1
-													}
-													MarkerTypeFfi.HEADING2 -> {
-														isHeading = true
-														headingLevel = 2
-													}
-													MarkerTypeFfi.HEADING3 -> {
-														isHeading = true
-														headingLevel = 3
-													}
-													MarkerTypeFfi.HEADING4 -> {
-														isHeading = true
-														headingLevel = 4
-													}
-													MarkerTypeFfi.HEADING5 -> {
-														isHeading = true
-														headingLevel = 5
-													}
-													MarkerTypeFfi.HEADING6 -> {
-														isHeading = true
-														headingLevel = 6
-													}
-													MarkerTypeFfi.LINK -> {
-														val markerStartInLine = (marker.position - pos).toInt().coerceAtLeast(0)
-														val markerTextLength = marker.text.length
+										sortedMarkers.forEach { marker ->
+											when (marker.mtype) {
+												MarkerTypeFfi.HEADING1 -> {
+													isHeading = true
+													headingLevel = 1
+												}
+												MarkerTypeFfi.HEADING2 -> {
+													isHeading = true
+													headingLevel = 2
+												}
+												MarkerTypeFfi.HEADING3 -> {
+													isHeading = true
+													headingLevel = 3
+												}
+												MarkerTypeFfi.HEADING4 -> {
+													isHeading = true
+													headingLevel = 4
+												}
+												MarkerTypeFfi.HEADING5 -> {
+													isHeading = true
+													headingLevel = 5
+												}
+												MarkerTypeFfi.HEADING6 -> {
+													isHeading = true
+													headingLevel = 6
+												}
+												MarkerTypeFfi.LINK -> {
+													val markerStartInLine = (marker.position - pos).toInt().coerceAtLeast(0)
+													val markerTextLength = marker.text.length
 
-														if (markerStartInLine > currentIdx) {
-															append(lineText.substring(currentIdx, markerStartInLine.coerceAtMost(lineText.length)))
-															currentIdx = markerStartInLine
-														}
+													if (markerStartInLine > currentIdx) {
+														append(lineText.substring(currentIdx, markerStartInLine.coerceAtMost(lineText.length)))
+														currentIdx = markerStartInLine
+													}
 
-														if (currentIdx < lineText.length) {
-															val linkEnd = (currentIdx + markerTextLength).coerceAtMost(lineText.length)
-															val linkText = lineText.substring(currentIdx, linkEnd)
+													if (currentIdx < lineText.length) {
+														val linkEnd = (currentIdx + markerTextLength).coerceAtMost(lineText.length)
+														val linkText = lineText.substring(currentIdx, linkEnd)
 
-															val linkAnnotation = LinkAnnotation.Clickable(
-																tag = marker.position.toString(),
-																styles = TextLinkStyles(
-																	style = SpanStyle(
-																		color = MaterialTheme.colorScheme.primary,
-																		textDecoration = TextDecoration.Underline
-																	)
+														val linkAnnotation = LinkAnnotation.Clickable(
+															tag = marker.position.toString(),
+															styles = TextLinkStyles(
+																style = SpanStyle(
+																	color = MaterialTheme.colorScheme.primary,
+																	textDecoration = TextDecoration.Underline
 																)
-															) {
-																val result = docState.session.activateLinkFfi(marker.position)
-																if (result.found) {
-																	when (result.action) {
-																		LinkActionFfi.EXTERNAL -> {
-																			val intent = Intent(Intent.ACTION_VIEW, Uri.parse(result.url))
-																			context.startActivity(intent)
-																		}
-																		LinkActionFfi.INTERNAL -> {
-																			val targetLine = docState.session.lineFromPosition(result.offset)
-																			val targetIndex = (targetLine - 1).toInt().coerceAtLeast(0)
-																			scope.launch {
-																				listState.scrollToItem(targetIndex)
-																				lineIndexToFocus = targetIndex
-																			}
-																		}
-																		else -> {}
+															)
+														) {
+															val result = docState.session.activateLinkFfi(marker.position)
+															if (result.found) {
+																when (result.action) {
+																	LinkActionFfi.EXTERNAL -> {
+																		val intent = Intent(Intent.ACTION_VIEW, Uri.parse(result.url))
+																		context.startActivity(intent)
 																	}
+																	LinkActionFfi.INTERNAL -> {
+																		val targetLine = docState.session.lineFromPosition(result.offset)
+																		val targetIndex = (targetLine - 1).toInt().coerceAtLeast(0)
+																		scope.launch {
+																			listState.scrollToItem(targetIndex)
+																			lineIndexToFocus = targetIndex
+																		}
+																	}
+																	else -> {}
 																}
 															}
-
-															withLink(linkAnnotation) {
-																append(linkText)
-															}
-															currentIdx = linkEnd
 														}
+
+														withLink(linkAnnotation) {
+															append(linkText)
+														}
+														currentIdx = linkEnd
 													}
-													else -> {}
 												}
-											}
-
-											if (currentIdx < lineText.length) {
-												append(lineText.substring(currentIdx))
+												else -> {}
 											}
 										}
 
-										if (isHeading) {
-											textModifier = textModifier.semantics {
-												heading()
-												if (headingLevel > 0) {
-													stateDescription = "Heading $headingLevel"
-												}
+										if (currentIdx < lineText.length) {
+											append(lineText.substring(currentIdx))
+										}
+									}
+
+									if (isHeading) {
+										textModifier = textModifier.semantics {
+											heading()
+											if (headingLevel > 0) {
+												stateDescription = "Heading $headingLevel"
 											}
 										}
+									}
 
-										if (isTemporaryFocusTarget) {
-											textModifier = textModifier.focusRequester(focusRequester).focusable()
-										}
+									if (isTemporaryFocusTarget) {
+										textModifier = textModifier.focusRequester(focusRequester).focusable()
+									}
 
-										val textStyle = if (isHeading) {
-											MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
-										} else {
-											MaterialTheme.typography.bodyLarge
-										}
+									val textStyle = if (isHeading) {
+										MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+									} else {
+										MaterialTheme.typography.bodyLarge
+									}
 
-										Text(
-											text = annotatedString,
-											style = textStyle,
-											modifier = textModifier
-										)
+									Text(
+										text = annotatedString,
+										style = textStyle,
+										modifier = textModifier
+									)
 
-										if (isTemporaryFocusTarget) {
-											LaunchedEffect(Unit) {
-												kotlinx.coroutines.delay(700)
-												try {
-													focusRequester.requestFocus()
-												} catch (e: Exception) {
-												}
-												kotlinx.coroutines.delay(1500)
-												isTemporaryFocusTarget = false
-												if (lineIndexToFocus == index) {
-													lineIndexToFocus = null
-												}
+									if (isTemporaryFocusTarget) {
+										LaunchedEffect(Unit) {
+											kotlinx.coroutines.delay(700)
+											try {
+												focusRequester.requestFocus()
+											} catch (e: Exception) {
+											}
+											kotlinx.coroutines.delay(1500)
+											isTemporaryFocusTarget = false
+											if (lineIndexToFocus == index) {
+												lineIndexToFocus = null
 											}
 										}
 									}
 								}
+							}
 						}
 
 						if (tocSheetOpen) {
