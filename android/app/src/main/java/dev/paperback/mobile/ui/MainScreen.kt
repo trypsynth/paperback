@@ -153,7 +153,10 @@ fun MainScreen(
 							modifier = Modifier.fillMaxSize(),
 							contentPadding = PaddingValues(16.dp)
 						) {
-								items(docState.lineCount.toInt()) { index ->
+								items(
+									count = docState.lineCount.toInt(),
+									key = { it }
+								) { index ->
 									val lineNum = (index + 1).toLong()
 									val pos = docState.session.positionFromLine(lineNum)
 									val lineText = docState.session.getLineText(pos).trimEnd()
@@ -168,7 +171,7 @@ fun MainScreen(
 											}
 										}
 
-										var textModifier = Modifier.padding(vertical = 4.dp)
+										var textModifier = Modifier.padding(vertical = 4.dp).semantics(mergeDescendants = true) {}
 										var isHeading = false
 										var headingLevel = 0
 
