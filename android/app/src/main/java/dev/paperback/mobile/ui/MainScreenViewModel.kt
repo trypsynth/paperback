@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Intent
 import android.net.Uri
 import android.provider.OpenableColumns
+import android.webkit.MimeTypeMap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -31,7 +32,8 @@ data class DocumentTabState(
 data class RecentDocumentItem(
 	val uri: String,
 	val displayName: String,
-	val isOpen: Boolean
+	val isOpen: Boolean,
+	val isMissing: Boolean = false
 )
 
 sealed class MainScreenUiState {
@@ -68,6 +70,45 @@ class MainScreenViewModel(
 	private var currentActiveIndex = -1
 	private var recentDocumentsList = emptyList<RecentDocumentItem>()
 
+	val supportedMimeTypes: Array<String> = run {
+		val extensions = config.getSupportedExtensions()
+		val mimeMap = MimeTypeMap.getSingleton()
+		val mimes = mutableSetOf<String>()
+		for (ext in extensions) {
+			val extStr = ext.toString()
+			val mime: String? = mimeMap.getMimeTypeFromExtension(extStr)
+			if (mime != null) {
+				mimes.add(mime)
+			}
+			when (extStr.lowercase()) {
+				"epub" -> mimes.add("application/epub+zip")
+				"fb2" -> mimes.add("application/x-fictionbook+xml")
+				"md" -> mimes.add("text/markdown")
+				"chm" -> mimes.add("application/vnd.ms-htmlhelp")
+				"opf" -> mimes.add("application/oebps-package+xml")
+				"fodp" -> mimes.add("application/vnd.oasis.opendocument.presentation")
+				"fodt" -> mimes.add("application/vnd.oasis.opendocument.text")
+				"zip" -> mimes.add("application/zip")
+				"rtf" -> mimes.add("application/rtf")
+				"pdf" -> mimes.add("application/pdf")
+				"txt" -> mimes.add("text/plain")
+				"xml" -> {
+					mimes.add("application/xml")
+					mimes.add("text/xml")
+				}
+				"html" -> mimes.add("text/html")
+				"doc" -> mimes.add("application/msword")
+				"docx" -> mimes.add("application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+				"docm" -> mimes.add("application/vnd.ms-word.document.macroEnabled.12")
+				"odt" -> mimes.add("application/vnd.oasis.opendocument.text")
+				"odp" -> mimes.add("application/vnd.oasis.opendocument.presentation")
+				"pptx" -> mimes.add("application/vnd.openxmlformats-officedocument.presentationml.presentation")
+				"mobi" -> mimes.add("application/x-mobipocket-ebook")
+			}
+		}
+		if (mimes.isEmpty()) arrayOf("*/*") else mimes.toTypedArray()
+	}
+
 	init {
 		viewModelScope.launch {
 			val openedUris = config.getOpenedDocuments()
@@ -85,25 +126,36 @@ class MainScreenViewModel(
 		}
 	}
 
-	private fun updateRecentDocuments() {
-		val recents = config.getRecentDocuments()
-		val opened = config.getOpenedDocuments().toSet()
-		recentDocumentsList = recents.map { uriString ->
-			val uri = Uri.parse(uriString)
-			var displayName = uri.lastPathSegment ?: uriString
-			try {
-				context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-					if (cursor.moveToFirst()) {
-						val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-						if (nameIndex != -1) displayName = cursor.getString(nameIndex)
+	private suspend fun updateRecentDocuments() =
+		withContext(Dispatchers.IO) {
+			val recents = config.getRecentDocuments()
+			val opened = config.getOpenedDocuments().toSet()
+			val updatedList = recents.map { uriString ->
+				val uri = Uri.parse(uriString)
+				var displayName = uri.lastPathSegment ?: uriString
+				var isMissing = false
+				try {
+					context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+						if (cursor.moveToFirst()) {
+							val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+							if (nameIndex != -1) displayName = cursor.getString(nameIndex)
+						} else {
+							isMissing = true
+						}
+					} ?: run { isMissing = true }
+				
+					if (!isMissing) {
+						context.contentResolver.openAssetFileDescriptor(uri, "r")?.close()
 					}
+				} catch (e: Exception) {
+					isMissing = true
 				}
-			} catch (e: Exception) {
-				// Ignore
+				RecentDocumentItem(uriString, displayName, opened.contains(uriString), isMissing)
 			}
-			RecentDocumentItem(uriString, displayName, opened.contains(uriString))
+			withContext(Dispatchers.Main) {
+				recentDocumentsList = updatedList
+			}
 		}
-	}
 
 	fun removeRecentDocument(uriString: String) {
 		viewModelScope.launch(Dispatchers.IO) {

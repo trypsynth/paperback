@@ -53,6 +53,16 @@ impl ConfigManagerFfi {
 		self.inner.lock().unwrap().remove_document_history(&path);
 	}
 
+	pub fn get_supported_extensions(&self) -> Vec<String> {
+		let mut exts = std::collections::HashSet::new();
+		for parser in crate::parser::ParserRegistry::global().all_parsers() {
+			for ext in parser.extensions {
+				exts.insert(ext);
+			}
+		}
+		exts.into_iter().collect()
+	}
+
 	pub fn flush(&self) {
 		self.inner.lock().unwrap().flush();
 	}

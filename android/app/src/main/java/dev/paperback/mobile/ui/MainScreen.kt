@@ -57,6 +57,15 @@ fun MainScreen(
 	var expandedTocIndices by remember { mutableStateOf(setOf<Int>()) }
 	val context = LocalContext.current
 
+	val activity = context as? android.app.Activity
+	LaunchedEffect(activity?.intent) {
+		val uri = activity?.intent?.data
+		if (uri != null && activity.intent?.action == android.content.Intent.ACTION_VIEW) {
+			viewModel.openDocument(uri)
+			activity.intent?.action = android.content.Intent.ACTION_MAIN
+		}
+	}
+
 	val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.OpenDocument()) { uri: Uri? ->
 		if (uri != null) {
 			viewModel.openDocument(uri)
@@ -81,7 +90,9 @@ fun MainScreen(
 								Text("Recent Books")
 							}
 						}
-						Button(onClick = { launcher.launch(arrayOf("*/*")) }) {
+						Button(onClick = {
+							launcher.launch(viewModel.supportedMimeTypes)
+						}) {
 							Text("Open Book")
 						}
 					}
@@ -426,6 +437,7 @@ fun RecentDocumentItemRow(
 		modifier = Modifier
 			.fillMaxWidth()
 			.clickable(
+				enabled = !item.isMissing,
 				onClickLabel = "open",
 				onClick = onOpen
 			).semantics {
@@ -435,16 +447,36 @@ fun RecentDocumentItemRow(
 						true
 					}
 				)
-				stateDescription = if (item.isOpen) "Open" else "Closed"
+				stateDescription = if (item.isMissing) {
+					"Missing"
+				} else if (item.isOpen) {
+					"Open"
+				} else {
+					"Closed"
+				}
 			}.padding(vertical = 12.dp, horizontal = 8.dp),
 		verticalAlignment = Alignment.CenterVertically
 	) {
 		Column(modifier = Modifier.weight(1f)) {
-			Text(text = item.displayName, style = MaterialTheme.typography.bodyLarge)
 			Text(
-				text = if (item.isOpen) "Currently Open" else "Closed",
+				text = item.displayName,
+				style = MaterialTheme.typography.bodyLarge,
+				color = if (item.isMissing) {
+					MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+				} else {
+					MaterialTheme.colorScheme.onSurface
+				}
+			)
+			Text(
+				text = if (item.isMissing) {
+					"File Missing"
+				} else if (item.isOpen) {
+					"Currently Open"
+				} else {
+					"Closed"
+				},
 				style = MaterialTheme.typography.bodySmall,
-				color = MaterialTheme.colorScheme.onSurfaceVariant
+				color = if (item.isMissing) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
 			)
 		}
 		TextButton(

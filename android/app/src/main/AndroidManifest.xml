@@ -18,6 +18,34 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="content" />
+                <data android:scheme="file" />
+                <data android:mimeType="*/*" />
+                <data android:pathPattern=".*\\.epub" />
+                <data android:pathPattern=".*\\.pdf" />
+                <data android:pathPattern=".*\\.txt" />
+                <data android:pathPattern=".*\\.html" />
+                <data android:pathPattern=".*\\.xml" />
+                <data android:pathPattern=".*\\.md" />
+                <data android:pathPattern=".*\\.rtf" />
+                <data android:pathPattern=".*\\.docx" />
+                <data android:pathPattern=".*\\.docm" />
+                <data android:pathPattern=".*\\.doc" />
+                <data android:pathPattern=".*\\.zip" />
+                <data android:pathPattern=".*\\.opf" />
+                <data android:pathPattern=".*\\.fb2" />
+                <data android:pathPattern=".*\\.mobi" />
+                <data android:pathPattern=".*\\.odp" />
+                <data android:pathPattern=".*\\.fodp" />
+                <data android:pathPattern=".*\\.odt" />
+                <data android:pathPattern=".*\\.fodt" />
+                <data android:pathPattern=".*\\.pptx" />
+                <data android:pathPattern=".*\\.chm" />
+            </intent-filter>
         </activity>
     </application>
 

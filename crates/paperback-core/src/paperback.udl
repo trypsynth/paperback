@@ -68,5 +68,6 @@ interface ConfigManagerFfi {
 	void set_document_opened(string path, boolean opened);
 	sequence<string> get_opened_documents();
 	void remove_document_history(string path);
+	sequence<string> get_supported_extensions();
 	void flush();
 };
