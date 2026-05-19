@@ -14,7 +14,8 @@ pub mod version;
 pub use crate::{
 	ffi_config::ConfigManagerFfi,
 	session::{
-		DocumentError, DocumentSession, LineMarker, LinkActionFfi, LinkActivationResultFfi, MarkerTypeFfi, TocEntry,
+		DocumentError, DocumentSession, DocumentStatsFfi, LineMarker, LinkActionFfi, LinkActivationResultFfi,
+		MarkerTypeFfi, TocEntry,
 	},
 };
 
