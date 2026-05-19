@@ -26,6 +26,7 @@ data class DocumentTabState(
 	val lineCount: Long,
 	val toc: List<TocEntry>,
 	val documentUri: String,
+	val docKey: String,
 	val initialScrollIndex: Int = 0
 )
 
@@ -114,8 +115,7 @@ class MainScreenViewModel(
 			val openedUris = config.getOpenedDocuments()
 			if (openedUris.isNotEmpty()) {
 				openedUris.forEach { uriString ->
-					val savedPosition = config.getDocumentPosition(uriString)
-					loadDocument(Uri.parse(uriString), savedPosition)
+					loadDocument(Uri.parse(uriString), false)
 				}
 			}
 			updateRecentDocuments()
@@ -126,11 +126,18 @@ class MainScreenViewModel(
 		}
 	}
 
-	private suspend fun updateRecentDocuments() =
+	private suspend fun updateRecentDocuments() {
+		val updatedList = getRecentDocumentsListIO()
+		withContext(Dispatchers.Main) {
+			recentDocumentsList = updatedList
+		}
+	}
+
+	private suspend fun getRecentDocumentsListIO(): List<RecentDocumentItem> =
 		withContext(Dispatchers.IO) {
 			val recents = config.getRecentDocuments()
 			val opened = config.getOpenedDocuments().toSet()
-			val updatedList = recents.map { uriString ->
+			recents.map { uriString ->
 				val uri = Uri.parse(uriString)
 				var displayName = uri.lastPathSegment ?: uriString
 				var isMissing = false
@@ -152,9 +159,6 @@ class MainScreenViewModel(
 				}
 				RecentDocumentItem(uriString, displayName, opened.contains(uriString), isMissing)
 			}
-			withContext(Dispatchers.Main) {
-				recentDocumentsList = updatedList
-			}
 		}
 
 	fun removeRecentDocument(uriString: String) {
@@ -163,11 +167,7 @@ class MainScreenViewModel(
 			config.flush()
 			updateRecentDocuments()
 			withContext(Dispatchers.Main) {
-				if (currentTabs.isEmpty()) {
-					_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
-				} else {
-					_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
-				}
+				_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
 			}
 		}
 	}
@@ -182,8 +182,7 @@ class MainScreenViewModel(
 			config.addRecentDocument(uriString)
 			config.addOpenedDocument(uriString)
 			config.flush()
-			val savedPosition = config.getDocumentPosition(uriString)
-			loadDocument(uri, savedPosition)
+			loadDocument(uri, true)
 		}
 	}
 
@@ -197,6 +196,12 @@ class MainScreenViewModel(
 				updateRecentDocuments()
 				withContext(Dispatchers.Main) {
 					currentActiveIndex = if (currentTabs.isEmpty()) -1 else currentActiveIndex.coerceIn(0, currentTabs.size - 1)
+					if (currentActiveIndex != -1) {
+						viewModelScope.launch(Dispatchers.IO) {
+							config
+								.setAppString("active_document", currentTabs[currentActiveIndex].docKey)
+						}
+					}
 					_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
 				}
 			}
@@ -206,6 +211,10 @@ class MainScreenViewModel(
 	fun setActiveTab(index: Int) {
 		if (index in currentTabs.indices && index != currentActiveIndex) {
 			currentActiveIndex = index
+			viewModelScope.launch(Dispatchers.IO) {
+				config.setAppString("active_document", currentTabs[index].docKey)
+				config.flush()
+			}
 			_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
 		}
 	}
@@ -228,7 +237,7 @@ class MainScreenViewModel(
 
 	private suspend fun loadDocument(
 		uri: Uri,
-		savedPosition: Long
+		makeActive: Boolean
 	) = withContext(Dispatchers.IO) {
 		if (currentTabs.isEmpty()) {
 			_uiState.value = MainScreenUiState.Loading
@@ -252,6 +261,10 @@ class MainScreenViewModel(
 			FileOutputStream(tempFile).use { inputStream.copyTo(it) }
 			inputStream.close()
 
+			config.associateUriWithLocalFile(uri.toString(), tempFile.absolutePath)
+			val docKey = config.getDocKey(uri.toString())
+			val savedPosition = config.getDocumentPosition(uri.toString())
+
 			val session = DocumentSession.newFfi(tempFile.absolutePath, "", "")
 			val initialScrollIndex = if (savedPosition > 0L) {
 				(session.lineFromPosition(savedPosition) - 1L).toInt().coerceAtLeast(0)
@@ -266,25 +279,49 @@ class MainScreenViewModel(
 				lineCount = session.lineCount(),
 				toc = session.getToc(),
 				documentUri = uri.toString(),
+				docKey = docKey,
 				initialScrollIndex = initialScrollIndex
 			)
 
-			// Check if already open
-			val existingIndex = currentTabs.indexOfFirst { it.documentUri == tabState.documentUri }
-			if (existingIndex != -1) {
-				currentActiveIndex = existingIndex
-			} else {
-				currentTabs.add(tabState)
-				currentActiveIndex = currentTabs.size - 1
-			}
+			val recentDocsUpdated = getRecentDocumentsListIO()
 
-			updateRecentDocuments()
-			_uiState.value =
-				MainScreenUiState.Success(tabs = currentTabs.toList(), activeTabIndex = currentActiveIndex, recentDocumentsList)
+			withContext(Dispatchers.Main) {
+				recentDocumentsList = recentDocsUpdated
+				val existingIndex = currentTabs.indexOfFirst { it.docKey == docKey }
+				if (existingIndex != -1) {
+					val oldTab = currentTabs[existingIndex]
+					if (oldTab.documentUri != uri.toString()) {
+						viewModelScope.launch(Dispatchers.IO) {
+							config.removeOpenedDocument(oldTab.documentUri)
+							config.addOpenedDocument(uri.toString())
+							config.flush()
+						}
+						currentTabs[existingIndex] = tabState
+					}
+					if (makeActive) {
+						currentActiveIndex = existingIndex
+						viewModelScope.launch(Dispatchers.IO) { config.setAppString("active_document", docKey) }
+					} else if (config.getAppString("active_document", "") == docKey) {
+						currentActiveIndex = existingIndex
+					}
+				} else {
+					currentTabs.add(tabState)
+					if (makeActive || config.getAppString("active_document", "") == docKey) {
+						currentActiveIndex = currentTabs.size - 1
+						viewModelScope.launch(Dispatchers.IO) { config.setAppString("active_document", docKey) }
+					} else if (currentActiveIndex == -1) {
+						currentActiveIndex = 0
+					}
+				}
+				_uiState.value =
+					MainScreenUiState.Success(tabs = currentTabs.toList(), activeTabIndex = currentActiveIndex, recentDocumentsList)
+			}
 		} catch (e: Exception) {
-			_uiState.value = MainScreenUiState.Error(e.message ?: "Unknown error")
-			if (currentTabs.isNotEmpty()) {
-				_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
+			withContext(Dispatchers.Main) {
+				_uiState.value = MainScreenUiState.Error(e.message ?: "Unknown error")
+				if (currentTabs.isNotEmpty()) {
+					_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
+				}
 			}
 		}
 	}

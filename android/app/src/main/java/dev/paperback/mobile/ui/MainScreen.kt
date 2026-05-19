@@ -58,11 +58,29 @@ fun MainScreen(
 	val context = LocalContext.current
 
 	val activity = context as? android.app.Activity
-	LaunchedEffect(activity?.intent) {
+	DisposableEffect(activity) {
+		val listener = androidx.core.util.Consumer<Intent> { newIntent ->
+			val uri = newIntent.data
+			if (uri != null && newIntent.action == Intent.ACTION_VIEW) {
+				viewModel.openDocument(uri)
+				newIntent.action = Intent.ACTION_MAIN
+			}
+		}
+		if (activity is androidx.activity.ComponentActivity) {
+			activity.addOnNewIntentListener(listener)
+		}
+		onDispose {
+			if (activity is androidx.activity.ComponentActivity) {
+				activity.removeOnNewIntentListener(listener)
+			}
+		}
+	}
+
+	LaunchedEffect(Unit) {
 		val uri = activity?.intent?.data
-		if (uri != null && activity.intent?.action == android.content.Intent.ACTION_VIEW) {
+		if (uri != null && activity?.intent?.action == Intent.ACTION_VIEW) {
 			viewModel.openDocument(uri)
-			activity.intent?.action = android.content.Intent.ACTION_MAIN
+			activity.intent?.action = Intent.ACTION_MAIN
 		}
 	}
 
@@ -74,29 +92,48 @@ fun MainScreen(
 
 	Scaffold(
 		topBar = {
-			Column {
-				TopAppBar(
-					title = { Text("Paperback") },
-					navigationIcon = {
+			Column(
+				modifier = Modifier
+					.fillMaxWidth()
+					.windowInsetsPadding(WindowInsets.statusBars)
+					.padding(horizontal = 16.dp, vertical = 8.dp)
+			) {
+				val titleText = if (state is MainScreenUiState.Success) {
+					val successState = state as MainScreenUiState.Success
+					successState.activeTab?.title ?: "Paperback"
+				} else {
+					"Paperback"
+				}
+				Text(
+					text = titleText,
+					style = MaterialTheme.typography.headlineSmall,
+					fontWeight = FontWeight.Bold,
+					modifier = Modifier.padding(bottom = 16.dp).semantics { heading() }
+				)
+
+				Row(
+					modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+					horizontalArrangement = Arrangement.SpaceBetween,
+					verticalAlignment = Alignment.Top
+				) {
+					Column(horizontalAlignment = Alignment.Start) {
 						if (state is MainScreenUiState.Success && (state as MainScreenUiState.Success).activeTab != null) {
-							TextButton(onClick = { tocSheetOpen = true }) {
+							Button(onClick = { tocSheetOpen = true }) {
 								Text("Table of Contents")
 							}
+							Spacer(modifier = Modifier.height(8.dp))
 						}
-					},
-					actions = {
-						if (state is MainScreenUiState.Success && (state as MainScreenUiState.Success).tabs.isNotEmpty()) {
-							TextButton(onClick = { recentsDialogOpen = true }) {
-								Text("Recent Books")
-							}
-						}
-						Button(onClick = {
-							launcher.launch(viewModel.supportedMimeTypes)
-						}) {
+						Button(onClick = { launcher.launch(viewModel.supportedMimeTypes) }) {
 							Text("Open Book")
 						}
 					}
-				)
+
+					if (state is MainScreenUiState.Success && (state as MainScreenUiState.Success).tabs.isNotEmpty()) {
+						Button(onClick = { recentsDialogOpen = true }) {
+							Text("Recent Books")
+						}
+					}
+				}
 				if (state is MainScreenUiState.Success) {
 					val successState = state as MainScreenUiState.Success
 					if (successState.tabs.isNotEmpty()) {
@@ -210,7 +247,7 @@ fun MainScreen(
 						LazyColumn(
 							state = listState,
 							modifier = Modifier.fillMaxSize().semantics { isTraversalGroup = true },
-							contentPadding = PaddingValues(16.dp)
+							contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 16.dp)
 						) {
 							items(
 								count = docState.lineCount.toInt(),

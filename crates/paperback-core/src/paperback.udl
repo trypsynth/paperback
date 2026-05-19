@@ -59,6 +59,10 @@ interface ConfigManagerFfi {
 	constructor();
 
 	boolean initialize(string config_path);
+	string get_doc_key(string path);
+	string get_app_string(string key, string default_value);
+	void set_app_string(string key, string value);
+	void associate_uri_with_local_file(string uri, string local_path);
 	void set_document_position(string path, i64 position);
 	i64 get_document_position(string path);
 	void add_recent_document(string path);
