@@ -31,6 +31,7 @@ pub struct DocumentTab {
 	pub text_ctrl: TextCtrl,
 	pub session: DocumentSession,
 	pub file_path: PathBuf,
+	pub track: bool,
 }
 
 const POSITION_SAVE_INTERVAL_SECS: u64 = 3;
@@ -182,7 +183,7 @@ impl DocumentManager {
 		let path_str = path.to_string_lossy();
 		let nav_history = config.get_navigation_history(&path_str);
 		session.set_history(&nav_history.positions, nav_history.index);
-		self.tabs.push(DocumentTab { panel, text_ctrl, session, file_path: path.to_path_buf() });
+		self.tabs.push(DocumentTab { panel, text_ctrl, session, file_path: path.to_path_buf(), track });
 		if !password.is_empty() {
 			config.set_document_password(&path_str, password);
 		}
@@ -216,7 +217,7 @@ impl DocumentManager {
 			self.recently_closed.push(tab.file_path.clone());
 			let path_str = tab.file_path.to_string_lossy();
 			let config = self.config.lock().unwrap();
-			if save_state {
+			if save_state && tab.track {
 				let position = tab.text_ctrl.get_insertion_point();
 				config.set_document_position(&path_str, position);
 				let (history, history_index) = tab.session.get_history();
