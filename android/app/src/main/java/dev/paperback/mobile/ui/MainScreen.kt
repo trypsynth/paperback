@@ -9,6 +9,8 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,6 +25,12 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
@@ -53,6 +61,7 @@ fun MainScreen(
 	val listStates = remember { mutableStateMapOf<String, LazyListState>() }
 	var tocSheetOpen by remember { mutableStateOf(false) }
 	var recentsDialogOpen by remember { mutableStateOf(false) }
+	var moreOptionsExpanded by remember { mutableStateOf(false) }
 	var lineIndexToFocus by remember { mutableStateOf<Int?>(null) }
 	var expandedTocIndices by remember { mutableStateOf(setOf<Int>()) }
 	val context = LocalContext.current
@@ -77,10 +86,11 @@ fun MainScreen(
 	}
 
 	LaunchedEffect(Unit) {
-		val uri = activity?.intent?.data
-		if (uri != null && activity?.intent?.action == Intent.ACTION_VIEW) {
+		val intent = activity?.intent
+		val uri = intent?.data
+		if (uri != null && intent.action == Intent.ACTION_VIEW) {
 			viewModel.openDocument(uri)
-			activity.intent?.action = Intent.ACTION_MAIN
+			intent.action = Intent.ACTION_MAIN
 		}
 	}
 
@@ -108,29 +118,61 @@ fun MainScreen(
 					text = titleText,
 					style = MaterialTheme.typography.headlineSmall,
 					fontWeight = FontWeight.Bold,
-					modifier = Modifier.padding(bottom = 16.dp).semantics { heading() }
+					modifier = Modifier.padding(bottom = 16.dp).semantics { 
+						heading() 
+						traversalIndex = 0f
+					}
 				)
 
 				Row(
-					modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+					modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp).semantics { isTraversalGroup = true },
 					horizontalArrangement = Arrangement.SpaceBetween,
 					verticalAlignment = Alignment.Top
 				) {
-					Column(horizontalAlignment = Alignment.Start) {
+					Column(horizontalAlignment = Alignment.Start, modifier = Modifier.semantics { isTraversalGroup = true }) {
 						if (state is MainScreenUiState.Success && (state as MainScreenUiState.Success).activeTab != null) {
-							Button(onClick = { tocSheetOpen = true }) {
+							Button(onClick = { tocSheetOpen = true }, modifier = Modifier.semantics { traversalIndex = 1f }) {
 								Text("Table of Contents")
 							}
 							Spacer(modifier = Modifier.height(8.dp))
 						}
-						Button(onClick = { launcher.launch(viewModel.supportedMimeTypes) }) {
+						Button(onClick = { launcher.launch(viewModel.supportedMimeTypes) }, modifier = Modifier.semantics { traversalIndex = 2f }) {
 							Text("Open Book")
 						}
 					}
 
 					if (state is MainScreenUiState.Success && (state as MainScreenUiState.Success).tabs.isNotEmpty()) {
-						Button(onClick = { recentsDialogOpen = true }) {
-							Text("Recent Books")
+						Box(modifier = Modifier.semantics { isTraversalGroup = true }) {
+							IconButton(
+								onClick = { moreOptionsExpanded = true },
+								modifier = Modifier.semantics {
+									traversalIndex = 3f
+									this.onClick(label = "show all options in a menu") {
+										moreOptionsExpanded = true
+										true
+									}
+									customActions = listOf(
+										CustomAccessibilityAction("Recent Documents") {
+											recentsDialogOpen = true
+											true
+										}
+									)
+								}
+							) {
+								Icon(Icons.Filled.MoreVert, contentDescription = "More Options")
+							}
+							DropdownMenu(
+								expanded = moreOptionsExpanded,
+								onDismissRequest = { moreOptionsExpanded = false }
+							) {
+								DropdownMenuItem(
+									text = { Text("Recent Documents") },
+									onClick = {
+										moreOptionsExpanded = false
+										recentsDialogOpen = true
+									}
+								)
+							}
 						}
 					}
 				}
@@ -218,6 +260,7 @@ fun MainScreen(
 									lazyItems(successState.recentDocuments.take(5)) { recentDoc ->
 										RecentDocumentItemRow(
 											item = recentDoc,
+											showClosedStatus = false,
 											onOpen = { viewModel.openDocument(Uri.parse(recentDoc.uri)) },
 											onRemove = { viewModel.removeRecentDocument(recentDoc.uri) }
 										)
@@ -227,7 +270,7 @@ fun MainScreen(
 									onClick = { recentsDialogOpen = true },
 									modifier = Modifier.padding(top = 8.dp)
 								) {
-									Text("Recent Books")
+									Text("Recent Documents")
 								}
 							}
 						}
@@ -429,6 +472,7 @@ fun MainScreen(
 					if (recentsDialogOpen) {
 						AlertDialog(
 							onDismissRequest = { recentsDialogOpen = false },
+							modifier = Modifier.semantics { paneTitle = "Recent Documents" },
 							title = { Text("Recent Documents") },
 							text = {
 								LazyColumn(
@@ -467,6 +511,7 @@ fun MainScreen(
 @Composable
 fun RecentDocumentItemRow(
 	item: RecentDocumentItem,
+	showClosedStatus: Boolean = true,
 	onOpen: () -> Unit,
 	onRemove: () -> Unit
 ) {
@@ -484,12 +529,17 @@ fun RecentDocumentItemRow(
 						true
 					}
 				)
-				stateDescription = if (item.isMissing) {
+				val desc = if (item.isMissing) {
 					"Missing"
 				} else if (item.isOpen) {
 					"Open"
-				} else {
+				} else if (showClosedStatus) {
 					"Closed"
+				} else {
+					null
+				}
+				if (desc != null) {
+					stateDescription = desc
 				}
 			}.padding(vertical = 12.dp, horizontal = 8.dp),
 		verticalAlignment = Alignment.CenterVertically
@@ -504,17 +554,19 @@ fun RecentDocumentItemRow(
 					MaterialTheme.colorScheme.onSurface
 				}
 			)
-			Text(
-				text = if (item.isMissing) {
-					"File Missing"
-				} else if (item.isOpen) {
-					"Currently Open"
-				} else {
-					"Closed"
-				},
-				style = MaterialTheme.typography.bodySmall,
-				color = if (item.isMissing) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
-			)
+			if (item.isMissing || item.isOpen || showClosedStatus) {
+				Text(
+					text = if (item.isMissing) {
+						"File Missing"
+					} else if (item.isOpen) {
+						"Currently Open"
+					} else {
+						"Closed"
+					},
+					style = MaterialTheme.typography.bodySmall,
+					color = if (item.isMissing) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+				)
+			}
 		}
 		TextButton(
 			onClick = onRemove,
