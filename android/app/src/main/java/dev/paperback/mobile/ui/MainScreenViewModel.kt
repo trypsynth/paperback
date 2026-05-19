@@ -356,12 +356,15 @@ class MainScreenViewModel(
 				if (makeActive) {
 					currentActiveIndex = existingIndex
 					viewModelScope.launch(Dispatchers.IO) { config.setAppString("active_document", tabState.docKey) }
-				} else if (activeDocKey == tabState.docKey) {
+				} else if (activeDocKey == tabState.docKey && !makeActive) {
 					currentActiveIndex = existingIndex
 				}
 			} else {
 				currentTabs.add(tabState)
-				if (makeActive || activeDocKey == tabState.docKey) {
+				if (makeActive) {
+					currentActiveIndex = currentTabs.size - 1
+					viewModelScope.launch(Dispatchers.IO) { config.setAppString("active_document", tabState.docKey) }
+				} else if (activeDocKey == tabState.docKey) {
 					currentActiveIndex = currentTabs.size - 1
 					viewModelScope.launch(Dispatchers.IO) { config.setAppString("active_document", tabState.docKey) }
 				} else if (currentActiveIndex == -1) {

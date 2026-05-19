@@ -13,6 +13,7 @@
         <activity
             android:name="dev.paperback.mobile.MainActivity"
             android:exported="true"
+            android:launchMode="singleTask"
             tools:ignore="Instantiatable">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
