@@ -92,6 +92,8 @@ fun MainScreen(
 		}
 	}
 
+	val supportedMimeTypes by viewModel.supportedMimeTypes.collectAsStateWithLifecycle()
+
 	val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.OpenDocument()) { uri: Uri? ->
 		if (uri != null) {
 			viewModel.openDocument(uri)
@@ -135,7 +137,7 @@ fun MainScreen(
 							Spacer(modifier = Modifier.height(8.dp))
 						}
 						Button(
-							onClick = { launcher.launch(viewModel.supportedMimeTypes) },
+							onClick = { launcher.launch(supportedMimeTypes) },
 							modifier = Modifier.semantics {
 								traversalIndex =
 									2f

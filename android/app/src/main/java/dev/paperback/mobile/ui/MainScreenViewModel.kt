@@ -7,6 +7,7 @@ import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -60,9 +61,7 @@ class MainScreenViewModel(
 ) : AndroidViewModel(application) {
 	private val context get() = getApplication<Application>()
 
-	private val config = ConfigManagerFfi().also {
-		it.initialize(context.filesDir.absolutePath + "/config.toml")
-	}
+	private val config = ConfigManagerFfi()
 
 	private val _uiState = MutableStateFlow<MainScreenUiState>(MainScreenUiState.Idle)
 	val uiState: StateFlow<MainScreenUiState> = _uiState
@@ -71,17 +70,42 @@ class MainScreenViewModel(
 	private var currentActiveIndex = -1
 	private var recentDocumentsList = emptyList<RecentDocumentItem>()
 
-	val supportedMimeTypes: Array<String> = run {
+	private val _supportedMimeTypes = MutableStateFlow<Array<String>>(arrayOf("*/*"))
+	val supportedMimeTypes: StateFlow<Array<String>> = _supportedMimeTypes
+
+	init {
+		viewModelScope.launch(Dispatchers.IO) {
+			config.initialize(context.filesDir.absolutePath + "/config.toml")
+			_supportedMimeTypes.value = buildSupportedMimeTypes()
+
+			val openedUris = config.getOpenedDocuments()
+			if (openedUris.isNotEmpty()) {
+				openedUris.forEach { uriString ->
+					loadDocument(Uri.parse(uriString), false)
+				}
+			}
+			
+			val initialRecents = getRecentDocumentsListIO()
+			
+			withContext(Dispatchers.Main) {
+				recentDocumentsList = initialRecents
+				if (currentTabs.isEmpty()) {
+					_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
+				}
+			}
+		}
+	}
+
+	private fun buildSupportedMimeTypes(): Array<String> {
 		val extensions = config.getSupportedExtensions()
 		val mimeMap = MimeTypeMap.getSingleton()
 		val mimes = mutableSetOf<String>()
 		for (ext in extensions) {
-			val extStr = ext.toString()
-			val mime: String? = mimeMap.getMimeTypeFromExtension(extStr)
+			val mime: String? = mimeMap.getMimeTypeFromExtension(ext)
 			if (mime != null) {
 				mimes.add(mime)
 			}
-			when (extStr.lowercase()) {
+			when (ext.lowercase()) {
 				"epub" -> mimes.add("application/epub+zip")
 				"fb2" -> mimes.add("application/x-fictionbook+xml")
 				"md" -> mimes.add("text/markdown")
@@ -107,23 +131,7 @@ class MainScreenViewModel(
 				"mobi" -> mimes.add("application/x-mobipocket-ebook")
 			}
 		}
-		if (mimes.isEmpty()) arrayOf("*/*") else mimes.toTypedArray()
-	}
-
-	init {
-		viewModelScope.launch {
-			val openedUris = config.getOpenedDocuments()
-			if (openedUris.isNotEmpty()) {
-				openedUris.forEach { uriString ->
-					loadDocument(Uri.parse(uriString), false)
-				}
-			}
-			updateRecentDocuments()
-			
-			if (currentTabs.isEmpty()) {
-				_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
-			}
-		}
+		return if (mimes.isEmpty()) arrayOf("*/*") else mimes.toTypedArray()
 	}
 
 	private suspend fun updateRecentDocuments() {
@@ -150,7 +158,7 @@ class MainScreenViewModel(
 							isMissing = true
 						}
 					} ?: run { isMissing = true }
-				
+
 					if (!isMissing) {
 						context.contentResolver.openAssetFileDescriptor(uri, "r")?.close()
 					}
@@ -197,9 +205,9 @@ class MainScreenViewModel(
 				withContext(Dispatchers.Main) {
 					currentActiveIndex = if (currentTabs.isEmpty()) -1 else currentActiveIndex.coerceIn(0, currentTabs.size - 1)
 					if (currentActiveIndex != -1) {
+						val activeKey = currentTabs[currentActiveIndex].docKey
 						viewModelScope.launch(Dispatchers.IO) {
-							config
-								.setAppString("active_document", currentTabs[currentActiveIndex].docKey)
+							config.setAppString("active_document", activeKey)
 						}
 					}
 					_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
@@ -232,7 +240,9 @@ class MainScreenViewModel(
 	}
 
 	override fun onCleared() {
-		config.flush()
+		CoroutineScope(Dispatchers.IO).launch {
+			config.flush()
+		}
 	}
 
 	private suspend fun loadDocument(
@@ -247,7 +257,7 @@ class MainScreenViewModel(
 				_uiState.value = MainScreenUiState.Error("Failed to open file")
 				return@withContext
 			}
-			
+
 			var displayName = ""
 			context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
 				if (cursor.moveToFirst()) {
@@ -255,7 +265,7 @@ class MainScreenViewModel(
 					if (nameIndex != -1) displayName = cursor.getString(nameIndex)
 				}
 			}
-			
+
 			val ext = displayName.substringAfterLast('.', "epub").lowercase()
 			val tempFile = File(context.cacheDir, "doc_${UUID.randomUUID()}.$ext")
 			FileOutputStream(tempFile).use { inputStream.copyTo(it) }
@@ -284,6 +294,7 @@ class MainScreenViewModel(
 			)
 
 			val recentDocsUpdated = getRecentDocumentsListIO()
+			val activeDocKey = config.getAppString("active_document", "")
 
 			withContext(Dispatchers.Main) {
 				recentDocumentsList = recentDocsUpdated
@@ -301,12 +312,12 @@ class MainScreenViewModel(
 					if (makeActive) {
 						currentActiveIndex = existingIndex
 						viewModelScope.launch(Dispatchers.IO) { config.setAppString("active_document", docKey) }
-					} else if (config.getAppString("active_document", "") == docKey) {
+					} else if (activeDocKey == docKey) {
 						currentActiveIndex = existingIndex
 					}
 				} else {
 					currentTabs.add(tabState)
-					if (makeActive || config.getAppString("active_document", "") == docKey) {
+					if (makeActive || activeDocKey == docKey) {
 						currentActiveIndex = currentTabs.size - 1
 						viewModelScope.launch(Dispatchers.IO) { config.setAppString("active_document", docKey) }
 					} else if (currentActiveIndex == -1) {
