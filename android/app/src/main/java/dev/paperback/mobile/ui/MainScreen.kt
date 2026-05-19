@@ -20,16 +20,14 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.isTraversalGroup
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.paneTitle
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
@@ -118,8 +116,8 @@ fun MainScreen(
 					text = titleText,
 					style = MaterialTheme.typography.headlineSmall,
 					fontWeight = FontWeight.Bold,
-					modifier = Modifier.padding(bottom = 16.dp).semantics { 
-						heading() 
+					modifier = Modifier.padding(bottom = 16.dp).semantics {
+						heading()
 						traversalIndex = 0f
 					}
 				)
@@ -136,7 +134,13 @@ fun MainScreen(
 							}
 							Spacer(modifier = Modifier.height(8.dp))
 						}
-						Button(onClick = { launcher.launch(viewModel.supportedMimeTypes) }, modifier = Modifier.semantics { traversalIndex = 2f }) {
+						Button(
+							onClick = { launcher.launch(viewModel.supportedMimeTypes) },
+							modifier = Modifier.semantics {
+								traversalIndex =
+									2f
+							}
+						) {
 							Text("Open Book")
 						}
 					}
