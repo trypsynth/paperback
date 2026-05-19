@@ -60,6 +60,8 @@ fun MainScreen(
 	var tocSheetOpen by remember { mutableStateOf(false) }
 	var recentsDialogOpen by remember { mutableStateOf(false) }
 	var moreOptionsExpanded by remember { mutableStateOf(false) }
+	var wordCountDialogOpen by remember { mutableStateOf(false) }
+	var documentInfoDialogOpen by remember { mutableStateOf(false) }
 	var lineIndexToFocus by remember { mutableStateOf<Int?>(null) }
 	var expandedTocIndices by remember { mutableStateOf(setOf<Int>()) }
 	val context = LocalContext.current
@@ -161,6 +163,14 @@ fun MainScreen(
 										CustomAccessibilityAction("Recent Documents") {
 											recentsDialogOpen = true
 											true
+										},
+										CustomAccessibilityAction("Word Count") {
+											wordCountDialogOpen = true
+											true
+										},
+										CustomAccessibilityAction("Document Information") {
+											documentInfoDialogOpen = true
+											true
 										}
 									)
 								}
@@ -176,6 +186,20 @@ fun MainScreen(
 									onClick = {
 										moreOptionsExpanded = false
 										recentsDialogOpen = true
+									}
+								)
+								DropdownMenuItem(
+									text = { Text("Word Count") },
+									onClick = {
+										moreOptionsExpanded = false
+										wordCountDialogOpen = true
+									}
+								)
+								DropdownMenuItem(
+									text = { Text("Document Information") },
+									onClick = {
+										moreOptionsExpanded = false
+										documentInfoDialogOpen = true
 									}
 								)
 							}
@@ -498,6 +522,85 @@ fun MainScreen(
 							},
 							confirmButton = {
 								TextButton(onClick = { recentsDialogOpen = false }) {
+									Text("Close")
+								}
+							}
+						)
+					}
+
+					if (wordCountDialogOpen && docState != null) {
+						val stats = remember(docState.session) { docState.session.getStatsFfi() }
+						AlertDialog(
+							onDismissRequest = { wordCountDialogOpen = false },
+							modifier = Modifier.semantics { paneTitle = "Word Count" },
+							title = { Text("Word Count") },
+							text = {
+								Text(
+									"This document contains ${stats.wordCount} words.",
+									style = MaterialTheme.typography.bodyLarge
+								)
+							},
+							confirmButton = {
+								TextButton(onClick = { wordCountDialogOpen = false }) {
+									Text("Close")
+								}
+							}
+						)
+					}
+
+					if (documentInfoDialogOpen && docState != null) {
+						val stats = remember(docState.session) { docState.session.getStatsFfi() }
+						AlertDialog(
+							onDismissRequest = { documentInfoDialogOpen = false },
+							modifier = Modifier.semantics { paneTitle = "Document Information" },
+							title = { Text("Document Information") },
+							text = {
+								Column(modifier = Modifier.fillMaxWidth()) {
+									if (docState.title.isNotBlank()) {
+										Text(
+											"Title: ${docState.title}",
+											style = MaterialTheme.typography.bodyLarge,
+											modifier = Modifier.padding(vertical = 4.dp)
+										)
+									}
+									if (docState.author.isNotBlank()) {
+										Text(
+											"Author: ${docState.author}",
+											style = MaterialTheme.typography.bodyLarge,
+											modifier = Modifier.padding(vertical = 4.dp)
+										)
+									}
+									if (docState.fileName.isNotBlank()) {
+										Text(
+											"File: ${docState.fileName}",
+											style = MaterialTheme.typography.bodyLarge,
+											modifier = Modifier.padding(vertical = 4.dp)
+										)
+									}
+									Text(
+										"Words: ${stats.wordCount}",
+										style = MaterialTheme.typography.bodyLarge,
+										modifier = Modifier.padding(vertical = 4.dp)
+									)
+									Text(
+										"Lines: ${stats.lineCount}",
+										style = MaterialTheme.typography.bodyLarge,
+										modifier = Modifier.padding(vertical = 4.dp)
+									)
+									Text(
+										"Characters: ${stats.charCount}",
+										style = MaterialTheme.typography.bodyLarge,
+										modifier = Modifier.padding(vertical = 4.dp)
+									)
+									Text(
+										"Characters (excluding spaces): ${stats.charCountNoWhitespace}",
+										style = MaterialTheme.typography.bodyLarge,
+										modifier = Modifier.padding(vertical = 4.dp)
+									)
+								}
+							},
+							confirmButton = {
+								TextButton(onClick = { documentInfoDialogOpen = false }) {
 									Text("Close")
 								}
 							}

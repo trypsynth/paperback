@@ -215,6 +215,14 @@ pub struct LineMarker {
 	pub length: i64,
 }
 
+#[derive(Debug, Clone)]
+pub struct DocumentStatsFfi {
+	pub word_count: i64,
+	pub line_count: i64,
+	pub char_count: i64,
+	pub char_count_no_whitespace: i64,
+}
+
 impl DocumentSession {
 	/// # Errors
 	///
@@ -642,6 +650,17 @@ impl DocumentSession {
 	pub fn activate_link_ffi(&self, position: i64) -> LinkActivationResultFfi {
 		let res = self.activate_link(position);
 		LinkActivationResultFfi { found: res.found, action: res.action.into(), offset: res.offset, url: res.url }
+	}
+
+	#[must_use]
+	pub fn get_stats_ffi(&self) -> DocumentStatsFfi {
+		let s = self.stats();
+		DocumentStatsFfi {
+			word_count: i64::try_from(s.word_count).unwrap_or(0),
+			line_count: i64::try_from(s.line_count).unwrap_or(0),
+			char_count: i64::try_from(s.char_count).unwrap_or(0),
+			char_count_no_whitespace: i64::try_from(s.char_count_no_whitespace).unwrap_or(0),
+		}
 	}
 
 	#[must_use]

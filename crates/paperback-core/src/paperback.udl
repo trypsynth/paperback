@@ -37,6 +37,13 @@ dictionary LinkActivationResultFfi {
 	string url;
 };
 
+dictionary DocumentStatsFfi {
+	i64 word_count;
+	i64 line_count;
+	i64 char_count;
+	i64 char_count_no_whitespace;
+};
+
 interface DocumentSession {
 	[Name=new_ffi, Throws=DocumentError]
 	constructor(string file_path, string password, string forced_extension);
@@ -53,6 +60,8 @@ interface DocumentSession {
 	LinkActivationResultFfi activate_link_ffi(i64 position);
 
 	sequence<TocEntry> get_toc();
+
+	DocumentStatsFfi get_stats_ffi();
 };
 
 interface ConfigManagerFfi {
