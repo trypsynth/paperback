@@ -223,6 +223,13 @@ pub struct DocumentStatsFfi {
 	pub char_count_no_whitespace: i64,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StatusInfoFfi {
+	pub line_number: i64,
+	pub character_number: i64,
+	pub percentage: i32,
+}
+
 impl DocumentSession {
 	/// # Errors
 	///
@@ -661,6 +668,36 @@ impl DocumentSession {
 			char_count: i64::try_from(s.char_count).unwrap_or(0),
 			char_count_no_whitespace: i64::try_from(s.char_count_no_whitespace).unwrap_or(0),
 		}
+	}
+
+	#[must_use]
+	pub fn get_status_info_ffi(&self, position: i64) -> StatusInfoFfi {
+		let status = self.get_status_info(position);
+		StatusInfoFfi {
+			line_number: status.line_number,
+			character_number: status.character_number,
+			percentage: status.percentage,
+		}
+	}
+
+	#[must_use]
+	pub fn position_from_percent_ffi(&self, percent: i32) -> i64 {
+		self.position_from_percent(percent)
+	}
+
+	#[must_use]
+	pub fn current_page_ffi(&self, position: i64) -> i32 {
+		i32::try_from(self.current_page(position)).unwrap_or(0)
+	}
+
+	#[must_use]
+	pub fn page_count_ffi(&self) -> i32 {
+		i32::try_from(self.page_count()).unwrap_or(0)
+	}
+
+	#[must_use]
+	pub fn page_offset_ffi(&self, page: i32) -> i64 {
+		self.page_offset(page)
 	}
 
 	#[must_use]
