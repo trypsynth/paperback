@@ -34,7 +34,7 @@ scraper = "0.27.0"
 serde = { version = "1.0.228", default-features = false, features = ["derive", "std"] }
 sha1 = "0.11.0"
 zip = { version = "8.6.0", default-features = false, features = ["deflate"] }
-pdfium = { git = "https://github.com/aryanchoudharypro/PDFium-rs", branch = "feature/tagged-pdf-support" }
+pdfium = "0.10.4"
 
 [dev-dependencies]
 rstest = { workspace = true }
