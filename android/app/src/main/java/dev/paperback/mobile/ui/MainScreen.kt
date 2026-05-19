@@ -4,13 +4,10 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
@@ -27,7 +24,6 @@ import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.onClick
-import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.traversalIndex
@@ -36,14 +32,13 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
+import dev.paperback.mobile.ui.dialogs.*
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -496,8 +491,8 @@ fun MainScreen(
 							}
 						}
 
-						if (tocSheetOpen) {
-							TocSheet(
+						if (tocSheetOpen && docState != null) {
+							TocDialog(
 								toc = docState.toc,
 								expandedTocIndices = expandedTocIndices,
 								onToggleExpand = { originalIndex ->
@@ -520,226 +515,45 @@ fun MainScreen(
 							)
 						}
 						
-						if (goToDialogOpen && docState != null) {
-							var selectedMode by remember { mutableStateOf("Line") }
-							var inputValue by remember { mutableStateOf("") }
-							var dropdownExpanded by remember { mutableStateOf(false) }
-							val maxLines = remember(docState.session) { docState.session.lineCount() }
-							val maxPages = remember(docState.session) { docState.session.pageCountFfi() }
-
-							val onSubmit = {
-								val value = inputValue.toLongOrNull()
-								if (value != null) {
-									val targetPos = when (selectedMode) {
-										"Line" -> docState.session.positionFromLine(value.coerceIn(1L, maxLines))
-										"Page" -> docState.session.pageOffsetFfi(value.toInt().coerceIn(1, maxPages))
-										"Percentage" -> docState.session.positionFromPercentFfi(value.toInt().coerceIn(0, 100))
-										else -> 0L
-									}
-									val targetLine = docState.session.lineFromPosition(targetPos)
-									val indexToScroll = (targetLine - 1).toInt().coerceAtLeast(0)
+						if (goToDialogOpen) {
+							GoToDialog(
+								docState = docState,
+								onDismiss = { goToDialogOpen = false },
+								onGoTo = { indexToScroll ->
 									scope.launch {
-										goToDialogOpen = false
 										listState.scrollToItem(indexToScroll)
 										lineIndexToFocus = indexToScroll
 									}
-								}
-							}
-
-							AlertDialog(
-								onDismissRequest = { goToDialogOpen = false },
-								modifier = Modifier.semantics { paneTitle = "Go To" },
-								title = { Text("Go To") },
-								text = {
-									Column {
-										ExposedDropdownMenuBox(
-											expanded = dropdownExpanded,
-											onExpandedChange = { dropdownExpanded = it },
-										) {
-											OutlinedButton(
-												onClick = { dropdownExpanded = true },
-												modifier = Modifier.menuAnchor().fillMaxWidth().semantics {
-													customActions = listOfNotNull(
-														if (selectedMode != "Line") CustomAccessibilityAction("Switch to Go to Line") {
-															selectedMode = "Line"
-															true
-														} else null,
-														if (selectedMode != "Page") CustomAccessibilityAction("Switch to Go to Page") {
-															selectedMode = "Page"
-															true
-														} else null,
-														if (selectedMode != "Percentage") CustomAccessibilityAction("Switch to Go to Percentage") {
-															selectedMode = "Percentage"
-															true
-														} else null
-													)
-												}
-											) {
-												Text("Go To $selectedMode", modifier = Modifier.weight(1f))
-												ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded)
-											}
-											ExposedDropdownMenu(
-												expanded = dropdownExpanded,
-												onDismissRequest = { dropdownExpanded = false }
-											) {
-												DropdownMenuItem(
-													text = { Text("Go To Line") },
-													onClick = {
-														selectedMode = "Line"
-														dropdownExpanded = false
-													}
-												)
-												DropdownMenuItem(
-													text = { Text("Go To Page") },
-													onClick = {
-														selectedMode = "Page"
-														dropdownExpanded = false
-													}
-												)
-												DropdownMenuItem(
-													text = { Text("Go To Percentage") },
-													onClick = {
-														selectedMode = "Percentage"
-														dropdownExpanded = false
-													}
-												)
-											}
-										}
-										Spacer(modifier = Modifier.height(16.dp))
-										TextField(
-											value = inputValue,
-											onValueChange = { inputValue = it.filter { char -> char.isDigit() } },
-											label = { Text("Enter $selectedMode") },
-											keyboardOptions = KeyboardOptions(
-												keyboardType = KeyboardType.Number,
-												imeAction = ImeAction.Go
-											),
-											keyboardActions = KeyboardActions(
-												onGo = { onSubmit() }
-											),
-											singleLine = true,
-											modifier = Modifier.fillMaxWidth()
-										)
-									}
-								},
-								confirmButton = {
-									TextButton(onClick = onSubmit) { Text("Go") }
-								},
-								dismissButton = {
-									TextButton(onClick = { goToDialogOpen = false }) { Text("Cancel") }
 								}
 							)
 						}
 					}
 					
 					if (recentsDialogOpen) {
-						AlertDialog(
-							onDismissRequest = { recentsDialogOpen = false },
-							modifier = Modifier.semantics { paneTitle = "Recent Documents" },
-							title = { Text("Recent Documents") },
-							text = {
-								LazyColumn(
-									modifier = Modifier.fillMaxWidth()
-								) {
-									lazyItems(successState.recentDocuments) { recentDoc ->
-										RecentDocumentItemRow(
-											item = recentDoc,
-											onOpen = {
-												recentsDialogOpen = false
-												viewModel.openDocument(Uri.parse(recentDoc.uri))
-											},
-											onRemove = { viewModel.removeRecentDocument(recentDoc.uri) }
-										)
-									}
-								}
-							},
-							confirmButton = {
-								TextButton(onClick = { recentsDialogOpen = false }) {
-									Text("Close")
-								}
-							}
+						AllDocumentsDialog(
+							recentDocuments = successState.recentDocuments,
+							onDismiss = { recentsDialogOpen = false },
+							onOpenDocument = { uri -> viewModel.openDocument(uri) },
+							onRemoveDocument = { uri -> viewModel.removeRecentDocument(uri) }
 						)
 					}
 
 					if (wordCountDialogOpen && docState != null) {
 						val stats = remember(docState.session) { docState.session.getStatsFfi() }
-						AlertDialog(
-							onDismissRequest = { wordCountDialogOpen = false },
-							modifier = Modifier.semantics { paneTitle = "Word Count" },
-							title = { Text("Word Count") },
-							text = {
-								Text(
-									"This document contains ${stats.wordCount} words.",
-									style = MaterialTheme.typography.bodyLarge
-								)
-							},
-							confirmButton = {
-								TextButton(onClick = { wordCountDialogOpen = false }) {
-									Text("Close")
-								}
-							}
+						WordCountDialog(
+							stats = stats,
+							onDismiss = { wordCountDialogOpen = false }
 						)
 					}
 
 					if (documentInfoDialogOpen && docState != null) {
 						val stats = remember(docState.session) { docState.session.getStatsFfi() }
-						AlertDialog(
-							onDismissRequest = { documentInfoDialogOpen = false },
-							modifier = Modifier.semantics { paneTitle = "Document Information" },
-							title = { Text("Document Information") },
-							text = {
-								Column(modifier = Modifier.fillMaxWidth()) {
-									if (docState.title.isNotBlank()) {
-										Text(
-											"Title: ${docState.title}",
-											style = MaterialTheme.typography.bodyLarge,
-											modifier = Modifier.padding(vertical = 4.dp)
-										)
-									}
-									if (docState.author.isNotBlank()) {
-										Text(
-											"Author: ${docState.author}",
-											style = MaterialTheme.typography.bodyLarge,
-											modifier = Modifier.padding(vertical = 4.dp)
-										)
-									}
-									if (docState.fileName.isNotBlank()) {
-										Text(
-											"File: ${docState.fileName}",
-											style = MaterialTheme.typography.bodyLarge,
-											modifier = Modifier.padding(vertical = 4.dp)
-										)
-									}
-									Text(
-										"Words: ${stats.wordCount}",
-										style = MaterialTheme.typography.bodyLarge,
-										modifier = Modifier.padding(vertical = 4.dp)
-									)
-									Text(
-										"Lines: ${stats.lineCount}",
-										style = MaterialTheme.typography.bodyLarge,
-										modifier = Modifier.padding(vertical = 4.dp)
-									)
-									Text(
-										"Characters: ${stats.charCount}",
-										style = MaterialTheme.typography.bodyLarge,
-										modifier = Modifier.padding(vertical = 4.dp)
-									)
-									Text(
-										"Characters (excluding spaces): ${stats.charCountNoWhitespace}",
-										style = MaterialTheme.typography.bodyLarge,
-										modifier = Modifier.padding(vertical = 4.dp)
-									)
-								}
-							},
-							confirmButton = {
-								TextButton(onClick = { documentInfoDialogOpen = false }) {
-									Text("Close")
-								}
-							}
+						DocumentInfoDialog(
+							docState = docState,
+							stats = stats,
+							onDismiss = { documentInfoDialogOpen = false }
 						)
 					}
-
 				}
 				is MainScreenUiState.Error -> {
 					Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -747,63 +561,6 @@ fun MainScreen(
 					}
 				}
 			}
-		}
-	}
-}
-
-@Composable
-fun RecentDocumentItemRow(
-	item: RecentDocumentItem,
-	showClosedStatus: Boolean = true,
-	onOpen: () -> Unit,
-	onRemove: () -> Unit
-) {
-	Row(
-		modifier = Modifier
-			.fillMaxWidth()
-			.clickable(
-				enabled = !item.isMissing,
-				onClickLabel = "open",
-				onClick = onOpen
-			).semantics {
-				customActions = listOf(
-					CustomAccessibilityAction("Remove") {
-						onRemove()
-						true
-					}
-				)
-			}.padding(vertical = 12.dp, horizontal = 8.dp),
-		verticalAlignment = Alignment.CenterVertically
-	) {
-		Column(modifier = Modifier.weight(1f)) {
-			Text(
-				text = item.displayName,
-				style = MaterialTheme.typography.bodyLarge,
-				color = if (item.isMissing) {
-					MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-				} else {
-					MaterialTheme.colorScheme.onSurface
-				}
-			)
-			if (item.isMissing || item.isOpen || showClosedStatus) {
-				Text(
-					text = if (item.isMissing) {
-						"File Missing"
-					} else if (item.isOpen) {
-						"Currently Open"
-					} else {
-						"Closed"
-					},
-					style = MaterialTheme.typography.bodySmall,
-					color = if (item.isMissing) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
-				)
-			}
-		}
-		TextButton(
-			onClick = onRemove,
-			modifier = Modifier.clearAndSetSemantics { }
-		) {
-			Text("Remove")
 		}
 	}
 }

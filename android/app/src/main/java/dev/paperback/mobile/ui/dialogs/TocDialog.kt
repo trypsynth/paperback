@@ -1,4 +1,4 @@
-package dev.paperback.mobile.ui
+package dev.paperback.mobile.ui.dialogs
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -23,7 +23,7 @@ import uniffi.paperback.TocEntry
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TocSheet(
+fun TocDialog(
 	toc: List<TocEntry>,
 	expandedTocIndices: Set<Int>,
 	onToggleExpand: (Int) -> Unit,
