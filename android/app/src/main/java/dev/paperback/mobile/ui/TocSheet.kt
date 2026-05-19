@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
@@ -79,7 +78,6 @@ fun TocSheet(
 								onItemClick(item)
 							}
 						}.semantics(mergeDescendants = true) {
-							contentDescription = "${item.title}, Level ${item.level + 1}"
 							if (hasChildren) {
 								stateDescription = if (isExpanded) "Expanded" else "Collapsed"
 								customActions = listOf(
@@ -114,9 +112,9 @@ fun TocSheet(
 						Spacer(modifier = Modifier.width(36.dp))
 					}
 					Text(
-						text = item.title,
+						text = "${item.title}, Level ${item.level + 1}",
 						style = MaterialTheme.typography.bodyLarge,
-						modifier = Modifier.weight(1f).padding(start = 8.dp).clearAndSetSemantics { }
+						modifier = Modifier.weight(1f).padding(start = 8.dp)
 					)
 				}
 			}

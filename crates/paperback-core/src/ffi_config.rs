@@ -17,6 +17,22 @@ impl ConfigManagerFfi {
 		self.inner.lock().unwrap().initialize(config_path.into())
 	}
 
+	pub fn get_doc_key(&self, path: String) -> String {
+		self.inner.lock().unwrap().get_doc_key(&path)
+	}
+
+	pub fn get_app_string(&self, key: String, default_value: String) -> String {
+		self.inner.lock().unwrap().get_app_string(&key, &default_value)
+	}
+
+	pub fn set_app_string(&self, key: String, value: String) {
+		self.inner.lock().unwrap().set_app_string(&key, &value);
+	}
+
+	pub fn associate_uri_with_local_file(&self, uri: String, local_path: String) {
+		self.inner.lock().unwrap().associate_uri_with_local_file(&uri, &local_path);
+	}
+
 	pub fn set_document_position(&self, path: String, position: i64) {
 		self.inner.lock().unwrap().set_document_position(&path, position);
 	}

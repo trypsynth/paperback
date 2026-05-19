@@ -9,6 +9,8 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,11 +20,15 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.isTraversalGroup
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
@@ -53,18 +59,40 @@ fun MainScreen(
 	val listStates = remember { mutableStateMapOf<String, LazyListState>() }
 	var tocSheetOpen by remember { mutableStateOf(false) }
 	var recentsDialogOpen by remember { mutableStateOf(false) }
+	var moreOptionsExpanded by remember { mutableStateOf(false) }
 	var lineIndexToFocus by remember { mutableStateOf<Int?>(null) }
 	var expandedTocIndices by remember { mutableStateOf(setOf<Int>()) }
 	val context = LocalContext.current
 
 	val activity = context as? android.app.Activity
-	LaunchedEffect(activity?.intent) {
-		val uri = activity?.intent?.data
-		if (uri != null && activity.intent?.action == android.content.Intent.ACTION_VIEW) {
-			viewModel.openDocument(uri)
-			activity.intent?.action = android.content.Intent.ACTION_MAIN
+	DisposableEffect(activity) {
+		val listener = androidx.core.util.Consumer<Intent> { newIntent ->
+			val uri = newIntent.data
+			if (uri != null && newIntent.action == Intent.ACTION_VIEW) {
+				viewModel.openDocument(uri)
+				newIntent.action = Intent.ACTION_MAIN
+			}
+		}
+		if (activity is androidx.activity.ComponentActivity) {
+			activity.addOnNewIntentListener(listener)
+		}
+		onDispose {
+			if (activity is androidx.activity.ComponentActivity) {
+				activity.removeOnNewIntentListener(listener)
+			}
 		}
 	}
+
+	LaunchedEffect(Unit) {
+		val intent = activity?.intent
+		val uri = intent?.data
+		if (uri != null && intent.action == Intent.ACTION_VIEW) {
+			viewModel.openDocument(uri)
+			intent.action = Intent.ACTION_MAIN
+		}
+	}
+
+	val supportedMimeTypes by viewModel.supportedMimeTypes.collectAsStateWithLifecycle()
 
 	val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.OpenDocument()) { uri: Uri? ->
 		if (uri != null) {
@@ -74,29 +102,86 @@ fun MainScreen(
 
 	Scaffold(
 		topBar = {
-			Column {
-				TopAppBar(
-					title = { Text("Paperback") },
-					navigationIcon = {
+			Column(
+				modifier = Modifier
+					.fillMaxWidth()
+					.windowInsetsPadding(WindowInsets.statusBars)
+					.padding(horizontal = 16.dp, vertical = 8.dp)
+			) {
+				val titleText = if (state is MainScreenUiState.Success) {
+					val successState = state as MainScreenUiState.Success
+					successState.activeTab?.title ?: "Paperback"
+				} else {
+					"Paperback"
+				}
+				Text(
+					text = titleText,
+					style = MaterialTheme.typography.headlineSmall,
+					fontWeight = FontWeight.Bold,
+					modifier = Modifier.padding(bottom = 16.dp).semantics {
+						heading()
+						traversalIndex = 0f
+					}
+				)
+
+				Row(
+					modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp).semantics { isTraversalGroup = true },
+					horizontalArrangement = Arrangement.SpaceBetween,
+					verticalAlignment = Alignment.Top
+				) {
+					Column(horizontalAlignment = Alignment.Start, modifier = Modifier.semantics { isTraversalGroup = true }) {
 						if (state is MainScreenUiState.Success && (state as MainScreenUiState.Success).activeTab != null) {
-							TextButton(onClick = { tocSheetOpen = true }) {
+							Button(onClick = { tocSheetOpen = true }, modifier = Modifier.semantics { traversalIndex = 1f }) {
 								Text("Table of Contents")
 							}
+							Spacer(modifier = Modifier.height(8.dp))
 						}
-					},
-					actions = {
-						if (state is MainScreenUiState.Success && (state as MainScreenUiState.Success).tabs.isNotEmpty()) {
-							TextButton(onClick = { recentsDialogOpen = true }) {
-								Text("Recent Books")
+						Button(
+							onClick = { launcher.launch(supportedMimeTypes) },
+							modifier = Modifier.semantics {
+								traversalIndex =
+									2f
 							}
-						}
-						Button(onClick = {
-							launcher.launch(viewModel.supportedMimeTypes)
-						}) {
+						) {
 							Text("Open Book")
 						}
 					}
-				)
+
+					if (state is MainScreenUiState.Success && (state as MainScreenUiState.Success).tabs.isNotEmpty()) {
+						Box(modifier = Modifier.semantics { isTraversalGroup = true }) {
+							IconButton(
+								onClick = { moreOptionsExpanded = true },
+								modifier = Modifier.semantics {
+									traversalIndex = 3f
+									this.onClick(label = "show all options in a menu") {
+										moreOptionsExpanded = true
+										true
+									}
+									customActions = listOf(
+										CustomAccessibilityAction("Recent Documents") {
+											recentsDialogOpen = true
+											true
+										}
+									)
+								}
+							) {
+								Icon(Icons.Filled.MoreVert, contentDescription = "More Options")
+							}
+							DropdownMenu(
+								expanded = moreOptionsExpanded,
+								onDismissRequest = { moreOptionsExpanded = false }
+							) {
+								DropdownMenuItem(
+									text = { Text("Recent Documents") },
+									onClick = {
+										moreOptionsExpanded = false
+										recentsDialogOpen = true
+									}
+								)
+							}
+						}
+					}
+				}
 				if (state is MainScreenUiState.Success) {
 					val successState = state as MainScreenUiState.Success
 					if (successState.tabs.isNotEmpty()) {
@@ -181,6 +266,7 @@ fun MainScreen(
 									lazyItems(successState.recentDocuments.take(5)) { recentDoc ->
 										RecentDocumentItemRow(
 											item = recentDoc,
+											showClosedStatus = false,
 											onOpen = { viewModel.openDocument(Uri.parse(recentDoc.uri)) },
 											onRemove = { viewModel.removeRecentDocument(recentDoc.uri) }
 										)
@@ -190,7 +276,7 @@ fun MainScreen(
 									onClick = { recentsDialogOpen = true },
 									modifier = Modifier.padding(top = 8.dp)
 								) {
-									Text("Recent Books")
+									Text("Recent Documents")
 								}
 							}
 						}
@@ -210,7 +296,7 @@ fun MainScreen(
 						LazyColumn(
 							state = listState,
 							modifier = Modifier.fillMaxSize().semantics { isTraversalGroup = true },
-							contentPadding = PaddingValues(16.dp)
+							contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 16.dp)
 						) {
 							items(
 								count = docState.lineCount.toInt(),
@@ -392,6 +478,7 @@ fun MainScreen(
 					if (recentsDialogOpen) {
 						AlertDialog(
 							onDismissRequest = { recentsDialogOpen = false },
+							modifier = Modifier.semantics { paneTitle = "Recent Documents" },
 							title = { Text("Recent Documents") },
 							text = {
 								LazyColumn(
@@ -430,6 +517,7 @@ fun MainScreen(
 @Composable
 fun RecentDocumentItemRow(
 	item: RecentDocumentItem,
+	showClosedStatus: Boolean = true,
 	onOpen: () -> Unit,
 	onRemove: () -> Unit
 ) {
@@ -447,12 +535,17 @@ fun RecentDocumentItemRow(
 						true
 					}
 				)
-				stateDescription = if (item.isMissing) {
+				val desc = if (item.isMissing) {
 					"Missing"
 				} else if (item.isOpen) {
 					"Open"
-				} else {
+				} else if (showClosedStatus) {
 					"Closed"
+				} else {
+					null
+				}
+				if (desc != null) {
+					stateDescription = desc
 				}
 			}.padding(vertical = 12.dp, horizontal = 8.dp),
 		verticalAlignment = Alignment.CenterVertically
@@ -467,17 +560,19 @@ fun RecentDocumentItemRow(
 					MaterialTheme.colorScheme.onSurface
 				}
 			)
-			Text(
-				text = if (item.isMissing) {
-					"File Missing"
-				} else if (item.isOpen) {
-					"Currently Open"
-				} else {
-					"Closed"
-				},
-				style = MaterialTheme.typography.bodySmall,
-				color = if (item.isMissing) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
-			)
+			if (item.isMissing || item.isOpen || showClosedStatus) {
+				Text(
+					text = if (item.isMissing) {
+						"File Missing"
+					} else if (item.isOpen) {
+						"Currently Open"
+					} else {
+						"Closed"
+					},
+					style = MaterialTheme.typography.bodySmall,
+					color = if (item.isMissing) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+				)
+			}
 		}
 		TextButton(
 			onClick = onRemove,
