@@ -638,18 +638,6 @@ fun RecentDocumentItemRow(
 						true
 					}
 				)
-				val desc = if (item.isMissing) {
-					"Missing"
-				} else if (item.isOpen) {
-					"Open"
-				} else if (showClosedStatus) {
-					"Closed"
-				} else {
-					null
-				}
-				if (desc != null) {
-					stateDescription = desc
-				}
 			}.padding(vertical = 12.dp, horizontal = 8.dp),
 		verticalAlignment = Alignment.CenterVertically
 	) {
