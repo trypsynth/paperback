@@ -4,7 +4,6 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -25,7 +24,6 @@ import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.onClick
-import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.traversalIndex
@@ -40,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
+import dev.paperback.mobile.ui.dialogs.*
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -62,6 +61,7 @@ fun MainScreen(
 	var moreOptionsExpanded by remember { mutableStateOf(false) }
 	var wordCountDialogOpen by remember { mutableStateOf(false) }
 	var documentInfoDialogOpen by remember { mutableStateOf(false) }
+	var goToDialogOpen by remember { mutableStateOf(false) }
 	var lineIndexToFocus by remember { mutableStateOf<Int?>(null) }
 	var expandedTocIndices by remember { mutableStateOf(setOf<Int>()) }
 	val context = LocalContext.current
@@ -164,6 +164,10 @@ fun MainScreen(
 											recentsDialogOpen = true
 											true
 										},
+										CustomAccessibilityAction("Go To") {
+											goToDialogOpen = true
+											true
+										},
 										CustomAccessibilityAction("Word Count") {
 											wordCountDialogOpen = true
 											true
@@ -186,6 +190,13 @@ fun MainScreen(
 									onClick = {
 										moreOptionsExpanded = false
 										recentsDialogOpen = true
+									}
+								)
+								DropdownMenuItem(
+									text = { Text("Go To") },
+									onClick = {
+										moreOptionsExpanded = false
+										goToDialogOpen = true
 									}
 								)
 								DropdownMenuItem(
@@ -307,6 +318,12 @@ fun MainScreen(
 					} else {
 						val listState = listStates.getOrPut(docState.documentUri) {
 							LazyListState(firstVisibleItemIndex = docState.initialScrollIndex)
+						}
+
+						LaunchedEffect(docState.documentUri) {
+							if (docState.initialScrollIndex > 0) {
+								lineIndexToFocus = docState.initialScrollIndex
+							}
 						}
 
 						// Track the scroll position
@@ -474,8 +491,8 @@ fun MainScreen(
 							}
 						}
 
-						if (tocSheetOpen) {
-							TocSheet(
+						if (tocSheetOpen && docState != null) {
+							TocDialog(
 								toc = docState.toc,
 								expandedTocIndices = expandedTocIndices,
 								onToggleExpand = { originalIndex ->
@@ -497,113 +514,44 @@ fun MainScreen(
 								onDismiss = { tocSheetOpen = false }
 							)
 						}
+						
+						if (goToDialogOpen) {
+							GoToDialog(
+								docState = docState,
+								onDismiss = { goToDialogOpen = false },
+								onGoTo = { indexToScroll ->
+									scope.launch {
+										listState.scrollToItem(indexToScroll)
+										lineIndexToFocus = indexToScroll
+									}
+								}
+							)
+						}
 					}
 					
 					if (recentsDialogOpen) {
-						AlertDialog(
-							onDismissRequest = { recentsDialogOpen = false },
-							modifier = Modifier.semantics { paneTitle = "Recent Documents" },
-							title = { Text("Recent Documents") },
-							text = {
-								LazyColumn(
-									modifier = Modifier.fillMaxWidth()
-								) {
-									lazyItems(successState.recentDocuments) { recentDoc ->
-										RecentDocumentItemRow(
-											item = recentDoc,
-											onOpen = {
-												recentsDialogOpen = false
-												viewModel.openDocument(Uri.parse(recentDoc.uri))
-											},
-											onRemove = { viewModel.removeRecentDocument(recentDoc.uri) }
-										)
-									}
-								}
-							},
-							confirmButton = {
-								TextButton(onClick = { recentsDialogOpen = false }) {
-									Text("Close")
-								}
-							}
+						AllDocumentsDialog(
+							recentDocuments = successState.recentDocuments,
+							onDismiss = { recentsDialogOpen = false },
+							onOpenDocument = { uri -> viewModel.openDocument(uri) },
+							onRemoveDocument = { uri -> viewModel.removeRecentDocument(uri) }
 						)
 					}
 
 					if (wordCountDialogOpen && docState != null) {
 						val stats = remember(docState.session) { docState.session.getStatsFfi() }
-						AlertDialog(
-							onDismissRequest = { wordCountDialogOpen = false },
-							modifier = Modifier.semantics { paneTitle = "Word Count" },
-							title = { Text("Word Count") },
-							text = {
-								Text(
-									"This document contains ${stats.wordCount} words.",
-									style = MaterialTheme.typography.bodyLarge
-								)
-							},
-							confirmButton = {
-								TextButton(onClick = { wordCountDialogOpen = false }) {
-									Text("Close")
-								}
-							}
+						WordCountDialog(
+							stats = stats,
+							onDismiss = { wordCountDialogOpen = false }
 						)
 					}
 
 					if (documentInfoDialogOpen && docState != null) {
 						val stats = remember(docState.session) { docState.session.getStatsFfi() }
-						AlertDialog(
-							onDismissRequest = { documentInfoDialogOpen = false },
-							modifier = Modifier.semantics { paneTitle = "Document Information" },
-							title = { Text("Document Information") },
-							text = {
-								Column(modifier = Modifier.fillMaxWidth()) {
-									if (docState.title.isNotBlank()) {
-										Text(
-											"Title: ${docState.title}",
-											style = MaterialTheme.typography.bodyLarge,
-											modifier = Modifier.padding(vertical = 4.dp)
-										)
-									}
-									if (docState.author.isNotBlank()) {
-										Text(
-											"Author: ${docState.author}",
-											style = MaterialTheme.typography.bodyLarge,
-											modifier = Modifier.padding(vertical = 4.dp)
-										)
-									}
-									if (docState.fileName.isNotBlank()) {
-										Text(
-											"File: ${docState.fileName}",
-											style = MaterialTheme.typography.bodyLarge,
-											modifier = Modifier.padding(vertical = 4.dp)
-										)
-									}
-									Text(
-										"Words: ${stats.wordCount}",
-										style = MaterialTheme.typography.bodyLarge,
-										modifier = Modifier.padding(vertical = 4.dp)
-									)
-									Text(
-										"Lines: ${stats.lineCount}",
-										style = MaterialTheme.typography.bodyLarge,
-										modifier = Modifier.padding(vertical = 4.dp)
-									)
-									Text(
-										"Characters: ${stats.charCount}",
-										style = MaterialTheme.typography.bodyLarge,
-										modifier = Modifier.padding(vertical = 4.dp)
-									)
-									Text(
-										"Characters (excluding spaces): ${stats.charCountNoWhitespace}",
-										style = MaterialTheme.typography.bodyLarge,
-										modifier = Modifier.padding(vertical = 4.dp)
-									)
-								}
-							},
-							confirmButton = {
-								TextButton(onClick = { documentInfoDialogOpen = false }) {
-									Text("Close")
-								}
-							}
+						DocumentInfoDialog(
+							docState = docState,
+							stats = stats,
+							onDismiss = { documentInfoDialogOpen = false }
 						)
 					}
 				}
@@ -613,75 +561,6 @@ fun MainScreen(
 					}
 				}
 			}
-		}
-	}
-}
-
-@Composable
-fun RecentDocumentItemRow(
-	item: RecentDocumentItem,
-	showClosedStatus: Boolean = true,
-	onOpen: () -> Unit,
-	onRemove: () -> Unit
-) {
-	Row(
-		modifier = Modifier
-			.fillMaxWidth()
-			.clickable(
-				enabled = !item.isMissing,
-				onClickLabel = "open",
-				onClick = onOpen
-			).semantics {
-				customActions = listOf(
-					CustomAccessibilityAction("Remove") {
-						onRemove()
-						true
-					}
-				)
-				val desc = if (item.isMissing) {
-					"Missing"
-				} else if (item.isOpen) {
-					"Open"
-				} else if (showClosedStatus) {
-					"Closed"
-				} else {
-					null
-				}
-				if (desc != null) {
-					stateDescription = desc
-				}
-			}.padding(vertical = 12.dp, horizontal = 8.dp),
-		verticalAlignment = Alignment.CenterVertically
-	) {
-		Column(modifier = Modifier.weight(1f)) {
-			Text(
-				text = item.displayName,
-				style = MaterialTheme.typography.bodyLarge,
-				color = if (item.isMissing) {
-					MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-				} else {
-					MaterialTheme.colorScheme.onSurface
-				}
-			)
-			if (item.isMissing || item.isOpen || showClosedStatus) {
-				Text(
-					text = if (item.isMissing) {
-						"File Missing"
-					} else if (item.isOpen) {
-						"Currently Open"
-					} else {
-						"Closed"
-					},
-					style = MaterialTheme.typography.bodySmall,
-					color = if (item.isMissing) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
-				)
-			}
-		}
-		TextButton(
-			onClick = onRemove,
-			modifier = Modifier.clearAndSetSemantics { }
-		) {
-			Text("Remove")
 		}
 	}
 }

@@ -15,7 +15,7 @@ pub use crate::{
 	ffi_config::ConfigManagerFfi,
 	session::{
 		DocumentError, DocumentSession, DocumentStatsFfi, LineMarker, LinkActionFfi, LinkActivationResultFfi,
-		MarkerTypeFfi, TocEntry,
+		MarkerTypeFfi, StatusInfoFfi, TocEntry,
 	},
 };
 

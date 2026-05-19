@@ -44,6 +44,12 @@ dictionary DocumentStatsFfi {
 	i64 char_count_no_whitespace;
 };
 
+dictionary StatusInfoFfi {
+	i64 line_number;
+	i64 character_number;
+	i32 percentage;
+};
+
 interface DocumentSession {
 	[Name=new_ffi, Throws=DocumentError]
 	constructor(string file_path, string password, string forced_extension);
@@ -58,6 +64,12 @@ interface DocumentSession {
 	i64 line_from_position(i64 position);
 	sequence<LineMarker> get_line_markers(i64 line);
 	LinkActivationResultFfi activate_link_ffi(i64 position);
+
+	StatusInfoFfi get_status_info_ffi(i64 position);
+	i64 position_from_percent_ffi(i32 percent);
+	i32 current_page_ffi(i64 position);
+	i32 page_count_ffi();
+	i64 page_offset_ffi(i32 page);
 
 	sequence<TocEntry> get_toc();
 
