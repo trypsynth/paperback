@@ -41,8 +41,26 @@ impl ConfigManagerFfi {
 		self.inner.lock().unwrap().remove_opened_document(&path);
 	}
 
+	pub fn set_document_opened(&self, path: String, opened: bool) {
+		self.inner.lock().unwrap().set_document_opened(&path, opened);
+	}
+
 	pub fn get_opened_documents(&self) -> Vec<String> {
 		self.inner.lock().unwrap().get_opened_documents()
+	}
+
+	pub fn remove_document_history(&self, path: String) {
+		self.inner.lock().unwrap().remove_document_history(&path);
+	}
+
+	pub fn get_supported_extensions(&self) -> Vec<String> {
+		let mut exts = std::collections::HashSet::new();
+		for parser in crate::parser::ParserRegistry::global().all_parsers() {
+			for ext in parser.extensions {
+				exts.insert(ext);
+			}
+		}
+		exts.into_iter().collect()
 	}
 
 	pub fn flush(&self) {

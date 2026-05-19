@@ -18,6 +18,46 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter tools:ignore="AppLinkUrlError">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="content" />
+                <data android:scheme="file" />
+                <data android:mimeType="*/*" />
+                <data android:pathPattern=".*\\.chm" />
+                <data android:pathPattern=".*\\.doc" />
+                <data android:pathPattern=".*\\.docm" />
+                <data android:pathPattern=".*\\.docx" />
+                <data android:pathPattern=".*\\.epub" />
+                <data android:pathPattern=".*\\.fb2" />
+                <data android:pathPattern=".*\\.fodp" />
+                <data android:pathPattern=".*\\.fodt" />
+                <data android:pathPattern=".*\\.htm" />
+                <data android:pathPattern=".*\\.html" />
+                <data android:pathPattern=".*\\.log" />
+                <data android:pathPattern=".*\\.markdown" />
+                <data android:pathPattern=".*\\.md" />
+                <data android:pathPattern=".*\\.mdown" />
+                <data android:pathPattern=".*\\.mdwn" />
+                <data android:pathPattern=".*\\.mdx" />
+                <data android:pathPattern=".*\\.mkd" />
+                <data android:pathPattern=".*\\.mkdn" />
+                <data android:pathPattern=".*\\.mkdown" />
+                <data android:pathPattern=".*\\.mobi" />
+                <data android:pathPattern=".*\\.odp" />
+                <data android:pathPattern=".*\\.odt" />
+                <data android:pathPattern=".*\\.opf" />
+                <data android:pathPattern=".*\\.pdf" />
+                <data android:pathPattern=".*\\.ppt" />
+                <data android:pathPattern=".*\\.pptm" />
+                <data android:pathPattern=".*\\.pptx" />
+                <data android:pathPattern=".*\\.ronn" />
+                <data android:pathPattern=".*\\.rtf" />
+                <data android:pathPattern=".*\\.txt" />
+                <data android:pathPattern=".*\\.xhtml" />
+                <data android:pathPattern=".*\\.zip" />
+            </intent-filter>
         </activity>
     </application>
 
