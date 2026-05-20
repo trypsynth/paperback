@@ -2024,8 +2024,9 @@ dependencies = [
 
 [[package]]
 name = "pdfium"
-version = "0.10.3"
-source = "git+https://github.com/aryanchoudharypro/PDFium-rs?branch=feature%2Ftagged-pdf-support#a59d46ce3652a0a9dabe9a4931331e811bacff6b"
+version = "0.10.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b6987558325271e2463fbd49e4e7685dc31ed42e5eedfb085d33e9b825ec43c8"
 dependencies = [
  "bitflags",
  "image",
@@ -3068,9 +3069,9 @@ checksum = "55937e1799185b12863d447f42597ed69d9928686b8d88a1df17376a097d8369"
 
 [[package]]
 name = "tar"
-version = "0.4.45"
+version = "0.4.46"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22692a6476a21fa75fdfc11d452fda482af402c008cdbaf3476414e122040973"
+checksum = "3f6221d9a6003c78398e3b239969f352578258df48c8eb051caadae0015bc840"
 dependencies = [
  "filetime",
  "libc",

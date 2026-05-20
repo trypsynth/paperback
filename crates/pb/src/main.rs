@@ -19,6 +19,17 @@ fn main() -> Result<()> {
 		bail!("unsupported file format: .{ext}");
 	}
 	let file_path = cli.input.to_string_lossy().into_owned();
+
+	// Fast path: EPUB → HTML bypasses the text-buffer pipeline entirely.
+	if !cli.metadata && matches!(cli.format, Format::Html) && ext == "epub" {
+		let html = paperback_core::export::epub_direct::render(&file_path)
+			.with_context(|| format!("failed to convert {}", cli.input.display()))?;
+		return match cli.output {
+			Some(path) => fs::write(&path, &html).with_context(|| format!("failed to write {}", path.display())),
+			None => Ok(print!("{html}")),
+		};
+	}
+
 	let mut context = ParserContext { file_path, password: cli.password, forced_extension: None };
 	let doc = match parse_document(&context) {
 		Ok(doc) => doc,

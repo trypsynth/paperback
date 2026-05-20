@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-05-14 12:18-0600\n"
+"POT-Creation-Date: 2026-05-18 20:49-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -62,7 +62,7 @@ msgstr ""
 msgid "&Clear All"
 msgstr ""
 
-msgid "OK"
+msgid "Close"
 msgstr ""
 
 msgid ""
@@ -159,6 +159,9 @@ msgid "Characters (excluding spaces):"
 msgstr ""
 
 msgid "Elements"
+msgstr ""
+
+msgid "OK"
 msgstr ""
 
 msgid "Cancel"
@@ -372,9 +375,6 @@ msgid "No Selection"
 msgstr ""
 
 msgid "View Note"
-msgstr ""
-
-msgid "Close"
 msgstr ""
 
 msgid "1 hour"

@@ -1,3 +1,4 @@
+pub mod epub_direct;
 pub mod html;
 pub mod markdown;
 

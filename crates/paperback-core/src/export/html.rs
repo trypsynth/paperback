@@ -1,13 +1,57 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use crate::{
 	document::{DocumentHandle, MarkerType},
+	parser::is_external_url,
 	util::text::{ch_width, display_len},
 };
 
 pub fn render(doc: &DocumentHandle) -> String {
 	let document = doc.document();
 	let content = &document.buffer.content;
+
+	// Precompute section boundaries once so link resolution is O(log S) per link
+	// instead of O(M) per link (where M = total marker count).
+	let section_break_positions: Vec<usize> =
+		document.buffer.markers.iter().filter(|m| m.mtype == MarkerType::SectionBreak).map(|m| m.position).collect();
+	// Single O(N) scan: collect newline positions in display coordinates and total display length.
+	// Used to replace the O(N)-per-call line_end_pos() with an O(log lines) binary search.
+	let (newline_display_positions, content_display_len): (Vec<usize>, usize) = {
+		let mut positions = Vec::new();
+		let mut dpos = 0usize;
+		for ch in content.chars() {
+			if ch == '\n' {
+				positions.push(dpos);
+			}
+			dpos += ch_width(ch);
+		}
+		(positions, dpos)
+	};
+	let newline_from = |start: usize| -> usize {
+		let idx = newline_display_positions.partition_point(|&p| p < start);
+		newline_display_positions.get(idx).copied().unwrap_or(content_display_len)
+	};
+	// path → (section_start, section_end)
+	let path_to_bounds: HashMap<&str, (usize, usize)> = document
+		.spine_items
+		.iter()
+		.enumerate()
+		.filter_map(|(i, manifest_id)| {
+			let path = document.manifest_items.get(manifest_id)?;
+			let start = section_break_positions.get(i).copied().unwrap_or(0);
+			let end = section_break_positions.get(i + 1).copied().unwrap_or(content_display_len);
+			Some((path.as_str(), (start, end)))
+		})
+		.collect();
+	// Returns the file path of the spine item that contains `pos`.
+	let section_path_at = |pos: usize| -> Option<&str> {
+		let count = section_break_positions.partition_point(|&bp| bp <= pos);
+		if count == 0 {
+			return None;
+		}
+		let manifest_id = document.spine_items.get(count - 1)?;
+		document.manifest_items.get(manifest_id).map(String::as_str)
+	};
 	let mut html = format!(
 		"<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>{}</title>\n</head>\n<body>\n",
 		escape(&document.title)
@@ -34,7 +78,7 @@ pub fn render(doc: &DocumentHandle) -> String {
 		// Recover the span: for block elements scan to the next '\n'; for inline links
 		// use the display length of the link text that was written into the content.
 		let effective_end =
-			|explicit: usize| -> usize { if explicit > 0 { pos + explicit } else { line_end_pos(content, pos) } };
+			|explicit: usize| -> usize { if explicit > 0 { pos + explicit } else { newline_from(pos) } };
 		match marker.mtype {
 			MarkerType::Heading1 => {
 				let end = effective_end(marker.length);
@@ -78,12 +122,48 @@ pub fn render(doc: &DocumentHandle) -> String {
 				let open = if marker.reference.is_empty() {
 					"<a>".to_string()
 				} else {
-					let nav = crate::reader_core::resolve_link(doc, &marker.reference, i64::try_from(pos).unwrap_or(0));
-					if nav.found && !nav.is_external {
-						target_offsets.insert(nav.offset);
-						format!("<a href=\"#pos-{}\">", nav.offset)
+					let href = marker.reference.trim();
+					if is_external_url(href) {
+						format!("<a href=\"{}\">", escape_attr(href))
+					} else if let Some(fragment) = href.strip_prefix('#') {
+						let current_path = section_path_at(pos);
+						if let Some(off) = resolve_fragment(&document.id_positions, fragment, current_path) {
+							target_offsets.insert(off);
+							format!("<a href=\"#pos-{off}\">")
+						} else {
+							format!("<a href=\"{}\">", escape_attr(href))
+						}
 					} else {
-						format!("<a href=\"{}\">", escape_attr(&marker.reference))
+						let mut parts = href.splitn(2, '#');
+						let file_part = parts.next().unwrap_or_default();
+						let frag_part = parts.next().unwrap_or_default();
+						if let Some(&(section_start, section_end)) = path_to_bounds.get(file_part) {
+							let off = if frag_part.is_empty() {
+								section_start
+							} else {
+								resolve_fragment(&document.id_positions, frag_part, Some(file_part))
+									.filter(|&f| f >= section_start && f < section_end)
+									.unwrap_or(section_start)
+							};
+							target_offsets.insert(off);
+							format!("<a href=\"#pos-{off}\">")
+						} else {
+							// CHM / fallback: try fragment, then bare file-path key
+							let current_path = section_path_at(pos);
+							let off = if !frag_part.is_empty() {
+								resolve_fragment(&document.id_positions, frag_part, Some(file_part))
+									.or_else(|| document.id_positions.get(file_part).copied())
+									.or_else(|| resolve_fragment(&document.id_positions, frag_part, current_path))
+							} else {
+								document.id_positions.get(file_part).copied()
+							};
+							if let Some(off) = off {
+								target_offsets.insert(off);
+								format!("<a href=\"#pos-{off}\">")
+							} else {
+								format!("<a href=\"{}\">", escape_attr(href))
+							}
+						}
 					}
 				};
 				events.push(Ev { pos, kind: Ek::InlineOpen(open) });
@@ -267,6 +347,20 @@ pub fn render(doc: &DocumentHandle) -> String {
 	html
 }
 
+fn resolve_fragment(id_positions: &HashMap<String, usize>, fragment: &str, scoped_path: Option<&str>) -> Option<usize> {
+	let fragment = fragment.trim_start_matches('#');
+	if fragment.is_empty() {
+		return None;
+	}
+	if let Some(path) = scoped_path {
+		let key = format!("{path}#{fragment}");
+		if let Some(&offset) = id_positions.get(&key) {
+			return Some(offset);
+		}
+	}
+	id_positions.get(fragment).copied()
+}
+
 fn push_escaped(ch: char, out: &mut String) {
 	match ch {
 		'&' => out.push_str("&amp;"),
@@ -286,17 +380,4 @@ fn escape(s: &str) -> String {
 
 fn escape_attr(s: &str) -> String {
 	s.replace('&', "&amp;").replace('"', "&quot;")
-}
-
-// Return the display position of the '\n' that ends the line beginning at `start`,
-// or the content end position if there is no such newline.
-fn line_end_pos(content: &str, start: usize) -> usize {
-	let mut pos = 0usize;
-	for ch in content.chars() {
-		if pos >= start && ch == '\n' {
-			return pos;
-		}
-		pos += ch_width(ch);
-	}
-	pos
 }

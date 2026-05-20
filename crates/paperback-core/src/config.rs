@@ -326,6 +326,16 @@ impl ConfigManager {
 		}
 	}
 
+	pub fn associate_uri_with_local_file(&self, uri: &str, local_path: &str) {
+		let digest = compute_document_hash(local_path);
+		let encoded = URL_SAFE_NO_PAD.encode(digest);
+		let new_key = format!("doc_{encoded}");
+
+		let mut data = self.data.borrow_mut();
+		data.path_hashes.insert(uri.to_string(), new_key.clone());
+		self.dirty.set(true);
+	}
+
 	pub fn get_doc_key(&self, path: &str) -> String {
 		{
 			let data = self.data.borrow();

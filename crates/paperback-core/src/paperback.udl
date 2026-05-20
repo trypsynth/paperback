@@ -11,6 +11,58 @@ dictionary TocEntry {
 	i32 level;
 };
 
+enum MarkerTypeFfi {
+	"Heading1", "Heading2", "Heading3", "Heading4", "Heading5", "Heading6",
+	"PageBreak", "SectionBreak", "TocItem", "Link",
+	"List", "ListItem", "Table", "Separator", "Image", "Figure"
+};
+
+dictionary LineMarker {
+	MarkerTypeFfi mtype;
+	i64 position;
+	string text;
+	string reference;
+	i32 level;
+	i64 length;
+};
+
+enum LinkActionFfi {
+	"Internal", "External", "NotFound"
+};
+
+dictionary LinkActivationResultFfi {
+	boolean found;
+	LinkActionFfi action;
+	i64 offset;
+	string url;
+};
+
+dictionary DocumentStatsFfi {
+	i64 word_count;
+	i64 line_count;
+	i64 char_count;
+	i64 char_count_no_whitespace;
+};
+
+dictionary SearchOptionsFfi {
+	boolean match_case;
+	boolean whole_word;
+	boolean regex;
+	boolean forward;
+};
+
+dictionary SearchResultFfi {
+	boolean found;
+	boolean wrapped;
+	i64 position;
+};
+
+dictionary StatusInfoFfi {
+	i64 line_number;
+	i64 character_number;
+	i32 percentage;
+};
+
 interface DocumentSession {
 	[Name=new_ffi, Throws=DocumentError]
 	constructor(string file_path, string password, string forced_extension);
@@ -23,17 +75,43 @@ interface DocumentSession {
 	i64 line_count();
 	i64 position_from_line(i64 line);
 	i64 line_from_position(i64 position);
+	sequence<LineMarker> get_line_markers(i64 line);
+	LinkActivationResultFfi activate_link_ffi(i64 position);
+
+	StatusInfoFfi get_status_info_ffi(i64 position);
+	i64 position_from_percent_ffi(i32 percent);
+	i32 current_page_ffi(i64 position);
+	i32 page_count_ffi();
+	i64 page_offset_ffi(i32 page);
 
 	sequence<TocEntry> get_toc();
+
+	DocumentStatsFfi get_stats_ffi();
+	
+	SearchResultFfi search_ffi(string query, i64 start_position, SearchOptionsFfi options);
 };
 
 interface ConfigManagerFfi {
 	constructor();
 
 	boolean initialize(string config_path);
+	string get_doc_key(string path);
+	string get_app_string(string key, string default_value);
+	void set_app_string(string key, string value);
+	boolean get_app_bool(string key, boolean default_value);
+	void set_app_bool(string key, boolean value);
+	void associate_uri_with_local_file(string uri, string local_path);
 	void set_document_position(string path, i64 position);
 	i64 get_document_position(string path);
 	void add_recent_document(string path);
 	sequence<string> get_recent_documents();
+	void add_opened_document(string path);
+	void remove_opened_document(string path);
+	void set_document_opened(string path, boolean opened);
+	sequence<string> get_opened_documents();
+	void remove_document_history(string path);
+	sequence<string> get_supported_extensions();
+	sequence<string> get_find_history();
+	void add_find_history(string text, i32 max_len);
 	void flush();
 };

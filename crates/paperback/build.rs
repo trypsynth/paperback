@@ -57,24 +57,44 @@ fn main() {
 	}
 }
 
-fn embed_commit_hash() {
+fn get_commit_info() -> (String, bool) {
 	let output = Command::new("git").args(["rev-parse", "HEAD"]).output();
 	let hash = match output {
 		Ok(o) if o.status.success() => String::from_utf8_lossy(&o.stdout).trim().to_string(),
 		_ => "unknown".to_string(),
 	};
+	let is_dev = !Command::new("git")
+		.args(["describe", "--tags", "--exact-match", "HEAD"])
+		.output()
+		.map(|o| o.status.success())
+		.unwrap_or(false);
+	(hash, is_dev)
+}
+
+fn embed_commit_hash() {
+	let (hash, is_dev) = get_commit_info();
+	let short_hash = if hash == "unknown" { "unknown".to_string() } else { hash[..hash.len().min(7)].to_string() };
 	println!("cargo:rustc-env=PAPERBACK_COMMIT_HASH={hash}");
+	println!("cargo:rustc-env=PAPERBACK_SHORT_HASH={short_hash}");
+	println!("cargo:rustc-env=PAPERBACK_IS_DEV={}", if is_dev { "1" } else { "0" });
 }
 
 fn embed_version_info() {
 	let version = env::var("CARGO_PKG_VERSION").unwrap_or_else(|_| "0.0.0".to_string());
+	let (hash, is_dev) = get_commit_info();
+	let product_version = if is_dev {
+		let short_hash = &hash[..hash.len().min(7)];
+		format!("{version} ({short_hash})")
+	} else {
+		version.clone()
+	};
 	let mut res = WindowsResource::new();
 	res.set("ProductName", "Paperback")
 		.set("FileDescription", "Paperback")
 		.set("LegalCopyright", "Copyright © 2025 Quin Gillespie")
 		.set("CompanyName", "Quin Gillespie")
 		.set("OriginalFilename", "paperback.exe")
-		.set("ProductVersion", &version)
+		.set("ProductVersion", &product_version)
 		.set("FileVersion", &version);
 	if let Err(e) = res.compile() {
 		println!("cargo:warning=Failed to embed version info: {}", e);

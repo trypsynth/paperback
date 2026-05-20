@@ -13,7 +13,8 @@ use crate::{
 	document::{self, DocumentHandle, MarkerType, ParserContext, ParserFlags},
 	parser,
 	reader_core::{
-		bookmark_navigate, history_go_next, history_go_previous, reader_navigate, record_history_position, resolve_link,
+		SearchOptions, bookmark_navigate, history_go_next, history_go_previous, reader_navigate,
+		reader_search_with_wrap, record_history_position, resolve_link,
 	},
 	types::{self as ffi, NavDirection, NavTarget},
 	util::{encoding::convert_to_utf8, zip as zip_utils},
@@ -21,6 +22,21 @@ use crate::{
 
 const MAX_HISTORY_LEN: usize = 10;
 const HISTORY_DISTANCE_THRESHOLD: i64 = 300;
+
+#[derive(Debug, Clone, Copy, Default)]
+pub struct SearchOptionsFfi {
+	pub match_case: bool,
+	pub whole_word: bool,
+	pub regex: bool,
+	pub forward: bool,
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+pub struct SearchResultFfi {
+	pub found: bool,
+	pub wrapped: bool,
+	pub position: i64,
+}
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct StatusInfo {
@@ -94,6 +110,31 @@ pub enum LinkAction {
 	NotFound,
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum LinkActionFfi {
+	Internal,
+	External,
+	NotFound,
+}
+
+impl From<LinkAction> for LinkActionFfi {
+	fn from(a: LinkAction) -> Self {
+		match a {
+			LinkAction::Internal => Self::Internal,
+			LinkAction::External => Self::External,
+			LinkAction::NotFound => Self::NotFound,
+		}
+	}
+}
+
+#[derive(Debug, Clone)]
+pub struct LinkActivationResultFfi {
+	pub found: bool,
+	pub action: LinkActionFfi,
+	pub offset: i64,
+	pub url: String,
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum DocumentError {
 	#[error("Parse error: {0}")]
@@ -135,6 +176,74 @@ pub struct TocEntry {
 	pub title: String,
 	pub position: i64,
 	pub level: i32,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum MarkerTypeFfi {
+	Heading1,
+	Heading2,
+	Heading3,
+	Heading4,
+	Heading5,
+	Heading6,
+	PageBreak,
+	SectionBreak,
+	TocItem,
+	Link,
+	List,
+	ListItem,
+	Table,
+	Separator,
+	Image,
+	Figure,
+}
+
+impl From<crate::document::MarkerType> for MarkerTypeFfi {
+	fn from(m: crate::document::MarkerType) -> Self {
+		match m {
+			crate::document::MarkerType::Heading1 => Self::Heading1,
+			crate::document::MarkerType::Heading2 => Self::Heading2,
+			crate::document::MarkerType::Heading3 => Self::Heading3,
+			crate::document::MarkerType::Heading4 => Self::Heading4,
+			crate::document::MarkerType::Heading5 => Self::Heading5,
+			crate::document::MarkerType::Heading6 => Self::Heading6,
+			crate::document::MarkerType::PageBreak => Self::PageBreak,
+			crate::document::MarkerType::SectionBreak => Self::SectionBreak,
+			crate::document::MarkerType::TocItem => Self::TocItem,
+			crate::document::MarkerType::Link => Self::Link,
+			crate::document::MarkerType::List => Self::List,
+			crate::document::MarkerType::ListItem => Self::ListItem,
+			crate::document::MarkerType::Table => Self::Table,
+			crate::document::MarkerType::Separator => Self::Separator,
+			crate::document::MarkerType::Image => Self::Image,
+			crate::document::MarkerType::Figure => Self::Figure,
+		}
+	}
+}
+
+#[derive(Debug, Clone)]
+pub struct LineMarker {
+	pub mtype: MarkerTypeFfi,
+	pub position: i64,
+	pub text: String,
+	pub reference: String,
+	pub level: i32,
+	pub length: i64,
+}
+
+#[derive(Debug, Clone)]
+pub struct DocumentStatsFfi {
+	pub word_count: i64,
+	pub line_count: i64,
+	pub char_count: i64,
+	pub char_count_no_whitespace: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StatusInfoFfi {
+	pub line_number: i64,
+	pub character_number: i64,
+	pub percentage: i32,
 }
 
 impl DocumentSession {
@@ -561,6 +670,73 @@ impl DocumentSession {
 	}
 
 	#[must_use]
+	pub fn activate_link_ffi(&self, position: i64) -> LinkActivationResultFfi {
+		let res = self.activate_link(position);
+		LinkActivationResultFfi { found: res.found, action: res.action.into(), offset: res.offset, url: res.url }
+	}
+
+	#[must_use]
+	pub fn get_stats_ffi(&self) -> DocumentStatsFfi {
+		let s = self.stats();
+		DocumentStatsFfi {
+			word_count: i64::try_from(s.word_count).unwrap_or(0),
+			line_count: i64::try_from(s.line_count).unwrap_or(0),
+			char_count: i64::try_from(s.char_count).unwrap_or(0),
+			char_count_no_whitespace: i64::try_from(s.char_count_no_whitespace).unwrap_or(0),
+		}
+	}
+
+	pub fn search_ffi(&self, query: String, start_position: i64, options: SearchOptionsFfi) -> SearchResultFfi {
+		let mut search_options = SearchOptions::empty();
+		if options.match_case {
+			search_options.insert(SearchOptions::MATCH_CASE);
+		}
+		if options.whole_word {
+			search_options.insert(SearchOptions::WHOLE_WORD);
+		}
+		if options.regex {
+			search_options.insert(SearchOptions::REGEX);
+		}
+		if options.forward {
+			search_options.insert(SearchOptions::FORWARD);
+		}
+
+		let result =
+			reader_search_with_wrap(&self.handle.document().buffer.content, &query, start_position, search_options);
+		SearchResultFfi { found: result.found, wrapped: result.wrapped, position: result.position }
+	}
+
+	#[must_use]
+	pub fn get_status_info_ffi(&self, position: i64) -> StatusInfoFfi {
+		let status = self.get_status_info(position);
+		StatusInfoFfi {
+			line_number: status.line_number,
+			character_number: status.character_number,
+			percentage: status.percentage,
+		}
+	}
+
+	#[must_use]
+	pub fn position_from_percent_ffi(&self, percent: i32) -> i64 {
+		self.position_from_percent(percent)
+	}
+
+	#[must_use]
+	pub fn current_page_ffi(&self, position: i64) -> i32 {
+		i32::try_from(self.current_page(position)).unwrap_or(0)
+	}
+
+	#[must_use]
+	pub fn page_count_ffi(&self) -> i32 {
+		i32::try_from(self.page_count()).unwrap_or(0)
+	}
+
+	#[must_use]
+	pub fn page_offset_ffi(&self, page: i32) -> i64 {
+		self.page_offset(page)
+	}
+
+	#[must_use]
 	pub fn get_table_at_position(&self, position: i64) -> Option<String> {
 		let pos_usize = usize::try_from(position.max(0)).unwrap_or(0);
 		let table_index = self.handle.current_marker_index(pos_usize, MarkerType::Table)?;
@@ -752,14 +928,41 @@ impl DocumentSession {
 
 	#[must_use]
 	pub fn get_line_text(&self, position: i64) -> String {
-		let content = &self.handle.document().buffer.content;
-		let total_chars = content.chars().count();
+		let buf = &self.handle.document().buffer;
+		let total_chars = buf.char_count();
 		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
-		let line_start =
-			content.chars().take(pos).collect::<Vec<_>>().iter().rposition(|&c| c == '\n').map_or(0, |idx| idx + 1);
-		let chars_after_start: String = content.chars().skip(line_start).collect();
-		let line_end = chars_after_start.find('\n').map_or(chars_after_start.len(), |idx| idx);
-		chars_after_start.chars().take(line_end).collect()
+		let newlines = buf.newline_positions();
+		let line_start = match newlines.partition_point(|&p| p < pos) {
+			0 => 0,
+			idx => newlines[idx - 1] + 1,
+		};
+		buf.content.chars().skip(line_start).take_while(|&c| c != '\n').collect()
+	}
+
+	#[must_use]
+	pub fn get_line_markers(&self, line: i64) -> Vec<LineMarker> {
+		let start_pos = self.position_from_line(line);
+		let end_pos = self.position_from_line(line + 1);
+		let start_usize = usize::try_from(start_pos.max(0)).unwrap_or(0);
+		// If line + 1 overflows or is the end, end_pos might be equal to start_pos
+		let end_usize = if start_pos == end_pos { usize::MAX } else { usize::try_from(end_pos.max(0)).unwrap_or(0) };
+
+		let mut res = Vec::new();
+		for marker in &self.handle.document().buffer.markers {
+			if marker.position >= start_usize && marker.position < end_usize {
+				res.push(LineMarker {
+					mtype: MarkerTypeFfi::from(marker.mtype),
+					position: i64::try_from(marker.position).unwrap_or(0),
+					text: marker.text.clone(),
+					reference: marker.reference.clone(),
+					level: marker.level,
+					length: i64::try_from(marker.length).unwrap_or(0),
+				});
+			} else if marker.position > end_usize {
+				break;
+			}
+		}
+		res
 	}
 
 	fn has_headings(&self, level: Option<i32>) -> bool {

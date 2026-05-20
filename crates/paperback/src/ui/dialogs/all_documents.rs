@@ -140,7 +140,7 @@ fn build_all_documents_buttons(dialog: Dialog) -> (Button, Button, Button, Butto
 	let open_button = Button::builder(&dialog).with_label(&t("&Open")).build();
 	let remove_button = Button::builder(&dialog).with_label(&t("&Remove")).build();
 	let clear_all_button = Button::builder(&dialog).with_label(&t("&Clear All")).build();
-	let ok_button = Button::builder(&dialog).with_label(&t("OK")).build();
+	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Close")).build();
 	(open_button, remove_button, clear_all_button, ok_button)
 }
 
