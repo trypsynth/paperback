@@ -1,7 +1,9 @@
 package dev.paperback.mobile.ui
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.view.accessibility.AccessibilityManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.focusable
@@ -62,9 +64,29 @@ fun MainScreen(
 	var wordCountDialogOpen by remember { mutableStateOf(false) }
 	var documentInfoDialogOpen by remember { mutableStateOf(false) }
 	var goToDialogOpen by remember { mutableStateOf(false) }
+	var findDialogOpen by remember { mutableStateOf(false) }
 	var lineIndexToFocus by remember { mutableStateOf<Int?>(null) }
+	
+	var activeSearchQuery by remember { mutableStateOf<String?>(null) }
+	var activeSearchOptions by remember { mutableStateOf<uniffi.paperback.SearchOptionsFfi?>(null) }
 	var expandedTocIndices by remember { mutableStateOf(setOf<Int>()) }
 	val context = LocalContext.current
+
+	val accessibilityManager =
+		remember(context) {
+			context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
+		}
+	var isTouchExplorationEnabled by remember { mutableStateOf(accessibilityManager.isTouchExplorationEnabled) }
+	
+	DisposableEffect(accessibilityManager) {
+		val listener = AccessibilityManager.TouchExplorationStateChangeListener { enabled ->
+			isTouchExplorationEnabled = enabled
+		}
+		accessibilityManager.addTouchExplorationStateChangeListener(listener)
+		onDispose {
+			accessibilityManager.removeTouchExplorationStateChangeListener(listener)
+		}
+	}
 
 	val activity = context as? android.app.Activity
 	DisposableEffect(activity) {
@@ -168,6 +190,10 @@ fun MainScreen(
 											goToDialogOpen = true
 											true
 										},
+										CustomAccessibilityAction("Find") {
+											findDialogOpen = true
+											true
+										},
 										CustomAccessibilityAction("Word Count") {
 											wordCountDialogOpen = true
 											true
@@ -197,6 +223,13 @@ fun MainScreen(
 									onClick = {
 										moreOptionsExpanded = false
 										goToDialogOpen = true
+									}
+								)
+								DropdownMenuItem(
+									text = { Text("Find") },
+									onClick = {
+										moreOptionsExpanded = false
+										findDialogOpen = true
 									}
 								)
 								DropdownMenuItem(
@@ -253,6 +286,77 @@ fun MainScreen(
 										}
 									}
 								)
+							}
+						}
+					}
+				}
+			}
+		},
+		bottomBar = {
+			if (activeSearchQuery != null && activeSearchOptions != null && !isTouchExplorationEnabled) {
+				BottomAppBar(
+					modifier = Modifier.semantics { isTraversalGroup = true },
+					contentPadding = PaddingValues(horizontal = 16.dp)
+				) {
+					Row(
+						modifier = Modifier.fillMaxWidth(),
+						horizontalArrangement = Arrangement.SpaceBetween,
+						verticalAlignment = Alignment.CenterVertically
+					) {
+						IconButton(
+							onClick = {
+								activeSearchQuery = null
+								activeSearchOptions = null
+							},
+							modifier = Modifier.semantics { contentDescription = "Close Search" }
+						) {
+							Text("X", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
+						}
+						
+						Row {
+							Button(
+								onClick = {
+									val docState = (state as? MainScreenUiState.Success)?.activeTab
+									val currentListState = docState?.let { listStates[it.documentUri] }
+									if (docState != null && currentListState != null) {
+										val currentIdx = currentListState.firstVisibleItemIndex
+										val pos = docState.session.positionFromLine((currentIdx + 1).toLong())
+										val res = docState.session.searchFfi(activeSearchQuery!!, pos, activeSearchOptions!!.copy(forward = false))
+										if (res.found) {
+											val targetLine = docState.session.lineFromPosition(res.position)
+											val targetIndex = (targetLine - 1).toInt().coerceAtLeast(0)
+											scope.launch {
+												currentListState.scrollToItem(targetIndex)
+												lineIndexToFocus = targetIndex
+											}
+										}
+									}
+								}
+							) {
+								Text("Find Previous")
+							}
+							Spacer(modifier = Modifier.width(8.dp))
+							Button(
+								onClick = {
+									val docState = (state as? MainScreenUiState.Success)?.activeTab
+									val currentListState = docState?.let { listStates[it.documentUri] }
+									if (docState != null && currentListState != null) {
+										val currentIdx = currentListState.firstVisibleItemIndex
+										val nextLine = (currentIdx + 2).toLong().coerceAtMost(docState.lineCount)
+										val pos = docState.session.positionFromLine(nextLine)
+										val res = docState.session.searchFfi(activeSearchQuery!!, pos, activeSearchOptions!!.copy(forward = true))
+										if (res.found) {
+											val targetLine = docState.session.lineFromPosition(res.position)
+											val targetIndex = (targetLine - 1).toInt().coerceAtLeast(0)
+											scope.launch {
+												currentListState.scrollToItem(targetIndex)
+												lineIndexToFocus = targetIndex
+											}
+										}
+									}
+								}
+							) {
+								Text("Find Next")
 							}
 						}
 					}
@@ -461,6 +565,47 @@ fun MainScreen(
 										textModifier = textModifier.focusRequester(focusRequester).focusable()
 									}
 
+									val currentOptions = activeSearchOptions
+									val currentQuery = activeSearchQuery
+									if (currentQuery != null && currentOptions != null) {
+										textModifier = textModifier.semantics {
+											customActions = listOf(
+												CustomAccessibilityAction("Find Next") {
+													val nextLine = (index + 2).toLong().coerceAtMost(docState.lineCount)
+													val pos = docState.session.positionFromLine(nextLine)
+													val res = docState.session.searchFfi(currentQuery, pos, currentOptions.copy(forward = true))
+													if (res.found) {
+														val targetLine = docState.session.lineFromPosition(res.position)
+														val targetIndex = (targetLine - 1).toInt().coerceAtLeast(0)
+														scope.launch {
+															listState.scrollToItem(targetIndex)
+															lineIndexToFocus = targetIndex
+														}
+													}
+													true
+												},
+												CustomAccessibilityAction("Find Previous") {
+													val pos = docState.session.positionFromLine((index + 1).toLong())
+													val res = docState.session.searchFfi(currentQuery, pos, currentOptions.copy(forward = false))
+													if (res.found) {
+														val targetLine = docState.session.lineFromPosition(res.position)
+														val targetIndex = (targetLine - 1).toInt().coerceAtLeast(0)
+														scope.launch {
+															listState.scrollToItem(targetIndex)
+															lineIndexToFocus = targetIndex
+														}
+													}
+													true
+												},
+												CustomAccessibilityAction("Close Search") {
+													activeSearchQuery = null
+													activeSearchOptions = null
+													true
+												}
+											)
+										}
+									}
+
 									val textStyle = if (isHeading) {
 										MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
 									} else {
@@ -491,7 +636,7 @@ fun MainScreen(
 							}
 						}
 
-						if (tocSheetOpen && docState != null) {
+						if (tocSheetOpen) {
 							TocDialog(
 								toc = docState.toc,
 								expandedTocIndices = expandedTocIndices,
@@ -523,6 +668,28 @@ fun MainScreen(
 									scope.launch {
 										listState.scrollToItem(indexToScroll)
 										lineIndexToFocus = indexToScroll
+									}
+								}
+							)
+						}
+
+						if (findDialogOpen) {
+							FindDialog(
+								configManager = viewModel.configManager,
+								initialQuery = activeSearchQuery ?: "",
+								onDismiss = { findDialogOpen = false },
+								onSearch = { query, options ->
+									activeSearchQuery = query
+									activeSearchOptions = options
+									val currentPos = docState.session.positionFromLine((listState.firstVisibleItemIndex + 1).toLong())
+									val res = docState.session.searchFfi(query, currentPos, options)
+									if (res.found) {
+										val targetLine = docState.session.lineFromPosition(res.position)
+										val targetIndex = (targetLine - 1).toInt().coerceAtLeast(0)
+										scope.launch {
+											listState.scrollToItem(targetIndex)
+											lineIndexToFocus = targetIndex
+										}
 									}
 								}
 							)

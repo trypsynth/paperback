@@ -62,6 +62,7 @@ class MainScreenViewModel(
 	private val context get() = getApplication<Application>()
 
 	private val config = ConfigManagerFfi()
+	val configManager: ConfigManagerFfi get() = config
 
 	private val _uiState = MutableStateFlow<MainScreenUiState>(MainScreenUiState.Idle)
 	val uiState: StateFlow<MainScreenUiState> = _uiState
