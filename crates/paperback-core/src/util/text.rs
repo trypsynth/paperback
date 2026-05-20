@@ -1,5 +1,3 @@
-use std::iter;
-
 use pulldown_cmark::{Event, Parser, TagEnd};
 use roman::to;
 
@@ -35,30 +33,29 @@ pub fn url_decode(input: &str) -> String {
 
 #[must_use]
 pub fn collapse_whitespace(input: &str) -> String {
-	let chars: Vec<char> = input.chars().collect();
-	let leading = chars.iter().take_while(|ch| is_space_like(**ch)).count();
-	let trailing = chars.iter().rev().take_while(|ch| is_space_like(**ch)).count();
-	let mut result = String::with_capacity(input.len());
-	if leading > 0 {
-		result.extend(iter::repeat_n(' ', leading));
+	if input.is_empty() {
+		return String::new();
 	}
-	let mut prev_was_space = false;
-	let mut seen_non_space = false;
-	let end = chars.len().saturating_sub(trailing);
-	for ch in chars.iter().take(end).skip(leading) {
-		let is_space = is_space_like(*ch);
-		if is_space {
-			if seen_non_space && !prev_was_space {
+	let mut result = String::with_capacity(input.len());
+	let mut in_leading = true;
+	let mut pending_space = false;
+	for ch in input.chars() {
+		if is_space_like(ch) {
+			if in_leading {
 				result.push(' ');
-				prev_was_space = true;
+			} else {
+				pending_space = true;
 			}
 		} else {
-			result.push(*ch);
-			prev_was_space = false;
-			seen_non_space = true;
+			in_leading = false;
+			if pending_space {
+				result.push(' ');
+				pending_space = false;
+			}
+			result.push(ch);
 		}
 	}
-	if trailing > 0 {
+	if pending_space {
 		result.push(' ');
 	}
 	result
