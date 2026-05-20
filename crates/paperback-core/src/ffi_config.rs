@@ -29,6 +29,14 @@ impl ConfigManagerFfi {
 		self.inner.lock().unwrap().set_app_string(&key, &value);
 	}
 
+	pub fn get_app_bool(&self, key: String, default_value: bool) -> bool {
+		self.inner.lock().unwrap().get_app_bool(&key, default_value)
+	}
+
+	pub fn set_app_bool(&self, key: String, value: bool) {
+		self.inner.lock().unwrap().set_app_bool(&key, value);
+	}
+
 	pub fn associate_uri_with_local_file(&self, uri: String, local_path: String) {
 		self.inner.lock().unwrap().associate_uri_with_local_file(&uri, &local_path);
 	}
@@ -77,6 +85,14 @@ impl ConfigManagerFfi {
 			}
 		}
 		exts.into_iter().collect()
+	}
+
+	pub fn get_find_history(&self) -> Vec<String> {
+		self.inner.lock().unwrap().get_find_history()
+	}
+
+	pub fn add_find_history(&self, text: String, max_len: i32) {
+		self.inner.lock().unwrap().add_find_history(&text, max_len as usize);
 	}
 
 	pub fn flush(&self) {

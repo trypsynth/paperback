@@ -13,7 +13,8 @@ use crate::{
 	document::{self, DocumentHandle, MarkerType, ParserContext, ParserFlags},
 	parser,
 	reader_core::{
-		bookmark_navigate, history_go_next, history_go_previous, reader_navigate, record_history_position, resolve_link,
+		SearchOptions, bookmark_navigate, history_go_next, history_go_previous, reader_navigate,
+		reader_search_with_wrap, record_history_position, resolve_link,
 	},
 	types::{self as ffi, NavDirection, NavTarget},
 	util::{encoding::convert_to_utf8, zip as zip_utils},
@@ -21,6 +22,21 @@ use crate::{
 
 const MAX_HISTORY_LEN: usize = 10;
 const HISTORY_DISTANCE_THRESHOLD: i64 = 300;
+
+#[derive(Debug, Clone, Copy, Default)]
+pub struct SearchOptionsFfi {
+	pub match_case: bool,
+	pub whole_word: bool,
+	pub regex: bool,
+	pub forward: bool,
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+pub struct SearchResultFfi {
+	pub found: bool,
+	pub wrapped: bool,
+	pub position: i64,
+}
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct StatusInfo {
@@ -668,6 +684,26 @@ impl DocumentSession {
 			char_count: i64::try_from(s.char_count).unwrap_or(0),
 			char_count_no_whitespace: i64::try_from(s.char_count_no_whitespace).unwrap_or(0),
 		}
+	}
+
+	pub fn search_ffi(&self, query: String, start_position: i64, options: SearchOptionsFfi) -> SearchResultFfi {
+		let mut search_options = SearchOptions::empty();
+		if options.match_case {
+			search_options.insert(SearchOptions::MATCH_CASE);
+		}
+		if options.whole_word {
+			search_options.insert(SearchOptions::WHOLE_WORD);
+		}
+		if options.regex {
+			search_options.insert(SearchOptions::REGEX);
+		}
+		if options.forward {
+			search_options.insert(SearchOptions::FORWARD);
+		}
+
+		let result =
+			reader_search_with_wrap(&self.handle.document().buffer.content, &query, start_position, search_options);
+		SearchResultFfi { found: result.found, wrapped: result.wrapped, position: result.position }
 	}
 
 	#[must_use]
