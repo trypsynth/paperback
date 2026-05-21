@@ -895,15 +895,15 @@ impl DocumentSession {
 
 				if text.trim().is_empty() {
 					let content = &self.handle.document().buffer.content;
-					let total_chars = content.chars().count();
+					let total_chars = self.handle.document().buffer.char_count();
 					let start_pos_char = usize::try_from(offset.max(0)).unwrap_or(0).min(total_chars);
 					let byte_idx = self.handle.document().buffer.byte_index_for_char(start_pos_char);
 
 					let (start_byte, end_byte) =
 						self.find_paragraph_boundaries(content, byte_idx, SegmentDirectionFfi::Current);
 					text = content[start_byte..end_byte].trim().to_string();
-					let start_char = content[..start_byte].chars().count() as i64;
-					let end_char = start_char + content[start_byte..end_byte].chars().count() as i64;
+					let start_char = self.handle.document().buffer.char_index_for_byte(start_byte) as i64;
+					let end_char = self.handle.document().buffer.char_index_for_byte(end_byte) as i64;
 
 					offset = start_char;
 					end_pos = end_char;
@@ -917,7 +917,7 @@ impl DocumentSession {
 		}
 
 		let content = &self.handle.document().buffer.content;
-		let total_chars = content.chars().count();
+		let total_chars = self.handle.document().buffer.char_count();
 		let start_pos_char = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
 		let byte_idx = self.handle.document().buffer.byte_index_for_char(start_pos_char);
 
@@ -938,8 +938,8 @@ impl DocumentSession {
 			self.find_paragraph_boundaries(content, byte_idx, direction)
 		};
 		let text = content[start_byte..end_byte].trim().to_string();
-		let start_char = content[..start_byte].chars().count();
-		let end_char = start_char + content[start_byte..end_byte].chars().count();
+		let start_char = self.handle.document().buffer.char_index_for_byte(start_byte);
+		let end_char = self.handle.document().buffer.char_index_for_byte(end_byte);
 		TextSegmentFfi {
 			text,
 			start_pos: i64::try_from(start_char).unwrap_or(0),
@@ -1062,14 +1062,17 @@ impl DocumentSession {
 	/// Returns the text between two positions (start inclusive, end exclusive).
 	#[must_use]
 	pub fn get_text_range(&self, start: i64, end: i64) -> String {
-		let content = &self.handle.document().buffer.content;
-		let total_chars = content.chars().count();
+		let total_chars = self.handle.document().buffer.char_count();
 		let start_pos = usize::try_from(start.max(0)).unwrap_or(0).min(total_chars);
 		let end_pos = usize::try_from(end.max(0)).unwrap_or(0).min(total_chars);
 		if start_pos >= end_pos {
 			return String::new();
 		}
-		content.chars().skip(start_pos).take(end_pos - start_pos).collect()
+
+		let start_byte = self.handle.document().buffer.byte_index_for_char(start_pos);
+		let end_byte = self.handle.document().buffer.byte_index_for_char(end_pos);
+
+		self.handle.document().buffer.content[start_byte..end_byte].to_string()
 	}
 
 	#[must_use]
@@ -1082,7 +1085,11 @@ impl DocumentSession {
 			0 => 0,
 			idx => newlines[idx - 1] + 1,
 		};
-		buf.content.chars().skip(line_start).take_while(|&c| c != '\n').collect()
+
+		let start_byte = buf.byte_index_for_char(line_start);
+		let line_end_byte = buf.content[start_byte..].find('\n').map_or(buf.content.len(), |i| start_byte + i);
+
+		buf.content[start_byte..line_end_byte].to_string()
 	}
 
 	#[must_use]

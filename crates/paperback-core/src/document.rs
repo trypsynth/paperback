@@ -178,6 +178,11 @@ impl DocumentBuffer {
 	}
 
 	#[must_use]
+	pub fn char_index_for_byte(&self, byte_index: usize) -> usize {
+		self.char_to_byte_map.binary_search(&byte_index).unwrap_or_else(|idx| idx)
+	}
+
+	#[must_use]
 	pub const fn current_position(&self) -> usize {
 		self.content_display_len
 	}
