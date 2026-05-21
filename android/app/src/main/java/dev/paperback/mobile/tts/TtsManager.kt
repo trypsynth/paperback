@@ -105,11 +105,16 @@ class TtsManager(
 	}
 
 	override fun onInit(status: Int) {
-		if (status == TextToSpeech.SUCCESS) {
-			tts?.language = Locale.getDefault()
+	    if (status == TextToSpeech.SUCCESS) {
+	        val langResult = tts?.setLanguage(Locale.getDefault()) ?: TextToSpeech.LANG_NOT_SUPPORTED
+	        if (langResult == TextToSpeech.LANG_MISSING_DATA || langResult == TextToSpeech.LANG_NOT_SUPPORTED) {
+	            _availableVoices.value = emptyList()
+	            _currentVoice.value = null
+	            _isInitialized.value = true
+	            return
+	        }
 
-			if (_currentEngineName.value == SYSTEM_DEFAULT) {
-				_availableVoices.value = emptyList()
+	        if (_currentEngineName.value == SYSTEM_DEFAULT) {				_availableVoices.value = emptyList()
 				_currentVoice.value = null
 			} else {
 				val engine = _currentEngineName.value!!

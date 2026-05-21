@@ -897,7 +897,7 @@ impl DocumentSession {
 					let content = &self.handle.document().buffer.content;
 					let total_chars = content.chars().count();
 					let start_pos_char = usize::try_from(offset.max(0)).unwrap_or(0).min(total_chars);
-					let byte_idx = content.char_indices().nth(start_pos_char).map_or(content.len(), |(i, _)| i);
+					let byte_idx = self.handle.document().buffer.byte_index_for_char(start_pos_char);
 
 					let (start_byte, end_byte) =
 						self.find_paragraph_boundaries(content, byte_idx, SegmentDirectionFfi::Current);
@@ -919,7 +919,7 @@ impl DocumentSession {
 		let content = &self.handle.document().buffer.content;
 		let total_chars = content.chars().count();
 		let start_pos_char = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
-		let byte_idx = content.char_indices().nth(start_pos_char).map_or(content.len(), |(i, _)| i);
+		let byte_idx = self.handle.document().buffer.byte_index_for_char(start_pos_char);
 
 		let (start_byte, end_byte) = if matches!(segment_type, SegmentTypeFfi::Line) {
 			let line_num = self.line_from_position(start_pos_char as i64);
@@ -931,13 +931,12 @@ impl DocumentSession {
 			let start_char_idx = usize::try_from(self.position_from_line(target_line)).unwrap_or(0);
 			let end_char_idx = usize::try_from(self.position_from_line(target_line + 1)).unwrap_or(0);
 
-			let sb = content.char_indices().nth(start_char_idx).map_or(content.len(), |(i, _)| i);
-			let eb = content.char_indices().nth(end_char_idx).map_or(content.len(), |(i, _)| i);
+			let sb = self.handle.document().buffer.byte_index_for_char(start_char_idx);
+			let eb = self.handle.document().buffer.byte_index_for_char(end_char_idx);
 			(sb, eb)
 		} else {
 			self.find_paragraph_boundaries(content, byte_idx, direction)
 		};
-
 		let text = content[start_byte..end_byte].trim().to_string();
 		let start_char = content[..start_byte].chars().count();
 		let end_char = start_char + content[start_byte..end_byte].chars().count();

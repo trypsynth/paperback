@@ -10,6 +10,8 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
@@ -553,7 +555,7 @@ fun MainScreen(
 									val markers = docState.session.getLineMarkers(lineNum)
 
 									if (lineText.isNotBlank()) {
-										val focusRequester = remember { FocusRequester() }
+										val bringIntoViewRequester = remember { BringIntoViewRequester() }
 										var isTemporaryFocusTarget by remember { mutableStateOf(lineIndexToFocus == index) }
 										LaunchedEffect(lineIndexToFocus) {
 											if (lineIndexToFocus == index) {
@@ -662,7 +664,7 @@ fun MainScreen(
 										}
 
 										if (isTemporaryFocusTarget) {
-											textModifier = textModifier.focusRequester(focusRequester).focusable()
+											textModifier = textModifier.bringIntoViewRequester(bringIntoViewRequester).focusable()
 										}
 
 										val currentOptions = activeSearchOptions
@@ -720,12 +722,10 @@ fun MainScreen(
 
 										if (isTemporaryFocusTarget) {
 											LaunchedEffect(Unit) {
-												kotlinx.coroutines.delay(700)
 												try {
-													focusRequester.requestFocus()
+													bringIntoViewRequester.bringIntoView()
 												} catch (e: Exception) {
 												}
-												kotlinx.coroutines.delay(1500)
 												isTemporaryFocusTarget = false
 												if (lineIndexToFocus == index) {
 													lineIndexToFocus = null

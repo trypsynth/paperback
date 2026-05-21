@@ -105,6 +105,7 @@ pub struct DocumentBuffer {
 	content_display_len: usize,
 	content_char_count: usize,
 	newline_char_positions: Vec<usize>,
+	char_to_byte_map: Vec<usize>,
 }
 
 impl DocumentBuffer {
@@ -116,6 +117,7 @@ impl DocumentBuffer {
 			content_display_len: 0,
 			content_char_count: 0,
 			newline_char_positions: Vec::new(),
+			char_to_byte_map: Vec::new(),
 		}
 	}
 
@@ -124,18 +126,22 @@ impl DocumentBuffer {
 		let display = display_len(&content);
 		let mut char_count = 0usize;
 		let mut newline_char_positions = Vec::new();
-		for c in content.chars() {
+		let mut char_to_byte_map = Vec::with_capacity(content.len().min(1024));
+		for (byte_idx, c) in content.char_indices() {
+			char_to_byte_map.push(byte_idx);
 			if c == '\n' {
 				newline_char_positions.push(char_count);
 			}
 			char_count += 1;
 		}
+		char_to_byte_map.push(content.len()); // append end boundary
 		Self {
 			content,
 			markers: Vec::new(),
 			content_display_len: display,
 			content_char_count: char_count,
 			newline_char_positions,
+			char_to_byte_map,
 		}
 	}
 
@@ -146,15 +152,29 @@ impl DocumentBuffer {
 	pub fn append(&mut self, text: &str) {
 		let base = self.content_char_count;
 		let mut count = 0usize;
-		for c in text.chars() {
+
+		// Remove the end boundary temporarily
+		if !self.char_to_byte_map.is_empty() {
+			self.char_to_byte_map.pop();
+		}
+
+		let start_byte = self.content.len();
+		for (byte_idx, c) in text.char_indices() {
+			self.char_to_byte_map.push(start_byte + byte_idx);
 			if c == '\n' {
 				self.newline_char_positions.push(base + count);
 			}
 			count += 1;
 		}
 		self.content.push_str(text);
+		self.char_to_byte_map.push(self.content.len()); // append end boundary back
 		self.content_display_len += display_len(text);
 		self.content_char_count += count;
+	}
+
+	#[must_use]
+	pub fn byte_index_for_char(&self, char_index: usize) -> usize {
+		self.char_to_byte_map.get(char_index).copied().unwrap_or(self.content.len())
 	}
 
 	#[must_use]
