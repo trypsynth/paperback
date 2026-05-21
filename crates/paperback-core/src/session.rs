@@ -135,6 +135,34 @@ pub struct LinkActivationResultFfi {
 	pub url: String,
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum SegmentTypeFfi {
+	Paragraph,
+	Line,
+	Heading,
+	Link,
+	Section,
+	Page,
+	List,
+	ListItem,
+	Table,
+	Separator,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum SegmentDirectionFfi {
+	Current,
+	Next,
+	Previous,
+}
+
+#[derive(Debug, Clone)]
+pub struct TextSegmentFfi {
+	pub text: String,
+	pub start_pos: i64,
+	pub end_pos: i64,
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum DocumentError {
 	#[error("Parse error: {0}")]
@@ -832,6 +860,125 @@ impl DocumentSession {
 		file.write_all(content.as_bytes())?;
 		file.flush()?;
 		Ok(())
+	}
+
+	#[must_use]
+	pub fn get_text_segment(
+		&self,
+		position: i64,
+		segment_type: SegmentTypeFfi,
+		direction: SegmentDirectionFfi,
+	) -> TextSegmentFfi {
+		let nav_target = match segment_type {
+			SegmentTypeFfi::Heading => Some(ffi::NavTarget::Heading),
+			SegmentTypeFfi::Link => Some(ffi::NavTarget::Link),
+			SegmentTypeFfi::Section => Some(ffi::NavTarget::Section),
+			SegmentTypeFfi::Page => Some(ffi::NavTarget::Page),
+			SegmentTypeFfi::List => Some(ffi::NavTarget::List),
+			SegmentTypeFfi::ListItem => Some(ffi::NavTarget::ListItem),
+			SegmentTypeFfi::Table => Some(ffi::NavTarget::Table),
+			SegmentTypeFfi::Separator => Some(ffi::NavTarget::Separator),
+			_ => None,
+		};
+
+		if let Some(target) = nav_target {
+			let direction_nav = match direction {
+				SegmentDirectionFfi::Previous => ffi::NavDirection::Previous,
+				_ => ffi::NavDirection::Next,
+			};
+			let nav_req = ffi::NavRequest { position, wrap: false, direction: direction_nav, target, level_filter: 0 };
+			let res = crate::reader_core::reader_navigate(&self.handle, &nav_req);
+			if res.found {
+				let mut text = res.marker_text.clone();
+				let mut offset = res.offset as i64;
+				let mut end_pos = offset;
+
+				if text.trim().is_empty() {
+					let content = &self.handle.document().buffer.content;
+					let total_chars = content.chars().count();
+					let start_pos_char = usize::try_from(offset.max(0)).unwrap_or(0).min(total_chars);
+					let byte_idx = content.char_indices().nth(start_pos_char).map_or(content.len(), |(i, _)| i);
+
+					let (start_byte, end_byte) =
+						self.find_paragraph_boundaries(content, byte_idx, SegmentDirectionFfi::Current);
+					text = content[start_byte..end_byte].trim().to_string();
+					let start_char = content[..start_byte].chars().count() as i64;
+					let end_char = start_char + content[start_byte..end_byte].chars().count() as i64;
+
+					offset = start_char;
+					end_pos = end_char;
+				} else {
+					end_pos += i64::try_from(text.chars().count()).unwrap_or(0);
+				}
+
+				return TextSegmentFfi { text, start_pos: offset, end_pos };
+			}
+			return TextSegmentFfi { text: String::new(), start_pos: position, end_pos: position };
+		}
+
+		let content = &self.handle.document().buffer.content;
+		let total_chars = content.chars().count();
+		let start_pos_char = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
+		let byte_idx = content.char_indices().nth(start_pos_char).map_or(content.len(), |(i, _)| i);
+
+		let (start_byte, end_byte) = if matches!(segment_type, SegmentTypeFfi::Line) {
+			let line_num = self.line_from_position(start_pos_char as i64);
+			let target_line = match direction {
+				SegmentDirectionFfi::Previous => (line_num - 1).max(1),
+				SegmentDirectionFfi::Next => line_num + 1,
+				SegmentDirectionFfi::Current => line_num,
+			};
+			let start_char_idx = usize::try_from(self.position_from_line(target_line)).unwrap_or(0);
+			let end_char_idx = usize::try_from(self.position_from_line(target_line + 1)).unwrap_or(0);
+
+			let sb = content.char_indices().nth(start_char_idx).map_or(content.len(), |(i, _)| i);
+			let eb = content.char_indices().nth(end_char_idx).map_or(content.len(), |(i, _)| i);
+			(sb, eb)
+		} else {
+			self.find_paragraph_boundaries(content, byte_idx, direction)
+		};
+
+		let text = content[start_byte..end_byte].trim().to_string();
+		let start_char = content[..start_byte].chars().count();
+		let end_char = start_char + content[start_byte..end_byte].chars().count();
+		TextSegmentFfi {
+			text,
+			start_pos: i64::try_from(start_char).unwrap_or(0),
+			end_pos: i64::try_from(end_char).unwrap_or(0),
+		}
+	}
+
+	fn find_paragraph_boundaries(
+		&self,
+		content: &str,
+		byte_idx: usize,
+		direction: SegmentDirectionFfi,
+	) -> (usize, usize) {
+		let mut start = byte_idx;
+
+		if matches!(direction, SegmentDirectionFfi::Previous) {
+			let mut search_end = byte_idx;
+			while search_end > 0 && content.as_bytes()[search_end - 1] == b'\n' {
+				search_end -= 1;
+			}
+			start = content[..search_end].rfind('\n').map_or(0, |i| i + 1);
+		} else if matches!(direction, SegmentDirectionFfi::Next) {
+			if let Some(next) = content[byte_idx..].find('\n') {
+				start = byte_idx + next;
+				while start < content.len() && content.as_bytes()[start] == b'\n' {
+					start += 1;
+				}
+			} else {
+				start = content.len();
+			}
+		} else {
+			while start < content.len() && content.as_bytes()[start] == b'\n' {
+				start += 1;
+			}
+		}
+
+		let end = content[start..].find('\n').map_or(content.len(), |i| start + i);
+		(start, end)
 	}
 
 	#[must_use]

@@ -65,11 +65,28 @@ fun MainScreen(
 	var documentInfoDialogOpen by remember { mutableStateOf(false) }
 	var goToDialogOpen by remember { mutableStateOf(false) }
 	var findDialogOpen by remember { mutableStateOf(false) }
+	var optionsDialogOpen by remember { mutableStateOf(false) }
 	var lineIndexToFocus by remember { mutableStateOf<Int?>(null) }
 	
+	var restorePreviousDocuments by remember {
+		mutableStateOf(viewModel.configManager.getAppBool("restore_previous_documents", true))
+	}
+
 	var activeSearchQuery by remember { mutableStateOf<String?>(null) }
 	var activeSearchOptions by remember { mutableStateOf<uniffi.paperback.SearchOptionsFfi?>(null) }
 	var expandedTocIndices by remember { mutableStateOf(setOf<Int>()) }
+
+	var isTextMode by remember { mutableStateOf(false) }
+	val isSpeaking by viewModel.ttsManager.isSpeaking.collectAsStateWithLifecycle()
+	val currentSegmentType by viewModel.currentSegmentType.collectAsStateWithLifecycle()
+	val ttsPosition by viewModel.ttsPosition.collectAsStateWithLifecycle()
+	val currentSpeechRate by viewModel.ttsManager.currentSpeechRate.collectAsStateWithLifecycle()
+	val currentSegmentText by viewModel.currentSegmentText.collectAsStateWithLifecycle()
+	val availableVoices by viewModel.ttsManager.availableVoices.collectAsStateWithLifecycle()
+	val currentVoice by viewModel.ttsManager.currentVoice.collectAsStateWithLifecycle()
+	val currentEngineName by viewModel.ttsManager.currentEngineName.collectAsStateWithLifecycle()
+	var ttsConfigDialogOpen by remember { mutableStateOf(false) }
+
 	val context = LocalContext.current
 
 	val accessibilityManager =
@@ -181,28 +198,50 @@ fun MainScreen(
 										moreOptionsExpanded = true
 										true
 									}
-									customActions = listOf(
-										CustomAccessibilityAction("Recent Documents") {
-											recentsDialogOpen = true
-											true
-										},
-										CustomAccessibilityAction("Go To") {
-											goToDialogOpen = true
-											true
-										},
-										CustomAccessibilityAction("Find") {
-											findDialogOpen = true
-											true
-										},
-										CustomAccessibilityAction("Word Count") {
-											wordCountDialogOpen = true
-											true
-										},
-										CustomAccessibilityAction("Document Information") {
-											documentInfoDialogOpen = true
-											true
-										}
-									)
+									customActions = mutableListOf<CustomAccessibilityAction>().apply {
+										add(
+											CustomAccessibilityAction(if (isTextMode) "Read Aloud" else "Show Text") {
+												isTextMode = !isTextMode
+												true
+											}
+										)
+										add(
+											CustomAccessibilityAction("Recent Documents") {
+												recentsDialogOpen = true
+												true
+											}
+										)
+										add(
+											CustomAccessibilityAction("Go To") {
+												goToDialogOpen = true
+												true
+											}
+										)
+										add(
+											CustomAccessibilityAction("Find") {
+												findDialogOpen = true
+												true
+											}
+										)
+										add(
+											CustomAccessibilityAction("Word Count") {
+												wordCountDialogOpen = true
+												true
+											}
+										)
+										add(
+											CustomAccessibilityAction("Document Information") {
+												documentInfoDialogOpen = true
+												true
+											}
+										)
+										add(
+											CustomAccessibilityAction("Options") {
+												optionsDialogOpen = true
+												true
+											}
+										)
+									}
 								}
 							) {
 								Icon(Icons.Filled.MoreVert, contentDescription = "More Options")
@@ -211,6 +250,22 @@ fun MainScreen(
 								expanded = moreOptionsExpanded,
 								onDismissRequest = { moreOptionsExpanded = false }
 							) {
+								DropdownMenuItem(
+									text = { Text(if (isTextMode) "Show Document" else "Show Text") },
+									onClick = {
+										isTextMode = !isTextMode
+										moreOptionsExpanded = false
+									}
+								)
+								if (isTextMode) {
+									DropdownMenuItem(
+										text = { Text(if (isSpeaking) "Pause Read Aloud" else "Read Aloud") },
+										onClick = {
+											viewModel.togglePlayPause()
+											moreOptionsExpanded = false
+										}
+									)
+								}
 								DropdownMenuItem(
 									text = { Text("Recent Documents") },
 									onClick = {
@@ -244,6 +299,13 @@ fun MainScreen(
 									onClick = {
 										moreOptionsExpanded = false
 										documentInfoDialogOpen = true
+									}
+								)
+								DropdownMenuItem(
+									text = { Text("Options") },
+									onClick = {
+										moreOptionsExpanded = false
+										optionsDialogOpen = true
 									}
 								)
 							}
@@ -361,6 +423,18 @@ fun MainScreen(
 						}
 					}
 				}
+			} else if (!isTextMode &&
+				state is MainScreenUiState.Success &&
+				(state as MainScreenUiState.Success).activeTab != null
+			) {
+				TtsBottomBar(
+					isSpeaking = isSpeaking,
+					onPlayPause = { viewModel.togglePlayPause() },
+					onPrev = { viewModel.playPrevSegment() },
+					onNext = { viewModel.playNextSegment() },
+					currentSegmentType = currentSegmentType,
+					onSegmentTypeChange = { viewModel.setSegmentType(it) }
+				)
 			}
 		}
 	) { padding ->
@@ -430,7 +504,15 @@ fun MainScreen(
 							}
 						}
 
-						// Track the scroll position
+						LaunchedEffect(isTextMode) {
+							if (isTextMode) {
+								val line = docState.session.lineFromPosition(ttsPosition)
+								val index = (line - 1).toInt().coerceAtLeast(0)
+								listState.scrollToItem(index)
+								lineIndexToFocus = index
+							}
+						}
+
 						LaunchedEffect(docState.documentUri) {
 							snapshotFlow { listState.firstVisibleItemIndex }
 								.distinctUntilChanged()
@@ -438,197 +520,216 @@ fun MainScreen(
 								.collect { index -> viewModel.savePosition(docState.session, docState.documentUri, index) }
 						}
 
-						LazyColumn(
-							state = listState,
-							modifier = Modifier.fillMaxSize().semantics { isTraversalGroup = true },
-							contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 16.dp)
-						) {
-							items(
-								count = docState.lineCount.toInt(),
-								key = { it }
-							) { index ->
-								val lineNum = (index + 1).toLong()
-								val pos = docState.session.positionFromLine(lineNum)
-								val lineText = docState.session.getLineText(pos).trimEnd()
-								val markers = docState.session.getLineMarkers(lineNum)
+						if (!isTextMode) {
+							Column(
+								modifier = Modifier.fillMaxSize().padding(16.dp).semantics { isTraversalGroup = true },
+								horizontalAlignment = Alignment.CenterHorizontally,
+								verticalArrangement = Arrangement.Center
+							) {
+								Text(docState.title, style = MaterialTheme.typography.titleLarge)
+								Spacer(modifier = Modifier.height(16.dp))
+								val stats = remember(ttsPosition) { docState.session.getStatusInfoFfi(ttsPosition) }
+								Text("Position: ${stats.percentage}%")
+								Spacer(modifier = Modifier.height(24.dp))
+								Text(
+									text = currentSegmentText,
+									style = MaterialTheme.typography.bodyLarge,
+									modifier = Modifier.padding(16.dp)
+								)
+							}
+						} else {
+							LazyColumn(
+								state = listState,
+								modifier = Modifier.fillMaxSize().semantics { isTraversalGroup = true },
+								contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 16.dp)
+							) {
+								items(
+									count = docState.lineCount.toInt(),
+									key = { it }
+								) { index ->
+									val lineNum = (index + 1).toLong()
+									val pos = docState.session.positionFromLine(lineNum)
+									val lineText = docState.session.getLineText(pos).trimEnd()
+									val markers = docState.session.getLineMarkers(lineNum)
 
-								if (lineText.isNotBlank()) {
-									val focusRequester = remember { FocusRequester() }
-									var isTemporaryFocusTarget by remember { mutableStateOf(lineIndexToFocus == index) }
-									LaunchedEffect(lineIndexToFocus) {
-										if (lineIndexToFocus == index) {
-											isTemporaryFocusTarget = true
+									if (lineText.isNotBlank()) {
+										val focusRequester = remember { FocusRequester() }
+										var isTemporaryFocusTarget by remember { mutableStateOf(lineIndexToFocus == index) }
+										LaunchedEffect(lineIndexToFocus) {
+											if (lineIndexToFocus == index) {
+												isTemporaryFocusTarget = true
+											}
 										}
-									}
 
-									var textModifier = Modifier.padding(vertical = 4.dp).semantics(mergeDescendants = true) {}
-									var isHeading = false
-									var headingLevel = 0
+										var textModifier = Modifier.padding(vertical = 4.dp).semantics(mergeDescendants = true) {}
+										var isHeading = false
+										var headingLevel = 0
 
-									val annotatedString = buildAnnotatedString {
-										var currentIdx = 0
-										val sortedMarkers = markers.sortedBy { it.position }
+										val annotatedString = buildAnnotatedString {
+											var currentIdx = 0
+											val sortedMarkers = markers.sortedBy { it.position }
 
-										sortedMarkers.forEach { marker ->
-											when (marker.mtype) {
-												MarkerTypeFfi.HEADING1 -> {
-													isHeading = true
-													headingLevel = 1
-												}
-												MarkerTypeFfi.HEADING2 -> {
-													isHeading = true
-													headingLevel = 2
-												}
-												MarkerTypeFfi.HEADING3 -> {
-													isHeading = true
-													headingLevel = 3
-												}
-												MarkerTypeFfi.HEADING4 -> {
-													isHeading = true
-													headingLevel = 4
-												}
-												MarkerTypeFfi.HEADING5 -> {
-													isHeading = true
-													headingLevel = 5
-												}
-												MarkerTypeFfi.HEADING6 -> {
-													isHeading = true
-													headingLevel = 6
-												}
-												MarkerTypeFfi.LINK -> {
-													val markerStartInLine = (marker.position - pos).toInt().coerceAtLeast(0)
-													val markerTextLength = marker.text.length
-
-													if (markerStartInLine > currentIdx) {
-														append(lineText.substring(currentIdx, markerStartInLine.coerceAtMost(lineText.length)))
-														currentIdx = markerStartInLine
+											sortedMarkers.forEach { marker ->
+												when (marker.mtype) {
+													MarkerTypeFfi.HEADING1 -> {
+														isHeading = true
+														headingLevel = 1
 													}
+													MarkerTypeFfi.HEADING2 -> {
+														isHeading = true
+														headingLevel = 2
+													}
+													MarkerTypeFfi.HEADING3 -> {
+														isHeading = true
+														headingLevel = 3
+													}
+													MarkerTypeFfi.HEADING4 -> {
+														isHeading = true
+														headingLevel = 4
+													}
+													MarkerTypeFfi.HEADING5 -> {
+														isHeading = true
+														headingLevel = 5
+													}
+													MarkerTypeFfi.HEADING6 -> {
+														isHeading = true
+														headingLevel = 6
+													}
+													MarkerTypeFfi.LINK -> {
+														val markerStartInLine = (marker.position - pos).toInt().coerceAtLeast(0)
+														val markerTextLength = marker.text.length
 
-													if (currentIdx < lineText.length) {
-														val linkEnd = (currentIdx + markerTextLength).coerceAtMost(lineText.length)
-														val linkText = lineText.substring(currentIdx, linkEnd)
+														if (markerStartInLine > currentIdx) {
+															append(lineText.substring(currentIdx, markerStartInLine.coerceAtMost(lineText.length)))
+															currentIdx = markerStartInLine
+														}
 
-														val linkAnnotation = LinkAnnotation.Clickable(
-															tag = marker.position.toString(),
-															styles = TextLinkStyles(
-																style = SpanStyle(
-																	color = MaterialTheme.colorScheme.primary,
-																	textDecoration = TextDecoration.Underline
+														if (currentIdx < lineText.length) {
+															val linkEnd = (currentIdx + markerTextLength).coerceAtMost(lineText.length)
+															val linkText = lineText.substring(currentIdx, linkEnd)
+
+															val linkAnnotation = LinkAnnotation.Clickable(
+																tag = marker.position.toString(),
+																styles = TextLinkStyles(
+																	style = SpanStyle(
+																		color = MaterialTheme.colorScheme.primary,
+																		textDecoration = TextDecoration.Underline
+																	)
 																)
-															)
-														) {
-															val result = docState.session.activateLinkFfi(marker.position)
-															if (result.found) {
-																when (result.action) {
-																	LinkActionFfi.EXTERNAL -> {
-																		val intent = Intent(Intent.ACTION_VIEW, Uri.parse(result.url))
-																		context.startActivity(intent)
-																	}
-																	LinkActionFfi.INTERNAL -> {
-																		val targetLine = docState.session.lineFromPosition(result.offset)
-																		val targetIndex = (targetLine - 1).toInt().coerceAtLeast(0)
-																		scope.launch {
-																			listState.scrollToItem(targetIndex)
-																			lineIndexToFocus = targetIndex
+															) {
+																val result = docState.session.activateLinkFfi(marker.position)
+																if (result.found) {
+																	when (result.action) {
+																		LinkActionFfi.EXTERNAL -> {
+																			val intent = Intent(Intent.ACTION_VIEW, Uri.parse(result.url))
+																			context.startActivity(intent)
 																		}
+																		LinkActionFfi.INTERNAL -> {
+																			val targetLine = docState.session.lineFromPosition(result.offset)
+																			val targetIndex = (targetLine - 1).toInt().coerceAtLeast(0)
+																			scope.launch {
+																				listState.scrollToItem(targetIndex)
+																				lineIndexToFocus = targetIndex
+																			}
+																		}
+																		else -> {}
 																	}
-																	else -> {}
 																}
 															}
-														}
 
-														withLink(linkAnnotation) {
-															append(linkText)
+															withLink(linkAnnotation) {
+																append(linkText)
+															}
+															currentIdx = linkEnd
 														}
-														currentIdx = linkEnd
 													}
+													else -> {}
 												}
-												else -> {}
+											}
+
+											if (currentIdx < lineText.length) {
+												append(lineText.substring(currentIdx))
 											}
 										}
 
-										if (currentIdx < lineText.length) {
-											append(lineText.substring(currentIdx))
-										}
-									}
-
-									if (isHeading) {
-										textModifier = textModifier.semantics {
-											heading()
-											if (headingLevel > 0) {
-												stateDescription = "Heading $headingLevel"
-											}
-										}
-									}
-
-									if (isTemporaryFocusTarget) {
-										textModifier = textModifier.focusRequester(focusRequester).focusable()
-									}
-
-									val currentOptions = activeSearchOptions
-									val currentQuery = activeSearchQuery
-									if (currentQuery != null && currentOptions != null) {
-										textModifier = textModifier.semantics {
-											customActions = listOf(
-												CustomAccessibilityAction("Find Next") {
-													val nextLine = (index + 2).toLong().coerceAtMost(docState.lineCount)
-													val pos = docState.session.positionFromLine(nextLine)
-													val res = docState.session.searchFfi(currentQuery, pos, currentOptions.copy(forward = true))
-													if (res.found) {
-														val targetLine = docState.session.lineFromPosition(res.position)
-														val targetIndex = (targetLine - 1).toInt().coerceAtLeast(0)
-														scope.launch {
-															listState.scrollToItem(targetIndex)
-															lineIndexToFocus = targetIndex
-														}
-													}
-													true
-												},
-												CustomAccessibilityAction("Find Previous") {
-													val pos = docState.session.positionFromLine((index + 1).toLong())
-													val res = docState.session.searchFfi(currentQuery, pos, currentOptions.copy(forward = false))
-													if (res.found) {
-														val targetLine = docState.session.lineFromPosition(res.position)
-														val targetIndex = (targetLine - 1).toInt().coerceAtLeast(0)
-														scope.launch {
-															listState.scrollToItem(targetIndex)
-															lineIndexToFocus = targetIndex
-														}
-													}
-													true
-												},
-												CustomAccessibilityAction("Close Search") {
-													activeSearchQuery = null
-													activeSearchOptions = null
-													true
+										if (isHeading) {
+											textModifier = textModifier.semantics {
+												heading()
+												if (headingLevel > 0) {
+													stateDescription = "Heading $headingLevel"
 												}
-											)
-										}
-									}
-
-									val textStyle = if (isHeading) {
-										MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
-									} else {
-										MaterialTheme.typography.bodyLarge
-									}
-
-									Text(
-										text = annotatedString,
-										style = textStyle,
-										modifier = textModifier
-									)
-
-									if (isTemporaryFocusTarget) {
-										LaunchedEffect(Unit) {
-											kotlinx.coroutines.delay(700)
-											try {
-												focusRequester.requestFocus()
-											} catch (e: Exception) {
 											}
-											kotlinx.coroutines.delay(1500)
-											isTemporaryFocusTarget = false
-											if (lineIndexToFocus == index) {
-												lineIndexToFocus = null
+										}
+
+										if (isTemporaryFocusTarget) {
+											textModifier = textModifier.focusRequester(focusRequester).focusable()
+										}
+
+										val currentOptions = activeSearchOptions
+										val currentQuery = activeSearchQuery
+										if (currentQuery != null && currentOptions != null) {
+											textModifier = textModifier.semantics {
+												customActions = listOf(
+													CustomAccessibilityAction("Find Next") {
+														val nextLine = (index + 2).toLong().coerceAtMost(docState.lineCount)
+														val pos = docState.session.positionFromLine(nextLine)
+														val res = docState.session.searchFfi(currentQuery, pos, currentOptions.copy(forward = true))
+														if (res.found) {
+															val targetLine = docState.session.lineFromPosition(res.position)
+															val targetIndex = (targetLine - 1).toInt().coerceAtLeast(0)
+															scope.launch {
+																listState.scrollToItem(targetIndex)
+																lineIndexToFocus = targetIndex
+															}
+														}
+														true
+													},
+													CustomAccessibilityAction("Find Previous") {
+														val pos = docState.session.positionFromLine((index + 1).toLong())
+														val res = docState.session.searchFfi(currentQuery, pos, currentOptions.copy(forward = false))
+														if (res.found) {
+															val targetLine = docState.session.lineFromPosition(res.position)
+															val targetIndex = (targetLine - 1).toInt().coerceAtLeast(0)
+															scope.launch {
+																listState.scrollToItem(targetIndex)
+																lineIndexToFocus = targetIndex
+															}
+														}
+														true
+													},
+													CustomAccessibilityAction("Close Search") {
+														activeSearchQuery = null
+														activeSearchOptions = null
+														true
+													}
+												)
+											}
+										}
+
+										val textStyle = if (isHeading) {
+											MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+										} else {
+											MaterialTheme.typography.bodyLarge
+										}
+
+										Text(
+											text = annotatedString,
+											style = textStyle,
+											modifier = textModifier
+										)
+
+										if (isTemporaryFocusTarget) {
+											LaunchedEffect(Unit) {
+												kotlinx.coroutines.delay(700)
+												try {
+													focusRequester.requestFocus()
+												} catch (e: Exception) {
+												}
+												kotlinx.coroutines.delay(1500)
+												isTemporaryFocusTarget = false
+												if (lineIndexToFocus == index) {
+													lineIndexToFocus = null
+												}
 											}
 										}
 									}
@@ -648,6 +749,7 @@ fun MainScreen(
 									}
 								},
 								onItemClick = { item ->
+									viewModel.updateTtsPosition(item.position)
 									val line = docState.session.lineFromPosition(item.position)
 									val indexToScroll = (line - 1).toInt().coerceAtLeast(0)
 									scope.launch {
@@ -679,6 +781,8 @@ fun MainScreen(
 								initialQuery = activeSearchQuery ?: "",
 								onDismiss = { findDialogOpen = false },
 								onSearch = { query, options ->
+									viewModel.pauseTts()
+									isTextMode = true
 									activeSearchQuery = query
 									activeSearchOptions = options
 									val currentPos = docState.session.positionFromLine((listState.firstVisibleItemIndex + 1).toLong())
@@ -719,6 +823,40 @@ fun MainScreen(
 							docState = docState,
 							stats = stats,
 							onDismiss = { documentInfoDialogOpen = false }
+						)
+					}
+
+					if (optionsDialogOpen) {
+						OptionsDialog(
+							initialRestorePreviousDocuments = restorePreviousDocuments,
+							onSaveOptions = { checked ->
+								restorePreviousDocuments = checked
+								viewModel.configManager.setAppBool("restore_previous_documents", checked)
+								viewModel.configManager.flush()
+								optionsDialogOpen = false
+							},
+							onOpenTtsConfig = {
+								optionsDialogOpen = false
+								ttsConfigDialogOpen = true
+							},
+							onDismiss = { optionsDialogOpen = false }
+						)
+					}
+
+					if (ttsConfigDialogOpen) {
+						TtsConfigDialog(
+							engines = viewModel.ttsManager.getAvailableEngines(),
+							currentEngine = currentEngineName ?: viewModel.ttsManager.getDefaultEngine(),
+							voices = availableVoices,
+							currentVoice = currentVoice,
+							currentRate = currentSpeechRate,
+							onEngineSelected = { viewModel.ttsManager.setEngine(it) },
+							onVoiceSelected = { viewModel.ttsManager.setVoice(it) },
+							onRateChanged = { viewModel.ttsManager.setSpeechRate(it) },
+							onPlaySample = {
+								viewModel.ttsManager.speak("This is a sample of the selected speech engine.", isSample = true)
+							},
+							onDismiss = { ttsConfigDialogOpen = false }
 						)
 					}
 				}

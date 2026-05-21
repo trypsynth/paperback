@@ -37,6 +37,22 @@ dictionary LinkActivationResultFfi {
 	string url;
 };
 
+enum SegmentTypeFfi {
+	"Paragraph", "Line",
+	"Heading", "Link", "Section", "Page",
+	"List", "ListItem", "Table", "Separator"
+};
+
+enum SegmentDirectionFfi {
+	"Current", "Next", "Previous"
+};
+
+dictionary TextSegmentFfi {
+	string text;
+	i64 start_pos;
+	i64 end_pos;
+};
+
 dictionary DocumentStatsFfi {
 	i64 word_count;
 	i64 line_count;
@@ -77,6 +93,7 @@ interface DocumentSession {
 	i64 line_from_position(i64 position);
 	sequence<LineMarker> get_line_markers(i64 line);
 	LinkActivationResultFfi activate_link_ffi(i64 position);
+	TextSegmentFfi get_text_segment(i64 position, SegmentTypeFfi segment_type, SegmentDirectionFfi direction);
 
 	StatusInfoFfi get_status_info_ffi(i64 position);
 	i64 position_from_percent_ffi(i32 percent);
