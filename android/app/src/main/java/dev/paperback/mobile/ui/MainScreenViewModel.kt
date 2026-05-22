@@ -7,6 +7,7 @@ import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import dev.paperback.mobile.tts.TtsManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,6 +15,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import uniffi.paperback.ConfigManagerFfi
 import uniffi.paperback.DocumentSession
+import uniffi.paperback.SegmentDirectionFfi
+import uniffi.paperback.SegmentTypeFfi
 import uniffi.paperback.TocEntry
 import java.io.File
 import java.io.FileOutputStream
@@ -64,6 +67,16 @@ class MainScreenViewModel(
 	private val config = ConfigManagerFfi()
 	val configManager: ConfigManagerFfi get() = config
 
+	val ttsManager = TtsManager(application, config)
+	private val _currentSegmentType = MutableStateFlow(SegmentTypeFfi.PARAGRAPH)
+	val currentSegmentType: StateFlow<SegmentTypeFfi> = _currentSegmentType
+
+	private val _ttsPosition = MutableStateFlow(0L)
+	val ttsPosition: StateFlow<Long> = _ttsPosition
+
+	private val _currentSegmentText = MutableStateFlow("")
+	val currentSegmentText: StateFlow<String> = _currentSegmentText
+
 	private val _uiState = MutableStateFlow<MainScreenUiState>(MainScreenUiState.Idle)
 	val uiState: StateFlow<MainScreenUiState> = _uiState
 
@@ -75,11 +88,25 @@ class MainScreenViewModel(
 	val supportedMimeTypes: StateFlow<Array<String>> = _supportedMimeTypes
 
 	init {
+		ttsManager.onUtteranceCompleted = {
+			playNextContinuousSegment()
+		}
+		ttsManager.onPlayCommand = { resumeTts() }
+		ttsManager.onPauseCommand = { pauseTts() }
+		ttsManager.onNextCommand = { playNextSegment() }
+		ttsManager.onPrevCommand = { playPrevSegment() }
+
 		viewModelScope.launch(Dispatchers.IO) {
 			config.initialize(context.filesDir.absolutePath + "/config.toml")
+
+			withContext(Dispatchers.Main) {
+				ttsManager.loadConfigAndInit()
+			}
+
 			_supportedMimeTypes.value = buildSupportedMimeTypes()
 
-			val openedUris = config.getOpenedDocuments()
+			val restorePrevious = config.getAppBool("restore_previous_documents", true)
+			val openedUris = if (restorePrevious) config.getOpenedDocuments() else emptyList()
 			val activeDocKey = config.getAppString("active_document", "")
 
 			if (openedUris.isNotEmpty()) {
@@ -261,6 +288,7 @@ class MainScreenViewModel(
 		scrollIndex: Int
 	) {
 		val position = session.positionFromLine((scrollIndex + 1).toLong())
+		_ttsPosition.value = position
 		viewModelScope.launch(Dispatchers.IO) {
 			config.setDocumentPosition(documentUri, position)
 			config.flush()
@@ -269,6 +297,7 @@ class MainScreenViewModel(
 
 	override fun onCleared() {
 		super.onCleared()
+		ttsManager.shutdown()
 		Thread {
 			try {
 				config.flush()
@@ -328,7 +357,7 @@ class MainScreenViewModel(
 		if (currentTabs.isEmpty()) {
 			_uiState.value = MainScreenUiState.Loading
 		}
-		
+
 		val tabState = prepareDocumentTabIO(uri)
 		if (tabState == null) {
 			withContext(Dispatchers.Main) {
@@ -377,5 +406,101 @@ class MainScreenViewModel(
 			_uiState.value =
 				MainScreenUiState.Success(tabs = currentTabs.toList(), activeTabIndex = currentActiveIndex, recentDocumentsList)
 		}
+	}
+
+	fun setSegmentType(type: SegmentTypeFfi) {
+		_currentSegmentType.value = type
+	}
+
+	fun togglePlayPause() {
+		if (ttsManager.isSpeaking.value) {
+			pauseTts()
+		} else {
+			speakCurrentSegment()
+		}
+	}
+
+	private fun saveTtsPositionToConfig(pos: Long) {
+		val state = uiState.value as? MainScreenUiState.Success ?: return
+		val docUri = state.activeTab?.documentUri ?: return
+		viewModelScope.launch(Dispatchers.IO) {
+			config.setDocumentPosition(docUri, pos)
+			config.flush()
+		}
+	}
+
+	private fun speakCurrentSegment() {
+		val state = uiState.value
+		if (state is MainScreenUiState.Success) {
+			val tab = state.activeTab ?: return
+			val segment = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
+			if (segment.text.isNotBlank()) {
+				_ttsPosition.value = segment.startPos
+				_currentSegmentText.value = segment.text
+				saveTtsPositionToConfig(segment.startPos)
+				ttsManager.speak(segment.text)
+			} else {
+				playNextSegment()
+			}
+		}
+	}
+
+	fun playNextSegment() {
+		val state = uiState.value
+		if (state is MainScreenUiState.Success) {
+			val tab = state.activeTab ?: return
+			val segment = tab.session.getTextSegment(_ttsPosition.value, _currentSegmentType.value, SegmentDirectionFfi.NEXT)
+			if (segment.text.isNotBlank()) {
+				_ttsPosition.value = segment.startPos
+				_currentSegmentText.value = segment.text
+				saveTtsPositionToConfig(segment.startPos)
+				ttsManager.speak(segment.text)
+			}
+		}
+	}
+
+	fun playNextContinuousSegment() {
+		val state = uiState.value
+		if (state is MainScreenUiState.Success) {
+			val tab = state.activeTab ?: return
+			val segment =
+				tab.session.getTextSegment(
+					_ttsPosition.value,
+					SegmentTypeFfi.PARAGRAPH,
+					SegmentDirectionFfi.NEXT
+				)
+			if (segment.text.isNotBlank()) {
+				_ttsPosition.value = segment.startPos
+				_currentSegmentText.value = segment.text
+				saveTtsPositionToConfig(segment.startPos)
+				ttsManager.speak(segment.text)
+			}
+		}
+	}
+
+	fun playPrevSegment() {
+		val state = uiState.value
+		if (state is MainScreenUiState.Success) {
+			val tab = state.activeTab ?: return
+			val segment = tab.session.getTextSegment(_ttsPosition.value, _currentSegmentType.value, SegmentDirectionFfi.PREVIOUS)
+			if (segment.text.isNotBlank()) {
+				_ttsPosition.value = segment.startPos
+				_currentSegmentText.value = segment.text
+				saveTtsPositionToConfig(segment.startPos)
+				ttsManager.speak(segment.text)
+			}
+		}
+	}
+
+	fun pauseTts() {
+		ttsManager.stop()
+	}
+
+	fun resumeTts() {
+		speakCurrentSegment()
+	}
+
+	fun updateTtsPosition(pos: Long) {
+		_ttsPosition.value = pos
 	}
 }

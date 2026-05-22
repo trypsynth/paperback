@@ -14,12 +14,17 @@ android {
 		targetSdk = 36
 		versionCode = 1
 		versionName = "1.0"
+		ndk {
+			abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+		}
 	}
 
 	buildTypes {
 		release {
-			isMinifyEnabled = false
+			isMinifyEnabled = true
+			isShrinkResources = true
 			proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+			signingConfig = signingConfigs.getByName("debug")
 		}
 	}
 	compileOptions {
@@ -66,6 +71,7 @@ dependencies {
 	implementation(libs.androidx.compose.ui.tooling.preview)
 	implementation(libs.androidx.compose.material3)
 	implementation(libs.androidx.compose.material.icons.core)
+	implementation(libs.androidx.compose.material.icons.extended)
 	// Tooling
 	debugImplementation(libs.androidx.compose.ui.tooling)
 	// Instrumented tests
