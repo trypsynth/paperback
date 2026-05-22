@@ -1,6 +1,8 @@
 package dev.paperback.mobile.tts
 
 import android.content.Context
+import android.media.AudioFocusRequest
+import android.media.AudioManager
 import android.media.session.MediaSession
 import android.media.session.PlaybackState
 import android.speech.tts.TextToSpeech
@@ -17,6 +19,44 @@ class TtsManager(
 ) : TextToSpeech.OnInitListener {
 	private var tts: TextToSpeech? = null
 	private var mediaSession: MediaSession? = null
+	private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+	private var audioFocusRequest: AudioFocusRequest? = null
+
+	private val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
+		when (focusChange) {
+			AudioManager.AUDIOFOCUS_LOSS,
+			AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
+				onPauseCommand?.invoke()
+			}
+		}
+	}
+
+	private fun requestAudioFocus() {
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+			val request = AudioFocusRequest
+				.Builder(AudioManager.AUDIOFOCUS_GAIN)
+				.setOnAudioFocusChangeListener(audioFocusChangeListener)
+				.build()
+			audioFocusRequest = request
+			audioManager.requestAudioFocus(request)
+		} else {
+			@Suppress("DEPRECATION")
+			audioManager.requestAudioFocus(
+				audioFocusChangeListener,
+				AudioManager.STREAM_MUSIC,
+				AudioManager.AUDIOFOCUS_GAIN
+			)
+		}
+	}
+
+	private fun abandonAudioFocus() {
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+			audioFocusRequest?.let { audioManager.abandonAudioFocusRequest(it) }
+		} else {
+			@Suppress("DEPRECATION")
+			audioManager.abandonAudioFocus(audioFocusChangeListener)
+		}
+	}
 
 	companion object {
 		const val SYSTEM_DEFAULT = "system_default"
@@ -106,6 +146,35 @@ class TtsManager(
 
 	override fun onInit(status: Int) {
 		if (status == TextToSpeech.SUCCESS) {
+			tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+				override fun onStart(utteranceId: String?) {
+					_isSpeaking.value = true
+					updatePlaybackState(true)
+				}
+
+				override fun onDone(utteranceId: String?) {
+					_isSpeaking.value = false
+					updatePlaybackState(false)
+					if (utteranceId == "TTS_CONTENT_ID") {
+						onUtteranceCompleted?.invoke()
+					}
+				}
+
+				@Deprecated("Deprecated in Java")
+				override fun onError(utteranceId: String?) {
+					_isSpeaking.value = false
+					updatePlaybackState(false)
+				}
+
+				override fun onStop(
+					utteranceId: String?,
+					interrupted: Boolean
+				) {
+					_isSpeaking.value = false
+					updatePlaybackState(false)
+				}
+			})
+
 			val langResult = tts?.setLanguage(Locale.getDefault()) ?: TextToSpeech.LANG_NOT_SUPPORTED
 			if (langResult == TextToSpeech.LANG_MISSING_DATA || langResult == TextToSpeech.LANG_NOT_SUPPORTED) {
 				_availableVoices.value = emptyList()
@@ -136,34 +205,6 @@ class TtsManager(
 				}
 			}
 
-			tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-				override fun onStart(utteranceId: String?) {
-					_isSpeaking.value = true
-					updatePlaybackState(true)
-				}
-
-				override fun onDone(utteranceId: String?) {
-					_isSpeaking.value = false
-					updatePlaybackState(false)
-					if (utteranceId == "TTS_CONTENT_ID") {
-						onUtteranceCompleted?.invoke()
-					}
-				}
-
-				@Deprecated("Deprecated in Java")
-				override fun onError(utteranceId: String?) {
-					_isSpeaking.value = false
-					updatePlaybackState(false)
-				}
-
-				override fun onStop(
-					utteranceId: String?,
-					interrupted: Boolean
-				) {
-					_isSpeaking.value = false
-					updatePlaybackState(false)
-				}
-			})
 			_isInitialized.value = true
 		}
 	}
@@ -173,6 +214,9 @@ class TtsManager(
 		isSample: Boolean = false
 	) {
 		if (text.isNotBlank()) {
+			if (!isSample) {
+				requestAudioFocus()
+			}
 			val utteranceId = if (isSample) "TTS_SAMPLE_ID" else "TTS_CONTENT_ID"
 			tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, utteranceId)
 		}
@@ -182,6 +226,7 @@ class TtsManager(
 		tts?.stop()
 		_isSpeaking.value = false
 		updatePlaybackState(false)
+		abandonAudioFocus()
 	}
 
 	fun setSpeechRate(ratePercentage: Int) {
@@ -253,7 +298,8 @@ class TtsManager(
 	fun getCurrentVoice(): Voice? = _currentVoice.value
 
 	fun shutdown() {
-		tts?.stop()
+		stop()
 		tts?.shutdown()
+		mediaSession?.release()
 	}
 }
