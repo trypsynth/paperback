@@ -87,8 +87,6 @@ class MainScreenViewModel(
 	private val _supportedMimeTypes = MutableStateFlow<Array<String>>(arrayOf("*/*"))
 	val supportedMimeTypes: StateFlow<Array<String>> = _supportedMimeTypes
 
-	private var lastSpokenWasContinuous = true
-
 	init {
 		ttsManager.onUtteranceCompleted = {
 			playNextContinuousSegment()
@@ -100,11 +98,11 @@ class MainScreenViewModel(
 
 		viewModelScope.launch(Dispatchers.IO) {
 			config.initialize(context.filesDir.absolutePath + "/config.toml")
-			
+
 			withContext(Dispatchers.Main) {
 				ttsManager.loadConfigAndInit()
 			}
-			
+
 			_supportedMimeTypes.value = buildSupportedMimeTypes()
 
 			val restorePrevious = config.getAppBool("restore_previous_documents", true)
@@ -359,7 +357,7 @@ class MainScreenViewModel(
 		if (currentTabs.isEmpty()) {
 			_uiState.value = MainScreenUiState.Loading
 		}
-		
+
 		val tabState = prepareDocumentTabIO(uri)
 		if (tabState == null) {
 			withContext(Dispatchers.Main) {
@@ -436,7 +434,6 @@ class MainScreenViewModel(
 		if (state is MainScreenUiState.Success) {
 			val tab = state.activeTab ?: return
 			val segment = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
-			lastSpokenWasContinuous = true
 			if (segment.text.isNotBlank()) {
 				_ttsPosition.value = segment.startPos
 				_currentSegmentText.value = segment.text
@@ -452,7 +449,6 @@ class MainScreenViewModel(
 		val state = uiState.value
 		if (state is MainScreenUiState.Success) {
 			val tab = state.activeTab ?: return
-			lastSpokenWasContinuous = false
 			val segment = tab.session.getTextSegment(_ttsPosition.value, _currentSegmentType.value, SegmentDirectionFfi.NEXT)
 			if (segment.text.isNotBlank()) {
 				_ttsPosition.value = segment.startPos
@@ -473,7 +469,6 @@ class MainScreenViewModel(
 					SegmentTypeFfi.PARAGRAPH,
 					SegmentDirectionFfi.NEXT
 				)
-			lastSpokenWasContinuous = true
 			if (segment.text.isNotBlank()) {
 				_ttsPosition.value = segment.startPos
 				_currentSegmentText.value = segment.text
@@ -487,7 +482,6 @@ class MainScreenViewModel(
 		val state = uiState.value
 		if (state is MainScreenUiState.Success) {
 			val tab = state.activeTab ?: return
-			lastSpokenWasContinuous = false
 			val segment = tab.session.getTextSegment(_ttsPosition.value, _currentSegmentType.value, SegmentDirectionFfi.PREVIOUS)
 			if (segment.text.isNotBlank()) {
 				_ttsPosition.value = segment.startPos

@@ -4,44 +4,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import uniffi.paperback.SegmentTypeFfi
-
-private val PauseIcon: ImageVector
-	get() = ImageVector
-		.Builder(
-			name = "Pause",
-			defaultWidth = 24.dp,
-			defaultHeight = 24.dp,
-			viewportWidth = 24f,
-			viewportHeight = 24f
-		).apply {
-			path(fill = SolidColor(Color.Black)) {
-				moveTo(6f, 19f)
-				horizontalLineToRelative(4f)
-				verticalLineTo(5f)
-				horizontalLineTo(6f)
-				verticalLineToRelative(14f)
-				close()
-				moveTo(14f, 5f)
-				verticalLineToRelative(14f)
-				horizontalLineToRelative(4f)
-				verticalLineTo(5f)
-				horizontalLineToRelative(-4f)
-				close()
-			}
-		}.build()
 
 fun getSegmentTypeName(type: SegmentTypeFfi): String =
 	when (type) {
@@ -82,7 +54,7 @@ fun TtsBottomBar(
 			IconButton(onClick = onPlayPause) {
 				if (isSpeaking) {
 					Icon(
-						imageVector = PauseIcon,
+						imageVector = Icons.Filled.Pause,
 						contentDescription = "Pause"
 					)
 				} else {
@@ -118,7 +90,7 @@ fun TtsBottomBar(
 					expanded = dropdownExpanded,
 					onDismissRequest = { dropdownExpanded = false }
 				) {
-					SegmentTypeFfi.values().forEach { type ->
+					SegmentTypeFfi.entries.forEach { type ->
 						DropdownMenuItem(
 							text = { Text(getSegmentTypeName(type)) },
 							onClick = {
