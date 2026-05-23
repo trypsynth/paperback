@@ -86,6 +86,23 @@ class MainActivity : ComponentActivity() {
 		setIntent(intent)
 	}
 
+	override fun onDestroy() {
+		super.onDestroy()
+		headsethookHandler.removeCallbacks(headsethookRunnable)
+	}
+
+	private var headsethookClickCount = 0
+	private val headsethookHandler = android.os.Handler(android.os.Looper.getMainLooper())
+	private val headsethookRunnable = Runnable {
+		val vm = ViewModelProvider(this)[MainScreenViewModel::class.java]
+		when (headsethookClickCount) {
+			1 -> vm.togglePlayPause()
+			2 -> vm.playNextSegment()
+			3 -> vm.playPrevSegment()
+		}
+		headsethookClickCount = 0
+	}
+
 	override fun dispatchKeyEvent(event: KeyEvent): Boolean {
 		if (event.action != KeyEvent.ACTION_DOWN) return super.dispatchKeyEvent(event)
 		// Don't intercept when a text field has focus (e.g. Find or Go-To dialogs).
@@ -93,7 +110,12 @@ class MainActivity : ComponentActivity() {
 		val vm = ViewModelProvider(this)[MainScreenViewModel::class.java]
 		val dir = if (event.isShiftPressed) SegmentDirectionFfi.PREVIOUS else SegmentDirectionFfi.NEXT
 		return when (event.keyCode) {
-			KeyEvent.KEYCODE_HEADSETHOOK,
+			KeyEvent.KEYCODE_HEADSETHOOK -> {
+				headsethookClickCount++
+				headsethookHandler.removeCallbacks(headsethookRunnable)
+				headsethookHandler.postDelayed(headsethookRunnable, 300)
+				true
+			}
 			KeyEvent.KEYCODE_SPACE -> { vm.togglePlayPause(); true }
 			// Sections: [ = previous, ] = next (no shift needed, matching desktop)
 			KeyEvent.KEYCODE_LEFT_BRACKET -> { vm.navigateByType(SegmentTypeFfi.SECTION, SegmentDirectionFfi.PREVIOUS); true }

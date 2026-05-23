@@ -30,7 +30,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import uniffi.paperback.LinkActionFfi
+import uniffi.paperback.LinkAction
 import uniffi.paperback.MarkerTypeFfi
 import uniffi.paperback.SearchOptionsFfi
 
@@ -103,11 +103,11 @@ fun DocumentTextView(
 										val result = docState.session.activateLinkFfi(marker.position)
 										if (result.found) {
 											when (result.action) {
-												LinkActionFfi.EXTERNAL -> {
+												LinkAction.EXTERNAL -> {
 													val intent = Intent(Intent.ACTION_VIEW, Uri.parse(result.url))
 													context.startActivity(intent)
 												}
-												LinkActionFfi.INTERNAL -> {
+												LinkAction.INTERNAL -> {
 													val targetLine = docState.session.lineFromPosition(result.offset)
 													val targetIndex = (targetLine - 1).toInt().coerceAtLeast(0)
 													scope.launch {
