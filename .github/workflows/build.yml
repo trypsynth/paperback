@@ -130,13 +130,17 @@ jobs:
         cd android
         chmod +x gradlew
         ./gradlew assembleRelease
-    - name: Copy APK
-      run: cp android/app/build/outputs/apk/release/app-release.apk paperback-android.apk
-    - name: Upload APK artifact
+    - name: Copy APKs
+      run: |
+        cp android/app/build/outputs/apk/release/app-arm64-v8a-release.apk paperback-android-arm64.apk
+        cp android/app/build/outputs/apk/release/app-armeabi-v7a-release.apk paperback-android-arm.apk
+    - name: Upload APK artifacts
       uses: actions/upload-artifact@v4
       with:
         name: paperback-android
-        path: paperback-android.apk
+        path: |
+          paperback-android-arm64.apk
+          paperback-android-arm.apk
         retention-days: 30
 
   release:
@@ -197,7 +201,8 @@ jobs:
           windows-build/paperback_setup.exe
           windows-build/paperback_setup.exe.minisig
           linux-build/paperback.flatpak
-          android-build/paperback-android.apk
+          android-build/paperback-android-arm64.apk
+          android-build/paperback-android-arm.apk
         prerelease: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
