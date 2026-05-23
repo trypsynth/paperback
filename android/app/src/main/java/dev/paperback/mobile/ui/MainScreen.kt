@@ -17,7 +17,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -309,31 +308,10 @@ fun MainScreen(
 						}
 
 						if (!isTextMode) {
-							Column(
-								modifier = Modifier.fillMaxSize().padding(16.dp).semantics { isTraversalGroup = true },
-								horizontalAlignment = Alignment.CenterHorizontally,
-								verticalArrangement = Arrangement.Center
+							Box(
+								modifier = Modifier.fillMaxSize().padding(16.dp),
+								contentAlignment = Alignment.Center
 							) {
-								val stats = remember(ttsPosition) { docState.session.getStatusInfoFfi(ttsPosition) }
-								var isDragging by remember { mutableStateOf(false) }
-								var sliderValue by remember { mutableFloatStateOf(stats.percentage.toFloat()) }
-								LaunchedEffect(ttsPosition) {
-									if (!isDragging) sliderValue = stats.percentage.toFloat()
-								}
-								Slider(
-									value = sliderValue,
-									onValueChange = { isDragging = true; sliderValue = it },
-									onValueChangeFinished = {
-										isDragging = false
-										viewModel.seekToPercent(sliderValue.toInt())
-									},
-									valueRange = 0f..100f,
-									modifier = Modifier.fillMaxWidth().semantics {
-										stateDescription = "${stats.percentage}%"
-									}
-								)
-								Text("${stats.percentage}%", style = MaterialTheme.typography.labelMedium)
-								Spacer(modifier = Modifier.height(24.dp))
 								Text(
 									text = currentSegmentText,
 									style = MaterialTheme.typography.bodyLarge,
