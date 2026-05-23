@@ -31,6 +31,10 @@ fn print_help() {
 	println!("Tasks:");
 	println!("	release	Build release binaries and package them");
 	println!("	android	Generate Kotlin bindings and build native Android libraries");
+	println!("		--release          Build APK using gradlew assembleRelease");
+	println!("		--debug            Build APK using gradlew assembleDebug");
+	println!("		--install-release  Install release APK using gradlew installRelease");
+	println!("		--install-debug    Install debug APK using gradlew installDebug");
 }
 
 fn release() -> Result<(), Box<dyn Error>> {
@@ -58,6 +62,22 @@ fn release() -> Result<(), Box<dyn Error>> {
 }
 
 fn android() -> Result<(), Box<dyn Error>> {
+	let args = env::args().skip(2);
+	let mut gradle_tasks = Vec::new();
+
+	for arg in args {
+		match arg.as_str() {
+			"--release" => gradle_tasks.push("assembleRelease"),
+			"--debug" => gradle_tasks.push("assembleDebug"),
+			"--installrelease" | "--install-release" => gradle_tasks.push("installRelease"),
+			"--installdebug" | "--install-debug" => gradle_tasks.push("installDebug"),
+			_ => {
+				print_help();
+				return Err(format!("Unknown argument for android: {}", arg).into());
+			}
+		}
+	}
+
 	let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
 	let jni_libs = project_root().join("android/app/src/main/jniLibs");
 	download_pdfium_so(PDFIUM_ANDROID_ARM64_URL, &jni_libs.join("arm64-v8a/libpdfium.so"))?;
@@ -103,7 +123,28 @@ fn android() -> Result<(), Box<dyn Error>> {
 	if !status.success() {
 		return Err("cargo ndk build failed".into());
 	}
-	println!("Android native build complete. Open android/ in Android Studio to build the APK.");
+	println!("Android native build complete.");
+
+	if !gradle_tasks.is_empty() {
+		println!("Running gradlew with tasks: {:?}", gradle_tasks);
+		let android_dir = project_root().join("android");
+		let mut cmd = if cfg!(windows) {
+			let mut c = Command::new("cmd");
+			c.arg("/C").arg("gradlew.bat");
+			c
+		} else {
+			Command::new("./gradlew")
+		};
+		cmd.current_dir(&android_dir).args(&gradle_tasks);
+		let status = cmd.status()?;
+		if !status.success() {
+			return Err("gradlew failed".into());
+		}
+		println!("Gradle tasks complete.");
+	} else {
+		println!("Open android/ in Android Studio to build the APK.");
+	}
+
 	Ok(())
 }
 

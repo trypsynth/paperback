@@ -115,8 +115,6 @@ jobs:
       run: cargo install cargo-ndk
     - name: Cache Rust dependencies
       uses: Swatinem/rust-cache@v2
-    - name: Build Android native libraries and bindings
-      run: cargo android
     - name: Cache Gradle packages
       uses: actions/cache@v4
       with:
@@ -125,11 +123,10 @@ jobs:
           ~/.gradle/wrapper
         key: gradle-${{ hashFiles('android/**/*.gradle.kts', 'android/gradle/wrapper/gradle-wrapper.properties') }}
         restore-keys: gradle-
-    - name: Build APK
+    - name: Build Android native libraries, bindings, and APK
       run: |
-        cd android
-        chmod +x gradlew
-        ./gradlew assembleRelease
+        chmod +x android/gradlew
+        cargo android --release
     - name: Copy APKs
       run: |
         cp android/app/build/outputs/apk/release/app-arm64-v8a-release.apk paperback-android-arm64.apk
