@@ -503,4 +503,12 @@ class MainScreenViewModel(
 	fun updateTtsPosition(pos: Long) {
 		_ttsPosition.value = pos
 	}
+
+	fun seekToPercent(percent: Int) {
+		val state = uiState.value as? MainScreenUiState.Success ?: return
+		val tab = state.activeTab ?: return
+		val pos = tab.session.positionFromPercentFfi(percent)
+		_ttsPosition.value = pos
+		saveTtsPositionToConfig(pos)
+	}
 }

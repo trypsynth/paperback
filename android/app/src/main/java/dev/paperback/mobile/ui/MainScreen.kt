@@ -63,7 +63,6 @@ fun MainScreen(
 	var moreOptionsExpanded by remember { mutableStateOf(false) }
 	var wordCountDialogOpen by remember { mutableStateOf(false) }
 	var documentInfoDialogOpen by remember { mutableStateOf(false) }
-	var goToDialogOpen by remember { mutableStateOf(false) }
 	var findDialogOpen by remember { mutableStateOf(false) }
 	var optionsDialogOpen by remember { mutableStateOf(false) }
 	var lineIndexToFocus by remember { mutableStateOf<Int?>(null) }
@@ -213,12 +212,6 @@ fun MainScreen(
 											}
 										)
 										add(
-											CustomAccessibilityAction("Go To") {
-												goToDialogOpen = true
-												true
-											}
-										)
-										add(
 											CustomAccessibilityAction("Find") {
 												findDialogOpen = true
 												true
@@ -272,13 +265,6 @@ fun MainScreen(
 									onClick = {
 										moreOptionsExpanded = false
 										recentsDialogOpen = true
-									}
-								)
-								DropdownMenuItem(
-									text = { Text("Go To") },
-									onClick = {
-										moreOptionsExpanded = false
-										goToDialogOpen = true
 									}
 								)
 								DropdownMenuItem(
@@ -527,10 +513,25 @@ fun MainScreen(
 								horizontalAlignment = Alignment.CenterHorizontally,
 								verticalArrangement = Arrangement.Center
 							) {
-								Text(docState.title, style = MaterialTheme.typography.titleLarge)
-								Spacer(modifier = Modifier.height(16.dp))
 								val stats = remember(ttsPosition) { docState.session.getStatusInfoFfi(ttsPosition) }
-								Text("Position: ${stats.percentage}%")
+								var isDragging by remember { mutableStateOf(false) }
+								var sliderValue by remember { mutableFloatStateOf(stats.percentage.toFloat()) }
+								LaunchedEffect(ttsPosition) {
+									if (!isDragging) sliderValue = stats.percentage.toFloat()
+								}
+								Slider(
+									value = sliderValue,
+									onValueChange = { isDragging = true; sliderValue = it },
+									onValueChangeFinished = {
+										isDragging = false
+										viewModel.seekToPercent(sliderValue.toInt())
+									},
+									valueRange = 0f..100f,
+									modifier = Modifier.fillMaxWidth().semantics {
+										stateDescription = "${stats.percentage}%"
+									}
+								)
+								Text("${stats.percentage}%", style = MaterialTheme.typography.labelMedium)
 								Spacer(modifier = Modifier.height(24.dp))
 								Text(
 									text = currentSegmentText,
@@ -758,19 +759,6 @@ fun MainScreen(
 									}
 								},
 								onDismiss = { tocSheetOpen = false }
-							)
-						}
-
-						if (goToDialogOpen) {
-							GoToDialog(
-								docState = docState,
-								onDismiss = { goToDialogOpen = false },
-								onGoTo = { indexToScroll ->
-									scope.launch {
-										listState.scrollToItem(indexToScroll)
-										lineIndexToFocus = indexToScroll
-									}
-								}
 							)
 						}
 
