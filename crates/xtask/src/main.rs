@@ -96,7 +96,7 @@ fn android() -> Result<(), Box<dyn Error>> {
 			"--language",
 			"kotlin",
 			"--out-dir",
-			"android/app/src/main/java",
+			"android/app/src/main/kotlin",
 			"--no-format",
 		])
 		.status()?;
