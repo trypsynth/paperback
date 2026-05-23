@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-zip = { version = "8.6.0", default-features = false, features = ["deflate"] }
-walkdir = "2.5.0"
-ureq = "3"
 flate2 = "1"
 tar = "0.4"
+ureq = "3"
+walkdir = "2.5.0"
+zip = { version = "8.6.0", default-features = false, features = ["deflate"] }

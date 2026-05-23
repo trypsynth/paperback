@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/paperback-core", "crates/paperback", "crates/pb", "crates/xtask"]
+members = ["crates/paperback", "crates/paperback-core", "crates/pb", "crates/xtask"]
 resolver = "2"
 
 [workspace.package]
@@ -13,8 +13,8 @@ repository = "https://github.com/trypsynth/paperback"
 [workspace.dependencies]
 anyhow = "1.0.102"
 base64 = "0.22.1"
-toml = "1.1"
 rstest = "0.26.1"
+toml = "1.1"
 
 [profile.release]
 strip = true
