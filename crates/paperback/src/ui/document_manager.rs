@@ -247,6 +247,9 @@ impl DocumentManager {
 	pub fn save_all_positions(&self) {
 		let config = self.config.lock().unwrap();
 		for tab in &self.tabs {
+			if !tab.track {
+				continue;
+			}
 			let position = tab.text_ctrl.get_insertion_point();
 			let path_str = tab.file_path.to_string_lossy();
 			config.set_document_position(&path_str, position);
@@ -264,11 +267,13 @@ impl DocumentManager {
 			}
 		}
 		if let Some(tab) = self.active_tab() {
-			let position = tab.text_ctrl.get_insertion_point();
-			let path_str = tab.file_path.to_string_lossy();
-			let config = self.config.lock().unwrap();
-			config.set_document_position(&path_str, position);
-			config.flush();
+			if tab.track {
+				let position = tab.text_ctrl.get_insertion_point();
+				let path_str = tab.file_path.to_string_lossy();
+				let config = self.config.lock().unwrap();
+				config.set_document_position(&path_str, position);
+				config.flush();
+			}
 		}
 		self.last_position_save.set(Some(now));
 	}

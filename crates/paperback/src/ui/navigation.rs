@@ -210,10 +210,14 @@ pub fn handle_history_navigation(
 			tab.text_ctrl.set_insertion_point(result.offset);
 			tab.text_ctrl.show_position(result.offset);
 			tab.session.set_stable_position(result.offset);
-			let (history, history_index) = tab.session.get_history();
-			let history = history.to_vec();
-			let path_str = tab.file_path.to_string_lossy().to_string();
-			(message, Some((path_str, history, history_index)))
+			let history_update = if tab.track {
+				let (history, history_index) = tab.session.get_history();
+				let path_str = tab.file_path.to_string_lossy().to_string();
+				Some((path_str, history.to_vec(), history_index))
+			} else {
+				None
+			};
+			(message, history_update)
 		} else {
 			let message = if forward { t("No next position.") } else { t("No previous position.") };
 			(message, None)
@@ -256,10 +260,13 @@ pub fn handle_marker_navigation(
 		let target_offset = result.offset;
 		if apply_navigation_result(tab, &result, target, next, live_region_label) {
 			tab.session.check_and_record_history(target_offset);
-			let (history, history_index) = tab.session.get_history();
-			let history = history.to_vec();
-			let path_str = tab.file_path.to_string_lossy().to_string();
-			Some((path_str, history, history_index))
+			if tab.track {
+				let (history, history_index) = tab.session.get_history();
+				let path_str = tab.file_path.to_string_lossy().to_string();
+				Some((path_str, history.to_vec(), history_index))
+			} else {
+				None
+			}
 		} else {
 			None
 		}
@@ -333,9 +340,13 @@ pub fn handle_bookmark_navigation(
 				1,
 			);
 			let message = format!("{wrap_prefix}{bookmark_text}");
-			let (history, history_index) = tab.session.get_history();
-			let history = history.to_vec();
-			(message, Some((path_str, history, history_index)))
+			let history_update = if tab.track {
+				let (history, history_index) = tab.session.get_history();
+				Some((path_str, history.to_vec(), history_index))
+			} else {
+				None
+			};
+			(message, history_update)
 		} else {
 			let message = if !has_items {
 				if notes_only { t("No notes.") } else { t("No bookmarks.") }
@@ -391,10 +402,14 @@ pub fn handle_bookmark_dialog(
 		} else {
 			t("Bookmark.")
 		};
-		let (history, history_index) = tab.session.get_history();
-		let history = history.to_vec();
-		let path_str = tab.file_path.to_string_lossy().to_string();
-		(message, Some((path_str, history, history_index)))
+		let history_update = if tab.track {
+			let (history, history_index) = tab.session.get_history();
+			let path_str = tab.file_path.to_string_lossy().to_string();
+			Some((path_str, history.to_vec(), history_index))
+		} else {
+			None
+		};
+		(message, history_update)
 	};
 	drop(dm);
 	live_region::announce(live_region_label, &message);
