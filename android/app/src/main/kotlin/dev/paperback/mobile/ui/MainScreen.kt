@@ -21,9 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
-import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -147,73 +145,19 @@ fun MainScreen(
 			)
 		},
 		bottomBar = {
-			if (activeSearchQuery != null && activeSearchOptions != null && !isTouchExplorationEnabled) {
-				BottomAppBar(
-					modifier = Modifier.semantics { isTraversalGroup = true },
-					contentPadding = PaddingValues(horizontal = 16.dp)
-				) {
-					Row(
-						modifier = Modifier.fillMaxWidth(),
-						horizontalArrangement = Arrangement.SpaceBetween,
-						verticalAlignment = Alignment.CenterVertically
-					) {
-						IconButton(
-							onClick = {
-								activeSearchQuery = null
-								activeSearchOptions = null
-							},
-							modifier = Modifier.semantics { contentDescription = "Close Search" }
-						) {
-							Text("X", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
-						}
-						Row {
-							Button(
-								onClick = {
-									val docState = (state as? MainScreenUiState.Success)?.activeTab
-									val currentListState = docState?.let { listStates[it.documentUri] }
-									if (docState != null && currentListState != null) {
-										val currentIdx = currentListState.firstVisibleItemIndex
-										val pos = docState.session.positionFromLine((currentIdx + 1).toLong())
-										val res = docState.session.searchFfi(activeSearchQuery!!, pos, activeSearchOptions!!.copy(forward = false))
-										if (res.found) {
-											val targetLine = docState.session.lineFromPosition(res.position)
-											val targetIndex = (targetLine - 1).toInt().coerceAtLeast(0)
-											scope.launch {
-												currentListState.scrollToItem(targetIndex)
-												lineIndexToFocus = targetIndex
-											}
-										}
-									}
-								}
-							) {
-								Text("Find Previous")
-							}
-							Spacer(modifier = Modifier.width(8.dp))
-							Button(
-								onClick = {
-									val docState = (state as? MainScreenUiState.Success)?.activeTab
-									val currentListState = docState?.let { listStates[it.documentUri] }
-									if (docState != null && currentListState != null) {
-										val currentIdx = currentListState.firstVisibleItemIndex
-										val nextLine = (currentIdx + 2).toLong().coerceAtMost(docState.lineCount)
-										val pos = docState.session.positionFromLine(nextLine)
-										val res = docState.session.searchFfi(activeSearchQuery!!, pos, activeSearchOptions!!.copy(forward = true))
-										if (res.found) {
-											val targetLine = docState.session.lineFromPosition(res.position)
-											val targetIndex = (targetLine - 1).toInt().coerceAtLeast(0)
-											scope.launch {
-												currentListState.scrollToItem(targetIndex)
-												lineIndexToFocus = targetIndex
-											}
-										}
-									}
-								}
-							) {
-								Text("Find Next")
-							}
-						}
-					}
-				}
+			val searchDocState = if (activeSearchQuery != null && activeSearchOptions != null && !isTouchExplorationEnabled) {
+				(state as? MainScreenUiState.Success)?.activeTab
+			} else null
+			val searchListState = searchDocState?.let { listStates[it.documentUri] }
+			if (searchDocState != null && searchListState != null) {
+				SearchBottomBar(
+					docState = searchDocState,
+					listState = searchListState,
+					activeSearchQuery = activeSearchQuery!!,
+					activeSearchOptions = activeSearchOptions!!,
+					onClose = { activeSearchQuery = null; activeSearchOptions = null },
+					onNavigate = { lineIndexToFocus = it }
+				)
 			} else if (!isTextMode &&
 				state is MainScreenUiState.Success &&
 				(state as MainScreenUiState.Success).activeTab != null

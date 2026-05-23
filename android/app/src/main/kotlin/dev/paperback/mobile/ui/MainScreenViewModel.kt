@@ -21,48 +21,9 @@ import uniffi.paperback.ConfigManagerFfi
 import uniffi.paperback.DocumentSession
 import uniffi.paperback.SegmentDirectionFfi
 import uniffi.paperback.SegmentTypeFfi
-import uniffi.paperback.TocEntry
 import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
-
-data class DocumentTabState(
-	val session: DocumentSession,
-	val title: String,
-	val author: String,
-	val fileName: String,
-	val lineCount: Long,
-	val toc: List<TocEntry>,
-	val documentUri: String,
-	val docKey: String,
-	val initialScrollIndex: Int = 0,
-	val savedPosition: Long = 0L
-)
-
-data class RecentDocumentItem(
-	val uri: String,
-	val displayName: String,
-	val isOpen: Boolean,
-	val isMissing: Boolean = false
-)
-
-sealed class MainScreenUiState {
-	object Idle : MainScreenUiState()
-
-	object Loading : MainScreenUiState()
-
-	data class Success(
-		val tabs: List<DocumentTabState>,
-		val activeTabIndex: Int,
-		val recentDocuments: List<RecentDocumentItem> = emptyList()
-	) : MainScreenUiState() {
-		val activeTab: DocumentTabState? get() = tabs.getOrNull(activeTabIndex)
-	}
-
-	data class Error(
-		val message: String
-	) : MainScreenUiState()
-}
 
 class MainScreenViewModel(
 	application: Application
