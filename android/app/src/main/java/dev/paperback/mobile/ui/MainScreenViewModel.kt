@@ -9,7 +9,11 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import dev.paperback.mobile.tts.TtsManager
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -77,6 +81,14 @@ class MainScreenViewModel(
 
 	private val _currentSegmentText = MutableStateFlow("")
 	val currentSegmentText: StateFlow<String> = _currentSegmentText
+
+	private val _sleepTimerRemaining = MutableStateFlow<Int?>(null)
+	val sleepTimerRemaining: StateFlow<Int?> = _sleepTimerRemaining
+
+	private val _sleepTimerExpired = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+	val sleepTimerExpired: SharedFlow<Unit> = _sleepTimerExpired
+
+	private var sleepTimerJob: Job? = null
 
 	private val _uiState = MutableStateFlow<MainScreenUiState>(MainScreenUiState.Idle)
 	val uiState: StateFlow<MainScreenUiState> = _uiState
@@ -517,6 +529,28 @@ class MainScreenViewModel(
 
 	fun pauseTts() {
 		ttsManager.stop()
+	}
+
+	fun setSleepTimer(minutes: Int) {
+		sleepTimerJob?.cancel()
+		sleepTimerJob = viewModelScope.launch {
+			var remaining = minutes * 60
+			_sleepTimerRemaining.value = remaining
+			while (remaining > 0) {
+				delay(1000)
+				remaining--
+				_sleepTimerRemaining.value = remaining
+			}
+			_sleepTimerRemaining.value = null
+			pauseTts()
+			_sleepTimerExpired.emit(Unit)
+		}
+	}
+
+	fun cancelSleepTimer() {
+		sleepTimerJob?.cancel()
+		sleepTimerJob = null
+		_sleepTimerRemaining.value = null
 	}
 
 	fun resumeTts() {

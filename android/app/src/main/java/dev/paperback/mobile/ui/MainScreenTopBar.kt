@@ -35,7 +35,8 @@ fun MainScreenTopBar(
 	onFindOpen: () -> Unit,
 	onWordCountOpen: () -> Unit,
 	onDocumentInfoOpen: () -> Unit,
-	onSettingsOpen: () -> Unit
+	onSettingsOpen: () -> Unit,
+	onSleepTimerOpen: () -> Unit
 ) {
 	var moreOptionsExpanded by remember { mutableStateOf(false) }
 
@@ -133,6 +134,12 @@ fun MainScreenTopBar(
 										true
 									}
 								)
+								add(
+									CustomAccessibilityAction("Sleep Timer") {
+										onSleepTimerOpen()
+										true
+									}
+								)
 							}
 						}
 					) {
@@ -198,6 +205,13 @@ fun MainScreenTopBar(
 							onClick = {
 								moreOptionsExpanded = false
 								onSettingsOpen()
+							}
+						)
+						DropdownMenuItem(
+							text = { Text("Sleep Timer") },
+							onClick = {
+								moreOptionsExpanded = false
+								onSleepTimerOpen()
 							}
 						)
 					}

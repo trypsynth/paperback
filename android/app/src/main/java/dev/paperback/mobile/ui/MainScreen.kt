@@ -6,6 +6,8 @@ import android.net.Uri
 import android.view.accessibility.AccessibilityManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -13,6 +15,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.isTraversalGroup
@@ -45,6 +49,8 @@ fun MainScreen(
 	var goToDialogOpen by remember { mutableStateOf(false) }
 	var findDialogOpen by remember { mutableStateOf(false) }
 	var optionsDialogOpen by remember { mutableStateOf(false) }
+	var sleepTimerDialogOpen by remember { mutableStateOf(false) }
+	var isScreenDimmed by remember { mutableStateOf(false) }
 	var lineIndexToFocus by remember { mutableStateOf<Int?>(null) }
 
 	var restorePreviousDocuments by remember {
@@ -66,6 +72,13 @@ fun MainScreen(
 	val currentVoice by viewModel.ttsManager.currentVoice.collectAsStateWithLifecycle()
 	val currentEngineName by viewModel.ttsManager.currentEngineName.collectAsStateWithLifecycle()
 	var ttsConfigDialogOpen by remember { mutableStateOf(false) }
+	val sleepTimerRemaining by viewModel.sleepTimerRemaining.collectAsStateWithLifecycle()
+
+	LaunchedEffect(Unit) {
+		viewModel.sleepTimerExpired.collect {
+			isScreenDimmed = true
+		}
+	}
 
 	val context = LocalContext.current
 
@@ -121,6 +134,7 @@ fun MainScreen(
 		}
 	}
 
+	Box(modifier = Modifier.fillMaxSize()) {
 	Scaffold(
 		topBar = {
 			MainScreenTopBar(
@@ -138,7 +152,8 @@ fun MainScreen(
 				onFindOpen = { findDialogOpen = true },
 				onWordCountOpen = { wordCountDialogOpen = true },
 				onDocumentInfoOpen = { documentInfoDialogOpen = true },
-				onSettingsOpen = { optionsDialogOpen = true }
+				onSettingsOpen = { optionsDialogOpen = true },
+				onSleepTimerOpen = { sleepTimerDialogOpen = true }
 			)
 		},
 		bottomBar = {
@@ -308,15 +323,26 @@ fun MainScreen(
 						}
 
 						if (!isTextMode) {
-							Box(
+							Column(
 								modifier = Modifier.fillMaxSize().padding(16.dp),
-								contentAlignment = Alignment.Center
+								horizontalAlignment = Alignment.CenterHorizontally,
+								verticalArrangement = Arrangement.Center
 							) {
 								Text(
 									text = currentSegmentText,
 									style = MaterialTheme.typography.bodyLarge,
 									modifier = Modifier.padding(16.dp)
 								)
+								val remaining = sleepTimerRemaining
+								if (remaining != null) {
+									val min = remaining / 60
+									val sec = remaining % 60
+									Text(
+										"Sleep timer: %d:%02d".format(min, sec),
+										style = MaterialTheme.typography.labelMedium,
+										color = MaterialTheme.colorScheme.onSurfaceVariant
+									)
+								}
 							}
 						} else {
 							DocumentTextView(
@@ -440,6 +466,15 @@ fun MainScreen(
 						)
 					}
 
+					if (sleepTimerDialogOpen) {
+						SleepTimerDialog(
+							remainingSeconds = sleepTimerRemaining,
+							onSetTimer = { viewModel.setSleepTimer(it) },
+							onCancelTimer = { viewModel.cancelSleepTimer() },
+							onDismiss = { sleepTimerDialogOpen = false }
+						)
+					}
+
 					if (ttsConfigDialogOpen) {
 						TtsConfigDialog(
 							engines = viewModel.ttsManager.getAvailableEngines(),
@@ -467,4 +502,15 @@ fun MainScreen(
 			}
 		}
 	}
+
+	if (isScreenDimmed) {
+		Box(
+			modifier = Modifier
+				.fillMaxSize()
+				.background(Color.Black)
+				.pointerInput(Unit) { detectTapGestures { isScreenDimmed = false } }
+				.semantics { contentDescription = "Screen dimmed by sleep timer. Tap to wake." }
+		)
+	}
+	} // end outer Box
 }
