@@ -26,13 +26,13 @@ dictionary LineMarker {
 	i64 length;
 };
 
-enum LinkActionFfi {
+enum LinkAction {
 	"Internal", "External", "NotFound"
 };
 
-dictionary LinkActivationResultFfi {
+dictionary LinkActivationResult {
 	boolean found;
-	LinkActionFfi action;
+	LinkAction action;
 	i64 offset;
 	string url;
 };
@@ -93,7 +93,7 @@ interface DocumentSession {
 	i64 position_from_line(i64 line);
 	i64 line_from_position(i64 position);
 	sequence<LineMarker> get_line_markers(i64 line);
-	LinkActivationResultFfi activate_link_ffi(i64 position);
+	LinkActivationResult activate_link_ffi(i64 position);
 	TextSegmentFfi get_text_segment(i64 position, SegmentTypeFfi segment_type, SegmentDirectionFfi direction);
 
 	StatusInfoFfi get_status_info_ffi(i64 position);

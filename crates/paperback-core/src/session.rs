@@ -111,31 +111,6 @@ pub enum LinkAction {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub enum LinkActionFfi {
-	Internal,
-	External,
-	NotFound,
-}
-
-impl From<LinkAction> for LinkActionFfi {
-	fn from(a: LinkAction) -> Self {
-		match a {
-			LinkAction::Internal => Self::Internal,
-			LinkAction::External => Self::External,
-			LinkAction::NotFound => Self::NotFound,
-		}
-	}
-}
-
-#[derive(Debug, Clone)]
-pub struct LinkActivationResultFfi {
-	pub found: bool,
-	pub action: LinkActionFfi,
-	pub offset: i64,
-	pub url: String,
-}
-
-#[derive(Debug, Clone, Copy)]
 pub enum SegmentTypeFfi {
 	Paragraph,
 	Line,
@@ -700,9 +675,8 @@ impl DocumentSession {
 	}
 
 	#[must_use]
-	pub fn activate_link_ffi(&self, position: i64) -> LinkActivationResultFfi {
-		let res = self.activate_link(position);
-		LinkActivationResultFfi { found: res.found, action: res.action.into(), offset: res.offset, url: res.url }
+	pub fn activate_link_ffi(&self, position: i64) -> LinkActivationResult {
+		self.activate_link(position)
 	}
 
 	#[must_use]
