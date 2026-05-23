@@ -13,12 +13,21 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.customActions
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.onLongClick
+import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.setProgress
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
+import kotlin.math.roundToInt
 import uniffi.paperback.SegmentTypeFfi
+
+private const val SEEK_RANGE = 10000
 
 fun getSegmentTypeName(type: SegmentTypeFfi): String =
 	when (type) {
@@ -46,84 +55,105 @@ fun TtsBottomBar(
 	modifier: Modifier = Modifier
 ) {
 	var dropdownExpanded by remember { mutableStateOf(false) }
+	val types = SegmentTypeFfi.entries
+	val segmentTypeName = getSegmentTypeName(currentSegmentType)
+	val currentTypeIndex = types.indexOf(currentSegmentType)
+
 	BottomAppBar(
 		modifier = modifier,
 		actions = {
-			val segmentTypeName = getSegmentTypeName(currentSegmentType)
-			IconButton(
-				onClick = onPrev,
-				modifier = Modifier.semantics {
-					customActions = SegmentTypeFfi.entries
-						.filter { it != currentSegmentType }
-						.map { type ->
-							CustomAccessibilityAction(getSegmentTypeName(type)) {
-								onSegmentTypeChange(type)
-								true
-							}
+			// Unit selector: swipe up/down to cycle through navigation units with wrap-around.
+			var unitSeekPosition by remember { mutableIntStateOf(SEEK_RANGE / 2) }
+			Box(
+				modifier = Modifier.clearAndSetSemantics {
+					contentDescription = "Navigation unit"
+					stateDescription = segmentTypeName
+					progressBarRangeInfo = ProgressBarRangeInfo(
+						current = unitSeekPosition.toFloat(),
+						range = 0f..SEEK_RANGE.toFloat(),
+						steps = SEEK_RANGE - 1,
+					)
+					setProgress { targetValue ->
+						val newPos = targetValue.roundToInt().coerceIn(0, SEEK_RANGE)
+						when {
+							newPos > unitSeekPosition -> onSegmentTypeChange(
+								types[(currentTypeIndex + 1) % types.size]
+							)
+							newPos < unitSeekPosition -> onSegmentTypeChange(
+								types[(currentTypeIndex - 1 + types.size) % types.size]
+							)
 						}
-				}
+						unitSeekPosition = newPos
+						true
+					}
+				},
+				contentAlignment = Alignment.Center,
 			) {
+				Text(text = segmentTypeName)
+			}
+
+			IconButton(onClick = onPrev) {
 				Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous $segmentTypeName")
 			}
+
+			// Play/pause: double-tap to play/pause, swipe up/down to seek by the current unit.
 			Box {
+				var seekPosition by remember { mutableIntStateOf(SEEK_RANGE / 2) }
 				Box(
 					modifier = Modifier
 						.size(48.dp)
 						.clip(CircleShape)
 						.combinedClickable(
-							role = Role.Button,
-							onLongClickLabel = "Select segment type",
+							onClick = onPlayPause,
 							onLongClick = { dropdownExpanded = true },
-							onClick = onPlayPause
 						)
-						.semantics {
-							customActions = SegmentTypeFfi.entries
-								.filter { it != currentSegmentType }
-								.map { type ->
-									CustomAccessibilityAction(getSegmentTypeName(type)) {
-										onSegmentTypeChange(type)
-										true
-									}
+						.clearAndSetSemantics {
+							role = Role.Button
+							contentDescription = if (isSpeaking) "Pause" else "Play"
+							progressBarRangeInfo = ProgressBarRangeInfo(
+								current = seekPosition.toFloat(),
+								range = 0f..SEEK_RANGE.toFloat(),
+								steps = SEEK_RANGE - 1,
+							)
+							setProgress { targetValue ->
+								val newPos = targetValue.roundToInt().coerceIn(0, SEEK_RANGE)
+								when {
+									newPos > seekPosition -> onNext()
+									newPos < seekPosition -> onPrev()
 								}
+								seekPosition = newPos
+								true
+							}
+							onClick(label = if (isSpeaking) "Pause" else "Play") { onPlayPause(); true }
+							onLongClick(label = "Select navigation unit") { dropdownExpanded = true; true }
 						},
-					contentAlignment = Alignment.Center
+					contentAlignment = Alignment.Center,
 				) {
 					if (isSpeaking) {
-						Icon(Icons.Filled.Pause, contentDescription = "Pause")
+						Icon(Icons.Filled.Pause, contentDescription = null)
 					} else {
-						Icon(Icons.Filled.PlayArrow, contentDescription = "Play")
+						Icon(Icons.Filled.PlayArrow, contentDescription = null)
 					}
 				}
 				DropdownMenu(
 					expanded = dropdownExpanded,
-					onDismissRequest = { dropdownExpanded = false }
+					onDismissRequest = { dropdownExpanded = false },
 				) {
-					SegmentTypeFfi.entries.forEach { type ->
+					types.forEach { type ->
 						DropdownMenuItem(
 							text = { Text(getSegmentTypeName(type)) },
 							onClick = {
 								onSegmentTypeChange(type)
 								dropdownExpanded = false
-							}
+							},
 						)
 					}
 				}
 			}
-			IconButton(
-				onClick = onNext,
-				modifier = Modifier.semantics {
-					customActions = SegmentTypeFfi.entries
-						.filter { it != currentSegmentType }
-						.map { type ->
-							CustomAccessibilityAction(getSegmentTypeName(type)) {
-								onSegmentTypeChange(type)
-								true
-							}
-						}
-				}
-			) {
+
+			IconButton(onClick = onNext) {
 				Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next $segmentTypeName")
 			}
-		}
+		},
 	)
 }
