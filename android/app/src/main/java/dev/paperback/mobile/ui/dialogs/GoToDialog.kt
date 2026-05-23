@@ -28,7 +28,7 @@ fun GoToDialog(
 	var selectedMode by remember { mutableStateOf("Line") }
 	var inputValue by remember { mutableStateOf("") }
 	var dropdownExpanded by remember { mutableStateOf(false) }
-	
+
 	val maxLines = remember(docState.session) { docState.session.lineCount() }
 	val maxPages = remember(docState.session) { docState.session.pageCountFfi() }
 
@@ -63,7 +63,7 @@ fun GoToDialog(
 						modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth().semantics {
 							customActions = listOfNotNull(
 								if (selectedMode != "Line") {
-									CustomAccessibilityAction("Switch to Go to Line") {
+									CustomAccessibilityAction("Line") {
 										selectedMode = "Line"
 										true
 									}
@@ -71,7 +71,7 @@ fun GoToDialog(
 									null
 								},
 								if (selectedMode != "Page") {
-									CustomAccessibilityAction("Switch to Go to Page") {
+									CustomAccessibilityAction("Page") {
 										selectedMode = "Page"
 										true
 									}
@@ -79,7 +79,7 @@ fun GoToDialog(
 									null
 								},
 								if (selectedMode != "Percentage") {
-									CustomAccessibilityAction("Switch to Go to Percentage") {
+									CustomAccessibilityAction("Percentage") {
 										selectedMode = "Percentage"
 										true
 									}
@@ -89,7 +89,7 @@ fun GoToDialog(
 							)
 						}
 					) {
-						Text("Go To $selectedMode", modifier = Modifier.weight(1f))
+						Text(selectedMode, modifier = Modifier.weight(1f))
 						ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded)
 					}
 					ExposedDropdownMenu(
@@ -97,21 +97,21 @@ fun GoToDialog(
 						onDismissRequest = { dropdownExpanded = false }
 					) {
 						DropdownMenuItem(
-							text = { Text("Go To Line") },
+							text = { Text("Line") },
 							onClick = {
 								selectedMode = "Line"
 								dropdownExpanded = false
 							}
 						)
 						DropdownMenuItem(
-							text = { Text("Go To Page") },
+							text = { Text("Page") },
 							onClick = {
 								selectedMode = "Page"
 								dropdownExpanded = false
 							}
 						)
 						DropdownMenuItem(
-							text = { Text("Go To Percentage") },
+							text = { Text("Percentage") },
 							onClick = {
 								selectedMode = "Percentage"
 								dropdownExpanded = false
