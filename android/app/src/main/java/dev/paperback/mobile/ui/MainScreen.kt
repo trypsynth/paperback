@@ -63,6 +63,7 @@ fun MainScreen(
 	var moreOptionsExpanded by remember { mutableStateOf(false) }
 	var wordCountDialogOpen by remember { mutableStateOf(false) }
 	var documentInfoDialogOpen by remember { mutableStateOf(false) }
+	var goToDialogOpen by remember { mutableStateOf(false) }
 	var findDialogOpen by remember { mutableStateOf(false) }
 	var optionsDialogOpen by remember { mutableStateOf(false) }
 	var lineIndexToFocus by remember { mutableStateOf<Int?>(null) }
@@ -212,6 +213,12 @@ fun MainScreen(
 											}
 										)
 										add(
+											CustomAccessibilityAction("Go To") {
+												goToDialogOpen = true
+												true
+											}
+										)
+										add(
 											CustomAccessibilityAction("Find") {
 												findDialogOpen = true
 												true
@@ -265,6 +272,13 @@ fun MainScreen(
 									onClick = {
 										moreOptionsExpanded = false
 										recentsDialogOpen = true
+									}
+								)
+								DropdownMenuItem(
+									text = { Text("Go To") },
+									onClick = {
+										moreOptionsExpanded = false
+										goToDialogOpen = true
 									}
 								)
 								DropdownMenuItem(
@@ -759,6 +773,20 @@ fun MainScreen(
 									}
 								},
 								onDismiss = { tocSheetOpen = false }
+							)
+						}
+
+						if (goToDialogOpen) {
+							GoToDialog(
+								docState = docState,
+								onDismiss = { goToDialogOpen = false },
+								onGoTo = { indexToScroll ->
+									isTextMode = true
+									scope.launch {
+										listState.scrollToItem(indexToScroll)
+										lineIndexToFocus = indexToScroll
+									}
+								}
 							)
 						}
 
