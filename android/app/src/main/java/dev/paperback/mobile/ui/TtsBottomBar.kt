@@ -46,12 +46,10 @@ fun TtsBottomBar(
 	modifier: Modifier = Modifier
 ) {
 	var dropdownExpanded by remember { mutableStateOf(false) }
-
 	BottomAppBar(
 		modifier = modifier,
 		actions = {
 			val segmentTypeName = getSegmentTypeName(currentSegmentType)
-
 			IconButton(
 				onClick = onPrev,
 				modifier = Modifier.semantics {
@@ -67,7 +65,6 @@ fun TtsBottomBar(
 			) {
 				Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous $segmentTypeName")
 			}
-
 			Box {
 				Box(
 					modifier = Modifier
@@ -112,7 +109,6 @@ fun TtsBottomBar(
 					}
 				}
 			}
-
 			IconButton(
 				onClick = onNext,
 				modifier = Modifier.semantics {

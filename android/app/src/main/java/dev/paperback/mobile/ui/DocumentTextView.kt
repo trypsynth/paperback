@@ -46,7 +46,6 @@ fun DocumentTextView(
 ) {
 	val context = LocalContext.current
 	val scope = rememberCoroutineScope()
-
 	LazyColumn(
 		state = listState,
 		modifier = Modifier.fillMaxSize().semantics { isTraversalGroup = true },
@@ -60,7 +59,6 @@ fun DocumentTextView(
 			val pos = docState.session.positionFromLine(lineNum)
 			val lineText = docState.session.getLineText(pos).trimEnd()
 			val markers = docState.session.getLineMarkers(lineNum)
-
 			if (lineText.isNotBlank()) {
 				val bringIntoViewRequester = remember { BringIntoViewRequester() }
 				var isTemporaryFocusTarget by remember { mutableStateOf(lineIndexToFocus == index) }
@@ -69,15 +67,12 @@ fun DocumentTextView(
 						isTemporaryFocusTarget = true
 					}
 				}
-
 				var textModifier = Modifier.padding(vertical = 4.dp).semantics(mergeDescendants = true) {}
 				var isHeading = false
 				var headingLevel = 0
-
 				val annotatedString = buildAnnotatedString {
 					var currentIdx = 0
 					val sortedMarkers = markers.sortedBy { it.position }
-
 					sortedMarkers.forEach { marker ->
 						when (marker.mtype) {
 							MarkerTypeFfi.HEADING1 -> { isHeading = true; headingLevel = 1 }
@@ -89,16 +84,13 @@ fun DocumentTextView(
 							MarkerTypeFfi.LINK -> {
 								val markerStartInLine = (marker.position - pos).toInt().coerceAtLeast(0)
 								val markerTextLength = marker.text.length
-
 								if (markerStartInLine > currentIdx) {
 									append(lineText.substring(currentIdx, markerStartInLine.coerceAtMost(lineText.length)))
 									currentIdx = markerStartInLine
 								}
-
 								if (currentIdx < lineText.length) {
 									val linkEnd = (currentIdx + markerTextLength).coerceAtMost(lineText.length)
 									val linkText = lineText.substring(currentIdx, linkEnd)
-
 									val linkAnnotation = LinkAnnotation.Clickable(
 										tag = marker.position.toString(),
 										styles = TextLinkStyles(
@@ -127,7 +119,6 @@ fun DocumentTextView(
 											}
 										}
 									}
-
 									withLink(linkAnnotation) {
 										append(linkText)
 									}
@@ -137,12 +128,10 @@ fun DocumentTextView(
 							else -> {}
 						}
 					}
-
 					if (currentIdx < lineText.length) {
 						append(lineText.substring(currentIdx))
 					}
 				}
-
 				if (isHeading) {
 					textModifier = textModifier.semantics {
 						heading()
@@ -151,11 +140,9 @@ fun DocumentTextView(
 						}
 					}
 				}
-
 				if (isTemporaryFocusTarget) {
 					textModifier = textModifier.bringIntoViewRequester(bringIntoViewRequester).focusable()
 				}
-
 				val currentOptions = activeSearchOptions
 				val currentQuery = activeSearchQuery
 				if (currentQuery != null && currentOptions != null) {
@@ -195,19 +182,16 @@ fun DocumentTextView(
 						)
 					}
 				}
-
 				val textStyle = if (isHeading) {
 					MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
 				} else {
 					MaterialTheme.typography.bodyLarge
 				}
-
 				Text(
 					text = annotatedString,
 					style = textStyle,
 					modifier = textModifier
 				)
-
 				if (isTemporaryFocusTarget) {
 					LaunchedEffect(Unit) {
 						try {

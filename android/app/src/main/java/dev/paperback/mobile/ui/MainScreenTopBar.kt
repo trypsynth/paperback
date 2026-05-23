@@ -39,7 +39,6 @@ fun MainScreenTopBar(
 	onSleepTimerOpen: () -> Unit
 ) {
 	var moreOptionsExpanded by remember { mutableStateOf(false) }
-
 	Column(
 		modifier = Modifier
 			.fillMaxWidth()
@@ -60,7 +59,6 @@ fun MainScreenTopBar(
 				traversalIndex = 0f
 			}
 		)
-
 		Row(
 			modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp).semantics { isTraversalGroup = true },
 			horizontalArrangement = Arrangement.SpaceBetween,
@@ -80,7 +78,6 @@ fun MainScreenTopBar(
 					Text("Open Book")
 				}
 			}
-
 			if (state is MainScreenUiState.Success && state.tabs.isNotEmpty()) {
 				Box(modifier = Modifier.semantics { isTraversalGroup = true }) {
 					IconButton(
@@ -218,7 +215,6 @@ fun MainScreenTopBar(
 				}
 			}
 		}
-
 		if (state is MainScreenUiState.Success && state.tabs.isNotEmpty()) {
 			PrimaryScrollableTabRow(
 				selectedTabIndex = state.activeTabIndex,

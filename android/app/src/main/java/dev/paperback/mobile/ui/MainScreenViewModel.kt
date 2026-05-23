@@ -108,20 +108,15 @@ class MainScreenViewModel(
 		ttsManager.onPauseCommand = { pauseTts() }
 		ttsManager.onNextCommand = { playNextSegment() }
 		ttsManager.onPrevCommand = { playPrevSegment() }
-
 		viewModelScope.launch(Dispatchers.IO) {
 			config.initialize(context.filesDir.absolutePath + "/config.toml")
-
 			withContext(Dispatchers.Main) {
 				ttsManager.loadConfigAndInit()
 			}
-
 			_supportedMimeTypes.value = buildSupportedMimeTypes()
-
 			val restorePrevious = config.getAppBool("restore_previous_documents", true)
 			val openedUris = if (restorePrevious) config.getOpenedDocuments() else emptyList()
 			val activeDocKey = config.getAppString("active_document", "")
-
 			if (openedUris.isNotEmpty()) {
 				val restoredTabs = mutableListOf<DocumentTabState>()
 				for (uriString in openedUris) {
@@ -130,20 +125,16 @@ class MainScreenViewModel(
 						restoredTabs.add(tab)
 					}
 				}
-
 				val initialRecents = getRecentDocumentsListIO()
-
 				withContext(Dispatchers.Main) {
 					currentTabs.addAll(restoredTabs)
 					recentDocumentsList = initialRecents
-
 					if (currentTabs.isNotEmpty()) {
 						val matchingIndex = currentTabs.indexOfFirst { it.docKey == activeDocKey }
 						currentActiveIndex = if (matchingIndex != -1) matchingIndex else 0
 					} else {
 						currentActiveIndex = -1
 					}
-
 					_uiState.value = MainScreenUiState.Success(
 						tabs = currentTabs.toList(),
 						activeTabIndex = currentActiveIndex,
@@ -230,7 +221,6 @@ class MainScreenViewModel(
 							isMissing = true
 						}
 					} ?: run { isMissing = true }
-
 					if (!isMissing) {
 						context.contentResolver.openAssetFileDescriptor(uri, "r")?.close()
 					}
@@ -336,23 +326,19 @@ class MainScreenViewModel(
 						if (nameIndex != -1) displayName = cursor.getString(nameIndex)
 					}
 				}
-
 				val ext = displayName.substringAfterLast('.', "epub").lowercase()
 				val tempFile = File(context.cacheDir, "doc_${UUID.randomUUID()}.$ext")
 				FileOutputStream(tempFile).use { inputStream.copyTo(it) }
 				inputStream.close()
-
 				config.associateUriWithLocalFile(uri.toString(), tempFile.absolutePath)
 				val docKey = config.getDocKey(uri.toString())
 				val savedPosition = config.getDocumentPosition(uri.toString())
-
 				val session = DocumentSession.newFfi(tempFile.absolutePath, "", "")
 				val initialScrollIndex = if (savedPosition > 0L) {
 					(session.lineFromPosition(savedPosition) - 1L).toInt().coerceAtLeast(0)
 				} else {
 					0
 				}
-
 				DocumentTabState(
 					session = session,
 					title = session.title().ifBlank { displayName },
@@ -377,7 +363,6 @@ class MainScreenViewModel(
 		if (currentTabs.isEmpty()) {
 			_uiState.value = MainScreenUiState.Loading
 		}
-
 		val tabState = prepareDocumentTabIO(uri)
 		if (tabState == null) {
 			withContext(Dispatchers.Main) {
@@ -388,10 +373,8 @@ class MainScreenViewModel(
 			}
 			return@withContext
 		}
-
 		val recentDocsUpdated = getRecentDocumentsListIO()
 		val activeDocKey = config.getAppString("active_document", "")
-
 		withContext(Dispatchers.Main) {
 			recentDocumentsList = recentDocsUpdated
 			val existingIndex = currentTabs.indexOfFirst { it.docKey == tabState.docKey }

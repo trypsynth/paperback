@@ -54,15 +54,12 @@ fun MainScreen(
 	var sleepTimerDialogOpen by remember { mutableStateOf(false) }
 	var isScreenDimmed by remember { mutableStateOf(false) }
 	var lineIndexToFocus by remember { mutableStateOf<Int?>(null) }
-
 	var restorePreviousDocuments by remember {
 		mutableStateOf(viewModel.configManager.getAppBool("restore_previous_documents", true))
 	}
-
 	var activeSearchQuery by remember { mutableStateOf<String?>(null) }
 	var activeSearchOptions by remember { mutableStateOf<uniffi.paperback.SearchOptionsFfi?>(null) }
 	var expandedTocIndices by remember { mutableStateOf(setOf<Int>()) }
-
 	var isTextMode by remember { mutableStateOf(false) }
 	val isSpeaking by viewModel.ttsManager.isSpeaking.collectAsStateWithLifecycle()
 	val currentSegmentType by viewModel.currentSegmentType.collectAsStateWithLifecycle()
@@ -75,21 +72,17 @@ fun MainScreen(
 	val currentEngineName by viewModel.ttsManager.currentEngineName.collectAsStateWithLifecycle()
 	var ttsConfigDialogOpen by remember { mutableStateOf(false) }
 	val sleepTimerRemaining by viewModel.sleepTimerRemaining.collectAsStateWithLifecycle()
-
 	LaunchedEffect(Unit) {
 		viewModel.sleepTimerExpired.collect {
 			isScreenDimmed = true
 		}
 	}
-
 	val context = LocalContext.current
-
 	val accessibilityManager =
 		remember(context) {
 			context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
 		}
 	var isTouchExplorationEnabled by remember { mutableStateOf(accessibilityManager.isTouchExplorationEnabled) }
-
 	DisposableEffect(accessibilityManager) {
 		val listener = AccessibilityManager.TouchExplorationStateChangeListener { enabled ->
 			isTouchExplorationEnabled = enabled
@@ -99,7 +92,6 @@ fun MainScreen(
 			accessibilityManager.removeTouchExplorationStateChangeListener(listener)
 		}
 	}
-
 	val activity = context as? android.app.Activity
 	DisposableEffect(activity) {
 		val listener = androidx.core.util.Consumer<Intent> { newIntent ->
@@ -118,7 +110,6 @@ fun MainScreen(
 			}
 		}
 	}
-
 	LaunchedEffect(Unit) {
 		val intent = activity?.intent
 		val uri = intent?.data
@@ -127,15 +118,12 @@ fun MainScreen(
 			intent.action = Intent.ACTION_MAIN
 		}
 	}
-
 	val supportedMimeTypes by viewModel.supportedMimeTypes.collectAsStateWithLifecycle()
-
 	val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.OpenDocument()) { uri: Uri? ->
 		if (uri != null) {
 			viewModel.openDocument(uri)
 		}
 	}
-
 	Box(modifier = Modifier.fillMaxSize()) {
 	Scaffold(
 		topBar = {
@@ -178,7 +166,6 @@ fun MainScreen(
 						) {
 							Text("X", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
 						}
-
 						Row {
 							Button(
 								onClick = {
@@ -257,7 +244,6 @@ fun MainScreen(
 				is MainScreenUiState.Success -> {
 					val successState = state as MainScreenUiState.Success
 					val docState = successState.activeTab
-
 					if (docState == null) {
 						Column(
 							modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -269,7 +255,6 @@ fun MainScreen(
 								style = MaterialTheme.typography.titleLarge,
 								modifier = Modifier.padding(bottom = 24.dp)
 							)
-
 							if (successState.recentDocuments.isNotEmpty()) {
 								Text(
 									"Recently Opened",
@@ -301,13 +286,11 @@ fun MainScreen(
 						val listState = listStates.getOrPut(docState.documentUri) {
 							LazyListState(firstVisibleItemIndex = docState.initialScrollIndex)
 						}
-
 						LaunchedEffect(docState.documentUri) {
 							if (docState.initialScrollIndex > 0) {
 								lineIndexToFocus = docState.initialScrollIndex
 							}
 						}
-
 						LaunchedEffect(isTextMode) {
 							if (isTextMode) {
 								val line = docState.session.lineFromPosition(ttsPosition)
@@ -319,14 +302,12 @@ fun MainScreen(
 								viewModel.refreshSegmentPreview()
 							}
 						}
-
 						LaunchedEffect(docState.documentUri) {
 							snapshotFlow { listState.firstVisibleItemIndex }
 								.distinctUntilChanged()
 								.debounce(500)
 								.collect { index -> viewModel.savePosition(docState.session, docState.documentUri, index) }
 						}
-
 						if (!isTextMode) {
 							Column(
 								modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -371,7 +352,6 @@ fun MainScreen(
 								}
 							)
 						}
-
 						if (tocSheetOpen) {
 							TocDialog(
 								toc = docState.toc,
@@ -396,7 +376,6 @@ fun MainScreen(
 								onDismiss = { tocSheetOpen = false }
 							)
 						}
-
 						if (goToDialogOpen) {
 							GoToDialog(
 								docState = docState,
@@ -412,7 +391,6 @@ fun MainScreen(
 								}
 							)
 						}
-
 						if (findDialogOpen) {
 							FindDialog(
 								configManager = viewModel.configManager,
@@ -437,7 +415,6 @@ fun MainScreen(
 							)
 						}
 					}
-
 					if (recentsDialogOpen) {
 						AllDocumentsDialog(
 							recentDocuments = successState.recentDocuments,
@@ -446,7 +423,6 @@ fun MainScreen(
 							onRemoveDocument = { uri -> viewModel.removeRecentDocument(uri) }
 						)
 					}
-
 					if (wordCountDialogOpen && docState != null) {
 						val stats = remember(docState.session) { docState.session.getStatsFfi() }
 						WordCountDialog(
@@ -454,7 +430,6 @@ fun MainScreen(
 							onDismiss = { wordCountDialogOpen = false }
 						)
 					}
-
 					if (documentInfoDialogOpen && docState != null) {
 						val stats = remember(docState.session) { docState.session.getStatsFfi() }
 						DocumentInfoDialog(
@@ -463,7 +438,6 @@ fun MainScreen(
 							onDismiss = { documentInfoDialogOpen = false }
 						)
 					}
-
 					if (optionsDialogOpen) {
 						SettingsDialog(
 							initialRestorePreviousDocuments = restorePreviousDocuments,
@@ -480,7 +454,6 @@ fun MainScreen(
 							onDismiss = { optionsDialogOpen = false }
 						)
 					}
-
 					if (sleepTimerDialogOpen) {
 						SleepTimerDialog(
 							remainingSeconds = sleepTimerRemaining,
@@ -489,7 +462,6 @@ fun MainScreen(
 							onDismiss = { sleepTimerDialogOpen = false }
 						)
 					}
-
 					if (ttsConfigDialogOpen) {
 						TtsConfigDialog(
 							engines = viewModel.ttsManager.getAvailableEngines(),
@@ -517,7 +489,6 @@ fun MainScreen(
 			}
 		}
 	}
-
 	if (isScreenDimmed) {
 		Box(
 			modifier = Modifier

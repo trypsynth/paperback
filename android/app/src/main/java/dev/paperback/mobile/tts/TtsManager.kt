@@ -139,7 +139,6 @@ class TtsManager(
 		_isInitialized.value = false
 		tts?.shutdown()
 		_currentEngineName.value = engineName
-
 		val actualEngine = if (engineName == SYSTEM_DEFAULT) null else engineName
 		tts = if (actualEngine != null) {
 			TextToSpeech(context, this, actualEngine)
@@ -178,7 +177,6 @@ class TtsManager(
 					updatePlaybackState(false)
 				}
 			})
-
 			val langResult = tts?.setLanguage(Locale.getDefault()) ?: TextToSpeech.LANG_NOT_SUPPORTED
 			if (langResult == TextToSpeech.LANG_MISSING_DATA || langResult == TextToSpeech.LANG_NOT_SUPPORTED) {
 				_availableVoices.value = emptyList()
@@ -186,7 +184,6 @@ class TtsManager(
 				_isInitialized.value = true
 				return
 			}
-
 			if (_currentEngineName.value == SYSTEM_DEFAULT) {
 				_availableVoices.value = emptyList()
 				_currentVoice.value = null
@@ -196,7 +193,6 @@ class TtsManager(
 				setSpeechRate(savedRate)
 				val savedPitch = config.getAppString("${KEY_PITCH}_$engine", "50").toIntOrNull() ?: 50
 				setPitch(savedPitch)
-
 				_availableVoices.value = getAvailableVoicesInternal()
 				val savedVoiceName = config.getAppString("${KEY_VOICE}_$engine", "")
 				val matchedVoice = _availableVoices.value.find { it.name == savedVoiceName }
@@ -210,7 +206,6 @@ class TtsManager(
 					}
 				}
 			}
-
 			_isInitialized.value = true
 		}
 	}
@@ -288,7 +283,6 @@ class TtsManager(
 		return try {
 			val currentLocale = Locale.getDefault()
 			val voices = ttsInstance.voices ?: return emptyList()
-
 			val filtered = voices.filter { it.locale.language == currentLocale.language }
 			if (filtered.isNotEmpty()) {
 				filtered.sortedBy { it.name }

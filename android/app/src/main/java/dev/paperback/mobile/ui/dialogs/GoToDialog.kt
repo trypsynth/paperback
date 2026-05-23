@@ -30,10 +30,8 @@ fun GoToDialog(
 	var inputValue by remember { mutableStateOf("") }
 	var sliderPercent by remember { mutableIntStateOf(0) }
 	var dropdownExpanded by remember { mutableStateOf(false) }
-
 	val maxLines = remember(docState.session) { docState.session.lineCount() }
 	val maxPages = remember(docState.session) { docState.session.pageCountFfi() }
-
 	val onSubmit = {
 		val targetPos = when (selectedMode) {
 			"Percentage" -> docState.session.positionFromPercentFfi(sliderPercent)
@@ -52,7 +50,6 @@ fun GoToDialog(
 			onDismiss()
 		}
 	}
-
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		modifier = Modifier.semantics { paneTitle = "Go To" },

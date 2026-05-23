@@ -38,7 +38,6 @@ fun TtsConfigDialog(
 			Column(modifier = Modifier.fillMaxWidth()) {
 				Text("Speech Engine", style = MaterialTheme.typography.labelLarge)
 				Spacer(modifier = Modifier.height(4.dp))
-
 				Box {
 					OutlinedButton(onClick = { engineExpanded = true }, modifier = Modifier.fillMaxWidth()) {
 						val selectedName =
@@ -61,14 +60,10 @@ fun TtsConfigDialog(
 						}
 					}
 				}
-
 				Spacer(modifier = Modifier.height(16.dp))
-
 				val isSystemDefault = currentEngine == dev.paperback.mobile.tts.TtsManager.SYSTEM_DEFAULT
-
 				Text("Voice", style = MaterialTheme.typography.labelLarge)
 				Spacer(modifier = Modifier.height(4.dp))
-
 				Box {
 					OutlinedButton(onClick = {
 						voiceExpanded = true
@@ -92,9 +87,7 @@ fun TtsConfigDialog(
 						}
 					}
 				}
-
 				Spacer(modifier = Modifier.height(16.dp))
-
 				Text("Speech Rate: $currentRate%", style = MaterialTheme.typography.labelLarge)
 				Slider(
 					value = currentRate.toFloat(),
@@ -106,9 +99,7 @@ fun TtsConfigDialog(
 						stateDescription = "$currentRate percent"
 					}
 				)
-
 				Spacer(modifier = Modifier.height(16.dp))
-
 				Text("Pitch: $currentPitch%", style = MaterialTheme.typography.labelLarge)
 				Slider(
 					value = currentPitch.toFloat(),
@@ -120,9 +111,7 @@ fun TtsConfigDialog(
 						stateDescription = "$currentPitch percent"
 					}
 				)
-
 				Spacer(modifier = Modifier.height(16.dp))
-
 				Button(onClick = onPlaySample, modifier = Modifier.fillMaxWidth()) {
 					Text("Play Sample")
 				}
