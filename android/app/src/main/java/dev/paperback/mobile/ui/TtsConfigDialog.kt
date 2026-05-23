@@ -19,9 +19,11 @@ fun TtsConfigDialog(
 	voices: List<Voice>,
 	currentVoice: Voice?,
 	currentRate: Int,
+	currentPitch: Int,
 	onEngineSelected: (String) -> Unit,
 	onVoiceSelected: (Voice) -> Unit,
 	onRateChanged: (Int) -> Unit,
+	onPitchChanged: (Int) -> Unit,
 	onPlaySample: () -> Unit,
 	onDismiss: () -> Unit
 ) {
@@ -102,6 +104,20 @@ fun TtsConfigDialog(
 					enabled = !isSystemDefault,
 					modifier = Modifier.semantics {
 						stateDescription = "$currentRate percent"
+					}
+				)
+
+				Spacer(modifier = Modifier.height(16.dp))
+
+				Text("Pitch: $currentPitch%", style = MaterialTheme.typography.labelLarge)
+				Slider(
+					value = currentPitch.toFloat(),
+					onValueChange = { onPitchChanged(kotlin.math.round(it).toInt()) },
+					valueRange = 0f..100f,
+					steps = 99,
+					enabled = !isSystemDefault,
+					modifier = Modifier.semantics {
+						stateDescription = "$currentPitch percent"
 					}
 				)
 

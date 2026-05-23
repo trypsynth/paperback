@@ -67,7 +67,7 @@ fun MainScreen(
 	var findDialogOpen by remember { mutableStateOf(false) }
 	var optionsDialogOpen by remember { mutableStateOf(false) }
 	var lineIndexToFocus by remember { mutableStateOf<Int?>(null) }
-	
+
 	var restorePreviousDocuments by remember {
 		mutableStateOf(viewModel.configManager.getAppBool("restore_previous_documents", true))
 	}
@@ -81,6 +81,7 @@ fun MainScreen(
 	val currentSegmentType by viewModel.currentSegmentType.collectAsStateWithLifecycle()
 	val ttsPosition by viewModel.ttsPosition.collectAsStateWithLifecycle()
 	val currentSpeechRate by viewModel.ttsManager.currentSpeechRate.collectAsStateWithLifecycle()
+	val currentPitch by viewModel.ttsManager.currentPitch.collectAsStateWithLifecycle()
 	val currentSegmentText by viewModel.currentSegmentText.collectAsStateWithLifecycle()
 	val availableVoices by viewModel.ttsManager.availableVoices.collectAsStateWithLifecycle()
 	val currentVoice by viewModel.ttsManager.currentVoice.collectAsStateWithLifecycle()
@@ -94,7 +95,7 @@ fun MainScreen(
 			context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
 		}
 	var isTouchExplorationEnabled by remember { mutableStateOf(accessibilityManager.isTouchExplorationEnabled) }
-	
+
 	DisposableEffect(accessibilityManager) {
 		val listener = AccessibilityManager.TouchExplorationStateChangeListener { enabled ->
 			isTouchExplorationEnabled = enabled
@@ -236,7 +237,7 @@ fun MainScreen(
 											}
 										)
 										add(
-											CustomAccessibilityAction("Options") {
+											CustomAccessibilityAction("Settings") {
 												optionsDialogOpen = true
 												true
 											}
@@ -302,7 +303,7 @@ fun MainScreen(
 									}
 								)
 								DropdownMenuItem(
-									text = { Text("Options") },
+									text = { Text("Settings") },
 									onClick = {
 										moreOptionsExpanded = false
 										optionsDialogOpen = true
@@ -374,7 +375,7 @@ fun MainScreen(
 						) {
 							Text("X", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
 						}
-						
+
 						Row {
 							Button(
 								onClick = {
@@ -465,7 +466,7 @@ fun MainScreen(
 								style = MaterialTheme.typography.titleLarge,
 								modifier = Modifier.padding(bottom = 24.dp)
 							)
-							
+
 							if (successState.recentDocuments.isNotEmpty()) {
 								Text(
 									"Recently Opened",
@@ -759,7 +760,7 @@ fun MainScreen(
 								onDismiss = { tocSheetOpen = false }
 							)
 						}
-						
+
 						if (goToDialogOpen) {
 							GoToDialog(
 								docState = docState,
@@ -797,7 +798,7 @@ fun MainScreen(
 							)
 						}
 					}
-					
+
 					if (recentsDialogOpen) {
 						AllDocumentsDialog(
 							recentDocuments = successState.recentDocuments,
@@ -848,9 +849,11 @@ fun MainScreen(
 							voices = availableVoices,
 							currentVoice = currentVoice,
 							currentRate = currentSpeechRate,
+							currentPitch = currentPitch,
 							onEngineSelected = { viewModel.ttsManager.setEngine(it) },
 							onVoiceSelected = { viewModel.ttsManager.setVoice(it) },
 							onRateChanged = { viewModel.ttsManager.setSpeechRate(it) },
+							onPitchChanged = { viewModel.ttsManager.setPitch(it) },
 							onPlaySample = {
 								viewModel.ttsManager.speak("This is a sample of the selected speech engine.", isSample = true)
 							},

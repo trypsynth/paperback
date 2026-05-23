@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OptionsDialog(
+fun SettingsDialog(
 	initialRestorePreviousDocuments: Boolean,
 	onSaveOptions: (Boolean) -> Unit,
 	onOpenTtsConfig: () -> Unit,
@@ -22,9 +22,9 @@ fun OptionsDialog(
 	var restorePreviousDocuments by remember { mutableStateOf(initialRestorePreviousDocuments) }
 
 	AlertDialog(
-		modifier = Modifier.semantics { paneTitle = "Options" },
+		modifier = Modifier.semantics { paneTitle = "Settings" },
 		onDismissRequest = onDismiss,
-		title = { Text("Options") },
+		title = { Text("Settings") },
 		text = {
 			Column(modifier = Modifier.fillMaxWidth()) {
 				Row(

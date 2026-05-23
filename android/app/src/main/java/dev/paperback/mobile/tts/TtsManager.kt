@@ -63,6 +63,7 @@ class TtsManager(
 		const val KEY_ENGINE = "tts_engine"
 		const val KEY_VOICE = "tts_voice"
 		const val KEY_RATE = "tts_rate"
+		const val KEY_PITCH = "tts_pitch"
 	}
 
 	private val _currentEngineName = MutableStateFlow<String?>(null)
@@ -82,6 +83,9 @@ class TtsManager(
 
 	private val _currentSpeechRate = MutableStateFlow(50)
 	val currentSpeechRate: StateFlow<Int> = _currentSpeechRate
+
+	private val _currentPitch = MutableStateFlow(50)
+	val currentPitch: StateFlow<Int> = _currentPitch
 
 	private val _currentVoice = MutableStateFlow<Voice?>(null)
 	val currentVoice: StateFlow<Voice?> = _currentVoice
@@ -190,6 +194,8 @@ class TtsManager(
 				val engine = _currentEngineName.value!!
 				val savedRate = config.getAppString("${KEY_RATE}_$engine", "50").toIntOrNull() ?: 50
 				setSpeechRate(savedRate)
+				val savedPitch = config.getAppString("${KEY_PITCH}_$engine", "50").toIntOrNull() ?: 50
+				setPitch(savedPitch)
 
 				_availableVoices.value = getAvailableVoicesInternal()
 				val savedVoiceName = config.getAppString("${KEY_VOICE}_$engine", "")
@@ -237,6 +243,17 @@ class TtsManager(
 			config.flush()
 			val mappedRate = 0.1f + (ratePercentage / 100f) * 2.9f
 			tts?.setSpeechRate(mappedRate)
+		}
+	}
+
+	fun setPitch(pitchPercentage: Int) {
+		_currentPitch.value = pitchPercentage
+		val engine = _currentEngineName.value
+		if (engine != null && engine != SYSTEM_DEFAULT) {
+			config.setAppString("${KEY_PITCH}_$engine", pitchPercentage.toString())
+			config.flush()
+			val mappedPitch = 0.1f + (pitchPercentage / 100f) * 1.9f
+			tts?.setPitch(mappedPitch)
 		}
 	}
 
