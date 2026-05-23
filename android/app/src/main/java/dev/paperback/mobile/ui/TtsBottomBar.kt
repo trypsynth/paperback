@@ -112,7 +112,7 @@ fun TtsBottomBar(
 						)
 						.clearAndSetSemantics {
 							role = Role.Button
-							contentDescription = if (isSpeaking) "Pause" else "Play"
+							contentDescription = if (isSpeaking) "Pause, button" else "Play, button"
 							stateDescription = ZWSP
 							progressBarRangeInfo = ProgressBarRangeInfo(
 								current = seekPosition.toFloat(),
@@ -128,7 +128,7 @@ fun TtsBottomBar(
 								seekPosition = newPos
 								true
 							}
-							onClick(label = if (isSpeaking) "Pause" else "Play") { onPlayPause(); true }
+							onClick(label = "Activate") { onPlayPause(); true }
 							onLongClick(label = "Select navigation unit") { dropdownExpanded = true; true }
 						},
 					contentAlignment = Alignment.Center,
