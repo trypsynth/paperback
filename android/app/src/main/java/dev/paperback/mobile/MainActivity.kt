@@ -12,6 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import dev.paperback.mobile.theme.MyApplicationTheme
 import dev.paperback.mobile.ui.MainScreenViewModel
+import uniffi.paperback.SegmentDirectionFfi
+import uniffi.paperback.SegmentTypeFfi
 
 class MainActivity : ComponentActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,10 +87,32 @@ class MainActivity : ComponentActivity() {
 	}
 
 	override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-		if (event.keyCode == KeyEvent.KEYCODE_HEADSETHOOK && event.action == KeyEvent.ACTION_DOWN) {
-			ViewModelProvider(this)[MainScreenViewModel::class.java].togglePlayPause()
-			return true
+		if (event.action != KeyEvent.ACTION_DOWN) return super.dispatchKeyEvent(event)
+		// Don't intercept when a text field has focus (e.g. Find or Go-To dialogs).
+		if (currentFocus is android.widget.EditText) return super.dispatchKeyEvent(event)
+		val vm = ViewModelProvider(this)[MainScreenViewModel::class.java]
+		val dir = if (event.isShiftPressed) SegmentDirectionFfi.PREVIOUS else SegmentDirectionFfi.NEXT
+		return when (event.keyCode) {
+			KeyEvent.KEYCODE_HEADSETHOOK,
+			KeyEvent.KEYCODE_SPACE -> { vm.togglePlayPause(); true }
+			// Sections: [ = previous, ] = next (no shift needed, matching desktop)
+			KeyEvent.KEYCODE_LEFT_BRACKET -> { vm.navigateByType(SegmentTypeFfi.SECTION, SegmentDirectionFfi.PREVIOUS); true }
+			KeyEvent.KEYCODE_RIGHT_BRACKET -> { vm.navigateByType(SegmentTypeFfi.SECTION, SegmentDirectionFfi.NEXT); true }
+			// Headings: H = next, Shift+H = previous
+			KeyEvent.KEYCODE_H -> { vm.navigateByType(SegmentTypeFfi.HEADING, dir); true }
+			// Pages: P = next, Shift+P = previous
+			KeyEvent.KEYCODE_P -> { vm.navigateByType(SegmentTypeFfi.PAGE, dir); true }
+			// Links: K = next, Shift+K = previous
+			KeyEvent.KEYCODE_K -> { vm.navigateByType(SegmentTypeFfi.LINK, dir); true }
+			// Tables: T = next, Shift+T = previous
+			KeyEvent.KEYCODE_T -> { vm.navigateByType(SegmentTypeFfi.TABLE, dir); true }
+			// Separators: S = next, Shift+S = previous
+			KeyEvent.KEYCODE_S -> { vm.navigateByType(SegmentTypeFfi.SEPARATOR, dir); true }
+			// Lists: L = next, Shift+L = previous
+			KeyEvent.KEYCODE_L -> { vm.navigateByType(SegmentTypeFfi.LIST, dir); true }
+			// List items: I = next, Shift+I = previous
+			KeyEvent.KEYCODE_I -> { vm.navigateByType(SegmentTypeFfi.LIST_ITEM, dir); true }
+			else -> super.dispatchKeyEvent(event)
 		}
-		return super.dispatchKeyEvent(event)
 	}
 }

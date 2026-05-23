@@ -536,6 +536,18 @@ class MainScreenViewModel(
 		_sleepTimerRemaining.value = null
 	}
 
+	fun navigateByType(type: SegmentTypeFfi, direction: SegmentDirectionFfi) {
+		val state = uiState.value as? MainScreenUiState.Success ?: return
+		val tab = state.activeTab ?: return
+		val segment = tab.session.getTextSegment(_ttsPosition.value, type, direction)
+		if (segment.text.isNotBlank()) {
+			_ttsPosition.value = segment.startPos
+			_currentSegmentText.value = segment.text
+			saveTtsPositionToConfig(segment.startPos)
+			ttsManager.speak(segment.text)
+		}
+	}
+
 	fun resumeTts() {
 		speakCurrentSegment()
 	}
