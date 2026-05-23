@@ -147,6 +147,8 @@ pub enum SegmentTypeFfi {
 	ListItem,
 	Table,
 	Separator,
+	Image,
+	Figure,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -878,6 +880,8 @@ impl DocumentSession {
 			SegmentTypeFfi::ListItem => Some(ffi::NavTarget::ListItem),
 			SegmentTypeFfi::Table => Some(ffi::NavTarget::Table),
 			SegmentTypeFfi::Separator => Some(ffi::NavTarget::Separator),
+			SegmentTypeFfi::Image => Some(ffi::NavTarget::Image),
+			SegmentTypeFfi::Figure => Some(ffi::NavTarget::Figure),
 			_ => None,
 		};
 

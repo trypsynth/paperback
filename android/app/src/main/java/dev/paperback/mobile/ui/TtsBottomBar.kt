@@ -44,6 +44,8 @@ fun getSegmentTypeName(type: SegmentTypeFfi): String =
 		SegmentTypeFfi.LIST_ITEM -> "List Item"
 		SegmentTypeFfi.TABLE -> "Table"
 		SegmentTypeFfi.SEPARATOR -> "Separator"
+		SegmentTypeFfi.IMAGE -> "Image"
+		SegmentTypeFfi.FIGURE -> "Figure"
 	}
 
 @OptIn(ExperimentalMaterial3Api::class)

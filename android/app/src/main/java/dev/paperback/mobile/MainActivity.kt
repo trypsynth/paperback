@@ -102,6 +102,10 @@ class MainActivity : ComponentActivity() {
 			KeyEvent.KEYCODE_H -> { vm.navigateByType(SegmentTypeFfi.HEADING, dir); true }
 			// Pages: P = next, Shift+P = previous
 			KeyEvent.KEYCODE_P -> { vm.navigateByType(SegmentTypeFfi.PAGE, dir); true }
+			// Images: G = next, Shift+G = previous
+			KeyEvent.KEYCODE_G -> { vm.navigateByType(SegmentTypeFfi.IMAGE, dir); true }
+			// Figures: F = next, Shift+F = previous
+			KeyEvent.KEYCODE_F -> { vm.navigateByType(SegmentTypeFfi.FIGURE, dir); true }
 			// Links: K = next, Shift+K = previous
 			KeyEvent.KEYCODE_K -> { vm.navigateByType(SegmentTypeFfi.LINK, dir); true }
 			// Tables: T = next, Shift+T = previous

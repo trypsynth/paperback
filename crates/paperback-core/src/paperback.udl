@@ -40,7 +40,8 @@ dictionary LinkActivationResultFfi {
 enum SegmentTypeFfi {
 	"Paragraph", "Line",
 	"Heading", "Link", "Section", "Page",
-	"List", "ListItem", "Table", "Separator"
+	"List", "ListItem", "Table", "Separator",
+	"Image", "Figure"
 };
 
 enum SegmentDirectionFfi {
@@ -104,7 +105,7 @@ interface DocumentSession {
 	sequence<TocEntry> get_toc();
 
 	DocumentStatsFfi get_stats_ffi();
-	
+
 	SearchResultFfi search_ffi(string query, i64 start_position, SearchOptionsFfi options);
 };
 
