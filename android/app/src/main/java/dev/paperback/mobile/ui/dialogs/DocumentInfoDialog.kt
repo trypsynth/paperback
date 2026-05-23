@@ -72,7 +72,7 @@ fun DocumentInfoDialog(
 		},
 		confirmButton = {
 			TextButton(onClick = onDismiss) {
-				Text("Close")
+				Text("OK")
 			}
 		}
 	)

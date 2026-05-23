@@ -27,7 +27,7 @@ fun WordCountDialog(
 		},
 		confirmButton = {
 			TextButton(onClick = onDismiss) {
-				Text("Close")
+				Text("OK")
 			}
 		}
 	)

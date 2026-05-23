@@ -114,7 +114,7 @@ fun TtsConfigDialog(
 		},
 		confirmButton = {
 			TextButton(onClick = onDismiss) {
-				Text("Close")
+				Text("Done")
 			}
 		}
 	)
