@@ -1,6 +1,8 @@
 package dev.paperback.mobile.ui
 
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -8,8 +10,11 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -51,40 +56,34 @@ fun TtsBottomBar(
 				Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous $segmentTypeName")
 			}
 
-			IconButton(onClick = onPlayPause) {
-				if (isSpeaking) {
-					Icon(
-						imageVector = Icons.Filled.Pause,
-						contentDescription = "Pause"
-					)
-				} else {
-					Icon(
-						imageVector = Icons.Filled.PlayArrow,
-						contentDescription = "Play"
-					)
-				}
-			}
-
-			IconButton(onClick = onNext) {
-				Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next $segmentTypeName")
-			}
-
 			Box {
-				TextButton(
-					onClick = { dropdownExpanded = true },
-					modifier = Modifier.semantics {
-						customActions = SegmentTypeFfi
-							.values()
-							.filter { it != currentSegmentType }
-							.map { type ->
-								CustomAccessibilityAction("Switch to ${getSegmentTypeName(type)}") {
-									onSegmentTypeChange(type)
-									true
+				Box(
+					modifier = Modifier
+						.size(48.dp)
+						.clip(CircleShape)
+						.combinedClickable(
+							role = Role.Button,
+							onLongClickLabel = "Select segment type",
+							onLongClick = { dropdownExpanded = true },
+							onClick = onPlayPause
+						)
+						.semantics {
+							customActions = SegmentTypeFfi.entries
+								.filter { it != currentSegmentType }
+								.map { type ->
+									CustomAccessibilityAction(getSegmentTypeName(type)) {
+										onSegmentTypeChange(type)
+										true
+									}
 								}
-							}
-					}
+						},
+					contentAlignment = Alignment.Center
 				) {
-					Text(segmentTypeName)
+					if (isSpeaking) {
+						Icon(Icons.Filled.Pause, contentDescription = "Pause")
+					} else {
+						Icon(Icons.Filled.PlayArrow, contentDescription = "Play")
+					}
 				}
 				DropdownMenu(
 					expanded = dropdownExpanded,
@@ -100,6 +99,10 @@ fun TtsBottomBar(
 						)
 					}
 				}
+			}
+
+			IconButton(onClick = onNext) {
+				Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next $segmentTypeName")
 			}
 		}
 	)
