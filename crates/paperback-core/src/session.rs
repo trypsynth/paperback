@@ -244,13 +244,6 @@ pub struct DocumentStatsFfi {
 	pub char_count_no_whitespace: i64,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StatusInfoFfi {
-	pub line_number: i64,
-	pub character_number: i64,
-	pub percentage: i32,
-}
-
 impl DocumentSession {
 	/// # Errors
 	///
@@ -711,13 +704,8 @@ impl DocumentSession {
 	}
 
 	#[must_use]
-	pub fn get_status_info_ffi(&self, position: i64) -> StatusInfoFfi {
-		let status = self.get_status_info(position);
-		StatusInfoFfi {
-			line_number: status.line_number,
-			character_number: status.character_number,
-			percentage: status.percentage,
-		}
+	pub fn get_status_info_ffi(&self, position: i64) -> StatusInfo {
+		self.get_status_info(position)
 	}
 
 	#[must_use]

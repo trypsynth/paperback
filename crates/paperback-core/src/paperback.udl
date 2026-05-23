@@ -74,7 +74,7 @@ dictionary SearchResultFfi {
 	i64 position;
 };
 
-dictionary StatusInfoFfi {
+dictionary StatusInfo {
 	i64 line_number;
 	i64 character_number;
 	i32 percentage;
@@ -96,7 +96,7 @@ interface DocumentSession {
 	LinkActivationResult activate_link_ffi(i64 position);
 	TextSegmentFfi get_text_segment(i64 position, SegmentTypeFfi segment_type, SegmentDirectionFfi direction);
 
-	StatusInfoFfi get_status_info_ffi(i64 position);
+	StatusInfo get_status_info_ffi(i64 position);
 	i64 position_from_percent_ffi(i32 percent);
 	i32 current_page_ffi(i64 position);
 	i32 page_count_ffi();
