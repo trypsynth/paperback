@@ -1,4 +1,4 @@
-package dev.paperback.mobile.ui
+﻿package dev.paperback.mobile.ui
 
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
@@ -28,6 +28,9 @@ import kotlin.math.roundToInt
 import uniffi.paperback.SegmentTypeFfi
 
 private const val SEEK_RANGE = 10000
+// Zero-width space: satisfies TalkBack's non-null stateDescription check so it doesn't
+// fall back to announcing the raw slider value, while reading aloud as nothing.
+private const val ZWSP = "​"
 
 fun getSegmentTypeName(type: SegmentTypeFfi): String =
 	when (type) {
@@ -110,6 +113,7 @@ fun TtsBottomBar(
 						.clearAndSetSemantics {
 							role = Role.Button
 							contentDescription = if (isSpeaking) "Pause" else "Play"
+							stateDescription = ZWSP
 							progressBarRangeInfo = ProgressBarRangeInfo(
 								current = seekPosition.toFloat(),
 								range = 0f..SEEK_RANGE.toFloat(),
