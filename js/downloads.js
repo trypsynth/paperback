@@ -19,7 +19,7 @@
     const assets = release.assets ?? [];
     const zip = assets.find(a => a.name.toLowerCase().endsWith(".zip"));
     const exe = assets.find(a => a.name.toLowerCase().endsWith(".exe"));
-    const apk = showApk ? assets.find(a => a.name.toLowerCase().endsWith(".apk")) : null;
+    const apks = showApk ? assets.filter(a => a.name.toLowerCase().endsWith(".apk")) : [];
     const version = release.tag_name.replace(/^v/, "");
     return `
       <div>
@@ -27,7 +27,10 @@
         ${subtitle ? `<p>${subtitle}</p>` : ""}
         <p>${exe ? `<p><a href="${exe.browser_download_url}">Windows Installer (.exe)</a> - ${fmtCount(exe.download_count)}</p>` : ""}</p>
         <p>${zip ? `<p><a href="${zip.browser_download_url}">Windows Portable (.zip)</a> - ${fmtCount(zip.download_count)}</p>` : ""}</p>
-        ${apk ? `<p><a href="${apk.browser_download_url}">Android APK</a> - ${fmtCount(apk.download_count)}</p>` : ""}
+        ${apks.map(a => {
+          const label = a.name.includes("arm64") ? "Android APK (arm64-v8a)" : a.name.includes("arm") ? "Android APK (armeabi-v7a)" : "Android APK";
+          return `<p><a href="${a.browser_download_url}">${label}</a> - ${fmtCount(a.download_count)}</p>`;
+        }).join("")}
         <p><a href="${release.html_url}">View on GitHub</a></p>
       </div>
     `.trim();
