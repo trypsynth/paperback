@@ -116,7 +116,7 @@ jobs:
     - name: Cache Rust dependencies
       uses: Swatinem/rust-cache@v2
     - name: Build Android native libraries and bindings
-      run: cargo xtask android
+      run: cargo android
     - name: Cache Gradle packages
       uses: actions/cache@v4
       with:
