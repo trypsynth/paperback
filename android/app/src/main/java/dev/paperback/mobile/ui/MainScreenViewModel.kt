@@ -31,7 +31,8 @@ data class DocumentTabState(
 	val toc: List<TocEntry>,
 	val documentUri: String,
 	val docKey: String,
-	val initialScrollIndex: Int = 0
+	val initialScrollIndex: Int = 0,
+	val savedPosition: Long = 0L
 )
 
 data class RecentDocumentItem(
@@ -136,6 +137,10 @@ class MainScreenViewModel(
 						activeTabIndex = currentActiveIndex,
 						recentDocuments = recentDocumentsList
 					)
+					currentTabs.getOrNull(currentActiveIndex)?.let {
+						_ttsPosition.value = it.savedPosition
+						refreshSegmentPreview()
+					}
 				}
 			} else {
 				val initialRecents = getRecentDocumentsListIO()
@@ -279,6 +284,8 @@ class MainScreenViewModel(
 				config.flush()
 			}
 			_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
+			_ttsPosition.value = currentTabs[index].savedPosition
+			refreshSegmentPreview()
 		}
 	}
 
@@ -343,7 +350,8 @@ class MainScreenViewModel(
 					toc = session.getToc(),
 					documentUri = uri.toString(),
 					docKey = docKey,
-					initialScrollIndex = initialScrollIndex
+					initialScrollIndex = initialScrollIndex,
+					savedPosition = savedPosition
 				)
 			} catch (e: Exception) {
 				null
@@ -405,6 +413,10 @@ class MainScreenViewModel(
 			}
 			_uiState.value =
 				MainScreenUiState.Success(tabs = currentTabs.toList(), activeTabIndex = currentActiveIndex, recentDocumentsList)
+			if (makeActive) {
+				_ttsPosition.value = tabState.savedPosition
+				refreshSegmentPreview()
+			}
 		}
 	}
 
@@ -426,6 +438,17 @@ class MainScreenViewModel(
 		viewModelScope.launch(Dispatchers.IO) {
 			config.setDocumentPosition(docUri, pos)
 			config.flush()
+		}
+	}
+
+	private fun refreshSegmentPreview() {
+		val state = uiState.value as? MainScreenUiState.Success ?: return
+		val tab = state.activeTab ?: return
+		val segment = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
+		_currentSegmentText.value = if (segment.text.isNotBlank()) {
+			segment.text
+		} else {
+			tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.NEXT).text
 		}
 	}
 
