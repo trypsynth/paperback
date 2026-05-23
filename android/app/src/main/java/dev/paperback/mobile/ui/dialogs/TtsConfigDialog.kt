@@ -1,4 +1,4 @@
-package dev.paperback.mobile.ui
+package dev.paperback.mobile.ui.dialogs
 
 import android.speech.tts.TextToSpeech
 import android.speech.tts.Voice
