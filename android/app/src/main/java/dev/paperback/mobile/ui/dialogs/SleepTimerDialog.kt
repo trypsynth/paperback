@@ -50,7 +50,7 @@ fun SleepTimerDialog(
 								onClick = { onSetTimer(minutes); onDismiss() },
 								modifier = Modifier.weight(1f)
 							) {
-								Text("${minutes}m")
+								Text("$minutes minutes")
 							}
 						}
 					}

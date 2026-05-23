@@ -18,7 +18,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -340,7 +342,15 @@ fun MainScreen(
 									Text(
 										"Sleep timer: %d:%02d".format(min, sec),
 										style = MaterialTheme.typography.labelMedium,
-										color = MaterialTheme.colorScheme.onSurfaceVariant
+										color = MaterialTheme.colorScheme.onSurfaceVariant,
+										modifier = Modifier.semantics {
+											customActions = listOf(
+												CustomAccessibilityAction("Cancel sleep timer") {
+													viewModel.cancelSleepTimer()
+													true
+												}
+											)
+										}
 									)
 								}
 							}
