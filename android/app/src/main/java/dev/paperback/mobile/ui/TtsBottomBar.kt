@@ -52,7 +52,19 @@ fun TtsBottomBar(
 		actions = {
 			val segmentTypeName = getSegmentTypeName(currentSegmentType)
 
-			IconButton(onClick = onPrev) {
+			IconButton(
+				onClick = onPrev,
+				modifier = Modifier.semantics {
+					customActions = SegmentTypeFfi.entries
+						.filter { it != currentSegmentType }
+						.map { type ->
+							CustomAccessibilityAction(getSegmentTypeName(type)) {
+								onSegmentTypeChange(type)
+								true
+							}
+						}
+				}
+			) {
 				Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous $segmentTypeName")
 			}
 
@@ -101,7 +113,19 @@ fun TtsBottomBar(
 				}
 			}
 
-			IconButton(onClick = onNext) {
+			IconButton(
+				onClick = onNext,
+				modifier = Modifier.semantics {
+					customActions = SegmentTypeFfi.entries
+						.filter { it != currentSegmentType }
+						.map { type ->
+							CustomAccessibilityAction(getSegmentTypeName(type)) {
+								onSegmentTypeChange(type)
+								true
+							}
+						}
+				}
+			) {
 				Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next $segmentTypeName")
 			}
 		}
