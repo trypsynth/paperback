@@ -10,6 +10,7 @@ import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import uniffi.paperback.ConfigManagerFfi
 import java.util.Locale
 
@@ -71,6 +72,9 @@ class TtsManager(
 
 	private val _isInitialized = MutableStateFlow(false)
 	val isInitialized: StateFlow<Boolean> = _isInitialized
+
+	private val ttsScope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main)
+	private var stopSpeakingJob: kotlinx.coroutines.Job? = null
 
 	private val _isSpeaking = MutableStateFlow(false)
 	val isSpeaking: StateFlow<Boolean> = _isSpeaking
@@ -151,13 +155,18 @@ class TtsManager(
 		if (status == TextToSpeech.SUCCESS) {
 			tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
 				override fun onStart(utteranceId: String?) {
+					stopSpeakingJob?.cancel()
 					_isSpeaking.value = true
 					updatePlaybackState(true)
 				}
 
 				override fun onDone(utteranceId: String?) {
-					_isSpeaking.value = false
-					updatePlaybackState(false)
+					stopSpeakingJob?.cancel()
+					stopSpeakingJob = ttsScope.launch {
+						kotlinx.coroutines.delay(400)
+						_isSpeaking.value = false
+						updatePlaybackState(false)
+					}
 					if (utteranceId == "TTS_CONTENT_ID") {
 						onUtteranceCompleted?.invoke()
 					}
@@ -165,6 +174,7 @@ class TtsManager(
 
 				@Deprecated("Deprecated in Java")
 				override fun onError(utteranceId: String?) {
+					stopSpeakingJob?.cancel()
 					_isSpeaking.value = false
 					updatePlaybackState(false)
 				}
@@ -173,6 +183,7 @@ class TtsManager(
 					utteranceId: String?,
 					interrupted: Boolean
 				) {
+					stopSpeakingJob?.cancel()
 					_isSpeaking.value = false
 					updatePlaybackState(false)
 				}
@@ -225,6 +236,7 @@ class TtsManager(
 
 	fun stop() {
 		tts?.stop()
+		stopSpeakingJob?.cancel()
 		_isSpeaking.value = false
 		updatePlaybackState(false)
 		abandonAudioFocus()

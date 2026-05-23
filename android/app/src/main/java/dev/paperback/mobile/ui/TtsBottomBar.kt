@@ -1,4 +1,4 @@
-﻿package dev.paperback.mobile.ui
+package dev.paperback.mobile.ui
 
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
@@ -112,7 +112,7 @@ fun TtsBottomBar(
 						)
 						.clearAndSetSemantics {
 							role = Role.Button
-							contentDescription = if (isSpeaking) "Pause, button" else "Play, button"
+							contentDescription = if (isSpeaking) "Pause" else "Play"
 							stateDescription = ZWSP
 							progressBarRangeInfo = ProgressBarRangeInfo(
 								current = seekPosition.toFloat(),
