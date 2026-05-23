@@ -453,7 +453,7 @@ class MainScreenViewModel(
 		}
 	}
 
-	private fun refreshSegmentPreview() {
+	fun refreshSegmentPreview() {
 		val state = uiState.value as? MainScreenUiState.Success ?: return
 		val tab = state.activeTab ?: return
 		val segment = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)

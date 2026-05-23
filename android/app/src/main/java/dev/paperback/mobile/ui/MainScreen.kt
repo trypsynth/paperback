@@ -314,6 +314,9 @@ fun MainScreen(
 								val index = (line - 1).toInt().coerceAtLeast(0)
 								listState.scrollToItem(index)
 								lineIndexToFocus = index
+							} else {
+								viewModel.savePosition(docState.session, docState.documentUri, listState.firstVisibleItemIndex)
+								viewModel.refreshSegmentPreview()
 							}
 						}
 
@@ -399,6 +402,8 @@ fun MainScreen(
 								docState = docState,
 								onDismiss = { goToDialogOpen = false },
 								onGoTo = { indexToScroll ->
+									viewModel.savePosition(docState.session, docState.documentUri, indexToScroll)
+									viewModel.refreshSegmentPreview()
 									isTextMode = true
 									scope.launch {
 										listState.scrollToItem(indexToScroll)
