@@ -814,7 +814,7 @@ fun MainScreen(
 					}
 
 					if (optionsDialogOpen) {
-						OptionsDialog(
+						SettingsDialog(
 							initialRestorePreviousDocuments = restorePreviousDocuments,
 							onSaveOptions = { checked ->
 								restorePreviousDocuments = checked
