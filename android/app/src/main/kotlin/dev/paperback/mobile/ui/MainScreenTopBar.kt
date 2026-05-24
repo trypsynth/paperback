@@ -36,7 +36,8 @@ fun MainScreenTopBar(
 	onWordCountOpen: () -> Unit,
 	onDocumentInfoOpen: () -> Unit,
 	onSettingsOpen: () -> Unit,
-	onSleepTimerOpen: () -> Unit
+	onSleepTimerOpen: () -> Unit,
+	onElementsOpen: () -> Unit
 ) {
 	var moreOptionsExpanded by remember { mutableStateOf(false) }
 	Column(
@@ -137,6 +138,12 @@ fun MainScreenTopBar(
 										true
 									}
 								)
+								add(
+									CustomAccessibilityAction("Elements List") {
+										onElementsOpen()
+										true
+									}
+								)
 							}
 						}
 					) {
@@ -209,6 +216,13 @@ fun MainScreenTopBar(
 							onClick = {
 								moreOptionsExpanded = false
 								onSleepTimerOpen()
+							}
+						)
+						DropdownMenuItem(
+							text = { Text("Elements List") },
+							onClick = {
+								moreOptionsExpanded = false
+								onElementsOpen()
 							}
 						)
 					}

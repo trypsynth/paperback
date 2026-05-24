@@ -20,6 +20,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.semantics.stateDescription
@@ -68,27 +69,26 @@ fun TtsBottomBar(
 		modifier = modifier,
 		actions = {
 			// Unit selector: swipe up/down to cycle through navigation units with wrap-around.
-			var unitSeekPosition by remember { mutableIntStateOf(SEEK_RANGE / 2) }
 			Box(
 				modifier = Modifier.clearAndSetSemantics {
 					contentDescription = "Navigation unit"
 					stateDescription = segmentTypeName
 					progressBarRangeInfo = ProgressBarRangeInfo(
-						current = unitSeekPosition.toFloat(),
+						current = (SEEK_RANGE / 2).toFloat(),
 						range = 0f..SEEK_RANGE.toFloat(),
 						steps = SEEK_RANGE - 1,
 					)
 					setProgress { targetValue ->
+						val current = SEEK_RANGE / 2
 						val newPos = targetValue.roundToInt().coerceIn(0, SEEK_RANGE)
 						when {
-							newPos > unitSeekPosition -> onSegmentTypeChange(
+							newPos > current -> onSegmentTypeChange(
 								types[(currentTypeIndex + 1) % types.size]
 							)
-							newPos < unitSeekPosition -> onSegmentTypeChange(
+							newPos < current -> onSegmentTypeChange(
 								types[(currentTypeIndex - 1 + types.size) % types.size]
 							)
 						}
-						unitSeekPosition = newPos
 						true
 					}
 				},
@@ -103,7 +103,6 @@ fun TtsBottomBar(
 
 			// Play/pause: double-tap to play/pause, swipe up/down to seek by the current unit.
 			Box {
-				var seekPosition by remember { mutableIntStateOf(SEEK_RANGE / 2) }
 				Box(
 					modifier = Modifier
 						.size(48.dp)
@@ -117,17 +116,17 @@ fun TtsBottomBar(
 							contentDescription = if (isSpeaking) "Pause" else "Play"
 							stateDescription = ZWSP
 							progressBarRangeInfo = ProgressBarRangeInfo(
-								current = seekPosition.toFloat(),
+								current = (SEEK_RANGE / 2).toFloat(),
 								range = 0f..SEEK_RANGE.toFloat(),
 								steps = SEEK_RANGE - 1,
 							)
 							setProgress { targetValue ->
+								val current = SEEK_RANGE / 2
 								val newPos = targetValue.roundToInt().coerceIn(0, SEEK_RANGE)
 								when {
-									newPos > seekPosition -> onNext()
-									newPos < seekPosition -> onPrev()
+									newPos > current -> onNext()
+									newPos < current -> onPrev()
 								}
-								seekPosition = newPos
 								true
 							}
 							onClick(label = "Activate") { onPlayPause(); true }

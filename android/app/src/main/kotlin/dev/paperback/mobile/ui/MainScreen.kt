@@ -70,6 +70,10 @@ fun MainScreen(
 	val currentEngineName by viewModel.ttsManager.currentEngineName.collectAsStateWithLifecycle()
 	var ttsConfigDialogOpen by remember { mutableStateOf(false) }
 	val sleepTimerRemaining by viewModel.sleepTimerRemaining.collectAsStateWithLifecycle()
+	val showElementsDialog by viewModel.showElementsDialog.collectAsStateWithLifecycle()
+	val currentHeadings by viewModel.currentHeadings.collectAsStateWithLifecycle()
+	val currentLinks by viewModel.currentLinks.collectAsStateWithLifecycle()
+
 	LaunchedEffect(Unit) {
 		viewModel.sleepTimerExpired.collect {
 			isScreenDimmed = true
@@ -141,7 +145,8 @@ fun MainScreen(
 				onWordCountOpen = { wordCountDialogOpen = true },
 				onDocumentInfoOpen = { documentInfoDialogOpen = true },
 				onSettingsOpen = { optionsDialogOpen = true },
-				onSleepTimerOpen = { sleepTimerDialogOpen = true }
+				onSleepTimerOpen = { sleepTimerDialogOpen = true },
+				onElementsOpen = { viewModel.openElementsDialog() }
 			)
 		},
 		bottomBar = {
@@ -356,6 +361,24 @@ fun MainScreen(
 										}
 									}
 								}
+							)
+						}
+						if (showElementsDialog) {
+							ElementsDialog(
+								headings = currentHeadings,
+								links = currentLinks,
+								onNavigate = { offset ->
+									val line = docState.session.lineFromPosition(offset)
+									val indexToScroll = (line - 1).toInt().coerceAtLeast(0)
+									viewModel.savePosition(docState.session, docState.documentUri, indexToScroll)
+									viewModel.refreshSegmentPreview()
+									isTextMode = true
+									scope.launch {
+										listState.scrollToItem(indexToScroll)
+										lineIndexToFocus = indexToScroll
+									}
+								},
+								onDismiss = { viewModel.closeElementsDialog() }
 							)
 						}
 					}

@@ -80,6 +80,27 @@ dictionary StatusInfo {
 	i32 percentage;
 };
 
+dictionary HeadingTreeItemFfi {
+	i64 offset;
+	string text;
+	i32 parent_index;
+};
+
+dictionary HeadingTreeFfi {
+	sequence<HeadingTreeItemFfi> items;
+	i32 closest_index;
+};
+
+dictionary LinkListItemFfi {
+	i64 offset;
+	string text;
+};
+
+dictionary LinkListFfi {
+	sequence<LinkListItemFfi> items;
+	i32 closest_index;
+};
+
 interface DocumentSession {
 	[Name=new_ffi, Throws=DocumentError]
 	constructor(string file_path, string password, string forced_extension);
@@ -101,6 +122,9 @@ interface DocumentSession {
 	i32 current_page_ffi(i64 position);
 	i32 page_count_ffi();
 	i64 page_offset_ffi(i32 page);
+
+	HeadingTreeFfi get_heading_tree_ffi(i64 position);
+	LinkListFfi get_link_list_ffi(i64 position);
 
 	sequence<TocEntry> get_toc();
 

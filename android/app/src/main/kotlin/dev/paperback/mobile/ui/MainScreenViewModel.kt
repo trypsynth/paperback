@@ -19,6 +19,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import uniffi.paperback.ConfigManagerFfi
 import uniffi.paperback.DocumentSession
+import uniffi.paperback.HeadingTreeFfi
+import uniffi.paperback.LinkListFfi
 import uniffi.paperback.SegmentDirectionFfi
 import uniffi.paperback.SegmentTypeFfi
 import java.io.File
@@ -60,6 +62,15 @@ class MainScreenViewModel(
 
 	private val _supportedMimeTypes = MutableStateFlow<Array<String>>(arrayOf("*/*"))
 	val supportedMimeTypes: StateFlow<Array<String>> = _supportedMimeTypes
+
+	private val _showElementsDialog = MutableStateFlow(false)
+	val showElementsDialog: StateFlow<Boolean> = _showElementsDialog
+
+	private val _currentHeadings = MutableStateFlow<HeadingTreeFfi?>(null)
+	val currentHeadings: StateFlow<HeadingTreeFfi?> = _currentHeadings
+
+	private val _currentLinks = MutableStateFlow<LinkListFfi?>(null)
+	val currentLinks: StateFlow<LinkListFfi?> = _currentLinks
 
 	init {
 		ttsManager.onUtteranceCompleted = {
@@ -523,5 +534,26 @@ class MainScreenViewModel(
 		val pos = tab.session.positionFromPercentFfi(percent)
 		_ttsPosition.value = pos
 		saveTtsPositionToConfig(pos)
+	}
+
+	fun openElementsDialog() {
+		val state = uiState.value as? MainScreenUiState.Success ?: return
+		val tab = state.activeTab ?: return
+		viewModelScope.launch(Dispatchers.IO) {
+			val pos = _ttsPosition.value
+			val headings = tab.session.getHeadingTreeFfi(pos)
+			val links = tab.session.getLinkListFfi(pos)
+			withContext(Dispatchers.Main) {
+				_currentHeadings.value = headings
+				_currentLinks.value = links
+				_showElementsDialog.value = true
+			}
+		}
+	}
+
+	fun closeElementsDialog() {
+		_showElementsDialog.value = false
+		_currentHeadings.value = null
+		_currentLinks.value = null
 	}
 }

@@ -244,6 +244,31 @@ pub struct DocumentStatsFfi {
 	pub char_count_no_whitespace: i64,
 }
 
+#[derive(Debug, Clone)]
+pub struct HeadingTreeItemFfi {
+	pub offset: i64,
+	pub text: String,
+	pub parent_index: i32,
+}
+
+#[derive(Debug, Clone)]
+pub struct HeadingTreeFfi {
+	pub items: Vec<HeadingTreeItemFfi>,
+	pub closest_index: i32,
+}
+
+#[derive(Debug, Clone)]
+pub struct LinkListItemFfi {
+	pub offset: i64,
+	pub text: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct LinkListFfi {
+	pub items: Vec<LinkListItemFfi>,
+	pub closest_index: i32,
+}
+
 impl DocumentSession {
 	/// # Errors
 	///
@@ -596,6 +621,36 @@ impl DocumentSession {
 			}
 		}
 		ffi::HeadingTree { items, closest_index }
+	}
+
+	#[must_use]
+	pub fn get_heading_tree_ffi(&self, position: i64) -> HeadingTreeFfi {
+		let tree = self.heading_tree(position);
+		HeadingTreeFfi {
+			items: tree
+				.items
+				.into_iter()
+				.map(|i| HeadingTreeItemFfi {
+					offset: i64::try_from(i.offset).unwrap_or(i64::MAX),
+					text: i.text,
+					parent_index: i.parent_index,
+				})
+				.collect(),
+			closest_index: tree.closest_index,
+		}
+	}
+
+	#[must_use]
+	pub fn get_link_list_ffi(&self, position: i64) -> LinkListFfi {
+		let list = self.link_list(position);
+		LinkListFfi {
+			items: list
+				.items
+				.into_iter()
+				.map(|i| LinkListItemFfi { offset: i64::try_from(i.offset).unwrap_or(i64::MAX), text: i.text })
+				.collect(),
+			closest_index: list.closest_index,
+		}
 	}
 
 	fn history_navigate(&mut self, current_pos: i64, forward: bool) -> NavigationResult {
