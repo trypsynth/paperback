@@ -6,6 +6,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
@@ -18,8 +19,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
-import androidx.compose.ui.semantics.onLongClick
-import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.setProgress
@@ -69,79 +68,40 @@ fun TtsBottomBar(
 	BottomAppBar(
 		modifier = modifier,
 		actions = {
-			// Unit selector: swipe up/down to cycle through navigation units with wrap-around.
-			Box(
-				modifier = Modifier.clearAndSetSemantics {
-					contentDescription = "Navigation unit"
-					stateDescription = segmentTypeName
-					progressBarRangeInfo = ProgressBarRangeInfo(
-						current = (SEEK_RANGE / 2).toFloat(),
-						range = 0f..SEEK_RANGE.toFloat(),
-						steps = SEEK_RANGE - 1,
-					)
-					setProgress { targetValue ->
-						val current = SEEK_RANGE / 2
-						val newPos = targetValue.roundToInt().coerceIn(0, SEEK_RANGE)
-						val idx = if (currentTypeIndex == -1) 0 else currentTypeIndex
-						when {
-							newPos > current -> onSegmentTypeChange(
-								types[(idx + 1) % types.size]
-							)
-							newPos < current -> onSegmentTypeChange(
-								types[(idx - 1 + types.size) % types.size]
-							)
-						}
-						true
-					}
-				},
-				contentAlignment = Alignment.Center,
-			) {
-				Text(text = segmentTypeName)
-			}
-
-			IconButton(onClick = onPrev) {
-				Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous $segmentTypeName")
-			}
-
-			// Play/pause: double-tap to play/pause, swipe up/down to seek by the current unit.
+			// Unit selector: chip for sighted users (tap to open menu), swipe slider for TalkBack.
 			Box {
-				Box(
-					modifier = Modifier
-						.size(48.dp)
-						.clip(CircleShape)
-						.combinedClickable(
-							onClick = onPlayPause,
-							onLongClick = { dropdownExpanded = true },
+				FilterChip(
+					selected = false,
+					onClick = { dropdownExpanded = true },
+					label = { Text(segmentTypeName) },
+					trailingIcon = {
+						Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
+					},
+					modifier = Modifier.clearAndSetSemantics {
+						contentDescription = "Navigation unit"
+						stateDescription = segmentTypeName
+						progressBarRangeInfo = ProgressBarRangeInfo(
+							current = (SEEK_RANGE / 2).toFloat(),
+							range = 0f..SEEK_RANGE.toFloat(),
+							steps = SEEK_RANGE - 1,
 						)
-						.clearAndSetSemantics {
-							role = Role.Button
-							contentDescription = if (isSpeaking) "Pause" else "Play"
-							stateDescription = ZWSP
-							progressBarRangeInfo = ProgressBarRangeInfo(
-								current = (SEEK_RANGE / 2).toFloat(),
-								range = 0f..SEEK_RANGE.toFloat(),
-								steps = SEEK_RANGE - 1,
-							)
-							setProgress { targetValue ->
-								val current = SEEK_RANGE / 2
-								val newPos = targetValue.roundToInt().coerceIn(0, SEEK_RANGE)
-								when {
-									newPos > current -> onNext()
-									newPos < current -> onPrev()
-								}
-								true
+						setProgress { targetValue ->
+							val current = SEEK_RANGE / 2
+							val newPos = targetValue.roundToInt().coerceIn(0, SEEK_RANGE)
+							val idx = if (currentTypeIndex == -1) 0 else currentTypeIndex
+							when {
+								newPos > current -> onSegmentTypeChange(
+									types[(idx + 1) % types.size]
+								)
+								newPos < current -> onSegmentTypeChange(
+									types[(idx - 1 + types.size) % types.size]
+								)
 							}
-							onClick(label = "Activate") { onPlayPause(); true }
-							onLongClick(label = "Select navigation unit") { dropdownExpanded = true; true }
-						},
-					contentAlignment = Alignment.Center,
-				) {
-					if (isSpeaking) {
-						Icon(Icons.Filled.Pause, contentDescription = null)
-					} else {
-						Icon(Icons.Filled.PlayArrow, contentDescription = null)
+							true
+						}
+						onClick(label = "Select navigation unit") { dropdownExpanded = true; true }
 					}
-				}
+				)
 				DropdownMenu(
 					expanded = dropdownExpanded,
 					onDismissRequest = { dropdownExpanded = false },
@@ -155,6 +115,45 @@ fun TtsBottomBar(
 							},
 						)
 					}
+				}
+			}
+
+			IconButton(onClick = onPrev) {
+				Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous $segmentTypeName")
+			}
+
+			// Play/pause: tap to play/pause, swipe up/down (TalkBack) to seek by the current unit.
+			Box(
+				modifier = Modifier
+					.size(48.dp)
+					.clip(CircleShape)
+					.combinedClickable(onClick = onPlayPause)
+					.clearAndSetSemantics {
+						role = Role.Button
+						contentDescription = if (isSpeaking) "Pause" else "Play"
+						stateDescription = ZWSP
+						progressBarRangeInfo = ProgressBarRangeInfo(
+							current = (SEEK_RANGE / 2).toFloat(),
+							range = 0f..SEEK_RANGE.toFloat(),
+							steps = SEEK_RANGE - 1,
+						)
+						setProgress { targetValue ->
+							val current = SEEK_RANGE / 2
+							val newPos = targetValue.roundToInt().coerceIn(0, SEEK_RANGE)
+							when {
+								newPos > current -> onNext()
+								newPos < current -> onPrev()
+							}
+							true
+						}
+						onClick(label = "Activate") { onPlayPause(); true }
+					},
+				contentAlignment = Alignment.Center,
+			) {
+				if (isSpeaking) {
+					Icon(Icons.Filled.Pause, contentDescription = null)
+				} else {
+					Icon(Icons.Filled.PlayArrow, contentDescription = null)
 				}
 			}
 
