@@ -167,12 +167,14 @@ fun MainScreen(
 				state is MainScreenUiState.Success &&
 				(state as MainScreenUiState.Success).activeTab != null
 			) {
+				val activeTab = (state as MainScreenUiState.Success).activeTab!!
 				TtsBottomBar(
 					isSpeaking = isSpeaking,
 					onPlayPause = { viewModel.togglePlayPause() },
 					onPrev = { viewModel.playPrevSegment() },
 					onNext = { viewModel.playNextSegment() },
 					currentSegmentType = currentSegmentType,
+					supportedSegmentTypes = activeTab.session.getSupportedSegmentTypesFfi(),
 					onSegmentTypeChange = { viewModel.setSegmentType(it) }
 				)
 			}

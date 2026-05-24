@@ -129,6 +129,7 @@ interface DocumentSession {
 	sequence<TocEntry> get_toc();
 
 	DocumentStatsFfi get_stats_ffi();
+	sequence<SegmentTypeFfi> get_supported_segment_types_ffi();
 
 	SearchResultFfi search_ffi(string query, i64 start_position, SearchOptionsFfi options);
 };

@@ -57,11 +57,12 @@ fun TtsBottomBar(
 	onPrev: () -> Unit,
 	onNext: () -> Unit,
 	currentSegmentType: SegmentTypeFfi,
+	supportedSegmentTypes: List<SegmentTypeFfi>,
 	onSegmentTypeChange: (SegmentTypeFfi) -> Unit,
 	modifier: Modifier = Modifier
 ) {
 	var dropdownExpanded by remember { mutableStateOf(false) }
-	val types = SegmentTypeFfi.entries
+	val types = supportedSegmentTypes
 	val segmentTypeName = getSegmentTypeName(currentSegmentType)
 	val currentTypeIndex = types.indexOf(currentSegmentType)
 
@@ -81,12 +82,13 @@ fun TtsBottomBar(
 					setProgress { targetValue ->
 						val current = SEEK_RANGE / 2
 						val newPos = targetValue.roundToInt().coerceIn(0, SEEK_RANGE)
+						val idx = if (currentTypeIndex == -1) 0 else currentTypeIndex
 						when {
 							newPos > current -> onSegmentTypeChange(
-								types[(currentTypeIndex + 1) % types.size]
+								types[(idx + 1) % types.size]
 							)
 							newPos < current -> onSegmentTypeChange(
-								types[(currentTypeIndex - 1 + types.size) % types.size]
+								types[(idx - 1 + types.size) % types.size]
 							)
 						}
 						true
