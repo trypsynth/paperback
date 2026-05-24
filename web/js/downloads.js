@@ -15,10 +15,11 @@
 
   const fmtCount = n => `downloaded ${n} ${n === 1 ? "time" : "times"}`;
 
-  const render = (release, label, subtitle = "") => {
+  const render = (release, label, subtitle = "", showApk = false) => {
     const assets = release.assets ?? [];
     const zip = assets.find(a => a.name.toLowerCase().endsWith(".zip"));
     const exe = assets.find(a => a.name.toLowerCase().endsWith(".exe"));
+    const apks = showApk ? assets.filter(a => a.name.toLowerCase().endsWith(".apk")) : [];
     const version = release.tag_name.replace(/^v/, "");
     return `
       <div>
@@ -26,6 +27,10 @@
         ${subtitle ? `<p>${subtitle}</p>` : ""}
         <p>${exe ? `<p><a href="${exe.browser_download_url}">Windows Installer (.exe)</a> - ${fmtCount(exe.download_count)}</p>` : ""}</p>
         <p>${zip ? `<p><a href="${zip.browser_download_url}">Windows Portable (.zip)</a> - ${fmtCount(zip.download_count)}</p>` : ""}</p>
+        ${apks.map(a => {
+          const label = a.name.includes("arm64") ? "Android APK (arm64-v8a)" : a.name.includes("arm") ? "Android APK (armeabi-v7a)" : "Android APK";
+          return `<p><a href="${a.browser_download_url}">${label}</a> - ${fmtCount(a.download_count)}</p>`;
+        }).join("")}
         <p><a href="${release.html_url}">View on GitHub</a></p>
       </div>
     `.trim();
@@ -39,7 +44,7 @@
     const dev = releases.find(r => r.tag_name === "latest");
     const previousStable = releases.filter(isStable).slice(1);
     stableEl.innerHTML = stable ? render(stable, "Stable Version", "Recommended for most users") : "No stable release found.";
-    devEl.innerHTML = dev ? render(dev, "Master Build", "Includes experimental features, may be unstable") : "No development builds found.";
+    devEl.innerHTML = dev ? render(dev, "Master Build", "Includes experimental features, may be unstable", true) : "No development builds found.";
     if (previousStable.length > 0) {
       const blocks = previousStable.map(r => render(r, "Stable Version")).join("");
       historyEl.innerHTML = `

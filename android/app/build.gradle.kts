@@ -16,10 +16,21 @@ android {
 		versionName = "1.0"
 	}
 
+	splits {
+		abi {
+			isEnable = true
+			reset()
+			include("armeabi-v7a", "arm64-v8a")
+			isUniversalApk = false
+		}
+	}
+
 	buildTypes {
 		release {
-			isMinifyEnabled = false
+			isMinifyEnabled = true
+			isShrinkResources = true
 			proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+			signingConfig = signingConfigs.getByName("debug")
 		}
 	}
 	compileOptions {
@@ -66,6 +77,7 @@ dependencies {
 	implementation(libs.androidx.compose.ui.tooling.preview)
 	implementation(libs.androidx.compose.material3)
 	implementation(libs.androidx.compose.material.icons.core)
+	implementation(libs.androidx.compose.material.icons.extended)
 	// Tooling
 	debugImplementation(libs.androidx.compose.ui.tooling)
 	// Instrumented tests

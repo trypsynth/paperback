@@ -26,15 +26,32 @@ dictionary LineMarker {
 	i64 length;
 };
 
-enum LinkActionFfi {
+enum LinkAction {
 	"Internal", "External", "NotFound"
 };
 
-dictionary LinkActivationResultFfi {
+dictionary LinkActivationResult {
 	boolean found;
-	LinkActionFfi action;
+	LinkAction action;
 	i64 offset;
 	string url;
+};
+
+enum SegmentTypeFfi {
+	"Paragraph", "Line",
+	"Heading", "Link", "Section", "Page",
+	"List", "ListItem", "Table", "Separator",
+	"Image", "Figure"
+};
+
+enum SegmentDirectionFfi {
+	"Current", "Next", "Previous"
+};
+
+dictionary TextSegmentFfi {
+	string text;
+	i64 start_pos;
+	i64 end_pos;
 };
 
 dictionary DocumentStatsFfi {
@@ -57,10 +74,31 @@ dictionary SearchResultFfi {
 	i64 position;
 };
 
-dictionary StatusInfoFfi {
+dictionary StatusInfo {
 	i64 line_number;
 	i64 character_number;
 	i32 percentage;
+};
+
+dictionary HeadingTreeItemFfi {
+	i64 offset;
+	string text;
+	i32 parent_index;
+};
+
+dictionary HeadingTreeFfi {
+	sequence<HeadingTreeItemFfi> items;
+	i32 closest_index;
+};
+
+dictionary LinkListItemFfi {
+	i64 offset;
+	string text;
+};
+
+dictionary LinkListFfi {
+	sequence<LinkListItemFfi> items;
+	i32 closest_index;
 };
 
 interface DocumentSession {
@@ -76,18 +114,22 @@ interface DocumentSession {
 	i64 position_from_line(i64 line);
 	i64 line_from_position(i64 position);
 	sequence<LineMarker> get_line_markers(i64 line);
-	LinkActivationResultFfi activate_link_ffi(i64 position);
+	LinkActivationResult activate_link_ffi(i64 position);
+	TextSegmentFfi get_text_segment(i64 position, SegmentTypeFfi segment_type, SegmentDirectionFfi direction);
 
-	StatusInfoFfi get_status_info_ffi(i64 position);
+	StatusInfo get_status_info_ffi(i64 position);
 	i64 position_from_percent_ffi(i32 percent);
 	i32 current_page_ffi(i64 position);
 	i32 page_count_ffi();
 	i64 page_offset_ffi(i32 page);
 
+	HeadingTreeFfi get_heading_tree_ffi(i64 position);
+	LinkListFfi get_link_list_ffi(i64 position);
+
 	sequence<TocEntry> get_toc();
 
 	DocumentStatsFfi get_stats_ffi();
-	
+
 	SearchResultFfi search_ffi(string query, i64 start_position, SearchOptionsFfi options);
 };
 

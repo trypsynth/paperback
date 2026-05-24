@@ -7,54 +7,25 @@ import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import dev.paperback.mobile.tts.TtsManager
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import uniffi.paperback.ConfigManagerFfi
 import uniffi.paperback.DocumentSession
-import uniffi.paperback.TocEntry
+import uniffi.paperback.HeadingTreeFfi
+import uniffi.paperback.LinkListFfi
+import uniffi.paperback.SegmentDirectionFfi
+import uniffi.paperback.SegmentTypeFfi
 import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
-
-data class DocumentTabState(
-	val session: DocumentSession,
-	val title: String,
-	val author: String,
-	val fileName: String,
-	val lineCount: Long,
-	val toc: List<TocEntry>,
-	val documentUri: String,
-	val docKey: String,
-	val initialScrollIndex: Int = 0
-)
-
-data class RecentDocumentItem(
-	val uri: String,
-	val displayName: String,
-	val isOpen: Boolean,
-	val isMissing: Boolean = false
-)
-
-sealed class MainScreenUiState {
-	object Idle : MainScreenUiState()
-
-	object Loading : MainScreenUiState()
-
-	data class Success(
-		val tabs: List<DocumentTabState>,
-		val activeTabIndex: Int,
-		val recentDocuments: List<RecentDocumentItem> = emptyList()
-	) : MainScreenUiState() {
-		val activeTab: DocumentTabState? get() = tabs.getOrNull(activeTabIndex)
-	}
-
-	data class Error(
-		val message: String
-	) : MainScreenUiState()
-}
 
 class MainScreenViewModel(
 	application: Application
@@ -63,6 +34,24 @@ class MainScreenViewModel(
 
 	private val config = ConfigManagerFfi()
 	val configManager: ConfigManagerFfi get() = config
+
+	val ttsManager = TtsManager(application, config)
+	private val _currentSegmentType = MutableStateFlow(SegmentTypeFfi.PARAGRAPH)
+	val currentSegmentType: StateFlow<SegmentTypeFfi> = _currentSegmentType
+
+	private val _ttsPosition = MutableStateFlow(0L)
+	val ttsPosition: StateFlow<Long> = _ttsPosition
+
+	private val _currentSegmentText = MutableStateFlow("")
+	val currentSegmentText: StateFlow<String> = _currentSegmentText
+
+	private val _sleepTimerRemaining = MutableStateFlow<Int?>(null)
+	val sleepTimerRemaining: StateFlow<Int?> = _sleepTimerRemaining
+
+	private val _sleepTimerExpired = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+	val sleepTimerExpired: SharedFlow<Unit> = _sleepTimerExpired
+
+	private var sleepTimerJob: Job? = null
 
 	private val _uiState = MutableStateFlow<MainScreenUiState>(MainScreenUiState.Idle)
 	val uiState: StateFlow<MainScreenUiState> = _uiState
@@ -74,14 +63,32 @@ class MainScreenViewModel(
 	private val _supportedMimeTypes = MutableStateFlow<Array<String>>(arrayOf("*/*"))
 	val supportedMimeTypes: StateFlow<Array<String>> = _supportedMimeTypes
 
+	private val _showElementsDialog = MutableStateFlow(false)
+	val showElementsDialog: StateFlow<Boolean> = _showElementsDialog
+
+	private val _currentHeadings = MutableStateFlow<HeadingTreeFfi?>(null)
+	val currentHeadings: StateFlow<HeadingTreeFfi?> = _currentHeadings
+
+	private val _currentLinks = MutableStateFlow<LinkListFfi?>(null)
+	val currentLinks: StateFlow<LinkListFfi?> = _currentLinks
+
 	init {
+		ttsManager.onUtteranceCompleted = {
+			playNextContinuousSegment()
+		}
+		ttsManager.onPlayCommand = { resumeTts() }
+		ttsManager.onPauseCommand = { pauseTts() }
+		ttsManager.onNextCommand = { playNextSegment() }
+		ttsManager.onPrevCommand = { playPrevSegment() }
 		viewModelScope.launch(Dispatchers.IO) {
 			config.initialize(context.filesDir.absolutePath + "/config.toml")
+			withContext(Dispatchers.Main) {
+				ttsManager.loadConfigAndInit()
+			}
 			_supportedMimeTypes.value = buildSupportedMimeTypes()
-
-			val openedUris = config.getOpenedDocuments()
+			val restorePrevious = config.getAppBool("restore_previous_documents", true)
+			val openedUris = if (restorePrevious) config.getOpenedDocuments() else emptyList()
 			val activeDocKey = config.getAppString("active_document", "")
-
 			if (openedUris.isNotEmpty()) {
 				val restoredTabs = mutableListOf<DocumentTabState>()
 				for (uriString in openedUris) {
@@ -90,25 +97,25 @@ class MainScreenViewModel(
 						restoredTabs.add(tab)
 					}
 				}
-
 				val initialRecents = getRecentDocumentsListIO()
-
 				withContext(Dispatchers.Main) {
 					currentTabs.addAll(restoredTabs)
 					recentDocumentsList = initialRecents
-
 					if (currentTabs.isNotEmpty()) {
 						val matchingIndex = currentTabs.indexOfFirst { it.docKey == activeDocKey }
 						currentActiveIndex = if (matchingIndex != -1) matchingIndex else 0
 					} else {
 						currentActiveIndex = -1
 					}
-
 					_uiState.value = MainScreenUiState.Success(
 						tabs = currentTabs.toList(),
 						activeTabIndex = currentActiveIndex,
 						recentDocuments = recentDocumentsList
 					)
+					currentTabs.getOrNull(currentActiveIndex)?.let {
+						_ttsPosition.value = it.savedPosition
+						refreshSegmentPreview()
+					}
 				}
 			} else {
 				val initialRecents = getRecentDocumentsListIO()
@@ -186,7 +193,6 @@ class MainScreenViewModel(
 							isMissing = true
 						}
 					} ?: run { isMissing = true }
-
 					if (!isMissing) {
 						context.contentResolver.openAssetFileDescriptor(uri, "r")?.close()
 					}
@@ -252,6 +258,8 @@ class MainScreenViewModel(
 				config.flush()
 			}
 			_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
+			_ttsPosition.value = currentTabs[index].savedPosition
+			refreshSegmentPreview()
 		}
 	}
 
@@ -261,6 +269,7 @@ class MainScreenViewModel(
 		scrollIndex: Int
 	) {
 		val position = session.positionFromLine((scrollIndex + 1).toLong())
+		_ttsPosition.value = position
 		viewModelScope.launch(Dispatchers.IO) {
 			config.setDocumentPosition(documentUri, position)
 			config.flush()
@@ -269,6 +278,7 @@ class MainScreenViewModel(
 
 	override fun onCleared() {
 		super.onCleared()
+		ttsManager.shutdown()
 		Thread {
 			try {
 				config.flush()
@@ -288,23 +298,19 @@ class MainScreenViewModel(
 						if (nameIndex != -1) displayName = cursor.getString(nameIndex)
 					}
 				}
-
 				val ext = displayName.substringAfterLast('.', "epub").lowercase()
 				val tempFile = File(context.cacheDir, "doc_${UUID.randomUUID()}.$ext")
 				FileOutputStream(tempFile).use { inputStream.copyTo(it) }
 				inputStream.close()
-
 				config.associateUriWithLocalFile(uri.toString(), tempFile.absolutePath)
 				val docKey = config.getDocKey(uri.toString())
 				val savedPosition = config.getDocumentPosition(uri.toString())
-
 				val session = DocumentSession.newFfi(tempFile.absolutePath, "", "")
 				val initialScrollIndex = if (savedPosition > 0L) {
 					(session.lineFromPosition(savedPosition) - 1L).toInt().coerceAtLeast(0)
 				} else {
 					0
 				}
-
 				DocumentTabState(
 					session = session,
 					title = session.title().ifBlank { displayName },
@@ -314,7 +320,8 @@ class MainScreenViewModel(
 					toc = session.getToc(),
 					documentUri = uri.toString(),
 					docKey = docKey,
-					initialScrollIndex = initialScrollIndex
+					initialScrollIndex = initialScrollIndex,
+					savedPosition = savedPosition
 				)
 			} catch (e: Exception) {
 				null
@@ -328,7 +335,6 @@ class MainScreenViewModel(
 		if (currentTabs.isEmpty()) {
 			_uiState.value = MainScreenUiState.Loading
 		}
-		
 		val tabState = prepareDocumentTabIO(uri)
 		if (tabState == null) {
 			withContext(Dispatchers.Main) {
@@ -339,10 +345,8 @@ class MainScreenViewModel(
 			}
 			return@withContext
 		}
-
 		val recentDocsUpdated = getRecentDocumentsListIO()
 		val activeDocKey = config.getAppString("active_document", "")
-
 		withContext(Dispatchers.Main) {
 			recentDocumentsList = recentDocsUpdated
 			val existingIndex = currentTabs.indexOfFirst { it.docKey == tabState.docKey }
@@ -376,6 +380,180 @@ class MainScreenViewModel(
 			}
 			_uiState.value =
 				MainScreenUiState.Success(tabs = currentTabs.toList(), activeTabIndex = currentActiveIndex, recentDocumentsList)
+			if (makeActive) {
+				_ttsPosition.value = tabState.savedPosition
+				refreshSegmentPreview()
+			}
 		}
+	}
+
+	fun setSegmentType(type: SegmentTypeFfi) {
+		_currentSegmentType.value = type
+	}
+
+	fun togglePlayPause() {
+		if (ttsManager.isSpeaking.value) {
+			pauseTts()
+		} else {
+			speakCurrentSegment()
+		}
+	}
+
+	private fun saveTtsPositionToConfig(pos: Long) {
+		val state = uiState.value as? MainScreenUiState.Success ?: return
+		val docUri = state.activeTab?.documentUri ?: return
+		viewModelScope.launch(Dispatchers.IO) {
+			config.setDocumentPosition(docUri, pos)
+			config.flush()
+		}
+	}
+
+	fun refreshSegmentPreview() {
+		val state = uiState.value as? MainScreenUiState.Success ?: return
+		val tab = state.activeTab ?: return
+		val segment = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
+		_currentSegmentText.value = if (segment.text.isNotBlank()) {
+			segment.text
+		} else {
+			tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.NEXT).text
+		}
+	}
+
+	private fun speakCurrentSegment() {
+		val state = uiState.value
+		if (state is MainScreenUiState.Success) {
+			val tab = state.activeTab ?: return
+			val segment = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
+			if (segment.text.isNotBlank()) {
+				_ttsPosition.value = segment.startPos
+				_currentSegmentText.value = segment.text
+				saveTtsPositionToConfig(segment.startPos)
+				ttsManager.speak(segment.text)
+			} else {
+				playNextSegment()
+			}
+		}
+	}
+
+	fun playNextSegment() {
+		val state = uiState.value
+		if (state is MainScreenUiState.Success) {
+			val tab = state.activeTab ?: return
+			val segment = tab.session.getTextSegment(_ttsPosition.value, _currentSegmentType.value, SegmentDirectionFfi.NEXT)
+			if (segment.text.isNotBlank()) {
+				_ttsPosition.value = segment.startPos
+				_currentSegmentText.value = segment.text
+				saveTtsPositionToConfig(segment.startPos)
+				ttsManager.speak(segment.text)
+			}
+		}
+	}
+
+	fun playNextContinuousSegment() {
+		val state = uiState.value
+		if (state is MainScreenUiState.Success) {
+			val tab = state.activeTab ?: return
+			val segment =
+				tab.session.getTextSegment(
+					_ttsPosition.value,
+					SegmentTypeFfi.PARAGRAPH,
+					SegmentDirectionFfi.NEXT
+				)
+			if (segment.text.isNotBlank()) {
+				_ttsPosition.value = segment.startPos
+				_currentSegmentText.value = segment.text
+				saveTtsPositionToConfig(segment.startPos)
+				ttsManager.speak(segment.text)
+			}
+		}
+	}
+
+	fun playPrevSegment() {
+		val state = uiState.value
+		if (state is MainScreenUiState.Success) {
+			val tab = state.activeTab ?: return
+			val segment = tab.session.getTextSegment(_ttsPosition.value, _currentSegmentType.value, SegmentDirectionFfi.PREVIOUS)
+			if (segment.text.isNotBlank()) {
+				_ttsPosition.value = segment.startPos
+				_currentSegmentText.value = segment.text
+				saveTtsPositionToConfig(segment.startPos)
+				ttsManager.speak(segment.text)
+			}
+		}
+	}
+
+	fun pauseTts() {
+		ttsManager.stop()
+	}
+
+	fun setSleepTimer(minutes: Int) {
+		sleepTimerJob?.cancel()
+		sleepTimerJob = viewModelScope.launch {
+			var remaining = minutes * 60
+			_sleepTimerRemaining.value = remaining
+			while (remaining > 0) {
+				delay(1000)
+				remaining--
+				_sleepTimerRemaining.value = remaining
+			}
+			_sleepTimerRemaining.value = null
+			pauseTts()
+			_sleepTimerExpired.emit(Unit)
+		}
+	}
+
+	fun cancelSleepTimer() {
+		sleepTimerJob?.cancel()
+		sleepTimerJob = null
+		_sleepTimerRemaining.value = null
+	}
+
+	fun navigateByType(type: SegmentTypeFfi, direction: SegmentDirectionFfi) {
+		val state = uiState.value as? MainScreenUiState.Success ?: return
+		val tab = state.activeTab ?: return
+		val segment = tab.session.getTextSegment(_ttsPosition.value, type, direction)
+		if (segment.text.isNotBlank()) {
+			_ttsPosition.value = segment.startPos
+			_currentSegmentText.value = segment.text
+			saveTtsPositionToConfig(segment.startPos)
+			ttsManager.speak(segment.text)
+		}
+	}
+
+	fun resumeTts() {
+		speakCurrentSegment()
+	}
+
+	fun updateTtsPosition(pos: Long) {
+		_ttsPosition.value = pos
+	}
+
+	fun seekToPercent(percent: Int) {
+		val state = uiState.value as? MainScreenUiState.Success ?: return
+		val tab = state.activeTab ?: return
+		val pos = tab.session.positionFromPercentFfi(percent)
+		_ttsPosition.value = pos
+		saveTtsPositionToConfig(pos)
+	}
+
+	fun openElementsDialog() {
+		val state = uiState.value as? MainScreenUiState.Success ?: return
+		val tab = state.activeTab ?: return
+		viewModelScope.launch(Dispatchers.IO) {
+			val pos = _ttsPosition.value
+			val headings = tab.session.getHeadingTreeFfi(pos)
+			val links = tab.session.getLinkListFfi(pos)
+			withContext(Dispatchers.Main) {
+				_currentHeadings.value = headings
+				_currentLinks.value = links
+				_showElementsDialog.value = true
+			}
+		}
+	}
+
+	fun closeElementsDialog() {
+		_showElementsDialog.value = false
+		_currentHeadings.value = null
+		_currentLinks.value = null
 	}
 }

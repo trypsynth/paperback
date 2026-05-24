@@ -13,9 +13,9 @@ base64 = { workspace = true }
 bitflags = "2.11.1"
 live-region = "0.1.4"
 paperback-core = { path = "../paperback-core" }
-ship-shape = { version = "0.1.1", features = ["ui"] }
+ship-shape = { version = "0.1.2", features = ["ui"] }
 toml = { workspace = true }
-wx-utils = "0.1.0"
+wx-utils = "0.1.1"
 wxdragon = { version = "0.9.16", features = ["webview"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]

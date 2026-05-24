@@ -49,7 +49,6 @@ fun TocDialog(
 		}
 		result
 	}
-	
 	ModalBottomSheet(
 		onDismissRequest = onDismiss,
 		sheetState = sheetState,

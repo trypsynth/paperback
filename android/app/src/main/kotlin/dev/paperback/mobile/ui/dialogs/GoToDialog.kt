@@ -13,6 +13,7 @@ import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -27,27 +28,28 @@ fun GoToDialog(
 ) {
 	var selectedMode by remember { mutableStateOf("Line") }
 	var inputValue by remember { mutableStateOf("") }
+	var sliderPercent by remember { mutableIntStateOf(0) }
 	var dropdownExpanded by remember { mutableStateOf(false) }
-	
 	val maxLines = remember(docState.session) { docState.session.lineCount() }
 	val maxPages = remember(docState.session) { docState.session.pageCountFfi() }
-
 	val onSubmit = {
-		val value = inputValue.toLongOrNull()
-		if (value != null) {
-			val targetPos = when (selectedMode) {
-				"Line" -> docState.session.positionFromLine(value.coerceIn(1L, maxLines))
-				"Page" -> docState.session.pageOffsetFfi(value.toInt().coerceIn(1, maxPages))
-				"Percentage" -> docState.session.positionFromPercentFfi(value.toInt().coerceIn(0, 100))
-				else -> 0L
+		val targetPos = when (selectedMode) {
+			"Percentage" -> docState.session.positionFromPercentFfi(sliderPercent)
+			else -> inputValue.toLongOrNull()?.let { value ->
+				when (selectedMode) {
+					"Line" -> docState.session.positionFromLine(value.coerceIn(1L, maxLines))
+					"Page" -> docState.session.pageOffsetFfi(value.toInt().coerceIn(1, maxPages))
+					else -> null
+				}
 			}
+		}
+		if (targetPos != null) {
 			val targetLine = docState.session.lineFromPosition(targetPos)
 			val indexToScroll = (targetLine - 1).toInt().coerceAtLeast(0)
 			onGoTo(indexToScroll)
 			onDismiss()
 		}
 	}
-
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		modifier = Modifier.semantics { paneTitle = "Go To" },
@@ -63,7 +65,7 @@ fun GoToDialog(
 						modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth().semantics {
 							customActions = listOfNotNull(
 								if (selectedMode != "Line") {
-									CustomAccessibilityAction("Switch to Go to Line") {
+									CustomAccessibilityAction("Line") {
 										selectedMode = "Line"
 										true
 									}
@@ -71,7 +73,7 @@ fun GoToDialog(
 									null
 								},
 								if (selectedMode != "Page") {
-									CustomAccessibilityAction("Switch to Go to Page") {
+									CustomAccessibilityAction("Page") {
 										selectedMode = "Page"
 										true
 									}
@@ -79,7 +81,7 @@ fun GoToDialog(
 									null
 								},
 								if (selectedMode != "Percentage") {
-									CustomAccessibilityAction("Switch to Go to Percentage") {
+									CustomAccessibilityAction("Percentage") {
 										selectedMode = "Percentage"
 										true
 									}
@@ -89,7 +91,7 @@ fun GoToDialog(
 							)
 						}
 					) {
-						Text("Go To $selectedMode", modifier = Modifier.weight(1f))
+						Text(selectedMode, modifier = Modifier.weight(1f))
 						ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded)
 					}
 					ExposedDropdownMenu(
@@ -97,21 +99,21 @@ fun GoToDialog(
 						onDismissRequest = { dropdownExpanded = false }
 					) {
 						DropdownMenuItem(
-							text = { Text("Go To Line") },
+							text = { Text("Line") },
 							onClick = {
 								selectedMode = "Line"
 								dropdownExpanded = false
 							}
 						)
 						DropdownMenuItem(
-							text = { Text("Go To Page") },
+							text = { Text("Page") },
 							onClick = {
 								selectedMode = "Page"
 								dropdownExpanded = false
 							}
 						)
 						DropdownMenuItem(
-							text = { Text("Go To Percentage") },
+							text = { Text("Percentage") },
 							onClick = {
 								selectedMode = "Percentage"
 								dropdownExpanded = false
@@ -120,20 +122,33 @@ fun GoToDialog(
 					}
 				}
 				Spacer(modifier = Modifier.height(16.dp))
-				TextField(
-					value = inputValue,
-					onValueChange = { inputValue = it.filter { char -> char.isDigit() } },
-					label = { Text("Enter $selectedMode") },
-					keyboardOptions = KeyboardOptions(
-						keyboardType = KeyboardType.Number,
-						imeAction = ImeAction.Go
-					),
-					keyboardActions = KeyboardActions(
-						onGo = { onSubmit() }
-					),
-					singleLine = true,
-					modifier = Modifier.fillMaxWidth()
-				)
+				if (selectedMode == "Percentage") {
+					Text("$sliderPercent%", style = MaterialTheme.typography.labelLarge)
+					Slider(
+						value = sliderPercent.toFloat(),
+						onValueChange = { sliderPercent = kotlin.math.round(it).toInt() },
+						valueRange = 0f..100f,
+						steps = 99,
+						modifier = Modifier.fillMaxWidth().semantics {
+							stateDescription = "$sliderPercent percent"
+						}
+					)
+				} else {
+					TextField(
+						value = inputValue,
+						onValueChange = { inputValue = it.filter { char -> char.isDigit() } },
+						label = { Text("Enter $selectedMode") },
+						keyboardOptions = KeyboardOptions(
+							keyboardType = KeyboardType.Number,
+							imeAction = ImeAction.Go
+						),
+						keyboardActions = KeyboardActions(
+							onGo = { onSubmit() }
+						),
+						singleLine = true,
+						modifier = Modifier.fillMaxWidth()
+					)
+				}
 			}
 		},
 		confirmButton = {

@@ -23,7 +23,7 @@ fun FindDialog(
 	onSearch: (String, SearchOptionsFfi) -> Unit
 ) {
 	var query by remember { mutableStateOf(initialQuery) }
-	
+
 	var matchCase by remember { mutableStateOf(configManager.getAppBool("find_match_case", false)) }
 	var wholeWord by remember { mutableStateOf(configManager.getAppBool("find_whole_word", false)) }
 	var useRegex by remember { mutableStateOf(configManager.getAppBool("find_use_regex", false)) }
@@ -36,7 +36,7 @@ fun FindDialog(
 			configManager.setAppBool("find_whole_word", wholeWord)
 			configManager.setAppBool("find_use_regex", useRegex)
 			configManager.addFindHistory(query, 10)
-			
+
 			onSearch(
 				query,
 				SearchOptionsFfi(
@@ -57,7 +57,6 @@ fun FindDialog(
 		text = {
 			Column {
 				var historyExpanded by remember { mutableStateOf(false) }
-
 				TextField(
 					value = query,
 					onValueChange = { query = it },
@@ -67,7 +66,6 @@ fun FindDialog(
 					singleLine = true,
 					modifier = Modifier.fillMaxWidth()
 				)
-
 				if (searchHistory.isNotEmpty()) {
 					Box(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
 						TextButton(
@@ -99,9 +97,7 @@ fun FindDialog(
 						}
 					}
 				}
-
 				Spacer(modifier = Modifier.height(16.dp))
-				
 				Row(
 					verticalAlignment = Alignment.CenterVertically,
 					modifier = Modifier
@@ -120,7 +116,6 @@ fun FindDialog(
 					)
 					Text("Match Case", modifier = Modifier.padding(start = 8.dp))
 				}
-				
 				Row(
 					verticalAlignment = Alignment.CenterVertically,
 					modifier = Modifier
@@ -139,7 +134,6 @@ fun FindDialog(
 					)
 					Text("Whole Word", modifier = Modifier.padding(start = 8.dp))
 				}
-				
 				Row(
 					verticalAlignment = Alignment.CenterVertically,
 					modifier = Modifier
