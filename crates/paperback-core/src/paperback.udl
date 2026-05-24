@@ -146,6 +146,8 @@ interface ConfigManagerFfi {
 	void associate_uri_with_local_file(string uri, string local_path);
 	void set_document_position(string path, i64 position);
 	i64 get_document_position(string path);
+	void set_document_password(string path, string password);
+	string get_document_password(string path);
 	void add_recent_document(string path);
 	sequence<string> get_recent_documents();
 	void add_opened_document(string path);

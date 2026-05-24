@@ -49,6 +49,14 @@ impl ConfigManagerFfi {
 		self.inner.lock().unwrap().get_document_position(&path)
 	}
 
+	pub fn set_document_password(&self, path: String, password: String) {
+		self.inner.lock().unwrap().set_document_password(&path, &password);
+	}
+
+	pub fn get_document_password(&self, path: String) -> String {
+		self.inner.lock().unwrap().get_document_password(&path)
+	}
+
 	pub fn add_recent_document(&self, path: String) {
 		self.inner.lock().unwrap().add_recent_document(&path);
 	}

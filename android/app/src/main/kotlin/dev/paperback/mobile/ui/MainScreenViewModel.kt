@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import uniffi.paperback.ConfigManagerFfi
@@ -71,6 +72,9 @@ class MainScreenViewModel(
 
 	private val _currentLinks = MutableStateFlow<LinkListFfi?>(null)
 	val currentLinks: StateFlow<LinkListFfi?> = _currentLinks
+
+	private val _passwordPromptUri = MutableStateFlow<Uri?>(null)
+	val passwordPromptUri = _passwordPromptUri.asStateFlow()
 
 	init {
 		ttsManager.onUtteranceCompleted = {
@@ -245,6 +249,13 @@ class MainScreenViewModel(
 						}
 					}
 					_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
+					if (currentActiveIndex != -1) {
+						_ttsPosition.value = currentTabs[currentActiveIndex].savedPosition
+						refreshSegmentPreview()
+					} else {
+						_ttsPosition.value = 0
+						_currentSegmentText.value = ""
+					}
 				}
 			}
 		}
@@ -287,7 +298,7 @@ class MainScreenViewModel(
 		}.start()
 	}
 
-	private suspend fun prepareDocumentTabIO(uri: Uri): DocumentTabState? =
+	private suspend fun prepareDocumentTabIO(uri: Uri, providedPassword: String? = null): DocumentTabState? =
 		withContext(Dispatchers.IO) {
 			try {
 				val inputStream = context.contentResolver.openInputStream(uri) ?: return@withContext null
@@ -299,13 +310,20 @@ class MainScreenViewModel(
 					}
 				}
 				val ext = displayName.substringAfterLast('.', "epub").lowercase()
-				val tempFile = File(context.cacheDir, "doc_${UUID.randomUUID()}.$ext")
+				val tempDir = File(context.cacheDir, UUID.randomUUID().toString())
+				tempDir.mkdirs()
+				val tempFile = File(tempDir, displayName.ifBlank { "document.$ext" })
 				FileOutputStream(tempFile).use { inputStream.copyTo(it) }
 				inputStream.close()
 				config.associateUriWithLocalFile(uri.toString(), tempFile.absolutePath)
 				val docKey = config.getDocKey(uri.toString())
 				val savedPosition = config.getDocumentPosition(uri.toString())
-				val session = DocumentSession.newFfi(tempFile.absolutePath, "", "")
+				val password = providedPassword ?: config.getDocumentPassword(uri.toString())
+				val session = DocumentSession.newFfi(tempFile.absolutePath, password, "")
+				if (providedPassword != null) {
+					config.setDocumentPassword(uri.toString(), providedPassword)
+					config.flush()
+				}
 				val initialScrollIndex = if (savedPosition > 0L) {
 					(session.lineFromPosition(savedPosition) - 1L).toInt().coerceAtLeast(0)
 				} else {
@@ -324,6 +342,13 @@ class MainScreenViewModel(
 					savedPosition = savedPosition
 				)
 			} catch (e: Exception) {
+				val msg = e.message ?: ""
+				if (msg.contains("[password_required]")) {
+					withContext(Dispatchers.Main) {
+						_passwordPromptUri.value = uri
+					}
+					return@withContext null
+				}
 				null
 			}
 		}
@@ -555,5 +580,60 @@ class MainScreenViewModel(
 		_showElementsDialog.value = false
 		_currentHeadings.value = null
 		_currentLinks.value = null
+	}
+
+	fun submitPassword(password: String) {
+		val uri = _passwordPromptUri.value ?: return
+		_passwordPromptUri.value = null
+		viewModelScope.launch(Dispatchers.IO) {
+			if (currentTabs.isEmpty()) {
+				_uiState.value = MainScreenUiState.Loading
+			}
+			val tabState = prepareDocumentTabIO(uri, password)
+			if (tabState == null) {
+				withContext(Dispatchers.Main) {
+					_uiState.value = MainScreenUiState.Error("Failed to open file or incorrect password")
+					if (currentTabs.isNotEmpty()) {
+						_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
+					}
+				}
+				return@launch
+			}
+			val recentDocsUpdated = getRecentDocumentsListIO()
+			val activeDocKey = config.getAppString("active_document", "")
+			withContext(Dispatchers.Main) {
+				recentDocumentsList = recentDocsUpdated
+				val existingIndex = currentTabs.indexOfFirst { it.docKey == tabState.docKey }
+				if (existingIndex != -1) {
+					val oldTab = currentTabs[existingIndex]
+					if (oldTab.documentUri != uri.toString()) {
+						viewModelScope.launch(Dispatchers.IO) {
+							config.removeOpenedDocument(oldTab.documentUri)
+							config.addOpenedDocument(uri.toString())
+							config.flush()
+						}
+						currentTabs[existingIndex] = tabState
+					}
+					currentActiveIndex = existingIndex
+					viewModelScope.launch(Dispatchers.IO) { config.setAppString("active_document", tabState.docKey) }
+				} else {
+					currentTabs.add(tabState)
+					currentActiveIndex = currentTabs.size - 1
+					viewModelScope.launch(Dispatchers.IO) { config.setAppString("active_document", tabState.docKey) }
+				}
+				_uiState.value = MainScreenUiState.Success(tabs = currentTabs.toList(), activeTabIndex = currentActiveIndex, recentDocumentsList)
+				_ttsPosition.value = tabState.savedPosition
+				refreshSegmentPreview()
+			}
+		}
+	}
+
+	fun cancelPasswordPrompt() {
+		_passwordPromptUri.value = null
+		if (currentTabs.isNotEmpty()) {
+			_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
+		} else {
+			_uiState.value = MainScreenUiState.Idle
+		}
 	}
 }

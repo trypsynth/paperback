@@ -73,6 +73,7 @@ fun MainScreen(
 	val showElementsDialog by viewModel.showElementsDialog.collectAsStateWithLifecycle()
 	val currentHeadings by viewModel.currentHeadings.collectAsStateWithLifecycle()
 	val currentLinks by viewModel.currentLinks.collectAsStateWithLifecycle()
+	val passwordPromptUri by viewModel.passwordPromptUri.collectAsStateWithLifecycle()
 
 	LaunchedEffect(Unit) {
 		viewModel.sleepTimerExpired.collect {
@@ -475,6 +476,12 @@ fun MainScreen(
 				.background(Color.Black)
 				.pointerInput(Unit) { detectTapGestures { isScreenDimmed = false } }
 				.semantics { contentDescription = "Screen dimmed by sleep timer. Tap to wake." }
+		)
+	}
+	if (passwordPromptUri != null) {
+		PasswordDialog(
+			onConfirm = { viewModel.submitPassword(it) },
+			onDismiss = { viewModel.cancelPasswordPrompt() }
 		)
 	}
 	} // end outer Box
