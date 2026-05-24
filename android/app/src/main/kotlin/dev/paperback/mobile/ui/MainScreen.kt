@@ -168,13 +168,23 @@ fun MainScreen(
 				(state as MainScreenUiState.Success).activeTab != null
 			) {
 				val activeTab = (state as MainScreenUiState.Success).activeTab!!
+				val supportedSegmentTypes = remember(activeTab.session) {
+					activeTab.session.getSupportedSegmentTypesFfi()
+				}
+
+				LaunchedEffect(supportedSegmentTypes) {
+					if (!supportedSegmentTypes.contains(currentSegmentType)) {
+						viewModel.setSegmentType(uniffi.paperback.SegmentTypeFfi.PARAGRAPH)
+					}
+				}
+
 				TtsBottomBar(
 					isSpeaking = isSpeaking,
 					onPlayPause = { viewModel.togglePlayPause() },
 					onPrev = { viewModel.playPrevSegment() },
 					onNext = { viewModel.playNextSegment() },
 					currentSegmentType = currentSegmentType,
-					supportedSegmentTypes = activeTab.session.getSupportedSegmentTypesFfi(),
+					supportedSegmentTypes = supportedSegmentTypes,
 					onSegmentTypeChange = { viewModel.setSegmentType(it) }
 				)
 			}
