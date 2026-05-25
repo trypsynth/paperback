@@ -3,8 +3,9 @@ package dev.paperback.mobile.tts
 import android.content.Context
 import android.media.AudioFocusRequest
 import android.media.AudioManager
-import android.media.session.MediaSession
-import android.media.session.PlaybackState
+import android.support.v4.media.MediaMetadataCompat
+import android.support.v4.media.session.MediaSessionCompat
+import android.support.v4.media.session.PlaybackStateCompat
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice
@@ -19,10 +20,22 @@ class TtsManager(
 	private val config: ConfigManagerFfi
 ) : TextToSpeech.OnInitListener {
 	private var tts: TextToSpeech? = null
-	private var mediaSession: MediaSession? = null
+	private var mediaSession: MediaSessionCompat? = null
 	private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+
+	var currentDocumentTitle: String = "Paperback"
+		set(value) {
+			field = value
+			updateMediaMetadata()
+		}
+	var currentDocumentAuthor: String = "Unknown"
+		set(value) {
+			field = value
+			updateMediaMetadata()
+		}
 	private var audioFocusRequest: AudioFocusRequest? = null
 	private var wasPlayingBeforeFocusLoss = false
+	private var hasStartedService = false
 
 	private val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
 		when (focusChange) {
@@ -117,14 +130,14 @@ class TtsManager(
 	}
 
 	private fun initMediaSession() {
-		mediaSession = MediaSession(context, "PaperbackTtsSession")
+		mediaSession = MediaSessionCompat(context, "PaperbackTtsSession")
 		PlaybackService.activeMediaSession = mediaSession
 		@Suppress("DEPRECATION")
 		mediaSession?.setFlags(
-			MediaSession.FLAG_HANDLES_MEDIA_BUTTONS or
-				MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS
+			MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
+				MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
 		)
-		mediaSession?.setCallback(object : MediaSession.Callback() {
+		mediaSession?.setCallback(object : MediaSessionCompat.Callback() {
 			override fun onMediaButtonEvent(mediaButtonIntent: android.content.Intent): Boolean {
 				@Suppress("DEPRECATION")
 				val keyEvent = mediaButtonIntent.getParcelableExtra<android.view.KeyEvent>(android.content.Intent.EXTRA_KEY_EVENT)
@@ -180,31 +193,44 @@ class TtsManager(
 				onPrevCommand?.invoke()
 			}
 		})
-		mediaSession?.isActive = true
-		updatePlaybackState(false)
 	}
 
 	private fun updatePlaybackState(isPlaying: Boolean) {
-		val state = if (isPlaying) PlaybackState.STATE_PLAYING else PlaybackState.STATE_PAUSED
-		val playbackState = PlaybackState
+		if (mediaSession?.isActive != true && (isPlaying || hasStartedService)) {
+			mediaSession?.isActive = true
+		}
+		
+		val state = if (isPlaying) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED
+		val playbackState = PlaybackStateCompat
 			.Builder()
 			.setActions(
-				PlaybackState.ACTION_PLAY or PlaybackState.ACTION_PAUSE or PlaybackState.ACTION_PLAY_PAUSE or
-					PlaybackState.ACTION_SKIP_TO_NEXT or
-					PlaybackState.ACTION_SKIP_TO_PREVIOUS
-			).setState(state, PlaybackState.PLAYBACK_POSITION_UNKNOWN, 1.0f)
+				PlaybackStateCompat.ACTION_PLAY or PlaybackStateCompat.ACTION_PAUSE or PlaybackStateCompat.ACTION_PLAY_PAUSE or
+					PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
+					PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+			).setState(state, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f)
 			.build()
 		mediaSession?.setPlaybackState(playbackState)
 
-		val intent = android.content.Intent(context, PlaybackService::class.java).apply {
-			putExtra(PlaybackService.EXTRA_IS_PLAYING, isPlaying)
-			// TODO: Add proper title if possible, or just default.
+		if (isPlaying && !hasStartedService) {
+			hasStartedService = true
 		}
-		if (isPlaying) {
+		updateMediaMetadata()
+	}
+
+	private fun updateMediaMetadata() {
+		val metadata = MediaMetadataCompat.Builder()
+			.putString(MediaMetadataCompat.METADATA_KEY_TITLE, currentDocumentTitle)
+			.putString(MediaMetadataCompat.METADATA_KEY_ARTIST, currentDocumentAuthor)
+			.build()
+		mediaSession?.setMetadata(metadata)
+
+		if (hasStartedService) {
+			val intent = android.content.Intent(context, PlaybackService::class.java).apply {
+				putExtra(PlaybackService.EXTRA_IS_PLAYING, _isSpeaking.value)
+				putExtra(PlaybackService.EXTRA_TITLE, currentDocumentTitle)
+				putExtra(PlaybackService.EXTRA_AUTHOR, currentDocumentAuthor)
+			}
 			androidx.core.content.ContextCompat.startForegroundService(context, intent)
-		} else {
-			intent.action = PlaybackService.ACTION_STOP
-			context.startService(intent)
 		}
 	}
 
@@ -391,7 +417,14 @@ class TtsManager(
 
 	fun shutdown() {
 		stop()
+		val stopIntent = android.content.Intent(context, PlaybackService::class.java).apply {
+			action = PlaybackService.ACTION_STOP
+		}
+		context.startService(stopIntent)
+		
 		tts?.shutdown()
 		mediaSession?.release()
+		PlaybackService.activeMediaSession = null
+		hasStartedService = false
 	}
 }

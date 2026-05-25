@@ -121,6 +121,7 @@ class MainScreenViewModel(
 					)
 					currentTabs.getOrNull(currentActiveIndex)?.let {
 						_ttsPosition.value = it.savedPosition
+						updateTtsMetadata()
 						refreshSegmentPreview()
 					}
 				}
@@ -261,10 +262,12 @@ class MainScreenViewModel(
 					_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
 					if (currentActiveIndex != -1) {
 						_ttsPosition.value = currentTabs[currentActiveIndex].savedPosition
+						updateTtsMetadata()
 						refreshSegmentPreview()
 					} else {
 						_ttsPosition.value = 0
 						_currentSegmentText.value = ""
+						updateTtsMetadata()
 					}
 				}
 			}
@@ -280,6 +283,7 @@ class MainScreenViewModel(
 			}
 			_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
 			_ttsPosition.value = currentTabs[index].savedPosition
+			updateTtsMetadata()
 			refreshSegmentPreview()
 		}
 	}
@@ -436,6 +440,7 @@ class MainScreenViewModel(
 				MainScreenUiState.Success(tabs = currentTabs.toList(), activeTabIndex = currentActiveIndex, recentDocumentsList)
 			if (makeActive) {
 				_ttsPosition.value = tabState.savedPosition
+				updateTtsMetadata()
 				refreshSegmentPreview()
 			}
 		}
@@ -576,6 +581,17 @@ class MainScreenViewModel(
 
 	fun resumeTts() {
 		speakCurrentSegment()
+	}
+
+	private fun updateTtsMetadata() {
+		if (currentActiveIndex in currentTabs.indices) {
+			val tab = currentTabs[currentActiveIndex]
+			ttsManager.currentDocumentTitle = tab.title.ifBlank { tab.fileName }
+			ttsManager.currentDocumentAuthor = tab.author.ifBlank { "Unknown Author" }
+		} else {
+			ttsManager.currentDocumentTitle = "Paperback"
+			ttsManager.currentDocumentAuthor = "Unknown"
+		}
 	}
 
 	fun updateTtsPosition(pos: Long) {

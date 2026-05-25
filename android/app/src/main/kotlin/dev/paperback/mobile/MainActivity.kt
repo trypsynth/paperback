@@ -21,6 +21,21 @@ class MainActivity : ComponentActivity() {
 		System.setProperty("uniffi.component.paperback.libraryOverride", "paperback_core")
 		enableEdgeToEdge()
 		setContent {
+			if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+				val permissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+					androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+				) { }
+				androidx.compose.runtime.LaunchedEffect(Unit) {
+					if (androidx.core.content.ContextCompat.checkSelfPermission(
+							this@MainActivity,
+							android.Manifest.permission.POST_NOTIFICATIONS
+						) != android.content.pm.PackageManager.PERMISSION_GRANTED
+					) {
+						permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+					}
+				}
+			}
+
 			val view = androidx.compose.ui.platform.LocalView.current
 			androidx.compose.runtime.LaunchedEffect(view) {
 				val originalDelegate = view.accessibilityDelegate
