@@ -123,6 +123,31 @@ class MainActivity : ComponentActivity() {
 		// Don't intercept when a text field has focus (e.g. Find or Go-To dialogs).
 		if (currentFocus is android.widget.EditText) return super.dispatchKeyEvent(event)
 		val vm = ViewModelProvider(this)[MainScreenViewModel::class.java]
+		// F7: elements list (matches desktop)
+		if (event.keyCode == KeyEvent.KEYCODE_F7) {
+			vm.openElementsDialog()
+			return true
+		}
+		// Ctrl shortcuts: parity with desktop app
+		if (event.isCtrlPressed) {
+			return when (event.keyCode) {
+				KeyEvent.KEYCODE_F -> { vm.openFindDialog(); true }
+				KeyEvent.KEYCODE_COMMA -> { vm.openSettingsDialog(); true }
+				KeyEvent.KEYCODE_T -> { vm.openTocDialog(); true }
+				KeyEvent.KEYCODE_G -> {
+					if (event.isShiftPressed) vm.openGoToDialog("Percentage")
+					else vm.openGoToDialog("Line")
+					true
+				}
+				KeyEvent.KEYCODE_W -> { vm.openWordCountDialog(); true }
+				KeyEvent.KEYCODE_I -> { vm.openDocumentInfoDialog(); true }
+				KeyEvent.KEYCODE_S -> {
+					if (event.isShiftPressed) { vm.openSleepTimerDialog(); true }
+					else super.dispatchKeyEvent(event)
+				}
+				else -> super.dispatchKeyEvent(event)
+			}
+		}
 		val dir = if (event.isShiftPressed) SegmentDirectionFfi.PREVIOUS else SegmentDirectionFfi.NEXT
 		return when (event.keyCode) {
 			KeyEvent.KEYCODE_HEADSETHOOK -> {

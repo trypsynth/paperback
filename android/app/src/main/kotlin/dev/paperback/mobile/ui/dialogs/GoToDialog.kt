@@ -24,9 +24,10 @@ import dev.paperback.mobile.ui.DocumentTabState
 fun GoToDialog(
 	docState: DocumentTabState,
 	onDismiss: () -> Unit,
-	onGoTo: (Int) -> Unit
+	onGoTo: (Int) -> Unit,
+	initialMode: String = "Line"
 ) {
-	var selectedMode by remember { mutableStateOf("Line") }
+	var selectedMode by remember { mutableStateOf(initialMode) }
 	var inputValue by remember { mutableStateOf("") }
 	var sliderPercent by remember { mutableIntStateOf(0) }
 	var dropdownExpanded by remember { mutableStateOf(false) }

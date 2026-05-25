@@ -67,6 +67,30 @@ class MainScreenViewModel(
 	private val _showElementsDialog = MutableStateFlow(false)
 	val showElementsDialog: StateFlow<Boolean> = _showElementsDialog
 
+	private val _showFindDialog = MutableStateFlow(false)
+	val showFindDialog: StateFlow<Boolean> = _showFindDialog
+
+	private val _showSettingsDialog = MutableStateFlow(false)
+	val showSettingsDialog: StateFlow<Boolean> = _showSettingsDialog
+
+	private val _showTocDialog = MutableStateFlow(false)
+	val showTocDialog: StateFlow<Boolean> = _showTocDialog
+
+	private val _showGoToDialog = MutableStateFlow(false)
+	val showGoToDialog: StateFlow<Boolean> = _showGoToDialog
+
+	private val _goToInitialMode = MutableStateFlow("Line")
+	val goToInitialMode: StateFlow<String> = _goToInitialMode
+
+	private val _showWordCountDialog = MutableStateFlow(false)
+	val showWordCountDialog: StateFlow<Boolean> = _showWordCountDialog
+
+	private val _showDocumentInfoDialog = MutableStateFlow(false)
+	val showDocumentInfoDialog: StateFlow<Boolean> = _showDocumentInfoDialog
+
+	private val _showSleepTimerDialog = MutableStateFlow(false)
+	val showSleepTimerDialog: StateFlow<Boolean> = _showSleepTimerDialog
+
 	private val _currentHeadings = MutableStateFlow<HeadingTreeFfi?>(null)
 	val currentHeadings: StateFlow<HeadingTreeFfi?> = _currentHeadings
 
@@ -192,7 +216,7 @@ class MainScreenViewModel(
 				val uri = Uri.parse(uriString)
 				var displayName = uri.lastPathSegment ?: uriString
 				var isMissing = false
-				
+
 				if (uri.scheme == "content") {
 					try {
 						context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
@@ -344,7 +368,7 @@ class MainScreenViewModel(
 					displayName = file.name
 					config.associateUriWithLocalFile(uriString, absolutePath)
 				}
-				
+
 				val docKey = config.getDocKey(uriString)
 				val savedPosition = config.getDocumentPosition(uriString)
 				val password = providedPassword ?: config.getDocumentPassword(uriString)
@@ -625,6 +649,63 @@ class MainScreenViewModel(
 		_showElementsDialog.value = false
 		_currentHeadings.value = null
 		_currentLinks.value = null
+	}
+
+	fun openFindDialog() {
+		_showFindDialog.value = true
+	}
+
+	fun closeFindDialog() {
+		_showFindDialog.value = false
+	}
+
+	fun openSettingsDialog() {
+		_showSettingsDialog.value = true
+	}
+
+	fun closeSettingsDialog() {
+		_showSettingsDialog.value = false
+	}
+
+	fun openTocDialog() {
+		_showTocDialog.value = true
+	}
+
+	fun closeTocDialog() {
+		_showTocDialog.value = false
+	}
+
+	fun openGoToDialog(initialMode: String = "Line") {
+		_goToInitialMode.value = initialMode
+		_showGoToDialog.value = true
+	}
+
+	fun closeGoToDialog() {
+		_showGoToDialog.value = false
+	}
+
+	fun openWordCountDialog() {
+		_showWordCountDialog.value = true
+	}
+
+	fun closeWordCountDialog() {
+		_showWordCountDialog.value = false
+	}
+
+	fun openDocumentInfoDialog() {
+		_showDocumentInfoDialog.value = true
+	}
+
+	fun closeDocumentInfoDialog() {
+		_showDocumentInfoDialog.value = false
+	}
+
+	fun openSleepTimerDialog() {
+		_showSleepTimerDialog.value = true
+	}
+
+	fun closeSleepTimerDialog() {
+		_showSleepTimerDialog.value = false
 	}
 
 	fun submitPassword(password: String) {

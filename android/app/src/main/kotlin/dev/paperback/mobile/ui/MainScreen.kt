@@ -42,14 +42,15 @@ fun MainScreen(
 	val state by viewModel.uiState.collectAsStateWithLifecycle()
 	val scope = rememberCoroutineScope()
 	val listStates = remember { mutableStateMapOf<String, LazyListState>() }
-	var tocSheetOpen by remember { mutableStateOf(false) }
+	val tocSheetOpen by viewModel.showTocDialog.collectAsStateWithLifecycle()
 	var recentsDialogOpen by remember { mutableStateOf(false) }
-	var wordCountDialogOpen by remember { mutableStateOf(false) }
-	var documentInfoDialogOpen by remember { mutableStateOf(false) }
-	var goToDialogOpen by remember { mutableStateOf(false) }
-	var findDialogOpen by remember { mutableStateOf(false) }
-	var optionsDialogOpen by remember { mutableStateOf(false) }
-	var sleepTimerDialogOpen by remember { mutableStateOf(false) }
+	val wordCountDialogOpen by viewModel.showWordCountDialog.collectAsStateWithLifecycle()
+	val documentInfoDialogOpen by viewModel.showDocumentInfoDialog.collectAsStateWithLifecycle()
+	val goToDialogOpen by viewModel.showGoToDialog.collectAsStateWithLifecycle()
+	val goToInitialMode by viewModel.goToInitialMode.collectAsStateWithLifecycle()
+	val findDialogOpen by viewModel.showFindDialog.collectAsStateWithLifecycle()
+	val optionsDialogOpen by viewModel.showSettingsDialog.collectAsStateWithLifecycle()
+	val sleepTimerDialogOpen by viewModel.showSleepTimerDialog.collectAsStateWithLifecycle()
 	var isScreenDimmed by remember { mutableStateOf(false) }
 	var lineIndexToFocus by remember { mutableStateOf<Int?>(null) }
 	var restorePreviousDocuments by remember {
@@ -125,14 +126,14 @@ fun MainScreen(
 		}
 	}
 	val supportedMimeTypes by viewModel.supportedMimeTypes.collectAsStateWithLifecycle()
-	
+
 	val filePickerLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
 		contract = androidx.activity.result.contract.ActivityResultContracts.OpenDocument(),
 		onResult = { uri -> uri?.let { viewModel.openDocument(it) } }
 	)
-	
+
 	var showFileManager by remember { mutableStateOf(false) }
-	
+
 	Box(modifier = Modifier.fillMaxSize()) {
 	Scaffold(
 		topBar = {
@@ -151,18 +152,18 @@ fun MainScreen(
 						filePickerLauncher.launch(supportedMimeTypes)
 					}
 				},
-				onTocOpen = { tocSheetOpen = true },
+				onTocOpen = { viewModel.openTocDialog() },
 				onTabSelect = { viewModel.setActiveTab(it) },
 				onTabClose = { viewModel.closeTab(it) },
 				onToggleTextMode = { isTextMode = !isTextMode },
 				onTogglePlayPause = { viewModel.togglePlayPause() },
 				onRecentsOpen = { recentsDialogOpen = true },
-				onGoToOpen = { goToDialogOpen = true },
-				onFindOpen = { findDialogOpen = true },
-				onWordCountOpen = { wordCountDialogOpen = true },
-				onDocumentInfoOpen = { documentInfoDialogOpen = true },
-				onSettingsOpen = { optionsDialogOpen = true },
-				onSleepTimerOpen = { sleepTimerDialogOpen = true },
+				onGoToOpen = { viewModel.openGoToDialog() },
+				onFindOpen = { viewModel.openFindDialog() },
+				onWordCountOpen = { viewModel.openWordCountDialog() },
+				onDocumentInfoOpen = { viewModel.openDocumentInfoDialog() },
+				onSettingsOpen = { viewModel.openSettingsDialog() },
+				onSleepTimerOpen = { viewModel.openSleepTimerDialog() },
 				onElementsOpen = { viewModel.openElementsDialog() }
 			)
 		},
@@ -346,18 +347,19 @@ fun MainScreen(
 									val line = docState.session.lineFromPosition(item.position)
 									val indexToScroll = (line - 1).toInt().coerceAtLeast(0)
 									scope.launch {
-										tocSheetOpen = false
+										viewModel.closeTocDialog()
 										listState.scrollToItem(indexToScroll)
 										lineIndexToFocus = indexToScroll
 									}
 								},
-								onDismiss = { tocSheetOpen = false }
+								onDismiss = { viewModel.closeTocDialog() }
 							)
 						}
 						if (goToDialogOpen) {
 							GoToDialog(
 								docState = docState,
-								onDismiss = { goToDialogOpen = false },
+								onDismiss = { viewModel.closeGoToDialog() },
+								initialMode = goToInitialMode,
 								onGoTo = { indexToScroll ->
 									viewModel.savePosition(docState.session, docState.documentUri, indexToScroll)
 									viewModel.refreshSegmentPreview()
@@ -373,7 +375,7 @@ fun MainScreen(
 							FindDialog(
 								configManager = viewModel.configManager,
 								initialQuery = activeSearchQuery ?: "",
-								onDismiss = { findDialogOpen = false },
+								onDismiss = { viewModel.closeFindDialog() },
 								onSearch = { query, options ->
 									viewModel.pauseTts()
 									isTextMode = true
@@ -423,7 +425,7 @@ fun MainScreen(
 						val stats = remember(docState.session) { docState.session.getStatsFfi() }
 						WordCountDialog(
 							stats = stats,
-							onDismiss = { wordCountDialogOpen = false }
+							onDismiss = { viewModel.closeWordCountDialog() }
 						)
 					}
 					if (documentInfoDialogOpen && docState != null) {
@@ -431,7 +433,7 @@ fun MainScreen(
 						DocumentInfoDialog(
 							docState = docState,
 							stats = stats,
-							onDismiss = { documentInfoDialogOpen = false }
+							onDismiss = { viewModel.closeDocumentInfoDialog() }
 						)
 					}
 					if (optionsDialogOpen) {
@@ -444,13 +446,13 @@ fun MainScreen(
 								viewModel.configManager.setAppBool("restore_previous_documents", restore)
 								viewModel.configManager.setAppBool("use_in_app_file_browser", useInApp)
 								viewModel.configManager.flush()
-								optionsDialogOpen = false
+								viewModel.closeSettingsDialog()
 							},
 							onOpenTtsConfig = {
-								optionsDialogOpen = false
+								viewModel.closeSettingsDialog()
 								ttsConfigDialogOpen = true
 							},
-							onDismiss = { optionsDialogOpen = false }
+							onDismiss = { viewModel.closeSettingsDialog() }
 						)
 					}
 					if (sleepTimerDialogOpen) {
@@ -458,7 +460,7 @@ fun MainScreen(
 							remainingSeconds = sleepTimerRemaining,
 							onSetTimer = { viewModel.setSleepTimer(it) },
 							onCancelTimer = { viewModel.cancelSleepTimer() },
-							onDismiss = { sleepTimerDialogOpen = false }
+							onDismiss = { viewModel.closeSleepTimerDialog() }
 						)
 					}
 					if (ttsConfigDialogOpen) {
@@ -503,7 +505,7 @@ fun MainScreen(
 			onDismiss = { viewModel.cancelPasswordPrompt() }
 		)
 	}
-	
+
 	val showPermissionRationale by viewModel.showPermissionRationale.collectAsStateWithLifecycle()
 	LaunchedEffect(Unit) {
 		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
