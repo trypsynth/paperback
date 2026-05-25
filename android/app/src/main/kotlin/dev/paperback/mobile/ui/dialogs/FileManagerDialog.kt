@@ -28,6 +28,9 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,14 +41,21 @@ fun FileManagerDialog(
 ) {
 	var currentDirectory by remember { mutableStateOf(Environment.getExternalStorageDirectory()) }
 	
-	val files = remember(currentDirectory, supportedExtensions) {
-		val list = currentDirectory.listFiles() ?: emptyArray()
-		val folders = list.filter { it.isDirectory && !it.isHidden }.sortedBy { it.name.lowercase() }
-		val docs = list.filter { file ->
-			!file.isDirectory && !file.isHidden &&
-			supportedExtensions.any { ext -> file.name.lowercase().endsWith(".$ext") }
-		}.sortedBy { it.name.lowercase() }
-		folders + docs
+	var files by remember { mutableStateOf<List<File>>(emptyList()) }
+	var isLoading by remember { mutableStateOf(true) }
+
+	LaunchedEffect(currentDirectory, supportedExtensions) {
+		isLoading = true
+		files = withContext(Dispatchers.IO) {
+			val list = currentDirectory.listFiles() ?: emptyArray()
+			val folders = list.filter { it.isDirectory && !it.isHidden }.sortedBy { it.name.lowercase() }
+			val docs = list.filter { file ->
+				!file.isDirectory && !file.isHidden &&
+				supportedExtensions.any { ext -> file.name.lowercase().endsWith(".$ext") }
+			}.sortedBy { it.name.lowercase() }
+			folders + docs
+		}
+		isLoading = false
 	}
 
 	Dialog(
@@ -82,7 +92,7 @@ fun FileManagerDialog(
 				}
 			)
 			
-			// Show full path for screen readers/power users
+
 			Text(
 				text = currentDirectory.absolutePath,
 				style = MaterialTheme.typography.bodySmall,
@@ -120,24 +130,33 @@ fun FileManagerDialog(
 					}
 				}
 
-				files.forEach { file ->
-					FileListItem(
-						file = file,
-						onClick = {
-							if (file.isDirectory) {
-								currentDirectory = file
-							} else {
-								onFileSelected(file)
-							}
-						}
-					)
-				}
-				if (files.isEmpty()) {
+				if (isLoading) {
 					Box(
 						modifier = Modifier.fillMaxWidth().padding(32.dp),
 						contentAlignment = Alignment.Center
 					) {
-						Text("No supported books or folders found here.")
+						CircularProgressIndicator()
+					}
+				} else {
+					files.forEach { file ->
+						FileListItem(
+							file = file,
+							onClick = {
+								if (file.isDirectory) {
+									currentDirectory = file
+								} else {
+									onFileSelected(file)
+								}
+							}
+						)
+					}
+					if (files.isEmpty()) {
+						Box(
+							modifier = Modifier.fillMaxWidth().padding(32.dp),
+							contentAlignment = Alignment.Center
+						) {
+							Text("No supported books or folders found here.")
+						}
 					}
 				}
 			}
