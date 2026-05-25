@@ -15,11 +15,13 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun SettingsDialog(
 	initialRestorePreviousDocuments: Boolean,
-	onSaveOptions: (Boolean) -> Unit,
+	initialUseInAppFileBrowser: Boolean,
+	onSaveOptions: (Boolean, Boolean) -> Unit,
 	onOpenTtsConfig: () -> Unit,
 	onDismiss: () -> Unit
 ) {
 	var restorePreviousDocuments by remember { mutableStateOf(initialRestorePreviousDocuments) }
+	var useInAppFileBrowser by remember { mutableStateOf(initialUseInAppFileBrowser) }
 
 	AlertDialog(
 		modifier = Modifier.semantics { paneTitle = "Settings" },
@@ -44,6 +46,23 @@ fun SettingsDialog(
 						onCheckedChange = null
 					)
 				}
+				Row(
+					modifier = Modifier
+						.fillMaxWidth()
+						.toggleable(
+							value = useInAppFileBrowser,
+							onValueChange = { useInAppFileBrowser = it },
+							role = Role.Switch
+						).padding(vertical = 8.dp),
+					verticalAlignment = Alignment.CenterVertically,
+					horizontalArrangement = Arrangement.SpaceBetween
+				) {
+					Text("Use in-app file browser (requires All Files permission)")
+					Switch(
+						checked = useInAppFileBrowser,
+						onCheckedChange = null
+					)
+				}
 				Spacer(modifier = Modifier.height(16.dp))
 				Button(onClick = onOpenTtsConfig, modifier = Modifier.fillMaxWidth()) {
 					Text("TTS Settings")
@@ -56,7 +75,7 @@ fun SettingsDialog(
 			}
 		},
 		confirmButton = {
-			TextButton(onClick = { onSaveOptions(restorePreviousDocuments) }) {
+			TextButton(onClick = { onSaveOptions(restorePreviousDocuments, useInAppFileBrowser) }) {
 				Text("Save")
 			}
 		}

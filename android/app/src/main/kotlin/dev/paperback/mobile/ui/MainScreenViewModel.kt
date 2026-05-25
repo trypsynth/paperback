@@ -76,6 +76,9 @@ class MainScreenViewModel(
 	private val _passwordPromptUri = MutableStateFlow<Uri?>(null)
 	val passwordPromptUri = _passwordPromptUri.asStateFlow()
 
+	private val _showPermissionRationale = MutableStateFlow(false)
+	val showPermissionRationale = _showPermissionRationale.asStateFlow()
+
 	init {
 		ttsManager.onUtteranceCompleted = {
 			playNextContinuousSegment()
@@ -188,20 +191,27 @@ class MainScreenViewModel(
 				val uri = Uri.parse(uriString)
 				var displayName = uri.lastPathSegment ?: uriString
 				var isMissing = false
-				try {
-					context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-						if (cursor.moveToFirst()) {
-							val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-							if (nameIndex != -1) displayName = cursor.getString(nameIndex)
-						} else {
-							isMissing = true
+				
+				if (uri.scheme == "content") {
+					try {
+						context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+							if (cursor.moveToFirst()) {
+								val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+								if (nameIndex != -1) displayName = cursor.getString(nameIndex)
+							} else {
+								isMissing = true
+							}
+						} ?: run { isMissing = true }
+						if (!isMissing) {
+							context.contentResolver.openAssetFileDescriptor(uri, "r")?.close()
 						}
-					} ?: run { isMissing = true }
-					if (!isMissing) {
-						context.contentResolver.openAssetFileDescriptor(uri, "r")?.close()
+					} catch (e: Exception) {
+						isMissing = true
 					}
-				} catch (e: Exception) {
-					isMissing = true
+				} else {
+					val file = File(uri.path ?: uriString)
+					displayName = file.name
+					isMissing = !file.exists()
 				}
 				RecentDocumentItem(uriString, displayName, opened.contains(uriString), isMissing)
 			}
@@ -301,27 +311,42 @@ class MainScreenViewModel(
 	private suspend fun prepareDocumentTabIO(uri: Uri, providedPassword: String? = null): DocumentTabState? =
 		withContext(Dispatchers.IO) {
 			try {
-				val inputStream = context.contentResolver.openInputStream(uri) ?: return@withContext null
-				var displayName = ""
-				context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-					if (cursor.moveToFirst()) {
-						val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-						if (nameIndex != -1) displayName = cursor.getString(nameIndex)
+				val uriString = uri.toString()
+				val isContentUri = uri.scheme == "content"
+				val absolutePath: String
+				val displayName: String
+
+				if (isContentUri) {
+					val inputStream = context.contentResolver.openInputStream(uri) ?: return@withContext null
+					var name = ""
+					context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+						if (cursor.moveToFirst()) {
+							val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+							if (nameIndex != -1) name = cursor.getString(nameIndex)
+						}
 					}
+					displayName = name
+					val ext = displayName.substringAfterLast('.', "epub").lowercase()
+					val tempDir = File(context.cacheDir, UUID.randomUUID().toString())
+					tempDir.mkdirs()
+					val tempFile = File(tempDir, displayName.ifBlank { "document.$ext" })
+					FileOutputStream(tempFile).use { inputStream.copyTo(it) }
+					inputStream.close()
+					absolutePath = tempFile.absolutePath
+					config.associateUriWithLocalFile(uriString, absolutePath)
+				} else {
+					absolutePath = uri.path ?: uriString
+					val file = File(absolutePath)
+					displayName = file.name
+					config.associateUriWithLocalFile(uriString, absolutePath)
 				}
-				val ext = displayName.substringAfterLast('.', "epub").lowercase()
-				val tempDir = File(context.cacheDir, UUID.randomUUID().toString())
-				tempDir.mkdirs()
-				val tempFile = File(tempDir, displayName.ifBlank { "document.$ext" })
-				FileOutputStream(tempFile).use { inputStream.copyTo(it) }
-				inputStream.close()
-				config.associateUriWithLocalFile(uri.toString(), tempFile.absolutePath)
-				val docKey = config.getDocKey(uri.toString())
-				val savedPosition = config.getDocumentPosition(uri.toString())
-				val password = providedPassword ?: config.getDocumentPassword(uri.toString())
-				val session = DocumentSession.newFfi(tempFile.absolutePath, password, "")
+				
+				val docKey = config.getDocKey(uriString)
+				val savedPosition = config.getDocumentPosition(uriString)
+				val password = providedPassword ?: config.getDocumentPassword(uriString)
+				val session = DocumentSession.newFfi(absolutePath, password, "")
 				if (providedPassword != null) {
-					config.setDocumentPassword(uri.toString(), providedPassword)
+					config.setDocumentPassword(uriString, providedPassword)
 					config.flush()
 				}
 				val initialScrollIndex = if (savedPosition > 0L) {
@@ -336,7 +361,7 @@ class MainScreenViewModel(
 					fileName = displayName,
 					lineCount = session.lineCount(),
 					toc = session.getToc(),
-					documentUri = uri.toString(),
+					documentUri = uriString,
 					docKey = docKey,
 					initialScrollIndex = initialScrollIndex,
 					savedPosition = savedPosition
@@ -363,7 +388,11 @@ class MainScreenViewModel(
 		val tabState = prepareDocumentTabIO(uri)
 		if (tabState == null) {
 			withContext(Dispatchers.Main) {
-				_uiState.value = MainScreenUiState.Error("Failed to open file")
+				if (uri.scheme == "file" && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R && !android.os.Environment.isExternalStorageManager()) {
+					setShowPermissionRationale(true)
+				} else {
+					_uiState.value = MainScreenUiState.Error("Failed to open file")
+				}
 				if (currentTabs.isNotEmpty()) {
 					_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
 				}
@@ -629,11 +658,23 @@ class MainScreenViewModel(
 	}
 
 	fun cancelPasswordPrompt() {
+		val uriStr = _passwordPromptUri.value?.toString()
 		_passwordPromptUri.value = null
-		if (currentTabs.isNotEmpty()) {
-			_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
-		} else {
-			_uiState.value = MainScreenUiState.Idle
+
+		viewModelScope.launch(Dispatchers.IO) {
+			if (uriStr != null) {
+				config.removeOpenedDocument(uriStr)
+				config.setDocumentOpened(uriStr, false)
+				config.flush()
+				updateRecentDocuments()
+			}
+			withContext(Dispatchers.Main) {
+				_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
+			}
 		}
+	}
+
+	fun setShowPermissionRationale(show: Boolean) {
+		_showPermissionRationale.value = show
 	}
 }
