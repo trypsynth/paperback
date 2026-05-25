@@ -41,12 +41,20 @@ fun DocumentInfoDialog(
 						modifier = Modifier.padding(vertical = 4.dp)
 					)
 				}
-				if (docState.fileName.isNotBlank()) {
-					Text(
-						"File: ${docState.fileName}",
-						style = MaterialTheme.typography.bodyLarge,
-						modifier = Modifier.padding(vertical = 4.dp)
-					)
+				if (docState.documentUri.isNotBlank()) {
+					if (docState.documentUri.startsWith("content://")) {
+						Text(
+							"File Name: ${docState.fileName}",
+							style = MaterialTheme.typography.bodyLarge,
+							modifier = Modifier.padding(vertical = 4.dp)
+						)
+					} else {
+						Text(
+							"Path: ${docState.documentUri.removePrefix("file://")}",
+							style = MaterialTheme.typography.bodyLarge,
+							modifier = Modifier.padding(vertical = 4.dp)
+						)
+					}
 				}
 				Text(
 					"Words: ${stats.wordCount}",

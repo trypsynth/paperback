@@ -55,6 +55,9 @@ fun MainScreen(
 	var restorePreviousDocuments by remember {
 		mutableStateOf(viewModel.configManager.getAppBool("restore_previous_documents", true))
 	}
+	var useInAppFileBrowser by remember {
+		mutableStateOf(viewModel.configManager.getAppBool("use_in_app_file_browser", false))
+	}
 	var activeSearchQuery by remember { mutableStateOf<String?>(null) }
 	var activeSearchOptions by remember { mutableStateOf<uniffi.paperback.SearchOptionsFfi?>(null) }
 	var expandedTocIndices by remember { mutableStateOf(setOf<Int>()) }
@@ -73,6 +76,7 @@ fun MainScreen(
 	val showElementsDialog by viewModel.showElementsDialog.collectAsStateWithLifecycle()
 	val currentHeadings by viewModel.currentHeadings.collectAsStateWithLifecycle()
 	val currentLinks by viewModel.currentLinks.collectAsStateWithLifecycle()
+	val passwordPromptUri by viewModel.passwordPromptUri.collectAsStateWithLifecycle()
 
 	LaunchedEffect(Unit) {
 		viewModel.sleepTimerExpired.collect {
@@ -121,11 +125,14 @@ fun MainScreen(
 		}
 	}
 	val supportedMimeTypes by viewModel.supportedMimeTypes.collectAsStateWithLifecycle()
-	val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.OpenDocument()) { uri: Uri? ->
-		if (uri != null) {
-			viewModel.openDocument(uri)
-		}
-	}
+	
+	val filePickerLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+		contract = androidx.activity.result.contract.ActivityResultContracts.OpenDocument(),
+		onResult = { uri -> uri?.let { viewModel.openDocument(it) } }
+	)
+	
+	var showFileManager by remember { mutableStateOf(false) }
+	
 	Box(modifier = Modifier.fillMaxSize()) {
 	Scaffold(
 		topBar = {
@@ -133,7 +140,17 @@ fun MainScreen(
 				state = state,
 				isTextMode = isTextMode,
 				isSpeaking = isSpeaking,
-				onOpenBook = { launcher.launch(supportedMimeTypes) },
+				onOpenBook = {
+					if (useInAppFileBrowser) {
+						if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R && !android.os.Environment.isExternalStorageManager()) {
+							viewModel.setShowPermissionRationale(true)
+						} else {
+							showFileManager = true
+						}
+					} else {
+						filePickerLauncher.launch(supportedMimeTypes)
+					}
+				},
 				onTocOpen = { tocSheetOpen = true },
 				onTabSelect = { viewModel.setActiveTab(it) },
 				onTabClose = { viewModel.closeTab(it) },
@@ -167,12 +184,24 @@ fun MainScreen(
 				state is MainScreenUiState.Success &&
 				(state as MainScreenUiState.Success).activeTab != null
 			) {
+				val activeTab = (state as MainScreenUiState.Success).activeTab!!
+				val supportedSegmentTypes = remember(activeTab.session) {
+					activeTab.session.getSupportedSegmentTypesFfi()
+				}
+
+				LaunchedEffect(supportedSegmentTypes) {
+					if (!supportedSegmentTypes.contains(currentSegmentType)) {
+						viewModel.setSegmentType(uniffi.paperback.SegmentTypeFfi.PARAGRAPH)
+					}
+				}
+
 				TtsBottomBar(
 					isSpeaking = isSpeaking,
 					onPlayPause = { viewModel.togglePlayPause() },
 					onPrev = { viewModel.playPrevSegment() },
 					onNext = { viewModel.playNextSegment() },
 					currentSegmentType = currentSegmentType,
+					supportedSegmentTypes = supportedSegmentTypes,
 					onSegmentTypeChange = { viewModel.setSegmentType(it) }
 				)
 			}
@@ -408,9 +437,12 @@ fun MainScreen(
 					if (optionsDialogOpen) {
 						SettingsDialog(
 							initialRestorePreviousDocuments = restorePreviousDocuments,
-							onSaveOptions = { checked ->
-								restorePreviousDocuments = checked
-								viewModel.configManager.setAppBool("restore_previous_documents", checked)
+							initialUseInAppFileBrowser = useInAppFileBrowser,
+							onSaveOptions = { restore, useInApp ->
+								restorePreviousDocuments = restore
+								useInAppFileBrowser = useInApp
+								viewModel.configManager.setAppBool("restore_previous_documents", restore)
+								viewModel.configManager.setAppBool("use_in_app_file_browser", useInApp)
 								viewModel.configManager.flush()
 								optionsDialogOpen = false
 							},
@@ -463,6 +495,46 @@ fun MainScreen(
 				.background(Color.Black)
 				.pointerInput(Unit) { detectTapGestures { isScreenDimmed = false } }
 				.semantics { contentDescription = "Screen dimmed by sleep timer. Tap to wake." }
+		)
+	}
+	if (passwordPromptUri != null) {
+		PasswordDialog(
+			onConfirm = { viewModel.submitPassword(it) },
+			onDismiss = { viewModel.cancelPasswordPrompt() }
+		)
+	}
+	
+	val showPermissionRationale by viewModel.showPermissionRationale.collectAsStateWithLifecycle()
+	LaunchedEffect(Unit) {
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+			if (!android.os.Environment.isExternalStorageManager()) {
+				viewModel.setShowPermissionRationale(true)
+			}
+		}
+	}
+	if (showPermissionRationale) {
+		PermissionRationaleDialog(
+			onGrantClick = {
+				viewModel.setShowPermissionRationale(false)
+				val intent = Intent(android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+				intent.data = Uri.parse("package:${context.packageName}")
+				context.startActivity(intent)
+			},
+			onDismiss = {
+				viewModel.setShowPermissionRationale(false)
+			}
+		)
+	}
+
+	if (showFileManager) {
+		val extensions = remember(viewModel.configManager) { viewModel.configManager.getSupportedExtensions() }
+		FileManagerDialog(
+			supportedExtensions = extensions.toList(),
+			onFileSelected = { file ->
+				showFileManager = false
+				viewModel.openDocument(Uri.fromFile(file))
+			},
+			onDismiss = { showFileManager = false }
 		)
 	}
 	} // end outer Box

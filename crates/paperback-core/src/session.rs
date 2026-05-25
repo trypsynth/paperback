@@ -738,6 +738,64 @@ impl DocumentSession {
 		}
 	}
 
+	#[must_use]
+	pub fn get_supported_segment_types_ffi(&self) -> Vec<SegmentTypeFfi> {
+		let mut supported = vec![SegmentTypeFfi::Paragraph, SegmentTypeFfi::Line];
+
+		let has_heading = (0..=5).any(|level| {
+			let mtype = match level {
+				0 => MarkerType::Heading1,
+				1 => MarkerType::Heading2,
+				2 => MarkerType::Heading3,
+				3 => MarkerType::Heading4,
+				4 => MarkerType::Heading5,
+				_ => MarkerType::Heading6,
+			};
+			self.has_marker(mtype)
+		});
+		if has_heading {
+			supported.push(SegmentTypeFfi::Heading);
+		}
+
+		if self.has_marker(MarkerType::Link) {
+			supported.push(SegmentTypeFfi::Link);
+		}
+
+		if self.parser_flags.contains(ParserFlags::SUPPORTS_SECTIONS) && self.has_marker(MarkerType::SectionBreak) {
+			supported.push(SegmentTypeFfi::Section);
+		}
+
+		if self.parser_flags.contains(ParserFlags::SUPPORTS_PAGES) && self.has_marker(MarkerType::PageBreak) {
+			supported.push(SegmentTypeFfi::Page);
+		}
+
+		if self.parser_flags.contains(ParserFlags::SUPPORTS_LISTS) && self.has_marker(MarkerType::List) {
+			supported.push(SegmentTypeFfi::List);
+		}
+
+		if self.parser_flags.contains(ParserFlags::SUPPORTS_LISTS) && self.has_marker(MarkerType::ListItem) {
+			supported.push(SegmentTypeFfi::ListItem);
+		}
+
+		if self.has_marker(MarkerType::Table) {
+			supported.push(SegmentTypeFfi::Table);
+		}
+
+		if self.has_marker(MarkerType::Separator) {
+			supported.push(SegmentTypeFfi::Separator);
+		}
+
+		if self.has_marker(MarkerType::Image) {
+			supported.push(SegmentTypeFfi::Image);
+		}
+
+		if self.has_marker(MarkerType::Figure) {
+			supported.push(SegmentTypeFfi::Figure);
+		}
+
+		supported
+	}
+
 	pub fn search_ffi(&self, query: String, start_position: i64, options: SearchOptionsFfi) -> SearchResultFfi {
 		let mut search_options = SearchOptions::empty();
 		if options.match_case {

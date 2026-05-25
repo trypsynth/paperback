@@ -82,6 +82,15 @@ fun RecentDocumentItemRow(
 					MaterialTheme.colorScheme.onSurface
 				}
 			)
+			if (!item.uri.startsWith("content://")) {
+				Text(
+					text = item.uri.removePrefix("file://"),
+					style = MaterialTheme.typography.bodySmall,
+					color = MaterialTheme.colorScheme.onSurfaceVariant,
+					maxLines = 2,
+					overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+				)
+			}
 			if (item.isMissing || item.isOpen || showClosedStatus) {
 				Text(
 					text = if (item.isMissing) {
