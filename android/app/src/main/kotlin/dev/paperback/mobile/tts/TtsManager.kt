@@ -118,12 +118,52 @@ class TtsManager(
 
 	private fun initMediaSession() {
 		mediaSession = MediaSession(context, "PaperbackTtsSession")
+		PlaybackService.activeMediaSession = mediaSession
 		@Suppress("DEPRECATION")
 		mediaSession?.setFlags(
 			MediaSession.FLAG_HANDLES_MEDIA_BUTTONS or
 				MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS
 		)
 		mediaSession?.setCallback(object : MediaSession.Callback() {
+			override fun onMediaButtonEvent(mediaButtonIntent: android.content.Intent): Boolean {
+				@Suppress("DEPRECATION")
+				val keyEvent = mediaButtonIntent.getParcelableExtra<android.view.KeyEvent>(android.content.Intent.EXTRA_KEY_EVENT)
+				if (keyEvent != null && keyEvent.action == android.view.KeyEvent.ACTION_DOWN) {
+					when (keyEvent.keyCode) {
+						android.view.KeyEvent.KEYCODE_MEDIA_PLAY -> {
+							onPlayCommand?.invoke()
+							return true
+						}
+						android.view.KeyEvent.KEYCODE_MEDIA_PAUSE -> {
+							onPauseCommand?.invoke()
+							return true
+						}
+						android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE,
+						android.view.KeyEvent.KEYCODE_HEADSETHOOK -> {
+							if (_isSpeaking.value) {
+								onPauseCommand?.invoke()
+							} else {
+								onPlayCommand?.invoke()
+							}
+							return true
+						}
+						android.view.KeyEvent.KEYCODE_MEDIA_STOP -> {
+							onPauseCommand?.invoke()
+							return true
+						}
+						android.view.KeyEvent.KEYCODE_MEDIA_NEXT -> {
+							onNextCommand?.invoke()
+							return true
+						}
+						android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
+							onPrevCommand?.invoke()
+							return true
+						}
+					}
+				}
+				return super.onMediaButtonEvent(mediaButtonIntent)
+			}
+
 			override fun onPlay() {
 				onPlayCommand?.invoke()
 			}
@@ -155,6 +195,17 @@ class TtsManager(
 			).setState(state, PlaybackState.PLAYBACK_POSITION_UNKNOWN, 1.0f)
 			.build()
 		mediaSession?.setPlaybackState(playbackState)
+
+		val intent = android.content.Intent(context, PlaybackService::class.java).apply {
+			putExtra(PlaybackService.EXTRA_IS_PLAYING, isPlaying)
+			// TODO: Add proper title if possible, or just default.
+		}
+		if (isPlaying) {
+			androidx.core.content.ContextCompat.startForegroundService(context, intent)
+		} else {
+			intent.action = PlaybackService.ACTION_STOP
+			context.startService(intent)
+		}
 	}
 
 	private fun initTts(engineName: String?) {
