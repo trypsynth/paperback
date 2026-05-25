@@ -22,12 +22,25 @@ class TtsManager(
 	private var mediaSession: MediaSession? = null
 	private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 	private var audioFocusRequest: AudioFocusRequest? = null
+	private var wasPlayingBeforeFocusLoss = false
 
 	private val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
 		when (focusChange) {
 			AudioManager.AUDIOFOCUS_LOSS,
 			AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
-				onPauseCommand?.invoke()
+				wasPlayingBeforeFocusLoss = _isSpeaking.value
+				if (_isSpeaking.value) {
+					onPauseCommand?.invoke()
+				}
+			}
+			AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+				// System handles ducking automatically on API 26+, or it just keeps playing on older APIs.
+			}
+			AudioManager.AUDIOFOCUS_GAIN -> {
+				if (wasPlayingBeforeFocusLoss) {
+					onPlayCommand?.invoke()
+					wasPlayingBeforeFocusLoss = false
+				}
 			}
 		}
 	}
@@ -105,6 +118,11 @@ class TtsManager(
 
 	private fun initMediaSession() {
 		mediaSession = MediaSession(context, "PaperbackTtsSession")
+		@Suppress("DEPRECATION")
+		mediaSession?.setFlags(
+			MediaSession.FLAG_HANDLES_MEDIA_BUTTONS or
+				MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS
+		)
 		mediaSession?.setCallback(object : MediaSession.Callback() {
 			override fun onPlay() {
 				onPlayCommand?.invoke()
