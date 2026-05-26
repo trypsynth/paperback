@@ -281,6 +281,14 @@ fun MainScreen(
 								viewModel.refreshSegmentPreview()
 							}
 						}
+						LaunchedEffect(ttsPosition) {
+							if (isTextMode) {
+								val line = docState.session.lineFromPosition(ttsPosition)
+								val index = (line - 1).toInt().coerceAtLeast(0)
+								listState.scrollToItem(index)
+								lineIndexToFocus = index
+							}
+						}
 						LaunchedEffect(docState.documentUri) {
 							snapshotFlow { listState.firstVisibleItemIndex }
 								.distinctUntilChanged()

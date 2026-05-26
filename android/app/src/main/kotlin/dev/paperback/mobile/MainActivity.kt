@@ -157,6 +157,30 @@ class MainActivity : ComponentActivity() {
 				true
 			}
 			KeyEvent.KEYCODE_SPACE -> { vm.togglePlayPause(); true }
+			KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
+				vm.togglePlayPause()
+				true
+			}
+			KeyEvent.KEYCODE_MEDIA_PLAY -> {
+				if (!vm.ttsManager.isSpeaking.value) {
+					vm.togglePlayPause()
+				}
+				true
+			}
+			KeyEvent.KEYCODE_MEDIA_PAUSE -> {
+				if (vm.ttsManager.isSpeaking.value) {
+					vm.togglePlayPause()
+				}
+				true
+			}
+			KeyEvent.KEYCODE_MEDIA_NEXT -> {
+				vm.playNextSegment()
+				true
+			}
+			KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
+				vm.playPrevSegment()
+				true
+			}
 			// Sections: [ = previous, ] = next (no shift needed, matching desktop)
 			KeyEvent.KEYCODE_LEFT_BRACKET -> { vm.navigateByType(SegmentTypeFfi.SECTION, SegmentDirectionFfi.PREVIOUS); true }
 			KeyEvent.KEYCODE_RIGHT_BRACKET -> { vm.navigateByType(SegmentTypeFfi.SECTION, SegmentDirectionFfi.NEXT); true }
