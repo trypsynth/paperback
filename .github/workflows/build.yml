@@ -90,7 +90,8 @@ jobs:
       with:
         bundle: paperback.flatpak
         manifest-path: dev.paperback.Paperback.yaml
-        cache-key: flatpak-builder-${{ github.sha }}
+        cache-key: flatpak-builder-${{ hashFiles('dev.paperback.Paperback.yaml', 'Cargo.lock') }}
+        restore-keys: flatpak-builder-
 
   build-android:
     runs-on: ubuntu-latest
