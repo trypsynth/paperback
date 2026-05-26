@@ -42,23 +42,15 @@ class PlaybackService : Service() {
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 		if (intent == null) return START_NOT_STICKY
 
-		when (intent.action) {
-			ACTION_PLAY -> {
-				activeMediaSession?.controller?.transportControls?.play()
-				return START_STICKY
+		if (intent.action == Intent.ACTION_MEDIA_BUTTON) {
+			activeMediaSession?.let { session ->
+				androidx.media.session.MediaButtonReceiver.handleIntent(session, intent)
 			}
-			ACTION_PAUSE -> {
-				activeMediaSession?.controller?.transportControls?.pause()
-				return START_STICKY
-			}
-			ACTION_NEXT -> {
-				activeMediaSession?.controller?.transportControls?.skipToNext()
-				return START_STICKY
-			}
-			ACTION_PREV -> {
-				activeMediaSession?.controller?.transportControls?.skipToPrevious()
-				return START_STICKY
-			}
+		} else when (intent.action) {
+			ACTION_PLAY -> activeMediaSession?.controller?.transportControls?.play()
+			ACTION_PAUSE -> activeMediaSession?.controller?.transportControls?.pause()
+			ACTION_NEXT -> activeMediaSession?.controller?.transportControls?.skipToNext()
+			ACTION_PREV -> activeMediaSession?.controller?.transportControls?.skipToPrevious()
 			ACTION_STOP -> {
 				activeMediaSession?.controller?.transportControls?.stop()
 				stopForeground(STOP_FOREGROUND_REMOVE)
@@ -67,7 +59,7 @@ class PlaybackService : Service() {
 			}
 		}
 
-		val isPlaying = intent.getBooleanExtra(EXTRA_IS_PLAYING, false)
+		val isPlaying = intent.getBooleanExtra(EXTRA_IS_PLAYING, activeMediaSession?.controller?.playbackState?.state == android.support.v4.media.session.PlaybackStateCompat.STATE_PLAYING)
 		
 		val sessionTitle = activeMediaSession?.controller?.metadata?.getString(android.support.v4.media.MediaMetadataCompat.METADATA_KEY_TITLE)
 		val sessionAuthor = activeMediaSession?.controller?.metadata?.getString(android.support.v4.media.MediaMetadataCompat.METADATA_KEY_ARTIST)

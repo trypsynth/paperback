@@ -60,8 +60,13 @@ class TtsManager(
 
 	private fun requestAudioFocus() {
 		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+			val attributes = android.media.AudioAttributes.Builder()
+				.setUsage(android.media.AudioAttributes.USAGE_MEDIA)
+				.setContentType(android.media.AudioAttributes.CONTENT_TYPE_SPEECH)
+				.build()
 			val request = AudioFocusRequest
 				.Builder(AudioManager.AUDIOFOCUS_GAIN)
+				.setAudioAttributes(attributes)
 				.setOnAudioFocusChangeListener(audioFocusChangeListener)
 				.build()
 			audioFocusRequest = request
@@ -130,7 +135,21 @@ class TtsManager(
 	}
 
 	private fun initMediaSession() {
-		mediaSession = MediaSessionCompat(context, "PaperbackTtsSession")
+		val mediaButtonIntent = android.content.Intent(android.content.Intent.ACTION_MEDIA_BUTTON).apply {
+			setClass(context, androidx.media.session.MediaButtonReceiver::class.java)
+		}
+		
+		val pendingIntent = android.app.PendingIntent.getBroadcast(
+			context,
+			0,
+			mediaButtonIntent,
+			android.app.PendingIntent.FLAG_IMMUTABLE
+		)
+
+		mediaSession = MediaSessionCompat(context, "PaperbackTtsSession").apply {
+			setMediaButtonReceiver(pendingIntent)
+		}
+		
 		PlaybackService.activeMediaSession = mediaSession
 		@Suppress("DEPRECATION")
 		mediaSession?.setFlags(
@@ -138,45 +157,6 @@ class TtsManager(
 				MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
 		)
 		mediaSession?.setCallback(object : MediaSessionCompat.Callback() {
-			override fun onMediaButtonEvent(mediaButtonIntent: android.content.Intent): Boolean {
-				@Suppress("DEPRECATION")
-				val keyEvent = mediaButtonIntent.getParcelableExtra<android.view.KeyEvent>(android.content.Intent.EXTRA_KEY_EVENT)
-				if (keyEvent != null && keyEvent.action == android.view.KeyEvent.ACTION_DOWN) {
-					when (keyEvent.keyCode) {
-						android.view.KeyEvent.KEYCODE_MEDIA_PLAY -> {
-							onPlayCommand?.invoke()
-							return true
-						}
-						android.view.KeyEvent.KEYCODE_MEDIA_PAUSE -> {
-							onPauseCommand?.invoke()
-							return true
-						}
-						android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE,
-						android.view.KeyEvent.KEYCODE_HEADSETHOOK -> {
-							if (_isSpeaking.value) {
-								onPauseCommand?.invoke()
-							} else {
-								onPlayCommand?.invoke()
-							}
-							return true
-						}
-						android.view.KeyEvent.KEYCODE_MEDIA_STOP -> {
-							onPauseCommand?.invoke()
-							return true
-						}
-						android.view.KeyEvent.KEYCODE_MEDIA_NEXT -> {
-							onNextCommand?.invoke()
-							return true
-						}
-						android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
-							onPrevCommand?.invoke()
-							return true
-						}
-					}
-				}
-				return super.onMediaButtonEvent(mediaButtonIntent)
-			}
-
 			override fun onPlay() {
 				onPlayCommand?.invoke()
 			}
@@ -193,6 +173,19 @@ class TtsManager(
 				onPrevCommand?.invoke()
 			}
 		})
+
+		mediaSession?.isActive = true
+		
+		val playbackState = PlaybackStateCompat
+			.Builder()
+			.setActions(
+				PlaybackStateCompat.ACTION_PLAY or PlaybackStateCompat.ACTION_PAUSE or PlaybackStateCompat.ACTION_PLAY_PAUSE or
+					PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
+					PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+			).setState(PlaybackStateCompat.STATE_PAUSED, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f)
+			.build()
+		mediaSession?.setPlaybackState(playbackState)
+		updateMediaMetadata()
 	}
 
 	private fun updatePlaybackState(isPlaying: Boolean) {
@@ -243,6 +236,13 @@ class TtsManager(
 			TextToSpeech(context, this, actualEngine)
 		} else {
 			TextToSpeech(context, this)
+		}
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+			val attributes = android.media.AudioAttributes.Builder()
+				.setUsage(android.media.AudioAttributes.USAGE_MEDIA)
+				.setContentType(android.media.AudioAttributes.CONTENT_TYPE_SPEECH)
+				.build()
+			tts?.setAudioAttributes(attributes)
 		}
 	}
 
