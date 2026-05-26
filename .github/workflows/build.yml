@@ -89,7 +89,7 @@ jobs:
     - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
       with:
         bundle: paperback.flatpak
-        manifest-path: io.github.trypsynth.Paperback.yaml
+        manifest-path: dev.paperback.Paperback.yaml
         cache-key: flatpak-builder-${{ github.sha }}
 
   build-android:

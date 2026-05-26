@@ -1,4 +1,4 @@
-app-id: io.github.trypsynth.Paperback
+app-id: dev.paperback.Paperback
 runtime: org.gnome.Platform
 runtime-version: '50'
 sdk: org.gnome.Sdk
@@ -121,11 +121,11 @@ modules:
           done
         fi
       # Install desktop file
-      - install -Dm644 paperback.desktop /app/share/applications/io.github.trypsynth.Paperback.desktop
+      - install -Dm644 paperback.desktop /app/share/applications/dev.paperback.Paperback.desktop
       # Update Icon field in desktop file to use app-id
-      - sed -i 's/Icon=paperback/Icon=io.github.trypsynth.Paperback/' /app/share/applications/io.github.trypsynth.Paperback.desktop
+      - sed -i 's/Icon=paperback/Icon=dev.paperback.Paperback/' /app/share/applications/dev.paperback.Paperback.desktop
       # Install icons
-      - for size in 16 32 48 64 128 256; do if [ -f icons/hicolor/${size}x${size}/apps/paperback.png ]; then install -Dm644 icons/hicolor/${size}x${size}/apps/paperback.png /app/share/icons/hicolor/${size}x${size}/apps/io.github.trypsynth.Paperback.png; fi; done
+      - for size in 16 32 48 64 128 256; do if [ -f icons/hicolor/${size}x${size}/apps/paperback.png ]; then install -Dm644 icons/hicolor/${size}x${size}/apps/paperback.png /app/share/icons/hicolor/${size}x${size}/apps/dev.paperback.Paperback.png; fi; done
     sources:
       - type: dir
         path: .
