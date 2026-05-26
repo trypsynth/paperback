@@ -13,6 +13,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import uniffi.paperback.ConfigManagerFfi
 import uniffi.paperback.SearchOptionsFfi
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.type
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,7 +69,16 @@ fun FindDialog(
 					keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
 					keyboardActions = KeyboardActions(onSearch = { submitSearch() }),
 					singleLine = true,
-					modifier = Modifier.fillMaxWidth()
+					modifier = Modifier
+						.fillMaxWidth()
+						.onKeyEvent { event ->
+							if (event.type == KeyEventType.KeyUp && (event.key == Key.Enter || event.key == Key.NumPadEnter)) {
+								submitSearch()
+								true
+							} else {
+								false
+							}
+						}
 				)
 				if (searchHistory.isNotEmpty()) {
 					Box(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {

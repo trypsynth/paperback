@@ -134,6 +134,7 @@ class MainActivity : ComponentActivity() {
 				KeyEvent.KEYCODE_F -> { vm.openFindDialog(); true }
 				KeyEvent.KEYCODE_COMMA -> { vm.openSettingsDialog(); true }
 				KeyEvent.KEYCODE_T -> { vm.openTocDialog(); true }
+				KeyEvent.KEYCODE_P -> { vm.openGoToDialog("Page"); true }
 				KeyEvent.KEYCODE_G -> {
 					if (event.isShiftPressed) vm.openGoToDialog("Percentage")
 					else vm.openGoToDialog("Line")
@@ -148,6 +149,16 @@ class MainActivity : ComponentActivity() {
 				else -> super.dispatchKeyEvent(event)
 			}
 		}
+		
+		if (event.keyCode == KeyEvent.KEYCODE_F3) {
+			if (event.isShiftPressed) {
+				vm.triggerFindPrevious()
+			} else {
+				vm.triggerFindNext()
+			}
+			return true
+		}
+
 		val dir = if (event.isShiftPressed) SegmentDirectionFfi.PREVIOUS else SegmentDirectionFfi.NEXT
 		return when (event.keyCode) {
 			KeyEvent.KEYCODE_HEADSETHOOK -> {

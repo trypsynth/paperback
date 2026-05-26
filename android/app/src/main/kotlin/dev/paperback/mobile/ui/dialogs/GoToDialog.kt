@@ -39,7 +39,7 @@ fun GoToDialog(
 			else -> inputValue.toLongOrNull()?.let { value ->
 				when (selectedMode) {
 					"Line" -> docState.session.positionFromLine(value.coerceIn(1L, maxLines))
-					"Page" -> docState.session.pageOffsetFfi(value.toInt().coerceIn(1, maxPages))
+					"Page" -> if (maxPages > 0) docState.session.pageOffsetFfi(value.toInt().coerceIn(1, maxPages)) else null
 					else -> null
 				}
 			}
@@ -73,7 +73,7 @@ fun GoToDialog(
 								} else {
 									null
 								},
-								if (selectedMode != "Page") {
+								if (selectedMode != "Page" && maxPages > 0) {
 									CustomAccessibilityAction("Page") {
 										selectedMode = "Page"
 										true
@@ -106,13 +106,15 @@ fun GoToDialog(
 								dropdownExpanded = false
 							}
 						)
-						DropdownMenuItem(
-							text = { Text("Page") },
-							onClick = {
-								selectedMode = "Page"
-								dropdownExpanded = false
-							}
-						)
+						if (maxPages > 0) {
+							DropdownMenuItem(
+								text = { Text("Page") },
+								onClick = {
+									selectedMode = "Page"
+									dropdownExpanded = false
+								}
+							)
+						}
 						DropdownMenuItem(
 							text = { Text("Percentage") },
 							onClick = {

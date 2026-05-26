@@ -59,10 +59,51 @@ fun MainScreen(
 	var useInAppFileBrowser by remember {
 		mutableStateOf(viewModel.configManager.getAppBool("use_in_app_file_browser", false))
 	}
-	var activeSearchQuery by remember { mutableStateOf<String?>(null) }
-	var activeSearchOptions by remember { mutableStateOf<uniffi.paperback.SearchOptionsFfi?>(null) }
+	val activeSearchQuery by viewModel.activeSearchQuery.collectAsStateWithLifecycle()
+	val activeSearchOptions by viewModel.activeSearchOptions.collectAsStateWithLifecycle()
 	var expandedTocIndices by remember { mutableStateOf(setOf<Int>()) }
 	var isTextMode by remember { mutableStateOf(false) }
+
+	LaunchedEffect(Unit) {
+		viewModel.performSearchEvent.collect { forward ->
+			if (activeSearchQuery != null && activeSearchOptions != null) {
+				val state = viewModel.uiState.value
+				if (state is MainScreenUiState.Success) {
+					val tab = state.activeTab
+					if (tab != null) {
+						val searchPos = if (isTextMode) {
+							val listState = listStates[tab.documentUri]
+							if (listState != null) {
+								val nextLine = (listState.firstVisibleItemIndex + if (forward) 2 else 1).toLong()
+								tab.session.positionFromLine(nextLine)
+							} else {
+								viewModel.ttsPosition.value
+							}
+						} else {
+							val currentPos = viewModel.ttsPosition.value
+							if (forward) currentPos + 1L else currentPos
+						}
+						
+						val res = tab.session.searchFfi(activeSearchQuery!!, searchPos, activeSearchOptions!!.copy(forward = forward))
+						if (res.found) {
+							if (isTextMode) {
+								val line = tab.session.lineFromPosition(res.position)
+								val indexToScroll = (line - 1).toInt().coerceAtLeast(0)
+								val listState = listStates[tab.documentUri]
+								listState?.scrollToItem(indexToScroll)
+							} else {
+								viewModel.updateTtsPosition(res.position)
+								viewModel.refreshSegmentPreview()
+								if (viewModel.ttsManager.isSpeaking.value) {
+									viewModel.resumeTts()
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 	val isSpeaking by viewModel.ttsManager.isSpeaking.collectAsStateWithLifecycle()
 	val currentSegmentType by viewModel.currentSegmentType.collectAsStateWithLifecycle()
 	val ttsPosition by viewModel.ttsPosition.collectAsStateWithLifecycle()
@@ -78,6 +119,13 @@ fun MainScreen(
 	val currentHeadings by viewModel.currentHeadings.collectAsStateWithLifecycle()
 	val currentLinks by viewModel.currentLinks.collectAsStateWithLifecycle()
 	val passwordPromptUri by viewModel.passwordPromptUri.collectAsStateWithLifecycle()
+
+	val view = androidx.compose.ui.platform.LocalView.current
+	LaunchedEffect(Unit) {
+		viewModel.accessibilityAnnouncement.collect { message ->
+			view.announceForAccessibility(message)
+		}
+	}
 
 	LaunchedEffect(Unit) {
 		viewModel.sleepTimerExpired.collect {
@@ -178,7 +226,7 @@ fun MainScreen(
 					listState = searchListState,
 					activeSearchQuery = activeSearchQuery!!,
 					activeSearchOptions = activeSearchOptions!!,
-					onClose = { activeSearchQuery = null; activeSearchOptions = null },
+					onClose = { viewModel.clearSearch() },
 					onNavigate = { lineIndexToFocus = it }
 				)
 			} else if (!isTextMode &&
@@ -304,7 +352,26 @@ fun MainScreen(
 								Text(
 									text = currentSegmentText,
 									style = MaterialTheme.typography.bodyLarge,
-									modifier = Modifier.padding(16.dp)
+									modifier = Modifier.padding(16.dp).semantics {
+										val actions = mutableListOf<CustomAccessibilityAction>()
+										if (activeSearchQuery != null && activeSearchOptions != null) {
+											actions.add(CustomAccessibilityAction("Find Next") {
+												viewModel.triggerFindNext()
+												true
+											})
+											actions.add(CustomAccessibilityAction("Find Previous") {
+												viewModel.triggerFindPrevious()
+												true
+											})
+											actions.add(CustomAccessibilityAction("Close Search") {
+												viewModel.clearSearch()
+												true
+											})
+										}
+										if (actions.isNotEmpty()) {
+											customActions = actions
+										}
+									}
 								)
 								val remaining = sleepTimerRemaining
 								if (remaining != null) {
@@ -334,8 +401,7 @@ fun MainScreen(
 								activeSearchQuery = activeSearchQuery,
 								activeSearchOptions = activeSearchOptions,
 								onCloseSearch = {
-									activeSearchQuery = null
-									activeSearchOptions = null
+									viewModel.clearSearch()
 								}
 							)
 						}
@@ -385,18 +451,31 @@ fun MainScreen(
 								initialQuery = activeSearchQuery ?: "",
 								onDismiss = { viewModel.closeFindDialog() },
 								onSearch = { query, options ->
-									viewModel.pauseTts()
-									isTextMode = true
-									activeSearchQuery = query
-									activeSearchOptions = options
-									val currentPos = docState.session.positionFromLine((listState.firstVisibleItemIndex + 1).toLong())
-									val res = docState.session.searchFfi(query, currentPos, options)
+									val wasSpeaking = viewModel.ttsManager.isSpeaking.value
+									if (wasSpeaking) {
+										viewModel.pauseTts()
+									}
+									viewModel.startSearch(query, options)
+									val searchPos = if (isTextMode) {
+										docState.session.positionFromLine((listState.firstVisibleItemIndex + 1).toLong())
+									} else {
+										viewModel.ttsPosition.value
+									}
+									val res = docState.session.searchFfi(query, searchPos, options)
 									if (res.found) {
-										val targetLine = docState.session.lineFromPosition(res.position)
-										val targetIndex = (targetLine - 1).toInt().coerceAtLeast(0)
-										scope.launch {
-											listState.scrollToItem(targetIndex)
-											lineIndexToFocus = targetIndex
+										if (isTextMode) {
+											val targetLine = docState.session.lineFromPosition(res.position)
+											val targetIndex = (targetLine - 1).toInt().coerceAtLeast(0)
+											scope.launch {
+												listState.scrollToItem(targetIndex)
+												lineIndexToFocus = targetIndex
+											}
+										} else {
+											viewModel.updateTtsPosition(res.position)
+											viewModel.refreshSegmentPreview()
+											if (wasSpeaking) {
+												viewModel.resumeTts()
+											}
 										}
 									}
 								}

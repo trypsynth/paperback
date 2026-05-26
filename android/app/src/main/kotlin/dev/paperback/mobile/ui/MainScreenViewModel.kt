@@ -88,6 +88,33 @@ class MainScreenViewModel(
 	private val _showDocumentInfoDialog = MutableStateFlow(false)
 	val showDocumentInfoDialog: StateFlow<Boolean> = _showDocumentInfoDialog
 
+	private val _activeSearchQuery = MutableStateFlow<String?>(null)
+	val activeSearchQuery: StateFlow<String?> = _activeSearchQuery
+
+	private val _activeSearchOptions = MutableStateFlow<uniffi.paperback.SearchOptionsFfi?>(null)
+	val activeSearchOptions: StateFlow<uniffi.paperback.SearchOptionsFfi?> = _activeSearchOptions
+
+	private val _performSearchEvent = MutableSharedFlow<Boolean>(extraBufferCapacity = 1)
+	val performSearchEvent: SharedFlow<Boolean> = _performSearchEvent
+
+	fun startSearch(query: String, options: uniffi.paperback.SearchOptionsFfi) {
+		_activeSearchQuery.value = query
+		_activeSearchOptions.value = options
+	}
+
+	fun clearSearch() {
+		_activeSearchQuery.value = null
+		_activeSearchOptions.value = null
+	}
+
+	fun triggerFindNext() {
+		_performSearchEvent.tryEmit(true)
+	}
+
+	fun triggerFindPrevious() {
+		_performSearchEvent.tryEmit(false)
+	}
+
 	private val _showSleepTimerDialog = MutableStateFlow(false)
 	val showSleepTimerDialog: StateFlow<Boolean> = _showSleepTimerDialog
 
@@ -675,7 +702,22 @@ class MainScreenViewModel(
 		_showTocDialog.value = false
 	}
 
+	private val _accessibilityAnnouncement = MutableSharedFlow<String>(extraBufferCapacity = 1)
+	val accessibilityAnnouncement: SharedFlow<String> = _accessibilityAnnouncement
+
+	fun announceForAccessibility(message: String) {
+		_accessibilityAnnouncement.tryEmit(message)
+	}
+
 	fun openGoToDialog(initialMode: String = "Line") {
+		val state = uiState.value
+		if (state is MainScreenUiState.Success) {
+			val tab = state.activeTab
+			if (tab != null && initialMode == "Page" && tab.session.pageCountFfi() == 0) {
+				announceForAccessibility("This document does not contain pages.")
+				return
+			}
+		}
 		_goToInitialMode.value = initialMode
 		_showGoToDialog.value = true
 	}
