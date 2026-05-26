@@ -25,12 +25,28 @@ android {
 		}
 	}
 
+	val keystorePath = System.getenv("ANDROID_KEYSTORE_PATH")
+	if (keystorePath != null) {
+		signingConfigs {
+			create("release") {
+				storeFile = file(keystorePath)
+				storePassword = System.getenv("ANDROID_STORE_PASSWORD")
+				keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+				keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+			}
+		}
+	}
+
 	buildTypes {
 		release {
 			isMinifyEnabled = true
 			isShrinkResources = true
 			proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-			signingConfig = signingConfigs.getByName("debug")
+			signingConfig = if (keystorePath != null) {
+				signingConfigs.getByName("release")
+			} else {
+				signingConfigs.getByName("debug")
+			}
 		}
 	}
 	compileOptions {

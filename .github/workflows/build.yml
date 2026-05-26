@@ -123,6 +123,18 @@ jobs:
           ~/.gradle/wrapper
         key: gradle-${{ hashFiles('android/**/*.gradle.kts', 'android/gradle/wrapper/gradle-wrapper.properties') }}
         restore-keys: gradle-
+    - name: Set up Android signing keystore
+      env:
+        ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+      run: |
+        echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/paperback-release.jks"
+        echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/paperback-release.jks" >> $GITHUB_ENV
+        echo "ANDROID_KEY_ALIAS=$ANDROID_KEY_ALIAS" >> $GITHUB_ENV
+        echo "ANDROID_KEY_PASSWORD=$ANDROID_KEY_PASSWORD" >> $GITHUB_ENV
+        echo "ANDROID_STORE_PASSWORD=$ANDROID_STORE_PASSWORD" >> $GITHUB_ENV
     - name: Build Android native libraries, bindings, and APK
       run: |
         chmod +x android/gradlew
