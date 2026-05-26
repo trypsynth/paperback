@@ -89,8 +89,8 @@ jobs:
     - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
       with:
         bundle: paperback.flatpak
-        manifest-path: dev.paperback.Paperback.yaml
-        cache-key: flatpak-builder-${{ hashFiles('dev.paperback.Paperback.yaml', 'Cargo.lock') }}
+        manifest-path: dev.paperback.desktop.yaml
+        cache-key: flatpak-builder-${{ hashFiles('dev.paperback.desktop.yaml', 'Cargo.lock') }}
         restore-keys: flatpak-builder-
 
   build-android:
