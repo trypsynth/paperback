@@ -22,7 +22,12 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.input.key.*
+import android.os.storage.StorageManager
+import android.content.Context
 import androidx.compose.ui.window.DialogProperties
 import java.io.File
 import java.text.SimpleDateFormat
@@ -36,24 +41,61 @@ import kotlinx.coroutines.withContext
 @Composable
 fun FileManagerDialog(
 	supportedExtensions: List<String>,
+	initialDirectory: File = Environment.getExternalStorageDirectory(),
+	onDirectoryChanged: (File) -> Unit = {},
 	onFileSelected: (File) -> Unit,
 	onDismiss: () -> Unit
 ) {
-	var currentDirectory by remember { mutableStateOf(Environment.getExternalStorageDirectory()) }
+	var currentDirectory by remember { mutableStateOf(initialDirectory) }
 	
+	var isFirstLaunch by remember { mutableStateOf(true) }
+	LaunchedEffect(currentDirectory) {
+		if (isFirstLaunch) {
+			isFirstLaunch = false
+		} else {
+			onDirectoryChanged(currentDirectory)
+		}
+	}
+
 	var files by remember { mutableStateOf<List<File>>(emptyList()) }
 	var isLoading by remember { mutableStateOf(true) }
 
-	LaunchedEffect(currentDirectory, supportedExtensions) {
+	val context = LocalContext.current
+	val storageRoots = remember(context) {
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+			val sm = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
+			sm.storageVolumes.mapNotNull { it.directory }
+		} else {
+			ContextCompat.getExternalFilesDirs(context, null).mapNotNull {
+				val path = it?.absolutePath ?: return@mapNotNull null
+				val index = path.indexOf("/Android/data/")
+				if (index != -1) {
+					File(path.substring(0, index))
+				} else null
+			}.distinct()
+		}
+	}
+	
+	val virtualParent = remember(currentDirectory, storageRoots) {
+		if (currentDirectory.absolutePath == "/storage") null
+		else if (storageRoots.any { it.absolutePath == currentDirectory.absolutePath }) File("/storage")
+		else currentDirectory.parentFile
+	}
+
+	LaunchedEffect(currentDirectory, supportedExtensions, storageRoots) {
 		isLoading = true
 		files = withContext(Dispatchers.IO) {
-			val list = currentDirectory.listFiles() ?: emptyArray()
-			val folders = list.filter { it.isDirectory && !it.isHidden }.sortedBy { it.name.lowercase() }
-			val docs = list.filter { file ->
-				!file.isDirectory && !file.isHidden &&
-				supportedExtensions.any { ext -> file.name.lowercase().endsWith(".$ext") }
-			}.sortedBy { it.name.lowercase() }
-			folders + docs
+			if (currentDirectory.absolutePath == "/storage") {
+				storageRoots.sortedBy { it.name.lowercase() }
+			} else {
+				var list = currentDirectory.listFiles()?.toList() ?: emptyList()
+				val folders = list.filter { it.isDirectory && !it.isHidden }.sortedBy { it.name.lowercase() }
+				val docs = list.filter { file ->
+					!file.isDirectory && !file.isHidden &&
+					supportedExtensions.any { ext -> file.name.lowercase().endsWith(".$ext") }
+				}.sortedBy { it.name.lowercase() }
+				folders + docs
+			}
 		}
 		isLoading = false
 	}
@@ -63,23 +105,36 @@ fun FileManagerDialog(
 		properties = DialogProperties(usePlatformDefaultWidth = false)
 	) {
 		Surface(
-			modifier = Modifier.fillMaxSize().semantics { paneTitle = "File Manager" },
+			modifier = Modifier
+				.fillMaxSize()
+				.semantics { paneTitle = "File Manager" }
+				.onKeyEvent { event ->
+					if (event.type == KeyEventType.KeyDown && event.key == Key.Backspace) {
+						if (virtualParent != null) {
+							currentDirectory = virtualParent
+							return@onKeyEvent true
+						}
+					}
+					false
+				},
 			color = MaterialTheme.colorScheme.surface
 		) {
 		Column(modifier = Modifier.fillMaxSize()) {
 			TopAppBar(
 				title = {
 					Text(
-						text = currentDirectory.name.ifBlank { "Storage" },
+						text = if (currentDirectory.absolutePath == "/storage") "Storage Devices" 
+							   else if (currentDirectory.absolutePath == Environment.getExternalStorageDirectory().absolutePath) "Internal Storage"
+							   else currentDirectory.name.ifBlank { "Storage" },
 						maxLines = 1,
 						overflow = TextOverflow.Ellipsis
 					)
 				},
 				navigationIcon = {
-					if (currentDirectory.absolutePath != Environment.getExternalStorageDirectory().absolutePath && currentDirectory.parentFile != null) {
+					if (virtualParent != null) {
 						IconButton(
-							onClick = { currentDirectory = currentDirectory.parentFile!! },
-							modifier = Modifier.semantics { contentDescription = "Go up to parent directory: ${currentDirectory.parentFile?.name ?: "Unknown"}" }
+							onClick = { currentDirectory = virtualParent },
+							modifier = Modifier.semantics { contentDescription = "Go up to parent directory: ${if (virtualParent.absolutePath == "/storage") "Storage Devices" else virtualParent.name}" }
 						) {
 							Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
 						}
@@ -103,15 +158,15 @@ fun FileManagerDialog(
 			)
 			
 			Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-				if (currentDirectory.parentFile != null) {
+				if (virtualParent != null) {
 					Row(
 						modifier = Modifier
 							.fillMaxWidth()
-							.clickable { currentDirectory = currentDirectory.parentFile!! }
+							.clickable { currentDirectory = virtualParent }
 							.padding(16.dp)
 							.clearAndSetSemantics {
 								role = Role.Button
-								contentDescription = "Go up to parent directory: ${currentDirectory.parentFile?.name ?: "Unknown"}"
+								contentDescription = "Go up to parent directory: ${if (virtualParent.absolutePath == "/storage") "Storage Devices" else virtualParent.name}"
 							},
 						verticalAlignment = Alignment.CenterVertically
 					) {
@@ -184,7 +239,8 @@ fun FileListItem(file: File, onClick: () -> Unit) {
 				role = Role.Button
 				val typeStr = if (file.isDirectory) "Folder" else "File"
 				val sizeDesc = if (file.isDirectory) "" else ", $sizeString"
-				contentDescription = "$typeStr: ${file.name}, modified $dateString$sizeDesc"
+				val displayName = if (file.absolutePath == Environment.getExternalStorageDirectory().absolutePath) "Internal Storage" else file.name
+				contentDescription = "$typeStr: $displayName, modified $dateString$sizeDesc"
 			},
 		verticalAlignment = Alignment.CenterVertically
 	) {
@@ -195,8 +251,9 @@ fun FileListItem(file: File, onClick: () -> Unit) {
 			modifier = Modifier.size(32.dp).padding(end = 16.dp)
 		)
 		Column {
+			val displayName = if (file.absolutePath == Environment.getExternalStorageDirectory().absolutePath) "Internal Storage" else file.name
 			Text(
-				text = file.name,
+				text = displayName,
 				style = MaterialTheme.typography.bodyLarge,
 				maxLines = 1,
 				overflow = TextOverflow.Ellipsis

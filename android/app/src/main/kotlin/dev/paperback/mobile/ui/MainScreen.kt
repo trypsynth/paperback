@@ -625,8 +625,23 @@ fun MainScreen(
 
 	if (showFileManager) {
 		val extensions = remember(viewModel.configManager) { viewModel.configManager.getSupportedExtensions() }
+		val initialDirPath = remember {
+			val savedPath = viewModel.configManager.getAppString("last_file_manager_directory", "")
+			if (savedPath.isNotEmpty()) {
+				savedPath
+			} else {
+				android.os.Environment.getExternalStorageDirectory().absolutePath
+			}
+		}
 		FileManagerDialog(
 			supportedExtensions = extensions.toList(),
+			initialDirectory = java.io.File(initialDirPath),
+			onDirectoryChanged = { dir ->
+				scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+					viewModel.configManager.setAppString("last_file_manager_directory", dir.absolutePath)
+					viewModel.configManager.flush()
+				}
+			},
 			onFileSelected = { file ->
 				showFileManager = false
 				viewModel.openDocument(Uri.fromFile(file))
