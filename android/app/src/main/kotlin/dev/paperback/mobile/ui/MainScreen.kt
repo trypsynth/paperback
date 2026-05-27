@@ -123,6 +123,7 @@ fun MainScreen(
 	val view = androidx.compose.ui.platform.LocalView.current
 	LaunchedEffect(Unit) {
 		viewModel.accessibilityAnnouncement.collect { message ->
+			@Suppress("DEPRECATION")
 			view.announceForAccessibility(message)
 		}
 	}
@@ -455,11 +456,18 @@ fun MainScreen(
 									if (wasSpeaking) {
 										viewModel.pauseTts()
 									}
+									val isSameQuery = activeSearchQuery == query &&
+											activeSearchOptions?.matchCase == options.matchCase &&
+											activeSearchOptions?.wholeWord == options.wholeWord &&
+											activeSearchOptions?.regex == options.regex
+									
 									viewModel.startSearch(query, options)
 									val searchPos = if (isTextMode) {
-										docState.session.positionFromLine((listState.firstVisibleItemIndex + 1).toLong())
+										val nextLineOffset = if (isSameQuery) 2 else 1
+										docState.session.positionFromLine((listState.firstVisibleItemIndex + nextLineOffset).toLong())
 									} else {
-										viewModel.ttsPosition.value
+										val currentPos = viewModel.ttsPosition.value
+										if (isSameQuery) currentPos + 1L else currentPos
 									}
 									val res = docState.session.searchFfi(query, searchPos, options)
 									if (res.found) {
