@@ -80,6 +80,22 @@ pub struct StoredBookmark {
 	pub note: String,
 }
 
+#[allow(clippy::struct_excessive_bools)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct HotkeyConfig {
+	pub ctrl: bool,
+	pub alt: bool,
+	pub shift: bool,
+	pub win: bool,
+	pub key: char,
+}
+
+impl Default for HotkeyConfig {
+	fn default() -> Self {
+		Self { ctrl: true, alt: true, shift: false, win: false, key: 'P' }
+	}
+}
+
 fn default_true() -> bool {
 	true
 }
@@ -143,6 +159,8 @@ pub struct AppSettings {
 	pub paragraph_spacing: i64,
 	#[serde(default)]
 	pub line_spacing: i64,
+	#[serde(default)]
+	pub hotkey: HotkeyConfig,
 	/// Pass-through storage for host-specific settings (e.g. desktop UI preferences).
 	/// Keys written here are preserved on read/write so host consumers can store their
 	/// own fields alongside the generic ones without conflict.
@@ -174,6 +192,7 @@ impl Default for AppSettings {
 			letter_spacing: 0,
 			paragraph_spacing: 0,
 			line_spacing: 0,
+			hotkey: HotkeyConfig::default(),
 			extra: HashMap::new(),
 		}
 	}
@@ -582,6 +601,21 @@ impl ConfigManager {
 			return;
 		}
 		self.data.borrow_mut().app.paragraph_spacing = i64::from(value);
+		self.dirty.set(true);
+	}
+
+	pub fn get_hotkey(&self) -> HotkeyConfig {
+		if !self.initialized {
+			return HotkeyConfig::default();
+		}
+		self.data.borrow().app.hotkey.clone()
+	}
+
+	pub fn set_hotkey(&self, hotkey: &HotkeyConfig) {
+		if !self.initialized {
+			return;
+		}
+		self.data.borrow_mut().app.hotkey = hotkey.clone();
 		self.dirty.set(true);
 	}
 

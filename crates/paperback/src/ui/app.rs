@@ -77,7 +77,7 @@ fn open_from_command_line(main_window: &MainWindow) {
 	}
 }
 
-fn main_window_from_ptr() -> Option<&'static MainWindow> {
+pub(crate) fn main_window_from_ptr() -> Option<&'static MainWindow> {
 	let ptr = MAIN_WINDOW_PTR.load(Ordering::SeqCst);
 	if ptr == 0 {
 		return None;
@@ -290,6 +290,7 @@ fn start_pipe_server(main_window: &Rc<MainWindow>) -> PipeServer {
 fn send_ipc_command(command: IpcCommand) {
 	let payload = match &command {
 		IpcCommand::Activate => IPC_COMMAND_ACTIVATE.to_string(),
+		IpcCommand::ToggleVisibility => crate::ipc::IPC_COMMAND_TOGGLE_VISIBILITY.to_string(),
 		IpcCommand::OpenFile(path) => path.to_string_lossy().to_string(),
 	};
 	#[cfg(windows)]
