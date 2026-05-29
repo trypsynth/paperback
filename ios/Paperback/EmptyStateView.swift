@@ -11,6 +11,7 @@ struct EmptyStateView: View {
 				.font(.system(size: 64))
 				.foregroundStyle(.secondary)
 				.padding(.bottom, 16)
+				.accessibilityHidden(true)
 			Text("No document open")
 				.font(.title2)
 				.foregroundStyle(.secondary)
@@ -42,6 +43,7 @@ struct EmptyStateView: View {
 					HStack {
 						Image(systemName: "doc.text")
 							.foregroundStyle(.secondary)
+							.accessibilityHidden(true)
 						Text(doc.title)
 							.foregroundStyle(.primary)
 							.lineLimit(1)

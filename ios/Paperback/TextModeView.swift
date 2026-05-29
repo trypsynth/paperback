@@ -11,7 +11,8 @@ struct TextModeView: View {
 					if let session = tab.session {
 						let lineCount = session.lineCount()
 						ForEach(0..<Int(lineCount), id: \.self) { i in
-							let line = session.getLineText(position: Int64(i))
+							let pos = session.positionFromLine(line: Int64(i))
+							let line = session.getLineText(position: pos)
 							Text(line.isEmpty ? "\n" : line)
 								.font(.body)
 								.padding(.horizontal)

@@ -112,6 +112,7 @@ struct ReaderView: View {
 			Button { showFilePicker = true } label: {
 				Image(systemName: "folder")
 			}
+			.accessibilityLabel("Open document")
 			if viewModel.activeTab != nil {
 				Button {
 					viewModel.isTextMode.toggle()
