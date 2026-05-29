@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -32,7 +32,7 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		A1A1A1A1A1A1A1A1A1A10002 /* = */ = {
+		A1A1A1A1A1A1A1A1A1A10002 = {
 			isa = PBXGroup;
 			children = (
 				A1A1A1A1A1A1A1A1A1A10013 /* Paperback */,
@@ -268,6 +268,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 63Z3C555W6;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Paperback;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.books";
@@ -296,6 +297,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 63Z3C555W6;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Paperback;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.books";
@@ -339,7 +341,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
 	};
 	rootObject = A1A1A1A1A1A1A1A1A1A10001 /* Project object */;
 }

@@ -12,3 +12,12 @@ result
 repo-flatpak/
 cargo-sources.json
 *.mobi
+
+# Xcode user state
+ios/**/*.xcuserstate
+ios/**/xcuserdata/
+ios/**/DerivedData/
+
+# Generated UniFFI Swift bindings and XCFramework (produced by cargo xtask ios)
+ios/Paperback/Generated/
+ios/paperbackFFI.xcframework/
