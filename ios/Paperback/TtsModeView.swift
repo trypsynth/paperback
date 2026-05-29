@@ -18,6 +18,12 @@ struct TtsModeView: View {
 				.frame(maxWidth: .infinity, alignment: .leading)
 			}
 			.frame(maxHeight: 400)
+			if let session = viewModel.activeSession {
+				let status = session.getStatusInfoFfi(position: viewModel.ttsPosition)
+				Text("Line \(status.lineNumber)  ·  \(status.percentage)%")
+					.font(.caption)
+					.foregroundStyle(.secondary)
+			}
 			if let remaining = viewModel.sleepTimerRemaining {
 				Text(String(format: "Sleep timer: %d:%02d", remaining / 60, remaining % 60))
 					.font(.caption)

@@ -12,6 +12,8 @@ final class AppViewModel: ObservableObject {
 		return tabs.first { $0.id == id }
 	}
 
+	var activeSession: DocumentSession? { activeTab?.session }
+
 	// MARK: - Reading mode
 	@Published var isTextMode: Bool = false
 
@@ -42,13 +44,19 @@ final class AppViewModel: ObservableObject {
 	@Published var showElements = false
 	@Published var passwordPromptUrl: URL? = nil
 
-	// MARK: - Settings (will be backed by ConfigManagerFfi)
+	// MARK: - Settings
 	@Published var restorePreviousDocuments = true
 
 	// MARK: - Recents
 	@Published var recentDocuments: [RecentDocument] = []
 
+	// MARK: - Config
+	let configManager = ConfigManagerFfi()
+
 	init() {
+		let configPath = configFilePath()
+		_ = configManager.initialize(configPath: configPath)
+		loadRecentsFromConfig()
 		ttsManager.onUtteranceFinished = { [weak self] in
 			self?.playNextSegment()
 		}
@@ -57,19 +65,40 @@ final class AppViewModel: ObservableObject {
 	// MARK: - Document management
 
 	func openDocument(url: URL, password: String? = nil) {
-		// TODO: call DocumentSession.newFfi() once UniFFI is wired up
-		let title = url.deletingPathExtension().lastPathComponent
 		if let existing = tabs.first(where: { $0.url == url }) {
 			activeTabId = existing.id
 			return
 		}
-		let tab = DocumentTab(title: title, url: url)
-		tabs.append(tab)
-		activeTabId = tab.id
-		addRecentDocument(url: url, title: title)
+		let path = url.path(percentEncoded: false)
+		let pass = password ?? configManager.getDocumentPassword(path: path)
+		do {
+			let session = try DocumentSession.newFfi(
+				filePath: path,
+				password: pass,
+				forcedExtension: ""
+			)
+			let title = session.title().isEmpty
+				? url.deletingPathExtension().lastPathComponent
+				: session.title()
+			let savedPos = configManager.getDocumentPosition(path: path)
+			var tab = DocumentTab(title: title, url: url, session: session)
+			tab.currentPosition = savedPos
+			tabs.append(tab)
+			activeTabId = tab.id
+			configManager.addRecentDocument(path: path)
+			loadRecentsFromConfig()
+			loadSegment(for: tab)
+		} catch {
+			if password == nil {
+				passwordPromptUrl = url
+			}
+		}
 	}
 
 	func closeTab(_ tab: DocumentTab) {
+		if let session = tab.session {
+			configManager.setDocumentPosition(path: tab.url.path(percentEncoded: false), position: tab.currentPosition)
+		}
 		tabs.removeAll { $0.id == tab.id }
 		if activeTabId == tab.id {
 			activeTabId = tabs.last?.id
@@ -78,16 +107,30 @@ final class AppViewModel: ObservableObject {
 
 	func setActiveTab(_ tab: DocumentTab) {
 		activeTabId = tab.id
+		if let t = activeTab {
+			loadSegment(for: t)
+		}
 	}
 
 	// MARK: - Recents
 
+	private func loadRecentsFromConfig() {
+		let paths = configManager.getRecentDocuments()
+		recentDocuments = paths.compactMap { path -> RecentDocument? in
+			let url = URL(fileURLWithPath: path)
+			guard url.path != path || FileManager.default.fileExists(atPath: path) else { return nil }
+			let title = url.deletingPathExtension().lastPathComponent
+			return RecentDocument(title: title, url: url)
+		}
+	}
+
 	func addRecentDocument(url: URL, title: String) {
-		recentDocuments.removeAll { $0.url == url }
-		recentDocuments.insert(RecentDocument(title: title, url: url), at: 0)
+		configManager.addRecentDocument(path: url.path(percentEncoded: false))
+		loadRecentsFromConfig()
 	}
 
 	func removeRecentDocument(url: URL) {
+		configManager.removeDocumentHistory(path: url.path(percentEncoded: false))
 		recentDocuments.removeAll { $0.url == url }
 	}
 
@@ -109,11 +152,43 @@ final class AppViewModel: ObservableObject {
 	}
 
 	func playNextSegment() {
-		// TODO: advance ttsPosition via DocumentSession and refresh segment text
+		guard let tab = activeTab, let session = tab.session else { return }
+		let seg = session.getTextSegment(
+			position: ttsPosition,
+			segmentType: ffiSegmentType(currentSegmentType),
+			direction: .next
+		)
+		if seg.text.isEmpty { return }
+		ttsPosition = seg.startPos
+		currentSegmentText = seg.text
+		updateTabPosition(seg.startPos)
+		ttsManager.speak(seg.text)
 	}
 
 	func playPrevSegment() {
-		// TODO: rewind ttsPosition via DocumentSession and refresh segment text
+		guard let tab = activeTab, let session = tab.session else { return }
+		let seg = session.getTextSegment(
+			position: ttsPosition,
+			segmentType: ffiSegmentType(currentSegmentType),
+			direction: .previous
+		)
+		if seg.text.isEmpty { return }
+		ttsPosition = seg.startPos
+		currentSegmentText = seg.text
+		updateTabPosition(seg.startPos)
+		ttsManager.speak(seg.text)
+	}
+
+	func changeSegmentType(_ type: SegmentType) {
+		currentSegmentType = type
+		guard let tab = activeTab, let session = tab.session else { return }
+		let seg = session.getTextSegment(
+			position: ttsPosition,
+			segmentType: ffiSegmentType(type),
+			direction: .current
+		)
+		currentSegmentText = seg.text
+		ttsPosition = seg.startPos
 	}
 
 	// MARK: - Sleep timer
@@ -145,18 +220,116 @@ final class AppViewModel: ObservableObject {
 	func startSearch(query: String, options: SearchOptions) {
 		activeSearchQuery = query
 		searchOptions = options
+		findNext(fromQuery: query, options: options)
 	}
 
 	func clearSearch() {
 		activeSearchQuery = nil
 	}
 
-	func findNext() {
-		// TODO: implement via DocumentSession.searchFfi
+	func findNext(fromQuery: String? = nil, options: SearchOptions? = nil) {
+		guard let session = activeSession else { return }
+		let q = fromQuery ?? activeSearchQuery ?? ""
+		let opts = options ?? searchOptions
+		let result = session.searchFfi(
+			query: q,
+			startPosition: ttsPosition,
+			options: SearchOptionsFfi(
+				matchCase: opts.matchCase,
+				wholeWord: opts.wholeWord,
+				regex: opts.regex,
+				forward: true
+			)
+		)
+		if result.found {
+			ttsPosition = result.position
+			updateTabPosition(result.position)
+			refreshCurrentSegment()
+		}
 	}
 
 	func findPrev() {
-		// TODO: implement via DocumentSession.searchFfi
+		guard let session = activeSession else { return }
+		let q = activeSearchQuery ?? ""
+		let result = session.searchFfi(
+			query: q,
+			startPosition: ttsPosition,
+			options: SearchOptionsFfi(
+				matchCase: searchOptions.matchCase,
+				wholeWord: searchOptions.wholeWord,
+				regex: searchOptions.regex,
+				forward: false
+			)
+		)
+		if result.found {
+			ttsPosition = result.position
+			updateTabPosition(result.position)
+			refreshCurrentSegment()
+		}
+	}
+
+	// MARK: - Navigation
+
+	func goToLine(_ line: Int64) {
+		guard let session = activeSession else { return }
+		let pos = session.positionFromLine(line: line)
+		ttsPosition = pos
+		updateTabPosition(pos)
+		refreshCurrentSegment()
+	}
+
+	func goToPage(_ page: Int32) {
+		guard let session = activeSession else { return }
+		let pos = session.pageOffsetFfi(page: page)
+		ttsPosition = pos
+		updateTabPosition(pos)
+		refreshCurrentSegment()
+	}
+
+	func goToPercent(_ percent: Int32) {
+		guard let session = activeSession else { return }
+		let pos = session.positionFromPercentFfi(percent: percent)
+		ttsPosition = pos
+		updateTabPosition(pos)
+		refreshCurrentSegment()
+	}
+
+	// MARK: - Private helpers
+
+	private func loadSegment(for tab: DocumentTab) {
+		guard let session = tab.session else { return }
+		ttsPosition = tab.currentPosition
+		let seg = session.getTextSegment(
+			position: ttsPosition,
+			segmentType: ffiSegmentType(currentSegmentType),
+			direction: .current
+		)
+		currentSegmentText = seg.text
+	}
+
+	private func refreshCurrentSegment() {
+		guard let session = activeSession else { return }
+		let seg = session.getTextSegment(
+			position: ttsPosition,
+			segmentType: ffiSegmentType(currentSegmentType),
+			direction: .current
+		)
+		currentSegmentText = seg.text
+	}
+
+	private func updateTabPosition(_ position: Int64) {
+		guard let id = activeTabId,
+		      let idx = tabs.firstIndex(where: { $0.id == id }) else { return }
+		tabs[idx].currentPosition = position
+	}
+
+	private func ffiSegmentType(_ type: SegmentType) -> SegmentTypeFfi {
+		switch type {
+		case .paragraph: return .paragraph
+		case .line: return .line
+		case .heading: return .heading
+		case .section: return .section
+		}
 	}
 }
 
@@ -166,7 +339,7 @@ enum SegmentType: String, CaseIterable {
 	case paragraph = "Paragraph"
 	case line = "Line"
 	case heading = "Heading"
-	case sentence = "Sentence"
+	case section = "Section"
 }
 
 enum GoToMode {
@@ -177,4 +350,11 @@ struct SearchOptions {
 	var matchCase: Bool = false
 	var wholeWord: Bool = false
 	var regex: Bool = false
+}
+
+private func configFilePath() -> String {
+	let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+	let dir = support.appendingPathComponent("dev.paperback.mobile", isDirectory: true)
+	try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+	return dir.appendingPathComponent("config.toml").path
 }

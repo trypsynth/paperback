@@ -54,7 +54,12 @@ struct GoToSheet: View {
 	}
 
 	private func go() {
-		// TODO: navigate via DocumentSession once UniFFI is wired up
+		guard let n = Int64(value) else { dismiss(); return }
+		switch mode {
+		case .line:    viewModel.goToLine(n)
+		case .page:    viewModel.goToPage(Int32(n))
+		case .percent: viewModel.goToPercent(Int32(min(100, max(0, n))))
+		}
 		dismiss()
 	}
 }

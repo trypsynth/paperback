@@ -5,13 +5,14 @@ struct DocumentTab: Identifiable, Equatable {
 	var title: String
 	var url: URL
 	var lineScrollIndex: Int = 0
-	var ttsPosition: Int64 = 0
-	// var session: DocumentSession  // added when UniFFI is wired up
+	var currentPosition: Int64 = 0
+	var session: DocumentSession?
 
-	init(title: String, url: URL) {
+	init(title: String, url: URL, session: DocumentSession? = nil) {
 		self.id = UUID()
 		self.title = title
 		self.url = url
+		self.session = session
 	}
 
 	static func == (lhs: DocumentTab, rhs: DocumentTab) -> Bool {

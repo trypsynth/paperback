@@ -10,7 +10,7 @@ description = "Core document parsing and reading logic for Paperback"
 [lib]
 name = "paperback_core"
 path = "src/lib.rs"
-crate-type = ["cdylib", "rlib"]
+crate-type = ["cdylib", "rlib", "staticlib"]
 
 [dependencies]
 anyhow = { workspace = true }
