@@ -11,6 +11,28 @@
 		A1A1A1A1A1A1A1A1A1A10016 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1A1A1A1A1A1A1A1A1A10010 /* ContentView.swift */; };
 		A1A1A1A1A1A1A1A1A1A10017 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1A1A1A1A1A1A1A1A1A10011 /* Assets.xcassets */; };
 		A1A1A1A1A1A1A1A1A1A10018 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1A1A1A1A1A1A1A1A1A10012 /* Preview Assets.xcassets */; };
+		A3A3A3A3A3A3A3A3A3A30001 /* AppViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20001 /* AppViewModel.swift */; };
+		A3A3A3A3A3A3A3A3A3A30002 /* DocumentTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20002 /* DocumentTab.swift */; };
+		A3A3A3A3A3A3A3A3A3A30003 /* TtsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20003 /* TtsManager.swift */; };
+		A3A3A3A3A3A3A3A3A3A30004 /* ReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20004 /* ReaderView.swift */; };
+		A3A3A3A3A3A3A3A3A3A30005 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20005 /* EmptyStateView.swift */; };
+		A3A3A3A3A3A3A3A3A3A30006 /* TtsModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20006 /* TtsModeView.swift */; };
+		A3A3A3A3A3A3A3A3A3A30007 /* TextModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20007 /* TextModeView.swift */; };
+		A3A3A3A3A3A3A3A3A3A30008 /* TtsControlBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20008 /* TtsControlBar.swift */; };
+		A3A3A3A3A3A3A3A3A3A30009 /* SearchControlBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20009 /* SearchControlBar.swift */; };
+		A3A3A3A3A3A3A3A3A3A3000A /* TabsMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A2000A /* TabsMenu.swift */; };
+		A3A3A3A3A3A3A3A3A3A3000B /* DocumentMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A2000B /* DocumentMenu.swift */; };
+		A3A3A3A3A3A3A3A3A3A3000C /* TocSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A2000C /* TocSheet.swift */; };
+		A3A3A3A3A3A3A3A3A3A3000D /* FindSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A2000D /* FindSheet.swift */; };
+		A3A3A3A3A3A3A3A3A3A3000E /* GoToSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A2000E /* GoToSheet.swift */; };
+		A3A3A3A3A3A3A3A3A3A3000F /* SettingsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A2000F /* SettingsSheet.swift */; };
+		A3A3A3A3A3A3A3A3A3A30010 /* RecentDocumentsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20010 /* RecentDocumentsSheet.swift */; };
+		A3A3A3A3A3A3A3A3A3A30011 /* WordCountSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20011 /* WordCountSheet.swift */; };
+		A3A3A3A3A3A3A3A3A3A30012 /* DocumentInfoSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20012 /* DocumentInfoSheet.swift */; };
+		A3A3A3A3A3A3A3A3A3A30013 /* SleepTimerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20013 /* SleepTimerSheet.swift */; };
+		A3A3A3A3A3A3A3A3A3A30014 /* ElementsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20014 /* ElementsSheet.swift */; };
+		A3A3A3A3A3A3A3A3A3A30015 /* PasswordSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20015 /* PasswordSheet.swift */; };
+		A3A3A3A3A3A3A3A3A3A30016 /* TtsConfigSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20016 /* TtsConfigSheet.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,6 +41,28 @@
 		A1A1A1A1A1A1A1A1A1A10010 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A1A1A1A1A1A1A1A1A1A10011 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A1A1A1A1A1A1A1A1A1A10012 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		A2A2A2A2A2A2A2A2A2A20001 /* AppViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppViewModel.swift; sourceTree = "<group>"; };
+		A2A2A2A2A2A2A2A2A2A20002 /* DocumentTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentTab.swift; sourceTree = "<group>"; };
+		A2A2A2A2A2A2A2A2A2A20003 /* TtsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TtsManager.swift; sourceTree = "<group>"; };
+		A2A2A2A2A2A2A2A2A2A20004 /* ReaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderView.swift; sourceTree = "<group>"; };
+		A2A2A2A2A2A2A2A2A2A20005 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
+		A2A2A2A2A2A2A2A2A2A20006 /* TtsModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TtsModeView.swift; sourceTree = "<group>"; };
+		A2A2A2A2A2A2A2A2A2A20007 /* TextModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextModeView.swift; sourceTree = "<group>"; };
+		A2A2A2A2A2A2A2A2A2A20008 /* TtsControlBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TtsControlBar.swift; sourceTree = "<group>"; };
+		A2A2A2A2A2A2A2A2A2A20009 /* SearchControlBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchControlBar.swift; sourceTree = "<group>"; };
+		A2A2A2A2A2A2A2A2A2A2000A /* TabsMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabsMenu.swift; sourceTree = "<group>"; };
+		A2A2A2A2A2A2A2A2A2A2000B /* DocumentMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentMenu.swift; sourceTree = "<group>"; };
+		A2A2A2A2A2A2A2A2A2A2000C /* TocSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TocSheet.swift; sourceTree = "<group>"; };
+		A2A2A2A2A2A2A2A2A2A2000D /* FindSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindSheet.swift; sourceTree = "<group>"; };
+		A2A2A2A2A2A2A2A2A2A2000E /* GoToSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoToSheet.swift; sourceTree = "<group>"; };
+		A2A2A2A2A2A2A2A2A2A2000F /* SettingsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSheet.swift; sourceTree = "<group>"; };
+		A2A2A2A2A2A2A2A2A2A20010 /* RecentDocumentsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentDocumentsSheet.swift; sourceTree = "<group>"; };
+		A2A2A2A2A2A2A2A2A2A20011 /* WordCountSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WordCountSheet.swift; sourceTree = "<group>"; };
+		A2A2A2A2A2A2A2A2A2A20012 /* DocumentInfoSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentInfoSheet.swift; sourceTree = "<group>"; };
+		A2A2A2A2A2A2A2A2A2A20013 /* SleepTimerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepTimerSheet.swift; sourceTree = "<group>"; };
+		A2A2A2A2A2A2A2A2A2A20014 /* ElementsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementsSheet.swift; sourceTree = "<group>"; };
+		A2A2A2A2A2A2A2A2A2A20015 /* PasswordSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordSheet.swift; sourceTree = "<group>"; };
+		A2A2A2A2A2A2A2A2A2A20016 /* TtsConfigSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TtsConfigSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,6 +97,28 @@
 			children = (
 				A1A1A1A1A1A1A1A1A1A1000F /* PaperbackApp.swift */,
 				A1A1A1A1A1A1A1A1A1A10010 /* ContentView.swift */,
+				A2A2A2A2A2A2A2A2A2A20001 /* AppViewModel.swift */,
+				A2A2A2A2A2A2A2A2A2A20002 /* DocumentTab.swift */,
+				A2A2A2A2A2A2A2A2A2A20003 /* TtsManager.swift */,
+				A2A2A2A2A2A2A2A2A2A20004 /* ReaderView.swift */,
+				A2A2A2A2A2A2A2A2A2A20005 /* EmptyStateView.swift */,
+				A2A2A2A2A2A2A2A2A2A20006 /* TtsModeView.swift */,
+				A2A2A2A2A2A2A2A2A2A20007 /* TextModeView.swift */,
+				A2A2A2A2A2A2A2A2A2A20008 /* TtsControlBar.swift */,
+				A2A2A2A2A2A2A2A2A2A20009 /* SearchControlBar.swift */,
+				A2A2A2A2A2A2A2A2A2A2000A /* TabsMenu.swift */,
+				A2A2A2A2A2A2A2A2A2A2000B /* DocumentMenu.swift */,
+				A2A2A2A2A2A2A2A2A2A2000C /* TocSheet.swift */,
+				A2A2A2A2A2A2A2A2A2A2000D /* FindSheet.swift */,
+				A2A2A2A2A2A2A2A2A2A2000E /* GoToSheet.swift */,
+				A2A2A2A2A2A2A2A2A2A2000F /* SettingsSheet.swift */,
+				A2A2A2A2A2A2A2A2A2A20010 /* RecentDocumentsSheet.swift */,
+				A2A2A2A2A2A2A2A2A2A20011 /* WordCountSheet.swift */,
+				A2A2A2A2A2A2A2A2A2A20012 /* DocumentInfoSheet.swift */,
+				A2A2A2A2A2A2A2A2A2A20013 /* SleepTimerSheet.swift */,
+				A2A2A2A2A2A2A2A2A2A20014 /* ElementsSheet.swift */,
+				A2A2A2A2A2A2A2A2A2A20015 /* PasswordSheet.swift */,
+				A2A2A2A2A2A2A2A2A2A20016 /* TtsConfigSheet.swift */,
 				A1A1A1A1A1A1A1A1A1A10011 /* Assets.xcassets */,
 				A1A1A1A1A1A1A1A1A1A10014 /* Preview Content */,
 			);
@@ -139,6 +205,28 @@
 			files = (
 				A1A1A1A1A1A1A1A1A1A10016 /* ContentView.swift in Sources */,
 				A1A1A1A1A1A1A1A1A1A10015 /* PaperbackApp.swift in Sources */,
+				A3A3A3A3A3A3A3A3A3A30001 /* AppViewModel.swift in Sources */,
+				A3A3A3A3A3A3A3A3A3A30002 /* DocumentTab.swift in Sources */,
+				A3A3A3A3A3A3A3A3A3A30003 /* TtsManager.swift in Sources */,
+				A3A3A3A3A3A3A3A3A3A30004 /* ReaderView.swift in Sources */,
+				A3A3A3A3A3A3A3A3A3A30005 /* EmptyStateView.swift in Sources */,
+				A3A3A3A3A3A3A3A3A3A30006 /* TtsModeView.swift in Sources */,
+				A3A3A3A3A3A3A3A3A3A30007 /* TextModeView.swift in Sources */,
+				A3A3A3A3A3A3A3A3A3A30008 /* TtsControlBar.swift in Sources */,
+				A3A3A3A3A3A3A3A3A3A30009 /* SearchControlBar.swift in Sources */,
+				A3A3A3A3A3A3A3A3A3A3000A /* TabsMenu.swift in Sources */,
+				A3A3A3A3A3A3A3A3A3A3000B /* DocumentMenu.swift in Sources */,
+				A3A3A3A3A3A3A3A3A3A3000C /* TocSheet.swift in Sources */,
+				A3A3A3A3A3A3A3A3A3A3000D /* FindSheet.swift in Sources */,
+				A3A3A3A3A3A3A3A3A3A3000E /* GoToSheet.swift in Sources */,
+				A3A3A3A3A3A3A3A3A3A3000F /* SettingsSheet.swift in Sources */,
+				A3A3A3A3A3A3A3A3A3A30010 /* RecentDocumentsSheet.swift in Sources */,
+				A3A3A3A3A3A3A3A3A3A30011 /* WordCountSheet.swift in Sources */,
+				A3A3A3A3A3A3A3A3A3A30012 /* DocumentInfoSheet.swift in Sources */,
+				A3A3A3A3A3A3A3A3A3A30013 /* SleepTimerSheet.swift in Sources */,
+				A3A3A3A3A3A3A3A3A3A30014 /* ElementsSheet.swift in Sources */,
+				A3A3A3A3A3A3A3A3A3A30015 /* PasswordSheet.swift in Sources */,
+				A3A3A3A3A3A3A3A3A3A30016 /* TtsConfigSheet.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
