@@ -22,6 +22,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 	match task.as_deref() {
 		Some("release") => release()?,
 		Some("android") => android()?,
+		Some("ios") => ios()?,
 		_ => print_help(),
 	}
 	Ok(())
@@ -35,6 +36,8 @@ fn print_help() {
 	println!("		--debug            Build APK using gradlew assembleDebug");
 	println!("		--install-release  Install release APK using gradlew installRelease");
 	println!("		--install-debug    Install debug APK using gradlew installDebug");
+	println!("	ios	Generate Swift bindings and build XCFramework for iOS");
+	println!("		--release          Build in release mode (default is debug)");
 }
 
 fn release() -> Result<(), Box<dyn Error>> {
@@ -179,6 +182,95 @@ fn download_pdfium_so(url: &str, dest: &Path) -> Result<(), Box<dyn Error>> {
 		}
 	}
 	Err(format!("libpdfium.so not found in archive from {url}").into())
+}
+
+fn ios() -> Result<(), Box<dyn Error>> {
+	let release = env::args().any(|a| a == "--release");
+	let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
+	let root = project_root();
+	let generated_dir = root.join("ios/Paperback/Generated");
+	fs::create_dir_all(&generated_dir)?;
+
+	println!("Generating Swift bindings via uniffi-bindgen...");
+	let status = Command::new(&cargo)
+		.current_dir(&root)
+		.args(&[
+			"run",
+			"--bin",
+			"uniffi-bindgen",
+			"--",
+			"generate",
+			"crates/paperback-core/src/paperback.udl",
+			"--language",
+			"swift",
+			"--out-dir",
+			"ios/Paperback/Generated",
+			"--no-format",
+		])
+		.status()?;
+	if !status.success() {
+		return Err("uniffi-bindgen Swift generation failed".into());
+	}
+
+	let profile = if release { "release" } else { "debug" };
+	let mut build_args = vec!["build", "-p", "paperback-core"];
+	if release {
+		build_args.push("--release");
+	}
+
+	println!("Building for aarch64-apple-ios (device)...");
+	let status = Command::new(&cargo)
+		.current_dir(&root)
+		.args(&build_args)
+		.args(&["--target", "aarch64-apple-ios"])
+		.status()?;
+	if !status.success() {
+		return Err("cargo build for aarch64-apple-ios failed".into());
+	}
+
+	println!("Building for aarch64-apple-ios-sim (simulator)...");
+	let status = Command::new(&cargo)
+		.current_dir(&root)
+		.args(&build_args)
+		.args(&["--target", "aarch64-apple-ios-sim"])
+		.status()?;
+	if !status.success() {
+		return Err("cargo build for aarch64-apple-ios-sim failed".into());
+	}
+
+	let headers_dir = root.join("ios/Paperback/Generated");
+	let device_lib = root.join(format!("target/aarch64-apple-ios/{profile}/libpaperback_core.a"));
+	let sim_lib =
+		root.join(format!("target/aarch64-apple-ios-sim/{profile}/libpaperback_core.a"));
+	let xcframework_out = root.join("ios/paperbackFFI.xcframework");
+
+	if xcframework_out.exists() {
+		fs::remove_dir_all(&xcframework_out)?;
+	}
+
+	println!("Creating paperbackFFI.xcframework...");
+	let status = Command::new("xcodebuild")
+		.args(&["-create-xcframework"])
+		.arg("-library")
+		.arg(&device_lib)
+		.arg("-headers")
+		.arg(&headers_dir)
+		.arg("-library")
+		.arg(&sim_lib)
+		.arg("-headers")
+		.arg(&headers_dir)
+		.arg("-output")
+		.arg(&xcframework_out)
+		.status()?;
+	if !status.success() {
+		return Err("xcodebuild -create-xcframework failed".into());
+	}
+
+	println!("iOS build complete.");
+	println!("  XCFramework: ios/paperbackFFI.xcframework");
+	println!("  Swift bindings: ios/Paperback/Generated/paperback.swift");
+	println!("  Add both to the Xcode project to use the Rust core.");
+	Ok(())
 }
 
 fn project_root() -> PathBuf {
