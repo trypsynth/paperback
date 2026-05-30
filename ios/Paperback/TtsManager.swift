@@ -3,17 +3,30 @@ import AVFoundation
 @MainActor
 final class TtsManager: NSObject, ObservableObject {
 	private let synthesizer = AVSpeechSynthesizer()
+	private let prefetchSynthesizer = AVSpeechSynthesizer()
 	private let engine = AVAudioEngine()
 	private let player = AVAudioPlayerNode()
 	private var outputFormat: AVAudioFormat!
+
 	private var speechGeneration = 0
 	private var suppressNextFinish = false
 
+	private var prefetchedText: String? = nil
+	private var prefetchedBuffer: AVAudioPCMBuffer? = nil
+	private var prefetchGeneration = 0
+
 	@Published var isSpeaking = false
 	@Published var isPaused = false
-	@Published var speechRate: Float = AVSpeechUtteranceDefaultSpeechRate
-	@Published var pitch: Float = 1.0
-	@Published var selectedVoiceIdentifier: String? = nil
+
+	@Published var speechRate: Float = AVSpeechUtteranceDefaultSpeechRate {
+		didSet { if oldValue != speechRate { invalidatePrefetch() } }
+	}
+	@Published var pitch: Float = 1.0 {
+		didSet { if oldValue != pitch { invalidatePrefetch() } }
+	}
+	@Published var selectedVoiceIdentifier: String? = nil {
+		didSet { if oldValue != selectedVoiceIdentifier { invalidatePrefetch() } }
+	}
 
 	var availableVoices: [AVSpeechSynthesisVoice] { AVSpeechSynthesisVoice.speechVoices() }
 	var onUtteranceFinished: (() -> Void)?
@@ -36,22 +49,33 @@ final class TtsManager: NSObject, ObservableObject {
 		try? engine.start()
 	}
 
+	// MARK: - Playback
+
 	func speak(_ text: String) {
+		// Use the prefetched buffer if it matches (no synthesis needed).
+		if text == prefetchedText, let cached = prefetchedBuffer {
+			prefetchedText = nil
+			prefetchedBuffer = nil
+			internalStop()
+			suppressNextFinish = false
+			speechGeneration += 1
+			let gen = speechGeneration
+			isSpeaking = true
+			isPaused = false
+			schedule(cached, gen: gen)
+			return
+		}
+
+		invalidatePrefetch()
 		internalStop()
 		suppressNextFinish = false
 		speechGeneration += 1
 		let gen = speechGeneration
-
-		let utterance = AVSpeechUtterance(string: text)
-		utterance.rate = speechRate
-		utterance.pitchMultiplier = pitch
-		utterance.voice = selectedVoiceIdentifier.flatMap { AVSpeechSynthesisVoice(identifier: $0) }
-
 		isSpeaking = true
 		isPaused = false
 
 		let acc = BufferAccumulator()
-		synthesizer.write(utterance) { [weak self, acc] buffer in
+		synthesizer.write(makeUtterance(text)) { [weak self, acc] buffer in
 			guard let pcm = buffer as? AVAudioPCMBuffer else { return }
 			if pcm.frameLength > 0 {
 				acc.buffers.append(pcm)
@@ -59,7 +83,30 @@ final class TtsManager: NSObject, ObservableObject {
 				let buffers = acc.buffers
 				DispatchQueue.main.async { [weak self] in
 					guard let self, self.speechGeneration == gen else { return }
-					self.scheduleAndPlay(buffers: buffers, gen: gen)
+					self.scheduleConverted(buffers, gen: gen)
+				}
+			}
+		}
+	}
+
+	// Synthesise `text` in the background so it's ready when speak() is called next.
+	func prefetch(_ text: String) {
+		guard text != prefetchedText else { return }
+		invalidatePrefetch()
+		prefetchedText = text
+		prefetchGeneration += 1
+		let gen = prefetchGeneration
+
+		let acc = BufferAccumulator()
+		prefetchSynthesizer.write(makeUtterance(text)) { [weak self, acc] buffer in
+			guard let pcm = buffer as? AVAudioPCMBuffer else { return }
+			if pcm.frameLength > 0 {
+				acc.buffers.append(pcm)
+			} else {
+				let buffers = acc.buffers
+				DispatchQueue.main.async { [weak self] in
+					guard let self, self.prefetchGeneration == gen else { return }
+					self.prefetchedBuffer = self.convertToOutput(buffers)
 				}
 			}
 		}
@@ -82,6 +129,7 @@ final class TtsManager: NSObject, ObservableObject {
 	func stop() {
 		suppressNextFinish = true
 		speechGeneration += 1
+		invalidatePrefetch()
 		internalStop()
 	}
 
@@ -94,16 +142,33 @@ final class TtsManager: NSObject, ObservableObject {
 		isPaused = false
 	}
 
-	private func scheduleAndPlay(buffers: [AVAudioPCMBuffer], gen: Int) {
+	private func invalidatePrefetch() {
+		prefetchGeneration += 1
+		prefetchSynthesizer.stopSpeaking(at: .immediate)
+		prefetchedText = nil
+		prefetchedBuffer = nil
+	}
+
+	private func makeUtterance(_ text: String) -> AVSpeechUtterance {
+		let u = AVSpeechUtterance(string: text)
+		u.rate = speechRate
+		u.pitchMultiplier = pitch
+		u.voice = selectedVoiceIdentifier.flatMap { AVSpeechSynthesisVoice(identifier: $0) }
+		return u
+	}
+
+	private func scheduleConverted(_ buffers: [AVAudioPCMBuffer], gen: Int) {
 		guard let pcm = convertToOutput(buffers) else {
 			isSpeaking = false
 			if !suppressNextFinish { onUtteranceFinished?() }
 			suppressNextFinish = false
 			return
 		}
+		schedule(pcm, gen: gen)
+	}
 
+	private func schedule(_ pcm: AVAudioPCMBuffer, gen: Int) {
 		if !engine.isRunning { try? engine.start() }
-
 		player.scheduleBuffer(pcm) { [weak self] in
 			DispatchQueue.main.async { [weak self] in
 				guard let self, self.speechGeneration == gen else { return }
@@ -120,7 +185,7 @@ final class TtsManager: NSObject, ObservableObject {
 		suppressNextFinish = false
 	}
 
-	// Concatenates raw synthesis buffers then converts to the hardware output format in one pass.
+	// Concatenate synthesis chunks then convert to the hardware output format in one pass.
 	private func convertToOutput(_ buffers: [AVAudioPCMBuffer]) -> AVAudioPCMBuffer? {
 		guard let synthFormat = buffers.first?.format else { return nil }
 

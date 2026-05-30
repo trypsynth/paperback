@@ -178,6 +178,7 @@ final class AppViewModel: ObservableObject {
 	func playCurrentSegment() {
 		guard !currentSegmentText.isEmpty else { return }
 		ttsManager.speak(currentSegmentText)
+		prefetchAdjacentSegment(after: ttsPosition)
 	}
 
 	func playNextSegment() {
@@ -192,6 +193,7 @@ final class AppViewModel: ObservableObject {
 		currentSegmentText = seg.text
 		updateTabPosition(seg.startPos)
 		ttsManager.speak(seg.text)
+		prefetchAdjacentSegment(after: seg.startPos)
 	}
 
 	func playPrevSegment() {
@@ -206,6 +208,19 @@ final class AppViewModel: ObservableObject {
 		currentSegmentText = seg.text
 		updateTabPosition(seg.startPos)
 		ttsManager.speak(seg.text)
+		prefetchAdjacentSegment(after: seg.startPos)
+	}
+
+	private func prefetchAdjacentSegment(after position: Int64) {
+		guard let session = activeSession else { return }
+		let next = session.getTextSegment(
+			position: position,
+			segmentType: ffiSegmentType(currentSegmentType),
+			direction: .next
+		)
+		if !next.text.isEmpty {
+			ttsManager.prefetch(next.text)
+		}
 	}
 
 	func changeSegmentType(_ type: SegmentType) {
