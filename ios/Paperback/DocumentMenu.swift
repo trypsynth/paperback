@@ -32,6 +32,13 @@ struct DocumentMenu: View {
 				Label("Document Info", systemImage: "info.circle")
 			}
 			Divider()
+			Button { viewModel.isTextMode.toggle() } label: {
+				Label(
+					viewModel.isTextMode ? "Switch to TTS Mode" : "Switch to Text Mode",
+					systemImage: viewModel.isTextMode ? "speaker.wave.2" : "text.alignleft"
+				)
+			}
+			Divider()
 			Button { viewModel.showSleepTimer = true } label: {
 				Label(
 					viewModel.sleepTimerRemaining != nil ? "Sleep Timer (active)" : "Sleep Timer",
@@ -51,11 +58,12 @@ struct DocumentMenu: View {
 		.accessibilityAction(named: "Document Info") { viewModel.showDocumentInfo = true }
 		.accessibilityAction(named: "Word Count") { viewModel.showWordCount = true }
 		.accessibilityAction(named: "Recent Documents") { viewModel.showRecents = true }
-		.accessibilityAction(named: "Go To") {
-			viewModel.showGoTo = true
-		}
+		.accessibilityAction(named: "Go To") { viewModel.showGoTo = true }
 		.accessibilityAction(named: "Find") { viewModel.showFind = true }
 		.accessibilityAction(named: "Elements") { viewModel.showElements = true }
 		.accessibilityAction(named: "Table of Contents") { viewModel.showToc = true }
+		.accessibilityAction(named: viewModel.isTextMode ? "Switch to TTS Mode" : "Switch to Text Mode") {
+			viewModel.isTextMode.toggle()
+		}
 	}
 }

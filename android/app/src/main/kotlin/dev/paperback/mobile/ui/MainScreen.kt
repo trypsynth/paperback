@@ -251,10 +251,10 @@ fun MainScreen(
 				TtsBottomBar(
 					isSpeaking = isSpeaking,
 					onPlayPause = { viewModel.togglePlayPause() },
-					onPrev = { viewModel.playPrevSegment(speak = isSpeaking) },
-					onNext = { viewModel.playNextSegment(speak = isSpeaking) },
-					onPrevButton = { viewModel.movePrevSegment() },
-					onNextButton = { viewModel.moveNextSegment() },
+					onPrev = { viewModel.playPrevSegment(speak = isSpeaking, announce = !isSpeaking) },
+					onNext = { viewModel.playNextSegment(speak = isSpeaking, announce = !isSpeaking) },
+					onPrevButton = { viewModel.playPrevSegment(speak = isSpeaking) },
+					onNextButton = { viewModel.playNextSegment(speak = isSpeaking) },
 					currentSegmentType = currentSegmentType,
 					supportedSegmentTypes = supportedSegmentTypes,
 					onSegmentTypeChange = { viewModel.setSegmentType(it) }

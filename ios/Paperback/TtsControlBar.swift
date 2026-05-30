@@ -41,7 +41,7 @@ struct TtsControlBar: View {
 
 			Spacer()
 
-			Button { viewModel.moveToPrevSegment() } label: {
+			Button { viewModel.playPrevSegment(speak: viewModel.ttsManager.isSpeaking) } label: {
 				Image(systemName: "backward.fill")
 					.font(.title2)
 			}
@@ -57,13 +57,13 @@ struct TtsControlBar: View {
 			.accessibilityAdjustableAction { direction in
 				let wasPlaying = viewModel.ttsManager.isSpeaking
 				switch direction {
-				case .increment: viewModel.playNextSegment(speak: wasPlaying)
-				case .decrement: viewModel.playPrevSegment(speak: wasPlaying)
+				case .increment: viewModel.playNextSegment(speak: wasPlaying, announce: !wasPlaying)
+				case .decrement: viewModel.playPrevSegment(speak: wasPlaying, announce: !wasPlaying)
 				@unknown default: break
 				}
 			}
 
-			Button { viewModel.moveToNextSegment() } label: {
+			Button { viewModel.playNextSegment(speak: viewModel.ttsManager.isSpeaking) } label: {
 				Image(systemName: "forward.fill")
 					.font(.title2)
 			}

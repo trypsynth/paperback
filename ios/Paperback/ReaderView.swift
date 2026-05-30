@@ -121,12 +121,6 @@ struct ReaderView: View {
 			}
 			.accessibilityLabel("Open document")
 			if viewModel.activeTab != nil {
-				Button {
-					viewModel.isTextMode.toggle()
-				} label: {
-					Image(systemName: viewModel.isTextMode ? "speaker.wave.2" : "text.alignleft")
-				}
-				.accessibilityLabel(viewModel.isTextMode ? "Switch to TTS mode" : "Switch to text mode")
 				DocumentMenu().environmentObject(viewModel)
 			}
 		}

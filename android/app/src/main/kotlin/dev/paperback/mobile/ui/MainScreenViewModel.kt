@@ -545,35 +545,7 @@ class MainScreenViewModel(
 		}
 	}
 
-	fun moveNextSegment() {
-		val state = uiState.value
-		if (state is MainScreenUiState.Success) {
-			val tab = state.activeTab ?: return
-			val segment = tab.session.getTextSegment(_ttsPosition.value, _currentSegmentType.value, SegmentDirectionFfi.NEXT)
-			if (segment.text.isNotBlank()) {
-				ttsManager.stop()
-				_ttsPosition.value = segment.startPos
-				_currentSegmentText.value = segment.text
-				saveTtsPositionToConfig(segment.startPos)
-			}
-		}
-	}
-
-	fun movePrevSegment() {
-		val state = uiState.value
-		if (state is MainScreenUiState.Success) {
-			val tab = state.activeTab ?: return
-			val segment = tab.session.getTextSegment(_ttsPosition.value, _currentSegmentType.value, SegmentDirectionFfi.PREVIOUS)
-			if (segment.text.isNotBlank()) {
-				ttsManager.stop()
-				_ttsPosition.value = segment.startPos
-				_currentSegmentText.value = segment.text
-				saveTtsPositionToConfig(segment.startPos)
-			}
-		}
-	}
-
-	fun playNextSegment(speak: Boolean = true) {
+	fun playNextSegment(speak: Boolean = true, announce: Boolean = false) {
 		val state = uiState.value
 		if (state is MainScreenUiState.Success) {
 			val tab = state.activeTab ?: return
@@ -584,7 +556,7 @@ class MainScreenViewModel(
 				saveTtsPositionToConfig(segment.startPos)
 				if (speak) {
 					ttsManager.speak(segment.text)
-				} else {
+				} else if (announce) {
 					announceNavigationCue(segment.text)
 				}
 			}
@@ -615,7 +587,7 @@ class MainScreenViewModel(
 		}
 	}
 
-	fun playPrevSegment(speak: Boolean = true) {
+	fun playPrevSegment(speak: Boolean = true, announce: Boolean = false) {
 		val state = uiState.value
 		if (state is MainScreenUiState.Success) {
 			val tab = state.activeTab ?: return
@@ -626,7 +598,7 @@ class MainScreenViewModel(
 				saveTtsPositionToConfig(segment.startPos)
 				if (speak) {
 					ttsManager.speak(segment.text)
-				} else {
+				} else if (announce) {
 					announceNavigationCue(segment.text)
 				}
 			}
