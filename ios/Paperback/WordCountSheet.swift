@@ -23,5 +23,6 @@ struct WordCountSheet: View {
 				}
 			}
 		}
+		.sheetAccessibilityFocus()
 	}
 }

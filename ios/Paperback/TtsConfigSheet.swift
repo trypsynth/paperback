@@ -50,5 +50,6 @@ struct TtsConfigSheet: View {
 				}
 			}
 		}
+		.sheetAccessibilityFocus()
 	}
 }

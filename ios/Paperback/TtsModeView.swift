@@ -19,10 +19,15 @@ struct TtsModeView: View {
 			}
 			.frame(maxHeight: 400)
 			if let session = viewModel.activeSession {
-				let status = session.getStatusInfoFfi(position: viewModel.ttsPosition)
-				Text("Line \(status.lineNumber)")
-					.font(.caption)
-					.foregroundStyle(.secondary)
+				let lineText = session.getLineText(position: viewModel.ttsPosition)
+					.trimmingCharacters(in: .whitespacesAndNewlines)
+				if !lineText.isEmpty {
+					Text(lineText)
+						.font(.caption)
+						.foregroundStyle(.secondary)
+						.lineLimit(1)
+						.padding(.horizontal, 24)
+				}
 			}
 			if let remaining = viewModel.sleepTimerRemaining {
 				Text(String(format: "Sleep timer: %d:%02d", remaining / 60, remaining % 60))

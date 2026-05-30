@@ -54,6 +54,7 @@ struct ElementsSheet: View {
 				}
 			}
 		}
+		.sheetAccessibilityFocus()
 	}
 
 	@ViewBuilder private var emptyView: some View {

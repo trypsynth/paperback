@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct SettingsSheet: View {
 	@EnvironmentObject var viewModel: AppViewModel
@@ -31,6 +32,9 @@ struct SettingsSheet: View {
 			}
 			.onAppear {
 				restore = viewModel.restorePreviousDocuments
+				DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+					UIAccessibility.post(notification: .screenChanged, argument: nil)
+				}
 			}
 		}
 	}

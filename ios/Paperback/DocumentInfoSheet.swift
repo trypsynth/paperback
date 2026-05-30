@@ -14,25 +14,18 @@ struct DocumentInfoSheet: View {
 					let author = session.author()
 					let stats = session.getStatsFfi()
 
-					Section("Document") {
-						LabeledContent("Title", value: title)
-						if !author.isEmpty {
-							LabeledContent("Author", value: author)
-						}
-						LabeledContent("File", value: viewModel.activeTab?.url.lastPathComponent ?? "—")
-						LabeledContent("Pages", value: session.pageCountFfi().formatted())
+					LabeledContent("Title", value: title)
+					if !author.isEmpty {
+						LabeledContent("Author", value: author)
 					}
-					Section("Statistics") {
-						LabeledContent("Words", value: stats.wordCount.formatted())
-						LabeledContent("Lines", value: stats.lineCount.formatted())
-						LabeledContent("Characters", value: stats.charCount.formatted())
-						LabeledContent("Characters (no spaces)", value: stats.charCountNoWhitespace.formatted())
-					}
+					LabeledContent("File", value: viewModel.activeTab?.url.lastPathComponent ?? "—")
+					LabeledContent("Words", value: stats.wordCount.formatted())
+					LabeledContent("Lines", value: stats.lineCount.formatted())
+					LabeledContent("Characters", value: stats.charCount.formatted())
+					LabeledContent("Characters (no spaces)", value: stats.charCountNoWhitespace.formatted())
 				} else {
-					Section("Document") {
-						LabeledContent("Title", value: viewModel.activeTab?.title ?? "—")
-						LabeledContent("File", value: viewModel.activeTab?.url.lastPathComponent ?? "—")
-					}
+					LabeledContent("Title", value: viewModel.activeTab?.title ?? "—")
+					LabeledContent("File", value: viewModel.activeTab?.url.lastPathComponent ?? "—")
 				}
 			}
 			.navigationTitle("Document Info")
@@ -43,5 +36,6 @@ struct DocumentInfoSheet: View {
 				}
 			}
 		}
+		.sheetAccessibilityFocus()
 	}
 }

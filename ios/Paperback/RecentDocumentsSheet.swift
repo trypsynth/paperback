@@ -55,5 +55,6 @@ struct RecentDocumentsSheet: View {
 				}
 			}
 		}
+		.sheetAccessibilityFocus()
 	}
 }
