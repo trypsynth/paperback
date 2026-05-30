@@ -20,6 +20,11 @@ struct ReaderView: View {
 					.accessibilityLabel("Screen dimmed by sleep timer. Tap to wake.")
 			}
 		}
+		.safeAreaInset(edge: .top, spacing: 0) {
+			if !viewModel.tabs.isEmpty {
+				TabStripView().environmentObject(viewModel)
+			}
+		}
 		.onReceive(viewModel.$sleepTimerRemaining) { remaining in
 			if remaining == 0 { isScreenDimmed = true }
 		}
@@ -110,11 +115,6 @@ struct ReaderView: View {
 
 	@ToolbarContentBuilder
 	private var readerToolbar: some ToolbarContent {
-		if viewModel.tabs.count > 1 {
-			ToolbarItem(placement: .topBarLeading) {
-				TabsMenu().environmentObject(viewModel)
-			}
-		}
 		ToolbarItemGroup(placement: .topBarTrailing) {
 			Button { showFilePicker = true } label: {
 				Image(systemName: "folder")
