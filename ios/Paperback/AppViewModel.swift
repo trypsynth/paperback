@@ -209,13 +209,6 @@ final class AppViewModel: ObservableObject {
 
 	func changeSegmentType(_ type: SegmentType) {
 		currentSegmentType = type
-		guard let tab = activeTab, let session = tab.session else { return }
-		let seg = session.getTextSegment(
-			position: ttsPosition,
-			segmentType: ffiSegmentType(type),
-			direction: .current
-		)
-		currentSegmentText = seg.text
 	}
 
 	// MARK: - Sleep timer
