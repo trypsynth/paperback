@@ -134,6 +134,7 @@ final class AppViewModel: ObservableObject {
 	}
 
 	func setActiveTab(_ tab: DocumentTab) {
+		ttsManager.stop()
 		activeTabId = tab.id
 		if let t = activeTab {
 			loadSegment(for: t)
