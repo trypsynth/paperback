@@ -64,6 +64,32 @@ final class TtsManager: NSObject, ObservableObject {
 		)
 	}
 
+	// MARK: - Sample playback
+
+	func speakSample(_ text: String) {
+		invalidatePrefetch()
+		internalStop()
+		suppressNextFinish = true
+		speechGeneration += 1
+		let gen = speechGeneration
+		isSpeaking = true
+		isPaused = false
+
+		let acc = BufferAccumulator()
+		synthesizer.write(makeUtterance(text)) { [weak self, acc] buffer in
+			guard let pcm = buffer as? AVAudioPCMBuffer else { return }
+			if pcm.frameLength > 0 {
+				acc.buffers.append(pcm)
+			} else {
+				let buffers = acc.buffers
+				DispatchQueue.main.async { [weak self] in
+					guard let self, self.speechGeneration == gen else { return }
+					self.scheduleConverted(buffers, gen: gen)
+				}
+			}
+		}
+	}
+
 	// MARK: - Session interruption
 
 	@objc private func handleInterruption(_ notification: Notification) {

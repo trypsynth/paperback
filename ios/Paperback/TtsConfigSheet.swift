@@ -74,20 +74,16 @@ private struct TtsConfigForm: View {
 				}
 			}
 			Section {
-				LabeledSlider(
-					label: "Speech Rate",
+				Slider(
 					value: $ttsManager.speechRate,
 					in: AVSpeechUtteranceMinimumSpeechRate...AVSpeechUtteranceMaximumSpeechRate,
-					step: (AVSpeechUtteranceMaximumSpeechRate - AVSpeechUtteranceMinimumSpeechRate) / 100,
-					displayValue: "\(ratePercent)%"
+					step: (AVSpeechUtteranceMaximumSpeechRate - AVSpeechUtteranceMinimumSpeechRate) / 100
 				)
-				LabeledSlider(
-					label: "Pitch",
-					value: $ttsManager.pitch,
-					in: 0.5...2.0,
-					step: 0.015,
-					displayValue: "\(pitchPercent)%"
-				)
+				.accessibilityLabel("Speech Rate")
+				.accessibilityValue("\(ratePercent) percent")
+				Slider(value: $ttsManager.pitch, in: 0.5...2.0, step: 0.015)
+					.accessibilityLabel("Pitch")
+					.accessibilityValue("\(pitchPercent) percent")
 			}
 			Section {
 				Button(action: onPlaySample) {
@@ -108,33 +104,6 @@ private struct TtsConfigForm: View {
 	}
 }
 
-private struct LabeledSlider: View {
-	let label: String
-	@Binding var value: Float
-	let `in`: ClosedRange<Float>
-	let step: Float
-	let displayValue: String
-
-	var body: some View {
-		VStack(alignment: .leading, spacing: 4) {
-			HStack {
-				Text(label)
-					.font(.subheadline)
-					.foregroundStyle(.secondary)
-				Spacer()
-				Text(displayValue)
-					.font(.subheadline)
-					.monospacedDigit()
-					.foregroundStyle(.secondary)
-					.accessibilityHidden(true)
-			}
-			Slider(value: $value, in: self.in, step: step)
-				.accessibilityLabel(label)
-				.accessibilityValue(displayValue)
-		}
-		.padding(.vertical, 2)
-	}
-}
 
 struct TtsConfigSheet: View {
 	@EnvironmentObject var viewModel: AppViewModel
@@ -159,7 +128,7 @@ struct TtsConfigSheet: View {
 					}
 				},
 				onPlaySample: {
-					viewModel.ttsManager.speak(sampleText)
+					viewModel.ttsManager.speakSample(sampleText)
 				},
 				onDone: { dismiss() }
 			)
