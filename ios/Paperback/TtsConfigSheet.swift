@@ -1,6 +1,8 @@
 import SwiftUI
 import AVFoundation
 
+private let sampleText = "This is a sample of the current voice and speed settings."
+
 private struct VoicePickerView: View {
 	@ObservedObject var ttsManager: TtsManager
 	let onSelect: (String?) -> Void
@@ -39,6 +41,7 @@ private struct TtsConfigForm: View {
 	@ObservedObject var ttsManager: TtsManager
 	@Binding var path: NavigationPath
 	let onVoiceSelect: (String?) -> Void
+	let onPlaySample: () -> Void
 	let onDone: () -> Void
 
 	private var selectedVoiceName: String {
@@ -46,6 +49,15 @@ private struct TtsConfigForm: View {
 		      let voice = ttsManager.availableVoices.first(where: { $0.identifier == id })
 		else { return "Default" }
 		return voice.name
+	}
+
+	private var ratePercent: Int {
+		let range = AVSpeechUtteranceMaximumSpeechRate - AVSpeechUtteranceMinimumSpeechRate
+		return Int(((ttsManager.speechRate - AVSpeechUtteranceMinimumSpeechRate) / range * 100).rounded())
+	}
+
+	private var pitchPercent: Int {
+		Int(((ttsManager.pitch - 0.5) / 1.5 * 100).rounded())
 	}
 
 	var body: some View {
@@ -62,11 +74,25 @@ private struct TtsConfigForm: View {
 				}
 			}
 			Section {
-				Slider(value: $ttsManager.speechRate,
-				       in: AVSpeechUtteranceMinimumSpeechRate...AVSpeechUtteranceMaximumSpeechRate)
-					.accessibilityLabel("Speech rate")
-				Slider(value: $ttsManager.pitch, in: 0.5...2.0)
-					.accessibilityLabel("Pitch")
+				LabeledSlider(
+					label: "Speech Rate",
+					value: $ttsManager.speechRate,
+					in: AVSpeechUtteranceMinimumSpeechRate...AVSpeechUtteranceMaximumSpeechRate,
+					step: (AVSpeechUtteranceMaximumSpeechRate - AVSpeechUtteranceMinimumSpeechRate) / 100,
+					displayValue: "\(ratePercent)%"
+				)
+				LabeledSlider(
+					label: "Pitch",
+					value: $ttsManager.pitch,
+					in: 0.5...2.0,
+					step: 0.015,
+					displayValue: "\(pitchPercent)%"
+				)
+			}
+			Section {
+				Button(action: onPlaySample) {
+					Label("Play Sample", systemImage: "play.circle")
+				}
 			}
 		}
 		.navigationTitle("TTS Settings")
@@ -79,6 +105,34 @@ private struct TtsConfigForm: View {
 		.navigationDestination(for: String.self) { _ in
 			VoicePickerView(ttsManager: ttsManager, onSelect: onVoiceSelect)
 		}
+	}
+}
+
+private struct LabeledSlider: View {
+	let label: String
+	@Binding var value: Float
+	let `in`: ClosedRange<Float>
+	let step: Float
+	let displayValue: String
+
+	var body: some View {
+		VStack(alignment: .leading, spacing: 4) {
+			HStack {
+				Text(label)
+					.font(.subheadline)
+					.foregroundStyle(.secondary)
+				Spacer()
+				Text(displayValue)
+					.font(.subheadline)
+					.monospacedDigit()
+					.foregroundStyle(.secondary)
+					.accessibilityHidden(true)
+			}
+			Slider(value: $value, in: self.in, step: step)
+				.accessibilityLabel(label)
+				.accessibilityValue(displayValue)
+		}
+		.padding(.vertical, 2)
 	}
 }
 
@@ -103,6 +157,9 @@ struct TtsConfigSheet: View {
 					} else if wasPaused {
 						viewModel.ttsManager.stop()
 					}
+				},
+				onPlaySample: {
+					viewModel.ttsManager.speak(sampleText)
 				},
 				onDone: { dismiss() }
 			)
