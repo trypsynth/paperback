@@ -52,13 +52,26 @@ final class AppViewModel: ObservableObject {
 
 	// MARK: - Config
 	let configManager = ConfigManagerFfi()
+	private var cancellables = Set<AnyCancellable>()
 
 	init() {
 		let configPath = configFilePath()
 		_ = configManager.initialize(configPath: configPath)
+		restorePreviousDocuments = configManager.getAppBool(key: "restore_previous_documents", defaultValue: true)
 		loadRecentsFromConfig()
 		ttsManager.onUtteranceFinished = { [weak self] in
 			self?.playNextSegment()
+		}
+		$restorePreviousDocuments
+			.dropFirst()
+			.sink { [weak self] value in
+				self?.configManager.setAppBool(key: "restore_previous_documents", value: value)
+			}
+			.store(in: &cancellables)
+		if restorePreviousDocuments {
+			for path in configManager.getOpenedDocuments() {
+				tryRestoreDocument(path: path)
+			}
 		}
 	}
 
@@ -88,6 +101,7 @@ final class AppViewModel: ObservableObject {
 			tabs.append(tab)
 			activeTabId = tab.id
 			configManager.addRecentDocument(path: path)
+			configManager.addOpenedDocument(path: path)
 			loadRecentsFromConfig()
 			loadSegment(for: tab)
 		} catch {
@@ -96,9 +110,11 @@ final class AppViewModel: ObservableObject {
 	}
 
 	func closeTab(_ tab: DocumentTab) {
-		if let session = tab.session {
-			configManager.setDocumentPosition(path: tab.url.path(percentEncoded: false), position: tab.currentPosition)
+		let path = tab.url.path(percentEncoded: false)
+		if tab.session != nil {
+			configManager.setDocumentPosition(path: path, position: tab.currentPosition)
 		}
+		configManager.removeOpenedDocument(path: path)
 		tabs.removeAll { $0.id == tab.id }
 		if activeTabId == tab.id {
 			activeTabId = tabs.last?.id
@@ -301,6 +317,24 @@ final class AppViewModel: ObservableObject {
 	}
 
 	// MARK: - Private helpers
+
+	private func tryRestoreDocument(path: String) {
+		guard FileManager.default.fileExists(atPath: path) else { return }
+		let url = URL(fileURLWithPath: path)
+		guard let session = try? DocumentSession.newFfi(
+			filePath: path,
+			password: configManager.getDocumentPassword(path: path),
+			forcedExtension: ""
+		) else { return }
+		let title = session.title().isEmpty
+			? url.deletingPathExtension().lastPathComponent
+			: session.title()
+		var tab = DocumentTab(title: title, url: url, session: session)
+		tab.currentPosition = configManager.getDocumentPosition(path: path)
+		tabs.append(tab)
+		if activeTabId == nil { activeTabId = tab.id }
+		loadSegment(for: tab)
+	}
 
 	private func loadSegment(for tab: DocumentTab) {
 		guard let session = tab.session else { return }

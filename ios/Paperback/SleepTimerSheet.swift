@@ -40,6 +40,6 @@ struct SleepTimerSheet: View {
 				}
 			}
 		}
-		.sheetAccessibilityFocus()
+		.sheetAccessibilityFocus(title: "Sleep Timer")
 	}
 }

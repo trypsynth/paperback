@@ -1,14 +1,27 @@
 import SwiftUI
-import UIKit
+
+private struct SheetFocusModifier: ViewModifier {
+	let title: String
+	@AccessibilityFocusState private var focused: Bool
+
+	func body(content: Content) -> some View {
+		content
+			.overlay(alignment: .top) {
+				Text(title)
+					.frame(height: 0)
+					.opacity(0)
+					.accessibilityFocused($focused)
+			}
+			.onAppear {
+				DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+					focused = true
+				}
+			}
+	}
+}
 
 extension View {
-	// Posts a VoiceOver screenChanged notification after the sheet animation
-	// settles so focus lands on the first element instead of nowhere.
-	func sheetAccessibilityFocus() -> some View {
-		onAppear {
-			DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-				UIAccessibility.post(notification: .screenChanged, argument: nil)
-			}
-		}
+	func sheetAccessibilityFocus(title: String) -> some View {
+		modifier(SheetFocusModifier(title: title))
 	}
 }

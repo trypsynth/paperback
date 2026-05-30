@@ -36,6 +36,6 @@ struct DocumentInfoSheet: View {
 				}
 			}
 		}
-		.sheetAccessibilityFocus()
+		.sheetAccessibilityFocus(title: "Document Info")
 	}
 }

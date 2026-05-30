@@ -37,7 +37,7 @@ struct TocSheet: View {
 				}
 			}
 		}
-		.sheetAccessibilityFocus()
+		.sheetAccessibilityFocus(title: "Contents")
 	}
 
 	@ViewBuilder private var emptyView: some View {

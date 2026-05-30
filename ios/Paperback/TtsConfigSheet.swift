@@ -8,6 +8,19 @@ struct TtsConfigSheet: View {
 	var body: some View {
 		NavigationStack {
 			Form {
+				Section {
+					Picker("Voice", selection: Binding(
+						get: { viewModel.ttsManager.selectedVoiceIdentifier },
+						set: { viewModel.ttsManager.selectedVoiceIdentifier = $0 }
+					)) {
+						Text("Default").tag(nil as String?)
+						ForEach(viewModel.ttsManager.availableVoices, id: \.identifier) { voice in
+							Text("\(voice.name) (\(voice.language))")
+								.tag(voice.identifier as String?)
+						}
+					}
+					.pickerStyle(.navigationLink)
+				}
 				Section("Playback") {
 					LabeledContent("Rate") {
 						Slider(
@@ -28,19 +41,6 @@ struct TtsConfigSheet: View {
 						)
 					}
 				}
-				Section("Voice") {
-					Picker("Voice", selection: Binding(
-						get: { viewModel.ttsManager.selectedVoice },
-						set: { viewModel.ttsManager.selectedVoice = $0 }
-					)) {
-						Text("Default").tag(nil as AVSpeechSynthesisVoice?)
-						ForEach(viewModel.ttsManager.availableVoices, id: \.identifier) { voice in
-							Text("\(voice.name) (\(voice.language))")
-								.tag(voice as AVSpeechSynthesisVoice?)
-						}
-					}
-					.pickerStyle(.navigationLink)
-				}
 			}
 			.navigationTitle("TTS Settings")
 			.navigationBarTitleDisplayMode(.inline)
@@ -50,6 +50,6 @@ struct TtsConfigSheet: View {
 				}
 			}
 		}
-		.sheetAccessibilityFocus()
+		.sheetAccessibilityFocus(title: "TTS Settings")
 	}
 }

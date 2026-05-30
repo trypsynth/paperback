@@ -55,6 +55,6 @@ struct RecentDocumentsSheet: View {
 				}
 			}
 		}
-		.sheetAccessibilityFocus()
+		.sheetAccessibilityFocus(title: "Recent Documents")
 	}
 }

@@ -8,7 +8,7 @@ final class TtsManager: NSObject, ObservableObject {
 	@Published var isPaused = false
 	@Published var speechRate: Float = AVSpeechUtteranceDefaultSpeechRate
 	@Published var pitch: Float = 1.0
-	@Published var selectedVoice: AVSpeechSynthesisVoice? = nil
+	@Published var selectedVoiceIdentifier: String? = nil
 
 	var availableVoices: [AVSpeechSynthesisVoice] {
 		AVSpeechSynthesisVoice.speechVoices()
@@ -32,7 +32,7 @@ final class TtsManager: NSObject, ObservableObject {
 		let utterance = AVSpeechUtterance(string: text)
 		utterance.rate = speechRate
 		utterance.pitchMultiplier = pitch
-		utterance.voice = selectedVoice
+		utterance.voice = selectedVoiceIdentifier.flatMap { AVSpeechSynthesisVoice(identifier: $0) }
 		synthesizer.speak(utterance)
 		isSpeaking = true
 		isPaused = false
