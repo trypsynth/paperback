@@ -23,6 +23,9 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
@@ -599,6 +602,24 @@ fun MainScreen(
 			onConfirm = { viewModel.submitPassword(it) },
 			onDismiss = { viewModel.cancelPasswordPrompt() }
 		)
+	}
+
+	val lifecycleOwner = LocalLifecycleOwner.current
+	DisposableEffect(lifecycleOwner) {
+		val observer = LifecycleEventObserver { _, event ->
+			if (event == Lifecycle.Event.ON_RESUME &&
+				android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R &&
+				android.os.Environment.isExternalStorageManager()
+			) {
+				if (!useInAppFileBrowser) {
+					useInAppFileBrowser = true
+					viewModel.configManager.setAppBool("use_in_app_file_browser", true)
+					viewModel.configManager.flush()
+				}
+			}
+		}
+		lifecycleOwner.lifecycle.addObserver(observer)
+		onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
 	}
 
 	val showPermissionRationale by viewModel.showPermissionRationale.collectAsStateWithLifecycle()

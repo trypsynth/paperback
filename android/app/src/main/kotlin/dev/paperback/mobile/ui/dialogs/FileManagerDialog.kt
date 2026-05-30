@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material3.*
@@ -47,7 +46,7 @@ fun FileManagerDialog(
 	onDismiss: () -> Unit
 ) {
 	var currentDirectory by remember { mutableStateOf(initialDirectory) }
-	
+
 	var isFirstLaunch by remember { mutableStateOf(true) }
 	LaunchedEffect(currentDirectory) {
 		if (isFirstLaunch) {
@@ -75,7 +74,7 @@ fun FileManagerDialog(
 			}.distinct()
 		}
 	}
-	
+
 	val virtualParent = remember(currentDirectory, storageRoots) {
 		if (currentDirectory.absolutePath == "/storage") null
 		else if (storageRoots.any { it.absolutePath == currentDirectory.absolutePath }) File("/storage")
@@ -123,22 +122,12 @@ fun FileManagerDialog(
 			TopAppBar(
 				title = {
 					Text(
-						text = if (currentDirectory.absolutePath == "/storage") "Storage Devices" 
+						text = if (currentDirectory.absolutePath == "/storage") "Storage Devices"
 							   else if (currentDirectory.absolutePath == Environment.getExternalStorageDirectory().absolutePath) "Internal Storage"
 							   else currentDirectory.name.ifBlank { "Storage" },
 						maxLines = 1,
 						overflow = TextOverflow.Ellipsis
 					)
-				},
-				navigationIcon = {
-					if (virtualParent != null) {
-						IconButton(
-							onClick = { currentDirectory = virtualParent },
-							modifier = Modifier.semantics { contentDescription = "Go up to parent directory: ${if (virtualParent.absolutePath == "/storage") "Storage Devices" else virtualParent.name}" }
-						) {
-							Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-						}
-					}
 				},
 				actions = {
 					TextButton(onClick = onDismiss) {
@@ -146,7 +135,7 @@ fun FileManagerDialog(
 					}
 				}
 			)
-			
+
 
 			Text(
 				text = currentDirectory.absolutePath,
@@ -156,7 +145,7 @@ fun FileManagerDialog(
 					contentDescription = "Current path: ${currentDirectory.absolutePath}"
 				}
 			)
-			
+
 			Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
 				if (virtualParent != null) {
 					Row(
@@ -240,7 +229,7 @@ fun FileListItem(file: File, onClick: () -> Unit) {
 				val typeStr = if (file.isDirectory) "Folder" else "File"
 				val sizeDesc = if (file.isDirectory) "" else ", $sizeString"
 				val displayName = if (file.absolutePath == Environment.getExternalStorageDirectory().absolutePath) "Internal Storage" else file.name
-				contentDescription = "$typeStr: $displayName, modified $dateString$sizeDesc"
+				contentDescription = "$displayName, $typeStr, modified $dateString$sizeDesc"
 			},
 		verticalAlignment = Alignment.CenterVertically
 	) {
