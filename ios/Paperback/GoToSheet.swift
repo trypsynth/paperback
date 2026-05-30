@@ -10,13 +10,18 @@ struct GoToSheet: View {
 	@State private var percentValue: Double = 50
 	@FocusState private var fieldFocused: Bool
 
+	private var session: DocumentSession? { viewModel.activeSession }
+	private var hasPages: Bool { (session?.pageCountFfi() ?? 0) > 0 }
+
 	var body: some View {
 		NavigationStack {
 			Form {
 				Section {
 					Picker("Mode", selection: $mode) {
 						Text("Line").tag(GoToMode.line)
-						Text("Page").tag(GoToMode.page)
+						if hasPages {
+							Text("Page").tag(GoToMode.page)
+						}
 						Text("Percent").tag(GoToMode.percent)
 					}
 					.pickerStyle(.wheel)
@@ -58,10 +63,7 @@ struct GoToSheet: View {
 						.disabled(!canGo)
 				}
 			}
-			.onAppear {
-				mode = viewModel.goToInitialMode
-				if !voiceOverEnabled { fieldFocused = true }
-			}
+			.onAppear { populate() }
 		}
 		.sheetAccessibilityFocus(title: "Go To")
 	}
@@ -72,6 +74,22 @@ struct GoToSheet: View {
 		case .page:    return Int64(pageValue) != nil
 		case .percent: return true
 		}
+	}
+
+	private func populate() {
+		let initialMode = viewModel.goToInitialMode
+		mode = (initialMode == .page && !hasPages) ? .line : initialMode
+
+		guard let session else { return }
+		let pos = viewModel.ttsPosition
+		let status = session.getStatusInfoFfi(position: pos)
+		lineValue = "\(status.lineNumber)"
+		percentValue = Double(status.percentage)
+		if hasPages {
+			pageValue = "\(session.currentPageFfi(position: pos))"
+		}
+
+		if !voiceOverEnabled { fieldFocused = mode != .percent }
 	}
 
 	private func go() {
