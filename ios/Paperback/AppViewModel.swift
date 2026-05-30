@@ -58,6 +58,16 @@ final class AppViewModel: ObservableObject {
 		let configPath = configFilePath()
 		_ = configManager.initialize(configPath: configPath)
 		restorePreviousDocuments = configManager.getAppBool(key: "restore_previous_documents", defaultValue: true)
+
+		let savedRate = configManager.getAppString(key: "tts_speech_rate", defaultValue: "")
+		if let r = Float(savedRate) { ttsManager.speechRate = r }
+
+		let savedPitch = configManager.getAppString(key: "tts_pitch", defaultValue: "")
+		if let p = Float(savedPitch) { ttsManager.pitch = p }
+
+		let savedVoice = configManager.getAppString(key: "tts_voice_identifier", defaultValue: "")
+		if !savedVoice.isEmpty { ttsManager.selectedVoiceIdentifier = savedVoice }
+
 		loadRecentsFromConfig()
 		ttsManager.onUtteranceFinished = { [weak self] in
 			self?.playNextSegment()
@@ -66,6 +76,24 @@ final class AppViewModel: ObservableObject {
 			.dropFirst()
 			.sink { [weak self] value in
 				self?.configManager.setAppBool(key: "restore_previous_documents", value: value)
+			}
+			.store(in: &cancellables)
+		ttsManager.$speechRate
+			.dropFirst()
+			.sink { [weak self] value in
+				self?.configManager.setAppString(key: "tts_speech_rate", value: "\(value)")
+			}
+			.store(in: &cancellables)
+		ttsManager.$pitch
+			.dropFirst()
+			.sink { [weak self] value in
+				self?.configManager.setAppString(key: "tts_pitch", value: "\(value)")
+			}
+			.store(in: &cancellables)
+		ttsManager.$selectedVoiceIdentifier
+			.dropFirst()
+			.sink { [weak self] value in
+				self?.configManager.setAppString(key: "tts_voice_identifier", value: value ?? "")
 			}
 			.store(in: &cancellables)
 		if restorePreviousDocuments {
