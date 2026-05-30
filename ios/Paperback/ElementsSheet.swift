@@ -24,7 +24,7 @@ struct ElementsSheet: View {
 							if tab == 0 {
 								List(headings.items, id: \.offset) { item in
 									Button {
-										viewModel.goToLine(item.offset)
+										viewModel.goToPosition(item.offset)
 										dismiss()
 									} label: {
 										Text(item.text)
@@ -33,7 +33,7 @@ struct ElementsSheet: View {
 							} else {
 								List(links.items, id: \.offset) { item in
 									Button {
-										viewModel.goToLine(item.offset)
+										viewModel.goToPosition(item.offset)
 										dismiss()
 									} label: {
 										Text(item.text)

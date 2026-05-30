@@ -14,7 +14,7 @@ struct TocSheet: View {
 					} else {
 						List(entries, id: \.position) { entry in
 							Button {
-								viewModel.goToLine(entry.position)
+								viewModel.goToPosition(entry.position)
 								dismiss()
 							} label: {
 								HStack {

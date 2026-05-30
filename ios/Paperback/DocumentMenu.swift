@@ -45,5 +45,18 @@ struct DocumentMenu: View {
 		} label: {
 			Image(systemName: "ellipsis.circle")
 		}
+		.accessibilityLabel("More options")
+		.accessibilityAction(named: "Table of Contents") { viewModel.showToc = true }
+		.accessibilityAction(named: "Elements") { viewModel.showElements = true }
+		.accessibilityAction(named: "Find") { viewModel.showFind = true }
+		.accessibilityAction(named: "Go To") {
+			viewModel.goToInitialMode = .line
+			viewModel.showGoTo = true
+		}
+		.accessibilityAction(named: "Recent Documents") { viewModel.showRecents = true }
+		.accessibilityAction(named: "Word Count") { viewModel.showWordCount = true }
+		.accessibilityAction(named: "Document Info") { viewModel.showDocumentInfo = true }
+		.accessibilityAction(named: "Sleep Timer") { viewModel.showSleepTimer = true }
+		.accessibilityAction(named: "Settings") { viewModel.showSettings = true }
 	}
 }
