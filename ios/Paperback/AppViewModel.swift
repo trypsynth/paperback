@@ -229,6 +229,8 @@ final class AppViewModel: ObservableObject {
 		if speak {
 			ttsManager.speak(seg.text)
 			prefetchAdjacentSegment(after: seg.startPos)
+		} else {
+			announceNavigationCue(seg.text)
 		}
 	}
 
@@ -246,7 +248,15 @@ final class AppViewModel: ObservableObject {
 		if speak {
 			ttsManager.speak(seg.text)
 			prefetchAdjacentSegment(after: seg.startPos)
+		} else {
+			announceNavigationCue(seg.text)
 		}
+	}
+
+	private func announceNavigationCue(_ text: String) {
+		let words = text.split(whereSeparator: \.isWhitespace)
+		let cue = words.prefix(5).joined(separator: " ")
+		UIAccessibility.post(notification: .announcement, argument: cue)
 	}
 
 	private func prefetchAdjacentSegment(after position: Int64) {

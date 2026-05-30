@@ -247,11 +247,18 @@ final class TtsManager: NSObject, ObservableObject {
 	}
 
 	private func makeUtterance(_ text: String) -> AVSpeechUtterance {
-		let u = AVSpeechUtterance(string: text)
+		let u = AVSpeechUtterance(string: sanitizeForSpeech(text))
 		u.rate = speechRate
 		u.pitchMultiplier = pitch
 		u.voice = selectedVoiceIdentifier.flatMap { AVSpeechSynthesisVoice(identifier: $0) }
 		return u
+	}
+
+	// Soft hyphens (\u{00AD}) and null bytes cause AVSpeechSynthesizer to truncate utterances.
+	private func sanitizeForSpeech(_ text: String) -> String {
+		text.unicodeScalars
+			.filter { $0.value != 0x00 && $0.value != 0x00AD }
+			.reduce(into: "") { $0.unicodeScalars.append($1) }
 	}
 
 	private func scheduleConverted(_ buffers: [AVAudioPCMBuffer], gen: Int, suppress: Bool) {
