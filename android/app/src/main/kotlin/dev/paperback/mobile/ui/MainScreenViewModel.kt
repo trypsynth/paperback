@@ -545,7 +545,7 @@ class MainScreenViewModel(
 		}
 	}
 
-	fun playNextSegment() {
+	fun playNextSegment(speak: Boolean = true) {
 		val state = uiState.value
 		if (state is MainScreenUiState.Success) {
 			val tab = state.activeTab ?: return
@@ -554,9 +554,18 @@ class MainScreenViewModel(
 				_ttsPosition.value = segment.startPos
 				_currentSegmentText.value = segment.text
 				saveTtsPositionToConfig(segment.startPos)
-				ttsManager.speak(segment.text)
+				if (speak) {
+					ttsManager.speak(segment.text)
+				} else {
+					announceNavigationCue(segment.text)
+				}
 			}
 		}
+	}
+
+	private fun announceNavigationCue(text: String) {
+		val cue = text.trim().split("\\s+".toRegex()).take(5).joinToString(" ")
+		_accessibilityAnnouncement.tryEmit(cue)
 	}
 
 	fun playNextContinuousSegment() {
@@ -578,7 +587,7 @@ class MainScreenViewModel(
 		}
 	}
 
-	fun playPrevSegment() {
+	fun playPrevSegment(speak: Boolean = true) {
 		val state = uiState.value
 		if (state is MainScreenUiState.Success) {
 			val tab = state.activeTab ?: return
@@ -587,7 +596,11 @@ class MainScreenViewModel(
 				_ttsPosition.value = segment.startPos
 				_currentSegmentText.value = segment.text
 				saveTtsPositionToConfig(segment.startPos)
-				ttsManager.speak(segment.text)
+				if (speak) {
+					ttsManager.speak(segment.text)
+				} else {
+					announceNavigationCue(segment.text)
+				}
 			}
 		}
 	}

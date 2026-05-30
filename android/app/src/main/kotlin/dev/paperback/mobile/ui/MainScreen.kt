@@ -83,7 +83,7 @@ fun MainScreen(
 							val currentPos = viewModel.ttsPosition.value
 							if (forward) currentPos + 1L else currentPos
 						}
-						
+
 						val res = tab.session.searchFfi(activeSearchQuery!!, searchPos, activeSearchOptions!!.copy(forward = forward))
 						if (res.found) {
 							if (isTextMode) {
@@ -248,8 +248,8 @@ fun MainScreen(
 				TtsBottomBar(
 					isSpeaking = isSpeaking,
 					onPlayPause = { viewModel.togglePlayPause() },
-					onPrev = { viewModel.playPrevSegment() },
-					onNext = { viewModel.playNextSegment() },
+					onPrev = { viewModel.playPrevSegment(speak = isSpeaking) },
+					onNext = { viewModel.playNextSegment(speak = isSpeaking) },
 					currentSegmentType = currentSegmentType,
 					supportedSegmentTypes = supportedSegmentTypes,
 					onSegmentTypeChange = { viewModel.setSegmentType(it) }
@@ -460,7 +460,7 @@ fun MainScreen(
 											activeSearchOptions?.matchCase == options.matchCase &&
 											activeSearchOptions?.wholeWord == options.wholeWord &&
 											activeSearchOptions?.regex == options.regex
-									
+
 									viewModel.startSearch(query, options)
 									val searchPos = if (isTextMode) {
 										val nextLineOffset = if (isSameQuery) 2 else 1
