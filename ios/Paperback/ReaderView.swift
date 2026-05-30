@@ -64,7 +64,6 @@ struct ReaderView: View {
 			allowsMultipleSelection: false
 		) { result in
 			guard case .success(let urls) = result, let url = urls.first else { return }
-			_ = url.startAccessingSecurityScopedResource()
 			viewModel.openDocument(url: url)
 		}
 		.alert("Open Error", isPresented: Binding(

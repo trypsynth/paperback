@@ -37,7 +37,6 @@ struct EmptyStateView: View {
 			}
 			ForEach(viewModel.recentDocuments.prefix(5)) { doc in
 				Button {
-					_ = doc.url.startAccessingSecurityScopedResource()
 					viewModel.openDocument(url: doc.url)
 				} label: {
 					HStack {

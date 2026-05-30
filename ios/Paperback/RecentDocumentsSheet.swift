@@ -23,7 +23,6 @@ struct RecentDocumentsSheet: View {
 					List {
 						ForEach(viewModel.recentDocuments) { doc in
 							Button {
-								_ = doc.url.startAccessingSecurityScopedResource()
 								viewModel.openDocument(url: doc.url)
 								dismiss()
 							} label: {

@@ -7,6 +7,7 @@ struct DocumentTab: Identifiable, Equatable {
 	var lineScrollIndex: Int = 0
 	var currentPosition: Int64 = 0
 	var session: DocumentSession?
+	var securityScopeURL: URL? = nil
 
 	init(title: String, url: URL, session: DocumentSession? = nil) {
 		self.id = UUID()

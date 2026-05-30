@@ -91,6 +91,7 @@ final class AppViewModel: ObservableObject {
 			activeTabId = existing.id
 			return
 		}
+		let scopeStarted = url.startAccessingSecurityScopedResource()
 		let path = url.path(percentEncoded: false)
 		let pass = password ?? configManager.getDocumentPassword(path: path)
 		do {
@@ -105,13 +106,16 @@ final class AppViewModel: ObservableObject {
 			let savedPos = configManager.getDocumentPosition(path: path)
 			var tab = DocumentTab(title: title, url: url, session: session)
 			tab.currentPosition = savedPos
+			tab.securityScopeURL = scopeStarted ? url : nil
 			tabs.append(tab)
 			activeTabId = tab.id
 			configManager.addRecentDocument(path: path)
 			configManager.addOpenedDocument(path: path)
 			loadRecentsFromConfig()
 			loadSegment(for: tab)
+			saveBookmark(for: url, path: path)
 		} catch {
+			if scopeStarted { url.stopAccessingSecurityScopedResource() }
 			debugMessage = "Error opening '\(url.lastPathComponent)':\n\(error)\n\nPath: \(path)"
 		}
 	}
@@ -122,6 +126,7 @@ final class AppViewModel: ObservableObject {
 			configManager.setDocumentPosition(path: path, position: tab.currentPosition)
 		}
 		configManager.removeOpenedDocument(path: path)
+		tab.securityScopeURL?.stopAccessingSecurityScopedResource()
 		tabs.removeAll { $0.id == tab.id }
 		if activeTabId == tab.id {
 			activeTabId = tabs.last?.id
@@ -326,21 +331,24 @@ final class AppViewModel: ObservableObject {
 	// MARK: - Private helpers
 
 	private func tryRestoreDocument(path: String) {
+		if let data = UserDefaults.standard.data(forKey: bookmarkKey(path)) {
+			var isStale = false
+			if let url = try? URL(resolvingBookmarkData: data, bookmarkDataIsStale: &isStale) {
+				openDocument(url: url)
+				return
+			}
+		}
 		guard FileManager.default.fileExists(atPath: path) else { return }
-		let url = URL(fileURLWithPath: path)
-		guard let session = try? DocumentSession.newFfi(
-			filePath: path,
-			password: configManager.getDocumentPassword(path: path),
-			forcedExtension: ""
-		) else { return }
-		let title = session.title().isEmpty
-			? url.deletingPathExtension().lastPathComponent
-			: session.title()
-		var tab = DocumentTab(title: title, url: url, session: session)
-		tab.currentPosition = configManager.getDocumentPosition(path: path)
-		tabs.append(tab)
-		if activeTabId == nil { activeTabId = tab.id }
-		loadSegment(for: tab)
+		openDocument(url: URL(fileURLWithPath: path))
+	}
+
+	private func saveBookmark(for url: URL, path: String) {
+		guard let data = try? url.bookmarkData(options: .minimalBookmark, includingResourceValuesForKeys: nil, relativeTo: nil) else { return }
+		UserDefaults.standard.set(data, forKey: bookmarkKey(path))
+	}
+
+	private func bookmarkKey(_ path: String) -> String {
+		"pb_bm_\(path)"
 	}
 
 	private func loadSegment(for tab: DocumentTab) {
