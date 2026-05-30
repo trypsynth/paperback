@@ -25,6 +25,7 @@ struct TtsControlBar: View {
 			}
 			.accessibilityLabel("Navigation unit")
 			.accessibilityValue(viewModel.currentSegmentType.rawValue)
+			.accessibilityRemoveTraits(.isButton)
 			.accessibilityAdjustableAction { direction in
 				let types = SegmentType.allCases
 				guard let idx = types.firstIndex(of: viewModel.currentSegmentType) else { return }

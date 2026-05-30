@@ -20,7 +20,7 @@ struct TtsModeView: View {
 			.frame(maxHeight: 400)
 			if let session = viewModel.activeSession {
 				let status = session.getStatusInfoFfi(position: viewModel.ttsPosition)
-				Text("Line \(status.lineNumber)  ·  \(status.percentage)%")
+				Text("Line \(status.lineNumber)")
 					.font(.caption)
 					.foregroundStyle(.secondary)
 			}
