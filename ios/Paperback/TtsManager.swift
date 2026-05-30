@@ -232,6 +232,7 @@ final class TtsManager: NSObject, ObservableObject {
 	// MARK: - Private
 
 	private func internalStop() {
+		wasInterruptedWhilePlaying = false
 		synthesizer.stopSpeaking(at: .immediate)
 		player.stop()
 		isSpeaking = false

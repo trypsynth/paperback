@@ -215,7 +215,7 @@ final class AppViewModel: ObservableObject {
 		prefetchAdjacentSegment(after: ttsPosition)
 	}
 
-	func playNextSegment() {
+	func playNextSegment(speak: Bool = true) {
 		guard let tab = activeTab, let session = tab.session else { return }
 		let seg = session.getTextSegment(
 			position: ttsPosition,
@@ -226,11 +226,13 @@ final class AppViewModel: ObservableObject {
 		ttsPosition = seg.startPos
 		currentSegmentText = seg.text
 		updateTabPosition(seg.startPos)
-		ttsManager.speak(seg.text)
-		prefetchAdjacentSegment(after: seg.startPos)
+		if speak {
+			ttsManager.speak(seg.text)
+			prefetchAdjacentSegment(after: seg.startPos)
+		}
 	}
 
-	func playPrevSegment() {
+	func playPrevSegment(speak: Bool = true) {
 		guard let tab = activeTab, let session = tab.session else { return }
 		let seg = session.getTextSegment(
 			position: ttsPosition,
@@ -241,8 +243,10 @@ final class AppViewModel: ObservableObject {
 		ttsPosition = seg.startPos
 		currentSegmentText = seg.text
 		updateTabPosition(seg.startPos)
-		ttsManager.speak(seg.text)
-		prefetchAdjacentSegment(after: seg.startPos)
+		if speak {
+			ttsManager.speak(seg.text)
+			prefetchAdjacentSegment(after: seg.startPos)
+		}
 	}
 
 	private func prefetchAdjacentSegment(after position: Int64) {
