@@ -15,6 +15,8 @@ final class TtsManager: NSObject, ObservableObject {
 	private var prefetchedBuffer: AVAudioPCMBuffer? = nil
 	private var prefetchGeneration = 0
 
+	private var wasInterruptedWhilePlaying = false
+
 	@Published var isSpeaking = false
 	@Published var isPaused = false
 
@@ -47,6 +49,78 @@ final class TtsManager: NSObject, ObservableObject {
 		engine.attach(player)
 		engine.connect(player, to: engine.mainMixerNode, format: outputFormat)
 		try? engine.start()
+
+		NotificationCenter.default.addObserver(
+			self,
+			selector: #selector(handleInterruption(_:)),
+			name: AVAudioSession.interruptionNotification,
+			object: AVAudioSession.sharedInstance()
+		)
+		NotificationCenter.default.addObserver(
+			self,
+			selector: #selector(handleMediaServicesReset),
+			name: AVAudioSession.mediaServicesWereResetNotification,
+			object: nil
+		)
+	}
+
+	// MARK: - Session interruption
+
+	@objc private func handleInterruption(_ notification: Notification) {
+		guard let info = notification.userInfo,
+		      let typeValue = info[AVAudioSessionInterruptionTypeKey] as? UInt,
+		      let type = AVAudioSession.InterruptionType(rawValue: typeValue) else { return }
+
+		Task { @MainActor [weak self] in
+			guard let self else { return }
+			switch type {
+			case .began:
+				if isSpeaking {
+					wasInterruptedWhilePlaying = true
+					player.pause()
+					isSpeaking = false
+					isPaused = true
+				}
+			case .ended:
+				let optionsValue = info[AVAudioSessionInterruptionOptionKey] as? UInt ?? 0
+				let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
+				try? AVAudioSession.sharedInstance().setActive(true)
+				if !engine.isRunning { try? engine.start() }
+				if wasInterruptedWhilePlaying && options.contains(.shouldResume) {
+					wasInterruptedWhilePlaying = false
+					player.play()
+					isSpeaking = true
+					isPaused = false
+				} else {
+					wasInterruptedWhilePlaying = false
+				}
+			@unknown default:
+				break
+			}
+		}
+	}
+
+	@objc private func handleMediaServicesReset() {
+		Task { @MainActor [weak self] in
+			guard let self else { return }
+			isSpeaking = false
+			isPaused = false
+			wasInterruptedWhilePlaying = false
+			speechGeneration += 1
+			invalidatePrefetch()
+
+			let hwRate = AVAudioSession.sharedInstance().sampleRate
+			outputFormat = AVAudioFormat(
+				standardFormatWithSampleRate: hwRate > 0 ? hwRate : 44100,
+				channels: 1
+			)!
+			engine.stop()
+			engine.detach(player)
+			engine.attach(player)
+			engine.connect(player, to: engine.mainMixerNode, format: outputFormat)
+			try? AVAudioSession.sharedInstance().setActive(true)
+			try? engine.start()
+		}
 	}
 
 	// MARK: - Playback
