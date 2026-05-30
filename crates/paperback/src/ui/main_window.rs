@@ -87,7 +87,8 @@ impl MainWindow {
 			&config,
 			&find_dialog,
 			live_region_label,
-			#[cfg(target_os = "windows")] &hotkey_handle,
+			#[cfg(target_os = "windows")]
+			&hotkey_handle,
 		);
 		let dm = Rc::clone(&doc_manager);
 		let frame_copy = frame;
@@ -1704,7 +1705,10 @@ fn char_to_vk(ch: char) -> Option<u32> {
 }
 
 #[cfg(target_os = "windows")]
-fn re_register_hotkey(hotkey_handle: &std::rc::Rc<std::cell::RefCell<Option<HotkeyHandle>>>, hotkey: &paperback_core::config::HotkeyConfig) {
+fn re_register_hotkey(
+	hotkey_handle: &std::rc::Rc<std::cell::RefCell<Option<HotkeyHandle>>>,
+	hotkey: &paperback_core::config::HotkeyConfig,
+) {
 	use windows::Win32::{
 		Foundation::{LPARAM, WPARAM},
 		UI::WindowsAndMessaging::{PostThreadMessageW, WM_QUIT},
