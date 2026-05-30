@@ -256,7 +256,12 @@ final class AppViewModel: ObservableObject {
 	private func announceNavigationCue(_ text: String) {
 		let words = text.split(whereSeparator: \.isWhitespace)
 		let cue = words.prefix(5).joined(separator: " ")
-		UIAccessibility.post(notification: .announcement, argument: cue)
+		// Delay so SwiftUI's layout-changed accessibility notification fires first;
+		// otherwise it interrupts the announcement when triggered by a button tap.
+		Task { @MainActor in
+			try? await Task.sleep(for: .milliseconds(150))
+			UIAccessibility.post(notification: .announcement, argument: cue)
+		}
 	}
 
 	private func prefetchAdjacentSegment(after position: Int64) {

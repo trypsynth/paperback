@@ -307,14 +307,16 @@ final class TtsManager: NSObject, ObservableObject {
 
 		guard let converter = AVAudioConverter(from: synthFormat, to: target) else { return nil }
 		let ratio = target.sampleRate / synthFormat.sampleRate
-		let outCapacity = AVAudioFrameCount(Double(totalFrames) * ratio) + 1
+		// Extra headroom so the resampler can flush its internal delay buffer via .endOfStream.
+		let outCapacity = AVAudioFrameCount(Double(totalFrames) * ratio) + 512
 		guard let outBuf = AVAudioPCMBuffer(pcmFormat: target, frameCapacity: outCapacity) else { return nil }
 
 		var inputConsumed = false
 		var error: NSError?
 		converter.convert(to: outBuf, error: &error) { _, outStatus in
 			if inputConsumed {
-				outStatus.pointee = .noDataNow
+				// Signal end-of-stream so the resampler flushes its tail; .noDataNow would discard it.
+				outStatus.pointee = .endOfStream
 				return nil
 			}
 			outStatus.pointee = .haveData
