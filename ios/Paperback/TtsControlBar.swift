@@ -41,7 +41,7 @@ struct TtsControlBar: View {
 
 			Spacer()
 
-			Button { viewModel.playPrevSegment(speak: viewModel.ttsManager.isSpeaking) } label: {
+			Button { viewModel.moveToPrevSegment() } label: {
 				Image(systemName: "backward.fill")
 					.font(.title2)
 			}
@@ -63,7 +63,7 @@ struct TtsControlBar: View {
 				}
 			}
 
-			Button { viewModel.playNextSegment(speak: viewModel.ttsManager.isSpeaking) } label: {
+			Button { viewModel.moveToNextSegment() } label: {
 				Image(systemName: "forward.fill")
 					.font(.title2)
 			}

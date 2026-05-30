@@ -209,6 +209,34 @@ final class AppViewModel: ObservableObject {
 		}
 	}
 
+	func moveToNextSegment() {
+		guard let tab = activeTab, let session = tab.session else { return }
+		let seg = session.getTextSegment(
+			position: ttsPosition,
+			segmentType: ffiSegmentType(currentSegmentType),
+			direction: .next
+		)
+		if seg.text.isEmpty { return }
+		ttsManager.stop()
+		ttsPosition = seg.startPos
+		currentSegmentText = seg.text
+		updateTabPosition(seg.startPos)
+	}
+
+	func moveToPrevSegment() {
+		guard let tab = activeTab, let session = tab.session else { return }
+		let seg = session.getTextSegment(
+			position: ttsPosition,
+			segmentType: ffiSegmentType(currentSegmentType),
+			direction: .previous
+		)
+		if seg.text.isEmpty { return }
+		ttsManager.stop()
+		ttsPosition = seg.startPos
+		currentSegmentText = seg.text
+		updateTabPosition(seg.startPos)
+	}
+
 	func playCurrentSegment() {
 		guard !currentSegmentText.isEmpty else { return }
 		ttsManager.speak(currentSegmentText)

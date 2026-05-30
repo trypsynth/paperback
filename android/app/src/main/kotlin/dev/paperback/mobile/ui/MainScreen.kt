@@ -253,6 +253,8 @@ fun MainScreen(
 					onPlayPause = { viewModel.togglePlayPause() },
 					onPrev = { viewModel.playPrevSegment(speak = isSpeaking) },
 					onNext = { viewModel.playNextSegment(speak = isSpeaking) },
+					onPrevButton = { viewModel.movePrevSegment() },
+					onNextButton = { viewModel.moveNextSegment() },
 					currentSegmentType = currentSegmentType,
 					supportedSegmentTypes = supportedSegmentTypes,
 					onSegmentTypeChange = { viewModel.setSegmentType(it) }

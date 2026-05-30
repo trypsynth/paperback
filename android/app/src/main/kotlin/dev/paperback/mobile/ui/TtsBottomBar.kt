@@ -55,6 +55,8 @@ fun TtsBottomBar(
 	onPlayPause: () -> Unit,
 	onPrev: () -> Unit,
 	onNext: () -> Unit,
+	onPrevButton: () -> Unit,
+	onNextButton: () -> Unit,
 	currentSegmentType: SegmentTypeFfi,
 	supportedSegmentTypes: List<SegmentTypeFfi>,
 	onSegmentTypeChange: (SegmentTypeFfi) -> Unit,
@@ -118,7 +120,7 @@ fun TtsBottomBar(
 				}
 			}
 
-			IconButton(onClick = onPrev) {
+			IconButton(onClick = onPrevButton) {
 				Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous $segmentTypeName")
 			}
 
@@ -157,7 +159,7 @@ fun TtsBottomBar(
 				}
 			}
 
-			IconButton(onClick = onNext) {
+			IconButton(onClick = onNextButton) {
 				Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next $segmentTypeName")
 			}
 		},
