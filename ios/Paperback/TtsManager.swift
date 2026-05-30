@@ -9,7 +9,7 @@ final class TtsManager: NSObject, ObservableObject {
 	private var outputFormat: AVAudioFormat!
 
 	private var speechGeneration = 0
-	private var suppressNextFinish = false
+	private var lastScheduledGen = -1
 
 	private var prefetchedText: String? = nil
 	private var prefetchedBuffer: AVAudioPCMBuffer? = nil
@@ -69,7 +69,6 @@ final class TtsManager: NSObject, ObservableObject {
 	func speakSample(_ text: String) {
 		invalidatePrefetch()
 		internalStop()
-		suppressNextFinish = true
 		speechGeneration += 1
 		let gen = speechGeneration
 		isSpeaking = true
@@ -84,7 +83,7 @@ final class TtsManager: NSObject, ObservableObject {
 				let buffers = acc.buffers
 				DispatchQueue.main.async { [weak self] in
 					guard let self, self.speechGeneration == gen else { return }
-					self.scheduleConverted(buffers, gen: gen)
+					self.scheduleConverted(buffers, gen: gen, suppress: true)
 				}
 			}
 		}
@@ -157,18 +156,16 @@ final class TtsManager: NSObject, ObservableObject {
 			prefetchedText = nil
 			prefetchedBuffer = nil
 			internalStop()
-			suppressNextFinish = false
 			speechGeneration += 1
 			let gen = speechGeneration
 			isSpeaking = true
 			isPaused = false
-			schedule(cached, gen: gen)
+			schedule(cached, gen: gen, suppress: false)
 			return
 		}
 
 		invalidatePrefetch()
 		internalStop()
-		suppressNextFinish = false
 		speechGeneration += 1
 		let gen = speechGeneration
 		isSpeaking = true
@@ -183,7 +180,7 @@ final class TtsManager: NSObject, ObservableObject {
 				let buffers = acc.buffers
 				DispatchQueue.main.async { [weak self] in
 					guard let self, self.speechGeneration == gen else { return }
-					self.scheduleConverted(buffers, gen: gen)
+					self.scheduleConverted(buffers, gen: gen, suppress: false)
 				}
 			}
 		}
@@ -227,7 +224,6 @@ final class TtsManager: NSObject, ObservableObject {
 	}
 
 	func stop() {
-		suppressNextFinish = true
 		speechGeneration += 1
 		invalidatePrefetch()
 		internalStop()
@@ -257,32 +253,30 @@ final class TtsManager: NSObject, ObservableObject {
 		return u
 	}
 
-	private func scheduleConverted(_ buffers: [AVAudioPCMBuffer], gen: Int) {
+	private func scheduleConverted(_ buffers: [AVAudioPCMBuffer], gen: Int, suppress: Bool) {
+		// AVSpeechSynthesizer sometimes fires the done signal twice; only schedule once per gen.
+		guard lastScheduledGen != gen else { return }
 		guard let pcm = convertToOutput(buffers) else {
 			isSpeaking = false
-			if !suppressNextFinish { onUtteranceFinished?() }
-			suppressNextFinish = false
+			isPaused = false
+			if !suppress { onUtteranceFinished?() }
 			return
 		}
-		schedule(pcm, gen: gen)
+		schedule(pcm, gen: gen, suppress: suppress)
 	}
 
-	private func schedule(_ pcm: AVAudioPCMBuffer, gen: Int) {
+	private func schedule(_ pcm: AVAudioPCMBuffer, gen: Int, suppress: Bool) {
+		lastScheduledGen = gen
 		if !engine.isRunning { try? engine.start() }
 		player.scheduleBuffer(pcm) { [weak self] in
 			DispatchQueue.main.async { [weak self] in
 				guard let self, self.speechGeneration == gen else { return }
-				self.handlePlaybackComplete()
+				self.isSpeaking = false
+				self.isPaused = false
+				if !suppress { self.onUtteranceFinished?() }
 			}
 		}
 		if !isPaused { player.play() }
-	}
-
-	private func handlePlaybackComplete() {
-		isSpeaking = false
-		isPaused = false
-		if !suppressNextFinish { onUtteranceFinished?() }
-		suppressNextFinish = false
 	}
 
 	// Concatenate synthesis chunks then convert to the hardware output format in one pass.

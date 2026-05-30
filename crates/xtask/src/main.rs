@@ -225,19 +225,8 @@ fn ios() -> Result<(), Box<dyn Error>> {
 		return Err("cargo build for aarch64-apple-ios failed".into());
 	}
 
-	println!("Building for aarch64-apple-ios-sim (simulator)...");
-	let status = Command::new(&cargo)
-		.current_dir(&root)
-		.args(&build_args)
-		.args(&["--target", "aarch64-apple-ios-sim"])
-		.status()?;
-	if !status.success() {
-		return Err("cargo build for aarch64-apple-ios-sim failed".into());
-	}
-
 	let headers_dir = root.join("ios/Paperback/Generated");
 	let device_lib = root.join(format!("target/aarch64-apple-ios/{profile}/libpaperback_core.a"));
-	let sim_lib = root.join(format!("target/aarch64-apple-ios-sim/{profile}/libpaperback_core.a"));
 	let xcframework_out = root.join("ios/paperbackFFI.xcframework");
 
 	if xcframework_out.exists() {
@@ -249,10 +238,6 @@ fn ios() -> Result<(), Box<dyn Error>> {
 		.args(&["-create-xcframework"])
 		.arg("-library")
 		.arg(&device_lib)
-		.arg("-headers")
-		.arg(&headers_dir)
-		.arg("-library")
-		.arg(&sim_lib)
 		.arg("-headers")
 		.arg(&headers_dir)
 		.arg("-output")
