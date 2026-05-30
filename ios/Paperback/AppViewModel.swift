@@ -73,6 +73,12 @@ final class AppViewModel: ObservableObject {
 				tryRestoreDocument(path: path)
 			}
 		}
+		NotificationCenter.default.publisher(for: .pbMagicTap)
+			.receive(on: RunLoop.main)
+			.sink { [weak self] _ in
+				self?.togglePlayPause()
+			}
+			.store(in: &cancellables)
 	}
 
 	// MARK: - Document management

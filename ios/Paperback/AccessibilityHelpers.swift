@@ -13,7 +13,7 @@ private struct SheetFocusModifier: ViewModifier {
 					.accessibilityFocused($focused)
 			}
 			.onAppear {
-				DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+				DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
 					focused = true
 				}
 			}
