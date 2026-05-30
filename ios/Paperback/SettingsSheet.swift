@@ -9,10 +9,10 @@ struct SettingsSheet: View {
 	var body: some View {
 		NavigationStack {
 			Form {
-				Section("Behaviour") {
+				Section {
 					Toggle("Restore last open documents", isOn: $restore)
 				}
-				Section("Text-to-Speech") {
+				Section {
 					Button("TTS Settings…") { showTtsConfig = true }
 				}
 			}

@@ -74,9 +74,10 @@ final class AppViewModel: ObservableObject {
 			}
 		}
 		NotificationCenter.default.publisher(for: .pbMagicTap)
-			.receive(on: RunLoop.main)
 			.sink { [weak self] _ in
-				self?.togglePlayPause()
+				Task { @MainActor [weak self] in
+					self?.togglePlayPause()
+				}
 			}
 			.store(in: &cancellables)
 	}

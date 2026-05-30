@@ -2,13 +2,13 @@ import SwiftUI
 import AVFoundation
 
 private struct VoicePickerView: View {
-	@EnvironmentObject var viewModel: AppViewModel
-	@Environment(\.dismiss) private var dismiss
+	@ObservedObject var ttsManager: TtsManager
+	let onSelect: () -> Void
 
 	var body: some View {
 		List {
 			voiceRow(name: "Default", identifier: nil)
-			ForEach(viewModel.ttsManager.availableVoices, id: \.identifier) { voice in
+			ForEach(ttsManager.availableVoices, id: \.identifier) { voice in
 				voiceRow(name: "\(voice.name) (\(voice.language))", identifier: voice.identifier)
 			}
 		}
@@ -17,10 +17,10 @@ private struct VoicePickerView: View {
 	}
 
 	private func voiceRow(name: String, identifier: String?) -> some View {
-		let isSelected = viewModel.ttsManager.selectedVoiceIdentifier == identifier
+		let isSelected = ttsManager.selectedVoiceIdentifier == identifier
 		return Button {
-			viewModel.ttsManager.selectedVoiceIdentifier = identifier
-			dismiss()
+			ttsManager.selectedVoiceIdentifier = identifier
+			onSelect()
 		} label: {
 			HStack {
 				Text(name)
@@ -39,6 +39,7 @@ private struct VoicePickerView: View {
 struct TtsConfigSheet: View {
 	@EnvironmentObject var viewModel: AppViewModel
 	@Environment(\.dismiss) private var dismiss
+	@State private var path = NavigationPath()
 
 	private var selectedVoiceName: String {
 		guard let id = viewModel.ttsManager.selectedVoiceIdentifier,
@@ -48,12 +49,10 @@ struct TtsConfigSheet: View {
 	}
 
 	var body: some View {
-		NavigationStack {
+		NavigationStack(path: $path) {
 			Form {
 				Section {
-					NavigationLink {
-						VoicePickerView()
-					} label: {
+					NavigationLink(value: "voice") {
 						HStack {
 							Text("Voice")
 							Spacer()
@@ -89,6 +88,11 @@ struct TtsConfigSheet: View {
 			.toolbar {
 				ToolbarItem(placement: .confirmationAction) {
 					Button("Done") { dismiss() }
+				}
+			}
+			.navigationDestination(for: String.self) { _ in
+				VoicePickerView(ttsManager: viewModel.ttsManager) {
+					path.removeLast()
 				}
 			}
 		}
