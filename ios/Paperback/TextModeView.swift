@@ -3,6 +3,9 @@ import SwiftUI
 struct TextModeView: View {
 	@EnvironmentObject var viewModel: AppViewModel
 	let tab: DocumentTab
+	@State private var visibleLineIndices: Set<Int> = []
+
+	private var firstVisibleLine: Int { visibleLineIndices.min() ?? 0 }
 
 	var body: some View {
 		ScrollViewReader { proxy in
@@ -19,6 +22,8 @@ struct TextModeView: View {
 								.padding(.vertical, 2)
 								.frame(maxWidth: .infinity, alignment: .leading)
 								.id(i)
+								.onAppear { visibleLineIndices.insert(i) }
+								.onDisappear { visibleLineIndices.remove(i) }
 						}
 					} else {
 						Text("No document open.")
@@ -28,7 +33,12 @@ struct TextModeView: View {
 				}
 			}
 			.onAppear {
-				proxy.scrollTo(Int(tab.lineScrollIndex), anchor: .top)
+				proxy.scrollTo(tab.lineScrollIndex, anchor: .top)
+			}
+		}
+		.onChange(of: visibleLineIndices) { indices in
+			if let min = indices.min() {
+				viewModel.textModeFirstLine = min
 			}
 		}
 	}

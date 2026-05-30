@@ -17,6 +17,8 @@ final class AppViewModel: ObservableObject {
 
 	// MARK: - Reading mode
 	@Published var isTextMode: Bool = false
+	// Tracks the first visible 0-indexed line in TextModeView; updated eagerly while scrolling.
+	var textModeFirstLine: Int = 0
 
 	// MARK: - TTS
 	let ttsManager = TtsManager()
@@ -437,6 +439,29 @@ final class AppViewModel: ObservableObject {
 		guard let id = activeTabId,
 		      let idx = tabs.firstIndex(where: { $0.id == id }) else { return }
 		tabs[idx].currentPosition = position
+		let path = tabs[idx].url.path(percentEncoded: false)
+		configManager.setDocumentPosition(path: path, position: position)
+	}
+
+	func enterTextMode() {
+		guard let session = activeSession,
+		      let id = activeTabId,
+		      let idx = tabs.firstIndex(where: { $0.id == id }) else { return }
+		let line = session.lineFromPosition(position: ttsPosition)
+		let scrollIdx = max(0, Int(line) - 1)
+		tabs[idx].lineScrollIndex = scrollIdx
+		textModeFirstLine = scrollIdx
+	}
+
+	func exitTextMode() {
+		guard let session = activeSession else { return }
+		let pos = session.positionFromLine(line: Int64(textModeFirstLine + 1))
+		ttsPosition = pos
+		updateTabPosition(pos)
+		refreshCurrentSegment()
+		if let id = activeTabId, let idx = tabs.firstIndex(where: { $0.id == id }) {
+			tabs[idx].lineScrollIndex = textModeFirstLine
+		}
 	}
 
 	private func ffiSegmentType(_ type: SegmentType) -> SegmentTypeFfi {

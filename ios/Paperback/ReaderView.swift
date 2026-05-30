@@ -28,6 +28,13 @@ struct ReaderView: View {
 		.onReceive(viewModel.$sleepTimerRemaining) { remaining in
 			if remaining == 0 { isScreenDimmed = true }
 		}
+		.onChange(of: viewModel.isTextMode) { entering in
+			if entering {
+				viewModel.enterTextMode()
+			} else {
+				viewModel.exitTextMode()
+			}
+		}
 		.sheet(isPresented: $viewModel.showToc) {
 			TocSheet().environmentObject(viewModel)
 		}
