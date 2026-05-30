@@ -8,7 +8,7 @@ struct TtsControlBar: View {
 			Menu {
 				ForEach(SegmentType.allCases, id: \.self) { type in
 					Button {
-						viewModel.currentSegmentType = type
+						viewModel.changeSegmentType(type)
 					} label: {
 						if type == viewModel.currentSegmentType {
 							Label(type.rawValue, systemImage: "checkmark")
@@ -23,6 +23,19 @@ struct TtsControlBar: View {
 					.foregroundStyle(.secondary)
 					.frame(minWidth: 72, alignment: .leading)
 			}
+			.accessibilityLabel("Navigation unit")
+			.accessibilityValue(viewModel.currentSegmentType.rawValue)
+			.accessibilityAdjustableAction { direction in
+				let types = SegmentType.allCases
+				guard let idx = types.firstIndex(of: viewModel.currentSegmentType) else { return }
+				switch direction {
+				case .increment:
+					viewModel.changeSegmentType(types[(idx + 1) % types.count])
+				case .decrement:
+					viewModel.changeSegmentType(types[(idx - 1 + types.count) % types.count])
+				@unknown default: break
+				}
+			}
 			.padding(.leading, 20)
 
 			Spacer()
@@ -31,6 +44,7 @@ struct TtsControlBar: View {
 				Image(systemName: "backward.fill")
 					.font(.title2)
 			}
+			.accessibilityLabel("Previous \(viewModel.currentSegmentType.rawValue)")
 			.padding(.horizontal, 20)
 
 			Button { viewModel.togglePlayPause() } label: {
@@ -38,11 +52,20 @@ struct TtsControlBar: View {
 					.font(.title)
 					.frame(width: 44)
 			}
+			.accessibilityLabel(viewModel.ttsManager.isSpeaking ? "Pause" : "Play")
+			.accessibilityAdjustableAction { direction in
+				switch direction {
+				case .increment: viewModel.playNextSegment()
+				case .decrement: viewModel.playPrevSegment()
+				@unknown default: break
+				}
+			}
 
 			Button { viewModel.playNextSegment() } label: {
 				Image(systemName: "forward.fill")
 					.font(.title2)
 			}
+			.accessibilityLabel("Next \(viewModel.currentSegmentType.rawValue)")
 			.padding(.horizontal, 20)
 
 			Spacer()

@@ -8,20 +8,31 @@ struct DocumentInfoSheet: View {
 		NavigationStack {
 			List {
 				if let session = viewModel.activeSession {
-					LabeledContent("Title", value: session.title().isEmpty
+					let title = session.title().isEmpty
 						? (viewModel.activeTab?.title ?? "—")
-						: session.title())
-					LabeledContent("Author", value: session.author().isEmpty ? "—" : session.author())
-					LabeledContent("File", value: viewModel.activeTab?.url.lastPathComponent ?? "—")
+						: session.title()
+					let author = session.author()
 					let stats = session.getStatsFfi()
-					LabeledContent("Words", value: stats.wordCount.formatted())
-					LabeledContent("Pages", value: session.pageCountFfi().formatted())
+
+					Section("Document") {
+						LabeledContent("Title", value: title)
+						if !author.isEmpty {
+							LabeledContent("Author", value: author)
+						}
+						LabeledContent("File", value: viewModel.activeTab?.url.lastPathComponent ?? "—")
+						LabeledContent("Pages", value: session.pageCountFfi().formatted())
+					}
+					Section("Statistics") {
+						LabeledContent("Words", value: stats.wordCount.formatted())
+						LabeledContent("Lines", value: stats.lineCount.formatted())
+						LabeledContent("Characters", value: stats.charCount.formatted())
+						LabeledContent("Characters (no spaces)", value: stats.charCountNoWhitespace.formatted())
+					}
 				} else {
-					LabeledContent("Title", value: viewModel.activeTab?.title ?? "—")
-					LabeledContent("Author", value: "—")
-					LabeledContent("File", value: viewModel.activeTab?.url.lastPathComponent ?? "—")
-					LabeledContent("Words", value: "—")
-					LabeledContent("Pages", value: "—")
+					Section("Document") {
+						LabeledContent("Title", value: viewModel.activeTab?.title ?? "—")
+						LabeledContent("File", value: viewModel.activeTab?.url.lastPathComponent ?? "—")
+					}
 				}
 			}
 			.navigationTitle("Document Info")
