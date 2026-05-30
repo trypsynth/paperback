@@ -741,7 +741,8 @@ impl ConfigManager {
 		if !self.initialized {
 			return 0;
 		}
-		self.data.borrow().documents.get(&self.get_doc_key(path)).map_or(0, |d| d.last_position)
+		let key = self.get_doc_key(path);
+		self.data.borrow().documents.get(&key).map_or(0, |d| d.last_position)
 	}
 
 	#[must_use]
@@ -769,7 +770,8 @@ impl ConfigManager {
 		if !self.initialized {
 			return nav;
 		}
-		if let Some(doc) = self.data.borrow().documents.get(&self.get_doc_key(path)) {
+		let key = self.get_doc_key(path);
+		if let Some(doc) = self.data.borrow().documents.get(&key) {
 			nav.positions = doc.navigation_history.clone();
 			nav.index = doc.navigation_history_index;
 		}
@@ -896,7 +898,8 @@ impl ConfigManager {
 		if !self.initialized {
 			return String::new();
 		}
-		self.data.borrow().documents.get(&self.get_doc_key(path)).map(|d| d.format.clone()).unwrap_or_default()
+		let key = self.get_doc_key(path);
+		self.data.borrow().documents.get(&key).map(|d| d.format.clone()).unwrap_or_default()
 	}
 
 	pub fn set_document_password(&self, path: &str, password: &str) {
@@ -915,7 +918,8 @@ impl ConfigManager {
 		if !self.initialized {
 			return String::new();
 		}
-		self.data.borrow().documents.get(&self.get_doc_key(path)).map(|d| d.password.clone()).unwrap_or_default()
+		let key = self.get_doc_key(path);
+		self.data.borrow().documents.get(&key).map(|d| d.password.clone()).unwrap_or_default()
 	}
 
 	/// Import document settings from a `.paperback` sidecar file if it exists.

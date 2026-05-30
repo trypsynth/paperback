@@ -67,6 +67,14 @@ struct ReaderView: View {
 			_ = url.startAccessingSecurityScopedResource()
 			viewModel.openDocument(url: url)
 		}
+		.alert("Open Error", isPresented: Binding(
+			get: { viewModel.debugMessage != nil },
+			set: { if !$0 { viewModel.debugMessage = nil } }
+		)) {
+			Button("OK") { viewModel.debugMessage = nil }
+		} message: {
+			Text(viewModel.debugMessage ?? "")
+		}
 	}
 
 	// MARK: - Main content

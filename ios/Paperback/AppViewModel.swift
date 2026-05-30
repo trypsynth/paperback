@@ -64,6 +64,8 @@ final class AppViewModel: ObservableObject {
 
 	// MARK: - Document management
 
+	@Published var debugMessage: String? = nil
+
 	func openDocument(url: URL, password: String? = nil) {
 		if let existing = tabs.first(where: { $0.url == url }) {
 			activeTabId = existing.id
@@ -89,9 +91,7 @@ final class AppViewModel: ObservableObject {
 			loadRecentsFromConfig()
 			loadSegment(for: tab)
 		} catch {
-			if password == nil {
-				passwordPromptUrl = url
-			}
+			debugMessage = "Error opening '\(url.lastPathComponent)':\n\(error)\n\nPath: \(path)"
 		}
 	}
 
