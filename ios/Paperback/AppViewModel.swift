@@ -216,7 +216,6 @@ final class AppViewModel: ObservableObject {
 			direction: .current
 		)
 		currentSegmentText = seg.text
-		ttsPosition = seg.startPos
 	}
 
 	// MARK: - Sleep timer
