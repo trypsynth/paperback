@@ -1,5 +1,6 @@
 import SwiftUI
 import Combine
+import UIKit
 
 @MainActor
 final class AppViewModel: ObservableObject {
@@ -101,6 +102,11 @@ final class AppViewModel: ObservableObject {
 				tryRestoreDocument(path: path)
 			}
 		}
+		NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)
+			.sink { [weak self] _ in
+				self?.configManager.flush()
+			}
+			.store(in: &cancellables)
 		NotificationCenter.default.publisher(for: .pbMagicTap)
 			.sink { [weak self] _ in
 				Task { @MainActor [weak self] in
