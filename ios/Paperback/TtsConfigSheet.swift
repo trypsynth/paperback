@@ -62,17 +62,11 @@ private struct TtsConfigForm: View {
 				}
 			}
 			Section {
-				VStack(alignment: .leading) {
-					Text("Rate")
-					Slider(value: $ttsManager.speechRate,
-					       in: AVSpeechUtteranceMinimumSpeechRate...AVSpeechUtteranceMaximumSpeechRate)
-						.accessibilityLabel("Speech rate")
-				}
-				VStack(alignment: .leading) {
-					Text("Pitch")
-					Slider(value: $ttsManager.pitch, in: 0.5...2.0)
-						.accessibilityLabel("Pitch")
-				}
+				Slider(value: $ttsManager.speechRate,
+				       in: AVSpeechUtteranceMinimumSpeechRate...AVSpeechUtteranceMaximumSpeechRate)
+					.accessibilityLabel("Speech rate")
+				Slider(value: $ttsManager.pitch, in: 0.5...2.0)
+					.accessibilityLabel("Pitch")
 			}
 		}
 		.navigationTitle("TTS Settings")

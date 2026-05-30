@@ -15,6 +15,7 @@ final class TtsManager: NSObject, ObservableObject {
 	}
 
 	var onUtteranceFinished: (() -> Void)? = nil
+	private var suppressNextFinish = false
 
 	override init() {
 		super.init()
@@ -28,6 +29,7 @@ final class TtsManager: NSObject, ObservableObject {
 	}
 
 	func speak(_ text: String) {
+		suppressNextFinish = false
 		synthesizer.stopSpeaking(at: .immediate)
 		let utterance = AVSpeechUtterance(string: text)
 		utterance.rate = speechRate
@@ -48,6 +50,7 @@ final class TtsManager: NSObject, ObservableObject {
 	}
 
 	func stop() {
+		suppressNextFinish = true
 		synthesizer.stopSpeaking(at: .immediate)
 		isSpeaking = false
 		isPaused = false
@@ -59,7 +62,10 @@ extension TtsManager: AVSpeechSynthesizerDelegate {
 		Task { @MainActor in
 			self.isSpeaking = false
 			self.isPaused = false
-			self.onUtteranceFinished?()
+			if !self.suppressNextFinish {
+				self.onUtteranceFinished?()
+			}
+			self.suppressNextFinish = false
 		}
 	}
 
@@ -81,6 +87,7 @@ extension TtsManager: AVSpeechSynthesizerDelegate {
 		Task { @MainActor in
 			self.isSpeaking = false
 			self.isPaused = false
+			self.suppressNextFinish = false
 		}
 	}
 }
