@@ -16,7 +16,6 @@ struct DocumentMenu: View {
 				Label("Find", systemImage: "magnifyingglass")
 			}
 			Button {
-				viewModel.goToInitialMode = .line
 				viewModel.showGoTo = true
 			} label: {
 				Label("Go To…", systemImage: "arrow.right.circle")
@@ -53,7 +52,6 @@ struct DocumentMenu: View {
 		.accessibilityAction(named: "Word Count") { viewModel.showWordCount = true }
 		.accessibilityAction(named: "Recent Documents") { viewModel.showRecents = true }
 		.accessibilityAction(named: "Go To") {
-			viewModel.goToInitialMode = .line
 			viewModel.showGoTo = true
 		}
 		.accessibilityAction(named: "Find") { viewModel.showFind = true }
