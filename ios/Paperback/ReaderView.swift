@@ -13,16 +13,6 @@ struct ReaderView: View {
 				.navigationBarTitleDisplayMode(.inline)
 				.toolbar { readerToolbar }
 				.safeAreaInset(edge: .bottom) { bottomBar }
-			if viewModel.isLoading {
-				Color.black.opacity(0.3)
-					.ignoresSafeArea()
-					.overlay {
-						ProgressView("Opening…")
-							.padding(20)
-							.background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
-					}
-					.accessibilityLabel("Opening document")
-			}
 			if isScreenDimmed {
 				Color.black
 					.ignoresSafeArea()

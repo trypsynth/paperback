@@ -44,9 +44,6 @@ final class AppViewModel: ObservableObject {
 	@Published var showElements = false
 	@Published var passwordPromptUrl: URL? = nil
 
-	// MARK: - Loading
-	@Published var isLoading = false
-
 	// MARK: - Settings
 	@Published var restorePreviousDocuments = true
 
@@ -74,37 +71,26 @@ final class AppViewModel: ObservableObject {
 		}
 		let path = url.path(percentEncoded: false)
 		let pass = password ?? configManager.getDocumentPassword(path: path)
-		isLoading = true
-		Task.detached(priority: .userInitiated) { [weak self] in
-			do {
-				let session = try DocumentSession.newFfi(
-					filePath: path,
-					password: pass,
-					forcedExtension: ""
-				)
-				await MainActor.run { [weak self] in
-					guard let self else { return }
-					self.isLoading = false
-					let title = session.title().isEmpty
-						? url.deletingPathExtension().lastPathComponent
-						: session.title()
-					let savedPos = self.configManager.getDocumentPosition(path: path)
-					var tab = DocumentTab(title: title, url: url, session: session)
-					tab.currentPosition = savedPos
-					self.tabs.append(tab)
-					self.activeTabId = tab.id
-					self.configManager.addRecentDocument(path: path)
-					self.loadRecentsFromConfig()
-					self.loadSegment(for: tab)
-				}
-			} catch {
-				await MainActor.run { [weak self] in
-					guard let self else { return }
-					self.isLoading = false
-					if password == nil {
-						self.passwordPromptUrl = url
-					}
-				}
+		do {
+			let session = try DocumentSession.newFfi(
+				filePath: path,
+				password: pass,
+				forcedExtension: ""
+			)
+			let title = session.title().isEmpty
+				? url.deletingPathExtension().lastPathComponent
+				: session.title()
+			let savedPos = configManager.getDocumentPosition(path: path)
+			var tab = DocumentTab(title: title, url: url, session: session)
+			tab.currentPosition = savedPos
+			tabs.append(tab)
+			activeTabId = tab.id
+			configManager.addRecentDocument(path: path)
+			loadRecentsFromConfig()
+			loadSegment(for: tab)
+		} catch {
+			if password == nil {
+				passwordPromptUrl = url
 			}
 		}
 	}
