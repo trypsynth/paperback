@@ -23,6 +23,9 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
@@ -59,10 +62,51 @@ fun MainScreen(
 	var useInAppFileBrowser by remember {
 		mutableStateOf(viewModel.configManager.getAppBool("use_in_app_file_browser", false))
 	}
-	var activeSearchQuery by remember { mutableStateOf<String?>(null) }
-	var activeSearchOptions by remember { mutableStateOf<uniffi.paperback.SearchOptionsFfi?>(null) }
+	val activeSearchQuery by viewModel.activeSearchQuery.collectAsStateWithLifecycle()
+	val activeSearchOptions by viewModel.activeSearchOptions.collectAsStateWithLifecycle()
 	var expandedTocIndices by remember { mutableStateOf(setOf<Int>()) }
 	var isTextMode by remember { mutableStateOf(false) }
+
+	LaunchedEffect(Unit) {
+		viewModel.performSearchEvent.collect { forward ->
+			if (activeSearchQuery != null && activeSearchOptions != null) {
+				val state = viewModel.uiState.value
+				if (state is MainScreenUiState.Success) {
+					val tab = state.activeTab
+					if (tab != null) {
+						val searchPos = if (isTextMode) {
+							val listState = listStates[tab.documentUri]
+							if (listState != null) {
+								val nextLine = (listState.firstVisibleItemIndex + if (forward) 2 else 1).toLong()
+								tab.session.positionFromLine(nextLine)
+							} else {
+								viewModel.ttsPosition.value
+							}
+						} else {
+							val currentPos = viewModel.ttsPosition.value
+							if (forward) currentPos + 1L else currentPos
+						}
+
+						val res = tab.session.searchFfi(activeSearchQuery!!, searchPos, activeSearchOptions!!.copy(forward = forward))
+						if (res.found) {
+							if (isTextMode) {
+								val line = tab.session.lineFromPosition(res.position)
+								val indexToScroll = (line - 1).toInt().coerceAtLeast(0)
+								val listState = listStates[tab.documentUri]
+								listState?.scrollToItem(indexToScroll)
+							} else {
+								viewModel.updateTtsPosition(res.position)
+								viewModel.refreshSegmentPreview()
+								if (viewModel.ttsManager.isSpeaking.value) {
+									viewModel.resumeTts()
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 	val isSpeaking by viewModel.ttsManager.isSpeaking.collectAsStateWithLifecycle()
 	val currentSegmentType by viewModel.currentSegmentType.collectAsStateWithLifecycle()
 	val ttsPosition by viewModel.ttsPosition.collectAsStateWithLifecycle()
@@ -78,6 +122,14 @@ fun MainScreen(
 	val currentHeadings by viewModel.currentHeadings.collectAsStateWithLifecycle()
 	val currentLinks by viewModel.currentLinks.collectAsStateWithLifecycle()
 	val passwordPromptUri by viewModel.passwordPromptUri.collectAsStateWithLifecycle()
+
+	val view = androidx.compose.ui.platform.LocalView.current
+	LaunchedEffect(Unit) {
+		viewModel.accessibilityAnnouncement.collect { message ->
+			@Suppress("DEPRECATION")
+			view.announceForAccessibility(message)
+		}
+	}
 
 	LaunchedEffect(Unit) {
 		viewModel.sleepTimerExpired.collect {
@@ -178,7 +230,7 @@ fun MainScreen(
 					listState = searchListState,
 					activeSearchQuery = activeSearchQuery!!,
 					activeSearchOptions = activeSearchOptions!!,
-					onClose = { activeSearchQuery = null; activeSearchOptions = null },
+					onClose = { viewModel.clearSearch() },
 					onNavigate = { lineIndexToFocus = it }
 				)
 			} else if (!isTextMode &&
@@ -199,8 +251,10 @@ fun MainScreen(
 				TtsBottomBar(
 					isSpeaking = isSpeaking,
 					onPlayPause = { viewModel.togglePlayPause() },
-					onPrev = { viewModel.playPrevSegment() },
-					onNext = { viewModel.playNextSegment() },
+					onPrev = { viewModel.playPrevSegment(speak = isSpeaking, announce = !isSpeaking) },
+					onNext = { viewModel.playNextSegment(speak = isSpeaking, announce = !isSpeaking) },
+					onPrevButton = { viewModel.playPrevSegment(speak = isSpeaking) },
+					onNextButton = { viewModel.playNextSegment(speak = isSpeaking) },
 					currentSegmentType = currentSegmentType,
 					supportedSegmentTypes = supportedSegmentTypes,
 					onSegmentTypeChange = { viewModel.setSegmentType(it) }
@@ -304,7 +358,26 @@ fun MainScreen(
 								Text(
 									text = currentSegmentText,
 									style = MaterialTheme.typography.bodyLarge,
-									modifier = Modifier.padding(16.dp)
+									modifier = Modifier.padding(16.dp).semantics {
+										val actions = mutableListOf<CustomAccessibilityAction>()
+										if (activeSearchQuery != null && activeSearchOptions != null) {
+											actions.add(CustomAccessibilityAction("Find Next") {
+												viewModel.triggerFindNext()
+												true
+											})
+											actions.add(CustomAccessibilityAction("Find Previous") {
+												viewModel.triggerFindPrevious()
+												true
+											})
+											actions.add(CustomAccessibilityAction("Close Search") {
+												viewModel.clearSearch()
+												true
+											})
+										}
+										if (actions.isNotEmpty()) {
+											customActions = actions
+										}
+									}
 								)
 								val remaining = sleepTimerRemaining
 								if (remaining != null) {
@@ -334,8 +407,7 @@ fun MainScreen(
 								activeSearchQuery = activeSearchQuery,
 								activeSearchOptions = activeSearchOptions,
 								onCloseSearch = {
-									activeSearchQuery = null
-									activeSearchOptions = null
+									viewModel.clearSearch()
 								}
 							)
 						}
@@ -385,18 +457,38 @@ fun MainScreen(
 								initialQuery = activeSearchQuery ?: "",
 								onDismiss = { viewModel.closeFindDialog() },
 								onSearch = { query, options ->
-									viewModel.pauseTts()
-									isTextMode = true
-									activeSearchQuery = query
-									activeSearchOptions = options
-									val currentPos = docState.session.positionFromLine((listState.firstVisibleItemIndex + 1).toLong())
-									val res = docState.session.searchFfi(query, currentPos, options)
+									val wasSpeaking = viewModel.ttsManager.isSpeaking.value
+									if (wasSpeaking) {
+										viewModel.pauseTts()
+									}
+									val isSameQuery = activeSearchQuery == query &&
+											activeSearchOptions?.matchCase == options.matchCase &&
+											activeSearchOptions?.wholeWord == options.wholeWord &&
+											activeSearchOptions?.regex == options.regex
+
+									viewModel.startSearch(query, options)
+									val searchPos = if (isTextMode) {
+										val nextLineOffset = if (isSameQuery) 2 else 1
+										docState.session.positionFromLine((listState.firstVisibleItemIndex + nextLineOffset).toLong())
+									} else {
+										val currentPos = viewModel.ttsPosition.value
+										if (isSameQuery) currentPos + 1L else currentPos
+									}
+									val res = docState.session.searchFfi(query, searchPos, options)
 									if (res.found) {
-										val targetLine = docState.session.lineFromPosition(res.position)
-										val targetIndex = (targetLine - 1).toInt().coerceAtLeast(0)
-										scope.launch {
-											listState.scrollToItem(targetIndex)
-											lineIndexToFocus = targetIndex
+										if (isTextMode) {
+											val targetLine = docState.session.lineFromPosition(res.position)
+											val targetIndex = (targetLine - 1).toInt().coerceAtLeast(0)
+											scope.launch {
+												listState.scrollToItem(targetIndex)
+												lineIndexToFocus = targetIndex
+											}
+										} else {
+											viewModel.updateTtsPosition(res.position)
+											viewModel.refreshSegmentPreview()
+											if (wasSpeaking) {
+												viewModel.resumeTts()
+											}
 										}
 									}
 								}
@@ -514,6 +606,24 @@ fun MainScreen(
 		)
 	}
 
+	val lifecycleOwner = LocalLifecycleOwner.current
+	DisposableEffect(lifecycleOwner) {
+		val observer = LifecycleEventObserver { _, event ->
+			if (event == Lifecycle.Event.ON_RESUME &&
+				android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R &&
+				android.os.Environment.isExternalStorageManager()
+			) {
+				if (!useInAppFileBrowser) {
+					useInAppFileBrowser = true
+					viewModel.configManager.setAppBool("use_in_app_file_browser", true)
+					viewModel.configManager.flush()
+				}
+			}
+		}
+		lifecycleOwner.lifecycle.addObserver(observer)
+		onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+	}
+
 	val showPermissionRationale by viewModel.showPermissionRationale.collectAsStateWithLifecycle()
 	LaunchedEffect(Unit) {
 		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
@@ -538,8 +648,23 @@ fun MainScreen(
 
 	if (showFileManager) {
 		val extensions = remember(viewModel.configManager) { viewModel.configManager.getSupportedExtensions() }
+		val initialDirPath = remember {
+			val savedPath = viewModel.configManager.getAppString("last_file_manager_directory", "")
+			if (savedPath.isNotEmpty()) {
+				savedPath
+			} else {
+				android.os.Environment.getExternalStorageDirectory().absolutePath
+			}
+		}
 		FileManagerDialog(
 			supportedExtensions = extensions.toList(),
+			initialDirectory = java.io.File(initialDirPath),
+			onDirectoryChanged = { dir ->
+				scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+					viewModel.configManager.setAppString("last_file_manager_directory", dir.absolutePath)
+					viewModel.configManager.flush()
+				}
+			},
 			onFileSelected = { file ->
 				showFileManager = false
 				viewModel.openDocument(Uri.fromFile(file))

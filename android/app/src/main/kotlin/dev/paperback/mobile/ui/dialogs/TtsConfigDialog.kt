@@ -2,12 +2,19 @@ package dev.paperback.mobile.ui.dialogs
 
 import android.speech.tts.TextToSpeech
 import android.speech.tts.Voice
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 
@@ -36,18 +43,21 @@ fun TtsConfigDialog(
 		title = { Text("TTS Configuration") },
 		text = {
 			Column(modifier = Modifier.fillMaxWidth()) {
-				Text("Speech Engine", style = MaterialTheme.typography.labelLarge)
-				Spacer(modifier = Modifier.height(4.dp))
-				Box {
-					OutlinedButton(onClick = { engineExpanded = true }, modifier = Modifier.fillMaxWidth()) {
-						val selectedName =
-							engines.find { it.name == currentEngine }?.label ?: currentEngine ?: "Default"
-						Text(selectedName)
+				ExposedDropdownMenuBox(
+					expanded = engineExpanded,
+					onExpandedChange = { engineExpanded = it }
+				) {
+					OutlinedButton(
+						onClick = { engineExpanded = true },
+						modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
+					) {
+						val selectedName = engines.find { it.name == currentEngine }?.label ?: currentEngine ?: "Default"
+						Text("Speech Engine: $selectedName", modifier = Modifier.weight(1f))
+						ExposedDropdownMenuDefaults.TrailingIcon(expanded = engineExpanded)
 					}
-					DropdownMenu(
+					ExposedDropdownMenu(
 						expanded = engineExpanded,
-						onDismissRequest = { engineExpanded = false },
-						modifier = Modifier.fillMaxWidth()
+						onDismissRequest = { engineExpanded = false }
 					) {
 						engines.forEach { engine ->
 							DropdownMenuItem(
@@ -62,19 +72,22 @@ fun TtsConfigDialog(
 				}
 				Spacer(modifier = Modifier.height(16.dp))
 				val isSystemDefault = currentEngine == dev.paperback.mobile.tts.TtsManager.SYSTEM_DEFAULT
-				Text("Voice", style = MaterialTheme.typography.labelLarge)
-				Spacer(modifier = Modifier.height(4.dp))
-				Box {
-					OutlinedButton(onClick = {
-						voiceExpanded = true
-					}, modifier = Modifier.fillMaxWidth(), enabled = !isSystemDefault) {
+				ExposedDropdownMenuBox(
+					expanded = voiceExpanded,
+					onExpandedChange = { if (!isSystemDefault) voiceExpanded = it }
+				) {
+					OutlinedButton(
+						onClick = { voiceExpanded = true },
+						modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+						enabled = !isSystemDefault
+					) {
 						val voiceName = currentVoice?.name ?: "Default"
-						Text(voiceName)
+						Text("Voice: $voiceName", modifier = Modifier.weight(1f))
+						ExposedDropdownMenuDefaults.TrailingIcon(expanded = voiceExpanded)
 					}
-					DropdownMenu(
+					ExposedDropdownMenu(
 						expanded = voiceExpanded,
-						onDismissRequest = { voiceExpanded = false },
-						modifier = Modifier.fillMaxWidth()
+						onDismissRequest = { voiceExpanded = false }
 					) {
 						voices.forEach { voice ->
 							DropdownMenuItem(
@@ -88,29 +101,67 @@ fun TtsConfigDialog(
 					}
 				}
 				Spacer(modifier = Modifier.height(16.dp))
-				Text("Speech Rate: $currentRate%", style = MaterialTheme.typography.labelLarge)
-				Slider(
-					value = currentRate.toFloat(),
-					onValueChange = { onRateChanged(kotlin.math.round(it).toInt()) },
-					valueRange = 0f..100f,
-					steps = 99,
-					enabled = !isSystemDefault,
-					modifier = Modifier.semantics {
-						stateDescription = "$currentRate percent"
+				Column(
+					modifier = Modifier.clearAndSetSemantics {
+						contentDescription = "Speech Rate"
+						if (isSystemDefault) {
+							stateDescription = "System Default"
+							disabled()
+						} else {
+							stateDescription = "$currentRate percent"
+							progressBarRangeInfo = ProgressBarRangeInfo(
+								current = currentRate.toFloat(),
+								range = 0f..100f,
+								steps = 99
+							)
+							setProgress { targetValue ->
+								onRateChanged(kotlin.math.round(targetValue).toInt())
+								true
+							}
+						}
 					}
-				)
+				) {
+					val rateText = if (isSystemDefault) "Speech Rate: System Default" else "Speech Rate: $currentRate%"
+					Text(rateText, style = MaterialTheme.typography.labelLarge)
+					Slider(
+						value = if (isSystemDefault) 50f else currentRate.toFloat(),
+						onValueChange = { onRateChanged(kotlin.math.round(it).toInt()) },
+						valueRange = 0f..100f,
+						steps = 99,
+						enabled = !isSystemDefault
+					)
+				}
 				Spacer(modifier = Modifier.height(16.dp))
-				Text("Pitch: $currentPitch%", style = MaterialTheme.typography.labelLarge)
-				Slider(
-					value = currentPitch.toFloat(),
-					onValueChange = { onPitchChanged(kotlin.math.round(it).toInt()) },
-					valueRange = 0f..100f,
-					steps = 99,
-					enabled = !isSystemDefault,
-					modifier = Modifier.semantics {
-						stateDescription = "$currentPitch percent"
+				Column(
+					modifier = Modifier.clearAndSetSemantics {
+						contentDescription = "Pitch"
+						if (isSystemDefault) {
+							stateDescription = "System Default"
+							disabled()
+						} else {
+							stateDescription = "$currentPitch percent"
+							progressBarRangeInfo = ProgressBarRangeInfo(
+								current = currentPitch.toFloat(),
+								range = 0f..100f,
+								steps = 99
+							)
+							setProgress { targetValue ->
+								onPitchChanged(kotlin.math.round(targetValue).toInt())
+								true
+							}
+						}
 					}
-				)
+				) {
+					val pitchText = if (isSystemDefault) "Pitch: System Default" else "Pitch: $currentPitch%"
+					Text(pitchText, style = MaterialTheme.typography.labelLarge)
+					Slider(
+						value = if (isSystemDefault) 50f else currentPitch.toFloat(),
+						onValueChange = { onPitchChanged(kotlin.math.round(it).toInt()) },
+						valueRange = 0f..100f,
+						steps = 99,
+						enabled = !isSystemDefault
+					)
+				}
 				Spacer(modifier = Modifier.height(16.dp))
 				Button(onClick = onPlaySample, modifier = Modifier.fillMaxWidth()) {
 					Text("Play Sample")

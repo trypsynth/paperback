@@ -77,29 +77,11 @@ The following hooks run on every commit:
 
 Building on Linux requires wxWidgets 3.2+ with the GTK3 backend. The wxDragon build system handles compiling the wxWidgets bindings automatically.
 
-### Nix
-
-Run directly:
-```bash
-nix run github:trypsynth/paperback
-```
-
-Install to profile:
-```bash
-nix profile install github:trypsynth/paperback
-```
-
-Build from source:
-```bash
-nix run    # build and run
-nix build  # build only
-```
-
 ### Flatpak
 
 ```bash
-flatpak-builder --force-clean --repo=repo-flatpak build io.github.trypsynth.Paperback.yaml
-flatpak build-bundle repo-flatpak paperback.flatpak io.github.trypsynth.Paperback
+flatpak-builder --force-clean --repo=repo-flatpak build dev.paperback.desktop.yaml
+flatpak build-bundle repo-flatpak paperback.flatpak dev.paperback.desktop
 flatpak --user install paperback.flatpak
 ```
 

@@ -66,15 +66,9 @@ fun MainScreenTopBar(
 			verticalAlignment = Alignment.Top
 		) {
 			Column(horizontalAlignment = Alignment.Start, modifier = Modifier.semantics { isTraversalGroup = true }) {
-				if (state is MainScreenUiState.Success && state.activeTab != null) {
-					Button(onClick = onTocOpen, modifier = Modifier.semantics { traversalIndex = 1f }) {
-						Text("Table of Contents")
-					}
-					Spacer(modifier = Modifier.height(8.dp))
-				}
 				Button(
 					onClick = onOpenBook,
-					modifier = Modifier.semantics { traversalIndex = 2f }
+					modifier = Modifier.semantics { traversalIndex = 1f }
 				) {
 					Text("Open Book")
 				}
@@ -84,21 +78,29 @@ fun MainScreenTopBar(
 					IconButton(
 						onClick = { moreOptionsExpanded = true },
 						modifier = Modifier.semantics {
-							traversalIndex = 3f
+							traversalIndex = 2f
 							this.onClick(label = "show all options in a menu") {
 								moreOptionsExpanded = true
 								true
 							}
 							customActions = mutableListOf<CustomAccessibilityAction>().apply {
+								if ((state as MainScreenUiState.Success).activeTab != null) {
+									add(
+										CustomAccessibilityAction("Table of Contents") {
+											onTocOpen()
+											true
+										}
+									)
+								}
 								add(
-									CustomAccessibilityAction(if (isTextMode) "Read Aloud" else "Show Text") {
-										onToggleTextMode()
+									CustomAccessibilityAction("Elements List") {
+										onElementsOpen()
 										true
 									}
 								)
 								add(
-									CustomAccessibilityAction("Recent Documents") {
-										onRecentsOpen()
+									CustomAccessibilityAction("Find") {
+										onFindOpen()
 										true
 									}
 								)
@@ -109,8 +111,8 @@ fun MainScreenTopBar(
 									}
 								)
 								add(
-									CustomAccessibilityAction("Find") {
-										onFindOpen()
+									CustomAccessibilityAction("Recent Documents") {
+										onRecentsOpen()
 										true
 									}
 								)
@@ -127,11 +129,19 @@ fun MainScreenTopBar(
 									}
 								)
 								add(
-									CustomAccessibilityAction("Settings") {
-										onSettingsOpen()
+									CustomAccessibilityAction(if (isTextMode) "Show Document" else "Show Text") {
+										onToggleTextMode()
 										true
 									}
 								)
+								if (isTextMode) {
+									add(
+										CustomAccessibilityAction(if (isSpeaking) "Pause Read Aloud" else "Read Aloud") {
+											onTogglePlayPause()
+											true
+										}
+									)
+								}
 								add(
 									CustomAccessibilityAction("Sleep Timer") {
 										onSleepTimerOpen()
@@ -139,8 +149,8 @@ fun MainScreenTopBar(
 									}
 								)
 								add(
-									CustomAccessibilityAction("Elements List") {
-										onElementsOpen()
+									CustomAccessibilityAction("Settings") {
+										onSettingsOpen()
 										true
 									}
 								)
@@ -153,27 +163,27 @@ fun MainScreenTopBar(
 						expanded = moreOptionsExpanded,
 						onDismissRequest = { moreOptionsExpanded = false }
 					) {
-						DropdownMenuItem(
-							text = { Text(if (isTextMode) "Show Document" else "Show Text") },
-							onClick = {
-								onToggleTextMode()
-								moreOptionsExpanded = false
-							}
-						)
-						if (isTextMode) {
+						if ((state as MainScreenUiState.Success).activeTab != null) {
 							DropdownMenuItem(
-								text = { Text(if (isSpeaking) "Pause Read Aloud" else "Read Aloud") },
+								text = { Text("Table of Contents") },
 								onClick = {
-									onTogglePlayPause()
 									moreOptionsExpanded = false
+									onTocOpen()
 								}
 							)
 						}
 						DropdownMenuItem(
-							text = { Text("Recent Documents") },
+							text = { Text("Elements List") },
 							onClick = {
 								moreOptionsExpanded = false
-								onRecentsOpen()
+								onElementsOpen()
+							}
+						)
+						DropdownMenuItem(
+							text = { Text("Find") },
+							onClick = {
+								moreOptionsExpanded = false
+								onFindOpen()
 							}
 						)
 						DropdownMenuItem(
@@ -184,10 +194,10 @@ fun MainScreenTopBar(
 							}
 						)
 						DropdownMenuItem(
-							text = { Text("Find") },
+							text = { Text("Recent Documents") },
 							onClick = {
 								moreOptionsExpanded = false
-								onFindOpen()
+								onRecentsOpen()
 							}
 						)
 						DropdownMenuItem(
@@ -205,12 +215,21 @@ fun MainScreenTopBar(
 							}
 						)
 						DropdownMenuItem(
-							text = { Text("Settings") },
+							text = { Text(if (isTextMode) "Show Document" else "Show Text") },
 							onClick = {
+								onToggleTextMode()
 								moreOptionsExpanded = false
-								onSettingsOpen()
 							}
 						)
+						if (isTextMode) {
+							DropdownMenuItem(
+								text = { Text(if (isSpeaking) "Pause Read Aloud" else "Read Aloud") },
+								onClick = {
+									onTogglePlayPause()
+									moreOptionsExpanded = false
+								}
+							)
+						}
 						DropdownMenuItem(
 							text = { Text("Sleep Timer") },
 							onClick = {
@@ -219,10 +238,10 @@ fun MainScreenTopBar(
 							}
 						)
 						DropdownMenuItem(
-							text = { Text("Elements List") },
+							text = { Text("Settings") },
 							onClick = {
 								moreOptionsExpanded = false
-								onElementsOpen()
+								onSettingsOpen()
 							}
 						)
 					}

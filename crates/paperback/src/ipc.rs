@@ -4,11 +4,13 @@ use std::{
 };
 
 pub const IPC_COMMAND_ACTIVATE: &str = "ACTIVATE";
+pub const IPC_COMMAND_TOGGLE_VISIBILITY: &str = "TOGGLE";
 pub const SINGLE_INSTANCE_NAME: &str = "paperback_running";
 
 #[derive(Debug, Clone)]
 pub enum IpcCommand {
 	Activate,
+	ToggleVisibility,
 	OpenFile(PathBuf),
 }
 
@@ -24,6 +26,9 @@ pub fn decode_execute_payload(data: &[u8]) -> Option<IpcCommand> {
 	}
 	if payload == IPC_COMMAND_ACTIVATE {
 		return Some(IpcCommand::Activate);
+	}
+	if payload == IPC_COMMAND_TOGGLE_VISIBILITY {
+		return Some(IpcCommand::ToggleVisibility);
 	}
 	Some(IpcCommand::OpenFile(PathBuf::from(payload)))
 }

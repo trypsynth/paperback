@@ -5,7 +5,7 @@ use std::{
 	rc::Rc,
 };
 
-use paperback_core::config::{ConfigManager, ReadabilityFont};
+use paperback_core::config::{ConfigManager, HotkeyConfig, ReadabilityFont};
 use wxdragon::{prelude::*, translations::translate as t};
 
 use super::DIALOG_PADDING;
@@ -25,6 +25,7 @@ pub struct OptionsDialogResult {
 	pub reading_speed_wpm: i32,
 	pub language: String,
 	pub update_channel: UpdateChannel,
+	pub hotkey: HotkeyConfig,
 	pub readability_font: ReadabilityFont,
 	pub line_spacing: i32,
 	pub bg_color: i32,
@@ -52,6 +53,7 @@ struct OptionsDialogUi {
 	current_language: String,
 	ok_button: Button,
 	cancel_button: Button,
+	hotkey: Rc<RefCell<HotkeyConfig>>,
 	readability_font: Rc<RefCell<ReadabilityFont>>,
 	line_spacing_ctrl: Choice,
 	bg_color: Rc<Cell<i32>>,
@@ -90,6 +92,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		reading_speed_wpm: ui.reading_speed_ctrl.value(),
 		language,
 		update_channel,
+		hotkey: ui.hotkey.borrow().clone(),
 		readability_font,
 		line_spacing,
 		bg_color,
@@ -119,10 +122,12 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		CheckBox::builder(&reading_panel).with_label(&t("Play &sounds on bookmarks and notes")).build();
 	let check_for_updates_check =
 		CheckBox::builder(&general_panel).with_label(&t("Check for &updates on startup")).build();
+	let hotkey_button = Button::builder(&general_panel).with_label(&t("Customize &Window Hotkey...")).build();
 	let option_padding = 5;
 	for check in [&restore_docs_check, &start_maximized_check, &minimize_to_tray_check, &check_for_updates_check] {
 		general_sizer.add(check, 0, SizerFlag::All, option_padding);
 	}
+	general_sizer.add(&hotkey_button, 0, SizerFlag::All, option_padding);
 	for check in [&navigation_wrap_check, &compact_go_menu_check, &bookmark_sounds_check] {
 		reading_sizer.add(check, 0, SizerFlag::All, option_padding);
 	}
@@ -263,6 +268,15 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		UpdateChannel::Dev => 1,
 	};
 	update_channel_combo.set_selection(channel_index);
+	let current_hotkey = Rc::new(RefCell::new(config.get_hotkey()));
+	let hotkey_state = Rc::clone(&current_hotkey);
+	let hotkey_dialog_parent = dialog.clone();
+	hotkey_button.on_click(move |_| {
+		let initial = hotkey_state.borrow().clone();
+		if let Some(updated) = prompt_for_hotkey(&hotkey_dialog_parent, &initial) {
+			*hotkey_state.borrow_mut() = updated;
+		}
+	});
 	let initial_font = config.get_readability_font();
 	font_preview_label.set_label(&font_description(&initial_font));
 	let readability_font = Rc::new(RefCell::new(initial_font));
@@ -345,6 +359,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		current_language,
 		ok_button,
 		cancel_button,
+		hotkey: current_hotkey,
 		readability_font,
 		line_spacing_ctrl,
 		bg_color,
@@ -468,4 +483,85 @@ fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Option<Readabi
 		color: chosen_color,
 		encoding: font.get_encoding(),
 	})
+}
+
+fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<HotkeyConfig> {
+	let dialog = Dialog::builder(parent, &t("Window Hotkey")).with_size(300, 230).build();
+	let panel = Panel::builder(&dialog).build();
+	let main_sizer = BoxSizer::builder(Orientation::Vertical).build();
+
+	let ctrl_cb = CheckBox::builder(&panel).with_label(&t("&Ctrl")).build();
+	ctrl_cb.set_value(initial.ctrl);
+	let alt_cb = CheckBox::builder(&panel).with_label(&t("&Alt")).build();
+	alt_cb.set_value(initial.alt);
+	let shift_cb = CheckBox::builder(&panel).with_label(&t("&Shift")).build();
+	shift_cb.set_value(initial.shift);
+	let win_cb = CheckBox::builder(&panel).with_label(&t("&Win")).build();
+	win_cb.set_value(initial.win);
+
+	main_sizer.add(&ctrl_cb, 0, SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Top, 10);
+	main_sizer.add(&alt_cb, 0, SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right, 10);
+	main_sizer.add(&shift_cb, 0, SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right, 10);
+	main_sizer.add(&win_cb, 0, SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right, 10);
+
+	let key_label = StaticText::builder(&panel).with_label(&t("&Key:")).build();
+	let key_text = TextCtrl::builder(&panel).build();
+	key_text.set_value(&hotkey_key_display_name(initial.key));
+	let key_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	key_sizer.add(&key_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 8);
+	key_sizer.add(&key_text, 1, SizerFlag::Expand, 0);
+	main_sizer.add_sizer(&key_sizer, 0, SizerFlag::Expand | SizerFlag::All, 10);
+
+	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	let ok_button = Button::builder(&panel).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
+	ok_button.set_default();
+	let cancel_button = Button::builder(&panel).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
+	button_sizer.add_stretch_spacer(1);
+	button_sizer.add(&ok_button, 0, SizerFlag::Right, 8);
+	button_sizer.add(&cancel_button, 0, SizerFlag::Right, 8);
+	main_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand | SizerFlag::All, 10);
+
+	panel.set_sizer(main_sizer, true);
+	let dialog_sizer = BoxSizer::builder(Orientation::Vertical).build();
+	dialog_sizer.add(&panel, 1, SizerFlag::Expand, 0);
+	dialog.set_sizer(dialog_sizer, true);
+	dialog.set_affirmative_id(wxdragon::id::ID_OK);
+	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+	dialog.centre();
+
+	if dialog.show_modal() != wxdragon::id::ID_OK {
+		return None;
+	}
+
+	let key_value = key_text.get_value();
+	let key_char = parse_hotkey_key(&key_value).unwrap_or(initial.key);
+
+	Some(HotkeyConfig {
+		ctrl: ctrl_cb.is_checked(),
+		alt: alt_cb.is_checked(),
+		shift: shift_cb.is_checked(),
+		win: win_cb.is_checked(),
+		key: key_char,
+	})
+}
+
+fn hotkey_key_display_name(key: char) -> String {
+	match key {
+		' ' => t("Space").to_string(),
+		c if c.is_ascii_alphanumeric() => c.to_ascii_uppercase().to_string(),
+		c => c.to_string(),
+	}
+}
+
+fn parse_hotkey_key(input: &str) -> Option<char> {
+	let trimmed = input.trim();
+	if trimmed.eq_ignore_ascii_case("space") {
+		return Some(' ');
+	}
+	let ch = if trimmed.is_empty() { return None } else { trimmed.chars().last()? };
+	if ch.is_ascii_alphanumeric() || ch.is_ascii_punctuation() || ch == ' ' {
+		Some(ch.to_ascii_uppercase())
+	} else {
+		None
+	}
 }

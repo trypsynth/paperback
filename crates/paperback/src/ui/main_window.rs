@@ -1,5 +1,5 @@
 use std::{
-	cell::Cell,
+	cell::{Cell, RefCell},
 	env,
 	path::Path,
 	process,
@@ -51,6 +51,8 @@ pub struct MainWindow {
 	_tray_state: Rc<Mutex<Option<tray::TrayState>>>,
 	_live_region_label: StaticText,
 	_find_dialog: Rc<Mutex<Option<FindDialogState>>>,
+	#[cfg(target_os = "windows")]
+	_hotkey_handle: Rc<RefCell<Option<HotkeyHandle>>>,
 }
 
 impl MainWindow {
@@ -77,7 +79,17 @@ impl MainWindow {
 		let doc_manager =
 			Rc::new(Mutex::new(DocumentManager::new(frame, notebook, Rc::clone(&config), live_region_label)));
 		let find_dialog = Rc::new(Mutex::new(None));
-		Self::bind_menu_events(&frame, &doc_manager, &config, &find_dialog, live_region_label);
+		#[cfg(target_os = "windows")]
+		let hotkey_handle = Rc::new(RefCell::new(start_hotkey_listener(&config.lock().unwrap().get_hotkey())));
+		Self::bind_menu_events(
+			&frame,
+			&doc_manager,
+			&config,
+			&find_dialog,
+			live_region_label,
+			#[cfg(target_os = "windows")]
+			&hotkey_handle,
+		);
 		let dm = Rc::clone(&doc_manager);
 		let frame_copy = frame;
 		let notebook = *doc_manager.lock().unwrap().notebook();
@@ -125,6 +137,8 @@ impl MainWindow {
 			let config_for_close = Rc::clone(&config);
 			#[cfg(not(target_os = "linux"))]
 			let tray_for_close = Rc::clone(&tray_state);
+			#[cfg(target_os = "windows")]
+			let hotkey_for_close = Rc::clone(&hotkey_handle);
 			frame.on_close(move |event| {
 				let dm = dm_for_close.lock().unwrap();
 				if let Some(tab) = dm.active_tab() {
@@ -137,6 +151,18 @@ impl MainWindow {
 				#[cfg(not(target_os = "linux"))]
 				if let Some(state) = tray_for_close.lock().unwrap().as_ref() {
 					state.icon.remove_icon();
+				}
+				#[cfg(target_os = "windows")]
+				if let Some(handle) = hotkey_for_close.borrow_mut().take() {
+					use windows::Win32::{
+						Foundation::{LPARAM, WPARAM},
+						UI::WindowsAndMessaging::{PostThreadMessageW, WM_QUIT},
+					};
+					if handle.thread_id != 0 {
+						unsafe {
+							let _ = PostThreadMessageW(handle.thread_id, WM_QUIT, WPARAM(0), LPARAM(0));
+						}
+					}
 				}
 				event.skip(true);
 			});
@@ -159,6 +185,8 @@ impl MainWindow {
 			_tray_state: tray_state,
 			_live_region_label: live_region_label,
 			_find_dialog: find_dialog,
+			#[cfg(target_os = "windows")]
+			_hotkey_handle: hotkey_handle,
 		}
 	}
 
@@ -192,6 +220,9 @@ impl MainWindow {
 			IpcCommand::Activate => {
 				self.activate_from_ipc();
 			}
+			IpcCommand::ToggleVisibility => {
+				self.toggle_visibility();
+			}
 			IpcCommand::OpenFile(path) => {
 				if self.open_file(&path) {
 					self.activate_from_ipc();
@@ -208,7 +239,42 @@ impl MainWindow {
 		self.doc_manager.lock().unwrap().restore_focus();
 		#[cfg(not(target_os = "linux"))]
 		if let Some(state) = self._tray_state.lock().unwrap().as_mut() {
-			state.icon.remove_icon();
+			if let Some(bundle) =
+				ArtProvider::get_bitmap_bundle(ArtId::Information, ArtClient::MessageBox, Some(Size::new(32, 32)))
+			{
+				state.icon.set_icon_bundle(&bundle, "Paperback");
+			} else if let Some(bitmap) =
+				ArtProvider::get_bitmap(ArtId::Information, ArtClient::MessageBox, Some(Size::new(32, 32)))
+			{
+				state.icon.set_icon(&bitmap, "Paperback");
+			}
+		}
+	}
+
+	fn is_window_active(&self) -> bool {
+		#[cfg(target_os = "windows")]
+		{
+			use windows::Win32::{Foundation::HWND, UI::WindowsAndMessaging::GetForegroundWindow};
+			let handle = self.frame.get_handle();
+			if handle.is_null() {
+				return self.frame.has_focus();
+			}
+			let frame_hwnd = HWND(handle);
+			let foreground = unsafe { GetForegroundWindow() };
+			foreground == frame_hwnd
+		}
+		#[cfg(not(target_os = "windows"))]
+		{
+			self.frame.has_focus()
+		}
+	}
+
+	fn toggle_visibility(&self) {
+		let is_shown = self.frame.is_shown();
+		if is_shown && self.is_window_active() {
+			self.frame.iconize(true);
+		} else {
+			self.activate_from_ipc();
 		}
 	}
 
@@ -343,11 +409,14 @@ impl MainWindow {
 		config: &Rc<Mutex<ConfigManager>>,
 		find_dialog: &Rc<Mutex<Option<FindDialogState>>>,
 		live_region_label: StaticText,
+		#[cfg(target_os = "windows")] hotkey_handle: &Rc<RefCell<Option<HotkeyHandle>>>,
 	) {
 		let frame_copy = *frame;
 		let dm = Rc::clone(doc_manager);
 		let config = Rc::clone(config);
 		let find_dialog = Rc::clone(find_dialog);
+		#[cfg(target_os = "windows")]
+		let hotkey_handle_for_options = Rc::clone(hotkey_handle);
 		let sleep_timer = Rc::new(Timer::new(frame));
 		let sleep_timer_running = Rc::new(Cell::new(false));
 		let sleep_timer_start_time = Rc::new(Cell::new(0i64));
@@ -1210,6 +1279,7 @@ impl MainWindow {
 					cfg.set_app_int("reading_speed_wpm", options.reading_speed_wpm);
 					cfg.set_app_string("language", &options.language);
 					crate::config_ext::set_update_channel(&cfg, options.update_channel);
+					cfg.set_hotkey(&options.hotkey);
 					cfg.set_readability_font(&options.readability_font);
 					cfg.set_line_spacing(options.line_spacing);
 					cfg.set_bg_color(options.bg_color);
@@ -1217,6 +1287,10 @@ impl MainWindow {
 					cfg.set_letter_spacing(options.letter_spacing);
 					cfg.set_paragraph_spacing(options.paragraph_spacing);
 					cfg.flush();
+					#[cfg(target_os = "windows")]
+					{
+						re_register_hotkey(&hotkey_handle_for_options, &options.hotkey);
+					}
 					drop(cfg);
 					let options_word_wrap = options.word_wrap;
 					let font_changed = old_readability_font != options.readability_font;
@@ -1556,4 +1630,96 @@ mod tests {
 		assert_eq!(parser_extension_for_path(Path::new("book.epub\u{0}")), "epub");
 		assert_eq!(parser_extension_for_path(Path::new(" \"book.epub\u{0}\" ")), "epub");
 	}
+}
+
+#[cfg(target_os = "windows")]
+pub(crate) struct HotkeyHandle {
+	pub(crate) thread_id: u32,
+	pub(crate) join_handle: std::thread::JoinHandle<()>,
+}
+
+#[cfg(target_os = "windows")]
+pub(crate) fn start_hotkey_listener(hotkey: &paperback_core::config::HotkeyConfig) -> Option<HotkeyHandle> {
+	use windows::Win32::{
+		System::Threading::GetCurrentThreadId,
+		UI::{
+			Input::KeyboardAndMouse::{
+				HOT_KEY_MODIFIERS, MOD_ALT, MOD_CONTROL, MOD_SHIFT, MOD_WIN, RegisterHotKey, UnregisterHotKey,
+			},
+			WindowsAndMessaging::{GetMessageW, MSG, WM_HOTKEY},
+		},
+	};
+	const HOTKEY_ID: i32 = 1;
+	let mut modifiers = HOT_KEY_MODIFIERS(0);
+	if hotkey.ctrl {
+		modifiers |= MOD_CONTROL;
+	}
+	if hotkey.alt {
+		modifiers |= MOD_ALT;
+	}
+	if hotkey.shift {
+		modifiers |= MOD_SHIFT;
+	}
+	if hotkey.win {
+		modifiers |= MOD_WIN;
+	}
+	let vk = char_to_vk(hotkey.key)?;
+	let (thread_id_tx, thread_id_rx) = std::sync::mpsc::channel();
+	let join_handle = std::thread::spawn(move || {
+		let thread_id = unsafe { GetCurrentThreadId() };
+		let _ = thread_id_tx.send(thread_id);
+		let registered = unsafe { RegisterHotKey(None, HOTKEY_ID, modifiers, vk).is_ok() };
+		if !registered {
+			return;
+		}
+		let mut msg = MSG::default();
+		loop {
+			let result = unsafe { GetMessageW(&raw mut msg, None, 0, 0) };
+			if result.0 <= 0 {
+				break;
+			}
+			if msg.message == WM_HOTKEY {
+				wxdragon::call_after(Box::new(|| {
+					if let Some(window) = super::app::main_window_from_ptr() {
+						window.handle_ipc_command(crate::ipc::IpcCommand::ToggleVisibility);
+					}
+				}));
+				wxdragon::app::wake_up_idle();
+			}
+		}
+		unsafe {
+			let _ = UnregisterHotKey(None, HOTKEY_ID);
+		}
+	});
+	let thread_id = thread_id_rx.recv().ok()?;
+	Some(HotkeyHandle { thread_id, join_handle })
+}
+
+#[cfg(target_os = "windows")]
+fn char_to_vk(ch: char) -> Option<u32> {
+	use windows::Win32::UI::Input::KeyboardAndMouse::VkKeyScanW;
+	let code = u16::try_from(u32::from(ch)).ok()?;
+	let result = unsafe { VkKeyScanW(code) };
+	let low_byte = u8::try_from(result & 0xFF).ok()?;
+	if low_byte == 0xFF { None } else { Some(u32::from(low_byte)) }
+}
+
+#[cfg(target_os = "windows")]
+fn re_register_hotkey(
+	hotkey_handle: &std::rc::Rc<std::cell::RefCell<Option<HotkeyHandle>>>,
+	hotkey: &paperback_core::config::HotkeyConfig,
+) {
+	use windows::Win32::{
+		Foundation::{LPARAM, WPARAM},
+		UI::WindowsAndMessaging::{PostThreadMessageW, WM_QUIT},
+	};
+	if let Some(handle) = hotkey_handle.borrow_mut().take() {
+		if handle.thread_id != 0 {
+			unsafe {
+				let _ = PostThreadMessageW(handle.thread_id, WM_QUIT, WPARAM(0), LPARAM(0));
+			}
+		}
+		let _ = handle.join_handle.join();
+	}
+	*hotkey_handle.borrow_mut() = start_hotkey_listener(hotkey);
 }
