@@ -62,6 +62,9 @@ fun MainScreen(
 	var useInAppFileBrowser by remember {
 		mutableStateOf(viewModel.configManager.getAppBool("use_in_app_file_browser", false))
 	}
+	var swipeUpMovesForward by remember {
+		mutableStateOf(viewModel.configManager.getAppBool("swipe_up_moves_forward", true))
+	}
 	val activeSearchQuery by viewModel.activeSearchQuery.collectAsStateWithLifecycle()
 	val activeSearchOptions by viewModel.activeSearchOptions.collectAsStateWithLifecycle()
 	var expandedTocIndices by remember { mutableStateOf(setOf<Int>()) }
@@ -257,7 +260,8 @@ fun MainScreen(
 					onNextButton = { viewModel.playNextSegment(speak = isSpeaking) },
 					currentSegmentType = currentSegmentType,
 					supportedSegmentTypes = supportedSegmentTypes,
-					onSegmentTypeChange = { viewModel.setSegmentType(it) }
+					onSegmentTypeChange = { viewModel.setSegmentType(it) },
+					swipeUpMovesForward = swipeUpMovesForward
 				)
 			}
 		}
@@ -540,31 +544,7 @@ fun MainScreen(
 						SettingsDialog(
 							initialRestorePreviousDocuments = restorePreviousDocuments,
 							initialUseInAppFileBrowser = useInAppFileBrowser,
-							onSaveOptions = { restore, useInApp ->
-								restorePreviousDocuments = restore
-								useInAppFileBrowser = useInApp
-								viewModel.configManager.setAppBool("restore_previous_documents", restore)
-								viewModel.configManager.setAppBool("use_in_app_file_browser", useInApp)
-								viewModel.configManager.flush()
-								viewModel.closeSettingsDialog()
-							},
-							onOpenTtsConfig = {
-								viewModel.closeSettingsDialog()
-								ttsConfigDialogOpen = true
-							},
-							onDismiss = { viewModel.closeSettingsDialog() }
-						)
-					}
-					if (sleepTimerDialogOpen) {
-						SleepTimerDialog(
-							remainingSeconds = sleepTimerRemaining,
-							onSetTimer = { viewModel.setSleepTimer(it) },
-							onCancelTimer = { viewModel.cancelSleepTimer() },
-							onDismiss = { viewModel.closeSleepTimerDialog() }
-						)
-					}
-					if (ttsConfigDialogOpen) {
-						TtsConfigDialog(
+							initialSwipeUpMovesForward = swipeUpMovesForward,
 							engines = viewModel.ttsManager.getAvailableEngines(),
 							currentEngine = currentEngineName ?: viewModel.ttsManager.getDefaultEngine(),
 							voices = availableVoices,
@@ -578,7 +558,25 @@ fun MainScreen(
 							onPlaySample = {
 								viewModel.ttsManager.speak("This is a sample of the selected speech engine.", isSample = true)
 							},
-							onDismiss = { ttsConfigDialogOpen = false }
+							onSaveOptions = { restore, useInApp, swipeUpFwd ->
+								restorePreviousDocuments = restore
+								useInAppFileBrowser = useInApp
+								swipeUpMovesForward = swipeUpFwd
+								viewModel.configManager.setAppBool("restore_previous_documents", restore)
+								viewModel.configManager.setAppBool("use_in_app_file_browser", useInApp)
+								viewModel.configManager.setAppBool("swipe_up_moves_forward", swipeUpFwd)
+								viewModel.configManager.flush()
+								viewModel.closeSettingsDialog()
+							},
+							onDismiss = { viewModel.closeSettingsDialog() }
+						)
+					}
+					if (sleepTimerDialogOpen) {
+						SleepTimerDialog(
+							remainingSeconds = sleepTimerRemaining,
+							onSetTimer = { viewModel.setSleepTimer(it) },
+							onCancelTimer = { viewModel.cancelSleepTimer() },
+							onDismiss = { viewModel.closeSleepTimerDialog() }
 						)
 					}
 				}
