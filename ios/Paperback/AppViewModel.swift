@@ -225,14 +225,15 @@ final class AppViewModel: ObservableObject {
 		prefetchAdjacentSegments(around: ttsPosition)
 	}
 
-	func playNextSegment(speak: Bool = true, announce: Bool = false) {
-		guard let tab = activeTab, let session = tab.session else { return }
+	@discardableResult
+	func playNextSegment(speak: Bool = true, announce: Bool = false) -> Bool {
+		guard let tab = activeTab, let session = tab.session else { return false }
 		let seg = session.getTextSegment(
 			position: ttsPosition,
 			segmentType: ffiSegmentType(currentSegmentType),
 			direction: .next
 		)
-		if seg.text.isEmpty { return }
+		if seg.text.isEmpty { return false }
 		ttsPosition = seg.startPos
 		currentSegmentText = seg.text
 		updateTabPosition(seg.startPos)
@@ -242,16 +243,18 @@ final class AppViewModel: ObservableObject {
 		} else if announce {
 			announceNavigationCue(seg.text)
 		}
+		return true
 	}
 
-	func playPrevSegment(speak: Bool = true, announce: Bool = false) {
-		guard let tab = activeTab, let session = tab.session else { return }
+	@discardableResult
+	func playPrevSegment(speak: Bool = true, announce: Bool = false) -> Bool {
+		guard let tab = activeTab, let session = tab.session else { return false }
 		let seg = session.getTextSegment(
 			position: ttsPosition,
 			segmentType: ffiSegmentType(currentSegmentType),
 			direction: .previous
 		)
-		if seg.text.isEmpty { return }
+		if seg.text.isEmpty || seg.startPos == ttsPosition { return false }
 		ttsPosition = seg.startPos
 		currentSegmentText = seg.text
 		updateTabPosition(seg.startPos)
@@ -261,6 +264,7 @@ final class AppViewModel: ObservableObject {
 		} else if announce {
 			announceNavigationCue(seg.text)
 		}
+		return true
 	}
 
 	private func announceNavigationCue(_ text: String) {
