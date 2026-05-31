@@ -79,6 +79,14 @@ final class AppViewModel: ObservableObject {
 			self?.playNextSegment()
 			self?.updateNowPlaying()
 		}
+		ttsManager.$isSpeaking
+			.dropFirst()
+			.sink { [weak self] _ in self?.updateNowPlaying() }
+			.store(in: &cancellables)
+		ttsManager.$isPaused
+			.dropFirst()
+			.sink { [weak self] _ in self?.updateNowPlaying() }
+			.store(in: &cancellables)
 		$restorePreviousDocuments
 			.dropFirst()
 			.sink { [weak self] value in
@@ -161,6 +169,7 @@ final class AppViewModel: ObservableObject {
 			loadRecentsFromConfig()
 			loadSegment(for: tab)
 			saveBookmark(for: url, path: path)
+			updateNowPlaying()
 		} catch {
 			if scopeStarted { url.stopAccessingSecurityScopedResource() }
 			debugMessage = "Error opening '\(url.lastPathComponent)':\n\(error)\n\nPath: \(path)"
