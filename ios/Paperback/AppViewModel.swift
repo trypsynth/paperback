@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 import UIKit
+import MediaPlayer
 
 @MainActor
 final class AppViewModel: ObservableObject {
@@ -76,6 +77,7 @@ final class AppViewModel: ObservableObject {
 		loadRecentsFromConfig()
 		ttsManager.onUtteranceFinished = { [weak self] in
 			self?.playNextSegment()
+			self?.updateNowPlaying()
 		}
 		$restorePreviousDocuments
 			.dropFirst()
@@ -107,6 +109,7 @@ final class AppViewModel: ObservableObject {
 				self?.configManager.setAppString(key: "tts_voice_identifier", value: value ?? "")
 			}
 			.store(in: &cancellables)
+		setupRemoteCommands()
 		if restorePreviousDocuments {
 			for path in configManager.getOpenedDocuments() {
 				tryRestoreDocument(path: path)
@@ -217,6 +220,7 @@ final class AppViewModel: ObservableObject {
 		} else {
 			playCurrentSegment()
 		}
+		updateNowPlaying()
 	}
 
 	func playCurrentSegment() {
@@ -482,6 +486,69 @@ final class AppViewModel: ObservableObject {
 		if let id = activeTabId, let idx = tabs.firstIndex(where: { $0.id == id }) {
 			tabs[idx].lineScrollIndex = textModeFirstLine
 		}
+	}
+
+	private func setupRemoteCommands() {
+		let center = MPRemoteCommandCenter.shared()
+
+		center.playCommand.addTarget { [weak self] _ in
+			guard let self else { return .commandFailed }
+			if ttsManager.isPaused { ttsManager.resume() }
+			else if !ttsManager.isSpeaking { playCurrentSegment() }
+			updateNowPlaying()
+			return .success
+		}
+		center.pauseCommand.addTarget { [weak self] _ in
+			guard let self else { return .commandFailed }
+			ttsManager.pause()
+			updateNowPlaying()
+			return .success
+		}
+		center.togglePlayPauseCommand.addTarget { [weak self] _ in
+			guard let self else { return .commandFailed }
+			togglePlayPause()
+			updateNowPlaying()
+			return .success
+		}
+		center.nextTrackCommand.addTarget { [weak self] _ in
+			guard let self else { return .commandFailed }
+			playNextSegment(speak: ttsManager.isSpeaking)
+			updateNowPlaying()
+			return .success
+		}
+		center.previousTrackCommand.addTarget { [weak self] _ in
+			guard let self else { return .commandFailed }
+			playPrevSegment(speak: ttsManager.isSpeaking)
+			updateNowPlaying()
+			return .success
+		}
+
+		center.stopCommand.addTarget { [weak self] _ in
+			guard let self else { return .commandFailed }
+			ttsManager.stop()
+			updateNowPlaying()
+			return .success
+		}
+
+		// Disable commands that don't apply to a book reader
+		center.skipForwardCommand.isEnabled = false
+		center.skipBackwardCommand.isEnabled = false
+		center.seekForwardCommand.isEnabled = false
+		center.seekBackwardCommand.isEnabled = false
+		center.changePlaybackRateCommand.isEnabled = false
+	}
+
+	func updateNowPlaying() {
+		var info: [String: Any] = [
+			MPMediaItemPropertyMediaType: MPMediaType.audioBook.rawValue,
+			MPNowPlayingInfoPropertyPlaybackRate: ttsManager.isSpeaking ? 1.0 : 0.0,
+			MPNowPlayingInfoPropertyDefaultPlaybackRate: 1.0,
+		]
+		if let title = activeTab?.title {
+			info[MPMediaItemPropertyTitle] = title
+		}
+		info[MPMediaItemPropertyArtist] = "Paperback"
+		MPNowPlayingInfoCenter.default().nowPlayingInfo = info
 	}
 
 	private func ffiSegmentType(_ type: SegmentType) -> SegmentTypeFfi {
