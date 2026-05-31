@@ -56,9 +56,14 @@ struct TtsControlBar: View {
 			.accessibilityLabel(viewModel.ttsManager.isSpeaking ? "Pause" : "Play")
 			.accessibilityAdjustableAction { direction in
 				let wasPlaying = viewModel.ttsManager.isSpeaking
+				let forward = viewModel.swipeUpMovesForward
 				switch direction {
-				case .increment: viewModel.playNextSegment(speak: wasPlaying, announce: !wasPlaying)
-				case .decrement: viewModel.playPrevSegment(speak: wasPlaying, announce: !wasPlaying)
+				case .increment:
+					if forward { viewModel.playNextSegment(speak: wasPlaying, announce: !wasPlaying) }
+					else { viewModel.playPrevSegment(speak: wasPlaying, announce: !wasPlaying) }
+				case .decrement:
+					if forward { viewModel.playPrevSegment(speak: wasPlaying, announce: !wasPlaying) }
+					else { viewModel.playNextSegment(speak: wasPlaying, announce: !wasPlaying) }
 				@unknown default: break
 				}
 			}

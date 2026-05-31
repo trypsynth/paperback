@@ -49,6 +49,7 @@ final class AppViewModel: ObservableObject {
 
 	// MARK: - Settings
 	@Published var restorePreviousDocuments = true
+	@Published var swipeUpMovesForward = true
 
 	// MARK: - Recents
 	@Published var recentDocuments: [RecentDocument] = []
@@ -61,6 +62,7 @@ final class AppViewModel: ObservableObject {
 		let configPath = configFilePath()
 		_ = configManager.initialize(configPath: configPath)
 		restorePreviousDocuments = configManager.getAppBool(key: "restore_previous_documents", defaultValue: true)
+		swipeUpMovesForward = configManager.getAppBool(key: "swipe_up_moves_forward", defaultValue: true)
 
 		let savedRate = configManager.getAppString(key: "tts_speech_rate", defaultValue: "")
 		if let r = Float(savedRate) { ttsManager.speechRate = r }
@@ -79,6 +81,12 @@ final class AppViewModel: ObservableObject {
 			.dropFirst()
 			.sink { [weak self] value in
 				self?.configManager.setAppBool(key: "restore_previous_documents", value: value)
+			}
+			.store(in: &cancellables)
+		$swipeUpMovesForward
+			.dropFirst()
+			.sink { [weak self] value in
+				self?.configManager.setAppBool(key: "swipe_up_moves_forward", value: value)
 			}
 			.store(in: &cancellables)
 		ttsManager.$speechRate
@@ -214,7 +222,7 @@ final class AppViewModel: ObservableObject {
 	func playCurrentSegment() {
 		guard !currentSegmentText.isEmpty else { return }
 		ttsManager.speak(currentSegmentText)
-		prefetchAdjacentSegment(after: ttsPosition)
+		prefetchAdjacentSegments(around: ttsPosition)
 	}
 
 	func playNextSegment(speak: Bool = true, announce: Bool = false) {
@@ -230,7 +238,7 @@ final class AppViewModel: ObservableObject {
 		updateTabPosition(seg.startPos)
 		if speak {
 			ttsManager.speak(seg.text)
-			prefetchAdjacentSegment(after: seg.startPos)
+			prefetchAdjacentSegments(around: seg.startPos)
 		} else if announce {
 			announceNavigationCue(seg.text)
 		}
@@ -249,7 +257,7 @@ final class AppViewModel: ObservableObject {
 		updateTabPosition(seg.startPos)
 		if speak {
 			ttsManager.speak(seg.text)
-			prefetchAdjacentSegment(after: seg.startPos)
+			prefetchAdjacentSegments(around: seg.startPos)
 		} else if announce {
 			announceNavigationCue(seg.text)
 		}
@@ -266,7 +274,7 @@ final class AppViewModel: ObservableObject {
 		}
 	}
 
-	private func prefetchAdjacentSegment(after position: Int64) {
+	private func prefetchAdjacentSegments(around position: Int64) {
 		guard let session = activeSession else { return }
 		let next = session.getTextSegment(
 			position: position,
@@ -275,6 +283,14 @@ final class AppViewModel: ObservableObject {
 		)
 		if !next.text.isEmpty {
 			ttsManager.prefetch(next.text)
+		}
+		let prev = session.getTextSegment(
+			position: position,
+			segmentType: ffiSegmentType(currentSegmentType),
+			direction: .previous
+		)
+		if !prev.text.isEmpty {
+			ttsManager.prefetchPrev(prev.text)
 		}
 	}
 

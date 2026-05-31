@@ -81,6 +81,10 @@ struct SettingsSheet: View {
 			Form {
 				Section("Behavior") {
 					Toggle("Restore last open documents", isOn: $restore)
+					Toggle("Swipe up moves forward", isOn: Binding(
+						get: { viewModel.swipeUpMovesForward },
+						set: { viewModel.swipeUpMovesForward = $0 }
+					))
 				}
 				TtsSettingsSection(
 					ttsManager: viewModel.ttsManager,

@@ -4,6 +4,7 @@ import AVFoundation
 final class TtsManager: NSObject, ObservableObject {
 	private let synthesizer = AVSpeechSynthesizer()
 	private let prefetchSynthesizer = AVSpeechSynthesizer()
+	private let prevPrefetchSynthesizer = AVSpeechSynthesizer()
 	private let engine = AVAudioEngine()
 	private let player = AVAudioPlayerNode()
 	private var outputFormat: AVAudioFormat!
@@ -14,6 +15,10 @@ final class TtsManager: NSObject, ObservableObject {
 	private var prefetchedText: String? = nil
 	private var prefetchedBuffer: AVAudioPCMBuffer? = nil
 	private var prefetchGeneration = 0
+
+	private var prevPrefetchedText: String? = nil
+	private var prevPrefetchedBuffer: AVAudioPCMBuffer? = nil
+	private var prevPrefetchGeneration = 0
 
 	private var wasInterruptedWhilePlaying = false
 
@@ -151,10 +156,21 @@ final class TtsManager: NSObject, ObservableObject {
 	// MARK: - Playback
 
 	func speak(_ text: String) {
-		// Use the prefetched buffer if it matches (no synthesis needed).
+		// Use a prefetched buffer if one matches (no synthesis needed).
 		if text == prefetchedText, let cached = prefetchedBuffer {
 			prefetchedText = nil
 			prefetchedBuffer = nil
+			internalStop()
+			speechGeneration += 1
+			let gen = speechGeneration
+			isSpeaking = true
+			isPaused = false
+			schedule(cached, gen: gen, suppress: false)
+			return
+		}
+		if text == prevPrefetchedText, let cached = prevPrefetchedBuffer {
+			prevPrefetchedText = nil
+			prevPrefetchedBuffer = nil
 			internalStop()
 			speechGeneration += 1
 			let gen = speechGeneration
@@ -209,6 +225,31 @@ final class TtsManager: NSObject, ObservableObject {
 		}
 	}
 
+	// Synthesise `text` in the background so it's ready if the user navigates backward.
+	func prefetchPrev(_ text: String) {
+		guard text != prevPrefetchedText else { return }
+		prevPrefetchGeneration += 1
+		prevPrefetchSynthesizer.stopSpeaking(at: .immediate)
+		prevPrefetchedText = text
+		prevPrefetchedBuffer = nil
+		prevPrefetchGeneration += 1
+		let gen = prevPrefetchGeneration
+
+		let acc = BufferAccumulator()
+		prevPrefetchSynthesizer.write(makeUtterance(text)) { [weak self, acc] buffer in
+			guard let pcm = buffer as? AVAudioPCMBuffer else { return }
+			if pcm.frameLength > 0 {
+				acc.buffers.append(pcm)
+			} else {
+				let buffers = acc.buffers
+				DispatchQueue.main.async { [weak self] in
+					guard let self, self.prevPrefetchGeneration == gen else { return }
+					self.prevPrefetchedBuffer = self.convertToOutput(buffers)
+				}
+			}
+		}
+	}
+
 	func pause() {
 		guard isSpeaking else { return }
 		player.pause()
@@ -244,6 +285,10 @@ final class TtsManager: NSObject, ObservableObject {
 		prefetchSynthesizer.stopSpeaking(at: .immediate)
 		prefetchedText = nil
 		prefetchedBuffer = nil
+		prevPrefetchGeneration += 1
+		prevPrefetchSynthesizer.stopSpeaking(at: .immediate)
+		prevPrefetchedText = nil
+		prevPrefetchedBuffer = nil
 	}
 
 	private func makeUtterance(_ text: String) -> AVSpeechUtterance {
