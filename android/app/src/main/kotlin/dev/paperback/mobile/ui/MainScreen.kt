@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -125,6 +126,7 @@ fun MainScreen(
 	val currentHeadings by viewModel.currentHeadings.collectAsStateWithLifecycle()
 	val currentLinks by viewModel.currentLinks.collectAsStateWithLifecycle()
 	val passwordPromptUri by viewModel.passwordPromptUri.collectAsStateWithLifecycle()
+	val importPromptPath by viewModel.importPromptPath.collectAsStateWithLifecycle()
 
 	val view = androidx.compose.ui.platform.LocalView.current
 	LaunchedEffect(Unit) {
@@ -188,6 +190,37 @@ fun MainScreen(
 	)
 
 	var showFileManager by remember { mutableStateOf(false) }
+	var showFileManagerForImport by remember { mutableStateOf(false) }
+
+	val importSettingsLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+		contract = androidx.activity.result.contract.ActivityResultContracts.OpenDocument(),
+		onResult = { uri ->
+			if (uri != null) {
+				scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+					val success = viewModel.importSettingsFromUri(context, uri)
+					val message = if (success) "Settings imported" else "Failed to import settings"
+					kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+						android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
+					}
+				}
+			}
+		}
+	)
+
+	val exportSettingsLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+		contract = androidx.activity.result.contract.ActivityResultContracts.CreateDocument("*/*"),
+		onResult = { uri ->
+			if (uri != null) {
+				scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+					val success = viewModel.exportSettingsToUri(context, uri)
+					val message = if (success) "Settings exported" else "Failed to export settings"
+					kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+						android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
+					}
+				}
+			}
+		}
+	)
 
 	Box(modifier = Modifier.fillMaxSize()) {
 	Scaffold(
@@ -219,7 +252,32 @@ fun MainScreen(
 				onDocumentInfoOpen = { viewModel.openDocumentInfoDialog() },
 				onSettingsOpen = { viewModel.openSettingsDialog() },
 				onSleepTimerOpen = { viewModel.openSleepTimerDialog() },
-				onElementsOpen = { viewModel.openElementsDialog() }
+				onElementsOpen = { viewModel.openElementsDialog() },
+				onExportSettings = {
+					val activeDocUri = (state as? MainScreenUiState.Success)?.activeTab?.documentUri
+					if (activeDocUri != null) {
+						if (activeDocUri.startsWith("content://")) {
+							exportSettingsLauncher.launch("document.paperback")
+						} else {
+							if (viewModel.exportCurrentSettings()) {
+								android.widget.Toast.makeText(context, "Settings exported", android.widget.Toast.LENGTH_SHORT).show()
+							} else {
+								android.widget.Toast.makeText(context, "Failed to export settings", android.widget.Toast.LENGTH_SHORT).show()
+							}
+						}
+					}
+				},
+				onImportSettings = {
+					if (useInAppFileBrowser) {
+						if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R && !android.os.Environment.isExternalStorageManager()) {
+							viewModel.setShowPermissionRationale(true)
+						} else {
+							showFileManagerForImport = true
+						}
+					} else {
+						importSettingsLauncher.launch(arrayOf("*/*"))
+					}
+				}
 			)
 		},
 		bottomBar = {
@@ -604,6 +662,25 @@ fun MainScreen(
 		)
 	}
 
+	if (importPromptPath != null) {
+		AlertDialog(
+			onDismissRequest = { viewModel.cancelImportSettings() },
+			modifier = Modifier.semantics { paneTitle = "Import document data" },
+			title = { Text("Import document data") },
+			text = { Text("A .paperback file was found for this document. Would you like to import it?") },
+			confirmButton = {
+				TextButton(onClick = { viewModel.confirmImportSettings() }) {
+					Text("Import")
+				}
+			},
+			dismissButton = {
+				TextButton(onClick = { viewModel.cancelImportSettings() }) {
+					Text("Cancel")
+				}
+			}
+		)
+	}
+
 	val lifecycleOwner = LocalLifecycleOwner.current
 	DisposableEffect(lifecycleOwner) {
 		val observer = LifecycleEventObserver { _, event ->
@@ -668,6 +745,44 @@ fun MainScreen(
 				viewModel.openDocument(Uri.fromFile(file))
 			},
 			onDismiss = { showFileManager = false }
+		)
+	}
+
+	if (showFileManagerForImport) {
+		val extensions = listOf("paperback")
+		val initialDirPath = remember {
+			val savedPath = viewModel.configManager.getAppString("last_file_manager_directory", "")
+			if (savedPath.isNotEmpty()) {
+				savedPath
+			} else {
+				android.os.Environment.getExternalStorageDirectory().absolutePath
+			}
+		}
+		FileManagerDialog(
+			supportedExtensions = extensions,
+			initialDirectory = java.io.File(initialDirPath),
+			onDirectoryChanged = { dir ->
+				scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+					viewModel.configManager.setAppString("last_file_manager_directory", dir.absolutePath)
+					viewModel.configManager.flush()
+				}
+			},
+			onFileSelected = { file ->
+				showFileManagerForImport = false
+				val uri = Uri.fromFile(file)
+				scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+					if (viewModel.importSettingsFromUri(context, uri)) {
+						launch(kotlinx.coroutines.Dispatchers.Main) {
+							android.widget.Toast.makeText(context, "Settings imported", android.widget.Toast.LENGTH_SHORT).show()
+						}
+					} else {
+						launch(kotlinx.coroutines.Dispatchers.Main) {
+							android.widget.Toast.makeText(context, "Failed to import settings", android.widget.Toast.LENGTH_SHORT).show()
+						}
+					}
+				}
+			},
+			onDismiss = { showFileManagerForImport = false }
 		)
 	}
 	} // end outer Box

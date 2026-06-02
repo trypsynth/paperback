@@ -15,10 +15,13 @@ import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
+import androidx.compose.ui.semantics.Role
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreenTopBar(
 	state: MainScreenUiState,
@@ -37,7 +40,9 @@ fun MainScreenTopBar(
 	onDocumentInfoOpen: () -> Unit,
 	onSettingsOpen: () -> Unit,
 	onSleepTimerOpen: () -> Unit,
-	onElementsOpen: () -> Unit
+	onElementsOpen: () -> Unit,
+	onExportSettings: () -> Unit,
+	onImportSettings: () -> Unit
 ) {
 	var moreOptionsExpanded by remember { mutableStateOf(false) }
 	Column(
@@ -66,11 +71,60 @@ fun MainScreenTopBar(
 			verticalAlignment = Alignment.Top
 		) {
 			Column(horizontalAlignment = Alignment.Start, modifier = Modifier.semantics { isTraversalGroup = true }) {
-				Button(
-					onClick = onOpenBook,
-					modifier = Modifier.semantics { traversalIndex = 1f }
-				) {
-					Text("Open Book")
+				var openBookMenuExpanded by remember { mutableStateOf(false) }
+				Box {
+					Surface(
+						shape = ButtonDefaults.shape,
+						color = MaterialTheme.colorScheme.primary,
+						contentColor = MaterialTheme.colorScheme.onPrimary,
+						modifier = Modifier
+							.combinedClickable(
+								role = Role.Button,
+								onClick = onOpenBook,
+								onLongClick = { openBookMenuExpanded = true },
+								onLongClickLabel = "show import and export options"
+							)
+							.semantics {
+								traversalIndex = 1f
+								customActions = listOf(
+									CustomAccessibilityAction("Import Document Data") {
+										onImportSettings()
+										true
+									},
+									CustomAccessibilityAction("Export Document Data") {
+										onExportSettings()
+										true
+									}
+								)
+							}
+					) {
+						Row(
+							modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp),
+							horizontalArrangement = Arrangement.Center,
+							verticalAlignment = Alignment.CenterVertically
+						) {
+							Text("Open Book", fontWeight = FontWeight.Medium)
+						}
+					}
+					DropdownMenu(
+						expanded = openBookMenuExpanded,
+						onDismissRequest = { openBookMenuExpanded = false }
+					) {
+						DropdownMenuItem(
+							text = { Text("Import Document Data") },
+							onClick = {
+								openBookMenuExpanded = false
+								onImportSettings()
+							}
+						)
+						DropdownMenuItem(
+							text = { Text("Export Document Data") },
+							onClick = {
+								openBookMenuExpanded = false
+								onExportSettings()
+							}
+						)
+					}
 				}
 			}
 			if (state is MainScreenUiState.Success && state.tabs.isNotEmpty()) {
