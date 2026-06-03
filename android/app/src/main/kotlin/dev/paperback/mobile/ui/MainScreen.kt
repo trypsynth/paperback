@@ -69,7 +69,49 @@ fun MainScreen(
 	val activeSearchQuery by viewModel.activeSearchQuery.collectAsStateWithLifecycle()
 	val activeSearchOptions by viewModel.activeSearchOptions.collectAsStateWithLifecycle()
 	var expandedTocIndices by remember { mutableStateOf(setOf<Int>()) }
+	var activeTocIndex by remember { mutableStateOf<Int?>(null) }
 	var isTextMode by remember { mutableStateOf(false) }
+
+	LaunchedEffect(tocSheetOpen) {
+		if (tocSheetOpen) {
+			val stateValue = viewModel.uiState.value
+			if (stateValue is MainScreenUiState.Success) {
+				val tab = stateValue.activeTab
+				if (tab != null) {
+					val toc = tab.toc
+					if (toc.isNotEmpty()) {
+						var activeIndex = 0
+						var bestDistance = Long.MAX_VALUE
+						val currentPos = viewModel.ttsPosition.value
+
+						for (i in toc.indices) {
+							if (toc[i].position <= currentPos) {
+								val distance = currentPos - toc[i].position
+								if (distance < bestDistance) {
+									bestDistance = distance
+									activeIndex = i
+								}
+							}
+						}
+						activeTocIndex = activeIndex
+
+						val toExpand = mutableSetOf<Int>()
+						var currentLevel = toc[activeIndex].level
+						for (i in activeIndex - 1 downTo 0) {
+							if (toc[i].level < currentLevel) {
+								toExpand.add(i)
+								currentLevel = toc[i].level
+								if (currentLevel == 0) break
+							}
+						}
+						expandedTocIndices = expandedTocIndices + toExpand
+					}
+				}
+			}
+		} else {
+			activeTocIndex = null
+		}
+	}
 
 	LaunchedEffect(Unit) {
 		viewModel.performSearchEvent.collect { forward ->
@@ -477,6 +519,7 @@ fun MainScreen(
 							TocDialog(
 								toc = docState.toc,
 								expandedTocIndices = expandedTocIndices,
+								activeTocIndex = activeTocIndex,
 								onToggleExpand = { originalIndex ->
 									expandedTocIndices = if (expandedTocIndices.contains(originalIndex)) {
 										expandedTocIndices - originalIndex

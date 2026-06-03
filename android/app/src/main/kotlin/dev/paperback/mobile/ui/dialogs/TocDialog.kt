@@ -4,12 +4,16 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -26,12 +30,15 @@ import uniffi.paperback.TocEntry
 fun TocDialog(
 	toc: List<TocEntry>,
 	expandedTocIndices: Set<Int>,
+	activeTocIndex: Int?,
 	onToggleExpand: (Int) -> Unit,
 	onItemClick: (TocEntry) -> Unit,
 	onDismiss: () -> Unit
 ) {
 	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 	val scope = rememberCoroutineScope()
+	val listState = rememberLazyListState()
+	val focusRequester = remember { FocusRequester() }
 	val visibleToc = remember(toc, expandedTocIndices) {
 		val result = mutableListOf<Pair<Int, TocEntry>>()
 		var skipLevelGreaterThan = Int.MAX_VALUE
@@ -49,13 +56,28 @@ fun TocDialog(
 		}
 		result
 	}
+
+	LaunchedEffect(activeTocIndex) {
+		if (activeTocIndex != null) {
+			val visibleIndex = visibleToc.indexOfFirst { it.first == activeTocIndex }
+			if (visibleIndex != -1) {
+				listState.scrollToItem(visibleIndex + 1)
+				try {
+					focusRequester.requestFocus()
+				} catch (e: Exception) {
+					// Ignore if not attached
+				}
+			}
+		}
+	}
+
 	ModalBottomSheet(
 		onDismissRequest = onDismiss,
 		sheetState = sheetState,
 		dragHandle = null,
 		modifier = Modifier.semantics { paneTitle = "Table of Contents" }
 	) {
-		LazyColumn(contentPadding = PaddingValues(bottom = 32.dp)) {
+		LazyColumn(state = listState, contentPadding = PaddingValues(bottom = 32.dp)) {
 			item {
 				Text(
 					text = "Table of Contents",
@@ -67,10 +89,12 @@ fun TocDialog(
 				val (originalIndex, item) = visibleToc[i]
 				val hasChildren = originalIndex + 1 < toc.size && toc[originalIndex + 1].level > item.level
 				val isExpanded = expandedTocIndices.contains(originalIndex)
+				val isActive = originalIndex == activeTocIndex
 				val paddingLeft = (16 + (item.level * 16)).dp
 				Row(
 					modifier = Modifier
 						.fillMaxWidth()
+						.then(if (isActive) Modifier.focusRequester(focusRequester) else Modifier)
 						.clickable(onClickLabel = "go to chapter") {
 							scope.launch {
 								sheetState.hide()
@@ -112,7 +136,8 @@ fun TocDialog(
 					}
 					Text(
 						text = "${item.title}, Level ${item.level + 1}",
-						style = MaterialTheme.typography.bodyLarge,
+						style = if (isActive) MaterialTheme.typography.titleMedium else MaterialTheme.typography.bodyLarge,
+						color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
 						modifier = Modifier.weight(1f).padding(start = 8.dp)
 					)
 				}
