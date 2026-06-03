@@ -1,10 +1,6 @@
 import SwiftUI
 import UIKit
 
-extension Notification.Name {
-	static let pbMagicTap = Notification.Name("dev.paperback.magicTap")
-}
-
 class AppDelegate: NSObject, UIApplicationDelegate {
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
 		application.beginReceivingRemoteControlEvents()
@@ -23,17 +19,10 @@ class SceneDelegate: NSObject, UIWindowSceneDelegate {
 
 	func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options: UIScene.ConnectionOptions) {
 		guard let windowScene = scene as? UIWindowScene else { return }
-		let window = MagicTapWindow(windowScene: windowScene)
+		let window = UIWindow(windowScene: windowScene)
 		window.rootViewController = UIHostingController(rootView: ContentView())
 		self.window = window
 		window.makeKeyAndVisible()
-	}
-}
-
-class MagicTapWindow: UIWindow {
-	override func accessibilityPerformMagicTap() -> Bool {
-		NotificationCenter.default.post(name: .pbMagicTap, object: nil)
-		return true
 	}
 }
 

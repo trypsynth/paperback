@@ -128,13 +128,6 @@ final class AppViewModel: ObservableObject {
 				self?.configManager.flush()
 			}
 			.store(in: &cancellables)
-		NotificationCenter.default.publisher(for: .pbMagicTap)
-			.sink { [weak self] _ in
-				Task { @MainActor [weak self] in
-					self?.togglePlayPause()
-				}
-			}
-			.store(in: &cancellables)
 	}
 
 	// MARK: - Document management
@@ -253,8 +246,10 @@ final class AppViewModel: ObservableObject {
 		if speak {
 			ttsManager.speak(seg.text)
 			prefetchAdjacentSegments(around: seg.startPos)
-		} else if announce {
-			announceNavigationCue(seg.text)
+		} else {
+			// Discard any paused buffer so pressing play starts at the new position.
+			if ttsManager.isPaused { ttsManager.stop() }
+			if announce { announceNavigationCue(seg.text) }
 		}
 		return true
 	}
@@ -274,8 +269,10 @@ final class AppViewModel: ObservableObject {
 		if speak {
 			ttsManager.speak(seg.text)
 			prefetchAdjacentSegments(around: seg.startPos)
-		} else if announce {
-			announceNavigationCue(seg.text)
+		} else {
+			// Discard any paused buffer so pressing play starts at the new position.
+			if ttsManager.isPaused { ttsManager.stop() }
+			if announce { announceNavigationCue(seg.text) }
 		}
 		return true
 	}
