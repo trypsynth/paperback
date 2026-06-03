@@ -106,14 +106,25 @@
 				A1A1A1A1A1A1A1A1A1A10010 /* ContentView.swift */,
 				A2A2A2A2A2A2A2A2A2A20001 /* AppViewModel.swift */,
 				A2A2A2A2A2A2A2A2A2A20002 /* DocumentTab.swift */,
-				A2A2A2A2A2A2A2A2A2A20003 /* TtsManager.swift */,
 				A2A2A2A2A2A2A2A2A2A20004 /* ReaderView.swift */,
 				A2A2A2A2A2A2A2A2A2A20005 /* EmptyStateView.swift */,
-				A2A2A2A2A2A2A2A2A2A20006 /* TtsModeView.swift */,
 				A2A2A2A2A2A2A2A2A2A20007 /* TextModeView.swift */,
-				A2A2A2A2A2A2A2A2A2A20008 /* TtsControlBar.swift */,
 				A2A2A2A2A2A2A2A2A2A20009 /* SearchControlBar.swift */,
 				A2A2A2A2A2A2A2A2A2A2000B /* DocumentMenu.swift */,
+				A2A2A2A2A2A2A2A2A2A20017 /* AccessibilityHelpers.swift */,
+				A2A2A2A2A2A2A2A2A2A20019 /* TabStripView.swift */,
+				B1B1B1B1B1B1B1B1B1B10001 /* Sheets */,
+				B1B1B1B1B1B1B1B1B1B10002 /* TTS */,
+				A5A5A5A5A5A5A5A5A5A50001 /* PaperbackBridgingHeader.h */,
+				A1A1A1A1A1A1A1A1A1A10011 /* Assets.xcassets */,
+				A4A4A4A4A4A4A4A4A4A40005 /* Generated */,
+			);
+			path = Paperback;
+			sourceTree = "<group>";
+		};
+		B1B1B1B1B1B1B1B1B1B10001 /* Sheets */ = {
+			isa = PBXGroup;
+			children = (
 				A2A2A2A2A2A2A2A2A2A2000C /* TocSheet.swift */,
 				A2A2A2A2A2A2A2A2A2A2000D /* FindSheet.swift */,
 				A2A2A2A2A2A2A2A2A2A2000E /* GoToSheet.swift */,
@@ -125,13 +136,18 @@
 				A2A2A2A2A2A2A2A2A2A20014 /* ElementsSheet.swift */,
 				A2A2A2A2A2A2A2A2A2A20015 /* PasswordSheet.swift */,
 				A2A2A2A2A2A2A2A2A2A20016 /* TtsConfigSheet.swift */,
-				A2A2A2A2A2A2A2A2A2A20017 /* AccessibilityHelpers.swift */,
-				A2A2A2A2A2A2A2A2A2A20019 /* TabStripView.swift */,
-				A5A5A5A5A5A5A5A5A5A50001 /* PaperbackBridgingHeader.h */,
-				A1A1A1A1A1A1A1A1A1A10011 /* Assets.xcassets */,
-				A4A4A4A4A4A4A4A4A4A40005 /* Generated */,
 			);
-			path = Paperback;
+			path = Sheets;
+			sourceTree = "<group>";
+		};
+		B1B1B1B1B1B1B1B1B1B10002 /* TTS */ = {
+			isa = PBXGroup;
+			children = (
+				A2A2A2A2A2A2A2A2A2A20003 /* TtsManager.swift */,
+				A2A2A2A2A2A2A2A2A2A20006 /* TtsModeView.swift */,
+				A2A2A2A2A2A2A2A2A2A20008 /* TtsControlBar.swift */,
+			);
+			path = TTS;
 			sourceTree = "<group>";
 		};
 		A4A4A4A4A4A4A4A4A4A40005 /* Generated */ = {
