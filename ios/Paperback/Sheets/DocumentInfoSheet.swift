@@ -9,6 +9,7 @@ struct DocumentInfoSheet: View {
 			Text("Document Info")
 				.font(.headline)
 				.padding(.vertical, 16)
+				.accessibilityAddTraits(.isHeader)
 			Divider()
 			ScrollView {
 				VStack(spacing: 0) {
@@ -32,7 +33,7 @@ struct DocumentInfoSheet: View {
 						Divider().padding(.leading, 16)
 						infoRow("Characters", value: stats.charCount.formatted())
 						Divider().padding(.leading, 16)
-						infoRow("Characters (no spaces)", value: stats.charCountNoWhitespace.formatted())
+						infoRow("Characters (excluding spaces)", value: stats.charCountNoWhitespace.formatted())
 					} else {
 						infoRow("Title", value: viewModel.activeTab?.title ?? "—")
 						Divider().padding(.leading, 16)
