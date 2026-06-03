@@ -128,6 +128,14 @@ final class AppViewModel: ObservableObject {
 				self?.configManager.flush()
 			}
 			.store(in: &cancellables)
+		NotificationCenter.default.publisher(for: .pbMagicTap)
+			.sink { [weak self] _ in
+				Task { @MainActor [weak self] in
+					self?.togglePlayPause()
+				}
+			}
+			.store(in: &cancellables)
+		updateNowPlaying()
 	}
 
 	// MARK: - Document management
