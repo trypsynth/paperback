@@ -10,7 +10,7 @@ repository.workspace = true
 [dependencies]
 anyhow = { workspace = true }
 base64 = { workspace = true }
-bitflags = "2.11.1"
+bitflags = "2.12.1"
 live-region = "0.1.4"
 paperback-core = { path = "../paperback-core" }
 ship-shape = { version = "0.1.2", features = ["ui"] }

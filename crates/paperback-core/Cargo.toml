@@ -15,7 +15,7 @@ crate-type = ["cdylib", "rlib", "staticlib"]
 [dependencies]
 anyhow = { workspace = true }
 base64 = { workspace = true }
-bitflags = "2.11.1"
+bitflags = "2.12.1"
 cfb = "0.14.0"
 ego-tree = "0.11.0"
 encoding_rs = "0.8.35"
