@@ -25,7 +25,6 @@
 		A3A3A3A3A3A3A3A3A3A3000E /* GoToSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A2000E /* GoToSheet.swift */; };
 		A3A3A3A3A3A3A3A3A3A3000F /* SettingsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A2000F /* SettingsSheet.swift */; };
 		A3A3A3A3A3A3A3A3A3A30010 /* RecentDocumentsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20010 /* RecentDocumentsSheet.swift */; };
-		A3A3A3A3A3A3A3A3A3A30011 /* WordCountSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20011 /* WordCountSheet.swift */; };
 		A3A3A3A3A3A3A3A3A3A30012 /* DocumentInfoSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20012 /* DocumentInfoSheet.swift */; };
 		A3A3A3A3A3A3A3A3A3A30013 /* SleepTimerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20013 /* SleepTimerSheet.swift */; };
 		A3A3A3A3A3A3A3A3A3A30014 /* ElementsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20014 /* ElementsSheet.swift */; };
@@ -57,7 +56,6 @@
 		A2A2A2A2A2A2A2A2A2A2000E /* GoToSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoToSheet.swift; sourceTree = "<group>"; };
 		A2A2A2A2A2A2A2A2A2A2000F /* SettingsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSheet.swift; sourceTree = "<group>"; };
 		A2A2A2A2A2A2A2A2A2A20010 /* RecentDocumentsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentDocumentsSheet.swift; sourceTree = "<group>"; };
-		A2A2A2A2A2A2A2A2A2A20011 /* WordCountSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WordCountSheet.swift; sourceTree = "<group>"; };
 		A2A2A2A2A2A2A2A2A2A20012 /* DocumentInfoSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentInfoSheet.swift; sourceTree = "<group>"; };
 		A2A2A2A2A2A2A2A2A2A20013 /* SleepTimerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepTimerSheet.swift; sourceTree = "<group>"; };
 		A2A2A2A2A2A2A2A2A2A20014 /* ElementsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementsSheet.swift; sourceTree = "<group>"; };
@@ -130,8 +128,7 @@
 				A2A2A2A2A2A2A2A2A2A2000E /* GoToSheet.swift */,
 				A2A2A2A2A2A2A2A2A2A2000F /* SettingsSheet.swift */,
 				A2A2A2A2A2A2A2A2A2A20010 /* RecentDocumentsSheet.swift */,
-				A2A2A2A2A2A2A2A2A2A20011 /* WordCountSheet.swift */,
-				A2A2A2A2A2A2A2A2A2A20012 /* DocumentInfoSheet.swift */,
+					A2A2A2A2A2A2A2A2A2A20012 /* DocumentInfoSheet.swift */,
 				A2A2A2A2A2A2A2A2A2A20013 /* SleepTimerSheet.swift */,
 				A2A2A2A2A2A2A2A2A2A20014 /* ElementsSheet.swift */,
 				A2A2A2A2A2A2A2A2A2A20015 /* PasswordSheet.swift */,
@@ -244,7 +241,6 @@
 				A3A3A3A3A3A3A3A3A3A3000E /* GoToSheet.swift in Sources */,
 				A3A3A3A3A3A3A3A3A3A3000F /* SettingsSheet.swift in Sources */,
 				A3A3A3A3A3A3A3A3A3A30010 /* RecentDocumentsSheet.swift in Sources */,
-				A3A3A3A3A3A3A3A3A3A30011 /* WordCountSheet.swift in Sources */,
 				A3A3A3A3A3A3A3A3A3A30012 /* DocumentInfoSheet.swift in Sources */,
 				A3A3A3A3A3A3A3A3A3A30013 /* SleepTimerSheet.swift in Sources */,
 				A3A3A3A3A3A3A3A3A3A30014 /* ElementsSheet.swift in Sources */,
