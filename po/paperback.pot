@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-05-18 20:49-0600\n"
+"POT-Creation-Date: 2026-06-03 18:57+0530\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -251,6 +251,9 @@ msgstr ""
 msgid "Check for &updates on startup"
 msgstr ""
 
+msgid "Customize &Window Hotkey..."
+msgstr ""
+
 msgid "&Reading speed (words per minute):"
 msgstr ""
 
@@ -359,6 +362,27 @@ msgstr ""
 msgid "Strikethrough"
 msgstr ""
 
+msgid "Window Hotkey"
+msgstr ""
+
+msgid "&Ctrl"
+msgstr ""
+
+msgid "&Alt"
+msgstr ""
+
+msgid "&Shift"
+msgstr ""
+
+msgid "&Win"
+msgstr ""
+
+msgid "&Key:"
+msgstr ""
+
+msgid "Space"
+msgstr ""
+
 msgid "Sleep Timer"
 msgstr ""
 
@@ -405,6 +429,13 @@ msgid "Word Count"
 msgstr ""
 
 msgid "File not found: {}"
+msgstr ""
+
+msgid ""
+"A .paperback file was found for this document. Would you like to import it?"
+msgstr ""
+
+msgid "Import document data"
 msgstr ""
 
 msgid "Password is required."

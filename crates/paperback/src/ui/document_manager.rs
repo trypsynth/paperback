@@ -77,14 +77,18 @@ impl DocumentManager {
 	}
 
 	pub fn open_file(&mut self, self_rc: &Rc<Mutex<Self>>, path: &Path) -> bool {
-		self.open_file_impl(self_rc, path, true)
+		self.open_file_impl(self_rc, path, true, false)
+	}
+
+	pub fn open_file_restore(&mut self, self_rc: &Rc<Mutex<Self>>, path: &Path) -> bool {
+		self.open_file_impl(self_rc, path, true, true)
 	}
 
 	pub fn open_help_file(&mut self, self_rc: &Rc<Mutex<Self>>, path: &Path) -> bool {
-		self.open_file_impl(self_rc, path, false)
+		self.open_file_impl(self_rc, path, false, false)
 	}
 
-	fn open_file_impl(&mut self, self_rc: &Rc<Mutex<Self>>, path: &Path, track: bool) -> bool {
+	fn open_file_impl(&mut self, self_rc: &Rc<Mutex<Self>>, path: &Path, track: bool, is_restore: bool) -> bool {
 		if !path.exists() {
 			let template = t("File not found: {}");
 			let message = template.replace("{}", &path.to_string_lossy());
@@ -95,11 +99,24 @@ impl DocumentManager {
 			self.notebook.set_selection(index);
 			return true;
 		}
+
+		let import_path = path.with_extension("paperback");
+		if !is_restore && import_path.exists() {
+			let message = t("A .paperback file was found for this document. Would you like to import it?");
+			let title = t("Import document data");
+			let dialog = MessageDialog::builder(&self.notebook, &message, &title)
+				.with_style(MessageDialogStyle::YesNo | MessageDialogStyle::IconQuestion | MessageDialogStyle::Centre)
+				.build();
+			if dialog.show_modal() == wxdragon::id::ID_YES {
+				let config = self.config.lock().unwrap();
+				config.import_settings_from_file(&path.to_string_lossy(), import_path.to_str().unwrap());
+			}
+		}
+
 		let (password, forced_extension) = {
 			let config = self.config.lock().unwrap();
 			let path_str = path.to_string_lossy();
 			config.refresh_document_hash(&path_str);
-			config.import_document_settings(&path_str);
 			let forced_extension = config.get_document_format(&path_str);
 			let password = config.get_document_password(&path_str);
 			drop(config);

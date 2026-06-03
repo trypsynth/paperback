@@ -355,7 +355,7 @@ impl MainWindow {
 				if !ensure_parser_ready_for_path(&frame, path, &config) {
 					continue;
 				}
-				let _ = doc_manager.lock().unwrap().open_file(&doc_manager, path);
+				let _ = doc_manager.lock().unwrap().open_file_restore(&doc_manager, path);
 			}
 			let mut target_idx = pre_restore_active;
 			if target_idx.is_none() && !active_path.is_empty() {
