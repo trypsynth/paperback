@@ -130,6 +130,27 @@ class MainScreenViewModel(
 	private val _showPermissionRationale = MutableStateFlow(false)
 	val showPermissionRationale = _showPermissionRationale.asStateFlow()
 
+	private val _importPromptPath = MutableStateFlow<String?>(null)
+	val importPromptPath: StateFlow<String?> = _importPromptPath
+
+	fun confirmImportSettings() {
+		val path = _importPromptPath.value ?: return
+		config.importDocumentSettings(path)
+
+		val state = uiState.value as? MainScreenUiState.Success
+		val tab = state?.activeTab
+		if (tab != null) {
+			val savedPosition = config.getDocumentPosition(tab.documentUri)
+			updateTtsPosition(savedPosition)
+			refreshSegmentPreview()
+		}
+		_importPromptPath.value = null
+	}
+
+	fun cancelImportSettings() {
+		_importPromptPath.value = null
+	}
+
 	init {
 		ttsManager.onUtteranceCompleted = {
 			playNextContinuousSegment()
@@ -150,7 +171,7 @@ class MainScreenViewModel(
 			if (openedUris.isNotEmpty()) {
 				val restoredTabs = mutableListOf<DocumentTabState>()
 				for (uriString in openedUris) {
-					val tab = prepareDocumentTabIO(Uri.parse(uriString))
+					val tab = prepareDocumentTabIO(Uri.parse(uriString), isRestore = true)
 					if (tab != null) {
 						restoredTabs.add(tab)
 					}
@@ -363,7 +384,7 @@ class MainScreenViewModel(
 		}.start()
 	}
 
-	private suspend fun prepareDocumentTabIO(uri: Uri, providedPassword: String? = null): DocumentTabState? =
+	private suspend fun prepareDocumentTabIO(uri: Uri, providedPassword: String? = null, isRestore: Boolean = false): DocumentTabState? =
 		withContext(Dispatchers.IO) {
 			try {
 				val uriString = uri.toString()
@@ -394,6 +415,14 @@ class MainScreenViewModel(
 					val file = File(absolutePath)
 					displayName = file.name
 					config.associateUriWithLocalFile(uriString, absolutePath)
+				}
+
+				val file = File(absolutePath)
+				val nameWithoutExtension = file.nameWithoutExtension
+				val paperbackPath = File(file.parentFile, "$nameWithoutExtension.paperback").absolutePath
+
+				if (!isRestore && File(paperbackPath).exists()) {
+					_importPromptPath.value = absolutePath
 				}
 
 				val docKey = config.getDocKey(uriString)
@@ -645,6 +674,80 @@ class MainScreenViewModel(
 
 	fun resumeTts() {
 		speakCurrentSegment()
+	}
+
+	fun exportCurrentSettings(): Boolean {
+		val state = uiState.value as? MainScreenUiState.Success ?: return false
+		val tab = state.activeTab ?: return false
+		val docUri = tab.documentUri
+		if (docUri.startsWith("content://")) return false
+		val absolutePath = Uri.parse(docUri).path ?: docUri
+		val file = File(absolutePath)
+		val nameWithoutExtension = file.nameWithoutExtension
+		val paperbackPath = File(file.parentFile, "$nameWithoutExtension.paperback").absolutePath
+		return try {
+			config.exportDocumentSettings(absolutePath, paperbackPath)
+			true
+		} catch (e: Exception) {
+			false
+		}
+	}
+
+	fun exportSettingsToUri(context: android.content.Context, destUri: android.net.Uri): Boolean {
+		val state = uiState.value as? MainScreenUiState.Success ?: return false
+		val tab = state.activeTab ?: return false
+		val docUri = tab.documentUri
+		val absolutePath = if (docUri.startsWith("content://")) {
+			docUri
+		} else {
+			Uri.parse(docUri).path ?: docUri
+		}
+
+		val tempFile = java.io.File(context.cacheDir, "temp_export.paperback")
+		return try {
+			config.exportDocumentSettings(absolutePath, tempFile.absolutePath)
+			context.contentResolver.openOutputStream(destUri)?.use { out ->
+				tempFile.inputStream().use { input ->
+					input.copyTo(out)
+				}
+			}
+			true
+		} catch (e: Exception) {
+			false
+		} finally {
+			if (tempFile.exists()) tempFile.delete()
+		}
+	}
+
+	fun importSettingsFromUri(context: android.content.Context, sourceUri: android.net.Uri): Boolean {
+		val state = uiState.value as? MainScreenUiState.Success ?: return false
+		val tab = state.activeTab ?: return false
+		val docUri = tab.documentUri
+		val absolutePath = if (docUri.startsWith("content://")) {
+			docUri
+		} else {
+			Uri.parse(docUri).path ?: docUri
+		}
+
+		val tempFile = java.io.File(context.cacheDir, "temp_import.paperback")
+		return try {
+			context.contentResolver.openInputStream(sourceUri)?.use { input ->
+				tempFile.outputStream().use { out ->
+					input.copyTo(out)
+				}
+			}
+			config.importSettingsFromFile(absolutePath, tempFile.absolutePath)
+
+			val savedPosition = config.getDocumentPosition(docUri)
+			if (savedPosition > 0L) {
+				updateTtsPosition(savedPosition)
+			}
+			true
+		} catch (e: Exception) {
+			false
+		} finally {
+			if (tempFile.exists()) tempFile.delete()
+		}
 	}
 
 	private fun updateTtsMetadata() {

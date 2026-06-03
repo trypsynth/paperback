@@ -15,7 +15,7 @@ crate-type = ["cdylib", "rlib", "staticlib"]
 [dependencies]
 anyhow = { workspace = true }
 base64 = { workspace = true }
-bitflags = "2.11.1"
+bitflags = "2.12.1"
 cfb = "0.14.0"
 ego-tree = "0.11.0"
 encoding_rs = "0.8.35"
@@ -25,7 +25,7 @@ pdfium = "0.10.4"
 percent-encoding = "2.3.2"
 pulldown-cmark = { version = "0.13.4", default-features = false, features = ["html"] }
 regex = "1.12.3"
-roman = "0.1"
+roman = "0.2"
 roxmltree = "0.21.1"
 rtf-parser = "0.4.2"
 scraper = "0.27.0"

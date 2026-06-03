@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -62,10 +63,55 @@ fun MainScreen(
 	var useInAppFileBrowser by remember {
 		mutableStateOf(viewModel.configManager.getAppBool("use_in_app_file_browser", false))
 	}
+	var swipeUpMovesForward by remember {
+		mutableStateOf(viewModel.configManager.getAppBool("swipe_up_moves_forward", true))
+	}
 	val activeSearchQuery by viewModel.activeSearchQuery.collectAsStateWithLifecycle()
 	val activeSearchOptions by viewModel.activeSearchOptions.collectAsStateWithLifecycle()
 	var expandedTocIndices by remember { mutableStateOf(setOf<Int>()) }
+	var activeTocIndex by remember { mutableStateOf<Int?>(null) }
 	var isTextMode by remember { mutableStateOf(false) }
+
+	LaunchedEffect(tocSheetOpen) {
+		if (tocSheetOpen) {
+			val stateValue = viewModel.uiState.value
+			if (stateValue is MainScreenUiState.Success) {
+				val tab = stateValue.activeTab
+				if (tab != null) {
+					val toc = tab.toc
+					if (toc.isNotEmpty()) {
+						var activeIndex = 0
+						var bestDistance = Long.MAX_VALUE
+						val currentPos = viewModel.ttsPosition.value
+
+						for (i in toc.indices) {
+							if (toc[i].position <= currentPos) {
+								val distance = currentPos - toc[i].position
+								if (distance < bestDistance) {
+									bestDistance = distance
+									activeIndex = i
+								}
+							}
+						}
+						activeTocIndex = activeIndex
+
+						val toExpand = mutableSetOf<Int>()
+						var currentLevel = toc[activeIndex].level
+						for (i in activeIndex - 1 downTo 0) {
+							if (toc[i].level < currentLevel) {
+								toExpand.add(i)
+								currentLevel = toc[i].level
+								if (currentLevel == 0) break
+							}
+						}
+						expandedTocIndices = expandedTocIndices + toExpand
+					}
+				}
+			}
+		} else {
+			activeTocIndex = null
+		}
+	}
 
 	LaunchedEffect(Unit) {
 		viewModel.performSearchEvent.collect { forward ->
@@ -122,6 +168,7 @@ fun MainScreen(
 	val currentHeadings by viewModel.currentHeadings.collectAsStateWithLifecycle()
 	val currentLinks by viewModel.currentLinks.collectAsStateWithLifecycle()
 	val passwordPromptUri by viewModel.passwordPromptUri.collectAsStateWithLifecycle()
+	val importPromptPath by viewModel.importPromptPath.collectAsStateWithLifecycle()
 
 	val view = androidx.compose.ui.platform.LocalView.current
 	LaunchedEffect(Unit) {
@@ -185,6 +232,37 @@ fun MainScreen(
 	)
 
 	var showFileManager by remember { mutableStateOf(false) }
+	var showFileManagerForImport by remember { mutableStateOf(false) }
+
+	val importSettingsLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+		contract = androidx.activity.result.contract.ActivityResultContracts.OpenDocument(),
+		onResult = { uri ->
+			if (uri != null) {
+				scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+					val success = viewModel.importSettingsFromUri(context, uri)
+					val message = if (success) "Settings imported" else "Failed to import settings"
+					kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+						android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
+					}
+				}
+			}
+		}
+	)
+
+	val exportSettingsLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+		contract = androidx.activity.result.contract.ActivityResultContracts.CreateDocument("*/*"),
+		onResult = { uri ->
+			if (uri != null) {
+				scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+					val success = viewModel.exportSettingsToUri(context, uri)
+					val message = if (success) "Settings exported" else "Failed to export settings"
+					kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+						android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
+					}
+				}
+			}
+		}
+	)
 
 	Box(modifier = Modifier.fillMaxSize()) {
 	Scaffold(
@@ -216,7 +294,32 @@ fun MainScreen(
 				onDocumentInfoOpen = { viewModel.openDocumentInfoDialog() },
 				onSettingsOpen = { viewModel.openSettingsDialog() },
 				onSleepTimerOpen = { viewModel.openSleepTimerDialog() },
-				onElementsOpen = { viewModel.openElementsDialog() }
+				onElementsOpen = { viewModel.openElementsDialog() },
+				onExportSettings = {
+					val activeDocUri = (state as? MainScreenUiState.Success)?.activeTab?.documentUri
+					if (activeDocUri != null) {
+						if (activeDocUri.startsWith("content://")) {
+							exportSettingsLauncher.launch("document.paperback")
+						} else {
+							if (viewModel.exportCurrentSettings()) {
+								android.widget.Toast.makeText(context, "Settings exported", android.widget.Toast.LENGTH_SHORT).show()
+							} else {
+								android.widget.Toast.makeText(context, "Failed to export settings", android.widget.Toast.LENGTH_SHORT).show()
+							}
+						}
+					}
+				},
+				onImportSettings = {
+					if (useInAppFileBrowser) {
+						if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R && !android.os.Environment.isExternalStorageManager()) {
+							viewModel.setShowPermissionRationale(true)
+						} else {
+							showFileManagerForImport = true
+						}
+					} else {
+						importSettingsLauncher.launch(arrayOf("*/*"))
+					}
+				}
 			)
 		},
 		bottomBar = {
@@ -257,7 +360,8 @@ fun MainScreen(
 					onNextButton = { viewModel.playNextSegment(speak = isSpeaking) },
 					currentSegmentType = currentSegmentType,
 					supportedSegmentTypes = supportedSegmentTypes,
-					onSegmentTypeChange = { viewModel.setSegmentType(it) }
+					onSegmentTypeChange = { viewModel.setSegmentType(it) },
+					swipeUpMovesForward = swipeUpMovesForward
 				)
 			}
 		}
@@ -415,6 +519,7 @@ fun MainScreen(
 							TocDialog(
 								toc = docState.toc,
 								expandedTocIndices = expandedTocIndices,
+								activeTocIndex = activeTocIndex,
 								onToggleExpand = { originalIndex ->
 									expandedTocIndices = if (expandedTocIndices.contains(originalIndex)) {
 										expandedTocIndices - originalIndex
@@ -540,31 +645,7 @@ fun MainScreen(
 						SettingsDialog(
 							initialRestorePreviousDocuments = restorePreviousDocuments,
 							initialUseInAppFileBrowser = useInAppFileBrowser,
-							onSaveOptions = { restore, useInApp ->
-								restorePreviousDocuments = restore
-								useInAppFileBrowser = useInApp
-								viewModel.configManager.setAppBool("restore_previous_documents", restore)
-								viewModel.configManager.setAppBool("use_in_app_file_browser", useInApp)
-								viewModel.configManager.flush()
-								viewModel.closeSettingsDialog()
-							},
-							onOpenTtsConfig = {
-								viewModel.closeSettingsDialog()
-								ttsConfigDialogOpen = true
-							},
-							onDismiss = { viewModel.closeSettingsDialog() }
-						)
-					}
-					if (sleepTimerDialogOpen) {
-						SleepTimerDialog(
-							remainingSeconds = sleepTimerRemaining,
-							onSetTimer = { viewModel.setSleepTimer(it) },
-							onCancelTimer = { viewModel.cancelSleepTimer() },
-							onDismiss = { viewModel.closeSleepTimerDialog() }
-						)
-					}
-					if (ttsConfigDialogOpen) {
-						TtsConfigDialog(
+							initialSwipeUpMovesForward = swipeUpMovesForward,
 							engines = viewModel.ttsManager.getAvailableEngines(),
 							currentEngine = currentEngineName ?: viewModel.ttsManager.getDefaultEngine(),
 							voices = availableVoices,
@@ -578,7 +659,25 @@ fun MainScreen(
 							onPlaySample = {
 								viewModel.ttsManager.speak("This is a sample of the selected speech engine.", isSample = true)
 							},
-							onDismiss = { ttsConfigDialogOpen = false }
+							onSaveOptions = { restore, useInApp, swipeUpFwd ->
+								restorePreviousDocuments = restore
+								useInAppFileBrowser = useInApp
+								swipeUpMovesForward = swipeUpFwd
+								viewModel.configManager.setAppBool("restore_previous_documents", restore)
+								viewModel.configManager.setAppBool("use_in_app_file_browser", useInApp)
+								viewModel.configManager.setAppBool("swipe_up_moves_forward", swipeUpFwd)
+								viewModel.configManager.flush()
+								viewModel.closeSettingsDialog()
+							},
+							onDismiss = { viewModel.closeSettingsDialog() }
+						)
+					}
+					if (sleepTimerDialogOpen) {
+						SleepTimerDialog(
+							remainingSeconds = sleepTimerRemaining,
+							onSetTimer = { viewModel.setSleepTimer(it) },
+							onCancelTimer = { viewModel.cancelSleepTimer() },
+							onDismiss = { viewModel.closeSleepTimerDialog() }
 						)
 					}
 				}
@@ -603,6 +702,25 @@ fun MainScreen(
 		PasswordDialog(
 			onConfirm = { viewModel.submitPassword(it) },
 			onDismiss = { viewModel.cancelPasswordPrompt() }
+		)
+	}
+
+	if (importPromptPath != null) {
+		AlertDialog(
+			onDismissRequest = { viewModel.cancelImportSettings() },
+			modifier = Modifier.semantics { paneTitle = "Import document data" },
+			title = { Text("Import document data") },
+			text = { Text("A .paperback file was found for this document. Would you like to import it?") },
+			confirmButton = {
+				TextButton(onClick = { viewModel.confirmImportSettings() }) {
+					Text("Import")
+				}
+			},
+			dismissButton = {
+				TextButton(onClick = { viewModel.cancelImportSettings() }) {
+					Text("Cancel")
+				}
+			}
 		)
 	}
 
@@ -670,6 +788,44 @@ fun MainScreen(
 				viewModel.openDocument(Uri.fromFile(file))
 			},
 			onDismiss = { showFileManager = false }
+		)
+	}
+
+	if (showFileManagerForImport) {
+		val extensions = listOf("paperback")
+		val initialDirPath = remember {
+			val savedPath = viewModel.configManager.getAppString("last_file_manager_directory", "")
+			if (savedPath.isNotEmpty()) {
+				savedPath
+			} else {
+				android.os.Environment.getExternalStorageDirectory().absolutePath
+			}
+		}
+		FileManagerDialog(
+			supportedExtensions = extensions,
+			initialDirectory = java.io.File(initialDirPath),
+			onDirectoryChanged = { dir ->
+				scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+					viewModel.configManager.setAppString("last_file_manager_directory", dir.absolutePath)
+					viewModel.configManager.flush()
+				}
+			},
+			onFileSelected = { file ->
+				showFileManagerForImport = false
+				val uri = Uri.fromFile(file)
+				scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+					if (viewModel.importSettingsFromUri(context, uri)) {
+						launch(kotlinx.coroutines.Dispatchers.Main) {
+							android.widget.Toast.makeText(context, "Settings imported", android.widget.Toast.LENGTH_SHORT).show()
+						}
+					} else {
+						launch(kotlinx.coroutines.Dispatchers.Main) {
+							android.widget.Toast.makeText(context, "Failed to import settings", android.widget.Toast.LENGTH_SHORT).show()
+						}
+					}
+				}
+			},
+			onDismiss = { showFileManagerForImport = false }
 		)
 	}
 	} // end outer Box

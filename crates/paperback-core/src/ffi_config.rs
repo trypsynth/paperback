@@ -103,6 +103,18 @@ impl ConfigManagerFfi {
 		self.inner.lock().unwrap().add_find_history(&text, max_len as usize);
 	}
 
+	pub fn import_document_settings(&self, path: String) {
+		self.inner.lock().unwrap().import_document_settings(&path);
+	}
+
+	pub fn import_settings_from_file(&self, doc_path: String, import_path: String) {
+		self.inner.lock().unwrap().import_settings_from_file(&doc_path, &import_path);
+	}
+
+	pub fn export_document_settings(&self, doc_path: String, export_path: String) {
+		self.inner.lock().unwrap().export_document_settings(&doc_path, &export_path);
+	}
+
 	pub fn flush(&self) {
 		self.inner.lock().unwrap().flush();
 	}

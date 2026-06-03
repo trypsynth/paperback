@@ -924,9 +924,11 @@ impl ConfigManager {
 
 	/// Import document settings from a `.paperback` sidecar file if it exists.
 	pub fn import_document_settings(&self, path: &str) {
-		let import_path = format!("{path}.paperback");
-		if Path::new(&import_path).exists() {
-			self.import_settings_from_file(path, &import_path);
+		let import_path = std::path::Path::new(path).with_extension("paperback");
+		if let Some(import_path_str) = import_path.to_str() {
+			if import_path.exists() {
+				self.import_settings_from_file(path, import_path_str);
+			}
 		}
 	}
 
