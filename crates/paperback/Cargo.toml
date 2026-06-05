@@ -16,7 +16,7 @@ base64 = { workspace = true }
 bitflags = "2.12.1"
 live-region = "0.1.4"
 paperback-core = { path = "../paperback-core" }
-patois = "0.1.0"
+patois = "0.1.1"
 ship-shape = "0.1.4"
 toml = { workspace = true }
 wx-utils = "0.1.1"
