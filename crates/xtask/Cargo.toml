@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 flate2 = "1"
+serde_json = "1"
 tar = "0.4"
 ureq = "3"
 walkdir = "2.5.0"

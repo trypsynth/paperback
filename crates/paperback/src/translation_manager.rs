@@ -57,6 +57,9 @@ impl TranslationManager {
 			translations.add_catalog("paperback");
 		}
 		Translations::set_global(translations);
+		if let Some(langs_dir) = langs_directory() {
+			patois::init("paperback", &langs_dir, &self.current_language);
+		}
 		self.initialized = true;
 		true
 	}
@@ -81,6 +84,7 @@ impl TranslationManager {
 			translations.add_catalog("paperback");
 		}
 		Translations::set_global(translations);
+		patois::set_locale(language_code);
 
 		true
 	}
