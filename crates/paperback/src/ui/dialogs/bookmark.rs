@@ -10,7 +10,8 @@ use paperback_core::{
 	session::DocumentSession,
 	types::{BookmarkDisplayEntry, BookmarkFilterType},
 };
-use wxdragon::{prelude::*, translations::translate as t};
+use patois::t;
+use wxdragon::prelude::*;
 
 use super::show_note_entry_dialog;
 

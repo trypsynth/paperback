@@ -16,7 +16,8 @@ use paperback_core::{
 	parser::{build_file_filter_string, parser_supports_extension},
 	types::BookmarkFilterType,
 };
-use wxdragon::{prelude::*, timer::Timer, translations::translate as t};
+use patois::t;
+use wxdragon::{prelude::*, timer::Timer};
 
 #[cfg(not(target_os = "linux"))]
 use super::tray;

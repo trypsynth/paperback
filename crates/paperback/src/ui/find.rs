@@ -2,7 +2,8 @@ use std::{cell::Cell, rc::Rc, sync::Mutex};
 
 use bitflags::bitflags;
 use paperback_core::{config::ConfigManager, reader_core, util::text::display_len};
-use wxdragon::{prelude::*, translations::translate as t};
+use patois::t;
+use wxdragon::prelude::*;
 
 use super::document_manager::DocumentManager;
 

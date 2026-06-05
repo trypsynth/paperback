@@ -1,6 +1,7 @@
 use paperback_core::version;
+use patois::t;
 use wx_utils::AboutBoxBuilder;
-use wxdragon::{prelude::*, translations::translate as t};
+use wxdragon::prelude::*;
 
 pub fn show_about_dialog(parent: &Frame) {
 	AboutBoxBuilder::new(parent)

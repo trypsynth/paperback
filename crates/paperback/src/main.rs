@@ -1,6 +1,8 @@
 #![cfg_attr(not(test), windows_subsystem = "windows")]
 #![warn(clippy::all, clippy::nursery, clippy::pedantic)]
 
+patois::embed_domain!();
+
 mod config_ext;
 mod ipc;
 mod legacy_config;

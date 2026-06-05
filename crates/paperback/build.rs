@@ -114,21 +114,12 @@ fn build_translations() {
 	let workspace_dir = manifest_dir.parent().unwrap().parent().unwrap();
 	let po_dir = workspace_dir.join("po");
 	println!("cargo:rerun-if-changed={}", po_dir.display());
+	// Tell cargo to rerun if any previously-generated .mo changes (covers incremental rebuilds).
+	println!("cargo:rerun-if-changed={}", manifest_dir.join("locale").display());
 	if !po_dir.exists() {
 		return;
 	}
-	let target_dir = match target_profile_dir() {
-		Some(dir) => dir,
-		None => {
-			println!("cargo:warning=Could not determine target output directory for translations.");
-			return;
-		}
-	};
-	let langs_dir = target_dir.join("langs");
-	if let Err(err) = fs::create_dir_all(&langs_dir) {
-		println!("cargo:warning=Failed to create langs directory: {}", err);
-		return;
-	}
+	let locale_dir = manifest_dir.join("locale");
 	let po_files = match fs::read_dir(&po_dir) {
 		Ok(entries) => entries,
 		Err(err) => {
@@ -156,9 +147,9 @@ fn build_translations() {
 			None => continue,
 		};
 		println!("cargo:rerun-if-changed={}", path.display());
-		let output_dir = langs_dir.join(lang).join("LC_MESSAGES");
+		let output_dir = locale_dir.join(lang).join("LC_MESSAGES");
 		if let Err(err) = fs::create_dir_all(&output_dir) {
-			println!("cargo:warning=Failed to create translation output directory: {}", err);
+			println!("cargo:warning=Failed to create locale output directory: {}", err);
 			continue;
 		}
 		let output_path = output_dir.join("paperback.mo");
@@ -517,28 +508,8 @@ fn generate_app_bundle() {
 	if exe_path.exists() {
 		let _ = fs::copy(&exe_path, &bundle_exe);
 	}
-	// Copy readme.html and langs into Resources if they exist
 	let readme = target_dir.join("readme.html");
 	if readme.exists() {
 		let _ = fs::copy(&readme, bundle_dir.join("Resources/readme.html"));
 	}
-	let langs = target_dir.join("langs");
-	if langs.exists() {
-		let _ = copy_dir_recursive(&langs, &bundle_dir.join("Resources/langs"));
-	}
-}
-
-fn copy_dir_recursive(src: &Path, dst: &Path) -> io::Result<()> {
-	fs::create_dir_all(dst)?;
-	for entry in fs::read_dir(src)? {
-		let entry = entry?;
-		let src_path = entry.path();
-		let dst_path = dst.join(entry.file_name());
-		if src_path.is_dir() {
-			copy_dir_recursive(&src_path, &dst_path)?;
-		} else {
-			fs::copy(&src_path, &dst_path)?;
-		}
-	}
-	Ok(())
 }

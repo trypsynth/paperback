@@ -6,10 +6,8 @@ use gtk::{
 	glib::{Propagation, translate},
 	prelude::*,
 };
-use wxdragon::{
-	prelude::{Frame, WxWidget},
-	translations::translate as t,
-};
+use patois::t;
+use wxdragon::prelude::{Frame, WxWidget};
 
 const GDK_KEY_LEFT: u32 = 0xff51;
 const GDK_KEY_RIGHT: u32 = 0xff53;

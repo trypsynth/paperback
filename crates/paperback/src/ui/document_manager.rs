@@ -14,11 +14,11 @@ use paperback_core::{
 	parser::PASSWORD_REQUIRED_ERROR_PREFIX,
 	session::DocumentSession,
 };
+use patois::t;
 use wxdragon::{
 	color::Colour,
 	event::{EventType, WindowEventData},
 	prelude::*,
-	translations::translate as t,
 };
 
 use super::{

@@ -10,7 +10,8 @@ use std::{
 };
 
 use paperback_core::config::ConfigManager;
-use wxdragon::{prelude::*, translations::translate as t};
+use patois::t;
+use wxdragon::prelude::*;
 
 use super::MainWindow;
 use crate::{

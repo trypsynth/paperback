@@ -52,14 +52,13 @@ fn release() -> Result<(), Box<dyn Error>> {
 	let exe_name = if cfg!(windows) { "paperback.exe" } else { "paperback" };
 	let exe_path = target_dir.join(exe_name);
 	let readme_path = target_dir.join("readme.html");
-	let langs_path = target_dir.join("langs");
 	let sounds_path = target_dir.join("sounds");
 	let pdfium_dll_path = target_dir.join("pdfium.dll");
 	if !exe_path.exists() {
 		return Err("Executable not found".into());
 	}
-	println!("Packaging binaries, docs, and translations...");
-	build_zip_package(&target_dir, &exe_path, &readme_path, &langs_path, &sounds_path, &pdfium_dll_path)?;
+	println!("Packaging binary, docs, and sounds...");
+	build_zip_package(&target_dir, &exe_path, &readme_path, &sounds_path, &pdfium_dll_path)?;
 	if cfg!(windows) {
 		build_windows_installer(&target_dir)?;
 	}
@@ -356,7 +355,6 @@ fn build_zip_package(
 	target_dir: &Path,
 	exe_path: &Path,
 	readme_path: &Path,
-	langs_dir: &Path,
 	sounds_dir: &Path,
 	pdfium_dll_path: &Path,
 ) -> Result<(), Box<dyn Error>> {
@@ -386,21 +384,6 @@ fn build_zip_package(
 		io::copy(&mut f, &mut zip)?;
 	} else {
 		println!("Warning: readme.html not found, skipping.");
-	}
-	if langs_dir.exists() {
-		for entry in WalkDir::new(langs_dir) {
-			let entry = entry?;
-			let path = entry.path();
-			if path.is_file() {
-				let relative_path = path.strip_prefix(target_dir)?;
-				let name = relative_path.to_string_lossy().replace('\\', "/");
-				zip.start_file(name, options)?;
-				let mut f = File::open(path)?;
-				io::copy(&mut f, &mut zip)?;
-			}
-		}
-	} else {
-		println!("Warning: langs directory not found, skipping translations.");
 	}
 	if sounds_dir.exists() {
 		for entry in WalkDir::new(sounds_dir) {
