@@ -158,5 +158,8 @@ interface ConfigManagerFfi {
 	sequence<string> get_supported_extensions();
 	sequence<string> get_find_history();
 	void add_find_history(string text, i32 max_len);
+	void import_document_settings(string path);
+	void import_settings_from_file(string doc_path, string import_path);
+	void export_document_settings(string doc_path, string export_path);
 	void flush();
 };

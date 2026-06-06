@@ -60,6 +60,7 @@ fun TtsBottomBar(
 	currentSegmentType: SegmentTypeFfi,
 	supportedSegmentTypes: List<SegmentTypeFfi>,
 	onSegmentTypeChange: (SegmentTypeFfi) -> Unit,
+	swipeUpMovesForward: Boolean = true,
 	modifier: Modifier = Modifier
 ) {
 	var dropdownExpanded by remember { mutableStateOf(false) }
@@ -143,8 +144,8 @@ fun TtsBottomBar(
 							val current = SEEK_RANGE / 2
 							val newPos = targetValue.roundToInt().coerceIn(0, SEEK_RANGE)
 							when {
-								newPos > current -> onNext()
-								newPos < current -> onPrev()
+								newPos > current -> if (swipeUpMovesForward) onNext() else onPrev()
+								newPos < current -> if (swipeUpMovesForward) onPrev() else onNext()
 							}
 							true
 						}

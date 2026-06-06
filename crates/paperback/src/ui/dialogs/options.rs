@@ -6,7 +6,8 @@ use std::{
 };
 
 use paperback_core::config::{ConfigManager, HotkeyConfig, ReadabilityFont};
-use wxdragon::{prelude::*, translations::translate as t};
+use patois::t;
+use wxdragon::prelude::*;
 
 use super::DIALOG_PADDING;
 use crate::{config_ext::UpdateChannel, translation_manager::TranslationManager};

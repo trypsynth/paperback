@@ -1,7 +1,8 @@
 use std::{path::Path, rc::Rc, sync::Mutex};
 
 use paperback_core::{config::ConfigManager, types::DocumentListStatus};
-use wxdragon::{prelude::*, translations::translate as t};
+use patois::t;
+use wxdragon::prelude::*;
 
 const DIALOG_PADDING: i32 = 10;
 const RECENT_DOCS_LIST_WIDTH: i32 = 800;

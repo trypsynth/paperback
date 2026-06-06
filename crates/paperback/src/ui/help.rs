@@ -9,9 +9,10 @@ use std::{
 };
 
 use paperback_core::{config::ConfigManager, parser, version};
+use patois::t;
 use ship_shape::{UpdateChannel as ShipChannel, UpdaterConfig};
 use wx_utils::show_error;
-use wxdragon::{prelude::*, translations::translate as t};
+use wxdragon::prelude::*;
 
 use super::{dialogs, document_manager::DocumentManager};
 use crate::config_ext::UpdateChannel;

@@ -1,6 +1,7 @@
 use std::path::Path;
 
-use wxdragon::{prelude::*, translations::translate as t};
+use patois::t;
+use wxdragon::prelude::*;
 
 use super::DIALOG_PADDING;
 

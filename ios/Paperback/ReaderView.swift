@@ -50,8 +50,12 @@ struct ReaderView: View {
 		.sheet(isPresented: $viewModel.showRecents) {
 			RecentDocumentsSheet().environmentObject(viewModel)
 		}
-		.sheet(isPresented: $viewModel.showWordCount) {
-			WordCountSheet().environmentObject(viewModel)
+		.alert("Word Count", isPresented: $viewModel.showWordCount) {
+			Button("OK", role: .cancel) { }
+		} message: {
+			if let stats = viewModel.activeSession?.getStatsFfi() {
+				Text("This document contains \(stats.wordCount.formatted()) words.")
+			}
 		}
 		.sheet(isPresented: $viewModel.showDocumentInfo) {
 			DocumentInfoSheet().environmentObject(viewModel)

@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 import UIKit
+import MediaPlayer
 
 @MainActor
 final class AppViewModel: ObservableObject {
@@ -49,6 +50,7 @@ final class AppViewModel: ObservableObject {
 
 	// MARK: - Settings
 	@Published var restorePreviousDocuments = true
+	@Published var swipeUpMovesForward = true
 
 	// MARK: - Recents
 	@Published var recentDocuments: [RecentDocument] = []
@@ -61,6 +63,7 @@ final class AppViewModel: ObservableObject {
 		let configPath = configFilePath()
 		_ = configManager.initialize(configPath: configPath)
 		restorePreviousDocuments = configManager.getAppBool(key: "restore_previous_documents", defaultValue: true)
+		swipeUpMovesForward = configManager.getAppBool(key: "swipe_up_moves_forward", defaultValue: true)
 
 		let savedRate = configManager.getAppString(key: "tts_speech_rate", defaultValue: "")
 		if let r = Float(savedRate) { ttsManager.speechRate = r }
@@ -74,11 +77,26 @@ final class AppViewModel: ObservableObject {
 		loadRecentsFromConfig()
 		ttsManager.onUtteranceFinished = { [weak self] in
 			self?.playNextSegment()
+			self?.updateNowPlaying()
 		}
+		ttsManager.$isSpeaking
+			.dropFirst()
+			.sink { [weak self] _ in self?.updateNowPlaying() }
+			.store(in: &cancellables)
+		ttsManager.$isPaused
+			.dropFirst()
+			.sink { [weak self] _ in self?.updateNowPlaying() }
+			.store(in: &cancellables)
 		$restorePreviousDocuments
 			.dropFirst()
 			.sink { [weak self] value in
 				self?.configManager.setAppBool(key: "restore_previous_documents", value: value)
+			}
+			.store(in: &cancellables)
+		$swipeUpMovesForward
+			.dropFirst()
+			.sink { [weak self] value in
+				self?.configManager.setAppBool(key: "swipe_up_moves_forward", value: value)
 			}
 			.store(in: &cancellables)
 		ttsManager.$speechRate
@@ -99,6 +117,7 @@ final class AppViewModel: ObservableObject {
 				self?.configManager.setAppString(key: "tts_voice_identifier", value: value ?? "")
 			}
 			.store(in: &cancellables)
+		setupRemoteCommands()
 		if restorePreviousDocuments {
 			for path in configManager.getOpenedDocuments() {
 				tryRestoreDocument(path: path)
@@ -116,6 +135,7 @@ final class AppViewModel: ObservableObject {
 				}
 			}
 			.store(in: &cancellables)
+		updateNowPlaying()
 	}
 
 	// MARK: - Document management
@@ -150,6 +170,7 @@ final class AppViewModel: ObservableObject {
 			loadRecentsFromConfig()
 			loadSegment(for: tab)
 			saveBookmark(for: url, path: path)
+			updateNowPlaying()
 		} catch {
 			if scopeStarted { url.stopAccessingSecurityScopedResource() }
 			debugMessage = "Error opening '\(url.lastPathComponent)':\n\(error)\n\nPath: \(path)"
@@ -209,50 +230,59 @@ final class AppViewModel: ObservableObject {
 		} else {
 			playCurrentSegment()
 		}
+		updateNowPlaying()
 	}
 
 	func playCurrentSegment() {
 		guard !currentSegmentText.isEmpty else { return }
 		ttsManager.speak(currentSegmentText)
-		prefetchAdjacentSegment(after: ttsPosition)
+		prefetchAdjacentSegments(around: ttsPosition)
 	}
 
-	func playNextSegment(speak: Bool = true, announce: Bool = false) {
-		guard let tab = activeTab, let session = tab.session else { return }
+	@discardableResult
+	func playNextSegment(speak: Bool = true, announce: Bool = false) -> Bool {
+		guard let tab = activeTab, let session = tab.session else { return false }
 		let seg = session.getTextSegment(
 			position: ttsPosition,
 			segmentType: ffiSegmentType(currentSegmentType),
 			direction: .next
 		)
-		if seg.text.isEmpty { return }
+		if seg.text.isEmpty { return false }
 		ttsPosition = seg.startPos
 		currentSegmentText = seg.text
 		updateTabPosition(seg.startPos)
 		if speak {
 			ttsManager.speak(seg.text)
-			prefetchAdjacentSegment(after: seg.startPos)
-		} else if announce {
-			announceNavigationCue(seg.text)
+			prefetchAdjacentSegments(around: seg.startPos)
+		} else {
+			// Discard any paused buffer so pressing play starts at the new position.
+			if ttsManager.isPaused { ttsManager.stop() }
+			if announce { announceNavigationCue(seg.text) }
 		}
+		return true
 	}
 
-	func playPrevSegment(speak: Bool = true, announce: Bool = false) {
-		guard let tab = activeTab, let session = tab.session else { return }
+	@discardableResult
+	func playPrevSegment(speak: Bool = true, announce: Bool = false) -> Bool {
+		guard let tab = activeTab, let session = tab.session else { return false }
 		let seg = session.getTextSegment(
 			position: ttsPosition,
 			segmentType: ffiSegmentType(currentSegmentType),
 			direction: .previous
 		)
-		if seg.text.isEmpty { return }
+		if seg.text.isEmpty || seg.startPos == ttsPosition { return false }
 		ttsPosition = seg.startPos
 		currentSegmentText = seg.text
 		updateTabPosition(seg.startPos)
 		if speak {
 			ttsManager.speak(seg.text)
-			prefetchAdjacentSegment(after: seg.startPos)
-		} else if announce {
-			announceNavigationCue(seg.text)
+			prefetchAdjacentSegments(around: seg.startPos)
+		} else {
+			// Discard any paused buffer so pressing play starts at the new position.
+			if ttsManager.isPaused { ttsManager.stop() }
+			if announce { announceNavigationCue(seg.text) }
 		}
+		return true
 	}
 
 	private func announceNavigationCue(_ text: String) {
@@ -266,7 +296,7 @@ final class AppViewModel: ObservableObject {
 		}
 	}
 
-	private func prefetchAdjacentSegment(after position: Int64) {
+	private func prefetchAdjacentSegments(around position: Int64) {
 		guard let session = activeSession else { return }
 		let next = session.getTextSegment(
 			position: position,
@@ -275,6 +305,14 @@ final class AppViewModel: ObservableObject {
 		)
 		if !next.text.isEmpty {
 			ttsManager.prefetch(next.text)
+		}
+		let prev = session.getTextSegment(
+			position: position,
+			segmentType: ffiSegmentType(currentSegmentType),
+			direction: .previous
+		)
+		if !prev.text.isEmpty {
+			ttsManager.prefetchPrev(prev.text)
 		}
 	}
 
@@ -462,6 +500,69 @@ final class AppViewModel: ObservableObject {
 		if let id = activeTabId, let idx = tabs.firstIndex(where: { $0.id == id }) {
 			tabs[idx].lineScrollIndex = textModeFirstLine
 		}
+	}
+
+	private func setupRemoteCommands() {
+		let center = MPRemoteCommandCenter.shared()
+
+		center.playCommand.addTarget { [weak self] _ in
+			guard let self else { return .commandFailed }
+			if ttsManager.isPaused { ttsManager.resume() }
+			else if !ttsManager.isSpeaking { playCurrentSegment() }
+			updateNowPlaying()
+			return .success
+		}
+		center.pauseCommand.addTarget { [weak self] _ in
+			guard let self else { return .commandFailed }
+			ttsManager.pause()
+			updateNowPlaying()
+			return .success
+		}
+		center.togglePlayPauseCommand.addTarget { [weak self] _ in
+			guard let self else { return .commandFailed }
+			togglePlayPause()
+			updateNowPlaying()
+			return .success
+		}
+		center.nextTrackCommand.addTarget { [weak self] _ in
+			guard let self else { return .commandFailed }
+			playNextSegment(speak: ttsManager.isSpeaking)
+			updateNowPlaying()
+			return .success
+		}
+		center.previousTrackCommand.addTarget { [weak self] _ in
+			guard let self else { return .commandFailed }
+			playPrevSegment(speak: ttsManager.isSpeaking)
+			updateNowPlaying()
+			return .success
+		}
+
+		center.stopCommand.addTarget { [weak self] _ in
+			guard let self else { return .commandFailed }
+			ttsManager.stop()
+			updateNowPlaying()
+			return .success
+		}
+
+		// Disable commands that don't apply to a book reader
+		center.skipForwardCommand.isEnabled = false
+		center.skipBackwardCommand.isEnabled = false
+		center.seekForwardCommand.isEnabled = false
+		center.seekBackwardCommand.isEnabled = false
+		center.changePlaybackRateCommand.isEnabled = false
+	}
+
+	func updateNowPlaying() {
+		var info: [String: Any] = [
+			MPMediaItemPropertyMediaType: MPMediaType.audioBook.rawValue,
+			MPNowPlayingInfoPropertyPlaybackRate: ttsManager.isSpeaking ? 1.0 : 0.0,
+			MPNowPlayingInfoPropertyDefaultPlaybackRate: 1.0,
+		]
+		if let title = activeTab?.title {
+			info[MPMediaItemPropertyTitle] = title
+		}
+		info[MPMediaItemPropertyArtist] = "Paperback"
+		MPNowPlayingInfoCenter.default().nowPlayingInfo = info
 	}
 
 	private func ffiSegmentType(_ type: SegmentType) -> SegmentTypeFfi {

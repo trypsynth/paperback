@@ -1,7 +1,8 @@
 use std::time::{self, SystemTime};
 
 use paperback_core::session::StatusInfo;
-use wxdragon::{prelude::*, translations::translate as t};
+use patois::t;
+use wxdragon::prelude::*;
 
 use super::document_manager::DocumentManager;
 

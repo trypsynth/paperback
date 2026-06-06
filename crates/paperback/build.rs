@@ -28,7 +28,6 @@ fn main() {
 	copy_pdfium_dll();
 	build_docs();
 	configure_installer();
-	generate_pot();
 	let target = env::var("TARGET").unwrap_or_default();
 	embed_commit_hash();
 	if target.contains("apple") {
@@ -115,21 +114,12 @@ fn build_translations() {
 	let workspace_dir = manifest_dir.parent().unwrap().parent().unwrap();
 	let po_dir = workspace_dir.join("po");
 	println!("cargo:rerun-if-changed={}", po_dir.display());
+	// Tell cargo to rerun if any previously-generated .mo changes (covers incremental rebuilds).
+	println!("cargo:rerun-if-changed={}", manifest_dir.join("locale").display());
 	if !po_dir.exists() {
 		return;
 	}
-	let target_dir = match target_profile_dir() {
-		Some(dir) => dir,
-		None => {
-			println!("cargo:warning=Could not determine target output directory for translations.");
-			return;
-		}
-	};
-	let langs_dir = target_dir.join("langs");
-	if let Err(err) = fs::create_dir_all(&langs_dir) {
-		println!("cargo:warning=Failed to create langs directory: {}", err);
-		return;
-	}
+	let locale_dir = manifest_dir.join("locale");
 	let po_files = match fs::read_dir(&po_dir) {
 		Ok(entries) => entries,
 		Err(err) => {
@@ -157,9 +147,9 @@ fn build_translations() {
 			None => continue,
 		};
 		println!("cargo:rerun-if-changed={}", path.display());
-		let output_dir = langs_dir.join(lang).join("LC_MESSAGES");
+		let output_dir = locale_dir.join(lang).join("LC_MESSAGES");
 		if let Err(err) = fs::create_dir_all(&output_dir) {
-			println!("cargo:warning=Failed to create translation output directory: {}", err);
+			println!("cargo:warning=Failed to create locale output directory: {}", err);
 			continue;
 		}
 		let output_path = output_dir.join("paperback.mo");
@@ -427,79 +417,6 @@ fn configure_installer() {
 	}
 }
 
-fn generate_pot() {
-	let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap_or_default());
-	let workspace_dir = manifest_dir.parent().unwrap().parent().unwrap();
-	let po_dir = workspace_dir.join("po");
-	if !po_dir.exists() {
-		let _ = fs::create_dir(&po_dir);
-	}
-	let xgettext_check = Command::new("xgettext").arg("--version").output();
-	if xgettext_check.is_err() {
-		println!("cargo:warning=xgettext not found. Translation template (.pot) generation will not be available.");
-		return;
-	}
-	let src_dir = manifest_dir.join("src");
-	let mut files = Vec::new();
-	let _ = collect_translatable_rust_files(&src_dir, &mut files);
-	if let Ok(path) = env::var("DEP_SHIP_SHAPE_I18N_UI_SRC") {
-		let path = PathBuf::from(path);
-		if path.exists() {
-			files.push(path);
-		}
-	}
-	if files.is_empty() {
-		println!("cargo:warning=No Rust source files found for POT generation.");
-		return;
-	}
-	let version = env::var("CARGO_PKG_VERSION").unwrap_or_else(|_| "0.0.0".to_string());
-	let output_file = po_dir.join("paperback.pot");
-	let temp_file = po_dir.join("paperback.pot.new");
-	let mut cmd = Command::new("xgettext");
-	cmd.arg("--keyword=t")
-		.arg("--language=C")
-		.arg("--from-code=UTF-8")
-		.arg("--add-comments=TRANSLATORS")
-		.arg("--no-location")
-		.arg("--package-name=paperback")
-		.arg(format!("--package-version={}", version))
-		.arg("--msgid-bugs-address=https://github.com/trypsynth/paperback/issues")
-		.arg("--copyright-holder=Quin Gillespie")
-		.arg(format!("--output={}", temp_file.display()));
-	for file in files {
-		cmd.arg(file);
-	}
-	let status = cmd.status();
-	match status {
-		Ok(s) if s.success() => {
-			// Only update the pot file if the content (excluding dates) has changed
-			if pot_content_changed(&output_file, &temp_file) {
-				let _ = fs::rename(&temp_file, &output_file);
-			} else {
-				let _ = fs::remove_file(&temp_file);
-			}
-		}
-		_ => {
-			println!("cargo:warning=Failed to generate POT file.");
-			let _ = fs::remove_file(&temp_file);
-		}
-	}
-}
-
-/// Compare two POT files, ignoring the POT-Creation-Date header.
-/// Returns true if the files differ in meaningful content.
-fn pot_content_changed(old_path: &Path, new_path: &Path) -> bool {
-	let strip_date = |content: &str| -> String {
-		content.lines().filter(|line| !line.starts_with("\"POT-Creation-Date:")).collect::<Vec<_>>().join("\n")
-	};
-	let old_content = fs::read_to_string(old_path).unwrap_or_default();
-	let new_content = match fs::read_to_string(new_path) {
-		Ok(c) => c,
-		Err(_) => return true,
-	};
-	strip_date(&old_content) != strip_date(&new_content)
-}
-
 fn generate_app_bundle() {
 	let target_dir = match target_profile_dir() {
 		Some(dir) => dir,
@@ -591,45 +508,8 @@ fn generate_app_bundle() {
 	if exe_path.exists() {
 		let _ = fs::copy(&exe_path, &bundle_exe);
 	}
-	// Copy readme.html and langs into Resources if they exist
 	let readme = target_dir.join("readme.html");
 	if readme.exists() {
 		let _ = fs::copy(&readme, bundle_dir.join("Resources/readme.html"));
 	}
-	let langs = target_dir.join("langs");
-	if langs.exists() {
-		let _ = copy_dir_recursive(&langs, &bundle_dir.join("Resources/langs"));
-	}
-}
-
-fn copy_dir_recursive(src: &Path, dst: &Path) -> io::Result<()> {
-	fs::create_dir_all(dst)?;
-	for entry in fs::read_dir(src)? {
-		let entry = entry?;
-		let src_path = entry.path();
-		let dst_path = dst.join(entry.file_name());
-		if src_path.is_dir() {
-			copy_dir_recursive(&src_path, &dst_path)?;
-		} else {
-			fs::copy(&src_path, &dst_path)?;
-		}
-	}
-	Ok(())
-}
-
-fn collect_translatable_rust_files(dir: &Path, files: &mut Vec<PathBuf>) -> io::Result<()> {
-	if dir.is_dir() {
-		for entry in fs::read_dir(dir)? {
-			let entry = entry?;
-			let path = entry.path();
-			if path.is_dir() {
-				collect_translatable_rust_files(&path, files)?;
-			} else if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
-				if ext == "rs" {
-					files.push(path);
-				}
-			}
-		}
-	}
-	Ok(())
 }

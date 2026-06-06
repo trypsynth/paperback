@@ -3,12 +3,11 @@ use std::{cell::Cell, rc::Rc};
 #[cfg(target_os = "linux")]
 use gtk::{Dialog, ListBox as GtkListBox, PolicyType, ResponseType, Widget, Window, glib::Propagation, prelude::*};
 use paperback_core::session::DocumentSession;
+use patois::t;
 #[cfg(target_os = "linux")]
 use wxdragon::prelude::Frame;
-#[cfg(target_os = "linux")]
-use wxdragon::translations::translate as t;
 #[cfg(not(target_os = "linux"))]
-use wxdragon::{prelude::*, translations::translate as t};
+use wxdragon::prelude::*;
 
 #[cfg(target_os = "linux")]
 use super::accessible_tree::{self, AccessibleTree};

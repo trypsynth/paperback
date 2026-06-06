@@ -5,11 +5,33 @@ extension Notification.Name {
 	static let pbMagicTap = Notification.Name("dev.paperback.magicTap")
 }
 
-class AppDelegate: NSObject, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate {
+	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+		application.beginReceivingRemoteControlEvents()
+		return true
+	}
+
 	func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
 		let config = UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
 		config.delegateClass = SceneDelegate.self
 		return config
+	}
+
+	// Belt-and-suspenders: in UIKit apps AppDelegate is at the end of the responder
+	// chain, but with SwiftUI's @UIApplicationDelegateAdaptor this may never fire.
+	// UIWindow (below) is the reliable catch for in-app magic tap.
+	override func accessibilityPerformMagicTap() -> Bool {
+		NotificationCenter.default.post(name: .pbMagicTap, object: nil)
+		return true
+	}
+}
+
+// UIWindow is always in the responder chain as the key window, making it the
+// reliable place to catch VoiceOver magic tap while the app is foregrounded.
+class MagicTapWindow: UIWindow {
+	override func accessibilityPerformMagicTap() -> Bool {
+		NotificationCenter.default.post(name: .pbMagicTap, object: nil)
+		return true
 	}
 }
 
@@ -22,13 +44,6 @@ class SceneDelegate: NSObject, UIWindowSceneDelegate {
 		window.rootViewController = UIHostingController(rootView: ContentView())
 		self.window = window
 		window.makeKeyAndVisible()
-	}
-}
-
-class MagicTapWindow: UIWindow {
-	override func accessibilityPerformMagicTap() -> Bool {
-		NotificationCenter.default.post(name: .pbMagicTap, object: nil)
-		return true
 	}
 }
 

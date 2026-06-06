@@ -1,4 +1,5 @@
-use wxdragon::{event::WebViewEvents, prelude::*, translations::translate as t, widgets::WebView};
+use patois::t;
+use wxdragon::{event::WebViewEvents, prelude::*, widgets::WebView};
 
 type NavigationHandler = Box<dyn Fn(&str) -> bool>;
 

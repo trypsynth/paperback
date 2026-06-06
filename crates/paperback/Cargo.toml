@@ -7,13 +7,17 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 
+[package.metadata.patois]
+translatable = true
+
 [dependencies]
 anyhow = { workspace = true }
 base64 = { workspace = true }
-bitflags = "2.11.1"
+bitflags = "2.12.1"
 live-region = "0.1.4"
 paperback-core = { path = "../paperback-core" }
-ship-shape = { version = "0.1.2", features = ["ui"] }
+patois = "0.1.1"
+ship-shape = "0.1.4"
 toml = { workspace = true }
 wx-utils = "0.1.1"
 wxdragon = { version = "0.9.16", features = ["webview"] }

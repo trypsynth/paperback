@@ -1,4 +1,5 @@
-use wxdragon::{prelude::*, translations::translate as t};
+use patois::t;
+use wxdragon::prelude::*;
 
 fn format_reading_time(word_count: usize, wpm: i32) -> String {
 	if wpm <= 0 {
