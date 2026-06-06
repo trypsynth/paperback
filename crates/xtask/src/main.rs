@@ -51,20 +51,25 @@ fn release() -> Result<(), Box<dyn Error>> {
 		return Err("Cargo build failed".into());
 	}
 	let target_dir = project_root().join("target/release");
-	let exe_name = if cfg!(windows) { "paperback.exe" } else { "paperback" };
-	let exe_path = target_dir.join(exe_name);
-	let readme_path = target_dir.join("readme.html");
-	let sounds_path = target_dir.join("sounds");
-	let pdfium_dll_path = target_dir.join("pdfium.dll");
-	if !exe_path.exists() {
-		return Err("Executable not found".into());
+	#[cfg(target_os = "macos")]
+	return build_mac_app_zip(&target_dir);
+	#[cfg(not(target_os = "macos"))]
+	{
+		let exe_name = if cfg!(windows) { "paperback.exe" } else { "paperback" };
+		let exe_path = target_dir.join(exe_name);
+		let readme_path = target_dir.join("readme.html");
+		let sounds_path = target_dir.join("sounds");
+		let pdfium_dll_path = target_dir.join("pdfium.dll");
+		if !exe_path.exists() {
+			return Err("Executable not found".into());
+		}
+		println!("Packaging binary, docs, and sounds...");
+		build_zip_package(&target_dir, &exe_path, &readme_path, &sounds_path, &pdfium_dll_path)?;
+		if cfg!(windows) {
+			build_windows_installer(&target_dir)?;
+		}
+		Ok(())
 	}
-	println!("Packaging binary, docs, and sounds...");
-	build_zip_package(&target_dir, &exe_path, &readme_path, &sounds_path, &pdfium_dll_path)?;
-	if cfg!(windows) {
-		build_windows_installer(&target_dir)?;
-	}
-	Ok(())
 }
 
 fn android() -> Result<(), Box<dyn Error>> {
@@ -302,6 +307,84 @@ fn gen_pot() -> Result<(), Box<dyn Error>> {
 	patois_build::gen_pot(&root, root.join("po"), "paperback")
 }
 
+#[cfg(target_os = "macos")]
+fn build_mac_app_zip(target_dir: &Path) -> Result<(), Box<dyn Error>> {
+	let bundle_dir = target_dir.join("Paperback.app");
+	let macos_dir = bundle_dir.join("Contents/MacOS");
+	let resources_dir = bundle_dir.join("Contents/Resources");
+	fs::create_dir_all(&macos_dir)?;
+	fs::create_dir_all(&resources_dir)?;
+
+	// build.rs creates the bundle skeleton but only copies the binary if one already
+	// existed from a prior build.  Copy the freshly-linked binary now.
+	let exe = target_dir.join("paperback");
+	if !exe.exists() {
+		return Err("paperback binary not found after build".into());
+	}
+	fs::copy(&exe, macos_dir.join("paperback"))?;
+	use std::os::unix::fs::PermissionsExt;
+	fs::set_permissions(macos_dir.join("paperback"), fs::Permissions::from_mode(0o755))?;
+
+	// Copy sounds into the bundle's Resources so the app can find them.
+	let sounds_src = target_dir.join("sounds");
+	if sounds_src.exists() {
+		copy_dir_all(&sounds_src, &resources_dir.join("sounds"))?;
+	} else {
+		println!("Warning: sounds directory not found, skipping.");
+	}
+
+	// Copy readme.
+	let readme = target_dir.join("readme.html");
+	if readme.exists() {
+		let _ = fs::copy(&readme, resources_dir.join("readme.html"));
+	}
+
+	// Zip the whole .app bundle.  Paths inside the zip are relative to target_dir
+	// so users see Paperback.app/... at the top level.
+	let zip_path = target_dir.join("paperback-macos.zip");
+	let file = File::create(&zip_path)?;
+	let mut zip = ZipWriter::new(file);
+	let default_opts = SimpleFileOptions::default().compression_method(CompressionMethod::Deflated);
+	for entry in WalkDir::new(&bundle_dir) {
+		let entry = entry?;
+		let path = entry.path();
+		if !path.is_file() {
+			continue;
+		}
+		let rel = path.strip_prefix(target_dir)?;
+		let name = rel.to_string_lossy().replace('\\', "/");
+		let opts = if name.ends_with("MacOS/paperback") {
+			default_opts.unix_permissions(0o755)
+		} else {
+			default_opts.unix_permissions(0o644)
+		};
+		zip.start_file(name, opts)?;
+		let mut f = File::open(path)?;
+		io::copy(&mut f, &mut zip)?;
+	}
+	zip.finish()?;
+	println!("Created zip: {}", zip_path.display());
+	Ok(())
+}
+
+#[cfg(target_os = "macos")]
+fn copy_dir_all(src: &Path, dst: &Path) -> Result<(), Box<dyn Error>> {
+	fs::create_dir_all(dst)?;
+	for entry in WalkDir::new(src) {
+		let entry = entry?;
+		let path = entry.path();
+		let rel = path.strip_prefix(src)?;
+		let dest = dst.join(rel);
+		if path.is_dir() {
+			fs::create_dir_all(&dest)?;
+		} else {
+			fs::copy(path, &dest)?;
+		}
+	}
+	Ok(())
+}
+
+#[cfg(not(target_os = "macos"))]
 fn build_zip_package(
 	target_dir: &Path,
 	exe_path: &Path,
@@ -355,6 +438,7 @@ fn build_zip_package(
 	Ok(())
 }
 
+#[cfg(not(target_os = "macos"))]
 fn build_windows_installer(target_dir: &Path) -> io::Result<()> {
 	let iss_path = target_dir.join("paperback.iss");
 	if !iss_path.exists() {

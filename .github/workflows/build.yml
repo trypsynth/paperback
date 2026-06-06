@@ -153,8 +153,44 @@ jobs:
           paperback-android-arm.apk
         retention-days: 30
 
+  build-macos:
+    runs-on: macos-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
+    - name: Install dependencies
+      run: |
+        brew install cmake ninja pandoc gettext libiconv
+        echo "/opt/homebrew/opt/gettext/bin" >> $GITHUB_PATH
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+    - name: Cache Rust build artifacts
+      uses: Swatinem/rust-cache@v2
+    - name: Cache wxWidgets source
+      id: wxwidgets-cache
+      uses: actions/cache@v4
+      with:
+        path: wxWidgets
+        key: wxwidgets-${{ runner.os }}-${{ runner.arch }}-v1
+    - name: Clone wxWidgets
+      if: steps.wxwidgets-cache.outputs.cache-hit != 'true'
+      run: git clone --recurse-submodules https://github.com/wxWidgets/wxWidgets.git
+    - name: Build and package
+      env:
+        WXWIDGETS_DIR: ${{ github.workspace }}/wxWidgets
+      run: cargo release
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: paperback-macos
+        path: target/release/paperback-macos.zip
+        retention-days: 30
+
   release:
-    needs: [build-windows, build-linux-flatpak, build-android]
+    needs: [build-windows, build-linux-flatpak, build-android, build-macos]
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     steps:
@@ -177,6 +213,11 @@ jobs:
       with:
         name: paperback-android
         path: android-build
+    - name: Download macOS artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: paperback-macos
+        path: macos-build
     - name: Get latest tag reachable from HEAD
       id: get_tag
       shell: bash
@@ -213,6 +254,7 @@ jobs:
           linux-build/paperback.flatpak
           android-build/paperback-android-arm64.apk
           android-build/paperback-android-arm.apk
+          macos-build/paperback-macos.zip
         prerelease: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
