@@ -259,96 +259,9 @@ fn project_root() -> PathBuf {
 	Path::new(&env!("CARGO_MANIFEST_DIR")).ancestors().nth(2).unwrap().to_path_buf()
 }
 
-/// Regenerate po/paperback.pot by scanning all listed crates via cargo metadata.
 fn gen_pot() -> Result<(), Box<dyn Error>> {
 	let root = project_root();
-	let po_dir = root.join("po");
-	fs::create_dir_all(&po_dir)?;
-	if Command::new("xgettext").arg("--version").output().is_err() {
-		return Err("xgettext not found; install gettext tools (e.g. scoop install gettext)".into());
-	}
-	let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
-	let meta_output = Command::new(&cargo).args(["metadata", "--format-version", "1"]).current_dir(&root).output()?;
-	if !meta_output.status.success() {
-		return Err("cargo metadata failed".into());
-	}
-	let meta: serde_json::Value = serde_json::from_slice(&meta_output.stdout)?;
-	// Discover crates by [package.metadata.patois] translatable = true.
-	let mut files: Vec<PathBuf> = Vec::new();
-	let packages = meta["packages"].as_array().ok_or("cargo metadata: missing packages")?;
-	for pkg in packages {
-		if pkg["metadata"]["patois"]["translatable"] != true {
-			continue;
-		}
-		let manifest = pkg["manifest_path"].as_str().ok_or("cargo metadata: missing manifest_path")?;
-		let src = Path::new(manifest).parent().unwrap().join("src");
-		collect_rust_files(&src, &mut files)?;
-	}
-	if files.is_empty() {
-		return Err("no Rust source files found — are the crates in the dependency graph?".into());
-	}
-	let version = packages
-		.iter()
-		.find(|p| p["name"] == "paperback")
-		.and_then(|p| p["version"].as_str())
-		.unwrap_or("0.0.0")
-		.to_string();
-	let output_file = po_dir.join("paperback.pot");
-	let temp_file = po_dir.join("paperback.pot.new");
-	let mut cmd = Command::new("xgettext");
-	cmd.arg("--keyword=t")
-		.arg("--language=C")
-		.arg("--from-code=UTF-8")
-		.arg("--add-comments=TRANSLATORS")
-		.arg("--no-location")
-		.arg("--package-name=paperback")
-		.arg(format!("--package-version={version}"))
-		.arg("--msgid-bugs-address=https://github.com/trypsynth/paperback/issues")
-		.arg("--copyright-holder=Quin Gillespie")
-		.arg(format!("--output={}", temp_file.display()));
-	for file in &files {
-		cmd.arg(file);
-	}
-	let status = cmd.status()?;
-	if !status.success() {
-		return Err("xgettext failed".into());
-	}
-	if pot_content_changed(&output_file, &temp_file) {
-		fs::rename(&temp_file, &output_file)?;
-		println!("Updated {}", output_file.display());
-	} else {
-		fs::remove_file(&temp_file)?;
-		println!("No changes ({})", output_file.display());
-	}
-	Ok(())
-}
-
-fn collect_rust_files(dir: &Path, files: &mut Vec<PathBuf>) -> Result<(), Box<dyn Error>> {
-	if !dir.is_dir() {
-		return Ok(());
-	}
-	for entry in fs::read_dir(dir)? {
-		let entry = entry?;
-		let path = entry.path();
-		if path.is_dir() {
-			collect_rust_files(&path, files)?;
-		} else if path.extension().and_then(|e| e.to_str()) == Some("rs") {
-			files.push(path);
-		}
-	}
-	Ok(())
-}
-
-fn pot_content_changed(old_path: &Path, new_path: &Path) -> bool {
-	let strip_date = |content: &str| -> String {
-		content.lines().filter(|l| !l.starts_with("\"POT-Creation-Date:")).collect::<Vec<_>>().join("\n")
-	};
-	let old = fs::read_to_string(old_path).unwrap_or_default();
-	let new = match fs::read_to_string(new_path) {
-		Ok(c) => c,
-		Err(_) => return true,
-	};
-	strip_date(&old) != strip_date(&new)
+	patois_build::gen_pot(&root, root.join("po"), "paperback")
 }
 
 fn build_zip_package(

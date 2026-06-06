@@ -152,7 +152,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let languages = TranslationManager::instance().lock().unwrap().available_languages();
 	let mut language_codes = Vec::new();
 	for lang in &languages {
-		language_combo.append(&lang.native_name);
+		language_combo.append(&lang.name);
 		language_codes.push(lang.code.clone());
 	}
 	let language_sizer = BoxSizer::builder(Orientation::Horizontal).build();

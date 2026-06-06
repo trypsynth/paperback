@@ -1953,6 +1953,7 @@ dependencies = [
  "live-region",
  "paperback-core",
  "patois",
+ "patois-build",
  "rstest",
  "ship-shape",
  "tar",
@@ -2024,19 +2025,29 @@ checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "patois"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1d75634ea8dc25e0ea9db4f98fdd0b6dad2eead0056d4dd1cbcbf4695eac145d"
+checksum = "beb58c9b3a6913bb412d2f36592f9945e5fdb984319a3527cb680284bfcdfeea"
 dependencies = [
  "inventory",
  "patois-macros",
+ "sys-locale",
+]
+
+[[package]]
+name = "patois-build"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ad9d2a05237bc8577524ff4dae2546b9d389190ad645dc062ef1a1bf2aff9041"
+dependencies = [
+ "serde_json",
 ]
 
 [[package]]
 name = "patois-macros"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c8dfd6f5bbc128e16dbabe65b792abb54188d8deccc2123f1da3b696ed37847e"
+checksum = "7932de848a50873ef1ef937a0e390d7bf251d9ecd8f22dd21d46c9c9bb100d90"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3063,6 +3074,15 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.117",
+]
+
+[[package]]
+name = "sys-locale"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8eab9a99a024a169fe8a903cf9d4a3b3601109bcc13bd9e3c6fff259138626c4"
+dependencies = [
+ "libc",
 ]
 
 [[package]]
@@ -4424,7 +4444,7 @@ name = "xtask"
 version = "0.1.0"
 dependencies = [
  "flate2",
- "serde_json",
+ "patois-build",
  "tar",
  "ureq",
  "walkdir",
