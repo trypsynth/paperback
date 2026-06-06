@@ -1,15 +1,18 @@
 use std::{
 	env,
 	error::Error,
-	fs::{self, File},
-	io::{self, Cursor, Read},
+	fs,
+	io::{Cursor, Read},
 	path::{Path, PathBuf},
 	process::Command,
 };
+#[cfg(not(target_os = "macos"))]
+use std::{fs::File, io};
 
 use flate2::read::GzDecoder;
 use tar::Archive;
 use walkdir::WalkDir;
+#[cfg(not(target_os = "macos"))]
 use zip::{CompressionMethod, ZipWriter, write::SimpleFileOptions};
 
 const PDFIUM_ANDROID_ARM64_URL: &str =
@@ -52,7 +55,7 @@ fn release() -> Result<(), Box<dyn Error>> {
 	}
 	let target_dir = project_root().join("target/release");
 	#[cfg(target_os = "macos")]
-	return build_mac_app_zip(&target_dir);
+	return build_mac_dmg(&target_dir);
 	#[cfg(not(target_os = "macos"))]
 	{
 		let exe_name = if cfg!(windows) { "paperback.exe" } else { "paperback" };
@@ -308,7 +311,7 @@ fn gen_pot() -> Result<(), Box<dyn Error>> {
 }
 
 #[cfg(target_os = "macos")]
-fn build_mac_app_zip(target_dir: &Path) -> Result<(), Box<dyn Error>> {
+fn build_mac_dmg(target_dir: &Path) -> Result<(), Box<dyn Error>> {
 	let bundle_dir = target_dir.join("Paperback.app");
 	let macos_dir = bundle_dir.join("Contents/MacOS");
 	let resources_dir = bundle_dir.join("Contents/Resources");
@@ -339,31 +342,32 @@ fn build_mac_app_zip(target_dir: &Path) -> Result<(), Box<dyn Error>> {
 		let _ = fs::copy(&readme, resources_dir.join("readme.html"));
 	}
 
-	// Zip the whole .app bundle.  Paths inside the zip are relative to target_dir
-	// so users see Paperback.app/... at the top level.
-	let zip_path = target_dir.join("paperback-macos.zip");
-	let file = File::create(&zip_path)?;
-	let mut zip = ZipWriter::new(file);
-	let default_opts = SimpleFileOptions::default().compression_method(CompressionMethod::Deflated);
-	for entry in WalkDir::new(&bundle_dir) {
-		let entry = entry?;
-		let path = entry.path();
-		if !path.is_file() {
-			continue;
-		}
-		let rel = path.strip_prefix(target_dir)?;
-		let name = rel.to_string_lossy().replace('\\', "/");
-		let opts = if name.ends_with("MacOS/paperback") {
-			default_opts.unix_permissions(0o755)
-		} else {
-			default_opts.unix_permissions(0o644)
-		};
-		zip.start_file(name, opts)?;
-		let mut f = File::open(path)?;
-		io::copy(&mut f, &mut zip)?;
+	// Build a DMG: staging folder contains the .app plus an /Applications symlink
+	// so users get the standard drag-to-install experience.
+	let staging = target_dir.join("dmg-staging");
+	let _ = fs::remove_dir_all(&staging);
+	fs::create_dir_all(&staging)?;
+	copy_dir_all(&bundle_dir, &staging.join("Paperback.app"))?;
+	std::os::unix::fs::symlink("/Applications", staging.join("Applications"))?;
+
+	let dmg_path = target_dir.join("paperback-macos.dmg");
+	let status = Command::new("hdiutil")
+		.args([
+			"create",
+			"-volname",
+			"Paperback",
+			"-srcfolder",
+			&staging.to_string_lossy(),
+			"-ov",
+			"-format",
+			"UDZO",
+			&dmg_path.to_string_lossy(),
+		])
+		.status()?;
+	if !status.success() {
+		return Err("hdiutil create failed".into());
 	}
-	zip.finish()?;
-	println!("Created zip: {}", zip_path.display());
+	println!("Created DMG: {}", dmg_path.display());
 	Ok(())
 }
 
