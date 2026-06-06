@@ -24,12 +24,25 @@ struct FindSheet: View {
 					Toggle("Whole Word", isOn: $wholeWord)
 					Toggle("Regular Expression", isOn: $useRegex)
 				}
+				if viewModel.activeSearchQuery != nil {
+					Section {
+						Button { viewModel.findPrev() } label: {
+							Label("Previous result", systemImage: "chevron.up")
+						}
+						Button { viewModel.findNext() } label: {
+							Label("Next result", systemImage: "chevron.down")
+						}
+					}
+				}
 			}
 			.navigationTitle("Find")
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) {
-					Button("Cancel") { dismiss() }
+					Button("Cancel") {
+						viewModel.clearSearch()
+						dismiss()
+					}
 				}
 				ToolbarItem(placement: .confirmationAction) {
 					Button("Search") { search() }
