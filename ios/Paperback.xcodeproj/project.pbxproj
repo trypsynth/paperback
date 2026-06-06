@@ -105,7 +105,6 @@
 			children = (
 				D4D4D4D4D4D4D4D4D4D40001 /* App */,
 				D4D4D4D4D4D4D4D4D4D40002 /* Model */,
-				B1B1B1B1B1B1B1B1B1B10002 /* TTS */,
 				D4D4D4D4D4D4D4D4D4D40003 /* UI */,
 				A5A5A5A5A5A5A5A5A5A50001 /* PaperbackBridgingHeader.h */,
 				A1A1A1A1A1A1A1A1A1A10011 /* Assets.xcassets */,
@@ -129,6 +128,7 @@
 			children = (
 				A2A2A2A2A2A2A2A2A2A20001 /* AppViewModel.swift */,
 				A2A2A2A2A2A2A2A2A2A20002 /* DocumentTab.swift */,
+				A2A2A2A2A2A2A2A2A2A20003 /* TtsManager.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -142,6 +142,8 @@
 				A2A2A2A2A2A2A2A2A2A2000B /* DocumentMenu.swift */,
 				A2A2A2A2A2A2A2A2A2A20019 /* TabStripView.swift */,
 				A2A2A2A2A2A2A2A2A2A20017 /* AccessibilityHelpers.swift */,
+				A2A2A2A2A2A2A2A2A2A20006 /* TtsModeView.swift */,
+				A2A2A2A2A2A2A2A2A2A20008 /* TtsControlBar.swift */,
 				B1B1B1B1B1B1B1B1B1B10001 /* Sheets */,
 			);
 			path = UI;
@@ -162,16 +164,6 @@
 				A2A2A2A2A2A2A2A2A2A20016 /* TtsConfigSheet.swift */,
 			);
 			path = Sheets;
-			sourceTree = "<group>";
-		};
-		B1B1B1B1B1B1B1B1B1B10002 /* TTS */ = {
-			isa = PBXGroup;
-			children = (
-				A2A2A2A2A2A2A2A2A2A20003 /* TtsManager.swift */,
-				A2A2A2A2A2A2A2A2A2A20006 /* TtsModeView.swift */,
-				A2A2A2A2A2A2A2A2A2A20008 /* TtsControlBar.swift */,
-			);
-			path = TTS;
 			sourceTree = "<group>";
 		};
 		A4A4A4A4A4A4A4A4A4A40005 /* Generated */ = {
