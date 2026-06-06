@@ -163,7 +163,7 @@ jobs:
         fetch-depth: 0
     - name: Install dependencies
       run: |
-        brew install cmake ninja pandoc gettext libiconv
+        brew install cmake ninja pandoc gettext
         echo "/opt/homebrew/opt/gettext/bin" >> $GITHUB_PATH
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
