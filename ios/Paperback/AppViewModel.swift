@@ -83,11 +83,17 @@ final class AppViewModel: ObservableObject {
 		}
 		ttsManager.$isSpeaking
 			.dropFirst()
-			.sink { [weak self] _ in self?.updateNowPlaying() }
+			.sink { [weak self] _ in
+				self?.objectWillChange.send()
+				self?.updateNowPlaying()
+			}
 			.store(in: &cancellables)
 		ttsManager.$isPaused
 			.dropFirst()
-			.sink { [weak self] _ in self?.updateNowPlaying() }
+			.sink { [weak self] _ in
+				self?.objectWillChange.send()
+				self?.updateNowPlaying()
+			}
 			.store(in: &cancellables)
 		$restorePreviousDocuments
 			.dropFirst()
