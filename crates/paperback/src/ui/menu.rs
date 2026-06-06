@@ -433,13 +433,23 @@ pub fn create_go_menu(compact: bool) -> Menu {
 	let bookmarks_menu = create_bookmarks_submenu();
 	let find_label = t("&Find...\tCtrl+F");
 	let find_help = t("Find text in the document");
-	let find_next_label = t("Find &Next\tF3");
+	// On macOS Cmd+G / Cmd+Shift+G are the standard find-next / find-previous shortcuts.
+	// F3 is buried behind Fn on Mac keyboards, so swap the accelerators there.
+	let find_next_label = if cfg!(target_os = "macos") { t("Find &Next\tCtrl+G") } else { t("Find &Next\tF3") };
 	let find_next_help = t("Find next occurrence");
-	let find_prev_label = t("Find &Previous\tShift+F3");
+	let find_prev_label =
+		if cfg!(target_os = "macos") { t("Find &Previous\tCtrl+Shift+G") } else { t("Find &Previous\tShift+F3") };
 	let find_prev_help = t("Find previous occurrence");
-	let goto_line_label = t("Go to &line...\tCtrl+G");
+	// On macOS Cmd+G is taken by Find Next, so use Cmd+L (Go to Line) and
+	// Cmd+Shift+L (Go to Percent) — standard in most Mac editors.
+	let goto_line_label =
+		if cfg!(target_os = "macos") { t("Go to &line...\tCtrl+L") } else { t("Go to &line...\tCtrl+G") };
 	let goto_line_help = t("Go to a specific line");
-	let goto_percent_label = t("Go to &percent...\tCtrl+Shift+G");
+	let goto_percent_label = if cfg!(target_os = "macos") {
+		t("Go to &percent...\tCtrl+Shift+L")
+	} else {
+		t("Go to &percent...\tCtrl+Shift+G")
+	};
 	let goto_percent_help = t("Go to a percentage of the document");
 	let go_back_label = t("Go &Back\tAlt+Left");
 	let go_back_help = t("Go back in history");
