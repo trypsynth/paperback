@@ -22,6 +22,10 @@ pub use crate::{
 
 uniffi::include_scaffolding!("paperback");
 
+pub fn set_pdfium_library_path(path: String) {
+	pdfium::set_library_location(&path);
+}
+
 /// Minimal translation stub for library-internal strings (e.g. document content labels).
 /// The GUI binary sets up the real wxWidgets translation system independently; strings
 /// returned by this function are English only and are intended for non-GUI consumers

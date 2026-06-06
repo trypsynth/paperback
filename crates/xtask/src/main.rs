@@ -16,6 +16,8 @@ const PDFIUM_ANDROID_ARM64_URL: &str =
 	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-android-arm64.tgz";
 const PDFIUM_ANDROID_ARM_URL: &str =
 	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-android-arm.tgz";
+const PDFIUM_IOS_ARM64_URL: &str =
+	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-ios-device-arm64.tgz";
 
 fn main() -> Result<(), Box<dyn Error>> {
 	let task = env::args().nth(1);
@@ -185,12 +187,48 @@ fn download_pdfium_so(url: &str, dest: &Path) -> Result<(), Box<dyn Error>> {
 	Err(format!("libpdfium.so not found in archive from {url}").into())
 }
 
+fn download_pdfium_dylib(url: &str, dest: &Path) -> Result<(), Box<dyn Error>> {
+	let skip =
+		env::var("PAPERBACK_SKIP_PDFIUM_DOWNLOAD").map(|v| v == "1" || v.eq_ignore_ascii_case("true")).unwrap_or(false);
+	if dest.exists() && !skip {
+		return Ok(());
+	}
+	if skip {
+		return Ok(());
+	}
+	if let Some(parent) = dest.parent() {
+		fs::create_dir_all(parent)?;
+	}
+	println!("Downloading {} ...", url);
+	let response = ureq::get(url).call().map_err(|e| format!("download failed: {e}"))?;
+	let mut archive_bytes = Vec::new();
+	response.into_body().as_reader().read_to_end(&mut archive_bytes)?;
+	let mut archive = Archive::new(GzDecoder::new(Cursor::new(archive_bytes)));
+	for entry in archive.entries()? {
+		let mut entry = entry?;
+		if entry.path()?.file_name().and_then(|n| n.to_str()) == Some("libpdfium.dylib") {
+			let tmp = dest.with_extension("dylib.tmp");
+			entry.unpack(&tmp)?;
+			if dest.exists() {
+				fs::remove_file(dest)?;
+			}
+			fs::rename(&tmp, dest)?;
+			println!("Saved {}", dest.display());
+			return Ok(());
+		}
+	}
+	Err(format!("libpdfium.dylib not found in archive from {url}").into())
+}
+
 fn ios() -> Result<(), Box<dyn Error>> {
 	let release = env::args().any(|a| a == "--release");
 	let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
 	let root = project_root();
 	let generated_dir = root.join("ios/Paperback/Generated");
 	fs::create_dir_all(&generated_dir)?;
+
+	let pdfium_dest = root.join("ios/libpdfium.dylib");
+	download_pdfium_dylib(PDFIUM_IOS_ARM64_URL, &pdfium_dest)?;
 
 	println!("Generating Swift bindings via uniffi-bindgen...");
 	let status = Command::new(&cargo)
