@@ -114,7 +114,11 @@ struct ReaderView: View {
 		if !viewModel.isTextMode, viewModel.activeTab != nil {
 			TtsControlBar()
 				.environmentObject(viewModel)
-				.background(.bar)
+				.background {
+					Rectangle()
+						.fill(.bar)
+						.ignoresSafeArea(edges: .bottom)
+				}
 		}
 	}
 
