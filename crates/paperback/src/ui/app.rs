@@ -10,12 +10,11 @@ use std::{
 };
 
 use paperback_core::config::ConfigManager;
-use patois::t;
 use wxdragon::prelude::*;
 
 use super::MainWindow;
 use crate::{
-	ipc::{IPC_COMMAND_ACTIVATE, IpcCommand, SINGLE_INSTANCE_NAME, decode_execute_payload, normalize_cli_path},
+	ipc::{IPC_COMMAND_ACTIVATE, IpcCommand, SINGLE_INSTANCE_NAME, normalize_cli_path},
 	translation_manager::TranslationManager,
 };
 
@@ -78,6 +77,7 @@ fn open_from_command_line(main_window: &MainWindow) {
 	}
 }
 
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 pub(crate) fn main_window_from_ptr() -> Option<&'static MainWindow> {
 	let ptr = MAIN_WINDOW_PTR.load(Ordering::SeqCst);
 	if ptr == 0 {
@@ -247,9 +247,13 @@ pub struct PipeServer {
 }
 
 fn start_pipe_server(main_window: &Rc<MainWindow>) -> PipeServer {
+	#[cfg(not(any(target_os = "linux", target_os = "windows")))]
+	let _ = main_window;
 	#[cfg(windows)]
 	{
-		use crate::ipc::named_pipe_path;
+		use patois::t;
+
+		use crate::ipc::{decode_execute_payload, named_pipe_path};
 		let name = named_pipe_path();
 		if let Some(handle) = pipe::try_create_server(&name) {
 			pipe::serve_loop(handle, move |data| {
@@ -272,6 +276,7 @@ fn start_pipe_server(main_window: &Rc<MainWindow>) -> PipeServer {
 	}
 	#[cfg(target_os = "linux")]
 	{
+		use crate::ipc::decode_execute_payload;
 		if let Some(listener) = pipe_unix::try_create_server() {
 			pipe_unix::serve_loop(listener, move |data| {
 				if let Some(cmd) = decode_execute_payload(&data) {
@@ -291,6 +296,7 @@ fn start_pipe_server(main_window: &Rc<MainWindow>) -> PipeServer {
 fn send_ipc_command(command: IpcCommand) {
 	let payload = match &command {
 		IpcCommand::Activate => IPC_COMMAND_ACTIVATE.to_string(),
+		#[cfg(any(target_os = "linux", target_os = "windows"))]
 		IpcCommand::ToggleVisibility => crate::ipc::IPC_COMMAND_TOGGLE_VISIBILITY.to_string(),
 		IpcCommand::OpenFile(path) => path.to_string_lossy().to_string(),
 	};

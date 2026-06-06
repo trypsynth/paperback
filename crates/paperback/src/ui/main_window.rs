@@ -1,5 +1,7 @@
+#[cfg(target_os = "windows")]
+use std::cell::RefCell;
 use std::{
-	cell::{Cell, RefCell},
+	cell::Cell,
 	env,
 	path::Path,
 	process,
@@ -30,7 +32,9 @@ use super::{
 	navigation::{self, MarkerNavTarget},
 	status,
 };
-use crate::{config_ext::UpdateChannel, ipc::IpcCommand, translation_manager::TranslationManager};
+#[cfg(any(target_os = "linux", target_os = "windows"))]
+use crate::ipc::IpcCommand;
+use crate::{config_ext::UpdateChannel, translation_manager::TranslationManager};
 
 const KEY_DELETE: i32 = 127;
 const KEY_NUMPAD_DELETE: i32 = 330;
@@ -216,6 +220,7 @@ impl MainWindow {
 		result
 	}
 
+	#[cfg(any(target_os = "linux", target_os = "windows"))]
 	pub fn handle_ipc_command(&self, command: IpcCommand) {
 		match command {
 			IpcCommand::Activate => {
@@ -232,6 +237,7 @@ impl MainWindow {
 		}
 	}
 
+	#[cfg(any(target_os = "linux", target_os = "windows"))]
 	fn activate_from_ipc(&self) {
 		self.frame.show(true);
 		self.frame.iconize(false);
@@ -252,6 +258,7 @@ impl MainWindow {
 		}
 	}
 
+	#[cfg(any(target_os = "linux", target_os = "windows"))]
 	fn is_window_active(&self) -> bool {
 		#[cfg(target_os = "windows")]
 		{
@@ -270,6 +277,7 @@ impl MainWindow {
 		}
 	}
 
+	#[cfg(any(target_os = "linux", target_os = "windows"))]
 	fn toggle_visibility(&self) {
 		let is_shown = self.frame.is_shown();
 		if is_shown && self.is_window_active() {
