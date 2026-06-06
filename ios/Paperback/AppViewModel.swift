@@ -60,7 +60,7 @@ final class AppViewModel: ObservableObject {
 	private var cancellables = Set<AnyCancellable>()
 
 	init() {
-		setPdfiumLibraryPath(path: Bundle.main.bundlePath)
+		setPdfiumLibraryPath(path: Bundle.main.bundlePath + "/Frameworks")
 
 		let configPath = configFilePath()
 		_ = configManager.initialize(configPath: configPath)
