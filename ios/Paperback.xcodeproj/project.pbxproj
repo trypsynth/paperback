@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		A1A1A1A1A1A1A1A1A1A10015 /* PaperbackApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1A1A1A1A1A1A1A1A1A1000F /* PaperbackApp.swift */; };
 		A1A1A1A1A1A1A1A1A1A10016 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1A1A1A1A1A1A1A1A1A10010 /* ContentView.swift */; };
+		C2C2C2C2C2C2C2C2C2C20001 /* KeyboardShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2C2C2C2C2C2C2C2C2C20002 /* KeyboardShortcuts.swift */; };
 		A1A1A1A1A1A1A1A1A1A10017 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1A1A1A1A1A1A1A1A1A10011 /* Assets.xcassets */; };
 		A3A3A3A3A3A3A3A3A3A30001 /* AppViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20001 /* AppViewModel.swift */; };
 		A3A3A3A3A3A3A3A3A3A30002 /* DocumentTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A2A2A2A2A2A2A2A2A20002 /* DocumentTab.swift */; };
@@ -39,6 +40,7 @@
 /* Begin PBXFileReference section */
 		A1A1A1A1A1A1A1A1A1A1000E /* Paperback.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Paperback.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1A1A1A1A1A1A1A1A1A1000F /* PaperbackApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaperbackApp.swift; sourceTree = "<group>"; };
+		C2C2C2C2C2C2C2C2C2C20002 /* KeyboardShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcuts.swift; sourceTree = "<group>"; };
 		A1A1A1A1A1A1A1A1A1A10010 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A1A1A1A1A1A1A1A1A1A10011 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A2A2A2A2A2A2A2A2A2A20001 /* AppViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppViewModel.swift; sourceTree = "<group>"; };
@@ -103,6 +105,7 @@
 			children = (
 				A1A1A1A1A1A1A1A1A1A1000F /* PaperbackApp.swift */,
 				A1A1A1A1A1A1A1A1A1A10010 /* ContentView.swift */,
+				C2C2C2C2C2C2C2C2C2C20002 /* KeyboardShortcuts.swift */,
 				A2A2A2A2A2A2A2A2A2A20001 /* AppViewModel.swift */,
 				A2A2A2A2A2A2A2A2A2A20002 /* DocumentTab.swift */,
 				A2A2A2A2A2A2A2A2A2A20004 /* ReaderView.swift */,
@@ -241,6 +244,7 @@
 			files = (
 				A1A1A1A1A1A1A1A1A1A10016 /* ContentView.swift in Sources */,
 				A1A1A1A1A1A1A1A1A1A10015 /* PaperbackApp.swift in Sources */,
+				C2C2C2C2C2C2C2C2C2C20001 /* KeyboardShortcuts.swift in Sources */,
 				A3A3A3A3A3A3A3A3A3A30001 /* AppViewModel.swift in Sources */,
 				A3A3A3A3A3A3A3A3A3A30002 /* DocumentTab.swift in Sources */,
 				A3A3A3A3A3A3A3A3A3A30003 /* TtsManager.swift in Sources */,

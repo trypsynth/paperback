@@ -328,6 +328,23 @@ final class AppViewModel: ObservableObject {
 		currentSegmentType = type
 	}
 
+	func navigateByType(_ type: SegmentTypeFfi, direction: SegmentDirectionFfi) {
+		guard let tab = activeTab, let session = tab.session else { return }
+		let seg = session.getTextSegment(position: ttsPosition, segmentType: type, direction: direction)
+		if seg.text.isEmpty { return }
+		if direction == .previous && seg.startPos == ttsPosition { return }
+		ttsPosition = seg.startPos
+		currentSegmentText = seg.text
+		updateTabPosition(seg.startPos)
+		if ttsManager.isSpeaking {
+			ttsManager.speak(seg.text)
+			prefetchAdjacentSegments(around: seg.startPos)
+		} else {
+			if ttsManager.isPaused { ttsManager.stop() }
+			announceNavigationCue(seg.text)
+		}
+	}
+
 	// MARK: - Sleep timer
 
 	func setSleepTimer(seconds: Int) {
