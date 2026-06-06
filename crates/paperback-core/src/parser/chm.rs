@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use anyhow::{Context, Result};
-use libchm::{CHM_ENUMERATE_ALL, ChmHandle, unit_info_path};
+use libchm::{ChmFile, EntryCategory, EntrySel};
 use scraper::{ElementRef, Html, Selector};
 
 use crate::{
@@ -35,24 +35,20 @@ impl Parser for ChmParser {
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
-		let mut chm = ChmHandle::open(&context.file_path)
+		let mut chm = ChmFile::open(&context.file_path)
 			.with_context(|| format!("Failed to open CHM file: {}", context.file_path))?;
 		let mut html_files = Vec::new();
 		let mut hhc_file = String::new();
-		chm.enumerate(CHM_ENUMERATE_ALL, |ui| {
-			let path = unit_info_path(ui);
-			let lower_path = path.to_lowercase();
+		for entry in chm.entries(EntrySel::ALL)? {
+			let lower_path = entry.path.to_lowercase();
 			if lower_path.contains(".hhc") && (hhc_file.is_empty() || lower_path.contains("index.hhc")) {
-				hhc_file.clone_from(&path);
+				hhc_file.clone_from(&entry.path);
 			}
-			if (lower_path.contains(".htm") || lower_path.contains(".html"))
-				&& !path.contains("/#")
-				&& !path.contains("/$")
+			if (lower_path.contains(".htm") || lower_path.contains(".html")) && entry.category != EntryCategory::Special
 			{
-				html_files.push(path);
+				html_files.push(entry.path);
 			}
-			true
-		})?;
+		}
 		html_files.sort();
 		let title = parse_system_file(&mut chm).unwrap_or_else(|| extract_title_from_path(&context.file_path));
 		let mut toc_items = if hhc_file.is_empty() { Vec::new() } else { parse_hhc_file(&mut chm, &hhc_file)? };
@@ -62,7 +58,7 @@ impl Parser for ChmParser {
 		let mut file_positions = HashMap::new();
 		for (idx, file_path) in ordered_files.iter().enumerate() {
 			let section_start = buffer.current_position();
-			let Ok(content_bytes) = chm.read_file(file_path) else { continue };
+			let Ok(content_bytes) = chm.find(file_path).and_then(|e| chm.read(&e)) else { continue };
 			if content_bytes.is_empty() {
 				continue;
 			}
@@ -109,8 +105,8 @@ impl Parser for ChmParser {
 	}
 }
 
-fn parse_system_file(chm: &mut ChmHandle) -> Option<String> {
-	let content = chm.read_file("/#SYSTEM").ok()?;
+fn parse_system_file(chm: &mut ChmFile) -> Option<String> {
+	let content = chm.find("/#SYSTEM").and_then(|e| chm.read(&e)).ok()?;
 	if content.len() < 4 {
 		return None;
 	}
@@ -137,8 +133,11 @@ fn parse_system_file(chm: &mut ChmHandle) -> Option<String> {
 	None
 }
 
-fn parse_hhc_file(chm: &mut ChmHandle, hhc_path: &str) -> Result<Vec<TocItem>> {
-	let content_bytes = chm.read_file(hhc_path).with_context(|| format!("Failed to read .hhc file: {hhc_path}"))?;
+fn parse_hhc_file(chm: &mut ChmFile, hhc_path: &str) -> Result<Vec<TocItem>> {
+	let content_bytes = chm
+		.find(hhc_path)
+		.and_then(|e| chm.read(&e))
+		.with_context(|| format!("Failed to read .hhc file: {hhc_path}"))?;
 	if content_bytes.is_empty() {
 		return Ok(Vec::new());
 	}
