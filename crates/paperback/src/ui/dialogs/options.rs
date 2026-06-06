@@ -125,9 +125,11 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		CheckBox::builder(&general_panel).with_label(&t("Check for &updates on startup")).build();
 	let hotkey_button = Button::builder(&general_panel).with_label(&t("Customize &Window Hotkey...")).build();
 	let option_padding = 5;
-	for check in [&restore_docs_check, &start_maximized_check, &minimize_to_tray_check, &check_for_updates_check] {
-		general_sizer.add(check, 0, SizerFlag::All, option_padding);
-	}
+	general_sizer.add(&restore_docs_check, 0, SizerFlag::All, option_padding);
+	general_sizer.add(&start_maximized_check, 0, SizerFlag::All, option_padding);
+	#[cfg(not(target_os = "macos"))]
+	general_sizer.add(&minimize_to_tray_check, 0, SizerFlag::All, option_padding);
+	general_sizer.add(&check_for_updates_check, 0, SizerFlag::All, option_padding);
 	general_sizer.add(&hotkey_button, 0, SizerFlag::All, option_padding);
 	for check in [&navigation_wrap_check, &compact_go_menu_check, &bookmark_sounds_check] {
 		reading_sizer.add(check, 0, SizerFlag::All, option_padding);

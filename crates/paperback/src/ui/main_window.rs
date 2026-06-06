@@ -21,7 +21,7 @@ use paperback_core::{
 use patois::t;
 use wxdragon::{prelude::*, timer::Timer};
 
-#[cfg(not(target_os = "linux"))]
+#[cfg(target_os = "windows")]
 use super::tray;
 use super::{
 	dialogs,
@@ -52,7 +52,7 @@ pub struct MainWindow {
 	frame: Frame,
 	doc_manager: Rc<Mutex<DocumentManager>>,
 	config: Rc<Mutex<ConfigManager>>,
-	#[cfg(not(target_os = "linux"))]
+	#[cfg(target_os = "windows")]
 	_tray_state: Rc<Mutex<Option<tray::TrayState>>>,
 	_live_region_label: StaticText,
 	_find_dialog: Rc<Mutex<Option<FindDialogState>>>,
@@ -133,14 +133,14 @@ impl MainWindow {
 			}
 			event.skip(true);
 		});
-		#[cfg(not(target_os = "linux"))]
+		#[cfg(target_os = "windows")]
 		let tray_state = Rc::new(Mutex::new(None));
-		#[cfg(not(target_os = "linux"))]
+		#[cfg(target_os = "windows")]
 		tray::bind_tray_events(frame, &doc_manager, &config, &tray_state);
 		{
 			let dm_for_close = Rc::clone(&doc_manager);
 			let config_for_close = Rc::clone(&config);
-			#[cfg(not(target_os = "linux"))]
+			#[cfg(target_os = "windows")]
 			let tray_for_close = Rc::clone(&tray_state);
 			#[cfg(target_os = "windows")]
 			let hotkey_for_close = Rc::clone(&hotkey_handle);
@@ -153,7 +153,16 @@ impl MainWindow {
 					cfg.flush();
 				}
 				dm.save_all_positions();
-				#[cfg(not(target_os = "linux"))]
+				#[cfg(target_os = "macos")]
+				if let WindowEventData::General(ref ev) = event {
+					if ev.can_veto() {
+						drop(dm);
+						ev.veto();
+						frame.show(false);
+						return;
+					}
+				}
+				#[cfg(target_os = "windows")]
 				if let Some(state) = tray_for_close.lock().unwrap().as_ref() {
 					state.icon.remove_icon();
 				}
@@ -172,7 +181,7 @@ impl MainWindow {
 				event.skip(true);
 			});
 		}
-		#[cfg(not(target_os = "linux"))]
+		#[cfg(target_os = "windows")]
 		{
 			let tray_for_destroy = Rc::clone(&tray_state);
 			frame.on_destroy(move |_event| {
@@ -186,7 +195,7 @@ impl MainWindow {
 			frame,
 			doc_manager,
 			config,
-			#[cfg(not(target_os = "linux"))]
+			#[cfg(target_os = "windows")]
 			_tray_state: tray_state,
 			_live_region_label: live_region_label,
 			_find_dialog: find_dialog,
@@ -201,6 +210,13 @@ impl MainWindow {
 		}
 		self.frame.show(true);
 		self.frame.centre();
+	}
+
+	#[cfg(target_os = "macos")]
+	pub fn show_from_dock(&self) {
+		self.frame.show(true);
+		self.frame.raise();
+		self.doc_manager.lock().unwrap().restore_focus();
 	}
 
 	pub fn check_for_updates(silent: bool, channel: UpdateChannel) {

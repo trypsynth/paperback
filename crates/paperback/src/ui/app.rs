@@ -53,6 +53,12 @@ impl PaperbackApp {
 		wxdragon::app::set_top_window(main_window.frame());
 		let pipe_server = start_pipe_server(&Rc::clone(&main_window));
 		main_window.show();
+		#[cfg(target_os = "macos")]
+		_app.on_reopen_app(|| {
+			if let Some(window) = main_window_from_ptr() {
+				window.show_from_dock();
+			}
+		});
 		open_from_command_line(&main_window);
 		let (check_updates, channel) = {
 			let cfg = config.lock().unwrap();
@@ -77,7 +83,6 @@ fn open_from_command_line(main_window: &MainWindow) {
 	}
 }
 
-#[cfg(any(target_os = "linux", target_os = "windows"))]
 pub(crate) fn main_window_from_ptr() -> Option<&'static MainWindow> {
 	let ptr = MAIN_WINDOW_PTR.load(Ordering::SeqCst);
 	if ptr == 0 {
