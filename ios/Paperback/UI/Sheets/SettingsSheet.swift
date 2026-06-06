@@ -64,6 +64,9 @@ private struct TtsSettingsSection: View {
 					.accessibilityLabel("Pitch")
 					.accessibilityValue("\(pitchPercent)%")
 			}
+			NavigationLink(value: "speechDictionary") {
+				Text("Speech Dictionary")
+			}
 			Button(action: onPlaySample) {
 				Label("Play Sample", systemImage: "play.circle")
 			}
@@ -101,16 +104,20 @@ struct SettingsSheet: View {
 					}
 				}
 			}
-			.navigationDestination(for: String.self) { _ in
-				VoicePickerView(ttsManager: viewModel.ttsManager) { identifier in
-					let wasPlaying = viewModel.ttsManager.isSpeaking
-					let wasPaused = viewModel.ttsManager.isPaused
-					viewModel.ttsManager.selectedVoiceIdentifier = identifier
-					if wasPlaying {
-						viewModel.ttsManager.stop()
-						viewModel.playCurrentSegment()
-					} else if wasPaused {
-						viewModel.ttsManager.stop()
+			.navigationDestination(for: String.self) { destination in
+				if destination == "speechDictionary" {
+					SpeechDictionaryView()
+				} else {
+					VoicePickerView(ttsManager: viewModel.ttsManager) { identifier in
+						let wasPlaying = viewModel.ttsManager.isSpeaking
+						let wasPaused = viewModel.ttsManager.isPaused
+						viewModel.ttsManager.selectedVoiceIdentifier = identifier
+						if wasPlaying {
+							viewModel.ttsManager.stop()
+							viewModel.playCurrentSegment()
+						} else if wasPaused {
+							viewModel.ttsManager.stop()
+						}
 					}
 				}
 			}

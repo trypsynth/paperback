@@ -26,6 +26,7 @@ final class AppViewModel: ObservableObject {
 	@Published var ttsPosition: Int64 = 0
 	@Published var currentSegmentText: String = ""
 	@Published var currentSegmentType: SegmentType = .paragraph
+	@Published var ttsRules: [TtsRule] = []
 
 	// MARK: - Search
 	@Published var activeSearchQuery: String? = nil
@@ -125,6 +126,22 @@ final class AppViewModel: ObservableObject {
 				self?.configManager.setAppString(key: "tts_voice_identifier", value: value ?? "")
 			}
 			.store(in: &cancellables)
+
+		if let data = UserDefaults.standard.data(forKey: "tts_rules"),
+		   let loaded = try? JSONDecoder().decode([TtsRule].self, from: data) {
+			ttsRules = loaded
+			ttsManager.rules = loaded
+		}
+		$ttsRules
+			.dropFirst()
+			.sink { [weak self] rules in
+				self?.ttsManager.rules = rules
+				if let data = try? JSONEncoder().encode(rules) {
+					UserDefaults.standard.set(data, forKey: "tts_rules")
+				}
+			}
+			.store(in: &cancellables)
+
 		setupRemoteCommands()
 		if restorePreviousDocuments {
 			for path in configManager.getOpenedDocuments() {

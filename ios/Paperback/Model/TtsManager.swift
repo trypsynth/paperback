@@ -37,6 +37,21 @@ final class TtsManager: NSObject, ObservableObject {
 
 	var availableVoices: [AVSpeechSynthesisVoice] { AVSpeechSynthesisVoice.speechVoices() }
 	var onUtteranceFinished: (() -> Void)?
+	var rules: [TtsRule] = [] {
+		didSet { invalidatePrefetch() }
+	}
+
+	func preprocessText(_ text: String) -> String {
+		guard !rules.isEmpty else { return text }
+		var result = text
+		for rule in rules where rule.scope == .paragraph {
+			result = rule.apply(to: result, voiceId: selectedVoiceIdentifier)
+		}
+		for rule in rules where rule.scope == .word {
+			result = rule.apply(to: result, voiceId: selectedVoiceIdentifier)
+		}
+		return result
+	}
 
 	override init() {
 		super.init()
@@ -156,6 +171,7 @@ final class TtsManager: NSObject, ObservableObject {
 	// MARK: - Playback
 
 	func speak(_ text: String) {
+		let text = preprocessText(text)
 		// Use a prefetched buffer if one matches (no synthesis needed).
 		if text == prefetchedText, let cached = prefetchedBuffer {
 			prefetchedText = nil
@@ -204,6 +220,7 @@ final class TtsManager: NSObject, ObservableObject {
 
 	// Synthesise `text` in the background so it's ready when speak() is called next.
 	func prefetch(_ text: String) {
+		let text = preprocessText(text)
 		guard text != prefetchedText else { return }
 		invalidatePrefetch()
 		prefetchedText = text
@@ -227,6 +244,7 @@ final class TtsManager: NSObject, ObservableObject {
 
 	// Synthesise `text` in the background so it's ready if the user navigates backward.
 	func prefetchPrev(_ text: String) {
+		let text = preprocessText(text)
 		guard text != prevPrefetchedText else { return }
 		prevPrefetchGeneration += 1
 		prevPrefetchSynthesizer.stopSpeaking(at: .immediate)
