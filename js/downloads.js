@@ -17,17 +17,9 @@
 
   const render = (release, label, subtitle = "", showApk = false, showMac = false) => {
     const assets = release.assets ?? [];
-    const isMacZip = a => {
-      const n = a.name.toLowerCase();
-      return n.endsWith(".zip") && n.includes("mac");
-    };
-    const isWinZip = a => {
-      const n = a.name.toLowerCase();
-      return n.endsWith(".zip") && !n.includes("mac");
-    };
     const exe = assets.find(a => a.name.toLowerCase().endsWith(".exe"));
-    const winZip = assets.find(isWinZip);
-    const macZip = assets.find(isMacZip);
+    const winZip = assets.find(a => a.name.toLowerCase().endsWith(".zip"));
+    const macDmg = assets.find(a => a.name.toLowerCase().endsWith(".dmg"));
     const apks = showApk ? assets.filter(a => a.name.toLowerCase().endsWith(".apk")) : [];
     const version = release.tag_name.replace(/^v/, "");
     return `
@@ -36,7 +28,7 @@
         ${subtitle ? `<p>${subtitle}</p>` : ""}
         ${exe ? `<p><a href="${exe.browser_download_url}">Windows Installer (.exe)</a> - ${fmtCount(exe.download_count)}</p>` : ""}
         ${winZip ? `<p><a href="${winZip.browser_download_url}">Windows Portable (.zip)</a> - ${fmtCount(winZip.download_count)}</p>` : ""}
-        ${showMac && macZip ? `<p><a href="${macZip.browser_download_url}">macOS (.app, zipped)</a> - ${fmtCount(macZip.download_count)}</p>` : ""}
+        ${showMac && macDmg ? `<p><a href="${macDmg.browser_download_url}">macOS (.dmg)</a> - ${fmtCount(macDmg.download_count)}</p>` : ""}
         ${apks.map(a => {
           const apkLabel = a.name.includes("arm64") ? "Android APK (arm64-v8a)" : a.name.includes("arm") ? "Android APK (armeabi-v7a)" : "Android APK";
           return `<p><a href="${a.browser_download_url}">${apkLabel}</a> - ${fmtCount(a.download_count)}</p>`;
