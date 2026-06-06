@@ -103,24 +103,48 @@
 		A1A1A1A1A1A1A1A1A1A10013 /* Paperback */ = {
 			isa = PBXGroup;
 			children = (
-				A1A1A1A1A1A1A1A1A1A1000F /* PaperbackApp.swift */,
-				A1A1A1A1A1A1A1A1A1A10010 /* ContentView.swift */,
-				C2C2C2C2C2C2C2C2C2C20002 /* KeyboardShortcuts.swift */,
-				A2A2A2A2A2A2A2A2A2A20001 /* AppViewModel.swift */,
-				A2A2A2A2A2A2A2A2A2A20002 /* DocumentTab.swift */,
-				A2A2A2A2A2A2A2A2A2A20004 /* ReaderView.swift */,
-				A2A2A2A2A2A2A2A2A2A20005 /* EmptyStateView.swift */,
-				A2A2A2A2A2A2A2A2A2A20007 /* TextModeView.swift */,
-					A2A2A2A2A2A2A2A2A2A2000B /* DocumentMenu.swift */,
-				A2A2A2A2A2A2A2A2A2A20017 /* AccessibilityHelpers.swift */,
-				A2A2A2A2A2A2A2A2A2A20019 /* TabStripView.swift */,
-				B1B1B1B1B1B1B1B1B1B10001 /* Sheets */,
+				D4D4D4D4D4D4D4D4D4D40001 /* App */,
+				D4D4D4D4D4D4D4D4D4D40002 /* Model */,
 				B1B1B1B1B1B1B1B1B1B10002 /* TTS */,
+				D4D4D4D4D4D4D4D4D4D40003 /* UI */,
 				A5A5A5A5A5A5A5A5A5A50001 /* PaperbackBridgingHeader.h */,
 				A1A1A1A1A1A1A1A1A1A10011 /* Assets.xcassets */,
 				A4A4A4A4A4A4A4A4A4A40005 /* Generated */,
 			);
 			path = Paperback;
+			sourceTree = "<group>";
+		};
+		D4D4D4D4D4D4D4D4D4D40001 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				A1A1A1A1A1A1A1A1A1A1000F /* PaperbackApp.swift */,
+				A1A1A1A1A1A1A1A1A1A10010 /* ContentView.swift */,
+				C2C2C2C2C2C2C2C2C2C20002 /* KeyboardShortcuts.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		D4D4D4D4D4D4D4D4D4D40002 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				A2A2A2A2A2A2A2A2A2A20001 /* AppViewModel.swift */,
+				A2A2A2A2A2A2A2A2A2A20002 /* DocumentTab.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		D4D4D4D4D4D4D4D4D4D40003 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				A2A2A2A2A2A2A2A2A2A20004 /* ReaderView.swift */,
+				A2A2A2A2A2A2A2A2A2A20005 /* EmptyStateView.swift */,
+				A2A2A2A2A2A2A2A2A2A20007 /* TextModeView.swift */,
+				A2A2A2A2A2A2A2A2A2A2000B /* DocumentMenu.swift */,
+				A2A2A2A2A2A2A2A2A2A20019 /* TabStripView.swift */,
+				A2A2A2A2A2A2A2A2A2A20017 /* AccessibilityHelpers.swift */,
+				B1B1B1B1B1B1B1B1B1B10001 /* Sheets */,
+			);
+			path = UI;
 			sourceTree = "<group>";
 		};
 		B1B1B1B1B1B1B1B1B1B10001 /* Sheets */ = {
@@ -131,7 +155,7 @@
 				A2A2A2A2A2A2A2A2A2A2000E /* GoToSheet.swift */,
 				A2A2A2A2A2A2A2A2A2A2000F /* SettingsSheet.swift */,
 				A2A2A2A2A2A2A2A2A2A20010 /* RecentDocumentsSheet.swift */,
-					A2A2A2A2A2A2A2A2A2A20012 /* DocumentInfoSheet.swift */,
+				A2A2A2A2A2A2A2A2A2A20012 /* DocumentInfoSheet.swift */,
 				A2A2A2A2A2A2A2A2A2A20013 /* SleepTimerSheet.swift */,
 				A2A2A2A2A2A2A2A2A2A20014 /* ElementsSheet.swift */,
 				A2A2A2A2A2A2A2A2A2A20015 /* PasswordSheet.swift */,
