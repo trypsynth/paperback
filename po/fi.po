@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-05-14 12:18-0600\n"
-"PO-Revision-Date: 2026-05-15 01:56+0300\n"
+"POT-Creation-Date: 2026-06-03 18:57+0530\n"
+"PO-Revision-Date: 2026-06-06 14:55+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -64,8 +64,8 @@ msgstr "&Poista"
 msgid "&Clear All"
 msgstr "P&oista kaikki"
 
-msgid "OK"
-msgstr "OK"
+msgid "Close"
+msgstr "Sulje"
 
 msgid ""
 "Are you sure you want to remove this document from the list? This will also "
@@ -169,6 +169,9 @@ msgstr "Merkkien määrä (ilman välilyöntejä):"
 msgid "Elements"
 msgstr "Elementit"
 
+msgid "OK"
+msgstr "OK"
+
 msgid "Cancel"
 msgstr "Peruuta"
 
@@ -257,6 +260,9 @@ msgstr "Toista &äänet kirjanmerkeille ja muistiinpanoille"
 
 msgid "Check for &updates on startup"
 msgstr "Tarkista &päivitykset käynnistettäessä"
+
+msgid "Customize &Window Hotkey..."
+msgstr "Mukauta &ikkunan pikanäppäintä..."
 
 msgid "&Reading speed (words per minute):"
 msgstr "&Lukunopeus (sanaa minuutissa):"
@@ -366,6 +372,27 @@ msgstr "Alleviivattu"
 msgid "Strikethrough"
 msgstr "Yliviivattu"
 
+msgid "Window Hotkey"
+msgstr "Ikkunan pikanäppäin"
+
+msgid "&Ctrl"
+msgstr "&Ctrl"
+
+msgid "&Alt"
+msgstr "&Alt"
+
+msgid "&Shift"
+msgstr "&Shift"
+
+msgid "&Win"
+msgstr "&Win"
+
+msgid "&Key:"
+msgstr "&Näppäin:"
+
+msgid "Space"
+msgstr "Väli"
+
 msgid "Sleep Timer"
 msgstr "Uniajastin"
 
@@ -383,9 +410,6 @@ msgstr "Ei valintaa"
 
 msgid "View Note"
 msgstr "Näytä muistiinpano"
-
-msgid "Close"
-msgstr "Sulje"
 
 msgid "1 hour"
 msgstr "1 tunti"
@@ -416,6 +440,14 @@ msgstr "Sanamäärä"
 
 msgid "File not found: {}"
 msgstr "Tiedostoa ei löydy: {}"
+
+msgid ""
+"A .paperback file was found for this document. Would you like to import it?"
+msgstr "Tälle asiakirjalle löytyi .paperback-tiedosto. Haluatko tuoda sen?"
+
+#| msgid "Export document to HTML"
+msgid "Import document data"
+msgstr "Asiakirjatietojen tuonti"
 
 msgid "Password is required."
 msgstr "Tarvitaan salasana."
@@ -1245,11 +1277,9 @@ msgid "Update to %s"
 msgstr "Päivitä versioon %s"
 
 #, c-format
-#| msgid "A new version of Paperback is available. Here's what's new:"
 msgid "A new version of %s is available. Here's what's new:"
 msgstr "%sista on saatavilla uusi versio. Sen uusia ominaisuuksia ovat:"
 
-#| msgid "No release notes were provided."
 msgid "No release notes provided."
 msgstr "Julkaisutietoja ei saatavilla."
 
@@ -1264,7 +1294,6 @@ msgid "No updates available."
 msgstr "Päivityksiä ei saatavilla."
 
 #, c-format
-#| msgid "No updates available. Latest version: {}"
 msgid "No updates available. Latest version: %s"
 msgstr "Päivityksiä ei saatavilla. Uusin versio: %s"
 
@@ -1272,8 +1301,6 @@ msgid "Info"
 msgstr "Tiedot"
 
 #, c-format
-#| msgid ""
-#| "Security verification failed. The update might have been tampered with: {}"
 msgid ""
 "Security verification failed. The update might have been tampered with: %s"
 msgstr "Tietoturvatarkistus epäonnistui. Päivitystä on saatettu peukaloida: %s"
@@ -1292,7 +1319,6 @@ msgstr ""
 "Päivitys ladattu kansioon: %s\n"
 "Asenna se manuaalisesti."
 
-#| msgid "Update failed"
 msgid "Update Ready"
 msgstr "Päivitys valmiina"
 
