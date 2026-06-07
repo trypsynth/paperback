@@ -10,7 +10,7 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::DIALOG_PADDING;
-use crate::{config_ext::UpdateChannel, translation_manager::TranslationManager};
+use crate::{accessibility, config_ext::UpdateChannel, translation_manager::TranslationManager};
 
 #[derive(Clone, Debug)]
 pub struct OptionsDialogResult {
@@ -149,7 +149,8 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	recent_docs_sizer.add(&recent_docs_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	recent_docs_sizer.add(&recent_docs_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
 	general_sizer.add_sizer(&recent_docs_sizer, 0, SizerFlag::All, option_padding);
-	let language_label = StaticText::builder(&general_panel).with_label(&t("&Language:")).build();
+	let language_label_text = t("&Language:");
+	let language_label = StaticText::builder(&general_panel).with_label(&language_label_text).build();
 	let language_combo = Choice::builder(&general_panel).build();
 	let languages = TranslationManager::instance().lock().unwrap().available_languages();
 	let mut language_codes = Vec::new();
@@ -157,14 +158,19 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		language_combo.append(&lang.name);
 		language_codes.push(lang.code.clone());
 	}
+	accessibility::set_label(&language_combo, language_label_text.replace('&', "").trim_end_matches(':').trim());
+
 	let language_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	language_sizer.add(&language_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	language_sizer.add(&language_combo, 0, SizerFlag::AlignCenterVertical, 0);
 	general_sizer.add_sizer(&language_sizer, 0, SizerFlag::All, option_padding);
-	let channel_label = StaticText::builder(&general_panel).with_label(&t("Update Channel:")).build();
+	let channel_label_text = t("Update Channel:");
+	let channel_label = StaticText::builder(&general_panel).with_label(&channel_label_text).build();
 	let update_channel_combo = Choice::builder(&general_panel).build();
 	update_channel_combo.append(&t("Stable"));
 	update_channel_combo.append(&t("Dev"));
+	accessibility::set_label(&update_channel_combo, channel_label_text.trim_end_matches(':').trim());
+
 	let channel_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	channel_sizer.add(&channel_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	channel_sizer.add(&update_channel_combo, 0, SizerFlag::AlignCenterVertical, 0);
@@ -187,19 +193,29 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	bg_group_sizer.add(&choose_bg_button, 0, SizerFlag::All, option_padding);
 	bg_group_sizer.add(&reset_bg_button, 0, SizerFlag::All, option_padding);
 	readability_sizer.add_sizer(&bg_group_sizer, 0, SizerFlag::Expand | SizerFlag::All, option_padding);
-	let line_spacing_label = StaticText::builder(&readability_panel).with_label(&t("&Line spacing:")).build();
+	let line_spacing_label_text = t("&Line spacing:");
+	let line_spacing_label = StaticText::builder(&readability_panel).with_label(&line_spacing_label_text).build();
 	let line_spacing_ctrl = Choice::builder(&readability_panel).build();
 	line_spacing_ctrl.append(&t("Normal"));
 	line_spacing_ctrl.append(&t("1.5\u{00d7}"));
 	line_spacing_ctrl.append(&t("Double"));
+	accessibility::set_label(&line_spacing_ctrl, line_spacing_label_text.replace('&', "").trim_end_matches(':').trim());
+
 	let line_spacing_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	line_spacing_sizer.add(&line_spacing_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	line_spacing_sizer.add(&line_spacing_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
-	let paragraph_spacing_label = StaticText::builder(&readability_panel).with_label(&t("&Paragraph spacing:")).build();
+	let paragraph_spacing_label_text = t("&Paragraph spacing:");
+	let paragraph_spacing_label =
+		StaticText::builder(&readability_panel).with_label(&paragraph_spacing_label_text).build();
 	let paragraph_spacing_ctrl = Choice::builder(&readability_panel).build();
 	paragraph_spacing_ctrl.append(&t("Normal"));
 	paragraph_spacing_ctrl.append(&t("Relaxed"));
 	paragraph_spacing_ctrl.append(&t("Wide"));
+	accessibility::set_label(
+		&paragraph_spacing_ctrl,
+		paragraph_spacing_label_text.replace('&', "").trim_end_matches(':').trim(),
+	);
+
 	let paragraph_spacing_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	paragraph_spacing_sizer.add(
 		&paragraph_spacing_label,
@@ -208,11 +224,17 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		DIALOG_PADDING,
 	);
 	paragraph_spacing_sizer.add(&paragraph_spacing_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
-	let letter_spacing_label = StaticText::builder(&readability_panel).with_label(&t("L&etter spacing:")).build();
+	let letter_spacing_label_text = t("L&etter spacing:");
+	let letter_spacing_label = StaticText::builder(&readability_panel).with_label(&letter_spacing_label_text).build();
 	let letter_spacing_ctrl = Choice::builder(&readability_panel).build();
 	letter_spacing_ctrl.append(&t("Normal"));
 	letter_spacing_ctrl.append(&t("Wide"));
 	letter_spacing_ctrl.append(&t("Very Wide"));
+	accessibility::set_label(
+		&letter_spacing_ctrl,
+		letter_spacing_label_text.replace('&', "").trim_end_matches(':').trim(),
+	);
+
 	let letter_spacing_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	letter_spacing_sizer.add(
 		&letter_spacing_label,
@@ -221,12 +243,18 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		DIALOG_PADDING,
 	);
 	letter_spacing_sizer.add(&letter_spacing_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
-	let text_alignment_label = StaticText::builder(&readability_panel).with_label(&t("Text &alignment:")).build();
+	let text_alignment_label_text = t("Text &alignment:");
+	let text_alignment_label = StaticText::builder(&readability_panel).with_label(&text_alignment_label_text).build();
 	let text_alignment_ctrl = Choice::builder(&readability_panel).build();
 	text_alignment_ctrl.append(&t("Left"));
 	text_alignment_ctrl.append(&t("Center"));
 	text_alignment_ctrl.append(&t("Right"));
 	text_alignment_ctrl.append(&t("Justify"));
+	accessibility::set_label(
+		&text_alignment_ctrl,
+		text_alignment_label_text.replace('&', "").trim_end_matches(':').trim(),
+	);
+
 	let text_alignment_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	text_alignment_sizer.add(
 		&text_alignment_label,

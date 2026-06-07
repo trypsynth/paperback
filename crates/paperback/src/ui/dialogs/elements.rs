@@ -11,6 +11,8 @@ use wxdragon::prelude::*;
 
 #[cfg(target_os = "linux")]
 use super::accessible_tree::{self, AccessibleTree};
+#[cfg(not(target_os = "linux"))]
+use crate::accessibility;
 
 #[cfg(not(target_os = "linux"))]
 const DIALOG_PADDING: i32 = 10;
@@ -203,11 +205,13 @@ struct ElementsDialogUi {
 fn build_elements_dialog_ui(dialog: Dialog) -> ElementsDialogUi {
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let choice_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	let choice_label = StaticText::builder(&dialog).with_label(&t("&View:")).build();
+	let choice_label_text = t("&View:");
+	let choice_label = StaticText::builder(&dialog).with_label(&choice_label_text).build();
 	let view_choice = Choice::builder(&dialog).build();
 	view_choice.append(&t("Headings"));
 	view_choice.append(&t("Links"));
 	view_choice.set_selection(0);
+	accessibility::set_label(&view_choice, choice_label_text.replace('&', "").trim_end_matches(':').trim());
 	choice_sizer.add(&choice_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	choice_sizer.add(&view_choice, 1, SizerFlag::Expand, 0);
 	content_sizer.add_sizer(&choice_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
