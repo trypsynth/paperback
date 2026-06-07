@@ -343,6 +343,12 @@ fn build_mac_dmg(target_dir: &Path) -> Result<(), Box<dyn Error>> {
 		let _ = fs::copy(&readme, resources_dir.join("readme.html"));
 	}
 
+	// Copy the finished .app to the project root for quick local testing.
+	let root_app = project_root().join("Paperback.app");
+	let _ = fs::remove_dir_all(&root_app);
+	copy_dir_all(&bundle_dir, &root_app)?;
+	println!("Copied app: {}", root_app.display());
+
 	// Build a DMG: staging folder contains the .app plus an /Applications symlink
 	// so users get the standard drag-to-install experience.
 	let staging = target_dir.join("dmg-staging");
@@ -351,7 +357,7 @@ fn build_mac_dmg(target_dir: &Path) -> Result<(), Box<dyn Error>> {
 	copy_dir_all(&bundle_dir, &staging.join("Paperback.app"))?;
 	std::os::unix::fs::symlink("/Applications", staging.join("Applications"))?;
 
-	let dmg_path = target_dir.join("paperback-macos.dmg");
+	let dmg_path = target_dir.join("paperback.dmg");
 	let status = Command::new("hdiutil")
 		.args([
 			"create",
