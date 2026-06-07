@@ -343,11 +343,7 @@ fn build_mac_dmg(target_dir: &Path) -> Result<(), Box<dyn Error>> {
 		let _ = fs::copy(&readme, resources_dir.join("readme.html"));
 	}
 
-	// Copy the finished .app to the project root for quick local testing.
-	let root_app = project_root().join("Paperback.app");
-	let _ = fs::remove_dir_all(&root_app);
-	copy_dir_all(&bundle_dir, &root_app)?;
-	println!("Copied app: {}", root_app.display());
+	println!("Built app: {}", bundle_dir.display());
 
 	// Build a DMG: staging folder contains the .app plus an /Applications symlink
 	// so users get the standard drag-to-install experience.
