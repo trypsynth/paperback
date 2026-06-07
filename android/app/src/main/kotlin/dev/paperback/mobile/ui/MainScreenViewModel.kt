@@ -152,6 +152,9 @@ class MainScreenViewModel(
 	}
 
 	init {
+		ttsManager.onSegmentTransition = {
+			transitionToNextContinuousSegment()
+		}
 		ttsManager.onUtteranceCompleted = {
 			playNextContinuousSegment()
 		}
@@ -533,6 +536,8 @@ class MainScreenViewModel(
 	fun togglePlayPause() {
 		if (ttsManager.isSpeaking.value) {
 			pauseTts()
+		} else if (ttsManager.isPaused.value) {
+			resumeTts()
 		} else {
 			speakCurrentSegment()
 		}
@@ -567,7 +572,9 @@ class MainScreenViewModel(
 				_ttsPosition.value = segment.startPos
 				_currentSegmentText.value = segment.text
 				saveTtsPositionToConfig(segment.startPos)
+				ttsManager.stop()
 				ttsManager.speak(segment.text)
+				precacheNextContinuousSegment()
 			} else {
 				playNextSegment()
 			}
@@ -585,6 +592,7 @@ class MainScreenViewModel(
 				saveTtsPositionToConfig(segment.startPos)
 				if (speak) {
 					ttsManager.speak(segment.text)
+					precacheNextContinuousSegment()
 				} else if (announce) {
 					announceNavigationCue(segment.text)
 				}
@@ -612,6 +620,32 @@ class MainScreenViewModel(
 				_currentSegmentText.value = segment.text
 				saveTtsPositionToConfig(segment.startPos)
 				ttsManager.speak(segment.text)
+				precacheNextContinuousSegment()
+			}
+		}
+	}
+
+	fun transitionToNextContinuousSegment() {
+		val state = uiState.value
+		if (state is MainScreenUiState.Success) {
+			val tab = state.activeTab ?: return
+			val segment = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.NEXT)
+			if (segment.text.isNotBlank()) {
+				_ttsPosition.value = segment.startPos
+				_currentSegmentText.value = segment.text
+				saveTtsPositionToConfig(segment.startPos)
+				precacheNextContinuousSegment()
+			}
+		}
+	}
+
+	fun precacheNextContinuousSegment() {
+		val state = uiState.value
+		if (state is MainScreenUiState.Success) {
+			val tab = state.activeTab ?: return
+			val segment = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.NEXT)
+			if (segment.text.isNotBlank()) {
+				ttsManager.precache(segment.text)
 			}
 		}
 	}
@@ -627,6 +661,7 @@ class MainScreenViewModel(
 				saveTtsPositionToConfig(segment.startPos)
 				if (speak) {
 					ttsManager.speak(segment.text)
+					precacheNextContinuousSegment()
 				} else if (announce) {
 					announceNavigationCue(segment.text)
 				}
@@ -635,7 +670,7 @@ class MainScreenViewModel(
 	}
 
 	fun pauseTts() {
-		ttsManager.stop()
+		ttsManager.pause()
 	}
 
 	fun setSleepTimer(minutes: Int) {
@@ -668,12 +703,18 @@ class MainScreenViewModel(
 			_ttsPosition.value = segment.startPos
 			_currentSegmentText.value = segment.text
 			saveTtsPositionToConfig(segment.startPos)
+			ttsManager.stop()
 			ttsManager.speak(segment.text)
+			precacheNextContinuousSegment()
 		}
 	}
 
 	fun resumeTts() {
-		speakCurrentSegment()
+		if (ttsManager.isPaused.value) {
+			ttsManager.resume()
+		} else {
+			speakCurrentSegment()
+		}
 	}
 
 	fun exportCurrentSettings(): Boolean {

@@ -1,12 +1,7 @@
 use std::sync::{Mutex, OnceLock};
 
-use wxdragon::translations::{Locale, Translations};
-
-#[derive(Clone, Debug)]
-pub struct LanguageInfo {
-	pub code: String,
-	pub native_name: String,
-}
+pub use patois::LanguageInfo;
+use wxdragon::translations::Translations;
 
 pub struct TranslationManager {
 	current_language: String,
@@ -25,18 +20,10 @@ impl TranslationManager {
 			return true;
 		}
 		let translations = Translations::new();
-		self.scan_available_languages();
-		let system_lang_id = Locale::get_system_language();
-		let raw_sys_lang =
-			Locale::get_language_info(system_lang_id).map_or_else(|| "en".to_string(), |info| info.canonical_name());
-		let sys_lang = raw_sys_lang
-			.split('_')
-			.next()
-			.unwrap_or(&raw_sys_lang)
-			.split('-')
-			.next()
-			.unwrap_or(&raw_sys_lang)
-			.to_string();
+		let mgr = patois::LanguageManager::new("paperback");
+		self.available_languages = mgr.available();
+		let raw_sys_lang = patois::LanguageManager::system_language();
+		let sys_lang = raw_sys_lang.split('_').next().unwrap_or(&raw_sys_lang).to_string();
 		if self.is_language_available(&sys_lang) {
 			self.current_language = sys_lang;
 		} else {
@@ -81,23 +68,10 @@ impl TranslationManager {
 		self.available_languages.iter().any(|lang| lang.code == language_code)
 	}
 
-	fn scan_available_languages(&mut self) {
-		for locale_code in patois::available_locales("paperback") {
-			let mut native_name = locale_code.to_string();
-			if let Some(info) = Locale::find_language_info(locale_code) {
-				let desc = info.native_description();
-				if !desc.is_empty() {
-					native_name = desc;
-				}
-			}
-			self.available_languages.push(LanguageInfo { code: locale_code.to_string(), native_name });
-		}
-	}
-
 	fn new() -> Self {
 		Self {
 			current_language: "en".to_string(),
-			available_languages: vec![LanguageInfo { code: "en".to_string(), native_name: "English".to_string() }],
+			available_languages: vec![LanguageInfo { code: "en".to_string(), name: "English".to_string() }],
 			initialized: false,
 		}
 	}
@@ -126,7 +100,7 @@ mod tests {
 	fn available_languages_returns_clone() {
 		let manager = TranslationManager::new();
 		let mut langs = manager.available_languages();
-		langs.push(LanguageInfo { code: "xx".to_string(), native_name: "Fake".to_string() });
+		langs.push(LanguageInfo { code: "xx".to_string(), name: "Fake".to_string() });
 		assert!(!manager.is_language_available("xx"));
 	}
 }

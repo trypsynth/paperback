@@ -37,6 +37,7 @@ class MagicTapWindow: UIWindow {
 
 class SceneDelegate: NSObject, UIWindowSceneDelegate {
 	var window: UIWindow?
+	weak var appViewModel: AppViewModel?
 
 	func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options: UIScene.ConnectionOptions) {
 		guard let windowScene = scene as? UIWindowScene else { return }

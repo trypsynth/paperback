@@ -1,4 +1,6 @@
-namespace paperback {};
+namespace paperback {
+	void set_pdfium_library_path(string path);
+};
 
 [Error]
 enum DocumentError {

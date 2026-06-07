@@ -38,7 +38,7 @@ pub fn show_go_to_page_dialog(parent: &Frame, current_page: i32, max_page: i32) 
 	let page_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	page_sizer.add(&label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 5);
 	page_sizer.add(&page_ctrl, 1, SizerFlag::Expand, 0);
-	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
+	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("Go")).build();
 	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
 	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
 	dialog.set_affirmative_id(wxdragon::id::ID_OK);

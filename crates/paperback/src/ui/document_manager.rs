@@ -37,7 +37,9 @@ pub struct DocumentTab {
 const POSITION_SAVE_INTERVAL_SECS: u64 = 3;
 const WXK_F10: i32 = 349;
 const WXK_WINDOWS_MENU: i32 = 395;
+#[cfg(target_os = "windows")]
 const WXK_UP: i32 = 315;
+#[cfg(target_os = "windows")]
 const WXK_DOWN: i32 = 317;
 
 pub struct DocumentManager {
@@ -592,6 +594,7 @@ impl DocumentManager {
 			}
 		});
 		let text_ctrl_for_menu = text_ctrl;
+		#[cfg(target_os = "windows")]
 		let dm_for_nav = Rc::clone(self_rc);
 		#[cfg(target_os = "linux")]
 		let key_map = navigation_key_map;
@@ -652,6 +655,7 @@ impl DocumentManager {
 /// Returns (new_position, preferred_column) for character-column-based vertical navigation.
 /// Uses wxdragon PositionToXY, XYToPosition, and GetLineLength so the cursor lands on the same
 /// character column (not pixel column) on the target visual line.
+#[cfg(target_os = "windows")]
 fn navigate_line_by_column(text_ctrl: TextCtrl, going_down: bool, pref_col: Option<i64>) -> Option<(i64, i64)> {
 	let current_pos = text_ctrl.get_insertion_point().max(0);
 	let (current_col, current_line) = text_ctrl.position_to_xy(current_pos)?;

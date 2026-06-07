@@ -23,7 +23,7 @@ pub fn show_go_to_line_dialog(parent: &Frame, current_line: i32, max_lines: i32)
 	let line_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	line_sizer.add(&label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 5);
 	line_sizer.add(&line_ctrl, 1, SizerFlag::Expand, 0);
-	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
+	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("Go")).build();
 	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
 	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
 	ok_button.set_default();

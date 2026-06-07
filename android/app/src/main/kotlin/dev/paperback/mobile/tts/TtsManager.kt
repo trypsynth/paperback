@@ -21,6 +21,13 @@ class TtsManager(
 ) : TextToSpeech.OnInitListener {
 	private var tts: TextToSpeech? = null
 	private var mediaSession: MediaSessionCompat? = null
+	private var mediaPlayer: android.media.MediaPlayer? = null
+	private var nextMediaPlayer: android.media.MediaPlayer? = null
+	private var isNextMediaPlayerPrepared = false
+	private var currentTempFile: java.io.File? = null
+	private var nextTempFile: java.io.File? = null
+	private var precachedText: String? = null
+	private var fileCounter = 0
 	private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
 	var currentDocumentTitle: String = "Paperback"
@@ -110,7 +117,11 @@ class TtsManager(
 	private val _isSpeaking = MutableStateFlow(false)
 	val isSpeaking: StateFlow<Boolean> = _isSpeaking
 
+	private val _isPaused = MutableStateFlow(false)
+	val isPaused: StateFlow<Boolean> = _isPaused
+
 	var onUtteranceCompleted: (() -> Unit)? = null
+	var onSegmentTransition: (() -> Unit)? = null
 	var onPlayCommand: (() -> Unit)? = null
 	var onPauseCommand: (() -> Unit)? = null
 	var onNextCommand: (() -> Unit)? = null
@@ -138,7 +149,7 @@ class TtsManager(
 		val mediaButtonIntent = android.content.Intent(android.content.Intent.ACTION_MEDIA_BUTTON).apply {
 			setClass(context, androidx.media.session.MediaButtonReceiver::class.java)
 		}
-		
+
 		val pendingIntent = android.app.PendingIntent.getBroadcast(
 			context,
 			0,
@@ -149,7 +160,7 @@ class TtsManager(
 		mediaSession = MediaSessionCompat(context, "PaperbackTtsSession").apply {
 			setMediaButtonReceiver(pendingIntent)
 		}
-		
+
 		PlaybackService.activeMediaSession = mediaSession
 		@Suppress("DEPRECATION")
 		mediaSession?.setFlags(
@@ -175,7 +186,7 @@ class TtsManager(
 		})
 
 		mediaSession?.isActive = true
-		
+
 		val playbackState = PlaybackStateCompat
 			.Builder()
 			.setActions(
@@ -192,7 +203,7 @@ class TtsManager(
 		if (mediaSession?.isActive != true && (isPlaying || hasStartedService)) {
 			mediaSession?.isActive = true
 		}
-		
+
 		val state = if (isPlaying) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED
 		val playbackState = PlaybackStateCompat
 			.Builder()
@@ -227,6 +238,18 @@ class TtsManager(
 		}
 	}
 
+	fun precache(text: String) {
+		if (text.isBlank() || text == precachedText) return
+		fileCounter++
+		precachedText = text
+		isNextMediaPlayerPrepared = false
+		nextTempFile = java.io.File(context.cacheDir, "paperback_tts_next_$fileCounter.wav")
+		if (nextTempFile!!.exists()) nextTempFile!!.delete()
+
+		val params = android.os.Bundle()
+		tts?.synthesizeToFile(text, params, nextTempFile, "TTS_PRECACHE_ID")
+	}
+
 	private fun initTts(engineName: String?) {
 		_isInitialized.value = false
 		tts?.shutdown()
@@ -250,37 +273,113 @@ class TtsManager(
 		if (status == TextToSpeech.SUCCESS) {
 			tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
 				override fun onStart(utteranceId: String?) {
-					stopSpeakingJob?.cancel()
-					_isSpeaking.value = true
-					updatePlaybackState(true)
+					if (!_isPaused.value && mediaPlayer == null) {
+						stopSpeakingJob?.cancel()
+						_isSpeaking.value = true
+						updatePlaybackState(true)
+					}
 				}
 
 				override fun onDone(utteranceId: String?) {
-					stopSpeakingJob?.cancel()
-					stopSpeakingJob = ttsScope.launch {
-						kotlinx.coroutines.delay(400)
-						_isSpeaking.value = false
-						updatePlaybackState(false)
-					}
-					if (utteranceId == "TTS_CONTENT_ID") {
-						onUtteranceCompleted?.invoke()
+					if (utteranceId == "TTS_CONTENT_ID" && currentTempFile != null) {
+						ttsScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+							try {
+								val player = android.media.MediaPlayer().apply {
+									val attributes = android.media.AudioAttributes.Builder()
+										.setUsage(android.media.AudioAttributes.USAGE_MEDIA)
+										.setContentType(android.media.AudioAttributes.CONTENT_TYPE_SPEECH)
+										.build()
+									setAudioAttributes(attributes)
+									setDataSource(currentTempFile!!.absolutePath)
+
+									setOnPreparedListener { mp ->
+										ttsScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+											mediaPlayer = mp
+											if (_isSpeaking.value && !_isPaused.value) {
+												mp.start()
+											}
+											nextMediaPlayer?.let {
+												try { mp.setNextMediaPlayer(it) } catch(e: Exception){}
+											}
+											setupCompletionListener(mp, utteranceId)
+										}
+									}
+
+									setOnErrorListener { _, _, _ ->
+										ttsScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+											stopSpeakingJob?.cancel()
+											_isSpeaking.value = false
+											updatePlaybackState(false)
+											cleanupPlayer()
+										}
+										true
+									}
+									prepareAsync()
+								}
+							} catch (e: Exception) {
+								e.printStackTrace()
+							}
+						}
+					} else if (utteranceId == "TTS_PRECACHE_ID" && nextTempFile != null) {
+						ttsScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+							try {
+								val nextPlayer = android.media.MediaPlayer().apply {
+									val attributes = android.media.AudioAttributes.Builder()
+										.setUsage(android.media.AudioAttributes.USAGE_MEDIA)
+										.setContentType(android.media.AudioAttributes.CONTENT_TYPE_SPEECH)
+										.build()
+									setAudioAttributes(attributes)
+									setDataSource(nextTempFile!!.absolutePath)
+
+									setOnPreparedListener { nextMp ->
+										ttsScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+											nextMediaPlayer = nextMp
+											isNextMediaPlayerPrepared = true
+											mediaPlayer?.let {
+												try { it.setNextMediaPlayer(nextMp) } catch (e: Exception) {}
+											}
+										}
+									}
+									prepareAsync()
+								}
+							} catch (e: Exception) {
+								e.printStackTrace()
+							}
+						}
+					} else {
+						if (_isPaused.value) return
+						stopSpeakingJob?.cancel()
+						stopSpeakingJob = ttsScope.launch {
+							kotlinx.coroutines.delay(400)
+							_isSpeaking.value = false
+							updatePlaybackState(false)
+						}
+						if (utteranceId == "TTS_CONTENT_ID") {
+							onUtteranceCompleted?.invoke()
+						}
 					}
 				}
 
 				@Deprecated("Deprecated in Java")
 				override fun onError(utteranceId: String?) {
-					stopSpeakingJob?.cancel()
-					_isSpeaking.value = false
-					updatePlaybackState(false)
+					if (currentTempFile == null) {
+						if (_isPaused.value) return
+						stopSpeakingJob?.cancel()
+						_isSpeaking.value = false
+						updatePlaybackState(false)
+					}
 				}
 
 				override fun onStop(
 					utteranceId: String?,
 					interrupted: Boolean
 				) {
-					stopSpeakingJob?.cancel()
-					_isSpeaking.value = false
-					updatePlaybackState(false)
+					if (currentTempFile == null) {
+						if (_isPaused.value) return
+						stopSpeakingJob?.cancel()
+						_isSpeaking.value = false
+						updatePlaybackState(false)
+					}
 				}
 			})
 			val langResult = tts?.setLanguage(Locale.getDefault()) ?: TextToSpeech.LANG_NOT_SUPPORTED
@@ -316,6 +415,38 @@ class TtsManager(
 		}
 	}
 
+	private fun setupCompletionListener(mp: android.media.MediaPlayer, utteranceId: String?) {
+		mp.setOnCompletionListener { _ ->
+			if (nextMediaPlayer != null && isNextMediaPlayerPrepared) {
+				val oldMp = mediaPlayer
+				mediaPlayer = nextMediaPlayer
+				nextMediaPlayer = null
+				isNextMediaPlayerPrepared = false
+				precachedText = null
+
+				try { oldMp?.release() } catch (e: Exception) {}
+				try { currentTempFile?.delete() } catch(e: Exception) {}
+				currentTempFile = nextTempFile
+				nextTempFile = null
+
+				onSegmentTransition?.invoke()
+
+				mediaPlayer?.let { setupCompletionListener(it, "TTS_CONTENT_ID") }
+			} else {
+				stopSpeakingJob?.cancel()
+				stopSpeakingJob = ttsScope.launch {
+					kotlinx.coroutines.delay(400)
+					_isSpeaking.value = false
+					updatePlaybackState(false)
+				}
+				if (utteranceId == "TTS_CONTENT_ID") {
+					onUtteranceCompleted?.invoke()
+				}
+				cleanupPlayer()
+			}
+		}
+	}
+
 	fun speak(
 		text: String,
 		isSample: Boolean = false
@@ -325,14 +456,95 @@ class TtsManager(
 				requestAudioFocus()
 			}
 			val utteranceId = if (isSample) "TTS_SAMPLE_ID" else "TTS_CONTENT_ID"
-			tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, utteranceId)
+			cleanupPlayer()
+			tts?.stop()
+
+			try {
+				fileCounter++
+				currentTempFile = java.io.File(context.cacheDir, "paperback_tts_$fileCounter.wav")
+				if (currentTempFile!!.exists()) {
+					currentTempFile!!.delete()
+				}
+
+				_isSpeaking.value = true
+				_isPaused.value = false
+				updatePlaybackState(true)
+
+				val params = android.os.Bundle()
+				tts?.synthesizeToFile(text, params, currentTempFile, utteranceId)
+			} catch (e: Exception) {
+				e.printStackTrace()
+				cleanupPlayer()
+				tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, utteranceId)
+			}
 		}
+	}
+
+
+
+	fun pause() {
+		if (_isSpeaking.value && !_isPaused.value) {
+			_isPaused.value = true
+			_isSpeaking.value = false
+			mediaPlayer?.let {
+				try {
+					if (it.isPlaying) {
+						it.pause()
+					}
+				} catch (e: Exception) {}
+			} ?: run {
+				if (currentTempFile == null) {
+					tts?.stop()
+				}
+			}
+			updatePlaybackState(false)
+		}
+	}
+
+	fun resume() {
+		if (_isPaused.value) {
+			_isPaused.value = false
+			_isSpeaking.value = true
+			updatePlaybackState(true)
+			mediaPlayer?.let {
+				try {
+					it.start()
+				} catch (e: Exception) {}
+			}
+		}
+	}
+
+	private fun cleanupPlayer() {
+		try {
+			mediaPlayer?.release()
+		} catch (e: Exception) {}
+		mediaPlayer = null
+
+		try {
+			nextMediaPlayer?.release()
+		} catch (e: Exception) {}
+		nextMediaPlayer = null
+		isNextMediaPlayerPrepared = false
+		precachedText = null
+
+		currentTempFile = null
+		nextTempFile = null
+
+		try {
+			context.cacheDir.listFiles()?.forEach {
+				if (it.name.startsWith("paperback_tts_")) {
+					it.delete()
+				}
+			}
+		} catch (e: Exception) {}
 	}
 
 	fun stop() {
 		tts?.stop()
+		cleanupPlayer()
 		stopSpeakingJob?.cancel()
 		_isSpeaking.value = false
+		_isPaused.value = false
 		updatePlaybackState(false)
 		abandonAudioFocus()
 	}
@@ -421,7 +633,7 @@ class TtsManager(
 			action = PlaybackService.ACTION_STOP
 		}
 		context.startService(stopIntent)
-		
+
 		tts?.shutdown()
 		mediaSession?.release()
 		PlaybackService.activeMediaSession = null

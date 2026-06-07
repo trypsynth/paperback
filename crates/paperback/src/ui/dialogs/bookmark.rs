@@ -14,6 +14,7 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::show_note_entry_dialog;
+use crate::accessibility;
 
 const DIALOG_PADDING: i32 = 10;
 const KEY_DELETE: i32 = 127;
@@ -94,7 +95,7 @@ pub fn show_bookmark_dialog(
 }
 
 struct BookmarkDialogUi {
-	filter_choice: ComboBox,
+	filter_choice: Choice,
 	filter_sizer: BoxSizer,
 	bookmark_list: ListBox,
 	edit_button: Button,
@@ -118,7 +119,7 @@ struct BookmarkRepopulateParams {
 	entries: Rc<RefCell<Vec<BookmarkDisplayEntry>>>,
 	selected_start: Rc<Cell<i64>>,
 	selected_end: Rc<Cell<i64>>,
-	filter_choice: ComboBox,
+	filter_choice: Choice,
 	set_buttons_enabled: Rc<dyn Fn(bool)>,
 }
 
@@ -132,7 +133,7 @@ struct BookmarkSelectionParams {
 
 struct BookmarkDialogActions {
 	dialog: Dialog,
-	filter_choice: ComboBox,
+	filter_choice: Choice,
 	bookmark_list: ListBox,
 	edit_button: Button,
 	delete_button: Button,
@@ -146,8 +147,9 @@ struct BookmarkDialogActions {
 }
 
 fn build_bookmark_dialog_ui(dialog: Dialog, initial_filter: BookmarkFilterType) -> BookmarkDialogUi {
-	let filter_label = StaticText::builder(&dialog).with_label(&t("&Filter:")).build();
-	let filter_choice = ComboBox::builder(&dialog).with_style(ComboBoxStyle::ReadOnly).build();
+	let filter_label_text = t("&Filter:");
+	let filter_label = StaticText::builder(&dialog).with_label(&filter_label_text).build();
+	let filter_choice = Choice::builder(&dialog).build();
 	filter_choice.append(&t("All"));
 	filter_choice.append(&t("Bookmarks"));
 	filter_choice.append(&t("Notes"));
@@ -157,6 +159,7 @@ fn build_bookmark_dialog_ui(dialog: Dialog, initial_filter: BookmarkFilterType) 
 		BookmarkFilterType::All => 0,
 	};
 	filter_choice.set_selection(initial_index);
+	accessibility::set_label(&filter_choice, filter_label_text.replace('&', "").trim_end_matches(':').trim());
 	let filter_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	filter_sizer.add(&filter_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 6);
 	filter_sizer.add(&filter_choice, 1, SizerFlag::Expand, 0);
@@ -375,7 +378,7 @@ fn bind_bookmark_cancel(dialog: Dialog, cancel_button: Button) {
 	});
 }
 
-fn bind_bookmark_filter(filter_choice: ComboBox, repopulate: Rc<dyn Fn(i64)>, current_pos: i64) {
+fn bind_bookmark_filter(filter_choice: Choice, repopulate: Rc<dyn Fn(i64)>, current_pos: i64) {
 	filter_choice.on_selection_changed(move |_event| {
 		repopulate(current_pos);
 	});

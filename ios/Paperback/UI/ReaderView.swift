@@ -111,14 +111,14 @@ struct ReaderView: View {
 
 	@ViewBuilder
 	private var bottomBar: some View {
-		if viewModel.activeSearchQuery != nil, viewModel.activeTab != nil {
-			SearchControlBar()
-				.environmentObject(viewModel)
-				.background(.bar)
-		} else if !viewModel.isTextMode, viewModel.activeTab != nil {
+		if !viewModel.isTextMode, viewModel.activeTab != nil {
 			TtsControlBar()
 				.environmentObject(viewModel)
-				.background(.bar)
+				.background {
+					Rectangle()
+						.fill(.bar)
+						.ignoresSafeArea(edges: .bottom)
+				}
 		}
 	}
 

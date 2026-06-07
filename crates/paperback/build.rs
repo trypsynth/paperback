@@ -110,68 +110,7 @@ fn track_packaging_inputs() {
 }
 
 fn build_translations() {
-	let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap_or_default());
-	let workspace_dir = manifest_dir.parent().unwrap().parent().unwrap();
-	let po_dir = workspace_dir.join("po");
-	println!("cargo:rerun-if-changed={}", po_dir.display());
-	// Tell cargo to rerun if any previously-generated .mo changes (covers incremental rebuilds).
-	println!("cargo:rerun-if-changed={}", manifest_dir.join("locale").display());
-	if !po_dir.exists() {
-		return;
-	}
-	let locale_dir = manifest_dir.join("locale");
-	let po_files = match fs::read_dir(&po_dir) {
-		Ok(entries) => entries,
-		Err(err) => {
-			println!("cargo:warning=Failed to read po directory: {}", err);
-			return;
-		}
-	};
-	for entry in po_files {
-		let entry = match entry {
-			Ok(entry) => entry,
-			Err(err) => {
-				println!("cargo:warning=Failed to read po file: {}", err);
-				continue;
-			}
-		};
-		let path = entry.path();
-		if path.extension().and_then(|ext| ext.to_str()) != Some("po") {
-			continue;
-		}
-		if path.file_stem().and_then(|stem| stem.to_str()) == Some("paperback") {
-			continue;
-		}
-		let lang = match path.file_stem().and_then(|stem| stem.to_str()) {
-			Some(lang) => lang,
-			None => continue,
-		};
-		println!("cargo:rerun-if-changed={}", path.display());
-		let output_dir = locale_dir.join(lang).join("LC_MESSAGES");
-		if let Err(err) = fs::create_dir_all(&output_dir) {
-			println!("cargo:warning=Failed to create locale output directory: {}", err);
-			continue;
-		}
-		let output_path = output_dir.join("paperback.mo");
-		if !run_msgfmt(&path, &output_path) {
-			println!("cargo:warning=Failed to compile {}", path.display());
-		}
-	}
-}
-
-fn run_msgfmt(input: &Path, output: &Path) -> bool {
-	let status = Command::new("msgfmt").arg(input).arg("-o").arg(output).status();
-	match status {
-		Ok(status) if status.success() => true,
-		Ok(status) => {
-			println!("cargo:warning=msgfmt exited with status {}", status);
-			false
-		}
-		Err(err) => {
-			println!("cargo:warning=Failed to run msgfmt: {}", err);
-			false
-		}
-	}
+	patois_build::compile_translations("../../po", "locale");
 }
 
 fn copy_sounds() {

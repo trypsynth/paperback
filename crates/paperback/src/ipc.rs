@@ -4,16 +4,19 @@ use std::{
 };
 
 pub const IPC_COMMAND_ACTIVATE: &str = "ACTIVATE";
+#[cfg(any(target_os = "linux", target_os = "windows", test))]
 pub const IPC_COMMAND_TOGGLE_VISIBILITY: &str = "TOGGLE";
 pub const SINGLE_INSTANCE_NAME: &str = "paperback_running";
 
 #[derive(Debug, Clone)]
 pub enum IpcCommand {
 	Activate,
+	#[cfg(any(target_os = "linux", target_os = "windows", test))]
 	ToggleVisibility,
 	OpenFile(PathBuf),
 }
 
+#[cfg(any(target_os = "linux", target_os = "windows", test))]
 pub fn decode_execute_payload(data: &[u8]) -> Option<IpcCommand> {
 	if data.is_empty() {
 		return None;

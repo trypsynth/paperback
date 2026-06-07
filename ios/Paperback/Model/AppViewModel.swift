@@ -26,6 +26,7 @@ final class AppViewModel: ObservableObject {
 	@Published var ttsPosition: Int64 = 0
 	@Published var currentSegmentText: String = ""
 	@Published var currentSegmentType: SegmentType = .paragraph
+	@Published var ttsRules: [TtsRule] = []
 
 	// MARK: - Search
 	@Published var activeSearchQuery: String? = nil
@@ -60,6 +61,8 @@ final class AppViewModel: ObservableObject {
 	private var cancellables = Set<AnyCancellable>()
 
 	init() {
+		setPdfiumLibraryPath(path: Bundle.main.bundlePath + "/Frameworks")
+
 		let configPath = configFilePath()
 		_ = configManager.initialize(configPath: configPath)
 		restorePreviousDocuments = configManager.getAppBool(key: "restore_previous_documents", defaultValue: true)
@@ -81,11 +84,17 @@ final class AppViewModel: ObservableObject {
 		}
 		ttsManager.$isSpeaking
 			.dropFirst()
-			.sink { [weak self] _ in self?.updateNowPlaying() }
+			.sink { [weak self] _ in
+				self?.objectWillChange.send()
+				self?.updateNowPlaying()
+			}
 			.store(in: &cancellables)
 		ttsManager.$isPaused
 			.dropFirst()
-			.sink { [weak self] _ in self?.updateNowPlaying() }
+			.sink { [weak self] _ in
+				self?.objectWillChange.send()
+				self?.updateNowPlaying()
+			}
 			.store(in: &cancellables)
 		$restorePreviousDocuments
 			.dropFirst()
@@ -117,6 +126,22 @@ final class AppViewModel: ObservableObject {
 				self?.configManager.setAppString(key: "tts_voice_identifier", value: value ?? "")
 			}
 			.store(in: &cancellables)
+
+		if let data = UserDefaults.standard.data(forKey: "tts_rules"),
+		   let loaded = try? JSONDecoder().decode([TtsRule].self, from: data) {
+			ttsRules = loaded
+			ttsManager.rules = loaded
+		}
+		$ttsRules
+			.dropFirst()
+			.sink { [weak self] rules in
+				self?.ttsManager.rules = rules
+				if let data = try? JSONEncoder().encode(rules) {
+					UserDefaults.standard.set(data, forKey: "tts_rules")
+				}
+			}
+			.store(in: &cancellables)
+
 		setupRemoteCommands()
 		if restorePreviousDocuments {
 			for path in configManager.getOpenedDocuments() {
@@ -318,6 +343,23 @@ final class AppViewModel: ObservableObject {
 
 	func changeSegmentType(_ type: SegmentType) {
 		currentSegmentType = type
+	}
+
+	func navigateByType(_ type: SegmentTypeFfi, direction: SegmentDirectionFfi) {
+		guard let tab = activeTab, let session = tab.session else { return }
+		let seg = session.getTextSegment(position: ttsPosition, segmentType: type, direction: direction)
+		if seg.text.isEmpty { return }
+		if direction == .previous && seg.startPos == ttsPosition { return }
+		ttsPosition = seg.startPos
+		currentSegmentText = seg.text
+		updateTabPosition(seg.startPos)
+		if ttsManager.isSpeaking {
+			ttsManager.speak(seg.text)
+			prefetchAdjacentSegments(around: seg.startPos)
+		} else {
+			if ttsManager.isPaused { ttsManager.stop() }
+			announceNavigationCue(seg.text)
+		}
 	}
 
 	// MARK: - Sleep timer

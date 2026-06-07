@@ -21,7 +21,7 @@ struct TtsControlBar: View {
 				Text(viewModel.currentSegmentType.rawValue)
 					.font(.caption)
 					.foregroundStyle(.secondary)
-					.frame(minWidth: 72, alignment: .leading)
+					.frame(width: 72, alignment: .leading)
 			}
 			.accessibilityLabel("Navigation unit")
 			.accessibilityValue(viewModel.currentSegmentType.rawValue)
@@ -37,21 +37,17 @@ struct TtsControlBar: View {
 				@unknown default: break
 				}
 			}
-			.padding(.leading, 20)
-
-			Spacer()
+			.padding(.leading, 16)
 
 			Button { viewModel.playPrevSegment(speak: viewModel.ttsManager.isSpeaking) } label: {
-				Image(systemName: "backward.fill")
-					.font(.title2)
+				Image(systemName: "backward.fill").font(.title2)
 			}
 			.accessibilityLabel("Previous \(viewModel.currentSegmentType.rawValue)")
-			.padding(.horizontal, 20)
+			.frame(maxWidth: .infinity, minHeight: 64)
+			.contentShape(Rectangle())
 
 			Button { viewModel.togglePlayPause() } label: {
-				Image(systemName: viewModel.ttsManager.isSpeaking ? "pause.fill" : "play.fill")
-					.font(.title)
-					.frame(width: 44)
+				Image(systemName: viewModel.ttsManager.isSpeaking ? "pause.fill" : "play.fill").font(.title)
 			}
 			.accessibilityLabel(viewModel.ttsManager.isSpeaking ? "Pause" : "Play")
 			.accessibilityAdjustableAction { direction in
@@ -74,20 +70,20 @@ struct TtsControlBar: View {
 					}
 				}
 			}
+			.frame(maxWidth: .infinity, minHeight: 64)
+			.contentShape(Rectangle())
 
 			Button { viewModel.playNextSegment(speak: viewModel.ttsManager.isSpeaking) } label: {
-				Image(systemName: "forward.fill")
-					.font(.title2)
+				Image(systemName: "forward.fill").font(.title2)
 			}
 			.accessibilityLabel("Next \(viewModel.currentSegmentType.rawValue)")
-			.padding(.horizontal, 20)
-
-			Spacer()
+			.frame(maxWidth: .infinity, minHeight: 64)
+			.contentShape(Rectangle())
 
 			// Balance the segment picker on the left
 			Color.clear.frame(width: 72)
-				.padding(.trailing, 20)
+				.padding(.trailing, 16)
 		}
-		.padding(.vertical, 12)
+		.padding(.vertical, 4)
 	}
 }

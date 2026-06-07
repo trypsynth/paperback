@@ -9,7 +9,7 @@ mod menu_ids;
 mod navigation;
 mod sounds;
 mod status;
-#[cfg(not(target_os = "linux"))]
+#[cfg(target_os = "windows")]
 mod tray;
 
 pub use app::PaperbackApp;
