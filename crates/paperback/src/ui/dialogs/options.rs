@@ -48,8 +48,8 @@ struct OptionsDialogUi {
 	bookmark_sounds_check: CheckBox,
 	recent_docs_ctrl: SpinCtrl,
 	reading_speed_ctrl: SpinCtrl,
-	language_combo: ComboBox,
-	update_channel_combo: ComboBox,
+	language_combo: Choice,
+	update_channel_combo: Choice,
 	language_codes: Vec<String>,
 	current_language: String,
 	ok_button: Button,
@@ -150,7 +150,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	recent_docs_sizer.add(&recent_docs_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
 	general_sizer.add_sizer(&recent_docs_sizer, 0, SizerFlag::All, option_padding);
 	let language_label = StaticText::builder(&general_panel).with_label(&t("&Language:")).build();
-	let language_combo = ComboBox::builder(&general_panel).with_style(ComboBoxStyle::ReadOnly).build();
+	let language_combo = Choice::builder(&general_panel).build();
 	let languages = TranslationManager::instance().lock().unwrap().available_languages();
 	let mut language_codes = Vec::new();
 	for lang in &languages {
@@ -162,7 +162,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	language_sizer.add(&language_combo, 0, SizerFlag::AlignCenterVertical, 0);
 	general_sizer.add_sizer(&language_sizer, 0, SizerFlag::All, option_padding);
 	let channel_label = StaticText::builder(&general_panel).with_label(&t("Update Channel:")).build();
-	let update_channel_combo = ComboBox::builder(&general_panel).with_style(ComboBoxStyle::ReadOnly).build();
+	let update_channel_combo = Choice::builder(&general_panel).build();
 	update_channel_combo.append(&t("Stable"));
 	update_channel_combo.append(&t("Dev"));
 	let channel_sizer = BoxSizer::builder(Orientation::Horizontal).build();

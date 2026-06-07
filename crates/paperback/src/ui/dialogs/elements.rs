@@ -194,7 +194,7 @@ fn show_elements_dialog_wx(parent: &Frame, session: &DocumentSession, current_po
 #[cfg(not(target_os = "linux"))]
 struct ElementsDialogUi {
 	content_sizer: BoxSizer,
-	view_choice: ComboBox,
+	view_choice: Choice,
 	headings_tree: TreeCtrl,
 	links_list: ListBox,
 }
@@ -204,7 +204,7 @@ fn build_elements_dialog_ui(dialog: Dialog) -> ElementsDialogUi {
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let choice_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	let choice_label = StaticText::builder(&dialog).with_label(&t("&View:")).build();
-	let view_choice = ComboBox::builder(&dialog).with_style(ComboBoxStyle::ReadOnly).build();
+	let view_choice = Choice::builder(&dialog).build();
 	view_choice.append(&t("Headings"));
 	view_choice.append(&t("Links"));
 	view_choice.set_selection(0);
@@ -295,7 +295,7 @@ fn populate_elements_dialog(
 }
 
 #[cfg(not(target_os = "linux"))]
-fn bind_elements_view_toggle(view_choice: ComboBox, headings_tree: TreeCtrl, links_list: ListBox, dialog: Dialog) {
+fn bind_elements_view_toggle(view_choice: Choice, headings_tree: TreeCtrl, links_list: ListBox, dialog: Dialog) {
 	let headings_tree_for_choice = headings_tree;
 	let links_list_for_choice = links_list;
 	let dialog_for_layout = dialog;
@@ -363,7 +363,7 @@ fn build_elements_buttons(dialog: Dialog) -> (Button, Button) {
 #[cfg(not(target_os = "linux"))]
 fn bind_elements_ok_action(
 	dialog: Dialog,
-	view_choice: ComboBox,
+	view_choice: Choice,
 	headings_tree: TreeCtrl,
 	links_list: ListBox,
 	link_offsets: &Rc<Vec<i64>>,

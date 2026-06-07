@@ -13,7 +13,7 @@ pub fn show_open_as_dialog(parent: &Frame, path: &Path) -> Option<String> {
 	let label = StaticText::builder(&dialog).with_label(&message).build();
 	let format_label_text = t("Open &as:");
 	let format_label = StaticText::builder(&dialog).with_label(&format_label_text).build();
-	let format_combo = ComboBox::builder(&dialog).with_style(ComboBoxStyle::ReadOnly).build();
+	let format_combo = Choice::builder(&dialog).build();
 	format_combo.append(&t("Plain Text"));
 	format_combo.append(&t("HTML"));
 	format_combo.append(&t("Markdown"));
