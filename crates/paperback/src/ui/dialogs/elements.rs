@@ -1,202 +1,42 @@
 use std::{cell::Cell, rc::Rc};
 
-#[cfg(target_os = "linux")]
-use gtk::{Dialog, ListBox as GtkListBox, PolicyType, ResponseType, Widget, Window, glib::Propagation, prelude::*};
 use paperback_core::session::DocumentSession;
 use patois::t;
-#[cfg(target_os = "linux")]
-use wxdragon::prelude::Frame;
-#[cfg(not(target_os = "linux"))]
+#[cfg(not(target_os = "windows"))]
+use wxdragon::ffi;
 use wxdragon::prelude::*;
 
-#[cfg(target_os = "linux")]
-use super::accessible_tree::{self, AccessibleTree};
-#[cfg(not(target_os = "linux"))]
 use crate::accessibility;
 
-#[cfg(not(target_os = "linux"))]
-const DIALOG_PADDING: i32 = 10;
-
 pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<i64> {
-	#[cfg(target_os = "linux")]
-	return show_elements_dialog_gtk(parent, session, current_pos);
-	#[cfg(target_os = "macos")]
-	return show_elements_dialog_macos(parent, session, current_pos);
+	#[cfg(not(target_os = "windows"))]
+	return show_elements_dialog_dv(parent, session, current_pos);
 	#[cfg(target_os = "windows")]
 	return show_elements_dialog_wx(parent, session, current_pos);
 }
 
-#[cfg(target_os = "linux")]
-fn show_elements_dialog_gtk(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<i64> {
-	gtk::init().ok()?;
-	let dialog = Dialog::with_buttons(
-		Some(&t("Elements")),
-		Window::NONE,
-		gtk::DialogFlags::MODAL | gtk::DialogFlags::DESTROY_WITH_PARENT,
-		&[(&t("OK"), ResponseType::Ok), (&t("Cancel"), ResponseType::Cancel)],
-	);
-	accessible_tree::set_transient_parent(&dialog, parent);
-	dialog.set_default_size(400, 500);
-	dialog.set_default_response(ResponseType::Ok);
-	let selected_offset = Rc::new(Cell::new(-1i64));
-	let view_combo = gtk::ComboBoxText::new();
-	view_combo.append_text(&t("Headings"));
-	view_combo.append_text(&t("Links"));
-	view_combo.set_active(Some(0));
-	let mut headings_tree = AccessibleTree::new();
-	let tree_data = session.heading_tree(current_pos);
-	populate_headings(&mut headings_tree, &tree_data.items);
-	let headings_select_idx = if tree_data.closest_index >= 0 {
-		tree_data
-			.items
-			.get(tree_data.closest_index as usize)
-			.and_then(|item| headings_tree.expand_to_offset(i64::try_from(item.offset).unwrap_or(i64::MAX)))
-	} else {
-		None
-	};
-	let sel_headings = Rc::clone(&selected_offset);
-	headings_tree.connect_events(&dialog, Rc::new(move |offset| sel_headings.set(offset)), view_combo.clone());
-	let headings_scrolled = gtk::ScrolledWindow::builder()
-		.hscrollbar_policy(PolicyType::Automatic)
-		.vscrollbar_policy(PolicyType::Automatic)
-		.build();
-	headings_scrolled.add(&headings_tree.list_box);
-	let links_list = GtkListBox::new();
-	links_list.set_selection_mode(gtk::SelectionMode::Browse);
-	let link_data = session.link_list(current_pos);
-	let mut link_offsets = Vec::new();
-	for item in &link_data.items {
-		let label = gtk::Label::new(Some(&item.text));
-		label.set_xalign(0.0);
-		let row = gtk::ListBoxRow::new();
-		row.add(&label);
-		links_list.add(&row);
-		link_offsets.push(i64::try_from(item.offset).unwrap_or(i64::MAX));
-	}
-	let link_offsets = Rc::new(link_offsets);
-	let sel_links = Rc::clone(&selected_offset);
-	let offsets_for_sel = Rc::clone(&link_offsets);
-	links_list.connect_row_selected(move |_, row| {
-		if let Some(row) = row {
-			let idx = row.index() as usize;
-			if let Some(&offset) = offsets_for_sel.get(idx) {
-				sel_links.set(offset);
-			}
-		}
-	});
-	let dialog_for_link_activate = dialog.clone();
-	links_list.connect_row_activated(move |_, _| {
-		dialog_for_link_activate.response(ResponseType::Ok);
-	});
-	connect_list_tab_handling(&links_list, &dialog, view_combo.clone());
-	let links_scrolled = gtk::ScrolledWindow::builder()
-		.hscrollbar_policy(PolicyType::Automatic)
-		.vscrollbar_policy(PolicyType::Automatic)
-		.build();
-	links_scrolled.add(&links_list);
-	let content = dialog.content_area();
-	content.pack_start(&view_combo, false, false, 5);
-	content.pack_start(&headings_scrolled, true, true, 0);
-	content.pack_start(&links_scrolled, true, true, 0);
-	let headings_scrolled_for_toggle = headings_scrolled.clone();
-	let links_scrolled_for_toggle = links_scrolled.clone();
-	view_combo.connect_changed(move |combo| {
-		let is_headings = combo.active() == Some(0);
-		headings_scrolled_for_toggle.set_visible(is_headings);
-		links_scrolled_for_toggle.set_visible(!is_headings);
-	});
-	dialog.show_all();
-	links_scrolled.set_visible(false);
-	headings_tree.show_and_focus(headings_select_idx.unwrap_or(0));
-	if !link_data.items.is_empty() {
-		let link_idx = if link_data.closest_index >= 0 { link_data.closest_index } else { 0 };
-		if let Some(row) = links_list.row_at_index(link_idx) {
-			links_list.select_row(Some(&row));
-		}
-	}
-	let response = dialog.run();
-	unsafe {
-		dialog.destroy();
-	}
-	if response == ResponseType::Ok {
-		let offset = selected_offset.get();
-		if offset >= 0 { Some(offset) } else { None }
-	} else {
-		None
-	}
-}
+// ── DataViewTreeCtrl implementation (Linux + macOS) ───────────────────────────
 
-#[cfg(target_os = "linux")]
-const GDK_KEY_TAB: u32 = 0xff09;
-#[cfg(target_os = "linux")]
-const GDK_KEY_ISO_LEFT_TAB: u32 = 0xfe20;
-
-#[cfg(target_os = "linux")]
-fn connect_list_tab_handling(list_box: &GtkListBox, dialog: &Dialog, shift_tab_target: impl IsA<Widget> + 'static) {
-	let dialog_clone = dialog.clone();
-	let shift_target: Widget = shift_tab_target.upcast();
-	list_box.connect_key_press_event(move |_, event| {
-		let keyval = *event.keyval();
-		if keyval == GDK_KEY_TAB || keyval == GDK_KEY_ISO_LEFT_TAB {
-			if keyval == GDK_KEY_TAB {
-				if let Some(button) = dialog_clone.widget_for_response(ResponseType::Ok) {
-					button.grab_focus();
-				}
-			} else {
-				shift_target.grab_focus();
-			}
-			return Propagation::Stop;
-		}
-		Propagation::Proceed
-	});
-}
-
-#[cfg(target_os = "linux")]
-fn populate_headings(tree: &mut AccessibleTree, items: &[paperback_core::types::HeadingTreeItem]) {
-	let mut depths = Vec::with_capacity(items.len());
-	let mut child_counts = vec![0usize; items.len()];
-	for item in items {
-		let depth =
-			if item.parent_index >= 0 { depths.get(item.parent_index as usize).map_or(0, |&d: &i32| d + 1) } else { 0 };
-		depths.push(depth);
-		if item.parent_index >= 0 {
-			if let Ok(pi) = usize::try_from(item.parent_index) {
-				child_counts[pi] += 1;
-			}
-		}
-	}
-	for (i, item) in items.iter().enumerate() {
-		let name = if item.text.is_empty() { t("Untitled") } else { item.text.clone() };
-		let offset = i64::try_from(item.offset).unwrap_or(i64::MAX);
-		tree.add_item(&name, offset, depths[i], child_counts[i] > 0);
-	}
-}
-
-// ── macOS implementation (DataViewTreeCtrl) ───────────────────────────────────
-
-#[cfg(target_os = "macos")]
-use wxdragon::ffi;
-
-#[cfg(target_os = "macos")]
-struct ElementsDialogUiMac {
+#[cfg(not(target_os = "windows"))]
+struct ElementsDialogUiDv {
 	content_sizer: BoxSizer,
 	view_choice: Choice,
 	headings_tree: DataViewTreeCtrl,
 	links_list: ListBox,
 }
 
-#[cfg(target_os = "macos")]
-fn show_elements_dialog_macos(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<i64> {
+#[cfg(not(target_os = "windows"))]
+fn show_elements_dialog_dv(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<i64> {
 	let dialog = Dialog::builder(parent, &t("Elements")).build();
-	let ElementsDialogUiMac { content_sizer, view_choice, headings_tree, links_list } =
-		build_elements_dialog_ui_macos(dialog);
+	let ElementsDialogUiDv { content_sizer, view_choice, headings_tree, links_list } =
+		build_elements_dialog_ui_dv(dialog);
 	let (selected_offset, item_offsets, link_offsets) =
-		populate_elements_dialog_macos(session, current_pos, headings_tree, links_list);
+		populate_elements_dialog_dv(session, current_pos, headings_tree, links_list);
 	let item_offsets = Rc::new(item_offsets);
-	bind_elements_view_toggle_macos(view_choice, headings_tree, links_list, dialog);
-	bind_elements_activation_macos(dialog, headings_tree, links_list, &item_offsets, &link_offsets, &selected_offset);
+	bind_elements_view_toggle_dv(view_choice, headings_tree, links_list, dialog);
+	bind_elements_activation_dv(dialog, headings_tree, links_list, &item_offsets, &link_offsets, &selected_offset);
 	let (ok_button, cancel_button) = build_elements_buttons(dialog);
-	bind_elements_ok_action_macos(
+	bind_elements_ok_action_dv(
 		dialog,
 		view_choice,
 		headings_tree,
@@ -220,8 +60,8 @@ fn show_elements_dialog_macos(parent: &Frame, session: &DocumentSession, current
 	}
 }
 
-#[cfg(target_os = "macos")]
-fn build_elements_dialog_ui_macos(dialog: Dialog) -> ElementsDialogUiMac {
+#[cfg(not(target_os = "windows"))]
+fn build_elements_dialog_ui_dv(dialog: Dialog) -> ElementsDialogUiDv {
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let choice_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	let choice_label_text = t("&View:");
@@ -231,29 +71,29 @@ fn build_elements_dialog_ui_macos(dialog: Dialog) -> ElementsDialogUiMac {
 	view_choice.append(&t("Links"));
 	view_choice.set_selection(0);
 	accessibility::set_label(&view_choice, choice_label_text.replace('&', "").trim_end_matches(':').trim());
-	choice_sizer.add(&choice_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
+	choice_sizer.add(&choice_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, super::DIALOG_PADDING);
 	choice_sizer.add(&view_choice, 1, SizerFlag::Expand, 0);
-	content_sizer.add_sizer(&choice_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
+	content_sizer.add_sizer(&choice_sizer, 0, SizerFlag::Expand | SizerFlag::All, super::DIALOG_PADDING);
 	let headings_tree = DataViewTreeCtrl::builder(&dialog).with_size(Size::new(400, 500)).build();
 	content_sizer.add(
 		&headings_tree,
 		1,
 		SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
-		DIALOG_PADDING,
+		super::DIALOG_PADDING,
 	);
 	let links_list = ListBox::builder(&dialog).build();
 	content_sizer.add(
 		&links_list,
 		1,
 		SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
-		DIALOG_PADDING,
+		super::DIALOG_PADDING,
 	);
 	links_list.show(false);
-	ElementsDialogUiMac { content_sizer, view_choice, headings_tree, links_list }
+	ElementsDialogUiDv { content_sizer, view_choice, headings_tree, links_list }
 }
 
-#[cfg(target_os = "macos")]
-fn populate_elements_dialog_macos(
+#[cfg(not(target_os = "windows"))]
+fn populate_elements_dialog_dv(
 	session: &DocumentSession,
 	current_pos: i64,
 	headings_tree: DataViewTreeCtrl,
@@ -263,8 +103,7 @@ fn populate_elements_dialog_macos(
 	let selected_offset = Rc::new(Cell::new(-1i64));
 	let mut item_offsets: HashMap<usize, i64> = HashMap::new();
 	let tree_data = session.heading_tree(current_pos);
-	// Precompute which indices have children so we know whether to use
-	// append_container or append_item before inserting.
+	// Precompute which items have children so we can use append_container vs append_item.
 	let has_children_vec: Vec<bool> = (0..tree_data.items.len())
 		.map(|i| {
 			tree_data.items.iter().any(|it| it.parent_index >= 0 && usize::try_from(it.parent_index).ok() == Some(i))
@@ -290,7 +129,6 @@ fn populate_elements_dialog_macos(
 		}
 		item_ids.push(node);
 	}
-	// Select item closest to current position
 	let select_idx = if tree_data.closest_index >= 0 {
 		usize::try_from(tree_data.closest_index).ok()
 	} else if !item_ids.is_empty() {
@@ -321,8 +159,8 @@ fn populate_elements_dialog_macos(
 	(selected_offset, item_offsets, Rc::new(link_offsets))
 }
 
-#[cfg(target_os = "macos")]
-fn bind_elements_view_toggle_macos(
+#[cfg(not(target_os = "windows"))]
+fn bind_elements_view_toggle_dv(
 	view_choice: Choice,
 	headings_tree: DataViewTreeCtrl,
 	links_list: ListBox,
@@ -343,8 +181,8 @@ fn bind_elements_view_toggle_macos(
 	});
 }
 
-#[cfg(target_os = "macos")]
-fn bind_elements_activation_macos(
+#[cfg(not(target_os = "windows"))]
+fn bind_elements_activation_dv(
 	dialog: Dialog,
 	headings_tree: DataViewTreeCtrl,
 	links_list: ListBox,
@@ -381,8 +219,8 @@ fn bind_elements_activation_macos(
 	});
 }
 
-#[cfg(target_os = "macos")]
-fn bind_elements_ok_action_macos(
+#[cfg(not(target_os = "windows"))]
+fn bind_elements_ok_action_dv(
 	dialog: Dialog,
 	view_choice: Choice,
 	headings_tree: DataViewTreeCtrl,
@@ -462,9 +300,9 @@ fn build_elements_dialog_ui(dialog: Dialog) -> ElementsDialogUi {
 	view_choice.append(&t("Links"));
 	view_choice.set_selection(0);
 	accessibility::set_label(&view_choice, choice_label_text.replace('&', "").trim_end_matches(':').trim());
-	choice_sizer.add(&choice_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
+	choice_sizer.add(&choice_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, super::DIALOG_PADDING);
 	choice_sizer.add(&view_choice, 1, SizerFlag::Expand, 0);
-	content_sizer.add_sizer(&choice_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
+	content_sizer.add_sizer(&choice_sizer, 0, SizerFlag::Expand | SizerFlag::All, super::DIALOG_PADDING);
 	let headings_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let headings_tree = TreeCtrl::builder(&dialog)
 		.with_style(TreeCtrlStyle::Default | TreeCtrlStyle::HideRoot)
@@ -475,7 +313,7 @@ fn build_elements_dialog_ui(dialog: Dialog) -> ElementsDialogUi {
 		&headings_sizer,
 		1,
 		SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
-		DIALOG_PADDING,
+		super::DIALOG_PADDING,
 	);
 	let links_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let links_list = ListBox::builder(&dialog).build();
@@ -484,7 +322,7 @@ fn build_elements_dialog_ui(dialog: Dialog) -> ElementsDialogUi {
 		&links_sizer,
 		1,
 		SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
-		DIALOG_PADDING,
+		super::DIALOG_PADDING,
 	);
 	links_list.show(false);
 	ElementsDialogUi { content_sizer, view_choice, headings_tree, links_list }
@@ -640,9 +478,8 @@ fn bind_elements_ok_action(
 	});
 }
 
-// ── Shared helpers (non-Linux) ────────────────────────────────────────────────
+// ── Shared helpers ─────────────────────────────────────────────────────────────
 
-#[cfg(not(target_os = "linux"))]
 fn build_elements_buttons(dialog: Dialog) -> (Button, Button) {
 	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
 	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
@@ -651,12 +488,11 @@ fn build_elements_buttons(dialog: Dialog) -> (Button, Button) {
 	(ok_button, cancel_button)
 }
 
-#[cfg(not(target_os = "linux"))]
 fn finalize_elements_layout(dialog: Dialog, content_sizer: BoxSizer, ok_button: Button, cancel_button: Button) {
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&ok_button, 0, SizerFlag::All, DIALOG_PADDING);
-	button_sizer.add(&cancel_button, 0, SizerFlag::All, DIALOG_PADDING);
+	button_sizer.add(&ok_button, 0, SizerFlag::All, super::DIALOG_PADDING);
+	button_sizer.add(&cancel_button, 0, SizerFlag::All, super::DIALOG_PADDING);
 	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
