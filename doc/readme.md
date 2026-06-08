@@ -124,6 +124,7 @@ To learn how to contribute, please read our [Translation Guide](translating.md).
 
 * Bosnian
 * Czech
+* Dutch
 * French
 * German
 * Japanese
