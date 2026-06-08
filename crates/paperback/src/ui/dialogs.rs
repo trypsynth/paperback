@@ -1,6 +1,3 @@
-#[cfg(target_os = "linux")]
-mod accessible_tree;
-
 // Shared constants used by sub-modules that import via `use super::`.
 pub(super) const DIALOG_PADDING: i32 = 10;
 pub(super) const KEY_RETURN: i32 = 13;

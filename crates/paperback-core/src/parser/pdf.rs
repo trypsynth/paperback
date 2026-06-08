@@ -10,6 +10,13 @@ use crate::{
 	util::text::{collapse_whitespace, display_len, trim_string},
 };
 
+/// Minimum fraction of visible text glyphs that must be associated with a
+/// marked-content ID for the tagged-extraction path to be trusted. Some PDFs
+/// advertise a structure tree while leaving their text essentially untagged
+/// (no MCIDs, or wrapped only in `/Artifact` marks); below this threshold the
+/// structure tree is treated as unreliable and plain extraction is used instead.
+const MIN_MCID_COVERAGE: f64 = 0.5;
+
 pub struct PdfParser;
 
 impl Parser for PdfParser {
@@ -61,6 +68,8 @@ impl Parser for PdfParser {
 				let child_count = struct_tree.count_children();
 				if child_count > 0 {
 					let mut mcid_to_text: HashMap<i32, String> = HashMap::new();
+					let mut real_char_count: usize = 0;
+					let mut mcid_char_count: usize = 0;
 					if let Ok(char_count) = text_page.char_count() {
 						let mut current_mcid = -1;
 						let mut current_text = String::new();
@@ -77,6 +86,12 @@ impl Parser for PdfParser {
 										char_mcid = obj.get_marked_content_id();
 									}
 								}
+								if !is_generated && !ch.is_whitespace() {
+									real_char_count += 1;
+									if char_mcid >= 0 {
+										mcid_char_count += 1;
+									}
+								}
 								if char_mcid >= 0 && char_mcid != current_mcid {
 									if current_mcid >= 0 && !current_text.is_empty() {
 										mcid_to_text.entry(current_mcid).or_default().push_str(&current_text);
@@ -91,23 +106,27 @@ impl Parser for PdfParser {
 							mcid_to_text.entry(current_mcid).or_default().push_str(&current_text);
 						}
 					}
-					let mut current_block = String::new();
-					for i in 0..child_count {
-						if let Ok(child) = struct_tree.child(i) {
-							process_struct_element(
-								&child,
-								&mcid_to_text,
-								&mut buffer,
-								&mut page_display_text,
-								&mut current_block,
-								&mut current_lines_info,
-								&mut flat_toc_items,
-							);
+					let coverage =
+						if real_char_count > 0 { mcid_char_count as f64 / real_char_count as f64 } else { 1.0 };
+					if coverage >= MIN_MCID_COVERAGE {
+						let mut current_block = String::new();
+						for i in 0..child_count {
+							if let Ok(child) = struct_tree.child(i) {
+								process_struct_element(
+									&child,
+									&mcid_to_text,
+									&mut buffer,
+									&mut page_display_text,
+									&mut current_block,
+									&mut current_lines_info,
+									&mut flat_toc_items,
+								);
+							}
 						}
+						flush_block(&mut current_block, &mut buffer, &mut page_display_text, &mut current_lines_info);
+						tags_processed = true;
+						any_tags_processed = true;
 					}
-					flush_block(&mut current_block, &mut buffer, &mut page_display_text, &mut current_lines_info);
-					tags_processed = true;
-					any_tags_processed = true;
 				}
 			}
 			if !tags_processed {

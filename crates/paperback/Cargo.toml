@@ -22,9 +22,6 @@ toml = { workspace = true }
 wx-utils = "0.1.1"
 wxdragon = { version = "0.9.16", features = ["webview"] }
 
-[target.'cfg(target_os = "linux")'.dependencies]
-gtk = { version = "0.18", default-features = false }
-
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_System_Com", "Win32_UI_WindowsAndMessaging", "Win32_Foundation", "Win32_System_Ole", "Win32_System_Variant", "Win32_UI_Controls_RichEdit", "Win32_Graphics_Gdi", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_System_Pipes", "Win32_UI_Input", "Win32_UI_Input_KeyboardAndMouse", "Win32_System_Threading"] }
 
