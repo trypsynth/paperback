@@ -124,9 +124,12 @@ To learn how to contribute, please read our [Translation Guide](translating.md).
 
 * Bosnian
 * Czech
+* Finnish
 * French
 * German
 * Japanese
+* Polish
+* Portuguese (Brazil)
 * Russian
 * Simplified Chinese
 * Serbian
