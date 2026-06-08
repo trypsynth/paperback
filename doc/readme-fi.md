@@ -123,14 +123,17 @@ Paperback on käännetty useille eri kielille, ja uusia lisätään jatkuvasti. 
 Jos haluat osallistua kääntämiseen, katso ohjeet [käännösoppaasta](translating.md).
 
 * bosnia
-* tšekki
+* brasilianportugali
+* espanja
+* japani
+* puola
 * ranska
 * saksa
-* japani
+* serbia
+* suomi
+* tšekki
 * venäjä
 * yksinkertaistettu kiina
-* serbia
-* espanja
 * vietnam
 
 ## Tekijät
