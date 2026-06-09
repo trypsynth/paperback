@@ -48,6 +48,7 @@ Paperback is translated into multiple languages by contributors around the world
 - French
 - German
 - Japanese
+- Polish
 - Portuguese (Brazil)
 - Russian
 - Serbian

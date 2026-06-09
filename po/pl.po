@@ -1,0 +1,1331 @@
+# Polish translation for Paperback.
+# Copyright (C) 2026 Quin Gillespie
+# This file is distributed under the same license as the paperback package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: paperback 0.8.5\n"
+"Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
+"POT-Creation-Date: 2026-06-03 18:57+0530\n"
+"PO-Revision-Date: 2026-06-08 13:45+0200\n"
+"Last-Translator: Michał Dziwisz <michal@dziwisz.net>\n"
+"Language-Team: Polish\n"
+"Language: pl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+
+msgid "Failed to create IPC server"
+msgstr "Nie udało się utworzyć serwera IPC"
+
+msgid "Warning"
+msgstr "Ostrzeżenie"
+
+msgid "An accessible, lightweight, fast ebook and document reader"
+msgstr "Dostępny, lekki i szybki czytnik e-booków i dokumentów"
+
+msgid "expanded"
+msgstr "rozwinięte"
+
+msgid "collapsed"
+msgstr "zwinięte"
+
+msgid "All Documents"
+msgstr "Wszystkie dokumenty"
+
+msgid "&search"
+msgstr "&Szukaj"
+
+msgid "&Yes"
+msgstr "&Tak"
+
+msgid "&No"
+msgstr "&Nie"
+
+msgid "File Name"
+msgstr "Nazwa pliku"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Path"
+msgstr "Ścieżka"
+
+msgid "&Open"
+msgstr "&Otwórz"
+
+msgid "&Remove"
+msgstr "&Usuń"
+
+msgid "&Clear All"
+msgstr "&Wyczyść wszystko"
+
+msgid "Close"
+msgstr "Zamknij"
+
+msgid ""
+"Are you sure you want to remove this document from the list? This will also "
+"remove its reading position."
+msgstr ""
+"Czy na pewno chcesz usunąć ten dokument z listy? Spowoduje to też usunięcie "
+"jego pozycji czytania."
+
+msgid ""
+"Are you sure you want to remove these {} documents from the list? This will "
+"also remove their reading positions."
+msgstr ""
+"Czy na pewno chcesz usunąć te dokumenty ({}) z listy? Spowoduje to też "
+"usunięcie ich pozycji czytania."
+
+msgid "Confirm"
+msgstr "Potwierdzenie"
+
+msgid ""
+"Are you sure you want to remove all documents from the list? This will also "
+"remove all reading positions and bookmarks."
+msgstr ""
+"Czy na pewno chcesz usunąć wszystkie dokumenty z listy? Spowoduje to też "
+"usunięcie wszystkich pozycji czytania i zakładek."
+
+msgid "Open"
+msgstr "Otwórz"
+
+msgid "Closed"
+msgstr "Zamknięty"
+
+msgid "Missing"
+msgstr "Brakujący"
+
+msgid "Jump to Bookmark"
+msgstr "Przejdź do zakładki"
+
+msgid "&Filter:"
+msgstr "&Filtr:"
+
+msgid "All"
+msgstr "Wszystko"
+
+msgid "Bookmarks"
+msgstr "Zakładki"
+
+msgid "Notes"
+msgstr "Notatki"
+
+msgid "&Edit Note"
+msgstr "&Edytuj notatkę"
+
+msgid "&Delete"
+msgstr "&Usuń"
+
+msgid "&Jump"
+msgstr "&Przejdź"
+
+msgid "&Cancel"
+msgstr "&Anuluj"
+
+msgid "blank"
+msgstr "puste"
+
+msgid "Please select a bookmark to jump to."
+msgstr "Wybierz zakładkę, do której chcesz przejść."
+
+msgid "Error"
+msgstr "Błąd"
+
+msgid "Bookmark Note"
+msgstr "Notatka zakładki"
+
+msgid "Edit bookmark note:"
+msgstr "Edytuj notatkę zakładki:"
+
+msgid "Document Info"
+msgstr "Informacje o dokumencie"
+
+msgid "Path:"
+msgstr "Ścieżka:"
+
+msgid "Title:"
+msgstr "Tytuł:"
+
+msgid "Author:"
+msgstr "Autor:"
+
+msgid "Words:"
+msgstr "Słowa:"
+
+msgid "Lines:"
+msgstr "Wiersze:"
+
+msgid "Characters:"
+msgstr "Znaki:"
+
+msgid "Characters (excluding spaces):"
+msgstr "Znaki bez spacji:"
+
+msgid "Elements"
+msgstr "Elementy"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Cancel"
+msgstr "Anuluj"
+
+msgid "Headings"
+msgstr "Nagłówki"
+
+msgid "Links"
+msgstr "Odnośniki"
+
+msgid "Untitled"
+msgstr "Bez tytułu"
+
+msgid "&View:"
+msgstr "&Widok:"
+
+msgid "Root"
+msgstr "Początek"
+
+msgid "Go to Line"
+msgstr "Przejdź do wiersza"
+
+msgid "&Line number:"
+msgstr "Numer &wiersza:"
+
+msgid "Go to page"
+msgstr "Przejdź do strony"
+
+#, c-format
+msgid "Go to page (%d/%d):"
+msgstr "Przejdź do strony (%d/%d):"
+
+msgid "Go to Percent"
+msgstr "Przejdź do procentu"
+
+msgid "&Percent"
+msgstr "&Procent"
+
+msgid "P&ercent:"
+msgstr "Pro&cent:"
+
+msgid "Open As"
+msgstr "Otwórz jako"
+
+msgid ""
+"No suitable parser was found for {}.\n"
+"How would you like to open this file?"
+msgstr ""
+"Nie znaleziono odpowiedniego parsera dla {}.\n"
+"Jak chcesz otworzyć ten plik?"
+
+msgid "Open &as:"
+msgstr "Otwórz &jako:"
+
+msgid "Plain Text"
+msgstr "Zwykły tekst"
+
+msgid "HTML"
+msgstr "HTML"
+
+msgid "Markdown"
+msgstr "Markdown"
+
+msgid "Options"
+msgstr "Opcje"
+
+msgid "&Restore previously opened documents on startup"
+msgstr "&Przywracaj poprzednio otwarte dokumenty przy uruchomieniu"
+
+msgid "&Word wrap"
+msgstr "&Zawijanie wierszy"
+
+msgid "&Minimize to system tray"
+msgstr "&Minimalizuj do zasobnika systemowego"
+
+msgid "&Start maximized"
+msgstr "&Uruchamiaj w zmaksymalizowanym oknie"
+
+msgid "Show compact &go menu"
+msgstr "Pokaż kompaktowe menu &Przejdź"
+
+msgid "&Wrap navigation"
+msgstr "Zawijaj &nawigację"
+
+msgid "Play &sounds on bookmarks and notes"
+msgstr "Odtwarzaj &dźwięki przy zakładkach i notatkach"
+
+msgid "Check for &updates on startup"
+msgstr "Sprawdzaj &aktualizacje przy uruchomieniu"
+
+msgid "Customize &Window Hotkey..."
+msgstr "Dostosuj &skrót okna..."
+
+msgid "&Reading speed (words per minute):"
+msgstr "&Szybkość czytania (słowa na minutę):"
+
+msgid "Number of &recent documents to show:"
+msgstr "Liczba &ostatnich dokumentów do pokazania:"
+
+msgid "&Language:"
+msgstr "&Język:"
+
+msgid "Update Channel:"
+msgstr "Kanał aktualizacji:"
+
+msgid "Stable"
+msgstr "Stabilny"
+
+msgid "Dev"
+msgstr "Deweloperski"
+
+msgid "Font"
+msgstr "Czcionka"
+
+msgid "Choose &Font..."
+msgstr "Wybierz &czcionkę..."
+
+msgid "&Reset to Default Font"
+msgstr "&Przywróć domyślną czcionkę"
+
+msgid "Background Color"
+msgstr "Kolor tła"
+
+msgid "Choose &Background Color..."
+msgstr "Wybierz kolor &tła..."
+
+msgid "Reset to &Default Background"
+msgstr "Przywróć &domyślne tło"
+
+msgid "&Line spacing:"
+msgstr "&Odstęp między wierszami:"
+
+msgid "Normal"
+msgstr "Normalny"
+
+msgid "1.5\\u{00d7}"
+msgstr "1,5\\u{00d7}"
+
+msgid "Double"
+msgstr "Podwójny"
+
+msgid "&Paragraph spacing:"
+msgstr "Odstęp między &akapitami:"
+
+msgid "Relaxed"
+msgstr "Luźny"
+
+msgid "Wide"
+msgstr "Szeroki"
+
+msgid "L&etter spacing:"
+msgstr "Odstęp między &literami:"
+
+msgid "Very Wide"
+msgstr "Bardzo szeroki"
+
+msgid "Text &alignment:"
+msgstr "&Wyrównanie tekstu:"
+
+msgid "Left"
+msgstr "Do lewej"
+
+msgid "Center"
+msgstr "Do środka"
+
+msgid "Right"
+msgstr "Do prawej"
+
+msgid "Justify"
+msgstr "Wyjustuj"
+
+msgid "General"
+msgstr "Ogólne"
+
+msgid "Reading"
+msgstr "Czytanie"
+
+msgid "Readability"
+msgstr "Czytelność"
+
+msgid "Background: Default"
+msgstr "Tło: domyślne"
+
+msgid "Font: Default"
+msgstr "Czcionka: domyślna"
+
+msgid "Default"
+msgstr "Domyślne"
+
+msgid "Bold"
+msgstr "Pogrubienie"
+
+msgid "Italic"
+msgstr "Kursywa"
+
+msgid "Underlined"
+msgstr "Podkreślenie"
+
+msgid "Strikethrough"
+msgstr "Przekreślenie"
+
+msgid "Window Hotkey"
+msgstr "Skrót okna"
+
+msgid "&Ctrl"
+msgstr "&Ctrl"
+
+msgid "&Alt"
+msgstr "&Alt"
+
+msgid "&Shift"
+msgstr "&Shift"
+
+msgid "&Win"
+msgstr "&Win"
+
+msgid "&Key:"
+msgstr "&Klawisz:"
+
+msgid "Space"
+msgstr "Spacja"
+
+msgid "Sleep Timer"
+msgstr "Wyłącznik czasowy"
+
+msgid "&Minutes:"
+msgstr "&Minuty:"
+
+msgid "Table of Contents"
+msgstr "Spis treści"
+
+msgid "Please select a section from the table of contents."
+msgstr "Wybierz sekcję ze spisu treści."
+
+msgid "No Selection"
+msgstr "Brak wyboru"
+
+msgid "View Note"
+msgstr "Wyświetl notatkę"
+
+msgid "1 hour"
+msgstr "1 godzina"
+
+msgid "hours"
+msgstr "godz."
+
+msgid "1 minute"
+msgstr "1 minuta"
+
+msgid "minutes"
+msgstr "min"
+
+msgid "1 second"
+msgstr "1 sekunda"
+
+msgid "seconds"
+msgstr "s"
+
+msgid "Estimated reading time: {}"
+msgstr "Szacowany czas czytania: {}"
+
+msgid "This document contains {} words."
+msgstr "Ten dokument zawiera {} słów."
+
+msgid "Word Count"
+msgstr "Liczba słów"
+
+msgid "File not found: {}"
+msgstr "Nie znaleziono pliku: {}"
+
+msgid ""
+"A .paperback file was found for this document. Would you like to import it?"
+msgstr "Znaleziono plik .paperback dla tego dokumentu. Czy chcesz go zaimportować?"
+
+msgid "Import document data"
+msgstr "Importuj dane dokumentu"
+
+msgid "Password is required."
+msgstr "Hasło jest wymagane."
+
+msgid "Navigated to internal link."
+msgstr "Przejście do odnośnika wewnętrznego."
+
+msgid "Table View"
+msgstr "Widok tabeli"
+
+msgid "Ready"
+msgstr "Gotowe"
+
+msgid "&Password:"
+msgstr "&Hasło:"
+
+msgid "Document Password"
+msgstr "Hasło dokumentu"
+
+msgid "Failed to load document."
+msgstr "Nie udało się wczytać dokumentu."
+
+msgid "Create &bookmark"
+msgstr "Utwórz &zakładkę"
+
+msgid "Create bookmark"
+msgstr "Utwórz zakładkę"
+
+msgid "Bookmark with &note"
+msgstr "Zakładka z &notatką"
+
+msgid "Create bookmark with note"
+msgstr "Utwórz zakładkę z notatką"
+
+msgid "&Find"
+msgstr "&Znajdź"
+
+msgid "Find text"
+msgstr "Znajdź tekst"
+
+msgid "Find &next"
+msgstr "Znajdź &następne"
+
+msgid "Find next match"
+msgstr "Znajdź następne dopasowanie"
+
+msgid "Find &previous"
+msgstr "Znajdź &poprzednie"
+
+msgid "Find previous match"
+msgstr "Znajdź poprzednie dopasowanie"
+
+msgid "Go to &page"
+msgstr "Przejdź do &strony"
+
+msgid "Go to &line"
+msgstr "Przejdź do &wiersza"
+
+msgid "Go to line"
+msgstr "Przejdź do wiersza"
+
+msgid "Go to &percent"
+msgstr "Przejdź do &procentu"
+
+msgid "Go to percent"
+msgstr "Przejdź do procentu"
+
+msgid "Find"
+msgstr "Znajdź"
+
+msgid "Find &what:"
+msgstr "Znajdź &tekst:"
+
+msgid "&Match case"
+msgstr "Uwzględniaj &wielkość liter"
+
+msgid "Match &whole word"
+msgstr "Dopasuj &całe słowo"
+
+msgid "Use &regular expressions"
+msgstr "Użyj wyrażeń &regularnych"
+
+msgid "Find &Previous"
+msgstr "Znajdź &poprzednie"
+
+msgid "Find &Next"
+msgstr "Znajdź &następne"
+
+msgid "Not found."
+msgstr "Nie znaleziono."
+
+msgid "No more results. Wrapping search."
+msgstr "Nie ma więcej wyników. Zawijanie wyszukiwania."
+
+msgid "Failed to open containing folder."
+msgstr "Nie udało się otworzyć folderu zawierającego dokument."
+
+msgid ""
+"readme.html not found. Please ensure the application was built properly."
+msgstr "Nie znaleziono readme.html. Upewnij się, że aplikacja została poprawnie zbudowana."
+
+msgid "Failed to launch default browser."
+msgstr "Nie udało się uruchomić domyślnej przeglądarki."
+
+msgid "Failed to open donation page in browser."
+msgstr "Nie udało się otworzyć strony wsparcia w przeglądarce."
+
+msgid "Unsupported format selected."
+msgstr "Wybrano nieobsługiwany format."
+
+msgid "Paperback"
+msgstr "Paperback"
+
+msgid "Paperback - {}"
+msgstr "Paperback - {}"
+
+msgid "{} chars"
+msgstr "{} znaków"
+
+msgid "Open Document"
+msgstr "Otwórz dokument"
+
+msgid "No pages."
+msgstr "Brak stron."
+
+msgid "document"
+msgstr "dokument"
+
+msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
+msgstr "Pliki tekstowe (*.txt)|*.txt|Wszystkie pliki (*.*)|*.*"
+
+msgid "Export document to plain text"
+msgstr "Eksportuj dokument do zwykłego tekstu"
+
+msgid "Failed to export document."
+msgstr "Nie udało się wyeksportować dokumentu."
+
+msgid "HTML files (*.html)|*.html|All files (*.*)|*.*"
+msgstr "Pliki HTML (*.html)|*.html|Wszystkie pliki (*.*)|*.*"
+
+msgid "Export document to HTML"
+msgstr "Eksportuj dokument do HTML"
+
+msgid "Markdown files (*.md)|*.md|All files (*.*)|*.*"
+msgstr "Pliki Markdown (*.md)|*.md|Wszystkie pliki (*.*)|*.*"
+
+msgid "Export document to Markdown"
+msgstr "Eksportuj dokument do Markdown"
+
+msgid "Paperback files (*.paperback)|*.paperback"
+msgstr "Pliki Paperback (*.paperback)|*.paperback"
+
+msgid "Export notes and bookmarks"
+msgstr "Eksportuj zakładki i notatki"
+
+msgid "Notes and bookmarks exported successfully."
+msgstr "Zakładki i notatki zostały wyeksportowane."
+
+msgid "Export Successful"
+msgstr "Eksport zakończony"
+
+msgid "Import notes and bookmarks"
+msgstr "Importuj zakładki i notatki"
+
+msgid "Notes and bookmarks imported successfully."
+msgstr "Zakładki i notatki zostały zaimportowane."
+
+msgid "Import Successful"
+msgstr "Import zakończony"
+
+msgid "No table of contents."
+msgstr "Brak spisu treści."
+
+msgid "Web View"
+msgstr "Widok WWW"
+
+msgid "Could not determine content to display in Web View."
+msgstr "Nie udało się określić treści do pokazania w Widoku WWW."
+
+msgid "Sleep timer cancelled."
+msgstr "Wyłącznik czasowy anulowany."
+
+msgid "Sleep timer set for 1 minute."
+msgstr "Wyłącznik czasowy ustawiony na 1 minutę."
+
+#, c-format
+msgid "Sleep timer set for %d minutes."
+msgstr "Wyłącznik czasowy ustawiony na %d min."
+
+msgid "No recent documents."
+msgstr "Brak ostatnich dokumentów."
+
+msgid "Previous Section\t["
+msgstr "Poprzednia sekcja\t["
+
+msgid "Go to previous section"
+msgstr "Przejdź do poprzedniej sekcji"
+
+msgid "Next Section\t]"
+msgstr "Następna sekcja\t]"
+
+msgid "Go to next section"
+msgstr "Przejdź do następnej sekcji"
+
+msgid "Go to &Page\tCtrl+P"
+msgstr "Przejdź do &strony\tCtrl+P"
+
+msgid "Previous Pa&ge\tShift+P"
+msgstr "Poprzednia stro&na\tShift+P"
+
+msgid "Next Pag&e\tP"
+msgstr "Następna str&ona\tP"
+
+msgid "Previous Lin&k\tShift+K"
+msgstr "Poprzedni odnośni&k\tShift+K"
+
+msgid "Next Lin&k\tK"
+msgstr "Następny odnośni&k\tK"
+
+msgid "Previous Ima&ge\tShift+G"
+msgstr "Poprzedni &obraz\tShift+G"
+
+msgid "Next Ima&ge\tG"
+msgstr "Następny &obraz\tG"
+
+msgid "Previous Figu&re\tShift+F"
+msgstr "Poprzedni &rysunek\tShift+F"
+
+msgid "Next Figu&re\tF"
+msgstr "Następny &rysunek\tF"
+
+msgid "Previous &Table\tShift+T"
+msgstr "Poprzednia &tabela\tShift+T"
+
+msgid "Next &Table\tT"
+msgstr "Następna &tabela\tT"
+
+msgid "Previous Se&parator\tShift+S"
+msgstr "Poprzedni se&parator\tShift+S"
+
+msgid "Next Se&parator\tS"
+msgstr "Następny se&parator\tS"
+
+msgid "Previous L&ist\tShift+L"
+msgstr "Poprzednia &lista\tShift+L"
+
+msgid "Next L&ist\tL"
+msgstr "Następna &lista\tL"
+
+msgid "Previous List &Item\tShift+I"
+msgstr "Poprzedni element l&isty\tShift+I"
+
+msgid "Next List I&tem\tI"
+msgstr "Następny element lis&ty\tI"
+
+msgid "Next Heading Level 1\t1"
+msgstr "Następny nagłówek poziomu 1\t1"
+
+msgid "Previous Heading Level &2\tShift+2"
+msgstr "Poprzedni nagłówek poziomu &2\tShift+2"
+
+msgid "Next Heading Level 2\t2"
+msgstr "Następny nagłówek poziomu 2\t2"
+
+msgid "Previous Heading Level &3\tShift+3"
+msgstr "Poprzedni nagłówek poziomu &3\tShift+3"
+
+msgid "Next Heading Level 3\t3"
+msgstr "Następny nagłówek poziomu 3\t3"
+
+msgid "Previous Heading Level &4\tShift+4"
+msgstr "Poprzedni nagłówek poziomu &4\tShift+4"
+
+msgid "Next Heading Level 4\t4"
+msgstr "Następny nagłówek poziomu 4\t4"
+
+msgid "Previous Heading Level &5\tShift+5"
+msgstr "Poprzedni nagłówek poziomu &5\tShift+5"
+
+msgid "Next Heading Level 5\t5"
+msgstr "Następny nagłówek poziomu 5\t5"
+
+msgid "Previous Heading Level &6\tShift+6"
+msgstr "Poprzedni nagłówek poziomu &6\tShift+6"
+
+msgid "Next Heading Level 6\t6"
+msgstr "Następny nagłówek poziomu 6\t6"
+
+msgid "&Previous Heading\tShift+H"
+msgstr "&Poprzedni nagłówek\tShift+H"
+
+msgid "Go to previous heading"
+msgstr "Przejdź do poprzedniego nagłówka"
+
+msgid "&Next Heading\tH"
+msgstr "&Następny nagłówek\tH"
+
+msgid "Go to next heading"
+msgstr "Przejdź do następnego nagłówka"
+
+msgid "Previous Heading Level &1\tShift+1"
+msgstr "Poprzedni nagłówek poziomu &1\tShift+1"
+
+msgid "&Previous Bookmark\tShift+B"
+msgstr "&Poprzednia zakładka\tShift+B"
+
+msgid "Go to previous bookmark"
+msgstr "Przejdź do poprzedniej zakładki"
+
+msgid "&Next Bookmark\tB"
+msgstr "&Następna zakładka\tB"
+
+msgid "Go to next bookmark"
+msgstr "Przejdź do następnej zakładki"
+
+msgid "Previous &Note\tShift+N"
+msgstr "Poprzednia &notatka\tShift+N"
+
+msgid "Go to previous note"
+msgstr "Przejdź do poprzedniej notatki"
+
+msgid "Next N&ote\tN"
+msgstr "Następna n&otatka\tN"
+
+msgid "Go to next note"
+msgstr "Przejdź do następnej notatki"
+
+msgid "Jump to &All...\tCtrl+B"
+msgstr "Przejdź do &wszystkich...\tCtrl+B"
+
+msgid "Show all bookmarks and notes"
+msgstr "Pokaż wszystkie zakładki i notatki"
+
+msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
+msgstr "Przejdź tylko do &zakładek...\tCtrl+Alt+B"
+
+msgid "Show bookmarks only"
+msgstr "Pokaż tylko zakładki"
+
+msgid "Jump to Notes &Only...\tCtrl+Alt+M"
+msgstr "Przejdź tylko do n&otatek...\tCtrl+Alt+M"
+
+msgid "Show notes only"
+msgstr "Pokaż tylko notatki"
+
+msgid "&View Note Text\tRawCtrl+Shift+W"
+msgstr "&Wyświetl tekst notatki\tRawCtrl+Shift+W"
+
+msgid "&View Note Text\tCtrl+Shift+W"
+msgstr "&Wyświetl tekst notatki\tCtrl+Shift+W"
+
+msgid "View the note at current position"
+msgstr "Wyświetl notatkę w bieżącej pozycji"
+
+msgid "&File"
+msgstr "&Plik"
+
+msgid "&Go"
+msgstr "&Przejdź"
+
+msgid "&Tools"
+msgstr "&Narzędzia"
+
+msgid "&Help"
+msgstr "Pomo&c"
+
+msgid "&Open...\tCtrl+O"
+msgstr "&Otwórz...\tCtrl+O"
+
+msgid "Open a document"
+msgstr "Otwórz dokument"
+
+msgid "&Close\tCtrl+W"
+msgstr "&Zamknij\tCtrl+W"
+
+msgid "&Close\tCtrl+F4"
+msgstr "&Zamknij\tCtrl+F4"
+
+msgid "Close the current document"
+msgstr "Zamknij bieżący dokument"
+
+msgid "Close &All\tCtrl+Shift+W"
+msgstr "Zamknij &wszystkie\tCtrl+Shift+W"
+
+msgid "Close &All\tCtrl+Shift+F4"
+msgstr "Zamknij &wszystkie\tCtrl+Shift+F4"
+
+msgid "Close all documents"
+msgstr "Zamknij wszystkie dokumenty"
+
+msgid "Reopen &Last Closed\tCtrl+Shift+T"
+msgstr "Otwórz ponownie &ostatnio zamknięty\tCtrl+Shift+T"
+
+msgid "Reopen the last closed document"
+msgstr "Otwórz ponownie ostatnio zamknięty dokument"
+
+msgid "&Recent Documents"
+msgstr "&Ostatnie dokumenty"
+
+msgid "Open a recent document"
+msgstr "Otwórz ostatni dokument"
+
+msgid "E&xit\tCtrl+Q"
+msgstr "Za&kończ\tCtrl+Q"
+
+msgid "Exit the application"
+msgstr "Zakończ aplikację"
+
+msgid "&Find...\tCtrl+F"
+msgstr "&Znajdź...\tCtrl+F"
+
+msgid "Find text in the document"
+msgstr "Znajdź tekst w dokumencie"
+
+msgid "Find &Next\tF3"
+msgstr "Znajdź &następne\tF3"
+
+msgid "Find next occurrence"
+msgstr "Znajdź następne wystąpienie"
+
+msgid "Find &Previous\tShift+F3"
+msgstr "Znajdź &poprzednie\tShift+F3"
+
+msgid "Find previous occurrence"
+msgstr "Znajdź poprzednie wystąpienie"
+
+msgid "Go to &line...\tCtrl+G"
+msgstr "Przejdź do &wiersza...\tCtrl+G"
+
+msgid "Go to a specific line"
+msgstr "Przejdź do określonego wiersza"
+
+msgid "Go to &percent...\tCtrl+Shift+G"
+msgstr "Przejdź do &procentu...\tCtrl+Shift+G"
+
+msgid "Go to a percentage of the document"
+msgstr "Przejdź do procentowej pozycji dokumentu"
+
+msgid "Go &Back\tAlt+Left"
+msgstr "W&stecz\tAlt+Left"
+
+msgid "Go back in history"
+msgstr "Przejdź wstecz w historii"
+
+msgid "Go &Forward\tAlt+Right"
+msgstr "D&o przodu\tAlt+Right"
+
+msgid "Go forward in history"
+msgstr "Przejdź do przodu w historii"
+
+msgid "&Sections"
+msgstr "&Sekcje"
+
+msgid "Navigate by sections"
+msgstr "Nawiguj po sekcjach"
+
+msgid "&Headings"
+msgstr "&Nagłówki"
+
+msgid "Navigate by headings"
+msgstr "Nawiguj po nagłówkach"
+
+msgid "&Pages"
+msgstr "S&trony"
+
+msgid "Navigate by pages"
+msgstr "Nawiguj po stronach"
+
+msgid "&Bookmarks"
+msgstr "&Zakładki"
+
+msgid "Navigate by bookmarks"
+msgstr "Nawiguj po zakładkach"
+
+msgid "&Links"
+msgstr "&Odnośniki"
+
+msgid "Navigate by links"
+msgstr "Nawiguj po odnośnikach"
+
+msgid "&Images"
+msgstr "&Obrazy"
+
+msgid "Navigate by images"
+msgstr "Nawiguj po obrazach"
+
+msgid "&Figures"
+msgstr "&Rysunki"
+
+msgid "Navigate by figures"
+msgstr "Nawiguj po rysunkach"
+
+msgid "&Tables"
+msgstr "&Tabele"
+
+msgid "Navigate by tables"
+msgstr "Nawiguj po tabelach"
+
+msgid "&Separators"
+msgstr "Se&paratory"
+
+msgid "Navigate by separators"
+msgstr "Nawiguj po separatorach"
+
+msgid "&Lists"
+msgstr "&Listy"
+
+msgid "Navigate by lists"
+msgstr "Nawiguj po listach"
+
+msgid "&Import Document Data...\tCtrl+Shift+I"
+msgstr "&Importuj dane dokumentu...\tCtrl+Shift+I"
+
+msgid "Import bookmarks and position"
+msgstr "Importuj zakładki i pozycję"
+
+msgid "&Export Document Data...\tCtrl+Shift+E"
+msgstr "&Eksportuj dane dokumentu...\tCtrl+Shift+E"
+
+msgid "Export bookmarks and position"
+msgstr "Eksportuj zakładki i pozycję"
+
+msgid "Export to &Plain Text...\tCtrl+E"
+msgstr "Eksportuj do &zwykłego tekstu...\tCtrl+E"
+
+msgid "Export document as plain text"
+msgstr "Eksportuj dokument jako zwykły tekst"
+
+msgid "Export to &HTML..."
+msgstr "Eksportuj do &HTML..."
+
+msgid "Export document as HTML"
+msgstr "Eksportuj dokument jako HTML"
+
+msgid "Export to &Markdown..."
+msgstr "Eksportuj do &Markdown..."
+
+msgid "Export document as Markdown"
+msgstr "Eksportuj dokument jako Markdown"
+
+msgid "&Word Count\tRawCtrl+W"
+msgstr "&Liczba słów\tRawCtrl+W"
+
+msgid "&Word Count\tCtrl+W"
+msgstr "&Liczba słów\tCtrl+W"
+
+msgid "Show word count"
+msgstr "Pokaż liczbę słów"
+
+msgid "Document &Info\tCtrl+I"
+msgstr "&Informacje o dokumencie\tCtrl+I"
+
+msgid "Show document information"
+msgstr "Pokaż informacje o dokumencie"
+
+msgid "&Table of Contents\tCtrl+T"
+msgstr "&Spis treści\tCtrl+T"
+
+msgid "Show table of contents"
+msgstr "Pokaż spis treści"
+
+msgid "&Elements List...\tF7"
+msgstr "Lista &elementów...\tF7"
+
+msgid "Show elements list"
+msgstr "Pokaż listę elementów"
+
+msgid "Open &Containing Folder\tCtrl+Shift+C"
+msgstr "Otwórz folder &zawierający\tCtrl+Shift+C"
+
+msgid "Open folder containing the document"
+msgstr "Otwórz folder zawierający dokument"
+
+msgid "Open in &Web View\tCtrl+Shift+V"
+msgstr "Otwórz w &Widoku WWW\tCtrl+Shift+V"
+
+msgid "Open document in web view"
+msgstr "Otwórz dokument w Widoku WWW"
+
+msgid "I&mport/Export"
+msgstr "I&mport/eksport"
+
+msgid "Import and export options"
+msgstr "Opcje importu i eksportu"
+
+msgid "Toggle &Bookmark\tCtrl+Shift+B"
+msgstr "Przełącz &zakładkę\tCtrl+Shift+B"
+
+msgid "Bookmark with &Note\tCtrl+Shift+N"
+msgstr "Zakładka z &notatką\tCtrl+Shift+N"
+
+msgid "&Options\tCtrl+,"
+msgstr "&Opcje\tCtrl+,"
+
+msgid "&Sleep Timer...\tCtrl+Shift+S"
+msgstr "&Wyłącznik czasowy...\tCtrl+Shift+S"
+
+msgid "&About Paperback\tCtrl+F1"
+msgstr "&O programie Paperback\tCtrl+F1"
+
+msgid "About this application"
+msgstr "Informacje o tej aplikacji"
+
+msgid "View Help in &Browser\tF1"
+msgstr "Wyświetl pomoc w &przeglądarce\tF1"
+
+msgid "View help in default browser"
+msgstr "Wyświetl pomoc w domyślnej przeglądarce"
+
+msgid "View Help in &Paperback\tShift+F1"
+msgstr "Wyświetl pomoc w &Paperbacku\tShift+F1"
+
+msgid "View help in Paperback"
+msgstr "Wyświetl pomoc w Paperbacku"
+
+msgid "Check for &Updates\tCtrl+Shift+U"
+msgstr "Sprawdź &aktualizacje\tCtrl+Shift+U"
+
+msgid "Check for updates"
+msgstr "Sprawdź aktualizacje"
+
+msgid "&Donate\tCtrl+D"
+msgstr "&Wesprzyj\tCtrl+D"
+
+msgid "Support Paperback development"
+msgstr "Wesprzyj rozwój Paperbacka"
+
+msgid "(No recent documents)"
+msgstr "(Brak ostatnich dokumentów)"
+
+msgid "Show All...\tCtrl+R"
+msgstr "Pokaż wszystko...\tCtrl+R"
+
+msgid "No sections."
+msgstr "Brak sekcji."
+
+msgid "No next section"
+msgstr "Brak następnej sekcji"
+
+msgid "No previous section"
+msgstr "Brak poprzedniej sekcji"
+
+#, c-format
+msgid "No headings at level %d."
+msgstr "Brak nagłówków poziomu %d."
+
+#, c-format
+msgid "No next heading at level %d."
+msgstr "Brak następnego nagłówka poziomu %d."
+
+#, c-format
+msgid "No previous heading at level %d."
+msgstr "Brak poprzedniego nagłówka poziomu %d."
+
+msgid "No headings."
+msgstr "Brak nagłówków."
+
+msgid "No next heading."
+msgstr "Brak następnego nagłówka."
+
+msgid "No previous heading."
+msgstr "Brak poprzedniego nagłówka."
+
+msgid "No next page."
+msgstr "Brak następnej strony."
+
+msgid "No previous page."
+msgstr "Brak poprzedniej strony."
+
+msgid "No links."
+msgstr "Brak odnośników."
+
+msgid "No next link."
+msgstr "Brak następnego odnośnika."
+
+msgid "No previous link."
+msgstr "Brak poprzedniego odnośnika."
+
+msgid "No lists."
+msgstr "Brak list."
+
+msgid "No next list."
+msgstr "Brak następnej listy."
+
+msgid "No previous list."
+msgstr "Brak poprzedniej listy."
+
+msgid "No list items."
+msgstr "Brak elementów listy."
+
+msgid "No next list item."
+msgstr "Brak następnego elementu listy."
+
+msgid "No previous list item."
+msgstr "Brak poprzedniego elementu listy."
+
+msgid "No tables."
+msgstr "Brak tabel."
+
+msgid "No next table."
+msgstr "Brak następnej tabeli."
+
+msgid "No previous table."
+msgstr "Brak poprzedniej tabeli."
+
+msgid "No separators."
+msgstr "Brak separatorów."
+
+msgid "No next separator."
+msgstr "Brak następnego separatora."
+
+msgid "No previous separator."
+msgstr "Brak poprzedniego separatora."
+
+msgid "No images."
+msgstr "Brak obrazów."
+
+msgid "No next image."
+msgstr "Brak następnego obrazu."
+
+msgid "No previous image."
+msgstr "Brak poprzedniego obrazu."
+
+msgid "No figures."
+msgstr "Brak rysunków."
+
+msgid "No next figure."
+msgstr "Brak następnego rysunku."
+
+msgid "No previous figure."
+msgstr "Brak poprzedniego rysunku."
+
+msgid "Wrapping to start. "
+msgstr "Zawijanie do początku. "
+
+msgid "Wrapping to end. "
+msgstr "Zawijanie do końca. "
+
+#, c-format
+msgid "%s Heading level %d"
+msgstr "%s Nagłówek poziomu %d"
+
+#, c-format
+msgid "Page %d: %s"
+msgstr "Strona %d: %s"
+
+msgid " link"
+msgstr " odnośnik"
+
+msgid "Navigated to next position."
+msgstr "Przejście do następnej pozycji."
+
+msgid "Navigated to previous position."
+msgstr "Przejście do poprzedniej pozycji."
+
+msgid "No next position."
+msgstr "Brak następnej pozycji."
+
+msgid "No previous position."
+msgstr "Brak poprzedniej pozycji."
+
+#, c-format
+msgid "%s - Bookmark %d"
+msgstr "%s - Zakładka %d"
+
+msgid "No notes."
+msgstr "Brak notatek."
+
+msgid "No bookmarks."
+msgstr "Brak zakładek."
+
+msgid "No next note."
+msgstr "Brak następnej notatki."
+
+msgid "No next bookmark."
+msgstr "Brak następnej zakładki."
+
+msgid "No previous note."
+msgstr "Brak poprzedniej notatki."
+
+msgid "No previous bookmark."
+msgstr "Brak poprzedniej zakładki."
+
+msgid "Bookmark."
+msgstr "Zakładka."
+
+msgid "Bookmark removed."
+msgstr "Zakładka usunięta."
+
+msgid "Bookmark added."
+msgstr "Zakładka dodana."
+
+msgid "Enter bookmark note:"
+msgstr "Wpisz notatkę zakładki:"
+
+msgid "Bookmark saved."
+msgstr "Zakładka zapisana."
+
+msgid "No note at the current position."
+msgstr "Brak notatki w bieżącej pozycji."
+
+msgid "Line"
+msgstr "Wiersz"
+
+msgid "Character"
+msgstr "Znak"
+
+msgid "Sleep timer"
+msgstr "Wyłącznik czasowy"
+
+msgid "&Restore"
+msgstr "&Przywróć"
+
+msgid "Restore Paperback"
+msgstr "Przywróć Paperback"
+
+msgid "E&xit"
+msgstr "Za&kończ"
+
+msgid "Exit Paperback"
+msgstr "Zakończ Paperback"
+
+#, c-format
+msgid "Update to %s"
+msgstr "Zaktualizuj do %s"
+
+#, c-format
+msgid "A new version of %s is available. Here's what's new:"
+msgstr "Dostępna jest nowa wersja %s. Oto zmiany:"
+
+msgid "No release notes provided."
+msgstr "Nie podano informacji o wydaniu."
+
+#, c-format
+msgid "%s Update"
+msgstr "Aktualizacja %s"
+
+msgid "Downloading update..."
+msgstr "Pobieranie aktualizacji..."
+
+msgid "No updates available."
+msgstr "Brak dostępnych aktualizacji."
+
+#, c-format
+msgid "No updates available. Latest version: %s"
+msgstr "Brak dostępnych aktualizacji. Najnowsza wersja: %s"
+
+msgid "Info"
+msgstr "Informacja"
+
+#, c-format
+msgid ""
+"Security verification failed. The update might have been tampered with: %s"
+msgstr ""
+"Weryfikacja bezpieczeństwa nie powiodła się. Aktualizacja mogła zostać "
+"zmodyfikowana: %s"
+
+msgid "Security Error"
+msgstr "Błąd bezpieczeństwa"
+
+msgid "Update failed"
+msgstr "Aktualizacja nie powiodła się"
+
+#, c-format
+msgid ""
+"Update downloaded to: %s\n"
+"Please install it manually."
+msgstr ""
+"Aktualizacja została pobrana do: %s\n"
+"Zainstaluj ją ręcznie."
+
+msgid "Update Ready"
+msgstr "Aktualizacja gotowa"
+
+msgid "Failed to get current exe path"
+msgstr "Nie udało się pobrać bieżącej ścieżki pliku exe"
+
+msgid "Failed to launch installer script"
+msgstr "Nie udało się uruchomić skryptu instalatora"
+
+msgid "Failed to launch update script"
+msgstr "Nie udało się uruchomić skryptu aktualizacji"
+
+msgid "Unknown update file format."
+msgstr "Nieznany format pliku aktualizacji."

@@ -348,8 +348,33 @@ fn extract_doc_text_simple(word_document: &[u8]) -> String {
 }
 
 fn normalize_doc_text(text: &str) -> String {
-	let mut normalized = text.replace("\r\n", "\n").replace('\r', "\n");
-	normalized = normalized.replace(['\u{13}', '\u{14}', '\u{15}'], "");
+	// Strip Word field codes: \u{13}=begin, \u{14}=separator (display text follows), \u{15}=end.
+	// Keep only text outside fields or in the display portion of a field; discard instructions.
+	let stripped = {
+		let mut out = String::with_capacity(text.len());
+		// Each entry on the stack is true when we have passed the \u{14} separator at that depth.
+		let mut field_stack: Vec<bool> = Vec::new();
+		for ch in text.chars() {
+			match ch {
+				'\u{13}' => field_stack.push(false),
+				'\u{14}' => {
+					if let Some(top) = field_stack.last_mut() {
+						*top = true;
+					}
+				}
+				'\u{15}' => {
+					field_stack.pop();
+				}
+				_ => {
+					if field_stack.is_empty() || field_stack.iter().all(|&past_sep| past_sep) {
+						out.push(ch);
+					}
+				}
+			}
+		}
+		out
+	};
+	let mut normalized = stripped.replace("\r\n", "\n").replace('\r', "\n");
 	let mut out = String::with_capacity(normalized.len());
 	let mut previous_was_newline = false;
 	let mut newline_run = 0usize;

@@ -187,7 +187,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: paperback-macos
-        path: target/release/paperback-macos.dmg
+        path: target/release/paperback.dmg
         retention-days: 30
 
   release:
@@ -255,7 +255,7 @@ jobs:
           linux-build/paperback.flatpak
           android-build/paperback-android-arm64.apk
           android-build/paperback-android-arm.apk
-          macos-build/paperback-macos.dmg
+          macos-build/paperback.dmg
         prerelease: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

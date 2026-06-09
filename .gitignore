@@ -4,6 +4,8 @@ web/_site/
 *.epub
 *.pdf
 *.rtf
+*.doc
+*.docx
 .DS_Store
 result
 .direnv/
