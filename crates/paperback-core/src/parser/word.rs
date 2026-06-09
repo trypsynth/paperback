@@ -819,7 +819,7 @@ mod tests {
 
 	#[test]
 	fn normalize_doc_text_cleans_control_markers() {
-		let text = "A\r\nB\u{13}C\u{14}\u{15}\n\n\nD";
+		let text = "A\r\nB\u{13}\u{14}C\u{15}\n\n\nD";
 		assert_eq!(normalize_doc_text(text), "A\nBC\n\nD");
 	}
 
