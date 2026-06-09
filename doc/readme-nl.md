@@ -125,6 +125,7 @@ Lees onze [Vertaalgids](translating.md) om te leren hoe je kunt bijdragen.
 * Bosnisch
 * Tsjechisch
 * Nederlands
+* Fins
 * Frans
 * Duits
 * Japans
