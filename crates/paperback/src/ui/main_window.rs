@@ -246,9 +246,10 @@ impl MainWindow {
 				self.toggle_visibility();
 			}
 			IpcCommand::OpenFile(path) => {
-				if self.open_file(&path) {
-					self.activate_from_ipc();
-				}
+				self.activate_from_ipc();
+				self.open_file(&path);
+				self.frame.raise();
+				self.doc_manager.lock().unwrap().restore_focus();
 			}
 		}
 	}
@@ -259,6 +260,14 @@ impl MainWindow {
 		self.frame.iconize(false);
 		self.frame.request_user_attention(UserAttentionFlag::Info);
 		self.frame.raise();
+		#[cfg(target_os = "windows")]
+		{
+			use windows::Win32::{Foundation::HWND, UI::WindowsAndMessaging::SetForegroundWindow};
+			let handle = self.frame.get_handle();
+			if !handle.is_null() {
+				let _ = unsafe { SetForegroundWindow(HWND(handle)) };
+			}
+		}
 		self.doc_manager.lock().unwrap().restore_focus();
 		#[cfg(not(target_os = "linux"))]
 		if let Some(state) = self._tray_state.lock().unwrap().as_mut() {

@@ -374,7 +374,7 @@ fn normalize_doc_text(text: &str) -> String {
 		}
 		out
 	};
-	let mut normalized = stripped.replace("\r\n", "\n").replace('\r', "\n");
+	let normalized = stripped.replace("\r\n", "\n").replace('\r', "\n");
 	let mut out = String::with_capacity(normalized.len());
 	let mut previous_was_newline = false;
 	let mut newline_run = 0usize;

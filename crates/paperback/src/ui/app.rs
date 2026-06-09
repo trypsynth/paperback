@@ -307,7 +307,10 @@ fn send_ipc_command(command: IpcCommand) {
 	};
 	#[cfg(windows)]
 	{
+		use windows::Win32::UI::WindowsAndMessaging::AllowSetForegroundWindow;
+
 		use crate::ipc::named_pipe_path;
+		let _ = unsafe { AllowSetForegroundWindow(u32::MAX) };
 		pipe::send(&named_pipe_path(), &payload);
 	}
 	#[cfg(target_os = "linux")]
