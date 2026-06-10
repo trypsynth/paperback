@@ -199,6 +199,7 @@ final class TtsManager: NSObject, ObservableObject {
 	@objc private func handleMediaServicesReset() {
 		Task { @MainActor [weak self] in
 			guard let self else { return }
+			let wasActive = isSpeaking || isPaused
 			isSpeaking = false
 			isPaused = false
 			wasInterruptedWhilePlaying = false
@@ -214,8 +215,12 @@ final class TtsManager: NSObject, ObservableObject {
 			engine.detach(player)
 			engine.attach(player)
 			engine.connect(player, to: engine.mainMixerNode, format: outputFormat)
-			try? AVAudioSession.sharedInstance().setActive(true)
-			try? engine.start()
+			// Only reactivate if audio was actually playing/paused before the reset;
+			// unconditionally starting the engine keeps the app alive in the background.
+			if wasActive {
+				try? AVAudioSession.sharedInstance().setActive(true)
+				try? engine.start()
+			}
 		}
 	}
 
