@@ -417,6 +417,42 @@ fn find_fragment_offset(doc: &DocumentHandle, fragment: &str, scoped_path: Optio
 	doc.document().id_positions.get(fragment).copied()
 }
 
+/// Percent-encodes an element id for use as a URL `#fragment`.
+#[must_use]
+pub fn encode_url_fragment(id: &str) -> String {
+	const FRAGMENT_ENCODE_SET: &percent_encoding::AsciiSet =
+		&percent_encoding::CONTROLS.add(b' ').add(b'"').add(b'<').add(b'>').add(b'`').add(b'#').add(b'%');
+	percent_encoding::utf8_percent_encode(id, FRAGMENT_ENCODE_SET).to_string()
+}
+
+/// Finds the id of the element closest at-or-before `position`, suitable as a URL
+/// fragment when opening the current section in a web view.
+///
+/// For multi-section documents (epub) only ids scoped to the current section
+/// (stored as `"{path}#{id}"` keys) are considered; for single-file documents
+/// bare id keys are used instead.
+#[must_use]
+pub fn nearest_fragment_before(doc: &DocumentHandle, position: usize) -> Option<String> {
+	let id_positions = &doc.document().id_positions;
+	current_section_path(doc, position).map_or_else(
+		|| {
+			id_positions
+				.iter()
+				.filter(|&(key, &offset)| offset <= position && !key.contains('#'))
+				.max_by_key(|&(_, &offset)| offset)
+				.map(|(key, _)| key.clone())
+		},
+		|path| {
+			let prefix = format!("{path}#");
+			id_positions
+				.iter()
+				.filter(|&(key, &offset)| offset <= position && key.starts_with(&prefix))
+				.max_by_key(|&(_, &offset)| offset)
+				.map(|(key, _)| key[prefix.len()..].to_string())
+		},
+	)
+}
+
 fn find_manifest_id_for_path(doc: &DocumentHandle, path: &str) -> Option<String> {
 	doc.document().manifest_items.iter().find_map(|(id, p)| if p == path { Some(id.clone()) } else { None })
 }
@@ -702,5 +738,74 @@ mod tests {
 		let doc = sample_link_doc_handle();
 		let result = resolve_link(&doc, "missing.xhtml#none", 0);
 		assert!(!result.found);
+	}
+
+	fn sample_reading_pos_doc_handle() -> DocumentHandle {
+		let mut buffer = DocumentBuffer::with_content("x".repeat(220));
+		buffer.add_marker(Marker::new(MarkerType::SectionBreak, 0));
+		buffer.add_marker(Marker::new(MarkerType::SectionBreak, 100));
+		let mut manifest_items = HashMap::new();
+		manifest_items.insert("id1".to_string(), "chapter1.xhtml".to_string());
+		manifest_items.insert("id2".to_string(), "chapter2.xhtml".to_string());
+		let mut id_positions = HashMap::new();
+		id_positions.insert("chapter1.xhtml#intro".to_string(), 10);
+		id_positions.insert("chapter1.xhtml#mid".to_string(), 50);
+		id_positions.insert("chapter2.xhtml#target".to_string(), 120);
+		// Bare duplicate as inserted by the epub parser alongside the scoped key.
+		id_positions.insert("intro".to_string(), 10);
+		let mut doc = Document::new();
+		doc.set_buffer(buffer);
+		doc.spine_items = vec!["id1".to_string(), "id2".to_string()];
+		doc.manifest_items = manifest_items;
+		doc.id_positions = id_positions;
+		DocumentHandle::new(doc)
+	}
+
+	fn sample_single_file_doc_handle() -> DocumentHandle {
+		let mut id_positions = HashMap::new();
+		id_positions.insert("top".to_string(), 10);
+		id_positions.insert("middle".to_string(), 50);
+		id_positions.insert("some.xhtml#scoped".to_string(), 40);
+		let mut doc = Document::new();
+		doc.set_buffer(DocumentBuffer::with_content("x".repeat(220)));
+		doc.id_positions = id_positions;
+		DocumentHandle::new(doc)
+	}
+
+	#[test]
+	fn nearest_fragment_picks_latest_id_at_or_before_position() {
+		let doc = sample_reading_pos_doc_handle();
+		assert_eq!(nearest_fragment_before(&doc, 60), Some("mid".to_string()));
+		assert_eq!(nearest_fragment_before(&doc, 30), Some("intro".to_string()));
+		assert_eq!(nearest_fragment_before(&doc, 120), Some("target".to_string()));
+	}
+
+	#[test]
+	fn nearest_fragment_returns_none_before_first_id_in_section() {
+		let doc = sample_reading_pos_doc_handle();
+		assert_eq!(nearest_fragment_before(&doc, 5), None);
+	}
+
+	#[test]
+	fn nearest_fragment_ignores_ids_from_other_sections_and_bare_duplicates() {
+		let doc = sample_reading_pos_doc_handle();
+		// Position 110 is in chapter2 before its first id; chapter1 ids and the
+		// bare "intro" duplicate must not match.
+		assert_eq!(nearest_fragment_before(&doc, 110), None);
+	}
+
+	#[test]
+	fn encode_url_fragment_escapes_unsafe_characters() {
+		assert_eq!(encode_url_fragment("plain-id_1"), "plain-id_1");
+		assert_eq!(encode_url_fragment("with space"), "with%20space");
+		assert_eq!(encode_url_fragment("a#b%c"), "a%23b%25c");
+	}
+
+	#[test]
+	fn nearest_fragment_uses_bare_ids_for_single_file_documents() {
+		let doc = sample_single_file_doc_handle();
+		assert_eq!(nearest_fragment_before(&doc, 60), Some("middle".to_string()));
+		assert_eq!(nearest_fragment_before(&doc, 45), Some("top".to_string()));
+		assert_eq!(nearest_fragment_before(&doc, 5), None);
 	}
 }
