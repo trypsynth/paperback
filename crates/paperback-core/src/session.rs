@@ -5,7 +5,6 @@ use std::{
 };
 
 use base64::Engine;
-use pulldown_cmark::{Options as MdOptions, Parser as MdParser, html::push_html as md_push_html};
 use zip::ZipArchive;
 
 use crate::{
@@ -13,8 +12,8 @@ use crate::{
 	document::{self, DocumentHandle, MarkerType, ParserContext, ParserFlags},
 	parser,
 	reader_core::{
-		SearchOptions, bookmark_navigate, history_go_next, history_go_previous, reader_navigate,
-		reader_search_with_wrap, record_history_position, resolve_link,
+		SearchOptions, bookmark_navigate, encode_url_fragment, history_go_next, history_go_previous,
+		nearest_fragment_before, reader_navigate, reader_search_with_wrap, record_history_position, resolve_link,
 	},
 	types::{self as ffi, NavDirection, NavTarget},
 	util::{encoding::convert_to_utf8, zip as zip_utils},
@@ -36,6 +35,12 @@ pub struct SearchResultFfi {
 	pub found: bool,
 	pub wrapped: bool,
 	pub position: i64,
+}
+
+#[derive(Debug, Clone)]
+pub struct WebviewTarget {
+	pub path: String,
+	pub fragment: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -868,7 +873,7 @@ impl DocumentSession {
 	}
 
 	#[must_use]
-	pub fn webview_target_path(&self, position: i64, temp_dir: &str) -> Option<String> {
+	pub fn webview_target_path(&self, position: i64, temp_dir: &str) -> Option<WebviewTarget> {
 		let section_path = self.get_current_section_path(position).filter(|path| !path.is_empty());
 		if let Some(section_path) = section_path {
 			let digest = crate::config::compute_document_hash(&self.file_path);
@@ -879,13 +884,14 @@ impl DocumentSession {
 				let output_path = doc_temp_dir.join(file_name);
 				let output_str = output_path.to_string_lossy().to_string();
 				if self.extract_resource(&section_path, &output_str).ok() == Some(true) {
-					return Some(output_str);
+					let fragment = self.inject_reading_anchor(position, &output_str);
+					return Some(WebviewTarget { path: output_str, fragment });
 				}
 			}
 		}
 		let ext = Path::new(&self.file_path).extension().map(|ext| ext.to_string_lossy().to_ascii_lowercase());
 		match ext.as_deref() {
-			Some("html" | "htm" | "xhtml") => Some(self.file_path.clone()),
+			Some("html" | "htm" | "xhtml") => Some(WebviewTarget { path: self.file_path.clone(), fragment: None }),
 			Some("md" | "markdown") => {
 				let digest = crate::config::compute_document_hash(&self.file_path);
 				let hash = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(digest);
@@ -894,15 +900,14 @@ impl DocumentSession {
 					let html_path = doc_temp_dir.join("document.html");
 					if let Ok(bytes) = fs::read(&self.file_path) {
 						let markdown_text = convert_to_utf8(&bytes);
-						let mut opts = MdOptions::empty();
-						opts.insert(MdOptions::ENABLE_TABLES);
-						let md_parser = MdParser::new_ext(&markdown_text, opts);
-						let mut html_body = String::new();
-						md_push_html(&mut html_body, md_parser);
+						let html_body = parser::markdown::markdown_to_html(&markdown_text);
 						let full_html =
 							format!("<html><head><meta charset=\"utf-8\"></head><body>{html_body}</body></html>");
 						if fs::write(&html_path, full_html.as_bytes()).is_ok() {
-							return Some(html_path.to_string_lossy().to_string());
+							return Some(WebviewTarget {
+								path: html_path.to_string_lossy().to_string(),
+								fragment: None,
+							});
 						}
 					}
 				}
@@ -910,6 +915,28 @@ impl DocumentSession {
 			}
 			_ => None,
 		}
+	}
+
+	/// Inserts an empty anchor element at the current reading position into the
+	/// extracted section file and returns its id, for use as a URL `#fragment`.
+	fn inject_reading_anchor(&self, position: i64, file_path: &str) -> Option<String> {
+		const READING_POS_ANCHOR_ID: &str = "paperback-reading-pos";
+		let pos = usize::try_from(position.max(0)).unwrap_or(0);
+		let section_index = self.handle.current_marker_index(pos, MarkerType::SectionBreak)?;
+		let section_start = self.handle.document().buffer.markers.get(section_index)?.position;
+		let relative = pos.checked_sub(section_start)?;
+		let content = convert_to_utf8(&fs::read(file_path).ok()?);
+		let injected = parser::xml_to_text::inject_anchor_at_position(&content, relative, READING_POS_ANCHOR_ID)?;
+		fs::write(file_path, injected.as_bytes()).ok()?;
+		Some(READING_POS_ANCHOR_ID.to_string())
+	}
+
+	/// Returns the id of the element closest at-or-before `position` in the current
+	/// section, for use as a `#fragment` when opening the section in a web view.
+	#[must_use]
+	pub fn webview_fragment_for_position(&self, position: i64) -> Option<String> {
+		let pos = usize::try_from(position.max(0)).unwrap_or(0);
+		nearest_fragment_before(&self.handle, pos).map(|id| encode_url_fragment(&id))
 	}
 
 	/// # Errors
@@ -1492,7 +1519,7 @@ mod tests {
 			parser_flags: ParserFlags::NONE,
 			last_stable_position: None,
 		};
-		assert_eq!(session.webview_target_path(0, "C:\\temp").as_deref(), None);
+		assert!(session.webview_target_path(0, "C:\\temp").is_none());
 	}
 
 	#[test]
