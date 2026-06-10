@@ -20,6 +20,10 @@ const PDFIUM_WIN_X86_URL: &str =
 	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-win-x86.tgz";
 const PDFIUM_WIN_ARM64_URL: &str =
 	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-win-arm64.tgz";
+const PDFIUM_MAC_X64_URL: &str =
+	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-mac-x64.tgz";
+const PDFIUM_MAC_ARM64_URL: &str =
+	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-mac-arm64.tgz";
 
 fn main() {
 	track_packaging_inputs();
@@ -31,6 +35,7 @@ fn main() {
 	let target = env::var("TARGET").unwrap_or_default();
 	embed_commit_hash();
 	if target.contains("apple") {
+		copy_pdfium_dylib();
 		// Homebrew's libiconv is keg-only and not on the default search path.
 		// wxWidgets links against it, so we need to tell the linker where to find it.
 		let homebrew_prefix = if target.contains("aarch64") { "/opt/homebrew" } else { "/usr/local" };
@@ -150,6 +155,103 @@ fn copy_sounds() {
 			}
 		}
 	}
+}
+
+fn copy_pdfium_dylib() {
+	println!("cargo:rerun-if-env-changed=PAPERBACK_PDFIUM_DYLIB");
+	println!("cargo:rerun-if-env-changed=PAPERBACK_SKIP_PDFIUM_DOWNLOAD");
+	println!("cargo:rerun-if-env-changed=PAPERBACK_REFRESH_PDFIUM");
+	let refresh = env::var("PAPERBACK_REFRESH_PDFIUM")
+		.map(|value| value == "1" || value.eq_ignore_ascii_case("true"))
+		.unwrap_or(false);
+	let target_dir = match target_profile_dir() {
+		Some(dir) => dir,
+		None => {
+			println!("cargo:warning=Could not determine target output directory for libpdfium.dylib.");
+			return;
+		}
+	};
+	let dest = target_dir.join("libpdfium.dylib");
+	if let Ok(path) = env::var("PAPERBACK_PDFIUM_DYLIB") {
+		let src = PathBuf::from(path);
+		if src.is_file() {
+			println!("cargo:rerun-if-changed={}", src.display());
+			if src != dest {
+				if let Err(err) = fs::copy(&src, &dest) {
+					println!("cargo:warning=Failed to copy libpdfium.dylib from {}: {}", src.display(), err);
+				}
+			}
+			return;
+		}
+	}
+	if dest.exists() && !refresh {
+		return;
+	}
+	if let Err(err) = ensure_pdfium_dylib(&dest) {
+		println!(
+			"cargo:warning=libpdfium.dylib not found. Automatic download failed: {}. Set PAPERBACK_PDFIUM_DYLIB or place libpdfium.dylib in the project root.",
+			err
+		);
+	} else if dest.exists() {
+		println!("cargo:rerun-if-changed={}", dest.display());
+	}
+}
+
+fn ensure_pdfium_dylib(dest: &Path) -> io::Result<()> {
+	let skip_download = env::var("PAPERBACK_SKIP_PDFIUM_DOWNLOAD")
+		.map(|value| value == "1" || value.eq_ignore_ascii_case("true"))
+		.unwrap_or(false);
+	if skip_download {
+		return Err(io::Error::other("download disabled by PAPERBACK_SKIP_PDFIUM_DOWNLOAD"));
+	}
+	let refresh = env::var("PAPERBACK_REFRESH_PDFIUM")
+		.map(|value| value == "1" || value.eq_ignore_ascii_case("true"))
+		.unwrap_or(false);
+	if dest.exists() && !refresh {
+		return Ok(());
+	}
+	let Some(url) = pdfium_dylib_download_url_for_target() else {
+		return Err(io::Error::other("no PDFium URL configured for this macOS target architecture"));
+	};
+	download_pdfium_dylib(url, dest)
+}
+
+fn pdfium_dylib_download_url_for_target() -> Option<&'static str> {
+	let arch = env::var("CARGO_CFG_TARGET_ARCH").ok()?;
+	match arch.as_str() {
+		"x86_64" => Some(PDFIUM_MAC_X64_URL),
+		"aarch64" => Some(PDFIUM_MAC_ARM64_URL),
+		_ => None,
+	}
+}
+
+fn download_pdfium_dylib(url: &str, dest_dylib: &Path) -> io::Result<()> {
+	if let Some(parent) = dest_dylib.parent() {
+		fs::create_dir_all(parent)?;
+	}
+	println!("cargo:warning=Downloading libpdfium.dylib from {}", url);
+	let response = ureq::get(url).call().map_err(|err| io::Error::other(format!("request failed: {err}")))?;
+	let mut body = response.into_body();
+	let mut archive_bytes = Vec::new();
+	body.as_reader()
+		.read_to_end(&mut archive_bytes)
+		.map_err(|err| io::Error::other(format!("failed to read response body: {err}")))?;
+	let decoder = GzDecoder::new(Cursor::new(archive_bytes));
+	let mut archive = Archive::new(decoder);
+	for entry in archive.entries()? {
+		let mut entry = entry?;
+		let path = entry.path()?;
+		if path.file_name().and_then(|name| name.to_str()) == Some("libpdfium.dylib") {
+			let temp_path = dest_dylib.with_extension("dylib.tmp");
+			entry.unpack(&temp_path)?;
+			if dest_dylib.exists() {
+				fs::remove_file(dest_dylib)?;
+			}
+			fs::rename(temp_path, dest_dylib)?;
+			return Ok(());
+		}
+	}
+	Err(io::Error::other("libpdfium.dylib not found inside downloaded archive"))
 }
 
 fn copy_pdfium_dll() {
@@ -446,6 +548,10 @@ fn generate_app_bundle() {
 	let bundle_exe = macos_dir.join("paperback");
 	if exe_path.exists() {
 		let _ = fs::copy(&exe_path, &bundle_exe);
+	}
+	let dylib_path = target_dir.join("libpdfium.dylib");
+	if dylib_path.exists() {
+		let _ = fs::copy(&dylib_path, macos_dir.join("libpdfium.dylib"));
 	}
 	let readme = target_dir.join("readme.html");
 	if readme.exists() {
