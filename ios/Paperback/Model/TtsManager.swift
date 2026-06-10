@@ -21,6 +21,11 @@ final class TtsManager: NSObject, ObservableObject {
 	private var prevPrefetchGeneration = 0
 
 	private var wasInterruptedWhilePlaying = false
+	private var ignoreExternalPlayUntil: Date = .distantPast
+
+	/// True within ~1.5 s of a new Bluetooth device connecting while paused.
+	/// Lets us ignore the spurious play command some speakers send on auto-pair.
+	var suppressExternalPlay: Bool { Date() < ignoreExternalPlayUntil }
 
 	@Published var isSpeaking = false
 	@Published var isPaused = false
@@ -125,14 +130,24 @@ final class TtsManager: NSObject, ObservableObject {
 		      let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue) else { return }
 		Task { @MainActor [weak self] in
 			guard let self else { return }
-			// Pause when headphones are unplugged (standard iOS behavior).
-			if reason == .oldDeviceUnavailable, isSpeaking {
-				player.pause()
-				isSpeaking = false
-				isPaused = true
+			switch reason {
+			case .oldDeviceUnavailable:
+				// Pause when headphones are unplugged (standard iOS behavior).
+				if isSpeaking {
+					player.pause()
+					isSpeaking = false
+					isPaused = true
+					try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+				}
+			case .newDeviceAvailable:
+				// Some Bluetooth speakers (e.g. JBL) fire a play command on auto-pair.
+				// Gate external play commands for 1.5 s so that spurious command is dropped.
+				if isPaused {
+					ignoreExternalPlayUntil = Date().addingTimeInterval(1.5)
+				}
+			default:
+				break
 			}
-			// Do nothing on .newDeviceAvailable — prevents auto-resume when a
-			// Bluetooth speaker or headphones connect while playback is paused.
 		}
 	}
 
@@ -178,17 +193,18 @@ final class TtsManager: NSObject, ObservableObject {
 					isPaused = true
 				}
 			case .ended:
+				// Only reactivate if TTS was actually interrupted; a call ending while
+				// Paperback was already stopped must not restart playback.
+				guard wasInterruptedWhilePlaying else { return }
+				wasInterruptedWhilePlaying = false
 				let optionsValue = info[AVAudioSessionInterruptionOptionKey] as? UInt ?? 0
 				let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
 				try? AVAudioSession.sharedInstance().setActive(true)
 				if !engine.isRunning { try? engine.start() }
-				if wasInterruptedWhilePlaying && options.contains(.shouldResume) {
-					wasInterruptedWhilePlaying = false
+				if options.contains(.shouldResume) {
 					player.play()
 					isSpeaking = true
 					isPaused = false
-				} else {
-					wasInterruptedWhilePlaying = false
 				}
 			@unknown default:
 				break

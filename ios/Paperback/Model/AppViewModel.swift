@@ -548,7 +548,7 @@ final class AppViewModel: ObservableObject {
 		let center = MPRemoteCommandCenter.shared()
 
 		center.playCommand.addTarget { [weak self] _ in
-			guard let self else { return .commandFailed }
+			guard let self, !ttsManager.suppressExternalPlay else { return .success }
 			if ttsManager.isPaused { ttsManager.resume() }
 			else if !ttsManager.isSpeaking { playCurrentSegment() }
 			updateNowPlaying()
