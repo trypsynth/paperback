@@ -1,0 +1,25 @@
+[[repos]]
+repo = "builtin"
+hooks = [
+	{ id = "trailing-whitespace" },
+	{ id = "end-of-file-fixer" },
+	{ id = "check-added-large-files" },
+	{ id = "check-case-conflict" },
+	{ id = "check-illegal-windows-names" },
+	{ id = "fix-byte-order-marker" },
+	{ id = "check-merge-conflict" },
+	{ id = "check-toml" },
+]
+
+[[repos]]
+repo = "local"
+hooks = [
+	{
+		id = "cargo-fmt",
+		name = "cargo fmt",
+		entry = "cargo +nightly fmt --",
+		language = "system",
+		types = ["rust"],
+		pass_filenames = false,
+	},
+]

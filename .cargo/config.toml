@@ -1,4 +1,9 @@
 [alias]
-release = "run -p xtask -- release"
+xtask = "run -p xtask --release --"
+release = "run -p xtask --release -- release"
+android = "run -p xtask --release -- android"
+ios = "run -p xtask --release -- ios"
+ios-release = "run -p xtask --release -- ios-release"
+gen-pot = "run -p xtask --release -- gen-pot"
 [target.x86_64-pc-windows-msvc]
 rustflags = ["-C", "target-feature=+crt-static"]

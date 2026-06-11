@@ -1,0 +1,37 @@
+[package]
+name = "paperback"
+description = "An accessible, light-weight, fast ebook and document reader"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[package.metadata.patois]
+translatable = true
+
+[dependencies]
+anyhow = { workspace = true }
+base64 = { workspace = true }
+bitflags = "2.12.1"
+live-region = "0.1.4"
+paperback-core = { path = "../paperback-core" }
+patois = "0.1.2"
+ship-shape = "0.1.4"
+toml = { workspace = true }
+wx-utils = "0.1.1"
+wxdragon = { version = "0.9.16", features = ["webview"] }
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_System_Com", "Win32_UI_WindowsAndMessaging", "Win32_Foundation", "Win32_System_Ole", "Win32_System_Variant", "Win32_UI_Controls_RichEdit", "Win32_Graphics_Gdi", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_System_Pipes", "Win32_UI_Input", "Win32_UI_Input_KeyboardAndMouse", "Win32_System_Threading"] }
+
+[build-dependencies]
+embed-manifest = "1.5.0"
+flate2 = { version = "1.1.9", default-features = false }
+patois-build = "0.1.0"
+tar = "0.4.46"
+ureq = { version = "3.3.0", default-features = false, features = ["rustls"] }
+winres = "0.1.12"
+
+[dev-dependencies]
+rstest = { workspace = true }

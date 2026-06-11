@@ -1,0 +1,1348 @@
+# Dutch translation for the paperback package.
+# Copyright (C) 2026 Quin Gillespie
+# This file is distributed under the same license as the paperback package.
+# Leonard de Ruijter <alderuijter@gmail.com>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: paperback 0.8.5\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-08 17:48+0200\n"
+"PO-Revision-Date: 2026-06-08 22:23+0200\n"
+"Last-Translator: Leonard de Ruijter <alderuijter@gmail.com>\n"
+"Language-Team: Leonard de Ruijter <alderuijter@gmail.com>\n"
+"Language: nl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.9\n"
+
+msgid "Failed to create IPC server"
+msgstr "IPC-server maken mislukt"
+
+msgid "Warning"
+msgstr "Waarschuwing"
+
+msgid "An accessible, lightweight, fast ebook and document reader"
+msgstr "Een toegankelijke, lichtgewicht, snelle e-book- en documentlezer"
+
+msgid "expanded"
+msgstr "uitgevouwen"
+
+msgid "collapsed"
+msgstr "samengevouwen"
+
+msgid "All Documents"
+msgstr "Alle documenten"
+
+msgid "&search"
+msgstr "&zoeken"
+
+msgid "&Yes"
+msgstr "&Ja"
+
+msgid "&No"
+msgstr "&Nee"
+
+msgid "File Name"
+msgstr "Bestandsnaam"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Path"
+msgstr "Pad"
+
+msgid "&Open"
+msgstr "&Openen"
+
+msgid "&Remove"
+msgstr "&Verwijderen"
+
+msgid "&Clear All"
+msgstr "Alles &wissen"
+
+msgid "Close"
+msgstr "Sluiten"
+
+msgid ""
+"Are you sure you want to remove this document from the list? This will also "
+"remove its reading position."
+msgstr ""
+"Weet je zeker dat je dit document uit de lijst wilt verwijderen? Hiermee "
+"wordt ook de leespositie verwijderd."
+
+msgid ""
+"Are you sure you want to remove these {} documents from the list? This will "
+"also remove their reading positions."
+msgstr ""
+"Weet je zeker dat je deze {} documenten uit de lijst wilt verwijderen? "
+"Hiermee worden ook hun leesposities verwijderd."
+
+msgid "Confirm"
+msgstr "Bevestigen"
+
+msgid ""
+"Are you sure you want to remove all documents from the list? This will also "
+"remove all reading positions and bookmarks."
+msgstr ""
+"Weet je zeker dat je alle documenten uit de lijst wilt verwijderen? Hiermee "
+"worden ook alle leesposities en bladwijzers verwijderd."
+
+msgid "Open"
+msgstr "Open"
+
+msgid "Closed"
+msgstr "Gesloten"
+
+msgid "Missing"
+msgstr "Ontbreekt"
+
+msgid "Jump to Bookmark"
+msgstr "Naar bladwijzer springen"
+
+msgid "&Filter:"
+msgstr "&Filter:"
+
+msgid "All"
+msgstr "Alle"
+
+msgid "Bookmarks"
+msgstr "Bladwijzers"
+
+msgid "Notes"
+msgstr "Notities"
+
+msgid "&Edit Note"
+msgstr "Notitie be&werken"
+
+msgid "&Delete"
+msgstr "Verwij&deren"
+
+msgid "&Jump"
+msgstr "&Springen"
+
+msgid "&Cancel"
+msgstr "&Annuleren"
+
+msgid "blank"
+msgstr "leeg"
+
+msgid "Please select a bookmark to jump to."
+msgstr "Selecteer een bladwijzer om naartoe te springen."
+
+msgid "Error"
+msgstr "Fout"
+
+msgid "Bookmark Note"
+msgstr "Bladwijzernotitie"
+
+msgid "Edit bookmark note:"
+msgstr "Bladwijzernotitie bewerken:"
+
+msgid "Document Info"
+msgstr "Documentinformatie"
+
+msgid "Path:"
+msgstr "Pad:"
+
+msgid "Title:"
+msgstr "Titel:"
+
+msgid "Author:"
+msgstr "Auteur:"
+
+msgid "Words:"
+msgstr "Woorden:"
+
+msgid "Lines:"
+msgstr "Regels:"
+
+msgid "Characters:"
+msgstr "Tekens:"
+
+msgid "Characters (excluding spaces):"
+msgstr "Tekens (exclusief spaties):"
+
+msgid "Elements"
+msgstr "Elementen"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Cancel"
+msgstr "Annuleren"
+
+msgid "Headings"
+msgstr "Koppen"
+
+msgid "Links"
+msgstr "Links"
+
+msgid "Untitled"
+msgstr "Naamloos"
+
+msgid "&View:"
+msgstr "&Weergave:"
+
+msgid "Root"
+msgstr "Hoofdniveau"
+
+msgid "Go to Line"
+msgstr "Ga naar regel"
+
+msgid "&Line number:"
+msgstr "&Regelnummer:"
+
+msgid "Go"
+msgstr "Ga"
+
+msgid "Go to page"
+msgstr "Ga naar pagina"
+
+#, c-format
+msgid "Go to page (%d/%d):"
+msgstr "Ga naar pagina (%d/%d):"
+
+msgid "Go to Percent"
+msgstr "Ga naar percentage"
+
+msgid "&Percent"
+msgstr "&Percentage"
+
+msgid "P&ercent:"
+msgstr "P&ercentage:"
+
+msgid "Open As"
+msgstr "Openen als"
+
+msgid ""
+"No suitable parser was found for {}.\n"
+"How would you like to open this file?"
+msgstr ""
+"Er is geen geschikte verwerker gevonden voor {}.\n"
+"Hoe wil je dit bestand openen?"
+
+msgid "Open &as:"
+msgstr "Openen &als:"
+
+msgid "Plain Text"
+msgstr "Platte tekst"
+
+msgid "HTML"
+msgstr "HTML"
+
+msgid "Markdown"
+msgstr "Markdown"
+
+msgid "Options"
+msgstr "Opties"
+
+msgid "&Restore previously opened documents on startup"
+msgstr "Eerder geopende documenten &herstellen bij opstarten"
+
+msgid "&Word wrap"
+msgstr "Automatische &terugloop"
+
+msgid "&Minimize to system tray"
+msgstr "&Minimaliseren naar systeemvak"
+
+msgid "&Start maximized"
+msgstr "Ge&maximaliseerd starten"
+
+msgid "Show compact &go menu"
+msgstr "Compact &Ga-menu tonen"
+
+msgid "&Wrap navigation"
+msgstr "Navigatie laten &rondlopen"
+
+msgid "Play &sounds on bookmarks and notes"
+msgstr "&Geluiden afspelen bij bladwijzers en notities"
+
+msgid "Check for &updates on startup"
+msgstr "Controleren op &updates bij opstarten"
+
+msgid "Customize &Window Hotkey..."
+msgstr "&Venstersneltoets aanpassen..."
+
+msgid "&Reading speed (words per minute):"
+msgstr "&Leessnelheid (woorden per minuut):"
+
+msgid "Number of &recent documents to show:"
+msgstr "Aantal te tonen &recente documenten:"
+
+msgid "&Language:"
+msgstr "&Taal:"
+
+msgid "Update Channel:"
+msgstr "Updatekanaal:"
+
+msgid "Stable"
+msgstr "Stabiel"
+
+msgid "Dev"
+msgstr "Ontwikkel"
+
+msgid "Font"
+msgstr "Lettertype"
+
+msgid "Choose &Font..."
+msgstr "&Lettertype kiezen..."
+
+msgid "&Reset to Default Font"
+msgstr "Standaardlettertype &herstellen"
+
+msgid "Background Color"
+msgstr "Achtergrondkleur"
+
+msgid "Choose &Background Color..."
+msgstr "&Achtergrondkleur kiezen..."
+
+msgid "Reset to &Default Background"
+msgstr "Stan&daardachtergrond herstellen"
+
+msgid "&Line spacing:"
+msgstr "&Regelafstand:"
+
+msgid "Normal"
+msgstr "Normaal"
+
+msgid "1.5\\u{00d7}"
+msgstr "1,5\\u{00d7}"
+
+msgid "Double"
+msgstr "Dubbel"
+
+msgid "&Paragraph spacing:"
+msgstr "&Alinea-afstand:"
+
+msgid "Relaxed"
+msgstr "Ontspannen"
+
+msgid "Wide"
+msgstr "Breed"
+
+msgid "L&etter spacing:"
+msgstr "T&ekenafstand:"
+
+msgid "Very Wide"
+msgstr "Zeer breed"
+
+msgid "Text &alignment:"
+msgstr "Tekst&uitlijning:"
+
+msgid "Left"
+msgstr "Links"
+
+msgid "Center"
+msgstr "Gecentreerd"
+
+msgid "Right"
+msgstr "Rechts"
+
+msgid "Justify"
+msgstr "Uitvullen"
+
+msgid "General"
+msgstr "Algemeen"
+
+msgid "Reading"
+msgstr "Lezen"
+
+msgid "Readability"
+msgstr "Leesbaarheid"
+
+msgid "Background: Default"
+msgstr "Achtergrond: standaard"
+
+msgid "Font: Default"
+msgstr "Lettertype: standaard"
+
+msgid "Default"
+msgstr "Standaard"
+
+msgid "Bold"
+msgstr "Vet"
+
+msgid "Italic"
+msgstr "Cursief"
+
+msgid "Underlined"
+msgstr "Onderstreept"
+
+msgid "Strikethrough"
+msgstr "Doorgehaald"
+
+msgid "Window Hotkey"
+msgstr "Venstersneltoets"
+
+msgid "&Ctrl"
+msgstr "&Ctrl"
+
+msgid "&Alt"
+msgstr "&Alt"
+
+msgid "&Shift"
+msgstr "&Shift"
+
+msgid "&Win"
+msgstr "&Win"
+
+msgid "&Key:"
+msgstr "&Toets:"
+
+msgid "Space"
+msgstr "Spatie"
+
+msgid "Sleep Timer"
+msgstr "Slaaptimer"
+
+msgid "&Minutes:"
+msgstr "&Minuten:"
+
+msgid "Table of Contents"
+msgstr "Inhoudsopgave"
+
+msgid "Please select a section from the table of contents."
+msgstr "Selecteer een sectie uit de inhoudsopgave."
+
+msgid "No Selection"
+msgstr "Geen selectie"
+
+msgid "View Note"
+msgstr "Notitie bekijken"
+
+msgid "1 hour"
+msgstr "1 uur"
+
+msgid "hours"
+msgstr "uur"
+
+msgid "1 minute"
+msgstr "1 minuut"
+
+msgid "minutes"
+msgstr "minuten"
+
+msgid "1 second"
+msgstr "1 seconde"
+
+msgid "seconds"
+msgstr "seconden"
+
+msgid "Estimated reading time: {}"
+msgstr "Geschatte leestijd: {}"
+
+msgid "This document contains {} words."
+msgstr "Dit document bevat {} woorden."
+
+msgid "Word Count"
+msgstr "Woordenaantal"
+
+msgid "File not found: {}"
+msgstr "Bestand niet gevonden: {}"
+
+msgid ""
+"A .paperback file was found for this document. Would you like to import it?"
+msgstr ""
+"Er is een .paperback-bestand gevonden voor dit document. Wil je het "
+"importeren?"
+
+msgid "Import document data"
+msgstr "Documentgegevens importeren"
+
+msgid "Password is required."
+msgstr "Wachtwoord is vereist."
+
+msgid "Navigated to internal link."
+msgstr "Naar interne link genavigeerd."
+
+msgid "Table View"
+msgstr "Tabelweergave"
+
+msgid "Ready"
+msgstr "Gereed"
+
+msgid "&Password:"
+msgstr "&Wachtwoord:"
+
+msgid "Document Password"
+msgstr "Documentwachtwoord"
+
+msgid "Failed to load document."
+msgstr "Document laden mislukt."
+
+msgid "Create &bookmark"
+msgstr "&Bladwijzer maken"
+
+msgid "Create bookmark"
+msgstr "Bladwijzer maken"
+
+msgid "Bookmark with &note"
+msgstr "Bladwijzer met &notitie"
+
+msgid "Create bookmark with note"
+msgstr "Bladwijzer met notitie maken"
+
+msgid "&Find"
+msgstr "&Zoeken"
+
+msgid "Find text"
+msgstr "Tekst zoeken"
+
+msgid "Find &next"
+msgstr "Volge&nde zoeken"
+
+msgid "Find next match"
+msgstr "Volgende overeenkomst zoeken"
+
+msgid "Find &previous"
+msgstr "Vo&rige zoeken"
+
+msgid "Find previous match"
+msgstr "Vorige overeenkomst zoeken"
+
+msgid "Go to &page"
+msgstr "Ga naar &pagina"
+
+msgid "Go to &line"
+msgstr "Ga naar &regel"
+
+msgid "Go to line"
+msgstr "Ga naar regel"
+
+msgid "Go to &percent"
+msgstr "Ga naar &percentage"
+
+msgid "Go to percent"
+msgstr "Ga naar percentage"
+
+msgid "Find"
+msgstr "Zoeken"
+
+msgid "Find &what:"
+msgstr "Zoeken &naar:"
+
+msgid "&Match case"
+msgstr "&Hoofdlettergevoelig"
+
+msgid "Match &whole word"
+msgstr "Heel &woord"
+
+msgid "Use &regular expressions"
+msgstr "&Reguliere expressies gebruiken"
+
+msgid "Find &Previous"
+msgstr "Vo&rige zoeken"
+
+msgid "Find &Next"
+msgstr "Volge&nde zoeken"
+
+msgid "Not found."
+msgstr "Niet gevonden."
+
+msgid "No more results. Wrapping search."
+msgstr "Geen resultaten meer. Verder zoeken vanaf het begin."
+
+msgid "Failed to open containing folder."
+msgstr "Bovenliggende map openen mislukt."
+
+msgid ""
+"readme.html not found. Please ensure the application was built properly."
+msgstr ""
+"readme.html niet gevonden. Controleer of de applicatie correct is gebouwd."
+
+msgid "Failed to launch default browser."
+msgstr "Standaardbrowser starten mislukt."
+
+msgid "Failed to open donation page in browser."
+msgstr "Donatiepagina openen in browser mislukt."
+
+msgid "Unsupported format selected."
+msgstr "Niet-ondersteunde indeling geselecteerd."
+
+msgid "Paperback"
+msgstr "Paperback"
+
+msgid "Paperback - {}"
+msgstr "Paperback - {}"
+
+msgid "{} chars"
+msgstr "{} tekens"
+
+msgid "Open Document"
+msgstr "Document openen"
+
+msgid "No pages."
+msgstr "Geen pagina's."
+
+msgid "document"
+msgstr "document"
+
+msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
+msgstr "Platte-tekstbestanden (*.txt)|*.txt|Alle bestanden (*.*)|*.*"
+
+msgid "Export document to plain text"
+msgstr "Document exporteren naar platte tekst"
+
+msgid "Failed to export document."
+msgstr "Document exporteren mislukt."
+
+msgid "HTML files (*.html)|*.html|All files (*.*)|*.*"
+msgstr "HTML-bestanden (*.html)|*.html|Alle bestanden (*.*)|*.*"
+
+msgid "Export document to HTML"
+msgstr "Document exporteren naar HTML"
+
+msgid "Markdown files (*.md)|*.md|All files (*.*)|*.*"
+msgstr "Markdown-bestanden (*.md)|*.md|Alle bestanden (*.*)|*.*"
+
+msgid "Export document to Markdown"
+msgstr "Document exporteren naar Markdown"
+
+msgid "Paperback files (*.paperback)|*.paperback"
+msgstr "Paperback-bestanden (*.paperback)|*.paperback"
+
+msgid "Export notes and bookmarks"
+msgstr "Notities en bladwijzers exporteren"
+
+msgid "Notes and bookmarks exported successfully."
+msgstr "Notities en bladwijzers succesvol geëxporteerd."
+
+msgid "Export Successful"
+msgstr "Exporteren geslaagd"
+
+msgid "Import notes and bookmarks"
+msgstr "Notities en bladwijzers importeren"
+
+msgid "Notes and bookmarks imported successfully."
+msgstr "Notities en bladwijzers succesvol geïmporteerd."
+
+msgid "Import Successful"
+msgstr "Importeren geslaagd"
+
+msgid "No table of contents."
+msgstr "Geen inhoudsopgave."
+
+msgid "Web View"
+msgstr "Webweergave"
+
+msgid "Could not determine content to display in Web View."
+msgstr "Kan niet bepalen welke inhoud in webweergave moet worden getoond."
+
+msgid "Sleep timer cancelled."
+msgstr "Slaaptimer geannuleerd."
+
+msgid "Sleep timer set for 1 minute."
+msgstr "Slaaptimer ingesteld op 1 minuut."
+
+#, c-format
+msgid "Sleep timer set for %d minutes."
+msgstr "Slaaptimer ingesteld op %d minuten."
+
+msgid "No recent documents."
+msgstr "Geen recente documenten."
+
+msgid "Previous Section\t["
+msgstr "Vorige sectie\t["
+
+msgid "Go to previous section"
+msgstr "Ga naar vorige sectie"
+
+msgid "Next Section\t]"
+msgstr "Volgende sectie\t]"
+
+msgid "Go to next section"
+msgstr "Ga naar volgende sectie"
+
+msgid "Go to &Page\tCtrl+P"
+msgstr "Ga naar &pagina\tCtrl+P"
+
+msgid "Previous Pa&ge\tShift+P"
+msgstr "Vorige pa&gina\tShift+P"
+
+msgid "Next Pag&e\tP"
+msgstr "Volgende pagin&a\tP"
+
+msgid "Previous Lin&k\tShift+K"
+msgstr "Vorige lin&k\tShift+K"
+
+msgid "Next Lin&k\tK"
+msgstr "Volgende lin&k\tK"
+
+msgid "Previous Ima&ge\tShift+G"
+msgstr "Vorige afbeeldin&g\tShift+G"
+
+msgid "Next Ima&ge\tG"
+msgstr "Volgende afbeeldin&g\tG"
+
+msgid "Previous Figu&re\tShift+F"
+msgstr "Vorige figuu&r\tShift+F"
+
+msgid "Next Figu&re\tF"
+msgstr "Volgende figuu&r\tF"
+
+msgid "Previous &Table\tShift+T"
+msgstr "Vorige &tabel\tShift+T"
+
+msgid "Next &Table\tT"
+msgstr "Volgende &tabel\tT"
+
+msgid "Previous Se&parator\tShift+S"
+msgstr "Vorige &scheiding\tShift+S"
+
+msgid "Next Se&parator\tS"
+msgstr "Volgende &scheiding\tS"
+
+msgid "Previous L&ist\tShift+L"
+msgstr "Vorige lij&st\tShift+L"
+
+msgid "Next L&ist\tL"
+msgstr "Volgende lij&st\tL"
+
+msgid "Previous List &Item\tShift+I"
+msgstr "Vorige lijst&item\tShift+I"
+
+msgid "Next List I&tem\tI"
+msgstr "Volgende lijsti&tem\tI"
+
+msgid "Next Heading Level 1\t1"
+msgstr "Volgende kop niveau 1\t1"
+
+msgid "Previous Heading Level &2\tShift+2"
+msgstr "Vorige kop niveau &2\tShift+2"
+
+msgid "Next Heading Level 2\t2"
+msgstr "Volgende kop niveau 2\t2"
+
+msgid "Previous Heading Level &3\tShift+3"
+msgstr "Vorige kop niveau &3\tShift+3"
+
+msgid "Next Heading Level 3\t3"
+msgstr "Volgende kop niveau 3\t3"
+
+msgid "Previous Heading Level &4\tShift+4"
+msgstr "Vorige kop niveau &4\tShift+4"
+
+msgid "Next Heading Level 4\t4"
+msgstr "Volgende kop niveau 4\t4"
+
+msgid "Previous Heading Level &5\tShift+5"
+msgstr "Vorige kop niveau &5\tShift+5"
+
+msgid "Next Heading Level 5\t5"
+msgstr "Volgende kop niveau 5\t5"
+
+msgid "Previous Heading Level &6\tShift+6"
+msgstr "Vorige kop niveau &6\tShift+6"
+
+msgid "Next Heading Level 6\t6"
+msgstr "Volgende kop niveau 6\t6"
+
+msgid "&Previous Heading\tShift+H"
+msgstr "&Vorige kop\tShift+H"
+
+msgid "Go to previous heading"
+msgstr "Ga naar vorige kop"
+
+msgid "&Next Heading\tH"
+msgstr "V&olgende kop\tH"
+
+msgid "Go to next heading"
+msgstr "Ga naar volgende kop"
+
+msgid "Previous Heading Level &1\tShift+1"
+msgstr "Vorige kop niveau &1\tShift+1"
+
+msgid "&Previous Bookmark\tShift+B"
+msgstr "&Vorige bladwijzer\tShift+B"
+
+msgid "Go to previous bookmark"
+msgstr "Ga naar vorige bladwijzer"
+
+msgid "&Next Bookmark\tB"
+msgstr "V&olgende bladwijzer\tB"
+
+msgid "Go to next bookmark"
+msgstr "Ga naar volgende bladwijzer"
+
+msgid "Previous &Note\tShift+N"
+msgstr "Vorige &notitie\tShift+N"
+
+msgid "Go to previous note"
+msgstr "Ga naar vorige notitie"
+
+msgid "Next N&ote\tN"
+msgstr "Volgende n&otitie\tN"
+
+msgid "Go to next note"
+msgstr "Ga naar volgende notitie"
+
+msgid "Jump to &All...\tCtrl+B"
+msgstr "Naar &allen springen...\tCtrl+B"
+
+msgid "Show all bookmarks and notes"
+msgstr "Alle bladwijzers en notities tonen"
+
+msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
+msgstr "Alleen naar &bladwijzers springen...\tCtrl+Alt+B"
+
+msgid "Show bookmarks only"
+msgstr "Alleen bladwijzers tonen"
+
+msgid "Jump to Notes &Only...\tCtrl+Alt+M"
+msgstr "Alleen naar n&otities springen...\tCtrl+Alt+M"
+
+msgid "Show notes only"
+msgstr "Alleen notities tonen"
+
+msgid "&View Note Text\tRawCtrl+Shift+W"
+msgstr "Notitietekst &bekijken\tRawCtrl+Shift+W"
+
+msgid "&View Note Text\tCtrl+Shift+W"
+msgstr "Notitietekst &bekijken\tCtrl+Shift+W"
+
+msgid "View the note at current position"
+msgstr "De notitie op de huidige positie bekijken"
+
+msgid "&File"
+msgstr "&Bestand"
+
+msgid "&Go"
+msgstr "&Ga"
+
+msgid "&Tools"
+msgstr "E&xtra"
+
+msgid "&Help"
+msgstr "&Help"
+
+msgid "&Open...\tCtrl+O"
+msgstr "&Openen...\tCtrl+O"
+
+msgid "Open a document"
+msgstr "Een document openen"
+
+msgid "&Close\tCtrl+W"
+msgstr "&Sluiten\tCtrl+W"
+
+msgid "&Close\tCtrl+F4"
+msgstr "&Sluiten\tCtrl+F4"
+
+msgid "Close the current document"
+msgstr "Het huidige document sluiten"
+
+msgid "Close &All\tCtrl+Shift+W"
+msgstr "&Alles sluiten\tCtrl+Shift+W"
+
+msgid "Close &All\tCtrl+Shift+F4"
+msgstr "&Alles sluiten\tCtrl+Shift+F4"
+
+msgid "Close all documents"
+msgstr "Alle documenten sluiten"
+
+msgid "Reopen &Last Closed\tCtrl+Shift+T"
+msgstr "&Laatst gesloten heropenen\tCtrl+Shift+T"
+
+msgid "Reopen the last closed document"
+msgstr "Het laatst gesloten document heropenen"
+
+msgid "&Recent Documents"
+msgstr "&Recente documenten"
+
+msgid "Open a recent document"
+msgstr "Een recent document openen"
+
+msgid "E&xit\tCtrl+Q"
+msgstr "&Afsluiten\tCtrl+Q"
+
+msgid "Exit the application"
+msgstr "De applicatie afsluiten"
+
+msgid "&Find...\tCtrl+F"
+msgstr "&Zoeken...\tCtrl+F"
+
+msgid "Find text in the document"
+msgstr "Tekst in het document zoeken"
+
+msgid "Find &Next\tCtrl+G"
+msgstr "Volge&nde zoeken\tCtrl+G"
+
+msgid "Find &Next\tF3"
+msgstr "Volge&nde zoeken\tF3"
+
+msgid "Find next occurrence"
+msgstr "Volgende overeenkomst zoeken"
+
+msgid "Find &Previous\tCtrl+Shift+G"
+msgstr "Vo&rige zoeken\tCtrl+Shift+G"
+
+msgid "Find &Previous\tShift+F3"
+msgstr "Vo&rige zoeken\tShift+F3"
+
+msgid "Find previous occurrence"
+msgstr "Vorige overeenkomst zoeken"
+
+msgid "Go to &line...\tCtrl+L"
+msgstr "Ga naar &regel...\tCtrl+L"
+
+msgid "Go to &line...\tCtrl+G"
+msgstr "Ga naar &regel...\tCtrl+G"
+
+msgid "Go to a specific line"
+msgstr "Ga naar een specifieke regel"
+
+msgid "Go to &percent...\tCtrl+Shift+L"
+msgstr "Ga naar &percentage...\tCtrl+Shift+L"
+
+msgid "Go to &percent...\tCtrl+Shift+G"
+msgstr "Ga naar &percentage...\tCtrl+Shift+G"
+
+msgid "Go to a percentage of the document"
+msgstr "Ga naar een percentage van het document"
+
+msgid "Go &Back\tAlt+Left"
+msgstr "Ga &terug\tAlt+Left"
+
+msgid "Go back in history"
+msgstr "Terug in geschiedenis"
+
+msgid "Go &Forward\tAlt+Right"
+msgstr "Ga voor&uit\tAlt+Right"
+
+msgid "Go forward in history"
+msgstr "Vooruit in geschiedenis"
+
+msgid "&Sections"
+msgstr "&Secties"
+
+msgid "Navigate by sections"
+msgstr "Navigeren per sectie"
+
+msgid "&Headings"
+msgstr "&Koppen"
+
+msgid "Navigate by headings"
+msgstr "Navigeren per kop"
+
+msgid "&Pages"
+msgstr "&Pagina's"
+
+msgid "Navigate by pages"
+msgstr "Navigeren per pagina"
+
+msgid "&Bookmarks"
+msgstr "&Bladwijzers"
+
+msgid "Navigate by bookmarks"
+msgstr "Navigeren per bladwijzer"
+
+msgid "&Links"
+msgstr "&Links"
+
+msgid "Navigate by links"
+msgstr "Navigeren per link"
+
+msgid "&Images"
+msgstr "&Afbeeldingen"
+
+msgid "Navigate by images"
+msgstr "Navigeren per afbeelding"
+
+msgid "&Figures"
+msgstr "&Figuren"
+
+msgid "Navigate by figures"
+msgstr "Navigeren per figuur"
+
+msgid "&Tables"
+msgstr "&Tabellen"
+
+msgid "Navigate by tables"
+msgstr "Navigeren per tabel"
+
+msgid "&Separators"
+msgstr "&Scheidingen"
+
+msgid "Navigate by separators"
+msgstr "Navigeren per scheiding"
+
+msgid "&Lists"
+msgstr "&Lijsten"
+
+msgid "Navigate by lists"
+msgstr "Navigeren per lijst"
+
+msgid "&Import Document Data...\tCtrl+Shift+I"
+msgstr "Document&gegevens importeren...\tCtrl+Shift+I"
+
+msgid "Import bookmarks and position"
+msgstr "Bladwijzers en positie importeren"
+
+msgid "&Export Document Data...\tCtrl+Shift+E"
+msgstr "Documentg&egevens exporteren...\tCtrl+Shift+E"
+
+msgid "Export bookmarks and position"
+msgstr "Bladwijzers en positie exporteren"
+
+msgid "Export to &Plain Text...\tCtrl+E"
+msgstr "Exporteren naar &platte tekst...\tCtrl+E"
+
+msgid "Export document as plain text"
+msgstr "Document exporteren als platte tekst"
+
+msgid "Export to &HTML..."
+msgstr "Exporteren naar &HTML..."
+
+msgid "Export document as HTML"
+msgstr "Document exporteren als HTML"
+
+msgid "Export to &Markdown..."
+msgstr "Exporteren naar &Markdown..."
+
+msgid "Export document as Markdown"
+msgstr "Document exporteren als Markdown"
+
+msgid "&Word Count\tRawCtrl+W"
+msgstr "&Woordenaantal\tRawCtrl+W"
+
+msgid "&Word Count\tCtrl+W"
+msgstr "&Woordenaantal\tCtrl+W"
+
+msgid "Show word count"
+msgstr "Woordenaantal tonen"
+
+msgid "Document &Info\tCtrl+I"
+msgstr "Document&informatie\tCtrl+I"
+
+msgid "Show document information"
+msgstr "Documentinformatie tonen"
+
+msgid "&Table of Contents\tCtrl+T"
+msgstr "&Inhoudsopgave\tCtrl+T"
+
+msgid "Show table of contents"
+msgstr "Inhoudsopgave tonen"
+
+msgid "&Elements List...\tF7"
+msgstr "&Elementenlijst...\tF7"
+
+msgid "Show elements list"
+msgstr "Elementenlijst tonen"
+
+msgid "Open &Containing Folder\tCtrl+Shift+C"
+msgstr "&Bovenliggende map openen\tCtrl+Shift+C"
+
+msgid "Open folder containing the document"
+msgstr "De map met het document openen"
+
+msgid "Open in &Web View\tCtrl+Shift+V"
+msgstr "Openen in &webweergave\tCtrl+Shift+V"
+
+msgid "Open document in web view"
+msgstr "Document openen in webweergave"
+
+msgid "I&mport/Export"
+msgstr "I&mporteren/exporteren"
+
+msgid "Import and export options"
+msgstr "Import- en exportopties"
+
+msgid "Toggle &Bookmark\tCtrl+Shift+B"
+msgstr "&Bladwijzer in-/uitschakelen\tCtrl+Shift+B"
+
+msgid "Bookmark with &Note\tCtrl+Shift+N"
+msgstr "Bladwijzer met &notitie\tCtrl+Shift+N"
+
+msgid "&Options\tCtrl+,"
+msgstr "&Opties\tCtrl+,"
+
+msgid "&Sleep Timer...\tCtrl+Shift+S"
+msgstr "&Slaaptimer...\tCtrl+Shift+S"
+
+msgid "&About Paperback\tCtrl+F1"
+msgstr "&Over Paperback\tCtrl+F1"
+
+msgid "About this application"
+msgstr "Over deze applicatie"
+
+msgid "View Help in &Browser\tF1"
+msgstr "Help bekijken in &browser\tF1"
+
+msgid "View help in default browser"
+msgstr "Help bekijken in standaardbrowser"
+
+msgid "View Help in &Paperback\tShift+F1"
+msgstr "Help bekijken in &Paperback\tShift+F1"
+
+msgid "View help in Paperback"
+msgstr "Help bekijken in Paperback"
+
+msgid "Check for &Updates\tCtrl+Shift+U"
+msgstr "Controleren op &updates\tCtrl+Shift+U"
+
+msgid "Check for updates"
+msgstr "Controleren op updates"
+
+msgid "&Donate\tCtrl+D"
+msgstr "&Doneren\tCtrl+D"
+
+msgid "Support Paperback development"
+msgstr "Ontwikkeling van Paperback steunen"
+
+msgid "(No recent documents)"
+msgstr "(Geen recente documenten)"
+
+msgid "Show All...\tCtrl+R"
+msgstr "Alles tonen...\tCtrl+R"
+
+msgid "No sections."
+msgstr "Geen secties."
+
+msgid "No next section"
+msgstr "Geen volgende sectie"
+
+msgid "No previous section"
+msgstr "Geen vorige sectie"
+
+#, c-format
+msgid "No headings at level %d."
+msgstr "Geen koppen op niveau %d."
+
+#, c-format
+msgid "No next heading at level %d."
+msgstr "Geen volgende kop op niveau %d."
+
+#, c-format
+msgid "No previous heading at level %d."
+msgstr "Geen vorige kop op niveau %d."
+
+msgid "No headings."
+msgstr "Geen koppen."
+
+msgid "No next heading."
+msgstr "Geen volgende kop."
+
+msgid "No previous heading."
+msgstr "Geen vorige kop."
+
+msgid "No next page."
+msgstr "Geen volgende pagina."
+
+msgid "No previous page."
+msgstr "Geen vorige pagina."
+
+msgid "No links."
+msgstr "Geen links."
+
+msgid "No next link."
+msgstr "Geen volgende link."
+
+msgid "No previous link."
+msgstr "Geen vorige link."
+
+msgid "No lists."
+msgstr "Geen lijsten."
+
+msgid "No next list."
+msgstr "Geen volgende lijst."
+
+msgid "No previous list."
+msgstr "Geen vorige lijst."
+
+msgid "No list items."
+msgstr "Geen lijstitems."
+
+msgid "No next list item."
+msgstr "Geen volgend lijstitem."
+
+msgid "No previous list item."
+msgstr "Geen vorig lijstitem."
+
+msgid "No tables."
+msgstr "Geen tabellen."
+
+msgid "No next table."
+msgstr "Geen volgende tabel."
+
+msgid "No previous table."
+msgstr "Geen vorige tabel."
+
+msgid "No separators."
+msgstr "Geen scheidingen."
+
+msgid "No next separator."
+msgstr "Geen volgende scheiding."
+
+msgid "No previous separator."
+msgstr "Geen vorige scheiding."
+
+msgid "No images."
+msgstr "Geen afbeeldingen."
+
+msgid "No next image."
+msgstr "Geen volgende afbeelding."
+
+msgid "No previous image."
+msgstr "Geen vorige afbeelding."
+
+msgid "No figures."
+msgstr "Geen figuren."
+
+msgid "No next figure."
+msgstr "Geen volgende figuur."
+
+msgid "No previous figure."
+msgstr "Geen vorige figuur."
+
+msgid "Wrapping to start. "
+msgstr "Terug naar het begin. "
+
+msgid "Wrapping to end. "
+msgstr "Terug naar het einde. "
+
+#, c-format
+msgid "%s Heading level %d"
+msgstr "%s Kop niveau %d"
+
+#, c-format
+msgid "Page %d: %s"
+msgstr "Pagina %d: %s"
+
+msgid " link"
+msgstr " link"
+
+msgid "Navigated to next position."
+msgstr "Naar volgende positie genavigeerd."
+
+msgid "Navigated to previous position."
+msgstr "Naar vorige positie genavigeerd."
+
+msgid "No next position."
+msgstr "Geen volgende positie."
+
+msgid "No previous position."
+msgstr "Geen vorige positie."
+
+#, c-format
+msgid "%s - Bookmark %d"
+msgstr "%s - Bladwijzer %d"
+
+msgid "No notes."
+msgstr "Geen notities."
+
+msgid "No bookmarks."
+msgstr "Geen bladwijzers."
+
+msgid "No next note."
+msgstr "Geen volgende notitie."
+
+msgid "No next bookmark."
+msgstr "Geen volgende bladwijzer."
+
+msgid "No previous note."
+msgstr "Geen vorige notitie."
+
+msgid "No previous bookmark."
+msgstr "Geen vorige bladwijzer."
+
+msgid "Bookmark."
+msgstr "Bladwijzer."
+
+msgid "Bookmark removed."
+msgstr "Bladwijzer verwijderd."
+
+msgid "Bookmark added."
+msgstr "Bladwijzer toegevoegd."
+
+msgid "Enter bookmark note:"
+msgstr "Voer bladwijzernotitie in:"
+
+msgid "Bookmark saved."
+msgstr "Bladwijzer opgeslagen."
+
+msgid "No note at the current position."
+msgstr "Geen notitie op de huidige positie."
+
+msgid "Line"
+msgstr "Regel"
+
+msgid "Character"
+msgstr "Teken"
+
+msgid "Sleep timer"
+msgstr "Slaaptimer"
+
+msgid "&Restore"
+msgstr "&Herstellen"
+
+msgid "Restore Paperback"
+msgstr "Paperback herstellen"
+
+msgid "E&xit"
+msgstr "&Afsluiten"
+
+msgid "Exit Paperback"
+msgstr "Paperback afsluiten"
+
+#, c-format
+msgid "Update to %s"
+msgstr "Bijwerken naar %s"
+
+#, c-format
+msgid "A new version of %s is available. Here's what's new:"
+msgstr "Er is een nieuwe versie van %s beschikbaar. Dit is er nieuw:"
+
+msgid "No release notes provided."
+msgstr "Geen release-opmerkingen beschikbaar."
+
+#, c-format
+msgid "%s Update"
+msgstr "%s-update"
+
+msgid "Downloading update..."
+msgstr "Update downloaden..."
+
+msgid "No updates available."
+msgstr "Geen updates beschikbaar."
+
+#, c-format
+msgid "No updates available. Latest version: %s"
+msgstr "Geen updates beschikbaar. Nieuwste versie: %s"
+
+msgid "Info"
+msgstr "Info"
+
+#, c-format
+msgid ""
+"Security verification failed. The update might have been tampered with: %s"
+msgstr "Veiligheidsverificatie mislukt. Mogelijk is met de update geknoeid: %s"
+
+msgid "Security Error"
+msgstr "Veiligheidsfout"
+
+msgid "Update failed"
+msgstr "Update mislukt"
+
+#, c-format
+msgid ""
+"Update downloaded to: %s\n"
+"Please install it manually."
+msgstr ""
+"Update gedownload naar: %s\n"
+"Installeer deze handmatig."
+
+msgid "Update Ready"
+msgstr "Update gereed"
+
+msgid "Failed to get current exe path"
+msgstr "Ophalen van huidig exe-pad mislukt"
+
+msgid "Failed to launch installer script"
+msgstr "Installatiescript starten mislukt"
+
+msgid "Failed to launch update script"
+msgstr "Updatescript starten mislukt"
+
+msgid "Unknown update file format."
+msgstr "Onbekende indeling van updatebestand."

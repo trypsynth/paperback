@@ -1,0 +1,12 @@
+[package]
+name = "xtask"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+flate2 = "1"
+patois-build = "0.1.0"
+tar = "0.4"
+ureq = "3"
+walkdir = "2.5.0"
+zip = { version = "8.6.0", default-features = false, features = ["deflate"] }

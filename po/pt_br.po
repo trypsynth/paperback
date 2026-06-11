@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-03-05 20:09-0700\n"
-"PO-Revision-Date: 2026-03-20 21:35-0300\n"
+"POT-Creation-Date: 2026-04-13 15:24-0600\n"
+"PO-Revision-Date: 2026-04-19 15:24-0300\n"
 "Last-Translator: Marco Paulinelli <mpaulinelli@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -17,6 +17,19 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.9\n"
+
+msgid "Figure"
+msgstr "Figura"
+
+msgid "Image"
+msgstr "Imagem"
+
+msgid ""
+"This PDF contains images only, with no extractable text. You may need to run "
+"it through OCR software to read its contents."
+msgstr ""
+"Este PDF contém apenas imagens, sem texto extraível. Pode ser necessário "
+"executá-lo por meio de um aplicativo de OCR para ler seu conteúdo."
 
 msgid "Failed to create IPC server"
 msgstr "Falha ao criar servidor IPC"
@@ -51,6 +64,9 @@ msgstr "Tocar sons em marcadores e notas"
 msgid "Check for &updates on startup"
 msgstr "Verificar se há &atualizações na inicialização"
 
+msgid "&Reading speed (words per minute):"
+msgstr ""
+
 msgid "Number of &recent documents to show:"
 msgstr "Número de documentos &recentes a serem mostrados:"
 
@@ -66,17 +82,105 @@ msgstr "Estável"
 msgid "Dev"
 msgstr "Em desenvolvimento"
 
+msgid "Font"
+msgstr ""
+
+msgid "Choose &Font..."
+msgstr ""
+
+msgid "&Reset to Default Font"
+msgstr ""
+
+msgid "Background Color"
+msgstr ""
+
+msgid "Choose &Background Color..."
+msgstr ""
+
+msgid "Reset to &Default Background"
+msgstr ""
+
+#, fuzzy
+#| msgid "Lines:"
+msgid "&Line spacing:"
+msgstr "Linhas:"
+
+msgid "Normal"
+msgstr ""
+
+msgid "1.5\\u{00d7}"
+msgstr ""
+
+msgid "Double"
+msgstr ""
+
+msgid "&Paragraph spacing:"
+msgstr ""
+
+msgid "Relaxed"
+msgstr ""
+
+msgid "Wide"
+msgstr ""
+
+msgid "L&etter spacing:"
+msgstr ""
+
+msgid "Very Wide"
+msgstr ""
+
+msgid "Text &alignment:"
+msgstr ""
+
+msgid "Left"
+msgstr ""
+
+msgid "Center"
+msgstr ""
+
+msgid "Right"
+msgstr ""
+
+msgid "Justify"
+msgstr ""
+
 msgid "General"
 msgstr "Geral"
 
 msgid "Reading"
 msgstr "Leitura"
 
+#, fuzzy
+#| msgid "Ready"
+msgid "Readability"
+msgstr "Pronto"
+
 msgid "OK"
 msgstr "OK"
 
 msgid "Cancel"
 msgstr "Cancelar"
+
+msgid "Background: Default"
+msgstr ""
+
+msgid "Font: Default"
+msgstr ""
+
+msgid "Default"
+msgstr ""
+
+msgid "Bold"
+msgstr ""
+
+msgid "Italic"
+msgstr ""
+
+msgid "Underlined"
+msgstr ""
+
+msgid "Strikethrough"
+msgstr ""
 
 msgid "Jump to Bookmark"
 msgstr "Ir para marcador"
@@ -141,6 +245,41 @@ msgstr "Sem Seleção"
 msgid "Untitled"
 msgstr "Sem Título"
 
+msgid "1 hour"
+msgstr ""
+
+msgid "hours"
+msgstr ""
+
+msgid "1 minute"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Minutes:"
+msgid "minutes"
+msgstr "&Minutos:"
+
+#, fuzzy
+#| msgid "No sections."
+msgid "1 second"
+msgstr "Sem seção."
+
+msgid "seconds"
+msgstr ""
+
+msgid "Estimated reading time: {}"
+msgstr ""
+
+#, fuzzy
+#| msgid "The document contains {} words."
+msgid "This document contains {} words."
+msgstr "O documento contém {} palavras."
+
+#, fuzzy
+#| msgid "Word count"
+msgid "Word Count"
+msgstr "Contar palavras"
+
 msgid "Document Info"
 msgstr "Informação do Documento"
 
@@ -174,6 +313,7 @@ msgstr "&Número da linha:"
 msgid "Go to page"
 msgstr "Ir para página"
 
+#, c-format
 msgid "Go to page (%d/%d):"
 msgstr "Ir para página (%d/%d):"
 
@@ -192,6 +332,7 @@ msgstr "&Sim"
 msgid "&No"
 msgstr "Não"
 
+#, c-format
 msgid "Update to %s"
 msgstr "Atualizar para %s"
 
@@ -223,28 +364,28 @@ msgid "&Clear All"
 msgstr "&Limpar tudo"
 
 msgid ""
-"Are you sure you want to remove this document from the list? This will also remove its reading "
-"position."
+"Are you sure you want to remove this document from the list? This will also "
+"remove its reading position."
 msgstr ""
-"Tem certeza de que deseja remover este documento da lista? Isso também removerá sua posição de "
-"leitura."
+"Tem certeza de que deseja remover este documento da lista? Isso também "
+"removerá sua posição de leitura."
 
 msgid ""
-"Are you sure you want to remove these {} documents from the list? This will also remove their "
-"reading positions."
+"Are you sure you want to remove these {} documents from the list? This will "
+"also remove their reading positions."
 msgstr ""
-"Tem certeza de que deseja remover estes {} documentos da lista? Isso também removerá suas "
-"posições de leitura."
+"Tem certeza de que deseja remover estes {} documentos da lista? Isso também "
+"removerá suas posições de leitura."
 
 msgid "Confirm"
 msgstr "Confirmar"
 
 msgid ""
-"Are you sure you want to remove all documents from the list? This will also remove all reading "
-"positions and bookmarks."
+"Are you sure you want to remove all documents from the list? This will also "
+"remove all reading positions and bookmarks."
 msgstr ""
-"Tem certeza de que deseja remover todos os documentos da lista? Isso também removerá todas as "
-"posições de leitura e marcadores."
+"Tem certeza de que deseja remover todos os documentos da lista? Isso também "
+"removerá todas as posições de leitura e marcadores."
 
 msgid "Open As"
 msgstr "Abrir como"
@@ -397,9 +538,11 @@ msgstr "Não há mais resultados. Reiniciando a busca."
 msgid "Failed to open containing folder."
 msgstr "Falha ao abrir conteúdo da pasta."
 
-msgid "readme.html not found. Please ensure the application was built properly."
+msgid ""
+"readme.html not found. Please ensure the application was built properly."
 msgstr ""
-"leiame.html não encontrado. Por favor verifique se a aplicação foi compilada corretamente."
+"leiame.html não encontrado. Por favor verifique se a aplicação foi compilada "
+"corretamente."
 
 msgid "Failed to launch default browser."
 msgstr "Falha ao carregar  navegador padrão da internet."
@@ -425,8 +568,16 @@ msgstr "Nenhuma atualização disponível. Última versão:"
 msgid "Info"
 msgstr "Informação"
 
+#, c-format
 msgid "Failed to check for updates. HTTP status: %d"
 msgstr "Falha ao verificar atualizações. HTTP status: %d"
+
+msgid ""
+"Security verification failed. The update might have been tampered with: {}"
+msgstr ""
+
+msgid "Security Error"
+msgstr ""
 
 msgid "Error checking for updates."
 msgstr "Erro ao verificar atualizações."
@@ -497,12 +648,6 @@ msgstr "Notas e marcadores inportados com sucesso."
 msgid "Import Successful"
 msgstr "Importação com sucesso"
 
-msgid "The document contains {} words."
-msgstr "O documento contém {} palavras."
-
-msgid "Word count"
-msgstr "Contar palavras"
-
 msgid "No table of contents."
 msgstr "Sem índice."
 
@@ -511,8 +656,8 @@ msgstr "Visualização em Página de internet"
 
 msgid "Could not determine content to display in Web View."
 msgstr ""
-"Não foi possível determinar conteúdo para mostrar no modo de visualização de página de internet "
-"de Página de internet."
+"Não foi possível determinar conteúdo para mostrar no modo de visualização de "
+"página de internet de Página de internet."
 
 msgid "Sleep timer cancelled."
 msgstr "Temporizador cancelado."
@@ -520,6 +665,7 @@ msgstr "Temporizador cancelado."
 msgid "Sleep timer set for 1 minute."
 msgstr "Temporizador configurado para 1 minuto."
 
+#, c-format
 msgid "Sleep timer set for %d minutes."
 msgstr "Temporizador configurado para %d minutos."
 
@@ -552,6 +698,26 @@ msgstr "Lin&k\tShift+K anterior"
 
 msgid "Next Lin&k\tK"
 msgstr "Próximo Lin&k\tK"
+
+#, fuzzy
+#| msgid "Previous Pa&ge\tShift+P"
+msgid "Previous Ima&ge\tShift+G"
+msgstr "Pá&gina Anterior\tShift+P"
+
+#, fuzzy
+#| msgid "Next Pag&e\tP"
+msgid "Next Ima&ge\tG"
+msgstr "Próxima Pág&ina\tP"
+
+#, fuzzy
+#| msgid "Previous Pa&ge\tShift+P"
+msgid "Previous Figu&re\tShift+F"
+msgstr "Pá&gina Anterior\tShift+P"
+
+#, fuzzy
+#| msgid "Next Pag&e\tP"
+msgid "Next Figu&re\tF"
+msgstr "Próxima Pág&ina\tP"
 
 msgid "Previous &Table\tShift+T"
 msgstr "&Tabela\tShift+T anterior"
@@ -724,8 +890,10 @@ msgstr "&Documentos Recentes"
 msgid "Open a recent document"
 msgstr "Abrir um documento recente"
 
-msgid "E&xit"
-msgstr "S&air"
+#, fuzzy
+#| msgid "&Donate\tCtrl+D"
+msgid "E&xit\tCtrl+Q"
+msgstr "&Doar\tCtrl+D"
 
 msgid "Exit the application"
 msgstr "Sair do aplicativo"
@@ -801,6 +969,24 @@ msgstr "&Links"
 
 msgid "Navigate by links"
 msgstr "Navegação por links"
+
+#, fuzzy
+#| msgid "&Pages"
+msgid "&Images"
+msgstr "&Páginas"
+
+#, fuzzy
+#| msgid "Navigate by pages"
+msgid "Navigate by images"
+msgstr "Navigação por páginas"
+
+msgid "&Figures"
+msgstr ""
+
+#, fuzzy
+#| msgid "Navigate by pages"
+msgid "Navigate by figures"
+msgstr "Navigação por páginas"
 
 msgid "&Tables"
 msgstr "&Tabelas"
@@ -942,12 +1128,15 @@ msgstr "Sem próxima seção"
 msgid "No previous section"
 msgstr "Sem seção anterior"
 
+#, c-format
 msgid "No headings at level %d."
 msgstr "Sem índice no nível %d."
 
+#, c-format
 msgid "No next heading at level %d."
 msgstr "Nenhum próximo índice No nível %d."
 
+#, c-format
 msgid "No previous heading at level %d."
 msgstr "Sem índice anterior para o  nível %d."
 
@@ -1011,15 +1200,45 @@ msgstr "Sem próximo separador."
 msgid "No previous separator."
 msgstr "Sem separador anterior."
 
+#, fuzzy
+#| msgid "No pages."
+msgid "No images."
+msgstr "Sem página."
+
+#, fuzzy
+#| msgid "No next page."
+msgid "No next image."
+msgstr "Sem próxima página."
+
+#, fuzzy
+#| msgid "No previous page."
+msgid "No previous image."
+msgstr "Sem página anterior."
+
+msgid "No figures."
+msgstr ""
+
+#, fuzzy
+#| msgid "No next page."
+msgid "No next figure."
+msgstr "Sem próxima página."
+
+#, fuzzy
+#| msgid "No previous page."
+msgid "No previous figure."
+msgstr "Sem página anterior."
+
 msgid "Wrapping to start. "
 msgstr "Voltando para o começo. "
 
 msgid "Wrapping to end. "
 msgstr "Indo para o fim. "
 
+#, c-format
 msgid "%s Heading level %d"
 msgstr "%s índice nível %d"
 
+#, c-format
 msgid "Page %d: %s"
 msgstr "Página %d: %s"
 
@@ -1038,6 +1257,7 @@ msgstr "Sem próxima posição."
 msgid "No previous position."
 msgstr "Sem posição anterior."
 
+#, c-format
 msgid "%s - Bookmark %d"
 msgstr "%s - Marcador %d"
 
@@ -1091,6 +1311,9 @@ msgstr "&Restaurar"
 
 msgid "Restore Paperback"
 msgstr "Restaurar o PaperBack"
+
+msgid "E&xit"
+msgstr "&Sair"
 
 msgid "Exit Paperback"
 msgstr "Sair do Paperback"

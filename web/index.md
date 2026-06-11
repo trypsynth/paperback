@@ -4,51 +4,55 @@ title: Home
 permalink: /
 ---
 
-# Home
+# Paperback
 
-Welcome to the website of Paperback, a fully accessible, blazing fast, and completely native ebook and document reader.
+Paperback is a fully accessible, fast, and native ebook and document reader for Windows and Linux.
 
-## Highlights
+## Supported formats
 
-### Extensive file format support
+- CHM (Compiled HTML Help)
+- DOCX and DOC (Microsoft Word)
+- EPUB
+- FB2
+- HTML
+- Markdown
+- ODP (OpenDocument Presentations)
+- ODT (OpenDocument Text)
+- PDF
+- PPTX and PPT (PowerPoint)
+- RTF
+- Plain text
 
-Paperback supports an extensive number of file formats, including:
-
-* Compiled HTML Help files
-* Microsoft Word documents
-* Epub books
-* FB2 books
-* HTML documents
-* Markdown documents
-* OpenDocument presentations
-* OpenDocument text files
-* PDF documents
-* PowerPoint presentations
-* Text documents
-
-### Incredibly fast and lightweight
-
-Paperback is incredibly small and blazing fast. It loads books with millions of words in a matter of seconds!
+## Features
 
 ### Accessible by design
 
-Built from the ground up for accessibility: full screen reader support and clear keyboard navigation across the entire app.
+Built from the ground up for accessibility: full screen reader support and clear keyboard navigation across the entire application.
 
-### Low resource usage
+### Fast and lightweight
 
-Optimized for performance and battery life. Opens instantly and runs smoothly even on older hardware.
+Opens instantly and runs smoothly even on older hardware. Optimized for performance and battery life.
 
 ### Open source and private
 
-Paperback is open source and collects no telemetry. Your library stays on your device.
+Paperback is open source under the MIT license and collects no telemetry. Your library stays on your device.
 
-### Multilingual support
+### Multilingual
 
-Paperback is translated into multiple languages, with many being added by contributors frequently. The currently available languages are:
+Paperback is translated into multiple languages by contributors around the world:
 
-* Bosnian
-* French
-* German
-* Russian
-* Serbian
-* Spanish
+- Bosnian
+- Chinese (Simplified)
+- Czech
+- Finnish
+- French
+- German
+- Japanese
+- Polish
+- Portuguese (Brazil)
+- Russian
+- Serbian
+- Spanish
+- Vietnamese
+
+Want to add your language? See the [translation guide](/translations).

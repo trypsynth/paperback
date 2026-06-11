@@ -1,0 +1,167 @@
+namespace paperback {
+	void set_pdfium_library_path(string path);
+};
+
+[Error]
+enum DocumentError {
+	"ParseError"
+};
+
+dictionary TocEntry {
+	string title;
+	i64 position;
+	i32 level;
+};
+
+enum MarkerTypeFfi {
+	"Heading1", "Heading2", "Heading3", "Heading4", "Heading5", "Heading6",
+	"PageBreak", "SectionBreak", "TocItem", "Link",
+	"List", "ListItem", "Table", "Separator", "Image", "Figure"
+};
+
+dictionary LineMarker {
+	MarkerTypeFfi mtype;
+	i64 position;
+	string text;
+	string reference;
+	i32 level;
+	i64 length;
+};
+
+enum LinkAction {
+	"Internal", "External", "NotFound"
+};
+
+dictionary LinkActivationResult {
+	boolean found;
+	LinkAction action;
+	i64 offset;
+	string url;
+};
+
+enum SegmentTypeFfi {
+	"Paragraph", "Line",
+	"Heading", "Link", "Section", "Page",
+	"List", "ListItem", "Table", "Separator",
+	"Image", "Figure"
+};
+
+enum SegmentDirectionFfi {
+	"Current", "Next", "Previous"
+};
+
+dictionary TextSegmentFfi {
+	string text;
+	i64 start_pos;
+	i64 end_pos;
+};
+
+dictionary DocumentStatsFfi {
+	i64 word_count;
+	i64 line_count;
+	i64 char_count;
+	i64 char_count_no_whitespace;
+};
+
+dictionary SearchOptionsFfi {
+	boolean match_case;
+	boolean whole_word;
+	boolean regex;
+	boolean forward;
+};
+
+dictionary SearchResultFfi {
+	boolean found;
+	boolean wrapped;
+	i64 position;
+};
+
+dictionary StatusInfo {
+	i64 line_number;
+	i64 character_number;
+	i32 percentage;
+};
+
+dictionary HeadingTreeItemFfi {
+	i64 offset;
+	string text;
+	i32 parent_index;
+};
+
+dictionary HeadingTreeFfi {
+	sequence<HeadingTreeItemFfi> items;
+	i32 closest_index;
+};
+
+dictionary LinkListItemFfi {
+	i64 offset;
+	string text;
+};
+
+dictionary LinkListFfi {
+	sequence<LinkListItemFfi> items;
+	i32 closest_index;
+};
+
+interface DocumentSession {
+	[Name=new_ffi, Throws=DocumentError]
+	constructor(string file_path, string password, string forced_extension);
+
+	string title();
+	string author();
+	string content();
+
+	string get_line_text(i64 position);
+	i64 line_count();
+	i64 position_from_line(i64 line);
+	i64 line_from_position(i64 position);
+	sequence<LineMarker> get_line_markers(i64 line);
+	LinkActivationResult activate_link_ffi(i64 position);
+	TextSegmentFfi get_text_segment(i64 position, SegmentTypeFfi segment_type, SegmentDirectionFfi direction);
+
+	StatusInfo get_status_info_ffi(i64 position);
+	i64 position_from_percent_ffi(i32 percent);
+	i32 current_page_ffi(i64 position);
+	i32 page_count_ffi();
+	i64 page_offset_ffi(i32 page);
+
+	HeadingTreeFfi get_heading_tree_ffi(i64 position);
+	LinkListFfi get_link_list_ffi(i64 position);
+
+	sequence<TocEntry> get_toc();
+
+	DocumentStatsFfi get_stats_ffi();
+	sequence<SegmentTypeFfi> get_supported_segment_types_ffi();
+
+	SearchResultFfi search_ffi(string query, i64 start_position, SearchOptionsFfi options);
+};
+
+interface ConfigManagerFfi {
+	constructor();
+
+	boolean initialize(string config_path);
+	string get_doc_key(string path);
+	string get_app_string(string key, string default_value);
+	void set_app_string(string key, string value);
+	boolean get_app_bool(string key, boolean default_value);
+	void set_app_bool(string key, boolean value);
+	void associate_uri_with_local_file(string uri, string local_path);
+	void set_document_position(string path, i64 position);
+	i64 get_document_position(string path);
+	void set_document_password(string path, string password);
+	string get_document_password(string path);
+	void add_recent_document(string path);
+	sequence<string> get_recent_documents();
+	void add_opened_document(string path);
+	void remove_opened_document(string path);
+	void set_document_opened(string path, boolean opened);
+	sequence<string> get_opened_documents();
+	void remove_document_history(string path);
+	sequence<string> get_supported_extensions();
+	sequence<string> get_find_history();
+	void add_find_history(string text, i32 max_len);
+	void import_document_settings(string path);
+	void import_settings_from_file(string doc_path, string import_path);
+	void export_document_settings(string doc_path, string export_path);
+	void flush();
+};
