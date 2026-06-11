@@ -246,9 +246,10 @@ impl MainWindow {
 				self.toggle_visibility();
 			}
 			IpcCommand::OpenFile(path) => {
-				if self.open_file(&path) {
-					self.activate_from_ipc();
-				}
+				self.activate_from_ipc();
+				self.open_file(&path);
+				self.frame.raise();
+				self.doc_manager.lock().unwrap().restore_focus();
 			}
 		}
 	}
@@ -259,6 +260,14 @@ impl MainWindow {
 		self.frame.iconize(false);
 		self.frame.request_user_attention(UserAttentionFlag::Info);
 		self.frame.raise();
+		#[cfg(target_os = "windows")]
+		{
+			use windows::Win32::{Foundation::HWND, UI::WindowsAndMessaging::SetForegroundWindow};
+			let handle = self.frame.get_handle();
+			if !handle.is_null() {
+				let _ = unsafe { SetForegroundWindow(HWND(handle)) };
+			}
+		}
 		self.doc_manager.lock().unwrap().restore_focus();
 		#[cfg(not(target_os = "linux"))]
 		if let Some(state) = self._tray_state.lock().unwrap().as_mut() {
@@ -1224,8 +1233,14 @@ impl MainWindow {
 					};
 					let current_pos = tab.text_ctrl.get_insertion_point();
 					let temp_dir = env::temp_dir().to_string_lossy().to_string();
-					if let Some(target_path) = tab.session.webview_target_path(current_pos, &temp_dir) {
-						let url = format!("file:///{}", target_path.replace('\\', "/"));
+					if let Some(target) = tab.session.webview_target_path(current_pos, &temp_dir) {
+						let mut url = format!("file:///{}", target.path.replace('\\', "/"));
+						let fragment =
+							target.fragment.or_else(|| tab.session.webview_fragment_for_position(current_pos));
+						if let Some(fragment) = fragment {
+							url.push('#');
+							url.push_str(&fragment);
+						}
 						dialogs::show_web_view_dialog(
 							&frame_copy,
 							&t("Web View"),

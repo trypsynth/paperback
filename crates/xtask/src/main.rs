@@ -28,6 +28,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 		Some("release") => release()?,
 		Some("android") => android()?,
 		Some("ios") => ios()?,
+		Some("ios-release") => ios_release()?,
 		Some("gen-pot") => gen_pot()?,
 		_ => print_help(),
 	}
@@ -36,15 +37,17 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 fn print_help() {
 	println!("Tasks:");
-	println!("	release	Build release binaries and package them");
-	println!("	gen-pot	Regenerate po/paperback.pot from all translatable crates");
-	println!("	android	Generate Kotlin bindings and build native Android libraries");
-	println!("		--release          Build APK using gradlew assembleRelease");
-	println!("		--debug            Build APK using gradlew assembleDebug");
-	println!("		--install-release  Install release APK using gradlew installRelease");
-	println!("		--install-debug    Install debug APK using gradlew installDebug");
-	println!("	ios	Generate Swift bindings and build XCFramework for iOS");
-	println!("		--release          Build in release mode (default is debug)");
+	println!("	release       Build release binaries and package them");
+	println!("	gen-pot       Regenerate po/paperback.pot from all translatable crates");
+	println!("	android       Generate Kotlin bindings and build native Android libraries");
+	println!("	  --release          Build APK using gradlew assembleRelease");
+	println!("	  --debug            Build APK using gradlew assembleDebug");
+	println!("	  --install-release  Install release APK using gradlew installRelease");
+	println!("	  --install-debug    Install debug APK using gradlew installDebug");
+	println!("	ios           Generate Swift bindings and build XCFramework for iOS");
+	println!("	  --release          Build in release mode (default is debug)");
+	println!("	ios-release   Archive and export a release IPA for App Store Connect");
+	println!("	  --upload           Upload directly to App Store Connect via altool");
 }
 
 fn release() -> Result<(), Box<dyn Error>> {
@@ -302,6 +305,88 @@ fn ios() -> Result<(), Box<dyn Error>> {
 	Ok(())
 }
 
+fn ios_release() -> Result<(), Box<dyn Error>> {
+	let upload = env::args().any(|a| a == "--upload");
+	let root = project_root();
+	let ios_dir = root.join("ios");
+	let archive_path = root.join("target/Paperback.xcarchive");
+	let export_path = root.join("target/PaperbackExport");
+	let export_options = ios_dir.join("ExportOptions.plist");
+
+	if !export_options.exists() {
+		return Err("ios/ExportOptions.plist not found".into());
+	}
+
+	println!("Archiving Paperback.xcodeproj...");
+	let status = Command::new("xcodebuild")
+		.args([
+			"archive",
+			"-project",
+			&ios_dir.join("Paperback.xcodeproj").to_string_lossy(),
+			"-scheme",
+			"Paperback",
+			"-destination",
+			"generic/platform=iOS",
+			"-archivePath",
+			&archive_path.to_string_lossy(),
+		])
+		.status()?;
+	if !status.success() {
+		return Err("xcodebuild archive failed".into());
+	}
+
+	println!("Exporting IPA...");
+	let _ = fs::remove_dir_all(&export_path);
+	let status = Command::new("xcodebuild")
+		.args([
+			"-exportArchive",
+			"-archivePath",
+			&archive_path.to_string_lossy(),
+			"-exportPath",
+			&export_path.to_string_lossy(),
+			"-exportOptionsPlist",
+			&export_options.to_string_lossy(),
+		])
+		.status()?;
+	if !status.success() {
+		return Err("xcodebuild -exportArchive failed".into());
+	}
+
+	let ipa = export_path.join("Paperback.ipa");
+	if !ipa.exists() {
+		return Err(format!("IPA not found at {}", ipa.display()).into());
+	}
+	println!("IPA ready: {}", ipa.display());
+
+	if upload {
+		println!("Uploading to App Store Connect...");
+		let status = Command::new("xcrun")
+			.args([
+				"altool",
+				"--upload-app",
+				"--type",
+				"ios",
+				"--file",
+				&ipa.to_string_lossy(),
+				"--authentication-key-path",
+				"",
+			])
+			.status();
+		match status {
+			Ok(s) if s.success() => println!("Upload complete."),
+			_ => println!(
+				"altool upload failed or not configured. Upload {} manually via Transporter or Xcode Organizer.",
+				ipa.display()
+			),
+		}
+	} else {
+		println!("To upload, run:  cargo xtask ios-release --upload");
+		println!("Or drag {} into Transporter or Xcode Organizer.", ipa.display());
+	}
+
+	Ok(())
+}
+
 fn project_root() -> PathBuf {
 	Path::new(&env!("CARGO_MANIFEST_DIR")).ancestors().nth(2).unwrap().to_path_buf()
 }
@@ -328,6 +413,14 @@ fn build_mac_dmg(target_dir: &Path) -> Result<(), Box<dyn Error>> {
 	fs::copy(&exe, macos_dir.join("paperback"))?;
 	use std::os::unix::fs::PermissionsExt;
 	fs::set_permissions(macos_dir.join("paperback"), fs::Permissions::from_mode(0o755))?;
+
+	// Copy libpdfium.dylib into the bundle so it ships alongside the binary.
+	let dylib_src = target_dir.join("libpdfium.dylib");
+	if dylib_src.exists() {
+		fs::copy(&dylib_src, macos_dir.join("libpdfium.dylib"))?;
+	} else {
+		println!("Warning: libpdfium.dylib not found in target directory; PDF support will be unavailable.");
+	}
 
 	// Copy sounds into the bundle's Resources so the app can find them.
 	let sounds_src = target_dir.join("sounds");

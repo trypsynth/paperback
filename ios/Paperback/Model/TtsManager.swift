@@ -21,6 +21,11 @@ final class TtsManager: NSObject, ObservableObject {
 	private var prevPrefetchGeneration = 0
 
 	private var wasInterruptedWhilePlaying = false
+	private var ignoreExternalPlayUntil: Date = .distantPast
+
+	/// True within ~1.5 s of a new Bluetooth device connecting while paused.
+	/// Lets us ignore the spurious play command some speakers send on auto-pair.
+	var suppressExternalPlay: Bool { Date() < ignoreExternalPlayUntil }
 
 	@Published var isSpeaking = false
 	@Published var isPaused = false
@@ -55,10 +60,7 @@ final class TtsManager: NSObject, ObservableObject {
 
 	override init() {
 		super.init()
-		try? AVAudioSession.sharedInstance().setCategory(
-			.playback, mode: .spokenAudio, options: [.duckOthers, .mixWithOthers]
-		)
-		try? AVAudioSession.sharedInstance().setActive(true)
+		try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio)
 
 		let hwRate = AVAudioSession.sharedInstance().sampleRate
 		outputFormat = AVAudioFormat(
@@ -68,13 +70,24 @@ final class TtsManager: NSObject, ObservableObject {
 
 		engine.attach(player)
 		engine.connect(player, to: engine.mainMixerNode, format: outputFormat)
-		try? engine.start()
 
 		NotificationCenter.default.addObserver(
 			self,
 			selector: #selector(handleInterruption(_:)),
 			name: AVAudioSession.interruptionNotification,
 			object: AVAudioSession.sharedInstance()
+		)
+		NotificationCenter.default.addObserver(
+			self,
+			selector: #selector(handleRouteChange(_:)),
+			name: AVAudioSession.routeChangeNotification,
+			object: AVAudioSession.sharedInstance()
+		)
+		NotificationCenter.default.addObserver(
+			self,
+			selector: #selector(handleEngineConfigurationChange),
+			name: .AVAudioEngineConfigurationChange,
+			object: engine
 		)
 		NotificationCenter.default.addObserver(
 			self,
@@ -109,7 +122,60 @@ final class TtsManager: NSObject, ObservableObject {
 		}
 	}
 
-	// MARK: - Session interruption
+	// MARK: - Session / route / engine notifications
+
+	@objc private func handleRouteChange(_ notification: Notification) {
+		guard let info = notification.userInfo,
+		      let reasonValue = info[AVAudioSessionRouteChangeReasonKey] as? UInt,
+		      let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue) else { return }
+		Task { @MainActor [weak self] in
+			guard let self else { return }
+			switch reason {
+			case .oldDeviceUnavailable:
+				// Pause when headphones are unplugged (standard iOS behavior).
+				if isSpeaking {
+					player.pause()
+					isSpeaking = false
+					isPaused = true
+					try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+				}
+			case .newDeviceAvailable:
+				// Some Bluetooth speakers (e.g. JBL) fire a play command on auto-pair.
+				// Gate external play commands for 1.5 s so that spurious command is dropped.
+				if isPaused {
+					ignoreExternalPlayUntil = Date().addingTimeInterval(1.5)
+				}
+			default:
+				break
+			}
+		}
+	}
+
+	// Fires when AVAudioEngine stops due to a hardware reconfiguration (e.g. Bluetooth
+	// device connects and changes the output format). Reconnect and restart the engine,
+	// but never auto-resume: respect the current isSpeaking / isPaused state.
+	@objc private func handleEngineConfigurationChange() {
+		Task { @MainActor [weak self] in
+			guard let self else { return }
+			guard isSpeaking || isPaused else { return }
+			let wasSpeaking = isSpeaking
+			isSpeaking = false
+			isPaused = false
+			engine.detach(player)
+			engine.attach(player)
+			let hwRate = AVAudioSession.sharedInstance().sampleRate
+			outputFormat = AVAudioFormat(
+				standardFormatWithSampleRate: hwRate > 0 ? hwRate : 44100,
+				channels: 1
+			)!
+			engine.connect(player, to: engine.mainMixerNode, format: outputFormat)
+			try? engine.start()
+			if wasSpeaking {
+				// The scheduled buffer was lost; advance to the next segment.
+				onUtteranceFinished?()
+			}
+		}
+	}
 
 	@objc private func handleInterruption(_ notification: Notification) {
 		guard let info = notification.userInfo,
@@ -127,17 +193,18 @@ final class TtsManager: NSObject, ObservableObject {
 					isPaused = true
 				}
 			case .ended:
+				// Only reactivate if TTS was actually interrupted; a call ending while
+				// Paperback was already stopped must not restart playback.
+				guard wasInterruptedWhilePlaying else { return }
+				wasInterruptedWhilePlaying = false
 				let optionsValue = info[AVAudioSessionInterruptionOptionKey] as? UInt ?? 0
 				let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
 				try? AVAudioSession.sharedInstance().setActive(true)
 				if !engine.isRunning { try? engine.start() }
-				if wasInterruptedWhilePlaying && options.contains(.shouldResume) {
-					wasInterruptedWhilePlaying = false
+				if options.contains(.shouldResume) {
 					player.play()
 					isSpeaking = true
 					isPaused = false
-				} else {
-					wasInterruptedWhilePlaying = false
 				}
 			@unknown default:
 				break
@@ -148,6 +215,7 @@ final class TtsManager: NSObject, ObservableObject {
 	@objc private func handleMediaServicesReset() {
 		Task { @MainActor [weak self] in
 			guard let self else { return }
+			let wasActive = isSpeaking || isPaused
 			isSpeaking = false
 			isPaused = false
 			wasInterruptedWhilePlaying = false
@@ -163,8 +231,12 @@ final class TtsManager: NSObject, ObservableObject {
 			engine.detach(player)
 			engine.attach(player)
 			engine.connect(player, to: engine.mainMixerNode, format: outputFormat)
-			try? AVAudioSession.sharedInstance().setActive(true)
-			try? engine.start()
+			// Only reactivate if audio was actually playing/paused before the reset;
+			// unconditionally starting the engine keeps the app alive in the background.
+			if wasActive {
+				try? AVAudioSession.sharedInstance().setActive(true)
+				try? engine.start()
+			}
 		}
 	}
 
@@ -273,10 +345,12 @@ final class TtsManager: NSObject, ObservableObject {
 		player.pause()
 		isSpeaking = false
 		isPaused = true
+		try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
 	}
 
 	func resume() {
 		guard isPaused else { return }
+		if !engine.isRunning { try? engine.start() }
 		player.play()
 		isSpeaking = true
 		isPaused = false
@@ -296,6 +370,8 @@ final class TtsManager: NSObject, ObservableObject {
 		player.stop()
 		isSpeaking = false
 		isPaused = false
+		engine.stop()
+		try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
 	}
 
 	private func invalidatePrefetch() {
@@ -338,6 +414,7 @@ final class TtsManager: NSObject, ObservableObject {
 
 	private func schedule(_ pcm: AVAudioPCMBuffer, gen: Int, suppress: Bool) {
 		lastScheduledGen = gen
+		try? AVAudioSession.sharedInstance().setActive(true)
 		if !engine.isRunning { try? engine.start() }
 		player.scheduleBuffer(pcm) { [weak self] in
 			DispatchQueue.main.async { [weak self] in

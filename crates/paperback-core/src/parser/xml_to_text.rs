@@ -37,6 +37,8 @@ pub struct XmlToText {
 	lists: Vec<ListInfo>,
 	list_items: Vec<ListItemInfo>,
 	section_offsets: Vec<usize>,
+	position_watch: Option<usize>,
+	watched_byte_offset: Option<usize>,
 	in_body: bool,
 	preserve_whitespace_depth: usize,
 	list_level: i32,
@@ -66,6 +68,18 @@ impl XmlToText {
 	#[must_use]
 	pub fn get_text(&self) -> String {
 		self.lines.join("\n")
+	}
+
+	/// Returns the source byte offset of the start tag of the element nearest
+	/// at-or-before `target_position` (a character position in the converted text),
+	/// suitable as an insertion point for a navigation anchor.
+	pub fn find_anchor_byte_offset(&mut self, xml_content: &str, target_position: usize) -> Option<usize> {
+		self.position_watch = Some(target_position);
+		self.watched_byte_offset = None;
+		let converted = self.convert(xml_content);
+		self.position_watch = None;
+		let result = self.watched_byte_offset.take();
+		if converted { result } else { None }
 	}
 
 	#[must_use]
@@ -145,6 +159,11 @@ impl XmlToText {
 				let tag_name = node.tag_name().name();
 				if Self::is_ignored_element(tag_name) {
 					return;
+				}
+				if let Some(target) = self.position_watch
+					&& self.in_body && self.get_current_text_position() <= target
+				{
+					self.watched_byte_offset = Some(node.range().start);
 				}
 				let skip_children = self.handle_element_opening_xml(tag_name, node);
 				self.handle_heading_xml(tag_name, node);
@@ -566,6 +585,19 @@ impl XmlToText {
 	}
 }
 
+/// Inserts an empty `<span id="{anchor_id}"></span>` into `xml_content`.
+///
+/// The span is placed before the element nearest at-or-before `target_position`
+/// (a character position in the converted text). Returns `None` when the
+/// content is not valid XML.
+#[must_use]
+pub fn inject_anchor_at_position(xml_content: &str, target_position: usize, anchor_id: &str) -> Option<String> {
+	let byte_offset = XmlToText::new().find_anchor_byte_offset(xml_content, target_position)?;
+	let mut result = xml_content.to_string();
+	result.insert_str(byte_offset, &format!("<span id=\"{anchor_id}\"></span>"));
+	Some(result)
+}
+
 impl crate::parser::ConverterOutput for XmlToText {
 	fn get_headings(&self) -> &[HeadingInfo] {
 		&self.headings
@@ -692,6 +724,52 @@ mod tests {
 		let mut converter = XmlToText::new();
 		assert!(converter.convert(xml));
 		assert_eq!(converter.get_tables().len(), 1);
+	}
+
+	#[test]
+	fn find_anchor_byte_offset_locates_block_containing_position() {
+		let xml = "<root><body><p>First paragraph.</p><p>Second paragraph.</p></body></root>";
+		// Text output: "First paragraph.\nSecond paragraph." — second paragraph starts at 17.
+		let mut converter = XmlToText::new();
+		let offset = converter.find_anchor_byte_offset(xml, 20).expect("offset for position in second paragraph");
+		assert!(xml[offset..].starts_with("<p>Second"), "got offset {offset}: {}", &xml[offset..]);
+		let offset = converter.find_anchor_byte_offset(xml, 5).expect("offset for position in first paragraph");
+		assert!(xml[offset..].starts_with("<p>First"), "got offset {offset}: {}", &xml[offset..]);
+	}
+
+	#[test]
+	fn find_anchor_byte_offset_at_position_zero_uses_first_body_element() {
+		let xml = "<root><head><title>T</title></head><body><p>First.</p></body></root>";
+		let mut converter = XmlToText::new();
+		let offset = converter.find_anchor_byte_offset(xml, 0).expect("offset at start");
+		assert!(xml[offset..].starts_with("<p>First."), "got offset {offset}: {}", &xml[offset..]);
+	}
+
+	#[test]
+	fn find_anchor_byte_offset_picks_nearest_inline_element() {
+		let xml = "<root><body><p>Start <em>middle</em> end of line</p></body></root>";
+		// Position inside " end of line" — nearest preceding element start is <em>.
+		let mut converter = XmlToText::new();
+		let offset = converter.find_anchor_byte_offset(xml, 16).expect("offset for position after em");
+		assert!(xml[offset..].starts_with("<em>"), "got offset {offset}: {}", &xml[offset..]);
+	}
+
+	#[test]
+	fn find_anchor_byte_offset_returns_none_for_invalid_xml() {
+		let mut converter = XmlToText::new();
+		assert_eq!(converter.find_anchor_byte_offset("<p>broken", 0), None);
+	}
+
+	#[test]
+	fn inject_anchor_at_position_inserts_span_before_block() {
+		let xml = "<root><body><p>First paragraph.</p><p>Second paragraph.</p></body></root>";
+		let result = inject_anchor_at_position(xml, 20, "reading-pos").expect("injection succeeds");
+		assert!(result.contains(r#"</p><span id="reading-pos"></span><p>Second paragraph.</p>"#), "got: {result}");
+	}
+
+	#[test]
+	fn inject_anchor_at_position_returns_none_for_invalid_xml() {
+		assert_eq!(inject_anchor_at_position("<p>broken", 0, "reading-pos"), None);
 	}
 
 	#[test]

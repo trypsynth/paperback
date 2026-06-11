@@ -12,16 +12,26 @@ mod ui;
 
 use std::{env, fs};
 
+use paperback_core::set_pdfium_library_path;
 use ui::PaperbackApp;
 use wxdragon::prelude::{Appearance, set_appearance};
 
 fn main() {
+	set_pdfium_path_from_exe();
 	cleanup_legacy_files();
 	let _ = wxdragon::main(|app| {
 		let _ = set_appearance(Appearance::System);
 		let app_state = PaperbackApp::new(app);
 		let _ = Box::leak(Box::new(app_state));
 	});
+}
+
+fn set_pdfium_path_from_exe() {
+	if let Ok(exe) = env::current_exe() {
+		if let Some(dir) = exe.parent() {
+			set_pdfium_library_path(dir.to_string_lossy().into_owned());
+		}
+	}
 }
 
 fn cleanup_legacy_files() {
