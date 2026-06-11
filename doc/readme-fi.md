@@ -125,6 +125,7 @@ Jos haluat osallistua kääntämiseen, katso ohjeet [käännösoppaasta](transla
 * bosnia
 * brasilianportugali
 * espanja
+* hollanti
 * japani
 * puola
 * ranska
@@ -133,8 +134,8 @@ Jos haluat osallistua kääntämiseen, katso ohjeet [käännösoppaasta](transla
 * suomi
 * tšekki
 * venäjä
-* yksinkertaistettu kiina
 * vietnam
+* yksinkertaistettu kiina
 
 ## Tekijät
 ### Kehitys
