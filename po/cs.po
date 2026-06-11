@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-03-22 01:14+0530\n"
-"PO-Revision-Date: 2026-03-22 09:26+0100\n"
+"POT-Creation-Date: 2026-06-03 18:57+0530\n"
+"PO-Revision-Date: 2026-06-12 00:53+0200\n"
 "Last-Translator: 4Sense Gaming <lukas@4sensegaming.cz>\n"
 "Language-Team: Lukáš Hosnedl <lukas@4sensegaming.cz>\n"
 "Language: cs\n"
@@ -18,78 +18,86 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.8\n"
 
-msgid "Figure"
-msgstr "Ilustrace"
-
-msgid "Image"
-msgstr "Obrázek"
-
-msgid ""
-"This PDF contains images only, with no extractable text. You may need to run "
-"it through OCR software to read its contents."
-msgstr ""
-"Tento soubor PDF obsahuje pouze obrázky a žádný extrahovatelný text. Pro "
-"přečtení jeho obsahu bude zřejmě potřeba aplikovat na něj OCR."
-
 msgid "Failed to create IPC server"
 msgstr "Nepodařilo se vytvořit IPC server"
 
 msgid "Warning"
 msgstr "Varování"
 
-msgid "Options"
-msgstr "Možnosti"
+msgid "An accessible, lightweight, fast ebook and document reader"
+msgstr "Přístupná, nenáročná a rychlá čtečka e-knih a dokumentů"
 
-msgid "&Restore previously opened documents on startup"
-msgstr "Při spuštění &načíst naposledy otevřené dokumenty"
+msgid "expanded"
+msgstr "rozbaleno"
 
-msgid "&Word wrap"
-msgstr "Zalamovat &řádky"
+msgid "collapsed"
+msgstr "sbaleno"
 
-msgid "&Minimize to system tray"
-msgstr "&Minimalizovat do systémové lišty"
+msgid "All Documents"
+msgstr "Všechny dokumenty"
 
-msgid "&Start maximized"
-msgstr "&Spouštět v maximalizovaném okně"
+msgid "&search"
+msgstr "&Hledat"
 
-msgid "Show compact &go menu"
-msgstr "Zobrazovat kompaktní nabídku &Přejít"
+msgid "&Yes"
+msgstr "&Ano"
 
-msgid "&Wrap navigation"
-msgstr "&Cyklická rychlá navigace"
+msgid "&No"
+msgstr "&Ne"
 
-msgid "Play &sounds on bookmarks and notes"
-msgstr "Přehrávat &zvuky na záložkách a poznámkách"
+msgid "File Name"
+msgstr "Název souboru"
 
-msgid "Check for &updates on startup"
-msgstr "Při spuštění kontrolovat &aktualizace"
+msgid "Status"
+msgstr "Stav"
 
-msgid "Number of &recent documents to show:"
-msgstr "Počet &nedávných dokumentů k zobrazení:"
+msgid "Path"
+msgstr "Cesta"
 
-msgid "&Language:"
-msgstr "&Jazyk:"
+msgid "&Open"
+msgstr "&Otevřít"
 
-msgid "Update Channel:"
-msgstr "Kanál aktualizací:"
+msgid "&Remove"
+msgstr "&Odstranit"
 
-msgid "Stable"
-msgstr "Stabilní"
+msgid "&Clear All"
+msgstr "&Smazat vše"
 
-msgid "Dev"
-msgstr "Vývojový"
+msgid "Close"
+msgstr "Zavřít"
 
-msgid "General"
-msgstr "Obecné"
+msgid ""
+"Are you sure you want to remove this document from the list? This will also "
+"remove its reading position."
+msgstr ""
+"Chcete opravdu odstranit tento dokument ze seznamu? Přijdete tak i o místo, "
+"kde jste přestali číst."
 
-msgid "Reading"
-msgstr "Čtení"
+msgid ""
+"Are you sure you want to remove these {} documents from the list? This will "
+"also remove their reading positions."
+msgstr ""
+"Chcete opravdu odstranit tyto {} dokumenty ze seznamu? Přijdete tak i o "
+"místo, kde jste v každém dokumentu přestali číst."
 
-msgid "OK"
-msgstr "OK"
+msgid "Confirm"
+msgstr "Potvrdit"
 
-msgid "Cancel"
-msgstr "Zrušit"
+msgid ""
+"Are you sure you want to remove all documents from the list? This will also "
+"remove all reading positions and bookmarks."
+msgstr ""
+"Chcete opravdu odstranit všechny dokumenty ze seznamu? Přijdete tak ve všech "
+"dokumentech i o místo, kde jste přestali číst, a o záložky."
+
+msgid "Open"
+msgstr "Otevřít"
+
+msgid "Closed"
+msgstr "Zavřeno"
+
+msgid "Missing"
+msgstr "Chybí"
 
 msgid "Jump to Bookmark"
 msgstr "Přejít na záložku"
@@ -133,27 +141,6 @@ msgstr "Poznámka k záložce"
 msgid "Edit bookmark note:"
 msgstr "Upravit poznámku k záložce:"
 
-msgid "View Note"
-msgstr "Zobrazit poznámku"
-
-msgid "Close"
-msgstr "Zavřít"
-
-msgid "Table of Contents"
-msgstr "Obsah"
-
-msgid "Root"
-msgstr "Začátek"
-
-msgid "Please select a section from the table of contents."
-msgstr "Prosím, vyberte požadovaný oddíl z obsahu."
-
-msgid "No Selection"
-msgstr "Žádný výběr"
-
-msgid "Untitled"
-msgstr "Bez názvu"
-
 msgid "Document Info"
 msgstr "Informace o dokumentu"
 
@@ -178,6 +165,30 @@ msgstr "Znaky:"
 msgid "Characters (excluding spaces):"
 msgstr "Znaky bez mezer:"
 
+msgid "Elements"
+msgstr "Prvky"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Cancel"
+msgstr "Zrušit"
+
+msgid "Headings"
+msgstr "Nadpisy"
+
+msgid "Links"
+msgstr "Odkazy"
+
+msgid "Untitled"
+msgstr "Bez názvu"
+
+msgid "&View:"
+msgstr "&Zobrazit:"
+
+msgid "Root"
+msgstr "Začátek"
+
 msgid "Go to Line"
 msgstr "Přejít na řádek"
 
@@ -199,67 +210,6 @@ msgstr "&Procenta"
 
 msgid "P&ercent:"
 msgstr "&Procenta:"
-
-msgid "&Yes"
-msgstr "&Ano"
-
-msgid "&No"
-msgstr "&Ne"
-
-#, c-format
-msgid "Update to %s"
-msgstr "Aktualizovat na verzi %s"
-
-msgid "A new version of Paperback is available. Here's what's new:"
-msgstr "Je k dispozici nová verze Paperbacku. Toto jsou novinky:"
-
-msgid "All Documents"
-msgstr "Všechny dokumenty"
-
-msgid "&search"
-msgstr "&Hledat"
-
-msgid "File Name"
-msgstr "Název souboru"
-
-msgid "Status"
-msgstr "Stav"
-
-msgid "Path"
-msgstr "Cesta"
-
-msgid "&Open"
-msgstr "&Otevřít"
-
-msgid "&Remove"
-msgstr "&Odstranit"
-
-msgid "&Clear All"
-msgstr "&Smazat vše"
-
-msgid ""
-"Are you sure you want to remove this document from the list? This will also "
-"remove its reading position."
-msgstr ""
-"Chcete opravdu odstranit tento dokument ze seznamu? Přijdete tak i o místo, "
-"kde jste přestali číst."
-
-msgid ""
-"Are you sure you want to remove these {} documents from the list? This will "
-"also remove their reading positions."
-msgstr ""
-"Chcete opravdu odstranit tyto {} dokumenty ze seznamu? Přijdete tak i o "
-"místo, kde jste v každém dokumentu přestali číst."
-
-msgid "Confirm"
-msgstr "Potvrdit"
-
-msgid ""
-"Are you sure you want to remove all documents from the list? This will also "
-"remove all reading positions and bookmarks."
-msgstr ""
-"Chcete opravdu odstranit všechny dokumenty ze seznamu? Přijdete tak ve všech "
-"dokumentech i o místo, kde jste přestali číst, a o záložky."
 
 msgid "Open As"
 msgstr "Otevřít jako"
@@ -283,14 +233,164 @@ msgstr "HTML"
 msgid "Markdown"
 msgstr "Markdown"
 
-msgid "Open"
-msgstr "Otevřít"
+msgid "Options"
+msgstr "Možnosti"
 
-msgid "Closed"
-msgstr "Zavřeno"
+msgid "&Restore previously opened documents on startup"
+msgstr "Při spuštění &načíst naposledy otevřené dokumenty"
 
-msgid "Missing"
-msgstr "Chybí"
+msgid "&Word wrap"
+msgstr "Zalamovat &řádky"
+
+msgid "&Minimize to system tray"
+msgstr "&Minimalizovat do systémové lišty"
+
+msgid "&Start maximized"
+msgstr "&Spouštět v maximalizovaném okně"
+
+msgid "Show compact &go menu"
+msgstr "Zobrazovat kompaktní nabídku &Přejít"
+
+msgid "&Wrap navigation"
+msgstr "&Cyklická rychlá navigace"
+
+msgid "Play &sounds on bookmarks and notes"
+msgstr "Přehrávat &zvuky na záložkách a poznámkách"
+
+msgid "Check for &updates on startup"
+msgstr "Při spuštění kontrolovat &aktualizace"
+
+msgid "Customize &Window Hotkey..."
+msgstr "Upravit klávesovou zkratku &okna..."
+
+msgid "&Reading speed (words per minute):"
+msgstr "&Rychlost čtení (ve slovech za minutu):"
+
+msgid "Number of &recent documents to show:"
+msgstr "Počet &nedávných dokumentů k zobrazení:"
+
+msgid "&Language:"
+msgstr "&Jazyk:"
+
+msgid "Update Channel:"
+msgstr "Kanál aktualizací:"
+
+msgid "Stable"
+msgstr "Stabilní"
+
+msgid "Dev"
+msgstr "Vývojový"
+
+msgid "Font"
+msgstr "Font"
+
+msgid "Choose &Font..."
+msgstr "Vybrat &font..."
+
+msgid "&Reset to Default Font"
+msgstr "&Obnovit výchozí font"
+
+msgid "Background Color"
+msgstr "Barva pozadí"
+
+msgid "Choose &Background Color..."
+msgstr "Vybrat barvu &pozadí..."
+
+msgid "Reset to &Default Background"
+msgstr "Obnovit výchozí barvu &pozadí"
+
+msgid "&Line spacing:"
+msgstr "&Velikost řádkování:"
+
+msgid "Normal"
+msgstr "Normální"
+
+msgid "1.5\\u{00d7}"
+msgstr "1,5\\u{00d7}"
+
+msgid "Double"
+msgstr "Dvojnásobné"
+
+msgid "&Paragraph spacing:"
+msgstr "&Mezery mezi odstavci:"
+
+msgid "Relaxed"
+msgstr "Menší"
+
+msgid "Wide"
+msgstr "Větší"
+
+msgid "L&etter spacing:"
+msgstr "Mezery mezi &písmeny:"
+
+msgid "Very Wide"
+msgstr "Největší"
+
+msgid "Text &alignment:"
+msgstr "&Zarovnání textu:"
+
+msgid "Left"
+msgstr "Doleva"
+
+msgid "Center"
+msgstr "Na střed"
+
+msgid "Right"
+msgstr "Doprava"
+
+msgid "Justify"
+msgstr "Do bloku"
+
+msgid "General"
+msgstr "Obecné"
+
+msgid "Reading"
+msgstr "Čtení"
+
+msgid "Readability"
+msgstr "Čitelnost"
+
+msgid "Background: Default"
+msgstr "Pozadí: Výchozí"
+
+msgid "Font: Default"
+msgstr "Font: Výchozí"
+
+msgid "Default"
+msgstr "Výchozí"
+
+msgid "Bold"
+msgstr "Tučné"
+
+msgid "Italic"
+msgstr "Kurzíva"
+
+msgid "Underlined"
+msgstr "Podtržené"
+
+msgid "Strikethrough"
+msgstr "Přeškrtnuté"
+
+msgid "Window Hotkey"
+msgstr "Klávesová zkratka okna"
+
+msgid "&Ctrl"
+msgstr "&Ctrl"
+
+msgid "&Alt"
+msgstr "&Alt"
+
+msgid "&Shift"
+msgstr "&Shift"
+
+msgid "&Win"
+msgstr "&Win"
+
+msgid "&Key:"
+msgstr "&Klávesa:"
+
+msgid "Space"
+msgstr "Mezerník"
 
 msgid "Sleep Timer"
 msgstr "Časovač spánku"
@@ -298,23 +398,54 @@ msgstr "Časovač spánku"
 msgid "&Minutes:"
 msgstr "&Minuty:"
 
-msgid "Elements"
-msgstr "Prvky"
+msgid "Table of Contents"
+msgstr "Obsah"
 
-msgid "&View:"
-msgstr "&Zobrazit:"
+msgid "Please select a section from the table of contents."
+msgstr "Prosím, vyberte požadovaný oddíl z obsahu."
 
-msgid "Headings"
-msgstr "Nadpisy"
+msgid "No Selection"
+msgstr "Žádný výběr"
 
-msgid "Links"
-msgstr "Odkazy"
+msgid "View Note"
+msgstr "Zobrazit poznámku"
 
-msgid "An accessible, lightweight, fast ebook and document reader"
-msgstr "Přístupná, nenáročná a rychlá čtečka e-knih a dokumentů"
+msgid "1 hour"
+msgstr "1 hodina"
+
+msgid "hours"
+msgstr "Hodin"
+
+msgid "1 minute"
+msgstr "Jedna minuta"
+
+msgid "minutes"
+msgstr "Minut"
+
+msgid "1 second"
+msgstr "Jedna vteřina"
+
+msgid "seconds"
+msgstr "Vteřin"
+
+msgid "Estimated reading time: {}"
+msgstr "Odhadovaná doba čtení: {}"
+
+msgid "This document contains {} words."
+msgstr "Tento dokument obsahuje {} slov."
+
+msgid "Word Count"
+msgstr "Počet slov"
 
 msgid "File not found: {}"
 msgstr "Soubor nenalezen: {}"
+
+msgid ""
+"A .paperback file was found for this document. Would you like to import it?"
+msgstr "Pro tento dokument existuje soubor .paperback. Chcete ho importovat?"
+
+msgid "Import document data"
+msgstr "Importovat data dokumentu"
 
 msgid "Password is required."
 msgstr "Je vyžadováno heslo."
@@ -424,46 +555,6 @@ msgstr "Nepodařilo se spustit výchozí prohlížeč."
 msgid "Failed to open donation page in browser."
 msgstr "Nepodařilo se otevřít stránku Přispět v prohlížeči."
 
-msgid "No release notes were provided."
-msgstr "Nejsou uvedeny žádné poznámky k verzi."
-
-msgid "Paperback Update"
-msgstr "Aktualizace Paperbacku"
-
-msgid "Downloading update..."
-msgstr "Stahuje se aktualizace..."
-
-msgid "No updates available."
-msgstr "Žádné aktualizace nejsou dostupné."
-
-msgid "No updates available. Latest version: {}"
-msgstr "Žádné aktualizace nejsou dostupné. Poslední verze: {}"
-
-msgid "Info"
-msgstr "Informace"
-
-#, c-format
-msgid "Failed to check for updates. HTTP status: %d"
-msgstr "Kontrola aktualizací selhala. HTTP status: %d"
-
-msgid "Error checking for updates."
-msgstr "Chyba při kontrole aktualizací."
-
-msgid "Failed to get current exe path"
-msgstr "Nepodařilo se zjistit cestu k aktuálnímu spustitelnému souboru"
-
-msgid "Failed to launch installer script"
-msgstr "Nepodařilo se spustit instalační skript"
-
-msgid "Failed to launch update script"
-msgstr "Nepodařilo se spustit aktualizační skript"
-
-msgid "Unknown update file format."
-msgstr "Neznámý formát souboru aktualizace."
-
-msgid "Update failed"
-msgstr "Aktualizace selhala"
-
 msgid "Unsupported format selected."
 msgstr "Je vybrán nepodporovaný formát."
 
@@ -494,6 +585,19 @@ msgstr "Exportovat dokument do prostého textu"
 msgid "Failed to export document."
 msgstr "Export dokumentu selhal."
 
+msgid "HTML files (*.html)|*.html|All files (*.*)|*.*"
+msgstr "Soubory HTML (*.html)|*.html|Všechny soubory (*.*)|*.*"
+
+msgid "Export document to HTML"
+msgstr "Exportovat dokument do HTML"
+
+#| msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
+msgid "Markdown files (*.md)|*.md|All files (*.*)|*.*"
+msgstr "Soubory Markdown (*.md)|*.md|Všechny soubory (*.*)|*.*"
+
+msgid "Export document to Markdown"
+msgstr "Exportovat dokument do Markdown"
+
 msgid "Paperback files (*.paperback)|*.paperback"
 msgstr "Soubory Paperbacku (*.paperback)|*.paperback"
 
@@ -514,12 +618,6 @@ msgstr "Poznámky a záložky úspěšně importovány."
 
 msgid "Import Successful"
 msgstr "Import úspěšný"
-
-msgid "The document contains {} words."
-msgstr "Dokument obsahuje {} slov."
-
-msgid "Word count"
-msgstr "Počet slov"
 
 msgid "No table of contents."
 msgstr "Žádný obsah."
@@ -570,7 +668,6 @@ msgstr "Předchozí &odkaz\tShift+K"
 msgid "Next Lin&k\tK"
 msgstr "Další &odkaz\tK"
 
-#| msgid "Previous Pa&ge\tShift+P"
 msgid "Previous Ima&ge\tShift+G"
 msgstr "Předchozí &obrázek\tShift+G"
 
@@ -880,6 +977,18 @@ msgstr "Exportovat do &prostého textu...\tCtrl+E"
 msgid "Export document as plain text"
 msgstr "Exportovat dokument jako prostý text"
 
+msgid "Export to &HTML..."
+msgstr "Exportovat do &HTML..."
+
+msgid "Export document as HTML"
+msgstr "Exportovat dokument jako HTML"
+
+msgid "Export to &Markdown..."
+msgstr "Exportovat do &Markdown..."
+
+msgid "Export document as Markdown"
+msgstr "Exportovat dokument jako Markdown"
+
 msgid "&Word Count\tRawCtrl+W"
 msgstr "&Počet slov\tRawCtrl+W"
 
@@ -1161,3 +1270,67 @@ msgstr "&Ukončit"
 
 msgid "Exit Paperback"
 msgstr "Ukončit Paperback"
+
+#, c-format
+msgid "Update to %s"
+msgstr "Aktualizovat na verzi %s"
+
+#, c-format
+msgid "A new version of %s is available. Here's what's new:"
+msgstr "Je k dispozici nová verze %s. Toto jsou novinky:"
+
+msgid "No release notes provided."
+msgstr "Nejsou uvedeny žádné poznámky k verzi."
+
+#, c-format
+msgid "%s Update"
+msgstr "%s aktualizace"
+
+msgid "Downloading update..."
+msgstr "Stahuje se aktualizace..."
+
+msgid "No updates available."
+msgstr "Žádné aktualizace nejsou dostupné."
+
+#, c-format
+msgid "No updates available. Latest version: %s"
+msgstr "Žádné aktualizace nejsou dostupné. Poslední verze: %s"
+
+msgid "Info"
+msgstr "Informace"
+
+#, c-format
+msgid ""
+"Security verification failed. The update might have been tampered with: %s"
+msgstr ""
+"Selhalo ověření bezpečnosti. Do této aktualizace možná zasáhl někdo "
+"nepovolaný.: %s"
+
+msgid "Security Error"
+msgstr "Chyba zabezpečení"
+
+msgid "Update failed"
+msgstr "Aktualizace selhala"
+
+#, c-format
+msgid ""
+"Update downloaded to: %s\n"
+"Please install it manually."
+msgstr ""
+"Aktualizace stažena do: %s\n"
+"Nainstalujte ji prosím ručně."
+
+msgid "Update Ready"
+msgstr "Aktualizace připravena"
+
+msgid "Failed to get current exe path"
+msgstr "Nepodařilo se zjistit cestu k aktuálnímu spustitelnému souboru"
+
+msgid "Failed to launch installer script"
+msgstr "Nepodařilo se spustit instalační skript"
+
+msgid "Failed to launch update script"
+msgstr "Nepodařilo se spustit aktualizační skript"
+
+msgid "Unknown update file format."
+msgstr "Neznámý formát souboru aktualizace."
