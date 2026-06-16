@@ -50,6 +50,7 @@
 	Name: "assoc_text"; Description: "Associate with Text Files (*.txt, *.log)"; Flags: unchecked
 	Name: "assoc_xml"; Description: "Associate with XML documents (*.xml)"; Flags: unchecked
 	Name: "assoc_zip"; Description: "Associate with ZIP archives (*.zip)"; Flags: unchecked
+	Name: "addtopath"; Description: "Add Paperback directory to PATH"; Flags: unchecked
 
 [Icons]
 	Name: "{autodesktop}\Paperback"; Filename: "{app}\paperback.exe"; Tasks: desktopicon
@@ -105,6 +106,45 @@
 	Root: HKCR; Subkey: ".txt\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_text
 	; ZIP archives.
 	Root: HKCR; Subkey: ".zip\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_zip
+	; PATH — appended only when not already present; removed cleanly on uninstall via [Code].
+	Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{app}"; Flags: preservestringtype; Check: NeedsAddPath; Tasks: addtopath
+
+[Code]
+const
+  PathSubkey = 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment';
+
+function NeedsAddPath: Boolean;
+var
+  CurrentPath: string;
+begin
+  if not RegQueryStringValue(HKLM, PathSubkey, 'Path', CurrentPath) then
+    CurrentPath := '';
+  Result := Pos(';' + ExpandConstant('{app}'), ';' + CurrentPath) = 0;
+end;
+
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  CurrentPath, AppDir, NewPath: string;
+  P: Integer;
+begin
+  if CurUninstallStep <> usPostUninstall then
+    Exit;
+  if not RegQueryStringValue(HKLM, PathSubkey, 'Path', CurrentPath) then
+    Exit;
+  AppDir := ExpandConstant('{app}');
+  P := Pos(';' + AppDir, CurrentPath);
+  if P > 0 then
+    NewPath := Copy(CurrentPath, 1, P - 1) + Copy(CurrentPath, P + 1 + Length(AppDir), MaxInt)
+  else
+  begin
+    P := Pos(AppDir + ';', CurrentPath);
+    if P > 0 then
+      NewPath := Copy(CurrentPath, 1, P - 1) + Copy(CurrentPath, P + Length(AppDir) + 1, MaxInt)
+    else
+      Exit;
+  end;
+  RegWriteExpandStringValue(HKLM, PathSubkey, 'Path', NewPath);
+end;
 
 [Run]
 	Filename: "{app}\paperback.exe"; Description: "Launch Paperback"; Flags: nowait postinstall skipifsilent
