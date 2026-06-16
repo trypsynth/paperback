@@ -406,6 +406,16 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 							buffer.append("\n");
 						}
 					}
+					ControlWord::Line => {
+						if !in_header {
+							buffer.append("\n");
+						}
+					}
+					ControlWord::Tab => {
+						if !in_header {
+							buffer.append("\t");
+						}
+					}
 					ControlWord::Unicode => {
 						if !in_header {
 							if let Property::Value(code) = property {
@@ -439,8 +449,6 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 					ControlWord::Unknown(name) => {
 						if !in_header {
 							match *name {
-								r"\line" => buffer.append("\n"),
-								r"\tab" => buffer.append("\t"),
 								r"\page" => {
 									let ends_with_ws =
 										buffer.content.chars().next_back().is_some_and(char::is_whitespace);
