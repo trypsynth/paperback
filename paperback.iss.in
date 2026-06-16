@@ -22,6 +22,7 @@
 
 [Files]
 	Source: "paperback.exe"; DestDir: "{app}"; Flags: ignoreversion
+	Source: "pb.exe"; DestDir: "{app}"; Flags: ignoreversion
 	Source: "pdfium.dll"; DestDir: "{app}"; Flags: ignoreversion
 	Source: "readme.html"; DestDir: "{app}"; Flags: ignoreversion
 	Source: "sounds\*"; DestDir: "{app}\sounds"; Flags: ignoreversion recursesubdirs createallsubdirs

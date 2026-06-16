@@ -53,9 +53,13 @@ fn print_help() {
 fn release() -> Result<(), Box<dyn Error>> {
 	let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
 	let status =
-		Command::new(cargo).current_dir(project_root()).args(&["build", "--release", "-p", "paperback"]).status()?;
+		Command::new(&cargo).current_dir(project_root()).args(&["build", "--release", "-p", "paperback"]).status()?;
 	if !status.success() {
 		return Err("Cargo build failed".into());
+	}
+	let status = Command::new(&cargo).current_dir(project_root()).args(&["build", "--release", "-p", "pb"]).status()?;
+	if !status.success() {
+		return Err("Cargo build of pb failed".into());
 	}
 	let target_dir = project_root().join("target/release");
 	#[cfg(target_os = "macos")]
@@ -63,7 +67,9 @@ fn release() -> Result<(), Box<dyn Error>> {
 	#[cfg(not(target_os = "macos"))]
 	{
 		let exe_name = if cfg!(windows) { "paperback.exe" } else { "paperback" };
+		let pb_exe_name = if cfg!(windows) { "pb.exe" } else { "pb" };
 		let exe_path = target_dir.join(exe_name);
+		let pb_exe_path = target_dir.join(pb_exe_name);
 		let readme_path = target_dir.join("readme.html");
 		let sounds_path = target_dir.join("sounds");
 		let pdfium_dll_path = target_dir.join("pdfium.dll");
@@ -71,7 +77,7 @@ fn release() -> Result<(), Box<dyn Error>> {
 			return Err("Executable not found".into());
 		}
 		println!("Packaging binary, docs, and sounds...");
-		build_zip_package(&target_dir, &exe_path, &readme_path, &sounds_path, &pdfium_dll_path)?;
+		build_zip_package(&target_dir, &exe_path, &pb_exe_path, &readme_path, &sounds_path, &pdfium_dll_path)?;
 		if cfg!(windows) {
 			build_windows_installer(&target_dir)?;
 		}
@@ -488,6 +494,7 @@ fn copy_dir_all(src: &Path, dst: &Path) -> Result<(), Box<dyn Error>> {
 fn build_zip_package(
 	target_dir: &Path,
 	exe_path: &Path,
+	pb_exe_path: &Path,
 	readme_path: &Path,
 	sounds_dir: &Path,
 	pdfium_dll_path: &Path,
@@ -501,6 +508,14 @@ fn build_zip_package(
 	zip.start_file(exe_filename.to_string_lossy(), options)?;
 	let mut f = File::open(exe_path)?;
 	io::copy(&mut f, &mut zip)?;
+	if pb_exe_path.exists() {
+		let pb_filename = pb_exe_path.file_name().unwrap();
+		zip.start_file(pb_filename.to_string_lossy(), options)?;
+		let mut f = File::open(pb_exe_path)?;
+		io::copy(&mut f, &mut zip)?;
+	} else {
+		println!("Warning: pb binary not found, skipping.");
+	}
 	if cfg!(windows) {
 		if !pdfium_dll_path.exists() {
 			return Err(
