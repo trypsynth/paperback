@@ -99,6 +99,7 @@ Paperback is designed for keyboard-first and screen reader-first use. Here are t
 * `Ctrl+E`: Export the current document to plain text.
 * `Ctrl+Shift+B`: Toggle bookmark at the current selection/cursor.
 * `Ctrl+Shift+N`: Add or edit bookmark note at the current selection/cursor.
+* `Ctrl+Alt+W`: Toggle word wrap.
 * `Ctrl+,`: Open options.
 * `Ctrl+Shift+S`: Toggle sleep timer.
 

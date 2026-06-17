@@ -85,6 +85,8 @@ const DOCUMENT_DEPENDENT_IDS: &[i32] = &[
 	// Bookmark tools
 	menu_ids::TOGGLE_BOOKMARK,
 	menu_ids::BOOKMARK_WITH_NOTE,
+	// View toggles
+	menu_ids::TOGGLE_WORD_WRAP,
 ];
 
 /// Enable or disable all document-dependent menu items.
@@ -380,7 +382,7 @@ pub fn create_menu_bar(config: &ConfigManager) -> MenuBar {
 	let file_menu = create_file_menu(config);
 	let compact_go_menu = config.get_app_bool("compact_go_menu", true);
 	let go_menu = create_go_menu(compact_go_menu);
-	let tools_menu = create_tools_menu();
+	let tools_menu = create_tools_menu(config);
 	let help_menu = create_help_menu();
 	let file_label = t("&File");
 	let go_label = t("&Go");
@@ -522,7 +524,7 @@ pub fn create_go_menu(compact: bool) -> Menu {
 	menu
 }
 
-pub fn create_tools_menu() -> Menu {
+pub fn create_tools_menu(config: &ConfigManager) -> Menu {
 	let import_label = t("&Import Document Data...\tCtrl+Shift+I");
 	let import_help = t("Import bookmarks and position");
 	let export_label = t("&Export Document Data...\tCtrl+Shift+E");
@@ -574,6 +576,11 @@ pub fn create_tools_menu() -> Menu {
 	let bookmark_note_label = t("Bookmark with &Note\tCtrl+Shift+N");
 	menu.append(menu_ids::TOGGLE_BOOKMARK, &toggle_bookmark_label, "", ItemKind::Normal);
 	menu.append(menu_ids::BOOKMARK_WITH_NOTE, &bookmark_note_label, "", ItemKind::Normal);
+	menu.append_separator();
+	let word_wrap_label = t("Word w&rap\tCtrl+Alt+W");
+	let word_wrap_help = t("Toggle word wrap");
+	menu.append(menu_ids::TOGGLE_WORD_WRAP, &word_wrap_label, &word_wrap_help, ItemKind::Check);
+	menu.check_item(menu_ids::TOGGLE_WORD_WRAP, config.get_app_bool("word_wrap", false));
 	menu.append_separator();
 	let options_label = t("&Options\tCtrl+,");
 	let sleep_label = t("&Sleep Timer...\tCtrl+Shift+S");

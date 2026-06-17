@@ -79,6 +79,9 @@ seq_ids!(BASE + 420 => TOGGLE_BOOKMARK, BOOKMARK_WITH_NOTE);
 // Tools menu: Settings (BASE + 430..439)
 seq_ids!(BASE + 430 => OPTIONS, SLEEP_TIMER);
 
+// Tools menu: View toggles (BASE + 440..449)
+seq_ids!(BASE + 440 => TOGGLE_WORD_WRAP);
+
 // Help menu (BASE + 500..599)
 seq_ids!(BASE + 500 => VIEW_HELP_BROWSER, VIEW_HELP_PAPERBACK, CHECK_FOR_UPDATES, DONATE);
 
