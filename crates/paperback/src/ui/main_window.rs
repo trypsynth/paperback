@@ -1737,6 +1737,9 @@ pub(crate) fn start_hotkey_listener(hotkey: &paperback_core::config::HotkeyConfi
 
 #[cfg(target_os = "windows")]
 fn char_to_vk(ch: char) -> Option<u32> {
+	if ch == '\0' {
+		return None;
+	}
 	use windows::Win32::UI::Input::KeyboardAndMouse::VkKeyScanW;
 	let code = u16::try_from(u32::from(ch)).ok()?;
 	let result = unsafe { VkKeyScanW(code) };
