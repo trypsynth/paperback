@@ -544,9 +544,25 @@ fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<Ho
 	main_sizer.add_sizer(&key_sizer, 0, SizerFlag::Expand | SizerFlag::All, 10);
 
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	let clear_button = Button::builder(&panel).with_label(&t("Clear")).build();
 	let ok_button = Button::builder(&panel).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
 	ok_button.set_default();
 	let cancel_button = Button::builder(&panel).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
+
+	let key_text_clone = key_text.clone();
+	let ctrl_cb_clone = ctrl_cb.clone();
+	let alt_cb_clone = alt_cb.clone();
+	let shift_cb_clone = shift_cb.clone();
+	let win_cb_clone = win_cb.clone();
+	clear_button.on_click(move |_| {
+		key_text_clone.set_value("");
+		ctrl_cb_clone.set_value(false);
+		alt_cb_clone.set_value(false);
+		shift_cb_clone.set_value(false);
+		win_cb_clone.set_value(false);
+	});
+
+	button_sizer.add(&clear_button, 0, SizerFlag::Right, 8);
 	button_sizer.add_stretch_spacer(1);
 	button_sizer.add(&ok_button, 0, SizerFlag::Right, 8);
 	button_sizer.add(&cancel_button, 0, SizerFlag::Right, 8);
@@ -565,7 +581,7 @@ fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<Ho
 	}
 
 	let key_value = key_text.get_value();
-	let key_char = parse_hotkey_key(&key_value).unwrap_or(initial.key);
+	let key_char = if key_value.trim().is_empty() { '\0' } else { parse_hotkey_key(&key_value).unwrap_or(initial.key) };
 
 	Some(HotkeyConfig {
 		ctrl: ctrl_cb.is_checked(),
@@ -578,6 +594,7 @@ fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<Ho
 
 fn hotkey_key_display_name(key: char) -> String {
 	match key {
+		'\0' => String::new(),
 		' ' => t("Space").to_string(),
 		c if c.is_ascii_alphanumeric() => c.to_ascii_uppercase().to_string(),
 		c => c.to_string(),
