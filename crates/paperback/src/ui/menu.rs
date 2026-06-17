@@ -85,8 +85,6 @@ const DOCUMENT_DEPENDENT_IDS: &[i32] = &[
 	// Bookmark tools
 	menu_ids::TOGGLE_BOOKMARK,
 	menu_ids::BOOKMARK_WITH_NOTE,
-	// View toggles
-	menu_ids::TOGGLE_WORD_WRAP,
 ];
 
 /// Enable or disable all document-dependent menu items.
