@@ -894,6 +894,26 @@ impl MainWindow {
 				menu_ids::BOOKMARK_WITH_NOTE => {
 					navigation::handle_bookmark_with_note(&frame_copy, &dm, &config, live_region_label);
 				}
+				menu_ids::TOGGLE_WORD_WRAP => {
+					let new_state = {
+						let cfg = config.lock().unwrap();
+						let v = !cfg.get_app_bool("word_wrap", false);
+						cfg.set_app_bool("word_wrap", v);
+						cfg.flush();
+						v
+					};
+					{
+						let dm_for_wrap = Rc::clone(&dm);
+						let mut dm_ref = dm.lock().unwrap();
+						dm_ref.apply_word_wrap(&dm_for_wrap, new_state);
+					}
+					if let Some(menu_bar) = frame_copy.get_menu_bar() {
+						menu_bar.check_item(menu_ids::TOGGLE_WORD_WRAP, new_state);
+					}
+					let msg = if new_state { t("Word wrap on.") } else { t("Word wrap off.") };
+					live_region::announce(live_region_label, &msg);
+					dm.lock().unwrap().restore_focus();
+				}
 				menu_ids::VIEW_NOTE_TEXT => {
 					navigation::handle_view_note_text(&frame_copy, &dm, &config);
 				}
