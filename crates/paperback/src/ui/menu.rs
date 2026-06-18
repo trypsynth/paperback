@@ -71,6 +71,9 @@ const DOCUMENT_DEPENDENT_IDS: &[i32] = &[
 	menu_ids::NEXT_LIST,
 	menu_ids::PREVIOUS_LIST_ITEM,
 	menu_ids::NEXT_LIST_ITEM,
+	// Containers
+	menu_ids::CONTAINER_START,
+	menu_ids::CONTAINER_END,
 	// Tools
 	menu_ids::WORD_COUNT,
 	menu_ids::DOCUMENT_INFO,
@@ -208,6 +211,17 @@ pub fn lists_entries() -> Vec<MenuEntry> {
 		item(menu_ids::NEXT_LIST, next_list_label),
 		item(menu_ids::PREVIOUS_LIST_ITEM, prev_list_item_label),
 		item(menu_ids::NEXT_LIST_ITEM, next_list_item_label),
+	]
+}
+
+pub fn containers_entries() -> Vec<MenuEntry> {
+	let container_start_label = t("Container &Start\tShift+,");
+	let container_start_help = t("Go to the start of the current list or table");
+	let container_end_label = t("Past Container &End\t,");
+	let container_end_help = t("Go past the end of the current list or table");
+	vec![
+		item_with_help(menu_ids::CONTAINER_START, container_start_label, container_start_help),
+		item_with_help(menu_ids::CONTAINER_END, container_end_label, container_end_help),
 	]
 }
 
@@ -356,6 +370,16 @@ pub fn append_lists_items(menu: &Menu) {
 	append_menu_entries(menu, &entries);
 }
 
+pub fn create_containers_submenu() -> Menu {
+	let entries = containers_entries();
+	build_menu(&entries)
+}
+
+pub fn append_containers_items(menu: &Menu) {
+	let entries = containers_entries();
+	append_menu_entries(menu, &entries);
+}
+
 pub fn create_headings_submenu() -> Menu {
 	let entries = headings_entries();
 	build_menu(&entries)
@@ -498,6 +522,9 @@ pub fn create_go_menu(compact: bool) -> Menu {
 		let lists_label = t("&Lists");
 		let lists_help = t("Navigate by lists");
 		menu.append_submenu(create_lists_submenu(), &lists_label, &lists_help);
+		let containers_label = t("&Containers");
+		let containers_help = t("Navigate by containers");
+		menu.append_submenu(create_containers_submenu(), &containers_label, &containers_help);
 	} else {
 		append_sections_items(&menu);
 		menu.append_separator();
@@ -518,6 +545,8 @@ pub fn create_go_menu(compact: bool) -> Menu {
 		append_separators_items(&menu);
 		menu.append_separator();
 		append_lists_items(&menu);
+		menu.append_separator();
+		append_containers_items(&menu);
 	}
 	menu
 }

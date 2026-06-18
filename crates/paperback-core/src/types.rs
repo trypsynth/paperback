@@ -42,6 +42,8 @@ pub struct ImageInfo {
 pub struct ListInfo {
 	pub offset: usize,
 	pub item_count: i32,
+	/// Display-unit span of the list, from its start offset to the end of its content.
+	pub length: usize,
 }
 
 #[derive(Debug, Clone)]

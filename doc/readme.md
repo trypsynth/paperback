@@ -85,6 +85,8 @@ Paperback is designed for keyboard-first and screen reader-first use. Here are t
 * `L`: Next list.
 * `Shift+I`: Previous list item.
 * `I`: Next list item.
+* `Shift+,`: Go to the start of the current container (list or table).
+* `,`: Go past the end of the current container (list or table).
 
 ### Tools menu
 
