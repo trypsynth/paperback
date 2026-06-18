@@ -954,6 +954,7 @@ fn build_navigation_key_map() -> HashMap<(i32, bool), i32> {
 		menu::tables_entries(),
 		menu::separators_entries(),
 		menu::lists_entries(),
+		menu::containers_entries(),
 		menu::bookmarks_entries(),
 	];
 	for entries in &all_entries {

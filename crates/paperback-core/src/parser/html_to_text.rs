@@ -58,6 +58,10 @@ pub struct HtmlToText {
 	current_link_text: String,
 	list_style_stack: Vec<ListStyle>,
 	list_level: i32,
+	/// Indices into `lists` for currently open `<ul>`/`<ol>` elements, in nesting order.
+	/// `None` marks an open list that was not recorded (no direct `<li>`), keeping the stack
+	/// balanced with the start/close handlers so list lengths are set on the right entries.
+	open_lists: Vec<Option<usize>>,
 	link_start_pos: usize,
 	source_mode: HtmlSourceMode,
 	cached_char_length: usize,
@@ -85,6 +89,7 @@ impl HtmlToText {
 			current_link_text: String::new(),
 			list_style_stack: Vec::new(),
 			list_level: 0,
+			open_lists: Vec::new(),
 			link_start_pos: 0,
 			source_mode: HtmlSourceMode::NativeHtml,
 			cached_char_length: 0,
@@ -165,6 +170,7 @@ impl HtmlToText {
 		self.current_link_text.clear();
 		self.list_style_stack.clear();
 		self.list_level = 0;
+		self.open_lists.clear();
 		self.link_start_pos = 0;
 		self.cached_char_length = 0;
 	}
@@ -405,7 +411,10 @@ impl HtmlToText {
 			}
 			if item_count > 0 {
 				self.finalize_current_line();
-				self.lists.push(ListInfo { offset: self.get_current_text_position(), item_count });
+				self.open_lists.push(Some(self.lists.len()));
+				self.lists.push(ListInfo { offset: self.get_current_text_position(), item_count, length: 0 });
+			} else {
+				self.open_lists.push(None);
 			}
 		}
 	}
@@ -479,6 +488,11 @@ impl HtmlToText {
 		if tag_name == "ul" || tag_name == "ol" {
 			self.list_level -= 1;
 			self.list_style_stack.pop();
+			if let Some(open) = self.open_lists.pop().flatten() {
+				self.finalize_current_line();
+				let offset = self.lists[open].offset;
+				self.lists[open].length = self.get_current_text_position().saturating_sub(offset);
+			}
 		}
 		if tag_name == "pre" {
 			let has_preserved_trailing_whitespace =
@@ -693,6 +707,11 @@ mod tests {
 		let items = converter.get_list_items();
 		assert_eq!(lists.len(), 1);
 		assert_eq!(lists[0].item_count, 2);
+		// The recorded length must span the whole list, reaching at least the last item's start.
+		assert!(lists[0].length > 0);
+		assert!(lists[0].offset + lists[0].length >= items[1].offset);
+		// End lands at most one line break past the content (trailing newline at document end).
+		assert!(lists[0].offset + lists[0].length <= display_len(&converter.get_text()) + 1);
 		assert_eq!(items.len(), 2);
 		assert_eq!(items[0].level, 1);
 		assert_eq!(items[0].text, "First");

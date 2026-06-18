@@ -296,7 +296,9 @@ fn add_tables_separators_lists(buffer: &mut DocumentBuffer, converter: &dyn Conv
 		);
 	}
 	for list in converter.get_lists() {
-		buffer.add_marker(Marker::new(MarkerType::List, offset + list.offset).with_level(list.item_count));
+		buffer.add_marker(
+			Marker::new(MarkerType::List, offset + list.offset).with_level(list.item_count).with_length(list.length),
+		);
 	}
 	for list_item in converter.get_list_items() {
 		buffer.add_marker(
@@ -401,7 +403,7 @@ mod tests {
 				length: 11,
 			}],
 			separators: vec![SeparatorInfo { offset: 4, length: 7 }],
-			lists: vec![ListInfo { offset: 5, item_count: 3 }],
+			lists: vec![ListInfo { offset: 5, item_count: 3, length: 4 }],
 			list_items: vec![ListItemInfo { offset: 6, level: 1, text: "Item".to_string() }],
 		}
 	}

@@ -13,7 +13,8 @@ use crate::{
 	parser,
 	reader_core::{
 		SearchOptions, bookmark_navigate, encode_url_fragment, history_go_next, history_go_previous,
-		nearest_fragment_before, reader_navigate, reader_search_with_wrap, record_history_position, resolve_link,
+		nearest_fragment_before, reader_container_navigate, reader_navigate, reader_search_with_wrap,
+		record_history_position, resolve_link,
 	},
 	types::{self as ffi, NavDirection, NavTarget},
 	util::{encoding::convert_to_utf8, zip as zip_utils},
@@ -483,6 +484,17 @@ impl DocumentSession {
 				s.fill_marker_text_if_empty(nav_result);
 			},
 		)
+	}
+
+	/// Move relative to the container (list/table) the caret is currently inside: `to_end` jumps
+	/// just past its end, otherwise to its start. Not found when the caret is not in a container.
+	#[must_use]
+	pub fn navigate_container(&self, position: i64, to_end: bool) -> NavigationResult {
+		if !(self.has_marker(MarkerType::List) || self.has_marker(MarkerType::Table)) {
+			return NavigationResult::not_supported();
+		}
+		let result = reader_container_navigate(&self.handle, position, to_end);
+		NavigationResult::from_nav_result(&result)
 	}
 
 	#[must_use]

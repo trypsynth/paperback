@@ -279,6 +279,57 @@ pub fn handle_marker_navigation(
 	}
 }
 
+/// Navigate relative to the container (list/table) the caret is currently inside: `to_end` jumps
+/// just past its end, otherwise to its start. Announces "Not in a container." when the caret is
+/// not inside any container.
+pub fn handle_container_navigation(
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+	live_region_label: StaticText,
+	to_end: bool,
+) {
+	let mut dm = doc_manager.lock().unwrap();
+	let history_update = {
+		let Some(tab) = dm.active_tab_mut() else {
+			return;
+		};
+		let current_pos = tab.text_ctrl.get_insertion_point();
+		let result = tab.session.navigate_container(current_pos, to_end);
+		if result.not_supported {
+			live_region::announce(live_region_label, &t("No containers."));
+			None
+		} else if !result.found {
+			live_region::announce(live_region_label, &t("Not in a container."));
+			None
+		} else {
+			let offset = result.offset;
+			let line = tab.session.get_line_text(offset);
+			let message = if line.trim().is_empty() {
+				if to_end { t("Past end of container.") } else { t("Start of container.") }
+			} else {
+				line
+			};
+			live_region::announce(live_region_label, &message);
+			tab.text_ctrl.set_focus();
+			tab.text_ctrl.set_insertion_point(offset);
+			tab.text_ctrl.show_position(offset);
+			tab.session.check_and_record_history(offset);
+			if tab.track {
+				let (history, history_index) = tab.session.get_history();
+				let path_str = tab.file_path.to_string_lossy().to_string();
+				Some((path_str, history.to_vec(), history_index))
+			} else {
+				None
+			}
+		}
+	};
+	drop(dm);
+	if let Some((path_str, history, history_index)) = history_update {
+		let cfg = config.lock().unwrap();
+		cfg.set_navigation_history(&path_str, &history, history_index);
+	}
+}
+
 pub fn selected_range(text_ctrl: TextCtrl) -> (i64, i64) {
 	let (start, end) = text_ctrl.get_selection();
 	if start == end {

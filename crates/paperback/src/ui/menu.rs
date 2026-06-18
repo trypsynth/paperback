@@ -71,6 +71,9 @@ const DOCUMENT_DEPENDENT_IDS: &[i32] = &[
 	menu_ids::NEXT_LIST,
 	menu_ids::PREVIOUS_LIST_ITEM,
 	menu_ids::NEXT_LIST_ITEM,
+	// Containers
+	menu_ids::CONTAINER_START,
+	menu_ids::CONTAINER_END,
 	// Tools
 	menu_ids::WORD_COUNT,
 	menu_ids::DOCUMENT_INFO,
@@ -208,6 +211,17 @@ pub fn lists_entries() -> Vec<MenuEntry> {
 		item(menu_ids::NEXT_LIST, next_list_label),
 		item(menu_ids::PREVIOUS_LIST_ITEM, prev_list_item_label),
 		item(menu_ids::NEXT_LIST_ITEM, next_list_item_label),
+	]
+}
+
+pub fn containers_entries() -> Vec<MenuEntry> {
+	let container_start_label = t("Container &Start\tShift+,");
+	let container_start_help = t("Go to the start of the current list or table");
+	let container_end_label = t("Past Container &End\t,");
+	let container_end_help = t("Go past the end of the current list or table");
+	vec![
+		item_with_help(menu_ids::CONTAINER_START, container_start_label, container_start_help),
+		item_with_help(menu_ids::CONTAINER_END, container_end_label, container_end_help),
 	]
 }
 
@@ -356,6 +370,16 @@ pub fn append_lists_items(menu: &Menu) {
 	append_menu_entries(menu, &entries);
 }
 
+pub fn create_containers_submenu() -> Menu {
+	let entries = containers_entries();
+	build_menu(&entries)
+}
+
+pub fn append_containers_items(menu: &Menu) {
+	let entries = containers_entries();
+	append_menu_entries(menu, &entries);
+}
+
 pub fn create_headings_submenu() -> Menu {
 	let entries = headings_entries();
 	build_menu(&entries)
@@ -380,7 +404,7 @@ pub fn create_menu_bar(config: &ConfigManager) -> MenuBar {
 	let file_menu = create_file_menu(config);
 	let compact_go_menu = config.get_app_bool("compact_go_menu", true);
 	let go_menu = create_go_menu(compact_go_menu);
-	let tools_menu = create_tools_menu();
+	let tools_menu = create_tools_menu(config);
 	let help_menu = create_help_menu();
 	let file_label = t("&File");
 	let go_label = t("&Go");
@@ -498,6 +522,9 @@ pub fn create_go_menu(compact: bool) -> Menu {
 		let lists_label = t("&Lists");
 		let lists_help = t("Navigate by lists");
 		menu.append_submenu(create_lists_submenu(), &lists_label, &lists_help);
+		let containers_label = t("&Containers");
+		let containers_help = t("Navigate by containers");
+		menu.append_submenu(create_containers_submenu(), &containers_label, &containers_help);
 	} else {
 		append_sections_items(&menu);
 		menu.append_separator();
@@ -518,11 +545,13 @@ pub fn create_go_menu(compact: bool) -> Menu {
 		append_separators_items(&menu);
 		menu.append_separator();
 		append_lists_items(&menu);
+		menu.append_separator();
+		append_containers_items(&menu);
 	}
 	menu
 }
 
-pub fn create_tools_menu() -> Menu {
+pub fn create_tools_menu(config: &ConfigManager) -> Menu {
 	let import_label = t("&Import Document Data...\tCtrl+Shift+I");
 	let import_help = t("Import bookmarks and position");
 	let export_label = t("&Export Document Data...\tCtrl+Shift+E");
@@ -574,6 +603,11 @@ pub fn create_tools_menu() -> Menu {
 	let bookmark_note_label = t("Bookmark with &Note\tCtrl+Shift+N");
 	menu.append(menu_ids::TOGGLE_BOOKMARK, &toggle_bookmark_label, "", ItemKind::Normal);
 	menu.append(menu_ids::BOOKMARK_WITH_NOTE, &bookmark_note_label, "", ItemKind::Normal);
+	menu.append_separator();
+	let word_wrap_label = t("Word w&rap\tCtrl+Alt+W");
+	let word_wrap_help = t("Toggle word wrap");
+	menu.append(menu_ids::TOGGLE_WORD_WRAP, &word_wrap_label, &word_wrap_help, ItemKind::Check);
+	menu.check_item(menu_ids::TOGGLE_WORD_WRAP, config.get_app_bool("word_wrap", false));
 	menu.append_separator();
 	let options_label = t("&Options\tCtrl+,");
 	let sleep_label = t("&Sleep Timer...\tCtrl+Shift+S");

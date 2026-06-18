@@ -63,6 +63,7 @@ seq_ids!(BASE + 300 => PREVIOUS_FIGURE, NEXT_FIGURE);
 // Go menu: Element navigation (BASE + 305..319)
 seq_ids!(BASE + 305 => PREVIOUS_TABLE, NEXT_TABLE, PREVIOUS_SEPARATOR, NEXT_SEPARATOR);
 seq_ids!(BASE + 310 => PREVIOUS_LIST, NEXT_LIST, PREVIOUS_LIST_ITEM, NEXT_LIST_ITEM);
+seq_ids!(BASE + 314 => CONTAINER_START, CONTAINER_END);
 
 // Tools menu: Document info (BASE + 400..409)
 seq_ids!(BASE + 400 =>
@@ -78,6 +79,9 @@ seq_ids!(BASE + 420 => TOGGLE_BOOKMARK, BOOKMARK_WITH_NOTE);
 
 // Tools menu: Settings (BASE + 430..439)
 seq_ids!(BASE + 430 => OPTIONS, SLEEP_TIMER);
+
+// Tools menu: View toggles (BASE + 440..449)
+seq_ids!(BASE + 440 => TOGGLE_WORD_WRAP);
 
 // Help menu (BASE + 500..599)
 seq_ids!(BASE + 500 => VIEW_HELP_BROWSER, VIEW_HELP_PAPERBACK, CHECK_FOR_UPDATES, DONATE);
