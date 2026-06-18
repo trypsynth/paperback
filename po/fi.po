@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
 "POT-Creation-Date: 2026-06-03 18:57+0530\n"
-"PO-Revision-Date: 2026-06-06 14:55+0300\n"
+"PO-Revision-Date: 2026-06-17 22:40+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -113,10 +113,10 @@ msgid "Bookmarks"
 msgstr "Kirjanmerkit"
 
 msgid "Notes"
-msgstr "Muistiinpanot"
+msgstr "Kommentit"
 
 msgid "&Edit Note"
-msgstr "&Muokkaa muistiinpanoa"
+msgstr "&Muokkaa kommenttia"
 
 msgid "&Delete"
 msgstr "&Poista"
@@ -137,10 +137,10 @@ msgid "Error"
 msgstr "Virhe"
 
 msgid "Bookmark Note"
-msgstr "Kirjanmerkin muistiinpano"
+msgstr "Kirjanmerkin kommentti"
 
 msgid "Edit bookmark note:"
-msgstr "Muokkaa kirjanmerkin muistiinpanoa:"
+msgstr "Muokkaa kirjanmerkin kommenttia:"
 
 msgid "Document Info"
 msgstr "Asiakirjan tiedot"
@@ -256,13 +256,13 @@ msgid "&Wrap navigation"
 msgstr "Siirry a&lkuun asiakirjan lopussa"
 
 msgid "Play &sounds on bookmarks and notes"
-msgstr "Toista &äänet kirjanmerkeille ja muistiinpanoille"
+msgstr "Ilmaise kirjanmerkit ja kommentit merkkiäänellä"
 
 msgid "Check for &updates on startup"
 msgstr "Tarkista &päivitykset käynnistettäessä"
 
 msgid "Customize &Window Hotkey..."
-msgstr "Mukauta &ikkunan pikanäppäintä..."
+msgstr "&Ikkunan pikanäppäin..."
 
 msgid "&Reading speed (words per minute):"
 msgstr "&Lukunopeus (sanaa minuutissa):"
@@ -409,7 +409,7 @@ msgid "No Selection"
 msgstr "Ei valintaa"
 
 msgid "View Note"
-msgstr "Näytä muistiinpano"
+msgstr "Näytä kommentti"
 
 msgid "1 hour"
 msgstr "1 tunti"
@@ -477,10 +477,10 @@ msgid "Create bookmark"
 msgstr "Luo kirjanmerkki"
 
 msgid "Bookmark with &note"
-msgstr "Kirjanmerkki &muistiinpanolla"
+msgstr "Kirjanmerkki k&ommentilla"
 
 msgid "Create bookmark with note"
-msgstr "Luo kirjanmerkki muistiinpanolla"
+msgstr "Luo kirjanmerkki kommentilla"
 
 msgid "&Find"
 msgstr "&Etsi"
@@ -603,19 +603,19 @@ msgid "Paperback files (*.paperback)|*.paperback"
 msgstr "Paperback-tiedostot (*.paperback)|*.paperback"
 
 msgid "Export notes and bookmarks"
-msgstr "Vie muistiinpanot ja kirjanmerkit"
+msgstr "Vie kommentit ja kirjanmerkit"
 
 msgid "Notes and bookmarks exported successfully."
-msgstr "Muistiinpanot ja kirjanmerkit viety onnistuneesti."
+msgstr "Kommentit ja kirjanmerkit viety onnistuneesti."
 
 msgid "Export Successful"
 msgstr "Vienti onnistui"
 
 msgid "Import notes and bookmarks"
-msgstr "Tuo muistiinpanot ja kirjanmerkit"
+msgstr "Tuo kommentit ja kirjanmerkit"
 
 msgid "Notes and bookmarks imported successfully."
-msgstr "Muistiinpanot ja kirjanmerkit tuotu onnistuneesti."
+msgstr "Kommentit ja kirjanmerkit tuotu onnistuneesti."
 
 msgid "Import Successful"
 msgstr "Tuonti onnistui"
@@ -766,22 +766,22 @@ msgid "Go to next bookmark"
 msgstr "Siirry seuraavaan kirjanmerkkiin"
 
 msgid "Previous &Note\tShift+N"
-msgstr "Edellinen &muistiinpano\tShift+N"
+msgstr "Edellinen &kommentti\tShift+N"
 
 msgid "Go to previous note"
-msgstr "Siirry edelliseen muistiinpanoon"
+msgstr "Siirry edelliseen kommenttiin"
 
 msgid "Next N&ote\tN"
-msgstr "Seuraava m&uistiinpano\tN"
+msgstr "Seuraava k&ommentti\tN"
 
 msgid "Go to next note"
-msgstr "Siirry seuraavaan  muistiinpanoon"
+msgstr "Siirry seuraavaan  kommenttiin"
 
 msgid "Jump to &All...\tCtrl+B"
 msgstr "Siirry k&aikkiin...\tCtrl+B"
 
 msgid "Show all bookmarks and notes"
-msgstr "Näytä kaikki kirjanmerkit ja muistiinpanot"
+msgstr "Näytä kaikki kirjanmerkit ja kommentit"
 
 msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
 msgstr "Siirry vain &kirjanmerkkeihin...\tCtrl+Alt+B"
@@ -790,19 +790,19 @@ msgid "Show bookmarks only"
 msgstr "Näytä vain kirjanmerkit"
 
 msgid "Jump to Notes &Only...\tCtrl+Alt+M"
-msgstr "Siirry vain mu&istiinpanoihin...\tCtrl+Alt+M"
+msgstr "Siirry vain kommentte&ihin...\tCtrl+Alt+M"
 
 msgid "Show notes only"
-msgstr "Näytä vain muistiinpanot"
+msgstr "Näytä vain kommentit"
 
 msgid "&View Note Text\tRawCtrl+Shift+W"
-msgstr "&Näytä muistiinpanon teksti\tRawCtrl+Shift+W"
+msgstr "&Näytä kommentin teksti\tRawCtrl+Shift+W"
 
 msgid "&View Note Text\tCtrl+Shift+W"
-msgstr "&Näytä muistiinpanon teksti\tCtrl+Shift+W"
+msgstr "&Näytä kommentin teksti\tCtrl+Shift+W"
 
 msgid "View the note at current position"
-msgstr "Näytä nykyisen sijainnin muistiinpano"
+msgstr "Näytä nykyisen sijainnin kommentti"
 
 msgid "&File"
 msgstr "&Tiedosto"
@@ -1039,7 +1039,7 @@ msgid "Toggle &Bookmark\tCtrl+Shift+B"
 msgstr "Lisää/poista &kirjanmerkki\tCtrl+Shift+B"
 
 msgid "Bookmark with &Note\tCtrl+Shift+N"
-msgstr "Lisää kirjanmerkki &muistiinpanolla\tCtrl+Shift+N"
+msgstr "Lisää kirjanmerkki ko&mmentilla\tCtrl+Shift+N"
 
 msgid "&Options\tCtrl+,"
 msgstr "&Asetukset\tCtrl+,"
@@ -1216,19 +1216,19 @@ msgid "%s - Bookmark %d"
 msgstr "%s - kirjanmerkki %d"
 
 msgid "No notes."
-msgstr "Ei muistiinpanoja."
+msgstr "Ei kommentteja."
 
 msgid "No bookmarks."
 msgstr "Ei kirjanmerkkejä."
 
 msgid "No next note."
-msgstr "Ei seuraavaa muistiinpanoa."
+msgstr "Ei seuraavaa kommenttia."
 
 msgid "No next bookmark."
 msgstr "Ei seuraavaa kirjanmerkkiä."
 
 msgid "No previous note."
-msgstr "Ei edellistä muistiinpanoa."
+msgstr "Ei edellistä kommenttia."
 
 msgid "No previous bookmark."
 msgstr "Ei edellistä kirjanmerkkiä."
@@ -1243,13 +1243,13 @@ msgid "Bookmark added."
 msgstr "Kirjanmerkki lisätty."
 
 msgid "Enter bookmark note:"
-msgstr "Kirjoita kirjanmerkin muistiinpano:"
+msgstr "Kirjoita kirjanmerkin kommentti:"
 
 msgid "Bookmark saved."
 msgstr "Kirjanmerkki tallennettu."
 
 msgid "No note at the current position."
-msgstr "Ei muistiinpanoa nykyisessä sijainnissa."
+msgstr "Ei kommenttia nykyisessä sijainnissa."
 
 msgid "Line"
 msgstr "Rivi"
