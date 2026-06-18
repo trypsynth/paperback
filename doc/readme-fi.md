@@ -85,6 +85,8 @@ Paperback on suunniteltu ensisijaisesti näppäimistöllä ja ruudunlukijalla k�
 * `L`: Seuraava luettelo.
 * `Shift+I`: Edellinen luettelokohde.
 * `I`: Seuraava luettelokohde.
+* `Shift+,`: Siirry nykyisen säilön, eli luettelon tai taulukon, alkuun.
+* `,`: Siirry nykyisen säilön, eli luettelon tai taulukon, jälkeiseen kohtaan.
 
 ### Työkalut-valikko
 
@@ -95,10 +97,11 @@ Paperback on suunniteltu ensisijaisesti näppäimistöllä ja ruudunlukijalla k�
 * `Ctrl+Shift+C`: Avaa asiakirjan kansio.
 * `Ctrl+Shift+V`: Avaa nykyinen sisältö verkkonäkymässä.
 * `Ctrl+Shift+E`: Vie asiakirjan tiedot (`.paperback`).
-* `Ctrl+Shift+I`: Tuo asiakirjan tiedot (`.paperback`).
+* `Ctrl+Shift+I`: Tuo asiakirjan tiedot `.paperback`-tiedostosta.
 * `Ctrl+E`: Vie nykyinen asiakirja pelkkänä tekstinä.
 * `Ctrl+Shift+B`: Kirjanmerkki päälle tai pois nykyisessä valinnassa tai kohdistimen sijainnissa.
 * `Ctrl+Shift+N`: Lisää kirjanmerkin kommentti nykyisen valinnan tai kohdistimen kohdalle tai muokkaa sitä.
+* `Ctrl+Alt+W`: Ota rivitys käyttöön tai poista se käytöstä.
 * `Ctrl+,`: Avaa asetukset.
 * `Ctrl+Shift+S`: Ota uniajastin käyttöön tai poista se käytöstä.
 
