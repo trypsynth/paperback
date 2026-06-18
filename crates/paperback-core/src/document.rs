@@ -305,6 +305,21 @@ pub const fn is_heading_marker(marker_type: MarkerType) -> bool {
 	)
 }
 
+/// Whether a marker type denotes a navigable container (an element the caret can be *inside* of,
+/// such as a list or table). The single place to extend the set of container types.
+#[must_use]
+pub const fn is_container_marker(marker_type: MarkerType) -> bool {
+	matches!(marker_type, MarkerType::List | MarkerType::Table)
+}
+
+/// The display-unit span of a container marker: `[start, end)`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ContainerSpan {
+	pub start: usize,
+	pub end: usize,
+	pub mtype: MarkerType,
+}
+
 #[derive(Debug, Clone)]
 pub struct DocumentHandle {
 	doc: Document,
@@ -379,6 +394,23 @@ impl DocumentHandle {
 			}
 		}
 		result
+	}
+
+	/// The innermost container (list/table) whose span contains `position`, or `None` when the
+	/// position is not inside any container. A container covers `[start, start + length)`; the
+	/// start is inclusive and the end is exclusive (a caret exactly at the end is past it).
+	/// When containers nest, the innermost is the candidate with the greatest start (ties broken
+	/// by the smallest end).
+	#[must_use]
+	pub fn enclosing_container(&self, position: usize) -> Option<ContainerSpan> {
+		self.doc
+			.buffer
+			.markers
+			.iter()
+			.filter(|m| is_container_marker(m.mtype) && m.length > 0)
+			.map(|m| ContainerSpan { start: m.position, end: m.position + m.length, mtype: m.mtype })
+			.filter(|span| span.start <= position && position < span.end)
+			.min_by(|a, b| b.start.cmp(&a.start).then_with(|| a.end.cmp(&b.end)))
 	}
 
 	#[must_use]
@@ -541,6 +573,53 @@ mod tests {
 		doc.set_buffer(buffer);
 		doc.toc_items = vec![parent, TocItem::new("Part 2".to_string(), "p2".to_string(), 50)];
 		DocumentHandle::new(doc)
+	}
+
+	fn container_handle() -> DocumentHandle {
+		let mut buffer = DocumentBuffer::new();
+		buffer.append(&"x".repeat(200));
+		// A list spanning [10, 40) and a table spanning [80, 120).
+		buffer.add_marker(Marker::new(MarkerType::List, 10).with_level(3).with_length(30));
+		buffer.add_marker(Marker::new(MarkerType::Table, 80).with_length(40));
+		// A nested list [50, 70) inside an outer list [45, 100).
+		buffer.add_marker(Marker::new(MarkerType::List, 45).with_level(2).with_length(55));
+		buffer.add_marker(Marker::new(MarkerType::List, 50).with_level(2).with_length(20));
+		let mut doc = Document::new();
+		doc.set_buffer(buffer);
+		DocumentHandle::new(doc)
+	}
+
+	#[test]
+	fn enclosing_container_finds_list_and_table_spans() {
+		let handle = container_handle();
+		let list = handle.enclosing_container(25).unwrap();
+		assert_eq!((list.start, list.end, list.mtype), (10, 40, MarkerType::List));
+		let table = handle.enclosing_container(80).unwrap();
+		assert_eq!((table.start, table.end, table.mtype), (80, 120, MarkerType::Table));
+	}
+
+	#[test]
+	fn enclosing_container_start_inclusive_end_exclusive() {
+		let handle = container_handle();
+		assert_eq!(handle.enclosing_container(10).unwrap().start, 10); // start is inside
+		assert!(handle.enclosing_container(40).is_none()); // end is past the list
+	}
+
+	#[test]
+	fn enclosing_container_returns_innermost_when_nested() {
+		let handle = container_handle();
+		// Position 55 is inside both the outer list [45,100) and the nested list [50,70).
+		let inner = handle.enclosing_container(55).unwrap();
+		assert_eq!((inner.start, inner.end), (50, 70));
+		// Position 75 is only inside the outer list.
+		assert_eq!(handle.enclosing_container(75).unwrap().start, 45);
+	}
+
+	#[test]
+	fn enclosing_container_none_outside_any_container() {
+		let handle = container_handle();
+		assert!(handle.enclosing_container(5).is_none());
+		assert!(handle.enclosing_container(150).is_none());
 	}
 
 	#[test]

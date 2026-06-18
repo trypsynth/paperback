@@ -43,6 +43,10 @@ pub struct XmlToText {
 	preserve_whitespace_depth: usize,
 	list_level: i32,
 	list_style_stack: Vec<ListStyle>,
+	/// Indices into `lists` for currently open `<ul>`/`<ol>` elements, in nesting order.
+	/// `None` marks an open list that was not recorded (no direct `<li>`), keeping the stack
+	/// balanced with the start/close handlers so list lengths are set on the right entries.
+	open_lists: Vec<Option<usize>>,
 	cached_char_length: usize,
 }
 
@@ -151,6 +155,7 @@ impl XmlToText {
 		self.list_level = 0;
 		self.cached_char_length = 0;
 		self.list_style_stack.clear();
+		self.open_lists.clear();
 	}
 
 	fn process_node(&mut self, node: Node<'_, '_>) {
@@ -384,7 +389,10 @@ impl XmlToText {
 		}
 		if item_count > 0 {
 			self.finalize_current_line();
-			self.lists.push(ListInfo { offset: self.get_current_text_position(), item_count });
+			self.open_lists.push(Some(self.lists.len()));
+			self.lists.push(ListInfo { offset: self.get_current_text_position(), item_count, length: 0 });
+		} else {
+			self.open_lists.push(None);
 		}
 	}
 
@@ -430,6 +438,11 @@ impl XmlToText {
 		if Self::tag_is(tag_name, "ul") || Self::tag_is(tag_name, "ol") {
 			self.list_level = (self.list_level - 1).max(0);
 			self.list_style_stack.pop();
+			if let Some(open) = self.open_lists.pop().flatten() {
+				self.finalize_current_line();
+				let offset = self.lists[open].offset;
+				self.lists[open].length = self.get_current_text_position().saturating_sub(offset);
+			}
 		}
 	}
 

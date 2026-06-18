@@ -987,6 +987,12 @@ impl MainWindow {
 						true,
 					);
 				}
+				menu_ids::CONTAINER_START => {
+					navigation::handle_container_navigation(&dm, &config, live_region_label, false);
+				}
+				menu_ids::CONTAINER_END => {
+					navigation::handle_container_navigation(&dm, &config, live_region_label, true);
+				}
 				menu_ids::EXPORT_TO_PLAIN_TEXT => {
 					let Ok(dm_ref) = dm.try_lock() else {
 						return;

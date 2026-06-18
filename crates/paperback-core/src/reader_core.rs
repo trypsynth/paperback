@@ -127,6 +127,33 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 	}
 }
 
+/// Move relative to the container (list/table) the caret is currently inside.
+///
+/// `to_end` moves to the start of the line that follows the container; otherwise moves to its
+/// start. `found` is false when the caret is not inside any container. `marker_level` carries the
+/// container's `MarkerType` as `i32` so the UI can describe what was left.
+pub fn reader_container_navigate(doc: &DocumentHandle, position: i64, to_end: bool) -> ffi::NavResult {
+	let pos = usize::try_from(position.max(0)).unwrap_or(0);
+	doc.enclosing_container(pos).map_or_else(
+		|| build_nav_result(false, false, 0, 0, String::new()),
+		|span| {
+			let offset = if to_end { line_after(doc, span.end) } else { span.start };
+			build_nav_result(true, false, offset, i32::from(span.mtype), String::new())
+		},
+	)
+}
+
+/// The start of the line following the one that ends at-or-after `end`. Container lengths vary in
+/// whether they include the terminating newline (lists do, tables do not), so we normalise to the
+/// next line: find the newline that terminates the container's final line and step past it. When
+/// the container is the last line of the document, the clamped document end is returned.
+fn line_after(doc: &DocumentHandle, end: usize) -> usize {
+	let buffer = &doc.document().buffer;
+	let total = buffer.char_count();
+	let probe = end.min(total).saturating_sub(1);
+	buffer.newline_positions().iter().find(|&&nl| nl >= probe).map_or(total, |&nl| (nl + 1).min(total))
+}
+
 pub fn reader_search(haystack: &str, needle: &str, start: i64, options: SearchOptions) -> i64 {
 	if needle.is_empty() {
 		return -1;
@@ -529,6 +556,43 @@ mod tests {
 
 	use super::*;
 	use crate::document::{Document, DocumentBuffer, DocumentHandle, Marker, MarkerType};
+
+	#[test]
+	fn reader_container_navigate_to_end_lands_on_following_line() {
+		// Lines: "AAAA"(0-3) \n(4) "LLLL"(5-8) \n(9) "MMMM"(10-13) \n(14) "BBBB"(15-18).
+		let content = "AAAA\nLLLL\nMMMM\nBBBB".to_string();
+		// List length 10 includes the trailing newline (end == 15, the next line start).
+		let mut list_buf = DocumentBuffer::with_content(content.clone());
+		list_buf.add_marker(Marker::new(MarkerType::List, 5).with_length(10));
+		let mut list_doc = Document::new();
+		list_doc.set_buffer(list_buf);
+		let list_handle = DocumentHandle::new(list_doc);
+		let list_end = reader_container_navigate(&list_handle, 7, true);
+		assert!(list_end.found);
+		assert_eq!(list_end.offset, 15); // start of "BBBB"
+		assert_eq!(list_end.marker_level, i32::from(MarkerType::List));
+		assert_eq!(reader_container_navigate(&list_handle, 7, false).offset, 5);
+
+		// Table length 9 stops at the last visible char (end == 14, the terminating newline).
+		let mut table_buf = DocumentBuffer::with_content(content);
+		table_buf.add_marker(Marker::new(MarkerType::Table, 5).with_length(9));
+		let mut table_doc = Document::new();
+		table_doc.set_buffer(table_buf);
+		let table_handle = DocumentHandle::new(table_doc);
+		let table_end = reader_container_navigate(&table_handle, 7, true);
+		assert!(table_end.found);
+		assert_eq!(table_end.offset, 15); // also lands on "BBBB", the line after the table
+	}
+
+	#[test]
+	fn reader_container_navigate_not_in_container() {
+		let mut buffer = DocumentBuffer::with_content("x".repeat(120));
+		buffer.add_marker(Marker::new(MarkerType::List, 10).with_length(30));
+		let mut doc = Document::new();
+		doc.set_buffer(buffer);
+		let handle = DocumentHandle::new(doc);
+		assert!(!reader_container_navigate(&handle, 5, true).found);
+	}
 
 	#[test]
 	fn reader_search_handles_basic_and_whole_word() {
