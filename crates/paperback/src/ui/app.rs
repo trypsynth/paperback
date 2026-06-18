@@ -52,6 +52,7 @@ impl PaperbackApp {
 		MAIN_WINDOW_PTR.store(Rc::as_ptr(&main_window) as usize, Ordering::SeqCst);
 		wxdragon::app::set_top_window(main_window.frame());
 		let pipe_server = start_pipe_server(&Rc::clone(&main_window));
+		open_from_command_line(&main_window);
 		main_window.show();
 		#[cfg(target_os = "macos")]
 		_app.on_reopen_app(|| {
@@ -59,7 +60,6 @@ impl PaperbackApp {
 				window.show_from_dock();
 			}
 		});
-		open_from_command_line(&main_window);
 		let (check_updates, channel) = {
 			let cfg = config.lock().unwrap();
 			(cfg.get_app_bool("check_for_updates_on_startup", true), crate::config_ext::get_update_channel(&cfg))
