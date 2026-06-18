@@ -85,6 +85,8 @@ Paperback is designed for keyboard-first and screen reader-first use. Here are t
 * `L`: Next list.
 * `Shift+I`: Previous list item.
 * `I`: Next list item.
+* `Shift+,`: Go to the start of the current container (list or table).
+* `,`: Go past the end of the current container (list or table).
 
 ### Tools menu
 
@@ -168,6 +170,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 ## Changelog
 
 ### Version 0.8.5
+* Added container navigation: press , to jump past the end of the current list or table, and shift+, to jump to its start.
 * Added page support to epub books.
 * Added support for encrypted Microsoft Office documents. Currently Legacy word, modern Word and modern Powerpoint are supported, with legacy Powerpoint planned for the future.
 * Added support for legacy Microsoft Word documents (*.doc)!
