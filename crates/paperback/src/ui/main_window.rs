@@ -238,6 +238,23 @@ impl MainWindow {
 
 	#[cfg(any(target_os = "linux", target_os = "windows"))]
 	pub fn handle_ipc_command(&self, command: IpcCommand) {
+		let mut web_view_dialog = None;
+		crate::ui::dialogs::ACTIVE_WEB_VIEW.with(|v| {
+			web_view_dialog = v.get();
+		});
+
+		if let Some(parent_dialog) = web_view_dialog {
+			let dialog = MessageDialog::builder(
+				&parent_dialog,
+				&t("Paperback cannot perform any actions while Web View is open."),
+				&t("Warning"),
+			)
+			.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconWarning | MessageDialogStyle::Centre)
+			.build();
+			dialog.show_modal();
+			return;
+		}
+
 		match command {
 			IpcCommand::Activate => {
 				self.activate_from_ipc();
@@ -1267,6 +1284,7 @@ impl MainWindow {
 							url.push('#');
 							url.push_str(&fragment);
 						}
+						drop(dm_ref);
 						dialogs::show_web_view_dialog(
 							&frame_copy,
 							&t("Web View"),

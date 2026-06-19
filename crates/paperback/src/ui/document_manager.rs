@@ -375,15 +375,11 @@ impl DocumentManager {
 			}
 		}
 	}
-
-	pub fn activate_current_table(&self) {
-		let table_html = self.active_tab().and_then(|tab| {
+	pub fn activate_current_table(&self) -> Option<String> {
+		self.active_tab().and_then(|tab| {
 			let pos = tab.text_ctrl.get_insertion_point();
 			tab.session.get_table_at_position(pos)
-		});
-		if let Some(html) = table_html {
-			super::dialogs::show_web_view_dialog(&self.frame, &t("Table View"), &html, false, None);
-		}
+		})
 	}
 
 	pub fn update_status_bar(&self) {
@@ -566,9 +562,17 @@ impl DocumentManager {
 			if let WindowEventData::Keyboard(kbd) = event {
 				if kbd.get_key_code() == Some(13) || kbd.get_key_code() == Some(32) {
 					// 13 is KEY_RETURN, 32 is space
-					let mut dm = dm_for_enter.lock().unwrap();
-					dm.activate_current_table();
-					dm.activate_current_link();
+					let table_html = {
+						let dm = dm_for_enter.lock().unwrap();
+						dm.activate_current_table()
+					};
+					if let Some(html) = table_html {
+						let frame = dm_for_enter.lock().unwrap().frame.clone();
+						super::dialogs::show_web_view_dialog(&frame, &t("Table View"), &html, false, None);
+					} else {
+						let mut dm = dm_for_enter.lock().unwrap();
+						dm.activate_current_link();
+					}
 				} else {
 					kbd.event.skip(true);
 				}

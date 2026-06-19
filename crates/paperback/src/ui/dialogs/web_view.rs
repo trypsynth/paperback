@@ -2,6 +2,11 @@ use patois::t;
 use wxdragon::{event::WebViewEvents, prelude::*, widgets::WebView};
 
 type NavigationHandler = Box<dyn Fn(&str) -> bool>;
+use std::cell::Cell;
+
+thread_local! {
+	pub static ACTIVE_WEB_VIEW: Cell<Option<Dialog>> = Cell::new(None);
+}
 
 pub fn show_web_view_dialog(
 	parent: &Frame,
@@ -14,6 +19,7 @@ pub fn show_web_view_dialog(
 		.with_style(DialogStyle::DefaultDialogStyle | DialogStyle::ResizeBorder)
 		.with_size(800, 600)
 		.build();
+	ACTIVE_WEB_VIEW.with(|v| v.set(Some(dialog)));
 	let web_view = WebView::builder(&dialog).build();
 	web_view.add_script_message_handler("wx");
 	let dialog_for_close = dialog;
@@ -67,4 +73,6 @@ pub fn show_web_view_dialog(
 	dialog.set_sizer(sizer, true);
 	dialog.centre();
 	dialog.show_modal();
+
+	ACTIVE_WEB_VIEW.with(|v| v.set(None));
 }
