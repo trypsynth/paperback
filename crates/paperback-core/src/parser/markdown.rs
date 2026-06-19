@@ -39,6 +39,31 @@ pub fn markdown_to_html(markdown_text: &str) -> String {
 	html_content
 }
 
+/// Returns the byte offset in `markdown_text` where the 1-based `block_index`
+/// block begins, using the same block numbering as [`markdown_to_html`].
+///
+/// This maps a `pb-block-N` anchor (recorded in `id_positions`) back to its
+/// location in the original Markdown source.
+#[must_use]
+pub fn block_source_offset(markdown_text: &str, block_index: usize) -> Option<usize> {
+	let mut options = Options::empty();
+	options.insert(Options::ENABLE_TABLES);
+	let parser = MarkdownParserImpl::new_ext(markdown_text, options).into_offset_iter();
+	let mut block_counter = 0usize;
+	for (event, range) in parser {
+		if matches!(
+			event,
+			Event::Start(Tag::Paragraph | Tag::Heading { .. } | Tag::Item | Tag::BlockQuote(_) | Tag::CodeBlock(_))
+		) {
+			block_counter += 1;
+			if block_counter == block_index {
+				return Some(range.start);
+			}
+		}
+	}
+	None
+}
+
 pub struct MarkdownParser;
 
 #[cfg(test)]
@@ -54,6 +79,16 @@ mod tests {
 		let second_para = html.find("<p>Second paragraph.</p>").expect("second paragraph present");
 		assert!(html.contains(r#"<span id="pb-block-1"></span>"#), "got: {html}");
 		assert!(anchor_2 < first_para && first_para < anchor_3 && anchor_3 < second_para, "got: {html}");
+	}
+
+	#[test]
+	fn block_source_offset_points_at_block_start_in_source() {
+		let source = "# Title\n\nFirst paragraph.\n\nSecond paragraph.\n";
+		// Block 1 = heading, 2 = first paragraph, 3 = second paragraph.
+		assert_eq!(block_source_offset(source, 1), Some(source.find("# Title").unwrap()));
+		assert_eq!(block_source_offset(source, 2), Some(source.find("First paragraph.").unwrap()));
+		assert_eq!(block_source_offset(source, 3), Some(source.find("Second paragraph.").unwrap()));
+		assert_eq!(block_source_offset(source, 99), None);
 	}
 
 	#[test]
