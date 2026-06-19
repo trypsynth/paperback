@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
 "POT-Creation-Date: 2026-06-03 18:57+0530\n"
-"PO-Revision-Date: 2026-06-06 14:55+0300\n"
+"PO-Revision-Date: 2026-06-18 23:09+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -256,13 +256,13 @@ msgid "&Wrap navigation"
 msgstr "Siirry a&lkuun asiakirjan lopussa"
 
 msgid "Play &sounds on bookmarks and notes"
-msgstr "Toista &äänet kirjanmerkeille ja muistiinpanoille"
+msgstr "Ilmaise kirjanmerkit ja muistiinpanot merkkiäänellä"
 
 msgid "Check for &updates on startup"
 msgstr "Tarkista &päivitykset käynnistettäessä"
 
 msgid "Customize &Window Hotkey..."
-msgstr "Mukauta &ikkunan pikanäppäintä..."
+msgstr "&Ikkunan pikanäppäin..."
 
 msgid "&Reading speed (words per minute):"
 msgstr "&Lukunopeus (sanaa minuutissa):"
@@ -477,7 +477,7 @@ msgid "Create bookmark"
 msgstr "Luo kirjanmerkki"
 
 msgid "Bookmark with &note"
-msgstr "Kirjanmerkki &muistiinpanolla"
+msgstr "Kirjanmerkki muistiinpan&olla"
 
 msgid "Create bookmark with note"
 msgstr "Luo kirjanmerkki muistiinpanolla"
@@ -775,7 +775,7 @@ msgid "Next N&ote\tN"
 msgstr "Seuraava m&uistiinpano\tN"
 
 msgid "Go to next note"
-msgstr "Siirry seuraavaan  muistiinpanoon"
+msgstr "Siirry seuraavaan muistiinpanoon"
 
 msgid "Jump to &All...\tCtrl+B"
 msgstr "Siirry k&aikkiin...\tCtrl+B"

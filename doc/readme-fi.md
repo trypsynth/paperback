@@ -74,7 +74,7 @@ Paperback on suunniteltu ensisijaisesti näppäimistöllä ja ruudunlukijalla k�
 * `Ctrl+B`: Siirry kaikkiin kirjanmerkkeihin ja muistiinpanoihin.
 * `Ctrl+Alt+B`: Siirry vain kirjanmerkkeihin.
 * `Ctrl+Alt+M`: Siirry vain muistiinpanoihin.
-* `Ctrl+Shift+W`: Näytä muistiinpanon teksti nykyisessä kohdassa.
+* `Ctrl+Shift+W`: Näytä muistiinpanon teksti nykyisessä sijainnissa.
 * `Shift+K`: Edellinen linkki.
 * `K`: Seuraava linkki.
 * `Shift+T`: Edellinen taulukko.
@@ -85,6 +85,8 @@ Paperback on suunniteltu ensisijaisesti näppäimistöllä ja ruudunlukijalla k�
 * `L`: Seuraava luettelo.
 * `Shift+I`: Edellinen luettelokohde.
 * `I`: Seuraava luettelokohde.
+* `Shift+,`: Siirry nykyisen säilön, eli luettelon tai taulukon, alkuun.
+* `,`: Siirry nykyisen säilön, eli luettelon tai taulukon, jälkeiseen kohtaan.
 
 ### Työkalut-valikko
 
@@ -95,10 +97,11 @@ Paperback on suunniteltu ensisijaisesti näppäimistöllä ja ruudunlukijalla k�
 * `Ctrl+Shift+C`: Avaa asiakirjan kansio.
 * `Ctrl+Shift+V`: Avaa nykyinen sisältö verkkonäkymässä.
 * `Ctrl+Shift+E`: Vie asiakirjan tiedot (`.paperback`).
-* `Ctrl+Shift+I`: Tuo asiakirjan tiedot (`.paperback`).
+* `Ctrl+Shift+I`: Tuo asiakirjan tiedot `.paperback`-tiedostosta.
 * `Ctrl+E`: Vie nykyinen asiakirja pelkkänä tekstinä.
 * `Ctrl+Shift+B`: Kirjanmerkki päälle tai pois nykyisessä valinnassa tai kohdistimen sijainnissa.
-* `Ctrl+Shift+N`: Lisää kirjanmerkin muistiinpano nykyisen valinnan/kohdistimen kohdalle tai muokkaa sitä.
+* `Ctrl+Shift+N`: Lisää kirjanmerkin muistiinpano nykyisen valinnan tai kohdistimen kohdalle tai muokkaa sitä.
+* `Ctrl+Alt+W`: Ota rivitys käyttöön tai poista se käytöstä.
 * `Ctrl+,`: Avaa asetukset.
 * `Ctrl+Shift+S`: Ota uniajastin käyttöön tai poista se käytöstä.
 
@@ -212,7 +215,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 ### Versio 0.8.0
 * Lisätty japanin, yksinkertaistetun kiinan ja vietnamin käännökset! [#300](https://github.com/trypsynth/paperback/pull/300), [#326](https://github.com/trypsynth/paperback/pull/326), [#335](https://github.com/trypsynth/paperback/pull/335).
 * Lisätty automaattinen päivittäjä, joka korvaa nyt nykyisen asennetun Paperback-version sen sijaan, että vain lataisi uuden version. [#323](https://github.com/trypsynth/paperback/pull/323).
-* Lisätty valinnainen äänipalaute kirjanmerkin tai muistiinpanon kohdalle siirtymisestä. Kiitos Andre Louis'lle äänistä! [#110](https://github.com/trypsynth/paperback/issues/110).
+* Lisätty valinnainen äänipalaute kirjanmerkin tai muistiinpanon kohdalle siirtymisestä. Kiitos Andre Louis'lle merkkiäänistä. [#110](https://github.com/trypsynth/paperback/issues/110).
 * Lisätty RTF-asiakirjojen tuki. [#26](https://github.com/trypsynth/paperback/issues/26).
 * Lisätty tuki DAISY XML -asiakirjoille. [#136](https://github.com/trypsynth/paperback/issues/136).
 * Lisätty tuki Flat Open Document Text -tiedostoille.
@@ -237,9 +240,9 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Lisätty "Tyhjennä kaikki" -painike Kaikki asiakirjat -valintaikkunaan. [#217](https://github.com/trypsynth/paperback/issues/217).
 * Päivitysten tarkistaja näyttää nyt julkaisutiedot, kun uusi versio on saatavilla. [#210](https://github.com/trypsynth/paperback/pull/210).
 * Korjattu ikkunan palautus ilmaisinalueelta. [#284](https://github.com/trypsynth/paperback/issues/284).
-* Korjattu Kyllä/Ei-painikkeiden käännökset vahvistusvalintaikkunoissa. [#285](https://github.com/trypsynth/paperback/issues/285).
+* Kyllä/Ei-painikkeiden käännökset korjattu vahvistusvalintaikkunoissa. [#285](https://github.com/trypsynth/paperback/issues/285).
 * Korjattu asetusten lataus, kun ohjelmaa ajetaan järjestelmänvalvojana.
-* Korjattu kommenttien käsittely XML- ja HTML-asiakirjoissa. [#198](https://github.com/trypsynth/paperback/issues/198).
+* Kommenttien käsittely korjattu XML- ja HTML-asiakirjoissa. [#198](https://github.com/trypsynth/paperback/issues/198).
 * Korjattu sisällysluettelon jäsennys ePub 2 -kirjoissa. [#192](https://github.com/trypsynth/paperback/pull/192).
 * Korjattu siirtyminen sisällysluettelon seuraavaan samalla kirjaimella alkavaan kohteeseen.
 * Korjattu Etsi-valintaikkuna, jota ei aina piilotettu oikein Seuraava/Edellinen-painikkeita käytettäessä.
@@ -276,7 +279,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Lisätty OpenDocument-esitysten jäsennystuki! [#105](https://github.com/trypsynth/paperback/issues/105), [#106](https://github.com/trypsynth/paperback/pull/106).
 * Lisätty OpenDocument-tekstitiedostojen jäsennystuki! [#29](https://github.com/trypsynth/paperback/issues/29), [#90](https://github.com/trypsynth/paperback/pull/90).
 * Kirjanmerkit voivat nyt kohdistua koko riville tai pelkästään valittuun tekstiin. Jos tekstiä ei ole valittuna kirjanmerkkiä luotaessa, toiminnallisuus on sama kuin ennen versiota 0.6, ja koko rivi merkitään. Mikäli tekstiä on valittuna, kirjanmerkki kohdistuu vain kyseiseen tekstiin. [#99](https://github.com/trypsynth/paperback/issues/99).
-* Kirjanmerkeissä voi nyt olla valinnaisia tekstimuistiinpanoja. Siirry muistiinpanoja sisältävien kirjanmerkkien välillä N:llä ja Shift+N:llä, tai avaa kirjanmerkkien valintaikkuna, jossa kaikki kirjanmerkit, vain muistiinpanot tai vain ilman muistiinpanoja olevat kirjanmerkit voidaan valita tietyillä pikanäppäimillä. [#68](https://github.com/trypsynth/paperback/issues/68), [#128](https://github.com/trypsynth/paperback/issues/128), [#156](https://github.com/trypsynth/paperback/issues/156), [#157](https://github.com/trypsynth/paperback/issues/157), [#158](https://github.com/trypsynth/paperback/pull/158), [#159](https://github.com/trypsynth/paperback/issues/159), [#161](https://github.com/trypsynth/paperback/pull/161).
+* Kirjanmerkeissä voi nyt olla valinnaisia muistiinpanoja. Siirry muistiinpanoja sisältävien kirjanmerkkien välillä N:llä ja Shift+N:llä, tai avaa kirjanmerkkien valintaikkuna, jossa kaikki kirjanmerkit, vain muistiinpanot tai vain ilman muistiinpanoja olevat kirjanmerkit voidaan valita tietyillä pikanäppäimillä. [#68](https://github.com/trypsynth/paperback/issues/68), [#128](https://github.com/trypsynth/paperback/issues/128), [#156](https://github.com/trypsynth/paperback/issues/156), [#157](https://github.com/trypsynth/paperback/issues/157), [#158](https://github.com/trypsynth/paperback/pull/158), [#159](https://github.com/trypsynth/paperback/issues/159), [#161](https://github.com/trypsynth/paperback/pull/161).
 * Kirjanmerkeissä ei enää ole ärsyttävää "bookmark x" -etuliitettä kirjanmerkkien valintaikkunassa. [#86](https://github.com/trypsynth/paperback/issues/86).
 * XML:ltä näyttävää HTML-koodia sisältävät ePub-kirjat käsitellään nyt oikein. [#96](https://github.com/trypsynth/paperback/issues/96).
 * Suurten Markdown-asiakirjojen lataaminen korjattu. [#97](https://github.com/trypsynth/paperback/issues/97).
