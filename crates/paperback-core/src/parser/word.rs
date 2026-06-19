@@ -161,11 +161,69 @@ pub fn parse_ooxml_from_archive<R: std::io::Read + std::io::Seek>(
 	id_positions: &mut HashMap<String, usize>,
 	headings: &mut Vec<HeadingInfo>,
 ) -> Result<()> {
+	let style_heading_map = build_style_heading_map(archive);
 	let rels = read_ooxml_relationships(archive, "word/_rels/document.xml.rels");
 	let doc_content = read_zip_entry_by_name(archive, "word/document.xml")?;
 	let doc_xml = XmlDocument::parse(&doc_content).context("Failed to parse word/document.xml")?;
-	traverse(doc_xml.root(), buffer, headings, id_positions, &rels);
+	traverse(doc_xml.root(), buffer, headings, id_positions, &rels, &style_heading_map);
 	Ok(())
+}
+
+/// Reads `word/styles.xml` and returns a map of style ID → heading level (1–9).
+/// Detects headings via `<w:name w:val="heading N"/>` (the canonical semantic name
+/// Word assigns regardless of locale) or a fallback `<w:outlineLvl>` in the style's pPr.
+fn build_style_heading_map<R: std::io::Read + std::io::Seek>(archive: &mut zip::ZipArchive<R>) -> HashMap<String, i32> {
+	let mut map = HashMap::new();
+	let Ok(content) = read_zip_entry_by_name(archive, "word/styles.xml") else {
+		return map;
+	};
+	let Ok(xml) = XmlDocument::parse(&content) else {
+		return map;
+	};
+	for node in xml.root().descendants() {
+		if node.node_type() != NodeType::Element || node.tag_name().name() != "style" {
+			continue;
+		}
+		let Some(style_id) = node.attribute("styleId") else { continue };
+		let mut heading_level: Option<i32> = None;
+		for child in node.children() {
+			if child.node_type() != NodeType::Element {
+				continue;
+			}
+			match child.tag_name().name() {
+				"name" => {
+					if let Some(val) = child.attribute("val") {
+						let lower = val.to_lowercase();
+						if lower.starts_with("heading") {
+							if let Some(n) = extract_number_from_string(val) {
+								if n > 0 && n <= 9 {
+									heading_level = Some(n);
+								}
+							}
+						}
+					}
+				}
+				"pPr" if heading_level.is_none() => {
+					for ppr_child in child.children() {
+						if ppr_child.node_type() == NodeType::Element && ppr_child.tag_name().name() == "outlineLvl" {
+							if let Some(val) = ppr_child.attribute("val") {
+								if let Ok(n) = val.parse::<i32>() {
+									if n >= 0 && n < 9 {
+										heading_level = Some(n + 1);
+									}
+								}
+							}
+						}
+					}
+				}
+				_ => {}
+			}
+		}
+		if let Some(level) = heading_level {
+			map.insert(style_id.to_string(), level);
+		}
+	}
+	map
 }
 
 fn parse_legacy_doc(context: &ParserContext) -> Result<Document> {
@@ -456,6 +514,7 @@ fn traverse(
 	headings: &mut Vec<HeadingInfo>,
 	id_positions: &mut HashMap<String, usize>,
 	rels: &HashMap<String, String>,
+	style_heading_map: &HashMap<String, i32>,
 ) {
 	if node.node_type() == NodeType::Element {
 		let tag_name = node.tag_name().name();
@@ -463,7 +522,7 @@ fn traverse(
 			id_positions.insert(id.to_string(), buffer.current_position());
 		}
 		if tag_name == "p" {
-			process_paragraph(node, buffer, headings, id_positions, rels);
+			process_paragraph(node, buffer, headings, id_positions, rels, style_heading_map);
 			return;
 		} else if tag_name == "tbl" {
 			process_table(node, buffer, rels);
@@ -471,7 +530,7 @@ fn traverse(
 		}
 	}
 	for child in node.children() {
-		traverse(child, buffer, headings, id_positions, rels);
+		traverse(child, buffer, headings, id_positions, rels, style_heading_map);
 	}
 }
 
@@ -528,6 +587,7 @@ fn process_paragraph(
 	headings: &mut Vec<HeadingInfo>,
 	id_positions: &mut HashMap<String, usize>,
 	rels: &HashMap<String, String>,
+	style_heading_map: &HashMap<String, i32>,
 ) {
 	let paragraph_start = buffer.current_position();
 	let mut paragraph_text = String::new();
@@ -539,7 +599,7 @@ fn process_paragraph(
 		}
 		let tag_name = child.tag_name().name();
 		if tag_name == "pPr" {
-			heading_level = get_paragraph_heading_level(child);
+			heading_level = get_paragraph_heading_level(child, style_heading_map);
 			if heading_level > 0 {
 				is_paragraph_style_heading = true;
 			}
@@ -627,7 +687,7 @@ fn process_hyperlink(
 	}
 }
 
-fn get_paragraph_heading_level(pr_element: Node) -> i32 {
+fn get_paragraph_heading_level(pr_element: Node, style_heading_map: &HashMap<String, i32>) -> i32 {
 	const MAX_HEADING_LEVEL: i32 = 9;
 	for child in pr_element.children() {
 		if child.node_type() != NodeType::Element {
@@ -643,6 +703,8 @@ fn get_paragraph_heading_level(pr_element: Node) -> i32 {
 							return level;
 						}
 					}
+				} else if let Some(&level) = style_heading_map.get(style) {
+					return level;
 				}
 			}
 		} else if tag_name == "outlineLvl" {
