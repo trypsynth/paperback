@@ -96,6 +96,7 @@ Paperback is designed for keyboard-first and screen reader-first use. Here are t
 * `F7`: Show elements list.
 * `Ctrl+Shift+C`: Open containing folder.
 * `Ctrl+Shift+V`: Open current content in Web View.
+* `Ctrl+U`: View the document source in a new tab.
 * `Ctrl+Shift+E`: Export document data (`.paperback`).
 * `Ctrl+Shift+I`: Import document data (`.paperback`).
 * `Ctrl+E`: Export the current document to plain text.
