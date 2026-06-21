@@ -2142,9 +2142,9 @@ dependencies = [
 
 [[package]]
 name = "roman"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2c78d795ff349dea7ef07d4004a2e1181ec0d4a7e00193098dcd6c96a61c1503"
+checksum = "c9f88af150ddaeec4dc9b1a80061ecb0f5459e1c720ebe15ebb2b93f4e6b6272"
 
 [[package]]
 name = "roxmltree"

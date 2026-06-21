@@ -44,6 +44,12 @@ pub struct WebviewTarget {
 	pub fragment: Option<String>,
 }
 
+#[derive(Debug, Clone)]
+pub struct SourceView {
+	pub path: String,
+	pub caret: i64,
+}
+
 #[derive(Debug, Clone, Copy, Default)]
 pub struct StatusInfo {
 	pub line_number: i64,
@@ -951,6 +957,82 @@ impl DocumentSession {
 		nearest_fragment_before(&self.handle, pos).map(|id| encode_url_fragment(&id))
 	}
 
+	/// Returns true when the document's underlying source can be shown as text.
+	#[must_use]
+	pub fn source_view_available(&self) -> bool {
+		if self.file_path.to_lowercase().ends_with(".epub") {
+			return true;
+		}
+		let ext = Path::new(&self.file_path).extension().map(|ext| ext.to_string_lossy().to_ascii_lowercase());
+		matches!(ext.as_deref(), Some("html" | "htm" | "xhtml" | "md" | "markdown"))
+	}
+
+	/// Writes the underlying source of the document at `position` to a temp `.txt`
+	/// file and returns its path plus the caret offset matching the reading position.
+	///
+	/// For EPUB the current spine section is used; for standalone HTML/XHTML and
+	/// Markdown the original file is used. The caret is mapped to the source the
+	/// same way the web view positions it: HTML/XHTML/EPUB via the source byte
+	/// offset of the element at the reading position, Markdown via the nearest
+	/// block anchor. Returns `None` for formats without a meaningful text source.
+	#[must_use]
+	pub fn view_source(&self, position: i64, temp_dir: &str) -> Option<SourceView> {
+		let (content, caret, name) = self.source_content_for_position(position)?;
+		let digest = crate::config::compute_document_hash(&self.file_path);
+		let hash = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(digest);
+		let doc_temp_dir = Path::new(temp_dir).join(format!("paperback_{hash}"));
+		fs::create_dir_all(&doc_temp_dir).ok()?;
+		let output_path = doc_temp_dir.join(format!("{name}.source.txt"));
+		fs::write(&output_path, content.as_bytes()).ok()?;
+		Some(SourceView { path: output_path.to_string_lossy().to_string(), caret: i64::try_from(caret).unwrap_or(0) })
+	}
+
+	/// Returns `(source_text, caret_char_offset, file_name)` for the document at
+	/// `position`. The caret is mapped into the returned source text.
+	fn source_content_for_position(&self, position: i64) -> Option<(String, usize, String)> {
+		let pos = usize::try_from(position.max(0)).unwrap_or(0);
+		if self.file_path.to_lowercase().ends_with(".epub") {
+			let section_path = self.get_current_section_path(position).filter(|path| !path.is_empty())?;
+			let file = File::open(&self.file_path).ok()?;
+			let mut archive = ZipArchive::new(BufReader::new(file)).ok()?;
+			let content = zip_utils::read_zip_entry_by_name(&mut archive, &section_path).ok()?;
+			let section_index = self.handle.current_marker_index(pos, MarkerType::SectionBreak)?;
+			let section_start = self.handle.document().buffer.markers.get(section_index)?.position;
+			let relative = pos.saturating_sub(section_start);
+			let caret = Self::xml_caret(&content, relative);
+			let name = Path::new(&section_path).file_name()?.to_string_lossy().to_string();
+			return Some((content, caret, name));
+		}
+		let ext = Path::new(&self.file_path).extension().map(|ext| ext.to_string_lossy().to_ascii_lowercase());
+		let name = Path::new(&self.file_path).file_name()?.to_string_lossy().to_string();
+		let content = convert_to_utf8(&fs::read(&self.file_path).ok()?);
+		let caret = match ext.as_deref() {
+			Some("html" | "htm" | "xhtml") => Self::xml_caret(&content, pos),
+			Some("md" | "markdown") => self.markdown_caret(&content, pos),
+			_ => return None,
+		};
+		Some((content, caret, name))
+	}
+
+	/// Maps a rendered character position to a caret offset in XML/HTML source
+	/// via the byte offset of the element at that position.
+	fn xml_caret(content: &str, relative: usize) -> usize {
+		parser::xml_to_text::XmlToText::new()
+			.find_anchor_byte_offset(content, relative)
+			.and_then(|byte| Some(content.get(..byte)?.chars().count()))
+			.unwrap_or(0)
+	}
+
+	/// Maps a rendered character position to a caret offset in Markdown source
+	/// via the nearest `pb-block-N` anchor recorded during parsing.
+	fn markdown_caret(&self, content: &str, pos: usize) -> usize {
+		nearest_fragment_before(&self.handle, pos)
+			.and_then(|id| id.strip_prefix("pb-block-").and_then(|n| n.parse::<usize>().ok()))
+			.and_then(|index| parser::markdown::block_source_offset(content, index))
+			.and_then(|byte| Some(content.get(..byte)?.chars().count()))
+			.unwrap_or(0)
+	}
+
 	/// # Errors
 	///
 	/// Returns an error if the EPUB cannot be opened or the resource cannot be written.
@@ -1551,6 +1633,90 @@ mod tests {
 			last_stable_position: None,
 		};
 		assert_eq!(session.extract_resource("anything", "out.file").ok(), Some(false));
+	}
+
+	fn session_with_path(file_path: &str) -> DocumentSession {
+		DocumentSession {
+			handle: sample_session(ParserFlags::NONE).handle.clone(),
+			file_path: file_path.to_string(),
+			history: Vec::new(),
+			history_index: 0,
+			parser_flags: ParserFlags::NONE,
+			last_stable_position: None,
+		}
+	}
+
+	fn unique_temp_dir() -> std::path::PathBuf {
+		let nanos = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos();
+		std::env::temp_dir().join(format!("paperback_source_test_{nanos}"))
+	}
+
+	#[test]
+	fn source_view_available_matches_text_source_formats() {
+		assert!(session_with_path("book.epub").source_view_available());
+		assert!(session_with_path("page.html").source_view_available());
+		assert!(session_with_path("page.htm").source_view_available());
+		assert!(session_with_path("page.xhtml").source_view_available());
+		assert!(session_with_path("notes.md").source_view_available());
+		assert!(session_with_path("notes.markdown").source_view_available());
+		assert!(!session_with_path("doc.pdf").source_view_available());
+		assert!(!session_with_path("doc.docx").source_view_available());
+		assert!(!session_with_path("plain.txt").source_view_available());
+	}
+
+	#[test]
+	fn view_source_returns_none_for_unsupported_format() {
+		let dir = unique_temp_dir();
+		let src = dir.join("doc.pdf");
+		fs::create_dir_all(&dir).unwrap();
+		fs::write(&src, b"%PDF-1.7").unwrap();
+		let session = session_with_path(&src.to_string_lossy());
+		assert!(session.view_source(0, &dir.to_string_lossy()).is_none());
+		let _ = fs::remove_dir_all(&dir);
+	}
+
+	#[test]
+	fn view_source_writes_html_source_and_maps_caret_forward() {
+		let dir = unique_temp_dir();
+		fs::create_dir_all(&dir).unwrap();
+		let html = "<html><body><p id=\"a\">Alpha</p><p id=\"b\">Bravo</p></body></html>";
+		let src = dir.join("page.html");
+		fs::write(&src, html.as_bytes()).unwrap();
+		let session = session_with_path(&src.to_string_lossy());
+
+		let at_start = session.view_source(0, &dir.to_string_lossy()).expect("source at start");
+		// Source written verbatim to a .txt file.
+		assert!(at_start.path.ends_with("page.html.source.txt"));
+		assert_eq!(fs::read_to_string(&at_start.path).unwrap(), html);
+
+		// A later reading position maps to a caret deeper in the source.
+		let at_bravo = session.view_source(6, &dir.to_string_lossy()).expect("source at bravo");
+		assert!(at_bravo.caret > at_start.caret);
+		let tail: String = html.chars().skip(usize::try_from(at_bravo.caret).unwrap()).collect();
+		assert!(tail.contains("Bravo"), "caret should land at/before the second paragraph: {tail}");
+		let _ = fs::remove_dir_all(&dir);
+	}
+
+	#[test]
+	fn view_source_for_markdown_maps_caret_to_current_block() {
+		let dir = unique_temp_dir();
+		fs::create_dir_all(&dir).unwrap();
+		let md = "# Title\n\nFirst paragraph.\n\nSecond paragraph.\n";
+		let src = dir.join("notes.md");
+		fs::write(&src, md.as_bytes()).unwrap();
+		// A real session populates id_positions with pb-block-N anchors.
+		let session = DocumentSession::new(&src.to_string_lossy(), "", "").expect("open markdown");
+
+		let rendered = session.content();
+		let pos = i64::try_from(rendered.find("Second").expect("second block rendered")).unwrap();
+		let view = session.view_source(pos, &dir.to_string_lossy()).expect("markdown source");
+
+		assert!(view.path.ends_with("notes.md.source.txt"));
+		assert_eq!(fs::read_to_string(&view.path).unwrap(), md);
+		// Caret lands at the start of the second paragraph in the raw Markdown.
+		let tail: String = md.chars().skip(usize::try_from(view.caret).unwrap()).collect();
+		assert!(tail.starts_with("Second paragraph."), "caret should be at the current block: {tail}");
+		let _ = fs::remove_dir_all(&dir);
 	}
 
 	#[test]

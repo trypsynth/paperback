@@ -238,6 +238,23 @@ impl MainWindow {
 
 	#[cfg(any(target_os = "linux", target_os = "windows"))]
 	pub fn handle_ipc_command(&self, command: IpcCommand) {
+		let mut web_view_dialog = None;
+		crate::ui::dialogs::ACTIVE_WEB_VIEW.with(|v| {
+			web_view_dialog = v.get();
+		});
+
+		if let Some(parent_dialog) = web_view_dialog {
+			let dialog = MessageDialog::builder(
+				&parent_dialog,
+				&t("Paperback cannot perform any actions while Web View is open."),
+				&t("Warning"),
+			)
+			.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconWarning | MessageDialogStyle::Centre)
+			.build();
+			dialog.show_modal();
+			return;
+		}
+
 		match command {
 			IpcCommand::Activate => {
 				self.activate_from_ipc();
@@ -1267,6 +1284,7 @@ impl MainWindow {
 							url.push('#');
 							url.push_str(&fragment);
 						}
+						drop(dm_ref);
 						dialogs::show_web_view_dialog(
 							&frame_copy,
 							&t("Web View"),
@@ -1300,6 +1318,56 @@ impl MainWindow {
 				}
 				menu_ids::OPEN_CONTAINING_FOLDER => {
 					help::handle_open_containing_folder(&frame_copy, &dm);
+				}
+				menu_ids::VIEW_SOURCE => {
+					// `None` => format has no text source; `Some(None)` => source could not
+					// be loaded; `Some(Some(..))` => source ready. Locks are dropped before
+					// any dialog is shown.
+					let outcome: Option<Option<(paperback_core::session::SourceView, String)>> = {
+						let Ok(dm_ref) = dm.try_lock() else {
+							return;
+						};
+						let Some(tab) = dm_ref.active_tab() else {
+							return;
+						};
+						if tab.session.source_view_available() {
+							let current_pos = tab.text_ctrl.get_insertion_point();
+							let orig_name = tab
+								.file_path
+								.file_name()
+								.map_or_else(|| t("document"), |name| name.to_string_lossy().to_string());
+							let temp_dir = env::temp_dir().to_string_lossy().to_string();
+							Some(tab.session.view_source(current_pos, &temp_dir).map(|view| (view, orig_name)))
+						} else {
+							None
+						}
+					};
+					match outcome {
+						Some(Some((view, orig_name))) => {
+							let title = format!("{} {orig_name}", t("Source:"));
+							let opened = dm.lock().unwrap().open_source_file(&dm, Path::new(&view.path), &title);
+							if opened {
+								let dm_ref = dm.lock().unwrap();
+								if let Some(tab) = dm_ref.active_tab() {
+									tab.text_ctrl.set_insertion_point(view.caret);
+									tab.text_ctrl.show_position(view.caret);
+								}
+							}
+						}
+						unavailable => {
+							let message = if unavailable.is_none() {
+								t("Source view is not available for this document format.")
+							} else {
+								t("Could not load the document source.")
+							};
+							let dialog = MessageDialog::builder(&frame_copy, &message, &t("Error"))
+								.with_style(
+									MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre,
+								)
+								.build();
+							dialog.show_modal();
+						}
+					}
 				}
 				menu_ids::OPTIONS | menu_ids::PREFERENCES => {
 					let current_language = TranslationManager::instance().lock().unwrap().current_language();

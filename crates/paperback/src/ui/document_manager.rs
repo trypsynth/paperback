@@ -79,18 +79,30 @@ impl DocumentManager {
 	}
 
 	pub fn open_file(&mut self, self_rc: &Rc<Mutex<Self>>, path: &Path) -> bool {
-		self.open_file_impl(self_rc, path, true, false)
+		self.open_file_impl(self_rc, path, true, false, None)
 	}
 
 	pub fn open_file_restore(&mut self, self_rc: &Rc<Mutex<Self>>, path: &Path) -> bool {
-		self.open_file_impl(self_rc, path, true, true)
+		self.open_file_impl(self_rc, path, true, true, None)
 	}
 
 	pub fn open_help_file(&mut self, self_rc: &Rc<Mutex<Self>>, path: &Path) -> bool {
-		self.open_file_impl(self_rc, path, false, false)
+		self.open_file_impl(self_rc, path, false, false, None)
 	}
 
-	fn open_file_impl(&mut self, self_rc: &Rc<Mutex<Self>>, path: &Path, track: bool, is_restore: bool) -> bool {
+	/// Opens a synthetic source-view document (untracked) with an explicit tab title.
+	pub fn open_source_file(&mut self, self_rc: &Rc<Mutex<Self>>, path: &Path, title: &str) -> bool {
+		self.open_file_impl(self_rc, path, false, false, Some(title))
+	}
+
+	fn open_file_impl(
+		&mut self,
+		self_rc: &Rc<Mutex<Self>>,
+		path: &Path,
+		track: bool,
+		is_restore: bool,
+		title_override: Option<&str>,
+	) -> bool {
 		if !path.exists() {
 			let template = t("File not found: {}");
 			let message = template.replace("{}", &path.to_string_lossy());
@@ -126,7 +138,7 @@ impl DocumentManager {
 		};
 		let path_str = path.to_string_lossy().to_string();
 		match DocumentSession::new(&path_str, &password, &forced_extension) {
-			Ok(session) => self.add_session_tab(self_rc, path, session, &password, track),
+			Ok(session) => self.add_session_tab(self_rc, path, session, &password, track, title_override),
 			Err(err) => {
 				if err.starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
 					let config = self.config.lock().unwrap();
@@ -138,7 +150,7 @@ impl DocumentManager {
 						return false;
 					};
 					match DocumentSession::new(&path_str, &password, &forced_extension) {
-						Ok(session) => self.add_session_tab(self_rc, path, session, &password, track),
+						Ok(session) => self.add_session_tab(self_rc, path, session, &password, track, title_override),
 						Err(retry_error) => {
 							let message = build_document_load_error_message(path, &retry_error);
 							show_error_dialog(&self.notebook, &message, &t("Error"));
@@ -161,17 +173,23 @@ impl DocumentManager {
 		session: DocumentSession,
 		password: &str,
 		track: bool,
+		title_override: Option<&str>,
 	) -> bool {
 		if let Some(index) = self.find_tab_by_path(path) {
 			self.notebook.set_selection(index);
 			return true;
 		}
-		let title = session.title();
-		let title = if title.is_empty() {
-			path.file_name().map_or_else(|| t("Untitled"), |s| s.to_string_lossy().to_string())
-		} else {
-			title
-		};
+		let title = title_override.map_or_else(
+			|| {
+				let title = session.title();
+				if title.is_empty() {
+					path.file_name().map_or_else(|| t("Untitled"), |s| s.to_string_lossy().to_string())
+				} else {
+					title
+				}
+			},
+			std::string::ToString::to_string,
+		);
 		let panel = Panel::builder(&self.notebook).build();
 		let config = self.config.lock().unwrap();
 		let mut session = session;
@@ -375,15 +393,11 @@ impl DocumentManager {
 			}
 		}
 	}
-
-	pub fn activate_current_table(&self) {
-		let table_html = self.active_tab().and_then(|tab| {
+	pub fn activate_current_table(&self) -> Option<String> {
+		self.active_tab().and_then(|tab| {
 			let pos = tab.text_ctrl.get_insertion_point();
 			tab.session.get_table_at_position(pos)
-		});
-		if let Some(html) = table_html {
-			super::dialogs::show_web_view_dialog(&self.frame, &t("Table View"), &html, false, None);
-		}
+		})
 	}
 
 	pub fn update_status_bar(&self) {
@@ -566,9 +580,17 @@ impl DocumentManager {
 			if let WindowEventData::Keyboard(kbd) = event {
 				if kbd.get_key_code() == Some(13) || kbd.get_key_code() == Some(32) {
 					// 13 is KEY_RETURN, 32 is space
-					let mut dm = dm_for_enter.lock().unwrap();
-					dm.activate_current_table();
-					dm.activate_current_link();
+					let table_html = {
+						let dm = dm_for_enter.lock().unwrap();
+						dm.activate_current_table()
+					};
+					if let Some(html) = table_html {
+						let frame = dm_for_enter.lock().unwrap().frame.clone();
+						super::dialogs::show_web_view_dialog(&frame, &t("Table View"), &html, false, None);
+					} else {
+						let mut dm = dm_for_enter.lock().unwrap();
+						dm.activate_current_link();
+					}
 				} else {
 					kbd.event.skip(true);
 				}

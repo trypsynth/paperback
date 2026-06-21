@@ -81,6 +81,7 @@ const DOCUMENT_DEPENDENT_IDS: &[i32] = &[
 	menu_ids::ELEMENTS_LIST,
 	menu_ids::OPEN_CONTAINING_FOLDER,
 	menu_ids::OPEN_IN_WEB_VIEW,
+	menu_ids::VIEW_SOURCE,
 	// Import/Export
 	menu_ids::IMPORT_DOCUMENT_DATA,
 	menu_ids::EXPORT_DOCUMENT_DATA,
@@ -584,6 +585,8 @@ pub fn create_tools_menu(config: &ConfigManager) -> Menu {
 	let open_folder_help = t("Open folder containing the document");
 	let web_view_label = t("Open in &Web View\tCtrl+Shift+V");
 	let web_view_help = t("Open document in web view");
+	let view_source_label = t("View &Source\tCtrl+U");
+	let view_source_help = t("Open the document source in a new tab");
 	let menu = Menu::builder()
 		.append_item(menu_ids::WORD_COUNT, &word_count_label, &word_count_help)
 		.append_item(menu_ids::DOCUMENT_INFO, &doc_info_label, &doc_info_help)
@@ -593,6 +596,7 @@ pub fn create_tools_menu(config: &ConfigManager) -> Menu {
 		.append_separator()
 		.append_item(menu_ids::OPEN_CONTAINING_FOLDER, &open_folder_label, &open_folder_help)
 		.append_item(menu_ids::OPEN_IN_WEB_VIEW, &web_view_label, &web_view_help)
+		.append_item(menu_ids::VIEW_SOURCE, &view_source_label, &view_source_help)
 		.append_separator()
 		.build();
 	let import_export_label = t("I&mport/Export");
