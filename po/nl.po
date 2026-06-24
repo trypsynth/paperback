@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-08 17:48+0200\n"
+"POT-Creation-Date: 2026-06-24 12:56+0200\n"
 "PO-Revision-Date: 2026-06-08 22:23+0200\n"
 "Last-Translator: Leonard de Ruijter <alderuijter@gmail.com>\n"
 "Language-Team: Leonard de Ruijter <alderuijter@gmail.com>\n"
@@ -25,12 +25,6 @@ msgstr "Waarschuwing"
 
 msgid "An accessible, lightweight, fast ebook and document reader"
 msgstr "Een toegankelijke, lichtgewicht, snelle e-book- en documentlezer"
-
-msgid "expanded"
-msgstr "uitgevouwen"
-
-msgid "collapsed"
-msgstr "samengevouwen"
 
 msgid "All Documents"
 msgstr "Alle documenten"
@@ -167,11 +161,8 @@ msgstr "Tekens (exclusief spaties):"
 msgid "Elements"
 msgstr "Elementen"
 
-msgid "OK"
-msgstr "OK"
-
-msgid "Cancel"
-msgstr "Annuleren"
+msgid "&View:"
+msgstr "&Weergave:"
 
 msgid "Headings"
 msgstr "Koppen"
@@ -182,11 +173,14 @@ msgstr "Links"
 msgid "Untitled"
 msgstr "Naamloos"
 
-msgid "&View:"
-msgstr "&Weergave:"
-
 msgid "Root"
 msgstr "Hoofdniveau"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Cancel"
+msgstr "Annuleren"
 
 msgid "Go to Line"
 msgstr "Ga naar regel"
@@ -391,6 +385,9 @@ msgstr "&Win"
 msgid "&Key:"
 msgstr "&Toets:"
 
+msgid "Clear"
+msgstr "Wissen"
+
 msgid "Space"
 msgstr "Spatie"
 
@@ -457,11 +454,11 @@ msgstr "Wachtwoord is vereist."
 msgid "Navigated to internal link."
 msgstr "Naar interne link genavigeerd."
 
-msgid "Table View"
-msgstr "Tabelweergave"
-
 msgid "Ready"
 msgstr "Gereed"
+
+msgid "Table View"
+msgstr "Tabelweergave"
 
 msgid "&Password:"
 msgstr "&Wachtwoord:"
@@ -564,6 +561,9 @@ msgstr "Niet-ondersteunde indeling geselecteerd."
 msgid "Paperback"
 msgstr "Paperback"
 
+msgid "Paperback cannot perform any actions while Web View is open."
+msgstr "Paperback kan geen acties uitvoeren terwijl webweergave is geopend."
+
 msgid "Paperback - {}"
 msgstr "Paperback - {}"
 
@@ -575,6 +575,12 @@ msgstr "Document openen"
 
 msgid "No pages."
 msgstr "Geen pagina's."
+
+msgid "Word wrap on."
+msgstr "Automatische terugloop aan."
+
+msgid "Word wrap off."
+msgstr "Automatische terugloop uit."
 
 msgid "document"
 msgstr "document"
@@ -629,6 +635,15 @@ msgstr "Webweergave"
 
 msgid "Could not determine content to display in Web View."
 msgstr "Kan niet bepalen welke inhoud in webweergave moet worden getoond."
+
+msgid "Source:"
+msgstr "Bron:"
+
+msgid "Source view is not available for this document format."
+msgstr "Bronweergave is niet beschikbaar voor dit documentformaat."
+
+msgid "Could not load the document source."
+msgstr "Kan de documentbron niet laden."
 
 msgid "Sleep timer cancelled."
 msgstr "Slaaptimer geannuleerd."
@@ -705,6 +720,18 @@ msgstr "Vorige lijst&item\tShift+I"
 
 msgid "Next List I&tem\tI"
 msgstr "Volgende lijsti&tem\tI"
+
+msgid "Container &Start\tShift+,"
+msgstr "&Containerbegin\tShift+,"
+
+msgid "Go to the start of the current list or table"
+msgstr "Ga naar het begin van de huidige lijst of tabel"
+
+msgid "Past Container &End\t,"
+msgstr "Voorbij container&einde\t,"
+
+msgid "Go past the end of the current list or table"
+msgstr "Ga voorbij het einde van de huidige lijst of tabel"
 
 msgid "Next Heading Level 1\t1"
 msgstr "Volgende kop niveau 1\t1"
@@ -973,6 +1000,12 @@ msgstr "&Lijsten"
 msgid "Navigate by lists"
 msgstr "Navigeren per lijst"
 
+msgid "&Containers"
+msgstr "&Containers"
+
+msgid "Navigate by containers"
+msgstr "Navigeren per container"
+
 msgid "&Import Document Data...\tCtrl+Shift+I"
 msgstr "Document&gegevens importeren...\tCtrl+Shift+I"
 
@@ -1042,6 +1075,12 @@ msgstr "Openen in &webweergave\tCtrl+Shift+V"
 msgid "Open document in web view"
 msgstr "Document openen in webweergave"
 
+msgid "View &Source\tCtrl+U"
+msgstr "&Bron weergeven\tCtrl+U"
+
+msgid "Open the document source in a new tab"
+msgstr "Documentbron openen in een nieuw tabblad"
+
 msgid "I&mport/Export"
 msgstr "I&mporteren/exporteren"
 
@@ -1053,6 +1092,12 @@ msgstr "&Bladwijzer in-/uitschakelen\tCtrl+Shift+B"
 
 msgid "Bookmark with &Note\tCtrl+Shift+N"
 msgstr "Bladwijzer met &notitie\tCtrl+Shift+N"
+
+msgid "Word w&rap\tCtrl+Alt+W"
+msgstr "Automatische te&rugloop\tCtrl+Alt+W"
+
+msgid "Toggle word wrap"
+msgstr "Automatische terugloop in-/uitschakelen"
 
 msgid "&Options\tCtrl+,"
 msgstr "&Opties\tCtrl+,"
@@ -1224,6 +1269,18 @@ msgstr "Geen volgende positie."
 msgid "No previous position."
 msgstr "Geen vorige positie."
 
+msgid "No containers."
+msgstr "Geen containers."
+
+msgid "Not in a container."
+msgstr "Niet in een container."
+
+msgid "Past end of container."
+msgstr "Voorbij einde van container."
+
+msgid "Start of container."
+msgstr "Begin van container."
+
 #, c-format
 msgid "%s - Bookmark %d"
 msgstr "%s - Bladwijzer %d"
@@ -1346,3 +1403,9 @@ msgstr "Updatescript starten mislukt"
 
 msgid "Unknown update file format."
 msgstr "Onbekende indeling van updatebestand."
+
+#~ msgid "expanded"
+#~ msgstr "uitgevouwen"
+
+#~ msgid "collapsed"
+#~ msgstr "samengevouwen"
