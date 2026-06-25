@@ -1208,9 +1208,14 @@ impl MainWindow {
 						return;
 					};
 					if let Some(tab) = dm_ref.active_tab() {
-						let word_count = tab.session.stats().word_count;
+						let selection = tab.text_ctrl.get_string_selection();
+						let (word_count, is_selection) = if selection.trim().is_empty() {
+							(tab.session.stats().word_count, false)
+						} else {
+							(paperback_core::document::DocumentStats::from_text(&selection).word_count, true)
+						};
 						let wpm = config.lock().unwrap().get_app_int("reading_speed_wpm", 150);
-						dialogs::show_word_count_dialog(&frame_copy, word_count, wpm);
+						dialogs::show_word_count_dialog(&frame_copy, word_count, wpm, is_selection);
 					}
 				}
 				menu_ids::DOCUMENT_INFO => {
