@@ -1,0 +1,20 @@
+root = true
+
+	[*.{kt,kts}]
+	indent_style = tab
+	indent_size = 4
+	tab_width = 4
+	max_line_length = 120
+	insert_final_newline = true
+	trim_trailing_whitespace = true
+	ktlint_standard_no-consecutive-blank-lines = enabled
+	ktlint_standard_no-wildcard-imports = disabled
+	ktlint_standard_function-naming = disabled
+	ktlint_standard_filename = disabled
+	ktlint_standard_multiline-expression-wrapping = disabled
+	ktlint_standard_argument-list-wrapping = disabled
+	ktlint_standard_trailing-comma-on-call-site = disabled
+	ktlint_standard_trailing-comma-on-declaration-site = disabled
+
+	[**/uniffi/**.kt]
+	ktlint_disabled_rules = *

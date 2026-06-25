@@ -1,4 +1,4 @@
-# Paperback - verze 0.8.2
+# Paperback - verze 0.8.5
 
 ## Představení
 
@@ -121,6 +121,7 @@ Paperback je navržen především pro použití s klávesnicí a s odečítače
 Paperback je přeložen do mnoha různých jazyků a další neustále přibývají. Následuje kompletní výčet:
 
 * Bosenština
+* Čeština
 * Francouzština
 * Němčina
 * Japonština
@@ -129,7 +130,6 @@ Paperback je přeložen do mnoha různých jazyků a další neustále přibýva
 * Srbština
 * Španělština
 * Vietnamština
-* Čeština
 
 ## Poděkování
 ### Vývoj
@@ -160,6 +160,30 @@ Upozornění: Veřejné sponzory na GitHubu automaticky považuji za určené ke
 * Tyler Rodick
 
 ## Historie změn
+
+### Verze 0.8.5
+* Přidána podpora tagovaných PDF souborů!
+* Přidána podpora stránek pro knihy ve formátu epub.
+* Přidána podpora PowerPointových prezentací ve starém formátu (*.ppt)!
+* Přidána podpora starého formátu dokumentů Microsoft Wordu (*.doc)!
+* Přidána podpora knih ve formátu mobi a AZW3!
+* Přidána podpora šifrovaných dokumentů Microsoft Office. Aktuálně jsou podporovány formáty starého Wordu, moderního Wordu a moderního PowerPointu. Starý PowerPoint je plánován do budoucna.
+* Přidána klávesová zkratka ctrl+q pro ukončení aplikace.
+* Přidána podpora zazipovaných knih z Bookshare (DAISY i Word)!
+* U obrázků v dokumentech by se nyní měl správně zobrazovat alt text.
+* Soubory CHM nyní správně podporují navigaci po vnitřních odkazech.
+* Opravena chyba, kdy se zvuky záložek přehrávaly na začátku odstavce místo na skutečné pozici záložky.
+* Opravena chyba, kdy přechod na konkrétní číslo stránky byl posunutý o 1.
+* Opravena chyba, kdy se dialog Otevřít jako nedal zavřít klávesou escape.
+* Opravena chyba, kdy se kontextové menu ve čtečce nezobrazovalo při kliknutí pravým tlačítkem myši nebo stisknutí shift+F10.
+* Opravena chyba, kdy se při otevírání dokumentů z příkazové řádky někdy fokusoval nesprávný dokument.
+* PDF, která jsou pouze obrázková, jsou nyní znovu správně detekována a upozorní vás na tuto skutečnost.
+* Nyní je možné navigovat po obrázcích a ilustracích pomocí zkratek G/shift+G a F/shift+F.
+* Paperback bude nyní respektovat vaše nastavení tmavého režimu pro aplikace.
+* Odstraněna podpora DAISY XML, protože už není potřeba.
+* Ve stromovém zobrazení obsahu dokumentu jsem přešel zpátky na nativní Win32 navigaci prvními písmeny.
+* Dialog o chybě při spuštění nyní zobrazuje podrobnější chybové hlášky.
+* Webové zobrazení se nyní bude načítat mnohem rychleji a hladčeji.
 
 ### Verze 0.8.2
 * Přidána podpora stránek pro RTF dokumenty!

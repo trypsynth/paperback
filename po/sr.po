@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.5\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-03-01 13:08-0700\n"
-"PO-Revision-Date: 2026-03-02 00:31+0100\n"
+"POT-Creation-Date: 2026-06-03 18:57+0530\n"
+"PO-Revision-Date: 2026-06-08 23:27+0200\n"
 "Last-Translator: Nikola Jović <wwenikola123@gmail.com>\n"
 "Language-Team: \n"
 "Language: sr\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
-"X-Generator: Poedit 3.8\n"
+"X-Generator: Poedit 3.9\n"
 "X-Poedit-Basepath: ../src\n"
 "X-Poedit-KeywordsList: _;wxTRANSLATE;wxPLURAL:1,2\n"
 "X-Poedit-SourceCharset: UTF-8\n"
@@ -27,73 +27,86 @@ msgstr ""
 "X-Poedit-SearchPathExcluded-1: ../vcpkg\n"
 "X-Poedit-SearchPathExcluded-2: ../web\n"
 
-msgid ""
-"This PDF contains images only, with no extractable text. You may need to run "
-"it through OCR software to read its contents."
-msgstr ""
-"Ovaj PDF sadrži samo slike, nema teksta koji se može izvući. Možda ćete prvo "
-"morati da ga obradite kroz softver za optičko prepoznavanje teksta kako "
-"biste pročitali njegov sadržaj."
-
 msgid "Failed to create IPC server"
 msgstr "Nemoguće napraviti IPC server"
 
 msgid "Warning"
 msgstr "Upozorenje"
 
-msgid "Options"
-msgstr "Podešavanja"
+msgid "An accessible, lightweight, fast ebook and document reader"
+msgstr "Pristupačan, lagan, brz čitač digitalnih knjiga i dokumenata"
 
-msgid "&Restore previously opened documents on startup"
-msgstr "&Vrati prethodno otvorene dokumente pri pokretanju"
+msgid "expanded"
+msgstr "prošireno"
 
-msgid "&Word wrap"
-msgstr "&Prelamanje reči"
+msgid "collapsed"
+msgstr "skupljeno"
 
-msgid "&Minimize to system tray"
-msgstr "&Umanji u sistemsku traku"
+msgid "All Documents"
+msgstr "Svi dokumenti"
 
-msgid "&Start maximized"
-msgstr "&Pokreni kao maksimizovan"
+msgid "&search"
+msgstr "&Pretraga"
 
-msgid "Show compact &go menu"
-msgstr "Prikaži kompaktan meni &kretanja"
+msgid "&Yes"
+msgstr "&Da"
 
-msgid "&Wrap navigation"
-msgstr "&Kružna navigacija"
+msgid "&No"
+msgstr "&Ne"
 
-msgid "Play &sounds on bookmarks and notes"
-msgstr "Reprodukuj &zvukove za knjižne oznake i napomene"
+msgid "File Name"
+msgstr "Ime datoteke"
 
-msgid "Check for &updates on startup"
-msgstr "Proveri &ažuriranja pri pokretanju"
+msgid "Status"
+msgstr "Status"
 
-msgid "Number of &recent documents to show:"
-msgstr "Broj &nedavnih dokumenata za prikazivanje:"
+msgid "Path"
+msgstr "Putanja"
 
-msgid "&Language:"
-msgstr "&Jezik:"
+msgid "&Open"
+msgstr "&Otvori"
 
-msgid "Update Channel:"
-msgstr "Kanal ažuriranja:"
+msgid "&Remove"
+msgstr "&Ukloni"
 
-msgid "Stable"
-msgstr "Stabilni"
+msgid "&Clear All"
+msgstr "&Očisti sve"
 
-msgid "Dev"
-msgstr "Dev"
+msgid "Close"
+msgstr "Zatvori"
 
-msgid "General"
-msgstr "Oppšta"
+msgid ""
+"Are you sure you want to remove this document from the list? This will also "
+"remove its reading position."
+msgstr ""
+"Da li ste sigurni da želite da uklonite ovaj dokument sa liste? Ovo će "
+"takođe ukloniti njegovu poziciju čitanja."
 
-msgid "Reading"
-msgstr "Čitanje"
+msgid ""
+"Are you sure you want to remove these {} documents from the list? This will "
+"also remove their reading positions."
+msgstr ""
+"Da li ste sigurni da želite da uklonite ovih {} dokumenata iz liste? Ovo će "
+"takođe ukloniti njihove pozicije čitanja."
 
-msgid "OK"
-msgstr "U redu"
+msgid "Confirm"
+msgstr "Potvrdi"
 
-msgid "Cancel"
-msgstr "Otkaži"
+msgid ""
+"Are you sure you want to remove all documents from the list? This will also "
+"remove all reading positions and bookmarks."
+msgstr ""
+"Da li ste sigurni da želite da uklonite sve dokumente iz liste? Ovo će "
+"takođe ukloniti sve pozicije čitanja i knjižne oznake."
+
+msgid "Open"
+msgstr "Otvori"
+
+msgid "Closed"
+msgstr "Zatvoreno"
+
+msgid "Missing"
+msgstr "Nedostaje"
 
 msgid "Jump to Bookmark"
 msgstr "Skoči na knjižnu oznaku"
@@ -137,27 +150,6 @@ msgstr "Napomena knjižne oznake"
 msgid "Edit bookmark note:"
 msgstr "Uredi napomenu knjižne oznake:"
 
-msgid "View Note"
-msgstr "Prikaži napomenu"
-
-msgid "Close"
-msgstr "Zatvori"
-
-msgid "Table of Contents"
-msgstr "Sadržaj"
-
-msgid "Root"
-msgstr "Koren"
-
-msgid "Please select a section from the table of contents."
-msgstr "Molimo izaberite odeljak iz sadržaja."
-
-msgid "No Selection"
-msgstr "Bez izbora"
-
-msgid "Untitled"
-msgstr "Nenaslovljeno"
-
 msgid "Document Info"
 msgstr "Informacije o dokumentu"
 
@@ -182,6 +174,30 @@ msgstr "Znakovi:"
 msgid "Characters (excluding spaces):"
 msgstr "Znakovi (bez razmaka):"
 
+msgid "Elements"
+msgstr "Elementi"
+
+msgid "OK"
+msgstr "U redu"
+
+msgid "Cancel"
+msgstr "Otkaži"
+
+msgid "Headings"
+msgstr "Naslovi"
+
+msgid "Links"
+msgstr "Linkovi"
+
+msgid "Untitled"
+msgstr "Nenaslovljeno"
+
+msgid "&View:"
+msgstr "&Prikaz:"
+
+msgid "Root"
+msgstr "Koren"
+
 msgid "Go to Line"
 msgstr "Pređi na red"
 
@@ -203,70 +219,6 @@ msgstr "&procenat"
 
 msgid "P&ercent:"
 msgstr "P&rocenat:"
-
-msgid "&Yes"
-msgstr "&Da"
-
-msgid "&No"
-msgstr "&Ne"
-
-#, c-format
-msgid "Update to %s"
-msgstr "Ažuriraj na %s"
-
-msgid "A new version of Paperback is available. Here's what's new:"
-msgstr "Dostupna je nova verzija Paperbacka. Evo šta je novo:"
-
-msgid "All Documents"
-msgstr "Svi dokumenti"
-
-msgid "&search"
-msgstr "&Pretraga"
-
-msgid "File Name"
-msgstr "Ime datoteke"
-
-msgid "Status"
-msgstr "Status"
-
-msgid "Path"
-msgstr "Putanja"
-
-msgid "&Open"
-msgstr "&Otvori"
-
-msgid "&Remove"
-msgstr "&Ukloni"
-
-msgid "&Clear All"
-msgstr "&Očisti sve"
-
-msgid ""
-"Are you sure you want to remove this document from the list? This will also "
-"remove its reading position."
-msgstr ""
-"Da li ste sigurni da želite da uklonite ovaj dokument sa liste? Ovo će "
-"takođe ukloniti njegovu poziciju čitanja."
-
-#| msgid ""
-#| "Are you sure you want to remove this document from the list? This will "
-#| "also remove its reading position."
-msgid ""
-"Are you sure you want to remove these {} documents from the list? This will "
-"also remove their reading positions."
-msgstr ""
-"Da li ste sigurni da želite da uklonite ovih {} iz liste? Ovo će takođe "
-"ukloniti njihove pozicije čitanja."
-
-msgid "Confirm"
-msgstr "Potvrdi"
-
-msgid ""
-"Are you sure you want to remove all documents from the list? This will also "
-"remove all reading positions and bookmarks."
-msgstr ""
-"Da li ste sigurni da želite da uklonite sve dokumente iz liste? Ovo će "
-"takođe ukloniti sve pozicije čitanja i knjižne oznake."
 
 msgid "Open As"
 msgstr "Otvori kao"
@@ -290,14 +242,164 @@ msgstr "HTML"
 msgid "Markdown"
 msgstr "Markdown"
 
-msgid "Open"
-msgstr "Otvori"
+msgid "Options"
+msgstr "Podešavanja"
 
-msgid "Closed"
-msgstr "Zatvori"
+msgid "&Restore previously opened documents on startup"
+msgstr "&Vrati prethodno otvorene dokumente pri pokretanju"
 
-msgid "Missing"
-msgstr "Nedostaje"
+msgid "&Word wrap"
+msgstr "&Prelamanje reči"
+
+msgid "&Minimize to system tray"
+msgstr "&Umanji u sistemsku traku"
+
+msgid "&Start maximized"
+msgstr "&Pokreni uvećan"
+
+msgid "Show compact &go menu"
+msgstr "Prikaži kompaktan meni &kretanja"
+
+msgid "&Wrap navigation"
+msgstr "&Kružna navigacija"
+
+msgid "Play &sounds on bookmarks and notes"
+msgstr "Reprodukuj &zvukove za knjižne oznake i napomene"
+
+msgid "Check for &updates on startup"
+msgstr "Proveri &ažuriranja pri pokretanju"
+
+msgid "Customize &Window Hotkey..."
+msgstr "Prilagodi &prečicu prozora..."
+
+msgid "&Reading speed (words per minute):"
+msgstr "&Brzina čitanja (broj reči po minutu):"
+
+msgid "Number of &recent documents to show:"
+msgstr "Broj &nedavnih dokumenata za prikazivanje:"
+
+msgid "&Language:"
+msgstr "&Jezik:"
+
+msgid "Update Channel:"
+msgstr "Kanal ažuriranja:"
+
+msgid "Stable"
+msgstr "Stabilni"
+
+msgid "Dev"
+msgstr "Dev"
+
+msgid "Font"
+msgstr "Font"
+
+msgid "Choose &Font..."
+msgstr "Izaberi &Font..."
+
+msgid "&Reset to Default Font"
+msgstr "V&rati na podrazumevani font"
+
+msgid "Background Color"
+msgstr "Boja pozadine"
+
+msgid "Choose &Background Color..."
+msgstr "Izaberi &boju pozadine..."
+
+msgid "Reset to &Default Background"
+msgstr "Vrati &pozadinu na podrazumevanu"
+
+msgid "&Line spacing:"
+msgstr "Odvajanje &redova:"
+
+msgid "Normal"
+msgstr "Normalno"
+
+msgid "1.5\\u{00d7}"
+msgstr "1.5\\u{00d7}"
+
+msgid "Double"
+msgstr "Duplo"
+
+msgid "&Paragraph spacing:"
+msgstr "&ODvajanje pasusa:"
+
+msgid "Relaxed"
+msgstr "Opušteno"
+
+msgid "Wide"
+msgstr "Široko"
+
+msgid "L&etter spacing:"
+msgstr "Odvajanja s&lova:"
+
+msgid "Very Wide"
+msgstr "Veoma široko"
+
+msgid "Text &alignment:"
+msgstr "Por&avnanje teksta:"
+
+msgid "Left"
+msgstr "Levo"
+
+msgid "Center"
+msgstr "Centrirano"
+
+msgid "Right"
+msgstr "Desno"
+
+msgid "Justify"
+msgstr "Obostrano"
+
+msgid "General"
+msgstr "Opšta"
+
+msgid "Reading"
+msgstr "Čitanje"
+
+msgid "Readability"
+msgstr "Čitljivost"
+
+msgid "Background: Default"
+msgstr "Pozadina: Podrazumevana"
+
+msgid "Font: Default"
+msgstr "Font: Podrazumevani"
+
+msgid "Default"
+msgstr "Podrazumevano"
+
+msgid "Bold"
+msgstr "Podebljano"
+
+msgid "Italic"
+msgstr "Iskošeno"
+
+msgid "Underlined"
+msgstr "Podvučeno"
+
+msgid "Strikethrough"
+msgstr "Precrtano"
+
+msgid "Window Hotkey"
+msgstr "Prečica prozora"
+
+msgid "&Ctrl"
+msgstr "&Ctrl"
+
+msgid "&Alt"
+msgstr "&Alt"
+
+msgid "&Shift"
+msgstr "&Šift"
+
+msgid "&Win"
+msgstr "&Win"
+
+msgid "&Key:"
+msgstr "&Taster:"
+
+msgid "Space"
+msgstr "Razmak"
 
 msgid "Sleep Timer"
 msgstr "Tajmer pre spavanja"
@@ -305,29 +407,60 @@ msgstr "Tajmer pre spavanja"
 msgid "&Minutes:"
 msgstr "&Minuti:"
 
-msgid "Elements"
-msgstr "Elementi"
+msgid "Table of Contents"
+msgstr "Sadržaj"
 
-msgid "&View:"
-msgstr "&Prikaži:"
+msgid "Please select a section from the table of contents."
+msgstr "Molimo izaberite odeljak iz sadržaja."
 
-msgid "Headings"
-msgstr "Naslovi"
+msgid "No Selection"
+msgstr "Bez izbora"
 
-msgid "Links"
-msgstr "Linkovi"
+msgid "View Note"
+msgstr "Prikaži napomenu"
 
-msgid "An accessible, lightweight, fast ebook and document reader"
-msgstr "Pristupačan, lagan, brz čitač digitalnih knjiga i dokumenata"
+msgid "1 hour"
+msgstr "1 sat"
+
+msgid "hours"
+msgstr "sati"
+
+msgid "1 minute"
+msgstr "1 minut"
+
+msgid "minutes"
+msgstr "minuta"
+
+msgid "1 second"
+msgstr "1 sekunda"
+
+msgid "seconds"
+msgstr "sekundi"
+
+msgid "Estimated reading time: {}"
+msgstr "Očekivano vreme čitanja: {}"
+
+#| msgid "The document contains {} words."
+msgid "This document contains {} words."
+msgstr "Ovaj dokument sadrži {} reči."
+
+msgid "Word Count"
+msgstr "Broj reči"
 
 msgid "File not found: {}"
 msgstr "Datoteka nije pronađena: {}"
 
+msgid ""
+"A .paperback file was found for this document. Would you like to import it?"
+msgstr ""
+".paperback datoteka je pronađena za ovaj dokument. Da li želite da je "
+"uvezete?"
+
+msgid "Import document data"
+msgstr "Uvezi podatke o dokumentu"
+
 msgid "Password is required."
 msgstr "Lozinka je obavezna."
-
-msgid "Failed to load document."
-msgstr "Učitavanje dokumenta nije uspelo."
 
 msgid "Navigated to internal link."
 msgstr "Prebačen do unutrašnjeg linka."
@@ -343,6 +476,9 @@ msgstr "&Lozinka:"
 
 msgid "Document Password"
 msgstr "Lozinka dokumenta"
+
+msgid "Failed to load document."
+msgstr "Učitavanje dokumenta nije uspelo."
 
 msgid "Create &bookmark"
 msgstr "Napravi &knjižnu oznaku"
@@ -432,47 +568,6 @@ msgid "Failed to open donation page in browser."
 msgstr ""
 "Otvaranje stranice za doniranje u podrazumevanom pretraživaču nije uspelo."
 
-msgid "No release notes were provided."
-msgstr "Informacije o verziji nisu ponuđene."
-
-msgid "Paperback Update"
-msgstr "Paperback ažuriranje"
-
-msgid "Downloading update..."
-msgstr "Preuzimanje ažuriranja..."
-
-msgid "No updates available."
-msgstr "Nema dostupnih ažuriranja."
-
-msgid "No updates available. Latest version: {}"
-msgstr "Nema dostupnih ažuriranja. Najnovija verzija: {}"
-
-msgid "Info"
-msgstr "Informacija"
-
-#, c-format
-msgid "Failed to check for updates. HTTP status: %d"
-msgstr "Provera ažuriranja nije uspela. HTTP status: %d"
-
-msgid "Error checking for updates."
-msgstr "Greška pri proveri ažuriranja."
-
-msgid "Failed to get current exe path"
-msgstr "Pribavljanje putanje do trenutne izvršne datoteke nije uspelo"
-
-#| msgid "Failed to launch installer"
-msgid "Failed to launch installer script"
-msgstr "Pokretanje instalacione skripte nije uspelo"
-
-msgid "Failed to launch update script"
-msgstr "Pokretanje skripte ažuriranja nije uspelo"
-
-msgid "Unknown update file format."
-msgstr "Nepoznat format ažuriranja datoteke."
-
-msgid "Update failed"
-msgstr "Ažuriranje nije uspelo"
-
 msgid "Unsupported format selected."
 msgstr "Izabran je format koji nije podržan."
 
@@ -503,6 +598,20 @@ msgstr "Izvezi dokument kao običan tekst"
 msgid "Failed to export document."
 msgstr "Izvoz dokumenta nije uspeo."
 
+#| msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
+msgid "HTML files (*.html)|*.html|All files (*.*)|*.*"
+msgstr "HTML datoteke (*.html)|*.html|Sve datoteke (*.*)|*.*"
+
+msgid "Export document to HTML"
+msgstr "Izvezi dokument kao HTML"
+
+#| msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
+msgid "Markdown files (*.md)|*.md|All files (*.*)|*.*"
+msgstr "Markdown datoteke (*.md)|*.md|Sve datoteke (*.*)|*.*"
+
+msgid "Export document to Markdown"
+msgstr "Izvezi dokument kao Markdown"
+
 msgid "Paperback files (*.paperback)|*.paperback"
 msgstr "Paperback datoteke (*.paperback)|*.paperback"
 
@@ -523,12 +632,6 @@ msgstr "Uspešan uvoz napomena i knjižnih oznaka."
 
 msgid "Import Successful"
 msgstr "Uvoz uspešan"
-
-msgid "The document contains {} words."
-msgstr "Dokument sadrži {} reči."
-
-msgid "Word count"
-msgstr "Broj reči"
 
 msgid "No table of contents."
 msgstr "Nema sadržaja."
@@ -579,6 +682,18 @@ msgstr "Prethodni Lin&k\tShift+K"
 msgid "Next Lin&k\tK"
 msgstr "Naredni lin&k\tK"
 
+msgid "Previous Ima&ge\tShift+G"
+msgstr "Prethodna &slika\tShift+G"
+
+msgid "Next Ima&ge\tG"
+msgstr "Naredna &slika\tG"
+
+msgid "Previous Figu&re\tShift+F"
+msgstr "Prethodna figu&ra\tShift+F"
+
+msgid "Next Figu&re\tF"
+msgstr "Naredna figu&ra\tF"
+
 msgid "Previous &Table\tShift+T"
 msgstr "Prethodna &tabela\tShift+T"
 
@@ -589,7 +704,7 @@ msgid "Previous Se&parator\tShift+S"
 msgstr "Prethodni se&parator\tShift+S"
 
 msgid "Next Se&parator\tS"
-msgstr "Sledeći Se&parator\tS"
+msgstr "Naredni Se&parator\tS"
 
 msgid "Previous L&ist\tShift+L"
 msgstr "Prethodna l&ista\tShift+L"
@@ -738,7 +853,6 @@ msgstr "Zatvori &sve\tCtrl+Shift+F4"
 msgid "Close all documents"
 msgstr "Zatvori sve dokumente"
 
-#| msgid "Close &All\tCtrl+Shift+W"
 msgid "Reopen &Last Closed\tCtrl+Shift+T"
 msgstr "Ponovo otvori pos&lednje zatvoreno\tCtrl+Shift+T"
 
@@ -751,8 +865,8 @@ msgstr "&Nedavni dokumenti"
 msgid "Open a recent document"
 msgstr "Otvori nedavni dokument"
 
-msgid "E&xit"
-msgstr "I&zlaz"
+msgid "E&xit\tCtrl+Q"
+msgstr "&Izlaz\tCtrl+Q"
 
 msgid "Exit the application"
 msgstr "Zatvori aplikaciju"
@@ -829,6 +943,18 @@ msgstr "&linkovi"
 msgid "Navigate by links"
 msgstr "Kreći se po linkovima"
 
+msgid "&Images"
+msgstr "Sl&ike"
+
+msgid "Navigate by images"
+msgstr "Kreći se po slikama"
+
+msgid "&Figures"
+msgstr "&Figure"
+
+msgid "Navigate by figures"
+msgstr "Kreći se po figurama"
+
 msgid "&Tables"
 msgstr "&Tabele"
 
@@ -864,6 +990,22 @@ msgstr "Izvezi kao &običan tekst...\tCtrl+E"
 
 msgid "Export document as plain text"
 msgstr "Izvezi dokument kao običan tekst"
+
+#| msgid "Export to &Plain Text...\tCtrl+E"
+msgid "Export to &HTML..."
+msgstr "Izvezi kao &HTML..."
+
+#| msgid "Export Document"
+msgid "Export document as HTML"
+msgstr "Izvezi dokument kao HTML"
+
+#| msgid "Export to &Plain Text...\tCtrl+E"
+msgid "Export to &Markdown..."
+msgstr "Izvezi kao &Markdown..."
+
+#| msgid "Export document as plain text"
+msgid "Export document as Markdown"
+msgstr "Izvezi dokument kao Markdown"
 
 msgid "&Word Count\tRawCtrl+W"
 msgstr "Broj &reči\tRawCtrl+W"
@@ -1039,6 +1181,24 @@ msgstr "Nema narednog separatora."
 msgid "No previous separator."
 msgstr "Nema prethodnog separatora."
 
+msgid "No images."
+msgstr "Nema slika."
+
+msgid "No next image."
+msgstr "Nema naredne slike."
+
+msgid "No previous image."
+msgstr "Nema prethodne slike."
+
+msgid "No figures."
+msgstr "Nema figura."
+
+msgid "No next figure."
+msgstr "Nema naredne figure."
+
+msgid "No previous figure."
+msgstr "Nema prethodne figure."
+
 msgid "Wrapping to start. "
 msgstr "Vraćanje na početak. "
 
@@ -1123,8 +1283,100 @@ msgstr "&Vrati"
 msgid "Restore Paperback"
 msgstr "Vrati Paperback"
 
+msgid "E&xit"
+msgstr "I&zlaz"
+
 msgid "Exit Paperback"
 msgstr "Zatvori Paperback"
+
+#, c-format
+msgid "Update to %s"
+msgstr "Ažuriraj na %s"
+
+#, c-format
+#| msgid "A new version of Paperback is available. Here's what's new:"
+msgid "A new version of %s is available. Here's what's new:"
+msgstr "Dostupna je nova verzija programa %s. Ovo su novosti:"
+
+msgid "No release notes provided."
+msgstr "Nema informacija o novostima."
+
+#, c-format
+msgid "%s Update"
+msgstr "%s ažuriranje"
+
+msgid "Downloading update..."
+msgstr "Preuzimanje ažuriranja..."
+
+msgid "No updates available."
+msgstr "Nema dostupnih ažuriranja."
+
+#, c-format
+msgid "No updates available. Latest version: %s"
+msgstr "Nema dostupnih ažuriranja. Najnovija verzija: %s"
+
+msgid "Info"
+msgstr "Informacija"
+
+#, c-format
+msgid ""
+"Security verification failed. The update might have been tampered with: %s"
+msgstr ""
+"Bezbednosna provera nije uspela. Ažuriranje je možda neočekivano izmenjeno: "
+"%s"
+
+msgid "Security Error"
+msgstr "Bezbednosna greška"
+
+msgid "Update failed"
+msgstr "Ažuriranje nije uspelo"
+
+#, c-format
+msgid ""
+"Update downloaded to: %s\n"
+"Please install it manually."
+msgstr ""
+"Ažuriranje je preuzeto u: %s\n"
+"Molimo ručno ga instalirajte."
+
+msgid "Update Ready"
+msgstr "Ažuriranje je spremno"
+
+msgid "Failed to get current exe path"
+msgstr "Pribavljanje putanje do trenutne izvršne datoteke nije uspelo"
+
+msgid "Failed to launch installer script"
+msgstr "Pokretanje instalacione skripte nije uspelo"
+
+msgid "Failed to launch update script"
+msgstr "Pokretanje skripte ažuriranja nije uspelo"
+
+msgid "Unknown update file format."
+msgstr "Nepoznat format ažuriranja datoteke."
+
+#~ msgid "Figure"
+#~ msgstr "Figura"
+
+#~ msgid "Image"
+#~ msgstr "Slika"
+
+#~ msgid ""
+#~ "This PDF contains images only, with no extractable text. You may need to "
+#~ "run it through OCR software to read its contents."
+#~ msgstr ""
+#~ "Ovaj PDF sadrži samo slike, nema teksta koji se može izvući. Možda ćete "
+#~ "prvo morati da ga obradite kroz softver za optičko prepoznavanje teksta "
+#~ "kako biste pročitali njegov sadržaj."
+
+#~ msgid "Paperback Update"
+#~ msgstr "Paperback ažuriranje"
+
+#, c-format
+#~ msgid "Failed to check for updates. HTTP status: %d"
+#~ msgstr "Provera ažuriranja nije uspela. HTTP status: %d"
+
+#~ msgid "Error checking for updates."
+#~ msgstr "Greška pri proveri ažuriranja."
 
 #~ msgid "Failed to initialize configuration"
 #~ msgstr "Učitavanje podešavanja nije uspelo"
@@ -1177,9 +1429,6 @@ msgstr "Zatvori Paperback"
 
 #~ msgid "Select a document to read"
 #~ msgstr "Izaberite dokument za čitanje"
-
-#~ msgid "Export Document"
-#~ msgstr "Izvezi dokument"
 
 #, c-format
 #~ msgid "Error opening Web View: %s"
@@ -1302,9 +1551,6 @@ msgstr "Zatvori Paperback"
 #~| msgid "No table of contents."
 #~ msgid "Couldn't parse table of contents: %s"
 #~ msgstr "Nemoguće obraditi sadržaj: %s"
-
-#~ msgid "&Export...\tCtrl+E"
-#~ msgstr "&Izvezi...\tCtrl+E"
 
 #~ msgid "Parsing of links in the document failed."
 #~ msgstr "Obrada linkova u dokumentu nije uspela."

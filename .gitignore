@@ -4,4 +4,26 @@ web/_site/
 *.epub
 *.pdf
 *.rtf
+*.doc
+*.docx
 .DS_Store
+result
+.direnv/
+.flatpak-builder/
+*.flatpak
+repo-flatpak/
+cargo-sources.json
+*.mobi
+
+# Xcode user state
+ios/**/*.xcuserstate
+ios/**/xcuserdata/
+ios/**/DerivedData/
+
+# Generated UniFFI Swift bindings and XCFramework (produced by cargo xtask ios)
+ios/Paperback/Generated/
+ios/paperbackFFI.xcframework/
+ios/libpdfium.dylib
+
+# Compiled .mo files baked into the binary via embed_domain!() (produced by build.rs)
+crates/paperback/locale/

@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-03-05 20:09-0700\n"
-"PO-Revision-Date: 2026-03-13 16:51+0800\n"
+"POT-Creation-Date: 2026-03-22 01:14+0530\n"
+"PO-Revision-Date: 2026-03-22 21:37+0800\n"
 "Last-Translator: Yongquan Yang <qt06.com@gmail.com>\n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -17,6 +17,18 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.8\n"
+
+msgid "Figure"
+msgstr "图表"
+
+msgid "Image"
+msgstr "图片"
+
+msgid ""
+"This PDF contains images only, with no extractable text. You may need to run "
+"it through OCR software to read its contents."
+msgstr ""
+"此 PDF 仅包含图像，没有可提取的文本。您可能需要使用 OCR 软件来读取其内容。"
 
 msgid "Failed to create IPC server"
 msgstr "创建 IPC 服务器失败"
@@ -549,6 +561,18 @@ msgstr "上一个链接(&K)\tShift+K"
 msgid "Next Lin&k\tK"
 msgstr "下一个链接(&K)\tK"
 
+msgid "Previous Ima&ge\tShift+G"
+msgstr "上一张图片(&G)\tShift+G"
+
+msgid "Next Ima&ge\tG"
+msgstr "下一张图片(&G)\tG"
+
+msgid "Previous Figu&re\tShift+F"
+msgstr "上一个图表(&R)\tShift+F"
+
+msgid "Next Figu&re\tF"
+msgstr "下一个图表(&R)\tF"
+
 msgid "Previous &Table\tShift+T"
 msgstr "上一个表格(&T)\tShift+T"
 
@@ -720,8 +744,8 @@ msgstr "最近文档(&R)"
 msgid "Open a recent document"
 msgstr "打开最近文档"
 
-msgid "E&xit"
-msgstr "退出(&X)"
+msgid "E&xit\tCtrl+Q"
+msgstr "退出(&X)\tCtrl+Q"
 
 msgid "Exit the application"
 msgstr "退出应用程序"
@@ -797,6 +821,18 @@ msgstr "链接(&L)"
 
 msgid "Navigate by links"
 msgstr "按链接导航"
+
+msgid "&Images"
+msgstr "图片(&I)"
+
+msgid "Navigate by images"
+msgstr "按图片导航"
+
+msgid "&Figures"
+msgstr "图表(&F)"
+
+msgid "Navigate by figures"
+msgstr "按图表导航"
 
 msgid "&Tables"
 msgstr "表格(&T)"
@@ -1008,6 +1044,24 @@ msgstr "没有下一个分隔符。"
 msgid "No previous separator."
 msgstr "没有上一个分隔符。"
 
+msgid "No images."
+msgstr "没有图片。"
+
+msgid "No next image."
+msgstr "没有下一张图片。"
+
+msgid "No previous image."
+msgstr "没有上一张图片。"
+
+msgid "No figures."
+msgstr "没有图表。"
+
+msgid "No next figure."
+msgstr "没有下一个图表。"
+
+msgid "No previous figure."
+msgstr "没有上一个图表。"
+
 msgid "Wrapping to start. "
 msgstr "循环到开头。"
 
@@ -1092,12 +1146,8 @@ msgstr "恢复(&R)"
 msgid "Restore Paperback"
 msgstr "恢复 Paperback"
 
+msgid "E&xit"
+msgstr "退出(&X)"
+
 msgid "Exit Paperback"
 msgstr "退出 Paperback"
-
-#~ msgid ""
-#~ "This PDF contains images only, with no extractable text. You may need to "
-#~ "run it through OCR software to read its contents."
-#~ msgstr ""
-#~ "此 PDF 仅包含图像，没有可提取的文本。您可能需要使用 OCR 软件来读取其内"
-#~ "容。"

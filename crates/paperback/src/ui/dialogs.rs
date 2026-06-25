@@ -1,0 +1,37 @@
+// Shared constants used by sub-modules that import via `use super::`.
+pub(super) const DIALOG_PADDING: i32 = 10;
+pub(super) const KEY_RETURN: i32 = 13;
+pub(super) const KEY_NUMPAD_ENTER: i32 = 370;
+
+mod about;
+pub use about::show_about_dialog;
+mod all_documents;
+pub use all_documents::show_all_documents_dialog;
+mod bookmark;
+pub use bookmark::show_bookmark_dialog;
+mod document_info;
+pub use document_info::show_document_info_dialog;
+mod elements;
+pub use elements::show_elements_dialog;
+mod go_to_line;
+pub use go_to_line::show_go_to_line_dialog;
+mod go_to_page;
+pub use go_to_page::show_go_to_page_dialog;
+mod go_to_percent;
+pub use go_to_percent::show_go_to_percent_dialog;
+mod note_entry;
+pub use note_entry::show_note_entry_dialog;
+mod open_as;
+pub use open_as::show_open_as_dialog;
+mod options;
+pub use options::show_options_dialog;
+mod sleep_timer;
+pub use sleep_timer::show_sleep_timer_dialog;
+mod toc;
+pub use toc::show_toc_dialog;
+mod view_note;
+pub use view_note::show_view_note_dialog;
+mod web_view;
+pub use web_view::{ACTIVE_WEB_VIEW, show_web_view_dialog};
+mod word_count;
+pub use word_count::show_word_count_dialog;
