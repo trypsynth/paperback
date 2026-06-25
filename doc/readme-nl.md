@@ -85,6 +85,8 @@ Paperback is ontworpen voor toetsenbord- en schermlezergericht gebruik. Hieronde
 * `L`: Volgende lijst.
 * `Shift+I`: Vorig lijstitem.
 * `I`: Volgend lijstitem.
+* `Shift+,`: Ga naar het begin van de huidige container (lijst of tabel).
+* `,`: Ga voorbij het einde van de huidige container (lijst of tabel).
 
 ### Menu Extra
 
@@ -94,11 +96,13 @@ Paperback is ontworpen voor toetsenbord- en schermlezergericht gebruik. Hieronde
 * `F7`: Elementenlijst tonen.
 * `Ctrl+Shift+C`: Bovenliggende map openen.
 * `Ctrl+Shift+V`: De huidige inhoud openen in webweergave.
+* `Ctrl+U`: De documentbron in een nieuw tabblad weergeven.
 * `Ctrl+Shift+E`: Documentgegevens exporteren (`.paperback`).
 * `Ctrl+Shift+I`: Documentgegevens importeren (`.paperback`).
 * `Ctrl+E`: Het huidige document exporteren naar platte tekst.
 * `Ctrl+Shift+B`: Bladwijzer in-/uitschakelen op de huidige selectie/cursor.
 * `Ctrl+Shift+N`: Bladwijzernotitie toevoegen of bewerken op de huidige selectie/cursor.
+* `Ctrl+Alt+W`: Automatische terugloop in-/uitschakelen.
 * `Ctrl+,`: Opties openen.
 * `Ctrl+Shift+S`: Slaaptimer in-/uitschakelen.
 

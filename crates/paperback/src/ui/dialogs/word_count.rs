@@ -30,8 +30,9 @@ fn format_reading_time(word_count: usize, wpm: i32) -> String {
 	template.replace("{}", &time_str)
 }
 
-pub fn show_word_count_dialog(parent: &Frame, word_count: usize, reading_speed_wpm: i32) {
-	let words_template = t("This document contains {} words.");
+pub fn show_word_count_dialog(parent: &Frame, word_count: usize, reading_speed_wpm: i32, is_selection: bool) {
+	let words_template =
+		if is_selection { t("The selection contains {} words.") } else { t("This document contains {} words.") };
 	let mut msg = words_template.replace("{}", &word_count.to_string());
 	let reading_time = format_reading_time(word_count, reading_speed_wpm);
 	if !reading_time.is_empty() {
