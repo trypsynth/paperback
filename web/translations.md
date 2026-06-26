@@ -78,6 +78,10 @@ msgmerge -U po/da.po po/paperback.pot
 
 5. Remove fuzzy markers once reviewed, then compile and test (same as steps 6 and 7 above).
 
+## Translating the README
+
+If you want to translate the user-facing documentation as well, create a `doc/readme-<lang>.md` file (for example `doc/readme-da.md`) using the English `doc/readme.md` as your starting point. The build system picks it up automatically and embeds the rendered HTML into the binary alongside the UI strings — no extra steps needed. Submit it in the same pull request as your `.po` file.
+
 ## Submitting Your Translation
 
 1. Commit your `.po` file and push:
