@@ -117,10 +117,65 @@ fn track_packaging_inputs() {
 fn build_translations() {
 	let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap_or_default());
 	let workspace_dir = manifest_dir.parent().unwrap().parent().unwrap();
-	if let Err(e) = patois_build::gen_pot(&workspace_dir, workspace_dir.join("po"), "paperback") {
+	let version = env::var("CARGO_PKG_VERSION").unwrap_or_default();
+	if let Err(e) = gen_pot_from_src(&manifest_dir.join("src"), &workspace_dir.join("po"), "paperback", &version) {
 		println!("cargo:warning=Failed to regenerate paperback.pot: {e}");
 	}
 	patois_build::compile_translations("../../po", "locale");
+}
+
+fn gen_pot_from_src(src_dir: &Path, po_dir: &Path, package_name: &str, version: &str) -> io::Result<()> {
+	if Command::new("xgettext").arg("--version").output().is_err() {
+		return Err(io::Error::other("xgettext not found; install gettext tools"));
+	}
+	let mut files = Vec::new();
+	collect_rs_files(src_dir, &mut files)?;
+	if files.is_empty() {
+		return Ok(());
+	}
+	fs::create_dir_all(po_dir)?;
+	let output_file = po_dir.join(format!("{package_name}.pot"));
+	let temp_file = po_dir.join(format!("{package_name}.pot.new"));
+	let status = Command::new("xgettext")
+		.arg("--keyword=t")
+		.arg("--language=C")
+		.arg("--from-code=UTF-8")
+		.arg("--add-comments=TRANSLATORS")
+		.arg("--no-location")
+		.arg(format!("--package-name={package_name}"))
+		.arg(format!("--package-version={version}"))
+		.arg(format!("--output={}", temp_file.display()))
+		.args(&files)
+		.status()?;
+	if !status.success() {
+		return Err(io::Error::other("xgettext failed"));
+	}
+	let strip_date = |s: String| -> String {
+		s.lines().filter(|l| !l.starts_with("\"POT-Creation-Date:")).collect::<Vec<_>>().join("\n")
+	};
+	let old = strip_date(fs::read_to_string(&output_file).unwrap_or_default());
+	let new = strip_date(fs::read_to_string(&temp_file)?);
+	if old != new {
+		fs::rename(&temp_file, &output_file)?;
+	} else {
+		fs::remove_file(&temp_file)?;
+	}
+	Ok(())
+}
+
+fn collect_rs_files(dir: &Path, out: &mut Vec<PathBuf>) -> io::Result<()> {
+	if !dir.is_dir() {
+		return Ok(());
+	}
+	for entry in fs::read_dir(dir)? {
+		let path = entry?.path();
+		if path.is_dir() {
+			collect_rs_files(&path, out)?;
+		} else if path.extension().and_then(|e| e.to_str()) == Some("rs") {
+			out.push(path);
+		}
+	}
+	Ok(())
 }
 
 fn copy_sounds() {
