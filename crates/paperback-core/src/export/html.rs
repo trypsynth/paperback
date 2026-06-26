@@ -6,6 +6,7 @@ use crate::{
 	util::text::{ch_width, display_len},
 };
 
+#[must_use]
 pub fn render(doc: &DocumentHandle) -> String {
 	let document = doc.document();
 	let content = &document.buffer.content;
@@ -150,12 +151,12 @@ pub fn render(doc: &DocumentHandle) -> String {
 						} else {
 							// CHM / fallback: try fragment, then bare file-path key
 							let current_path = section_path_at(pos);
-							let off = if !frag_part.is_empty() {
+							let off = if frag_part.is_empty() {
+								document.id_positions.get(file_part).copied()
+							} else {
 								resolve_fragment(&document.id_positions, frag_part, Some(file_part))
 									.or_else(|| document.id_positions.get(file_part).copied())
 									.or_else(|| resolve_fragment(&document.id_positions, frag_part, current_path))
-							} else {
-								document.id_positions.get(file_part).copied()
 							};
 							if let Some(off) = off {
 								target_offsets.insert(off);
@@ -217,11 +218,10 @@ pub fn render(doc: &DocumentHandle) -> String {
 		// Fire events whose position has been reached
 		while event_idx < events.len() && events[event_idx].pos <= display_pos {
 			// Suppress events that fall inside an active replace range
-			if skip_until.is_some_and(|u| events[event_idx].pos < u) {
-				if !matches!(events[event_idx].kind, Ek::Anchor(_)) {
-					event_idx += 1;
-					continue;
-				}
+			if skip_until.is_some_and(|u| events[event_idx].pos < u) && !matches!(events[event_idx].kind, Ek::Anchor(_))
+			{
+				event_idx += 1;
+				continue;
 			}
 			match &events[event_idx].kind {
 				Ek::BlockOpen(tag) => {

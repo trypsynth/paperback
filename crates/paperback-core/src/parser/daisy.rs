@@ -108,18 +108,14 @@ impl Parser for DaisyParser {
 						.file_names()
 						.find(|n| Path::new(n).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("ncx")))
 						.map(String::from);
-					if let Some(ncx_name) = ncx_path {
-						if let Ok(ncx_content) =
+					if let Some(ncx_name) = ncx_path
+						&& let Ok(ncx_content) =
 							read_zip_entry_by_name_with_password(&mut archive, &ncx_name, context.password.as_deref())
-						{
-							if !ncx_content.is_empty() {
-								if let Some(ncx_toc) = parse_daisy_ncx(&ncx_content, converter.get_id_positions()) {
-									if !ncx_toc.is_empty() {
-										toc_items = Some(ncx_toc);
-									}
-								}
-							}
-						}
+						&& !ncx_content.is_empty()
+						&& let Some(ncx_toc) = parse_daisy_ncx(&ncx_content, converter.get_id_positions())
+						&& !ncx_toc.is_empty()
+					{
+						toc_items = Some(ncx_toc);
 					}
 					let toc_items = toc_items.unwrap_or_else(|| build_toc_from_headings(converter.get_headings()));
 					return Ok(Document {
@@ -201,15 +197,14 @@ impl Parser for DaisyParser {
 				if let Ok(entries) = std::fs::read_dir(base_dir) {
 					for entry in entries.flatten() {
 						let path = entry.path();
-						if path.is_file() && path.extension().is_some_and(|e| e.eq_ignore_ascii_case("ncx")) {
-							if let Ok(ncx_content) = std::fs::read_to_string(&path) {
-								if let Some(ncx_toc) = parse_daisy_ncx(&ncx_content, converter.get_id_positions()) {
-									if !ncx_toc.is_empty() {
-										toc_items = Some(ncx_toc);
-										break;
-									}
-								}
-							}
+						if path.is_file()
+							&& path.extension().is_some_and(|e| e.eq_ignore_ascii_case("ncx"))
+							&& let Ok(ncx_content) = std::fs::read_to_string(&path)
+							&& let Some(ncx_toc) = parse_daisy_ncx(&ncx_content, converter.get_id_positions())
+							&& !ncx_toc.is_empty()
+						{
+							toc_items = Some(ncx_toc);
+							break;
 						}
 					}
 				}
@@ -316,10 +311,11 @@ fn parse_daisy_ncx(
 		ncx_doc.descendants().find(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "navMap")?;
 	let mut items = Vec::new();
 	for navpoint in nav_map.children() {
-		if navpoint.node_type() == NodeType::Element && navpoint.tag_name().name() == "navPoint" {
-			if let Some(item) = convert_daisy_navpoint(navpoint, id_positions) {
-				items.push(item);
-			}
+		if navpoint.node_type() == NodeType::Element
+			&& navpoint.tag_name().name() == "navPoint"
+			&& let Some(item) = convert_daisy_navpoint(navpoint, id_positions)
+		{
+			items.push(item);
 		}
 	}
 	if items.is_empty() { None } else { Some(items) }
@@ -356,10 +352,11 @@ fn convert_daisy_navpoint(
 		.unwrap_or(0);
 	let mut item = crate::document::TocItem::new(label, target_id.to_string(), offset);
 	for child in nav.children() {
-		if child.node_type() == NodeType::Element && child.tag_name().name() == "navPoint" {
-			if let Some(child_item) = convert_daisy_navpoint(child, id_positions) {
-				item.children.push(child_item);
-			}
+		if child.node_type() == NodeType::Element
+			&& child.tag_name().name() == "navPoint"
+			&& let Some(child_item) = convert_daisy_navpoint(child, id_positions)
+		{
+			item.children.push(child_item);
 		}
 	}
 	Some(item)

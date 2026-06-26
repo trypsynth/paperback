@@ -1,5 +1,6 @@
 use std::path::Path;
 
+#[must_use]
 pub fn extract_title_from_path(path: &str) -> String {
 	let trimmed = path.trim();
 	if trimmed.is_empty() {

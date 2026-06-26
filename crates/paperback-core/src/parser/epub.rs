@@ -255,10 +255,11 @@ fn find_container_path<R: Read + Seek>(archive: &mut ZipArchive<R>) -> Result<St
 	)
 	.context("Failed to parse container.xml")?;
 	for node in doc.descendants() {
-		if node.node_type() == NodeType::Element && node.tag_name().name() == "rootfile" {
-			if let Some(path) = node.attribute("full-path") {
-				return Ok(path.to_string());
-			}
+		if node.node_type() == NodeType::Element
+			&& node.tag_name().name() == "rootfile"
+			&& let Some(path) = node.attribute("full-path")
+		{
+			return Ok(path.to_string());
 		}
 	}
 	anyhow::bail!("rootfile not found in container.xml")
@@ -316,10 +317,10 @@ fn parse_package(package: Node<'_, '_>, opf_dir: &Path) -> PackageParts {
 				}
 			}
 			"spine" => {
-				if ncx_path.is_none() {
-					if let Some(id) = child.attribute("toc") {
-						ncx_path = manifest.get(id).map(|m| m.path.clone());
-					}
+				if ncx_path.is_none()
+					&& let Some(id) = child.attribute("toc")
+				{
+					ncx_path = manifest.get(id).map(|m| m.path.clone());
 				}
 				for itemref in
 					child.children().filter(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "itemref")
@@ -542,30 +543,29 @@ fn collect_text(node: Node<'_, '_>, buffer: &mut String) {
 fn compute_nav_offset(reference: &str, sections: &[SectionMeta], id_positions: &HashMap<String, usize>) -> usize {
 	let (path_part, fragment) = split_href(reference);
 	if let Some(section) = sections.iter().find(|section| section.path == path_part) {
-		if let Some(frag) = fragment.as_deref() {
-			if let Some(offset) = id_positions.get(&format!("{path_part}#{frag}")).or_else(|| id_positions.get(frag)) {
-				if *offset >= section.start && *offset < section.end {
-					return *offset;
-				}
-			}
+		if let Some(frag) = fragment.as_deref()
+			&& let Some(offset) = id_positions.get(&format!("{path_part}#{frag}")).or_else(|| id_positions.get(frag))
+			&& *offset >= section.start
+			&& *offset < section.end
+		{
+			return *offset;
 		}
 		return section.start;
 	}
-	if let Some(frag) = fragment {
-		if let Some(offset) = id_positions.get(&frag) {
-			return *offset;
-		}
+	if let Some(frag) = fragment
+		&& let Some(offset) = id_positions.get(&frag)
+	{
+		return *offset;
 	}
 	// Fallback: match by file name if full path didn't resolve.
-	if let Some(name) = Path::new(&path_part).file_name().and_then(|n| n.to_str()) {
-		if let Some(section) = sections.iter().find(|section| {
+	if let Some(name) = Path::new(&path_part).file_name().and_then(|n| n.to_str())
+		&& let Some(section) = sections.iter().find(|section| {
 			Path::new(&section.path)
 				.file_name()
 				.and_then(|n| n.to_str())
 				.is_some_and(|base| base.eq_ignore_ascii_case(name))
 		}) {
-			return section.start;
-		}
+		return section.start;
 	}
 	0
 }
@@ -584,10 +584,11 @@ fn build_toc_from_ncx<R: Read + Seek>(
 		ncx_doc.descendants().find(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "navMap")?;
 	let mut items = Vec::new();
 	for navpoint in nav_map.children() {
-		if navpoint.node_type() == NodeType::Element && navpoint.tag_name().name() == "navPoint" {
-			if let Some(item) = convert_navpoint(navpoint, sections, id_positions, ncx_path) {
-				items.push(item);
-			}
+		if navpoint.node_type() == NodeType::Element
+			&& navpoint.tag_name().name() == "navPoint"
+			&& let Some(item) = convert_navpoint(navpoint, sections, id_positions, ncx_path)
+		{
+			items.push(item);
 		}
 	}
 	if items.is_empty() { None } else { Some(items) }
@@ -621,10 +622,11 @@ fn convert_navpoint(
 	let offset = compute_nav_offset(&reference, sections, id_positions);
 	let mut item = TocItem::new(label, reference, offset);
 	for child in nav.children() {
-		if child.node_type() == NodeType::Element && child.tag_name().name() == "navPoint" {
-			if let Some(child_item) = convert_navpoint(child, sections, id_positions, base_path) {
-				item.children.push(child_item);
-			}
+		if child.node_type() == NodeType::Element
+			&& child.tag_name().name() == "navPoint"
+			&& let Some(child_item) = convert_navpoint(child, sections, id_positions, base_path)
+		{
+			item.children.push(child_item);
 		}
 	}
 	Some(item)
@@ -710,10 +712,11 @@ fn build_pages_from_ncx<R: Read + Seek>(
 		ncx_doc.descendants().find(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "pageList")?;
 	let mut items = Vec::new();
 	for page_target in page_list.children() {
-		if page_target.node_type() == NodeType::Element && page_target.tag_name().name() == "pageTarget" {
-			if let Some(item) = convert_navpoint(page_target, sections, id_positions, ncx_path) {
-				items.push(item);
-			}
+		if page_target.node_type() == NodeType::Element
+			&& page_target.tag_name().name() == "pageTarget"
+			&& let Some(item) = convert_navpoint(page_target, sections, id_positions, ncx_path)
+		{
+			items.push(item);
 		}
 	}
 	if items.is_empty() { None } else { Some(items) }

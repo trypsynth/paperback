@@ -40,7 +40,7 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 	println!("Generating Kotlin bindings via uniffi-bindgen...");
 	let status = Command::new(&cargo)
 		.current_dir(crate::project_root())
-		.args(&[
+		.args([
 			"run",
 			"--bin",
 			"uniffi-bindgen",
@@ -60,7 +60,7 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 	println!("Building native libraries for arm64-v8a and armeabi-v7a...");
 	let status = Command::new(&cargo)
 		.current_dir(crate::project_root())
-		.args(&[
+		.args([
 			"ndk",
 			"-t",
 			"arm64-v8a",

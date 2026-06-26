@@ -189,10 +189,10 @@ impl HtmlToText {
 			Node::Element(element) => {
 				let tag_name = element.name();
 				if tag_name == "table" {
-					if self.flags.contains(ProcessingFlags::IN_BODY) {
-						if let Some(id) = element.attr("id").or_else(|| element.attr("name")) {
-							self.id_positions.insert(id.to_string(), self.get_current_text_position());
-						}
+					if self.flags.contains(ProcessingFlags::IN_BODY)
+						&& let Some(id) = element.attr("id").or_else(|| element.attr("name"))
+					{
+						self.id_positions.insert(id.to_string(), self.get_current_text_position());
 					}
 					self.handle_table(node, document);
 					return;
@@ -226,11 +226,11 @@ impl HtmlToText {
 		let start_offset = self.get_current_text_position();
 		let mut table_caption = String::new();
 		for child in node.children() {
-			if let Node::Element(element) = child.value() {
-				if element.name() == "caption" {
-					table_caption = Self::collect_text(child).trim().to_string();
-					break;
-				}
+			if let Node::Element(element) = child.value()
+				&& element.name() == "caption"
+			{
+				table_caption = Self::collect_text(child).trim().to_string();
+				break;
 			}
 		}
 		if table_caption.is_empty() {
@@ -242,11 +242,11 @@ impl HtmlToText {
 						break;
 					} else if matches!(name, "thead" | "tbody" | "tfoot") {
 						for subchild in child.children() {
-							if let Node::Element(subelem) = subchild.value() {
-								if subelem.name() == "tr" {
-									table_caption = Self::collect_text(subchild).trim().to_string();
-									break;
-								}
+							if let Node::Element(subelem) = subchild.value()
+								&& subelem.name() == "tr"
+							{
+								table_caption = Self::collect_text(subchild).trim().to_string();
+								break;
 							}
 						}
 						if !table_caption.is_empty() {
@@ -300,11 +300,11 @@ impl HtmlToText {
 
 					if description.is_empty() && tag_name == "figure" {
 						for child in node.children() {
-							if let Node::Element(child_elem) = child.value() {
-								if child_elem.name() == "figcaption" {
-									description = collapse_whitespace(&Self::collect_text(child));
-									break;
-								}
+							if let Node::Element(child_elem) = child.value()
+								&& child_elem.name() == "figcaption"
+							{
+								description = collapse_whitespace(&Self::collect_text(child));
+								break;
 							}
 						}
 					}
@@ -390,10 +390,10 @@ impl HtmlToText {
 			if tag_name == "ol" {
 				style.ordered = true;
 				if let Some(element) = ElementRef::wrap(node) {
-					if let Some(start_val) = element.attr("start") {
-						if let Ok(start_num) = start_val.parse::<i32>() {
-							style.item_number = start_num;
-						}
+					if let Some(start_val) = element.attr("start")
+						&& let Ok(start_num) = start_val.parse::<i32>()
+					{
+						style.item_number = start_num;
 					}
 					if let Some(type_val) = element.attr("type") {
 						style.list_type = type_val.to_lowercase();
@@ -403,10 +403,10 @@ impl HtmlToText {
 			self.list_style_stack.push(style);
 			let mut item_count = 0;
 			for child in node.children() {
-				if let Node::Element(child_elem) = child.value() {
-					if child_elem.name() == "li" {
-						item_count += 1;
-					}
+				if let Node::Element(child_elem) = child.value()
+					&& child_elem.name() == "li"
+				{
+					item_count += 1;
 				}
 			}
 			if item_count > 0 {
@@ -424,23 +424,16 @@ impl HtmlToText {
 			&& tag_name.len() == 2
 			&& tag_name.starts_with('h')
 			&& tag_name.chars().nth(1).is_some_and(|c| c.is_ascii_digit())
+			&& let Some(level_char) = tag_name.chars().nth(1)
+			&& let Some(level) = level_char.to_digit(10)
+			&& (1..=6).contains(&level)
 		{
-			if let Some(level_char) = tag_name.chars().nth(1) {
-				if let Some(level) = level_char.to_digit(10) {
-					if (1..=6).contains(&level) {
-						self.finalize_current_line();
-						let heading_offset = self.get_current_text_position();
-						let heading_text = Self::get_element_text(node, document);
-						if !heading_text.is_empty() {
-							#[allow(clippy::cast_possible_wrap)]
-							self.headings.push(HeadingInfo {
-								offset: heading_offset,
-								level: level as i32,
-								text: heading_text,
-							});
-						}
-					}
-				}
+			self.finalize_current_line();
+			let heading_offset = self.get_current_text_position();
+			let heading_text = Self::get_element_text(node, document);
+			if !heading_text.is_empty() {
+				#[allow(clippy::cast_possible_wrap)]
+				self.headings.push(HeadingInfo { offset: heading_offset, level: level as i32, text: heading_text });
 			}
 		}
 	}

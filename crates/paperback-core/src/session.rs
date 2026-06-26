@@ -160,7 +160,7 @@ pub enum DocumentError {
 
 impl From<String> for DocumentError {
 	fn from(s: String) -> Self {
-		DocumentError::ParseError(s)
+		Self::ParseError(s)
 	}
 }
 
@@ -710,6 +710,7 @@ impl DocumentSession {
 		self.history_navigate(current_pos, true)
 	}
 
+	#[must_use]
 	pub fn activate_link(&self, position: i64) -> LinkActivationResult {
 		let pos_usize = usize::try_from(position.max(0)).unwrap_or(0);
 		let href = {
@@ -819,6 +820,7 @@ impl DocumentSession {
 		supported
 	}
 
+	#[must_use]
 	pub fn search_ffi(&self, query: String, start_position: i64, options: SearchOptionsFfi) -> SearchResultFfi {
 		let mut search_options = SearchOptions::empty();
 		if options.match_case {

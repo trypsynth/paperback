@@ -67,12 +67,10 @@ pub fn config_toml_path() -> PathBuf {
 		}
 	}
 	let is_installed = (0..10).any(|i| exe_dir.join(format!("unins{i:03}.exe")).exists());
-	if is_installed {
-		if let Some(appdata) = env::var_os("APPDATA") {
-			let config_dir = PathBuf::from(appdata).join("Paperback");
-			let _ = std::fs::create_dir_all(&config_dir);
-			return config_dir.join("Paperback.toml");
-		}
+	if is_installed && let Some(appdata) = env::var_os("APPDATA") {
+		let config_dir = PathBuf::from(appdata).join("Paperback");
+		let _ = std::fs::create_dir_all(&config_dir);
+		return config_dir.join("Paperback.toml");
 	}
 	exe_dir.join("Paperback.toml")
 }

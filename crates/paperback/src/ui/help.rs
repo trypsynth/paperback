@@ -76,27 +76,27 @@ pub fn readme_path() -> Option<PathBuf> {
 pub fn handle_open_containing_folder(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) {
 	let dir = doc_manager.lock().unwrap().active_tab().and_then(|tab| tab.file_path.parent()).map(Path::to_path_buf);
 	let Some(dir) = dir else {
-		show_error(frame, &t("Failed to open containing folder."), &t("Error"));
+		show_error(frame, t("Failed to open containing folder."), &t("Error"));
 		return;
 	};
 	let url = format!("file://{}", dir.to_string_lossy());
 	if !wxdragon::utils::launch_default_browser(&url, wxdragon::utils::BrowserLaunchFlags::Default) {
-		show_error(frame, &t("Failed to open containing folder."), &t("Error"));
+		show_error(frame, t("Failed to open containing folder."), &t("Error"));
 	}
 }
 
 pub fn handle_view_help_browser(frame: &Frame) {
 	let Some(path) = readme_path() else {
-		show_error(frame, &t("readme.html not found. Please ensure the application was built properly."), &t("Error"));
+		show_error(frame, t("readme.html not found. Please ensure the application was built properly."), &t("Error"));
 		return;
 	};
 	if !path.exists() {
-		show_error(frame, &t("readme.html not found. Please ensure the application was built properly."), &t("Error"));
+		show_error(frame, t("readme.html not found. Please ensure the application was built properly."), &t("Error"));
 		return;
 	}
 	let url = format!("file://{}", path.to_string_lossy());
 	if !wxdragon::utils::launch_default_browser(&url, wxdragon::utils::BrowserLaunchFlags::Default) {
-		show_error(frame, &t("Failed to launch default browser."), &t("Error"));
+		show_error(frame, t("Failed to launch default browser."), &t("Error"));
 	}
 }
 
@@ -106,11 +106,11 @@ pub fn handle_view_help_paperback(
 	config: &Rc<Mutex<ConfigManager>>,
 ) -> bool {
 	let Some(path) = readme_path() else {
-		show_error(frame, &t("readme.html not found. Please ensure the application was built properly."), &t("Error"));
+		show_error(frame, t("readme.html not found. Please ensure the application was built properly."), &t("Error"));
 		return false;
 	};
 	if !path.exists() {
-		show_error(frame, &t("readme.html not found. Please ensure the application was built properly."), &t("Error"));
+		show_error(frame, t("readme.html not found. Please ensure the application was built properly."), &t("Error"));
 		return false;
 	}
 	if !ensure_parser_ready_for_path(frame, &path, config) {
@@ -122,7 +122,7 @@ pub fn handle_view_help_paperback(
 pub fn handle_donate(frame: &Frame) {
 	let url = "https://paypal.me/tygillespie05";
 	if !wxdragon::utils::launch_default_browser(url, wxdragon::utils::BrowserLaunchFlags::Default) {
-		show_error(frame, &t("Failed to open donation page in browser."), &t("Error"));
+		show_error(frame, t("Failed to open donation page in browser."), &t("Error"));
 	}
 }
 

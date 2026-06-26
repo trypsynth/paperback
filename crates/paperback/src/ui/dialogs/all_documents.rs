@@ -168,11 +168,11 @@ fn make_all_documents_open_action(
 	selected_path: Rc<Mutex<Option<String>>>,
 ) -> Rc<dyn Fn()> {
 	Rc::new(move || {
-		if let Some(path) = get_selected_path(list) {
-			if Path::new(&path).exists() {
-				*selected_path.lock().unwrap() = Some(path);
-				dialog.end_modal(wxdragon::id::ID_OK);
-			}
+		if let Some(path) = get_selected_path(list)
+			&& Path::new(&path).exists()
+		{
+			*selected_path.lock().unwrap() = Some(path);
+			dialog.end_modal(wxdragon::id::ID_OK);
 		}
 	})
 }
@@ -352,12 +352,12 @@ fn bind_all_documents_keys(list: ListCtrl, open_action: &Rc<dyn Fn()>, remove_ac
 	});
 	let open_action_for_char = Rc::clone(open_action);
 	list.bind_internal(EventType::CHAR, move |event| {
-		if let Some(key) = event.get_key_code() {
-			if key == KEY_RETURN || key == KEY_NUMPAD_ENTER {
-				open_action_for_char();
-				event.skip(false);
-				return;
-			}
+		if let Some(key) = event.get_key_code()
+			&& (key == KEY_RETURN || key == KEY_NUMPAD_ENTER)
+		{
+			open_action_for_char();
+			event.skip(false);
+			return;
 		}
 		event.skip(true);
 	});
@@ -507,12 +507,11 @@ fn get_path_for_index(list: ListCtrl, index: i32) -> Option<String> {
 	if index < 0 {
 		return None;
 	}
-	if let Ok(index_u64) = u64::try_from(index) {
-		if let Some(data) = list.get_custom_data(index_u64) {
-			if let Some(path) = data.as_ref().downcast_ref::<String>() {
-				return Some(path.clone());
-			}
-		}
+	if let Ok(index_u64) = u64::try_from(index)
+		&& let Some(data) = list.get_custom_data(index_u64)
+		&& let Some(path) = data.as_ref().downcast_ref::<String>()
+	{
+		return Some(path.clone());
 	}
 	let path = list.get_item_text(i64::from(index), 2);
 	if path.is_empty() { None } else { Some(path) }

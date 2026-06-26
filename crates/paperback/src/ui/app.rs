@@ -42,11 +42,11 @@ impl PaperbackApp {
 		}
 		let config = Rc::new(Mutex::new(config));
 		let single_instance_checker = SingleInstanceChecker::new(SINGLE_INSTANCE_NAME, None);
-		if let Some(checker) = single_instance_checker.as_ref() {
-			if checker.is_another_running() {
-				send_ipc_command(ipc_command_from_cli());
-				process::exit(0);
-			}
+		if let Some(checker) = single_instance_checker.as_ref()
+			&& checker.is_another_running()
+		{
+			send_ipc_command(ipc_command_from_cli());
+			process::exit(0);
 		}
 		let main_window = Rc::new(MainWindow::new(Rc::clone(&config)));
 		MAIN_WINDOW_PTR.store(Rc::as_ptr(&main_window) as usize, Ordering::SeqCst);
@@ -83,7 +83,7 @@ fn open_from_command_line(main_window: &MainWindow) {
 	}
 }
 
-pub(crate) fn main_window_from_ptr() -> Option<&'static MainWindow> {
+pub fn main_window_from_ptr() -> Option<&'static MainWindow> {
 	let ptr = MAIN_WINDOW_PTR.load(Ordering::SeqCst);
 	if ptr == 0 {
 		return None;
@@ -164,7 +164,7 @@ mod pipe {
 				if ready {
 					let mut buf = vec![0u8; BUF];
 					let mut n = 0u32;
-					let ok = unsafe { ReadFile(h, Some(&mut buf), Some(&mut n), None) };
+					let ok = unsafe { ReadFile(h, Some(&mut buf), Some(&raw mut n), None) };
 					if ok.is_ok() && n > 0 {
 						on_data(buf[..n as usize].to_vec());
 					}

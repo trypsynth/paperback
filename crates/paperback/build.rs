@@ -176,10 +176,10 @@ fn copy_pdfium_dylib() {
 		let src = PathBuf::from(path);
 		if src.is_file() {
 			println!("cargo:rerun-if-changed={}", src.display());
-			if src != dest {
-				if let Err(err) = fs::copy(&src, &dest) {
-					println!("cargo:warning=Failed to copy libpdfium.dylib from {}: {}", src.display(), err);
-				}
+			if src != dest
+				&& let Err(err) = fs::copy(&src, &dest)
+			{
+				println!("cargo:warning=Failed to copy libpdfium.dylib from {}: {}", src.display(), err);
 			}
 			return;
 		}

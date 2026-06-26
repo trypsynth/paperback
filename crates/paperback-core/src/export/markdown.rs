@@ -3,6 +3,7 @@ use crate::{
 	util::text::{ch_width, display_len},
 };
 
+#[must_use]
 pub fn render(doc: &Document) -> String {
 	let content = &doc.buffer.content;
 	enum Mk {

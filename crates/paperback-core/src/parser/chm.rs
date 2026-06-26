@@ -174,18 +174,17 @@ fn parse_hhc_node(node: ElementRef, items: &mut Vec<TocItem>) {
 				let mut name = String::new();
 				let mut local = String::new();
 				for obj_child in child_ref.children() {
-					if let Some(obj_element) = obj_child.value().as_element() {
-						if obj_element.name() == "object" {
-							if let Some(object_ref) = ElementRef::wrap(obj_child) {
-								for param in object_ref.select(&param_selector) {
-									let param_name = param.value().attr("name").unwrap_or("").to_lowercase();
-									let param_value = param.value().attr("value").unwrap_or("");
-									match param_name.as_str() {
-										"name" => name = param_value.to_string(),
-										"local" => local = param_value.to_string(),
-										_ => {}
-									}
-								}
+					if let Some(obj_element) = obj_child.value().as_element()
+						&& obj_element.name() == "object"
+						&& let Some(object_ref) = ElementRef::wrap(obj_child)
+					{
+						for param in object_ref.select(&param_selector) {
+							let param_name = param.value().attr("name").unwrap_or("").to_lowercase();
+							let param_value = param.value().attr("value").unwrap_or("");
+							match param_name.as_str() {
+								"name" => name = param_value.to_string(),
+								"local" => local = param_value.to_string(),
+								_ => {}
 							}
 						}
 					}
@@ -195,13 +194,12 @@ fn parse_hhc_node(node: ElementRef, items: &mut Vec<TocItem>) {
 					let mut found_child_ul = false;
 					// PATTERN 1: Check for child UL (standard CHM pattern)
 					for nested_child in child_ref.children() {
-						if let Some(nested_element) = nested_child.value().as_element() {
-							if nested_element.name() == "ul" {
-								if let Some(nested_ref) = ElementRef::wrap(nested_child) {
-									parse_hhc_node(nested_ref, &mut item.children);
-									found_child_ul = true;
-								}
-							}
+						if let Some(nested_element) = nested_child.value().as_element()
+							&& nested_element.name() == "ul"
+							&& let Some(nested_ref) = ElementRef::wrap(nested_child)
+						{
+							parse_hhc_node(nested_ref, &mut item.children);
+							found_child_ul = true;
 						}
 					}
 					// PATTERN 2: Check for sibling UL elements, as seen in nvgt.chm.
@@ -217,11 +215,11 @@ fn parse_hhc_node(node: ElementRef, items: &mut Vec<TocItem>) {
 								}
 							}
 						}
-						if let Some((ul_index, sibling_node)) = next_element {
-							if let Some(sibling_ref) = ElementRef::wrap(sibling_node) {
-								parse_hhc_node(sibling_ref, &mut item.children);
-								consumed_indices.insert(ul_index); // Mark as consumed
-							}
+						if let Some((ul_index, sibling_node)) = next_element
+							&& let Some(sibling_ref) = ElementRef::wrap(sibling_node)
+						{
+							parse_hhc_node(sibling_ref, &mut item.children);
+							consumed_indices.insert(ul_index); // Mark as consumed
 						}
 					}
 					items.push(item);
@@ -247,10 +245,10 @@ fn build_ordered_file_list(html_files: &[String], toc_items: &[TocItem]) -> Vec<
 	collect_toc_files(toc_items, &mut toc_files);
 	for toc_file in toc_files {
 		let normalized = normalize_path(&toc_file);
-		if let Some(actual_path) = path_map.get(&normalized) {
-			if seen.insert(normalized) {
-				ordered.push(actual_path.clone());
-			}
+		if let Some(actual_path) = path_map.get(&normalized)
+			&& seen.insert(normalized)
+		{
+			ordered.push(actual_path.clone());
 		}
 	}
 	for file in html_files {

@@ -27,10 +27,10 @@ fn main() {
 }
 
 fn set_pdfium_path_from_exe() {
-	if let Ok(exe) = env::current_exe() {
-		if let Some(dir) = exe.parent() {
-			set_pdfium_library_path(dir.to_string_lossy().into_owned());
-		}
+	if let Ok(exe) = env::current_exe()
+		&& let Some(dir) = exe.parent()
+	{
+		set_pdfium_library_path(dir.to_string_lossy().into_owned());
 	}
 }
 

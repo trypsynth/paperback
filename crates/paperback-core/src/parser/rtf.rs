@@ -229,13 +229,13 @@ fn extract_font_table(rtf: &str, default_encoding: &'static Encoding) -> HashMap
 			ei += 1;
 		}
 
-		if let Some(fnum) = font_num {
-			if let Some(cs_pos) = entry.find("\\fcharset") {
-				let after = &entry[cs_pos + 9..];
-				let num_str: String = after.chars().take_while(|c| c.is_ascii_digit()).collect();
-				if let Ok(cs) = num_str.parse::<i32>() {
-					map.insert(fnum, encoding_for_fcharset(cs, default_encoding));
-				}
+		if let Some(fnum) = font_num
+			&& let Some(cs_pos) = entry.find("\\fcharset")
+		{
+			let after = &entry[cs_pos + 9..];
+			let num_str: String = after.chars().take_while(char::is_ascii_digit).collect();
+			if let Ok(cs) = num_str.parse::<i32>() {
+				map.insert(fnum, encoding_for_fcharset(cs, default_encoding));
 			}
 		}
 
@@ -272,10 +272,10 @@ fn resolve_hex_escapes(rtf: &str, encoding: &'static Encoding, font_table: &Hash
 			while num_end < len && bytes[num_end].is_ascii_digit() {
 				num_end += 1;
 			}
-			if let Ok(s) = std::str::from_utf8(&bytes[num_start..num_end]) {
-				if let Ok(font_num) = s.parse::<u32>() {
-					current_encoding = font_table.get(&font_num).copied().unwrap_or(encoding);
-				}
+			if let Ok(s) = std::str::from_utf8(&bytes[num_start..num_end])
+				&& let Ok(font_num) = s.parse::<u32>()
+			{
+				current_encoding = font_table.get(&font_num).copied().unwrap_or(encoding);
 			}
 			// Fall through — emit the control word bytes as-is for the lexer.
 		}
@@ -417,56 +417,49 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 						}
 					}
 					ControlWord::Unicode => {
-						if !in_header {
-							if let Property::Value(code) = property {
-								let code = if *code < 0 {
-									let adjusted = i64::from(*code) + 0x10000;
-									let adjusted = u64::try_from(adjusted).unwrap_or(0) & 0xFFFF;
-									u16::try_from(adjusted).unwrap_or(0)
-								} else {
-									u16::try_from(*code).unwrap_or(0)
-								};
-								// Check for surrogate pairs
-								if (0xD800..=0xDBFF).contains(&code) {
-									pending_high_surrogate = Some(code);
-								} else if (0xDC00..=0xDFFF).contains(&code) {
-									if let Some(high) = pending_high_surrogate.take() {
-										let codepoint =
-											0x10000 + ((u32::from(high) - 0xD800) << 10) + (u32::from(code) - 0xDC00);
-										if let Some(ch) = char::from_u32(codepoint) {
-											buffer.append(&ch.to_string());
-										}
-									}
-								} else {
-									pending_high_surrogate = None;
-									if let Some(ch) = char::from_u32(u32::from(code)) {
+						if !in_header && let Property::Value(code) = property {
+							let code = if *code < 0 {
+								let adjusted = i64::from(*code) + 0x10000;
+								let adjusted = u64::try_from(adjusted).unwrap_or(0) & 0xFFFF;
+								u16::try_from(adjusted).unwrap_or(0)
+							} else {
+								u16::try_from(*code).unwrap_or(0)
+							};
+							// Check for surrogate pairs
+							if (0xD800..=0xDBFF).contains(&code) {
+								pending_high_surrogate = Some(code);
+							} else if (0xDC00..=0xDFFF).contains(&code) {
+								if let Some(high) = pending_high_surrogate.take() {
+									let codepoint =
+										0x10000 + ((u32::from(high) - 0xD800) << 10) + (u32::from(code) - 0xDC00);
+									if let Some(ch) = char::from_u32(codepoint) {
 										buffer.append(&ch.to_string());
 									}
 								}
-							}
-						}
-					}
-					ControlWord::Unknown(name) => {
-						if !in_header {
-							match *name {
-								r"\page" => {
-									let ends_with_ws =
-										buffer.content.chars().next_back().is_some_and(char::is_whitespace);
-									if !ends_with_ws && !buffer.content.is_empty() {
-										buffer.append(" ");
-									}
-									buffer.add_marker(Marker::new(MarkerType::PageBreak, buffer.current_position()));
+							} else {
+								pending_high_surrogate = None;
+								if let Some(ch) = char::from_u32(u32::from(code)) {
+									buffer.append(&ch.to_string());
 								}
-								r"\rquote" => buffer.append("\u{2019}"),
-								r"\lquote" => buffer.append("\u{2018}"),
-								r"\rdblquote" => buffer.append("\u{201D}"),
-								r"\ldblquote" => buffer.append("\u{201C}"),
-								r"\emdash" => buffer.append("\u{2014}"),
-								r"\endash" => buffer.append("\u{2013}"),
-								_ => {}
 							}
 						}
 					}
+					ControlWord::Unknown(name) if !in_header => match *name {
+						r"\page" => {
+							let ends_with_ws = buffer.content.chars().next_back().is_some_and(char::is_whitespace);
+							if !ends_with_ws && !buffer.content.is_empty() {
+								buffer.append(" ");
+							}
+							buffer.add_marker(Marker::new(MarkerType::PageBreak, buffer.current_position()));
+						}
+						r"\rquote" => buffer.append("\u{2019}"),
+						r"\lquote" => buffer.append("\u{2018}"),
+						r"\rdblquote" => buffer.append("\u{201D}"),
+						r"\ldblquote" => buffer.append("\u{201C}"),
+						r"\emdash" => buffer.append("\u{2014}"),
+						r"\endash" => buffer.append("\u{2013}"),
+						_ => {}
+					},
 					_ => {}
 				}
 			}
@@ -490,10 +483,8 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 					}
 				}
 			}
-			Token::CRLF => {
-				if !in_header {
-					buffer.append("\n");
-				}
+			Token::CRLF if !in_header => {
+				buffer.append("\n");
 			}
 			_ => {}
 		}

@@ -2,7 +2,7 @@
 ///
 /// Called at startup before `ConfigManager::initialize()`. If an INI file exists
 /// and no TOML file exists yet, reads the INI via wxdragon's Config and writes a
-/// TOML file that the core's ConfigManager can load normally. This module is the
+/// TOML file that the core's `ConfigManager` can load normally. This module is the
 /// only place in the binary that directly constructs `ConfigData`.
 use std::fs;
 
@@ -152,7 +152,7 @@ fn read_ini(ini_path: &std::path::Path) -> ConfigData {
 					doc.bookmarks.push(StoredBookmark { start: pos, end: pos, note: String::new() });
 				}
 			}
-			doc.bookmarks.sort_by(|a, b| a.start.cmp(&b.start));
+			doc.bookmarks.sort_by_key(|a| a.start);
 		}
 		data.documents.insert(group, doc);
 		config.set_path("/");

@@ -141,7 +141,7 @@ fn format_nav_found_message(
 			format!("{wrap_prefix}{message}")
 		}
 		NavFoundFormat::ImageFormat => {
-			let message = format!("{context_text}");
+			let message = context_text.to_string();
 			format!("{wrap_prefix}{message}")
 		}
 	}

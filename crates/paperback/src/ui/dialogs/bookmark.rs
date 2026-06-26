@@ -260,30 +260,28 @@ fn build_bookmark_repopulate(params: BookmarkRepopulateParams) -> Rc<dyn Fn(i64)
 		selected_end.set(-1);
 		set_buttons_enabled(false);
 		let entries_ref = entries.borrow();
-		if previous_selected >= 0 {
-			if let Some((idx, entry)) =
+		if previous_selected >= 0
+			&& let Some((idx, entry)) =
 				entries_ref.iter().enumerate().find(|(_, entry)| entry.start == previous_selected)
-			{
-				if let Ok(idx_u32) = u32::try_from(idx) {
-					list.set_selection(idx_u32, true);
-				}
-				selected_start.set(entry.start);
-				selected_end.set(entry.end);
-				set_buttons_enabled(true);
-				return;
+		{
+			if let Ok(idx_u32) = u32::try_from(idx) {
+				list.set_selection(idx_u32, true);
 			}
+			selected_start.set(entry.start);
+			selected_end.set(entry.end);
+			set_buttons_enabled(true);
+			return;
 		}
-		if filtered.closest_index >= 0 {
-			if let Ok(idx) = usize::try_from(filtered.closest_index) {
-				if let Some(entry) = entries_ref.get(idx) {
-					if let Ok(idx_u32) = u32::try_from(idx) {
-						list.set_selection(idx_u32, true);
-					}
-					selected_start.set(entry.start);
-					selected_end.set(entry.end);
-					set_buttons_enabled(true);
-				}
+		if filtered.closest_index >= 0
+			&& let Ok(idx) = usize::try_from(filtered.closest_index)
+			&& let Some(entry) = entries_ref.get(idx)
+		{
+			if let Ok(idx_u32) = u32::try_from(idx) {
+				list.set_selection(idx_u32, true);
 			}
+			selected_start.set(entry.start);
+			selected_end.set(entry.end);
+			set_buttons_enabled(true);
 		}
 	})
 }
@@ -294,13 +292,13 @@ fn bind_bookmark_selection(params: BookmarkSelectionParams) {
 		let selection = event.get_selection().unwrap_or(-1);
 		if selection >= 0 {
 			let entries_ref = entries.borrow();
-			if let Ok(index) = usize::try_from(selection) {
-				if let Some(entry) = entries_ref.get(index) {
-					selected_start.set(entry.start);
-					selected_end.set(entry.end);
-					set_buttons_enabled(true);
-					return;
-				}
+			if let Ok(index) = usize::try_from(selection)
+				&& let Some(entry) = entries_ref.get(index)
+			{
+				selected_start.set(entry.start);
+				selected_end.set(entry.end);
+				set_buttons_enabled(true);
+				return;
 			}
 		}
 		selected_start.set(-1);

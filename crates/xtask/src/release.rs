@@ -12,7 +12,7 @@ pub fn release() -> Result<(), Box<dyn Error>> {
 	let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
 	let status = Command::new(&cargo)
 		.current_dir(crate::project_root())
-		.args(&["build", "--release", "-p", "paperback", "-p", "pb"])
+		.args(["build", "--release", "-p", "paperback", "-p", "pb"])
 		.status()?;
 	if !status.success() {
 		return Err("Cargo build failed".into());
