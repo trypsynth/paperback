@@ -128,6 +128,8 @@
 <p>Remove fuzzy markers once reviewed, then compile and test (same as steps 6 and 7 above).</p>
 </li>
 </ol>
+<h2>Translating the README</h2>
+<p>If you want to translate the user-facing documentation as well, create a <code>doc/readme-&lt;lang&gt;.md</code> file (for example <code>doc/readme-da.md</code>) using the English <code>doc/readme.md</code> as your starting point. The build system picks it up automatically and embeds the rendered HTML into the binary alongside the UI strings. Submit it in the same pull request as your <code>.po</code> file.</p>
 <h2>Submitting Your Translation</h2>
 <ol>
 <li>Commit your <code>.po</code> file and push:</li>
