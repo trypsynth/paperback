@@ -115,6 +115,11 @@ fn track_packaging_inputs() {
 }
 
 fn build_translations() {
+	let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap_or_default());
+	let workspace_dir = manifest_dir.parent().unwrap().parent().unwrap();
+	if let Err(e) = patois_build::gen_pot(&workspace_dir, workspace_dir.join("po"), "paperback") {
+		println!("cargo:warning=Failed to regenerate paperback.pot: {e}");
+	}
 	patois_build::compile_translations("../../po", "locale");
 }
 
