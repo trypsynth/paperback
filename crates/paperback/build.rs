@@ -406,6 +406,7 @@ fn build_docs() {
 			return;
 		}
 	};
+	let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap_or_default());
 	let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap_or_default());
 	let workspace_dir = manifest_dir.parent().unwrap().parent().unwrap();
 	let doc_dir = workspace_dir.join("doc");
@@ -413,22 +414,68 @@ fn build_docs() {
 	let config = doc_dir.join("pandoc.yaml");
 	println!("cargo:rerun-if-changed={}", readme.display());
 	println!("cargo:rerun-if-changed={}", config.display());
-	let pandoc_check = Command::new("pandoc").arg("--version").output();
-	if pandoc_check.is_err() {
+	let mut embedded_langs: Vec<String> = Vec::new();
+	let pandoc_available = Command::new("pandoc").arg("--version").output().is_ok();
+	if !pandoc_available {
 		println!("cargo:warning=Pandoc not found. Documentation will not be generated.");
-		return;
+	} else {
+		// English readme: build to both target_dir (for macOS bundle) and OUT_DIR (for embedding)
+		let target_output = target_dir.join("readme.html");
+		let out_output = out_dir.join("readme.html");
+		let status = Command::new("pandoc")
+			.arg(format!("--defaults={}", config.display()))
+			.arg(&readme)
+			.arg("-o")
+			.arg(&target_output)
+			.status();
+		match status {
+			Ok(s) if s.success() => {
+				let _ = fs::copy(&target_output, &out_output);
+				embedded_langs.push("en".to_string());
+			}
+			_ => println!("cargo:warning=Failed to generate documentation."),
+		}
+		if let Ok(entries) = fs::read_dir(&doc_dir) {
+			let mut doc_entries: Vec<_> = entries.flatten().collect();
+			doc_entries.sort_by_key(|e| e.file_name());
+			for entry in doc_entries {
+				let path = entry.path();
+				if path.extension().and_then(|e| e.to_str()) != Some("md") {
+					continue;
+				}
+				let stem = match path.file_stem().and_then(|s| s.to_str()) {
+					Some(s) => s.to_string(),
+					None => continue,
+				};
+				let lang_code = match stem.strip_prefix("readme-") {
+					Some(code) if !code.is_empty() => code.to_string(),
+					_ => continue,
+				};
+				println!("cargo:rerun-if-changed={}", path.display());
+				let lang_output = out_dir.join(format!("readme-{lang_code}.html"));
+				let status = Command::new("pandoc")
+					.arg(format!("--defaults={}", config.display()))
+					.arg(&path)
+					.arg("-o")
+					.arg(&lang_output)
+					.status();
+				match status {
+					Ok(s) if s.success() => embedded_langs.push(lang_code),
+					_ => println!("cargo:warning=Failed to generate documentation for language: {lang_code}"),
+				}
+			}
+		}
 	}
-	let output = target_dir.join("readme.html");
-	let status = Command::new("pandoc")
-		.arg(format!("--defaults={}", config.display()))
-		.arg(&readme)
-		.arg("-o")
-		.arg(&output)
-		.status();
-	match status {
-		Ok(s) if s.success() => {}
-		_ => println!("cargo:warning=Failed to generate documentation."),
+	let mut code = String::from("pub fn readme_for_lang(lang: &str) -> Option<&'static [u8]> {\n    match lang {\n");
+	for lang_code in &embedded_langs {
+		let filename = if lang_code == "en" { "/readme.html".to_string() } else { format!("/readme-{lang_code}.html") };
+		code.push_str(&format!(
+			"        {:?} => Some(include_bytes!(concat!(env!(\"OUT_DIR\"), {:?}))),\n",
+			lang_code, filename,
+		));
 	}
+	code.push_str("        _ => None,\n    }\n}\n");
+	let _ = fs::write(out_dir.join("lang_readmes.rs"), code);
 }
 
 fn configure_installer() {

@@ -26,14 +26,13 @@ pub fn release() -> Result<(), Box<dyn Error>> {
 		let pb_exe_name = if cfg!(windows) { "pb.exe" } else { "pb" };
 		let exe_path = target_dir.join(exe_name);
 		let pb_exe_path = target_dir.join(pb_exe_name);
-		let readme_path = target_dir.join("readme.html");
 		let sounds_path = target_dir.join("sounds");
 		let pdfium_dll_path = target_dir.join("pdfium.dll");
 		if !exe_path.exists() {
 			return Err("Executable not found".into());
 		}
-		println!("Packaging binary, docs, and sounds...");
-		build_zip_package(&target_dir, &exe_path, &pb_exe_path, &readme_path, &sounds_path, &pdfium_dll_path)?;
+		println!("Packaging binary and sounds...");
+		build_zip_package(&target_dir, &exe_path, &pb_exe_path, &sounds_path, &pdfium_dll_path)?;
 		if cfg!(windows) {
 			build_windows_installer(&target_dir)?;
 		}
@@ -73,12 +72,6 @@ fn build_mac_dmg(target_dir: &Path) -> Result<(), Box<dyn Error>> {
 		copy_dir_all(&sounds_src, &resources_dir.join("sounds"))?;
 	} else {
 		println!("Warning: sounds directory not found, skipping.");
-	}
-
-	// Copy readme.
-	let readme = target_dir.join("readme.html");
-	if readme.exists() {
-		let _ = fs::copy(&readme, resources_dir.join("readme.html"));
 	}
 
 	println!("Built app: {}", bundle_dir.display());
@@ -134,7 +127,6 @@ fn build_zip_package(
 	target_dir: &Path,
 	exe_path: &Path,
 	pb_exe_path: &Path,
-	readme_path: &Path,
 	sounds_dir: &Path,
 	pdfium_dll_path: &Path,
 ) -> Result<(), Box<dyn Error>> {
@@ -164,13 +156,6 @@ fn build_zip_package(
 		zip.start_file("pdfium.dll", options)?;
 		let mut f = File::open(pdfium_dll_path)?;
 		io::copy(&mut f, &mut zip)?;
-	}
-	if readme_path.exists() {
-		zip.start_file("readme.html", options)?;
-		let mut f = File::open(readme_path)?;
-		io::copy(&mut f, &mut zip)?;
-	} else {
-		println!("Warning: readme.html not found, skipping.");
 	}
 	if sounds_dir.exists() {
 		for entry in WalkDir::new(sounds_dir) {

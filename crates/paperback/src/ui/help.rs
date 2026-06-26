@@ -1,5 +1,5 @@
 use std::{
-	env,
+	env, fs,
 	path::{Path, PathBuf},
 	rc::Rc,
 	sync::{
@@ -8,6 +8,10 @@ use std::{
 	},
 };
 
+mod lang_readmes {
+	include!(concat!(env!("OUT_DIR"), "/lang_readmes.rs"));
+}
+
 use paperback_core::{config::ConfigManager, parser, version};
 use patois::t;
 use ship_shape::{UpdateChannel as ShipChannel, UpdaterConfig};
@@ -15,7 +19,7 @@ use wx_utils::show_error;
 use wxdragon::prelude::*;
 
 use super::{dialogs, document_manager::DocumentManager};
-use crate::config_ext::UpdateChannel;
+use crate::{config_ext::UpdateChannel, translation_manager::TranslationManager};
 
 pub static MAIN_WINDOW_PTR: AtomicUsize = AtomicUsize::new(0);
 
@@ -56,6 +60,14 @@ pub fn is_installer_distribution() -> bool {
 }
 
 pub fn readme_path() -> Option<PathBuf> {
+	let lang = TranslationManager::instance().lock().unwrap().current_language();
+	if let Some(bytes) = lang_readmes::readme_for_lang(&lang) {
+		let tmp = env::temp_dir().join(format!("paperback-readme-{lang}.html"));
+		if fs::write(&tmp, bytes).is_ok() {
+			return Some(tmp);
+		}
+	}
+	// Fallback for builds without pandoc: look for readme.html next to the exe
 	let exe = env::current_exe().ok()?;
 	let dir = exe.parent()?;
 	Some(dir.join("readme.html"))
