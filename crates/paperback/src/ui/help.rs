@@ -27,6 +27,7 @@ const PAPERBACK_GITHUB_REPO: &str = "trypsynth/paperback";
 const PAPERBACK_MINISIGN_KEY: &str = "RWQasnbWXwK2dhno9ThUm8HONEIo85iiDBZvw3jlNs574QJHEkoRiGX7";
 
 pub fn run_update_check(silent: bool, channel: UpdateChannel) {
+	tracing::info!(channel = %channel, silent, "checking for updates");
 	let config = Arc::new(UpdaterConfig::new(
 		PAPERBACK_GITHUB_REPO,
 		"paperback",

@@ -7,16 +7,19 @@ mod accessibility;
 mod config_ext;
 mod ipc;
 mod legacy_config;
+mod logging;
 mod translation_manager;
 mod ui;
 
 use std::{env, fs};
 
-use paperback_core::set_pdfium_library_path;
+use paperback_core::{set_pdfium_library_path, version};
 use ui::PaperbackApp;
 use wxdragon::prelude::{Appearance, set_appearance};
 
 fn main() {
+	let _log_guard = logging::init(&config_ext::config_dir());
+	tracing::info!(version = env!("CARGO_PKG_VERSION"), commit = version::COMMIT_HASH, "starting");
 	set_pdfium_path_from_exe();
 	cleanup_legacy_files();
 	let _ = wxdragon::main(|app| {

@@ -137,6 +137,7 @@ impl DocumentManager {
 			(password, forced_extension)
 		};
 		let path_str = path.to_string_lossy().to_string();
+		tracing::info!(path = %path.display(), "opening document");
 		match DocumentSession::new(&path_str, &password, &forced_extension) {
 			Ok(session) => self.add_session_tab(self_rc, path, session, &password, track, title_override),
 			Err(err) => {
@@ -152,12 +153,14 @@ impl DocumentManager {
 					match DocumentSession::new(&path_str, &password, &forced_extension) {
 						Ok(session) => self.add_session_tab(self_rc, path, session, &password, track, title_override),
 						Err(retry_error) => {
+							tracing::error!(path = %path.display(), error = %retry_error, "failed to open document");
 							let message = build_document_load_error_message(path, &retry_error);
 							show_error_dialog(&self.notebook, &message, &t("Error"));
 							false
 						}
 					}
 				} else {
+					tracing::error!(path = %path.display(), error = %err, "failed to open document");
 					let message = build_document_load_error_message(path, &err);
 					show_error_dialog(&self.notebook, &message, &t("Error"));
 					false
@@ -251,6 +254,7 @@ impl DocumentManager {
 			return false;
 		}
 		if let Some(tab) = self.tabs.get(index) {
+			tracing::info!(path = %tab.file_path.display(), "closing document");
 			self.recently_closed.push(tab.file_path.clone());
 			let path_str = tab.file_path.to_string_lossy();
 			let config = self.config.lock().unwrap();

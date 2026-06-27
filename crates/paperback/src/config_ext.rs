@@ -49,30 +49,33 @@ pub fn set_update_channel(config: &ConfigManager, channel: UpdateChannel) {
 	config.set_app_string("update_channel", &channel.to_string());
 }
 
-/// Returns the path to `Paperback.toml`.
+/// Returns the directory where Paperback stores its config and log files.
 ///
-/// On macOS, if running inside an app bundle (`*.app/Contents/MacOS/`), the config
-/// lives in `~/Library/Application Support/Paperback/`. On Windows installer
-/// distributions (detected by the presence of `unins000.exe` next to the executable),
-/// it lives in `%APPDATA%\Paperback\`. Otherwise it lives next to the executable,
-/// which is the portable and non-Windows/non-bundled convention.
-pub fn config_toml_path() -> PathBuf {
+/// On macOS app bundles: `~/Library/Application Support/Paperback/`.
+/// On Windows installer builds: `%APPDATA%\Paperback\`.
+/// Otherwise: the directory containing the executable (portable convention).
+pub fn config_dir() -> PathBuf {
 	let exe_dir = get_exe_directory();
 	#[cfg(target_os = "macos")]
 	if is_app_bundle(&exe_dir) {
 		if let Some(home) = env::var_os("HOME") {
-			let config_dir = PathBuf::from(home).join("Library/Application Support/Paperback");
-			let _ = std::fs::create_dir_all(&config_dir);
-			return config_dir.join("Paperback.toml");
+			let dir = PathBuf::from(home).join("Library/Application Support/Paperback");
+			let _ = std::fs::create_dir_all(&dir);
+			return dir;
 		}
 	}
 	let is_installed = (0..10).any(|i| exe_dir.join(format!("unins{i:03}.exe")).exists());
 	if is_installed && let Some(appdata) = env::var_os("APPDATA") {
-		let config_dir = PathBuf::from(appdata).join("Paperback");
-		let _ = std::fs::create_dir_all(&config_dir);
-		return config_dir.join("Paperback.toml");
+		let dir = PathBuf::from(appdata).join("Paperback");
+		let _ = std::fs::create_dir_all(&dir);
+		return dir;
 	}
-	exe_dir.join("Paperback.toml")
+	exe_dir
+}
+
+/// Returns the path to `Paperback.toml`.
+pub fn config_toml_path() -> PathBuf {
+	config_dir().join("Paperback.toml")
 }
 
 #[cfg(target_os = "macos")]

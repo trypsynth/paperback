@@ -17,6 +17,9 @@ bitflags = "2.12.1"
 live-region = "0.1.4"
 paperback-core = { path = "../paperback-core" }
 patois = "0.1.2"
+tracing = "0.1.44"
+tracing-appender = "0.2.5"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 ship-shape = "0.1.4"
 toml = { workspace = true }
 wx-utils = "0.1.1"
