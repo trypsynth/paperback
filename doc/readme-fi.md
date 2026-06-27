@@ -95,7 +95,7 @@ Paperback on suunniteltu ensisijaisesti näppäimistöllä ja ruudunlukijalla k�
 * `Ctrl+T`: Näytä sisällysluettelo.
 * `F7`: Näytä elementtilista.
 * `Ctrl+Shift+C`: Avaa asiakirjan kansio.
-* `Ctrl+Shift+V`: Avaa nykyinen sisältö verkkonäkymässä.
+* `Ctrl+Shift+V`: Avaa nykyinen sisältö selainnäkymässä.
 * `Ctrl+U`: Näytä asiakirjan lähdekoodi uudessa välilehdessä.
 * `Ctrl+Shift+E`: Vie asiakirjan tiedot `.paperback`-tiedostoon.
 * `Ctrl+Shift+I`: Tuo asiakirjan tiedot `.paperback`-tiedostosta.
@@ -188,16 +188,16 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Korjattu lukijan pikavalikko, joka ei avautunut hiiren oikealla painikkeella eikä sovellusnäppäimellä. [#362](https://github.com/trypsynth/paperback/issues/362).
 * Korjattu virhe, jossa kohdistus siirtyi toisinaan väärään asiakirjaan, kun niitä avattiin komentoriviltä.
 * Pelkkiä kuvia sisältävät PDF-tiedostot tunnistetaan taas ja niiden olemassaolosta ilmoitetaan.
-* Kuvien ja kuvioiden välillä on nyt mahdollista liikkua G/Shift+G- ja F/Shift+F-näppäimillä.
+* Kuvien ja kuvitusten välillä on nyt mahdollista liikkua G/Shift+G- ja F/Shift+F-näppäimillä.
 * Paperback noudattaa nyt sovelluksen "Tumma tila" -asetusta.
 * Poistettu DAISY XML -tuki, koska sitä ei enää tarvita.
 * Palattu käyttämään alkuperäistä Win32:n ensimmäisen kirjaimen navigointia sisällysluettelopuussa.
 * Virheenkäsittelyikkuna näyttää nyt yksityiskohtaisempia virheilmoituksia.
-* Verkkonäkymä avautuu nyt paljon nopeammin ja sulavammin. [#359](https://github.com/trypsynth/paperback/pull/359).
+* Selainnäkymä avautuu nyt paljon nopeammin ja sulavammin. [#359](https://github.com/trypsynth/paperback/pull/359).
 
 ### Versio 0.8.2
 * Lisätty sivujen tuki RTF-asiakirjoille.
-* Korjattu virhe, jossa verkkonäkymän avaaminen aktivoi automaattisesti ePubien sisältämät ulkoiset linkit.
+* Korjattu virhe, jossa selainnäkymän avaaminen aktivoi automaattisesti ePubien sisältämät ulkoiset linkit.
 * Korjattu virhe, jossa RTF-jäsennin ei lisännyt joissakin harvinaisissa tapauksissa sanaväliä sanojen väliin.
 * Korjattu kappaleet, jotka jakautuivat useiksi lyhyiksi riveiksi joissakin PDF-asiakirjoissa. [#101](https://github.com/trypsynth/paperback/issues/101), [#355](https://github.com/trypsynth/paperback/pull/355).
 * PDF-asiakirjoissa on nyt perustason linkki- ja otsikkonavigointi. [#291](https://github.com/trypsynth/paperback/issues/291), [#353](https://github.com/trypsynth/paperback/pull/353), [#354](https://github.com/trypsynth/paperback/pull/354).
@@ -224,7 +224,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Lisätty tuki erottimiin siirtymiselle S- ja Shift+S-näppäimillä. [#294](https://github.com/trypsynth/paperback/issues/294).
 * Kaikki yli 300 merkin pituiset siirtymät lisätään nyt automaattisesti navigointihistoriaan. [#179](https://github.com/trypsynth/paperback/issues/179).
 * Korjattu Paperbackin ikkunan palautus järjestelmäpalkista. [#284](https://github.com/trypsynth/paperback/issues/284).
-* Korjattu Markdown-asiakirjojen näyttäminen verkkonäkymässä raakatekstinä renderöidyn HTML:n sijaan.
+* Korjattu Markdown-asiakirjojen näyttäminen selainnäkymässä raakatekstinä renderöidyn HTML:n sijaan.
 * Korjattu Markdown-tiedostojen sisältämien taulukoiden virheellinen renderöinti. [#303](https://github.com/trypsynth/paperback/issues/303).
 * Paperback varoittaa nyt yritettäessä avata pelkkiä kuvia sisältäviä PDF-tiedostoja. [#89](https://github.com/trypsynth/paperback/issues/89).
 * Päivityksiä haettaessa on nyt mahdollista tarkistaa uudet kehitysversiot vakaiden julkaisujen sijaan. [#333](https://github.com/trypsynth/paperback/pull/333).
@@ -235,7 +235,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Sisältöä näyttävän elementin pikavalikossa on nyt lukusovellukselle ominaisia komentoja eikä yleisiä toimintoja, kuten Leikkaa tai Liitä. [#114](https://github.com/trypsynth/paperback/issues/114).
 
 ### Versio 0.7.0
-* Lisätty taulukoiden tuki HTML- ja XHTML-pohjaisille asiakirjoille. Liiku taulukoiden välillä T:llä ja Shift+T:llä ja avaa taulukko verkkonäkymässä painamalla Enter. [#81](https://github.com/trypsynth/paperback/issues/81), [#98](https://github.com/trypsynth/paperback/pull/98), [#226](https://github.com/trypsynth/paperback/pull/226), [#228](https://github.com/trypsynth/paperback/pull/228).
+* Lisätty taulukoiden tuki HTML- ja XHTML-pohjaisille asiakirjoille. Liiku taulukoiden välillä T:llä ja Shift+T:llä ja avaa taulukko selainnäkymässä painamalla Enter. [#81](https://github.com/trypsynth/paperback/issues/81), [#98](https://github.com/trypsynth/paperback/pull/98), [#226](https://github.com/trypsynth/paperback/pull/226), [#228](https://github.com/trypsynth/paperback/pull/228).
 * Lisätty alkeellinen verkkorenderöinti. Avaa asiakirjan nykyinen luku verkkopohjaisessa renderöijässä painamalla Ctrl+Shift+V. Tästä on hyötyä esimerkiksi monimutkaisessa muotoilussa tai koodiesimerkeissä. [#188](https://github.com/trypsynth/paperback/issues/188), [#239](https://github.com/trypsynth/paperback/pull/239).
 * Lisätty venäjänkielinen käännös. Kiitos Ruslan Gulmagomedoville. [#211](https://github.com/trypsynth/paperback/pull/211), [#212](https://github.com/trypsynth/paperback/pull/212).
 * Lisätty "Tyhjennä kaikki" -painike Kaikki asiakirjat -valintaikkunaan. [#217](https://github.com/trypsynth/paperback/issues/217).
