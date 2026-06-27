@@ -48,12 +48,23 @@ pub struct XmlToText {
 	/// balanced with the start/close handlers so list lengths are set on the right entries.
 	open_lists: Vec<Option<usize>>,
 	cached_char_length: usize,
+	/// When `true`, tables are emitted as their full tab-separated rendering; otherwise as a
+	/// `"[Table]: <first row>"` placeholder. A config flag, not parse state: it survives `clear()`.
+	render_tables_inline: bool,
 }
 
 impl XmlToText {
 	#[must_use]
 	pub fn new() -> Self {
 		Self::default()
+	}
+
+	/// Like [`new`](Self::new) but sets whether tables are rendered inline (full TSV) or as a
+	/// placeholder. Threaded from the owning parser's `ParserContext`; preserved across
+	/// `convert`/`clear`.
+	#[must_use]
+	pub fn with_render_tables_inline(render_tables_inline: bool) -> Self {
+		Self { render_tables_inline, ..Self::default() }
 	}
 
 	pub fn convert(&mut self, xml_content: &str) -> bool {
@@ -285,61 +296,30 @@ impl XmlToText {
 	fn handle_table_xml(&mut self, node: Node<'_, '_>) {
 		self.finalize_current_line();
 		let table_xml = node.document().input_text()[node.range()].to_string();
-		let start_lines_count = self.lines.len();
 		let start_offset = self.get_current_text_position();
-		let mut table_caption = String::new();
-		for child in node.children() {
-			if child.is_element() && child.tag_name().name() == "caption" {
-				table_caption = collect_element_text(child).trim().to_string();
-				break;
-			}
+		// Emit the table's on-screen text via the shared helper instead of recursing children to
+		// emit one cell per line. The helper output may contain tabs and span multiple lines; push
+		// each line verbatim so tab separators and empty cells survive whitespace collapsing.
+		let render = crate::parser::table_text::table_render_bundle(&table_xml, self.render_tables_inline);
+		for line in render.lines {
+			self.push_finalized_line(line);
 		}
-		if table_caption.is_empty() {
-			for child in node.children() {
-				if child.is_element() {
-					let name = child.tag_name().name();
-					if name == "tr" {
-						table_caption = collect_element_text(child).trim().to_string();
-						break;
-					} else if matches!(name, "thead" | "tbody" | "tfoot") {
-						for subchild in child.children() {
-							if subchild.is_element() && subchild.tag_name().name() == "tr" {
-								table_caption = collect_element_text(subchild).trim().to_string();
-								break;
-							}
-						}
-						if !table_caption.is_empty() {
-							break;
-						}
-					}
-				}
-			}
-		}
-		for child in node.children() {
-			self.process_node(child);
-		}
-		self.finalize_current_line();
-		let mut table_text = String::new();
-		for (i, line) in self.lines.iter().enumerate().skip(start_lines_count) {
-			if i > start_lines_count {
-				table_text.push('\n');
-			}
-			table_text.push_str(line);
-		}
-		if table_text.trim().is_empty() {
-			table_text = "table".to_string();
-			self.current_line.push_str(&table_text);
-			self.finalize_current_line();
-		}
-		if table_caption.trim().is_empty() {
-			table_caption = "table".to_string();
-		}
+		let table_caption = render.caption;
+		let display_length = render.display_length;
 		self.tables.push(TableInfo {
 			offset: start_offset,
 			text: table_caption,
 			html_content: table_xml,
-			length: table_text.len(),
+			length: display_length,
 		});
+	}
+
+	/// Push a line to the output verbatim (no whitespace collapsing/trimming), updating the cached
+	/// length so position tracking stays correct. Used for table rows whose tab separators and empty
+	/// cells must not be mangled by `add_line`.
+	fn push_finalized_line(&mut self, line: String) {
+		self.cached_char_length += display_len(&line) + 1; // +1 for the line's newline
+		self.lines.push(line);
 	}
 
 	fn handle_list_item_xml(&mut self, node: Node<'_, '_>) {
@@ -795,5 +775,67 @@ mod tests {
 		let lines: Vec<&str> = text.lines().collect();
 		assert!(lines.iter().any(|l| *l == "Term"), "dt content should be on its own line");
 		assert!(lines.iter().any(|l| *l == "Definition"), "dd content should be on its own line");
+	}
+	/// `TableInfo.length` must equal the emitted display extent (display units), NOT the
+	/// emitted text's byte length. Prefix text ensures start_offset > 0. With inline rendering the
+	/// emitted row is the TSV "A\t𝄞"; a non-BMP char (U+1D11E, G Clef, width 2) locks the math.
+	#[test]
+	fn xml_table_display_length_is_display_extent_not_byte_length() {
+		// "Intro\n" → 6 display units. Inline table row: "A\t𝄞" = 4 display units + newline = 5.
+		let xml = concat!(
+			"<root><body><p>Intro</p>",
+			"<table><tr><td>A</td><td>\u{1D11E}</td></tr></table>",
+			"</body></root>"
+		);
+		let mut converter = XmlToText::with_render_tables_inline(true);
+		assert!(converter.convert(xml));
+		let tables = converter.get_tables();
+		assert_eq!(tables.len(), 1, "expected exactly one table");
+		let table = &tables[0];
+
+		assert_eq!(table.offset, 6, "table starts after 'Intro\\n'");
+		// display_length = 5 (display extent); emitted byte length = 6 — they differ.
+		assert_eq!(table.length, 5, "length must be the display extent (5), not byte length (6)");
+	}
+
+	/// OFF mode emits the `"[Table]: <first row>"` placeholder; ON mode emits the full TSV.
+	#[test]
+	fn xml_table_emits_placeholder_or_tsv_by_flag() {
+		let xml = "<root><body><table><tr><td>A</td><td>B</td></tr><tr><td>c</td><td>d</td></tr></table></body></root>";
+
+		let mut off = XmlToText::new();
+		assert!(off.convert(xml));
+		assert_eq!(off.get_text(), "[Table]: A B");
+
+		let mut on = XmlToText::with_render_tables_inline(true);
+		assert!(on.convert(xml));
+		assert_eq!(on.get_text(), "A\tB\nc\td");
+	}
+
+	/// Two XML tables: second table's offset equals first offset + first display_length.
+	#[test]
+	fn xml_two_tables_offsets_are_cumulative() {
+		let xml = concat!(
+			"<root><body>",
+			"<table><tr><td>X</td></tr></table>",
+			"<table><tr><td>Y</td></tr></table>",
+			"</body></root>"
+		);
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(xml));
+		let tables = converter.get_tables();
+		assert_eq!(tables.len(), 2, "expected two tables");
+
+		let t1_offset = tables[0].offset;
+		let t1_display_length = tables[0].length;
+		let t2_offset = tables[1].offset;
+
+		assert_eq!(t1_offset, 0, "first table starts at 0");
+		assert!(t1_display_length > 0, "first table has non-zero display_length");
+		assert_eq!(
+			t2_offset,
+			t1_offset + t1_display_length,
+			"second table offset must equal first offset + first display_length"
+		);
 	}
 }

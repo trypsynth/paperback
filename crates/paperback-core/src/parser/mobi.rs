@@ -247,7 +247,7 @@ impl Parser for MobiParser {
 		// Old-style Mobipocket files use <font size="N"> instead of <h1>-<h6>.
 		// Rewrite them so the heading-based TOC builder can pick them up.
 		text = rewrite_font_size_headings(&text);
-		let mut html_converter = HtmlToText::new();
+		let mut html_converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
 		html_converter.convert(&text, HtmlSourceMode::NativeHtml);
 		if document_title.trim().is_empty() {
 			document_title = extract_title_from_path(&context.file_path);

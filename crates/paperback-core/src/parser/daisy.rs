@@ -93,7 +93,7 @@ impl Parser for DaisyParser {
 									e.context("Failed to read XML file from zip")
 								}
 							})?;
-					let mut converter = XmlToText::new();
+					let mut converter = XmlToText::with_render_tables_inline(context.render_tables_inline);
 					if converter.convert(&xml_content) {
 						buffer = DocumentBuffer::with_content(converter.get_text());
 						add_converter_markers(&mut buffer, &converter, 0);
@@ -156,7 +156,7 @@ impl Parser for DaisyParser {
 						combined_html.push_str("\n\n");
 					}
 				}
-				let mut converter = HtmlToText::new();
+				let mut converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
 				if converter.convert(&combined_html, HtmlSourceMode::NativeHtml) {
 					buffer = DocumentBuffer::with_content(converter.get_text());
 					add_converter_markers(&mut buffer, &converter, 0);
@@ -186,7 +186,7 @@ impl Parser for DaisyParser {
 			let xml_full_path = base_dir.join(&dtbook_path);
 			let xml_content = std::fs::read_to_string(&xml_full_path)
 				.with_context(|| format!("Failed to read DTBook XML file at {}", xml_full_path.display()))?;
-			let mut converter = XmlToText::new();
+			let mut converter = XmlToText::with_render_tables_inline(context.render_tables_inline);
 			if converter.convert(&xml_content) {
 				buffer = DocumentBuffer::with_content(converter.get_text());
 				add_converter_markers(&mut buffer, &converter, 0);

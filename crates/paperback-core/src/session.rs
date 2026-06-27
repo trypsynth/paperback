@@ -285,7 +285,12 @@ impl DocumentSession {
 	/// # Errors
 	///
 	/// Returns an error if the document cannot be parsed.
-	pub fn new(file_path: &str, password: &str, forced_extension: &str) -> Result<Self, String> {
+	pub fn new(
+		file_path: &str,
+		password: &str,
+		forced_extension: &str,
+		render_tables_inline: bool,
+	) -> Result<Self, String> {
 		let mut context = ParserContext::new(file_path.to_string());
 		if !password.is_empty() {
 			context = context.with_password(password.to_string());
@@ -293,6 +298,7 @@ impl DocumentSession {
 		if !forced_extension.is_empty() {
 			context = context.with_forced_extension(forced_extension.to_string());
 		}
+		context = context.with_render_tables_inline(render_tables_inline);
 		let parser_flags = parser::get_parser_flags_for_context(&context);
 		let doc = parser::parse_document(&context).map_err(|e| e.to_string())?;
 		Ok(Self {
@@ -305,10 +311,16 @@ impl DocumentSession {
 		})
 	}
 
-	pub fn new_ffi(file_path: String, password: String, forced_extension: String) -> Result<Self, DocumentError> {
-		Self::new(&file_path, &password, &forced_extension).map_err(DocumentError::ParseError)
+	pub fn new_ffi(
+		file_path: String,
+		password: String,
+		forced_extension: String,
+		render_tables_inline: bool,
+	) -> Result<Self, DocumentError> {
+		Self::new(&file_path, &password, &forced_extension, render_tables_inline).map_err(DocumentError::ParseError)
 	}
 
+	/// The parsed document handle backing this session.
 	#[must_use]
 	pub const fn handle(&self) -> &DocumentHandle {
 		&self.handle
@@ -871,8 +883,9 @@ impl DocumentSession {
 		let pos_usize = usize::try_from(position.max(0)).unwrap_or(0);
 		let table_index = self.handle.current_marker_index(pos_usize, MarkerType::Table)?;
 		let marker = self.handle.document().buffer.markers.get(table_index)?;
-		let table_end = marker.position + marker.text.chars().count();
-		if pos_usize < marker.position || pos_usize > table_end {
+		// `length` is the display extent (Tasks 2-3); valid range is the half-open `[position, end)`.
+		let table_end = marker.position + marker.length;
+		if pos_usize < marker.position || pos_usize >= table_end {
 			return None;
 		}
 		if marker.reference.is_empty() {
@@ -1379,7 +1392,10 @@ mod tests {
 		buffer.add_marker(Marker::new(MarkerType::ListItem, 6).with_level(1).with_text("item".to_string()));
 		buffer.add_marker(Marker::new(MarkerType::PageBreak, 8));
 		buffer.add_marker(
-			Marker::new(MarkerType::Table, 12).with_text("line3".to_string()).with_reference("<table/>".to_string()),
+			Marker::new(MarkerType::Table, 12)
+				.with_length(5)
+				.with_text("line3".to_string())
+				.with_reference("<table/>".to_string()),
 		);
 		buffer.add_marker(Marker::new(MarkerType::Separator, 5).with_length(1));
 		let mut doc = Document::new().with_title("Title".to_string()).with_author("Author".to_string());
@@ -1707,7 +1723,7 @@ mod tests {
 		let src = dir.join("notes.md");
 		fs::write(&src, md.as_bytes()).unwrap();
 		// A real session populates id_positions with pb-block-N anchors.
-		let session = DocumentSession::new(&src.to_string_lossy(), "", "").expect("open markdown");
+		let session = DocumentSession::new(&src.to_string_lossy(), "", "", false).expect("open markdown");
 
 		let rendered = session.content();
 		let pos = i64::try_from(rendered.find("Second").expect("second block rendered")).unwrap();
@@ -1816,6 +1832,72 @@ mod tests {
 			last_stable_position: None,
 		};
 		assert!(session.extract_resource("x", "y").is_err());
+	}
+
+	/// Builds a session whose buffer contains a table marker spanning a display range, used to
+	/// exercise `get_table_at_position`'s half-open `[position, position + length)` check.
+	fn table_session() -> DocumentSession {
+		// Layout (display units): "before\n" (0..7), table span "tbl\n" (7..11), "after\n" (11..17).
+		let html = "<table><tr><td>a</td><td>b</td></tr></table>";
+		let mut buffer = DocumentBuffer::with_content("before\ntbl\nafter\n".to_string());
+		// Table marker length is the DISPLAY extent of the emitted span ("tbl\n" -> 4).
+		buffer.add_marker(
+			Marker::new(MarkerType::Table, 7)
+				.with_length(4)
+				.with_text("tbl".to_string())
+				.with_reference(html.to_string()),
+		);
+		let mut doc = Document::new();
+		doc.set_buffer(buffer);
+		doc.compute_stats();
+		DocumentSession {
+			handle: DocumentHandle::new(doc),
+			file_path: "book.epub".to_string(),
+			history: Vec::new(),
+			history_index: 0,
+			parser_flags: ParserFlags::NONE,
+			last_stable_position: None,
+		}
+	}
+
+	#[test]
+	fn get_table_at_position_uses_display_length() {
+		let session = table_session();
+		// Table marker at display position 7 with length 4 -> half-open range [7, 11).
+		assert_eq!(session.get_table_at_position(7).as_deref(), Some("<table><tr><td>a</td><td>b</td></tr></table>"));
+		assert_eq!(session.get_table_at_position(10).as_deref(), Some("<table><tr><td>a</td><td>b</td></tr></table>"));
+		assert!(session.get_table_at_position(11).is_none());
+		assert!(session.get_table_at_position(2).is_none());
+	}
+
+	#[test]
+	fn get_table_at_position_handles_multibyte_extent() {
+		// A table marker whose display extent exceeds its char-count would have been mis-measured
+		// by the old `text.chars().count()` logic. Here the displayed text is shorter (in chars)
+		// than the display extent, so the caret near the end is only inside the table when using
+		// `marker.length`.
+		let mut buffer = DocumentBuffer::with_content("\u{1F600}\u{1F600}\u{1F600}".to_string());
+		// Three non-BMP emoji: 3 chars but 6 display (UTF-16) units. Marker spans the whole range.
+		buffer.add_marker(
+			Marker::new(MarkerType::Table, 0)
+				.with_length(6)
+				.with_text("x".to_string())
+				.with_reference("<table/>".to_string()),
+		);
+		let mut doc = Document::new();
+		doc.set_buffer(buffer);
+		doc.compute_stats();
+		let session = DocumentSession {
+			handle: DocumentHandle::new(doc),
+			file_path: "book.epub".to_string(),
+			history: Vec::new(),
+			history_index: 0,
+			parser_flags: ParserFlags::NONE,
+			last_stable_position: None,
+		};
+		// Position 5 is within [0, 6) by display length but would be outside [0, 1) by char count.
+		assert_eq!(session.get_table_at_position(5).as_deref(), Some("<table/>"));
+		assert!(session.get_table_at_position(6).is_none());
 	}
 
 	#[test]

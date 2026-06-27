@@ -42,7 +42,7 @@ impl Parser for OdtParser {
 		let xml_doc = XmlDocument::parse(&content_str).context("Invalid ODT content.xml")?;
 		let mut buffer = DocumentBuffer::new();
 		let mut id_positions = HashMap::new();
-		traverse(xml_doc.root(), &mut buffer, &mut id_positions);
+		traverse(xml_doc.root(), &mut buffer, &mut id_positions, context.render_tables_inline);
 		let title = extract_title_from_path(&context.file_path);
 		let toc_items = build_toc_from_buffer(&buffer);
 		let mut document = Document::new().with_title(title);
@@ -74,7 +74,7 @@ impl Parser for FodtParser {
 		let xml_doc = XmlDocument::parse(&content_str).context("Invalid FODT document")?;
 		let mut buffer = DocumentBuffer::new();
 		let mut id_positions = HashMap::new();
-		traverse(xml_doc.root(), &mut buffer, &mut id_positions);
+		traverse(xml_doc.root(), &mut buffer, &mut id_positions, context.render_tables_inline);
 		let title = extract_title_from_path(&context.file_path);
 		let toc_items = build_toc_from_buffer(&buffer);
 		let mut document = Document::new().with_title(title);
@@ -85,7 +85,12 @@ impl Parser for FodtParser {
 	}
 }
 
-fn traverse(node: Node, buffer: &mut DocumentBuffer, id_positions: &mut HashMap<String, usize>) {
+fn traverse(
+	node: Node,
+	buffer: &mut DocumentBuffer,
+	id_positions: &mut HashMap<String, usize>,
+	render_tables_inline: bool,
+) {
 	if node.node_type() == NodeType::Element {
 		let tag_name = node.tag_name().name();
 		if tag_name == "h" {
@@ -101,7 +106,7 @@ fn traverse(node: Node, buffer: &mut DocumentBuffer, id_positions: &mut HashMap<
 			return; // Don't traverse children, we already got the text
 		}
 		if tag_name == "p" {
-			traverse_children(node, buffer, id_positions);
+			traverse_children(node, buffer, id_positions, render_tables_inline);
 			buffer.append("\n");
 			return;
 		}
@@ -124,7 +129,7 @@ fn traverse(node: Node, buffer: &mut DocumentBuffer, id_positions: &mut HashMap<
 			id_positions.insert(id.to_string(), buffer.current_position());
 		}
 		if tag_name == "table" {
-			process_table(node, buffer, id_positions);
+			process_table(node, buffer, render_tables_inline);
 			return;
 		}
 	} else if node.node_type() == NodeType::Text {
@@ -133,59 +138,112 @@ fn traverse(node: Node, buffer: &mut DocumentBuffer, id_positions: &mut HashMap<
 		}
 		return;
 	}
-	traverse_children(node, buffer, id_positions);
+	traverse_children(node, buffer, id_positions, render_tables_inline);
 }
 
-fn traverse_children(node: Node, buffer: &mut DocumentBuffer, id_positions: &mut HashMap<String, usize>) {
+fn traverse_children(
+	node: Node,
+	buffer: &mut DocumentBuffer,
+	id_positions: &mut HashMap<String, usize>,
+	render_tables_inline: bool,
+) {
 	for child in node.children() {
-		traverse(child, buffer, id_positions);
+		traverse(child, buffer, id_positions, render_tables_inline);
 	}
 }
 
-fn process_table(node: Node, buffer: &mut DocumentBuffer, id_positions: &mut HashMap<String, usize>) {
+fn process_table(node: Node, buffer: &mut DocumentBuffer, render_tables_inline: bool) {
 	let table_start = buffer.current_position();
 	let mut html_content = String::from("<table border=\"1\">");
 	let mut table_caption = String::new();
 	let mut found_first_row = false;
+	let mut has_content = false;
+	// Build the table HTML and caption from the XML nodes directly. Cell text is collected via
+	// `collect_element_text` (operating on the XML tree), NOT by slicing the display buffer — the
+	// display buffer is indexed in display units, so slicing it with those offsets as byte indices
+	// mis-sliced (and could panic) on non-ASCII cell content.
 	for child in node.children() {
 		if child.is_element() && child.tag_name().name() == "table-row" {
-			if !found_first_row {
-				for cell in child.children() {
-					if cell.is_element() && cell.tag_name().name() == "table-cell" {
-						let cell_text = collect_element_text(cell);
-						table_caption.push_str(&cell_text);
-						table_caption.push(' ');
-					}
-				}
-				found_first_row = true;
-			}
 			html_content.push_str("<tr>");
 			for cell in child.children() {
 				if cell.is_element() && cell.tag_name().name() == "table-cell" {
+					let cell_text = collect_element_text(cell);
+					if !cell_text.trim().is_empty() {
+						has_content = true;
+					}
+					if !found_first_row {
+						table_caption.push_str(cell_text.trim());
+						table_caption.push(' ');
+					}
 					html_content.push_str("<td>");
-					let cell_start = buffer.current_position();
-					traverse_children(cell, buffer, id_positions);
-					let cell_end = buffer.current_position();
-					let cell_text = &buffer.content[cell_start..cell_end];
 					html_content.push_str(&cell_text.replace('\n', "<br/>"));
 					html_content.push_str("</td>");
-					buffer.append(" ");
 				}
 			}
 			html_content.push_str("</tr>");
-			buffer.append("\n");
+			found_first_row = true;
 		}
 	}
 	html_content.push_str("</table>");
-	let table_end = buffer.current_position();
-	let table_text = buffer.content[table_start..table_end].to_string();
-	if !table_text.trim().is_empty() {
-		let marker_text = if table_caption.trim().is_empty() { "table".to_string() } else { table_caption };
-		buffer.add_marker(
-			Marker::new(MarkerType::Table, table_start)
-				.with_text(marker_text)
-				.with_reference(html_content)
-				.with_length(table_text.len()),
-		);
+	if !has_content {
+		return;
+	}
+	let marker_text =
+		if table_caption.trim().is_empty() { "table".to_string() } else { table_caption.trim().to_string() };
+	let display_text = crate::parser::table_text::html_table_to_display(&html_content, render_tables_inline);
+	buffer.append(&display_text);
+	buffer.append("\n");
+	let display_len = buffer.current_position() - table_start;
+	buffer.add_marker(
+		Marker::new(MarkerType::Table, table_start)
+			.with_text(marker_text)
+			.with_reference(html_content)
+			.with_length(display_len),
+	);
+}
+
+#[cfg(test)]
+mod tests {
+	use std::collections::HashMap;
+
+	use roxmltree::Document as XmlDocument;
+
+	use super::traverse;
+	use crate::{
+		document::{DocumentBuffer, MarkerType},
+		util::text::display_len,
+	};
+
+	/// OFF mode: an ODT table emits a `"[Table]: <first row>"` placeholder. The second cell holds a
+	/// non-ASCII character (U+1D11E, G Clef, non-BMP) to prove the cell-text extraction no longer
+	/// mis-slices the display buffer with display-unit offsets as byte indices.
+	#[test]
+	fn odt_table_emits_placeholder_when_off() {
+		let xml = "<document><table><table-row><table-cell>Kop</table-cell><table-cell>\u{1D11E}</table-cell></table-row></table></document>";
+		let xml_doc = XmlDocument::parse(xml).expect("valid xml");
+		let mut buffer = DocumentBuffer::new();
+		let mut id_positions = HashMap::new();
+		traverse(xml_doc.root(), &mut buffer, &mut id_positions, false);
+
+		assert_eq!(buffer.content, "[Table]: Kop \u{1D11E}\n");
+		let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
+		assert_eq!(table_marker.position, 0, "marker starts at buffer start");
+		assert_eq!(table_marker.length, display_len("[Table]: Kop \u{1D11E}") + 1, "marker length in display units");
+		assert_eq!(table_marker.text, "Kop \u{1D11E}", "marker keeps the first-row caption");
+		assert!(table_marker.reference.contains("<table"), "marker reference is the table HTML");
+	}
+
+	/// ON mode: the same ODT table emits the full TSV instead of the placeholder.
+	#[test]
+	fn odt_table_emits_tsv_when_inline() {
+		let xml = "<document><table><table-row><table-cell>Kop</table-cell><table-cell>\u{1D11E}</table-cell></table-row></table></document>";
+		let xml_doc = XmlDocument::parse(xml).expect("valid xml");
+		let mut buffer = DocumentBuffer::new();
+		let mut id_positions = HashMap::new();
+		traverse(xml_doc.root(), &mut buffer, &mut id_positions, true);
+
+		assert_eq!(buffer.content, "Kop\t\u{1D11E}\n");
+		let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
+		assert_eq!(table_marker.length, display_len("Kop\t\u{1D11E}") + 1, "marker length spans the TSV");
 	}
 }
