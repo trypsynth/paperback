@@ -1697,9 +1697,9 @@ dependencies = [
 
 [[package]]
 name = "patois-build"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ad9d2a05237bc8577524ff4dae2546b9d389190ad645dc062ef1a1bf2aff9041"
+checksum = "f801c89e4f74b8c29fd21c081764ca0ffddb7e3de7850f627141322719b84162"
 dependencies = [
  "serde_json",
 ]
