@@ -174,6 +174,12 @@
 <li><a href="#system-requirements" id="toc-system-requirements">System
 Requirements</a></li>
 <li><a href="#features" id="toc-features">Features</a></li>
+<li><a href="#screen-reader-compatibility"
+id="toc-screen-reader-compatibility">Screen Reader Compatibility</a>
+<ul>
+<li><a href="#jaws-and-braille-displays"
+id="toc-jaws-and-braille-displays">JAWS and Braille Displays</a></li>
+</ul></li>
 <li><a href="#currently-supported-file-types"
 id="toc-currently-supported-file-types">Currently supported file
 types</a></li>
@@ -255,6 +261,23 @@ and regular expression support.</li>
 <li>Can be run entirely portably, or installed with file associations
 automatically set up.</li>
 </ul>
+<h1 id="screen-reader-compatibility">Screen Reader Compatibility</h1>
+<p>Paperback works well with all major screen readers. There is,
+however, one known issue for JAWS users.</p>
+<h2 id="jaws-and-braille-displays">JAWS and Braille Displays</h2>
+<p>If you use JAWS with a Braille display, you may find that long
+paragraphs are truncated when panning forward with your display’s
+navigation keys. The read current paragraph command is also affected.
+This is a bug in JAWS’s handling of the RICHEDIT50W text control, not
+something in Paperback itself, and one that took quite a while to
+surface a fix for given Vispero’s enthusiasm for responding to issues
+with open source software.</p>
+<p>The workaround, eventually surfaced through the JAWS discussion group
+after months of waiting, is to edit <code>paperback.jcf</code> and set
+“Braille Presentation and Panning” to “Always use DOM if available”.
+You’ll also want to enable “Pan Text by Paragraph”, otherwise your
+display will stay on the active paragraph rather than advancing. With
+both settings in place, panning should work correctly.</p>
 <h1 id="currently-supported-file-types">Currently supported file
 types</h1>
 <p>Paperback supports the following formats and extensions:</p>
