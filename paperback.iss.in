@@ -24,13 +24,13 @@
 	Source: "paperback.exe"; DestDir: "{app}"; Flags: ignoreversion
 	Source: "pb.exe"; DestDir: "{app}"; Flags: ignoreversion
 	Source: "pdfium.dll"; DestDir: "{app}"; Flags: ignoreversion
-	Source: "readme.html"; DestDir: "{app}"; Flags: ignoreversion
 	Source: "sounds\*"; DestDir: "{app}\sounds"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [InstallDelete]
 	Type: files; Name: "{app}\nvdaControllerClient64.dll"
 	Type: files; Name: "{app}\SAAPI64.dll"
 	Type: filesandordirs; Name: "{app}\langs"
+	Type: files; Name: "{app}\readme.html"
 
 [Tasks]
 	Name: "desktopicon"; Description: "Desktop Shortcut"
@@ -145,4 +145,3 @@ end;
 
 [Run]
 	Filename: "{app}\paperback.exe"; Description: "Launch Paperback"; Flags: nowait postinstall skipifsilent
-	Filename: "{app}\readme.html"; Description: "View readme.html"; Flags: shellexec postinstall skipifsilent unchecked

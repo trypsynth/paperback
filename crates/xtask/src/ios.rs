@@ -26,7 +26,7 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 	println!("Generating Swift bindings via uniffi-bindgen...");
 	let status = Command::new(&cargo)
 		.current_dir(&root)
-		.args(&[
+		.args([
 			"run",
 			"--bin",
 			"uniffi-bindgen",
@@ -52,7 +52,7 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 
 	println!("Building for aarch64-apple-ios (device)...");
 	let status =
-		Command::new(&cargo).current_dir(&root).args(&build_args).args(&["--target", "aarch64-apple-ios"]).status()?;
+		Command::new(&cargo).current_dir(&root).args(&build_args).args(["--target", "aarch64-apple-ios"]).status()?;
 	if !status.success() {
 		return Err("cargo build for aarch64-apple-ios failed".into());
 	}
@@ -67,7 +67,7 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 
 	println!("Creating paperbackFFI.xcframework...");
 	let status = Command::new("xcodebuild")
-		.args(&["-create-xcframework"])
+		.args(["-create-xcframework"])
 		.arg("-library")
 		.arg(&device_lib)
 		.arg("-headers")

@@ -1,5 +1,5 @@
 use std::{
-	env,
+	env, fs,
 	path::{Path, PathBuf},
 	rc::Rc,
 	sync::{
@@ -8,6 +8,10 @@ use std::{
 	},
 };
 
+mod lang_readmes {
+	include!(concat!(env!("OUT_DIR"), "/lang_readmes.rs"));
+}
+
 use paperback_core::{config::ConfigManager, parser, version};
 use patois::t;
 use ship_shape::{UpdateChannel as ShipChannel, UpdaterConfig};
@@ -15,7 +19,7 @@ use wx_utils::show_error;
 use wxdragon::prelude::*;
 
 use super::{dialogs, document_manager::DocumentManager};
-use crate::config_ext::UpdateChannel;
+use crate::{config_ext::UpdateChannel, translation_manager::TranslationManager};
 
 pub static MAIN_WINDOW_PTR: AtomicUsize = AtomicUsize::new(0);
 
@@ -23,6 +27,7 @@ const PAPERBACK_GITHUB_REPO: &str = "trypsynth/paperback";
 const PAPERBACK_MINISIGN_KEY: &str = "RWQasnbWXwK2dhno9ThUm8HONEIo85iiDBZvw3jlNs574QJHEkoRiGX7";
 
 pub fn run_update_check(silent: bool, channel: UpdateChannel) {
+	tracing::info!(channel = %channel, silent, "checking for updates");
 	let config = Arc::new(UpdaterConfig::new(
 		PAPERBACK_GITHUB_REPO,
 		"paperback",
@@ -56,6 +61,15 @@ pub fn is_installer_distribution() -> bool {
 }
 
 pub fn readme_path() -> Option<PathBuf> {
+	let lang = TranslationManager::instance().lock().unwrap().current_language();
+	if let Some(bytes) = lang_readmes::readme_for_lang(&lang) {
+		let tmp = env::temp_dir().join(format!("paperback-readme-{lang}.html"));
+		match fs::write(&tmp, bytes) {
+			Ok(()) => return Some(tmp),
+			Err(e) => tracing::warn!(path = %tmp.display(), error = %e, "failed to write readme temp file"),
+		}
+	}
+	// Fallback for builds without pandoc: look for readme.html next to the exe
 	let exe = env::current_exe().ok()?;
 	let dir = exe.parent()?;
 	Some(dir.join("readme.html"))
@@ -64,27 +78,28 @@ pub fn readme_path() -> Option<PathBuf> {
 pub fn handle_open_containing_folder(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) {
 	let dir = doc_manager.lock().unwrap().active_tab().and_then(|tab| tab.file_path.parent()).map(Path::to_path_buf);
 	let Some(dir) = dir else {
-		show_error(frame, &t("Failed to open containing folder."), &t("Error"));
+		show_error(frame, t("Failed to open containing folder."), &t("Error"));
 		return;
 	};
 	let url = format!("file://{}", dir.to_string_lossy());
 	if !wxdragon::utils::launch_default_browser(&url, wxdragon::utils::BrowserLaunchFlags::Default) {
-		show_error(frame, &t("Failed to open containing folder."), &t("Error"));
+		show_error(frame, t("Failed to open containing folder."), &t("Error"));
 	}
 }
 
 pub fn handle_view_help_browser(frame: &Frame) {
 	let Some(path) = readme_path() else {
-		show_error(frame, &t("readme.html not found. Please ensure the application was built properly."), &t("Error"));
+		show_error(frame, t("readme.html not found. Please ensure the application was built properly."), &t("Error"));
 		return;
 	};
 	if !path.exists() {
-		show_error(frame, &t("readme.html not found. Please ensure the application was built properly."), &t("Error"));
+		show_error(frame, t("readme.html not found. Please ensure the application was built properly."), &t("Error"));
 		return;
 	}
 	let url = format!("file://{}", path.to_string_lossy());
 	if !wxdragon::utils::launch_default_browser(&url, wxdragon::utils::BrowserLaunchFlags::Default) {
-		show_error(frame, &t("Failed to launch default browser."), &t("Error"));
+		tracing::warn!(url = %url, "failed to launch default browser for help");
+		show_error(frame, t("Failed to launch default browser."), &t("Error"));
 	}
 }
 
@@ -94,11 +109,11 @@ pub fn handle_view_help_paperback(
 	config: &Rc<Mutex<ConfigManager>>,
 ) -> bool {
 	let Some(path) = readme_path() else {
-		show_error(frame, &t("readme.html not found. Please ensure the application was built properly."), &t("Error"));
+		show_error(frame, t("readme.html not found. Please ensure the application was built properly."), &t("Error"));
 		return false;
 	};
 	if !path.exists() {
-		show_error(frame, &t("readme.html not found. Please ensure the application was built properly."), &t("Error"));
+		show_error(frame, t("readme.html not found. Please ensure the application was built properly."), &t("Error"));
 		return false;
 	}
 	if !ensure_parser_ready_for_path(frame, &path, config) {
@@ -110,7 +125,8 @@ pub fn handle_view_help_paperback(
 pub fn handle_donate(frame: &Frame) {
 	let url = "https://paypal.me/tygillespie05";
 	if !wxdragon::utils::launch_default_browser(url, wxdragon::utils::BrowserLaunchFlags::Default) {
-		show_error(frame, &t("Failed to open donation page in browser."), &t("Error"));
+		tracing::warn!("failed to launch default browser for donation page");
+		show_error(frame, t("Failed to open donation page in browser."), &t("Error"));
 	}
 }
 

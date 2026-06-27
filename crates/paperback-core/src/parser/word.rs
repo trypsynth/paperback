@@ -194,25 +194,23 @@ fn build_style_heading_map<R: std::io::Read + std::io::Seek>(archive: &mut zip::
 				"name" => {
 					if let Some(val) = child.attribute("val") {
 						let lower = val.to_lowercase();
-						if lower.starts_with("heading") {
-							if let Some(n) = extract_number_from_string(val) {
-								if n > 0 && n <= 9 {
-									heading_level = Some(n);
-								}
-							}
+						if lower.starts_with("heading")
+							&& let Some(n) = extract_number_from_string(val)
+							&& n > 0 && n <= 9
+						{
+							heading_level = Some(n);
 						}
 					}
 				}
 				"pPr" if heading_level.is_none() => {
 					for ppr_child in child.children() {
-						if ppr_child.node_type() == NodeType::Element && ppr_child.tag_name().name() == "outlineLvl" {
-							if let Some(val) = ppr_child.attribute("val") {
-								if let Ok(n) = val.parse::<i32>() {
-									if n >= 0 && n < 9 {
-										heading_level = Some(n + 1);
-									}
-								}
-							}
+						if ppr_child.node_type() == NodeType::Element
+							&& ppr_child.tag_name().name() == "outlineLvl"
+							&& let Some(val) = ppr_child.attribute("val")
+							&& let Ok(n) = val.parse::<i32>()
+							&& (0..9).contains(&n)
+						{
+							heading_level = Some(n + 1);
 						}
 					}
 				}
@@ -610,27 +608,26 @@ fn process_paragraph(
 		} else if tag_name == "hyperlink" {
 			process_hyperlink(child, &mut paragraph_text, buffer, rels, paragraph_start);
 		} else if tag_name == "r" {
-			if heading_level == 0 {
-				if let Some(rpr_node) = find_child_element(child, "rPr") {
-					heading_level = get_run_heading_level(rpr_node);
-				}
+			if heading_level == 0
+				&& let Some(rpr_node) = find_child_element(child, "rPr")
+			{
+				heading_level = get_run_heading_level(rpr_node);
 			}
-			if let Some(instr_text_node) = find_child_element(child, "instrText") {
-				if let Some(instruction) = instr_text_node.text() {
-					if instruction.contains("HYPERLINK") {
-						let link_target = parse_hyperlink_instruction(instruction);
-						if !link_target.is_empty() {
-							let (display_text, _) = extract_field_display_text(element, child);
-							if !display_text.is_empty() {
-								let link_offset = paragraph_start + paragraph_text.len();
-								paragraph_text.push_str(&display_text);
-								buffer.add_marker(
-									Marker::new(MarkerType::Link, link_offset)
-										.with_text(display_text.clone())
-										.with_reference(link_target),
-								);
-							}
-						}
+			if let Some(instr_text_node) = find_child_element(child, "instrText")
+				&& let Some(instruction) = instr_text_node.text()
+				&& instruction.contains("HYPERLINK")
+			{
+				let link_target = parse_hyperlink_instruction(instruction);
+				if !link_target.is_empty() {
+					let (display_text, _) = extract_field_display_text(element, child);
+					if !display_text.is_empty() {
+						let link_offset = paragraph_start + paragraph_text.len();
+						paragraph_text.push_str(&display_text);
+						buffer.add_marker(
+							Marker::new(MarkerType::Link, link_offset)
+								.with_text(display_text.clone())
+								.with_reference(link_target),
+						);
 					}
 				}
 			}
@@ -698,23 +695,22 @@ fn get_paragraph_heading_level(pr_element: Node, style_heading_map: &HashMap<Str
 			if let Some(style) = child.attribute("val") {
 				let style_lower = style.to_lowercase();
 				if style_lower.starts_with("heading") {
-					if let Some(level) = extract_number_from_string(style) {
-						if level > 0 && level <= MAX_HEADING_LEVEL {
-							return level;
-						}
+					if let Some(level) = extract_number_from_string(style)
+						&& level > 0 && level <= MAX_HEADING_LEVEL
+					{
+						return level;
 					}
 				} else if let Some(&level) = style_heading_map.get(style) {
 					return level;
 				}
 			}
-		} else if tag_name == "outlineLvl" {
-			if let Some(level_str) = child.attribute("val") {
-				if let Ok(level) = level_str.parse::<i32>() {
-					let actual_level = level + 1;
-					if actual_level > 0 && actual_level <= MAX_HEADING_LEVEL {
-						return actual_level;
-					}
-				}
+		} else if tag_name == "outlineLvl"
+			&& let Some(level_str) = child.attribute("val")
+			&& let Ok(level) = level_str.parse::<i32>()
+		{
+			let actual_level = level + 1;
+			if actual_level > 0 && actual_level <= MAX_HEADING_LEVEL {
+				return actual_level;
 			}
 		}
 	}
@@ -723,16 +719,17 @@ fn get_paragraph_heading_level(pr_element: Node, style_heading_map: &HashMap<Str
 
 fn get_run_heading_level(rpr_element: Node) -> i32 {
 	const MAX_HEADING_LEVEL: i32 = 9;
-	if let Some(rstyle_node) = find_child_element(rpr_element, "rStyle") {
-		if let Some(style) = rstyle_node.attribute("val") {
-			let style_lower = style.to_lowercase();
-			if style_lower.starts_with("heading") && style_lower.ends_with("char") {
-				if let Some(level) = extract_number_from_string(style) {
-					if level > 0 && level <= MAX_HEADING_LEVEL {
-						return level;
-					}
-				}
-			}
+	if let Some(rstyle_node) = find_child_element(rpr_element, "rStyle")
+		&& let Some(style) = rstyle_node.attribute("val")
+	{
+		let style_lower = style.to_lowercase();
+		if style_lower.starts_with("heading")
+			&& style_lower.ends_with("char")
+			&& let Some(level) = extract_number_from_string(style)
+			&& level > 0
+			&& level <= MAX_HEADING_LEVEL
+		{
+			return level;
 		}
 	}
 	0
@@ -767,14 +764,14 @@ fn extract_heading_text(paragraph: Node, heading_level: i32) -> String {
 fn parse_hyperlink_instruction(instruction: &str) -> String {
 	let first_quote = instruction.find('"');
 	let last_quote = instruction.rfind('"');
-	if let (Some(first), Some(last)) = (first_quote, last_quote) {
-		if first != last {
-			let target = &instruction[first + 1..last];
-			if instruction.contains("\\l") {
-				return format!("#{target}");
-			}
-			return target.to_string();
+	if let (Some(first), Some(last)) = (first_quote, last_quote)
+		&& first != last
+	{
+		let target = &instruction[first + 1..last];
+		if instruction.contains("\\l") {
+			return format!("#{target}");
 		}
+		return target.to_string();
 	}
 	String::new()
 }

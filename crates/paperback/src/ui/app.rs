@@ -42,11 +42,13 @@ impl PaperbackApp {
 		}
 		let config = Rc::new(Mutex::new(config));
 		let single_instance_checker = SingleInstanceChecker::new(SINGLE_INSTANCE_NAME, None);
-		if let Some(checker) = single_instance_checker.as_ref() {
-			if checker.is_another_running() {
-				send_ipc_command(ipc_command_from_cli());
-				process::exit(0);
-			}
+		if let Some(checker) = single_instance_checker.as_ref()
+			&& checker.is_another_running()
+		{
+			let cmd = ipc_command_from_cli();
+			tracing::info!(command = ?cmd, "another instance is running, forwarding command and exiting");
+			send_ipc_command(cmd);
+			process::exit(0);
 		}
 		let main_window = Rc::new(MainWindow::new(Rc::clone(&config)));
 		MAIN_WINDOW_PTR.store(Rc::as_ptr(&main_window) as usize, Ordering::SeqCst);
@@ -83,7 +85,7 @@ fn open_from_command_line(main_window: &MainWindow) {
 	}
 }
 
-pub(crate) fn main_window_from_ptr() -> Option<&'static MainWindow> {
+pub fn main_window_from_ptr() -> Option<&'static MainWindow> {
 	let ptr = MAIN_WINDOW_PTR.load(Ordering::SeqCst);
 	if ptr == 0 {
 		return None;
@@ -164,7 +166,7 @@ mod pipe {
 				if ready {
 					let mut buf = vec![0u8; BUF];
 					let mut n = 0u32;
-					let ok = unsafe { ReadFile(h, Some(&mut buf), Some(&mut n), None) };
+					let ok = unsafe { ReadFile(h, Some(&mut buf), Some(&raw mut n), None) };
 					if ok.is_ok() && n > 0 {
 						on_data(buf[..n as usize].to_vec());
 					}
@@ -261,6 +263,7 @@ fn start_pipe_server(main_window: &Rc<MainWindow>) -> PipeServer {
 		use crate::ipc::{decode_execute_payload, named_pipe_path};
 		let name = named_pipe_path();
 		if let Some(handle) = pipe::try_create_server(&name) {
+			tracing::info!(pipe = %name, "IPC server started");
 			pipe::serve_loop(handle, move |data| {
 				if let Some(cmd) = decode_execute_payload(&data) {
 					wxdragon::call_after(Box::new(move || {
@@ -272,7 +275,7 @@ fn start_pipe_server(main_window: &Rc<MainWindow>) -> PipeServer {
 				}
 			});
 		} else {
-			// Named pipe already exists but SingleInstanceChecker didn't catch it; show a warning so the issue is visible rather than silent.
+			tracing::error!(pipe = %name, "failed to create IPC server; named pipe already exists");
 			let dialog = MessageDialog::builder(main_window.frame(), &t("Failed to create IPC server"), &t("Warning"))
 				.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconWarning | MessageDialogStyle::Centre)
 				.build();
@@ -283,6 +286,9 @@ fn start_pipe_server(main_window: &Rc<MainWindow>) -> PipeServer {
 	{
 		use crate::ipc::decode_execute_payload;
 		if let Some(listener) = pipe_unix::try_create_server() {
+			if let Some(path) = pipe_unix::socket_path() {
+				tracing::info!(socket = %path.display(), "IPC server started");
+			}
 			pipe_unix::serve_loop(listener, move |data| {
 				if let Some(cmd) = decode_execute_payload(&data) {
 					wxdragon::call_after(Box::new(move || {
@@ -292,13 +298,15 @@ fn start_pipe_server(main_window: &Rc<MainWindow>) -> PipeServer {
 					}));
 				}
 			});
+		} else {
+			tracing::warn!("XDG_RUNTIME_DIR not set; IPC file forwarding unavailable");
 		}
-		// No warning if XDG_RUNTIME_DIR is absent; file forwarding just won't work, but single-instance detection is unaffected.
 	}
 	PipeServer {}
 }
 
 fn send_ipc_command(command: IpcCommand) {
+	tracing::debug!(command = ?command, "sending IPC command to existing instance");
 	let payload = match &command {
 		IpcCommand::Activate => IPC_COMMAND_ACTIVATE.to_string(),
 		#[cfg(any(target_os = "linux", target_os = "windows"))]

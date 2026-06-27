@@ -26,7 +26,10 @@ fn main() -> Result<()> {
 			.with_context(|| format!("failed to convert {}", cli.input.display()))?;
 		return match cli.output {
 			Some(path) => fs::write(&path, &html).with_context(|| format!("failed to write {}", path.display())),
-			None => Ok(print!("{html}")),
+			None => {
+				print!("{html}");
+				Ok(())
+			}
 		};
 	}
 
@@ -68,7 +71,10 @@ fn main() -> Result<()> {
 			}
 			.with_context(|| format!("failed to write {}", path.display()))
 		}
-		None => Ok(print!("{result}")),
+		None => {
+			print!("{result}");
+			Ok(())
+		}
 	}
 }
 

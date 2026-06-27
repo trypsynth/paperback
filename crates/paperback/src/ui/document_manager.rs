@@ -137,6 +137,7 @@ impl DocumentManager {
 			(password, forced_extension)
 		};
 		let path_str = path.to_string_lossy().to_string();
+		tracing::info!(path = %path.display(), "opening document");
 		match DocumentSession::new(&path_str, &password, &forced_extension) {
 			Ok(session) => self.add_session_tab(self_rc, path, session, &password, track, title_override),
 			Err(err) => {
@@ -152,12 +153,14 @@ impl DocumentManager {
 					match DocumentSession::new(&path_str, &password, &forced_extension) {
 						Ok(session) => self.add_session_tab(self_rc, path, session, &password, track, title_override),
 						Err(retry_error) => {
+							tracing::error!(path = %path.display(), error = %retry_error, "failed to open document");
 							let message = build_document_load_error_message(path, &retry_error);
 							show_error_dialog(&self.notebook, &message, &t("Error"));
 							false
 						}
 					}
 				} else {
+					tracing::error!(path = %path.display(), error = %err, "failed to open document");
 					let message = build_document_load_error_message(path, &err);
 					show_error_dialog(&self.notebook, &message, &t("Error"));
 					false
@@ -251,6 +254,7 @@ impl DocumentManager {
 			return false;
 		}
 		if let Some(tab) = self.tabs.get(index) {
+			tracing::info!(path = %tab.file_path.display(), "closing document");
 			self.recently_closed.push(tab.file_path.clone());
 			let path_str = tab.file_path.to_string_lossy();
 			let config = self.config.lock().unwrap();
@@ -298,19 +302,19 @@ impl DocumentManager {
 
 	pub fn save_position_throttled(&self) {
 		let now = Instant::now();
-		if let Some(last_save) = self.last_position_save.get() {
-			if now.duration_since(last_save).as_secs() < POSITION_SAVE_INTERVAL_SECS {
-				return;
-			}
+		if let Some(last_save) = self.last_position_save.get()
+			&& now.duration_since(last_save).as_secs() < POSITION_SAVE_INTERVAL_SECS
+		{
+			return;
 		}
-		if let Some(tab) = self.active_tab() {
-			if tab.track {
-				let position = tab.text_ctrl.get_insertion_point();
-				let path_str = tab.file_path.to_string_lossy();
-				let config = self.config.lock().unwrap();
-				config.set_document_position(&path_str, position);
-				config.flush();
-			}
+		if let Some(tab) = self.active_tab()
+			&& tab.track
+		{
+			let position = tab.text_ctrl.get_insertion_point();
+			let path_str = tab.file_path.to_string_lossy();
+			let config = self.config.lock().unwrap();
+			config.set_document_position(&path_str, position);
+			config.flush();
 		}
 		self.last_position_save.set(Some(now));
 	}
@@ -454,10 +458,10 @@ impl DocumentManager {
 				bm.start >= position && bm.start < prev
 			};
 			if triggered {
-				if !bm.note.is_empty() {
-					has_note = true;
-				} else {
+				if bm.note.is_empty() {
 					has_bookmark = true;
+				} else {
+					has_note = true;
 				}
 			}
 		}
@@ -585,7 +589,7 @@ impl DocumentManager {
 						dm.activate_current_table()
 					};
 					if let Some(html) = table_html {
-						let frame = dm_for_enter.lock().unwrap().frame.clone();
+						let frame = dm_for_enter.lock().unwrap().frame;
 						super::dialogs::show_web_view_dialog(&frame, &t("Table View"), &html, false, None);
 					} else {
 						let mut dm = dm_for_enter.lock().unwrap();
@@ -623,44 +627,44 @@ impl DocumentManager {
 		#[cfg(target_os = "linux")]
 		let frame_for_keys = frame;
 		text_ctrl.on_key_down(move |event| {
-			if let WindowEventData::Keyboard(kbd) = &event {
-				if let Some(key) = kbd.get_key_code() {
-					if (key == WXK_F10 && kbd.shift_down()) || key == WXK_WINDOWS_MENU {
+			if let WindowEventData::Keyboard(kbd) = &event
+				&& let Some(key) = kbd.get_key_code()
+			{
+				if (key == WXK_F10 && kbd.shift_down()) || key == WXK_WINDOWS_MENU {
+					kbd.event.skip(false);
+					show_reader_context_menu(text_ctrl_for_menu);
+					return;
+				}
+				#[cfg(target_os = "linux")]
+				if !kbd.control_down() && !kbd.alt_down() {
+					if let Some(&menu_id) = key_map.get(&(key, kbd.shift_down())) {
 						kbd.event.skip(false);
-						show_reader_context_menu(text_ctrl_for_menu);
+						frame_for_keys.process_menu_command(menu_id);
 						return;
 					}
-					#[cfg(target_os = "linux")]
-					if !kbd.control_down() && !kbd.alt_down() {
-						if let Some(&menu_id) = key_map.get(&(key, kbd.shift_down())) {
-							kbd.event.skip(false);
-							frame_for_keys.process_menu_command(menu_id);
-							return;
+				}
+				#[cfg(target_os = "windows")]
+				if (key == WXK_DOWN || key == WXK_UP) && !kbd.shift_down() && !kbd.control_down() {
+					let going_down = key == WXK_DOWN;
+					let nav_result = dm_for_nav.try_lock().ok().and_then(|dm| {
+						navigate_line_by_column(text_ctrl_for_menu, going_down, dm.preferred_column.get())
+					});
+					if let Some((new_pos, new_col)) = nav_result {
+						kbd.event.skip(false);
+						text_ctrl_for_menu.set_insertion_point(new_pos);
+						text_ctrl_for_menu.show_position(new_pos);
+						if let Ok(dm) = dm_for_nav.try_lock() {
+							dm.preferred_column.set(Some(new_col));
+							dm.update_status_bar();
 						}
+					} else {
+						kbd.event.skip(true);
 					}
-					#[cfg(target_os = "windows")]
-					if (key == WXK_DOWN || key == WXK_UP) && !kbd.shift_down() && !kbd.control_down() {
-						let going_down = key == WXK_DOWN;
-						let nav_result = dm_for_nav.try_lock().ok().and_then(|dm| {
-							navigate_line_by_column(text_ctrl_for_menu, going_down, dm.preferred_column.get())
-						});
-						if let Some((new_pos, new_col)) = nav_result {
-							kbd.event.skip(false);
-							text_ctrl_for_menu.set_insertion_point(new_pos);
-							text_ctrl_for_menu.show_position(new_pos);
-							if let Ok(dm) = dm_for_nav.try_lock() {
-								dm.preferred_column.set(Some(new_col));
-								dm.update_status_bar();
-							}
-						} else {
-							kbd.event.skip(true);
-						}
-						return;
-					}
-					#[cfg(target_os = "windows")]
-					if let Ok(dm) = dm_for_nav.try_lock() {
-						dm.preferred_column.set(None);
-					}
+					return;
+				}
+				#[cfg(target_os = "windows")]
+				if let Ok(dm) = dm_for_nav.try_lock() {
+					dm.preferred_column.set(None);
 				}
 			}
 			event.skip(true);
@@ -674,8 +678,8 @@ impl DocumentManager {
 	}
 }
 
-/// Returns (new_position, preferred_column) for character-column-based vertical navigation.
-/// Uses wxdragon PositionToXY, XYToPosition, and GetLineLength so the cursor lands on the same
+/// Returns (`new_position`, `preferred_column`) for character-column-based vertical navigation.
+/// Uses wxdragon `PositionToXY`, `XYToPosition`, and `GetLineLength` so the cursor lands on the same
 /// character column (not pixel column) on the target visual line.
 #[cfg(target_os = "windows")]
 fn navigate_line_by_column(text_ctrl: TextCtrl, going_down: bool, pref_col: Option<i64>) -> Option<(i64, i64)> {
@@ -690,7 +694,7 @@ fn navigate_line_by_column(text_ctrl: TextCtrl, going_down: bool, pref_col: Opti
 	if target_line_start < 0 {
 		return None;
 	}
-	let target_line_len = text_ctrl.get_line_length(target_line) as i64;
+	let target_line_len = i64::from(text_ctrl.get_line_length(target_line));
 	let new_pos = target_line_start + col.min(target_line_len);
 	Some((new_pos, col))
 }

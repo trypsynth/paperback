@@ -81,10 +81,8 @@ impl Parser for PdfParser {
 								}
 								let is_generated = text_page.is_generated(i).unwrap_or(false);
 								let mut char_mcid = -1;
-								if !is_generated {
-									if let Ok(obj) = text_page.get_text_object(i) {
-										char_mcid = obj.get_marked_content_id();
-									}
+								if !is_generated && let Ok(obj) = text_page.get_text_object(i) {
+									char_mcid = obj.get_marked_content_id();
 								}
 								if !is_generated && !ch.is_whitespace() {
 									real_char_count += 1;
@@ -129,7 +127,9 @@ impl Parser for PdfParser {
 					}
 				}
 			}
-			if !tags_processed {
+			if tags_processed {
+				has_any_text = true;
+			} else {
 				let line_infos = extract_text_lines(&text_page);
 				let body_size = median_line_font_size(&line_infos);
 				let paragraphs = join_paragraphs(&line_infos, body_size);
@@ -147,18 +147,16 @@ impl Parser for PdfParser {
 					page_display_text.push_str(text);
 					page_display_text.push('\n');
 				}
-			} else {
-				has_any_text = true;
 			}
 			// Check for image objects on this page
 			if !has_any_images {
 				let obj_count = lib().FPDFPage_CountObjects(&page);
 				for i in 0..obj_count {
-					if let Ok(obj) = lib().FPDFPage_GetObject(&page, i) {
-						if lib().FPDFPageObj_GetType(&obj) == pdfium::pdfium_constants::FPDF_PAGEOBJ_IMAGE {
-							has_any_images = true;
-							break;
-						}
+					if let Ok(obj) = lib().FPDFPage_GetObject(&page, i)
+						&& lib().FPDFPageObj_GetType(&obj) == pdfium::pdfium_constants::FPDF_PAGEOBJ_IMAGE
+					{
+						has_any_images = true;
+						break;
 					}
 				}
 			}
@@ -202,80 +200,79 @@ impl Parser for PdfParser {
 			let mut last_search_pos = 0;
 			for i in 0..annot_count {
 				let annot_result = lib().FPDFPage_GetAnnot(&page, i);
-				if let Ok(annot) = annot_result {
-					if lib().FPDFAnnot_GetSubtype(&annot) == pdfium::pdfium_constants::FPDF_ANNOT_LINK {
-						let mut rect = pdfium::pdfium_types::FS_RECTF { left: 0.0, top: 0.0, right: 0.0, bottom: 0.0 };
-						if lib().FPDFAnnot_GetRect(&annot, &mut rect).is_ok() {
-							let mut text_buffer = vec![0u16; 2048];
-							let len = lib().FPDFText_GetBoundedText(
-								&text_page,
-								f64::from(rect.left),
-								f64::from(rect.top),
-								f64::from(rect.right),
-								f64::from(rect.bottom),
-								&mut text_buffer[0],
-								2048,
-							);
-							if len > 0 {
-								let text =
-									sanitize_pdf_text(&String::from_utf16_lossy(&text_buffer[..(len as usize - 1)]));
-								let trimmed_link = trim_string(&collapse_whitespace(&text));
-								if trimmed_link.is_empty() {
-									continue;
-								}
-								let mut url = String::new();
-								let link_result = lib().FPDFAnnot_GetLink(&annot);
-								if let Ok(link) = link_result {
-									let action_result = lib().FPDFLink_GetAction(&link);
-									if let Ok(action) = action_result {
-										let action_type = lib().FPDFAction_GetType(&action);
-										// PDFACTION_URI is 3
-										if action_type == 3 {
-											let mut uri_buffer = vec![0u8; 2048];
-											let uri_len = lib().FPDFAction_GetURIPath(
-												&document,
-												&action,
-												Some(&mut uri_buffer),
-												2048,
-											);
-											if uri_len > 0 {
-												url = String::from_utf8_lossy(&uri_buffer[..(uri_len as usize - 1)])
-													.to_string();
-											}
-										}
-									}
-									if url.is_empty() {
-										let dest_result = lib().FPDFLink_GetDest(&document, &link);
-										let dest = dest_result.ok().or_else(|| {
-											lib()
-												.FPDFLink_GetAction(&link)
-												.ok()
-												.and_then(|action| lib().FPDFAction_GetDest(&document, &action).ok())
-										});
-										if let Some(dest) = dest {
-											let dest_page = lib().FPDFDest_GetDestPageIndex(&document, &dest);
-											if dest_page >= 0 {
-												url = format!("#page_{dest_page}");
-											}
-										}
-									}
-								}
-								if !url.is_empty() {
-									if let Some(pos) = page_display_text[last_search_pos..].find(&trimmed_link) {
-										let text_before = &page_display_text[last_search_pos..last_search_pos + pos];
-										let marker_pos = page_start_offset
-											+ display_len(&page_display_text[..last_search_pos])
-											+ display_len(text_before);
-										let link_len = display_len(&trimmed_link);
-										buffer.add_marker(
-											Marker::new(MarkerType::Link, marker_pos)
-												.with_text(trimmed_link.clone())
-												.with_reference(url)
-												.with_length(link_len),
+				if let Ok(annot) = annot_result
+					&& lib().FPDFAnnot_GetSubtype(&annot) == pdfium::pdfium_constants::FPDF_ANNOT_LINK
+				{
+					let mut rect = pdfium::pdfium_types::FS_RECTF { left: 0.0, top: 0.0, right: 0.0, bottom: 0.0 };
+					if lib().FPDFAnnot_GetRect(&annot, &mut rect).is_ok() {
+						let mut text_buffer = vec![0u16; 2048];
+						let len = lib().FPDFText_GetBoundedText(
+							&text_page,
+							f64::from(rect.left),
+							f64::from(rect.top),
+							f64::from(rect.right),
+							f64::from(rect.bottom),
+							&mut text_buffer[0],
+							2048,
+						);
+						if len > 0 {
+							let text = sanitize_pdf_text(&String::from_utf16_lossy(&text_buffer[..(len as usize - 1)]));
+							let trimmed_link = trim_string(&collapse_whitespace(&text));
+							if trimmed_link.is_empty() {
+								continue;
+							}
+							let mut url = String::new();
+							let link_result = lib().FPDFAnnot_GetLink(&annot);
+							if let Ok(link) = link_result {
+								let action_result = lib().FPDFLink_GetAction(&link);
+								if let Ok(action) = action_result {
+									let action_type = lib().FPDFAction_GetType(&action);
+									// PDFACTION_URI is 3
+									if action_type == 3 {
+										let mut uri_buffer = vec![0u8; 2048];
+										let uri_len = lib().FPDFAction_GetURIPath(
+											&document,
+											&action,
+											Some(&mut uri_buffer),
+											2048,
 										);
-										last_search_pos += pos + trimmed_link.len();
+										if uri_len > 0 {
+											url = String::from_utf8_lossy(&uri_buffer[..(uri_len as usize - 1)])
+												.to_string();
+										}
 									}
 								}
+								if url.is_empty() {
+									let dest_result = lib().FPDFLink_GetDest(&document, &link);
+									let dest = dest_result.ok().or_else(|| {
+										lib()
+											.FPDFLink_GetAction(&link)
+											.ok()
+											.and_then(|action| lib().FPDFAction_GetDest(&document, &action).ok())
+									});
+									if let Some(dest) = dest {
+										let dest_page = lib().FPDFDest_GetDestPageIndex(&document, &dest);
+										if dest_page >= 0 {
+											url = format!("#page_{dest_page}");
+										}
+									}
+								}
+							}
+							if !url.is_empty()
+								&& let Some(pos) = page_display_text[last_search_pos..].find(&trimmed_link)
+							{
+								let text_before = &page_display_text[last_search_pos..last_search_pos + pos];
+								let marker_pos = page_start_offset
+									+ display_len(&page_display_text[..last_search_pos])
+									+ display_len(text_before);
+								let link_len = display_len(&trimmed_link);
+								buffer.add_marker(
+									Marker::new(MarkerType::Link, marker_pos)
+										.with_text(trimmed_link.clone())
+										.with_reference(url)
+										.with_length(link_len),
+								);
+								last_search_pos += pos + trimmed_link.len();
 							}
 						}
 					}
@@ -444,21 +441,20 @@ fn join_paragraphs(raw_lines: &[(String, f64)], body_font_size: f64) -> Vec<(Str
 		} else {
 			let mut is_numbered = false;
 			let mut chars = line.chars();
-			if let Some(first) = chars.next() {
-				if first.is_ascii_digit() {
-					let mut found_space = false;
-					for c in chars {
-						if c.is_ascii_digit() || c == '.' || c == ')' {
-							continue;
-						} else if c.is_whitespace() {
-							found_space = true;
-							break;
-						} else {
-							break;
-						}
+			if let Some(first) = chars.next()
+				&& first.is_ascii_digit()
+			{
+				let mut found_space = false;
+				for c in chars {
+					if c.is_ascii_digit() || c == '.' || c == ')' {
+						continue;
+					} else if c.is_whitespace() {
+						found_space = true;
+						break;
 					}
-					is_numbered = found_space;
+					break;
 				}
+				is_numbered = found_space;
 			}
 			let break_paragraph = if *is_heading_line || current_is_heading {
 				true
@@ -705,12 +701,10 @@ fn process_struct_element(
 				current_lines_info,
 				toc_items,
 			);
-		} else {
-			if let Some(mcid) = elem.child_marked_content_id(i) {
-				if let Some(text) = mcid_to_text.get(&mcid) {
-					current_block.push_str(text);
-				}
-			}
+		} else if let Some(mcid) = elem.child_marked_content_id(i)
+			&& let Some(text) = mcid_to_text.get(&mcid)
+		{
+			current_block.push_str(text);
 		}
 	}
 	if is_block {
@@ -805,12 +799,10 @@ fn collect_text(elem: &pdfium::PdfiumStructElement, mcid_to_text: &HashMap<i32, 
 	for i in 0..count {
 		if let Ok(child) = elem.child(i) {
 			collect_text(&child, mcid_to_text, out);
-		} else {
-			if let Some(mcid) = elem.child_marked_content_id(i) {
-				if let Some(text) = mcid_to_text.get(&mcid) {
-					out.push_str(text);
-				}
-			}
+		} else if let Some(mcid) = elem.child_marked_content_id(i)
+			&& let Some(text) = mcid_to_text.get(&mcid)
+		{
+			out.push_str(text);
 		}
 	}
 }

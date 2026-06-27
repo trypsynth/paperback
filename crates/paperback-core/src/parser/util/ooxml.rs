@@ -10,18 +10,19 @@ pub fn read_ooxml_relationships<R: std::io::Read + std::io::Seek>(
 	rels_path: &str,
 ) -> HashMap<String, String> {
 	let mut rels = HashMap::new();
-	if let Ok(rels_content) = read_zip_entry_by_name(archive, rels_path) {
-		if let Ok(rels_doc) = roxmltree::Document::parse(&rels_content) {
-			for node in rels_doc.descendants() {
-				if node.node_type() == NodeType::Element && node.tag_name().name() == "Relationship" {
-					let id = node.attribute("Id").unwrap_or("").to_string();
-					let target = node.attribute("Target").unwrap_or("").to_string();
-					let rel_type = node.attribute("Type").unwrap_or("");
-					if rel_type == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"
-						&& !id.is_empty() && !target.is_empty()
-					{
-						rels.insert(id, target);
-					}
+	if let Ok(rels_content) = read_zip_entry_by_name(archive, rels_path)
+		&& let Ok(rels_doc) = roxmltree::Document::parse(&rels_content)
+	{
+		for node in rels_doc.descendants() {
+			if node.node_type() == NodeType::Element && node.tag_name().name() == "Relationship" {
+				let id = node.attribute("Id").unwrap_or("").to_string();
+				let target = node.attribute("Target").unwrap_or("").to_string();
+				let rel_type = node.attribute("Type").unwrap_or("");
+				if rel_type == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"
+					&& !id.is_empty()
+					&& !target.is_empty()
+				{
+					rels.insert(id, target);
 				}
 			}
 		}
@@ -29,6 +30,7 @@ pub fn read_ooxml_relationships<R: std::io::Read + std::io::Seek>(
 	rels
 }
 
+#[must_use]
 pub fn collect_ooxml_run_text(run_element: Node) -> String {
 	let mut text = String::new();
 	for child in run_element.children() {

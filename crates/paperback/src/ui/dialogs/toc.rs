@@ -198,12 +198,11 @@ fn build_toc_tree(dialog: Dialog, toc_items: &[TocItem], current_offset: i32) ->
 fn bind_toc_selection(tree: TreeCtrl, selected_offset: Rc<Cell<i32>>) {
 	let tree_for_sel = tree;
 	tree.on_selection_changed(move |event| {
-		if let Some(item) = event.get_item() {
-			if let Some(data) = tree_for_sel.get_custom_data(&item) {
-				if let Some(offset) = data.downcast_ref::<i32>() {
-					selected_offset.set(*offset);
-				}
-			}
+		if let Some(item) = event.get_item()
+			&& let Some(data) = tree_for_sel.get_custom_data(&item)
+			&& let Some(offset) = data.downcast_ref::<i32>()
+		{
+			selected_offset.set(*offset);
 		}
 	});
 }
@@ -213,13 +212,12 @@ fn bind_toc_activation(dialog: Dialog, tree: TreeCtrl, selected_offset: Rc<Cell<
 	let dialog_for_activate = dialog;
 	let tree_for_activate = tree;
 	tree.on_item_activated(move |event| {
-		if let Some(item) = event.get_item() {
-			if let Some(data) = tree_for_activate.get_custom_data(&item) {
-				if let Some(offset) = data.downcast_ref::<i32>() {
-					selected_offset.set(*offset);
-					dialog_for_activate.end_modal(wxdragon::id::ID_OK);
-				}
-			}
+		if let Some(item) = event.get_item()
+			&& let Some(data) = tree_for_activate.get_custom_data(&item)
+			&& let Some(offset) = data.downcast_ref::<i32>()
+		{
+			selected_offset.set(*offset);
+			dialog_for_activate.end_modal(wxdragon::id::ID_OK);
 		}
 	});
 }
@@ -228,11 +226,11 @@ fn bind_toc_activation(dialog: Dialog, tree: TreeCtrl, selected_offset: Rc<Cell<
 fn bind_toc_search(tree: TreeCtrl) {
 	// Prevent space from triggering item_activated (which our handler maps to OK).
 	tree.bind_internal(EventType::KEY_DOWN, move |event| {
-		if let Some(key) = event.get_key_code() {
-			if key == KEY_SPACE {
-				event.skip(false);
-				return;
-			}
+		if let Some(key) = event.get_key_code()
+			&& key == KEY_SPACE
+		{
+			event.skip(false);
+			return;
 		}
 		event.skip(true);
 	});
@@ -261,10 +259,10 @@ fn populate_toc_tree(tree: TreeCtrl, parent: &TreeItemId, items: &[TocItem]) {
 	for item in items {
 		let display_text = if item.name.is_empty() { t("Untitled") } else { item.name.clone() };
 		let offset = i32::try_from(item.offset).unwrap_or(i32::MAX);
-		if let Some(id) = tree.append_item_with_data(parent, &display_text, offset, None, None) {
-			if !item.children.is_empty() {
-				populate_toc_tree(tree, &id, &item.children);
-			}
+		if let Some(id) = tree.append_item_with_data(parent, &display_text, offset, None, None)
+			&& !item.children.is_empty()
+		{
+			populate_toc_tree(tree, &id, &item.children);
 		}
 	}
 }
@@ -274,15 +272,14 @@ fn find_and_select_item(tree: TreeCtrl, parent: &TreeItemId, offset: i32) -> boo
 	if let Some((child, mut cookie)) = tree.get_first_child(parent) {
 		let mut current_child = Some(child);
 		while let Some(item) = current_child {
-			if let Some(data) = tree.get_custom_data(&item) {
-				if let Some(item_offset) = data.downcast_ref::<i32>() {
-					if *item_offset == offset {
-						tree.select_item(&item);
-						tree.set_focused_item(&item);
-						tree.ensure_visible(&item);
-						return true;
-					}
-				}
+			if let Some(data) = tree.get_custom_data(&item)
+				&& let Some(item_offset) = data.downcast_ref::<i32>()
+				&& *item_offset == offset
+			{
+				tree.select_item(&item);
+				tree.set_focused_item(&item);
+				tree.ensure_visible(&item);
+				return true;
 			}
 			if find_and_select_item(tree, &item, offset) {
 				return true;

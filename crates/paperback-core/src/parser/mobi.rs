@@ -220,7 +220,7 @@ impl Parser for MobiParser {
 						content.extend_from_slice(&decoder.decode(record_data)?);
 					}
 				}
-				other => anyhow::bail!("Unsupported compression mode ({})", other),
+				other => anyhow::bail!("Unsupported compression mode ({other})"),
 			}
 		}
 		const MAX_MOBI_TEXT_BYTES: usize = 20 * 1024 * 1024;
@@ -268,7 +268,7 @@ impl Parser for MobiParser {
 // Old-style Mobipocket files use <font size="N"> for headings (size 7 = largest, 4-7 map to h1-h4).
 // Only activated when the document contains no semantic h1-h6 tags.
 fn rewrite_font_size_headings(html: &str) -> String {
-	if regex::Regex::new(r"(?i)<h[1-6]\b").map(|re| re.is_match(html)).unwrap_or(false) {
+	if regex::Regex::new(r"(?i)<h[1-6]\b").is_ok_and(|re| re.is_match(html)) {
 		return html.to_string();
 	}
 	let mut result = html.to_string();
@@ -297,12 +297,11 @@ fn snap_to_char_boundary(s: &str, pos: usize) -> usize {
 // corrupting it into a text fragment.
 fn snap_past_open_tag(html: &str, pos: usize) -> usize {
 	let pos = pos.min(html.len());
-	if let Some(tag_start) = html[..pos].rfind('<') {
-		if !html[tag_start..pos].contains('>') {
-			if let Some(rel) = html[pos..].find('>') {
-				return pos + rel + 1;
-			}
-		}
+	if let Some(tag_start) = html[..pos].rfind('<')
+		&& !html[tag_start..pos].contains('>')
+		&& let Some(rel) = html[pos..].find('>')
+	{
+		return pos + rel + 1;
 	}
 	pos
 }
@@ -315,11 +314,11 @@ fn rewrite_filepos_links(html: &str) -> String {
 	let mut targets = std::collections::BTreeSet::new();
 	for cap in re.captures_iter(html) {
 		let m = cap.get(0).unwrap();
-		if let Ok(filepos) = cap[1].parse::<usize>() {
-			if filepos < html.len() {
-				links.push((m.start(), m.end(), filepos));
-				targets.insert(filepos);
-			}
+		if let Ok(filepos) = cap[1].parse::<usize>()
+			&& filepos < html.len()
+		{
+			links.push((m.start(), m.end(), filepos));
+			targets.insert(filepos);
 		}
 	}
 	if links.is_empty() {
@@ -495,7 +494,7 @@ impl HuffmanDecoder {
 			let v = u32::from_be_bytes([huff[off], huff[off + 1], huff[off + 2], huff[off + 3]]);
 			let code_len = (v & 0x1F) as u8;
 			let term = (v & 0x80) == 0x80;
-			let mut max_code = (v >> 8) as u64;
+			let mut max_code = u64::from(v >> 8);
 			if code_len == 0 {
 				anyhow::bail!("Code len out of bounds");
 			}
@@ -513,12 +512,12 @@ impl HuffmanDecoder {
 			let min_off = base_offset + (i - 1) * 8;
 			let max_off = base_offset + (i - 1) * 8 + 4;
 			let min_val = if min_off + 4 <= huff.len() {
-				u32::from_be_bytes([huff[min_off], huff[min_off + 1], huff[min_off + 2], huff[min_off + 3]]) as u64
+				u64::from(u32::from_be_bytes([huff[min_off], huff[min_off + 1], huff[min_off + 2], huff[min_off + 3]]))
 			} else {
 				0
 			};
 			let max_val = if max_off + 4 <= huff.len() {
-				u32::from_be_bytes([huff[max_off], huff[max_off + 1], huff[max_off + 2], huff[max_off + 3]]) as u64
+				u64::from(u32::from_be_bytes([huff[max_off], huff[max_off + 1], huff[max_off + 2], huff[max_off + 3]]))
 			} else {
 				0
 			};
@@ -608,7 +607,7 @@ impl HuffmanDecoder {
 				}
 			}
 			if code_len == 0 || code_len > 32 {
-				anyhow::bail!("Invalid code_len {}", code_len);
+				anyhow::bail!("Invalid code_len {code_len}");
 			}
 			current.n -= code_len as i32;
 			if current.bits_left < code_len {

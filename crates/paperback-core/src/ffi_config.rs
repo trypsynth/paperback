@@ -2,7 +2,7 @@ use std::sync::Mutex;
 
 use crate::config::ConfigManager;
 
-/// Thread-safe wrapper around ConfigManager for UniFFI exposure.
+/// Thread-safe wrapper around `ConfigManager` for `UniFFI` exposure.
 pub struct ConfigManagerFfi {
 	inner: Mutex<ConfigManager>,
 }

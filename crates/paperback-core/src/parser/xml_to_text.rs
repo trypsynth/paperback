@@ -371,10 +371,10 @@ impl XmlToText {
 		let mut style = ListStyle::default();
 		if Self::tag_is(tag_name, "ol") {
 			style.ordered = true;
-			if let Some(start_val) = node.attribute("start") {
-				if let Ok(start_num) = start_val.parse::<i32>() {
-					style.item_number = start_num;
-				}
+			if let Some(start_val) = node.attribute("start")
+				&& let Ok(start_num) = start_val.parse::<i32>()
+			{
+				style.item_number = start_num;
 			}
 			if let Some(type_val) = node.attribute("type") {
 				style.list_type = type_val.to_lowercase();
@@ -399,22 +399,23 @@ impl XmlToText {
 	fn handle_heading_xml(&mut self, tag_name: &str, node: Node<'_, '_>) {
 		if self.in_body {
 			let mut chars = tag_name.chars();
-			if let (Some(h), Some(level_char)) = (chars.next(), chars.next()) {
-				if h.eq_ignore_ascii_case(&'h') && level_char.is_ascii_digit() {
-					let level = level_char as u8 - b'0';
-					if (1..=6).contains(&level) {
-						self.finalize_current_line();
-						let heading_offset = self.get_current_text_position();
-						let text = collect_element_text(node);
-						if !text.is_empty() {
-							let normalized = trim_string(&collapse_whitespace(&text));
-							if !normalized.is_empty() {
-								self.headings.push(HeadingInfo {
-									offset: heading_offset,
-									level: i32::from(level),
-									text: normalized,
-								});
-							}
+			if let (Some(h), Some(level_char)) = (chars.next(), chars.next())
+				&& h.eq_ignore_ascii_case(&'h')
+				&& level_char.is_ascii_digit()
+			{
+				let level = level_char as u8 - b'0';
+				if (1..=6).contains(&level) {
+					self.finalize_current_line();
+					let heading_offset = self.get_current_text_position();
+					let text = collect_element_text(node);
+					if !text.is_empty() {
+						let normalized = trim_string(&collapse_whitespace(&text));
+						if !normalized.is_empty() {
+							self.headings.push(HeadingInfo {
+								offset: heading_offset,
+								level: i32::from(level),
+								text: normalized,
+							});
 						}
 					}
 				}
@@ -585,7 +586,7 @@ impl XmlToText {
 		["script", "style", "noscript", "iframe", "object", "embed"].iter().any(|t| Self::tag_is(tag_name, t))
 	}
 
-	fn tag_is(tag_name: &str, expected: &str) -> bool {
+	const fn tag_is(tag_name: &str, expected: &str) -> bool {
 		tag_name.eq_ignore_ascii_case(expected)
 	}
 

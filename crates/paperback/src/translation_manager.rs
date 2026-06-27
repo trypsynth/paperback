@@ -27,6 +27,9 @@ impl TranslationManager {
 		if self.is_language_available(&sys_lang) {
 			self.current_language = sys_lang;
 		} else {
+			if sys_lang != "en" {
+				tracing::warn!(system_lang = %raw_sys_lang, "system language not available, falling back to English");
+			}
 			self.current_language = "en".to_string();
 		}
 		if self.current_language != "en" {
@@ -37,16 +40,20 @@ impl TranslationManager {
 		patois::set_default_domain("paperback");
 		patois::set_locale(&self.current_language);
 		self.initialized = true;
+		tracing::info!(system_lang = %raw_sys_lang, selected = %self.current_language, "translations initialized");
 		true
 	}
 
 	pub fn set_language(&mut self, language_code: &str) -> bool {
 		if !self.initialized {
+			tracing::warn!(language = %language_code, "set_language called before initialize");
 			return false;
 		}
 		if !self.is_language_available(language_code) {
+			tracing::warn!(language = %language_code, "requested language not available");
 			return false;
 		}
+		tracing::info!(language = %language_code, "switching language");
 		self.current_language = language_code.to_string();
 		let translations = Translations::new();
 		translations.set_language_str(language_code);

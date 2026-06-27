@@ -361,11 +361,11 @@ fn populate_elements_dialog(
 	}
 	headings_tree.expand_all();
 	if tree_data.closest_index >= 0 {
-		if let Ok(index) = usize::try_from(tree_data.closest_index) {
-			if let Some(item) = item_ids.get(index) {
-				headings_tree.select_item(item);
-				headings_tree.ensure_visible(item);
-			}
+		if let Ok(index) = usize::try_from(tree_data.closest_index)
+			&& let Some(item) = item_ids.get(index)
+		{
+			headings_tree.select_item(item);
+			headings_tree.ensure_visible(item);
 		}
 	} else if let Some((first_child, _)) = headings_tree.get_first_child(&root) {
 		headings_tree.select_item(&first_child);
@@ -418,13 +418,12 @@ fn bind_elements_activation(
 	let tree_for_activate = headings_tree;
 	let dialog_for_tree = dialog;
 	headings_tree.on_item_activated(move |event| {
-		if let Some(item) = event.get_item() {
-			if let Some(data) = tree_for_activate.get_custom_data(&item) {
-				if let Some(offset) = data.downcast_ref::<i64>() {
-					selected_offset_for_tree.set(*offset);
-					dialog_for_tree.end_modal(wxdragon::id::ID_OK);
-				}
-			}
+		if let Some(item) = event.get_item()
+			&& let Some(data) = tree_for_activate.get_custom_data(&item)
+			&& let Some(offset) = data.downcast_ref::<i64>()
+		{
+			selected_offset_for_tree.set(*offset);
+			dialog_for_tree.end_modal(wxdragon::id::ID_OK);
 		}
 	});
 	let selected_offset_for_list = Rc::clone(selected_offset);
@@ -432,13 +431,12 @@ fn bind_elements_activation(
 	let dialog_for_list = dialog;
 	links_list.on_item_double_clicked(move |event| {
 		let selection = event.get_selection().unwrap_or(-1);
-		if selection >= 0 {
-			if let Ok(index) = usize::try_from(selection) {
-				if let Some(offset) = offsets_for_list.get(index) {
-					selected_offset_for_list.set(*offset);
-					dialog_for_list.end_modal(wxdragon::id::ID_OK);
-				}
-			}
+		if selection >= 0
+			&& let Ok(index) = usize::try_from(selection)
+			&& let Some(offset) = offsets_for_list.get(index)
+		{
+			selected_offset_for_list.set(*offset);
+			dialog_for_list.end_modal(wxdragon::id::ID_OK);
 		}
 	});
 }
@@ -459,21 +457,19 @@ fn bind_elements_ok_action(
 	ok_button.on_click(move |_| {
 		let selection = view_choice.get_selection().unwrap_or(0);
 		if selection == 0 {
-			if let Some(item) = headings_tree.get_selection() {
-				if let Some(data) = headings_tree.get_custom_data(&item) {
-					if let Some(offset) = data.downcast_ref::<i64>() {
-						selected_offset_for_ok.set(*offset);
-						dialog_for_ok.end_modal(wxdragon::id::ID_OK);
-					}
-				}
+			if let Some(item) = headings_tree.get_selection()
+				&& let Some(data) = headings_tree.get_custom_data(&item)
+				&& let Some(offset) = data.downcast_ref::<i64>()
+			{
+				selected_offset_for_ok.set(*offset);
+				dialog_for_ok.end_modal(wxdragon::id::ID_OK);
 			}
-		} else if let Some(idx) = links_list.get_selection() {
-			if let Ok(index) = usize::try_from(idx) {
-				if let Some(offset) = offsets_for_ok.get(index) {
-					selected_offset_for_ok.set(*offset);
-					dialog_for_ok.end_modal(wxdragon::id::ID_OK);
-				}
-			}
+		} else if let Some(idx) = links_list.get_selection()
+			&& let Ok(index) = usize::try_from(idx)
+			&& let Some(offset) = offsets_for_ok.get(index)
+		{
+			selected_offset_for_ok.set(*offset);
+			dialog_for_ok.end_modal(wxdragon::id::ID_OK);
 		}
 	});
 }

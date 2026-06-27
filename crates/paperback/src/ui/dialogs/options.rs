@@ -301,7 +301,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	update_channel_combo.set_selection(channel_index);
 	let current_hotkey = Rc::new(RefCell::new(config.get_hotkey()));
 	let hotkey_state = Rc::clone(&current_hotkey);
-	let hotkey_dialog_parent = dialog.clone();
+	let hotkey_dialog_parent = dialog;
 	hotkey_button.on_click(move |_| {
 		let initial = hotkey_state.borrow().clone();
 		if let Some(updated) = prompt_for_hotkey(&hotkey_dialog_parent, &initial) {
@@ -354,12 +354,12 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 			dlg = dlg.with_initial_colour(c);
 		}
 		let dlg = dlg.build();
-		if dlg.show_modal() == wxdragon::id::ID_OK {
-			if let Some(c) = dlg.get_colour() {
-				let packed = ((c.r as i32) << 16) | ((c.g as i32) << 8) | c.b as i32;
-				bg_state.set(packed);
-				bg_label.set_label(&color_description(packed));
-			}
+		if dlg.show_modal() == wxdragon::id::ID_OK
+			&& let Some(c) = dlg.get_colour()
+		{
+			let packed = (i32::from(c.r) << 16) | (i32::from(c.g) << 8) | i32::from(c.b);
+			bg_state.set(packed);
+			bg_label.set_label(&color_description(packed));
 		}
 	});
 	let bg_state_reset = Rc::clone(&bg_color);
@@ -500,7 +500,7 @@ fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Option<Readabi
 		let c = fd.get_chosen_colour();
 		// Prevent double-free: this FontData pointer is owned by the dialog, not by us
 		mem::forget(fd);
-		c.map(|col| ((col.r as i32) << 16) | ((col.g as i32) << 8) | col.b as i32).unwrap_or(-1)
+		c.map_or(-1, |col| (i32::from(col.r) << 16) | (i32::from(col.g) << 8) | i32::from(col.b))
 	} else {
 		-1
 	};
@@ -549,11 +549,11 @@ fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<Ho
 	ok_button.set_default();
 	let cancel_button = Button::builder(&panel).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
 
-	let key_text_clone = key_text.clone();
-	let ctrl_cb_clone = ctrl_cb.clone();
-	let alt_cb_clone = alt_cb.clone();
-	let shift_cb_clone = shift_cb.clone();
-	let win_cb_clone = win_cb.clone();
+	let key_text_clone = key_text;
+	let ctrl_cb_clone = ctrl_cb;
+	let alt_cb_clone = alt_cb;
+	let shift_cb_clone = shift_cb;
+	let win_cb_clone = win_cb;
 	clear_button.on_click(move |_| {
 		key_text_clone.set_value("");
 		ctrl_cb_clone.set_value(false);
@@ -595,7 +595,7 @@ fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<Ho
 fn hotkey_key_display_name(key: char) -> String {
 	match key {
 		'\0' => String::new(),
-		' ' => t("Space").to_string(),
+		' ' => t("Space"),
 		c if c.is_ascii_alphanumeric() => c.to_ascii_uppercase().to_string(),
 		c => c.to_string(),
 	}

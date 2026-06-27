@@ -5,7 +5,7 @@ type NavigationHandler = Box<dyn Fn(&str) -> bool>;
 use std::cell::Cell;
 
 thread_local! {
-	pub static ACTIVE_WEB_VIEW: Cell<Option<Dialog>> = Cell::new(None);
+	pub static ACTIVE_WEB_VIEW: Cell<Option<Dialog>> = const { Cell::new(None) };
 }
 
 pub fn show_web_view_dialog(
