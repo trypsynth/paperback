@@ -16,6 +16,7 @@ use crate::{accessibility, config_ext::UpdateChannel, translation_manager::Trans
 pub struct OptionsDialogResult {
 	pub restore_previous_documents: bool,
 	pub word_wrap: bool,
+	pub render_tables_inline: bool,
 	pub minimize_to_tray: bool,
 	pub start_maximized: bool,
 	pub compact_go_menu: bool,
@@ -40,6 +41,7 @@ struct OptionsDialogUi {
 	notebook: Notebook,
 	restore_docs_check: CheckBox,
 	word_wrap_check: CheckBox,
+	render_tables_inline_check: CheckBox,
 	minimize_to_tray_check: CheckBox,
 	start_maximized_check: CheckBox,
 	compact_go_menu_check: CheckBox,
@@ -83,6 +85,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 	Some(OptionsDialogResult {
 		restore_previous_documents: ui.restore_docs_check.is_checked(),
 		word_wrap: ui.word_wrap_check.is_checked(),
+		render_tables_inline: ui.render_tables_inline_check.is_checked(),
 		minimize_to_tray: ui.minimize_to_tray_check.is_checked(),
 		start_maximized: ui.start_maximized_check.is_checked(),
 		compact_go_menu: ui.compact_go_menu_check.is_checked(),
@@ -115,6 +118,8 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let restore_docs_check =
 		CheckBox::builder(&general_panel).with_label(&t("&Restore previously opened documents on startup")).build();
 	let word_wrap_check = CheckBox::builder(&readability_panel).with_label(&t("&Word wrap")).build();
+	let render_tables_inline_check =
+		CheckBox::builder(&readability_panel).with_label(&t("Render tables &inline")).build();
 	let minimize_to_tray_check = CheckBox::builder(&general_panel).with_label(&t("&Minimize to system tray")).build();
 	let start_maximized_check = CheckBox::builder(&general_panel).with_label(&t("&Start maximized")).build();
 	let compact_go_menu_check = CheckBox::builder(&reading_panel).with_label(&t("Show compact &go menu")).build();
@@ -264,6 +269,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	);
 	text_alignment_sizer.add(&text_alignment_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
 	readability_sizer.add(&word_wrap_check, 0, SizerFlag::All, option_padding);
+	readability_sizer.add(&render_tables_inline_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add_sizer(&line_spacing_sizer, 0, SizerFlag::All, option_padding);
 	readability_sizer.add_sizer(&paragraph_spacing_sizer, 0, SizerFlag::All, option_padding);
 	readability_sizer.add_sizer(&letter_spacing_sizer, 0, SizerFlag::All, option_padding);
@@ -276,6 +282,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	notebook.add_page(&readability_panel, &t("Readability"), false, None);
 	restore_docs_check.set_value(config.get_app_bool("restore_previous_documents", true));
 	word_wrap_check.set_value(config.get_app_bool("word_wrap", false));
+	render_tables_inline_check.set_value(config.get_app_bool("render_tables_inline", true));
 	minimize_to_tray_check.set_value(config.get_app_bool("minimize_to_tray", false));
 	start_maximized_check.set_value(config.get_app_bool("start_maximized", false));
 	compact_go_menu_check.set_value(config.get_app_bool("compact_go_menu", true));
@@ -376,6 +383,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		notebook,
 		restore_docs_check,
 		word_wrap_check,
+		render_tables_inline_check,
 		minimize_to_tray_check,
 		start_maximized_check,
 		compact_go_menu_check,

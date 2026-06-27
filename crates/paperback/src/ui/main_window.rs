@@ -1384,6 +1384,7 @@ impl MainWindow {
 					};
 					let (
 						old_word_wrap,
+						old_render_tables_inline,
 						old_compact_menu,
 						old_readability_font,
 						old_line_spacing,
@@ -1395,6 +1396,7 @@ impl MainWindow {
 						let cfg = config.lock().unwrap();
 						(
 							cfg.get_app_bool("word_wrap", false),
+							cfg.get_app_bool("render_tables_inline", true),
 							cfg.get_app_bool("compact_go_menu", true),
 							cfg.get_readability_font(),
 							cfg.get_line_spacing(),
@@ -1407,6 +1409,7 @@ impl MainWindow {
 					let cfg = config.lock().unwrap();
 					cfg.set_app_bool("restore_previous_documents", options.restore_previous_documents);
 					cfg.set_app_bool("word_wrap", options.word_wrap);
+					cfg.set_app_bool("render_tables_inline", options.render_tables_inline);
 					cfg.set_app_bool("minimize_to_tray", options.minimize_to_tray);
 					cfg.set_app_bool("start_maximized", options.start_maximized);
 					cfg.set_app_bool("compact_go_menu", options.compact_go_menu);
@@ -1431,6 +1434,8 @@ impl MainWindow {
 					}
 					drop(cfg);
 					let options_word_wrap = options.word_wrap;
+					let options_render_tables_inline = options.render_tables_inline;
+					let render_tables_inline_changed = old_render_tables_inline != options_render_tables_inline;
 					let font_changed = old_readability_font != options.readability_font;
 					let line_spacing_changed = old_line_spacing != options.line_spacing;
 					let bg_color_changed = old_bg_color != options.bg_color;
@@ -1469,6 +1474,10 @@ impl MainWindow {
 						if paragraph_spacing_changed {
 							dm_ref.apply_paragraph_spacing(options.paragraph_spacing);
 						}
+					}
+					if render_tables_inline_changed {
+						let mut dm_ref = dm.lock().unwrap();
+						dm_ref.apply_render_tables_inline(options_render_tables_inline);
 					}
 					let options_compact_menu = options.compact_go_menu;
 					if current_language != options.language || old_compact_menu != options_compact_menu {

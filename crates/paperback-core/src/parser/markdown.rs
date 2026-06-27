@@ -123,7 +123,7 @@ impl Parser for MarkdownParser {
 			.with_context(|| format!("Failed to open Markdown file '{}'", context.file_path))?;
 		let markdown_content = convert_to_utf8(&bytes);
 		let html_content = markdown_to_html(&markdown_content);
-		let mut converter = HtmlToText::new();
+		let mut converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
 		if !converter.convert(&html_content, HtmlSourceMode::Markdown) {
 			anyhow::bail!("Failed to convert Markdown to text: {}", context.file_path);
 		}

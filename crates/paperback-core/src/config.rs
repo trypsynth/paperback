@@ -122,6 +122,8 @@ pub struct AppSettings {
 	pub restore_previous_documents: bool,
 	#[serde(default)]
 	pub word_wrap: bool,
+	#[serde(default = "default_true")]
+	pub render_tables_inline: bool,
 	#[serde(default)]
 	pub navigation_wrap: bool,
 	#[serde(default)]
@@ -174,6 +176,7 @@ impl Default for AppSettings {
 		Self {
 			restore_previous_documents: true,
 			word_wrap: false,
+			render_tables_inline: true,
 			navigation_wrap: false,
 			find_match_case: false,
 			find_whole_word: false,
@@ -412,6 +415,7 @@ impl ConfigManager {
 		match key {
 			"restore_previous_documents" => data.app.restore_previous_documents,
 			"word_wrap" => data.app.word_wrap,
+			"render_tables_inline" => data.app.render_tables_inline,
 			"navigation_wrap" => data.app.navigation_wrap,
 			"find_match_case" => data.app.find_match_case,
 			"find_whole_word" => data.app.find_whole_word,
@@ -459,6 +463,7 @@ impl ConfigManager {
 			match key {
 				"restore_previous_documents" => data.app.restore_previous_documents = value,
 				"word_wrap" => data.app.word_wrap = value,
+				"render_tables_inline" => data.app.render_tables_inline = value,
 				"navigation_wrap" => data.app.navigation_wrap = value,
 				"find_match_case" => data.app.find_match_case = value,
 				"find_whole_word" => data.app.find_whole_word = value,
@@ -1106,5 +1111,16 @@ mod tests {
 		let a = config.get_doc_key("book-a.epub");
 		let b = config.get_doc_key("book-b.epub");
 		assert_ne!(a, b);
+	}
+
+	#[test]
+	fn render_tables_inline_round_trips() {
+		let mut config = ConfigManager::new();
+		config.initialized = true;
+		assert!(config.get_app_bool("render_tables_inline", true));
+		config.set_app_bool("render_tables_inline", false);
+		assert!(!config.get_app_bool("render_tables_inline", true));
+		config.set_app_bool("render_tables_inline", true);
+		assert!(config.get_app_bool("render_tables_inline", true));
 	}
 }

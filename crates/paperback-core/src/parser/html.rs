@@ -34,7 +34,7 @@ impl Parser for HtmlParser {
 			anyhow::bail!("HTML file is empty: {}", context.file_path);
 		}
 		let html_content = convert_to_utf8(&bytes);
-		let mut converter = HtmlToText::new();
+		let mut converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
 		if !converter.convert(&html_content, HtmlSourceMode::NativeHtml) {
 			anyhow::bail!("Failed to convert HTML to text: {}", context.file_path);
 		}

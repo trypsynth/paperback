@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-26 14:10-0600\n"
+"POT-Creation-Date: 2026-06-27 11:48+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -228,6 +228,9 @@ msgid "&Restore previously opened documents on startup"
 msgstr ""
 
 msgid "&Word wrap"
+msgstr ""
+
+msgid "Render tables &inline"
 msgstr ""
 
 msgid "&Minimize to system tray"

@@ -123,7 +123,7 @@ impl Parser for EpubParser {
 			.find(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "package")
 			.ok_or_else(|| anyhow::anyhow!("OPF package element missing"))?;
 		let (manifest, spine, nav_path, ncx_path, metadata) = parse_package(package_node, &opf_dir);
-		let mut conversion = convert_spine_items(&mut archive, &manifest, &spine);
+		let mut conversion = convert_spine_items(&mut archive, &manifest, &spine, context.render_tables_inline);
 		if conversion.sections.is_empty() {
 			let reason = if conversion.conversion_errors.is_empty() {
 				String::from("no readable spine items")
@@ -170,6 +170,7 @@ fn convert_spine_items<R: Read + Seek>(
 	archive: &mut ZipArchive<R>,
 	manifest: &HashMap<String, ManifestItem>,
 	spine: &[String],
+	render_tables_inline: bool,
 ) -> SpineConversionResult {
 	let mut buffer = DocumentBuffer::new();
 	let mut id_positions = HashMap::new();
@@ -194,7 +195,7 @@ fn convert_spine_items<R: Read + Seek>(
 				.with_text(section_label)
 				.with_reference(item.path.clone()),
 		);
-		match convert_section(&section_data) {
+		match convert_section(&section_data, render_tables_inline) {
 			Ok(section) => {
 				for (id, relative) in &section.id_positions {
 					let absolute = section_start + relative;
@@ -336,8 +337,8 @@ fn parse_package(package: Node<'_, '_>, opf_dir: &Path) -> PackageParts {
 	(manifest, spine, nav_path, ncx_path, PackageMetadata { title, author })
 }
 
-fn convert_section(content: &str) -> Result<SectionContent> {
-	let mut xml_converter = XmlToText::new();
+fn convert_section(content: &str, render_tables_inline: bool) -> Result<SectionContent> {
+	let mut xml_converter = XmlToText::with_render_tables_inline(render_tables_inline);
 	if xml_converter.convert(content) {
 		return Ok(SectionContent {
 			text: xml_converter.get_text(),
@@ -352,7 +353,7 @@ fn convert_section(content: &str) -> Result<SectionContent> {
 			id_positions: xml_converter.get_id_positions().clone(),
 		});
 	}
-	let mut html_converter = HtmlToText::new();
+	let mut html_converter = HtmlToText::with_render_tables_inline(render_tables_inline);
 	if html_converter.convert(content, HtmlSourceMode::NativeHtml) {
 		return Ok(SectionContent {
 			text: html_converter.get_text(),

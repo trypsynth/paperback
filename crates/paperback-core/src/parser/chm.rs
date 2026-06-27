@@ -63,7 +63,7 @@ impl Parser for ChmParser {
 				continue;
 			}
 			let utf8_content = convert_to_utf8(&content_bytes);
-			let mut converter = HtmlToText::new();
+			let mut converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
 			if !converter.convert(&utf8_content, HtmlSourceMode::NativeHtml) {
 				continue;
 			}

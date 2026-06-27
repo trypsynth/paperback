@@ -58,6 +58,7 @@ pub struct TableInfo {
 	pub offset: usize,
 	pub text: String,
 	pub html_content: String,
+	/// Display-unit span of the emitted table text.
 	pub length: usize,
 }
 
