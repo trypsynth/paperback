@@ -12,7 +12,6 @@ use std::{
 use paperback_core::{
 	config::{ConfigManager, ReadabilityFont},
 	parser::PASSWORD_REQUIRED_ERROR_PREFIX,
-	reader_core::nearest_fragment_before,
 	session::DocumentSession,
 };
 use patois::t;
@@ -602,19 +601,19 @@ impl DocumentManager {
 			let current_pos = tab.text_ctrl.get_insertion_point();
 			let pos = usize::try_from(current_pos.max(0)).unwrap_or(0);
 
-			// Snapshot a structural anchor before reparsing so we can restore position
-			// accurately even when inline-table toggling changes content length.
-			// Strategy: find the nearest element anchor (pb-block-N / HTML id / etc.)
-			// at-or-before the cursor and record the cursor's offset within that anchor's
-			// block. After reparsing the anchor's absolute position is looked up in the
-			// new id_positions map and the within-block offset is added back.
-			// Fallback: percentage-based position when no anchor exists (e.g. plain-text
-			// formats that emit no anchors).
-			let stable_anchor = nearest_fragment_before(tab.session.handle(), pos).map(|id| {
-				let anchor_pos = tab.session.handle().document().id_positions.get(&id).copied().unwrap_or(0);
-				let within = pos.saturating_sub(anchor_pos);
-				(id, within)
-			});
+			// Find the nearest anchor at-or-before the cursor using the full id_positions key
+			// (unlike nearest_fragment_before, which strips the "path#" prefix for epub keys
+			// making the subsequent lookup fail). Record the within-block offset so the cursor
+			// lands at the same structural position after reparsing. Fallback: percentage-based
+			// position for formats with no anchors.
+			let stable_anchor = {
+				let id_positions = &tab.session.handle().document().id_positions;
+				id_positions
+					.iter()
+					.filter(|&(_, &off)| off <= pos)
+					.max_by_key(|&(_, &off)| off)
+					.map(|(key, &anchor_off)| (key.clone(), pos.saturating_sub(anchor_off)))
+			};
 			let fallback_percent = tab.session.get_status_info(current_pos).percentage;
 
 			let new_session = match DocumentSession::new(&path_str, &password, &forced_extension, render_tables_inline)
@@ -643,11 +642,11 @@ impl DocumentManager {
 			tab.panel.layout();
 			let max_pos = tab.text_ctrl.get_last_position();
 
-			// Resolve the restored position from the anchor snapshot or fall back to %.
-			let restored_pos = if let Some((id, within)) = stable_anchor {
-				let new_anchor_pos = tab.session.handle().document().id_positions.get(&id).copied().unwrap_or(0);
-				let candidate = (new_anchor_pos + within) as i64;
-				candidate.clamp(0, max_pos)
+			let restored_pos = if let Some((ref key, within)) = stable_anchor {
+				match tab.session.handle().document().id_positions.get(key) {
+					Some(&new_anchor_off) => i64::try_from(new_anchor_off + within).unwrap_or(0).clamp(0, max_pos),
+					None => tab.session.position_from_percent(fallback_percent).clamp(0, max_pos),
+				}
 			} else {
 				tab.session.position_from_percent(fallback_percent).clamp(0, max_pos)
 			};
