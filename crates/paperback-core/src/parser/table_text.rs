@@ -95,6 +95,15 @@ pub fn display_lines_and_length(display_text: &str) -> (Vec<String>, usize) {
 	(lines, display_length)
 }
 
+/// Push a line to a parser's output verbatim (no whitespace collapsing/trimming), updating its
+/// cached display length so position tracking stays correct. Shared by `HtmlToText` and `XmlToText`
+/// so the `+1` newline accounting can never diverge between the two. Used for table rows whose tab
+/// separators and empty cells must not be mangled.
+pub fn push_finalized_line(lines: &mut Vec<String>, cached_len: &mut usize, line: String) {
+	*cached_len += display_len(&line) + 1; // +1 for the line's newline
+	lines.push(line);
+}
+
 #[must_use]
 pub fn table_render_bundle(html: &str, inline: bool) -> TableRenderBundle {
 	// Parse the HTML once; derive TSV, caption, and display text from the same tree.

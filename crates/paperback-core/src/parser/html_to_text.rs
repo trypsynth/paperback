@@ -256,8 +256,7 @@ impl HtmlToText {
 	/// length so position tracking stays correct. Used for table rows whose tab separators and empty
 	/// cells must not be mangled by `add_line`.
 	fn push_finalized_line(&mut self, line: String) {
-		self.cached_char_length += display_len(&line) + 1; // +1 for the line's newline
-		self.lines.push(line);
+		crate::parser::table_text::push_finalized_line(&mut self.lines, &mut self.cached_char_length, line);
 	}
 
 	fn handle_element_opening(&mut self, tag_name: &str, node: NodeRef<'_, Node>, document: &Html) {

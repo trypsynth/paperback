@@ -129,7 +129,7 @@ fn traverse(
 			id_positions.insert(id.to_string(), buffer.current_position());
 		}
 		if tag_name == "table" {
-			process_table(node, buffer, render_tables_inline);
+			process_table(node, buffer, id_positions, render_tables_inline);
 			return;
 		}
 	} else if node.node_type() == NodeType::Text {
@@ -152,8 +152,23 @@ fn traverse_children(
 	}
 }
 
-fn process_table(node: Node, buffer: &mut DocumentBuffer, render_tables_inline: bool) {
+fn process_table(
+	node: Node,
+	buffer: &mut DocumentBuffer,
+	id_positions: &mut HashMap<String, usize>,
+	render_tables_inline: bool,
+) {
 	let table_start = buffer.current_position();
+	// The table collapses to a placeholder/TSV, so cells have no individual display offset. Register
+	// every anchor `id` nested inside the table at the table's start position; internal links to a
+	// bookmark/footnote/cross-ref target inside a cell then navigate to the table.
+	for descendant in node.descendants() {
+		if descendant.is_element()
+			&& let Some(id) = descendant.attribute("id")
+		{
+			id_positions.insert(id.to_string(), table_start);
+		}
+	}
 	let mut html_content = String::from("<table border=\"1\">");
 	let mut table_caption = String::new();
 	let mut found_first_row = false;
@@ -231,6 +246,26 @@ mod tests {
 		assert_eq!(table_marker.length, display_len("[Table]: Kop \u{1D11E}") + 1, "marker length in display units");
 		assert_eq!(table_marker.text, "Kop \u{1D11E}", "marker keeps the first-row caption");
 		assert!(table_marker.reference.contains("<table"), "marker reference is the table HTML");
+	}
+
+	/// An `id` attribute on an element nested inside a table cell must be registered in
+	/// `id_positions` at the table's start position, so internal links to that anchor navigate to
+	/// the table. Holds in both OFF and ON modes (registration happens before the cells collapse).
+	#[test]
+	fn odt_table_cell_id_registered_at_table_start() {
+		let xml = "<document><p>before</p><table><table-row><table-cell><span id=\"anchor1\">Kop</span></table-cell></table-row></table></document>";
+		let xml_doc = XmlDocument::parse(xml).expect("valid xml");
+		for inline in [false, true] {
+			let mut buffer = DocumentBuffer::new();
+			let mut id_positions = HashMap::new();
+			traverse(xml_doc.root(), &mut buffer, &mut id_positions, inline);
+			let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
+			assert_eq!(
+				id_positions.get("anchor1"),
+				Some(&table_marker.position),
+				"in-cell anchor id maps to the table start (inline={inline})"
+			);
+		}
 	}
 
 	/// ON mode: the same ODT table emits the full TSV instead of the placeholder.

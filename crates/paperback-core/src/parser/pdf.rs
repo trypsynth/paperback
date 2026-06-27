@@ -824,12 +824,15 @@ fn append_pdf_table_to_buffer(
 	render_tables_inline: bool,
 ) {
 	let display_text = crate::parser::table_text::html_table_to_display(&html, render_tables_inline);
-	for line in display_text.split('\n') {
+	// `display_lines_and_length` guards the empty case (an empty inline table) by returning no
+	// lines, where a raw `split('\n')` would yield one `""` and emit a spurious blank line.
+	let (lines, _) = crate::parser::table_text::display_lines_and_length(&display_text);
+	for line in lines {
 		let line_pos = buffer.current_position();
-		current_lines_info.push((line_pos, line.to_string()));
-		buffer.append(line);
+		current_lines_info.push((line_pos, line.clone()));
+		buffer.append(&line);
 		buffer.append("\n");
-		page_display_text.push_str(line);
+		page_display_text.push_str(&line);
 		page_display_text.push('\n');
 	}
 	let display_len = buffer.current_position() - pos;
@@ -917,5 +920,23 @@ mod tests {
 		let expected_len = display_len("Kop\t\u{1D11E}\na\tb\n");
 		let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker present");
 		assert_eq!(table_marker.length, expected_len, "marker length spans all emitted rows");
+	}
+
+	/// An empty inline table must emit no line at all (a raw `split('\n')` would emit one spurious
+	/// blank line). The buffer stays empty and the Table marker has zero length.
+	#[test]
+	fn pdf_table_helper_empty_inline_emits_no_line() {
+		let html = "<table border=\"1\">\n</table>\n".to_string();
+		let mut buffer = DocumentBuffer::new();
+		let pos = buffer.current_position();
+		let mut lines_info = Vec::new();
+		let mut page_text = String::new();
+		append_pdf_table_to_buffer(&mut buffer, html, pos, &mut lines_info, &mut page_text, true);
+
+		assert_eq!(buffer.content, "", "empty inline table appends nothing");
+		assert!(lines_info.is_empty(), "no lines recorded");
+		assert!(page_text.is_empty(), "no page display text");
+		let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker present");
+		assert_eq!(table_marker.length, 0, "zero-length marker for empty inline table");
 	}
 }

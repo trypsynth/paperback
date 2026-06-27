@@ -549,8 +549,6 @@ fn process_table(
 ) {
 	let table_start = buffer.current_position();
 	let mut html_content = String::from("<table border=\"1\">");
-	let mut table_caption = String::from("table: ");
-	let mut first_row = true;
 	for child in element.children() {
 		if child.node_type() == NodeType::Element && child.tag_name().name() == "tr" {
 			html_content.push_str("<tr>");
@@ -568,21 +566,18 @@ fn process_table(
 							cell_text.push(' ');
 						}
 					}
-					let trimmed_cell = cell_text.trim();
-					html_content.push_str(trimmed_cell);
+					html_content.push_str(cell_text.trim());
 					html_content.push_str("</td>");
-					if first_row {
-						table_caption.push_str(trimmed_cell);
-						table_caption.push(' ');
-					}
 				}
 			}
 			html_content.push_str("</tr>");
-			first_row = false;
 		}
 	}
 	html_content.push_str("</table>");
-	let final_caption = table_caption.trim().to_string();
+	// Derive the caption the same way HTML/XML do (first-row text, no prefix) for consistent
+	// labels across formats; fall back to "table" for an empty table like `table_caption_from_tsv`.
+	let final_caption =
+		crate::parser::table_text::table_caption_from_html(&html_content).unwrap_or_else(|| "table".to_string());
 	let display_text = crate::parser::table_text::html_table_to_display(&html_content, render_tables_inline);
 	buffer.append(&display_text);
 	buffer.append("\n");
@@ -935,7 +930,7 @@ mod tests {
 		traverse(xml_doc.root(), &mut buffer, &mut headings, &mut id_positions, &rels, &HashMap::new(), false);
 		assert_eq!(buffer.content, "[Table]: Kop \u{1D11E}\n");
 		let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
-		assert_eq!(table_marker.text, "table: Kop \u{1D11E}", "marker keeps the caption text");
+		assert_eq!(table_marker.text, "Kop \u{1D11E}", "marker caption is the first-row text, no prefix");
 		assert_eq!(table_marker.length, display_len("[Table]: Kop \u{1D11E}") + 1, "marker length in display units");
 		assert!(table_marker.reference.contains("<td>Kop</td>"), "marker reference is the table HTML");
 
