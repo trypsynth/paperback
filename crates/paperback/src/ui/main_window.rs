@@ -1320,8 +1320,8 @@ impl MainWindow {
 						dialog.show_modal();
 					}
 				}
-				menu_ids::OPEN_CONTAINING_FOLDER => {
-					help::handle_open_containing_folder(&frame_copy, &dm);
+				menu_ids::REVEAL_FILE_IN_FOLDER => {
+					help::handle_reveal_file_in_folder(&frame_copy, &dm);
 				}
 				menu_ids::VIEW_SOURCE => {
 					// `None` => format has no text source; `Some(None)` => source could not
