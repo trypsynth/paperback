@@ -79,7 +79,7 @@ const DOCUMENT_DEPENDENT_IDS: &[i32] = &[
 	menu_ids::DOCUMENT_INFO,
 	menu_ids::TABLE_OF_CONTENTS,
 	menu_ids::ELEMENTS_LIST,
-	menu_ids::OPEN_CONTAINING_FOLDER,
+	menu_ids::REVEAL_FILE_IN_FOLDER,
 	menu_ids::OPEN_IN_WEB_VIEW,
 	menu_ids::VIEW_SOURCE,
 	// Import/Export
@@ -581,8 +581,8 @@ pub fn create_tools_menu(config: &ConfigManager) -> Menu {
 	let toc_help = t("Show table of contents");
 	let elements_label = t("&Elements List...\tF7");
 	let elements_help = t("Show elements list");
-	let open_folder_label = t("Open &Containing Folder\tCtrl+Shift+C");
-	let open_folder_help = t("Open folder containing the document");
+	let open_folder_label = t("Reveal &File in Folder\tCtrl+Shift+C");
+	let open_folder_help = t("Reveal document in the file manager");
 	let web_view_label = t("Open in &Web View\tCtrl+Shift+V");
 	let web_view_help = t("Open document in web view");
 	let view_source_label = t("View &Source\tCtrl+U");
@@ -594,7 +594,7 @@ pub fn create_tools_menu(config: &ConfigManager) -> Menu {
 		.append_item(menu_ids::TABLE_OF_CONTENTS, &toc_label, &toc_help)
 		.append_item(menu_ids::ELEMENTS_LIST, &elements_label, &elements_help)
 		.append_separator()
-		.append_item(menu_ids::OPEN_CONTAINING_FOLDER, &open_folder_label, &open_folder_help)
+		.append_item(menu_ids::REVEAL_FILE_IN_FOLDER, &open_folder_label, &open_folder_help)
 		.append_item(menu_ids::OPEN_IN_WEB_VIEW, &web_view_label, &web_view_help)
 		.append_item(menu_ids::VIEW_SOURCE, &view_source_label, &view_source_help)
 		.append_separator()

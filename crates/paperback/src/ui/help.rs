@@ -75,15 +75,25 @@ pub fn readme_path() -> Option<PathBuf> {
 	Some(dir.join("readme.html"))
 }
 
-pub fn handle_open_containing_folder(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) {
-	let dir = doc_manager.lock().unwrap().active_tab().and_then(|tab| tab.file_path.parent()).map(Path::to_path_buf);
-	let Some(dir) = dir else {
-		show_error(frame, t("Failed to open containing folder."), &t("Error"));
+pub fn handle_reveal_file_in_folder(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) {
+	let file_path = doc_manager.lock().unwrap().active_tab().map(|tab| tab.file_path.clone());
+	let Some(file_path) = file_path else {
+		show_error(frame, t("Failed to reveal file in folder."), &t("Error"));
 		return;
 	};
-	let url = format!("file://{}", dir.to_string_lossy());
-	if !wxdragon::utils::launch_default_browser(&url, wxdragon::utils::BrowserLaunchFlags::Default) {
-		show_error(frame, t("Failed to open containing folder."), &t("Error"));
+
+	#[cfg(target_os = "windows")]
+	{
+		std::process::Command::new("explorer").arg(format!("/select,{}", file_path.display())).spawn().ok();
+	}
+	#[cfg(not(target_os = "windows"))]
+	{
+		if let Some(dir) = file_path.parent() {
+			let url = format!("file://{}", dir.to_string_lossy());
+			if !wxdragon::utils::launch_default_browser(&url, wxdragon::utils::BrowserLaunchFlags::Default) {
+				show_error(frame, t("Failed to reveal file in folder."), &t("Error"));
+			}
+		}
 	}
 }
 

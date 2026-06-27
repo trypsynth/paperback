@@ -127,18 +127,19 @@ impl DocumentManager {
 			}
 		}
 
-		let (password, forced_extension) = {
+		let (password, forced_extension, render_tables_inline) = {
 			let config = self.config.lock().unwrap();
 			let path_str = path.to_string_lossy();
 			config.refresh_document_hash(&path_str);
 			let forced_extension = config.get_document_format(&path_str);
 			let password = config.get_document_password(&path_str);
+			let render_tables_inline = config.get_app_bool("render_tables_inline", true);
 			drop(config);
-			(password, forced_extension)
+			(password, forced_extension, render_tables_inline)
 		};
 		let path_str = path.to_string_lossy().to_string();
 		tracing::info!(path = %path.display(), "opening document");
-		match DocumentSession::new(&path_str, &password, &forced_extension) {
+		match DocumentSession::new(&path_str, &password, &forced_extension, render_tables_inline) {
 			Ok(session) => self.add_session_tab(self_rc, path, session, &password, track, title_override),
 			Err(err) => {
 				if err.starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
@@ -150,7 +151,7 @@ impl DocumentManager {
 						show_error_dialog(&self.notebook, &t("Password is required."), &t("Error"));
 						return false;
 					};
-					match DocumentSession::new(&path_str, &password, &forced_extension) {
+					match DocumentSession::new(&path_str, &password, &forced_extension, render_tables_inline) {
 						Ok(session) => self.add_session_tab(self_rc, path, session, &password, track, title_override),
 						Err(retry_error) => {
 							tracing::error!(path = %path.display(), error = %retry_error, "failed to open document");
@@ -564,6 +565,95 @@ impl DocumentManager {
 			text_ctrl.show_position(pos);
 			old_ctrl.destroy();
 			tab.text_ctrl = text_ctrl;
+		}
+	}
+
+	/// Re-parses every open document with the new `render_tables_inline` setting and refills its
+	/// text control. Re-parsing (rather than transforming in place) keeps every format's table
+	/// rendering identical via the shared parse-time helper. A tab whose re-parse fails is left
+	/// unchanged.
+	pub fn apply_render_tables_inline(&mut self, render_tables_inline: bool) {
+		// Read readability settings and collect each tab's parse inputs (path, password, forced
+		// format) under a single config lock, so we don't re-lock per tab while mutating the tabs.
+		let (rf, line_spacing, bg_color, text_alignment, letter_spacing, paragraph_spacing, parse_inputs) = {
+			let cfg = self.config.lock().unwrap();
+			let parse_inputs: Vec<(String, String, String)> = self
+				.tabs
+				.iter()
+				.map(|tab| {
+					let path_str = tab.file_path.to_string_lossy().to_string();
+					let password = cfg.get_document_password(&path_str);
+					let forced_extension = cfg.get_document_format(&path_str);
+					(path_str, password, forced_extension)
+				})
+				.collect();
+			(
+				cfg.get_readability_font(),
+				cfg.get_line_spacing(),
+				cfg.get_bg_color(),
+				cfg.get_text_alignment(),
+				cfg.get_letter_spacing(),
+				cfg.get_paragraph_spacing(),
+				parse_inputs,
+			)
+		};
+		for (tab, (path_str, password, forced_extension)) in self.tabs.iter_mut().zip(parse_inputs) {
+			let current_pos = tab.text_ctrl.get_insertion_point();
+			let pos = usize::try_from(current_pos.max(0)).unwrap_or(0);
+
+			// Find the nearest anchor at-or-before the cursor using the full id_positions key
+			// (unlike nearest_fragment_before, which strips the "path#" prefix for epub keys
+			// making the subsequent lookup fail). Record the within-block offset so the cursor
+			// lands at the same structural position after reparsing. Fallback: percentage-based
+			// position for formats with no anchors.
+			let stable_anchor = {
+				let id_positions = &tab.session.handle().document().id_positions;
+				id_positions
+					.iter()
+					.filter(|&(_, &off)| off <= pos)
+					.max_by_key(|&(_, &off)| off)
+					.map(|(key, &anchor_off)| (key.clone(), pos.saturating_sub(anchor_off)))
+			};
+			let fallback_percent = tab.session.get_status_info(current_pos).percentage;
+
+			let new_session = match DocumentSession::new(&path_str, &password, &forced_extension, render_tables_inline)
+			{
+				Ok(session) => session,
+				Err(err) => {
+					tracing::error!(path = %path_str, error = %err, "failed to re-parse document for render_tables_inline toggle");
+					continue;
+				}
+			};
+			tab.session = new_session;
+			let content = tab.session.content();
+			fill_text_ctrl(tab.text_ctrl, &content);
+			if let Some(font) = build_font_from_readability(&rf) {
+				tab.text_ctrl.set_font(&font);
+			}
+			apply_foreground_color_to_ctrl(tab.text_ctrl, rf.color);
+			apply_bg_color_to_ctrl(tab.text_ctrl, bg_color);
+			apply_readability_format_to_ctrl(
+				tab.text_ctrl,
+				line_spacing,
+				paragraph_spacing,
+				letter_spacing,
+				text_alignment,
+			);
+			tab.panel.layout();
+			let max_pos = tab.text_ctrl.get_last_position();
+
+			let restored_pos = if let Some((ref key, within)) = stable_anchor {
+				match tab.session.handle().document().id_positions.get(key) {
+					Some(&new_anchor_off) => i64::try_from(new_anchor_off + within).unwrap_or(0).clamp(0, max_pos),
+					None => tab.session.position_from_percent(fallback_percent).clamp(0, max_pos),
+				}
+			} else {
+				tab.session.position_from_percent(fallback_percent).clamp(0, max_pos)
+			};
+
+			tab.text_ctrl.set_insertion_point(restored_pos);
+			tab.text_ctrl.show_position(restored_pos);
+			tab.session.set_stable_position(restored_pos);
 		}
 	}
 

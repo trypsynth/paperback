@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-26 14:10-0600\n"
+"POT-Creation-Date: 2026-06-27 13:07-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -228,6 +228,9 @@ msgid "&Restore previously opened documents on startup"
 msgstr ""
 
 msgid "&Word wrap"
+msgstr ""
+
+msgid "Render tables &inline"
 msgstr ""
 
 msgid "&Minimize to system tray"
@@ -534,7 +537,7 @@ msgstr ""
 msgid "No more results. Wrapping search."
 msgstr ""
 
-msgid "Failed to open containing folder."
+msgid "Failed to reveal file in folder."
 msgstr ""
 
 msgid ""
@@ -1055,10 +1058,10 @@ msgstr ""
 msgid "Show elements list"
 msgstr ""
 
-msgid "Open &Containing Folder\tCtrl+Shift+C"
+msgid "Reveal &File in Folder\tCtrl+Shift+C"
 msgstr ""
 
-msgid "Open folder containing the document"
+msgid "Reveal document in the file manager"
 msgstr ""
 
 msgid "Open in &Web View\tCtrl+Shift+V"

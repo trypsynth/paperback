@@ -532,12 +532,15 @@ pub struct ParserContext {
 	pub file_path: String,
 	pub password: Option<String>,
 	pub forced_extension: Option<String>,
+	/// When `true`, parsers emit each table's full tab-separated rendering inline; when `false`,
+	/// they emit a `"[Table]: <first row>"` placeholder. Threaded into each parser at parse time.
+	pub render_tables_inline: bool,
 }
 
 impl ParserContext {
 	#[must_use]
 	pub const fn new(file_path: String) -> Self {
-		Self { file_path, password: None, forced_extension: None }
+		Self { file_path, password: None, forced_extension: None, render_tables_inline: true }
 	}
 
 	#[must_use]
@@ -549,6 +552,12 @@ impl ParserContext {
 	#[must_use]
 	pub fn with_forced_extension(mut self, extension: String) -> Self {
 		self.forced_extension = Some(extension);
+		self
+	}
+
+	#[must_use]
+	pub const fn with_render_tables_inline(mut self, value: bool) -> Self {
+		self.render_tables_inline = value;
 		self
 	}
 }

@@ -20,6 +20,16 @@ Paperback currently runs on Windows 10/11 and Linux. Support for macOS is in the
 * Includes a robust find dialog, including features such as history and regular expression support.
 * Can be run entirely portably, or installed with file associations automatically set up.
 
+## Screen Reader Compatibility
+
+Paperback works well with all major screen readers. There is, however, one known issue for JAWS users.
+
+### JAWS and Braille Displays
+
+If you use JAWS with a Braille display, you may find that long paragraphs are truncated when panning forward with your display's navigation keys. The read current paragraph command is also affected. This is a bug in JAWS's handling of the RICHEDIT50W text control, not something in Paperback itself, and one that took quite a while to surface a fix for given Vispero's enthusiasm for responding to issues with open source software.
+
+The workaround, eventually surfaced through the JAWS discussion group after months of waiting, is to edit `paperback.jcf` and set "Braille Presentation and Panning" to "Always use DOM if available". You'll also want to enable "Pan Text by Paragraph", otherwise your display will stay on the active paragraph rather than advancing. With both settings in place, panning should work correctly.
+
 ## Currently supported file types
 
 Paperback supports the following formats and extensions:

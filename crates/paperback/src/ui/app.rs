@@ -81,6 +81,7 @@ impl PaperbackApp {
 fn open_from_command_line(main_window: &MainWindow) {
 	if let Some(path) = env::args().nth(1) {
 		let normalized = normalize_cli_path(Path::new(&path));
+		tracing::info!(path = %normalized.display(), "opening file from command line");
 		main_window.open_file(&normalized);
 	}
 }

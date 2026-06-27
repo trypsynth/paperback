@@ -33,6 +33,7 @@ impl Parser for PdfParser {
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		let render_tables_inline = context.render_tables_inline;
 		let document =
 			PdfiumDocument::new_from_path(&context.file_path, context.password.as_deref()).map_err(map_load_error)?;
 		let mut buffer = DocumentBuffer::new();
@@ -118,6 +119,7 @@ impl Parser for PdfParser {
 									&mut current_block,
 									&mut current_lines_info,
 									&mut flat_toc_items,
+									render_tables_inline,
 								);
 							}
 						}
@@ -656,19 +658,14 @@ fn process_struct_element(
 	current_block: &mut String,
 	current_lines_info: &mut Vec<(usize, String)>,
 	toc_items: &mut Vec<(u32, TocItem)>,
+	render_tables_inline: bool,
 ) {
 	let elem_type = elem.element_type().unwrap_or_default();
 	if elem_type == "Table" {
 		flush_block(current_block, buffer, page_display_text, current_lines_info);
 		let html = build_html_table(elem, mcid_to_text);
 		let pos = buffer.current_position();
-		buffer.add_marker(Marker::new(MarkerType::Table, pos).with_reference(html));
-		let table_placeholder = "[Table]";
-		current_lines_info.push((pos, table_placeholder.to_string()));
-		buffer.append(table_placeholder);
-		buffer.append("\n");
-		page_display_text.push_str(table_placeholder);
-		page_display_text.push('\n');
+		append_pdf_table_to_buffer(buffer, html, pos, current_lines_info, page_display_text, render_tables_inline);
 		return;
 	}
 	let is_block = matches!(
@@ -700,6 +697,7 @@ fn process_struct_element(
 				current_block,
 				current_lines_info,
 				toc_items,
+				render_tables_inline,
 			);
 		} else if let Some(mcid) = elem.child_marked_content_id(i)
 			&& let Some(text) = mcid_to_text.get(&mcid)
@@ -811,9 +809,40 @@ fn html_escape(s: &str) -> String {
 	s.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;")
 }
 
+/// Append a PDF table's on-screen text to the buffer and add the Table marker. The text is produced
+/// by [`crate::parser::table_text::html_table_to_display`]: the full tab-separated rendering when
+/// `render_tables_inline` is set, otherwise a `"[Table]: <first row>"` placeholder. The helper
+/// output may span multiple lines (one per table row); each line is recorded as its own
+/// `current_lines_info` / `page_display_text` line, mirroring the rest of the PDF line tracking.
+/// Extracted from `process_struct_element` so the logic is unit-testable without live pdfium objects.
+fn append_pdf_table_to_buffer(
+	buffer: &mut DocumentBuffer,
+	html: String,
+	pos: usize,
+	current_lines_info: &mut Vec<(usize, String)>,
+	page_display_text: &mut String,
+	render_tables_inline: bool,
+) {
+	let display_text = crate::parser::table_text::html_table_to_display(&html, render_tables_inline);
+	// `display_lines_and_length` guards the empty case (an empty inline table) by returning no
+	// lines, where a raw `split('\n')` would yield one `""` and emit a spurious blank line.
+	let (lines, _) = crate::parser::table_text::display_lines_and_length(&display_text);
+	for line in lines {
+		let line_pos = buffer.current_position();
+		current_lines_info.push((line_pos, line.clone()));
+		buffer.append(&line);
+		buffer.append("\n");
+		page_display_text.push_str(&line);
+		page_display_text.push('\n');
+	}
+	let display_len = buffer.current_position() - pos;
+	buffer.add_marker(Marker::new(MarkerType::Table, pos).with_reference(html).with_length(display_len));
+}
+
 #[cfg(test)]
 mod tests {
-	use super::{join_paragraphs, sanitize_pdf_text};
+	use super::{append_pdf_table_to_buffer, join_paragraphs, sanitize_pdf_text};
+	use crate::document::{DocumentBuffer, MarkerType};
 
 	#[test]
 	fn sanitize_pdf_text_strips_control_chars_and_soft_hyphens() {
@@ -840,5 +869,74 @@ mod tests {
 		assert!(result[0].1);
 		assert_eq!(result[1].0, "This is the body text of the document.");
 		assert!(!result[1].1);
+	}
+
+	/// OFF mode: the PDF table helper emits a single `"[Table]: <first row>"` placeholder line and
+	/// the Table marker's length equals the emitted display extent. The HTML has a non-BMP char
+	/// (U+1D11E, G Clef) in a cell to lock display-unit math (it takes 2 UTF-16 units).
+	#[test]
+	fn pdf_table_helper_emits_placeholder_when_off() {
+		use crate::util::text::display_len;
+		let html = "<table border=\"1\">\n<tr>\n<td>Kop</td>\n<td>\u{1D11E}</td>\n</tr>\n</table>\n".to_string();
+		let mut buffer = DocumentBuffer::new();
+		let pos = buffer.current_position();
+		let mut lines_info = Vec::new();
+		let mut page_text = String::new();
+		append_pdf_table_to_buffer(&mut buffer, html.clone(), pos, &mut lines_info, &mut page_text, false);
+
+		// Placeholder: first row with tabs->spaces.
+		assert_eq!(buffer.content, "[Table]: Kop \u{1D11E}\n");
+		assert_eq!(lines_info.len(), 1, "placeholder is a single line");
+		assert!(lines_info[0].1.starts_with("[Table]: "));
+
+		// Table marker length equals the emitted display extent.
+		let placeholder_len = display_len("[Table]: Kop \u{1D11E}") + 1; // +1 for trailing newline
+		let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker present");
+		assert_eq!(table_marker.position, 0);
+		assert_eq!(table_marker.length, placeholder_len, "marker length in display units");
+		assert_eq!(table_marker.reference, html, "marker keeps the table HTML");
+	}
+
+	/// ON mode: the helper emits the full TSV; multi-row tables produce one line per row, and the
+	/// marker length spans all emitted lines.
+	#[test]
+	fn pdf_table_helper_emits_tsv_when_inline() {
+		use crate::util::text::display_len;
+		let html =
+			"<table border=\"1\">\n<tr>\n<td>Kop</td>\n<td>\u{1D11E}</td>\n</tr>\n<tr>\n<td>a</td>\n<td>b</td>\n</tr>\n</table>\n"
+				.to_string();
+		let mut buffer = DocumentBuffer::new();
+		let pos = buffer.current_position();
+		let mut lines_info = Vec::new();
+		let mut page_text = String::new();
+		append_pdf_table_to_buffer(&mut buffer, html.clone(), pos, &mut lines_info, &mut page_text, true);
+
+		// Two rows -> "Kop\t𝄞\na\tb\n".
+		assert_eq!(buffer.content, "Kop\t\u{1D11E}\na\tb\n");
+		assert_eq!(lines_info.len(), 2, "one line per table row");
+		assert_eq!(lines_info[0].1, "Kop\t\u{1D11E}");
+		assert_eq!(lines_info[1].1, "a\tb");
+
+		let expected_len = display_len("Kop\t\u{1D11E}\na\tb\n");
+		let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker present");
+		assert_eq!(table_marker.length, expected_len, "marker length spans all emitted rows");
+	}
+
+	/// An empty inline table must emit no line at all (a raw `split('\n')` would emit one spurious
+	/// blank line). The buffer stays empty and the Table marker has zero length.
+	#[test]
+	fn pdf_table_helper_empty_inline_emits_no_line() {
+		let html = "<table border=\"1\">\n</table>\n".to_string();
+		let mut buffer = DocumentBuffer::new();
+		let pos = buffer.current_position();
+		let mut lines_info = Vec::new();
+		let mut page_text = String::new();
+		append_pdf_table_to_buffer(&mut buffer, html, pos, &mut lines_info, &mut page_text, true);
+
+		assert_eq!(buffer.content, "", "empty inline table appends nothing");
+		assert!(lines_info.is_empty(), "no lines recorded");
+		assert!(page_text.is_empty(), "no page display text");
+		let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker present");
+		assert_eq!(table_marker.length, 0, "zero-length marker for empty inline table");
 	}
 }

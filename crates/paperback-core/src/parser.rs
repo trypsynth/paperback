@@ -25,6 +25,7 @@ pub mod odt;
 pub mod pdf;
 pub mod powerpoint;
 pub mod rtf;
+pub mod table_text;
 pub mod text;
 pub mod util;
 pub mod word;
@@ -530,5 +531,33 @@ mod tests {
 	fn file_filter_string_contains_text_files_group_name() {
 		let filter = build_file_filter_string();
 		assert!(filter.contains("Text Files ("));
+	}
+	/// `add_tables_separators_lists` sets the Table marker's `length` to `table.length`
+	/// (display units) and offsets it by the base offset.
+	#[test]
+	fn add_tables_separators_lists_sets_table_marker_length() {
+		let converter = MockConverter {
+			headings: vec![],
+			links: vec![],
+			images: vec![],
+			figures: vec![],
+			tables: vec![TableInfo {
+				offset: 10,
+				text: "T".to_string(),
+				html_content: "<table/>".to_string(),
+				length: 7, // display-unit field — must appear as marker length
+			}],
+			separators: vec![],
+			lists: vec![],
+			list_items: vec![],
+		};
+		let mut buffer = DocumentBuffer::new();
+		let base_offset = 100usize;
+		add_converter_markers(&mut buffer, &converter, base_offset);
+
+		let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
+		assert_eq!(table_marker.position, base_offset + 10, "position = offset + table.offset");
+		assert_eq!(table_marker.length, 7, "marker length must equal table length, not byte length");
+		assert_eq!(table_marker.reference, "<table/>", "marker reference must be the table HTML");
 	}
 }
