@@ -7,9 +7,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
-"Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-06-03 18:57+0530\n"
-"PO-Revision-Date: 2026-06-21 21:40+0300\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-26 14:10-0600\n"
+"PO-Revision-Date: 2026-06-27 17:08+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -27,12 +27,6 @@ msgstr "Varoitus"
 
 msgid "An accessible, lightweight, fast ebook and document reader"
 msgstr "Saavutettava, kevyt ja nopea e- ja asiakirjanlukija"
-
-msgid "expanded"
-msgstr "laajennettu"
-
-msgid "collapsed"
-msgstr "kutistettu"
 
 msgid "All Documents"
 msgstr "Kaikki asiakirjat"
@@ -169,11 +163,8 @@ msgstr "Merkkien määrä (ilman välilyöntejä):"
 msgid "Elements"
 msgstr "Elementit"
 
-msgid "OK"
-msgstr "OK"
-
-msgid "Cancel"
-msgstr "Peruuta"
+msgid "&View:"
+msgstr "&Näytä:"
 
 msgid "Headings"
 msgstr "Otsikot"
@@ -184,17 +175,23 @@ msgstr "Linkit"
 msgid "Untitled"
 msgstr "Nimetön"
 
-msgid "&View:"
-msgstr "&Näytä:"
-
 msgid "Root"
 msgstr "Juuri"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Cancel"
+msgstr "Peruuta"
 
 msgid "Go to Line"
 msgstr "Siirry riville"
 
 msgid "&Line number:"
 msgstr "R&ivinumero:"
+
+msgid "Go"
+msgstr "Siirry"
 
 msgid "Go to page"
 msgstr "Siirry sivulle"
@@ -390,6 +387,9 @@ msgstr "&Win"
 msgid "&Key:"
 msgstr "&Näppäin:"
 
+msgid "Clear"
+msgstr "Tyhjennä"
+
 msgid "Space"
 msgstr "Väli"
 
@@ -432,6 +432,9 @@ msgstr "sekuntia"
 msgid "Estimated reading time: {}"
 msgstr "Arvioitu lukuaika: {}"
 
+msgid "The selection contains {} words."
+msgstr "Valitussa tekstissä on {} sanaa."
+
 msgid "This document contains {} words."
 msgstr "Asiakirjassa on {} sanaa."
 
@@ -445,7 +448,6 @@ msgid ""
 "A .paperback file was found for this document. Would you like to import it?"
 msgstr "Tälle asiakirjalle löytyi .paperback-tiedosto. Haluatko tuoda sen?"
 
-#| msgid "Export document to HTML"
 msgid "Import document data"
 msgstr "Asiakirjatietojen tuonti"
 
@@ -455,11 +457,11 @@ msgstr "Tarvitaan salasana."
 msgid "Navigated to internal link."
 msgstr "Siirrytty sisäiseen linkkiin."
 
-msgid "Table View"
-msgstr "Taulukkonäkymä"
-
 msgid "Ready"
 msgstr "Valmis"
+
+msgid "Table View"
+msgstr "Taulukkonäkymä"
 
 msgid "&Password:"
 msgstr "&Salasana:"
@@ -563,6 +565,9 @@ msgstr "Valittua tiedostomuotoa ei tueta."
 msgid "Paperback"
 msgstr "Paperback"
 
+msgid "Paperback cannot perform any actions while Web View is open."
+msgstr "Paperback ei voi suorittaa toimintoja selainnäkymän ollessa avoinna."
+
 msgid "Paperback - {}"
 msgstr "Paperback - {}"
 
@@ -574,6 +579,14 @@ msgstr "Avaa asiakirja"
 
 msgid "No pages."
 msgstr "Ei sivuja."
+
+#| msgid "&Word wrap"
+msgid "Word wrap on."
+msgstr "Rivitys käytössä."
+
+#| msgid "&Word wrap"
+msgid "Word wrap off."
+msgstr "Rivitys pois."
 
 msgid "document"
 msgstr "asiakirja"
@@ -624,10 +637,20 @@ msgid "No table of contents."
 msgstr "Ei sisällysluetteloa."
 
 msgid "Web View"
-msgstr "Verkkonäkymä"
+msgstr "Selainnäkymä"
 
 msgid "Could not determine content to display in Web View."
-msgstr "Verkkonäkymässä näytettävää sisältöä ei voitu määrittää."
+msgstr "Selainnäkymässä näytettävää sisältöä ei voitu määrittää."
+
+msgid "Source:"
+msgstr "Lähdekoodi:"
+
+msgid "Source view is not available for this document format."
+msgstr "Tämä asiakirjamuoto ei tue lähdekoodinäkymää."
+
+#| msgid "Failed to load document."
+msgid "Could not load the document source."
+msgstr "Asiakirjan lähdekoodia ei voitu näyttää."
 
 msgid "Sleep timer cancelled."
 msgstr "Uniajastin peruutettu."
@@ -676,10 +699,10 @@ msgid "Next Ima&ge\tG"
 msgstr "Seuraava k&uva\tG"
 
 msgid "Previous Figu&re\tShift+F"
-msgstr "Edellinen ku&vio\tShift+F"
+msgstr "Edellinen ku&vitus\tShift+F"
 
 msgid "Next Figu&re\tF"
-msgstr "Seuraava kuv&io\tF"
+msgstr "Seuraava kuv&itus\tF"
 
 msgid "Previous &Table\tShift+T"
 msgstr "Edellinen t&aulukko\tShift+T"
@@ -704,6 +727,19 @@ msgstr "Edellinen luettelok&ohde\tShift+I"
 
 msgid "Next List I&tem\tI"
 msgstr "Seuraava luetteloko&hde\tI"
+
+msgid "Container &Start\tShift+,"
+msgstr "Säilön &alku\tShift+,"
+
+#| msgid "No note at the current position."
+msgid "Go to the start of the current list or table"
+msgstr "Siirry nykyisen luettelon tai taulukon alkuun"
+
+msgid "Past Container &End\t,"
+msgstr "Säilön &jälkeinen kohta\t,"
+
+msgid "Go past the end of the current list or table"
+msgstr "Siirry luettelon tai taulukon lopun jälkeiseen kohtaan"
 
 msgid "Next Heading Level 1\t1"
 msgstr "Seuraava otsikkotaso 1\t1"
@@ -841,10 +877,10 @@ msgid "Close all documents"
 msgstr "Sulje kaikki asiakirjat"
 
 msgid "Reopen &Last Closed\tCtrl+Shift+T"
-msgstr "Avaa uudelleen &viimeksi suljettu\tCtrl+Shift+T"
+msgstr "Palauta &viimeksi suljettu\tCtrl+Shift+T"
 
 msgid "Reopen the last closed document"
-msgstr "Avaa uudelleen viimeksi suljettu asiakirja"
+msgstr "Avaa viimeksi suljettu asiakirja uudelleen"
 
 msgid "&Recent Documents"
 msgstr "&Viimeisimmät asiakirjat"
@@ -864,11 +900,17 @@ msgstr "&Etsi...\tCtrl+F"
 msgid "Find text in the document"
 msgstr "Etsi tekstiä asiakirjasta"
 
+msgid "Find &Next\tCtrl+G"
+msgstr "Etsi se&uraava\tCtrl+G"
+
 msgid "Find &Next\tF3"
 msgstr "Etsi &seuraava\tF3"
 
 msgid "Find next occurrence"
 msgstr "Etsi seuraava esiintymä"
+
+msgid "Find &Previous\tCtrl+Shift+G"
+msgstr "Etsi e&dellinen\tCtrl+Shift+G"
 
 msgid "Find &Previous\tShift+F3"
 msgstr "Etsi e&dellinen\tShift+F3"
@@ -876,11 +918,17 @@ msgstr "Etsi e&dellinen\tShift+F3"
 msgid "Find previous occurrence"
 msgstr "Etsi edellinen esiintymä"
 
+msgid "Go to &line...\tCtrl+L"
+msgstr "Siirry &riville...\tCtrl+L"
+
 msgid "Go to &line...\tCtrl+G"
 msgstr "Siirry &riville...\tCtrl+G"
 
 msgid "Go to a specific line"
 msgstr "Siirry tietylle riville"
+
+msgid "Go to &percent...\tCtrl+Shift+L"
+msgstr "Siirry &prosenttiin...\tCtrl+Shift+L"
 
 msgid "Go to &percent...\tCtrl+Shift+G"
 msgstr "Siirry &prosenttiin...\tCtrl+Shift+G"
@@ -937,10 +985,10 @@ msgid "Navigate by images"
 msgstr "Siirry kuvittain"
 
 msgid "&Figures"
-msgstr "K&uviot"
+msgstr "K&uvitukset"
 
 msgid "Navigate by figures"
-msgstr "Siirry kuvioittain"
+msgstr "Siirry kuvituksittain"
 
 msgid "&Tables"
 msgstr "T&aulukot"
@@ -959,6 +1007,12 @@ msgstr "&Luettelot"
 
 msgid "Navigate by lists"
 msgstr "Siirry luetteloittain"
+
+msgid "&Containers"
+msgstr "&Säilöt"
+
+msgid "Navigate by containers"
+msgstr "Siirry säilöittäin"
 
 msgid "&Import Document Data...\tCtrl+Shift+I"
 msgstr "Tu&o asiakirjan tiedot...\tCtrl+Shift+I"
@@ -1024,10 +1078,16 @@ msgid "Open folder containing the document"
 msgstr "Avaa asiakirjan kansio"
 
 msgid "Open in &Web View\tCtrl+Shift+V"
-msgstr "Avaa &verkkonäkymässä\tCtrl+Shift+V"
+msgstr "Avaa sel&ainnäkymässä\tCtrl+Shift+V"
 
 msgid "Open document in web view"
-msgstr "Avaa asiakirja verkkonäkymässä"
+msgstr "Avaa asiakirja selainnäkymässä"
+
+msgid "View &Source\tCtrl+U"
+msgstr "Näytä läh&dekoodi\tCtrl+U"
+
+msgid "Open the document source in a new tab"
+msgstr "Avaa asiakirjan lähdekoodi uudessa välilehdessä"
 
 msgid "I&mport/Export"
 msgstr "T&uo ja vie"
@@ -1040,6 +1100,12 @@ msgstr "Lisää tai poista &kirjanmerkki\tCtrl+Shift+B"
 
 msgid "Bookmark with &Note\tCtrl+Shift+N"
 msgstr "Lisää kirjanmerkki &muistiinpanolla\tCtrl+Shift+N"
+
+msgid "Word w&rap\tCtrl+Alt+W"
+msgstr "R&ivitys\tCtrl+Alt+W"
+
+msgid "Toggle word wrap"
+msgstr "Ota rivitys käyttöön tai poista se käytöstä"
 
 msgid "&Options\tCtrl+,"
 msgstr "&Asetukset\tCtrl+,"
@@ -1174,13 +1240,13 @@ msgid "No previous image."
 msgstr "Ei edellistä kuvaa."
 
 msgid "No figures."
-msgstr "Ei kuvioita."
+msgstr "Ei kuvituksia."
 
 msgid "No next figure."
-msgstr "Ei seuraavaa kuviota."
+msgstr "Ei seuraavaa kuvitusta."
 
 msgid "No previous figure."
-msgstr "Ei edellistä kuviota."
+msgstr "Ei edellistä kuvitusta."
 
 msgid "Wrapping to start. "
 msgstr "Siirrytään alkuun. "
@@ -1210,6 +1276,18 @@ msgstr "Ei seuraavaa sijaintia."
 
 msgid "No previous position."
 msgstr "Ei edellistä sijaintia."
+
+msgid "No containers."
+msgstr "Ei säilöjä."
+
+msgid "Not in a container."
+msgstr "Ei säilössä."
+
+msgid "Past end of container."
+msgstr "Säilön jälkeinen kohta."
+
+msgid "Start of container."
+msgstr "Säilön alku."
 
 #, c-format
 msgid "%s - Bookmark %d"
@@ -1272,67 +1350,74 @@ msgstr "&Lopeta"
 msgid "Exit Paperback"
 msgstr "Lopeta Paperback"
 
-#, c-format
-msgid "Update to %s"
-msgstr "Päivitä versioon %s"
+#~ msgid "expanded"
+#~ msgstr "laajennettu"
+
+#~ msgid "collapsed"
+#~ msgstr "kutistettu"
 
 #, c-format
-msgid "A new version of %s is available. Here's what's new:"
-msgstr "%sista on saatavilla uusi versio. Sen uusia ominaisuuksia ovat:"
-
-msgid "No release notes provided."
-msgstr "Julkaisutietoja ei saatavilla."
+#~ msgid "Update to %s"
+#~ msgstr "Päivitä versioon %s"
 
 #, c-format
-msgid "%s Update"
-msgstr "%sin päivitys"
+#~ msgid "A new version of %s is available. Here's what's new:"
+#~ msgstr "%sista on saatavilla uusi versio. Sen uusia ominaisuuksia ovat:"
 
-msgid "Downloading update..."
-msgstr "Päivitystä ladataan..."
-
-msgid "No updates available."
-msgstr "Päivityksiä ei saatavilla."
+#~ msgid "No release notes provided."
+#~ msgstr "Julkaisutietoja ei saatavilla."
 
 #, c-format
-msgid "No updates available. Latest version: %s"
-msgstr "Päivityksiä ei saatavilla. Uusin versio: %s"
+#~ msgid "%s Update"
+#~ msgstr "%sin päivitys"
 
-msgid "Info"
-msgstr "Tiedot"
+#~ msgid "Downloading update..."
+#~ msgstr "Päivitystä ladataan..."
 
-#, c-format
-msgid ""
-"Security verification failed. The update might have been tampered with: %s"
-msgstr "Tietoturvatarkistus epäonnistui. Päivitystä on saatettu peukaloida: %s"
-
-msgid "Security Error"
-msgstr "Suojausvirhe"
-
-msgid "Update failed"
-msgstr "Päivitys epäonnistui"
+#~ msgid "No updates available."
+#~ msgstr "Päivityksiä ei saatavilla."
 
 #, c-format
-msgid ""
-"Update downloaded to: %s\n"
-"Please install it manually."
-msgstr ""
-"Päivitys ladattu kansioon: %s\n"
-"Asenna se manuaalisesti."
+#~ msgid "No updates available. Latest version: %s"
+#~ msgstr "Päivityksiä ei saatavilla. Uusin versio: %s"
 
-msgid "Update Ready"
-msgstr "Päivitys valmiina"
+#~ msgid "Info"
+#~ msgstr "Tiedot"
 
-msgid "Failed to get current exe path"
-msgstr "Sovelluksen exe-tiedoston sijaintia ei voitu määrittää"
+#, c-format
+#~ msgid ""
+#~ "Security verification failed. The update might have been tampered with: %s"
+#~ msgstr ""
+#~ "Tietoturvatarkistus epäonnistui. Päivitystä on saatettu peukaloida: %s"
 
-msgid "Failed to launch installer script"
-msgstr "Asennusohjelmaskriptin käynnistys epäonnistui"
+#~ msgid "Security Error"
+#~ msgstr "Suojausvirhe"
 
-msgid "Failed to launch update script"
-msgstr "Päivitysskriptin käynnistys epäonnistui"
+#~ msgid "Update failed"
+#~ msgstr "Päivitys epäonnistui"
 
-msgid "Unknown update file format."
-msgstr "Tuntematon päivitystiedoston muoto."
+#, c-format
+#~ msgid ""
+#~ "Update downloaded to: %s\n"
+#~ "Please install it manually."
+#~ msgstr ""
+#~ "Päivitys ladattu kansioon: %s\n"
+#~ "Asenna se manuaalisesti."
+
+#~ msgid "Update Ready"
+#~ msgstr "Päivitys valmiina"
+
+#~ msgid "Failed to get current exe path"
+#~ msgstr "Sovelluksen exe-tiedoston sijaintia ei voitu määrittää"
+
+#~ msgid "Failed to launch installer script"
+#~ msgstr "Asennusohjelmaskriptin käynnistys epäonnistui"
+
+#~ msgid "Failed to launch update script"
+#~ msgstr "Päivitysskriptin käynnistys epäonnistui"
+
+#~ msgid "Unknown update file format."
+#~ msgstr "Tuntematon päivitystiedoston muoto."
 
 #~ msgid "Paperback Update"
 #~ msgstr "Paperbackin päivitys"
