@@ -57,7 +57,7 @@ pub struct DocumentManager {
 }
 
 impl DocumentManager {
-	pub const fn new(
+	pub fn new(
 		frame: Frame,
 		notebook: Notebook,
 		config: Rc<Mutex<ConfigManager>>,

@@ -1,5 +1,5 @@
 # SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR Quin Gillespie
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the paperback package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
@@ -7,8 +7,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
-"Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-06-03 18:57+0530\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-26 14:10-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -24,12 +24,6 @@ msgid "Warning"
 msgstr ""
 
 msgid "An accessible, lightweight, fast ebook and document reader"
-msgstr ""
-
-msgid "expanded"
-msgstr ""
-
-msgid "collapsed"
 msgstr ""
 
 msgid "All Documents"
@@ -161,10 +155,7 @@ msgstr ""
 msgid "Elements"
 msgstr ""
 
-msgid "OK"
-msgstr ""
-
-msgid "Cancel"
+msgid "&View:"
 msgstr ""
 
 msgid "Headings"
@@ -176,16 +167,22 @@ msgstr ""
 msgid "Untitled"
 msgstr ""
 
-msgid "&View:"
+msgid "Root"
 msgstr ""
 
-msgid "Root"
+msgid "OK"
+msgstr ""
+
+msgid "Cancel"
 msgstr ""
 
 msgid "Go to Line"
 msgstr ""
 
 msgid "&Line number:"
+msgstr ""
+
+msgid "Go"
 msgstr ""
 
 msgid "Go to page"
@@ -380,6 +377,9 @@ msgstr ""
 msgid "&Key:"
 msgstr ""
 
+msgid "Clear"
+msgstr ""
+
 msgid "Space"
 msgstr ""
 
@@ -422,6 +422,9 @@ msgstr ""
 msgid "Estimated reading time: {}"
 msgstr ""
 
+msgid "The selection contains {} words."
+msgstr ""
+
 msgid "This document contains {} words."
 msgstr ""
 
@@ -444,10 +447,10 @@ msgstr ""
 msgid "Navigated to internal link."
 msgstr ""
 
-msgid "Table View"
+msgid "Ready"
 msgstr ""
 
-msgid "Ready"
+msgid "Table View"
 msgstr ""
 
 msgid "&Password:"
@@ -550,6 +553,9 @@ msgstr ""
 msgid "Paperback"
 msgstr ""
 
+msgid "Paperback cannot perform any actions while Web View is open."
+msgstr ""
+
 msgid "Paperback - {}"
 msgstr ""
 
@@ -560,6 +566,12 @@ msgid "Open Document"
 msgstr ""
 
 msgid "No pages."
+msgstr ""
+
+msgid "Word wrap on."
+msgstr ""
+
+msgid "Word wrap off."
 msgstr ""
 
 msgid "document"
@@ -614,6 +626,15 @@ msgid "Web View"
 msgstr ""
 
 msgid "Could not determine content to display in Web View."
+msgstr ""
+
+msgid "Source:"
+msgstr ""
+
+msgid "Source view is not available for this document format."
+msgstr ""
+
+msgid "Could not load the document source."
 msgstr ""
 
 msgid "Sleep timer cancelled."
@@ -690,6 +711,18 @@ msgid "Previous List &Item\tShift+I"
 msgstr ""
 
 msgid "Next List I&tem\tI"
+msgstr ""
+
+msgid "Container &Start\tShift+,"
+msgstr ""
+
+msgid "Go to the start of the current list or table"
+msgstr ""
+
+msgid "Past Container &End\t,"
+msgstr ""
+
+msgid "Go past the end of the current list or table"
 msgstr ""
 
 msgid "Next Heading Level 1\t1"
@@ -851,10 +884,16 @@ msgstr ""
 msgid "Find text in the document"
 msgstr ""
 
+msgid "Find &Next\tCtrl+G"
+msgstr ""
+
 msgid "Find &Next\tF3"
 msgstr ""
 
 msgid "Find next occurrence"
+msgstr ""
+
+msgid "Find &Previous\tCtrl+Shift+G"
 msgstr ""
 
 msgid "Find &Previous\tShift+F3"
@@ -863,10 +902,16 @@ msgstr ""
 msgid "Find previous occurrence"
 msgstr ""
 
+msgid "Go to &line...\tCtrl+L"
+msgstr ""
+
 msgid "Go to &line...\tCtrl+G"
 msgstr ""
 
 msgid "Go to a specific line"
+msgstr ""
+
+msgid "Go to &percent...\tCtrl+Shift+L"
 msgstr ""
 
 msgid "Go to &percent...\tCtrl+Shift+G"
@@ -947,6 +992,12 @@ msgstr ""
 msgid "Navigate by lists"
 msgstr ""
 
+msgid "&Containers"
+msgstr ""
+
+msgid "Navigate by containers"
+msgstr ""
+
 msgid "&Import Document Data...\tCtrl+Shift+I"
 msgstr ""
 
@@ -1016,6 +1067,12 @@ msgstr ""
 msgid "Open document in web view"
 msgstr ""
 
+msgid "View &Source\tCtrl+U"
+msgstr ""
+
+msgid "Open the document source in a new tab"
+msgstr ""
+
 msgid "I&mport/Export"
 msgstr ""
 
@@ -1026,6 +1083,12 @@ msgid "Toggle &Bookmark\tCtrl+Shift+B"
 msgstr ""
 
 msgid "Bookmark with &Note\tCtrl+Shift+N"
+msgstr ""
+
+msgid "Word w&rap\tCtrl+Alt+W"
+msgstr ""
+
+msgid "Toggle word wrap"
 msgstr ""
 
 msgid "&Options\tCtrl+,"
@@ -1198,6 +1261,18 @@ msgstr ""
 msgid "No previous position."
 msgstr ""
 
+msgid "No containers."
+msgstr ""
+
+msgid "Not in a container."
+msgstr ""
+
+msgid "Past end of container."
+msgstr ""
+
+msgid "Start of container."
+msgstr ""
+
 #, c-format
 msgid "%s - Bookmark %d"
 msgstr ""
@@ -1257,64 +1332,4 @@ msgid "E&xit"
 msgstr ""
 
 msgid "Exit Paperback"
-msgstr ""
-
-#, c-format
-msgid "Update to %s"
-msgstr ""
-
-#, c-format
-msgid "A new version of %s is available. Here's what's new:"
-msgstr ""
-
-msgid "No release notes provided."
-msgstr ""
-
-#, c-format
-msgid "%s Update"
-msgstr ""
-
-msgid "Downloading update..."
-msgstr ""
-
-msgid "No updates available."
-msgstr ""
-
-#, c-format
-msgid "No updates available. Latest version: %s"
-msgstr ""
-
-msgid "Info"
-msgstr ""
-
-#, c-format
-msgid ""
-"Security verification failed. The update might have been tampered with: %s"
-msgstr ""
-
-msgid "Security Error"
-msgstr ""
-
-msgid "Update failed"
-msgstr ""
-
-#, c-format
-msgid ""
-"Update downloaded to: %s\n"
-"Please install it manually."
-msgstr ""
-
-msgid "Update Ready"
-msgstr ""
-
-msgid "Failed to get current exe path"
-msgstr ""
-
-msgid "Failed to launch installer script"
-msgstr ""
-
-msgid "Failed to launch update script"
-msgstr ""
-
-msgid "Unknown update file format."
 msgstr ""
