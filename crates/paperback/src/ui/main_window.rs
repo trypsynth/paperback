@@ -1046,16 +1046,20 @@ impl MainWindow {
 						.with_wildcard(&wildcard)
 						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
 						.build();
-					if dialog.show_modal() == wxdragon::id::ID_OK
-						&& let Some(path) = dialog.get_path()
-						&& tab.session.export_as(&path, paperback_core::export::ExportFormat::Text).is_err()
-					{
-						let dialog = MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
-							.with_style(
-								MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre,
-							)
-							.build();
-						dialog.show_modal();
+					if dialog.show_modal() == wxdragon::id::ID_OK {
+						if let Some(path) = dialog.get_path() {
+							if let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Text) {
+								tracing::error!(path = %path, error = %e, "failed to export document as text");
+								let dialog =
+									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
+										.with_style(
+											MessageDialogStyle::OK
+												| MessageDialogStyle::IconError | MessageDialogStyle::Centre,
+										)
+										.build();
+								dialog.show_modal();
+							}
+						}
 					}
 				}
 				menu_ids::EXPORT_TO_HTML => {
@@ -1075,16 +1079,20 @@ impl MainWindow {
 						.with_wildcard(&wildcard)
 						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
 						.build();
-					if dialog.show_modal() == wxdragon::id::ID_OK
-						&& let Some(path) = dialog.get_path()
-						&& tab.session.export_as(&path, paperback_core::export::ExportFormat::Html).is_err()
-					{
-						let dialog = MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
-							.with_style(
-								MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre,
-							)
-							.build();
-						dialog.show_modal();
+					if dialog.show_modal() == wxdragon::id::ID_OK {
+						if let Some(path) = dialog.get_path() {
+							if let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Html) {
+								tracing::error!(path = %path, error = %e, "failed to export document as HTML");
+								let dialog =
+									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
+										.with_style(
+											MessageDialogStyle::OK
+												| MessageDialogStyle::IconError | MessageDialogStyle::Centre,
+										)
+										.build();
+								dialog.show_modal();
+							}
+						}
 					}
 				}
 				menu_ids::EXPORT_TO_MARKDOWN => {
@@ -1104,16 +1112,21 @@ impl MainWindow {
 						.with_wildcard(&wildcard)
 						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
 						.build();
-					if dialog.show_modal() == wxdragon::id::ID_OK
-						&& let Some(path) = dialog.get_path()
-						&& tab.session.export_as(&path, paperback_core::export::ExportFormat::Markdown).is_err()
-					{
-						let dialog = MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
-							.with_style(
-								MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre,
-							)
-							.build();
-						dialog.show_modal();
+					if dialog.show_modal() == wxdragon::id::ID_OK {
+						if let Some(path) = dialog.get_path() {
+							if let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Markdown)
+							{
+								tracing::error!(path = %path, error = %e, "failed to export document as Markdown");
+								let dialog =
+									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
+										.with_style(
+											MessageDialogStyle::OK
+												| MessageDialogStyle::IconError | MessageDialogStyle::Centre,
+										)
+										.build();
+								dialog.show_modal();
+							}
+						}
 					}
 				}
 				menu_ids::EXPORT_DOCUMENT_DATA => {

@@ -11,7 +11,7 @@ mod logging;
 mod translation_manager;
 mod ui;
 
-use std::{env, fs};
+use std::{env, fs, io};
 
 use paperback_core::{set_pdfium_library_path, version};
 use ui::PaperbackApp;
@@ -41,7 +41,16 @@ fn cleanup_legacy_files() {
 	let Ok(exe) = env::current_exe() else { return };
 	let Some(dir) = exe.parent() else { return };
 	for name in ["nvdaControllerClient64.dll", "SAAPI64.dll"] {
-		let _ = fs::remove_file(dir.join(name));
+		let path = dir.join(name);
+		if let Err(e) = fs::remove_file(&path) {
+			if e.kind() != io::ErrorKind::NotFound {
+				tracing::warn!(path = %path.display(), error = %e, "failed to remove legacy file");
+			}
+		}
 	}
-	let _ = fs::remove_dir_all(dir.join("langs"));
+	if let Err(e) = fs::remove_dir_all(dir.join("langs")) {
+		if e.kind() != io::ErrorKind::NotFound {
+			tracing::warn!(error = %e, "failed to remove legacy langs directory");
+		}
+	}
 }
