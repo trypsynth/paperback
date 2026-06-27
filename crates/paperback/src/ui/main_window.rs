@@ -237,6 +237,7 @@ impl MainWindow {
 
 	#[cfg(any(target_os = "linux", target_os = "windows"))]
 	pub fn handle_ipc_command(&self, command: IpcCommand) {
+		tracing::info!(command = ?command, "received IPC command");
 		let mut web_view_dialog = None;
 		crate::ui::dialogs::ACTIVE_WEB_VIEW.with(|v| {
 			web_view_dialog = v.get();
@@ -400,6 +401,7 @@ impl MainWindow {
 			let pre_restore_active = doc_manager.lock().unwrap().active_tab_index();
 			let active_path = config.lock().unwrap().get_app_string("active_document", "");
 			let paths = config.lock().unwrap().get_opened_documents_existing();
+			tracing::info!(count = paths.len(), "restoring previously open documents");
 			for path in paths {
 				let path = Path::new(&path);
 				if !ensure_parser_ready_for_path(&frame, path, &config) {
@@ -477,6 +479,7 @@ impl MainWindow {
 		let dm_for_timer = Rc::clone(doc_manager);
 		let config_for_timer = Rc::clone(&config);
 		sleep_timer.on_tick(move |_| {
+			tracing::info!("sleep timer fired, closing application");
 			sleep_timer_running_for_tick.set(false);
 			sleep_timer_for_tick.stop();
 			SLEEP_TIMER_START_MS.store(0, Ordering::SeqCst);
@@ -1151,6 +1154,7 @@ impl MainWindow {
 					{
 						let path_str = tab.file_path.to_string_lossy();
 						config.lock().unwrap().export_document_settings(&path_str, &path);
+						tracing::info!(doc = %tab.file_path.display(), export = %path, "document data exported");
 						let dialog = MessageDialog::builder(
 							&frame_copy,
 							&t("Notes and bookmarks exported successfully."),
@@ -1186,6 +1190,7 @@ impl MainWindow {
 							let max_pos = tab.text_ctrl.get_last_position();
 							config.get_validated_document_position(&path_str, max_pos)
 						};
+						tracing::info!(doc = %tab.file_path.display(), import = %path, "document data imported");
 						if pos >= 0 {
 							tab.text_ctrl.set_insertion_point(pos);
 							tab.text_ctrl.show_position(pos);
@@ -1310,6 +1315,7 @@ impl MainWindow {
 							})),
 						);
 					} else {
+						tracing::warn!(path = %tab.file_path.display(), "could not determine web view content");
 						let dialog = MessageDialog::builder(
 							&frame_copy,
 							&t("Could not determine content to display in Web View."),
@@ -1360,8 +1366,10 @@ impl MainWindow {
 						}
 						unavailable => {
 							let message = if unavailable.is_none() {
+								tracing::debug!("source view not available for this format");
 								t("Source view is not available for this document format.")
 							} else {
+								tracing::warn!("failed to load document source for view source");
 								t("Could not load the document source.")
 							};
 							let dialog = MessageDialog::builder(&frame_copy, &message, &t("Error"))
@@ -1428,6 +1436,7 @@ impl MainWindow {
 					cfg.set_letter_spacing(options.letter_spacing);
 					cfg.set_paragraph_spacing(options.paragraph_spacing);
 					cfg.flush();
+					tracing::info!("settings saved");
 					#[cfg(target_os = "windows")]
 					{
 						re_register_hotkey(&hotkey_handle_for_options, &options.hotkey);
@@ -1504,6 +1513,7 @@ impl MainWindow {
 						sleep_timer_duration_for_menu.set(0);
 						SLEEP_TIMER_START_MS.store(0, Ordering::SeqCst);
 						SLEEP_TIMER_DURATION_MINUTES.store(0, Ordering::SeqCst);
+						tracing::info!("sleep timer cancelled");
 						let dm_ref = dm.lock().unwrap();
 						update_title_from_manager(&frame_copy, &dm_ref);
 						live_region::announce(live_region_label, &t("Sleep timer cancelled."));
@@ -1519,6 +1529,7 @@ impl MainWindow {
 						let duration_ms = u64::try_from(duration).unwrap_or(0) * 60 * 1000;
 						sleep_timer_for_menu.start(i32::try_from(duration_ms).unwrap_or(i32::MAX), true);
 						sleep_timer_running_for_menu.set(true);
+						tracing::info!(duration_minutes = duration, "sleep timer started");
 						let now = SystemTime::now()
 							.duration_since(UNIX_EPOCH)
 							.ok()
