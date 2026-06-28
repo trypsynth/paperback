@@ -7,9 +7,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.5\n"
-"Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-06-03 18:57+0530\n"
-"PO-Revision-Date: 2026-06-08 23:27+0200\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-27 13:07-0600\n"
+"PO-Revision-Date: 2026-06-28 23:15+0200\n"
 "Last-Translator: Nikola Jović <wwenikola123@gmail.com>\n"
 "Language-Team: \n"
 "Language: sr\n"
@@ -35,12 +35,6 @@ msgstr "Upozorenje"
 
 msgid "An accessible, lightweight, fast ebook and document reader"
 msgstr "Pristupačan, lagan, brz čitač digitalnih knjiga i dokumenata"
-
-msgid "expanded"
-msgstr "prošireno"
-
-msgid "collapsed"
-msgstr "skupljeno"
 
 msgid "All Documents"
 msgstr "Svi dokumenti"
@@ -177,11 +171,8 @@ msgstr "Znakovi (bez razmaka):"
 msgid "Elements"
 msgstr "Elementi"
 
-msgid "OK"
-msgstr "U redu"
-
-msgid "Cancel"
-msgstr "Otkaži"
+msgid "&View:"
+msgstr "&Prikaz:"
 
 msgid "Headings"
 msgstr "Naslovi"
@@ -192,17 +183,23 @@ msgstr "Linkovi"
 msgid "Untitled"
 msgstr "Nenaslovljeno"
 
-msgid "&View:"
-msgstr "&Prikaz:"
-
 msgid "Root"
 msgstr "Koren"
+
+msgid "OK"
+msgstr "U redu"
+
+msgid "Cancel"
+msgstr "Otkaži"
 
 msgid "Go to Line"
 msgstr "Pređi na red"
 
 msgid "&Line number:"
 msgstr "&Broj reda:"
+
+msgid "Go"
+msgstr "Kretanje"
 
 msgid "Go to page"
 msgstr "Pređi na stranicu"
@@ -250,6 +247,9 @@ msgstr "&Vrati prethodno otvorene dokumente pri pokretanju"
 
 msgid "&Word wrap"
 msgstr "&Prelamanje reči"
+
+msgid "Render tables &inline"
+msgstr "Obradi tabele &u redu"
 
 msgid "&Minimize to system tray"
 msgstr "&Umanji u sistemsku traku"
@@ -398,6 +398,9 @@ msgstr "&Win"
 msgid "&Key:"
 msgstr "&Taster:"
 
+msgid "Clear"
+msgstr "Očisti"
+
 msgid "Space"
 msgstr "Razmak"
 
@@ -440,7 +443,10 @@ msgstr "sekundi"
 msgid "Estimated reading time: {}"
 msgstr "Očekivano vreme čitanja: {}"
 
-#| msgid "The document contains {} words."
+#| msgid "This document contains {} words."
+msgid "The selection contains {} words."
+msgstr "Izbor sadrži {} reči."
+
 msgid "This document contains {} words."
 msgstr "Ovaj dokument sadrži {} reči."
 
@@ -465,11 +471,11 @@ msgstr "Lozinka je obavezna."
 msgid "Navigated to internal link."
 msgstr "Prebačen do unutrašnjeg linka."
 
-msgid "Table View"
-msgstr "Prikaz tabele"
-
 msgid "Ready"
 msgstr "Spreman"
+
+msgid "Table View"
+msgstr "Prikaz tabele"
 
 msgid "&Password:"
 msgstr "&Lozinka:"
@@ -552,8 +558,8 @@ msgstr "Nije pronađeno."
 msgid "No more results. Wrapping search."
 msgstr "Nema više rezultata. Vraćanje pretrage na početak."
 
-msgid "Failed to open containing folder."
-msgstr "Otvaranje izvornog foldera nije uspelo."
+msgid "Failed to reveal file in folder."
+msgstr "Neuspešno otkrivanje datoteke u folderu."
 
 msgid ""
 "readme.html not found. Please ensure the application was built properly."
@@ -574,6 +580,9 @@ msgstr "Izabran je format koji nije podržan."
 msgid "Paperback"
 msgstr "Paperback"
 
+msgid "Paperback cannot perform any actions while Web View is open."
+msgstr "Paperback ne može da vrši druge radnje dok je Web prikaz otvoren."
+
 msgid "Paperback - {}"
 msgstr "Paperback - {}"
 
@@ -585,6 +594,12 @@ msgstr "Otvori dokument"
 
 msgid "No pages."
 msgstr "Nema stranica."
+
+msgid "Word wrap on."
+msgstr "Uključeno prelamanje reči."
+
+msgid "Word wrap off."
+msgstr "Isključeno prelamanje reči."
 
 msgid "document"
 msgstr "dokument"
@@ -598,14 +613,12 @@ msgstr "Izvezi dokument kao običan tekst"
 msgid "Failed to export document."
 msgstr "Izvoz dokumenta nije uspeo."
 
-#| msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgid "HTML files (*.html)|*.html|All files (*.*)|*.*"
 msgstr "HTML datoteke (*.html)|*.html|Sve datoteke (*.*)|*.*"
 
 msgid "Export document to HTML"
 msgstr "Izvezi dokument kao HTML"
 
-#| msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgid "Markdown files (*.md)|*.md|All files (*.*)|*.*"
 msgstr "Markdown datoteke (*.md)|*.md|Sve datoteke (*.*)|*.*"
 
@@ -641,6 +654,15 @@ msgstr "Web prikaz"
 
 msgid "Could not determine content to display in Web View."
 msgstr "Nemoguće odrediti sadržaj koji će se prikazati u Web prikazu."
+
+msgid "Source:"
+msgstr "Izvor:"
+
+msgid "Source view is not available for this document format."
+msgstr "Prikaz izvora nije dostupan za ovaj format dokumenta."
+
+msgid "Could not load the document source."
+msgstr "Nemoguće učitati izvor dokumenta."
 
 msgid "Sleep timer cancelled."
 msgstr "Tajmer pre spavanja otkazan."
@@ -717,6 +739,18 @@ msgstr "Prethodna stavka l&iste\tShift+I"
 
 msgid "Next List I&tem\tI"
 msgstr "Naredna stavka li&ste\tI"
+
+msgid "Container &Start\tShift+,"
+msgstr "&Početak sadrživača\tShift+,"
+
+msgid "Go to the start of the current list or table"
+msgstr "Pređi na početak trenutne liste ili tabele"
+
+msgid "Past Container &End\t,"
+msgstr "Nakon &kraja sadrživača\t,"
+
+msgid "Go past the end of the current list or table"
+msgstr "Idi nakon kraja trenutne liste ili tabele"
 
 msgid "Next Heading Level 1\t1"
 msgstr "Naredni naslov na nivou 1\t1"
@@ -877,11 +911,19 @@ msgstr "&Pronađi...\tCtrl+F"
 msgid "Find text in the document"
 msgstr "Pronađi tekst u dokumentu"
 
+#| msgid "Find &Next"
+msgid "Find &Next\tCtrl+G"
+msgstr "Pronađi &sledeće\tCtrl+G"
+
 msgid "Find &Next\tF3"
 msgstr "Pro&nađi sledeće\tF3"
 
 msgid "Find next occurrence"
 msgstr "Pronađi sledeću pojavu"
+
+#| msgid "Find &Previous\tShift+F3"
+msgid "Find &Previous\tCtrl+Shift+G"
+msgstr "Pronađi &prethodno\tCtrl+Shift+G"
 
 msgid "Find &Previous\tShift+F3"
 msgstr "&Pronađi prethodno\tShift+F3"
@@ -889,11 +931,19 @@ msgstr "&Pronađi prethodno\tShift+F3"
 msgid "Find previous occurrence"
 msgstr "Pronađi prethodnu pojavu"
 
+#| msgid "Go to &line...\tCtrl+G"
+msgid "Go to &line...\tCtrl+L"
+msgstr "Idi u &red...\tCtrl+L"
+
 msgid "Go to &line...\tCtrl+G"
 msgstr "Pređi na &red...\tCtrl+G"
 
 msgid "Go to a specific line"
 msgstr "Pređi u određeni red"
+
+#| msgid "Go to &percent...\tCtrl+Shift+G"
+msgid "Go to &percent...\tCtrl+Shift+L"
+msgstr "Idi na &procenat...\tCtrl+Shift+L"
 
 msgid "Go to &percent...\tCtrl+Shift+G"
 msgstr "Pređi na &procenat...\tCtrl+Shift+G"
@@ -973,6 +1023,12 @@ msgstr "&Liste"
 msgid "Navigate by lists"
 msgstr "Kreći se po listama"
 
+msgid "&Containers"
+msgstr "&Sadrživači"
+
+msgid "Navigate by containers"
+msgstr "Kreći se po sadrživačima"
+
 msgid "&Import Document Data...\tCtrl+Shift+I"
 msgstr "Uvez&i podatke o dokumentu...\tCtrl+Shift+I"
 
@@ -991,19 +1047,15 @@ msgstr "Izvezi kao &običan tekst...\tCtrl+E"
 msgid "Export document as plain text"
 msgstr "Izvezi dokument kao običan tekst"
 
-#| msgid "Export to &Plain Text...\tCtrl+E"
 msgid "Export to &HTML..."
 msgstr "Izvezi kao &HTML..."
 
-#| msgid "Export Document"
 msgid "Export document as HTML"
 msgstr "Izvezi dokument kao HTML"
 
-#| msgid "Export to &Plain Text...\tCtrl+E"
 msgid "Export to &Markdown..."
 msgstr "Izvezi kao &Markdown..."
 
-#| msgid "Export document as plain text"
 msgid "Export document as Markdown"
 msgstr "Izvezi dokument kao Markdown"
 
@@ -1034,17 +1086,24 @@ msgstr "&Lista elemenata...\tF7"
 msgid "Show elements list"
 msgstr "Prikaži listu elemenata"
 
-msgid "Open &Containing Folder\tCtrl+Shift+C"
-msgstr "Otvori &izvorni folder\tCtrl+Shift+C"
+#| msgid "Open &Containing Folder\tCtrl+Shift+C"
+msgid "Reveal &File in Folder\tCtrl+Shift+C"
+msgstr "Otkrij &datoteku u folderu\tCtrl+Shift+C"
 
-msgid "Open folder containing the document"
-msgstr "Otvori folder koji sadrži dokument"
+msgid "Reveal document in the file manager"
+msgstr "Otkri dokument u upravljaču datoteka"
 
 msgid "Open in &Web View\tCtrl+Shift+V"
 msgstr "Otvori u &Web prikazu\tCtrl+Shift+V"
 
 msgid "Open document in web view"
 msgstr "Otvori dokument u Web prikazu"
+
+msgid "View &Source\tCtrl+U"
+msgstr "Prikaži &izvor\tCtrl+U"
+
+msgid "Open the document source in a new tab"
+msgstr "Otvori izvor dokumenta u novoj kartici"
 
 msgid "I&mport/Export"
 msgstr "U&vezi ili izvezi"
@@ -1057,6 +1116,13 @@ msgstr "Dodaj ili ukloni &knjižnu oznaku\tCtrl+Shift+B"
 
 msgid "Bookmark with &Note\tCtrl+Shift+N"
 msgstr "Knjižna oznaka sa &napomenom\tCtrl+Shift+N"
+
+#| msgid "&Word Count\tCtrl+W"
+msgid "Word w&rap\tCtrl+Alt+W"
+msgstr "P&relamanje reči\tCtrl+Alt+W"
+
+msgid "Toggle word wrap"
+msgstr "Uključi ili isključi prelamanje reči"
 
 msgid "&Options\tCtrl+,"
 msgstr "&Podešavanja\tCtrl+,"
@@ -1228,6 +1294,18 @@ msgstr "Nema naredne pozicije."
 msgid "No previous position."
 msgstr "Nema prethodne pozicije."
 
+msgid "No containers."
+msgstr "Nema sadrživača."
+
+msgid "Not in a container."
+msgstr "Niste u sadrživaču."
+
+msgid "Past end of container."
+msgstr "Nakon kraja sadrživača."
+
+msgid "Start of container."
+msgstr "Početak sadrživača."
+
 #, c-format
 msgid "%s - Bookmark %d"
 msgstr "%s - knjižna oznaka %d"
@@ -1289,70 +1367,79 @@ msgstr "I&zlaz"
 msgid "Exit Paperback"
 msgstr "Zatvori Paperback"
 
-#, c-format
-msgid "Update to %s"
-msgstr "Ažuriraj na %s"
+#~ msgid "expanded"
+#~ msgstr "prošireno"
+
+#~ msgid "collapsed"
+#~ msgstr "skupljeno"
+
+#~ msgid "Open folder containing the document"
+#~ msgstr "Otvori folder koji sadrži dokument"
 
 #, c-format
-#| msgid "A new version of Paperback is available. Here's what's new:"
-msgid "A new version of %s is available. Here's what's new:"
-msgstr "Dostupna je nova verzija programa %s. Ovo su novosti:"
-
-msgid "No release notes provided."
-msgstr "Nema informacija o novostima."
+#~ msgid "Update to %s"
+#~ msgstr "Ažuriraj na %s"
 
 #, c-format
-msgid "%s Update"
-msgstr "%s ažuriranje"
+#~| msgid "A new version of Paperback is available. Here's what's new:"
+#~ msgid "A new version of %s is available. Here's what's new:"
+#~ msgstr "Dostupna je nova verzija programa %s. Ovo su novosti:"
 
-msgid "Downloading update..."
-msgstr "Preuzimanje ažuriranja..."
-
-msgid "No updates available."
-msgstr "Nema dostupnih ažuriranja."
+#~ msgid "No release notes provided."
+#~ msgstr "Nema informacija o novostima."
 
 #, c-format
-msgid "No updates available. Latest version: %s"
-msgstr "Nema dostupnih ažuriranja. Najnovija verzija: %s"
+#~ msgid "%s Update"
+#~ msgstr "%s ažuriranje"
 
-msgid "Info"
-msgstr "Informacija"
+#~ msgid "Downloading update..."
+#~ msgstr "Preuzimanje ažuriranja..."
 
-#, c-format
-msgid ""
-"Security verification failed. The update might have been tampered with: %s"
-msgstr ""
-"Bezbednosna provera nije uspela. Ažuriranje je možda neočekivano izmenjeno: "
-"%s"
-
-msgid "Security Error"
-msgstr "Bezbednosna greška"
-
-msgid "Update failed"
-msgstr "Ažuriranje nije uspelo"
+#~ msgid "No updates available."
+#~ msgstr "Nema dostupnih ažuriranja."
 
 #, c-format
-msgid ""
-"Update downloaded to: %s\n"
-"Please install it manually."
-msgstr ""
-"Ažuriranje je preuzeto u: %s\n"
-"Molimo ručno ga instalirajte."
+#~ msgid "No updates available. Latest version: %s"
+#~ msgstr "Nema dostupnih ažuriranja. Najnovija verzija: %s"
 
-msgid "Update Ready"
-msgstr "Ažuriranje je spremno"
+#~ msgid "Info"
+#~ msgstr "Informacija"
 
-msgid "Failed to get current exe path"
-msgstr "Pribavljanje putanje do trenutne izvršne datoteke nije uspelo"
+#, c-format
+#~ msgid ""
+#~ "Security verification failed. The update might have been tampered with: %s"
+#~ msgstr ""
+#~ "Bezbednosna provera nije uspela. Ažuriranje je možda neočekivano "
+#~ "izmenjeno: %s"
 
-msgid "Failed to launch installer script"
-msgstr "Pokretanje instalacione skripte nije uspelo"
+#~ msgid "Security Error"
+#~ msgstr "Bezbednosna greška"
 
-msgid "Failed to launch update script"
-msgstr "Pokretanje skripte ažuriranja nije uspelo"
+#~ msgid "Update failed"
+#~ msgstr "Ažuriranje nije uspelo"
 
-msgid "Unknown update file format."
-msgstr "Nepoznat format ažuriranja datoteke."
+#, c-format
+#~ msgid ""
+#~ "Update downloaded to: %s\n"
+#~ "Please install it manually."
+#~ msgstr ""
+#~ "Ažuriranje je preuzeto u: %s\n"
+#~ "Molimo ručno ga instalirajte."
+
+#~ msgid "Update Ready"
+#~ msgstr "Ažuriranje je spremno"
+
+#~ msgid "Failed to get current exe path"
+#~ msgstr "Pribavljanje putanje do trenutne izvršne datoteke nije uspelo"
+
+#~ msgid "Failed to launch installer script"
+#~ msgstr "Pokretanje instalacione skripte nije uspelo"
+
+#~ msgid "Failed to launch update script"
+#~ msgstr "Pokretanje skripte ažuriranja nije uspelo"
+
+#~ msgid "Unknown update file format."
+#~ msgstr "Nepoznat format ažuriranja datoteke."
 
 #~ msgid "Figure"
 #~ msgstr "Figura"
