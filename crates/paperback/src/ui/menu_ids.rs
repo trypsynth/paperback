@@ -7,6 +7,28 @@ pub const ABOUT: i32 = ID_ABOUT;
 #[allow(clippy::cast_possible_truncation)]
 pub const PREFERENCES: i32 = wxdragon::ffi::WXD_ID_PREFERENCES as i32;
 
+// Standard wxWidgets IDs for the macOS Edit menu. They must be the real wxWidgets
+// IDs (not custom ones) so wxWidgets binds each item to its native macOS selector
+// — cut:, copy:, paste:, delete:, selectAll: — with a nil target. AppKit then
+// routes the command through the responder chain to the focused control and, because
+// a `copy:` item is present, appends its own "Emoji & Symbols" and "Start Dictation"
+// items to the menu. Undo/Redo have no native selector mapping but are handled by
+// wxTextCtrl when it has focus.
+#[cfg(target_os = "macos")]
+pub use edit_ids::*;
+#[cfg(target_os = "macos")]
+mod edit_ids {
+	#![allow(clippy::cast_possible_truncation)]
+	use wxdragon::ffi;
+	pub const UNDO: i32 = ffi::WXD_ID_UNDO as i32;
+	pub const REDO: i32 = ffi::WXD_ID_REDO as i32;
+	pub const CUT: i32 = ffi::WXD_ID_CUT as i32;
+	pub const COPY: i32 = ffi::WXD_ID_COPY as i32;
+	pub const PASTE: i32 = ffi::WXD_ID_PASTE as i32;
+	pub const DELETE: i32 = ffi::WXD_ID_CLEAR as i32;
+	pub const SELECT_ALL: i32 = ffi::WXD_ID_SELECTALL as i32;
+}
+
 // Base for custom IDs
 const BASE: i32 = 5000;
 
