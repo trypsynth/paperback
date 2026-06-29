@@ -28,6 +28,16 @@ wxdragon = { version = "0.9.16", features = ["webview"] }
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_System_Com", "Win32_UI_WindowsAndMessaging", "Win32_Foundation", "Win32_System_Ole", "Win32_System_Variant", "Win32_UI_Controls_RichEdit", "Win32_Graphics_Gdi", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_System_Pipes", "Win32_UI_Input", "Win32_UI_Input_KeyboardAndMouse", "Win32_System_Threading"] }
 
+[target.'cfg(target_os = "macos")'.dependencies]
+objc = "0.2.7"
+
+[lints.rust]
+# `objc`'s `msg_send!` macro expands to a `cfg(feature = "cargo-clippy")` check.
+# This is not a feature that this crate defines and the Rust compiler understands, so a warning would normally be generated.
+# When using macros from older crates (written before this compiler check
+# existed) that rely on this feature, such warnings must be suppressed.
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("cargo-clippy"))'] }
+
 [build-dependencies]
 embed-manifest = "1.5.0"
 flate2 = { version = "1.1.9", default-features = false }

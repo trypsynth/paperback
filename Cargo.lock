@@ -1651,6 +1651,7 @@ dependencies = [
  "embed-manifest",
  "flate2",
  "live-region",
+ "objc",
  "paperback-core",
  "patois",
  "patois-build",
