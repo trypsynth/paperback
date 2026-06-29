@@ -514,8 +514,7 @@ pub fn create_go_menu(compact: bool) -> Menu {
 	// movement in text fields; binding history navigation there would shadow
 	// them. Cmd+[ / Cmd+] are the system-standard back/forward (Safari, Finder,
 	// Xcode, Preview), so use those instead.
-	let go_back_label =
-		if cfg!(target_os = "macos") { t("Go &Back\tCtrl+[") } else { t("Go &Back\tAlt+Left") };
+	let go_back_label = if cfg!(target_os = "macos") { t("Go &Back\tCtrl+[") } else { t("Go &Back\tAlt+Left") };
 	let go_back_help = t("Go back in history");
 	let go_forward_label =
 		if cfg!(target_os = "macos") { t("Go &Forward\tCtrl+]") } else { t("Go &Forward\tAlt+Right") };
