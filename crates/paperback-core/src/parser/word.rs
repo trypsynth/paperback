@@ -548,13 +548,12 @@ fn process_table(
 	render_tables_inline: bool,
 ) {
 	let table_start = buffer.current_position();
-	let mut html_content = String::from("<table border=\"1\">");
+	let mut rows: Vec<Vec<String>> = Vec::new();
 	for child in element.children() {
 		if child.node_type() == NodeType::Element && child.tag_name().name() == "tr" {
-			html_content.push_str("<tr>");
+			let mut cells: Vec<String> = Vec::new();
 			for tc in child.children() {
 				if tc.node_type() == NodeType::Element && tc.tag_name().name() == "tc" {
-					html_content.push_str("<td>");
 					let mut cell_text = String::new();
 					for p in tc.children() {
 						if p.node_type() == NodeType::Element && p.tag_name().name() == "p" {
@@ -566,14 +565,13 @@ fn process_table(
 							cell_text.push(' ');
 						}
 					}
-					html_content.push_str(cell_text.trim());
-					html_content.push_str("</td>");
+					cells.push(cell_text.trim().to_string());
 				}
 			}
-			html_content.push_str("</tr>");
+			rows.push(cells);
 		}
 	}
-	html_content.push_str("</table>");
+	let html_content = crate::parser::table_text::build_html_table_from_grid(&rows);
 	// Derive the caption the same way HTML/XML do (first-row text, no prefix) for consistent
 	// labels across formats; fall back to "table" for an empty table like `table_caption_from_tsv`.
 	let final_caption =
