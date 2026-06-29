@@ -510,9 +510,15 @@ pub fn create_go_menu(compact: bool) -> Menu {
 		t("Go to &percent...\tCtrl+Shift+G")
 	};
 	let goto_percent_help = t("Go to a percentage of the document");
-	let go_back_label = t("Go &Back\tAlt+Left");
+	// On macOS, Alt+Left/Right are reserved by AppKit for word-by-word caret
+	// movement in text fields; binding history navigation there would shadow
+	// them. Cmd+[ / Cmd+] are the system-standard back/forward (Safari, Finder,
+	// Xcode, Preview), so use those instead.
+	let go_back_label =
+		if cfg!(target_os = "macos") { t("Go &Back\tCtrl+[") } else { t("Go &Back\tAlt+Left") };
 	let go_back_help = t("Go back in history");
-	let go_forward_label = t("Go &Forward\tAlt+Right");
+	let go_forward_label =
+		if cfg!(target_os = "macos") { t("Go &Forward\tCtrl+]") } else { t("Go &Forward\tAlt+Right") };
 	let go_forward_help = t("Go forward in history");
 	let menu = Menu::builder()
 		.append_item(menu_ids::FIND, &find_label, &find_help)
