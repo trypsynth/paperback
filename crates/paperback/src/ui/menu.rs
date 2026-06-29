@@ -411,12 +411,16 @@ pub fn create_menu_bar(config: &ConfigManager) -> MenuBar {
 	let go_label = t("&Go");
 	let tools_label = t("&Tools");
 	let help_label = t("&Help");
-	MenuBar::builder()
-		.append(file_menu, &file_label)
-		.append(go_menu, &go_label)
-		.append(tools_menu, &tools_label)
-		.append(help_menu, &help_label)
-		.build()
+	let mut builder = MenuBar::builder().append(file_menu, &file_label);
+
+	// All MacOS apps need an Edit menu.
+	// This is where the OS places some items that each app should have, like "Start dictation" or "Emoji and Symbols."
+	#[cfg(target_os = "macos")]
+	{
+		let edit_label = t("&Edit");
+		builder = builder.append(create_edit_menu(), &edit_label);
+	}
+	builder.append(go_menu, &go_label).append(tools_menu, &tools_label).append(help_menu, &help_label).build()
 }
 
 pub fn create_file_menu(config: &ConfigManager) -> Menu {
@@ -451,6 +455,36 @@ pub fn create_file_menu(config: &ConfigManager) -> Menu {
 		let _ = file_menu.append(menu_ids::EXIT, &exit_label, &exit_help, ItemKind::Normal);
 	}
 	file_menu
+}
+
+/// The standard macOS Edit menu.
+///
+/// Each entry uses a real wxWidgets edit ID, so wxWidgets wires it to the matching
+/// native macOS selector. AppKit handles enabling/disabling and routing to the
+/// focused control.
+///
+/// Because a `copy:` item is present, AppKit  appends its own
+/// items, like "Emoji & Symbols" and "Start Dictation".
+#[cfg(target_os = "macos")]
+pub fn create_edit_menu() -> Menu {
+	let undo_label = t("&Undo\tCtrl+Z");
+	let redo_label = t("&Redo\tCtrl+Shift+Z");
+	let cut_label = t("Cu&t\tCtrl+X");
+	let copy_label = t("&Copy\tCtrl+C");
+	let paste_label = t("&Paste\tCtrl+V");
+	let delete_label = t("&Delete");
+	let select_all_label = t("Select &All\tCtrl+A");
+	Menu::builder()
+		.append_item(menu_ids::UNDO, &undo_label, "")
+		.append_item(menu_ids::REDO, &redo_label, "")
+		.append_separator()
+		.append_item(menu_ids::CUT, &cut_label, "")
+		.append_item(menu_ids::COPY, &copy_label, "")
+		.append_item(menu_ids::PASTE, &paste_label, "")
+		.append_item(menu_ids::DELETE, &delete_label, "")
+		.append_separator()
+		.append_item(menu_ids::SELECT_ALL, &select_all_label, "")
+		.build()
 }
 
 pub fn create_go_menu(compact: bool) -> Menu {
