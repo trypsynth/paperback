@@ -24,6 +24,26 @@ pub fn html_table_to_display(html: &str, inline: bool) -> String {
 	tsv_to_display(&html_table_to_tsv(html), inline)
 }
 
+/// Build a `<table border="1">…</table>` string from a rectangular grid of pre-extracted,
+/// plain-text cell values (one inner `Vec` per row). Cells are inserted verbatim (no
+/// HTML-escaping); the downstream `html_table_to_*` functions handle whitespace collapsing.
+/// Callers extract the cell text themselves, so this only owns the grid-to-HTML wrapping.
+#[must_use]
+pub fn build_html_table_from_grid(rows: &[Vec<String>]) -> String {
+	let mut html = String::from("<table border=\"1\">");
+	for row in rows {
+		html.push_str("<tr>");
+		for cell in row {
+			html.push_str("<td>");
+			html.push_str(cell);
+			html.push_str("</td>");
+		}
+		html.push_str("</tr>");
+	}
+	html.push_str("</table>");
+	html
+}
+
 /// Render a tab-separated table body in the requested display mode.
 ///
 /// - `inline == true`  -> the TSV unchanged.
@@ -326,5 +346,27 @@ mod tests {
 		assert_eq!(bundle.caption, "table");
 		assert!(bundle.lines.is_empty());
 		assert_eq!(bundle.display_length, 0);
+	}
+
+	#[test]
+	fn build_html_table_from_grid_2x2() {
+		let rows = vec![vec!["a".to_string(), "b".to_string()], vec!["c".to_string(), "d".to_string()]];
+		assert_eq!(
+			build_html_table_from_grid(&rows),
+			"<table border=\"1\"><tr><td>a</td><td>b</td></tr><tr><td>c</td><td>d</td></tr></table>"
+		);
+		// Round-trips through the shared TSV renderer.
+		assert_eq!(html_table_to_tsv(&build_html_table_from_grid(&rows)), "a\tb\nc\td");
+	}
+
+	#[test]
+	fn build_html_table_from_grid_empty() {
+		assert_eq!(build_html_table_from_grid(&[]), "<table border=\"1\"></table>");
+	}
+
+	#[test]
+	fn build_html_table_from_grid_empty_cell() {
+		let rows = vec![vec![String::new(), "b".to_string()]];
+		assert_eq!(build_html_table_from_grid(&rows), "<table border=\"1\"><tr><td></td><td>b</td></tr></table>");
 	}
 }
