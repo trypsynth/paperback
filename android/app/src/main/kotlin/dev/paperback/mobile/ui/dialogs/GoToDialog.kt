@@ -54,7 +54,7 @@ fun GoToDialog(
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		modifier = Modifier.semantics { paneTitle = "Go To" },
-		title = { Text("Go To") },
+		title = { Text(t("Go To")) },
 		text = {
 			Column {
 				ExposedDropdownMenuBox(
@@ -66,7 +66,7 @@ fun GoToDialog(
 						modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth().semantics {
 							customActions = listOfNotNull(
 								if (selectedMode != "Line") {
-									CustomAccessibilityAction("Line") {
+									CustomAccessibilityAction(t("Line")) {
 										selectedMode = "Line"
 										true
 									}
@@ -74,7 +74,7 @@ fun GoToDialog(
 									null
 								},
 								if (selectedMode != "Page" && maxPages > 0) {
-									CustomAccessibilityAction("Page") {
+									CustomAccessibilityAction(t("Page")) {
 										selectedMode = "Page"
 										true
 									}
@@ -82,7 +82,7 @@ fun GoToDialog(
 									null
 								},
 								if (selectedMode != "Percentage") {
-									CustomAccessibilityAction("Percentage") {
+									CustomAccessibilityAction(t("Percentage")) {
 										selectedMode = "Percentage"
 										true
 									}
@@ -92,7 +92,7 @@ fun GoToDialog(
 							)
 						}
 					) {
-						Text(selectedMode, modifier = Modifier.weight(1f))
+						Text(t(selectedMode), modifier = Modifier.weight(1f))
 						ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded)
 					}
 					ExposedDropdownMenu(
@@ -155,10 +155,10 @@ fun GoToDialog(
 			}
 		},
 		confirmButton = {
-			TextButton(onClick = onSubmit) { Text("Go") }
+			TextButton(onClick = onSubmit) { Text(t("Go")) }
 		},
 		dismissButton = {
-			TextButton(onClick = onDismiss) { Text("Cancel") }
+			TextButton(onClick = onDismiss) { Text(t("Cancel")) }
 		}
 	)
 }

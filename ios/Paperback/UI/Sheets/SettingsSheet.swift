@@ -24,10 +24,10 @@ private struct TtsSettingsSection: View {
 	}
 
 	var body: some View {
-		Section("Text to Speech") {
+		Section(t("Text to Speech")) {
 			NavigationLink(value: "voice") {
 				HStack {
-					Text("Voice")
+					Text(t("Voice"))
 					Spacer()
 					Text(selectedVoiceName)
 						.foregroundStyle(.secondary)
@@ -36,7 +36,7 @@ private struct TtsSettingsSection: View {
 			}
 			VStack(alignment: .leading, spacing: 4) {
 				HStack {
-					Text("Rate").accessibilityHidden(true)
+					Text(t("Rate")).accessibilityHidden(true)
 					Spacer()
 					Text("\(ratePercent)%")
 						.foregroundStyle(.secondary)
@@ -48,12 +48,12 @@ private struct TtsSettingsSection: View {
 					in: AVSpeechUtteranceMinimumSpeechRate...AVSpeechUtteranceMaximumSpeechRate,
 					step: (AVSpeechUtteranceMaximumSpeechRate - AVSpeechUtteranceMinimumSpeechRate) / 100
 				)
-				.accessibilityLabel("Speech Rate")
+				.accessibilityLabel(t("Speech Rate"))
 				.accessibilityValue("\(ratePercent)%")
 			}
 			VStack(alignment: .leading, spacing: 4) {
 				HStack {
-					Text("Pitch").accessibilityHidden(true)
+					Text(t("Pitch")).accessibilityHidden(true)
 					Spacer()
 					Text("\(pitchPercent)%")
 						.foregroundStyle(.secondary)
@@ -61,14 +61,14 @@ private struct TtsSettingsSection: View {
 						.accessibilityHidden(true)
 				}
 				Slider(value: $ttsManager.pitch, in: 0.5...2.0, step: 0.015)
-					.accessibilityLabel("Pitch")
+					.accessibilityLabel(t("Pitch"))
 					.accessibilityValue("\(pitchPercent)%")
 			}
 			NavigationLink(value: "speechDictionary") {
-				Text("Speech Dictionary")
+				Text(t("Speech Dictionary"))
 			}
 			Button(action: onPlaySample) {
-				Label("Play Sample", systemImage: "play.circle")
+				Label(t("Play Sample"), systemImage: "play.circle")
 			}
 		}
 	}
@@ -82,9 +82,9 @@ struct SettingsSheet: View {
 	var body: some View {
 		NavigationStack {
 			Form {
-				Section("Behavior") {
-					Toggle("Restore last open documents", isOn: $restore)
-					Toggle("Swipe up moves forward", isOn: Binding(
+				Section(t("Behavior")) {
+					Toggle(t("Restore last open documents"), isOn: $restore)
+					Toggle(t("Swipe up moves forward"), isOn: Binding(
 						get: { viewModel.swipeUpMovesForward },
 						set: { viewModel.swipeUpMovesForward = $0 }
 					))
@@ -94,11 +94,11 @@ struct SettingsSheet: View {
 					onPlaySample: { viewModel.ttsManager.speakSample(sampleText) }
 				)
 			}
-			.navigationTitle("Settings")
+			.navigationTitle(t("Settings"))
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .confirmationAction) {
-					Button("Done") {
+					Button(t("Done")) {
 						viewModel.restorePreviousDocuments = restore
 						dismiss()
 					}

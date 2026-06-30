@@ -9,7 +9,7 @@ struct TtsModeView: View {
 			ScrollView {
 				Text(
 					viewModel.currentSegmentText.isEmpty
-						? "Press play to start listening."
+						? t("Press play to start listening.")
 						: viewModel.currentSegmentText
 				)
 				.font(.body)

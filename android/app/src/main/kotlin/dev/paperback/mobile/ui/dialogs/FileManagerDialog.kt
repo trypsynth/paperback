@@ -199,7 +199,7 @@ fun FileManagerDialog(
 							modifier = Modifier.fillMaxWidth().padding(32.dp),
 							contentAlignment = Alignment.Center
 						) {
-							Text("No supported books or folders found here.")
+							Text(t("No supported books or folders found here."))
 						}
 					}
 				}
@@ -226,9 +226,9 @@ fun FileListItem(file: File, onClick: () -> Unit) {
 			.padding(16.dp)
 			.clearAndSetSemantics {
 				role = Role.Button
-				val typeStr = if (file.isDirectory) "Folder" else "File"
+				val typeStr = if (file.isDirectory) t("Folder") else t("File")
 				val sizeDesc = if (file.isDirectory) "" else ", $sizeString"
-				val displayName = if (file.absolutePath == Environment.getExternalStorageDirectory().absolutePath) "Internal Storage" else file.name
+				val displayName = if (file.absolutePath == Environment.getExternalStorageDirectory().absolutePath) t("Internal Storage") else file.name
 				contentDescription = "$displayName, $typeStr, modified $dateString$sizeDesc"
 			},
 		verticalAlignment = Alignment.CenterVertically
@@ -240,7 +240,7 @@ fun FileListItem(file: File, onClick: () -> Unit) {
 			modifier = Modifier.size(32.dp).padding(end = 16.dp)
 		)
 		Column {
-			val displayName = if (file.absolutePath == Environment.getExternalStorageDirectory().absolutePath) "Internal Storage" else file.name
+			val displayName = if (file.absolutePath == Environment.getExternalStorageDirectory().absolutePath) t("Internal Storage") else file.name
 			Text(
 				text = displayName,
 				style = MaterialTheme.typography.bodyLarge,

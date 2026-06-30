@@ -6,7 +6,7 @@ struct DocumentInfoSheet: View {
 
 	var body: some View {
 		VStack(spacing: 0) {
-			Text("Document Info")
+			Text(t("Document Info"))
 				.font(.headline)
 				.padding(.vertical, 16)
 				.accessibilityAddTraits(.isHeader)
@@ -19,25 +19,25 @@ struct DocumentInfoSheet: View {
 							: session.title()
 						let author = session.author()
 						let stats = session.getStatsFfi()
-						infoRow("Title", value: title)
+						infoRow(t("Title"), value: title)
 						if !author.isEmpty {
 							Divider().padding(.leading, 16)
-							infoRow("Author", value: author)
+							infoRow(t("Author"), value: author)
 						}
 						Divider().padding(.leading, 16)
-						infoRow("File", value: viewModel.activeTab?.url.lastPathComponent ?? "—")
+						infoRow(t("File"), value: viewModel.activeTab?.url.lastPathComponent ?? "—")
 						Divider().padding(.leading, 16)
-						infoRow("Words", value: stats.wordCount.formatted())
+						infoRow(t("Words"), value: stats.wordCount.formatted())
 						Divider().padding(.leading, 16)
-						infoRow("Lines", value: stats.lineCount.formatted())
+						infoRow(t("Lines"), value: stats.lineCount.formatted())
 						Divider().padding(.leading, 16)
-						infoRow("Characters", value: stats.charCount.formatted())
+						infoRow(t("Characters"), value: stats.charCount.formatted())
 						Divider().padding(.leading, 16)
-						infoRow("Characters (excluding spaces)", value: stats.charCountNoWhitespace.formatted())
+						infoRow(t("Characters (excluding spaces)"), value: stats.charCountNoWhitespace.formatted())
 					} else {
-						infoRow("Title", value: viewModel.activeTab?.title ?? "—")
+						infoRow(t("Title"), value: viewModel.activeTab?.title ?? "—")
 						Divider().padding(.leading, 16)
-						infoRow("File", value: viewModel.activeTab?.url.lastPathComponent ?? "—")
+						infoRow(t("File"), value: viewModel.activeTab?.url.lastPathComponent ?? "—")
 					}
 				}
 				.background(Color(.secondarySystemBackground))
@@ -45,7 +45,7 @@ struct DocumentInfoSheet: View {
 				.padding()
 			}
 			Divider()
-			Button("OK") { dismiss() }
+			Button(t("OK")) { dismiss() }
 				.padding()
 		}
 		.presentationDetents([.medium, .large])

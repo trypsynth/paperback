@@ -80,7 +80,7 @@ fun TocDialog(
 		LazyColumn(state = listState, contentPadding = PaddingValues(bottom = 32.dp)) {
 			item {
 				Text(
-					text = "Table of Contents",
+					text = t("Table of Contents"),
 					style = MaterialTheme.typography.titleLarge,
 					modifier = Modifier.padding(16.dp)
 				)
@@ -102,10 +102,10 @@ fun TocDialog(
 							}
 						}.semantics(mergeDescendants = true) {
 							if (hasChildren) {
-								stateDescription = if (isExpanded) "Expanded" else "Collapsed"
+								stateDescription = if (isExpanded) t("Expanded") else t("Collapsed")
 								customActions = listOf(
 									CustomAccessibilityAction(
-										label = if (isExpanded) "Collapse" else "Expand",
+										label = if (isExpanded) t("Collapse") else t("Expand"),
 										action = {
 											onToggleExpand(originalIndex)
 											true

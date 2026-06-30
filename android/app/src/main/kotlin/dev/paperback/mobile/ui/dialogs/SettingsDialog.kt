@@ -43,10 +43,10 @@ fun SettingsDialog(
 	AlertDialog(
 		modifier = Modifier.semantics { paneTitle = "Settings" },
 		onDismissRequest = onDismiss,
-		title = { Text("Settings") },
+		title = { Text(t("Settings")) },
 		text = {
 			Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
-				Text("General", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 8.dp))
+				Text(t("General"), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 8.dp))
 
 				Row(
 					modifier = Modifier
@@ -59,7 +59,7 @@ fun SettingsDialog(
 					verticalAlignment = Alignment.CenterVertically,
 					horizontalArrangement = Arrangement.SpaceBetween
 				) {
-					Text("Restore last open book", modifier = Modifier.weight(1f))
+					Text(t("Restore last open book"), modifier = Modifier.weight(1f))
 					Switch(
 						checked = restorePreviousDocuments,
 						onCheckedChange = null
@@ -76,7 +76,7 @@ fun SettingsDialog(
 					verticalAlignment = Alignment.CenterVertically,
 					horizontalArrangement = Arrangement.SpaceBetween
 				) {
-					Text("Use in-app file browser (requires All Files permission)", modifier = Modifier.weight(1f))
+					Text(t("Use in-app file browser (requires All Files permission)"), modifier = Modifier.weight(1f))
 					Switch(
 						checked = useInAppFileBrowser,
 						onCheckedChange = null
@@ -93,7 +93,7 @@ fun SettingsDialog(
 					verticalAlignment = Alignment.CenterVertically,
 					horizontalArrangement = Arrangement.SpaceBetween
 				) {
-					Text("Swipe up moves forward", modifier = Modifier.weight(1f))
+					Text(t("Swipe up moves forward"), modifier = Modifier.weight(1f))
 					Switch(
 						checked = swipeUpMovesForward,
 						onCheckedChange = null
@@ -101,7 +101,7 @@ fun SettingsDialog(
 				}
 
 				Spacer(modifier = Modifier.height(24.dp))
-				Text("Text-to-Speech", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 8.dp))
+				Text(t("Text-to-Speech"), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 8.dp))
 
 				ExposedDropdownMenuBox(
 					expanded = engineExpanded,
@@ -163,9 +163,9 @@ fun SettingsDialog(
 				Spacer(modifier = Modifier.height(16.dp))
 				Column(
 					modifier = Modifier.clearAndSetSemantics {
-						contentDescription = "Speech Rate"
+						contentDescription = t("Speech Rate")
 						if (isSystemDefault) {
-							stateDescription = "System Default"
+							stateDescription = t("System Default")
 							disabled()
 						} else {
 							stateDescription = "$currentRate percent"
@@ -194,9 +194,9 @@ fun SettingsDialog(
 				Spacer(modifier = Modifier.height(16.dp))
 				Column(
 					modifier = Modifier.clearAndSetSemantics {
-						contentDescription = "Pitch"
+						contentDescription = t("Pitch")
 						if (isSystemDefault) {
-							stateDescription = "System Default"
+							stateDescription = t("System Default")
 							disabled()
 						} else {
 							stateDescription = "$currentPitch percent"
@@ -224,7 +224,7 @@ fun SettingsDialog(
 				}
 				Spacer(modifier = Modifier.height(16.dp))
 				Button(onClick = onPlaySample, modifier = Modifier.fillMaxWidth()) {
-					Text("Play Sample")
+					Text(t("Play Sample"))
 				}
 			}
 		},

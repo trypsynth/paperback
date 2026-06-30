@@ -148,7 +148,7 @@ fun DocumentTextView(
 				if (currentQuery != null && currentOptions != null) {
 					textModifier = textModifier.semantics {
 						customActions = listOf(
-							CustomAccessibilityAction("Find Next") {
+							CustomAccessibilityAction(t("Find Next")) {
 								val nextLine = (index + 2).toLong().coerceAtMost(docState.lineCount)
 								val searchPos = docState.session.positionFromLine(nextLine)
 								val res = docState.session.searchFfi(currentQuery, searchPos, currentOptions.copy(forward = true))
@@ -162,7 +162,7 @@ fun DocumentTextView(
 								}
 								true
 							},
-							CustomAccessibilityAction("Find Previous") {
+							CustomAccessibilityAction(t("Find Previous")) {
 								val searchPos = docState.session.positionFromLine((index + 1).toLong())
 								val res = docState.session.searchFfi(currentQuery, searchPos, currentOptions.copy(forward = false))
 								if (res.found) {
@@ -175,7 +175,7 @@ fun DocumentTextView(
 								}
 								true
 							},
-							CustomAccessibilityAction("Close Search") {
+							CustomAccessibilityAction(t("Close Search")) {
 								onCloseSearch()
 								true
 							}

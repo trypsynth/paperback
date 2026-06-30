@@ -17,12 +17,12 @@ struct GoToSheet: View {
 		NavigationStack {
 			Form {
 				Section {
-					Picker("Mode", selection: $mode) {
-						Text("Line").tag(GoToMode.line)
+					Picker(t("Mode"), selection: $mode) {
+						Text(t("Line")).tag(GoToMode.line)
 						if hasPages {
-							Text("Page").tag(GoToMode.page)
+							Text(t("Page")).tag(GoToMode.page)
 						}
-						Text("Percent").tag(GoToMode.percent)
+						Text(t("Percent")).tag(GoToMode.percent)
 					}
 					.pickerStyle(.wheel)
 					.labelsHidden()
@@ -31,17 +31,17 @@ struct GoToSheet: View {
 				Section {
 					switch mode {
 					case .line:
-						TextField("Line number", text: $lineValue)
+						TextField(t("Line number"), text: $lineValue)
 							.keyboardType(.numberPad)
 							.focused($fieldFocused)
 					case .page:
-						TextField("Page number", text: $pageValue)
+						TextField(t("Page number"), text: $pageValue)
 							.keyboardType(.numberPad)
 							.focused($fieldFocused)
 					case .percent:
 						HStack {
 							Slider(value: $percentValue, in: 0...100, step: 1)
-								.accessibilityLabel("Percentage")
+								.accessibilityLabel(t("Percentage"))
 								.accessibilityValue("\(Int(percentValue))%")
 							Text("\(Int(percentValue))%")
 								.monospacedDigit()
@@ -52,14 +52,14 @@ struct GoToSheet: View {
 					}
 				}
 			}
-			.navigationTitle("Go To")
+			.navigationTitle(t("Go To"))
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) {
-					Button("Cancel") { dismiss() }
+					Button(t("Cancel")) { dismiss() }
 				}
 				ToolbarItem(placement: .confirmationAction) {
-					Button("Go") { go() }
+					Button(t("Go")) { go() }
 						.disabled(!canGo)
 				}
 			}

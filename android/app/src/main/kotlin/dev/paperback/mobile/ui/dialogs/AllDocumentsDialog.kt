@@ -23,7 +23,7 @@ fun AllDocumentsDialog(
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		modifier = Modifier.semantics { paneTitle = "Recent Documents" },
-		title = { Text("Recent Documents") },
+		title = { Text(t("Recent Documents")) },
 		text = {
 			LazyColumn(
 				modifier = Modifier.fillMaxWidth()
@@ -64,7 +64,7 @@ fun RecentDocumentItemRow(
 				onClick = onOpen
 			).semantics {
 				customActions = listOf(
-					CustomAccessibilityAction("Remove") {
+					CustomAccessibilityAction(t("Remove")) {
 						onRemove()
 						true
 					}
@@ -94,11 +94,11 @@ fun RecentDocumentItemRow(
 			if (item.isMissing || item.isOpen || showClosedStatus) {
 				Text(
 					text = if (item.isMissing) {
-						"File Missing"
+						t("File Missing")
 					} else if (item.isOpen) {
-						"Currently Open"
+						t("Currently Open")
 					} else {
-						"Closed"
+						t("Closed")
 					},
 					style = MaterialTheme.typography.bodySmall,
 					color = if (item.isMissing) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
@@ -109,7 +109,7 @@ fun RecentDocumentItemRow(
 			onClick = onRemove,
 			modifier = Modifier.clearAndSetSemantics { }
 		) {
-			Text("Remove")
+			Text(t("Remove"))
 		}
 	}
 }

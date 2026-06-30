@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-27 13:07-0600\n"
+"POT-Creation-Date: 2026-06-28 22:54-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -839,6 +839,9 @@ msgstr ""
 msgid "&Help"
 msgstr ""
 
+msgid "&Edit"
+msgstr ""
+
 msgid "&Open...\tCtrl+O"
 msgstr ""
 
@@ -879,6 +882,24 @@ msgid "E&xit\tCtrl+Q"
 msgstr ""
 
 msgid "Exit the application"
+msgstr ""
+
+msgid "&Undo\tCtrl+Z"
+msgstr ""
+
+msgid "&Redo\tCtrl+Shift+Z"
+msgstr ""
+
+msgid "Cu&t\tCtrl+X"
+msgstr ""
+
+msgid "&Copy\tCtrl+C"
+msgstr ""
+
+msgid "&Paste\tCtrl+V"
+msgstr ""
+
+msgid "Select &All\tCtrl+A"
 msgstr ""
 
 msgid "&Find...\tCtrl+F"
@@ -923,10 +944,16 @@ msgstr ""
 msgid "Go to a percentage of the document"
 msgstr ""
 
+msgid "Go &Back\tCtrl+["
+msgstr ""
+
 msgid "Go &Back\tAlt+Left"
 msgstr ""
 
 msgid "Go back in history"
+msgstr ""
+
+msgid "Go &Forward\tCtrl+]"
 msgstr ""
 
 msgid "Go &Forward\tAlt+Right"
@@ -1335,4 +1362,505 @@ msgid "E&xit"
 msgstr ""
 
 msgid "Exit Paperback"
+msgstr ""
+
+#, c-format
+msgid "Update to %s"
+msgstr ""
+
+#, c-format
+msgid "A new version of %s is available. Here's what's new:"
+msgstr ""
+
+msgid "No release notes provided."
+msgstr ""
+
+#, c-format
+msgid "%s Update"
+msgstr ""
+
+msgid "Downloading update..."
+msgstr ""
+
+msgid "No updates available."
+msgstr ""
+
+#, c-format
+msgid "No updates available. Latest version: %s"
+msgstr ""
+
+msgid "Info"
+msgstr ""
+
+#, c-format
+msgid ""
+"Security verification failed. The update might have been tampered with: %s"
+msgstr ""
+
+msgid "Security Error"
+msgstr ""
+
+msgid "Update failed"
+msgstr ""
+
+#, c-format
+msgid ""
+"Update downloaded to: %s\n"
+"Please install it manually."
+msgstr ""
+
+msgid "Update Ready"
+msgstr ""
+
+msgid "Failed to get current exe path"
+msgstr ""
+
+msgid "Failed to launch installer script"
+msgstr ""
+
+msgid "Failed to launch update script"
+msgstr ""
+
+msgid "Unknown update file format."
+msgstr ""
+
+msgid "Go To…"
+msgstr ""
+
+msgid "Recent Documents"
+msgstr ""
+
+msgid "Switch to TTS Mode"
+msgstr ""
+
+msgid "Switch to Text Mode"
+msgstr ""
+
+msgid "Sleep Timer (active)"
+msgstr ""
+
+msgid "Settings"
+msgstr ""
+
+msgid "More options"
+msgstr ""
+
+msgid "No document open"
+msgstr ""
+
+msgid "Recent"
+msgstr ""
+
+msgid "Screen dimmed by sleep timer. Tap to wake."
+msgstr ""
+
+msgid "Open Error"
+msgstr ""
+
+msgid "Open document"
+msgstr ""
+
+msgid "Title"
+msgstr ""
+
+msgid "Author"
+msgstr ""
+
+msgid "File"
+msgstr ""
+
+msgid "Words"
+msgstr ""
+
+msgid "Lines"
+msgstr ""
+
+msgid "Characters"
+msgstr ""
+
+msgid "Characters (excluding spaces)"
+msgstr ""
+
+msgid "Type"
+msgstr ""
+
+msgid "Done"
+msgstr ""
+
+msgid "No Elements"
+msgstr ""
+
+msgid "Headings, images, and other elements will appear here."
+msgstr ""
+
+msgid "Search…"
+msgstr ""
+
+msgid "Match Case"
+msgstr ""
+
+msgid "Whole Word"
+msgstr ""
+
+msgid "Regular Expression"
+msgstr ""
+
+msgid "Previous result"
+msgstr ""
+
+msgid "Next result"
+msgstr ""
+
+msgid "Search"
+msgstr ""
+
+msgid "Mode"
+msgstr ""
+
+msgid "Page"
+msgstr ""
+
+msgid "Percent"
+msgstr ""
+
+msgid "Line number"
+msgstr ""
+
+msgid "Page number"
+msgstr ""
+
+msgid "Percentage"
+msgstr ""
+
+msgid "Go To"
+msgstr ""
+
+msgid "Password"
+msgstr ""
+
+msgid "Password Required"
+msgstr ""
+
+msgid "No Recent Documents"
+msgstr ""
+
+msgid "Documents you open will appear here."
+msgstr ""
+
+msgid "Remove"
+msgstr ""
+
+msgid "Rule"
+msgstr ""
+
+msgid "Scope"
+msgstr ""
+
+msgid "Word"
+msgstr ""
+
+msgid "Paragraph"
+msgstr ""
+
+msgid "Pattern & Replacement"
+msgstr ""
+
+msgid "Pattern"
+msgstr ""
+
+msgid "Replacement"
+msgstr ""
+
+msgid "Whole word only"
+msgstr ""
+
+msgid "Regular expression (\\1 = first capture group)"
+msgstr ""
+
+msgid "Enabled"
+msgstr ""
+
+msgid "Apply to"
+msgstr ""
+
+msgid "Voices"
+msgstr ""
+
+msgid "New Rule"
+msgstr ""
+
+msgid "Edit Rule"
+msgstr ""
+
+msgid "Save"
+msgstr ""
+
+msgid "All voices"
+msgstr ""
+
+msgid "Apply To"
+msgstr ""
+
+msgid "Text to Speech"
+msgstr ""
+
+msgid "Voice"
+msgstr ""
+
+msgid "Rate"
+msgstr ""
+
+msgid "Speech Rate"
+msgstr ""
+
+msgid "Pitch"
+msgstr ""
+
+msgid "Speech Dictionary"
+msgstr ""
+
+msgid "Play Sample"
+msgstr ""
+
+msgid "Behavior"
+msgstr ""
+
+msgid "Restore last open documents"
+msgstr ""
+
+msgid "Swipe up moves forward"
+msgstr ""
+
+msgid "Active"
+msgstr ""
+
+msgid "Time remaining"
+msgstr ""
+
+msgid "Cancel Timer"
+msgstr ""
+
+msgid "Set timer"
+msgstr ""
+
+msgid "Edit"
+msgstr ""
+
+msgid "Add Rule"
+msgstr ""
+
+msgid "No Rules"
+msgstr ""
+
+msgid "Contents"
+msgstr ""
+
+msgid "No Table of Contents"
+msgstr ""
+
+msgid "This document has no table of contents."
+msgstr ""
+
+msgid "Tabs"
+msgstr ""
+
+msgid "Navigation unit"
+msgstr ""
+
+msgid "Pause"
+msgstr ""
+
+msgid "Play"
+msgstr ""
+
+msgid "End of document"
+msgstr ""
+
+msgid "Beginning of document"
+msgstr ""
+
+msgid "Press play to start listening."
+msgstr ""
+
+msgid "File Missing"
+msgstr ""
+
+msgid "Currently Open"
+msgstr ""
+
+msgid "Document Information"
+msgstr ""
+
+msgid "Expanded"
+msgstr ""
+
+msgid "Collapsed"
+msgstr ""
+
+msgid "Collapse"
+msgstr ""
+
+msgid "Expand"
+msgstr ""
+
+msgid "Untitled Link"
+msgstr ""
+
+msgid "No supported books or folders found here."
+msgstr ""
+
+msgid "Folder"
+msgstr ""
+
+msgid "Internal Storage"
+msgstr ""
+
+msgid "Search Term"
+msgstr ""
+
+msgid "Search History"
+msgstr ""
+
+msgid "Find Next"
+msgstr ""
+
+msgid "Password:"
+msgstr ""
+
+msgid "All Files Access Required"
+msgstr ""
+
+msgid "Paperback requires the 'All Files Access' permission to enable the custom in-app file browser."
+msgstr ""
+
+msgid "Why we need this:"
+msgstr ""
+
+msgid "• To provide a fast, fully screen-reader accessible file manager inside the app."
+msgstr ""
+
+msgid "• To load large files instantly without needing to copy them into the app's cache."
+msgstr ""
+
+msgid "• To display the exact local file paths of your documents."
+msgstr ""
+
+msgid "If you deny this permission, you can still use the Android System File Picker to open your books by turning off the custom file browser setting."
+msgstr ""
+
+msgid "Grant"
+msgstr ""
+
+msgid "Not Now"
+msgstr ""
+
+msgid "Restore last open book"
+msgstr ""
+
+msgid "Use in-app file browser (requires All Files permission)"
+msgstr ""
+
+msgid "Text-to-Speech"
+msgstr ""
+
+msgid "System Default"
+msgstr ""
+
+msgid "Custom Timer"
+msgstr ""
+
+msgid "Minutes"
+msgstr ""
+
+msgid "Back"
+msgstr ""
+
+msgid "Start"
+msgstr ""
+
+msgid "Change to:"
+msgstr ""
+
+msgid "Custom time..."
+msgstr ""
+
+msgid "Find Previous"
+msgstr ""
+
+msgid "Close Search"
+msgstr ""
+
+msgid "Settings imported"
+msgstr ""
+
+msgid "Failed to import settings"
+msgstr ""
+
+msgid "Settings exported"
+msgstr ""
+
+msgid "Failed to export settings"
+msgstr ""
+
+msgid "No document open. Please open a book."
+msgstr ""
+
+msgid "Cancel sleep timer"
+msgstr ""
+
+msgid "Import"
+msgstr ""
+
+msgid "Import Document Data"
+msgstr ""
+
+msgid "Export Document Data"
+msgstr ""
+
+msgid "Open Book"
+msgstr ""
+
+msgid "Elements List"
+msgstr ""
+
+msgid "Show Document"
+msgstr ""
+
+msgid "Show Text"
+msgstr ""
+
+msgid "Pause Read Aloud"
+msgstr ""
+
+msgid "Read Aloud"
+msgstr ""
+
+msgid "More Options"
+msgstr ""
+
+msgid "Heading"
+msgstr ""
+
+msgid "Link"
+msgstr ""
+
+msgid "Section"
+msgstr ""
+
+msgid "List"
+msgstr ""
+
+msgid "List Item"
+msgstr ""
+
+msgid "Table"
+msgstr ""
+
+msgid "Separator"
+msgstr ""
+
+msgid "Image"
+msgstr ""
+
+msgid "Figure"
 msgstr ""

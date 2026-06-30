@@ -24,7 +24,7 @@ fun DocumentInfoDialog(
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		modifier = Modifier.semantics { paneTitle = "Document Information" },
-		title = { Text("Document Information") },
+		title = { Text(t("Document Information")) },
 		text = {
 			Column(modifier = Modifier.fillMaxWidth()) {
 				if (docState.title.isNotBlank()) {
@@ -80,7 +80,7 @@ fun DocumentInfoDialog(
 		},
 		confirmButton = {
 			TextButton(onClick = onDismiss) {
-				Text("OK")
+				Text(t("OK"))
 			}
 		}
 	)

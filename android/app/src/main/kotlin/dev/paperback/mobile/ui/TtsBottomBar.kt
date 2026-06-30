@@ -34,18 +34,18 @@ private const val ZWSP = "​"
 
 fun getSegmentTypeName(type: SegmentTypeFfi): String =
 	when (type) {
-		SegmentTypeFfi.PARAGRAPH -> "Paragraph"
-		SegmentTypeFfi.LINE -> "Line"
-		SegmentTypeFfi.HEADING -> "Heading"
-		SegmentTypeFfi.LINK -> "Link"
-		SegmentTypeFfi.SECTION -> "Section"
-		SegmentTypeFfi.PAGE -> "Page"
-		SegmentTypeFfi.LIST -> "List"
-		SegmentTypeFfi.LIST_ITEM -> "List Item"
-		SegmentTypeFfi.TABLE -> "Table"
-		SegmentTypeFfi.SEPARATOR -> "Separator"
-		SegmentTypeFfi.IMAGE -> "Image"
-		SegmentTypeFfi.FIGURE -> "Figure"
+		SegmentTypeFfi.PARAGRAPH -> t("Paragraph")
+		SegmentTypeFfi.LINE -> t("Line")
+		SegmentTypeFfi.HEADING -> t("Heading")
+		SegmentTypeFfi.LINK -> t("Link")
+		SegmentTypeFfi.SECTION -> t("Section")
+		SegmentTypeFfi.PAGE -> t("Page")
+		SegmentTypeFfi.LIST -> t("List")
+		SegmentTypeFfi.LIST_ITEM -> t("List Item")
+		SegmentTypeFfi.TABLE -> t("Table")
+		SegmentTypeFfi.SEPARATOR -> t("Separator")
+		SegmentTypeFfi.IMAGE -> t("Image")
+		SegmentTypeFfi.FIGURE -> t("Figure")
 	}
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -81,7 +81,7 @@ fun TtsBottomBar(
 						Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
 					},
 					modifier = Modifier.clearAndSetSemantics {
-						contentDescription = "Navigation unit"
+						contentDescription = t("Navigation unit")
 						stateDescription = segmentTypeName
 						progressBarRangeInfo = ProgressBarRangeInfo(
 							current = (SEEK_RANGE / 2).toFloat(),
@@ -133,7 +133,7 @@ fun TtsBottomBar(
 					.combinedClickable(onClick = onPlayPause)
 					.clearAndSetSemantics {
 						role = Role.Button
-						contentDescription = if (isSpeaking) "Pause" else "Play"
+						contentDescription = if (isSpeaking) t("Pause") else t("Play")
 						stateDescription = ZWSP
 						progressBarRangeInfo = ProgressBarRangeInfo(
 							current = (SEEK_RANGE / 2).toFloat(),
