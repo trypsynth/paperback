@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.lazy.items as lazyItems
+import dev.paperback.mobile.t
 
 @OptIn(ExperimentalMaterial3Api::class, kotlinx.coroutines.FlowPreview::class)
 @Composable
@@ -240,7 +241,7 @@ fun MainScreen(
 			if (uri != null) {
 				scope.launch(kotlinx.coroutines.Dispatchers.IO) {
 					val success = viewModel.importSettingsFromUri(context, uri)
-					val message = if (success) "Settings imported" else "Failed to import settings"
+					val message = if (success) t("Settings imported") else t("Failed to import settings")
 					kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
 						android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
 					}
@@ -255,7 +256,7 @@ fun MainScreen(
 			if (uri != null) {
 				scope.launch(kotlinx.coroutines.Dispatchers.IO) {
 					val success = viewModel.exportSettingsToUri(context, uri)
-					val message = if (success) "Settings exported" else "Failed to export settings"
+					val message = if (success) t("Settings exported") else t("Failed to export settings")
 					kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
 						android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
 					}
@@ -302,9 +303,9 @@ fun MainScreen(
 							exportSettingsLauncher.launch("document.paperback")
 						} else {
 							if (viewModel.exportCurrentSettings()) {
-								android.widget.Toast.makeText(context, "Settings exported", android.widget.Toast.LENGTH_SHORT).show()
+								android.widget.Toast.makeText(context, t("Settings exported"), android.widget.Toast.LENGTH_SHORT).show()
 							} else {
-								android.widget.Toast.makeText(context, "Failed to export settings", android.widget.Toast.LENGTH_SHORT).show()
+								android.widget.Toast.makeText(context, t("Failed to export settings"), android.widget.Toast.LENGTH_SHORT).show()
 							}
 						}
 					}
@@ -370,7 +371,7 @@ fun MainScreen(
 			when (state) {
 				MainScreenUiState.Idle -> {
 					Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-						Text("No document open. Please open a book.")
+						Text(t("No document open. Please open a book."))
 					}
 				}
 				MainScreenUiState.Loading -> {
@@ -415,7 +416,7 @@ fun MainScreen(
 									onClick = { recentsDialogOpen = true },
 									modifier = Modifier.padding(top = 8.dp)
 								) {
-									Text("Recent Documents")
+									Text(t("Recent Documents"))
 								}
 							}
 						}
@@ -465,15 +466,15 @@ fun MainScreen(
 									modifier = Modifier.padding(16.dp).semantics {
 										val actions = mutableListOf<CustomAccessibilityAction>()
 										if (activeSearchQuery != null && activeSearchOptions != null) {
-											actions.add(CustomAccessibilityAction("Find Next") {
+											actions.add(CustomAccessibilityAction(t("Find Next")) {
 												viewModel.triggerFindNext()
 												true
 											})
-											actions.add(CustomAccessibilityAction("Find Previous") {
+											actions.add(CustomAccessibilityAction(t("Find Previous")) {
 												viewModel.triggerFindPrevious()
 												true
 											})
-											actions.add(CustomAccessibilityAction("Close Search") {
+											actions.add(CustomAccessibilityAction(t("Close Search")) {
 												viewModel.clearSearch()
 												true
 											})
@@ -493,7 +494,7 @@ fun MainScreen(
 										color = MaterialTheme.colorScheme.onSurfaceVariant,
 										modifier = Modifier.semantics {
 											customActions = listOf(
-												CustomAccessibilityAction("Cancel sleep timer") {
+												CustomAccessibilityAction(t("Cancel sleep timer")) {
 													viewModel.cancelSleepTimer()
 													true
 												}
@@ -695,7 +696,7 @@ fun MainScreen(
 				.fillMaxSize()
 				.background(Color.Black)
 				.pointerInput(Unit) { detectTapGestures { isScreenDimmed = false } }
-				.semantics { contentDescription = "Screen dimmed by sleep timer. Tap to wake." }
+				.semantics { contentDescription = t("Screen dimmed by sleep timer. Tap to wake.") }
 		)
 	}
 	if (passwordPromptUri != null) {
@@ -709,16 +710,16 @@ fun MainScreen(
 		AlertDialog(
 			onDismissRequest = { viewModel.cancelImportSettings() },
 			modifier = Modifier.semantics { paneTitle = "Import document data" },
-			title = { Text("Import document data") },
-			text = { Text("A .paperback file was found for this document. Would you like to import it?") },
+			title = { Text(t("Import document data")) },
+			text = { Text(t("A .paperback file was found for this document. Would you like to import it?")) },
 			confirmButton = {
 				TextButton(onClick = { viewModel.confirmImportSettings() }) {
-					Text("Import")
+					Text(t("Import"))
 				}
 			},
 			dismissButton = {
 				TextButton(onClick = { viewModel.cancelImportSettings() }) {
-					Text("Cancel")
+					Text(t("Cancel"))
 				}
 			}
 		)
@@ -816,11 +817,11 @@ fun MainScreen(
 				scope.launch(kotlinx.coroutines.Dispatchers.IO) {
 					if (viewModel.importSettingsFromUri(context, uri)) {
 						launch(kotlinx.coroutines.Dispatchers.Main) {
-							android.widget.Toast.makeText(context, "Settings imported", android.widget.Toast.LENGTH_SHORT).show()
+							android.widget.Toast.makeText(context, t("Settings imported"), android.widget.Toast.LENGTH_SHORT).show()
 						}
 					} else {
 						launch(kotlinx.coroutines.Dispatchers.Main) {
-							android.widget.Toast.makeText(context, "Failed to import settings", android.widget.Toast.LENGTH_SHORT).show()
+							android.widget.Toast.makeText(context, t("Failed to import settings"), android.widget.Toast.LENGTH_SHORT).show()
 						}
 					}
 				}

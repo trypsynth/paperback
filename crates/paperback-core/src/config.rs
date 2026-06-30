@@ -812,6 +812,30 @@ impl ConfigManager {
 		self.dirty.set(true);
 	}
 
+	pub fn rename_document_path(&self, old_path: &str, new_path: &str) {
+		if !self.initialized {
+			return;
+		}
+		let mut data = self.data.borrow_mut();
+		for p in &mut data.recent_documents {
+			if p == old_path {
+				*p = new_path.to_string();
+			}
+		}
+		for p in &mut data.opened_documents {
+			if p == old_path {
+				*p = new_path.to_string();
+			}
+		}
+		if let Some(doc_key) = data.path_hashes.remove(old_path) {
+			data.path_hashes.insert(new_path.to_string(), doc_key.clone());
+			if let Some(doc) = data.documents.get_mut(&doc_key) {
+				doc.path = new_path.to_string();
+			}
+		}
+		self.dirty.set(true);
+	}
+
 	pub fn get_all_documents(&self) -> Vec<String> {
 		if !self.initialized {
 			return Vec::new();

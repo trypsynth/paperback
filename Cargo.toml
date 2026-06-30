@@ -24,4 +24,4 @@ panic = "abort"
 codegen-units = 1
 
 [patch.crates-io]
-wxdragon = { git = "https://github.com/trypsynth/wxDragon", branch = "macos-accessibility-label" }
+wxdragon = { git = "https://github.com/AllenDang/wxDragon" }

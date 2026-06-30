@@ -18,21 +18,21 @@ struct RuleEditSheet: View {
 	var body: some View {
 		NavigationStack {
 			Form {
-				Section("Rule") {
-					Picker("Scope", selection: $rule.scope) {
-						Text("Word").tag(TtsRule.Scope.word)
-						Text("Paragraph").tag(TtsRule.Scope.paragraph)
+				Section(t("Rule")) {
+					Picker(t("Scope"), selection: $rule.scope) {
+						Text(t("Word")).tag(TtsRule.Scope.word)
+						Text(t("Paragraph")).tag(TtsRule.Scope.paragraph)
 					}
 					.pickerStyle(.wheel)
 				}
 
-				Section("Pattern & Replacement") {
-					TextField("Pattern", text: $rule.pattern)
+				Section(t("Pattern & Replacement")) {
+					TextField(t("Pattern"), text: $rule.pattern)
 						.autocorrectionDisabled()
 						.textInputAutocapitalization(.never)
 						.font(.system(.body, design: .monospaced))
 
-					TextField("Replacement", text: $rule.replacement)
+					TextField(t("Replacement"), text: $rule.replacement)
 						.autocorrectionDisabled()
 						.textInputAutocapitalization(.never)
 						.font(.system(.body, design: .monospaced))
@@ -40,21 +40,21 @@ struct RuleEditSheet: View {
 
 				Section {
 					if rule.scope == .word {
-						Toggle("Whole word only", isOn: $rule.wholeWord)
+						Toggle(t("Whole word only"), isOn: $rule.wholeWord)
 					}
 					if rule.scope == .paragraph {
-						Toggle("Regular expression (\\1 = first capture group)", isOn: Binding(
+						Toggle(t("Regular expression (\\1 = first capture group)"), isOn: Binding(
 							get: { rule.matchType == .regex },
 							set: { rule.matchType = $0 ? .regex : .literal }
 						))
 					}
-					Toggle("Enabled", isOn: $rule.isEnabled)
+					Toggle(t("Enabled"), isOn: $rule.isEnabled)
 				}
 
-				Section("Apply to") {
+				Section(t("Apply to")) {
 					NavigationLink(value: "voiceFilter") {
 						HStack {
-							Text("Voices")
+							Text(t("Voices"))
 							Spacer()
 							Text(rule.voiceFilter.label)
 								.foregroundStyle(.secondary)
@@ -63,14 +63,14 @@ struct RuleEditSheet: View {
 					}
 				}
 			}
-			.navigationTitle(original == nil ? "New Rule" : "Edit Rule")
+			.navigationTitle(original == nil ? t("New Rule") : t("Edit Rule"))
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) {
-					Button("Cancel") { dismiss() }
+					Button(t("Cancel")) { dismiss() }
 				}
 				ToolbarItem(placement: .confirmationAction) {
-					Button("Save") {
+					Button(t("Save")) {
 						onSave(rule)
 						dismiss()
 					}
@@ -97,7 +97,7 @@ private struct VoiceFilterPicker: View {
 	var body: some View {
 		List {
 			Section {
-				filterRow(label: "All voices", isSelected: filter == .all) {
+				filterRow(label: t("All voices"), isSelected: filter == .all) {
 					filter = .all
 					dismiss()
 				}
@@ -122,7 +122,7 @@ private struct VoiceFilterPicker: View {
 				}
 			}
 		}
-		.navigationTitle("Apply To")
+		.navigationTitle(t("Apply To"))
 		.navigationBarTitleDisplayMode(.inline)
 	}
 

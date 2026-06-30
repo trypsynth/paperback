@@ -79,6 +79,15 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 	}
 	println!("Android native build complete.");
 
+	// Generate translation JSON assets for each translated language
+	let po_dir = crate::project_root().join("po");
+	let assets_dir = crate::project_root().join("android/app/src/main/assets");
+	if po_dir.is_dir() {
+		if let Err(e) = patois_build::gen_android_strings(&po_dir, &assets_dir) {
+			println!("Warning: could not generate Android translations: {e}");
+		}
+	}
+
 	if !gradle_tasks.is_empty() {
 		println!("Running gradlew with tasks: {:?}", gradle_tasks);
 		let android_dir = crate::project_root().join("android");

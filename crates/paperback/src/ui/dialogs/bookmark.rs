@@ -14,7 +14,6 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::show_note_entry_dialog;
-use crate::accessibility;
 
 const DIALOG_PADDING: i32 = 10;
 const KEY_DELETE: i32 = 127;
@@ -159,7 +158,8 @@ fn build_bookmark_dialog_ui(dialog: Dialog, initial_filter: BookmarkFilterType) 
 		BookmarkFilterType::All => 0,
 	};
 	filter_choice.set_selection(initial_index);
-	accessibility::set_label(&filter_choice, filter_label_text.replace('&', "").trim_end_matches(':').trim());
+	#[cfg(target_os = "macos")]
+	filter_choice.set_accessibility_label(filter_label_text.replace('&', "").trim_end_matches(':').trim());
 	let filter_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	filter_sizer.add(&filter_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 6);
 	filter_sizer.add(&filter_choice, 1, SizerFlag::Expand, 0);
