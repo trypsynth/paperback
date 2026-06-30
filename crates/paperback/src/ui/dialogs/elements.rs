@@ -2,8 +2,6 @@ use std::{cell::Cell, rc::Rc};
 
 use paperback_core::session::DocumentSession;
 use patois::t;
-#[cfg(not(target_os = "windows"))]
-use wxdragon::ffi;
 use wxdragon::prelude::*;
 
 use crate::accessibility;
@@ -138,10 +136,8 @@ fn populate_elements_dialog_dv(
 	};
 	if let Some(idx) = select_idx {
 		if let Some(item) = item_ids.get(idx) {
-			unsafe {
-				ffi::wxd_DataViewCtrl_Select(headings_tree.handle_ptr(), **item);
-				ffi::wxd_DataViewCtrl_EnsureVisible(headings_tree.handle_ptr(), **item);
-			}
+			headings_tree.select(item);
+			headings_tree.ensure_visible(item);
 		}
 	}
 	let link_data = session.link_list(current_pos);
