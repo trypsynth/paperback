@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 import uniffi.paperback.SearchOptionsFfi
+import dev.paperback.mobile.t
 
 @Composable
 fun SearchBottomBar(

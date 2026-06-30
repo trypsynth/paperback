@@ -14,6 +14,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import dev.paperback.mobile.ui.DocumentTabState
 import uniffi.paperback.DocumentStatsFfi
+import dev.paperback.mobile.t
 
 @Composable
 fun DocumentInfoDialog(

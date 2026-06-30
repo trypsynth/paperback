@@ -40,6 +40,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import uniffi.paperback.HeadingTreeFfi
 import uniffi.paperback.LinkListFfi
+import dev.paperback.mobile.t
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -33,6 +33,7 @@ import kotlinx.coroutines.launch
 import uniffi.paperback.LinkAction
 import uniffi.paperback.MarkerTypeFfi
 import uniffi.paperback.SearchOptionsFfi
+import dev.paperback.mobile.t
 
 @Composable
 fun DocumentTextView(

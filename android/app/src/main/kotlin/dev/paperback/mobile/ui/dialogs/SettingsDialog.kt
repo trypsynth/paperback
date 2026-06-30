@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.unit.dp
+import dev.paperback.mobile.t
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

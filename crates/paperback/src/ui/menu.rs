@@ -411,7 +411,7 @@ pub fn create_menu_bar(config: &ConfigManager) -> MenuBar {
 	let go_label = t("&Go");
 	let tools_label = t("&Tools");
 	let help_label = t("&Help");
-	let builder = MenuBar::builder().append(file_menu, &file_label);
+	let mut builder = MenuBar::builder().append(file_menu, &file_label);
 
 	// All MacOS apps need an Edit menu.
 	// This is where the OS places some items that each app should have, like "Start dictation" or "Emoji and Symbols."

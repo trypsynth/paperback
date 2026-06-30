@@ -26,6 +26,7 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 import uniffi.paperback.SegmentTypeFfi
+import dev.paperback.mobile.t
 
 private const val SEEK_RANGE = 10000
 // Zero-width space: satisfies TalkBack's non-null stateDescription check so it doesn't

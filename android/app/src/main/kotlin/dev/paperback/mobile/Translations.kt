@@ -5,7 +5,7 @@ import org.json.JSONObject
 import java.util.Locale
 
 object Translations {
-	private var map: HashMap<String, String> = HashMap()
+	internal var map: HashMap<String, String> = HashMap()
 
 	fun load(context: Context) {
 		val lang = Locale.getDefault().language

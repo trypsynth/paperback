@@ -24,6 +24,7 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import uniffi.paperback.TocEntry
+import dev.paperback.mobile.t
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

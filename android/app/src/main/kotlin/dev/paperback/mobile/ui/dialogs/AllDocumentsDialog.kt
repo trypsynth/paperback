@@ -12,6 +12,7 @@ import androidx.compose.ui.semantics.*
 import androidx.compose.ui.unit.dp
 import dev.paperback.mobile.ui.RecentDocumentItem
 import androidx.compose.foundation.lazy.items as lazyItems
+import dev.paperback.mobile.t
 
 @Composable
 fun AllDocumentsDialog(
