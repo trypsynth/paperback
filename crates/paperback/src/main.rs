@@ -3,7 +3,6 @@
 
 patois::embed_domain!();
 
-mod accessibility;
 mod config_ext;
 mod ipc;
 mod legacy_config;

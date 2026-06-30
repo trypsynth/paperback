@@ -4,7 +4,6 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::DIALOG_PADDING;
-use crate::accessibility;
 
 pub fn show_open_as_dialog(parent: &Frame, path: &Path) -> Option<String> {
 	let title = t("Open As");
@@ -19,7 +18,8 @@ pub fn show_open_as_dialog(parent: &Frame, path: &Path) -> Option<String> {
 	format_combo.append(&t("HTML"));
 	format_combo.append(&t("Markdown"));
 	format_combo.set_selection(0);
-	accessibility::set_label(&format_combo, format_label_text.replace('&', "").trim_end_matches(':').trim());
+	#[cfg(target_os = "macos")]
+	format_combo.set_accessibility_label(format_label_text.replace('&', "").trim_end_matches(':').trim());
 	let ok_label = t("OK");
 	let ok_button = Button::builder(&dialog).with_label(&ok_label).build();
 	let cancel_label = t("Cancel");
