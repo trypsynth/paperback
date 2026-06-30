@@ -106,9 +106,7 @@ impl Parser for PdfParser {
 									current_chars.clear();
 									current_mcid = char_mcid;
 								}
-								let (mut x, mut y) = (0.0, 0.0);
-								let _ = text_page.get_char_origin(i, &mut x, &mut y);
-								current_chars.push((ch, x as f32));
+								current_chars.push((ch, char_x_origin(&text_page, i)));
 							}
 						}
 						if current_mcid >= 0 && !current_chars.is_empty() {
@@ -357,6 +355,12 @@ fn sanitize_pdf_text(input: &str) -> String {
 	input.chars().filter(|&ch| (!ch.is_control() || matches!(ch, '\n' | '\r' | '\t')) && ch != '\u{00AD}').collect()
 }
 
+fn char_x_origin(text_page: &PdfiumTextPage, i: i32) -> f32 {
+	let (mut x, mut y) = (0.0, 0.0);
+	let _ = text_page.get_char_origin(i, &mut x, &mut y);
+	x as f32
+}
+
 fn extract_text_lines(text_page: &PdfiumTextPage) -> Vec<(String, f64)> {
 	let Ok(char_count) = text_page.char_count() else {
 		let raw = sanitize_pdf_text(&text_page.full()).replace('\r', "");
@@ -381,9 +385,7 @@ fn extract_text_lines(text_page: &PdfiumTextPage) -> Vec<(String, f64)> {
 			if size > 0.0 {
 				current_sizes.push(size);
 			}
-			let (mut x, mut y) = (0.0, 0.0);
-			let _ = text_page.get_char_origin(i, &mut x, &mut y);
-			current_chars.push((ch, x as f32));
+			current_chars.push((ch, char_x_origin(&text_page, i)));
 		}
 	}
 	if !current_chars.is_empty() {

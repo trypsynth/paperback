@@ -2,17 +2,18 @@ use icu_properties::{
 	CodePointMapData,
 	props::{BidiClass, BidiMirroringGlyph},
 };
-
-/// Resolved coarse direction of a character.
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
-enum Strong {
-	Ltr,
-	Rtl,
-}
+use unicode_bidi::{BidiInfo, Level};
 
 /// True when some maximal run of consecutive RTL-strong base characters is stored
 /// left-to-right (x increasing) — i.e. visual order that needs reversing. Combining
 /// marks are transparent; any non-RTL strong/neutral/space breaks the current run.
+/// Also covers the "no RTL character at all" case (the loop simply never enters the
+/// RTL branch), so callers need no separate "any RTL" pre-check.
+///
+/// The `0.5` threshold is half a PDF user-space unit (typically 1/72 inch at the
+/// default, unscaled CTM): glyph x-origins within that distance are treated as the
+/// "same position" jitter PDF producers emit for stacked/overlapping marks, not a
+/// genuine left-to-right step.
 fn has_visual_rtl_run(chars: &[(char, f32)], bidi: icu_properties::CodePointMapDataBorrowed<BidiClass>) -> bool {
 	let mut prev_x: Option<f32> = None;
 	for &(c, x) in chars {
@@ -32,21 +33,11 @@ fn has_visual_rtl_run(chars: &[(char, f32)], bidi: icu_properties::CodePointMapD
 	false
 }
 
-const fn strong_dir(bc: BidiClass) -> Option<Strong> {
-	match bc {
-		BidiClass::LeftToRight => Some(Strong::Ltr),
-		BidiClass::RightToLeft | BidiClass::ArabicLetter => Some(Strong::Rtl),
-		_ => None,
-	}
-}
-
 /// One base character plus the combining marks that attach to it, in logical
 /// (base-first) order.
 struct Cluster {
 	ch: char,
 	x: f32,
-	dir: Option<Strong>,
-	is_space: bool,
 	marks: Vec<char>,
 }
 
@@ -62,17 +53,14 @@ struct Cluster {
 #[must_use]
 pub fn reorder_line(chars: &[(char, f32)]) -> String {
 	let bidi = CodePointMapData::<BidiClass>::new();
-	// Fast path: nothing right-to-left → return input verbatim.
-	if !chars.iter().any(|&(c, _)| matches!(bidi.get(c), BidiClass::RightToLeft | BidiClass::ArabicLetter)) {
-		return chars.iter().map(|&(c, _)| c).collect();
-	}
 
-	// Only reorder when an RTL run is actually stored in *visual* (reversed) order.
-	// Many PDFs (and all faithfully-exported vocalized Hebrew) already store RTL
-	// text in logical order with x decreasing right-to-left; re-deriving order from
-	// x there is a no-op at best and, because producers sprinkle stray spaces with
-	// imprecise x, can wrongly relocate them. Leaving already-logical lines byte-for-
-	// byte untouched guarantees no regression on correctly-stored documents.
+	// Fast path, covering both "nothing right-to-left" and "RTL present but already
+	// stored in logical order": return input verbatim, in a single scan. Many PDFs
+	// (and all faithfully-exported vocalized Hebrew) already store RTL text in
+	// logical order with x decreasing right-to-left; re-deriving order from x there
+	// is a no-op at best and, because producers sprinkle stray spaces with imprecise
+	// x, can wrongly relocate them. Leaving already-logical lines byte-for-byte
+	// untouched guarantees no regression on correctly-stored documents.
 	if !has_visual_rtl_run(chars, bidi) {
 		return chars.iter().map(|&(c, _)| c).collect();
 	}
@@ -87,7 +75,7 @@ pub fn reorder_line(chars: &[(char, f32)]) -> String {
 		if bc == BidiClass::NonspacingMark {
 			mark_targets.push((c, x));
 		} else {
-			clusters.push(Cluster { ch: c, x, dir: strong_dir(bc), is_space: c.is_whitespace(), marks: Vec::new() });
+			clusters.push(Cluster { ch: c, x, marks: Vec::new() });
 		}
 	}
 	if clusters.is_empty() {
@@ -100,7 +88,7 @@ pub fn reorder_line(chars: &[(char, f32)]) -> String {
 		let pick = clusters
 			.iter()
 			.enumerate()
-			.filter(|(_, cl)| !cl.is_space)
+			.filter(|(_, cl)| !cl.ch.is_whitespace())
 			.min_by(|a, b| dist(a.1).total_cmp(&dist(b.1)))
 			.or_else(|| clusters.iter().enumerate().min_by(|a, b| dist(a.1).total_cmp(&dist(b.1))))
 			.map(|(i, _)| i);
@@ -112,87 +100,47 @@ pub fn reorder_line(chars: &[(char, f32)]) -> String {
 	// 2. Sort clusters by ascending x → true visual (left-to-right) order.
 	clusters.sort_by(|a, b| a.x.total_cmp(&b.x));
 
-	// 3. Resolve a base/paragraph direction from the strong-character majority.
+	// 3. Determine the paragraph base direction from the strong-character majority,
+	//    overriding the Unicode Bidi Algorithm's own first-strong-character (P2/P3)
+	//    detection: a line that opens with punctuation or a short embedded word in
+	//    the other script would otherwise pick the wrong base direction for the
+	//    dominant script.
 	let (mut rtl, mut ltr) = (0usize, 0usize);
 	for cl in &clusters {
-		match cl.dir {
-			Some(Strong::Rtl) => rtl += 1,
-			Some(Strong::Ltr) => ltr += 1,
-			None => {}
+		match bidi.get(cl.ch) {
+			BidiClass::RightToLeft | BidiClass::ArabicLetter => rtl += 1,
+			BidiClass::LeftToRight => ltr += 1,
+			_ => {}
 		}
 	}
 	let base_rtl = rtl >= ltr && rtl > 0;
-	let base = if base_rtl { Strong::Rtl } else { Strong::Ltr };
+	let base_level = if base_rtl { Level::rtl() } else { Level::ltr() };
 
-	// 4. Resolve neutral runs (UBA N1/N2): a neutral takes the surrounding strong
-	//    direction when both sides agree, else the paragraph base direction.
-	let n = clusters.len();
-	let mut resolved: Vec<Strong> = vec![base; n];
-	let mut i = 0;
-	let mut prev_strong = base;
-	while i < n {
-		match clusters[i].dir {
-			Some(d) => {
-				resolved[i] = d;
-				prev_strong = d;
-				i += 1;
-			}
-			None => {
-				let start = i;
-				while i < n && clusters[i].dir.is_none() {
-					i += 1;
-				}
-				let next_strong = if i < n { clusters[i].dir.unwrap() } else { base };
-				let run_dir = if prev_strong == next_strong { prev_strong } else { base };
-				for r in resolved.iter_mut().take(i).skip(start) {
-					*r = run_dir;
-				}
-			}
-		}
-	}
-
-	// 5. Assign embedding levels and apply the Unicode Bidi rule L2: reverse, from
-	//    the highest level down to the lowest odd level, every contiguous run whose
-	//    level is at or above the current level. With a single embedding this is
-	//    levels {0,1} for an LTR base (reverse RTL runs) and {1,2} for an RTL base
-	//    (reverse LTR runs, then reverse the whole line).
-	let base_level: u8 = u8::from(base_rtl);
-	let levels: Vec<u8> = resolved
-		.iter()
-		.map(|d| match d {
-			Strong::Rtl => 1,
-			Strong::Ltr => base_level + base_level, // 0 for LTR base, 2 for RTL base
-		})
-		.collect();
+	// 4. Resolve per-character embedding levels (UBA rules N0-N3, L1), delegated to
+	//    `unicode_bidi`. The x-sorted cluster text is fed in as if it were logical
+	//    order: resolving levels and reordering (L2) a single-embedding paragraph is
+	//    a self-inverse transform, so running the standard logical→visual reorder
+	//    over this pretend-logical (actually visual) text recovers the true logical
+	//    order.
+	let base_text: String = clusters.iter().map(|cl| cl.ch).collect();
+	let bidi_info = BidiInfo::new_with_data_source(&bidi, &base_text, Some(base_level));
+	let para = &bidi_info.paragraphs[0];
+	let char_levels = bidi_info.reordered_levels_per_char(para, para.range.clone());
 
 	// Mirror paired punctuation that sits at an odd (right-to-left) level.
 	let mirror = CodePointMapData::<BidiMirroringGlyph>::new();
-	for (cl, &lvl) in clusters.iter_mut().zip(levels.iter()) {
-		if lvl % 2 == 1
+	for (cl, lvl) in clusters.iter_mut().zip(&char_levels) {
+		if lvl.is_rtl()
 			&& let Some(m) = mirror.get(cl.ch).mirroring_glyph
 		{
 			cl.ch = m;
 		}
 	}
 
-	let mut order: Vec<usize> = (0..n).collect();
-	let max_level = levels.iter().copied().max().unwrap_or(0);
-	let mut lvl = max_level;
-	while lvl >= 1 {
-		let mut k = 0;
-		while k < n {
-			if levels[order[k]] >= lvl {
-				let start = k;
-				while k < n && levels[order[k]] >= lvl {
-					k += 1;
-				}
-				order[start..k].reverse();
-			} else {
-				k += 1;
-			}
-		}
-		lvl -= 1;
-	}
+	// 5. Apply the Unicode Bidi rule L2 (reverse, from the highest level down to the
+	//    lowest odd level, every contiguous run whose level is at or above the
+	//    current level) to recover the logical order.
+	let order = BidiInfo::reorder_visual(&char_levels);
 
 	// 6. Emit clusters in final order: each base followed by its marks.
 	let mut out = String::with_capacity(chars.len());
