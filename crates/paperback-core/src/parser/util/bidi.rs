@@ -1,23 +1,3 @@
-//! Geometry-driven visual→logical reordering for RTL text extracted from PDFs.
-//!
-//! pdfium returns glyphs in the order they were painted, which for right-to-left
-//! scripts (Hebrew, Arabic, …) is frequently *visual* order: the consonants come
-//! out reversed and combining marks (niqqud / harakat) are detached from their
-//! base letter. Other engines (MuPDF) reorder to logical order; pdfium does not,
-//! and exposes no API to do so, so we reconstruct logical order here.
-//!
-//! Unlike a pure codepoint Unicode Bidi Algorithm pass, we have the **x origin**
-//! of every glyph. That is decisive: PDFs are inconsistent about whether a given
-//! RTL run was stored visually or logically, and the x coordinate disambiguates
-//! them (within an RTL run, logical reading order is right-to-left = descending x).
-//! Character classification (strong direction, combining marks, bracket mirroring)
-//! comes from `icu_properties` so every RTL script — not just Hebrew — is covered.
-//!
-//! Scope: this fixes consonant/word **order** and re-attaches combining marks to
-//! the base whose x position they match. It deliberately does not try to repair
-//! duplicated/biased diacritics that some PDF producers bake into the glyph stream
-//! (a generation-time defect every faithful extractor reproduces).
-
 use icu_properties::{
 	CodePointMapData,
 	props::{BidiClass, BidiMirroringGlyph},
