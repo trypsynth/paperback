@@ -5,7 +5,10 @@ use pdfium::{PdfiumDocument, PdfiumError, PdfiumTextPage, lib};
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
-	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, Parser, util::path::extract_title_from_path},
+	parser::{
+		PASSWORD_REQUIRED_ERROR_PREFIX, Parser,
+		util::{bidi, path::extract_title_from_path},
+	},
 	t,
 	util::text::{collapse_whitespace, display_len, trim_string},
 };
@@ -73,7 +76,9 @@ impl Parser for PdfParser {
 					let mut mcid_char_count: usize = 0;
 					if let Ok(char_count) = text_page.char_count() {
 						let mut current_mcid = -1;
-						let mut current_text = String::new();
+						// Chars of the current marked-content run with their x origin, so RTL runs
+						// can be reordered visual→logical per run.
+						let mut current_chars: Vec<(char, f32)> = Vec::new();
 						for i in 0..char_count {
 							let unicode = text_page.get_unicode(i);
 							if let Some(ch) = char::from_u32(unicode) {
@@ -92,17 +97,22 @@ impl Parser for PdfParser {
 									}
 								}
 								if char_mcid >= 0 && char_mcid != current_mcid {
-									if current_mcid >= 0 && !current_text.is_empty() {
-										mcid_to_text.entry(current_mcid).or_default().push_str(&current_text);
+									if current_mcid >= 0 && !current_chars.is_empty() {
+										mcid_to_text
+											.entry(current_mcid)
+											.or_default()
+											.push_str(&bidi::reorder_line(&current_chars));
 									}
-									current_text.clear();
+									current_chars.clear();
 									current_mcid = char_mcid;
 								}
-								current_text.push(ch);
+								let (mut x, mut y) = (0.0, 0.0);
+								let _ = text_page.get_char_origin(i, &mut x, &mut y);
+								current_chars.push((ch, x as f32));
 							}
 						}
-						if current_mcid >= 0 && !current_text.is_empty() {
-							mcid_to_text.entry(current_mcid).or_default().push_str(&current_text);
+						if current_mcid >= 0 && !current_chars.is_empty() {
+							mcid_to_text.entry(current_mcid).or_default().push_str(&bidi::reorder_line(&current_chars));
 						}
 					}
 					let coverage =
@@ -353,14 +363,16 @@ fn extract_text_lines(text_page: &PdfiumTextPage) -> Vec<(String, f64)> {
 		return raw.lines().map(|l| (l.to_string(), 0.0)).collect();
 	};
 	let mut result: Vec<(String, f64)> = Vec::new();
-	let mut current_line = String::new();
+	// Chars of the current visual line with their x origin, so each line can be
+	// reordered visual→logical (handles RTL scripts) before paragraph joining.
+	let mut current_chars: Vec<(char, f32)> = Vec::new();
 	let mut current_sizes: Vec<f64> = Vec::new();
 	for i in 0..char_count {
 		let unicode = text_page.get_unicode(i);
 		let Some(ch) = char::from_u32(unicode) else { continue };
 		if ch == '\n' || ch == '\r' {
 			let size = sorted_median(&mut current_sizes);
-			result.push((std::mem::take(&mut current_line), size));
+			result.push((bidi::reorder_line(&std::mem::take(&mut current_chars)), size));
 			current_sizes.clear();
 		} else if (ch.is_control() && !matches!(ch, '\t')) || ch == '\u{00AD}' {
 			continue;
@@ -369,12 +381,14 @@ fn extract_text_lines(text_page: &PdfiumTextPage) -> Vec<(String, f64)> {
 			if size > 0.0 {
 				current_sizes.push(size);
 			}
-			current_line.push(ch);
+			let (mut x, mut y) = (0.0, 0.0);
+			let _ = text_page.get_char_origin(i, &mut x, &mut y);
+			current_chars.push((ch, x as f32));
 		}
 	}
-	if !current_line.is_empty() {
+	if !current_chars.is_empty() {
 		let size = sorted_median(&mut current_sizes);
-		result.push((current_line, size));
+		result.push((bidi::reorder_line(&current_chars), size));
 	}
 	result
 }

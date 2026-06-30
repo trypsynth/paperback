@@ -1679,6 +1679,7 @@ dependencies = [
  "cfb",
  "ego-tree",
  "encoding_rs",
+ "icu_properties",
  "libchm",
  "office-crypto",
  "pdfium",
