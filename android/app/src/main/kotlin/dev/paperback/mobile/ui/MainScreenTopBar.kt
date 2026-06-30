@@ -3,6 +3,7 @@ package dev.paperback.mobile.ui
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -51,6 +52,7 @@ fun MainScreenTopBar(
 			.fillMaxWidth()
 			.windowInsetsPadding(WindowInsets.statusBars)
 			.padding(horizontal = 16.dp, vertical = 8.dp)
+			.semantics { isTraversalGroup = true }
 	) {
 		val titleText = if (state is MainScreenUiState.Success) {
 			state.activeTab?.title ?: "Paperback"
@@ -67,11 +69,11 @@ fun MainScreenTopBar(
 			}
 		)
 		Row(
-			modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp).semantics { isTraversalGroup = true },
+			modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
 			horizontalArrangement = Arrangement.SpaceBetween,
 			verticalAlignment = Alignment.Top
 		) {
-			Column(horizontalAlignment = Alignment.Start, modifier = Modifier.semantics { isTraversalGroup = true }) {
+			Column(horizontalAlignment = Alignment.Start) {
 				var openBookMenuExpanded by remember { mutableStateOf(false) }
 				Box {
 					Surface(
@@ -129,7 +131,7 @@ fun MainScreenTopBar(
 				}
 			}
 			if (state is MainScreenUiState.Success && state.tabs.isNotEmpty()) {
-				Box(modifier = Modifier.semantics { isTraversalGroup = true }) {
+				Box {
 					IconButton(
 						onClick = { moreOptionsExpanded = true },
 						modifier = Modifier.semantics {
@@ -139,7 +141,7 @@ fun MainScreenTopBar(
 								true
 							}
 							customActions = mutableListOf<CustomAccessibilityAction>().apply {
-								if ((state as MainScreenUiState.Success).activeTab != null) {
+								if (state.activeTab != null) {
 									add(
 										CustomAccessibilityAction(t("Table of Contents")) {
 											onTocOpen()
@@ -218,7 +220,7 @@ fun MainScreenTopBar(
 						expanded = moreOptionsExpanded,
 						onDismissRequest = { moreOptionsExpanded = false }
 					) {
-						if ((state as MainScreenUiState.Success).activeTab != null) {
+						if (state.activeTab != null) {
 							DropdownMenuItem(
 								text = { Text(t("Table of Contents")) },
 								onClick = {
@@ -299,6 +301,17 @@ fun MainScreenTopBar(
 								onSettingsOpen()
 							}
 						)
+					}
+				}
+			} else {
+				Box {
+					IconButton(
+						onClick = { onSettingsOpen() },
+						modifier = Modifier.semantics {
+							traversalIndex = -1f
+						}
+					) {
+						Icon(Icons.Filled.Settings, contentDescription = "Settings")
 					}
 				}
 			}
