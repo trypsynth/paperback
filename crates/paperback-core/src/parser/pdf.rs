@@ -76,9 +76,9 @@ impl Parser for PdfParser {
 					let mut mcid_char_count: usize = 0;
 					if let Ok(char_count) = text_page.char_count() {
 						let mut current_mcid = -1;
-						// Chars of the current marked-content run with their x origin, so RTL runs
-						// can be reordered visual→logical per run.
-						let mut current_chars: Vec<(char, f32)> = Vec::new();
+						// Chars of the current marked-content run with their pdfium index, so RTL
+						// runs can be reordered visual→logical per run.
+						let mut current_chars: Vec<(char, i32)> = Vec::new();
 						for i in 0..char_count {
 							let unicode = text_page.get_unicode(i);
 							if let Some(ch) = char::from_u32(unicode) {
@@ -101,16 +101,19 @@ impl Parser for PdfParser {
 										mcid_to_text
 											.entry(current_mcid)
 											.or_default()
-											.push_str(&bidi::reorder_line(&current_chars));
+											.push_str(&reorder_run(&text_page, &current_chars));
 									}
 									current_chars.clear();
 									current_mcid = char_mcid;
 								}
-								current_chars.push((ch, char_x_origin(&text_page, i)));
+								current_chars.push((ch, i));
 							}
 						}
 						if current_mcid >= 0 && !current_chars.is_empty() {
-							mcid_to_text.entry(current_mcid).or_default().push_str(&bidi::reorder_line(&current_chars));
+							mcid_to_text
+								.entry(current_mcid)
+								.or_default()
+								.push_str(&reorder_run(&text_page, &current_chars));
 						}
 					}
 					let coverage =
@@ -361,22 +364,34 @@ fn char_x_origin(text_page: &PdfiumTextPage, i: i32) -> f32 {
 	x as f32
 }
 
+/// Assemble one run of `(char, pdfium index)` pairs into text, reordering
+/// visual→logical for RTL scripts. Fetches x origins (a per-char FFI call)
+/// only when the run actually contains an RTL character, so pure-LTR runs —
+/// the overwhelming majority — pay a single cheap classification scan instead.
+fn reorder_run(text_page: &PdfiumTextPage, chars: &[(char, i32)]) -> String {
+	if !bidi::contains_rtl(chars.iter().map(|&(c, _)| c)) {
+		return chars.iter().map(|&(c, _)| c).collect();
+	}
+	let with_origin: Vec<(char, f32)> = chars.iter().map(|&(c, i)| (c, char_x_origin(text_page, i))).collect();
+	bidi::reorder_line(&with_origin)
+}
+
 fn extract_text_lines(text_page: &PdfiumTextPage) -> Vec<(String, f64)> {
 	let Ok(char_count) = text_page.char_count() else {
 		let raw = sanitize_pdf_text(&text_page.full()).replace('\r', "");
 		return raw.lines().map(|l| (l.to_string(), 0.0)).collect();
 	};
 	let mut result: Vec<(String, f64)> = Vec::new();
-	// Chars of the current visual line with their x origin, so each line can be
+	// Chars of the current visual line with their pdfium index, so each line can be
 	// reordered visual→logical (handles RTL scripts) before paragraph joining.
-	let mut current_chars: Vec<(char, f32)> = Vec::new();
+	let mut current_chars: Vec<(char, i32)> = Vec::new();
 	let mut current_sizes: Vec<f64> = Vec::new();
 	for i in 0..char_count {
 		let unicode = text_page.get_unicode(i);
 		let Some(ch) = char::from_u32(unicode) else { continue };
 		if ch == '\n' || ch == '\r' {
 			let size = sorted_median(&mut current_sizes);
-			result.push((bidi::reorder_line(&std::mem::take(&mut current_chars)), size));
+			result.push((reorder_run(text_page, &std::mem::take(&mut current_chars)), size));
 			current_sizes.clear();
 		} else if (ch.is_control() && !matches!(ch, '\t')) || ch == '\u{00AD}' {
 			continue;
@@ -385,12 +400,12 @@ fn extract_text_lines(text_page: &PdfiumTextPage) -> Vec<(String, f64)> {
 			if size > 0.0 {
 				current_sizes.push(size);
 			}
-			current_chars.push((ch, char_x_origin(&text_page, i)));
+			current_chars.push((ch, i));
 		}
 	}
 	if !current_chars.is_empty() {
 		let size = sorted_median(&mut current_sizes);
-		result.push((bidi::reorder_line(&current_chars), size));
+		result.push((reorder_run(text_page, &current_chars), size));
 	}
 	result
 }

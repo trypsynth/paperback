@@ -33,6 +33,14 @@ fn has_visual_rtl_run(chars: &[(char, f32)], bidi: icu_properties::CodePointMapD
 	false
 }
 
+/// Cheap presence check for whether `chars` contains any strong RTL character,
+/// with no x-origin needed. Callers use this to skip fetching origins entirely
+/// for runs that turn out to be pure LTR — the overwhelming majority of text.
+pub fn contains_rtl(mut chars: impl Iterator<Item = char>) -> bool {
+	let bidi = CodePointMapData::<BidiClass>::new();
+	chars.any(|c| matches!(bidi.get(c), BidiClass::RightToLeft | BidiClass::ArabicLetter))
+}
+
 /// One base character plus the combining marks that attach to it, in logical
 /// (base-first) order.
 struct Cluster {
@@ -78,19 +86,14 @@ pub fn reorder_line(chars: &[(char, f32)]) -> String {
 			clusters.push(Cluster { ch: c, x, marks: Vec::new() });
 		}
 	}
-	if clusters.is_empty() {
-		// Marks only (degenerate); preserve input order.
-		return chars.iter().map(|&(c, _)| c).collect();
-	}
 	for (mc, mx) in mark_targets {
-		// Nearest non-whitespace cluster; fall back to nearest of any kind.
+		// Nearest non-whitespace cluster; fall back to nearest of any kind
+		// (whitespace sorts after non-whitespace at equal distance, for free).
 		let dist = |cl: &Cluster| (cl.x - mx).abs();
 		let pick = clusters
 			.iter()
 			.enumerate()
-			.filter(|(_, cl)| !cl.ch.is_whitespace())
-			.min_by(|a, b| dist(a.1).total_cmp(&dist(b.1)))
-			.or_else(|| clusters.iter().enumerate().min_by(|a, b| dist(a.1).total_cmp(&dist(b.1))))
+			.min_by(|a, b| a.1.ch.is_whitespace().cmp(&b.1.ch.is_whitespace()).then(dist(a.1).total_cmp(&dist(b.1))))
 			.map(|(i, _)| i);
 		if let Some(i) = pick {
 			clusters[i].marks.push(mc);
@@ -157,11 +160,6 @@ pub fn reorder_line(chars: &[(char, f32)]) -> String {
 mod tests {
 	use super::reorder_line;
 
-	/// Helper: build an input line with synthetic descending/ascending x.
-	fn line(chars: &[(char, f32)]) -> String {
-		reorder_line(chars)
-	}
-
 	#[test]
 	fn pure_latin_is_unchanged() {
 		let input: Vec<(char, f32)> = "Hello, world. (test)".chars().enumerate().map(|(i, c)| (c, i as f32)).collect();
@@ -186,7 +184,7 @@ mod tests {
 			('\u{05D9}', 473.80), // yod
 		];
 		// Logical: yod+holam, aleph, bet+patach, dalet.
-		assert_eq!(line(&input), "\u{05D9}\u{05B9}\u{05D0}\u{05D1}\u{05B7}\u{05D3}");
+		assert_eq!(reorder_line(&input), "\u{05D9}\u{05B9}\u{05D0}\u{05D1}\u{05B7}\u{05D3}");
 	}
 
 	#[test]
@@ -197,7 +195,7 @@ mod tests {
 			('\u{05DE}', 234.02), // mem
 			('\u{05D3}', 228.41), // dalet
 		];
-		assert_eq!(line(&input), "\u{05E2}\u{05DE}\u{05D3}"); // עמד
+		assert_eq!(reorder_line(&input), "\u{05E2}\u{05DE}\u{05D3}"); // עמד
 	}
 
 	#[test]
@@ -209,7 +207,7 @@ mod tests {
 			('\u{0644}', 30.0), // lam
 			('\u{0633}', 40.0), // seen  (logical first)
 		];
-		assert_eq!(line(&input), "\u{0633}\u{0644}\u{0627}\u{0645}");
+		assert_eq!(reorder_line(&input), "\u{0633}\u{0644}\u{0627}\u{0645}");
 	}
 
 	#[test]
@@ -221,7 +219,7 @@ mod tests {
 			('\u{064E}', 20.2), // fatha → nearest base seen
 		];
 		// logical: seen+fatha, beh
-		assert_eq!(line(&input), "\u{0633}\u{064E}\u{0628}");
+		assert_eq!(reorder_line(&input), "\u{0633}\u{064E}\u{0628}");
 	}
 
 	#[test]
@@ -249,6 +247,6 @@ mod tests {
 			('k', 76.0),
 		];
 		// logical: aleph, bet, space, o, k
-		assert_eq!(line(&input), "\u{05D0}\u{05D1} ok");
+		assert_eq!(reorder_line(&input), "\u{05D0}\u{05D1} ok");
 	}
 }
