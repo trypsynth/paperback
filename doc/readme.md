@@ -6,7 +6,7 @@ Paperback is a lightweight, fast, and accessible ebook and document reader for e
 
 ## System Requirements
 
-Paperback currently runs on Windows 10/11 and Linux. Support for macOS is in the pipeline.
+Paperback currently runs on Windows, macOS, Linux, iOS, and Android.
 
 ## Features
 
@@ -180,6 +180,61 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Tyler Rodick
 
 ## Changelog
+
+### Version 0.9.0
+* Added a cancel button to the update-in-progress dialog.
+* Added a CLI tool, called pb, to quickly convert any of Paperback's supported formats to HTML, Markdown, or plain text.
+* Added a Configurable Shortcut to Restore Paperback from the system tray.
+* Added a locate button to the all documents dialog to locate missing books that just changed their path.
+* Added a readability tab to the options dialog, with the following options:
+    * Word wrap (moved from general);
+    * Render tables inline (new in this release, see below);
+    * Font;
+    * Background color;
+    * Line spacing;
+    * paragraph spacing;
+    * Letter spacing;
+    * Text alignment.
+* Added a toggle to determine how you want tables displayed, and unified how tables are displayed across documents.
+* added a View Source option to open a document's source in a new tab, useful for editing Markdown for example.
+* Added estimated reading time to the word count dialog, as well as the ability to set your reading speed to make this metric actually useful.
+* Added Android support!
+* Added iOS support!
+* Added Linux support!
+* Added macOS support!
+* Added new languages: Dutch, Finish, and Polish.
+* Added support for navigating by container.
+* Added support for lists, list items, figures, and images in CHM documents.
+* Added a word wrap menu item and subsequent hotkey.
+* Allow resizing the webview dialog and make it pop up at a much easier-to-see size.
+* Expanded the export menu item to allow exporting to HTML and Markdown in addition to plain text.
+* Fixed applying word wrap shooting you to the start of your document.
+* Fix daisy books showing incorrect  info in the status bar.
+* Fixed dl, dt, and dd elements not producing line breaks in XHTML documents.
+* Fixed Escape not closing the Document Info and All Documents dialogs.
+* Fixed filepos anchors in Mobi books splitting HTML tags and putting garbage in the book text.
+* Fixed lag when getting near the end of the text field in large documents.
+* Fixed links in legacy mobi books.
+* Fixed parsing RTF documents with non-Latin characters in them.
+* Fixed the title bar not updating after closing a document from the all documents dialog.
+*Fixed word documents with locale-specific style names not rendering their headings properly.
+* Fixed your selected tab not getting properly focused after restarting Paperback.
+* If a selection is active when you open the word count dialog, how many words you have selected will now be shown.
+* Migrated away from chmlib to our own pure-Rust CHM file reader.
+* On desktop, .paperback files will no longer be forcefully loaded on document restoration. Instead, you will be asked for  Confirmation  when the file is found.
+* Paperback now falls back to plain text extraction for falsely-tagged PDFs.
+* Open containing folder now focuses the given file in explorer.
+* Opening the readme will now respect your selected language.
+* PowerPoint documents now support tables.
+* Properly update the menu and set focus to the text control when opening help in paperback.
+* Readme.html will no longer be added to your all documents list when opened via Shift+F1.
+* Removed the broken AZW3 support.
+* Removing documents from the recents dialog will now also close their active tab.
+* Switched to a much more secure method of IPC on Windows.
+* The updater now properly shows the content of markdown code tags in release notes.
+* The updater now validates the downloaded file hasn't been tampered with.
+* The webview is now opened at your current reading position.
+* Your search filter in the all documents dialog is now preserved after removing a document.
 
 ### Version 0.8.5
 * Added page support to epub books.
