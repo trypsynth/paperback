@@ -1,3 +1,4 @@
+pub mod bidi;
 pub mod ooxml;
 pub mod path;
 pub mod toc;
