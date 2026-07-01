@@ -117,10 +117,23 @@ fn track_packaging_inputs() {
 fn build_translations() {
 	let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap_or_default());
 	let workspace_dir = manifest_dir.parent().unwrap().parent().unwrap();
-	let version = env::var("CARGO_PKG_VERSION").unwrap_or_default();
-	let src_dirs = [manifest_dir.join("src")];
-	if let Err(e) = patois_build::gen_pot_from_dirs(&src_dirs, workspace_dir.join("po"), "paperback", &version) {
-		println!("cargo:warning=Failed to regenerate paperback.pot: {e}");
+	let po_dir = workspace_dir.join("po");
+	let pot_file = po_dir.join("paperback.pot");
+	println!("cargo:rerun-if-changed={}", workspace_dir.join("ios/Paperback").display());
+	println!(
+		"cargo:rerun-if-changed={}",
+		workspace_dir.join("android/app/src/main/kotlin/dev/paperback/mobile").display()
+	);
+	if let Err(e) = patois_build::gen_pot(&workspace_dir, &po_dir, "paperback") {
+		println!("cargo:warning=Failed to regenerate paperback.pot from Rust sources: {e}");
+	}
+	let ios_src = workspace_dir.join("ios/Paperback");
+	if let Err(e) = patois_build::extend_pot_from_source_dirs(&[&ios_src], "swift", &pot_file) {
+		println!("cargo:warning=Failed to extend paperback.pot from Swift sources: {e}");
+	}
+	let kt_src = workspace_dir.join("android/app/src/main/kotlin/dev/paperback/mobile");
+	if let Err(e) = patois_build::extend_pot_from_source_dirs(&[&kt_src], "kt", &pot_file) {
+		println!("cargo:warning=Failed to extend paperback.pot from Kotlin sources: {e}");
 	}
 	patois_build::compile_translations("../../po", "locale");
 }

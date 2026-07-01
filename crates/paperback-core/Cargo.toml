@@ -35,11 +35,11 @@ sha1 = "0.11.0"
 thiserror = "2.0.18"
 toml = { workspace = true }
 unicode-bidi = "0.3"
-uniffi = { version = "0.31.1", features = ["cli"] }
+uniffi = { version = "0.32.0", features = ["cli"] }
 zip = { version = "8.6.0", default-features = false, features = ["deflate"] }
 
 [build-dependencies]
-uniffi = { version = "0.31.1", features = ["build"] }
+uniffi = { version = "0.32.0", features = ["build"] }
 
 [dev-dependencies]
 rstest = { workspace = true }

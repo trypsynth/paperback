@@ -1,6 +1,6 @@
 use std::{path::Path, rc::Rc, sync::Mutex};
 
-use paperback_core::{config::ConfigManager, types::DocumentListStatus};
+use paperback_core::{config::ConfigManager, parser::build_file_filter_string, types::DocumentListStatus};
 use patois::t;
 use wxdragon::prelude::*;
 
@@ -33,11 +33,12 @@ pub fn show_all_documents_dialog(
 	let search_label = StaticText::builder(&dialog).with_label(&t("&search")).build();
 	let search_ctrl = TextCtrl::builder(&dialog).with_size(Size::new(300, -1)).build();
 	let doc_list = build_all_documents_list(dialog);
-	let (open_button, remove_button, clear_all_button, ok_button) = build_all_documents_buttons(dialog);
+	let (open_button, locate_button, remove_button, clear_all_button, ok_button) = build_all_documents_buttons(dialog);
 	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
 	populate_document_list(&DocumentListParams {
 		list: doc_list,
 		open_button,
+		locate_button,
 		remove_button,
 		clear_all_button,
 		config,
@@ -45,7 +46,7 @@ pub fn show_all_documents_dialog(
 		filter: "",
 		selection: None,
 	});
-	bind_all_documents_selection(doc_list, open_button);
+	bind_all_documents_selection(doc_list, open_button, locate_button);
 	let open_action = make_all_documents_open_action(dialog, doc_list, Rc::clone(&selected_path));
 	bind_all_documents_open(doc_list, open_button, &open_action);
 	let remove_action = make_all_documents_remove_action(
@@ -53,6 +54,7 @@ pub fn show_all_documents_dialog(
 		doc_list,
 		search_ctrl,
 		open_button,
+		locate_button,
 		remove_button,
 		clear_all_button,
 		Rc::clone(config),
@@ -63,11 +65,24 @@ pub fn show_all_documents_dialog(
 		let remove_action = Rc::clone(&remove_action);
 		move |_| remove_action()
 	});
+	bind_all_documents_locate(
+		dialog,
+		doc_list,
+		search_ctrl,
+		open_button,
+		locate_button,
+		remove_button,
+		clear_all_button,
+		Rc::clone(config),
+		Rc::clone(&open_paths),
+		locate_button,
+	);
 	bind_all_documents_clear(
 		dialog,
 		doc_list,
 		search_ctrl,
 		open_button,
+		locate_button,
 		remove_button,
 		clear_all_button,
 		Rc::clone(config),
@@ -78,6 +93,7 @@ pub fn show_all_documents_dialog(
 		search_ctrl,
 		doc_list,
 		open_button,
+		locate_button,
 		remove_button,
 		clear_all_button,
 		Rc::clone(config),
@@ -91,6 +107,7 @@ pub fn show_all_documents_dialog(
 			search_ctrl,
 			doc_list,
 			open_button,
+			locate_button,
 			remove_button,
 			clear_all_button,
 			ok_button,
@@ -137,20 +154,23 @@ fn build_all_documents_list(dialog: Dialog) -> ListCtrl {
 	doc_list
 }
 
-fn build_all_documents_buttons(dialog: Dialog) -> (Button, Button, Button, Button) {
+fn build_all_documents_buttons(dialog: Dialog) -> (Button, Button, Button, Button, Button) {
 	let open_button = Button::builder(&dialog).with_label(&t("&Open")).build();
+	let locate_button = Button::builder(&dialog).with_label(&t("&Locate…")).build();
 	let remove_button = Button::builder(&dialog).with_label(&t("&Remove")).build();
 	let clear_all_button = Button::builder(&dialog).with_label(&t("&Clear All")).build();
 	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Close")).build();
-	(open_button, remove_button, clear_all_button, ok_button)
+	locate_button.enable(false);
+	(open_button, locate_button, remove_button, clear_all_button, ok_button)
 }
 
-fn bind_all_documents_selection(list: ListCtrl, open_button: Button) {
+fn bind_all_documents_selection(list: ListCtrl, open_button: Button, locate_button: Button) {
 	let list_for_select = list;
 	let open_button_for_select = open_button;
 	list.on_item_selected(move |event| {
 		let index = event.get_item_index();
 		update_open_button_for_index(list_for_select, open_button_for_select, index);
+		update_locate_button(list_for_select, locate_button);
 	});
 	let list_for_focus = list;
 	let open_button_for_focus = open_button;
@@ -158,7 +178,11 @@ fn bind_all_documents_selection(list: ListCtrl, open_button: Button) {
 		let index = event.get_item_index();
 		if index >= 0 {
 			update_open_button_for_index(list_for_focus, open_button_for_focus, index);
+			update_locate_button(list_for_focus, locate_button);
 		}
+	});
+	list.on_item_deselected(move |_| {
+		update_locate_button(list, locate_button);
 	});
 }
 
@@ -195,6 +219,7 @@ fn make_all_documents_remove_action(
 	list: ListCtrl,
 	search_ctrl: TextCtrl,
 	open_button: Button,
+	locate_button: Button,
 	remove_button: Button,
 	clear_button: Button,
 	config: Rc<Mutex<ConfigManager>>,
@@ -240,6 +265,7 @@ fn make_all_documents_remove_action(
 		populate_document_list(&DocumentListParams {
 			list,
 			open_button,
+			locate_button,
 			remove_button,
 			clear_all_button: clear_button,
 			config: &config,
@@ -255,6 +281,7 @@ fn bind_all_documents_clear(
 	list: ListCtrl,
 	search_ctrl: TextCtrl,
 	open_button: Button,
+	locate_button: Button,
 	remove_button: Button,
 	clear_button: Button,
 	config: Rc<Mutex<ConfigManager>>,
@@ -292,6 +319,7 @@ fn bind_all_documents_clear(
 		populate_document_list(&DocumentListParams {
 			list,
 			open_button,
+			locate_button,
 			remove_button,
 			clear_all_button: clear_button,
 			config: &config,
@@ -306,6 +334,7 @@ fn bind_all_documents_search(
 	search_ctrl: TextCtrl,
 	list: ListCtrl,
 	open_button: Button,
+	locate_button: Button,
 	remove_button: Button,
 	clear_button: Button,
 	config: Rc<Mutex<ConfigManager>>,
@@ -316,6 +345,7 @@ fn bind_all_documents_search(
 		populate_document_list(&DocumentListParams {
 			list,
 			open_button,
+			locate_button,
 			remove_button,
 			clear_all_button: clear_button,
 			config: &config,
@@ -369,6 +399,7 @@ struct AllDocumentsLayout {
 	search_ctrl: TextCtrl,
 	doc_list: ListCtrl,
 	open_button: Button,
+	locate_button: Button,
 	remove_button: Button,
 	clear_all_button: Button,
 	ok_button: Button,
@@ -380,6 +411,7 @@ fn bind_all_documents_layout(dialog: Dialog, layout: AllDocumentsLayout) {
 		search_ctrl,
 		doc_list,
 		open_button,
+		locate_button,
 		remove_button,
 		clear_all_button,
 		ok_button,
@@ -397,6 +429,7 @@ fn bind_all_documents_layout(dialog: Dialog, layout: AllDocumentsLayout) {
 	doc_list.set_focus();
 	let action_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	action_sizer.add(&open_button, 0, SizerFlag::Right, DIALOG_PADDING);
+	action_sizer.add(&locate_button, 0, SizerFlag::Right, DIALOG_PADDING);
 	action_sizer.add(&remove_button, 0, SizerFlag::Right, DIALOG_PADDING);
 	action_sizer.add(&clear_all_button, 0, SizerFlag::Right, DIALOG_PADDING);
 	content_sizer.add_sizer(
@@ -416,6 +449,7 @@ fn bind_all_documents_layout(dialog: Dialog, layout: AllDocumentsLayout) {
 struct DocumentListParams<'a> {
 	list: ListCtrl,
 	open_button: Button,
+	locate_button: Button,
 	remove_button: Button,
 	clear_all_button: Button,
 	config: &'a Rc<Mutex<ConfigManager>>,
@@ -428,6 +462,7 @@ fn populate_document_list(params: &DocumentListParams<'_>) {
 	let DocumentListParams {
 		list,
 		open_button,
+		locate_button,
 		remove_button,
 		clear_all_button,
 		config,
@@ -467,10 +502,12 @@ fn populate_document_list(params: &DocumentListParams<'_>) {
 		);
 		list.ensure_visible(i64::from(select_index));
 		update_open_button_for_index(list, open_button, select_index);
+		update_locate_button(list, locate_button);
 		remove_button.enable(true);
 		clear_all_button.enable(true);
 	} else {
 		open_button.enable(false);
+		locate_button.enable(false);
 		remove_button.enable(false);
 		clear_all_button.enable(false);
 	}
@@ -483,6 +520,65 @@ fn update_open_button_for_index(list: ListCtrl, open_button: Button, index: i32)
 	}
 	let status = list.get_item_text(i64::from(index), 1);
 	open_button.enable(status != t("Missing"));
+}
+
+fn update_locate_button(list: ListCtrl, locate_button: Button) {
+	let indices = get_selected_indices(list);
+	let enabled = if indices.len() == 1 { list.get_item_text(i64::from(indices[0]), 1) == t("Missing") } else { false };
+	locate_button.enable(enabled);
+}
+
+fn bind_all_documents_locate(
+	dialog: Dialog,
+	list: ListCtrl,
+	search_ctrl: TextCtrl,
+	open_button: Button,
+	locate_button: Button,
+	remove_button: Button,
+	clear_all_button: Button,
+	config: Rc<Mutex<ConfigManager>>,
+	open_paths: Rc<Vec<String>>,
+	locate_button_widget: Button,
+) {
+	locate_button_widget.on_click(move |_| {
+		let old_path = match get_selected_path(list) {
+			Some(p) => p,
+			None => return,
+		};
+		let filename = Path::new(&old_path).file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
+		let wildcard = build_file_filter_string();
+		let file_dialog = FileDialog::builder(&dialog)
+			.with_message(&t("Locate Book"))
+			.with_default_file(&filename)
+			.with_wildcard(&wildcard)
+			.with_style(FileDialogStyle::Open | FileDialogStyle::FileMustExist)
+			.build();
+		if file_dialog.show_modal() != wxdragon::id::ID_OK {
+			return;
+		}
+		let new_path = match file_dialog.get_path() {
+			Some(p) => p,
+			None => return,
+		};
+		{
+			let cfg = config.lock().unwrap();
+			cfg.rename_document_path(&old_path, &new_path);
+			cfg.flush();
+		}
+		let filter = search_ctrl.get_value();
+		let selected_index = get_selected_index(list);
+		populate_document_list(&DocumentListParams {
+			list,
+			open_button,
+			locate_button,
+			remove_button,
+			clear_all_button,
+			config: &config,
+			open_paths: open_paths.as_ref(),
+			filter: &filter,
+			selection: if selected_index >= 0 { Some(selected_index) } else { None },
+		});
+	});
 }
 
 fn get_selected_index(list: ListCtrl) -> i32 {

@@ -2,8 +2,6 @@ use std::{cell::Cell, rc::Rc};
 
 use paperback_core::document::TocItem;
 use patois::t;
-#[cfg(not(target_os = "windows"))]
-use wxdragon::ffi;
 use wxdragon::prelude::*;
 
 #[cfg(target_os = "windows")]
@@ -143,10 +141,8 @@ fn find_and_select_dv(
 		let child = tree.get_nth_child(parent, i);
 		if let Some(id_ptr) = child.get_id::<std::ffi::c_void>() {
 			if item_offsets.get(&(id_ptr as usize)) == Some(&offset) {
-				unsafe {
-					ffi::wxd_DataViewCtrl_Select(tree.handle_ptr(), *child);
-					ffi::wxd_DataViewCtrl_EnsureVisible(tree.handle_ptr(), *child);
-				}
+				tree.select(&child);
+				tree.ensure_visible(&child);
 				return true;
 			}
 		}

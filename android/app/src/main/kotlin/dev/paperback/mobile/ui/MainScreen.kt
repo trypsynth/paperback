@@ -642,37 +642,7 @@ fun MainScreen(
 							onDismiss = { viewModel.closeDocumentInfoDialog() }
 						)
 					}
-					if (optionsDialogOpen) {
-						SettingsDialog(
-							initialRestorePreviousDocuments = restorePreviousDocuments,
-							initialUseInAppFileBrowser = useInAppFileBrowser,
-							initialSwipeUpMovesForward = swipeUpMovesForward,
-							engines = viewModel.ttsManager.getAvailableEngines(),
-							currentEngine = currentEngineName ?: viewModel.ttsManager.getDefaultEngine(),
-							voices = availableVoices,
-							currentVoice = currentVoice,
-							currentRate = currentSpeechRate,
-							currentPitch = currentPitch,
-							onEngineSelected = { viewModel.ttsManager.setEngine(it) },
-							onVoiceSelected = { viewModel.ttsManager.setVoice(it) },
-							onRateChanged = { viewModel.ttsManager.setSpeechRate(it) },
-							onPitchChanged = { viewModel.ttsManager.setPitch(it) },
-							onPlaySample = {
-								viewModel.ttsManager.speak("This is a sample of the selected speech engine.", isSample = true)
-							},
-							onSaveOptions = { restore, useInApp, swipeUpFwd ->
-								restorePreviousDocuments = restore
-								useInAppFileBrowser = useInApp
-								swipeUpMovesForward = swipeUpFwd
-								viewModel.configManager.setAppBool("restore_previous_documents", restore)
-								viewModel.configManager.setAppBool("use_in_app_file_browser", useInApp)
-								viewModel.configManager.setAppBool("swipe_up_moves_forward", swipeUpFwd)
-								viewModel.configManager.flush()
-								viewModel.closeSettingsDialog()
-							},
-							onDismiss = { viewModel.closeSettingsDialog() }
-						)
-					}
+
 					if (sleepTimerDialogOpen) {
 						SleepTimerDialog(
 							remainingSeconds = sleepTimerRemaining,
@@ -689,6 +659,37 @@ fun MainScreen(
 				}
 			}
 		}
+	}
+	if (optionsDialogOpen) {
+		SettingsDialog(
+			initialRestorePreviousDocuments = restorePreviousDocuments,
+			initialUseInAppFileBrowser = useInAppFileBrowser,
+			initialSwipeUpMovesForward = swipeUpMovesForward,
+			engines = viewModel.ttsManager.getAvailableEngines(),
+			currentEngine = currentEngineName ?: viewModel.ttsManager.getDefaultEngine(),
+			voices = availableVoices,
+			currentVoice = currentVoice,
+			currentRate = currentSpeechRate,
+			currentPitch = currentPitch,
+			onEngineSelected = { viewModel.ttsManager.setEngine(it) },
+			onVoiceSelected = { viewModel.ttsManager.setVoice(it) },
+			onRateChanged = { viewModel.ttsManager.setSpeechRate(it) },
+			onPitchChanged = { viewModel.ttsManager.setPitch(it) },
+			onPlaySample = {
+				viewModel.ttsManager.speak("This is a sample of the selected speech engine.", isSample = true)
+			},
+			onSaveOptions = { restore, useInApp, swipeUpFwd ->
+				restorePreviousDocuments = restore
+				useInAppFileBrowser = useInApp
+				swipeUpMovesForward = swipeUpFwd
+				viewModel.configManager.setAppBool("restore_previous_documents", restore)
+				viewModel.configManager.setAppBool("use_in_app_file_browser", useInApp)
+				viewModel.configManager.setAppBool("swipe_up_moves_forward", swipeUpFwd)
+				viewModel.configManager.flush()
+				viewModel.closeSettingsDialog()
+			},
+			onDismiss = { viewModel.closeSettingsDialog() }
+		)
 	}
 	if (isScreenDimmed) {
 		Box(
