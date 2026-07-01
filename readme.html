@@ -203,6 +203,8 @@ id="toc-supported-languages">Supported languages</a></li>
 </ul></li>
 <li><a href="#changelog" id="toc-changelog">Changelog</a>
 <ul>
+<li><a href="#version-0.9.0" id="toc-version-0.9.0">Version
+0.9.0</a></li>
 <li><a href="#version-0.8.5" id="toc-version-0.8.5">Version
 0.8.5</a></li>
 <li><a href="#version-0.8.2" id="toc-version-0.8.2">Version
@@ -240,8 +242,8 @@ reader for everyone, from casual readers to heavy power users. It’s
 designed for screen reader accessibility, fast speeds, and a bloat-free
 experience.</p>
 <h1 id="system-requirements">System Requirements</h1>
-<p>Paperback currently runs on Windows 10/11 and Linux. Support for
-macOS is in the pipeline.</p>
+<p>Paperback currently runs on Windows, macOS, Linux, iOS, and
+Android.</p>
 <h1 id="features">Features</h1>
 <ul>
 <li>Completely standalone, not requiring any software to be installed on
@@ -453,6 +455,92 @@ inclusion in this list.</p>
 <li>Tyler Rodick</li>
 </ul>
 <h1 id="changelog">Changelog</h1>
+<h2 id="version-0.9.0">Version 0.9.0</h2>
+<ul>
+<li>Added a cancel button to the update-in-progress dialog.</li>
+<li>Added a CLI tool, called pb, to quickly convert any of Paperback’s
+supported formats to HTML, Markdown, or plain text.</li>
+<li>Added a Configurable Shortcut to Restore Paperback from the system
+tray.</li>
+<li>Added a locate button to the all documents dialog to locate missing
+books that just changed their path.</li>
+<li>Added a readability tab to the options dialog, with the following
+options:
+<ul>
+<li>Word wrap (moved from general);</li>
+<li>Render tables inline (new in this release, see below);</li>
+<li>Font;</li>
+<li>Background color;</li>
+<li>Line spacing;</li>
+<li>paragraph spacing;</li>
+<li>Letter spacing;</li>
+<li>Text alignment.</li>
+</ul></li>
+<li>Added a toggle to determine how you want tables displayed, and
+unified how tables are displayed across documents.</li>
+<li>added a View Source option to open a document’s source in a new tab,
+useful for editing Markdown for example.</li>
+<li>Added estimated reading time to the word count dialog, as well as
+the ability to set your reading speed to make this metric actually
+useful.</li>
+<li>Added Android support!</li>
+<li>Added iOS support!</li>
+<li>Added Linux support!</li>
+<li>Added macOS support!</li>
+<li>Added new languages: Dutch, Finish, and Polish.</li>
+<li>Added support for navigating by container.</li>
+<li>Added support for lists, list items, figures, and images in CHM
+documents.</li>
+<li>Added a word wrap menu item and subsequent hotkey.</li>
+<li>Allow resizing the webview dialog and make it pop up at a much
+easier-to-see size.</li>
+<li>Expanded the export menu item to allow exporting to HTML and
+Markdown in addition to plain text.</li>
+<li>Fixed applying word wrap shooting you to the start of your
+document.</li>
+<li>Fix daisy books showing incorrect info in the status bar.</li>
+<li>Fixed dl, dt, and dd elements not producing line breaks in XHTML
+documents.</li>
+<li>Fixed Escape not closing the Document Info and All Documents
+dialogs.</li>
+<li>Fixed filepos anchors in Mobi books splitting HTML tags and putting
+garbage in the book text.</li>
+<li>Fixed lag when getting near the end of the text field in large
+documents.</li>
+<li>Fixed links in legacy mobi books.</li>
+<li>Fixed parsing RTF documents with non-Latin characters in them.</li>
+<li>Fixed the title bar not updating after closing a document from the
+all documents dialog. *Fixed word documents with locale-specific style
+names not rendering their headings properly.</li>
+<li>Fixed your selected tab not getting properly focused after
+restarting Paperback.</li>
+<li>If a selection is active when you open the word count dialog, how
+many words you have selected will now be shown.</li>
+<li>Migrated away from chmlib to our own pure-Rust CHM file reader.</li>
+<li>On desktop, .paperback files will no longer be forcefully loaded on
+document restoration. Instead, you will be asked for Confirmation when
+the file is found.</li>
+<li>Paperback now falls back to plain text extraction for falsely-tagged
+PDFs.</li>
+<li>Open containing folder now focuses the given file in explorer.</li>
+<li>Opening the readme will now respect your selected language.</li>
+<li>PowerPoint documents now support tables.</li>
+<li>Properly update the menu and set focus to the text control when
+opening help in paperback.</li>
+<li>Readme.html will no longer be added to your all documents list when
+opened via Shift+F1.</li>
+<li>Removed the broken AZW3 support.</li>
+<li>Removing documents from the recents dialog will now also close their
+active tab.</li>
+<li>Switched to a much more secure method of IPC on Windows.</li>
+<li>The updater now properly shows the content of markdown code tags in
+release notes.</li>
+<li>The updater now validates the downloaded file hasn’t been tampered
+with.</li>
+<li>The webview is now opened at your current reading position.</li>
+<li>Your search filter in the all documents dialog is now preserved
+after removing a document.</li>
+</ul>
 <h2 id="version-0.8.5">Version 0.8.5</h2>
 <ul>
 <li>Added page support to epub books.</li>
