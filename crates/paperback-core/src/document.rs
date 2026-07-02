@@ -23,6 +23,9 @@ pub enum MarkerType {
 	Separator = 13,
 	Image = 14,
 	Figure = 15,
+	Bold = 16,
+	Italic = 17,
+	Underline = 18,
 }
 
 impl From<MarkerType> for i32 {
@@ -52,6 +55,9 @@ impl TryFrom<i32> for MarkerType {
 			13 => Ok(Self::Separator),
 			14 => Ok(Self::Image),
 			15 => Ok(Self::Figure),
+			16 => Ok(Self::Bold),
+			17 => Ok(Self::Italic),
+			18 => Ok(Self::Underline),
 			_ => Err(()),
 		}
 	}

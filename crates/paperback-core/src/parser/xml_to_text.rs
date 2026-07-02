@@ -47,6 +47,12 @@ pub struct XmlToText {
 	/// `None` marks an open list that was not recorded (no direct `<li>`), keeping the stack
 	/// balanced with the start/close handlers so list lengths are set on the right entries.
 	open_lists: Vec<Option<usize>>,
+	bolds: Vec<crate::types::FormatInfo>,
+	italics: Vec<crate::types::FormatInfo>,
+	underlines: Vec<crate::types::FormatInfo>,
+	open_bolds: Vec<usize>,
+	open_italics: Vec<usize>,
+	open_underlines: Vec<usize>,
 	cached_char_length: usize,
 	/// When `true`, tables are emitted as their full tab-separated rendering; otherwise as a
 	/// `"[Table]: <first row>"` placeholder. A config flag, not parse state: it survives `clear()`.
@@ -147,6 +153,21 @@ impl XmlToText {
 		&self.section_offsets
 	}
 
+	#[must_use]
+	pub fn get_bolds(&self) -> &[crate::types::FormatInfo] {
+		&self.bolds
+	}
+
+	#[must_use]
+	pub fn get_italics(&self) -> &[crate::types::FormatInfo] {
+		&self.italics
+	}
+
+	#[must_use]
+	pub fn get_underlines(&self) -> &[crate::types::FormatInfo] {
+		&self.underlines
+	}
+
 	pub fn clear(&mut self) {
 		self.lines.clear();
 		self.current_line.clear();
@@ -167,6 +188,12 @@ impl XmlToText {
 		self.cached_char_length = 0;
 		self.list_style_stack.clear();
 		self.open_lists.clear();
+		self.bolds.clear();
+		self.italics.clear();
+		self.underlines.clear();
+		self.open_bolds.clear();
+		self.open_italics.clear();
+		self.open_underlines.clear();
 	}
 
 	fn process_node(&mut self, node: Node<'_, '_>) {
@@ -252,6 +279,12 @@ impl XmlToText {
 			self.handle_list_item_xml(node);
 		} else if Self::tag_is(tag_name, "ul") || Self::tag_is(tag_name, "ol") || Self::tag_is(tag_name, "list") {
 			self.handle_list_start_xml(tag_name, node);
+		} else if Self::tag_is(tag_name, "b") || Self::tag_is(tag_name, "strong") {
+			self.open_bolds.push(self.get_current_text_position());
+		} else if Self::tag_is(tag_name, "i") || Self::tag_is(tag_name, "em") {
+			self.open_italics.push(self.get_current_text_position());
+		} else if Self::tag_is(tag_name, "u") {
+			self.open_underlines.push(self.get_current_text_position());
 		}
 		if self.in_body {
 			if let Some(id) = node.attribute("id").or_else(|| node.attribute("name")) {
@@ -413,6 +446,27 @@ impl XmlToText {
 			}
 			if Self::tag_is(tag_name, "code") {
 				self.stop_preserve_whitespace();
+			} else if Self::tag_is(tag_name, "b") || Self::tag_is(tag_name, "strong") {
+				if let Some(start) = self.open_bolds.pop() {
+					self.bolds.push(crate::types::FormatInfo {
+						offset: start,
+						length: self.get_current_text_position().saturating_sub(start),
+					});
+				}
+			} else if Self::tag_is(tag_name, "i") || Self::tag_is(tag_name, "em") {
+				if let Some(start) = self.open_italics.pop() {
+					self.italics.push(crate::types::FormatInfo {
+						offset: start,
+						length: self.get_current_text_position().saturating_sub(start),
+					});
+				}
+			} else if Self::tag_is(tag_name, "u") {
+				if let Some(start) = self.open_underlines.pop() {
+					self.underlines.push(crate::types::FormatInfo {
+						offset: start,
+						length: self.get_current_text_position().saturating_sub(start),
+					});
+				}
 			}
 		}
 		if Self::tag_is(tag_name, "ul") || Self::tag_is(tag_name, "ol") {
@@ -615,6 +669,15 @@ impl crate::parser::ConverterOutput for XmlToText {
 	}
 	fn get_list_items(&self) -> &[ListItemInfo] {
 		&self.list_items
+	}
+	fn get_bolds(&self) -> &[crate::types::FormatInfo] {
+		&self.bolds
+	}
+	fn get_italics(&self) -> &[crate::types::FormatInfo] {
+		&self.italics
+	}
+	fn get_underlines(&self) -> &[crate::types::FormatInfo] {
+		&self.underlines
 	}
 }
 

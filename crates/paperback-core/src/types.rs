@@ -26,6 +26,12 @@ pub struct HeadingInfo {
 }
 
 #[derive(Debug, Clone)]
+pub struct FormatInfo {
+	pub offset: usize,
+	pub length: usize,
+}
+
+#[derive(Debug, Clone)]
 pub struct LinkInfo {
 	pub offset: usize,
 	pub text: String,
