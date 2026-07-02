@@ -11,10 +11,10 @@ repository = "https://github.com/trypsynth/paperback"
 
 # Deps shared by two or more crates in this workspace.
 [workspace.dependencies]
-anyhow = "1.0.102"
+anyhow = "1.0.103"
 base64 = "0.22.1"
 rstest = "0.26.1"
-toml = "1.1"
+toml = "1.1.2"
 
 [profile.release]
 strip = true
