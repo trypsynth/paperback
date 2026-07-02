@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - master
+  pull_request:
+    branches:
+      - master
   workflow_dispatch:
 permissions:
   contents: write
@@ -49,6 +52,7 @@ jobs:
         $env:PATH = "$env:PATH;C:\msys64\ucrt64\bin;C:\msys64\usr\bin"
         cargo release
     - name: Sign artifacts
+      if: github.event_name == 'push'
       shell: pwsh
       env:
         MINISIGN_KEY: ${{ secrets.MINISIGN_KEY }}
@@ -67,8 +71,15 @@ jobs:
         name: paperback-windows
         path: |
           target/release/paperback.zip
-          target/release/paperback.zip.minisig
           target/release/paperback_setup.exe
+        retention-days: 30
+    - name: Upload signatures
+      if: github.event_name == 'push'
+      uses: actions/upload-artifact@v4
+      with:
+        name: paperback-windows-signatures
+        path: |
+          target/release/paperback.zip.minisig
           target/release/paperback_setup.exe.minisig
         retention-days: 30
 
@@ -125,6 +136,7 @@ jobs:
         key: gradle-${{ hashFiles('android/**/*.gradle.kts', 'android/gradle/wrapper/gradle-wrapper.properties') }}
         restore-keys: gradle-
     - name: Set up Android signing keystore
+      if: github.event_name == 'push'
       env:
         ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
@@ -203,6 +215,11 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: paperback-windows
+        path: windows-build
+    - name: Download Windows signatures
+      uses: actions/download-artifact@v4
+      with:
+        name: paperback-windows-signatures
         path: windows-build
     - name: Download Linux Flatpak
       uses: actions/download-artifact@v4
