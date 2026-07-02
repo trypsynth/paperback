@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/paperback", "crates/paperback-core", "crates/pb", "crates/xtask"]
+members = ["crates/paperback", "crates/paperback-core", "crates/pb", "crates/ship-shape", "crates/xtask"]
 resolver = "2"
 
 [workspace.package]
@@ -22,3 +22,6 @@ opt-level = "z"
 lto = true
 panic = "abort"
 codegen-units = 1
+
+[patch.crates-io]
+ship-shape = { path = "crates/ship-shape" }
