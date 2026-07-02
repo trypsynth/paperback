@@ -10,7 +10,7 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::DIALOG_PADDING;
-use crate::{accessibility, config_ext::UpdateChannel, translation_manager::TranslationManager};
+use crate::{config_ext::UpdateChannel, translation_manager::TranslationManager};
 
 #[derive(Clone, Debug)]
 pub struct OptionsDialogResult {
@@ -163,7 +163,8 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		language_combo.append(&lang.name);
 		language_codes.push(lang.code.clone());
 	}
-	accessibility::set_label(&language_combo, language_label_text.replace('&', "").trim_end_matches(':').trim());
+	#[cfg(target_os = "macos")]
+	language_combo.set_accessibility_label(language_label_text.replace('&', "").trim_end_matches(':').trim());
 
 	let language_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	language_sizer.add(&language_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
@@ -174,7 +175,8 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let update_channel_combo = Choice::builder(&general_panel).build();
 	update_channel_combo.append(&t("Stable"));
 	update_channel_combo.append(&t("Dev"));
-	accessibility::set_label(&update_channel_combo, channel_label_text.trim_end_matches(':').trim());
+	#[cfg(target_os = "macos")]
+	update_channel_combo.set_accessibility_label(channel_label_text.trim_end_matches(':').trim());
 
 	let channel_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	channel_sizer.add(&channel_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
@@ -204,7 +206,8 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	line_spacing_ctrl.append(&t("Normal"));
 	line_spacing_ctrl.append(&t("1.5\u{00d7}"));
 	line_spacing_ctrl.append(&t("Double"));
-	accessibility::set_label(&line_spacing_ctrl, line_spacing_label_text.replace('&', "").trim_end_matches(':').trim());
+	#[cfg(target_os = "macos")]
+	line_spacing_ctrl.set_accessibility_label(line_spacing_label_text.replace('&', "").trim_end_matches(':').trim());
 
 	let line_spacing_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	line_spacing_sizer.add(&line_spacing_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
@@ -216,10 +219,9 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	paragraph_spacing_ctrl.append(&t("Normal"));
 	paragraph_spacing_ctrl.append(&t("Relaxed"));
 	paragraph_spacing_ctrl.append(&t("Wide"));
-	accessibility::set_label(
-		&paragraph_spacing_ctrl,
-		paragraph_spacing_label_text.replace('&', "").trim_end_matches(':').trim(),
-	);
+	#[cfg(target_os = "macos")]
+	paragraph_spacing_ctrl
+		.set_accessibility_label(paragraph_spacing_label_text.replace('&', "").trim_end_matches(':').trim());
 
 	let paragraph_spacing_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	paragraph_spacing_sizer.add(
@@ -235,10 +237,9 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	letter_spacing_ctrl.append(&t("Normal"));
 	letter_spacing_ctrl.append(&t("Wide"));
 	letter_spacing_ctrl.append(&t("Very Wide"));
-	accessibility::set_label(
-		&letter_spacing_ctrl,
-		letter_spacing_label_text.replace('&', "").trim_end_matches(':').trim(),
-	);
+	#[cfg(target_os = "macos")]
+	letter_spacing_ctrl
+		.set_accessibility_label(letter_spacing_label_text.replace('&', "").trim_end_matches(':').trim());
 
 	let letter_spacing_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	letter_spacing_sizer.add(
@@ -255,10 +256,9 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	text_alignment_ctrl.append(&t("Center"));
 	text_alignment_ctrl.append(&t("Right"));
 	text_alignment_ctrl.append(&t("Justify"));
-	accessibility::set_label(
-		&text_alignment_ctrl,
-		text_alignment_label_text.replace('&', "").trim_end_matches(':').trim(),
-	);
+	#[cfg(target_os = "macos")]
+	text_alignment_ctrl
+		.set_accessibility_label(text_alignment_label_text.replace('&', "").trim_end_matches(':').trim());
 
 	let text_alignment_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	text_alignment_sizer.add(

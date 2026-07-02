@@ -2,11 +2,7 @@ use std::{cell::Cell, rc::Rc};
 
 use paperback_core::session::DocumentSession;
 use patois::t;
-#[cfg(not(target_os = "windows"))]
-use wxdragon::ffi;
 use wxdragon::prelude::*;
-
-use crate::accessibility;
 
 pub fn show_elements_dialog(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<i64> {
 	#[cfg(not(target_os = "windows"))]
@@ -70,7 +66,8 @@ fn build_elements_dialog_ui_dv(dialog: Dialog) -> ElementsDialogUiDv {
 	view_choice.append(&t("Headings"));
 	view_choice.append(&t("Links"));
 	view_choice.set_selection(0);
-	accessibility::set_label(&view_choice, choice_label_text.replace('&', "").trim_end_matches(':').trim());
+	#[cfg(target_os = "macos")]
+	view_choice.set_accessibility_label(choice_label_text.replace('&', "").trim_end_matches(':').trim());
 	choice_sizer.add(&choice_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, super::DIALOG_PADDING);
 	choice_sizer.add(&view_choice, 1, SizerFlag::Expand, 0);
 	content_sizer.add_sizer(&choice_sizer, 0, SizerFlag::Expand | SizerFlag::All, super::DIALOG_PADDING);
@@ -138,10 +135,8 @@ fn populate_elements_dialog_dv(
 	};
 	if let Some(idx) = select_idx {
 		if let Some(item) = item_ids.get(idx) {
-			unsafe {
-				ffi::wxd_DataViewCtrl_Select(headings_tree.handle_ptr(), **item);
-				ffi::wxd_DataViewCtrl_EnsureVisible(headings_tree.handle_ptr(), **item);
-			}
+			headings_tree.select(item);
+			headings_tree.ensure_visible(item);
 		}
 	}
 	let link_data = session.link_list(current_pos);
@@ -299,7 +294,8 @@ fn build_elements_dialog_ui(dialog: Dialog) -> ElementsDialogUi {
 	view_choice.append(&t("Headings"));
 	view_choice.append(&t("Links"));
 	view_choice.set_selection(0);
-	accessibility::set_label(&view_choice, choice_label_text.replace('&', "").trim_end_matches(':').trim());
+	#[cfg(target_os = "macos")]
+	view_choice.set_accessibility_label(choice_label_text.replace('&', "").trim_end_matches(':').trim());
 	choice_sizer.add(&choice_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, super::DIALOG_PADDING);
 	choice_sizer.add(&view_choice, 1, SizerFlag::Expand, 0);
 	content_sizer.add_sizer(&choice_sizer, 0, SizerFlag::Expand | SizerFlag::All, super::DIALOG_PADDING);

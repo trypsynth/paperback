@@ -79,10 +79,20 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 		return Err("xcodebuild -create-xcframework failed".into());
 	}
 
+	// Generate Localizable.strings for each translated language
+	let po_dir = root.join("po");
+	let ios_dir = root.join("ios/Paperback");
+	if po_dir.is_dir() {
+		if let Err(e) = patois_build::gen_ios_strings(&po_dir, &ios_dir) {
+			println!("Warning: could not generate Localizable.strings: {e}");
+		}
+	}
+
 	println!("iOS build complete.");
 	println!("  XCFramework: ios/paperbackFFI.xcframework");
 	println!("  Swift bindings: ios/Paperback/Generated/paperback.swift");
-	println!("  Add both to the Xcode project to use the Rust core.");
+	println!("  Localizable.strings: ios/Paperback/<lang>.lproj/Localizable.strings");
+	println!("  Add both XCFramework and Swift bindings to the Xcode project to use the Rust core.");
 	Ok(())
 }
 

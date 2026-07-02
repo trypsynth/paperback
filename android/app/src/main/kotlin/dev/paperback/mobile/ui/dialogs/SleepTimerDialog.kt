@@ -13,6 +13,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import dev.paperback.mobile.t
 
 private val presets = listOf(5, 10, 15, 30, 45, 60)
 
@@ -36,7 +37,7 @@ fun SleepTimerDialog(
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		modifier = Modifier.semantics { paneTitle = "Sleep Timer" },
-		title = { Text(if (showCustomInput) "Custom Timer" else "Sleep Timer") },
+		title = { Text(if (showCustomInput) t("Custom Timer") else t("Sleep Timer")) },
 		text = {
 			Column(modifier = Modifier.fillMaxWidth()) {
 				if (showCustomInput) {
@@ -47,7 +48,7 @@ fun SleepTimerDialog(
 								customMinutes = newValue
 							}
 						},
-						label = { Text("Minutes") },
+						label = { Text(t("Minutes")) },
 						keyboardOptions = KeyboardOptions(
 							keyboardType = KeyboardType.Number,
 							imeAction = ImeAction.Done
@@ -75,7 +76,7 @@ fun SleepTimerDialog(
 							onClick = { showCustomInput = false },
 							modifier = Modifier.weight(1f)
 						) {
-							Text("Back")
+							Text(t("Back"))
 						}
 						Button(
 							onClick = {
@@ -88,7 +89,7 @@ fun SleepTimerDialog(
 							enabled = customMinutes.isNotEmpty() && (customMinutes.toIntOrNull() ?: 0) > 0,
 							modifier = Modifier.weight(1f)
 						) {
-							Text("Start")
+							Text(t("Start"))
 						}
 					}
 				} else {
@@ -104,9 +105,9 @@ fun SleepTimerDialog(
 							onClick = { onCancelTimer(); onDismiss() },
 							modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
 						) {
-							Text("Cancel Timer")
+							Text(t("Cancel Timer"))
 						}
-						Text("Change to:", style = MaterialTheme.typography.labelMedium)
+						Text(t("Change to:"), style = MaterialTheme.typography.labelMedium)
 						Spacer(modifier = Modifier.height(8.dp))
 					}
 					presets.chunked(2).forEach { row ->
@@ -132,14 +133,14 @@ fun SleepTimerDialog(
 						onClick = { showCustomInput = true },
 						modifier = Modifier.fillMaxWidth()
 					) {
-						Text("Custom time...")
+						Text(t("Custom time..."))
 					}
 				}
 			}
 		},
 		confirmButton = {},
 		dismissButton = {
-			TextButton(onClick = onDismiss) { Text("Close") }
+			TextButton(onClick = onDismiss) { Text(t("Close")) }
 		}
 	)
 }

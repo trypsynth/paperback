@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 import uniffi.paperback.SearchOptionsFfi
+import dev.paperback.mobile.t
 
 @Composable
 fun SearchBottomBar(
@@ -45,7 +46,7 @@ fun SearchBottomBar(
 		) {
 			IconButton(
 				onClick = onClose,
-				modifier = Modifier.semantics { contentDescription = "Close Search" }
+				modifier = Modifier.semantics { contentDescription = t("Close Search") }
 			) {
 				Text("X", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
 			}
@@ -64,7 +65,7 @@ fun SearchBottomBar(
 						}
 					}
 				) {
-					Text("Find Previous")
+					Text(t("Find Previous"))
 				}
 				Spacer(modifier = Modifier.width(8.dp))
 				Button(
@@ -82,7 +83,7 @@ fun SearchBottomBar(
 						}
 					}
 				) {
-					Text("Find Next")
+					Text(t("Find Next"))
 				}
 			}
 		}

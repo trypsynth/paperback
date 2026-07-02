@@ -11,7 +11,7 @@ struct PasswordSheet: View {
 		NavigationStack {
 			Form {
 				Section {
-					SecureField("Password", text: $password)
+					SecureField(t("Password"), text: $password)
 						.focused($isFocused)
 						.onSubmit { submit() }
 				} footer: {
@@ -20,14 +20,14 @@ struct PasswordSheet: View {
 					}
 				}
 			}
-			.navigationTitle("Password Required")
+			.navigationTitle(t("Password Required"))
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) {
-					Button("Cancel") { dismiss() }
+					Button(t("Cancel")) { dismiss() }
 				}
 				ToolbarItem(placement: .confirmationAction) {
-					Button("Open") { submit() }
+					Button(t("Open")) { submit() }
 						.disabled(password.isEmpty)
 				}
 			}

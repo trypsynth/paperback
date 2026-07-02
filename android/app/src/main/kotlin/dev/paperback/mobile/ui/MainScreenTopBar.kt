@@ -3,6 +3,7 @@ package dev.paperback.mobile.ui
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +21,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import dev.paperback.mobile.t
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -50,6 +52,7 @@ fun MainScreenTopBar(
 			.fillMaxWidth()
 			.windowInsetsPadding(WindowInsets.statusBars)
 			.padding(horizontal = 16.dp, vertical = 8.dp)
+			.semantics { isTraversalGroup = true }
 	) {
 		val titleText = if (state is MainScreenUiState.Success) {
 			state.activeTab?.title ?: "Paperback"
@@ -66,11 +69,11 @@ fun MainScreenTopBar(
 			}
 		)
 		Row(
-			modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp).semantics { isTraversalGroup = true },
+			modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
 			horizontalArrangement = Arrangement.SpaceBetween,
 			verticalAlignment = Alignment.Top
 		) {
-			Column(horizontalAlignment = Alignment.Start, modifier = Modifier.semantics { isTraversalGroup = true }) {
+			Column(horizontalAlignment = Alignment.Start) {
 				var openBookMenuExpanded by remember { mutableStateOf(false) }
 				Box {
 					Surface(
@@ -87,11 +90,11 @@ fun MainScreenTopBar(
 							.semantics {
 								traversalIndex = 1f
 								customActions = listOf(
-									CustomAccessibilityAction("Import Document Data") {
+									CustomAccessibilityAction(t("Import Document Data")) {
 										onImportSettings()
 										true
 									},
-									CustomAccessibilityAction("Export Document Data") {
+									CustomAccessibilityAction(t("Export Document Data")) {
 										onExportSettings()
 										true
 									}
@@ -103,7 +106,7 @@ fun MainScreenTopBar(
 							horizontalArrangement = Arrangement.Center,
 							verticalAlignment = Alignment.CenterVertically
 						) {
-							Text("Open Book", fontWeight = FontWeight.Medium)
+							Text(t("Open Book"), fontWeight = FontWeight.Medium)
 						}
 					}
 					DropdownMenu(
@@ -111,14 +114,14 @@ fun MainScreenTopBar(
 						onDismissRequest = { openBookMenuExpanded = false }
 					) {
 						DropdownMenuItem(
-							text = { Text("Import Document Data") },
+							text = { Text(t("Import Document Data")) },
 							onClick = {
 								openBookMenuExpanded = false
 								onImportSettings()
 							}
 						)
 						DropdownMenuItem(
-							text = { Text("Export Document Data") },
+							text = { Text(t("Export Document Data")) },
 							onClick = {
 								openBookMenuExpanded = false
 								onExportSettings()
@@ -128,7 +131,7 @@ fun MainScreenTopBar(
 				}
 			}
 			if (state is MainScreenUiState.Success && state.tabs.isNotEmpty()) {
-				Box(modifier = Modifier.semantics { isTraversalGroup = true }) {
+				Box {
 					IconButton(
 						onClick = { moreOptionsExpanded = true },
 						modifier = Modifier.semantics {
@@ -138,72 +141,72 @@ fun MainScreenTopBar(
 								true
 							}
 							customActions = mutableListOf<CustomAccessibilityAction>().apply {
-								if ((state as MainScreenUiState.Success).activeTab != null) {
+								if (state.activeTab != null) {
 									add(
-										CustomAccessibilityAction("Table of Contents") {
+										CustomAccessibilityAction(t("Table of Contents")) {
 											onTocOpen()
 											true
 										}
 									)
 								}
 								add(
-									CustomAccessibilityAction("Elements List") {
+									CustomAccessibilityAction(t("Elements List")) {
 										onElementsOpen()
 										true
 									}
 								)
 								add(
-									CustomAccessibilityAction("Find") {
+									CustomAccessibilityAction(t("Find")) {
 										onFindOpen()
 										true
 									}
 								)
 								add(
-									CustomAccessibilityAction("Go To") {
+									CustomAccessibilityAction(t("Go To")) {
 										onGoToOpen()
 										true
 									}
 								)
 								add(
-									CustomAccessibilityAction("Recent Documents") {
+									CustomAccessibilityAction(t("Recent Documents")) {
 										onRecentsOpen()
 										true
 									}
 								)
 								add(
-									CustomAccessibilityAction("Word Count") {
+									CustomAccessibilityAction(t("Word Count")) {
 										onWordCountOpen()
 										true
 									}
 								)
 								add(
-									CustomAccessibilityAction("Document Information") {
+									CustomAccessibilityAction(t("Document Information")) {
 										onDocumentInfoOpen()
 										true
 									}
 								)
 								add(
-									CustomAccessibilityAction(if (isTextMode) "Show Document" else "Show Text") {
+									CustomAccessibilityAction(if (isTextMode) t("Show Document") else t("Show Text")) {
 										onToggleTextMode()
 										true
 									}
 								)
 								if (isTextMode) {
 									add(
-										CustomAccessibilityAction(if (isSpeaking) "Pause Read Aloud" else "Read Aloud") {
+										CustomAccessibilityAction(if (isSpeaking) t("Pause Read Aloud") else t("Read Aloud")) {
 											onTogglePlayPause()
 											true
 										}
 									)
 								}
 								add(
-									CustomAccessibilityAction("Sleep Timer") {
+									CustomAccessibilityAction(t("Sleep Timer")) {
 										onSleepTimerOpen()
 										true
 									}
 								)
 								add(
-									CustomAccessibilityAction("Settings") {
+									CustomAccessibilityAction(t("Settings")) {
 										onSettingsOpen()
 										true
 									}
@@ -211,15 +214,15 @@ fun MainScreenTopBar(
 							}
 						}
 					) {
-						Icon(Icons.Filled.MoreVert, contentDescription = "More Options")
+						Icon(Icons.Filled.MoreVert, contentDescription = t("More Options"))
 					}
 					DropdownMenu(
 						expanded = moreOptionsExpanded,
 						onDismissRequest = { moreOptionsExpanded = false }
 					) {
-						if ((state as MainScreenUiState.Success).activeTab != null) {
+						if (state.activeTab != null) {
 							DropdownMenuItem(
-								text = { Text("Table of Contents") },
+								text = { Text(t("Table of Contents")) },
 								onClick = {
 									moreOptionsExpanded = false
 									onTocOpen()
@@ -227,49 +230,49 @@ fun MainScreenTopBar(
 							)
 						}
 						DropdownMenuItem(
-							text = { Text("Elements List") },
+							text = { Text(t("Elements List")) },
 							onClick = {
 								moreOptionsExpanded = false
 								onElementsOpen()
 							}
 						)
 						DropdownMenuItem(
-							text = { Text("Find") },
+							text = { Text(t("Find")) },
 							onClick = {
 								moreOptionsExpanded = false
 								onFindOpen()
 							}
 						)
 						DropdownMenuItem(
-							text = { Text("Go To") },
+							text = { Text(t("Go To")) },
 							onClick = {
 								moreOptionsExpanded = false
 								onGoToOpen()
 							}
 						)
 						DropdownMenuItem(
-							text = { Text("Recent Documents") },
+							text = { Text(t("Recent Documents")) },
 							onClick = {
 								moreOptionsExpanded = false
 								onRecentsOpen()
 							}
 						)
 						DropdownMenuItem(
-							text = { Text("Word Count") },
+							text = { Text(t("Word Count")) },
 							onClick = {
 								moreOptionsExpanded = false
 								onWordCountOpen()
 							}
 						)
 						DropdownMenuItem(
-							text = { Text("Document Information") },
+							text = { Text(t("Document Information")) },
 							onClick = {
 								moreOptionsExpanded = false
 								onDocumentInfoOpen()
 							}
 						)
 						DropdownMenuItem(
-							text = { Text(if (isTextMode) "Show Document" else "Show Text") },
+							text = { Text(if (isTextMode) t("Show Document") else t("Show Text")) },
 							onClick = {
 								onToggleTextMode()
 								moreOptionsExpanded = false
@@ -277,7 +280,7 @@ fun MainScreenTopBar(
 						)
 						if (isTextMode) {
 							DropdownMenuItem(
-								text = { Text(if (isSpeaking) "Pause Read Aloud" else "Read Aloud") },
+								text = { Text(if (isSpeaking) t("Pause Read Aloud") else t("Read Aloud")) },
 								onClick = {
 									onTogglePlayPause()
 									moreOptionsExpanded = false
@@ -285,19 +288,30 @@ fun MainScreenTopBar(
 							)
 						}
 						DropdownMenuItem(
-							text = { Text("Sleep Timer") },
+							text = { Text(t("Sleep Timer")) },
 							onClick = {
 								moreOptionsExpanded = false
 								onSleepTimerOpen()
 							}
 						)
 						DropdownMenuItem(
-							text = { Text("Settings") },
+							text = { Text(t("Settings")) },
 							onClick = {
 								moreOptionsExpanded = false
 								onSettingsOpen()
 							}
 						)
+					}
+				}
+			} else {
+				Box {
+					IconButton(
+						onClick = { onSettingsOpen() },
+						modifier = Modifier.semantics {
+							traversalIndex = -1f
+						}
+					) {
+						Icon(Icons.Filled.Settings, contentDescription = "Settings")
 					}
 				}
 			}

@@ -10,20 +10,20 @@ struct SleepTimerSheet: View {
 		NavigationStack {
 			List {
 				if let remaining = viewModel.sleepTimerRemaining {
-					Section("Active") {
+					Section(t("Active")) {
 						LabeledContent(
-							"Time remaining",
+							t("Time remaining"),
 							value: String(format: "%d:%02d", remaining / 60, remaining % 60)
 						)
 						Button(role: .destructive) {
 							viewModel.cancelSleepTimer()
 							dismiss()
 						} label: {
-							Label("Cancel Timer", systemImage: "timer.slash")
+							Label(t("Cancel Timer"), systemImage: "timer.slash")
 						}
 					}
 				}
-				Section("Set timer") {
+				Section(t("Set timer")) {
 					ForEach(presets, id: \.self) { minutes in
 						Button("\(minutes) minutes") {
 							viewModel.setSleepTimer(seconds: minutes * 60)
@@ -32,11 +32,11 @@ struct SleepTimerSheet: View {
 					}
 				}
 			}
-			.navigationTitle("Sleep Timer")
+			.navigationTitle(t("Sleep Timer"))
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) {
-					Button("Cancel") { dismiss() }
+					Button(t("Cancel")) { dismiss() }
 				}
 			}
 		}

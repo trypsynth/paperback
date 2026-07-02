@@ -11,7 +11,7 @@ struct VoicePickerView: View {
 	var body: some View {
 		List {
 			Section {
-				voiceRow(label: "Default", identifier: nil)
+				voiceRow(label: t("Default"), identifier: nil)
 			}
 			ForEach(sections) { section in
 				Section(languageLabel(section.language)) {
@@ -21,7 +21,7 @@ struct VoicePickerView: View {
 				}
 			}
 		}
-		.navigationTitle("Voice")
+		.navigationTitle(t("Voice"))
 		.navigationBarTitleDisplayMode(.inline)
 	}
 

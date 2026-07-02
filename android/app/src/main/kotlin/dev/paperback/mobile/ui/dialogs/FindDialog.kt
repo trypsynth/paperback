@@ -18,6 +18,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.type
+import dev.paperback.mobile.t
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,14 +59,14 @@ fun FindDialog(
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		modifier = Modifier.semantics { paneTitle = "Find" },
-		title = { Text("Find") },
+		title = { Text(t("Find")) },
 		text = {
 			Column {
 				var historyExpanded by remember { mutableStateOf(false) }
 				TextField(
 					value = query,
 					onValueChange = { query = it },
-					label = { Text("Search Term") },
+					label = { Text(t("Search Term")) },
 					keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
 					keyboardActions = KeyboardActions(onSearch = { submitSearch() }),
 					singleLine = true,
@@ -93,7 +94,7 @@ fun FindDialog(
 								}
 							}
 						) {
-							Text("Search History")
+							Text(t("Search History"))
 						}
 						DropdownMenu(
 							expanded = historyExpanded,
@@ -128,7 +129,7 @@ fun FindDialog(
 						checked = matchCase,
 						onCheckedChange = null // Handled by Row toggleable
 					)
-					Text("Match Case", modifier = Modifier.padding(start = 8.dp))
+					Text(t("Match Case"), modifier = Modifier.padding(start = 8.dp))
 				}
 				Row(
 					verticalAlignment = Alignment.CenterVertically,
@@ -146,7 +147,7 @@ fun FindDialog(
 						checked = wholeWord,
 						onCheckedChange = null // Handled by Row toggleable
 					)
-					Text("Whole Word", modifier = Modifier.padding(start = 8.dp))
+					Text(t("Whole Word"), modifier = Modifier.padding(start = 8.dp))
 				}
 				Row(
 					verticalAlignment = Alignment.CenterVertically,
@@ -164,18 +165,18 @@ fun FindDialog(
 						checked = useRegex,
 						onCheckedChange = null // Handled by Row toggleable
 					)
-					Text("Regular Expression", modifier = Modifier.padding(start = 8.dp))
+					Text(t("Regular Expression"), modifier = Modifier.padding(start = 8.dp))
 				}
 			}
 		},
 		confirmButton = {
 			TextButton(onClick = submitSearch) {
-				Text("Find Next")
+				Text(t("Find Next"))
 			}
 		},
 		dismissButton = {
 			TextButton(onClick = onDismiss) {
-				Text("Cancel")
+				Text(t("Cancel"))
 			}
 		}
 	)
