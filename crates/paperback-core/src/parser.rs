@@ -373,6 +373,9 @@ mod tests {
 		separators: Vec<SeparatorInfo>,
 		lists: Vec<ListInfo>,
 		list_items: Vec<ListItemInfo>,
+		bolds: Vec<crate::types::FormatInfo>,
+		italics: Vec<crate::types::FormatInfo>,
+		underlines: Vec<crate::types::FormatInfo>,
 	}
 
 	impl ConverterOutput for MockConverter {
@@ -407,6 +410,18 @@ mod tests {
 		fn get_list_items(&self) -> &[ListItemInfo] {
 			&self.list_items
 		}
+
+		fn get_bolds(&self) -> &[crate::types::FormatInfo] {
+			&self.bolds
+		}
+
+		fn get_italics(&self) -> &[crate::types::FormatInfo] {
+			&self.italics
+		}
+
+		fn get_underlines(&self) -> &[crate::types::FormatInfo] {
+			&self.underlines
+		}
 	}
 	fn sample_converter() -> MockConverter {
 		MockConverter {
@@ -423,6 +438,9 @@ mod tests {
 			separators: vec![SeparatorInfo { offset: 4, length: 7 }],
 			lists: vec![ListInfo { offset: 5, item_count: 3, length: 4 }],
 			list_items: vec![ListItemInfo { offset: 6, level: 1, text: "Item".to_string() }],
+			bolds: vec![],
+			italics: vec![],
+			underlines: vec![],
 		}
 	}
 
@@ -518,6 +536,9 @@ mod tests {
 			separators: vec![],
 			lists: vec![],
 			list_items: vec![],
+			bolds: vec![],
+			italics: vec![],
+			underlines: vec![],
 		};
 		let mut buffer = DocumentBuffer::new();
 		add_converter_markers(&mut buffer, &converter, 0);
@@ -567,6 +588,9 @@ mod tests {
 			separators: vec![],
 			lists: vec![],
 			list_items: vec![],
+			bolds: vec![],
+			italics: vec![],
+			underlines: vec![],
 		};
 		let mut buffer = DocumentBuffer::new();
 		let base_offset = 100usize;

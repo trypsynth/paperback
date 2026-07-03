@@ -639,11 +639,11 @@ mod tests {
 
 	#[test]
 	fn marker_type_round_trip_for_all_known_values() {
-		for raw in 0..=15 {
+		for raw in 0..=18 {
 			let marker = MarkerType::try_from(raw).unwrap();
 			assert_eq!(i32::from(marker), raw);
 		}
-		assert!(MarkerType::try_from(16).is_err());
+		assert!(MarkerType::try_from(19).is_err());
 		assert!(MarkerType::try_from(-1).is_err());
 	}
 
