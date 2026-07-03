@@ -1041,29 +1041,121 @@ pub fn apply_readability_format_to_ctrl(
 	}
 }
 
+/// A non-overlapping run of text with the union of bold/italic/underline
+/// styles active over it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct FormatSegment {
+	pub start: i64,
+	pub end: i64,
+	pub bold: bool,
+	pub italic: bool,
+	pub underline: bool,
+}
+
+/// Merges bold/italic/underline markers (which may overlap, e.g. a bold word
+/// inside an italic sentence) into a sequence of non-overlapping segments, each
+/// carrying the union of the styles active over that range.
+///
+/// This is required because wxMSW's `wxTextCtrl::SetStyle` rewrites the *entire*
+/// font for a range whenever any font attribute is present in the `wxTextAttr`
+/// (it masks `CFM_FACE | CFM_SIZE | ...` unconditionally and fills unset fields
+/// from a default font — Arial 10pt). Applying overlapping single-style markers
+/// one at a time would therefore both reset the face/size and clobber each
+/// other's styles. Producing one combined style per non-overlapping segment
+/// avoids both problems and is correct on every platform.
+pub fn merge_formatting_markers(markers: &[paperback_core::session::LineMarker]) -> Vec<FormatSegment> {
+	use paperback_core::session::MarkerTypeFfi;
+	let is_format = |m: &&paperback_core::session::LineMarker| {
+		m.length > 0 && matches!(m.mtype, MarkerTypeFfi::Bold | MarkerTypeFfi::Italic | MarkerTypeFfi::Underline)
+	};
+
+	let mut bounds: Vec<i64> = Vec::new();
+	for m in markers.iter().filter(is_format) {
+		bounds.push(m.position);
+		bounds.push(m.position + m.length);
+	}
+	bounds.sort_unstable();
+	bounds.dedup();
+
+	let mut segments: Vec<FormatSegment> = Vec::new();
+	for pair in bounds.windows(2) {
+		let (start, end) = (pair[0], pair[1]);
+		let mut seg = FormatSegment { start, end, ..Default::default() };
+		for m in markers.iter().filter(is_format) {
+			// Boundaries include every marker edge, so each atomic span is
+			// either fully inside or fully outside every marker.
+			if m.position <= start && m.position + m.length >= end {
+				match m.mtype {
+					MarkerTypeFfi::Bold => seg.bold = true,
+					MarkerTypeFfi::Italic => seg.italic = true,
+					MarkerTypeFfi::Underline => seg.underline = true,
+					_ => {}
+				}
+			}
+		}
+		if !(seg.bold || seg.italic || seg.underline) {
+			continue;
+		}
+		// Coalesce with the previous segment when adjacent and identically styled.
+		if let Some(last) = segments.last_mut() {
+			if last.end == seg.start
+				&& last.bold == seg.bold
+				&& last.italic == seg.italic
+				&& last.underline == seg.underline
+			{
+				last.end = seg.end;
+				continue;
+			}
+		}
+		segments.push(seg);
+	}
+	segments
+}
+
 pub fn apply_formatting_markers_to_ctrl(text_ctrl: TextCtrl, session: &DocumentSession) {
 	let markers = session.get_formatting_markers();
-	if markers.is_empty() {
+	let segments = merge_formatting_markers(&markers);
+	if segments.is_empty() {
 		return;
 	}
+	let base_font = text_ctrl.get_font();
 	text_ctrl.freeze();
-	for marker in markers {
+	for seg in segments {
 		let mut attr = wxdragon::widgets::textctrl::TextAttr::new();
-		match marker.mtype {
-			paperback_core::session::MarkerTypeFfi::Bold => {
+		if let Some(base) = &base_font {
+			let style = if seg.italic { FontStyle::Italic } else { base.get_style() };
+			let weight = if seg.bold { FontWeight::Bold } else { base.get_weight() };
+			let underlined = seg.underline || base.is_underlined();
+			if let Some(mut font) = Font::new_with_details(
+				base.get_point_size(),
+				base.get_family().as_i32(),
+				style.as_i32(),
+				weight.as_i32(),
+				underlined,
+				&base.get_face_name(),
+			) {
+				if base.is_strikethrough() {
+					font.set_strikethrough(true);
+				}
+				let encoding = base.get_encoding();
+				if encoding != 0 {
+					font.set_encoding(encoding);
+				}
+				attr.set_font(&font);
+			}
+		} else {
+			// No base font to preserve; fall back to per-attribute flags.
+			if seg.bold {
 				attr.set_font_weight(FontWeight::Bold);
 			}
-			paperback_core::session::MarkerTypeFfi::Italic => {
+			if seg.italic {
 				attr.set_font_style(FontStyle::Italic);
 			}
-			paperback_core::session::MarkerTypeFfi::Underline => {
+			if seg.underline {
 				attr.set_font_underlined(true);
 			}
-			_ => continue,
 		}
-		let start = marker.position;
-		let end = start + marker.length;
-		text_ctrl.set_style(start, end, &attr);
+		text_ctrl.set_style(seg.start, seg.end, &attr);
 	}
 	text_ctrl.thaw();
 }
@@ -1133,4 +1225,77 @@ fn parse_single_key_shortcut(label: &str) -> Option<(i32, bool)> {
 		return Some((key, shift));
 	}
 	None
+}
+
+#[cfg(test)]
+mod tests {
+	use paperback_core::session::{LineMarker, MarkerTypeFfi};
+
+	use super::{FormatSegment, merge_formatting_markers};
+
+	fn marker(mtype: MarkerTypeFfi, position: i64, length: i64) -> LineMarker {
+		LineMarker { mtype, position, text: String::new(), reference: String::new(), level: 0, length }
+	}
+
+	#[test]
+	fn no_markers_yields_no_segments() {
+		assert_eq!(merge_formatting_markers(&[]), Vec::new());
+	}
+
+	#[test]
+	fn zero_length_markers_are_ignored() {
+		let markers = [marker(MarkerTypeFfi::Bold, 5, 0)];
+		assert_eq!(merge_formatting_markers(&markers), Vec::new());
+	}
+
+	#[test]
+	fn non_format_markers_are_ignored() {
+		let markers = [marker(MarkerTypeFfi::Heading1, 0, 10), marker(MarkerTypeFfi::Link, 2, 3)];
+		assert_eq!(merge_formatting_markers(&markers), Vec::new());
+	}
+
+	#[test]
+	fn single_bold_marker_produces_one_segment() {
+		let markers = [marker(MarkerTypeFfi::Bold, 0, 4)];
+		assert_eq!(
+			merge_formatting_markers(&markers),
+			vec![FormatSegment { start: 0, end: 4, bold: true, italic: false, underline: false }]
+		);
+	}
+
+	#[test]
+	fn overlapping_bold_and_italic_keep_both_on_the_intersection() {
+		// Bold over [0,10), italic over [4,7): the middle run must carry both.
+		let markers = [marker(MarkerTypeFfi::Bold, 0, 10), marker(MarkerTypeFfi::Italic, 4, 3)];
+		assert_eq!(
+			merge_formatting_markers(&markers),
+			vec![
+				FormatSegment { start: 0, end: 4, bold: true, italic: false, underline: false },
+				FormatSegment { start: 4, end: 7, bold: true, italic: true, underline: false },
+				FormatSegment { start: 7, end: 10, bold: true, italic: false, underline: false },
+			]
+		);
+	}
+
+	#[test]
+	fn adjacent_identical_segments_are_coalesced() {
+		let markers = [marker(MarkerTypeFfi::Bold, 0, 4), marker(MarkerTypeFfi::Bold, 4, 4)];
+		assert_eq!(
+			merge_formatting_markers(&markers),
+			vec![FormatSegment { start: 0, end: 8, bold: true, italic: false, underline: false }]
+		);
+	}
+
+	#[test]
+	fn all_three_styles_can_stack() {
+		let markers = [
+			marker(MarkerTypeFfi::Bold, 0, 6),
+			marker(MarkerTypeFfi::Italic, 0, 6),
+			marker(MarkerTypeFfi::Underline, 0, 6),
+		];
+		assert_eq!(
+			merge_formatting_markers(&markers),
+			vec![FormatSegment { start: 0, end: 6, bold: true, italic: true, underline: true }]
+		);
+	}
 }
