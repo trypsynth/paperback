@@ -195,7 +195,7 @@ pub struct TocEntry {
 	pub level: i32,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MarkerTypeFfi {
 	Heading1,
 	Heading2,
@@ -1566,6 +1566,38 @@ mod tests {
 		assert!(session.has_headings(Some(1)));
 		assert!(!session.has_headings(Some(2)));
 		assert!(!session.has_headings(Some(99)));
+	}
+
+	#[test]
+	fn get_formatting_markers_returns_only_bold_italic_underline_markers() {
+		let mut buffer = DocumentBuffer::with_content("line1\nline2\nline3".to_string());
+		buffer.add_marker(Marker::new(MarkerType::Heading1, 0).with_level(1).with_text("H1".to_string()));
+		buffer.add_marker(Marker::new(MarkerType::Bold, 0).with_length(5));
+		buffer.add_marker(Marker::new(MarkerType::Italic, 6).with_length(5));
+		buffer.add_marker(Marker::new(MarkerType::Underline, 12).with_length(5));
+		let mut doc = Document::new().with_title("Title".to_string()).with_author("Author".to_string());
+		doc.set_buffer(buffer);
+		let session = DocumentSession {
+			handle: DocumentHandle::new(doc),
+			file_path: "book.epub".to_string(),
+			history: Vec::new(),
+			history_index: 0,
+			parser_flags: ParserFlags::NONE,
+			last_stable_position: None,
+		};
+
+		let markers = session.get_formatting_markers();
+
+		assert_eq!(markers.len(), 3);
+		assert_eq!(markers[0].mtype, MarkerTypeFfi::Bold);
+		assert_eq!(markers[0].position, 0);
+		assert_eq!(markers[0].length, 5);
+		assert_eq!(markers[1].mtype, MarkerTypeFfi::Italic);
+		assert_eq!(markers[1].position, 6);
+		assert_eq!(markers[1].length, 5);
+		assert_eq!(markers[2].mtype, MarkerTypeFfi::Underline);
+		assert_eq!(markers[2].position, 12);
+		assert_eq!(markers[2].length, 5);
 	}
 
 	#[test]
