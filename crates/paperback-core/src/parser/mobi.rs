@@ -273,24 +273,27 @@ impl Parser for MobiParser {
 
 		// Rewrite MOBI-style filepos links into standard href/id anchors before any
 		// content is stripped, since filepos values are byte offsets into the raw HTML.
-		text = rewrite_filepos_links(&text);
+		let frag_offsets = build_fragment_offsets(&data, &record_offsets, mobi_header);
+		let mut text = rewrite_internal_links(&text, &frag_offsets);
 
 		// KF8 / AZW3 files concatenate the skeleton and fragments, often leaving
 		// `</body></html>` inside unclosed tags at insertion points. We strip these
 		// to allow `scraper` to parse the fragments cleanly.
-		if let Ok(re) = regex::Regex::new(r"(?is)</body>|</html>") {
-			text = re.replace_all(&text, "").into_owned();
-		}
+		static RE_BODY: std::sync::LazyLock<regex::Regex> =
+			std::sync::LazyLock::new(|| regex::Regex::new(r"(?is)</body>|</html>").unwrap());
+		text = RE_BODY.replace_all(&text, "").into_owned();
 
-		if let Ok(re) = regex::Regex::new(r"(?is)<title[^>]*>.*?</title>") {
-			text = re.replace_all(&text, "").into_owned();
-		}
-		if let Ok(re) = regex::Regex::new(r"(?is)<style[^>]*>.*?</style>") {
-			text = re.replace_all(&text, "").into_owned();
-		}
-		if let Ok(re) = regex::Regex::new(r"(?is)@page\s*\{[^<]+") {
-			text = re.replace_all(&text, "").into_owned();
-		}
+		static RE_TITLE: std::sync::LazyLock<regex::Regex> =
+			std::sync::LazyLock::new(|| regex::Regex::new(r"(?is)<title[^>]*>.*?</title>").unwrap());
+		text = RE_TITLE.replace_all(&text, "").into_owned();
+
+		static RE_STYLE: std::sync::LazyLock<regex::Regex> =
+			std::sync::LazyLock::new(|| regex::Regex::new(r"(?is)<style[^>]*>.*?</style>").unwrap());
+		text = RE_STYLE.replace_all(&text, "").into_owned();
+
+		static RE_PAGE: std::sync::LazyLock<regex::Regex> =
+			std::sync::LazyLock::new(|| regex::Regex::new(r"(?is)@page\s*\{[^<]+").unwrap());
+		text = RE_PAGE.replace_all(&text, "").into_owned();
 
 		// Old-style Mobipocket files use <font size="N"> instead of <h1>-<h6>.
 		// Rewrite them so the heading-based TOC builder can pick them up.
@@ -316,7 +319,9 @@ impl Parser for MobiParser {
 // Old-style Mobipocket files use <font size="N"> for headings (size 7 = largest, 4-7 map to h1-h4).
 // Only activated when the document contains no semantic h1-h6 tags.
 fn rewrite_font_size_headings(html: &str) -> String {
-	if regex::Regex::new(r"(?i)<h[1-6]\b").is_ok_and(|re| re.is_match(html)) {
+	static RE_H1_6: std::sync::LazyLock<regex::Regex> =
+		std::sync::LazyLock::new(|| regex::Regex::new(r"(?i)<h[1-6]\b").unwrap());
+	if RE_H1_6.is_match(html) {
 		return html.to_string();
 	}
 	let mut result = html.to_string();
@@ -344,29 +349,155 @@ fn snap_to_char_boundary(s: &str, pos: usize) -> usize {
 // This prevents filepos anchors from being inserted in the middle of a tag and
 // corrupting it into a text fragment.
 fn snap_past_open_tag(html: &str, pos: usize) -> usize {
-	let pos = pos.min(html.len());
-	if let Some(tag_start) = html[..pos].rfind('<')
-		&& !html[tag_start..pos].contains('>')
-		&& let Some(rel) = html[pos..].find('>')
-	{
-		return pos + rel + 1;
+	if html[pos..].starts_with('<') {
+		if let Some(end) = html[pos..].find('>') {
+			return pos + end + 1;
+		}
 	}
 	pos
 }
 
-fn rewrite_filepos_links(html: &str) -> String {
-	let Ok(re) = regex::Regex::new(r"(?i)<a\b[^>]*?filepos\s*=\s*(\d+)[^>]*>") else {
-		return html.to_string();
-	};
+fn decode_vwi(data: &[u8], mut pos: usize) -> (usize, usize) {
+	let mut val: usize = 0;
+	while pos < data.len() {
+		let b = data[pos];
+		pos += 1;
+		val = (val << 7) | (b & 0x7F) as usize;
+		if (b & 0x80) != 0 {
+			break;
+		}
+	}
+	(val, pos)
+}
+
+fn base32_decode(s: &str) -> usize {
+	let mut val = 0;
+	for c in s.chars() {
+		val = (val << 5) | (c.to_digit(32).unwrap_or(0) as usize);
+	}
+	val
+}
+
+fn build_fragment_offsets(
+	data: &[u8],
+	records: &[usize],
+	mobi_header: &[u8],
+) -> std::collections::HashMap<usize, usize> {
+	let mut frag_offsets = std::collections::HashMap::new();
+	if mobi_header.len() < 236 {
+		return frag_offsets;
+	}
+	let frag_indx =
+		u32::from_be_bytes([mobi_header[232], mobi_header[233], mobi_header[234], mobi_header[235]]) as usize;
+	if frag_indx == 0xFFFFFFFF || frag_indx >= records.len() - 1 {
+		return frag_offsets;
+	}
+
+	let prim_rec = &data[records[frag_indx]..records[frag_indx + 1]];
+	if prim_rec.len() < 28 || &prim_rec[0..4] != b"INDX" {
+		return frag_offsets;
+	}
+	let num_data_recs = u32::from_be_bytes([prim_rec[24], prim_rec[25], prim_rec[26], prim_rec[27]]) as usize;
+
+	for i in 1..=num_data_recs {
+		if frag_indx + i >= records.len() - 1 {
+			break;
+		}
+		let data_rec = &data[records[frag_indx + i]..records[frag_indx + i + 1]];
+		if data_rec.len() < 28 || &data_rec[0..4] != b"INDX" {
+			continue;
+		}
+
+		let idxt_offset = u32::from_be_bytes([data_rec[20], data_rec[21], data_rec[22], data_rec[23]]) as usize;
+		let num_entries = u32::from_be_bytes([data_rec[24], data_rec[25], data_rec[26], data_rec[27]]) as usize;
+
+		if idxt_offset + 4 > data_rec.len() {
+			continue;
+		}
+		let idxt = &data_rec[idxt_offset..];
+		if &idxt[0..4] != b"IDXT" {
+			continue;
+		}
+
+		for j in 0..num_entries {
+			let entry_idx = 4 + j as usize * 2;
+			if entry_idx + 2 > idxt.len() {
+				break;
+			}
+			let entry_offset = u16::from_be_bytes([idxt[entry_idx], idxt[entry_idx + 1]]) as usize;
+			if entry_offset >= data_rec.len() {
+				continue;
+			}
+
+			let mut pos = entry_offset;
+			let label_len = data_rec[pos] as usize;
+			pos += 1;
+			if pos + label_len > data_rec.len() {
+				continue;
+			}
+			let label_str = match std::str::from_utf8(&data_rec[pos..pos + label_len]) {
+				Ok(s) => s,
+				Err(_) => continue,
+			};
+			let insert_offset = match label_str.parse::<usize>() {
+				Ok(v) => v,
+				Err(_) => continue,
+			};
+			pos += label_len;
+
+			if pos >= data_rec.len() {
+				continue;
+			}
+			let control = data_rec[pos];
+			pos += 1;
+
+			if (control & 1) != 0 {
+				let (_, p) = decode_vwi(data_rec, pos);
+				pos = p;
+			}
+			if (control & 2) != 0 {
+				let (_, p) = decode_vwi(data_rec, pos);
+				pos = p;
+			}
+			if (control & 4) != 0 {
+				let (fid, p) = decode_vwi(data_rec, pos);
+				pos = p;
+				frag_offsets.insert(fid, insert_offset);
+			}
+		}
+	}
+	frag_offsets
+}
+
+fn rewrite_internal_links(html: &str, frag_offsets: &std::collections::HashMap<usize, usize>) -> String {
+	static RE_LINKS: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+		regex::Regex::new(r#"(?i)<a\b[^>]*?(?:filepos\s*=\s*['"]?(\d+)|href\s*=\s*['"]?kindle:pos:(?:fid:([0-9A-Va-v]+):)?off:([0-9A-Va-v]+))[^>]*>"#).unwrap()
+	});
+
 	let mut links: Vec<(usize, usize, usize)> = Vec::new();
 	let mut targets = std::collections::BTreeSet::new();
-	for cap in re.captures_iter(html) {
+	for cap in RE_LINKS.captures_iter(html) {
 		let m = cap.get(0).unwrap();
-		if let Ok(filepos) = cap[1].parse::<usize>()
-			&& filepos < html.len()
-		{
-			links.push((m.start(), m.end(), filepos));
-			targets.insert(filepos);
+		let mut filepos = None;
+		if let Some(fpos) = cap.get(1) {
+			filepos = fpos.as_str().parse::<usize>().ok();
+		} else if let Some(off) = cap.get(3) {
+			let off_val = base32_decode(off.as_str());
+			if let Some(fid) = cap.get(2) {
+				let f_idx = base32_decode(fid.as_str());
+				if let Some(&base_offset) = frag_offsets.get(&f_idx) {
+					filepos = Some(base_offset + off_val);
+				}
+			} else {
+				filepos = Some(off_val);
+			}
+		}
+
+		if let Some(filepos) = filepos {
+			if filepos < html.len() {
+				links.push((m.start(), m.end(), filepos));
+				targets.insert(filepos);
+			}
 		}
 	}
 	if links.is_empty() {
@@ -599,7 +730,7 @@ impl HuffmanDecoder {
 				self.dictionary.push(Some((bytes, (num_bytes & 0x8000) == 0x8000)));
 			}
 		}
-		println!("Dictionary size: {}", self.dictionary.len());
+		self.dictionary.reserve(4096);
 		Ok(())
 	}
 
@@ -655,20 +786,15 @@ impl HuffmanDecoder {
 			} else {
 				current.bits_left -= code_len;
 				if code > max_code {
-					println!("Broke on code > max_code, code={}, max_code={}", code, max_code);
 					current.bits_left = 0;
 				} else {
 					let index = ((max_code - code) >> (32 - code_len)) as usize;
 					if index >= self.dictionary.len() {
-						println!("Broke on index >= dictionary len, index={}", index);
 						current.bits_left = 0;
 					} else {
 						let (slice, flag) = match self.dictionary[index].clone() {
 							Some(v) => v,
-							None => {
-								println!("Broke on cycle");
-								(Vec::new(), true)
-							}
+							None => (Vec::new(), true),
 						};
 						if flag {
 							current.out.extend_from_slice(&slice);
