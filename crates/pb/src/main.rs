@@ -92,5 +92,8 @@ fn metadata(doc: &Document) -> String {
 	out.push_str(&format!("Words: {}\n", doc.stats.word_count));
 	out.push_str(&format!("Characters: {}\n", doc.stats.char_count));
 	out.push_str(&format!("Lines: {}\n", doc.stats.line_count));
+	for item in &doc.toc_items {
+		out.push_str(&format!("TOC: {} -> {:?}\n", item.name, item.offset));
+	}
 	out
 }

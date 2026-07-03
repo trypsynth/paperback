@@ -20,7 +20,7 @@ impl Parser for MobiParser {
 	}
 
 	fn extensions(&self) -> &[&str] {
-		&["mobi"]
+		&["mobi", "azw", "azw3"]
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
@@ -177,17 +177,37 @@ impl Parser for MobiParser {
 			}
 		}
 		let mut extra_data_flags = 0u32;
-		if header_length >= 244 && mobi_header_offset + 244 <= rec0.len() {
-			extra_data_flags = u32::from_be_bytes([
-				rec0[mobi_header_offset + 240],
-				rec0[mobi_header_offset + 241],
-				rec0[mobi_header_offset + 242],
-				rec0[mobi_header_offset + 243],
-			]);
+		let mobi_header = &rec0[mobi_header_offset..];
+		if mobi_header.len() >= 244 {
+			let mobi_version = u32::from_be_bytes([mobi_header[20], mobi_header[21], mobi_header[22], mobi_header[23]]);
+			if mobi_version == 8 {
+				extra_data_flags =
+					u32::from_be_bytes([mobi_header[224], mobi_header[225], mobi_header[226], mobi_header[227]]);
+			} else {
+				extra_data_flags = u16::from_be_bytes([mobi_header[242], mobi_header[243]]) as u32;
+			}
 			if extra_data_flags == 0xFFFFFFFF {
 				extra_data_flags = 0;
 			}
 		}
+		let mut fdst_html_end = None;
+		if mobi_header.len() >= 180 {
+			let fdst_idx =
+				u32::from_be_bytes([mobi_header[176], mobi_header[177], mobi_header[178], mobi_header[179]]) as usize;
+			if fdst_idx != 0xFFFFFFFF && fdst_idx < num_records {
+				let start = record_offsets[fdst_idx];
+				let end = if fdst_idx + 1 < num_records { record_offsets[fdst_idx + 1] } else { data.len() };
+				if start < end && end <= data.len() {
+					let fdst_rec = &data[start..end];
+					if fdst_rec.starts_with(b"FDST") && fdst_rec.len() >= 20 {
+						let html_flow_end =
+							u32::from_be_bytes([fdst_rec[16], fdst_rec[17], fdst_rec[18], fdst_rec[19]]) as usize;
+						fdst_html_end = Some(html_flow_end);
+					}
+				}
+			}
+		}
+
 		let mut content = Vec::new();
 		for i in first_content_record..=last_content_record {
 			let start = record_offsets[i];
@@ -197,19 +217,29 @@ impl Parser for MobiParser {
 			}
 			let mut record_data = &data[start..end];
 			let trailing_entries = (extra_data_flags >> 1).count_ones();
+			let mut stripped_len = record_data.len();
 			if trailing_entries > 0 && !record_data.is_empty() {
-				let mut stripped_len = record_data.len();
+				let mut valid = true;
 				for _ in 0..trailing_entries {
 					if stripped_len == 0 {
 						break;
 					}
 					let size = get_trailing_size(&record_data[..stripped_len]);
-					stripped_len = stripped_len.saturating_sub(size);
+					if size > stripped_len {
+						valid = false;
+						break;
+					}
+					stripped_len -= size;
 				}
-				if extra_data_flags & 1 != 0 && stripped_len > 0 {
-					let overlap_size = (record_data[stripped_len - 1] & 0x07) as usize;
-					stripped_len = stripped_len.saturating_sub(overlap_size + 1);
+				if !valid {
+					stripped_len = record_data.len();
 				}
+			}
+			if extra_data_flags & 1 != 0 && stripped_len > 0 {
+				let overlap_size = (record_data[stripped_len - 1] & 0x03) as usize;
+				stripped_len = stripped_len.saturating_sub(overlap_size + 1);
+			}
+			if stripped_len != record_data.len() {
 				record_data = &record_data[..stripped_len];
 			}
 			match compression {
@@ -217,12 +247,20 @@ impl Parser for MobiParser {
 				2 => content.extend_from_slice(&decompress_palmdoc(record_data)),
 				17480 => {
 					if let Some(ref mut decoder) = huff_decoder {
-						content.extend_from_slice(&decoder.decode(record_data)?);
+						let decoded = decoder.decode(record_data)?;
+						content.extend_from_slice(&decoded);
 					}
 				}
 				other => anyhow::bail!("Unsupported compression mode ({other})"),
 			}
 		}
+
+		if let Some(html_end) = fdst_html_end {
+			if html_end < content.len() {
+				content.truncate(html_end);
+			}
+		}
+
 		const MAX_MOBI_TEXT_BYTES: usize = 20 * 1024 * 1024;
 		if content.len() > MAX_MOBI_TEXT_BYTES {
 			content.truncate(MAX_MOBI_TEXT_BYTES);
@@ -232,9 +270,18 @@ impl Parser for MobiParser {
 		} else {
 			WINDOWS_1252.decode(&content).0.into_owned()
 		};
+
 		// Rewrite MOBI-style filepos links into standard href/id anchors before any
 		// content is stripped, since filepos values are byte offsets into the raw HTML.
 		text = rewrite_filepos_links(&text);
+
+		// KF8 / AZW3 files concatenate the skeleton and fragments, often leaving
+		// `</body></html>` inside unclosed tags at insertion points. We strip these
+		// to allow `scraper` to parse the fragments cleanly.
+		if let Ok(re) = regex::Regex::new(r"(?is)</body>|</html>") {
+			text = re.replace_all(&text, "").into_owned();
+		}
+
 		if let Ok(re) = regex::Regex::new(r"(?is)<title[^>]*>.*?</title>") {
 			text = re.replace_all(&text, "").into_owned();
 		}
@@ -244,6 +291,7 @@ impl Parser for MobiParser {
 		if let Ok(re) = regex::Regex::new(r"(?is)@page\s*\{[^<]+") {
 			text = re.replace_all(&text, "").into_owned();
 		}
+
 		// Old-style Mobipocket files use <font size="N"> instead of <h1>-<h6>.
 		// Rewrite them so the heading-based TOC builder can pick them up.
 		text = rewrite_font_size_headings(&text);
@@ -358,15 +406,6 @@ fn rewrite_filepos_links(html: &str) -> String {
 }
 
 fn get_trailing_size(data: &[u8]) -> usize {
-	if data.is_empty() {
-		return 0;
-	}
-	// If the last byte doesn't have bit 7 set it's not a valid VLQ terminator —
-	// this happens when the trailing-entry count from extra_data_flags exceeds the
-	// entries actually present. Treat the entry as absent.
-	if data[data.len() - 1] & 0x80 == 0 {
-		return 0;
-	}
 	let mut size = 0usize;
 	let mut pos = data.len() - 1;
 	let mut shift = 0u32;
@@ -560,6 +599,7 @@ impl HuffmanDecoder {
 				self.dictionary.push(Some((bytes, (num_bytes & 0x8000) == 0x8000)));
 			}
 		}
+		println!("Dictionary size: {}", self.dictionary.len());
 		Ok(())
 	}
 
@@ -611,48 +651,52 @@ impl HuffmanDecoder {
 			}
 			current.n -= code_len as i32;
 			if current.bits_left < code_len {
-				break;
-			}
-			current.bits_left -= code_len;
-			if code > max_code {
-				break;
-			}
-			let index = ((max_code - code) >> (32 - code_len)) as usize;
-			if index >= self.dictionary.len() {
-				break;
-			}
-			let (slice, flag) = match self.dictionary[index].clone() {
-				Some(v) => v,
-				None => {
-					// Cycle detected: this entry is already being decoded up the stack.
-					// Break the cycle by emitting nothing for this reference.
-					break;
-				}
-			};
-			if flag {
-				current.out.extend_from_slice(&slice);
+				current.bits_left = 0;
 			} else {
-				self.dictionary[index] = None;
-				stack.push(current);
-				if stack.len() > 1024 {
-					anyhow::bail!("Decode stack overflow");
-				}
-				current = {
-					let mut padded_data = Vec::with_capacity(slice.len() + 8);
-					padded_data.extend_from_slice(&slice);
-					padded_data.extend_from_slice(&[0u8; 8]);
-					let mut x_bytes = [0u8; 8];
-					x_bytes.copy_from_slice(&padded_data[0..8]);
-					DecodeFrame {
-						data: padded_data,
-						pos: 0,
-						bits_left: slice.len() * 8,
-						x: u64::from_be_bytes(x_bytes),
-						n: 32,
-						out: Vec::new(),
-						target_dict_index: Some(index),
+				current.bits_left -= code_len;
+				if code > max_code {
+					println!("Broke on code > max_code, code={}, max_code={}", code, max_code);
+					current.bits_left = 0;
+				} else {
+					let index = ((max_code - code) >> (32 - code_len)) as usize;
+					if index >= self.dictionary.len() {
+						println!("Broke on index >= dictionary len, index={}", index);
+						current.bits_left = 0;
+					} else {
+						let (slice, flag) = match self.dictionary[index].clone() {
+							Some(v) => v,
+							None => {
+								println!("Broke on cycle");
+								(Vec::new(), true)
+							}
+						};
+						if flag {
+							current.out.extend_from_slice(&slice);
+						} else {
+							self.dictionary[index] = None;
+							stack.push(current);
+							if stack.len() > 1024 {
+								anyhow::bail!("Decode stack overflow");
+							}
+							current = {
+								let mut padded_data = Vec::with_capacity(slice.len() + 8);
+								padded_data.extend_from_slice(&slice);
+								padded_data.extend_from_slice(&[0u8; 8]);
+								let mut x_bytes = [0u8; 8];
+								x_bytes.copy_from_slice(&padded_data[0..8]);
+								DecodeFrame {
+									data: padded_data,
+									pos: 0,
+									bits_left: slice.len() * 8,
+									x: u64::from_be_bytes(x_bytes),
+									n: 32,
+									out: Vec::new(),
+									target_dict_index: Some(index),
+								}
+							};
+						}
 					}
-				};
+				}
 			}
 			while current.bits_left == 0 {
 				let finished_out = current.out;

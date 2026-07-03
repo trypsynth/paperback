@@ -3941,8 +3941,3 @@ checksum = "27bc9d5b815bc103f142aa054f561d9187d191692ec7c2d1e2b4737f8dbd7296"
 dependencies = [
  "zune-core",
 ]
-
-[[patch.unused]]
-name = "wxdragon"
-version = "0.9.16"
-source = "git+https://github.com/AllenDang/wxDragon#39775f3754b0404b0f69d0c8ea56fe1f2edcfd90"
