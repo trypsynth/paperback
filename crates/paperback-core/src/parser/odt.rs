@@ -5,7 +5,7 @@ use roxmltree::{Document as XmlDocument, Node, NodeType};
 use zip::ZipArchive;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, format_marker_types},
 	parser::{
 		Parser,
 		util::{
@@ -173,14 +173,8 @@ fn traverse(
 			traverse_children(node, buffer, id_positions, render_tables_inline, format_style_map);
 			let end = buffer.current_position();
 			if end > start {
-				if bold {
-					buffer.add_marker(Marker::new(MarkerType::Bold, start).with_length(end - start));
-				}
-				if italic {
-					buffer.add_marker(Marker::new(MarkerType::Italic, start).with_length(end - start));
-				}
-				if underline {
-					buffer.add_marker(Marker::new(MarkerType::Underline, start).with_length(end - start));
+				for kind in format_marker_types(bold, italic, underline) {
+					buffer.add_marker(Marker::new(kind, start).with_length(end - start));
 				}
 			}
 			return;

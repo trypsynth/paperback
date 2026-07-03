@@ -13,7 +13,7 @@ use roxmltree::{Document as XmlDocument, Node, NodeType};
 use zip::ZipArchive;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, format_marker_types},
 	parser::{
 		PASSWORD_REQUIRED_ERROR_PREFIX, Parser,
 		util::{
@@ -598,6 +598,7 @@ fn process_paragraph(
 ) {
 	let paragraph_start = buffer.current_position();
 	let mut paragraph_text = String::new();
+	let mut para_display_len = 0usize;
 	let mut heading_level = 0;
 	let mut is_paragraph_style_heading = false;
 	let mut format_spans: Vec<(MarkerType, usize, usize)> = Vec::new();
@@ -616,7 +617,7 @@ fn process_paragraph(
 				id_positions.insert(name.to_string(), paragraph_start + paragraph_text.len());
 			}
 		} else if tag_name == "hyperlink" {
-			process_hyperlink(child, &mut paragraph_text, buffer, rels, paragraph_start);
+			para_display_len += process_hyperlink(child, &mut paragraph_text, buffer, rels, paragraph_start);
 		} else if tag_name == "r" {
 			if heading_level == 0
 				&& let Some(rpr_node) = find_child_element(child, "rPr")
@@ -633,6 +634,7 @@ fn process_paragraph(
 					if !display_text.is_empty() {
 						let link_offset = paragraph_start + paragraph_text.len();
 						paragraph_text.push_str(&display_text);
+						para_display_len += display_len(&display_text);
 						buffer.add_marker(
 							Marker::new(MarkerType::Link, link_offset)
 								.with_text(display_text.clone())
@@ -643,23 +645,19 @@ fn process_paragraph(
 			}
 			let run_text = collect_ooxml_run_text(child);
 			if !run_text.is_empty() {
-				let run_start = paragraph_start + display_len(&paragraph_text);
+				let run_start = paragraph_start + para_display_len;
+				let run_len = display_len(&run_text);
 				if let Some(rpr_node) = find_child_element(child, "rPr") {
 					let (bold, italic, underline) = get_run_format_flags(rpr_node);
-					let run_end = run_start + display_len(&run_text);
+					let run_end = run_start + run_len;
 					if run_end > run_start {
-						if bold {
-							format_spans.push((MarkerType::Bold, run_start, run_end));
-						}
-						if italic {
-							format_spans.push((MarkerType::Italic, run_start, run_end));
-						}
-						if underline {
-							format_spans.push((MarkerType::Underline, run_start, run_end));
-						}
+						format_spans.extend(
+							format_marker_types(bold, italic, underline).map(|kind| (kind, run_start, run_end)),
+						);
 					}
 				}
 				paragraph_text.push_str(&run_text);
+				para_display_len += run_len;
 			}
 		}
 	}
@@ -687,13 +685,15 @@ fn process_paragraph(
 	}
 }
 
+/// Appends the hyperlink's display text to `paragraph_text`, records a Link
+/// marker, and returns the number of display units appended.
 fn process_hyperlink(
 	element: Node,
 	paragraph_text: &mut String,
 	buffer: &mut DocumentBuffer,
 	rels: &HashMap<String, String>,
 	paragraph_start: usize,
-) {
+) -> usize {
 	let r_id = element.attribute("id").unwrap_or("");
 	let anchor = element.attribute("anchor").unwrap_or("");
 	let link_target = if !r_id.is_empty() {
@@ -710,7 +710,7 @@ fn process_hyperlink(
 		}
 	}
 	if link_text.is_empty() {
-		return;
+		return 0;
 	}
 	let link_offset = paragraph_start + paragraph_text.len();
 	paragraph_text.push_str(&link_text);
@@ -719,6 +719,7 @@ fn process_hyperlink(
 			Marker::new(MarkerType::Link, link_offset).with_text(link_text.clone()).with_reference(link_target),
 		);
 	}
+	display_len(&link_text)
 }
 
 fn get_paragraph_heading_level(pr_element: Node, style_heading_map: &HashMap<String, i32>) -> i32 {

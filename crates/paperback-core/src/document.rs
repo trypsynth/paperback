@@ -34,6 +34,15 @@ impl From<MarkerType> for i32 {
 	}
 }
 
+/// Yields the character-formatting marker types implied by the given
+/// bold/italic/underline flags, in a stable order. Shared by the parsers so
+/// the flag-triple → marker fan-out lives in one place.
+pub(crate) fn format_marker_types(bold: bool, italic: bool, underline: bool) -> impl Iterator<Item = MarkerType> {
+	[(bold, MarkerType::Bold), (italic, MarkerType::Italic), (underline, MarkerType::Underline)]
+		.into_iter()
+		.filter_map(|(on, kind)| on.then_some(kind))
+}
+
 impl TryFrom<i32> for MarkerType {
 	type Error = ();
 
