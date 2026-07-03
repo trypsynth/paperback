@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-26 14:10-0600\n"
-"PO-Revision-Date: 2026-06-27 17:08+0300\n"
+"POT-Creation-Date: 2026-06-30 11:59-0600\n"
+"PO-Revision-Date: 2026-07-03 21:04+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -52,6 +52,9 @@ msgstr "Polku"
 msgid "&Open"
 msgstr "&Avaa"
 
+msgid "&Locate…"
+msgstr "Et&si…"
+
 msgid "&Remove"
 msgstr "&Poista"
 
@@ -93,6 +96,9 @@ msgstr "Suljettu"
 
 msgid "Missing"
 msgstr "Ei löydy"
+
+msgid "Locate Book"
+msgstr "Kirjan etsintä"
 
 msgid "Jump to Bookmark"
 msgstr "Siirry kirjanmerkkiin"
@@ -239,6 +245,9 @@ msgstr "Pala&uta aiemmin avatut asiakirjat käynnistettäessä"
 
 msgid "&Word wrap"
 msgstr "Rivit&ys"
+
+msgid "Render tables &inline"
+msgstr "Näytä taulukot tekst&in osana"
 
 msgid "&Minimize to system tray"
 msgstr "&Pienennä ilmaisinalueelle"
@@ -527,10 +536,10 @@ msgid "&Match case"
 msgstr "Sama &kirjainkoko"
 
 msgid "Match &whole word"
-msgstr "Kokonainen sa&na"
+msgstr "Koko sa&na"
 
 msgid "Use &regular expressions"
-msgstr "Kä&ytä sääntölausekkeita"
+msgstr "Kä&ytä säännöllisiä lausekkeita"
 
 msgid "Find &Previous"
 msgstr "Etsi edell&inen"
@@ -544,14 +553,14 @@ msgstr "Ei löydy."
 msgid "No more results. Wrapping search."
 msgstr "Ei enempää tuloksia. Aloitetaan alusta."
 
-msgid "Failed to open containing folder."
-msgstr "Asiakirjakansion avaaminen epäonnistui."
+msgid "Failed to reveal file in folder."
+msgstr "Tiedostokansion avaaminen epäonnistui."
 
 msgid ""
 "readme.html not found. Please ensure the application was built properly."
 msgstr ""
-"Tiedostoa readme.html ei löydy. Varmista, että sovellus on koontikäännetty "
-"oikein."
+"Tiedostoa readme.html ei löydy. Varmista, että sovellus on käännetty oikein "
+"lähdekoodista."
 
 msgid "Failed to launch default browser."
 msgstr "Oletusselaimen käynnistys epäonnistui."
@@ -575,16 +584,14 @@ msgid "{} chars"
 msgstr "{} merkkiä"
 
 msgid "Open Document"
-msgstr "Avaa asiakirja"
+msgstr "Asiakirjan avaaminen"
 
 msgid "No pages."
 msgstr "Ei sivuja."
 
-#| msgid "&Word wrap"
 msgid "Word wrap on."
 msgstr "Rivitys käytössä."
 
-#| msgid "&Word wrap"
 msgid "Word wrap off."
 msgstr "Rivitys pois."
 
@@ -648,7 +655,6 @@ msgstr "Lähdekoodi:"
 msgid "Source view is not available for this document format."
 msgstr "Tämä asiakirjamuoto ei tue lähdekoodinäkymää."
 
-#| msgid "Failed to load document."
 msgid "Could not load the document source."
 msgstr "Asiakirjan lähdekoodia ei voitu näyttää."
 
@@ -731,7 +737,6 @@ msgstr "Seuraava luetteloko&hde\tI"
 msgid "Container &Start\tShift+,"
 msgstr "Säilön &alku\tShift+,"
 
-#| msgid "No note at the current position."
 msgid "Go to the start of the current list or table"
 msgstr "Siirry nykyisen luettelon tai taulukon alkuun"
 
@@ -852,6 +857,10 @@ msgstr "T&yökalut"
 msgid "&Help"
 msgstr "&Ohje"
 
+#| msgid "&Edit Note"
+msgid "&Edit"
+msgstr "&Muokkaa"
+
 msgid "&Open...\tCtrl+O"
 msgstr "&Avaa...\tCtrl+O"
 
@@ -877,7 +886,7 @@ msgid "Close all documents"
 msgstr "Sulje kaikki asiakirjat"
 
 msgid "Reopen &Last Closed\tCtrl+Shift+T"
-msgstr "Palauta &viimeksi suljettu\tCtrl+Shift+T"
+msgstr "Avaa &viimeksi suljettu uudelleen\tCtrl+Shift+T"
 
 msgid "Reopen the last closed document"
 msgstr "Avaa viimeksi suljettu asiakirja uudelleen"
@@ -893,6 +902,30 @@ msgstr "&Lopeta\tCtrl+Q"
 
 msgid "Exit the application"
 msgstr "Lopeta sovellus"
+
+#| msgid "&Find...\tCtrl+F"
+msgid "&Undo\tCtrl+Z"
+msgstr "K&umoa\tCtrl+Z"
+
+#| msgid "Find &Previous\tCtrl+Shift+G"
+msgid "&Redo\tCtrl+Shift+Z"
+msgstr "Tee uu&delleen\tCtrl+Shift+Z"
+
+#| msgid "E&xit\tCtrl+Q"
+msgid "Cu&t\tCtrl+X"
+msgstr "&Leikkaa\tCtrl+X"
+
+#| msgid "&Close\tCtrl+W"
+msgid "&Copy\tCtrl+C"
+msgstr "&Kopioi\tCtrl+C"
+
+#| msgid "&Donate\tCtrl+D"
+msgid "&Paste\tCtrl+V"
+msgstr "L&iitä\tCtrl+V"
+
+#| msgid "Close &All\tCtrl+Shift+W"
+msgid "Select &All\tCtrl+A"
+msgstr "Valitse k&aikki\tCtrl+A"
 
 msgid "&Find...\tCtrl+F"
 msgstr "&Etsi...\tCtrl+F"
@@ -936,11 +969,19 @@ msgstr "Siirry &prosenttiin...\tCtrl+Shift+G"
 msgid "Go to a percentage of the document"
 msgstr "Siirry prosenttiin"
 
+#| msgid "Go &Back\tAlt+Left"
+msgid "Go &Back\tCtrl+["
+msgstr "Siirry &taaksepäin\tCtrl+["
+
 msgid "Go &Back\tAlt+Left"
 msgstr "Siirry t&aaksepäin\tAlt+Vasen"
 
 msgid "Go back in history"
 msgstr "Siirry historiassa taaksepäin"
+
+#| msgid "Go &Forward\tAlt+Right"
+msgid "Go &Forward\tCtrl+]"
+msgstr "Siirry &eteenpäin\tCtrl+]"
 
 msgid "Go &Forward\tAlt+Right"
 msgstr "Siirry &eteenpäin\tAlt+Oikea"
@@ -1066,16 +1107,16 @@ msgid "Show table of contents"
 msgstr "Näytä sisällysluettelo"
 
 msgid "&Elements List...\tF7"
-msgstr "&Elementtiluettelo...\tF7"
+msgstr "&Elementtilista...\tF7"
 
 msgid "Show elements list"
-msgstr "Näytä elementtiluettelo"
+msgstr "Näytä elementtilista"
 
-msgid "Open &Containing Folder\tCtrl+Shift+C"
-msgstr "Avaa &asiakirjan kansio\tCtrl+Shift+C"
+msgid "Reveal &File in Folder\tCtrl+Shift+C"
+msgstr "Avaa t&iedoston kansio\tCtrl+Shift+C"
 
-msgid "Open folder containing the document"
-msgstr "Avaa asiakirjan kansio"
+msgid "Reveal document in the file manager"
+msgstr "Avaa asiakirjan kansio tiedostonhallinnassa"
 
 msgid "Open in &Web View\tCtrl+Shift+V"
 msgstr "Avaa sel&ainnäkymässä\tCtrl+Shift+V"
@@ -1350,74 +1391,606 @@ msgstr "&Lopeta"
 msgid "Exit Paperback"
 msgstr "Lopeta Paperback"
 
-#~ msgid "expanded"
-#~ msgstr "laajennettu"
-
-#~ msgid "collapsed"
-#~ msgstr "kutistettu"
+#, c-format
+msgid "Update to %s"
+msgstr "Päivitä versioon %s"
 
 #, c-format
-#~ msgid "Update to %s"
-#~ msgstr "Päivitä versioon %s"
+msgid "A new version of %s is available. Here's what's new:"
+msgstr "%sista on saatavilla uusi versio. Sen uusia ominaisuuksia ovat:"
+
+msgid "No release notes provided."
+msgstr "Julkaisutietoja ei saatavilla."
 
 #, c-format
-#~ msgid "A new version of %s is available. Here's what's new:"
-#~ msgstr "%sista on saatavilla uusi versio. Sen uusia ominaisuuksia ovat:"
+msgid "%s Update"
+msgstr "%sin päivitys"
 
-#~ msgid "No release notes provided."
-#~ msgstr "Julkaisutietoja ei saatavilla."
+msgid "Downloading update..."
+msgstr "Päivitystä ladataan..."
 
-#, c-format
-#~ msgid "%s Update"
-#~ msgstr "%sin päivitys"
-
-#~ msgid "Downloading update..."
-#~ msgstr "Päivitystä ladataan..."
-
-#~ msgid "No updates available."
-#~ msgstr "Päivityksiä ei saatavilla."
+msgid "No updates available."
+msgstr "Päivityksiä ei saatavilla."
 
 #, c-format
-#~ msgid "No updates available. Latest version: %s"
-#~ msgstr "Päivityksiä ei saatavilla. Uusin versio: %s"
+msgid "No updates available. Latest version: %s"
+msgstr "Päivityksiä ei saatavilla. Uusin versio: %s"
 
-#~ msgid "Info"
-#~ msgstr "Tiedot"
-
-#, c-format
-#~ msgid ""
-#~ "Security verification failed. The update might have been tampered with: %s"
-#~ msgstr ""
-#~ "Tietoturvatarkistus epäonnistui. Päivitystä on saatettu peukaloida: %s"
-
-#~ msgid "Security Error"
-#~ msgstr "Suojausvirhe"
-
-#~ msgid "Update failed"
-#~ msgstr "Päivitys epäonnistui"
+msgid "Info"
+msgstr "Tiedot"
 
 #, c-format
-#~ msgid ""
-#~ "Update downloaded to: %s\n"
-#~ "Please install it manually."
-#~ msgstr ""
-#~ "Päivitys ladattu kansioon: %s\n"
-#~ "Asenna se manuaalisesti."
+msgid ""
+"Security verification failed. The update might have been tampered with: %s"
+msgstr "Tietoturvatarkistus epäonnistui. Päivitystä on saatettu peukaloida: %s"
 
-#~ msgid "Update Ready"
-#~ msgstr "Päivitys valmiina"
+msgid "Security Error"
+msgstr "Suojausvirhe"
 
-#~ msgid "Failed to get current exe path"
-#~ msgstr "Sovelluksen exe-tiedoston sijaintia ei voitu määrittää"
+msgid "Update failed"
+msgstr "Päivitys epäonnistui"
 
-#~ msgid "Failed to launch installer script"
-#~ msgstr "Asennusohjelmaskriptin käynnistys epäonnistui"
+#, c-format
+msgid ""
+"Update downloaded to: %s\n"
+"Please install it manually."
+msgstr ""
+"Päivitys ladattu kansioon: %s\n"
+"Asenna se manuaalisesti."
 
-#~ msgid "Failed to launch update script"
-#~ msgstr "Päivitysskriptin käynnistys epäonnistui"
+msgid "Update Ready"
+msgstr "Päivitys valmiina"
 
-#~ msgid "Unknown update file format."
-#~ msgstr "Tuntematon päivitystiedoston muoto."
+msgid "Failed to get current exe path"
+msgstr "Sovelluksen exe-tiedoston sijaintia ei voitu määrittää"
+
+msgid "Failed to launch installer script"
+msgstr "Asennusohjelmaskriptin käynnistys epäonnistui"
+
+msgid "Failed to launch update script"
+msgstr "Päivitysskriptin käynnistys epäonnistui"
+
+msgid "Unknown update file format."
+msgstr "Tuntematon päivitystiedoston muoto."
+
+msgid "Go To…"
+msgstr "Siirry…"
+
+#| msgid "&Recent Documents"
+msgid "Recent Documents"
+msgstr "Viimeisimmät asiakirjat"
+
+msgid "Switch to TTS Mode"
+msgstr "Vaihda tekstistä puheeksi -tilaan"
+
+msgid "Switch to Text Mode"
+msgstr "Vaihda tekstitilaan"
+
+#| msgid "Sleep Timer"
+msgid "Sleep Timer (active)"
+msgstr "Uniajastin (aktiivinen)"
+
+#| msgid "Headings"
+msgid "Settings"
+msgstr "Asetukset"
+
+#| msgid "Options"
+msgid "More options"
+msgstr "Lisää asetuksia"
+
+#| msgid "document"
+msgid "No document open"
+msgstr "Ei avointa asiakirjaa"
+
+#| msgid "&Percent"
+msgid "Recent"
+msgstr "Viimeisimmät"
+
+msgid "Screen dimmed by sleep timer. Tap to wake."
+msgstr "Uniajastin on himmentänyt näytön. Herätä napauttamalla."
+
+#| msgid "Error"
+msgid "Open Error"
+msgstr "Avausvirhe"
+
+#| msgid "Open a document"
+msgid "Open document"
+msgstr "Avaa asiakirja"
+
+#| msgid "Title:"
+msgid "Title"
+msgstr "Nimi"
+
+#| msgid "Author:"
+msgid "Author"
+msgstr "Tekijä"
+
+#| msgid "&File"
+msgid "File"
+msgstr "Tiedosto"
+
+#| msgid "Words:"
+msgid "Words"
+msgstr "Sanojen määrä"
+
+#| msgid "Lines:"
+msgid "Lines"
+msgstr "Rivien määrä"
+
+#| msgid "Characters:"
+msgid "Characters"
+msgstr "Merkkien määrä"
+
+msgid "Characters (excluding spaces)"
+msgstr "Merkkien määrä (ilman välilyöntejä)"
+
+msgid "Type"
+msgstr "Tyyppi"
+
+msgid "Done"
+msgstr "Valmis"
+
+#| msgid "Elements"
+msgid "No Elements"
+msgstr "Ei elementtejä"
+
+msgid "Headings, images, and other elements will appear here."
+msgstr "Otsikot, kuvat ja muut elementit näytetään tässä."
+
+#| msgid "&search"
+msgid "Search…"
+msgstr "Hae…"
+
+msgid "Match Case"
+msgstr "Sama kirjainkoko"
+
+msgid "Whole Word"
+msgstr "Koko sana"
+
+msgid "Regular Expression"
+msgstr "Säännöllinen lauseke"
+
+#| msgid "Previous Section\t["
+msgid "Previous result"
+msgstr "Edellinen tulos"
+
+#| msgid "Next L&ist\tL"
+msgid "Next result"
+msgstr "Seuraava tulos"
+
+#| msgid "&search"
+msgid "Search"
+msgstr "Haku"
+
+msgid "Mode"
+msgstr "Tila"
+
+#| msgid "&Pages"
+msgid "Page"
+msgstr "Sivu"
+
+#| msgid "&Percent"
+msgid "Percent"
+msgstr "Prosenttia"
+
+#| msgid "&Line number:"
+msgid "Line number"
+msgstr "Rivinumero"
+
+#| msgid "&Line number:"
+msgid "Page number"
+msgstr "Sivunumero"
+
+#| msgid "&Percent"
+msgid "Percentage"
+msgstr "Prosenttia luettu"
+
+msgid "Go To"
+msgstr "Siirry"
+
+#| msgid "&Password:"
+msgid "Password"
+msgstr "salasana"
+
+#| msgid "Password is required."
+msgid "Password Required"
+msgstr "Tarvitaan salasana"
+
+#| msgid "&Recent Documents"
+msgid "No Recent Documents"
+msgstr "Ei viimeisimpiä asiakirjoja"
+
+msgid "Documents you open will appear here."
+msgstr "Avaamasi asiakirjat näytetään tässä."
+
+#| msgid "&Remove"
+msgid "Remove"
+msgstr "Poista"
+
+msgid "Rule"
+msgstr "Sääntö"
+
+msgid "Scope"
+msgstr "Laajuus"
+
+#| msgid "Words:"
+msgid "Word"
+msgstr "Sana"
+
+#| msgid "&Paragraph spacing:"
+msgid "Paragraph"
+msgstr "Kappale"
+
+msgid "Pattern & Replacement"
+msgstr "Etsittävä ja korvaava teksti"
+
+msgid "Pattern"
+msgstr "Etsittävä teksti"
+
+#| msgid "Elements"
+msgid "Replacement"
+msgstr "Korvaava teksti"
+
+#| msgid "Show word count"
+msgid "Whole word only"
+msgstr "Koko sana"
+
+msgid "Regular expression (\\1 = first capture group)"
+msgstr "Säännöllinen lauseke (\\1 = ensimmäinen sieppausryhmä)"
+
+#| msgid "Stable"
+msgid "Enabled"
+msgstr "Käytössä"
+
+msgid "Apply to"
+msgstr "Käytä kohteessa"
+
+msgid "Voices"
+msgstr "Puheäänet"
+
+msgid "New Rule"
+msgstr "Uusi sääntö"
+
+#| msgid "&Edit Note"
+msgid "Edit Rule"
+msgstr "Muokkaa sääntöä"
+
+msgid "Save"
+msgstr "Tallenna"
+
+#| msgid "All Documents"
+msgid "All voices"
+msgstr "Kaikki puheäänet"
+
+msgid "Apply To"
+msgstr "Käytä kohteessa"
+
+msgid "Text to Speech"
+msgstr "Tekstistä puheeksi"
+
+msgid "Voice"
+msgstr "Puheääni"
+
+msgid "Rate"
+msgstr "Nopeus"
+
+msgid "Speech Rate"
+msgstr "Puhenopeus"
+
+msgid "Pitch"
+msgstr "Korkeus"
+
+msgid "Speech Dictionary"
+msgstr "Käyttäjän sanasto"
+
+msgid "Play Sample"
+msgstr "Toista näyte"
+
+msgid "Behavior"
+msgstr "Toiminta"
+
+#| msgid "Reopen the last closed document"
+msgid "Restore last open documents"
+msgstr "Palauta viimeksi avatut asiakirjat"
+
+msgid "Swipe up moves forward"
+msgstr "Pitkä pyyhkäisy siirtää eteenpäin"
+
+msgid "Active"
+msgstr "Aktiivinen"
+
+msgid "Time remaining"
+msgstr "Aikaa jäljellä"
+
+#| msgid "Cancel"
+msgid "Cancel Timer"
+msgstr "Peruuta ajastin"
+
+#| msgid "Sleep timer"
+msgid "Set timer"
+msgstr "Aseta ajastin"
+
+msgid "Edit"
+msgstr "Muokkaa"
+
+msgid "Add Rule"
+msgstr "Säännön lisäys"
+
+msgid "No Rules"
+msgstr "Ei sääntöjä"
+
+#| msgid "Table of Contents"
+msgid "Contents"
+msgstr "Sisällys"
+
+#| msgid "Table of Contents"
+msgid "No Table of Contents"
+msgstr "Ei sisällysluetteloa"
+
+#| msgid "Couldn't parse table of contents"
+msgid "This document has no table of contents."
+msgstr "Tässä asiakirjassa ei ole sisällysluetteloa."
+
+msgid "Tabs"
+msgstr "Välilehdet"
+
+#| msgid "Navigate by lists"
+msgid "Navigation unit"
+msgstr "Navigoinnin tarkkuus"
+
+msgid "Pause"
+msgstr "Tauota"
+
+msgid "Play"
+msgstr "Toista"
+
+#| msgid "Open a document"
+msgid "End of document"
+msgstr "Asiakirjan loppu"
+
+#| msgid "Open a document"
+msgid "Beginning of document"
+msgstr "Asiakirjan alku"
+
+msgid "Press play to start listening."
+msgstr "Aloita kuuntelu painamalla Toista-painiketta."
+
+#| msgid "Missing"
+msgid "File Missing"
+msgstr "Tiedostoa ei ole"
+
+msgid "Currently Open"
+msgstr "Avoinna tällä hetkellä"
+
+#| msgid "Show document information"
+msgid "Document Information"
+msgstr "Asiakirjan tiedot"
+
+#| msgid "expanded"
+msgid "Expanded"
+msgstr "Laajennettu"
+
+#| msgid "collapsed"
+msgid "Collapsed"
+msgstr "Kutistettu"
+
+#| msgid "collapsed"
+msgid "Collapse"
+msgstr "Kutista"
+
+#| msgid "expanded"
+msgid "Expand"
+msgstr "Laajenna"
+
+#| msgid "Untitled"
+msgid "Untitled Link"
+msgstr "Nimetön linkki"
+
+msgid "No supported books or folders found here."
+msgstr "Tästä sijainnista ei löydy tuettuja kirjoja eikä kansioita."
+
+msgid "Folder"
+msgstr "Kansio"
+
+msgid "Internal Storage"
+msgstr "Sisäinen tallennustila"
+
+msgid "Search Term"
+msgstr "Hakusana"
+
+msgid "Search History"
+msgstr "Hakuhistoria"
+
+#| msgid "Find &Next"
+msgid "Find Next"
+msgstr "Etsi seuraava"
+
+#| msgid "&Password:"
+msgid "Password:"
+msgstr "Salasana:"
+
+msgid "All Files Access Required"
+msgstr "Tarvitaan kaikkien tiedostojen käyttöoikeus"
+
+msgid ""
+"Paperback requires the 'All Files Access' permission to enable the custom in-"
+"app file browser."
+msgstr ""
+"Paperback tarvitsee kaikkien tiedostojen käyttöoikeuden sovelluksen sisäisen "
+"tiedostoselaimen käyttämiseen."
+
+msgid "Why we need this:"
+msgstr "Mihin tätä tarvitaan:"
+
+msgid ""
+"• To provide a fast, fully screen-reader accessible file manager inside the "
+"app."
+msgstr ""
+"• Sovelluksen sisäisen, nopean ja ruudunlukijalla täysin saavutettavan "
+"tiedostonhallinnan toteuttamiseen."
+
+msgid ""
+"• To load large files instantly without needing to copy them into the app's "
+"cache."
+msgstr ""
+"• Suurten tiedostojen nopeaan avaamiseen ilman sovelluksen välimuistiin "
+"kopiointia."
+
+msgid "• To display the exact local file paths of your documents."
+msgstr "• Asiakirjojen tarkkojen paikallisten tiedostopolkujen näyttämiseen."
+
+msgid ""
+"If you deny this permission, you can still use the Android System File "
+"Picker to open your books by turning off the custom file browser setting."
+msgstr ""
+"Jos et salli tätä käyttöoikeutta, voit silti käyttää Androidin omaa "
+"tiedostonvalitsinta kirjojen avaamiseen poistamalla asetuksissa käytöstä "
+"sovelluksen sisäisen tiedostoselaimen."
+
+msgid "Grant"
+msgstr "Salli"
+
+msgid "Not Now"
+msgstr "Älä salli"
+
+#| msgid "Restore Paperback"
+msgid "Restore last open book"
+msgstr "Palauta viimeksi avattu kirja"
+
+msgid "Use in-app file browser (requires All Files permission)"
+msgstr ""
+"Käytä sovelluksen sisäistä tiedostoselainta (edellyttää kaikkien tiedostojen "
+"käyttöoikeutta)"
+
+msgid "Text-to-Speech"
+msgstr "Tekstistä puheeksi"
+
+#| msgid "Font: Default"
+msgid "System Default"
+msgstr "Järjestelmän oletus"
+
+msgid "Custom Timer"
+msgstr "Mukautettu ajastin"
+
+#| msgid "&Minutes:"
+msgid "Minutes"
+msgstr "Minuuttia"
+
+msgid "Back"
+msgstr "Takaisin"
+
+#| msgid "start"
+msgid "Start"
+msgstr "Käynnistä"
+
+msgid "Change to:"
+msgstr "Uusi arvo:"
+
+msgid "Custom time..."
+msgstr "Mukautettu aika..."
+
+#| msgid "Find &Previous"
+msgid "Find Previous"
+msgstr "Etsi edellinen"
+
+#| msgid "&search"
+msgid "Close Search"
+msgstr "Sulje haku"
+
+msgid "Settings imported"
+msgstr "Asetukset tuotu"
+
+#| msgid "Failed to export document."
+msgid "Failed to import settings"
+msgstr "Asetusten tuonti epäonnistui"
+
+msgid "Settings exported"
+msgstr "Asetukset viety"
+
+#| msgid "Failed to export document."
+msgid "Failed to export settings"
+msgstr "Asetusten vienti epäonnistui"
+
+msgid "No document open. Please open a book."
+msgstr "Ei avointa asiakirjaa."
+
+#| msgid "Sleep timer"
+msgid "Cancel sleep timer"
+msgstr "Peruuta uniajastin"
+
+#| msgid "I&mport/Export"
+msgid "Import"
+msgstr "Tuo"
+
+#| msgid "Import document data"
+msgid "Import Document Data"
+msgstr "Tuo asiakirjan tiedot"
+
+#| msgid "Import document data"
+msgid "Export Document Data"
+msgstr "Vie asiakirjan tiedot"
+
+#| msgid "Open As"
+msgid "Open Book"
+msgstr "Avaa kirja"
+
+#| msgid "&Elements List...\tF7"
+msgid "Elements List"
+msgstr "Elementtilista"
+
+#| msgid "Show word count"
+msgid "Show Document"
+msgstr "Näytä asiakirja"
+
+msgid "Show Text"
+msgstr "Näytä teksti"
+
+msgid "Pause Read Aloud"
+msgstr "Tauota ääneen lukeminen"
+
+msgid "Read Aloud"
+msgstr "Lue ääneen"
+
+#| msgid "Options"
+msgid "More Options"
+msgstr "Lisää asetuksia"
+
+#| msgid "Headings"
+msgid "Heading"
+msgstr "Otsikko"
+
+#| msgid "Links"
+msgid "Link"
+msgstr "Linkki"
+
+#| msgid "&Sections"
+msgid "Section"
+msgstr "Luku"
+
+#| msgid "&Lists"
+msgid "List"
+msgstr "Luettelo"
+
+#| msgid "Next List I&tem\tI"
+msgid "List Item"
+msgstr "Luettelon kohde"
+
+#| msgid "&Tables"
+msgid "Table"
+msgstr "Taulukko"
+
+#| msgid "&Separators"
+msgid "Separator"
+msgstr "Erotin"
+
+msgid "Image"
+msgstr "Kuva"
+
+msgid "Figure"
+msgstr "Kuvio"
+
+#~ msgid "Open folder containing the document"
+#~ msgstr "Avaa asiakirjan kansio"
 
 #~ msgid "Paperback Update"
 #~ msgstr "Paperbackin päivitys"
@@ -1428,12 +2001,6 @@ msgstr "Lopeta Paperback"
 
 #~ msgid "Error checking for updates."
 #~ msgstr "Virhe päivityksiä tarkistettaessa."
-
-#~ msgid "Figure"
-#~ msgstr "Kuvio"
-
-#~ msgid "Image"
-#~ msgstr "Kuva"
 
 #~ msgid ""
 #~ "This PDF contains images only, with no extractable text. You may need to "
@@ -1531,9 +2098,6 @@ msgstr "Lopeta Paperback"
 #~ msgid "Wrapping to %s. %s Heading level %d"
 #~ msgstr "Siirrytään %s. %s otsikkotaso %d"
 
-#~ msgid "start"
-#~ msgstr "alkuun"
-
 #~ msgid "end"
 #~ msgstr "loppuun"
 
@@ -1549,9 +2113,6 @@ msgstr "Lopeta Paperback"
 
 #~ msgid "Unknown error while parsing CHM file"
 #~ msgstr "Tuntematon virhe jäsenneltäessä CHM-tiedostoa"
-
-#~ msgid "Couldn't parse table of contents"
-#~ msgstr "Sisällysluetteloa ei voitu jäsentää"
 
 #~ msgid "Failed to open FB2 file"
 #~ msgstr "FB2-tiedoston avaus epäonnistui"
