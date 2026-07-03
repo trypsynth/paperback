@@ -213,6 +213,9 @@ pub enum MarkerTypeFfi {
 	Separator,
 	Image,
 	Figure,
+	Bold,
+	Italic,
+	Underline,
 }
 
 impl From<crate::document::MarkerType> for MarkerTypeFfi {
@@ -234,6 +237,9 @@ impl From<crate::document::MarkerType> for MarkerTypeFfi {
 			crate::document::MarkerType::Separator => Self::Separator,
 			crate::document::MarkerType::Image => Self::Image,
 			crate::document::MarkerType::Figure => Self::Figure,
+			crate::document::MarkerType::Bold => Self::Bold,
+			crate::document::MarkerType::Italic => Self::Italic,
+			crate::document::MarkerType::Underline => Self::Underline,
 		}
 	}
 }
@@ -620,6 +626,25 @@ impl DocumentSession {
 			items.push(ffi::LinkListItem { offset: marker.position, text });
 		}
 		ffi::LinkList { items, closest_index }
+	}
+
+	#[must_use]
+	pub fn get_formatting_markers(&self) -> Vec<LineMarker> {
+		self.handle
+			.document()
+			.buffer
+			.markers
+			.iter()
+			.filter(|m| matches!(m.mtype, MarkerType::Bold | MarkerType::Italic | MarkerType::Underline))
+			.map(|m| LineMarker {
+				mtype: m.mtype.into(),
+				position: i64::try_from(m.position).unwrap_or(0),
+				text: String::new(),
+				reference: String::new(),
+				level: 0,
+				length: i64::try_from(m.length).unwrap_or(0),
+			})
+			.collect()
 	}
 
 	#[must_use]

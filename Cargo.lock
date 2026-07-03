@@ -1119,6 +1119,7 @@ dependencies = [
  "icu_locale_core",
  "icu_properties_data",
  "icu_provider",
+ "unicode-bidi",
  "zerotrie",
  "zerovec",
 ]
@@ -1628,6 +1629,7 @@ dependencies = [
  "cfb",
  "ego-tree",
  "encoding_rs",
+ "icu_properties",
  "libchm",
  "office-crypto",
  "pdfium",
@@ -1643,6 +1645,7 @@ dependencies = [
  "sha1 0.11.0",
  "thiserror",
  "toml 1.1.2+spec-1.1.0",
+ "unicode-bidi",
  "uniffi",
  "zip",
 ]
@@ -2954,6 +2957,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dbc4bc3a9f746d862c45cb89d705aa10f187bb96c76001afab07a0d35ce60142"
 
 [[package]]
+name = "unicode-bidi"
+version = "0.3.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5c1cb5db39152898a79168971543b1cb5020dff7fe43c8dc468b0885f5e29df5"
+
+[[package]]
 name = "unicode-ident"
 version = "1.0.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3727,8 +3736,9 @@ dependencies = [
 
 [[package]]
 name = "wxdragon"
-version = "0.9.16"
-source = "git+https://github.com/AllenDang/wxDragon#39775f3754b0404b0f69d0c8ea56fe1f2edcfd90"
+version = "0.9.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2115ff35df05b6c6efc17673084ea7c1fce07178c699ecf9fbbbd3092298a9a2"
 dependencies = [
  "bitflags",
  "log",
@@ -3739,8 +3749,9 @@ dependencies = [
 
 [[package]]
 name = "wxdragon-macros"
-version = "0.9.16"
-source = "git+https://github.com/AllenDang/wxDragon#39775f3754b0404b0f69d0c8ea56fe1f2edcfd90"
+version = "0.9.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "57c2f6ec62d2078586e70eb4eadc231fe4ae626baab583518c1450cae1829fd1"
 dependencies = [
  "proc-macro2",
  "quick-xml",
@@ -3750,8 +3761,9 @@ dependencies = [
 
 [[package]]
 name = "wxdragon-sys"
-version = "0.9.16"
-source = "git+https://github.com/AllenDang/wxDragon#39775f3754b0404b0f69d0c8ea56fe1f2edcfd90"
+version = "0.9.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0dacfa148fa1377483c3b1d7ca3f780021d7bad0efa6d65b29ea2f2693ea0c92"
 dependencies = [
  "bindgen",
  "cmake",
@@ -3929,3 +3941,8 @@ checksum = "27bc9d5b815bc103f142aa054f561d9187d191692ec7c2d1e2b4737f8dbd7296"
 dependencies = [
  "zune-core",
 ]
+
+[[patch.unused]]
+name = "wxdragon"
+version = "0.9.16"
+source = "git+https://github.com/AllenDang/wxDragon#39775f3754b0404b0f69d0c8ea56fe1f2edcfd90"

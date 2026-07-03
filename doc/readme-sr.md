@@ -6,7 +6,7 @@ Paperback je lagan, brz i pristupačan čitač digitalnih knjiga i dokumenata za
 
 ## Sistemski zahtevi
 
-Paperback trenutno radi na Windowsu 10/11 i Linuxu. Rad na podršci za macOS je u toku.
+Paperback trenutno radi na Windowsu, MacOS-u, Linuxu, iOS-u i Androidu.
 
 ## Funkcije
 
@@ -180,6 +180,61 @@ Napomena: smatram javno GitHub sponzorisanje osnovu za automatsko dodavanje u ov
 * Tyler Rodick
 
 ## Dnevnik promena
+
+### Verzija 0.9.0
+* Dodato dugme za otkazivanje u dijalogu ažuriranja koje je u toku.
+* Dodat alat komandne linije, pb, koji brzo pretvara bilo koji format koji Paperback podržava u HTML, Markdown ili običan tekst.
+* Dodata mogućnost da podesite prečicu za vraćanje Paperbacka iz sistemske trake.
+* Dodato dugme za lociranje u dijalogu sa svim dokumentima koje vam dozvoljava da pronađete knjige koje nedostaju zato što je njihova putanja promenjena.
+* Dodata kartica čitljivosti u podešavanjima, sa sledećim opcijama:
+    * Prelamanje reči (premešteno iz opšte kartice);
+    * Obradi table u redu (novo u ovoj verziji, pogledajte ispod);
+    * Font;
+    * Boja pozadine;
+    * Odvajanje redova;
+    * Odvajanje pasusa;
+    * Odvajanje slova;
+    * Poravnanje teksta.
+* Dodato podešavanje koje određuje kako će se prikazivati tabele, a prikazivanje tabela je sada jedinstveno u svim dokumentima.
+* Dodata opcija za prikazivanje izvora koja otvara izvor dokumenta u novoj kartici, što može biti korisno na primer za uređivanje Markdown dokumenata.
+* Dodato očekivano vreme čitanja, kao i mogućnost da podesite vašu brzinu čitanja kako bi ovo vreme zapravo bilo korisno.
+* Dodata Android podrška!
+* Dodata iOS podrška!
+* Dodata Linux podrška!
+* Dodata macOS podrška!
+* Dodati novi jezici: holandski, finski i poljski.
+* Dodata podrška za kretanje po sadrživačima.
+* Dodata podrška za liste, stavke liste, figure i slike u CHM dokumentima.
+* Dodata stavka menija za prelamanje reči kao i odgovarajuća prečica.
+* Dozvoljeno menjanje veličine dijaloga Web prikaza, a on se sada podrazumevano otvara u veličini koja je mnogo lakša za pregled.
+* Meni izvoza je proširen i sada dozvoljava izvoz u HTML i Markdown uz običan tekst.
+* Ispravljeno primenjivanje prelamanja reči koje vas je prebacivalo na početak dokumenta.
+* Ispravljeno prikazivanje pogrešnih informacija na statusnoj traci u daisy knjigama.
+* Ispravljeni dl, dt i dd elementi koji nisu dodavali nove redove u XHTML dokumentima.
+* Ispravljen taster Escape koji nije zatvarao dijalog informacija o dokumentu i dijalog sa svim dokumentima.
+* Ispravljeni filepos veznici u Mobi knjigama koji su razdvajali HTML tagove i ostavljali smeće u tekstu knjige.
+* Ispravljena usporavanja kada ste blizu kraja tekstualnog polja u velikim dokumentima.
+* Ispravljeni linkovi u zastarelim mobi knjigama.
+* Ispravljeno obrađivanje RTF dokumenata koji imaju znakove koji nisu latinični.
+* Ispravljena traka sa naslovom koja se nije ažurirala nakon što se dokument zatvori iz dijaloga sa svim dokumentima.
+*Ispravljeni word dokumenti sa imenima stilova u zavisnosti od jezika koji nisu ispravno obrađivali naslove.
+* Ispravljeno neispravno fokusiranje vaše izabrane kartice nakon što se restartuje Paperback.
+* Ako je tekst izabran kada otvorite dijalog sa brojem reči, biće prikazano koliko reči ste izabrali.
+* Prelazak sa biblioteke chmlib na naš sopstveni čitač CHM datoteka koji je u potpunosti u Rustu.
+* Na računarima, .paperback datoteke se više neće prisilno učitati nakon što se dokument vrati. Umesto toga, bićete upitani za potvrdu kada se datoteka pronađe.
+* Paperback se vraća na izvlačenje običnog teksta za PDF datoteke sa pogrešnim tagovima.
+* Otvaranje izvornog foldera sada fokusira datu datoteku u istraživaču datoteka.
+* Otvaranje dokumentacije će sada uzeti u obzir vaš izabran jezik.
+* PowerPoint dokumenti sada podržavaju tabele.
+* Meni se ispravno ažurira i fokus se prebacuje na kontrolu teksta kada se pomoć otvori u Paperbacku.
+* Readme.html se više neće dodavati u vašu listu svih dokumenata kada se otvori prečicom Šift+F1.
+* Uklonjena AZW3 podrška koja nije radila kako treba.
+* Uklanjanje dokumenata iz dijaloga nedavnih dokumenata sada takođe zatvara njihovu aktivnu karticu.
+* Prelazak na mnogo bezbedniji način međuprocesne komunikacije na Windowsu.
+* Prikaz ažuriranja sada ispravno prikazuje sadržaj markdown tagova koda u informacijama o verziji.
+* Ažuriranje će sada proveriti da li  preuzeta datoteka nije neočekivano izmenjena.
+* Web prikaz se sada otvara na vašoj trenutnoj poziciji čitanja.
+* Vaš filter pretrage u dijalogu svih dokumenata se sada čuva nakon što uklonite dokument.
 
 ### Verzija 0.8.5
 * Dodata podrška za stranice u epub knjige.
