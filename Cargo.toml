@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/paperback", "crates/paperback-core", "crates/pb", "crates/ship-shape", "crates/xtask"]
+members = ["crates/paperback", "crates/paperback-core", "crates/pb", "crates/xtask"]
 resolver = "2"
 
 [workspace.package]
@@ -24,4 +24,4 @@ panic = "abort"
 codegen-units = 1
 
 [patch.crates-io]
-ship-shape = { path = "crates/ship-shape" }
+ship-shape = { git = "https://github.com/tareh7z/ship-shape", branch = "fix/download-cancel-and-reentrancy" }

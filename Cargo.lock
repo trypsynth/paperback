@@ -2417,6 +2417,7 @@ dependencies = [
 [[package]]
 name = "ship-shape"
 version = "0.1.4"
+source = "git+https://github.com/tareh7z/ship-shape?branch=fix%2Fdownload-cancel-and-reentrancy#24a5eff480fe63e2c606889c069a87318f204e87"
 dependencies = [
  "minisign-verify",
  "patois",
@@ -3939,8 +3940,3 @@ checksum = "27bc9d5b815bc103f142aa054f561d9187d191692ec7c2d1e2b4737f8dbd7296"
 dependencies = [
  "zune-core",
 ]
-
-[[patch.unused]]
-name = "wxdragon"
-version = "0.9.16"
-source = "git+https://github.com/AllenDang/wxDragon#39775f3754b0404b0f69d0c8ea56fe1f2edcfd90"
