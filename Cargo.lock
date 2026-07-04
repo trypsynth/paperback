@@ -2416,8 +2416,9 @@ dependencies = [
 
 [[package]]
 name = "ship-shape"
-version = "0.1.4"
-source = "git+https://github.com/tareh7z/ship-shape?branch=fix%2Fdownload-cancel-and-reentrancy#24a5eff480fe63e2c606889c069a87318f204e87"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "30b37707b2122f92421f378597fba2beea45f51bffcb451dd17eb3908fc5a5fe"
 dependencies = [
  "minisign-verify",
  "patois",

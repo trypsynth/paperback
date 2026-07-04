@@ -20,7 +20,7 @@ patois = "0.1.2"
 tracing = "0.1.44"
 tracing-appender = "0.2.5"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
-ship-shape = "0.1.4"
+ship-shape = "0.1.5"
 toml = { workspace = true }
 wx-utils = "0.1.1"
 wxdragon = { version = "0.9.17", features = ["webview"] }

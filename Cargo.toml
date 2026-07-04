@@ -22,6 +22,3 @@ opt-level = "z"
 lto = true
 panic = "abort"
 codegen-units = 1
-
-[patch.crates-io]
-ship-shape = { git = "https://github.com/tareh7z/ship-shape", branch = "fix/download-cancel-and-reentrancy" }
