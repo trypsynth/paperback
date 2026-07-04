@@ -35,6 +35,9 @@ struct SectionContent {
 	separators: Vec<SeparatorInfo>,
 	lists: Vec<ListInfo>,
 	list_items: Vec<ListItemInfo>,
+	bolds: Vec<crate::types::FormatInfo>,
+	italics: Vec<crate::types::FormatInfo>,
+	underlines: Vec<crate::types::FormatInfo>,
 	id_positions: HashMap<String, usize>,
 }
 
@@ -62,6 +65,15 @@ impl ConverterOutput for SectionContent {
 	}
 	fn get_list_items(&self) -> &[ListItemInfo] {
 		&self.list_items
+	}
+	fn get_bolds(&self) -> &[crate::types::FormatInfo] {
+		&self.bolds
+	}
+	fn get_italics(&self) -> &[crate::types::FormatInfo] {
+		&self.italics
+	}
+	fn get_underlines(&self) -> &[crate::types::FormatInfo] {
+		&self.underlines
 	}
 }
 
@@ -350,6 +362,9 @@ fn convert_section(content: &str, render_tables_inline: bool) -> Result<SectionC
 			separators: xml_converter.get_separators().to_vec(),
 			lists: xml_converter.get_lists().to_vec(),
 			list_items: xml_converter.get_list_items().to_vec(),
+			bolds: xml_converter.get_bolds().to_vec(),
+			italics: xml_converter.get_italics().to_vec(),
+			underlines: xml_converter.get_underlines().to_vec(),
 			id_positions: xml_converter.get_id_positions().clone(),
 		});
 	}
@@ -365,6 +380,9 @@ fn convert_section(content: &str, render_tables_inline: bool) -> Result<SectionC
 			separators: html_converter.get_separators().to_vec(),
 			lists: html_converter.get_lists().to_vec(),
 			list_items: html_converter.get_list_items().to_vec(),
+			bolds: html_converter.get_bolds().to_vec(),
+			italics: html_converter.get_italics().to_vec(),
+			underlines: html_converter.get_underlines().to_vec(),
 			id_positions: html_converter.get_id_positions().clone(),
 		});
 	}

@@ -213,6 +213,7 @@ impl DocumentManager {
 		panel.set_sizer(sizer, true);
 		let content = session.content();
 		fill_text_ctrl(text_ctrl, &content);
+		apply_formatting_markers_to_ctrl(text_ctrl, &session);
 		apply_readability_format_to_ctrl(
 			text_ctrl,
 			config.get_line_spacing(),
@@ -549,6 +550,7 @@ impl DocumentManager {
 			sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
 			tab.panel.set_sizer(sizer, true);
 			fill_text_ctrl(text_ctrl, &content);
+			apply_formatting_markers_to_ctrl(text_ctrl, &tab.session);
 			if let Some(font) = build_font_from_readability(&rf) {
 				text_ctrl.set_font(&font);
 			}
@@ -627,6 +629,7 @@ impl DocumentManager {
 			tab.session = new_session;
 			let content = tab.session.content();
 			fill_text_ctrl(tab.text_ctrl, &content);
+			apply_formatting_markers_to_ctrl(tab.text_ctrl, &tab.session);
 			if let Some(font) = build_font_from_readability(&rf) {
 				tab.text_ctrl.set_font(&font);
 			}
@@ -1036,6 +1039,33 @@ pub fn apply_readability_format_to_ctrl(
 			let _ = InvalidateRect(Some(hwnd), None::<*const RECT>, true);
 		}
 	}
+}
+
+pub fn apply_formatting_markers_to_ctrl(text_ctrl: TextCtrl, session: &DocumentSession) {
+	let markers = session.get_formatting_markers();
+	if markers.is_empty() {
+		return;
+	}
+	text_ctrl.freeze();
+	for marker in markers {
+		let mut attr = wxdragon::widgets::textctrl::TextAttr::new();
+		match marker.mtype {
+			paperback_core::session::MarkerTypeFfi::Bold => {
+				attr.set_font_weight(FontWeight::Bold);
+			}
+			paperback_core::session::MarkerTypeFfi::Italic => {
+				attr.set_font_style(FontStyle::Italic);
+			}
+			paperback_core::session::MarkerTypeFfi::Underline => {
+				attr.set_font_underlined(true);
+			}
+			_ => continue,
+		}
+		let start = marker.position;
+		let end = start + marker.length;
+		text_ctrl.set_style(start, end, &attr);
+	}
+	text_ctrl.thaw();
 }
 
 fn show_reader_context_menu(text_ctrl: TextCtrl) {

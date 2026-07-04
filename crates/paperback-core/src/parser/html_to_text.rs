@@ -63,6 +63,12 @@ pub struct HtmlToText {
 	/// balanced with the start/close handlers so list lengths are set on the right entries.
 	open_lists: Vec<Option<usize>>,
 	link_start_pos: usize,
+	bolds: Vec<crate::types::FormatInfo>,
+	italics: Vec<crate::types::FormatInfo>,
+	underlines: Vec<crate::types::FormatInfo>,
+	open_bolds: Vec<usize>,
+	open_italics: Vec<usize>,
+	open_underlines: Vec<usize>,
 	source_mode: HtmlSourceMode,
 	cached_char_length: usize,
 	/// When `true`, tables are emitted as their full tab-separated rendering; otherwise as a
@@ -94,6 +100,12 @@ impl HtmlToText {
 			list_level: 0,
 			open_lists: Vec::new(),
 			link_start_pos: 0,
+			bolds: Vec::new(),
+			italics: Vec::new(),
+			underlines: Vec::new(),
+			open_bolds: Vec::new(),
+			open_italics: Vec::new(),
+			open_underlines: Vec::new(),
 			source_mode: HtmlSourceMode::NativeHtml,
 			cached_char_length: 0,
 			render_tables_inline: false,
@@ -163,6 +175,21 @@ impl HtmlToText {
 		&self.id_positions
 	}
 
+	#[must_use]
+	pub fn get_bolds(&self) -> &[crate::types::FormatInfo] {
+		&self.bolds
+	}
+
+	#[must_use]
+	pub fn get_italics(&self) -> &[crate::types::FormatInfo] {
+		&self.italics
+	}
+
+	#[must_use]
+	pub fn get_underlines(&self) -> &[crate::types::FormatInfo] {
+		&self.underlines
+	}
+
 	pub fn clear(&mut self) {
 		self.lines.clear();
 		self.current_line.clear();
@@ -184,6 +211,12 @@ impl HtmlToText {
 		self.list_level = 0;
 		self.open_lists.clear();
 		self.link_start_pos = 0;
+		self.bolds.clear();
+		self.italics.clear();
+		self.underlines.clear();
+		self.open_bolds.clear();
+		self.open_italics.clear();
+		self.open_underlines.clear();
 		self.cached_char_length = 0;
 	}
 
@@ -306,6 +339,13 @@ impl HtmlToText {
 					self.current_link_href = href.to_string();
 				}
 				self.link_start_pos = self.get_current_text_position();
+			}
+			if tag_name == "b" || tag_name == "strong" {
+				self.open_bolds.push(self.get_current_text_position());
+			} else if tag_name == "i" || tag_name == "em" {
+				self.open_italics.push(self.get_current_text_position());
+			} else if tag_name == "u" {
+				self.open_underlines.push(self.get_current_text_position());
 			}
 		}
 		if tag_name == "title" && self.title.is_empty() {
@@ -475,6 +515,28 @@ impl HtmlToText {
 		} else if Self::is_block_element(tag_name) {
 			self.finalize_current_line();
 		}
+		if tag_name == "b" || tag_name == "strong" {
+			if let Some(start) = self.open_bolds.pop() {
+				self.bolds.push(crate::types::FormatInfo {
+					offset: start,
+					length: self.get_current_text_position().saturating_sub(start),
+				});
+			}
+		} else if tag_name == "i" || tag_name == "em" {
+			if let Some(start) = self.open_italics.pop() {
+				self.italics.push(crate::types::FormatInfo {
+					offset: start,
+					length: self.get_current_text_position().saturating_sub(start),
+				});
+			}
+		} else if tag_name == "u" {
+			if let Some(start) = self.open_underlines.pop() {
+				self.underlines.push(crate::types::FormatInfo {
+					offset: start,
+					length: self.get_current_text_position().saturating_sub(start),
+				});
+			}
+		}
 	}
 
 	fn handle_text_node(&mut self, text: &node::Text) {
@@ -637,6 +699,15 @@ impl crate::parser::ConverterOutput for HtmlToText {
 	}
 	fn get_list_items(&self) -> &[ListItemInfo] {
 		&self.list_items
+	}
+	fn get_bolds(&self) -> &[crate::types::FormatInfo] {
+		&self.bolds
+	}
+	fn get_italics(&self) -> &[crate::types::FormatInfo] {
+		&self.italics
+	}
+	fn get_underlines(&self) -> &[crate::types::FormatInfo] {
+		&self.underlines
 	}
 }
 

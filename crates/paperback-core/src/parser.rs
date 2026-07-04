@@ -247,6 +247,9 @@ pub trait ConverterOutput {
 	fn get_separators(&self) -> &[SeparatorInfo];
 	fn get_lists(&self) -> &[ListInfo];
 	fn get_list_items(&self) -> &[ListItemInfo];
+	fn get_bolds(&self) -> &[crate::types::FormatInfo];
+	fn get_italics(&self) -> &[crate::types::FormatInfo];
+	fn get_underlines(&self) -> &[crate::types::FormatInfo];
 }
 
 fn add_headings(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
@@ -310,6 +313,18 @@ fn add_tables_separators_lists(buffer: &mut DocumentBuffer, converter: &dyn Conv
 	}
 }
 
+fn add_formatting(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
+	for bold in converter.get_bolds() {
+		buffer.add_marker(Marker::new(MarkerType::Bold, offset + bold.offset).with_length(bold.length));
+	}
+	for italic in converter.get_italics() {
+		buffer.add_marker(Marker::new(MarkerType::Italic, offset + italic.offset).with_length(italic.length));
+	}
+	for underline in converter.get_underlines() {
+		buffer.add_marker(Marker::new(MarkerType::Underline, offset + underline.offset).with_length(underline.length));
+	}
+}
+
 /// Transfer all converter markers to a `DocumentBuffer`.
 /// `offset` is added to each marker position (for multi-section parsers like CHM/EPUB).
 pub fn add_converter_markers(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
@@ -318,6 +333,7 @@ pub fn add_converter_markers(buffer: &mut DocumentBuffer, converter: &dyn Conver
 	add_images(buffer, converter, offset);
 	add_figures(buffer, converter, offset);
 	add_tables_separators_lists(buffer, converter, offset);
+	add_formatting(buffer, converter, offset);
 }
 
 /// Like `add_converter_markers` but excludes links, for parsers that resolve link hrefs specially.
@@ -330,6 +346,7 @@ pub fn add_converter_markers_excluding_links(
 	add_images(buffer, converter, offset);
 	add_figures(buffer, converter, offset);
 	add_tables_separators_lists(buffer, converter, offset);
+	add_formatting(buffer, converter, offset);
 }
 
 #[must_use]
@@ -356,6 +373,9 @@ mod tests {
 		separators: Vec<SeparatorInfo>,
 		lists: Vec<ListInfo>,
 		list_items: Vec<ListItemInfo>,
+		bolds: Vec<crate::types::FormatInfo>,
+		italics: Vec<crate::types::FormatInfo>,
+		underlines: Vec<crate::types::FormatInfo>,
 	}
 
 	impl ConverterOutput for MockConverter {
@@ -390,6 +410,18 @@ mod tests {
 		fn get_list_items(&self) -> &[ListItemInfo] {
 			&self.list_items
 		}
+
+		fn get_bolds(&self) -> &[crate::types::FormatInfo] {
+			&self.bolds
+		}
+
+		fn get_italics(&self) -> &[crate::types::FormatInfo] {
+			&self.italics
+		}
+
+		fn get_underlines(&self) -> &[crate::types::FormatInfo] {
+			&self.underlines
+		}
 	}
 	fn sample_converter() -> MockConverter {
 		MockConverter {
@@ -406,6 +438,9 @@ mod tests {
 			separators: vec![SeparatorInfo { offset: 4, length: 7 }],
 			lists: vec![ListInfo { offset: 5, item_count: 3, length: 4 }],
 			list_items: vec![ListItemInfo { offset: 6, level: 1, text: "Item".to_string() }],
+			bolds: vec![],
+			italics: vec![],
+			underlines: vec![],
 		}
 	}
 
@@ -501,6 +536,9 @@ mod tests {
 			separators: vec![],
 			lists: vec![],
 			list_items: vec![],
+			bolds: vec![],
+			italics: vec![],
+			underlines: vec![],
 		};
 		let mut buffer = DocumentBuffer::new();
 		add_converter_markers(&mut buffer, &converter, 0);
@@ -550,6 +588,9 @@ mod tests {
 			separators: vec![],
 			lists: vec![],
 			list_items: vec![],
+			bolds: vec![],
+			italics: vec![],
+			underlines: vec![],
 		};
 		let mut buffer = DocumentBuffer::new();
 		let base_offset = 100usize;
