@@ -13,7 +13,7 @@ use roxmltree::{Document as XmlDocument, Node, NodeType};
 use zip::ZipArchive;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, format_marker_types},
 	parser::{
 		PASSWORD_REQUIRED_ERROR_PREFIX, Parser,
 		util::{
@@ -24,7 +24,7 @@ use crate::{
 		},
 	},
 	types::HeadingInfo,
-	util::{encoding::convert_to_utf8, zip::read_zip_entry_by_name},
+	util::{encoding::convert_to_utf8, text::display_len, zip::read_zip_entry_by_name},
 };
 
 const FIB_MAGIC_DOC: u16 = 0xA5EC;
@@ -598,8 +598,10 @@ fn process_paragraph(
 ) {
 	let paragraph_start = buffer.current_position();
 	let mut paragraph_text = String::new();
+	let mut para_display_len = 0usize;
 	let mut heading_level = 0;
 	let mut is_paragraph_style_heading = false;
+	let mut format_spans: Vec<(MarkerType, usize, usize)> = Vec::new();
 	for child in element.children() {
 		if child.node_type() != NodeType::Element {
 			continue;
@@ -615,7 +617,7 @@ fn process_paragraph(
 				id_positions.insert(name.to_string(), paragraph_start + paragraph_text.len());
 			}
 		} else if tag_name == "hyperlink" {
-			process_hyperlink(child, &mut paragraph_text, buffer, rels, paragraph_start);
+			para_display_len += process_hyperlink(child, &mut paragraph_text, buffer, rels, paragraph_start);
 		} else if tag_name == "r" {
 			if heading_level == 0
 				&& let Some(rpr_node) = find_child_element(child, "rPr")
@@ -632,6 +634,7 @@ fn process_paragraph(
 					if !display_text.is_empty() {
 						let link_offset = paragraph_start + paragraph_text.len();
 						paragraph_text.push_str(&display_text);
+						para_display_len += display_len(&display_text);
 						buffer.add_marker(
 							Marker::new(MarkerType::Link, link_offset)
 								.with_text(display_text.clone())
@@ -640,12 +643,35 @@ fn process_paragraph(
 					}
 				}
 			}
-			paragraph_text.push_str(&collect_ooxml_run_text(child));
+			let run_text = collect_ooxml_run_text(child);
+			if !run_text.is_empty() {
+				let run_start = paragraph_start + para_display_len;
+				let run_len = display_len(&run_text);
+				if let Some(rpr_node) = find_child_element(child, "rPr") {
+					let (bold, italic, underline) = get_run_format_flags(rpr_node);
+					let run_end = run_start + run_len;
+					if run_end > run_start {
+						format_spans.extend(
+							format_marker_types(bold, italic, underline).map(|kind| (kind, run_start, run_end)),
+						);
+					}
+				}
+				paragraph_text.push_str(&run_text);
+				para_display_len += run_len;
+			}
 		}
 	}
 	let trimmed = paragraph_text.trim();
 	buffer.append(trimmed);
 	buffer.append("\n");
+	let leading_trim = display_len(&paragraph_text) - display_len(paragraph_text.trim_start());
+	for (kind, start, end) in format_spans {
+		let adj_start = start.saturating_sub(leading_trim);
+		let adj_end = end.saturating_sub(leading_trim);
+		if adj_end > adj_start {
+			buffer.add_marker(Marker::new(kind, adj_start).with_length(adj_end - adj_start));
+		}
+	}
 	if heading_level > 0 && !trimmed.is_empty() {
 		let heading_text =
 			if is_paragraph_style_heading { trimmed.to_string() } else { extract_heading_text(element, heading_level) };
@@ -659,13 +685,15 @@ fn process_paragraph(
 	}
 }
 
+/// Appends the hyperlink's display text to `paragraph_text`, records a Link
+/// marker, and returns the number of display units appended.
 fn process_hyperlink(
 	element: Node,
 	paragraph_text: &mut String,
 	buffer: &mut DocumentBuffer,
 	rels: &HashMap<String, String>,
 	paragraph_start: usize,
-) {
+) -> usize {
 	let r_id = element.attribute("id").unwrap_or("");
 	let anchor = element.attribute("anchor").unwrap_or("");
 	let link_target = if !r_id.is_empty() {
@@ -682,7 +710,7 @@ fn process_hyperlink(
 		}
 	}
 	if link_text.is_empty() {
-		return;
+		return 0;
 	}
 	let link_offset = paragraph_start + paragraph_text.len();
 	paragraph_text.push_str(&link_text);
@@ -691,6 +719,7 @@ fn process_hyperlink(
 			Marker::new(MarkerType::Link, link_offset).with_text(link_text.clone()).with_reference(link_target),
 		);
 	}
+	display_len(&link_text)
 }
 
 fn get_paragraph_heading_level(pr_element: Node, style_heading_map: &HashMap<String, i32>) -> i32 {
@@ -742,6 +771,18 @@ fn get_run_heading_level(rpr_element: Node) -> i32 {
 		}
 	}
 	0
+}
+
+fn get_run_format_flags(rpr_element: Node) -> (bool, bool, bool) {
+	let is_toggle_on = |tag: &str| {
+		find_child_element(rpr_element, tag)
+			.is_some_and(|node| node.attribute("val").is_none_or(|v| !matches!(v, "false" | "0")))
+	};
+	let bold = is_toggle_on("b");
+	let italic = is_toggle_on("i");
+	let underline =
+		find_child_element(rpr_element, "u").is_some_and(|node| node.attribute("val").is_none_or(|v| v != "none"));
+	(bold, italic, underline)
 }
 
 fn extract_heading_text(paragraph: Node, heading_level: i32) -> String {
@@ -854,7 +895,10 @@ mod tests {
 	use roxmltree::Document as XmlDocument;
 
 	use super::{looks_like_text_content, normalize_doc_text, parse_doc_clx, parse_doc_piece_table, traverse};
-	use crate::document::{DocumentBuffer, MarkerType};
+	use crate::{
+		document::{DocumentBuffer, MarkerType},
+		util::text::display_len,
+	};
 
 	#[test]
 	fn parse_doc_piece_table_extracts_ansi_text() {
@@ -908,7 +952,6 @@ mod tests {
 	/// equals the emitted display extent.
 	#[test]
 	fn word_table_emits_placeholder_or_tsv_by_flag() {
-		use crate::util::text::display_len;
 		// Minimal OOXML XML: one table with one row, two cells.
 		let xml = r#"<document><body>
 			<tbl>
@@ -940,5 +983,115 @@ mod tests {
 		assert_eq!(buffer.content, "Kop\t\u{1D11E}\n");
 		let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
 		assert_eq!(table_marker.length, display_len("Kop\t\u{1D11E}") + 1, "marker length spans the TSV");
+	}
+
+	/// Parse a single paragraph and return the buffer, so run-property (`<w:rPr>`) format markers
+	/// can be inspected. Test XML uses unnamespaced tags/attributes to match `attribute("val")`
+	/// (roxmltree matches on the local name here, mirroring the existing table test fixtures).
+	fn parse_run_props(xml: &str) -> DocumentBuffer {
+		let xml_doc = XmlDocument::parse(xml).expect("valid xml");
+		let mut buffer = DocumentBuffer::new();
+		let mut headings = Vec::new();
+		let mut id_positions = HashMap::new();
+		let rels = HashMap::new();
+		traverse(xml_doc.root(), &mut buffer, &mut headings, &mut id_positions, &rels, &HashMap::new(), false);
+		buffer
+	}
+
+	#[test]
+	fn run_bold_property_emits_bold_marker() {
+		let buffer = parse_run_props(r"<document><body><p><r><rPr><b/></rPr><t>bold</t></r></p></body></document>");
+		let marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Bold).expect("Bold marker");
+		assert_eq!(marker.position, 0);
+		assert_eq!(marker.length, display_len("bold"));
+	}
+
+	#[test]
+	fn run_italic_property_emits_italic_marker() {
+		let buffer = parse_run_props(r"<document><body><p><r><rPr><i/></rPr><t>italic</t></r></p></body></document>");
+		let marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Italic).expect("Italic marker");
+		assert_eq!(marker.position, 0);
+		assert_eq!(marker.length, display_len("italic"));
+	}
+
+	#[test]
+	fn run_underline_property_emits_underline_marker() {
+		let buffer = parse_run_props(
+			r#"<document><body><p><r><rPr><u val="single"/></rPr><t>under</t></r></p></body></document>"#,
+		);
+		let marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Underline).expect("Underline marker");
+		assert_eq!(marker.position, 0);
+		assert_eq!(marker.length, display_len("under"));
+	}
+
+	#[test]
+	fn run_bold_and_italic_together_emit_both_spanning_same_range() {
+		let buffer = parse_run_props(r"<document><body><p><r><rPr><b/><i/></rPr><t>both</t></r></p></body></document>");
+		let bold = buffer.markers.iter().find(|m| m.mtype == MarkerType::Bold).expect("Bold marker");
+		let italic = buffer.markers.iter().find(|m| m.mtype == MarkerType::Italic).expect("Italic marker");
+		assert_eq!(bold.position, italic.position);
+		assert_eq!(bold.length, italic.length);
+		assert_eq!(bold.position, 0);
+		assert_eq!(bold.length, display_len("both"));
+	}
+
+	#[test]
+	fn run_underline_none_is_not_underlined() {
+		let buffer = parse_run_props(
+			r#"<document><body><p><r><rPr><u val="none"/></rPr><t>plain</t></r></p></body></document>"#,
+		);
+		assert!(
+			!buffer.markers.iter().any(|m| m.mtype == MarkerType::Underline),
+			"u val=none must not produce an Underline marker"
+		);
+	}
+
+	#[test]
+	fn run_bold_false_cancels_bold() {
+		let buffer = parse_run_props(
+			r#"<document><body><p><r><rPr><b val="false"/></rPr><t>plain</t></r></p></body></document>"#,
+		);
+		assert!(
+			!buffer.markers.iter().any(|m| m.mtype == MarkerType::Bold),
+			"b val=false must not produce a Bold marker"
+		);
+	}
+
+	#[test]
+	fn run_bold_zero_cancels_bold() {
+		let buffer =
+			parse_run_props(r#"<document><body><p><r><rPr><b val="0"/></rPr><t>plain</t></r></p></body></document>"#);
+		assert!(!buffer.markers.iter().any(|m| m.mtype == MarkerType::Bold), "b val=0 must not produce a Bold marker");
+	}
+
+	/// The offset of a format marker must be computed in DISPLAY units, not byte length. A paragraph
+	/// beginning with a multi-byte (but display-stable) character before the bold run would place the
+	/// Bold marker at the wrong position if `String::len()` (bytes) were used instead of `display_len`.
+	#[test]
+	fn run_format_offset_uses_display_units_not_bytes() {
+		// "é" is 2 bytes in UTF-8 but 1 display unit (single UTF-16 code unit / one char).
+		let buffer = parse_run_props(
+			r"<document><body><p><r><t>é</t></r><r><rPr><b/></rPr><t>bold</t></r></p></body></document>",
+		);
+		let marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Bold).expect("Bold marker");
+		assert_eq!(marker.position, display_len("é"), "offset must be display-unit, not byte length");
+		assert_ne!(marker.position, "é".len(), "byte length (2) would be the bug");
+		assert_eq!(marker.length, display_len("bold"));
+	}
+
+	/// A paragraph starting with a whitespace-only unformatted run before a bold run must not
+	/// desync the Bold marker's offset. `process_paragraph` only appends the TRIMMED paragraph
+	/// text to the buffer, so the leading spaces never make it into the final content - the
+	/// bold run's offset must be shifted left by the same amount that gets trimmed, or the
+	/// marker ends up pointing past the start of "bold" into the wrong text.
+	#[test]
+	fn run_format_offset_accounts_for_leading_whitespace_trim() {
+		let buffer = parse_run_props(
+			r#"<document><body><p><r><t xml:space="preserve">  </t></r><r><rPr><b/></rPr><t>bold</t></r></p></body></document>"#,
+		);
+		assert_eq!(buffer.content, "bold\n", "leading whitespace run must be trimmed from the final content");
+		let marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Bold).expect("Bold marker");
+		assert_eq!(marker.position, 0, "Bold marker must point at the start of the trimmed content");
+		assert_eq!(marker.length, display_len("bold"));
 	}
 }
