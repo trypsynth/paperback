@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import dev.paperback.mobile.t
 
 @Composable
 fun PermissionRationaleDialog(
@@ -14,35 +15,35 @@ fun PermissionRationaleDialog(
 ) {
 	AlertDialog(
 		onDismissRequest = onDismiss,
-		title = { Text(text = "All Files Access Required") },
+		title = { Text(text = t("All Files Access Required")) },
 		text = {
 			Column {
 				Text(
-					text = "Paperback requires the 'All Files Access' permission to enable the custom in-app file browser.",
+					text = t("Paperback requires the 'All Files Access' permission to enable the custom in-app file browser."),
 					style = MaterialTheme.typography.bodyMedium,
 					modifier = Modifier.padding(bottom = 8.dp)
 				)
 				Text(
-					text = "Why we need this:",
+					text = t("Why we need this:"),
 					style = MaterialTheme.typography.bodyMedium,
 					fontWeight = FontWeight.Bold,
 					modifier = Modifier.padding(bottom = 4.dp)
 				)
 				Text(
-					text = "• To provide a fast, fully screen-reader accessible file manager inside the app.",
+					text = t("• To provide a fast, fully screen-reader accessible file manager inside the app."),
 					style = MaterialTheme.typography.bodyMedium
 				)
 				Text(
-					text = "• To load large files instantly without needing to copy them into the app's cache.",
+					text = t("• To load large files instantly without needing to copy them into the app's cache."),
 					style = MaterialTheme.typography.bodyMedium
 				)
 				Text(
-					text = "• To display the exact local file paths of your documents.",
+					text = t("• To display the exact local file paths of your documents."),
 					style = MaterialTheme.typography.bodyMedium,
 					modifier = Modifier.padding(bottom = 8.dp)
 				)
 				Text(
-					text = "If you deny this permission, you can still use the Android System File Picker to open your books by turning off the custom file browser setting.",
+					text = t("If you deny this permission, you can still use the Android System File Picker to open your books by turning off the custom file browser setting."),
 					style = MaterialTheme.typography.bodyMedium,
 					fontWeight = FontWeight.Bold
 				)
@@ -50,12 +51,12 @@ fun PermissionRationaleDialog(
 		},
 		confirmButton = {
 			Button(onClick = onGrantClick) {
-				Text("Grant")
+				Text(t("Grant"))
 			}
 		},
 		dismissButton = {
 			TextButton(onClick = onDismiss) {
-				Text("Not Now")
+				Text(t("Not Now"))
 			}
 		}
 	)

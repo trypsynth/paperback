@@ -23,7 +23,7 @@ struct TtsControlBar: View {
 					.foregroundStyle(.secondary)
 					.frame(width: 72, alignment: .leading)
 			}
-			.accessibilityLabel("Navigation unit")
+			.accessibilityLabel(t("Navigation unit"))
 			.accessibilityValue(viewModel.currentSegmentType.rawValue)
 			.accessibilityRemoveTraits(.isButton)
 			.accessibilityAdjustableAction { direction in
@@ -49,7 +49,7 @@ struct TtsControlBar: View {
 			Button { viewModel.togglePlayPause() } label: {
 				Image(systemName: viewModel.ttsManager.isSpeaking ? "pause.fill" : "play.fill").font(.title)
 			}
-			.accessibilityLabel(viewModel.ttsManager.isSpeaking ? "Pause" : "Play")
+			.accessibilityLabel(viewModel.ttsManager.isSpeaking ? t("Pause") : t("Play"))
 			.accessibilityAdjustableAction { direction in
 				let wasPlaying = viewModel.ttsManager.isSpeaking
 				let forward = viewModel.swipeUpMovesForward
@@ -63,7 +63,7 @@ struct TtsControlBar: View {
 					? viewModel.playNextSegment(speak: wasPlaying, announce: !wasPlaying)
 					: viewModel.playPrevSegment(speak: wasPlaying, announce: !wasPlaying)
 				if !moved {
-					let label = tryingNext ? "End of document" : "Beginning of document"
+					let label = tryingNext ? t("End of document") : t("Beginning of document")
 					Task { @MainActor in
 						try? await Task.sleep(for: .milliseconds(150))
 						UIAccessibility.post(notification: .announcement, argument: label)

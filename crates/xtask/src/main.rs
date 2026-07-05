@@ -42,5 +42,23 @@ pub(crate) fn project_root() -> PathBuf {
 
 fn gen_pot() -> Result<(), Box<dyn Error>> {
 	let root = project_root();
-	patois_build::gen_pot(&root, root.join("po"), "paperback")
+	let po_dir = root.join("po");
+	let pot_file = po_dir.join("paperback.pot");
+
+	// Step 1: generate from Rust crates tagged with translatable = true
+	patois_build::gen_pot(&root, &po_dir, "paperback")?;
+
+	// Step 2: extend with iOS Swift sources (t() calls in Swift files)
+	let ios_src = root.join("ios/Paperback");
+	if ios_src.is_dir() {
+		patois_build::extend_pot_from_source_dirs(&[&ios_src], "swift", &pot_file)?;
+	}
+
+	// Step 3: extend with Android Kotlin sources (excluding uniffi-generated bindings)
+	let kt_src = root.join("android/app/src/main/kotlin/dev/paperback/mobile");
+	if kt_src.is_dir() {
+		patois_build::extend_pot_from_source_dirs(&[&kt_src], "kt", &pot_file)?;
+	}
+
+	Ok(())
 }

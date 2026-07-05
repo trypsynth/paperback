@@ -1,6 +1,7 @@
 use pulldown_cmark::{Event, Parser, TagEnd};
 use roman::to;
 
+#[must_use]
 pub fn markdown_to_text(markdown: &str) -> String {
 	let mut text = String::new();
 	let parser = Parser::new(markdown);
@@ -91,10 +92,12 @@ pub const fn ch_width(ch: char) -> usize {
 	}
 }
 
+#[must_use]
 pub const fn is_space_like(ch: char) -> bool {
 	ch.is_whitespace() || matches!(ch, '\u{00A0}' | '\u{200B}')
 }
 
+#[must_use]
 pub fn format_list_item(number: i32, list_type: &str) -> String {
 	match list_type {
 		"a" => to_alpha(number, false),

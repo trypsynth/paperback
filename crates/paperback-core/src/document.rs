@@ -23,6 +23,9 @@ pub enum MarkerType {
 	Separator = 13,
 	Image = 14,
 	Figure = 15,
+	Bold = 16,
+	Italic = 17,
+	Underline = 18,
 }
 
 impl From<MarkerType> for i32 {
@@ -52,6 +55,9 @@ impl TryFrom<i32> for MarkerType {
 			13 => Ok(Self::Separator),
 			14 => Ok(Self::Image),
 			15 => Ok(Self::Figure),
+			16 => Ok(Self::Bold),
+			17 => Ok(Self::Italic),
+			18 => Ok(Self::Underline),
 			_ => Err(()),
 		}
 	}
@@ -532,12 +538,15 @@ pub struct ParserContext {
 	pub file_path: String,
 	pub password: Option<String>,
 	pub forced_extension: Option<String>,
+	/// When `true`, parsers emit each table's full tab-separated rendering inline; when `false`,
+	/// they emit a `"[Table]: <first row>"` placeholder. Threaded into each parser at parse time.
+	pub render_tables_inline: bool,
 }
 
 impl ParserContext {
 	#[must_use]
 	pub const fn new(file_path: String) -> Self {
-		Self { file_path, password: None, forced_extension: None }
+		Self { file_path, password: None, forced_extension: None, render_tables_inline: true }
 	}
 
 	#[must_use]
@@ -549,6 +558,12 @@ impl ParserContext {
 	#[must_use]
 	pub fn with_forced_extension(mut self, extension: String) -> Self {
 		self.forced_extension = Some(extension);
+		self
+	}
+
+	#[must_use]
+	pub const fn with_render_tables_inline(mut self, value: bool) -> Self {
+		self.render_tables_inline = value;
 		self
 	}
 }
@@ -624,11 +639,11 @@ mod tests {
 
 	#[test]
 	fn marker_type_round_trip_for_all_known_values() {
-		for raw in 0..=15 {
+		for raw in 0..=18 {
 			let marker = MarkerType::try_from(raw).unwrap();
 			assert_eq!(i32::from(marker), raw);
 		}
-		assert!(MarkerType::try_from(16).is_err());
+		assert!(MarkerType::try_from(19).is_err());
 		assert!(MarkerType::try_from(-1).is_err());
 	}
 

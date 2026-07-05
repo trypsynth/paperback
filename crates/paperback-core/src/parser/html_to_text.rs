@@ -63,8 +63,17 @@ pub struct HtmlToText {
 	/// balanced with the start/close handlers so list lengths are set on the right entries.
 	open_lists: Vec<Option<usize>>,
 	link_start_pos: usize,
+	bolds: Vec<crate::types::FormatInfo>,
+	italics: Vec<crate::types::FormatInfo>,
+	underlines: Vec<crate::types::FormatInfo>,
+	open_bolds: Vec<usize>,
+	open_italics: Vec<usize>,
+	open_underlines: Vec<usize>,
 	source_mode: HtmlSourceMode,
 	cached_char_length: usize,
+	/// When `true`, tables are emitted as their full tab-separated rendering; otherwise as a
+	/// `"[Table]: <first row>"` placeholder. A config flag, not parse state: it survives `clear()`.
+	render_tables_inline: bool,
 }
 
 impl HtmlToText {
@@ -91,9 +100,24 @@ impl HtmlToText {
 			list_level: 0,
 			open_lists: Vec::new(),
 			link_start_pos: 0,
+			bolds: Vec::new(),
+			italics: Vec::new(),
+			underlines: Vec::new(),
+			open_bolds: Vec::new(),
+			open_italics: Vec::new(),
+			open_underlines: Vec::new(),
 			source_mode: HtmlSourceMode::NativeHtml,
 			cached_char_length: 0,
+			render_tables_inline: false,
 		}
+	}
+
+	/// Like [`new`](Self::new) but sets whether tables are rendered inline (full TSV) or as a
+	/// placeholder. Threaded from the owning parser's `ParserContext`; preserved across
+	/// `convert`/`clear`.
+	#[must_use]
+	pub fn with_render_tables_inline(render_tables_inline: bool) -> Self {
+		Self { render_tables_inline, ..Self::new() }
 	}
 
 	pub fn convert(&mut self, html_content: &str, mode: HtmlSourceMode) -> bool {
@@ -151,6 +175,21 @@ impl HtmlToText {
 		&self.id_positions
 	}
 
+	#[must_use]
+	pub fn get_bolds(&self) -> &[crate::types::FormatInfo] {
+		&self.bolds
+	}
+
+	#[must_use]
+	pub fn get_italics(&self) -> &[crate::types::FormatInfo] {
+		&self.italics
+	}
+
+	#[must_use]
+	pub fn get_underlines(&self) -> &[crate::types::FormatInfo] {
+		&self.underlines
+	}
+
 	pub fn clear(&mut self) {
 		self.lines.clear();
 		self.current_line.clear();
@@ -172,6 +211,12 @@ impl HtmlToText {
 		self.list_level = 0;
 		self.open_lists.clear();
 		self.link_start_pos = 0;
+		self.bolds.clear();
+		self.italics.clear();
+		self.underlines.clear();
+		self.open_bolds.clear();
+		self.open_italics.clear();
+		self.open_underlines.clear();
 		self.cached_char_length = 0;
 	}
 
@@ -189,10 +234,10 @@ impl HtmlToText {
 			Node::Element(element) => {
 				let tag_name = element.name();
 				if tag_name == "table" {
-					if self.flags.contains(ProcessingFlags::IN_BODY) {
-						if let Some(id) = element.attr("id").or_else(|| element.attr("name")) {
-							self.id_positions.insert(id.to_string(), self.get_current_text_position());
-						}
+					if self.flags.contains(ProcessingFlags::IN_BODY)
+						&& let Some(id) = element.attr("id").or_else(|| element.attr("name"))
+					{
+						self.id_positions.insert(id.to_string(), self.get_current_text_position());
 					}
 					self.handle_table(node, document);
 					return;
@@ -222,65 +267,29 @@ impl HtmlToText {
 	fn handle_table(&mut self, node: NodeRef<'_, Node>, document: &Html) {
 		self.finalize_current_line();
 		let table_html = Self::serialize_node(node, document);
-		let start_lines_count = self.lines.len();
 		let start_offset = self.get_current_text_position();
-		let mut table_caption = String::new();
-		for child in node.children() {
-			if let Node::Element(element) = child.value() {
-				if element.name() == "caption" {
-					table_caption = Self::collect_text(child).trim().to_string();
-					break;
-				}
-			}
+		// Emit the table's on-screen text via the shared helper instead of recursing children to
+		// emit one cell per line. The helper output may contain tabs and span multiple lines; push
+		// each line verbatim so tab separators and empty cells survive whitespace collapsing.
+		let render = crate::parser::table_text::table_render_bundle(&table_html, self.render_tables_inline);
+		for line in render.lines {
+			self.push_finalized_line(line);
 		}
-		if table_caption.is_empty() {
-			for child in node.children() {
-				if let Node::Element(element) = child.value() {
-					let name = element.name();
-					if name == "tr" {
-						table_caption = Self::collect_text(child).trim().to_string();
-						break;
-					} else if matches!(name, "thead" | "tbody" | "tfoot") {
-						for subchild in child.children() {
-							if let Node::Element(subelem) = subchild.value() {
-								if subelem.name() == "tr" {
-									table_caption = Self::collect_text(subchild).trim().to_string();
-									break;
-								}
-							}
-						}
-						if !table_caption.is_empty() {
-							break;
-						}
-					}
-				}
-			}
-		}
-		for child in node.children() {
-			self.process_node(child, document);
-		}
-		self.finalize_current_line();
-		let mut table_text = String::new();
-		for (i, line) in self.lines.iter().enumerate().skip(start_lines_count) {
-			if i > start_lines_count {
-				table_text.push('\n');
-			}
-			table_text.push_str(line);
-		}
-		if table_text.trim().is_empty() {
-			table_text = "table".to_string();
-			self.current_line.push_str(&table_text);
-			self.finalize_current_line();
-		}
-		if table_caption.trim().is_empty() {
-			table_caption = "table".to_string();
-		}
+		let table_caption = render.caption;
+		let display_length = render.display_length;
 		self.tables.push(TableInfo {
 			offset: start_offset,
 			text: table_caption,
 			html_content: table_html,
-			length: table_text.len(),
+			length: display_length,
 		});
+	}
+
+	/// Push a line to the output verbatim (no whitespace collapsing/trimming), updating the cached
+	/// length so position tracking stays correct. Used for table rows whose tab separators and empty
+	/// cells must not be mangled by `add_line`.
+	fn push_finalized_line(&mut self, line: String) {
+		crate::parser::table_text::push_finalized_line(&mut self.lines, &mut self.cached_char_length, line);
 	}
 
 	fn handle_element_opening(&mut self, tag_name: &str, node: NodeRef<'_, Node>, document: &Html) {
@@ -300,11 +309,11 @@ impl HtmlToText {
 
 					if description.is_empty() && tag_name == "figure" {
 						for child in node.children() {
-							if let Node::Element(child_elem) = child.value() {
-								if child_elem.name() == "figcaption" {
-									description = collapse_whitespace(&Self::collect_text(child));
-									break;
-								}
+							if let Node::Element(child_elem) = child.value()
+								&& child_elem.name() == "figcaption"
+							{
+								description = collapse_whitespace(&Self::collect_text(child));
+								break;
 							}
 						}
 					}
@@ -330,6 +339,13 @@ impl HtmlToText {
 					self.current_link_href = href.to_string();
 				}
 				self.link_start_pos = self.get_current_text_position();
+			}
+			if tag_name == "b" || tag_name == "strong" {
+				self.open_bolds.push(self.get_current_text_position());
+			} else if tag_name == "i" || tag_name == "em" {
+				self.open_italics.push(self.get_current_text_position());
+			} else if tag_name == "u" {
+				self.open_underlines.push(self.get_current_text_position());
 			}
 		}
 		if tag_name == "title" && self.title.is_empty() {
@@ -390,10 +406,10 @@ impl HtmlToText {
 			if tag_name == "ol" {
 				style.ordered = true;
 				if let Some(element) = ElementRef::wrap(node) {
-					if let Some(start_val) = element.attr("start") {
-						if let Ok(start_num) = start_val.parse::<i32>() {
-							style.item_number = start_num;
-						}
+					if let Some(start_val) = element.attr("start")
+						&& let Ok(start_num) = start_val.parse::<i32>()
+					{
+						style.item_number = start_num;
 					}
 					if let Some(type_val) = element.attr("type") {
 						style.list_type = type_val.to_lowercase();
@@ -403,10 +419,10 @@ impl HtmlToText {
 			self.list_style_stack.push(style);
 			let mut item_count = 0;
 			for child in node.children() {
-				if let Node::Element(child_elem) = child.value() {
-					if child_elem.name() == "li" {
-						item_count += 1;
-					}
+				if let Node::Element(child_elem) = child.value()
+					&& child_elem.name() == "li"
+				{
+					item_count += 1;
 				}
 			}
 			if item_count > 0 {
@@ -424,23 +440,16 @@ impl HtmlToText {
 			&& tag_name.len() == 2
 			&& tag_name.starts_with('h')
 			&& tag_name.chars().nth(1).is_some_and(|c| c.is_ascii_digit())
+			&& let Some(level_char) = tag_name.chars().nth(1)
+			&& let Some(level) = level_char.to_digit(10)
+			&& (1..=6).contains(&level)
 		{
-			if let Some(level_char) = tag_name.chars().nth(1) {
-				if let Some(level) = level_char.to_digit(10) {
-					if (1..=6).contains(&level) {
-						self.finalize_current_line();
-						let heading_offset = self.get_current_text_position();
-						let heading_text = Self::get_element_text(node, document);
-						if !heading_text.is_empty() {
-							#[allow(clippy::cast_possible_wrap)]
-							self.headings.push(HeadingInfo {
-								offset: heading_offset,
-								level: level as i32,
-								text: heading_text,
-							});
-						}
-					}
-				}
+			self.finalize_current_line();
+			let heading_offset = self.get_current_text_position();
+			let heading_text = Self::get_element_text(node, document);
+			if !heading_text.is_empty() {
+				#[allow(clippy::cast_possible_wrap)]
+				self.headings.push(HeadingInfo { offset: heading_offset, level: level as i32, text: heading_text });
 			}
 		}
 	}
@@ -505,6 +514,28 @@ impl HtmlToText {
 			self.stop_preserve_whitespace();
 		} else if Self::is_block_element(tag_name) {
 			self.finalize_current_line();
+		}
+		if tag_name == "b" || tag_name == "strong" {
+			if let Some(start) = self.open_bolds.pop() {
+				self.bolds.push(crate::types::FormatInfo {
+					offset: start,
+					length: self.get_current_text_position().saturating_sub(start),
+				});
+			}
+		} else if tag_name == "i" || tag_name == "em" {
+			if let Some(start) = self.open_italics.pop() {
+				self.italics.push(crate::types::FormatInfo {
+					offset: start,
+					length: self.get_current_text_position().saturating_sub(start),
+				});
+			}
+		} else if tag_name == "u" {
+			if let Some(start) = self.open_underlines.pop() {
+				self.underlines.push(crate::types::FormatInfo {
+					offset: start,
+					length: self.get_current_text_position().saturating_sub(start),
+				});
+			}
 		}
 	}
 
@@ -651,10 +682,10 @@ impl crate::parser::ConverterOutput for HtmlToText {
 	fn get_links(&self) -> &[LinkInfo] {
 		&self.links
 	}
-	fn get_images(&self) -> &[crate::types::ImageInfo] {
+	fn get_images(&self) -> &[ImageInfo] {
 		&self.images
 	}
-	fn get_figures(&self) -> &[crate::types::ImageInfo] {
+	fn get_figures(&self) -> &[ImageInfo] {
 		&self.figures
 	}
 	fn get_tables(&self) -> &[TableInfo] {
@@ -669,6 +700,15 @@ impl crate::parser::ConverterOutput for HtmlToText {
 	fn get_list_items(&self) -> &[ListItemInfo] {
 		&self.list_items
 	}
+	fn get_bolds(&self) -> &[crate::types::FormatInfo] {
+		&self.bolds
+	}
+	fn get_italics(&self) -> &[crate::types::FormatInfo] {
+		&self.italics
+	}
+	fn get_underlines(&self) -> &[crate::types::FormatInfo] {
+		&self.underlines
+	}
 }
 
 #[cfg(test)]
@@ -676,6 +716,54 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
+
+	/// End-to-end: the HtmlToText converter emits each table's on-screen text at parse time, and a
+	/// heading that follows the table is offset by the emitted display extent. Verified in both
+	/// modes: OFF (placeholder) and ON (full TSV). The fixture has an "Intro" paragraph before the
+	/// table (so the table offset is non-zero) and an `<h2>` after it.
+	#[rstest]
+	#[case(false)]
+	#[case(true)]
+	fn html_converter_emits_table_inline_or_placeholder(#[case] inline: bool) {
+		let html = concat!(
+			"<html><body>",
+			"<p>Intro</p>",
+			"<table><tr><td>A</td><td>B</td></tr></table>",
+			"<h2>After heading</h2>",
+			"</body></html>"
+		);
+
+		let mut converter = HtmlToText::with_render_tables_inline(inline);
+		assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
+
+		let tables = converter.get_tables();
+		assert_eq!(tables.len(), 1);
+		assert_eq!(tables[0].offset, 6, "table follows 'Intro\n' (6 display units)");
+
+		let table_line = if inline { "A\tB" } else { "[Table]: A B" };
+		let expected_text = format!("Intro\n{table_line}\nAfter heading");
+		assert_eq!(converter.get_text(), expected_text, "table emitted as {table_line:?}");
+
+		// display_length equals the emitted display extent (the table line plus its newline).
+		let expected_display_length = display_len(table_line) + 1;
+		assert_eq!(tables[0].length, expected_display_length);
+
+		// The heading marker that follows the table sits right after the emitted table span.
+		let headings = converter.get_headings();
+		assert_eq!(headings.len(), 1);
+		assert_eq!(
+			headings[0].offset,
+			tables[0].offset + expected_display_length,
+			"h2 immediately follows the emitted table span"
+		);
+
+		// Through the real marker path, the Table marker's length matches the emitted extent.
+		let mut buffer = crate::document::DocumentBuffer::with_content(converter.get_text());
+		crate::parser::add_converter_markers(&mut buffer, &converter, 0);
+		let table_marker =
+			buffer.markers.iter().find(|m| m.mtype == crate::document::MarkerType::Table).expect("Table marker");
+		assert_eq!(table_marker.length, expected_display_length);
+	}
 
 	#[test]
 	fn test_title_and_text() {
@@ -792,5 +880,47 @@ mod tests {
 		assert_eq!(converter.get_title(), "Second");
 		assert_eq!(converter.get_text(), "Two");
 		assert!(converter.get_headings().is_empty());
+	}
+
+	#[test]
+	fn html_table_display_length_is_display_extent_not_byte_length() {
+		let html = concat!(
+			"<html><body><p>Intro</p>",
+			"<table><tr><td>A</td><td>\u{1D11E}</td></tr></table>",
+			"</body></html>"
+		);
+		let mut converter = HtmlToText::with_render_tables_inline(true);
+		assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
+		let tables = converter.get_tables();
+		assert_eq!(tables.len(), 1, "expected exactly one table");
+		let table = &tables[0];
+		assert_eq!(table.offset, 6, "table starts after 'Intro\n'");
+		assert_eq!(table.length, 5, "length must be the display extent (5 display units), not byte length (6)");
+	}
+
+	#[test]
+	fn html_two_tables_offsets_are_cumulative() {
+		let html = concat!(
+			"<html><body>",
+			"<table><tr><td>X</td></tr></table>",
+			"<table><tr><td>Y</td></tr></table>",
+			"</body></html>"
+		);
+		let mut converter = HtmlToText::new();
+		assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
+		let tables = converter.get_tables();
+		assert_eq!(tables.len(), 2, "expected two tables");
+
+		let t1_offset = tables[0].offset;
+		let t1_display_length = tables[0].length;
+		let t2_offset = tables[1].offset;
+
+		assert_eq!(t1_offset, 0, "first table starts at 0");
+		assert!(t1_display_length > 0, "first table has non-zero display_length");
+		assert_eq!(
+			t2_offset,
+			t1_offset + t1_display_length,
+			"second table offset must equal first offset + first display_length"
+		);
 	}
 }

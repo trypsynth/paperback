@@ -438,6 +438,7 @@ fn do_find(
 	let (sel_start, sel_end) = text_ctrl.get_selection();
 	let start_pos = if forward { sel_end } else { sel_start };
 	let result = find_text_with_wrap(&text, &query, start_pos, options);
+	tracing::debug!(query = %query, forward, found = result.found, wrapped = result.wrapped, "find search");
 	if !result.found {
 		live_region::announce(live_region_label, &t("Not found."));
 		state.dialog.show(true);

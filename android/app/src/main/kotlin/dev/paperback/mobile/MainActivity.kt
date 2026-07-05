@@ -19,6 +19,7 @@ class MainActivity : ComponentActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		System.setProperty("uniffi.component.paperback.libraryOverride", "paperback_core")
+		Translations.load(this)
 		enableEdgeToEdge()
 		setContent {
 			if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
@@ -149,7 +150,7 @@ class MainActivity : ComponentActivity() {
 				else -> super.dispatchKeyEvent(event)
 			}
 		}
-		
+
 		if (event.keyCode == KeyEvent.KEYCODE_F3) {
 			if (event.isShiftPressed) {
 				vm.triggerFindPrevious()

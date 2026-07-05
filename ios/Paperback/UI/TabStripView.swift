@@ -16,7 +16,7 @@ struct TabStripView: View {
 				.padding(.vertical, 6)
 			}
 			.accessibilityElement(children: .contain)
-			.accessibilityLabel("Tabs")
+			.accessibilityLabel(t("Tabs"))
 			.onChange(of: viewModel.activeTabId) { id in
 				guard let id else { return }
 				withAnimation { proxy.scrollTo(id, anchor: .center) }

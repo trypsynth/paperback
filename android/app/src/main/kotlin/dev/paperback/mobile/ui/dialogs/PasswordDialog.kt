@@ -22,6 +22,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import dev.paperback.mobile.t
 
 @Composable
 fun PasswordDialog(
@@ -39,12 +40,12 @@ fun PasswordDialog(
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		modifier = Modifier.semantics { paneTitle = "Document Password" },
-		title = { Text("Document Password") },
+		title = { Text(t("Document Password")) },
 		text = {
 			OutlinedTextField(
 				value = password,
 				onValueChange = { password = it },
-				label = { Text("Password:") },
+				label = { Text(t("Password:")) },
 				visualTransformation = PasswordVisualTransformation(),
 				keyboardOptions = KeyboardOptions(
 					keyboardType = KeyboardType.Password,
@@ -68,12 +69,12 @@ fun PasswordDialog(
 				onClick = { onConfirm(password) },
 				enabled = password.isNotEmpty()
 			) {
-				Text("OK")
+				Text(t("OK"))
 			}
 		},
 		dismissButton = {
 			TextButton(onClick = onDismiss) {
-				Text("Cancel")
+				Text(t("Cancel"))
 			}
 		}
 	)

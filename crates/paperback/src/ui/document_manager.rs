@@ -127,17 +127,19 @@ impl DocumentManager {
 			}
 		}
 
-		let (password, forced_extension) = {
+		let (password, forced_extension, render_tables_inline) = {
 			let config = self.config.lock().unwrap();
 			let path_str = path.to_string_lossy();
 			config.refresh_document_hash(&path_str);
 			let forced_extension = config.get_document_format(&path_str);
 			let password = config.get_document_password(&path_str);
+			let render_tables_inline = config.get_app_bool("render_tables_inline", true);
 			drop(config);
-			(password, forced_extension)
+			(password, forced_extension, render_tables_inline)
 		};
 		let path_str = path.to_string_lossy().to_string();
-		match DocumentSession::new(&path_str, &password, &forced_extension) {
+		tracing::info!(path = %path.display(), "opening document");
+		match DocumentSession::new(&path_str, &password, &forced_extension, render_tables_inline) {
 			Ok(session) => self.add_session_tab(self_rc, path, session, &password, track, title_override),
 			Err(err) => {
 				if err.starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
@@ -149,15 +151,17 @@ impl DocumentManager {
 						show_error_dialog(&self.notebook, &t("Password is required."), &t("Error"));
 						return false;
 					};
-					match DocumentSession::new(&path_str, &password, &forced_extension) {
+					match DocumentSession::new(&path_str, &password, &forced_extension, render_tables_inline) {
 						Ok(session) => self.add_session_tab(self_rc, path, session, &password, track, title_override),
 						Err(retry_error) => {
+							tracing::error!(path = %path.display(), error = %retry_error, "failed to open document");
 							let message = build_document_load_error_message(path, &retry_error);
 							show_error_dialog(&self.notebook, &message, &t("Error"));
 							false
 						}
 					}
 				} else {
+					tracing::error!(path = %path.display(), error = %err, "failed to open document");
 					let message = build_document_load_error_message(path, &err);
 					show_error_dialog(&self.notebook, &message, &t("Error"));
 					false
@@ -209,6 +213,7 @@ impl DocumentManager {
 		panel.set_sizer(sizer, true);
 		let content = session.content();
 		fill_text_ctrl(text_ctrl, &content);
+		apply_formatting_markers_to_ctrl(text_ctrl, &session);
 		apply_readability_format_to_ctrl(
 			text_ctrl,
 			config.get_line_spacing(),
@@ -251,6 +256,7 @@ impl DocumentManager {
 			return false;
 		}
 		if let Some(tab) = self.tabs.get(index) {
+			tracing::info!(path = %tab.file_path.display(), "closing document");
 			self.recently_closed.push(tab.file_path.clone());
 			let path_str = tab.file_path.to_string_lossy();
 			let config = self.config.lock().unwrap();
@@ -298,19 +304,19 @@ impl DocumentManager {
 
 	pub fn save_position_throttled(&self) {
 		let now = Instant::now();
-		if let Some(last_save) = self.last_position_save.get() {
-			if now.duration_since(last_save).as_secs() < POSITION_SAVE_INTERVAL_SECS {
-				return;
-			}
+		if let Some(last_save) = self.last_position_save.get()
+			&& now.duration_since(last_save).as_secs() < POSITION_SAVE_INTERVAL_SECS
+		{
+			return;
 		}
-		if let Some(tab) = self.active_tab() {
-			if tab.track {
-				let position = tab.text_ctrl.get_insertion_point();
-				let path_str = tab.file_path.to_string_lossy();
-				let config = self.config.lock().unwrap();
-				config.set_document_position(&path_str, position);
-				config.flush();
-			}
+		if let Some(tab) = self.active_tab()
+			&& tab.track
+		{
+			let position = tab.text_ctrl.get_insertion_point();
+			let path_str = tab.file_path.to_string_lossy();
+			let config = self.config.lock().unwrap();
+			config.set_document_position(&path_str, position);
+			config.flush();
 		}
 		self.last_position_save.set(Some(now));
 	}
@@ -454,10 +460,10 @@ impl DocumentManager {
 				bm.start >= position && bm.start < prev
 			};
 			if triggered {
-				if !bm.note.is_empty() {
-					has_note = true;
-				} else {
+				if bm.note.is_empty() {
 					has_bookmark = true;
+				} else {
+					has_note = true;
 				}
 			}
 		}
@@ -544,6 +550,7 @@ impl DocumentManager {
 			sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
 			tab.panel.set_sizer(sizer, true);
 			fill_text_ctrl(text_ctrl, &content);
+			apply_formatting_markers_to_ctrl(text_ctrl, &tab.session);
 			if let Some(font) = build_font_from_readability(&rf) {
 				text_ctrl.set_font(&font);
 			}
@@ -560,6 +567,96 @@ impl DocumentManager {
 			text_ctrl.show_position(pos);
 			old_ctrl.destroy();
 			tab.text_ctrl = text_ctrl;
+		}
+	}
+
+	/// Re-parses every open document with the new `render_tables_inline` setting and refills its
+	/// text control. Re-parsing (rather than transforming in place) keeps every format's table
+	/// rendering identical via the shared parse-time helper. A tab whose re-parse fails is left
+	/// unchanged.
+	pub fn apply_render_tables_inline(&mut self, render_tables_inline: bool) {
+		// Read readability settings and collect each tab's parse inputs (path, password, forced
+		// format) under a single config lock, so we don't re-lock per tab while mutating the tabs.
+		let (rf, line_spacing, bg_color, text_alignment, letter_spacing, paragraph_spacing, parse_inputs) = {
+			let cfg = self.config.lock().unwrap();
+			let parse_inputs: Vec<(String, String, String)> = self
+				.tabs
+				.iter()
+				.map(|tab| {
+					let path_str = tab.file_path.to_string_lossy().to_string();
+					let password = cfg.get_document_password(&path_str);
+					let forced_extension = cfg.get_document_format(&path_str);
+					(path_str, password, forced_extension)
+				})
+				.collect();
+			(
+				cfg.get_readability_font(),
+				cfg.get_line_spacing(),
+				cfg.get_bg_color(),
+				cfg.get_text_alignment(),
+				cfg.get_letter_spacing(),
+				cfg.get_paragraph_spacing(),
+				parse_inputs,
+			)
+		};
+		for (tab, (path_str, password, forced_extension)) in self.tabs.iter_mut().zip(parse_inputs) {
+			let current_pos = tab.text_ctrl.get_insertion_point();
+			let pos = usize::try_from(current_pos.max(0)).unwrap_or(0);
+
+			// Find the nearest anchor at-or-before the cursor using the full id_positions key
+			// (unlike nearest_fragment_before, which strips the "path#" prefix for epub keys
+			// making the subsequent lookup fail). Record the within-block offset so the cursor
+			// lands at the same structural position after reparsing. Fallback: percentage-based
+			// position for formats with no anchors.
+			let stable_anchor = {
+				let id_positions = &tab.session.handle().document().id_positions;
+				id_positions
+					.iter()
+					.filter(|&(_, &off)| off <= pos)
+					.max_by_key(|&(_, &off)| off)
+					.map(|(key, &anchor_off)| (key.clone(), pos.saturating_sub(anchor_off)))
+			};
+			let fallback_percent = tab.session.get_status_info(current_pos).percentage;
+
+			let new_session = match DocumentSession::new(&path_str, &password, &forced_extension, render_tables_inline)
+			{
+				Ok(session) => session,
+				Err(err) => {
+					tracing::error!(path = %path_str, error = %err, "failed to re-parse document for render_tables_inline toggle");
+					continue;
+				}
+			};
+			tab.session = new_session;
+			let content = tab.session.content();
+			fill_text_ctrl(tab.text_ctrl, &content);
+			apply_formatting_markers_to_ctrl(tab.text_ctrl, &tab.session);
+			if let Some(font) = build_font_from_readability(&rf) {
+				tab.text_ctrl.set_font(&font);
+			}
+			apply_foreground_color_to_ctrl(tab.text_ctrl, rf.color);
+			apply_bg_color_to_ctrl(tab.text_ctrl, bg_color);
+			apply_readability_format_to_ctrl(
+				tab.text_ctrl,
+				line_spacing,
+				paragraph_spacing,
+				letter_spacing,
+				text_alignment,
+			);
+			tab.panel.layout();
+			let max_pos = tab.text_ctrl.get_last_position();
+
+			let restored_pos = if let Some((ref key, within)) = stable_anchor {
+				match tab.session.handle().document().id_positions.get(key) {
+					Some(&new_anchor_off) => i64::try_from(new_anchor_off + within).unwrap_or(0).clamp(0, max_pos),
+					None => tab.session.position_from_percent(fallback_percent).clamp(0, max_pos),
+				}
+			} else {
+				tab.session.position_from_percent(fallback_percent).clamp(0, max_pos)
+			};
+
+			tab.text_ctrl.set_insertion_point(restored_pos);
+			tab.text_ctrl.show_position(restored_pos);
+			tab.session.set_stable_position(restored_pos);
 		}
 	}
 
@@ -585,7 +682,7 @@ impl DocumentManager {
 						dm.activate_current_table()
 					};
 					if let Some(html) = table_html {
-						let frame = dm_for_enter.lock().unwrap().frame.clone();
+						let frame = dm_for_enter.lock().unwrap().frame;
 						super::dialogs::show_web_view_dialog(&frame, &t("Table View"), &html, false, None);
 					} else {
 						let mut dm = dm_for_enter.lock().unwrap();
@@ -623,44 +720,44 @@ impl DocumentManager {
 		#[cfg(target_os = "linux")]
 		let frame_for_keys = frame;
 		text_ctrl.on_key_down(move |event| {
-			if let WindowEventData::Keyboard(kbd) = &event {
-				if let Some(key) = kbd.get_key_code() {
-					if (key == WXK_F10 && kbd.shift_down()) || key == WXK_WINDOWS_MENU {
+			if let WindowEventData::Keyboard(kbd) = &event
+				&& let Some(key) = kbd.get_key_code()
+			{
+				if (key == WXK_F10 && kbd.shift_down()) || key == WXK_WINDOWS_MENU {
+					kbd.event.skip(false);
+					show_reader_context_menu(text_ctrl_for_menu);
+					return;
+				}
+				#[cfg(target_os = "linux")]
+				if !kbd.control_down() && !kbd.alt_down() {
+					if let Some(&menu_id) = key_map.get(&(key, kbd.shift_down())) {
 						kbd.event.skip(false);
-						show_reader_context_menu(text_ctrl_for_menu);
+						frame_for_keys.process_menu_command(menu_id);
 						return;
 					}
-					#[cfg(target_os = "linux")]
-					if !kbd.control_down() && !kbd.alt_down() {
-						if let Some(&menu_id) = key_map.get(&(key, kbd.shift_down())) {
-							kbd.event.skip(false);
-							frame_for_keys.process_menu_command(menu_id);
-							return;
+				}
+				#[cfg(target_os = "windows")]
+				if (key == WXK_DOWN || key == WXK_UP) && !kbd.shift_down() && !kbd.control_down() {
+					let going_down = key == WXK_DOWN;
+					let nav_result = dm_for_nav.try_lock().ok().and_then(|dm| {
+						navigate_line_by_column(text_ctrl_for_menu, going_down, dm.preferred_column.get())
+					});
+					if let Some((new_pos, new_col)) = nav_result {
+						kbd.event.skip(false);
+						text_ctrl_for_menu.set_insertion_point(new_pos);
+						text_ctrl_for_menu.show_position(new_pos);
+						if let Ok(dm) = dm_for_nav.try_lock() {
+							dm.preferred_column.set(Some(new_col));
+							dm.update_status_bar();
 						}
+					} else {
+						kbd.event.skip(true);
 					}
-					#[cfg(target_os = "windows")]
-					if (key == WXK_DOWN || key == WXK_UP) && !kbd.shift_down() && !kbd.control_down() {
-						let going_down = key == WXK_DOWN;
-						let nav_result = dm_for_nav.try_lock().ok().and_then(|dm| {
-							navigate_line_by_column(text_ctrl_for_menu, going_down, dm.preferred_column.get())
-						});
-						if let Some((new_pos, new_col)) = nav_result {
-							kbd.event.skip(false);
-							text_ctrl_for_menu.set_insertion_point(new_pos);
-							text_ctrl_for_menu.show_position(new_pos);
-							if let Ok(dm) = dm_for_nav.try_lock() {
-								dm.preferred_column.set(Some(new_col));
-								dm.update_status_bar();
-							}
-						} else {
-							kbd.event.skip(true);
-						}
-						return;
-					}
-					#[cfg(target_os = "windows")]
-					if let Ok(dm) = dm_for_nav.try_lock() {
-						dm.preferred_column.set(None);
-					}
+					return;
+				}
+				#[cfg(target_os = "windows")]
+				if let Ok(dm) = dm_for_nav.try_lock() {
+					dm.preferred_column.set(None);
 				}
 			}
 			event.skip(true);
@@ -674,8 +771,8 @@ impl DocumentManager {
 	}
 }
 
-/// Returns (new_position, preferred_column) for character-column-based vertical navigation.
-/// Uses wxdragon PositionToXY, XYToPosition, and GetLineLength so the cursor lands on the same
+/// Returns (`new_position`, `preferred_column`) for character-column-based vertical navigation.
+/// Uses wxdragon `PositionToXY`, `XYToPosition`, and `GetLineLength` so the cursor lands on the same
 /// character column (not pixel column) on the target visual line.
 #[cfg(target_os = "windows")]
 fn navigate_line_by_column(text_ctrl: TextCtrl, going_down: bool, pref_col: Option<i64>) -> Option<(i64, i64)> {
@@ -690,7 +787,7 @@ fn navigate_line_by_column(text_ctrl: TextCtrl, going_down: bool, pref_col: Opti
 	if target_line_start < 0 {
 		return None;
 	}
-	let target_line_len = text_ctrl.get_line_length(target_line) as i64;
+	let target_line_len = i64::from(text_ctrl.get_line_length(target_line));
 	let new_pos = target_line_start + col.min(target_line_len);
 	Some((new_pos, col))
 }
@@ -944,6 +1041,125 @@ pub fn apply_readability_format_to_ctrl(
 	}
 }
 
+/// A non-overlapping run of text with the union of bold/italic/underline
+/// styles active over it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct FormatSegment {
+	pub start: i64,
+	pub end: i64,
+	pub bold: bool,
+	pub italic: bool,
+	pub underline: bool,
+}
+
+/// Merges bold/italic/underline markers (which may overlap, e.g. a bold word
+/// inside an italic sentence) into a sequence of non-overlapping segments, each
+/// carrying the union of the styles active over that range.
+///
+/// This is required because wxMSW's `wxTextCtrl::SetStyle` rewrites the *entire*
+/// font for a range whenever any font attribute is present in the `wxTextAttr`
+/// (it masks `CFM_FACE | CFM_SIZE | ...` unconditionally and fills unset fields
+/// from a default font — Arial 10pt). Applying overlapping single-style markers
+/// one at a time would therefore both reset the face/size and clobber each
+/// other's styles. Producing one combined style per non-overlapping segment
+/// avoids both problems and is correct on every platform.
+pub fn merge_formatting_markers(markers: &[paperback_core::session::LineMarker]) -> Vec<FormatSegment> {
+	use paperback_core::session::MarkerTypeFfi;
+	let is_format = |m: &&paperback_core::session::LineMarker| {
+		m.length > 0 && matches!(m.mtype, MarkerTypeFfi::Bold | MarkerTypeFfi::Italic | MarkerTypeFfi::Underline)
+	};
+
+	let mut bounds: Vec<i64> = Vec::new();
+	for m in markers.iter().filter(is_format) {
+		bounds.push(m.position);
+		bounds.push(m.position + m.length);
+	}
+	bounds.sort_unstable();
+	bounds.dedup();
+
+	let mut segments: Vec<FormatSegment> = Vec::new();
+	for pair in bounds.windows(2) {
+		let (start, end) = (pair[0], pair[1]);
+		let mut seg = FormatSegment { start, end, ..Default::default() };
+		for m in markers.iter().filter(is_format) {
+			// Boundaries include every marker edge, so each atomic span is
+			// either fully inside or fully outside every marker.
+			if m.position <= start && m.position + m.length >= end {
+				match m.mtype {
+					MarkerTypeFfi::Bold => seg.bold = true,
+					MarkerTypeFfi::Italic => seg.italic = true,
+					MarkerTypeFfi::Underline => seg.underline = true,
+					_ => {}
+				}
+			}
+		}
+		if !(seg.bold || seg.italic || seg.underline) {
+			continue;
+		}
+		// Coalesce with the previous segment when adjacent and identically styled.
+		if let Some(last) = segments.last_mut() {
+			if last.end == seg.start
+				&& last.bold == seg.bold
+				&& last.italic == seg.italic
+				&& last.underline == seg.underline
+			{
+				last.end = seg.end;
+				continue;
+			}
+		}
+		segments.push(seg);
+	}
+	segments
+}
+
+pub fn apply_formatting_markers_to_ctrl(text_ctrl: TextCtrl, session: &DocumentSession) {
+	let markers = session.get_formatting_markers();
+	let segments = merge_formatting_markers(&markers);
+	if segments.is_empty() {
+		return;
+	}
+	let base_font = text_ctrl.get_font();
+	text_ctrl.freeze();
+	for seg in segments {
+		let mut attr = wxdragon::widgets::textctrl::TextAttr::new();
+		if let Some(base) = &base_font {
+			let style = if seg.italic { FontStyle::Italic } else { base.get_style() };
+			let weight = if seg.bold { FontWeight::Bold } else { base.get_weight() };
+			let underlined = seg.underline || base.is_underlined();
+			if let Some(mut font) = Font::new_with_details(
+				base.get_point_size(),
+				base.get_family().as_i32(),
+				style.as_i32(),
+				weight.as_i32(),
+				underlined,
+				&base.get_face_name(),
+			) {
+				if base.is_strikethrough() {
+					font.set_strikethrough(true);
+				}
+				let encoding = base.get_encoding();
+				if encoding != 0 {
+					font.set_encoding(encoding);
+				}
+				attr.set_font(&font);
+			}
+		} else {
+			// No base font to preserve; fall back to per-attribute flags.
+			if seg.bold {
+				attr.set_font_weight(FontWeight::Bold);
+			}
+			if seg.italic {
+				attr.set_font_style(FontStyle::Italic);
+			}
+			if seg.underline {
+				attr.set_font_underlined(true);
+			}
+		}
+		text_ctrl.set_style(seg.start, seg.end, &attr);
+	}
+	text_ctrl.thaw();
+}
+
 fn show_reader_context_menu(text_ctrl: TextCtrl) {
 	text_ctrl.set_focus();
 	let mut menu = Menu::builder()
@@ -1009,4 +1225,77 @@ fn parse_single_key_shortcut(label: &str) -> Option<(i32, bool)> {
 		return Some((key, shift));
 	}
 	None
+}
+
+#[cfg(test)]
+mod tests {
+	use paperback_core::session::{LineMarker, MarkerTypeFfi};
+
+	use super::{FormatSegment, merge_formatting_markers};
+
+	fn marker(mtype: MarkerTypeFfi, position: i64, length: i64) -> LineMarker {
+		LineMarker { mtype, position, text: String::new(), reference: String::new(), level: 0, length }
+	}
+
+	#[test]
+	fn no_markers_yields_no_segments() {
+		assert_eq!(merge_formatting_markers(&[]), Vec::new());
+	}
+
+	#[test]
+	fn zero_length_markers_are_ignored() {
+		let markers = [marker(MarkerTypeFfi::Bold, 5, 0)];
+		assert_eq!(merge_formatting_markers(&markers), Vec::new());
+	}
+
+	#[test]
+	fn non_format_markers_are_ignored() {
+		let markers = [marker(MarkerTypeFfi::Heading1, 0, 10), marker(MarkerTypeFfi::Link, 2, 3)];
+		assert_eq!(merge_formatting_markers(&markers), Vec::new());
+	}
+
+	#[test]
+	fn single_bold_marker_produces_one_segment() {
+		let markers = [marker(MarkerTypeFfi::Bold, 0, 4)];
+		assert_eq!(
+			merge_formatting_markers(&markers),
+			vec![FormatSegment { start: 0, end: 4, bold: true, italic: false, underline: false }]
+		);
+	}
+
+	#[test]
+	fn overlapping_bold_and_italic_keep_both_on_the_intersection() {
+		// Bold over [0,10), italic over [4,7): the middle run must carry both.
+		let markers = [marker(MarkerTypeFfi::Bold, 0, 10), marker(MarkerTypeFfi::Italic, 4, 3)];
+		assert_eq!(
+			merge_formatting_markers(&markers),
+			vec![
+				FormatSegment { start: 0, end: 4, bold: true, italic: false, underline: false },
+				FormatSegment { start: 4, end: 7, bold: true, italic: true, underline: false },
+				FormatSegment { start: 7, end: 10, bold: true, italic: false, underline: false },
+			]
+		);
+	}
+
+	#[test]
+	fn adjacent_identical_segments_are_coalesced() {
+		let markers = [marker(MarkerTypeFfi::Bold, 0, 4), marker(MarkerTypeFfi::Bold, 4, 4)];
+		assert_eq!(
+			merge_formatting_markers(&markers),
+			vec![FormatSegment { start: 0, end: 8, bold: true, italic: false, underline: false }]
+		);
+	}
+
+	#[test]
+	fn all_three_styles_can_stack() {
+		let markers = [
+			marker(MarkerTypeFfi::Bold, 0, 6),
+			marker(MarkerTypeFfi::Italic, 0, 6),
+			marker(MarkerTypeFfi::Underline, 0, 6),
+		];
+		assert_eq!(
+			merge_formatting_markers(&markers),
+			vec![FormatSegment { start: 0, end: 6, bold: true, italic: true, underline: true }]
+		);
+	}
 }

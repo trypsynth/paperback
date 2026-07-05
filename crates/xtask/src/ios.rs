@@ -26,7 +26,7 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 	println!("Generating Swift bindings via uniffi-bindgen...");
 	let status = Command::new(&cargo)
 		.current_dir(&root)
-		.args(&[
+		.args([
 			"run",
 			"--bin",
 			"uniffi-bindgen",
@@ -52,7 +52,7 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 
 	println!("Building for aarch64-apple-ios (device)...");
 	let status =
-		Command::new(&cargo).current_dir(&root).args(&build_args).args(&["--target", "aarch64-apple-ios"]).status()?;
+		Command::new(&cargo).current_dir(&root).args(&build_args).args(["--target", "aarch64-apple-ios"]).status()?;
 	if !status.success() {
 		return Err("cargo build for aarch64-apple-ios failed".into());
 	}
@@ -67,7 +67,7 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 
 	println!("Creating paperbackFFI.xcframework...");
 	let status = Command::new("xcodebuild")
-		.args(&["-create-xcframework"])
+		.args(["-create-xcframework"])
 		.arg("-library")
 		.arg(&device_lib)
 		.arg("-headers")
@@ -79,10 +79,20 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 		return Err("xcodebuild -create-xcframework failed".into());
 	}
 
+	// Generate Localizable.strings for each translated language
+	let po_dir = root.join("po");
+	let ios_dir = root.join("ios/Paperback");
+	if po_dir.is_dir() {
+		if let Err(e) = patois_build::gen_ios_strings(&po_dir, &ios_dir) {
+			println!("Warning: could not generate Localizable.strings: {e}");
+		}
+	}
+
 	println!("iOS build complete.");
 	println!("  XCFramework: ios/paperbackFFI.xcframework");
 	println!("  Swift bindings: ios/Paperback/Generated/paperback.swift");
-	println!("  Add both to the Xcode project to use the Rust core.");
+	println!("  Localizable.strings: ios/Paperback/<lang>.lproj/Localizable.strings");
+	println!("  Add both XCFramework and Swift bindings to the Xcode project to use the Rust core.");
 	Ok(())
 }
 

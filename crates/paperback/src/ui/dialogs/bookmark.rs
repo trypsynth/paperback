@@ -14,7 +14,6 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::show_note_entry_dialog;
-use crate::accessibility;
 
 const DIALOG_PADDING: i32 = 10;
 const KEY_DELETE: i32 = 127;
@@ -159,7 +158,8 @@ fn build_bookmark_dialog_ui(dialog: Dialog, initial_filter: BookmarkFilterType) 
 		BookmarkFilterType::All => 0,
 	};
 	filter_choice.set_selection(initial_index);
-	accessibility::set_label(&filter_choice, filter_label_text.replace('&', "").trim_end_matches(':').trim());
+	#[cfg(target_os = "macos")]
+	filter_choice.set_accessibility_label(filter_label_text.replace('&', "").trim_end_matches(':').trim());
 	let filter_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	filter_sizer.add(&filter_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 6);
 	filter_sizer.add(&filter_choice, 1, SizerFlag::Expand, 0);
@@ -260,30 +260,28 @@ fn build_bookmark_repopulate(params: BookmarkRepopulateParams) -> Rc<dyn Fn(i64)
 		selected_end.set(-1);
 		set_buttons_enabled(false);
 		let entries_ref = entries.borrow();
-		if previous_selected >= 0 {
-			if let Some((idx, entry)) =
+		if previous_selected >= 0
+			&& let Some((idx, entry)) =
 				entries_ref.iter().enumerate().find(|(_, entry)| entry.start == previous_selected)
-			{
-				if let Ok(idx_u32) = u32::try_from(idx) {
-					list.set_selection(idx_u32, true);
-				}
-				selected_start.set(entry.start);
-				selected_end.set(entry.end);
-				set_buttons_enabled(true);
-				return;
+		{
+			if let Ok(idx_u32) = u32::try_from(idx) {
+				list.set_selection(idx_u32, true);
 			}
+			selected_start.set(entry.start);
+			selected_end.set(entry.end);
+			set_buttons_enabled(true);
+			return;
 		}
-		if filtered.closest_index >= 0 {
-			if let Ok(idx) = usize::try_from(filtered.closest_index) {
-				if let Some(entry) = entries_ref.get(idx) {
-					if let Ok(idx_u32) = u32::try_from(idx) {
-						list.set_selection(idx_u32, true);
-					}
-					selected_start.set(entry.start);
-					selected_end.set(entry.end);
-					set_buttons_enabled(true);
-				}
+		if filtered.closest_index >= 0
+			&& let Ok(idx) = usize::try_from(filtered.closest_index)
+			&& let Some(entry) = entries_ref.get(idx)
+		{
+			if let Ok(idx_u32) = u32::try_from(idx) {
+				list.set_selection(idx_u32, true);
 			}
+			selected_start.set(entry.start);
+			selected_end.set(entry.end);
+			set_buttons_enabled(true);
 		}
 	})
 }
@@ -294,13 +292,13 @@ fn bind_bookmark_selection(params: BookmarkSelectionParams) {
 		let selection = event.get_selection().unwrap_or(-1);
 		if selection >= 0 {
 			let entries_ref = entries.borrow();
-			if let Ok(index) = usize::try_from(selection) {
-				if let Some(entry) = entries_ref.get(index) {
-					selected_start.set(entry.start);
-					selected_end.set(entry.end);
-					set_buttons_enabled(true);
-					return;
-				}
+			if let Ok(index) = usize::try_from(selection)
+				&& let Some(entry) = entries_ref.get(index)
+			{
+				selected_start.set(entry.start);
+				selected_end.set(entry.end);
+				set_buttons_enabled(true);
+				return;
 			}
 		}
 		selected_start.set(-1);

@@ -16,7 +16,8 @@ dictionary TocEntry {
 enum MarkerTypeFfi {
 	"Heading1", "Heading2", "Heading3", "Heading4", "Heading5", "Heading6",
 	"PageBreak", "SectionBreak", "TocItem", "Link",
-	"List", "ListItem", "Table", "Separator", "Image", "Figure"
+	"List", "ListItem", "Table", "Separator", "Image", "Figure",
+	"Bold", "Italic", "Underline"
 };
 
 dictionary LineMarker {
@@ -105,7 +106,7 @@ dictionary LinkListFfi {
 
 interface DocumentSession {
 	[Name=new_ffi, Throws=DocumentError]
-	constructor(string file_path, string password, string forced_extension);
+	constructor(string file_path, string password, string forced_extension, boolean render_tables_inline);
 
 	string title();
 	string author();

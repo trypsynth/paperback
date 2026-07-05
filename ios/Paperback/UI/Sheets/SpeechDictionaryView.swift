@@ -25,13 +25,13 @@ struct SpeechDictionaryView: View {
 				}
 			}
 		}
-		.navigationTitle("Speech Dictionary")
+		.navigationTitle(t("Speech Dictionary"))
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {
 			ToolbarItem(placement: .primaryAction) {
 				HStack(spacing: 16) {
 					if !viewModel.ttsRules.isEmpty {
-						Button(editMode?.wrappedValue.isEditing == true ? "Done" : "Edit") {
+						Button(editMode?.wrappedValue.isEditing == true ? t("Done") : t("Edit")) {
 							withAnimation {
 								editMode?.wrappedValue = editMode?.wrappedValue.isEditing == true ? .inactive : .active
 							}
@@ -40,7 +40,7 @@ struct SpeechDictionaryView: View {
 					Button { showAddRule = true } label: {
 						Image(systemName: "plus")
 					}
-					.accessibilityLabel("Add Rule")
+					.accessibilityLabel(t("Add Rule"))
 				}
 			}
 		}
@@ -65,7 +65,7 @@ struct SpeechDictionaryView: View {
 				.font(.largeTitle)
 				.foregroundStyle(.secondary)
 				.accessibilityHidden(true)
-			Text("No Rules")
+			Text(t("No Rules"))
 				.font(.title2.bold())
 			Spacer()
 		}
@@ -135,7 +135,7 @@ private struct RuleRow: View {
 
 	private var scopeBadge: some View {
 		let isWord = rule.scope == .word
-		return Text(isWord ? "Word" : "Paragraph")
+		return Text(isWord ? t("Word") : t("Paragraph"))
 			.font(.caption2.weight(.semibold))
 			.padding(.horizontal, 5)
 			.padding(.vertical, 2)

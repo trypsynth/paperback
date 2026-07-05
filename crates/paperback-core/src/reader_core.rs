@@ -46,6 +46,7 @@ const fn build_nav_result(found: bool, wrapped: bool, offset: usize, level: i32,
 	ffi::NavResult { found, wrapped, offset, marker_level: level, marker_text: text }
 }
 
+#[must_use]
 pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavResult {
 	use ffi::NavTarget;
 	match req.target {
@@ -132,6 +133,7 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 /// `to_end` moves to the start of the line that follows the container; otherwise moves to its
 /// start. `found` is false when the caret is not inside any container. `marker_level` carries the
 /// container's `MarkerType` as `i32` so the UI can describe what was left.
+#[must_use]
 pub fn reader_container_navigate(doc: &DocumentHandle, position: i64, to_end: bool) -> ffi::NavResult {
 	let pos = usize::try_from(position.max(0)).unwrap_or(0);
 	doc.enclosing_container(pos).map_or_else(
@@ -154,6 +156,7 @@ fn line_after(doc: &DocumentHandle, end: usize) -> usize {
 	buffer.newline_positions().iter().find(|&&nl| nl >= probe).map_or(total, |&nl| (nl + 1).min(total))
 }
 
+#[must_use]
 pub fn reader_search(haystack: &str, needle: &str, start: i64, options: SearchOptions) -> i64 {
 	if needle.is_empty() {
 		return -1;
@@ -216,6 +219,7 @@ pub fn reader_search(haystack: &str, needle: &str, start: i64, options: SearchOp
 	-1
 }
 
+#[must_use]
 pub fn reader_search_with_wrap(haystack: &str, needle: &str, start: i64, options: SearchOptions) -> ffi::SearchResult {
 	let position = reader_search(haystack, needle, start, options);
 	if position >= 0 {
@@ -380,6 +384,7 @@ pub struct HistoryNavResult {
 	pub index: usize,
 }
 
+#[must_use]
 pub fn history_go_previous(
 	history: &[i64],
 	history_index: usize,
@@ -400,6 +405,7 @@ pub fn history_go_previous(
 	HistoryNavResult { found: false, target: -1, positions, index }
 }
 
+#[must_use]
 pub fn history_go_next(history: &[i64], history_index: usize, current_pos: i64, max_len: usize) -> HistoryNavResult {
 	if history.is_empty() {
 		return HistoryNavResult { found: false, target: -1, positions: Vec::new(), index: 0 };
@@ -500,6 +506,7 @@ fn spine_section_bounds(doc: &DocumentHandle, spine_index: usize) -> (usize, usi
 	(start, end)
 }
 
+#[must_use]
 pub fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> LinkNavigation {
 	let href_trimmed = href.trim();
 	if href_trimmed.is_empty() {
@@ -518,34 +525,34 @@ pub fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> 
 	let mut parts = href_trimmed.splitn(2, '#');
 	let file_path = parts.next().unwrap_or_default();
 	let fragment = parts.next().unwrap_or_default();
-	if let Some(manifest_id) = find_manifest_id_for_path(doc, file_path) {
-		if let Some(spine_index) = doc.document().spine_items.iter().position(|id| id == &manifest_id) {
-			let (section_start, section_end) = spine_section_bounds(doc, spine_index);
-			let mut offset = section_start;
-			if !fragment.is_empty() {
-				if let Some(found) = find_fragment_offset(doc, fragment, Some(file_path)) {
-					if found >= section_start && found < section_end {
-						offset = found;
-					}
-				}
-			}
-			return LinkNavigation { found: true, is_external: false, offset, url: String::new() };
+	if let Some(manifest_id) = find_manifest_id_for_path(doc, file_path)
+		&& let Some(spine_index) = doc.document().spine_items.iter().position(|id| id == &manifest_id)
+	{
+		let (section_start, section_end) = spine_section_bounds(doc, spine_index);
+		let mut offset = section_start;
+		if !fragment.is_empty()
+			&& let Some(found) = find_fragment_offset(doc, fragment, Some(file_path))
+			&& found >= section_start
+			&& found < section_end
+		{
+			offset = found;
 		}
+		return LinkNavigation { found: true, is_external: false, offset, url: String::new() };
 	}
 	// Fallback for formats like CHM that store id_positions with "{path}#{id}" keys.
-	if !fragment.is_empty() {
-		if let Some(offset) = find_fragment_offset(doc, fragment, Some(file_path)) {
-			return LinkNavigation { found: true, is_external: false, offset, url: String::new() };
-		}
+	if !fragment.is_empty()
+		&& let Some(offset) = find_fragment_offset(doc, fragment, Some(file_path))
+	{
+		return LinkNavigation { found: true, is_external: false, offset, url: String::new() };
 	}
 	// Direct file-path lookup (covers fragment-less CHM links and fallback for fragment misses).
 	if let Some(&offset) = doc.document().id_positions.get(file_path) {
 		return LinkNavigation { found: true, is_external: false, offset, url: String::new() };
 	}
-	if !fragment.is_empty() {
-		if let Some(offset) = find_fragment_offset(doc, fragment, current_section.as_deref()) {
-			return LinkNavigation { found: true, is_external: false, offset, url: String::new() };
-		}
+	if !fragment.is_empty()
+		&& let Some(offset) = find_fragment_offset(doc, fragment, current_section.as_deref())
+	{
+		return LinkNavigation { found: true, is_external: false, offset, url: String::new() };
 	}
 	LinkNavigation { found: false, is_external: false, offset: 0, url: String::new() }
 }

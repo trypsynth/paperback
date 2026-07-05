@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import uniffi.paperback.DocumentStatsFfi
+import dev.paperback.mobile.t
 
 @Composable
 fun WordCountDialog(
@@ -18,7 +19,7 @@ fun WordCountDialog(
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		modifier = Modifier.semantics { paneTitle = "Word Count" },
-		title = { Text("Word Count") },
+		title = { Text(t("Word Count")) },
 		text = {
 			Text(
 				"This document contains ${stats.wordCount} words.",
@@ -27,7 +28,7 @@ fun WordCountDialog(
 		},
 		confirmButton = {
 			TextButton(onClick = onDismiss) {
-				Text("OK")
+				Text(t("OK"))
 			}
 		}
 	)

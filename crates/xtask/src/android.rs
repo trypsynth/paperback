@@ -40,7 +40,7 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 	println!("Generating Kotlin bindings via uniffi-bindgen...");
 	let status = Command::new(&cargo)
 		.current_dir(crate::project_root())
-		.args(&[
+		.args([
 			"run",
 			"--bin",
 			"uniffi-bindgen",
@@ -60,7 +60,7 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 	println!("Building native libraries for arm64-v8a and armeabi-v7a...");
 	let status = Command::new(&cargo)
 		.current_dir(crate::project_root())
-		.args(&[
+		.args([
 			"ndk",
 			"-t",
 			"arm64-v8a",
@@ -78,6 +78,15 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 		return Err("cargo ndk build failed".into());
 	}
 	println!("Android native build complete.");
+
+	// Generate translation JSON assets for each translated language
+	let po_dir = crate::project_root().join("po");
+	let assets_dir = crate::project_root().join("android/app/src/main/assets");
+	if po_dir.is_dir() {
+		if let Err(e) = patois_build::gen_android_strings(&po_dir, &assets_dir) {
+			println!("Warning: could not generate Android translations: {e}");
+		}
+	}
 
 	if !gradle_tasks.is_empty() {
 		println!("Running gradlew with tasks: {:?}", gradle_tasks);

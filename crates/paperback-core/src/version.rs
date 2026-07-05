@@ -3,10 +3,12 @@ pub const COMMIT_HASH: &str = env!("PAPERBACK_COMMIT_HASH");
 const SHORT_HASH: &str = env!("PAPERBACK_SHORT_HASH");
 const IS_DEV: &str = env!("PAPERBACK_IS_DEV");
 
+#[must_use]
 pub fn user_agent() -> String {
 	format!("paperback/{VERSION}")
 }
 
+#[must_use]
 pub fn display_version() -> String {
 	if IS_DEV == "1" { format!("{VERSION} ({SHORT_HASH})") } else { VERSION.to_string() }
 }

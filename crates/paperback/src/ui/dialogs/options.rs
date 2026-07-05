@@ -10,12 +10,13 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::DIALOG_PADDING;
-use crate::{accessibility, config_ext::UpdateChannel, translation_manager::TranslationManager};
+use crate::{config_ext::UpdateChannel, translation_manager::TranslationManager};
 
 #[derive(Clone, Debug)]
 pub struct OptionsDialogResult {
 	pub restore_previous_documents: bool,
 	pub word_wrap: bool,
+	pub render_tables_inline: bool,
 	pub minimize_to_tray: bool,
 	pub start_maximized: bool,
 	pub compact_go_menu: bool,
@@ -40,6 +41,7 @@ struct OptionsDialogUi {
 	notebook: Notebook,
 	restore_docs_check: CheckBox,
 	word_wrap_check: CheckBox,
+	render_tables_inline_check: CheckBox,
 	minimize_to_tray_check: CheckBox,
 	start_maximized_check: CheckBox,
 	compact_go_menu_check: CheckBox,
@@ -83,6 +85,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 	Some(OptionsDialogResult {
 		restore_previous_documents: ui.restore_docs_check.is_checked(),
 		word_wrap: ui.word_wrap_check.is_checked(),
+		render_tables_inline: ui.render_tables_inline_check.is_checked(),
 		minimize_to_tray: ui.minimize_to_tray_check.is_checked(),
 		start_maximized: ui.start_maximized_check.is_checked(),
 		compact_go_menu: ui.compact_go_menu_check.is_checked(),
@@ -115,6 +118,8 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let restore_docs_check =
 		CheckBox::builder(&general_panel).with_label(&t("&Restore previously opened documents on startup")).build();
 	let word_wrap_check = CheckBox::builder(&readability_panel).with_label(&t("&Word wrap")).build();
+	let render_tables_inline_check =
+		CheckBox::builder(&readability_panel).with_label(&t("Render tables &inline")).build();
 	let minimize_to_tray_check = CheckBox::builder(&general_panel).with_label(&t("&Minimize to system tray")).build();
 	let start_maximized_check = CheckBox::builder(&general_panel).with_label(&t("&Start maximized")).build();
 	let compact_go_menu_check = CheckBox::builder(&reading_panel).with_label(&t("Show compact &go menu")).build();
@@ -158,7 +163,8 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		language_combo.append(&lang.name);
 		language_codes.push(lang.code.clone());
 	}
-	accessibility::set_label(&language_combo, language_label_text.replace('&', "").trim_end_matches(':').trim());
+	#[cfg(target_os = "macos")]
+	language_combo.set_accessibility_label(language_label_text.replace('&', "").trim_end_matches(':').trim());
 
 	let language_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	language_sizer.add(&language_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
@@ -169,7 +175,8 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let update_channel_combo = Choice::builder(&general_panel).build();
 	update_channel_combo.append(&t("Stable"));
 	update_channel_combo.append(&t("Dev"));
-	accessibility::set_label(&update_channel_combo, channel_label_text.trim_end_matches(':').trim());
+	#[cfg(target_os = "macos")]
+	update_channel_combo.set_accessibility_label(channel_label_text.trim_end_matches(':').trim());
 
 	let channel_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	channel_sizer.add(&channel_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
@@ -199,7 +206,8 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	line_spacing_ctrl.append(&t("Normal"));
 	line_spacing_ctrl.append(&t("1.5\u{00d7}"));
 	line_spacing_ctrl.append(&t("Double"));
-	accessibility::set_label(&line_spacing_ctrl, line_spacing_label_text.replace('&', "").trim_end_matches(':').trim());
+	#[cfg(target_os = "macos")]
+	line_spacing_ctrl.set_accessibility_label(line_spacing_label_text.replace('&', "").trim_end_matches(':').trim());
 
 	let line_spacing_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	line_spacing_sizer.add(&line_spacing_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
@@ -211,10 +219,9 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	paragraph_spacing_ctrl.append(&t("Normal"));
 	paragraph_spacing_ctrl.append(&t("Relaxed"));
 	paragraph_spacing_ctrl.append(&t("Wide"));
-	accessibility::set_label(
-		&paragraph_spacing_ctrl,
-		paragraph_spacing_label_text.replace('&', "").trim_end_matches(':').trim(),
-	);
+	#[cfg(target_os = "macos")]
+	paragraph_spacing_ctrl
+		.set_accessibility_label(paragraph_spacing_label_text.replace('&', "").trim_end_matches(':').trim());
 
 	let paragraph_spacing_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	paragraph_spacing_sizer.add(
@@ -230,10 +237,9 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	letter_spacing_ctrl.append(&t("Normal"));
 	letter_spacing_ctrl.append(&t("Wide"));
 	letter_spacing_ctrl.append(&t("Very Wide"));
-	accessibility::set_label(
-		&letter_spacing_ctrl,
-		letter_spacing_label_text.replace('&', "").trim_end_matches(':').trim(),
-	);
+	#[cfg(target_os = "macos")]
+	letter_spacing_ctrl
+		.set_accessibility_label(letter_spacing_label_text.replace('&', "").trim_end_matches(':').trim());
 
 	let letter_spacing_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	letter_spacing_sizer.add(
@@ -250,10 +256,9 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	text_alignment_ctrl.append(&t("Center"));
 	text_alignment_ctrl.append(&t("Right"));
 	text_alignment_ctrl.append(&t("Justify"));
-	accessibility::set_label(
-		&text_alignment_ctrl,
-		text_alignment_label_text.replace('&', "").trim_end_matches(':').trim(),
-	);
+	#[cfg(target_os = "macos")]
+	text_alignment_ctrl
+		.set_accessibility_label(text_alignment_label_text.replace('&', "").trim_end_matches(':').trim());
 
 	let text_alignment_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	text_alignment_sizer.add(
@@ -264,6 +269,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	);
 	text_alignment_sizer.add(&text_alignment_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
 	readability_sizer.add(&word_wrap_check, 0, SizerFlag::All, option_padding);
+	readability_sizer.add(&render_tables_inline_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add_sizer(&line_spacing_sizer, 0, SizerFlag::All, option_padding);
 	readability_sizer.add_sizer(&paragraph_spacing_sizer, 0, SizerFlag::All, option_padding);
 	readability_sizer.add_sizer(&letter_spacing_sizer, 0, SizerFlag::All, option_padding);
@@ -276,6 +282,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	notebook.add_page(&readability_panel, &t("Readability"), false, None);
 	restore_docs_check.set_value(config.get_app_bool("restore_previous_documents", true));
 	word_wrap_check.set_value(config.get_app_bool("word_wrap", false));
+	render_tables_inline_check.set_value(config.get_app_bool("render_tables_inline", true));
 	minimize_to_tray_check.set_value(config.get_app_bool("minimize_to_tray", false));
 	start_maximized_check.set_value(config.get_app_bool("start_maximized", false));
 	compact_go_menu_check.set_value(config.get_app_bool("compact_go_menu", true));
@@ -301,7 +308,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	update_channel_combo.set_selection(channel_index);
 	let current_hotkey = Rc::new(RefCell::new(config.get_hotkey()));
 	let hotkey_state = Rc::clone(&current_hotkey);
-	let hotkey_dialog_parent = dialog.clone();
+	let hotkey_dialog_parent = dialog;
 	hotkey_button.on_click(move |_| {
 		let initial = hotkey_state.borrow().clone();
 		if let Some(updated) = prompt_for_hotkey(&hotkey_dialog_parent, &initial) {
@@ -354,12 +361,12 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 			dlg = dlg.with_initial_colour(c);
 		}
 		let dlg = dlg.build();
-		if dlg.show_modal() == wxdragon::id::ID_OK {
-			if let Some(c) = dlg.get_colour() {
-				let packed = ((c.r as i32) << 16) | ((c.g as i32) << 8) | c.b as i32;
-				bg_state.set(packed);
-				bg_label.set_label(&color_description(packed));
-			}
+		if dlg.show_modal() == wxdragon::id::ID_OK
+			&& let Some(c) = dlg.get_colour()
+		{
+			let packed = (i32::from(c.r) << 16) | (i32::from(c.g) << 8) | i32::from(c.b);
+			bg_state.set(packed);
+			bg_label.set_label(&color_description(packed));
 		}
 	});
 	let bg_state_reset = Rc::clone(&bg_color);
@@ -376,6 +383,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		notebook,
 		restore_docs_check,
 		word_wrap_check,
+		render_tables_inline_check,
 		minimize_to_tray_check,
 		start_maximized_check,
 		compact_go_menu_check,
@@ -500,7 +508,7 @@ fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Option<Readabi
 		let c = fd.get_chosen_colour();
 		// Prevent double-free: this FontData pointer is owned by the dialog, not by us
 		mem::forget(fd);
-		c.map(|col| ((col.r as i32) << 16) | ((col.g as i32) << 8) | col.b as i32).unwrap_or(-1)
+		c.map_or(-1, |col| (i32::from(col.r) << 16) | (i32::from(col.g) << 8) | i32::from(col.b))
 	} else {
 		-1
 	};
@@ -549,11 +557,11 @@ fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<Ho
 	ok_button.set_default();
 	let cancel_button = Button::builder(&panel).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
 
-	let key_text_clone = key_text.clone();
-	let ctrl_cb_clone = ctrl_cb.clone();
-	let alt_cb_clone = alt_cb.clone();
-	let shift_cb_clone = shift_cb.clone();
-	let win_cb_clone = win_cb.clone();
+	let key_text_clone = key_text;
+	let ctrl_cb_clone = ctrl_cb;
+	let alt_cb_clone = alt_cb;
+	let shift_cb_clone = shift_cb;
+	let win_cb_clone = win_cb;
 	clear_button.on_click(move |_| {
 		key_text_clone.set_value("");
 		ctrl_cb_clone.set_value(false);
@@ -595,7 +603,7 @@ fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<Ho
 fn hotkey_key_display_name(key: char) -> String {
 	match key {
 		'\0' => String::new(),
-		' ' => t("Space").to_string(),
+		' ' => t("Space"),
 		c if c.is_ascii_alphanumeric() => c.to_ascii_uppercase().to_string(),
 		c => c.to_string(),
 	}

@@ -41,11 +41,11 @@ struct TocSheet: View {
 					emptyView
 				}
 			}
-			.navigationTitle("Contents")
+			.navigationTitle(t("Contents"))
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .confirmationAction) {
-					Button("Done") { dismiss() }
+					Button(t("Done")) { dismiss() }
 				}
 			}
 		}
@@ -60,12 +60,12 @@ struct TocSheet: View {
 	@ViewBuilder private var emptyView: some View {
 		if #available(iOS 17, *) {
 			ContentUnavailableView(
-				"No Table of Contents",
+				t("No Table of Contents"),
 				systemImage: "list.bullet",
-				description: Text("This document has no table of contents.")
+				description: Text(t("This document has no table of contents."))
 			)
 		} else {
-			Text("No Table of Contents")
+			Text(t("No Table of Contents"))
 				.foregroundStyle(.secondary)
 				.frame(maxWidth: .infinity, maxHeight: .infinity)
 		}

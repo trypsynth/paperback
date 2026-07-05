@@ -20,8 +20,17 @@ use crate::{
 		word::try_decrypt_office_file,
 	},
 	types::LinkInfo,
-	util::zip::read_zip_entry_by_name,
+	util::{text::display_len, zip::read_zip_entry_by_name},
 };
+
+/// A table found while traversing a slide. Markers are added after the slide text is appended to
+/// the buffer (mirroring the deferred link-marker handling), so positions stay in display units.
+struct TableData {
+	offset: usize,
+	caption: String,
+	html: String,
+	length: usize,
+}
 
 const PPT_RECORD_HEADER_SIZE: usize = 8;
 const PPT_REC_SLIDE: u16 = 1006;
@@ -95,7 +104,15 @@ fn parse_pptx(context: &ParserContext) -> Result<Document> {
 		let slide_title = extract_slide_title(slide_doc.root());
 		let slide_start = buffer.current_position();
 		let mut links = Vec::new();
-		let slide_text = extract_slide_text(slide_doc.root(), &mut links, slide_start, &rels);
+		let mut tables = Vec::new();
+		let slide_text = extract_slide_text(
+			slide_doc.root(),
+			&mut links,
+			&mut tables,
+			slide_start,
+			&rels,
+			context.render_tables_inline,
+		);
 		if !slide_text.trim().is_empty() {
 			buffer.append(&slide_text);
 			if !buffer.content.ends_with('\n') {
@@ -109,6 +126,14 @@ fn parse_pptx(context: &ParserContext) -> Result<Document> {
 			for link in links {
 				buffer.add_marker(
 					Marker::new(MarkerType::Link, link.offset).with_text(link.text).with_reference(link.reference),
+				);
+			}
+			for table in tables {
+				buffer.add_marker(
+					Marker::new(MarkerType::Table, table.offset)
+						.with_text(table.caption)
+						.with_reference(table.html)
+						.with_length(table.length),
 				);
 			}
 			let toc_name = if slide_title.is_empty() { format!("Slide {}", index + 1) } else { slide_title.clone() };
@@ -341,11 +366,13 @@ fn is_title_shape(node: Node) -> bool {
 fn extract_slide_text(
 	root: Node,
 	links: &mut Vec<LinkInfo>,
+	tables: &mut Vec<TableData>,
 	slide_start: usize,
 	rels: &HashMap<String, String>,
+	render_tables_inline: bool,
 ) -> String {
 	let mut text = String::new();
-	traverse_for_text(root, &mut text, links, slide_start, rels);
+	traverse_for_text(root, &mut text, links, tables, slide_start, rels, render_tables_inline);
 	text
 }
 
@@ -353,8 +380,10 @@ fn traverse_for_text(
 	node: Node,
 	text: &mut String,
 	links: &mut Vec<LinkInfo>,
+	tables: &mut Vec<TableData>,
 	slide_start: usize,
 	rels: &HashMap<String, String>,
+	render_tables_inline: bool,
 ) {
 	match node.node_type() {
 		NodeType::Element => {
@@ -370,9 +399,15 @@ fn traverse_for_text(
 					text.push('\n');
 					return;
 				}
+				"tbl" => {
+					// Handle the table here and skip generic recursion: otherwise the walk below would
+					// re-emit every cell's `<a:t>` text as flat paragraph lines, duplicating the table.
+					process_pptx_table(node, text, tables, slide_start, render_tables_inline);
+					return;
+				}
 				"p" => {
 					for child in node.children() {
-						traverse_for_text(child, text, links, slide_start, rels);
+						traverse_for_text(child, text, links, tables, slide_start, rels, render_tables_inline);
 					}
 					if !text.ends_with('\n') {
 						text.push('\n');
@@ -404,8 +439,55 @@ fn traverse_for_text(
 		_ => {}
 	}
 	for child in node.children() {
-		traverse_for_text(child, text, links, slide_start, rels);
+		traverse_for_text(child, text, links, tables, slide_start, rels, render_tables_inline);
 	}
+}
+
+/// Convert a DrawingML `<a:tbl>` into the shared HTML-table representation, append its display text
+/// to `text`, and record a [`TableData`] for later marker creation. pptx cells nest one level
+/// deeper than Word (`tc > txBody > p`), so cell text is gathered from every descendant `<a:t>`.
+fn process_pptx_table(
+	node: Node,
+	text: &mut String,
+	tables: &mut Vec<TableData>,
+	slide_start: usize,
+	render_tables_inline: bool,
+) {
+	let mut rows: Vec<Vec<String>> = Vec::new();
+	for tr in node.children() {
+		if tr.node_type() != NodeType::Element || tr.tag_name().name() != "tr" {
+			continue;
+		}
+		let mut cells: Vec<String> = Vec::new();
+		for tc in tr.children() {
+			if tc.node_type() != NodeType::Element || tc.tag_name().name() != "tc" {
+				continue;
+			}
+			// Join paragraphs within the cell with a space so multi-paragraph cells stay readable.
+			let mut cell_text = String::new();
+			for p in tc.descendants() {
+				if p.node_type() == NodeType::Element && p.tag_name().name() == "p" {
+					let para = collect_text_from_tagged_elements(p, "t");
+					if !para.is_empty() {
+						if !cell_text.is_empty() {
+							cell_text.push(' ');
+						}
+						cell_text.push_str(&para);
+					}
+				}
+			}
+			cells.push(cell_text.trim().to_string());
+		}
+		rows.push(cells);
+	}
+	let html = crate::parser::table_text::build_html_table_from_grid(&rows);
+	let caption = crate::parser::table_text::table_caption_from_html(&html).unwrap_or_else(|| "table".to_string());
+	let display_text = crate::parser::table_text::html_table_to_display(&html, render_tables_inline);
+	let (_, length) = crate::parser::table_text::display_lines_and_length(&display_text);
+	let offset = slide_start + display_len(text);
+	text.push_str(&display_text);
+	text.push('\n');
+	tables.push(TableData { offset, caption, html, length });
 }
 
 #[cfg(test)]
@@ -416,8 +498,8 @@ mod tests {
 	use rstest::rstest;
 
 	use super::{
-		extract_legacy_text, extract_slide_number, extract_slide_text, extract_slide_title, is_title_shape,
-		normalize_legacy_slide_text, parse_cstring, parse_text_bytes_atom, parse_text_chars_atom,
+		display_len, extract_legacy_text, extract_slide_number, extract_slide_text, extract_slide_title,
+		is_title_shape, normalize_legacy_slide_text, parse_cstring, parse_text_bytes_atom, parse_text_chars_atom,
 	};
 
 	#[rstest]
@@ -480,10 +562,57 @@ mod tests {
 		"#;
 		let doc = XmlDocument::parse(xml).expect("xml parse");
 		let mut links = Vec::new();
+		let mut tables = Vec::new();
 		let rels = HashMap::new();
-		let text = extract_slide_text(doc.root(), &mut links, 0, &rels);
+		let text = extract_slide_text(doc.root(), &mut links, &mut tables, 0, &rels, true);
 		assert_eq!(text, "Hello\nWorld\nNext\n");
 		assert!(links.is_empty());
+		assert!(tables.is_empty());
+	}
+
+	const TABLE_SLIDE_XML: &str = r#"
+		<root>
+			<graphicFrame><graphic><graphicData>
+				<tbl>
+					<tblPr/>
+					<tblGrid><gridCol/><gridCol/></tblGrid>
+					<tr><tc><txBody><p><r><t>One</t></r></p></txBody></tc><tc><txBody><p><r><t>Two</t></r></p></txBody></tc></tr>
+					<tr><tc><txBody><p><r><t>Three</t></r></p></txBody></tc><tc><txBody><p><r><t>Four</t></r></p></txBody></tc></tr>
+				</tbl>
+			</graphicData></graphic></graphicFrame>
+		</root>
+	"#;
+
+	#[test]
+	fn extract_slide_text_renders_table_inline_with_marker_data() {
+		let doc = XmlDocument::parse(TABLE_SLIDE_XML).expect("xml parse");
+		let mut links = Vec::new();
+		let mut tables = Vec::new();
+		let rels = HashMap::new();
+		let text = extract_slide_text(doc.root(), &mut links, &mut tables, 0, &rels, true);
+		// Tab-separated rows, no flat duplication of the cell text.
+		assert_eq!(text, "One\tTwo\nThree\tFour\n");
+		assert_eq!(tables.len(), 1);
+		let table = &tables[0];
+		assert_eq!(table.offset, 0);
+		assert_eq!(table.caption, "One Two");
+		assert!(table.html.contains("<table"));
+		assert!(table.html.contains("Four"));
+		// Two rows, each contributing its display width + a trailing newline.
+		assert_eq!(table.length, display_len("One\tTwo") + 1 + display_len("Three\tFour") + 1);
+		assert!(links.is_empty());
+	}
+
+	#[test]
+	fn extract_slide_text_renders_table_placeholder() {
+		let doc = XmlDocument::parse(TABLE_SLIDE_XML).expect("xml parse");
+		let mut links = Vec::new();
+		let mut tables = Vec::new();
+		let rels = HashMap::new();
+		let text = extract_slide_text(doc.root(), &mut links, &mut tables, 0, &rels, false);
+		assert_eq!(text, "[Table]: One Two\n");
+		assert_eq!(tables.len(), 1);
+		assert_eq!(tables[0].caption, "One Two");
 	}
 
 	#[test]

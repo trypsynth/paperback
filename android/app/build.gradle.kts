@@ -7,7 +7,7 @@ plugins {
 
 android {
 	namespace = "dev.paperback.mobile"
-	compileSdk = 36
+	compileSdk = 37
 	defaultConfig {
 		applicationId = "dev.paperback.mobile"
 		minSdk = 24

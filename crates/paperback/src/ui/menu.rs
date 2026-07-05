@@ -79,7 +79,7 @@ const DOCUMENT_DEPENDENT_IDS: &[i32] = &[
 	menu_ids::DOCUMENT_INFO,
 	menu_ids::TABLE_OF_CONTENTS,
 	menu_ids::ELEMENTS_LIST,
-	menu_ids::OPEN_CONTAINING_FOLDER,
+	menu_ids::REVEAL_FILE_IN_FOLDER,
 	menu_ids::OPEN_IN_WEB_VIEW,
 	menu_ids::VIEW_SOURCE,
 	// Import/Export
@@ -411,12 +411,16 @@ pub fn create_menu_bar(config: &ConfigManager) -> MenuBar {
 	let go_label = t("&Go");
 	let tools_label = t("&Tools");
 	let help_label = t("&Help");
-	MenuBar::builder()
-		.append(file_menu, &file_label)
-		.append(go_menu, &go_label)
-		.append(tools_menu, &tools_label)
-		.append(help_menu, &help_label)
-		.build()
+	let mut builder = MenuBar::builder().append(file_menu, &file_label);
+
+	// All MacOS apps need an Edit menu.
+	// This is where the OS places some items that each app should have, like "Start dictation" or "Emoji and Symbols."
+	#[cfg(target_os = "macos")]
+	{
+		let edit_label = t("&Edit");
+		builder = builder.append(create_edit_menu(), &edit_label);
+	}
+	builder.append(go_menu, &go_label).append(tools_menu, &tools_label).append(help_menu, &help_label).build()
 }
 
 pub fn create_file_menu(config: &ConfigManager) -> Menu {
@@ -453,6 +457,36 @@ pub fn create_file_menu(config: &ConfigManager) -> Menu {
 	file_menu
 }
 
+/// The standard macOS Edit menu.
+///
+/// Each entry uses a real wxWidgets edit ID, so wxWidgets wires it to the matching
+/// native macOS selector. AppKit handles enabling/disabling and routing to the
+/// focused control.
+///
+/// Because a `copy:` item is present, AppKit  appends its own
+/// items, like "Emoji & Symbols" and "Start Dictation".
+#[cfg(target_os = "macos")]
+pub fn create_edit_menu() -> Menu {
+	let undo_label = t("&Undo\tCtrl+Z");
+	let redo_label = t("&Redo\tCtrl+Shift+Z");
+	let cut_label = t("Cu&t\tCtrl+X");
+	let copy_label = t("&Copy\tCtrl+C");
+	let paste_label = t("&Paste\tCtrl+V");
+	let delete_label = t("&Delete");
+	let select_all_label = t("Select &All\tCtrl+A");
+	Menu::builder()
+		.append_item(menu_ids::UNDO, &undo_label, "")
+		.append_item(menu_ids::REDO, &redo_label, "")
+		.append_separator()
+		.append_item(menu_ids::CUT, &cut_label, "")
+		.append_item(menu_ids::COPY, &copy_label, "")
+		.append_item(menu_ids::PASTE, &paste_label, "")
+		.append_item(menu_ids::DELETE, &delete_label, "")
+		.append_separator()
+		.append_item(menu_ids::SELECT_ALL, &select_all_label, "")
+		.build()
+}
+
 pub fn create_go_menu(compact: bool) -> Menu {
 	let headings_menu = create_headings_submenu();
 	let bookmarks_menu = create_bookmarks_submenu();
@@ -476,9 +510,14 @@ pub fn create_go_menu(compact: bool) -> Menu {
 		t("Go to &percent...\tCtrl+Shift+G")
 	};
 	let goto_percent_help = t("Go to a percentage of the document");
-	let go_back_label = t("Go &Back\tAlt+Left");
+	// On macOS, Alt+Left/Right are reserved by AppKit for word-by-word caret
+	// movement in text fields; binding history navigation there would shadow
+	// them. Cmd+[ / Cmd+] are the system-standard back/forward (Safari, Finder,
+	// Xcode, Preview), so use those instead.
+	let go_back_label = if cfg!(target_os = "macos") { t("Go &Back\tCtrl+[") } else { t("Go &Back\tAlt+Left") };
 	let go_back_help = t("Go back in history");
-	let go_forward_label = t("Go &Forward\tAlt+Right");
+	let go_forward_label =
+		if cfg!(target_os = "macos") { t("Go &Forward\tCtrl+]") } else { t("Go &Forward\tAlt+Right") };
 	let go_forward_help = t("Go forward in history");
 	let menu = Menu::builder()
 		.append_item(menu_ids::FIND, &find_label, &find_help)
@@ -581,8 +620,8 @@ pub fn create_tools_menu(config: &ConfigManager) -> Menu {
 	let toc_help = t("Show table of contents");
 	let elements_label = t("&Elements List...\tF7");
 	let elements_help = t("Show elements list");
-	let open_folder_label = t("Open &Containing Folder\tCtrl+Shift+C");
-	let open_folder_help = t("Open folder containing the document");
+	let open_folder_label = t("Reveal &File in Folder\tCtrl+Shift+C");
+	let open_folder_help = t("Reveal document in the file manager");
 	let web_view_label = t("Open in &Web View\tCtrl+Shift+V");
 	let web_view_help = t("Open document in web view");
 	let view_source_label = t("View &Source\tCtrl+U");
@@ -594,7 +633,7 @@ pub fn create_tools_menu(config: &ConfigManager) -> Menu {
 		.append_item(menu_ids::TABLE_OF_CONTENTS, &toc_label, &toc_help)
 		.append_item(menu_ids::ELEMENTS_LIST, &elements_label, &elements_help)
 		.append_separator()
-		.append_item(menu_ids::OPEN_CONTAINING_FOLDER, &open_folder_label, &open_folder_help)
+		.append_item(menu_ids::REVEAL_FILE_IN_FOLDER, &open_folder_label, &open_folder_help)
 		.append_item(menu_ids::OPEN_IN_WEB_VIEW, &web_view_label, &web_view_help)
 		.append_item(menu_ids::VIEW_SOURCE, &view_source_label, &view_source_help)
 		.append_separator()

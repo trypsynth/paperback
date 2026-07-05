@@ -6,52 +6,52 @@ struct DocumentMenu: View {
 	var body: some View {
 		Menu {
 			Button { viewModel.showToc = true } label: {
-				Label("Table of Contents", systemImage: "list.bullet")
+				Label(t("Table of Contents"), systemImage: "list.bullet")
 			}
 			Button { viewModel.showElements = true } label: {
-				Label("Elements", systemImage: "list.dash")
+				Label(t("Elements"), systemImage: "list.dash")
 			}
 			Divider()
 			Button { viewModel.showFind = true } label: {
-				Label("Find", systemImage: "magnifyingglass")
+				Label(t("Find"), systemImage: "magnifyingglass")
 			}
 			Button {
 				viewModel.showGoTo = true
 			} label: {
-				Label("Go To…", systemImage: "arrow.right.circle")
+				Label(t("Go To…"), systemImage: "arrow.right.circle")
 			}
 			Divider()
 			Button { viewModel.showRecents = true } label: {
-				Label("Recent Documents", systemImage: "clock")
+				Label(t("Recent Documents"), systemImage: "clock")
 			}
 			Divider()
 			Button { viewModel.showWordCount = true } label: {
-				Label("Word Count", systemImage: "textformat.123")
+				Label(t("Word Count"), systemImage: "textformat.123")
 			}
 			Button { viewModel.showDocumentInfo = true } label: {
-				Label("Document Info", systemImage: "info.circle")
+				Label(t("Document Info"), systemImage: "info.circle")
 			}
 			Divider()
 			Button { viewModel.isTextMode.toggle() } label: {
 				Label(
-					viewModel.isTextMode ? "Switch to TTS Mode" : "Switch to Text Mode",
+					viewModel.isTextMode ? t("Switch to TTS Mode") : t("Switch to Text Mode"),
 					systemImage: viewModel.isTextMode ? "speaker.wave.2" : "text.alignleft"
 				)
 			}
 			Divider()
 			Button { viewModel.showSleepTimer = true } label: {
 				Label(
-					viewModel.sleepTimerRemaining != nil ? "Sleep Timer (active)" : "Sleep Timer",
+					viewModel.sleepTimerRemaining != nil ? t("Sleep Timer (active)") : t("Sleep Timer"),
 					systemImage: "timer"
 				)
 			}
 			Button { viewModel.showSettings = true } label: {
-				Label("Settings", systemImage: "gear")
+				Label(t("Settings"), systemImage: "gear")
 			}
 		} label: {
 			Image(systemName: "ellipsis.circle")
 		}
-		.accessibilityLabel("More options")
+		.accessibilityLabel(t("More options"))
 		.accessibilityRemoveTraits(.isButton)
 		.accessibilityAction(named: "Settings") { viewModel.showSettings = true }
 		.accessibilityAction(named: "Sleep Timer") { viewModel.showSleepTimer = true }
@@ -62,7 +62,7 @@ struct DocumentMenu: View {
 		.accessibilityAction(named: "Find") { viewModel.showFind = true }
 		.accessibilityAction(named: "Elements") { viewModel.showElements = true }
 		.accessibilityAction(named: "Table of Contents") { viewModel.showToc = true }
-		.accessibilityAction(named: viewModel.isTextMode ? "Switch to TTS Mode" : "Switch to Text Mode") {
+		.accessibilityAction(named: viewModel.isTextMode ? t("Switch to TTS Mode") : t("Switch to Text Mode")) {
 			viewModel.isTextMode.toggle()
 		}
 	}

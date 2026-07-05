@@ -36,7 +36,7 @@ pub struct FindSettings {
 	pub use_regex: bool,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ReadabilityFont {
 	pub face_name: String,
 	pub point_size: i32,
@@ -67,7 +67,8 @@ impl Default for ReadabilityFont {
 }
 
 impl ReadabilityFont {
-	pub fn is_default(&self) -> bool {
+	#[must_use]
+	pub const fn is_default(&self) -> bool {
 		self.face_name.is_empty() && self.point_size == 0
 	}
 }
@@ -96,22 +97,22 @@ impl Default for HotkeyConfig {
 	}
 }
 
-fn default_true() -> bool {
+const fn default_true() -> bool {
 	true
 }
-fn default_recent_documents_to_show() -> i64 {
+const fn default_recent_documents_to_show() -> i64 {
 	DEFAULT_RECENT_DOCUMENTS_TO_SHOW
 }
-fn default_sleep_timer() -> i64 {
+const fn default_sleep_timer() -> i64 {
 	30
 }
-fn default_reading_speed_wpm() -> i64 {
+const fn default_reading_speed_wpm() -> i64 {
 	150
 }
-fn default_font_color() -> i64 {
+const fn default_font_color() -> i64 {
 	-1
 }
-fn default_bg_color() -> i64 {
+const fn default_bg_color() -> i64 {
 	-1
 }
 
@@ -121,6 +122,8 @@ pub struct AppSettings {
 	pub restore_previous_documents: bool,
 	#[serde(default)]
 	pub word_wrap: bool,
+	#[serde(default = "default_true")]
+	pub render_tables_inline: bool,
 	#[serde(default)]
 	pub navigation_wrap: bool,
 	#[serde(default)]
@@ -173,6 +176,7 @@ impl Default for AppSettings {
 		Self {
 			restore_previous_documents: true,
 			word_wrap: false,
+			render_tables_inline: true,
 			navigation_wrap: false,
 			find_match_case: false,
 			find_whole_word: false,
@@ -351,7 +355,7 @@ impl ConfigManager {
 		let new_key = format!("doc_{encoded}");
 
 		let mut data = self.data.borrow_mut();
-		data.path_hashes.insert(uri.to_string(), new_key.clone());
+		data.path_hashes.insert(uri.to_string(), new_key);
 		self.dirty.set(true);
 	}
 
@@ -411,11 +415,12 @@ impl ConfigManager {
 		match key {
 			"restore_previous_documents" => data.app.restore_previous_documents,
 			"word_wrap" => data.app.word_wrap,
+			"render_tables_inline" => data.app.render_tables_inline,
 			"navigation_wrap" => data.app.navigation_wrap,
 			"find_match_case" => data.app.find_match_case,
 			"find_whole_word" => data.app.find_whole_word,
 			"find_use_regex" => data.app.find_use_regex,
-			_ => data.app.extra.get(key).and_then(|v| v.as_bool()).unwrap_or(default_value),
+			_ => data.app.extra.get(key).and_then(toml::Value::as_bool).unwrap_or(default_value),
 		}
 	}
 
@@ -433,7 +438,7 @@ impl ConfigManager {
 					.app
 					.extra
 					.get(key)
-					.and_then(|v| v.as_integer())
+					.and_then(toml::Value::as_integer)
 					.and_then(|i| i32::try_from(i).ok())
 					.unwrap_or(default_value);
 			}
@@ -458,6 +463,7 @@ impl ConfigManager {
 			match key {
 				"restore_previous_documents" => data.app.restore_previous_documents = value,
 				"word_wrap" => data.app.word_wrap = value,
+				"render_tables_inline" => data.app.render_tables_inline = value,
 				"navigation_wrap" => data.app.navigation_wrap = value,
 				"find_match_case" => data.app.find_match_case = value,
 				"find_whole_word" => data.app.find_whole_word = value,
@@ -505,7 +511,7 @@ impl ConfigManager {
 				.app
 				.extra
 				.get("font_encoding")
-				.and_then(|v| v.as_integer())
+				.and_then(toml::Value::as_integer)
 				.and_then(|i| i32::try_from(i).ok())
 				.unwrap_or(0),
 		}
@@ -806,6 +812,30 @@ impl ConfigManager {
 		self.dirty.set(true);
 	}
 
+	pub fn rename_document_path(&self, old_path: &str, new_path: &str) {
+		if !self.initialized {
+			return;
+		}
+		let mut data = self.data.borrow_mut();
+		for p in &mut data.recent_documents {
+			if p == old_path {
+				*p = new_path.to_string();
+			}
+		}
+		for p in &mut data.opened_documents {
+			if p == old_path {
+				*p = new_path.to_string();
+			}
+		}
+		if let Some(doc_key) = data.path_hashes.remove(old_path) {
+			data.path_hashes.insert(new_path.to_string(), doc_key.clone());
+			if let Some(doc) = data.documents.get_mut(&doc_key) {
+				doc.path = new_path.to_string();
+			}
+		}
+		self.dirty.set(true);
+	}
+
 	pub fn get_all_documents(&self) -> Vec<String> {
 		if !self.initialized {
 			return Vec::new();
@@ -825,7 +855,7 @@ impl ConfigManager {
 				return;
 			}
 			doc.bookmarks.push(StoredBookmark { start, end, note: note.to_string() });
-			doc.bookmarks.sort_by(|a, b| a.start.cmp(&b.start));
+			doc.bookmarks.sort_by_key(|a| a.start);
 		}
 		self.dirty.set(true);
 	}
@@ -925,10 +955,10 @@ impl ConfigManager {
 	/// Import document settings from a `.paperback` sidecar file if it exists.
 	pub fn import_document_settings(&self, path: &str) {
 		let import_path = std::path::Path::new(path).with_extension("paperback");
-		if let Some(import_path_str) = import_path.to_str() {
-			if import_path.exists() {
-				self.import_settings_from_file(path, import_path_str);
-			}
+		if let Some(import_path_str) = import_path.to_str()
+			&& import_path.exists()
+		{
+			self.import_settings_from_file(path, import_path_str);
 		}
 	}
 
@@ -972,7 +1002,7 @@ impl ConfigManager {
 	}
 
 	fn doc_entry_mut<'a>(data: &'a mut ConfigData, key: String, path: &str) -> &'a mut DocumentConfig {
-		let entry = data.documents.entry(key).or_insert_with(DocumentConfig::default);
+		let entry = data.documents.entry(key).or_default();
 		if entry.path.is_empty() {
 			entry.path = path.to_string();
 		}
@@ -1034,6 +1064,7 @@ pub fn get_sorted_document_list(config: &ConfigManager, open_paths: &[String], f
 		.collect()
 }
 
+#[must_use]
 pub fn compute_document_hash(path: &str) -> [u8; 20] {
 	let mut hasher = Sha1::new();
 	if let Ok(mut file) = fs::File::open(path) {
@@ -1055,7 +1086,7 @@ pub fn compute_document_hash(path: &str) -> [u8; 20] {
 		}
 		if let Ok(metadata) = file.metadata() {
 			let file_size = metadata.len();
-			hasher.update(&file_size.to_le_bytes());
+			hasher.update(file_size.to_le_bytes());
 			if file_size > max_read as u64 {
 				let seek_pos = std::cmp::max(file_size.saturating_sub(max_read as u64), max_read as u64);
 				if file.seek(SeekFrom::Start(seek_pos)).is_ok() {
@@ -1104,5 +1135,16 @@ mod tests {
 		let a = config.get_doc_key("book-a.epub");
 		let b = config.get_doc_key("book-b.epub");
 		assert_ne!(a, b);
+	}
+
+	#[test]
+	fn render_tables_inline_round_trips() {
+		let mut config = ConfigManager::new();
+		config.initialized = true;
+		assert!(config.get_app_bool("render_tables_inline", true));
+		config.set_app_bool("render_tables_inline", false);
+		assert!(!config.get_app_bool("render_tables_inline", true));
+		config.set_app_bool("render_tables_inline", true);
+		assert!(config.get_app_bool("render_tables_inline", true));
 	}
 }

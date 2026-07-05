@@ -17,6 +17,8 @@ pub fn play_sound(filename: &str) {
 	let path = sounds_directory().join(filename);
 	if path.exists() {
 		Sound::play_file(&path.to_string_lossy(), SoundFlags::Async);
+	} else {
+		tracing::debug!(path = %path.display(), "sound file not found, skipping");
 	}
 }
 

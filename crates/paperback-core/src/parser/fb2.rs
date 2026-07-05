@@ -40,7 +40,7 @@ impl Parser for Fb2Parser {
 			let (title, author) = extract_metadata(&xml_content);
 			(xml_content, (title, author))
 		});
-		let mut converter = XmlToText::new();
+		let mut converter = XmlToText::with_render_tables_inline(context.render_tables_inline);
 		if !converter.convert(&xml_content) {
 			anyhow::bail!("Failed to convert FB2 XML to text");
 		}

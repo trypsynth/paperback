@@ -5,7 +5,10 @@ use pdfium::{PdfiumDocument, PdfiumError, PdfiumTextPage, lib};
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
-	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, Parser, util::path::extract_title_from_path},
+	parser::{
+		PASSWORD_REQUIRED_ERROR_PREFIX, Parser,
+		util::{bidi, path::extract_title_from_path},
+	},
 	t,
 	util::text::{collapse_whitespace, display_len, trim_string},
 };
@@ -33,6 +36,7 @@ impl Parser for PdfParser {
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		let render_tables_inline = context.render_tables_inline;
 		let document =
 			PdfiumDocument::new_from_path(&context.file_path, context.password.as_deref()).map_err(map_load_error)?;
 		let mut buffer = DocumentBuffer::new();
@@ -72,7 +76,9 @@ impl Parser for PdfParser {
 					let mut mcid_char_count: usize = 0;
 					if let Ok(char_count) = text_page.char_count() {
 						let mut current_mcid = -1;
-						let mut current_text = String::new();
+						// Chars of the current marked-content run with their pdfium index, so RTL
+						// runs can be reordered visual→logical per run.
+						let mut current_chars: Vec<(char, i32)> = Vec::new();
 						for i in 0..char_count {
 							let unicode = text_page.get_unicode(i);
 							if let Some(ch) = char::from_u32(unicode) {
@@ -81,10 +87,8 @@ impl Parser for PdfParser {
 								}
 								let is_generated = text_page.is_generated(i).unwrap_or(false);
 								let mut char_mcid = -1;
-								if !is_generated {
-									if let Ok(obj) = text_page.get_text_object(i) {
-										char_mcid = obj.get_marked_content_id();
-									}
+								if !is_generated && let Ok(obj) = text_page.get_text_object(i) {
+									char_mcid = obj.get_marked_content_id();
 								}
 								if !is_generated && !ch.is_whitespace() {
 									real_char_count += 1;
@@ -93,17 +97,23 @@ impl Parser for PdfParser {
 									}
 								}
 								if char_mcid >= 0 && char_mcid != current_mcid {
-									if current_mcid >= 0 && !current_text.is_empty() {
-										mcid_to_text.entry(current_mcid).or_default().push_str(&current_text);
+									if current_mcid >= 0 && !current_chars.is_empty() {
+										mcid_to_text
+											.entry(current_mcid)
+											.or_default()
+											.push_str(&reorder_run(&text_page, &current_chars));
 									}
-									current_text.clear();
+									current_chars.clear();
 									current_mcid = char_mcid;
 								}
-								current_text.push(ch);
+								current_chars.push((ch, i));
 							}
 						}
-						if current_mcid >= 0 && !current_text.is_empty() {
-							mcid_to_text.entry(current_mcid).or_default().push_str(&current_text);
+						if current_mcid >= 0 && !current_chars.is_empty() {
+							mcid_to_text
+								.entry(current_mcid)
+								.or_default()
+								.push_str(&reorder_run(&text_page, &current_chars));
 						}
 					}
 					let coverage =
@@ -120,6 +130,7 @@ impl Parser for PdfParser {
 									&mut current_block,
 									&mut current_lines_info,
 									&mut flat_toc_items,
+									render_tables_inline,
 								);
 							}
 						}
@@ -129,7 +140,9 @@ impl Parser for PdfParser {
 					}
 				}
 			}
-			if !tags_processed {
+			if tags_processed {
+				has_any_text = true;
+			} else {
 				let line_infos = extract_text_lines(&text_page);
 				let body_size = median_line_font_size(&line_infos);
 				let paragraphs = join_paragraphs(&line_infos, body_size);
@@ -147,18 +160,16 @@ impl Parser for PdfParser {
 					page_display_text.push_str(text);
 					page_display_text.push('\n');
 				}
-			} else {
-				has_any_text = true;
 			}
 			// Check for image objects on this page
 			if !has_any_images {
 				let obj_count = lib().FPDFPage_CountObjects(&page);
 				for i in 0..obj_count {
-					if let Ok(obj) = lib().FPDFPage_GetObject(&page, i) {
-						if lib().FPDFPageObj_GetType(&obj) == pdfium::pdfium_constants::FPDF_PAGEOBJ_IMAGE {
-							has_any_images = true;
-							break;
-						}
+					if let Ok(obj) = lib().FPDFPage_GetObject(&page, i)
+						&& lib().FPDFPageObj_GetType(&obj) == pdfium::pdfium_constants::FPDF_PAGEOBJ_IMAGE
+					{
+						has_any_images = true;
+						break;
 					}
 				}
 			}
@@ -202,80 +213,79 @@ impl Parser for PdfParser {
 			let mut last_search_pos = 0;
 			for i in 0..annot_count {
 				let annot_result = lib().FPDFPage_GetAnnot(&page, i);
-				if let Ok(annot) = annot_result {
-					if lib().FPDFAnnot_GetSubtype(&annot) == pdfium::pdfium_constants::FPDF_ANNOT_LINK {
-						let mut rect = pdfium::pdfium_types::FS_RECTF { left: 0.0, top: 0.0, right: 0.0, bottom: 0.0 };
-						if lib().FPDFAnnot_GetRect(&annot, &mut rect).is_ok() {
-							let mut text_buffer = vec![0u16; 2048];
-							let len = lib().FPDFText_GetBoundedText(
-								&text_page,
-								f64::from(rect.left),
-								f64::from(rect.top),
-								f64::from(rect.right),
-								f64::from(rect.bottom),
-								&mut text_buffer[0],
-								2048,
-							);
-							if len > 0 {
-								let text =
-									sanitize_pdf_text(&String::from_utf16_lossy(&text_buffer[..(len as usize - 1)]));
-								let trimmed_link = trim_string(&collapse_whitespace(&text));
-								if trimmed_link.is_empty() {
-									continue;
-								}
-								let mut url = String::new();
-								let link_result = lib().FPDFAnnot_GetLink(&annot);
-								if let Ok(link) = link_result {
-									let action_result = lib().FPDFLink_GetAction(&link);
-									if let Ok(action) = action_result {
-										let action_type = lib().FPDFAction_GetType(&action);
-										// PDFACTION_URI is 3
-										if action_type == 3 {
-											let mut uri_buffer = vec![0u8; 2048];
-											let uri_len = lib().FPDFAction_GetURIPath(
-												&document,
-												&action,
-												Some(&mut uri_buffer),
-												2048,
-											);
-											if uri_len > 0 {
-												url = String::from_utf8_lossy(&uri_buffer[..(uri_len as usize - 1)])
-													.to_string();
-											}
-										}
-									}
-									if url.is_empty() {
-										let dest_result = lib().FPDFLink_GetDest(&document, &link);
-										let dest = dest_result.ok().or_else(|| {
-											lib()
-												.FPDFLink_GetAction(&link)
-												.ok()
-												.and_then(|action| lib().FPDFAction_GetDest(&document, &action).ok())
-										});
-										if let Some(dest) = dest {
-											let dest_page = lib().FPDFDest_GetDestPageIndex(&document, &dest);
-											if dest_page >= 0 {
-												url = format!("#page_{dest_page}");
-											}
-										}
-									}
-								}
-								if !url.is_empty() {
-									if let Some(pos) = page_display_text[last_search_pos..].find(&trimmed_link) {
-										let text_before = &page_display_text[last_search_pos..last_search_pos + pos];
-										let marker_pos = page_start_offset
-											+ display_len(&page_display_text[..last_search_pos])
-											+ display_len(text_before);
-										let link_len = display_len(&trimmed_link);
-										buffer.add_marker(
-											Marker::new(MarkerType::Link, marker_pos)
-												.with_text(trimmed_link.clone())
-												.with_reference(url)
-												.with_length(link_len),
+				if let Ok(annot) = annot_result
+					&& lib().FPDFAnnot_GetSubtype(&annot) == pdfium::pdfium_constants::FPDF_ANNOT_LINK
+				{
+					let mut rect = pdfium::pdfium_types::FS_RECTF { left: 0.0, top: 0.0, right: 0.0, bottom: 0.0 };
+					if lib().FPDFAnnot_GetRect(&annot, &mut rect).is_ok() {
+						let mut text_buffer = vec![0u16; 2048];
+						let len = lib().FPDFText_GetBoundedText(
+							&text_page,
+							f64::from(rect.left),
+							f64::from(rect.top),
+							f64::from(rect.right),
+							f64::from(rect.bottom),
+							&mut text_buffer[0],
+							2048,
+						);
+						if len > 0 {
+							let text = sanitize_pdf_text(&String::from_utf16_lossy(&text_buffer[..(len as usize - 1)]));
+							let trimmed_link = trim_string(&collapse_whitespace(&text));
+							if trimmed_link.is_empty() {
+								continue;
+							}
+							let mut url = String::new();
+							let link_result = lib().FPDFAnnot_GetLink(&annot);
+							if let Ok(link) = link_result {
+								let action_result = lib().FPDFLink_GetAction(&link);
+								if let Ok(action) = action_result {
+									let action_type = lib().FPDFAction_GetType(&action);
+									// PDFACTION_URI is 3
+									if action_type == 3 {
+										let mut uri_buffer = vec![0u8; 2048];
+										let uri_len = lib().FPDFAction_GetURIPath(
+											&document,
+											&action,
+											Some(&mut uri_buffer),
+											2048,
 										);
-										last_search_pos += pos + trimmed_link.len();
+										if uri_len > 0 {
+											url = String::from_utf8_lossy(&uri_buffer[..(uri_len as usize - 1)])
+												.to_string();
+										}
 									}
 								}
+								if url.is_empty() {
+									let dest_result = lib().FPDFLink_GetDest(&document, &link);
+									let dest = dest_result.ok().or_else(|| {
+										lib()
+											.FPDFLink_GetAction(&link)
+											.ok()
+											.and_then(|action| lib().FPDFAction_GetDest(&document, &action).ok())
+									});
+									if let Some(dest) = dest {
+										let dest_page = lib().FPDFDest_GetDestPageIndex(&document, &dest);
+										if dest_page >= 0 {
+											url = format!("#page_{dest_page}");
+										}
+									}
+								}
+							}
+							if !url.is_empty()
+								&& let Some(pos) = page_display_text[last_search_pos..].find(&trimmed_link)
+							{
+								let text_before = &page_display_text[last_search_pos..last_search_pos + pos];
+								let marker_pos = page_start_offset
+									+ display_len(&page_display_text[..last_search_pos])
+									+ display_len(text_before);
+								let link_len = display_len(&trimmed_link);
+								buffer.add_marker(
+									Marker::new(MarkerType::Link, marker_pos)
+										.with_text(trimmed_link.clone())
+										.with_reference(url)
+										.with_length(link_len),
+								);
+								last_search_pos += pos + trimmed_link.len();
 							}
 						}
 					}
@@ -348,20 +358,40 @@ fn sanitize_pdf_text(input: &str) -> String {
 	input.chars().filter(|&ch| (!ch.is_control() || matches!(ch, '\n' | '\r' | '\t')) && ch != '\u{00AD}').collect()
 }
 
+fn char_x_origin(text_page: &PdfiumTextPage, i: i32) -> f32 {
+	let (mut x, mut y) = (0.0, 0.0);
+	let _ = text_page.get_char_origin(i, &mut x, &mut y);
+	x as f32
+}
+
+/// Assemble one run of `(char, pdfium index)` pairs into text, reordering
+/// visual→logical for RTL scripts. Fetches x origins (a per-char FFI call)
+/// only when the run actually contains an RTL character, so pure-LTR runs —
+/// the overwhelming majority — pay a single cheap classification scan instead.
+fn reorder_run(text_page: &PdfiumTextPage, chars: &[(char, i32)]) -> String {
+	if !bidi::contains_rtl(chars.iter().map(|&(c, _)| c)) {
+		return chars.iter().map(|&(c, _)| c).collect();
+	}
+	let with_origin: Vec<(char, f32)> = chars.iter().map(|&(c, i)| (c, char_x_origin(text_page, i))).collect();
+	bidi::reorder_line(&with_origin)
+}
+
 fn extract_text_lines(text_page: &PdfiumTextPage) -> Vec<(String, f64)> {
 	let Ok(char_count) = text_page.char_count() else {
 		let raw = sanitize_pdf_text(&text_page.full()).replace('\r', "");
 		return raw.lines().map(|l| (l.to_string(), 0.0)).collect();
 	};
 	let mut result: Vec<(String, f64)> = Vec::new();
-	let mut current_line = String::new();
+	// Chars of the current visual line with their pdfium index, so each line can be
+	// reordered visual→logical (handles RTL scripts) before paragraph joining.
+	let mut current_chars: Vec<(char, i32)> = Vec::new();
 	let mut current_sizes: Vec<f64> = Vec::new();
 	for i in 0..char_count {
 		let unicode = text_page.get_unicode(i);
 		let Some(ch) = char::from_u32(unicode) else { continue };
 		if ch == '\n' || ch == '\r' {
 			let size = sorted_median(&mut current_sizes);
-			result.push((std::mem::take(&mut current_line), size));
+			result.push((reorder_run(text_page, &std::mem::take(&mut current_chars)), size));
 			current_sizes.clear();
 		} else if (ch.is_control() && !matches!(ch, '\t')) || ch == '\u{00AD}' {
 			continue;
@@ -370,12 +400,12 @@ fn extract_text_lines(text_page: &PdfiumTextPage) -> Vec<(String, f64)> {
 			if size > 0.0 {
 				current_sizes.push(size);
 			}
-			current_line.push(ch);
+			current_chars.push((ch, i));
 		}
 	}
-	if !current_line.is_empty() {
+	if !current_chars.is_empty() {
 		let size = sorted_median(&mut current_sizes);
-		result.push((current_line, size));
+		result.push((reorder_run(text_page, &current_chars), size));
 	}
 	result
 }
@@ -444,21 +474,20 @@ fn join_paragraphs(raw_lines: &[(String, f64)], body_font_size: f64) -> Vec<(Str
 		} else {
 			let mut is_numbered = false;
 			let mut chars = line.chars();
-			if let Some(first) = chars.next() {
-				if first.is_ascii_digit() {
-					let mut found_space = false;
-					for c in chars {
-						if c.is_ascii_digit() || c == '.' || c == ')' {
-							continue;
-						} else if c.is_whitespace() {
-							found_space = true;
-							break;
-						} else {
-							break;
-						}
+			if let Some(first) = chars.next()
+				&& first.is_ascii_digit()
+			{
+				let mut found_space = false;
+				for c in chars {
+					if c.is_ascii_digit() || c == '.' || c == ')' {
+						continue;
+					} else if c.is_whitespace() {
+						found_space = true;
+						break;
 					}
-					is_numbered = found_space;
+					break;
 				}
+				is_numbered = found_space;
 			}
 			let break_paragraph = if *is_heading_line || current_is_heading {
 				true
@@ -660,19 +689,14 @@ fn process_struct_element(
 	current_block: &mut String,
 	current_lines_info: &mut Vec<(usize, String)>,
 	toc_items: &mut Vec<(u32, TocItem)>,
+	render_tables_inline: bool,
 ) {
 	let elem_type = elem.element_type().unwrap_or_default();
 	if elem_type == "Table" {
 		flush_block(current_block, buffer, page_display_text, current_lines_info);
 		let html = build_html_table(elem, mcid_to_text);
 		let pos = buffer.current_position();
-		buffer.add_marker(Marker::new(MarkerType::Table, pos).with_reference(html));
-		let table_placeholder = "[Table]";
-		current_lines_info.push((pos, table_placeholder.to_string()));
-		buffer.append(table_placeholder);
-		buffer.append("\n");
-		page_display_text.push_str(table_placeholder);
-		page_display_text.push('\n');
+		append_pdf_table_to_buffer(buffer, html, pos, current_lines_info, page_display_text, render_tables_inline);
 		return;
 	}
 	let is_block = matches!(
@@ -704,13 +728,12 @@ fn process_struct_element(
 				current_block,
 				current_lines_info,
 				toc_items,
+				render_tables_inline,
 			);
-		} else {
-			if let Some(mcid) = elem.child_marked_content_id(i) {
-				if let Some(text) = mcid_to_text.get(&mcid) {
-					current_block.push_str(text);
-				}
-			}
+		} else if let Some(mcid) = elem.child_marked_content_id(i)
+			&& let Some(text) = mcid_to_text.get(&mcid)
+		{
+			current_block.push_str(text);
 		}
 	}
 	if is_block {
@@ -805,12 +828,10 @@ fn collect_text(elem: &pdfium::PdfiumStructElement, mcid_to_text: &HashMap<i32, 
 	for i in 0..count {
 		if let Ok(child) = elem.child(i) {
 			collect_text(&child, mcid_to_text, out);
-		} else {
-			if let Some(mcid) = elem.child_marked_content_id(i) {
-				if let Some(text) = mcid_to_text.get(&mcid) {
-					out.push_str(text);
-				}
-			}
+		} else if let Some(mcid) = elem.child_marked_content_id(i)
+			&& let Some(text) = mcid_to_text.get(&mcid)
+		{
+			out.push_str(text);
 		}
 	}
 }
@@ -819,9 +840,40 @@ fn html_escape(s: &str) -> String {
 	s.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;")
 }
 
+/// Append a PDF table's on-screen text to the buffer and add the Table marker. The text is produced
+/// by [`crate::parser::table_text::html_table_to_display`]: the full tab-separated rendering when
+/// `render_tables_inline` is set, otherwise a `"[Table]: <first row>"` placeholder. The helper
+/// output may span multiple lines (one per table row); each line is recorded as its own
+/// `current_lines_info` / `page_display_text` line, mirroring the rest of the PDF line tracking.
+/// Extracted from `process_struct_element` so the logic is unit-testable without live pdfium objects.
+fn append_pdf_table_to_buffer(
+	buffer: &mut DocumentBuffer,
+	html: String,
+	pos: usize,
+	current_lines_info: &mut Vec<(usize, String)>,
+	page_display_text: &mut String,
+	render_tables_inline: bool,
+) {
+	let display_text = crate::parser::table_text::html_table_to_display(&html, render_tables_inline);
+	// `display_lines_and_length` guards the empty case (an empty inline table) by returning no
+	// lines, where a raw `split('\n')` would yield one `""` and emit a spurious blank line.
+	let (lines, _) = crate::parser::table_text::display_lines_and_length(&display_text);
+	for line in lines {
+		let line_pos = buffer.current_position();
+		current_lines_info.push((line_pos, line.clone()));
+		buffer.append(&line);
+		buffer.append("\n");
+		page_display_text.push_str(&line);
+		page_display_text.push('\n');
+	}
+	let display_len = buffer.current_position() - pos;
+	buffer.add_marker(Marker::new(MarkerType::Table, pos).with_reference(html).with_length(display_len));
+}
+
 #[cfg(test)]
 mod tests {
-	use super::{join_paragraphs, sanitize_pdf_text};
+	use super::{append_pdf_table_to_buffer, join_paragraphs, sanitize_pdf_text};
+	use crate::document::{DocumentBuffer, MarkerType};
 
 	#[test]
 	fn sanitize_pdf_text_strips_control_chars_and_soft_hyphens() {
@@ -848,5 +900,74 @@ mod tests {
 		assert!(result[0].1);
 		assert_eq!(result[1].0, "This is the body text of the document.");
 		assert!(!result[1].1);
+	}
+
+	/// OFF mode: the PDF table helper emits a single `"[Table]: <first row>"` placeholder line and
+	/// the Table marker's length equals the emitted display extent. The HTML has a non-BMP char
+	/// (U+1D11E, G Clef) in a cell to lock display-unit math (it takes 2 UTF-16 units).
+	#[test]
+	fn pdf_table_helper_emits_placeholder_when_off() {
+		use crate::util::text::display_len;
+		let html = "<table border=\"1\">\n<tr>\n<td>Kop</td>\n<td>\u{1D11E}</td>\n</tr>\n</table>\n".to_string();
+		let mut buffer = DocumentBuffer::new();
+		let pos = buffer.current_position();
+		let mut lines_info = Vec::new();
+		let mut page_text = String::new();
+		append_pdf_table_to_buffer(&mut buffer, html.clone(), pos, &mut lines_info, &mut page_text, false);
+
+		// Placeholder: first row with tabs->spaces.
+		assert_eq!(buffer.content, "[Table]: Kop \u{1D11E}\n");
+		assert_eq!(lines_info.len(), 1, "placeholder is a single line");
+		assert!(lines_info[0].1.starts_with("[Table]: "));
+
+		// Table marker length equals the emitted display extent.
+		let placeholder_len = display_len("[Table]: Kop \u{1D11E}") + 1; // +1 for trailing newline
+		let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker present");
+		assert_eq!(table_marker.position, 0);
+		assert_eq!(table_marker.length, placeholder_len, "marker length in display units");
+		assert_eq!(table_marker.reference, html, "marker keeps the table HTML");
+	}
+
+	/// ON mode: the helper emits the full TSV; multi-row tables produce one line per row, and the
+	/// marker length spans all emitted lines.
+	#[test]
+	fn pdf_table_helper_emits_tsv_when_inline() {
+		use crate::util::text::display_len;
+		let html =
+			"<table border=\"1\">\n<tr>\n<td>Kop</td>\n<td>\u{1D11E}</td>\n</tr>\n<tr>\n<td>a</td>\n<td>b</td>\n</tr>\n</table>\n"
+				.to_string();
+		let mut buffer = DocumentBuffer::new();
+		let pos = buffer.current_position();
+		let mut lines_info = Vec::new();
+		let mut page_text = String::new();
+		append_pdf_table_to_buffer(&mut buffer, html.clone(), pos, &mut lines_info, &mut page_text, true);
+
+		// Two rows -> "Kop\t𝄞\na\tb\n".
+		assert_eq!(buffer.content, "Kop\t\u{1D11E}\na\tb\n");
+		assert_eq!(lines_info.len(), 2, "one line per table row");
+		assert_eq!(lines_info[0].1, "Kop\t\u{1D11E}");
+		assert_eq!(lines_info[1].1, "a\tb");
+
+		let expected_len = display_len("Kop\t\u{1D11E}\na\tb\n");
+		let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker present");
+		assert_eq!(table_marker.length, expected_len, "marker length spans all emitted rows");
+	}
+
+	/// An empty inline table must emit no line at all (a raw `split('\n')` would emit one spurious
+	/// blank line). The buffer stays empty and the Table marker has zero length.
+	#[test]
+	fn pdf_table_helper_empty_inline_emits_no_line() {
+		let html = "<table border=\"1\">\n</table>\n".to_string();
+		let mut buffer = DocumentBuffer::new();
+		let pos = buffer.current_position();
+		let mut lines_info = Vec::new();
+		let mut page_text = String::new();
+		append_pdf_table_to_buffer(&mut buffer, html, pos, &mut lines_info, &mut page_text, true);
+
+		assert_eq!(buffer.content, "", "empty inline table appends nothing");
+		assert!(lines_info.is_empty(), "no lines recorded");
+		assert!(page_text.is_empty(), "no page display text");
+		let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker present");
+		assert_eq!(table_marker.length, 0, "zero-length marker for empty inline table");
 	}
 }

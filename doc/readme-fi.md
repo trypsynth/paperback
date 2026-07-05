@@ -6,7 +6,7 @@ Paperback on kevyt, nopea ja saavutettava e-kirjojen ja asiakirjojen lukuohjelma
 
 ## Järjestelmävaatimukset
 
-Paperback toimii tällä hetkellä Windows 10:ssä, 11:ssä ja Linuxissa. MacOS-tuki on työn alla.
+Paperback toimii tällä hetkellä Windowsissa, macOS:ssä, Linuxissa, iOS:ssä ja Androidissa.
 
 ## Ominaisuudet
 
@@ -15,14 +15,24 @@ Paperback toimii tällä hetkellä Windows 10:ssä, 11:ssä ja Linuxissa. MacOS-
 * Yksinkertainen välilehtikäyttöliittymä, jonka avulla voit avata rajattoman määrän asiakirjoja.
 * Tallentaa kohdistimen sijainnin jokaisessa avaamassasi asiakirjassa.
 * Muistaa valinnaisesti, mitkä asiakirjat olivat avoinna ohjelmaa suljettaessa, ja avaa ne uudelleen seuraavalla käynnistyskerralla.
-* Ruudunlukijakäyttäjän suunnittelema muille ruudunlukijan käyttäjille.
-* Sisältää verkkoselauksen tilaa muistuttavan navigointitoiminnon, jonka avulla voit liikkua asiakirjoissa nopeasti ja helposti.
+* Sen on suunnitellut ruudunlukijan käyttäjä toisille ruudunlukijan käyttäjille.
+* Sisältää ruudunlukijoista tuttua verkkoselaustilaa muistuttavan navigointitoiminnon, jonka avulla voit liikkua asiakirjoissa nopeasti ja vaivattomasti.
 * Sisältää tehokkaan etsintävalintaikkunan, jossa on muun muassa historia ja sääntölausekkeiden tuki.
-* Voidaan käyttää massamuistiversiona tai asentaa niin, että tiedostokytkennät määritetään automaattisesti.
+* Voidaan käyttää massamuistiversiona tai asentaa siten, että tiedostokytkennät määritetään automaattisesti.
 
-## Tällä hetkellä tuetut tiedostotyypit
+## Ruudunlukijoiden yhteensopivuus
 
-Paperback tukee seuraavia tiedostomuotoja ja tunnisteita:
+Paperback toimii sujuvasti kaikilla yleisimmillä ruudunlukijoilla. JAWS-käyttäjien on kuitenkin hyvä tietää  eräästä tunnetusta ongelmasta.
+
+### JAWS ja pistenäytöt
+
+Jos käytät JAWS-ruudunlukijaa ja pistenäyttöä, pitkät kappaleet saattavat katketa, kun tekstiä vieritetään eteenpäin näytön navigointinäppäimillä. Ongelma koskee myös nykyisen kappaleen lukukomentoa. Tämä johtuu JAWSin virheestä RICHEDIT50W-tekstikentän käsittelyssä, eli vika ei ole Paperbackissa. Ratkaisun löytäminen kesti kauan, koska Visperolta on tunnetusti vaikea saada vastauksia avoimen lähdekoodin sovellusten virheraportteihin.
+
+Kiertotienä ongelmaan on paperback.jcf-tiedoston muokkaaminen siten, että asetuksen "Braille Presentation and Panning" (Pistekirjoitusesitys ja -vieritys) arvoksi määritetään "Always use DOM if available" (Käytä aina DOMia, jos se on saatavilla). Lisäksi asetus "Pan Text by Paragraph" (Vieritä kappaleittain) on otettava käyttöön, jotta pistenäyttö siirtyy eteenpäin seuraavaan kappaleeseen. Näillä asetuksilla vierityksen pitäisi toimia oikein.
+
+## Tuetut tiedostotyypit
+
+Paperback tukee seuraavia tiedostomuotoja ja -tarkenteita:
 
 * CHM-ohjetiedostot (`.chm`)
 * ePub-kirjat (`.epub`)
@@ -38,9 +48,9 @@ Paperback tukee seuraavia tiedostomuotoja ja tunnisteita:
 * Teksti- ja lokitiedostot (`.txt`, `.log`)
 * XML-asiakirjat (`.xml`)
 
-## Näppäinkomennot
+## Pikanäppäimet
 
-Paperback on suunniteltu ensisijaisesti näppäimistöllä ja ruudunlukijalla käytettäväksi. Alla on luettelo nykyisistä Näppäinkomennoista.
+Paperback on suunniteltu ensisijaisesti näppäimistöllä ja ruudunlukijalla käytettäväksi. Alla on luettelo nykyisistä pikanäppäimistä.
 
 ### Tiedosto-valikko
 
@@ -56,7 +66,7 @@ Paperback on suunniteltu ensisijaisesti näppäimistöllä ja ruudunlukijalla k�
 * `Shift+F3`: Etsi edellinen.
 * `Ctrl+G`: Siirry riville.
 * `Ctrl+Shift+G`: Siirry prosenttiin.
-* `Ctrl+P`: Siirry sivulle (kun nykyinen asiakirja tukee sitä).
+* `Ctrl+P`: Siirry sivulle (jos nykyinen asiakirja tukee sitä).
 * `Alt+Vasen nuoli`: Siirry taaksepäin navigointihistoriassa.
 * `Alt+Oikea nuoli`: Siirry eteenpäin navigointihistoriassa.
 * `[`: Edellinen luku.
@@ -95,7 +105,7 @@ Paperback on suunniteltu ensisijaisesti näppäimistöllä ja ruudunlukijalla k�
 * `Ctrl+T`: Näytä sisällysluettelo.
 * `F7`: Näytä elementtilista.
 * `Ctrl+Shift+C`: Avaa asiakirjan kansio.
-* `Ctrl+Shift+V`: Avaa nykyinen sisältö verkkonäkymässä.
+* `Ctrl+Shift+V`: Avaa nykyinen sisältö selainnäkymässä.
 * `Ctrl+U`: Näytä asiakirjan lähdekoodi uudessa välilehdessä.
 * `Ctrl+Shift+E`: Vie asiakirjan tiedot `.paperback`-tiedostoon.
 * `Ctrl+Shift+I`: Tuo asiakirjan tiedot `.paperback`-tiedostosta.
@@ -171,6 +181,61 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 
 ## Muutosloki
 
+### Versio 0.9.0
+* Lisätty Peruuta-painike käynnissä olevan päivityksen valintaikkunaan.
+* Lisätty pb-komentorivityökalu, jolla voi muuntaa nopeasti minkä tahansa Paperbackin tukeman tiedostomuodon HTML-, Markdown- tai pelkkä teksti -muotoon.
+* Lisätty mukautettava pikanäppäin Paperbackin palauttamiseen ilmoitusalueelta.
+* Lisätty Etsi kirja -painike Kaikki asiakirjat -valintaikkunaan sellaisten puuttuvien kirjojen löytämiseksi, joiden tiedostopolku on muuttunut.
+* Lisätty Asetukset-valintaikkunaan Luettavuus-välilehti, jossa on seuraavat asetukset:
+    * Tekstin rivitys (siirretty Yleiset-välilehdeltä)
+    * Näytä taulukot tekstin osana (uusi tässä versiossa, katso jäljempää)
+    * Fontti
+    * Taustaväri
+    * Riviväli
+    * Kappaleväli
+    * Kirjainväli
+    * Tekstin tasaus
+* Lisätty asetus taulukoiden näyttötavan määrittämiseksi sekä yhtenäistetty taulukoiden esitystapa kaikille asiakirjoille.
+* Lisätty Näytä lähdekoodi -vaihtoehto, joka avaa asiakirjan lähdekoodin uuteen välilehteen (hyödyllinen esimerkiksi Markdown-muokkauksessa).
+* Lisätty Sanamäärä-valintaikkunaan arvioitu lukuaika sekä mahdollisuus oman lukunopeuden määrittämiseen, jotta tästä lukemasta on oikeasti hyötyä.
+* Android-tuki lisätty.
+* iOS-tuki lisätty.
+* Linux-tuki lisätty.
+* macOS-tuki lisätty.
+* Lisätty hollannin-, suomen- ja puolankieliset käännökset.
+* Lisätty tuki säilöittäin navigoimiselle.
+* Lisätty CHM-asiakirjoihin luetteloiden, luettelokohteiden, kuvitusten ja kuvien tuki.
+* Lisätty Rivitys-valikkokohde ja vastaava pikanäppäin.
+* Mahdollistettu Selainnäkymä-valintaikkunan koon muuttaminen ja asetettu se avautumaan oletusarvoisesti huomattavasti selkeämmässä koossa.
+* Laajennettu vientitoimintoa siten, että se mahdollistaa viennin pelkän tekstin lisäksi myös HTML- ja Markdown-muotoihin.
+* Korjattu virhe, jossa tekstin rivityksen käyttöönotto aiheutti kohdistuksen siirtymistä suoraan asiakirjan alkuun.
+* Korjattu virhe, jossa DAISY-kirjoista näytettiin tilarivillä virheellisiä tietoja.
+* Korjattu virhe, jossa dl-, dt- ja dd-elementit eivät aiheuttaneet rivinvaihtoja XHTML-asiakirjoissa.
+* Korjattu virhe, jossa Esc-näppäimen painaminen ei sulkenut Asiakirjan tiedot- ja Kaikki asiakirjat -valintaikkunoita.
+* Korjattu virhe, jossa Mobi-kirjojen filepos-ankkurit rikkoivat HTML-elementtejä ja aiheuttivat merkkisotkua kirjan tekstiin.
+* Korjattu suurten asiakirjojen tekstikentän loppua lähestyttäessä ilmennyt hidastelu.
+* Korjattu vanhojen Mobi-kirjojen linkit.
+* Korjattu muita kuin latinalaisia kirjaimia sisältävien RTF-asiakirjojen jäsentäminen.
+* Korjattu virhe, jossa otsikkopalkki ei päivittynyt, kun dokumentti suljettiin Kaikki asiakirjat -valintaikkunasta.
+* Korjattu virhe, jossa Word-asiakirjojen otsikoita ei näytetty oikein, jos niissä käytettiin kielikohtaisia tyylinimiä.
+* Korjattu virhe, jossa kohdistus ei siirtynyt oikein valitulle välilehdelle Paperbackin uudelleenkäynnistyksen jälkeen.
+* Jos tekstiä on valittuna Sanamäärä-valintaikkunaa avattaessa, näkymässä näytetään nyt valittujen sanojen määrä.
+* Luovuttu chmlib-kirjaston käytöstä ja siirrytty omaan, täysin Rust-pohjaiseen CHM-tiedostonlukijaan.
+* .paperback-tiedostoja ei enää ladata työpöytäversiossa pakotetusti asiakirjojen palautuksen yhteydessä. Käyttäjältä pyydetään sen sijaan vahvistus tiedoston löytyessä.
+* Paperback käyttää nyt varavaihtoehtona pelkän tekstin poimimista sellaisista PDF-tiedostoista, , joiden tagit on merkitty virheellisesti.
+* Avaa tiedoston kansio -toiminto siirtää nyt kohdistuksen kyseisen tiedoston kohdalle suoraan tiedostonhallinnassa.
+* Käytössä oleva kieli otetaan nyt huomioon Readme-tiedostoa avattaessa.
+* PowerPoint-esitykset tukevat nyt taulukoita.
+* Valikko päivittyy nyt oikein ja kohdistus siirtyy tekstikenttään, kun ohje avataan Paperbackissa.
+* Readme.html-tiedostoa ei enää lisätä Kaikki asiakirjat -luetteloon, kun se avataan Shift+F1-pikanäppäimellä.
+* Toimimaton AZW3-tuki poistettu.
+* Asiakirjojen poistaminen Viimeisimmät asiakirjat -valintaikkunasta sulkee nyt myös niiden aktiiviset välilehdet.
+* Windowsissa on siirrytty huomattavasti turvallisempaan prosessien välisen viestinnän menetelmään.
+* Päivittäjä näyttää nyt versiotiedoissa oikein Markdown-kooditunnisteiden sisällön.
+* Päivittäjä varmistaa nyt, ettei ladattua tiedostoa ole peukaloitu.
+* Selainnäkymä avautuu nyt suoraan nykyisessä lukukohdassa.
+* Kaikki asiakirjat -valintaikkunan hakusuodatin säilytetään nyt myös asiakirjan poistamisen jälkeen.
+
 ### Versio 0.8.5
 * Lisätty alkeellinen tuki tunnisteita sisältäville PDF-tiedostoille. [#364](https://github.com/trypsynth/paperback/pull/364), [#365](https://github.com/trypsynth/paperback/pull/365).
 * Lisätty sivujen tuki ePub-kirjoille. [#379](https://github.com/trypsynth/paperback/issues/379), [#380](https://github.com/trypsynth/paperback/pull/380).
@@ -188,16 +253,16 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Korjattu lukijan pikavalikko, joka ei avautunut hiiren oikealla painikkeella eikä sovellusnäppäimellä. [#362](https://github.com/trypsynth/paperback/issues/362).
 * Korjattu virhe, jossa kohdistus siirtyi toisinaan väärään asiakirjaan, kun niitä avattiin komentoriviltä.
 * Pelkkiä kuvia sisältävät PDF-tiedostot tunnistetaan taas ja niiden olemassaolosta ilmoitetaan.
-* Kuvien ja kuvioiden välillä on nyt mahdollista liikkua G/Shift+G- ja F/Shift+F-näppäimillä.
+* Kuvien ja kuvitusten välillä on nyt mahdollista liikkua G/Shift+G- ja F/Shift+F-näppäimillä.
 * Paperback noudattaa nyt sovelluksen "Tumma tila" -asetusta.
 * Poistettu DAISY XML -tuki, koska sitä ei enää tarvita.
 * Palattu käyttämään alkuperäistä Win32:n ensimmäisen kirjaimen navigointia sisällysluettelopuussa.
 * Virheenkäsittelyikkuna näyttää nyt yksityiskohtaisempia virheilmoituksia.
-* Verkkonäkymä avautuu nyt paljon nopeammin ja sulavammin. [#359](https://github.com/trypsynth/paperback/pull/359).
+* Selainnäkymä avautuu nyt paljon nopeammin ja sulavammin. [#359](https://github.com/trypsynth/paperback/pull/359).
 
 ### Versio 0.8.2
 * Lisätty sivujen tuki RTF-asiakirjoille.
-* Korjattu virhe, jossa verkkonäkymän avaaminen aktivoi automaattisesti ePubien sisältämät ulkoiset linkit.
+* Korjattu virhe, jossa selainnäkymän avaaminen aktivoi automaattisesti ePubien sisältämät ulkoiset linkit.
 * Korjattu virhe, jossa RTF-jäsennin ei lisännyt joissakin harvinaisissa tapauksissa sanaväliä sanojen väliin.
 * Korjattu kappaleet, jotka jakautuivat useiksi lyhyiksi riveiksi joissakin PDF-asiakirjoissa. [#101](https://github.com/trypsynth/paperback/issues/101), [#355](https://github.com/trypsynth/paperback/pull/355).
 * PDF-asiakirjoissa on nyt perustason linkki- ja otsikkonavigointi. [#291](https://github.com/trypsynth/paperback/issues/291), [#353](https://github.com/trypsynth/paperback/pull/353), [#354](https://github.com/trypsynth/paperback/pull/354).
@@ -224,7 +289,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Lisätty tuki erottimiin siirtymiselle S- ja Shift+S-näppäimillä. [#294](https://github.com/trypsynth/paperback/issues/294).
 * Kaikki yli 300 merkin pituiset siirtymät lisätään nyt automaattisesti navigointihistoriaan. [#179](https://github.com/trypsynth/paperback/issues/179).
 * Korjattu Paperbackin ikkunan palautus järjestelmäpalkista. [#284](https://github.com/trypsynth/paperback/issues/284).
-* Korjattu Markdown-asiakirjojen näyttäminen verkkonäkymässä raakatekstinä renderöidyn HTML:n sijaan.
+* Korjattu Markdown-asiakirjojen näyttäminen selainnäkymässä raakatekstinä renderöidyn HTML:n sijaan.
 * Korjattu Markdown-tiedostojen sisältämien taulukoiden virheellinen renderöinti. [#303](https://github.com/trypsynth/paperback/issues/303).
 * Paperback varoittaa nyt yritettäessä avata pelkkiä kuvia sisältäviä PDF-tiedostoja. [#89](https://github.com/trypsynth/paperback/issues/89).
 * Päivityksiä haettaessa on nyt mahdollista tarkistaa uudet kehitysversiot vakaiden julkaisujen sijaan. [#333](https://github.com/trypsynth/paperback/pull/333).
@@ -235,7 +300,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Sisältöä näyttävän elementin pikavalikossa on nyt lukusovellukselle ominaisia komentoja eikä yleisiä toimintoja, kuten Leikkaa tai Liitä. [#114](https://github.com/trypsynth/paperback/issues/114).
 
 ### Versio 0.7.0
-* Lisätty taulukoiden tuki HTML- ja XHTML-pohjaisille asiakirjoille. Liiku taulukoiden välillä T:llä ja Shift+T:llä ja avaa taulukko verkkonäkymässä painamalla Enter. [#81](https://github.com/trypsynth/paperback/issues/81), [#98](https://github.com/trypsynth/paperback/pull/98), [#226](https://github.com/trypsynth/paperback/pull/226), [#228](https://github.com/trypsynth/paperback/pull/228).
+* Lisätty taulukoiden tuki HTML- ja XHTML-pohjaisille asiakirjoille. Liiku taulukoiden välillä T:llä ja Shift+T:llä ja avaa taulukko selainnäkymässä painamalla Enter. [#81](https://github.com/trypsynth/paperback/issues/81), [#98](https://github.com/trypsynth/paperback/pull/98), [#226](https://github.com/trypsynth/paperback/pull/226), [#228](https://github.com/trypsynth/paperback/pull/228).
 * Lisätty alkeellinen verkkorenderöinti. Avaa asiakirjan nykyinen luku verkkopohjaisessa renderöijässä painamalla Ctrl+Shift+V. Tästä on hyötyä esimerkiksi monimutkaisessa muotoilussa tai koodiesimerkeissä. [#188](https://github.com/trypsynth/paperback/issues/188), [#239](https://github.com/trypsynth/paperback/pull/239).
 * Lisätty venäjänkielinen käännös. Kiitos Ruslan Gulmagomedoville. [#211](https://github.com/trypsynth/paperback/pull/211), [#212](https://github.com/trypsynth/paperback/pull/212).
 * Lisätty "Tyhjennä kaikki" -painike Kaikki asiakirjat -valintaikkunaan. [#217](https://github.com/trypsynth/paperback/issues/217).

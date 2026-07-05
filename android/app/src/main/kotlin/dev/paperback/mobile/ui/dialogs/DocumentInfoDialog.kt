@@ -14,6 +14,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import dev.paperback.mobile.ui.DocumentTabState
 import uniffi.paperback.DocumentStatsFfi
+import dev.paperback.mobile.t
 
 @Composable
 fun DocumentInfoDialog(
@@ -24,7 +25,7 @@ fun DocumentInfoDialog(
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		modifier = Modifier.semantics { paneTitle = "Document Information" },
-		title = { Text("Document Information") },
+		title = { Text(t("Document Information")) },
 		text = {
 			Column(modifier = Modifier.fillMaxWidth()) {
 				if (docState.title.isNotBlank()) {
@@ -80,7 +81,7 @@ fun DocumentInfoDialog(
 		},
 		confirmButton = {
 			TextButton(onClick = onDismiss) {
-				Text("OK")
+				Text(t("OK"))
 			}
 		}
 	)

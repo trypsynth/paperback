@@ -108,28 +108,27 @@ impl MainWindow {
 		let dm = Rc::clone(&doc_manager);
 		let frame_copy = frame;
 		notebook.on_key_down(move |event| {
-			if let wxdragon::event::WindowEventData::Keyboard(key_event) = &event {
-				if let Some(key) = key_event.get_key_code() {
-					if key == KEY_DELETE || key == KEY_NUMPAD_DELETE {
-						let mut dm = dm.lock().unwrap();
-						if let Some(index) = dm.active_tab_index() {
-							dm.close_document(index, true);
-						}
-						update_title_from_manager(&frame_copy, &dm);
-						let has_docs = dm.tab_count() > 0;
-						let has_reopen = dm.has_recently_closed();
-						if has_docs {
-							dm.restore_focus();
-						} else {
-							dm.notebook().set_focus();
-						}
-						drop(dm);
-						menu::update_menu_item_states(&frame_copy, has_docs);
-						menu::update_reopen_state(&frame_copy, has_reopen);
-						event.skip(false);
-						return;
-					}
+			if let wxdragon::event::WindowEventData::Keyboard(key_event) = &event
+				&& let Some(key) = key_event.get_key_code()
+				&& (key == KEY_DELETE || key == KEY_NUMPAD_DELETE)
+			{
+				let mut dm = dm.lock().unwrap();
+				if let Some(index) = dm.active_tab_index() {
+					dm.close_document(index, true);
 				}
+				update_title_from_manager(&frame_copy, &dm);
+				let has_docs = dm.tab_count() > 0;
+				let has_reopen = dm.has_recently_closed();
+				if has_docs {
+					dm.restore_focus();
+				} else {
+					dm.notebook().set_focus();
+				}
+				drop(dm);
+				menu::update_menu_item_states(&frame_copy, has_docs);
+				menu::update_reopen_state(&frame_copy, has_reopen);
+				event.skip(false);
+				return;
 			}
 			event.skip(true);
 		});
@@ -238,6 +237,7 @@ impl MainWindow {
 
 	#[cfg(any(target_os = "linux", target_os = "windows"))]
 	pub fn handle_ipc_command(&self, command: IpcCommand) {
+		tracing::info!(command = ?command, "received IPC command");
 		let mut web_view_dialog = None;
 		crate::ui::dialogs::ACTIVE_WEB_VIEW.with(|v| {
 			web_view_dialog = v.get();
@@ -401,6 +401,7 @@ impl MainWindow {
 			let pre_restore_active = doc_manager.lock().unwrap().active_tab_index();
 			let active_path = config.lock().unwrap().get_app_string("active_document", "");
 			let paths = config.lock().unwrap().get_opened_documents_existing();
+			tracing::info!(count = paths.len(), "restoring previously open documents");
 			for path in paths {
 				let path = Path::new(&path);
 				if !ensure_parser_ready_for_path(&frame, path, &config) {
@@ -434,21 +435,21 @@ impl MainWindow {
 			.with_wildcard(&wildcard)
 			.with_style(FileDialogStyle::Open | FileDialogStyle::FileMustExist)
 			.build();
-		if dialog.show_modal() == wxdragon::id::ID_OK {
-			if let Some(path) = dialog.get_path() {
-				let path = Path::new(&path);
-				if !ensure_parser_ready_for_path(frame, path, config) {
+		if dialog.show_modal() == wxdragon::id::ID_OK
+			&& let Some(path) = dialog.get_path()
+		{
+			let path = Path::new(&path);
+			if !ensure_parser_ready_for_path(frame, path, config) {
+				return;
+			}
+			if doc_manager.lock().unwrap().open_file(doc_manager, path) {
+				let Ok(dm_ref) = doc_manager.try_lock() else {
 					return;
-				}
-				if doc_manager.lock().unwrap().open_file(doc_manager, path) {
-					let Ok(dm_ref) = doc_manager.try_lock() else {
-						return;
-					};
-					update_title_from_manager(frame, &dm_ref);
-					dm_ref.restore_focus();
-					drop(dm_ref);
-					menu::update_menu_item_states(frame, true);
-				}
+				};
+				update_title_from_manager(frame, &dm_ref);
+				dm_ref.restore_focus();
+				drop(dm_ref);
+				menu::update_menu_item_states(frame, true);
 			}
 		}
 	}
@@ -478,6 +479,7 @@ impl MainWindow {
 		let dm_for_timer = Rc::clone(doc_manager);
 		let config_for_timer = Rc::clone(&config);
 		sleep_timer.on_tick(move |_| {
+			tracing::info!("sleep timer fired, closing application");
 			sleep_timer_running_for_tick.set(false);
 			sleep_timer_for_tick.stop();
 			SLEEP_TIMER_START_MS.store(0, Ordering::SeqCst);
@@ -1049,7 +1051,8 @@ impl MainWindow {
 						.build();
 					if dialog.show_modal() == wxdragon::id::ID_OK {
 						if let Some(path) = dialog.get_path() {
-							if tab.session.export_as(&path, paperback_core::export::ExportFormat::Text).is_err() {
+							if let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Text) {
+								tracing::error!(path = %path, error = %e, "failed to export document as text");
 								let dialog =
 									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
 										.with_style(
@@ -1081,7 +1084,8 @@ impl MainWindow {
 						.build();
 					if dialog.show_modal() == wxdragon::id::ID_OK {
 						if let Some(path) = dialog.get_path() {
-							if tab.session.export_as(&path, paperback_core::export::ExportFormat::Html).is_err() {
+							if let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Html) {
+								tracing::error!(path = %path, error = %e, "failed to export document as HTML");
 								let dialog =
 									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
 										.with_style(
@@ -1113,7 +1117,9 @@ impl MainWindow {
 						.build();
 					if dialog.show_modal() == wxdragon::id::ID_OK {
 						if let Some(path) = dialog.get_path() {
-							if tab.session.export_as(&path, paperback_core::export::ExportFormat::Markdown).is_err() {
+							if let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Markdown)
+							{
+								tracing::error!(path = %path, error = %e, "failed to export document as Markdown");
 								let dialog =
 									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
 										.with_style(
@@ -1143,23 +1149,22 @@ impl MainWindow {
 						.with_wildcard(&wildcard)
 						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
 						.build();
-					if dialog.show_modal() == wxdragon::id::ID_OK {
-						if let Some(path) = dialog.get_path() {
-							let path_str = tab.file_path.to_string_lossy();
-							config.lock().unwrap().export_document_settings(&path_str, &path);
-							let dialog = MessageDialog::builder(
-								&frame_copy,
-								&t("Notes and bookmarks exported successfully."),
-								&t("Export Successful"),
-							)
-							.with_style(
-								MessageDialogStyle::OK
-									| MessageDialogStyle::IconInformation
-									| MessageDialogStyle::Centre,
-							)
-							.build();
-							dialog.show_modal();
-						}
+					if dialog.show_modal() == wxdragon::id::ID_OK
+						&& let Some(path) = dialog.get_path()
+					{
+						let path_str = tab.file_path.to_string_lossy();
+						config.lock().unwrap().export_document_settings(&path_str, &path);
+						tracing::info!(doc = %tab.file_path.display(), export = %path, "document data exported");
+						let dialog = MessageDialog::builder(
+							&frame_copy,
+							&t("Notes and bookmarks exported successfully."),
+							&t("Export Successful"),
+						)
+						.with_style(
+							MessageDialogStyle::OK | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre,
+						)
+						.build();
+						dialog.show_modal();
 					}
 				}
 				menu_ids::IMPORT_DOCUMENT_DATA => {
@@ -1175,32 +1180,31 @@ impl MainWindow {
 						.with_wildcard(&wildcard)
 						.with_style(FileDialogStyle::Open | FileDialogStyle::FileMustExist)
 						.build();
-					if dialog.show_modal() == wxdragon::id::ID_OK {
-						if let Some(path) = dialog.get_path() {
-							let path_str = tab.file_path.to_string_lossy();
-							let pos = {
-								let config = config.lock().unwrap();
-								config.import_settings_from_file(&path_str, &path);
-								let max_pos = tab.text_ctrl.get_last_position();
-								config.get_validated_document_position(&path_str, max_pos)
-							};
-							if pos >= 0 {
-								tab.text_ctrl.set_insertion_point(pos);
-								tab.text_ctrl.show_position(pos);
-							}
-							let dialog = MessageDialog::builder(
-								&frame_copy,
-								&t("Notes and bookmarks imported successfully."),
-								&t("Import Successful"),
-							)
-							.with_style(
-								MessageDialogStyle::OK
-									| MessageDialogStyle::IconInformation
-									| MessageDialogStyle::Centre,
-							)
-							.build();
-							dialog.show_modal();
+					if dialog.show_modal() == wxdragon::id::ID_OK
+						&& let Some(path) = dialog.get_path()
+					{
+						let path_str = tab.file_path.to_string_lossy();
+						let pos = {
+							let config = config.lock().unwrap();
+							config.import_settings_from_file(&path_str, &path);
+							let max_pos = tab.text_ctrl.get_last_position();
+							config.get_validated_document_position(&path_str, max_pos)
+						};
+						tracing::info!(doc = %tab.file_path.display(), import = %path, "document data imported");
+						if pos >= 0 {
+							tab.text_ctrl.set_insertion_point(pos);
+							tab.text_ctrl.show_position(pos);
 						}
+						let dialog = MessageDialog::builder(
+							&frame_copy,
+							&t("Notes and bookmarks imported successfully."),
+							&t("Import Successful"),
+						)
+						.with_style(
+							MessageDialogStyle::OK | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre,
+						)
+						.build();
+						dialog.show_modal();
 					}
 				}
 				menu_ids::WORD_COUNT => {
@@ -1311,6 +1315,7 @@ impl MainWindow {
 							})),
 						);
 					} else {
+						tracing::warn!(path = %tab.file_path.display(), "could not determine web view content");
 						let dialog = MessageDialog::builder(
 							&frame_copy,
 							&t("Could not determine content to display in Web View."),
@@ -1321,8 +1326,8 @@ impl MainWindow {
 						dialog.show_modal();
 					}
 				}
-				menu_ids::OPEN_CONTAINING_FOLDER => {
-					help::handle_open_containing_folder(&frame_copy, &dm);
+				menu_ids::REVEAL_FILE_IN_FOLDER => {
+					help::handle_reveal_file_in_folder(&frame_copy, &dm);
 				}
 				menu_ids::VIEW_SOURCE => {
 					// `None` => format has no text source; `Some(None)` => source could not
@@ -1361,8 +1366,10 @@ impl MainWindow {
 						}
 						unavailable => {
 							let message = if unavailable.is_none() {
+								tracing::debug!("source view not available for this format");
 								t("Source view is not available for this document format.")
 							} else {
+								tracing::warn!("failed to load document source for view source");
 								t("Could not load the document source.")
 							};
 							let dialog = MessageDialog::builder(&frame_copy, &message, &t("Error"))
@@ -1385,6 +1392,7 @@ impl MainWindow {
 					};
 					let (
 						old_word_wrap,
+						old_render_tables_inline,
 						old_compact_menu,
 						old_readability_font,
 						old_line_spacing,
@@ -1396,6 +1404,7 @@ impl MainWindow {
 						let cfg = config.lock().unwrap();
 						(
 							cfg.get_app_bool("word_wrap", false),
+							cfg.get_app_bool("render_tables_inline", true),
 							cfg.get_app_bool("compact_go_menu", true),
 							cfg.get_readability_font(),
 							cfg.get_line_spacing(),
@@ -1408,6 +1417,7 @@ impl MainWindow {
 					let cfg = config.lock().unwrap();
 					cfg.set_app_bool("restore_previous_documents", options.restore_previous_documents);
 					cfg.set_app_bool("word_wrap", options.word_wrap);
+					cfg.set_app_bool("render_tables_inline", options.render_tables_inline);
 					cfg.set_app_bool("minimize_to_tray", options.minimize_to_tray);
 					cfg.set_app_bool("start_maximized", options.start_maximized);
 					cfg.set_app_bool("compact_go_menu", options.compact_go_menu);
@@ -1426,12 +1436,15 @@ impl MainWindow {
 					cfg.set_letter_spacing(options.letter_spacing);
 					cfg.set_paragraph_spacing(options.paragraph_spacing);
 					cfg.flush();
+					tracing::info!("settings saved");
 					#[cfg(target_os = "windows")]
 					{
 						re_register_hotkey(&hotkey_handle_for_options, &options.hotkey);
 					}
 					drop(cfg);
 					let options_word_wrap = options.word_wrap;
+					let options_render_tables_inline = options.render_tables_inline;
+					let render_tables_inline_changed = old_render_tables_inline != options_render_tables_inline;
 					let font_changed = old_readability_font != options.readability_font;
 					let line_spacing_changed = old_line_spacing != options.line_spacing;
 					let bg_color_changed = old_bg_color != options.bg_color;
@@ -1471,6 +1484,10 @@ impl MainWindow {
 							dm_ref.apply_paragraph_spacing(options.paragraph_spacing);
 						}
 					}
+					if render_tables_inline_changed {
+						let mut dm_ref = dm.lock().unwrap();
+						dm_ref.apply_render_tables_inline(options_render_tables_inline);
+					}
 					let options_compact_menu = options.compact_go_menu;
 					if current_language != options.language || old_compact_menu != options_compact_menu {
 						if current_language != options.language {
@@ -1496,6 +1513,7 @@ impl MainWindow {
 						sleep_timer_duration_for_menu.set(0);
 						SLEEP_TIMER_START_MS.store(0, Ordering::SeqCst);
 						SLEEP_TIMER_DURATION_MINUTES.store(0, Ordering::SeqCst);
+						tracing::info!("sleep timer cancelled");
 						let dm_ref = dm.lock().unwrap();
 						update_title_from_manager(&frame_copy, &dm_ref);
 						live_region::announce(live_region_label, &t("Sleep timer cancelled."));
@@ -1511,6 +1529,7 @@ impl MainWindow {
 						let duration_ms = u64::try_from(duration).unwrap_or(0) * 60 * 1000;
 						sleep_timer_for_menu.start(i32::try_from(duration_ms).unwrap_or(i32::MAX), true);
 						sleep_timer_running_for_menu.set(true);
+						tracing::info!(duration_minutes = duration, "sleep timer started");
 						let now = SystemTime::now()
 							.duration_since(UNIX_EPOCH)
 							.ok()
@@ -1562,24 +1581,24 @@ impl MainWindow {
 							let config_guard = config.lock().unwrap();
 							menu::recent_documents_for_menu(&config_guard)
 						};
-						if let Ok(doc_index) = usize::try_from(doc_index) {
-							if let Some(path) = recent_docs.get(doc_index) {
-								let path = Path::new(path);
-								if !ensure_parser_ready_for_path(&frame_copy, path, &config) {
-									return;
+						if let Ok(doc_index) = usize::try_from(doc_index)
+							&& let Some(path) = recent_docs.get(doc_index)
+						{
+							let path = Path::new(path);
+							if !ensure_parser_ready_for_path(&frame_copy, path, &config) {
+								return;
+							}
+							if dm.lock().unwrap().open_file(&dm, path) {
+								{
+									let dm_ref = dm.lock().unwrap();
+									update_title_from_manager(&frame_copy, &dm_ref);
+									dm_ref.restore_focus();
 								}
-								if dm.lock().unwrap().open_file(&dm, path) {
-									{
-										let dm_ref = dm.lock().unwrap();
-										update_title_from_manager(&frame_copy, &dm_ref);
-										dm_ref.restore_focus();
-									}
-									let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
-									frame_copy.set_menu_bar(menu_bar);
-									menu::update_menu_item_states(&frame_copy, true);
-									let has_reopen = dm.lock().unwrap().has_recently_closed();
-									menu::update_reopen_state(&frame_copy, has_reopen);
-								}
+								let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
+								frame_copy.set_menu_bar(menu_bar);
+								menu::update_menu_item_states(&frame_copy, true);
+								let has_reopen = dm.lock().unwrap().has_recently_closed();
+								menu::update_reopen_state(&frame_copy, has_reopen);
 							}
 						}
 					} else if id == menu_ids::SHOW_ALL_DOCUMENTS {
@@ -1772,13 +1791,13 @@ mod tests {
 }
 
 #[cfg(target_os = "windows")]
-pub(crate) struct HotkeyHandle {
+pub struct HotkeyHandle {
 	pub(crate) thread_id: u32,
 	pub(crate) join_handle: std::thread::JoinHandle<()>,
 }
 
 #[cfg(target_os = "windows")]
-pub(crate) fn start_hotkey_listener(hotkey: &paperback_core::config::HotkeyConfig) -> Option<HotkeyHandle> {
+pub fn start_hotkey_listener(hotkey: &paperback_core::config::HotkeyConfig) -> Option<HotkeyHandle> {
 	use windows::Win32::{
 		System::Threading::GetCurrentThreadId,
 		UI::{

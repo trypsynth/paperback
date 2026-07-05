@@ -17,7 +17,7 @@ struct ReaderView: View {
 				Color.black
 					.ignoresSafeArea()
 					.onTapGesture { isScreenDimmed = false }
-					.accessibilityLabel("Screen dimmed by sleep timer. Tap to wake.")
+					.accessibilityLabel(t("Screen dimmed by sleep timer. Tap to wake."))
 			}
 		}
 		.safeAreaInset(edge: .top, spacing: 0) {
@@ -50,8 +50,8 @@ struct ReaderView: View {
 		.sheet(isPresented: $viewModel.showRecents) {
 			RecentDocumentsSheet().environmentObject(viewModel)
 		}
-		.alert("Word Count", isPresented: $viewModel.showWordCount) {
-			Button("OK", role: .cancel) { }
+		.alert(t("Word Count"), isPresented: $viewModel.showWordCount) {
+			Button(t("OK"), role: .cancel) { }
 		} message: {
 			if let stats = viewModel.activeSession?.getStatsFfi() {
 				Text("This document contains \(stats.wordCount.formatted()) words.")
@@ -82,11 +82,11 @@ struct ReaderView: View {
 			guard case .success(let urls) = result, let url = urls.first else { return }
 			viewModel.openDocument(url: url)
 		}
-		.alert("Open Error", isPresented: Binding(
+		.alert(t("Open Error"), isPresented: Binding(
 			get: { viewModel.debugMessage != nil },
 			set: { if !$0 { viewModel.debugMessage = nil } }
 		)) {
-			Button("OK") { viewModel.debugMessage = nil }
+			Button(t("OK")) { viewModel.debugMessage = nil }
 		} message: {
 			Text(viewModel.debugMessage ?? "")
 		}
@@ -130,7 +130,7 @@ struct ReaderView: View {
 			Button { showFilePicker = true } label: {
 				Image(systemName: "folder")
 			}
-			.accessibilityLabel("Open document")
+			.accessibilityLabel(t("Open document"))
 			if viewModel.activeTab != nil {
 				DocumentMenu().environmentObject(viewModel)
 			}

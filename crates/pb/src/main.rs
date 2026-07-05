@@ -26,11 +26,17 @@ fn main() -> Result<()> {
 			.with_context(|| format!("failed to convert {}", cli.input.display()))?;
 		return match cli.output {
 			Some(path) => fs::write(&path, &html).with_context(|| format!("failed to write {}", path.display())),
-			None => Ok(print!("{html}")),
+			None => {
+				print!("{html}");
+				Ok(())
+			}
 		};
 	}
 
-	let mut context = ParserContext { file_path, password: cli.password, forced_extension: None };
+	let mut context = ParserContext::new(file_path).with_render_tables_inline(true);
+	if let Some(password) = cli.password {
+		context = context.with_password(password);
+	}
 	let doc = match parse_document(&context) {
 		Ok(doc) => doc,
 		Err(e) if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) => {
@@ -68,7 +74,10 @@ fn main() -> Result<()> {
 			}
 			.with_context(|| format!("failed to write {}", path.display()))
 		}
-		None => Ok(print!("{result}")),
+		None => {
+			print!("{result}");
+			Ok(())
+		}
 	}
 }
 

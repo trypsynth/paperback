@@ -61,13 +61,14 @@ impl Parser for WordParser {
 			},
 			|ext| ext.to_ascii_lowercase(),
 		);
+		let render_tables_inline = context.render_tables_inline;
 		if extension == "zip" {
-			return parse_word_zip(context);
+			return parse_word_zip(context, render_tables_inline);
 		}
 		if extension == "doc" {
 			match parse_legacy_doc(context) {
 				Ok(document) => return Ok(document),
-				Err(legacy_err) => match parse_ooxml_doc(context) {
+				Err(legacy_err) => match parse_ooxml_doc(context, render_tables_inline) {
 					Ok(document) => return Ok(document),
 					Err(ooxml_err) => {
 						if let Ok(document) = parse_text_like_doc(context) {
@@ -80,11 +81,11 @@ impl Parser for WordParser {
 				},
 			}
 		}
-		parse_ooxml_doc(context)
+		parse_ooxml_doc(context, render_tables_inline)
 	}
 }
 
-fn parse_word_zip(context: &ParserContext) -> Result<Document> {
+fn parse_word_zip(context: &ParserContext, render_tables_inline: bool) -> Result<Document> {
 	let file =
 		File::open(&context.file_path).with_context(|| format!("Failed to open ZIP file '{}'", context.file_path))?;
 	let mut archive = ZipArchive::new(BufReader::new(file))
@@ -117,8 +118,14 @@ fn parse_word_zip(context: &ParserContext) -> Result<Document> {
 		let mut inner_archive = ZipArchive::new(Cursor::new(inner_file_data))
 			.with_context(|| format!("Failed to parse inner DOCX '{docx_name}' as zip"))?;
 
-		parse_ooxml_from_archive(&mut inner_archive, &mut buffer, &mut id_positions, &mut headings)
-			.with_context(|| format!("Failed to parse DOCX contents of '{docx_name}'"))?;
+		parse_ooxml_from_archive(
+			&mut inner_archive,
+			&mut buffer,
+			&mut id_positions,
+			&mut headings,
+			render_tables_inline,
+		)
+		.with_context(|| format!("Failed to parse DOCX contents of '{docx_name}'"))?;
 	}
 
 	let title = extract_title_from_path(&context.file_path);
@@ -130,14 +137,14 @@ fn parse_word_zip(context: &ParserContext) -> Result<Document> {
 	Ok(document)
 }
 
-fn parse_ooxml_doc(context: &ParserContext) -> Result<Document> {
+fn parse_ooxml_doc(context: &ParserContext, render_tables_inline: bool) -> Result<Document> {
 	let bytes = load_ooxml_bytes(&context.file_path, context.password.as_deref())?;
 	let mut archive = ZipArchive::new(Cursor::new(bytes))
 		.with_context(|| format!("Failed to read DOCX as zip '{}'", context.file_path))?;
 	let mut buffer = DocumentBuffer::new();
 	let mut id_positions = HashMap::new();
 	let mut headings = Vec::new();
-	parse_ooxml_from_archive(&mut archive, &mut buffer, &mut id_positions, &mut headings)?;
+	parse_ooxml_from_archive(&mut archive, &mut buffer, &mut id_positions, &mut headings, render_tables_inline)?;
 	let title = extract_title_from_path(&context.file_path);
 	let toc_items = build_toc_from_buffer(&buffer);
 	let mut document = Document::new().with_title(title);
@@ -160,12 +167,13 @@ pub fn parse_ooxml_from_archive<R: std::io::Read + std::io::Seek>(
 	buffer: &mut DocumentBuffer,
 	id_positions: &mut HashMap<String, usize>,
 	headings: &mut Vec<HeadingInfo>,
+	render_tables_inline: bool,
 ) -> Result<()> {
 	let style_heading_map = build_style_heading_map(archive);
 	let rels = read_ooxml_relationships(archive, "word/_rels/document.xml.rels");
 	let doc_content = read_zip_entry_by_name(archive, "word/document.xml")?;
 	let doc_xml = XmlDocument::parse(&doc_content).context("Failed to parse word/document.xml")?;
-	traverse(doc_xml.root(), buffer, headings, id_positions, &rels, &style_heading_map);
+	traverse(doc_xml.root(), buffer, headings, id_positions, &rels, &style_heading_map, render_tables_inline);
 	Ok(())
 }
 
@@ -194,25 +202,23 @@ fn build_style_heading_map<R: std::io::Read + std::io::Seek>(archive: &mut zip::
 				"name" => {
 					if let Some(val) = child.attribute("val") {
 						let lower = val.to_lowercase();
-						if lower.starts_with("heading") {
-							if let Some(n) = extract_number_from_string(val) {
-								if n > 0 && n <= 9 {
-									heading_level = Some(n);
-								}
-							}
+						if lower.starts_with("heading")
+							&& let Some(n) = extract_number_from_string(val)
+							&& n > 0 && n <= 9
+						{
+							heading_level = Some(n);
 						}
 					}
 				}
 				"pPr" if heading_level.is_none() => {
 					for ppr_child in child.children() {
-						if ppr_child.node_type() == NodeType::Element && ppr_child.tag_name().name() == "outlineLvl" {
-							if let Some(val) = ppr_child.attribute("val") {
-								if let Ok(n) = val.parse::<i32>() {
-									if n >= 0 && n < 9 {
-										heading_level = Some(n + 1);
-									}
-								}
-							}
+						if ppr_child.node_type() == NodeType::Element
+							&& ppr_child.tag_name().name() == "outlineLvl"
+							&& let Some(val) = ppr_child.attribute("val")
+							&& let Ok(n) = val.parse::<i32>()
+							&& (0..9).contains(&n)
+						{
+							heading_level = Some(n + 1);
 						}
 					}
 				}
@@ -515,6 +521,7 @@ fn traverse(
 	id_positions: &mut HashMap<String, usize>,
 	rels: &HashMap<String, String>,
 	style_heading_map: &HashMap<String, i32>,
+	render_tables_inline: bool,
 ) {
 	if node.node_type() == NodeType::Element {
 		let tag_name = node.tag_name().name();
@@ -525,26 +532,28 @@ fn traverse(
 			process_paragraph(node, buffer, headings, id_positions, rels, style_heading_map);
 			return;
 		} else if tag_name == "tbl" {
-			process_table(node, buffer, rels);
+			process_table(node, buffer, rels, render_tables_inline);
 			return;
 		}
 	}
 	for child in node.children() {
-		traverse(child, buffer, headings, id_positions, rels, style_heading_map);
+		traverse(child, buffer, headings, id_positions, rels, style_heading_map, render_tables_inline);
 	}
 }
 
-fn process_table(element: Node, buffer: &mut DocumentBuffer, _rels: &HashMap<String, String>) {
+fn process_table(
+	element: Node,
+	buffer: &mut DocumentBuffer,
+	_rels: &HashMap<String, String>,
+	render_tables_inline: bool,
+) {
 	let table_start = buffer.current_position();
-	let mut html_content = String::from("<table border=\"1\">");
-	let mut table_caption = String::from("table: ");
-	let mut first_row = true;
+	let mut rows: Vec<Vec<String>> = Vec::new();
 	for child in element.children() {
 		if child.node_type() == NodeType::Element && child.tag_name().name() == "tr" {
-			html_content.push_str("<tr>");
+			let mut cells: Vec<String> = Vec::new();
 			for tc in child.children() {
 				if tc.node_type() == NodeType::Element && tc.tag_name().name() == "tc" {
-					html_content.push_str("<td>");
 					let mut cell_text = String::new();
 					for p in tc.children() {
 						if p.node_type() == NodeType::Element && p.tag_name().name() == "p" {
@@ -556,28 +565,26 @@ fn process_table(element: Node, buffer: &mut DocumentBuffer, _rels: &HashMap<Str
 							cell_text.push(' ');
 						}
 					}
-					let trimmed_cell = cell_text.trim();
-					html_content.push_str(trimmed_cell);
-					html_content.push_str("</td>");
-					if first_row {
-						table_caption.push_str(trimmed_cell);
-						table_caption.push(' ');
-					}
+					cells.push(cell_text.trim().to_string());
 				}
 			}
-			html_content.push_str("</tr>");
-			first_row = false;
+			rows.push(cells);
 		}
 	}
-	html_content.push_str("</table>");
-	let final_caption = table_caption.trim().to_string();
-	buffer.append(&final_caption);
+	let html_content = crate::parser::table_text::build_html_table_from_grid(&rows);
+	// Derive the caption the same way HTML/XML do (first-row text, no prefix) for consistent
+	// labels across formats; fall back to "table" for an empty table like `table_caption_from_tsv`.
+	let final_caption =
+		crate::parser::table_text::table_caption_from_html(&html_content).unwrap_or_else(|| "table".to_string());
+	let display_text = crate::parser::table_text::html_table_to_display(&html_content, render_tables_inline);
+	buffer.append(&display_text);
 	buffer.append("\n");
+	let display_len = buffer.current_position() - table_start;
 	buffer.add_marker(
 		Marker::new(MarkerType::Table, table_start)
-			.with_text(final_caption.clone())
+			.with_text(final_caption)
 			.with_reference(html_content)
-			.with_length(final_caption.len()),
+			.with_length(display_len),
 	);
 }
 
@@ -610,27 +617,26 @@ fn process_paragraph(
 		} else if tag_name == "hyperlink" {
 			process_hyperlink(child, &mut paragraph_text, buffer, rels, paragraph_start);
 		} else if tag_name == "r" {
-			if heading_level == 0 {
-				if let Some(rpr_node) = find_child_element(child, "rPr") {
-					heading_level = get_run_heading_level(rpr_node);
-				}
+			if heading_level == 0
+				&& let Some(rpr_node) = find_child_element(child, "rPr")
+			{
+				heading_level = get_run_heading_level(rpr_node);
 			}
-			if let Some(instr_text_node) = find_child_element(child, "instrText") {
-				if let Some(instruction) = instr_text_node.text() {
-					if instruction.contains("HYPERLINK") {
-						let link_target = parse_hyperlink_instruction(instruction);
-						if !link_target.is_empty() {
-							let (display_text, _) = extract_field_display_text(element, child);
-							if !display_text.is_empty() {
-								let link_offset = paragraph_start + paragraph_text.len();
-								paragraph_text.push_str(&display_text);
-								buffer.add_marker(
-									Marker::new(MarkerType::Link, link_offset)
-										.with_text(display_text.clone())
-										.with_reference(link_target),
-								);
-							}
-						}
+			if let Some(instr_text_node) = find_child_element(child, "instrText")
+				&& let Some(instruction) = instr_text_node.text()
+				&& instruction.contains("HYPERLINK")
+			{
+				let link_target = parse_hyperlink_instruction(instruction);
+				if !link_target.is_empty() {
+					let (display_text, _) = extract_field_display_text(element, child);
+					if !display_text.is_empty() {
+						let link_offset = paragraph_start + paragraph_text.len();
+						paragraph_text.push_str(&display_text);
+						buffer.add_marker(
+							Marker::new(MarkerType::Link, link_offset)
+								.with_text(display_text.clone())
+								.with_reference(link_target),
+						);
 					}
 				}
 			}
@@ -698,23 +704,22 @@ fn get_paragraph_heading_level(pr_element: Node, style_heading_map: &HashMap<Str
 			if let Some(style) = child.attribute("val") {
 				let style_lower = style.to_lowercase();
 				if style_lower.starts_with("heading") {
-					if let Some(level) = extract_number_from_string(style) {
-						if level > 0 && level <= MAX_HEADING_LEVEL {
-							return level;
-						}
+					if let Some(level) = extract_number_from_string(style)
+						&& level > 0 && level <= MAX_HEADING_LEVEL
+					{
+						return level;
 					}
 				} else if let Some(&level) = style_heading_map.get(style) {
 					return level;
 				}
 			}
-		} else if tag_name == "outlineLvl" {
-			if let Some(level_str) = child.attribute("val") {
-				if let Ok(level) = level_str.parse::<i32>() {
-					let actual_level = level + 1;
-					if actual_level > 0 && actual_level <= MAX_HEADING_LEVEL {
-						return actual_level;
-					}
-				}
+		} else if tag_name == "outlineLvl"
+			&& let Some(level_str) = child.attribute("val")
+			&& let Ok(level) = level_str.parse::<i32>()
+		{
+			let actual_level = level + 1;
+			if actual_level > 0 && actual_level <= MAX_HEADING_LEVEL {
+				return actual_level;
 			}
 		}
 	}
@@ -723,16 +728,17 @@ fn get_paragraph_heading_level(pr_element: Node, style_heading_map: &HashMap<Str
 
 fn get_run_heading_level(rpr_element: Node) -> i32 {
 	const MAX_HEADING_LEVEL: i32 = 9;
-	if let Some(rstyle_node) = find_child_element(rpr_element, "rStyle") {
-		if let Some(style) = rstyle_node.attribute("val") {
-			let style_lower = style.to_lowercase();
-			if style_lower.starts_with("heading") && style_lower.ends_with("char") {
-				if let Some(level) = extract_number_from_string(style) {
-					if level > 0 && level <= MAX_HEADING_LEVEL {
-						return level;
-					}
-				}
-			}
+	if let Some(rstyle_node) = find_child_element(rpr_element, "rStyle")
+		&& let Some(style) = rstyle_node.attribute("val")
+	{
+		let style_lower = style.to_lowercase();
+		if style_lower.starts_with("heading")
+			&& style_lower.ends_with("char")
+			&& let Some(level) = extract_number_from_string(style)
+			&& level > 0
+			&& level <= MAX_HEADING_LEVEL
+		{
+			return level;
 		}
 	}
 	0
@@ -767,14 +773,14 @@ fn extract_heading_text(paragraph: Node, heading_level: i32) -> String {
 fn parse_hyperlink_instruction(instruction: &str) -> String {
 	let first_quote = instruction.find('"');
 	let last_quote = instruction.rfind('"');
-	if let (Some(first), Some(last)) = (first_quote, last_quote) {
-		if first != last {
-			let target = &instruction[first + 1..last];
-			if instruction.contains("\\l") {
-				return format!("#{target}");
-			}
-			return target.to_string();
+	if let (Some(first), Some(last)) = (first_quote, last_quote)
+		&& first != last
+	{
+		let target = &instruction[first + 1..last];
+		if instruction.contains("\\l") {
+			return format!("#{target}");
 		}
+		return target.to_string();
 	}
 	String::new()
 }
@@ -843,7 +849,12 @@ pub fn try_decrypt_office_file(path: &str, password: Option<&str>) -> Result<Opt
 
 #[cfg(test)]
 mod tests {
-	use super::{looks_like_text_content, normalize_doc_text, parse_doc_clx, parse_doc_piece_table};
+	use std::collections::HashMap;
+
+	use roxmltree::Document as XmlDocument;
+
+	use super::{looks_like_text_content, normalize_doc_text, parse_doc_clx, parse_doc_piece_table, traverse};
+	use crate::document::{DocumentBuffer, MarkerType};
 
 	#[test]
 	fn parse_doc_piece_table_extracts_ansi_text() {
@@ -889,5 +900,45 @@ mod tests {
 	fn looks_like_text_content_detects_textual_data() {
 		assert!(looks_like_text_content("Manual Title\nLine 2\nLine 3"));
 		assert!(!looks_like_text_content("\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}"));
+	}
+
+	/// Parse a Word table. The second cell contains U+1D11E (MUSICAL SYMBOL G CLEF, non-BMP,
+	/// UTF-16 width 2) to lock the display-unit arithmetic. OFF mode emits the placeholder; ON mode
+	/// emits the full TSV. In both cases the Table marker keeps the caption as text and its length
+	/// equals the emitted display extent.
+	#[test]
+	fn word_table_emits_placeholder_or_tsv_by_flag() {
+		use crate::util::text::display_len;
+		// Minimal OOXML XML: one table with one row, two cells.
+		let xml = r#"<document><body>
+			<tbl>
+				<tr>
+					<tc><p><r><t>Kop</t></r></p></tc>
+					<tc><p><r><t>&#x1D11E;</t></r></p></tc>
+				</tr>
+			</tbl>
+		</body></document>"#;
+		let xml_doc = XmlDocument::parse(xml).expect("valid xml");
+
+		// OFF: placeholder "[Table]: Kop 𝄞".
+		let mut buffer = DocumentBuffer::new();
+		let mut headings = Vec::new();
+		let mut id_positions = HashMap::new();
+		let rels = HashMap::new();
+		traverse(xml_doc.root(), &mut buffer, &mut headings, &mut id_positions, &rels, &HashMap::new(), false);
+		assert_eq!(buffer.content, "[Table]: Kop \u{1D11E}\n");
+		let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
+		assert_eq!(table_marker.text, "Kop \u{1D11E}", "marker caption is the first-row text, no prefix");
+		assert_eq!(table_marker.length, display_len("[Table]: Kop \u{1D11E}") + 1, "marker length in display units");
+		assert!(table_marker.reference.contains("<td>Kop</td>"), "marker reference is the table HTML");
+
+		// ON: full TSV "Kop\t𝄞".
+		let mut buffer = DocumentBuffer::new();
+		let mut headings = Vec::new();
+		let mut id_positions = HashMap::new();
+		traverse(xml_doc.root(), &mut buffer, &mut headings, &mut id_positions, &rels, &HashMap::new(), true);
+		assert_eq!(buffer.content, "Kop\t\u{1D11E}\n");
+		let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
+		assert_eq!(table_marker.length, display_len("Kop\t\u{1D11E}") + 1, "marker length spans the TSV");
 	}
 }

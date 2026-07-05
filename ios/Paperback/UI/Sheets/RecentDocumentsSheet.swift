@@ -10,12 +10,12 @@ struct RecentDocumentsSheet: View {
 				if viewModel.recentDocuments.isEmpty {
 					if #available(iOS 17, *) {
 						ContentUnavailableView(
-							"No Recent Documents",
+							t("No Recent Documents"),
 							systemImage: "clock",
-							description: Text("Documents you open will appear here.")
+							description: Text(t("Documents you open will appear here."))
 						)
 					} else {
-						Text("No Recent Documents")
+						Text(t("No Recent Documents"))
 							.foregroundStyle(.secondary)
 							.frame(maxWidth: .infinity, maxHeight: .infinity)
 					}
@@ -39,18 +39,18 @@ struct RecentDocumentsSheet: View {
 								Button(role: .destructive) {
 									viewModel.removeRecentDocument(url: doc.url)
 								} label: {
-									Label("Remove", systemImage: "trash")
+									Label(t("Remove"), systemImage: "trash")
 								}
 							}
 						}
 					}
 				}
 			}
-			.navigationTitle("Recent Documents")
+			.navigationTitle(t("Recent Documents"))
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .confirmationAction) {
-					Button("Done") { dismiss() }
+					Button(t("Done")) { dismiss() }
 				}
 			}
 		}

@@ -12,7 +12,7 @@ struct EmptyStateView: View {
 				.foregroundStyle(.secondary)
 				.padding(.bottom, 16)
 				.accessibilityHidden(true)
-			Text("No document open")
+			Text(t("No document open"))
 				.font(.title2)
 				.foregroundStyle(.secondary)
 			Spacer()
@@ -26,12 +26,12 @@ struct EmptyStateView: View {
 	private var recentList: some View {
 		VStack(alignment: .leading, spacing: 0) {
 			HStack {
-				Text("Recent")
+				Text(t("Recent"))
 					.font(.headline)
 					.padding(.horizontal)
 					.padding(.top, 12)
 				Spacer()
-				Button("All") { viewModel.showRecents = true }
+				Button(t("All")) { viewModel.showRecents = true }
 					.padding(.horizontal)
 					.padding(.top, 12)
 			}

@@ -40,6 +40,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import uniffi.paperback.HeadingTreeFfi
 import uniffi.paperback.LinkListFfi
+import dev.paperback.mobile.t
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,7 +59,7 @@ fun ElementsDialog(
 			color = MaterialTheme.colorScheme.background
 		) {
 			var selectedTabIndex by remember { mutableIntStateOf(0) }
-			val tabs = listOf("Headings", "Links")
+			val tabs = listOf(t("Headings"), t("Links"))
 
 			Column(modifier = Modifier.fillMaxSize()) {
 				PrimaryTabRow(selectedTabIndex = selectedTabIndex) {
@@ -103,7 +104,7 @@ fun ElementsDialog(
 							val hasChildren = originalIndex + 1 < items.size && levels[originalIndex + 1] > level
 							val isExpanded = expandedHeadingIndices.contains(originalIndex)
 							val paddingLeft = (16 + (level * 16)).dp
-							
+
 							Row(
 								modifier = Modifier
 									.fillMaxWidth()
@@ -113,10 +114,10 @@ fun ElementsDialog(
 									}
 									.semantics(mergeDescendants = true) {
 										if (hasChildren) {
-											stateDescription = if (isExpanded) "Expanded" else "Collapsed"
+											stateDescription = if (isExpanded) t("Expanded") else t("Collapsed")
 											customActions = listOf(
 												CustomAccessibilityAction(
-													label = if (isExpanded) "Collapse" else "Expand",
+													label = if (isExpanded) t("Collapse") else t("Expand"),
 													action = {
 														expandedHeadingIndices = if (isExpanded) {
 															expandedHeadingIndices - originalIndex
@@ -157,7 +158,7 @@ fun ElementsDialog(
 									Spacer(modifier = Modifier.width(36.dp))
 								}
 								Text(
-									text = "${item.text.ifBlank { "Untitled" }}, Level ${level + 1}",
+									text = "${item.text.ifBlank { t("Untitled") }}, Level ${level + 1}",
 									modifier = Modifier.weight(1f).padding(start = 8.dp)
 								)
 							}
@@ -176,7 +177,7 @@ fun ElementsDialog(
 										}
 										.padding(16.dp)
 								) {
-									Text(text = item.text.ifBlank { "Untitled Link" })
+									Text(text = item.text.ifBlank { t("Untitled Link") })
 								}
 							}
 						}

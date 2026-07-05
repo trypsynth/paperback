@@ -13,39 +13,39 @@ struct FindSheet: View {
 		NavigationStack {
 			Form {
 				Section {
-					TextField("Search…", text: $query)
+					TextField(t("Search…"), text: $query)
 						.autocorrectionDisabled()
 						.textInputAutocapitalization(.never)
 						.focused($queryFocused)
 						.onSubmit { search() }
 				}
-				Section("Options") {
-					Toggle("Match Case", isOn: $matchCase)
-					Toggle("Whole Word", isOn: $wholeWord)
-					Toggle("Regular Expression", isOn: $useRegex)
+				Section(t("Options")) {
+					Toggle(t("Match Case"), isOn: $matchCase)
+					Toggle(t("Whole Word"), isOn: $wholeWord)
+					Toggle(t("Regular Expression"), isOn: $useRegex)
 				}
 				if viewModel.activeSearchQuery != nil {
 					Section {
 						Button { viewModel.findPrev() } label: {
-							Label("Previous result", systemImage: "chevron.up")
+							Label(t("Previous result"), systemImage: "chevron.up")
 						}
 						Button { viewModel.findNext() } label: {
-							Label("Next result", systemImage: "chevron.down")
+							Label(t("Next result"), systemImage: "chevron.down")
 						}
 					}
 				}
 			}
-			.navigationTitle("Find")
+			.navigationTitle(t("Find"))
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) {
-					Button("Cancel") {
+					Button(t("Cancel")) {
 						viewModel.clearSearch()
 						dismiss()
 					}
 				}
 				ToolbarItem(placement: .confirmationAction) {
-					Button("Search") { search() }
+					Button(t("Search")) { search() }
 						.disabled(query.trimmingCharacters(in: .whitespaces).isEmpty)
 				}
 			}

@@ -431,7 +431,7 @@ class MainScreenViewModel(
 				val docKey = config.getDocKey(uriString)
 				val savedPosition = config.getDocumentPosition(uriString)
 				val password = providedPassword ?: config.getDocumentPassword(uriString)
-				val session = DocumentSession.newFfi(absolutePath, password, "")
+				val session = DocumentSession.newFfi(absolutePath, password, "", false)
 				if (providedPassword != null) {
 					config.setDocumentPassword(uriString, providedPassword)
 					config.flush()

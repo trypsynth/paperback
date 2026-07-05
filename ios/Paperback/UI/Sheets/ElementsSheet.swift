@@ -15,9 +15,9 @@ struct ElementsSheet: View {
 						emptyView
 					} else {
 						VStack(spacing: 0) {
-							Picker("Type", selection: $tab) {
-								Text("Headings").tag(0)
-								Text("Links").tag(1)
+							Picker(t("Type"), selection: $tab) {
+								Text(t("Headings")).tag(0)
+								Text(t("Links")).tag(1)
 							}
 							.pickerStyle(.segmented)
 							.padding()
@@ -46,11 +46,11 @@ struct ElementsSheet: View {
 					emptyView
 				}
 			}
-			.navigationTitle("Elements")
+			.navigationTitle(t("Elements"))
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .confirmationAction) {
-					Button("Done") { dismiss() }
+					Button(t("Done")) { dismiss() }
 				}
 			}
 		}
@@ -60,12 +60,12 @@ struct ElementsSheet: View {
 	@ViewBuilder private var emptyView: some View {
 		if #available(iOS 17, *) {
 			ContentUnavailableView(
-				"No Elements",
+				t("No Elements"),
 				systemImage: "list.bullet.indent",
-				description: Text("Headings, images, and other elements will appear here.")
+				description: Text(t("Headings, images, and other elements will appear here."))
 			)
 		} else {
-			Text("No Elements")
+			Text(t("No Elements"))
 				.foregroundStyle(.secondary)
 				.frame(maxWidth: .infinity, maxHeight: .infinity)
 		}

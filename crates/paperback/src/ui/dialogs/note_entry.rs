@@ -30,16 +30,16 @@ pub fn show_note_entry_dialog(
 	});
 	let dialog_for_key = dialog;
 	note_ctrl.bind_internal(EventType::KEY_DOWN, move |event| {
-		if let Some(key) = event.get_key_code() {
-			if key == KEY_RETURN {
-				if event.shift_down() {
-					event.skip(true);
-				} else {
-					dialog_for_key.end_modal(wxdragon::id::ID_OK);
-					event.skip(false);
-				}
-				return;
+		if let Some(key) = event.get_key_code()
+			&& key == KEY_RETURN
+		{
+			if event.shift_down() {
+				event.skip(true);
+			} else {
+				dialog_for_key.end_modal(wxdragon::id::ID_OK);
+				event.skip(false);
 			}
+			return;
 		}
 		event.skip(true);
 	});
