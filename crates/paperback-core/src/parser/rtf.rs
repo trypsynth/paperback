@@ -368,6 +368,32 @@ const fn hex_digit(b: u8) -> Option<u8> {
 	}
 }
 
+/// Applies a formatting toggle for a single marker kind, recording spans as they
+/// open and close. No-op when the requested state already matches the current one
+/// (handles redundant toggles and group-close reverts that don't change this kind).
+/// Turning ON records the start position; turning OFF emits the span, guarded by
+/// `position > s` to skip degenerate zero-length spans.
+fn apply_format_toggle(
+	on: &mut bool,
+	start: &mut Option<usize>,
+	want_on: bool,
+	position: usize,
+	kind: MarkerType,
+	buffer: &mut DocumentBuffer,
+) {
+	if want_on == *on {
+		return;
+	}
+	if want_on {
+		*start = Some(position);
+	} else if let Some(s) = start.take()
+		&& position > s
+	{
+		buffer.add_marker(Marker::new(kind, s).with_length(position - s));
+	}
+	*on = want_on;
+}
+
 #[allow(clippy::too_many_lines)]
 fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 	let mut buffer = DocumentBuffer::new();
@@ -376,12 +402,44 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 	let mut pending_link: Option<PendingLink> = None;
 	let mut depth: i32 = 0;
 	let mut skip_until_depth: Option<i32> = None;
+	let mut bold_on = false;
+	let mut italic_on = false;
+	let mut underline_on = false;
+	let mut bold_start: Option<usize> = None;
+	let mut italic_start: Option<usize> = None;
+	let mut underline_start: Option<usize> = None;
+	let mut format_stack: Vec<(bool, bool, bool)> = Vec::new();
 	for token in tokens {
 		// Depth tracking for group nesting (needed for IgnorableDestination skipping).
 		match token {
-			Token::OpeningBracket => depth += 1,
+			Token::OpeningBracket => {
+				depth += 1;
+				// Snapshot formatting state so a group close reverts to it (RTF group scoping).
+				// Push/pop happen unconditionally to stay in lockstep with `depth`.
+				format_stack.push((bold_on, italic_on, underline_on));
+			}
 			Token::ClosingBracket => {
 				depth -= 1;
+				if let Some((want_bold, want_italic, want_underline)) = format_stack.pop() {
+					let pos = buffer.current_position();
+					apply_format_toggle(&mut bold_on, &mut bold_start, want_bold, pos, MarkerType::Bold, &mut buffer);
+					apply_format_toggle(
+						&mut italic_on,
+						&mut italic_start,
+						want_italic,
+						pos,
+						MarkerType::Italic,
+						&mut buffer,
+					);
+					apply_format_toggle(
+						&mut underline_on,
+						&mut underline_start,
+						want_underline,
+						pos,
+						MarkerType::Underline,
+						&mut buffer,
+					);
+				}
 				if skip_until_depth.is_some_and(|sd| depth <= sd) {
 					skip_until_depth = None;
 				}
@@ -444,6 +502,49 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 							}
 						}
 					}
+					ControlWord::Bold if !in_header => {
+						let want_on = !matches!(property, Property::Value(0));
+						apply_format_toggle(
+							&mut bold_on,
+							&mut bold_start,
+							want_on,
+							buffer.current_position(),
+							MarkerType::Bold,
+							&mut buffer,
+						);
+					}
+					ControlWord::Italic if !in_header => {
+						let want_on = !matches!(property, Property::Value(0));
+						apply_format_toggle(
+							&mut italic_on,
+							&mut italic_start,
+							want_on,
+							buffer.current_position(),
+							MarkerType::Italic,
+							&mut buffer,
+						);
+					}
+					ControlWord::Underline if !in_header => {
+						let want_on = !matches!(property, Property::Value(0));
+						apply_format_toggle(
+							&mut underline_on,
+							&mut underline_start,
+							want_on,
+							buffer.current_position(),
+							MarkerType::Underline,
+							&mut buffer,
+						);
+					}
+					ControlWord::UnderlineNone if !in_header => {
+						apply_format_toggle(
+							&mut underline_on,
+							&mut underline_start,
+							false,
+							buffer.current_position(),
+							MarkerType::Underline,
+							&mut buffer,
+						);
+					}
 					ControlWord::Unknown(name) if !in_header => match *name {
 						r"\page" => {
 							let ends_with_ws = buffer.content.chars().next_back().is_some_and(char::is_whitespace);
@@ -489,6 +590,13 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 			_ => {}
 		}
 	}
+	// Defensive flush for malformed/truncated RTF with unbalanced braces. In a
+	// well-formed document the outermost group close already reverted all three to
+	// `false` (step 3), so this is a no-op in the common case.
+	let final_pos = buffer.current_position();
+	apply_format_toggle(&mut bold_on, &mut bold_start, false, final_pos, MarkerType::Bold, &mut buffer);
+	apply_format_toggle(&mut italic_on, &mut italic_start, false, final_pos, MarkerType::Italic, &mut buffer);
+	apply_format_toggle(&mut underline_on, &mut underline_start, false, final_pos, MarkerType::Underline, &mut buffer);
 	let trimmed = buffer.content.trim().to_string();
 	let mut result = DocumentBuffer::with_content(trimmed);
 	let leading_trim = buffer.content.len() - buffer.content.trim_start().len();
@@ -715,5 +823,123 @@ mod tests {
 		assert!(buffer.content.contains("decisão"));
 		assert!(buffer.content.contains("execução"));
 		assert!(buffer.content.contains("2ª executada"));
+	}
+
+	#[test]
+	fn extract_content_maps_bold_toggle_to_marker() {
+		// \b bold \b0 not-bold  → one Bold marker spanning exactly "bold ".
+		let tokens = vec![
+			Token::ControlSymbol((ControlWord::Pard, Property::None)),
+			Token::ControlSymbol((ControlWord::Bold, Property::None)),
+			Token::PlainText("bold "),
+			Token::ControlSymbol((ControlWord::Bold, Property::Value(0))),
+			Token::PlainText("not-bold"),
+		];
+		let buffer = extract_content_from_tokens(&tokens);
+		assert_eq!(buffer.content, "bold not-bold");
+		let bold: Vec<_> = buffer.markers.iter().filter(|m| m.mtype == MarkerType::Bold).collect();
+		assert_eq!(bold.len(), 1);
+		assert_eq!(bold[0].position, 0);
+		assert_eq!(bold[0].length, "bold ".chars().count());
+	}
+
+	#[test]
+	fn extract_content_scopes_nested_group_formatting() {
+		// \b bold {\i more} still-bold \b0
+		// Bold spans the whole "bold more still-bold " (uninterrupted by the group);
+		// Italic spans only "more" (opened and closed within the group).
+		let tokens = vec![
+			Token::ControlSymbol((ControlWord::Pard, Property::None)),
+			Token::ControlSymbol((ControlWord::Bold, Property::None)),
+			Token::PlainText("bold "),
+			Token::OpeningBracket,
+			Token::ControlSymbol((ControlWord::Italic, Property::None)),
+			Token::PlainText("more"),
+			Token::ClosingBracket,
+			Token::PlainText(" still-bold "),
+			Token::ControlSymbol((ControlWord::Bold, Property::Value(0))),
+		];
+		let buffer = extract_content_from_tokens(&tokens);
+		assert_eq!(buffer.content, "bold more still-bold");
+
+		let bold: Vec<_> = buffer.markers.iter().filter(|m| m.mtype == MarkerType::Bold).collect();
+		assert_eq!(bold.len(), 1);
+		assert_eq!(bold[0].position, 0);
+		assert_eq!(bold[0].length, "bold more still-bold ".chars().count());
+
+		let italic: Vec<_> = buffer.markers.iter().filter(|m| m.mtype == MarkerType::Italic).collect();
+		assert_eq!(italic.len(), 1);
+		assert_eq!(italic[0].position, "bold ".chars().count());
+		assert_eq!(italic[0].length, "more".chars().count());
+	}
+
+	#[test]
+	fn extract_content_maps_underline_off_via_ulnone() {
+		// \ul under \ulnone plain → one Underline marker spanning "under ".
+		let tokens = vec![
+			Token::ControlSymbol((ControlWord::Pard, Property::None)),
+			Token::ControlSymbol((ControlWord::Underline, Property::None)),
+			Token::PlainText("under "),
+			Token::ControlSymbol((ControlWord::UnderlineNone, Property::None)),
+			Token::PlainText("plain"),
+		];
+		let buffer = extract_content_from_tokens(&tokens);
+		assert_eq!(buffer.content, "under plain");
+		let underline: Vec<_> = buffer.markers.iter().filter(|m| m.mtype == MarkerType::Underline).collect();
+		assert_eq!(underline.len(), 1);
+		assert_eq!(underline[0].position, 0);
+		assert_eq!(underline[0].length, "under ".chars().count());
+	}
+
+	#[test]
+	fn extract_content_reverts_bold_on_group_close() {
+		// \b before {\b0 middle} after \b0
+		// Two separate Bold markers ("before " and " after "), "middle" in neither.
+		let tokens = vec![
+			Token::ControlSymbol((ControlWord::Pard, Property::None)),
+			Token::ControlSymbol((ControlWord::Bold, Property::None)),
+			Token::PlainText("before "),
+			Token::OpeningBracket,
+			Token::ControlSymbol((ControlWord::Bold, Property::Value(0))),
+			Token::PlainText("middle"),
+			Token::ClosingBracket,
+			Token::PlainText(" after "),
+			Token::ControlSymbol((ControlWord::Bold, Property::Value(0))),
+		];
+		let buffer = extract_content_from_tokens(&tokens);
+		assert_eq!(buffer.content, "before middle after");
+
+		let bold: Vec<_> = buffer.markers.iter().filter(|m| m.mtype == MarkerType::Bold).collect();
+		assert_eq!(bold.len(), 2, "expected two Bold spans, got {bold:?}");
+		// "before "
+		assert_eq!(bold[0].position, 0);
+		assert_eq!(bold[0].length, "before ".chars().count());
+		// " after " starts right after "before middle"
+		assert_eq!(bold[1].position, "before middle".chars().count());
+		assert_eq!(bold[1].length, " after ".chars().count());
+		// "middle" is covered by neither span.
+		let middle_start = "before ".chars().count();
+		let middle_end = "before middle".chars().count();
+		for m in &bold {
+			let span_end = m.position + m.length;
+			assert!(
+				m.position >= middle_end || span_end <= middle_start,
+				"Bold span {m:?} should not overlap \"middle\""
+			);
+		}
+	}
+
+	#[test]
+	fn extract_content_renders_bold_from_real_rtf_string() {
+		// Round-trip through the real lexer to confirm \b / \b0 map to Bold markers.
+		let rtf = r"{\rtf1\ansi\pard normal \b bold\b0  normal}";
+		let normalized = resolve_hex_escapes(rtf, encoding_rs::WINDOWS_1252, &HashMap::new()).replace('\r', "");
+		let tokens = Lexer::scan(&normalized).expect("RTF tokenization should succeed");
+		let buffer = extract_content_from_tokens(&tokens);
+		assert_eq!(buffer.content, "normal bold normal");
+		let bold: Vec<_> = buffer.markers.iter().filter(|m| m.mtype == MarkerType::Bold).collect();
+		assert_eq!(bold.len(), 1);
+		assert_eq!(bold[0].position, "normal ".chars().count());
+		assert_eq!(bold[0].length, "bold".chars().count());
 	}
 }

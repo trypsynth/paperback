@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-06-30 11:59-0600\n"
-"PO-Revision-Date: 2026-07-01 20:01+0200\n"
+"PO-Revision-Date: 2026-07-03 17:45+0200\n"
 "Last-Translator: Tarik Hadžirović <tarik.hadzirovic.official@gmail.com>\n"
 "Language-Team: Tarik Hadžirović <tarik.hadzirovic.official@gmail.com>\n"
 "Language: bs\n"
@@ -78,7 +78,7 @@ msgid ""
 "remove its reading position."
 msgstr ""
 "Jeste li sigurni da želite ukloniti ovaj dokument s popisa? Ovo će također "
-"ukloniti njegovu poziciju čitanja."
+"ukloniti njegov položaj čitanja."
 
 msgid ""
 "Are you sure you want to remove these {} documents from the list? This will "
@@ -95,7 +95,7 @@ msgid ""
 "remove all reading positions and bookmarks."
 msgstr ""
 "Jeste li sigurni da želite ukloniti sve dokumente s popisa? Ovo će također "
-"ukloniti sve položaje čitanja i knjižne oznake."
+"ukloniti sve položaje čitanja i oznake."
 
 msgid "Open"
 msgstr "Otvoreno"
@@ -110,7 +110,7 @@ msgid "Locate Book"
 msgstr "Pronalažennje knjige"
 
 msgid "Jump to Bookmark"
-msgstr "Skoči na knjižnu oznaku"
+msgstr "Skoči na oznaku"
 
 msgid "&Filter:"
 msgstr "&Sortiraj po:"
@@ -119,7 +119,7 @@ msgid "All"
 msgstr "Sve"
 
 msgid "Bookmarks"
-msgstr "Knjižne oznake"
+msgstr "Oznake"
 
 msgid "Notes"
 msgstr "Bilješke"
@@ -140,16 +140,16 @@ msgid "blank"
 msgstr "prazno"
 
 msgid "Please select a bookmark to jump to."
-msgstr "Molimo izaberite knjižnu oznaku na koju želite da skočite."
+msgstr "Molimo odaberite oznaku na koju želite da skočite."
 
 msgid "Error"
 msgstr "Greška"
 
 msgid "Bookmark Note"
-msgstr "Bilješka knjižne oznake"
+msgstr "Bilješka oznake"
 
 msgid "Edit bookmark note:"
-msgstr "Uredi bilješku knjižne oznake:"
+msgstr "Uredi bilješku oznake:"
 
 msgid "Document Info"
 msgstr "Informacije o dokumentu"
@@ -271,7 +271,7 @@ msgid "&Wrap navigation"
 msgstr "&Kružno kretanje"
 
 msgid "Play &sounds on bookmarks and notes"
-msgstr "Reprodukuj zvučne signale na knjižnim oznakama i bilješkama"
+msgstr "Reprodukuj zvučne signale na oznakama i bilješkama"
 
 msgid "Check for &updates on startup"
 msgstr "Provjeravaj &ažuriranja prilikom pokretanja"
@@ -316,7 +316,7 @@ msgid "Reset to &Default Background"
 msgstr "Vrati na zadanu boju pozadine"
 
 msgid "&Line spacing:"
-msgstr "&Prored:Redovi:"
+msgstr "&Prored"
 
 msgid "Normal"
 msgstr "Normalan"
@@ -328,7 +328,7 @@ msgid "Double"
 msgstr "Dvostruki"
 
 msgid "&Paragraph spacing:"
-msgstr "Prored:"
+msgstr "Razmak između odlomaka"
 
 msgid "Relaxed"
 msgstr "Opušten"
@@ -492,16 +492,16 @@ msgid "Failed to load document."
 msgstr "Učitavanje dokumenta nije uspjelo."
 
 msgid "Create &bookmark"
-msgstr "Stvori knjižnu oznaku"
+msgstr "Stvori oznaku"
 
 msgid "Create bookmark"
-msgstr "Stvaranje knjižne oznake"
+msgstr "Stvaranje oznake"
 
 msgid "Bookmark with &note"
-msgstr "Knjižna oznaka s bilješkom"
+msgstr "Oznaka s bilješkom"
 
 msgid "Create bookmark with note"
-msgstr "Stvaranje knjižne oznake s bilješkom"
+msgstr "Stvaranje oznake s bilješkom"
 
 msgid "&Find"
 msgstr "&Traži"
@@ -594,7 +594,7 @@ msgid "{} chars"
 msgstr "Znakovi"
 
 msgid "Open Document"
-msgstr "Otvara dokument"
+msgstr "Otvaranje dokumenta"
 
 msgid "No pages."
 msgstr "Nema stranica."
@@ -633,19 +633,19 @@ msgid "Paperback files (*.paperback)|*.paperback"
 msgstr "Paperback datoteke (*.paperback)|*.paperback"
 
 msgid "Export notes and bookmarks"
-msgstr "Izvezi bilješke i knjižne oznake"
+msgstr "Izvezi bilješke i oznake"
 
 msgid "Notes and bookmarks exported successfully."
-msgstr "Bilješke i knjižne oznake su uspješno izvezene."
+msgstr "Bilješke i oznake su uspješno izvezene."
 
 msgid "Export Successful"
 msgstr "Izvoženje uspješno"
 
 msgid "Import notes and bookmarks"
-msgstr "Uvezi bilješke i knjižne oznake"
+msgstr "Uvezi bilješke i oznake"
 
 msgid "Notes and bookmarks imported successfully."
-msgstr "Bilješke i knjižne oznake su uspješno uvezene."
+msgstr "Bilješke i oznake su uspješno uvezene."
 
 msgid "Import Successful"
 msgstr "Uvoženje uspješno"
@@ -805,16 +805,16 @@ msgid "Previous Heading Level &1\tShift+1"
 msgstr "Prethodni naslov nivoa &1\tShift+1"
 
 msgid "&Previous Bookmark\tShift+B"
-msgstr "Prethodna &knjižna oznaka\tShift+B"
+msgstr "Prethodna &oznaka\tShift+B"
 
 msgid "Go to previous bookmark"
-msgstr "Prelazi na prethodnu knjižnu oznaku"
+msgstr "Prelazi na prethodnu oznaku"
 
 msgid "&Next Bookmark\tB"
-msgstr "Sljedeća k&njižna oznaka\tB"
+msgstr "Sljedeća &oznaka\tB"
 
 msgid "Go to next bookmark"
-msgstr "Prelazi na sljedeću knjižnu oznaku"
+msgstr "Prelazi na sljedeću oznaku"
 
 msgid "Previous &Note\tShift+N"
 msgstr "Prethodna bilješka\tShift+N"
@@ -832,28 +832,28 @@ msgid "Jump to &All...\tCtrl+B"
 msgstr "Skoči na sve\tControl+A"
 
 msgid "Show all bookmarks and notes"
-msgstr "Prikaži sve knjižne oznake i bilješke"
+msgstr "Prikaži sve oznake i bilješke"
 
 msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
-msgstr "Skoči na knjižnu oznaku...\tControl+Alt+B"
+msgstr "Skoči na oznaku...\tControl+Alt+B"
 
 msgid "Show bookmarks only"
-msgstr "Prikazuje samo knjižne oznake"
+msgstr "Prikazuje samo oznake"
 
 msgid "Jump to Notes &Only...\tCtrl+Alt+M"
-msgstr "Skoči na napomenu...\tControl+Alt+M"
+msgstr "Skoči na bilješku...\tControl+Alt+M"
 
 msgid "Show notes only"
 msgstr "Prikaži samo bilješke"
 
 msgid "&View Note Text\tRawCtrl+Shift+W"
-msgstr "Pregledaj tekst bilješke\tControl+Shift+W"
+msgstr "Prikaži tekst bilješke\tControl+Shift+W"
 
 msgid "&View Note Text\tCtrl+Shift+W"
-msgstr "Pregledaj tekst bilješke\tControl+Shift+W"
+msgstr "Prikaži tekst bilješke\tControl+Shift+W"
 
 msgid "View the note at current position"
-msgstr "Pregledava bilješku na trenutnom položaju"
+msgstr "Prikazuje bilješku na trenutnom položaju"
 
 msgid "&File"
 msgstr "&Datoteka"
@@ -1009,10 +1009,10 @@ msgid "Navigate by pages"
 msgstr "Kretanje po stranicama"
 
 msgid "&Bookmarks"
-msgstr "&Knjižne oznake"
+msgstr "&Ooznake"
 
 msgid "Navigate by bookmarks"
-msgstr "Kretanje po knjižnim oznakama"
+msgstr "Kretanje po oznakama"
 
 msgid "&Links"
 msgstr "&Poveznice"
@@ -1060,13 +1060,13 @@ msgid "&Import Document Data...\tCtrl+Shift+I"
 msgstr "&Uvezi sadržaj dokumenta...\tCtrl+Shift+I"
 
 msgid "Import bookmarks and position"
-msgstr "Uvoz knjižnih oznaka i položaja"
+msgstr "Uvoz oznaka i položaja"
 
 msgid "&Export Document Data...\tCtrl+Shift+E"
 msgstr "&Izvezi sadržaj dokumenta...\tCtrl+Shift+E"
 
 msgid "Export bookmarks and position"
-msgstr "Izvozi knjižne oznake i položaje čitanja"
+msgstr "Izvozi oznake i položaje čitanja"
 
 msgid "Export to &Plain Text...\tCtrl+E"
 msgstr "Izvezi u obični tekst...\tCtrl+E"
@@ -1078,13 +1078,13 @@ msgid "Export to &HTML..."
 msgstr "Izvezi u HTML..."
 
 msgid "Export document as HTML"
-msgstr "Izvoz dokumenta kao HTML"
+msgstr "Izvozi dokument kao HTML"
 
 msgid "Export to &Markdown..."
 msgstr "Izvezi u Markdown..."
 
 msgid "Export document as Markdown"
-msgstr "IOzvoz dokumenta kao Markdown"
+msgstr "Izvozi dokument kao Markdown"
 
 msgid "&Word Count\tRawCtrl+W"
 msgstr "&Broj riječi\tCtrl+W"
@@ -1138,16 +1138,16 @@ msgid "Import and export options"
 msgstr "Opcije uvoza i izvoza"
 
 msgid "Toggle &Bookmark\tCtrl+Shift+B"
-msgstr "Dodaj ili ukloni knjižnu oznaku\tCtrl+Shift+B"
+msgstr "Dodaj ili ukloni oznaku\tCtrl+Shift+B"
 
 msgid "Bookmark with &Note\tCtrl+Shift+N"
-msgstr "Knjižna oznaka s bilješkom\tCtrl+Shift+N"
+msgstr "Oznaka s bilješkom\tCtrl+Shift+N"
 
 msgid "Word w&rap\tCtrl+Alt+W"
 msgstr "Prelamanje riječi\tControl+Alt+W"
 
 msgid "Toggle word wrap"
-msgstr "Prelamanje riječi"
+msgstr "Uključuje i isključuje prelamanje riječi"
 
 msgid "&Options\tCtrl+,"
 msgstr "&Postavke\tCtrl+,"
@@ -1333,40 +1333,40 @@ msgstr "Početak bloka."
 
 #, c-format
 msgid "%s - Bookmark %d"
-msgstr "%s - Knjižna oznaka %d"
+msgstr "%s - Oznaka %d"
 
 msgid "No notes."
 msgstr "Nema bilješki."
 
 msgid "No bookmarks."
-msgstr "Nema knjižnih oznaka."
+msgstr "Nema oznaka."
 
 msgid "No next note."
 msgstr "Nema sljedeće bilješke."
 
 msgid "No next bookmark."
-msgstr "Nema sljedeće knjižne oznake."
+msgstr "Nema sljedeće oznake."
 
 msgid "No previous note."
 msgstr "Nema prethodne bilješke."
 
 msgid "No previous bookmark."
-msgstr "Nema prethodne knjižne oznake."
+msgstr "Nema prethodne oznake."
 
 msgid "Bookmark."
-msgstr "Knjižna oznaka."
+msgstr "Oznaka."
 
 msgid "Bookmark removed."
-msgstr "Knjižna oznaka je uklonjena."
+msgstr "Oznaka je uklonjena."
 
 msgid "Bookmark added."
-msgstr "Knjižna oznaka je dodana."
+msgstr "Oznaka je dodana."
 
 msgid "Enter bookmark note:"
-msgstr "Unesite bilješku knjižne oznake:"
+msgstr "Unesite bilješku oznake:"
 
 msgid "Bookmark saved."
-msgstr "Knjižna oznaka je spremljena."
+msgstr "Oznaka je spremljena."
 
 msgid "No note at the current position."
 msgstr "Nema bilješke na trenutnom položaju."

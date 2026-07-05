@@ -2416,9 +2416,9 @@ dependencies = [
 
 [[package]]
 name = "ship-shape"
-version = "0.1.4"
+version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2bcd438d70f2bfb7e76293cce8ac930b6bb248346850b511a80cc8f36b2496b8"
+checksum = "30b37707b2122f92421f378597fba2beea45f51bffcb451dd17eb3908fc5a5fe"
 dependencies = [
  "minisign-verify",
  "patois",
@@ -3941,8 +3941,3 @@ checksum = "27bc9d5b815bc103f142aa054f561d9187d191692ec7c2d1e2b4737f8dbd7296"
 dependencies = [
  "zune-core",
 ]
-
-[[patch.unused]]
-name = "wxdragon"
-version = "0.9.16"
-source = "git+https://github.com/AllenDang/wxDragon#39775f3754b0404b0f69d0c8ea56fe1f2edcfd90"

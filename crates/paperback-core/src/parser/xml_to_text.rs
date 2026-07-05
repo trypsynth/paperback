@@ -686,6 +686,7 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
+	use crate::document::MarkerType;
 
 	#[test]
 	fn test_link_collection() {
@@ -899,5 +900,81 @@ mod tests {
 			t1_offset + t1_display_length,
 			"second table offset must equal first offset + first display_length"
 		);
+	}
+
+	#[rstest]
+	#[case("b", MarkerType::Bold)]
+	#[case("strong", MarkerType::Bold)]
+	#[case("i", MarkerType::Italic)]
+	#[case("em", MarkerType::Italic)]
+	#[case("u", MarkerType::Underline)]
+	fn test_format_span_collection(#[case] tag: &str, #[case] kind: MarkerType) {
+		let xml = format!("<root><body><p>Some <{tag}>bold</{tag}> text</p></body></root>");
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(&xml));
+		let spans = match kind {
+			MarkerType::Bold => converter.get_bolds(),
+			MarkerType::Italic => converter.get_italics(),
+			MarkerType::Underline => converter.get_underlines(),
+			_ => unreachable!(),
+		};
+		assert_eq!(spans.len(), 1);
+		let text = converter.get_text();
+		assert_eq!(&text[spans[0].offset..spans[0].offset + spans[0].length], "bold");
+	}
+
+	#[test]
+	fn test_format_span_tag_matching_is_case_insensitive() {
+		let xml = "<root><body><p>Some <B>bold</B> text</p></body></root>";
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(xml));
+		let spans = converter.get_bolds();
+		assert_eq!(spans.len(), 1);
+		let text = converter.get_text();
+		assert_eq!(&text[spans[0].offset..spans[0].offset + spans[0].length], "bold");
+	}
+
+	#[test]
+	fn test_format_span_nested_bold_and_italic() {
+		let xml = "<root><body><p><b>outer <i>inner</i></b></p></body></root>";
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(xml));
+		let text = converter.get_text();
+
+		let italics = converter.get_italics();
+		assert_eq!(italics.len(), 1);
+		assert_eq!(&text[italics[0].offset..italics[0].offset + italics[0].length], "inner");
+
+		let bolds = converter.get_bolds();
+		assert_eq!(bolds.len(), 1);
+		assert_eq!(&text[bolds[0].offset..bolds[0].offset + bolds[0].length], "outer inner");
+	}
+
+	#[test]
+	fn test_format_span_fully_inside_link_is_dropped_known_limitation() {
+		// Known limitation: `<a>` handling (see `handle_element_opening_xml`) eagerly grabs the full
+		// flattened text of the element via `collect_element_text`, pushes it into `current_line`, and
+		// sets `skip_children = true`. `process_node` then skips recursing into the `<a>`'s children
+		// entirely, so the open/close handlers for a `<b>`/`<i>`/`<u>` nested inside the link never
+		// fire and no format span is recorded. This degrades gracefully (no panic, no bad offset; the
+		// link itself is still recorded correctly) and is left as-is per this task's scope (no changes
+		// to the `<a>`/`skip_children` behavior).
+		let xml = "<root><body><a href=\"https://example.com\"><b>bold</b></a></body></root>";
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(xml));
+		assert!(converter.get_bolds().is_empty());
+		let links = converter.get_links();
+		assert_eq!(links.len(), 1);
+		assert_eq!(links[0].text, "bold");
+	}
+
+	#[test]
+	fn test_no_format_spans_without_formatting_tags() {
+		let xml = "<root><body><p>Plain paragraph with no formatting.</p></body></root>";
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(xml));
+		assert!(converter.get_bolds().is_empty());
+		assert!(converter.get_italics().is_empty());
+		assert!(converter.get_underlines().is_empty());
 	}
 }

@@ -77,14 +77,14 @@ Paperback je osmišljen prvenstveno za korištenje putem tastature i čitača za
 * Od `1` do `6`: Sljedeći naslov nivoa od 1 do 6.
 * `Shift+P`: Prethodna stranica.
 * `P`: Sljedeća stranica.
-* `Shift+B`: Prethodna knjižna oznaka.
-* `B`: Sljedeća knjižna oznaka.
-* `Shift+N`: Prethodna napomena.
-* `N`: Sljedeća napomena.
-* `Control+B`: Prelazi na sve knjižne oznake i napomene.
-* `Control+Alt+B`: Prelazi samo na knjižne oznake.
-* `Control+Alt+M`: Prelazi samo na napomene.
-* `Control+Shift+W`: Prikazuje tekst napomene na trenutnom položaju.
+* `Shift+B`: Prethodna oznaka.
+* `B`: Sljedeća oznaka.
+* `Shift+N`: Prethodna bilješka.
+* `N`: Sljedeća bilješka.
+* `Control+B`: Prelazi na sve oznake i bilješke.
+* `Control+Alt+B`: Prelazi samo na oznake.
+* `Control+Alt+M`: Prelazi samo na bilješke.
+* `Control+Shift+W`: Prikazuje tekst bilješke na trenutnom položaju.
 * `Shift+K`: Prethodna poveznica.
 * `K`: Sljedeća poveznica.
 * `Shift+T`: Prethodna tabela.
@@ -110,8 +110,8 @@ Paperback je osmišljen prvenstveno za korištenje putem tastature i čitača za
 * `Control+Shift+E`: Izvozi podatke dokumenta (`.paperback`).
 * `Control+Shift+I`: Uvozi podatke dokumenta (`.paperback`).
 * `Control+E`: Izvozi trenutni dokument u obični tekst.
-* `Ctrl+Shift+B`: Dodaje i uklanja knjižnu oznaku na trenutnom odabiru ili položaju.
-* `Ctrl+Shift+N`: Dodaje ili uređuje napomenu knjižne oznake na trenutnom odabiru ili položaju.
+* `Ctrl+Shift+B`: Dodaje i uklanja oznaku na trenutnom odabiru ili položaju.
+* `Ctrl+Shift+N`: Dodaje ili uređuje bilješku oznake na trenutnom odabiru ili položaju.
 * `Ctrl+Alt+W`: Uključuje i isključuje prelamanje riječi.
 * `Control+,`: Otvara postavke.
 * `Control+Shift+S`: Uključuje i isključuje brojač spavanja.
@@ -244,7 +244,7 @@ Napomena: Ako ste javni sponzor na GitHubu, smatrat ću to pristankom da vaše i
 
 * Dodana je podrška za stranice u EPUB knjigama.
 * Dodana je podrška za šifrovane Microsoft Office dokumente. Trenutno su podržani stariji Word dokumenti, moderni Word dokumenti i moderne PowerPoint prezentacije, dok je podrška za starije PowerPoint prezentacije planirana u budućnosti.
-* Dodana je podrška za starije Microsoft Word dokumente (*.doc). nije odabrano
+* Dodana je podrška za starije Microsoft Word dokumente (*.doc).
 * Dodana je podrška za starije Microsoft PowerPoint prezentacije (  *.ppt  ).
 * Dodana je podrška za MOBI i AZW3 knjige.
 * Dodana je podrška za označene PDF dokumente.
@@ -355,7 +355,7 @@ Napomena: Ako ste javni sponzor na GitHubu, smatrat ću to pristankom da vaše i
 * Dodana je podrška za OpenDocument prezentacije.
 * Dodana je podrška za OpenDocument tekstualne dokumente.
 * Oznake sada mogu obuhvatati cijeli red ili samo odabrani tekst. Ako prilikom postavljanja oznake nemate aktivan odabir, ponašanje je isto kao prije verzije `0.6.0` i označit će se cijeli red. Ako je dio teksta označen, oznaka će obuhvatiti samo taj tekst.
-* Oznakama se sada mogu dodati i napomene. Između oznaka koje sadrže napomene možete se kretati pomoću `N` i `Shift+N`, a dijalog s oznakama možete otvoriti tako da prikazuje sve oznake, samo one s napomenama ili samo one bez napomena, koristeći odgovarajuće prečice.
+* Oznakama se sada mogu dodati i bilješke. Između oznaka koje sadrže bilješke možete se kretati pomoću `N` i `Shift+N`, a dijalog s oznakama možete otvoriti tako da prikazuje sve oznake, samo one s bilješkama ili samo one bez bilješki, koristeći odgovarajuće prečice.
 * Oznake u dijalogu s oznakama više neće imati dosadni prefiks "Oznaka x".
 * EPUB knjige koje sadrže HTML sadržaj predstavljen kao XML sada će se ispravno obrađivati.
 * Ispravljeno je učitavanje velikih Markdown dokumenata.
@@ -406,7 +406,7 @@ Napomena: Ako ste javni sponzor na GitHubu, smatrat ću to pristankom da vaše i
 ### Verzija 0.4.1
 
 * Instalacijski program sada nudi mogućnost dodavanja prečice u Start izbornik.
-* Sadržaj će sada u pojedinim slučajevima biti pregledniji. Na primjer, ako nadređena i podređena stavka imaju isti tekst na istoj poziciji, prikazat će se samo nadređena stavka.
+* Sadržaj će sada u pojedinim slučajevima biti pregledniji. Na primjer, ako nadređena i podređena stavka imaju isti tekst na istom položaju, prikazat će se samo nadređena stavka.
 * Ispravljen je sadržaj u određenim CHM dokumentima.
 * Ispravljen je sadržaj u EPUB 3 knjigama koje sadrže apsolutne putanje.
 * CHM dokumenti sada će prikazivati naslov definisan u datoteci s metapodacima.

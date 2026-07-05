@@ -4,7 +4,7 @@ use anyhow::Result;
 use encoding_rs::WINDOWS_1252;
 
 use crate::{
-	document::{Document, DocumentBuffer, ParserContext, ParserFlags},
+	document::{Document, DocumentBuffer, ParserContext, ParserFlags, TocItem},
 	parser::{
 		Parser, add_converter_markers,
 		html_to_text::{HtmlSourceMode, HtmlToText},
@@ -20,7 +20,7 @@ impl Parser for MobiParser {
 	}
 
 	fn extensions(&self) -> &[&str] {
-		&["mobi"]
+		&["mobi", "azw", "azw3"]
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
@@ -111,6 +111,7 @@ impl Parser for MobiParser {
 		};
 		document_title = document_title.replace('\0', "").trim().replace('_', " ");
 		let mut document_author = String::new();
+		let mut exth_map = std::collections::HashMap::new();
 		let exth_offset = mobi_header_offset + header_length;
 		if exth_offset + 12 <= rec0.len() && &rec0[exth_offset..exth_offset + 4] == b"EXTH" {
 			let exth_num_records = u32::from_be_bytes([
@@ -129,6 +130,7 @@ impl Parser for MobiParser {
 				if p + rec_len > rec0.len() {
 					break;
 				}
+				exth_map.insert(rec_type, rec0[p + 8..p + rec_len].to_vec());
 				if rec_type == 100 {
 					let exth_author = String::from_utf8_lossy(&rec0[p + 8..p + rec_len]).into_owned();
 					if !exth_author.trim().is_empty() {
@@ -177,17 +179,37 @@ impl Parser for MobiParser {
 			}
 		}
 		let mut extra_data_flags = 0u32;
-		if header_length >= 244 && mobi_header_offset + 244 <= rec0.len() {
-			extra_data_flags = u32::from_be_bytes([
-				rec0[mobi_header_offset + 240],
-				rec0[mobi_header_offset + 241],
-				rec0[mobi_header_offset + 242],
-				rec0[mobi_header_offset + 243],
-			]);
+		let mobi_header = &rec0[mobi_header_offset..];
+		if mobi_header.len() >= 24 {
+			let mobi_version = u32::from_be_bytes([mobi_header[20], mobi_header[21], mobi_header[22], mobi_header[23]]);
+			if mobi_version == 8 && mobi_header.len() >= 244 {
+				extra_data_flags =
+					u32::from_be_bytes([mobi_header[224], mobi_header[225], mobi_header[226], mobi_header[227]]);
+			} else {
+				extra_data_flags = u16::from_be_bytes([mobi_header[242], mobi_header[243]]) as u32;
+			}
 			if extra_data_flags == 0xFFFFFFFF {
 				extra_data_flags = 0;
 			}
 		}
+		let mut fdst_html_end = None;
+		if mobi_header.len() >= 180 {
+			let fdst_idx =
+				u32::from_be_bytes([mobi_header[176], mobi_header[177], mobi_header[178], mobi_header[179]]) as usize;
+			if fdst_idx != 0xFFFFFFFF && fdst_idx < num_records {
+				let start = record_offsets[fdst_idx];
+				let end = if fdst_idx + 1 < num_records { record_offsets[fdst_idx + 1] } else { data.len() };
+				if start < end && end <= data.len() {
+					let fdst_rec = &data[start..end];
+					if fdst_rec.starts_with(b"FDST") && fdst_rec.len() >= 20 {
+						let html_flow_end =
+							u32::from_be_bytes([fdst_rec[16], fdst_rec[17], fdst_rec[18], fdst_rec[19]]) as usize;
+						fdst_html_end = Some(html_flow_end);
+					}
+				}
+			}
+		}
+
 		let mut content = Vec::new();
 		for i in first_content_record..=last_content_record {
 			let start = record_offsets[i];
@@ -197,19 +219,29 @@ impl Parser for MobiParser {
 			}
 			let mut record_data = &data[start..end];
 			let trailing_entries = (extra_data_flags >> 1).count_ones();
+			let mut stripped_len = record_data.len();
 			if trailing_entries > 0 && !record_data.is_empty() {
-				let mut stripped_len = record_data.len();
+				let mut valid = true;
 				for _ in 0..trailing_entries {
 					if stripped_len == 0 {
 						break;
 					}
 					let size = get_trailing_size(&record_data[..stripped_len]);
-					stripped_len = stripped_len.saturating_sub(size);
+					if size > stripped_len {
+						valid = false;
+						break;
+					}
+					stripped_len -= size;
 				}
-				if extra_data_flags & 1 != 0 && stripped_len > 0 {
-					let overlap_size = (record_data[stripped_len - 1] & 0x07) as usize;
-					stripped_len = stripped_len.saturating_sub(overlap_size + 1);
+				if !valid {
+					stripped_len = record_data.len();
 				}
+			}
+			if extra_data_flags & 1 != 0 && stripped_len > 0 {
+				let overlap_size = (record_data[stripped_len - 1] & 0x03) as usize;
+				stripped_len = stripped_len.saturating_sub(overlap_size + 1);
+			}
+			if stripped_len != record_data.len() {
 				record_data = &record_data[..stripped_len];
 			}
 			match compression {
@@ -217,12 +249,20 @@ impl Parser for MobiParser {
 				2 => content.extend_from_slice(&decompress_palmdoc(record_data)),
 				17480 => {
 					if let Some(ref mut decoder) = huff_decoder {
-						content.extend_from_slice(&decoder.decode(record_data)?);
+						let decoded = decoder.decode(record_data)?;
+						content.extend_from_slice(&decoded);
 					}
 				}
 				other => anyhow::bail!("Unsupported compression mode ({other})"),
 			}
 		}
+
+		if let Some(html_end) = fdst_html_end {
+			if html_end < content.len() {
+				content.truncate(html_end);
+			}
+		}
+
 		const MAX_MOBI_TEXT_BYTES: usize = 20 * 1024 * 1024;
 		if content.len() > MAX_MOBI_TEXT_BYTES {
 			content.truncate(MAX_MOBI_TEXT_BYTES);
@@ -232,18 +272,62 @@ impl Parser for MobiParser {
 		} else {
 			WINDOWS_1252.decode(&content).0.into_owned()
 		};
+
 		// Rewrite MOBI-style filepos links into standard href/id anchors before any
 		// content is stripped, since filepos values are byte offsets into the raw HTML.
-		text = rewrite_filepos_links(&text);
-		if let Ok(re) = regex::Regex::new(r"(?is)<title[^>]*>.*?</title>") {
-			text = re.replace_all(&text, "").into_owned();
+		let frag_offsets = build_fragment_offsets(&data, &record_offsets, mobi_header);
+		let is_kf8 = {
+			let mobi_version = if mobi_header.len() >= 24 {
+				u32::from_be_bytes([mobi_header[20], mobi_header[21], mobi_header[22], mobi_header[23]])
+			} else {
+				0
+			};
+			mobi_version == 8
+		};
+		let mut ncx_toc = parse_ncx(&data, &record_offsets, mobi_header, &exth_map, is_kf8, &frag_offsets);
+
+		fn extract_targets(items: &[TocItem], targets: &mut std::collections::BTreeSet<usize>) {
+			let mut stack = vec![items];
+			while let Some(current_items) = stack.pop() {
+				for item in current_items {
+					if let Some(pos_str) = item.reference.strip_prefix("#fp") {
+						if let Ok(pos) = pos_str.parse::<usize>() {
+							targets.insert(pos);
+						}
+					}
+					if !item.children.is_empty() {
+						stack.push(&item.children);
+					}
+				}
+			}
 		}
-		if let Ok(re) = regex::Regex::new(r"(?is)<style[^>]*>.*?</style>") {
-			text = re.replace_all(&text, "").into_owned();
-		}
-		if let Ok(re) = regex::Regex::new(r"(?is)@page\s*\{[^<]+") {
-			text = re.replace_all(&text, "").into_owned();
-		}
+		let mut extra_targets = std::collections::BTreeSet::new();
+		extract_targets(&ncx_toc, &mut extra_targets);
+		let mut text = rewrite_internal_links(&text, &frag_offsets, &extra_targets);
+
+		static RE_AID: std::sync::LazyLock<regex::Regex> =
+			std::sync::LazyLock::new(|| regex::Regex::new(r#"(?i)\s[ac]id\s*=\s*["'][^"']*["']"#).unwrap());
+		text = RE_AID.replace_all(&text, "").into_owned();
+
+		// KF8 / AZW3 files concatenate the skeleton and fragments, often leaving
+		// `</body></html>` inside unclosed tags at insertion points. We strip these
+		// to allow `scraper` to parse the fragments cleanly.
+		static RE_BODY: std::sync::LazyLock<regex::Regex> =
+			std::sync::LazyLock::new(|| regex::Regex::new(r"(?is)</body>|</html>").unwrap());
+		text = RE_BODY.replace_all(&text, "").into_owned();
+
+		static RE_TITLE: std::sync::LazyLock<regex::Regex> =
+			std::sync::LazyLock::new(|| regex::Regex::new(r"(?is)<title[^>]*>.*?</title>").unwrap());
+		text = RE_TITLE.replace_all(&text, "").into_owned();
+
+		static RE_STYLE: std::sync::LazyLock<regex::Regex> =
+			std::sync::LazyLock::new(|| regex::Regex::new(r"(?is)<style[^>]*>.*?</style>").unwrap());
+		text = RE_STYLE.replace_all(&text, "").into_owned();
+
+		static RE_PAGE: std::sync::LazyLock<regex::Regex> =
+			std::sync::LazyLock::new(|| regex::Regex::new(r"(?is)@page\s*\{[^<]+").unwrap());
+		text = RE_PAGE.replace_all(&text, "").into_owned();
+
 		// Old-style Mobipocket files use <font size="N"> instead of <h1>-<h6>.
 		// Rewrite them so the heading-based TOC builder can pick them up.
 		text = rewrite_font_size_headings(&text);
@@ -259,16 +343,39 @@ impl Parser for MobiParser {
 		add_converter_markers(&mut buffer, &html_converter, 0);
 		document.set_buffer(buffer);
 		document.id_positions = html_converter.get_id_positions().clone();
-		let toc_items = build_toc_from_headings(html_converter.get_headings());
+		let mut toc_items = build_toc_from_headings(html_converter.get_headings());
+		if toc_items.is_empty() && !ncx_toc.is_empty() {
+			resolve_ncx_offsets(&mut ncx_toc, &document.id_positions);
+			toc_items = ncx_toc;
+		}
 		document.toc_items = toc_items;
 		Ok(document)
+	}
+}
+
+fn resolve_ncx_offsets(items: &mut [TocItem], id_positions: &std::collections::HashMap<String, usize>) {
+	let mut stack: Vec<&mut [TocItem]> = vec![items];
+	while let Some(current) = stack.pop() {
+		for item in current.iter_mut() {
+			if item.offset == 0 && !item.reference.is_empty() {
+				let key = if item.reference.starts_with('#') { &item.reference[1..] } else { &item.reference };
+				if let Some(&pos) = id_positions.get(key) {
+					item.offset = pos;
+				}
+			}
+			if !item.children.is_empty() {
+				stack.push(&mut item.children);
+			}
+		}
 	}
 }
 
 // Old-style Mobipocket files use <font size="N"> for headings (size 7 = largest, 4-7 map to h1-h4).
 // Only activated when the document contains no semantic h1-h6 tags.
 fn rewrite_font_size_headings(html: &str) -> String {
-	if regex::Regex::new(r"(?i)<h[1-6]\b").is_ok_and(|re| re.is_match(html)) {
+	static RE_H1_6: std::sync::LazyLock<regex::Regex> =
+		std::sync::LazyLock::new(|| regex::Regex::new(r"(?i)<h[1-6]\b").unwrap());
+	if RE_H1_6.is_match(html) {
 		return html.to_string();
 	}
 	let mut result = html.to_string();
@@ -292,36 +399,174 @@ fn snap_to_char_boundary(s: &str, pos: usize) -> usize {
 	p
 }
 
-// If pos falls inside an HTML tag (<...>), advance it to just after the closing '>'.
-// This prevents filepos anchors from being inserted in the middle of a tag and
-// corrupting it into a text fragment.
+// If pos falls inside or at the start of an HTML tag (<...>), advance it to
+// just after the closing '>'. We look at the first '<' and '>' from pos
+// onwards: if '>' comes before '<', we are inside a tag.
 fn snap_past_open_tag(html: &str, pos: usize) -> usize {
-	let pos = pos.min(html.len());
-	if let Some(tag_start) = html[..pos].rfind('<')
-		&& !html[tag_start..pos].contains('>')
-		&& let Some(rel) = html[pos..].find('>')
-	{
-		return pos + rel + 1;
+	let bytes = &html.as_bytes()[pos..];
+	let next_gt = bytes.iter().position(|&b| b == b'>');
+	let next_lt = bytes.iter().position(|&b| b == b'<');
+	match (next_gt, next_lt) {
+		(Some(gt), Some(lt)) if gt < lt => return pos + gt + 1,
+		(Some(gt), None) => return pos + gt + 1,
+		(Some(0), _) | (None, Some(0)) => {
+			if let Some(end) = bytes.iter().position(|&b| b == b'>') {
+				return pos + end + 1;
+			}
+		}
+		_ => {}
 	}
 	pos
 }
 
-fn rewrite_filepos_links(html: &str) -> String {
-	let Ok(re) = regex::Regex::new(r"(?i)<a\b[^>]*?filepos\s*=\s*(\d+)[^>]*>") else {
-		return html.to_string();
-	};
-	let mut links: Vec<(usize, usize, usize)> = Vec::new();
-	let mut targets = std::collections::BTreeSet::new();
-	for cap in re.captures_iter(html) {
-		let m = cap.get(0).unwrap();
-		if let Ok(filepos) = cap[1].parse::<usize>()
-			&& filepos < html.len()
-		{
-			links.push((m.start(), m.end(), filepos));
-			targets.insert(filepos);
+fn decode_vwi(data: &[u8], mut pos: usize) -> (usize, usize) {
+	let mut val: usize = 0;
+	while pos < data.len() {
+		let b = data[pos];
+		pos += 1;
+		val = (val << 7) | (b & 0x7F) as usize;
+		if (b & 0x80) != 0 {
+			break;
 		}
 	}
-	if links.is_empty() {
+	(val, pos)
+}
+
+fn base32_decode(s: &str) -> usize {
+	let mut val = 0;
+	for c in s.chars() {
+		val = (val << 5) | (c.to_digit(32).unwrap_or(0) as usize);
+	}
+	val
+}
+
+fn build_fragment_offsets(
+	data: &[u8],
+	records: &[usize],
+	mobi_header: &[u8],
+) -> std::collections::HashMap<usize, usize> {
+	let mut frag_offsets = std::collections::HashMap::new();
+	if mobi_header.len() < 236 {
+		return frag_offsets;
+	}
+	let frag_indx =
+		u32::from_be_bytes([mobi_header[232], mobi_header[233], mobi_header[234], mobi_header[235]]) as usize;
+	if frag_indx == 0xFFFFFFFF || frag_indx >= records.len() - 1 {
+		return frag_offsets;
+	}
+
+	let prim_rec = &data[records[frag_indx]..records[frag_indx + 1]];
+	if prim_rec.len() < 28 || &prim_rec[0..4] != b"INDX" {
+		return frag_offsets;
+	}
+	let num_data_recs = u32::from_be_bytes([prim_rec[24], prim_rec[25], prim_rec[26], prim_rec[27]]) as usize;
+
+	for i in 1..=num_data_recs {
+		if frag_indx + i >= records.len() - 1 {
+			break;
+		}
+		let data_rec = &data[records[frag_indx + i]..records[frag_indx + i + 1]];
+		if data_rec.len() < 28 || &data_rec[0..4] != b"INDX" {
+			continue;
+		}
+
+		let idxt_offset = u32::from_be_bytes([data_rec[20], data_rec[21], data_rec[22], data_rec[23]]) as usize;
+		let num_entries = u32::from_be_bytes([data_rec[24], data_rec[25], data_rec[26], data_rec[27]]) as usize;
+
+		if idxt_offset + 4 > data_rec.len() {
+			continue;
+		}
+		let idxt = &data_rec[idxt_offset..];
+		if &idxt[0..4] != b"IDXT" {
+			continue;
+		}
+
+		for j in 0..num_entries {
+			let entry_idx = 4 + j as usize * 2;
+			if entry_idx + 2 > idxt.len() {
+				break;
+			}
+			let entry_offset = u16::from_be_bytes([idxt[entry_idx], idxt[entry_idx + 1]]) as usize;
+			if entry_offset >= data_rec.len() {
+				continue;
+			}
+
+			let mut pos = entry_offset;
+			let label_len = data_rec[pos] as usize;
+			pos += 1;
+			if pos + label_len > data_rec.len() {
+				continue;
+			}
+			let label_str = match std::str::from_utf8(&data_rec[pos..pos + label_len]) {
+				Ok(s) => s,
+				Err(_) => continue,
+			};
+			let insert_offset = match label_str.parse::<usize>() {
+				Ok(v) => v,
+				Err(_) => continue,
+			};
+			pos += label_len;
+
+			if pos >= data_rec.len() {
+				continue;
+			}
+			let control = data_rec[pos];
+			pos += 1;
+
+			if (control & 1) != 0 {
+				let (_, p) = decode_vwi(data_rec, pos);
+				pos = p;
+			}
+			if (control & 2) != 0 {
+				let (_, p) = decode_vwi(data_rec, pos);
+				pos = p;
+			}
+			if (control & 4) != 0 {
+				let (fid, p) = decode_vwi(data_rec, pos);
+				pos = p;
+				frag_offsets.insert(fid, insert_offset);
+			}
+		}
+	}
+	frag_offsets
+}
+
+fn rewrite_internal_links(
+	html: &str,
+	frag_offsets: &std::collections::HashMap<usize, usize>,
+	extra_targets: &std::collections::BTreeSet<usize>,
+) -> String {
+	static RE_LINKS: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+		regex::Regex::new(r#"(?i)<a\b[^>]*?(?:filepos\s*=\s*['"]?(\d+)|href\s*=\s*['"]?kindle:pos:(?:fid:([0-9A-Va-v]+):)?off:([0-9A-Va-v]+))[^>]*>"#).unwrap()
+	});
+
+	let mut links: Vec<(usize, usize, usize)> = Vec::new();
+	let mut targets = extra_targets.clone();
+	for cap in RE_LINKS.captures_iter(html) {
+		let m = cap.get(0).unwrap();
+		let mut filepos = None;
+		if let Some(fpos) = cap.get(1) {
+			filepos = fpos.as_str().parse::<usize>().ok();
+		} else if let Some(off) = cap.get(3) {
+			let off_val = base32_decode(off.as_str());
+			if let Some(fid) = cap.get(2) {
+				let f_idx = base32_decode(fid.as_str());
+				if let Some(&base_offset) = frag_offsets.get(&f_idx) {
+					filepos = Some(base_offset + off_val);
+				}
+			} else {
+				filepos = Some(off_val);
+			}
+		}
+
+		if let Some(filepos) = filepos {
+			if filepos < html.len() {
+				links.push((m.start(), m.end(), filepos));
+				targets.insert(filepos);
+			}
+		}
+	}
+	if links.is_empty() && targets.is_empty() {
 		return html.to_string();
 	}
 	// Build a sorted event list: inserts (kind=0) at target positions, replaces (kind=1) at link sites.
@@ -358,15 +603,6 @@ fn rewrite_filepos_links(html: &str) -> String {
 }
 
 fn get_trailing_size(data: &[u8]) -> usize {
-	if data.is_empty() {
-		return 0;
-	}
-	// If the last byte doesn't have bit 7 set it's not a valid VLQ terminator —
-	// this happens when the trailing-entry count from extra_data_flags exceeds the
-	// entries actually present. Treat the entry as absent.
-	if data[data.len() - 1] & 0x80 == 0 {
-		return 0;
-	}
 	let mut size = 0usize;
 	let mut pos = data.len() - 1;
 	let mut shift = 0u32;
@@ -560,6 +796,7 @@ impl HuffmanDecoder {
 				self.dictionary.push(Some((bytes, (num_bytes & 0x8000) == 0x8000)));
 			}
 		}
+		self.dictionary.reserve(4096);
 		Ok(())
 	}
 
@@ -611,48 +848,47 @@ impl HuffmanDecoder {
 			}
 			current.n -= code_len as i32;
 			if current.bits_left < code_len {
-				break;
-			}
-			current.bits_left -= code_len;
-			if code > max_code {
-				break;
-			}
-			let index = ((max_code - code) >> (32 - code_len)) as usize;
-			if index >= self.dictionary.len() {
-				break;
-			}
-			let (slice, flag) = match self.dictionary[index].clone() {
-				Some(v) => v,
-				None => {
-					// Cycle detected: this entry is already being decoded up the stack.
-					// Break the cycle by emitting nothing for this reference.
-					break;
-				}
-			};
-			if flag {
-				current.out.extend_from_slice(&slice);
+				current.bits_left = 0;
 			} else {
-				self.dictionary[index] = None;
-				stack.push(current);
-				if stack.len() > 1024 {
-					anyhow::bail!("Decode stack overflow");
-				}
-				current = {
-					let mut padded_data = Vec::with_capacity(slice.len() + 8);
-					padded_data.extend_from_slice(&slice);
-					padded_data.extend_from_slice(&[0u8; 8]);
-					let mut x_bytes = [0u8; 8];
-					x_bytes.copy_from_slice(&padded_data[0..8]);
-					DecodeFrame {
-						data: padded_data,
-						pos: 0,
-						bits_left: slice.len() * 8,
-						x: u64::from_be_bytes(x_bytes),
-						n: 32,
-						out: Vec::new(),
-						target_dict_index: Some(index),
+				current.bits_left -= code_len;
+				if code > max_code {
+					current.bits_left = 0;
+				} else {
+					let index = ((max_code - code) >> (32 - code_len)) as usize;
+					if index >= self.dictionary.len() {
+						current.bits_left = 0;
+					} else {
+						let (slice, flag) = match self.dictionary[index].clone() {
+							Some(v) => v,
+							None => (Vec::new(), true),
+						};
+						if flag {
+							current.out.extend_from_slice(&slice);
+						} else {
+							self.dictionary[index] = None;
+							stack.push(current);
+							if stack.len() > 1024 {
+								anyhow::bail!("Decode stack overflow");
+							}
+							current = {
+								let mut padded_data = Vec::with_capacity(slice.len() + 8);
+								padded_data.extend_from_slice(&slice);
+								padded_data.extend_from_slice(&[0u8; 8]);
+								let mut x_bytes = [0u8; 8];
+								x_bytes.copy_from_slice(&padded_data[0..8]);
+								DecodeFrame {
+									data: padded_data,
+									pos: 0,
+									bits_left: slice.len() * 8,
+									x: u64::from_be_bytes(x_bytes),
+									n: 32,
+									out: Vec::new(),
+									target_dict_index: Some(index),
+								}
+							};
+						}
 					}
-				};
+				}
 			}
 			while current.bits_left == 0 {
 				let finished_out = current.out;
@@ -677,4 +913,258 @@ impl HuffmanDecoder {
 		}
 		Ok(current.out)
 	}
+}
+
+fn parse_ncx(
+	data: &[u8],
+	records: &[usize],
+	mobi_header: &[u8],
+	exth: &std::collections::HashMap<u32, Vec<u8>>,
+	is_kf8: bool,
+	frag_offsets: &std::collections::HashMap<usize, usize>,
+) -> Vec<TocItem> {
+	let mut ncx_index = 0xFFFFFFFF;
+	if is_kf8 && mobi_header.len() >= 232 {
+		ncx_index = u32::from_be_bytes(mobi_header[228..232].try_into().unwrap_or([0; 4])) as usize;
+	} else if !is_kf8 && mobi_header.len() >= 248 {
+		ncx_index = u32::from_be_bytes(mobi_header[244..248].try_into().unwrap_or([0; 4])) as usize;
+	}
+	if ncx_index == 0xFFFFFFFF || ncx_index == 0 {
+		if let Some(ext) = exth.get(&253) {
+			if ext.len() >= 4 {
+				ncx_index = u32::from_be_bytes([ext[0], ext[1], ext[2], ext[3]]) as usize;
+			}
+		}
+	}
+	if ncx_index == 0xFFFFFFFF || ncx_index == 0 || ncx_index >= records.len() - 1 {
+		return Vec::new();
+	}
+
+	let indx_rec = &data[records[ncx_index]..records[ncx_index + 1]];
+	if indx_rec.len() < 192 || &indx_rec[0..4] != b"INDX" {
+		return Vec::new();
+	}
+
+	let count = u32::from_be_bytes(indx_rec[24..28].try_into().unwrap()) as usize;
+	let cncx_count = u32::from_be_bytes(indx_rec[52..56].try_into().unwrap()) as usize;
+
+	let cncx_start_rec = ncx_index + count + 1;
+	let mut cncx_data = Vec::new();
+	for i in 0..cncx_count {
+		let rec_idx = cncx_start_rec + i;
+		if rec_idx >= records.len() - 1 {
+			break;
+		}
+		let rec = &data[records[rec_idx]..records[rec_idx + 1]];
+		cncx_data.extend_from_slice(rec);
+	}
+
+	let tagx_start = u32::from_be_bytes(indx_rec[4..8].try_into().unwrap()) as usize;
+	if tagx_start + 12 > indx_rec.len() || &indx_rec[tagx_start..tagx_start + 4] != b"TAGX" {
+		return Vec::new();
+	}
+
+	let tagx_len = u32::from_be_bytes(indx_rec[tagx_start + 4..tagx_start + 8].try_into().unwrap()) as usize;
+	let control_byte_count = u32::from_be_bytes(indx_rec[tagx_start + 8..tagx_start + 12].try_into().unwrap()) as usize;
+
+	let mut tags = Vec::new();
+	for i in (12..tagx_len).step_by(4) {
+		let p = tagx_start + i;
+		if p + 4 > indx_rec.len() {
+			break;
+		}
+		let tag = indx_rec[p];
+		let vpe = indx_rec[p + 1] as usize;
+		let mask = indx_rec[p + 2] as u32;
+		let end = indx_rec[p + 3];
+		tags.push((tag, vpe, mask, end));
+	}
+
+	let mut idxt_start = 0;
+	for i in (0..indx_rec.len().saturating_sub(4)).rev() {
+		if &indx_rec[i..i + 4] == b"IDXT" {
+			idxt_start = i;
+			break;
+		}
+	}
+	if idxt_start == 0 {
+		return Vec::new();
+	}
+
+	let num_entries = (indx_rec.len() - idxt_start - 4) / 2;
+	let mut offsets = Vec::new();
+	for i in 0..num_entries {
+		let p = idxt_start + 4 + i * 2;
+		if p + 2 > indx_rec.len() {
+			break;
+		}
+		let off = u16::from_be_bytes(indx_rec[p..p + 2].try_into().unwrap()) as usize;
+		offsets.push(off);
+	}
+
+	let mut entries = Vec::new();
+	for i in 0..=count {
+		let rec_idx = ncx_index + i;
+		if rec_idx >= records.len() - 1 {
+			break;
+		}
+		let rec = &data[records[rec_idx]..records[rec_idx + 1]];
+
+		let mut idxt = 0;
+		for j in (0..rec.len().saturating_sub(4)).rev() {
+			if &rec[j..j + 4] == b"IDXT" {
+				idxt = j;
+				break;
+			}
+		}
+		if idxt == 0 {
+			continue;
+		}
+		let num = (rec.len() - idxt - 4) / 2;
+		for j in 0..num {
+			let p = idxt + 4 + j * 2;
+			if p + 2 > rec.len() {
+				break;
+			}
+			let off = u16::from_be_bytes(rec[p..p + 2].try_into().unwrap()) as usize;
+
+			if off >= rec.len() {
+				continue;
+			}
+
+			let id_len = rec[off] as usize;
+			let data_start = off + 1 + id_len;
+			if data_start + control_byte_count > rec.len() {
+				continue;
+			}
+
+			let mut cbytes = Vec::new();
+			for k in 0..control_byte_count {
+				cbytes.push(rec[data_start + k]);
+			}
+
+			let mut title_offset: Option<usize> = None;
+			let mut pos: Option<usize> = None;
+			let mut fid: Option<usize> = None;
+			let mut lvl = 0;
+
+			let mut vwi_offset = data_start + control_byte_count;
+			let mut cbyte_idx = 0;
+
+			for &(tag, vpe, mask, end_flag) in &tags {
+				let cb = cbytes.get(cbyte_idx).copied().unwrap_or(0) as u32;
+				if end_flag == 1 {
+					cbyte_idx += 1;
+				}
+				if tag == 0 {
+					continue;
+				}
+
+				let val = cb & mask;
+				if val == 0 {
+					continue;
+				}
+
+				let mut value_count = 0;
+				let mut value_bytes = 0;
+
+				if val == mask {
+					if mask.count_ones() > 1 {
+						if vwi_offset < rec.len() {
+							let (v, next) = decode_vwi(rec, vwi_offset);
+							value_bytes = v as usize;
+							vwi_offset = next;
+						}
+					} else {
+						value_count = 1;
+					}
+				} else {
+					let mut m = mask;
+					let mut v = val;
+					while m & 1 == 0 {
+						m >>= 1;
+						v >>= 1;
+					}
+					value_count = v as usize;
+				}
+
+				let mut vals = Vec::new();
+				if value_count > 0 {
+					for _ in 0..(value_count * vpe) {
+						if vwi_offset < rec.len() {
+							let (v, next) = decode_vwi(rec, vwi_offset);
+							vals.push(v);
+							vwi_offset = next;
+						}
+					}
+				} else if value_bytes > 0 {
+					let mut total_consumed = 0;
+					while total_consumed < value_bytes && vwi_offset < rec.len() {
+						let (v, next) = decode_vwi(rec, vwi_offset);
+						vals.push(v);
+						total_consumed += next - vwi_offset;
+						vwi_offset = next;
+					}
+				}
+
+				if !vals.is_empty() {
+					if tag == 1 {
+						pos = Some(vals[0] as usize);
+					}
+					if tag == 3 {
+						title_offset = Some(vals[0] as usize);
+					}
+					if tag == 4 {
+						lvl = vals[0] as usize;
+					}
+					if tag == 6 {
+						fid = Some(vals[0] as usize);
+						if vals.len() > 1 {
+							pos = Some(vals[1] as usize);
+						}
+					}
+				}
+			}
+
+			if let (Some(toff), Some(p)) = (title_offset, pos) {
+				if toff < cncx_data.len() {
+					let (text_len, next) = decode_vwi(&cncx_data, toff);
+					if next + text_len <= cncx_data.len() {
+						let title_bytes = &cncx_data[next..next + text_len];
+						let title = String::from_utf8_lossy(title_bytes).into_owned();
+						let f = fid.unwrap_or(0);
+						let filepos = frag_offsets.get(&f).copied().unwrap_or(0) + p;
+						let lvl = if lvl == 0 { 1 } else { lvl as u32 };
+
+						entries.push((title, lvl, format!("#fp{:010}", filepos)));
+					}
+				}
+			}
+		}
+	}
+
+	let mut toc: Vec<TocItem> = Vec::new();
+	let mut stack: Vec<usize> = Vec::new();
+	let mut levels: Vec<u32> = Vec::new();
+	for (title, level, reference) in entries {
+		if level == 0 {
+			continue;
+		}
+		while let Some(&last_level) = levels.last() {
+			if last_level < level {
+				break;
+			}
+			stack.pop();
+			levels.pop();
+		}
+		let item = TocItem::new(title, reference, 0);
+		let mut current = &mut toc;
+		for &idx in &stack {
+			current = &mut current[idx].children;
+		}
+		current.push(item);
+		stack.push(current.len() - 1);
+		levels.push(level);
+	}
+	toc
 }

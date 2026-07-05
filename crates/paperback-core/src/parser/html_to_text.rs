@@ -716,6 +716,7 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
+	use crate::document::MarkerType;
 
 	/// End-to-end: the HtmlToText converter emits each table's on-screen text at parse time, and a
 	/// heading that follows the table is offset by the emitted display extent. Verified in both
@@ -784,6 +785,73 @@ mod tests {
 		assert_eq!(links[0].text, "Hello world");
 		assert_eq!(links[0].reference, "https://example.com");
 		assert_eq!(converter.get_text(), "Hello world");
+	}
+
+	#[rstest]
+	#[case("b", MarkerType::Bold)]
+	#[case("strong", MarkerType::Bold)]
+	#[case("i", MarkerType::Italic)]
+	#[case("em", MarkerType::Italic)]
+	#[case("u", MarkerType::Underline)]
+	fn test_format_span_collection(#[case] tag: &str, #[case] kind: MarkerType) {
+		let html = format!("<html><body><p>Some <{tag}>bold</{tag}> text</p></body></html>");
+		let mut converter = HtmlToText::new();
+		assert!(converter.convert(&html, HtmlSourceMode::NativeHtml));
+		let spans = match kind {
+			MarkerType::Bold => converter.get_bolds(),
+			MarkerType::Italic => converter.get_italics(),
+			MarkerType::Underline => converter.get_underlines(),
+			_ => unreachable!(),
+		};
+		assert_eq!(spans.len(), 1);
+		let text = converter.get_text();
+		assert_eq!(&text[spans[0].offset..spans[0].offset + spans[0].length], "bold");
+	}
+
+	#[test]
+	fn test_format_span_nested_bold_and_italic() {
+		let html = "<html><body><p><b>outer <i>inner</i></b></p></body></html>";
+		let mut converter = HtmlToText::new();
+		assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
+		let text = converter.get_text();
+
+		let italics = converter.get_italics();
+		assert_eq!(italics.len(), 1);
+		assert_eq!(&text[italics[0].offset..italics[0].offset + italics[0].length], "inner");
+
+		let bolds = converter.get_bolds();
+		assert_eq!(bolds.len(), 1);
+		assert_eq!(&text[bolds[0].offset..bolds[0].offset + bolds[0].length], "outer inner");
+	}
+
+	#[test]
+	fn test_format_span_fully_inside_link_is_dropped_known_limitation() {
+		// Known limitation: text inside an `<a>` is buffered in `current_link_text` and only
+		// pushed into `current_line` on `</a>` (see `handle_text_node`/`handle_element_closing`),
+		// so `get_current_text_position()` does not advance while inside a link. A `<b>`/`<i>`/`<u>`
+		// that opens and closes fully inside an `<a>` therefore sees `start == end` and is recorded
+		// as a zero-length span rather than spanning the link's text. This degrades gracefully (no
+		// panic, no bad offset; the link itself is still recorded correctly) rather than corrupting
+		// data, so it is left as-is (no changes to the `<a>` deferred-buffering behavior).
+		let html = "<html><body><a href=\"https://example.com\"><b>bold</b></a></body></html>";
+		let mut converter = HtmlToText::new();
+		assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
+		let bolds = converter.get_bolds();
+		assert_eq!(bolds.len(), 1);
+		assert_eq!(bolds[0].length, 0);
+		let links = converter.get_links();
+		assert_eq!(links.len(), 1);
+		assert_eq!(links[0].text, "bold");
+	}
+
+	#[test]
+	fn test_no_format_spans_without_formatting_tags() {
+		let html = "<html><body><p>Plain paragraph with no formatting.</p></body></html>";
+		let mut converter = HtmlToText::new();
+		assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
+		assert!(converter.get_bolds().is_empty());
+		assert!(converter.get_italics().is_empty());
+		assert!(converter.get_underlines().is_empty());
 	}
 
 	#[test]
