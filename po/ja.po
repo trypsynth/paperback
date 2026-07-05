@@ -7,9 +7,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.0\n"
-"Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-06-03 18:57+0530\n"
-"PO-Revision-Date: 2026-06-25 21:58+0900\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-30 11:59-0600\n"
+"PO-Revision-Date: 2026-07-05 15:03+0900\n"
 "Last-Translator: Kazto Kitabatake <contact@kitabatake1013.jp>\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -26,12 +26,6 @@ msgstr "警告"
 
 msgid "An accessible, lightweight, fast ebook and document reader"
 msgstr "アクセシブル、軽量、高速な電子書籍・文書リーダー"
-
-msgid "expanded"
-msgstr "展開"
-
-msgid "collapsed"
-msgstr "折りたたみ"
 
 msgid "All Documents"
 msgstr "すべての文書"
@@ -56,6 +50,9 @@ msgstr "パス"
 
 msgid "&Open"
 msgstr "開く(&O)"
+
+msgid "&Locate…"
+msgstr ""
 
 msgid "&Remove"
 msgstr "削除(&R)"
@@ -86,6 +83,9 @@ msgstr "クローズ"
 
 msgid "Missing"
 msgstr "見つかりません"
+
+msgid "Locate Book"
+msgstr ""
 
 msgid "Jump to Bookmark"
 msgstr "しおりへ移動"
@@ -156,11 +156,8 @@ msgstr "文字数(スペースを除く):"
 msgid "Elements"
 msgstr "要素"
 
-msgid "OK"
-msgstr "OK"
-
-msgid "Cancel"
-msgstr "キャンセル"
+msgid "&View:"
+msgstr "表示(&V):"
 
 msgid "Headings"
 msgstr "見出し"
@@ -171,17 +168,25 @@ msgstr "リンク"
 msgid "Untitled"
 msgstr "無題"
 
-msgid "&View:"
-msgstr "表示(&V):"
-
 msgid "Root"
 msgstr "ルート"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Cancel"
+msgstr "キャンセル"
 
 msgid "Go to Line"
 msgstr "指定行へ移動"
 
 msgid "&Line number:"
 msgstr "行番号(&L):"
+
+#, fuzzy
+#| msgid "&Go"
+msgid "Go"
+msgstr "移動(&G)"
 
 msgid "Go to page"
 msgstr "指定ページへ移動"
@@ -229,6 +234,9 @@ msgstr "起動時に前回の文書を開く(&R)"
 
 msgid "&Word wrap"
 msgstr "折り返し(&W)"
+
+msgid "Render tables &inline"
+msgstr ""
 
 msgid "&Minimize to system tray"
 msgstr "システムトレーに最小化(&M)"
@@ -377,6 +385,11 @@ msgstr "&Win"
 msgid "&Key:"
 msgstr "キー(&K):"
 
+#, fuzzy
+#| msgid "&Clear All"
+msgid "Clear"
+msgstr "すべて削除(&C)"
+
 msgid "Space"
 msgstr "Space"
 
@@ -419,6 +432,11 @@ msgstr "秒"
 msgid "Estimated reading time: {}"
 msgstr "推定閲覧時間: {}"
 
+#, fuzzy
+#| msgid "This document contains {} words."
+msgid "The selection contains {} words."
+msgstr "この文書の単語数は{}です。"
+
 msgid "This document contains {} words."
 msgstr "この文書の単語数は{}です。"
 
@@ -440,11 +458,11 @@ msgstr "パスワードが必要です。"
 msgid "Navigated to internal link."
 msgstr "リンク先へ移動しました。"
 
-msgid "Table View"
-msgstr "テーブルビュー"
-
 msgid "Ready"
 msgstr "準備完了"
+
+msgid "Table View"
+msgstr "テーブルビュー"
 
 msgid "&Password:"
 msgstr "パスワード(&P):"
@@ -527,7 +545,9 @@ msgstr "見つかりません。"
 msgid "No more results. Wrapping search."
 msgstr "これ以上見つかりません。折り返して検索します。"
 
-msgid "Failed to open containing folder."
+#, fuzzy
+#| msgid "Failed to open containing folder."
+msgid "Failed to reveal file in folder."
 msgstr "保存先フォルダーを開けません。"
 
 msgid "readme.html not found. Please ensure the application was built properly."
@@ -545,6 +565,9 @@ msgstr "選択した形式には対応していません。"
 msgid "Paperback"
 msgstr "Paperback"
 
+msgid "Paperback cannot perform any actions while Web View is open."
+msgstr ""
+
 msgid "Paperback - {}"
 msgstr "Paperback - {}"
 
@@ -556,6 +579,16 @@ msgstr "文書を開く"
 
 msgid "No pages."
 msgstr "ページがありません。"
+
+#, fuzzy
+#| msgid "&Word wrap"
+msgid "Word wrap on."
+msgstr "折り返し(&W)"
+
+#, fuzzy
+#| msgid "&Word wrap"
+msgid "Word wrap off."
+msgstr "折り返し(&W)"
 
 msgid "document"
 msgstr "文書"
@@ -610,6 +643,17 @@ msgstr "Webビュー"
 
 msgid "Could not determine content to display in Web View."
 msgstr "Webビューに表示する内容を特定できません。"
+
+msgid "Source:"
+msgstr ""
+
+msgid "Source view is not available for this document format."
+msgstr ""
+
+#, fuzzy
+#| msgid "Failed to load document."
+msgid "Could not load the document source."
+msgstr "文書の読み込みに失敗しました。"
 
 msgid "Sleep timer cancelled."
 msgstr "スリープタイマーをキャンセルしました。"
@@ -686,6 +730,20 @@ msgstr "前のリスト項目(&I)\tShift+I"
 
 msgid "Next List I&tem\tI"
 msgstr "次のリスト項目(&t)\tI"
+
+msgid "Container &Start\tShift+,"
+msgstr ""
+
+#, fuzzy
+#| msgid "No note at the current position."
+msgid "Go to the start of the current list or table"
+msgstr "現在位置にメモはありません。"
+
+msgid "Past Container &End\t,"
+msgstr ""
+
+msgid "Go past the end of the current list or table"
+msgstr ""
 
 msgid "Next Heading Level 1\t1"
 msgstr "次の見出しレベル1\t1"
@@ -798,6 +856,11 @@ msgstr "ツール(&T)"
 msgid "&Help"
 msgstr "ヘルプ(&H)"
 
+#, fuzzy
+#| msgid "&Edit Note"
+msgid "&Edit"
+msgstr "メモの編集(&E)"
+
 msgid "&Open...\tCtrl+O"
 msgstr "開く(&O)...\tCtrl+O"
 
@@ -840,11 +903,46 @@ msgstr "終了(&X)\tCtrl+Q"
 msgid "Exit the application"
 msgstr "アプリケーションを終了します"
 
+#, fuzzy
+#| msgid "&Find...\tCtrl+F"
+msgid "&Undo\tCtrl+Z"
+msgstr "検索(&F)...\tCtrl+F"
+
+#, fuzzy
+#| msgid "&View Note Text\tCtrl+Shift+W"
+msgid "&Redo\tCtrl+Shift+Z"
+msgstr "メモの内容を表示(&V)\tCtrl+Shift+W"
+
+#, fuzzy
+#| msgid "E&xit\tCtrl+Q"
+msgid "Cu&t\tCtrl+X"
+msgstr "終了(&X)\tCtrl+Q"
+
+#, fuzzy
+#| msgid "&Close\tCtrl+W"
+msgid "&Copy\tCtrl+C"
+msgstr "閉じる(&C)\tCtrl+W"
+
+#, fuzzy
+#| msgid "&Donate\tCtrl+D"
+msgid "&Paste\tCtrl+V"
+msgstr "寄付(&D)\tCtrl+D"
+
+#, fuzzy
+#| msgid "Close &All\tCtrl+Shift+W"
+msgid "Select &All\tCtrl+A"
+msgstr "すべて閉じる(&A)\tCtrl+Shift+W"
+
 msgid "&Find...\tCtrl+F"
 msgstr "検索(&F)...\tCtrl+F"
 
 msgid "Find text in the document"
 msgstr "文書内のテキストを検索します"
+
+#, fuzzy
+#| msgid "Find &Next"
+msgid "Find &Next\tCtrl+G"
+msgstr "次を検索(&N)"
 
 msgid "Find &Next\tF3"
 msgstr "次を検索(&N)\tF3"
@@ -852,11 +950,21 @@ msgstr "次を検索(&N)\tF3"
 msgid "Find next occurrence"
 msgstr "次のテキストを検索します"
 
+#, fuzzy
+#| msgid "Find &Previous\tShift+F3"
+msgid "Find &Previous\tCtrl+Shift+G"
+msgstr "前を検索(&P)\tShift+F3"
+
 msgid "Find &Previous\tShift+F3"
 msgstr "前を検索(&P)\tShift+F3"
 
 msgid "Find previous occurrence"
 msgstr "前のテキストを検索します"
+
+#, fuzzy
+#| msgid "Go to &line...\tCtrl+G"
+msgid "Go to &line...\tCtrl+L"
+msgstr "指定行へ移動(&l)...\tCtrl+G"
 
 msgid "Go to &line...\tCtrl+G"
 msgstr "指定行へ移動(&l)...\tCtrl+G"
@@ -864,17 +972,32 @@ msgstr "指定行へ移動(&l)...\tCtrl+G"
 msgid "Go to a specific line"
 msgstr "指定した行へ移動します"
 
+#, fuzzy
+#| msgid "Go to &percent...\tCtrl+Shift+G"
+msgid "Go to &percent...\tCtrl+Shift+L"
+msgstr "パーセント移動(&p)...\tCtrl+Shift+G"
+
 msgid "Go to &percent...\tCtrl+Shift+G"
 msgstr "パーセント移動(&p)...\tCtrl+Shift+G"
 
 msgid "Go to a percentage of the document"
 msgstr "文書内のパーセンテージを指定して移動します"
 
+#, fuzzy
+#| msgid "Go &Back\tAlt+Left"
+msgid "Go &Back\tCtrl+["
+msgstr "戻る(&B)\tAlt+Left"
+
 msgid "Go &Back\tAlt+Left"
 msgstr "戻る(&B)\tAlt+Left"
 
 msgid "Go back in history"
 msgstr "履歴を戻ります"
+
+#, fuzzy
+#| msgid "Go &Forward\tAlt+Right"
+msgid "Go &Forward\tCtrl+]"
+msgstr "進む(&F)\tAlt+Right"
 
 msgid "Go &Forward\tAlt+Right"
 msgstr "進む(&F)\tAlt+Right"
@@ -942,6 +1065,14 @@ msgstr "リスト(&L)"
 msgid "Navigate by lists"
 msgstr "リスト単位で移動します"
 
+msgid "&Containers"
+msgstr ""
+
+#, fuzzy
+#| msgid "Navigate by sections"
+msgid "Navigate by containers"
+msgstr "セクション単位で移動します"
+
 msgid "&Import Document Data...\tCtrl+Shift+I"
 msgstr "文書データのインポート(&I)...\tCtrl+Shift+I"
 
@@ -999,16 +1130,28 @@ msgstr "要素リスト(&E)...\tF7"
 msgid "Show elements list"
 msgstr "要素リストを表示します"
 
-msgid "Open &Containing Folder\tCtrl+Shift+C"
+#, fuzzy
+#| msgid "Open &Containing Folder\tCtrl+Shift+C"
+msgid "Reveal &File in Folder\tCtrl+Shift+C"
 msgstr "保存先フォルダーを開く(&C)\tCtrl+Shift+C"
 
-msgid "Open folder containing the document"
-msgstr "文書が保存されているフォルダーを開きます"
+#, fuzzy
+#| msgid "Open document in web view"
+msgid "Reveal document in the file manager"
+msgstr "文書をWebビューで開きます"
 
 msgid "Open in &Web View\tCtrl+Shift+V"
 msgstr "&Webビューで開く\tCtrl+Shift+V"
 
 msgid "Open document in web view"
+msgstr "文書をWebビューで開きます"
+
+msgid "View &Source\tCtrl+U"
+msgstr ""
+
+#, fuzzy
+#| msgid "Open document in web view"
+msgid "Open the document source in a new tab"
 msgstr "文書をWebビューで開きます"
 
 msgid "I&mport/Export"
@@ -1022,6 +1165,16 @@ msgstr "しおりの切り替え(&B)\tCtrl+Shift+B"
 
 msgid "Bookmark with &Note\tCtrl+Shift+N"
 msgstr "メモ付きのしおりを設定(&N)\tCtrl+Shift+N"
+
+#, fuzzy
+#| msgid "&Word Count\tCtrl+W"
+msgid "Word w&rap\tCtrl+Alt+W"
+msgstr "単語数の確認(&W)\tCtrl+W"
+
+#, fuzzy
+#| msgid "&Word wrap"
+msgid "Toggle word wrap"
+msgstr "折り返し(&W)"
 
 msgid "&Options\tCtrl+,"
 msgstr "オプション(&O)\tCtrl+,"
@@ -1193,6 +1346,20 @@ msgstr "次の位置がありません。"
 msgid "No previous position."
 msgstr "前の位置がありません。"
 
+msgid "No containers."
+msgstr ""
+
+msgid "Not in a container."
+msgstr ""
+
+msgid "Past end of container."
+msgstr ""
+
+#, fuzzy
+#| msgid "No table of contents."
+msgid "Start of container."
+msgstr "目次がありません。"
+
 #, c-format
 msgid "%s - Bookmark %d"
 msgstr "%s - しおり%d"
@@ -1314,6 +1481,610 @@ msgstr "更新スクリプトを起動できません"
 
 msgid "Unknown update file format."
 msgstr "更新ファイルが不明な形式です。"
+
+msgid "Go To…"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Recent Documents"
+msgid "Recent Documents"
+msgstr "最近開いた文書(&R)"
+
+msgid "Switch to TTS Mode"
+msgstr ""
+
+msgid "Switch to Text Mode"
+msgstr ""
+
+#, fuzzy
+#| msgid "Sleep Timer"
+msgid "Sleep Timer (active)"
+msgstr "スリープタイマー"
+
+#, fuzzy
+#| msgid "Headings"
+msgid "Settings"
+msgstr "見出し"
+
+#, fuzzy
+#| msgid "Options"
+msgid "More options"
+msgstr "オプション"
+
+#, fuzzy
+#| msgid "document"
+msgid "No document open"
+msgstr "文書"
+
+#, fuzzy
+#| msgid "&Percent"
+msgid "Recent"
+msgstr "パーセント(&P)"
+
+msgid "Screen dimmed by sleep timer. Tap to wake."
+msgstr ""
+
+#, fuzzy
+#| msgid "Error"
+msgid "Open Error"
+msgstr "エラー"
+
+#, fuzzy
+#| msgid "Open a document"
+msgid "Open document"
+msgstr "文書を開きます"
+
+#, fuzzy
+#| msgid "Title:"
+msgid "Title"
+msgstr "タイトル:"
+
+#, fuzzy
+#| msgid "Author:"
+msgid "Author"
+msgstr "著者:"
+
+#, fuzzy
+#| msgid "&File"
+msgid "File"
+msgstr "ファイル(&F)"
+
+#, fuzzy
+#| msgid "Words:"
+msgid "Words"
+msgstr "単語数:"
+
+#, fuzzy
+#| msgid "Lines:"
+msgid "Lines"
+msgstr "行数:"
+
+#, fuzzy
+#| msgid "Characters:"
+msgid "Characters"
+msgstr "文字数:"
+
+#, fuzzy
+#| msgid "Characters (excluding spaces):"
+msgid "Characters (excluding spaces)"
+msgstr "文字数(スペースを除く):"
+
+msgid "Type"
+msgstr ""
+
+msgid "Done"
+msgstr ""
+
+#, fuzzy
+#| msgid "Elements"
+msgid "No Elements"
+msgstr "要素"
+
+msgid "Headings, images, and other elements will appear here."
+msgstr ""
+
+#, fuzzy
+#| msgid "&search"
+msgid "Search…"
+msgstr "検索(&S)"
+
+#, fuzzy
+#| msgid "&Match case"
+msgid "Match Case"
+msgstr "大文字/小文字を区別(&M)"
+
+msgid "Whole Word"
+msgstr ""
+
+#, fuzzy
+#| msgid "Use &regular expressions"
+msgid "Regular Expression"
+msgstr "正規表現を使用(&R)"
+
+#, fuzzy
+#| msgid "Previous Section\t["
+msgid "Previous result"
+msgstr "前のセクション\t["
+
+#, fuzzy
+#| msgid "Next L&ist\tL"
+msgid "Next result"
+msgstr "次のリスト(&i)\tL"
+
+#, fuzzy
+#| msgid "&search"
+msgid "Search"
+msgstr "検索(&S)"
+
+msgid "Mode"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Pages"
+msgid "Page"
+msgstr "ページ(&P)"
+
+#, fuzzy
+#| msgid "&Percent"
+msgid "Percent"
+msgstr "パーセント(&P)"
+
+#, fuzzy
+#| msgid "&Line number:"
+msgid "Line number"
+msgstr "行番号(&L):"
+
+#, fuzzy
+#| msgid "&Line number:"
+msgid "Page number"
+msgstr "行番号(&L):"
+
+#, fuzzy
+#| msgid "&Percent"
+msgid "Percentage"
+msgstr "パーセント(&P)"
+
+msgid "Go To"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Password:"
+msgid "Password"
+msgstr "パスワード(&P):"
+
+#, fuzzy
+#| msgid "Password is required."
+msgid "Password Required"
+msgstr "パスワードが必要です。"
+
+#, fuzzy
+#| msgid "&Recent Documents"
+msgid "No Recent Documents"
+msgstr "最近開いた文書(&R)"
+
+msgid "Documents you open will appear here."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Remove"
+msgid "Remove"
+msgstr "削除(&R)"
+
+msgid "Rule"
+msgstr ""
+
+msgid "Scope"
+msgstr ""
+
+#, fuzzy
+#| msgid "Words:"
+msgid "Word"
+msgstr "単語数:"
+
+#, fuzzy
+#| msgid "&Paragraph spacing:"
+msgid "Paragraph"
+msgstr "段落の間隔(&P):"
+
+msgid "Pattern & Replacement"
+msgstr ""
+
+msgid "Pattern"
+msgstr ""
+
+#, fuzzy
+#| msgid "Elements"
+msgid "Replacement"
+msgstr "要素"
+
+#, fuzzy
+#| msgid "Show word count"
+msgid "Whole word only"
+msgstr "単語数を表示します"
+
+msgid "Regular expression (\\1 = first capture group)"
+msgstr ""
+
+#, fuzzy
+#| msgid "Stable"
+msgid "Enabled"
+msgstr "安定版"
+
+msgid "Apply to"
+msgstr ""
+
+msgid "Voices"
+msgstr ""
+
+msgid "New Rule"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Edit Note"
+msgid "Edit Rule"
+msgstr "メモの編集(&E)"
+
+msgid "Save"
+msgstr ""
+
+#, fuzzy
+#| msgid "All Documents"
+msgid "All voices"
+msgstr "すべての文書"
+
+msgid "Apply To"
+msgstr ""
+
+msgid "Text to Speech"
+msgstr ""
+
+msgid "Voice"
+msgstr ""
+
+msgid "Rate"
+msgstr ""
+
+msgid "Speech Rate"
+msgstr ""
+
+msgid "Pitch"
+msgstr ""
+
+msgid "Speech Dictionary"
+msgstr ""
+
+msgid "Play Sample"
+msgstr ""
+
+msgid "Behavior"
+msgstr ""
+
+#, fuzzy
+#| msgid "Reopen the last closed document"
+msgid "Restore last open documents"
+msgstr "最後に閉じた文書を開きます"
+
+msgid "Swipe up moves forward"
+msgstr ""
+
+msgid "Active"
+msgstr ""
+
+msgid "Time remaining"
+msgstr ""
+
+#, fuzzy
+#| msgid "Cancel"
+msgid "Cancel Timer"
+msgstr "キャンセル"
+
+#, fuzzy
+#| msgid "Sleep timer"
+msgid "Set timer"
+msgstr "スリープタイマー"
+
+msgid "Edit"
+msgstr ""
+
+msgid "Add Rule"
+msgstr ""
+
+msgid "No Rules"
+msgstr ""
+
+#, fuzzy
+#| msgid "Table of Contents"
+msgid "Contents"
+msgstr "目次"
+
+#, fuzzy
+#| msgid "Table of Contents"
+msgid "No Table of Contents"
+msgstr "目次"
+
+#, fuzzy
+#| msgid "No table of contents."
+msgid "This document has no table of contents."
+msgstr "目次がありません。"
+
+msgid "Tabs"
+msgstr ""
+
+#, fuzzy
+#| msgid "Navigate by lists"
+msgid "Navigation unit"
+msgstr "リスト単位で移動します"
+
+msgid "Pause"
+msgstr ""
+
+msgid "Play"
+msgstr ""
+
+#, fuzzy
+#| msgid "Open a document"
+msgid "End of document"
+msgstr "文書を開きます"
+
+#, fuzzy
+#| msgid "Open a document"
+msgid "Beginning of document"
+msgstr "文書を開きます"
+
+msgid "Press play to start listening."
+msgstr ""
+
+#, fuzzy
+#| msgid "Missing"
+msgid "File Missing"
+msgstr "見つかりません"
+
+msgid "Currently Open"
+msgstr ""
+
+#, fuzzy
+#| msgid "Show document information"
+msgid "Document Information"
+msgstr "文書の情報を表示します"
+
+#, fuzzy
+#| msgid "expanded"
+msgid "Expanded"
+msgstr "展開"
+
+#, fuzzy
+#| msgid "collapsed"
+msgid "Collapsed"
+msgstr "折りたたみ"
+
+#, fuzzy
+#| msgid "collapsed"
+msgid "Collapse"
+msgstr "折りたたみ"
+
+#, fuzzy
+#| msgid "expanded"
+msgid "Expand"
+msgstr "展開"
+
+#, fuzzy
+#| msgid "Untitled"
+msgid "Untitled Link"
+msgstr "無題"
+
+msgid "No supported books or folders found here."
+msgstr ""
+
+msgid "Folder"
+msgstr ""
+
+msgid "Internal Storage"
+msgstr ""
+
+msgid "Search Term"
+msgstr ""
+
+msgid "Search History"
+msgstr ""
+
+#, fuzzy
+#| msgid "Find &Next"
+msgid "Find Next"
+msgstr "次を検索(&N)"
+
+#, fuzzy
+#| msgid "&Password:"
+msgid "Password:"
+msgstr "パスワード(&P):"
+
+msgid "All Files Access Required"
+msgstr ""
+
+msgid "Paperback requires the 'All Files Access' permission to enable the custom in-app file browser."
+msgstr ""
+
+msgid "Why we need this:"
+msgstr ""
+
+msgid "• To provide a fast, fully screen-reader accessible file manager inside the app."
+msgstr ""
+
+msgid "• To load large files instantly without needing to copy them into the app's cache."
+msgstr ""
+
+msgid "• To display the exact local file paths of your documents."
+msgstr ""
+
+msgid "If you deny this permission, you can still use the Android System File Picker to open your books by turning off the custom file browser setting."
+msgstr ""
+
+msgid "Grant"
+msgstr ""
+
+msgid "Not Now"
+msgstr ""
+
+#, fuzzy
+#| msgid "Restore Paperback"
+msgid "Restore last open book"
+msgstr "Paperbackを再度表示します"
+
+msgid "Use in-app file browser (requires All Files permission)"
+msgstr ""
+
+msgid "Text-to-Speech"
+msgstr ""
+
+#, fuzzy
+#| msgid "Font: Default"
+msgid "System Default"
+msgstr "フォント: 既定"
+
+msgid "Custom Timer"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Minutes:"
+msgid "Minutes"
+msgstr "分(&M):"
+
+msgid "Back"
+msgstr ""
+
+msgid "Start"
+msgstr ""
+
+msgid "Change to:"
+msgstr ""
+
+msgid "Custom time..."
+msgstr ""
+
+#, fuzzy
+#| msgid "Find &Previous"
+msgid "Find Previous"
+msgstr "前を検索(&P)"
+
+#, fuzzy
+#| msgid "&search"
+msgid "Close Search"
+msgstr "検索(&S)"
+
+msgid "Settings imported"
+msgstr ""
+
+#, fuzzy
+#| msgid "Failed to export document."
+msgid "Failed to import settings"
+msgstr "文書のエクスポートに失敗しました。"
+
+msgid "Settings exported"
+msgstr ""
+
+#, fuzzy
+#| msgid "Failed to export document."
+msgid "Failed to export settings"
+msgstr "文書のエクスポートに失敗しました。"
+
+msgid "No document open. Please open a book."
+msgstr ""
+
+#, fuzzy
+#| msgid "Sleep timer"
+msgid "Cancel sleep timer"
+msgstr "スリープタイマー"
+
+#, fuzzy
+#| msgid "I&mport/Export"
+msgid "Import"
+msgstr "インポート/エクスポート(&M)"
+
+#, fuzzy
+#| msgid "Import document data"
+msgid "Import Document Data"
+msgstr "文書データのインポート"
+
+#, fuzzy
+#| msgid "Import document data"
+msgid "Export Document Data"
+msgstr "文書データのインポート"
+
+#, fuzzy
+#| msgid "Open As"
+msgid "Open Book"
+msgstr "読み込み形式の指定"
+
+#, fuzzy
+#| msgid "&Elements List...\tF7"
+msgid "Elements List"
+msgstr "要素リスト(&E)...\tF7"
+
+#, fuzzy
+#| msgid "Show word count"
+msgid "Show Document"
+msgstr "単語数を表示します"
+
+msgid "Show Text"
+msgstr ""
+
+msgid "Pause Read Aloud"
+msgstr ""
+
+msgid "Read Aloud"
+msgstr ""
+
+#, fuzzy
+#| msgid "Options"
+msgid "More Options"
+msgstr "オプション"
+
+#, fuzzy
+#| msgid "Headings"
+msgid "Heading"
+msgstr "見出し"
+
+#, fuzzy
+#| msgid "Links"
+msgid "Link"
+msgstr "リンク"
+
+#, fuzzy
+#| msgid "&Sections"
+msgid "Section"
+msgstr "セクション(&S)"
+
+#, fuzzy
+#| msgid "&Lists"
+msgid "List"
+msgstr "リスト(&L)"
+
+#, fuzzy
+#| msgid "Next List I&tem\tI"
+msgid "List Item"
+msgstr "次のリスト項目(&t)\tI"
+
+#, fuzzy
+#| msgid "&Tables"
+msgid "Table"
+msgstr "テーブル(&T)"
+
+#, fuzzy
+#| msgid "&Separators"
+msgid "Separator"
+msgstr "区切り線(&S)"
+
+#, fuzzy
+#| msgid "&Images"
+msgid "Image"
+msgstr "画像(&I)"
+
+#, fuzzy
+#| msgid "&Figures"
+msgid "Figure"
+msgstr "図(&F)"
+
+#~ msgid "Open folder containing the document"
+#~ msgstr "文書が保存されているフォルダーを開きます"
 
 #~ msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."
 #~ msgstr "このPDFには画像のみが含まれ、抽出可能なテキストがありません。内容を読むにはOCRソフトウェアが必要です。"
