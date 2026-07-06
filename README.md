@@ -5,7 +5,21 @@
 ## Features
 
 - Written entirely in Rust to ensure it's modern, fast, and memory-safe
-- Supports a wide range of document formats: HTML/XHTML, EPUB, FB2, CHM, DAISY, PDF, DOCX/DOCM, PPTX/PPTM, DOC, PPT, ODT/FODT, ODP/FODP, RTF, MOBI/AZW/AZW3, Markdown, and plain text
+- Supports a wide range of document formats:
+  - HTML documents (htm/html/xhtml)
+  - EPUB books (epub)
+  - FictionBook ebooks (fb2)
+  - CHM help files (chm)
+  - DAISY books (opf/zip)
+  - PDF documents (pdf)
+  - Word documents (doc/docx/docm)
+  - PowerPoint presentations (ppt/pptx/pptm)
+  - OpenDocument text files (odt/fodt)
+  - OpenDocument presentations (odp/fodp)
+  - RTF documents (rtf)
+  - MOBI/Kindle books (mobi/azw/azw3)
+  - Markdown documents (md/markdown/mdx/mdown/mdwn/mkd/mkdn/mkdown/ronn)
+  - Plain text and log files (txt/log)
 - Intuitive tabbed interface for managing multiple documents, with single-instance behavior so opening a file from the shell or a file association reuses the running window
 - Full screen reader accessibility, including live-region status announcements for actions like search results and navigation
 - Robust find functionality with match case, whole word, and regular expression options, plus persisted search history

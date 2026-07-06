@@ -35,40 +35,45 @@ The workaround, eventually surfaced through the JAWS discussion group after mont
 Paperback supports the following formats and extensions:
 
 * CHM help files (`.chm`)
+* DAISY books (`.opf`, `.zip`)
 * EPUB books (`.epub`)
 * FB2 ebooks (`.fb2`)
 * HTML documents (`.htm`, `.html`, `.xhtml`)
 * Markdown documents (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
-* Microsoft Word documents (`.docx`, `.docm`)
+* Microsoft Word documents (`.docx`, `.docm`, `.doc`)
+* MOBI/Kindle books (`.mobi`, `.azw`, `.azw3`)
 * OpenDocument presentations (`.odp`, `.fodp`)
 * OpenDocument text files (`.odt`, `.fodt`)
 * PDF documents (`.pdf`)
-* PowerPoint presentations (`.pptx`, `.pptm`)
+* PowerPoint presentations (`.pptx`, `.pptm`, `.ppt`)
 * RTF documents (`.rtf`)
 * Plain text and log files (`.txt`, `.log`)
-* XML documents (`.xml`)
 
 ## Keyboard shortcuts
 
 Paperback is designed for keyboard-first and screen reader-first use. Here are the current shortcuts.
 
+Shortcuts below are for Windows and Linux. Where macOS differs, the macOS equivalent is noted in parentheses — mainly because Ctrl+G, Ctrl+W, and Alt+Left/Right are already claimed by other system or app conventions on that platform.
+
 ### File menu
 
 * `Ctrl+O`: Open a document.
-* `Ctrl+F4`: Close the current document.
-* `Ctrl+Shift+F4`: Close all open documents.
+* `Ctrl+F4` (macOS: `Cmd+W`): Close the current document.
+* `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Close all open documents.
+* `Ctrl+Shift+T`: Reopen the last closed document.
 * `Ctrl+R`: Show the "All Documents" dialog (from Recent Documents).
+* `Ctrl+Q`: Exit (Windows/Linux only; on macOS this is under the app menu instead).
 
 ### Go menu
 
 * `Ctrl+F`: Show the Find dialog.
-* `F3`: Find next.
-* `Shift+F3`: Find previous.
-* `Ctrl+G`: Go to line.
-* `Ctrl+Shift+G`: Go to percent.
+* `F3` (macOS: `Cmd+G`): Find next.
+* `Shift+F3` (macOS: `Cmd+Shift+G`): Find previous.
+* `Ctrl+G` (macOS: `Cmd+L`): Go to line.
+* `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Go to percent.
 * `Ctrl+P`: Go to page (when supported by the current document).
-* `Alt+Left`: Go back in navigation history.
-* `Alt+Right`: Go forward in navigation history.
+* `Alt+Left` (macOS: `Cmd+[`): Go back in navigation history.
+* `Alt+Right` (macOS: `Cmd+]`): Go forward in navigation history.
 * `[`: Previous section.
 * `]`: Next section.
 * `Shift+H`: Previous heading.
@@ -84,9 +89,13 @@ Paperback is designed for keyboard-first and screen reader-first use. Here are t
 * `Ctrl+B`: Jump to all bookmarks and notes.
 * `Ctrl+Alt+B`: Jump to bookmarks only.
 * `Ctrl+Alt+M`: Jump to notes only.
-* `Ctrl+Shift+W`: View note text at the current position.
+* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, i.e. the physical Control key rather than Cmd): View note text at the current position.
 * `Shift+K`: Previous link.
 * `K`: Next link.
+* `Shift+G`: Previous image.
+* `G`: Next image.
+* `Shift+F`: Previous figure.
+* `F`: Next figure.
 * `Shift+T`: Previous table.
 * `T`: Next table.
 * `Shift+S`: Previous separator.
@@ -100,7 +109,7 @@ Paperback is designed for keyboard-first and screen reader-first use. Here are t
 
 ### Tools menu
 
-* `Ctrl+W`: Show word count for the current document.
+* `Ctrl+W` (macOS: `RawCtrl+W`, i.e. the physical Control key rather than Cmd): Show word count for the current document.
 * `Ctrl+I`: Show document info.
 * `Ctrl+T`: Show table of contents.
 * `F7`: Show elements list.
@@ -113,7 +122,7 @@ Paperback is designed for keyboard-first and screen reader-first use. Here are t
 * `Ctrl+Shift+B`: Toggle bookmark at the current selection/cursor.
 * `Ctrl+Shift+N`: Add or edit bookmark note at the current selection/cursor.
 * `Ctrl+Alt+W`: Toggle word wrap.
-* `Ctrl+,`: Open options.
+* `Ctrl+,`: Open options (macOS: Preferences, under the app menu).
 * `Ctrl+Shift+S`: Toggle sleep timer.
 
 ### Help menu
@@ -127,8 +136,8 @@ Paperback is designed for keyboard-first and screen reader-first use. Here are t
 ### Additional document-view keys
 
 * `Delete` / `Numpad Delete` on the tab control: Close the selected document tab.
-* `Enter` in the document text: Activate link at cursor, or open a table view when on a table marker.
-* `Shift+F10` in the document text: Open the context menu.
+* `Enter` or `Space` in the document text: Activate link at cursor, or open a table view when on a table marker.
+* `Shift+F10` or the Menu/Application key in the document text: Open the context menu.
 
 ## Supported languages
 
