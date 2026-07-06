@@ -9,6 +9,7 @@ mod legacy_config;
 mod logging;
 mod translation_manager;
 mod ui;
+mod wx_translation_loader;
 
 use std::{env, fs, io};
 

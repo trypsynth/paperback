@@ -685,7 +685,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -1433,7 +1433,7 @@ version = "0.50.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7957b9740744892f114936ab4a57b3f487491bbeafaf8083688b16841a4240e5"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -2101,7 +2101,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -2579,7 +2579,7 @@ dependencies = [
  "getrandom 0.4.3",
  "once_cell",
  "rustix",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -3304,7 +3304,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -3544,8 +3544,7 @@ dependencies = [
 [[package]]
 name = "wxdragon"
 version = "0.9.17"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2115ff35df05b6c6efc17673084ea7c1fce07178c699ecf9fbbbd3092298a9a2"
+source = "git+https://github.com/AllenDang/wxDragon?branch=main#6a6f342eb490312056dda66bf3edc15d53b35ca4"
 dependencies = [
  "bitflags",
  "log",
@@ -3557,8 +3556,7 @@ dependencies = [
 [[package]]
 name = "wxdragon-macros"
 version = "0.9.17"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57c2f6ec62d2078586e70eb4eadc231fe4ae626baab583518c1450cae1829fd1"
+source = "git+https://github.com/AllenDang/wxDragon?branch=main#6a6f342eb490312056dda66bf3edc15d53b35ca4"
 dependencies = [
  "proc-macro2",
  "quick-xml",
@@ -3569,8 +3567,7 @@ dependencies = [
 [[package]]
 name = "wxdragon-sys"
 version = "0.9.17"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0dacfa148fa1377483c3b1d7ca3f780021d7bad0efa6d65b29ea2f2693ea0c92"
+source = "git+https://github.com/AllenDang/wxDragon?branch=main#6a6f342eb490312056dda66bf3edc15d53b35ca4"
 dependencies = [
  "bindgen",
  "cmake",
