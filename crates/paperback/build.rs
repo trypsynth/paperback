@@ -148,9 +148,16 @@ fn build_translations() {
 /// includes. This mirrors how `patois::embed_domain!` bundles Paperback's own `.mo`
 /// files. Because `paperback` depends on `wxdragon-sys` (via `wxdragon`), Cargo runs
 /// that crate's build script first, so the catalogs exist by the time we look.
+///
+/// Only the languages Paperback itself ships (the `po/*.po` files) are embedded, so
+/// the two translation sets stay in lockstep and we don't bloat the binary with wx
+/// catalogs for languages the app isn't translated into.
 fn embed_wx_translations() {
 	let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap_or_default());
 	let out_file = out_dir.join("wx_translations.rs");
+	let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap_or_default());
+	let workspace_dir = manifest_dir.parent().unwrap().parent().unwrap();
+	let paperback_langs = paperback_po_languages(&workspace_dir.join("po"));
 	let locale_dir = target_profile_dir()
 		.expect("could not determine target directory for wx translations")
 		.join("wxdragon_sys_cmake_build")
@@ -165,6 +172,11 @@ fn embed_wx_translations() {
 	lang_entries.sort_by_key(|e| e.file_name());
 	for entry in lang_entries {
 		let lang = entry.file_name().to_string_lossy().to_string();
+		// Restrict to languages Paperback ships. Match case-insensitively so wx's
+		// `pt_BR`/`zh_CN` line up with Paperback's `pt_br`/`zh_CN` po stems.
+		if !paperback_langs.contains(&lang.to_lowercase()) {
+			continue;
+		}
 		let lc_messages = entry.path().join("LC_MESSAGES");
 		let Ok(files) = fs::read_dir(&lc_messages) else { continue };
 		// wxWidgets names the file `wxstd-<major>.<minor>.mo`; match any `wxstd*.mo`.
@@ -194,6 +206,26 @@ fn embed_wx_translations() {
 	}
 	code.push_str("]\n}\n");
 	fs::write(&out_file, code).expect("failed to write wx_translations.rs");
+}
+
+/// Return the set of languages Paperback ships, as lowercased `po` file stems
+/// (e.g. `de`, `pt_br`, `zh_cn`). Used to restrict which wx catalogs get embedded.
+fn paperback_po_languages(po_dir: &Path) -> std::collections::HashSet<String> {
+	println!("cargo:rerun-if-changed={}", po_dir.display());
+	let mut langs = std::collections::HashSet::new();
+	let Ok(entries) = fs::read_dir(po_dir) else {
+		panic!("po directory not found at {}", po_dir.display());
+	};
+	for entry in entries.flatten() {
+		let path = entry.path();
+		if path.extension().and_then(|e| e.to_str()) != Some("po") {
+			continue;
+		}
+		if let Some(stem) = path.file_stem().and_then(|s| s.to_str()) {
+			langs.insert(stem.to_lowercase());
+		}
+	}
+	langs
 }
 
 fn copy_sounds() {

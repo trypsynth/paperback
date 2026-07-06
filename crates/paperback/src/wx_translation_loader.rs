@@ -80,6 +80,17 @@ mod tests {
 	}
 
 	#[test]
+	fn only_paperback_languages_are_embedded() {
+		let langs = wx_available_languages();
+		// wx ships ~46 catalogs; we restrict to Paperback's own set, so languages
+		// wx has but Paperback does not must be absent.
+		assert!(!langs.contains(&"af"), "af is not a Paperback language but was embedded");
+		assert!(!langs.contains(&"tr"), "tr is not a Paperback language but was embedded");
+		// Paperback's pt_br maps to wx's pt_BR (case-insensitive match).
+		assert!(langs.contains(&"pt_BR"), "pt_BR should be embedded: {langs:?}");
+	}
+
+	#[test]
 	fn loader_serves_wxstd_domain_only() {
 		let loader = WxStdCatalogLoader;
 		// Versioned and unversioned wxstd domains resolve; anything else does not.
