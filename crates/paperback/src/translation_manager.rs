@@ -3,6 +3,8 @@ use std::sync::{Mutex, OnceLock};
 pub use patois::LanguageInfo;
 use wxdragon::translations::Translations;
 
+use crate::wx_translation_loader::WxStdCatalogLoader;
+
 pub struct TranslationManager {
 	current_language: String,
 	available_languages: Vec<LanguageInfo>,
@@ -20,6 +22,9 @@ impl TranslationManager {
 			return true;
 		}
 		let translations = Translations::new();
+		// Serve wxWidgets' own UI catalogs (wxstd) from bytes embedded in the binary.
+		// Must be installed before add_std_catalog so wx consults it for the language.
+		translations.set_loader(WxStdCatalogLoader);
 		let mgr = patois::LanguageManager::new("paperback");
 		self.available_languages = mgr.available();
 		let raw_sys_lang = patois::LanguageManager::system_language();
@@ -56,6 +61,9 @@ impl TranslationManager {
 		tracing::info!(language = %language_code, "switching language");
 		self.current_language = language_code.to_string();
 		let translations = Translations::new();
+		// A fresh Translations replaces (and drops) the previous global one, so it needs
+		// its own loader installed before add_std_catalog picks the language catalog.
+		translations.set_loader(WxStdCatalogLoader);
 		translations.set_language_str(language_code);
 		translations.add_std_catalog();
 		Translations::set_global(translations);

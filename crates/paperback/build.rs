@@ -28,6 +28,7 @@ const PDFIUM_MAC_ARM64_URL: &str =
 fn main() {
 	track_packaging_inputs();
 	build_translations();
+	embed_wx_translations();
 	copy_sounds();
 	copy_pdfium_dll();
 	build_docs();
@@ -136,6 +137,87 @@ fn build_translations() {
 		println!("cargo:warning=Failed to extend paperback.pot from Kotlin sources: {e}");
 	}
 	patois_build::compile_translations("../../po", "locale");
+}
+
+/// Embed wxWidgets' own standard message catalogs (`wxstd`) into the binary.
+///
+/// wxWidgets' build (driven by `wxdragon-sys`) emits its translation catalogs to
+/// `<target>/<profile>/wxdragon_sys_cmake_build/share/locale/<lang>/LC_MESSAGES/wxstd-*.mo`.
+/// We scan that tree and generate `wx_translations.rs` in `OUT_DIR` exposing
+/// `wx_catalog(lang)` and `wx_available_languages()`, which `wx_translation_loader.rs`
+/// includes. This mirrors how `patois::embed_domain!` bundles Paperback's own `.mo`
+/// files. Because `paperback` depends on `wxdragon-sys` (via `wxdragon`), Cargo runs
+/// that crate's build script first, so the catalogs exist by the time we look.
+fn embed_wx_translations() {
+	let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap_or_default());
+	let out_file = out_dir.join("wx_translations.rs");
+	let locale_dir = match target_profile_dir() {
+		Some(dir) => dir.join("wxdragon_sys_cmake_build").join("share").join("locale"),
+		None => {
+			println!("cargo:warning=Could not determine target directory for wx translations.");
+			write_empty_wx_translations(&out_file);
+			return;
+		}
+	};
+	println!("cargo:rerun-if-changed={}", locale_dir.display());
+	let entries = match fs::read_dir(&locale_dir) {
+		Ok(entries) => entries,
+		Err(_) => {
+			println!(
+				"cargo:warning=wxWidgets locale directory not found at {}; wx UI strings will not be translated.",
+				locale_dir.display()
+			);
+			write_empty_wx_translations(&out_file);
+			return;
+		}
+	};
+	// Collect (lang, mo_path), sorted by language code for deterministic output.
+	let mut catalogs: Vec<(String, PathBuf)> = Vec::new();
+	let mut lang_entries: Vec<_> = entries.flatten().collect();
+	lang_entries.sort_by_key(|e| e.file_name());
+	for entry in lang_entries {
+		let lang = entry.file_name().to_string_lossy().to_string();
+		let lc_messages = entry.path().join("LC_MESSAGES");
+		let Ok(files) = fs::read_dir(&lc_messages) else { continue };
+		// wxWidgets names the file `wxstd-<major>.<minor>.mo`; match any `wxstd*.mo`.
+		let mut mo_files: Vec<PathBuf> = files
+			.flatten()
+			.map(|f| f.path())
+			.filter(|p| {
+				p.extension().and_then(|e| e.to_str()) == Some("mo")
+					&& p.file_stem().and_then(|s| s.to_str()).is_some_and(|s| s.starts_with("wxstd"))
+			})
+			.collect();
+		mo_files.sort();
+		if let Some(mo_path) = mo_files.into_iter().next() {
+			catalogs.push((lang, mo_path));
+		}
+	}
+	if catalogs.is_empty() {
+		println!("cargo:warning=No wxstd catalogs found under {}.", locale_dir.display());
+	}
+	let mut code = String::new();
+	code.push_str("fn wx_catalog(lang: &str) -> Option<&'static [u8]> {\n    match lang {\n");
+	for (lang, mo_path) in &catalogs {
+		code.push_str(&format!("        {:?} => Some(include_bytes!({:?})),\n", lang, mo_path.display().to_string()));
+	}
+	code.push_str("        _ => None,\n    }\n}\n\n");
+	code.push_str("fn wx_available_languages() -> &'static [&'static str] {\n    &[");
+	for (lang, _) in &catalogs {
+		code.push_str(&format!("{lang:?}, "));
+	}
+	code.push_str("]\n}\n");
+	if let Err(e) = fs::write(&out_file, code) {
+		println!("cargo:warning=Failed to write wx_translations.rs: {e}");
+	}
+}
+
+fn write_empty_wx_translations(out_file: &Path) {
+	let code = "fn wx_catalog(_lang: &str) -> Option<&'static [u8]> { None }\n\
+		fn wx_available_languages() -> &'static [&'static str] { &[] }\n";
+	if let Err(e) = fs::write(out_file, code) {
+		println!("cargo:warning=Failed to write wx_translations.rs: {e}");
+	}
 }
 
 fn copy_sounds() {
