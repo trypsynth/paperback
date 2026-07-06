@@ -217,9 +217,10 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Fixed links in legacy mobi books.
 * Fixed parsing RTF documents with non-Latin characters in them.
 * Fixed the title bar not updating after closing a document from the all documents dialog.
-*Fixed word documents with locale-specific style names not rendering their headings properly.
+* Fixed word documents with locale-specific style names not rendering their headings properly.
 * Fixed your selected tab not getting properly focused after restarting Paperback.
 * If a selection is active when you open the word count dialog, how many words you have selected will now be shown.
+* Majorly improved AZW3 parsing.
 * Migrated away from chmlib to our own pure-Rust CHM file reader.
 * On desktop, .paperback files will no longer be forcefully loaded on document restoration. Instead, you will be asked for  Confirmation  when the file is found.
 * Paperback now falls back to plain text extraction for falsely-tagged PDFs.
@@ -228,7 +229,6 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * PowerPoint documents now support tables.
 * Properly update the menu and set focus to the text control when opening help in paperback.
 * Readme.html will no longer be added to your all documents list when opened via Shift+F1.
-* Removed the broken AZW3 support.
 * Removing documents from the recents dialog will now also close their active tab.
 * Switched to a much more secure method of IPC on Windows.
 * The updater now properly shows the content of markdown code tags in release notes.
