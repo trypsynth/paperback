@@ -510,12 +510,14 @@ documents.</li>
 <li>Fixed links in legacy mobi books.</li>
 <li>Fixed parsing RTF documents with non-Latin characters in them.</li>
 <li>Fixed the title bar not updating after closing a document from the
-all documents dialog. *Fixed word documents with locale-specific style
-names not rendering their headings properly.</li>
+all documents dialog.</li>
+<li>Fixed word documents with locale-specific style names not rendering
+their headings properly.</li>
 <li>Fixed your selected tab not getting properly focused after
 restarting Paperback.</li>
 <li>If a selection is active when you open the word count dialog, how
 many words you have selected will now be shown.</li>
+<li>Majorly improved AZW3 parsing.</li>
 <li>Migrated away from chmlib to our own pure-Rust CHM file reader.</li>
 <li>On desktop, .paperback files will no longer be forcefully loaded on
 document restoration. Instead, you will be asked for Confirmation when
@@ -529,7 +531,6 @@ PDFs.</li>
 opening help in paperback.</li>
 <li>Readme.html will no longer be added to your all documents list when
 opened via Shift+F1.</li>
-<li>Removed the broken AZW3 support.</li>
 <li>Removing documents from the recents dialog will now also close their
 active tab.</li>
 <li>Switched to a much more secure method of IPC on Windows.</li>
