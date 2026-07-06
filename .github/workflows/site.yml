@@ -8,7 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install Cobalt
         run: |
           wget https://github.com/cobalt-org/cobalt.rs/releases/download/v0.20.4/cobalt-v0.20.4-x86_64-unknown-linux-gnu.tar.gz
