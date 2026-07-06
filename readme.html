@@ -285,6 +285,7 @@ types</h1>
 <p>Paperback supports the following formats and extensions:</p>
 <ul>
 <li>CHM help files (<code>.chm</code>)</li>
+<li>DAISY books (<code>.opf</code>, <code>.zip</code>)</li>
 <li>EPUB books (<code>.epub</code>)</li>
 <li>FB2 ebooks (<code>.fb2</code>)</li>
 <li>HTML documents (<code>.htm</code>, <code>.html</code>,
@@ -293,40 +294,54 @@ types</h1>
 <code>.mdx</code>, <code>.mdown</code>, <code>.mdwn</code>,
 <code>.mkd</code>, <code>.mkdn</code>, <code>.mkdown</code>,
 <code>.ronn</code>)</li>
-<li>Microsoft Word documents (<code>.docx</code>,
-<code>.docm</code>)</li>
+<li>Microsoft Word documents (<code>.docx</code>, <code>.docm</code>,
+<code>.doc</code>)</li>
+<li>MOBI/Kindle books (<code>.mobi</code>, <code>.azw</code>,
+<code>.azw3</code>)</li>
 <li>OpenDocument presentations (<code>.odp</code>,
 <code>.fodp</code>)</li>
 <li>OpenDocument text files (<code>.odt</code>, <code>.fodt</code>)</li>
 <li>PDF documents (<code>.pdf</code>)</li>
-<li>PowerPoint presentations (<code>.pptx</code>,
-<code>.pptm</code>)</li>
+<li>PowerPoint presentations (<code>.pptx</code>, <code>.pptm</code>,
+<code>.ppt</code>)</li>
 <li>RTF documents (<code>.rtf</code>)</li>
 <li>Plain text and log files (<code>.txt</code>, <code>.log</code>)</li>
-<li>XML documents (<code>.xml</code>)</li>
 </ul>
 <h1 id="keyboard-shortcuts">Keyboard shortcuts</h1>
 <p>Paperback is designed for keyboard-first and screen reader-first use.
 Here are the current shortcuts.</p>
+<p>Shortcuts below are for Windows and Linux. Where macOS differs, the
+macOS equivalent is noted in parentheses — mainly because Ctrl+G,
+Ctrl+W, and Alt+Left/Right are already claimed by other system or app
+conventions on that platform.</p>
 <h2 id="file-menu">File menu</h2>
 <ul>
 <li><code>Ctrl+O</code>: Open a document.</li>
-<li><code>Ctrl+F4</code>: Close the current document.</li>
-<li><code>Ctrl+Shift+F4</code>: Close all open documents.</li>
+<li><code>Ctrl+F4</code> (macOS: <code>Cmd+W</code>): Close the current
+document.</li>
+<li><code>Ctrl+Shift+F4</code> (macOS: <code>Cmd+Shift+W</code>): Close
+all open documents.</li>
+<li><code>Ctrl+Shift+T</code>: Reopen the last closed document.</li>
 <li><code>Ctrl+R</code>: Show the “All Documents” dialog (from Recent
 Documents).</li>
+<li><code>Ctrl+Q</code>: Exit (Windows/Linux only; on macOS this is
+under the app menu instead).</li>
 </ul>
 <h2 id="go-menu">Go menu</h2>
 <ul>
 <li><code>Ctrl+F</code>: Show the Find dialog.</li>
-<li><code>F3</code>: Find next.</li>
-<li><code>Shift+F3</code>: Find previous.</li>
-<li><code>Ctrl+G</code>: Go to line.</li>
-<li><code>Ctrl+Shift+G</code>: Go to percent.</li>
+<li><code>F3</code> (macOS: <code>Cmd+G</code>): Find next.</li>
+<li><code>Shift+F3</code> (macOS: <code>Cmd+Shift+G</code>): Find
+previous.</li>
+<li><code>Ctrl+G</code> (macOS: <code>Cmd+L</code>): Go to line.</li>
+<li><code>Ctrl+Shift+G</code> (macOS: <code>Cmd+Shift+L</code>): Go to
+percent.</li>
 <li><code>Ctrl+P</code>: Go to page (when supported by the current
 document).</li>
-<li><code>Alt+Left</code>: Go back in navigation history.</li>
-<li><code>Alt+Right</code>: Go forward in navigation history.</li>
+<li><code>Alt+Left</code> (macOS: <code>Cmd+[</code>): Go back in
+navigation history.</li>
+<li><code>Alt+Right</code> (macOS: <code>Cmd+]</code>): Go forward in
+navigation history.</li>
 <li><code>[</code>: Previous section.</li>
 <li><code>]</code>: Next section.</li>
 <li><code>Shift+H</code>: Previous heading.</li>
@@ -344,10 +359,15 @@ at level 1-6.</li>
 <li><code>Ctrl+B</code>: Jump to all bookmarks and notes.</li>
 <li><code>Ctrl+Alt+B</code>: Jump to bookmarks only.</li>
 <li><code>Ctrl+Alt+M</code>: Jump to notes only.</li>
-<li><code>Ctrl+Shift+W</code>: View note text at the current
-position.</li>
+<li><code>Ctrl+Shift+W</code> (macOS: <code>RawCtrl+Shift+W</code>,
+i.e. the physical Control key rather than Cmd): View note text at the
+current position.</li>
 <li><code>Shift+K</code>: Previous link.</li>
 <li><code>K</code>: Next link.</li>
+<li><code>Shift+G</code>: Previous image.</li>
+<li><code>G</code>: Next image.</li>
+<li><code>Shift+F</code>: Previous figure.</li>
+<li><code>F</code>: Next figure.</li>
 <li><code>Shift+T</code>: Previous table.</li>
 <li><code>T</code>: Next table.</li>
 <li><code>Shift+S</code>: Previous separator.</li>
@@ -363,7 +383,9 @@ table).</li>
 </ul>
 <h2 id="tools-menu">Tools menu</h2>
 <ul>
-<li><code>Ctrl+W</code>: Show word count for the current document.</li>
+<li><code>Ctrl+W</code> (macOS: <code>RawCtrl+W</code>, i.e. the
+physical Control key rather than Cmd): Show word count for the current
+document.</li>
 <li><code>Ctrl+I</code>: Show document info.</li>
 <li><code>Ctrl+T</code>: Show table of contents.</li>
 <li><code>F7</code>: Show elements list.</li>
@@ -380,7 +402,8 @@ selection/cursor.</li>
 <li><code>Ctrl+Shift+N</code>: Add or edit bookmark note at the current
 selection/cursor.</li>
 <li><code>Ctrl+Alt+W</code>: Toggle word wrap.</li>
-<li><code>Ctrl+,</code>: Open options.</li>
+<li><code>Ctrl+,</code>: Open options (macOS: Preferences, under the app
+menu).</li>
 <li><code>Ctrl+Shift+S</code>: Toggle sleep timer.</li>
 </ul>
 <h2 id="help-menu">Help menu</h2>
@@ -397,10 +420,11 @@ keys</h2>
 <ul>
 <li><code>Delete</code> / <code>Numpad Delete</code> on the tab control:
 Close the selected document tab.</li>
-<li><code>Enter</code> in the document text: Activate link at cursor, or
-open a table view when on a table marker.</li>
-<li><code>Shift+F10</code> in the document text: Open the context
-menu.</li>
+<li><code>Enter</code> or <code>Space</code> in the document text:
+Activate link at cursor, or open a table view when on a table
+marker.</li>
+<li><code>Shift+F10</code> or the Menu/Application key in the document
+text: Open the context menu.</li>
 </ul>
 <h1 id="supported-languages">Supported languages</h1>
 <p>Paperback is translated into many different languages, with more
