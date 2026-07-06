@@ -151,26 +151,14 @@ fn build_translations() {
 fn embed_wx_translations() {
 	let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap_or_default());
 	let out_file = out_dir.join("wx_translations.rs");
-	let locale_dir = match target_profile_dir() {
-		Some(dir) => dir.join("wxdragon_sys_cmake_build").join("share").join("locale"),
-		None => {
-			println!("cargo:warning=Could not determine target directory for wx translations.");
-			write_empty_wx_translations(&out_file);
-			return;
-		}
-	};
+	let locale_dir = target_profile_dir()
+		.expect("could not determine target directory for wx translations")
+		.join("wxdragon_sys_cmake_build")
+		.join("share")
+		.join("locale");
 	println!("cargo:rerun-if-changed={}", locale_dir.display());
-	let entries = match fs::read_dir(&locale_dir) {
-		Ok(entries) => entries,
-		Err(_) => {
-			println!(
-				"cargo:warning=wxWidgets locale directory not found at {}; wx UI strings will not be translated.",
-				locale_dir.display()
-			);
-			write_empty_wx_translations(&out_file);
-			return;
-		}
-	};
+	let entries = fs::read_dir(&locale_dir)
+		.unwrap_or_else(|e| panic!("wxWidgets locale directory not found at {}: {e}", locale_dir.display()));
 	// Collect (lang, mo_path), sorted by language code for deterministic output.
 	let mut catalogs: Vec<(String, PathBuf)> = Vec::new();
 	let mut lang_entries: Vec<_> = entries.flatten().collect();
@@ -193,9 +181,7 @@ fn embed_wx_translations() {
 			catalogs.push((lang, mo_path));
 		}
 	}
-	if catalogs.is_empty() {
-		println!("cargo:warning=No wxstd catalogs found under {}.", locale_dir.display());
-	}
+	assert!(!catalogs.is_empty(), "no wxstd catalogs found under {}", locale_dir.display());
 	let mut code = String::new();
 	code.push_str("fn wx_catalog(lang: &str) -> Option<&'static [u8]> {\n    match lang {\n");
 	for (lang, mo_path) in &catalogs {
@@ -207,17 +193,7 @@ fn embed_wx_translations() {
 		code.push_str(&format!("{lang:?}, "));
 	}
 	code.push_str("]\n}\n");
-	if let Err(e) = fs::write(&out_file, code) {
-		println!("cargo:warning=Failed to write wx_translations.rs: {e}");
-	}
-}
-
-fn write_empty_wx_translations(out_file: &Path) {
-	let code = "fn wx_catalog(_lang: &str) -> Option<&'static [u8]> { None }\n\
-		fn wx_available_languages() -> &'static [&'static str] { &[] }\n";
-	if let Err(e) = fs::write(out_file, code) {
-		println!("cargo:warning=Failed to write wx_translations.rs: {e}");
-	}
+	fs::write(&out_file, code).expect("failed to write wx_translations.rs");
 }
 
 fn copy_sounds() {
