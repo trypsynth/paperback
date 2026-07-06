@@ -12,7 +12,7 @@ coroutines = "1.11.0"
 junit = "4.13.2"
 kotlin = "2.3.20"
 ktlintPlugin = "14.2.0"
-nav3Core = "1.0.1"
+nav3Core = "1.1.4"
 lifecycleViewmodelNav3 = "2.11.0"
 
 [libraries]
