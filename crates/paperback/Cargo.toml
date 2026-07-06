@@ -16,7 +16,7 @@ base64 = { workspace = true }
 bitflags = "2.13.0"
 live-region = "0.1.4"
 paperback-core = { path = "../paperback-core" }
-patois = "0.1.2"
+patois = { git = "https://github.com/trypsynth/patois.git", features = ["wx"] }
 tracing = "0.1.44"
 tracing-appender = "0.2.5"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }

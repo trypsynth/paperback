@@ -2,6 +2,7 @@
 #![warn(clippy::all, clippy::nursery, clippy::pedantic)]
 
 patois::embed_domain!();
+patois::embed_wx_translations!();
 
 mod config_ext;
 mod ipc;
@@ -9,7 +10,6 @@ mod legacy_config;
 mod logging;
 mod translation_manager;
 mod ui;
-mod wx_translation_loader;
 
 use std::{env, fs, io};
 

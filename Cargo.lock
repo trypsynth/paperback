@@ -1570,7 +1570,7 @@ dependencies = [
  "live-region",
  "objc",
  "paperback-core",
- "patois",
+ "patois 0.2.0",
  "patois-build",
  "rstest",
  "ship-shape",
@@ -1653,8 +1653,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "beb58c9b3a6913bb412d2f36592f9945e5fdb984319a3527cb680284bfcdfeea"
 dependencies = [
  "inventory",
- "patois-macros",
+ "patois-macros 0.1.2",
  "sys-locale",
+]
+
+[[package]]
+name = "patois"
+version = "0.2.0"
+source = "git+https://github.com/trypsynth/patois.git#9456f7c0bf2119235990e7021580a8d9636b4afa"
+dependencies = [
+ "inventory",
+ "patois-macros 0.2.0",
+ "sys-locale",
+ "wxdragon",
 ]
 
 [[package]]
@@ -1671,6 +1682,16 @@ name = "patois-macros"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7932de848a50873ef1ef937a0e390d7bf251d9ecd8f22dd21d46c9c9bb100d90"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.118",
+]
+
+[[package]]
+name = "patois-macros"
+version = "0.2.0"
+source = "git+https://github.com/trypsynth/patois.git#9456f7c0bf2119235990e7021580a8d9636b4afa"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2388,7 +2409,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "30b37707b2122f92421f378597fba2beea45f51bffcb451dd17eb3908fc5a5fe"
 dependencies = [
  "minisign-verify",
- "patois",
+ "patois 0.1.2",
  "pulldown-cmark",
  "serde",
  "ureq",

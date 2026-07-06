@@ -6,7 +6,7 @@ use std::{
 };
 
 use paperback_core::config::{ConfigManager, HotkeyConfig, ReadabilityFont};
-use patois::t;
+use patois::{t, ui::populate_language_choice};
 use wxdragon::prelude::*;
 
 use super::DIALOG_PADDING;
@@ -158,11 +158,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let language_label = StaticText::builder(&general_panel).with_label(&language_label_text).build();
 	let language_combo = Choice::builder(&general_panel).build();
 	let languages = TranslationManager::instance().lock().unwrap().available_languages();
-	let mut language_codes = Vec::new();
-	for lang in &languages {
-		language_combo.append(&lang.name);
-		language_codes.push(lang.code.clone());
-	}
+	let language_codes = populate_language_choice(&language_combo, &languages);
 	#[cfg(target_os = "macos")]
 	language_combo.set_accessibility_label(language_label_text.replace('&', "").trim_end_matches(':').trim());
 
@@ -421,10 +417,7 @@ fn finalize_options_dialog_layout(ui: &OptionsDialogUi) {
 }
 
 fn resolve_options_language(ui: &OptionsDialogUi) -> String {
-	ui.language_combo
-		.get_selection()
-		.and_then(|index| usize::try_from(index).ok())
-		.and_then(|index| ui.language_codes.get(index).cloned())
+	patois::ui::resolve_language_choice(&ui.language_combo, &ui.language_codes)
 		.unwrap_or_else(|| ui.current_language.clone())
 }
 
