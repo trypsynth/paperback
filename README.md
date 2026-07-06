@@ -5,12 +5,19 @@
 ## Features
 
 - Written entirely in Rust to ensure it's modern, fast, and memory-safe
-- Supports many common document formats: HTML, EPUB, FB2, CHM, PDF, DOCX, PPTX, DOC, PPT, ODT, RTF, Markdown, and plain text
-- Intuitive tabbed interface for managing multiple documents
-- Full screen reader accessibility
-- Robust find functionality for quick document searches
-- Seamless navigation between EPUB sections, headings, pages, links, lists, images, figures, and tables via hotkeys similar to screen reader conventions
-- Precise navigation to specific lines or percentages within documents
+- Supports a wide range of document formats: HTML/XHTML, EPUB, FB2, CHM, DAISY, PDF, DOCX/DOCM, PPTX/PPTM, DOC, PPT, ODT/FODT, ODP/FODP, RTF, MOBI/AZW/AZW3, Markdown, and plain text
+- Intuitive tabbed interface for managing multiple documents, with single-instance behavior so opening a file from the shell or a file association reuses the running window
+- Full screen reader accessibility, including live-region status announcements for actions like search results and navigation
+- Robust find functionality with match case, whole word, and regular expression options, plus persisted search history
+- Seamless navigation between EPUB sections, headings (per level), pages, links, lists, list items, images, figures, tables, and separators via hotkeys similar to screen reader conventions, with a table of contents and elements list for quick jumps
+- Precise navigation to specific lines or percentages within documents, plus per-document navigation history (back/forward)
+- Bookmarks and notes, with optional sound feedback and a dedicated dialog to jump to any of them
+- Extensive readability customization: custom fonts and colors, line/paragraph/letter spacing, text alignment, word wrap, and inline vs. placeholder table rendering
+- Password-protected document support, and per-document settings (position, bookmarks, format overrides) that can be exported/imported via `.paperback` files
+- Recently closed and recently opened document tracking, with quick reopen
+- Built-in auto-update checker with stable/dev channels
+- System tray support on Windows and Linux
+- A `pb` CLI tool for scripted conversion of documents to plain text, HTML, or Markdown
 - Lightweight installer that automatically sets up file associations
 - Translated into numerous languages
 
