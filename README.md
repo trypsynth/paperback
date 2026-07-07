@@ -98,14 +98,6 @@ The following hooks run on every commit:
 
 Building on Linux requires wxWidgets 3.2+ with the GTK3 backend. The wxDragon build system handles compiling the wxWidgets bindings automatically.
 
-### Flatpak
-
-```bash
-flatpak-builder --force-clean --repo=repo-flatpak build dev.paperback.desktop.yaml
-flatpak build-bundle repo-flatpak paperback.flatpak dev.paperback.desktop
-flatpak --user install paperback.flatpak
-```
-
 ## Contributing
 
 Contributions are welcome! Whether through issues, pull requests, or discussions, your interest is appreciated. Thanks for using Paperback!

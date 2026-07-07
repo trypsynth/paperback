@@ -83,27 +83,6 @@ jobs:
           target/release/paperback_setup.exe.minisig
         retention-days: 30
 
-  build-linux-flatpak:
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-49
-      options: --privileged
-    steps:
-    - uses: actions/checkout@v7
-      with:
-        submodules: recursive
-    - name: Generate cargo sources for Flatpak
-      run: |
-        pip install aiohttp tomlkit
-        curl -sSL https://raw.githubusercontent.com/flatpak/flatpak-builder-tools/master/cargo/flatpak-cargo-generator.py -o flatpak-cargo-generator.py
-        python3 flatpak-cargo-generator.py Cargo.lock -o cargo-sources.json
-    - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
-      with:
-        bundle: paperback.flatpak
-        manifest-path: dev.paperback.desktop.yaml
-        cache-key: flatpak-builder-${{ hashFiles('dev.paperback.desktop.yaml', 'Cargo.lock') }}
-        restore-keys: flatpak-builder-
-
   build-android:
     runs-on: ubuntu-latest
     steps:
@@ -203,7 +182,7 @@ jobs:
         retention-days: 30
 
   release:
-    needs: [build-windows, build-linux-flatpak, build-android, build-macos]
+    needs: [build-windows, build-android, build-macos]
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     steps:
@@ -221,11 +200,6 @@ jobs:
       with:
         name: paperback-windows-signatures
         path: windows-build
-    - name: Download Linux Flatpak
-      uses: actions/download-artifact@v8
-      with:
-        name: paperback-x86_64.flatpak
-        path: linux-build
     - name: Download Android APK
       uses: actions/download-artifact@v8
       with:
@@ -269,7 +243,6 @@ jobs:
           windows-build/paperback.zip.minisig
           windows-build/paperback_setup.exe
           windows-build/paperback_setup.exe.minisig
-          linux-build/paperback.flatpak
           android-build/paperback-android-arm64.apk
           android-build/paperback-android-arm.apk
           macos-build/paperback.dmg
