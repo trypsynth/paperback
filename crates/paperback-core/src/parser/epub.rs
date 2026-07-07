@@ -6,6 +6,7 @@ use std::{
 };
 
 use anyhow::{Context, Result};
+use rayon::prelude::*;
 use roxmltree::{Document as XmlDocument, Node, NodeType, ParsingOptions};
 use zip::ZipArchive;
 
@@ -189,19 +190,36 @@ fn convert_spine_items<R: Read + Seek>(
 	spine: &[String],
 	render_tables_inline: bool,
 ) -> SpineConversionResult {
+	// Reading from the archive must be single-threaded (archive is &mut).
+	let entries: Vec<Result<(&ManifestItem, String), String>> = spine
+		.iter()
+		.map(|idref| {
+			let item = manifest.get(idref).ok_or_else(|| format!("missing manifest item for {idref}"))?;
+			let data = read_zip_entry_by_name(archive, &item.path).map_err(|err| format!("{} ({err})", item.path))?;
+			Ok((item, data))
+		})
+		.collect();
+
+	// parallel parsing makes large, math-heavy books go from ~60s to ~16s.
+	let converted: Vec<Result<(&ManifestItem, SectionContent), String>> = entries
+		.into_par_iter()
+		.map(|entry| {
+			let (item, data) = entry?;
+			let section =
+				convert_section(&data, render_tables_inline).map_err(|err| format!("{} ({err})", item.path))?;
+			Ok((item, section))
+		})
+		.collect();
+
 	let mut buffer = DocumentBuffer::new();
 	let mut id_positions = HashMap::new();
 	let mut sections = Vec::new();
 	let mut conversion_errors = Vec::new();
-	for (idx, idref) in spine.iter().enumerate() {
-		let Some(item) = manifest.get(idref) else {
-			conversion_errors.push(format!("missing manifest item for {idref}"));
-			continue;
-		};
-		let section_data = match read_zip_entry_by_name(archive, &item.path) {
-			Ok(v) => v,
+	for (idx, slot) in converted.into_iter().enumerate() {
+		let (item, section) = match slot {
+			Ok(pair) => pair,
 			Err(err) => {
-				conversion_errors.push(format!("{} ({err})", item.path));
+				conversion_errors.push(err);
 				continue;
 			}
 		};
@@ -212,36 +230,29 @@ fn convert_spine_items<R: Read + Seek>(
 				.with_text(section_label)
 				.with_reference(item.path.clone()),
 		);
-		match convert_section(&section_data, render_tables_inline) {
-			Ok(section) => {
-				for (id, relative) in &section.id_positions {
-					let absolute = section_start + relative;
-					// Keep the first occurrence for bare ids to avoid later sections overwriting earlier ones.
-					id_positions.entry(id.clone()).or_insert(absolute);
-					id_positions.insert(format!("{}#{id}", item.path), absolute);
-				}
-				add_converter_markers_excluding_links(&mut buffer, &section, section_start);
-				for link in &section.links {
-					let resolved = resolve_href(&item.path, &link.reference);
-					buffer.add_marker(
-						Marker::new(MarkerType::Link, section_start + link.offset)
-							.with_text(link.text.clone())
-							.with_reference(resolved),
-					);
-				}
-				if !section.text.is_empty() {
-					buffer.append(&section.text);
-					if !buffer.content.ends_with('\n') {
-						buffer.append("\n");
-					}
-				}
-				let section_end = buffer.current_position();
-				sections.push(SectionMeta { path: item.path.clone(), start: section_start, end: section_end });
-			}
-			Err(err) => {
-				conversion_errors.push(format!("{} ({err})", item.path));
+		for (id, relative) in &section.id_positions {
+			let absolute = section_start + relative;
+			// Keep the first occurrence for bare ids to avoid later sections overwriting earlier ones.
+			id_positions.entry(id.clone()).or_insert(absolute);
+			id_positions.insert(format!("{}#{id}", item.path), absolute);
+		}
+		add_converter_markers_excluding_links(&mut buffer, &section, section_start);
+		for link in &section.links {
+			let resolved = resolve_href(&item.path, &link.reference);
+			buffer.add_marker(
+				Marker::new(MarkerType::Link, section_start + link.offset)
+					.with_text(link.text.clone())
+					.with_reference(resolved),
+			);
+		}
+		if !section.text.is_empty() {
+			buffer.append(&section.text);
+			if !buffer.content.ends_with('\n') {
+				buffer.append("\n");
 			}
 		}
+		let section_end = buffer.current_position();
+		sections.push(SectionMeta { path: item.path.clone(), start: section_start, end: section_end });
 	}
 	SpineConversionResult { buffer, id_positions, sections, conversion_errors }
 }
