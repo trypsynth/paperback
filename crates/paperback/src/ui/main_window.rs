@@ -107,7 +107,7 @@ impl MainWindow {
 				&& let Ok(new_index) = usize::try_from(new_index)
 				&& let Some(tab) = dm_ref.get_tab(new_index)
 			{
-				live_region::announce(live_region_label, &t("Switched to {}").replace("{}", &display_title(tab)));
+				live_region::announce(live_region_label, &display_title(tab));
 			}
 		});
 		let dm = Rc::clone(&doc_manager);
@@ -551,7 +551,6 @@ impl MainWindow {
 				menu_ids::CLOSE_ALL => {
 					let mut dm = dm.lock().unwrap();
 					dm.close_all_documents();
-					live_region::announce(live_region_label, &t("Closed all documents."));
 					update_title_from_manager(&frame_copy, &dm);
 					dm.notebook().set_focus();
 					drop(dm);
@@ -1727,24 +1726,20 @@ fn ensure_parser_for_unknown_file(parent: &Frame, path: &Path, config: &ConfigMa
 	true
 }
 
-/// Close the active document and announce the change for screen readers.
+/// Close the active document, announcing the newly focused document for screen readers.
 ///
-/// The `set_selection` inside `close_document` fires `on_page_changed` while the
+/// The `set_selection` inside `close_document` fires `on_page_changing` while the
 /// caller holds the manager lock, so the generic switch announcement is suppressed
-/// and only this message speaks.
+/// and this function announces the new focus itself instead, before the focus change
+/// actually happens.
 fn close_active_document_announced(dm: &mut DocumentManager, live_region_label: StaticText) {
 	let Some(index) = dm.active_tab_index() else {
 		return;
 	};
-	let Some(tab) = dm.get_tab(index) else {
-		return;
-	};
-	let closed = display_title(tab);
-	let msg = match dm.active_index_after_closing(index).and_then(|i| dm.get_tab(i)) {
-		Some(next) => t("Closed {a}. Now on {b}.").replace("{a}", &closed).replace("{b}", &display_title(next)),
-		None => t("Closed {a}. No documents open.").replace("{a}", &closed),
-	};
-	live_region::announce(live_region_label, &msg);
+	let next = dm.active_index_after_closing(index).and_then(|i| dm.get_tab(i)).map(display_title);
+	if let Some(next) = &next {
+		live_region::announce(live_region_label, next);
+	}
 	dm.close_document(index, true);
 }
 
