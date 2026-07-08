@@ -52,7 +52,7 @@ jobs:
         $env:PATH = "$env:PATH;C:\msys64\ucrt64\bin;C:\msys64\usr\bin"
         cargo release
     - name: Sign artifacts
-      if: github.event_name == 'push'
+      if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
       shell: pwsh
       env:
         MINISIGN_KEY: ${{ secrets.MINISIGN_KEY }}
@@ -74,7 +74,7 @@ jobs:
           target/release/paperback_setup.exe
         retention-days: 30
     - name: Upload signatures
-      if: github.event_name == 'push'
+      if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
       uses: actions/upload-artifact@v7
       with:
         name: paperback-windows-signatures
@@ -115,7 +115,7 @@ jobs:
         key: gradle-${{ hashFiles('android/**/*.gradle.kts', 'android/gradle/wrapper/gradle-wrapper.properties') }}
         restore-keys: gradle-
     - name: Set up Android signing keystore
-      if: github.event_name == 'push'
+      if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
       env:
         ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
@@ -184,7 +184,7 @@ jobs:
   release:
     needs: [build-windows, build-android, build-macos]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
     steps:
     - name: Checkout repository
       uses: actions/checkout@v7
