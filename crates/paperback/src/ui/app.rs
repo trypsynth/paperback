@@ -322,7 +322,7 @@ fn send_ipc_command(command: IpcCommand) {
 	tracing::debug!(command = ?command, "sending IPC command to existing instance");
 	let payload = match &command {
 		IpcCommand::Activate => IPC_COMMAND_ACTIVATE.to_string(),
-		#[cfg(any(target_os = "linux", target_os = "windows"))]
+		#[cfg(any(target_os = "linux", target_os = "windows", test))]
 		IpcCommand::ToggleVisibility => crate::ipc::IPC_COMMAND_TOGGLE_VISIBILITY.to_string(),
 		IpcCommand::OpenFile(path) => path.to_string_lossy().to_string(),
 	};
