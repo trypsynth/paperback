@@ -36,6 +36,18 @@ pub struct DocumentTab {
 	pub track: bool,
 }
 
+pub fn title_or_filename(title: String, path: &Path) -> String {
+	if title.is_empty() {
+		path.file_name().map_or_else(|| t("Untitled"), |s| s.to_string_lossy().to_string())
+	} else {
+		title
+	}
+}
+
+pub fn display_title(tab: &DocumentTab) -> String {
+	title_or_filename(tab.session.title(), &tab.file_path)
+}
+
 const POSITION_SAVE_INTERVAL_SECS: u64 = 3;
 const WXK_F10: i32 = 349;
 const WXK_WINDOWS_MENU: i32 = 395;
@@ -185,17 +197,8 @@ impl DocumentManager {
 			self.notebook.set_selection(index);
 			return true;
 		}
-		let title = title_override.map_or_else(
-			|| {
-				let title = session.title();
-				if title.is_empty() {
-					path.file_name().map_or_else(|| t("Untitled"), |s| s.to_string_lossy().to_string())
-				} else {
-					title
-				}
-			},
-			std::string::ToString::to_string,
-		);
+		let title =
+			title_override.map_or_else(|| title_or_filename(session.title(), path), std::string::ToString::to_string);
 		let panel = Panel::builder(&self.notebook).build();
 		let config = self.config.lock().unwrap();
 		let mut session = session;
@@ -280,6 +283,15 @@ impl DocumentManager {
 			self.notebook.set_selection(new_index);
 		}
 		true
+	}
+
+	pub fn active_index_after_closing(&self, index: usize) -> Option<usize> {
+		let count = self.tabs.len();
+		if index >= count || count <= 1 {
+			return None;
+		}
+		let new_index = index.min(count - 2);
+		Some(if new_index < index { new_index } else { new_index + 1 })
 	}
 
 	pub fn close_all_documents(&mut self) {
