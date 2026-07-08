@@ -6,7 +6,7 @@ Paperback is a lightweight, fast, and accessible ebook and document reader for e
 
 ## System Requirements
 
-Paperback currently runs on Windows, macOS, Linux, iOS, and Android.
+Paperback currently runs on Windows, macOS, iOS, and Android.
 
 ## Features
 
@@ -53,7 +53,7 @@ Paperback supports the following formats and extensions:
 
 Paperback is designed for keyboard-first and screen reader-first use. Here are the current shortcuts.
 
-Shortcuts below are for Windows and Linux. Where macOS differs, the macOS equivalent is noted in parentheses — mainly because Ctrl+G, Ctrl+W, and Alt+Left/Right are already claimed by other system or app conventions on that platform.
+Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in parentheses — mainly because Ctrl+G, Ctrl+W, and Alt+Left/Right are already claimed by other system or app conventions on that platform.
 
 ### File menu
 
@@ -62,7 +62,7 @@ Shortcuts below are for Windows and Linux. Where macOS differs, the macOS equiva
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Close all open documents.
 * `Ctrl+Shift+T`: Reopen the last closed document.
 * `Ctrl+R`: Show the "All Documents" dialog (from Recent Documents).
-* `Ctrl+Q`: Exit (Windows/Linux only; on macOS this is under the app menu instead).
+* `Ctrl+Q`: Exit (Windows only; on macOS this is under the app menu instead).
 
 ### Go menu
 
@@ -209,7 +209,6 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Added estimated reading time to the word count dialog, as well as the ability to set your reading speed to make this metric actually useful.
 * Added Android support!
 * Added iOS support!
-* Added Linux support!
 * Added macOS support!
 * Added new languages: Dutch, Finish, and Polish.
 * Added support for navigating by container.
