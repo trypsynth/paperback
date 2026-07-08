@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, process};
 
 use anyhow::{Context, Result, bail};
 use clap::Parser;
@@ -19,8 +19,6 @@ fn main() -> Result<()> {
 		bail!("unsupported file format: .{ext}");
 	}
 	let file_path = cli.input.to_string_lossy().into_owned();
-
-	// Fast path: EPUB → HTML bypasses the text-buffer pipeline entirely.
 	if !cli.metadata && matches!(cli.format, Format::Html) && ext == "epub" {
 		let html = paperback_core::export::epub_direct::render(&file_path)
 			.with_context(|| format!("failed to convert {}", cli.input.display()))?;
@@ -32,7 +30,6 @@ fn main() -> Result<()> {
 			}
 		};
 	}
-
 	let mut context = ParserContext::new(file_path).with_render_tables_inline(true);
 	if let Some(password) = cli.password {
 		context = context.with_password(password);
@@ -42,7 +39,7 @@ fn main() -> Result<()> {
 		Err(e) if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) => {
 			if cli.no_prompt {
 				eprintln!("pb: document requires a password; skipping (use -p to supply one)");
-				std::process::exit(2);
+				process::exit(2);
 			}
 			let password = rpassword::prompt_password("Password: ").context("failed to read password")?;
 			context.password = Some(password);
