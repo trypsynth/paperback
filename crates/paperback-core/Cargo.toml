@@ -25,7 +25,7 @@ office-crypto = "0.2.0"
 pdfium = "0.10.4"
 percent-encoding = "2.3.2"
 pulldown-cmark = { version = "0.13.4", default-features = false, features = ["html"] }
-regex = "1.12.4"
+regex = "1.13.0"
 roman = "0.2.1"
 roxmltree = "0.21.1"
 rtf-parser = "0.4.3"
