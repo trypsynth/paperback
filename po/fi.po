@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-06-30 11:59-0600\n"
-"PO-Revision-Date: 2026-07-03 21:04+0300\n"
+"PO-Revision-Date: 2026-07-09 21:58+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -89,7 +89,7 @@ msgstr ""
 "kirjanmerkit poistetaan."
 
 msgid "Open"
-msgstr "Avaa"
+msgstr "Avoinna"
 
 msgid "Closed"
 msgstr "Suljettu"
@@ -98,7 +98,7 @@ msgid "Missing"
 msgstr "Ei löydy"
 
 msgid "Locate Book"
-msgstr "Kirjan etsintä"
+msgstr "Etsi kirja"
 
 msgid "Jump to Bookmark"
 msgstr "Siirry kirjanmerkkiin"
@@ -1113,7 +1113,7 @@ msgid "Show elements list"
 msgstr "Näytä elementtilista"
 
 msgid "Reveal &File in Folder\tCtrl+Shift+C"
-msgstr "Avaa t&iedoston kansio\tCtrl+Shift+C"
+msgstr "Avaa as&iakirjan kansio\tCtrl+Shift+C"
 
 msgid "Reveal document in the file manager"
 msgstr "Avaa asiakirjan kansio tiedostonhallinnassa"
@@ -1988,192 +1988,3 @@ msgstr "Kuva"
 
 msgid "Figure"
 msgstr "Kuvio"
-
-#~ msgid "Open folder containing the document"
-#~ msgstr "Avaa asiakirjan kansio"
-
-#~ msgid "Paperback Update"
-#~ msgstr "Paperbackin päivitys"
-
-#, c-format
-#~ msgid "Failed to check for updates. HTTP status: %d"
-#~ msgstr "Päivitysten tarkistus epäonnistui. HTTP-tila: %d"
-
-#~ msgid "Error checking for updates."
-#~ msgstr "Virhe päivityksiä tarkistettaessa."
-
-#~ msgid ""
-#~ "This PDF contains images only, with no extractable text. You may need to "
-#~ "run it through OCR software to read its contents."
-#~ msgstr ""
-#~ "Tämä PDF sisältää pelkkiä kuvia, eikä siinä ole poimittavaa tekstiä. "
-#~ "Sisällön lukeminen saattaa edellyttää tekstintunnistusohjelman käyttöä."
-
-#, c-format
-#~ msgid ""
-#~ "There is an update available.\n"
-#~ "Your version: %s\n"
-#~ "Latest version: %s\n"
-#~ "Description:\n"
-#~ "%s\n"
-#~ "Do you want to open the direct download link?"
-#~ msgstr ""
-#~ "Päivitys on saatavilla.\n"
-#~ "Nykyinen versio: %s\n"
-#~ "Uusin versio: %s\n"
-#~ "Kuvaus:\n"
-#~ "%s\n"
-#~ "Haluatko avata suoran latauslinkin?"
-
-#~ msgid "Failed to initialize configuration"
-#~ msgstr "Asetusten alustus epäonnistui"
-
-#~ msgid "Total number of words: "
-#~ msgstr "Sanojen kokonaismäärä: "
-
-#~ msgid "Total number of lines: "
-#~ msgstr "Rivien kokonaismäärä: "
-
-#~ msgid "Total number of characters: "
-#~ msgstr "Merkkien kokonaismäärä: "
-
-#, c-format
-#~ msgid "Failed to parse document: %s"
-#~ msgstr "Dokumentin jäsennys epäonnistui: %s"
-
-#, c-format
-#~ msgid "%s - %s - Note %d"
-#~ msgstr "%s - %s - muistiinpano %d"
-
-#, c-format
-#~ msgid "%s - Note %d"
-#~ msgstr "%s - muistiinpano %d"
-
-#~ msgid "Opening link in default browser."
-#~ msgstr "Avataan linkki oletusselaimessa."
-
-#~ msgid "Failed to open link."
-#~ msgstr "Linkin avaus epäonnistui."
-
-#~ msgid "Internal link target not found."
-#~ msgstr "Sisäisen linkin kohdetta ei löydy."
-
-#, c-format
-#~ msgid "List with %d items"
-#~ msgstr "Luettelo, jossa %d kohdetta"
-
-#, c-format
-#~ msgid "List with %d items "
-#~ msgstr "Luettelo, jossa %d kohdetta "
-
-#~ msgid "Bookmark note updated"
-#~ msgstr "Kirjanmerkin muistiinpano päivitetty"
-
-#, c-format
-#~ msgid "Bookmark: %s - %s"
-#~ msgstr "Kirjanmerkki: %s - %s"
-
-#, c-format
-#~ msgid "Bookmark: %s"
-#~ msgstr "Kirjanmerkki: %s"
-
-#~ msgid "Table of contents is empty."
-#~ msgstr "Sisällysluettelo on tyhjä."
-
-#, c-format
-#~ msgid "line %ld, character %ld, reading %d%%"
-#~ msgstr "rivi %ld, merkki %ld, luetaan %d %%"
-
-#, c-format
-#~ msgid "No %s heading"
-#~ msgstr "Ei otsikkoa %s"
-
-#~ msgid "next"
-#~ msgstr "seuraava"
-
-#~ msgid "previous"
-#~ msgstr "edellinen"
-
-#, c-format
-#~ msgid "Wrapping to %s. %s Heading level %d"
-#~ msgstr "Siirrytään %s. %s otsikkotaso %d"
-
-#~ msgid "end"
-#~ msgstr "loppuun"
-
-#, c-format
-#~ msgid " | Sleep timer: %02d:%02d"
-#~ msgstr " | Uniajastin: %02d:%02d"
-
-#~ msgid "Select a document to read"
-#~ msgstr "Valitse luettava dokumentti"
-
-#~ msgid "Password required or incorrect."
-#~ msgstr "Salasana tarvitaan tai se on virheellinen."
-
-#~ msgid "Unknown error while parsing CHM file"
-#~ msgstr "Tuntematon virhe jäsenneltäessä CHM-tiedostoa"
-
-#~ msgid "Failed to open FB2 file"
-#~ msgstr "FB2-tiedoston avaus epäonnistui"
-
-#~ msgid "FB2 file is empty or could not be read"
-#~ msgstr "FB2-tiedosto on tyhjä tai sitä ei voitu lukea"
-
-#~ msgid "Failed to convert FB2 XML to text"
-#~ msgstr "FB2 XML -muodon muuntaminen tekstiksi epäonnistui"
-
-#~ msgid "Failed to open HTML file"
-#~ msgstr "HTML-tiedoston avaus epäonnistui"
-
-#~ msgid "Failed to convert HTML to text"
-#~ msgstr "HTML-muodon muuntaminen tekstiksi epäonnistui"
-
-#~ msgid "Failed to open Markdown file"
-#~ msgstr "Markdown-tiedoston avaus epäonnistui"
-
-#~ msgid "Markdown file is empty"
-#~ msgstr "Markdown-tiedosto on tyhjä"
-
-#~ msgid "Failed to convert Markdown HTML to text"
-#~ msgstr "Markdown-HTML-muodon muuntaminen tekstiksi epäonnistui"
-
-#~ msgid "Failed to open ODP file"
-#~ msgstr "ODP-tiedoston avaus epäonnistui"
-
-#~ msgid "ODP file does not contain content.xml or it is empty"
-#~ msgstr "ODP-dokumentti ei sisällä tiedostoa content.xml tai se on tyhjä"
-
-#~ msgid "ODP file does not contain any pages"
-#~ msgstr "ODP-dokumentissa ei ole sivuja"
-
-#~ msgid "Failed to open ODT file"
-#~ msgstr "ODT-tiedoston avaus epäonnistui"
-
-#~ msgid "ODT file does not contain content.xml or it is empty"
-#~ msgstr "ODT-dokumentti ei sisällä tiedostoa content.xml tai se on tyhjä"
-
-#~ msgid "Parsing of links in the document failed."
-#~ msgstr "Dokumentin linkkien jäsennys epäonnistui."
-
-#, c-format
-#~ msgid "Error parsing PPTX file: %s"
-#~ msgstr "Virhe jäsenneltäessä PPTX-tiedostoa: %s"
-
-#~ msgid "Unknown error while parsing PPTX file"
-#~ msgstr "Tuntematon virhe jäsenneltäessä PPTX-tiedostoa"
-
-#~ msgid "Failed to open text file"
-#~ msgstr "Tekstitiedoston avaus epäonnistui"
-
-#~ msgid "Text file is empty"
-#~ msgstr "Tekstitiedosto on tyhjä"
-
-#~ msgid "Failed to create update request."
-#~ msgstr "Päivityspyynnön luonti epäonnistui."
-
-#~ msgid "Failed to parse update response."
-#~ msgstr "Päivitysvastauksen jäsennys epäonnistui."
-
-#~ msgid "Update is available but download link could not be found."
-#~ msgstr "Päivitys on saatavilla, mutta latauslinkkiä ei löytynyt."
