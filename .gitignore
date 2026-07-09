@@ -9,10 +9,6 @@ web/_site/
 .DS_Store
 result
 .direnv/
-.flatpak-builder/
-*.flatpak
-repo-flatpak/
-cargo-sources.json
 *.mobi
 
 # Xcode user state

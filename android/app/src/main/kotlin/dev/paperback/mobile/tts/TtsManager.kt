@@ -28,6 +28,12 @@ class TtsManager(
 	private var nextTempFile: java.io.File? = null
 	private var precachedText: String? = null
 	private var fileCounter = 0
+	// Identifies the synthesis request that isSpeaking/media-player state should currently track.
+	// Seeking quickly (e.g. paragraph-by-paragraph) cancels in-flight synthesis/precache requests;
+	// without this, a stale callback for an abandoned request could flip isSpeaking off after the
+	// next segment already started, causing TalkBack to briefly announce "Play" then "Pause".
+	private var currentContentUtteranceId: String? = null
+	private var currentPrecacheUtteranceId: String? = null
 	private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
 	var currentDocumentTitle: String = "Paperback"
@@ -243,11 +249,13 @@ class TtsManager(
 		fileCounter++
 		precachedText = text
 		isNextMediaPlayerPrepared = false
+		val precacheUtteranceId = "TTS_PRECACHE_ID_$fileCounter"
+		currentPrecacheUtteranceId = precacheUtteranceId
 		nextTempFile = java.io.File(context.cacheDir, "paperback_tts_next_$fileCounter.wav")
 		if (nextTempFile!!.exists()) nextTempFile!!.delete()
 
 		val params = android.os.Bundle()
-		tts?.synthesizeToFile(text, params, nextTempFile, "TTS_PRECACHE_ID")
+		tts?.synthesizeToFile(text, params, nextTempFile, precacheUtteranceId)
 	}
 
 	private fun initTts(engineName: String?) {
@@ -273,7 +281,7 @@ class TtsManager(
 		if (status == TextToSpeech.SUCCESS) {
 			tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
 				override fun onStart(utteranceId: String?) {
-					if (!_isPaused.value && mediaPlayer == null) {
+					if (utteranceId == currentContentUtteranceId && !_isPaused.value && mediaPlayer == null) {
 						stopSpeakingJob?.cancel()
 						_isSpeaking.value = true
 						updatePlaybackState(true)
@@ -281,7 +289,9 @@ class TtsManager(
 				}
 
 				override fun onDone(utteranceId: String?) {
-					if (utteranceId == "TTS_CONTENT_ID" && currentTempFile != null) {
+					val isCurrentContent = utteranceId != null && utteranceId == currentContentUtteranceId
+					val isCurrentPrecache = utteranceId != null && utteranceId == currentPrecacheUtteranceId
+					if (isCurrentContent && currentTempFile != null) {
 						ttsScope.launch(kotlinx.coroutines.Dispatchers.IO) {
 							try {
 								val player = android.media.MediaPlayer().apply {
@@ -320,7 +330,7 @@ class TtsManager(
 								e.printStackTrace()
 							}
 						}
-					} else if (utteranceId == "TTS_PRECACHE_ID" && nextTempFile != null) {
+					} else if (isCurrentPrecache && nextTempFile != null) {
 						ttsScope.launch(kotlinx.coroutines.Dispatchers.IO) {
 							try {
 								val nextPlayer = android.media.MediaPlayer().apply {
@@ -346,7 +356,10 @@ class TtsManager(
 								e.printStackTrace()
 							}
 						}
-					} else {
+					} else if (isCurrentContent) {
+						// Current content utterance finished without going through the media-player
+						// path above (e.g. a sample preview). A stale/superseded content or precache
+						// callback never reaches here, so it can no longer flip isSpeaking off late.
 						if (_isPaused.value) return
 						stopSpeakingJob?.cancel()
 						stopSpeakingJob = ttsScope.launch {
@@ -354,15 +367,16 @@ class TtsManager(
 							_isSpeaking.value = false
 							updatePlaybackState(false)
 						}
-						if (utteranceId == "TTS_CONTENT_ID") {
+						if (utteranceId?.startsWith("TTS_CONTENT_ID") == true) {
 							onUtteranceCompleted?.invoke()
 						}
 					}
+					// else: stale/cancelled utterance (superseded by a newer speak/precache) - ignore.
 				}
 
 				@Deprecated("Deprecated in Java")
 				override fun onError(utteranceId: String?) {
-					if (currentTempFile == null) {
+					if (utteranceId == currentContentUtteranceId) {
 						if (_isPaused.value) return
 						stopSpeakingJob?.cancel()
 						_isSpeaking.value = false
@@ -374,7 +388,7 @@ class TtsManager(
 					utteranceId: String?,
 					interrupted: Boolean
 				) {
-					if (currentTempFile == null) {
+					if (utteranceId == currentContentUtteranceId) {
 						if (_isPaused.value) return
 						stopSpeakingJob?.cancel()
 						_isSpeaking.value = false
@@ -439,7 +453,7 @@ class TtsManager(
 					_isSpeaking.value = false
 					updatePlaybackState(false)
 				}
-				if (utteranceId == "TTS_CONTENT_ID") {
+				if (utteranceId?.startsWith("TTS_CONTENT_ID") == true) {
 					onUtteranceCompleted?.invoke()
 				}
 				cleanupPlayer()
@@ -455,12 +469,14 @@ class TtsManager(
 			if (!isSample) {
 				requestAudioFocus()
 			}
-			val utteranceId = if (isSample) "TTS_SAMPLE_ID" else "TTS_CONTENT_ID"
+			stopSpeakingJob?.cancel()
+			fileCounter++
+			val utteranceId = if (isSample) "TTS_SAMPLE_ID_$fileCounter" else "TTS_CONTENT_ID_$fileCounter"
+			currentContentUtteranceId = utteranceId
 			cleanupPlayer()
 			tts?.stop()
 
 			try {
-				fileCounter++
 				currentTempFile = java.io.File(context.cacheDir, "paperback_tts_$fileCounter.wav")
 				if (currentTempFile!!.exists()) {
 					currentTempFile!!.delete()
@@ -543,6 +559,8 @@ class TtsManager(
 		tts?.stop()
 		cleanupPlayer()
 		stopSpeakingJob?.cancel()
+		currentContentUtteranceId = null
+		currentPrecacheUtteranceId = null
 		_isSpeaking.value = false
 		_isPaused.value = false
 		updatePlaybackState(false)

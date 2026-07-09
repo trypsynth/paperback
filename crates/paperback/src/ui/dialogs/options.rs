@@ -6,7 +6,9 @@ use std::{
 };
 
 use paperback_core::config::{ConfigManager, HotkeyConfig, ReadabilityFont};
-use patois::t;
+use patois::{t, ui::populate_language_choice};
+#[cfg(target_os = "windows")]
+use wxdragon::accessible::AccRole;
 use wxdragon::prelude::*;
 
 use super::DIALOG_PADDING;
@@ -158,11 +160,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let language_label = StaticText::builder(&general_panel).with_label(&language_label_text).build();
 	let language_combo = Choice::builder(&general_panel).build();
 	let languages = TranslationManager::instance().lock().unwrap().available_languages();
-	let mut language_codes = Vec::new();
-	for lang in &languages {
-		language_combo.append(&lang.name);
-		language_codes.push(lang.code.clone());
-	}
+	let language_codes = populate_language_choice(&language_combo, &languages);
 	#[cfg(target_os = "macos")]
 	language_combo.set_accessibility_label(language_label_text.replace('&', "").trim_end_matches(':').trim());
 
@@ -277,9 +275,21 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	readability_panel.set_sizer(readability_sizer, true);
 	general_panel.set_sizer(general_sizer, true);
 	reading_panel.set_sizer(reading_sizer, true);
-	notebook.add_page(&general_panel, &t("General"), true, None);
-	notebook.add_page(&reading_panel, &t("Reading"), false, None);
-	notebook.add_page(&readability_panel, &t("Readability"), false, None);
+	let general_label = t("General");
+	let reading_label = t("Reading");
+	let readability_label = t("Readability");
+	general_panel.set_accessibility_label(&general_label);
+	reading_panel.set_accessibility_label(&reading_label);
+	readability_panel.set_accessibility_label(&readability_label);
+	#[cfg(target_os = "windows")]
+	{
+		general_panel.set_accessibility_role(AccRole::PropertyPage);
+		reading_panel.set_accessibility_role(AccRole::PropertyPage);
+		readability_panel.set_accessibility_role(AccRole::PropertyPage);
+	}
+	notebook.add_page(&general_panel, &general_label, true, None);
+	notebook.add_page(&reading_panel, &reading_label, false, None);
+	notebook.add_page(&readability_panel, &readability_label, false, None);
 	restore_docs_check.set_value(config.get_app_bool("restore_previous_documents", true));
 	word_wrap_check.set_value(config.get_app_bool("word_wrap", false));
 	render_tables_inline_check.set_value(config.get_app_bool("render_tables_inline", true));
@@ -421,10 +431,7 @@ fn finalize_options_dialog_layout(ui: &OptionsDialogUi) {
 }
 
 fn resolve_options_language(ui: &OptionsDialogUi) -> String {
-	ui.language_combo
-		.get_selection()
-		.and_then(|index| usize::try_from(index).ok())
-		.and_then(|index| ui.language_codes.get(index).cloned())
+	patois::ui::resolve_language_choice(&ui.language_combo, &ui.language_codes)
 		.unwrap_or_else(|| ui.current_language.clone())
 }
 

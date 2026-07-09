@@ -6,7 +6,7 @@ Paperback is a lightweight, fast, and accessible ebook and document reader for e
 
 ## System Requirements
 
-Paperback currently runs on Windows, macOS, Linux, iOS, and Android.
+Paperback currently runs on Windows, macOS, iOS, and Android.
 
 ## Features
 
@@ -35,40 +35,45 @@ The workaround, eventually surfaced through the JAWS discussion group after mont
 Paperback supports the following formats and extensions:
 
 * CHM help files (`.chm`)
+* DAISY books (`.opf`, `.zip`)
 * EPUB books (`.epub`)
 * FB2 ebooks (`.fb2`)
 * HTML documents (`.htm`, `.html`, `.xhtml`)
 * Markdown documents (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
-* Microsoft Word documents (`.docx`, `.docm`)
+* Microsoft Word documents (`.docx`, `.docm`, `.doc`)
+* MOBI/Kindle books (`.mobi`, `.azw`, `.azw3`)
 * OpenDocument presentations (`.odp`, `.fodp`)
 * OpenDocument text files (`.odt`, `.fodt`)
 * PDF documents (`.pdf`)
-* PowerPoint presentations (`.pptx`, `.pptm`)
+* PowerPoint presentations (`.pptx`, `.pptm`, `.ppt`)
 * RTF documents (`.rtf`)
 * Plain text and log files (`.txt`, `.log`)
-* XML documents (`.xml`)
 
 ## Keyboard shortcuts
 
 Paperback is designed for keyboard-first and screen reader-first use. Here are the current shortcuts.
 
+Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in parentheses — mainly because Ctrl+G, Ctrl+W, and Alt+Left/Right are already claimed by other system or app conventions on that platform.
+
 ### File menu
 
 * `Ctrl+O`: Open a document.
-* `Ctrl+F4`: Close the current document.
-* `Ctrl+Shift+F4`: Close all open documents.
+* `Ctrl+F4` (macOS: `Cmd+W`): Close the current document.
+* `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Close all open documents.
+* `Ctrl+Shift+T`: Reopen the last closed document.
 * `Ctrl+R`: Show the "All Documents" dialog (from Recent Documents).
+* `Ctrl+Q`: Exit (Windows only; on macOS this is under the app menu instead).
 
 ### Go menu
 
 * `Ctrl+F`: Show the Find dialog.
-* `F3`: Find next.
-* `Shift+F3`: Find previous.
-* `Ctrl+G`: Go to line.
-* `Ctrl+Shift+G`: Go to percent.
+* `F3` (macOS: `Cmd+G`): Find next.
+* `Shift+F3` (macOS: `Cmd+Shift+G`): Find previous.
+* `Ctrl+G` (macOS: `Cmd+L`): Go to line.
+* `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Go to percent.
 * `Ctrl+P`: Go to page (when supported by the current document).
-* `Alt+Left`: Go back in navigation history.
-* `Alt+Right`: Go forward in navigation history.
+* `Alt+Left` (macOS: `Cmd+[`): Go back in navigation history.
+* `Alt+Right` (macOS: `Cmd+]`): Go forward in navigation history.
 * `[`: Previous section.
 * `]`: Next section.
 * `Shift+H`: Previous heading.
@@ -84,9 +89,13 @@ Paperback is designed for keyboard-first and screen reader-first use. Here are t
 * `Ctrl+B`: Jump to all bookmarks and notes.
 * `Ctrl+Alt+B`: Jump to bookmarks only.
 * `Ctrl+Alt+M`: Jump to notes only.
-* `Ctrl+Shift+W`: View note text at the current position.
+* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, i.e. the physical Control key rather than Cmd): View note text at the current position.
 * `Shift+K`: Previous link.
 * `K`: Next link.
+* `Shift+G`: Previous image.
+* `G`: Next image.
+* `Shift+F`: Previous figure.
+* `F`: Next figure.
 * `Shift+T`: Previous table.
 * `T`: Next table.
 * `Shift+S`: Previous separator.
@@ -100,7 +109,7 @@ Paperback is designed for keyboard-first and screen reader-first use. Here are t
 
 ### Tools menu
 
-* `Ctrl+W`: Show word count for the current document.
+* `Ctrl+W` (macOS: `RawCtrl+W`, i.e. the physical Control key rather than Cmd): Show word count for the current document.
 * `Ctrl+I`: Show document info.
 * `Ctrl+T`: Show table of contents.
 * `F7`: Show elements list.
@@ -113,7 +122,7 @@ Paperback is designed for keyboard-first and screen reader-first use. Here are t
 * `Ctrl+Shift+B`: Toggle bookmark at the current selection/cursor.
 * `Ctrl+Shift+N`: Add or edit bookmark note at the current selection/cursor.
 * `Ctrl+Alt+W`: Toggle word wrap.
-* `Ctrl+,`: Open options.
+* `Ctrl+,`: Open options (macOS: Preferences, under the app menu).
 * `Ctrl+Shift+S`: Toggle sleep timer.
 
 ### Help menu
@@ -127,8 +136,8 @@ Paperback is designed for keyboard-first and screen reader-first use. Here are t
 ### Additional document-view keys
 
 * `Delete` / `Numpad Delete` on the tab control: Close the selected document tab.
-* `Enter` in the document text: Activate link at cursor, or open a table view when on a table marker.
-* `Shift+F10` in the document text: Open the context menu.
+* `Enter` or `Space` in the document text: Activate link at cursor, or open a table view when on a table marker.
+* `Shift+F10` or the Menu/Application key in the document text: Open the context menu.
 
 ## Supported languages
 
@@ -200,7 +209,6 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Added estimated reading time to the word count dialog, as well as the ability to set your reading speed to make this metric actually useful.
 * Added Android support!
 * Added iOS support!
-* Added Linux support!
 * Added macOS support!
 * Added new languages: Dutch, Finish, and Polish.
 * Added support for navigating by container.
@@ -217,9 +225,10 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Fixed links in legacy mobi books.
 * Fixed parsing RTF documents with non-Latin characters in them.
 * Fixed the title bar not updating after closing a document from the all documents dialog.
-*Fixed word documents with locale-specific style names not rendering their headings properly.
+* Fixed word documents with locale-specific style names not rendering their headings properly.
 * Fixed your selected tab not getting properly focused after restarting Paperback.
 * If a selection is active when you open the word count dialog, how many words you have selected will now be shown.
+* Majorly improved AZW3 parsing.
 * Migrated away from chmlib to our own pure-Rust CHM file reader.
 * On desktop, .paperback files will no longer be forcefully loaded on document restoration. Instead, you will be asked for  Confirmation  when the file is found.
 * Paperback now falls back to plain text extraction for falsely-tagged PDFs.
@@ -228,7 +237,6 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * PowerPoint documents now support tables.
 * Properly update the menu and set focus to the text control when opening help in paperback.
 * Readme.html will no longer be added to your all documents list when opened via Shift+F1.
-* Removed the broken AZW3 support.
 * Removing documents from the recents dialog will now also close their active tab.
 * Switched to a much more secure method of IPC on Windows.
 * The updater now properly shows the content of markdown code tags in release notes.

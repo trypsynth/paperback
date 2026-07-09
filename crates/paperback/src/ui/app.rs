@@ -61,6 +61,18 @@ impl PaperbackApp {
 				window.show_from_dock();
 			}
 		});
+		// Finder delivers documents via the odoc Apple Event, not argv, so
+		// "Open with"/double-click never reaches open_from_command_line.
+		#[cfg(target_os = "macos")]
+		_app.on_open_files(|files| {
+			if let Some(window) = main_window_from_ptr() {
+				window.show_from_dock();
+				for file in &files {
+					tracing::info!(path = %file, "opening file from macOS open-files event");
+					window.open_file(Path::new(file));
+				}
+			}
+		});
 		open_from_command_line(&main_window);
 		let (check_updates, channel) = {
 			let cfg = config.lock().unwrap();
@@ -310,7 +322,7 @@ fn send_ipc_command(command: IpcCommand) {
 	tracing::debug!(command = ?command, "sending IPC command to existing instance");
 	let payload = match &command {
 		IpcCommand::Activate => IPC_COMMAND_ACTIVATE.to_string(),
-		#[cfg(any(target_os = "linux", target_os = "windows"))]
+		#[cfg(any(target_os = "linux", target_os = "windows", test))]
 		IpcCommand::ToggleVisibility => crate::ipc::IPC_COMMAND_TOGGLE_VISIBILITY.to_string(),
 		IpcCommand::OpenFile(path) => path.to_string_lossy().to_string(),
 	};
