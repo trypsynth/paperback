@@ -973,4 +973,29 @@ class MainScreenViewModel(
 	fun setShowPermissionRationale(show: Boolean) {
 		_showPermissionRationale.value = show
 	}
+
+	fun openHelpDocument() {
+		val lang = java.util.Locale.getDefault().language
+		val assetName = when (lang) {
+			"bs", "cs", "fi", "nl", "pl", "sr" -> "readmes/readme-$lang.html"
+			else -> "readmes/readme.html"
+		}
+		viewModelScope.launch(Dispatchers.IO) {
+			try {
+				val tempFile = File(context.cacheDir, "readme-$lang.html")
+				context.assets.open(assetName).use { input ->
+					FileOutputStream(tempFile).use { output ->
+						input.copyTo(output)
+					}
+				}
+				withContext(Dispatchers.Main) {
+					openDocument(Uri.fromFile(tempFile))
+				}
+			} catch (e: Exception) {
+				withContext(Dispatchers.Main) {
+					android.widget.Toast.makeText(context, dev.paperback.mobile.t("Failed to load document."), android.widget.Toast.LENGTH_LONG).show()
+				}
+			}
+		}
+	}
 }

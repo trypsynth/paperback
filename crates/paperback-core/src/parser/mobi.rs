@@ -267,7 +267,7 @@ impl Parser for MobiParser {
 		if content.len() > MAX_MOBI_TEXT_BYTES {
 			content.truncate(MAX_MOBI_TEXT_BYTES);
 		}
-		let mut text = if text_encoding == 65001 {
+		let text = if text_encoding == 65001 {
 			String::from_utf8_lossy(&content).into_owned()
 		} else {
 			WINDOWS_1252.decode(&content).0.into_owned()
@@ -522,8 +522,7 @@ fn build_fragment_offsets(
 				pos = p;
 			}
 			if (control & 4) != 0 {
-				let (fid, p) = decode_vwi(data_rec, pos);
-				pos = p;
+				let (fid, _) = decode_vwi(data_rec, pos);
 				frag_offsets.insert(fid, insert_offset);
 			}
 		}
@@ -903,15 +902,6 @@ impl HuffmanDecoder {
 				}
 			}
 		}
-		while let Some(mut parent) = stack.pop() {
-			let finished_out = current.out;
-			if let Some(idx) = current.target_dict_index {
-				self.dictionary[idx] = Some((finished_out.clone(), true));
-			}
-			parent.out.extend_from_slice(&finished_out);
-			current = parent;
-		}
-		Ok(current.out)
 	}
 }
 

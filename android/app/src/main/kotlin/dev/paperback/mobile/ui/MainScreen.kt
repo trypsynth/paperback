@@ -320,6 +320,9 @@ fun MainScreen(
 					} else {
 						importSettingsLauncher.launch(arrayOf("*/*"))
 					}
+				},
+				onHelpOpen = {
+					viewModel.openHelpDocument()
 				}
 			)
 		},

@@ -44,7 +44,8 @@ fun MainScreenTopBar(
 	onSleepTimerOpen: () -> Unit,
 	onElementsOpen: () -> Unit,
 	onExportSettings: () -> Unit,
-	onImportSettings: () -> Unit
+	onImportSettings: () -> Unit,
+	onHelpOpen: () -> Unit
 ) {
 	var moreOptionsExpanded by remember { mutableStateOf(false) }
 	Column(
@@ -211,6 +212,12 @@ fun MainScreenTopBar(
 										true
 									}
 								)
+								add(
+									CustomAccessibilityAction(t("Help")) {
+										onHelpOpen()
+										true
+									}
+								)
 							}
 						}
 					) {
@@ -301,17 +308,58 @@ fun MainScreenTopBar(
 								onSettingsOpen()
 							}
 						)
+						DropdownMenuItem(
+							text = { Text(t("Help")) },
+							onClick = {
+								moreOptionsExpanded = false
+								onHelpOpen()
+							}
+						)
 					}
 				}
 			} else {
+				var emptyMenuExpanded by remember { mutableStateOf(false) }
 				Box {
 					IconButton(
-						onClick = { onSettingsOpen() },
+						onClick = { emptyMenuExpanded = true },
 						modifier = Modifier.semantics {
-							traversalIndex = -1f
+							traversalIndex = 2f
+							this.onClick(label = "show all options in a menu") {
+								emptyMenuExpanded = true
+								true
+							}
+							customActions = listOf(
+								CustomAccessibilityAction(t("Settings")) {
+									onSettingsOpen()
+									true
+								},
+								CustomAccessibilityAction(t("Help")) {
+									onHelpOpen()
+									true
+								}
+							)
 						}
 					) {
-						Icon(Icons.Filled.Settings, contentDescription = "Settings")
+						Icon(Icons.Filled.MoreVert, contentDescription = t("More Options"))
+					}
+					DropdownMenu(
+						expanded = emptyMenuExpanded,
+						onDismissRequest = { emptyMenuExpanded = false }
+					) {
+						DropdownMenuItem(
+							text = { Text(t("Settings")) },
+							onClick = {
+								emptyMenuExpanded = false
+								onSettingsOpen()
+							}
+						)
+						DropdownMenuItem(
+							text = { Text(t("Help")) },
+							onClick = {
+								emptyMenuExpanded = false
+								onHelpOpen()
+							}
+						)
 					}
 				}
 			}
