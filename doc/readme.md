@@ -13,12 +13,12 @@ Paperback currently runs on Windows, macOS, iOS, and Android.
 * Completely standalone, not requiring any software to be installed on your computer to start reading.
 * Incredibly fast, even on old hardware.
 * Simple tabbed interface, allowing you to open as many documents as you want side-by-side.
-* Saves your cursor position across every document you open.
+* Saves your exact reading position across every document you open.
 * Optionally remembers what documents you had open when you closed the program, and restores them on next launch.
-* Designed by a screen reader user for screen reader users.
 * Includes navigation functionality similar to that found in the web browsing mode of many screen readers to quickly and easily navigate through documents.
 * Includes a robust find dialog, including features such as history and regular expression support.
 * Can be run entirely portably, or installed with file associations automatically set up.
+* Supports a massive array of common file formats.
 
 ## Screen Reader Compatibility
 
@@ -51,7 +51,7 @@ Paperback supports the following formats and extensions:
 
 ## Keyboard shortcuts
 
-Paperback is designed for keyboard-first and screen reader-first use. Here are the current shortcuts.
+Paperback is designed for keyboard-first use. Here are the current shortcuts.
 
 Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in parentheses — mainly because Ctrl+G, Ctrl+W, and Alt+Left/Right are already claimed by other system or app conventions on that platform.
 
@@ -239,6 +239,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Readme.html will no longer be added to your all documents list when opened via Shift+F1.
 * Removing documents from the recents dialog will now also close their active tab.
 * Switched to a much more secure method of IPC on Windows.
+* The active document title will now be read when switching between tabs.
 * The updater now properly shows the content of markdown code tags in release notes.
 * The updater now validates the downloaded file hasn't been tampered with.
 * The webview is now opened at your current reading position.
