@@ -10,15 +10,15 @@ Paperback toimii tällä hetkellä Windowsissa, macOS:ssä, iOS:ssä ja Androidi
 
 ## Ominaisuudet
 
-* Täysin itsenäinen, eikä vaadi mitään ohjelmia asennettavaksi tietokoneelle ennen lukemisen aloittamista.
+* Saatavilla sekä asennettavana versiona että purettavana zip-pakettina, jota ei tarvitse erikseen asentaa.
 * Erittäin nopea myös vanhalla laitteistolla.
 * Yksinkertainen välilehtikäyttöliittymä, jonka avulla voit avata rajattoman määrän asiakirjoja.
-* Tallentaa kohdistimen sijainnin jokaisessa avaamassasi asiakirjassa.
+* Tallentaa tarkan lukukohdan jokaisessa avaamassasi asiakirjassa.
 * Muistaa valinnaisesti, mitkä asiakirjat olivat avoinna ohjelmaa suljettaessa, ja avaa ne uudelleen seuraavalla käynnistyskerralla.
-* Sen on suunnitellut ruudunlukijan käyttäjä toisille ruudunlukijan käyttäjille.
 * Sisältää ruudunlukijoista tuttua verkkoselaustilaa muistuttavan navigointitoiminnon, jonka avulla voit liikkua asiakirjoissa nopeasti ja vaivattomasti.
 * Sisältää tehokkaan etsintävalintaikkunan, jossa on muun muassa historia ja sääntölausekkeiden tuki.
 * Voidaan käyttää massamuistiversiona tai asentaa siten, että tiedostokytkennät määritetään automaattisesti.
+Tukee erittäin laajaa valikoimaa yleisiä tiedostomuotoja.
 
 ## Ruudunlukijoiden yhteensopivuus
 
@@ -51,9 +51,9 @@ Paperback tukee seuraavia tiedostomuotoja:
 
 ## Pikanäppäimet
 
-Paperback on suunniteltu ensisijaisesti näppäimistöllä ja ruudunlukijalla käytettäväksi. Alla on luettelo nykyisistä pikanäppäimistä.
+Paperback on suunniteltu ensisijaisesti näppäimistöllä käytettäväksi. Alla on luettelo nykyisistä pikanäppäimistä.
 
-Alla luetellut pikanäppäimet toimivat Windowsissa. MacOS-komennot on merkitty sulkeisiin. Erot johtuvat siitä, että näppäinyhdistelmät Ctrl+G, Ctrl+W sekä Alt + vasen/oikea nuoli on varattu macOS-alustalla järjestelmän tai muiden sovellusten käyttöön.
+Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot on merkitty sulkeisiin. Erot johtuvat siitä, että näppäinyhdistelmät Ctrl+G, Ctrl+W sekä Alt + vasen/oikea nuoli on varattu macOS-alustalla järjestelmän tai muiden sovellusten käyttöön.
 
 ### Tiedosto-valikko
 
@@ -238,7 +238,8 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Valikko päivittyy nyt oikein ja kohdistus siirtyy tekstikenttään, kun ohje avataan Paperbackissa.
 * Readme.html-tiedostoa ei enää lisätä Kaikki asiakirjat -luetteloon, kun se avataan Shift+F1-pikanäppäimellä.
 * Asiakirjojen poistaminen Viimeisimmät asiakirjat -valintaikkunasta sulkee nyt myös niiden aktiiviset välilehdet.
-* Windowsissa on siirrytty huomattavasti turvallisempaan prosessien välisen viestinnän menetelmään.
+* Windowsissa on otettu käyttöön huomattavasti turvallisempi prosessien välinen viestintämenetelmä.
+* Aktiivisen asiakirjan nimi luetaan nyt välilehteä vaihdettaessa.
 * Päivittäjä näyttää nyt versiotiedoissa oikein Markdown-kooditunnisteiden sisällön.
 * Päivittäjä varmistaa nyt, ettei ladattua tiedostoa ole peukaloitu.
 * Selainnäkymä avautuu nyt suoraan nykyisessä lukukohdassa.
