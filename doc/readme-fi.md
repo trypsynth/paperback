@@ -2,7 +2,7 @@
 
 ## Johdanto
 
-Paperback on kevyt, nopea ja saavutettava e-kirjojen ja asiakirjojen lukuohjelma kaikille satunnaisista lukijoista vaativiin tehokäyttäjiin. Se on suunniteltu ruudunlukijaystävällisyyttä, suorituskykyä ja turhista ominaisuuksista riisuttua käyttökokemusta ajatellen.
+Paperback on kevyt ja saavutettava e- ja asiakirjojen lukusovellus kaikille satunnaisista lukijoista vaativiin tehokäyttäjiin. Se on suunniteltu ruudunlukijaystävällisyyttä, suorituskykyä ja turhista ominaisuuksista riisuttua käyttökokemusta ajatellen.
 
 ## Järjestelmävaatimukset
 
@@ -11,7 +11,7 @@ Paperback toimii tällä hetkellä Windowsissa, macOS:ssä, iOS:ssä ja Androidi
 ## Ominaisuudet
 
 * Saatavilla sekä asennettavana versiona että purettavana zip-pakettina, jota ei tarvitse erikseen asentaa.
-* Erittäin nopea myös vanhalla laitteistolla.
+* Toimii erittäin nopeasti myös vanhalla laitteistolla.
 * Yksinkertainen välilehtikäyttöliittymä, jonka avulla voit avata rajattoman määrän asiakirjoja.
 * Tallentaa tarkan lukukohdan jokaisessa avaamassasi asiakirjassa.
 * Muistaa valinnaisesti, mitkä asiakirjat olivat avoinna ohjelmaa suljettaessa, ja avaa ne uudelleen seuraavalla käynnistyskerralla.
