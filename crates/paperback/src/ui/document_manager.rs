@@ -567,10 +567,13 @@ impl DocumentManager {
 			}
 			apply_foreground_color_to_ctrl(text_ctrl, rf.color);
 			apply_bg_color_to_ctrl(text_ctrl, bg_color);
-			apply_line_spacing_to_ctrl(text_ctrl, line_spacing);
-			apply_paragraph_spacing_to_ctrl(text_ctrl, paragraph_spacing);
-			apply_letter_spacing_to_ctrl(text_ctrl, letter_spacing);
-			apply_text_alignment_to_ctrl(text_ctrl, text_alignment);
+			apply_readability_format_to_ctrl(
+				text_ctrl,
+				line_spacing,
+				paragraph_spacing,
+				letter_spacing,
+				text_alignment,
+			);
 			let max_pos = text_ctrl.get_last_position();
 			let pos = current_pos.clamp(0, max_pos);
 			tab.panel.layout();
