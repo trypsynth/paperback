@@ -13,12 +13,15 @@ const WXK_PAGEUP: i32 = 366;
 const WXK_PAGEDOWN: i32 = 367;
 
 pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32) -> Option<i32> {
+	// TRANSLATORS: Title of the Go to Percent dialog
 	let dialog_title = t("Go to Percent");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
 	let current_percent = current_percent.clamp(0, 100);
+	// TRANSLATORS: Label for the percentage selection slider
 	let slider_label = StaticText::builder(&dialog).with_label(&t("&Percent")).build();
 	let percent_slider =
 		Slider::builder(&dialog).with_value(current_percent).with_min_value(0).with_max_value(100).build();
+	// TRANSLATORS: Label for the numeric percentage entry field
 	let input_label = StaticText::builder(&dialog).with_label(&t("P&ercent:")).build();
 	let input_ctrl = SpinCtrl::builder(&dialog)
 		.with_range(0, 100)
@@ -77,8 +80,10 @@ pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32) -> Option
 	content_sizer.add(&percent_slider, 0, SizerFlag::Expand | SizerFlag::Bottom, 5);
 	content_sizer.add(&input_label, 0, SizerFlag::Left, 5);
 	content_sizer.add(&input_ctrl, 0, SizerFlag::Expand, 0);
+	// TRANSLATORS: Label for the button that jumps to the specified percentage in the document
 	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("Go")).build();
 	ok_button.set_default();
+	// TRANSLATORS: Label for the button that cancels the action
 	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
 	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
 	dialog.set_affirmative_id(wxdragon::id::ID_OK);
