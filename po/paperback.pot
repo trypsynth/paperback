@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-12 11:40-0600\n"
+"POT-Creation-Date: 2026-07-12 12:18-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,9 +25,11 @@ msgstr ""
 msgid "A new version of %s is available. Here's what's new:"
 msgstr ""
 
+#. TRANSLATORS: Label for the confirmation dialog "Yes" button
 msgid "&Yes"
 msgstr ""
 
+#. TRANSLATORS: Label for the confirmation dialog "No" button
 msgid "&No"
 msgstr ""
 
@@ -51,6 +53,7 @@ msgstr ""
 msgid "Info"
 msgstr ""
 
+#. TRANSLATORS: Title of the error dialog
 msgid "Error"
 msgstr ""
 
@@ -96,33 +99,43 @@ msgstr ""
 msgid "An accessible, lightweight, fast ebook and document reader"
 msgstr ""
 
+#. TRANSLATORS: Title of the All Documents dialog
 msgid "All Documents"
 msgstr ""
 
+#. TRANSLATORS: Label for the search input field in the All Documents dialog
 msgid "&search"
 msgstr ""
 
+#. TRANSLATORS: Column header for the document filename in the All Documents list
 msgid "File Name"
 msgstr ""
 
+#. TRANSLATORS: Column header for the document status (e.g. Open, Closed, Missing) in the All Documents list
 msgid "Status"
 msgstr ""
 
+#. TRANSLATORS: Column header for the file path in the All Documents list
 msgid "Path"
 msgstr ""
 
+#. TRANSLATORS: Button label to open the selected document
 msgid "&Open"
 msgstr ""
 
+#. TRANSLATORS: Button label to locate a missing file on disk
 msgid "&Locate…"
 msgstr ""
 
+#. TRANSLATORS: Button label to remove selected documents from the list
 msgid "&Remove"
 msgstr ""
 
+#. TRANSLATORS: Button label to clear all documents from the list
 msgid "&Clear All"
 msgstr ""
 
+#. TRANSLATORS: Button label to close the All Documents dialog
 #. TRANSLATORS: Label for the button to close the Document Info dialog
 #. TRANSLATORS: Label for the button to close the View Note dialog
 #. TRANSLATORS: Label for the button to close the web view dialog
@@ -130,71 +143,93 @@ msgid "Close"
 msgstr ""
 
 msgid ""
-"Are you sure you want to remove this document from the list? This will also "
-"remove its reading position."
+"Are you sure you want to remove the selected document? This will also remove "
+"its reading position and bookmarks."
 msgstr ""
 
 msgid ""
-"Are you sure you want to remove these {} documents from the list? This will "
-"also remove their reading positions."
+"Are you sure you want to remove the {} selected documents? This will also "
+"remove their reading positions and bookmarks."
 msgstr ""
 
+#. TRANSLATORS: Title of the confirmation dialog
 msgid "Confirm"
 msgstr ""
 
+#. TRANSLATORS: Confirmation prompt when clearing all documents from the list.
 msgid ""
 "Are you sure you want to remove all documents from the list? This will also "
 "remove all reading positions and bookmarks."
 msgstr ""
 
+#. TRANSLATORS: Status of a document that is currently open in a tab
 msgid "Open"
 msgstr ""
 
+#. TRANSLATORS: Status of a document that was previously opened but is currently closed
 msgid "Closed"
 msgstr ""
 
+#. TRANSLATORS: Status of a document whose file could not be found on disk
 msgid "Missing"
 msgstr ""
 
+#. TRANSLATORS: Message/prompt shown in the file picker dialog to locate a missing book
 msgid "Locate Book"
 msgstr ""
 
+#. TRANSLATORS: Title of the Jump to Bookmark dialog
 msgid "Jump to Bookmark"
 msgstr ""
 
+#. TRANSLATORS: Label for the bookmark filter dropdown
 msgid "&Filter:"
 msgstr ""
 
+#. TRANSLATORS: Option in the filter dropdown to show all entries
 msgid "All"
 msgstr ""
 
+#. TRANSLATORS: Option in the filter dropdown to show bookmarks only
 msgid "Bookmarks"
 msgstr ""
 
+#. TRANSLATORS: Option in the filter dropdown to show notes only
 msgid "Notes"
 msgstr ""
 
+msgid "&Bookmarks:"
+msgstr ""
+
+#. TRANSLATORS: Label for the button to edit a note
 msgid "&Edit Note"
 msgstr ""
 
+#. TRANSLATORS: Label for the button to delete a bookmark
 msgid "&Delete"
 msgstr ""
 
+#. TRANSLATORS: Label for the button to jump to the selected bookmark
 msgid "&Jump"
 msgstr ""
 
+#. TRANSLATORS: Label for the button to cancel the action
 msgid "&Cancel"
 msgstr ""
 
+#. TRANSLATORS: Placeholder text shown in the bookmarks list when the bookmark text range is empty or blank
 msgid "blank"
 msgstr ""
 
+#. TRANSLATORS: Error message shown when the user attempts to jump without selecting any bookmark
 msgid "Please select a bookmark to jump to."
 msgstr ""
 
+#. TRANSLATORS: Title of the Bookmark Note editor dialog
 msgid "Bookmark Note"
 msgstr ""
 
+#. TRANSLATORS: Label/prompt in the Note editor dialog
 msgid "Edit bookmark note:"
 msgstr ""
 
@@ -246,7 +281,6 @@ msgstr ""
 msgid "Untitled"
 msgstr ""
 
-#. TRANSLATORS: Label for the hidden root item in the table of contents tree view
 msgid "Root"
 msgstr ""
 
@@ -1477,6 +1511,12 @@ msgid "E&xit"
 msgstr ""
 
 msgid "Exit Paperback"
+msgstr ""
+
+msgid "Are you sure you want to remove this document from the list? This will also remove its reading position."
+msgstr ""
+
+msgid "Are you sure you want to remove these {} documents from the list? This will also remove their reading positions."
 msgstr ""
 
 msgid "Go To…"
