@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-07 21:06-0600\n"
+"POT-Creation-Date: 2026-07-12 11:30-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -236,24 +236,33 @@ msgstr ""
 msgid "Root"
 msgstr ""
 
+#. TRANSLATORS: Label for the confirmation button
 msgid "OK"
 msgstr ""
 
+#. TRANSLATORS: Label for the button that cancels the action
+#. TRANSLATORS: Label for the cancellation button
 msgid "Cancel"
 msgstr ""
 
+#. TRANSLATORS: Title of the Go to Line dialog
 msgid "Go to Line"
 msgstr ""
 
+#. TRANSLATORS: Label for the input field where users enter the target line number.
 msgid "&Line number:"
 msgstr ""
 
+#. TRANSLATORS: Label for the action button that jumps to the specified line number
+#. TRANSLATORS: Label for the action button that jumps to the specified page number
 msgid "Go"
 msgstr ""
 
+#. TRANSLATORS: Title of the Go to page dialog
 msgid "Go to page"
 msgstr ""
 
+#. TRANSLATORS: Label/prompt template for the page selection dialog. The %d placeholders represent current_page and max_pages respectively.
 #, c-format
 msgid "Go to page (%d/%d):"
 msgstr ""
@@ -452,9 +461,11 @@ msgstr ""
 msgid "Space"
 msgstr ""
 
+#. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
 msgstr ""
 
+#. TRANSLATORS: Label for the input field where users enter the number of minutes for the sleep timer.
 msgid "&Minutes:"
 msgstr ""
 

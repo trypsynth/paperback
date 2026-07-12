@@ -4,7 +4,9 @@ use wxdragon::prelude::*;
 use super::DIALOG_PADDING;
 
 pub fn show_sleep_timer_dialog(parent: &Frame, initial_duration: i32) -> Option<i32> {
+	// TRANSLATORS: Title of the Sleep Timer dialog
 	let dialog = Dialog::builder(parent, &t("Sleep Timer")).build();
+	// TRANSLATORS: Label for the input field where users enter the number of minutes for the sleep timer.
 	let label = StaticText::builder(&dialog).with_label(&t("&Minutes:")).build();
 	let input_ctrl = SpinCtrl::builder(&dialog)
 		.with_range(1, 999)
@@ -19,7 +21,9 @@ pub fn show_sleep_timer_dialog(parent: &Frame, initial_duration: i32) -> Option<
 	let input_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	input_sizer.add(&label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 5);
 	input_sizer.add(&input_ctrl, 1, SizerFlag::Expand, 0);
+	// TRANSLATORS: Label for the confirmation button
 	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
+	// TRANSLATORS: Label for the cancellation button
 	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
 	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
 	ok_button.set_default();
