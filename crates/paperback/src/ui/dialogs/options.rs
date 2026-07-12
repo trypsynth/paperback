@@ -499,9 +499,12 @@ fn font_description(rf: &ReadabilityFont) -> String {
 	}
 	// TRANSLATORS: Fallback font name
 	let face = if rf.face_name.is_empty() { t("Default") } else { rf.face_name.clone() };
-	let mut desc = format!("Font: {face}");
+	// TRANSLATORS: Font description prefix; {} is the font face name
+	let mut desc = t("Font: {}").replace("{}", &face);
 	if rf.point_size > 0 {
-		let _ = write!(desc, ", {}pt", rf.point_size);
+		// TRANSLATORS: Point size attribute; {} is the numeric size, "pt" is the unit abbreviation
+		let size_desc = t("{}pt").replace("{}", &rf.point_size.to_string());
+		let _ = write!(desc, ", {size_desc}");
 	}
 	if rf.weight >= FontWeight::Bold as i32 {
 		// TRANSLATORS: Font weight attribute name

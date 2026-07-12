@@ -169,6 +169,7 @@ fn build_bookmark_dialog_ui(dialog: Dialog, initial_filter: BookmarkFilterType) 
 	filter_sizer.add(&filter_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 6);
 	filter_sizer.add(&filter_choice, 1, SizerFlag::Expand, 0);
 	let bookmark_list = ListBox::builder(&dialog).build();
+	// TRANSLATORS: Label for the bookmark/note list (used only as an accessibility label on macOS)
 	let list_label_text = t("&Bookmarks:");
 	let _list_label = StaticText::builder(&dialog).with_label(&list_label_text).build();
 	#[cfg(target_os = "macos")]
