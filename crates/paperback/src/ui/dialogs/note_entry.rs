@@ -16,7 +16,9 @@ pub fn show_note_entry_dialog(
 		.with_style(TextCtrlStyle::MultiLine)
 		.with_size(Size::new(400, 200))
 		.build();
+	// TRANSLATORS: Label for the confirmation button
 	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
+	// TRANSLATORS: Label for the cancellation button
 	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
 	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
 	dialog.set_affirmative_id(wxdragon::id::ID_OK);

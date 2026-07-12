@@ -2,7 +2,6 @@
 use std::collections::HashMap;
 use std::{
 	cell::Cell,
-	fs,
 	path::{Path, PathBuf},
 	rc::Rc,
 	sync::{Mutex, atomic::Ordering},

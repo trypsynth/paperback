@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-12 11:30-0600\n"
+"POT-Creation-Date: 2026-07-12 11:40-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -92,6 +92,7 @@ msgstr ""
 msgid "Warning"
 msgstr ""
 
+#. TRANSLATORS: Description/tagline of the application shown in the About dialog
 msgid "An accessible, lightweight, fast ebook and document reader"
 msgstr ""
 
@@ -122,6 +123,9 @@ msgstr ""
 msgid "&Clear All"
 msgstr ""
 
+#. TRANSLATORS: Label for the button to close the Document Info dialog
+#. TRANSLATORS: Label for the button to close the View Note dialog
+#. TRANSLATORS: Label for the button to close the web view dialog
 msgid "Close"
 msgstr ""
 
@@ -194,27 +198,35 @@ msgstr ""
 msgid "Edit bookmark note:"
 msgstr ""
 
+#. TRANSLATORS: Title of the Document Info dialog
 msgid "Document Info"
 msgstr ""
 
+#. TRANSLATORS: Label for the document's file path
 msgid "Path:"
 msgstr ""
 
+#. TRANSLATORS: Label for the document's title
 msgid "Title:"
 msgstr ""
 
+#. TRANSLATORS: Label for the document's author
 msgid "Author:"
 msgstr ""
 
+#. TRANSLATORS: Label for the number of words in the document
 msgid "Words:"
 msgstr ""
 
+#. TRANSLATORS: Label for the number of lines in the document
 msgid "Lines:"
 msgstr ""
 
+#. TRANSLATORS: Label for the number of characters in the document
 msgid "Characters:"
 msgstr ""
 
+#. TRANSLATORS: Label for the number of characters in the document excluding space characters
 msgid "Characters (excluding spaces):"
 msgstr ""
 
@@ -230,9 +242,11 @@ msgstr ""
 msgid "Links"
 msgstr ""
 
+#. TRANSLATORS: Placeholder text shown in the Table of Contents when a section has no title
 msgid "Untitled"
 msgstr ""
 
+#. TRANSLATORS: Label for the hidden root item in the table of contents tree view
 msgid "Root"
 msgstr ""
 
@@ -255,6 +269,7 @@ msgstr ""
 
 #. TRANSLATORS: Label for the action button that jumps to the specified line number
 #. TRANSLATORS: Label for the action button that jumps to the specified page number
+#. TRANSLATORS: Label for the button that jumps to the specified percentage in the document
 msgid "Go"
 msgstr ""
 
@@ -267,32 +282,41 @@ msgstr ""
 msgid "Go to page (%d/%d):"
 msgstr ""
 
+#. TRANSLATORS: Title of the Go to Percent dialog
 msgid "Go to Percent"
 msgstr ""
 
+#. TRANSLATORS: Label for the percentage selection slider
 msgid "&Percent"
 msgstr ""
 
+#. TRANSLATORS: Label for the numeric percentage entry field
 msgid "P&ercent:"
 msgstr ""
 
+#. TRANSLATORS: Title of the Open As dialog
 msgid "Open As"
 msgstr ""
 
+#. TRANSLATORS: Prompt template informing the user that no parser was found for their file. The {} placeholder is replaced with the file path.
 msgid ""
 "No suitable parser was found for {}.\n"
 "How would you like to open this file?"
 msgstr ""
 
+#. TRANSLATORS: Label for the format selection dropdown
 msgid "Open &as:"
 msgstr ""
 
+#. TRANSLATORS: Choice option to open a file as plain text
 msgid "Plain Text"
 msgstr ""
 
+#. TRANSLATORS: Choice option to open a file as HTML
 msgid "HTML"
 msgstr ""
 
+#. TRANSLATORS: Choice option to open a file as Markdown
 msgid "Markdown"
 msgstr ""
 
@@ -469,45 +493,59 @@ msgstr ""
 msgid "&Minutes:"
 msgstr ""
 
+#. TRANSLATORS: Title of the Table of Contents dialog
 msgid "Table of Contents"
 msgstr ""
 
+#. TRANSLATORS: Error message shown when the user attempts to confirm the Table of Contents dialog without having selected any section
 msgid "Please select a section from the table of contents."
 msgstr ""
 
+#. TRANSLATORS: Title of the error dialog shown when the user attempts to confirm the Table of Contents dialog without having selected any section
 msgid "No Selection"
 msgstr ""
 
+#. TRANSLATORS: Title of the View Note dialog
 msgid "View Note"
 msgstr ""
 
+#. TRANSLATORS: Singular label for 1 hour duration
 msgid "1 hour"
 msgstr ""
 
+#. TRANSLATORS: Plural label for hours duration (e.g. "2 hours")
 msgid "hours"
 msgstr ""
 
+#. TRANSLATORS: Singular label for 1 minute duration
 msgid "1 minute"
 msgstr ""
 
+#. TRANSLATORS: Plural label for minutes duration (e.g. "2 minutes")
 msgid "minutes"
 msgstr ""
 
+#. TRANSLATORS: Singular label for 1 second duration
 msgid "1 second"
 msgstr ""
 
+#. TRANSLATORS: Plural label for seconds duration (e.g. "2 seconds")
 msgid "seconds"
 msgstr ""
 
+#. TRANSLATORS: Prompt showing estimated reading time. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
 msgid "Estimated reading time: {}"
 msgstr ""
 
+#. TRANSLATORS: Message template for selection word count. The {} placeholder is replaced with the number of words.
 msgid "The selection contains {} words."
 msgstr ""
 
+#. TRANSLATORS: Message template for document word count. The {} placeholder is replaced with the number of words.
 msgid "This document contains {} words."
 msgstr ""
 
+#. TRANSLATORS: Title of the Word Count dialog
 msgid "Word Count"
 msgstr ""
 

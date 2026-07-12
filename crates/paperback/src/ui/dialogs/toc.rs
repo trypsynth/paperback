@@ -20,6 +20,7 @@ pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i3
 fn show_toc_dialog_dv(parent: &Frame, toc_items: &[TocItem], current_offset: i32) -> Option<i32> {
 	use std::collections::HashMap;
 
+	// TRANSLATORS: Title of the Table of Contents dialog
 	let dialog_title = t("Table of Contents");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
 	let selected_offset = Rc::new(Cell::new(-1i32));
@@ -58,6 +59,7 @@ fn populate_toc_tree_dv(
 	item_offsets: &mut std::collections::HashMap<usize, i32>,
 ) {
 	for item in items {
+		// TRANSLATORS: Placeholder text shown in the Table of Contents when a section has no title
 		let display_text = if item.name.is_empty() { t("Untitled") } else { item.name.clone() };
 		let offset = i32::try_from(item.offset).unwrap_or(i32::MAX);
 		let node = if item.children.is_empty() {
@@ -157,6 +159,7 @@ fn find_and_select_dv(
 
 #[cfg(target_os = "windows")]
 fn show_toc_dialog_wx(parent: &Frame, toc_items: &[TocItem], current_offset: i32) -> Option<i32> {
+	// TRANSLATORS: Title of the Table of Contents dialog
 	let dialog_title = t("Table of Contents");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
 	let selected_offset = Rc::new(Cell::new(-1));
@@ -182,7 +185,7 @@ fn build_toc_tree(dialog: Dialog, toc_items: &[TocItem], current_offset: i32) ->
 		.with_style(TreeCtrlStyle::Default | TreeCtrlStyle::HideRoot)
 		.with_size(Size::new(400, 500))
 		.build();
-	let root = tree.add_root(&t("Root"), None, None).unwrap();
+	let root = tree.add_root("Root", None, None).unwrap();
 	populate_toc_tree(tree, &root, toc_items);
 	if current_offset != -1 {
 		find_and_select_item(tree, &root, current_offset);
@@ -253,6 +256,7 @@ fn bind_toc_layout(dialog: Dialog, tree: TreeCtrl, ok_button: Button, cancel_but
 #[cfg(target_os = "windows")]
 fn populate_toc_tree(tree: TreeCtrl, parent: &TreeItemId, items: &[TocItem]) {
 	for item in items {
+		// TRANSLATORS: Placeholder text shown in the Table of Contents when a section has no title
 		let display_text = if item.name.is_empty() { t("Untitled") } else { item.name.clone() };
 		let offset = i32::try_from(item.offset).unwrap_or(i32::MAX);
 		if let Some(id) = tree.append_item_with_data(parent, &display_text, offset, None, None)
@@ -289,7 +293,9 @@ fn find_and_select_item(tree: TreeCtrl, parent: &TreeItemId, offset: i32) -> boo
 // ── Shared helpers ─────────────────────────────────────────────────────────────
 
 fn build_toc_buttons(dialog: Dialog) -> (Button, Button) {
+	// TRANSLATORS: Label for the confirmation button
 	let ok_button = Button::builder(&dialog).with_label(&t("OK")).build();
+	// TRANSLATORS: Label for the cancellation button
 	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
 	(ok_button, cancel_button)
 }
@@ -303,7 +309,9 @@ fn bind_toc_ok(dialog: Dialog, ok_button: Button, selected_offset: Rc<Cell<i32>>
 		} else {
 			MessageDialog::builder(
 				&dialog_for_ok,
+				// TRANSLATORS: Error message shown when the user attempts to confirm the Table of Contents dialog without having selected any section
 				&t("Please select a section from the table of contents."),
+				// TRANSLATORS: Title of the error dialog shown when the user attempts to confirm the Table of Contents dialog without having selected any section
 				&t("No Selection"),
 			)
 			.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre)
