@@ -117,6 +117,7 @@ impl DocumentManager {
 		title_override: Option<&str>,
 	) -> bool {
 		if !path.exists() {
+			// TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 			let template = t("File not found: {}");
 			let message = template.replace("{}", &path.to_string_lossy());
 			show_error_dialog(&self.notebook, &message, &t("Error"));
@@ -838,7 +839,11 @@ fn build_document_load_error_message(path: &Path, error: &str) -> String {
 	if details.is_empty() {
 		return t("Failed to load document.");
 	}
-	format!("{}\n\nFile: {}\nDetails: {}", t("Failed to load document."), path.display(), details)
+	// TRANSLATORS: "File" label prefix in the document-load error dialog; {} is the file path
+	let file_line = t("File: {}").replace("{}", &path.display().to_string());
+	// TRANSLATORS: "Details" label prefix in the document-load error dialog; {} is the underlying error message
+	let details_line = t("Details: {}").replace("{}", details);
+	format!("{}\n\n{file_line}\n{details_line}", t("Failed to load document."))
 }
 
 fn fill_text_ctrl(text_ctrl: TextCtrl, content: &str) {

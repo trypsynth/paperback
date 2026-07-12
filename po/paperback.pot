@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-12 16:39-0600\n"
+"POT-Creation-Date: 2026-07-12 16:51-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -589,6 +589,7 @@ msgstr ""
 msgid "Word Count"
 msgstr ""
 
+#. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 msgid "File not found: {}"
 msgstr ""
 
@@ -618,6 +619,14 @@ msgid "Document Password"
 msgstr ""
 
 msgid "Failed to load document."
+msgstr ""
+
+#. TRANSLATORS: "File" label prefix in the document-load error dialog; {} is the file path
+msgid "File: {}"
+msgstr ""
+
+#. TRANSLATORS: "Details" label prefix in the document-load error dialog; {} is the underlying error message
+msgid "Details: {}"
 msgstr ""
 
 msgid "Create &bookmark"
@@ -714,9 +723,11 @@ msgstr ""
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr ""
 
+#. TRANSLATORS: Window title when a document is open; {} is the document title
 msgid "Paperback - {}"
 msgstr ""
 
+#. TRANSLATORS: Status bar character count; {} is the number of characters
 msgid "{} chars"
 msgstr ""
 
@@ -798,9 +809,11 @@ msgstr ""
 msgid "Sleep timer cancelled."
 msgstr ""
 
+#. TRANSLATORS: Announcement when the sleep timer is set for exactly 1 minute
 msgid "Sleep timer set for 1 minute."
 msgstr ""
 
+#. TRANSLATORS: Announcement when the sleep timer is set; %d is the number of minutes (always 2 or more)
 #, c-format
 msgid "Sleep timer set for %d minutes."
 msgstr ""
@@ -1482,14 +1495,17 @@ msgstr ""
 msgid "No previous section"
 msgstr ""
 
+#. TRANSLATORS: Announced when the document has no headings at the given level; %d is the heading level number
 #, c-format
 msgid "No headings at level %d."
 msgstr ""
 
+#. TRANSLATORS: Announced when there is no next heading at the given level; %d is the heading level number
 #, c-format
 msgid "No next heading at level %d."
 msgstr ""
 
+#. TRANSLATORS: Announced when there is no previous heading at the given level; %d is the heading level number
 #, c-format
 msgid "No previous heading at level %d."
 msgstr ""
@@ -1578,14 +1594,17 @@ msgstr ""
 msgid "Wrapping to end. "
 msgstr ""
 
+#. TRANSLATORS: Announcement when landing on a heading; %s is the heading text, %d is the heading level number
 #, c-format
 msgid "%s Heading level %d"
 msgstr ""
 
+#. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
 #, c-format
 msgid "Page %d: %s"
 msgstr ""
 
+#. TRANSLATORS: Suffix appended after a link's text when announcing navigation to a link; the leading space is significant
 msgid " link"
 msgstr ""
 
@@ -1613,6 +1632,7 @@ msgstr ""
 msgid "Start of container."
 msgstr ""
 
+#. TRANSLATORS: Announcement when landing on a bookmark; %s is the bookmark/line text, %d is the bookmark's 1-based index
 #, c-format
 msgid "%s - Bookmark %d"
 msgstr ""

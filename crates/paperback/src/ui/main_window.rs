@@ -350,8 +350,10 @@ impl MainWindow {
 			return;
 		}
 		if let Some(tab) = dm.active_tab() {
+			// TRANSLATORS: Window title when a document is open; {} is the document title
 			let template = t("Paperback - {}");
 			self.frame.set_title(&template.replace("{}", &display_title(tab)));
+			// TRANSLATORS: Status bar character count; {} is the number of characters
 			let chars_label = t("{} chars");
 			self.frame.set_status_text(&chars_label.replace("{}", &tab.session.content().len().to_string()), 0);
 		}
@@ -1543,8 +1545,10 @@ impl MainWindow {
 						SLEEP_TIMER_START_MS.store(now, Ordering::SeqCst);
 						SLEEP_TIMER_DURATION_MINUTES.store(duration, Ordering::SeqCst);
 						let msg = if duration == 1 {
+							// TRANSLATORS: Announcement when the sleep timer is set for exactly 1 minute
 							t("Sleep timer set for 1 minute.")
 						} else {
+							// TRANSLATORS: Announcement when the sleep timer is set; %d is the number of minutes (always 2 or more)
 							t("Sleep timer set for %d minutes.").replace("%d", &duration.to_string())
 						};
 						live_region::announce(live_region_label, &msg);
@@ -1759,6 +1763,7 @@ fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 		return;
 	}
 	if let Some(tab) = dm.active_tab() {
+		// TRANSLATORS: Window title when a document is open; {} is the document title
 		let template = t("Paperback - {}");
 		frame.set_title(&template.replace("{}", &display_title(tab)));
 		let position = tab.text_ctrl.get_insertion_point();
