@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-12 12:18-0600\n"
+"POT-Creation-Date: 2026-07-12 13:07-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,78 +16,6 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-
-#, c-format
-msgid "Update to %s"
-msgstr ""
-
-#, c-format
-msgid "A new version of %s is available. Here's what's new:"
-msgstr ""
-
-#. TRANSLATORS: Label for the confirmation dialog "Yes" button
-msgid "&Yes"
-msgstr ""
-
-#. TRANSLATORS: Label for the confirmation dialog "No" button
-msgid "&No"
-msgstr ""
-
-msgid "No release notes provided."
-msgstr ""
-
-#, c-format
-msgid "%s Update"
-msgstr ""
-
-msgid "Downloading update..."
-msgstr ""
-
-msgid "No updates available."
-msgstr ""
-
-#, c-format
-msgid "No updates available. Latest version: %s"
-msgstr ""
-
-msgid "Info"
-msgstr ""
-
-#. TRANSLATORS: Title of the error dialog
-msgid "Error"
-msgstr ""
-
-#, c-format
-msgid ""
-"Security verification failed. The update might have been tampered with: %s"
-msgstr ""
-
-msgid "Security Error"
-msgstr ""
-
-msgid "Update failed"
-msgstr ""
-
-#, c-format
-msgid ""
-"Update downloaded to: %s\n"
-"Please install it manually."
-msgstr ""
-
-msgid "Update Ready"
-msgstr ""
-
-msgid "Failed to get current exe path"
-msgstr ""
-
-msgid "Failed to launch installer script"
-msgstr ""
-
-msgid "Failed to launch update script"
-msgstr ""
-
-msgid "Unknown update file format."
-msgstr ""
 
 msgid "Failed to create IPC server"
 msgstr ""
@@ -105,6 +33,14 @@ msgstr ""
 
 #. TRANSLATORS: Label for the search input field in the All Documents dialog
 msgid "&search"
+msgstr ""
+
+#. TRANSLATORS: Label for the confirmation dialog "Yes" button
+msgid "&Yes"
+msgstr ""
+
+#. TRANSLATORS: Label for the confirmation dialog "No" button
+msgid "&No"
 msgstr ""
 
 #. TRANSLATORS: Column header for the document filename in the All Documents list
@@ -225,6 +161,10 @@ msgstr ""
 msgid "Please select a bookmark to jump to."
 msgstr ""
 
+#. TRANSLATORS: Title of the error dialog
+msgid "Error"
+msgstr ""
+
 #. TRANSLATORS: Title of the Bookmark Note editor dialog
 msgid "Bookmark Note"
 msgstr ""
@@ -265,29 +205,33 @@ msgstr ""
 msgid "Characters (excluding spaces):"
 msgstr ""
 
+#. TRANSLATORS: Title of the Elements dialog (non-Windows version)
+#. TRANSLATORS: Title of the Elements dialog (Windows version)
 msgid "Elements"
 msgstr ""
 
+#. TRANSLATORS: Label for the view selection dropdown in the Elements dialog
 msgid "&View:"
 msgstr ""
 
+#. TRANSLATORS: Choice option in the view dropdown to show headings list
 msgid "Headings"
 msgstr ""
 
+#. TRANSLATORS: Choice option in the view dropdown to show links list
 msgid "Links"
 msgstr ""
 
+#. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
 #. TRANSLATORS: Placeholder text shown in the Table of Contents when a section has no title
 msgid "Untitled"
-msgstr ""
-
-msgid "Root"
 msgstr ""
 
 #. TRANSLATORS: Label for the confirmation button
 msgid "OK"
 msgstr ""
 
+#. TRANSLATORS: Label for the cancellation button
 #. TRANSLATORS: Label for the button that cancels the action
 #. TRANSLATORS: Label for the cancellation button
 msgid "Cancel"
@@ -354,27 +298,33 @@ msgstr ""
 msgid "Markdown"
 msgstr ""
 
+#. TRANSLATORS: Title of the Options dialog
 msgid "Options"
 msgstr ""
 
 msgid "&Restore previously opened documents on startup"
 msgstr ""
 
+#. TRANSLATORS: Option to toggle word wrapping of text
 msgid "&Word wrap"
 msgstr ""
 
 msgid "Render tables &inline"
 msgstr ""
 
+#. TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
 msgid "&Minimize to system tray"
 msgstr ""
 
+#. TRANSLATORS: Option to start the app maximized
 msgid "&Start maximized"
 msgstr ""
 
+#. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
 msgstr ""
 
+#. TRANSLATORS: Option to wrap navigation around to the beginning/end when navigating elements
 msgid "&Wrap navigation"
 msgstr ""
 
@@ -384,6 +334,7 @@ msgstr ""
 msgid "Check for &updates on startup"
 msgstr ""
 
+#. TRANSLATORS: Button label to open the hotkey customization dialog
 msgid "Customize &Window Hotkey..."
 msgstr ""
 
@@ -393,129 +344,174 @@ msgstr ""
 msgid "Number of &recent documents to show:"
 msgstr ""
 
+#. TRANSLATORS: Label for the language selection dropdown
 msgid "&Language:"
 msgstr ""
 
+#. TRANSLATORS: Label for the update channel selection dropdown
 msgid "Update Channel:"
 msgstr ""
 
+#. TRANSLATORS: Stable update channel option
 msgid "Stable"
 msgstr ""
 
+#. TRANSLATORS: Developer/development update channel option
 msgid "Dev"
 msgstr ""
 
+#. TRANSLATORS: Label/header for the Font options section
 msgid "Font"
 msgstr ""
 
+#. TRANSLATORS: Button label to pick a font
 msgid "Choose &Font..."
 msgstr ""
 
+#. TRANSLATORS: Button label to restore font settings to default values
 msgid "&Reset to Default Font"
 msgstr ""
 
+#. TRANSLATORS: Label/header for the Background Color options section
 msgid "Background Color"
 msgstr ""
 
+#. TRANSLATORS: Button label to pick a background color
 msgid "Choose &Background Color..."
 msgstr ""
 
+#. TRANSLATORS: Button label to restore background color to default values
 msgid "Reset to &Default Background"
 msgstr ""
 
+#. TRANSLATORS: Label for the line spacing dropdown
 msgid "&Line spacing:"
 msgstr ""
 
+#. TRANSLATORS: Normal line spacing option
+#. TRANSLATORS: Normal paragraph spacing option
+#. TRANSLATORS: Normal letter spacing option
 msgid "Normal"
 msgstr ""
 
+#. TRANSLATORS: 1.5x line spacing option
 msgid "1.5\\u{00d7}"
 msgstr ""
 
+#. TRANSLATORS: Double line spacing option
 msgid "Double"
 msgstr ""
 
+#. TRANSLATORS: Label for the paragraph spacing dropdown
 msgid "&Paragraph spacing:"
 msgstr ""
 
+#. TRANSLATORS: Relaxed paragraph spacing option
 msgid "Relaxed"
 msgstr ""
 
+#. TRANSLATORS: Wide paragraph spacing option
+#. TRANSLATORS: Wide letter spacing option
 msgid "Wide"
 msgstr ""
 
+#. TRANSLATORS: Label for the letter spacing dropdown
 msgid "L&etter spacing:"
 msgstr ""
 
+#. TRANSLATORS: Very Wide letter spacing option
 msgid "Very Wide"
 msgstr ""
 
+#. TRANSLATORS: Label for the text alignment dropdown
 msgid "Text &alignment:"
 msgstr ""
 
+#. TRANSLATORS: Left text alignment option
 msgid "Left"
 msgstr ""
 
+#. TRANSLATORS: Center text alignment option
 msgid "Center"
 msgstr ""
 
+#. TRANSLATORS: Right text alignment option
 msgid "Right"
 msgstr ""
 
+#. TRANSLATORS: Justified text alignment option
 msgid "Justify"
 msgstr ""
 
+#. TRANSLATORS: Tab label for the General options panel
 msgid "General"
 msgstr ""
 
+#. TRANSLATORS: Tab label for the Reading options panel
 msgid "Reading"
 msgstr ""
 
+#. TRANSLATORS: Tab label for the Readability options panel
 msgid "Readability"
 msgstr ""
 
+#. TRANSLATORS: Description text shown when the background color is set to default
 msgid "Background: Default"
 msgstr ""
 
+#. TRANSLATORS: Description text shown when the font is set to default
 msgid "Font: Default"
 msgstr ""
 
+#. TRANSLATORS: Fallback font name
 msgid "Default"
 msgstr ""
 
+#. TRANSLATORS: Font weight attribute name
 msgid "Bold"
 msgstr ""
 
+#. TRANSLATORS: Font style attribute name
 msgid "Italic"
 msgstr ""
 
+#. TRANSLATORS: Font underline attribute name
 msgid "Underlined"
 msgstr ""
 
+#. TRANSLATORS: Font strikethrough attribute name
 msgid "Strikethrough"
 msgstr ""
 
+#. TRANSLATORS: Title of the hotkey customization dialog
 msgid "Window Hotkey"
 msgstr ""
 
+#. TRANSLATORS: Checkbox label for Control modifier key
 msgid "&Ctrl"
 msgstr ""
 
+#. TRANSLATORS: Checkbox label for Alt modifier key
 msgid "&Alt"
 msgstr ""
 
+#. TRANSLATORS: Checkbox label for Shift modifier key
 msgid "&Shift"
 msgstr ""
 
+#. TRANSLATORS: Checkbox label for Windows modifier key
 msgid "&Win"
 msgstr ""
 
+#. TRANSLATORS: Label for the hotkey key selection input field
 msgid "&Key:"
 msgstr ""
 
+#. TRANSLATORS: Button label to clear the current hotkey selection
 msgid "Clear"
 msgstr ""
 
+#. TRANSLATORS: Representation of the Spacebar key
 msgid "Space"
 msgstr ""
 
@@ -1511,6 +1507,69 @@ msgid "E&xit"
 msgstr ""
 
 msgid "Exit Paperback"
+msgstr ""
+
+#, c-format
+msgid "Update to %s"
+msgstr ""
+
+#, c-format
+msgid "A new version of %s is available. Here's what's new:"
+msgstr ""
+
+msgid "No release notes provided."
+msgstr ""
+
+#, c-format
+msgid "%s Update"
+msgstr ""
+
+msgid "Downloading update..."
+msgstr ""
+
+msgid "No updates available."
+msgstr ""
+
+#, c-format
+msgid "No updates available. Latest version: %s"
+msgstr ""
+
+msgid "Info"
+msgstr ""
+
+#, c-format
+msgid ""
+"Security verification failed. The update might have been tampered with: %s"
+msgstr ""
+
+msgid "Security Error"
+msgstr ""
+
+msgid "Update failed"
+msgstr ""
+
+#, c-format
+msgid ""
+"Update downloaded to: %s\n"
+"Please install it manually."
+msgstr ""
+
+msgid "Update Ready"
+msgstr ""
+
+msgid "Failed to get current exe path"
+msgstr ""
+
+msgid "Failed to launch installer script"
+msgstr ""
+
+msgid "Failed to launch update script"
+msgstr ""
+
+msgid "Unknown update file format."
+msgstr ""
+
+msgid "Root"
 msgstr ""
 
 msgid "Are you sure you want to remove this document from the list? This will also remove its reading position."

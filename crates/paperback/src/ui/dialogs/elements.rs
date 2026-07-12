@@ -23,6 +23,7 @@ struct ElementsDialogUiDv {
 
 #[cfg(not(target_os = "windows"))]
 fn show_elements_dialog_dv(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<i64> {
+	// TRANSLATORS: Title of the Elements dialog (non-Windows version)
 	let dialog = Dialog::builder(parent, &t("Elements")).build();
 	let ElementsDialogUiDv { content_sizer, view_choice, headings_tree, links_list } =
 		build_elements_dialog_ui_dv(dialog);
@@ -60,10 +61,13 @@ fn show_elements_dialog_dv(parent: &Frame, session: &DocumentSession, current_po
 fn build_elements_dialog_ui_dv(dialog: Dialog) -> ElementsDialogUiDv {
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let choice_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	// TRANSLATORS: Label for the view selection dropdown in the Elements dialog
 	let choice_label_text = t("&View:");
 	let choice_label = StaticText::builder(&dialog).with_label(&choice_label_text).build();
 	let view_choice = Choice::builder(&dialog).build();
+	// TRANSLATORS: Choice option in the view dropdown to show headings list
 	view_choice.append(&t("Headings"));
+	// TRANSLATORS: Choice option in the view dropdown to show links list
 	view_choice.append(&t("Links"));
 	view_choice.set_selection(0);
 	#[cfg(target_os = "macos")]
@@ -114,6 +118,7 @@ fn populate_elements_dialog_dv(
 		} else {
 			&root
 		};
+		// TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
 		let display_text = if item.text.is_empty() { t("Untitled") } else { item.text.clone() };
 		let offset = i64::try_from(item.offset).unwrap_or(i64::MAX);
 		let node = if has_children_vec[current_idx] {
@@ -263,6 +268,7 @@ struct ElementsDialogUi {
 
 #[cfg(target_os = "windows")]
 fn show_elements_dialog_wx(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<i64> {
+	// TRANSLATORS: Title of the Elements dialog (Windows version)
 	let dialog = Dialog::builder(parent, &t("Elements")).build();
 	let ElementsDialogUi { content_sizer, view_choice, headings_tree, links_list } = build_elements_dialog_ui(dialog);
 	let (selected_offset, link_offsets) = populate_elements_dialog(session, current_pos, headings_tree, links_list);
@@ -288,10 +294,13 @@ fn show_elements_dialog_wx(parent: &Frame, session: &DocumentSession, current_po
 fn build_elements_dialog_ui(dialog: Dialog) -> ElementsDialogUi {
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let choice_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	// TRANSLATORS: Label for the view selection dropdown in the Elements dialog
 	let choice_label_text = t("&View:");
 	let choice_label = StaticText::builder(&dialog).with_label(&choice_label_text).build();
 	let view_choice = Choice::builder(&dialog).build();
+	// TRANSLATORS: Choice option in the view dropdown to show headings list
 	view_choice.append(&t("Headings"));
+	// TRANSLATORS: Choice option in the view dropdown to show links list
 	view_choice.append(&t("Links"));
 	view_choice.set_selection(0);
 	#[cfg(target_os = "macos")]
@@ -332,7 +341,7 @@ fn populate_elements_dialog(
 	links_list: ListBox,
 ) -> (Rc<Cell<i64>>, Rc<Vec<i64>>) {
 	let selected_offset = Rc::new(Cell::new(-1i64));
-	let root = headings_tree.add_root(&t("Root"), None, None).unwrap();
+	let root = headings_tree.add_root("Root", None, None).unwrap();
 	let tree_data = session.heading_tree(current_pos);
 	let mut item_ids: Vec<wxdragon::widgets::treectrl::TreeItemId> = Vec::new();
 	if !tree_data.items.is_empty() {
@@ -347,6 +356,7 @@ fn populate_elements_dialog(
 		} else {
 			root.clone()
 		};
+		// TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
 		let display_text = if item.text.is_empty() { t("Untitled") } else { item.text.clone() };
 		let offset = i64::try_from(item.offset).unwrap_or(i64::MAX);
 		if let Some(id) = headings_tree.append_item_with_data(&parent_id, &display_text, offset, None, None) {
@@ -473,7 +483,9 @@ fn bind_elements_ok_action(
 // ── Shared helpers ─────────────────────────────────────────────────────────────
 
 fn build_elements_buttons(dialog: Dialog) -> (Button, Button) {
+	// TRANSLATORS: Label for the confirmation button
 	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
+	// TRANSLATORS: Label for the cancellation button
 	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
 	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
 	ok_button.set_default();
