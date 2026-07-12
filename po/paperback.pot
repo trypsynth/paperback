@@ -1870,3 +1870,6 @@ msgstr ""
 
 msgid "Figure"
 msgstr ""
+
+msgid "Help"
+msgstr ""

@@ -804,7 +804,7 @@ fn navigate_line_by_column(text_ctrl: TextCtrl, going_down: bool, pref_col: Opti
 }
 
 fn normalized_path_key(path: &Path) -> String {
-	let normalized = fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
+	let normalized = dunce::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
 	let value = normalized.to_string_lossy().to_string();
 	#[cfg(target_os = "windows")]
 	{
