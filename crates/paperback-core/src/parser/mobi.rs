@@ -10,6 +10,7 @@ use crate::{
 		html_to_text::{HtmlSourceMode, HtmlToText},
 		util::{path::extract_title_from_path, toc::build_toc_from_headings},
 	},
+	t,
 };
 
 pub struct MobiParser;
@@ -32,7 +33,8 @@ impl Parser for MobiParser {
 		let mut data = Vec::new();
 		file.read_to_end(&mut data)?;
 		if data.len() < 78 {
-			anyhow::bail!("File too short");
+			// TRANSLATORS: Error shown when a MOBI file is too small to contain a valid header
+			anyhow::bail!(t("File too short"));
 		}
 		let title_bytes = &data[0..32];
 		let num_records = u16::from_be_bytes([data[76], data[77]]) as usize;
@@ -40,30 +42,36 @@ impl Parser for MobiParser {
 		for i in 0..num_records {
 			let start = 78 + i * 8;
 			if start + 4 > data.len() {
-				anyhow::bail!("Invalid record offsets");
+				// TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
+				anyhow::bail!(t("Invalid record offsets"));
 			}
 			let offset = u32::from_be_bytes([data[start], data[start + 1], data[start + 2], data[start + 3]]) as usize;
 			record_offsets.push(offset);
 		}
 		if record_offsets.is_empty() {
-			anyhow::bail!("No records found");
+			// TRANSLATORS: Error shown when a MOBI file has no records
+			anyhow::bail!(t("No records found"));
 		}
 		let rec0_offset = record_offsets[0];
 		let rec1_offset = if record_offsets.len() > 1 { record_offsets[1] } else { data.len() };
 		if rec1_offset <= rec0_offset || rec1_offset > data.len() {
-			anyhow::bail!("Invalid Record 0 offsets");
+			// TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
+			anyhow::bail!(t("Invalid Record 0 offsets"));
 		}
 		let rec0 = &data[rec0_offset..rec1_offset];
 		if rec0.len() < 16 {
-			anyhow::bail!("Invalid Record 0");
+			// TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
+			anyhow::bail!(t("Invalid Record 0"));
 		}
 		let compression = u16::from_be_bytes([rec0[0], rec0[1]]);
 		let mobi_header_offset = 16;
 		if mobi_header_offset + 8 > rec0.len() {
-			anyhow::bail!("No MOBI header");
+			// TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
+			anyhow::bail!(t("No MOBI header"));
 		}
 		if &rec0[mobi_header_offset..mobi_header_offset + 4] != b"MOBI" {
-			anyhow::bail!("Invalid MOBI identifier");
+			// TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
+			anyhow::bail!(t("Invalid MOBI identifier"));
 		}
 		let header_length = u32::from_be_bytes([
 			rec0[mobi_header_offset + 4],
@@ -102,7 +110,8 @@ impl Parser for MobiParser {
 			}
 		}
 		if last_content_record >= num_records || first_content_record > last_content_record {
-			anyhow::bail!("Invalid content record range");
+			// TRANSLATORS: Error shown when a MOBI file's content record range is invalid
+			anyhow::bail!(t("Invalid content record range"));
 		}
 		let mut document_title = if name_offset > 0 && name_length > 0 && name_offset + name_length <= rec0.len() {
 			String::from_utf8_lossy(&rec0[name_offset..name_offset + name_length]).into_owned()
@@ -172,10 +181,12 @@ impl Parser for MobiParser {
 					}
 					huff_decoder = Some(HuffmanDecoder::init(&huffs)?);
 				} else {
-					anyhow::bail!("Invalid HUFF/CDIC records");
+					// TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
+					anyhow::bail!(t("Invalid HUFF/CDIC records"));
 				}
 			} else {
-				anyhow::bail!("Missing HUFF parameters in header");
+				// TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
+				anyhow::bail!(t("Missing HUFF parameters in header"));
 			}
 		}
 		let mut extra_data_flags = 0u32;
@@ -253,7 +264,8 @@ impl Parser for MobiParser {
 						content.extend_from_slice(&decoded);
 					}
 				}
-				other => anyhow::bail!("Unsupported compression mode ({other})"),
+				// TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
+				other => anyhow::bail!(t("Unsupported compression mode ({})").replace("{}", &other.to_string())),
 			}
 		}
 
@@ -714,15 +726,18 @@ impl HuffmanDecoder {
 
 	fn load_huff(&mut self, huff: &[u8]) -> Result<()> {
 		if huff.len() < 24 {
-			anyhow::bail!("Invalid HUFF record");
+			// TRANSLATORS: Error shown when a MOBI file's Huffman compression record is too small to be valid
+			anyhow::bail!(t("Invalid HUFF record"));
 		}
 		if &huff[0..4] != b"HUFF" {
-			anyhow::bail!("Invalid HUFF header");
+			// TRANSLATORS: Error shown when a MOBI file's Huffman compression record has the wrong signature
+			anyhow::bail!(t("Invalid HUFF header"));
 		}
 		let cache_offset = u32::from_be_bytes([huff[8], huff[9], huff[10], huff[11]]) as usize;
 		let base_offset = u32::from_be_bytes([huff[12], huff[13], huff[14], huff[15]]) as usize;
 		if cache_offset + 256 * 4 > huff.len() {
-			anyhow::bail!("Invalid HUFF cache offset");
+			// TRANSLATORS: Error shown when a MOBI file's Huffman cache table offset is out of bounds
+			anyhow::bail!(t("Invalid HUFF cache offset"));
 		}
 		for i in 0..256 {
 			let off = cache_offset + i * 4;
@@ -731,17 +746,20 @@ impl HuffmanDecoder {
 			let term = (v & 0x80) == 0x80;
 			let mut max_code = u64::from(v >> 8);
 			if code_len == 0 {
-				anyhow::bail!("Code len out of bounds");
+				// TRANSLATORS: Error shown when a MOBI file's Huffman code length is invalid
+				anyhow::bail!(t("Code len out of bounds"));
 			}
 			if code_len <= 8 && !term {
-				anyhow::bail!("Bad term");
+				// TRANSLATORS: Error shown when a MOBI file's Huffman table has an invalid terminal-code entry
+				anyhow::bail!(t("Bad term"));
 			}
 			max_code = ((max_code + 1) << (32usize.saturating_sub(code_len as usize))).saturating_sub(1);
 			self.code_dict[i] = (code_len, term, max_code as u32);
 		}
 		// Base table has 64 interleaved entries: [min1, max1, min2, max2, ... min32, max32]
 		if base_offset + 64 * 4 > huff.len() {
-			anyhow::bail!("Invalid HUFF base offset");
+			// TRANSLATORS: Error shown when a MOBI file's Huffman base table offset is out of bounds
+			anyhow::bail!(t("Invalid HUFF base offset"));
 		}
 		for i in 1..=32usize {
 			let min_off = base_offset + (i - 1) * 8;
@@ -768,7 +786,8 @@ impl HuffmanDecoder {
 				continue;
 			}
 			if &cdic[0..4] != b"CDIC" {
-				anyhow::bail!("Invalid CDIC header");
+				// TRANSLATORS: Error shown when a MOBI file's compressed dictionary record has the wrong signature
+				anyhow::bail!(t("Invalid CDIC header"));
 			}
 			let num_phrases = u32::from_be_bytes([cdic[8], cdic[9], cdic[10], cdic[11]]);
 			let bits = u32::from_be_bytes([cdic[12], cdic[13], cdic[14], cdic[15]]);
@@ -777,19 +796,22 @@ impl HuffmanDecoder {
 			for i in 0..n as usize {
 				let off = 16 + i * 2;
 				if off + 2 > cdic.len() {
-					anyhow::bail!("Invalid CDIC offsets");
+					// TRANSLATORS: Error shown when a MOBI file's compressed dictionary offset table is out of bounds
+					anyhow::bail!(t("Invalid CDIC offsets"));
 				}
 				offsets.push(u16::from_be_bytes([cdic[off], cdic[off + 1]]));
 			}
 			for offset in offsets {
 				let off = 16 + offset as usize;
 				if off + 2 > cdic.len() {
-					anyhow::bail!("Invalid CDIC phrase offset");
+					// TRANSLATORS: Error shown when a MOBI file's compressed dictionary phrase offset is out of bounds
+					anyhow::bail!(t("Invalid CDIC phrase offset"));
 				}
 				let num_bytes = u16::from_be_bytes([cdic[off], cdic[off + 1]]);
 				let len = (num_bytes & 0x7FFF) as usize;
 				if off + 2 + len > cdic.len() {
-					anyhow::bail!("Invalid CDIC phrase length");
+					// TRANSLATORS: Error shown when a MOBI file's compressed dictionary phrase length is out of bounds
+					anyhow::bail!(t("Invalid CDIC phrase length"));
 				}
 				let bytes = cdic[off + 2..off + 2 + len].to_vec();
 				self.dictionary.push(Some((bytes, (num_bytes & 0x8000) == 0x8000)));
@@ -843,7 +865,8 @@ impl HuffmanDecoder {
 				}
 			}
 			if code_len == 0 || code_len > 32 {
-				anyhow::bail!("Invalid code_len {code_len}");
+				// TRANSLATORS: Error shown when a MOBI file's Huffman code length is out of range; {} is the invalid length value
+				anyhow::bail!(t("Invalid code_len {}").replace("{}", &code_len.to_string()));
 			}
 			current.n -= code_len as i32;
 			if current.bits_left < code_len {
@@ -867,7 +890,8 @@ impl HuffmanDecoder {
 							self.dictionary[index] = None;
 							stack.push(current);
 							if stack.len() > 1024 {
-								anyhow::bail!("Decode stack overflow");
+								// TRANSLATORS: Error shown when a MOBI file's Huffman decoder recurses too deeply (likely corrupt data)
+								anyhow::bail!(t("Decode stack overflow"));
 							}
 							current = {
 								let mut padded_data = Vec::with_capacity(slice.len() + 8);

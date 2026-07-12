@@ -23,6 +23,7 @@ use crate::{
 			xml::find_child_element,
 		},
 	},
+	t,
 	types::HeadingInfo,
 	util::{encoding::convert_to_utf8, text::display_len, zip::read_zip_entry_by_name},
 };
@@ -74,9 +75,11 @@ impl Parser for WordParser {
 						if let Ok(document) = parse_text_like_doc(context) {
 							return Ok(document);
 						}
-						return Err(anyhow::anyhow!(
-							"Legacy DOC parse failed: {legacy_err}. OOXML fallback failed: {ooxml_err}"
-						));
+						// TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
+						let msg = t("Legacy DOC parse failed: {}. OOXML fallback failed: {}")
+							.replacen("{}", &legacy_err.to_string(), 1)
+							.replacen("{}", &ooxml_err.to_string(), 1);
+						return Err(anyhow::anyhow!(msg));
 					}
 				},
 			}
@@ -95,7 +98,8 @@ fn parse_word_zip(context: &ParserContext, render_tables_inline: bool) -> Result
 		archive.file_names().filter(|name| name.to_ascii_lowercase().ends_with(".docx")).map(String::from).collect();
 
 	if docx_names.is_empty() {
-		anyhow::bail!("No readable content found in the ZIP archive");
+		// TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
+		anyhow::bail!(t("No readable content found in the ZIP archive"));
 	}
 
 	docx_names.sort();
@@ -240,19 +244,24 @@ fn parse_legacy_doc(context: &ParserContext) -> Result<Document> {
 	let word_document =
 		read_stream(&mut compound, "WordDocument").or_else(|_| read_stream(&mut compound, "/WordDocument"))?;
 	if word_document.len() < FIB_LCBCLX_OFFSET + 4 {
-		anyhow::bail!("DOC file is missing required FIB fields");
+		// TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
+		anyhow::bail!(t("DOC file is missing required FIB fields"));
 	}
 	let fib_magic = read_u16_le(&word_document, 0);
 	if fib_magic != FIB_MAGIC_DOC && fib_magic != FIB_MAGIC_DOC_OLD {
-		anyhow::bail!("Not a valid DOC file (invalid FIB magic)");
+		// TRANSLATORS: Error shown when a legacy DOC file's header signature is invalid
+		anyhow::bail!(t("Not a valid DOC file (invalid FIB magic)"));
 	}
 	let fib_flags = read_u16_le(&word_document, FIB_FLAGS_OFFSET);
 	if (fib_flags & FIB_FLAG_ENCRYPTED) != 0 {
 		let Some(password) = context.password.as_deref() else {
-			anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX} DOC file is encrypted and requires a password");
+			// TRANSLATORS: Error detail shown when an encrypted legacy DOC file needs a password (the internal sentinel prefix before it is not translated)
+			anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX} {}", t("DOC file is encrypted and requires a password"));
 		};
 		let decrypted = decrypt_from_file(&context.file_path, password).map_err(|e| {
-			anyhow::anyhow!("{PASSWORD_REQUIRED_ERROR_PREFIX} DOC decryption failed (wrong password?): {e}")
+			// TRANSLATORS: Error detail shown when decrypting a legacy DOC file fails (the internal sentinel prefix before it is not translated); {} is the underlying error
+			let msg = t("DOC decryption failed (wrong password?): {}").replace("{}", &e.to_string());
+			anyhow::anyhow!("{PASSWORD_REQUIRED_ERROR_PREFIX} {msg}")
 		})?;
 		let mut dec_compound =
 			CompoundFile::open(Cursor::new(decrypted)).context("Decrypted DOC data is not a valid compound file")?;
@@ -470,11 +479,13 @@ fn parse_text_like_doc(context: &ParserContext) -> Result<Document> {
 		.with_context(|| format!("Failed to read potential text DOC '{}'", context.file_path))?;
 	let decoded = convert_to_utf8(&bytes);
 	if !looks_like_text_content(&decoded) {
-		anyhow::bail!("File content does not look like plain text");
+		// TRANSLATORS: Error shown when a DOC file's fallback content doesn't look like plain text
+		anyhow::bail!(t("File content does not look like plain text"));
 	}
 	let normalized = normalize_doc_text(&decoded);
 	if normalized.trim().is_empty() {
-		anyhow::bail!("No readable text content found");
+		// TRANSLATORS: Error shown when a DOC file's fallback content has no readable text
+		anyhow::bail!(t("No readable text content found"));
 	}
 	let mut buffer = DocumentBuffer::new();
 	buffer.append(&normalized);
@@ -881,10 +892,12 @@ pub fn try_decrypt_office_file(path: &str, password: Option<&str>) -> Result<Opt
 		return Ok(None); // Compound file but not encrypted Office format
 	}
 	let Some(password) = password else {
-		anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX} File is encrypted and requires a password");
+		// TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
+		anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX} {}", t("File is encrypted and requires a password"));
 	};
-	let decrypted =
-		decrypt_from_file(path, password).map_err(|e| anyhow::anyhow!("Decryption failed (wrong password?): {e}"))?;
+	// TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
+	let decrypted = decrypt_from_file(path, password)
+		.map_err(|e| anyhow::anyhow!(t("Decryption failed (wrong password?): {}").replace("{}", &e.to_string())))?;
 	Ok(Some(decrypted))
 }
 

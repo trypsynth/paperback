@@ -1606,6 +1606,7 @@ dependencies = [
  "icu_properties",
  "libchm",
  "office-crypto",
+ "patois 0.2.0",
  "pdfium",
  "percent-encoding",
  "pulldown-cmark",

@@ -16,6 +16,7 @@ use crate::{
 		util::{path::extract_title_from_path, toc::build_toc_from_headings},
 		xml_to_text::XmlToText,
 	},
+	t,
 	util::zip::read_zip_entry_by_name_with_password,
 };
 
@@ -101,7 +102,8 @@ impl Parser for DaisyParser {
 							buffer.add_marker(Marker::new(MarkerType::PageBreak, pb.offset).with_text(pb.text.clone()));
 						}
 					} else {
-						anyhow::bail!("Failed to convert DTBook XML to text");
+						// TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
+						anyhow::bail!(t("Failed to convert DTBook XML to text"));
 					}
 					let mut toc_items = None;
 					let ncx_path = archive
@@ -171,7 +173,8 @@ impl Parser for DaisyParser {
 					});
 				}
 			}
-			anyhow::bail!("ZIP archive does not appear to be a valid DAISY 3 or DAISY 2.02 book");
+			// TRANSLATORS: Error shown when a ZIP file is not a recognizable DAISY 3 or DAISY 2.02 book
+			anyhow::bail!(t("ZIP archive does not appear to be a valid DAISY 3 or DAISY 2.02 book"));
 		}
 		let file_content = std::fs::read_to_string(path)?;
 		let (manifest_xml, metadata) = parse_opf_metadata_and_manifest(&file_content)?;
@@ -219,7 +222,8 @@ impl Parser for DaisyParser {
 				});
 			}
 		}
-		anyhow::bail!("Invalid DAISY .opf file or could not find DTBook XML in manifest");
+		// TRANSLATORS: Error shown when a DAISY .opf file is invalid or its DTBook XML can't be located
+		anyhow::bail!(t("Invalid DAISY .opf file or could not find DTBook XML in manifest"));
 	}
 }
 

@@ -10,6 +10,7 @@ use crate::{
 		Parser,
 		util::{path::extract_title_from_path, xml::collect_element_text},
 	},
+	t,
 	types::LinkInfo,
 	util::zip::read_zip_entry_by_name,
 };
@@ -41,7 +42,8 @@ impl Parser for OdpParser {
 		let id_positions = HashMap::new();
 		let pages = find_all_pages(xml_doc.root());
 		if pages.is_empty() {
-			anyhow::bail!("ODP file does not contain any pages");
+			// TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
+			anyhow::bail!(t("ODP file does not contain any pages"));
 		}
 		for (index, page_node) in pages.iter().enumerate() {
 			let slide_start = buffer.current_position();
@@ -93,7 +95,8 @@ impl Parser for FodpParser {
 		let id_positions = HashMap::new();
 		let pages = find_all_pages(xml_doc.root());
 		if pages.is_empty() {
-			anyhow::bail!("FODP file does not contain any pages");
+			// TRANSLATORS: Error shown when a flat-XML ODP presentation file has no pages/slides
+			anyhow::bail!(t("FODP file does not contain any pages"));
 		}
 		for (index, page_node) in pages.iter().enumerate() {
 			let slide_start = buffer.current_position();

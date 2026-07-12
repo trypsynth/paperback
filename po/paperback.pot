@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-12 16:51-0600\n"
+"POT-Creation-Date: 2026-07-12 17:07-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1694,6 +1694,256 @@ msgstr ""
 msgid "Exit Paperback"
 msgstr ""
 
+#. TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
+msgid "Failed to convert DTBook XML to text"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a ZIP file is not a recognizable DAISY 3 or DAISY 2.02 book
+msgid "ZIP archive does not appear to be a valid DAISY 3 or DAISY 2.02 book"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a DAISY .opf file is invalid or its DTBook XML can't be located
+msgid "Invalid DAISY .opf file or could not find DTBook XML in manifest"
+msgstr ""
+
+#. TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
+msgid "OPF package element missing"
+msgstr ""
+
+#. TRANSLATORS: Reason given when an EPUB has no spine items that could be read
+msgid "no readable spine items"
+msgstr ""
+
+#. TRANSLATORS: Reason given when EPUB spine items failed to convert; {} is a comma-separated list of underlying errors
+msgid "failed to convert spine items: {}"
+msgstr ""
+
+#. TRANSLATORS: Error shown when an EPUB has no readable content; {} is the specific reason (see the two messages above)
+msgid "EPUB has no readable content ({})"
+msgstr ""
+
+#. TRANSLATORS: Error shown when an EPUB's container.xml is missing its rootfile reference
+msgid "rootfile not found in container.xml"
+msgstr ""
+
+#. TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
+msgid "unsupported content"
+msgstr ""
+
+#. TRANSLATORS: Error shown when an FB2 (FictionBook) file's XML fails to convert to plain text
+msgid "Failed to convert FB2 XML to text"
+msgstr ""
+
+#. TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
+msgid "HTML file is empty: {}"
+msgstr ""
+
+#. TRANSLATORS: Error shown when an HTML file fails to convert to plain text; {} is the file path
+msgid "Failed to convert HTML to text: {}"
+msgstr ""
+
+msgid "Figure"
+msgstr ""
+
+msgid "Image"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
+msgid "Failed to convert Markdown to text: {}"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file is too small to contain a valid header
+msgid "File too short"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
+msgid "Invalid record offsets"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file has no records
+msgid "No records found"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
+msgid "Invalid Record 0 offsets"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
+msgid "Invalid Record 0"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
+msgid "No MOBI header"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
+msgid "Invalid MOBI identifier"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
+msgid "Invalid content record range"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
+msgid "Invalid HUFF/CDIC records"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
+msgid "Missing HUFF parameters in header"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
+msgid "Unsupported compression mode ({})"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman compression record is too small to be valid
+msgid "Invalid HUFF record"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman compression record has the wrong signature
+msgid "Invalid HUFF header"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman cache table offset is out of bounds
+msgid "Invalid HUFF cache offset"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman code length is invalid
+msgid "Code len out of bounds"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman table has an invalid terminal-code entry
+msgid "Bad term"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman base table offset is out of bounds
+msgid "Invalid HUFF base offset"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's compressed dictionary record has the wrong signature
+msgid "Invalid CDIC header"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's compressed dictionary offset table is out of bounds
+msgid "Invalid CDIC offsets"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's compressed dictionary phrase offset is out of bounds
+msgid "Invalid CDIC phrase offset"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's compressed dictionary phrase length is out of bounds
+msgid "Invalid CDIC phrase length"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman code length is out of range; {} is the invalid length value
+msgid "Invalid code_len {}"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman decoder recurses too deeply (likely corrupt data)
+msgid "Decode stack overflow"
+msgstr ""
+
+#. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
+msgid "ODP file does not contain any pages"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a flat-XML ODP presentation file has no pages/slides
+msgid "FODP file does not contain any pages"
+msgstr ""
+
+msgid ""
+"This PDF contains images only, with no extractable text. You may need to run "
+"it through OCR software to read its contents."
+msgstr ""
+
+#. TRANSLATORS: Error detail shown when a PDF's password is missing or wrong (the internal sentinel prefix before it is not translated)
+msgid "Password required or incorrect"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a PDF fails to open for a reason other than a password; {} is the underlying error detail
+msgid "Failed to open PDF document: {}"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a PPTX presentation file has no slides
+msgid "PPTX file contains no slides"
+msgstr ""
+
+msgid ""
+"Password-protected PPT files are not currently supported. Try saving the "
+"file as PPTX and opening that instead."
+msgstr ""
+
+#. TRANSLATORS: Error shown when a legacy PPT presentation file has no slides
+msgid "PPT file contains no slides"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a legacy PPT file's OLE container has no PowerPoint Document stream
+msgid "PowerPoint Document stream not found"
+msgstr ""
+
+msgid "Failed to parse RTF document: {}"
+msgstr ""
+
+#. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
+msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
+msgid "No readable content found in the ZIP archive"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
+msgid "DOC file is missing required FIB fields"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a legacy DOC file's header signature is invalid
+msgid "Not a valid DOC file (invalid FIB magic)"
+msgstr ""
+
+#. TRANSLATORS: Error detail shown when an encrypted legacy DOC file needs a password (the internal sentinel prefix before it is not translated)
+msgid "DOC file is encrypted and requires a password"
+msgstr ""
+
+#. TRANSLATORS: Error detail shown when decrypting a legacy DOC file fails (the internal sentinel prefix before it is not translated); {} is the underlying error
+msgid "DOC decryption failed (wrong password?): {}"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a DOC file's fallback content doesn't look like plain text
+msgid "File content does not look like plain text"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a DOC file's fallback content has no readable text
+msgid "No readable text content found"
+msgstr ""
+
+#. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
+msgid "File is encrypted and requires a password"
+msgstr ""
+
+msgid "Decryption failed (wrong password?): {}"
+msgstr ""
+
+#. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
+msgid "No file extension found for: {}"
+msgstr ""
+
+#. TRANSLATORS: Error shown when no parser supports a file's extension; {} is the extension (without the leading dot)
+msgid "No parser found for extension: .{}"
+msgstr ""
+
+#. TRANSLATORS: Error shown when every parser for a file's extension failed; {} is the extension (without the leading dot)
+msgid "All parsers failed for extension: .{}"
+msgstr ""
+
+#. TRANSLATORS: Error detail shown when a password-protected ZIP-based document needs a password (the internal sentinel prefix before it is not translated)
+msgid "Password required"
+msgstr ""
+
+#. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
+msgid "Password incorrect"
+msgstr ""
+
 #, c-format
 msgid "Update to %s"
 msgstr ""
@@ -2196,12 +2446,6 @@ msgid "Table"
 msgstr ""
 
 msgid "Separator"
-msgstr ""
-
-msgid "Image"
-msgstr ""
-
-msgid "Figure"
 msgstr ""
 
 msgid "Help"

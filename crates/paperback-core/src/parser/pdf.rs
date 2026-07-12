@@ -535,8 +535,12 @@ fn join_paragraphs(raw_lines: &[(String, f64)], body_font_size: f64) -> Vec<(Str
 
 fn map_load_error(err: PdfiumError) -> anyhow::Error {
 	match err {
-		PdfiumError::PasswordError => anyhow!("{PASSWORD_REQUIRED_ERROR_PREFIX}Password required or incorrect"),
-		other => anyhow!("Failed to open PDF document: {other}"),
+		// TRANSLATORS: Error detail shown when a PDF's password is missing or wrong (the internal sentinel prefix before it is not translated)
+		PdfiumError::PasswordError => {
+			anyhow!("{PASSWORD_REQUIRED_ERROR_PREFIX}{}", t("Password required or incorrect"))
+		}
+		// TRANSLATORS: Error shown when a PDF fails to open for a reason other than a password; {} is the underlying error detail
+		other => anyhow!(t("Failed to open PDF document: {}").replace("{}", &other.to_string())),
 	}
 }
 

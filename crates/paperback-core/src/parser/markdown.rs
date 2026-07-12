@@ -10,6 +10,7 @@ use crate::{
 		html_to_text::{HtmlSourceMode, HtmlToText},
 		util::{path::extract_title_from_path, toc::build_toc_from_headings},
 	},
+	t,
 	util::encoding::convert_to_utf8,
 };
 
@@ -125,7 +126,8 @@ impl Parser for MarkdownParser {
 		let html_content = markdown_to_html(&markdown_content);
 		let mut converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
 		if !converter.convert(&html_content, HtmlSourceMode::Markdown) {
-			anyhow::bail!("Failed to convert Markdown to text: {}", context.file_path);
+			// TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
+			anyhow::bail!(t("Failed to convert Markdown to text: {}").replace("{}", &context.file_path));
 		}
 		let title = extract_title_from_path(&context.file_path);
 		let text = converter.get_text();

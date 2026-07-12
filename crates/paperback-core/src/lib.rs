@@ -26,10 +26,10 @@ pub fn set_pdfium_library_path(path: String) {
 	pdfium::set_library_location(&path);
 }
 
-/// Minimal translation stub for library-internal strings (e.g. document content labels).
-/// The GUI binary sets up the real wxWidgets translation system independently; strings
-/// returned by this function are English only and are intended for non-GUI consumers
-/// (CLI, mobile bindings) or for embedding into document content.
+/// Translates library-internal strings (e.g. document content labels, parser error messages).
+/// Delegates to `patois`'s process-global registry: when the GUI binary calls `patois::init`
+/// at startup, these strings come back translated automatically. Non-GUI consumers (CLI,
+/// mobile bindings) that never call `patois::init` get the English source string back unchanged.
 pub(crate) fn t(s: &str) -> String {
-	s.to_owned()
+	patois::t(s)
 }

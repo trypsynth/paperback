@@ -7,6 +7,9 @@ license.workspace = true
 repository.workspace = true
 description = "Core document parsing and reading logic for Paperback"
 
+[package.metadata.patois]
+translatable = true
+
 [lib]
 name = "paperback_core"
 path = "src/lib.rs"
@@ -22,6 +25,7 @@ encoding_rs = "0.8.35"
 icu_properties = { version = "2.2.0", features = ["unicode_bidi"] }
 libchm = "0.2.0"
 office-crypto = "0.2.0"
+patois = { git = "https://github.com/trypsynth/patois.git" }
 pdfium = "0.10.4"
 percent-encoding = "2.3.2"
 pulldown-cmark = { version = "0.13.4", default-features = false, features = ["html"] }
