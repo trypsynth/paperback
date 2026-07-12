@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-12 16:04-0600\n"
+"POT-Creation-Date: 2026-07-12 16:39-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -143,6 +143,7 @@ msgid "&Edit Note"
 msgstr ""
 
 #. TRANSLATORS: Label for the button to delete a bookmark
+#. TRANSLATORS: Standard "Delete" edit menu item label
 msgid "&Delete"
 msgstr ""
 
@@ -807,207 +808,274 @@ msgstr ""
 msgid "No recent documents."
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the previous section
 msgid "Previous Section\t["
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Previous Section" menu item
 msgid "Go to previous section"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the next section
 msgid "Next Section\t]"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Next Section" menu item
 msgid "Go to next section"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to open the "go to page" dialog
 msgid "Go to &Page\tCtrl+P"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the previous page
 msgid "Previous Pa&ge\tShift+P"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the next page
 msgid "Next Pag&e\tP"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the previous link
 msgid "Previous Lin&k\tShift+K"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the next link
 msgid "Next Lin&k\tK"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the previous image
 msgid "Previous Ima&ge\tShift+G"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the next image
 msgid "Next Ima&ge\tG"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the previous figure
 msgid "Previous Figu&re\tShift+F"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the next figure
 msgid "Next Figu&re\tF"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the previous table
 msgid "Previous &Table\tShift+T"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the next table
 msgid "Next &Table\tT"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the previous separator element
 msgid "Previous Se&parator\tShift+S"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the next separator element
 msgid "Next Se&parator\tS"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the previous list
 msgid "Previous L&ist\tShift+L"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the next list
 msgid "Next L&ist\tL"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the previous list item
 msgid "Previous List &Item\tShift+I"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the next list item
 msgid "Next List I&tem\tI"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the start of the enclosing list/table
 msgid "Container &Start\tShift+,"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Container Start" menu item
 msgid "Go to the start of the current list or table"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go past the end of the enclosing list/table
 msgid "Past Container &End\t,"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Past Container End" menu item
 msgid "Go past the end of the current list or table"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the next level-1 heading
 msgid "Next Heading Level 1\t1"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the previous level-2 heading
 msgid "Previous Heading Level &2\tShift+2"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the next level-2 heading
 msgid "Next Heading Level 2\t2"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the previous level-3 heading
 msgid "Previous Heading Level &3\tShift+3"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the next level-3 heading
 msgid "Next Heading Level 3\t3"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the previous level-4 heading
 msgid "Previous Heading Level &4\tShift+4"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the next level-4 heading
 msgid "Next Heading Level 4\t4"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the previous level-5 heading
 msgid "Previous Heading Level &5\tShift+5"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the next level-5 heading
 msgid "Next Heading Level 5\t5"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the previous level-6 heading
 msgid "Previous Heading Level &6\tShift+6"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the next level-6 heading
 msgid "Next Heading Level 6\t6"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the previous heading of any level
 msgid "&Previous Heading\tShift+H"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Previous Heading" menu item
 msgid "Go to previous heading"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the next heading of any level
 msgid "&Next Heading\tH"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Next Heading" menu item
 msgid "Go to next heading"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the previous level-1 heading
 msgid "Previous Heading Level &1\tShift+1"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the previous bookmark
 msgid "&Previous Bookmark\tShift+B"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Previous Bookmark" menu item
 msgid "Go to previous bookmark"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the next bookmark
 msgid "&Next Bookmark\tB"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Next Bookmark" menu item
 msgid "Go to next bookmark"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the previous note
 msgid "Previous &Note\tShift+N"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Previous Note" menu item
 msgid "Go to previous note"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go to the next note
 msgid "Next N&ote\tN"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Next Note" menu item
 msgid "Go to next note"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to open the bookmark/note picker showing all entries
 msgid "Jump to &All...\tCtrl+B"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Jump to All" menu item
 msgid "Show all bookmarks and notes"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to open the bookmark/note picker filtered to bookmarks only
 msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Jump to Bookmarks Only" menu item
 msgid "Show bookmarks only"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to open the bookmark/note picker filtered to notes only
 msgid "Jump to Notes &Only...\tCtrl+Alt+M"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Jump to Notes Only" menu item
 msgid "Show notes only"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to view the note at the cursor position (macOS variant)
 msgid "&View Note Text\tRawCtrl+Shift+W"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to view the note at the cursor position
 msgid "&View Note Text\tCtrl+Shift+W"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "View Note Text" menu item
 msgid "View the note at current position"
 msgstr ""
 
+#. TRANSLATORS: Top-level "File" menu bar label
 msgid "&File"
 msgstr ""
 
+#. TRANSLATORS: Top-level "Go" menu bar label
 msgid "&Go"
 msgstr ""
 
+#. TRANSLATORS: Top-level "Tools" menu bar label
 msgid "&Tools"
 msgstr ""
 
+#. TRANSLATORS: Top-level "Help" menu bar label
 msgid "&Help"
 msgstr ""
 
+#. TRANSLATORS: Top-level "Edit" menu bar label (macOS only)
 msgid "&Edit"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to open a document
 msgid "&Open...\tCtrl+O"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Open" menu item
 msgid "Open a document"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to close the current document
 msgid "&Close\tCtrl+W"
 msgstr ""
 
 msgid "&Close\tCtrl+F4"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Close" menu item
 msgid "Close the current document"
 msgstr ""
 
@@ -1017,57 +1085,74 @@ msgstr ""
 msgid "Close &All\tCtrl+Shift+F4"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Close All" menu item
 msgid "Close all documents"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to reopen the most recently closed document
 msgid "Reopen &Last Closed\tCtrl+Shift+T"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Reopen Last Closed" menu item
 msgid "Reopen the last closed document"
 msgstr ""
 
+#. TRANSLATORS: Submenu label listing recently opened documents
 msgid "&Recent Documents"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Recent Documents" submenu
 msgid "Open a recent document"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to exit the application
 msgid "E&xit\tCtrl+Q"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Exit" menu item
 msgid "Exit the application"
 msgstr ""
 
+#. TRANSLATORS: Standard "Undo" edit menu item label
 msgid "&Undo\tCtrl+Z"
 msgstr ""
 
+#. TRANSLATORS: Standard "Redo" edit menu item label
 msgid "&Redo\tCtrl+Shift+Z"
 msgstr ""
 
+#. TRANSLATORS: Standard "Cut" edit menu item label
 msgid "Cu&t\tCtrl+X"
 msgstr ""
 
+#. TRANSLATORS: Standard "Copy" edit menu item label
 msgid "&Copy\tCtrl+C"
 msgstr ""
 
+#. TRANSLATORS: Standard "Paste" edit menu item label
 msgid "&Paste\tCtrl+V"
 msgstr ""
 
+#. TRANSLATORS: Standard "Select All" edit menu item label
 msgid "Select &All\tCtrl+A"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to open the find dialog
 msgid "&Find...\tCtrl+F"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Find" menu item
 msgid "Find text in the document"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to find the next match
 msgid "Find &Next\tCtrl+G"
 msgstr ""
 
 msgid "Find &Next\tF3"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Find Next" menu item
 msgid "Find next occurrence"
 msgstr ""
 
@@ -1077,6 +1162,7 @@ msgstr ""
 msgid "Find &Previous\tShift+F3"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Find Previous" menu item
 msgid "Find previous occurrence"
 msgstr ""
 
@@ -1086,6 +1172,7 @@ msgstr ""
 msgid "Go to &line...\tCtrl+G"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Go to line" menu item
 msgid "Go to a specific line"
 msgstr ""
 
@@ -1095,15 +1182,18 @@ msgstr ""
 msgid "Go to &percent...\tCtrl+Shift+G"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Go to percent" menu item
 msgid "Go to a percentage of the document"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go back in navigation history
 msgid "Go &Back\tCtrl+["
 msgstr ""
 
 msgid "Go &Back\tAlt+Left"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Go Back" menu item
 msgid "Go back in history"
 msgstr ""
 
@@ -1113,102 +1203,135 @@ msgstr ""
 msgid "Go &Forward\tAlt+Right"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Go Forward" menu item
 msgid "Go forward in history"
 msgstr ""
 
+#. TRANSLATORS: Submenu label containing section navigation commands
 msgid "&Sections"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Sections" submenu
 msgid "Navigate by sections"
 msgstr ""
 
+#. TRANSLATORS: Submenu label containing heading navigation commands
 msgid "&Headings"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Headings" submenu
 msgid "Navigate by headings"
 msgstr ""
 
+#. TRANSLATORS: Submenu label containing page navigation commands
 msgid "&Pages"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Pages" submenu
 msgid "Navigate by pages"
 msgstr ""
 
+#. TRANSLATORS: Submenu label containing bookmark/note navigation commands
 msgid "&Bookmarks"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Bookmarks" submenu
 msgid "Navigate by bookmarks"
 msgstr ""
 
+#. TRANSLATORS: Submenu label containing link navigation commands
 msgid "&Links"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Links" submenu
 msgid "Navigate by links"
 msgstr ""
 
+#. TRANSLATORS: Submenu label containing image navigation commands
 msgid "&Images"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Images" submenu
 msgid "Navigate by images"
 msgstr ""
 
+#. TRANSLATORS: Submenu label containing figure navigation commands
 msgid "&Figures"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Figures" submenu
 msgid "Navigate by figures"
 msgstr ""
 
+#. TRANSLATORS: Submenu label containing table navigation commands
 msgid "&Tables"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Tables" submenu
 msgid "Navigate by tables"
 msgstr ""
 
+#. TRANSLATORS: Submenu label containing separator-element navigation commands
 msgid "&Separators"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Separators" submenu
 msgid "Navigate by separators"
 msgstr ""
 
+#. TRANSLATORS: Submenu label containing list navigation commands
 msgid "&Lists"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Lists" submenu
 msgid "Navigate by lists"
 msgstr ""
 
+#. TRANSLATORS: Submenu label containing container (list/table) navigation commands
 msgid "&Containers"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Containers" submenu
 msgid "Navigate by containers"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to import bookmark/position data for the document
 msgid "&Import Document Data...\tCtrl+Shift+I"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Import Document Data" menu item
 msgid "Import bookmarks and position"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to export bookmark/position data for the document
 msgid "&Export Document Data...\tCtrl+Shift+E"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Export Document Data" menu item
 msgid "Export bookmarks and position"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to export the document as plain text
 msgid "Export to &Plain Text...\tCtrl+E"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Export to Plain Text" menu item
 msgid "Export document as plain text"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to export the document as HTML
 msgid "Export to &HTML..."
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Export to HTML" menu item
 msgid "Export document as HTML"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to export the document as Markdown
 msgid "Export to &Markdown..."
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Export to Markdown" menu item
 msgid "Export document as Markdown"
 msgstr ""
 
@@ -1218,102 +1341,135 @@ msgstr ""
 msgid "&Word Count\tCtrl+W"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Word Count" menu item
 msgid "Show word count"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to show the document info dialog
 msgid "Document &Info\tCtrl+I"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Document Info" menu item
 msgid "Show document information"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to show the table of contents dialog
 msgid "&Table of Contents\tCtrl+T"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Table of Contents" menu item
 msgid "Show table of contents"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to show the elements list dialog
 msgid "&Elements List...\tF7"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Elements List" menu item
 msgid "Show elements list"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to reveal the document file in the system file manager
 msgid "Reveal &File in Folder\tCtrl+Shift+C"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Reveal File in Folder" menu item
 msgid "Reveal document in the file manager"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to open the document in the web view
 msgid "Open in &Web View\tCtrl+Shift+V"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Open in Web View" menu item
 msgid "Open document in web view"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to open the document's raw source in a new tab
 msgid "View &Source\tCtrl+U"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "View Source" menu item
 msgid "Open the document source in a new tab"
 msgstr ""
 
+#. TRANSLATORS: Submenu label containing import/export commands
 msgid "I&mport/Export"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Import/Export" submenu
 msgid "Import and export options"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to toggle a bookmark at the current position
 msgid "Toggle &Bookmark\tCtrl+Shift+B"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to add a bookmark with an attached note
 msgid "Bookmark with &Note\tCtrl+Shift+N"
 msgstr ""
 
+#. TRANSLATORS: Checkable menu item label to toggle word wrap
 msgid "Word w&rap\tCtrl+Alt+W"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Word wrap" menu item
 msgid "Toggle word wrap"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to open the application options/preferences dialog
 msgid "&Options\tCtrl+,"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to open the sleep timer dialog
 msgid "&Sleep Timer...\tCtrl+Shift+S"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to open the About dialog
 msgid "&About Paperback\tCtrl+F1"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "About" menu item
 msgid "About this application"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to open the help documentation in a web browser
 msgid "View Help in &Browser\tF1"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "View Help in Browser" menu item
 msgid "View help in default browser"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to open the help documentation inside Paperback itself
 msgid "View Help in &Paperback\tShift+F1"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "View Help in Paperback" menu item
 msgid "View help in Paperback"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to check for application updates
 msgid "Check for &Updates\tCtrl+Shift+U"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Check for Updates" menu item
 msgid "Check for updates"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to open the donation page
 msgid "&Donate\tCtrl+D"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the "Donate" menu item
 msgid "Support Paperback development"
 msgstr ""
 
+#. TRANSLATORS: Placeholder menu item shown in the Recent Documents submenu when there are none
 msgid "(No recent documents)"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to open the full recent-documents list dialog
 msgid "Show All...\tCtrl+R"
 msgstr ""
 
