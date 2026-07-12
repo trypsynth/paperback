@@ -411,6 +411,7 @@ pub fn create_menu_bar(config: &ConfigManager) -> MenuBar {
 	let go_label = t("&Go");
 	let tools_label = t("&Tools");
 	let help_label = t("&Help");
+	#[allow(unused_mut)]
 	let mut builder = MenuBar::builder().append(file_menu, &file_label);
 
 	// All MacOS apps need an Edit menu.
