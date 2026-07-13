@@ -60,6 +60,9 @@ pub struct MainWindow {
 	_hotkey_handle: Rc<RefCell<Option<HotkeyHandle>>>,
 }
 
+#[cfg(target_os = "windows")]
+static HIDDEN_POPUP: std::sync::atomic::AtomicIsize = std::sync::atomic::AtomicIsize::new(0);
+
 impl MainWindow {
 	pub fn new(config: Rc<Mutex<ConfigManager>>) -> Self {
 		let app_title = t("Paperback");
@@ -283,20 +286,76 @@ impl MainWindow {
 	}
 
 	#[cfg(any(target_os = "linux", target_os = "windows"))]
+	fn toggle_visibility(&self) {
+		let is_shown = self.frame.is_shown();
+		if is_shown && self.is_window_active() {
+			let mut has_popup = false;
+			#[cfg(target_os = "windows")]
+			{
+				use windows::Win32::{
+					Foundation::HWND,
+					UI::WindowsAndMessaging::{GetLastActivePopup, SW_HIDE, ShowWindow},
+				};
+				let handle = self.frame.get_handle();
+				if !handle.is_null() {
+					let frame_hwnd = HWND(handle);
+					let active_popup = unsafe { GetLastActivePopup(frame_hwnd) };
+					if active_popup != frame_hwnd {
+						has_popup = true;
+						HIDDEN_POPUP.store(active_popup.0 as isize, std::sync::atomic::Ordering::SeqCst);
+						let _ = unsafe { ShowWindow(active_popup, SW_HIDE) };
+					}
+				}
+			}
+
+			if has_popup {
+				self.frame.show(false);
+			} else {
+				self.frame.iconize(true);
+			}
+		} else {
+			self.activate_from_ipc();
+		}
+	}
+
+	#[cfg(any(target_os = "linux", target_os = "windows"))]
 	fn activate_from_ipc(&self) {
 		self.frame.show(true);
 		self.frame.iconize(false);
 		self.frame.request_user_attention(UserAttentionFlag::Info);
 		self.frame.raise();
+
+		#[allow(unused_mut)]
+		let mut has_popup = false;
 		#[cfg(target_os = "windows")]
 		{
-			use windows::Win32::{Foundation::HWND, UI::WindowsAndMessaging::SetForegroundWindow};
+			use windows::Win32::{
+				Foundation::HWND,
+				UI::WindowsAndMessaging::{GetLastActivePopup, SW_SHOW, SetForegroundWindow, ShowWindow},
+			};
 			let handle = self.frame.get_handle();
 			if !handle.is_null() {
-				let _ = unsafe { SetForegroundWindow(HWND(handle)) };
+				let frame_hwnd = HWND(handle);
+
+				let hidden = HIDDEN_POPUP.swap(0, std::sync::atomic::Ordering::SeqCst);
+				if hidden != 0 {
+					let active_popup = HWND(hidden as _);
+					let _ = unsafe { ShowWindow(active_popup, SW_SHOW) };
+					let _ = unsafe { SetForegroundWindow(active_popup) };
+					has_popup = true;
+				} else {
+					let active_popup = unsafe { GetLastActivePopup(frame_hwnd) };
+					has_popup = active_popup != frame_hwnd;
+
+					let _ = unsafe { SetForegroundWindow(active_popup) };
+				}
 			}
 		}
-		self.doc_manager.lock().unwrap().restore_focus();
+
+		if !has_popup {
+			self.doc_manager.lock().unwrap().restore_focus();
+		}
+
 		#[cfg(not(target_os = "linux"))]
 		if let Some(state) = self._tray_state.lock().unwrap().as_mut() {
 			if let Some(bundle) =
@@ -315,28 +374,22 @@ impl MainWindow {
 	fn is_window_active(&self) -> bool {
 		#[cfg(target_os = "windows")]
 		{
-			use windows::Win32::{Foundation::HWND, UI::WindowsAndMessaging::GetForegroundWindow};
+			use windows::Win32::{
+				Foundation::HWND,
+				UI::WindowsAndMessaging::{GetForegroundWindow, GetLastActivePopup},
+			};
 			let handle = self.frame.get_handle();
 			if handle.is_null() {
 				return self.frame.has_focus();
 			}
 			let frame_hwnd = HWND(handle);
 			let foreground = unsafe { GetForegroundWindow() };
-			foreground == frame_hwnd
+			let active_popup = unsafe { GetLastActivePopup(frame_hwnd) };
+			foreground == frame_hwnd || foreground == active_popup
 		}
 		#[cfg(not(target_os = "windows"))]
 		{
 			self.frame.has_focus()
-		}
-	}
-
-	#[cfg(any(target_os = "linux", target_os = "windows"))]
-	fn toggle_visibility(&self) {
-		let is_shown = self.frame.is_shown();
-		if is_shown && self.is_window_active() {
-			self.frame.iconize(true);
-		} else {
-			self.activate_from_ipc();
 		}
 	}
 
