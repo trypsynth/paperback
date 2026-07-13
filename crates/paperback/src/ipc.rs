@@ -37,7 +37,7 @@ pub fn decode_execute_payload(data: &[u8]) -> Option<IpcCommand> {
 }
 
 pub fn normalize_cli_path(path: &Path) -> PathBuf {
-	if let Ok(normalized) = path.canonicalize() {
+	if let Ok(normalized) = dunce::canonicalize(path) {
 		return normalized;
 	}
 	if path.is_absolute() {
@@ -135,14 +135,16 @@ mod tests {
 
 	#[test]
 	fn normalize_cli_path_canonicalizes_existing_path() {
-		let cwd = env::current_dir().expect("cwd").canonicalize().expect("canonical cwd");
+		let cwd = env::current_dir().expect("cwd");
+		let cwd = dunce::canonicalize(cwd).expect("canonical cwd");
 		let normalized = normalize_cli_path(Path::new("."));
 		assert_eq!(normalized, cwd);
 	}
 
 	#[test]
 	fn normalize_cli_path_preserves_existing_absolute_files() {
-		let abs = env::current_exe().expect("current exe").canonicalize().expect("canonical exe");
+		let abs = env::current_exe().expect("current exe");
+		let abs = dunce::canonicalize(abs).expect("canonical exe");
 		let normalized = normalize_cli_path(&abs);
 		assert_eq!(normalized, abs);
 	}

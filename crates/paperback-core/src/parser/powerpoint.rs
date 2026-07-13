@@ -19,6 +19,7 @@ use crate::{
 		},
 		word::try_decrypt_office_file,
 	},
+	t,
 	types::LinkInfo,
 	util::{text::display_len, zip::read_zip_entry_by_name},
 };
@@ -88,7 +89,8 @@ fn parse_pptx(context: &ParserContext) -> Result<Document> {
 		})
 		.collect::<Vec<_>>();
 	if slides.is_empty() {
-		anyhow::bail!("PPTX file contains no slides");
+		// TRANSLATORS: Error shown when a PPTX presentation file has no slides
+		anyhow::bail!(t("PPTX file contains no slides"));
 	}
 	slides.sort_by_key(|name| extract_slide_number(name));
 	let mut buffer = DocumentBuffer::new();
@@ -156,16 +158,18 @@ fn parse_legacy_ppt(context: &ParserContext) -> Result<Document> {
 
 	// Encrypted PPT files have an EncryptionInfo stream. We can detect but not decrypt them.
 	if compound.entry("/EncryptionInfo").is_ok() {
-		anyhow::bail!(
+		// TRANSLATORS: Error shown when a legacy PPT file is password-protected, which this parser cannot handle
+		anyhow::bail!(t(
 			"Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
-		);
+		));
 	}
 
 	let ppt_document_stream = read_ppt_document_stream(&mut compound)
 		.with_context(|| format!("Failed to read PowerPoint Document stream from '{}'", context.file_path))?;
 	let slide_texts = collect_legacy_slide_texts(&ppt_document_stream);
 	if slide_texts.is_empty() {
-		anyhow::bail!("PPT file contains no slides");
+		// TRANSLATORS: Error shown when a legacy PPT presentation file has no slides
+		anyhow::bail!(t("PPT file contains no slides"));
 	}
 	let mut buffer = DocumentBuffer::new();
 	let mut toc_items = Vec::with_capacity(slide_texts.len());
@@ -208,7 +212,8 @@ fn read_ppt_document_stream(compound: &mut CompoundFile<File>) -> Result<Vec<u8>
 			}
 		}
 	}
-	anyhow::bail!("PowerPoint Document stream not found")
+	// TRANSLATORS: Error shown when a legacy PPT file's OLE container has no PowerPoint Document stream
+	anyhow::bail!(t("PowerPoint Document stream not found"))
 }
 
 fn collect_legacy_slide_texts(stream_data: &[u8]) -> Vec<String> {

@@ -45,8 +45,11 @@ fn nav_announcements(target: MarkerNavTarget, level_filter: i32) -> NavAnnouncem
 		},
 		MarkerNavTarget::Heading(level) => {
 			if level_filter > 0 {
+				// TRANSLATORS: Announced when the document has no headings at the given level; %d is the heading level number
 				let no_headings = t("No headings at level %d.");
+				// TRANSLATORS: Announced when there is no next heading at the given level; %d is the heading level number
 				let no_next = t("No next heading at level %d.");
+				// TRANSLATORS: Announced when there is no previous heading at the given level; %d is the heading level number
 				let no_prev = t("No previous heading at level %d.");
 				NavAnnouncements {
 					not_supported: no_headings.replacen("%d", &level.to_string(), 1),
@@ -126,17 +129,20 @@ fn format_nav_found_message(
 	match ann.format {
 		NavFoundFormat::TextOnly => format!("{wrap_prefix}{context_text}"),
 		NavFoundFormat::TextWithLevel => {
+			// TRANSLATORS: Announcement when landing on a heading; %s is the heading text, %d is the heading level number
 			let template = t("%s Heading level %d");
 			let message = template.replacen("%s", context_text, 1).replacen("%d", &context_index.to_string(), 1);
 			format!("{wrap_prefix}{message}")
 		}
 		NavFoundFormat::PageFormat => {
+			// TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
 			let template = t("Page %d: %s");
 			let page_text = (context_index + 1).to_string();
 			let message = template.replacen("%d", &page_text, 1).replacen("%s", context_text, 1);
 			format!("{wrap_prefix}{message}")
 		}
 		NavFoundFormat::LinkFormat => {
+			// TRANSLATORS: Suffix appended after a link's text when announcing navigation to a link; the leading space is significant
 			let message = format!("{context_text}{}", t(" link"));
 			format!("{wrap_prefix}{message}")
 		}
@@ -386,6 +392,7 @@ pub fn handle_bookmark_navigation(
 			} else {
 				String::new()
 			};
+			// TRANSLATORS: Announcement when landing on a bookmark; %s is the bookmark/line text, %d is the bookmark's 1-based index
 			let bookmark_text = t("%s - Bookmark %d").replacen("%s", &content_text, 1).replacen(
 				"%d",
 				&(result.marker_index + 1).to_string(),

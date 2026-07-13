@@ -9,6 +9,7 @@ use anyhow::Result;
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
+	t,
 	types::{HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
 };
 
@@ -126,15 +127,17 @@ pub fn parse_document(context: &ParserContext) -> Result<Document> {
 	let path = Path::new(&context.file_path);
 	let extension = context.forced_extension.as_ref().map_or_else(
 		|| {
-			path.extension()
-				.and_then(|e| e.to_str())
-				.ok_or_else(|| anyhow::anyhow!("No file extension found for: {}", context.file_path))
+			path.extension().and_then(|e| e.to_str()).ok_or_else(|| {
+				// TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
+				anyhow::anyhow!(t("No file extension found for: {}").replace("{}", &context.file_path))
+			})
 		},
 		|ext| Ok(ext.as_str()),
 	)?;
 	let parsers = ParserRegistry::global().get_parsers_for_extension(extension);
 	if parsers.is_empty() {
-		return Err(anyhow::anyhow!("No parser found for extension: .{extension}"));
+		// TRANSLATORS: Error shown when no parser supports a file's extension; {} is the extension (without the leading dot)
+		return Err(anyhow::anyhow!(t("No parser found for extension: .{}").replace("{}", extension)));
 	}
 	let mut last_error = None;
 	for parser in parsers {
@@ -151,7 +154,10 @@ pub fn parse_document(context: &ParserContext) -> Result<Document> {
 			}
 		}
 	}
-	Err(last_error.unwrap_or_else(|| anyhow::anyhow!("All parsers failed for extension: .{extension}")))
+	Err(last_error.unwrap_or_else(|| {
+		// TRANSLATORS: Error shown when every parser for a file's extension failed; {} is the extension (without the leading dot)
+		anyhow::anyhow!(t("All parsers failed for extension: .{}").replace("{}", extension))
+	}))
 }
 
 #[must_use]

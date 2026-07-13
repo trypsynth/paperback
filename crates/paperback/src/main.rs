@@ -20,6 +20,7 @@ use wxdragon::prelude::{Appearance, set_appearance};
 fn main() {
 	let _log_guard = logging::init(&config_ext::config_dir());
 	tracing::info!(version = env!("CARGO_PKG_VERSION"), commit = version::COMMIT_HASH, "starting");
+	paperback_core::set_translator(patois::t);
 	set_pdfium_path_from_exe();
 	cleanup_legacy_files();
 

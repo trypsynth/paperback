@@ -237,9 +237,9 @@ checksum = "72f5acc6cb2ba439de613abc23857ec3d78374d8ed5ac84e9d11336e87da8649"
 
 [[package]]
 name = "bytemuck"
-version = "1.25.0"
+version = "1.25.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c8efb64bd706a16a1bdde310ae86b351e4d21550d98d056f22f8a7f7a2183fec"
+checksum = "d6aedf8ae72766347502cf3cb4f41cf5e9cc37d28bee90f1fdaaae15f9cf9424"
 
 [[package]]
 name = "byteorder-lite"
@@ -249,9 +249,9 @@ checksum = "8f1fe948ff07f4bd06c30984e69f5b4899c516a3ef74f34df92a2df2ab535495"
 
 [[package]]
 name = "bytes"
-version = "1.12.0"
+version = "1.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8ae3f5d315924270530207e2a68396c3cc547f6dca3fbdca317cfb1a51edb593"
+checksum = "fc652a48c352aef3ea3aed32080501cf3ef6ed5da78602a020c991775b0aff04"
 
 [[package]]
 name = "camino"
@@ -297,9 +297,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.2.66"
+version = "1.2.67"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f5d6cac793997bd970000024b2934968efe83b382de4fdcf4fcb46b6ee4ad996"
+checksum = "e17dd265a7d0f31ef544e1b20e03add05d3b45b491b633b10d67145d2acc1a38"
 dependencies = [
  "find-msvc-tools",
  "shlex 2.0.1",
@@ -635,6 +635,12 @@ checksum = "cd1511a7b6a56299bd043a9c167a6d2bfb37bf84a6dfceaba651168adfb43c87"
 dependencies = [
  "dtoa",
 ]
+
+[[package]]
+name = "dunce"
+version = "1.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "92773504d58c093f6de2459af4af33faa518c13451eb8f2b5698ed3d36e7c813"
 
 [[package]]
 name = "ecb"
@@ -1347,9 +1353,9 @@ dependencies = [
 
 [[package]]
 name = "memchr"
-version = "2.8.2"
+version = "2.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "88904434abc2901f197fe8cc55f0445e7ded921dba5911dad2e2b39b48e663c4"
+checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
 
 [[package]]
 name = "minimal-lexical"
@@ -1476,7 +1482,7 @@ dependencies = [
  "packed_struct",
  "quick-xml",
  "rc4",
- "sha1 0.10.6",
+ "sha1 0.10.7",
  "sha2 0.10.9",
  "thiserror",
 ]
@@ -1565,6 +1571,7 @@ dependencies = [
  "anyhow",
  "base64",
  "bitflags",
+ "dunce",
  "embed-manifest",
  "flate2",
  "live-region",
@@ -1660,7 +1667,7 @@ dependencies = [
 [[package]]
 name = "patois"
 version = "0.2.0"
-source = "git+https://github.com/trypsynth/patois.git#0dc6afc5fb87c6e3e3b703df3102b37d82de9358"
+source = "git+https://github.com/trypsynth/patois.git#40c6c00978110ef7667bc482b98b944912b72c13"
 dependencies = [
  "inventory",
  "patois-macros 0.2.0",
@@ -1680,7 +1687,7 @@ dependencies = [
 [[package]]
 name = "patois-build"
 version = "0.1.4"
-source = "git+https://github.com/trypsynth/patois.git#0dc6afc5fb87c6e3e3b703df3102b37d82de9358"
+source = "git+https://github.com/trypsynth/patois.git#40c6c00978110ef7667bc482b98b944912b72c13"
 dependencies = [
  "serde_json",
 ]
@@ -1699,7 +1706,7 @@ dependencies = [
 [[package]]
 name = "patois-macros"
 version = "0.2.0"
-source = "git+https://github.com/trypsynth/patois.git#0dc6afc5fb87c6e3e3b703df3102b37d82de9358"
+source = "git+https://github.com/trypsynth/patois.git#40c6c00978110ef7667bc482b98b944912b72c13"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1959,9 +1966,9 @@ dependencies = [
 
 [[package]]
 name = "regex-automata"
-version = "0.4.14"
+version = "0.4.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e1dd4122fc1595e8162618945476892eefca7b88c52820e74af6262213cae8f"
+checksum = "1f388202e4b80542a0921078cc23b6333bcf1409c1e3f86404cae4766a6131db"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -2359,9 +2366,9 @@ dependencies = [
 
 [[package]]
 name = "sha1"
-version = "0.10.6"
+version = "0.10.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3bf829a2d51ab4a5ddf1352d8470c140cadc8301b2ae1789db023f01cedd6ba"
+checksum = "a978451301f4db1d02937a4ab3ccce137717b81826e79b7d49ffe3244a13c3b8"
 dependencies = [
  "cfg-if",
  "cpufeatures 0.2.17",
@@ -2651,9 +2658,9 @@ dependencies = [
 
 [[package]]
 name = "thread_local"
-version = "1.1.9"
+version = "1.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f60246a4944f24f6e018aa17cdeffb7818b76356965d03b07d6a9886e8962185"
+checksum = "1ad99c4c6d32803332c548b1af0540b357b3f5fc0be8f6c6bfe8b2e6ae784070"
 dependencies = [
  "cfg-if",
 ]
@@ -3171,9 +3178,9 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 
 [[package]]
 name = "uuid"
-version = "1.23.4"
+version = "1.23.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bf80a72845275afea99e7f2b434723d3bc7e38470fcd1c7ed39a599c73319a53"
+checksum = "ea5fab0d6c3c01ae70085a09cb03d4c7a1d6314e2b3e075392783396d724ca0a"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
@@ -3573,7 +3580,7 @@ dependencies = [
 [[package]]
 name = "wxdragon"
 version = "0.9.17"
-source = "git+https://github.com/AllenDang/wxDragon?branch=main#d723ce0dea473ec86fe82a689c5bc8dc35ddb05d"
+source = "git+https://github.com/AllenDang/wxDragon?branch=main#8cca7cd0be8a913a076050f7c4923c4292f2c78b"
 dependencies = [
  "bitflags",
  "log",
@@ -3585,7 +3592,7 @@ dependencies = [
 [[package]]
 name = "wxdragon-macros"
 version = "0.9.17"
-source = "git+https://github.com/AllenDang/wxDragon?branch=main#d723ce0dea473ec86fe82a689c5bc8dc35ddb05d"
+source = "git+https://github.com/AllenDang/wxDragon?branch=main#8cca7cd0be8a913a076050f7c4923c4292f2c78b"
 dependencies = [
  "proc-macro2",
  "quick-xml",
@@ -3596,7 +3603,7 @@ dependencies = [
 [[package]]
 name = "wxdragon-sys"
 version = "0.9.17"
-source = "git+https://github.com/AllenDang/wxDragon?branch=main#d723ce0dea473ec86fe82a689c5bc8dc35ddb05d"
+source = "git+https://github.com/AllenDang/wxDragon?branch=main#8cca7cd0be8a913a076050f7c4923c4292f2c78b"
 dependencies = [
  "bindgen",
  "cmake",
@@ -3738,15 +3745,15 @@ dependencies = [
 
 [[package]]
 name = "zlib-rs"
-version = "0.6.5"
+version = "0.6.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5431d5661c32445236631278f27946e444ddafe4684cac70b185272d4f9c52d5"
+checksum = "b142a20ec14a91d5bc708c1dc21b080c550113d8aa77afa29635673a65dd02c5"
 
 [[package]]
 name = "zmij"
-version = "1.0.21"
+version = "1.0.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b8848ee67ecc8aedbaf3e4122217aff892639231befc6a1b58d29fff4c2cabaa"
+checksum = "bd2f034a4bebf216c9e4b7083603e024cf930873fd67830cfb083c9fa33129d9"
 
 [[package]]
 name = "zopfli"

@@ -9,6 +9,7 @@ use crate::{
 		html_to_text::{HtmlSourceMode, HtmlToText},
 		util::{path::extract_title_from_path, toc::build_toc_from_headings},
 	},
+	t,
 	util::encoding::convert_to_utf8,
 };
 
@@ -31,12 +32,14 @@ impl Parser for HtmlParser {
 		let bytes = fs::read(&context.file_path)
 			.with_context(|| format!("Failed to open HTML file '{}'", context.file_path))?;
 		if bytes.is_empty() {
-			anyhow::bail!("HTML file is empty: {}", context.file_path);
+			// TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
+			anyhow::bail!(t("HTML file is empty: {}").replace("{}", &context.file_path));
 		}
 		let html_content = convert_to_utf8(&bytes);
 		let mut converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
 		if !converter.convert(&html_content, HtmlSourceMode::NativeHtml) {
-			anyhow::bail!("Failed to convert HTML to text: {}", context.file_path);
+			// TRANSLATORS: Error shown when an HTML file fails to convert to plain text; {} is the file path
+			anyhow::bail!(t("Failed to convert HTML to text: {}").replace("{}", &context.file_path));
 		}
 		let extracted_title = converter.get_title();
 		let title = if extracted_title.is_empty() {

@@ -6,22 +6,30 @@ use wxdragon::prelude::*;
 use super::DIALOG_PADDING;
 
 pub fn show_open_as_dialog(parent: &Frame, path: &Path) -> Option<String> {
+	// TRANSLATORS: Title of the Open As dialog
 	let title = t("Open As");
 	let dialog = Dialog::builder(parent, &title).build();
+	// TRANSLATORS: Prompt template informing the user that no parser was found for their file. The {} placeholder is replaced with the file path.
 	let message_template = t("No suitable parser was found for {}.\nHow would you like to open this file?");
 	let message = message_template.replace("{}", &path.display().to_string());
 	let label = StaticText::builder(&dialog).with_label(&message).build();
+	// TRANSLATORS: Label for the format selection dropdown
 	let format_label_text = t("Open &as:");
 	let format_label = StaticText::builder(&dialog).with_label(&format_label_text).build();
 	let format_combo = Choice::builder(&dialog).build();
+	// TRANSLATORS: Choice option to open a file as plain text
 	format_combo.append(&t("Plain Text"));
+	// TRANSLATORS: Choice option to open a file as HTML
 	format_combo.append(&t("HTML"));
+	// TRANSLATORS: Choice option to open a file as Markdown
 	format_combo.append(&t("Markdown"));
 	format_combo.set_selection(0);
 	#[cfg(target_os = "macos")]
 	format_combo.set_accessibility_label(format_label_text.replace('&', "").trim_end_matches(':').trim());
+	// TRANSLATORS: Label for the confirmation button
 	let ok_label = t("OK");
 	let ok_button = Button::builder(&dialog).with_label(&ok_label).build();
+	// TRANSLATORS: Label for the cancellation button
 	let cancel_label = t("Cancel");
 	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&cancel_label).build();
 	let dialog_for_ok = dialog;

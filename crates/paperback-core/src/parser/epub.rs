@@ -18,6 +18,7 @@ use crate::{
 		util::path::extract_title_from_path,
 		xml_to_text::XmlToText,
 	},
+	t,
 	types::{HeadingInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
 	util::{
 		text::{collapse_whitespace, trim_string, url_decode},
@@ -133,16 +134,20 @@ impl Parser for EpubParser {
 		let package_node = opf_doc
 			.descendants()
 			.find(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "package")
-			.ok_or_else(|| anyhow::anyhow!("OPF package element missing"))?;
+			// TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
+			.ok_or_else(|| anyhow::anyhow!(t("OPF package element missing")))?;
 		let (manifest, spine, nav_path, ncx_path, metadata) = parse_package(package_node, &opf_dir);
 		let mut conversion = convert_spine_items(&mut archive, &manifest, &spine, context.render_tables_inline);
 		if conversion.sections.is_empty() {
 			let reason = if conversion.conversion_errors.is_empty() {
-				String::from("no readable spine items")
+				// TRANSLATORS: Reason given when an EPUB has no spine items that could be read
+				t("no readable spine items")
 			} else {
-				format!("failed to convert spine items: {}", conversion.conversion_errors.join(", "))
+				// TRANSLATORS: Reason given when EPUB spine items failed to convert; {} is a comma-separated list of underlying errors
+				t("failed to convert spine items: {}").replace("{}", &conversion.conversion_errors.join(", "))
 			};
-			anyhow::bail!("EPUB has no readable content ({reason})");
+			// TRANSLATORS: Error shown when an EPUB has no readable content; {} is the specific reason (see the two messages above)
+			anyhow::bail!(t("EPUB has no readable content ({})").replace("{}", &reason));
 		}
 		let title = metadata
 			.title
@@ -275,7 +280,8 @@ fn find_container_path<R: Read + Seek>(archive: &mut ZipArchive<R>) -> Result<St
 			return Ok(path.to_string());
 		}
 	}
-	anyhow::bail!("rootfile not found in container.xml")
+	// TRANSLATORS: Error shown when an EPUB's container.xml is missing its rootfile reference
+	anyhow::bail!(t("rootfile not found in container.xml"))
 }
 
 struct PackageMetadata {
@@ -386,7 +392,8 @@ fn convert_section(content: &str, render_tables_inline: bool) -> Result<SectionC
 			id_positions: html_converter.get_id_positions().clone(),
 		});
 	}
-	anyhow::bail!("unsupported content")
+	// TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
+	anyhow::bail!(t("unsupported content"))
 }
 
 fn resolve_href(current_path: &str, target: &str) -> String {

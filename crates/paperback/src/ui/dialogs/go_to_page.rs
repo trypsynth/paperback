@@ -5,8 +5,10 @@ use super::DIALOG_PADDING;
 
 pub fn show_go_to_page_dialog(parent: &Frame, current_page: i32, max_page: i32) -> Option<i32> {
 	let max_page = max_page.max(1);
+	// TRANSLATORS: Title of the Go to page dialog
 	let dialog_title = t("Go to page");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
+	// TRANSLATORS: Label/prompt template for the page selection dialog. The %d placeholders represent current_page and max_pages respectively.
 	let label_template = t("Go to page (%d/%d):");
 	let label_text = label_template.replacen("%d", &current_page.clamp(1, max_page).to_string(), 1).replacen(
 		"%d",
@@ -38,7 +40,9 @@ pub fn show_go_to_page_dialog(parent: &Frame, current_page: i32, max_page: i32) 
 	let page_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	page_sizer.add(&label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 5);
 	page_sizer.add(&page_ctrl, 1, SizerFlag::Expand, 0);
+	// TRANSLATORS: Label for the action button that jumps to the specified page number
 	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("Go")).build();
+	// TRANSLATORS: Label for the button that cancels the action
 	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
 	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
 	dialog.set_affirmative_id(wxdragon::id::ID_OK);

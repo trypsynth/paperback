@@ -2,7 +2,6 @@
 use std::collections::HashMap;
 use std::{
 	cell::Cell,
-	fs,
 	path::{Path, PathBuf},
 	rc::Rc,
 	sync::{Mutex, atomic::Ordering},
@@ -118,6 +117,7 @@ impl DocumentManager {
 		title_override: Option<&str>,
 	) -> bool {
 		if !path.exists() {
+			// TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 			let template = t("File not found: {}");
 			let message = template.replace("{}", &path.to_string_lossy());
 			show_error_dialog(&self.notebook, &message, &t("Error"));
@@ -568,10 +568,13 @@ impl DocumentManager {
 			}
 			apply_foreground_color_to_ctrl(text_ctrl, rf.color);
 			apply_bg_color_to_ctrl(text_ctrl, bg_color);
-			apply_line_spacing_to_ctrl(text_ctrl, line_spacing);
-			apply_paragraph_spacing_to_ctrl(text_ctrl, paragraph_spacing);
-			apply_letter_spacing_to_ctrl(text_ctrl, letter_spacing);
-			apply_text_alignment_to_ctrl(text_ctrl, text_alignment);
+			apply_readability_format_to_ctrl(
+				text_ctrl,
+				line_spacing,
+				paragraph_spacing,
+				letter_spacing,
+				text_alignment,
+			);
 			let max_pos = text_ctrl.get_last_position();
 			let pos = current_pos.clamp(0, max_pos);
 			tab.panel.layout();
@@ -804,7 +807,7 @@ fn navigate_line_by_column(text_ctrl: TextCtrl, going_down: bool, pref_col: Opti
 }
 
 fn normalized_path_key(path: &Path) -> String {
-	let normalized = fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
+	let normalized = dunce::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
 	let value = normalized.to_string_lossy().to_string();
 	#[cfg(target_os = "windows")]
 	{
@@ -836,7 +839,11 @@ fn build_document_load_error_message(path: &Path, error: &str) -> String {
 	if details.is_empty() {
 		return t("Failed to load document.");
 	}
-	format!("{}\n\nFile: {}\nDetails: {}", t("Failed to load document."), path.display(), details)
+	// TRANSLATORS: "File" label prefix in the document-load error dialog; {} is the file path
+	let file_line = t("File: {}").replace("{}", &path.display().to_string());
+	// TRANSLATORS: "Details" label prefix in the document-load error dialog; {} is the underlying error message
+	let details_line = t("Details: {}").replace("{}", details);
+	format!("{}\n\n{file_line}\n{details_line}", t("Failed to load document."))
 }
 
 fn fill_text_ctrl(text_ctrl: TextCtrl, content: &str) {
