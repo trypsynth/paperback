@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-12 17:07-0600\n"
+"POT-Creation-Date: 2026-07-12 17:50-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1857,7 +1857,6 @@ msgid ""
 "it through OCR software to read its contents."
 msgstr ""
 
-#. TRANSLATORS: Error detail shown when a PDF's password is missing or wrong (the internal sentinel prefix before it is not translated)
 msgid "Password required or incorrect"
 msgstr ""
 
