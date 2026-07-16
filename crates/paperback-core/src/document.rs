@@ -2,7 +2,10 @@ use std::collections::HashMap;
 
 use bitflags::bitflags;
 
-use crate::util::text::{display_len, is_space_like};
+use crate::{
+	types::HeadingInfo,
+	util::text::{display_len, is_space_like},
+};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(i32)]
@@ -454,11 +457,11 @@ impl DocumentHandle {
 	}
 
 	#[must_use]
-	pub fn heading_info(&self, heading_index: i32) -> Option<crate::types::HeadingInfo> {
+	pub fn heading_info(&self, heading_index: i32) -> Option<HeadingInfo> {
 		let idx = usize::try_from(heading_index).ok()?;
 		let heading_markers = self.heading_markers(None);
 		let (_, marker) = heading_markers.get(idx)?;
-		Some(crate::types::HeadingInfo { offset: marker.position, level: marker.level, text: marker.text.clone() })
+		Some(HeadingInfo { offset: marker.position, level: marker.level, text: marker.text.clone() })
 	}
 
 	#[must_use]

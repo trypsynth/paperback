@@ -12,11 +12,11 @@ pub fn show_view_note_dialog(parent: &dyn WxWidget, note_text: &str) {
 		.with_size(Size::new(400, 200))
 		.build();
 	// TRANSLATORS: Label for the button to close the View Note dialog
-	let close_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("Close")).build();
-	dialog.set_affirmative_id(wxdragon::id::ID_OK);
+	let close_button = Button::builder(&dialog).with_id(ID_OK).with_label(&t("Close")).build();
+	dialog.set_affirmative_id(ID_OK);
 	let dialog_for_close = dialog;
 	close_button.on_click(move |_| {
-		dialog_for_close.end_modal(wxdragon::id::ID_OK);
+		dialog_for_close.end_modal(ID_OK);
 	});
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add(&note_ctrl, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);

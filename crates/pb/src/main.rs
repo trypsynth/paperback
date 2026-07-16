@@ -20,7 +20,7 @@ fn main() -> Result<()> {
 	}
 	let file_path = cli.input.to_string_lossy().into_owned();
 	if !cli.metadata && matches!(cli.format, Format::Html) && ext == "epub" {
-		let html = paperback_core::export::epub_direct::render(&file_path)
+		let html = export::epub_direct::render(&file_path)
 			.with_context(|| format!("failed to convert {}", cli.input.display()))?;
 		return match cli.output {
 			Some(path) => fs::write(&path, &html).with_context(|| format!("failed to write {}", path.display())),

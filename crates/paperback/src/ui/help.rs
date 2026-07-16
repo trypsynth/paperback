@@ -107,7 +107,7 @@ pub fn handle_view_help_browser(frame: &Frame) {
 		return;
 	}
 	let url = format!("file://{}", path.to_string_lossy());
-	if !wxdragon::utils::launch_default_browser(&url, wxdragon::utils::BrowserLaunchFlags::Default) {
+	if !launch_default_browser(&url, BrowserLaunchFlags::Default) {
 		tracing::warn!(url = %url, "failed to launch default browser for help");
 		show_error(frame, t("Failed to launch default browser."), &t("Error"));
 	}
@@ -134,7 +134,7 @@ pub fn handle_view_help_paperback(
 
 pub fn handle_donate(frame: &Frame) {
 	let url = "https://paypal.me/tygillespie05";
-	if !wxdragon::utils::launch_default_browser(url, wxdragon::utils::BrowserLaunchFlags::Default) {
+	if !launch_default_browser(url, BrowserLaunchFlags::Default) {
 		tracing::warn!("failed to launch default browser for donation page");
 		show_error(frame, t("Failed to open donation page in browser."), &t("Error"));
 	}

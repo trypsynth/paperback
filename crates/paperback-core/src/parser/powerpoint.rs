@@ -14,6 +14,9 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
 	parser::{
 		Parser,
+		table_text::{
+			build_html_table_from_grid, display_lines_and_length, html_table_to_display, table_caption_from_html,
+		},
 		util::{
 			ooxml::read_ooxml_relationships, path::extract_title_from_path, xml::collect_text_from_tagged_elements,
 		},
@@ -485,10 +488,10 @@ fn process_pptx_table(
 		}
 		rows.push(cells);
 	}
-	let html = crate::parser::table_text::build_html_table_from_grid(&rows);
-	let caption = crate::parser::table_text::table_caption_from_html(&html).unwrap_or_else(|| "table".to_string());
-	let display_text = crate::parser::table_text::html_table_to_display(&html, render_tables_inline);
-	let (_, length) = crate::parser::table_text::display_lines_and_length(&display_text);
+	let html = build_html_table_from_grid(&rows);
+	let caption = table_caption_from_html(&html).unwrap_or_else(|| "table".to_string());
+	let display_text = html_table_to_display(&html, render_tables_inline);
+	let (_, length) = display_lines_and_length(&display_text);
 	let offset = slide_start + display_len(text);
 	text.push_str(&display_text);
 	text.push('\n');

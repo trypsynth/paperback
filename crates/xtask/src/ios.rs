@@ -10,13 +10,15 @@ use std::{
 use flate2::read::GzDecoder;
 use tar::Archive;
 
+use crate::project_root;
+
 const PDFIUM_IOS_ARM64_URL: &str =
 	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-ios-device-arm64.tgz";
 
 pub fn ios() -> Result<(), Box<dyn Error>> {
 	let release = env::args().any(|a| a == "--release");
 	let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
-	let root = crate::project_root();
+	let root = project_root();
 	let generated_dir = root.join("ios/Paperback/Generated");
 	fs::create_dir_all(&generated_dir)?;
 
@@ -98,7 +100,7 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 
 pub fn ios_release() -> Result<(), Box<dyn Error>> {
 	let upload = env::args().any(|a| a == "--upload");
-	let root = crate::project_root();
+	let root = project_root();
 	let ios_dir = root.join("ios");
 	let archive_path = root.join("target/Paperback.xcarchive");
 	let export_path = root.join("target/PaperbackExport");

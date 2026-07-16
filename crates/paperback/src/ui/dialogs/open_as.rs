@@ -31,14 +31,14 @@ pub fn show_open_as_dialog(parent: &Frame, path: &Path) -> Option<String> {
 	let ok_button = Button::builder(&dialog).with_label(&ok_label).build();
 	// TRANSLATORS: Label for the cancellation button
 	let cancel_label = t("Cancel");
-	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&cancel_label).build();
+	let cancel_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&cancel_label).build();
 	let dialog_for_ok = dialog;
 	ok_button.on_click(move |_| {
-		dialog_for_ok.end_modal(wxdragon::id::ID_OK);
+		dialog_for_ok.end_modal(ID_OK);
 	});
 	let dialog_for_cancel = dialog;
 	cancel_button.on_click(move |_| {
-		dialog_for_cancel.end_modal(wxdragon::id::ID_CANCEL);
+		dialog_for_cancel.end_modal(ID_CANCEL);
 	});
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add(&label, 0, SizerFlag::All, DIALOG_PADDING / 2);
@@ -54,7 +54,7 @@ pub fn show_open_as_dialog(parent: &Frame, path: &Path) -> Option<String> {
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
 	format_combo.set_focus();
-	if dialog.show_modal() != wxdragon::id::ID_OK {
+	if dialog.show_modal() != ID_OK {
 		return None;
 	}
 	let selection = format_combo.get_selection();

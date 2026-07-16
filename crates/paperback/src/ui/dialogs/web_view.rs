@@ -25,7 +25,7 @@ pub fn show_web_view_dialog(
 	let dialog_for_close = dialog;
 	web_view.on_script_message_received(move |event| {
 		if event.get_string() == Some("close_dialog".to_string()) {
-			dialog_for_close.end_modal(wxdragon::id::ID_CANCEL);
+			dialog_for_close.end_modal(ID_CANCEL);
 		}
 	});
 	if let Some(handler) = navigation_handler {
@@ -59,12 +59,12 @@ pub fn show_web_view_dialog(
 		);
 	});
 	// TRANSLATORS: Label for the button to close the web view dialog
-	let close_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Close")).build();
+	let close_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Close")).build();
 	let dialog_for_ok = dialog;
 	close_button.on_click(move |_| {
-		dialog_for_ok.end_modal(wxdragon::id::ID_OK);
+		dialog_for_ok.end_modal(ID_OK);
 	});
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+	dialog.set_escape_id(ID_CANCEL);
 	let sizer = BoxSizer::builder(Orientation::Vertical).build();
 	sizer.add(&web_view, 1, SizerFlag::Expand | SizerFlag::All, 5);
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();

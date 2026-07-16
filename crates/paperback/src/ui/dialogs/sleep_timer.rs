@@ -16,16 +16,16 @@ pub fn show_sleep_timer_dialog(parent: &Frame, initial_duration: i32) -> Option<
 	let dialog_for_enter = dialog;
 	input_ctrl.bind_internal(EventType::TEXT_ENTER, move |event| {
 		event.skip(false);
-		dialog_for_enter.end_modal(wxdragon::id::ID_OK);
+		dialog_for_enter.end_modal(ID_OK);
 	});
 	let input_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	input_sizer.add(&label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 5);
 	input_sizer.add(&input_ctrl, 1, SizerFlag::Expand, 0);
 	// TRANSLATORS: Label for the confirmation button
-	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
+	let ok_button = Button::builder(&dialog).with_id(ID_OK).with_label(&t("OK")).build();
 	// TRANSLATORS: Label for the cancellation button
-	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+	let cancel_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
+	dialog.set_escape_id(ID_CANCEL);
 	ok_button.set_default();
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add_sizer(&input_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
@@ -37,5 +37,5 @@ pub fn show_sleep_timer_dialog(parent: &Frame, initial_duration: i32) -> Option<
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
 	input_ctrl.set_focus();
-	if dialog.show_modal() == wxdragon::id::ID_OK { Some(input_ctrl.value()) } else { None }
+	if dialog.show_modal() == ID_OK { Some(input_ctrl.value()) } else { None }
 }

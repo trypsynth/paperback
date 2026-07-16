@@ -87,7 +87,7 @@ pub fn show_bookmark_dialog(
 		jump_button,
 		cancel_button,
 	);
-	if dialog.show_modal() != wxdragon::id::ID_OK {
+	if dialog.show_modal() != ID_OK {
 		return None;
 	}
 	let start = state.selected_start.get();
@@ -179,10 +179,10 @@ fn build_bookmark_dialog_ui(dialog: Dialog, initial_filter: BookmarkFilterType) 
 	// TRANSLATORS: Label for the button to delete a bookmark
 	let delete_button = Button::builder(&dialog).with_label(&t("&Delete")).build();
 	// TRANSLATORS: Label for the button to jump to the selected bookmark
-	let jump_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("&Jump")).build();
+	let jump_button = Button::builder(&dialog).with_id(ID_OK).with_label(&t("&Jump")).build();
 	// TRANSLATORS: Label for the button to cancel the action
-	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("&Cancel")).build();
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+	let cancel_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("&Cancel")).build();
+	dialog.set_escape_id(ID_CANCEL);
 	jump_button.set_default();
 	BookmarkDialogUi {
 		filter_choice,
@@ -327,7 +327,7 @@ fn bind_bookmark_jump(dialog: Dialog, jump_button: Button, selected_start: &Rc<C
 	let selected_start_for_jump = Rc::clone(selected_start);
 	jump_button.on_click(move |_| {
 		if selected_start_for_jump.get() >= 0 {
-			dialog_for_jump.end_modal(wxdragon::id::ID_OK);
+			dialog_for_jump.end_modal(ID_OK);
 		} else {
 			MessageDialog::builder(
 				&dialog_for_jump,
@@ -393,7 +393,7 @@ fn bind_bookmark_actions(actions: BookmarkDialogActions) {
 
 fn bind_bookmark_cancel(dialog: Dialog, cancel_button: Button) {
 	cancel_button.on_click(move |_| {
-		dialog.end_modal(wxdragon::id::ID_CANCEL);
+		dialog.end_modal(ID_CANCEL);
 	});
 }
 
@@ -514,7 +514,7 @@ fn bind_bookmark_key_actions(
 fn bind_bookmark_double_click(bookmark_list: ListBox, dialog: Dialog, selected_start: Rc<Cell<i64>>) {
 	bookmark_list.on_item_double_clicked(move |_| {
 		if selected_start.get() >= 0 {
-			dialog.end_modal(wxdragon::id::ID_OK);
+			dialog.end_modal(ID_OK);
 		}
 	});
 }

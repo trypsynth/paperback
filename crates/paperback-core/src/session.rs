@@ -8,8 +8,9 @@ use base64::Engine;
 use zip::ZipArchive;
 
 use crate::{
-	config::ConfigManager,
+	config::{ConfigManager, compute_document_hash},
 	document::{self, DocumentHandle, MarkerType, ParserContext, ParserFlags},
+	export::{ExportFormat, render},
 	parser,
 	reader_core::{
 		SearchOptions, bookmark_navigate, encode_url_fragment, history_go_next, history_go_previous,
@@ -218,28 +219,28 @@ pub enum MarkerTypeFfi {
 	Underline,
 }
 
-impl From<crate::document::MarkerType> for MarkerTypeFfi {
-	fn from(m: crate::document::MarkerType) -> Self {
+impl From<MarkerType> for MarkerTypeFfi {
+	fn from(m: MarkerType) -> Self {
 		match m {
-			crate::document::MarkerType::Heading1 => Self::Heading1,
-			crate::document::MarkerType::Heading2 => Self::Heading2,
-			crate::document::MarkerType::Heading3 => Self::Heading3,
-			crate::document::MarkerType::Heading4 => Self::Heading4,
-			crate::document::MarkerType::Heading5 => Self::Heading5,
-			crate::document::MarkerType::Heading6 => Self::Heading6,
-			crate::document::MarkerType::PageBreak => Self::PageBreak,
-			crate::document::MarkerType::SectionBreak => Self::SectionBreak,
-			crate::document::MarkerType::TocItem => Self::TocItem,
-			crate::document::MarkerType::Link => Self::Link,
-			crate::document::MarkerType::List => Self::List,
-			crate::document::MarkerType::ListItem => Self::ListItem,
-			crate::document::MarkerType::Table => Self::Table,
-			crate::document::MarkerType::Separator => Self::Separator,
-			crate::document::MarkerType::Image => Self::Image,
-			crate::document::MarkerType::Figure => Self::Figure,
-			crate::document::MarkerType::Bold => Self::Bold,
-			crate::document::MarkerType::Italic => Self::Italic,
-			crate::document::MarkerType::Underline => Self::Underline,
+			MarkerType::Heading1 => Self::Heading1,
+			MarkerType::Heading2 => Self::Heading2,
+			MarkerType::Heading3 => Self::Heading3,
+			MarkerType::Heading4 => Self::Heading4,
+			MarkerType::Heading5 => Self::Heading5,
+			MarkerType::Heading6 => Self::Heading6,
+			MarkerType::PageBreak => Self::PageBreak,
+			MarkerType::SectionBreak => Self::SectionBreak,
+			MarkerType::TocItem => Self::TocItem,
+			MarkerType::Link => Self::Link,
+			MarkerType::List => Self::List,
+			MarkerType::ListItem => Self::ListItem,
+			MarkerType::Table => Self::Table,
+			MarkerType::Separator => Self::Separator,
+			MarkerType::Image => Self::Image,
+			MarkerType::Figure => Self::Figure,
+			MarkerType::Bold => Self::Bold,
+			MarkerType::Italic => Self::Italic,
+			MarkerType::Underline => Self::Underline,
 		}
 	}
 }
@@ -353,7 +354,7 @@ impl DocumentSession {
 	}
 
 	#[must_use]
-	pub const fn stats(&self) -> &crate::document::DocumentStats {
+	pub const fn stats(&self) -> &document::DocumentStats {
 		&self.handle.document().stats
 	}
 
@@ -934,7 +935,7 @@ impl DocumentSession {
 	pub fn webview_target_path(&self, position: i64, temp_dir: &str) -> Option<WebviewTarget> {
 		let section_path = self.get_current_section_path(position).filter(|path| !path.is_empty());
 		if let Some(section_path) = section_path {
-			let digest = crate::config::compute_document_hash(&self.file_path);
+			let digest = compute_document_hash(&self.file_path);
 			let hash = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(digest);
 			let doc_temp_dir = Path::new(temp_dir).join(format!("paperback_{hash}"));
 			if fs::create_dir_all(&doc_temp_dir).is_ok() {
@@ -951,7 +952,7 @@ impl DocumentSession {
 		match ext.as_deref() {
 			Some("html" | "htm" | "xhtml") => Some(WebviewTarget { path: self.file_path.clone(), fragment: None }),
 			Some("md" | "markdown") => {
-				let digest = crate::config::compute_document_hash(&self.file_path);
+				let digest = compute_document_hash(&self.file_path);
 				let hash = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(digest);
 				let doc_temp_dir = Path::new(temp_dir).join(format!("paperback_{hash}"));
 				if fs::create_dir_all(&doc_temp_dir).is_ok() {
@@ -1018,7 +1019,7 @@ impl DocumentSession {
 	#[must_use]
 	pub fn view_source(&self, position: i64, temp_dir: &str) -> Option<SourceView> {
 		let (content, caret, name) = self.source_content_for_position(position)?;
-		let digest = crate::config::compute_document_hash(&self.file_path);
+		let digest = compute_document_hash(&self.file_path);
 		let hash = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(digest);
 		let doc_temp_dir = Path::new(temp_dir).join(format!("paperback_{hash}"));
 		fs::create_dir_all(&doc_temp_dir).ok()?;
@@ -1092,8 +1093,8 @@ impl DocumentSession {
 	/// # Errors
 	///
 	/// Returns an error if the file cannot be written.
-	pub fn export_as(&self, output_path: &str, format: crate::export::ExportFormat) -> io::Result<()> {
-		let content = crate::export::render(&self.handle, format);
+	pub fn export_as(&self, output_path: &str, format: ExportFormat) -> io::Result<()> {
+		let content = render(&self.handle, format);
 		let mut file = File::create(output_path)?;
 		file.write_all(content.as_bytes())?;
 		file.flush()?;
@@ -1108,26 +1109,26 @@ impl DocumentSession {
 		direction: SegmentDirectionFfi,
 	) -> TextSegmentFfi {
 		let nav_target = match segment_type {
-			SegmentTypeFfi::Heading => Some(ffi::NavTarget::Heading),
-			SegmentTypeFfi::Link => Some(ffi::NavTarget::Link),
-			SegmentTypeFfi::Section => Some(ffi::NavTarget::Section),
-			SegmentTypeFfi::Page => Some(ffi::NavTarget::Page),
-			SegmentTypeFfi::List => Some(ffi::NavTarget::List),
-			SegmentTypeFfi::ListItem => Some(ffi::NavTarget::ListItem),
-			SegmentTypeFfi::Table => Some(ffi::NavTarget::Table),
-			SegmentTypeFfi::Separator => Some(ffi::NavTarget::Separator),
-			SegmentTypeFfi::Image => Some(ffi::NavTarget::Image),
-			SegmentTypeFfi::Figure => Some(ffi::NavTarget::Figure),
+			SegmentTypeFfi::Heading => Some(NavTarget::Heading),
+			SegmentTypeFfi::Link => Some(NavTarget::Link),
+			SegmentTypeFfi::Section => Some(NavTarget::Section),
+			SegmentTypeFfi::Page => Some(NavTarget::Page),
+			SegmentTypeFfi::List => Some(NavTarget::List),
+			SegmentTypeFfi::ListItem => Some(NavTarget::ListItem),
+			SegmentTypeFfi::Table => Some(NavTarget::Table),
+			SegmentTypeFfi::Separator => Some(NavTarget::Separator),
+			SegmentTypeFfi::Image => Some(NavTarget::Image),
+			SegmentTypeFfi::Figure => Some(NavTarget::Figure),
 			_ => None,
 		};
 
 		if let Some(target) = nav_target {
 			let direction_nav = match direction {
-				SegmentDirectionFfi::Previous => ffi::NavDirection::Previous,
-				_ => ffi::NavDirection::Next,
+				SegmentDirectionFfi::Previous => NavDirection::Previous,
+				_ => NavDirection::Next,
 			};
 			let nav_req = ffi::NavRequest { position, wrap: false, direction: direction_nav, target, level_filter: 0 };
-			let res = crate::reader_core::reader_navigate(&self.handle, &nav_req);
+			let res = reader_navigate(&self.handle, &nav_req);
 			if res.found {
 				let mut text = res.marker_text.clone();
 				let mut offset = res.offset as i64;
@@ -1383,7 +1384,7 @@ impl DocumentSession {
 	#[must_use]
 	pub fn get_toc(&self) -> Vec<TocEntry> {
 		let mut flat = Vec::new();
-		fn flatten(items: &[crate::document::TocItem], level: i32, flat: &mut Vec<TocEntry>) {
+		fn flatten(items: &[document::TocItem], level: i32, flat: &mut Vec<TocEntry>) {
 			for item in items {
 				flat.push(TocEntry {
 					title: item.name.clone(),

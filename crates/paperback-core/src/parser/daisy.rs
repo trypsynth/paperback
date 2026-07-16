@@ -1,5 +1,6 @@
 use std::{
-	fs::File,
+	collections::HashMap,
+	fs::{self, File},
 	io::{BufReader, Read},
 	path::Path,
 };
@@ -9,9 +10,9 @@ use roxmltree::{Document as XmlDocument, Node, NodeType, ParsingOptions};
 use zip::ZipArchive;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
 	parser::{
-		Parser, add_converter_markers,
+		PASSWORD_REQUIRED_ERROR_PREFIX, Parser, add_converter_markers,
 		html_to_text::{HtmlSourceMode, HtmlToText},
 		util::{path::extract_title_from_path, toc::build_toc_from_headings},
 		xml_to_text::XmlToText,
@@ -64,7 +65,7 @@ impl Parser for DaisyParser {
 					let opf_content =
 						read_zip_entry_by_name_with_password(&mut archive, &opf_name, context.password.as_deref())
 							.map_err(|e| {
-								if e.to_string().starts_with(crate::parser::PASSWORD_REQUIRED_ERROR_PREFIX) {
+								if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
 									e
 								} else {
 									e.context("Failed to read OPF file")
@@ -88,7 +89,7 @@ impl Parser for DaisyParser {
 					let xml_content =
 						read_zip_entry_by_name_with_password(&mut archive, &xml_full_path, context.password.as_deref())
 							.map_err(|e| {
-								if e.to_string().starts_with(crate::parser::PASSWORD_REQUIRED_ERROR_PREFIX) {
+								if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
 									e
 								} else {
 									e.context("Failed to read XML file from zip")
@@ -136,7 +137,7 @@ impl Parser for DaisyParser {
 				let ncc_content =
 					read_zip_entry_by_name_with_password(&mut archive, &ncc_name, context.password.as_deref())
 						.map_err(|e| {
-							if e.to_string().starts_with(crate::parser::PASSWORD_REQUIRED_ERROR_PREFIX) {
+							if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
 								e
 							} else {
 								e.context("Failed to read ncc.html")
@@ -176,7 +177,7 @@ impl Parser for DaisyParser {
 			// TRANSLATORS: Error shown when a ZIP file is not a recognizable DAISY 3 or DAISY 2.02 book
 			anyhow::bail!(t("ZIP archive does not appear to be a valid DAISY 3 or DAISY 2.02 book"));
 		}
-		let file_content = std::fs::read_to_string(path)?;
+		let file_content = fs::read_to_string(path)?;
 		let (manifest_xml, metadata) = parse_opf_metadata_and_manifest(&file_content)?;
 		if let Some(t) = metadata.0 {
 			title = t;
@@ -187,7 +188,7 @@ impl Parser for DaisyParser {
 		if let Some(dtbook_path) = manifest_xml {
 			let base_dir = path.parent().unwrap_or_else(|| Path::new(""));
 			let xml_full_path = base_dir.join(&dtbook_path);
-			let xml_content = std::fs::read_to_string(&xml_full_path)
+			let xml_content = fs::read_to_string(&xml_full_path)
 				.with_context(|| format!("Failed to read DTBook XML file at {}", xml_full_path.display()))?;
 			let mut converter = XmlToText::with_render_tables_inline(context.render_tables_inline);
 			if converter.convert(&xml_content) {
@@ -197,12 +198,12 @@ impl Parser for DaisyParser {
 					buffer.add_marker(Marker::new(MarkerType::PageBreak, pb.offset).with_text(pb.text.clone()));
 				}
 				let mut toc_items = None;
-				if let Ok(entries) = std::fs::read_dir(base_dir) {
+				if let Ok(entries) = fs::read_dir(base_dir) {
 					for entry in entries.flatten() {
 						let path = entry.path();
 						if path.is_file()
 							&& path.extension().is_some_and(|e| e.eq_ignore_ascii_case("ncx"))
-							&& let Ok(ncx_content) = std::fs::read_to_string(&path)
+							&& let Ok(ncx_content) = fs::read_to_string(&path)
 							&& let Some(ncx_toc) = parse_daisy_ncx(&ncx_content, converter.get_id_positions())
 							&& !ncx_toc.is_empty()
 						{
@@ -269,7 +270,7 @@ fn parse_opf_metadata_and_manifest(opf_content: &str) -> OpfMetadataResult {
 						if item.is_element() && item.tag_name().name() == "item" {
 							let media_type = item.attribute("media-type").unwrap_or("");
 							if media_type == "application/x-dtbook+xml" || media_type == "text/xml" {
-								let href = item.attribute("href").map(std::string::ToString::to_string);
+								let href = item.attribute("href").map(ToString::to_string);
 								if media_type == "application/x-dtbook+xml" {
 									dtbook_href = href;
 									break;
@@ -304,10 +305,7 @@ fn extract_daisy2_links(ncc_content: &str) -> Vec<String> {
 	links
 }
 
-fn parse_daisy_ncx(
-	ncx_content: &str,
-	id_positions: &std::collections::HashMap<String, usize>,
-) -> Option<Vec<crate::document::TocItem>> {
+fn parse_daisy_ncx(ncx_content: &str, id_positions: &HashMap<String, usize>) -> Option<Vec<TocItem>> {
 	let ncx_doc =
 		XmlDocument::parse_with_options(ncx_content, ParsingOptions { allow_dtd: true, ..ParsingOptions::default() })
 			.ok()?;
@@ -325,10 +323,7 @@ fn parse_daisy_ncx(
 	if items.is_empty() { None } else { Some(items) }
 }
 
-fn convert_daisy_navpoint(
-	nav: Node,
-	id_positions: &std::collections::HashMap<String, usize>,
-) -> Option<crate::document::TocItem> {
+fn convert_daisy_navpoint(nav: Node, id_positions: &HashMap<String, usize>) -> Option<TocItem> {
 	let label = nav
 		.children()
 		.find(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "navLabel")
@@ -354,7 +349,7 @@ fn convert_daisy_navpoint(
 		.or_else(|| nav.attribute("id").and_then(|id| id_positions.get(id)))
 		.copied()
 		.unwrap_or(0);
-	let mut item = crate::document::TocItem::new(label, target_id.to_string(), offset);
+	let mut item = TocItem::new(label, target_id.to_string(), offset);
 	for child in nav.children() {
 		if child.node_type() == NodeType::Element
 			&& child.tag_name().name() == "navPoint"

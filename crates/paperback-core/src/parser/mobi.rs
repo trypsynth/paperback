@@ -1,4 +1,9 @@
-use std::{fs::File, io::Read};
+use std::{
+	collections::{BTreeSet, HashMap},
+	fs::File,
+	io::Read,
+	sync::LazyLock,
+};
 
 use anyhow::Result;
 use encoding_rs::WINDOWS_1252;
@@ -120,7 +125,7 @@ impl Parser for MobiParser {
 		};
 		document_title = document_title.replace('\0', "").trim().replace('_', " ");
 		let mut document_author = String::new();
-		let mut exth_map = std::collections::HashMap::new();
+		let mut exth_map = HashMap::new();
 		let exth_offset = mobi_header_offset + header_length;
 		if exth_offset + 12 <= rec0.len() && &rec0[exth_offset..exth_offset + 4] == b"EXTH" {
 			let exth_num_records = u32::from_be_bytes([
@@ -298,7 +303,7 @@ impl Parser for MobiParser {
 		};
 		let mut ncx_toc = parse_ncx(&data, &record_offsets, mobi_header, &exth_map, is_kf8, &frag_offsets);
 
-		fn extract_targets(items: &[TocItem], targets: &mut std::collections::BTreeSet<usize>) {
+		fn extract_targets(items: &[TocItem], targets: &mut BTreeSet<usize>) {
 			let mut stack = vec![items];
 			while let Some(current_items) = stack.pop() {
 				for item in current_items {
@@ -313,31 +318,29 @@ impl Parser for MobiParser {
 				}
 			}
 		}
-		let mut extra_targets = std::collections::BTreeSet::new();
+		let mut extra_targets = BTreeSet::new();
 		extract_targets(&ncx_toc, &mut extra_targets);
 		let mut text = rewrite_internal_links(&text, &frag_offsets, &extra_targets);
 
-		static RE_AID: std::sync::LazyLock<regex::Regex> =
-			std::sync::LazyLock::new(|| regex::Regex::new(r#"(?i)\s[ac]id\s*=\s*["'][^"']*["']"#).unwrap());
+		static RE_AID: LazyLock<regex::Regex> =
+			LazyLock::new(|| regex::Regex::new(r#"(?i)\s[ac]id\s*=\s*["'][^"']*["']"#).unwrap());
 		text = RE_AID.replace_all(&text, "").into_owned();
 
 		// KF8 / AZW3 files concatenate the skeleton and fragments, often leaving
 		// `</body></html>` inside unclosed tags at insertion points. We strip these
 		// to allow `scraper` to parse the fragments cleanly.
-		static RE_BODY: std::sync::LazyLock<regex::Regex> =
-			std::sync::LazyLock::new(|| regex::Regex::new(r"(?is)</body>|</html>").unwrap());
+		static RE_BODY: LazyLock<regex::Regex> = LazyLock::new(|| regex::Regex::new(r"(?is)</body>|</html>").unwrap());
 		text = RE_BODY.replace_all(&text, "").into_owned();
 
-		static RE_TITLE: std::sync::LazyLock<regex::Regex> =
-			std::sync::LazyLock::new(|| regex::Regex::new(r"(?is)<title[^>]*>.*?</title>").unwrap());
+		static RE_TITLE: LazyLock<regex::Regex> =
+			LazyLock::new(|| regex::Regex::new(r"(?is)<title[^>]*>.*?</title>").unwrap());
 		text = RE_TITLE.replace_all(&text, "").into_owned();
 
-		static RE_STYLE: std::sync::LazyLock<regex::Regex> =
-			std::sync::LazyLock::new(|| regex::Regex::new(r"(?is)<style[^>]*>.*?</style>").unwrap());
+		static RE_STYLE: LazyLock<regex::Regex> =
+			LazyLock::new(|| regex::Regex::new(r"(?is)<style[^>]*>.*?</style>").unwrap());
 		text = RE_STYLE.replace_all(&text, "").into_owned();
 
-		static RE_PAGE: std::sync::LazyLock<regex::Regex> =
-			std::sync::LazyLock::new(|| regex::Regex::new(r"(?is)@page\s*\{[^<]+").unwrap());
+		static RE_PAGE: LazyLock<regex::Regex> = LazyLock::new(|| regex::Regex::new(r"(?is)@page\s*\{[^<]+").unwrap());
 		text = RE_PAGE.replace_all(&text, "").into_owned();
 
 		// Old-style Mobipocket files use <font size="N"> instead of <h1>-<h6>.
@@ -365,7 +368,7 @@ impl Parser for MobiParser {
 	}
 }
 
-fn resolve_ncx_offsets(items: &mut [TocItem], id_positions: &std::collections::HashMap<String, usize>) {
+fn resolve_ncx_offsets(items: &mut [TocItem], id_positions: &HashMap<String, usize>) {
 	let mut stack: Vec<&mut [TocItem]> = vec![items];
 	while let Some(current) = stack.pop() {
 		for item in current.iter_mut() {
@@ -385,8 +388,7 @@ fn resolve_ncx_offsets(items: &mut [TocItem], id_positions: &std::collections::H
 // Old-style Mobipocket files use <font size="N"> for headings (size 7 = largest, 4-7 map to h1-h4).
 // Only activated when the document contains no semantic h1-h6 tags.
 fn rewrite_font_size_headings(html: &str) -> String {
-	static RE_H1_6: std::sync::LazyLock<regex::Regex> =
-		std::sync::LazyLock::new(|| regex::Regex::new(r"(?i)<h[1-6]\b").unwrap());
+	static RE_H1_6: LazyLock<regex::Regex> = LazyLock::new(|| regex::Regex::new(r"(?i)<h[1-6]\b").unwrap());
 	if RE_H1_6.is_match(html) {
 		return html.to_string();
 	}
@@ -452,12 +454,8 @@ fn base32_decode(s: &str) -> usize {
 	val
 }
 
-fn build_fragment_offsets(
-	data: &[u8],
-	records: &[usize],
-	mobi_header: &[u8],
-) -> std::collections::HashMap<usize, usize> {
-	let mut frag_offsets = std::collections::HashMap::new();
+fn build_fragment_offsets(data: &[u8], records: &[usize], mobi_header: &[u8]) -> HashMap<usize, usize> {
+	let mut frag_offsets = HashMap::new();
 	if mobi_header.len() < 236 {
 		return frag_offsets;
 	}
@@ -542,12 +540,8 @@ fn build_fragment_offsets(
 	frag_offsets
 }
 
-fn rewrite_internal_links(
-	html: &str,
-	frag_offsets: &std::collections::HashMap<usize, usize>,
-	extra_targets: &std::collections::BTreeSet<usize>,
-) -> String {
-	static RE_LINKS: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+fn rewrite_internal_links(html: &str, frag_offsets: &HashMap<usize, usize>, extra_targets: &BTreeSet<usize>) -> String {
+	static RE_LINKS: LazyLock<regex::Regex> = LazyLock::new(|| {
 		regex::Regex::new(r#"(?i)<a\b[^>]*?(?:filepos\s*=\s*['"]?(\d+)|href\s*=\s*['"]?kindle:pos:(?:fid:([0-9A-Va-v]+):)?off:([0-9A-Va-v]+))[^>]*>"#).unwrap()
 	});
 
@@ -933,9 +927,9 @@ fn parse_ncx(
 	data: &[u8],
 	records: &[usize],
 	mobi_header: &[u8],
-	exth: &std::collections::HashMap<u32, Vec<u8>>,
+	exth: &HashMap<u32, Vec<u8>>,
 	is_kf8: bool,
-	frag_offsets: &std::collections::HashMap<usize, usize>,
+	frag_offsets: &HashMap<usize, usize>,
 ) -> Vec<TocItem> {
 	let mut ncx_index = 0xFFFFFFFF;
 	if is_kf8 && mobi_header.len() >= 232 {

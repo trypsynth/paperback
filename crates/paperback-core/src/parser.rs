@@ -10,7 +10,7 @@ use anyhow::Result;
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
 	t,
-	types::{HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
+	types::{FormatInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
 };
 
 pub mod chm;
@@ -253,9 +253,9 @@ pub trait ConverterOutput {
 	fn get_separators(&self) -> &[SeparatorInfo];
 	fn get_lists(&self) -> &[ListInfo];
 	fn get_list_items(&self) -> &[ListItemInfo];
-	fn get_bolds(&self) -> &[crate::types::FormatInfo];
-	fn get_italics(&self) -> &[crate::types::FormatInfo];
-	fn get_underlines(&self) -> &[crate::types::FormatInfo];
+	fn get_bolds(&self) -> &[FormatInfo];
+	fn get_italics(&self) -> &[FormatInfo];
+	fn get_underlines(&self) -> &[FormatInfo];
 }
 
 fn add_headings(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
@@ -368,7 +368,7 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
-	use crate::types::{HeadingInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo};
+	use crate::types::{FormatInfo, HeadingInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo};
 
 	struct MockConverter {
 		headings: Vec<HeadingInfo>,
@@ -379,9 +379,9 @@ mod tests {
 		separators: Vec<SeparatorInfo>,
 		lists: Vec<ListInfo>,
 		list_items: Vec<ListItemInfo>,
-		bolds: Vec<crate::types::FormatInfo>,
-		italics: Vec<crate::types::FormatInfo>,
-		underlines: Vec<crate::types::FormatInfo>,
+		bolds: Vec<FormatInfo>,
+		italics: Vec<FormatInfo>,
+		underlines: Vec<FormatInfo>,
 	}
 
 	impl ConverterOutput for MockConverter {
@@ -417,15 +417,15 @@ mod tests {
 			&self.list_items
 		}
 
-		fn get_bolds(&self) -> &[crate::types::FormatInfo] {
+		fn get_bolds(&self) -> &[FormatInfo] {
 			&self.bolds
 		}
 
-		fn get_italics(&self) -> &[crate::types::FormatInfo] {
+		fn get_italics(&self) -> &[FormatInfo] {
 			&self.italics
 		}
 
-		fn get_underlines(&self) -> &[crate::types::FormatInfo] {
+		fn get_underlines(&self) -> &[FormatInfo] {
 			&self.underlines
 		}
 	}

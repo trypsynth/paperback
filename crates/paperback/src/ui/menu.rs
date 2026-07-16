@@ -860,7 +860,7 @@ pub fn populate_recent_documents_menu(menu: &Menu, config: &ConfigManager) {
 	if recent_docs.is_empty() {
 		// TRANSLATORS: Placeholder menu item shown in the Recent Documents submenu when there are none
 		let empty_label = t("(No recent documents)");
-		if let Some(item) = menu.append(wxdragon::id::ID_ANY.try_into().unwrap(), &empty_label, "", ItemKind::Normal) {
+		if let Some(item) = menu.append(ID_ANY.try_into().unwrap(), &empty_label, "", ItemKind::Normal) {
 			item.enable(false);
 		}
 	} else {

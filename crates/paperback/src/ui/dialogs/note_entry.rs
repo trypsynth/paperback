@@ -17,18 +17,18 @@ pub fn show_note_entry_dialog(
 		.with_size(Size::new(400, 200))
 		.build();
 	// TRANSLATORS: Label for the confirmation button
-	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
+	let ok_button = Button::builder(&dialog).with_id(ID_OK).with_label(&t("OK")).build();
 	// TRANSLATORS: Label for the cancellation button
-	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
-	dialog.set_affirmative_id(wxdragon::id::ID_OK);
+	let cancel_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
+	dialog.set_escape_id(ID_CANCEL);
+	dialog.set_affirmative_id(ID_OK);
 	let dialog_for_ok = dialog;
 	ok_button.on_click(move |_| {
-		dialog_for_ok.end_modal(wxdragon::id::ID_OK);
+		dialog_for_ok.end_modal(ID_OK);
 	});
 	let dialog_for_cancel = dialog;
 	cancel_button.on_click(move |_| {
-		dialog_for_cancel.end_modal(wxdragon::id::ID_CANCEL);
+		dialog_for_cancel.end_modal(ID_CANCEL);
 	});
 	let dialog_for_key = dialog;
 	note_ctrl.bind_internal(EventType::KEY_DOWN, move |event| {
@@ -38,7 +38,7 @@ pub fn show_note_entry_dialog(
 			if event.shift_down() {
 				event.skip(true);
 			} else {
-				dialog_for_key.end_modal(wxdragon::id::ID_OK);
+				dialog_for_key.end_modal(ID_OK);
 				event.skip(false);
 			}
 			return;
@@ -61,5 +61,5 @@ pub fn show_note_entry_dialog(
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
 	note_ctrl.set_focus();
-	if dialog.show_modal() == wxdragon::id::ID_OK { Some(note_ctrl.get_value()) } else { None }
+	if dialog.show_modal() == ID_OK { Some(note_ctrl.get_value()) } else { None }
 }
