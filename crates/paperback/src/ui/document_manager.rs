@@ -462,14 +462,14 @@ impl DocumentManager {
 		let path_str = tab.file_path.to_string_lossy().to_string();
 		let bookmarks = config.get_bookmarks(&path_str);
 		drop(config);
+
 		let mut has_note = false;
 		let mut has_bookmark = false;
 		for bm in &bookmarks {
-			let triggered = if position > prev {
-				bm.start > prev && bm.start <= position
-			} else {
-				bm.start >= position && bm.start < prev
-			};
+			let was_inside = if bm.start == bm.end { prev == bm.start } else { prev >= bm.start && prev < bm.end };
+			let is_inside =
+				if bm.start == bm.end { position == bm.start } else { position >= bm.start && position < bm.end };
+			let triggered = is_inside && !was_inside;
 			if triggered {
 				if bm.note.is_empty() {
 					has_bookmark = true;
