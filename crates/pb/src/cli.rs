@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use clap::{Parser, ValueEnum};
 
 #[derive(Parser)]
-#[command(name = "pb", about = "Convert a document to text or HTML")]
+#[command(name = "pb", about = "Convert any document to text, HTML, or Markdown")]
 pub struct Cli {
 	/// Input document file
 	pub input: PathBuf,
@@ -16,7 +16,7 @@ pub struct Cli {
 	/// Password for encrypted documents (omit to be prompted interactively)
 	#[arg(short, long)]
 	pub password: Option<String>,
-	/// Print document metadata (title, author, word count) instead of content
+	/// Print document metadata instead of content
 	#[arg(short, long)]
 	pub metadata: bool,
 	/// Exit with code 2 instead of prompting for a password (useful for batch processing)
@@ -26,7 +26,9 @@ pub struct Cli {
 
 #[derive(Clone, ValueEnum)]
 pub enum Format {
+	#[value(alias = "txt")]
 	Text,
+	#[value(alias = "htm")]
 	Html,
 	#[value(alias = "md")]
 	Markdown,
