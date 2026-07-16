@@ -38,11 +38,19 @@ sha1 = "0.11.0"
 thiserror = "2.0.18"
 toml = { workspace = true }
 unicode-bidi = "0.3.18"
-uniffi = { version = "0.32.0", features = ["cli"] }
+uniffi = { version = "0.32.0", features = ["cli"], optional = true }
 zip = { version = "8.6.0", default-features = false, features = ["deflate"] }
 
 [build-dependencies]
-uniffi = { version = "0.32.0", features = ["build"] }
+uniffi = { version = "0.32.0", features = ["build"], optional = true }
 
 [dev-dependencies]
 rstest = { workspace = true }
+
+[features]
+uniffi = ["dep:uniffi"]
+
+[[bin]]
+name = "uniffi-bindgen"
+path = "src/bin/uniffi-bindgen.rs"
+required-features = ["uniffi"]

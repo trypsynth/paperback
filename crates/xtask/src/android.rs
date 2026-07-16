@@ -44,6 +44,10 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 		.current_dir(project_root())
 		.args([
 			"run",
+			"-p",
+			"paperback-core",
+			"--features",
+			"uniffi",
 			"--bin",
 			"uniffi-bindgen",
 			"--",
@@ -74,6 +78,8 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 			"--release",
 			"-p",
 			"paperback-core",
+			"--features",
+			"uniffi",
 		])
 		.status()?;
 	if !status.success() {

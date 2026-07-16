@@ -22,6 +22,7 @@ pub use crate::{
 	},
 };
 
+#[cfg(feature = "uniffi")]
 uniffi::include_scaffolding!("paperback");
 
 pub fn set_pdfium_library_path(path: String) {

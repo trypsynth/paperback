@@ -30,6 +30,10 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 		.current_dir(&root)
 		.args([
 			"run",
+			"-p",
+			"paperback-core",
+			"--features",
+			"uniffi",
 			"--bin",
 			"uniffi-bindgen",
 			"--",
@@ -47,7 +51,7 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 	}
 
 	let profile = if release { "release" } else { "debug" };
-	let mut build_args = vec!["build", "-p", "paperback-core"];
+	let mut build_args = vec!["build", "-p", "paperback-core", "--features", "uniffi"];
 	if release {
 		build_args.push("--release");
 	}
