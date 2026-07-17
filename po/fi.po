@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-07-12 17:50-0600\n"
-"PO-Revision-Date: 2026-07-17 19:38+0300\n"
+"PO-Revision-Date: 2026-07-17 22:22+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -301,7 +301,7 @@ msgstr "Avaa &muodossa:"
 
 #. TRANSLATORS: Choice option to open a file as plain text
 msgid "Plain Text"
-msgstr "Pelkkä teksti"
+msgstr "Muotoilematon teksti"
 
 #. TRANSLATORS: Choice option to open a file as HTML
 msgid "HTML"
@@ -595,7 +595,7 @@ msgstr "Valitussa tekstissä on {} sanaa."
 
 #. TRANSLATORS: Message template for document word count. The {} placeholder is replaced with the number of words.
 msgid "This document contains {} words."
-msgstr "Asiakirjassa on {} sanaa."
+msgstr "Tässä asiakirjassa on {} sanaa."
 
 #. TRANSLATORS: Title of the Word Count dialog
 msgid "Word Count"
@@ -740,7 +740,7 @@ msgstr "Paperback ei voi suorittaa toimintoja selainnäkymän ollessa avoinna."
 
 #. TRANSLATORS: Window title when a document is open; {} is the document title
 msgid "Paperback - {}"
-msgstr "Paperback - {}"
+msgstr "Paperback – {}"
 
 #. TRANSLATORS: Status bar character count; {} is the number of characters
 msgid "{} chars"
@@ -765,7 +765,7 @@ msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgstr "Tekstitiedostot (*.txt)|*.txt|Kaikki tiedostot (*.*)|*.*"
 
 msgid "Export document to plain text"
-msgstr "Vie asiakirja tekstimuotoon"
+msgstr "Vie asiakirja muotoilemattomana tekstinä"
 
 msgid "Failed to export document."
 msgstr "Asiakirjan vienti epäonnistui."
@@ -774,13 +774,13 @@ msgid "HTML files (*.html)|*.html|All files (*.*)|*.*"
 msgstr "HTML-tiedostot (*.html)|*.html|Kaikki tiedostot (*.*)|*.*"
 
 msgid "Export document to HTML"
-msgstr "Vie asiakirja HTML-muotoon"
+msgstr "Vie asiakirja HTML-muodossa"
 
 msgid "Markdown files (*.md)|*.md|All files (*.*)|*.*"
 msgstr "Markdown-tiedostot (*.md)|*.md|Kaikki tiedostot (*.*)|*.*"
 
 msgid "Export document to Markdown"
-msgstr "Vie asiakirja Markdown-muotoon"
+msgstr "Vie asiakirja Markdown-muodossa"
 
 msgid "Paperback files (*.paperback)|*.paperback"
 msgstr "Paperback-tiedostot (*.paperback)|*.paperback"
@@ -789,7 +789,7 @@ msgid "Export notes and bookmarks"
 msgstr "Vie muistiinpanot ja kirjanmerkit"
 
 msgid "Notes and bookmarks exported successfully."
-msgstr "Muistiinpanot ja kirjanmerkit viety onnistuneesti."
+msgstr "Muistiinpanot ja kirjanmerkit on viety onnistuneesti."
 
 msgid "Export Successful"
 msgstr "Vienti onnistui"
@@ -798,7 +798,7 @@ msgid "Import notes and bookmarks"
 msgstr "Tuo muistiinpanot ja kirjanmerkit"
 
 msgid "Notes and bookmarks imported successfully."
-msgstr "Muistiinpanot ja kirjanmerkit tuotu onnistuneesti."
+msgstr "Muistiinpanot ja kirjanmerkit on tuotu onnistuneesti."
 
 msgid "Import Successful"
 msgstr "Tuonti onnistui"
@@ -1341,15 +1341,15 @@ msgstr "Vie kirjanmerkit ja sijainti"
 
 #. TRANSLATORS: Menu item label to export the document as plain text
 msgid "Export to &Plain Text...\tCtrl+E"
-msgstr "Vie te&kstimuotoon...\tCtrl+E"
+msgstr "Vie muotoilemattomana te&kstinä...\tCtrl+E"
 
 #. TRANSLATORS: Status bar help text for the "Export to Plain Text" menu item
 msgid "Export document as plain text"
-msgstr "Vie asiakirja tekstimuotoon"
+msgstr "Vie asiakirja muotoilemattomana tekstinä"
 
 #. TRANSLATORS: Menu item label to export the document as HTML
 msgid "Export to &HTML..."
-msgstr "Vie &HTML-muotoon..."
+msgstr "Vie &HTML-muodossa..."
 
 #. TRANSLATORS: Status bar help text for the "Export to HTML" menu item
 msgid "Export document as HTML"
@@ -1357,7 +1357,7 @@ msgstr "Vie asiakirja HTML-muodossa"
 
 #. TRANSLATORS: Menu item label to export the document as Markdown
 msgid "Export to &Markdown..."
-msgstr "Vie &Markdown-muotoon..."
+msgstr "Vie &Markdown-muodossa..."
 
 #. TRANSLATORS: Status bar help text for the "Export to Markdown" menu item
 msgid "Export document as Markdown"
