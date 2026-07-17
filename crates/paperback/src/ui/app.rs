@@ -13,8 +13,12 @@ use paperback_core::config::ConfigManager;
 use wxdragon::prelude::*;
 
 use super::MainWindow;
+#[cfg(any(target_os = "linux", target_os = "windows", test))]
+use crate::ipc::IPC_COMMAND_TOGGLE_VISIBILITY;
 use crate::{
+	config_ext::{config_toml_path, get_update_channel},
 	ipc::{IPC_COMMAND_ACTIVATE, IpcCommand, SINGLE_INSTANCE_NAME, normalize_cli_path},
+	legacy_config::migrate_if_needed,
 	translation_manager::TranslationManager,
 };
 
@@ -29,9 +33,9 @@ static MAIN_WINDOW_PTR: AtomicUsize = AtomicUsize::new(0);
 
 impl PaperbackApp {
 	pub fn new(_app: App) -> Self {
-		crate::legacy_config::migrate_if_needed();
+		migrate_if_needed();
 		let mut config = ConfigManager::new();
-		let _ = config.initialize(crate::config_ext::config_toml_path());
+		let _ = config.initialize(config_toml_path());
 		{
 			let mut translations = TranslationManager::instance().lock().unwrap();
 			translations.initialize();
@@ -52,7 +56,7 @@ impl PaperbackApp {
 		}
 		let main_window = Rc::new(MainWindow::new(Rc::clone(&config)));
 		MAIN_WINDOW_PTR.store(Rc::as_ptr(&main_window) as usize, Ordering::SeqCst);
-		wxdragon::app::set_top_window(main_window.frame());
+		set_top_window(main_window.frame());
 		let pipe_server = start_pipe_server(&Rc::clone(&main_window));
 		main_window.show();
 		#[cfg(target_os = "macos")]
@@ -76,7 +80,7 @@ impl PaperbackApp {
 		open_from_command_line(&main_window);
 		let (check_updates, channel) = {
 			let cfg = config.lock().unwrap();
-			(cfg.get_app_bool("check_for_updates_on_startup", true), crate::config_ext::get_update_channel(&cfg))
+			(cfg.get_app_bool("check_for_updates_on_startup", true), get_update_channel(&cfg))
 		};
 		if check_updates {
 			MainWindow::check_for_updates(true, channel);
@@ -279,7 +283,7 @@ fn start_pipe_server(main_window: &Rc<MainWindow>) -> PipeServer {
 			tracing::info!(pipe = %name, "IPC server started");
 			pipe::serve_loop(handle, move |data| {
 				if let Some(cmd) = decode_execute_payload(&data) {
-					wxdragon::call_after(Box::new(move || {
+					call_after(Box::new(move || {
 						if let Some(window) = main_window_from_ptr() {
 							window.handle_ipc_command(cmd);
 						}
@@ -323,7 +327,7 @@ fn send_ipc_command(command: IpcCommand) {
 	let payload = match &command {
 		IpcCommand::Activate => IPC_COMMAND_ACTIVATE.to_string(),
 		#[cfg(any(target_os = "linux", target_os = "windows", test))]
-		IpcCommand::ToggleVisibility => crate::ipc::IPC_COMMAND_TOGGLE_VISIBILITY.to_string(),
+		IpcCommand::ToggleVisibility => IPC_COMMAND_TOGGLE_VISIBILITY.to_string(),
 		IpcCommand::OpenFile(path) => path.to_string_lossy().to_string(),
 	};
 	#[cfg(windows)]

@@ -34,7 +34,10 @@ use super::{
 };
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 use crate::ipc::IpcCommand;
-use crate::{config_ext::UpdateChannel, translation_manager::TranslationManager};
+use crate::{
+	config_ext::{UpdateChannel, get_update_channel, set_update_channel},
+	translation_manager::TranslationManager,
+};
 
 const KEY_DELETE: i32 = 127;
 const KEY_NUMPAD_DELETE: i32 = 330;
@@ -124,7 +127,7 @@ impl MainWindow {
 		let dm = Rc::clone(&doc_manager);
 		let frame_copy = frame;
 		notebook.on_key_down(move |event| {
-			if let wxdragon::event::WindowEventData::Keyboard(key_event) = &event
+			if let WindowEventData::Keyboard(key_event) = &event
 				&& let Some(key) = key_event.get_key_code()
 				&& (key == KEY_DELETE || key == KEY_NUMPAD_DELETE)
 			{
@@ -253,7 +256,7 @@ impl MainWindow {
 	pub fn handle_ipc_command(&self, command: IpcCommand) {
 		tracing::info!(command = ?command, "received IPC command");
 		let mut web_view_dialog = None;
-		crate::ui::dialogs::ACTIVE_WEB_VIEW.with(|v| {
+		dialogs::ACTIVE_WEB_VIEW.with(|v| {
 			web_view_dialog = v.get();
 		});
 
@@ -302,7 +305,7 @@ impl MainWindow {
 					let active_popup = unsafe { GetLastActivePopup(frame_hwnd) };
 					if active_popup != frame_hwnd {
 						has_popup = true;
-						HIDDEN_POPUP.store(active_popup.0 as isize, std::sync::atomic::Ordering::SeqCst);
+						HIDDEN_POPUP.store(active_popup.0 as isize, Ordering::SeqCst);
 						let _ = unsafe { ShowWindow(active_popup, SW_HIDE) };
 					}
 				}
@@ -337,7 +340,7 @@ impl MainWindow {
 			if !handle.is_null() {
 				let frame_hwnd = HWND(handle);
 
-				let hidden = HIDDEN_POPUP.swap(0, std::sync::atomic::Ordering::SeqCst);
+				let hidden = HIDDEN_POPUP.swap(0, Ordering::SeqCst);
 				if hidden != 0 {
 					let active_popup = HWND(hidden as _);
 					let _ = unsafe { ShowWindow(active_popup, SW_SHOW) };
@@ -495,7 +498,7 @@ impl MainWindow {
 			.with_wildcard(&wildcard)
 			.with_style(FileDialogStyle::Open | FileDialogStyle::FileMustExist)
 			.build();
-		if dialog.show_modal() == wxdragon::id::ID_OK
+		if dialog.show_modal() == ID_OK
 			&& let Some(path) = dialog.get_path()
 		{
 			let path = Path::new(&path);
@@ -1107,7 +1110,7 @@ impl MainWindow {
 						.with_wildcard(&wildcard)
 						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
 						.build();
-					if dialog.show_modal() == wxdragon::id::ID_OK {
+					if dialog.show_modal() == ID_OK {
 						if let Some(path) = dialog.get_path() {
 							if let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Text) {
 								tracing::error!(path = %path, error = %e, "failed to export document as text");
@@ -1140,7 +1143,7 @@ impl MainWindow {
 						.with_wildcard(&wildcard)
 						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
 						.build();
-					if dialog.show_modal() == wxdragon::id::ID_OK {
+					if dialog.show_modal() == ID_OK {
 						if let Some(path) = dialog.get_path() {
 							if let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Html) {
 								tracing::error!(path = %path, error = %e, "failed to export document as HTML");
@@ -1173,7 +1176,7 @@ impl MainWindow {
 						.with_wildcard(&wildcard)
 						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
 						.build();
-					if dialog.show_modal() == wxdragon::id::ID_OK {
+					if dialog.show_modal() == ID_OK {
 						if let Some(path) = dialog.get_path() {
 							if let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Markdown)
 							{
@@ -1207,7 +1210,7 @@ impl MainWindow {
 						.with_wildcard(&wildcard)
 						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
 						.build();
-					if dialog.show_modal() == wxdragon::id::ID_OK
+					if dialog.show_modal() == ID_OK
 						&& let Some(path) = dialog.get_path()
 					{
 						let path_str = tab.file_path.to_string_lossy();
@@ -1238,7 +1241,7 @@ impl MainWindow {
 						.with_wildcard(&wildcard)
 						.with_style(FileDialogStyle::Open | FileDialogStyle::FileMustExist)
 						.build();
-					if dialog.show_modal() == wxdragon::id::ID_OK
+					if dialog.show_modal() == ID_OK
 						&& let Some(path) = dialog.get_path()
 					{
 						let path_str = tab.file_path.to_string_lossy();
@@ -1362,10 +1365,7 @@ impl MainWindow {
 									|| url.to_lowercase().starts_with("https://")
 									|| url.to_lowercase().starts_with("mailto:")
 								{
-									wxdragon::utils::launch_default_browser(
-										url,
-										wxdragon::utils::BrowserLaunchFlags::Default,
-									);
+									launch_default_browser(url, BrowserLaunchFlags::Default);
 									false
 								} else {
 									true
@@ -1485,7 +1485,7 @@ impl MainWindow {
 					cfg.set_app_int("recent_documents_to_show", options.recent_documents_to_show);
 					cfg.set_app_int("reading_speed_wpm", options.reading_speed_wpm);
 					cfg.set_app_string("language", &options.language);
-					crate::config_ext::set_update_channel(&cfg, options.update_channel);
+					set_update_channel(&cfg, options.update_channel);
 					cfg.set_hotkey(&options.hotkey);
 					cfg.set_readability_font(&options.readability_font);
 					cfg.set_line_spacing(options.line_spacing);
@@ -1628,7 +1628,7 @@ impl MainWindow {
 					}
 				}
 				menu_ids::CHECK_FOR_UPDATES => {
-					let channel = crate::config_ext::get_update_channel(&config.lock().unwrap());
+					let channel = get_update_channel(&config.lock().unwrap());
 					help::run_update_check(false, channel);
 				}
 				menu_ids::DONATE => {
@@ -1909,12 +1909,12 @@ pub fn start_hotkey_listener(hotkey: &paperback_core::config::HotkeyConfig) -> O
 				break;
 			}
 			if msg.message == WM_HOTKEY {
-				wxdragon::call_after(Box::new(|| {
+				call_after(Box::new(|| {
 					if let Some(window) = super::app::main_window_from_ptr() {
-						window.handle_ipc_command(crate::ipc::IpcCommand::ToggleVisibility);
+						window.handle_ipc_command(IpcCommand::ToggleVisibility);
 					}
 				}));
-				wxdragon::app::wake_up_idle();
+				wake_up_idle();
 			}
 		}
 		unsafe {
@@ -1939,7 +1939,7 @@ fn char_to_vk(ch: char) -> Option<u32> {
 
 #[cfg(target_os = "windows")]
 fn re_register_hotkey(
-	hotkey_handle: &std::rc::Rc<std::cell::RefCell<Option<HotkeyHandle>>>,
+	hotkey_handle: &Rc<RefCell<Option<HotkeyHandle>>>,
 	hotkey: &paperback_core::config::HotkeyConfig,
 ) {
 	use windows::Win32::{

@@ -36,7 +36,7 @@ pub fn show_all_documents_dialog(
 	let search_ctrl = TextCtrl::builder(&dialog).with_size(Size::new(300, -1)).build();
 	let doc_list = build_all_documents_list(dialog);
 	let (open_button, locate_button, remove_button, clear_all_button, ok_button) = build_all_documents_buttons(dialog);
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+	dialog.set_escape_id(ID_CANCEL);
 	populate_document_list(&DocumentListParams {
 		list: doc_list,
 		open_button,
@@ -127,11 +127,11 @@ fn show_yes_no_dialog(parent: &dyn WxWidget, message: &str, title: &str) -> bool
 	let panel = Panel::builder(&dialog).build();
 	let message_label = StaticText::builder(&panel).with_label(message).build();
 	// TRANSLATORS: Label for the confirmation dialog "Yes" button
-	let yes_button = Button::builder(&panel).with_id(wxdragon::id::ID_OK).with_label(&t("&Yes")).build();
+	let yes_button = Button::builder(&panel).with_id(ID_OK).with_label(&t("&Yes")).build();
 	// TRANSLATORS: Label for the confirmation dialog "No" button
-	let no_button = Button::builder(&panel).with_id(wxdragon::id::ID_CANCEL).with_label(&t("&No")).build();
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
-	dialog.set_affirmative_id(wxdragon::id::ID_OK);
+	let no_button = Button::builder(&panel).with_id(ID_CANCEL).with_label(&t("&No")).build();
+	dialog.set_escape_id(ID_CANCEL);
+	dialog.set_affirmative_id(ID_OK);
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add(&message_label, 0, SizerFlag::All, DIALOG_PADDING);
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
@@ -144,7 +144,7 @@ fn show_yes_no_dialog(parent: &dyn WxWidget, message: &str, title: &str) -> bool
 	dialog_sizer.add(&panel, 1, SizerFlag::Expand, 0);
 	dialog.set_sizer_and_fit(dialog_sizer, true);
 	dialog.centre();
-	dialog.show_modal() == wxdragon::id::ID_OK
+	dialog.show_modal() == ID_OK
 }
 
 fn build_all_documents_list(dialog: Dialog) -> ListCtrl {
@@ -171,7 +171,7 @@ fn build_all_documents_buttons(dialog: Dialog) -> (Button, Button, Button, Butto
 	// TRANSLATORS: Button label to clear all documents from the list
 	let clear_all_button = Button::builder(&dialog).with_label(&t("&Clear All")).build();
 	// TRANSLATORS: Button label to close the All Documents dialog
-	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Close")).build();
+	let ok_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Close")).build();
 	locate_button.enable(false);
 	(open_button, locate_button, remove_button, clear_all_button, ok_button)
 }
@@ -208,7 +208,7 @@ fn make_all_documents_open_action(
 			&& Path::new(&path).exists()
 		{
 			*selected_path.lock().unwrap() = Some(path);
-			dialog.end_modal(wxdragon::id::ID_OK);
+			dialog.end_modal(ID_OK);
 		}
 	})
 }
@@ -435,7 +435,7 @@ fn bind_all_documents_layout(dialog: Dialog, layout: AllDocumentsLayout) {
 	} = layout;
 	let dialog_for_ok = dialog;
 	ok_button.on_click(move |_| {
-		dialog_for_ok.end_modal(wxdragon::id::ID_OK);
+		dialog_for_ok.end_modal(ID_OK);
 	});
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let search_sizer = BoxSizer::builder(Orientation::Horizontal).build();
@@ -574,7 +574,7 @@ fn bind_all_documents_locate(
 			.with_wildcard(&wildcard)
 			.with_style(FileDialogStyle::Open | FileDialogStyle::FileMustExist)
 			.build();
-		if file_dialog.show_modal() != wxdragon::id::ID_OK {
+		if file_dialog.show_modal() != ID_OK {
 			return;
 		}
 		let new_path = match file_dialog.get_path() {

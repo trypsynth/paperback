@@ -17,5 +17,6 @@ fn main() {
 	println!("cargo:rustc-env=PAPERBACK_IS_DEV={}", if is_dev { "1" } else { "0" });
 	println!("cargo:rerun-if-changed=.git/HEAD");
 
+	#[cfg(feature = "uniffi")]
 	uniffi::generate_scaffolding("src/paperback.udl").expect("Building the UDL file failed");
 }

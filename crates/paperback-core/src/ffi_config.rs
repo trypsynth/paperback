@@ -1,6 +1,6 @@
-use std::sync::Mutex;
+use std::{collections::HashSet, sync::Mutex};
 
-use crate::config::ConfigManager;
+use crate::{config::ConfigManager, parser::ParserRegistry};
 
 /// Thread-safe wrapper around `ConfigManager` for `UniFFI` exposure.
 pub struct ConfigManagerFfi {
@@ -86,8 +86,8 @@ impl ConfigManagerFfi {
 	}
 
 	pub fn get_supported_extensions(&self) -> Vec<String> {
-		let mut exts = std::collections::HashSet::new();
-		for parser in crate::parser::ParserRegistry::global().all_parsers() {
+		let mut exts = HashSet::new();
+		for parser in ParserRegistry::global().all_parsers() {
 			for ext in parser.extensions {
 				exts.insert(ext);
 			}

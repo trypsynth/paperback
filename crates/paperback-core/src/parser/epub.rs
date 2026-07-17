@@ -19,7 +19,7 @@ use crate::{
 		xml_to_text::XmlToText,
 	},
 	t,
-	types::{HeadingInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
+	types::{FormatInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
 	util::{
 		text::{collapse_whitespace, trim_string, url_decode},
 		zip::read_zip_entry_by_name,
@@ -30,15 +30,15 @@ struct SectionContent {
 	text: String,
 	headings: Vec<HeadingInfo>,
 	links: Vec<LinkInfo>,
-	images: Vec<crate::types::ImageInfo>,
-	figures: Vec<crate::types::ImageInfo>,
+	images: Vec<ImageInfo>,
+	figures: Vec<ImageInfo>,
 	tables: Vec<TableInfo>,
 	separators: Vec<SeparatorInfo>,
 	lists: Vec<ListInfo>,
 	list_items: Vec<ListItemInfo>,
-	bolds: Vec<crate::types::FormatInfo>,
-	italics: Vec<crate::types::FormatInfo>,
-	underlines: Vec<crate::types::FormatInfo>,
+	bolds: Vec<FormatInfo>,
+	italics: Vec<FormatInfo>,
+	underlines: Vec<FormatInfo>,
 	id_positions: HashMap<String, usize>,
 }
 
@@ -49,10 +49,10 @@ impl ConverterOutput for SectionContent {
 	fn get_links(&self) -> &[LinkInfo] {
 		&self.links
 	}
-	fn get_images(&self) -> &[crate::types::ImageInfo] {
+	fn get_images(&self) -> &[ImageInfo] {
 		&self.images
 	}
-	fn get_figures(&self) -> &[crate::types::ImageInfo] {
+	fn get_figures(&self) -> &[ImageInfo] {
 		&self.figures
 	}
 	fn get_tables(&self) -> &[TableInfo] {
@@ -67,13 +67,13 @@ impl ConverterOutput for SectionContent {
 	fn get_list_items(&self) -> &[ListItemInfo] {
 		&self.list_items
 	}
-	fn get_bolds(&self) -> &[crate::types::FormatInfo] {
+	fn get_bolds(&self) -> &[FormatInfo] {
 		&self.bolds
 	}
-	fn get_italics(&self) -> &[crate::types::FormatInfo] {
+	fn get_italics(&self) -> &[FormatInfo] {
 		&self.italics
 	}
-	fn get_underlines(&self) -> &[crate::types::FormatInfo] {
+	fn get_underlines(&self) -> &[FormatInfo] {
 		&self.underlines
 	}
 }

@@ -1,4 +1,6 @@
 use std::{cell::Cell, rc::Rc};
+#[cfg(not(target_os = "windows"))]
+use std::{collections::HashMap, ffi::c_void};
 
 use paperback_core::session::DocumentSession;
 use patois::t;
@@ -99,8 +101,7 @@ fn populate_elements_dialog_dv(
 	current_pos: i64,
 	headings_tree: DataViewTreeCtrl,
 	links_list: ListBox,
-) -> (Rc<Cell<i64>>, std::collections::HashMap<usize, i64>, Rc<Vec<i64>>) {
-	use std::collections::HashMap;
+) -> (Rc<Cell<i64>>, HashMap<usize, i64>, Rc<Vec<i64>>) {
 	let selected_offset = Rc::new(Cell::new(-1i64));
 	let mut item_offsets: HashMap<usize, i64> = HashMap::new();
 	let tree_data = session.heading_tree(current_pos);
@@ -126,7 +127,7 @@ fn populate_elements_dialog_dv(
 		} else {
 			headings_tree.append_item(parent, &display_text, -1)
 		};
-		if let Some(id_ptr) = node.get_id::<std::ffi::c_void>() {
+		if let Some(id_ptr) = node.get_id::<c_void>() {
 			item_offsets.insert(id_ptr as usize, offset);
 		}
 		item_ids.push(node);
@@ -186,7 +187,7 @@ fn bind_elements_activation_dv(
 	dialog: Dialog,
 	headings_tree: DataViewTreeCtrl,
 	links_list: ListBox,
-	item_offsets: &Rc<std::collections::HashMap<usize, i64>>,
+	item_offsets: &Rc<HashMap<usize, i64>>,
 	link_offsets: &Rc<Vec<i64>>,
 	selected_offset: &Rc<Cell<i64>>,
 ) {
@@ -195,7 +196,7 @@ fn bind_elements_activation_dv(
 	let dialog_for_tree = dialog;
 	headings_tree.on_item_activated(move |event| {
 		if let Some(item) = event.get_item() {
-			if let Some(id_ptr) = item.get_id::<std::ffi::c_void>() {
+			if let Some(id_ptr) = item.get_id::<c_void>() {
 				if let Some(&offset) = offsets_for_tree.get(&(id_ptr as usize)) {
 					selected_for_tree.set(offset);
 					dialog_for_tree.end_modal(wxdragon::id::ID_OK);
@@ -225,7 +226,7 @@ fn bind_elements_ok_action_dv(
 	view_choice: Choice,
 	headings_tree: DataViewTreeCtrl,
 	links_list: ListBox,
-	item_offsets: &Rc<std::collections::HashMap<usize, i64>>,
+	item_offsets: &Rc<HashMap<usize, i64>>,
 	link_offsets: &Rc<Vec<i64>>,
 	selected_offset: &Rc<Cell<i64>>,
 	ok_button: Button,
@@ -238,7 +239,7 @@ fn bind_elements_ok_action_dv(
 		let selection = view_choice.get_selection().unwrap_or(0);
 		if selection == 0 {
 			if let Some(item) = headings_tree.get_selection() {
-				if let Some(id_ptr) = item.get_id::<std::ffi::c_void>() {
+				if let Some(id_ptr) = item.get_id::<c_void>() {
 					if let Some(&offset) = offsets_for_ok.get(&(id_ptr as usize)) {
 						selected_for_ok.set(offset);
 						dialog_for_ok.end_modal(wxdragon::id::ID_OK);
@@ -282,7 +283,7 @@ fn show_elements_dialog_wx(parent: &Frame, session: &DocumentSession, current_po
 	} else {
 		links_list.set_focus();
 	}
-	if dialog.show_modal() == wxdragon::id::ID_OK {
+	if dialog.show_modal() == ID_OK {
 		let offset = selected_offset.get();
 		if offset >= 0 { Some(offset) } else { None }
 	} else {
@@ -343,7 +344,7 @@ fn populate_elements_dialog(
 	let selected_offset = Rc::new(Cell::new(-1i64));
 	let root = headings_tree.add_root("Root", None, None).unwrap();
 	let tree_data = session.heading_tree(current_pos);
-	let mut item_ids: Vec<wxdragon::widgets::treectrl::TreeItemId> = Vec::new();
+	let mut item_ids: Vec<TreeItemId> = Vec::new();
 	if !tree_data.items.is_empty() {
 		item_ids.reserve(tree_data.items.len());
 	}
@@ -429,7 +430,7 @@ fn bind_elements_activation(
 			&& let Some(offset) = data.downcast_ref::<i64>()
 		{
 			selected_offset_for_tree.set(*offset);
-			dialog_for_tree.end_modal(wxdragon::id::ID_OK);
+			dialog_for_tree.end_modal(ID_OK);
 		}
 	});
 	let selected_offset_for_list = Rc::clone(selected_offset);
@@ -442,7 +443,7 @@ fn bind_elements_activation(
 			&& let Some(offset) = offsets_for_list.get(index)
 		{
 			selected_offset_for_list.set(*offset);
-			dialog_for_list.end_modal(wxdragon::id::ID_OK);
+			dialog_for_list.end_modal(ID_OK);
 		}
 	});
 }
@@ -468,14 +469,14 @@ fn bind_elements_ok_action(
 				&& let Some(offset) = data.downcast_ref::<i64>()
 			{
 				selected_offset_for_ok.set(*offset);
-				dialog_for_ok.end_modal(wxdragon::id::ID_OK);
+				dialog_for_ok.end_modal(ID_OK);
 			}
 		} else if let Some(idx) = links_list.get_selection()
 			&& let Ok(index) = usize::try_from(idx)
 			&& let Some(offset) = offsets_for_ok.get(index)
 		{
 			selected_offset_for_ok.set(*offset);
-			dialog_for_ok.end_modal(wxdragon::id::ID_OK);
+			dialog_for_ok.end_modal(ID_OK);
 		}
 	});
 }
@@ -484,10 +485,10 @@ fn bind_elements_ok_action(
 
 fn build_elements_buttons(dialog: Dialog) -> (Button, Button) {
 	// TRANSLATORS: Label for the confirmation button
-	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
+	let ok_button = Button::builder(&dialog).with_id(ID_OK).with_label(&t("OK")).build();
 	// TRANSLATORS: Label for the cancellation button
-	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+	let cancel_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
+	dialog.set_escape_id(ID_CANCEL);
 	ok_button.set_default();
 	(ok_button, cancel_button)
 }

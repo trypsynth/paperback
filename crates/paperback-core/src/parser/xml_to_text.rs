@@ -3,9 +3,15 @@ use std::{collections::HashMap, mem};
 use roxmltree::{Document, Node, NodeType, ParsingOptions};
 
 use crate::{
-	parser::util::xml::collect_element_text,
+	parser::{
+		ConverterOutput,
+		table_text::{push_finalized_line, table_render_bundle},
+		util::xml::collect_element_text,
+	},
 	t,
-	types::{HeadingInfo, LinkInfo, ListInfo, ListItemInfo, PageBreakInfo, SeparatorInfo, TableInfo},
+	types::{
+		FormatInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, PageBreakInfo, SeparatorInfo, TableInfo,
+	},
 	util::text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string},
 };
 
@@ -29,8 +35,8 @@ pub struct XmlToText {
 	id_positions: HashMap<String, usize>,
 	headings: Vec<HeadingInfo>,
 	links: Vec<LinkInfo>,
-	images: Vec<crate::types::ImageInfo>,
-	figures: Vec<crate::types::ImageInfo>,
+	images: Vec<ImageInfo>,
+	figures: Vec<ImageInfo>,
 	tables: Vec<TableInfo>,
 	separators: Vec<SeparatorInfo>,
 	page_breaks: Vec<PageBreakInfo>,
@@ -47,9 +53,9 @@ pub struct XmlToText {
 	/// `None` marks an open list that was not recorded (no direct `<li>`), keeping the stack
 	/// balanced with the start/close handlers so list lengths are set on the right entries.
 	open_lists: Vec<Option<usize>>,
-	bolds: Vec<crate::types::FormatInfo>,
-	italics: Vec<crate::types::FormatInfo>,
-	underlines: Vec<crate::types::FormatInfo>,
+	bolds: Vec<FormatInfo>,
+	italics: Vec<FormatInfo>,
+	underlines: Vec<FormatInfo>,
 	open_bolds: Vec<usize>,
 	open_italics: Vec<usize>,
 	open_underlines: Vec<usize>,
@@ -119,7 +125,7 @@ impl XmlToText {
 	}
 
 	#[must_use]
-	pub fn get_images(&self) -> &[crate::types::ImageInfo] {
+	pub fn get_images(&self) -> &[ImageInfo] {
 		&self.images
 	}
 
@@ -154,17 +160,17 @@ impl XmlToText {
 	}
 
 	#[must_use]
-	pub fn get_bolds(&self) -> &[crate::types::FormatInfo] {
+	pub fn get_bolds(&self) -> &[FormatInfo] {
 		&self.bolds
 	}
 
 	#[must_use]
-	pub fn get_italics(&self) -> &[crate::types::FormatInfo] {
+	pub fn get_italics(&self) -> &[FormatInfo] {
 		&self.italics
 	}
 
 	#[must_use]
-	pub fn get_underlines(&self) -> &[crate::types::FormatInfo] {
+	pub fn get_underlines(&self) -> &[FormatInfo] {
 		&self.underlines
 	}
 
@@ -314,7 +320,7 @@ impl XmlToText {
 					let image_text = format!("[{label}: {description}]");
 					let offset = self.get_current_text_position();
 					self.current_line.push_str(&image_text);
-					let info = crate::types::ImageInfo { offset, alt_text: description };
+					let info = ImageInfo { offset, alt_text: description };
 					if is_figure {
 						self.figures.push(info);
 					} else {
@@ -333,7 +339,7 @@ impl XmlToText {
 		// Emit the table's on-screen text via the shared helper instead of recursing children to
 		// emit one cell per line. The helper output may contain tabs and span multiple lines; push
 		// each line verbatim so tab separators and empty cells survive whitespace collapsing.
-		let render = crate::parser::table_text::table_render_bundle(&table_xml, self.render_tables_inline);
+		let render = table_render_bundle(&table_xml, self.render_tables_inline);
 		for line in render.lines {
 			self.push_finalized_line(line);
 		}
@@ -351,7 +357,7 @@ impl XmlToText {
 	/// length so position tracking stays correct. Used for table rows whose tab separators and empty
 	/// cells must not be mangled by `add_line`.
 	fn push_finalized_line(&mut self, line: String) {
-		crate::parser::table_text::push_finalized_line(&mut self.lines, &mut self.cached_char_length, line);
+		push_finalized_line(&mut self.lines, &mut self.cached_char_length, line);
 	}
 
 	fn handle_list_item_xml(&mut self, node: Node<'_, '_>) {
@@ -448,21 +454,21 @@ impl XmlToText {
 				self.stop_preserve_whitespace();
 			} else if Self::tag_is(tag_name, "b") || Self::tag_is(tag_name, "strong") {
 				if let Some(start) = self.open_bolds.pop() {
-					self.bolds.push(crate::types::FormatInfo {
+					self.bolds.push(FormatInfo {
 						offset: start,
 						length: self.get_current_text_position().saturating_sub(start),
 					});
 				}
 			} else if Self::tag_is(tag_name, "i") || Self::tag_is(tag_name, "em") {
 				if let Some(start) = self.open_italics.pop() {
-					self.italics.push(crate::types::FormatInfo {
+					self.italics.push(FormatInfo {
 						offset: start,
 						length: self.get_current_text_position().saturating_sub(start),
 					});
 				}
 			} else if Self::tag_is(tag_name, "u") {
 				if let Some(start) = self.open_underlines.pop() {
-					self.underlines.push(crate::types::FormatInfo {
+					self.underlines.push(FormatInfo {
 						offset: start,
 						length: self.get_current_text_position().saturating_sub(start),
 					});
@@ -645,17 +651,17 @@ pub fn inject_anchor_at_position(xml_content: &str, target_position: usize, anch
 	Some(result)
 }
 
-impl crate::parser::ConverterOutput for XmlToText {
+impl ConverterOutput for XmlToText {
 	fn get_headings(&self) -> &[HeadingInfo] {
 		&self.headings
 	}
 	fn get_links(&self) -> &[LinkInfo] {
 		&self.links
 	}
-	fn get_images(&self) -> &[crate::types::ImageInfo] {
+	fn get_images(&self) -> &[ImageInfo] {
 		&self.images
 	}
-	fn get_figures(&self) -> &[crate::types::ImageInfo] {
+	fn get_figures(&self) -> &[ImageInfo] {
 		&self.figures
 	}
 	fn get_tables(&self) -> &[TableInfo] {
@@ -670,13 +676,13 @@ impl crate::parser::ConverterOutput for XmlToText {
 	fn get_list_items(&self) -> &[ListItemInfo] {
 		&self.list_items
 	}
-	fn get_bolds(&self) -> &[crate::types::FormatInfo] {
+	fn get_bolds(&self) -> &[FormatInfo] {
 		&self.bolds
 	}
-	fn get_italics(&self) -> &[crate::types::FormatInfo] {
+	fn get_italics(&self) -> &[FormatInfo] {
 		&self.italics
 	}
-	fn get_underlines(&self) -> &[crate::types::FormatInfo] {
+	fn get_underlines(&self) -> &[FormatInfo] {
 		&self.underlines
 	}
 }

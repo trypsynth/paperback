@@ -1,7 +1,7 @@
 use std::{
 	collections::HashMap,
 	fs::File,
-	io::{BufReader, Cursor, Read},
+	io::{BufReader, Cursor, Read, Seek},
 	path::Path,
 };
 
@@ -16,6 +16,7 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, format_marker_types},
 	parser::{
 		PASSWORD_REQUIRED_ERROR_PREFIX, Parser,
+		table_text::{build_html_table_from_grid, html_table_to_display, table_caption_from_html},
 		util::{
 			ooxml::{collect_ooxml_run_text, read_ooxml_relationships},
 			path::extract_title_from_path,
@@ -166,8 +167,8 @@ fn load_ooxml_bytes(path: &str, password: Option<&str>) -> Result<Vec<u8>> {
 	}
 }
 
-pub fn parse_ooxml_from_archive<R: std::io::Read + std::io::Seek>(
-	archive: &mut zip::ZipArchive<R>,
+pub fn parse_ooxml_from_archive<R: Read + Seek>(
+	archive: &mut ZipArchive<R>,
 	buffer: &mut DocumentBuffer,
 	id_positions: &mut HashMap<String, usize>,
 	headings: &mut Vec<HeadingInfo>,
@@ -184,7 +185,7 @@ pub fn parse_ooxml_from_archive<R: std::io::Read + std::io::Seek>(
 /// Reads `word/styles.xml` and returns a map of style ID → heading level (1–9).
 /// Detects headings via `<w:name w:val="heading N"/>` (the canonical semantic name
 /// Word assigns regardless of locale) or a fallback `<w:outlineLvl>` in the style's pPr.
-fn build_style_heading_map<R: std::io::Read + std::io::Seek>(archive: &mut zip::ZipArchive<R>) -> HashMap<String, i32> {
+fn build_style_heading_map<R: Read + Seek>(archive: &mut ZipArchive<R>) -> HashMap<String, i32> {
 	let mut map = HashMap::new();
 	let Ok(content) = read_zip_entry_by_name(archive, "word/styles.xml") else {
 		return map;
@@ -312,7 +313,7 @@ fn parse_legacy_doc(context: &ParserContext) -> Result<Document> {
 	Ok(document)
 }
 
-fn read_stream<R: std::io::Read + std::io::Seek>(compound: &mut CompoundFile<R>, path: &str) -> Result<Vec<u8>> {
+fn read_stream<R: Read + Seek>(compound: &mut CompoundFile<R>, path: &str) -> Result<Vec<u8>> {
 	let mut stream = compound.open_stream(path).with_context(|| format!("Stream not found: {path}"))?;
 	let mut bytes = Vec::new();
 	stream.read_to_end(&mut bytes)?;
@@ -582,12 +583,11 @@ fn process_table(
 			rows.push(cells);
 		}
 	}
-	let html_content = crate::parser::table_text::build_html_table_from_grid(&rows);
+	let html_content = build_html_table_from_grid(&rows);
 	// Derive the caption the same way HTML/XML do (first-row text, no prefix) for consistent
 	// labels across formats; fall back to "table" for an empty table like `table_caption_from_tsv`.
-	let final_caption =
-		crate::parser::table_text::table_caption_from_html(&html_content).unwrap_or_else(|| "table".to_string());
-	let display_text = crate::parser::table_text::html_table_to_display(&html_content, render_tables_inline);
+	let final_caption = table_caption_from_html(&html_content).unwrap_or_else(|| "table".to_string());
+	let display_text = html_table_to_display(&html_content, render_tables_inline);
 	buffer.append(&display_text);
 	buffer.append("\n");
 	let display_len = buffer.current_position() - table_start;

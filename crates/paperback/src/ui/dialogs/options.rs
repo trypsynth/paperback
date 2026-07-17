@@ -12,7 +12,10 @@ use wxdragon::accessible::AccRole;
 use wxdragon::prelude::*;
 
 use super::DIALOG_PADDING;
-use crate::{config_ext::UpdateChannel, translation_manager::TranslationManager};
+use crate::{
+	config_ext::{UpdateChannel, get_update_channel},
+	translation_manager::TranslationManager,
+};
 
 #[derive(Clone, Debug)]
 pub struct OptionsDialogResult {
@@ -70,7 +73,7 @@ struct OptionsDialogUi {
 pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<OptionsDialogResult> {
 	let ui = build_options_dialog_ui(parent, config);
 	finalize_options_dialog_layout(&ui);
-	if ui.dialog.show_modal() != wxdragon::id::ID_OK {
+	if ui.dialog.show_modal() != ID_OK {
 		return None;
 	}
 	let language = resolve_options_language(&ui);
@@ -353,7 +356,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	if let Some(index) = language_codes.iter().position(|code| code == &current_language) {
 		language_combo.set_selection(u32::try_from(index).unwrap_or(0));
 	}
-	let current_channel = crate::config_ext::get_update_channel(config);
+	let current_channel = get_update_channel(config);
 	let channel_index = match current_channel {
 		UpdateChannel::Stable => 0,
 		UpdateChannel::Dev => 1,
@@ -414,7 +417,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 			dlg = dlg.with_initial_colour(c);
 		}
 		let dlg = dlg.build();
-		if dlg.show_modal() == wxdragon::id::ID_OK
+		if dlg.show_modal() == ID_OK
 			&& let Some(c) = dlg.get_colour()
 		{
 			let packed = (i32::from(c.r) << 16) | (i32::from(c.g) << 8) | i32::from(c.b);
@@ -429,9 +432,9 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		bg_label_reset.set_label(&color_description(-1));
 	});
 	// TRANSLATORS: Label for the confirmation button
-	let ok_button = Button::builder(&dialog_ref).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
+	let ok_button = Button::builder(&dialog_ref).with_id(ID_OK).with_label(&t("OK")).build();
 	// TRANSLATORS: Label for the cancellation button
-	let cancel_button = Button::builder(&dialog_ref).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
+	let cancel_button = Button::builder(&dialog_ref).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
 	ok_button.set_default();
 	OptionsDialogUi {
 		dialog: dialog_ref,
@@ -562,7 +565,7 @@ fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Option<Readabi
 		}
 	}
 	let dlg = FontDialog::builder(&parent).with_font_data(&font_data).build();
-	if dlg.show_modal() != wxdragon::id::ID_OK {
+	if dlg.show_modal() != ID_OK {
 		return None;
 	}
 	let font = dlg.get_font()?;
@@ -623,10 +626,10 @@ fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<Ho
 	// TRANSLATORS: Button label to clear the current hotkey selection
 	let clear_button = Button::builder(&panel).with_label(&t("Clear")).build();
 	// TRANSLATORS: Label for the confirmation button
-	let ok_button = Button::builder(&panel).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
+	let ok_button = Button::builder(&panel).with_id(ID_OK).with_label(&t("OK")).build();
 	ok_button.set_default();
 	// TRANSLATORS: Label for the cancellation button
-	let cancel_button = Button::builder(&panel).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
+	let cancel_button = Button::builder(&panel).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
 
 	let key_text_clone = key_text;
 	let ctrl_cb_clone = ctrl_cb;
@@ -651,11 +654,11 @@ fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<Ho
 	let dialog_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	dialog_sizer.add(&panel, 1, SizerFlag::Expand, 0);
 	dialog.set_sizer(dialog_sizer, true);
-	dialog.set_affirmative_id(wxdragon::id::ID_OK);
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+	dialog.set_affirmative_id(ID_OK);
+	dialog.set_escape_id(ID_CANCEL);
 	dialog.centre();
 
-	if dialog.show_modal() != wxdragon::id::ID_OK {
+	if dialog.show_modal() != ID_OK {
 		return None;
 	}
 

@@ -189,10 +189,10 @@ fn build_find_dialog_ui(dialog: Dialog) -> FindDialogWidgets {
 	options_box.add(&whole_word, 0, SizerFlag::All, option_padding);
 	options_box.add(&use_regex, 0, SizerFlag::All, option_padding);
 	let find_prev_btn = Button::builder(&dialog).with_label(&t("Find &Previous")).build();
-	let find_next_btn = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("Find &Next")).build();
-	let cancel_btn = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
-	dialog.set_affirmative_id(wxdragon::id::ID_OK);
+	let find_next_btn = Button::builder(&dialog).with_id(ID_OK).with_label(&t("Find &Next")).build();
+	let cancel_btn = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
+	dialog.set_escape_id(ID_CANCEL);
+	dialog.set_affirmative_id(ID_OK);
 	let find_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	find_sizer.add(&find_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	find_sizer.add(&find_combo, 1, SizerFlag::Expand, 0);

@@ -1,6 +1,7 @@
 use std::path::Path;
 
 /// Derives a fallback document title from the path of the file being opened.
+///
 /// Inputs are always native local paths, so separators are interpreted
 /// per-platform: on unix, a backslash is an ordinary filename character.
 #[must_use]

@@ -1,11 +1,14 @@
-use std::collections::HashMap;
+use std::{
+	collections::HashMap,
+	io::{Read, Seek},
+};
 
 use roxmltree::{Node, NodeType};
 use zip::ZipArchive;
 
 use crate::util::zip::read_zip_entry_by_name;
 
-pub fn read_ooxml_relationships<R: std::io::Read + std::io::Seek>(
+pub fn read_ooxml_relationships<R: Read + Seek>(
 	archive: &mut ZipArchive<R>,
 	rels_path: &str,
 ) -> HashMap<String, String> {

@@ -13,7 +13,7 @@ pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, autho
 	// TRANSLATORS: Title of the Document Info dialog
 	let dialog_title = t("Document Info");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+	dialog.set_escape_id(ID_CANCEL);
 	let info_ctrl = TextCtrl::builder(&dialog)
 		.with_style(TextCtrlStyle::MultiLine | TextCtrlStyle::ReadOnly)
 		.with_size(Size::new(DOC_INFO_WIDTH, DOC_INFO_HEIGHT))
@@ -47,7 +47,7 @@ pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, autho
 	info_ctrl.set_value(&info);
 	// TRANSLATORS: Label for the button to close the Document Info dialog
 	let ok_label = t("Close");
-	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&ok_label).build();
+	let ok_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&ok_label).build();
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add(&info_ctrl, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();

@@ -1,5 +1,7 @@
 #[cfg(target_os = "linux")]
 use std::collections::HashMap;
+#[cfg(target_os = "windows")]
+use std::ptr::{addr_of_mut, copy_nonoverlapping};
 use std::{
 	cell::Cell,
 	path::{Path, PathBuf},
@@ -135,7 +137,7 @@ impl DocumentManager {
 			let dialog = MessageDialog::builder(&self.notebook, &message, &title)
 				.with_style(MessageDialogStyle::YesNo | MessageDialogStyle::IconQuestion | MessageDialogStyle::Centre)
 				.build();
-			if dialog.show_modal() == wxdragon::id::ID_YES {
+			if dialog.show_modal() == ID_YES {
 				let config = self.config.lock().unwrap();
 				config.import_settings_from_file(&path.to_string_lossy(), import_path.to_str().unwrap());
 			}
@@ -197,8 +199,7 @@ impl DocumentManager {
 			self.notebook.set_selection(index);
 			return true;
 		}
-		let title =
-			title_override.map_or_else(|| title_or_filename(session.title(), path), std::string::ToString::to_string);
+		let title = title_override.map_or_else(|| title_or_filename(session.title(), path), ToString::to_string);
 		let panel = Panel::builder(&self.notebook).build();
 		let config = self.config.lock().unwrap();
 		let mut session = session;
@@ -402,10 +403,7 @@ impl DocumentManager {
 						live_region::announce(self.live_region_label, &t("Navigated to internal link."));
 					}
 					paperback_core::session::LinkAction::External => {
-						wxdragon::utils::launch_default_browser(
-							&result.url,
-							wxdragon::utils::BrowserLaunchFlags::Default,
-						);
+						launch_default_browser(&result.url, BrowserLaunchFlags::Default);
 					}
 					paperback_core::session::LinkAction::NotFound => {}
 				}
@@ -464,14 +462,14 @@ impl DocumentManager {
 		let path_str = tab.file_path.to_string_lossy().to_string();
 		let bookmarks = config.get_bookmarks(&path_str);
 		drop(config);
+
 		let mut has_note = false;
 		let mut has_bookmark = false;
 		for bm in &bookmarks {
-			let triggered = if position > prev {
-				bm.start > prev && bm.start <= position
-			} else {
-				bm.start >= position && bm.start < prev
-			};
+			let was_inside = if bm.start == bm.end { prev == bm.start } else { prev >= bm.start && prev < bm.end };
+			let is_inside =
+				if bm.start == bm.end { position == bm.start } else { position >= bm.start && position < bm.end };
+			let triggered = is_inside && !was_inside;
 			if triggered {
 				if bm.note.is_empty() {
 					has_bookmark = true;
@@ -821,7 +819,7 @@ fn normalized_path_key(path: &Path) -> String {
 
 fn prompt_for_password(parent: &dyn WxWidget) -> Option<String> {
 	let dialog = TextEntryDialog::builder(parent, &t("&Password:"), &t("Document Password")).password().build();
-	if dialog.show_modal() != wxdragon::id::ID_OK {
+	if dialog.show_modal() != ID_OK {
 		return None;
 	}
 	dialog.get_value().filter(|value| !value.trim().is_empty())
@@ -918,7 +916,7 @@ unsafe extern "system" fn rtf_stream_read_callback(dwcookie: usize, pbbuff: *mut
 	let remaining = cursor.data.len() - cursor.pos;
 	let to_copy = remaining.min(usize::try_from(cb.max(0)).unwrap_or(0));
 	if to_copy > 0 {
-		unsafe { std::ptr::copy_nonoverlapping(cursor.data[cursor.pos..].as_ptr(), pbbuff, to_copy) };
+		unsafe { copy_nonoverlapping(cursor.data[cursor.pos..].as_ptr(), pbbuff, to_copy) };
 		cursor.pos += to_copy;
 	}
 	unsafe { *pcb = i32::try_from(to_copy).unwrap_or(i32::MAX) };
@@ -954,18 +952,10 @@ fn stream_rtf_into_ctrl(text_ctrl: TextCtrl, rtf: &str) -> bool {
 	}
 	let hwnd = HWND(hwnd_ptr);
 	let mut cursor = RtfStreamCursor { data: rtf.as_bytes(), pos: 0 };
-	let mut stream = EDITSTREAM {
-		dwCookie: std::ptr::addr_of_mut!(cursor) as usize,
-		dwError: 0,
-		pfnCallback: Some(rtf_stream_read_callback),
-	};
+	let mut stream =
+		EDITSTREAM { dwCookie: addr_of_mut!(cursor) as usize, dwError: 0, pfnCallback: Some(rtf_stream_read_callback) };
 	unsafe {
-		SendMessageW(
-			hwnd,
-			EM_STREAMIN,
-			Some(WPARAM(SF_RTF as usize)),
-			Some(LPARAM(std::ptr::addr_of_mut!(stream) as isize)),
-		);
+		SendMessageW(hwnd, EM_STREAMIN, Some(WPARAM(SF_RTF as usize)), Some(LPARAM(addr_of_mut!(stream) as isize)));
 	}
 	stream.dwError == 0 && cursor.pos == cursor.data.len()
 }
@@ -1057,10 +1047,10 @@ pub fn apply_letter_spacing_to_ctrl(text_ctrl: TextCtrl, spacing: i32) {
 	};
 	unsafe {
 		let mut caret: u32 = 0;
-		SendMessageW(hwnd, EM_GETSEL, Some(WPARAM(std::ptr::addr_of_mut!(caret) as usize)), None);
+		SendMessageW(hwnd, EM_GETSEL, Some(WPARAM(addr_of_mut!(caret) as usize)), None);
 		SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(-1_isize)));
 		let mut cf = CHARFORMAT2W::default();
-		cf.Base.cbSize = std::mem::size_of::<CHARFORMAT2W>() as u32;
+		cf.Base.cbSize = size_of::<CHARFORMAT2W>() as u32;
 		cf.Base.dwMask = CFM_SPACING;
 		cf.sSpacing = spacing_twips;
 		SendMessageW(hwnd, EM_SETCHARFORMAT, Some(WPARAM(SCF_ALL as usize)), Some(LPARAM(&raw const cf as isize)));
@@ -1109,7 +1099,7 @@ pub fn apply_readability_format_to_ctrl(
 			let hwnd = HWND(hwnd_ptr);
 			let mut caret: u32 = 0;
 			unsafe {
-				SendMessageW(hwnd, EM_GETSEL, Some(WPARAM(std::ptr::addr_of_mut!(caret) as usize)), None);
+				SendMessageW(hwnd, EM_GETSEL, Some(WPARAM(addr_of_mut!(caret) as usize)), None);
 				SendMessageW(hwnd, WM_SETREDRAW, Some(WPARAM(0)), None);
 				SendMessageW(hwnd, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(-1_isize)));
 			}
@@ -1162,7 +1152,7 @@ pub fn apply_readability_format_to_ctrl(
 					_ => 0,
 				};
 				let mut cf = CHARFORMAT2W::default();
-				cf.Base.cbSize = std::mem::size_of::<CHARFORMAT2W>() as u32;
+				cf.Base.cbSize = size_of::<CHARFORMAT2W>() as u32;
 				cf.Base.dwMask = CFM_SPACING;
 				cf.sSpacing = spacing_twips;
 				SendMessageW(

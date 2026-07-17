@@ -25,7 +25,7 @@ pub fn show_go_to_page_dialog(parent: &Frame, current_page: i32, max_page: i32) 
 	let dialog_for_enter = dialog;
 	page_ctrl.bind_internal(EventType::TEXT_ENTER, move |event| {
 		event.skip(false);
-		dialog_for_enter.end_modal(wxdragon::id::ID_OK);
+		dialog_for_enter.end_modal(ID_OK);
 	});
 	let label_for_update = label;
 	let label_template_for_update = label_template;
@@ -41,11 +41,11 @@ pub fn show_go_to_page_dialog(parent: &Frame, current_page: i32, max_page: i32) 
 	page_sizer.add(&label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 5);
 	page_sizer.add(&page_ctrl, 1, SizerFlag::Expand, 0);
 	// TRANSLATORS: Label for the action button that jumps to the specified page number
-	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("Go")).build();
+	let ok_button = Button::builder(&dialog).with_id(ID_OK).with_label(&t("Go")).build();
 	// TRANSLATORS: Label for the button that cancels the action
-	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
-	dialog.set_affirmative_id(wxdragon::id::ID_OK);
+	let cancel_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
+	dialog.set_escape_id(ID_CANCEL);
+	dialog.set_affirmative_id(ID_OK);
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add_sizer(&page_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
@@ -56,5 +56,5 @@ pub fn show_go_to_page_dialog(parent: &Frame, current_page: i32, max_page: i32) 
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
 	page_ctrl.set_focus();
-	if dialog.show_modal() == wxdragon::id::ID_OK { Some(page_ctrl.value().clamp(1, max_page)) } else { None }
+	if dialog.show_modal() == ID_OK { Some(page_ctrl.value().clamp(1, max_page)) } else { None }
 }

@@ -1,4 +1,7 @@
-use std::collections::{HashMap, HashSet};
+use std::{
+	collections::{HashMap, HashSet},
+	mem,
+};
 
 use anyhow::{Result, anyhow};
 use pdfium::{PdfiumDocument, PdfiumError, PdfiumTextPage, lib};
@@ -7,6 +10,7 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
 	parser::{
 		PASSWORD_REQUIRED_ERROR_PREFIX, Parser,
+		table_text::{display_lines_and_length, html_table_to_display},
 		util::{bidi, path::extract_title_from_path},
 	},
 	t,
@@ -391,7 +395,7 @@ fn extract_text_lines(text_page: &PdfiumTextPage) -> Vec<(String, f64)> {
 		let Some(ch) = char::from_u32(unicode) else { continue };
 		if ch == '\n' || ch == '\r' {
 			let size = sorted_median(&mut current_sizes);
-			result.push((reorder_run(text_page, &std::mem::take(&mut current_chars)), size));
+			result.push((reorder_run(text_page, &mem::take(&mut current_chars)), size));
 			current_sizes.clear();
 		} else if (ch.is_control() && !matches!(ch, '\t')) || ch == '\u{00AD}' {
 			continue;
@@ -456,7 +460,7 @@ fn join_paragraphs(raw_lines: &[(String, f64)], body_font_size: f64) -> Vec<(Str
 	for (line, is_heading_line) in &lines {
 		if line.is_empty() {
 			if !current_paragraph.is_empty() {
-				paragraphs.push((std::mem::take(&mut current_paragraph), current_is_heading));
+				paragraphs.push((mem::take(&mut current_paragraph), current_is_heading));
 				current_is_heading = false;
 			}
 			last_line_len = 0;
@@ -499,7 +503,7 @@ fn join_paragraphs(raw_lines: &[(String, f64)], body_font_size: f64) -> Vec<(Str
 				last_line_len < short_line_threshold && (starts_with_uppercase || !starts_with_alpha)
 			};
 			if break_paragraph {
-				paragraphs.push((std::mem::take(&mut current_paragraph), current_is_heading));
+				paragraphs.push((mem::take(&mut current_paragraph), current_is_heading));
 				current_paragraph = line.clone();
 				current_is_heading = *is_heading_line;
 			} else {
@@ -858,10 +862,10 @@ fn append_pdf_table_to_buffer(
 	page_display_text: &mut String,
 	render_tables_inline: bool,
 ) {
-	let display_text = crate::parser::table_text::html_table_to_display(&html, render_tables_inline);
+	let display_text = html_table_to_display(&html, render_tables_inline);
 	// `display_lines_and_length` guards the empty case (an empty inline table) by returning no
 	// lines, where a raw `split('\n')` would yield one `""` and emit a spurious blank line.
-	let (lines, _) = crate::parser::table_text::display_lines_and_length(&display_text);
+	let (lines, _) = display_lines_and_length(&display_text);
 	for line in lines {
 		let line_pos = buffer.current_position();
 		current_lines_info.push((line_pos, line.clone()));

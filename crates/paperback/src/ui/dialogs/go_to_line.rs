@@ -20,16 +20,16 @@ pub fn show_go_to_line_dialog(parent: &Frame, current_line: i32, max_lines: i32)
 	let dialog_for_enter = dialog;
 	line_ctrl.bind_internal(EventType::TEXT_ENTER, move |event| {
 		event.skip(false);
-		dialog_for_enter.end_modal(wxdragon::id::ID_OK);
+		dialog_for_enter.end_modal(ID_OK);
 	});
 	let line_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	line_sizer.add(&label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 5);
 	line_sizer.add(&line_ctrl, 1, SizerFlag::Expand, 0);
 	// TRANSLATORS: Label for the action button that jumps to the specified line number
-	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("Go")).build();
+	let ok_button = Button::builder(&dialog).with_id(ID_OK).with_label(&t("Go")).build();
 	// TRANSLATORS: Label for the button that cancels the action
-	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+	let cancel_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
+	dialog.set_escape_id(ID_CANCEL);
 	ok_button.set_default();
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add_sizer(&line_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
@@ -41,5 +41,5 @@ pub fn show_go_to_line_dialog(parent: &Frame, current_line: i32, max_lines: i32)
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
 	line_ctrl.set_focus();
-	if dialog.show_modal() == wxdragon::id::ID_OK { Some(line_ctrl.value().clamp(1, max_lines)) } else { None }
+	if dialog.show_modal() == ID_OK { Some(line_ctrl.value().clamp(1, max_lines)) } else { None }
 }

@@ -8,6 +8,7 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, format_marker_types},
 	parser::{
 		Parser,
+		table_text::html_table_to_display,
 		util::{
 			path::extract_title_from_path,
 			toc::{build_toc_from_buffer, heading_level_to_marker_type},
@@ -257,7 +258,7 @@ fn process_table(
 	}
 	let marker_text =
 		if table_caption.trim().is_empty() { "table".to_string() } else { table_caption.trim().to_string() };
-	let display_text = crate::parser::table_text::html_table_to_display(&html_content, render_tables_inline);
+	let display_text = html_table_to_display(&html_content, render_tables_inline);
 	buffer.append(&display_text);
 	buffer.append("\n");
 	let display_len = buffer.current_position() - table_start;
