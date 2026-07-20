@@ -549,6 +549,12 @@ impl MainWindow {
 		let dm_for_timer = Rc::clone(doc_manager);
 		let config_for_timer = Rc::clone(&config);
 		sleep_timer.on_tick(move |_| {
+			// Due to a wxdragon bug, on_tick runs all closures of all timers owned by this frame, not just this one.
+			// We unset sleep_timer_running_for_tick here. If it is already unset or the timer is still running,
+			// the event was intended for a different timer.
+			if !sleep_timer_running_for_tick.get() || sleep_timer_for_tick.is_running() {
+				return;
+			}
 			tracing::info!("sleep timer fired, closing application");
 			sleep_timer_running_for_tick.set(false);
 			sleep_timer_for_tick.stop();
