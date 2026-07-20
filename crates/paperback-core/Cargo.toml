@@ -34,9 +34,9 @@ roman = "0.2.1"
 roxmltree = "0.21.1"
 rtf-parser = "0.4.3"
 scraper = "0.27.0"
-serde = { version = "1.0.228", default-features = false, features = ["derive", "std"] }
+serde = { version = "1.0.229", default-features = false, features = ["derive", "std"] }
 sha1 = "0.11.0"
-thiserror = "2.0.18"
+thiserror = "2.0.19"
 toml = { workspace = true }
 unicode-bidi = "0.3.18"
 uniffi = { version = "0.32.0", features = ["cli"], optional = true }
