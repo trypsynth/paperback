@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: paperback 0.8.5\n"
+"Project-Id-Version: paperback 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-12 17:50-0600\n"
+"POT-Creation-Date: 2026-07-21 22:26-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,9 +17,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
 msgstr ""
 
+#. TRANSLATORS: Title of a warning dialog
 msgid "Warning"
 msgstr ""
 
@@ -164,10 +166,12 @@ msgid "Please select a bookmark to jump to."
 msgstr ""
 
 #. TRANSLATORS: Title of the error dialog
+#. TRANSLATORS: Generic error dialog title
 msgid "Error"
 msgstr ""
 
 #. TRANSLATORS: Title of the Bookmark Note editor dialog
+#. TRANSLATORS: Title of the dialog for adding/editing a bookmark's note
 msgid "Bookmark Note"
 msgstr ""
 
@@ -226,6 +230,7 @@ msgstr ""
 
 #. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
 #. TRANSLATORS: Placeholder text shown in the Table of Contents when a section has no title
+#. TRANSLATORS: Fallback document title used when the file has no title metadata and no filename either
 msgid "Untitled"
 msgstr ""
 
@@ -304,6 +309,7 @@ msgstr ""
 msgid "Options"
 msgstr ""
 
+#. TRANSLATORS: Option to restore documents that were open when the app was last closed
 msgid "&Restore previously opened documents on startup"
 msgstr ""
 
@@ -311,6 +317,7 @@ msgstr ""
 msgid "&Word wrap"
 msgstr ""
 
+#. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
 msgid "Render tables &inline"
 msgstr ""
 
@@ -330,9 +337,11 @@ msgstr ""
 msgid "&Wrap navigation"
 msgstr ""
 
+#. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 msgid "Play &sounds on bookmarks and notes"
 msgstr ""
 
+#. TRANSLATORS: Option to check for app updates automatically on startup
 msgid "Check for &updates on startup"
 msgstr ""
 
@@ -340,9 +349,11 @@ msgstr ""
 msgid "Customize &Window Hotkey..."
 msgstr ""
 
+#. TRANSLATORS: Label for the reading speed input field (Words Per Minute)
 msgid "&Reading speed (words per minute):"
 msgstr ""
 
+#. TRANSLATORS: Label for the number of recently opened documents to keep in history
 msgid "Number of &recent documents to show:"
 msgstr ""
 
@@ -450,6 +461,7 @@ msgid "General"
 msgstr ""
 
 #. TRANSLATORS: Tab label for the Reading options panel
+#. TRANSLATORS: Status bar label for percentage read through the document
 msgid "Reading"
 msgstr ""
 
@@ -593,31 +605,40 @@ msgstr ""
 msgid "File not found: {}"
 msgstr ""
 
+#. TRANSLATORS: Prompt asking whether to import a document's previously saved settings and bookmarks found alongside it
 msgid ""
 "A .paperback file was found for this document. Would you like to import it?"
 msgstr ""
 
+#. TRANSLATORS: Title of the dialog prompting to import a document's saved settings and bookmarks
 msgid "Import document data"
 msgstr ""
 
+#. TRANSLATORS: Error shown when the user dismisses the password prompt for an encrypted document without entering one
 msgid "Password is required."
 msgstr ""
 
+#. TRANSLATORS: Announcement read by screen readers after following an internal link within the document
 msgid "Navigated to internal link."
 msgstr ""
 
+#. TRANSLATORS: Default status bar text when no document is open
+#. TRANSLATORS: Status bar text shown when no document is open and the sleep timer is still counting down
 msgid "Ready"
 msgstr ""
 
+#. TRANSLATORS: Title of the dialog showing a table rendered as HTML when activated with Enter/Space
 msgid "Table View"
 msgstr ""
 
+#. TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
 msgid "&Password:"
 msgstr ""
 
 msgid "Document Password"
 msgstr ""
 
+#. TRANSLATORS: Generic error message shown when a document fails to load with no further detail available
 msgid "Failed to load document."
 msgstr ""
 
@@ -629,97 +650,122 @@ msgstr ""
 msgid "Details: {}"
 msgstr ""
 
+#. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
 msgid "Create &bookmark"
 msgstr ""
 
 msgid "Create bookmark"
 msgstr ""
 
+#. TRANSLATORS: Right-click context menu item and status text to bookmark the current position with an attached note
 msgid "Bookmark with &note"
 msgstr ""
 
 msgid "Create bookmark with note"
 msgstr ""
 
+#. TRANSLATORS: Right-click context menu item and status text to open the find dialog
 msgid "&Find"
 msgstr ""
 
 msgid "Find text"
 msgstr ""
 
+#. TRANSLATORS: Right-click context menu item and status text to repeat the last search forward
 msgid "Find &next"
 msgstr ""
 
 msgid "Find next match"
 msgstr ""
 
+#. TRANSLATORS: Right-click context menu item and status text to repeat the last search backward
 msgid "Find &previous"
 msgstr ""
 
 msgid "Find previous match"
 msgstr ""
 
+#. TRANSLATORS: Right-click context menu item and status text to jump to a specific page
 msgid "Go to &page"
 msgstr ""
 
+#. TRANSLATORS: Right-click context menu item and status text to jump to a specific line
 msgid "Go to &line"
 msgstr ""
 
 msgid "Go to line"
 msgstr ""
 
+#. TRANSLATORS: Right-click context menu item and status text to jump to a percentage through the document
 msgid "Go to &percent"
 msgstr ""
 
 msgid "Go to percent"
 msgstr ""
 
+#. TRANSLATORS: Title of the Find dialog
 msgid "Find"
 msgstr ""
 
+#. TRANSLATORS: Label for the text field where the user types what to search for
 msgid "Find &what:"
 msgstr ""
 
+#. TRANSLATORS: Checkbox to make the search case-sensitive
 msgid "&Match case"
 msgstr ""
 
+#. TRANSLATORS: Checkbox to only match whole words, not substrings
 msgid "Match &whole word"
 msgstr ""
 
+#. TRANSLATORS: Checkbox to treat the search text as a regular expression
 msgid "Use &regular expressions"
 msgstr ""
 
+#. TRANSLATORS: Button to search backward for the previous match
 msgid "Find &Previous"
 msgstr ""
 
+#. TRANSLATORS: Button to search forward for the next match
 msgid "Find &Next"
 msgstr ""
 
+#. TRANSLATORS: Announced when a search finds no matches in the document
 msgid "Not found."
 msgstr ""
 
+#. TRANSLATORS: Announced when a search reaches the end of the document and wraps back to the start
 msgid "No more results. Wrapping search."
 msgstr ""
 
+#. TRANSLATORS: Error shown when the active document has no known file path to reveal
 msgid "Failed to reveal file in folder."
 msgstr ""
 
+#. TRANSLATORS: Error shown when the bundled help/readme file could not be located on disk
 msgid ""
 "readme.html not found. Please ensure the application was built properly."
 msgstr ""
 
+#. TRANSLATORS: Error shown when the OS default web browser could not be launched to display help
 msgid "Failed to launch default browser."
 msgstr ""
 
+#. TRANSLATORS: Error shown when the OS default web browser could not be launched to open the donation page
 msgid "Failed to open donation page in browser."
 msgstr ""
 
+#. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
+#. TRANSLATORS: Error shown when the user manually picks a file format the app doesn't support, in the "Open As" dialog
 msgid "Unsupported format selected."
 msgstr ""
 
+#. TRANSLATORS: Main window title when no document is open
 msgid "Paperback"
 msgstr ""
 
+#. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr ""
 
@@ -731,81 +777,108 @@ msgstr ""
 msgid "{} chars"
 msgstr ""
 
+#. TRANSLATORS: Title of the file picker dialog shown when opening a document
 msgid "Open Document"
 msgstr ""
 
+#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
+#. TRANSLATORS: Announced when the document has no page markers to navigate
 msgid "No pages."
 msgstr ""
 
+#. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 msgid "Word wrap on."
 msgstr ""
 
 msgid "Word wrap off."
 msgstr ""
 
+#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+#. TRANSLATORS: Fallback file name used when the document's path has no file name, shown in the "View Source" tab title
 msgid "document"
 msgstr ""
 
+#. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgstr ""
 
+#. TRANSLATORS: Title of the file save dialog when exporting a document to plain text
 msgid "Export document to plain text"
 msgstr ""
 
+#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
 msgstr ""
 
+#. TRANSLATORS: File filter shown in the "Export to HTML" save dialog
 msgid "HTML files (*.html)|*.html|All files (*.*)|*.*"
 msgstr ""
 
+#. TRANSLATORS: Title of the file save dialog when exporting a document to HTML
 msgid "Export document to HTML"
 msgstr ""
 
+#. TRANSLATORS: File filter shown in the "Export to Markdown" save dialog
 msgid "Markdown files (*.md)|*.md|All files (*.*)|*.*"
 msgstr ""
 
+#. TRANSLATORS: Title of the file save dialog when exporting a document to Markdown
 msgid "Export document to Markdown"
 msgstr ""
 
+#. TRANSLATORS: File filter shown in the export/import notes-and-bookmarks (.paperback) dialogs
 msgid "Paperback files (*.paperback)|*.paperback"
 msgstr ""
 
+#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
 msgid "Export notes and bookmarks"
 msgstr ""
 
+#. TRANSLATORS: Success message shown after exporting a document's notes and bookmarks
 msgid "Notes and bookmarks exported successfully."
 msgstr ""
 
+#. TRANSLATORS: Title of the export-succeeded dialog
 msgid "Export Successful"
 msgstr ""
 
+#. TRANSLATORS: Title of the file open dialog when importing a document's notes and bookmarks
 msgid "Import notes and bookmarks"
 msgstr ""
 
+#. TRANSLATORS: Success message shown after importing a document's notes and bookmarks
 msgid "Notes and bookmarks imported successfully."
 msgstr ""
 
+#. TRANSLATORS: Title of the import-succeeded dialog
 msgid "Import Successful"
 msgstr ""
 
+#. TRANSLATORS: Announced when opening the Table of Contents for a document that has none
 msgid "No table of contents."
 msgstr ""
 
+#. TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
 msgid "Web View"
 msgstr ""
 
+#. TRANSLATORS: Error shown when the document has no content that can be rendered in the Web View
 msgid "Could not determine content to display in Web View."
 msgstr ""
 
+#. TRANSLATORS: Prefix before the file name in the tab title for a "View Source" tab, e.g. "Source: book.epub"
 msgid "Source:"
 msgstr ""
 
+#. TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
 msgid "Source view is not available for this document format."
 msgstr ""
 
+#. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
 msgid "Could not load the document source."
 msgstr ""
 
+#. TRANSLATORS: Announced when the user cancels a running sleep timer
 msgid "Sleep timer cancelled."
 msgstr ""
 
@@ -818,6 +891,7 @@ msgstr ""
 msgid "Sleep timer set for %d minutes."
 msgstr ""
 
+#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
 msgid "No recent documents."
 msgstr ""
 
@@ -1092,6 +1166,7 @@ msgstr ""
 msgid "Close the current document"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to close all open documents
 msgid "Close &All\tCtrl+Shift+W"
 msgstr ""
 
@@ -1169,6 +1244,7 @@ msgstr ""
 msgid "Find next occurrence"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to find the previous match
 msgid "Find &Previous\tCtrl+Shift+G"
 msgstr ""
 
@@ -1179,6 +1255,7 @@ msgstr ""
 msgid "Find previous occurrence"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to open the "go to line" dialog
 msgid "Go to &line...\tCtrl+L"
 msgstr ""
 
@@ -1189,9 +1266,11 @@ msgstr ""
 msgid "Go to a specific line"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to open the "go to percent" dialog (macOS variant)
 msgid "Go to &percent...\tCtrl+Shift+L"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to open the "go to percent" dialog
 msgid "Go to &percent...\tCtrl+Shift+G"
 msgstr ""
 
@@ -1210,6 +1289,7 @@ msgstr ""
 msgid "Go back in history"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to go forward in navigation history
 msgid "Go &Forward\tCtrl+]"
 msgstr ""
 
@@ -1348,6 +1428,7 @@ msgstr ""
 msgid "Export document as Markdown"
 msgstr ""
 
+#. TRANSLATORS: Menu item label to show the word count dialog
 msgid "&Word Count\tRawCtrl+W"
 msgstr ""
 
@@ -1486,12 +1567,15 @@ msgstr ""
 msgid "Show All...\tCtrl+R"
 msgstr ""
 
+#. TRANSLATORS: Announced when the document has no sections to navigate
 msgid "No sections."
 msgstr ""
 
+#. TRANSLATORS: Announced when there is no next section from the current position
 msgid "No next section"
 msgstr ""
 
+#. TRANSLATORS: Announced when there is no previous section from the current position
 msgid "No previous section"
 msgstr ""
 
@@ -1510,84 +1594,112 @@ msgstr ""
 msgid "No previous heading at level %d."
 msgstr ""
 
+#. TRANSLATORS: Announced when the document has no headings at all (no level filter applied)
 msgid "No headings."
 msgstr ""
 
+#. TRANSLATORS: Announced when there is no next heading (no level filter applied)
 msgid "No next heading."
 msgstr ""
 
+#. TRANSLATORS: Announced when there is no previous heading (no level filter applied)
 msgid "No previous heading."
 msgstr ""
 
+#. TRANSLATORS: Announced when there is no next page from the current position
 msgid "No next page."
 msgstr ""
 
+#. TRANSLATORS: Announced when there is no previous page from the current position
 msgid "No previous page."
 msgstr ""
 
+#. TRANSLATORS: Announced when the document has no links to navigate
 msgid "No links."
 msgstr ""
 
+#. TRANSLATORS: Announced when there is no next link from the current position
 msgid "No next link."
 msgstr ""
 
+#. TRANSLATORS: Announced when there is no previous link from the current position
 msgid "No previous link."
 msgstr ""
 
+#. TRANSLATORS: Announced when the document has no lists to navigate
 msgid "No lists."
 msgstr ""
 
+#. TRANSLATORS: Announced when there is no next list from the current position
 msgid "No next list."
 msgstr ""
 
+#. TRANSLATORS: Announced when there is no previous list from the current position
 msgid "No previous list."
 msgstr ""
 
+#. TRANSLATORS: Announced when the document has no list items to navigate
 msgid "No list items."
 msgstr ""
 
+#. TRANSLATORS: Announced when there is no next list item from the current position
 msgid "No next list item."
 msgstr ""
 
+#. TRANSLATORS: Announced when there is no previous list item from the current position
 msgid "No previous list item."
 msgstr ""
 
+#. TRANSLATORS: Announced when the document has no tables to navigate
 msgid "No tables."
 msgstr ""
 
+#. TRANSLATORS: Announced when there is no next table from the current position
 msgid "No next table."
 msgstr ""
 
+#. TRANSLATORS: Announced when there is no previous table from the current position
 msgid "No previous table."
 msgstr ""
 
+#. TRANSLATORS: Announced when the document has no separators to navigate
 msgid "No separators."
 msgstr ""
 
+#. TRANSLATORS: Announced when there is no next separator from the current position
 msgid "No next separator."
 msgstr ""
 
+#. TRANSLATORS: Announced when there is no previous separator from the current position
 msgid "No previous separator."
 msgstr ""
 
+#. TRANSLATORS: Announced when the document has no images to navigate
 msgid "No images."
 msgstr ""
 
+#. TRANSLATORS: Announced when there is no next image from the current position
 msgid "No next image."
 msgstr ""
 
+#. TRANSLATORS: Announced when there is no previous image from the current position
 msgid "No previous image."
 msgstr ""
 
+#. TRANSLATORS: Announced when the document has no figures to navigate
 msgid "No figures."
 msgstr ""
 
+#. TRANSLATORS: Announced when there is no next figure from the current position
 msgid "No next figure."
 msgstr ""
 
+#. TRANSLATORS: Announced when there is no previous figure from the current position
 msgid "No previous figure."
 msgstr ""
 
+#. TRANSLATORS: Prefix announced when navigation wraps around past the end/start of the document; the trailing space is significant
+#. TRANSLATORS: Prefix announced when bookmark navigation wraps around past the end/start of the document; the trailing space is significant
 msgid "Wrapping to start. "
 msgstr ""
 
@@ -1608,24 +1720,29 @@ msgstr ""
 msgid " link"
 msgstr ""
 
+#. TRANSLATORS: Announced when moving forward/backward through the caret position history
 msgid "Navigated to next position."
 msgstr ""
 
 msgid "Navigated to previous position."
 msgstr ""
 
+#. TRANSLATORS: Announced when there is no next/previous position in the caret position history
 msgid "No next position."
 msgstr ""
 
 msgid "No previous position."
 msgstr ""
 
+#. TRANSLATORS: Announced when the document has no containers (lists/tables) to navigate
 msgid "No containers."
 msgstr ""
 
+#. TRANSLATORS: Announced when the caret is not currently inside a container (list/table)
 msgid "Not in a container."
 msgstr ""
 
+#. TRANSLATORS: Announced when jumping to the start/end of the container (list/table) the caret is inside, and the target line is blank
 msgid "Past end of container."
 msgstr ""
 
@@ -1637,27 +1754,33 @@ msgstr ""
 msgid "%s - Bookmark %d"
 msgstr ""
 
+#. TRANSLATORS: Announced when there are no bookmarks/notes at all to navigate to
 msgid "No notes."
 msgstr ""
 
 msgid "No bookmarks."
 msgstr ""
 
+#. TRANSLATORS: Announced when there is no next bookmark/note from the current position
 msgid "No next note."
 msgstr ""
 
 msgid "No next bookmark."
 msgstr ""
 
+#. TRANSLATORS: Announced when there is no previous note from the current position
 msgid "No previous note."
 msgstr ""
 
+#. TRANSLATORS: Announced when there is no previous bookmark from the current position
 msgid "No previous bookmark."
 msgstr ""
 
+#. TRANSLATORS: Fallback announcement when viewing a bookmark that has no note text or line snippet
 msgid "Bookmark."
 msgstr ""
 
+#. TRANSLATORS: Announced after toggling a bookmark at the current selection off/on
 msgid "Bookmark removed."
 msgstr ""
 
@@ -1667,30 +1790,39 @@ msgstr ""
 msgid "Enter bookmark note:"
 msgstr ""
 
+#. TRANSLATORS: Announced after saving a bookmark's note text
 msgid "Bookmark saved."
 msgstr ""
 
+#. TRANSLATORS: Message shown when trying to view a bookmark note but the current position has none
 msgid "No note at the current position."
 msgstr ""
 
+#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Reading 45%"
 msgid "Line"
 msgstr ""
 
+#. TRANSLATORS: Status bar label for the current character offset within the line
 msgid "Character"
 msgstr ""
 
+#. TRANSLATORS: Status bar label prefixed before the remaining sleep timer countdown, e.g. "Sleep timer: 04:32"
 msgid "Sleep timer"
 msgstr ""
 
+#. TRANSLATORS: System tray menu item to restore the main window from the tray
 msgid "&Restore"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the tray menu's "Restore" item
 msgid "Restore Paperback"
 msgstr ""
 
+#. TRANSLATORS: System tray menu item to quit the application
 msgid "E&xit"
 msgstr ""
 
+#. TRANSLATORS: Status bar help text for the tray menu's "Exit" item
 msgid "Exit Paperback"
 msgstr ""
 
@@ -1742,6 +1874,7 @@ msgstr ""
 msgid "Failed to convert HTML to text: {}"
 msgstr ""
 
+#. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 msgid "Figure"
 msgstr ""
 
@@ -1852,11 +1985,13 @@ msgstr ""
 msgid "FODP file does not contain any pages"
 msgstr ""
 
+#. TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
 msgid ""
 "This PDF contains images only, with no extractable text. You may need to run "
 "it through OCR software to read its contents."
 msgstr ""
 
+#. TRANSLATORS: Error detail shown when a PDF's password is missing or wrong (the internal sentinel prefix before it is not translated)
 msgid "Password required or incorrect"
 msgstr ""
 
@@ -1881,6 +2016,7 @@ msgstr ""
 msgid "PowerPoint Document stream not found"
 msgstr ""
 
+#. TRANSLATORS: Error shown when an RTF document's tokens fail to parse; {} is the underlying lexer error
 msgid "Failed to parse RTF document: {}"
 msgstr ""
 
@@ -1920,6 +2056,7 @@ msgstr ""
 msgid "File is encrypted and requires a password"
 msgstr ""
 
+#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
 msgid "Decryption failed (wrong password?): {}"
 msgstr ""
 
@@ -1941,75 +2078,6 @@ msgstr ""
 
 #. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
 msgid "Password incorrect"
-msgstr ""
-
-#, c-format
-msgid "Update to %s"
-msgstr ""
-
-#, c-format
-msgid "A new version of %s is available. Here's what's new:"
-msgstr ""
-
-msgid "No release notes provided."
-msgstr ""
-
-#, c-format
-msgid "%s Update"
-msgstr ""
-
-msgid "Downloading update..."
-msgstr ""
-
-msgid "No updates available."
-msgstr ""
-
-#, c-format
-msgid "No updates available. Latest version: %s"
-msgstr ""
-
-msgid "Info"
-msgstr ""
-
-#, c-format
-msgid ""
-"Security verification failed. The update might have been tampered with: %s"
-msgstr ""
-
-msgid "Security Error"
-msgstr ""
-
-msgid "Update failed"
-msgstr ""
-
-#, c-format
-msgid ""
-"Update downloaded to: %s\n"
-"Please install it manually."
-msgstr ""
-
-msgid "Update Ready"
-msgstr ""
-
-msgid "Failed to get current exe path"
-msgstr ""
-
-msgid "Failed to launch installer script"
-msgstr ""
-
-msgid "Failed to launch update script"
-msgstr ""
-
-msgid "Unknown update file format."
-msgstr ""
-
-msgid "Root"
-msgstr ""
-
-msgid "Are you sure you want to remove this document from the list? This will also remove its reading position."
-msgstr ""
-
-msgid "Are you sure you want to remove these {} documents from the list? This will also remove their reading positions."
 msgstr ""
 
 msgid "Go To…"
@@ -2124,6 +2192,9 @@ msgid "Go To"
 msgstr ""
 
 msgid "Password"
+msgstr ""
+
+msgid "Enter password for {}"
 msgstr ""
 
 msgid "Password Required"
@@ -2255,6 +2326,9 @@ msgstr ""
 msgid "Navigation unit"
 msgstr ""
 
+msgid "Previous {}"
+msgstr ""
+
 msgid "Pause"
 msgstr ""
 
@@ -2267,7 +2341,13 @@ msgstr ""
 msgid "Beginning of document"
 msgstr ""
 
+msgid "Next {}"
+msgstr ""
+
 msgid "Press play to start listening."
+msgstr ""
+
+msgid "Locate"
 msgstr ""
 
 msgid "File Missing"
@@ -2393,6 +2473,15 @@ msgstr ""
 msgid "No document open. Please open a book."
 msgstr ""
 
+msgid "No Documents"
+msgstr ""
+
+msgid "Show All"
+msgstr ""
+
+msgid "Sleep timer: {}"
+msgstr ""
+
 msgid "Cancel sleep timer"
 msgstr ""
 
@@ -2423,6 +2512,9 @@ msgstr ""
 msgid "Read Aloud"
 msgstr ""
 
+msgid "Help"
+msgstr ""
+
 msgid "More Options"
 msgstr ""
 
@@ -2445,7 +2537,4 @@ msgid "Table"
 msgstr ""
 
 msgid "Separator"
-msgstr ""
-
-msgid "Help"
 msgstr ""
