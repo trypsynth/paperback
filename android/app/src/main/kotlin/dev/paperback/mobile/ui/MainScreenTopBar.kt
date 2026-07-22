@@ -368,7 +368,10 @@ fun MainScreenTopBar(
 			PrimaryScrollableTabRow(
 				selectedTabIndex = state.activeTabIndex,
 				edgePadding = 8.dp,
-				modifier = Modifier.fillMaxWidth()
+				modifier = Modifier.fillMaxWidth().semantics {
+					isTraversalGroup = true
+					traversalIndex = 3f
+				}
 			) {
 				state.tabs.forEachIndexed { index, tab ->
 					Tab(
