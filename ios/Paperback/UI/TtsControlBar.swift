@@ -10,22 +10,23 @@ struct TtsControlBar: View {
 					Button {
 						viewModel.changeSegmentType(type)
 					} label: {
+						// TRANSLATORS: Name of a navigation/reading unit shown in the "jump by unit" picker (e.g. "Paragraph", "Line", "Heading", "Section")
 						if type == viewModel.currentSegmentType {
-							Label(type.rawValue, systemImage: "checkmark")
+							Label(t(type.rawValue), systemImage: "checkmark")
 						} else {
-							Text(type.rawValue)
+							Text(t(type.rawValue))
 						}
 					}
 				}
 			} label: {
-				Text(viewModel.currentSegmentType.rawValue)
+				Text(t(viewModel.currentSegmentType.rawValue))
 					.font(.caption)
 					.foregroundStyle(.secondary)
 					.frame(width: 72, alignment: .leading)
 			}
 			// TRANSLATORS: Accessibility label for the control that picks which unit (sentence, paragraph, etc.) prev/next buttons navigate by
 			.accessibilityLabel(t("Navigation unit"))
-			.accessibilityValue(viewModel.currentSegmentType.rawValue)
+			.accessibilityValue(t(viewModel.currentSegmentType.rawValue))
 			.accessibilityRemoveTraits(.isButton)
 			.accessibilityAdjustableAction { direction in
 				let types = SegmentType.allCases
@@ -43,7 +44,8 @@ struct TtsControlBar: View {
 			Button { viewModel.playPrevSegment(speak: viewModel.ttsManager.isSpeaking) } label: {
 				Image(systemName: "backward.fill").font(.title2)
 			}
-			.accessibilityLabel("Previous \(viewModel.currentSegmentType.rawValue)")
+			// TRANSLATORS: Accessibility label for the "previous unit" button; {} is the current navigation unit name, e.g. "Previous Paragraph"
+			.accessibilityLabel(t("Previous {}").replacingOccurrences(of: "{}", with: t(viewModel.currentSegmentType.rawValue)))
 			.frame(maxWidth: .infinity, minHeight: 64)
 			.contentShape(Rectangle())
 
@@ -79,7 +81,8 @@ struct TtsControlBar: View {
 			Button { viewModel.playNextSegment(speak: viewModel.ttsManager.isSpeaking) } label: {
 				Image(systemName: "forward.fill").font(.title2)
 			}
-			.accessibilityLabel("Next \(viewModel.currentSegmentType.rawValue)")
+			// TRANSLATORS: Accessibility label for the "next unit" button; {} is the current navigation unit name, e.g. "Next Paragraph"
+			.accessibilityLabel(t("Next {}").replacingOccurrences(of: "{}", with: t(viewModel.currentSegmentType.rawValue)))
 			.frame(maxWidth: .infinity, minHeight: 64)
 			.contentShape(Rectangle())
 

@@ -17,7 +17,8 @@ struct PasswordSheet: View {
 						.onSubmit { submit() }
 				} footer: {
 					if let url = viewModel.passwordPromptUrl {
-						Text("Enter password for \(url.lastPathComponent)")
+						// TRANSLATORS: Footer text naming the file that needs a password; {} is the file name
+						Text(t("Enter password for {}").replacingOccurrences(of: "{}", with: url.lastPathComponent))
 					}
 				}
 			}

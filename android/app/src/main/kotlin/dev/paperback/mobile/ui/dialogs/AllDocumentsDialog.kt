@@ -46,7 +46,7 @@ fun AllDocumentsDialog(
 		},
 		confirmButton = {
 			TextButton(onClick = onDismiss) {
-				Text("Close")
+				Text(t("Close"))
 			}
 		}
 	)

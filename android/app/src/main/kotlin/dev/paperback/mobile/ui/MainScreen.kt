@@ -520,7 +520,8 @@ fun MainScreen(
 									val min = remaining / 60
 									val sec = remaining % 60
 									Text(
-										"Sleep timer: %d:%02d".format(min, sec),
+										// TRANSLATORS: Countdown shown while the reading sleep timer is active; {} is the remaining time as minutes:seconds
+										t("Sleep timer: {}").replace("{}", "%d:%02d".format(min, sec)),
 										style = MaterialTheme.typography.labelMedium,
 										color = MaterialTheme.colorScheme.onSurfaceVariant,
 										modifier = Modifier.semantics {
