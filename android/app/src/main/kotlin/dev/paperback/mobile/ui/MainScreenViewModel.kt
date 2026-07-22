@@ -320,16 +320,18 @@ class MainScreenViewModel(
 		}
 	}
 
-	fun openDocument(uri: Uri) {
+	fun openDocument(uri: Uri, track: Boolean = true) {
 		val uriString = uri.toString()
 		viewModelScope.launch(Dispatchers.IO) {
 			try {
 				context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
 			} catch (_: SecurityException) {
 			}
-			config.addRecentDocument(uriString)
-			config.addOpenedDocument(uriString)
-			config.flush()
+			if (track) {
+				config.addRecentDocument(uriString)
+				config.addOpenedDocument(uriString)
+				config.flush()
+			}
 			loadDocument(uri, true)
 		}
 	}
@@ -1005,7 +1007,7 @@ class MainScreenViewModel(
 					}
 				}
 				withContext(Dispatchers.Main) {
-					openDocument(Uri.fromFile(tempFile))
+					openDocument(Uri.fromFile(tempFile), track = false)
 				}
 			} catch (e: Exception) {
 				withContext(Dispatchers.Main) {
