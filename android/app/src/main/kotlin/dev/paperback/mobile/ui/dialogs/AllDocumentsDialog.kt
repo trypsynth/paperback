@@ -25,6 +25,7 @@ fun AllDocumentsDialog(
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		modifier = Modifier.semantics { paneTitle = "Recent Documents" },
+		// TRANSLATORS: Title of the dialog listing every previously opened document
 		title = { Text(t("Recent Documents")) },
 		text = {
 			LazyColumn(
@@ -69,6 +70,7 @@ fun RecentDocumentItemRow(
 				customActions = mutableListOf<CustomAccessibilityAction>().apply {
 					if (item.isMissing && onLocate != null) {
 						add(
+							// TRANSLATORS: Accessibility action to pick a new file location for a document whose file can no longer be found
 							CustomAccessibilityAction(t("Locate")) {
 								onLocate()
 								true
@@ -76,6 +78,7 @@ fun RecentDocumentItemRow(
 						)
 					}
 					add(
+						// TRANSLATORS: Accessibility action to remove a document from the recent documents list
 						CustomAccessibilityAction(t("Remove")) {
 							onRemove()
 							true
@@ -107,6 +110,7 @@ fun RecentDocumentItemRow(
 			if (item.isMissing || item.isOpen || showClosedStatus) {
 				Text(
 					text = if (item.isMissing) {
+						// TRANSLATORS: Status label for a recent document: its file can't be found, it's open in a tab right now, or it's just closed
 						t("File Missing")
 					} else if (item.isOpen) {
 						t("Currently Open")

@@ -46,6 +46,7 @@ fun SearchBottomBar(
 		) {
 			IconButton(
 				onClick = onClose,
+				// TRANSLATORS: TalkBack label for the button that dismisses the in-document search bar
 				modifier = Modifier.semantics { contentDescription = t("Close Search") }
 			) {
 				Text("X", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
@@ -65,6 +66,7 @@ fun SearchBottomBar(
 						}
 					}
 				) {
+					// TRANSLATORS: Button in the in-document search bar to jump to the previous match
 					Text(t("Find Previous"))
 				}
 				Spacer(modifier = Modifier.width(8.dp))
@@ -83,6 +85,7 @@ fun SearchBottomBar(
 						}
 					}
 				) {
+					// TRANSLATORS: Button in the in-document search bar to jump to the next match
 					Text(t("Find Next"))
 				}
 			}

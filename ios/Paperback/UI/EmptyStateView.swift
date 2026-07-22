@@ -12,6 +12,7 @@ struct EmptyStateView: View {
 				.foregroundStyle(.secondary)
 				.padding(.bottom, 16)
 				.accessibilityHidden(true)
+			// TRANSLATORS: Shown in the main reading area when no document is currently open
 			Text(t("No document open"))
 				.font(.title2)
 				.foregroundStyle(.secondary)
@@ -26,11 +27,13 @@ struct EmptyStateView: View {
 	private var recentList: some View {
 		VStack(alignment: .leading, spacing: 0) {
 			HStack {
+				// TRANSLATORS: Heading above the short list of recently opened documents shown when no document is open
 				Text(t("Recent"))
 					.font(.headline)
 					.padding(.horizontal)
 					.padding(.top, 12)
 				Spacer()
+				// TRANSLATORS: Button that opens the full list of recent documents (short for "Show All")
 				Button(t("All")) { viewModel.showRecents = true }
 					.padding(.horizontal)
 					.padding(.top, 12)

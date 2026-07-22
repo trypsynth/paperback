@@ -149,6 +149,7 @@ fun DocumentTextView(
 				if (currentQuery != null && currentOptions != null) {
 					textModifier = textModifier.semantics {
 						customActions = listOf(
+							// TRANSLATORS: Accessibility action on a text line to jump to the next search match
 							CustomAccessibilityAction(t("Find Next")) {
 								val nextLine = (index + 2).toLong().coerceAtMost(docState.lineCount)
 								val searchPos = docState.session.positionFromLine(nextLine)
@@ -163,6 +164,7 @@ fun DocumentTextView(
 								}
 								true
 							},
+							// TRANSLATORS: Accessibility action on a text line to jump to the previous search match
 							CustomAccessibilityAction(t("Find Previous")) {
 								val searchPos = docState.session.positionFromLine((index + 1).toLong())
 								val res = docState.session.searchFfi(currentQuery, searchPos, currentOptions.copy(forward = false))
@@ -176,6 +178,7 @@ fun DocumentTextView(
 								}
 								true
 							},
+							// TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
 							CustomAccessibilityAction(t("Close Search")) {
 								onCloseSearch()
 								true

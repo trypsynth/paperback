@@ -40,8 +40,8 @@ impl Parser for RtfParser {
 		let content_str = resolve_hex_escapes(&content_str, encoding, &font_table);
 		// Strip \r so that \r\n line endings don't leave stray carriage returns in text tokens
 		let content_str = content_str.replace('\r', "");
-		// TRANSLATORS: Error shown when an RTF document's tokens fail to parse; {} is the underlying lexer error
 		let tokens = Lexer::scan(&content_str)
+			// TRANSLATORS: Error shown when an RTF document's tokens fail to parse; {} is the underlying lexer error
 			.map_err(|e| anyhow::anyhow!(t("Failed to parse RTF document: {}").replace("{}", &e.to_string())))?;
 		let buffer = extract_content_from_tokens(&tokens);
 		let title = extract_title_from_path(&context.file_path);

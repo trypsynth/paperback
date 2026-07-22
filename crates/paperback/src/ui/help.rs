@@ -78,6 +78,7 @@ pub fn readme_path() -> Option<PathBuf> {
 pub fn handle_reveal_file_in_folder(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) {
 	let file_path = doc_manager.lock().unwrap().active_tab().map(|tab| tab.file_path.clone());
 	let Some(file_path) = file_path else {
+		// TRANSLATORS: Error shown when the active document has no known file path to reveal
 		show_error(frame, t("Failed to reveal file in folder."), &t("Error"));
 		return;
 	};
@@ -99,6 +100,7 @@ pub fn handle_reveal_file_in_folder(frame: &Frame, doc_manager: &Rc<Mutex<Docume
 
 pub fn handle_view_help_browser(frame: &Frame) {
 	let Some(path) = readme_path() else {
+		// TRANSLATORS: Error shown when the bundled help/readme file could not be located on disk
 		show_error(frame, t("readme.html not found. Please ensure the application was built properly."), &t("Error"));
 		return;
 	};
@@ -109,6 +111,7 @@ pub fn handle_view_help_browser(frame: &Frame) {
 	let url = format!("file://{}", path.to_string_lossy());
 	if !launch_default_browser(&url, BrowserLaunchFlags::Default) {
 		tracing::warn!(url = %url, "failed to launch default browser for help");
+		// TRANSLATORS: Error shown when the OS default web browser could not be launched to display help
 		show_error(frame, t("Failed to launch default browser."), &t("Error"));
 	}
 }
@@ -119,6 +122,7 @@ pub fn handle_view_help_paperback(
 	config: &Rc<Mutex<ConfigManager>>,
 ) -> bool {
 	let Some(path) = readme_path() else {
+		// TRANSLATORS: Error shown when the bundled help/readme file could not be located on disk
 		show_error(frame, t("readme.html not found. Please ensure the application was built properly."), &t("Error"));
 		return false;
 	};
@@ -136,6 +140,7 @@ pub fn handle_donate(frame: &Frame) {
 	let url = "https://paypal.me/tygillespie05";
 	if !launch_default_browser(url, BrowserLaunchFlags::Default) {
 		tracing::warn!("failed to launch default browser for donation page");
+		// TRANSLATORS: Error shown when the OS default web browser could not be launched to open the donation page
 		show_error(frame, t("Failed to open donation page in browser."), &t("Error"));
 	}
 }
@@ -159,6 +164,7 @@ fn ensure_parser_for_unknown_file(parent: &Frame, path: &Path, config: &ConfigMa
 		return false;
 	};
 	if !parser::parser_supports_extension(&format) {
+		// TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
 		let message = t("Unsupported format selected.");
 		let title = t("Error");
 		let dialog = MessageDialog::builder(parent, &message, &title)

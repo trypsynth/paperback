@@ -25,6 +25,7 @@ fun DocumentInfoDialog(
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		modifier = Modifier.semantics { paneTitle = "Document Information" },
+		// TRANSLATORS: Title of the dialog showing the current document's title, author, path, and word/line/character counts
 		title = { Text(t("Document Information")) },
 		text = {
 			Column(modifier = Modifier.fillMaxWidth()) {
@@ -81,6 +82,7 @@ fun DocumentInfoDialog(
 		},
 		confirmButton = {
 			TextButton(onClick = onDismiss) {
+				// TRANSLATORS: Button to close the Document Information dialog
 				Text(t("OK"))
 			}
 		}

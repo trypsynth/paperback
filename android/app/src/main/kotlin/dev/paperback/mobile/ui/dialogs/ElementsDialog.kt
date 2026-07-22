@@ -59,6 +59,7 @@ fun ElementsDialog(
 			color = MaterialTheme.colorScheme.background
 		) {
 			var selectedTabIndex by remember { mutableIntStateOf(0) }
+			// TRANSLATORS: Tab labels in the Elements dialog for browsing a document's headings vs. its links
 			val tabs = listOf(t("Headings"), t("Links"))
 
 			Column(modifier = Modifier.fillMaxSize()) {
@@ -114,9 +115,11 @@ fun ElementsDialog(
 									}
 									.semantics(mergeDescendants = true) {
 										if (hasChildren) {
+											// TRANSLATORS: TalkBack state description for a heading row announcing whether its children are shown
 											stateDescription = if (isExpanded) t("Expanded") else t("Collapsed")
 											customActions = listOf(
 												CustomAccessibilityAction(
+													// TRANSLATORS: TalkBack custom action toggling whether a heading's children are shown
 													label = if (isExpanded) t("Collapse") else t("Expand"),
 													action = {
 														expandedHeadingIndices = if (isExpanded) {
@@ -158,6 +161,7 @@ fun ElementsDialog(
 									Spacer(modifier = Modifier.width(36.dp))
 								}
 								Text(
+									// TRANSLATORS: Fallback label for a heading in the Elements dialog when the document gave it no text
 									text = "${item.text.ifBlank { t("Untitled") }}, Level ${level + 1}",
 									modifier = Modifier.weight(1f).padding(start = 8.dp)
 								)
@@ -177,6 +181,7 @@ fun ElementsDialog(
 										}
 										.padding(16.dp)
 								) {
+									// TRANSLATORS: Fallback label for a link in the Elements dialog when it has no visible text
 									Text(text = item.text.ifBlank { t("Untitled Link") })
 								}
 							}

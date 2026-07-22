@@ -17,11 +17,15 @@ struct GoToSheet: View {
 		NavigationStack {
 			Form {
 				Section {
+					// TRANSLATORS: Label for the wheel picker that chooses whether Go To navigates by line, page, or percent
 					Picker(t("Mode"), selection: $mode) {
+						// TRANSLATORS: Go To mode option: navigate to a specific line number
 						Text(t("Line")).tag(GoToMode.line)
 						if hasPages {
+							// TRANSLATORS: Go To mode option: navigate to a specific page number
 							Text(t("Page")).tag(GoToMode.page)
 						}
+						// TRANSLATORS: Go To mode option: navigate to a percentage through the document
 						Text(t("Percent")).tag(GoToMode.percent)
 					}
 					.pickerStyle(.wheel)
@@ -31,16 +35,19 @@ struct GoToSheet: View {
 				Section {
 					switch mode {
 					case .line:
+						// TRANSLATORS: Placeholder for the line number input field in Go To
 						TextField(t("Line number"), text: $lineValue)
 							.keyboardType(.numberPad)
 							.focused($fieldFocused)
 					case .page:
+						// TRANSLATORS: Placeholder for the page number input field in Go To
 						TextField(t("Page number"), text: $pageValue)
 							.keyboardType(.numberPad)
 							.focused($fieldFocused)
 					case .percent:
 						HStack {
 							Slider(value: $percentValue, in: 0...100, step: 1)
+								// TRANSLATORS: VoiceOver label for the slider that picks a percentage through the document
 								.accessibilityLabel(t("Percentage"))
 								.accessibilityValue("\(Int(percentValue))%")
 							Text("\(Int(percentValue))%")
@@ -52,13 +59,16 @@ struct GoToSheet: View {
 					}
 				}
 			}
+			// TRANSLATORS: Navigation title of the Go To sheet
 			.navigationTitle(t("Go To"))
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) {
+					// TRANSLATORS: Button that dismisses the Go To sheet without navigating
 					Button(t("Cancel")) { dismiss() }
 				}
 				ToolbarItem(placement: .confirmationAction) {
+					// TRANSLATORS: Button that performs the Go To navigation using the entered line/page/percent
 					Button(t("Go")) { go() }
 						.disabled(!canGo)
 				}

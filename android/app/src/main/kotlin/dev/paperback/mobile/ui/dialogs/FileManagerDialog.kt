@@ -200,6 +200,7 @@ fun FileManagerDialog(
 							modifier = Modifier.fillMaxWidth().padding(32.dp),
 							contentAlignment = Alignment.Center
 						) {
+							// TRANSLATORS: Shown in the in-app file browser when a folder has no openable documents or subfolders
 							Text(t("No supported books or folders found here."))
 						}
 					}
@@ -227,8 +228,10 @@ fun FileListItem(file: File, onClick: () -> Unit) {
 			.padding(16.dp)
 			.clearAndSetSemantics {
 				role = Role.Button
+				// TRANSLATORS: TalkBack description of a file browser entry's type, read as e.g. "myfile.epub, File, modified ..."
 				val typeStr = if (file.isDirectory) t("Folder") else t("File")
 				val sizeDesc = if (file.isDirectory) "" else ", $sizeString"
+				// TRANSLATORS: Display name for the device's root storage folder in the in-app file browser
 				val displayName = if (file.absolutePath == Environment.getExternalStorageDirectory().absolutePath) t("Internal Storage") else file.name
 				contentDescription = "$displayName, $typeStr, modified $dateString$sizeDesc"
 			},

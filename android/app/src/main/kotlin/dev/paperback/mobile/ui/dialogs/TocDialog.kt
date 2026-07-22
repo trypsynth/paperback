@@ -81,6 +81,7 @@ fun TocDialog(
 		LazyColumn(state = listState, contentPadding = PaddingValues(bottom = 32.dp)) {
 			item {
 				Text(
+					// TRANSLATORS: Title heading at the top of the Table of Contents sheet
 					text = t("Table of Contents"),
 					style = MaterialTheme.typography.titleLarge,
 					modifier = Modifier.padding(16.dp)
@@ -103,9 +104,11 @@ fun TocDialog(
 							}
 						}.semantics(mergeDescendants = true) {
 							if (hasChildren) {
+								// TRANSLATORS: TalkBack state description for a TOC entry announcing whether its children are shown
 								stateDescription = if (isExpanded) t("Expanded") else t("Collapsed")
 								customActions = listOf(
 									CustomAccessibilityAction(
+										// TRANSLATORS: TalkBack custom action toggling whether a TOC entry's children are shown
 										label = if (isExpanded) t("Collapse") else t("Expand"),
 										action = {
 											onToggleExpand(originalIndex)

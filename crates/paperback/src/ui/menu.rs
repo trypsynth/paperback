@@ -509,8 +509,8 @@ pub fn create_file_menu(config: &ConfigManager) -> Menu {
 	let close_label = if cfg!(target_os = "macos") { t("&Close\tCtrl+W") } else { t("&Close\tCtrl+F4") };
 	// TRANSLATORS: Status bar help text for the "Close" menu item
 	let close_help = t("Close the current document");
-	// TRANSLATORS: Menu item label to close all open documents
 	let close_all_label =
+		// TRANSLATORS: Menu item label to close all open documents
 		if cfg!(target_os = "macos") { t("Close &All\tCtrl+Shift+W") } else { t("Close &All\tCtrl+Shift+F4") };
 	// TRANSLATORS: Status bar help text for the "Close All" menu item
 	let close_all_help = t("Close all documents");
@@ -594,22 +594,23 @@ pub fn create_go_menu(compact: bool) -> Menu {
 	let find_next_label = if cfg!(target_os = "macos") { t("Find &Next\tCtrl+G") } else { t("Find &Next\tF3") };
 	// TRANSLATORS: Status bar help text for the "Find Next" menu item
 	let find_next_help = t("Find next occurrence");
-	// TRANSLATORS: Menu item label to find the previous match
 	let find_prev_label =
+		// TRANSLATORS: Menu item label to find the previous match
 		if cfg!(target_os = "macos") { t("Find &Previous\tCtrl+Shift+G") } else { t("Find &Previous\tShift+F3") };
 	// TRANSLATORS: Status bar help text for the "Find Previous" menu item
 	let find_prev_help = t("Find previous occurrence");
 	// On macOS Cmd+G is taken by Find Next, so use Cmd+L (Go to Line) and
 	// Cmd+Shift+L (Go to Percent) — standard in most Mac editors.
-	// TRANSLATORS: Menu item label to open the "go to line" dialog
 	let goto_line_label =
+		// TRANSLATORS: Menu item label to open the "go to line" dialog
 		if cfg!(target_os = "macos") { t("Go to &line...\tCtrl+L") } else { t("Go to &line...\tCtrl+G") };
 	// TRANSLATORS: Status bar help text for the "Go to line" menu item
 	let goto_line_help = t("Go to a specific line");
-	// TRANSLATORS: Menu item label to open the "go to percent" dialog
 	let goto_percent_label = if cfg!(target_os = "macos") {
+		// TRANSLATORS: Menu item label to open the "go to percent" dialog (macOS variant)
 		t("Go to &percent...\tCtrl+Shift+L")
 	} else {
+		// TRANSLATORS: Menu item label to open the "go to percent" dialog
 		t("Go to &percent...\tCtrl+Shift+G")
 	};
 	// TRANSLATORS: Status bar help text for the "Go to percent" menu item
@@ -622,8 +623,8 @@ pub fn create_go_menu(compact: bool) -> Menu {
 	let go_back_label = if cfg!(target_os = "macos") { t("Go &Back\tCtrl+[") } else { t("Go &Back\tAlt+Left") };
 	// TRANSLATORS: Status bar help text for the "Go Back" menu item
 	let go_back_help = t("Go back in history");
-	// TRANSLATORS: Menu item label to go forward in navigation history
 	let go_forward_label =
+		// TRANSLATORS: Menu item label to go forward in navigation history
 		if cfg!(target_os = "macos") { t("Go &Forward\tCtrl+]") } else { t("Go &Forward\tAlt+Right") };
 	// TRANSLATORS: Status bar help text for the "Go Forward" menu item
 	let go_forward_help = t("Go forward in history");
@@ -751,8 +752,8 @@ pub fn create_tools_menu(config: &ConfigManager) -> Menu {
 		.append_item(menu_ids::EXPORT_TO_MARKDOWN, &export_markdown_label, &export_markdown_help)
 		.build();
 	// On macOS, Cmd+W is close, so use Ctrl+W (raw Control key) for word count.
-	// TRANSLATORS: Menu item label to show the word count dialog
 	let word_count_label =
+		// TRANSLATORS: Menu item label to show the word count dialog
 		if cfg!(target_os = "macos") { t("&Word Count\tRawCtrl+W") } else { t("&Word Count\tCtrl+W") };
 	// TRANSLATORS: Status bar help text for the "Word Count" menu item
 	let word_count_help = t("Show word count");

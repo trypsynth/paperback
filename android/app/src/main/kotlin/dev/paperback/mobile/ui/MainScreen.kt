@@ -258,6 +258,7 @@ fun MainScreen(
 			if (uri != null) {
 				scope.launch(kotlinx.coroutines.Dispatchers.IO) {
 					val success = viewModel.importSettingsFromUri(context, uri)
+					// TRANSLATORS: Toast confirming a .paperback settings file was imported successfully, or the failure message if not
 					val message = if (success) t("Settings imported") else t("Failed to import settings")
 					kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
 						android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
@@ -273,6 +274,7 @@ fun MainScreen(
 			if (uri != null) {
 				scope.launch(kotlinx.coroutines.Dispatchers.IO) {
 					val success = viewModel.exportSettingsToUri(context, uri)
+					// TRANSLATORS: Toast confirming the document's settings were exported to a .paperback file, or the failure message if not
 					val message = if (success) t("Settings exported") else t("Failed to export settings")
 					kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
 						android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
@@ -391,6 +393,7 @@ fun MainScreen(
 			when (state) {
 				MainScreenUiState.Idle -> {
 					Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+						// TRANSLATORS: Shown on the main screen before the app has finished loading any document state
 						Text(t("No document open. Please open a book."))
 					}
 				}
@@ -410,12 +413,14 @@ fun MainScreen(
 						) {
 							if (successState.recentDocuments.isEmpty()) {
 								Text(
+									// TRANSLATORS: Shown on the main screen when no document is open and there are no recent documents to list
 									t("No Documents"),
 									style = MaterialTheme.typography.titleLarge,
 									modifier = Modifier.padding(bottom = 24.dp)
 								)
 							} else {
 								Text(
+									// TRANSLATORS: Heading above the list of recently opened documents, shown when no document is currently open
 									t("Recent Documents"),
 									style = MaterialTheme.typography.titleMedium,
 									modifier = Modifier.padding(bottom = 8.dp).semantics { heading() }
@@ -438,6 +443,7 @@ fun MainScreen(
 									onClick = { recentsDialogOpen = true },
 									modifier = Modifier.padding(top = 8.dp)
 								) {
+									// TRANSLATORS: Button below the short recent-documents preview that opens the full Recent Documents dialog
 									Text(t("Show All"))
 								}
 							}
@@ -488,14 +494,17 @@ fun MainScreen(
 									modifier = Modifier.padding(16.dp).semantics {
 										val actions = mutableListOf<CustomAccessibilityAction>()
 										if (activeSearchQuery != null && activeSearchOptions != null) {
+											// TRANSLATORS: Accessibility action to jump to the next search match while reading
 											actions.add(CustomAccessibilityAction(t("Find Next")) {
 												viewModel.triggerFindNext()
 												true
 											})
+											// TRANSLATORS: Accessibility action to jump to the previous search match while reading
 											actions.add(CustomAccessibilityAction(t("Find Previous")) {
 												viewModel.triggerFindPrevious()
 												true
 											})
+											// TRANSLATORS: Accessibility action to dismiss the active search and return to normal reading
 											actions.add(CustomAccessibilityAction(t("Close Search")) {
 												viewModel.clearSearch()
 												true
@@ -516,6 +525,7 @@ fun MainScreen(
 										color = MaterialTheme.colorScheme.onSurfaceVariant,
 										modifier = Modifier.semantics {
 											customActions = listOf(
+												// TRANSLATORS: Accessibility action to cancel the active reading sleep timer
 												CustomAccessibilityAction(t("Cancel sleep timer")) {
 													viewModel.cancelSleepTimer()
 													true
@@ -720,6 +730,7 @@ fun MainScreen(
 				.fillMaxSize()
 				.background(Color.Black)
 				.pointerInput(Unit) { detectTapGestures { isScreenDimmed = false } }
+				// TRANSLATORS: Accessibility description of the black overlay shown when the sleep timer dims the screen
 				.semantics { contentDescription = t("Screen dimmed by sleep timer. Tap to wake.") }
 		)
 	}
@@ -734,15 +745,19 @@ fun MainScreen(
 		AlertDialog(
 			onDismissRequest = { viewModel.cancelImportSettings() },
 			modifier = Modifier.semantics { paneTitle = "Import document data" },
+			// TRANSLATORS: Title of the dialog offering to import a document's saved settings/bookmarks found alongside it
 			title = { Text(t("Import document data")) },
+			// TRANSLATORS: Body text of the dialog offering to import a found .paperback settings file for the current document
 			text = { Text(t("A .paperback file was found for this document. Would you like to import it?")) },
 			confirmButton = {
 				TextButton(onClick = { viewModel.confirmImportSettings() }) {
+					// TRANSLATORS: Confirm button to proceed with importing the found document settings
 					Text(t("Import"))
 				}
 			},
 			dismissButton = {
 				TextButton(onClick = { viewModel.cancelImportSettings() }) {
+					// TRANSLATORS: Button to decline importing the found document settings
 					Text(t("Cancel"))
 				}
 			}

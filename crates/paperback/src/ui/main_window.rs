@@ -68,10 +68,12 @@ static HIDDEN_POPUP: std::sync::atomic::AtomicIsize = std::sync::atomic::AtomicI
 
 impl MainWindow {
 	pub fn new(config: Rc<Mutex<ConfigManager>>) -> Self {
+		// TRANSLATORS: Main window title when no document is open
 		let app_title = t("Paperback");
 		let frame = Frame::builder().with_title(&app_title).with_size(Size::new(800, 600)).build();
 		MAIN_WINDOW_PTR.store(frame.handle_ptr() as usize, Ordering::SeqCst);
 		frame.create_status_bar(1, 0, -1, "statusbar");
+		// TRANSLATORS: Default status bar text when no document is open
 		frame.set_status_text(&t("Ready"), 0);
 		let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 		frame.set_menu_bar(menu_bar);
@@ -263,7 +265,9 @@ impl MainWindow {
 		if let Some(parent_dialog) = web_view_dialog {
 			let dialog = MessageDialog::builder(
 				&parent_dialog,
+				// TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
 				&t("Paperback cannot perform any actions while Web View is open."),
+				// TRANSLATORS: Title of a warning dialog
 				&t("Warning"),
 			)
 			.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconWarning | MessageDialogStyle::Centre)
@@ -401,7 +405,9 @@ impl MainWindow {
 			return;
 		};
 		if dm.tab_count() == 0 {
+			// TRANSLATORS: Main window title when no document is open
 			self.frame.set_title(&t("Paperback"));
+			// TRANSLATORS: Default status bar text when no document is open
 			self.frame.set_status_text(&t("Ready"), 0);
 			return;
 		}
@@ -492,6 +498,7 @@ impl MainWindow {
 
 	fn handle_open(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) {
 		let wildcard = build_file_filter_string();
+		// TRANSLATORS: Title of the file picker dialog shown when opening a document
 		let dialog_title = t("Open Document");
 		let dialog = FileDialog::builder(frame)
 			.with_message(&dialog_title)
@@ -700,6 +707,7 @@ impl MainWindow {
 							};
 							let page_count = tab.session.page_count();
 							if page_count == 0 {
+								// TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
 								live_region::announce(live_region_label, &t("No pages."));
 								return;
 							}
@@ -990,6 +998,7 @@ impl MainWindow {
 					if let Some(menu_bar) = frame_copy.get_menu_bar() {
 						menu_bar.check_item(menu_ids::TOGGLE_WORD_WRAP, new_state);
 					}
+					// TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 					let msg = if new_state { t("Word wrap on.") } else { t("Word wrap off.") };
 					live_region::announce(live_region_label, &msg);
 					dm.lock().unwrap().restore_focus();
@@ -1101,10 +1110,13 @@ impl MainWindow {
 						return;
 					};
 					let default_name =
+						// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
 						tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
 					let default_file = format!("{default_name}.txt");
+					// TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 					let wildcard = t("Plain text files (*.txt)|*.txt|All files (*.*)|*.*");
 					let dialog = FileDialog::builder(&frame_copy)
+						// TRANSLATORS: Title of the file save dialog when exporting a document to plain text
 						.with_message(&t("Export document to plain text"))
 						.with_default_file(&default_file)
 						.with_wildcard(&wildcard)
@@ -1115,6 +1127,7 @@ impl MainWindow {
 							if let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Text) {
 								tracing::error!(path = %path, error = %e, "failed to export document as text");
 								let dialog =
+									// TRANSLATORS: Error dialog shown when exporting a document to another format fails
 									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
 										.with_style(
 											MessageDialogStyle::OK
@@ -1134,10 +1147,13 @@ impl MainWindow {
 						return;
 					};
 					let default_name =
+						// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
 						tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
 					let default_file = format!("{default_name}.html");
+					// TRANSLATORS: File filter shown in the "Export to HTML" save dialog
 					let wildcard = t("HTML files (*.html)|*.html|All files (*.*)|*.*");
 					let dialog = FileDialog::builder(&frame_copy)
+						// TRANSLATORS: Title of the file save dialog when exporting a document to HTML
 						.with_message(&t("Export document to HTML"))
 						.with_default_file(&default_file)
 						.with_wildcard(&wildcard)
@@ -1148,6 +1164,7 @@ impl MainWindow {
 							if let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Html) {
 								tracing::error!(path = %path, error = %e, "failed to export document as HTML");
 								let dialog =
+									// TRANSLATORS: Error dialog shown when exporting a document to another format fails
 									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
 										.with_style(
 											MessageDialogStyle::OK
@@ -1167,10 +1184,13 @@ impl MainWindow {
 						return;
 					};
 					let default_name =
+						// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
 						tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
 					let default_file = format!("{default_name}.md");
+					// TRANSLATORS: File filter shown in the "Export to Markdown" save dialog
 					let wildcard = t("Markdown files (*.md)|*.md|All files (*.*)|*.*");
 					let dialog = FileDialog::builder(&frame_copy)
+						// TRANSLATORS: Title of the file save dialog when exporting a document to Markdown
 						.with_message(&t("Export document to Markdown"))
 						.with_default_file(&default_file)
 						.with_wildcard(&wildcard)
@@ -1182,6 +1202,7 @@ impl MainWindow {
 							{
 								tracing::error!(path = %path, error = %e, "failed to export document as Markdown");
 								let dialog =
+									// TRANSLATORS: Error dialog shown when exporting a document to another format fails
 									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
 										.with_style(
 											MessageDialogStyle::OK
@@ -1201,10 +1222,13 @@ impl MainWindow {
 						return;
 					};
 					let default_name =
+						// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
 						tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
 					let default_file = format!("{default_name}.paperback");
+					// TRANSLATORS: File filter shown in the export/import notes-and-bookmarks (.paperback) dialogs
 					let wildcard = t("Paperback files (*.paperback)|*.paperback");
 					let dialog = FileDialog::builder(&frame_copy)
+						// TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
 						.with_message(&t("Export notes and bookmarks"))
 						.with_default_file(&default_file)
 						.with_wildcard(&wildcard)
@@ -1218,7 +1242,9 @@ impl MainWindow {
 						tracing::info!(doc = %tab.file_path.display(), export = %path, "document data exported");
 						let dialog = MessageDialog::builder(
 							&frame_copy,
+							// TRANSLATORS: Success message shown after exporting a document's notes and bookmarks
 							&t("Notes and bookmarks exported successfully."),
+							// TRANSLATORS: Title of the export-succeeded dialog
 							&t("Export Successful"),
 						)
 						.with_style(
@@ -1235,8 +1261,10 @@ impl MainWindow {
 					let Some(tab) = dm_ref.active_tab() else {
 						return;
 					};
+					// TRANSLATORS: File filter shown in the export/import notes-and-bookmarks (.paperback) dialogs
 					let wildcard = t("Paperback files (*.paperback)|*.paperback");
 					let dialog = FileDialog::builder(&frame_copy)
+						// TRANSLATORS: Title of the file open dialog when importing a document's notes and bookmarks
 						.with_message(&t("Import notes and bookmarks"))
 						.with_wildcard(&wildcard)
 						.with_style(FileDialogStyle::Open | FileDialogStyle::FileMustExist)
@@ -1258,7 +1286,9 @@ impl MainWindow {
 						}
 						let dialog = MessageDialog::builder(
 							&frame_copy,
+							// TRANSLATORS: Success message shown after importing a document's notes and bookmarks
 							&t("Notes and bookmarks imported successfully."),
+							// TRANSLATORS: Title of the import-succeeded dialog
 							&t("Import Successful"),
 						)
 						.with_style(
@@ -1299,6 +1329,7 @@ impl MainWindow {
 					if let Some(tab) = dm_guard.active_tab_mut() {
 						let toc_items = &tab.session.handle().document().toc_items;
 						if toc_items.is_empty() {
+							// TRANSLATORS: Announced when opening the Table of Contents for a document that has none
 							live_region::announce(live_region_label, &t("No table of contents."));
 							return;
 						}
@@ -1357,6 +1388,7 @@ impl MainWindow {
 						drop(dm_ref);
 						dialogs::show_web_view_dialog(
 							&frame_copy,
+							// TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
 							&t("Web View"),
 							&url,
 							true,
@@ -1376,6 +1408,7 @@ impl MainWindow {
 						tracing::warn!(path = %tab.file_path.display(), "could not determine web view content");
 						let dialog = MessageDialog::builder(
 							&frame_copy,
+							// TRANSLATORS: Error shown when the document has no content that can be rendered in the Web View
 							&t("Could not determine content to display in Web View."),
 							&t("Error"),
 						)
@@ -1403,6 +1436,7 @@ impl MainWindow {
 							let orig_name = tab
 								.file_path
 								.file_name()
+								// TRANSLATORS: Fallback file name used when the document's path has no file name, shown in the "View Source" tab title
 								.map_or_else(|| t("document"), |name| name.to_string_lossy().to_string());
 							let temp_dir = env::temp_dir().to_string_lossy().to_string();
 							Some(tab.session.view_source(current_pos, &temp_dir).map(|view| (view, orig_name)))
@@ -1412,6 +1446,7 @@ impl MainWindow {
 					};
 					match outcome {
 						Some(Some((view, orig_name))) => {
+							// TRANSLATORS: Prefix before the file name in the tab title for a "View Source" tab, e.g. "Source: book.epub"
 							let title = format!("{} {orig_name}", t("Source:"));
 							let opened = dm.lock().unwrap().open_source_file(&dm, Path::new(&view.path), &title);
 							if opened {
@@ -1425,9 +1460,11 @@ impl MainWindow {
 						unavailable => {
 							let message = if unavailable.is_none() {
 								tracing::debug!("source view not available for this format");
+								// TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
 								t("Source view is not available for this document format.")
 							} else {
 								tracing::warn!("failed to load document source for view source");
+								// TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
 								t("Could not load the document source.")
 							};
 							let dialog = MessageDialog::builder(&frame_copy, &message, &t("Error"))
@@ -1574,6 +1611,7 @@ impl MainWindow {
 						tracing::info!("sleep timer cancelled");
 						let dm_ref = dm.lock().unwrap();
 						update_title_from_manager(&frame_copy, &dm_ref);
+						// TRANSLATORS: Announced when the user cancels a running sleep timer
 						live_region::announce(live_region_label, &t("Sleep timer cancelled."));
 						return;
 					}
@@ -1667,6 +1705,7 @@ impl MainWindow {
 							!config_guard.get_all_documents().is_empty()
 						};
 						if !has_documents {
+							// TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
 							live_region::announce(live_region_label, &t("No recent documents."));
 							return;
 						}
@@ -1771,6 +1810,7 @@ fn ensure_parser_for_unknown_file(parent: &Frame, path: &Path, config: &ConfigMa
 		return false;
 	};
 	if !parser_supports_extension(&format) {
+		// TRANSLATORS: Error shown when the user manually picks a file format the app doesn't support, in the "Open As" dialog
 		let message = t("Unsupported format selected.");
 		let title = t("Error");
 		let dialog = MessageDialog::builder(parent, &message, &title)

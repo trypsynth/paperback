@@ -23,6 +23,7 @@ struct TtsControlBar: View {
 					.foregroundStyle(.secondary)
 					.frame(width: 72, alignment: .leading)
 			}
+			// TRANSLATORS: Accessibility label for the control that picks which unit (sentence, paragraph, etc.) prev/next buttons navigate by
 			.accessibilityLabel(t("Navigation unit"))
 			.accessibilityValue(viewModel.currentSegmentType.rawValue)
 			.accessibilityRemoveTraits(.isButton)
@@ -49,6 +50,7 @@ struct TtsControlBar: View {
 			Button { viewModel.togglePlayPause() } label: {
 				Image(systemName: viewModel.ttsManager.isSpeaking ? "pause.fill" : "play.fill").font(.title)
 			}
+			// TRANSLATORS: Accessibility label for the play/pause button, which toggles between these two states
 			.accessibilityLabel(viewModel.ttsManager.isSpeaking ? t("Pause") : t("Play"))
 			.accessibilityAdjustableAction { direction in
 				let wasPlaying = viewModel.ttsManager.isSpeaking
@@ -63,6 +65,7 @@ struct TtsControlBar: View {
 					? viewModel.playNextSegment(speak: wasPlaying, announce: !wasPlaying)
 					: viewModel.playPrevSegment(speak: wasPlaying, announce: !wasPlaying)
 				if !moved {
+					// TRANSLATORS: Accessibility announcement spoken when trying to navigate past the start or end of the document
 					let label = tryingNext ? t("End of document") : t("Beginning of document")
 					Task { @MainActor in
 						try? await Task.sleep(for: .milliseconds(150))

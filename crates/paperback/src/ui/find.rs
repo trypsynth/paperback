@@ -67,6 +67,7 @@ impl FindDialogState {
 		find_dialog: &Rc<Mutex<Option<Self>>>,
 		live_region_label: StaticText,
 	) -> Self {
+		// TRANSLATORS: Title of the Find dialog
 		let dialog = Dialog::builder(frame, &t("Find")).build();
 		let FindDialogWidgets {
 			find_combo,
@@ -176,19 +177,25 @@ fn build_find_dialog_ui(dialog: Dialog) -> FindDialogWidgets {
 	let combo_width = 250;
 	let option_padding = 2;
 	let button_spacing = 5;
+	// TRANSLATORS: Label for the text field where the user types what to search for
 	let find_label = StaticText::builder(&dialog).with_label(&t("Find &what:")).build();
 	let find_combo = ComboBox::builder(&dialog)
 		.with_style(ComboBoxStyle::ProcessEnter)
 		.with_size(Size::new(combo_width, -1))
 		.build();
 	let options_box = StaticBoxSizerBuilder::new_with_label(Orientation::Vertical, &dialog, &t("Options")).build();
+	// TRANSLATORS: Checkbox to make the search case-sensitive
 	let match_case = CheckBox::builder(&dialog).with_label(&t("&Match case")).build();
+	// TRANSLATORS: Checkbox to only match whole words, not substrings
 	let whole_word = CheckBox::builder(&dialog).with_label(&t("Match &whole word")).build();
+	// TRANSLATORS: Checkbox to treat the search text as a regular expression
 	let use_regex = CheckBox::builder(&dialog).with_label(&t("Use &regular expressions")).build();
 	options_box.add(&match_case, 0, SizerFlag::All, option_padding);
 	options_box.add(&whole_word, 0, SizerFlag::All, option_padding);
 	options_box.add(&use_regex, 0, SizerFlag::All, option_padding);
+	// TRANSLATORS: Button to search backward for the previous match
 	let find_prev_btn = Button::builder(&dialog).with_label(&t("Find &Previous")).build();
+	// TRANSLATORS: Button to search forward for the next match
 	let find_next_btn = Button::builder(&dialog).with_id(ID_OK).with_label(&t("Find &Next")).build();
 	let cancel_btn = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
 	dialog.set_escape_id(ID_CANCEL);
@@ -440,6 +447,7 @@ fn do_find(
 	let result = find_text_with_wrap(&text, &query, start_pos, options);
 	tracing::debug!(query = %query, forward, found = result.found, wrapped = result.wrapped, "find search");
 	if !result.found {
+		// TRANSLATORS: Announced when a search finds no matches in the document
 		live_region::announce(live_region_label, &t("Not found."));
 		state.dialog.show(true);
 		state.dialog.raise();
@@ -447,6 +455,7 @@ fn do_find(
 		return;
 	}
 	if result.wrapped {
+		// TRANSLATORS: Announced when a search reaches the end of the document and wraps back to the start
 		live_region::announce(live_region_label, &t("No more results. Wrapping search."));
 	}
 	if result.position < 0 {

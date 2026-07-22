@@ -59,6 +59,7 @@ fun FindDialog(
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		modifier = Modifier.semantics { paneTitle = "Find" },
+		// TRANSLATORS: Title of the Find dialog
 		title = { Text(t("Find")) },
 		text = {
 			Column {
@@ -66,6 +67,7 @@ fun FindDialog(
 				TextField(
 					value = query,
 					onValueChange = { query = it },
+					// TRANSLATORS: Label for the text field where the user types what to search for
 					label = { Text(t("Search Term")) },
 					keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
 					keyboardActions = KeyboardActions(onSearch = { submitSearch() }),
@@ -94,6 +96,7 @@ fun FindDialog(
 								}
 							}
 						) {
+							// TRANSLATORS: Button that opens a dropdown of previously used search terms
 							Text(t("Search History"))
 						}
 						DropdownMenu(
@@ -129,6 +132,7 @@ fun FindDialog(
 						checked = matchCase,
 						onCheckedChange = null // Handled by Row toggleable
 					)
+					// TRANSLATORS: Checkbox label to make Find treat uppercase/lowercase letters as distinct
 					Text(t("Match Case"), modifier = Modifier.padding(start = 8.dp))
 				}
 				Row(
@@ -147,6 +151,7 @@ fun FindDialog(
 						checked = wholeWord,
 						onCheckedChange = null // Handled by Row toggleable
 					)
+					// TRANSLATORS: Checkbox label to make Find only match whole words, not substrings within other words
 					Text(t("Whole Word"), modifier = Modifier.padding(start = 8.dp))
 				}
 				Row(
@@ -165,17 +170,20 @@ fun FindDialog(
 						checked = useRegex,
 						onCheckedChange = null // Handled by Row toggleable
 					)
+					// TRANSLATORS: Checkbox label to interpret the search term as a regular expression
 					Text(t("Regular Expression"), modifier = Modifier.padding(start = 8.dp))
 				}
 			}
 		},
 		confirmButton = {
 			TextButton(onClick = submitSearch) {
+				// TRANSLATORS: Button to run the search and jump to the next match
 				Text(t("Find Next"))
 			}
 		},
 		dismissButton = {
 			TextButton(onClick = onDismiss) {
+				// TRANSLATORS: Button to close the Find dialog without searching
 				Text(t("Cancel"))
 			}
 		}

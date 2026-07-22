@@ -1011,6 +1011,7 @@ class MainScreenViewModel(
 				}
 			} catch (e: Exception) {
 				withContext(Dispatchers.Main) {
+					// TRANSLATORS: Toast shown when the bundled Help document fails to load
 					android.widget.Toast.makeText(context, dev.paperback.mobile.t("Failed to load document."), android.widget.Toast.LENGTH_LONG).show()
 				}
 			}

@@ -38,8 +38,11 @@ struct NavAnnouncements {
 fn nav_announcements(target: MarkerNavTarget, level_filter: i32) -> NavAnnouncements {
 	match target {
 		MarkerNavTarget::Section => NavAnnouncements {
+			// TRANSLATORS: Announced when the document has no sections to navigate
 			not_supported: t("No sections."),
+			// TRANSLATORS: Announced when there is no next section from the current position
 			not_found_next: t("No next section"),
+			// TRANSLATORS: Announced when there is no previous section from the current position
 			not_found_prev: t("No previous section"),
 			format: NavFoundFormat::TextOnly,
 		},
@@ -59,58 +62,85 @@ fn nav_announcements(target: MarkerNavTarget, level_filter: i32) -> NavAnnouncem
 				}
 			} else {
 				NavAnnouncements {
+					// TRANSLATORS: Announced when the document has no headings at all (no level filter applied)
 					not_supported: t("No headings."),
+					// TRANSLATORS: Announced when there is no next heading (no level filter applied)
 					not_found_next: t("No next heading."),
+					// TRANSLATORS: Announced when there is no previous heading (no level filter applied)
 					not_found_prev: t("No previous heading."),
 					format: NavFoundFormat::TextWithLevel,
 				}
 			}
 		}
 		MarkerNavTarget::Page => NavAnnouncements {
+			// TRANSLATORS: Announced when the document has no page markers to navigate
 			not_supported: t("No pages."),
+			// TRANSLATORS: Announced when there is no next page from the current position
 			not_found_next: t("No next page."),
+			// TRANSLATORS: Announced when there is no previous page from the current position
 			not_found_prev: t("No previous page."),
 			format: NavFoundFormat::PageFormat,
 		},
 		MarkerNavTarget::Link => NavAnnouncements {
+			// TRANSLATORS: Announced when the document has no links to navigate
 			not_supported: t("No links."),
+			// TRANSLATORS: Announced when there is no next link from the current position
 			not_found_next: t("No next link."),
+			// TRANSLATORS: Announced when there is no previous link from the current position
 			not_found_prev: t("No previous link."),
 			format: NavFoundFormat::LinkFormat,
 		},
 		MarkerNavTarget::List => NavAnnouncements {
+			// TRANSLATORS: Announced when the document has no lists to navigate
 			not_supported: t("No lists."),
+			// TRANSLATORS: Announced when there is no next list from the current position
 			not_found_next: t("No next list."),
+			// TRANSLATORS: Announced when there is no previous list from the current position
 			not_found_prev: t("No previous list."),
 			format: NavFoundFormat::TextOnly,
 		},
 		MarkerNavTarget::ListItem => NavAnnouncements {
+			// TRANSLATORS: Announced when the document has no list items to navigate
 			not_supported: t("No list items."),
+			// TRANSLATORS: Announced when there is no next list item from the current position
 			not_found_next: t("No next list item."),
+			// TRANSLATORS: Announced when there is no previous list item from the current position
 			not_found_prev: t("No previous list item."),
 			format: NavFoundFormat::TextOnly,
 		},
 		MarkerNavTarget::Table => NavAnnouncements {
+			// TRANSLATORS: Announced when the document has no tables to navigate
 			not_supported: t("No tables."),
+			// TRANSLATORS: Announced when there is no next table from the current position
 			not_found_next: t("No next table."),
+			// TRANSLATORS: Announced when there is no previous table from the current position
 			not_found_prev: t("No previous table."),
 			format: NavFoundFormat::TextOnly,
 		},
 		MarkerNavTarget::Separator => NavAnnouncements {
+			// TRANSLATORS: Announced when the document has no separators to navigate
 			not_supported: t("No separators."),
+			// TRANSLATORS: Announced when there is no next separator from the current position
 			not_found_next: t("No next separator."),
+			// TRANSLATORS: Announced when there is no previous separator from the current position
 			not_found_prev: t("No previous separator."),
 			format: NavFoundFormat::TextOnly,
 		},
 		MarkerNavTarget::Image => NavAnnouncements {
+			// TRANSLATORS: Announced when the document has no images to navigate
 			not_supported: t("No images."),
+			// TRANSLATORS: Announced when there is no next image from the current position
 			not_found_next: t("No next image."),
+			// TRANSLATORS: Announced when there is no previous image from the current position
 			not_found_prev: t("No previous image."),
 			format: NavFoundFormat::ImageFormat,
 		},
 		MarkerNavTarget::Figure => NavAnnouncements {
+			// TRANSLATORS: Announced when the document has no figures to navigate
 			not_supported: t("No figures."),
+			// TRANSLATORS: Announced when there is no next figure from the current position
 			not_found_next: t("No next figure."),
+			// TRANSLATORS: Announced when there is no previous figure from the current position
 			not_found_prev: t("No previous figure."),
 			format: NavFoundFormat::ImageFormat,
 		},
@@ -125,6 +155,7 @@ fn format_nav_found_message(
 	next: bool,
 ) -> String {
 	let wrap_prefix =
+		// TRANSLATORS: Prefix announced when navigation wraps around past the end/start of the document; the trailing space is significant
 		if wrapped { if next { t("Wrapping to start. ") } else { t("Wrapping to end. ") } } else { String::new() };
 	match ann.format {
 		NavFoundFormat::TextOnly => format!("{wrap_prefix}{context_text}"),
@@ -212,6 +243,7 @@ pub fn handle_history_navigation(
 			tab.session.history_go_back(current_pos)
 		};
 		if result.found {
+			// TRANSLATORS: Announced when moving forward/backward through the caret position history
 			let message = if forward { t("Navigated to next position.") } else { t("Navigated to previous position.") };
 			tab.text_ctrl.set_focus();
 			tab.text_ctrl.set_insertion_point(result.offset);
@@ -226,6 +258,7 @@ pub fn handle_history_navigation(
 			};
 			(message, history_update)
 		} else {
+			// TRANSLATORS: Announced when there is no next/previous position in the caret position history
 			let message = if forward { t("No next position.") } else { t("No previous position.") };
 			(message, None)
 		}
@@ -302,15 +335,18 @@ pub fn handle_container_navigation(
 		let current_pos = tab.text_ctrl.get_insertion_point();
 		let result = tab.session.navigate_container(current_pos, to_end);
 		if result.not_supported {
+			// TRANSLATORS: Announced when the document has no containers (lists/tables) to navigate
 			live_region::announce(live_region_label, &t("No containers."));
 			None
 		} else if !result.found {
+			// TRANSLATORS: Announced when the caret is not currently inside a container (list/table)
 			live_region::announce(live_region_label, &t("Not in a container."));
 			None
 		} else {
 			let offset = result.offset;
 			let line = tab.session.get_line_text(offset);
 			let message = if line.trim().is_empty() {
+				// TRANSLATORS: Announced when jumping to the start/end of the container (list/table) the caret is inside, and the target line is blank
 				if to_end { t("Past end of container.") } else { t("Start of container.") }
 			} else {
 				line
@@ -388,6 +424,7 @@ pub fn handle_bookmark_navigation(
 			let line_text = tab.session.get_line_text(result.offset);
 			let content_text = if note_text.is_empty() { line_text } else { format!("{note_text}, {line_text}") };
 			let wrap_prefix = if result.wrapped {
+				// TRANSLATORS: Prefix announced when bookmark navigation wraps around past the end/start of the document; the trailing space is significant
 				if next { t("Wrapping to start. ") } else { t("Wrapping to end. ") }
 			} else {
 				String::new()
@@ -408,12 +445,16 @@ pub fn handle_bookmark_navigation(
 			(message, history_update)
 		} else {
 			let message = if !has_items {
+				// TRANSLATORS: Announced when there are no bookmarks/notes at all to navigate to
 				if notes_only { t("No notes.") } else { t("No bookmarks.") }
 			} else if next {
+				// TRANSLATORS: Announced when there is no next bookmark/note from the current position
 				if notes_only { t("No next note.") } else { t("No next bookmark.") }
 			} else if notes_only {
+				// TRANSLATORS: Announced when there is no previous note from the current position
 				t("No previous note.")
 			} else {
+				// TRANSLATORS: Announced when there is no previous bookmark from the current position
 				t("No previous bookmark.")
 			};
 			(message, None)
@@ -457,8 +498,10 @@ pub fn handle_bookmark_dialog(
 			if text.is_empty() {
 				text = info.snippet;
 			}
+			// TRANSLATORS: Fallback announcement when viewing a bookmark that has no note text or line snippet
 			if text.is_empty() { t("Bookmark.") } else { text }
 		} else {
+			// TRANSLATORS: Fallback announcement when viewing a bookmark that has no note text or line snippet
 			t("Bookmark.")
 		};
 		let history_update = if tab.track {
@@ -501,6 +544,7 @@ pub fn handle_toggle_bookmark(
 	cfg.toggle_bookmark(&path_str, start, end, "");
 	cfg.flush();
 	drop(cfg);
+	// TRANSLATORS: Announced after toggling a bookmark at the current selection off/on
 	let message = if existed { t("Bookmark removed.") } else { t("Bookmark added.") };
 	live_region::announce(live_region_label, &message);
 }
@@ -530,6 +574,7 @@ pub fn handle_bookmark_with_note(
 	};
 	let existing_note = existing.as_ref().map(|bm| bm.note.clone()).unwrap_or_default();
 	let Some(note) =
+		// TRANSLATORS: Title of the dialog for adding/editing a bookmark's note
 		dialogs::show_note_entry_dialog(frame, &t("Bookmark Note"), &t("Enter bookmark note:"), &existing_note)
 	else {
 		return;
@@ -542,6 +587,7 @@ pub fn handle_bookmark_with_note(
 	}
 	cfg.flush();
 	drop(cfg);
+	// TRANSLATORS: Announced after saving a bookmark's note text
 	live_region::announce(live_region_label, &t("Bookmark saved."));
 }
 
@@ -568,6 +614,7 @@ pub fn handle_view_note_text(
 		reader_core::bookmark_note_at_position(&cfg, &path_str, current_pos)
 	};
 	if note.is_empty() {
+		// TRANSLATORS: Message shown when trying to view a bookmark note but the current position has none
 		let dialog = MessageDialog::builder(frame, &t("No note at the current position."), &t("View Note"))
 			.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre)
 			.build();

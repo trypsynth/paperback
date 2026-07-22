@@ -17,6 +17,7 @@ struct ReaderView: View {
 				Color.black
 					.ignoresSafeArea()
 					.onTapGesture { isScreenDimmed = false }
+					// TRANSLATORS: Accessibility label for the black overlay shown when the sleep timer dims the screen; tapping it wakes the screen
 					.accessibilityLabel(t("Screen dimmed by sleep timer. Tap to wake."))
 			}
 		}
@@ -50,7 +51,9 @@ struct ReaderView: View {
 		.sheet(isPresented: $viewModel.showRecents) {
 			RecentDocumentsSheet().environmentObject(viewModel)
 		}
+		// TRANSLATORS: Title of the alert dialog showing the current document's word count
 		.alert(t("Word Count"), isPresented: $viewModel.showWordCount) {
+			// TRANSLATORS: Button dismissing the word count alert
 			Button(t("OK"), role: .cancel) { }
 		} message: {
 			if let stats = viewModel.activeSession?.getStatsFfi() {
@@ -82,10 +85,12 @@ struct ReaderView: View {
 			guard case .success(let urls) = result, let url = urls.first else { return }
 			viewModel.openDocument(url: url)
 		}
+		// TRANSLATORS: Title of the alert shown when a document fails to open
 		.alert(t("Open Error"), isPresented: Binding(
 			get: { viewModel.debugMessage != nil },
 			set: { if !$0 { viewModel.debugMessage = nil } }
 		)) {
+			// TRANSLATORS: Button dismissing the document-open-error alert
 			Button(t("OK")) { viewModel.debugMessage = nil }
 		} message: {
 			Text(viewModel.debugMessage ?? "")
@@ -130,6 +135,7 @@ struct ReaderView: View {
 			Button { showFilePicker = true } label: {
 				Image(systemName: "folder")
 			}
+			// TRANSLATORS: Accessibility label for the toolbar button that opens a file picker to choose a document
 			.accessibilityLabel(t("Open document"))
 			if viewModel.activeTab != nil {
 				DocumentMenu().environmentObject(viewModel)

@@ -40,11 +40,13 @@ fun PasswordDialog(
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		modifier = Modifier.semantics { paneTitle = "Document Password" },
+		// TRANSLATORS: Title of the dialog prompting for a password to open an encrypted document
 		title = { Text(t("Document Password")) },
 		text = {
 			OutlinedTextField(
 				value = password,
 				onValueChange = { password = it },
+				// TRANSLATORS: Label for the password input field
 				label = { Text(t("Password:")) },
 				visualTransformation = PasswordVisualTransformation(),
 				keyboardOptions = KeyboardOptions(
@@ -69,11 +71,13 @@ fun PasswordDialog(
 				onClick = { onConfirm(password) },
 				enabled = password.isNotEmpty()
 			) {
+				// TRANSLATORS: Button to submit the entered password and attempt to open the document
 				Text(t("OK"))
 			}
 		},
 		dismissButton = {
 			TextButton(onClick = onDismiss) {
+				// TRANSLATORS: Button to dismiss the password prompt without opening the document
 				Text(t("Cancel"))
 			}
 		}

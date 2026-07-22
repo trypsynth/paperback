@@ -300,6 +300,7 @@ impl Parser for PdfParser {
 		if !has_any_text && has_any_images {
 			let marker_position = buffer.current_position();
 			buffer.add_marker(Marker::new(MarkerType::PageBreak, marker_position).with_text(String::new()));
+			// TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
 			buffer.append(&t("This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."));
 			buffer.append("\n");
 		}
@@ -539,8 +540,8 @@ fn join_paragraphs(raw_lines: &[(String, f64)], body_font_size: f64) -> Vec<(Str
 
 fn map_load_error(err: PdfiumError) -> anyhow::Error {
 	match err {
-		// TRANSLATORS: Error detail shown when a PDF's password is missing or wrong (the internal sentinel prefix before it is not translated)
 		PdfiumError::PasswordError => {
+			// TRANSLATORS: Error detail shown when a PDF's password is missing or wrong (the internal sentinel prefix before it is not translated)
 			anyhow!("{PASSWORD_REQUIRED_ERROR_PREFIX}{}", t("Password required or incorrect"))
 		}
 		// TRANSLATORS: Error shown when a PDF fails to open for a reason other than a password; {} is the underlying error detail

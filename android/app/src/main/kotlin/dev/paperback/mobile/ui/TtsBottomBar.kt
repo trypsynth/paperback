@@ -34,18 +34,31 @@ private const val SEEK_RANGE = 10000
 private const val ZWSP = "​"
 
 fun getSegmentTypeName(type: SegmentTypeFfi): String =
+	// TRANSLATORS: Name of a navigation/reading unit shown in the "jump by unit" picker and read-aloud controls (e.g. "Paragraph", "Line", "Heading")
 	when (type) {
+		// TRANSLATORS: Name of the "paragraph" reading/navigation unit
 		SegmentTypeFfi.PARAGRAPH -> t("Paragraph")
+		// TRANSLATORS: Name of the "line" reading/navigation unit
 		SegmentTypeFfi.LINE -> t("Line")
+		// TRANSLATORS: Name of the "heading" reading/navigation unit
 		SegmentTypeFfi.HEADING -> t("Heading")
+		// TRANSLATORS: Name of the "link" reading/navigation unit
 		SegmentTypeFfi.LINK -> t("Link")
+		// TRANSLATORS: Name of the "section" reading/navigation unit
 		SegmentTypeFfi.SECTION -> t("Section")
+		// TRANSLATORS: Name of the "page" reading/navigation unit
 		SegmentTypeFfi.PAGE -> t("Page")
+		// TRANSLATORS: Name of the "list" reading/navigation unit
 		SegmentTypeFfi.LIST -> t("List")
+		// TRANSLATORS: Name of the "list item" reading/navigation unit
 		SegmentTypeFfi.LIST_ITEM -> t("List Item")
+		// TRANSLATORS: Name of the "table" reading/navigation unit
 		SegmentTypeFfi.TABLE -> t("Table")
+		// TRANSLATORS: Name of the "separator" reading/navigation unit
 		SegmentTypeFfi.SEPARATOR -> t("Separator")
+		// TRANSLATORS: Name of the "image" reading/navigation unit
 		SegmentTypeFfi.IMAGE -> t("Image")
+		// TRANSLATORS: Name of the "figure" reading/navigation unit
 		SegmentTypeFfi.FIGURE -> t("Figure")
 	}
 
@@ -82,6 +95,7 @@ fun TtsBottomBar(
 						Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
 					},
 					modifier = Modifier.clearAndSetSemantics {
+						// TRANSLATORS: TalkBack label for the control that seeks between reading/navigation units (paragraph, line, heading, etc.)
 						contentDescription = t("Navigation unit")
 						stateDescription = segmentTypeName
 						progressBarRangeInfo = ProgressBarRangeInfo(
@@ -134,6 +148,7 @@ fun TtsBottomBar(
 					.combinedClickable(onClick = onPlayPause)
 					.clearAndSetSemantics {
 						role = Role.Button
+						// TRANSLATORS: TalkBack label for the central play/pause control in the read-aloud bar
 						contentDescription = if (isSpeaking) t("Pause") else t("Play")
 						stateDescription = ZWSP
 						progressBarRangeInfo = ProgressBarRangeInfo(

@@ -293,6 +293,7 @@ fn start_pipe_server(main_window: &Rc<MainWindow>) -> PipeServer {
 			});
 		} else {
 			tracing::error!(pipe = %name, "failed to create IPC server; named pipe already exists");
+			// TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 			let dialog = MessageDialog::builder(main_window.frame(), &t("Failed to create IPC server"), &t("Warning"))
 				.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconWarning | MessageDialogStyle::Centre)
 				.build();

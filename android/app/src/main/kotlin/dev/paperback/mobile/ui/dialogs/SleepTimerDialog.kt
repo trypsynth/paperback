@@ -37,6 +37,7 @@ fun SleepTimerDialog(
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		modifier = Modifier.semantics { paneTitle = "Sleep Timer" },
+		// TRANSLATORS: Dialog title, switches between the main sleep timer view and the custom-minutes entry view
 		title = { Text(if (showCustomInput) t("Custom Timer") else t("Sleep Timer")) },
 		text = {
 			Column(modifier = Modifier.fillMaxWidth()) {
@@ -48,6 +49,7 @@ fun SleepTimerDialog(
 								customMinutes = newValue
 							}
 						},
+						// TRANSLATORS: Label for the numeric input field where the user types a custom sleep timer duration in minutes
 						label = { Text(t("Minutes")) },
 						keyboardOptions = KeyboardOptions(
 							keyboardType = KeyboardType.Number,
@@ -76,6 +78,7 @@ fun SleepTimerDialog(
 							onClick = { showCustomInput = false },
 							modifier = Modifier.weight(1f)
 						) {
+							// TRANSLATORS: Button to return from the custom-minutes entry view to the main sleep timer view
 							Text(t("Back"))
 						}
 						Button(
@@ -89,6 +92,7 @@ fun SleepTimerDialog(
 							enabled = customMinutes.isNotEmpty() && (customMinutes.toIntOrNull() ?: 0) > 0,
 							modifier = Modifier.weight(1f)
 						) {
+							// TRANSLATORS: Button to confirm and start the sleep timer with the custom minutes entered
 							Text(t("Start"))
 						}
 					}
@@ -105,8 +109,10 @@ fun SleepTimerDialog(
 							onClick = { onCancelTimer(); onDismiss() },
 							modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
 						) {
+							// TRANSLATORS: Button to cancel the currently running sleep timer
 							Text(t("Cancel Timer"))
 						}
+						// TRANSLATORS: Heading introducing the preset duration buttons, shown while a sleep timer is already active
 						Text(t("Change to:"), style = MaterialTheme.typography.labelMedium)
 						Spacer(modifier = Modifier.height(8.dp))
 					}
@@ -133,6 +139,7 @@ fun SleepTimerDialog(
 						onClick = { showCustomInput = true },
 						modifier = Modifier.fillMaxWidth()
 					) {
+						// TRANSLATORS: Button to switch to the custom-minutes entry view for the sleep timer
 						Text(t("Custom time..."))
 					}
 				}
@@ -140,6 +147,7 @@ fun SleepTimerDialog(
 		},
 		confirmButton = {},
 		dismissButton = {
+			// TRANSLATORS: Button to close the Sleep Timer dialog without changing anything
 			TextButton(onClick = onDismiss) { Text(t("Close")) }
 		}
 	)

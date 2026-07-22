@@ -55,6 +55,7 @@ fun GoToDialog(
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		modifier = Modifier.semantics { paneTitle = "Go To" },
+		// TRANSLATORS: Title of the dialog for jumping to a specific line, page, or percentage through the document
 		title = { Text(t("Go To")) },
 		text = {
 			Column {
@@ -67,6 +68,7 @@ fun GoToDialog(
 						modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth().semantics {
 							customActions = listOfNotNull(
 								if (selectedMode != "Line") {
+									// TRANSLATORS: TalkBack custom action switching the Go To mode to "by line"
 									CustomAccessibilityAction(t("Line")) {
 										selectedMode = "Line"
 										true
@@ -75,6 +77,7 @@ fun GoToDialog(
 									null
 								},
 								if (selectedMode != "Page" && maxPages > 0) {
+									// TRANSLATORS: TalkBack custom action switching the Go To mode to "by page"
 									CustomAccessibilityAction(t("Page")) {
 										selectedMode = "Page"
 										true
@@ -83,6 +86,7 @@ fun GoToDialog(
 									null
 								},
 								if (selectedMode != "Percentage") {
+									// TRANSLATORS: TalkBack custom action switching the Go To mode to "by percentage"
 									CustomAccessibilityAction(t("Percentage")) {
 										selectedMode = "Percentage"
 										true
@@ -93,6 +97,7 @@ fun GoToDialog(
 							)
 						}
 					) {
+						// TRANSLATORS: Renders the currently selected Go To mode name ("Line", "Page", or "Percentage")
 						Text(t(selectedMode), modifier = Modifier.weight(1f))
 						ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded)
 					}
@@ -156,9 +161,11 @@ fun GoToDialog(
 			}
 		},
 		confirmButton = {
+			// TRANSLATORS: Button to jump to the entered line/page/percentage
 			TextButton(onClick = onSubmit) { Text(t("Go")) }
 		},
 		dismissButton = {
+			// TRANSLATORS: Button to close the Go To dialog without navigating
 			TextButton(onClick = onDismiss) { Text(t("Cancel")) }
 		}
 	)

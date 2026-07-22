@@ -121,13 +121,13 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let general_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let reading_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let readability_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	// TRANSLATORS: Option to restore documents that were open when the app was last closed
 	let restore_docs_check =
+		// TRANSLATORS: Option to restore documents that were open when the app was last closed
 		CheckBox::builder(&general_panel).with_label(&t("&Restore previously opened documents on startup")).build();
 	// TRANSLATORS: Option to toggle word wrapping of text
 	let word_wrap_check = CheckBox::builder(&readability_panel).with_label(&t("&Word wrap")).build();
-	// TRANSLATORS: Option to render tables inline rather than showing a placeholder link
 	let render_tables_inline_check =
+		// TRANSLATORS: Option to render tables inline rather than showing a placeholder link
 		CheckBox::builder(&readability_panel).with_label(&t("Render tables &inline")).build();
 	// TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
 	let minimize_to_tray_check = CheckBox::builder(&general_panel).with_label(&t("&Minimize to system tray")).build();
@@ -137,11 +137,11 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let compact_go_menu_check = CheckBox::builder(&reading_panel).with_label(&t("Show compact &go menu")).build();
 	// TRANSLATORS: Option to wrap navigation around to the beginning/end when navigating elements
 	let navigation_wrap_check = CheckBox::builder(&reading_panel).with_label(&t("&Wrap navigation")).build();
-	// TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 	let bookmark_sounds_check =
+		// TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 		CheckBox::builder(&reading_panel).with_label(&t("Play &sounds on bookmarks and notes")).build();
-	// TRANSLATORS: Option to check for app updates automatically on startup
 	let check_for_updates_check =
+		// TRANSLATORS: Option to check for app updates automatically on startup
 		CheckBox::builder(&general_panel).with_label(&t("Check for &updates on startup")).build();
 	// TRANSLATORS: Button label to open the hotkey customization dialog
 	let hotkey_button = Button::builder(&general_panel).with_label(&t("Customize &Window Hotkey...")).build();
@@ -155,8 +155,8 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	for check in [&navigation_wrap_check, &compact_go_menu_check, &bookmark_sounds_check] {
 		reading_sizer.add(check, 0, SizerFlag::All, option_padding);
 	}
-	// TRANSLATORS: Label for the reading speed input field (Words Per Minute)
 	let reading_speed_label =
+		// TRANSLATORS: Label for the reading speed input field (Words Per Minute)
 		StaticText::builder(&reading_panel).with_label(&t("&Reading speed (words per minute):")).build();
 	let reading_speed_ctrl = SpinCtrl::builder(&reading_panel).with_range(1, 2000).build();
 	let reading_speed_sizer = BoxSizer::builder(Orientation::Horizontal).build();
@@ -164,8 +164,8 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	reading_speed_sizer.add(&reading_speed_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
 	reading_sizer.add_sizer(&reading_speed_sizer, 0, SizerFlag::All, option_padding);
 	let max_recent_docs = 100;
-	// TRANSLATORS: Label for the number of recently opened documents to keep in history
 	let recent_docs_label =
+		// TRANSLATORS: Label for the number of recently opened documents to keep in history
 		StaticText::builder(&general_panel).with_label(&t("Number of &recent documents to show:")).build();
 	let recent_docs_ctrl = SpinCtrl::builder(&general_panel).with_range(0, max_recent_docs).build();
 	let recent_docs_sizer = BoxSizer::builder(Orientation::Horizontal).build();

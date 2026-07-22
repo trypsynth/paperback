@@ -44,9 +44,11 @@ fun SettingsDialog(
 	AlertDialog(
 		modifier = Modifier.semantics { paneTitle = "Settings" },
 		onDismissRequest = onDismiss,
+		// TRANSLATORS: Title of the app settings dialog
 		title = { Text(t("Settings")) },
 		text = {
 			Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
+				// TRANSLATORS: Section heading for general (non-speech) settings
 				Text(t("General"), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 8.dp))
 
 				Row(
@@ -60,6 +62,7 @@ fun SettingsDialog(
 					verticalAlignment = Alignment.CenterVertically,
 					horizontalArrangement = Arrangement.SpaceBetween
 				) {
+					// TRANSLATORS: Settings switch: reopen the last-read book automatically on launch
 					Text(t("Restore last open book"), modifier = Modifier.weight(1f))
 					Switch(
 						checked = restorePreviousDocuments,
@@ -77,6 +80,7 @@ fun SettingsDialog(
 					verticalAlignment = Alignment.CenterVertically,
 					horizontalArrangement = Arrangement.SpaceBetween
 				) {
+					// TRANSLATORS: Settings switch: use the app's built-in file browser instead of the system document picker
 					Text(t("Use in-app file browser (requires All Files permission)"), modifier = Modifier.weight(1f))
 					Switch(
 						checked = useInAppFileBrowser,
@@ -94,6 +98,7 @@ fun SettingsDialog(
 					verticalAlignment = Alignment.CenterVertically,
 					horizontalArrangement = Arrangement.SpaceBetween
 				) {
+					// TRANSLATORS: Settings switch: choose whether swiping up in the reading view moves forward or backward
 					Text(t("Swipe up moves forward"), modifier = Modifier.weight(1f))
 					Switch(
 						checked = swipeUpMovesForward,
@@ -102,6 +107,7 @@ fun SettingsDialog(
 				}
 
 				Spacer(modifier = Modifier.height(24.dp))
+				// TRANSLATORS: Section heading for text-to-speech (read-aloud) settings
 				Text(t("Text-to-Speech"), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 8.dp))
 
 				ExposedDropdownMenuBox(
@@ -164,8 +170,10 @@ fun SettingsDialog(
 				Spacer(modifier = Modifier.height(16.dp))
 				Column(
 					modifier = Modifier.clearAndSetSemantics {
+						// TRANSLATORS: TalkBack label for the speech rate slider
 						contentDescription = t("Speech Rate")
 						if (isSystemDefault) {
+							// TRANSLATORS: TalkBack value announced when a TTS setting is following the system/engine default rather than a custom value
 							stateDescription = t("System Default")
 							disabled()
 						} else {
@@ -195,6 +203,7 @@ fun SettingsDialog(
 				Spacer(modifier = Modifier.height(16.dp))
 				Column(
 					modifier = Modifier.clearAndSetSemantics {
+						// TRANSLATORS: TalkBack label for the speech pitch slider
 						contentDescription = t("Pitch")
 						if (isSystemDefault) {
 							stateDescription = t("System Default")
@@ -225,6 +234,7 @@ fun SettingsDialog(
 				}
 				Spacer(modifier = Modifier.height(16.dp))
 				Button(onClick = onPlaySample, modifier = Modifier.fillMaxWidth()) {
+					// TRANSLATORS: Button to speak a sample sentence using the currently selected TTS voice/rate/pitch
 					Text(t("Play Sample"))
 				}
 			}

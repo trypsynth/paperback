@@ -39,6 +39,7 @@ pub struct DocumentTab {
 
 pub fn title_or_filename(title: String, path: &Path) -> String {
 	if title.is_empty() {
+		// TRANSLATORS: Fallback document title used when the file has no title metadata and no filename either
 		path.file_name().map_or_else(|| t("Untitled"), |s| s.to_string_lossy().to_string())
 	} else {
 		title
@@ -122,6 +123,7 @@ impl DocumentManager {
 			// TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 			let template = t("File not found: {}");
 			let message = template.replace("{}", &path.to_string_lossy());
+			// TRANSLATORS: Generic error dialog title
 			show_error_dialog(&self.notebook, &message, &t("Error"));
 			return false;
 		}
@@ -132,7 +134,9 @@ impl DocumentManager {
 
 		let import_path = path.with_extension("paperback");
 		if !is_restore && import_path.exists() {
+			// TRANSLATORS: Prompt asking whether to import a document's previously saved settings and bookmarks found alongside it
 			let message = t("A .paperback file was found for this document. Would you like to import it?");
+			// TRANSLATORS: Title of the dialog prompting to import a document's saved settings and bookmarks
 			let title = t("Import document data");
 			let dialog = MessageDialog::builder(&self.notebook, &message, &title)
 				.with_style(MessageDialogStyle::YesNo | MessageDialogStyle::IconQuestion | MessageDialogStyle::Centre)
@@ -164,6 +168,7 @@ impl DocumentManager {
 					drop(config);
 					let password = prompt_for_password(&self.notebook);
 					let Some(password) = password else {
+						// TRANSLATORS: Error shown when the user dismisses the password prompt for an encrypted document without entering one
 						show_error_dialog(&self.notebook, &t("Password is required."), &t("Error"));
 						return false;
 					};
@@ -400,6 +405,7 @@ impl DocumentManager {
 						tab.text_ctrl.set_insertion_point(result.offset);
 						tab.text_ctrl.show_position(result.offset);
 						tab.session.check_and_record_history(result.offset);
+						// TRANSLATORS: Announcement read by screen readers after following an internal link within the document
 						live_region::announce(self.live_region_label, &t("Navigated to internal link."));
 					}
 					paperback_core::session::LinkAction::External => {
@@ -695,6 +701,7 @@ impl DocumentManager {
 					};
 					if let Some(html) = table_html {
 						let frame = dm_for_enter.lock().unwrap().frame;
+						// TRANSLATORS: Title of the dialog showing a table rendered as HTML when activated with Enter/Space
 						super::dialogs::show_web_view_dialog(&frame, &t("Table View"), &html, false, None);
 					} else {
 						let mut dm = dm_for_enter.lock().unwrap();
@@ -818,6 +825,7 @@ fn normalized_path_key(path: &Path) -> String {
 }
 
 fn prompt_for_password(parent: &dyn WxWidget) -> Option<String> {
+	// TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
 	let dialog = TextEntryDialog::builder(parent, &t("&Password:"), &t("Document Password")).password().build();
 	if dialog.show_modal() != ID_OK {
 		return None;
@@ -835,6 +843,7 @@ fn show_error_dialog(parent: &dyn WxWidget, message: &str, title: &str) {
 fn build_document_load_error_message(path: &Path, error: &str) -> String {
 	let details = error.trim().strip_prefix(PASSWORD_REQUIRED_ERROR_PREFIX).map_or_else(|| error.trim(), str::trim);
 	if details.is_empty() {
+		// TRANSLATORS: Generic error message shown when a document fails to load with no further detail available
 		return t("Failed to load document.");
 	}
 	// TRANSLATORS: "File" label prefix in the document-load error dialog; {} is the file path
@@ -1307,15 +1316,23 @@ fn apply_formatting_markers_to_ctrl_from_segments(text_ctrl: TextCtrl, segments:
 fn show_reader_context_menu(text_ctrl: TextCtrl) {
 	text_ctrl.set_focus();
 	let mut menu = Menu::builder()
+		// TRANSLATORS: Right-click context menu item and status text to bookmark the current position
 		.append_item(menu_ids::TOGGLE_BOOKMARK, &t("Create &bookmark"), &t("Create bookmark"))
+		// TRANSLATORS: Right-click context menu item and status text to bookmark the current position with an attached note
 		.append_item(menu_ids::BOOKMARK_WITH_NOTE, &t("Bookmark with &note"), &t("Create bookmark with note"))
 		.append_separator()
+		// TRANSLATORS: Right-click context menu item and status text to open the find dialog
 		.append_item(menu_ids::FIND, &t("&Find"), &t("Find text"))
+		// TRANSLATORS: Right-click context menu item and status text to repeat the last search forward
 		.append_item(menu_ids::FIND_NEXT, &t("Find &next"), &t("Find next match"))
+		// TRANSLATORS: Right-click context menu item and status text to repeat the last search backward
 		.append_item(menu_ids::FIND_PREVIOUS, &t("Find &previous"), &t("Find previous match"))
 		.append_separator()
+		// TRANSLATORS: Right-click context menu item and status text to jump to a specific page
 		.append_item(menu_ids::GO_TO_PAGE, &t("Go to &page"), &t("Go to page"))
+		// TRANSLATORS: Right-click context menu item and status text to jump to a specific line
 		.append_item(menu_ids::GO_TO_LINE, &t("Go to &line"), &t("Go to line"))
+		// TRANSLATORS: Right-click context menu item and status text to jump to a percentage through the document
 		.append_item(menu_ids::GO_TO_PERCENT, &t("Go to &percent"), &t("Go to percent"))
 		.build();
 	text_ctrl.popup_menu(&mut menu, None);

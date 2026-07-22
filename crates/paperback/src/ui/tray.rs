@@ -71,9 +71,13 @@ fn create_tray_state(
 	doc_manager: Rc<Mutex<DocumentManager>>,
 	tray_state: Rc<Mutex<Option<TrayState>>>,
 ) -> TrayState {
+	// TRANSLATORS: System tray menu item to restore the main window from the tray
 	let restore_label = t("&Restore");
+	// TRANSLATORS: Status bar help text for the tray menu's "Restore" item
 	let restore_help = t("Restore Paperback");
+	// TRANSLATORS: System tray menu item to quit the application
 	let exit_label = t("E&xit");
+	// TRANSLATORS: Status bar help text for the tray menu's "Exit" item
 	let exit_help = t("Exit Paperback");
 	let mut menu = Menu::builder()
 		.append_item(menu_ids::RESTORE, &restore_label, &restore_help)

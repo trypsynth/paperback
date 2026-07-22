@@ -19,6 +19,7 @@ fun WordCountDialog(
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		modifier = Modifier.semantics { paneTitle = "Word Count" },
+		// TRANSLATORS: Title of the dialog showing the current document's word count
 		title = { Text(t("Word Count")) },
 		text = {
 			Text(
@@ -28,6 +29,7 @@ fun WordCountDialog(
 		},
 		confirmButton = {
 			TextButton(onClick = onDismiss) {
+				// TRANSLATORS: Button to close the Word Count dialog
 				Text(t("OK"))
 			}
 		}

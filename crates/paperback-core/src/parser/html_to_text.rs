@@ -324,6 +324,7 @@ impl HtmlToText {
 
 					if !description.is_empty() {
 						let is_figure = tag_name == "figure";
+						// TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 						let label = if is_figure { t("Figure") } else { t("Image") };
 						let image_text = format!("[{label}: {description}]");
 						let offset = self.get_current_text_position();
