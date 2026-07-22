@@ -19,7 +19,8 @@ fun AllDocumentsDialog(
 	recentDocuments: List<RecentDocumentItem>,
 	onDismiss: () -> Unit,
 	onOpenDocument: (Uri) -> Unit,
-	onRemoveDocument: (String) -> Unit
+	onRemoveDocument: (String) -> Unit,
+	onLocateDocument: (String) -> Unit
 ) {
 	AlertDialog(
 		onDismissRequest = onDismiss,
@@ -36,7 +37,8 @@ fun AllDocumentsDialog(
 							onDismiss()
 							onOpenDocument(Uri.parse(recentDoc.uri))
 						},
-						onRemove = { onRemoveDocument(recentDoc.uri) }
+						onRemove = { onRemoveDocument(recentDoc.uri) },
+						onLocate = { onLocateDocument(recentDoc.uri) }
 					)
 				}
 			}
@@ -54,22 +56,32 @@ fun RecentDocumentItemRow(
 	item: RecentDocumentItem,
 	showClosedStatus: Boolean = true,
 	onOpen: () -> Unit,
-	onRemove: () -> Unit
+	onRemove: () -> Unit,
+	onLocate: (() -> Unit)? = null
 ) {
 	Row(
 		modifier = Modifier
 			.fillMaxWidth()
 			.clickable(
-				enabled = !item.isMissing,
 				onClickLabel = "open",
-				onClick = onOpen
+				onClick = { if (!item.isMissing) onOpen() }
 			).semantics {
-				customActions = listOf(
-					CustomAccessibilityAction(t("Remove")) {
-						onRemove()
-						true
+				customActions = mutableListOf<CustomAccessibilityAction>().apply {
+					if (item.isMissing && onLocate != null) {
+						add(
+							CustomAccessibilityAction(t("Locate")) {
+								onLocate()
+								true
+							}
+						)
 					}
-				)
+					add(
+						CustomAccessibilityAction(t("Remove")) {
+							onRemove()
+							true
+						}
+					)
+				}
 			}.padding(vertical = 12.dp, horizontal = 8.dp),
 		verticalAlignment = Alignment.CenterVertically
 	) {
@@ -104,6 +116,14 @@ fun RecentDocumentItemRow(
 					style = MaterialTheme.typography.bodySmall,
 					color = if (item.isMissing) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
 				)
+			}
+		}
+		if (item.isMissing && onLocate != null) {
+			TextButton(
+				onClick = onLocate,
+				modifier = Modifier.clearAndSetSemantics { }
+			) {
+				Text(t("Locate"))
 			}
 		}
 		TextButton(

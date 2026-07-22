@@ -304,6 +304,22 @@ class MainScreenViewModel(
 		}
 	}
 
+	fun locateRecentDocument(oldUriString: String, newUri: Uri) {
+		val newUriString = newUri.toString()
+		viewModelScope.launch(Dispatchers.IO) {
+			try {
+				context.contentResolver.takePersistableUriPermission(newUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+			} catch (_: SecurityException) {
+			}
+			config.renameDocumentPath(oldUriString, newUriString)
+			config.flush()
+			updateRecentDocuments()
+			withContext(Dispatchers.Main) {
+				_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
+			}
+		}
+	}
+
 	fun openDocument(uri: Uri) {
 		val uriString = uri.toString()
 		viewModelScope.launch(Dispatchers.IO) {

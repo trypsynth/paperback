@@ -233,6 +233,22 @@ fun MainScreen(
 		onResult = { uri -> uri?.let { viewModel.openDocument(it) } }
 	)
 
+	var locateTargetUri by remember { mutableStateOf<String?>(null) }
+	val locateFilePickerLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+		contract = androidx.activity.result.contract.ActivityResultContracts.OpenDocument(),
+		onResult = { uri ->
+			val target = locateTargetUri
+			if (uri != null && target != null) {
+				viewModel.locateRecentDocument(target, uri)
+			}
+			locateTargetUri = null
+		}
+	)
+	val onLocateRecentDocument: (String) -> Unit = { uri ->
+		locateTargetUri = uri
+		locateFilePickerLauncher.launch(supportedMimeTypes)
+	}
+
 	var showFileManager by remember { mutableStateOf(false) }
 	var showFileManagerForImport by remember { mutableStateOf(false) }
 
@@ -413,7 +429,8 @@ fun MainScreen(
 											item = recentDoc,
 											showClosedStatus = false,
 											onOpen = { viewModel.openDocument(Uri.parse(recentDoc.uri)) },
-											onRemove = { viewModel.removeRecentDocument(recentDoc.uri) }
+											onRemove = { viewModel.removeRecentDocument(recentDoc.uri) },
+											onLocate = { onLocateRecentDocument(recentDoc.uri) }
 										)
 									}
 								}
@@ -629,7 +646,8 @@ fun MainScreen(
 							recentDocuments = successState.recentDocuments,
 							onDismiss = { recentsDialogOpen = false },
 							onOpenDocument = { uri -> viewModel.openDocument(uri) },
-							onRemoveDocument = { uri -> viewModel.removeRecentDocument(uri) }
+							onRemoveDocument = { uri -> viewModel.removeRecentDocument(uri) },
+							onLocateDocument = onLocateRecentDocument
 						)
 					}
 					if (wordCountDialogOpen && docState != null) {
