@@ -170,7 +170,7 @@ fn build_all_documents_buttons(dialog: Dialog) -> (Button, Button, Button, Butto
 	let remove_button = Button::builder(&dialog).with_label(&t("&Remove")).build();
 	// TRANSLATORS: Button label to clear all documents from the list
 	let clear_all_button = Button::builder(&dialog).with_label(&t("&Clear All")).build();
-	// TRANSLATORS: Button label to close the All Documents dialog
+	// TRANSLATORS: Label for a button that closes a dialog
 	let ok_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Close")).build();
 	locate_button.enable(false);
 	(open_button, locate_button, remove_button, clear_all_button, ok_button)

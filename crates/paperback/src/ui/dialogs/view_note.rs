@@ -11,7 +11,6 @@ pub fn show_view_note_dialog(parent: &dyn WxWidget, note_text: &str) {
 		.with_style(TextCtrlStyle::MultiLine | TextCtrlStyle::ReadOnly | TextCtrlStyle::Rich2)
 		.with_size(Size::new(400, 200))
 		.build();
-	// TRANSLATORS: Label for the button to close the View Note dialog
 	let close_button = Button::builder(&dialog).with_id(ID_OK).with_label(&t("Close")).build();
 	dialog.set_affirmative_id(ID_OK);
 	let dialog_for_close = dialog;

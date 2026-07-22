@@ -80,10 +80,10 @@ pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32) -> Option
 	content_sizer.add(&percent_slider, 0, SizerFlag::Expand | SizerFlag::Bottom, 5);
 	content_sizer.add(&input_label, 0, SizerFlag::Left, 5);
 	content_sizer.add(&input_ctrl, 0, SizerFlag::Expand, 0);
-	// TRANSLATORS: Label for the button that jumps to the specified percentage in the document
+	// TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
 	let ok_button = Button::builder(&dialog).with_id(ID_OK).with_label(&t("Go")).build();
 	ok_button.set_default();
-	// TRANSLATORS: Label for the button that cancels the action
+	// TRANSLATORS: Label for the cancellation button
 	let cancel_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
 	dialog.set_escape_id(ID_CANCEL);
 	dialog.set_affirmative_id(ID_OK);

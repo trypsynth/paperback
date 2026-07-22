@@ -45,7 +45,6 @@ pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, autho
 	let _ = writeln!(info, "{characters_label} {}", stats.char_count);
 	let _ = writeln!(info, "{characters_no_spaces_label} {}", stats.char_count_no_whitespace);
 	info_ctrl.set_value(&info);
-	// TRANSLATORS: Label for the button to close the Document Info dialog
 	let ok_label = t("Close");
 	let ok_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&ok_label).build();
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();

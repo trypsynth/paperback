@@ -25,7 +25,7 @@ struct ElementsDialogUiDv {
 
 #[cfg(not(target_os = "windows"))]
 fn show_elements_dialog_dv(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<i64> {
-	// TRANSLATORS: Title of the Elements dialog (non-Windows version)
+	// TRANSLATORS: Title of the Elements dialog
 	let dialog = Dialog::builder(parent, &t("Elements")).build();
 	let ElementsDialogUiDv { content_sizer, view_choice, headings_tree, links_list } =
 		build_elements_dialog_ui_dv(dialog);
@@ -269,7 +269,6 @@ struct ElementsDialogUi {
 
 #[cfg(target_os = "windows")]
 fn show_elements_dialog_wx(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<i64> {
-	// TRANSLATORS: Title of the Elements dialog (Windows version)
 	let dialog = Dialog::builder(parent, &t("Elements")).build();
 	let ElementsDialogUi { content_sizer, view_choice, headings_tree, links_list } = build_elements_dialog_ui(dialog);
 	let (selected_offset, link_offsets) = populate_elements_dialog(session, current_pos, headings_tree, links_list);
@@ -357,7 +356,6 @@ fn populate_elements_dialog(
 		} else {
 			root.clone()
 		};
-		// TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
 		let display_text = if item.text.is_empty() { t("Untitled") } else { item.text.clone() };
 		let offset = i64::try_from(item.offset).unwrap_or(i64::MAX);
 		if let Some(id) = headings_tree.append_item_with_data(&parent_id, &display_text, offset, None, None) {

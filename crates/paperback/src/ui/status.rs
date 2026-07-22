@@ -11,7 +11,6 @@ pub fn format_status_text(info: &StatusInfo) -> String {
 	let line_label = t("Line");
 	// TRANSLATORS: Status bar label for the current character offset within the line
 	let char_label = t("Character");
-	// TRANSLATORS: Status bar label for percentage read through the document
 	let reading_label = t("Reading");
 	format!(
 		"{} {}, {} {}, {} {}%",
@@ -49,7 +48,7 @@ pub fn update_status_bar_with_sleep_timer(
 		if sleep_timer_start_ms > 0 {
 			let remaining = calculate_sleep_timer_remaining(sleep_timer_start_ms, sleep_timer_duration_minutes);
 			if remaining > 0 {
-				// TRANSLATORS: Status bar text shown when no document is open and the sleep timer is still counting down
+				// TRANSLATORS: Default status bar text when no document is open
 				let status_text = format_sleep_timer_status(&t("Ready"), remaining);
 				frame.set_status_text(&status_text, 0);
 				return;

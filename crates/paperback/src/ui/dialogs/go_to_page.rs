@@ -40,9 +40,9 @@ pub fn show_go_to_page_dialog(parent: &Frame, current_page: i32, max_page: i32) 
 	let page_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	page_sizer.add(&label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 5);
 	page_sizer.add(&page_ctrl, 1, SizerFlag::Expand, 0);
-	// TRANSLATORS: Label for the action button that jumps to the specified page number
+	// TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
 	let ok_button = Button::builder(&dialog).with_id(ID_OK).with_label(&t("Go")).build();
-	// TRANSLATORS: Label for the button that cancels the action
+	// TRANSLATORS: Label for the cancellation button
 	let cancel_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
 	dialog.set_escape_id(ID_CANCEL);
 	dialog.set_affirmative_id(ID_OK);

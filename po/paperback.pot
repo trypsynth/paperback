@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-21 22:26-0600\n"
+"POT-Creation-Date: 2026-07-22 07:32-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -73,10 +73,7 @@ msgstr ""
 msgid "&Clear All"
 msgstr ""
 
-#. TRANSLATORS: Button label to close the All Documents dialog
-#. TRANSLATORS: Label for the button to close the Document Info dialog
-#. TRANSLATORS: Label for the button to close the View Note dialog
-#. TRANSLATORS: Label for the button to close the web view dialog
+#. TRANSLATORS: Label for a button that closes a dialog
 msgid "Close"
 msgstr ""
 
@@ -144,7 +141,6 @@ msgstr ""
 msgid "&Edit Note"
 msgstr ""
 
-#. TRANSLATORS: Label for the button to delete a bookmark
 #. TRANSLATORS: Standard "Delete" edit menu item label
 msgid "&Delete"
 msgstr ""
@@ -165,13 +161,11 @@ msgstr ""
 msgid "Please select a bookmark to jump to."
 msgstr ""
 
-#. TRANSLATORS: Title of the error dialog
 #. TRANSLATORS: Generic error dialog title
 msgid "Error"
 msgstr ""
 
 #. TRANSLATORS: Title of the Bookmark Note editor dialog
-#. TRANSLATORS: Title of the dialog for adding/editing a bookmark's note
 msgid "Bookmark Note"
 msgstr ""
 
@@ -211,8 +205,7 @@ msgstr ""
 msgid "Characters (excluding spaces):"
 msgstr ""
 
-#. TRANSLATORS: Title of the Elements dialog (non-Windows version)
-#. TRANSLATORS: Title of the Elements dialog (Windows version)
+#. TRANSLATORS: Title of the Elements dialog
 msgid "Elements"
 msgstr ""
 
@@ -229,8 +222,6 @@ msgid "Links"
 msgstr ""
 
 #. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
-#. TRANSLATORS: Placeholder text shown in the Table of Contents when a section has no title
-#. TRANSLATORS: Fallback document title used when the file has no title metadata and no filename either
 msgid "Untitled"
 msgstr ""
 
@@ -238,8 +229,6 @@ msgstr ""
 msgid "OK"
 msgstr ""
 
-#. TRANSLATORS: Label for the cancellation button
-#. TRANSLATORS: Label for the button that cancels the action
 #. TRANSLATORS: Label for the cancellation button
 msgid "Cancel"
 msgstr ""
@@ -252,9 +241,7 @@ msgstr ""
 msgid "&Line number:"
 msgstr ""
 
-#. TRANSLATORS: Label for the action button that jumps to the specified line number
-#. TRANSLATORS: Label for the action button that jumps to the specified page number
-#. TRANSLATORS: Label for the button that jumps to the specified percentage in the document
+#. TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
 msgid "Go"
 msgstr ""
 
@@ -401,9 +388,7 @@ msgstr ""
 msgid "&Line spacing:"
 msgstr ""
 
-#. TRANSLATORS: Normal line spacing option
-#. TRANSLATORS: Normal paragraph spacing option
-#. TRANSLATORS: Normal letter spacing option
+#. TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
 msgid "Normal"
 msgstr ""
 
@@ -423,8 +408,7 @@ msgstr ""
 msgid "Relaxed"
 msgstr ""
 
-#. TRANSLATORS: Wide paragraph spacing option
-#. TRANSLATORS: Wide letter spacing option
+#. TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
 msgid "Wide"
 msgstr ""
 
@@ -461,7 +445,6 @@ msgid "General"
 msgstr ""
 
 #. TRANSLATORS: Tab label for the Reading options panel
-#. TRANSLATORS: Status bar label for percentage read through the document
 msgid "Reading"
 msgstr ""
 
@@ -623,7 +606,6 @@ msgid "Navigated to internal link."
 msgstr ""
 
 #. TRANSLATORS: Default status bar text when no document is open
-#. TRANSLATORS: Status bar text shown when no document is open and the sleep timer is still counting down
 msgid "Ready"
 msgstr ""
 
@@ -757,7 +739,6 @@ msgid "Failed to open donation page in browser."
 msgstr ""
 
 #. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
-#. TRANSLATORS: Error shown when the user manually picks a file format the app doesn't support, in the "Open As" dialog
 msgid "Unsupported format selected."
 msgstr ""
 
@@ -782,7 +763,6 @@ msgid "Open Document"
 msgstr ""
 
 #. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
-#. TRANSLATORS: Announced when the document has no page markers to navigate
 msgid "No pages."
 msgstr ""
 
@@ -794,7 +774,6 @@ msgid "Word wrap off."
 msgstr ""
 
 #. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-#. TRANSLATORS: Fallback file name used when the document's path has no file name, shown in the "View Source" tab title
 msgid "document"
 msgstr ""
 
@@ -1699,7 +1678,6 @@ msgid "No previous figure."
 msgstr ""
 
 #. TRANSLATORS: Prefix announced when navigation wraps around past the end/start of the document; the trailing space is significant
-#. TRANSLATORS: Prefix announced when bookmark navigation wraps around past the end/start of the document; the trailing space is significant
 msgid "Wrapping to start. "
 msgstr ""
 

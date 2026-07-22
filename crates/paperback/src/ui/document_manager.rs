@@ -39,7 +39,6 @@ pub struct DocumentTab {
 
 pub fn title_or_filename(title: String, path: &Path) -> String {
 	if title.is_empty() {
-		// TRANSLATORS: Fallback document title used when the file has no title metadata and no filename either
 		path.file_name().map_or_else(|| t("Untitled"), |s| s.to_string_lossy().to_string())
 	} else {
 		title

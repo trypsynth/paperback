@@ -176,7 +176,6 @@ fn build_bookmark_dialog_ui(dialog: Dialog, initial_filter: BookmarkFilterType) 
 	bookmark_list.set_accessibility_label(list_label_text.replace('&', "").trim_end_matches(':').trim());
 	// TRANSLATORS: Label for the button to edit a note
 	let edit_button = Button::builder(&dialog).with_label(&t("&Edit Note")).build();
-	// TRANSLATORS: Label for the button to delete a bookmark
 	let delete_button = Button::builder(&dialog).with_label(&t("&Delete")).build();
 	// TRANSLATORS: Label for the button to jump to the selected bookmark
 	let jump_button = Button::builder(&dialog).with_id(ID_OK).with_label(&t("&Jump")).build();
@@ -333,7 +332,6 @@ fn bind_bookmark_jump(dialog: Dialog, jump_button: Button, selected_start: &Rc<C
 				&dialog_for_jump,
 				// TRANSLATORS: Error message shown when the user attempts to jump without selecting any bookmark
 				&t("Please select a bookmark to jump to."),
-				// TRANSLATORS: Title of the error dialog
 				&t("Error"),
 			)
 			.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)

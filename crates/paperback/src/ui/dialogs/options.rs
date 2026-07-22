@@ -228,7 +228,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let line_spacing_label_text = t("&Line spacing:");
 	let line_spacing_label = StaticText::builder(&readability_panel).with_label(&line_spacing_label_text).build();
 	let line_spacing_ctrl = Choice::builder(&readability_panel).build();
-	// TRANSLATORS: Normal line spacing option
+	// TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
 	line_spacing_ctrl.append(&t("Normal"));
 	// TRANSLATORS: 1.5x line spacing option
 	line_spacing_ctrl.append(&t("1.5\u{00d7}"));
@@ -245,11 +245,11 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let paragraph_spacing_label =
 		StaticText::builder(&readability_panel).with_label(&paragraph_spacing_label_text).build();
 	let paragraph_spacing_ctrl = Choice::builder(&readability_panel).build();
-	// TRANSLATORS: Normal paragraph spacing option
+	// TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
 	paragraph_spacing_ctrl.append(&t("Normal"));
 	// TRANSLATORS: Relaxed paragraph spacing option
 	paragraph_spacing_ctrl.append(&t("Relaxed"));
-	// TRANSLATORS: Wide paragraph spacing option
+	// TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
 	paragraph_spacing_ctrl.append(&t("Wide"));
 	#[cfg(target_os = "macos")]
 	paragraph_spacing_ctrl
@@ -267,9 +267,9 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let letter_spacing_label_text = t("L&etter spacing:");
 	let letter_spacing_label = StaticText::builder(&readability_panel).with_label(&letter_spacing_label_text).build();
 	let letter_spacing_ctrl = Choice::builder(&readability_panel).build();
-	// TRANSLATORS: Normal letter spacing option
+	// TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
 	letter_spacing_ctrl.append(&t("Normal"));
-	// TRANSLATORS: Wide letter spacing option
+	// TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
 	letter_spacing_ctrl.append(&t("Wide"));
 	// TRANSLATORS: Very Wide letter spacing option
 	letter_spacing_ctrl.append(&t("Very Wide"));

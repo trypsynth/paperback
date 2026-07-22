@@ -73,7 +73,7 @@ fn nav_announcements(target: MarkerNavTarget, level_filter: i32) -> NavAnnouncem
 			}
 		}
 		MarkerNavTarget::Page => NavAnnouncements {
-			// TRANSLATORS: Announced when the document has no page markers to navigate
+			// TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
 			not_supported: t("No pages."),
 			// TRANSLATORS: Announced when there is no next page from the current position
 			not_found_next: t("No next page."),
@@ -424,7 +424,7 @@ pub fn handle_bookmark_navigation(
 			let line_text = tab.session.get_line_text(result.offset);
 			let content_text = if note_text.is_empty() { line_text } else { format!("{note_text}, {line_text}") };
 			let wrap_prefix = if result.wrapped {
-				// TRANSLATORS: Prefix announced when bookmark navigation wraps around past the end/start of the document; the trailing space is significant
+				// TRANSLATORS: Prefix announced when navigation wraps around past the end/start of the document; the trailing space is significant
 				if next { t("Wrapping to start. ") } else { t("Wrapping to end. ") }
 			} else {
 				String::new()
@@ -574,7 +574,6 @@ pub fn handle_bookmark_with_note(
 	};
 	let existing_note = existing.as_ref().map(|bm| bm.note.clone()).unwrap_or_default();
 	let Some(note) =
-		// TRANSLATORS: Title of the dialog for adding/editing a bookmark's note
 		dialogs::show_note_entry_dialog(frame, &t("Bookmark Note"), &t("Enter bookmark note:"), &existing_note)
 	else {
 		return;

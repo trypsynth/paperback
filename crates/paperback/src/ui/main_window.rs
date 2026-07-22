@@ -1436,7 +1436,7 @@ impl MainWindow {
 							let orig_name = tab
 								.file_path
 								.file_name()
-								// TRANSLATORS: Fallback file name used when the document's path has no file name, shown in the "View Source" tab title
+								// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
 								.map_or_else(|| t("document"), |name| name.to_string_lossy().to_string());
 							let temp_dir = env::temp_dir().to_string_lossy().to_string();
 							Some(tab.session.view_source(current_pos, &temp_dir).map(|view| (view, orig_name)))
@@ -1810,7 +1810,7 @@ fn ensure_parser_for_unknown_file(parent: &Frame, path: &Path, config: &ConfigMa
 		return false;
 	};
 	if !parser_supports_extension(&format) {
-		// TRANSLATORS: Error shown when the user manually picks a file format the app doesn't support, in the "Open As" dialog
+		// TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
 		let message = t("Unsupported format selected.");
 		let title = t("Error");
 		let dialog = MessageDialog::builder(parent, &message, &title)

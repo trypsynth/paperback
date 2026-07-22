@@ -58,7 +58,6 @@ pub fn show_web_view_dialog(
              });",
 		);
 	});
-	// TRANSLATORS: Label for the button to close the web view dialog
 	let close_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Close")).build();
 	let dialog_for_ok = dialog;
 	close_button.on_click(move |_| {
