@@ -412,7 +412,7 @@ fun MainScreen(
 								Text(
 									t("No Documents"),
 									style = MaterialTheme.typography.titleLarge,
-									modifier = Modifier.padding(bottom = 24.dp).semantics { heading() }
+									modifier = Modifier.padding(bottom = 24.dp)
 								)
 							} else {
 								Text(
