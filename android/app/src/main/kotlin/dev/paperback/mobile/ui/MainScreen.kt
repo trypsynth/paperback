@@ -392,12 +392,13 @@ fun MainScreen(
 							horizontalAlignment = Alignment.CenterHorizontally,
 							verticalArrangement = Arrangement.Center
 						) {
-							Text(
-								"No document open.",
-								style = MaterialTheme.typography.titleLarge,
-								modifier = Modifier.padding(bottom = 24.dp)
-							)
-							if (successState.recentDocuments.isNotEmpty()) {
+							if (successState.recentDocuments.isEmpty()) {
+								Text(
+									t("No Documents"),
+									style = MaterialTheme.typography.titleLarge,
+									modifier = Modifier.padding(bottom = 24.dp).semantics { heading() }
+								)
+							} else {
 								Text(
 									t("Recent Documents"),
 									style = MaterialTheme.typography.titleMedium,
