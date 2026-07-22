@@ -85,6 +85,10 @@ impl ConfigManagerFfi {
 		self.inner.lock().unwrap().remove_document_history(&path);
 	}
 
+	pub fn rename_document_path(&self, old_path: String, new_path: String) {
+		self.inner.lock().unwrap().rename_document_path(&old_path, &new_path);
+	}
+
 	pub fn get_supported_extensions(&self) -> Vec<String> {
 		let mut exts = HashSet::new();
 		for parser in ParserRegistry::global().all_parsers() {
