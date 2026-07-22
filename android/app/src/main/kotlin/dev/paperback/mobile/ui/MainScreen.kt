@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -398,9 +399,9 @@ fun MainScreen(
 							)
 							if (successState.recentDocuments.isNotEmpty()) {
 								Text(
-									"Recently Opened",
+									t("Recent Documents"),
 									style = MaterialTheme.typography.titleMedium,
-									modifier = Modifier.padding(bottom = 8.dp)
+									modifier = Modifier.padding(bottom = 8.dp).semantics { heading() }
 								)
 								LazyColumn(
 									modifier = Modifier.weight(1f).fillMaxWidth(),
@@ -419,7 +420,7 @@ fun MainScreen(
 									onClick = { recentsDialogOpen = true },
 									modifier = Modifier.padding(top = 8.dp)
 								) {
-									Text(t("Recent Documents"))
+									Text(t("Show All"))
 								}
 							}
 						}
