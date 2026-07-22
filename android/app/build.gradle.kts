@@ -9,7 +9,7 @@ android {
 	namespace = "dev.paperback.mobile"
 	compileSdk = 37
 	defaultConfig {
-		applicationId = "dev.paperback.mobile"
+		applicationId = "dev.paperback.android"
 		minSdk = 24
 		targetSdk = 36
 		versionCode = 1
