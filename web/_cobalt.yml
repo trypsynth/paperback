@@ -8,6 +8,7 @@ site:
       - [Downloads, "/downloads"]
       - [Documentation, "/readme.html"]
       - [Translations, "/translations"]
+      - [Privacy Policy, "/privacy"]
       - [Source code, "https://github.com/trypsynth/paperback"]
       - [Sponsor on GitHub, "https://github.com/sponsors/trypsynth"]
       - [Donate with PayPal, "https://paypal.me/tygillespie05"]
