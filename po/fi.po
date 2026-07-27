@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-12 17:50-0600\n"
-"PO-Revision-Date: 2026-07-17 19:38+0300\n"
+"POT-Creation-Date: 2026-07-24 10:48-0600\n"
+"PO-Revision-Date: 2026-07-27 00:46+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -19,9 +19,11 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.9\n"
 
+#. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
 msgstr "IPC-palvelimen luonti epäonnistui"
 
+#. TRANSLATORS: Title of a warning dialog
 msgid "Warning"
 msgstr "Varoitus"
 
@@ -73,10 +75,7 @@ msgstr "&Poista"
 msgid "&Clear All"
 msgstr "P&oista kaikki"
 
-#. TRANSLATORS: Button label to close the All Documents dialog
-#. TRANSLATORS: Label for the button to close the Document Info dialog
-#. TRANSLATORS: Label for the button to close the View Note dialog
-#. TRANSLATORS: Label for the button to close the web view dialog
+#. TRANSLATORS: Label for a button that closes a dialog
 msgid "Close"
 msgstr "Sulje"
 
@@ -143,7 +142,6 @@ msgid "Notes"
 msgstr "Muistiinpanot"
 
 #. TRANSLATORS: Label for the bookmark/note list (used only as an accessibility label on macOS)
-#| msgid "&Bookmarks"
 msgid "&Bookmarks:"
 msgstr "&Kirjanmerkit:"
 
@@ -151,7 +149,6 @@ msgstr "&Kirjanmerkit:"
 msgid "&Edit Note"
 msgstr "&Muokkaa muistiinpanoa"
 
-#. TRANSLATORS: Label for the button to delete a bookmark
 #. TRANSLATORS: Standard "Delete" edit menu item label
 msgid "&Delete"
 msgstr "&Poista"
@@ -172,7 +169,7 @@ msgstr "tyhjä"
 msgid "Please select a bookmark to jump to."
 msgstr "Valitse kirjanmerkki, johon siirrytään."
 
-#. TRANSLATORS: Title of the error dialog
+#. TRANSLATORS: Generic error dialog title
 msgid "Error"
 msgstr "Virhe"
 
@@ -216,8 +213,7 @@ msgstr "Merkkien määrä:"
 msgid "Characters (excluding spaces):"
 msgstr "Merkkien määrä (ilman välilyöntejä):"
 
-#. TRANSLATORS: Title of the Elements dialog (non-Windows version)
-#. TRANSLATORS: Title of the Elements dialog (Windows version)
+#. TRANSLATORS: Title of the Elements dialog
 msgid "Elements"
 msgstr "Elementit"
 
@@ -234,7 +230,6 @@ msgid "Links"
 msgstr "Linkit"
 
 #. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
-#. TRANSLATORS: Placeholder text shown in the Table of Contents when a section has no title
 msgid "Untitled"
 msgstr "Nimetön"
 
@@ -242,8 +237,6 @@ msgstr "Nimetön"
 msgid "OK"
 msgstr "OK"
 
-#. TRANSLATORS: Label for the cancellation button
-#. TRANSLATORS: Label for the button that cancels the action
 #. TRANSLATORS: Label for the cancellation button
 msgid "Cancel"
 msgstr "Peruuta"
@@ -256,9 +249,7 @@ msgstr "Siirry riville"
 msgid "&Line number:"
 msgstr "R&ivinumero:"
 
-#. TRANSLATORS: Label for the action button that jumps to the specified line number
-#. TRANSLATORS: Label for the action button that jumps to the specified page number
-#. TRANSLATORS: Label for the button that jumps to the specified percentage in the document
+#. TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
 msgid "Go"
 msgstr "Siirry"
 
@@ -315,6 +306,7 @@ msgstr "Markdown"
 msgid "Options"
 msgstr "Asetukset"
 
+#. TRANSLATORS: Option to restore documents that were open when the app was last closed
 msgid "&Restore previously opened documents on startup"
 msgstr "Pala&uta aiemmin avatut asiakirjat käynnistettäessä"
 
@@ -322,6 +314,7 @@ msgstr "Pala&uta aiemmin avatut asiakirjat käynnistettäessä"
 msgid "&Word wrap"
 msgstr "Rivit&ys"
 
+#. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
 msgid "Render tables &inline"
 msgstr "Näytä taulukot tekst&in osana"
 
@@ -341,9 +334,11 @@ msgstr "Näytä tiivis &Siirry-valikko"
 msgid "&Wrap navigation"
 msgstr "Siirry a&lkuun asiakirjan lopussa"
 
+#. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 msgid "Play &sounds on bookmarks and notes"
 msgstr "Ilmaise kirjanmerkit ja muistiinpanot merkkiäänellä"
 
+#. TRANSLATORS: Option to check for app updates automatically on startup
 msgid "Check for &updates on startup"
 msgstr "Tarkista &päivitykset käynnistettäessä"
 
@@ -351,9 +346,11 @@ msgstr "Tarkista &päivitykset käynnistettäessä"
 msgid "Customize &Window Hotkey..."
 msgstr "&Ikkunan pikanäppäin..."
 
+#. TRANSLATORS: Label for the reading speed input field (Words Per Minute)
 msgid "&Reading speed (words per minute):"
 msgstr "&Lukunopeus (sanaa minuutissa):"
 
+#. TRANSLATORS: Label for the number of recently opened documents to keep in history
 msgid "Number of &recent documents to show:"
 msgstr "V&iimeisimpien asiakirjojen määrä:"
 
@@ -401,9 +398,7 @@ msgstr "Palauta &oletustausta"
 msgid "&Line spacing:"
 msgstr "R&iviväli:"
 
-#. TRANSLATORS: Normal line spacing option
-#. TRANSLATORS: Normal paragraph spacing option
-#. TRANSLATORS: Normal letter spacing option
+#. TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
 msgid "Normal"
 msgstr "Normaali"
 
@@ -423,8 +418,7 @@ msgstr "&Kappaleväli:"
 msgid "Relaxed"
 msgstr "Väljä"
 
-#. TRANSLATORS: Wide paragraph spacing option
-#. TRANSLATORS: Wide letter spacing option
+#. TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
 msgid "Wide"
 msgstr "Leveä"
 
@@ -481,7 +475,6 @@ msgid "Default"
 msgstr "Oletus"
 
 #. TRANSLATORS: Font description prefix; {} is the font face name
-#| msgid "Font"
 msgid "Font: {}"
 msgstr "Fontti: {}"
 
@@ -605,36 +598,43 @@ msgstr "Sanamäärä"
 msgid "File not found: {}"
 msgstr "Tiedostoa {} ei löydy"
 
+#. TRANSLATORS: Prompt asking whether to import a document's previously saved settings and bookmarks found alongside it
 msgid ""
 "A .paperback file was found for this document. Would you like to import it?"
 msgstr "Tälle asiakirjalle löytyi .paperback-tiedosto. Haluatko tuoda sen?"
 
+#. TRANSLATORS: Title of the dialog prompting to import a document's saved settings and bookmarks
 msgid "Import document data"
 msgstr "Asiakirjatietojen tuonti"
 
+#. TRANSLATORS: Error shown when the user dismisses the password prompt for an encrypted document without entering one
 msgid "Password is required."
 msgstr "Tarvitaan salasana."
 
+#. TRANSLATORS: Announcement read by screen readers after following an internal link within the document
 msgid "Navigated to internal link."
 msgstr "Siirrytty sisäiseen linkkiin."
 
+#. TRANSLATORS: Default status bar text when no document is open
 msgid "Ready"
 msgstr "Valmis"
 
+#. TRANSLATORS: Title of the dialog showing a table rendered as HTML when activated with Enter/Space
 msgid "Table View"
 msgstr "Taulukkonäkymä"
 
+#. TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
 msgid "&Password:"
 msgstr "&Salasana:"
 
 msgid "Document Password"
 msgstr "Asiakirjan salasana"
 
+#. TRANSLATORS: Generic error message shown when a document fails to load with no further detail available
 msgid "Failed to load document."
 msgstr "Asiakirjan avaus epäonnistui."
 
 #. TRANSLATORS: "File" label prefix in the document-load error dialog; {} is the file path
-#| msgid "File"
 msgid "File: {}"
 msgstr "Tiedosto: {}"
 
@@ -642,99 +642,123 @@ msgstr "Tiedosto: {}"
 msgid "Details: {}"
 msgstr "Tiedot: {}"
 
+#. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
 msgid "Create &bookmark"
 msgstr "Luo &kirjanmerkki"
 
 msgid "Create bookmark"
 msgstr "Luo kirjanmerkki"
 
+#. TRANSLATORS: Right-click context menu item and status text to bookmark the current position with an attached note
 msgid "Bookmark with &note"
 msgstr "Kirjanmerkki muistiinpan&olla"
 
 msgid "Create bookmark with note"
 msgstr "Luo kirjanmerkki muistiinpanolla"
 
+#. TRANSLATORS: Right-click context menu item and status text to open the find dialog
 msgid "&Find"
 msgstr "&Etsi"
 
 msgid "Find text"
 msgstr "Etsi tekstiä"
 
+#. TRANSLATORS: Right-click context menu item and status text to repeat the last search forward
 msgid "Find &next"
 msgstr "Etsi se&uraava"
 
 msgid "Find next match"
 msgstr "Etsi seuraava osuma"
 
+#. TRANSLATORS: Right-click context menu item and status text to repeat the last search backward
 msgid "Find &previous"
 msgstr "Etsi ede&llinen"
 
 msgid "Find previous match"
 msgstr "Etsi edellinen osuma"
 
+#. TRANSLATORS: Right-click context menu item and status text to jump to a specific page
 msgid "Go to &page"
 msgstr "Siirry s&ivulle"
 
+#. TRANSLATORS: Right-click context menu item and status text to jump to a specific line
 msgid "Go to &line"
 msgstr "Siirry rivi&lle"
 
 msgid "Go to line"
 msgstr "Siirry riville"
 
+#. TRANSLATORS: Right-click context menu item and status text to jump to a percentage through the document
 msgid "Go to &percent"
 msgstr "Siirry &prosenttiin"
 
 msgid "Go to percent"
 msgstr "Siirry prosenttiin"
 
+#. TRANSLATORS: Title of the Find dialog
 msgid "Find"
 msgstr "Etsi"
 
+#. TRANSLATORS: Label for the text field where the user types what to search for
 msgid "Find &what:"
 msgstr "Ets&ittävä:"
 
+#. TRANSLATORS: Checkbox to make the search case-sensitive
 msgid "&Match case"
 msgstr "Sama &kirjainkoko"
 
+#. TRANSLATORS: Checkbox to only match whole words, not substrings
 msgid "Match &whole word"
 msgstr "Koko sa&na"
 
+#. TRANSLATORS: Checkbox to treat the search text as a regular expression
 msgid "Use &regular expressions"
 msgstr "Kä&ytä säännöllisiä lausekkeita"
 
+#. TRANSLATORS: Button to search backward for the previous match
 msgid "Find &Previous"
 msgstr "Etsi edell&inen"
 
+#. TRANSLATORS: Button to search forward for the next match
 msgid "Find &Next"
 msgstr "Etsi se&uraava"
 
+#. TRANSLATORS: Announced when a search finds no matches in the document
 msgid "Not found."
 msgstr "Ei löydy."
 
+#. TRANSLATORS: Announced when a search reaches the end of the document and wraps back to the start
 msgid "No more results. Wrapping search."
 msgstr "Ei enempää tuloksia. Aloitetaan alusta."
 
+#. TRANSLATORS: Error shown when the active document has no known file path to reveal
 msgid "Failed to reveal file in folder."
 msgstr "Tiedostokansion avaaminen epäonnistui."
 
+#. TRANSLATORS: Error shown when the bundled help/readme file could not be located on disk
 msgid ""
 "readme.html not found. Please ensure the application was built properly."
 msgstr ""
 "Tiedostoa readme.html ei löydy. Varmista, että sovellus on käännetty oikein "
 "lähdekoodista."
 
+#. TRANSLATORS: Error shown when the OS default web browser could not be launched to display help
 msgid "Failed to launch default browser."
 msgstr "Oletusselaimen käynnistys epäonnistui."
 
+#. TRANSLATORS: Error shown when the OS default web browser could not be launched to open the donation page
 msgid "Failed to open donation page in browser."
 msgstr "Lahjoitussivun avaaminen selaimessa epäonnistui."
 
+#. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
 msgid "Unsupported format selected."
 msgstr "Valittua tiedostomuotoa ei tueta."
 
+#. TRANSLATORS: Main window title when no document is open
 msgid "Paperback"
 msgstr "Paperback"
 
+#. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Paperback ei voi suorittaa toimintoja selainnäkymän ollessa avoinna."
 
@@ -746,81 +770,106 @@ msgstr "Paperback - {}"
 msgid "{} chars"
 msgstr "{} merkkiä"
 
+#. TRANSLATORS: Title of the file picker dialog shown when opening a document
 msgid "Open Document"
 msgstr "Asiakirjan avaaminen"
 
+#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
 msgid "No pages."
 msgstr "Ei sivuja."
 
+#. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 msgid "Word wrap on."
 msgstr "Rivitys käytössä."
 
 msgid "Word wrap off."
 msgstr "Rivitys pois."
 
+#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
 msgid "document"
 msgstr "asiakirja"
 
+#. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgstr "Tekstitiedostot (*.txt)|*.txt|Kaikki tiedostot (*.*)|*.*"
 
+#. TRANSLATORS: Title of the file save dialog when exporting a document to plain text
 msgid "Export document to plain text"
 msgstr "Vie asiakirja tekstimuotoon"
 
+#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
 msgstr "Asiakirjan vienti epäonnistui."
 
+#. TRANSLATORS: File filter shown in the "Export to HTML" save dialog
 msgid "HTML files (*.html)|*.html|All files (*.*)|*.*"
 msgstr "HTML-tiedostot (*.html)|*.html|Kaikki tiedostot (*.*)|*.*"
 
+#. TRANSLATORS: Title of the file save dialog when exporting a document to HTML
 msgid "Export document to HTML"
 msgstr "Vie asiakirja HTML-muotoon"
 
+#. TRANSLATORS: File filter shown in the "Export to Markdown" save dialog
 msgid "Markdown files (*.md)|*.md|All files (*.*)|*.*"
 msgstr "Markdown-tiedostot (*.md)|*.md|Kaikki tiedostot (*.*)|*.*"
 
+#. TRANSLATORS: Title of the file save dialog when exporting a document to Markdown
 msgid "Export document to Markdown"
 msgstr "Vie asiakirja Markdown-muotoon"
 
+#. TRANSLATORS: File filter shown in the export/import notes-and-bookmarks (.paperback) dialogs
 msgid "Paperback files (*.paperback)|*.paperback"
 msgstr "Paperback-tiedostot (*.paperback)|*.paperback"
 
+#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
 msgid "Export notes and bookmarks"
 msgstr "Vie muistiinpanot ja kirjanmerkit"
 
+#. TRANSLATORS: Success message shown after exporting a document's notes and bookmarks
 msgid "Notes and bookmarks exported successfully."
 msgstr "Muistiinpanot ja kirjanmerkit viety onnistuneesti."
 
+#. TRANSLATORS: Title of the export-succeeded dialog
 msgid "Export Successful"
 msgstr "Vienti onnistui"
 
+#. TRANSLATORS: Title of the file open dialog when importing a document's notes and bookmarks
 msgid "Import notes and bookmarks"
 msgstr "Tuo muistiinpanot ja kirjanmerkit"
 
+#. TRANSLATORS: Success message shown after importing a document's notes and bookmarks
 msgid "Notes and bookmarks imported successfully."
 msgstr "Muistiinpanot ja kirjanmerkit tuotu onnistuneesti."
 
+#. TRANSLATORS: Title of the import-succeeded dialog
 msgid "Import Successful"
 msgstr "Tuonti onnistui"
 
+#. TRANSLATORS: Announced when opening the Table of Contents for a document that has none
 msgid "No table of contents."
 msgstr "Ei sisällysluetteloa."
 
+#. TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
 msgid "Web View"
 msgstr "Selainnäkymä"
 
+#. TRANSLATORS: Error shown when the document has no content that can be rendered in the Web View
 msgid "Could not determine content to display in Web View."
 msgstr "Selainnäkymässä näytettävää sisältöä ei voitu määrittää."
 
+#. TRANSLATORS: Prefix before the file name in the tab title for a "View Source" tab, e.g. "Source: book.epub"
 msgid "Source:"
 msgstr "Lähdekoodi:"
 
+#. TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
 msgid "Source view is not available for this document format."
 msgstr "Tämä asiakirjamuoto ei tue lähdekoodinäkymää."
 
+#. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
 msgid "Could not load the document source."
 msgstr "Asiakirjan lähdekoodia ei voitu näyttää."
 
+#. TRANSLATORS: Announced when the user cancels a running sleep timer
 msgid "Sleep timer cancelled."
 msgstr "Uniajastin peruutettu."
 
@@ -833,6 +882,7 @@ msgstr "Uniajastin: 1 minuutti."
 msgid "Sleep timer set for %d minutes."
 msgstr "Uniajastin: %d minuuttia."
 
+#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
 msgid "No recent documents."
 msgstr "Ei viimeisimpiä asiakirjoja."
 
@@ -1107,6 +1157,7 @@ msgstr "&Sulje\tCtrl+F4"
 msgid "Close the current document"
 msgstr "Sulje nykyinen asiakirja"
 
+#. TRANSLATORS: Menu item label to close all open documents
 msgid "Close &All\tCtrl+Shift+W"
 msgstr "Sulje k&aikki\tCtrl+Shift+W"
 
@@ -1184,6 +1235,7 @@ msgstr "Etsi &seuraava\tF3"
 msgid "Find next occurrence"
 msgstr "Etsi seuraava esiintymä"
 
+#. TRANSLATORS: Menu item label to find the previous match
 msgid "Find &Previous\tCtrl+Shift+G"
 msgstr "Etsi e&dellinen\tCtrl+Shift+G"
 
@@ -1194,6 +1246,7 @@ msgstr "Etsi e&dellinen\tShift+F3"
 msgid "Find previous occurrence"
 msgstr "Etsi edellinen esiintymä"
 
+#. TRANSLATORS: Menu item label to open the "go to line" dialog
 msgid "Go to &line...\tCtrl+L"
 msgstr "Siirry &riville...\tCtrl+L"
 
@@ -1204,9 +1257,11 @@ msgstr "Siirry &riville...\tCtrl+G"
 msgid "Go to a specific line"
 msgstr "Siirry tietylle riville"
 
+#. TRANSLATORS: Menu item label to open the "go to percent" dialog (macOS variant)
 msgid "Go to &percent...\tCtrl+Shift+L"
 msgstr "Siirry &prosenttiin...\tCtrl+Shift+L"
 
+#. TRANSLATORS: Menu item label to open the "go to percent" dialog
 msgid "Go to &percent...\tCtrl+Shift+G"
 msgstr "Siirry &prosenttiin...\tCtrl+Shift+G"
 
@@ -1225,6 +1280,7 @@ msgstr "Siirry t&aaksepäin\tAlt+Vasen"
 msgid "Go back in history"
 msgstr "Siirry historiassa taaksepäin"
 
+#. TRANSLATORS: Menu item label to go forward in navigation history
 msgid "Go &Forward\tCtrl+]"
 msgstr "Siirry &eteenpäin\tCtrl+]"
 
@@ -1363,6 +1419,7 @@ msgstr "Vie &Markdown-muotoon..."
 msgid "Export document as Markdown"
 msgstr "Vie asiakirja Markdown-muodossa"
 
+#. TRANSLATORS: Menu item label to show the word count dialog
 msgid "&Word Count\tRawCtrl+W"
 msgstr "Sana&määrä\tRawCtrl+W"
 
@@ -1501,12 +1558,15 @@ msgstr "(Ei viimeisimpiä asiakirjoja)"
 msgid "Show All...\tCtrl+R"
 msgstr "Näytä kaikki...\tCtrl+R"
 
+#. TRANSLATORS: Announced when the document has no sections to navigate
 msgid "No sections."
 msgstr "Ei lukuja."
 
+#. TRANSLATORS: Announced when there is no next section from the current position
 msgid "No next section"
 msgstr "Ei seuraavaa lukua"
 
+#. TRANSLATORS: Announced when there is no previous section from the current position
 msgid "No previous section"
 msgstr "Ei edellistä lukua"
 
@@ -1525,84 +1585,111 @@ msgstr "Ei seuraavaa otsikkoa tasolla %d."
 msgid "No previous heading at level %d."
 msgstr "Ei edellistä otsikkoa tasolla %d."
 
+#. TRANSLATORS: Announced when the document has no headings at all (no level filter applied)
 msgid "No headings."
 msgstr "Ei otsikoita."
 
+#. TRANSLATORS: Announced when there is no next heading (no level filter applied)
 msgid "No next heading."
 msgstr "Ei seuraavaa otsikkoa."
 
+#. TRANSLATORS: Announced when there is no previous heading (no level filter applied)
 msgid "No previous heading."
 msgstr "Ei edellistä otsikkoa."
 
+#. TRANSLATORS: Announced when there is no next page from the current position
 msgid "No next page."
 msgstr "Ei seuraavaa sivua."
 
+#. TRANSLATORS: Announced when there is no previous page from the current position
 msgid "No previous page."
 msgstr "Ei edellistä sivua."
 
+#. TRANSLATORS: Announced when the document has no links to navigate
 msgid "No links."
 msgstr "Ei linkkejä."
 
+#. TRANSLATORS: Announced when there is no next link from the current position
 msgid "No next link."
 msgstr "Ei seuraavaa linkkiä."
 
+#. TRANSLATORS: Announced when there is no previous link from the current position
 msgid "No previous link."
 msgstr "Ei edellistä linkkiä."
 
+#. TRANSLATORS: Announced when the document has no lists to navigate
 msgid "No lists."
 msgstr "Ei luetteloita."
 
+#. TRANSLATORS: Announced when there is no next list from the current position
 msgid "No next list."
 msgstr "Ei seuraavaa luetteloa."
 
+#. TRANSLATORS: Announced when there is no previous list from the current position
 msgid "No previous list."
 msgstr "Ei edellistä luetteloa."
 
+#. TRANSLATORS: Announced when the document has no list items to navigate
 msgid "No list items."
 msgstr "Ei luettelokohteita."
 
+#. TRANSLATORS: Announced when there is no next list item from the current position
 msgid "No next list item."
 msgstr "Ei seuraavaa luettelokohdetta."
 
+#. TRANSLATORS: Announced when there is no previous list item from the current position
 msgid "No previous list item."
 msgstr "Ei edellistä luettelokohdetta."
 
+#. TRANSLATORS: Announced when the document has no tables to navigate
 msgid "No tables."
 msgstr "Ei taulukoita."
 
+#. TRANSLATORS: Announced when there is no next table from the current position
 msgid "No next table."
 msgstr "Ei seuraavaa taulukkoa."
 
+#. TRANSLATORS: Announced when there is no previous table from the current position
 msgid "No previous table."
 msgstr "Ei edellistä taulukkoa."
 
+#. TRANSLATORS: Announced when the document has no separators to navigate
 msgid "No separators."
 msgstr "Ei erottimia."
 
+#. TRANSLATORS: Announced when there is no next separator from the current position
 msgid "No next separator."
 msgstr "Ei seuraavaa erotinta."
 
+#. TRANSLATORS: Announced when there is no previous separator from the current position
 msgid "No previous separator."
 msgstr "Ei edellistä erotinta."
 
+#. TRANSLATORS: Announced when the document has no images to navigate
 msgid "No images."
 msgstr "Ei kuvia."
 
+#. TRANSLATORS: Announced when there is no next image from the current position
 msgid "No next image."
 msgstr "Ei seuraavaa kuvaa."
 
+#. TRANSLATORS: Announced when there is no previous image from the current position
 msgid "No previous image."
 msgstr "Ei edellistä kuvaa."
 
+#. TRANSLATORS: Announced when the document has no figures to navigate
 msgid "No figures."
 msgstr "Ei kuvituksia."
 
+#. TRANSLATORS: Announced when there is no next figure from the current position
 msgid "No next figure."
 msgstr "Ei seuraavaa kuvitusta."
 
+#. TRANSLATORS: Announced when there is no previous figure from the current position
 msgid "No previous figure."
 msgstr "Ei edellistä kuvitusta."
 
+#. TRANSLATORS: Prefix announced when navigation wraps around past the end/start of the document; the trailing space is significant
 msgid "Wrapping to start. "
 msgstr "Siirrytään alkuun. "
 
@@ -1623,24 +1710,29 @@ msgstr "Sivu %d: %s"
 msgid " link"
 msgstr " linkki"
 
+#. TRANSLATORS: Announced when moving forward/backward through the caret position history
 msgid "Navigated to next position."
 msgstr "Siirrytty seuraavaan sijaintiin."
 
 msgid "Navigated to previous position."
 msgstr "Siirrytty edelliseen sijaintiin."
 
+#. TRANSLATORS: Announced when there is no next/previous position in the caret position history
 msgid "No next position."
 msgstr "Ei seuraavaa sijaintia."
 
 msgid "No previous position."
 msgstr "Ei edellistä sijaintia."
 
+#. TRANSLATORS: Announced when the document has no containers (lists/tables) to navigate
 msgid "No containers."
 msgstr "Ei säilöjä."
 
+#. TRANSLATORS: Announced when the caret is not currently inside a container (list/table)
 msgid "Not in a container."
 msgstr "Ei säilössä."
 
+#. TRANSLATORS: Announced when jumping to the start/end of the container (list/table) the caret is inside, and the target line is blank
 msgid "Past end of container."
 msgstr "Säilön jälkeinen kohta."
 
@@ -1652,27 +1744,33 @@ msgstr "Säilön alku."
 msgid "%s - Bookmark %d"
 msgstr "%s - kirjanmerkki %d"
 
+#. TRANSLATORS: Announced when there are no bookmarks/notes at all to navigate to
 msgid "No notes."
 msgstr "Ei muistiinpanoja."
 
 msgid "No bookmarks."
 msgstr "Ei kirjanmerkkejä."
 
+#. TRANSLATORS: Announced when there is no next bookmark/note from the current position
 msgid "No next note."
 msgstr "Ei seuraavaa muistiinpanoa."
 
 msgid "No next bookmark."
 msgstr "Ei seuraavaa kirjanmerkkiä."
 
+#. TRANSLATORS: Announced when there is no previous note from the current position
 msgid "No previous note."
 msgstr "Ei edellistä muistiinpanoa."
 
+#. TRANSLATORS: Announced when there is no previous bookmark from the current position
 msgid "No previous bookmark."
 msgstr "Ei edellistä kirjanmerkkiä."
 
+#. TRANSLATORS: Fallback announcement when viewing a bookmark that has no note text or line snippet
 msgid "Bookmark."
 msgstr "Kirjanmerkki."
 
+#. TRANSLATORS: Announced after toggling a bookmark at the current selection off/on
 msgid "Bookmark removed."
 msgstr "Kirjanmerkki poistettu."
 
@@ -1680,32 +1778,41 @@ msgid "Bookmark added."
 msgstr "Kirjanmerkki lisätty."
 
 msgid "Enter bookmark note:"
-msgstr "Kirjoita kirjanmerkin muistiinpano:"
+msgstr "Anna kirjanmerkin muistiinpano:"
 
+#. TRANSLATORS: Announced after saving a bookmark's note text
 msgid "Bookmark saved."
 msgstr "Kirjanmerkki tallennettu."
 
+#. TRANSLATORS: Message shown when trying to view a bookmark note but the current position has none
 msgid "No note at the current position."
 msgstr "Ei muistiinpanoa nykyisessä sijainnissa."
 
+#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Reading 45%"
 msgid "Line"
 msgstr "Rivi"
 
+#. TRANSLATORS: Status bar label for the current character offset within the line
 msgid "Character"
 msgstr "Merkki"
 
+#. TRANSLATORS: Status bar label prefixed before the remaining sleep timer countdown, e.g. "Sleep timer: 04:32"
 msgid "Sleep timer"
 msgstr "Uniajastin"
 
+#. TRANSLATORS: System tray menu item to restore the main window from the tray
 msgid "&Restore"
 msgstr "&Palauta"
 
+#. TRANSLATORS: Status bar help text for the tray menu's "Restore" item
 msgid "Restore Paperback"
 msgstr "Palauta Paperback"
 
+#. TRANSLATORS: System tray menu item to quit the application
 msgid "E&xit"
 msgstr "&Lopeta"
 
+#. TRANSLATORS: Status bar help text for the tray menu's "Exit" item
 msgid "Exit Paperback"
 msgstr "Lopeta Paperback"
 
@@ -1744,7 +1851,6 @@ msgid "rootfile not found in container.xml"
 msgstr "container.xml-tiedostosta ei löydy rootfile-elementtiä"
 
 #. TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
-#| msgid "Unsupported format selected."
 msgid "unsupported content"
 msgstr "sisältöä ei tueta"
 
@@ -1760,6 +1866,7 @@ msgstr "HTML-tiedosto on tyhjä: {}"
 msgid "Failed to convert HTML to text: {}"
 msgstr "HTML-tiedoston tekstimuunnos epäonnistui: {}"
 
+#. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 msgid "Figure"
 msgstr "Kuvio"
 
@@ -1779,7 +1886,6 @@ msgid "Invalid record offsets"
 msgstr "Virhe tietueiden sijaintitiedoissa"
 
 #. TRANSLATORS: Error shown when a MOBI file has no records
-#| msgid "Not found."
 msgid "No records found"
 msgstr "Tietueita ei löydy"
 
@@ -1871,6 +1977,7 @@ msgstr "ODP-tiedostossa ei ole sivuja"
 msgid "FODP file does not contain any pages"
 msgstr "FODP-tiedostossa ei ole sivuja"
 
+#. TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
 msgid ""
 "This PDF contains images only, with no extractable text. You may need to run "
 "it through OCR software to read its contents."
@@ -1878,12 +1985,11 @@ msgstr ""
 "Tässä PDF-asiakirjassa on pelkkiä kuvia ilman luettavaa tekstiä. Tiedostolle "
 "on suoritettava tekstintunnistus, jotta sen sisältöä voidaan lukea."
 
-#| msgid "Password Required"
+#. TRANSLATORS: Error detail shown when a PDF's password is missing or wrong (the internal sentinel prefix before it is not translated)
 msgid "Password required or incorrect"
 msgstr "Tarvitaan salasana tai se on virheellinen"
 
 #. TRANSLATORS: Error shown when a PDF fails to open for a reason other than a password; {} is the underlying error detail
-#| msgid "Failed to load document."
 msgid "Failed to open PDF document: {}"
 msgstr "PDF-asiakirjan avaus epäonnistui: {}"
 
@@ -1906,7 +2012,7 @@ msgstr "PPT-tiedostossa ei ole dioja"
 msgid "PowerPoint Document stream not found"
 msgstr "PowerPoint-asiakirjan tietovirtaa ei löydy"
 
-#| msgid "Failed to export document."
+#. TRANSLATORS: Error shown when an RTF document's tokens fail to parse; {} is the underlying lexer error
 msgid "Failed to parse RTF document: {}"
 msgstr "RTF-asiakirjan jäsennys epäonnistui: {}"
 
@@ -1941,7 +2047,6 @@ msgid "File content does not look like plain text"
 msgstr "Tiedoston sisältö ei ole muotoilematonta tekstiä"
 
 #. TRANSLATORS: Error shown when a DOC file's fallback content has no readable text
-#| msgid "No table of contents."
 msgid "No readable text content found"
 msgstr "Luettavaa tekstisisältöä ei löydy"
 
@@ -1949,11 +2054,11 @@ msgstr "Luettavaa tekstisisältöä ei löydy"
 msgid "File is encrypted and requires a password"
 msgstr "Tiedosto on salattu ja sen avaamiseen tarvitaan salasana"
 
+#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
 msgid "Decryption failed (wrong password?): {}"
 msgstr "Virhe salausta purettaessa (tarkista salasana): {}"
 
 #. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
-#| msgid "File not found: {}"
 msgid "No file extension found for: {}"
 msgstr "Tiedostotunnistetta {} ei löydy"
 
@@ -1966,12 +2071,10 @@ msgid "All parsers failed for extension: .{}"
 msgstr "Tiedostotunnistetta .{} ei voitu käsitellä millään jäsentimellä"
 
 #. TRANSLATORS: Error detail shown when a password-protected ZIP-based document needs a password (the internal sentinel prefix before it is not translated)
-#| msgid "Password Required"
 msgid "Password required"
 msgstr "Tarvitaan salasana"
 
 #. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
-#| msgid "Password Required"
 msgid "Password incorrect"
 msgstr "Virheellinen salasana"
 
@@ -2036,23 +2139,6 @@ msgstr "Päivitysskriptin käynnistys epäonnistui"
 
 msgid "Unknown update file format."
 msgstr "Tuntematon päivitystiedoston muoto."
-
-msgid "Root"
-msgstr "Juuri"
-
-msgid ""
-"Are you sure you want to remove this document from the list? This will also "
-"remove its reading position."
-msgstr ""
-"Haluatko varmasti poistaa luettelosta tämän asiakirjan? Myös lukukohta "
-"poistetaan."
-
-msgid ""
-"Are you sure you want to remove these {} documents from the list? This will "
-"also remove their reading positions."
-msgstr ""
-"Haluatko varmasti poistaa luettelosta nämä asiakirjat? Myös niiden "
-"lukukohdat poistetaan."
 
 msgid "Go To…"
 msgstr "Siirry…"
@@ -2167,6 +2253,9 @@ msgstr "Siirry"
 
 msgid "Password"
 msgstr "salasana"
+
+msgid "Enter password for {}"
+msgstr "Anna asiakirjan {} salasana"
 
 msgid "Password Required"
 msgstr "Tarvitaan salasana"
@@ -2297,6 +2386,10 @@ msgstr "Välilehdet"
 msgid "Navigation unit"
 msgstr "Navigoinnin tarkkuus"
 
+#| msgid "Previous result"
+msgid "Previous {}"
+msgstr "Edellinen {}"
+
 msgid "Pause"
 msgstr "Tauota"
 
@@ -2309,8 +2402,15 @@ msgstr "Asiakirjan loppu"
 msgid "Beginning of document"
 msgstr "Asiakirjan alku"
 
+msgid "Next {}"
+msgstr "Seuraava {}"
+
 msgid "Press play to start listening."
 msgstr "Aloita kuuntelu painamalla Toista-painiketta."
+
+#| msgid "&Locate…"
+msgid "Locate"
+msgstr "Etsi"
 
 msgid "File Missing"
 msgstr "Tiedostoa ei ole"
@@ -2454,6 +2554,18 @@ msgstr "Asetusten vienti epäonnistui"
 msgid "No document open. Please open a book."
 msgstr "Ei avointa asiakirjaa."
 
+#| msgid "All Documents"
+msgid "No Documents"
+msgstr "Asiakirjoja ei ole"
+
+#| msgid "Show All...\tCtrl+R"
+msgid "Show All"
+msgstr "Näytä kaikki"
+
+#| msgid "Sleep timer"
+msgid "Sleep timer: {}"
+msgstr "Uniajastin: {}"
+
 msgid "Cancel sleep timer"
 msgstr "Peruuta uniajastin"
 
@@ -2484,6 +2596,9 @@ msgstr "Tauota ääneen lukeminen"
 msgid "Read Aloud"
 msgstr "Lue ääneen"
 
+msgid "Help"
+msgstr "Ohje"
+
 msgid "More Options"
 msgstr "Lisää asetuksia"
 
@@ -2507,7 +2622,3 @@ msgstr "Taulukko"
 
 msgid "Separator"
 msgstr "Erotin"
-
-#| msgid "&Help"
-msgid "Help"
-msgstr "Ohje"
