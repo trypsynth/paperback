@@ -392,6 +392,9 @@ class MainScreenViewModel(
 			config.setDocumentPosition(documentUri, position)
 			config.flush()
 		}
+		if (ttsManager.isPaused.value) {
+			ttsManager.stop()
+		}
 	}
 
 	override fun onCleared() {
@@ -611,8 +614,13 @@ class MainScreenViewModel(
 				if (speak) {
 					ttsManager.speak(segment.text)
 					precacheNextContinuousSegment()
-				} else if (announce) {
-					announceNavigationCue(segment.text)
+				} else {
+					if (ttsManager.isPaused.value) {
+						ttsManager.stop()
+					}
+					if (announce) {
+						announceNavigationCue(segment.text)
+					}
 				}
 			}
 		}
@@ -680,8 +688,13 @@ class MainScreenViewModel(
 				if (speak) {
 					ttsManager.speak(segment.text)
 					precacheNextContinuousSegment()
-				} else if (announce) {
-					announceNavigationCue(segment.text)
+				} else {
+					if (ttsManager.isPaused.value) {
+						ttsManager.stop()
+					}
+					if (announce) {
+						announceNavigationCue(segment.text)
+					}
 				}
 			}
 		}
@@ -822,14 +835,20 @@ class MainScreenViewModel(
 
 	fun updateTtsPosition(pos: Long) {
 		_ttsPosition.value = pos
+		refreshSegmentPreview()
+		saveTtsPositionToConfig(pos)
+		if (ttsManager.isSpeaking.value) {
+			speakCurrentSegment()
+		} else if (ttsManager.isPaused.value) {
+			ttsManager.stop()
+		}
 	}
 
 	fun seekToPercent(percent: Int) {
 		val state = uiState.value as? MainScreenUiState.Success ?: return
 		val tab = state.activeTab ?: return
 		val pos = tab.session.positionFromPercentFfi(percent)
-		_ttsPosition.value = pos
-		saveTtsPositionToConfig(pos)
+		updateTtsPosition(pos)
 	}
 
 	fun openElementsDialog() {
