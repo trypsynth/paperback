@@ -91,6 +91,12 @@ fun MainScreen(
 	var useInAppFileBrowser by remember {
 		mutableStateOf(viewModel.configManager.getAppBool("use_in_app_file_browser", false))
 	}
+	// Guards the one-time auto-switch to the in-app browser right after All Files
+	// Access is first granted, so it doesn't keep re-enabling itself on every later
+	// resume (e.g. after using the system picker) and fight the user's own toggle.
+	var hasAutoEnabledInAppFileBrowser by remember {
+		mutableStateOf(viewModel.configManager.getAppBool("auto_enabled_in_app_file_browser", false))
+	}
 	var swipeUpMovesForward by remember {
 		mutableStateOf(viewModel.configManager.getAppBool("swipe_up_moves_forward", true))
 	}
@@ -814,9 +820,11 @@ fun MainScreen(
 		val observer = LifecycleEventObserver { _, event ->
 			if (event == Lifecycle.Event.ON_RESUME) {
 				permissionResumeTrigger++
-				if (hasAllFilesAccessOnR() && !useInAppFileBrowser) {
+				if (hasAllFilesAccessOnR() && !useInAppFileBrowser && !hasAutoEnabledInAppFileBrowser) {
 					useInAppFileBrowser = true
+					hasAutoEnabledInAppFileBrowser = true
 					viewModel.configManager.setAppBool("use_in_app_file_browser", true)
+					viewModel.configManager.setAppBool("auto_enabled_in_app_file_browser", true)
 					viewModel.configManager.flush()
 				}
 			}
