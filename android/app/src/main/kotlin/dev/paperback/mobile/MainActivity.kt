@@ -1,90 +1,109 @@
 package dev.paperback.mobile
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.KeyEvent
+import android.view.View
+import android.view.ViewGroup
+import android.widget.EditText
+import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityNodeInfo
+import android.view.accessibility.AccessibilityNodeProvider
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.ViewModelProvider
+import androidx.compose.ui.platform.LocalView
+import androidx.core.content.ContextCompat
 import dev.paperback.mobile.theme.MyApplicationTheme
 import dev.paperback.mobile.ui.MainScreenViewModel
 import uniffi.paperback.SegmentDirectionFfi
 import uniffi.paperback.SegmentTypeFfi
 
 class MainActivity : ComponentActivity() {
+	private val vm: MainScreenViewModel by viewModels()
+
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		System.setProperty("uniffi.component.paperback.libraryOverride", "paperback_core")
 		Translations.load(this)
 		enableEdgeToEdge()
 		setContent {
-			if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-				val permissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
-					androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+				val permissionLauncher = rememberLauncherForActivityResult(
+					ActivityResultContracts.RequestPermission()
 				) { }
-				androidx.compose.runtime.LaunchedEffect(Unit) {
-					if (androidx.core.content.ContextCompat.checkSelfPermission(
+				LaunchedEffect(Unit) {
+					if (ContextCompat.checkSelfPermission(
 							this@MainActivity,
-							android.Manifest.permission.POST_NOTIFICATIONS
-						) != android.content.pm.PackageManager.PERMISSION_GRANTED
+							Manifest.permission.POST_NOTIFICATIONS
+						) != PackageManager.PERMISSION_GRANTED
 					) {
-						permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+						permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
 					}
 				}
 			}
 
-			val view = androidx.compose.ui.platform.LocalView.current
-			androidx.compose.runtime.LaunchedEffect(view) {
+			val view = LocalView.current
+			LaunchedEffect(view) {
 				val originalDelegate = view.accessibilityDelegate
-				view.accessibilityDelegate = object : android.view.View.AccessibilityDelegate() {
-					override fun getAccessibilityNodeProvider(host: android.view.View): android.view.accessibility.AccessibilityNodeProvider? {
+				view.accessibilityDelegate = object : View.AccessibilityDelegate() {
+					override fun getAccessibilityNodeProvider(host: View): AccessibilityNodeProvider? {
 						val provider = originalDelegate?.getAccessibilityNodeProvider(host) ?: super.getAccessibilityNodeProvider(host)
 						if (provider == null) return null
-						return object : android.view.accessibility.AccessibilityNodeProvider() {
-							override fun createAccessibilityNodeInfo(virtualViewId: Int): android.view.accessibility.AccessibilityNodeInfo? {
+						return object : AccessibilityNodeProvider() {
+							override fun createAccessibilityNodeInfo(virtualViewId: Int): AccessibilityNodeInfo? {
 								val info = provider.createAccessibilityNodeInfo(virtualViewId)
 								if (info != null && info.className == "android.widget.SeekBar" && info.stateDescription?.toString() == "\u200B") {
 									info.extras.putCharSequence("AccessibilityNodeInfo.roleDescription", "button")
 								}
 								return info
 							}
-							override fun performAction(virtualViewId: Int, action: Int, arguments: android.os.Bundle?): Boolean {
+							override fun performAction(virtualViewId: Int, action: Int, arguments: Bundle?): Boolean {
 								return provider.performAction(virtualViewId, action, arguments)
 							}
-							override fun findAccessibilityNodeInfosByText(text: String, virtualViewId: Int): MutableList<android.view.accessibility.AccessibilityNodeInfo>? {
+							override fun findAccessibilityNodeInfosByText(text: String, virtualViewId: Int): MutableList<AccessibilityNodeInfo>? {
 								return provider.findAccessibilityNodeInfosByText(text, virtualViewId)
 							}
-							override fun findFocus(focus: Int): android.view.accessibility.AccessibilityNodeInfo? {
+							override fun findFocus(focus: Int): AccessibilityNodeInfo? {
 								return provider.findFocus(focus)
 							}
 						}
 					}
-					override fun sendAccessibilityEvent(host: android.view.View, eventType: Int) {
+					override fun sendAccessibilityEvent(host: View, eventType: Int) {
 						originalDelegate?.sendAccessibilityEvent(host, eventType) ?: super.sendAccessibilityEvent(host, eventType)
 					}
-					override fun sendAccessibilityEventUnchecked(host: android.view.View, event: android.view.accessibility.AccessibilityEvent) {
+					override fun sendAccessibilityEventUnchecked(host: View, event: AccessibilityEvent) {
 						originalDelegate?.sendAccessibilityEventUnchecked(host, event) ?: super.sendAccessibilityEventUnchecked(host, event)
 					}
-					override fun dispatchPopulateAccessibilityEvent(host: android.view.View, event: android.view.accessibility.AccessibilityEvent): Boolean {
+					override fun dispatchPopulateAccessibilityEvent(host: View, event: AccessibilityEvent): Boolean {
 						return originalDelegate?.dispatchPopulateAccessibilityEvent(host, event) ?: super.dispatchPopulateAccessibilityEvent(host, event)
 					}
-					override fun onPopulateAccessibilityEvent(host: android.view.View, event: android.view.accessibility.AccessibilityEvent) {
+					override fun onPopulateAccessibilityEvent(host: View, event: AccessibilityEvent) {
 						originalDelegate?.onPopulateAccessibilityEvent(host, event) ?: super.onPopulateAccessibilityEvent(host, event)
 					}
-					override fun onInitializeAccessibilityEvent(host: android.view.View, event: android.view.accessibility.AccessibilityEvent) {
+					override fun onInitializeAccessibilityEvent(host: View, event: AccessibilityEvent) {
 						originalDelegate?.onInitializeAccessibilityEvent(host, event) ?: super.onInitializeAccessibilityEvent(host, event)
 					}
-					override fun onInitializeAccessibilityNodeInfo(host: android.view.View, info: android.view.accessibility.AccessibilityNodeInfo) {
+					override fun onInitializeAccessibilityNodeInfo(host: View, info: AccessibilityNodeInfo) {
 						originalDelegate?.onInitializeAccessibilityNodeInfo(host, info) ?: super.onInitializeAccessibilityNodeInfo(host, info)
 					}
-					override fun onRequestSendAccessibilityEvent(host: android.view.ViewGroup, child: android.view.View, event: android.view.accessibility.AccessibilityEvent): Boolean {
+					override fun onRequestSendAccessibilityEvent(host: ViewGroup, child: View, event: AccessibilityEvent): Boolean {
 						return originalDelegate?.onRequestSendAccessibilityEvent(host, child, event) ?: super.onRequestSendAccessibilityEvent(host, child, event)
 					}
-					override fun performAccessibilityAction(host: android.view.View, action: Int, args: android.os.Bundle?): Boolean {
+					override fun performAccessibilityAction(host: View, action: Int, args: Bundle?): Boolean {
 						return originalDelegate?.performAccessibilityAction(host, action, args) ?: super.performAccessibilityAction(host, action, args)
 					}
 				}
@@ -97,7 +116,7 @@ class MainActivity : ComponentActivity() {
 		}
 	}
 
-	override fun onNewIntent(intent: android.content.Intent) {
+	override fun onNewIntent(intent: Intent) {
 		super.onNewIntent(intent)
 		setIntent(intent)
 	}
@@ -108,9 +127,8 @@ class MainActivity : ComponentActivity() {
 	}
 
 	private var headsethookClickCount = 0
-	private val headsethookHandler = android.os.Handler(android.os.Looper.getMainLooper())
+	private val headsethookHandler = Handler(Looper.getMainLooper())
 	private val headsethookRunnable = Runnable {
-		val vm = ViewModelProvider(this)[MainScreenViewModel::class.java]
 		when (headsethookClickCount) {
 			1 -> vm.togglePlayPause()
 			2 -> vm.playNextSegment()
@@ -122,8 +140,7 @@ class MainActivity : ComponentActivity() {
 	override fun dispatchKeyEvent(event: KeyEvent): Boolean {
 		if (event.action != KeyEvent.ACTION_DOWN) return super.dispatchKeyEvent(event)
 		// Don't intercept when a text field has focus (e.g. Find or Go-To dialogs).
-		if (currentFocus is android.widget.EditText) return super.dispatchKeyEvent(event)
-		val vm = ViewModelProvider(this)[MainScreenViewModel::class.java]
+		if (currentFocus is EditText) return super.dispatchKeyEvent(event)
 		// F7: elements list (matches desktop)
 		if (event.keyCode == KeyEvent.KEYCODE_F7) {
 			vm.openElementsDialog()

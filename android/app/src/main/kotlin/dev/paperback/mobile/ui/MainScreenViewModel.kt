@@ -1,12 +1,15 @@
 package dev.paperback.mobile.ui
 
 import android.app.Application
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
+import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import dev.paperback.mobile.t
 import dev.paperback.mobile.tts.TtsManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -15,6 +18,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -26,6 +30,7 @@ import uniffi.paperback.SegmentDirectionFfi
 import uniffi.paperback.SegmentTypeFfi
 import java.io.File
 import java.io.FileOutputStream
+import java.util.Locale
 import java.util.UUID
 
 class MainScreenViewModel(
@@ -38,64 +43,72 @@ class MainScreenViewModel(
 
 	val ttsManager = TtsManager(application, config)
 	private val _currentSegmentType = MutableStateFlow(SegmentTypeFfi.PARAGRAPH)
-	val currentSegmentType: StateFlow<SegmentTypeFfi> = _currentSegmentType
+	val currentSegmentType: StateFlow<SegmentTypeFfi> = _currentSegmentType.asStateFlow()
 
 	private val _ttsPosition = MutableStateFlow(0L)
-	val ttsPosition: StateFlow<Long> = _ttsPosition
+	val ttsPosition: StateFlow<Long> = _ttsPosition.asStateFlow()
 
 	private val _currentSegmentText = MutableStateFlow("")
-	val currentSegmentText: StateFlow<String> = _currentSegmentText
+	val currentSegmentText: StateFlow<String> = _currentSegmentText.asStateFlow()
 
 	private val _sleepTimerRemaining = MutableStateFlow<Int?>(null)
-	val sleepTimerRemaining: StateFlow<Int?> = _sleepTimerRemaining
+	val sleepTimerRemaining: StateFlow<Int?> = _sleepTimerRemaining.asStateFlow()
 
 	private val _sleepTimerExpired = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
-	val sleepTimerExpired: SharedFlow<Unit> = _sleepTimerExpired
+	val sleepTimerExpired: SharedFlow<Unit> = _sleepTimerExpired.asSharedFlow()
 
 	private var sleepTimerJob: Job? = null
 
 	private val _uiState = MutableStateFlow<MainScreenUiState>(MainScreenUiState.Idle)
-	val uiState: StateFlow<MainScreenUiState> = _uiState
+	val uiState: StateFlow<MainScreenUiState> = _uiState.asStateFlow()
 
 	private val currentTabs = mutableListOf<DocumentTabState>()
 	private var currentActiveIndex = -1
 	private var recentDocumentsList = emptyList<RecentDocumentItem>()
 
+	private fun emitTabsState() {
+		_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
+	}
+
+	private fun persistActiveDocument(docKey: String) {
+		viewModelScope.launch(Dispatchers.IO) { config.setAppString("active_document", docKey) }
+	}
+
 	private val _supportedMimeTypes = MutableStateFlow<Array<String>>(arrayOf("*/*"))
-	val supportedMimeTypes: StateFlow<Array<String>> = _supportedMimeTypes
+	val supportedMimeTypes: StateFlow<Array<String>> = _supportedMimeTypes.asStateFlow()
 
 	private val _showElementsDialog = MutableStateFlow(false)
-	val showElementsDialog: StateFlow<Boolean> = _showElementsDialog
+	val showElementsDialog: StateFlow<Boolean> = _showElementsDialog.asStateFlow()
 
 	private val _showFindDialog = MutableStateFlow(false)
-	val showFindDialog: StateFlow<Boolean> = _showFindDialog
+	val showFindDialog: StateFlow<Boolean> = _showFindDialog.asStateFlow()
 
 	private val _showSettingsDialog = MutableStateFlow(false)
-	val showSettingsDialog: StateFlow<Boolean> = _showSettingsDialog
+	val showSettingsDialog: StateFlow<Boolean> = _showSettingsDialog.asStateFlow()
 
 	private val _showTocDialog = MutableStateFlow(false)
-	val showTocDialog: StateFlow<Boolean> = _showTocDialog
+	val showTocDialog: StateFlow<Boolean> = _showTocDialog.asStateFlow()
 
 	private val _showGoToDialog = MutableStateFlow(false)
-	val showGoToDialog: StateFlow<Boolean> = _showGoToDialog
+	val showGoToDialog: StateFlow<Boolean> = _showGoToDialog.asStateFlow()
 
 	private val _goToInitialMode = MutableStateFlow("Line")
-	val goToInitialMode: StateFlow<String> = _goToInitialMode
+	val goToInitialMode: StateFlow<String> = _goToInitialMode.asStateFlow()
 
 	private val _showWordCountDialog = MutableStateFlow(false)
-	val showWordCountDialog: StateFlow<Boolean> = _showWordCountDialog
+	val showWordCountDialog: StateFlow<Boolean> = _showWordCountDialog.asStateFlow()
 
 	private val _showDocumentInfoDialog = MutableStateFlow(false)
-	val showDocumentInfoDialog: StateFlow<Boolean> = _showDocumentInfoDialog
+	val showDocumentInfoDialog: StateFlow<Boolean> = _showDocumentInfoDialog.asStateFlow()
 
 	private val _activeSearchQuery = MutableStateFlow<String?>(null)
-	val activeSearchQuery: StateFlow<String?> = _activeSearchQuery
+	val activeSearchQuery: StateFlow<String?> = _activeSearchQuery.asStateFlow()
 
 	private val _activeSearchOptions = MutableStateFlow<uniffi.paperback.SearchOptionsFfi?>(null)
-	val activeSearchOptions: StateFlow<uniffi.paperback.SearchOptionsFfi?> = _activeSearchOptions
+	val activeSearchOptions: StateFlow<uniffi.paperback.SearchOptionsFfi?> = _activeSearchOptions.asStateFlow()
 
 	private val _performSearchEvent = MutableSharedFlow<Boolean>(extraBufferCapacity = 1)
-	val performSearchEvent: SharedFlow<Boolean> = _performSearchEvent
+	val performSearchEvent: SharedFlow<Boolean> = _performSearchEvent.asSharedFlow()
 
 	fun startSearch(query: String, options: uniffi.paperback.SearchOptionsFfi) {
 		_activeSearchQuery.value = query
@@ -116,13 +129,13 @@ class MainScreenViewModel(
 	}
 
 	private val _showSleepTimerDialog = MutableStateFlow(false)
-	val showSleepTimerDialog: StateFlow<Boolean> = _showSleepTimerDialog
+	val showSleepTimerDialog: StateFlow<Boolean> = _showSleepTimerDialog.asStateFlow()
 
 	private val _currentHeadings = MutableStateFlow<HeadingTreeFfi?>(null)
-	val currentHeadings: StateFlow<HeadingTreeFfi?> = _currentHeadings
+	val currentHeadings: StateFlow<HeadingTreeFfi?> = _currentHeadings.asStateFlow()
 
 	private val _currentLinks = MutableStateFlow<LinkListFfi?>(null)
-	val currentLinks: StateFlow<LinkListFfi?> = _currentLinks
+	val currentLinks: StateFlow<LinkListFfi?> = _currentLinks.asStateFlow()
 
 	private val _passwordPromptUri = MutableStateFlow<Uri?>(null)
 	val passwordPromptUri = _passwordPromptUri.asStateFlow()
@@ -131,7 +144,7 @@ class MainScreenViewModel(
 	val showPermissionRationale = _showPermissionRationale.asStateFlow()
 
 	private val _importPromptPath = MutableStateFlow<String?>(null)
-	val importPromptPath: StateFlow<String?> = _importPromptPath
+	val importPromptPath: StateFlow<String?> = _importPromptPath.asStateFlow()
 
 	fun confirmImportSettings() {
 		val path = _importPromptPath.value ?: return
@@ -189,11 +202,7 @@ class MainScreenViewModel(
 					} else {
 						currentActiveIndex = -1
 					}
-					_uiState.value = MainScreenUiState.Success(
-						tabs = currentTabs.toList(),
-						activeTabIndex = currentActiveIndex,
-						recentDocuments = recentDocumentsList
-					)
+					emitTabsState()
 					currentTabs.getOrNull(currentActiveIndex)?.let {
 						_ttsPosition.value = it.savedPosition
 						updateTtsMetadata()
@@ -204,11 +213,7 @@ class MainScreenViewModel(
 				val initialRecents = getRecentDocumentsListIO()
 				withContext(Dispatchers.Main) {
 					recentDocumentsList = initialRecents
-					_uiState.value = MainScreenUiState.Success(
-						tabs = currentTabs.toList(),
-						activeTabIndex = currentActiveIndex,
-						recentDocuments = recentDocumentsList
-					)
+					emitTabsState()
 				}
 			}
 		}
@@ -281,7 +286,7 @@ class MainScreenViewModel(
 						if (!isMissing) {
 							context.contentResolver.openAssetFileDescriptor(uri, "r")?.close()
 						}
-					} catch (e: Exception) {
+					} catch (_: Exception) {
 						isMissing = true
 					}
 				} else {
@@ -299,7 +304,7 @@ class MainScreenViewModel(
 			config.flush()
 			updateRecentDocuments()
 			withContext(Dispatchers.Main) {
-				_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
+				emitTabsState()
 			}
 		}
 	}
@@ -315,7 +320,7 @@ class MainScreenViewModel(
 			config.flush()
 			updateRecentDocuments()
 			withContext(Dispatchers.Main) {
-				_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
+				emitTabsState()
 			}
 		}
 	}
@@ -347,12 +352,9 @@ class MainScreenViewModel(
 				withContext(Dispatchers.Main) {
 					currentActiveIndex = if (currentTabs.isEmpty()) -1 else currentActiveIndex.coerceIn(0, currentTabs.size - 1)
 					if (currentActiveIndex != -1) {
-						val activeKey = currentTabs[currentActiveIndex].docKey
-						viewModelScope.launch(Dispatchers.IO) {
-							config.setAppString("active_document", activeKey)
-						}
+						persistActiveDocument(currentTabs[currentActiveIndex].docKey)
 					}
-					_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
+					emitTabsState()
 					if (currentActiveIndex != -1) {
 						_ttsPosition.value = currentTabs[currentActiveIndex].savedPosition
 						updateTtsMetadata()
@@ -374,7 +376,7 @@ class MainScreenViewModel(
 				config.setAppString("active_document", currentTabs[index].docKey)
 				config.flush()
 			}
-			_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
+			emitTabsState()
 			_ttsPosition.value = currentTabs[index].savedPosition
 			updateTtsMetadata()
 			refreshSegmentPreview()
@@ -496,13 +498,13 @@ class MainScreenViewModel(
 		val tabState = prepareDocumentTabIO(uri)
 		if (tabState == null) {
 			withContext(Dispatchers.Main) {
-				if (uri.scheme == "file" && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R && !android.os.Environment.isExternalStorageManager()) {
+				if (uri.scheme == "file" && needsAllFilesAccessPermission()) {
 					setShowPermissionRationale(true)
 				} else {
 					_uiState.value = MainScreenUiState.Error("Failed to open file")
 				}
 				if (currentTabs.isNotEmpty()) {
-					_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
+					emitTabsState()
 				}
 			}
 			return@withContext
@@ -524,7 +526,7 @@ class MainScreenViewModel(
 				}
 				if (makeActive) {
 					currentActiveIndex = existingIndex
-					viewModelScope.launch(Dispatchers.IO) { config.setAppString("active_document", tabState.docKey) }
+					persistActiveDocument(tabState.docKey)
 				} else if (activeDocKey == tabState.docKey && !makeActive) {
 					currentActiveIndex = existingIndex
 				}
@@ -532,16 +534,15 @@ class MainScreenViewModel(
 				currentTabs.add(tabState)
 				if (makeActive) {
 					currentActiveIndex = currentTabs.size - 1
-					viewModelScope.launch(Dispatchers.IO) { config.setAppString("active_document", tabState.docKey) }
+					persistActiveDocument(tabState.docKey)
 				} else if (activeDocKey == tabState.docKey) {
 					currentActiveIndex = currentTabs.size - 1
-					viewModelScope.launch(Dispatchers.IO) { config.setAppString("active_document", tabState.docKey) }
+					persistActiveDocument(tabState.docKey)
 				} else if (currentActiveIndex == -1) {
 					currentActiveIndex = 0
 				}
 			}
-			_uiState.value =
-				MainScreenUiState.Success(tabs = currentTabs.toList(), activeTabIndex = currentActiveIndex, recentDocumentsList)
+			emitTabsState()
 			if (makeActive) {
 				_ttsPosition.value = tabState.savedPosition
 				updateTtsMetadata()
@@ -627,7 +628,7 @@ class MainScreenViewModel(
 	}
 
 	private fun announceNavigationCue(text: String) {
-		val cue = text.trim().split("\\s+".toRegex()).take(5).joinToString(" ")
+		val cue = text.trim().split(WHITESPACE_REGEX).take(5).joinToString(" ")
 		_accessibilityAnnouncement.tryEmit(cue)
 	}
 
@@ -760,12 +761,12 @@ class MainScreenViewModel(
 		return try {
 			config.exportDocumentSettings(absolutePath, paperbackPath)
 			true
-		} catch (e: Exception) {
+		} catch (_: Exception) {
 			false
 		}
 	}
 
-	fun exportSettingsToUri(context: android.content.Context, destUri: android.net.Uri): Boolean {
+	fun exportSettingsToUri(context: Context, destUri: Uri): Boolean {
 		val state = uiState.value as? MainScreenUiState.Success ?: return false
 		val tab = state.activeTab ?: return false
 		val docUri = tab.documentUri
@@ -775,7 +776,7 @@ class MainScreenViewModel(
 			Uri.parse(docUri).path ?: docUri
 		}
 
-		val tempFile = java.io.File(context.cacheDir, "temp_export.paperback")
+		val tempFile = File(context.cacheDir, "temp_export.paperback")
 		return try {
 			config.exportDocumentSettings(absolutePath, tempFile.absolutePath)
 			context.contentResolver.openOutputStream(destUri)?.use { out ->
@@ -784,14 +785,14 @@ class MainScreenViewModel(
 				}
 			}
 			true
-		} catch (e: Exception) {
+		} catch (_: Exception) {
 			false
 		} finally {
 			if (tempFile.exists()) tempFile.delete()
 		}
 	}
 
-	fun importSettingsFromUri(context: android.content.Context, sourceUri: android.net.Uri): Boolean {
+	fun importSettingsFromUri(context: Context, sourceUri: Uri): Boolean {
 		val state = uiState.value as? MainScreenUiState.Success ?: return false
 		val tab = state.activeTab ?: return false
 		val docUri = tab.documentUri
@@ -801,7 +802,7 @@ class MainScreenViewModel(
 			Uri.parse(docUri).path ?: docUri
 		}
 
-		val tempFile = java.io.File(context.cacheDir, "temp_import.paperback")
+		val tempFile = File(context.cacheDir, "temp_import.paperback")
 		return try {
 			context.contentResolver.openInputStream(sourceUri)?.use { input ->
 				tempFile.outputStream().use { out ->
@@ -815,7 +816,7 @@ class MainScreenViewModel(
 				updateTtsPosition(savedPosition)
 			}
 			true
-		} catch (e: Exception) {
+		} catch (_: Exception) {
 			false
 		} finally {
 			if (tempFile.exists()) tempFile.delete()
@@ -897,7 +898,7 @@ class MainScreenViewModel(
 	}
 
 	private val _accessibilityAnnouncement = MutableSharedFlow<String>(extraBufferCapacity = 1)
-	val accessibilityAnnouncement: SharedFlow<String> = _accessibilityAnnouncement
+	val accessibilityAnnouncement: SharedFlow<String> = _accessibilityAnnouncement.asSharedFlow()
 
 	fun announceForAccessibility(message: String) {
 		_accessibilityAnnouncement.tryEmit(message)
@@ -956,7 +957,7 @@ class MainScreenViewModel(
 				withContext(Dispatchers.Main) {
 					_uiState.value = MainScreenUiState.Error("Failed to open file or incorrect password")
 					if (currentTabs.isNotEmpty()) {
-						_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
+						emitTabsState()
 					}
 				}
 				return@launch
@@ -977,13 +978,13 @@ class MainScreenViewModel(
 						currentTabs[existingIndex] = tabState
 					}
 					currentActiveIndex = existingIndex
-					viewModelScope.launch(Dispatchers.IO) { config.setAppString("active_document", tabState.docKey) }
+					persistActiveDocument(tabState.docKey)
 				} else {
 					currentTabs.add(tabState)
 					currentActiveIndex = currentTabs.size - 1
-					viewModelScope.launch(Dispatchers.IO) { config.setAppString("active_document", tabState.docKey) }
+					persistActiveDocument(tabState.docKey)
 				}
-				_uiState.value = MainScreenUiState.Success(tabs = currentTabs.toList(), activeTabIndex = currentActiveIndex, recentDocumentsList)
+				emitTabsState()
 				_ttsPosition.value = tabState.savedPosition
 				refreshSegmentPreview()
 			}
@@ -1002,7 +1003,7 @@ class MainScreenViewModel(
 				updateRecentDocuments()
 			}
 			withContext(Dispatchers.Main) {
-				_uiState.value = MainScreenUiState.Success(currentTabs.toList(), currentActiveIndex, recentDocumentsList)
+				emitTabsState()
 			}
 		}
 	}
@@ -1012,7 +1013,7 @@ class MainScreenViewModel(
 	}
 
 	fun openHelpDocument() {
-		val lang = java.util.Locale.getDefault().language
+		val lang = Locale.getDefault().language
 		val assetName = when (lang) {
 			"bs", "cs", "fi", "nl", "pl", "sr" -> "readmes/readme-$lang.html"
 			else -> "readmes/readme.html"
@@ -1028,12 +1029,16 @@ class MainScreenViewModel(
 				withContext(Dispatchers.Main) {
 					openDocument(Uri.fromFile(tempFile), track = false)
 				}
-			} catch (e: Exception) {
+			} catch (_: Exception) {
 				withContext(Dispatchers.Main) {
 					// TRANSLATORS: Toast shown when the bundled Help document fails to load
-					android.widget.Toast.makeText(context, dev.paperback.mobile.t("Failed to load document."), android.widget.Toast.LENGTH_LONG).show()
+					Toast.makeText(context, t("Failed to load document."), Toast.LENGTH_LONG).show()
 				}
 			}
 		}
+	}
+
+	companion object {
+		private val WHITESPACE_REGEX = "\\s+".toRegex()
 	}
 }

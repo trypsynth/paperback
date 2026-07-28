@@ -1,9 +1,14 @@
 package dev.paperback.mobile.ui
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
+import android.os.Environment
+import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -32,13 +37,25 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
 import dev.paperback.mobile.ui.dialogs.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.compose.foundation.lazy.items as lazyItems
 import dev.paperback.mobile.t
+import java.io.File
 
-@OptIn(ExperimentalMaterial3Api::class, kotlinx.coroutines.FlowPreview::class)
+/** True once Android enforces scoped storage (R+) and the app still lacks "All files access". */
+internal fun needsAllFilesAccessPermission(): Boolean =
+	Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()
+
+/** True only on R+ devices where "All files access" has already been granted. */
+internal fun hasAllFilesAccessOnR(): Boolean =
+	Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && Environment.isExternalStorageManager()
+
+@OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
 @Composable
 fun MainScreen(
 	onItemClick: (NavKey) -> Unit = {},
@@ -200,7 +217,7 @@ fun MainScreen(
 			accessibilityManager.removeTouchExplorationStateChangeListener(listener)
 		}
 	}
-	val activity = context as? android.app.Activity
+	val activity = context as? Activity
 	DisposableEffect(activity) {
 		val listener = androidx.core.util.Consumer<Intent> { newIntent ->
 			val uri = newIntent.data
@@ -228,14 +245,14 @@ fun MainScreen(
 	}
 	val supportedMimeTypes by viewModel.supportedMimeTypes.collectAsStateWithLifecycle()
 
-	val filePickerLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
-		contract = androidx.activity.result.contract.ActivityResultContracts.OpenDocument(),
+	val filePickerLauncher = rememberLauncherForActivityResult(
+		contract = ActivityResultContracts.OpenDocument(),
 		onResult = { uri -> uri?.let { viewModel.openDocument(it) } }
 	)
 
 	var locateTargetUri by remember { mutableStateOf<String?>(null) }
-	val locateFilePickerLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
-		contract = androidx.activity.result.contract.ActivityResultContracts.OpenDocument(),
+	val locateFilePickerLauncher = rememberLauncherForActivityResult(
+		contract = ActivityResultContracts.OpenDocument(),
 		onResult = { uri ->
 			val target = locateTargetUri
 			if (uri != null && target != null) {
@@ -252,32 +269,32 @@ fun MainScreen(
 	var showFileManager by remember { mutableStateOf(false) }
 	var showFileManagerForImport by remember { mutableStateOf(false) }
 
-	val importSettingsLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
-		contract = androidx.activity.result.contract.ActivityResultContracts.OpenDocument(),
+	val importSettingsLauncher = rememberLauncherForActivityResult(
+		contract = ActivityResultContracts.OpenDocument(),
 		onResult = { uri ->
 			if (uri != null) {
-				scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+				scope.launch(Dispatchers.IO) {
 					val success = viewModel.importSettingsFromUri(context, uri)
 					// TRANSLATORS: Toast confirming a .paperback settings file was imported successfully, or the failure message if not
 					val message = if (success) t("Settings imported") else t("Failed to import settings")
-					kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-						android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
+					withContext(Dispatchers.Main) {
+						Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
 					}
 				}
 			}
 		}
 	)
 
-	val exportSettingsLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
-		contract = androidx.activity.result.contract.ActivityResultContracts.CreateDocument("*/*"),
+	val exportSettingsLauncher = rememberLauncherForActivityResult(
+		contract = ActivityResultContracts.CreateDocument("*/*"),
 		onResult = { uri ->
 			if (uri != null) {
-				scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+				scope.launch(Dispatchers.IO) {
 					val success = viewModel.exportSettingsToUri(context, uri)
 					// TRANSLATORS: Toast confirming the document's settings were exported to a .paperback file, or the failure message if not
 					val message = if (success) t("Settings exported") else t("Failed to export settings")
-					kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-						android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
+					withContext(Dispatchers.Main) {
+						Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
 					}
 				}
 			}
@@ -293,7 +310,7 @@ fun MainScreen(
 				isSpeaking = isSpeaking,
 				onOpenBook = {
 					if (useInAppFileBrowser) {
-						if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R && !android.os.Environment.isExternalStorageManager()) {
+						if (needsAllFilesAccessPermission()) {
 							viewModel.setShowPermissionRationale(true)
 						} else {
 							showFileManager = true
@@ -322,16 +339,16 @@ fun MainScreen(
 							exportSettingsLauncher.launch("document.paperback")
 						} else {
 							if (viewModel.exportCurrentSettings()) {
-								android.widget.Toast.makeText(context, t("Settings exported"), android.widget.Toast.LENGTH_SHORT).show()
+								Toast.makeText(context, t("Settings exported"), Toast.LENGTH_SHORT).show()
 							} else {
-								android.widget.Toast.makeText(context, t("Failed to export settings"), android.widget.Toast.LENGTH_SHORT).show()
+								Toast.makeText(context, t("Failed to export settings"), Toast.LENGTH_SHORT).show()
 							}
 						}
 					}
 				},
 				onImportSettings = {
 					if (useInAppFileBrowser) {
-						if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R && !android.os.Environment.isExternalStorageManager()) {
+						if (needsAllFilesAccessPermission()) {
 							viewModel.setShowPermissionRationale(true)
 						} else {
 							showFileManagerForImport = true
@@ -768,10 +785,7 @@ fun MainScreen(
 	val lifecycleOwner = LocalLifecycleOwner.current
 	DisposableEffect(lifecycleOwner) {
 		val observer = LifecycleEventObserver { _, event ->
-			if (event == Lifecycle.Event.ON_RESUME &&
-				android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R &&
-				android.os.Environment.isExternalStorageManager()
-			) {
+			if (event == Lifecycle.Event.ON_RESUME && hasAllFilesAccessOnR()) {
 				if (!useInAppFileBrowser) {
 					useInAppFileBrowser = true
 					viewModel.configManager.setAppBool("use_in_app_file_browser", true)
@@ -785,17 +799,15 @@ fun MainScreen(
 
 	val showPermissionRationale by viewModel.showPermissionRationale.collectAsStateWithLifecycle()
 	LaunchedEffect(Unit) {
-		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-			if (!android.os.Environment.isExternalStorageManager()) {
-				viewModel.setShowPermissionRationale(true)
-			}
+		if (needsAllFilesAccessPermission()) {
+			viewModel.setShowPermissionRationale(true)
 		}
 	}
 	if (showPermissionRationale) {
 		PermissionRationaleDialog(
 			onGrantClick = {
 				viewModel.setShowPermissionRationale(false)
-				val intent = Intent(android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+				val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
 				intent.data = Uri.parse("package:${context.packageName}")
 				context.startActivity(intent)
 			},
@@ -812,14 +824,14 @@ fun MainScreen(
 			if (savedPath.isNotEmpty()) {
 				savedPath
 			} else {
-				android.os.Environment.getExternalStorageDirectory().absolutePath
+				Environment.getExternalStorageDirectory().absolutePath
 			}
 		}
 		FileManagerDialog(
 			supportedExtensions = extensions.toList(),
-			initialDirectory = java.io.File(initialDirPath),
+			initialDirectory = File(initialDirPath),
 			onDirectoryChanged = { dir ->
-				scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+				scope.launch(Dispatchers.IO) {
 					viewModel.configManager.setAppString("last_file_manager_directory", dir.absolutePath)
 					viewModel.configManager.flush()
 				}
@@ -839,14 +851,14 @@ fun MainScreen(
 			if (savedPath.isNotEmpty()) {
 				savedPath
 			} else {
-				android.os.Environment.getExternalStorageDirectory().absolutePath
+				Environment.getExternalStorageDirectory().absolutePath
 			}
 		}
 		FileManagerDialog(
 			supportedExtensions = extensions,
-			initialDirectory = java.io.File(initialDirPath),
+			initialDirectory = File(initialDirPath),
 			onDirectoryChanged = { dir ->
-				scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+				scope.launch(Dispatchers.IO) {
 					viewModel.configManager.setAppString("last_file_manager_directory", dir.absolutePath)
 					viewModel.configManager.flush()
 				}
@@ -854,14 +866,14 @@ fun MainScreen(
 			onFileSelected = { file ->
 				showFileManagerForImport = false
 				val uri = Uri.fromFile(file)
-				scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+				scope.launch(Dispatchers.IO) {
 					if (viewModel.importSettingsFromUri(context, uri)) {
-						launch(kotlinx.coroutines.Dispatchers.Main) {
-							android.widget.Toast.makeText(context, t("Settings imported"), android.widget.Toast.LENGTH_SHORT).show()
+						launch(Dispatchers.Main) {
+							Toast.makeText(context, t("Settings imported"), Toast.LENGTH_SHORT).show()
 						}
 					} else {
-						launch(kotlinx.coroutines.Dispatchers.Main) {
-							android.widget.Toast.makeText(context, t("Failed to import settings"), android.widget.Toast.LENGTH_SHORT).show()
+						launch(Dispatchers.Main) {
+							Toast.makeText(context, t("Failed to import settings"), Toast.LENGTH_SHORT).show()
 						}
 					}
 				}
