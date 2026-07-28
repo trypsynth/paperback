@@ -222,16 +222,16 @@ fun MainScreenTopBar(
 									}
 								)
 								add(
-									// TRANSLATORS: Accessibility action to open the app's settings
-									CustomAccessibilityAction(t("Settings")) {
-										onSettingsOpen()
+									// TRANSLATORS: Accessibility action to open the in-app help document
+									CustomAccessibilityAction(t("Help")) {
+										onHelpOpen()
 										true
 									}
 								)
 								add(
-									// TRANSLATORS: Accessibility action to open the in-app help document
-									CustomAccessibilityAction(t("Help")) {
-										onHelpOpen()
+									// TRANSLATORS: Accessibility action to open the app's settings
+									CustomAccessibilityAction(t("Settings")) {
+										onSettingsOpen()
 										true
 									}
 								)
@@ -330,19 +330,19 @@ fun MainScreenTopBar(
 							}
 						)
 						DropdownMenuItem(
-							// TRANSLATORS: Menu item to open the app's settings
-							text = { Text(t("Settings")) },
-							onClick = {
-								moreOptionsExpanded = false
-								onSettingsOpen()
-							}
-						)
-						DropdownMenuItem(
 							// TRANSLATORS: Menu item to open the in-app help document
 							text = { Text(t("Help")) },
 							onClick = {
 								moreOptionsExpanded = false
 								onHelpOpen()
+							}
+						)
+						DropdownMenuItem(
+							// TRANSLATORS: Menu item to open the app's settings
+							text = { Text(t("Settings")) },
+							onClick = {
+								moreOptionsExpanded = false
+								onSettingsOpen()
 							}
 						)
 					}
@@ -359,14 +359,14 @@ fun MainScreenTopBar(
 								true
 							}
 							customActions = listOf(
-								// TRANSLATORS: Accessibility action to open the app's settings
-								CustomAccessibilityAction(t("Settings")) {
-									onSettingsOpen()
-									true
-								},
 								// TRANSLATORS: Accessibility action to open the in-app help document
 								CustomAccessibilityAction(t("Help")) {
 									onHelpOpen()
+									true
+								},
+								// TRANSLATORS: Accessibility action to open the app's settings
+								CustomAccessibilityAction(t("Settings")) {
+									onSettingsOpen()
 									true
 								}
 							)
@@ -380,19 +380,19 @@ fun MainScreenTopBar(
 						onDismissRequest = { emptyMenuExpanded = false }
 					) {
 						DropdownMenuItem(
-							// TRANSLATORS: Menu item to open the app's settings
-							text = { Text(t("Settings")) },
-							onClick = {
-								emptyMenuExpanded = false
-								onSettingsOpen()
-							}
-						)
-						DropdownMenuItem(
 							// TRANSLATORS: Menu item to open the in-app help document
 							text = { Text(t("Help")) },
 							onClick = {
 								emptyMenuExpanded = false
 								onHelpOpen()
+							}
+						)
+						DropdownMenuItem(
+							// TRANSLATORS: Menu item to open the app's settings
+							text = { Text(t("Settings")) },
+							onClick = {
+								emptyMenuExpanded = false
+								onSettingsOpen()
 							}
 						)
 					}
