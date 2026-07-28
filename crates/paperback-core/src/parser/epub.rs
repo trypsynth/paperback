@@ -190,7 +190,6 @@ fn convert_spine_items<R: Read + Seek>(
 	spine: &[String],
 	render_tables_inline: bool,
 ) -> SpineConversionResult {
-	// Reading from the archive must be single-threaded (archive is &mut).
 	let entries: Vec<Result<(&ManifestItem, String), String>> = spine
 		.iter()
 		.map(|idref| {
@@ -199,8 +198,6 @@ fn convert_spine_items<R: Read + Seek>(
 			Ok((item, data))
 		})
 		.collect();
-
-	// parallel parsing makes large, math-heavy books go from ~60s to ~16s.
 	let converted: Vec<Result<(&ManifestItem, SectionContent), String>> = entries
 		.into_par_iter()
 		.map(|entry| {
@@ -210,7 +207,6 @@ fn convert_spine_items<R: Read + Seek>(
 			Ok((item, section))
 		})
 		.collect();
-
 	let mut buffer = DocumentBuffer::new();
 	let mut id_positions = HashMap::new();
 	let mut sections = Vec::new();
