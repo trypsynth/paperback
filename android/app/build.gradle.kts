@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-	namespace = "dev.paperback.mobile"
+	namespace = "dev.paperback.android"
 	compileSdk = 37
 	defaultConfig {
 		applicationId = "dev.paperback.android"
