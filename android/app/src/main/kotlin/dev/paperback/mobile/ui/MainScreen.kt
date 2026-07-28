@@ -1,8 +1,10 @@
 package dev.paperback.mobile.ui
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -11,6 +13,7 @@ import android.view.accessibility.AccessibilityManager
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -55,6 +58,11 @@ internal fun needsAllFilesAccessPermission(): Boolean =
 internal fun hasAllFilesAccessOnR(): Boolean =
 	Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && Environment.isExternalStorageManager()
 
+/** True once Android requires a runtime prompt (Tiramisu+) and notifications aren't yet allowed. */
+internal fun needsNotificationPermission(context: Context): Boolean =
+	Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+		ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+
 @OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
 @Composable
 fun MainScreen(
@@ -62,6 +70,7 @@ fun MainScreen(
 	modifier: Modifier = Modifier,
 	viewModel: MainScreenViewModel = viewModel()
 ) {
+	val context = LocalContext.current
 	val state by viewModel.uiState.collectAsStateWithLifecycle()
 	val scope = rememberCoroutineScope()
 	val listStates = remember { mutableStateMapOf<String, LazyListState>() }
@@ -85,6 +94,25 @@ fun MainScreen(
 	var swipeUpMovesForward by remember {
 		mutableStateOf(viewModel.configManager.getAppBool("swipe_up_moves_forward", true))
 	}
+	var onboardingCompleted by remember {
+		mutableStateOf(viewModel.configManager.getAppBool("permissions_onboarding_shown", false))
+	}
+	// Bumped whenever the activity resumes (e.g. returning from the All Files Access
+	// settings screen), so permission checks below re-read the live OS state instead
+	// of the value from whenever this composable last recomposed for another reason.
+	var permissionResumeTrigger by remember { mutableStateOf(0) }
+	var notificationRequested by remember { mutableStateOf(false) }
+	val notificationPermissionLauncher = rememberLauncherForActivityResult(
+		ActivityResultContracts.RequestPermission()
+	) { notificationRequested = true }
+	val notificationsSectionApplicable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+	val allFilesAccessSectionApplicable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+	val notificationsGranted = remember(permissionResumeTrigger, notificationRequested) {
+		!needsNotificationPermission(context)
+	}
+	val allFilesAccessGranted = remember(permissionResumeTrigger) { !needsAllFilesAccessPermission() }
+	val showOnboarding = !onboardingCompleted &&
+		((notificationsSectionApplicable && !notificationsGranted) || (allFilesAccessSectionApplicable && !allFilesAccessGranted))
 	val activeSearchQuery by viewModel.activeSearchQuery.collectAsStateWithLifecycle()
 	val activeSearchOptions by viewModel.activeSearchOptions.collectAsStateWithLifecycle()
 	var expandedTocIndices by remember { mutableStateOf(setOf<Int>()) }
@@ -202,7 +230,6 @@ fun MainScreen(
 			isScreenDimmed = true
 		}
 	}
-	val context = LocalContext.current
 	val accessibilityManager =
 		remember(context) {
 			context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
@@ -785,8 +812,9 @@ fun MainScreen(
 	val lifecycleOwner = LocalLifecycleOwner.current
 	DisposableEffect(lifecycleOwner) {
 		val observer = LifecycleEventObserver { _, event ->
-			if (event == Lifecycle.Event.ON_RESUME && hasAllFilesAccessOnR()) {
-				if (!useInAppFileBrowser) {
+			if (event == Lifecycle.Event.ON_RESUME) {
+				permissionResumeTrigger++
+				if (hasAllFilesAccessOnR() && !useInAppFileBrowser) {
 					useInAppFileBrowser = true
 					viewModel.configManager.setAppBool("use_in_app_file_browser", true)
 					viewModel.configManager.flush()
@@ -798,11 +826,6 @@ fun MainScreen(
 	}
 
 	val showPermissionRationale by viewModel.showPermissionRationale.collectAsStateWithLifecycle()
-	LaunchedEffect(Unit) {
-		if (needsAllFilesAccessPermission()) {
-			viewModel.setShowPermissionRationale(true)
-		}
-	}
 	if (showPermissionRationale) {
 		PermissionRationaleDialog(
 			onGrantClick = {
@@ -879,6 +902,26 @@ fun MainScreen(
 				}
 			},
 			onDismiss = { showFileManagerForImport = false }
+		)
+	}
+
+	if (showOnboarding) {
+		PermissionsOnboardingScreen(
+			showNotificationsSection = notificationsSectionApplicable,
+			notificationsGranted = notificationsGranted,
+			onEnableNotifications = { notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) },
+			showAllFilesAccessSection = allFilesAccessSectionApplicable,
+			allFilesAccessGranted = allFilesAccessGranted,
+			onEnableAllFilesAccess = {
+				val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+				intent.data = Uri.parse("package:${context.packageName}")
+				context.startActivity(intent)
+			},
+			onContinue = {
+				onboardingCompleted = true
+				viewModel.configManager.setAppBool("permissions_onboarding_shown", true)
+				viewModel.configManager.flush()
+			}
 		)
 	}
 	} // end outer Box

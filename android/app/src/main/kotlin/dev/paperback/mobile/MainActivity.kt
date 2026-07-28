@@ -1,9 +1,6 @@
 package dev.paperback.mobile
 
-import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -15,10 +12,8 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityNodeProvider
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -26,7 +21,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
-import androidx.core.content.ContextCompat
 import dev.paperback.mobile.theme.MyApplicationTheme
 import dev.paperback.mobile.ui.MainScreenViewModel
 import uniffi.paperback.SegmentDirectionFfi
@@ -41,21 +35,6 @@ class MainActivity : ComponentActivity() {
 		Translations.load(this)
 		enableEdgeToEdge()
 		setContent {
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-				val permissionLauncher = rememberLauncherForActivityResult(
-					ActivityResultContracts.RequestPermission()
-				) { }
-				LaunchedEffect(Unit) {
-					if (ContextCompat.checkSelfPermission(
-							this@MainActivity,
-							Manifest.permission.POST_NOTIFICATIONS
-						) != PackageManager.PERMISSION_GRANTED
-					) {
-						permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-					}
-				}
-			}
-
 			val view = LocalView.current
 			LaunchedEffect(view) {
 				val originalDelegate = view.accessibilityDelegate
