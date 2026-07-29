@@ -99,6 +99,19 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 		if let Err(e) = patois_build::gen_ios_strings(&po_dir, &ios_dir) {
 			println!("Warning: could not generate Localizable.strings: {e}");
 		}
+		// gen_ios_strings names .lproj folders after the po file stem (Android-style,
+		// e.g. pt_br, zh_CN). iOS expects canonical BCP-47 identifiers to match a
+		// device's language automatically, so rename the two that differ. Keep this
+		// in sync with the language list checked into project.pbxproj's knownRegions
+		// and the Localizable.strings variant group.
+		for (from, to) in [("pt_br", "pt-BR"), ("zh_CN", "zh-Hans")] {
+			let from_dir = ios_dir.join(format!("{from}.lproj"));
+			let to_dir = ios_dir.join(format!("{to}.lproj"));
+			if from_dir.is_dir() {
+				let _ = fs::remove_dir_all(&to_dir);
+				fs::rename(&from_dir, &to_dir)?;
+			}
+		}
 	}
 
 	generate_readmes(&root, &ios_dir.join("Readmes"))?;
