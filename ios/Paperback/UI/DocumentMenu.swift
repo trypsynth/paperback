@@ -16,8 +16,8 @@ struct DocumentMenu: View {
 			// TRANSLATORS: VoiceOver accessibility label for the "..." button that opens this document actions menu
 			.accessibilityLabel(t("More options"))
 			.accessibilityRemoveTraits(.isButton)
-			.accessibilityAction(named: "Help") { viewModel.openHelpDocument() }
 			.accessibilityAction(named: "Settings") { viewModel.showSettings = true }
+			.accessibilityAction(named: "Help") { viewModel.openHelpDocument() }
 			.accessibilityAction(named: "Sleep Timer") { viewModel.showSleepTimer = true }
 			.accessibilityAction(named: "Document Info") { viewModel.showDocumentInfo = true }
 			.accessibilityAction(named: "Word Count") { viewModel.showWordCount = true }
@@ -40,8 +40,8 @@ struct DocumentMenu: View {
 			// TRANSLATORS: VoiceOver accessibility label for the "..." button that opens this document actions menu
 			.accessibilityLabel(t("More options"))
 			.accessibilityRemoveTraits(.isButton)
-			.accessibilityAction(named: "Help") { viewModel.openHelpDocument() }
 			.accessibilityAction(named: "Settings") { viewModel.showSettings = true }
+			.accessibilityAction(named: "Help") { viewModel.openHelpDocument() }
 	}
 
 	// TRANSLATORS: VoiceOver custom action name for toggling between TTS and text reading mode; same strings as the menu item above
