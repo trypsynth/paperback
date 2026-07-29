@@ -140,7 +140,6 @@ fun MainScreen(
 						var activeIndex = 0
 						var bestDistance = Long.MAX_VALUE
 						val currentPos = viewModel.ttsPosition.value
-
 						for (i in toc.indices) {
 							if (toc[i].position <= currentPos) {
 								val distance = currentPos - toc[i].position
@@ -151,7 +150,6 @@ fun MainScreen(
 							}
 						}
 						activeTocIndex = activeIndex
-
 						val toExpand = mutableSetOf<Int>()
 						var currentLevel = toc[activeIndex].level
 						for (i in activeIndex - 1 downTo 0) {
@@ -189,7 +187,6 @@ fun MainScreen(
 							val currentPos = viewModel.ttsPosition.value
 							if (forward) currentPos + 1L else currentPos
 						}
-
 						val res = tab.session.searchFfi(activeSearchQuery!!, searchPos, activeSearchOptions!!.copy(forward = forward))
 						if (res.found) {
 							if (isTextMode) {
@@ -423,13 +420,11 @@ fun MainScreen(
 					val supportedSegmentTypes = remember(activeTab.session) {
 						activeTab.session.getSupportedSegmentTypesFfi()
 					}
-
 					LaunchedEffect(supportedSegmentTypes) {
 						if (!supportedSegmentTypes.contains(currentSegmentType)) {
 							viewModel.setSegmentType(uniffi.paperback.SegmentTypeFfi.PARAGRAPH)
 						}
 					}
-
 					TtsBottomBar(
 						isSpeaking = isSpeaking,
 						onPlayPause = { viewModel.togglePlayPause() },
@@ -666,7 +661,6 @@ fun MainScreen(
 											activeSearchOptions?.matchCase == options.matchCase &&
 											activeSearchOptions?.wholeWord == options.wholeWord &&
 											activeSearchOptions?.regex == options.regex
-
 										viewModel.startSearch(query, options)
 										val searchPos = if (isTextMode) {
 											val nextLineOffset = if (isSameQuery) 2 else 1
@@ -738,7 +732,6 @@ fun MainScreen(
 								onDismiss = { viewModel.closeDocumentInfoDialog() }
 							)
 						}
-
 						if (sleepTimerDialogOpen) {
 							SleepTimerDialog(
 								remainingSeconds = sleepTimerRemaining,
@@ -803,7 +796,6 @@ fun MainScreen(
 				onDismiss = { viewModel.cancelPasswordPrompt() }
 			)
 		}
-
 		if (importPromptPath != null) {
 			AlertDialog(
 				onDismissRequest = { viewModel.cancelImportSettings() },
@@ -826,7 +818,6 @@ fun MainScreen(
 				}
 			)
 		}
-
 		val lifecycleOwner = LocalLifecycleOwner.current
 		DisposableEffect(lifecycleOwner) {
 			val observer = LifecycleEventObserver { _, event ->
@@ -844,7 +835,6 @@ fun MainScreen(
 			lifecycleOwner.lifecycle.addObserver(observer)
 			onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
 		}
-
 		val showPermissionRationale by viewModel.showPermissionRationale.collectAsStateWithLifecycle()
 		if (showPermissionRationale) {
 			PermissionRationaleDialog(
@@ -859,7 +849,6 @@ fun MainScreen(
 				}
 			)
 		}
-
 		if (showFileManager) {
 			val extensions = remember(viewModel.configManager) { viewModel.configManager.getSupportedExtensions() }
 			val initialDirPath = remember {
@@ -886,7 +875,6 @@ fun MainScreen(
 				onDismiss = { showFileManager = false }
 			)
 		}
-
 		if (showFileManagerForImport) {
 			val extensions = listOf("paperback")
 			val initialDirPath = remember {
@@ -924,7 +912,6 @@ fun MainScreen(
 				onDismiss = { showFileManagerForImport = false }
 			)
 		}
-
 		if (showOnboarding) {
 			PermissionsOnboardingScreen(
 				showNotificationsSection = notificationsSectionApplicable,
@@ -944,5 +931,5 @@ fun MainScreen(
 				}
 			)
 		}
-	} // end outer Box
+	}
 }
