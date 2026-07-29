@@ -167,7 +167,7 @@ final class AppViewModel: ObservableObject {
 
 	@Published var debugMessage: String? = nil
 
-	func openDocument(url: URL, password: String? = nil) {
+	func openDocument(url: URL, password: String? = nil, track: Bool = true) {
 		if let existing = tabs.first(where: { $0.url == url }) {
 			activeTabId = existing.id
 			return
@@ -191,16 +191,33 @@ final class AppViewModel: ObservableObject {
 			tab.securityScopeURL = scopeStarted ? url : nil
 			tabs.append(tab)
 			activeTabId = tab.id
-			configManager.addRecentDocument(path: path)
-			configManager.addOpenedDocument(path: path)
-			loadRecentsFromConfig()
+			if track {
+				configManager.addRecentDocument(path: path)
+				configManager.addOpenedDocument(path: path)
+				loadRecentsFromConfig()
+				saveBookmark(for: url, path: path)
+			}
 			loadSegment(for: tab)
-			saveBookmark(for: url, path: path)
 			updateNowPlaying()
 		} catch {
 			if scopeStarted { url.stopAccessingSecurityScopedResource() }
 			debugMessage = "Error opening '\(url.lastPathComponent)':\n\(error)\n\nPath: \(path)"
 		}
+	}
+
+	// TRANSLATORS: Locale codes with a translated in-app help document; keep in sync with doc/readme-<lang>.md
+	private static let helpLocalizedLanguages: Set<String> = ["bs", "cs", "fi", "nl", "pl", "sr"]
+
+	func openHelpDocument() {
+		let preferred = Bundle.main.preferredLocalizations.first ?? "en"
+		let lang = preferred.split(separator: "-").first.map(String.init) ?? preferred
+		let resourceName = Self.helpLocalizedLanguages.contains(lang) ? "readme-\(lang)" : "readme"
+		guard let url = Bundle.main.url(forResource: resourceName, withExtension: "html", subdirectory: "Readmes") else {
+			// TRANSLATORS: Shown when the bundled Help document fails to load
+			debugMessage = t("Failed to load document.")
+			return
+		}
+		openDocument(url: url, track: false)
 	}
 
 	func closeTab(_ tab: DocumentTab) {
