@@ -190,10 +190,10 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 
 ## Changelog
 
-### Version 0.9.0
+### Version 0.9.0 (unreleased)
 * Added a cancel button to the update-in-progress dialog.
 * Added a CLI tool, called pb, to quickly convert any of Paperback's supported formats to HTML, Markdown, or plain text.
-* Added a Configurable Shortcut to Restore Paperback from the system tray.
+* Added a Configurable keyboard shortcut to Restore Paperback from the system tray.
 * Added a locate button to the all documents dialog to locate missing books that just changed their path.
 * Added a readability tab to the options dialog, with the following options:
     * Word wrap (moved from general);
@@ -207,6 +207,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Added a toggle to determine how you want tables displayed, and unified how tables are displayed across documents.
 * added a View Source option to open a document's source in a new tab, useful for editing Markdown for example.
 * Added estimated reading time to the word count dialog, as well as the ability to set your reading speed to make this metric actually useful.
+* Added ARM64 Windows support!
 * Added Android support!
 * Added iOS support!
 * Added macOS support!
@@ -214,7 +215,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Added support for navigating by container.
 * Added support for lists, list items, figures, and images in CHM documents.
 * Added a word wrap menu item and subsequent hotkey.
-* Allow resizing the webview dialog and make it pop up at a much easier-to-see size.
+* Bookmark/note sounds should now properly play exclusively when you navigate over a word containing one.
 * Expanded the export menu item to allow exporting to HTML and Markdown in addition to plain text.
 * Fixed applying word wrap shooting you to the start of your document.
 * Fix daisy books showing incorrect  info in the status bar.
@@ -223,11 +224,14 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Fixed filepos anchors in Mobi books splitting HTML tags and putting garbage in the book text.
 * Fixed lag when getting near the end of the text field in large documents.
 * Fixed links in legacy mobi books.
+* Fixed loading DAISY books with bogus encoding declarations.
 * Fixed parsing RTF documents with non-Latin characters in them.
 * Fixed the title bar not updating after closing a document from the all documents dialog.
+* Fix the webview dialog not being resizable and popping up at a very small initial size.
 * Fixed word documents with locale-specific style names not rendering their headings properly.
 * Fixed your selected tab not getting properly focused after restarting Paperback.
 * If a selection is active when you open the word count dialog, how many words you have selected will now be shown.
+* Improved Paperback's handling of files on Windows network drives: pressing show file in folder now properly focuses the file on the network storage, and the paths no longer contain strange characters.
 * Majorly improved AZW3 parsing.
 * Migrated away from chmlib to our own pure-Rust CHM file reader.
 * On desktop, .paperback files will no longer be forcefully loaded on document restoration. Instead, you will be asked for  Confirmation  when the file is found.
