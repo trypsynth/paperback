@@ -179,7 +179,8 @@ final class AppViewModel: ObservableObject {
 			let session = try DocumentSession.newFfi(
 				filePath: path,
 				password: pass,
-				forcedExtension: ""
+				forcedExtension: "",
+				renderTablesInline: false
 			)
 			let title = session.title().isEmpty
 				? url.deletingPathExtension().lastPathComponent

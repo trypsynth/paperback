@@ -39,6 +39,7 @@
 		A4A4A4A4A4A4A4A4A4A40002 /* paperbackFFI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A4A4A4A4A4A4A4A4A4A40001 /* paperbackFFI.xcframework */; };
 		A4A4A4A4A4A4A4A4A4A40004 /* paperback.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4A4A4A4A4A4A4A4A4A40003 /* paperback.swift */; };
 		A6A6A6A6A6A6A6A6A6A60002 /* libpdfium.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = A6A6A6A6A6A6A6A6A6A60001 /* libpdfium.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		F7F7F7F7F7F7F7F7F7F70002 /* Translations.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7F7F7F7F7F7F7F7F7F70001 /* Translations.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -76,6 +77,7 @@
 		A4A4A4A4A4A4A4A4A4A40003 /* paperback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = paperback.swift; sourceTree = "<group>"; };
 		A5A5A5A5A5A5A5A5A5A50001 /* PaperbackBridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PaperbackBridgingHeader.h; sourceTree = "<group>"; };
 		A6A6A6A6A6A6A6A6A6A60001 /* libpdfium.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libpdfium.dylib; sourceTree = "<group>"; };
+		F7F7F7F7F7F7F7F7F7F70001 /* Translations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Translations.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -116,6 +118,7 @@
 				D4D4D4D4D4D4D4D4D4D40003 /* UI */,
 				A5A5A5A5A5A5A5A5A5A50001 /* PaperbackBridgingHeader.h */,
 				A1A1A1A1A1A1A1A1A1A10011 /* Assets.xcassets */,
+				F7F7F7F7F7F7F7F7F7F70001 /* Translations.swift */,
 				A4A4A4A4A4A4A4A4A4A40005 /* Generated */,
 			);
 			path = Paperback;
@@ -299,6 +302,7 @@
 				E3E3E3E3E3E3E3E3E3E30003 /* VoiceHelpers.swift in Sources */,
 				E3E3E3E3E3E3E3E3E3E30005 /* SpeechDictionaryView.swift in Sources */,
 				E3E3E3E3E3E3E3E3E3E30007 /* RuleEditSheet.swift in Sources */,
+				F7F7F7F7F7F7F7F7F7F70002 /* Translations.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
