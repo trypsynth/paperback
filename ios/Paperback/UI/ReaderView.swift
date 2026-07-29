@@ -136,10 +136,8 @@ struct ReaderView: View {
 				Image(systemName: "folder")
 			}
 			// TRANSLATORS: Accessibility label for the toolbar button that opens a file picker to choose a document
-			.accessibilityLabel(t("Open document"))
-			if viewModel.activeTab != nil {
-				DocumentMenu().environmentObject(viewModel)
-			}
+			.accessibilityLabel(t("Open Book"))
+			DocumentMenu().environmentObject(viewModel)
 		}
 	}
 }

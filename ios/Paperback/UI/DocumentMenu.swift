@@ -4,14 +4,27 @@ struct DocumentMenu: View {
 	@EnvironmentObject var viewModel: AppViewModel
 
 	var body: some View {
-		menuButton
+		if viewModel.activeTab != nil {
+			fullMenu
+		} else {
+			emptyMenu
+		}
+	}
+
+	private var fullMenuAccessibilityBase: some View {
+		fullMenuButton
 			// TRANSLATORS: VoiceOver accessibility label for the "..." button that opens this document actions menu
 			.accessibilityLabel(t("More options"))
 			.accessibilityRemoveTraits(.isButton)
+			.accessibilityAction(named: "Help") { viewModel.openHelpDocument() }
 			.accessibilityAction(named: "Settings") { viewModel.showSettings = true }
 			.accessibilityAction(named: "Sleep Timer") { viewModel.showSleepTimer = true }
 			.accessibilityAction(named: "Document Info") { viewModel.showDocumentInfo = true }
 			.accessibilityAction(named: "Word Count") { viewModel.showWordCount = true }
+	}
+
+	private var fullMenu: some View {
+		fullMenuAccessibilityBase
 			.accessibilityAction(named: "Recent Documents") { viewModel.showRecents = true }
 			.accessibilityAction(named: "Go To") { viewModel.showGoTo = true }
 			.accessibilityAction(named: "Find") { viewModel.showFind = true }
@@ -22,18 +35,37 @@ struct DocumentMenu: View {
 			}
 	}
 
+	private var emptyMenu: some View {
+		emptyMenuButton
+			// TRANSLATORS: VoiceOver accessibility label for the "..." button that opens this document actions menu
+			.accessibilityLabel(t("More options"))
+			.accessibilityRemoveTraits(.isButton)
+			.accessibilityAction(named: "Help") { viewModel.openHelpDocument() }
+			.accessibilityAction(named: "Settings") { viewModel.showSettings = true }
+	}
+
 	// TRANSLATORS: VoiceOver custom action name for toggling between TTS and text reading mode; same strings as the menu item above
 	private var toggleModeActionName: String {
 		viewModel.isTextMode ? t("Switch to TTS Mode") : t("Switch to Text Mode")
 	}
 
-	private var menuButton: some View {
+	private var fullMenuButton: some View {
 		Menu {
 			navigationItems
 			Divider()
 			infoItems
 			Divider()
-			modeAndSettingsItems
+			modeItems
+			Divider()
+			helpAndSettingsItems
+		} label: {
+			Image(systemName: "ellipsis.circle")
+		}
+	}
+
+	private var emptyMenuButton: some View {
+		Menu {
+			helpAndSettingsItems
 		} label: {
 			Image(systemName: "ellipsis.circle")
 		}
@@ -77,7 +109,7 @@ struct DocumentMenu: View {
 		}
 	}
 
-	@ViewBuilder private var modeAndSettingsItems: some View {
+	@ViewBuilder private var modeItems: some View {
 		Button { viewModel.isTextMode.toggle() } label: {
 			// TRANSLATORS: Menu item toggling between spoken (TTS) reading mode and visual text reading mode; label reflects the mode it will switch TO
 			let title: String = viewModel.isTextMode ? t("Switch to TTS Mode") : t("Switch to Text Mode")
@@ -89,6 +121,13 @@ struct DocumentMenu: View {
 			// TRANSLATORS: Menu item to open the sleep timer; the "(active)" variant is shown while a timer is currently counting down
 			let title: String = viewModel.sleepTimerRemaining != nil ? t("Sleep Timer (active)") : t("Sleep Timer")
 			Label(title, systemImage: "timer")
+		}
+	}
+
+	@ViewBuilder private var helpAndSettingsItems: some View {
+		Button { viewModel.openHelpDocument() } label: {
+			// TRANSLATORS: Menu item to open the in-app help document
+			Label(t("Help"), systemImage: "questionmark.circle")
 		}
 		Button { viewModel.showSettings = true } label: {
 			// TRANSLATORS: Menu item to open the app's settings
