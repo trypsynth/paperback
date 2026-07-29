@@ -1,14 +1,16 @@
 package dev.paperback.android.ui
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.heading
@@ -16,9 +18,6 @@ import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
-import androidx.compose.ui.semantics.Role
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dev.paperback.android.t
@@ -87,8 +86,7 @@ fun MainScreenTopBar(
 								onClick = onOpenBook,
 								onLongClick = { openBookMenuExpanded = true },
 								onLongClickLabel = "show import and export options"
-							)
-							.semantics {
+							).semantics {
 								traversalIndex = 1f
 								customActions = listOf(
 									// TRANSLATORS: Accessibility action to import a document's saved settings and bookmarks from a .paperback file

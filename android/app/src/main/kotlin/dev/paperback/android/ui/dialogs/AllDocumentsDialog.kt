@@ -10,9 +10,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.unit.dp
+import dev.paperback.android.t
 import dev.paperback.android.ui.RecentDocumentItem
 import androidx.compose.foundation.lazy.items as lazyItems
-import dev.paperback.android.t
 
 @Composable
 fun AllDocumentsDialog(

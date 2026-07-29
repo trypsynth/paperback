@@ -15,7 +15,6 @@ import dev.paperback.android.MainActivity
 import dev.paperback.android.R
 
 class PlaybackService : Service() {
-
 	companion object {
 		const val CHANNEL_ID = "paperback_tts_channel"
 		const val NOTIFICATION_ID = 1
@@ -39,30 +38,47 @@ class PlaybackService : Service() {
 		createNotificationChannel()
 	}
 
-	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+	override fun onStartCommand(
+		intent: Intent?,
+		flags: Int,
+		startId: Int
+	): Int {
 		if (intent == null) return START_NOT_STICKY
 
 		if (intent.action == Intent.ACTION_MEDIA_BUTTON) {
 			activeMediaSession?.let { session ->
-				androidx.media.session.MediaButtonReceiver.handleIntent(session, intent)
+				androidx.media.session.MediaButtonReceiver
+					.handleIntent(session, intent)
 			}
-		} else when (intent.action) {
-			ACTION_PLAY -> activeMediaSession?.controller?.transportControls?.play()
-			ACTION_PAUSE -> activeMediaSession?.controller?.transportControls?.pause()
-			ACTION_NEXT -> activeMediaSession?.controller?.transportControls?.skipToNext()
-			ACTION_PREV -> activeMediaSession?.controller?.transportControls?.skipToPrevious()
-			ACTION_STOP -> {
-				activeMediaSession?.controller?.transportControls?.stop()
-				stopForeground(STOP_FOREGROUND_REMOVE)
-				stopSelf()
-				return START_NOT_STICKY
+		} else {
+			when (intent.action) {
+				ACTION_PLAY -> activeMediaSession?.controller?.transportControls?.play()
+				ACTION_PAUSE -> activeMediaSession?.controller?.transportControls?.pause()
+				ACTION_NEXT -> activeMediaSession?.controller?.transportControls?.skipToNext()
+				ACTION_PREV -> activeMediaSession?.controller?.transportControls?.skipToPrevious()
+				ACTION_STOP -> {
+					activeMediaSession?.controller?.transportControls?.stop()
+					stopForeground(STOP_FOREGROUND_REMOVE)
+					stopSelf()
+					return START_NOT_STICKY
+				}
 			}
 		}
 
-		val isPlaying = intent.getBooleanExtra(EXTRA_IS_PLAYING, activeMediaSession?.controller?.playbackState?.state == android.support.v4.media.session.PlaybackStateCompat.STATE_PLAYING)
+		val isPlaying = intent.getBooleanExtra(
+			EXTRA_IS_PLAYING,
+			activeMediaSession?.controller?.playbackState?.state ==
+				android.support.v4.media.session.PlaybackStateCompat.STATE_PLAYING
+		)
 
-		val sessionTitle = activeMediaSession?.controller?.metadata?.getString(android.support.v4.media.MediaMetadataCompat.METADATA_KEY_TITLE)
-		val sessionAuthor = activeMediaSession?.controller?.metadata?.getString(android.support.v4.media.MediaMetadataCompat.METADATA_KEY_ARTIST)
+		val sessionTitle = activeMediaSession
+			?.controller
+			?.metadata
+			?.getString(android.support.v4.media.MediaMetadataCompat.METADATA_KEY_TITLE)
+		val sessionAuthor = activeMediaSession
+			?.controller
+			?.metadata
+			?.getString(android.support.v4.media.MediaMetadataCompat.METADATA_KEY_ARTIST)
 
 		val title = intent.getStringExtra(EXTRA_TITLE)?.takeIf { it.isNotBlank() }
 			?: sessionTitle?.takeIf { it.isNotBlank() }
@@ -92,13 +108,18 @@ class PlaybackService : Service() {
 		return START_STICKY
 	}
 
-	private fun buildNotification(isPlaying: Boolean, title: String, author: String): Notification {
+	private fun buildNotification(
+		isPlaying: Boolean,
+		title: String,
+		author: String
+	): Notification {
 		val mainIntent = Intent(this, MainActivity::class.java)
 		val pendingMainIntent = PendingIntent.getActivity(
 			this, 0, mainIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
 		)
 
-		val builder = NotificationCompat.Builder(this, CHANNEL_ID)
+		val builder = NotificationCompat
+			.Builder(this, CHANNEL_ID)
 			.setSmallIcon(android.R.drawable.ic_media_play) // Fallback icon
 			.setContentTitle(title)
 			.setContentText(author)
@@ -109,28 +130,33 @@ class PlaybackService : Service() {
 		// Add Media actions
 		builder.addAction(
 			android.R.drawable.ic_media_previous, "Previous",
-			PendingIntent.getService(this, 1, Intent(this, PlaybackService::class.java).setAction(ACTION_PREV), PendingIntent.FLAG_IMMUTABLE)
+			PendingIntent
+				.getService(this, 1, Intent(this, PlaybackService::class.java).setAction(ACTION_PREV), PendingIntent.FLAG_IMMUTABLE)
 		)
 
 		if (isPlaying) {
+			val pauseIntent = Intent(this, PlaybackService::class.java).setAction(ACTION_PAUSE)
 			builder.addAction(
 				android.R.drawable.ic_media_pause, "Pause",
-				PendingIntent.getService(this, 2, Intent(this, PlaybackService::class.java).setAction(ACTION_PAUSE), PendingIntent.FLAG_IMMUTABLE)
+				PendingIntent.getService(this, 2, pauseIntent, PendingIntent.FLAG_IMMUTABLE)
 			)
 		} else {
+			val playIntent = Intent(this, PlaybackService::class.java).setAction(ACTION_PLAY)
 			builder.addAction(
 				android.R.drawable.ic_media_play, "Play",
-				PendingIntent.getService(this, 2, Intent(this, PlaybackService::class.java).setAction(ACTION_PLAY), PendingIntent.FLAG_IMMUTABLE)
+				PendingIntent.getService(this, 2, playIntent, PendingIntent.FLAG_IMMUTABLE)
 			)
 		}
 
 		builder.addAction(
 			android.R.drawable.ic_media_next, "Next",
-			PendingIntent.getService(this, 3, Intent(this, PlaybackService::class.java).setAction(ACTION_NEXT), PendingIntent.FLAG_IMMUTABLE)
+			PendingIntent
+				.getService(this, 3, Intent(this, PlaybackService::class.java).setAction(ACTION_NEXT), PendingIntent.FLAG_IMMUTABLE)
 		)
 
 		activeMediaSession?.sessionToken?.let { token ->
-			val mediaStyle = androidx.media.app.NotificationCompat.MediaStyle()
+			val mediaStyle = androidx.media.app.NotificationCompat
+				.MediaStyle()
 				.setShowActionsInCompactView(0, 1, 2)
 				.setMediaSession(token)
 			builder.setStyle(mediaStyle)

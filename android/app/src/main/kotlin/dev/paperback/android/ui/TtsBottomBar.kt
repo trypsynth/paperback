@@ -24,11 +24,12 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
-import kotlin.math.roundToInt
-import uniffi.paperback.SegmentTypeFfi
 import dev.paperback.android.t
+import uniffi.paperback.SegmentTypeFfi
+import kotlin.math.roundToInt
 
 private const val SEEK_RANGE = 10000
+
 // Zero-width space: satisfies TalkBack's non-null stateDescription check so it doesn't
 // fall back to announcing the raw slider value, while reading aloud as nothing.
 private const val ZWSP = "​"
@@ -117,7 +118,10 @@ fun TtsBottomBar(
 							}
 							true
 						}
-						onClick(label = "Select navigation unit") { dropdownExpanded = true; true }
+						onClick(label = "Select navigation unit") {
+							dropdownExpanded = true
+							true
+						}
 					}
 				)
 				DropdownMenu(
@@ -165,7 +169,10 @@ fun TtsBottomBar(
 							}
 							true
 						}
-						onClick(label = "Activate") { onPlayPause(); true }
+						onClick(label = "Activate") {
+							onPlayPause()
+							true
+						}
 					},
 				contentAlignment = Alignment.Center,
 			) {

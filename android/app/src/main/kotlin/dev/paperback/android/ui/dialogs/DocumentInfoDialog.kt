@@ -12,9 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import dev.paperback.android.t
 import dev.paperback.android.ui.DocumentTabState
 import uniffi.paperback.DocumentStatsFfi
-import dev.paperback.android.t
 
 @Composable
 fun DocumentInfoDialog(

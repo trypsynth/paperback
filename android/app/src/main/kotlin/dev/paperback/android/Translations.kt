@@ -10,7 +10,10 @@ object Translations {
 	fun load(context: Context) {
 		val lang = Locale.getDefault().language
 		try {
-			val json = context.assets.open("translations/$lang.json").bufferedReader().use { it.readText() }
+			val json = context.assets
+				.open("translations/$lang.json")
+				.bufferedReader()
+				.use { it.readText() }
 			val obj = JSONObject(json)
 			val loaded = HashMap<String, String>(obj.length())
 			for (key in obj.keys()) {

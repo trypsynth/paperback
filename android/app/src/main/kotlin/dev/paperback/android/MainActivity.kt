@@ -7,10 +7,10 @@ import android.os.Looper
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityNodeProvider
+import android.widget.EditText
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -45,46 +45,93 @@ class MainActivity : ComponentActivity() {
 						return object : AccessibilityNodeProvider() {
 							override fun createAccessibilityNodeInfo(virtualViewId: Int): AccessibilityNodeInfo? {
 								val info = provider.createAccessibilityNodeInfo(virtualViewId)
-								if (info != null && info.className == "android.widget.SeekBar" && info.stateDescription?.toString() == "\u200B") {
+								if (info != null &&
+									info.className == "android.widget.SeekBar" &&
+									info.stateDescription?.toString() == "\u200B"
+								) {
 									info.extras.putCharSequence("AccessibilityNodeInfo.roleDescription", "button")
 								}
 								return info
 							}
-							override fun performAction(virtualViewId: Int, action: Int, arguments: Bundle?): Boolean {
-								return provider.performAction(virtualViewId, action, arguments)
-							}
-							override fun findAccessibilityNodeInfosByText(text: String, virtualViewId: Int): MutableList<AccessibilityNodeInfo>? {
-								return provider.findAccessibilityNodeInfosByText(text, virtualViewId)
-							}
-							override fun findFocus(focus: Int): AccessibilityNodeInfo? {
-								return provider.findFocus(focus)
-							}
+
+							override fun performAction(
+								virtualViewId: Int,
+								action: Int,
+								arguments: Bundle?
+							): Boolean =
+								provider
+									.performAction(virtualViewId, action, arguments)
+
+							override fun findAccessibilityNodeInfosByText(
+								text: String,
+								virtualViewId: Int
+							): MutableList<AccessibilityNodeInfo>? =
+								provider
+									.findAccessibilityNodeInfosByText(text, virtualViewId)
+
+							override fun findFocus(focus: Int): AccessibilityNodeInfo? = provider.findFocus(focus)
 						}
 					}
-					override fun sendAccessibilityEvent(host: View, eventType: Int) {
+
+					override fun sendAccessibilityEvent(
+						host: View,
+						eventType: Int
+					) {
 						originalDelegate?.sendAccessibilityEvent(host, eventType) ?: super.sendAccessibilityEvent(host, eventType)
 					}
-					override fun sendAccessibilityEventUnchecked(host: View, event: AccessibilityEvent) {
-						originalDelegate?.sendAccessibilityEventUnchecked(host, event) ?: super.sendAccessibilityEventUnchecked(host, event)
+
+					override fun sendAccessibilityEventUnchecked(
+						host: View,
+						event: AccessibilityEvent
+					) {
+						originalDelegate?.sendAccessibilityEventUnchecked(host, event)
+							?: super.sendAccessibilityEventUnchecked(host, event)
 					}
-					override fun dispatchPopulateAccessibilityEvent(host: View, event: AccessibilityEvent): Boolean {
-						return originalDelegate?.dispatchPopulateAccessibilityEvent(host, event) ?: super.dispatchPopulateAccessibilityEvent(host, event)
-					}
-					override fun onPopulateAccessibilityEvent(host: View, event: AccessibilityEvent) {
+
+					override fun dispatchPopulateAccessibilityEvent(
+						host: View,
+						event: AccessibilityEvent
+					): Boolean =
+						originalDelegate?.dispatchPopulateAccessibilityEvent(host, event)
+							?: super.dispatchPopulateAccessibilityEvent(host, event)
+
+					override fun onPopulateAccessibilityEvent(
+						host: View,
+						event: AccessibilityEvent
+					) {
 						originalDelegate?.onPopulateAccessibilityEvent(host, event) ?: super.onPopulateAccessibilityEvent(host, event)
 					}
-					override fun onInitializeAccessibilityEvent(host: View, event: AccessibilityEvent) {
+
+					override fun onInitializeAccessibilityEvent(
+						host: View,
+						event: AccessibilityEvent
+					) {
 						originalDelegate?.onInitializeAccessibilityEvent(host, event) ?: super.onInitializeAccessibilityEvent(host, event)
 					}
-					override fun onInitializeAccessibilityNodeInfo(host: View, info: AccessibilityNodeInfo) {
-						originalDelegate?.onInitializeAccessibilityNodeInfo(host, info) ?: super.onInitializeAccessibilityNodeInfo(host, info)
+
+					override fun onInitializeAccessibilityNodeInfo(
+						host: View,
+						info: AccessibilityNodeInfo
+					) {
+						originalDelegate?.onInitializeAccessibilityNodeInfo(host, info)
+							?: super.onInitializeAccessibilityNodeInfo(host, info)
 					}
-					override fun onRequestSendAccessibilityEvent(host: ViewGroup, child: View, event: AccessibilityEvent): Boolean {
-						return originalDelegate?.onRequestSendAccessibilityEvent(host, child, event) ?: super.onRequestSendAccessibilityEvent(host, child, event)
-					}
-					override fun performAccessibilityAction(host: View, action: Int, args: Bundle?): Boolean {
-						return originalDelegate?.performAccessibilityAction(host, action, args) ?: super.performAccessibilityAction(host, action, args)
-					}
+
+					override fun onRequestSendAccessibilityEvent(
+						host: ViewGroup,
+						child: View,
+						event: AccessibilityEvent
+					): Boolean =
+						originalDelegate?.onRequestSendAccessibilityEvent(host, child, event)
+							?: super.onRequestSendAccessibilityEvent(host, child, event)
+
+					override fun performAccessibilityAction(
+						host: View,
+						action: Int,
+						args: Bundle?
+					): Boolean =
+						originalDelegate?.performAccessibilityAction(host, action, args)
+							?: super.performAccessibilityAction(host, action, args)
 				}
 			}
 			MyApplicationTheme {
@@ -128,20 +175,45 @@ class MainActivity : ComponentActivity() {
 		// Ctrl shortcuts: parity with desktop app
 		if (event.isCtrlPressed) {
 			return when (event.keyCode) {
-				KeyEvent.KEYCODE_F -> { vm.openFindDialog(); true }
-				KeyEvent.KEYCODE_COMMA -> { vm.openSettingsDialog(); true }
-				KeyEvent.KEYCODE_T -> { vm.openTocDialog(); true }
-				KeyEvent.KEYCODE_P -> { vm.openGoToDialog("Page"); true }
-				KeyEvent.KEYCODE_G -> {
-					if (event.isShiftPressed) vm.openGoToDialog("Percentage")
-					else vm.openGoToDialog("Line")
+				KeyEvent.KEYCODE_F -> {
+					vm.openFindDialog()
 					true
 				}
-				KeyEvent.KEYCODE_W -> { vm.openWordCountDialog(); true }
-				KeyEvent.KEYCODE_I -> { vm.openDocumentInfoDialog(); true }
+				KeyEvent.KEYCODE_COMMA -> {
+					vm.openSettingsDialog()
+					true
+				}
+				KeyEvent.KEYCODE_T -> {
+					vm.openTocDialog()
+					true
+				}
+				KeyEvent.KEYCODE_P -> {
+					vm.openGoToDialog("Page")
+					true
+				}
+				KeyEvent.KEYCODE_G -> {
+					if (event.isShiftPressed) {
+						vm.openGoToDialog("Percentage")
+					} else {
+						vm.openGoToDialog("Line")
+					}
+					true
+				}
+				KeyEvent.KEYCODE_W -> {
+					vm.openWordCountDialog()
+					true
+				}
+				KeyEvent.KEYCODE_I -> {
+					vm.openDocumentInfoDialog()
+					true
+				}
 				KeyEvent.KEYCODE_S -> {
-					if (event.isShiftPressed) { vm.openSleepTimerDialog(); true }
-					else super.dispatchKeyEvent(event)
+					if (event.isShiftPressed) {
+						vm.openSleepTimerDialog()
+						true
+					} else {
+						super.dispatchKeyEvent(event)
+					}
 				}
 				else -> super.dispatchKeyEvent(event)
 			}
@@ -164,7 +236,10 @@ class MainActivity : ComponentActivity() {
 				headsethookHandler.postDelayed(headsethookRunnable, 300)
 				true
 			}
-			KeyEvent.KEYCODE_SPACE -> { vm.togglePlayPause(); true }
+			KeyEvent.KEYCODE_SPACE -> {
+				vm.togglePlayPause()
+				true
+			}
 			KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
 				vm.togglePlayPause()
 				true
@@ -190,26 +265,59 @@ class MainActivity : ComponentActivity() {
 				true
 			}
 			// Sections: [ = previous, ] = next (no shift needed, matching desktop)
-			KeyEvent.KEYCODE_LEFT_BRACKET -> { vm.navigateByType(SegmentTypeFfi.SECTION, SegmentDirectionFfi.PREVIOUS); true }
-			KeyEvent.KEYCODE_RIGHT_BRACKET -> { vm.navigateByType(SegmentTypeFfi.SECTION, SegmentDirectionFfi.NEXT); true }
+			KeyEvent.KEYCODE_LEFT_BRACKET -> {
+				vm.navigateByType(SegmentTypeFfi.SECTION, SegmentDirectionFfi.PREVIOUS)
+				true
+			}
+			KeyEvent.KEYCODE_RIGHT_BRACKET -> {
+				vm.navigateByType(SegmentTypeFfi.SECTION, SegmentDirectionFfi.NEXT)
+				true
+			}
 			// Headings: H = next, Shift+H = previous
-			KeyEvent.KEYCODE_H -> { vm.navigateByType(SegmentTypeFfi.HEADING, dir); true }
+			KeyEvent.KEYCODE_H -> {
+				vm.navigateByType(SegmentTypeFfi.HEADING, dir)
+				true
+			}
 			// Pages: P = next, Shift+P = previous
-			KeyEvent.KEYCODE_P -> { vm.navigateByType(SegmentTypeFfi.PAGE, dir); true }
+			KeyEvent.KEYCODE_P -> {
+				vm.navigateByType(SegmentTypeFfi.PAGE, dir)
+				true
+			}
 			// Images: G = next, Shift+G = previous
-			KeyEvent.KEYCODE_G -> { vm.navigateByType(SegmentTypeFfi.IMAGE, dir); true }
+			KeyEvent.KEYCODE_G -> {
+				vm.navigateByType(SegmentTypeFfi.IMAGE, dir)
+				true
+			}
 			// Figures: F = next, Shift+F = previous
-			KeyEvent.KEYCODE_F -> { vm.navigateByType(SegmentTypeFfi.FIGURE, dir); true }
+			KeyEvent.KEYCODE_F -> {
+				vm.navigateByType(SegmentTypeFfi.FIGURE, dir)
+				true
+			}
 			// Links: K = next, Shift+K = previous
-			KeyEvent.KEYCODE_K -> { vm.navigateByType(SegmentTypeFfi.LINK, dir); true }
+			KeyEvent.KEYCODE_K -> {
+				vm.navigateByType(SegmentTypeFfi.LINK, dir)
+				true
+			}
 			// Tables: T = next, Shift+T = previous
-			KeyEvent.KEYCODE_T -> { vm.navigateByType(SegmentTypeFfi.TABLE, dir); true }
+			KeyEvent.KEYCODE_T -> {
+				vm.navigateByType(SegmentTypeFfi.TABLE, dir)
+				true
+			}
 			// Separators: S = next, Shift+S = previous
-			KeyEvent.KEYCODE_S -> { vm.navigateByType(SegmentTypeFfi.SEPARATOR, dir); true }
+			KeyEvent.KEYCODE_S -> {
+				vm.navigateByType(SegmentTypeFfi.SEPARATOR, dir)
+				true
+			}
 			// Lists: L = next, Shift+L = previous
-			KeyEvent.KEYCODE_L -> { vm.navigateByType(SegmentTypeFfi.LIST, dir); true }
+			KeyEvent.KEYCODE_L -> {
+				vm.navigateByType(SegmentTypeFfi.LIST, dir)
+				true
+			}
 			// List items: I = next, Shift+I = previous
-			KeyEvent.KEYCODE_I -> { vm.navigateByType(SegmentTypeFfi.LIST_ITEM, dir); true }
+			KeyEvent.KEYCODE_I -> {
+				vm.navigateByType(SegmentTypeFfi.LIST_ITEM, dir)
+				true
+			}
 			else -> super.dispatchKeyEvent(event)
 		}
 	}

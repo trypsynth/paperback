@@ -8,8 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
-import uniffi.paperback.DocumentStatsFfi
 import dev.paperback.android.t
+import uniffi.paperback.DocumentStatsFfi
 
 @Composable
 fun WordCountDialog(

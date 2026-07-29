@@ -9,12 +9,12 @@ import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
-import android.support.v4.media.MediaMetadataCompat
-import android.support.v4.media.session.MediaSessionCompat
-import android.support.v4.media.session.PlaybackStateCompat
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice
+import android.support.v4.media.MediaMetadataCompat
+import android.support.v4.media.session.MediaSessionCompat
+import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.content.ContextCompat
 import androidx.media.session.MediaButtonReceiver
 import kotlinx.coroutines.CoroutineScope
@@ -41,6 +41,7 @@ class TtsManager(
 	private var nextTempFile: File? = null
 	private var precachedText: String? = null
 	private var fileCounter = 0
+
 	// Identifies the synthesis request that isSpeaking/media-player state should currently track.
 	// Seeking quickly (e.g. paragraph-by-paragraph) cancels in-flight synthesis/precache requests;
 	// without this, a stale callback for an abandoned request could flip isSpeaking off after the
@@ -87,7 +88,8 @@ class TtsManager(
 	// Speech playback always uses the same audio attributes; shared to avoid rebuilding
 	// an identical AudioAttributes instance at every call site.
 	private fun speechAudioAttributes(): AudioAttributes =
-		AudioAttributes.Builder()
+		AudioAttributes
+			.Builder()
 			.setUsage(AudioAttributes.USAGE_MEDIA)
 			.setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
 			.build()
@@ -245,7 +247,8 @@ class TtsManager(
 	}
 
 	private fun updateMediaMetadata() {
-		val metadata = MediaMetadataCompat.Builder()
+		val metadata = MediaMetadataCompat
+			.Builder()
 			.putString(MediaMetadataCompat.METADATA_KEY_TITLE, currentDocumentTitle)
 			.putString(MediaMetadataCompat.METADATA_KEY_ARTIST, currentDocumentAuthor)
 			.build()
@@ -318,7 +321,10 @@ class TtsManager(
 												mp.start()
 											}
 											nextMediaPlayer?.let {
-												try { mp.setNextMediaPlayer(it) } catch (_: Exception) {}
+												try {
+													mp.setNextMediaPlayer(it)
+												} catch (_: Exception) {
+												}
 											}
 											setupCompletionListener(mp, utteranceId)
 										}
@@ -351,7 +357,10 @@ class TtsManager(
 											nextMediaPlayer = nextMp
 											isNextMediaPlayerPrepared = true
 											mediaPlayer?.let {
-												try { it.setNextMediaPlayer(nextMp) } catch (_: Exception) {}
+												try {
+													it.setNextMediaPlayer(nextMp)
+												} catch (_: Exception) {
+												}
 											}
 										}
 									}
@@ -434,7 +443,10 @@ class TtsManager(
 		}
 	}
 
-	private fun setupCompletionListener(mp: MediaPlayer, utteranceId: String?) {
+	private fun setupCompletionListener(
+		mp: MediaPlayer,
+		utteranceId: String?
+	) {
 		mp.setOnCompletionListener { _ ->
 			if (nextMediaPlayer != null && isNextMediaPlayerPrepared) {
 				val oldMp = mediaPlayer
@@ -443,8 +455,14 @@ class TtsManager(
 				isNextMediaPlayerPrepared = false
 				precachedText = null
 
-				try { oldMp?.release() } catch (_: Exception) {}
-				try { currentTempFile?.delete() } catch (_: Exception) {}
+				try {
+					oldMp?.release()
+				} catch (_: Exception) {
+				}
+				try {
+					currentTempFile?.delete()
+				} catch (_: Exception) {
+				}
 				currentTempFile = nextTempFile
 				nextTempFile = null
 
@@ -499,8 +517,6 @@ class TtsManager(
 		}
 	}
 
-
-
 	fun pause() {
 		if (_isSpeaking.value && !_isPaused.value) {
 			_isPaused.value = true
@@ -510,7 +526,8 @@ class TtsManager(
 					if (it.isPlaying) {
 						it.pause()
 					}
-				} catch (_: Exception) {}
+				} catch (_: Exception) {
+				}
 			} ?: run {
 				if (currentTempFile == null) {
 					tts?.stop()
@@ -528,7 +545,8 @@ class TtsManager(
 			mediaPlayer?.let {
 				try {
 					it.start()
-				} catch (_: Exception) {}
+				} catch (_: Exception) {
+				}
 			}
 		}
 	}
@@ -536,12 +554,14 @@ class TtsManager(
 	private fun cleanupPlayer() {
 		try {
 			mediaPlayer?.release()
-		} catch (_: Exception) {}
+		} catch (_: Exception) {
+		}
 		mediaPlayer = null
 
 		try {
 			nextMediaPlayer?.release()
-		} catch (_: Exception) {}
+		} catch (_: Exception) {
+		}
 		nextMediaPlayer = null
 		isNextMediaPlayerPrepared = false
 		precachedText = null
@@ -555,7 +575,8 @@ class TtsManager(
 					it.delete()
 				}
 			}
-		} catch (_: Exception) {}
+		} catch (_: Exception) {
+		}
 	}
 
 	fun stop() {

@@ -110,7 +110,10 @@ class MainScreenViewModel(
 	private val _performSearchEvent = MutableSharedFlow<Boolean>(extraBufferCapacity = 1)
 	val performSearchEvent: SharedFlow<Boolean> = _performSearchEvent.asSharedFlow()
 
-	fun startSearch(query: String, options: uniffi.paperback.SearchOptionsFfi) {
+	fun startSearch(
+		query: String,
+		options: uniffi.paperback.SearchOptionsFfi
+	) {
 		_activeSearchQuery.value = query
 		_activeSearchOptions.value = options
 	}
@@ -309,7 +312,10 @@ class MainScreenViewModel(
 		}
 	}
 
-	fun locateRecentDocument(oldUriString: String, newUri: Uri) {
+	fun locateRecentDocument(
+		oldUriString: String,
+		newUri: Uri
+	) {
 		val newUriString = newUri.toString()
 		viewModelScope.launch(Dispatchers.IO) {
 			try {
@@ -325,7 +331,10 @@ class MainScreenViewModel(
 		}
 	}
 
-	fun openDocument(uri: Uri, track: Boolean = true) {
+	fun openDocument(
+		uri: Uri,
+		track: Boolean = true
+	) {
 		val uriString = uri.toString()
 		viewModelScope.launch(Dispatchers.IO) {
 			try {
@@ -410,7 +419,11 @@ class MainScreenViewModel(
 		}.start()
 	}
 
-	private suspend fun prepareDocumentTabIO(uri: Uri, providedPassword: String? = null, isRestore: Boolean = false): DocumentTabState? =
+	private suspend fun prepareDocumentTabIO(
+		uri: Uri,
+		providedPassword: String? = null,
+		isRestore: Boolean = false
+	): DocumentTabState? =
 		withContext(Dispatchers.IO) {
 			try {
 				val uriString = uri.toString()
@@ -603,7 +616,10 @@ class MainScreenViewModel(
 		}
 	}
 
-	fun playNextSegment(speak: Boolean = true, announce: Boolean = false) {
+	fun playNextSegment(
+		speak: Boolean = true,
+		announce: Boolean = false
+	) {
 		val state = uiState.value
 		if (state is MainScreenUiState.Success) {
 			val tab = state.activeTab ?: return
@@ -628,7 +644,11 @@ class MainScreenViewModel(
 	}
 
 	private fun announceNavigationCue(text: String) {
-		val cue = text.trim().split(WHITESPACE_REGEX).take(5).joinToString(" ")
+		val cue = text
+			.trim()
+			.split(WHITESPACE_REGEX)
+			.take(5)
+			.joinToString(" ")
 		_accessibilityAnnouncement.tryEmit(cue)
 	}
 
@@ -677,7 +697,10 @@ class MainScreenViewModel(
 		}
 	}
 
-	fun playPrevSegment(speak: Boolean = true, announce: Boolean = false) {
+	fun playPrevSegment(
+		speak: Boolean = true,
+		announce: Boolean = false
+	) {
 		val state = uiState.value
 		if (state is MainScreenUiState.Success) {
 			val tab = state.activeTab ?: return
@@ -727,7 +750,10 @@ class MainScreenViewModel(
 		_sleepTimerRemaining.value = null
 	}
 
-	fun navigateByType(type: SegmentTypeFfi, direction: SegmentDirectionFfi) {
+	fun navigateByType(
+		type: SegmentTypeFfi,
+		direction: SegmentDirectionFfi
+	) {
 		val state = uiState.value as? MainScreenUiState.Success ?: return
 		val tab = state.activeTab ?: return
 		val segment = tab.session.getTextSegment(_ttsPosition.value, type, direction)
@@ -766,7 +792,10 @@ class MainScreenViewModel(
 		}
 	}
 
-	fun exportSettingsToUri(context: Context, destUri: Uri): Boolean {
+	fun exportSettingsToUri(
+		context: Context,
+		destUri: Uri
+	): Boolean {
 		val state = uiState.value as? MainScreenUiState.Success ?: return false
 		val tab = state.activeTab ?: return false
 		val docUri = tab.documentUri
@@ -792,7 +821,10 @@ class MainScreenViewModel(
 		}
 	}
 
-	fun importSettingsFromUri(context: Context, sourceUri: Uri): Boolean {
+	fun importSettingsFromUri(
+		context: Context,
+		sourceUri: Uri
+	): Boolean {
 		val state = uiState.value as? MainScreenUiState.Success ?: return false
 		val tab = state.activeTab ?: return false
 		val docUri = tab.documentUri

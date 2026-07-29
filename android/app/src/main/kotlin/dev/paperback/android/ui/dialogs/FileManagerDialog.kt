@@ -1,7 +1,8 @@
 package dev.paperback.android.ui.dialogs
 
+import android.content.Context
 import android.os.Environment
-import androidx.compose.foundation.background
+import android.os.storage.StorageManager
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -13,29 +14,26 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.*
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.platform.LocalContext
-import androidx.core.content.ContextCompat
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.input.key.*
-import android.os.storage.StorageManager
-import android.content.Context
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.content.ContextCompat
+import dev.paperback.android.t
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import dev.paperback.android.t
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,20 +64,28 @@ fun FileManagerDialog(
 			val sm = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
 			sm.storageVolumes.mapNotNull { it.directory }
 		} else {
-			ContextCompat.getExternalFilesDirs(context, null).mapNotNull {
-				val path = it?.absolutePath ?: return@mapNotNull null
-				val index = path.indexOf("/Android/data/")
-				if (index != -1) {
-					File(path.substring(0, index))
-				} else null
-			}.distinct()
+			ContextCompat
+				.getExternalFilesDirs(context, null)
+				.mapNotNull {
+					val path = it?.absolutePath ?: return@mapNotNull null
+					val index = path.indexOf("/Android/data/")
+					if (index != -1) {
+						File(path.substring(0, index))
+					} else {
+						null
+					}
+				}.distinct()
 		}
 	}
 
 	val virtualParent = remember(currentDirectory, storageRoots) {
-		if (currentDirectory.absolutePath == "/storage") null
-		else if (storageRoots.any { it.absolutePath == currentDirectory.absolutePath }) File("/storage")
-		else currentDirectory.parentFile
+		if (currentDirectory.absolutePath == "/storage") {
+			null
+		} else if (storageRoots.any { it.absolutePath == currentDirectory.absolutePath }) {
+			File("/storage")
+		} else {
+			currentDirectory.parentFile
+		}
 	}
 
 	LaunchedEffect(currentDirectory, supportedExtensions, storageRoots) {
@@ -90,10 +96,12 @@ fun FileManagerDialog(
 			} else {
 				var list = currentDirectory.listFiles()?.toList() ?: emptyList()
 				val folders = list.filter { it.isDirectory && !it.isHidden }.sortedBy { it.name.lowercase() }
-				val docs = list.filter { file ->
-					!file.isDirectory && !file.isHidden &&
-					supportedExtensions.any { ext -> file.name.lowercase().endsWith(".$ext") }
-				}.sortedBy { it.name.lowercase() }
+				val docs = list
+					.filter { file ->
+						!file.isDirectory &&
+							!file.isHidden &&
+							supportedExtensions.any { ext -> file.name.lowercase().endsWith(".$ext") }
+					}.sortedBy { it.name.lowercase() }
 				folders + docs
 			}
 		}
@@ -119,103 +127,115 @@ fun FileManagerDialog(
 				},
 			color = MaterialTheme.colorScheme.surface
 		) {
-		Column(modifier = Modifier.fillMaxSize()) {
-			TopAppBar(
-				title = {
-					Text(
-						text = if (currentDirectory.absolutePath == "/storage") "Storage Devices"
-							   else if (currentDirectory.absolutePath == Environment.getExternalStorageDirectory().absolutePath) "Internal Storage"
-							   else currentDirectory.name.ifBlank { "Storage" },
-						maxLines = 1,
-						overflow = TextOverflow.Ellipsis
-					)
-				},
-				actions = {
-					TextButton(onClick = onDismiss) {
-						Text("Cancel")
-					}
-				}
-			)
-
-
-			Text(
-				text = currentDirectory.absolutePath,
-				style = MaterialTheme.typography.bodySmall,
-				color = MaterialTheme.colorScheme.onSurfaceVariant,
-				modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp).semantics {
-					contentDescription = "Current path: ${currentDirectory.absolutePath}"
-				}
-			)
-
-			Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-				if (virtualParent != null) {
-					Row(
-						modifier = Modifier
-							.fillMaxWidth()
-							.clickable { currentDirectory = virtualParent }
-							.padding(16.dp)
-							.clearAndSetSemantics {
-								role = Role.Button
-								contentDescription = "Go up to parent directory: ${if (virtualParent.absolutePath == "/storage") "Storage Devices" else virtualParent.name}"
-							},
-						verticalAlignment = Alignment.CenterVertically
-					) {
-						Icon(
-							imageVector = Icons.Default.Folder,
-							contentDescription = null,
-							tint = MaterialTheme.colorScheme.primary,
-							modifier = Modifier.size(32.dp).padding(end = 16.dp)
-						)
+			Column(modifier = Modifier.fillMaxSize()) {
+				TopAppBar(
+					title = {
 						Text(
-							text = ".. (Parent Directory)",
-							style = MaterialTheme.typography.bodyLarge,
+							text = if (currentDirectory.absolutePath == "/storage") {
+								"Storage Devices"
+							} else if (currentDirectory.absolutePath ==
+								Environment.getExternalStorageDirectory().absolutePath
+							) {
+								"Internal Storage"
+							} else {
+								currentDirectory.name.ifBlank { "Storage" }
+							},
 							maxLines = 1,
 							overflow = TextOverflow.Ellipsis
 						)
+					},
+					actions = {
+						TextButton(onClick = onDismiss) {
+							Text("Cancel")
+						}
 					}
-				}
+				)
 
-				if (isLoading) {
-					Box(
-						modifier = Modifier.fillMaxWidth().padding(32.dp),
-						contentAlignment = Alignment.Center
-					) {
-						CircularProgressIndicator()
+				Text(
+					text = currentDirectory.absolutePath,
+					style = MaterialTheme.typography.bodySmall,
+					color = MaterialTheme.colorScheme.onSurfaceVariant,
+					modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp).semantics {
+						contentDescription = "Current path: ${currentDirectory.absolutePath}"
 					}
-				} else {
-					files.forEach { file ->
-						FileListItem(
-							file = file,
-							onClick = {
-								if (file.isDirectory) {
-									currentDirectory = file
-								} else {
-									onFileSelected(file)
-								}
-							}
-						)
+				)
+
+				Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+					if (virtualParent != null) {
+						Row(
+							modifier = Modifier
+								.fillMaxWidth()
+								.clickable { currentDirectory = virtualParent }
+								.padding(16.dp)
+								.clearAndSetSemantics {
+									role = Role.Button
+									contentDescription =
+										"Go up to parent directory: ${if (virtualParent.absolutePath == "/storage") "Storage Devices" else virtualParent.name}"
+								},
+							verticalAlignment = Alignment.CenterVertically
+						) {
+							Icon(
+								imageVector = Icons.Default.Folder,
+								contentDescription = null,
+								tint = MaterialTheme.colorScheme.primary,
+								modifier = Modifier.size(32.dp).padding(end = 16.dp)
+							)
+							Text(
+								text = ".. (Parent Directory)",
+								style = MaterialTheme.typography.bodyLarge,
+								maxLines = 1,
+								overflow = TextOverflow.Ellipsis
+							)
+						}
 					}
-					if (files.isEmpty()) {
+
+					if (isLoading) {
 						Box(
 							modifier = Modifier.fillMaxWidth().padding(32.dp),
 							contentAlignment = Alignment.Center
 						) {
-							// TRANSLATORS: Shown in the in-app file browser when a folder has no openable documents or subfolders
-							Text(t("No supported books or folders found here."))
+							CircularProgressIndicator()
+						}
+					} else {
+						files.forEach { file ->
+							FileListItem(
+								file = file,
+								onClick = {
+									if (file.isDirectory) {
+										currentDirectory = file
+									} else {
+										onFileSelected(file)
+									}
+								}
+							)
+						}
+						if (files.isEmpty()) {
+							Box(
+								modifier = Modifier.fillMaxWidth().padding(32.dp),
+								contentAlignment = Alignment.Center
+							) {
+								// TRANSLATORS: Shown in the in-app file browser when a folder has no openable documents or subfolders
+								Text(t("No supported books or folders found here."))
+							}
 						}
 					}
 				}
 			}
 		}
 	}
-	}
 }
+
 @Composable
-fun FileListItem(file: File, onClick: () -> Unit) {
+fun FileListItem(
+	file: File,
+	onClick: () -> Unit
+) {
 	val dateFormat = remember { SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()) }
 	val dateString = remember(file) { dateFormat.format(Date(file.lastModified())) }
 	val sizeString = remember(file) {
-		if (file.isDirectory) "" else {
+		if (file.isDirectory) {
+			""
+		} else {
 			val kb = file.length() / 1024
 			if (kb > 1024) "${kb / 1024} MB" else "$kb KB"
 		}
@@ -232,7 +252,13 @@ fun FileListItem(file: File, onClick: () -> Unit) {
 				val typeStr = if (file.isDirectory) t("Folder") else t("File")
 				val sizeDesc = if (file.isDirectory) "" else ", $sizeString"
 				// TRANSLATORS: Display name for the device's root storage folder in the in-app file browser
-				val displayName = if (file.absolutePath == Environment.getExternalStorageDirectory().absolutePath) t("Internal Storage") else file.name
+				val displayName = if (file.absolutePath ==
+					Environment.getExternalStorageDirectory().absolutePath
+				) {
+					t("Internal Storage")
+				} else {
+					file.name
+				}
 				contentDescription = "$displayName, $typeStr, modified $dateString$sizeDesc"
 			},
 		verticalAlignment = Alignment.CenterVertically
@@ -244,7 +270,13 @@ fun FileListItem(file: File, onClick: () -> Unit) {
 			modifier = Modifier.size(32.dp).padding(end = 16.dp)
 		)
 		Column {
-			val displayName = if (file.absolutePath == Environment.getExternalStorageDirectory().absolutePath) t("Internal Storage") else file.name
+			val displayName = if (file.absolutePath ==
+				Environment.getExternalStorageDirectory().absolutePath
+			) {
+				t("Internal Storage")
+			} else {
+				file.name
+			}
 			Text(
 				text = displayName,
 				style = MaterialTheme.typography.bodyLarge,

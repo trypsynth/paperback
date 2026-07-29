@@ -15,8 +15,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,9 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
@@ -38,9 +36,9 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import dev.paperback.android.t
 import uniffi.paperback.HeadingTreeFfi
 import uniffi.paperback.LinkListFfi
-import dev.paperback.android.t
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -112,8 +110,7 @@ fun ElementsDialog(
 									.clickable(onClickLabel = "go to heading") {
 										onNavigate(item.offset)
 										onDismiss()
-									}
-									.semantics(mergeDescendants = true) {
+									}.semantics(mergeDescendants = true) {
 										if (hasChildren) {
 											// TRANSLATORS: TalkBack state description for a heading row announcing whether its children are shown
 											stateDescription = if (isExpanded) t("Expanded") else t("Collapsed")
@@ -132,8 +129,7 @@ fun ElementsDialog(
 												)
 											)
 										}
-									}
-									.padding(start = paddingLeft, top = 8.dp, bottom = 8.dp, end = 16.dp),
+									}.padding(start = paddingLeft, top = 8.dp, bottom = 8.dp, end = 16.dp),
 								verticalAlignment = Alignment.CenterVertically
 							) {
 								if (hasChildren) {
@@ -178,8 +174,7 @@ fun ElementsDialog(
 										.clickable(onClickLabel = "go to link") {
 											onNavigate(item.offset)
 											onDismiss()
-										}
-										.padding(16.dp)
+										}.padding(16.dp)
 								) {
 									// TRANSLATORS: Fallback label for a link in the Elements dialog when it has no visible text
 									Text(text = item.text.ifBlank { t("Untitled Link") })
@@ -193,7 +188,10 @@ fun ElementsDialog(
 	}
 }
 
-private fun calculateDepth(items: List<uniffi.paperback.HeadingTreeItemFfi>, parentIndex: Int): Int {
+private fun calculateDepth(
+	items: List<uniffi.paperback.HeadingTreeItemFfi>,
+	parentIndex: Int
+): Int {
 	var depth = 0
 	var currentIndex = parentIndex
 	while (currentIndex >= 0 && currentIndex < items.size) {

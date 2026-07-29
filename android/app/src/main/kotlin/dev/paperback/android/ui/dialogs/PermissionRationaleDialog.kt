@@ -50,7 +50,10 @@ fun PermissionRationaleDialog(
 				)
 				Text(
 					// TRANSLATORS: Closing note explaining the fallback if the user denies the permission
-					text = t("If you deny this permission, you can still use the Android System File Picker to open your books by turning off the custom file browser setting."),
+					text = t(
+						"If you deny this permission, you can still use the Android System File Picker to open your " +
+							"books by turning off the custom file browser setting."
+					),
 					style = MaterialTheme.typography.bodyMedium,
 					fontWeight = FontWeight.Bold
 				)

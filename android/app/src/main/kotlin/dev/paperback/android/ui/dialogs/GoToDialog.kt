@@ -17,8 +17,8 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import dev.paperback.android.ui.DocumentTabState
 import dev.paperback.android.t
+import dev.paperback.android.ui.DocumentTabState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -22,9 +22,9 @@ import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
+import dev.paperback.android.t
 import kotlinx.coroutines.launch
 import uniffi.paperback.TocEntry
-import dev.paperback.android.t
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

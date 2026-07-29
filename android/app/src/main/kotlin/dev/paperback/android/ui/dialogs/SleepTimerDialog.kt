@@ -106,7 +106,10 @@ fun SleepTimerDialog(
 							modifier = Modifier.padding(bottom = 8.dp)
 						)
 						OutlinedButton(
-							onClick = { onCancelTimer(); onDismiss() },
+							onClick = {
+								onCancelTimer()
+								onDismiss()
+							},
 							modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
 						) {
 							// TRANSLATORS: Button to cancel the currently running sleep timer
@@ -123,7 +126,10 @@ fun SleepTimerDialog(
 						) {
 							row.forEach { minutes ->
 								OutlinedButton(
-									onClick = { onSetTimer(minutes); onDismiss() },
+									onClick = {
+										onSetTimer(minutes)
+										onDismiss()
+									},
 									modifier = Modifier.weight(1f)
 								) {
 									Text("$minutes minutes")
