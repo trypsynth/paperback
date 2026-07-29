@@ -518,7 +518,14 @@ fn configure_installer() {
 		}
 	};
 	let version = env::var("CARGO_PKG_VERSION").unwrap_or_else(|_| "0.0.0".to_string());
-	let new_content = content.replace("@PROJECT_VERSION@", &version);
+	let (arch_allowed, arch_mode) = match env::var("CARGO_CFG_TARGET_ARCH").as_deref() {
+		Ok("aarch64") => ("arm64", "arm64"),
+		_ => ("x64compatible", "x64compatible"),
+	};
+	let new_content = content
+		.replace("@PROJECT_VERSION@", &version)
+		.replace("@ARCH_ALLOWED@", arch_allowed)
+		.replace("@ARCH_MODE@", arch_mode);
 	let output_path = target_dir.join("paperback.iss");
 	if let Err(e) = fs::write(&output_path, new_content) {
 		println!("cargo:warning=Failed to write installer script: {}", e);

@@ -15,7 +15,8 @@
 	SolidCompression=yes
 	WizardStyle=modern
 	UninstallDisplayIcon={app}\paperback.exe
-	ArchitecturesInstallIn64BitMode=x64compatible
+	ArchitecturesAllowed=@ARCH_ALLOWED@
+	ArchitecturesInstallIn64BitMode=@ARCH_MODE@
 
 [Languages]
 	Name: "english"; MessagesFile: "compiler:Default.isl"
