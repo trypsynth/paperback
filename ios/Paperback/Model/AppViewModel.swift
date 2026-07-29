@@ -220,6 +220,43 @@ final class AppViewModel: ObservableObject {
 		openDocument(url: url, track: false)
 	}
 
+	// MARK: - Document data import/export
+
+	// Writes the active document's bookmarks/position to a temporary .paperback
+	// file and returns its URL, ready to hand to a file mover/exporter. Returns
+	// nil if there's no active document or the write failed.
+	func exportActiveDocumentSettings() -> URL? {
+		guard let tab = activeTab else { return nil }
+		let path = tab.url.path(percentEncoded: false)
+		let name = tab.url.deletingPathExtension().lastPathComponent
+		let tempURL = FileManager.default.temporaryDirectory
+			.appendingPathComponent(name)
+			.appendingPathExtension("paperback")
+		try? FileManager.default.removeItem(at: tempURL)
+		configManager.exportDocumentSettings(docPath: path, exportPath: tempURL.path(percentEncoded: false))
+		return FileManager.default.fileExists(atPath: tempURL.path) ? tempURL : nil
+	}
+
+	// Applies a .paperback file's bookmarks/position to the active document.
+	@discardableResult
+	func importActiveDocumentSettings(from url: URL) -> Bool {
+		guard let tab = activeTab else { return false }
+		let scopeStarted = url.startAccessingSecurityScopedResource()
+		defer { if scopeStarted { url.stopAccessingSecurityScopedResource() } }
+		guard FileManager.default.fileExists(atPath: url.path(percentEncoded: false)) else { return false }
+		let path = tab.url.path(percentEncoded: false)
+		configManager.importSettingsFromFile(docPath: path, importPath: url.path(percentEncoded: false))
+		let savedPos = configManager.getDocumentPosition(path: path)
+		if let idx = tabs.firstIndex(where: { $0.id == tab.id }) {
+			tabs[idx].currentPosition = savedPos
+		}
+		if activeTabId == tab.id {
+			ttsPosition = savedPos
+			refreshCurrentSegment()
+		}
+		return true
+	}
+
 	func closeTab(_ tab: DocumentTab) {
 		let path = tab.url.path(percentEncoded: false)
 		if tab.session != nil {

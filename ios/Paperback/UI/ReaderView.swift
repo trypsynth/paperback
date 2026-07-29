@@ -137,6 +137,7 @@ struct ReaderView: View {
 			}
 			// TRANSLATORS: Accessibility label for the toolbar button that opens a file picker to choose a document
 			.accessibilityLabel(t("Open Book"))
+			.documentDataTransferMenu()
 			DocumentMenu().environmentObject(viewModel)
 		}
 	}
