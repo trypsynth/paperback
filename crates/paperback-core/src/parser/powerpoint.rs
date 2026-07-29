@@ -46,11 +46,11 @@ pub struct PowerpointParser;
 
 impl Parser for PowerpointParser {
 	fn name(&self) -> &'static str {
-		"PowerPoint Presentations"
+		paperback_formats::POWERPOINT.name
 	}
 
 	fn extensions(&self) -> &[&str] {
-		&["pptx", "pptm", "ppt"]
+		paperback_formats::POWERPOINT.extensions
 	}
 
 	fn supported_flags(&self) -> ParserFlags {

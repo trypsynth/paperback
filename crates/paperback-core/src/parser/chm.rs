@@ -19,11 +19,11 @@ pub struct ChmParser;
 
 impl Parser for ChmParser {
 	fn name(&self) -> &'static str {
-		"Compiled HTML Help files"
+		paperback_formats::CHM.name
 	}
 
 	fn extensions(&self) -> &[&str] {
-		&["chm"]
+		paperback_formats::CHM.extensions
 	}
 
 	fn supported_flags(&self) -> ParserFlags {

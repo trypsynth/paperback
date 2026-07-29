@@ -42,6 +42,7 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("cargo-cli
 [build-dependencies]
 embed-manifest = "1.5.0"
 flate2 = { version = "1.1.9", default-features = false }
+paperback-formats = { path = "../paperback-formats" }
 patois-build = { git = "https://github.com/trypsynth/patois.git" }
 tar = "0.4.46"
 ureq = { version = "3.3.0", default-features = false, features = ["rustls"] }

@@ -25,11 +25,11 @@ pub struct DaisyParser;
 
 impl Parser for DaisyParser {
 	fn name(&self) -> &'static str {
-		"DAISY Books"
+		paperback_formats::DAISY.name
 	}
 
 	fn extensions(&self) -> &[&str] {
-		&["opf", "zip"]
+		paperback_formats::DAISY.extensions
 	}
 
 	fn supported_flags(&self) -> ParserFlags {

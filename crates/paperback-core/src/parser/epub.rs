@@ -103,11 +103,11 @@ pub struct EpubParser;
 
 impl Parser for EpubParser {
 	fn name(&self) -> &'static str {
-		"EPUB Books"
+		paperback_formats::EPUB.name
 	}
 
 	fn extensions(&self) -> &[&str] {
-		&["epub"]
+		paperback_formats::EPUB.extensions
 	}
 
 	fn supported_flags(&self) -> ParserFlags {

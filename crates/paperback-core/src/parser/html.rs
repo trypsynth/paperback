@@ -17,11 +17,11 @@ pub struct HtmlParser;
 
 impl Parser for HtmlParser {
 	fn name(&self) -> &'static str {
-		"HTML Files"
+		paperback_formats::HTML.name
 	}
 
 	fn extensions(&self) -> &[&str] {
-		&["htm", "html", "xhtml"]
+		paperback_formats::HTML.extensions
 	}
 
 	fn supported_flags(&self) -> ParserFlags {

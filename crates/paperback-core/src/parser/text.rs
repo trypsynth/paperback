@@ -12,11 +12,11 @@ pub struct TextParser;
 
 impl Parser for TextParser {
 	fn name(&self) -> &'static str {
-		"Text Files"
+		paperback_formats::TEXT.name
 	}
 
 	fn extensions(&self) -> &[&str] {
-		&["txt", "log"]
+		paperback_formats::TEXT.extensions
 	}
 
 	fn supported_flags(&self) -> ParserFlags {

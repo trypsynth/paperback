@@ -19,11 +19,11 @@ pub struct Fb2Parser;
 
 impl Parser for Fb2Parser {
 	fn name(&self) -> &'static str {
-		"FictionBook Documents"
+		paperback_formats::FB2.name
 	}
 
 	fn extensions(&self) -> &[&str] {
-		&["fb2"]
+		paperback_formats::FB2.extensions
 	}
 
 	fn supported_flags(&self) -> ParserFlags {

@@ -1602,6 +1602,7 @@ dependencies = [
  "live-region",
  "objc",
  "paperback-core",
+ "paperback-formats",
  "patois 0.2.0",
  "patois-build 0.1.4",
  "rstest",
@@ -1631,6 +1632,7 @@ dependencies = [
  "icu_properties",
  "libchm",
  "office-crypto",
+ "paperback-formats",
  "patois 0.2.0",
  "pdfium",
  "percent-encoding",
@@ -1650,6 +1652,10 @@ dependencies = [
  "uniffi",
  "zip",
 ]
+
+[[package]]
+name = "paperback-formats"
+version = "0.8.5"
 
 [[package]]
 name = "parking_lot"
