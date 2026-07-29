@@ -12,8 +12,15 @@ use tar::Archive;
 
 use crate::project_root;
 
+// Pinned instead of `releases/latest`: whatever `latest` currently resolves to
+// crashes on real iOS devices (not the Simulator) with
+// `[FATAL:partition_address_space.cc(81)] Check failed: false.` inside
+// libpdfium.dylib the moment PDFium is initialized, even though the release
+// sets `pdf_use_partition_alloc = false` in its build args. chromium/7920 is
+// confirmed (by direct on-device test) not to hit this. Re-verify on a real
+// device before bumping this pin.
 const PDFIUM_IOS_ARM64_URL: &str =
-	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-ios-device-arm64.tgz";
+	"https://github.com/bblanchon/pdfium-binaries/releases/download/chromium%2F7920/pdfium-ios-device-arm64.tgz";
 
 pub fn ios() -> Result<(), Box<dyn Error>> {
 	let release = env::args().any(|a| a == "--release");
