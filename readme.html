@@ -203,8 +203,8 @@ id="toc-supported-languages">Supported languages</a></li>
 </ul></li>
 <li><a href="#changelog" id="toc-changelog">Changelog</a>
 <ul>
-<li><a href="#version-0.9.0" id="toc-version-0.9.0">Version
-0.9.0</a></li>
+<li><a href="#version-0.9.0-unreleased"
+id="toc-version-0.9.0-unreleased">Version 0.9.0 (unreleased)</a></li>
 <li><a href="#version-0.8.5" id="toc-version-0.8.5">Version
 0.8.5</a></li>
 <li><a href="#version-0.8.2" id="toc-version-0.8.2">Version
@@ -479,13 +479,13 @@ inclusion in this list.</p>
 <li>Tyler Rodick</li>
 </ul>
 <h1 id="changelog">Changelog</h1>
-<h2 id="version-0.9.0">Version 0.9.0</h2>
+<h2 id="version-0.9.0-unreleased">Version 0.9.0 (unreleased)</h2>
 <ul>
 <li>Added a cancel button to the update-in-progress dialog.</li>
 <li>Added a CLI tool, called pb, to quickly convert any of Paperback’s
 supported formats to HTML, Markdown, or plain text.</li>
-<li>Added a Configurable Shortcut to Restore Paperback from the system
-tray.</li>
+<li>Added a Configurable keyboard shortcut to Restore Paperback from the
+system tray.</li>
 <li>Added a locate button to the all documents dialog to locate missing
 books that just changed their path.</li>
 <li>Added a readability tab to the options dialog, with the following
@@ -507,6 +507,7 @@ useful for editing Markdown for example.</li>
 <li>Added estimated reading time to the word count dialog, as well as
 the ability to set your reading speed to make this metric actually
 useful.</li>
+<li>Added ARM64 Windows support!</li>
 <li>Added Android support!</li>
 <li>Added iOS support!</li>
 <li>Added macOS support!</li>
@@ -515,8 +516,8 @@ useful.</li>
 <li>Added support for lists, list items, figures, and images in CHM
 documents.</li>
 <li>Added a word wrap menu item and subsequent hotkey.</li>
-<li>Allow resizing the webview dialog and make it pop up at a much
-easier-to-see size.</li>
+<li>Bookmark/note sounds should now properly play exclusively when you
+navigate over a word containing one.</li>
 <li>Expanded the export menu item to allow exporting to HTML and
 Markdown in addition to plain text.</li>
 <li>Fixed applying word wrap shooting you to the start of your
@@ -531,15 +532,22 @@ garbage in the book text.</li>
 <li>Fixed lag when getting near the end of the text field in large
 documents.</li>
 <li>Fixed links in legacy mobi books.</li>
+<li>Fixed loading DAISY books with bogus encoding declarations.</li>
 <li>Fixed parsing RTF documents with non-Latin characters in them.</li>
 <li>Fixed the title bar not updating after closing a document from the
 all documents dialog.</li>
+<li>Fix the webview dialog not being resizable and popping up at a very
+small initial size.</li>
 <li>Fixed word documents with locale-specific style names not rendering
 their headings properly.</li>
 <li>Fixed your selected tab not getting properly focused after
 restarting Paperback.</li>
 <li>If a selection is active when you open the word count dialog, how
 many words you have selected will now be shown.</li>
+<li>Improved Paperback’s handling of files on Windows network drives:
+pressing show file in folder now properly focuses the file on the
+network storage, and the paths no longer contain strange
+characters.</li>
 <li>Majorly improved AZW3 parsing.</li>
 <li>Migrated away from chmlib to our own pure-Rust CHM file reader.</li>
 <li>On desktop, .paperback files will no longer be forcefully loaded on
