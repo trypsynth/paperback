@@ -15,6 +15,16 @@ struct DocumentDataTransferMenu: ViewModifier {
 	@State private var resultMessage: String? = nil
 
 	func body(content: Content) -> some View {
+		if viewModel.activeTab != nil {
+			withPickersAndFeedback(content)
+				.accessibilityAction(named: "Import Document Data") { showImportPicker = true }
+				.accessibilityAction(named: "Export Document Data") { beginExport() }
+		} else {
+			withPickersAndFeedback(content)
+		}
+	}
+
+	private func withPickersAndFeedback(_ content: Content) -> some View {
 		content
 			.contextMenu {
 				Button { beginExport() } label: {
@@ -28,8 +38,6 @@ struct DocumentDataTransferMenu: ViewModifier {
 				}
 				.disabled(viewModel.activeTab == nil)
 			}
-			.accessibilityAction(named: "Import Document Data") { showImportPicker = true }
-			.accessibilityAction(named: "Export Document Data") { beginExport() }
 			.fileMover(
 				isPresented: Binding(get: { exportURL != nil }, set: { if !$0 { exportURL = nil } }),
 				file: exportURL
