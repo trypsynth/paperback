@@ -19,6 +19,7 @@ ios/**/DerivedData/
 # Generated UniFFI Swift bindings and XCFramework (produced by cargo xtask ios)
 ios/Paperback/Generated/
 ios/Paperback/Readmes/
+ios/Paperback/*.lproj/
 ios/paperbackFFI.xcframework/
 ios/libpdfium.dylib
 
