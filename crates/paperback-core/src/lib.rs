@@ -20,16 +20,17 @@ pub use crate::{
 	},
 };
 
+#[cfg(feature = "uniffi")]
 uniffi::include_scaffolding!("paperback");
 
 pub fn set_pdfium_library_path(path: String) {
 	pdfium::set_library_location(&path);
 }
 
-/// Minimal translation stub for library-internal strings (e.g. document content labels).
-/// The GUI binary sets up the real wxWidgets translation system independently; strings
-/// returned by this function are English only and are intended for non-GUI consumers
-/// (CLI, mobile bindings) or for embedding into document content.
+/// Translates library-internal strings (e.g. document content labels, parser error messages).
+///
+/// `patois`'s "ui" feature (which pulls in wxdragon) is never enabled here, so this stays free
+/// of desktop UI dependencies for the CLI and mobile FFI consumers of this crate.
 pub(crate) fn t(s: &str) -> String {
-	s.to_owned()
+	patois::t(s)
 }

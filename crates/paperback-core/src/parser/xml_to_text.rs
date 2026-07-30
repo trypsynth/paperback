@@ -3,9 +3,15 @@ use std::{collections::HashMap, mem};
 use roxmltree::{Document, Node, NodeType, ParsingOptions};
 
 use crate::{
-	parser::util::xml::collect_element_text,
+	parser::{
+		ConverterOutput,
+		table_text::{push_finalized_line, table_render_bundle},
+		util::xml::collect_element_text,
+	},
 	t,
-	types::{HeadingInfo, LinkInfo, ListInfo, ListItemInfo, PageBreakInfo, SeparatorInfo, TableInfo},
+	types::{
+		FormatInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, PageBreakInfo, SeparatorInfo, TableInfo,
+	},
 	util::text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string},
 };
 
@@ -29,8 +35,8 @@ pub struct XmlToText {
 	id_positions: HashMap<String, usize>,
 	headings: Vec<HeadingInfo>,
 	links: Vec<LinkInfo>,
-	images: Vec<crate::types::ImageInfo>,
-	figures: Vec<crate::types::ImageInfo>,
+	images: Vec<ImageInfo>,
+	figures: Vec<ImageInfo>,
 	tables: Vec<TableInfo>,
 	separators: Vec<SeparatorInfo>,
 	page_breaks: Vec<PageBreakInfo>,
@@ -47,9 +53,9 @@ pub struct XmlToText {
 	/// `None` marks an open list that was not recorded (no direct `<li>`), keeping the stack
 	/// balanced with the start/close handlers so list lengths are set on the right entries.
 	open_lists: Vec<Option<usize>>,
-	bolds: Vec<crate::types::FormatInfo>,
-	italics: Vec<crate::types::FormatInfo>,
-	underlines: Vec<crate::types::FormatInfo>,
+	bolds: Vec<FormatInfo>,
+	italics: Vec<FormatInfo>,
+	underlines: Vec<FormatInfo>,
 	open_bolds: Vec<usize>,
 	open_italics: Vec<usize>,
 	open_underlines: Vec<usize>,
@@ -119,7 +125,7 @@ impl XmlToText {
 	}
 
 	#[must_use]
-	pub fn get_images(&self) -> &[crate::types::ImageInfo] {
+	pub fn get_images(&self) -> &[ImageInfo] {
 		&self.images
 	}
 
@@ -154,17 +160,17 @@ impl XmlToText {
 	}
 
 	#[must_use]
-	pub fn get_bolds(&self) -> &[crate::types::FormatInfo] {
+	pub fn get_bolds(&self) -> &[FormatInfo] {
 		&self.bolds
 	}
 
 	#[must_use]
-	pub fn get_italics(&self) -> &[crate::types::FormatInfo] {
+	pub fn get_italics(&self) -> &[FormatInfo] {
 		&self.italics
 	}
 
 	#[must_use]
-	pub fn get_underlines(&self) -> &[crate::types::FormatInfo] {
+	pub fn get_underlines(&self) -> &[FormatInfo] {
 		&self.underlines
 	}
 
@@ -310,11 +316,12 @@ impl XmlToText {
 
 				if !description.is_empty() {
 					let is_figure = Self::tag_is(tag_name, "figure");
+					// TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 					let label = if is_figure { t("Figure") } else { t("Image") };
 					let image_text = format!("[{label}: {description}]");
 					let offset = self.get_current_text_position();
 					self.current_line.push_str(&image_text);
-					let info = crate::types::ImageInfo { offset, alt_text: description };
+					let info = ImageInfo { offset, alt_text: description };
 					if is_figure {
 						self.figures.push(info);
 					} else {
@@ -333,7 +340,7 @@ impl XmlToText {
 		// Emit the table's on-screen text via the shared helper instead of recursing children to
 		// emit one cell per line. The helper output may contain tabs and span multiple lines; push
 		// each line verbatim so tab separators and empty cells survive whitespace collapsing.
-		let render = crate::parser::table_text::table_render_bundle(&table_xml, self.render_tables_inline);
+		let render = table_render_bundle(&table_xml, self.render_tables_inline);
 		for line in render.lines {
 			self.push_finalized_line(line);
 		}
@@ -351,7 +358,7 @@ impl XmlToText {
 	/// length so position tracking stays correct. Used for table rows whose tab separators and empty
 	/// cells must not be mangled by `add_line`.
 	fn push_finalized_line(&mut self, line: String) {
-		crate::parser::table_text::push_finalized_line(&mut self.lines, &mut self.cached_char_length, line);
+		push_finalized_line(&mut self.lines, &mut self.cached_char_length, line);
 	}
 
 	fn handle_list_item_xml(&mut self, node: Node<'_, '_>) {
@@ -448,21 +455,21 @@ impl XmlToText {
 				self.stop_preserve_whitespace();
 			} else if Self::tag_is(tag_name, "b") || Self::tag_is(tag_name, "strong") {
 				if let Some(start) = self.open_bolds.pop() {
-					self.bolds.push(crate::types::FormatInfo {
+					self.bolds.push(FormatInfo {
 						offset: start,
 						length: self.get_current_text_position().saturating_sub(start),
 					});
 				}
 			} else if Self::tag_is(tag_name, "i") || Self::tag_is(tag_name, "em") {
 				if let Some(start) = self.open_italics.pop() {
-					self.italics.push(crate::types::FormatInfo {
+					self.italics.push(FormatInfo {
 						offset: start,
 						length: self.get_current_text_position().saturating_sub(start),
 					});
 				}
 			} else if Self::tag_is(tag_name, "u") {
 				if let Some(start) = self.open_underlines.pop() {
-					self.underlines.push(crate::types::FormatInfo {
+					self.underlines.push(FormatInfo {
 						offset: start,
 						length: self.get_current_text_position().saturating_sub(start),
 					});
@@ -645,17 +652,17 @@ pub fn inject_anchor_at_position(xml_content: &str, target_position: usize, anch
 	Some(result)
 }
 
-impl crate::parser::ConverterOutput for XmlToText {
+impl ConverterOutput for XmlToText {
 	fn get_headings(&self) -> &[HeadingInfo] {
 		&self.headings
 	}
 	fn get_links(&self) -> &[LinkInfo] {
 		&self.links
 	}
-	fn get_images(&self) -> &[crate::types::ImageInfo] {
+	fn get_images(&self) -> &[ImageInfo] {
 		&self.images
 	}
-	fn get_figures(&self) -> &[crate::types::ImageInfo] {
+	fn get_figures(&self) -> &[ImageInfo] {
 		&self.figures
 	}
 	fn get_tables(&self) -> &[TableInfo] {
@@ -670,13 +677,13 @@ impl crate::parser::ConverterOutput for XmlToText {
 	fn get_list_items(&self) -> &[ListItemInfo] {
 		&self.list_items
 	}
-	fn get_bolds(&self) -> &[crate::types::FormatInfo] {
+	fn get_bolds(&self) -> &[FormatInfo] {
 		&self.bolds
 	}
-	fn get_italics(&self) -> &[crate::types::FormatInfo] {
+	fn get_italics(&self) -> &[FormatInfo] {
 		&self.italics
 	}
-	fn get_underlines(&self) -> &[crate::types::FormatInfo] {
+	fn get_underlines(&self) -> &[FormatInfo] {
 		&self.underlines
 	}
 }
@@ -686,6 +693,7 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
+	use crate::document::MarkerType;
 
 	#[test]
 	fn test_link_collection() {
@@ -899,5 +907,81 @@ mod tests {
 			t1_offset + t1_display_length,
 			"second table offset must equal first offset + first display_length"
 		);
+	}
+
+	#[rstest]
+	#[case("b", MarkerType::Bold)]
+	#[case("strong", MarkerType::Bold)]
+	#[case("i", MarkerType::Italic)]
+	#[case("em", MarkerType::Italic)]
+	#[case("u", MarkerType::Underline)]
+	fn test_format_span_collection(#[case] tag: &str, #[case] kind: MarkerType) {
+		let xml = format!("<root><body><p>Some <{tag}>bold</{tag}> text</p></body></root>");
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(&xml));
+		let spans = match kind {
+			MarkerType::Bold => converter.get_bolds(),
+			MarkerType::Italic => converter.get_italics(),
+			MarkerType::Underline => converter.get_underlines(),
+			_ => unreachable!(),
+		};
+		assert_eq!(spans.len(), 1);
+		let text = converter.get_text();
+		assert_eq!(&text[spans[0].offset..spans[0].offset + spans[0].length], "bold");
+	}
+
+	#[test]
+	fn test_format_span_tag_matching_is_case_insensitive() {
+		let xml = "<root><body><p>Some <B>bold</B> text</p></body></root>";
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(xml));
+		let spans = converter.get_bolds();
+		assert_eq!(spans.len(), 1);
+		let text = converter.get_text();
+		assert_eq!(&text[spans[0].offset..spans[0].offset + spans[0].length], "bold");
+	}
+
+	#[test]
+	fn test_format_span_nested_bold_and_italic() {
+		let xml = "<root><body><p><b>outer <i>inner</i></b></p></body></root>";
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(xml));
+		let text = converter.get_text();
+
+		let italics = converter.get_italics();
+		assert_eq!(italics.len(), 1);
+		assert_eq!(&text[italics[0].offset..italics[0].offset + italics[0].length], "inner");
+
+		let bolds = converter.get_bolds();
+		assert_eq!(bolds.len(), 1);
+		assert_eq!(&text[bolds[0].offset..bolds[0].offset + bolds[0].length], "outer inner");
+	}
+
+	#[test]
+	fn test_format_span_fully_inside_link_is_dropped_known_limitation() {
+		// Known limitation: `<a>` handling (see `handle_element_opening_xml`) eagerly grabs the full
+		// flattened text of the element via `collect_element_text`, pushes it into `current_line`, and
+		// sets `skip_children = true`. `process_node` then skips recursing into the `<a>`'s children
+		// entirely, so the open/close handlers for a `<b>`/`<i>`/`<u>` nested inside the link never
+		// fire and no format span is recorded. This degrades gracefully (no panic, no bad offset; the
+		// link itself is still recorded correctly) and is left as-is per this task's scope (no changes
+		// to the `<a>`/`skip_children` behavior).
+		let xml = "<root><body><a href=\"https://example.com\"><b>bold</b></a></body></root>";
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(xml));
+		assert!(converter.get_bolds().is_empty());
+		let links = converter.get_links();
+		assert_eq!(links.len(), 1);
+		assert_eq!(links[0].text, "bold");
+	}
+
+	#[test]
+	fn test_no_format_spans_without_formatting_tags() {
+		let xml = "<root><body><p>Plain paragraph with no formatting.</p></body></root>";
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(xml));
+		assert!(converter.get_bolds().is_empty());
+		assert!(converter.get_italics().is_empty());
+		assert!(converter.get_underlines().is_empty());
 	}
 }

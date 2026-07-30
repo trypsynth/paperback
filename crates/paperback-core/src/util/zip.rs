@@ -7,7 +7,7 @@ use std::{
 use anyhow::{Context, Result};
 use zip::{ZipArchive, result::ZipError};
 
-use crate::parser::PASSWORD_REQUIRED_ERROR_PREFIX;
+use crate::{parser::PASSWORD_REQUIRED_ERROR_PREFIX, t, util::encoding::convert_to_utf8};
 
 pub fn read_zip_entry_by_name<R: Read + Seek>(archive: &mut ZipArchive<R>, name: &str) -> Result<String> {
 	read_zip_entry_by_name_with_password(archive, name, None)
@@ -22,24 +22,27 @@ pub fn read_zip_entry_by_name_with_password<R: Read + Seek>(
 		Some(pass) => match archive.by_name_decrypt(name, pass.as_bytes()) {
 			Ok(e) => e,
 			Err(ZipError::UnsupportedArchive(msg)) if msg == ZipError::PASSWORD_REQUIRED => {
-				anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX}Password required");
+				// TRANSLATORS: Error detail shown when a password-protected ZIP-based document needs a password (the internal sentinel prefix before it is not translated)
+				anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX}{}", t("Password required"));
 			}
 			Err(ZipError::InvalidPassword) => {
-				anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX}Password incorrect");
+				// TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
+				anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX}{}", t("Password incorrect"));
 			}
 			Err(e) => return Err(e.into()),
 		},
 		None => match archive.by_name(name) {
 			Ok(e) => e,
 			Err(ZipError::UnsupportedArchive(msg)) if msg == ZipError::PASSWORD_REQUIRED => {
-				anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX}Password required");
+				// TRANSLATORS: Error detail shown when a password-protected ZIP-based document needs a password (the internal sentinel prefix before it is not translated)
+				anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX}{}", t("Password required"));
 			}
 			Err(e) => return Err(e.into()),
 		},
 	};
-	let mut contents = String::new();
-	entry.read_to_string(&mut contents).with_context(|| format!("Failed to read entry '{name}'"))?;
-	Ok(contents)
+	let mut contents = Vec::new();
+	entry.read_to_end(&mut contents).with_context(|| format!("Failed to read entry '{name}'"))?;
+	Ok(convert_to_utf8(&contents))
 }
 
 pub fn extract_zip_entry_to_file<R: Read + Seek>(

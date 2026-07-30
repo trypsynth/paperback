@@ -25,10 +25,14 @@ struct RecentDocument: Identifiable {
 	let id: UUID
 	var title: String
 	var url: URL
+	var isMissing: Bool
+	var isOpen: Bool
 
-	init(title: String, url: URL) {
+	init(title: String, url: URL, isMissing: Bool = false, isOpen: Bool = false) {
 		self.id = UUID()
 		self.title = title
 		self.url = url
+		self.isMissing = isMissing
+		self.isOpen = isOpen
 	}
 }

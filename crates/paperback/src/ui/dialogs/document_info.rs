@@ -10,19 +10,27 @@ const DOC_INFO_WIDTH: i32 = 600;
 const DOC_INFO_HEIGHT: i32 = 400;
 
 pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, author: &str, stats: &DocumentStats) {
+	// TRANSLATORS: Title of the Document Info dialog
 	let dialog_title = t("Document Info");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+	dialog.set_escape_id(ID_CANCEL);
 	let info_ctrl = TextCtrl::builder(&dialog)
 		.with_style(TextCtrlStyle::MultiLine | TextCtrlStyle::ReadOnly)
 		.with_size(Size::new(DOC_INFO_WIDTH, DOC_INFO_HEIGHT))
 		.build();
+	// TRANSLATORS: Label for the document's file path
 	let path_label = t("Path:");
+	// TRANSLATORS: Label for the document's title
 	let title_label = t("Title:");
+	// TRANSLATORS: Label for the document's author
 	let author_label = t("Author:");
+	// TRANSLATORS: Label for the number of words in the document
 	let words_label = t("Words:");
+	// TRANSLATORS: Label for the number of lines in the document
 	let lines_label = t("Lines:");
+	// TRANSLATORS: Label for the number of characters in the document
 	let characters_label = t("Characters:");
+	// TRANSLATORS: Label for the number of characters in the document excluding space characters
 	let characters_no_spaces_label = t("Characters (excluding spaces):");
 	let mut info = String::new();
 	let _ = writeln!(info, "{path_label} {}", path.display());
@@ -38,7 +46,7 @@ pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, autho
 	let _ = writeln!(info, "{characters_no_spaces_label} {}", stats.char_count_no_whitespace);
 	info_ctrl.set_value(&info);
 	let ok_label = t("Close");
-	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&ok_label).build();
+	let ok_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&ok_label).build();
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add(&info_ctrl, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();

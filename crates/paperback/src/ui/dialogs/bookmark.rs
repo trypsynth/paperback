@@ -32,6 +32,7 @@ pub fn show_bookmark_dialog(
 ) -> Option<BookmarkDialogResult> {
 	let file_path = session.file_path().to_string();
 	let content = Rc::new(session.content());
+	// TRANSLATORS: Title of the Jump to Bookmark dialog
 	let dialog = Dialog::builder(parent, &t("Jump to Bookmark")).build();
 	let BookmarkDialogUi {
 		filter_choice,
@@ -86,7 +87,7 @@ pub fn show_bookmark_dialog(
 		jump_button,
 		cancel_button,
 	);
-	if dialog.show_modal() != wxdragon::id::ID_OK {
+	if dialog.show_modal() != ID_OK {
 		return None;
 	}
 	let start = state.selected_start.get();
@@ -146,11 +147,15 @@ struct BookmarkDialogActions {
 }
 
 fn build_bookmark_dialog_ui(dialog: Dialog, initial_filter: BookmarkFilterType) -> BookmarkDialogUi {
+	// TRANSLATORS: Label for the bookmark filter dropdown
 	let filter_label_text = t("&Filter:");
 	let filter_label = StaticText::builder(&dialog).with_label(&filter_label_text).build();
 	let filter_choice = Choice::builder(&dialog).build();
+	// TRANSLATORS: Option in the filter dropdown to show all entries
 	filter_choice.append(&t("All"));
+	// TRANSLATORS: Option in the filter dropdown to show bookmarks only
 	filter_choice.append(&t("Bookmarks"));
+	// TRANSLATORS: Option in the filter dropdown to show notes only
 	filter_choice.append(&t("Notes"));
 	let initial_index = match initial_filter {
 		BookmarkFilterType::BookmarksOnly => 1,
@@ -164,11 +169,19 @@ fn build_bookmark_dialog_ui(dialog: Dialog, initial_filter: BookmarkFilterType) 
 	filter_sizer.add(&filter_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 6);
 	filter_sizer.add(&filter_choice, 1, SizerFlag::Expand, 0);
 	let bookmark_list = ListBox::builder(&dialog).build();
+	// TRANSLATORS: Label for the bookmark/note list (used only as an accessibility label on macOS)
+	let list_label_text = t("&Bookmarks:");
+	let _list_label = StaticText::builder(&dialog).with_label(&list_label_text).build();
+	#[cfg(target_os = "macos")]
+	bookmark_list.set_accessibility_label(list_label_text.replace('&', "").trim_end_matches(':').trim());
+	// TRANSLATORS: Label for the button to edit a note
 	let edit_button = Button::builder(&dialog).with_label(&t("&Edit Note")).build();
 	let delete_button = Button::builder(&dialog).with_label(&t("&Delete")).build();
-	let jump_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("&Jump")).build();
-	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("&Cancel")).build();
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+	// TRANSLATORS: Label for the button to jump to the selected bookmark
+	let jump_button = Button::builder(&dialog).with_id(ID_OK).with_label(&t("&Jump")).build();
+	// TRANSLATORS: Label for the button to cancel the action
+	let cancel_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("&Cancel")).build();
+	dialog.set_escape_id(ID_CANCEL);
 	jump_button.set_default();
 	BookmarkDialogUi {
 		filter_choice,
@@ -249,7 +262,8 @@ fn build_bookmark_repopulate(params: BookmarkRepopulateParams) -> Rc<dyn Fn(i64)
 			let snippet =
 				if item.is_whole_line { get_line_text(item.start) } else { get_text_range(item.start, item.end) };
 			let mut snippet = snippet.trim().to_string();
-			if snippet.is_empty() {
+			if snippet.trim().is_empty() {
+				// TRANSLATORS: Placeholder text shown in the bookmarks list when the bookmark text range is empty or blank
 				snippet = t("blank");
 			}
 			let display = if item.note.is_empty() { snippet.clone() } else { format!("{} - {}", item.note, snippet) };
@@ -312,12 +326,17 @@ fn bind_bookmark_jump(dialog: Dialog, jump_button: Button, selected_start: &Rc<C
 	let selected_start_for_jump = Rc::clone(selected_start);
 	jump_button.on_click(move |_| {
 		if selected_start_for_jump.get() >= 0 {
-			dialog_for_jump.end_modal(wxdragon::id::ID_OK);
+			dialog_for_jump.end_modal(ID_OK);
 		} else {
-			MessageDialog::builder(&dialog_for_jump, &t("Please select a bookmark to jump to."), &t("Error"))
-				.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
-				.build()
-				.show_modal();
+			MessageDialog::builder(
+				&dialog_for_jump,
+				// TRANSLATORS: Error message shown when the user attempts to jump without selecting any bookmark
+				&t("Please select a bookmark to jump to."),
+				&t("Error"),
+			)
+			.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
+			.build()
+			.show_modal();
 		}
 	});
 }
@@ -372,7 +391,7 @@ fn bind_bookmark_actions(actions: BookmarkDialogActions) {
 
 fn bind_bookmark_cancel(dialog: Dialog, cancel_button: Button) {
 	cancel_button.on_click(move |_| {
-		dialog.end_modal(wxdragon::id::ID_CANCEL);
+		dialog.end_modal(ID_CANCEL);
 	});
 }
 
@@ -442,9 +461,14 @@ fn bind_bookmark_edit(params: BookmarkEditParams) {
 				.map(|bm| bm.note)
 				.unwrap_or_default()
 		};
-		let Some(note) =
-			show_note_entry_dialog(&dialog, &t("Bookmark Note"), &t("Edit bookmark note:"), &existing_note)
-		else {
+		let Some(note) = show_note_entry_dialog(
+			&dialog,
+			// TRANSLATORS: Title of the Bookmark Note editor dialog
+			&t("Bookmark Note"),
+			// TRANSLATORS: Label/prompt in the Note editor dialog
+			&t("Edit bookmark note:"),
+			&existing_note,
+		) else {
 			return;
 		};
 		{
@@ -488,7 +512,7 @@ fn bind_bookmark_key_actions(
 fn bind_bookmark_double_click(bookmark_list: ListBox, dialog: Dialog, selected_start: Rc<Cell<i64>>) {
 	bookmark_list.on_item_double_clicked(move |_| {
 		if selected_start.get() >= 0 {
-			dialog.end_modal(wxdragon::id::ID_OK);
+			dialog.end_modal(ID_OK);
 		}
 	});
 }

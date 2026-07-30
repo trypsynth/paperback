@@ -2,7 +2,10 @@ use std::collections::HashMap;
 
 use bitflags::bitflags;
 
-use crate::util::text::{display_len, is_space_like};
+use crate::{
+	types::HeadingInfo,
+	util::text::{display_len, is_space_like},
+};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(i32)]
@@ -32,6 +35,15 @@ impl From<MarkerType> for i32 {
 	fn from(marker: MarkerType) -> Self {
 		marker as Self
 	}
+}
+
+/// Yields the character-formatting marker types implied by the given
+/// bold/italic/underline flags, in a stable order. Shared by the parsers so
+/// the flag-triple → marker fan-out lives in one place.
+pub(crate) fn format_marker_types(bold: bool, italic: bool, underline: bool) -> impl Iterator<Item = MarkerType> {
+	[(bold, MarkerType::Bold), (italic, MarkerType::Italic), (underline, MarkerType::Underline)]
+		.into_iter()
+		.filter_map(|(on, kind)| on.then_some(kind))
 }
 
 impl TryFrom<i32> for MarkerType {
@@ -445,11 +457,11 @@ impl DocumentHandle {
 	}
 
 	#[must_use]
-	pub fn heading_info(&self, heading_index: i32) -> Option<crate::types::HeadingInfo> {
+	pub fn heading_info(&self, heading_index: i32) -> Option<HeadingInfo> {
 		let idx = usize::try_from(heading_index).ok()?;
 		let heading_markers = self.heading_markers(None);
 		let (_, marker) = heading_markers.get(idx)?;
-		Some(crate::types::HeadingInfo { offset: marker.position, level: marker.level, text: marker.text.clone() })
+		Some(HeadingInfo { offset: marker.position, level: marker.level, text: marker.text.clone() })
 	}
 
 	#[must_use]

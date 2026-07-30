@@ -170,6 +170,21 @@ pub fn render(doc: &DocumentHandle) -> String {
 				events.push(Ev { pos, kind: Ek::InlineOpen(open) });
 				events.push(Ev { pos: end, kind: Ek::InlineClose("</a>") });
 			}
+			MarkerType::Bold => {
+				let end = pos + marker.length;
+				events.push(Ev { pos, kind: Ek::InlineOpen("<b>".to_string()) });
+				events.push(Ev { pos: end, kind: Ek::InlineClose("</b>") });
+			}
+			MarkerType::Italic => {
+				let end = pos + marker.length;
+				events.push(Ev { pos, kind: Ek::InlineOpen("<i>".to_string()) });
+				events.push(Ev { pos: end, kind: Ek::InlineClose("</i>") });
+			}
+			MarkerType::Underline => {
+				let end = pos + marker.length;
+				events.push(Ev { pos, kind: Ek::InlineOpen("<u>".to_string()) });
+				events.push(Ev { pos: end, kind: Ek::InlineClose("</u>") });
+			}
 			MarkerType::List if marker.length > 0 => {
 				// Only emit a <ul> wrapper when an explicit length is available; without it
 				// we cannot determine where the list ends and bare <li> items are cleaner.
@@ -380,4 +395,135 @@ fn escape(s: &str) -> String {
 
 fn escape_attr(s: &str) -> String {
 	s.replace('&', "&amp;").replace('"', "&quot;")
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::document::{Document, DocumentBuffer, DocumentHandle, Marker, MarkerType};
+
+	fn simple_doc(content: &str, markers: Vec<Marker>) -> DocumentHandle {
+		let mut buffer = DocumentBuffer::with_content(content.to_string());
+		for marker in markers {
+			buffer.add_marker(marker);
+		}
+		let mut doc = Document::new();
+		doc.set_buffer(buffer);
+		DocumentHandle::new(doc)
+	}
+
+	#[test]
+	fn test_bold_basic() {
+		let doc = simple_doc("bold text", vec![Marker::new(MarkerType::Bold, 0).with_length(4)]);
+		let html = render(&doc);
+		assert!(html.contains("<b>bold</b>"), "Expected <b>bold</b> in HTML: {}", html);
+	}
+
+	#[test]
+	fn test_italic_basic() {
+		let doc = simple_doc("italic text", vec![Marker::new(MarkerType::Italic, 0).with_length(6)]);
+		let html = render(&doc);
+		assert!(html.contains("<i>italic</i>"), "Expected <i>italic</i> in HTML: {}", html);
+	}
+
+	#[test]
+	fn test_underline_basic() {
+		let doc = simple_doc("underline text", vec![Marker::new(MarkerType::Underline, 0).with_length(9)]);
+		let html = render(&doc);
+		assert!(html.contains("<u>underline</u>"), "Expected <u>underline</u> in HTML: {}", html);
+	}
+
+	#[test]
+	fn test_nested_bold_italic() {
+		// "bold italic" where 0-4 is bold, 5-11 is italic (nested/overlapping)
+		let doc = simple_doc(
+			"bold italic",
+			vec![Marker::new(MarkerType::Bold, 0).with_length(4), Marker::new(MarkerType::Italic, 5).with_length(6)],
+		);
+		let html = render(&doc);
+		// Both tags should be present and properly ordered
+		assert!(html.contains("<b>bold</b>"), "Expected <b>bold</b> in HTML: {}", html);
+		assert!(html.contains("<i>italic</i>"), "Expected <i>italic</i> in HTML: {}", html);
+	}
+
+	#[test]
+	fn test_nested_same_start_different_end() {
+		// "bold italic" where 0-11 is bold, 0-6 is italic (nested: italic entirely inside bold)
+		let doc = simple_doc(
+			"bold italic",
+			vec![Marker::new(MarkerType::Bold, 0).with_length(11), Marker::new(MarkerType::Italic, 0).with_length(6)],
+		);
+		let html = render(&doc);
+		// Check both are present
+		assert!(html.contains("<b>"), "Expected <b> in HTML: {}", html);
+		assert!(html.contains("</b>"), "Expected </b> in HTML: {}", html);
+		assert!(html.contains("<i>"), "Expected <i> in HTML: {}", html);
+		assert!(html.contains("</i>"), "Expected </i> in HTML: {}", html);
+	}
+
+	#[test]
+	fn test_coincident_end_edge_case() {
+		// "text" where both bold and italic end at position 4
+		// This tests the pre-existing characteristic where non-perfectly-nested
+		// tags can occur based on insertion order in buffer.markers
+		let doc = simple_doc(
+			"text",
+			vec![Marker::new(MarkerType::Bold, 0).with_length(4), Marker::new(MarkerType::Italic, 0).with_length(4)],
+		);
+		let html = render(&doc);
+		// Both opens and closes should be present
+		// The order of closes may vary based on insertion order (pre-existing behavior)
+		assert!(html.contains("<b>"), "Expected <b> in HTML: {}", html);
+		assert!(html.contains("</b>"), "Expected </b> in HTML: {}", html);
+		assert!(html.contains("<i>"), "Expected <i> in HTML: {}", html);
+		assert!(html.contains("</i>"), "Expected </i> in HTML: {}", html);
+		// Count tags to verify they're paired
+		let b_open = html.matches("<b>").count();
+		let b_close = html.matches("</b>").count();
+		let i_open = html.matches("<i>").count();
+		let i_close = html.matches("</i>").count();
+		assert_eq!(b_open, b_close, "Bold tags should be paired");
+		assert_eq!(i_open, i_close, "Italic tags should be paired");
+		// Note: the tag nesting order depends on marker iteration order.
+		// The output might be <b><i>text</i></b> or <i><b>text</b></i> or
+		// </b></i> before </i></b> depending on which marker is processed first.
+		// This is acceptable per the task brief.
+	}
+
+	#[test]
+	fn test_multiple_separate_bold_spans() {
+		// "bold text normal more bold"
+		// Bold at 0-4 and 22-26
+		let doc = simple_doc(
+			"bold text normal more bold",
+			vec![Marker::new(MarkerType::Bold, 0).with_length(4), Marker::new(MarkerType::Bold, 22).with_length(4)],
+		);
+		let html = render(&doc);
+		// Should have two bold pairs
+		let b_open = html.matches("<b>").count();
+		let b_close = html.matches("</b>").count();
+		assert_eq!(b_open, 2, "Expected 2 <b> opens");
+		assert_eq!(b_close, 2, "Expected 2 </b> closes");
+	}
+
+	#[test]
+	fn test_bold_italic_underline_combined() {
+		// "text" with all three marker types
+		let doc = simple_doc(
+			"text",
+			vec![
+				Marker::new(MarkerType::Bold, 0).with_length(4),
+				Marker::new(MarkerType::Italic, 1).with_length(2),
+				Marker::new(MarkerType::Underline, 2).with_length(2),
+			],
+		);
+		let html = render(&doc);
+		// All tags should be present
+		assert!(html.contains("<b>"), "Expected <b> in HTML: {}", html);
+		assert!(html.contains("</b>"), "Expected </b> in HTML: {}", html);
+		assert!(html.contains("<i>"), "Expected <i> in HTML: {}", html);
+		assert!(html.contains("</i>"), "Expected </i> in HTML: {}", html);
+		assert!(html.contains("<u>"), "Expected <u> in HTML: {}", html);
+		assert!(html.contains("</u>"), "Expected </u> in HTML: {}", html);
+	}
 }

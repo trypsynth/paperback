@@ -25,7 +25,7 @@ use wxdragon::{prelude::*, timer::Timer};
 use super::tray;
 use super::{
 	dialogs,
-	document_manager::{DocumentManager, build_font_from_readability},
+	document_manager::{DocumentManager, build_font_from_readability, display_title},
 	find::{self, FindDialogState},
 	help::{self, MAIN_WINDOW_PTR},
 	menu, menu_ids,
@@ -34,7 +34,10 @@ use super::{
 };
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 use crate::ipc::IpcCommand;
-use crate::{config_ext::UpdateChannel, translation_manager::TranslationManager};
+use crate::{
+	config_ext::{UpdateChannel, get_update_channel, set_update_channel},
+	translation_manager::TranslationManager,
+};
 
 const KEY_DELETE: i32 = 127;
 const KEY_NUMPAD_DELETE: i32 = 330;
@@ -60,12 +63,17 @@ pub struct MainWindow {
 	_hotkey_handle: Rc<RefCell<Option<HotkeyHandle>>>,
 }
 
+#[cfg(target_os = "windows")]
+static HIDDEN_POPUP: std::sync::atomic::AtomicIsize = std::sync::atomic::AtomicIsize::new(0);
+
 impl MainWindow {
 	pub fn new(config: Rc<Mutex<ConfigManager>>) -> Self {
+		// TRANSLATORS: Main window title when no document is open
 		let app_title = t("Paperback");
 		let frame = Frame::builder().with_title(&app_title).with_size(Size::new(800, 600)).build();
 		MAIN_WINDOW_PTR.store(frame.handle_ptr() as usize, Ordering::SeqCst);
 		frame.create_status_bar(1, 0, -1, "statusbar");
+		// TRANSLATORS: Default status bar text when no document is open
 		frame.set_status_text(&t("Ready"), 0);
 		let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 		frame.set_menu_bar(menu_bar);
@@ -95,9 +103,22 @@ impl MainWindow {
 			#[cfg(target_os = "windows")]
 			&hotkey_handle,
 		);
-		let dm = Rc::clone(&doc_manager);
 		let frame_copy = frame;
 		let notebook = *doc_manager.lock().unwrap().notebook();
+		let dm = Rc::clone(&doc_manager);
+		notebook.on_page_changing(move |event| {
+			let Ok(dm_ref) = dm.try_lock() else {
+				return;
+			};
+			if !dm_ref.notebook().has_focus()
+				&& let Some(new_index) = event.get_selection()
+				&& let Ok(new_index) = usize::try_from(new_index)
+				&& let Some(tab) = dm_ref.get_tab(new_index)
+			{
+				live_region::announce(live_region_label, &display_title(tab));
+			}
+		});
+		let dm = Rc::clone(&doc_manager);
 		notebook.on_page_changed(move |_event| {
 			let Ok(dm_ref) = dm.try_lock() else {
 				return;
@@ -108,14 +129,12 @@ impl MainWindow {
 		let dm = Rc::clone(&doc_manager);
 		let frame_copy = frame;
 		notebook.on_key_down(move |event| {
-			if let wxdragon::event::WindowEventData::Keyboard(key_event) = &event
+			if let WindowEventData::Keyboard(key_event) = &event
 				&& let Some(key) = key_event.get_key_code()
 				&& (key == KEY_DELETE || key == KEY_NUMPAD_DELETE)
 			{
 				let mut dm = dm.lock().unwrap();
-				if let Some(index) = dm.active_tab_index() {
-					dm.close_document(index, true);
-				}
+				close_active_document_announced(&mut dm, live_region_label);
 				update_title_from_manager(&frame_copy, &dm);
 				let has_docs = dm.tab_count() > 0;
 				let has_reopen = dm.has_recently_closed();
@@ -239,14 +258,16 @@ impl MainWindow {
 	pub fn handle_ipc_command(&self, command: IpcCommand) {
 		tracing::info!(command = ?command, "received IPC command");
 		let mut web_view_dialog = None;
-		crate::ui::dialogs::ACTIVE_WEB_VIEW.with(|v| {
+		dialogs::ACTIVE_WEB_VIEW.with(|v| {
 			web_view_dialog = v.get();
 		});
 
 		if let Some(parent_dialog) = web_view_dialog {
 			let dialog = MessageDialog::builder(
 				&parent_dialog,
+				// TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
 				&t("Paperback cannot perform any actions while Web View is open."),
+				// TRANSLATORS: Title of a warning dialog
 				&t("Warning"),
 			)
 			.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconWarning | MessageDialogStyle::Centre)
@@ -272,20 +293,76 @@ impl MainWindow {
 	}
 
 	#[cfg(any(target_os = "linux", target_os = "windows"))]
+	fn toggle_visibility(&self) {
+		let is_shown = self.frame.is_shown();
+		if is_shown && self.is_window_active() {
+			let mut has_popup = false;
+			#[cfg(target_os = "windows")]
+			{
+				use windows::Win32::{
+					Foundation::HWND,
+					UI::WindowsAndMessaging::{GetLastActivePopup, SW_HIDE, ShowWindow},
+				};
+				let handle = self.frame.get_handle();
+				if !handle.is_null() {
+					let frame_hwnd = HWND(handle);
+					let active_popup = unsafe { GetLastActivePopup(frame_hwnd) };
+					if active_popup != frame_hwnd {
+						has_popup = true;
+						HIDDEN_POPUP.store(active_popup.0 as isize, Ordering::SeqCst);
+						let _ = unsafe { ShowWindow(active_popup, SW_HIDE) };
+					}
+				}
+			}
+
+			if has_popup {
+				self.frame.show(false);
+			} else {
+				self.frame.iconize(true);
+			}
+		} else {
+			self.activate_from_ipc();
+		}
+	}
+
+	#[cfg(any(target_os = "linux", target_os = "windows"))]
 	fn activate_from_ipc(&self) {
 		self.frame.show(true);
 		self.frame.iconize(false);
 		self.frame.request_user_attention(UserAttentionFlag::Info);
 		self.frame.raise();
+
+		#[allow(unused_mut)]
+		let mut has_popup = false;
 		#[cfg(target_os = "windows")]
 		{
-			use windows::Win32::{Foundation::HWND, UI::WindowsAndMessaging::SetForegroundWindow};
+			use windows::Win32::{
+				Foundation::HWND,
+				UI::WindowsAndMessaging::{GetLastActivePopup, SW_SHOW, SetForegroundWindow, ShowWindow},
+			};
 			let handle = self.frame.get_handle();
 			if !handle.is_null() {
-				let _ = unsafe { SetForegroundWindow(HWND(handle)) };
+				let frame_hwnd = HWND(handle);
+
+				let hidden = HIDDEN_POPUP.swap(0, Ordering::SeqCst);
+				if hidden != 0 {
+					let active_popup = HWND(hidden as _);
+					let _ = unsafe { ShowWindow(active_popup, SW_SHOW) };
+					let _ = unsafe { SetForegroundWindow(active_popup) };
+					has_popup = true;
+				} else {
+					let active_popup = unsafe { GetLastActivePopup(frame_hwnd) };
+					has_popup = active_popup != frame_hwnd;
+
+					let _ = unsafe { SetForegroundWindow(active_popup) };
+				}
 			}
 		}
-		self.doc_manager.lock().unwrap().restore_focus();
+
+		if !has_popup {
+			self.doc_manager.lock().unwrap().restore_focus();
+		}
+
 		#[cfg(not(target_os = "linux"))]
 		if let Some(state) = self._tray_state.lock().unwrap().as_mut() {
 			if let Some(bundle) =
@@ -304,28 +381,22 @@ impl MainWindow {
 	fn is_window_active(&self) -> bool {
 		#[cfg(target_os = "windows")]
 		{
-			use windows::Win32::{Foundation::HWND, UI::WindowsAndMessaging::GetForegroundWindow};
+			use windows::Win32::{
+				Foundation::HWND,
+				UI::WindowsAndMessaging::{GetForegroundWindow, GetLastActivePopup},
+			};
 			let handle = self.frame.get_handle();
 			if handle.is_null() {
 				return self.frame.has_focus();
 			}
 			let frame_hwnd = HWND(handle);
 			let foreground = unsafe { GetForegroundWindow() };
-			foreground == frame_hwnd
+			let active_popup = unsafe { GetLastActivePopup(frame_hwnd) };
+			foreground == frame_hwnd || foreground == active_popup
 		}
 		#[cfg(not(target_os = "windows"))]
 		{
 			self.frame.has_focus()
-		}
-	}
-
-	#[cfg(any(target_os = "linux", target_os = "windows"))]
-	fn toggle_visibility(&self) {
-		let is_shown = self.frame.is_shown();
-		if is_shown && self.is_window_active() {
-			self.frame.iconize(true);
-		} else {
-			self.activate_from_ipc();
 		}
 	}
 
@@ -334,19 +405,17 @@ impl MainWindow {
 			return;
 		};
 		if dm.tab_count() == 0 {
+			// TRANSLATORS: Main window title when no document is open
 			self.frame.set_title(&t("Paperback"));
+			// TRANSLATORS: Default status bar text when no document is open
 			self.frame.set_status_text(&t("Ready"), 0);
 			return;
 		}
 		if let Some(tab) = dm.active_tab() {
-			let title = tab.session.title();
-			let display_title = if title.is_empty() {
-				tab.file_path.file_name().map_or_else(|| t("Untitled"), |s| s.to_string_lossy().to_string())
-			} else {
-				title
-			};
+			// TRANSLATORS: Window title when a document is open; {} is the document title
 			let template = t("Paperback - {}");
-			self.frame.set_title(&template.replace("{}", &display_title));
+			self.frame.set_title(&template.replace("{}", &display_title(tab)));
+			// TRANSLATORS: Status bar character count; {} is the number of characters
 			let chars_label = t("{} chars");
 			self.frame.set_status_text(&chars_label.replace("{}", &tab.session.content().len().to_string()), 0);
 		}
@@ -429,13 +498,14 @@ impl MainWindow {
 
 	fn handle_open(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) {
 		let wildcard = build_file_filter_string();
+		// TRANSLATORS: Title of the file picker dialog shown when opening a document
 		let dialog_title = t("Open Document");
 		let dialog = FileDialog::builder(frame)
 			.with_message(&dialog_title)
 			.with_wildcard(&wildcard)
 			.with_style(FileDialogStyle::Open | FileDialogStyle::FileMustExist)
 			.build();
-		if dialog.show_modal() == wxdragon::id::ID_OK
+		if dialog.show_modal() == ID_OK
 			&& let Some(path) = dialog.get_path()
 		{
 			let path = Path::new(&path);
@@ -531,9 +601,7 @@ impl MainWindow {
 				}
 				menu_ids::CLOSE => {
 					let mut dm = dm.lock().unwrap();
-					if let Some(index) = dm.active_tab_index() {
-						dm.close_document(index, true);
-					}
+					close_active_document_announced(&mut dm, live_region_label);
 					update_title_from_manager(&frame_copy, &dm);
 					let has_docs = dm.tab_count() > 0;
 					if has_docs {
@@ -639,6 +707,7 @@ impl MainWindow {
 							};
 							let page_count = tab.session.page_count();
 							if page_count == 0 {
+								// TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
 								live_region::announce(live_region_label, &t("No pages."));
 								return;
 							}
@@ -929,6 +998,7 @@ impl MainWindow {
 					if let Some(menu_bar) = frame_copy.get_menu_bar() {
 						menu_bar.check_item(menu_ids::TOGGLE_WORD_WRAP, new_state);
 					}
+					// TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 					let msg = if new_state { t("Word wrap on.") } else { t("Word wrap off.") };
 					live_region::announce(live_region_label, &msg);
 					dm.lock().unwrap().restore_focus();
@@ -1040,20 +1110,24 @@ impl MainWindow {
 						return;
 					};
 					let default_name =
+						// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
 						tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
 					let default_file = format!("{default_name}.txt");
+					// TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 					let wildcard = t("Plain text files (*.txt)|*.txt|All files (*.*)|*.*");
 					let dialog = FileDialog::builder(&frame_copy)
+						// TRANSLATORS: Title of the file save dialog when exporting a document to plain text
 						.with_message(&t("Export document to plain text"))
 						.with_default_file(&default_file)
 						.with_wildcard(&wildcard)
 						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
 						.build();
-					if dialog.show_modal() == wxdragon::id::ID_OK {
+					if dialog.show_modal() == ID_OK {
 						if let Some(path) = dialog.get_path() {
 							if let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Text) {
 								tracing::error!(path = %path, error = %e, "failed to export document as text");
 								let dialog =
+									// TRANSLATORS: Error dialog shown when exporting a document to another format fails
 									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
 										.with_style(
 											MessageDialogStyle::OK
@@ -1073,20 +1147,24 @@ impl MainWindow {
 						return;
 					};
 					let default_name =
+						// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
 						tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
 					let default_file = format!("{default_name}.html");
+					// TRANSLATORS: File filter shown in the "Export to HTML" save dialog
 					let wildcard = t("HTML files (*.html)|*.html|All files (*.*)|*.*");
 					let dialog = FileDialog::builder(&frame_copy)
+						// TRANSLATORS: Title of the file save dialog when exporting a document to HTML
 						.with_message(&t("Export document to HTML"))
 						.with_default_file(&default_file)
 						.with_wildcard(&wildcard)
 						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
 						.build();
-					if dialog.show_modal() == wxdragon::id::ID_OK {
+					if dialog.show_modal() == ID_OK {
 						if let Some(path) = dialog.get_path() {
 							if let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Html) {
 								tracing::error!(path = %path, error = %e, "failed to export document as HTML");
 								let dialog =
+									// TRANSLATORS: Error dialog shown when exporting a document to another format fails
 									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
 										.with_style(
 											MessageDialogStyle::OK
@@ -1106,21 +1184,25 @@ impl MainWindow {
 						return;
 					};
 					let default_name =
+						// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
 						tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
 					let default_file = format!("{default_name}.md");
+					// TRANSLATORS: File filter shown in the "Export to Markdown" save dialog
 					let wildcard = t("Markdown files (*.md)|*.md|All files (*.*)|*.*");
 					let dialog = FileDialog::builder(&frame_copy)
+						// TRANSLATORS: Title of the file save dialog when exporting a document to Markdown
 						.with_message(&t("Export document to Markdown"))
 						.with_default_file(&default_file)
 						.with_wildcard(&wildcard)
 						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
 						.build();
-					if dialog.show_modal() == wxdragon::id::ID_OK {
+					if dialog.show_modal() == ID_OK {
 						if let Some(path) = dialog.get_path() {
 							if let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Markdown)
 							{
 								tracing::error!(path = %path, error = %e, "failed to export document as Markdown");
 								let dialog =
+									// TRANSLATORS: Error dialog shown when exporting a document to another format fails
 									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
 										.with_style(
 											MessageDialogStyle::OK
@@ -1140,16 +1222,19 @@ impl MainWindow {
 						return;
 					};
 					let default_name =
+						// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
 						tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
 					let default_file = format!("{default_name}.paperback");
+					// TRANSLATORS: File filter shown in the export/import notes-and-bookmarks (.paperback) dialogs
 					let wildcard = t("Paperback files (*.paperback)|*.paperback");
 					let dialog = FileDialog::builder(&frame_copy)
+						// TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
 						.with_message(&t("Export notes and bookmarks"))
 						.with_default_file(&default_file)
 						.with_wildcard(&wildcard)
 						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
 						.build();
-					if dialog.show_modal() == wxdragon::id::ID_OK
+					if dialog.show_modal() == ID_OK
 						&& let Some(path) = dialog.get_path()
 					{
 						let path_str = tab.file_path.to_string_lossy();
@@ -1157,7 +1242,9 @@ impl MainWindow {
 						tracing::info!(doc = %tab.file_path.display(), export = %path, "document data exported");
 						let dialog = MessageDialog::builder(
 							&frame_copy,
+							// TRANSLATORS: Success message shown after exporting a document's notes and bookmarks
 							&t("Notes and bookmarks exported successfully."),
+							// TRANSLATORS: Title of the export-succeeded dialog
 							&t("Export Successful"),
 						)
 						.with_style(
@@ -1174,13 +1261,15 @@ impl MainWindow {
 					let Some(tab) = dm_ref.active_tab() else {
 						return;
 					};
+					// TRANSLATORS: File filter shown in the export/import notes-and-bookmarks (.paperback) dialogs
 					let wildcard = t("Paperback files (*.paperback)|*.paperback");
 					let dialog = FileDialog::builder(&frame_copy)
+						// TRANSLATORS: Title of the file open dialog when importing a document's notes and bookmarks
 						.with_message(&t("Import notes and bookmarks"))
 						.with_wildcard(&wildcard)
 						.with_style(FileDialogStyle::Open | FileDialogStyle::FileMustExist)
 						.build();
-					if dialog.show_modal() == wxdragon::id::ID_OK
+					if dialog.show_modal() == ID_OK
 						&& let Some(path) = dialog.get_path()
 					{
 						let path_str = tab.file_path.to_string_lossy();
@@ -1197,7 +1286,9 @@ impl MainWindow {
 						}
 						let dialog = MessageDialog::builder(
 							&frame_copy,
+							// TRANSLATORS: Success message shown after importing a document's notes and bookmarks
 							&t("Notes and bookmarks imported successfully."),
+							// TRANSLATORS: Title of the import-succeeded dialog
 							&t("Import Successful"),
 						)
 						.with_style(
@@ -1238,6 +1329,7 @@ impl MainWindow {
 					if let Some(tab) = dm_guard.active_tab_mut() {
 						let toc_items = &tab.session.handle().document().toc_items;
 						if toc_items.is_empty() {
+							// TRANSLATORS: Announced when opening the Table of Contents for a document that has none
 							live_region::announce(live_region_label, &t("No table of contents."));
 							return;
 						}
@@ -1296,6 +1388,7 @@ impl MainWindow {
 						drop(dm_ref);
 						dialogs::show_web_view_dialog(
 							&frame_copy,
+							// TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
 							&t("Web View"),
 							&url,
 							true,
@@ -1304,10 +1397,7 @@ impl MainWindow {
 									|| url.to_lowercase().starts_with("https://")
 									|| url.to_lowercase().starts_with("mailto:")
 								{
-									wxdragon::utils::launch_default_browser(
-										url,
-										wxdragon::utils::BrowserLaunchFlags::Default,
-									);
+									launch_default_browser(url, BrowserLaunchFlags::Default);
 									false
 								} else {
 									true
@@ -1318,6 +1408,7 @@ impl MainWindow {
 						tracing::warn!(path = %tab.file_path.display(), "could not determine web view content");
 						let dialog = MessageDialog::builder(
 							&frame_copy,
+							// TRANSLATORS: Error shown when the document has no content that can be rendered in the Web View
 							&t("Could not determine content to display in Web View."),
 							&t("Error"),
 						)
@@ -1345,6 +1436,7 @@ impl MainWindow {
 							let orig_name = tab
 								.file_path
 								.file_name()
+								// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
 								.map_or_else(|| t("document"), |name| name.to_string_lossy().to_string());
 							let temp_dir = env::temp_dir().to_string_lossy().to_string();
 							Some(tab.session.view_source(current_pos, &temp_dir).map(|view| (view, orig_name)))
@@ -1354,6 +1446,7 @@ impl MainWindow {
 					};
 					match outcome {
 						Some(Some((view, orig_name))) => {
+							// TRANSLATORS: Prefix before the file name in the tab title for a "View Source" tab, e.g. "Source: book.epub"
 							let title = format!("{} {orig_name}", t("Source:"));
 							let opened = dm.lock().unwrap().open_source_file(&dm, Path::new(&view.path), &title);
 							if opened {
@@ -1367,9 +1460,11 @@ impl MainWindow {
 						unavailable => {
 							let message = if unavailable.is_none() {
 								tracing::debug!("source view not available for this format");
+								// TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
 								t("Source view is not available for this document format.")
 							} else {
 								tracing::warn!("failed to load document source for view source");
+								// TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
 								t("Could not load the document source.")
 							};
 							let dialog = MessageDialog::builder(&frame_copy, &message, &t("Error"))
@@ -1427,7 +1522,7 @@ impl MainWindow {
 					cfg.set_app_int("recent_documents_to_show", options.recent_documents_to_show);
 					cfg.set_app_int("reading_speed_wpm", options.reading_speed_wpm);
 					cfg.set_app_string("language", &options.language);
-					crate::config_ext::set_update_channel(&cfg, options.update_channel);
+					set_update_channel(&cfg, options.update_channel);
 					cfg.set_hotkey(&options.hotkey);
 					cfg.set_readability_font(&options.readability_font);
 					cfg.set_line_spacing(options.line_spacing);
@@ -1516,6 +1611,7 @@ impl MainWindow {
 						tracing::info!("sleep timer cancelled");
 						let dm_ref = dm.lock().unwrap();
 						update_title_from_manager(&frame_copy, &dm_ref);
+						// TRANSLATORS: Announced when the user cancels a running sleep timer
 						live_region::announce(live_region_label, &t("Sleep timer cancelled."));
 						return;
 					}
@@ -1540,8 +1636,10 @@ impl MainWindow {
 						SLEEP_TIMER_START_MS.store(now, Ordering::SeqCst);
 						SLEEP_TIMER_DURATION_MINUTES.store(duration, Ordering::SeqCst);
 						let msg = if duration == 1 {
+							// TRANSLATORS: Announcement when the sleep timer is set for exactly 1 minute
 							t("Sleep timer set for 1 minute.")
 						} else {
+							// TRANSLATORS: Announcement when the sleep timer is set; %d is the number of minutes (always 2 or more)
 							t("Sleep timer set for %d minutes.").replace("%d", &duration.to_string())
 						};
 						live_region::announce(live_region_label, &msg);
@@ -1568,7 +1666,7 @@ impl MainWindow {
 					}
 				}
 				menu_ids::CHECK_FOR_UPDATES => {
-					let channel = crate::config_ext::get_update_channel(&config.lock().unwrap());
+					let channel = get_update_channel(&config.lock().unwrap());
 					help::run_update_check(false, channel);
 				}
 				menu_ids::DONATE => {
@@ -1607,6 +1705,7 @@ impl MainWindow {
 							!config_guard.get_all_documents().is_empty()
 						};
 						if !has_documents {
+							// TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
 							live_region::announce(live_region_label, &t("No recent documents."));
 							return;
 						}
@@ -1711,6 +1810,7 @@ fn ensure_parser_for_unknown_file(parent: &Frame, path: &Path, config: &ConfigMa
 		return false;
 	};
 	if !parser_supports_extension(&format) {
+		// TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
 		let message = t("Unsupported format selected.");
 		let title = t("Error");
 		let dialog = MessageDialog::builder(parent, &message, &title)
@@ -1721,6 +1821,23 @@ fn ensure_parser_for_unknown_file(parent: &Frame, path: &Path, config: &ConfigMa
 	}
 	config.set_document_format(&path_str, &format);
 	true
+}
+
+/// Close the active document, announcing the newly focused document for screen readers.
+///
+/// The `set_selection` inside `close_document` fires `on_page_changing` while the
+/// caller holds the manager lock, so the generic switch announcement is suppressed
+/// and this function announces the new focus itself instead, before the focus change
+/// actually happens.
+fn close_active_document_announced(dm: &mut DocumentManager, live_region_label: StaticText) {
+	let Some(index) = dm.active_tab_index() else {
+		return;
+	};
+	let next = dm.active_index_after_closing(index).and_then(|i| dm.get_tab(i)).map(display_title);
+	if let Some(next) = &next {
+		live_region::announce(live_region_label, next);
+	}
+	dm.close_document(index, true);
 }
 
 fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
@@ -1739,14 +1856,9 @@ fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 		return;
 	}
 	if let Some(tab) = dm.active_tab() {
-		let title = tab.session.title();
-		let display_title = if title.is_empty() {
-			tab.file_path.file_name().map_or_else(|| t("Untitled"), |s| s.to_string_lossy().to_string())
-		} else {
-			title
-		};
+		// TRANSLATORS: Window title when a document is open; {} is the document title
 		let template = t("Paperback - {}");
-		frame.set_title(&template.replace("{}", &display_title));
+		frame.set_title(&template.replace("{}", &display_title(tab)));
 		let position = tab.text_ctrl.get_insertion_point();
 		let status_info = tab.session.get_status_info(position);
 		let mut status_text = status::format_status_text(&status_info);
@@ -1837,12 +1949,12 @@ pub fn start_hotkey_listener(hotkey: &paperback_core::config::HotkeyConfig) -> O
 				break;
 			}
 			if msg.message == WM_HOTKEY {
-				wxdragon::call_after(Box::new(|| {
+				call_after(Box::new(|| {
 					if let Some(window) = super::app::main_window_from_ptr() {
-						window.handle_ipc_command(crate::ipc::IpcCommand::ToggleVisibility);
+						window.handle_ipc_command(IpcCommand::ToggleVisibility);
 					}
 				}));
-				wxdragon::app::wake_up_idle();
+				wake_up_idle();
 			}
 		}
 		unsafe {
@@ -1867,7 +1979,7 @@ fn char_to_vk(ch: char) -> Option<u32> {
 
 #[cfg(target_os = "windows")]
 fn re_register_hotkey(
-	hotkey_handle: &std::rc::Rc<std::cell::RefCell<Option<HotkeyHandle>>>,
+	hotkey_handle: &Rc<RefCell<Option<HotkeyHandle>>>,
 	hotkey: &paperback_core::config::HotkeyConfig,
 ) {
 	use windows::Win32::{

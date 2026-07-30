@@ -14,11 +14,15 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
 	parser::{
 		Parser,
+		table_text::{
+			build_html_table_from_grid, display_lines_and_length, html_table_to_display, table_caption_from_html,
+		},
 		util::{
 			ooxml::read_ooxml_relationships, path::extract_title_from_path, xml::collect_text_from_tagged_elements,
 		},
 		word::try_decrypt_office_file,
 	},
+	t,
 	types::LinkInfo,
 	util::{text::display_len, zip::read_zip_entry_by_name},
 };
@@ -42,11 +46,11 @@ pub struct PowerpointParser;
 
 impl Parser for PowerpointParser {
 	fn name(&self) -> &'static str {
-		"PowerPoint Presentations"
+		paperback_formats::POWERPOINT.name
 	}
 
 	fn extensions(&self) -> &[&str] {
-		&["pptx", "pptm", "ppt"]
+		paperback_formats::POWERPOINT.extensions
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
@@ -88,7 +92,8 @@ fn parse_pptx(context: &ParserContext) -> Result<Document> {
 		})
 		.collect::<Vec<_>>();
 	if slides.is_empty() {
-		anyhow::bail!("PPTX file contains no slides");
+		// TRANSLATORS: Error shown when a PPTX presentation file has no slides
+		anyhow::bail!(t("PPTX file contains no slides"));
 	}
 	slides.sort_by_key(|name| extract_slide_number(name));
 	let mut buffer = DocumentBuffer::new();
@@ -156,16 +161,18 @@ fn parse_legacy_ppt(context: &ParserContext) -> Result<Document> {
 
 	// Encrypted PPT files have an EncryptionInfo stream. We can detect but not decrypt them.
 	if compound.entry("/EncryptionInfo").is_ok() {
-		anyhow::bail!(
+		// TRANSLATORS: Error shown when a legacy PPT file is password-protected, which this parser cannot handle
+		anyhow::bail!(t(
 			"Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
-		);
+		));
 	}
 
 	let ppt_document_stream = read_ppt_document_stream(&mut compound)
 		.with_context(|| format!("Failed to read PowerPoint Document stream from '{}'", context.file_path))?;
 	let slide_texts = collect_legacy_slide_texts(&ppt_document_stream);
 	if slide_texts.is_empty() {
-		anyhow::bail!("PPT file contains no slides");
+		// TRANSLATORS: Error shown when a legacy PPT presentation file has no slides
+		anyhow::bail!(t("PPT file contains no slides"));
 	}
 	let mut buffer = DocumentBuffer::new();
 	let mut toc_items = Vec::with_capacity(slide_texts.len());
@@ -208,7 +215,8 @@ fn read_ppt_document_stream(compound: &mut CompoundFile<File>) -> Result<Vec<u8>
 			}
 		}
 	}
-	anyhow::bail!("PowerPoint Document stream not found")
+	// TRANSLATORS: Error shown when a legacy PPT file's OLE container has no PowerPoint Document stream
+	anyhow::bail!(t("PowerPoint Document stream not found"))
 }
 
 fn collect_legacy_slide_texts(stream_data: &[u8]) -> Vec<String> {
@@ -480,10 +488,10 @@ fn process_pptx_table(
 		}
 		rows.push(cells);
 	}
-	let html = crate::parser::table_text::build_html_table_from_grid(&rows);
-	let caption = crate::parser::table_text::table_caption_from_html(&html).unwrap_or_else(|| "table".to_string());
-	let display_text = crate::parser::table_text::html_table_to_display(&html, render_tables_inline);
-	let (_, length) = crate::parser::table_text::display_lines_and_length(&display_text);
+	let html = build_html_table_from_grid(&rows);
+	let caption = table_caption_from_html(&html).unwrap_or_else(|| "table".to_string());
+	let display_text = html_table_to_display(&html, render_tables_inline);
+	let (_, length) = display_lines_and_length(&display_text);
 	let offset = slide_start + display_len(text);
 	text.push_str(&display_text);
 	text.push('\n');

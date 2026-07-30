@@ -13,12 +13,15 @@ const WXK_PAGEUP: i32 = 366;
 const WXK_PAGEDOWN: i32 = 367;
 
 pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32) -> Option<i32> {
+	// TRANSLATORS: Title of the Go to Percent dialog
 	let dialog_title = t("Go to Percent");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
 	let current_percent = current_percent.clamp(0, 100);
+	// TRANSLATORS: Label for the percentage selection slider
 	let slider_label = StaticText::builder(&dialog).with_label(&t("&Percent")).build();
 	let percent_slider =
 		Slider::builder(&dialog).with_value(current_percent).with_min_value(0).with_max_value(100).build();
+	// TRANSLATORS: Label for the numeric percentage entry field
 	let input_label = StaticText::builder(&dialog).with_label(&t("P&ercent:")).build();
 	let input_ctrl = SpinCtrl::builder(&dialog)
 		.with_range(0, 100)
@@ -36,14 +39,14 @@ pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32) -> Option
 	let dialog_for_enter = dialog;
 	input_ctrl.bind_internal(EventType::TEXT_ENTER, move |event| {
 		event.skip(false);
-		dialog_for_enter.end_modal(wxdragon::id::ID_OK);
+		dialog_for_enter.end_modal(ID_OK);
 	});
 	let dialog_for_slider_enter = dialog;
 	percent_slider.bind_internal(EventType::KEY_DOWN, move |event| {
 		let key = event.get_key_code().unwrap_or(0);
 		if key == KEY_RETURN || key == KEY_NUMPAD_ENTER {
 			event.skip(false);
-			dialog_for_slider_enter.end_modal(wxdragon::id::ID_OK);
+			dialog_for_slider_enter.end_modal(ID_OK);
 			return;
 		}
 		event.skip(true);
@@ -77,11 +80,13 @@ pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32) -> Option
 	content_sizer.add(&percent_slider, 0, SizerFlag::Expand | SizerFlag::Bottom, 5);
 	content_sizer.add(&input_label, 0, SizerFlag::Left, 5);
 	content_sizer.add(&input_ctrl, 0, SizerFlag::Expand, 0);
-	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_OK).with_label(&t("Go")).build();
+	// TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
+	let ok_button = Button::builder(&dialog).with_id(ID_OK).with_label(&t("Go")).build();
 	ok_button.set_default();
-	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
-	dialog.set_affirmative_id(wxdragon::id::ID_OK);
+	// TRANSLATORS: Label for the cancellation button
+	let cancel_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
+	dialog.set_escape_id(ID_CANCEL);
+	dialog.set_affirmative_id(ID_OK);
 	let main_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	main_sizer.add_sizer(&content_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
@@ -92,5 +97,5 @@ pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32) -> Option
 	dialog.set_sizer_and_fit(main_sizer, true);
 	dialog.centre();
 	percent_slider.set_focus();
-	if dialog.show_modal() == wxdragon::id::ID_OK { Some(input_ctrl.value().clamp(0, 100)) } else { None }
+	if dialog.show_modal() == ID_OK { Some(input_ctrl.value().clamp(0, 100)) } else { None }
 }

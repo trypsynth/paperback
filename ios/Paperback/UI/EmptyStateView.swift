@@ -1,8 +1,10 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct EmptyStateView: View {
 	@EnvironmentObject var viewModel: AppViewModel
 	let onOpenFile: () -> Void
+	@State private var locateTarget: RecentDocument? = nil
 
 	var body: some View {
 		VStack(spacing: 0) {
@@ -12,6 +14,7 @@ struct EmptyStateView: View {
 				.foregroundStyle(.secondary)
 				.padding(.bottom, 16)
 				.accessibilityHidden(true)
+			// TRANSLATORS: Shown in the main reading area when no document is currently open
 			Text(t("No document open"))
 				.font(.title2)
 				.foregroundStyle(.secondary)
@@ -21,38 +24,39 @@ struct EmptyStateView: View {
 				recentList
 			}
 		}
+		.fileImporter(
+			isPresented: Binding(get: { locateTarget != nil }, set: { if !$0 { locateTarget = nil } }),
+			allowedContentTypes: [.item],
+			allowsMultipleSelection: false
+		) { result in
+			defer { locateTarget = nil }
+			guard case .success(let urls) = result, let newURL = urls.first, let target = locateTarget else { return }
+			viewModel.locateRecentDocument(target.url, at: newURL)
+		}
 	}
 
 	private var recentList: some View {
 		VStack(alignment: .leading, spacing: 0) {
-			HStack {
-				Text(t("Recent"))
-					.font(.headline)
-					.padding(.horizontal)
-					.padding(.top, 12)
-				Spacer()
-				Button(t("All")) { viewModel.showRecents = true }
-					.padding(.horizontal)
-					.padding(.top, 12)
-			}
+			// TRANSLATORS: Heading above the short list of recently opened documents shown when no document is open
+			Text(t("Recent Documents"))
+				.font(.headline)
+				.padding(.horizontal)
+				.padding(.top, 12)
+				.accessibilityAddTraits(.isHeader)
 			ForEach(viewModel.recentDocuments.prefix(5)) { doc in
-				Button {
-					viewModel.openDocument(url: doc.url)
-				} label: {
-					HStack {
-						Image(systemName: "doc.text")
-							.foregroundStyle(.secondary)
-							.accessibilityHidden(true)
-						Text(doc.title)
-							.foregroundStyle(.primary)
-							.lineLimit(1)
-						Spacer()
-					}
-					.padding(.horizontal)
-					.padding(.vertical, 10)
-				}
+				RecentDocumentRow(
+					doc: doc,
+					showClosedStatus: false,
+					onOpen: { viewModel.openDocument(url: doc.url) },
+					onRemove: { viewModel.removeRecentDocument(url: doc.url) },
+					onLocate: { locateTarget = doc }
+				)
+				.padding(.horizontal)
 				Divider().padding(.leading)
 			}
+			// TRANSLATORS: Button below the short recent-documents preview that opens the full Recent Documents list
+			Button(t("Show All")) { viewModel.showRecents = true }
+				.padding()
 		}
 	}
 }

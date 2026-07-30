@@ -9,6 +9,7 @@ struct TtsModeView: View {
 			ScrollView {
 				Text(
 					viewModel.currentSegmentText.isEmpty
+						// TRANSLATORS: Placeholder shown in the read-aloud view before the user has started playback
 						? t("Press play to start listening.")
 						: viewModel.currentSegmentText
 				)

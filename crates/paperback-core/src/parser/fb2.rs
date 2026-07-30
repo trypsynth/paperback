@@ -10,6 +10,7 @@ use crate::{
 		util::xml::{collect_element_text, find_child_element},
 		xml_to_text::XmlToText,
 	},
+	t,
 };
 
 type Metadata = (String, String);
@@ -18,11 +19,11 @@ pub struct Fb2Parser;
 
 impl Parser for Fb2Parser {
 	fn name(&self) -> &'static str {
-		"FictionBook Documents"
+		paperback_formats::FB2.name
 	}
 
 	fn extensions(&self) -> &[&str] {
-		&["fb2"]
+		paperback_formats::FB2.extensions
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
@@ -42,7 +43,8 @@ impl Parser for Fb2Parser {
 		});
 		let mut converter = XmlToText::with_render_tables_inline(context.render_tables_inline);
 		if !converter.convert(&xml_content) {
-			anyhow::bail!("Failed to convert FB2 XML to text");
+			// TRANSLATORS: Error shown when an FB2 (FictionBook) file's XML fails to convert to plain text
+			anyhow::bail!(t("Failed to convert FB2 XML to text"));
 		}
 		let mut buffer = DocumentBuffer::new();
 		buffer.append(&converter.get_text());

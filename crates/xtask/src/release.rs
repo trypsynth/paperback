@@ -8,16 +8,18 @@ use walkdir::WalkDir;
 #[cfg(not(target_os = "macos"))]
 use zip::{CompressionMethod, ZipWriter, write::SimpleFileOptions};
 
+use crate::project_root;
+
 pub fn release() -> Result<(), Box<dyn Error>> {
 	let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
 	let status = Command::new(&cargo)
-		.current_dir(crate::project_root())
+		.current_dir(project_root())
 		.args(["build", "--release", "-p", "paperback", "-p", "pb"])
 		.status()?;
 	if !status.success() {
 		return Err("Cargo build failed".into());
 	}
-	let target_dir = crate::project_root().join("target/release");
+	let target_dir = project_root().join("target/release");
 	#[cfg(target_os = "macos")]
 	return build_mac_dmg(&target_dir);
 	#[cfg(not(target_os = "macos"))]

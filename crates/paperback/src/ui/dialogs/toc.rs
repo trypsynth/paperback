@@ -1,4 +1,6 @@
 use std::{cell::Cell, rc::Rc};
+#[cfg(not(target_os = "windows"))]
+use std::{collections::HashMap, ffi::c_void};
 
 use paperback_core::document::TocItem;
 use patois::t;
@@ -18,8 +20,7 @@ pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i3
 
 #[cfg(not(target_os = "windows"))]
 fn show_toc_dialog_dv(parent: &Frame, toc_items: &[TocItem], current_offset: i32) -> Option<i32> {
-	use std::collections::HashMap;
-
+	// TRANSLATORS: Title of the Table of Contents dialog
 	let dialog_title = t("Table of Contents");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
 	let selected_offset = Rc::new(Cell::new(-1i32));
@@ -55,7 +56,7 @@ fn populate_toc_tree_dv(
 	tree: DataViewTreeCtrl,
 	parent: &DataViewItem,
 	items: &[TocItem],
-	item_offsets: &mut std::collections::HashMap<usize, i32>,
+	item_offsets: &mut HashMap<usize, i32>,
 ) {
 	for item in items {
 		let display_text = if item.name.is_empty() { t("Untitled") } else { item.name.clone() };
@@ -65,7 +66,7 @@ fn populate_toc_tree_dv(
 		} else {
 			tree.append_container(parent, &display_text, -1, -1)
 		};
-		if let Some(id_ptr) = node.get_id::<std::ffi::c_void>() {
+		if let Some(id_ptr) = node.get_id::<c_void>() {
 			item_offsets.insert(id_ptr as usize, offset);
 		}
 		if !item.children.is_empty() {
@@ -77,12 +78,12 @@ fn populate_toc_tree_dv(
 #[cfg(not(target_os = "windows"))]
 fn bind_toc_selection_dv(
 	tree: DataViewTreeCtrl,
-	item_offsets: Rc<std::collections::HashMap<usize, i32>>,
+	item_offsets: Rc<HashMap<usize, i32>>,
 	selected_offset: Rc<Cell<i32>>,
 ) {
 	tree.on_selection_changed(move |event| {
 		if let Some(item) = event.get_item() {
-			if let Some(id_ptr) = item.get_id::<std::ffi::c_void>() {
+			if let Some(id_ptr) = item.get_id::<c_void>() {
 				if let Some(&offset) = item_offsets.get(&(id_ptr as usize)) {
 					selected_offset.set(offset);
 				}
@@ -95,13 +96,13 @@ fn bind_toc_selection_dv(
 fn bind_toc_activation_dv(
 	dialog: Dialog,
 	tree: DataViewTreeCtrl,
-	item_offsets: Rc<std::collections::HashMap<usize, i32>>,
+	item_offsets: Rc<HashMap<usize, i32>>,
 	selected_offset: Rc<Cell<i32>>,
 ) {
 	let dialog_for_activate = dialog;
 	tree.on_item_activated(move |event| {
 		if let Some(item) = event.get_item() {
-			if let Some(id_ptr) = item.get_id::<std::ffi::c_void>() {
+			if let Some(id_ptr) = item.get_id::<c_void>() {
 				if let Some(&offset) = item_offsets.get(&(id_ptr as usize)) {
 					selected_offset.set(offset);
 					dialog_for_activate.end_modal(wxdragon::id::ID_OK);
@@ -134,12 +135,12 @@ fn find_and_select_dv(
 	tree: DataViewTreeCtrl,
 	parent: &DataViewItem,
 	offset: i32,
-	item_offsets: &std::collections::HashMap<usize, i32>,
+	item_offsets: &HashMap<usize, i32>,
 ) -> bool {
 	let count = tree.get_child_count(parent);
 	for i in 0..count {
 		let child = tree.get_nth_child(parent, i);
-		if let Some(id_ptr) = child.get_id::<std::ffi::c_void>() {
+		if let Some(id_ptr) = child.get_id::<c_void>() {
 			if item_offsets.get(&(id_ptr as usize)) == Some(&offset) {
 				tree.select(&child);
 				tree.ensure_visible(&child);
@@ -157,6 +158,7 @@ fn find_and_select_dv(
 
 #[cfg(target_os = "windows")]
 fn show_toc_dialog_wx(parent: &Frame, toc_items: &[TocItem], current_offset: i32) -> Option<i32> {
+	// TRANSLATORS: Title of the Table of Contents dialog
 	let dialog_title = t("Table of Contents");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
 	let selected_offset = Rc::new(Cell::new(-1));
@@ -168,7 +170,7 @@ fn show_toc_dialog_wx(parent: &Frame, toc_items: &[TocItem], current_offset: i32
 	bind_toc_ok(dialog, ok_button, Rc::clone(&selected_offset));
 	bind_toc_layout(dialog, tree, ok_button, cancel_button);
 	tree.set_focus();
-	if dialog.show_modal() == wxdragon::id::ID_OK {
+	if dialog.show_modal() == ID_OK {
 		let offset = selected_offset.get();
 		if offset >= 0 { Some(offset) } else { None }
 	} else {
@@ -182,7 +184,7 @@ fn build_toc_tree(dialog: Dialog, toc_items: &[TocItem], current_offset: i32) ->
 		.with_style(TreeCtrlStyle::Default | TreeCtrlStyle::HideRoot)
 		.with_size(Size::new(400, 500))
 		.build();
-	let root = tree.add_root(&t("Root"), None, None).unwrap();
+	let root = tree.add_root("Root", None, None).unwrap();
 	populate_toc_tree(tree, &root, toc_items);
 	if current_offset != -1 {
 		find_and_select_item(tree, &root, current_offset);
@@ -213,7 +215,7 @@ fn bind_toc_activation(dialog: Dialog, tree: TreeCtrl, selected_offset: Rc<Cell<
 			&& let Some(offset) = data.downcast_ref::<i32>()
 		{
 			selected_offset.set(*offset);
-			dialog_for_activate.end_modal(wxdragon::id::ID_OK);
+			dialog_for_activate.end_modal(ID_OK);
 		}
 	});
 }
@@ -289,21 +291,25 @@ fn find_and_select_item(tree: TreeCtrl, parent: &TreeItemId, offset: i32) -> boo
 // ── Shared helpers ─────────────────────────────────────────────────────────────
 
 fn build_toc_buttons(dialog: Dialog) -> (Button, Button) {
+	// TRANSLATORS: Label for the confirmation button
 	let ok_button = Button::builder(&dialog).with_label(&t("OK")).build();
-	let cancel_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
+	// TRANSLATORS: Label for the cancellation button
+	let cancel_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
 	(ok_button, cancel_button)
 }
 
 fn bind_toc_ok(dialog: Dialog, ok_button: Button, selected_offset: Rc<Cell<i32>>) {
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+	dialog.set_escape_id(ID_CANCEL);
 	let dialog_for_ok = dialog;
 	ok_button.on_click(move |_| {
 		if selected_offset.get() >= 0 {
-			dialog_for_ok.end_modal(wxdragon::id::ID_OK);
+			dialog_for_ok.end_modal(ID_OK);
 		} else {
 			MessageDialog::builder(
 				&dialog_for_ok,
+				// TRANSLATORS: Error message shown when the user attempts to confirm the Table of Contents dialog without having selected any section
 				&t("Please select a section from the table of contents."),
+				// TRANSLATORS: Title of the error dialog shown when the user attempts to confirm the Table of Contents dialog without having selected any section
 				&t("No Selection"),
 			)
 			.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre)

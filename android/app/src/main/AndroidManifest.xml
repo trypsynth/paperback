@@ -23,7 +23,7 @@
         android:windowSoftInputMode="adjustResize"
         android:theme="@style/Theme.MyApplication">
         <activity
-            android:name="dev.paperback.mobile.MainActivity"
+            android:name="dev.paperback.android.MainActivity"
             android:exported="true"
             android:launchMode="singleTask"
             tools:ignore="Instantiatable">
@@ -90,7 +90,7 @@
                 <data android:pathPattern=".*\\.zip" />
             </intent-filter>
         </activity>
-        
+
         <service
             android:name=".tts.PlaybackService"
             android:foregroundServiceType="mediaPlayback"

@@ -2,23 +2,23 @@
 
 ## Johdanto
 
-Paperback on kevyt, nopea ja saavutettava e-kirjojen ja asiakirjojen lukuohjelma kaikille satunnaisista lukijoista vaativiin tehokäyttäjiin. Se on suunniteltu ruudunlukijaystävällisyyttä, suorituskykyä ja turhista ominaisuuksista riisuttua käyttökokemusta ajatellen.
+Paperback on kevyt ja saavutettava e- ja asiakirjojen lukusovellus kaikille satunnaisista lukijoista vaativiin tehokäyttäjiin. Se on suunniteltu ruudunlukijaystävällisyyttä, suorituskykyä ja turhista ominaisuuksista riisuttua käyttökokemusta ajatellen.
 
 ## Järjestelmävaatimukset
 
-Paperback toimii tällä hetkellä Windowsissa, macOS:ssä, Linuxissa, iOS:ssä ja Androidissa.
+Paperback toimii Windowsissa, macOS:ssä, iOS:ssä ja Androidissa.
 
 ## Ominaisuudet
 
-* Täysin itsenäinen, eikä vaadi mitään ohjelmia asennettavaksi tietokoneelle ennen lukemisen aloittamista.
-* Erittäin nopea jopa vanhalla laitteistolla.
+* Toimii täysin itsenäisesti ilman kolmannen osapuolen ohjelmistojen asentamista.
+* Toimii erittäin nopeasti myös vanhalla laitteistolla.
 * Yksinkertainen välilehtikäyttöliittymä, jonka avulla voit avata rajattoman määrän asiakirjoja.
-* Tallentaa kohdistimen sijainnin jokaisessa avaamassasi asiakirjassa.
+* Tallentaa tarkan lukukohdan jokaisessa avaamassasi asiakirjassa.
 * Muistaa valinnaisesti, mitkä asiakirjat olivat avoinna ohjelmaa suljettaessa, ja avaa ne uudelleen seuraavalla käynnistyskerralla.
-* Sen on suunnitellut ruudunlukijan käyttäjä toisille ruudunlukijan käyttäjille.
 * Sisältää ruudunlukijoista tuttua verkkoselaustilaa muistuttavan navigointitoiminnon, jonka avulla voit liikkua asiakirjoissa nopeasti ja vaivattomasti.
 * Sisältää tehokkaan etsintävalintaikkunan, jossa on muun muassa historia ja sääntölausekkeiden tuki.
 * Voidaan käyttää massamuistiversiona tai asentaa siten, että tiedostokytkennät määritetään automaattisesti.
+Tukee erittäin kattavasti yleisiä tiedostomuotoja.
 
 ## Ruudunlukijoiden yhteensopivuus
 
@@ -32,43 +32,48 @@ Kiertotienä ongelmaan on paperback.jcf-tiedoston muokkaaminen siten, että aset
 
 ## Tuetut tiedostotyypit
 
-Paperback tukee seuraavia tiedostomuotoja ja -tarkenteita:
+Paperback tukee seuraavia tiedostomuotoja ja -tunnisteita:
 
 * CHM-ohjetiedostot (`.chm`)
+* DAISY-kirjat (`.opf`, `.zip`)
 * ePub-kirjat (`.epub`)
 * FB2-e-kirjat (`.fb2`)
 * HTML-asiakirjat (`.htm`, `.html`, `.xhtml`)
 * Markdown-asiakirjat (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
-* Microsoft Word -asiakirjat (`.docx`, `.docm`)
+* Microsoft Word -asiakirjat (`.docx`, `.docm`, `.doc`)
+* MOBI- ja Kindle-kirjat (`.mobi`, `.azw`, `.azw3`)
 * OpenDocument-esitykset (`.odp`, `.fodp`)
 * OpenDocument-tekstiasiakirjat (`.odt`, `.fodt`)
 * PDF-asiakirjat (`.pdf`)
-* PowerPoint-esitykset (`.pptx`, `.pptm`)
+* PowerPoint-esitykset (`.pptx`, `.pptm`, `.ppt`)
 * RTF-asiakirjat (`.rtf`)
 * Teksti- ja lokitiedostot (`.txt`, `.log`)
-* XML-asiakirjat (`.xml`)
 
 ## Pikanäppäimet
 
-Paperback on suunniteltu ensisijaisesti näppäimistöllä ja ruudunlukijalla käytettäväksi. Alla on luettelo nykyisistä pikanäppäimistä.
+Paperback on suunniteltu ensisijaisesti näppäimistöllä käytettäväksi. Alla on luettelo nykyisistä pikanäppäimistä.
+
+Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot on merkitty sulkeisiin. Erot johtuvat siitä, että näppäinyhdistelmät Ctrl+G, Ctrl+W sekä Alt + vasen/oikea nuoli on varattu macOS-alustalla järjestelmän tai muiden sovellusten käyttöön.
 
 ### Tiedosto-valikko
 
 * `Ctrl+O`: Avaa asiakirja.
-* `Ctrl+F4`: Sulje nykyinen asiakirja.
-* `Ctrl+Shift+F4`: Sulje kaikki avoimet asiakirjat.
+* `Ctrl+F4` (macOS: `Cmd+W`): Sulje nykyinen asiakirja.
+* `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Sulje kaikki avoimet asiakirjat.
+* `Ctrl+Shift+T`: Avaa viimeksi suljetun asiakirjan uudelleen.
 * `Ctrl+R`: Näytä "Kaikki asiakirjat" -valintaikkuna (Viimeisimmät asiakirjat -valikosta).
+* `Ctrl+Q`: Lopeta (vain Windowsissa; macOS:ää käytettäessä tämä komento löytyy sovellusvalikosta).
 
 ### Siirry-valikko
 
 * `Ctrl+F`: Näytä Etsi-valintaikkuna.
-* `F3`: Etsi seuraava.
-* `Shift+F3`: Etsi edellinen.
-* `Ctrl+G`: Siirry riville.
-* `Ctrl+Shift+G`: Siirry prosenttiin.
+* `F3` (macOS: `Cmd+G`): Etsi seuraava.
+* `Shift+F3` (macOS: `Cmd+Shift+G`): Etsi edellinen.
+* `Ctrl+G` (macOS: `Cmd+L`): Siirry riville.
+* `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Siirry prosenttiin.
 * `Ctrl+P`: Siirry sivulle (jos nykyinen asiakirja tukee sitä).
-* `Alt+Vasen nuoli`: Siirry taaksepäin navigointihistoriassa.
-* `Alt+Oikea nuoli`: Siirry eteenpäin navigointihistoriassa.
+* `Alt+Vasen nuoli` (macOS: `Cmd+[`): Siirry taaksepäin navigointihistoriassa.
+* `Alt+Oikea nuoli` (macOS: `Cmd+]`): Siirry eteenpäin navigointihistoriassa.
 * `[`: Edellinen luku.
 * `]`: Seuraava luku.
 * `Shift+H`: Edellinen otsikko.
@@ -84,9 +89,13 @@ Paperback on suunniteltu ensisijaisesti näppäimistöllä ja ruudunlukijalla k�
 * `Ctrl+B`: Siirry kaikkiin kirjanmerkkeihin ja muistiinpanoihin.
 * `Ctrl+Alt+B`: Siirry vain kirjanmerkkeihin.
 * `Ctrl+Alt+M`: Siirry vain muistiinpanoihin.
-* `Ctrl+Shift+W`: Näytä muistiinpanon teksti nykyisessä sijainnissa.
+* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W` eli fyysinen Ctrl-näppäin Cmd-näppäimen sijaan): Näytä muistiinpanon teksti nykyisessä sijainnissa.
 * `Shift+K`: Edellinen linkki.
 * `K`: Seuraava linkki.
+* `Shift+G`: Edellinen kuva.
+* `G`: Seuraava kuva.
+* `Shift+F`: Edellinen kuvitus.
+* `F`: Seuraava kuvitus.
 * `Shift+T`: Edellinen taulukko.
 * `T`: Seuraava taulukko.
 * `Shift+S`: Edellinen erotin.
@@ -100,7 +109,7 @@ Paperback on suunniteltu ensisijaisesti näppäimistöllä ja ruudunlukijalla k�
 
 ### Työkalut-valikko
 
-* `Ctrl+W`: Näytä nykyisen asiakirjan sanamäärä.
+* `Ctrl+W` (macOS: `RawCtrl+W` eli fyysinen Ctrl-näppäin Cmd-näppäimen sijaan): Näytä nykyisen asiakirjan sanamäärä.
 * `Ctrl+I`: Näytä asiakirjan tiedot.
 * `Ctrl+T`: Näytä sisällysluettelo.
 * `F7`: Näytä elementtilista.
@@ -113,7 +122,7 @@ Paperback on suunniteltu ensisijaisesti näppäimistöllä ja ruudunlukijalla k�
 * `Ctrl+Shift+B`: Lisää kirjanmerkki nykyisen valinnan kohdalle tai kohdistimen sijaintiin tai poista se.
 * `Ctrl+Shift+N`: Lisää kirjanmerkin muistiinpano nykyisen valinnan tai kohdistimen kohdalle tai muokkaa sitä.
 * `Ctrl+Alt+W`: Ota rivitys käyttöön tai poista se käytöstä.
-* `Ctrl+,`: Avaa asetukset.
+* `Ctrl+,`: Avaa asetukset (löytyy macOS:ää käytettäessä sovellusvalikosta).
 * `Ctrl+Shift+S`: Ota uniajastin käyttöön tai poista se käytöstä.
 
 ### Ohje-valikko
@@ -127,8 +136,8 @@ Paperback on suunniteltu ensisijaisesti näppäimistöllä ja ruudunlukijalla k�
 ### Asiakirjanäkymän lisänäppäimet
 
 * `Delete` / `Laskinnäppäimistön Delete` välilehtisäätimessä: Sulje valittu asiakirjan välilehti.
-* `Enter` asiakirjan tekstissä: Aktivoi kohdistimen kohdalla oleva linkki tai avaa taulukkonäkymä, kun kohdistin on taulukossa.
-* `Shift+F10` asiakirjan tekstissä: Avaa pikavalikko.
+* `Enter` tai `Väli` asiakirjan tekstissä: Aktivoi kohdistimen kohdalla oleva linkki tai avaa taulukkonäkymä, kun kohdistin on taulukossa.
+* `Shift+F10` tai sovellusnäppäin asiakirjan tekstissä: Avaa pikavalikko.
 
 ## Tuetut kielet
 
@@ -181,7 +190,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 
 ## Muutosloki
 
-### Versio 0.9.0
+### Versio 0.9.0 (ei vielä julkaistu)
 * Lisätty Peruuta-painike käynnissä olevan päivityksen valintaikkunaan.
 * Lisätty pb-komentorivityökalu, jolla voi muuntaa nopeasti minkä tahansa Paperbackin tukeman tiedostomuodon HTML-, Markdown- tai pelkkä teksti -muotoon.
 * Lisätty mukautettava pikanäppäin Paperbackin palauttamiseen ilmoitusalueelta.
@@ -197,16 +206,16 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
     * Tekstin tasaus
 * Lisätty asetus taulukoiden näyttötavan määrittämiseksi sekä yhtenäistetty taulukoiden esitystapa kaikille asiakirjoille.
 * Lisätty Näytä lähdekoodi -vaihtoehto, joka avaa asiakirjan lähdekoodin uuteen välilehteen (hyödyllinen esimerkiksi Markdown-muokkauksessa).
-* Lisätty Sanamäärä-valintaikkunaan arvioitu lukuaika sekä mahdollisuus oman lukunopeuden määrittämiseen, jotta tästä lukemasta on oikeasti hyötyä.
+* Lisätty Sanamäärä-valintaikkunaan arvioitu lukuaika sekä mahdollisuus oman lukunopeuden määrittämiseen, jotta tästä tiedosta on oikeasti hyötyä.
+* ARM64-pohjaisen Windowsin tuki lisätty.
 * Android-tuki lisätty.
 * iOS-tuki lisätty.
-* Linux-tuki lisätty.
 * macOS-tuki lisätty.
 * Lisätty hollannin-, suomen- ja puolankieliset käännökset.
 * Lisätty tuki säilöittäin navigoimiselle.
 * Lisätty CHM-asiakirjoihin luetteloiden, luettelokohteiden, kuvitusten ja kuvien tuki.
 * Lisätty Rivitys-valikkokohde ja vastaava pikanäppäin.
-* Mahdollistettu Selainnäkymä-valintaikkunan koon muuttaminen ja asetettu se avautumaan oletusarvoisesti huomattavasti selkeämmässä koossa.
+* Merkkiääni toistuu nyt vain sellaisten sanojen kohdalla, joihin on lisätty kirjanmerkki tai muistiinpano.
 * Laajennettu vientitoimintoa siten, että se mahdollistaa viennin pelkän tekstin lisäksi myös HTML- ja Markdown-muotoihin.
 * Korjattu virhe, jossa tekstin rivityksen käyttöönotto aiheutti kohdistuksen siirtymistä suoraan asiakirjan alkuun.
 * Korjattu virhe, jossa DAISY-kirjoista näytettiin tilarivillä virheellisiä tietoja.
@@ -215,11 +224,15 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Korjattu virhe, jossa Mobi-kirjojen filepos-ankkurit rikkoivat HTML-elementtejä ja aiheuttivat merkkisotkua kirjan tekstiin.
 * Korjattu suurten asiakirjojen tekstikentän loppua lähestyttäessä ilmennyt hidastelu.
 * Korjattu vanhojen Mobi-kirjojen linkit.
-* Korjattu muita kuin latinalaisia kirjaimia sisältävien RTF-asiakirjojen jäsentäminen.
+* Korjattu ongelma virheellisen koodausmäärityksen sisältävien DAISY-kirjojen lataamisessa.
+* Korjattu muita kuin latinalaisia kirjaimia sisältävien RTF-asiakirjojen jäsennys.
 * Korjattu virhe, jossa otsikkopalkki ei päivittynyt, kun dokumentti suljettiin Kaikki asiakirjat -valintaikkunasta.
+* Selainnäkymävalintaikkunan kokoa voi nyt muuttaa, eikä se avaudu enää aivan liian pienenä.
 * Korjattu virhe, jossa Word-asiakirjojen otsikoita ei näytetty oikein, jos niissä käytettiin kielikohtaisia tyylinimiä.
 * Korjattu virhe, jossa kohdistus ei siirtynyt oikein valitulle välilehdelle Paperbackin uudelleenkäynnistyksen jälkeen.
 * Jos tekstiä on valittuna Sanamäärä-valintaikkunaa avattaessa, näkymässä näytetään nyt valittujen sanojen määrä.
+* Paperbackin tiedostonkäsittelyä on parannettu Windows-verkkolevyillä: "Avaa asiakirjan kansio" -toiminto siirtää nyt kohdistuksen asianmukaisesti verkkolevyllä olevan tiedoston kohdalle, eikä tiedostopoluissa enää ole outoja merkkejä.
+* Parannettu huomattavasti AZW3-kirjojen jäsennystä.
 * Luovuttu chmlib-kirjaston käytöstä ja siirrytty omaan, täysin Rust-pohjaiseen CHM-tiedostonlukijaan.
 * .paperback-tiedostoja ei enää ladata työpöytäversiossa pakotetusti asiakirjojen palautuksen yhteydessä. Käyttäjältä pyydetään sen sijaan vahvistus tiedoston löytyessä.
 * Paperback käyttää nyt varavaihtoehtona pelkän tekstin poimimista sellaisista PDF-tiedostoista, , joiden tagit on merkitty virheellisesti.
@@ -228,9 +241,9 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * PowerPoint-esitykset tukevat nyt taulukoita.
 * Valikko päivittyy nyt oikein ja kohdistus siirtyy tekstikenttään, kun ohje avataan Paperbackissa.
 * Readme.html-tiedostoa ei enää lisätä Kaikki asiakirjat -luetteloon, kun se avataan Shift+F1-pikanäppäimellä.
-* Toimimaton AZW3-tuki poistettu.
 * Asiakirjojen poistaminen Viimeisimmät asiakirjat -valintaikkunasta sulkee nyt myös niiden aktiiviset välilehdet.
-* Windowsissa on siirrytty huomattavasti turvallisempaan prosessien välisen viestinnän menetelmään.
+* Windowsissa on otettu käyttöön huomattavasti turvallisempi prosessien välinen viestintämenetelmä.
+* Aktiivisen asiakirjan nimi luetaan nyt välilehteä vaihdettaessa.
 * Päivittäjä näyttää nyt versiotiedoissa oikein Markdown-kooditunnisteiden sisällön.
 * Päivittäjä varmistaa nyt, ettei ladattua tiedostoa ole peukaloitu.
 * Selainnäkymä avautuu nyt suoraan nykyisessä lukukohdassa.
@@ -358,7 +371,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Kun kirja ladataan komentoriviparametrilla jo käynnissä olevaan Paperback-kopioon, virheilmoitusta ei enää näytetä, vaikka dokumentin lataus kestäisi yli 5 sekuntia.
 * Asetukset ladataan ja tallennetaan nyt asianmukaisesti, kun Paperback on käynnissä järjestelmänvalvojana. [#148](https://github.com/trypsynth/paperback/issues/148), [#149](https://github.com/trypsynth/paperback/pull/149).
 * Kirjanmerkki voidaan nyt poistaa suoraan kirjanmerkkien valintaikkunasta. [#100](https://github.com/trypsynth/paperback/issues/100), [#103](https://github.com/trypsynth/paperback/pull/103).
-* Asiakirjan kirjanmerkkien ja lukukohdan tuonti ja vienti on nyt mahdollista. Luotu tiedosto nimetään asiakirjan tiedostonimen mukaan ja sen pääte on .paperback. Mikäli tällainen tiedosto löytyy ladattaessa asiakirjan kansiosta, se ladataan automaattisesti. Muussa tapauksessa voit tuoda sen manuaalisesti Työkalut-valikon toiminnolla. [#146](https://github.com/trypsynth/paperback/issues/146), [#147](https://github.com/trypsynth/paperback/pull/147).
+* Asiakirjan kirjanmerkkien ja lukukohdan tuonti ja vienti on nyt mahdollista. Luotu tiedosto nimetään asiakirjan tiedostonimen perusteella ja sen tunniste on .paperback. Mikäli tällainen tiedosto löytyy ladattaessa asiakirjan kansiosta, se ladataan automaattisesti. Muussa tapauksessa voit tuoda sen manuaalisesti Työkalut-valikon toiminnolla. [#146](https://github.com/trypsynth/paperback/issues/146), [#147](https://github.com/trypsynth/paperback/pull/147).
 * Asiakirjojen sisäiset linkit ovat nyt täysin tuettuja. Siirry niiden välillä eteen- ja taaksepäin K- ja Shift+K-näppäimillä ja avaa tai aktivoi linkki Enterillä. [#74](https://github.com/trypsynth/paperback/issues/74), [#87](https://github.com/trypsynth/paperback/pull/87), [#126](https://github.com/trypsynth/paperback/issues/126), [#129](https://github.com/trypsynth/paperback/issues/129), [#130](https://github.com/trypsynth/paperback/issues/130).
 * Tehty useita sisäisiä uudelleenjärjestelyjä, jotka nopeuttavat ohjelmaa ja pienentävät binääriä.
 * Markdown-sisältö esikäsitellään nyt CommonMark-yhteensopivaksi ennen renderöintiä.
@@ -382,7 +395,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Korjattu ongelma, jossa XHTML-otsikoissa olevat välilyönnit poistettiin oudosti.
 * Korjattu HTML-asiakirjojen sisäkkäisten pre-tagien sisällä olevien välilyöntien käsittely.
 * HTML- ja Markdown-asiakirjat tukevat nyt sisällysluetteloa. Kun HTML- tai Markdown-asiakirja ladataan, Paperback muodostaa sisällysluettelon asiakirjan otsikkorakenteesta ja näyttää sen Ctrl+T-näppäinkomennolla avattavassa valintaikkunassa.
-* HTML-asiakirjoissa käytetään nyt title-tagin mukaista otsikkoa, mikäli sellainen on määritetty. Muutoin käytetään edelleen tiedoston nimeä ilman päätettä.
+* HTML-asiakirjoissa käytetään nyt title-tagin mukaista otsikkoa, mikäli sellainen on määritetty. Muutoin käytetään edelleen tiedoston nimeä ilman tunnistetta.
 * Puhumiseen käytetään UniversalSpeech-kirjaston sijaan aktiivista aluetta. Tämä tarkoittaa, ettei ohjelman mukana enää toimiteta ruudunlukijoiden DLL-tiedostoja, ja nyt tuetaan useampia ruudunlukijoita, kuten Microsoft Narratoria.
 * ZIP-kirjastoja on vaihdettu, jotta voidaan avata laajempi valikoima ePub-kirjoja. [#73](https://github.com/trypsynth/paperback/issues/73).
 * Valintaikkuna, joka kysyy asiakirjan avaamista pelkkänä tekstinä, on uudistettu kokonaan ja se mahdollistaa nyt asiakirjan avaamisen pelkkänä tekstinä, HTML:nä tai Markdownina.

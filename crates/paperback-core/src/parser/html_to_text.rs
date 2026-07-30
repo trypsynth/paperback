@@ -5,8 +5,12 @@ use ego_tree::NodeRef;
 use scraper::{ElementRef, Html, Node, node};
 
 use crate::{
+	parser::{
+		ConverterOutput,
+		table_text::{push_finalized_line, table_render_bundle},
+	},
 	t,
-	types::{HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
+	types::{FormatInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
 	util::text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string},
 };
 
@@ -63,9 +67,9 @@ pub struct HtmlToText {
 	/// balanced with the start/close handlers so list lengths are set on the right entries.
 	open_lists: Vec<Option<usize>>,
 	link_start_pos: usize,
-	bolds: Vec<crate::types::FormatInfo>,
-	italics: Vec<crate::types::FormatInfo>,
-	underlines: Vec<crate::types::FormatInfo>,
+	bolds: Vec<FormatInfo>,
+	italics: Vec<FormatInfo>,
+	underlines: Vec<FormatInfo>,
 	open_bolds: Vec<usize>,
 	open_italics: Vec<usize>,
 	open_underlines: Vec<usize>,
@@ -176,17 +180,17 @@ impl HtmlToText {
 	}
 
 	#[must_use]
-	pub fn get_bolds(&self) -> &[crate::types::FormatInfo] {
+	pub fn get_bolds(&self) -> &[FormatInfo] {
 		&self.bolds
 	}
 
 	#[must_use]
-	pub fn get_italics(&self) -> &[crate::types::FormatInfo] {
+	pub fn get_italics(&self) -> &[FormatInfo] {
 		&self.italics
 	}
 
 	#[must_use]
-	pub fn get_underlines(&self) -> &[crate::types::FormatInfo] {
+	pub fn get_underlines(&self) -> &[FormatInfo] {
 		&self.underlines
 	}
 
@@ -271,7 +275,7 @@ impl HtmlToText {
 		// Emit the table's on-screen text via the shared helper instead of recursing children to
 		// emit one cell per line. The helper output may contain tabs and span multiple lines; push
 		// each line verbatim so tab separators and empty cells survive whitespace collapsing.
-		let render = crate::parser::table_text::table_render_bundle(&table_html, self.render_tables_inline);
+		let render = table_render_bundle(&table_html, self.render_tables_inline);
 		for line in render.lines {
 			self.push_finalized_line(line);
 		}
@@ -289,7 +293,7 @@ impl HtmlToText {
 	/// length so position tracking stays correct. Used for table rows whose tab separators and empty
 	/// cells must not be mangled by `add_line`.
 	fn push_finalized_line(&mut self, line: String) {
-		crate::parser::table_text::push_finalized_line(&mut self.lines, &mut self.cached_char_length, line);
+		push_finalized_line(&mut self.lines, &mut self.cached_char_length, line);
 	}
 
 	fn handle_element_opening(&mut self, tag_name: &str, node: NodeRef<'_, Node>, document: &Html) {
@@ -320,11 +324,12 @@ impl HtmlToText {
 
 					if !description.is_empty() {
 						let is_figure = tag_name == "figure";
+						// TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 						let label = if is_figure { t("Figure") } else { t("Image") };
 						let image_text = format!("[{label}: {description}]");
 						let offset = self.get_current_text_position();
 						self.current_line.push_str(&image_text);
-						let info = crate::types::ImageInfo { offset, alt_text: description };
+						let info = ImageInfo { offset, alt_text: description };
 						if is_figure {
 							self.figures.push(info);
 						} else {
@@ -517,24 +522,18 @@ impl HtmlToText {
 		}
 		if tag_name == "b" || tag_name == "strong" {
 			if let Some(start) = self.open_bolds.pop() {
-				self.bolds.push(crate::types::FormatInfo {
-					offset: start,
-					length: self.get_current_text_position().saturating_sub(start),
-				});
+				self.bolds
+					.push(FormatInfo { offset: start, length: self.get_current_text_position().saturating_sub(start) });
 			}
 		} else if tag_name == "i" || tag_name == "em" {
 			if let Some(start) = self.open_italics.pop() {
-				self.italics.push(crate::types::FormatInfo {
-					offset: start,
-					length: self.get_current_text_position().saturating_sub(start),
-				});
+				self.italics
+					.push(FormatInfo { offset: start, length: self.get_current_text_position().saturating_sub(start) });
 			}
 		} else if tag_name == "u" {
 			if let Some(start) = self.open_underlines.pop() {
-				self.underlines.push(crate::types::FormatInfo {
-					offset: start,
-					length: self.get_current_text_position().saturating_sub(start),
-				});
+				self.underlines
+					.push(FormatInfo { offset: start, length: self.get_current_text_position().saturating_sub(start) });
 			}
 		}
 	}
@@ -675,7 +674,7 @@ impl Default for HtmlToText {
 	}
 }
 
-impl crate::parser::ConverterOutput for HtmlToText {
+impl ConverterOutput for HtmlToText {
 	fn get_headings(&self) -> &[HeadingInfo] {
 		&self.headings
 	}
@@ -700,13 +699,13 @@ impl crate::parser::ConverterOutput for HtmlToText {
 	fn get_list_items(&self) -> &[ListItemInfo] {
 		&self.list_items
 	}
-	fn get_bolds(&self) -> &[crate::types::FormatInfo] {
+	fn get_bolds(&self) -> &[FormatInfo] {
 		&self.bolds
 	}
-	fn get_italics(&self) -> &[crate::types::FormatInfo] {
+	fn get_italics(&self) -> &[FormatInfo] {
 		&self.italics
 	}
-	fn get_underlines(&self) -> &[crate::types::FormatInfo] {
+	fn get_underlines(&self) -> &[FormatInfo] {
 		&self.underlines
 	}
 }
@@ -716,6 +715,10 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
+	use crate::{
+		document::{DocumentBuffer, MarkerType},
+		parser::add_converter_markers,
+	};
 
 	/// End-to-end: the HtmlToText converter emits each table's on-screen text at parse time, and a
 	/// heading that follows the table is offset by the emitted display extent. Verified in both
@@ -758,10 +761,9 @@ mod tests {
 		);
 
 		// Through the real marker path, the Table marker's length matches the emitted extent.
-		let mut buffer = crate::document::DocumentBuffer::with_content(converter.get_text());
-		crate::parser::add_converter_markers(&mut buffer, &converter, 0);
-		let table_marker =
-			buffer.markers.iter().find(|m| m.mtype == crate::document::MarkerType::Table).expect("Table marker");
+		let mut buffer = DocumentBuffer::with_content(converter.get_text());
+		add_converter_markers(&mut buffer, &converter, 0);
+		let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
 		assert_eq!(table_marker.length, expected_display_length);
 	}
 
@@ -784,6 +786,73 @@ mod tests {
 		assert_eq!(links[0].text, "Hello world");
 		assert_eq!(links[0].reference, "https://example.com");
 		assert_eq!(converter.get_text(), "Hello world");
+	}
+
+	#[rstest]
+	#[case("b", MarkerType::Bold)]
+	#[case("strong", MarkerType::Bold)]
+	#[case("i", MarkerType::Italic)]
+	#[case("em", MarkerType::Italic)]
+	#[case("u", MarkerType::Underline)]
+	fn test_format_span_collection(#[case] tag: &str, #[case] kind: MarkerType) {
+		let html = format!("<html><body><p>Some <{tag}>bold</{tag}> text</p></body></html>");
+		let mut converter = HtmlToText::new();
+		assert!(converter.convert(&html, HtmlSourceMode::NativeHtml));
+		let spans = match kind {
+			MarkerType::Bold => converter.get_bolds(),
+			MarkerType::Italic => converter.get_italics(),
+			MarkerType::Underline => converter.get_underlines(),
+			_ => unreachable!(),
+		};
+		assert_eq!(spans.len(), 1);
+		let text = converter.get_text();
+		assert_eq!(&text[spans[0].offset..spans[0].offset + spans[0].length], "bold");
+	}
+
+	#[test]
+	fn test_format_span_nested_bold_and_italic() {
+		let html = "<html><body><p><b>outer <i>inner</i></b></p></body></html>";
+		let mut converter = HtmlToText::new();
+		assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
+		let text = converter.get_text();
+
+		let italics = converter.get_italics();
+		assert_eq!(italics.len(), 1);
+		assert_eq!(&text[italics[0].offset..italics[0].offset + italics[0].length], "inner");
+
+		let bolds = converter.get_bolds();
+		assert_eq!(bolds.len(), 1);
+		assert_eq!(&text[bolds[0].offset..bolds[0].offset + bolds[0].length], "outer inner");
+	}
+
+	#[test]
+	fn test_format_span_fully_inside_link_is_dropped_known_limitation() {
+		// Known limitation: text inside an `<a>` is buffered in `current_link_text` and only
+		// pushed into `current_line` on `</a>` (see `handle_text_node`/`handle_element_closing`),
+		// so `get_current_text_position()` does not advance while inside a link. A `<b>`/`<i>`/`<u>`
+		// that opens and closes fully inside an `<a>` therefore sees `start == end` and is recorded
+		// as a zero-length span rather than spanning the link's text. This degrades gracefully (no
+		// panic, no bad offset; the link itself is still recorded correctly) rather than corrupting
+		// data, so it is left as-is (no changes to the `<a>` deferred-buffering behavior).
+		let html = "<html><body><a href=\"https://example.com\"><b>bold</b></a></body></html>";
+		let mut converter = HtmlToText::new();
+		assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
+		let bolds = converter.get_bolds();
+		assert_eq!(bolds.len(), 1);
+		assert_eq!(bolds[0].length, 0);
+		let links = converter.get_links();
+		assert_eq!(links.len(), 1);
+		assert_eq!(links[0].text, "bold");
+	}
+
+	#[test]
+	fn test_no_format_spans_without_formatting_tags() {
+		let html = "<html><body><p>Plain paragraph with no formatting.</p></body></html>";
+		let mut converter = HtmlToText::new();
+		assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
+		assert!(converter.get_bolds().is_empty());
+		assert!(converter.get_italics().is_empty());
+		assert!(converter.get_underlines().is_empty());
 	}
 
 	#[test]

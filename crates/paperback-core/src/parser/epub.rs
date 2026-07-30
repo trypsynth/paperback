@@ -6,6 +6,7 @@ use std::{
 };
 
 use anyhow::{Context, Result};
+use rayon::prelude::*;
 use roxmltree::{Document as XmlDocument, Node, NodeType, ParsingOptions};
 use zip::ZipArchive;
 
@@ -18,7 +19,8 @@ use crate::{
 		util::path::extract_title_from_path,
 		xml_to_text::XmlToText,
 	},
-	types::{HeadingInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
+	t,
+	types::{FormatInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
 	util::{
 		text::{collapse_whitespace, trim_string, url_decode},
 		zip::read_zip_entry_by_name,
@@ -29,15 +31,15 @@ struct SectionContent {
 	text: String,
 	headings: Vec<HeadingInfo>,
 	links: Vec<LinkInfo>,
-	images: Vec<crate::types::ImageInfo>,
-	figures: Vec<crate::types::ImageInfo>,
+	images: Vec<ImageInfo>,
+	figures: Vec<ImageInfo>,
 	tables: Vec<TableInfo>,
 	separators: Vec<SeparatorInfo>,
 	lists: Vec<ListInfo>,
 	list_items: Vec<ListItemInfo>,
-	bolds: Vec<crate::types::FormatInfo>,
-	italics: Vec<crate::types::FormatInfo>,
-	underlines: Vec<crate::types::FormatInfo>,
+	bolds: Vec<FormatInfo>,
+	italics: Vec<FormatInfo>,
+	underlines: Vec<FormatInfo>,
 	id_positions: HashMap<String, usize>,
 }
 
@@ -48,10 +50,10 @@ impl ConverterOutput for SectionContent {
 	fn get_links(&self) -> &[LinkInfo] {
 		&self.links
 	}
-	fn get_images(&self) -> &[crate::types::ImageInfo] {
+	fn get_images(&self) -> &[ImageInfo] {
 		&self.images
 	}
-	fn get_figures(&self) -> &[crate::types::ImageInfo] {
+	fn get_figures(&self) -> &[ImageInfo] {
 		&self.figures
 	}
 	fn get_tables(&self) -> &[TableInfo] {
@@ -66,13 +68,13 @@ impl ConverterOutput for SectionContent {
 	fn get_list_items(&self) -> &[ListItemInfo] {
 		&self.list_items
 	}
-	fn get_bolds(&self) -> &[crate::types::FormatInfo] {
+	fn get_bolds(&self) -> &[FormatInfo] {
 		&self.bolds
 	}
-	fn get_italics(&self) -> &[crate::types::FormatInfo] {
+	fn get_italics(&self) -> &[FormatInfo] {
 		&self.italics
 	}
-	fn get_underlines(&self) -> &[crate::types::FormatInfo] {
+	fn get_underlines(&self) -> &[FormatInfo] {
 		&self.underlines
 	}
 }
@@ -101,11 +103,11 @@ pub struct EpubParser;
 
 impl Parser for EpubParser {
 	fn name(&self) -> &'static str {
-		"EPUB Books"
+		paperback_formats::EPUB.name
 	}
 
 	fn extensions(&self) -> &[&str] {
-		&["epub"]
+		paperback_formats::EPUB.extensions
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
@@ -133,16 +135,20 @@ impl Parser for EpubParser {
 		let package_node = opf_doc
 			.descendants()
 			.find(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "package")
-			.ok_or_else(|| anyhow::anyhow!("OPF package element missing"))?;
+			// TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
+			.ok_or_else(|| anyhow::anyhow!(t("OPF package element missing")))?;
 		let (manifest, spine, nav_path, ncx_path, metadata) = parse_package(package_node, &opf_dir);
 		let mut conversion = convert_spine_items(&mut archive, &manifest, &spine, context.render_tables_inline);
 		if conversion.sections.is_empty() {
 			let reason = if conversion.conversion_errors.is_empty() {
-				String::from("no readable spine items")
+				// TRANSLATORS: Reason given when an EPUB has no spine items that could be read
+				t("no readable spine items")
 			} else {
-				format!("failed to convert spine items: {}", conversion.conversion_errors.join(", "))
+				// TRANSLATORS: Reason given when EPUB spine items failed to convert; {} is a comma-separated list of underlying errors
+				t("failed to convert spine items: {}").replace("{}", &conversion.conversion_errors.join(", "))
 			};
-			anyhow::bail!("EPUB has no readable content ({reason})");
+			// TRANSLATORS: Error shown when an EPUB has no readable content; {} is the specific reason (see the two messages above)
+			anyhow::bail!(t("EPUB has no readable content ({})").replace("{}", &reason));
 		}
 		let title = metadata
 			.title
@@ -184,19 +190,32 @@ fn convert_spine_items<R: Read + Seek>(
 	spine: &[String],
 	render_tables_inline: bool,
 ) -> SpineConversionResult {
+	let entries: Vec<Result<(&ManifestItem, String), String>> = spine
+		.iter()
+		.map(|idref| {
+			let item = manifest.get(idref).ok_or_else(|| format!("missing manifest item for {idref}"))?;
+			let data = read_zip_entry_by_name(archive, &item.path).map_err(|err| format!("{} ({err})", item.path))?;
+			Ok((item, data))
+		})
+		.collect();
+	let converted: Vec<Result<(&ManifestItem, SectionContent), String>> = entries
+		.into_par_iter()
+		.map(|entry| {
+			let (item, data) = entry?;
+			let section =
+				convert_section(&data, render_tables_inline).map_err(|err| format!("{} ({err})", item.path))?;
+			Ok((item, section))
+		})
+		.collect();
 	let mut buffer = DocumentBuffer::new();
 	let mut id_positions = HashMap::new();
 	let mut sections = Vec::new();
 	let mut conversion_errors = Vec::new();
-	for (idx, idref) in spine.iter().enumerate() {
-		let Some(item) = manifest.get(idref) else {
-			conversion_errors.push(format!("missing manifest item for {idref}"));
-			continue;
-		};
-		let section_data = match read_zip_entry_by_name(archive, &item.path) {
-			Ok(v) => v,
+	for (idx, slot) in converted.into_iter().enumerate() {
+		let (item, section) = match slot {
+			Ok(pair) => pair,
 			Err(err) => {
-				conversion_errors.push(format!("{} ({err})", item.path));
+				conversion_errors.push(err);
 				continue;
 			}
 		};
@@ -207,36 +226,29 @@ fn convert_spine_items<R: Read + Seek>(
 				.with_text(section_label)
 				.with_reference(item.path.clone()),
 		);
-		match convert_section(&section_data, render_tables_inline) {
-			Ok(section) => {
-				for (id, relative) in &section.id_positions {
-					let absolute = section_start + relative;
-					// Keep the first occurrence for bare ids to avoid later sections overwriting earlier ones.
-					id_positions.entry(id.clone()).or_insert(absolute);
-					id_positions.insert(format!("{}#{id}", item.path), absolute);
-				}
-				add_converter_markers_excluding_links(&mut buffer, &section, section_start);
-				for link in &section.links {
-					let resolved = resolve_href(&item.path, &link.reference);
-					buffer.add_marker(
-						Marker::new(MarkerType::Link, section_start + link.offset)
-							.with_text(link.text.clone())
-							.with_reference(resolved),
-					);
-				}
-				if !section.text.is_empty() {
-					buffer.append(&section.text);
-					if !buffer.content.ends_with('\n') {
-						buffer.append("\n");
-					}
-				}
-				let section_end = buffer.current_position();
-				sections.push(SectionMeta { path: item.path.clone(), start: section_start, end: section_end });
-			}
-			Err(err) => {
-				conversion_errors.push(format!("{} ({err})", item.path));
+		for (id, relative) in &section.id_positions {
+			let absolute = section_start + relative;
+			// Keep the first occurrence for bare ids to avoid later sections overwriting earlier ones.
+			id_positions.entry(id.clone()).or_insert(absolute);
+			id_positions.insert(format!("{}#{id}", item.path), absolute);
+		}
+		add_converter_markers_excluding_links(&mut buffer, &section, section_start);
+		for link in &section.links {
+			let resolved = resolve_href(&item.path, &link.reference);
+			buffer.add_marker(
+				Marker::new(MarkerType::Link, section_start + link.offset)
+					.with_text(link.text.clone())
+					.with_reference(resolved),
+			);
+		}
+		if !section.text.is_empty() {
+			buffer.append(&section.text);
+			if !buffer.content.ends_with('\n') {
+				buffer.append("\n");
 			}
 		}
+		let section_end = buffer.current_position();
+		sections.push(SectionMeta { path: item.path.clone(), start: section_start, end: section_end });
 	}
 	SpineConversionResult { buffer, id_positions, sections, conversion_errors }
 }
@@ -275,7 +287,8 @@ fn find_container_path<R: Read + Seek>(archive: &mut ZipArchive<R>) -> Result<St
 			return Ok(path.to_string());
 		}
 	}
-	anyhow::bail!("rootfile not found in container.xml")
+	// TRANSLATORS: Error shown when an EPUB's container.xml is missing its rootfile reference
+	anyhow::bail!(t("rootfile not found in container.xml"))
 }
 
 struct PackageMetadata {
@@ -386,7 +399,8 @@ fn convert_section(content: &str, render_tables_inline: bool) -> Result<SectionC
 			id_positions: html_converter.get_id_positions().clone(),
 		});
 	}
-	anyhow::bail!("unsupported content")
+	// TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
+	anyhow::bail!(t("unsupported content"))
 }
 
 fn resolve_href(current_path: &str, target: &str) -> String {

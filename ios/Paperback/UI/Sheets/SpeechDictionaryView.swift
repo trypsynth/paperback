@@ -25,12 +25,14 @@ struct SpeechDictionaryView: View {
 				}
 			}
 		}
+		// TRANSLATORS: Navigation title for the screen where users define text-replacement rules for TTS pronunciation
 		.navigationTitle(t("Speech Dictionary"))
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {
 			ToolbarItem(placement: .primaryAction) {
 				HStack(spacing: 16) {
 					if !viewModel.ttsRules.isEmpty {
+						// TRANSLATORS: Toolbar button toggling the rule list's edit mode; label reflects the action it will perform next (finish editing / start editing)
 						Button(editMode?.wrappedValue.isEditing == true ? t("Done") : t("Edit")) {
 							withAnimation {
 								editMode?.wrappedValue = editMode?.wrappedValue.isEditing == true ? .inactive : .active
@@ -40,6 +42,7 @@ struct SpeechDictionaryView: View {
 					Button { showAddRule = true } label: {
 						Image(systemName: "plus")
 					}
+					// TRANSLATORS: Accessibility label for the "+" button that adds a new speech dictionary rule
 					.accessibilityLabel(t("Add Rule"))
 				}
 			}
@@ -65,6 +68,7 @@ struct SpeechDictionaryView: View {
 				.font(.largeTitle)
 				.foregroundStyle(.secondary)
 				.accessibilityHidden(true)
+			// TRANSLATORS: Message shown when no speech dictionary rules have been created yet
 			Text(t("No Rules"))
 				.font(.title2.bold())
 			Spacer()
@@ -135,6 +139,7 @@ private struct RuleRow: View {
 
 	private var scopeBadge: some View {
 		let isWord = rule.scope == .word
+		// TRANSLATORS: Badge on a rule row indicating whether the rule applies per-word or per-paragraph
 		return Text(isWord ? t("Word") : t("Paragraph"))
 			.font(.caption2.weight(.semibold))
 			.padding(.horizontal, 5)

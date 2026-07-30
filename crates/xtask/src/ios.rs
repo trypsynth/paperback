@@ -10,13 +10,22 @@ use std::{
 use flate2::read::GzDecoder;
 use tar::Archive;
 
+use crate::project_root;
+
+// Pinned instead of `releases/latest`: whatever `latest` currently resolves to
+// crashes on real iOS devices (not the Simulator) with
+// `[FATAL:partition_address_space.cc(81)] Check failed: false.` inside
+// libpdfium.dylib the moment PDFium is initialized, even though the release
+// sets `pdf_use_partition_alloc = false` in its build args. chromium/7920 is
+// confirmed (by direct on-device test) not to hit this. Re-verify on a real
+// device before bumping this pin.
 const PDFIUM_IOS_ARM64_URL: &str =
-	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-ios-device-arm64.tgz";
+	"https://github.com/bblanchon/pdfium-binaries/releases/download/chromium%2F7920/pdfium-ios-device-arm64.tgz";
 
 pub fn ios() -> Result<(), Box<dyn Error>> {
 	let release = env::args().any(|a| a == "--release");
 	let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
-	let root = crate::project_root();
+	let root = project_root();
 	let generated_dir = root.join("ios/Paperback/Generated");
 	fs::create_dir_all(&generated_dir)?;
 
@@ -28,6 +37,10 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 		.current_dir(&root)
 		.args([
 			"run",
+			"-p",
+			"paperback-core",
+			"--features",
+			"uniffi",
 			"--bin",
 			"uniffi-bindgen",
 			"--",
@@ -45,7 +58,7 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 	}
 
 	let profile = if release { "release" } else { "debug" };
-	let mut build_args = vec!["build", "-p", "paperback-core"];
+	let mut build_args = vec!["build", "-p", "paperback-core", "--features", "uniffi"];
 	if release {
 		build_args.push("--release");
 	}
@@ -86,7 +99,22 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 		if let Err(e) = patois_build::gen_ios_strings(&po_dir, &ios_dir) {
 			println!("Warning: could not generate Localizable.strings: {e}");
 		}
+		// gen_ios_strings names .lproj folders after the po file stem (Android-style,
+		// e.g. pt_br, zh_CN). iOS expects canonical BCP-47 identifiers to match a
+		// device's language automatically, so rename the two that differ. Keep this
+		// in sync with the language list checked into project.pbxproj's knownRegions
+		// and the Localizable.strings variant group.
+		for (from, to) in [("pt_br", "pt-BR"), ("zh_CN", "zh-Hans")] {
+			let from_dir = ios_dir.join(format!("{from}.lproj"));
+			let to_dir = ios_dir.join(format!("{to}.lproj"));
+			if from_dir.is_dir() {
+				let _ = fs::remove_dir_all(&to_dir);
+				fs::rename(&from_dir, &to_dir)?;
+			}
+		}
 	}
+
+	generate_readmes(&root, &ios_dir.join("Readmes"))?;
 
 	println!("iOS build complete.");
 	println!("  XCFramework: ios/paperbackFFI.xcframework");
@@ -98,7 +126,7 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 
 pub fn ios_release() -> Result<(), Box<dyn Error>> {
 	let upload = env::args().any(|a| a == "--upload");
-	let root = crate::project_root();
+	let root = project_root();
 	let ios_dir = root.join("ios");
 	let archive_path = root.join("target/Paperback.xcarchive");
 	let export_path = root.join("target/PaperbackExport");
@@ -209,4 +237,48 @@ fn download_pdfium_dylib(url: &str, dest: &Path) -> Result<(), Box<dyn Error>> {
 		}
 	}
 	Err(format!("libpdfium.dylib not found in archive from {url}").into())
+}
+
+fn generate_readmes(root: &Path, readmes_dir: &Path) -> Result<(), Box<dyn Error>> {
+	let doc_dir = root.join("doc");
+	if !doc_dir.is_dir() {
+		return Ok(());
+	}
+	fs::create_dir_all(readmes_dir)?;
+	let pandoc_config = doc_dir.join("pandoc.yaml");
+
+	let default_readme = doc_dir.join("readme.md");
+	if default_readme.exists() {
+		let status = Command::new("pandoc")
+			.arg(format!("--defaults={}", pandoc_config.display()))
+			.arg(&default_readme)
+			.arg("-o")
+			.arg(readmes_dir.join("readme.html"))
+			.status();
+		match status {
+			Ok(s) if s.success() => {}
+			_ => println!("Warning: Failed to generate default English documentation"),
+		}
+	}
+
+	for entry in fs::read_dir(&doc_dir)?.flatten() {
+		let path = entry.path();
+		let Some(name) = path.file_name().and_then(|n| n.to_str()) else { continue };
+		if !name.starts_with("readme-") || !name.ends_with(".md") {
+			continue;
+		}
+		let out_name = name.replace(".md", ".html");
+		let status = Command::new("pandoc")
+			.arg(format!("--defaults={}", pandoc_config.display()))
+			.arg(&path)
+			.arg("-o")
+			.arg(readmes_dir.join(out_name))
+			.status();
+		match status {
+			Ok(s) if s.success() => {}
+			_ => println!("Warning: Failed to generate documentation for language: {name}"),
+		}
+	}
+
+	Ok(())
 }

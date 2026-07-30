@@ -84,6 +84,7 @@ pub const fn marker_type_to_heading_level(marker_type: MarkerType) -> i32 {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use crate::document::Marker;
 
 	#[test]
 	fn build_toc_from_headings_creates_tree() {
@@ -132,9 +133,9 @@ mod tests {
 	#[test]
 	fn build_toc_from_buffer_uses_only_heading_markers() {
 		let mut buffer = DocumentBuffer::new();
-		buffer.add_marker(crate::document::Marker::new(MarkerType::Link, 5).with_text("ignored".to_string()));
-		buffer.add_marker(crate::document::Marker::new(MarkerType::Heading1, 10).with_text("Root".to_string()));
-		buffer.add_marker(crate::document::Marker::new(MarkerType::Heading2, 20).with_text("Child".to_string()));
+		buffer.add_marker(Marker::new(MarkerType::Link, 5).with_text("ignored".to_string()));
+		buffer.add_marker(Marker::new(MarkerType::Heading1, 10).with_text("Root".to_string()));
+		buffer.add_marker(Marker::new(MarkerType::Heading2, 20).with_text("Child".to_string()));
 		let toc = build_toc_from_buffer(&buffer);
 		assert_eq!(toc.len(), 1);
 		assert_eq!(toc[0].name, "Root");

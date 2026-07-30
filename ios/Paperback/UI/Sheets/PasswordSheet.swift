@@ -11,22 +11,27 @@ struct PasswordSheet: View {
 		NavigationStack {
 			Form {
 				Section {
+					// TRANSLATORS: Placeholder text for the password entry field
 					SecureField(t("Password"), text: $password)
 						.focused($isFocused)
 						.onSubmit { submit() }
 				} footer: {
 					if let url = viewModel.passwordPromptUrl {
-						Text("Enter password for \(url.lastPathComponent)")
+						// TRANSLATORS: Footer text naming the file that needs a password; {} is the file name
+						Text(t("Enter password for {}").replacingOccurrences(of: "{}", with: url.lastPathComponent))
 					}
 				}
 			}
+			// TRANSLATORS: Navigation title of the sheet prompting for a document's password
 			.navigationTitle(t("Password Required"))
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .cancellationAction) {
+					// TRANSLATORS: Button that dismisses the password prompt without opening the document
 					Button(t("Cancel")) { dismiss() }
 				}
 				ToolbarItem(placement: .confirmationAction) {
+					// TRANSLATORS: Button that submits the entered password and opens the document
 					Button(t("Open")) { submit() }
 						.disabled(password.isEmpty)
 				}

@@ -67,29 +67,18 @@ pub fn trim_string(s: &str) -> String {
 	s.trim_matches(is_space_like).to_string()
 }
 
+/// Display units match the index space of the platform text control that the
+/// document text is loaded into: UTF-16 code units on Windows (Win32 edit
+/// control) and macOS (NSTextView's NSRange, which wxWidgets passes through
+/// unconverted); Unicode characters on GTK (GtkTextIter offsets).
 #[must_use]
 pub fn display_len(s: &str) -> usize {
-	#[cfg(windows)]
-	{
-		s.encode_utf16().count()
-	}
-	#[cfg(not(windows))]
-	{
-		s.chars().count()
-	}
+	if cfg!(any(windows, target_os = "macos")) { s.encode_utf16().count() } else { s.chars().count() }
 }
 
 #[must_use]
 pub const fn ch_width(ch: char) -> usize {
-	#[cfg(windows)]
-	{
-		ch.len_utf16()
-	}
-	#[cfg(not(windows))]
-	{
-		let _ = ch;
-		1
-	}
+	if cfg!(any(windows, target_os = "macos")) { ch.len_utf16() } else { 1 }
 }
 
 #[must_use]
@@ -171,17 +160,17 @@ mod tests {
 		assert_eq!(trim_string(input), expected);
 	}
 
-	#[cfg(windows)]
+	#[cfg(any(windows, target_os = "macos"))]
 	#[test]
-	fn test_display_len_windows() {
+	fn test_display_len_utf16_platforms() {
 		assert_eq!(display_len("abc"), 3);
 		assert_eq!(display_len("💖"), 2);
 		assert_eq!(display_len("line\nwrap"), 9);
 	}
 
-	#[cfg(not(windows))]
+	#[cfg(not(any(windows, target_os = "macos")))]
 	#[test]
-	fn test_display_len_non_windows() {
+	fn test_display_len_char_platforms() {
 		assert_eq!(display_len("abc"), 3);
 		assert_eq!(display_len("💖"), 1);
 		assert_eq!(display_len("line\nwrap"), 9);

@@ -11,6 +11,7 @@ struct VoicePickerView: View {
 	var body: some View {
 		List {
 			Section {
+				// TRANSLATORS: Voice picker row that uses the system's default text-to-speech voice instead of a specific one
 				voiceRow(label: t("Default"), identifier: nil)
 			}
 			ForEach(sections) { section in
@@ -21,6 +22,7 @@ struct VoicePickerView: View {
 				}
 			}
 		}
+		// TRANSLATORS: Navigation title of the text-to-speech voice picker sheet
 		.navigationTitle(t("Voice"))
 		.navigationBarTitleDisplayMode(.inline)
 	}

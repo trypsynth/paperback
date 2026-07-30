@@ -16,6 +16,7 @@ struct TabStripView: View {
 				.padding(.vertical, 6)
 			}
 			.accessibilityElement(children: .contain)
+			// TRANSLATORS: Accessibility label for the horizontal strip of open document tabs
 			.accessibilityLabel(t("Tabs"))
 			.onChange(of: viewModel.activeTabId) { id in
 				guard let id else { return }

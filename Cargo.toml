@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/paperback", "crates/paperback-core", "crates/pb", "crates/xtask"]
+members = ["crates/paperback", "crates/paperback-core", "crates/paperback-formats", "crates/pb", "crates/xtask"]
 resolver = "2"
 
 [workspace.package]
@@ -11,10 +11,10 @@ repository = "https://github.com/trypsynth/paperback"
 
 # Deps shared by two or more crates in this workspace.
 [workspace.dependencies]
-anyhow = "1.0.103"
-base64 = "0.22.1"
+anyhow = "1.0.104"
+base64 = "0.23.0"
 rstest = "0.26.1"
-toml = "1.1.2"
+toml = "1.1.4"
 
 [profile.release]
 strip = true

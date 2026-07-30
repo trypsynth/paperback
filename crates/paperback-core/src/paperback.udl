@@ -158,6 +158,7 @@ interface ConfigManagerFfi {
 	void set_document_opened(string path, boolean opened);
 	sequence<string> get_opened_documents();
 	void remove_document_history(string path);
+	void rename_document_path(string old_path, string new_path);
 	sequence<string> get_supported_extensions();
 	sequence<string> get_find_history();
 	void add_find_history(string text, i32 max_len);

@@ -167,7 +167,7 @@ final class AppViewModel: ObservableObject {
 
 	@Published var debugMessage: String? = nil
 
-	func openDocument(url: URL, password: String? = nil) {
+	func openDocument(url: URL, password: String? = nil, track: Bool = true) {
 		if let existing = tabs.first(where: { $0.url == url }) {
 			activeTabId = existing.id
 			return
@@ -179,7 +179,8 @@ final class AppViewModel: ObservableObject {
 			let session = try DocumentSession.newFfi(
 				filePath: path,
 				password: pass,
-				forcedExtension: ""
+				forcedExtension: "",
+				renderTablesInline: false
 			)
 			let title = session.title().isEmpty
 				? url.deletingPathExtension().lastPathComponent
@@ -190,16 +191,70 @@ final class AppViewModel: ObservableObject {
 			tab.securityScopeURL = scopeStarted ? url : nil
 			tabs.append(tab)
 			activeTabId = tab.id
-			configManager.addRecentDocument(path: path)
-			configManager.addOpenedDocument(path: path)
-			loadRecentsFromConfig()
+			if track {
+				configManager.addRecentDocument(path: path)
+				configManager.addOpenedDocument(path: path)
+				loadRecentsFromConfig()
+				saveBookmark(for: url, path: path)
+			}
 			loadSegment(for: tab)
-			saveBookmark(for: url, path: path)
 			updateNowPlaying()
 		} catch {
 			if scopeStarted { url.stopAccessingSecurityScopedResource() }
 			debugMessage = "Error opening '\(url.lastPathComponent)':\n\(error)\n\nPath: \(path)"
 		}
+	}
+
+	// TRANSLATORS: Locale codes with a translated in-app help document; keep in sync with doc/readme-<lang>.md
+	private static let helpLocalizedLanguages: Set<String> = ["bs", "cs", "fi", "nl", "pl", "sr"]
+
+	func openHelpDocument() {
+		let preferred = Bundle.main.preferredLocalizations.first ?? "en"
+		let lang = preferred.split(separator: "-").first.map(String.init) ?? preferred
+		let resourceName = Self.helpLocalizedLanguages.contains(lang) ? "readme-\(lang)" : "readme"
+		guard let url = Bundle.main.url(forResource: resourceName, withExtension: "html", subdirectory: "Readmes") else {
+			// TRANSLATORS: Shown when the bundled Help document fails to load
+			debugMessage = t("Failed to load document.")
+			return
+		}
+		openDocument(url: url, track: false)
+	}
+
+	// MARK: - Document data import/export
+
+	// Writes the active document's bookmarks/position to a temporary .paperback
+	// file and returns its URL, ready to hand to a file mover/exporter. Returns
+	// nil if there's no active document or the write failed.
+	func exportActiveDocumentSettings() -> URL? {
+		guard let tab = activeTab else { return nil }
+		let path = tab.url.path(percentEncoded: false)
+		let name = tab.url.deletingPathExtension().lastPathComponent
+		let tempURL = FileManager.default.temporaryDirectory
+			.appendingPathComponent(name)
+			.appendingPathExtension("paperback")
+		try? FileManager.default.removeItem(at: tempURL)
+		configManager.exportDocumentSettings(docPath: path, exportPath: tempURL.path(percentEncoded: false))
+		return FileManager.default.fileExists(atPath: tempURL.path) ? tempURL : nil
+	}
+
+	// Applies a .paperback file's bookmarks/position to the active document.
+	@discardableResult
+	func importActiveDocumentSettings(from url: URL) -> Bool {
+		guard let tab = activeTab else { return false }
+		let scopeStarted = url.startAccessingSecurityScopedResource()
+		defer { if scopeStarted { url.stopAccessingSecurityScopedResource() } }
+		guard FileManager.default.fileExists(atPath: url.path(percentEncoded: false)) else { return false }
+		let path = tab.url.path(percentEncoded: false)
+		configManager.importSettingsFromFile(docPath: path, importPath: url.path(percentEncoded: false))
+		let savedPos = configManager.getDocumentPosition(path: path)
+		if let idx = tabs.firstIndex(where: { $0.id == tab.id }) {
+			tabs[idx].currentPosition = savedPos
+		}
+		if activeTabId == tab.id {
+			ttsPosition = savedPos
+			refreshCurrentSegment()
+		}
+		return true
 	}
 
 	func closeTab(_ tab: DocumentTab) {
@@ -227,16 +282,31 @@ final class AppViewModel: ObservableObject {
 
 	private func loadRecentsFromConfig() {
 		let paths = configManager.getRecentDocuments()
-		recentDocuments = paths.compactMap { path -> RecentDocument? in
+		let openPaths = Set(tabs.map { $0.url.path(percentEncoded: false) })
+		recentDocuments = paths.map { path in
 			let url = URL(fileURLWithPath: path)
-			guard url.path != path || FileManager.default.fileExists(atPath: path) else { return nil }
 			let title = url.deletingPathExtension().lastPathComponent
-			return RecentDocument(title: title, url: url)
+			return RecentDocument(
+				title: title,
+				url: url,
+				isMissing: !FileManager.default.fileExists(atPath: path),
+				isOpen: openPaths.contains(path)
+			)
 		}
 	}
 
 	func addRecentDocument(url: URL, title: String) {
 		configManager.addRecentDocument(path: url.path(percentEncoded: false))
+		loadRecentsFromConfig()
+	}
+
+	// Points a recent-document entry at a new file location, e.g. after the
+	// original was moved or renamed outside the app.
+	func locateRecentDocument(_ oldURL: URL, at newURL: URL) {
+		configManager.renameDocumentPath(
+			oldPath: oldURL.path(percentEncoded: false),
+			newPath: newURL.path(percentEncoded: false)
+		)
 		loadRecentsFromConfig()
 	}
 

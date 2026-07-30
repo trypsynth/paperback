@@ -26,15 +26,17 @@ pub fn show_all_documents_dialog(
 	open_paths: Vec<String>,
 ) -> AllDocumentsResult {
 	let open_paths = Rc::new(open_paths);
+	// TRANSLATORS: Title of the All Documents dialog
 	let dialog_title = t("All Documents");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
 	let selected_path = Rc::new(Mutex::new(None));
 	let paths_to_close: Rc<Mutex<Vec<String>>> = Rc::new(Mutex::new(Vec::new()));
+	// TRANSLATORS: Label for the search input field in the All Documents dialog
 	let search_label = StaticText::builder(&dialog).with_label(&t("&search")).build();
 	let search_ctrl = TextCtrl::builder(&dialog).with_size(Size::new(300, -1)).build();
 	let doc_list = build_all_documents_list(dialog);
 	let (open_button, locate_button, remove_button, clear_all_button, ok_button) = build_all_documents_buttons(dialog);
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+	dialog.set_escape_id(ID_CANCEL);
 	populate_document_list(&DocumentListParams {
 		list: doc_list,
 		open_button,
@@ -124,10 +126,12 @@ fn show_yes_no_dialog(parent: &dyn WxWidget, message: &str, title: &str) -> bool
 	let dialog = Dialog::builder(parent, title).build();
 	let panel = Panel::builder(&dialog).build();
 	let message_label = StaticText::builder(&panel).with_label(message).build();
-	let yes_button = Button::builder(&panel).with_id(wxdragon::id::ID_OK).with_label(&t("&Yes")).build();
-	let no_button = Button::builder(&panel).with_id(wxdragon::id::ID_CANCEL).with_label(&t("&No")).build();
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
-	dialog.set_affirmative_id(wxdragon::id::ID_OK);
+	// TRANSLATORS: Label for the confirmation dialog "Yes" button
+	let yes_button = Button::builder(&panel).with_id(ID_OK).with_label(&t("&Yes")).build();
+	// TRANSLATORS: Label for the confirmation dialog "No" button
+	let no_button = Button::builder(&panel).with_id(ID_CANCEL).with_label(&t("&No")).build();
+	dialog.set_escape_id(ID_CANCEL);
+	dialog.set_affirmative_id(ID_OK);
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add(&message_label, 0, SizerFlag::All, DIALOG_PADDING);
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
@@ -140,7 +144,7 @@ fn show_yes_no_dialog(parent: &dyn WxWidget, message: &str, title: &str) -> bool
 	dialog_sizer.add(&panel, 1, SizerFlag::Expand, 0);
 	dialog.set_sizer_and_fit(dialog_sizer, true);
 	dialog.centre();
-	dialog.show_modal() == wxdragon::id::ID_OK
+	dialog.show_modal() == ID_OK
 }
 
 fn build_all_documents_list(dialog: Dialog) -> ListCtrl {
@@ -148,18 +152,26 @@ fn build_all_documents_list(dialog: Dialog) -> ListCtrl {
 		.with_style(ListCtrlStyle::Report)
 		.with_size(Size::new(RECENT_DOCS_LIST_WIDTH, RECENT_DOCS_LIST_HEIGHT))
 		.build();
+	// TRANSLATORS: Column header for the document filename in the All Documents list
 	doc_list.insert_column(0, &t("File Name"), ListColumnFormat::Left, RECENT_DOCS_FILENAME_WIDTH);
+	// TRANSLATORS: Column header for the document status (e.g. Open, Closed, Missing) in the All Documents list
 	doc_list.insert_column(1, &t("Status"), ListColumnFormat::Left, RECENT_DOCS_STATUS_WIDTH);
+	// TRANSLATORS: Column header for the file path in the All Documents list
 	doc_list.insert_column(2, &t("Path"), ListColumnFormat::Left, RECENT_DOCS_PATH_WIDTH);
 	doc_list
 }
 
 fn build_all_documents_buttons(dialog: Dialog) -> (Button, Button, Button, Button, Button) {
+	// TRANSLATORS: Button label to open the selected document
 	let open_button = Button::builder(&dialog).with_label(&t("&Open")).build();
+	// TRANSLATORS: Button label to locate a missing file on disk
 	let locate_button = Button::builder(&dialog).with_label(&t("&Locate…")).build();
+	// TRANSLATORS: Button label to remove selected documents from the list
 	let remove_button = Button::builder(&dialog).with_label(&t("&Remove")).build();
+	// TRANSLATORS: Button label to clear all documents from the list
 	let clear_all_button = Button::builder(&dialog).with_label(&t("&Clear All")).build();
-	let ok_button = Button::builder(&dialog).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Close")).build();
+	// TRANSLATORS: Label for a button that closes a dialog
+	let ok_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Close")).build();
 	locate_button.enable(false);
 	(open_button, locate_button, remove_button, clear_all_button, ok_button)
 }
@@ -196,7 +208,7 @@ fn make_all_documents_open_action(
 			&& Path::new(&path).exists()
 		{
 			*selected_path.lock().unwrap() = Some(path);
-			dialog.end_modal(wxdragon::id::ID_OK);
+			dialog.end_modal(ID_OK);
 		}
 	})
 }
@@ -232,15 +244,18 @@ fn make_all_documents_remove_action(
 			return;
 		}
 		let confirm_message = if indices.len() == 1 {
+			// TRANSLATORS: Confirmation prompt when removing a single document.
 			t(
-				"Are you sure you want to remove this document from the list? This will also remove its reading position.",
+				"Are you sure you want to remove the selected document? This will also remove its reading position and bookmarks.",
 			)
 		} else {
+			// TRANSLATORS: Confirmation prompt when removing multiple documents. The {} placeholder is replaced with the number of documents.
 			let template = t(
-				"Are you sure you want to remove these {} documents from the list? This will also remove their reading positions.",
+				"Are you sure you want to remove the {} selected documents? This will also remove their reading positions and bookmarks.",
 			);
 			template.replace("{}", &indices.len().to_string())
 		};
+		// TRANSLATORS: Title of the confirmation dialog
 		if !show_yes_no_dialog(&dialog, &confirm_message, &t("Confirm")) {
 			return;
 		}
@@ -294,7 +309,9 @@ fn bind_all_documents_clear(
 		}
 		if !show_yes_no_dialog(
 			&dialog,
+			// TRANSLATORS: Confirmation prompt when clearing all documents from the list.
 			&t("Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks."),
+			// TRANSLATORS: Title of the confirmation dialog
 			&t("Confirm"),
 		) {
 			return;
@@ -418,7 +435,7 @@ fn bind_all_documents_layout(dialog: Dialog, layout: AllDocumentsLayout) {
 	} = layout;
 	let dialog_for_ok = dialog;
 	ok_button.on_click(move |_| {
-		dialog_for_ok.end_modal(wxdragon::id::ID_OK);
+		dialog_for_ok.end_modal(ID_OK);
 	});
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let search_sizer = BoxSizer::builder(Orientation::Horizontal).build();
@@ -483,8 +500,11 @@ fn populate_document_list(params: &DocumentListParams<'_>) {
 			list.set_custom_data(index_u64, item.path.clone());
 		}
 		let status = match item.status {
+			// TRANSLATORS: Status of a document that is currently open in a tab
 			DocumentListStatus::Open => t("Open"),
+			// TRANSLATORS: Status of a document that was previously opened but is currently closed
 			DocumentListStatus::Closed => t("Closed"),
+			// TRANSLATORS: Status of a document whose file could not be found on disk
 			DocumentListStatus::Missing => t("Missing"),
 		};
 		list.set_item_text_by_column(index, 1, &status);
@@ -548,12 +568,13 @@ fn bind_all_documents_locate(
 		let filename = Path::new(&old_path).file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
 		let wildcard = build_file_filter_string();
 		let file_dialog = FileDialog::builder(&dialog)
+			// TRANSLATORS: Message/prompt shown in the file picker dialog to locate a missing book
 			.with_message(&t("Locate Book"))
 			.with_default_file(&filename)
 			.with_wildcard(&wildcard)
 			.with_style(FileDialogStyle::Open | FileDialogStyle::FileMustExist)
 			.build();
-		if file_dialog.show_modal() != wxdragon::id::ID_OK {
+		if file_dialog.show_modal() != ID_OK {
 			return;
 		}
 		let new_path = match file_dialog.get_path() {

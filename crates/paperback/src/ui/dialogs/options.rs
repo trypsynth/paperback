@@ -6,11 +6,16 @@ use std::{
 };
 
 use paperback_core::config::{ConfigManager, HotkeyConfig, ReadabilityFont};
-use patois::t;
+use patois::{t, ui::populate_language_choice};
+#[cfg(target_os = "windows")]
+use wxdragon::accessible::AccRole;
 use wxdragon::prelude::*;
 
 use super::DIALOG_PADDING;
-use crate::{config_ext::UpdateChannel, translation_manager::TranslationManager};
+use crate::{
+	config_ext::{UpdateChannel, get_update_channel},
+	translation_manager::TranslationManager,
+};
 
 #[derive(Clone, Debug)]
 pub struct OptionsDialogResult {
@@ -68,7 +73,7 @@ struct OptionsDialogUi {
 pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<OptionsDialogResult> {
 	let ui = build_options_dialog_ui(parent, config);
 	finalize_options_dialog_layout(&ui);
-	if ui.dialog.show_modal() != wxdragon::id::ID_OK {
+	if ui.dialog.show_modal() != ID_OK {
 		return None;
 	}
 	let language = resolve_options_language(&ui);
@@ -107,6 +112,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 }
 
 fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDialogUi {
+	// TRANSLATORS: Title of the Options dialog
 	let dialog = Dialog::builder(parent, &t("Options")).build();
 	let notebook = Notebook::builder(&dialog).with_style(NotebookStyle::Top).build();
 	let general_panel = Panel::builder(&notebook).build();
@@ -116,18 +122,28 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let reading_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let readability_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let restore_docs_check =
+		// TRANSLATORS: Option to restore documents that were open when the app was last closed
 		CheckBox::builder(&general_panel).with_label(&t("&Restore previously opened documents on startup")).build();
+	// TRANSLATORS: Option to toggle word wrapping of text
 	let word_wrap_check = CheckBox::builder(&readability_panel).with_label(&t("&Word wrap")).build();
 	let render_tables_inline_check =
+		// TRANSLATORS: Option to render tables inline rather than showing a placeholder link
 		CheckBox::builder(&readability_panel).with_label(&t("Render tables &inline")).build();
+	// TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
 	let minimize_to_tray_check = CheckBox::builder(&general_panel).with_label(&t("&Minimize to system tray")).build();
+	// TRANSLATORS: Option to start the app maximized
 	let start_maximized_check = CheckBox::builder(&general_panel).with_label(&t("&Start maximized")).build();
+	// TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 	let compact_go_menu_check = CheckBox::builder(&reading_panel).with_label(&t("Show compact &go menu")).build();
+	// TRANSLATORS: Option to wrap navigation around to the beginning/end when navigating elements
 	let navigation_wrap_check = CheckBox::builder(&reading_panel).with_label(&t("&Wrap navigation")).build();
 	let bookmark_sounds_check =
+		// TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 		CheckBox::builder(&reading_panel).with_label(&t("Play &sounds on bookmarks and notes")).build();
 	let check_for_updates_check =
+		// TRANSLATORS: Option to check for app updates automatically on startup
 		CheckBox::builder(&general_panel).with_label(&t("Check for &updates on startup")).build();
+	// TRANSLATORS: Button label to open the hotkey customization dialog
 	let hotkey_button = Button::builder(&general_panel).with_label(&t("Customize &Window Hotkey...")).build();
 	let option_padding = 5;
 	general_sizer.add(&restore_docs_check, 0, SizerFlag::All, option_padding);
@@ -140,6 +156,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		reading_sizer.add(check, 0, SizerFlag::All, option_padding);
 	}
 	let reading_speed_label =
+		// TRANSLATORS: Label for the reading speed input field (Words Per Minute)
 		StaticText::builder(&reading_panel).with_label(&t("&Reading speed (words per minute):")).build();
 	let reading_speed_ctrl = SpinCtrl::builder(&reading_panel).with_range(1, 2000).build();
 	let reading_speed_sizer = BoxSizer::builder(Orientation::Horizontal).build();
@@ -148,21 +165,19 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	reading_sizer.add_sizer(&reading_speed_sizer, 0, SizerFlag::All, option_padding);
 	let max_recent_docs = 100;
 	let recent_docs_label =
+		// TRANSLATORS: Label for the number of recently opened documents to keep in history
 		StaticText::builder(&general_panel).with_label(&t("Number of &recent documents to show:")).build();
 	let recent_docs_ctrl = SpinCtrl::builder(&general_panel).with_range(0, max_recent_docs).build();
 	let recent_docs_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	recent_docs_sizer.add(&recent_docs_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	recent_docs_sizer.add(&recent_docs_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
 	general_sizer.add_sizer(&recent_docs_sizer, 0, SizerFlag::All, option_padding);
+	// TRANSLATORS: Label for the language selection dropdown
 	let language_label_text = t("&Language:");
 	let language_label = StaticText::builder(&general_panel).with_label(&language_label_text).build();
 	let language_combo = Choice::builder(&general_panel).build();
 	let languages = TranslationManager::instance().lock().unwrap().available_languages();
-	let mut language_codes = Vec::new();
-	for lang in &languages {
-		language_combo.append(&lang.name);
-		language_codes.push(lang.code.clone());
-	}
+	let language_codes = populate_language_choice(&language_combo, &languages);
 	#[cfg(target_os = "macos")]
 	language_combo.set_accessibility_label(language_label_text.replace('&', "").trim_end_matches(':').trim());
 
@@ -170,10 +185,13 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	language_sizer.add(&language_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	language_sizer.add(&language_combo, 0, SizerFlag::AlignCenterVertical, 0);
 	general_sizer.add_sizer(&language_sizer, 0, SizerFlag::All, option_padding);
+	// TRANSLATORS: Label for the update channel selection dropdown
 	let channel_label_text = t("Update Channel:");
 	let channel_label = StaticText::builder(&general_panel).with_label(&channel_label_text).build();
 	let update_channel_combo = Choice::builder(&general_panel).build();
+	// TRANSLATORS: Stable update channel option
 	update_channel_combo.append(&t("Stable"));
+	// TRANSLATORS: Developer/development update channel option
 	update_channel_combo.append(&t("Dev"));
 	#[cfg(target_os = "macos")]
 	update_channel_combo.set_accessibility_label(channel_label_text.trim_end_matches(':').trim());
@@ -182,29 +200,39 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	channel_sizer.add(&channel_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	channel_sizer.add(&update_channel_combo, 0, SizerFlag::AlignCenterVertical, 0);
 	general_sizer.add_sizer(&channel_sizer, 0, SizerFlag::All, option_padding);
+	// TRANSLATORS: Label/header for the Font options section
 	let font_group_box = StaticBox::builder(&readability_panel).with_label(&t("Font")).build();
 	let font_group_sizer = StaticBoxSizerBuilder::new_with_box(&font_group_box, Orientation::Vertical).build();
 	let font_preview_label = StaticText::builder(&readability_panel).with_label("").build();
+	// TRANSLATORS: Button label to pick a font
 	let choose_font_button = Button::builder(&readability_panel).with_label(&t("Choose &Font...")).build();
+	// TRANSLATORS: Button label to restore font settings to default values
 	let reset_font_button = Button::builder(&readability_panel).with_label(&t("&Reset to Default Font")).build();
 	font_group_sizer.add(&font_preview_label, 0, SizerFlag::All, option_padding);
 	font_group_sizer.add(&choose_font_button, 0, SizerFlag::All, option_padding);
 	font_group_sizer.add(&reset_font_button, 0, SizerFlag::All, option_padding);
 	readability_sizer.add_sizer(&font_group_sizer, 0, SizerFlag::Expand | SizerFlag::All, option_padding);
+	// TRANSLATORS: Label/header for the Background Color options section
 	let bg_group_box = StaticBox::builder(&readability_panel).with_label(&t("Background Color")).build();
 	let bg_group_sizer = StaticBoxSizerBuilder::new_with_box(&bg_group_box, Orientation::Vertical).build();
 	let bg_color_label = StaticText::builder(&readability_panel).with_label("").build();
+	// TRANSLATORS: Button label to pick a background color
 	let choose_bg_button = Button::builder(&readability_panel).with_label(&t("Choose &Background Color...")).build();
+	// TRANSLATORS: Button label to restore background color to default values
 	let reset_bg_button = Button::builder(&readability_panel).with_label(&t("Reset to &Default Background")).build();
 	bg_group_sizer.add(&bg_color_label, 0, SizerFlag::All, option_padding);
 	bg_group_sizer.add(&choose_bg_button, 0, SizerFlag::All, option_padding);
 	bg_group_sizer.add(&reset_bg_button, 0, SizerFlag::All, option_padding);
 	readability_sizer.add_sizer(&bg_group_sizer, 0, SizerFlag::Expand | SizerFlag::All, option_padding);
+	// TRANSLATORS: Label for the line spacing dropdown
 	let line_spacing_label_text = t("&Line spacing:");
 	let line_spacing_label = StaticText::builder(&readability_panel).with_label(&line_spacing_label_text).build();
 	let line_spacing_ctrl = Choice::builder(&readability_panel).build();
+	// TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
 	line_spacing_ctrl.append(&t("Normal"));
+	// TRANSLATORS: 1.5x line spacing option
 	line_spacing_ctrl.append(&t("1.5\u{00d7}"));
+	// TRANSLATORS: Double line spacing option
 	line_spacing_ctrl.append(&t("Double"));
 	#[cfg(target_os = "macos")]
 	line_spacing_ctrl.set_accessibility_label(line_spacing_label_text.replace('&', "").trim_end_matches(':').trim());
@@ -212,12 +240,16 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let line_spacing_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	line_spacing_sizer.add(&line_spacing_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	line_spacing_sizer.add(&line_spacing_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
+	// TRANSLATORS: Label for the paragraph spacing dropdown
 	let paragraph_spacing_label_text = t("&Paragraph spacing:");
 	let paragraph_spacing_label =
 		StaticText::builder(&readability_panel).with_label(&paragraph_spacing_label_text).build();
 	let paragraph_spacing_ctrl = Choice::builder(&readability_panel).build();
+	// TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
 	paragraph_spacing_ctrl.append(&t("Normal"));
+	// TRANSLATORS: Relaxed paragraph spacing option
 	paragraph_spacing_ctrl.append(&t("Relaxed"));
+	// TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
 	paragraph_spacing_ctrl.append(&t("Wide"));
 	#[cfg(target_os = "macos")]
 	paragraph_spacing_ctrl
@@ -231,11 +263,15 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		DIALOG_PADDING,
 	);
 	paragraph_spacing_sizer.add(&paragraph_spacing_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
+	// TRANSLATORS: Label for the letter spacing dropdown
 	let letter_spacing_label_text = t("L&etter spacing:");
 	let letter_spacing_label = StaticText::builder(&readability_panel).with_label(&letter_spacing_label_text).build();
 	let letter_spacing_ctrl = Choice::builder(&readability_panel).build();
+	// TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
 	letter_spacing_ctrl.append(&t("Normal"));
+	// TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
 	letter_spacing_ctrl.append(&t("Wide"));
+	// TRANSLATORS: Very Wide letter spacing option
 	letter_spacing_ctrl.append(&t("Very Wide"));
 	#[cfg(target_os = "macos")]
 	letter_spacing_ctrl
@@ -249,12 +285,17 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		DIALOG_PADDING,
 	);
 	letter_spacing_sizer.add(&letter_spacing_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
+	// TRANSLATORS: Label for the text alignment dropdown
 	let text_alignment_label_text = t("Text &alignment:");
 	let text_alignment_label = StaticText::builder(&readability_panel).with_label(&text_alignment_label_text).build();
 	let text_alignment_ctrl = Choice::builder(&readability_panel).build();
+	// TRANSLATORS: Left text alignment option
 	text_alignment_ctrl.append(&t("Left"));
+	// TRANSLATORS: Center text alignment option
 	text_alignment_ctrl.append(&t("Center"));
+	// TRANSLATORS: Right text alignment option
 	text_alignment_ctrl.append(&t("Right"));
+	// TRANSLATORS: Justified text alignment option
 	text_alignment_ctrl.append(&t("Justify"));
 	#[cfg(target_os = "macos")]
 	text_alignment_ctrl
@@ -277,9 +318,24 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	readability_panel.set_sizer(readability_sizer, true);
 	general_panel.set_sizer(general_sizer, true);
 	reading_panel.set_sizer(reading_sizer, true);
-	notebook.add_page(&general_panel, &t("General"), true, None);
-	notebook.add_page(&reading_panel, &t("Reading"), false, None);
-	notebook.add_page(&readability_panel, &t("Readability"), false, None);
+	// TRANSLATORS: Tab label for the General options panel
+	let general_label = t("General");
+	// TRANSLATORS: Tab label for the Reading options panel
+	let reading_label = t("Reading");
+	// TRANSLATORS: Tab label for the Readability options panel
+	let readability_label = t("Readability");
+	general_panel.set_accessibility_label(&general_label);
+	reading_panel.set_accessibility_label(&reading_label);
+	readability_panel.set_accessibility_label(&readability_label);
+	#[cfg(target_os = "windows")]
+	{
+		general_panel.set_accessibility_role(AccRole::PropertyPage);
+		reading_panel.set_accessibility_role(AccRole::PropertyPage);
+		readability_panel.set_accessibility_role(AccRole::PropertyPage);
+	}
+	notebook.add_page(&general_panel, &general_label, true, None);
+	notebook.add_page(&reading_panel, &reading_label, false, None);
+	notebook.add_page(&readability_panel, &readability_label, false, None);
 	restore_docs_check.set_value(config.get_app_bool("restore_previous_documents", true));
 	word_wrap_check.set_value(config.get_app_bool("word_wrap", false));
 	render_tables_inline_check.set_value(config.get_app_bool("render_tables_inline", true));
@@ -300,7 +356,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	if let Some(index) = language_codes.iter().position(|code| code == &current_language) {
 		language_combo.set_selection(u32::try_from(index).unwrap_or(0));
 	}
-	let current_channel = crate::config_ext::get_update_channel(config);
+	let current_channel = get_update_channel(config);
 	let channel_index = match current_channel {
 		UpdateChannel::Stable => 0,
 		UpdateChannel::Dev => 1,
@@ -361,7 +417,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 			dlg = dlg.with_initial_colour(c);
 		}
 		let dlg = dlg.build();
-		if dlg.show_modal() == wxdragon::id::ID_OK
+		if dlg.show_modal() == ID_OK
 			&& let Some(c) = dlg.get_colour()
 		{
 			let packed = (i32::from(c.r) << 16) | (i32::from(c.g) << 8) | i32::from(c.b);
@@ -375,8 +431,10 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		bg_state_reset.set(-1);
 		bg_label_reset.set_label(&color_description(-1));
 	});
-	let ok_button = Button::builder(&dialog_ref).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
-	let cancel_button = Button::builder(&dialog_ref).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
+	// TRANSLATORS: Label for the confirmation button
+	let ok_button = Button::builder(&dialog_ref).with_id(ID_OK).with_label(&t("OK")).build();
+	// TRANSLATORS: Label for the cancellation button
+	let cancel_button = Button::builder(&dialog_ref).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
 	ok_button.set_default();
 	OptionsDialogUi {
 		dialog: dialog_ref,
@@ -421,15 +479,13 @@ fn finalize_options_dialog_layout(ui: &OptionsDialogUi) {
 }
 
 fn resolve_options_language(ui: &OptionsDialogUi) -> String {
-	ui.language_combo
-		.get_selection()
-		.and_then(|index| usize::try_from(index).ok())
-		.and_then(|index| ui.language_codes.get(index).cloned())
+	patois::ui::resolve_language_choice(&ui.language_combo, &ui.language_codes)
 		.unwrap_or_else(|| ui.current_language.clone())
 }
 
 fn color_description(color: i32) -> String {
 	if color < 0 {
+		// TRANSLATORS: Description text shown when the background color is set to default
 		t("Background: Default")
 	} else {
 		let r = ((color >> 16) & 0xFF) as u8;
@@ -441,23 +497,32 @@ fn color_description(color: i32) -> String {
 
 fn font_description(rf: &ReadabilityFont) -> String {
 	if rf.is_default() {
+		// TRANSLATORS: Description text shown when the font is set to default
 		return t("Font: Default");
 	}
+	// TRANSLATORS: Fallback font name
 	let face = if rf.face_name.is_empty() { t("Default") } else { rf.face_name.clone() };
-	let mut desc = format!("Font: {face}");
+	// TRANSLATORS: Font description prefix; {} is the font face name
+	let mut desc = t("Font: {}").replace("{}", &face);
 	if rf.point_size > 0 {
-		let _ = write!(desc, ", {}pt", rf.point_size);
+		// TRANSLATORS: Point size attribute; {} is the numeric size, "pt" is the unit abbreviation
+		let size_desc = t("{}pt").replace("{}", &rf.point_size.to_string());
+		let _ = write!(desc, ", {size_desc}");
 	}
 	if rf.weight >= FontWeight::Bold as i32 {
+		// TRANSLATORS: Font weight attribute name
 		let _ = write!(desc, ", {}", t("Bold"));
 	}
 	if rf.style == FontStyle::Italic as i32 || rf.style == FontStyle::Slant as i32 {
+		// TRANSLATORS: Font style attribute name
 		let _ = write!(desc, ", {}", t("Italic"));
 	}
 	if rf.underlined {
+		// TRANSLATORS: Font underline attribute name
 		let _ = write!(desc, ", {}", t("Underlined"));
 	}
 	if rf.strikethrough {
+		// TRANSLATORS: Font strikethrough attribute name
 		let _ = write!(desc, ", {}", t("Strikethrough"));
 	}
 	desc
@@ -500,7 +565,7 @@ fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Option<Readabi
 		}
 	}
 	let dlg = FontDialog::builder(&parent).with_font_data(&font_data).build();
-	if dlg.show_modal() != wxdragon::id::ID_OK {
+	if dlg.show_modal() != ID_OK {
 		return None;
 	}
 	let font = dlg.get_font()?;
@@ -525,16 +590,21 @@ fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Option<Readabi
 }
 
 fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<HotkeyConfig> {
+	// TRANSLATORS: Title of the hotkey customization dialog
 	let dialog = Dialog::builder(parent, &t("Window Hotkey")).with_size(300, 230).build();
 	let panel = Panel::builder(&dialog).build();
 	let main_sizer = BoxSizer::builder(Orientation::Vertical).build();
 
+	// TRANSLATORS: Checkbox label for Control modifier key
 	let ctrl_cb = CheckBox::builder(&panel).with_label(&t("&Ctrl")).build();
 	ctrl_cb.set_value(initial.ctrl);
+	// TRANSLATORS: Checkbox label for Alt modifier key
 	let alt_cb = CheckBox::builder(&panel).with_label(&t("&Alt")).build();
 	alt_cb.set_value(initial.alt);
+	// TRANSLATORS: Checkbox label for Shift modifier key
 	let shift_cb = CheckBox::builder(&panel).with_label(&t("&Shift")).build();
 	shift_cb.set_value(initial.shift);
+	// TRANSLATORS: Checkbox label for Windows modifier key
 	let win_cb = CheckBox::builder(&panel).with_label(&t("&Win")).build();
 	win_cb.set_value(initial.win);
 
@@ -543,6 +613,7 @@ fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<Ho
 	main_sizer.add(&shift_cb, 0, SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right, 10);
 	main_sizer.add(&win_cb, 0, SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right, 10);
 
+	// TRANSLATORS: Label for the hotkey key selection input field
 	let key_label = StaticText::builder(&panel).with_label(&t("&Key:")).build();
 	let key_text = TextCtrl::builder(&panel).build();
 	key_text.set_value(&hotkey_key_display_name(initial.key));
@@ -552,10 +623,13 @@ fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<Ho
 	main_sizer.add_sizer(&key_sizer, 0, SizerFlag::Expand | SizerFlag::All, 10);
 
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	// TRANSLATORS: Button label to clear the current hotkey selection
 	let clear_button = Button::builder(&panel).with_label(&t("Clear")).build();
-	let ok_button = Button::builder(&panel).with_id(wxdragon::id::ID_OK).with_label(&t("OK")).build();
+	// TRANSLATORS: Label for the confirmation button
+	let ok_button = Button::builder(&panel).with_id(ID_OK).with_label(&t("OK")).build();
 	ok_button.set_default();
-	let cancel_button = Button::builder(&panel).with_id(wxdragon::id::ID_CANCEL).with_label(&t("Cancel")).build();
+	// TRANSLATORS: Label for the cancellation button
+	let cancel_button = Button::builder(&panel).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
 
 	let key_text_clone = key_text;
 	let ctrl_cb_clone = ctrl_cb;
@@ -580,11 +654,11 @@ fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<Ho
 	let dialog_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	dialog_sizer.add(&panel, 1, SizerFlag::Expand, 0);
 	dialog.set_sizer(dialog_sizer, true);
-	dialog.set_affirmative_id(wxdragon::id::ID_OK);
-	dialog.set_escape_id(wxdragon::id::ID_CANCEL);
+	dialog.set_affirmative_id(ID_OK);
+	dialog.set_escape_id(ID_CANCEL);
 	dialog.centre();
 
-	if dialog.show_modal() != wxdragon::id::ID_OK {
+	if dialog.show_modal() != ID_OK {
 		return None;
 	}
 
@@ -603,6 +677,7 @@ fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<Ho
 fn hotkey_key_display_name(key: char) -> String {
 	match key {
 		'\0' => String::new(),
+		// TRANSLATORS: Representation of the Spacebar key
 		' ' => t("Space"),
 		c if c.is_ascii_alphanumeric() => c.to_ascii_uppercase().to_string(),
 		c => c.to_string(),

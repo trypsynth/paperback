@@ -17,17 +17,19 @@
 
   const render = (release, label, subtitle = "", showApk = false, showMac = false) => {
     const assets = release.assets ?? [];
-    const exe = assets.find(a => a.name.toLowerCase().endsWith(".exe"));
-    const winZip = assets.find(a => a.name.toLowerCase().endsWith(".zip"));
+    const exes = assets.filter(a => a.name.toLowerCase().endsWith(".exe"));
+    const winZips = assets.filter(a => a.name.toLowerCase().endsWith(".zip"));
     const macDmg = assets.find(a => a.name.toLowerCase().endsWith(".dmg"));
     const apks = showApk ? assets.filter(a => a.name.toLowerCase().endsWith(".apk")) : [];
     const version = release.tag_name.replace(/^v/, "");
+    const winArchLabel = name => name.toLowerCase().includes("arm64") ? " (ARM64)" : name.toLowerCase().includes("x64") ? " (x64)" : "";
+    const winArchOrder = name => name.toLowerCase().includes("arm64") ? 1 : 0;
     return `
       <div>
         <h3>${label} ${version}</h3>
         ${subtitle ? `<p>${subtitle}</p>` : ""}
-        ${exe ? `<p><a href="${exe.browser_download_url}">Windows Installer (.exe)</a> - ${fmtCount(exe.download_count)}</p>` : ""}
-        ${winZip ? `<p><a href="${winZip.browser_download_url}">Windows Portable (.zip)</a> - ${fmtCount(winZip.download_count)}</p>` : ""}
+        ${exes.sort((a, b) => winArchOrder(a.name) - winArchOrder(b.name)).map(exe => `<p><a href="${exe.browser_download_url}">Windows Installer${winArchLabel(exe.name)} (.exe)</a> - ${fmtCount(exe.download_count)}</p>`).join("")}
+        ${winZips.sort((a, b) => winArchOrder(a.name) - winArchOrder(b.name)).map(zip => `<p><a href="${zip.browser_download_url}">Windows Portable${winArchLabel(zip.name)} (.zip)</a> - ${fmtCount(zip.download_count)}</p>`).join("")}
         ${showMac && macDmg ? `<p><a href="${macDmg.browser_download_url}">macOS (.dmg)</a> - ${fmtCount(macDmg.download_count)}</p>` : ""}
         ${apks.map(a => {
           const apkLabel = a.name.includes("arm64") ? "Android APK (arm64-v8a)" : a.name.includes("arm") ? "Android APK (armeabi-v7a)" : "Android APK";

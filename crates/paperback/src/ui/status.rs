@@ -7,7 +7,9 @@ use wxdragon::prelude::*;
 use super::document_manager::DocumentManager;
 
 pub fn format_status_text(info: &StatusInfo) -> String {
+	// TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Reading 45%"
 	let line_label = t("Line");
+	// TRANSLATORS: Status bar label for the current character offset within the line
 	let char_label = t("Character");
 	let reading_label = t("Reading");
 	format!(
@@ -31,6 +33,7 @@ pub fn calculate_sleep_timer_remaining(start_ms: i64, duration_minutes: i32) -> 
 pub fn format_sleep_timer_status(base_status: &str, remaining_seconds: i32) -> String {
 	let minutes = remaining_seconds / 60;
 	let seconds = remaining_seconds % 60;
+	// TRANSLATORS: Status bar label prefixed before the remaining sleep timer countdown, e.g. "Sleep timer: 04:32"
 	let sleep_label = t("Sleep timer");
 	format!("{base_status} | {sleep_label}: {minutes:02}:{seconds:02}")
 }
@@ -45,6 +48,7 @@ pub fn update_status_bar_with_sleep_timer(
 		if sleep_timer_start_ms > 0 {
 			let remaining = calculate_sleep_timer_remaining(sleep_timer_start_ms, sleep_timer_duration_minutes);
 			if remaining > 0 {
+				// TRANSLATORS: Default status bar text when no document is open
 				let status_text = format_sleep_timer_status(&t("Ready"), remaining);
 				frame.set_status_text(&status_text, 0);
 				return;
