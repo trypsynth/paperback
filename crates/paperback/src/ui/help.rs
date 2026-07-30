@@ -27,15 +27,28 @@ pub static MAIN_WINDOW_PTR: AtomicUsize = AtomicUsize::new(0);
 const PAPERBACK_GITHUB_REPO: &str = "trypsynth/paperback";
 const PAPERBACK_MINISIGN_KEY: &str = "RWQasnbWXwK2dhno9ThUm8HONEIo85iiDBZvw3jlNs574QJHEkoRiGX7";
 
+// Matches the `-x64`/`-arm64` suffixes the release workflow appends to Windows asset names
+// (see .github/workflows/build.yml) so the updater requests the build for this machine's
+// architecture instead of a name that no longer exists in the release.
+#[cfg(all(target_os = "windows", target_arch = "x86_64"))]
+const UPDATE_ASSET_SUFFIX: &str = "-x64";
+#[cfg(all(target_os = "windows", target_arch = "aarch64"))]
+const UPDATE_ASSET_SUFFIX: &str = "-arm64";
+#[cfg(not(target_os = "windows"))]
+const UPDATE_ASSET_SUFFIX: &str = "";
+
 pub fn run_update_check(silent: bool, channel: UpdateChannel) {
 	tracing::info!(channel = %channel, silent, "checking for updates");
-	let config = Arc::new(UpdaterConfig::new(
-		PAPERBACK_GITHUB_REPO,
-		"paperback",
-		"Paperback",
-		PAPERBACK_MINISIGN_KEY,
-		version::user_agent(),
-	));
+	let config = Arc::new(
+		UpdaterConfig::new(
+			PAPERBACK_GITHUB_REPO,
+			"paperback",
+			"Paperback",
+			PAPERBACK_MINISIGN_KEY,
+			version::user_agent(),
+		)
+		.with_asset_suffix(UPDATE_ASSET_SUFFIX),
+	);
 	let ship_channel = match channel {
 		UpdateChannel::Stable => ShipChannel::Stable,
 		UpdateChannel::Dev => ShipChannel::Dev,
