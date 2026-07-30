@@ -282,16 +282,31 @@ final class AppViewModel: ObservableObject {
 
 	private func loadRecentsFromConfig() {
 		let paths = configManager.getRecentDocuments()
-		recentDocuments = paths.compactMap { path -> RecentDocument? in
+		let openPaths = Set(tabs.map { $0.url.path(percentEncoded: false) })
+		recentDocuments = paths.map { path in
 			let url = URL(fileURLWithPath: path)
-			guard url.path != path || FileManager.default.fileExists(atPath: path) else { return nil }
 			let title = url.deletingPathExtension().lastPathComponent
-			return RecentDocument(title: title, url: url)
+			return RecentDocument(
+				title: title,
+				url: url,
+				isMissing: !FileManager.default.fileExists(atPath: path),
+				isOpen: openPaths.contains(path)
+			)
 		}
 	}
 
 	func addRecentDocument(url: URL, title: String) {
 		configManager.addRecentDocument(path: url.path(percentEncoded: false))
+		loadRecentsFromConfig()
+	}
+
+	// Points a recent-document entry at a new file location, e.g. after the
+	// original was moved or renamed outside the app.
+	func locateRecentDocument(_ oldURL: URL, at newURL: URL) {
+		configManager.renameDocumentPath(
+			oldPath: oldURL.path(percentEncoded: false),
+			newPath: newURL.path(percentEncoded: false)
+		)
 		loadRecentsFromConfig()
 	}
 
