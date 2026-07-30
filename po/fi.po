@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-07-24 10:48-0600\n"
-"PO-Revision-Date: 2026-07-27 00:46+0300\n"
+"PO-Revision-Date: 2026-07-30 06:25+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -2386,7 +2386,6 @@ msgstr "Välilehdet"
 msgid "Navigation unit"
 msgstr "Navigoinnin tarkkuus"
 
-#| msgid "Previous result"
 msgid "Previous {}"
 msgstr "Edellinen {}"
 
@@ -2408,7 +2407,6 @@ msgstr "Seuraava {}"
 msgid "Press play to start listening."
 msgstr "Aloita kuuntelu painamalla Toista-painiketta."
 
-#| msgid "&Locate…"
 msgid "Locate"
 msgstr "Etsi"
 
@@ -2554,15 +2552,12 @@ msgstr "Asetusten vienti epäonnistui"
 msgid "No document open. Please open a book."
 msgstr "Ei avointa asiakirjaa."
 
-#| msgid "All Documents"
 msgid "No Documents"
 msgstr "Asiakirjoja ei ole"
 
-#| msgid "Show All...\tCtrl+R"
 msgid "Show All"
 msgstr "Näytä kaikki"
 
-#| msgid "Sleep timer"
 msgid "Sleep timer: {}"
 msgstr "Uniajastin: {}"
 
@@ -2622,3 +2617,7 @@ msgstr "Taulukko"
 
 msgid "Separator"
 msgstr "Erotin"
+
+#| msgid "Import Document Data"
+msgid "Document Data"
+msgstr "Asiakirjan tiedot"
