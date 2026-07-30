@@ -1,0 +1,12 @@
+[package]
+name = "paperback-formats"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Shared format metadata (names, extensions) for Paperback's parsers and packaging scripts"
+
+[lib]
+name = "paperback_formats"
+path = "src/lib.rs"

@@ -19,11 +19,11 @@ pub struct OdpParser;
 
 impl Parser for OdpParser {
 	fn name(&self) -> &'static str {
-		"OpenDocument Presentations"
+		paperback_formats::ODP.name
 	}
 
 	fn extensions(&self) -> &[&str] {
-		&["odp"]
+		paperback_formats::ODP.extensions
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
@@ -76,11 +76,11 @@ pub struct FodpParser;
 
 impl Parser for FodpParser {
 	fn name(&self) -> &'static str {
-		"Flat OpenDocument Presentations"
+		paperback_formats::FODP.name
 	}
 
 	fn extensions(&self) -> &[&str] {
-		&["fodp"]
+		paperback_formats::FODP.extensions
 	}
 
 	fn supported_flags(&self) -> ParserFlags {

@@ -22,11 +22,11 @@ pub struct OdtParser;
 
 impl Parser for OdtParser {
 	fn name(&self) -> &'static str {
-		"OpenDocument Text Files"
+		paperback_formats::ODT.name
 	}
 
 	fn extensions(&self) -> &[&str] {
-		&["odt"]
+		paperback_formats::ODT.extensions
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
@@ -59,11 +59,11 @@ pub struct FodtParser;
 
 impl Parser for FodtParser {
 	fn name(&self) -> &'static str {
-		"Flat OpenDocument Text Files"
+		paperback_formats::FODT.name
 	}
 
 	fn extensions(&self) -> &[&str] {
-		&["fodt"]
+		paperback_formats::FODT.extensions
 	}
 
 	fn supported_flags(&self) -> ParserFlags {

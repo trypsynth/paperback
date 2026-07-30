@@ -28,11 +28,11 @@ pub struct PdfParser;
 
 impl Parser for PdfParser {
 	fn name(&self) -> &'static str {
-		"PDF Documents"
+		paperback_formats::PDF.name
 	}
 
 	fn extensions(&self) -> &[&str] {
-		&["pdf"]
+		paperback_formats::PDF.extensions
 	}
 
 	fn supported_flags(&self) -> ParserFlags {

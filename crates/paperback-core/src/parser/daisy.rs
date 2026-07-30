@@ -18,18 +18,18 @@ use crate::{
 		xml_to_text::XmlToText,
 	},
 	t,
-	util::zip::read_zip_entry_by_name_with_password,
+	util::{encoding::convert_to_utf8, zip::read_zip_entry_by_name_with_password},
 };
 
 pub struct DaisyParser;
 
 impl Parser for DaisyParser {
 	fn name(&self) -> &'static str {
-		"DAISY Books"
+		paperback_formats::DAISY.name
 	}
 
 	fn extensions(&self) -> &[&str] {
-		&["opf", "zip"]
+		paperback_formats::DAISY.extensions
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
@@ -177,7 +177,7 @@ impl Parser for DaisyParser {
 			// TRANSLATORS: Error shown when a ZIP file is not a recognizable DAISY 3 or DAISY 2.02 book
 			anyhow::bail!(t("ZIP archive does not appear to be a valid DAISY 3 or DAISY 2.02 book"));
 		}
-		let file_content = fs::read_to_string(path)?;
+		let file_content = convert_to_utf8(&fs::read(path)?);
 		let (manifest_xml, metadata) = parse_opf_metadata_and_manifest(&file_content)?;
 		if let Some(t) = metadata.0 {
 			title = t;
@@ -188,8 +188,10 @@ impl Parser for DaisyParser {
 		if let Some(dtbook_path) = manifest_xml {
 			let base_dir = path.parent().unwrap_or_else(|| Path::new(""));
 			let xml_full_path = base_dir.join(&dtbook_path);
-			let xml_content = fs::read_to_string(&xml_full_path)
-				.with_context(|| format!("Failed to read DTBook XML file at {}", xml_full_path.display()))?;
+			let xml_content = convert_to_utf8(
+				&fs::read(&xml_full_path)
+					.with_context(|| format!("Failed to read DTBook XML file at {}", xml_full_path.display()))?,
+			);
 			let mut converter = XmlToText::with_render_tables_inline(context.render_tables_inline);
 			if converter.convert(&xml_content) {
 				buffer = DocumentBuffer::with_content(converter.get_text());
@@ -203,7 +205,7 @@ impl Parser for DaisyParser {
 						let path = entry.path();
 						if path.is_file()
 							&& path.extension().is_some_and(|e| e.eq_ignore_ascii_case("ncx"))
-							&& let Ok(ncx_content) = fs::read_to_string(&path)
+							&& let Some(ncx_content) = fs::read(&path).ok().map(|b| convert_to_utf8(&b))
 							&& let Some(ncx_toc) = parse_daisy_ncx(&ncx_content, converter.get_id_positions())
 							&& !ncx_toc.is_empty()
 						{
@@ -359,4 +361,67 @@ fn convert_daisy_navpoint(nav: Node, id_positions: &HashMap<String, usize>) -> O
 		}
 	}
 	Some(item)
+}
+
+#[cfg(test)]
+mod tests {
+	use std::{
+		env,
+		time::{SystemTime, UNIX_EPOCH},
+	};
+
+	use super::*;
+
+	fn unique_temp_dir(suffix: &str) -> std::path::PathBuf {
+		let nanos = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
+		let mut path = env::temp_dir();
+		path.push(format!("paperback_daisy_test_{nanos}_{suffix}"));
+		fs::create_dir_all(&path).expect("create temp dir");
+		path
+	}
+
+	// Regression test for https://github.com/trypsynth/paperback/issues/606: a real-world DAISY
+	// book declared its DTBook XML as ISO-8859-1 but was actually encoded as Windows-1252 (a very
+	// common mislabeling), which made `fs::read_to_string` fail outright since the bytes were not
+	// valid UTF-8.
+	#[test]
+	fn parses_dtbook_xml_declared_as_iso_8859_1_but_encoded_as_windows_1252() {
+		let dir = unique_temp_dir("opf");
+		let opf_path = dir.join("book.opf");
+		let xml_path = dir.join("book.xml");
+		fs::write(
+			&opf_path,
+			br#"<?xml version="1.0" encoding="ISO-8859-1"?>
+<package unique-identifier="uid">
+  <metadata>
+    <dc-metadata xmlns:dc="http://purl.org/dc/elements/1.0/">
+      <dc:Title>Test Book</dc:Title>
+      <dc:Creator>Test Author</dc:Creator>
+    </dc-metadata>
+  </metadata>
+  <manifest>
+    <item href="book.xml" media-type="application/x-dtbook+xml"/>
+  </manifest>
+</package>
+"#,
+		)
+		.expect("write opf");
+		// Windows-1252 bytes for curly quotes (0x93/0x94) and 0xE7 for the c-cedilla in
+		// "Fran\xE7ois" -- both invalid as standalone UTF-8.
+		let mut xml_bytes = Vec::new();
+		xml_bytes.extend_from_slice(b"<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n");
+		xml_bytes.extend_from_slice(b"<dtbook><book><frontmatter><p id=\"p1\">Fran\xE7ois said, \x93hello\x94.</p>");
+		xml_bytes.extend_from_slice(b"</frontmatter></book></dtbook>");
+		fs::write(&xml_path, &xml_bytes).expect("write dtbook xml");
+
+		let context = ParserContext::new(opf_path.to_string_lossy().to_string());
+		let document = DaisyParser.parse(&context).expect("DAISY parse should succeed on mislabeled encoding");
+
+		assert_eq!(document.title, "Test Book");
+		assert_eq!(document.author, "Test Author");
+		assert!(!document.buffer.content.contains('\u{FFFD}'), "no replacement characters expected");
+		assert!(document.buffer.content.contains("François"), "c-cedilla should decode correctly");
+		assert!(document.buffer.content.contains('\u{201C}'), "left curly quote should decode correctly");
+		assert!(document.buffer.content.contains('\u{201D}'), "right curly quote should decode correctly");
+	}
 }

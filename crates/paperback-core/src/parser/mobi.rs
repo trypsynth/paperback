@@ -22,11 +22,11 @@ pub struct MobiParser;
 
 impl Parser for MobiParser {
 	fn name(&self) -> &'static str {
-		"MOBI Books"
+		paperback_formats::MOBI.name
 	}
 
 	fn extensions(&self) -> &[&str] {
-		&["mobi", "azw", "azw3"]
+		paperback_formats::MOBI.extensions
 	}
 
 	fn supported_flags(&self) -> ParserFlags {

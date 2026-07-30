@@ -41,11 +41,11 @@ pub struct WordParser;
 
 impl Parser for WordParser {
 	fn name(&self) -> &'static str {
-		"Word Documents"
+		paperback_formats::WORD.name
 	}
 
 	fn extensions(&self) -> &[&str] {
-		&["docx", "docm", "doc", "zip"]
+		paperback_formats::WORD.extensions
 	}
 
 	fn supported_flags(&self) -> ParserFlags {

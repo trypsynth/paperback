@@ -17,11 +17,11 @@ pub struct RtfParser;
 
 impl Parser for RtfParser {
 	fn name(&self) -> &'static str {
-		"RTF Documents"
+		paperback_formats::RTF.name
 	}
 
 	fn extensions(&self) -> &[&str] {
-		&["rtf"]
+		paperback_formats::RTF.extensions
 	}
 
 	fn supported_flags(&self) -> ParserFlags {

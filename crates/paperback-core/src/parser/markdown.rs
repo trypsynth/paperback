@@ -108,11 +108,11 @@ mod tests {
 
 impl Parser for MarkdownParser {
 	fn name(&self) -> &'static str {
-		"Markdown Files"
+		paperback_formats::MARKDOWN.name
 	}
 
 	fn extensions(&self) -> &[&str] {
-		&["md", "markdown", "mdx", "mdown", "mdwn", "mkd", "mkdn", "mkdown", "ronn"]
+		paperback_formats::MARKDOWN.extensions
 	}
 
 	fn supported_flags(&self) -> ParserFlags {

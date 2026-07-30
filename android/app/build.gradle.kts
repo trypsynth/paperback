@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-	namespace = "dev.paperback.mobile"
+	namespace = "dev.paperback.android"
 	compileSdk = 37
 	defaultConfig {
 		applicationId = "dev.paperback.android"
@@ -18,7 +18,9 @@ android {
 
 	splits {
 		abi {
-			isEnable = true
+			// Bundle builds (.aab) handle per-ABI delivery themselves; ABI splits
+			// only apply to standalone APK builds and conflict with bundleRelease.
+			isEnable = !gradle.startParameter.taskNames.any { it.contains("bundle", ignoreCase = true) }
 			reset()
 			include("armeabi-v7a", "arm64-v8a")
 			isUniversalApk = false

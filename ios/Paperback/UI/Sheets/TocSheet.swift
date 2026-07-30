@@ -28,6 +28,7 @@ struct TocSheet: View {
 										Spacer()
 									}
 								}
+								.accessibilityAddTraits(isActive ? .isSelected : [])
 								.id(entry.position)
 							}
 							.onAppear {

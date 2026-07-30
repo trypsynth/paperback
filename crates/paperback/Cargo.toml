@@ -24,7 +24,7 @@ tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 ship-shape = "0.1.5"
 toml = { workspace = true }
 wx-utils = "0.1.1"
-wxdragon = { version = "0.9.17", features = ["webview"] }
+wxdragon = { version = "0.9.18", features = ["webview"] }
 
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_System_Com", "Win32_UI_WindowsAndMessaging", "Win32_Foundation", "Win32_System_Ole", "Win32_System_Variant", "Win32_UI_Controls_RichEdit", "Win32_Graphics_Gdi", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_System_Pipes", "Win32_UI_Input", "Win32_UI_Input_KeyboardAndMouse", "Win32_System_Threading"] }
@@ -42,6 +42,7 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("cargo-cli
 [build-dependencies]
 embed-manifest = "1.5.0"
 flate2 = { version = "1.1.9", default-features = false }
+paperback-formats = { path = "../paperback-formats" }
 patois-build = { git = "https://github.com/trypsynth/patois.git" }
 tar = "0.4.46"
 ureq = { version = "3.3.0", default-features = false, features = ["rustls"] }

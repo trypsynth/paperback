@@ -1,8 +1,10 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct RecentDocumentsSheet: View {
 	@EnvironmentObject var viewModel: AppViewModel
 	@Environment(\.dismiss) private var dismiss
+	@State private var locateTarget: RecentDocument? = nil
 
 	var body: some View {
 		NavigationStack {
@@ -25,27 +27,15 @@ struct RecentDocumentsSheet: View {
 				} else {
 					List {
 						ForEach(viewModel.recentDocuments) { doc in
-							Button {
-								viewModel.openDocument(url: doc.url)
-								dismiss()
-							} label: {
-								VStack(alignment: .leading, spacing: 2) {
-									Text(doc.title)
-										.foregroundStyle(.primary)
-									Text(doc.url.path(percentEncoded: false))
-										.font(.caption)
-										.foregroundStyle(.secondary)
-										.lineLimit(1)
-								}
-							}
-							.swipeActions(edge: .trailing) {
-								Button(role: .destructive) {
-									viewModel.removeRecentDocument(url: doc.url)
-								} label: {
-									// TRANSLATORS: Swipe action to remove a document from the recent documents list
-									Label(t("Remove"), systemImage: "trash")
-								}
-							}
+							RecentDocumentRow(
+								doc: doc,
+								onOpen: {
+									viewModel.openDocument(url: doc.url)
+									dismiss()
+								},
+								onRemove: { viewModel.removeRecentDocument(url: doc.url) },
+								onLocate: { locateTarget = doc }
+							)
 						}
 					}
 				}
@@ -59,6 +49,15 @@ struct RecentDocumentsSheet: View {
 					Button(t("Done")) { dismiss() }
 				}
 			}
+		}
+		.fileImporter(
+			isPresented: Binding(get: { locateTarget != nil }, set: { if !$0 { locateTarget = nil } }),
+			allowedContentTypes: [.item],
+			allowsMultipleSelection: false
+		) { result in
+			defer { locateTarget = nil }
+			guard case .success(let urls) = result, let newURL = urls.first, let target = locateTarget else { return }
+			viewModel.locateRecentDocument(target.url, at: newURL)
 		}
 		.sheetAccessibilityFocus(title: "Recent Documents")
 	}
