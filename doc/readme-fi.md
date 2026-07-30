@@ -190,7 +190,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 
 ## Muutosloki
 
-### Versio 0.9.0
+### Versio 0.9.0 (ei vielä julkaistu)
 * Lisätty Peruuta-painike käynnissä olevan päivityksen valintaikkunaan.
 * Lisätty pb-komentorivityökalu, jolla voi muuntaa nopeasti minkä tahansa Paperbackin tukeman tiedostomuodon HTML-, Markdown- tai pelkkä teksti -muotoon.
 * Lisätty mukautettava pikanäppäin Paperbackin palauttamiseen ilmoitusalueelta.
@@ -207,6 +207,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Lisätty asetus taulukoiden näyttötavan määrittämiseksi sekä yhtenäistetty taulukoiden esitystapa kaikille asiakirjoille.
 * Lisätty Näytä lähdekoodi -vaihtoehto, joka avaa asiakirjan lähdekoodin uuteen välilehteen (hyödyllinen esimerkiksi Markdown-muokkauksessa).
 * Lisätty Sanamäärä-valintaikkunaan arvioitu lukuaika sekä mahdollisuus oman lukunopeuden määrittämiseen, jotta tästä tiedosta on oikeasti hyötyä.
+* ARM64-pohjaisen Windowsin tuki lisätty.
 * Android-tuki lisätty.
 * iOS-tuki lisätty.
 * macOS-tuki lisätty.
@@ -214,7 +215,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Lisätty tuki säilöittäin navigoimiselle.
 * Lisätty CHM-asiakirjoihin luetteloiden, luettelokohteiden, kuvitusten ja kuvien tuki.
 * Lisätty Rivitys-valikkokohde ja vastaava pikanäppäin.
-* Mahdollistettu Selainnäkymä-valintaikkunan koon muuttaminen ja asetettu se avautumaan oletusarvoisesti huomattavasti selkeämmässä koossa.
+* Merkkiääni toistuu nyt vain sellaisten sanojen kohdalla, joihin on lisätty kirjanmerkki tai muistiinpano.
 * Laajennettu vientitoimintoa siten, että se mahdollistaa viennin pelkän tekstin lisäksi myös HTML- ja Markdown-muotoihin.
 * Korjattu virhe, jossa tekstin rivityksen käyttöönotto aiheutti kohdistuksen siirtymistä suoraan asiakirjan alkuun.
 * Korjattu virhe, jossa DAISY-kirjoista näytettiin tilarivillä virheellisiä tietoja.
@@ -223,11 +224,14 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Korjattu virhe, jossa Mobi-kirjojen filepos-ankkurit rikkoivat HTML-elementtejä ja aiheuttivat merkkisotkua kirjan tekstiin.
 * Korjattu suurten asiakirjojen tekstikentän loppua lähestyttäessä ilmennyt hidastelu.
 * Korjattu vanhojen Mobi-kirjojen linkit.
-* Korjattu muita kuin latinalaisia kirjaimia sisältävien RTF-asiakirjojen jäsentäminen.
+* Korjattu ongelma virheellisen koodausmäärityksen sisältävien DAISY-kirjojen lataamisessa.
+* Korjattu muita kuin latinalaisia kirjaimia sisältävien RTF-asiakirjojen jäsennys.
 * Korjattu virhe, jossa otsikkopalkki ei päivittynyt, kun dokumentti suljettiin Kaikki asiakirjat -valintaikkunasta.
+* Selainnäkymävalintaikkunan kokoa voi nyt muuttaa, eikä se avaudu enää aivan liian pienenä.
 * Korjattu virhe, jossa Word-asiakirjojen otsikoita ei näytetty oikein, jos niissä käytettiin kielikohtaisia tyylinimiä.
 * Korjattu virhe, jossa kohdistus ei siirtynyt oikein valitulle välilehdelle Paperbackin uudelleenkäynnistyksen jälkeen.
 * Jos tekstiä on valittuna Sanamäärä-valintaikkunaa avattaessa, näkymässä näytetään nyt valittujen sanojen määrä.
+* Paperbackin tiedostonkäsittelyä on parannettu Windows-verkkolevyillä: "Avaa asiakirjan kansio" -toiminto siirtää nyt kohdistuksen asianmukaisesti verkkolevyllä olevan tiedoston kohdalle, eikä tiedostopoluissa enää ole outoja merkkejä.
 * Parannettu huomattavasti AZW3-kirjojen jäsennystä.
 * Luovuttu chmlib-kirjaston käytöstä ja siirrytty omaan, täysin Rust-pohjaiseen CHM-tiedostonlukijaan.
 * .paperback-tiedostoja ei enää ladata työpöytäversiossa pakotetusti asiakirjojen palautuksen yhteydessä. Käyttäjältä pyydetään sen sijaan vahvistus tiedoston löytyessä.
