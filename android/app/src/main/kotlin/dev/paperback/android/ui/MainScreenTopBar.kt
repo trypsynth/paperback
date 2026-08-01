@@ -42,6 +42,7 @@ fun MainScreenTopBar(
 	onSettingsOpen: () -> Unit,
 	onSleepTimerOpen: () -> Unit,
 	onElementsOpen: () -> Unit,
+	onExportDocumentOpen: () -> Unit,
 	onExportSettings: () -> Unit,
 	onImportSettings: () -> Unit,
 	onHelpOpen: () -> Unit
@@ -153,6 +154,12 @@ fun MainScreenTopBar(
 											true
 										}
 									)
+									add(
+										CustomAccessibilityAction(t("Export As")) {
+											onExportDocumentOpen()
+											true
+										}
+									)
 								}
 								add(
 									// TRANSLATORS: Accessibility action to open the list of headings and links in the current document
@@ -250,6 +257,13 @@ fun MainScreenTopBar(
 								onClick = {
 									moreOptionsExpanded = false
 									onTocOpen()
+								}
+							)
+							DropdownMenuItem(
+								text = { Text(t("Export As")) },
+								onClick = {
+									moreOptionsExpanded = false
+									onExportDocumentOpen()
 								}
 							)
 						}

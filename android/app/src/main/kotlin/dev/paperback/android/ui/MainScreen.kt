@@ -77,6 +77,8 @@ fun MainScreen(
 	val listStates = remember { mutableStateMapOf<String, LazyListState>() }
 	val tocSheetOpen by viewModel.showTocDialog.collectAsStateWithLifecycle()
 	var recentsDialogOpen by remember { mutableStateOf(false) }
+	var exportDocumentDialogOpen by remember { mutableStateOf(false) }
+	var selectedExportFormat by remember { mutableStateOf<uniffi.paperback.ExportFormatFfi?>(null) }
 	val wordCountDialogOpen by viewModel.showWordCountDialog.collectAsStateWithLifecycle()
 	val documentInfoDialogOpen by viewModel.showDocumentInfoDialog.collectAsStateWithLifecycle()
 	val goToDialogOpen by viewModel.showGoToDialog.collectAsStateWithLifecycle()
@@ -335,6 +337,23 @@ fun MainScreen(
 		}
 	)
 
+	val exportDocumentLauncher = rememberLauncherForActivityResult(
+		contract = ActivityResultContracts.CreateDocument("*/*"),
+		onResult = { uri ->
+			if (uri != null) {
+				selectedExportFormat?.let { format ->
+					scope.launch(Dispatchers.IO) {
+						val success = viewModel.exportDocumentToUri(context, uri, format)
+						val message = if (success) t("Document exported") else t("Failed to export document")
+						withContext(Dispatchers.Main) {
+							Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+						}
+					}
+				}
+			}
+		}
+	)
+
 	Box(modifier = Modifier.fillMaxSize()) {
 		Scaffold(
 			topBar = {
@@ -366,6 +385,7 @@ fun MainScreen(
 					onSettingsOpen = { viewModel.openSettingsDialog() },
 					onSleepTimerOpen = { viewModel.openSleepTimerDialog() },
 					onElementsOpen = { viewModel.openElementsDialog() },
+					onExportDocumentOpen = { exportDocumentDialogOpen = true },
 					onExportSettings = {
 						val activeDocUri = (state as? MainScreenUiState.Success)?.activeTab?.documentUri
 						if (activeDocUri != null) {
@@ -706,6 +726,27 @@ fun MainScreen(
 									},
 									onDismiss = { viewModel.closeElementsDialog() }
 								)
+							}
+						}
+						if (exportDocumentDialogOpen) {
+							(state as? MainScreenUiState.Success)?.activeTab?.let { docState ->
+								ExportDocumentDialog(
+									supportedFormats = docState.session.getSupportedExportFormatsFfi(),
+									onFormatSelected = { format ->
+										selectedExportFormat = format
+										exportDocumentDialogOpen = false
+										val extension = when (format) {
+											uniffi.paperback.ExportFormatFfi.TEXT -> "txt"
+											uniffi.paperback.ExportFormatFfi.HTML -> "html"
+											uniffi.paperback.ExportFormatFfi.MARKDOWN -> "md"
+										}
+										val baseName = docState.fileName.substringBeforeLast(".")
+										exportDocumentLauncher.launch("$baseName.$extension")
+									},
+									onDismiss = { exportDocumentDialogOpen = false }
+								)
+							} ?: run {
+								exportDocumentDialogOpen = false
 							}
 						}
 						if (recentsDialogOpen) {

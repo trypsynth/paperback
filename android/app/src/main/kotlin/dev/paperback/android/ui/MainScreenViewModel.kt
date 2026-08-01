@@ -821,6 +821,25 @@ class MainScreenViewModel(
 		}
 	}
 
+	fun exportDocumentToUri(
+		context: Context,
+		destUri: Uri,
+		format: uniffi.paperback.ExportFormatFfi
+	): Boolean {
+		val state = uiState.value as? MainScreenUiState.Success ?: return false
+		val tab = state.activeTab ?: return false
+
+		return try {
+			val content = tab.session.renderExportFfi(format)
+			context.contentResolver.openOutputStream(destUri)?.use { out ->
+				out.write(content.toByteArray(Charsets.UTF_8))
+			}
+			true
+		} catch (_: Exception) {
+			false
+		}
+	}
+
 	fun importSettingsFromUri(
 		context: Context,
 		sourceUri: Uri

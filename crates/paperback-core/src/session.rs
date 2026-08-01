@@ -165,6 +165,23 @@ impl From<String> for DocumentError {
 	}
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ExportFormatFfi {
+	Text,
+	Html,
+	Markdown,
+}
+
+impl From<ExportFormatFfi> for ExportFormat {
+	fn from(f: ExportFormatFfi) -> Self {
+		match f {
+			ExportFormatFfi::Text => ExportFormat::Text,
+			ExportFormatFfi::Html => ExportFormat::Html,
+			ExportFormatFfi::Markdown => ExportFormat::Markdown,
+		}
+	}
+}
+
 impl LinkActivationResult {
 	const fn not_found() -> Self {
 		Self { found: false, action: LinkAction::NotFound, offset: 0, url: String::new() }
@@ -1101,6 +1118,14 @@ impl DocumentSession {
 		Ok(())
 	}
 
+	pub fn get_supported_export_formats_ffi(&self) -> Vec<ExportFormatFfi> {
+		vec![ExportFormatFfi::Text, ExportFormatFfi::Html, ExportFormatFfi::Markdown]
+	}
+
+	pub fn render_export_ffi(&self, format: ExportFormatFfi) -> String {
+		render(&self.handle, format.into())
+	}
+
 	#[must_use]
 	pub fn get_text_segment(
 		&self,
@@ -1198,21 +1223,25 @@ impl DocumentSession {
 
 		if matches!(direction, SegmentDirectionFfi::Previous) {
 			let mut search_end = byte_idx;
-			while search_end > 0 && content.as_bytes()[search_end - 1] == b'\n' {
+			while search_end > 0
+				&& (content.as_bytes()[search_end - 1] == b'\n' || content.as_bytes()[search_end - 1] == b'\r')
+			{
 				search_end -= 1;
 			}
 			start = content[..search_end].rfind('\n').map_or(0, |i| i + 1);
 		} else if matches!(direction, SegmentDirectionFfi::Next) {
 			if let Some(next) = content[byte_idx..].find('\n') {
 				start = byte_idx + next;
-				while start < content.len() && content.as_bytes()[start] == b'\n' {
+				while start < content.len()
+					&& (content.as_bytes()[start] == b'\n' || content.as_bytes()[start] == b'\r')
+				{
 					start += 1;
 				}
 			} else {
 				start = content.len();
 			}
 		} else {
-			while start < content.len() && content.as_bytes()[start] == b'\n' {
+			while start < content.len() && (content.as_bytes()[start] == b'\n' || content.as_bytes()[start] == b'\r') {
 				start += 1;
 			}
 		}
