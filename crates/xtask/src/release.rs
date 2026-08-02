@@ -185,7 +185,7 @@ fn build_windows_installer(target_dir: &Path) -> io::Result<()> {
 		println!("Skipping installer: paperback.iss not found.");
 		return Ok(());
 	}
-	let status = Command::new("ISCC.exe").arg(&iss_path).status();
+	let status = Command::new("ISCC.exe").arg("/Q").arg(&iss_path).status();
 	match status {
 		Ok(s) if s.success() => println!("Installer created successfully."),
 		_ => println!("Failed to run Inno Setup (ISCC.exe). Is it in your PATH?"),
