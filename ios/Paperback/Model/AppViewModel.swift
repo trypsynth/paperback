@@ -79,7 +79,7 @@ final class AppViewModel: ObservableObject {
 
 		loadRecentsFromConfig()
 		ttsManager.onUtteranceFinished = { [weak self] in
-			self?.playNextSegment()
+			self?.advanceTtsAfterUtterance()
 			self?.updateNowPlaying()
 		}
 		ttsManager.$isSpeaking
@@ -380,6 +380,35 @@ final class AppViewModel: ObservableObject {
 		return true
 	}
 
+	// Advances playback after an utterance finishes. Unlike playNextSegment(), this always
+	// walks by actual readable content rather than currentSegmentType: heading/section are marker
+	// jumps that only return the marker's title text, so using them here would make continuous
+	// playback read a heading, then skip straight to the next one, forever.
+	private func advanceTtsAfterUtterance() {
+		guard let tab = activeTab, let session = tab.session else { return }
+		let seg = session.getTextSegment(
+			position: ttsPosition,
+			segmentType: continuousPlaybackSegmentType(),
+			direction: .next
+		)
+		if seg.text.isEmpty { return }
+		ttsPosition = seg.startPos
+		currentSegmentText = seg.text
+		updateTabPosition(seg.startPos)
+		ttsManager.speak(seg.text)
+		prefetchAdjacentSegments(around: seg.startPos)
+	}
+
+	// The segment type continuous TTS playback should walk by, regardless of the user's chosen
+	// navigation unit. Paragraph/line are real sequential content; heading/section are marker
+	// jumps and must fall back to paragraph so playback doesn't skip the body between markers.
+	private func continuousPlaybackSegmentType() -> SegmentTypeFfi {
+		switch currentSegmentType {
+		case .paragraph, .line: return ffiSegmentType(currentSegmentType)
+		case .heading, .section: return .paragraph
+		}
+	}
+
 	private func announceNavigationCue(_ text: String) {
 		let words = text.split(whereSeparator: \.isWhitespace)
 		let cue = words.prefix(5).joined(separator: " ")
@@ -393,19 +422,12 @@ final class AppViewModel: ObservableObject {
 
 	private func prefetchAdjacentSegments(around position: Int64) {
 		guard let session = activeSession else { return }
-		let next = session.getTextSegment(
-			position: position,
-			segmentType: ffiSegmentType(currentSegmentType),
-			direction: .next
-		)
+		let type = continuousPlaybackSegmentType()
+		let next = session.getTextSegment(position: position, segmentType: type, direction: .next)
 		if !next.text.isEmpty {
 			ttsManager.prefetch(next.text)
 		}
-		let prev = session.getTextSegment(
-			position: position,
-			segmentType: ffiSegmentType(currentSegmentType),
-			direction: .previous
-		)
+		let prev = session.getTextSegment(position: position, segmentType: type, direction: .previous)
 		if !prev.text.isEmpty {
 			ttsManager.prefetchPrev(prev.text)
 		}
