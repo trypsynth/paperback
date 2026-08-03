@@ -66,8 +66,8 @@ struct ReaderView: View {
 		.sheet(isPresented: $viewModel.showSleepTimer) {
 			SleepTimerSheet().environmentObject(viewModel)
 		}
-		.sheet(isPresented: $viewModel.showElements) {
-			ElementsSheet().environmentObject(viewModel)
+		.navigationDestination(isPresented: $viewModel.showElements) {
+			ElementsView().environmentObject(viewModel)
 		}
 		.sheet(
 			isPresented: Binding(
