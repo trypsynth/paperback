@@ -15,15 +15,16 @@ struct ElementsSheet: View {
 						emptyView
 					} else {
 						VStack(spacing: 0) {
-							// TRANSLATORS: Label for the segmented control choosing between the Headings and Links tabs
+							// TRANSLATORS: Label for the wheel picker choosing between the Headings and Links tabs
 							Picker(t("Type"), selection: $tab) {
 								// TRANSLATORS: Tab showing the document's list of headings
 								Text(t("Headings")).tag(0)
 								// TRANSLATORS: Tab showing the document's list of links
 								Text(t("Links")).tag(1)
 							}
-							.pickerStyle(.segmented)
-							.padding()
+							.pickerStyle(.wheel)
+							.labelsHidden()
+							.frame(height: 120)
 							if tab == 0 {
 								List(headings.items, id: \.offset) { item in
 									Button {

@@ -1241,9 +1241,13 @@ impl DocumentSession {
 				start = content.len();
 			}
 		} else {
+			// Current: byte_idx may land anywhere inside the enclosing paragraph (e.g. a link
+			// marker mid-sentence), not just at its start, so search backward for the nearest
+			// preceding newline rather than only trimming forward from byte_idx.
 			while start < content.len() && (content.as_bytes()[start] == b'\n' || content.as_bytes()[start] == b'\r') {
 				start += 1;
 			}
+			start = content[..start].rfind('\n').map_or(0, |i| i + 1);
 		}
 
 		let end = content[start..].find('\n').map_or(content.len(), |i| start + i);
@@ -1663,6 +1667,18 @@ mod tests {
 		assert_eq!(list.items[0].offset, 6);
 		assert_eq!(list.items[0].text, "line2");
 		assert_eq!(list.closest_index, 0);
+	}
+
+	#[test]
+	fn get_text_segment_current_direction_finds_enclosing_paragraph_start() {
+		// "line2" spans bytes 6..11; position 8 lands mid-paragraph, e.g. where a link marker
+		// embedded in the middle of a sentence would sit. The Current direction must still
+		// return the full enclosing paragraph, not a suffix truncated from the given position.
+		let session = sample_session(ParserFlags::NONE);
+		let seg = session.get_text_segment(8, SegmentTypeFfi::Paragraph, SegmentDirectionFfi::Current);
+		assert_eq!(seg.text, "line2");
+		assert_eq!(seg.start_pos, 6);
+		assert_eq!(seg.end_pos, 11);
 	}
 
 	#[test]
