@@ -956,8 +956,13 @@ impl DocumentSession {
 			let hash = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(digest);
 			let doc_temp_dir = Path::new(temp_dir).join(format!("paperback_{hash}"));
 			if fs::create_dir_all(&doc_temp_dir).is_ok() {
-				let file_name = Path::new(&section_path).file_name()?.to_string_lossy().to_string();
-				let output_path = doc_temp_dir.join(file_name);
+				// Extract every entry (images, stylesheets, fonts, ...) once, preserving
+				// the epub's internal layout, so the section's relative resource
+				// references (e.g. `<img src="../images/foo.jpg">`) resolve on disk.
+				let _ = self.ensure_epub_resources_extracted(&doc_temp_dir);
+				// Re-extract the section itself fresh at its original relative path so
+				// the reading-position anchor below is injected into a clean copy.
+				let output_path = doc_temp_dir.join(&section_path);
 				let output_str = output_path.to_string_lossy().to_string();
 				if self.extract_resource(&section_path, &output_str).ok() == Some(true) {
 					let fragment = self.inject_reading_anchor(position, &output_str);
@@ -1089,6 +1094,34 @@ impl DocumentSession {
 			.and_then(|index| parser::markdown::block_source_offset(content, index))
 			.and_then(|byte| Some(content.get(..byte)?.chars().count()))
 			.unwrap_or(0)
+	}
+
+	/// Extracts every non-markup entry of the EPUB (images, stylesheets, fonts,
+	/// ...) into `doc_temp_dir`, preserving the archive's internal directory
+	/// structure, so that resources referenced relatively from a spine section
+	/// are present on disk wherever a webview loading that section would look
+	/// for them. Spine XHTML/HTML/NCX/OPF/XML entries are skipped here: they're
+	/// never needed as sibling resources for rendering, and skipping them avoids
+	/// extracting every chapter in the book just to view one. Runs at most once
+	/// per `doc_temp_dir`; subsequent calls are a no-op.
+	fn ensure_epub_resources_extracted(&self, doc_temp_dir: &Path) -> anyhow::Result<()> {
+		if !self.file_path.to_lowercase().ends_with(".epub") {
+			return Ok(());
+		}
+		let marker = doc_temp_dir.join(".resources_extracted");
+		if marker.exists() {
+			return Ok(());
+		}
+		let file = File::open(&self.file_path)?;
+		let mut archive = ZipArchive::new(BufReader::new(file))?;
+		zip_utils::extract_zip_to_dir(&mut archive, doc_temp_dir, |path| {
+			matches!(
+				path.extension().and_then(|ext| ext.to_str()).map(str::to_ascii_lowercase).as_deref(),
+				Some("xhtml" | "html" | "htm" | "ncx" | "opf" | "xml")
+			)
+		})?;
+		fs::write(&marker, b"").ok();
+		Ok(())
 	}
 
 	/// # Errors
@@ -2020,5 +2053,92 @@ mod tests {
 		let result = session.activate_link(7);
 		assert!(!result.found);
 		assert_eq!(result.action, LinkAction::NotFound);
+	}
+
+	/// Builds a minimal real EPUB on disk whose spine chapter references an image
+	/// via a relative path that only resolves if sibling directory structure is
+	/// preserved on extraction, then returns its path.
+	fn build_epub_with_relative_image(dir: &Path) -> std::path::PathBuf {
+		use zip::{ZipWriter, write::FileOptions};
+
+		let epub_path = dir.join("book.epub");
+		let file = File::create(&epub_path).expect("create epub file");
+		let mut writer = ZipWriter::new(file);
+		let opts = FileOptions::<()>::default();
+
+		writer.start_file("mimetype", opts).unwrap();
+		writer.write_all(b"application/epub+zip").unwrap();
+
+		writer.start_file("META-INF/container.xml", opts).unwrap();
+		writer
+			.write_all(
+				br#"<?xml version="1.0"?>
+<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
+	<rootfiles>
+		<rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
+	</rootfiles>
+</container>"#,
+			)
+			.unwrap();
+
+		writer.start_file("OEBPS/content.opf", opts).unwrap();
+		writer
+			.write_all(
+				br#"<?xml version="1.0"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="bookid">
+	<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+		<dc:title>Test Book</dc:title>
+		<dc:identifier id="bookid">test-book</dc:identifier>
+	</metadata>
+	<manifest>
+		<item id="chapter1" href="Text/chapter1.xhtml" media-type="application/xhtml+xml"/>
+		<item id="cover-img" href="Images/cover.jpg" media-type="image/jpeg"/>
+	</manifest>
+	<spine>
+		<itemref idref="chapter1"/>
+	</spine>
+</package>"#,
+			)
+			.unwrap();
+
+		writer.start_file("OEBPS/Text/chapter1.xhtml", opts).unwrap();
+		writer
+			.write_all(
+				br#"<?xml version="1.0"?>
+<html xmlns="http://www.w3.org/1999/xhtml"><body>
+	<p>Chapter text.</p>
+	<img src="../Images/cover.jpg" alt="Cover"/>
+</body></html>"#,
+			)
+			.unwrap();
+
+		writer.start_file("OEBPS/Images/cover.jpg", opts).unwrap();
+		writer.write_all(b"\xFF\xD8\xFF\xE0fake-jpeg-bytes").unwrap();
+
+		writer.finish().unwrap();
+		epub_path
+	}
+
+	#[test]
+	fn webview_target_path_extracts_sibling_image_resources() {
+		let temp_root = std::env::temp_dir().join(format!(
+			"paperback_webview_test_{}",
+			std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()
+		));
+		fs::create_dir_all(&temp_root).unwrap();
+		let epub_path = build_epub_with_relative_image(&temp_root);
+
+		let session = DocumentSession::new(&epub_path.to_string_lossy(), "", "", false).expect("parse test epub");
+		let target = session.webview_target_path(0, &temp_root.to_string_lossy()).expect("webview target");
+
+		let section_content = fs::read_to_string(&target.path).expect("read extracted section");
+		assert!(section_content.contains("Images/cover.jpg"));
+
+		// The image referenced relatively from the section must have been
+		// extracted alongside it at the same relative location.
+		let image_path = Path::new(&target.path).parent().unwrap().parent().unwrap().join("Images/cover.jpg");
+		assert!(image_path.exists(), "expected image extracted at {}", image_path.display());
+
+		fs::remove_dir_all(&temp_root).ok();
 	}
 }

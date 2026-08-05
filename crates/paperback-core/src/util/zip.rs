@@ -60,6 +60,39 @@ pub fn extract_zip_entry_to_file<R: Read + Seek>(
 	Ok(())
 }
 
+/// Extracts every entry of `archive` for which `skip` returns `false` into
+/// `output_dir`, preserving the archive's internal directory structure so that
+/// relative references between entries (e.g. an XHTML file's
+/// `<img src="../images/foo.jpg">`) keep resolving once extracted. Entries
+/// whose name would escape `output_dir` are always skipped.
+pub fn extract_zip_to_dir<R: Read + Seek>(
+	archive: &mut ZipArchive<R>,
+	output_dir: &Path,
+	skip: impl Fn(&Path) -> bool,
+) -> Result<()> {
+	for i in 0..archive.len() {
+		let mut entry = archive.by_index(i).with_context(|| format!("Failed to get entry at index {i}"))?;
+		let Some(enclosed) = entry.enclosed_name() else { continue };
+		if !entry.is_dir() && skip(&enclosed) {
+			continue;
+		}
+		let output_path = output_dir.join(enclosed);
+		if entry.is_dir() {
+			fs::create_dir_all(&output_path)
+				.with_context(|| format!("Failed to create directory '{}'", output_path.display()))?;
+			continue;
+		}
+		if let Some(parent) = output_path.parent() {
+			fs::create_dir_all(parent).with_context(|| format!("Failed to create directory '{}'", parent.display()))?;
+		}
+		let mut out_file =
+			File::create(&output_path).with_context(|| format!("Failed to create file '{}'", output_path.display()))?;
+		io::copy(&mut entry, &mut out_file)
+			.with_context(|| format!("Failed to extract entry '{}'", output_path.display()))?;
+	}
+	Ok(())
+}
+
 #[cfg(test)]
 mod tests {
 	use std::{
