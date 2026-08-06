@@ -85,6 +85,18 @@ impl RegisteredParser {
 	}
 }
 
+/// Builds a registry from a `FORMAT => parser` table, where `FORMAT` names a static in
+/// `paperback-formats`. Registration order is the order the entries appear in: it decides
+/// which parser is tried first for an extension more than one format claims, so it should
+/// match the declaration order of the format table.
+macro_rules! parser_registry {
+	($($format:ident => $parser:expr),+ $(,)?) => {{
+		let mut registry = ParserRegistry::new();
+		$(registry.register(&paperback_formats::$format, $parser);)+
+		registry
+	}};
+}
+
 pub struct ParserRegistry {
 	/// Registered parsers in registration order, which is the order they're offered to the
 	/// user (file dialog filters) and tried in (extensions claimed by more than one format).
@@ -123,26 +135,24 @@ impl ParserRegistry {
 	pub fn global() -> &'static Self {
 		static REGISTRY: OnceLock<ParserRegistry> = OnceLock::new();
 		REGISTRY.get_or_init(|| {
-			use paperback_formats as formats;
-			let mut registry = Self::new();
-			registry.register(&formats::CHM, chm::ChmParser);
-			// DAISY is registered ahead of Word so that it gets first crack at `.zip`.
-			registry.register(&formats::DAISY, daisy::DaisyParser);
-			registry.register(&formats::WORD, word::WordParser);
-			registry.register(&formats::EPUB, epub::EpubParser);
-			registry.register(&formats::FB2, fb2::Fb2Parser);
-			registry.register(&formats::HTML, html::HtmlParser);
-			registry.register(&formats::PDF, pdf::PdfParser);
-			registry.register(&formats::MARKDOWN, markdown::MarkdownParser);
-			registry.register(&formats::MOBI, mobi::MobiParser);
-			registry.register(&formats::FODP, odp::FodpParser);
-			registry.register(&formats::ODP, odp::OdpParser);
-			registry.register(&formats::FODT, odt::FodtParser);
-			registry.register(&formats::ODT, odt::OdtParser);
-			registry.register(&formats::POWERPOINT, powerpoint::PowerpointParser);
-			registry.register(&formats::RTF, rtf::RtfParser);
-			registry.register(&formats::TEXT, text::TextParser);
-			registry
+			parser_registry! {
+				CHM => chm::ChmParser,
+				DAISY => daisy::DaisyParser,
+				WORD => word::WordParser,
+				EPUB => epub::EpubParser,
+				FB2 => fb2::Fb2Parser,
+				HTML => html::HtmlParser,
+				PDF => pdf::PdfParser,
+				MARKDOWN => markdown::MarkdownParser,
+				MOBI => mobi::MobiParser,
+				FODP => odp::FodpParser,
+				ODP => odp::OdpParser,
+				FODT => odt::FodtParser,
+				ODT => odt::OdtParser,
+				POWERPOINT => powerpoint::PowerpointParser,
+				RTF => rtf::RtfParser,
+				TEXT => text::TextParser,
+			}
 		})
 	}
 }
@@ -601,6 +611,29 @@ mod tests {
 	fn get_parser_flags_for_context_returns_none_for_unknown_extension() {
 		let context = ParserContext::new("doc.unknown_ext".to_string());
 		assert_eq!(get_parser_flags_for_context(&context), ParserFlags::NONE);
+	}
+
+	/// Guards against a format being declared in `paperback-formats` with no parser wired up
+	/// in `parser_registry!` (it would show up in the installer and open dialog but fail to
+	/// open), and against a parser being registered twice.
+	#[test]
+	fn every_declared_format_has_exactly_one_parser() {
+		let registered: Vec<&'static FormatMeta> =
+			ParserRegistry::global().all_parsers().iter().map(RegisteredParser::format).collect();
+		for format in paperback_formats::ALL {
+			let count = registered.iter().filter(|candidate| std::ptr::eq(**candidate, *format)).count();
+			assert_eq!(count, 1, "{} must have exactly one registered parser, found {count}", format.name);
+		}
+		assert_eq!(registered.len(), paperback_formats::ALL.len(), "a parser was registered for an unlisted format");
+	}
+
+	/// Registration order decides which parser wins a shared extension, so it must track the
+	/// order of the format table rather than drifting from it.
+	#[test]
+	fn registration_order_matches_the_format_table() {
+		let registered: Vec<&str> = ParserRegistry::global().all_parsers().iter().map(RegisteredParser::name).collect();
+		let declared: Vec<&str> = paperback_formats::ALL.iter().map(|format| format.name).collect();
+		assert_eq!(registered, declared);
 	}
 
 	/// `.zip` is claimed by both DAISY and Word, and `parse_document` tries claimants in
