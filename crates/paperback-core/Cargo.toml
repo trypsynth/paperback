@@ -57,3 +57,6 @@ uniffi = ["dep:uniffi"]
 name = "uniffi-bindgen"
 path = "src/bin/uniffi-bindgen.rs"
 required-features = ["uniffi"]
+
+[lints]
+workspace = true

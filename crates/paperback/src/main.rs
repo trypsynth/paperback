@@ -1,5 +1,4 @@
 #![cfg_attr(not(test), windows_subsystem = "windows")]
-#![warn(clippy::all, clippy::nursery, clippy::pedantic)]
 
 patois::embed_domain!();
 patois::embed_wx_translations!();
@@ -65,15 +64,15 @@ fn cleanup_legacy_files() {
 	let Some(dir) = exe.parent() else { return };
 	for name in ["nvdaControllerClient64.dll", "SAAPI64.dll"] {
 		let path = dir.join(name);
-		if let Err(e) = fs::remove_file(&path) {
-			if e.kind() != io::ErrorKind::NotFound {
-				tracing::warn!(path = %path.display(), error = %e, "failed to remove legacy file");
-			}
+		if let Err(e) = fs::remove_file(&path)
+			&& e.kind() != io::ErrorKind::NotFound
+		{
+			tracing::warn!(path = %path.display(), error = %e, "failed to remove legacy file");
 		}
 	}
-	if let Err(e) = fs::remove_dir_all(dir.join("langs")) {
-		if e.kind() != io::ErrorKind::NotFound {
-			tracing::warn!(error = %e, "failed to remove legacy langs directory");
-		}
+	if let Err(e) = fs::remove_dir_all(dir.join("langs"))
+		&& e.kind() != io::ErrorKind::NotFound
+	{
+		tracing::warn!(error = %e, "failed to remove legacy langs directory");
 	}
 }

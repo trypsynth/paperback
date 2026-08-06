@@ -1,5 +1,3 @@
-#![warn(clippy::all, clippy::nursery, clippy::pedantic)]
-
 pub mod config;
 pub mod document;
 pub mod export;

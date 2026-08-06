@@ -467,13 +467,11 @@ impl XmlToText {
 						length: self.get_current_text_position().saturating_sub(start),
 					});
 				}
-			} else if Self::tag_is(tag_name, "u") {
-				if let Some(start) = self.open_underlines.pop() {
-					self.underlines.push(FormatInfo {
-						offset: start,
-						length: self.get_current_text_position().saturating_sub(start),
-					});
-				}
+			} else if Self::tag_is(tag_name, "u")
+				&& let Some(start) = self.open_underlines.pop()
+			{
+				self.underlines
+					.push(FormatInfo { offset: start, length: self.get_current_text_position().saturating_sub(start) });
 			}
 		}
 		if Self::tag_is(tag_name, "ul") || Self::tag_is(tag_name, "ol") {
@@ -843,8 +841,8 @@ mod tests {
 		assert!(converter.convert(xml));
 		let text = converter.get_text();
 		let lines: Vec<&str> = text.lines().collect();
-		assert!(lines.iter().any(|l| *l == "Term"), "dt content should be on its own line");
-		assert!(lines.iter().any(|l| *l == "Definition"), "dd content should be on its own line");
+		assert!(lines.contains(&"Term"), "dt content should be on its own line");
+		assert!(lines.contains(&"Definition"), "dd content should be on its own line");
 	}
 	/// `TableInfo.length` must equal the emitted display extent (display units), NOT the
 	/// emitted text's byte length. Prefix text ensures start_offset > 0. With inline rendering the

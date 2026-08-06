@@ -908,7 +908,7 @@ impl DocumentSession {
 
 	#[must_use]
 	pub fn current_page_ffi(&self, position: i64) -> i32 {
-		i32::try_from(self.current_page(position)).unwrap_or(0)
+		self.current_page(position)
 	}
 
 	#[must_use]
@@ -1294,7 +1294,7 @@ impl DocumentSession {
 		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
 		let line_number = buf.newline_positions().partition_point(|&p| p < pos) + 1;
 		let character_number = pos + 1;
-		let percentage = if total_chars > 0 { (pos * 100) / total_chars } else { 0 };
+		let percentage = (pos * 100).checked_div(total_chars).unwrap_or(0);
 		StatusInfo {
 			line_number: i64::try_from(line_number).unwrap_or(1),
 			character_number: i64::try_from(character_number).unwrap_or(1),

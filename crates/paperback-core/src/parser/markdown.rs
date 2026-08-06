@@ -67,6 +67,31 @@ pub fn block_source_offset(markdown_text: &str, block_index: usize) -> Option<us
 
 pub struct MarkdownParser;
 
+impl Parser for MarkdownParser {
+	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		let bytes = fs::read(&context.file_path)
+			.with_context(|| format!("Failed to open Markdown file '{}'", context.file_path))?;
+		let markdown_content = convert_to_utf8(&bytes);
+		let html_content = markdown_to_html(&markdown_content);
+		let mut converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
+		if !converter.convert(&html_content, HtmlSourceMode::Markdown) {
+			// TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
+			anyhow::bail!(t("Failed to convert Markdown to text: {}").replace("{}", &context.file_path));
+		}
+		let title = extract_title_from_path(&context.file_path);
+		let text = converter.get_text();
+		let mut buffer = DocumentBuffer::with_content(text);
+		let id_positions = converter.get_id_positions().clone();
+		add_converter_markers(&mut buffer, &converter, 0);
+		let toc_items = build_toc_from_headings(converter.get_headings());
+		let mut doc = Document::new().with_title(title);
+		doc.set_buffer(buffer);
+		doc.toc_items = toc_items;
+		doc.id_positions = id_positions;
+		Ok(doc)
+	}
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -103,30 +128,5 @@ mod tests {
 		assert_eq!(ids.get("pb-block-1"), Some(&text.find("Title").unwrap()), "ids: {ids:?} text: {text:?}");
 		assert_eq!(ids.get("pb-block-3"), Some(&text.find("Second").unwrap()), "ids: {ids:?} text: {text:?}");
 		assert!(!text.contains("pb-block"), "anchors must not leak into text: {text:?}");
-	}
-}
-
-impl Parser for MarkdownParser {
-	fn parse(&self, context: &ParserContext) -> Result<Document> {
-		let bytes = fs::read(&context.file_path)
-			.with_context(|| format!("Failed to open Markdown file '{}'", context.file_path))?;
-		let markdown_content = convert_to_utf8(&bytes);
-		let html_content = markdown_to_html(&markdown_content);
-		let mut converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
-		if !converter.convert(&html_content, HtmlSourceMode::Markdown) {
-			// TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
-			anyhow::bail!(t("Failed to convert Markdown to text: {}").replace("{}", &context.file_path));
-		}
-		let title = extract_title_from_path(&context.file_path);
-		let text = converter.get_text();
-		let mut buffer = DocumentBuffer::with_content(text);
-		let id_positions = converter.get_id_positions().clone();
-		add_converter_markers(&mut buffer, &converter, 0);
-		let toc_items = build_toc_from_headings(converter.get_headings());
-		let mut doc = Document::new().with_title(title);
-		doc.set_buffer(buffer);
-		doc.toc_items = toc_items;
-		doc.id_positions = id_positions;
-		Ok(doc)
 	}
 }

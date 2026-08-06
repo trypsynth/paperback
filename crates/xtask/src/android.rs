@@ -90,10 +90,10 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 	// Generate translation JSON assets for each translated language
 	let po_dir = project_root().join("po");
 	let assets_dir = project_root().join("android/app/src/main/assets");
-	if po_dir.is_dir() {
-		if let Err(e) = patois_build::gen_android_strings(&po_dir, &assets_dir) {
-			println!("Warning: could not generate Android translations: {e}");
-		}
+	if po_dir.is_dir()
+		&& let Err(e) = patois_build::gen_android_strings(&po_dir, &assets_dir)
+	{
+		println!("Warning: could not generate Android translations: {e}");
 	}
 
 	let readmes_assets_dir = assets_dir.join("readmes");
@@ -117,19 +117,20 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 		if let Ok(entries) = fs::read_dir(&doc_dir) {
 			for entry in entries.flatten() {
 				let path = entry.path();
-				if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-					if name.starts_with("readme-") && name.ends_with(".md") {
-						let out_name = name.replace(".md", ".html");
-						let status = Command::new("pandoc")
-							.arg(format!("--defaults={}", pandoc_config.display()))
-							.arg(&path)
-							.arg("-o")
-							.arg(readmes_assets_dir.join(out_name))
-							.status();
-						match status {
-							Ok(s) if s.success() => {}
-							_ => println!("Warning: Failed to generate documentation for language: {}", name),
-						}
+				if let Some(name) = path.file_name().and_then(|n| n.to_str())
+					&& name.starts_with("readme-")
+					&& name.ends_with(".md")
+				{
+					let out_name = name.replace(".md", ".html");
+					let status = Command::new("pandoc")
+						.arg(format!("--defaults={}", pandoc_config.display()))
+						.arg(&path)
+						.arg("-o")
+						.arg(readmes_assets_dir.join(out_name))
+						.status();
+					match status {
+						Ok(s) if s.success() => {}
+						_ => println!("Warning: Failed to generate documentation for language: {}", name),
 					}
 				}
 			}

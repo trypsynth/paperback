@@ -66,12 +66,17 @@ fn find_opf_path<R: Read + Seek>(archive: &mut ZipArchive<R>) -> Result<String> 
 		.ok_or_else(|| anyhow::anyhow!("rootfile not found in container.xml"))
 }
 
-/// Returns `(manifest: id → (path, media_type), spine order, document title)`.
-fn parse_opf(content: &str, opf_dir: &str) -> Result<(HashMap<String, (String, String)>, Vec<String>, String)> {
+/// Manifest entries from an OPF, keyed by item id: id → (path, media type).
+type OpfManifest = HashMap<String, (String, String)>;
+
+/// The parts of an OPF we care about: `(manifest, spine order, document title)`.
+type OpfContents = (OpfManifest, Vec<String>, String);
+
+fn parse_opf(content: &str, opf_dir: &str) -> Result<OpfContents> {
 	let doc = XmlDoc::parse_with_options(content, ParsingOptions { allow_dtd: true, ..Default::default() })
 		.context("failed to parse OPF")?;
 
-	let mut manifest: HashMap<String, (String, String)> = HashMap::new();
+	let mut manifest: OpfManifest = HashMap::new();
 	let mut spine: Vec<String> = Vec::new();
 	let mut title = String::new();
 

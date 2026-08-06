@@ -129,12 +129,14 @@ fn read_ini(ini_path: &std::path::Path) -> ConfigData {
 			config.set_path("/");
 			continue;
 		}
-		let mut doc = DocumentConfig::default();
-		doc.path = path.clone();
-		doc.last_position = config.read_long("last_position", 0);
-		doc.opened = config.read_bool("opened", false);
-		doc.format = config.read_string("format", "");
-		doc.password = config.read_string("password", "");
+		let mut doc = DocumentConfig {
+			path: path.clone(),
+			last_position: config.read_long("last_position", 0),
+			opened: config.read_bool("opened", false),
+			format: config.read_string("format", ""),
+			password: config.read_string("password", ""),
+			..DocumentConfig::default()
+		};
 		let history_str = config.read_string("navigation_history", "");
 		if !history_str.is_empty() {
 			doc.navigation_history = history_str.split(',').filter_map(|t| t.trim().parse::<i64>().ok()).collect();

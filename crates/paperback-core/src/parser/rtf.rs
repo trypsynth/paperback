@@ -782,7 +782,7 @@ mod tests {
 		let default_enc = encoding_rs::WINDOWS_1252;
 		let font_table = extract_font_table(rtf, default_enc);
 		let out = resolve_hex_escapes(rtf, default_enc, &font_table);
-		assert!(out.contains('Ć'), "expected Ć (Windows-1250 0xC6), got: {}", &out);
+		assert!(out.contains('Ć'), "expected Ć (Windows-1250 0xC6), got: {}", out);
 		assert!(!out.contains('Æ'), "should not contain Æ (Windows-1252 0xC6)");
 	}
 

@@ -874,33 +874,33 @@ fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, session: &DocumentSession
 	let segments = merge_formatting_markers(&markers);
 
 	#[cfg(target_os = "windows")]
-	if !segments.is_empty() {
-		if let Some(font) = text_ctrl.get_font() {
-			let rtf = rtf_write::build_rtf(
-				content,
-				&segments,
-				&RtfFontInfo { face_name: font.get_face_name(), point_size: font.get_point_size() },
-			);
-			if stream_rtf_into_ctrl(text_ctrl, &rtf) {
-				let round_tripped = text_ctrl.get_value();
-				// RichEdit's document model implicitly terminates the buffer, so a
-				// wholly-trailing "\par" (with no content after it) doesn't manifest
-				// as a stored character. Tolerate exactly that one known, harmless
-				// discrepancy rather than falling back over it: the very last
-				// position of the document ends up one short of `content`, which
-				// only matters at the literal last character of the book.
-				let matched = round_tripped == content
-					|| (content.ends_with('\n')
-						&& round_tripped.len() + 1 == content.len()
-						&& content.starts_with(round_tripped.as_str()));
-				if matched {
-					return;
-				}
+	if !segments.is_empty()
+		&& let Some(font) = text_ctrl.get_font()
+	{
+		let rtf = rtf_write::build_rtf(
+			content,
+			&segments,
+			&RtfFontInfo { face_name: font.get_face_name(), point_size: font.get_point_size() },
+		);
+		if stream_rtf_into_ctrl(text_ctrl, &rtf) {
+			let round_tripped = text_ctrl.get_value();
+			// RichEdit's document model implicitly terminates the buffer, so a
+			// wholly-trailing "\par" (with no content after it) doesn't manifest
+			// as a stored character. Tolerate exactly that one known, harmless
+			// discrepancy rather than falling back over it: the very last
+			// position of the document ends up one short of `content`, which
+			// only matters at the literal last character of the book.
+			let matched = round_tripped == content
+				|| (content.ends_with('\n')
+					&& round_tripped.len() + 1 == content.len()
+					&& content.starts_with(round_tripped.as_str()));
+			if matched {
+				return;
 			}
-			// Never leave raw RTF markup on screen for an accessibility user;
-			// fall back below to the plain-text + segment-loop path.
-			tracing::warn!("RTF fast path for formatting markers did not round-trip; falling back");
 		}
+		// Never leave raw RTF markup on screen for an accessibility user;
+		// fall back below to the plain-text + segment-loop path.
+		tracing::warn!("RTF fast path for formatting markers did not round-trip; falling back");
 	}
 
 	fill_text_ctrl(text_ctrl, content);
@@ -1261,10 +1261,10 @@ pub fn merge_formatting_markers(markers: &[paperback_core::session::LineMarker])
 			}
 		}
 	}
-	if let Some(seg) = open {
-		if seg.bold || seg.italic || seg.underline {
-			segments.push(seg);
-		}
+	if let Some(seg) = open
+		&& (seg.bold || seg.italic || seg.underline)
+	{
+		segments.push(seg);
 	}
 	segments
 }

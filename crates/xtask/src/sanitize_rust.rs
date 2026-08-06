@@ -74,9 +74,7 @@ pub fn sanitize_for_xgettext(src: &str) -> String {
 			}
 		} else if c == '\'' {
 			if let Some(end) = char_literal_end(&chars, i) {
-				for k in i..=end {
-					out.push(chars[k]);
-				}
+				out.extend(&chars[i..=end]);
 				i = end + 1;
 			} else {
 				out.push(' ');

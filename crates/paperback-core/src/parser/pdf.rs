@@ -403,7 +403,7 @@ fn extract_text_lines(text_page: &PdfiumTextPage) -> Vec<(String, f64)> {
 	result
 }
 
-fn sorted_median(values: &mut Vec<f64>) -> f64 {
+fn sorted_median(values: &mut [f64]) -> f64 {
 	if values.is_empty() {
 		return 0.0;
 	}
@@ -482,15 +482,15 @@ fn join_paragraphs(raw_lines: &[(String, f64)], body_font_size: f64) -> Vec<(Str
 				}
 				is_numbered = found_space;
 			}
-			let break_paragraph = if *is_heading_line || current_is_heading {
-				true
-			} else if is_list_item || is_numbered {
-				true
-			} else if last_line_ends_with_punctuation && last_line_len < short_line_threshold {
-				true
-			} else {
-				last_line_len < short_line_threshold && (starts_with_uppercase || !starts_with_alpha)
-			};
+			// A heading (either side of the boundary) or a list item always starts a new paragraph;
+			// otherwise a short previous line does, whether it ended on punctuation or the new line
+			// looks like a fresh sentence.
+			let break_paragraph = *is_heading_line
+				|| current_is_heading
+				|| is_list_item
+				|| is_numbered
+				|| (last_line_len < short_line_threshold
+					&& (last_line_ends_with_punctuation || starts_with_uppercase || !starts_with_alpha));
 			if break_paragraph {
 				paragraphs.push((mem::take(&mut current_paragraph), current_is_heading));
 				current_paragraph = line.clone();

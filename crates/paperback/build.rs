@@ -124,7 +124,7 @@ fn build_translations() {
 		"cargo:rerun-if-changed={}",
 		workspace_dir.join("android/app/src/main/kotlin/dev/paperback/mobile").display()
 	);
-	if let Err(e) = patois_build::gen_pot(&workspace_dir, &po_dir, "paperback") {
+	if let Err(e) = patois_build::gen_pot(workspace_dir, &po_dir, "paperback") {
 		println!("cargo:warning=Failed to regenerate paperback.pot from Rust sources: {e}");
 	}
 	let ios_src = workspace_dir.join("ios/Paperback");

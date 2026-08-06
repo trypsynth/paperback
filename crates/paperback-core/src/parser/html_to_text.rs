@@ -530,11 +530,11 @@ impl HtmlToText {
 				self.italics
 					.push(FormatInfo { offset: start, length: self.get_current_text_position().saturating_sub(start) });
 			}
-		} else if tag_name == "u" {
-			if let Some(start) = self.open_underlines.pop() {
-				self.underlines
-					.push(FormatInfo { offset: start, length: self.get_current_text_position().saturating_sub(start) });
-			}
+		} else if tag_name == "u"
+			&& let Some(start) = self.open_underlines.pop()
+		{
+			self.underlines
+				.push(FormatInfo { offset: start, length: self.get_current_text_position().saturating_sub(start) });
 		}
 	}
 
