@@ -27,7 +27,7 @@ impl Parser for OdpParser {
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::empty()
+		paperback_formats::ODP.flags
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
@@ -84,7 +84,7 @@ impl Parser for FodpParser {
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::empty()
+		paperback_formats::FODP.flags
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {

@@ -523,7 +523,7 @@ fn format_tasks_block() -> String {
 	let mut lines = Vec::new();
 	for format in paperback_formats::ALL {
 		let ext_list = format.extensions.iter().map(|ext| format!("*.{ext}")).collect::<Vec<_>>().join(", ");
-		let flags = if format.default_checked { String::new() } else { "; Flags: unchecked".to_string() };
+		let flags = if format.installer.default_checked { String::new() } else { "; Flags: unchecked".to_string() };
 		lines.push(format!(
 			"\tName: \"assoc_{}\"; Description: \"Associate with {} ({})\"{}",
 			slugify(format.name),
@@ -547,7 +547,7 @@ fn format_registry_block() -> String {
 			if *ext == "zip" {
 				continue;
 			}
-			if format.default_handler {
+			if format.installer.default_handler {
 				lines.push(format!(
 					"\tRoot: HKCR; Subkey: \".{ext}\"; ValueType: string; ValueName: \"\"; ValueData: \"Paperback.Document\"; Flags: uninsdeletevalue; Tasks: {task}"
 				));

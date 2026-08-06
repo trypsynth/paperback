@@ -27,11 +27,7 @@ impl Parser for ChmParser {
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_TOC
-			| ParserFlags::SUPPORTS_LISTS
-			| ParserFlags::SUPPORTS_SECTIONS
-			| ParserFlags::SUPPORTS_IMAGES
-			| ParserFlags::SUPPORTS_FIGURES
+		paperback_formats::CHM.flags
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {

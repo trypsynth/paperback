@@ -49,7 +49,7 @@ impl Parser for WordParser {
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_SECTIONS
+		paperback_formats::WORD.flags
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {

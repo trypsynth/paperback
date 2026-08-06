@@ -116,7 +116,7 @@ impl Parser for MarkdownParser {
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_LISTS
+		paperback_formats::MARKDOWN.flags
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {

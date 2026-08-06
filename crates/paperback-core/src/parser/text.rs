@@ -20,7 +20,7 @@ impl Parser for TextParser {
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::NONE
+		paperback_formats::TEXT.flags
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {

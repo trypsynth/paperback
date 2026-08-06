@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 
-use bitflags::bitflags;
+/// Re-exported so `crate::document::ParserFlags` keeps working; the flags themselves are
+/// declared alongside the rest of each format's metadata in `paperback-formats`.
+pub use paperback_formats::ParserFlags;
 
 use crate::{
 	types::HeadingInfo,
@@ -529,19 +531,6 @@ impl DocumentHandle {
 	#[must_use]
 	pub fn previous_heading_index(&self, position: i64, level: Option<i32>) -> Option<i32> {
 		self.previous_heading_marker_index(position, level).and_then(|idx| i32::try_from(idx).ok())
-	}
-}
-
-bitflags! {
-	#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-	pub struct ParserFlags: u32 {
-		const NONE = 0;
-		const SUPPORTS_SECTIONS = 1 << 0;
-		const SUPPORTS_TOC = 1 << 1;
-		const SUPPORTS_PAGES = 1 << 2;
-		const SUPPORTS_LISTS = 1 << 3;
-		const SUPPORTS_IMAGES = 1 << 4;
-		const SUPPORTS_FIGURES = 1 << 5;
 	}
 }
 

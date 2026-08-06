@@ -30,7 +30,7 @@ impl Parser for MobiParser {
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_LISTS
+		paperback_formats::MOBI.flags
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {

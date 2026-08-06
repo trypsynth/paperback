@@ -25,7 +25,7 @@ impl Parser for RtfParser {
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_PAGES
+		paperback_formats::RTF.flags
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {

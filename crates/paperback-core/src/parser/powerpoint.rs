@@ -54,7 +54,7 @@ impl Parser for PowerpointParser {
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_TOC
+		paperback_formats::POWERPOINT.flags
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {

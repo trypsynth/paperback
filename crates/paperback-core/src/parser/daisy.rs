@@ -33,10 +33,7 @@ impl Parser for DaisyParser {
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_SECTIONS
-			| ParserFlags::SUPPORTS_TOC
-			| ParserFlags::SUPPORTS_LISTS
-			| ParserFlags::SUPPORTS_PAGES
+		paperback_formats::DAISY.flags
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {

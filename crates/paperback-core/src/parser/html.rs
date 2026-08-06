@@ -25,7 +25,7 @@ impl Parser for HtmlParser {
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_LISTS
+		paperback_formats::HTML.flags
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {

@@ -36,7 +36,7 @@ impl Parser for PdfParser {
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_PAGES | ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_LISTS
+		paperback_formats::PDF.flags
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {

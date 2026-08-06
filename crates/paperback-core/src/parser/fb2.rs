@@ -27,7 +27,7 @@ impl Parser for Fb2Parser {
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_SECTIONS
+		paperback_formats::FB2.flags
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {

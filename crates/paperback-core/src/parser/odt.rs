@@ -30,7 +30,7 @@ impl Parser for OdtParser {
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_TOC
+		paperback_formats::ODT.flags
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
@@ -67,7 +67,7 @@ impl Parser for FodtParser {
 	}
 
 	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_TOC
+		paperback_formats::FODT.flags
 	}
 
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
