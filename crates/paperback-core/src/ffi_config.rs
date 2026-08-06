@@ -92,8 +92,8 @@ impl ConfigManagerFfi {
 	pub fn get_supported_extensions(&self) -> Vec<String> {
 		let mut exts = HashSet::new();
 		for parser in ParserRegistry::global().all_parsers() {
-			for ext in parser.extensions {
-				exts.insert(ext);
+			for ext in parser.extensions() {
+				exts.insert((*ext).to_string());
 			}
 		}
 		exts.into_iter().collect()

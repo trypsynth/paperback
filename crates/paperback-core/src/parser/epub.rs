@@ -11,7 +11,7 @@ use roxmltree::{Document as XmlDocument, Node, NodeType, ParsingOptions};
 use zip::ZipArchive;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
 		ConverterOutput, Parser, add_converter_markers_excluding_links,
 		html_to_text::{HtmlSourceMode, HtmlToText},
@@ -102,18 +102,6 @@ struct SpineConversionResult {
 pub struct EpubParser;
 
 impl Parser for EpubParser {
-	fn name(&self) -> &'static str {
-		paperback_formats::EPUB.name
-	}
-
-	fn extensions(&self) -> &[&str] {
-		paperback_formats::EPUB.extensions
-	}
-
-	fn supported_flags(&self) -> ParserFlags {
-		paperback_formats::EPUB.flags
-	}
-
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		let file = File::open(&context.file_path)
 			.with_context(|| format!("Failed to open EPUB file '{}'", context.file_path))?;

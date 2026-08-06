@@ -3,7 +3,7 @@ use std::fs;
 use anyhow::{Context, Result};
 
 use crate::{
-	document::{Document, DocumentBuffer, ParserContext, ParserFlags},
+	document::{Document, DocumentBuffer, ParserContext},
 	parser::{Parser, util::path::extract_title_from_path},
 	util::{encoding::convert_to_utf8, text::remove_soft_hyphens},
 };
@@ -11,18 +11,6 @@ use crate::{
 pub struct TextParser;
 
 impl Parser for TextParser {
-	fn name(&self) -> &'static str {
-		paperback_formats::TEXT.name
-	}
-
-	fn extensions(&self) -> &[&str] {
-		paperback_formats::TEXT.extensions
-	}
-
-	fn supported_flags(&self) -> ParserFlags {
-		paperback_formats::TEXT.flags
-	}
-
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		let bytes = fs::read(&context.file_path)
 			.with_context(|| format!("Failed to open text file '{}'", context.file_path))?;

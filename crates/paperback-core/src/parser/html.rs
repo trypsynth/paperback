@@ -3,7 +3,7 @@ use std::fs;
 use anyhow::{Context, Result};
 
 use crate::{
-	document::{Document, DocumentBuffer, ParserContext, ParserFlags},
+	document::{Document, DocumentBuffer, ParserContext},
 	parser::{
 		Parser, add_converter_markers,
 		html_to_text::{HtmlSourceMode, HtmlToText},
@@ -16,18 +16,6 @@ use crate::{
 pub struct HtmlParser;
 
 impl Parser for HtmlParser {
-	fn name(&self) -> &'static str {
-		paperback_formats::HTML.name
-	}
-
-	fn extensions(&self) -> &[&str] {
-		paperback_formats::HTML.extensions
-	}
-
-	fn supported_flags(&self) -> ParserFlags {
-		paperback_formats::HTML.flags
-	}
-
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		let bytes = fs::read(&context.file_path)
 			.with_context(|| format!("Failed to open HTML file '{}'", context.file_path))?;

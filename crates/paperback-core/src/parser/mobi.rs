@@ -9,7 +9,7 @@ use anyhow::Result;
 use encoding_rs::WINDOWS_1252;
 
 use crate::{
-	document::{Document, DocumentBuffer, ParserContext, ParserFlags, TocItem},
+	document::{Document, DocumentBuffer, ParserContext, TocItem},
 	parser::{
 		Parser, add_converter_markers,
 		html_to_text::{HtmlSourceMode, HtmlToText},
@@ -21,18 +21,6 @@ use crate::{
 pub struct MobiParser;
 
 impl Parser for MobiParser {
-	fn name(&self) -> &'static str {
-		paperback_formats::MOBI.name
-	}
-
-	fn extensions(&self) -> &[&str] {
-		paperback_formats::MOBI.extensions
-	}
-
-	fn supported_flags(&self) -> ParserFlags {
-		paperback_formats::MOBI.flags
-	}
-
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		let mut file = File::open(&context.file_path)?;
 		let mut data = Vec::new();

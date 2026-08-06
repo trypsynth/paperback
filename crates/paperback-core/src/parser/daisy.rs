@@ -10,7 +10,7 @@ use roxmltree::{Document as XmlDocument, Node, NodeType, ParsingOptions};
 use zip::ZipArchive;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
 		PASSWORD_REQUIRED_ERROR_PREFIX, Parser, add_converter_markers,
 		html_to_text::{HtmlSourceMode, HtmlToText},
@@ -24,18 +24,6 @@ use crate::{
 pub struct DaisyParser;
 
 impl Parser for DaisyParser {
-	fn name(&self) -> &'static str {
-		paperback_formats::DAISY.name
-	}
-
-	fn extensions(&self) -> &[&str] {
-		paperback_formats::DAISY.extensions
-	}
-
-	fn supported_flags(&self) -> ParserFlags {
-		paperback_formats::DAISY.flags
-	}
-
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		let path = Path::new(&context.file_path);
 		let mut title = extract_title_from_path(&context.file_path);

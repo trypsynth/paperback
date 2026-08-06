@@ -4,7 +4,7 @@ use anyhow::{Context, Result};
 use pulldown_cmark::{Event, Options, Parser as MarkdownParserImpl, Tag, html::push_html};
 
 use crate::{
-	document::{Document, DocumentBuffer, ParserContext, ParserFlags},
+	document::{Document, DocumentBuffer, ParserContext},
 	parser::{
 		Parser, add_converter_markers,
 		html_to_text::{HtmlSourceMode, HtmlToText},
@@ -107,18 +107,6 @@ mod tests {
 }
 
 impl Parser for MarkdownParser {
-	fn name(&self) -> &'static str {
-		paperback_formats::MARKDOWN.name
-	}
-
-	fn extensions(&self) -> &[&str] {
-		paperback_formats::MARKDOWN.extensions
-	}
-
-	fn supported_flags(&self) -> ParserFlags {
-		paperback_formats::MARKDOWN.flags
-	}
-
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		let bytes = fs::read(&context.file_path)
 			.with_context(|| format!("Failed to open Markdown file '{}'", context.file_path))?;

@@ -7,7 +7,7 @@ use anyhow::{Result, anyhow};
 use pdfium::{PdfiumDocument, PdfiumError, PdfiumTextPage, lib};
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
 		PASSWORD_REQUIRED_ERROR_PREFIX, Parser,
 		table_text::{display_lines_and_length, html_table_to_display},
@@ -27,18 +27,6 @@ const MIN_MCID_COVERAGE: f64 = 0.5;
 pub struct PdfParser;
 
 impl Parser for PdfParser {
-	fn name(&self) -> &'static str {
-		paperback_formats::PDF.name
-	}
-
-	fn extensions(&self) -> &[&str] {
-		paperback_formats::PDF.extensions
-	}
-
-	fn supported_flags(&self) -> ParserFlags {
-		paperback_formats::PDF.flags
-	}
-
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		let render_tables_inline = context.render_tables_inline;
 		let document =

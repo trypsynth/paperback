@@ -13,7 +13,7 @@ use roxmltree::{Document as XmlDocument, Node, NodeType};
 use zip::ZipArchive;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, format_marker_types},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, format_marker_types},
 	parser::{
 		PASSWORD_REQUIRED_ERROR_PREFIX, Parser,
 		table_text::{build_html_table_from_grid, html_table_to_display, table_caption_from_html},
@@ -40,18 +40,6 @@ const FIB_FLAG_USE_1_TABLE: u16 = 0x0200;
 pub struct WordParser;
 
 impl Parser for WordParser {
-	fn name(&self) -> &'static str {
-		paperback_formats::WORD.name
-	}
-
-	fn extensions(&self) -> &[&str] {
-		paperback_formats::WORD.extensions
-	}
-
-	fn supported_flags(&self) -> ParserFlags {
-		paperback_formats::WORD.flags
-	}
-
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		let extension = context.forced_extension.as_ref().map_or_else(
 			|| {

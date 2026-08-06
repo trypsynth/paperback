@@ -11,7 +11,7 @@ use roxmltree::{Document as XmlDocument, Node, NodeType};
 use zip::ZipArchive;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
 		Parser,
 		table_text::{
@@ -45,18 +45,6 @@ const PPT_REC_CSTRING: u16 = 4026;
 pub struct PowerpointParser;
 
 impl Parser for PowerpointParser {
-	fn name(&self) -> &'static str {
-		paperback_formats::POWERPOINT.name
-	}
-
-	fn extensions(&self) -> &[&str] {
-		paperback_formats::POWERPOINT.extensions
-	}
-
-	fn supported_flags(&self) -> ParserFlags {
-		paperback_formats::POWERPOINT.flags
-	}
-
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		let extension = context.forced_extension.as_ref().map_or_else(
 			|| {

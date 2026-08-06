@@ -4,7 +4,7 @@ use anyhow::{Context, Result};
 use roxmltree::{Document as XmlDocument, Node, NodeType};
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext},
 	parser::{
 		Parser, add_converter_markers,
 		util::xml::{collect_element_text, find_child_element},
@@ -18,18 +18,6 @@ type Metadata = (String, String);
 pub struct Fb2Parser;
 
 impl Parser for Fb2Parser {
-	fn name(&self) -> &'static str {
-		paperback_formats::FB2.name
-	}
-
-	fn extensions(&self) -> &[&str] {
-		paperback_formats::FB2.extensions
-	}
-
-	fn supported_flags(&self) -> ParserFlags {
-		paperback_formats::FB2.flags
-	}
-
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		const CLOSING_TAG: &str = "</FictionBook>";
 		let mut xml_content = fs::read_to_string(&context.file_path)

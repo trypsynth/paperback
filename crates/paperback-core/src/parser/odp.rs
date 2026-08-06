@@ -5,7 +5,7 @@ use roxmltree::{Document as XmlDocument, Node, NodeType};
 use zip::ZipArchive;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext},
 	parser::{
 		Parser,
 		util::{path::extract_title_from_path, xml::collect_element_text},
@@ -18,18 +18,6 @@ use crate::{
 pub struct OdpParser;
 
 impl Parser for OdpParser {
-	fn name(&self) -> &'static str {
-		paperback_formats::ODP.name
-	}
-
-	fn extensions(&self) -> &[&str] {
-		paperback_formats::ODP.extensions
-	}
-
-	fn supported_flags(&self) -> ParserFlags {
-		paperback_formats::ODP.flags
-	}
-
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		let file = File::open(&context.file_path)
 			.with_context(|| format!("Failed to open ODP file '{}'", context.file_path))?;
@@ -75,18 +63,6 @@ impl Parser for OdpParser {
 pub struct FodpParser;
 
 impl Parser for FodpParser {
-	fn name(&self) -> &'static str {
-		paperback_formats::FODP.name
-	}
-
-	fn extensions(&self) -> &[&str] {
-		paperback_formats::FODP.extensions
-	}
-
-	fn supported_flags(&self) -> ParserFlags {
-		paperback_formats::FODP.flags
-	}
-
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		let content_str = fs::read_to_string(&context.file_path)
 			.with_context(|| format!("Failed to open FODP file '{}'", context.file_path))?;
