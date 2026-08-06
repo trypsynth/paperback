@@ -22,6 +22,7 @@ bitflags! {
 		const SUPPORTS_LISTS = 1 << 3;
 		const SUPPORTS_IMAGES = 1 << 4;
 		const SUPPORTS_FIGURES = 1 << 5;
+		const SUPPORTS_AUDIO = 1 << 6;
 	}
 }
 
