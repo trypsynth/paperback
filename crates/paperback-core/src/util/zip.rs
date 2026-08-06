@@ -95,16 +95,12 @@ pub fn extract_zip_to_dir<R: Read + Seek>(
 
 #[cfg(test)]
 mod tests {
-	use std::{
-		env,
-		io::{Cursor, Write},
-		path::PathBuf,
-		time::{SystemTime, UNIX_EPOCH},
-	};
+	use std::io::{Cursor, Write};
 
 	use zip::{ZipWriter, write::FileOptions};
 
 	use super::*;
+	use crate::util::test_support::TempDir;
 
 	fn build_test_archive() -> ZipArchive<Cursor<Vec<u8>>> {
 		let mut cursor = Cursor::new(Vec::new());
@@ -118,14 +114,6 @@ mod tests {
 		}
 		cursor.set_position(0);
 		ZipArchive::new(cursor).expect("open zip")
-	}
-
-	fn unique_temp_path(suffix: &str) -> PathBuf {
-		let nanos = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
-		let mut path = env::temp_dir();
-		path.push(format!("paperback_test_{nanos}"));
-		path.push(suffix);
-		path
 	}
 
 	#[test]
@@ -144,7 +132,8 @@ mod tests {
 	#[test]
 	fn extract_zip_entry_to_file_writes_to_nested_path() {
 		let mut archive = build_test_archive();
-		let output_path = unique_temp_path("nested/out.txt");
+		let dir = TempDir::new("zip");
+		let output_path = dir.path().join("nested/out.txt");
 		extract_zip_entry_to_file(&mut archive, "nested/bar.txt", &output_path).expect("extract entry");
 		let contents = fs::read_to_string(&output_path).expect("read output");
 		assert_eq!(contents, "nested");
@@ -153,14 +142,16 @@ mod tests {
 	#[test]
 	fn extract_zip_entry_to_file_reports_missing_entry() {
 		let mut archive = build_test_archive();
-		let output_path = unique_temp_path("nested/missing.txt");
+		let dir = TempDir::new("zip");
+		let output_path = dir.path().join("nested/missing.txt");
 		assert!(extract_zip_entry_to_file(&mut archive, "does-not-exist.txt", &output_path).is_err());
 	}
 
 	#[test]
 	fn extract_zip_entry_to_file_overwrites_existing_file_contents() {
 		let mut archive = build_test_archive();
-		let output_path = unique_temp_path("nested/overwrite.txt");
+		let dir = TempDir::new("zip");
+		let output_path = dir.path().join("nested/overwrite.txt");
 		if let Some(parent) = output_path.parent() {
 			fs::create_dir_all(parent).expect("create parent");
 		}
