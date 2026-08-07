@@ -486,15 +486,22 @@ fn build_docs() {
 			}
 		}
 	}
-	let mut code = String::from("pub fn readme_for_lang(lang: &str) -> Option<&'static [u8]> {\n    match lang {\n");
-	for lang_code in &embedded_langs {
-		let filename = if lang_code == "en" { "/readme.html".to_string() } else { format!("/readme-{lang_code}.html") };
-		code.push_str(&format!(
-			"        {:?} => Some(include_bytes!(concat!(env!(\"OUT_DIR\"), {:?}))),\n",
-			lang_code, filename,
-		));
-	}
-	code.push_str("        _ => None,\n    }\n}\n");
+	let code = if embedded_langs.is_empty() {
+		"pub fn readme_for_lang(_lang: &str) -> Option<&'static [u8]> {\n    None\n}\n".to_string()
+	} else {
+		let mut code =
+			String::from("pub fn readme_for_lang(lang: &str) -> Option<&'static [u8]> {\n    match lang {\n");
+		for lang_code in &embedded_langs {
+			let filename =
+				if lang_code == "en" { "/readme.html".to_string() } else { format!("/readme-{lang_code}.html") };
+			code.push_str(&format!(
+				"        {:?} => Some(include_bytes!(concat!(env!(\"OUT_DIR\"), {:?}))),\n",
+				lang_code, filename,
+			));
+		}
+		code.push_str("        _ => None,\n    }\n}\n");
+		code
+	};
 	let _ = fs::write(out_dir.join("lang_readmes.rs"), code);
 }
 
