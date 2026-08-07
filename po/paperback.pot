@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-07 11:23+0200\n"
+"POT-Creation-Date: 2026-08-07 12:05+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -333,7 +333,7 @@ msgid "Check for &updates on startup"
 msgstr ""
 
 #. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
-msgid "&Automatically reload documents changed on disk"
+msgid "&Automatically reload changed documents"
 msgstr ""
 
 #. TRANSLATORS: Button label to open the hotkey customization dialog

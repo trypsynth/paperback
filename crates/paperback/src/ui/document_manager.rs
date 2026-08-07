@@ -39,6 +39,10 @@ pub struct DocumentTab {
 	disk_fingerprint: Option<FileFingerprint>,
 }
 
+/// Change-detection stamp for an open document's file, compared on every frame activation and
+/// tab switch. Metadata-only on purpose: `config::compute_document_hash` would read up to 2 MiB
+/// from disk per check and still miss mid-file edits in files larger than that (it hashes only
+/// head, tail and size), whereas a single `fs::metadata` call catches any completed write.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 struct FileFingerprint {
 	modified: SystemTime,

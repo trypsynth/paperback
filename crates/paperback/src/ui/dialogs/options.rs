@@ -148,7 +148,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		CheckBox::builder(&general_panel).with_label(&t("Check for &updates on startup")).build();
 	let auto_reload_check =
 		// TRANSLATORS: Option to automatically reload an open document when its file changes on disk
-		CheckBox::builder(&general_panel).with_label(&t("&Automatically reload documents changed on disk")).build();
+		CheckBox::builder(&general_panel).with_label(&t("&Automatically reload changed documents")).build();
 	// TRANSLATORS: Button label to open the hotkey customization dialog
 	let hotkey_button = Button::builder(&general_panel).with_label(&t("Customize &Window Hotkey...")).build();
 	let option_padding = 5;
