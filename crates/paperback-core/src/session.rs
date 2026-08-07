@@ -175,9 +175,9 @@ pub enum ExportFormatFfi {
 impl From<ExportFormatFfi> for ExportFormat {
 	fn from(f: ExportFormatFfi) -> Self {
 		match f {
-			ExportFormatFfi::Text => ExportFormat::Text,
-			ExportFormatFfi::Html => ExportFormat::Html,
-			ExportFormatFfi::Markdown => ExportFormat::Markdown,
+			ExportFormatFfi::Text => Self::Text,
+			ExportFormatFfi::Html => Self::Html,
+			ExportFormatFfi::Markdown => Self::Markdown,
 		}
 	}
 }
@@ -1151,10 +1151,12 @@ impl DocumentSession {
 		Ok(())
 	}
 
+	#[must_use]
 	pub fn get_supported_export_formats_ffi(&self) -> Vec<ExportFormatFfi> {
 		vec![ExportFormatFfi::Text, ExportFormatFfi::Html, ExportFormatFfi::Markdown]
 	}
 
+	#[must_use]
 	pub fn render_export_ffi(&self, format: ExportFormatFfi) -> String {
 		render(&self.handle, format.into())
 	}
@@ -1760,7 +1762,7 @@ mod tests {
 	#[test]
 	fn webview_target_path_returns_none_for_missing_markdown_file() {
 		let session = DocumentSession {
-			handle: sample_session(ParserFlags::NONE).handle.clone(),
+			handle: sample_session(ParserFlags::NONE).handle,
 			file_path: "C:\\docs\\chapter.md".to_string(),
 			history: Vec::new(),
 			history_index: 0,
@@ -1779,7 +1781,7 @@ mod tests {
 	#[test]
 	fn extract_resource_returns_false_for_non_epub_files() {
 		let session = DocumentSession {
-			handle: sample_session(ParserFlags::NONE).handle.clone(),
+			handle: sample_session(ParserFlags::NONE).handle,
 			file_path: "C:\\docs\\chapter.txt".to_string(),
 			history: Vec::new(),
 			history_index: 0,
@@ -1791,7 +1793,7 @@ mod tests {
 
 	fn session_with_path(file_path: &str) -> DocumentSession {
 		DocumentSession {
-			handle: sample_session(ParserFlags::NONE).handle.clone(),
+			handle: sample_session(ParserFlags::NONE).handle,
 			file_path: file_path.to_string(),
 			history: Vec::new(),
 			history_index: 0,
@@ -1960,7 +1962,7 @@ mod tests {
 	#[test]
 	fn extract_resource_for_missing_epub_returns_error() {
 		let session = DocumentSession {
-			handle: sample_session(ParserFlags::NONE).handle.clone(),
+			handle: sample_session(ParserFlags::NONE).handle,
 			file_path: "C:\\path\\does\\not\\exist.epub".to_string(),
 			history: Vec::new(),
 			history_index: 0,

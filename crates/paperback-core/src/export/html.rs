@@ -416,21 +416,21 @@ mod tests {
 	fn test_bold_basic() {
 		let doc = simple_doc("bold text", vec![Marker::new(MarkerType::Bold, 0).with_length(4)]);
 		let html = render(&doc);
-		assert!(html.contains("<b>bold</b>"), "Expected <b>bold</b> in HTML: {}", html);
+		assert!(html.contains("<b>bold</b>"), "Expected <b>bold</b> in HTML: {html}");
 	}
 
 	#[test]
 	fn test_italic_basic() {
 		let doc = simple_doc("italic text", vec![Marker::new(MarkerType::Italic, 0).with_length(6)]);
 		let html = render(&doc);
-		assert!(html.contains("<i>italic</i>"), "Expected <i>italic</i> in HTML: {}", html);
+		assert!(html.contains("<i>italic</i>"), "Expected <i>italic</i> in HTML: {html}");
 	}
 
 	#[test]
 	fn test_underline_basic() {
 		let doc = simple_doc("underline text", vec![Marker::new(MarkerType::Underline, 0).with_length(9)]);
 		let html = render(&doc);
-		assert!(html.contains("<u>underline</u>"), "Expected <u>underline</u> in HTML: {}", html);
+		assert!(html.contains("<u>underline</u>"), "Expected <u>underline</u> in HTML: {html}");
 	}
 
 	#[test]
@@ -442,8 +442,8 @@ mod tests {
 		);
 		let html = render(&doc);
 		// Both tags should be present and properly ordered
-		assert!(html.contains("<b>bold</b>"), "Expected <b>bold</b> in HTML: {}", html);
-		assert!(html.contains("<i>italic</i>"), "Expected <i>italic</i> in HTML: {}", html);
+		assert!(html.contains("<b>bold</b>"), "Expected <b>bold</b> in HTML: {html}");
+		assert!(html.contains("<i>italic</i>"), "Expected <i>italic</i> in HTML: {html}");
 	}
 
 	#[test]
@@ -455,10 +455,10 @@ mod tests {
 		);
 		let html = render(&doc);
 		// Check both are present
-		assert!(html.contains("<b>"), "Expected <b> in HTML: {}", html);
-		assert!(html.contains("</b>"), "Expected </b> in HTML: {}", html);
-		assert!(html.contains("<i>"), "Expected <i> in HTML: {}", html);
-		assert!(html.contains("</i>"), "Expected </i> in HTML: {}", html);
+		assert!(html.contains("<b>"), "Expected <b> in HTML: {html}");
+		assert!(html.contains("</b>"), "Expected </b> in HTML: {html}");
+		assert!(html.contains("<i>"), "Expected <i> in HTML: {html}");
+		assert!(html.contains("</i>"), "Expected </i> in HTML: {html}");
 	}
 
 	#[test]
@@ -473,10 +473,10 @@ mod tests {
 		let html = render(&doc);
 		// Both opens and closes should be present
 		// The order of closes may vary based on insertion order (pre-existing behavior)
-		assert!(html.contains("<b>"), "Expected <b> in HTML: {}", html);
-		assert!(html.contains("</b>"), "Expected </b> in HTML: {}", html);
-		assert!(html.contains("<i>"), "Expected <i> in HTML: {}", html);
-		assert!(html.contains("</i>"), "Expected </i> in HTML: {}", html);
+		assert!(html.contains("<b>"), "Expected <b> in HTML: {html}");
+		assert!(html.contains("</b>"), "Expected </b> in HTML: {html}");
+		assert!(html.contains("<i>"), "Expected <i> in HTML: {html}");
+		assert!(html.contains("</i>"), "Expected </i> in HTML: {html}");
 		// Count tags to verify they're paired
 		let b_open = html.matches("<b>").count();
 		let b_close = html.matches("</b>").count();
@@ -519,11 +519,11 @@ mod tests {
 		);
 		let html = render(&doc);
 		// All tags should be present
-		assert!(html.contains("<b>"), "Expected <b> in HTML: {}", html);
-		assert!(html.contains("</b>"), "Expected </b> in HTML: {}", html);
-		assert!(html.contains("<i>"), "Expected <i> in HTML: {}", html);
-		assert!(html.contains("</i>"), "Expected </i> in HTML: {}", html);
-		assert!(html.contains("<u>"), "Expected <u> in HTML: {}", html);
-		assert!(html.contains("</u>"), "Expected </u> in HTML: {}", html);
+		assert!(html.contains("<b>"), "Expected <b> in HTML: {html}");
+		assert!(html.contains("</b>"), "Expected </b> in HTML: {html}");
+		assert!(html.contains("<i>"), "Expected <i> in HTML: {html}");
+		assert!(html.contains("</i>"), "Expected </i> in HTML: {html}");
+		assert!(html.contains("<u>"), "Expected <u> in HTML: {html}");
+		assert!(html.contains("</u>"), "Expected </u> in HTML: {html}");
 	}
 }

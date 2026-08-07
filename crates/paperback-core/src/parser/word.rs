@@ -954,14 +954,14 @@ mod tests {
 	#[test]
 	fn word_table_emits_placeholder_or_tsv_by_flag() {
 		// Minimal OOXML XML: one table with one row, two cells.
-		let xml = r#"<document><body>
+		let xml = r"<document><body>
 			<tbl>
 				<tr>
 					<tc><p><r><t>Kop</t></r></p></tc>
 					<tc><p><r><t>&#x1D11E;</t></r></p></tc>
 				</tr>
 			</tbl>
-		</body></document>"#;
+		</body></document>";
 		let xml_doc = XmlDocument::parse(xml).expect("valid xml");
 
 		// OFF: placeholder "[Table]: Kop 𝄞".

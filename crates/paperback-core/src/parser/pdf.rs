@@ -937,7 +937,7 @@ mod tests {
 		let pos = buffer.current_position();
 		let mut lines_info = Vec::new();
 		let mut page_text = String::new();
-		append_pdf_table_to_buffer(&mut buffer, html.clone(), pos, &mut lines_info, &mut page_text, true);
+		append_pdf_table_to_buffer(&mut buffer, html, pos, &mut lines_info, &mut page_text, true);
 
 		// Two rows -> "Kop\t𝄞\na\tb\n".
 		assert_eq!(buffer.content, "Kop\t\u{1D11E}\na\tb\n");

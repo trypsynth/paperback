@@ -31,6 +31,7 @@ impl TempDir {
 		Self { path }
 	}
 
+	#[must_use]
 	pub fn path(&self) -> &Path {
 		&self.path
 	}
@@ -52,6 +53,7 @@ impl TempDir {
 	}
 
 	/// The path a file would have inside this directory, without creating it.
+	#[must_use]
 	pub fn join_str(&self, name: &str) -> String {
 		self.path.join(name).to_string_lossy().into_owned()
 	}

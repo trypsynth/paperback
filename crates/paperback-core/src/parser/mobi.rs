@@ -190,7 +190,7 @@ impl Parser for MobiParser {
 				extra_data_flags =
 					u32::from_be_bytes([mobi_header[224], mobi_header[225], mobi_header[226], mobi_header[227]]);
 			} else {
-				extra_data_flags = u16::from_be_bytes([mobi_header[242], mobi_header[243]]) as u32;
+				extra_data_flags = u32::from(u16::from_be_bytes([mobi_header[242], mobi_header[243]]));
 			}
 			if extra_data_flags == 0xFFFFFFFF {
 				extra_data_flags = 0;
@@ -970,7 +970,7 @@ fn parse_ncx(
 		}
 		let tag = indx_rec[p];
 		let vpe = indx_rec[p + 1] as usize;
-		let mask = indx_rec[p + 2] as u32;
+		let mask = u32::from(indx_rec[p + 2]);
 		let end = indx_rec[p + 3];
 		tags.push((tag, vpe, mask, end));
 	}
@@ -1047,7 +1047,7 @@ fn parse_ncx(
 			let mut cbyte_idx = 0;
 
 			for &(tag, vpe, mask, end_flag) in &tags {
-				let cb = cbytes.get(cbyte_idx).copied().unwrap_or(0) as u32;
+				let cb = u32::from(cbytes.get(cbyte_idx).copied().unwrap_or(0));
 				if end_flag == 1 {
 					cbyte_idx += 1;
 				}
@@ -1132,7 +1132,7 @@ fn parse_ncx(
 					let filepos = frag_offsets.get(&f).copied().unwrap_or(0) + p;
 					let lvl = if lvl == 0 { 1 } else { lvl as u32 };
 
-					entries.push((title, lvl, format!("#fp{:010}", filepos)));
+					entries.push((title, lvl, format!("#fp{filepos:010}")));
 				}
 			}
 		}

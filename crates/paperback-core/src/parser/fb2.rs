@@ -185,7 +185,7 @@ mod tests {
 	use super::*;
 	use crate::{document::MarkerType, util::test_support::TempDir};
 
-	const BODY: &str = r#"<body><section><title><p>Chapter One</p></title><p>Opening line.</p></section></body>"#;
+	const BODY: &str = r"<body><section><title><p>Chapter One</p></title><p>Opening line.</p></section></body>";
 
 	fn fb2_document(description: &str, body: &str) -> String {
 		format!(

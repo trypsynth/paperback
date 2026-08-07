@@ -113,7 +113,7 @@ fn blank_raw_string_body(chars: &[char], i: &mut usize, hashes: usize, out: &mut
 				k += 1;
 			}
 			if matched == hashes {
-				for _ in 0..(hashes + 1) {
+				for _ in 0..=hashes {
 					out.push(' ');
 				}
 				*i = k;

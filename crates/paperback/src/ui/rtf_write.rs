@@ -1,7 +1,7 @@
 //! Builds a minimal RTF document from plain text plus a set of non-overlapping
 //! bold/italic/underline spans, for the Windows RTF fast path in
 //! `document_manager`. See `apply_formatting_markers_to_ctrl` for why this
-//! exists: the native RichEdit control backing a `wxTE_RICH2` `TextCtrl`
+//! exists: the native `RichEdit` control backing a `wxTE_RICH2` `TextCtrl`
 //! special-cases `WM_SETTEXT` — text starting with `{\rtf` is parsed as RTF in
 //! one shot instead of literal text, which is far cheaper than issuing one
 //! `SetStyle` call per formatting span on documents with thousands of them.
@@ -201,7 +201,7 @@ mod tests {
 	/// Independent black-box check: run generated RTF through paperback-core's
 	/// own `RtfParser` (used for *reading* .rtf files) and confirm the plain
 	/// text and bold/italic/underline spans it extracts match what went in.
-	/// This doesn't exercise the real fast path (that's native RichEdit, not
+	/// This doesn't exercise the real fast path (that's native `RichEdit`, not
 	/// this crate's parser), but it does catch escaping bugs independently of
 	/// hand-checking the raw RTF string.
 	#[test]
