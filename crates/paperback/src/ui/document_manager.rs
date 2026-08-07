@@ -4,10 +4,11 @@ use std::collections::HashMap;
 use std::ptr::{addr_of_mut, copy_nonoverlapping};
 use std::{
 	cell::Cell,
+	fs,
 	path::{Path, PathBuf},
 	rc::Rc,
 	sync::{Mutex, atomic::Ordering},
-	time::Instant,
+	time::{Instant, SystemTime},
 };
 
 use paperback_core::{
@@ -35,6 +36,18 @@ pub struct DocumentTab {
 	pub session: DocumentSession,
 	pub file_path: PathBuf,
 	pub track: bool,
+	disk_fingerprint: Option<FileFingerprint>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct FileFingerprint {
+	modified: SystemTime,
+	len: u64,
+}
+
+fn read_fingerprint(path: &Path) -> Option<FileFingerprint> {
+	let meta = fs::metadata(path).ok()?;
+	Some(FileFingerprint { modified: meta.modified().ok()?, len: meta.len() })
 }
 
 pub fn title_or_filename(title: String, path: &Path) -> String {
@@ -234,7 +247,14 @@ impl DocumentManager {
 		let path_str = path.to_string_lossy();
 		let nav_history = config.get_navigation_history(&path_str);
 		session.set_history(&nav_history.positions, nav_history.index);
-		self.tabs.push(DocumentTab { panel, text_ctrl, session, file_path: path.to_path_buf(), track });
+		self.tabs.push(DocumentTab {
+			panel,
+			text_ctrl,
+			session,
+			file_path: path.to_path_buf(),
+			track,
+			disk_fingerprint: read_fingerprint(path),
+		});
 		if !password.is_empty() {
 			config.set_document_password(&path_str, password);
 		}
@@ -598,7 +618,7 @@ impl DocumentManager {
 	pub fn apply_render_tables_inline(&mut self, render_tables_inline: bool) {
 		// Read readability settings and collect each tab's parse inputs (path, password, forced
 		// format) under a single config lock, so we don't re-lock per tab while mutating the tabs.
-		let (rf, line_spacing, bg_color, text_alignment, letter_spacing, paragraph_spacing, parse_inputs) = {
+		let (style, parse_inputs) = {
 			let cfg = self.config.lock().unwrap();
 			let parse_inputs: Vec<(String, String, String)> = self
 				.tabs
@@ -610,74 +630,53 @@ impl DocumentManager {
 					(path_str, password, forced_extension)
 				})
 				.collect();
-			(
-				cfg.get_readability_font(),
-				cfg.get_line_spacing(),
-				cfg.get_bg_color(),
-				cfg.get_text_alignment(),
-				cfg.get_letter_spacing(),
-				cfg.get_paragraph_spacing(),
-				parse_inputs,
-			)
+			(readability_style(&cfg), parse_inputs)
 		};
 		for (tab, (path_str, password, forced_extension)) in self.tabs.iter_mut().zip(parse_inputs) {
-			let current_pos = tab.text_ctrl.get_insertion_point();
-			let pos = usize::try_from(current_pos.max(0)).unwrap_or(0);
-
-			// Find the nearest anchor at-or-before the cursor using the full id_positions key
-			// (unlike nearest_fragment_before, which strips the "path#" prefix for epub keys
-			// making the subsequent lookup fail). Record the within-block offset so the cursor
-			// lands at the same structural position after reparsing. Fallback: percentage-based
-			// position for formats with no anchors.
-			let stable_anchor = {
-				let id_positions = &tab.session.handle().document().id_positions;
-				id_positions
-					.iter()
-					.filter(|&(_, &off)| off <= pos)
-					.max_by_key(|&(_, &off)| off)
-					.map(|(key, &anchor_off)| (key.clone(), pos.saturating_sub(anchor_off)))
-			};
-			let fallback_percent = tab.session.get_status_info(current_pos).percentage;
-
-			let new_session = match DocumentSession::new(&path_str, &password, &forced_extension, render_tables_inline)
-			{
-				Ok(session) => session,
-				Err(err) => {
-					tracing::error!(path = %path_str, error = %err, "failed to re-parse document for render_tables_inline toggle");
-					continue;
-				}
-			};
-			tab.session = new_session;
-			let content = tab.session.content();
-			fill_text_ctrl_with_formatting(tab.text_ctrl, &tab.session, &content);
-			if let Some(font) = build_font_from_readability(&rf) {
-				tab.text_ctrl.set_font(&font);
-			}
-			apply_foreground_color_to_ctrl(tab.text_ctrl, rf.color);
-			apply_bg_color_to_ctrl(tab.text_ctrl, bg_color);
-			apply_readability_format_to_ctrl(
-				tab.text_ctrl,
-				line_spacing,
-				paragraph_spacing,
-				letter_spacing,
-				text_alignment,
-			);
-			tab.panel.layout();
-			let max_pos = tab.text_ctrl.get_last_position();
-
-			let restored_pos = if let Some((ref key, within)) = stable_anchor {
-				match tab.session.handle().document().id_positions.get(key) {
-					Some(&new_anchor_off) => i64::try_from(new_anchor_off + within).unwrap_or(0).clamp(0, max_pos),
-					None => tab.session.position_from_percent(fallback_percent).clamp(0, max_pos),
-				}
-			} else {
-				tab.session.position_from_percent(fallback_percent).clamp(0, max_pos)
-			};
-
-			tab.text_ctrl.set_insertion_point(restored_pos);
-			tab.text_ctrl.show_position(restored_pos);
-			tab.session.set_stable_position(restored_pos);
+			reparse_tab_in_place(tab, &path_str, &password, &forced_extension, render_tables_inline, &style);
 		}
+	}
+
+	/// Reloads the tab at `index` if its file changed on disk since it was last parsed. Returns
+	/// true only when the tab content was actually replaced. Uses `try_lock` on the config: the
+	/// caller may be a frame-activation handler running inside a nested modal event loop whose
+	/// opener already holds the lock.
+	pub fn reload_tab_if_changed(&mut self, index: usize) -> bool {
+		let Some(tab) = self.tabs.get(index) else {
+			return false;
+		};
+		if !tab.track {
+			return false;
+		}
+		let Some(current) = read_fingerprint(&tab.file_path) else {
+			return false;
+		};
+		if tab.disk_fingerprint == Some(current) {
+			return false;
+		}
+		let path_str = tab.file_path.to_string_lossy().to_string();
+		let Ok(cfg) = self.config.try_lock() else {
+			return false;
+		};
+		if !cfg.get_app_bool("auto_reload_documents", true) {
+			return false;
+		}
+		let password = cfg.get_document_password(&path_str);
+		let forced_extension = cfg.get_document_format(&path_str);
+		let render_tables_inline = cfg.get_app_bool("render_tables_inline", true);
+		let style = readability_style(&cfg);
+		drop(cfg);
+		let tab = &mut self.tabs[index];
+		let (positions, history_index) = tab.session.get_history();
+		let positions = positions.to_vec();
+		let reloaded = reparse_tab_in_place(tab, &path_str, &password, &forced_extension, render_tables_inline, &style);
+		if reloaded {
+			tab.session.set_history(&positions, history_index);
+			tracing::info!(path = %path_str, "document reloaded after on-disk change");
+		} else {
+			tab.disk_fingerprint = Some(current);
+		}
+		reloaded
 	}
 
 	fn build_text_ctrl(
@@ -857,6 +856,96 @@ fn build_document_load_error_message(path: &Path, error: &str) -> String {
 
 fn fill_text_ctrl(text_ctrl: TextCtrl, content: &str) {
 	text_ctrl.set_value(content);
+}
+
+struct ReadabilityStyle {
+	rf: ReadabilityFont,
+	line_spacing: i32,
+	bg_color: i32,
+	text_alignment: i32,
+	letter_spacing: i32,
+	paragraph_spacing: i32,
+}
+
+fn readability_style(cfg: &ConfigManager) -> ReadabilityStyle {
+	ReadabilityStyle {
+		rf: cfg.get_readability_font(),
+		line_spacing: cfg.get_line_spacing(),
+		bg_color: cfg.get_bg_color(),
+		text_alignment: cfg.get_text_alignment(),
+		letter_spacing: cfg.get_letter_spacing(),
+		paragraph_spacing: cfg.get_paragraph_spacing(),
+	}
+}
+
+/// Builds a fresh session for `tab`'s file and refills its text control, restoring the reading
+/// position. Returns false and leaves the tab unchanged if the re-parse fails.
+fn reparse_tab_in_place(
+	tab: &mut DocumentTab,
+	path_str: &str,
+	password: &str,
+	forced_extension: &str,
+	render_tables_inline: bool,
+	style: &ReadabilityStyle,
+) -> bool {
+	let new_fingerprint = read_fingerprint(&tab.file_path);
+	let current_pos = tab.text_ctrl.get_insertion_point();
+	let pos = usize::try_from(current_pos.max(0)).unwrap_or(0);
+
+	// Find the nearest anchor at-or-before the cursor using the full id_positions key
+	// (unlike nearest_fragment_before, which strips the "path#" prefix for epub keys
+	// making the subsequent lookup fail). Record the within-block offset so the cursor
+	// lands at the same structural position after reparsing. Fallback: percentage-based
+	// position for formats with no anchors.
+	let stable_anchor = {
+		let id_positions = &tab.session.handle().document().id_positions;
+		id_positions
+			.iter()
+			.filter(|&(_, &off)| off <= pos)
+			.max_by_key(|&(_, &off)| off)
+			.map(|(key, &anchor_off)| (key.clone(), pos.saturating_sub(anchor_off)))
+	};
+	let fallback_percent = tab.session.get_status_info(current_pos).percentage;
+
+	let new_session = match DocumentSession::new(path_str, password, forced_extension, render_tables_inline) {
+		Ok(session) => session,
+		Err(err) => {
+			tracing::error!(path = %path_str, error = %err, "failed to re-parse document");
+			return false;
+		}
+	};
+	tab.session = new_session;
+	let content = tab.session.content();
+	fill_text_ctrl_with_formatting(tab.text_ctrl, &tab.session, &content);
+	if let Some(font) = build_font_from_readability(&style.rf) {
+		tab.text_ctrl.set_font(&font);
+	}
+	apply_foreground_color_to_ctrl(tab.text_ctrl, style.rf.color);
+	apply_bg_color_to_ctrl(tab.text_ctrl, style.bg_color);
+	apply_readability_format_to_ctrl(
+		tab.text_ctrl,
+		style.line_spacing,
+		style.paragraph_spacing,
+		style.letter_spacing,
+		style.text_alignment,
+	);
+	tab.panel.layout();
+	let max_pos = tab.text_ctrl.get_last_position();
+
+	let restored_pos = if let Some((ref key, within)) = stable_anchor {
+		match tab.session.handle().document().id_positions.get(key) {
+			Some(&new_anchor_off) => i64::try_from(new_anchor_off + within).unwrap_or(0).clamp(0, max_pos),
+			None => tab.session.position_from_percent(fallback_percent).clamp(0, max_pos),
+		}
+	} else {
+		tab.session.position_from_percent(fallback_percent).clamp(0, max_pos)
+	};
+
+	tab.text_ctrl.set_insertion_point(restored_pos);
+	tab.text_ctrl.show_position(restored_pos);
+	tab.session.set_stable_position(restored_pos);
+	tab.disk_fingerprint = new_fingerprint;
+	true
 }
 
 /// Sets `content` on `text_ctrl` and applies its bold/italic/underline markers.
@@ -1392,9 +1481,53 @@ fn parse_single_key_shortcut(label: &str) -> Option<(i32, bool)> {
 
 #[cfg(test)]
 mod tests {
+	use std::{env, fs, path::PathBuf, process};
+
 	use paperback_core::session::{LineMarker, MarkerTypeFfi};
 
-	use super::{FormatSegment, merge_formatting_markers};
+	use super::{FormatSegment, merge_formatting_markers, read_fingerprint};
+
+	struct TempFile {
+		path: PathBuf,
+	}
+
+	impl TempFile {
+		fn with_content(name: &str, content: &[u8]) -> Self {
+			let path = env::temp_dir().join(format!("paperback-fingerprint-{}-{name}", process::id()));
+			fs::write(&path, content).unwrap();
+			Self { path }
+		}
+	}
+
+	impl Drop for TempFile {
+		fn drop(&mut self) {
+			let _ = fs::remove_file(&self.path);
+		}
+	}
+
+	#[test]
+	fn fingerprint_of_missing_path_is_none() {
+		let path = env::temp_dir().join(format!("paperback-fingerprint-{}-does-not-exist", process::id()));
+		assert_eq!(read_fingerprint(&path), None);
+	}
+
+	#[test]
+	fn unchanged_file_keeps_the_same_fingerprint() {
+		let file = TempFile::with_content("unchanged", b"stable content");
+		let first = read_fingerprint(&file.path);
+		assert!(first.is_some());
+		assert_eq!(first, read_fingerprint(&file.path));
+	}
+
+	#[test]
+	fn rewriting_with_a_different_length_changes_the_fingerprint() {
+		let file = TempFile::with_content("grows", b"short");
+		let before = read_fingerprint(&file.path);
+		fs::write(&file.path, b"content that is clearly longer").unwrap();
+		let after = read_fingerprint(&file.path);
+		assert!(before.is_some() && after.is_some());
+		assert_ne!(before, after);
+	}
 
 	fn marker(mtype: MarkerTypeFfi, position: i64, length: i64) -> LineMarker {
 		LineMarker { mtype, position, text: String::new(), reference: String::new(), level: 0, length }
