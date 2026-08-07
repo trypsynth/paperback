@@ -1,4 +1,7 @@
-use std::collections::{HashMap, HashSet};
+use std::{
+	collections::{HashMap, HashSet},
+	fmt::Write as _,
+};
 
 use crate::{
 	document::{DocumentHandle, MarkerType},
@@ -128,12 +131,13 @@ pub fn render(doc: &DocumentHandle) -> String {
 						format!("<a href=\"{}\">", escape_attr(href))
 					} else if let Some(fragment) = href.strip_prefix('#') {
 						let current_path = section_path_at(pos);
-						if let Some(off) = resolve_fragment(&document.id_positions, fragment, current_path) {
-							target_offsets.insert(off);
-							format!("<a href=\"#pos-{off}\">")
-						} else {
-							format!("<a href=\"{}\">", escape_attr(href))
-						}
+						resolve_fragment(&document.id_positions, fragment, current_path).map_or_else(
+							|| format!("<a href=\"{}\">", escape_attr(href)),
+							|off| {
+								target_offsets.insert(off);
+								format!("<a href=\"#pos-{off}\">")
+							},
+						)
 					} else {
 						let mut parts = href.splitn(2, '#');
 						let file_part = parts.next().unwrap_or_default();
@@ -158,12 +162,13 @@ pub fn render(doc: &DocumentHandle) -> String {
 									.or_else(|| document.id_positions.get(file_part).copied())
 									.or_else(|| resolve_fragment(&document.id_positions, frag_part, current_path))
 							};
-							if let Some(off) = off {
-								target_offsets.insert(off);
-								format!("<a href=\"#pos-{off}\">")
-							} else {
-								format!("<a href=\"{}\">", escape_attr(href))
-							}
+							off.map_or_else(
+								|| format!("<a href=\"{}\">", escape_attr(href)),
+								|off| {
+									target_offsets.insert(off);
+									format!("<a href=\"#pos-{off}\">")
+								},
+							)
 						}
 					}
 				};
@@ -296,7 +301,7 @@ pub fn render(doc: &DocumentHandle) -> String {
 					pending_newlines = 0;
 				}
 				Ek::Anchor(offset) => {
-					html.push_str(&format!("<a id=\"pos-{offset}\"></a>"));
+					let _ = write!(html, "<a id=\"pos-{offset}\"></a>");
 				}
 			}
 			event_idx += 1;
@@ -349,7 +354,7 @@ pub fn render(doc: &DocumentHandle) -> String {
 				html.push_str("<hr>\n");
 			}
 			Ek::Anchor(offset) => {
-				html.push_str(&format!("<a id=\"pos-{offset}\"></a>"));
+				let _ = write!(html, "<a id=\"pos-{offset}\"></a>");
 			}
 			_ => {}
 		}

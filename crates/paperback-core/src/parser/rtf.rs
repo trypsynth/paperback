@@ -130,7 +130,6 @@ fn extract_codepage(rtf: &str) -> &'static Encoding {
 /// Maps an RTF `\fcharsetN` number to the corresponding encoding.
 fn encoding_for_fcharset(charset: i32, default: &'static Encoding) -> &'static Encoding {
 	match charset {
-		0 | 2 => default,                 // ANSI / Symbol — use document default
 		161 => encoding_rs::WINDOWS_1253, // Greek
 		162 => encoding_rs::WINDOWS_1254, // Turkish
 		163 => encoding_rs::WINDOWS_1258, // Vietnamese
@@ -140,6 +139,7 @@ fn encoding_for_fcharset(charset: i32, default: &'static Encoding) -> &'static E
 		204 => encoding_rs::WINDOWS_1251, // Cyrillic
 		238 => encoding_rs::WINDOWS_1250, // Central/Eastern European
 		222 => encoding_rs::WINDOWS_874,  // Thai
+		// 0 / 2 (ANSI / Symbol) and any other unrecognized value fall back to the document default
 		_ => default,
 	}
 }
@@ -450,12 +450,7 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 			Token::ControlSymbol((ctrl, property)) => {
 				match ctrl {
 					ControlWord::Pard => in_header = false,
-					ControlWord::Par => {
-						if !in_header {
-							buffer.append("\n");
-						}
-					}
-					ControlWord::Line => {
+					ControlWord::Par | ControlWord::Line => {
 						if !in_header {
 							buffer.append("\n");
 						}

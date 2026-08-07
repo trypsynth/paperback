@@ -1,5 +1,7 @@
 use std::{
-	env, fs, io,
+	env,
+	fmt::Write as _,
+	fs, io,
 	io::{Cursor, Read},
 	path::{Path, PathBuf},
 	process::Command,
@@ -148,9 +150,7 @@ fn copy_sounds() {
 	if !sounds_src.exists() {
 		return;
 	}
-	let target_dir = if let Some(dir) = target_profile_dir() {
-		dir
-	} else {
+	let Some(target_dir) = target_profile_dir() else {
 		println!("cargo:warning=Could not determine target output directory for sounds.");
 		return;
 	};
@@ -184,9 +184,7 @@ fn copy_pdfium_dylib() {
 	println!("cargo:rerun-if-env-changed=PAPERBACK_REFRESH_PDFIUM");
 	let refresh =
 		env::var("PAPERBACK_REFRESH_PDFIUM").is_ok_and(|value| value == "1" || value.eq_ignore_ascii_case("true"));
-	let target_dir = if let Some(dir) = target_profile_dir() {
-		dir
-	} else {
+	let Some(target_dir) = target_profile_dir() else {
 		println!("cargo:warning=Could not determine target output directory for libpdfium.dylib.");
 		return;
 	};
@@ -281,9 +279,7 @@ fn copy_pdfium_dll() {
 	println!("cargo:rerun-if-env-changed=PAPERBACK_REFRESH_PDFIUM");
 	let refresh =
 		env::var("PAPERBACK_REFRESH_PDFIUM").is_ok_and(|value| value == "1" || value.eq_ignore_ascii_case("true"));
-	let target_dir = if let Some(dir) = target_profile_dir() {
-		dir
-	} else {
+	let Some(target_dir) = target_profile_dir() else {
 		println!("cargo:warning=Could not determine target output directory for pdfium.dll.");
 		return;
 	};
@@ -410,9 +406,7 @@ fn target_profile_dir() -> Option<PathBuf> {
 }
 
 fn build_docs() {
-	let target_dir = if let Some(dir) = target_profile_dir() {
-		dir
-	} else {
+	let Some(target_dir) = target_profile_dir() else {
 		println!("cargo:warning=Could not determine target directory for docs.");
 		return;
 	};
@@ -484,9 +478,10 @@ fn build_docs() {
 		for lang_code in &embedded_langs {
 			let filename =
 				if lang_code == "en" { "/readme.html".to_string() } else { format!("/readme-{lang_code}.html") };
-			code.push_str(&format!(
-				"        {lang_code:?} => Some(include_bytes!(concat!(env!(\"OUT_DIR\"), {filename:?}))),\n",
-			));
+			let _ = writeln!(
+				code,
+				"        {lang_code:?} => Some(include_bytes!(concat!(env!(\"OUT_DIR\"), {filename:?}))),",
+			);
 		}
 		code.push_str("        _ => None,\n    }\n}\n");
 		code
@@ -558,9 +553,8 @@ fn format_registry_block() -> String {
 }
 
 fn configure_installer() {
-	let target_dir = match target_profile_dir() {
-		Some(dir) => dir,
-		None => return,
+	let Some(target_dir) = target_profile_dir() else {
+		return;
 	};
 	let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap_or_default());
 	let workspace_dir = manifest_dir.parent().unwrap().parent().unwrap();
@@ -604,9 +598,7 @@ fn bundle_document_extensions_block() -> String {
 }
 
 fn generate_app_bundle() {
-	let target_dir = if let Some(dir) = target_profile_dir() {
-		dir
-	} else {
+	let Some(target_dir) = target_profile_dir() else {
 		println!("cargo:warning=Could not determine target directory for macOS app bundle.");
 		return;
 	};

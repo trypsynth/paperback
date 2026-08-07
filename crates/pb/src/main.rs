@@ -1,4 +1,4 @@
-use std::{fs, process};
+use std::{fmt::Write as _, fs, process};
 
 use anyhow::{Context, Result, bail};
 use clap::Parser;
@@ -22,6 +22,8 @@ fn main() -> Result<()> {
 	if !cli.metadata && matches!(cli.format, Format::Html) && ext == "epub" {
 		let html = export::epub_direct::render(&file_path)
 			.with_context(|| format!("failed to convert {}", cli.input.display()))?;
+		// map_or_else reads worse here than the plain if/else.
+		#[allow(clippy::option_if_let_else)]
 		return if let Some(path) = cli.output {
 			fs::write(&path, &html).with_context(|| format!("failed to write {}", path.display()))
 		} else {
@@ -58,6 +60,8 @@ fn main() -> Result<()> {
 		};
 		export::render(&handle, format)
 	};
+	// map_or_else reads worse here than the plain if/else.
+	#[allow(clippy::option_if_let_else)]
 	if let Some(path) = cli.output {
 		if is_markdown {
 			// Prepend UTF-8 BOM so editors like EdSharp detect the encoding correctly
@@ -77,13 +81,13 @@ fn main() -> Result<()> {
 fn metadata(doc: &Document) -> String {
 	let mut out = String::new();
 	if !doc.title.is_empty() {
-		out.push_str(&format!("Title: {}\n", doc.title));
+		let _ = writeln!(out, "Title: {}", doc.title);
 	}
 	if !doc.author.is_empty() {
-		out.push_str(&format!("Author: {}\n", doc.author));
+		let _ = writeln!(out, "Author: {}", doc.author);
 	}
-	out.push_str(&format!("Words: {}\n", doc.stats.word_count));
-	out.push_str(&format!("Characters: {}\n", doc.stats.char_count));
-	out.push_str(&format!("Lines: {}\n", doc.stats.line_count));
+	let _ = writeln!(out, "Words: {}", doc.stats.word_count);
+	let _ = writeln!(out, "Characters: {}", doc.stats.char_count);
+	let _ = writeln!(out, "Lines: {}", doc.stats.line_count);
 	out
 }

@@ -1,5 +1,6 @@
 use std::{
 	collections::{BTreeSet, HashMap},
+	fmt::Write as _,
 	fs::File,
 	io::Read,
 	sync::LazyLock,
@@ -495,14 +496,8 @@ fn build_fragment_offsets(data: &[u8], records: &[usize], mobi_header: &[u8]) ->
 			if pos + label_len > data_rec.len() {
 				continue;
 			}
-			let label_str = match std::str::from_utf8(&data_rec[pos..pos + label_len]) {
-				Ok(s) => s,
-				Err(_) => continue,
-			};
-			let insert_offset = match label_str.parse::<usize>() {
-				Ok(v) => v,
-				Err(_) => continue,
-			};
+			let Ok(label_str) = std::str::from_utf8(&data_rec[pos..pos + label_len]) else { continue };
+			let Ok(insert_offset) = label_str.parse::<usize>() else { continue };
 			pos += label_len;
 
 			if pos >= data_rec.len() {
@@ -584,10 +579,10 @@ fn rewrite_internal_links(html: &str, frag_offsets: &HashMap<usize, usize>, extr
 		}
 		result.push_str(&html[pos..actual_pos]);
 		if kind == 0 {
-			result.push_str(&format!("<a id=\"fp{filepos:010}\"></a>"));
+			let _ = write!(result, "<a id=\"fp{filepos:010}\"></a>");
 			pos = actual_pos;
 		} else {
-			result.push_str(&format!("<a href=\"#fp{filepos:010}\">"));
+			let _ = write!(result, "<a href=\"#fp{filepos:010}\">");
 			pos = end;
 		}
 	}
@@ -862,10 +857,7 @@ impl HuffmanDecoder {
 					if index >= self.dictionary.len() {
 						current.bits_left = 0;
 					} else {
-						let (slice, flag) = match self.dictionary[index].clone() {
-							Some(v) => v,
-							None => (Vec::new(), true),
-						};
+						let (slice, flag) = self.dictionary[index].clone().unwrap_or_else(|| (Vec::new(), true));
 						if flag {
 							current.out.extend_from_slice(&slice);
 						} else {

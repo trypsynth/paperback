@@ -6,6 +6,8 @@
 //! one shot instead of literal text, which is far cheaper than issuing one
 //! `SetStyle` call per formatting span on documents with thousands of them.
 
+use std::fmt::Write as _;
+
 use paperback_core::util::text::ch_width;
 
 use super::document_manager::FormatSegment;
@@ -103,7 +105,7 @@ fn append_escaped_char(ch: char, out: &mut String) {
 				// header declares that count as 1). Writing it as \'3f (hex for
 				// '?') rather than a literal '?' keeps it unambiguously delimited
 				// from adjacent plain text for any hex-escape-aware RTF reader.
-				out.push_str(&format!("\\u{signed}\\'3f"));
+				let _ = write!(out, "\\u{signed}\\'3f");
 			}
 		}
 	}
