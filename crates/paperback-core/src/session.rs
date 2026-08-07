@@ -335,6 +335,8 @@ impl DocumentSession {
 		})
 	}
 
+	// Owned `String` params (not `&str`) because paperback.udl dictates this signature for UniFFI scaffolding.
+	#[allow(clippy::needless_pass_by_value)]
 	pub fn new_ffi(
 		file_path: String,
 		password: String,
@@ -875,7 +877,9 @@ impl DocumentSession {
 		supported
 	}
 
+	// `query: String` (not `&str`) because paperback.udl dictates this signature for UniFFI scaffolding.
 	#[must_use]
+	#[allow(clippy::needless_pass_by_value)]
 	pub fn search_ffi(&self, query: String, start_position: i64, options: SearchOptionsFfi) -> SearchResultFfi {
 		let mut search_options = SearchOptions::empty();
 		if options.match_case {
