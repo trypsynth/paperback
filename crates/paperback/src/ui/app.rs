@@ -51,7 +51,7 @@ impl PaperbackApp {
 		{
 			let cmd = ipc_command_from_cli();
 			tracing::info!(command = ?cmd, "another instance is running, forwarding command and exiting");
-			send_ipc_command(cmd);
+			send_ipc_command(&cmd);
 			process::exit(0);
 		}
 		let main_window = Rc::new(MainWindow::new(Rc::clone(&config)));
@@ -323,9 +323,9 @@ fn start_pipe_server(main_window: &Rc<MainWindow>) -> PipeServer {
 	PipeServer {}
 }
 
-fn send_ipc_command(command: IpcCommand) {
-	tracing::debug!(command = ?command, "sending IPC command to existing instance");
-	let payload = match &command {
+fn send_ipc_command(command: &IpcCommand) {
+	tracing::debug!(?command, "sending IPC command to existing instance");
+	let payload = match command {
 		IpcCommand::Activate => IPC_COMMAND_ACTIVATE.to_string(),
 		#[cfg(any(target_os = "linux", target_os = "windows", test))]
 		IpcCommand::ToggleVisibility => IPC_COMMAND_TOGGLE_VISIBILITY.to_string(),

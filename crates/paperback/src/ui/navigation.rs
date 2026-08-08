@@ -211,9 +211,7 @@ fn apply_navigation_result(
 	}
 	let context_index = match target {
 		MarkerNavTarget::Heading(_) => result.marker_level,
-		MarkerNavTarget::Page => result.marker_index,
-		MarkerNavTarget::Image => result.marker_index,
-		MarkerNavTarget::Figure => result.marker_index,
+		MarkerNavTarget::Page | MarkerNavTarget::Image | MarkerNavTarget::Figure => result.marker_index,
 		_ => 0,
 	};
 	let message = format_nav_found_message(&ann, &context_text, context_index, result.wrapped, next);

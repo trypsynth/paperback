@@ -1,4 +1,4 @@
-use std::{fs, process};
+use std::{fmt::Write as _, fs, process};
 
 use anyhow::{Context, Result, bail};
 use clap::Parser;
@@ -22,12 +22,13 @@ fn main() -> Result<()> {
 	if !cli.metadata && matches!(cli.format, Format::Html) && ext == "epub" {
 		let html = export::epub_direct::render(&file_path)
 			.with_context(|| format!("failed to convert {}", cli.input.display()))?;
-		return match cli.output {
-			Some(path) => fs::write(&path, &html).with_context(|| format!("failed to write {}", path.display())),
-			None => {
-				print!("{html}");
-				Ok(())
-			}
+		// map_or_else reads worse here than the plain if/else.
+		#[allow(clippy::option_if_let_else)]
+		return if let Some(path) = cli.output {
+			fs::write(&path, &html).with_context(|| format!("failed to write {}", path.display()))
+		} else {
+			print!("{html}");
+			Ok(())
 		};
 	}
 	let mut context = ParserContext::new(file_path).with_render_tables_inline(true);
@@ -59,35 +60,34 @@ fn main() -> Result<()> {
 		};
 		export::render(&handle, format)
 	};
-	match cli.output {
-		Some(path) => {
-			if is_markdown {
-				// Prepend UTF-8 BOM so editors like EdSharp detect the encoding correctly
-				let mut bytes = vec![0xEF_u8, 0xBB, 0xBF];
-				bytes.extend_from_slice(result.as_bytes());
-				fs::write(&path, &bytes)
-			} else {
-				fs::write(&path, &result)
-			}
-			.with_context(|| format!("failed to write {}", path.display()))
+	// map_or_else reads worse here than the plain if/else.
+	#[allow(clippy::option_if_let_else)]
+	if let Some(path) = cli.output {
+		if is_markdown {
+			// Prepend UTF-8 BOM so editors like EdSharp detect the encoding correctly
+			let mut bytes = vec![0xEF_u8, 0xBB, 0xBF];
+			bytes.extend_from_slice(result.as_bytes());
+			fs::write(&path, &bytes)
+		} else {
+			fs::write(&path, &result)
 		}
-		None => {
-			print!("{result}");
-			Ok(())
-		}
+		.with_context(|| format!("failed to write {}", path.display()))
+	} else {
+		print!("{result}");
+		Ok(())
 	}
 }
 
 fn metadata(doc: &Document) -> String {
 	let mut out = String::new();
 	if !doc.title.is_empty() {
-		out.push_str(&format!("Title: {}\n", doc.title));
+		let _ = writeln!(out, "Title: {}", doc.title);
 	}
 	if !doc.author.is_empty() {
-		out.push_str(&format!("Author: {}\n", doc.author));
+		let _ = writeln!(out, "Author: {}", doc.author);
 	}
-	out.push_str(&format!("Words: {}\n", doc.stats.word_count));
-	out.push_str(&format!("Characters: {}\n", doc.stats.char_count));
-	out.push_str(&format!("Lines: {}\n", doc.stats.line_count));
+	let _ = writeln!(out, "Words: {}", doc.stats.word_count);
+	let _ = writeln!(out, "Characters: {}", doc.stats.char_count);
+	let _ = writeln!(out, "Lines: {}", doc.stats.line_count);
 	out
 }

@@ -1,5 +1,6 @@
 use std::{
 	collections::{BTreeSet, HashMap},
+	fmt::Write as _,
 	fs::File,
 	io::Read,
 	sync::LazyLock,
@@ -190,7 +191,7 @@ impl Parser for MobiParser {
 				extra_data_flags =
 					u32::from_be_bytes([mobi_header[224], mobi_header[225], mobi_header[226], mobi_header[227]]);
 			} else {
-				extra_data_flags = u16::from_be_bytes([mobi_header[242], mobi_header[243]]) as u32;
+				extra_data_flags = u32::from(u16::from_be_bytes([mobi_header[242], mobi_header[243]]));
 			}
 			if extra_data_flags == 0xFFFFFFFF {
 				extra_data_flags = 0;
@@ -495,14 +496,8 @@ fn build_fragment_offsets(data: &[u8], records: &[usize], mobi_header: &[u8]) ->
 			if pos + label_len > data_rec.len() {
 				continue;
 			}
-			let label_str = match std::str::from_utf8(&data_rec[pos..pos + label_len]) {
-				Ok(s) => s,
-				Err(_) => continue,
-			};
-			let insert_offset = match label_str.parse::<usize>() {
-				Ok(v) => v,
-				Err(_) => continue,
-			};
+			let Ok(label_str) = std::str::from_utf8(&data_rec[pos..pos + label_len]) else { continue };
+			let Ok(insert_offset) = label_str.parse::<usize>() else { continue };
 			pos += label_len;
 
 			if pos >= data_rec.len() {
@@ -584,10 +579,10 @@ fn rewrite_internal_links(html: &str, frag_offsets: &HashMap<usize, usize>, extr
 		}
 		result.push_str(&html[pos..actual_pos]);
 		if kind == 0 {
-			result.push_str(&format!("<a id=\"fp{filepos:010}\"></a>"));
+			let _ = write!(result, "<a id=\"fp{filepos:010}\"></a>");
 			pos = actual_pos;
 		} else {
-			result.push_str(&format!("<a href=\"#fp{filepos:010}\">"));
+			let _ = write!(result, "<a href=\"#fp{filepos:010}\">");
 			pos = end;
 		}
 	}
@@ -862,10 +857,7 @@ impl HuffmanDecoder {
 					if index >= self.dictionary.len() {
 						current.bits_left = 0;
 					} else {
-						let (slice, flag) = match self.dictionary[index].clone() {
-							Some(v) => v,
-							None => (Vec::new(), true),
-						};
+						let (slice, flag) = self.dictionary[index].clone().unwrap_or_else(|| (Vec::new(), true));
 						if flag {
 							current.out.extend_from_slice(&slice);
 						} else {
@@ -970,7 +962,7 @@ fn parse_ncx(
 		}
 		let tag = indx_rec[p];
 		let vpe = indx_rec[p + 1] as usize;
-		let mask = indx_rec[p + 2] as u32;
+		let mask = u32::from(indx_rec[p + 2]);
 		let end = indx_rec[p + 3];
 		tags.push((tag, vpe, mask, end));
 	}
@@ -1047,7 +1039,7 @@ fn parse_ncx(
 			let mut cbyte_idx = 0;
 
 			for &(tag, vpe, mask, end_flag) in &tags {
-				let cb = cbytes.get(cbyte_idx).copied().unwrap_or(0) as u32;
+				let cb = u32::from(cbytes.get(cbyte_idx).copied().unwrap_or(0));
 				if end_flag == 1 {
 					cbyte_idx += 1;
 				}
@@ -1132,7 +1124,7 @@ fn parse_ncx(
 					let filepos = frag_offsets.get(&f).copied().unwrap_or(0) + p;
 					let lvl = if lvl == 0 { 1 } else { lvl as u32 };
 
-					entries.push((title, lvl, format!("#fp{:010}", filepos)));
+					entries.push((title, lvl, format!("#fp{filepos:010}")));
 				}
 			}
 		}

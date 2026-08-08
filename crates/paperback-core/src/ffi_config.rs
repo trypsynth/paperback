@@ -7,6 +7,10 @@ pub struct ConfigManagerFfi {
 	inner: Mutex<ConfigManager>,
 }
 
+// These take `String`/owned params instead of `&str` because their signatures are dictated by
+// paperback.udl: UniFFI's generated scaffolding calls them with owned values it has just lifted
+// from the FFI boundary, so a borrowed parameter here would fail to compile against that scaffolding.
+#[allow(clippy::needless_pass_by_value)]
 impl ConfigManagerFfi {
 	#[must_use]
 	pub fn new() -> Self {

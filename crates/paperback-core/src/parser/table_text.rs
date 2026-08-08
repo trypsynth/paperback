@@ -128,17 +128,17 @@ pub fn push_finalized_line(lines: &mut Vec<String>, cached_len: &mut usize, line
 pub fn table_render_bundle(html: &str, inline: bool) -> TableRenderBundle {
 	// Parse the HTML once; derive TSV, caption, and display text from the same tree.
 	let fragment = Html::parse_fragment(html);
-	let (tsv, caption) = match find_first_table(fragment.tree.root()) {
-		Some(table) => {
+	let (tsv, caption) = find_first_table(fragment.tree.root()).map_or_else(
+		|| (String::new(), table_caption_from_tsv("")),
+		|table| {
 			let mut rows: Vec<String> = Vec::new();
 			collect_rows(table, &mut rows);
 			let tsv = rows.join("\n");
 			// Prefer an explicit <caption> element; fall back to the first TSV row.
 			let caption = caption_element_text(table).unwrap_or_else(|| table_caption_from_tsv(&tsv));
 			(tsv, caption)
-		}
-		None => (String::new(), table_caption_from_tsv("")),
-	};
+		},
+	);
 	let (lines, display_length) = display_lines_and_length(&tsv_to_display(&tsv, inline));
 	TableRenderBundle { caption, lines, display_length }
 }

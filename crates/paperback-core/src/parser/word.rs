@@ -149,10 +149,8 @@ fn parse_ooxml_doc(context: &ParserContext, render_tables_inline: bool) -> Resul
 
 /// Read a DOCX/OOXML file's raw bytes, decrypting first if the file is an encrypted OLE container.
 fn load_ooxml_bytes(path: &str, password: Option<&str>) -> Result<Vec<u8>> {
-	match try_decrypt_office_file(path, password)? {
-		Some(decrypted) => Ok(decrypted),
-		None => std::fs::read(path).with_context(|| format!("Failed to read '{path}'")),
-	}
+	try_decrypt_office_file(path, password)?
+		.map_or_else(|| std::fs::read(path).with_context(|| format!("Failed to read '{path}'")), Ok)
 }
 
 pub fn parse_ooxml_from_archive<R: Read + Seek>(
@@ -871,10 +869,8 @@ fn extract_number_from_string(s: &str) -> Option<i32> {
 pub fn try_decrypt_office_file(path: &str, password: Option<&str>) -> Result<Option<Vec<u8>>> {
 	// Try opening as a CFB compound file. Plain ZIPs will fail here.
 	let file = File::open(path).with_context(|| format!("Failed to open '{path}'"))?;
-	let compound = match CompoundFile::open(file) {
-		Ok(c) => c,
-		Err(_) => return Ok(None), // Not a compound file at all
-	};
+	// Not a compound file at all
+	let Ok(compound) = CompoundFile::open(file) else { return Ok(None) };
 	// Encrypted OOXML files always contain an EncryptionInfo stream.
 	if compound.entry("/EncryptionInfo").is_err() {
 		return Ok(None); // Compound file but not encrypted Office format
@@ -954,14 +950,14 @@ mod tests {
 	#[test]
 	fn word_table_emits_placeholder_or_tsv_by_flag() {
 		// Minimal OOXML XML: one table with one row, two cells.
-		let xml = r#"<document><body>
+		let xml = r"<document><body>
 			<tbl>
 				<tr>
 					<tc><p><r><t>Kop</t></r></p></tc>
 					<tc><p><r><t>&#x1D11E;</t></r></p></tc>
 				</tr>
 			</tbl>
-		</body></document>"#;
+		</body></document>";
 		let xml_doc = XmlDocument::parse(xml).expect("valid xml");
 
 		// OFF: placeholder "[Table]: Kop 𝄞".

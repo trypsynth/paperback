@@ -133,7 +133,7 @@ fn crate_version(manifest_path: &Path) -> String {
 }
 
 /// Copy every `.rs` file under `src` into the same relative layout under `dest`, sanitizing
-/// each one for `xgettext --language=C` on the way (see sanitize_rust).
+/// each one for `xgettext --language=C` on the way (see `sanitize_rust`).
 fn sanitize_dir_into(src: &Path, dest: &Path) -> Result<(), Box<dyn Error>> {
 	for entry in walkdir::WalkDir::new(src) {
 		let entry = entry?;

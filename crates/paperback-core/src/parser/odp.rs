@@ -180,7 +180,7 @@ mod tests {
 	}
 
 	fn page(paragraphs: &str) -> String {
-		format!(r#"<draw:page><draw:frame><draw:text-box>{paragraphs}</draw:text-box></draw:frame></draw:page>"#)
+		format!(r"<draw:page><draw:frame><draw:text-box>{paragraphs}</draw:text-box></draw:frame></draw:page>")
 	}
 
 	fn parse_fodp(contents: &str) -> Result<Document> {

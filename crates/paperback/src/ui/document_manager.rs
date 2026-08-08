@@ -89,7 +89,7 @@ pub struct DocumentManager {
 }
 
 impl DocumentManager {
-	pub fn new(
+	pub const fn new(
 		frame: Frame,
 		notebook: Notebook,
 		config: Rc<Mutex<ConfigManager>>,
@@ -954,7 +954,7 @@ fn reparse_tab_in_place(
 
 /// Sets `content` on `text_ctrl` and applies its bold/italic/underline markers.
 ///
-/// On Windows this streams a single RTF blob into the native RichEdit control
+/// On Windows this streams a single RTF blob into the native `RichEdit` control
 /// via `EM_STREAMIN` (see `stream_rtf_into_ctrl`) instead of issuing one
 /// `SetStyle` call per formatting span, which is far cheaper on documents with
 /// thousands of spans. `wxTextCtrl::SetValue` can't be used for this — it does
@@ -1006,7 +1006,7 @@ struct RtfStreamCursor<'a> {
 	pos: usize,
 }
 
-/// `EDITSTREAMCALLBACK` for `EM_STREAMIN`: RichEdit calls this repeatedly,
+/// `EDITSTREAMCALLBACK` for `EM_STREAMIN`: `RichEdit` calls this repeatedly,
 /// asking for up to `cb` bytes each time, until we report 0 bytes written
 /// (end of stream) or return a nonzero error code. Called synchronously
 /// within `SendMessageW` on the same thread, so the `RtfStreamCursor` borrow
@@ -1027,13 +1027,13 @@ unsafe extern "system" fn rtf_stream_read_callback(dwcookie: usize, pbbuff: *mut
 	0
 }
 
-/// Feeds `rtf` into the native RichEdit control behind `text_ctrl` via the
+/// Feeds `rtf` into the native `RichEdit` control behind `text_ctrl` via the
 /// Win32 `EM_STREAMIN` message. `wxTextCtrl::SetValue` cannot be used for this:
 /// it does not forward to the native `WM_SETTEXT` handler that auto-detects a
 /// `{\rtf` prefix, so it just stores the markup as literal text (confirmed by
 /// a round-trip mismatch where `GetValue()` returned the raw RTF source
 /// unchanged). `EM_STREAMIN` is the documented, explicit way to load RTF into
-/// a RichEdit control, and is why this needs a raw `SendMessageW` call rather
+/// a `RichEdit` control, and is why this needs a raw `SendMessageW` call rather
 /// than a wx-level API — the same pattern already used for letter-spacing
 /// (`EM_SETCHARFORMAT`) in `apply_readability_format_to_ctrl`.
 ///

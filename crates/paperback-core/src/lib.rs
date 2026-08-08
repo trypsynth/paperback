@@ -21,6 +21,8 @@ pub use crate::{
 #[cfg(feature = "uniffi")]
 uniffi::include_scaffolding!("paperback");
 
+// `path: String` (not `&str`) because paperback.udl dictates this signature for UniFFI scaffolding.
+#[allow(clippy::needless_pass_by_value)]
 pub fn set_pdfium_library_path(path: String) {
 	pdfium::set_library_location(&path);
 }

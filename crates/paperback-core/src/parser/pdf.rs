@@ -1,5 +1,6 @@
 use std::{
 	collections::{HashMap, HashSet},
+	fmt::Write as _,
 	mem,
 };
 
@@ -740,13 +741,12 @@ fn process_struct_element(
 			flush_block(current_block, buffer, page_display_text, current_lines_info);
 		}
 		let heading_level = match elem_type.as_str() {
-			"H1" => Some(1),
+			"H1" | "H" => Some(1), // "H" is a fallback generic heading, treated as H1
 			"H2" => Some(2),
 			"H3" => Some(3),
 			"H4" => Some(4),
 			"H5" => Some(5),
 			"H6" => Some(6),
-			"H" => Some(1), // Fallback generic heading to H1
 			_ => None,
 		};
 		if let Some(level) = heading_level {
@@ -806,7 +806,7 @@ fn build_html_table(elem: &pdfium::PdfiumStructElement, mcid_to_text: &HashMap<i
 		let mut cell_text = String::new();
 		collect_text(elem, mcid_to_text, &mut cell_text);
 		html.push_str(&html_escape(&trim_string(&collapse_whitespace(&cell_text))));
-		html.push_str(&format!("</{}>\n", elem_type.to_lowercase()));
+		let _ = writeln!(html, "</{}>", elem_type.to_lowercase());
 		html
 	} else {
 		let mut html = String::new();
@@ -937,7 +937,7 @@ mod tests {
 		let pos = buffer.current_position();
 		let mut lines_info = Vec::new();
 		let mut page_text = String::new();
-		append_pdf_table_to_buffer(&mut buffer, html.clone(), pos, &mut lines_info, &mut page_text, true);
+		append_pdf_table_to_buffer(&mut buffer, html, pos, &mut lines_info, &mut page_text, true);
 
 		// Two rows -> "Kop\t𝄞\na\tb\n".
 		assert_eq!(buffer.content, "Kop\t\u{1D11E}\na\tb\n");

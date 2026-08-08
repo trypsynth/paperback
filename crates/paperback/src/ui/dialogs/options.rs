@@ -578,14 +578,12 @@ fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Option<Readabi
 		return None;
 	}
 	let font = dlg.get_font()?;
-	let chosen_color = if let Some(fd) = dlg.get_font_data() {
+	let chosen_color = dlg.get_font_data().map_or(-1, |fd| {
 		let c = fd.get_chosen_colour();
 		// Prevent double-free: this FontData pointer is owned by the dialog, not by us
 		mem::forget(fd);
 		c.map_or(-1, |col| (i32::from(col.r) << 16) | (i32::from(col.g) << 8) | i32::from(col.b))
-	} else {
-		-1
-	};
+	});
 	Some(ReadabilityFont {
 		face_name: font.get_face_name(),
 		point_size: font.get_point_size(),

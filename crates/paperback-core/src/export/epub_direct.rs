@@ -1,5 +1,6 @@
 use std::{
 	collections::HashMap,
+	fmt::Write as _,
 	fs::File,
 	io::{BufReader, Read, Seek},
 	path::Path,
@@ -39,7 +40,7 @@ pub fn render(file_path: &str) -> Result<String> {
 		let Ok(content) = read_zip_entry_by_name(&mut archive, path) else { continue };
 
 		let section_id = path_to_id(path);
-		out.push_str(&format!("<section id=\"{}\">\n", escape_attr(&section_id)));
+		let _ = writeln!(out, "<section id=\"{}\">", escape_attr(&section_id));
 
 		let body = extract_body(&content);
 		let file_dir = Path::new(path.as_str())
@@ -172,23 +173,20 @@ fn rewrite_single_href(href: &str, current_dir: &str, spine_path_to_id: &HashMap
 	if href.contains("://") || href.starts_with("mailto:") || href.starts_with("data:") {
 		return href.to_string();
 	}
-	let (path_part, fragment) = match href.find('#') {
-		Some(i) => (&href[..i], Some(&href[i + 1..])),
-		None => (href, None),
-	};
+	let (path_part, fragment) = href.find('#').map_or((href, None), |i| (&href[..i], Some(&href[i + 1..])));
 	let decoded = url_decode(path_part);
 	let resolved = if current_dir.is_empty() {
 		normalize_epub_path(&decoded)
 	} else {
 		normalize_epub_path(&format!("{current_dir}/{decoded}"))
 	};
-	match spine_path_to_id.get(&resolved) {
-		Some(section_id) => match fragment {
+	spine_path_to_id.get(&resolved).map_or_else(
+		|| href.to_string(),
+		|section_id| match fragment {
 			None | Some("") => format!("#{section_id}"),
 			Some(frag) => format!("#{frag}"),
 		},
-		None => href.to_string(),
-	}
+	)
 }
 
 fn normalize_epub_path(path: &str) -> String {

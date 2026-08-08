@@ -720,7 +720,7 @@ mod tests {
 		parser::add_converter_markers,
 	};
 
-	/// End-to-end: the HtmlToText converter emits each table's on-screen text at parse time, and a
+	/// End-to-end: the `HtmlToText` converter emits each table's on-screen text at parse time, and a
 	/// heading that follows the table is offset by the emitted display extent. Verified in both
 	/// modes: OFF (placeholder) and ON (full TSV). The fixture has an "Intro" paragraph before the
 	/// table (so the table offset is non-zero) and an `<h2>` after it.
@@ -917,8 +917,8 @@ mod tests {
 		assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
 		let items = converter.get_list_items();
 		assert!(items.len() >= 2, "expected at least two list items");
-		let outer_level = items.iter().find(|i| i.text == "Outer").map(|i| i.level).unwrap_or(0);
-		let inner_level = items.iter().find(|i| i.text == "Inner").map(|i| i.level).unwrap_or(0);
+		let outer_level = items.iter().find(|i| i.text == "Outer").map_or(0, |i| i.level);
+		let inner_level = items.iter().find(|i| i.text == "Inner").map_or(0, |i| i.level);
 		assert!(inner_level > outer_level, "nested item should have a higher level");
 	}
 
