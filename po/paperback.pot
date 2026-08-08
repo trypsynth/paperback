@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-24 10:48-0600\n"
+"POT-Creation-Date: 2026-08-07 12:05+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -330,6 +330,10 @@ msgstr ""
 
 #. TRANSLATORS: Option to check for app updates automatically on startup
 msgid "Check for &updates on startup"
+msgstr ""
+
+#. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
+msgid "&Automatically reload changed documents"
 msgstr ""
 
 #. TRANSLATORS: Button label to open the hotkey customization dialog
@@ -744,6 +748,10 @@ msgstr ""
 
 #. TRANSLATORS: Main window title when no document is open
 msgid "Paperback"
+msgstr ""
+
+#. TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
+msgid "Document reloaded."
 msgstr ""
 
 #. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open

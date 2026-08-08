@@ -118,13 +118,46 @@ impl MainWindow {
 				live_region::announce(live_region_label, &display_title(tab));
 			}
 		});
+		let reload_guard = Rc::new(Cell::new(false));
 		let dm = Rc::clone(&doc_manager);
+		let page_reload_guard = Rc::clone(&reload_guard);
 		notebook.on_page_changed(move |_event| {
-			let Ok(dm_ref) = dm.try_lock() else {
+			let Ok(mut dm_ref) = dm.try_lock() else {
 				return;
 			};
+			if !page_reload_guard.get() {
+				page_reload_guard.set(true);
+				if let Some(index) = dm_ref.active_tab_index()
+					&& dm_ref.reload_tab_if_changed(index)
+				{
+					// TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
+					live_region::announce(live_region_label, &t("Document reloaded."));
+				}
+				page_reload_guard.set(false);
+			}
 			update_title_from_manager(&frame_copy, &dm_ref);
 			dm_ref.reset_sound_line();
+		});
+		let dm_for_activate = Rc::clone(&doc_manager);
+		let activate_reload_guard = Rc::clone(&reload_guard);
+		let frame_for_activate = frame;
+		frame.on_activate(move |event| {
+			event.skip(true);
+			if let WindowEventData::Activate(activate) = &event
+				&& activate.is_active()
+				&& !activate_reload_guard.get()
+				&& let Ok(mut dm_ref) = dm_for_activate.try_lock()
+				&& let Some(index) = dm_ref.active_tab_index()
+			{
+				activate_reload_guard.set(true);
+				if dm_ref.reload_tab_if_changed(index) {
+					update_title_from_manager(&frame_for_activate, &dm_ref);
+					dm_ref.update_status_bar();
+					// TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
+					live_region::announce(live_region_label, &t("Document reloaded."));
+				}
+				activate_reload_guard.set(false);
+			}
 		});
 		let dm = Rc::clone(&doc_manager);
 		let frame_copy = frame;
@@ -1515,6 +1548,7 @@ impl MainWindow {
 					cfg.set_app_bool("navigation_wrap", options.navigation_wrap);
 					cfg.set_app_bool("check_for_updates_on_startup", options.check_for_updates_on_startup);
 					cfg.set_app_bool("bookmark_sounds", options.bookmark_sounds);
+					cfg.set_app_bool("auto_reload_documents", options.auto_reload_documents);
 					cfg.set_app_int("recent_documents_to_show", options.recent_documents_to_show);
 					cfg.set_app_int("reading_speed_wpm", options.reading_speed_wpm);
 					cfg.set_app_string("language", &options.language);
