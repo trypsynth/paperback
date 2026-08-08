@@ -637,14 +637,15 @@ impl DocumentManager {
 			(readability_style(&cfg), parse_inputs)
 		};
 		for (tab, (path_str, password, forced_extension)) in self.tabs.iter_mut().zip(parse_inputs) {
-			reparse_tab_in_place(tab, &path_str, &password, &forced_extension, render_tables_inline, &style);
+			let _ = reparse_tab_in_place(tab, &path_str, &password, &forced_extension, render_tables_inline, &style);
 		}
 	}
 
 	/// Reloads the tab at `index` if its file changed on disk since it was last parsed. Returns
-	/// true only when the tab content was actually replaced. Uses `try_lock` on the config: the
-	/// caller may be a frame-activation handler running inside a nested modal event loop whose
-	/// opener already holds the lock.
+	/// true only when the tab content was actually replaced. If the stored password no longer
+	/// decrypts the file, prompts for a new one and retries once. Uses `try_lock` on the config:
+	/// the caller may be a frame-activation handler running inside a nested modal event loop
+	/// whose opener already holds the lock.
 	pub fn reload_tab_if_changed(&mut self, index: usize) -> bool {
 		let Some(tab) = self.tabs.get(index) else {
 			return false;
@@ -673,7 +674,24 @@ impl DocumentManager {
 		let tab = &mut self.tabs[index];
 		let (positions, history_index) = tab.session.get_history();
 		let positions = positions.to_vec();
-		let reloaded = reparse_tab_in_place(tab, &path_str, &password, &forced_extension, render_tables_inline, &style);
+		let reloaded =
+			match reparse_tab_in_place(tab, &path_str, &password, &forced_extension, render_tables_inline, &style) {
+				Ok(()) => true,
+				Err(err) if err.starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) => {
+					// Recorded before the prompt so a re-entrant call during its modal
+					// event loop sees the file as unchanged and skips a second prompt.
+					tab.disk_fingerprint = Some(current);
+					self.reprompt_password_and_reparse(
+						index,
+						&path_str,
+						&forced_extension,
+						render_tables_inline,
+						&style,
+					)
+				}
+				Err(_) => false,
+			};
+		let tab = &mut self.tabs[index];
 		if reloaded {
 			tab.session.set_history(&positions, history_index);
 			tracing::info!(path = %path_str, "document reloaded after on-disk change");
@@ -681,6 +699,42 @@ impl DocumentManager {
 			tab.disk_fingerprint = Some(current);
 		}
 		reloaded
+	}
+
+	/// Asks for a fresh password after a reload attempt failed to decrypt the file, then retries
+	/// the re-parse once. Dismissing the prompt keeps the old tab content without an error: the
+	/// reload was not user-initiated, so there is nothing to recover from. A wrong password shows
+	/// the same load-error dialog as the open flow.
+	fn reprompt_password_and_reparse(
+		&mut self,
+		index: usize,
+		path_str: &str,
+		forced_extension: &str,
+		render_tables_inline: bool,
+		style: &ReadabilityStyle,
+	) -> bool {
+		if let Ok(cfg) = self.config.try_lock() {
+			cfg.set_document_password(path_str, "");
+		}
+		let Some(password) = prompt_for_password(&self.notebook) else {
+			return false;
+		};
+		let tab = &mut self.tabs[index];
+		match reparse_tab_in_place(tab, path_str, &password, forced_extension, render_tables_inline, style) {
+			Ok(()) => {
+				if !password.is_empty()
+					&& let Ok(cfg) = self.config.try_lock()
+				{
+					cfg.set_document_password(path_str, &password);
+				}
+				true
+			}
+			Err(err) => {
+				let message = build_document_load_error_message(&self.tabs[index].file_path, &err);
+				show_error_dialog(&self.notebook, &message, &t("Error"));
+				false
+			}
+		}
 	}
 
 	fn build_text_ctrl(
@@ -883,7 +937,7 @@ fn readability_style(cfg: &ConfigManager) -> ReadabilityStyle {
 }
 
 /// Builds a fresh session for `tab`'s file and refills its text control, restoring the reading
-/// position. Returns false and leaves the tab unchanged if the re-parse fails.
+/// position. Returns the parse error and leaves the tab unchanged if the re-parse fails.
 fn reparse_tab_in_place(
 	tab: &mut DocumentTab,
 	path_str: &str,
@@ -891,7 +945,7 @@ fn reparse_tab_in_place(
 	forced_extension: &str,
 	render_tables_inline: bool,
 	style: &ReadabilityStyle,
-) -> bool {
+) -> Result<(), String> {
 	let new_fingerprint = read_fingerprint(&tab.file_path);
 	let current_pos = tab.text_ctrl.get_insertion_point();
 	let pos = usize::try_from(current_pos.max(0)).unwrap_or(0);
@@ -915,7 +969,7 @@ fn reparse_tab_in_place(
 		Ok(session) => session,
 		Err(err) => {
 			tracing::error!(path = %path_str, error = %err, "failed to re-parse document");
-			return false;
+			return Err(err);
 		}
 	};
 	tab.session = new_session;
@@ -949,7 +1003,7 @@ fn reparse_tab_in_place(
 	tab.text_ctrl.show_position(restored_pos);
 	tab.session.set_stable_position(restored_pos);
 	tab.disk_fingerprint = new_fingerprint;
-	true
+	Ok(())
 }
 
 /// Sets `content` on `text_ctrl` and applies its bold/italic/underline markers.
