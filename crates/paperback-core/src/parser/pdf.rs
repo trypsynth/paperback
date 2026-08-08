@@ -1,5 +1,6 @@
 use std::{
 	collections::{HashMap, HashSet},
+	fmt::Write as _,
 	mem,
 };
 
@@ -7,7 +8,7 @@ use anyhow::{Result, anyhow};
 use pdfium::{PdfiumDocument, PdfiumError, PdfiumTextPage, lib};
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
 		PASSWORD_REQUIRED_ERROR_PREFIX, Parser,
 		table_text::{display_lines_and_length, html_table_to_display},
@@ -27,18 +28,6 @@ const MIN_MCID_COVERAGE: f64 = 0.5;
 pub struct PdfParser;
 
 impl Parser for PdfParser {
-	fn name(&self) -> &'static str {
-		paperback_formats::PDF.name
-	}
-
-	fn extensions(&self) -> &[&str] {
-		paperback_formats::PDF.extensions
-	}
-
-	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_PAGES | ParserFlags::SUPPORTS_TOC
-	}
-
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		let render_tables_inline = context.render_tables_inline;
 		let document =
@@ -415,7 +404,7 @@ fn extract_text_lines(text_page: &PdfiumTextPage) -> Vec<(String, f64)> {
 	result
 }
 
-fn sorted_median(values: &mut Vec<f64>) -> f64 {
+fn sorted_median(values: &mut [f64]) -> f64 {
 	if values.is_empty() {
 		return 0.0;
 	}
@@ -494,15 +483,15 @@ fn join_paragraphs(raw_lines: &[(String, f64)], body_font_size: f64) -> Vec<(Str
 				}
 				is_numbered = found_space;
 			}
-			let break_paragraph = if *is_heading_line || current_is_heading {
-				true
-			} else if is_list_item || is_numbered {
-				true
-			} else if last_line_ends_with_punctuation && last_line_len < short_line_threshold {
-				true
-			} else {
-				last_line_len < short_line_threshold && (starts_with_uppercase || !starts_with_alpha)
-			};
+			// A heading (either side of the boundary) or a list item always starts a new paragraph;
+			// otherwise a short previous line does, whether it ended on punctuation or the new line
+			// looks like a fresh sentence.
+			let break_paragraph = *is_heading_line
+				|| current_is_heading
+				|| is_list_item
+				|| is_numbered
+				|| (last_line_len < short_line_threshold
+					&& (last_line_ends_with_punctuation || starts_with_uppercase || !starts_with_alpha));
 			if break_paragraph {
 				paragraphs.push((mem::take(&mut current_paragraph), current_is_heading));
 				current_paragraph = line.clone();
@@ -752,13 +741,12 @@ fn process_struct_element(
 			flush_block(current_block, buffer, page_display_text, current_lines_info);
 		}
 		let heading_level = match elem_type.as_str() {
-			"H1" => Some(1),
+			"H1" | "H" => Some(1), // "H" is a fallback generic heading, treated as H1
 			"H2" => Some(2),
 			"H3" => Some(3),
 			"H4" => Some(4),
 			"H5" => Some(5),
 			"H6" => Some(6),
-			"H" => Some(1), // Fallback generic heading to H1
 			_ => None,
 		};
 		if let Some(level) = heading_level {
@@ -818,7 +806,7 @@ fn build_html_table(elem: &pdfium::PdfiumStructElement, mcid_to_text: &HashMap<i
 		let mut cell_text = String::new();
 		collect_text(elem, mcid_to_text, &mut cell_text);
 		html.push_str(&html_escape(&trim_string(&collapse_whitespace(&cell_text))));
-		html.push_str(&format!("</{}>\n", elem_type.to_lowercase()));
+		let _ = writeln!(html, "</{}>", elem_type.to_lowercase());
 		html
 	} else {
 		let mut html = String::new();
@@ -949,7 +937,7 @@ mod tests {
 		let pos = buffer.current_position();
 		let mut lines_info = Vec::new();
 		let mut page_text = String::new();
-		append_pdf_table_to_buffer(&mut buffer, html.clone(), pos, &mut lines_info, &mut page_text, true);
+		append_pdf_table_to_buffer(&mut buffer, html, pos, &mut lines_info, &mut page_text, true);
 
 		// Two rows -> "Kop\t𝄞\na\tb\n".
 		assert_eq!(buffer.content, "Kop\t\u{1D11E}\na\tb\n");

@@ -13,15 +13,15 @@ translatable = true
 [dependencies]
 anyhow = { workspace = true }
 base64 = { workspace = true }
-bitflags = "2.13.1"
+bitflags = { workspace = true }
 dunce = "1.0.5"
 live-region = "0.2.0"
 paperback-core = { path = "../paperback-core" }
-patois = { git = "https://github.com/trypsynth/patois.git", features = ["ui"] }
+patois = { version = "0.2.0", features = ["ui"] }
 tracing = "0.1.44"
 tracing-appender = "0.2.5"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
-ship-shape = "0.1.5"
+ship-shape = "0.1.6"
 toml = { workspace = true }
 wx-utils = "0.1.1"
 wxdragon = { version = "0.9.18", features = ["webview"] }
@@ -32,21 +32,17 @@ windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_Sys
 [target.'cfg(target_os = "macos")'.dependencies]
 objc = "0.2.7"
 
-[lints.rust]
-# `objc`'s `msg_send!` macro expands to a `cfg(feature = "cargo-clippy")` check.
-# This is not a feature that this crate defines and the Rust compiler understands, so a warning would normally be generated.
-# When using macros from older crates (written before this compiler check
-# existed) that rely on this feature, such warnings must be suppressed.
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("cargo-clippy"))'] }
-
 [build-dependencies]
 embed-manifest = "1.5.0"
 flate2 = { version = "1.1.9", default-features = false }
 paperback-formats = { path = "../paperback-formats" }
-patois-build = { git = "https://github.com/trypsynth/patois.git" }
+patois-build = "0.1.4"
 tar = "0.4.46"
 ureq = { version = "3.3.0", default-features = false, features = ["rustls"] }
 winres = "0.1.12"
 
 [dev-dependencies]
 rstest = { workspace = true }
+
+[lints]
+workspace = true

@@ -21,7 +21,42 @@ jobs:
       - name: Check formatting
         run: cargo +nightly fmt --check
   test:
-    name: Tests and clippy
+    name: Tests
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+      - name: Install CMake and Ninja
+        run: choco install cmake ninja -y
+      - name: Install WebView2 SDK
+        run: |
+          nuget install Microsoft.Web.WebView2 -OutputDirectory packages
+          $pkg = Get-ChildItem "packages" -Filter "Microsoft.Web.WebView2.*" -Directory | Select-Object -First 1
+          $libPath = Join-Path $pkg.FullName "build\native\x64"
+          echo "LIB=$env:LIB;$libPath" >> $env:GITHUB_ENV
+      - name: Install Gettext via MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            gettext
+            mingw-w64-ucrt-x86_64-gettext-tools
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+      - name: Run tests
+        run: cargo test --workspace
+  clippy:
+    name: Clippy
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
@@ -54,7 +89,8 @@ jobs:
             mingw-w64-ucrt-x86_64-gettext-tools
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
-      - name: Run tests
-        run: cargo test
+      # `clippy::all` is denied through [workspace.lints] in Cargo.toml, so this fails the job on
+      # any of those lints. The pedantic and nursery groups stay warnings and are printed, not
+      # enforced -- see the comment on the lint table for why.
       - name: Run clippy
-        run: cargo clippy --release
+        run: cargo clippy --workspace --all-targets --release

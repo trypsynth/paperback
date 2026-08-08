@@ -135,6 +135,15 @@ interface DocumentSession {
 	sequence<SegmentTypeFfi> get_supported_segment_types_ffi();
 
 	SearchResultFfi search_ffi(string query, i64 start_position, SearchOptionsFfi options);
+
+	sequence<ExportFormatFfi> get_supported_export_formats_ffi();
+	string render_export_ffi(ExportFormatFfi format);
+};
+
+enum ExportFormatFfi {
+	"Text",
+	"Html",
+	"Markdown"
 };
 
 interface ConfigManagerFfi {

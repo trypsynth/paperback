@@ -5,7 +5,7 @@ use libchm::{ChmFile, EntryCategory, EntrySel};
 use scraper::{ElementRef, Html, Selector};
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
 		Parser, add_converter_markers_excluding_links,
 		html_to_text::{HtmlSourceMode, HtmlToText},
@@ -18,22 +18,6 @@ use crate::{
 pub struct ChmParser;
 
 impl Parser for ChmParser {
-	fn name(&self) -> &'static str {
-		paperback_formats::CHM.name
-	}
-
-	fn extensions(&self) -> &[&str] {
-		paperback_formats::CHM.extensions
-	}
-
-	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_TOC
-			| ParserFlags::SUPPORTS_LISTS
-			| ParserFlags::SUPPORTS_SECTIONS
-			| ParserFlags::SUPPORTS_IMAGES
-			| ParserFlags::SUPPORTS_FIGURES
-	}
-
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		let mut chm = ChmFile::open(&context.file_path)
 			.with_context(|| format!("Failed to open CHM file: {}", context.file_path))?;

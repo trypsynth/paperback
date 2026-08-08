@@ -1,5 +1,6 @@
 use std::{
 	collections::{BTreeSet, HashMap},
+	fmt::Write as _,
 	fs::File,
 	io::Read,
 	sync::LazyLock,
@@ -9,7 +10,7 @@ use anyhow::Result;
 use encoding_rs::WINDOWS_1252;
 
 use crate::{
-	document::{Document, DocumentBuffer, ParserContext, ParserFlags, TocItem},
+	document::{Document, DocumentBuffer, ParserContext, TocItem},
 	parser::{
 		Parser, add_converter_markers,
 		html_to_text::{HtmlSourceMode, HtmlToText},
@@ -21,18 +22,6 @@ use crate::{
 pub struct MobiParser;
 
 impl Parser for MobiParser {
-	fn name(&self) -> &'static str {
-		paperback_formats::MOBI.name
-	}
-
-	fn extensions(&self) -> &[&str] {
-		paperback_formats::MOBI.extensions
-	}
-
-	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_LISTS
-	}
-
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		let mut file = File::open(&context.file_path)?;
 		let mut data = Vec::new();
@@ -202,7 +191,7 @@ impl Parser for MobiParser {
 				extra_data_flags =
 					u32::from_be_bytes([mobi_header[224], mobi_header[225], mobi_header[226], mobi_header[227]]);
 			} else {
-				extra_data_flags = u16::from_be_bytes([mobi_header[242], mobi_header[243]]) as u32;
+				extra_data_flags = u32::from(u16::from_be_bytes([mobi_header[242], mobi_header[243]]));
 			}
 			if extra_data_flags == 0xFFFFFFFF {
 				extra_data_flags = 0;
@@ -274,10 +263,10 @@ impl Parser for MobiParser {
 			}
 		}
 
-		if let Some(html_end) = fdst_html_end {
-			if html_end < content.len() {
-				content.truncate(html_end);
-			}
+		if let Some(html_end) = fdst_html_end
+			&& html_end < content.len()
+		{
+			content.truncate(html_end);
 		}
 
 		const MAX_MOBI_TEXT_BYTES: usize = 20 * 1024 * 1024;
@@ -307,10 +296,10 @@ impl Parser for MobiParser {
 			let mut stack = vec![items];
 			while let Some(current_items) = stack.pop() {
 				for item in current_items {
-					if let Some(pos_str) = item.reference.strip_prefix("#fp") {
-						if let Ok(pos) = pos_str.parse::<usize>() {
-							targets.insert(pos);
-						}
+					if let Some(pos_str) = item.reference.strip_prefix("#fp")
+						&& let Ok(pos) = pos_str.parse::<usize>()
+					{
+						targets.insert(pos);
 					}
 					if !item.children.is_empty() {
 						stack.push(&item.children);
@@ -492,7 +481,7 @@ fn build_fragment_offsets(data: &[u8], records: &[usize], mobi_header: &[u8]) ->
 		}
 
 		for j in 0..num_entries {
-			let entry_idx = 4 + j as usize * 2;
+			let entry_idx = 4 + j * 2;
 			if entry_idx + 2 > idxt.len() {
 				break;
 			}
@@ -507,14 +496,8 @@ fn build_fragment_offsets(data: &[u8], records: &[usize], mobi_header: &[u8]) ->
 			if pos + label_len > data_rec.len() {
 				continue;
 			}
-			let label_str = match std::str::from_utf8(&data_rec[pos..pos + label_len]) {
-				Ok(s) => s,
-				Err(_) => continue,
-			};
-			let insert_offset = match label_str.parse::<usize>() {
-				Ok(v) => v,
-				Err(_) => continue,
-			};
+			let Ok(label_str) = std::str::from_utf8(&data_rec[pos..pos + label_len]) else { continue };
+			let Ok(insert_offset) = label_str.parse::<usize>() else { continue };
 			pos += label_len;
 
 			if pos >= data_rec.len() {
@@ -564,11 +547,11 @@ fn rewrite_internal_links(html: &str, frag_offsets: &HashMap<usize, usize>, extr
 			}
 		}
 
-		if let Some(filepos) = filepos {
-			if filepos < html.len() {
-				links.push((m.start(), m.end(), filepos));
-				targets.insert(filepos);
-			}
+		if let Some(filepos) = filepos
+			&& filepos < html.len()
+		{
+			links.push((m.start(), m.end(), filepos));
+			targets.insert(filepos);
 		}
 	}
 	if links.is_empty() && targets.is_empty() {
@@ -596,10 +579,10 @@ fn rewrite_internal_links(html: &str, frag_offsets: &HashMap<usize, usize>, extr
 		}
 		result.push_str(&html[pos..actual_pos]);
 		if kind == 0 {
-			result.push_str(&format!("<a id=\"fp{filepos:010}\"></a>"));
+			let _ = write!(result, "<a id=\"fp{filepos:010}\"></a>");
 			pos = actual_pos;
 		} else {
-			result.push_str(&format!("<a href=\"#fp{filepos:010}\">"));
+			let _ = write!(result, "<a href=\"#fp{filepos:010}\">");
 			pos = end;
 		}
 	}
@@ -874,10 +857,7 @@ impl HuffmanDecoder {
 					if index >= self.dictionary.len() {
 						current.bits_left = 0;
 					} else {
-						let (slice, flag) = match self.dictionary[index].clone() {
-							Some(v) => v,
-							None => (Vec::new(), true),
-						};
+						let (slice, flag) = self.dictionary[index].clone().unwrap_or_else(|| (Vec::new(), true));
 						if flag {
 							current.out.extend_from_slice(&slice);
 						} else {
@@ -937,12 +917,11 @@ fn parse_ncx(
 	} else if !is_kf8 && mobi_header.len() >= 248 {
 		ncx_index = u32::from_be_bytes(mobi_header[244..248].try_into().unwrap_or([0; 4])) as usize;
 	}
-	if ncx_index == 0xFFFFFFFF || ncx_index == 0 {
-		if let Some(ext) = exth.get(&253) {
-			if ext.len() >= 4 {
-				ncx_index = u32::from_be_bytes([ext[0], ext[1], ext[2], ext[3]]) as usize;
-			}
-		}
+	if (ncx_index == 0xFFFFFFFF || ncx_index == 0)
+		&& let Some(ext) = exth.get(&253)
+		&& ext.len() >= 4
+	{
+		ncx_index = u32::from_be_bytes([ext[0], ext[1], ext[2], ext[3]]) as usize;
 	}
 	if ncx_index == 0xFFFFFFFF || ncx_index == 0 || ncx_index >= records.len() - 1 {
 		return Vec::new();
@@ -983,7 +962,7 @@ fn parse_ncx(
 		}
 		let tag = indx_rec[p];
 		let vpe = indx_rec[p + 1] as usize;
-		let mask = indx_rec[p + 2] as u32;
+		let mask = u32::from(indx_rec[p + 2]);
 		let end = indx_rec[p + 3];
 		tags.push((tag, vpe, mask, end));
 	}
@@ -1060,7 +1039,7 @@ fn parse_ncx(
 			let mut cbyte_idx = 0;
 
 			for &(tag, vpe, mask, end_flag) in &tags {
-				let cb = cbytes.get(cbyte_idx).copied().unwrap_or(0) as u32;
+				let cb = u32::from(cbytes.get(cbyte_idx).copied().unwrap_or(0));
 				if end_flag == 1 {
 					cbyte_idx += 1;
 				}
@@ -1080,7 +1059,7 @@ fn parse_ncx(
 					if mask.count_ones() > 1 {
 						if vwi_offset < rec.len() {
 							let (v, next) = decode_vwi(rec, vwi_offset);
-							value_bytes = v as usize;
+							value_bytes = v;
 							vwi_offset = next;
 						}
 					} else {
@@ -1117,35 +1096,35 @@ fn parse_ncx(
 
 				if !vals.is_empty() {
 					if tag == 1 {
-						pos = Some(vals[0] as usize);
+						pos = Some(vals[0]);
 					}
 					if tag == 3 {
-						title_offset = Some(vals[0] as usize);
+						title_offset = Some(vals[0]);
 					}
 					if tag == 4 {
-						lvl = vals[0] as usize;
+						lvl = vals[0];
 					}
 					if tag == 6 {
-						fid = Some(vals[0] as usize);
+						fid = Some(vals[0]);
 						if vals.len() > 1 {
-							pos = Some(vals[1] as usize);
+							pos = Some(vals[1]);
 						}
 					}
 				}
 			}
 
-			if let (Some(toff), Some(p)) = (title_offset, pos) {
-				if toff < cncx_data.len() {
-					let (text_len, next) = decode_vwi(&cncx_data, toff);
-					if next + text_len <= cncx_data.len() {
-						let title_bytes = &cncx_data[next..next + text_len];
-						let title = String::from_utf8_lossy(title_bytes).into_owned();
-						let f = fid.unwrap_or(0);
-						let filepos = frag_offsets.get(&f).copied().unwrap_or(0) + p;
-						let lvl = if lvl == 0 { 1 } else { lvl as u32 };
+			if let (Some(toff), Some(p)) = (title_offset, pos)
+				&& toff < cncx_data.len()
+			{
+				let (text_len, next) = decode_vwi(&cncx_data, toff);
+				if next + text_len <= cncx_data.len() {
+					let title_bytes = &cncx_data[next..next + text_len];
+					let title = String::from_utf8_lossy(title_bytes).into_owned();
+					let f = fid.unwrap_or(0);
+					let filepos = frag_offsets.get(&f).copied().unwrap_or(0) + p;
+					let lvl = if lvl == 0 { 1 } else { lvl as u32 };
 
-						entries.push((title, lvl, format!("#fp{:010}", filepos)));
-					}
+					entries.push((title, lvl, format!("#fp{filepos:010}")));
 				}
 			}
 		}

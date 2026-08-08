@@ -12,9 +12,24 @@ repository = "https://github.com/trypsynth/paperback"
 # Deps shared by two or more crates in this workspace.
 [workspace.dependencies]
 anyhow = "1.0.104"
-base64 = "0.23.0"
+base64 = "0.23.1"
+bitflags = "2.13.1"
 rstest = "0.26.1"
 toml = "1.1.4"
+
+# Lint policy for every crate in the workspace; each member opts in with `[lints] workspace = true`.
+# `clippy::all` is denied so CI fails on it, while the pedantic and nursery groups stay warnings:
+# they hold a long tail of style suggestions we haven't worked through and don't want blocking a build.
+[workspace.lints.rust]
+# `objc`'s `msg_send!` macro (used by the desktop crate on macOS) expands to a
+# `cfg(feature = "cargo-clippy")` check. No crate here defines that feature, so the compiler
+# would warn about it; macros from crates written before this check existed need it suppressed.
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("cargo-clippy"))'] }
+
+[workspace.lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
 
 [profile.release]
 strip = true

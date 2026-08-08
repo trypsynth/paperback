@@ -8,7 +8,7 @@ use rtf_parser::{
 };
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext},
 	parser::{Parser, util::path::extract_title_from_path},
 	t,
 };
@@ -16,18 +16,6 @@ use crate::{
 pub struct RtfParser;
 
 impl Parser for RtfParser {
-	fn name(&self) -> &'static str {
-		paperback_formats::RTF.name
-	}
-
-	fn extensions(&self) -> &[&str] {
-		paperback_formats::RTF.extensions
-	}
-
-	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_PAGES
-	}
-
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		let bytes =
 			fs::read(&context.file_path).with_context(|| format!("Failed to open RTF file '{}'", context.file_path))?;
@@ -142,7 +130,6 @@ fn extract_codepage(rtf: &str) -> &'static Encoding {
 /// Maps an RTF `\fcharsetN` number to the corresponding encoding.
 fn encoding_for_fcharset(charset: i32, default: &'static Encoding) -> &'static Encoding {
 	match charset {
-		0 | 2 => default,                 // ANSI / Symbol — use document default
 		161 => encoding_rs::WINDOWS_1253, // Greek
 		162 => encoding_rs::WINDOWS_1254, // Turkish
 		163 => encoding_rs::WINDOWS_1258, // Vietnamese
@@ -152,6 +139,7 @@ fn encoding_for_fcharset(charset: i32, default: &'static Encoding) -> &'static E
 		204 => encoding_rs::WINDOWS_1251, // Cyrillic
 		238 => encoding_rs::WINDOWS_1250, // Central/Eastern European
 		222 => encoding_rs::WINDOWS_874,  // Thai
+		// 0 / 2 (ANSI / Symbol) and any other unrecognized value fall back to the document default
 		_ => default,
 	}
 }
@@ -462,12 +450,7 @@ fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 			Token::ControlSymbol((ctrl, property)) => {
 				match ctrl {
 					ControlWord::Pard => in_header = false,
-					ControlWord::Par => {
-						if !in_header {
-							buffer.append("\n");
-						}
-					}
-					ControlWord::Line => {
+					ControlWord::Par | ControlWord::Line => {
 						if !in_header {
 							buffer.append("\n");
 						}
@@ -794,7 +777,7 @@ mod tests {
 		let default_enc = encoding_rs::WINDOWS_1252;
 		let font_table = extract_font_table(rtf, default_enc);
 		let out = resolve_hex_escapes(rtf, default_enc, &font_table);
-		assert!(out.contains('Ć'), "expected Ć (Windows-1250 0xC6), got: {}", &out);
+		assert!(out.contains('Ć'), "expected Ć (Windows-1250 0xC6), got: {out}");
 		assert!(!out.contains('Æ'), "should not contain Æ (Windows-1252 0xC6)");
 	}
 

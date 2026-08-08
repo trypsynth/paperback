@@ -72,7 +72,7 @@ pub struct DocumentManager {
 }
 
 impl DocumentManager {
-	pub fn new(
+	pub const fn new(
 		frame: Frame,
 		notebook: Notebook,
 		config: Rc<Mutex<ConfigManager>>,
@@ -266,7 +266,10 @@ impl DocumentManager {
 		}
 		if let Some(tab) = self.tabs.get(index) {
 			tracing::info!(path = %tab.file_path.display(), "closing document");
-			self.recently_closed.push(tab.file_path.clone());
+			// don't make an untracked document reopenable; reopening would give it the wrong title and make it tracked.
+			if tab.track {
+				self.recently_closed.push(tab.file_path.clone());
+			}
 			let path_str = tab.file_path.to_string_lossy();
 			let config = self.config.lock().unwrap();
 			if save_state && tab.track {
@@ -858,7 +861,7 @@ fn fill_text_ctrl(text_ctrl: TextCtrl, content: &str) {
 
 /// Sets `content` on `text_ctrl` and applies its bold/italic/underline markers.
 ///
-/// On Windows this streams a single RTF blob into the native RichEdit control
+/// On Windows this streams a single RTF blob into the native `RichEdit` control
 /// via `EM_STREAMIN` (see `stream_rtf_into_ctrl`) instead of issuing one
 /// `SetStyle` call per formatting span, which is far cheaper on documents with
 /// thousands of spans. `wxTextCtrl::SetValue` can't be used for this — it does
@@ -871,33 +874,33 @@ fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, session: &DocumentSession
 	let segments = merge_formatting_markers(&markers);
 
 	#[cfg(target_os = "windows")]
-	if !segments.is_empty() {
-		if let Some(font) = text_ctrl.get_font() {
-			let rtf = rtf_write::build_rtf(
-				content,
-				&segments,
-				&RtfFontInfo { face_name: font.get_face_name(), point_size: font.get_point_size() },
-			);
-			if stream_rtf_into_ctrl(text_ctrl, &rtf) {
-				let round_tripped = text_ctrl.get_value();
-				// RichEdit's document model implicitly terminates the buffer, so a
-				// wholly-trailing "\par" (with no content after it) doesn't manifest
-				// as a stored character. Tolerate exactly that one known, harmless
-				// discrepancy rather than falling back over it: the very last
-				// position of the document ends up one short of `content`, which
-				// only matters at the literal last character of the book.
-				let matched = round_tripped == content
-					|| (content.ends_with('\n')
-						&& round_tripped.len() + 1 == content.len()
-						&& content.starts_with(round_tripped.as_str()));
-				if matched {
-					return;
-				}
+	if !segments.is_empty()
+		&& let Some(font) = text_ctrl.get_font()
+	{
+		let rtf = rtf_write::build_rtf(
+			content,
+			&segments,
+			&RtfFontInfo { face_name: font.get_face_name(), point_size: font.get_point_size() },
+		);
+		if stream_rtf_into_ctrl(text_ctrl, &rtf) {
+			let round_tripped = text_ctrl.get_value();
+			// RichEdit's document model implicitly terminates the buffer, so a
+			// wholly-trailing "\par" (with no content after it) doesn't manifest
+			// as a stored character. Tolerate exactly that one known, harmless
+			// discrepancy rather than falling back over it: the very last
+			// position of the document ends up one short of `content`, which
+			// only matters at the literal last character of the book.
+			let matched = round_tripped == content
+				|| (content.ends_with('\n')
+					&& round_tripped.len() + 1 == content.len()
+					&& content.starts_with(round_tripped.as_str()));
+			if matched {
+				return;
 			}
-			// Never leave raw RTF markup on screen for an accessibility user;
-			// fall back below to the plain-text + segment-loop path.
-			tracing::warn!("RTF fast path for formatting markers did not round-trip; falling back");
 		}
+		// Never leave raw RTF markup on screen for an accessibility user;
+		// fall back below to the plain-text + segment-loop path.
+		tracing::warn!("RTF fast path for formatting markers did not round-trip; falling back");
 	}
 
 	fill_text_ctrl(text_ctrl, content);
@@ -910,7 +913,7 @@ struct RtfStreamCursor<'a> {
 	pos: usize,
 }
 
-/// `EDITSTREAMCALLBACK` for `EM_STREAMIN`: RichEdit calls this repeatedly,
+/// `EDITSTREAMCALLBACK` for `EM_STREAMIN`: `RichEdit` calls this repeatedly,
 /// asking for up to `cb` bytes each time, until we report 0 bytes written
 /// (end of stream) or return a nonzero error code. Called synchronously
 /// within `SendMessageW` on the same thread, so the `RtfStreamCursor` borrow
@@ -931,13 +934,13 @@ unsafe extern "system" fn rtf_stream_read_callback(dwcookie: usize, pbbuff: *mut
 	0
 }
 
-/// Feeds `rtf` into the native RichEdit control behind `text_ctrl` via the
+/// Feeds `rtf` into the native `RichEdit` control behind `text_ctrl` via the
 /// Win32 `EM_STREAMIN` message. `wxTextCtrl::SetValue` cannot be used for this:
 /// it does not forward to the native `WM_SETTEXT` handler that auto-detects a
 /// `{\rtf` prefix, so it just stores the markup as literal text (confirmed by
 /// a round-trip mismatch where `GetValue()` returned the raw RTF source
 /// unchanged). `EM_STREAMIN` is the documented, explicit way to load RTF into
-/// a RichEdit control, and is why this needs a raw `SendMessageW` call rather
+/// a `RichEdit` control, and is why this needs a raw `SendMessageW` call rather
 /// than a wx-level API — the same pattern already used for letter-spacing
 /// (`EM_SETCHARFORMAT`) in `apply_readability_format_to_ctrl`.
 ///
@@ -1258,10 +1261,10 @@ pub fn merge_formatting_markers(markers: &[paperback_core::session::LineMarker])
 			}
 		}
 	}
-	if let Some(seg) = open {
-		if seg.bold || seg.italic || seg.underline {
-			segments.push(seg);
-		}
+	if let Some(seg) = open
+		&& (seg.bold || seg.italic || seg.underline)
+	{
+		segments.push(seg);
 	}
 	segments
 }

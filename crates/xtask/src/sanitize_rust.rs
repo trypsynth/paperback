@@ -74,9 +74,7 @@ pub fn sanitize_for_xgettext(src: &str) -> String {
 			}
 		} else if c == '\'' {
 			if let Some(end) = char_literal_end(&chars, i) {
-				for k in i..=end {
-					out.push(chars[k]);
-				}
+				out.extend(&chars[i..=end]);
 				i = end + 1;
 			} else {
 				out.push(' ');
@@ -115,7 +113,7 @@ fn blank_raw_string_body(chars: &[char], i: &mut usize, hashes: usize, out: &mut
 				k += 1;
 			}
 			if matched == hashes {
-				for _ in 0..(hashes + 1) {
+				for _ in 0..=hashes {
 					out.push(' ');
 				}
 				*i = k;

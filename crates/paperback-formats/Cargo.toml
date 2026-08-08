@@ -10,3 +10,9 @@ description = "Shared format metadata (names, extensions) for Paperback's parser
 [lib]
 name = "paperback_formats"
 path = "src/lib.rs"
+
+[dependencies]
+bitflags = { workspace = true }
+
+[lints]
+workspace = true

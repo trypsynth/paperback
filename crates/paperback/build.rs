@@ -1,5 +1,7 @@
 use std::{
-	env, fs, io,
+	env,
+	fmt::Write as _,
+	fs, io,
 	io::{Cursor, Read},
 	path::{Path, PathBuf},
 	process::Command,
@@ -7,7 +9,10 @@ use std::{
 
 use embed_manifest::{
 	embed_manifest,
-	manifest::{ActiveCodePage, DpiAwareness, HeapType, Setting, SupportedOS::*},
+	manifest::{
+		ActiveCodePage, DpiAwareness, HeapType, Setting,
+		SupportedOS::{Windows7, Windows10},
+	},
 	new_manifest,
 };
 use flate2::read::GzDecoder;
@@ -39,9 +44,9 @@ fn main() {
 		// Homebrew's libiconv is keg-only and not on the default search path.
 		// wxWidgets links against it, so we need to tell the linker where to find it.
 		let homebrew_prefix = if target.contains("aarch64") { "/opt/homebrew" } else { "/usr/local" };
-		let iconv_lib = format!("{}/opt/libiconv/lib", homebrew_prefix);
+		let iconv_lib = format!("{homebrew_prefix}/opt/libiconv/lib");
 		if Path::new(&iconv_lib).exists() {
-			println!("cargo:rustc-link-search=native={}", iconv_lib);
+			println!("cargo:rustc-link-search=native={iconv_lib}");
 		}
 		generate_app_bundle();
 	}
@@ -53,7 +58,7 @@ fn main() {
 			.dpi_awareness(DpiAwareness::PerMonitorV2)
 			.long_path_aware(Setting::Enabled);
 		if let Err(e) = embed_manifest(manifest) {
-			println!("cargo:warning=Failed to embed manifest: {}", e);
+			println!("cargo:warning=Failed to embed manifest: {e}");
 			println!("cargo:warning=The application will still work but may lack optimal Windows theming");
 		}
 		embed_version_info();
@@ -70,8 +75,7 @@ fn get_commit_info() -> (String, bool) {
 	let is_dev = !Command::new("git")
 		.args(["describe", "--tags", "--exact-match", "HEAD"])
 		.output()
-		.map(|o| o.status.success())
-		.unwrap_or(false);
+		.is_ok_and(|o| o.status.success());
 	(hash, is_dev)
 }
 
@@ -101,7 +105,7 @@ fn embed_version_info() {
 		.set("ProductVersion", &product_version)
 		.set("FileVersion", &version);
 	if let Err(e) = res.compile() {
-		println!("cargo:warning=Failed to embed version info: {}", e);
+		println!("cargo:warning=Failed to embed version info: {e}");
 	}
 }
 
@@ -124,7 +128,7 @@ fn build_translations() {
 		"cargo:rerun-if-changed={}",
 		workspace_dir.join("android/app/src/main/kotlin/dev/paperback/mobile").display()
 	);
-	if let Err(e) = patois_build::gen_pot(&workspace_dir, &po_dir, "paperback") {
+	if let Err(e) = patois_build::gen_pot(workspace_dir, &po_dir, "paperback") {
 		println!("cargo:warning=Failed to regenerate paperback.pot from Rust sources: {e}");
 	}
 	let ios_src = workspace_dir.join("ios/Paperback");
@@ -146,22 +150,19 @@ fn copy_sounds() {
 	if !sounds_src.exists() {
 		return;
 	}
-	let target_dir = match target_profile_dir() {
-		Some(dir) => dir,
-		None => {
-			println!("cargo:warning=Could not determine target output directory for sounds.");
-			return;
-		}
+	let Some(target_dir) = target_profile_dir() else {
+		println!("cargo:warning=Could not determine target output directory for sounds.");
+		return;
 	};
 	let sounds_dst = target_dir.join("sounds");
 	if let Err(err) = fs::create_dir_all(&sounds_dst) {
-		println!("cargo:warning=Failed to create sounds directory: {}", err);
+		println!("cargo:warning=Failed to create sounds directory: {err}");
 		return;
 	}
 	let entries = match fs::read_dir(&sounds_src) {
 		Ok(entries) => entries,
 		Err(err) => {
-			println!("cargo:warning=Failed to read sounds directory: {}", err);
+			println!("cargo:warning=Failed to read sounds directory: {err}");
 			return;
 		}
 	};
@@ -171,7 +172,7 @@ fn copy_sounds() {
 		if path.is_file() {
 			let dest = sounds_dst.join(entry.file_name());
 			if let Err(err) = fs::copy(&path, &dest) {
-				println!("cargo:warning=Failed to copy sound file: {}", err);
+				println!("cargo:warning=Failed to copy sound file: {err}");
 			}
 		}
 	}
@@ -181,15 +182,11 @@ fn copy_pdfium_dylib() {
 	println!("cargo:rerun-if-env-changed=PAPERBACK_PDFIUM_DYLIB");
 	println!("cargo:rerun-if-env-changed=PAPERBACK_SKIP_PDFIUM_DOWNLOAD");
 	println!("cargo:rerun-if-env-changed=PAPERBACK_REFRESH_PDFIUM");
-	let refresh = env::var("PAPERBACK_REFRESH_PDFIUM")
-		.map(|value| value == "1" || value.eq_ignore_ascii_case("true"))
-		.unwrap_or(false);
-	let target_dir = match target_profile_dir() {
-		Some(dir) => dir,
-		None => {
-			println!("cargo:warning=Could not determine target output directory for libpdfium.dylib.");
-			return;
-		}
+	let refresh =
+		env::var("PAPERBACK_REFRESH_PDFIUM").is_ok_and(|value| value == "1" || value.eq_ignore_ascii_case("true"));
+	let Some(target_dir) = target_profile_dir() else {
+		println!("cargo:warning=Could not determine target output directory for libpdfium.dylib.");
+		return;
 	};
 	let dest = target_dir.join("libpdfium.dylib");
 	if let Ok(path) = env::var("PAPERBACK_PDFIUM_DYLIB") {
@@ -209,8 +206,7 @@ fn copy_pdfium_dylib() {
 	}
 	if let Err(err) = ensure_pdfium_dylib(&dest) {
 		println!(
-			"cargo:warning=libpdfium.dylib not found. Automatic download failed: {}. Set PAPERBACK_PDFIUM_DYLIB or place libpdfium.dylib in the project root.",
-			err
+			"cargo:warning=libpdfium.dylib not found. Automatic download failed: {err}. Set PAPERBACK_PDFIUM_DYLIB or place libpdfium.dylib in the project root."
 		);
 	} else if dest.exists() {
 		println!("cargo:rerun-if-changed={}", dest.display());
@@ -219,14 +215,12 @@ fn copy_pdfium_dylib() {
 
 fn ensure_pdfium_dylib(dest: &Path) -> io::Result<()> {
 	let skip_download = env::var("PAPERBACK_SKIP_PDFIUM_DOWNLOAD")
-		.map(|value| value == "1" || value.eq_ignore_ascii_case("true"))
-		.unwrap_or(false);
+		.is_ok_and(|value| value == "1" || value.eq_ignore_ascii_case("true"));
 	if skip_download {
 		return Err(io::Error::other("download disabled by PAPERBACK_SKIP_PDFIUM_DOWNLOAD"));
 	}
-	let refresh = env::var("PAPERBACK_REFRESH_PDFIUM")
-		.map(|value| value == "1" || value.eq_ignore_ascii_case("true"))
-		.unwrap_or(false);
+	let refresh =
+		env::var("PAPERBACK_REFRESH_PDFIUM").is_ok_and(|value| value == "1" || value.eq_ignore_ascii_case("true"));
 	if dest.exists() && !refresh {
 		return Ok(());
 	}
@@ -249,7 +243,7 @@ fn download_pdfium_dylib(url: &str, dest_dylib: &Path) -> io::Result<()> {
 	if let Some(parent) = dest_dylib.parent() {
 		fs::create_dir_all(parent)?;
 	}
-	println!("cargo:warning=Downloading libpdfium.dylib from {}", url);
+	println!("cargo:warning=Downloading libpdfium.dylib from {url}");
 	let response = ureq::get(url).call().map_err(|err| io::Error::other(format!("request failed: {err}")))?;
 	let mut body = response.into_body();
 	let mut archive_bytes = Vec::new();
@@ -283,15 +277,11 @@ fn copy_pdfium_dll() {
 	println!("cargo:rerun-if-env-changed=PAPERBACK_PDFIUM_DLL");
 	println!("cargo:rerun-if-env-changed=PAPERBACK_SKIP_PDFIUM_DOWNLOAD");
 	println!("cargo:rerun-if-env-changed=PAPERBACK_REFRESH_PDFIUM");
-	let refresh = env::var("PAPERBACK_REFRESH_PDFIUM")
-		.map(|value| value == "1" || value.eq_ignore_ascii_case("true"))
-		.unwrap_or(false);
-	let target_dir = match target_profile_dir() {
-		Some(dir) => dir,
-		None => {
-			println!("cargo:warning=Could not determine target output directory for pdfium.dll.");
-			return;
-		}
+	let refresh =
+		env::var("PAPERBACK_REFRESH_PDFIUM").is_ok_and(|value| value == "1" || value.eq_ignore_ascii_case("true"));
+	let Some(target_dir) = target_profile_dir() else {
+		println!("cargo:warning=Could not determine target output directory for pdfium.dll.");
+		return;
 	};
 	let dest = target_dir.join("pdfium.dll");
 	let mut candidates = Vec::new();
@@ -319,8 +309,7 @@ fn copy_pdfium_dll() {
 	}
 	if let Err(err) = ensure_pdfium_dll(&dest) {
 		println!(
-			"cargo:warning=pdfium.dll not found. Automatic download failed: {}. Set PDFIUM_DLL_PATH (or PAPERBACK_PDFIUM_DLL), install pdfium.dll on PATH, or place it in the project root.",
-			err
+			"cargo:warning=pdfium.dll not found. Automatic download failed: {err}. Set PDFIUM_DLL_PATH (or PAPERBACK_PDFIUM_DLL), install pdfium.dll on PATH, or place it in the project root."
 		);
 	} else if dest.exists() {
 		println!("cargo:rerun-if-changed={}", dest.display());
@@ -329,14 +318,12 @@ fn copy_pdfium_dll() {
 
 fn ensure_pdfium_dll(dest_dll: &Path) -> io::Result<()> {
 	let skip_download = env::var("PAPERBACK_SKIP_PDFIUM_DOWNLOAD")
-		.map(|value| value == "1" || value.eq_ignore_ascii_case("true"))
-		.unwrap_or(false);
+		.is_ok_and(|value| value == "1" || value.eq_ignore_ascii_case("true"));
 	if skip_download {
 		return Err(io::Error::other("download disabled by PAPERBACK_SKIP_PDFIUM_DOWNLOAD"));
 	}
-	let refresh = env::var("PAPERBACK_REFRESH_PDFIUM")
-		.map(|value| value == "1" || value.eq_ignore_ascii_case("true"))
-		.unwrap_or(false);
+	let refresh =
+		env::var("PAPERBACK_REFRESH_PDFIUM").is_ok_and(|value| value == "1" || value.eq_ignore_ascii_case("true"));
 	if dest_dll.exists() && !refresh {
 		return Ok(());
 	}
@@ -360,7 +347,7 @@ fn download_pdfium_dll(url: &str, dest_dll: &Path) -> io::Result<()> {
 	if let Some(parent) = dest_dll.parent() {
 		fs::create_dir_all(parent)?;
 	}
-	println!("cargo:warning=Downloading pdfium.dll from {}", url);
+	println!("cargo:warning=Downloading pdfium.dll from {url}");
 	let response = ureq::get(url).call().map_err(|err| io::Error::other(format!("request failed: {err}")))?;
 	let mut body = response.into_body();
 	let mut archive_bytes = Vec::new();
@@ -419,12 +406,9 @@ fn target_profile_dir() -> Option<PathBuf> {
 }
 
 fn build_docs() {
-	let target_dir = match target_profile_dir() {
-		Some(dir) => dir,
-		None => {
-			println!("cargo:warning=Could not determine target directory for docs.");
-			return;
-		}
+	let Some(target_dir) = target_profile_dir() else {
+		println!("cargo:warning=Could not determine target directory for docs.");
+		return;
 	};
 	let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap_or_default());
 	let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap_or_default());
@@ -436,9 +420,7 @@ fn build_docs() {
 	println!("cargo:rerun-if-changed={}", config.display());
 	let mut embedded_langs: Vec<String> = Vec::new();
 	let pandoc_available = Command::new("pandoc").arg("--version").output().is_ok();
-	if !pandoc_available {
-		println!("cargo:warning=Pandoc not found. Documentation will not be generated.");
-	} else {
+	if pandoc_available {
 		// English readme: build to both target_dir (for macOS bundle) and OUT_DIR (for embedding)
 		let target_output = target_dir.join("readme.html");
 		let out_output = out_dir.join("readme.html");
@@ -457,7 +439,7 @@ fn build_docs() {
 		}
 		if let Ok(entries) = fs::read_dir(&doc_dir) {
 			let mut doc_entries: Vec<_> = entries.flatten().collect();
-			doc_entries.sort_by_key(|e| e.file_name());
+			doc_entries.sort_by_key(std::fs::DirEntry::file_name);
 			for entry in doc_entries {
 				let path = entry.path();
 				if path.extension().and_then(|e| e.to_str()) != Some("md") {
@@ -485,21 +467,30 @@ fn build_docs() {
 				}
 			}
 		}
+	} else {
+		println!("cargo:warning=Pandoc not found. Documentation will not be generated.");
 	}
-	let mut code = String::from("pub fn readme_for_lang(lang: &str) -> Option<&'static [u8]> {\n    match lang {\n");
-	for lang_code in &embedded_langs {
-		let filename = if lang_code == "en" { "/readme.html".to_string() } else { format!("/readme-{lang_code}.html") };
-		code.push_str(&format!(
-			"        {:?} => Some(include_bytes!(concat!(env!(\"OUT_DIR\"), {:?}))),\n",
-			lang_code, filename,
-		));
-	}
-	code.push_str("        _ => None,\n    }\n}\n");
+	let code = if embedded_langs.is_empty() {
+		"pub fn readme_for_lang(_lang: &str) -> Option<&'static [u8]> {\n    None\n}\n".to_string()
+	} else {
+		let mut code =
+			String::from("pub fn readme_for_lang(lang: &str) -> Option<&'static [u8]> {\n    match lang {\n");
+		for lang_code in &embedded_langs {
+			let filename =
+				if lang_code == "en" { "/readme.html".to_string() } else { format!("/readme-{lang_code}.html") };
+			let _ = writeln!(
+				code,
+				"        {lang_code:?} => Some(include_bytes!(concat!(env!(\"OUT_DIR\"), {filename:?}))),",
+			);
+		}
+		code.push_str("        _ => None,\n    }\n}\n");
+		code
+	};
 	let _ = fs::write(out_dir.join("lang_readmes.rs"), code);
 }
 
 /// Turns a format's display name into an Inno Setup task identifier, e.g.
-/// "Flat OpenDocument Presentations" -> "flat_opendocument_presentations".
+/// "Flat `OpenDocument` Presentations" -> "`flat_opendocument_presentations`".
 fn slugify(name: &str) -> String {
 	let mut slug = String::new();
 	let mut last_was_sep = true;
@@ -523,7 +514,7 @@ fn format_tasks_block() -> String {
 	let mut lines = Vec::new();
 	for format in paperback_formats::ALL {
 		let ext_list = format.extensions.iter().map(|ext| format!("*.{ext}")).collect::<Vec<_>>().join(", ");
-		let flags = if format.default_checked { String::new() } else { "; Flags: unchecked".to_string() };
+		let flags = if format.installer.default_checked { String::new() } else { "; Flags: unchecked".to_string() };
 		lines.push(format!(
 			"\tName: \"assoc_{}\"; Description: \"Associate with {} ({})\"{}",
 			slugify(format.name),
@@ -547,7 +538,7 @@ fn format_registry_block() -> String {
 			if *ext == "zip" {
 				continue;
 			}
-			if format.default_handler {
+			if format.installer.default_handler {
 				lines.push(format!(
 					"\tRoot: HKCR; Subkey: \".{ext}\"; ValueType: string; ValueName: \"\"; ValueData: \"Paperback.Document\"; Flags: uninsdeletevalue; Tasks: {task}"
 				));
@@ -562,9 +553,8 @@ fn format_registry_block() -> String {
 }
 
 fn configure_installer() {
-	let target_dir = match target_profile_dir() {
-		Some(dir) => dir,
-		None => return,
+	let Some(target_dir) = target_profile_dir() else {
+		return;
 	};
 	let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap_or_default());
 	let workspace_dir = manifest_dir.parent().unwrap().parent().unwrap();
@@ -576,7 +566,7 @@ fn configure_installer() {
 	let content = match fs::read_to_string(&input_path) {
 		Ok(c) => c,
 		Err(e) => {
-			println!("cargo:warning=Failed to read installer script: {}", e);
+			println!("cargo:warning=Failed to read installer script: {e}");
 			return;
 		}
 	};
@@ -593,7 +583,7 @@ fn configure_installer() {
 		.replace("@FORMAT_REGISTRY@", &format_registry_block());
 	let output_path = target_dir.join("paperback.iss");
 	if let Err(e) = fs::write(&output_path, new_content) {
-		println!("cargo:warning=Failed to write installer script: {}", e);
+		println!("cargo:warning=Failed to write installer script: {e}");
 	}
 }
 
@@ -608,12 +598,9 @@ fn bundle_document_extensions_block() -> String {
 }
 
 fn generate_app_bundle() {
-	let target_dir = match target_profile_dir() {
-		Some(dir) => dir,
-		None => {
-			println!("cargo:warning=Could not determine target directory for macOS app bundle.");
-			return;
-		}
+	let Some(target_dir) = target_profile_dir() else {
+		println!("cargo:warning=Could not determine target directory for macOS app bundle.");
+		return;
 	};
 	let version = env::var("CARGO_PKG_VERSION").unwrap_or_else(|_| "0.0.0".to_string());
 	let document_extensions = bundle_document_extensions_block();
@@ -660,7 +647,7 @@ fn generate_app_bundle() {
 	);
 	let plist_path = bundle_dir.join("Info.plist");
 	if let Err(e) = fs::write(&plist_path, plist) {
-		println!("cargo:warning=Failed to write Info.plist: {}", e);
+		println!("cargo:warning=Failed to write Info.plist: {e}");
 		return;
 	}
 	// Copy the binary into the bundle if it exists (from a previous build)

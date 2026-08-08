@@ -6,6 +6,7 @@ use std::{
 };
 
 use anyhow::Result;
+use paperback_formats::FormatMeta;
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags},
@@ -35,9 +36,6 @@ pub mod xml_to_text;
 pub const PASSWORD_REQUIRED_ERROR_PREFIX: &str = "[password_required]";
 
 pub trait Parser: Send + Sync {
-	fn name(&self) -> &str;
-	fn extensions(&self) -> &[&str];
-	fn supported_flags(&self) -> ParserFlags;
 	/// Parse a document from the given context.
 	///
 	/// # Errors
@@ -46,71 +44,115 @@ pub trait Parser: Send + Sync {
 	fn parse(&self, context: &ParserContext) -> Result<Document>;
 }
 
-pub struct ParserInfo {
-	pub name: String,
-	pub extensions: Vec<String>,
+/// A parser paired with the format it was registered for.
+///
+/// Every fact about a format — its name, extensions and supported navigation features — lives
+/// in `paperback-formats` and is attached here at registration time, so parsers themselves hold
+/// no metadata that could drift from that table.
+pub struct RegisteredParser {
+	format: &'static FormatMeta,
+	parser: Box<dyn Parser>,
+}
+
+impl RegisteredParser {
+	#[must_use]
+	pub const fn format(&self) -> &'static FormatMeta {
+		self.format
+	}
+
+	#[must_use]
+	pub const fn name(&self) -> &'static str {
+		self.format.name
+	}
+
+	#[must_use]
+	pub const fn extensions(&self) -> &'static [&'static str] {
+		self.format.extensions
+	}
+
+	#[must_use]
+	pub const fn supported_flags(&self) -> ParserFlags {
+		self.format.flags
+	}
+
+	/// Parse a document from the given context.
+	///
+	/// # Errors
+	///
+	/// Returns an error if the file cannot be read or parsed.
+	pub fn parse(&self, context: &ParserContext) -> Result<Document> {
+		self.parser.parse(context)
+	}
+}
+
+/// Builds a registry from a `FORMAT => parser` table, where `FORMAT` names a static in
+/// `paperback-formats`. Registration order is the order the entries appear in: it decides
+/// which parser is tried first for an extension more than one format claims, so it should
+/// match the declaration order of the format table.
+macro_rules! parser_registry {
+	($($format:ident => $parser:expr),+ $(,)?) => {{
+		let mut registry = ParserRegistry::new();
+		$(registry.register(&paperback_formats::$format, $parser);)+
+		registry
+	}};
 }
 
 pub struct ParserRegistry {
-	parsers: HashMap<String, Box<dyn Parser>>,
-	extension_map: HashMap<String, Vec<String>>,
+	/// Registered parsers in registration order, which is the order they're offered to the
+	/// user (file dialog filters) and tried in (extensions claimed by more than one format).
+	parsers: Vec<RegisteredParser>,
+	/// Lowercase extension to indices into `parsers`, preserving registration order.
+	extension_map: HashMap<String, Vec<usize>>,
 }
 
 impl ParserRegistry {
 	fn new() -> Self {
-		Self { parsers: HashMap::new(), extension_map: HashMap::new() }
+		Self { parsers: Vec::new(), extension_map: HashMap::new() }
 	}
 
-	pub fn register<P: Parser + 'static>(&mut self, parser: P) {
-		let name = parser.name().to_string();
-		for ext in parser.extensions() {
-			self.extension_map.entry(ext.to_ascii_lowercase()).or_default().push(name.clone());
+	pub fn register<P: Parser + 'static>(&mut self, format: &'static FormatMeta, parser: P) {
+		let index = self.parsers.len();
+		for ext in format.extensions {
+			self.extension_map.entry(ext.to_ascii_lowercase()).or_default().push(index);
 		}
-		self.parsers.insert(name, Box::new(parser));
+		self.parsers.push(RegisteredParser { format, parser: Box::new(parser) });
 	}
 
 	#[must_use]
-	pub fn get_parsers_for_extension(&self, extension: &str) -> Vec<&dyn Parser> {
+	pub fn get_parsers_for_extension(&self, extension: &str) -> Vec<&RegisteredParser> {
 		let ext = extension.to_ascii_lowercase();
 		self.extension_map
 			.get(&ext)
-			.map(|names| names.iter().filter_map(|name| self.parsers.get(name)).map(|p| &**p).collect())
+			.map(|indices| indices.iter().map(|&index| &self.parsers[index]).collect())
 			.unwrap_or_default()
 	}
 
 	#[must_use]
-	pub fn all_parsers(&self) -> Vec<ParserInfo> {
-		self.parsers
-			.values()
-			.map(|p| ParserInfo {
-				name: p.name().to_string(),
-				extensions: p.extensions().iter().map(|s| (*s).to_string()).collect(),
-			})
-			.collect()
+	pub fn all_parsers(&self) -> &[RegisteredParser] {
+		&self.parsers
 	}
 
 	pub fn global() -> &'static Self {
 		static REGISTRY: OnceLock<ParserRegistry> = OnceLock::new();
 		REGISTRY.get_or_init(|| {
-			let mut registry = Self::new();
-			registry.register(chm::ChmParser);
-			registry.register(daisy::DaisyParser);
-			registry.register(word::WordParser);
-			registry.register(epub::EpubParser);
-			registry.register(fb2::Fb2Parser);
-			registry.register(html::HtmlParser);
-
-			registry.register(pdf::PdfParser);
-			registry.register(markdown::MarkdownParser);
-			registry.register(mobi::MobiParser);
-			registry.register(odp::FodpParser);
-			registry.register(odp::OdpParser);
-			registry.register(odt::FodtParser);
-			registry.register(odt::OdtParser);
-			registry.register(powerpoint::PowerpointParser);
-			registry.register(rtf::RtfParser);
-			registry.register(text::TextParser);
-			registry
+			parser_registry! {
+				CHM => chm::ChmParser,
+				DAISY => daisy::DaisyParser,
+				WORD => word::WordParser,
+				EPUB => epub::EpubParser,
+				FB2 => fb2::Fb2Parser,
+				HTML => html::HtmlParser,
+				PDF => pdf::PdfParser,
+				MARKDOWN => markdown::MarkdownParser,
+				MOBI => mobi::MobiParser,
+				FODP => odp::FodpParser,
+				ODP => odp::OdpParser,
+				FODT => odt::FodtParser,
+				ODT => odt::OdtParser,
+				POWERPOINT => powerpoint::PowerpointParser,
+				RTF => rtf::RtfParser,
+				TEXT => text::TextParser,
+			}
 		})
 	}
 }
@@ -199,15 +241,15 @@ pub fn build_file_filter_string() -> String {
 		return "All Files (*.*)|*.*".to_string();
 	}
 	let mut all_extensions = BTreeSet::new();
-	for parser in &parsers {
-		for ext in &parser.extensions {
+	for parser in parsers {
+		for ext in parser.extensions() {
 			if !ext.is_empty() {
-				all_extensions.insert(ext.clone());
+				all_extensions.insert(*ext);
 			}
 		}
 	}
 	let mut parts = String::new();
-	let all_ext_part = join_extensions(all_extensions.iter().map(String::as_str));
+	let all_ext_part = join_extensions(all_extensions.iter().copied());
 	if !all_ext_part.is_empty() {
 		parts.push_str("All Supported Files (");
 		parts.push_str(&all_ext_part);
@@ -215,15 +257,15 @@ pub fn build_file_filter_string() -> String {
 		parts.push_str(&all_ext_part);
 		parts.push('|');
 	}
-	for parser in &parsers {
-		if parser.extensions.is_empty() {
+	for parser in parsers {
+		if parser.extensions().is_empty() {
 			continue;
 		}
-		let ext_part = join_extensions(parser.extensions.iter().map(String::as_str));
+		let ext_part = join_extensions(parser.extensions().iter().copied());
 		if ext_part.is_empty() {
 			continue;
 		}
-		parts.push_str(&parser.name);
+		parts.push_str(parser.name());
 		parts.push_str(" (");
 		parts.push_str(&ext_part);
 		parts.push_str(")|");
@@ -569,6 +611,51 @@ mod tests {
 	fn get_parser_flags_for_context_returns_none_for_unknown_extension() {
 		let context = ParserContext::new("doc.unknown_ext".to_string());
 		assert_eq!(get_parser_flags_for_context(&context), ParserFlags::NONE);
+	}
+
+	/// Guards against a format being declared in `paperback-formats` with no parser wired up
+	/// in `parser_registry!` (it would show up in the installer and open dialog but fail to
+	/// open), and against a parser being registered twice.
+	#[test]
+	fn every_declared_format_has_exactly_one_parser() {
+		let registered: Vec<&'static FormatMeta> =
+			ParserRegistry::global().all_parsers().iter().map(RegisteredParser::format).collect();
+		for format in paperback_formats::ALL {
+			let count = registered.iter().filter(|candidate| std::ptr::eq(**candidate, *format)).count();
+			assert_eq!(count, 1, "{} must have exactly one registered parser, found {count}", format.name);
+		}
+		assert_eq!(registered.len(), paperback_formats::ALL.len(), "a parser was registered for an unlisted format");
+	}
+
+	/// Registration order decides which parser wins a shared extension, so it must track the
+	/// order of the format table rather than drifting from it.
+	#[test]
+	fn registration_order_matches_the_format_table() {
+		let registered: Vec<&str> = ParserRegistry::global().all_parsers().iter().map(RegisteredParser::name).collect();
+		let declared: Vec<&str> = paperback_formats::ALL.iter().map(|format| format.name).collect();
+		assert_eq!(registered, declared);
+	}
+
+	/// `.zip` is claimed by both DAISY and Word, and `parse_document` tries claimants in
+	/// registration order, so DAISY must stay ahead of Word.
+	#[test]
+	fn zip_is_offered_to_daisy_before_word() {
+		let names: Vec<_> =
+			ParserRegistry::global().get_parsers_for_extension("zip").iter().map(|p| p.name()).collect();
+		assert_eq!(names, vec![paperback_formats::DAISY.name, paperback_formats::WORD.name]);
+	}
+
+	/// The registry stores parsers in a `Vec`, so the file dialog's filter groups appear in a
+	/// stable order rather than whatever order a hash map happened to yield.
+	#[test]
+	fn file_filter_lists_groups_in_registration_order() {
+		let filter = build_file_filter_string();
+		// Groups are "Label (*.ext;…)|*.ext;…" pairs, so every other field is a label.
+		let labels: Vec<&str> =
+			filter.split('|').step_by(2).filter_map(|group| group.split_once(" (").map(|(label, _)| label)).collect();
+		let expected: Vec<&str> = ParserRegistry::global().all_parsers().iter().map(RegisteredParser::name).collect();
+		assert_eq!(labels.first().copied(), Some("All Supported Files"));
+		assert_eq!(&labels[1..=expected.len()], expected.as_slice());
 	}
 
 	#[test]

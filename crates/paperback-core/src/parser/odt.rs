@@ -5,7 +5,7 @@ use roxmltree::{Document as XmlDocument, Node, NodeType};
 use zip::ZipArchive;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, format_marker_types},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, format_marker_types},
 	parser::{
 		Parser,
 		table_text::html_table_to_display,
@@ -21,18 +21,6 @@ use crate::{
 pub struct OdtParser;
 
 impl Parser for OdtParser {
-	fn name(&self) -> &'static str {
-		paperback_formats::ODT.name
-	}
-
-	fn extensions(&self) -> &[&str] {
-		paperback_formats::ODT.extensions
-	}
-
-	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_TOC
-	}
-
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		let file = File::open(&context.file_path)
 			.with_context(|| format!("Failed to open ODT file '{}'", context.file_path))?;
@@ -58,18 +46,6 @@ impl Parser for OdtParser {
 pub struct FodtParser;
 
 impl Parser for FodtParser {
-	fn name(&self) -> &'static str {
-		paperback_formats::FODT.name
-	}
-
-	fn extensions(&self) -> &[&str] {
-		paperback_formats::FODT.extensions
-	}
-
-	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_TOC
-	}
-
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		let content_str = fs::read_to_string(&context.file_path)
 			.with_context(|| format!("Failed to open FODT file '{}'", context.file_path))?;

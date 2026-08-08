@@ -131,12 +131,12 @@ pub fn render(doc: &Document) -> String {
 		}
 		event_idx += 1;
 	}
-	normalize_newlines(md)
+	normalize_newlines(&md)
 }
 
 // Expand single newlines to blank lines and collapse runs of 3+ newlines to 2.
 // Markdown ignores single newlines; a blank line is required for paragraph breaks.
-fn normalize_newlines(s: String) -> String {
+fn normalize_newlines(s: &str) -> String {
 	let mut out = String::with_capacity(s.len() + s.len() / 4);
 	let mut nl_run = 0usize;
 	for ch in s.chars() {
@@ -175,14 +175,14 @@ mod tests {
 	fn test_bold_basic() {
 		let doc = simple_doc("bold text", vec![Marker::new(MarkerType::Bold, 0).with_length(4)]);
 		let md = render(&doc);
-		assert!(md.contains("**bold**"), "Expected **bold** in markdown: {}", md);
+		assert!(md.contains("**bold**"), "Expected **bold** in markdown: {md}");
 	}
 
 	#[test]
 	fn test_italic_basic() {
 		let doc = simple_doc("italic text", vec![Marker::new(MarkerType::Italic, 0).with_length(6)]);
 		let md = render(&doc);
-		assert!(md.contains("*italic*"), "Expected *italic* in markdown: {}", md);
+		assert!(md.contains("*italic*"), "Expected *italic* in markdown: {md}");
 	}
 
 	#[test]
@@ -190,7 +190,7 @@ mod tests {
 		let doc = simple_doc("underline text", vec![Marker::new(MarkerType::Underline, 0).with_length(9)]);
 		let md = render(&doc);
 		// The text should still appear, but without any markdown syntax
-		assert!(md.contains("underline"), "Expected text 'underline' in markdown: {}", md);
+		assert!(md.contains("underline"), "Expected text 'underline' in markdown: {md}");
 		// No underline syntax should be present
 		assert!(!md.contains("__"), "Expected no __ syntax for underline");
 		assert!(!md.contains("_underline_"), "Expected no _underline_ italic-like syntax");
@@ -206,8 +206,8 @@ mod tests {
 			vec![Marker::new(MarkerType::Bold, 0).with_length(4), Marker::new(MarkerType::Italic, 5).with_length(6)],
 		);
 		let md = render(&doc);
-		assert!(md.contains("**bold**"), "Expected **bold** in markdown: {}", md);
-		assert!(md.contains("*italic*"), "Expected *italic* in markdown: {}", md);
+		assert!(md.contains("**bold**"), "Expected **bold** in markdown: {md}");
+		assert!(md.contains("*italic*"), "Expected *italic* in markdown: {md}");
 	}
 
 	#[test]
@@ -215,7 +215,7 @@ mod tests {
 		// Test that a bold span ending exactly at end-of-content doesn't lose its closing **
 		let doc = simple_doc("bold", vec![Marker::new(MarkerType::Bold, 0).with_length(4)]);
 		let md = render(&doc);
-		assert!(md.contains("**bold**"), "Expected **bold** in markdown with closing **: {}", md);
+		assert!(md.contains("**bold**"), "Expected **bold** in markdown with closing **: {md}");
 		// Count ** to verify both open and close are present
 		let count = md.matches("**").count();
 		assert_eq!(count, 2, "Expected exactly 2 occurrences of ** (open and close)");
@@ -226,9 +226,9 @@ mod tests {
 		// Test that an italic span ending exactly at end-of-content doesn't lose its closing *
 		let doc = simple_doc("italic", vec![Marker::new(MarkerType::Italic, 0).with_length(6)]);
 		let md = render(&doc);
-		assert!(md.contains("*italic*"), "Expected *italic* in markdown with closing *: {}", md);
+		assert!(md.contains("*italic*"), "Expected *italic* in markdown with closing *: {md}");
 		// Count * to verify both open and close are present (should be 2)
-		let count = md.matches("*").count();
+		let count = md.matches('*').count();
 		assert_eq!(count, 2, "Expected exactly 2 occurrences of * (open and close)");
 	}
 }

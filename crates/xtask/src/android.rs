@@ -29,7 +29,7 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 			"--installdebug" | "--install-debug" => gradle_tasks.push("installDebug"),
 			_ => {
 				print_help();
-				return Err(format!("Unknown argument for android: {}", arg).into());
+				return Err(format!("Unknown argument for android: {arg}").into());
 			}
 		}
 	}
@@ -90,10 +90,10 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 	// Generate translation JSON assets for each translated language
 	let po_dir = project_root().join("po");
 	let assets_dir = project_root().join("android/app/src/main/assets");
-	if po_dir.is_dir() {
-		if let Err(e) = patois_build::gen_android_strings(&po_dir, &assets_dir) {
-			println!("Warning: could not generate Android translations: {e}");
-		}
+	if po_dir.is_dir()
+		&& let Err(e) = patois_build::gen_android_strings(&po_dir, &assets_dir)
+	{
+		println!("Warning: could not generate Android translations: {e}");
 	}
 
 	let readmes_assets_dir = assets_dir.join("readmes");
@@ -117,27 +117,30 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 		if let Ok(entries) = fs::read_dir(&doc_dir) {
 			for entry in entries.flatten() {
 				let path = entry.path();
-				if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-					if name.starts_with("readme-") && name.ends_with(".md") {
-						let out_name = name.replace(".md", ".html");
-						let status = Command::new("pandoc")
-							.arg(format!("--defaults={}", pandoc_config.display()))
-							.arg(&path)
-							.arg("-o")
-							.arg(readmes_assets_dir.join(out_name))
-							.status();
-						match status {
-							Ok(s) if s.success() => {}
-							_ => println!("Warning: Failed to generate documentation for language: {}", name),
-						}
+				if let Some(name) = path.file_name().and_then(|n| n.to_str())
+					&& name.starts_with("readme-")
+					&& name.ends_with(".md")
+				{
+					let out_name = name.replace(".md", ".html");
+					let status = Command::new("pandoc")
+						.arg(format!("--defaults={}", pandoc_config.display()))
+						.arg(&path)
+						.arg("-o")
+						.arg(readmes_assets_dir.join(out_name))
+						.status();
+					match status {
+						Ok(s) if s.success() => {}
+						_ => println!("Warning: Failed to generate documentation for language: {name}"),
 					}
 				}
 			}
 		}
 	}
 
-	if !gradle_tasks.is_empty() {
-		println!("Running gradlew with tasks: {:?}", gradle_tasks);
+	if gradle_tasks.is_empty() {
+		println!("Open android/ in Android Studio to build the APK.");
+	} else {
+		println!("Running gradlew with tasks: {gradle_tasks:?}");
 		let android_dir = project_root().join("android");
 		let mut cmd = if cfg!(windows) {
 			let mut c = Command::new("cmd");
@@ -152,16 +155,13 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 			return Err("gradlew failed".into());
 		}
 		println!("Gradle tasks complete.");
-	} else {
-		println!("Open android/ in Android Studio to build the APK.");
 	}
 
 	Ok(())
 }
 
 fn download_pdfium_so(url: &str, dest: &Path) -> Result<(), Box<dyn Error>> {
-	let skip =
-		env::var("PAPERBACK_SKIP_PDFIUM_DOWNLOAD").map(|v| v == "1" || v.eq_ignore_ascii_case("true")).unwrap_or(false);
+	let skip = env::var("PAPERBACK_SKIP_PDFIUM_DOWNLOAD").is_ok_and(|v| v == "1" || v.eq_ignore_ascii_case("true"));
 	if dest.exists() && !skip {
 		return Ok(());
 	}
@@ -171,7 +171,7 @@ fn download_pdfium_so(url: &str, dest: &Path) -> Result<(), Box<dyn Error>> {
 	if let Some(parent) = dest.parent() {
 		fs::create_dir_all(parent)?;
 	}
-	println!("Downloading {} ...", url);
+	println!("Downloading {url} ...");
 	let response = ureq::get(url).call().map_err(|e| format!("download failed: {e}"))?;
 	let mut archive_bytes = Vec::new();
 	response.into_body().as_reader().read_to_end(&mut archive_bytes)?;

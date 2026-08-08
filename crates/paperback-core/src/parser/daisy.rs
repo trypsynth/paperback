@@ -10,7 +10,7 @@ use roxmltree::{Document as XmlDocument, Node, NodeType, ParsingOptions};
 use zip::ZipArchive;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem},
+	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
 		PASSWORD_REQUIRED_ERROR_PREFIX, Parser, add_converter_markers,
 		html_to_text::{HtmlSourceMode, HtmlToText},
@@ -24,21 +24,6 @@ use crate::{
 pub struct DaisyParser;
 
 impl Parser for DaisyParser {
-	fn name(&self) -> &'static str {
-		paperback_formats::DAISY.name
-	}
-
-	fn extensions(&self) -> &[&str] {
-		paperback_formats::DAISY.extensions
-	}
-
-	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_SECTIONS
-			| ParserFlags::SUPPORTS_TOC
-			| ParserFlags::SUPPORTS_LISTS
-			| ParserFlags::SUPPORTS_PAGES
-	}
-
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		let path = Path::new(&context.file_path);
 		let mut title = extract_title_from_path(&context.file_path);
@@ -365,20 +350,8 @@ fn convert_daisy_navpoint(nav: Node, id_positions: &HashMap<String, usize>) -> O
 
 #[cfg(test)]
 mod tests {
-	use std::{
-		env,
-		time::{SystemTime, UNIX_EPOCH},
-	};
-
 	use super::*;
-
-	fn unique_temp_dir(suffix: &str) -> std::path::PathBuf {
-		let nanos = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
-		let mut path = env::temp_dir();
-		path.push(format!("paperback_daisy_test_{nanos}_{suffix}"));
-		fs::create_dir_all(&path).expect("create temp dir");
-		path
-	}
+	use crate::util::test_support::TempDir;
 
 	// Regression test for https://github.com/trypsynth/paperback/issues/606: a real-world DAISY
 	// book declared its DTBook XML as ISO-8859-1 but was actually encoded as Windows-1252 (a very
@@ -386,9 +359,9 @@ mod tests {
 	// valid UTF-8.
 	#[test]
 	fn parses_dtbook_xml_declared_as_iso_8859_1_but_encoded_as_windows_1252() {
-		let dir = unique_temp_dir("opf");
-		let opf_path = dir.join("book.opf");
-		let xml_path = dir.join("book.xml");
+		let dir = TempDir::new("daisy");
+		let opf_path = dir.path().join("book.opf");
+		let xml_path = dir.path().join("book.xml");
 		fs::write(
 			&opf_path,
 			br#"<?xml version="1.0" encoding="ISO-8859-1"?>

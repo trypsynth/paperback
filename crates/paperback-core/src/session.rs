@@ -165,6 +165,23 @@ impl From<String> for DocumentError {
 	}
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ExportFormatFfi {
+	Text,
+	Html,
+	Markdown,
+}
+
+impl From<ExportFormatFfi> for ExportFormat {
+	fn from(f: ExportFormatFfi) -> Self {
+		match f {
+			ExportFormatFfi::Text => Self::Text,
+			ExportFormatFfi::Html => Self::Html,
+			ExportFormatFfi::Markdown => Self::Markdown,
+		}
+	}
+}
+
 impl LinkActivationResult {
 	const fn not_found() -> Self {
 		Self { found: false, action: LinkAction::NotFound, offset: 0, url: String::new() }
@@ -318,6 +335,8 @@ impl DocumentSession {
 		})
 	}
 
+	// Owned `String` params (not `&str`) because paperback.udl dictates this signature for UniFFI scaffolding.
+	#[allow(clippy::needless_pass_by_value)]
 	pub fn new_ffi(
 		file_path: String,
 		password: String,
@@ -858,7 +877,9 @@ impl DocumentSession {
 		supported
 	}
 
+	// `query: String` (not `&str`) because paperback.udl dictates this signature for UniFFI scaffolding.
 	#[must_use]
+	#[allow(clippy::needless_pass_by_value)]
 	pub fn search_ffi(&self, query: String, start_position: i64, options: SearchOptionsFfi) -> SearchResultFfi {
 		let mut search_options = SearchOptions::empty();
 		if options.match_case {
@@ -891,7 +912,7 @@ impl DocumentSession {
 
 	#[must_use]
 	pub fn current_page_ffi(&self, position: i64) -> i32 {
-		i32::try_from(self.current_page(position)).unwrap_or(0)
+		self.current_page(position)
 	}
 
 	#[must_use]
@@ -939,8 +960,13 @@ impl DocumentSession {
 			let hash = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(digest);
 			let doc_temp_dir = Path::new(temp_dir).join(format!("paperback_{hash}"));
 			if fs::create_dir_all(&doc_temp_dir).is_ok() {
-				let file_name = Path::new(&section_path).file_name()?.to_string_lossy().to_string();
-				let output_path = doc_temp_dir.join(file_name);
+				// Extract every entry (images, stylesheets, fonts, ...) once, preserving
+				// the epub's internal layout, so the section's relative resource
+				// references (e.g. `<img src="../images/foo.jpg">`) resolve on disk.
+				let _ = self.ensure_epub_resources_extracted(&doc_temp_dir);
+				// Re-extract the section itself fresh at its original relative path so
+				// the reading-position anchor below is injected into a clean copy.
+				let output_path = doc_temp_dir.join(&section_path);
 				let output_str = output_path.to_string_lossy().to_string();
 				if self.extract_resource(&section_path, &output_str).ok() == Some(true) {
 					let fragment = self.inject_reading_anchor(position, &output_str);
@@ -1074,6 +1100,34 @@ impl DocumentSession {
 			.unwrap_or(0)
 	}
 
+	/// Extracts every non-markup entry of the EPUB (images, stylesheets, fonts,
+	/// ...) into `doc_temp_dir`, preserving the archive's internal directory
+	/// structure, so that resources referenced relatively from a spine section
+	/// are present on disk wherever a webview loading that section would look
+	/// for them. Spine XHTML/HTML/NCX/OPF/XML entries are skipped here: they're
+	/// never needed as sibling resources for rendering, and skipping them avoids
+	/// extracting every chapter in the book just to view one. Runs at most once
+	/// per `doc_temp_dir`; subsequent calls are a no-op.
+	fn ensure_epub_resources_extracted(&self, doc_temp_dir: &Path) -> anyhow::Result<()> {
+		if !self.file_path.to_lowercase().ends_with(".epub") {
+			return Ok(());
+		}
+		let marker = doc_temp_dir.join(".resources_extracted");
+		if marker.exists() {
+			return Ok(());
+		}
+		let file = File::open(&self.file_path)?;
+		let mut archive = ZipArchive::new(BufReader::new(file))?;
+		zip_utils::extract_zip_to_dir(&mut archive, doc_temp_dir, |path| {
+			matches!(
+				path.extension().and_then(|ext| ext.to_str()).map(str::to_ascii_lowercase).as_deref(),
+				Some("xhtml" | "html" | "htm" | "ncx" | "opf" | "xml")
+			)
+		})?;
+		fs::write(&marker, b"").ok();
+		Ok(())
+	}
+
 	/// # Errors
 	///
 	/// Returns an error if the EPUB cannot be opened or the resource cannot be written.
@@ -1099,6 +1153,16 @@ impl DocumentSession {
 		file.write_all(content.as_bytes())?;
 		file.flush()?;
 		Ok(())
+	}
+
+	#[must_use]
+	pub fn get_supported_export_formats_ffi(&self) -> Vec<ExportFormatFfi> {
+		vec![ExportFormatFfi::Text, ExportFormatFfi::Html, ExportFormatFfi::Markdown]
+	}
+
+	#[must_use]
+	pub fn render_export_ffi(&self, format: ExportFormatFfi) -> String {
+		render(&self.handle, format.into())
 	}
 
 	#[must_use]
@@ -1198,23 +1262,31 @@ impl DocumentSession {
 
 		if matches!(direction, SegmentDirectionFfi::Previous) {
 			let mut search_end = byte_idx;
-			while search_end > 0 && content.as_bytes()[search_end - 1] == b'\n' {
+			while search_end > 0
+				&& (content.as_bytes()[search_end - 1] == b'\n' || content.as_bytes()[search_end - 1] == b'\r')
+			{
 				search_end -= 1;
 			}
 			start = content[..search_end].rfind('\n').map_or(0, |i| i + 1);
 		} else if matches!(direction, SegmentDirectionFfi::Next) {
 			if let Some(next) = content[byte_idx..].find('\n') {
 				start = byte_idx + next;
-				while start < content.len() && content.as_bytes()[start] == b'\n' {
+				while start < content.len()
+					&& (content.as_bytes()[start] == b'\n' || content.as_bytes()[start] == b'\r')
+				{
 					start += 1;
 				}
 			} else {
 				start = content.len();
 			}
 		} else {
-			while start < content.len() && content.as_bytes()[start] == b'\n' {
+			// Current: byte_idx may land anywhere inside the enclosing paragraph (e.g. a link
+			// marker mid-sentence), not just at its start, so search backward for the nearest
+			// preceding newline rather than only trimming forward from byte_idx.
+			while start < content.len() && (content.as_bytes()[start] == b'\n' || content.as_bytes()[start] == b'\r') {
 				start += 1;
 			}
+			start = content[..start].rfind('\n').map_or(0, |i| i + 1);
 		}
 
 		let end = content[start..].find('\n').map_or(content.len(), |i| start + i);
@@ -1228,7 +1300,7 @@ impl DocumentSession {
 		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
 		let line_number = buf.newline_positions().partition_point(|&p| p < pos) + 1;
 		let character_number = pos + 1;
-		let percentage = if total_chars > 0 { (pos * 100) / total_chars } else { 0 };
+		let percentage = (pos * 100).checked_div(total_chars).unwrap_or(0);
 		StatusInfo {
 			line_number: i64::try_from(line_number).unwrap_or(1),
 			character_number: i64::try_from(character_number).unwrap_or(1),
@@ -1637,6 +1709,18 @@ mod tests {
 	}
 
 	#[test]
+	fn get_text_segment_current_direction_finds_enclosing_paragraph_start() {
+		// "line2" spans bytes 6..11; position 8 lands mid-paragraph, e.g. where a link marker
+		// embedded in the middle of a sentence would sit. The Current direction must still
+		// return the full enclosing paragraph, not a suffix truncated from the given position.
+		let session = sample_session(ParserFlags::NONE);
+		let seg = session.get_text_segment(8, SegmentTypeFfi::Paragraph, SegmentDirectionFfi::Current);
+		assert_eq!(seg.text, "line2");
+		assert_eq!(seg.start_pos, 6);
+		assert_eq!(seg.end_pos, 11);
+	}
+
+	#[test]
 	fn heading_tree_builds_parent_links_and_closest_index() {
 		let mut buffer = DocumentBuffer::with_content("a\nb\nc".to_string());
 		buffer.add_marker(Marker::new(MarkerType::Heading1, 0).with_level(1).with_text("H1".to_string()));
@@ -1682,7 +1766,7 @@ mod tests {
 	#[test]
 	fn webview_target_path_returns_none_for_missing_markdown_file() {
 		let session = DocumentSession {
-			handle: sample_session(ParserFlags::NONE).handle.clone(),
+			handle: sample_session(ParserFlags::NONE).handle,
 			file_path: "C:\\docs\\chapter.md".to_string(),
 			history: Vec::new(),
 			history_index: 0,
@@ -1701,7 +1785,7 @@ mod tests {
 	#[test]
 	fn extract_resource_returns_false_for_non_epub_files() {
 		let session = DocumentSession {
-			handle: sample_session(ParserFlags::NONE).handle.clone(),
+			handle: sample_session(ParserFlags::NONE).handle,
 			file_path: "C:\\docs\\chapter.txt".to_string(),
 			history: Vec::new(),
 			history_index: 0,
@@ -1713,7 +1797,7 @@ mod tests {
 
 	fn session_with_path(file_path: &str) -> DocumentSession {
 		DocumentSession {
-			handle: sample_session(ParserFlags::NONE).handle.clone(),
+			handle: sample_session(ParserFlags::NONE).handle,
 			file_path: file_path.to_string(),
 			history: Vec::new(),
 			history_index: 0,
@@ -1882,7 +1966,7 @@ mod tests {
 	#[test]
 	fn extract_resource_for_missing_epub_returns_error() {
 		let session = DocumentSession {
-			handle: sample_session(ParserFlags::NONE).handle.clone(),
+			handle: sample_session(ParserFlags::NONE).handle,
 			file_path: "C:\\path\\does\\not\\exist.epub".to_string(),
 			history: Vec::new(),
 			history_index: 0,
@@ -1975,5 +2059,92 @@ mod tests {
 		let result = session.activate_link(7);
 		assert!(!result.found);
 		assert_eq!(result.action, LinkAction::NotFound);
+	}
+
+	/// Builds a minimal real EPUB on disk whose spine chapter references an image
+	/// via a relative path that only resolves if sibling directory structure is
+	/// preserved on extraction, then returns its path.
+	fn build_epub_with_relative_image(dir: &Path) -> std::path::PathBuf {
+		use zip::{ZipWriter, write::FileOptions};
+
+		let epub_path = dir.join("book.epub");
+		let file = File::create(&epub_path).expect("create epub file");
+		let mut writer = ZipWriter::new(file);
+		let opts = FileOptions::<()>::default();
+
+		writer.start_file("mimetype", opts).unwrap();
+		writer.write_all(b"application/epub+zip").unwrap();
+
+		writer.start_file("META-INF/container.xml", opts).unwrap();
+		writer
+			.write_all(
+				br#"<?xml version="1.0"?>
+<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
+	<rootfiles>
+		<rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
+	</rootfiles>
+</container>"#,
+			)
+			.unwrap();
+
+		writer.start_file("OEBPS/content.opf", opts).unwrap();
+		writer
+			.write_all(
+				br#"<?xml version="1.0"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="bookid">
+	<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+		<dc:title>Test Book</dc:title>
+		<dc:identifier id="bookid">test-book</dc:identifier>
+	</metadata>
+	<manifest>
+		<item id="chapter1" href="Text/chapter1.xhtml" media-type="application/xhtml+xml"/>
+		<item id="cover-img" href="Images/cover.jpg" media-type="image/jpeg"/>
+	</manifest>
+	<spine>
+		<itemref idref="chapter1"/>
+	</spine>
+</package>"#,
+			)
+			.unwrap();
+
+		writer.start_file("OEBPS/Text/chapter1.xhtml", opts).unwrap();
+		writer
+			.write_all(
+				br#"<?xml version="1.0"?>
+<html xmlns="http://www.w3.org/1999/xhtml"><body>
+	<p>Chapter text.</p>
+	<img src="../Images/cover.jpg" alt="Cover"/>
+</body></html>"#,
+			)
+			.unwrap();
+
+		writer.start_file("OEBPS/Images/cover.jpg", opts).unwrap();
+		writer.write_all(b"\xFF\xD8\xFF\xE0fake-jpeg-bytes").unwrap();
+
+		writer.finish().unwrap();
+		epub_path
+	}
+
+	#[test]
+	fn webview_target_path_extracts_sibling_image_resources() {
+		let temp_root = std::env::temp_dir().join(format!(
+			"paperback_webview_test_{}",
+			std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()
+		));
+		fs::create_dir_all(&temp_root).unwrap();
+		let epub_path = build_epub_with_relative_image(&temp_root);
+
+		let session = DocumentSession::new(&epub_path.to_string_lossy(), "", "", false).expect("parse test epub");
+		let target = session.webview_target_path(0, &temp_root.to_string_lossy()).expect("webview target");
+
+		let section_content = fs::read_to_string(&target.path).expect("read extracted section");
+		assert!(section_content.contains("Images/cover.jpg"));
+
+		// The image referenced relatively from the section must have been
+		// extracted alongside it at the same relative location.
+		let image_path = Path::new(&target.path).parent().unwrap().parent().unwrap().join("Images/cover.jpg");
+		assert!(image_path.exists(), "expected image extracted at {}", image_path.display());
+
+		fs::remove_dir_all(&temp_root).ok();
 	}
 }

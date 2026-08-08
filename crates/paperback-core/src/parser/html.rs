@@ -3,7 +3,7 @@ use std::fs;
 use anyhow::{Context, Result};
 
 use crate::{
-	document::{Document, DocumentBuffer, ParserContext, ParserFlags},
+	document::{Document, DocumentBuffer, ParserContext},
 	parser::{
 		Parser, add_converter_markers,
 		html_to_text::{HtmlSourceMode, HtmlToText},
@@ -16,18 +16,6 @@ use crate::{
 pub struct HtmlParser;
 
 impl Parser for HtmlParser {
-	fn name(&self) -> &'static str {
-		paperback_formats::HTML.name
-	}
-
-	fn extensions(&self) -> &[&str] {
-		paperback_formats::HTML.extensions
-	}
-
-	fn supported_flags(&self) -> ParserFlags {
-		ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_LISTS
-	}
-
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		let bytes = fs::read(&context.file_path)
 			.with_context(|| format!("Failed to open HTML file '{}'", context.file_path))?;
@@ -57,5 +45,73 @@ impl Parser for HtmlParser {
 		doc.toc_items = toc_items;
 		doc.id_positions = id_positions;
 		Ok(doc)
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::{document::MarkerType, util::test_support::TempDir};
+
+	fn parse_html(name: &str, contents: &str) -> Result<Document> {
+		let dir = TempDir::new("html-parser");
+		let path = dir.write_str(name, contents);
+		HtmlParser.parse(&ParserContext::new(path))
+	}
+
+	fn parse_ok(contents: &str) -> Document {
+		parse_html("page.html", contents).expect("parse html document")
+	}
+
+	#[test]
+	fn extracts_visible_text_without_markup() {
+		let doc = parse_ok("<html><body><p>Hello there</p><p>Second paragraph</p></body></html>");
+		assert!(doc.buffer.content.contains("Hello there"), "text: {:?}", doc.buffer.content);
+		assert!(doc.buffer.content.contains("Second paragraph"));
+		assert!(!doc.buffer.content.contains('<'), "markup leaked into text: {:?}", doc.buffer.content);
+	}
+
+	#[test]
+	fn prefers_the_title_element_over_the_file_name() {
+		let doc = parse_ok("<html><head><title>Document Title</title></head><body><p>x</p></body></html>");
+		assert_eq!(doc.title, "Document Title");
+	}
+
+	#[test]
+	fn falls_back_to_the_file_name_when_there_is_no_title() {
+		let doc = parse_html("Fallback Name.html", "<html><body><p>x</p></body></html>").expect("parse");
+		assert_eq!(doc.title, "Fallback Name");
+	}
+
+	#[test]
+	fn records_headings_as_markers_and_toc_entries() {
+		let doc = parse_ok("<html><body><h1>Chapter One</h1><p>body</p><h2>Section</h2></body></html>");
+		let headings: Vec<_> = doc
+			.buffer
+			.markers
+			.iter()
+			.filter(|marker| matches!(marker.mtype, MarkerType::Heading1 | MarkerType::Heading2))
+			.map(|marker| marker.text.as_str())
+			.collect();
+		assert_eq!(headings, vec!["Chapter One", "Section"]);
+		// The TOC is a tree, so the h2 hangs off the h1 rather than sitting beside it.
+		assert_eq!(doc.toc_items.len(), 1);
+		assert_eq!(doc.toc_items[0].name, "Chapter One");
+		assert_eq!(doc.toc_items[0].children.len(), 1);
+		assert_eq!(doc.toc_items[0].children[0].name, "Section");
+	}
+
+	#[test]
+	fn records_links_with_their_targets() {
+		let doc = parse_ok(r#"<html><body><p><a href="https://example.com">click me</a></p></body></html>"#);
+		let link = doc.buffer.markers.iter().find(|marker| marker.mtype == MarkerType::Link).expect("link marker");
+		assert_eq!(link.text, "click me");
+		assert_eq!(link.reference, "https://example.com");
+	}
+
+	#[test]
+	fn rejects_an_empty_file() {
+		let err = parse_html("page.html", "").expect_err("empty html must fail");
+		assert!(err.to_string().contains("empty"), "unexpected error: {err}");
 	}
 }
