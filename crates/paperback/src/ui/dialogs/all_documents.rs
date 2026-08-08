@@ -561,10 +561,7 @@ fn bind_all_documents_locate(
 	locate_button_widget: Button,
 ) {
 	locate_button_widget.on_click(move |_| {
-		let old_path = match get_selected_path(list) {
-			Some(p) => p,
-			None => return,
-		};
+		let Some(old_path) = get_selected_path(list) else { return };
 		let filename = Path::new(&old_path).file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
 		let wildcard = build_file_filter_string();
 		let file_dialog = FileDialog::builder(&dialog)
@@ -577,10 +574,7 @@ fn bind_all_documents_locate(
 		if file_dialog.show_modal() != ID_OK {
 			return;
 		}
-		let new_path = match file_dialog.get_path() {
-			Some(p) => p,
-			None => return,
-		};
+		let Some(new_path) = file_dialog.get_path() else { return };
 		{
 			let cfg = config.lock().unwrap();
 			cfg.rename_document_path(&old_path, &new_path);

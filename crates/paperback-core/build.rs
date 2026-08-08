@@ -10,8 +10,7 @@ fn main() {
 	let is_dev = !Command::new("git")
 		.args(["describe", "--tags", "--exact-match", "HEAD"])
 		.output()
-		.map(|o| o.status.success())
-		.unwrap_or(false);
+		.is_ok_and(|o| o.status.success());
 	println!("cargo:rustc-env=PAPERBACK_COMMIT_HASH={hash}");
 	println!("cargo:rustc-env=PAPERBACK_SHORT_HASH={short_hash}");
 	println!("cargo:rustc-env=PAPERBACK_IS_DEV={}", if is_dev { "1" } else { "0" });

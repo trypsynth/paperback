@@ -58,7 +58,8 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 					return build_nav_result(false, wrapped, 0, 0, String::new());
 				};
 				let offset = doc.marker_position(idx_i32).unwrap_or(0);
-				return build_nav_result(true, wrapped, offset, 0, String::new());
+				let text = doc.document().buffer.markers.get(idx).map(|m| m.text.clone()).unwrap_or_default();
+				return build_nav_result(true, wrapped, offset, 0, text);
 			}
 			build_nav_result(false, wrapped, 0, 0, String::new())
 		}

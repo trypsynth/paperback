@@ -10,3 +10,6 @@ tar = "0.4.46"
 ureq = "3.3.0"
 walkdir = "2.5.0"
 zip = { version = "8.6.0", default-features = false, features = ["deflate"] }
+
+[lints]
+workspace = true

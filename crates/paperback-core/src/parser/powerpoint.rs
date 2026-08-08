@@ -439,7 +439,7 @@ fn traverse_for_text(
 	}
 }
 
-/// Convert a DrawingML `<a:tbl>` into the shared HTML-table representation, append its display text
+/// Convert a `DrawingML` `<a:tbl>` into the shared HTML-table representation, append its display text
 /// to `text`, and record a [`TableData`] for later marker creation. pptx cells nest one level
 /// deeper than Word (`tc > txBody > p`), so cell text is gathered from every descendant `<a:t>`.
 fn process_pptx_table(
@@ -543,19 +543,19 @@ mod tests {
 
 	#[test]
 	fn extract_slide_title_returns_empty_when_missing() {
-		let xml = r#"<root><sp><txBody><p><r><t>Body text</t></r></p></txBody></sp></root>"#;
+		let xml = r"<root><sp><txBody><p><r><t>Body text</t></r></p></txBody></sp></root>";
 		let doc = XmlDocument::parse(xml).expect("xml parse");
 		assert!(extract_slide_title(doc.root()).is_empty());
 	}
 
 	#[test]
 	fn extract_slide_text_collects_paragraphs_and_breaks() {
-		let xml = r#"
+		let xml = r"
 			<root>
 				<p><r><t>Hello</t></r><br/><r><t>World</t></r></p>
 				<p><r><t>Next</t></r></p>
 			</root>
-		"#;
+		";
 		let doc = XmlDocument::parse(xml).expect("xml parse");
 		let mut links = Vec::new();
 		let mut tables = Vec::new();
@@ -566,7 +566,7 @@ mod tests {
 		assert!(tables.is_empty());
 	}
 
-	const TABLE_SLIDE_XML: &str = r#"
+	const TABLE_SLIDE_XML: &str = r"
 		<root>
 			<graphicFrame><graphic><graphicData>
 				<tbl>
@@ -577,7 +577,7 @@ mod tests {
 				</tbl>
 			</graphicData></graphic></graphicFrame>
 		</root>
-	"#;
+	";
 
 	#[test]
 	fn extract_slide_text_renders_table_inline_with_marker_data() {

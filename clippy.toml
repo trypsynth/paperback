@@ -1,0 +1,4 @@
+# wx dialog wiring passes a widget per parameter, and the PDF structure walker threads several
+# accumulators through one recursive call; clippy's default of 7 is too tight for both. Anything
+# past 10 should be bundled into a struct rather than allowed here.
+too-many-arguments-threshold = 10

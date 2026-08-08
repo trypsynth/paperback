@@ -467,13 +467,11 @@ impl XmlToText {
 						length: self.get_current_text_position().saturating_sub(start),
 					});
 				}
-			} else if Self::tag_is(tag_name, "u") {
-				if let Some(start) = self.open_underlines.pop() {
-					self.underlines.push(FormatInfo {
-						offset: start,
-						length: self.get_current_text_position().saturating_sub(start),
-					});
-				}
+			} else if Self::tag_is(tag_name, "u")
+				&& let Some(start) = self.open_underlines.pop()
+			{
+				self.underlines
+					.push(FormatInfo { offset: start, length: self.get_current_text_position().saturating_sub(start) });
 			}
 		}
 		if Self::tag_is(tag_name, "ul") || Self::tag_is(tag_name, "ol") {
@@ -777,8 +775,8 @@ mod tests {
 		assert!(converter.convert(xml));
 		let items = converter.get_list_items();
 		assert!(items.len() >= 2, "expected at least two list items");
-		let level_a = items.iter().find(|i| i.text == "A").map(|i| i.level).unwrap_or(0);
-		let level_b = items.iter().find(|i| i.text == "B").map(|i| i.level).unwrap_or(0);
+		let level_a = items.iter().find(|i| i.text == "A").map_or(0, |i| i.level);
+		let level_b = items.iter().find(|i| i.text == "B").map_or(0, |i| i.level);
 		assert!(level_b > level_a, "nested item should have a higher level");
 	}
 
@@ -843,11 +841,11 @@ mod tests {
 		assert!(converter.convert(xml));
 		let text = converter.get_text();
 		let lines: Vec<&str> = text.lines().collect();
-		assert!(lines.iter().any(|l| *l == "Term"), "dt content should be on its own line");
-		assert!(lines.iter().any(|l| *l == "Definition"), "dd content should be on its own line");
+		assert!(lines.contains(&"Term"), "dt content should be on its own line");
+		assert!(lines.contains(&"Definition"), "dd content should be on its own line");
 	}
 	/// `TableInfo.length` must equal the emitted display extent (display units), NOT the
-	/// emitted text's byte length. Prefix text ensures start_offset > 0. With inline rendering the
+	/// emitted text's byte length. Prefix text ensures `start_offset` > 0. With inline rendering the
 	/// emitted row is the TSV "A\t𝄞"; a non-BMP char (U+1D11E, G Clef, width 2) locks the math.
 	#[test]
 	fn xml_table_display_length_is_display_extent_not_byte_length() {
@@ -882,7 +880,7 @@ mod tests {
 		assert_eq!(on.get_text(), "A\tB\nc\td");
 	}
 
-	/// Two XML tables: second table's offset equals first offset + first display_length.
+	/// Two XML tables: second table's offset equals first offset + first `display_length`.
 	#[test]
 	fn xml_two_tables_offsets_are_cumulative() {
 		let xml = concat!(

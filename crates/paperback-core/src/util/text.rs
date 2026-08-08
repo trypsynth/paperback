@@ -69,8 +69,8 @@ pub fn trim_string(s: &str) -> String {
 
 /// Display units match the index space of the platform text control that the
 /// document text is loaded into: UTF-16 code units on Windows (Win32 edit
-/// control) and macOS (NSTextView's NSRange, which wxWidgets passes through
-/// unconverted); Unicode characters on GTK (GtkTextIter offsets).
+/// control) and macOS (`NSTextView`'s `NSRange`, which wxWidgets passes through
+/// unconverted); Unicode characters on GTK (`GtkTextIter` offsets).
 #[must_use]
 pub fn display_len(s: &str) -> usize {
 	if cfg!(any(windows, target_os = "macos")) { s.encode_utf16().count() } else { s.chars().count() }

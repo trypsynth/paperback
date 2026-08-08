@@ -175,9 +175,9 @@ pub enum ExportFormatFfi {
 impl From<ExportFormatFfi> for ExportFormat {
 	fn from(f: ExportFormatFfi) -> Self {
 		match f {
-			ExportFormatFfi::Text => ExportFormat::Text,
-			ExportFormatFfi::Html => ExportFormat::Html,
-			ExportFormatFfi::Markdown => ExportFormat::Markdown,
+			ExportFormatFfi::Text => Self::Text,
+			ExportFormatFfi::Html => Self::Html,
+			ExportFormatFfi::Markdown => Self::Markdown,
 		}
 	}
 }
@@ -335,6 +335,8 @@ impl DocumentSession {
 		})
 	}
 
+	// Owned `String` params (not `&str`) because paperback.udl dictates this signature for UniFFI scaffolding.
+	#[allow(clippy::needless_pass_by_value)]
 	pub fn new_ffi(
 		file_path: String,
 		password: String,
@@ -875,7 +877,9 @@ impl DocumentSession {
 		supported
 	}
 
+	// `query: String` (not `&str`) because paperback.udl dictates this signature for UniFFI scaffolding.
 	#[must_use]
+	#[allow(clippy::needless_pass_by_value)]
 	pub fn search_ffi(&self, query: String, start_position: i64, options: SearchOptionsFfi) -> SearchResultFfi {
 		let mut search_options = SearchOptions::empty();
 		if options.match_case {
@@ -908,7 +912,7 @@ impl DocumentSession {
 
 	#[must_use]
 	pub fn current_page_ffi(&self, position: i64) -> i32 {
-		i32::try_from(self.current_page(position)).unwrap_or(0)
+		self.current_page(position)
 	}
 
 	#[must_use]
@@ -1151,10 +1155,12 @@ impl DocumentSession {
 		Ok(())
 	}
 
+	#[must_use]
 	pub fn get_supported_export_formats_ffi(&self) -> Vec<ExportFormatFfi> {
 		vec![ExportFormatFfi::Text, ExportFormatFfi::Html, ExportFormatFfi::Markdown]
 	}
 
+	#[must_use]
 	pub fn render_export_ffi(&self, format: ExportFormatFfi) -> String {
 		render(&self.handle, format.into())
 	}
@@ -1294,7 +1300,7 @@ impl DocumentSession {
 		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
 		let line_number = buf.newline_positions().partition_point(|&p| p < pos) + 1;
 		let character_number = pos + 1;
-		let percentage = if total_chars > 0 { (pos * 100) / total_chars } else { 0 };
+		let percentage = (pos * 100).checked_div(total_chars).unwrap_or(0);
 		StatusInfo {
 			line_number: i64::try_from(line_number).unwrap_or(1),
 			character_number: i64::try_from(character_number).unwrap_or(1),
@@ -1760,7 +1766,7 @@ mod tests {
 	#[test]
 	fn webview_target_path_returns_none_for_missing_markdown_file() {
 		let session = DocumentSession {
-			handle: sample_session(ParserFlags::NONE).handle.clone(),
+			handle: sample_session(ParserFlags::NONE).handle,
 			file_path: "C:\\docs\\chapter.md".to_string(),
 			history: Vec::new(),
 			history_index: 0,
@@ -1779,7 +1785,7 @@ mod tests {
 	#[test]
 	fn extract_resource_returns_false_for_non_epub_files() {
 		let session = DocumentSession {
-			handle: sample_session(ParserFlags::NONE).handle.clone(),
+			handle: sample_session(ParserFlags::NONE).handle,
 			file_path: "C:\\docs\\chapter.txt".to_string(),
 			history: Vec::new(),
 			history_index: 0,
@@ -1791,7 +1797,7 @@ mod tests {
 
 	fn session_with_path(file_path: &str) -> DocumentSession {
 		DocumentSession {
-			handle: sample_session(ParserFlags::NONE).handle.clone(),
+			handle: sample_session(ParserFlags::NONE).handle,
 			file_path: file_path.to_string(),
 			history: Vec::new(),
 			history_index: 0,
@@ -1960,7 +1966,7 @@ mod tests {
 	#[test]
 	fn extract_resource_for_missing_epub_returns_error() {
 		let session = DocumentSession {
-			handle: sample_session(ParserFlags::NONE).handle.clone(),
+			handle: sample_session(ParserFlags::NONE).handle,
 			file_path: "C:\\path\\does\\not\\exist.epub".to_string(),
 			history: Vec::new(),
 			history_index: 0,

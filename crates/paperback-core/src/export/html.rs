@@ -1,4 +1,7 @@
-use std::collections::{HashMap, HashSet};
+use std::{
+	collections::{HashMap, HashSet},
+	fmt::Write as _,
+};
 
 use crate::{
 	document::{DocumentHandle, MarkerType},
@@ -128,12 +131,13 @@ pub fn render(doc: &DocumentHandle) -> String {
 						format!("<a href=\"{}\">", escape_attr(href))
 					} else if let Some(fragment) = href.strip_prefix('#') {
 						let current_path = section_path_at(pos);
-						if let Some(off) = resolve_fragment(&document.id_positions, fragment, current_path) {
-							target_offsets.insert(off);
-							format!("<a href=\"#pos-{off}\">")
-						} else {
-							format!("<a href=\"{}\">", escape_attr(href))
-						}
+						resolve_fragment(&document.id_positions, fragment, current_path).map_or_else(
+							|| format!("<a href=\"{}\">", escape_attr(href)),
+							|off| {
+								target_offsets.insert(off);
+								format!("<a href=\"#pos-{off}\">")
+							},
+						)
 					} else {
 						let mut parts = href.splitn(2, '#');
 						let file_part = parts.next().unwrap_or_default();
@@ -158,12 +162,13 @@ pub fn render(doc: &DocumentHandle) -> String {
 									.or_else(|| document.id_positions.get(file_part).copied())
 									.or_else(|| resolve_fragment(&document.id_positions, frag_part, current_path))
 							};
-							if let Some(off) = off {
-								target_offsets.insert(off);
-								format!("<a href=\"#pos-{off}\">")
-							} else {
-								format!("<a href=\"{}\">", escape_attr(href))
-							}
+							off.map_or_else(
+								|| format!("<a href=\"{}\">", escape_attr(href)),
+								|off| {
+									target_offsets.insert(off);
+									format!("<a href=\"#pos-{off}\">")
+								},
+							)
 						}
 					}
 				};
@@ -296,7 +301,7 @@ pub fn render(doc: &DocumentHandle) -> String {
 					pending_newlines = 0;
 				}
 				Ek::Anchor(offset) => {
-					html.push_str(&format!("<a id=\"pos-{offset}\"></a>"));
+					let _ = write!(html, "<a id=\"pos-{offset}\"></a>");
 				}
 			}
 			event_idx += 1;
@@ -349,7 +354,7 @@ pub fn render(doc: &DocumentHandle) -> String {
 				html.push_str("<hr>\n");
 			}
 			Ek::Anchor(offset) => {
-				html.push_str(&format!("<a id=\"pos-{offset}\"></a>"));
+				let _ = write!(html, "<a id=\"pos-{offset}\"></a>");
 			}
 			_ => {}
 		}
@@ -416,21 +421,21 @@ mod tests {
 	fn test_bold_basic() {
 		let doc = simple_doc("bold text", vec![Marker::new(MarkerType::Bold, 0).with_length(4)]);
 		let html = render(&doc);
-		assert!(html.contains("<b>bold</b>"), "Expected <b>bold</b> in HTML: {}", html);
+		assert!(html.contains("<b>bold</b>"), "Expected <b>bold</b> in HTML: {html}");
 	}
 
 	#[test]
 	fn test_italic_basic() {
 		let doc = simple_doc("italic text", vec![Marker::new(MarkerType::Italic, 0).with_length(6)]);
 		let html = render(&doc);
-		assert!(html.contains("<i>italic</i>"), "Expected <i>italic</i> in HTML: {}", html);
+		assert!(html.contains("<i>italic</i>"), "Expected <i>italic</i> in HTML: {html}");
 	}
 
 	#[test]
 	fn test_underline_basic() {
 		let doc = simple_doc("underline text", vec![Marker::new(MarkerType::Underline, 0).with_length(9)]);
 		let html = render(&doc);
-		assert!(html.contains("<u>underline</u>"), "Expected <u>underline</u> in HTML: {}", html);
+		assert!(html.contains("<u>underline</u>"), "Expected <u>underline</u> in HTML: {html}");
 	}
 
 	#[test]
@@ -442,8 +447,8 @@ mod tests {
 		);
 		let html = render(&doc);
 		// Both tags should be present and properly ordered
-		assert!(html.contains("<b>bold</b>"), "Expected <b>bold</b> in HTML: {}", html);
-		assert!(html.contains("<i>italic</i>"), "Expected <i>italic</i> in HTML: {}", html);
+		assert!(html.contains("<b>bold</b>"), "Expected <b>bold</b> in HTML: {html}");
+		assert!(html.contains("<i>italic</i>"), "Expected <i>italic</i> in HTML: {html}");
 	}
 
 	#[test]
@@ -455,10 +460,10 @@ mod tests {
 		);
 		let html = render(&doc);
 		// Check both are present
-		assert!(html.contains("<b>"), "Expected <b> in HTML: {}", html);
-		assert!(html.contains("</b>"), "Expected </b> in HTML: {}", html);
-		assert!(html.contains("<i>"), "Expected <i> in HTML: {}", html);
-		assert!(html.contains("</i>"), "Expected </i> in HTML: {}", html);
+		assert!(html.contains("<b>"), "Expected <b> in HTML: {html}");
+		assert!(html.contains("</b>"), "Expected </b> in HTML: {html}");
+		assert!(html.contains("<i>"), "Expected <i> in HTML: {html}");
+		assert!(html.contains("</i>"), "Expected </i> in HTML: {html}");
 	}
 
 	#[test]
@@ -473,10 +478,10 @@ mod tests {
 		let html = render(&doc);
 		// Both opens and closes should be present
 		// The order of closes may vary based on insertion order (pre-existing behavior)
-		assert!(html.contains("<b>"), "Expected <b> in HTML: {}", html);
-		assert!(html.contains("</b>"), "Expected </b> in HTML: {}", html);
-		assert!(html.contains("<i>"), "Expected <i> in HTML: {}", html);
-		assert!(html.contains("</i>"), "Expected </i> in HTML: {}", html);
+		assert!(html.contains("<b>"), "Expected <b> in HTML: {html}");
+		assert!(html.contains("</b>"), "Expected </b> in HTML: {html}");
+		assert!(html.contains("<i>"), "Expected <i> in HTML: {html}");
+		assert!(html.contains("</i>"), "Expected </i> in HTML: {html}");
 		// Count tags to verify they're paired
 		let b_open = html.matches("<b>").count();
 		let b_close = html.matches("</b>").count();
@@ -519,11 +524,11 @@ mod tests {
 		);
 		let html = render(&doc);
 		// All tags should be present
-		assert!(html.contains("<b>"), "Expected <b> in HTML: {}", html);
-		assert!(html.contains("</b>"), "Expected </b> in HTML: {}", html);
-		assert!(html.contains("<i>"), "Expected <i> in HTML: {}", html);
-		assert!(html.contains("</i>"), "Expected </i> in HTML: {}", html);
-		assert!(html.contains("<u>"), "Expected <u> in HTML: {}", html);
-		assert!(html.contains("</u>"), "Expected </u> in HTML: {}", html);
+		assert!(html.contains("<b>"), "Expected <b> in HTML: {html}");
+		assert!(html.contains("</b>"), "Expected </b> in HTML: {html}");
+		assert!(html.contains("<i>"), "Expected <i> in HTML: {html}");
+		assert!(html.contains("</i>"), "Expected </i> in HTML: {html}");
+		assert!(html.contains("<u>"), "Expected <u> in HTML: {html}");
+		assert!(html.contains("</u>"), "Expected </u> in HTML: {html}");
 	}
 }

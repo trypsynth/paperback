@@ -32,13 +32,6 @@ windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_Sys
 [target.'cfg(target_os = "macos")'.dependencies]
 objc = "0.2.7"
 
-[lints.rust]
-# `objc`'s `msg_send!` macro expands to a `cfg(feature = "cargo-clippy")` check.
-# This is not a feature that this crate defines and the Rust compiler understands, so a warning would normally be generated.
-# When using macros from older crates (written before this compiler check
-# existed) that rely on this feature, such warnings must be suppressed.
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("cargo-clippy"))'] }
-
 [build-dependencies]
 embed-manifest = "1.5.0"
 flate2 = { version = "1.1.9", default-features = false }
@@ -50,3 +43,6 @@ winres = "0.1.12"
 
 [dev-dependencies]
 rstest = { workspace = true }
+
+[lints]
+workspace = true

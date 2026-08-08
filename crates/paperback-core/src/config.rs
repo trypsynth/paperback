@@ -288,10 +288,10 @@ impl ConfigManager {
 
 	pub fn initialize(&mut self, config_path: PathBuf) -> bool {
 		let (data, needs_save) = if config_path.exists() {
-			match fs::read_to_string(&config_path).ok().and_then(|s| toml::from_str::<ConfigData>(&s).ok()) {
-				Some(d) => (d, false),
-				None => (ConfigData::default(), true),
-			}
+			fs::read_to_string(&config_path)
+				.ok()
+				.and_then(|s| toml::from_str::<ConfigData>(&s).ok())
+				.map_or_else(|| (ConfigData::default(), true), |d| (d, false))
 		} else {
 			(ConfigData::default(), true)
 		};

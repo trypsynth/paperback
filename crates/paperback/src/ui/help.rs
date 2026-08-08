@@ -103,7 +103,7 @@ pub fn handle_reveal_file_in_folder(frame: &Frame, doc_manager: &Rc<Mutex<Docume
 		let path_to_reveal =
 			dunce::canonicalize(&file_path).unwrap_or_else(|_| dunce::simplified(&file_path).to_path_buf());
 		let path_str = path_to_reveal.to_string_lossy();
-		if Command::new("explorer").raw_arg(format!("/select,\"{}\"", path_str)).spawn().is_err() {
+		if Command::new("explorer").raw_arg(format!("/select,\"{path_str}\"")).spawn().is_err() {
 			show_error(frame, t("Failed to reveal file in folder."), &t("Error"));
 		}
 	}

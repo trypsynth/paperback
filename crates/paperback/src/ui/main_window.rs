@@ -1122,11 +1122,12 @@ impl MainWindow {
 						.with_wildcard(&wildcard)
 						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
 						.build();
-					if dialog.show_modal() == ID_OK {
-						if let Some(path) = dialog.get_path() {
-							if let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Text) {
-								tracing::error!(path = %path, error = %e, "failed to export document as text");
-								let dialog =
+					if dialog.show_modal() == ID_OK
+						&& let Some(path) = dialog.get_path()
+						&& let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Text)
+					{
+						tracing::error!(path = %path, error = %e, "failed to export document as text");
+						let dialog =
 									// TRANSLATORS: Error dialog shown when exporting a document to another format fails
 									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
 										.with_style(
@@ -1134,9 +1135,7 @@ impl MainWindow {
 												| MessageDialogStyle::IconError | MessageDialogStyle::Centre,
 										)
 										.build();
-								dialog.show_modal();
-							}
-						}
+						dialog.show_modal();
 					}
 				}
 				menu_ids::EXPORT_TO_HTML => {
@@ -1159,11 +1158,12 @@ impl MainWindow {
 						.with_wildcard(&wildcard)
 						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
 						.build();
-					if dialog.show_modal() == ID_OK {
-						if let Some(path) = dialog.get_path() {
-							if let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Html) {
-								tracing::error!(path = %path, error = %e, "failed to export document as HTML");
-								let dialog =
+					if dialog.show_modal() == ID_OK
+						&& let Some(path) = dialog.get_path()
+						&& let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Html)
+					{
+						tracing::error!(path = %path, error = %e, "failed to export document as HTML");
+						let dialog =
 									// TRANSLATORS: Error dialog shown when exporting a document to another format fails
 									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
 										.with_style(
@@ -1171,9 +1171,7 @@ impl MainWindow {
 												| MessageDialogStyle::IconError | MessageDialogStyle::Centre,
 										)
 										.build();
-								dialog.show_modal();
-							}
-						}
+						dialog.show_modal();
 					}
 				}
 				menu_ids::EXPORT_TO_MARKDOWN => {
@@ -1196,12 +1194,12 @@ impl MainWindow {
 						.with_wildcard(&wildcard)
 						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
 						.build();
-					if dialog.show_modal() == ID_OK {
-						if let Some(path) = dialog.get_path() {
-							if let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Markdown)
-							{
-								tracing::error!(path = %path, error = %e, "failed to export document as Markdown");
-								let dialog =
+					if dialog.show_modal() == ID_OK
+						&& let Some(path) = dialog.get_path()
+						&& let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Markdown)
+					{
+						tracing::error!(path = %path, error = %e, "failed to export document as Markdown");
+						let dialog =
 									// TRANSLATORS: Error dialog shown when exporting a document to another format fails
 									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
 										.with_style(
@@ -1209,9 +1207,7 @@ impl MainWindow {
 												| MessageDialogStyle::IconError | MessageDialogStyle::Centre,
 										)
 										.build();
-								dialog.show_modal();
-							}
-						}
+						dialog.show_modal();
 					}
 				}
 				menu_ids::EXPORT_DOCUMENT_DATA => {
@@ -1872,36 +1868,6 @@ fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 	}
 }
 
-#[cfg(test)]
-mod tests {
-	use std::path::Path;
-
-	use super::parser_extension_for_path;
-
-	#[test]
-	fn parser_extension_for_path_handles_normal_paths() {
-		assert_eq!(parser_extension_for_path(Path::new("book.epub")), "epub");
-		assert_eq!(parser_extension_for_path(Path::new("C:\\docs\\book.PDF")), "PDF");
-	}
-
-	#[test]
-	fn parser_extension_for_path_strips_quotes_and_whitespace() {
-		assert_eq!(parser_extension_for_path(Path::new("  \"book.epub\"  ")), "epub");
-		assert_eq!(parser_extension_for_path(Path::new("'book.txt'")), "txt");
-	}
-
-	#[test]
-	fn parser_extension_for_path_returns_empty_for_no_extension() {
-		assert_eq!(parser_extension_for_path(Path::new("README")), "");
-	}
-
-	#[test]
-	fn parser_extension_for_path_handles_ipc_artifacts() {
-		assert_eq!(parser_extension_for_path(Path::new("book.epub\u{0}")), "epub");
-		assert_eq!(parser_extension_for_path(Path::new(" \"book.epub\u{0}\" ")), "epub");
-	}
-}
-
 #[cfg(target_os = "windows")]
 pub struct HotkeyHandle {
 	pub(crate) thread_id: u32,
@@ -1995,4 +1961,34 @@ fn re_register_hotkey(
 		let _ = handle.join_handle.join();
 	}
 	*hotkey_handle.borrow_mut() = start_hotkey_listener(hotkey);
+}
+
+#[cfg(test)]
+mod tests {
+	use std::path::Path;
+
+	use super::parser_extension_for_path;
+
+	#[test]
+	fn parser_extension_for_path_handles_normal_paths() {
+		assert_eq!(parser_extension_for_path(Path::new("book.epub")), "epub");
+		assert_eq!(parser_extension_for_path(Path::new("C:\\docs\\book.PDF")), "PDF");
+	}
+
+	#[test]
+	fn parser_extension_for_path_strips_quotes_and_whitespace() {
+		assert_eq!(parser_extension_for_path(Path::new("  \"book.epub\"  ")), "epub");
+		assert_eq!(parser_extension_for_path(Path::new("'book.txt'")), "txt");
+	}
+
+	#[test]
+	fn parser_extension_for_path_returns_empty_for_no_extension() {
+		assert_eq!(parser_extension_for_path(Path::new("README")), "");
+	}
+
+	#[test]
+	fn parser_extension_for_path_handles_ipc_artifacts() {
+		assert_eq!(parser_extension_for_path(Path::new("book.epub\u{0}")), "epub");
+		assert_eq!(parser_extension_for_path(Path::new(" \"book.epub\u{0}\" ")), "epub");
+	}
 }
