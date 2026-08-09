@@ -424,9 +424,16 @@ final class AppViewModel: ObservableObject {
 		guard let session = activeSession else { return }
 		let type = continuousPlaybackSegmentType()
 		let next = session.getTextSegment(position: position, segmentType: type, direction: .next)
+		var upcoming: [String] = []
 		if !next.text.isEmpty {
-			ttsManager.prefetch(next.text)
+			upcoming.append(next.text)
+			let nextNext = session.getTextSegment(position: next.startPos, segmentType: type, direction: .next)
+			if !nextNext.text.isEmpty {
+				upcoming.append(nextNext.text)
+			}
 		}
+		ttsManager.prefetch(upcoming: upcoming)
+
 		let prev = session.getTextSegment(position: position, segmentType: type, direction: .previous)
 		if !prev.text.isEmpty {
 			ttsManager.prefetchPrev(prev.text)
