@@ -31,7 +31,7 @@ struct DocumentMenu: View {
 			.accessibilityAction(named: "Elements") { viewModel.showElements = true }
 			.accessibilityAction(named: "Table of Contents") { viewModel.showToc = true }
 			.accessibilityAction(named: toggleModeActionName) {
-				viewModel.isTextMode.toggle()
+				viewModel.toggleTextMode()
 			}
 	}
 
@@ -112,7 +112,7 @@ struct DocumentMenu: View {
 	}
 
 	private var modeToggleItem: some View {
-		Button { viewModel.isTextMode.toggle() } label: {
+		Button { viewModel.toggleTextMode() } label: {
 			// TRANSLATORS: Menu item toggling between spoken (TTS) reading mode and visual text reading mode; label reflects the mode it will switch TO
 			let title: String = viewModel.isTextMode ? t("Switch to TTS Mode") : t("Switch to Text Mode")
 			let icon: String = viewModel.isTextMode ? "speaker.wave.2" : "text.alignleft"

@@ -626,7 +626,23 @@ final class AppViewModel: ObservableObject {
 		configManager.setDocumentPosition(path: path, position: position)
 	}
 
-	func enterTextMode() {
+	// Computes and stores the text-mode scroll position BEFORE flipping isTextMode, rather than
+	// reacting to the flag afterward: TextModeView's initial scroll only runs once, on its own
+	// .onAppear, when it first mounts. If isTextMode flipped first, it would mount and scroll
+	// using the still-default (0) lineScrollIndex before this had a chance to update it, and
+	// that one-shot scroll wouldn't re-run once the real position was computed a moment later —
+	// landing the user at the start of the book instead of where they were reading.
+	func toggleTextMode() {
+		if isTextMode {
+			exitTextMode()
+			isTextMode = false
+		} else {
+			enterTextMode()
+			isTextMode = true
+		}
+	}
+
+	private func enterTextMode() {
 		guard let session = activeSession,
 		      let id = activeTabId,
 		      let idx = tabs.firstIndex(where: { $0.id == id }) else { return }
@@ -636,7 +652,7 @@ final class AppViewModel: ObservableObject {
 		textModeFirstLine = scrollIdx
 	}
 
-	func exitTextMode() {
+	private func exitTextMode() {
 		guard let session = activeSession else { return }
 		let pos = session.positionFromLine(line: Int64(textModeFirstLine + 1))
 		ttsPosition = pos
