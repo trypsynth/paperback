@@ -5,53 +5,45 @@ struct TocSheet: View {
 	@Environment(\.dismiss) private var dismiss
 
 	var body: some View {
-		NavigationStack {
-			Group {
-				if let session = viewModel.activeSession {
-					let entries = session.getToc()
-					if entries.isEmpty {
-						emptyView
-					} else {
-						let activePos = activePosition(in: entries)
-						ScrollViewReader { proxy in
-							List(entries, id: \.position) { entry in
-								let isActive = entry.position == activePos
-								Button {
-									viewModel.goToPosition(entry.position)
-									dismiss()
-								} label: {
-									HStack {
-										Text(entry.title)
-											.padding(.leading, CGFloat(max(0, entry.level - 1)) * 16)
-											.fontWeight(isActive ? .semibold : .regular)
-											.foregroundStyle(isActive ? Color.accentColor : Color.primary)
-										Spacer()
-									}
+		Group {
+			if let session = viewModel.activeSession {
+				let entries = session.getToc()
+				if entries.isEmpty {
+					emptyView
+				} else {
+					let activePos = activePosition(in: entries)
+					ScrollViewReader { proxy in
+						List(entries, id: \.position) { entry in
+							let isActive = entry.position == activePos
+							Button {
+								viewModel.goToPosition(entry.position)
+								dismiss()
+							} label: {
+								HStack {
+									Text(entry.title)
+										.padding(.leading, CGFloat(max(0, entry.level - 1)) * 16)
+										.fontWeight(isActive ? .semibold : .regular)
+										.foregroundStyle(isActive ? Color.accentColor : Color.primary)
+									Spacer()
 								}
-								.accessibilityAddTraits(isActive ? .isSelected : [])
-								.id(entry.position)
 							}
-							.onAppear {
-								if let pos = activePos {
-									proxy.scrollTo(pos, anchor: .center)
-								}
+							.accessibilityAddTraits(isActive ? .isSelected : [])
+							.id(entry.position)
+						}
+						.onAppear {
+							if let pos = activePos {
+								proxy.scrollTo(pos, anchor: .center)
 							}
 						}
 					}
-				} else {
-					emptyView
 				}
-			}
-			// TRANSLATORS: Navigation title of the table of contents sheet
-			.navigationTitle(t("Contents"))
-			.navigationBarTitleDisplayMode(.inline)
-			.toolbar {
-				ToolbarItem(placement: .confirmationAction) {
-					// TRANSLATORS: Button that dismisses the table of contents sheet
-					Button(t("Done")) { dismiss() }
-				}
+			} else {
+				emptyView
 			}
 		}
+		// TRANSLATORS: Navigation title of the table of contents screen
+		.navigationTitle(t("Contents"))
+		.navigationBarTitleDisplayMode(.inline)
 		.sheetAccessibilityFocus(title: "Contents")
 	}
 
