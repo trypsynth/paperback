@@ -37,7 +37,7 @@ struct ReaderView: View {
 			}
 		}
 		.navigationDestination(isPresented: $viewModel.showToc) {
-			TocSheet().environmentObject(viewModel)
+			TocView().environmentObject(viewModel)
 		}
 		.sheet(isPresented: $viewModel.showFind) {
 			FindSheet().environmentObject(viewModel)

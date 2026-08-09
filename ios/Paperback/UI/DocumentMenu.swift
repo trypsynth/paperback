@@ -51,11 +51,13 @@ struct DocumentMenu: View {
 
 	private var fullMenuButton: some View {
 		Menu {
+			modeToggleItem
+			Divider()
 			navigationItems
 			Divider()
 			infoItems
 			Divider()
-			modeItems
+			sleepTimerItem
 			Divider()
 			helpAndSettingsItems
 		} label: {
@@ -109,14 +111,16 @@ struct DocumentMenu: View {
 		}
 	}
 
-	@ViewBuilder private var modeItems: some View {
+	private var modeToggleItem: some View {
 		Button { viewModel.isTextMode.toggle() } label: {
 			// TRANSLATORS: Menu item toggling between spoken (TTS) reading mode and visual text reading mode; label reflects the mode it will switch TO
 			let title: String = viewModel.isTextMode ? t("Switch to TTS Mode") : t("Switch to Text Mode")
 			let icon: String = viewModel.isTextMode ? "speaker.wave.2" : "text.alignleft"
 			Label(title, systemImage: icon)
 		}
-		Divider()
+	}
+
+	private var sleepTimerItem: some View {
 		Button { viewModel.showSleepTimer = true } label: {
 			// TRANSLATORS: Menu item to open the sleep timer; the "(active)" variant is shown while a timer is currently counting down
 			let title: String = viewModel.sleepTimerRemaining != nil ? t("Sleep Timer (active)") : t("Sleep Timer")

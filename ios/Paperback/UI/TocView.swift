@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct TocSheet: View {
+struct TocView: View {
 	@EnvironmentObject var viewModel: AppViewModel
 	@Environment(\.dismiss) private var dismiss
 
