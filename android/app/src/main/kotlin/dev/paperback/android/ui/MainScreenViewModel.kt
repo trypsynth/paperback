@@ -86,6 +86,15 @@ class MainScreenViewModel(
 	private val _showSettingsDialog = MutableStateFlow(false)
 	val showSettingsDialog: StateFlow<Boolean> = _showSettingsDialog.asStateFlow()
 
+	private val _restorePreviousDocuments = MutableStateFlow(config.getAppBool("restore_previous_documents", true))
+	val restorePreviousDocuments: StateFlow<Boolean> = _restorePreviousDocuments.asStateFlow()
+
+	private val _useInAppFileBrowser = MutableStateFlow(config.getAppBool("use_in_app_file_browser", false))
+	val useInAppFileBrowser: StateFlow<Boolean> = _useInAppFileBrowser.asStateFlow()
+
+	private val _swipeUpMovesForward = MutableStateFlow(config.getAppBool("swipe_up_moves_forward", true))
+	val swipeUpMovesForward: StateFlow<Boolean> = _swipeUpMovesForward.asStateFlow()
+
 	private val _showTocDialog = MutableStateFlow(false)
 	val showTocDialog: StateFlow<Boolean> = _showTocDialog.asStateFlow()
 
@@ -938,6 +947,24 @@ class MainScreenViewModel(
 
 	fun closeSettingsDialog() {
 		_showSettingsDialog.value = false
+	}
+
+	fun setRestorePreviousDocuments(value: Boolean) {
+		_restorePreviousDocuments.value = value
+		config.setAppBool("restore_previous_documents", value)
+		config.flush()
+	}
+
+	fun setUseInAppFileBrowser(value: Boolean) {
+		_useInAppFileBrowser.value = value
+		config.setAppBool("use_in_app_file_browser", value)
+		config.flush()
+	}
+
+	fun setSwipeUpMovesForward(value: Boolean) {
+		_swipeUpMovesForward.value = value
+		config.setAppBool("swipe_up_moves_forward", value)
+		config.flush()
 	}
 
 	fun openTocDialog() {

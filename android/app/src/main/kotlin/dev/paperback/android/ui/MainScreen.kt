@@ -39,6 +39,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
+import dev.paperback.android.SettingsRoute
 import dev.paperback.android.t
 import dev.paperback.android.ui.dialogs.*
 import kotlinx.coroutines.Dispatchers
@@ -84,25 +85,18 @@ fun MainScreen(
 	val goToDialogOpen by viewModel.showGoToDialog.collectAsStateWithLifecycle()
 	val goToInitialMode by viewModel.goToInitialMode.collectAsStateWithLifecycle()
 	val findDialogOpen by viewModel.showFindDialog.collectAsStateWithLifecycle()
-	val optionsDialogOpen by viewModel.showSettingsDialog.collectAsStateWithLifecycle()
 	val sleepTimerDialogOpen by viewModel.showSleepTimerDialog.collectAsStateWithLifecycle()
 	var isScreenDimmed by remember { mutableStateOf(false) }
 	var lineIndexToFocus by remember { mutableStateOf<Int?>(null) }
-	var restorePreviousDocuments by remember {
-		mutableStateOf(viewModel.configManager.getAppBool("restore_previous_documents", true))
-	}
-	var useInAppFileBrowser by remember {
-		mutableStateOf(viewModel.configManager.getAppBool("use_in_app_file_browser", false))
-	}
+	val restorePreviousDocuments by viewModel.restorePreviousDocuments.collectAsStateWithLifecycle()
+	val useInAppFileBrowser by viewModel.useInAppFileBrowser.collectAsStateWithLifecycle()
 	// Guards the one-time auto-switch to the in-app browser right after All Files
 	// Access is first granted, so it doesn't keep re-enabling itself on every later
 	// resume (e.g. after using the system picker) and fight the user's own toggle.
 	var hasAutoEnabledInAppFileBrowser by remember {
 		mutableStateOf(viewModel.configManager.getAppBool("auto_enabled_in_app_file_browser", false))
 	}
-	var swipeUpMovesForward by remember {
-		mutableStateOf(viewModel.configManager.getAppBool("swipe_up_moves_forward", true))
-	}
+	val swipeUpMovesForward by viewModel.swipeUpMovesForward.collectAsStateWithLifecycle()
 	var onboardingCompleted by remember {
 		mutableStateOf(viewModel.configManager.getAppBool("permissions_onboarding_shown", false))
 	}
@@ -212,12 +206,7 @@ fun MainScreen(
 	val isSpeaking by viewModel.ttsManager.isSpeaking.collectAsStateWithLifecycle()
 	val currentSegmentType by viewModel.currentSegmentType.collectAsStateWithLifecycle()
 	val ttsPosition by viewModel.ttsPosition.collectAsStateWithLifecycle()
-	val currentSpeechRate by viewModel.ttsManager.currentSpeechRate.collectAsStateWithLifecycle()
-	val currentPitch by viewModel.ttsManager.currentPitch.collectAsStateWithLifecycle()
 	val currentSegmentText by viewModel.currentSegmentText.collectAsStateWithLifecycle()
-	val availableVoices by viewModel.ttsManager.availableVoices.collectAsStateWithLifecycle()
-	val currentVoice by viewModel.ttsManager.currentVoice.collectAsStateWithLifecycle()
-	val currentEngineName by viewModel.ttsManager.currentEngineName.collectAsStateWithLifecycle()
 	var ttsConfigDialogOpen by remember { mutableStateOf(false) }
 	val sleepTimerRemaining by viewModel.sleepTimerRemaining.collectAsStateWithLifecycle()
 	val showElementsDialog by viewModel.showElementsDialog.collectAsStateWithLifecycle()
@@ -382,7 +371,7 @@ fun MainScreen(
 					onFindOpen = { viewModel.openFindDialog() },
 					onWordCountOpen = { viewModel.openWordCountDialog() },
 					onDocumentInfoOpen = { viewModel.openDocumentInfoDialog() },
-					onSettingsOpen = { viewModel.openSettingsDialog() },
+					onSettingsOpen = { onItemClick(SettingsRoute) },
 					onSleepTimerOpen = { viewModel.openSleepTimerDialog() },
 					onElementsOpen = { viewModel.openElementsDialog() },
 					onExportDocumentOpen = { exportDocumentDialogOpen = true },
@@ -790,37 +779,6 @@ fun MainScreen(
 				}
 			}
 		}
-		if (optionsDialogOpen) {
-			SettingsDialog(
-				initialRestorePreviousDocuments = restorePreviousDocuments,
-				initialUseInAppFileBrowser = useInAppFileBrowser,
-				initialSwipeUpMovesForward = swipeUpMovesForward,
-				engines = viewModel.ttsManager.getAvailableEngines(),
-				currentEngine = currentEngineName ?: viewModel.ttsManager.getDefaultEngine(),
-				voices = availableVoices,
-				currentVoice = currentVoice,
-				currentRate = currentSpeechRate,
-				currentPitch = currentPitch,
-				onEngineSelected = { viewModel.ttsManager.setEngine(it) },
-				onVoiceSelected = { viewModel.ttsManager.setVoice(it) },
-				onRateChanged = { viewModel.ttsManager.setSpeechRate(it) },
-				onPitchChanged = { viewModel.ttsManager.setPitch(it) },
-				onPlaySample = {
-					viewModel.ttsManager.speak("This is a sample of the selected speech engine.", isSample = true)
-				},
-				onSaveOptions = { restore, useInApp, swipeUpFwd ->
-					restorePreviousDocuments = restore
-					useInAppFileBrowser = useInApp
-					swipeUpMovesForward = swipeUpFwd
-					viewModel.configManager.setAppBool("restore_previous_documents", restore)
-					viewModel.configManager.setAppBool("use_in_app_file_browser", useInApp)
-					viewModel.configManager.setAppBool("swipe_up_moves_forward", swipeUpFwd)
-					viewModel.configManager.flush()
-					viewModel.closeSettingsDialog()
-				},
-				onDismiss = { viewModel.closeSettingsDialog() }
-			)
-		}
 		if (isScreenDimmed) {
 			Box(
 				modifier = Modifier
@@ -865,9 +823,8 @@ fun MainScreen(
 				if (event == Lifecycle.Event.ON_RESUME) {
 					permissionResumeTrigger++
 					if (hasAllFilesAccessOnR() && !useInAppFileBrowser && !hasAutoEnabledInAppFileBrowser) {
-						useInAppFileBrowser = true
+						viewModel.setUseInAppFileBrowser(true)
 						hasAutoEnabledInAppFileBrowser = true
-						viewModel.configManager.setAppBool("use_in_app_file_browser", true)
 						viewModel.configManager.setAppBool("auto_enabled_in_app_file_browser", true)
 						viewModel.configManager.flush()
 					}
