@@ -20,6 +20,7 @@ anyhow = { workspace = true }
 base64 = { workspace = true }
 bitflags = { workspace = true }
 cfb = "0.14.0"
+chardetng = "1.0.0"
 ego-tree = "0.11.0"
 encoding_rs = "0.8.35"
 icu_properties = { version = "2.2.0", features = ["unicode_bidi"] }
