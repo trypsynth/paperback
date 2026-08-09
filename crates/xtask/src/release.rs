@@ -78,6 +78,8 @@ fn build_mac_dmg(target_dir: &Path) -> Result<(), Box<dyn Error>> {
 
 	println!("Built app: {}", bundle_dir.display());
 
+	sign_mac_bundle(&bundle_dir, &macos_dir)?;
+
 	// Build a DMG: staging folder contains the .app plus an /Applications symlink
 	// so users get the standard drag-to-install experience.
 	let staging = target_dir.join("dmg-staging");
@@ -104,6 +106,41 @@ fn build_mac_dmg(target_dir: &Path) -> Result<(), Box<dyn Error>> {
 		return Err("hdiutil create failed".into());
 	}
 	println!("Created DMG: {}", dmg_path.display());
+	Ok(())
+}
+
+/// Signs the bundle with the Developer ID Application identity named by the
+/// MACOS_SIGN_IDENTITY env var, so the shipped DMG can be notarized and doesn't trip
+/// Gatekeeper's "app is damaged" check. A no-op when that var isn't set (i.e. local dev
+/// builds from contributors without a signing certificate) — everything signs deepest
+/// first: the third-party dylib, then the executable, then the bundle as a whole, which
+/// is what Apple's docs recommend over a single `--deep` sign.
+#[cfg(target_os = "macos")]
+fn sign_mac_bundle(bundle_dir: &Path, macos_dir: &Path) -> Result<(), Box<dyn Error>> {
+	let Ok(identity) = env::var("MACOS_SIGN_IDENTITY") else {
+		println!("MACOS_SIGN_IDENTITY not set; skipping code signing.");
+		return Ok(());
+	};
+
+	let dylib = macos_dir.join("libpdfium.dylib");
+	if dylib.exists() {
+		codesign(&dylib, &identity)?;
+	}
+	codesign(&macos_dir.join("paperback"), &identity)?;
+	codesign(bundle_dir, &identity)?;
+	println!("Signed {}", bundle_dir.display());
+	Ok(())
+}
+
+#[cfg(target_os = "macos")]
+fn codesign(path: &Path, identity: &str) -> Result<(), Box<dyn Error>> {
+	let status = Command::new("codesign")
+		.args(["--force", "--timestamp", "--options", "runtime", "--sign", identity])
+		.arg(path)
+		.status()?;
+	if !status.success() {
+		return Err(format!("codesign failed for {}", path.display()).into());
+	}
 	Ok(())
 }
 
