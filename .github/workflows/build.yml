@@ -275,11 +275,16 @@ jobs:
         APPSTORE_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
         APPSTORE_API_ISSUER_ID: ${{ secrets.APPSTORE_API_ISSUER_ID }}
       run: |
+        # Secret values occasionally carry a trailing newline depending on how they were
+        # set (e.g. from a file via `gh secret set NAME < file.txt`); notarytool rejects
+        # --key-id/--issuer outright if so, so strip whitespace defensively.
+        KEY_ID=$(printf '%s' "$APPSTORE_API_KEY_ID" | tr -d '[:space:]')
+        ISSUER_ID=$(printf '%s' "$APPSTORE_API_ISSUER_ID" | tr -d '[:space:]')
         KEY_PATH="$RUNNER_TEMP/AppStoreConnectAPIKey.p8"
         echo "$APPSTORE_API_KEY_BASE64" | base64 -D -o "$KEY_PATH"
         set +e
         xcrun notarytool submit target/release/paperback.dmg \
-          --key "$KEY_PATH" --key-id "$APPSTORE_API_KEY_ID" --issuer "$APPSTORE_API_ISSUER_ID" \
+          --key "$KEY_PATH" --key-id "$KEY_ID" --issuer "$ISSUER_ID" \
           --wait --output-format json | tee notarization-result.json
         SUBMIT_STATUS=$?
         set -e
@@ -289,7 +294,7 @@ jobs:
           echo "Notarization failed (exit $SUBMIT_STATUS, status '$SUBMIT_RESULT_STATUS'); fetching full log..."
           if [ -n "$SUBMISSION_ID" ]; then
             xcrun notarytool log "$SUBMISSION_ID" \
-              --key "$KEY_PATH" --key-id "$APPSTORE_API_KEY_ID" --issuer "$APPSTORE_API_ISSUER_ID"
+              --key "$KEY_PATH" --key-id "$KEY_ID" --issuer "$ISSUER_ID"
           fi
           rm -f "$KEY_PATH"
           exit 1
