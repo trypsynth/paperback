@@ -267,8 +267,10 @@ fn wrap_pdfium_framework(root: &Path, dylib: &Path) -> Result<(), Box<dyn Error>
 	let framework_binary = framework_dir.join("libpdfium.dylib");
 	fs::copy(dylib, &framework_binary)?;
 
-	let status =
-		Command::new("install_name_tool").args(["-id", "@rpath/libpdfium.framework/libpdfium.dylib"]).arg(&framework_binary).status()?;
+	let status = Command::new("install_name_tool")
+		.args(["-id", "@rpath/libpdfium.framework/libpdfium.dylib"])
+		.arg(&framework_binary)
+		.status()?;
 	if !status.success() {
 		return Err("install_name_tool -id failed on libpdfium.framework/libpdfium.dylib".into());
 	}
