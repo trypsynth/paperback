@@ -104,7 +104,9 @@ fun TocDialog(
 								onItemClick(item)
 							}
 						}.semantics(mergeDescendants = true) {
-							selected = isActive
+							if (isActive) {
+								selected = true
+							}
 							if (hasChildren) {
 								// TRANSLATORS: TalkBack state description for a TOC entry announcing whether its children are shown
 								stateDescription = if (isExpanded) t("Expanded") else t("Collapsed")
