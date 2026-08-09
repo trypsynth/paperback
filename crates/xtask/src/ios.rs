@@ -273,11 +273,32 @@ fn wrap_pdfium_framework(root: &Path, dylib: &Path) -> Result<(), Box<dyn Error>
 		return Err("install_name_tool -id failed on libpdfium.framework/libpdfium.dylib".into());
 	}
 
-	fs::write(framework_dir.join("Info.plist"), PDFIUM_FRAMEWORK_INFO_PLIST)?;
+	// The prebuilt binary's LC_BUILD_VERSION load command declares a minos far above our own
+	// deployment target (observed: iOS 26.0, just whatever SDK the upstream release happened to
+	// be built with) — nothing in PDFium actually requires that OS version, but App Store
+	// Connect's validator takes the declaration at face value and rejects the bundle as
+	// unsupported on our (lower) deployment target. Rewrite it to match.
+	let status = Command::new("xcrun")
+		.args(["vtool", "-set-build-version", "ios", IOS_DEPLOYMENT_TARGET, IOS_DEPLOYMENT_TARGET])
+		.arg("-replace")
+		.arg("-output")
+		.arg(&framework_binary)
+		.arg(&framework_binary)
+		.status()?;
+	if !status.success() {
+		return Err("vtool -set-build-version failed on libpdfium.framework/libpdfium.dylib".into());
+	}
+
+	fs::write(framework_dir.join("Info.plist"), pdfium_framework_info_plist())?;
 	Ok(())
 }
 
-const PDFIUM_FRAMEWORK_INFO_PLIST: &str = r#"<?xml version="1.0" encoding="UTF-8"?>
+// Keep in sync with IPHONEOS_DEPLOYMENT_TARGET in Paperback.xcodeproj/project.pbxproj.
+const IOS_DEPLOYMENT_TARGET: &str = "16.0";
+
+fn pdfium_framework_info_plist() -> String {
+	format!(
+		r#"<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
@@ -300,10 +321,12 @@ const PDFIUM_FRAMEWORK_INFO_PLIST: &str = r#"<?xml version="1.0" encoding="UTF-8
 		<string>iPhoneOS</string>
 	</array>
 	<key>MinimumOSVersion</key>
-	<string>16.0</string>
+	<string>{IOS_DEPLOYMENT_TARGET}</string>
 </dict>
 </plist>
-"#;
+"#
+	)
+}
 
 fn generate_readmes(root: &Path, readmes_dir: &Path) -> Result<(), Box<dyn Error>> {
 	let doc_dir = root.join("doc");
