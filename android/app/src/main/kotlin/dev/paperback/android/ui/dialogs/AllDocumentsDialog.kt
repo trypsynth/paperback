@@ -81,6 +81,7 @@ fun RecentDocumentItemRow(
 		modifier = Modifier
 			.clickable(
 				onClickLabel = "open",
+				role = Role.Button,
 				onClick = { if (!item.isMissing) onOpen() }
 			).semantics {
 				customActions = mutableListOf<CustomAccessibilityAction>().apply {

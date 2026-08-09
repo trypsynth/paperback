@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -46,7 +47,7 @@ fun ExportDocumentDialog(
 					ListItem(
 						headlineContent = { Text(label) },
 						leadingContent = { Icon(icon, contentDescription = null) },
-						modifier = Modifier.clickable { onFormatSelected(format) }
+						modifier = Modifier.clickable(role = Role.Button) { onFormatSelected(format) }
 					)
 					if (index < supportedFormats.lastIndex) {
 						HorizontalDivider()
