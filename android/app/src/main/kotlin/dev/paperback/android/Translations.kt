@@ -27,3 +27,15 @@ object Translations {
 }
 
 fun t(str: String): String = Translations.map[str] ?: str
+
+/** Translates [str], then substitutes each "{}" placeholder in order with the given [args]. */
+fun t(
+	str: String,
+	vararg args: String
+): String {
+	var result = t(str)
+	for (arg in args) {
+		result = result.replaceFirst("{}", arg)
+	}
+	return result
+}

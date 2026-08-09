@@ -25,7 +25,7 @@ fun WordCountDialog(
 	onDismiss: () -> Unit
 ) {
 	// TRANSLATORS: Sentence announced to screen readers with the document's word count; {} is replaced with the number
-	val announcement = t("This document contains {} words.").replace("{}", "${stats.wordCount}")
+	val announcement = t("This document contains {} words.", "${stats.wordCount}")
 
 	AlertDialog(
 		onDismissRequest = onDismiss,

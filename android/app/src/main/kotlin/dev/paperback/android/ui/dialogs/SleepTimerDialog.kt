@@ -109,7 +109,7 @@ fun SleepTimerDialog(
 						val sec = remainingSeconds % 60
 						val timeText = "%d:%02d".format(min, sec)
 						// TRANSLATORS: Sentence announced to screen readers with the sleep timer's remaining time; {} is replaced with e.g. "3:45"
-						val remainingAnnouncement = t("Active: {} remaining").replace("{}", timeText)
+						val remainingAnnouncement = t("Active: {} remaining", timeText)
 						Surface(
 							color = MaterialTheme.colorScheme.secondaryContainer,
 							shape = MaterialTheme.shapes.medium,
@@ -169,7 +169,7 @@ fun SleepTimerDialog(
 									onDismiss()
 								},
 								// TRANSLATORS: Preset sleep timer duration chip; {} is replaced with the number of minutes
-								label = { Text(t("{} minutes").replace("{}", "$minutes")) }
+								label = { Text(t("{} minutes", "$minutes")) }
 							)
 						}
 						AssistChip(
