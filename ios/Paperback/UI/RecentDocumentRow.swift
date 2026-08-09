@@ -1,9 +1,9 @@
 import SwiftUI
 
-// A single row in a recent-documents list: title, path, and an open/closed/missing
-// status, with Locate (when the file can't be found) and Remove actions — mirrors
-// Android's RecentDocumentItemRow, reused by both the compact empty-state preview
-// and the full Recent Documents sheet.
+// A single row in a recent-documents list: title and an open/closed/missing status,
+// with Locate (when the file can't be found) and Remove actions — mirrors Android's
+// RecentDocumentItemRow, reused by both the compact empty-state preview and the full
+// Recent Documents sheet.
 struct RecentDocumentRow: View {
 	let doc: RecentDocument
 	var showClosedStatus: Bool = true
@@ -30,10 +30,6 @@ struct RecentDocumentRow: View {
 				Text(doc.title)
 					.foregroundStyle(doc.isMissing ? .secondary : .primary)
 					.lineLimit(1)
-				Text(doc.url.path(percentEncoded: false))
-					.font(.caption)
-					.foregroundStyle(.secondary)
-					.lineLimit(2)
 				statusText
 			}
 			.frame(maxWidth: .infinity, alignment: .leading)
