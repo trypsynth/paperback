@@ -487,14 +487,17 @@ final class AppViewModel: ObservableObject {
 
 	// MARK: - Search
 
-	func startSearch(query: String, options: SearchOptions) {
+	// Starts (or re-runs) a search and immediately jumps to the first match in the given
+	// direction, matching desktop/Android: there's no separate "start search" step, pressing
+	// Find Previous/Next both sets the active query and jumps in one action.
+	func startSearch(query: String, options: SearchOptions, forward: Bool) {
 		activeSearchQuery = query
 		searchOptions = options
-		findNext(fromQuery: query, options: options)
-	}
-
-	func clearSearch() {
-		activeSearchQuery = nil
+		if forward {
+			findNext(fromQuery: query, options: options)
+		} else {
+			findPrev(fromQuery: query, options: options)
+		}
 	}
 
 	func findNext(fromQuery: String? = nil, options: SearchOptions? = nil) {
@@ -518,16 +521,17 @@ final class AppViewModel: ObservableObject {
 		}
 	}
 
-	func findPrev() {
+	func findPrev(fromQuery: String? = nil, options: SearchOptions? = nil) {
 		guard let session = activeSession else { return }
-		let q = activeSearchQuery ?? ""
+		let q = fromQuery ?? activeSearchQuery ?? ""
+		let opts = options ?? searchOptions
 		let result = session.searchFfi(
 			query: q,
 			startPosition: ttsPosition,
 			options: SearchOptionsFfi(
-				matchCase: searchOptions.matchCase,
-				wholeWord: searchOptions.wholeWord,
-				regex: searchOptions.regex,
+				matchCase: opts.matchCase,
+				wholeWord: opts.wholeWord,
+				regex: opts.regex,
 				forward: false
 			)
 		)
