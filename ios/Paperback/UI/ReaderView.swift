@@ -110,13 +110,23 @@ struct ReaderView: View {
 	@ViewBuilder
 	private var bottomBar: some View {
 		if !viewModel.isTextMode, viewModel.activeTab != nil {
-			TtsControlBar()
-				.environmentObject(viewModel)
-				.background {
-					Rectangle()
-						.fill(.bar)
-						.ignoresSafeArea(edges: .bottom)
-				}
+			if #available(iOS 26, *) {
+				// Floats as a Liquid Glass pill inset from the edges, matching Safari's bottom
+				// toolbar, instead of a flat bar spanning the full width.
+				TtsControlBar()
+					.environmentObject(viewModel)
+					.glassEffect(.regular, in: RoundedRectangle(cornerRadius: 26))
+					.padding(.horizontal, 12)
+					.padding(.bottom, 8)
+			} else {
+				TtsControlBar()
+					.environmentObject(viewModel)
+					.background {
+						Rectangle()
+							.fill(.bar)
+							.ignoresSafeArea(edges: .bottom)
+					}
+			}
 		}
 	}
 

@@ -7,6 +7,10 @@ import SwiftUI
 struct RecentDocumentRow: View {
 	let doc: RecentDocument
 	var showClosedStatus: Bool = true
+	// The full Recent Documents list uses a swipe action for Remove instead (the standard
+	// iOS list-deletion idiom); the compact empty-state preview isn't a List, so it keeps
+	// this inline button as its only way to remove a document.
+	var showRemoveButton: Bool = true
 	let onOpen: () -> Void
 	let onRemove: () -> Void
 	let onLocate: (() -> Void)?
@@ -43,10 +47,12 @@ struct RecentDocumentRow: View {
 					.font(.footnote)
 					.buttonStyle(.borderless)
 			}
-			// TRANSLATORS: Button to remove a document from the recent documents list
-			Button(t("Remove"), role: .destructive, action: onRemove)
-				.font(.footnote)
-				.buttonStyle(.borderless)
+			if showRemoveButton {
+				// TRANSLATORS: Button to remove a document from the recent documents list
+				Button(t("Remove"), role: .destructive, action: onRemove)
+					.font(.footnote)
+					.buttonStyle(.borderless)
+			}
 		}
 		.padding(.vertical, 8)
 		.accessibilityElement(children: .combine)
