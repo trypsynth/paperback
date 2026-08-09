@@ -146,6 +146,22 @@ fun MainScreenTopBar(
 								true
 							}
 							customActions = mutableListOf<CustomAccessibilityAction>().apply {
+								add(
+									// TRANSLATORS: Accessibility action toggling between the read-aloud view and the plain text view; label names the mode that tapping it switches TO
+									CustomAccessibilityAction(if (isTextMode) t("Switch to TTS Mode") else t("Switch to Text Mode")) {
+										onToggleTextMode()
+										true
+									}
+								)
+								if (isTextMode) {
+									add(
+										// TRANSLATORS: Accessibility action toggling text-to-speech playback; label names the action that tapping it performs
+										CustomAccessibilityAction(if (isSpeaking) t("Pause Read Aloud") else t("Read Aloud")) {
+											onTogglePlayPause()
+											true
+										}
+									)
+								}
 								if (state.activeTab != null) {
 									add(
 										// TRANSLATORS: Accessibility action to open the table of contents for the current document
@@ -204,22 +220,6 @@ fun MainScreenTopBar(
 									}
 								)
 								add(
-									// TRANSLATORS: Accessibility action toggling between the read-aloud view and the plain text view; label names the view that tapping it switches to
-									CustomAccessibilityAction(if (isTextMode) t("Show Document") else t("Show Text")) {
-										onToggleTextMode()
-										true
-									}
-								)
-								if (isTextMode) {
-									add(
-										// TRANSLATORS: Accessibility action toggling text-to-speech playback; label names the action that tapping it performs
-										CustomAccessibilityAction(if (isSpeaking) t("Pause Read Aloud") else t("Read Aloud")) {
-											onTogglePlayPause()
-											true
-										}
-									)
-								}
-								add(
 									// TRANSLATORS: Accessibility action to open the sleep timer dialog
 									CustomAccessibilityAction(t("Sleep Timer")) {
 										onSleepTimerOpen()
@@ -250,6 +250,24 @@ fun MainScreenTopBar(
 						expanded = moreOptionsExpanded,
 						onDismissRequest = { moreOptionsExpanded = false }
 					) {
+						DropdownMenuItem(
+							// TRANSLATORS: Menu item toggling between the read-aloud view and the plain text view; label names the mode that tapping it switches TO
+							text = { Text(if (isTextMode) t("Switch to TTS Mode") else t("Switch to Text Mode")) },
+							onClick = {
+								onToggleTextMode()
+								moreOptionsExpanded = false
+							}
+						)
+						if (isTextMode) {
+							DropdownMenuItem(
+								// TRANSLATORS: Menu item toggling text-to-speech playback; label names the action that tapping it performs
+								text = { Text(if (isSpeaking) t("Pause Read Aloud") else t("Read Aloud")) },
+								onClick = {
+									onTogglePlayPause()
+									moreOptionsExpanded = false
+								}
+							)
+						}
 						if (state.activeTab != null) {
 							DropdownMenuItem(
 								// TRANSLATORS: Menu item to open the table of contents for the current document
@@ -315,24 +333,6 @@ fun MainScreenTopBar(
 								onDocumentInfoOpen()
 							}
 						)
-						DropdownMenuItem(
-							// TRANSLATORS: Menu item toggling between the read-aloud view and the plain text view; label names the view that tapping it switches to
-							text = { Text(if (isTextMode) t("Show Document") else t("Show Text")) },
-							onClick = {
-								onToggleTextMode()
-								moreOptionsExpanded = false
-							}
-						)
-						if (isTextMode) {
-							DropdownMenuItem(
-								// TRANSLATORS: Menu item toggling text-to-speech playback; label names the action that tapping it performs
-								text = { Text(if (isSpeaking) t("Pause Read Aloud") else t("Read Aloud")) },
-								onClick = {
-									onTogglePlayPause()
-									moreOptionsExpanded = false
-								}
-							)
-						}
 						DropdownMenuItem(
 							// TRANSLATORS: Menu item to open the sleep timer dialog
 							text = { Text(t("Sleep Timer")) },
