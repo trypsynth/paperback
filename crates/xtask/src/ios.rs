@@ -31,6 +31,7 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 
 	let pdfium_dest = root.join("ios/libpdfium.dylib");
 	download_pdfium_dylib(PDFIUM_IOS_ARM64_URL, &pdfium_dest)?;
+	wrap_pdfium_framework(&root, &pdfium_dest)?;
 
 	println!("Generating Swift bindings via uniffi-bindgen...");
 	let status = Command::new(&cargo)
@@ -118,6 +119,7 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 
 	println!("iOS build complete.");
 	println!("  XCFramework: ios/paperbackFFI.xcframework");
+	println!("  PDFium framework: ios/libpdfium.framework");
 	println!("  Swift bindings: ios/Paperback/Generated/paperback.swift");
 	println!("  Localizable.strings: ios/Paperback/<lang>.lproj/Localizable.strings");
 	println!("  Add both XCFramework and Swift bindings to the Xcode project to use the Rust core.");
@@ -237,6 +239,71 @@ fn download_pdfium_dylib(url: &str, dest: &Path) -> Result<(), Box<dyn Error>> {
 	}
 	Err(format!("libpdfium.dylib not found in archive from {url}").into())
 }
+
+// Wraps libpdfium.dylib in a proper .framework bundle. iOS doesn't support standalone
+// third-party dylibs at all — only .framework bundles — regardless of whether the dylib is
+// wrapped in an XCFramework container; App Store Connect's upload validator rejects a
+// bare-dylib XCFramework with ITMS-90426 ("SwiftSupport folder is missing"), because it still
+// routes through the legacy validation path that a raw dylib triggers. A real .framework
+// bundle takes the modern, SwiftSupport-free path instead.
+//
+// This is embedded directly (not further wrapped in an XCFramework like paperbackFFI): we
+// only ever ship one platform slice, so XCFramework's multi-platform packaging buys nothing
+// here, and `xcodebuild -create-xcframework -framework` insists the binary inside be named
+// after the bundle itself (e.g. `libpdfium.framework/libpdfium`, no `.dylib`), which would
+// conflict with the fixed filename below.
+//
+// The framework's binary keeps the "libpdfium.dylib" filename (not the usual extension-less
+// framework-binary convention) because the `pdfium` crate's dlopen call constructs exactly
+// that filename via `libloading::library_filename("pdfium")` — AppViewModel.swift points
+// setPdfiumLibraryPath at .../Frameworks/libpdfium.framework to match.
+fn wrap_pdfium_framework(root: &Path, dylib: &Path) -> Result<(), Box<dyn Error>> {
+	let framework_dir = root.join("ios/libpdfium.framework");
+	if framework_dir.exists() {
+		fs::remove_dir_all(&framework_dir)?;
+	}
+	fs::create_dir_all(&framework_dir)?;
+
+	let framework_binary = framework_dir.join("libpdfium.dylib");
+	fs::copy(dylib, &framework_binary)?;
+
+	let status =
+		Command::new("install_name_tool").args(["-id", "@rpath/libpdfium.framework/libpdfium.dylib"]).arg(&framework_binary).status()?;
+	if !status.success() {
+		return Err("install_name_tool -id failed on libpdfium.framework/libpdfium.dylib".into());
+	}
+
+	fs::write(framework_dir.join("Info.plist"), PDFIUM_FRAMEWORK_INFO_PLIST)?;
+	Ok(())
+}
+
+const PDFIUM_FRAMEWORK_INFO_PLIST: &str = r#"<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleExecutable</key>
+	<string>libpdfium.dylib</string>
+	<key>CFBundleIdentifier</key>
+	<string>org.pdfium.libpdfium</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>libpdfium</string>
+	<key>CFBundlePackageType</key>
+	<string>FMWK</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>CFBundleSupportedPlatforms</key>
+	<array>
+		<string>iPhoneOS</string>
+	</array>
+	<key>MinimumOSVersion</key>
+	<string>16.0</string>
+</dict>
+</plist>
+"#;
 
 fn generate_readmes(root: &Path, readmes_dir: &Path) -> Result<(), Box<dyn Error>> {
 	let doc_dir = root.join("doc");
