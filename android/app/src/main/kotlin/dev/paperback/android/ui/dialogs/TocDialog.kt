@@ -19,6 +19,7 @@ import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
@@ -103,6 +104,7 @@ fun TocDialog(
 								onItemClick(item)
 							}
 						}.semantics(mergeDescendants = true) {
+							selected = isActive
 							if (hasChildren) {
 								// TRANSLATORS: TalkBack state description for a TOC entry announcing whether its children are shown
 								stateDescription = if (isExpanded) t("Expanded") else t("Collapsed")
