@@ -76,16 +76,16 @@ fun MainScreen(
 	val state by viewModel.uiState.collectAsStateWithLifecycle()
 	val scope = rememberCoroutineScope()
 	val listStates = remember { mutableStateMapOf<String, LazyListState>() }
-	val tocSheetOpen by viewModel.showTocDialog.collectAsStateWithLifecycle()
+	val tocSheetOpen by viewModel.tocDialog.isOpen.collectAsStateWithLifecycle()
 	var recentsDialogOpen by remember { mutableStateOf(false) }
 	var exportDocumentDialogOpen by remember { mutableStateOf(false) }
 	var selectedExportFormat by remember { mutableStateOf<uniffi.paperback.ExportFormatFfi?>(null) }
-	val wordCountDialogOpen by viewModel.showWordCountDialog.collectAsStateWithLifecycle()
-	val documentInfoDialogOpen by viewModel.showDocumentInfoDialog.collectAsStateWithLifecycle()
+	val wordCountDialogOpen by viewModel.wordCountDialog.isOpen.collectAsStateWithLifecycle()
+	val documentInfoDialogOpen by viewModel.documentInfoDialog.isOpen.collectAsStateWithLifecycle()
 	val goToDialogOpen by viewModel.showGoToDialog.collectAsStateWithLifecycle()
 	val goToInitialMode by viewModel.goToInitialMode.collectAsStateWithLifecycle()
-	val findDialogOpen by viewModel.showFindDialog.collectAsStateWithLifecycle()
-	val sleepTimerDialogOpen by viewModel.showSleepTimerDialog.collectAsStateWithLifecycle()
+	val findDialogOpen by viewModel.findDialog.isOpen.collectAsStateWithLifecycle()
+	val sleepTimerDialogOpen by viewModel.sleepTimerDialog.isOpen.collectAsStateWithLifecycle()
 	var isScreenDimmed by remember { mutableStateOf(false) }
 	var lineIndexToFocus by remember { mutableStateOf<Int?>(null) }
 	val restorePreviousDocuments by viewModel.restorePreviousDocuments.collectAsStateWithLifecycle()
@@ -353,7 +353,7 @@ fun MainScreen(
 					onOpenBook = {
 						if (useInAppFileBrowser) {
 							if (needsAllFilesAccessPermission()) {
-								viewModel.setShowPermissionRationale(true)
+								viewModel.permissionRationaleDialog.open()
 							} else {
 								showFileManager = true
 							}
@@ -361,18 +361,18 @@ fun MainScreen(
 							filePickerLauncher.launch(supportedMimeTypes)
 						}
 					},
-					onTocOpen = { viewModel.openTocDialog() },
+					onTocOpen = { viewModel.tocDialog.open() },
 					onTabSelect = { viewModel.setActiveTab(it) },
 					onTabClose = { viewModel.closeTab(it) },
 					onToggleTextMode = { isTextMode = !isTextMode },
 					onTogglePlayPause = { viewModel.togglePlayPause() },
 					onRecentsOpen = { recentsDialogOpen = true },
 					onGoToOpen = { viewModel.openGoToDialog() },
-					onFindOpen = { viewModel.openFindDialog() },
-					onWordCountOpen = { viewModel.openWordCountDialog() },
-					onDocumentInfoOpen = { viewModel.openDocumentInfoDialog() },
+					onFindOpen = { viewModel.findDialog.open() },
+					onWordCountOpen = { viewModel.wordCountDialog.open() },
+					onDocumentInfoOpen = { viewModel.documentInfoDialog.open() },
 					onSettingsOpen = { onItemClick(SettingsRoute) },
-					onSleepTimerOpen = { viewModel.openSleepTimerDialog() },
+					onSleepTimerOpen = { viewModel.sleepTimerDialog.open() },
 					onElementsOpen = { viewModel.openElementsDialog() },
 					onExportDocumentOpen = { exportDocumentDialogOpen = true },
 					onExportSettings = {
@@ -392,7 +392,7 @@ fun MainScreen(
 					onImportSettings = {
 						if (useInAppFileBrowser) {
 							if (needsAllFilesAccessPermission()) {
-								viewModel.setShowPermissionRationale(true)
+								viewModel.permissionRationaleDialog.open()
 							} else {
 								showFileManagerForImport = true
 							}
@@ -632,12 +632,12 @@ fun MainScreen(
 										val line = docState.session.lineFromPosition(item.position)
 										val indexToScroll = (line - 1).toInt().coerceAtLeast(0)
 										scope.launch {
-											viewModel.closeTocDialog()
+											viewModel.tocDialog.close()
 											listState.scrollToItem(indexToScroll)
 											lineIndexToFocus = indexToScroll
 										}
 									},
-									onDismiss = { viewModel.closeTocDialog() }
+									onDismiss = { viewModel.tocDialog.close() }
 								)
 							}
 							if (goToDialogOpen) {
@@ -660,7 +660,7 @@ fun MainScreen(
 								FindDialog(
 									configManager = viewModel.configManager,
 									initialQuery = activeSearchQuery ?: "",
-									onDismiss = { viewModel.closeFindDialog() },
+									onDismiss = { viewModel.findDialog.close() },
 									onSearch = { query, options ->
 										val wasSpeaking = viewModel.ttsManager.isSpeaking.value
 										if (wasSpeaking) {
@@ -751,7 +751,7 @@ fun MainScreen(
 							val stats = remember(docState.session) { docState.session.getStatsFfi() }
 							WordCountDialog(
 								stats = stats,
-								onDismiss = { viewModel.closeWordCountDialog() }
+								onDismiss = { viewModel.wordCountDialog.close() }
 							)
 						}
 						if (documentInfoDialogOpen && docState != null) {
@@ -759,7 +759,7 @@ fun MainScreen(
 							DocumentInfoDialog(
 								docState = docState,
 								stats = stats,
-								onDismiss = { viewModel.closeDocumentInfoDialog() }
+								onDismiss = { viewModel.documentInfoDialog.close() }
 							)
 						}
 						if (sleepTimerDialogOpen) {
@@ -767,7 +767,7 @@ fun MainScreen(
 								remainingSeconds = sleepTimerRemaining,
 								onSetTimer = { viewModel.setSleepTimer(it) },
 								onCancelTimer = { viewModel.cancelSleepTimer() },
-								onDismiss = { viewModel.closeSleepTimerDialog() }
+								onDismiss = { viewModel.sleepTimerDialog.close() }
 							)
 						}
 					}
@@ -833,17 +833,17 @@ fun MainScreen(
 			lifecycleOwner.lifecycle.addObserver(observer)
 			onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
 		}
-		val showPermissionRationale by viewModel.showPermissionRationale.collectAsStateWithLifecycle()
+		val showPermissionRationale by viewModel.permissionRationaleDialog.isOpen.collectAsStateWithLifecycle()
 		if (showPermissionRationale) {
 			PermissionRationaleDialog(
 				onGrantClick = {
-					viewModel.setShowPermissionRationale(false)
+					viewModel.permissionRationaleDialog.close()
 					val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
 					intent.data = Uri.parse("package:${context.packageName}")
 					context.startActivity(intent)
 				},
 				onDismiss = {
-					viewModel.setShowPermissionRationale(false)
+					viewModel.permissionRationaleDialog.close()
 				}
 			)
 		}
