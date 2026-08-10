@@ -27,6 +27,8 @@ jobs:
       with:
         toolchain: stable
         components: rustfmt, clippy
+    - name: Cache Rust build artifacts
+      uses: Swatinem/rust-cache@v2
     - name: Install CMake, Ninja, and Pandoc
       run: |
         choco install cmake ninja pandoc minisign -y
@@ -41,7 +43,6 @@ jobs:
       uses: msys2/setup-msys2@v2
       with:
         msystem: UCRT64
-        update: true
         install: >-
           gettext
           mingw-w64-ucrt-x86_64-gettext-tools
@@ -98,6 +99,8 @@ jobs:
       with:
         toolchain: stable
         components: rustfmt, clippy
+    - name: Cache Rust build artifacts
+      uses: Swatinem/rust-cache@v2
     - name: Install CMake, Ninja, and Pandoc
       run: |
         choco install cmake ninja pandoc minisign -y
@@ -112,7 +115,6 @@ jobs:
       uses: msys2/setup-msys2@v2
       with:
         msystem: UCRT64
-        update: true
         install: >-
           gettext
           mingw-w64-ucrt-x86_64-gettext-tools
