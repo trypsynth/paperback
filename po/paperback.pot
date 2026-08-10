@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-09 21:48-0600\n"
+"POT-Creation-Date: 2026-08-10 19:58+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -322,6 +322,10 @@ msgstr ""
 
 #. TRANSLATORS: Option to wrap navigation around to the beginning/end when navigating elements
 msgid "&Wrap navigation"
+msgstr ""
+
+#. TRANSLATORS: Option to move the caret to the start of the line when navigating up or down
+msgid "Move to &start of line"
 msgstr ""
 
 #. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered

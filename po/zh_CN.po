@@ -7,8 +7,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
-"Report-Msgid-Bugs-To: https://github.com/trypsynth/paperback/issues\n"
-"POT-Creation-Date: 2026-03-22 01:14+0530\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-10 19:58+0000\n"
 "PO-Revision-Date: 2026-03-22 21:37+0800\n"
 "Last-Translator: Yongquan Yang <qt06.com@gmail.com>\n"
 "Language-Team: \n"
@@ -18,245 +18,260 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.8\n"
 
-msgid "Figure"
-msgstr "图表"
-
-msgid "Image"
-msgstr "图片"
-
-msgid ""
-"This PDF contains images only, with no extractable text. You may need to run "
-"it through OCR software to read its contents."
-msgstr ""
-"此 PDF 仅包含图像，没有可提取的文本。您可能需要使用 OCR 软件来读取其内容。"
-
+#. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
 msgstr "创建 IPC 服务器失败"
 
+#. TRANSLATORS: Title of a warning dialog
 msgid "Warning"
 msgstr "警告"
 
-msgid "Options"
-msgstr "选项"
+#. TRANSLATORS: Description/tagline of the application shown in the About dialog
+msgid "An accessible, lightweight, fast ebook and document reader"
+msgstr "一款无障碍、轻量、快速的电子书和文档阅读器"
 
-msgid "&Restore previously opened documents on startup"
-msgstr "启动时恢复先前打开的文档(&R)"
+#. TRANSLATORS: Title of the All Documents dialog
+msgid "All Documents"
+msgstr "所有文档"
 
-msgid "&Word wrap"
-msgstr "自动换行(&W)"
+#. TRANSLATORS: Label for the search input field in the All Documents dialog
+msgid "&search"
+msgstr "搜索(&S)"
 
-msgid "&Minimize to system tray"
-msgstr "最小化到系统托盘(&M)"
+#. TRANSLATORS: Label for the confirmation dialog "Yes" button
+msgid "&Yes"
+msgstr "是(&Y)"
 
-msgid "&Start maximized"
-msgstr "启动时最大化(&S)"
+#. TRANSLATORS: Label for the confirmation dialog "No" button
+msgid "&No"
+msgstr "否(&N)"
 
-msgid "Show compact &go menu"
-msgstr "显示紧凑的转到菜单(&G)"
+#. TRANSLATORS: Column header for the document filename in the All Documents list
+msgid "File Name"
+msgstr "文件名"
 
-msgid "&Wrap navigation"
-msgstr "循环导航(&W)"
+#. TRANSLATORS: Column header for the document status (e.g. Open, Closed, Missing) in the All Documents list
+msgid "Status"
+msgstr "状态"
 
-msgid "Play &sounds on bookmarks and notes"
-msgstr "在书签和笔记上播放声音(&S)"
+#. TRANSLATORS: Column header for the file path in the All Documents list
+msgid "Path"
+msgstr "路径"
 
-msgid "Check for &updates on startup"
-msgstr "启动时检查更新(&U)"
+#. TRANSLATORS: Button label to open the selected document
+msgid "&Open"
+msgstr "打开(&O)"
 
-msgid "Number of &recent documents to show:"
-msgstr "显示的最近文档数量(&R)："
+#. TRANSLATORS: Button label to locate a missing file on disk
+#, fuzzy
+msgid "&Locate…"
+msgstr "&定位……"
 
-msgid "&Language:"
-msgstr "语言(&L)："
+#. TRANSLATORS: Button label to remove selected documents from the list
+msgid "&Remove"
+msgstr "移除(&R)"
 
-msgid "Update Channel:"
-msgstr "更新通道："
+#. TRANSLATORS: Button label to clear all documents from the list
+msgid "&Clear All"
+msgstr "全部清除(&C)"
 
-msgid "Stable"
-msgstr "稳定版"
-
-msgid "Dev"
-msgstr "开发版"
-
-msgid "General"
-msgstr "常规"
-
-msgid "Reading"
-msgstr "阅读"
-
-msgid "OK"
-msgstr "确定"
-
-msgid "Cancel"
-msgstr "取消"
-
-msgid "Jump to Bookmark"
-msgstr "跳转到书签"
-
-msgid "&Filter:"
-msgstr "筛选(&F)："
-
-msgid "All"
-msgstr "全部"
-
-msgid "Bookmarks"
-msgstr "书签"
-
-msgid "Notes"
-msgstr "笔记"
-
-msgid "&Edit Note"
-msgstr "编辑笔记(&E)"
-
-msgid "&Delete"
-msgstr "删除(&D)"
-
-msgid "&Jump"
-msgstr "跳转(&J)"
-
-msgid "&Cancel"
-msgstr "取消(&C)"
-
-msgid "blank"
-msgstr "空白"
-
-msgid "Please select a bookmark to jump to."
-msgstr "请选择一个要跳转的书签。"
-
-msgid "Error"
-msgstr "错误"
-
-msgid "Bookmark Note"
-msgstr "书签笔记"
-
-msgid "Edit bookmark note:"
-msgstr "编辑书签笔记："
-
-msgid "View Note"
-msgstr "查看笔记"
-
+#. TRANSLATORS: Label for a button that closes a dialog
 msgid "Close"
 msgstr "关闭"
 
-msgid "Table of Contents"
-msgstr "目录"
+#, fuzzy
+msgid "Are you sure you want to remove the selected document? This will also remove its reading position and bookmarks."
+msgstr "您确定要删除所选文档吗？此操作还将删除该文档的阅读位置和书签。"
 
-msgid "Root"
-msgstr "根目录"
+#, fuzzy
+msgid "Are you sure you want to remove the {} selected documents? This will also remove their reading positions and bookmarks."
+msgstr "您确定要删除所选的{}文档吗？此操作还将删除这些文档的阅读位置和书签。"
 
-msgid "Please select a section from the table of contents."
-msgstr "请从目录中选择一个章节。"
+#. TRANSLATORS: Title of the confirmation dialog
+msgid "Confirm"
+msgstr "确认"
 
-msgid "No Selection"
-msgstr "未选择"
+#. TRANSLATORS: Confirmation prompt when clearing all documents from the list.
+msgid "Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks."
+msgstr "您确定要从列表中移除所有文档吗？这也会删除所有阅读位置和书签。"
 
-msgid "Untitled"
-msgstr "无标题"
+#. TRANSLATORS: Status of a document that is currently open in a tab
+msgid "Open"
+msgstr "打开"
 
+#. TRANSLATORS: Status of a document that was previously opened but is currently closed
+msgid "Closed"
+msgstr "已关闭"
+
+#. TRANSLATORS: Status of a document whose file could not be found on disk
+msgid "Missing"
+msgstr "缺失"
+
+#. TRANSLATORS: Message/prompt shown in the file picker dialog to locate a missing book
+#, fuzzy
+msgid "Locate Book"
+msgstr "查找图书"
+
+#. TRANSLATORS: Title of the Jump to Bookmark dialog
+msgid "Jump to Bookmark"
+msgstr "跳转到书签"
+
+#. TRANSLATORS: Label for the bookmark filter dropdown
+msgid "&Filter:"
+msgstr "筛选(&F)："
+
+#. TRANSLATORS: Option in the filter dropdown to show all entries
+msgid "All"
+msgstr "全部"
+
+#. TRANSLATORS: Option in the filter dropdown to show bookmarks only
+msgid "Bookmarks"
+msgstr "书签"
+
+#. TRANSLATORS: Option in the filter dropdown to show notes only
+msgid "Notes"
+msgstr "笔记"
+
+#. TRANSLATORS: Label for the bookmark/note list (used only as an accessibility label on macOS)
+#, fuzzy
+msgid "&Bookmarks:"
+msgstr "&书签："
+
+#. TRANSLATORS: Label for the button to edit a note
+msgid "&Edit Note"
+msgstr "编辑笔记(&E)"
+
+#. TRANSLATORS: Standard "Delete" edit menu item label
+msgid "&Delete"
+msgstr "删除(&D)"
+
+#. TRANSLATORS: Label for the button to jump to the selected bookmark
+msgid "&Jump"
+msgstr "跳转(&J)"
+
+#. TRANSLATORS: Label for the button to cancel the action
+msgid "&Cancel"
+msgstr "取消(&C)"
+
+#. TRANSLATORS: Placeholder text shown in the bookmarks list when the bookmark text range is empty or blank
+msgid "blank"
+msgstr "空白"
+
+#. TRANSLATORS: Error message shown when the user attempts to jump without selecting any bookmark
+msgid "Please select a bookmark to jump to."
+msgstr "请选择一个要跳转的书签。"
+
+#. TRANSLATORS: Generic error dialog title
+msgid "Error"
+msgstr "错误"
+
+#. TRANSLATORS: Title of the Bookmark Note editor dialog
+msgid "Bookmark Note"
+msgstr "书签笔记"
+
+#. TRANSLATORS: Label/prompt in the Note editor dialog
+msgid "Edit bookmark note:"
+msgstr "编辑书签笔记："
+
+#. TRANSLATORS: Title of the Document Info dialog
 msgid "Document Info"
 msgstr "文档信息"
 
+#. TRANSLATORS: Label for the document's file path
 msgid "Path:"
 msgstr "路径："
 
+#. TRANSLATORS: Label for the document's title
 msgid "Title:"
 msgstr "标题："
 
+#. TRANSLATORS: Label for the document's author
 msgid "Author:"
 msgstr "作者："
 
+#. TRANSLATORS: Label for the number of words in the document
 msgid "Words:"
 msgstr "字数："
 
+#. TRANSLATORS: Label for the number of lines in the document
 msgid "Lines:"
 msgstr "行数："
 
+#. TRANSLATORS: Label for the number of characters in the document
 msgid "Characters:"
 msgstr "字符数："
 
+#. TRANSLATORS: Label for the number of characters in the document excluding space characters
 msgid "Characters (excluding spaces):"
 msgstr "字符数（不含空格）："
 
+#. TRANSLATORS: Title of the Elements dialog
+msgid "Elements"
+msgstr "元素"
+
+#. TRANSLATORS: Label for the view selection dropdown in the Elements dialog
+msgid "&View:"
+msgstr "视图(&V)："
+
+#. TRANSLATORS: Choice option in the view dropdown to show headings list
+msgid "Headings"
+msgstr "标题"
+
+#. TRANSLATORS: Choice option in the view dropdown to show links list
+msgid "Links"
+msgstr "链接"
+
+#. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
+msgid "Untitled"
+msgstr "无标题"
+
+#. TRANSLATORS: Label for the confirmation button
+msgid "OK"
+msgstr "确定"
+
+#. TRANSLATORS: Label for the cancellation button
+msgid "Cancel"
+msgstr "取消"
+
+#. TRANSLATORS: Title of the Go to Line dialog
 msgid "Go to Line"
 msgstr "跳转到行"
 
+#. TRANSLATORS: Label for the input field where users enter the target line number.
 msgid "&Line number:"
 msgstr "行号(&L)："
 
+#. TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
+#, fuzzy
+msgid "Go"
+msgstr "去"
+
+#. TRANSLATORS: Title of the Go to page dialog
 msgid "Go to page"
 msgstr "跳转到页"
 
+#. TRANSLATORS: Label/prompt template for the page selection dialog. The %d placeholders represent current_page and max_pages respectively.
 #, c-format
 msgid "Go to page (%d/%d):"
 msgstr "跳转到页（%d/%d）："
 
+#. TRANSLATORS: Title of the Go to Percent dialog
 msgid "Go to Percent"
 msgstr "跳转到百分比"
 
+#. TRANSLATORS: Label for the percentage selection slider
 msgid "&Percent"
 msgstr "百分比(&P)"
 
+#. TRANSLATORS: Label for the numeric percentage entry field
 msgid "P&ercent:"
 msgstr "百分比(&E)："
 
-msgid "&Yes"
-msgstr "是(&Y)"
-
-msgid "&No"
-msgstr "否(&N)"
-
-#, c-format
-msgid "Update to %s"
-msgstr "更新到 %s"
-
-msgid "A new version of Paperback is available. Here's what's new:"
-msgstr "Paperback 有新版本可用。以下是新功能："
-
-msgid "All Documents"
-msgstr "所有文档"
-
-msgid "&search"
-msgstr "搜索(&S)"
-
-msgid "File Name"
-msgstr "文件名"
-
-msgid "Status"
-msgstr "状态"
-
-msgid "Path"
-msgstr "路径"
-
-msgid "&Open"
-msgstr "打开(&O)"
-
-msgid "&Remove"
-msgstr "移除(&R)"
-
-msgid "&Clear All"
-msgstr "全部清除(&C)"
-
-msgid ""
-"Are you sure you want to remove this document from the list? This will also "
-"remove its reading position."
-msgstr "您确定要从列表中移除此文档吗？这也会删除其阅读位置。"
-
-msgid ""
-"Are you sure you want to remove these {} documents from the list? This will "
-"also remove their reading positions."
-msgstr "您确定要从列表中删除这些｛｝文档吗？这也将删除他们的阅读位置。"
-
-msgid "Confirm"
-msgstr "确认"
-
-msgid ""
-"Are you sure you want to remove all documents from the list? This will also "
-"remove all reading positions and bookmarks."
-msgstr "您确定要从列表中移除所有文档吗？这也会删除所有阅读位置和书签。"
-
+#. TRANSLATORS: Title of the Open As dialog
 msgid "Open As"
 msgstr "打开为"
 
+#. TRANSLATORS: Prompt template informing the user that no parser was found for their file. The {} placeholder is replaced with the file path.
 msgid ""
 "No suitable parser was found for {}.\n"
 "How would you like to open this file?"
@@ -264,162 +279,1970 @@ msgstr ""
 "未找到适合 {} 的解析器。\n"
 "您希望如何打开此文件？"
 
+#. TRANSLATORS: Label for the format selection dropdown
 msgid "Open &as:"
 msgstr "打开为(&A)："
 
+#. TRANSLATORS: Choice option to open a file as plain text
 msgid "Plain Text"
 msgstr "纯文本"
 
+#. TRANSLATORS: Choice option to open a file as HTML
 msgid "HTML"
 msgstr "HTML"
 
+#. TRANSLATORS: Choice option to open a file as Markdown
 msgid "Markdown"
 msgstr "Markdown"
 
-msgid "Open"
-msgstr "打开"
+#. TRANSLATORS: Title of the Options dialog
+msgid "Options"
+msgstr "选项"
 
-msgid "Closed"
-msgstr "已关闭"
+#. TRANSLATORS: Option to restore documents that were open when the app was last closed
+msgid "&Restore previously opened documents on startup"
+msgstr "启动时恢复先前打开的文档(&R)"
 
-msgid "Missing"
-msgstr "缺失"
+#. TRANSLATORS: Option to toggle word wrapping of text
+msgid "&Word wrap"
+msgstr "自动换行(&W)"
 
+#. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
+#, fuzzy
+msgid "Render tables &inline"
+msgstr "渲染表格及内联表格"
+
+#. TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
+msgid "&Minimize to system tray"
+msgstr "最小化到系统托盘(&M)"
+
+#. TRANSLATORS: Option to start the app maximized
+msgid "&Start maximized"
+msgstr "启动时最大化(&S)"
+
+#. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
+msgid "Show compact &go menu"
+msgstr "显示紧凑的转到菜单(&G)"
+
+#. TRANSLATORS: Option to wrap navigation around to the beginning/end when navigating elements
+msgid "&Wrap navigation"
+msgstr "循环导航(&W)"
+
+#. TRANSLATORS: Option to move the caret to the start of the line when navigating up or down
+#, fuzzy
+msgid "Move to &start of line"
+msgstr "移至 &行首"
+
+#. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
+msgid "Play &sounds on bookmarks and notes"
+msgstr "在书签和笔记上播放声音(&S)"
+
+#. TRANSLATORS: Option to check for app updates automatically on startup
+msgid "Check for &updates on startup"
+msgstr "启动时检查更新(&U)"
+
+#. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
+#, fuzzy
+msgid "&Automatically reload changed documents"
+msgstr "&自动重新加载已修改的文档"
+
+#. TRANSLATORS: Button label to open the hotkey customization dialog
+#, fuzzy
+msgid "Customize &Window Hotkey..."
+msgstr "自定义 &Window 热键..."
+
+#. TRANSLATORS: Label for the reading speed input field (Words Per Minute)
+#, fuzzy
+msgid "&Reading speed (words per minute):"
+msgstr "&阅读速度（每分钟单词数）："
+
+#. TRANSLATORS: Label for the number of recently opened documents to keep in history
+msgid "Number of &recent documents to show:"
+msgstr "显示的最近文档数量(&R)："
+
+#. TRANSLATORS: Label for the language selection dropdown
+msgid "&Language:"
+msgstr "语言(&L)："
+
+#. TRANSLATORS: Label for the update channel selection dropdown
+msgid "Update Channel:"
+msgstr "更新通道："
+
+#. TRANSLATORS: Stable update channel option
+msgid "Stable"
+msgstr "稳定版"
+
+#. TRANSLATORS: Developer/development update channel option
+msgid "Dev"
+msgstr "开发版"
+
+#. TRANSLATORS: Label/header for the Font options section
+#, fuzzy
+msgid "Font"
+msgstr "字体"
+
+#. TRANSLATORS: Button label to pick a font
+#, fuzzy
+msgid "Choose &Font..."
+msgstr "选择“&Font...”"
+
+#. TRANSLATORS: Button label to restore font settings to default values
+#, fuzzy
+msgid "&Reset to Default Font"
+msgstr "&恢复为默认字体"
+
+#. TRANSLATORS: Label/header for the Background Color options section
+#, fuzzy
+msgid "Background Color"
+msgstr "背景颜色"
+
+#. TRANSLATORS: Button label to pick a background color
+#, fuzzy
+msgid "Choose &Background Color..."
+msgstr "选择背景色..."
+
+#. TRANSLATORS: Button label to restore background color to default values
+#, fuzzy
+msgid "Reset to &Default Background"
+msgstr "重置为默认背景"
+
+#. TRANSLATORS: Label for the line spacing dropdown
+#, fuzzy
+msgid "&Line spacing:"
+msgstr "&行距："
+
+#. TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
+#, fuzzy
+msgid "Normal"
+msgstr "正常"
+
+#. TRANSLATORS: 1.5x line spacing option
+#, fuzzy
+msgid "1.5\\u{00d7}"
+msgstr "1.5\\u{00d7}"
+
+#. TRANSLATORS: Double line spacing option
+#, fuzzy
+msgid "Double"
+msgstr "双倍"
+
+#. TRANSLATORS: Label for the paragraph spacing dropdown
+#, fuzzy
+msgid "&Paragraph spacing:"
+msgstr "&段落间距："
+
+#. TRANSLATORS: Relaxed paragraph spacing option
+#, fuzzy
+msgid "Relaxed"
+msgstr "轻松自在"
+
+#. TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
+#, fuzzy
+msgid "Wide"
+msgstr "宽"
+
+#. TRANSLATORS: Label for the letter spacing dropdown
+#, fuzzy
+msgid "L&etter spacing:"
+msgstr "字母间距："
+
+#. TRANSLATORS: Very Wide letter spacing option
+#, fuzzy
+msgid "Very Wide"
+msgstr "非常宽"
+
+#. TRANSLATORS: Label for the text alignment dropdown
+#, fuzzy
+msgid "Text &alignment:"
+msgstr "文本与对齐方式："
+
+#. TRANSLATORS: Left text alignment option
+#, fuzzy
+msgid "Left"
+msgstr "左"
+
+#. TRANSLATORS: Center text alignment option
+#, fuzzy
+msgid "Center"
+msgstr "中心"
+
+#. TRANSLATORS: Right text alignment option
+#, fuzzy
+msgid "Right"
+msgstr "对"
+
+#. TRANSLATORS: Justified text alignment option
+#, fuzzy
+msgid "Justify"
+msgstr "两端对齐"
+
+#. TRANSLATORS: Tab label for the General options panel
+msgid "General"
+msgstr "常规"
+
+#. TRANSLATORS: Tab label for the Reading options panel
+msgid "Reading"
+msgstr "阅读"
+
+#. TRANSLATORS: Tab label for the Readability options panel
+#, fuzzy
+msgid "Readability"
+msgstr "可读性"
+
+#. TRANSLATORS: Description text shown when the background color is set to default
+#, fuzzy
+msgid "Background: Default"
+msgstr "背景：默认"
+
+#. TRANSLATORS: Description text shown when the font is set to default
+#, fuzzy
+msgid "Font: Default"
+msgstr "字体：默认"
+
+#. TRANSLATORS: Fallback font name
+#, fuzzy
+msgid "Default"
+msgstr "默认"
+
+#. TRANSLATORS: Font description prefix; {} is the font face name
+#, fuzzy
+msgid "Font: {}"
+msgstr "字体：{}"
+
+#. TRANSLATORS: Point size attribute; {} is the numeric size, "pt" is the unit abbreviation
+#, fuzzy
+msgid "{}pt"
+msgstr "{} pt"
+
+#. TRANSLATORS: Font weight attribute name
+#, fuzzy
+msgid "Bold"
+msgstr "粗体"
+
+#. TRANSLATORS: Font style attribute name
+#, fuzzy
+msgid "Italic"
+msgstr "斜体"
+
+#. TRANSLATORS: Font underline attribute name
+#, fuzzy
+msgid "Underlined"
+msgstr "带下划线的"
+
+#. TRANSLATORS: Font strikethrough attribute name
+#, fuzzy
+msgid "Strikethrough"
+msgstr "删除线"
+
+#. TRANSLATORS: Title of the hotkey customization dialog
+#, fuzzy
+msgid "Window Hotkey"
+msgstr "窗口热键"
+
+#. TRANSLATORS: Checkbox label for Control modifier key
+#, fuzzy
+msgid "&Ctrl"
+msgstr "&Ctrl"
+
+#. TRANSLATORS: Checkbox label for Alt modifier key
+#, fuzzy
+msgid "&Alt"
+msgstr "&Alt"
+
+#. TRANSLATORS: Checkbox label for Shift modifier key
+#, fuzzy
+msgid "&Shift"
+msgstr "&Shift&Shift"
+
+#. TRANSLATORS: Checkbox label for Windows modifier key
+#, fuzzy
+msgid "&Win"
+msgstr "&Win"
+
+#. TRANSLATORS: Label for the hotkey key selection input field
+#, fuzzy
+msgid "&Key:"
+msgstr "&Key:"
+
+#. TRANSLATORS: Button label to clear the current hotkey selection
+#, fuzzy
+msgid "Clear"
+msgstr "清除"
+
+#. TRANSLATORS: Representation of the Spacebar key
+#, fuzzy
+msgid "Space"
+msgstr "空间"
+
+#. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
 msgstr "睡眠定时器"
 
+#. TRANSLATORS: Label for the input field where users enter the number of minutes for the sleep timer.
 msgid "&Minutes:"
 msgstr "分钟(&M)："
 
-msgid "Elements"
-msgstr "元素"
+#. TRANSLATORS: Title of the Table of Contents dialog
+msgid "Table of Contents"
+msgstr "目录"
 
-msgid "&View:"
-msgstr "视图(&V)："
+#. TRANSLATORS: Error message shown when the user attempts to confirm the Table of Contents dialog without having selected any section
+msgid "Please select a section from the table of contents."
+msgstr "请从目录中选择一个章节。"
 
-msgid "Headings"
-msgstr "标题"
+#. TRANSLATORS: Title of the error dialog shown when the user attempts to confirm the Table of Contents dialog without having selected any section
+msgid "No Selection"
+msgstr "未选择"
 
-msgid "Links"
-msgstr "链接"
+#. TRANSLATORS: Title of the View Note dialog
+msgid "View Note"
+msgstr "查看笔记"
 
-msgid "An accessible, lightweight, fast ebook and document reader"
-msgstr "一款无障碍、轻量、快速的电子书和文档阅读器"
+#. TRANSLATORS: Singular label for 1 hour duration
+#, fuzzy
+msgid "1 hour"
+msgstr "1小时"
 
+#. TRANSLATORS: Plural label for hours duration (e.g. "2 hours")
+#, fuzzy
+msgid "hours"
+msgstr "小时"
+
+#. TRANSLATORS: Singular label for 1 minute duration
+#, fuzzy
+msgid "1 minute"
+msgstr "1分钟"
+
+#. TRANSLATORS: Plural label for minutes duration (e.g. "2 minutes")
+#, fuzzy
+msgid "minutes"
+msgstr "分钟"
+
+#. TRANSLATORS: Singular label for 1 second duration
+#, fuzzy
+msgid "1 second"
+msgstr "1秒"
+
+#. TRANSLATORS: Plural label for seconds duration (e.g. "2 seconds")
+#, fuzzy
+msgid "seconds"
+msgstr "秒"
+
+#. TRANSLATORS: Prompt showing estimated reading time. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
+#, fuzzy
+msgid "Estimated reading time: {}"
+msgstr "预计阅读时间：{}"
+
+#. TRANSLATORS: Message template for selection word count. The {} placeholder is replaced with the number of words.
+#, fuzzy
+msgid "The selection contains {} words."
+msgstr "该选段包含{}个单词。"
+
+#. TRANSLATORS: Message template for document word count. The {} placeholder is replaced with the number of words.
+#, fuzzy
+msgid "This document contains {} words."
+msgstr "本文件包含{}个单词。"
+
+#. TRANSLATORS: Title of the Word Count dialog
+#, fuzzy
+msgid "Word Count"
+msgstr "字数"
+
+#. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 msgid "File not found: {}"
 msgstr "未找到文件：{}"
 
+#. TRANSLATORS: Prompt asking whether to import a document's previously saved settings and bookmarks found alongside it
+#, fuzzy
+msgid "A .paperback file was found for this document. Would you like to import it?"
+msgstr "已找到该文档的平装版文件。您要导入它吗？"
+
+#. TRANSLATORS: Title of the dialog prompting to import a document's saved settings and bookmarks
+#, fuzzy
+msgid "Import document data"
+msgstr "导入文档数据"
+
+#. TRANSLATORS: Error shown when the user dismisses the password prompt for an encrypted document without entering one
 msgid "Password is required."
 msgstr "需要密码。"
 
+#. TRANSLATORS: Announcement read by screen readers after following an internal link within the document
 msgid "Navigated to internal link."
 msgstr "已导航到内部链接。"
 
-msgid "Table View"
-msgstr "表格视图"
-
+#. TRANSLATORS: Default status bar text when no document is open
 msgid "Ready"
 msgstr "就绪"
 
+#. TRANSLATORS: Title of the dialog showing a table rendered as HTML when activated with Enter/Space
+msgid "Table View"
+msgstr "表格视图"
+
+#. TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
 msgid "&Password:"
 msgstr "密码(&P)："
 
 msgid "Document Password"
 msgstr "文档密码"
 
+#. TRANSLATORS: Generic error message shown when a document fails to load with no further detail available
 msgid "Failed to load document."
 msgstr "加载文档失败。"
 
+#. TRANSLATORS: "File" label prefix in the document-load error dialog; {} is the file path
+#, fuzzy
+msgid "File: {}"
+msgstr "文件：{}"
+
+#. TRANSLATORS: "Details" label prefix in the document-load error dialog; {} is the underlying error message
+#, fuzzy
+msgid "Details: {}"
+msgstr "详情：{}"
+
+#. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
 msgid "Create &bookmark"
 msgstr "创建书签(&B)"
 
 msgid "Create bookmark"
 msgstr "创建书签"
 
+#. TRANSLATORS: Right-click context menu item and status text to bookmark the current position with an attached note
 msgid "Bookmark with &note"
 msgstr "带笔记的书签(&N)"
 
 msgid "Create bookmark with note"
 msgstr "创建带笔记的书签"
 
+#. TRANSLATORS: Right-click context menu item and status text to open the find dialog
 msgid "&Find"
 msgstr "查找(&F)"
 
 msgid "Find text"
 msgstr "查找文本"
 
+#. TRANSLATORS: Right-click context menu item and status text to repeat the last search forward
 msgid "Find &next"
 msgstr "查找下一个(&N)"
 
 msgid "Find next match"
 msgstr "查找下一个匹配项"
 
+#. TRANSLATORS: Right-click context menu item and status text to repeat the last search backward
 msgid "Find &previous"
 msgstr "查找上一个(&P)"
 
 msgid "Find previous match"
 msgstr "查找上一个匹配项"
 
+#. TRANSLATORS: Right-click context menu item and status text to jump to a specific page
 msgid "Go to &page"
 msgstr "跳转到页(&P)"
 
+#. TRANSLATORS: Right-click context menu item and status text to jump to a specific line
 msgid "Go to &line"
 msgstr "跳转到行(&L)"
 
 msgid "Go to line"
 msgstr "跳转到行"
 
+#. TRANSLATORS: Right-click context menu item and status text to jump to a percentage through the document
 msgid "Go to &percent"
 msgstr "跳转到百分比(&P)"
 
 msgid "Go to percent"
 msgstr "跳转到百分比"
 
+#. TRANSLATORS: Title of the Find dialog
 msgid "Find"
 msgstr "查找"
 
+#. TRANSLATORS: Label for the text field where the user types what to search for
 msgid "Find &what:"
 msgstr "查找内容(&W)："
 
+#. TRANSLATORS: Checkbox to make the search case-sensitive
 msgid "&Match case"
 msgstr "区分大小写(&M)"
 
+#. TRANSLATORS: Checkbox to only match whole words, not substrings
 msgid "Match &whole word"
 msgstr "全字匹配(&W)"
 
+#. TRANSLATORS: Checkbox to treat the search text as a regular expression
 msgid "Use &regular expressions"
 msgstr "使用正则表达式(&R)"
 
+#. TRANSLATORS: Button to search backward for the previous match
 msgid "Find &Previous"
 msgstr "查找上一个(&P)"
 
+#. TRANSLATORS: Button to search forward for the next match
 msgid "Find &Next"
 msgstr "查找下一个(&N)"
 
+#. TRANSLATORS: Announced when a search finds no matches in the document
 msgid "Not found."
 msgstr "未找到。"
 
+#. TRANSLATORS: Announced when a search reaches the end of the document and wraps back to the start
 msgid "No more results. Wrapping search."
 msgstr "没有更多结果。正在循环搜索。"
 
-msgid "Failed to open containing folder."
-msgstr "打开所在文件夹失败。"
+#. TRANSLATORS: Error shown when the active document has no known file path to reveal
+#, fuzzy
+msgid "Failed to reveal file in folder."
+msgstr "无法显示文件夹中的文件。"
 
-msgid ""
-"readme.html not found. Please ensure the application was built properly."
+#. TRANSLATORS: Error shown when the bundled help/readme file could not be located on disk
+msgid "readme.html not found. Please ensure the application was built properly."
 msgstr "未找到 readme.html。请确保应用程序已正确构建。"
 
+#. TRANSLATORS: Error shown when the OS default web browser could not be launched to display help
 msgid "Failed to launch default browser."
 msgstr "启动默认浏览器失败。"
 
+#. TRANSLATORS: Error shown when the OS default web browser could not be launched to open the donation page
 msgid "Failed to open donation page in browser."
 msgstr "在浏览器中打开捐赠页面失败。"
 
-msgid "No release notes were provided."
-msgstr "未提供发行说明。"
+#. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
+msgid "Unsupported format selected."
+msgstr "选择了不支持的格式。"
 
-msgid "Paperback Update"
-msgstr "Paperback 更新"
+#. TRANSLATORS: Main window title when no document is open
+msgid "Paperback"
+msgstr "Paperback"
+
+#. TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
+#, fuzzy
+msgid "Document reloaded."
+msgstr "文档已重新加载。"
+
+#. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
+#, fuzzy
+msgid "Paperback cannot perform any actions while Web View is open."
+msgstr "在 Web View 打开期间，Paperback 无法执行任何操作。"
+
+#. TRANSLATORS: Window title when a document is open; {} is the document title
+msgid "Paperback - {}"
+msgstr "Paperback - {}"
+
+#. TRANSLATORS: Status bar character count; {} is the number of characters
+msgid "{} chars"
+msgstr "{} 个字符"
+
+#. TRANSLATORS: Title of the file picker dialog shown when opening a document
+msgid "Open Document"
+msgstr "打开文档"
+
+#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
+msgid "No pages."
+msgstr "没有页面。"
+
+#. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
+#, fuzzy
+msgid "Word wrap on."
+msgstr "启用自动换行。"
+
+#, fuzzy
+msgid "Word wrap off."
+msgstr "关闭自动换行。"
+
+#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+msgid "document"
+msgstr "文档"
+
+#. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
+msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
+msgstr "纯文本文件 (*.txt)|*.txt|所有文件 (*.*)|*.*"
+
+#. TRANSLATORS: Title of the file save dialog when exporting a document to plain text
+msgid "Export document to plain text"
+msgstr "将文档导出为纯文本"
+
+#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
+msgid "Failed to export document."
+msgstr "导出文档失败。"
+
+#. TRANSLATORS: File filter shown in the "Export to HTML" save dialog
+#, fuzzy
+msgid "HTML files (*.html)|*.html|All files (*.*)|*.*"
+msgstr "HTML 文件 (*.html)|*.html|所有文件 (*.*)|*.*"
+
+#. TRANSLATORS: Title of the file save dialog when exporting a document to HTML
+#, fuzzy
+msgid "Export document to HTML"
+msgstr "将文档导出为 HTML"
+
+#. TRANSLATORS: File filter shown in the "Export to Markdown" save dialog
+#, fuzzy
+msgid "Markdown files (*.md)|*.md|All files (*.*)|*.*"
+msgstr "Markdown 文件 (*.md)|*.md|所有文件 (*.*)|*.*"
+
+#. TRANSLATORS: Title of the file save dialog when exporting a document to Markdown
+#, fuzzy
+msgid "Export document to Markdown"
+msgstr "将文档导出为 Markdown 格式"
+
+#. TRANSLATORS: File filter shown in the export/import notes-and-bookmarks (.paperback) dialogs
+msgid "Paperback files (*.paperback)|*.paperback"
+msgstr "Paperback 文件 (*.paperback)|*.paperback"
+
+#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
+msgid "Export notes and bookmarks"
+msgstr "导出笔记和书签"
+
+#. TRANSLATORS: Success message shown after exporting a document's notes and bookmarks
+msgid "Notes and bookmarks exported successfully."
+msgstr "笔记和书签导出成功。"
+
+#. TRANSLATORS: Title of the export-succeeded dialog
+msgid "Export Successful"
+msgstr "导出成功"
+
+#. TRANSLATORS: Title of the file open dialog when importing a document's notes and bookmarks
+msgid "Import notes and bookmarks"
+msgstr "导入笔记和书签"
+
+#. TRANSLATORS: Success message shown after importing a document's notes and bookmarks
+msgid "Notes and bookmarks imported successfully."
+msgstr "笔记和书签导入成功。"
+
+#. TRANSLATORS: Title of the import-succeeded dialog
+msgid "Import Successful"
+msgstr "导入成功"
+
+#. TRANSLATORS: Announced when opening the Table of Contents for a document that has none
+msgid "No table of contents."
+msgstr "没有目录。"
+
+#. TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
+msgid "Web View"
+msgstr "网页视图"
+
+#. TRANSLATORS: Error shown when the document has no content that can be rendered in the Web View
+msgid "Could not determine content to display in Web View."
+msgstr "无法确定要在网页视图中显示的内容。"
+
+#. TRANSLATORS: Prefix before the file name in the tab title for a "View Source" tab, e.g. "Source: book.epub"
+#, fuzzy
+msgid "Source:"
+msgstr "来源："
+
+#. TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
+#, fuzzy
+msgid "Source view is not available for this document format."
+msgstr "此文档格式不支持源代码视图。"
+
+#. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
+#, fuzzy
+msgid "Could not load the document source."
+msgstr "无法加载文档源。"
+
+#. TRANSLATORS: Announced when the user cancels a running sleep timer
+msgid "Sleep timer cancelled."
+msgstr "睡眠定时器已取消。"
+
+#. TRANSLATORS: Announcement when the sleep timer is set for exactly 1 minute
+msgid "Sleep timer set for 1 minute."
+msgstr "睡眠定时器已设置为 1 分钟。"
+
+#. TRANSLATORS: Announcement when the sleep timer is set; %d is the number of minutes (always 2 or more)
+#, c-format
+msgid "Sleep timer set for %d minutes."
+msgstr "睡眠定时器已设置为 %d 分钟。"
+
+#. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
+msgid "No recent documents."
+msgstr "没有最近文档。"
+
+#. TRANSLATORS: Menu item label to go to the previous section
+msgid "Previous Section\t["
+msgstr "上一章节\t["
+
+#. TRANSLATORS: Status bar help text for the "Previous Section" menu item
+msgid "Go to previous section"
+msgstr "跳转到上一章节"
+
+#. TRANSLATORS: Menu item label to go to the next section
+msgid "Next Section\t]"
+msgstr "下一章节\t]"
+
+#. TRANSLATORS: Status bar help text for the "Next Section" menu item
+msgid "Go to next section"
+msgstr "跳转到下一章节"
+
+#. TRANSLATORS: Menu item label to open the "go to page" dialog
+msgid "Go to &Page\tCtrl+P"
+msgstr "跳转到页(&P)\tCtrl+P"
+
+#. TRANSLATORS: Menu item label to go to the previous page
+msgid "Previous Pa&ge\tShift+P"
+msgstr "上一页(&G)\tShift+P"
+
+#. TRANSLATORS: Menu item label to go to the next page
+msgid "Next Pag&e\tP"
+msgstr "下一页(&E)\tP"
+
+#. TRANSLATORS: Menu item label to go to the previous link
+msgid "Previous Lin&k\tShift+K"
+msgstr "上一个链接(&K)\tShift+K"
+
+#. TRANSLATORS: Menu item label to go to the next link
+msgid "Next Lin&k\tK"
+msgstr "下一个链接(&K)\tK"
+
+#. TRANSLATORS: Menu item label to go to the previous image
+msgid "Previous Ima&ge\tShift+G"
+msgstr "上一张图片(&G)\tShift+G"
+
+#. TRANSLATORS: Menu item label to go to the next image
+msgid "Next Ima&ge\tG"
+msgstr "下一张图片(&G)\tG"
+
+#. TRANSLATORS: Menu item label to go to the previous figure
+msgid "Previous Figu&re\tShift+F"
+msgstr "上一个图表(&R)\tShift+F"
+
+#. TRANSLATORS: Menu item label to go to the next figure
+msgid "Next Figu&re\tF"
+msgstr "下一个图表(&R)\tF"
+
+#. TRANSLATORS: Menu item label to go to the previous table
+msgid "Previous &Table\tShift+T"
+msgstr "上一个表格(&T)\tShift+T"
+
+#. TRANSLATORS: Menu item label to go to the next table
+msgid "Next &Table\tT"
+msgstr "下一个表格(&T)\tT"
+
+#. TRANSLATORS: Menu item label to go to the previous separator element
+msgid "Previous Se&parator\tShift+S"
+msgstr "上一个分隔符(&P)\tShift+S"
+
+#. TRANSLATORS: Menu item label to go to the next separator element
+msgid "Next Se&parator\tS"
+msgstr "下一个分隔符(&P)\tS"
+
+#. TRANSLATORS: Menu item label to go to the previous list
+msgid "Previous L&ist\tShift+L"
+msgstr "上一个列表(&I)\tShift+L"
+
+#. TRANSLATORS: Menu item label to go to the next list
+msgid "Next L&ist\tL"
+msgstr "下一个列表(&I)\tL"
+
+#. TRANSLATORS: Menu item label to go to the previous list item
+msgid "Previous List &Item\tShift+I"
+msgstr "上一个列表项(&I)\tShift+I"
+
+#. TRANSLATORS: Menu item label to go to the next list item
+msgid "Next List I&tem\tI"
+msgstr "下一个列表项(&T)\tI"
+
+#. TRANSLATORS: Menu item label to go to the start of the enclosing list/table
+#, fuzzy
+msgid "Container &Start\tShift+,"
+msgstr "容器 & 开始    Shift+,"
+
+#. TRANSLATORS: Status bar help text for the "Container Start" menu item
+#, fuzzy
+msgid "Go to the start of the current list or table"
+msgstr "转到当前列表或表格的开头"
+
+#. TRANSLATORS: Menu item label to go past the end of the enclosing list/table
+#, fuzzy
+msgid "Past Container &End\t,"
+msgstr "“Past Container &End”    ,"
+
+#. TRANSLATORS: Status bar help text for the "Past Container End" menu item
+#, fuzzy
+msgid "Go past the end of the current list or table"
+msgstr "跳过当前列表或表格的末尾"
+
+#. TRANSLATORS: Menu item label to go to the next level-1 heading
+msgid "Next Heading Level 1\t1"
+msgstr "下一级标题 1\t1"
+
+#. TRANSLATORS: Menu item label to go to the previous level-2 heading
+msgid "Previous Heading Level &2\tShift+2"
+msgstr "上一级标题 2(&2)\tShift+2"
+
+#. TRANSLATORS: Menu item label to go to the next level-2 heading
+msgid "Next Heading Level 2\t2"
+msgstr "下一级标题 2\t2"
+
+#. TRANSLATORS: Menu item label to go to the previous level-3 heading
+msgid "Previous Heading Level &3\tShift+3"
+msgstr "上一级标题 3(&3)\tShift+3"
+
+#. TRANSLATORS: Menu item label to go to the next level-3 heading
+msgid "Next Heading Level 3\t3"
+msgstr "下一级标题 3\t3"
+
+#. TRANSLATORS: Menu item label to go to the previous level-4 heading
+msgid "Previous Heading Level &4\tShift+4"
+msgstr "上一级标题 4(&4)\tShift+4"
+
+#. TRANSLATORS: Menu item label to go to the next level-4 heading
+msgid "Next Heading Level 4\t4"
+msgstr "下一级标题 4\t4"
+
+#. TRANSLATORS: Menu item label to go to the previous level-5 heading
+msgid "Previous Heading Level &5\tShift+5"
+msgstr "上一级标题 5(&5)\tShift+5"
+
+#. TRANSLATORS: Menu item label to go to the next level-5 heading
+msgid "Next Heading Level 5\t5"
+msgstr "下一级标题 5\t5"
+
+#. TRANSLATORS: Menu item label to go to the previous level-6 heading
+msgid "Previous Heading Level &6\tShift+6"
+msgstr "上一级标题 6(&6)\tShift+6"
+
+#. TRANSLATORS: Menu item label to go to the next level-6 heading
+msgid "Next Heading Level 6\t6"
+msgstr "下一级标题 6\t6"
+
+#. TRANSLATORS: Menu item label to go to the previous heading of any level
+msgid "&Previous Heading\tShift+H"
+msgstr "上一个标题(&P)\tShift+H"
+
+#. TRANSLATORS: Status bar help text for the "Previous Heading" menu item
+msgid "Go to previous heading"
+msgstr "跳转到上一个标题"
+
+#. TRANSLATORS: Menu item label to go to the next heading of any level
+msgid "&Next Heading\tH"
+msgstr "下一个标题(&N)\tH"
+
+#. TRANSLATORS: Status bar help text for the "Next Heading" menu item
+msgid "Go to next heading"
+msgstr "跳转到下一个标题"
+
+#. TRANSLATORS: Menu item label to go to the previous level-1 heading
+msgid "Previous Heading Level &1\tShift+1"
+msgstr "上一级标题 1(&1)\tShift+1"
+
+#. TRANSLATORS: Menu item label to go to the previous bookmark
+msgid "&Previous Bookmark\tShift+B"
+msgstr "上一个书签(&P)\tShift+B"
+
+#. TRANSLATORS: Status bar help text for the "Previous Bookmark" menu item
+msgid "Go to previous bookmark"
+msgstr "跳转到上一个书签"
+
+#. TRANSLATORS: Menu item label to go to the next bookmark
+msgid "&Next Bookmark\tB"
+msgstr "下一个书签(&N)\tB"
+
+#. TRANSLATORS: Status bar help text for the "Next Bookmark" menu item
+msgid "Go to next bookmark"
+msgstr "跳转到下一个书签"
+
+#. TRANSLATORS: Menu item label to go to the previous note
+msgid "Previous &Note\tShift+N"
+msgstr "上一个笔记(&N)\tShift+N"
+
+#. TRANSLATORS: Status bar help text for the "Previous Note" menu item
+msgid "Go to previous note"
+msgstr "跳转到上一个笔记"
+
+#. TRANSLATORS: Menu item label to go to the next note
+msgid "Next N&ote\tN"
+msgstr "下一个笔记(&O)\tN"
+
+#. TRANSLATORS: Status bar help text for the "Next Note" menu item
+msgid "Go to next note"
+msgstr "跳转到下一个笔记"
+
+#. TRANSLATORS: Menu item label to open the bookmark/note picker showing all entries
+msgid "Jump to &All...\tCtrl+B"
+msgstr "跳转到全部(&A)...\tCtrl+B"
+
+#. TRANSLATORS: Status bar help text for the "Jump to All" menu item
+msgid "Show all bookmarks and notes"
+msgstr "显示所有书签和笔记"
+
+#. TRANSLATORS: Menu item label to open the bookmark/note picker filtered to bookmarks only
+msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
+msgstr "仅跳转到书签(&B)...\tCtrl+Alt+B"
+
+#. TRANSLATORS: Status bar help text for the "Jump to Bookmarks Only" menu item
+msgid "Show bookmarks only"
+msgstr "仅显示书签"
+
+#. TRANSLATORS: Menu item label to open the bookmark/note picker filtered to notes only
+msgid "Jump to Notes &Only...\tCtrl+Alt+M"
+msgstr "仅跳转到笔记(&O)...\tCtrl+Alt+M"
+
+#. TRANSLATORS: Status bar help text for the "Jump to Notes Only" menu item
+msgid "Show notes only"
+msgstr "仅显示笔记"
+
+#. TRANSLATORS: Menu item label to view the note at the cursor position (macOS variant)
+msgid "&View Note Text\tRawCtrl+Shift+W"
+msgstr "查看笔记文本(&V)\tRawCtrl+Shift+W"
+
+#. TRANSLATORS: Menu item label to view the note at the cursor position
+msgid "&View Note Text\tCtrl+Shift+W"
+msgstr "查看笔记文本(&V)\tCtrl+Shift+W"
+
+#. TRANSLATORS: Status bar help text for the "View Note Text" menu item
+msgid "View the note at current position"
+msgstr "查看当前位置的笔记"
+
+#. TRANSLATORS: Top-level "File" menu bar label
+msgid "&File"
+msgstr "文件(&F)"
+
+#. TRANSLATORS: Top-level "Go" menu bar label
+msgid "&Go"
+msgstr "转到(&G)"
+
+#. TRANSLATORS: Top-level "Tools" menu bar label
+msgid "&Tools"
+msgstr "工具(&T)"
+
+#. TRANSLATORS: Top-level "Help" menu bar label
+msgid "&Help"
+msgstr "帮助(&H)"
+
+#. TRANSLATORS: Top-level "Edit" menu bar label (macOS only)
+#, fuzzy
+msgid "&Edit"
+msgstr "&编辑"
+
+#. TRANSLATORS: Menu item label to open a document
+msgid "&Open...\tCtrl+O"
+msgstr "打开(&O)...\tCtrl+O"
+
+#. TRANSLATORS: Status bar help text for the "Open" menu item
+msgid "Open a document"
+msgstr "打开文档"
+
+#. TRANSLATORS: Menu item label to close the current document
+msgid "&Close\tCtrl+W"
+msgstr "关闭(&C)\tCtrl+W"
+
+msgid "&Close\tCtrl+F4"
+msgstr "关闭(&C)\tCtrl+F4"
+
+#. TRANSLATORS: Status bar help text for the "Close" menu item
+msgid "Close the current document"
+msgstr "关闭当前文档"
+
+#. TRANSLATORS: Menu item label to close all open documents
+msgid "Close &All\tCtrl+Shift+W"
+msgstr "全部关闭(&A)\tCtrl+Shift+W"
+
+msgid "Close &All\tCtrl+Shift+F4"
+msgstr "全部关闭(&A)\tCtrl+Shift+F4"
+
+#. TRANSLATORS: Status bar help text for the "Close All" menu item
+msgid "Close all documents"
+msgstr "关闭所有文档"
+
+#. TRANSLATORS: Menu item label to reopen the most recently closed document
+msgid "Reopen &Last Closed\tCtrl+Shift+T"
+msgstr "重新打开上次关闭的(&L)\tCtrl+Shift+T"
+
+#. TRANSLATORS: Status bar help text for the "Reopen Last Closed" menu item
+msgid "Reopen the last closed document"
+msgstr "重新打开上次关闭的文档"
+
+#. TRANSLATORS: Submenu label listing recently opened documents
+msgid "&Recent Documents"
+msgstr "最近文档(&R)"
+
+#. TRANSLATORS: Status bar help text for the "Recent Documents" submenu
+msgid "Open a recent document"
+msgstr "打开最近文档"
+
+#. TRANSLATORS: Menu item label to exit the application
+msgid "E&xit\tCtrl+Q"
+msgstr "退出(&X)\tCtrl+Q"
+
+#. TRANSLATORS: Status bar help text for the "Exit" menu item
+msgid "Exit the application"
+msgstr "退出应用程序"
+
+#. TRANSLATORS: Standard "Undo" edit menu item label
+#, fuzzy
+msgid "&Undo\tCtrl+Z"
+msgstr "&撤销    Ctrl+Z"
+
+#. TRANSLATORS: Standard "Redo" edit menu item label
+#, fuzzy
+msgid "&Redo\tCtrl+Shift+Z"
+msgstr "&重做    Ctrl+Shift+Z"
+
+#. TRANSLATORS: Standard "Cut" edit menu item label
+#, fuzzy
+msgid "Cu&t\tCtrl+X"
+msgstr "Cu&t    Ctrl+X"
+
+#. TRANSLATORS: Standard "Copy" edit menu item label
+#, fuzzy
+msgid "&Copy\tCtrl+C"
+msgstr "&复制    Ctrl+C"
+
+#. TRANSLATORS: Standard "Paste" edit menu item label
+#, fuzzy
+msgid "&Paste\tCtrl+V"
+msgstr "&粘贴    Ctrl+V"
+
+#. TRANSLATORS: Standard "Select All" edit menu item label
+#, fuzzy
+msgid "Select &All\tCtrl+A"
+msgstr "全选    Ctrl+A"
+
+#. TRANSLATORS: Menu item label to open the find dialog
+msgid "&Find...\tCtrl+F"
+msgstr "查找(&F)...\tCtrl+F"
+
+#. TRANSLATORS: Status bar help text for the "Find" menu item
+msgid "Find text in the document"
+msgstr "在文档中查找文本"
+
+#. TRANSLATORS: Menu item label to find the next match
+#, fuzzy
+msgid "Find &Next\tCtrl+G"
+msgstr "查找和下一项    Ctrl+G"
+
+msgid "Find &Next\tF3"
+msgstr "查找下一个(&N)\tF3"
+
+#. TRANSLATORS: Status bar help text for the "Find Next" menu item
+msgid "Find next occurrence"
+msgstr "查找下一个出现位置"
+
+#. TRANSLATORS: Menu item label to find the previous match
+#, fuzzy
+msgid "Find &Previous\tCtrl+Shift+G"
+msgstr "查找与上一个    Ctrl+Shift+G"
+
+msgid "Find &Previous\tShift+F3"
+msgstr "查找上一个(&P)\tShift+F3"
+
+#. TRANSLATORS: Status bar help text for the "Find Previous" menu item
+msgid "Find previous occurrence"
+msgstr "查找上一个出现位置"
+
+#. TRANSLATORS: Menu item label to open the "go to line" dialog
+#, fuzzy
+msgid "Go to &line...\tCtrl+L"
+msgstr "转到第&行...    Ctrl+L"
+
+msgid "Go to &line...\tCtrl+G"
+msgstr "跳转到行(&L)...\tCtrl+G"
+
+#. TRANSLATORS: Status bar help text for the "Go to line" menu item
+msgid "Go to a specific line"
+msgstr "跳转到指定行"
+
+#. TRANSLATORS: Menu item label to open the "go to percent" dialog (macOS variant)
+#, fuzzy
+msgid "Go to &percent...\tCtrl+Shift+L"
+msgstr "转到 &percent...    Ctrl+Shift+L"
+
+#. TRANSLATORS: Menu item label to open the "go to percent" dialog
+msgid "Go to &percent...\tCtrl+Shift+G"
+msgstr "跳转到百分比(&P)...\tCtrl+Shift+G"
+
+#. TRANSLATORS: Status bar help text for the "Go to percent" menu item
+msgid "Go to a percentage of the document"
+msgstr "跳转到文档的百分比位置"
+
+#. TRANSLATORS: Menu item label to go back in navigation history
+#, fuzzy
+msgid "Go &Back\tCtrl+["
+msgstr "前进与后退    Ctrl+["
+
+msgid "Go &Back\tAlt+Left"
+msgstr "后退(&B)\tAlt+Left"
+
+#. TRANSLATORS: Status bar help text for the "Go Back" menu item
+msgid "Go back in history"
+msgstr "在历史记录中后退"
+
+#. TRANSLATORS: Menu item label to go forward in navigation history
+#, fuzzy
+msgid "Go &Forward\tCtrl+]"
+msgstr "前进    Ctrl+]"
+
+msgid "Go &Forward\tAlt+Right"
+msgstr "前进(&F)\tAlt+Right"
+
+#. TRANSLATORS: Status bar help text for the "Go Forward" menu item
+msgid "Go forward in history"
+msgstr "在历史记录中前进"
+
+#. TRANSLATORS: Submenu label containing section navigation commands
+msgid "&Sections"
+msgstr "章节(&S)"
+
+#. TRANSLATORS: Status bar help text for the "Sections" submenu
+msgid "Navigate by sections"
+msgstr "按章节导航"
+
+#. TRANSLATORS: Submenu label containing heading navigation commands
+msgid "&Headings"
+msgstr "标题(&H)"
+
+#. TRANSLATORS: Status bar help text for the "Headings" submenu
+msgid "Navigate by headings"
+msgstr "按标题导航"
+
+#. TRANSLATORS: Submenu label containing page navigation commands
+msgid "&Pages"
+msgstr "页(&P)"
+
+#. TRANSLATORS: Status bar help text for the "Pages" submenu
+msgid "Navigate by pages"
+msgstr "按页导航"
+
+#. TRANSLATORS: Submenu label containing bookmark/note navigation commands
+msgid "&Bookmarks"
+msgstr "书签(&B)"
+
+#. TRANSLATORS: Status bar help text for the "Bookmarks" submenu
+msgid "Navigate by bookmarks"
+msgstr "按书签导航"
+
+#. TRANSLATORS: Submenu label containing link navigation commands
+msgid "&Links"
+msgstr "链接(&L)"
+
+#. TRANSLATORS: Status bar help text for the "Links" submenu
+msgid "Navigate by links"
+msgstr "按链接导航"
+
+#. TRANSLATORS: Submenu label containing image navigation commands
+msgid "&Images"
+msgstr "图片(&I)"
+
+#. TRANSLATORS: Status bar help text for the "Images" submenu
+msgid "Navigate by images"
+msgstr "按图片导航"
+
+#. TRANSLATORS: Submenu label containing figure navigation commands
+msgid "&Figures"
+msgstr "图表(&F)"
+
+#. TRANSLATORS: Status bar help text for the "Figures" submenu
+msgid "Navigate by figures"
+msgstr "按图表导航"
+
+#. TRANSLATORS: Submenu label containing table navigation commands
+msgid "&Tables"
+msgstr "表格(&T)"
+
+#. TRANSLATORS: Status bar help text for the "Tables" submenu
+msgid "Navigate by tables"
+msgstr "按表格导航"
+
+#. TRANSLATORS: Submenu label containing separator-element navigation commands
+msgid "&Separators"
+msgstr "分隔符(&S)"
+
+#. TRANSLATORS: Status bar help text for the "Separators" submenu
+msgid "Navigate by separators"
+msgstr "按分隔符导航"
+
+#. TRANSLATORS: Submenu label containing list navigation commands
+msgid "&Lists"
+msgstr "列表(&L)"
+
+#. TRANSLATORS: Status bar help text for the "Lists" submenu
+msgid "Navigate by lists"
+msgstr "按列表导航"
+
+#. TRANSLATORS: Submenu label containing container (list/table) navigation commands
+#, fuzzy
+msgid "&Containers"
+msgstr "&容器"
+
+#. TRANSLATORS: Status bar help text for the "Containers" submenu
+#, fuzzy
+msgid "Navigate by containers"
+msgstr "按容器导航"
+
+#. TRANSLATORS: Menu item label to import bookmark/position data for the document
+msgid "&Import Document Data...\tCtrl+Shift+I"
+msgstr "导入文档数据(&I)...\tCtrl+Shift+I"
+
+#. TRANSLATORS: Status bar help text for the "Import Document Data" menu item
+msgid "Import bookmarks and position"
+msgstr "导入书签和位置"
+
+#. TRANSLATORS: Menu item label to export bookmark/position data for the document
+msgid "&Export Document Data...\tCtrl+Shift+E"
+msgstr "导出文档数据(&E)...\tCtrl+Shift+E"
+
+#. TRANSLATORS: Status bar help text for the "Export Document Data" menu item
+msgid "Export bookmarks and position"
+msgstr "导出书签和位置"
+
+#. TRANSLATORS: Menu item label to export the document as plain text
+msgid "Export to &Plain Text...\tCtrl+E"
+msgstr "导出为纯文本(&P)...\tCtrl+E"
+
+#. TRANSLATORS: Status bar help text for the "Export to Plain Text" menu item
+msgid "Export document as plain text"
+msgstr "将文档导出为纯文本"
+
+#. TRANSLATORS: Menu item label to export the document as HTML
+#, fuzzy
+msgid "Export to &HTML..."
+msgstr "导出为 HTML..."
+
+#. TRANSLATORS: Status bar help text for the "Export to HTML" menu item
+#, fuzzy
+msgid "Export document as HTML"
+msgstr "将文档导出为 HTML"
+
+#. TRANSLATORS: Menu item label to export the document as Markdown
+#, fuzzy
+msgid "Export to &Markdown..."
+msgstr "导出为 &Markdown..."
+
+#. TRANSLATORS: Status bar help text for the "Export to Markdown" menu item
+#, fuzzy
+msgid "Export document as Markdown"
+msgstr "将文档导出为 Markdown 格式"
+
+#. TRANSLATORS: Menu item label to show the word count dialog
+msgid "&Word Count\tRawCtrl+W"
+msgstr "字数统计(&W)\tRawCtrl+W"
+
+msgid "&Word Count\tCtrl+W"
+msgstr "字数统计(&W)\tCtrl+W"
+
+#. TRANSLATORS: Status bar help text for the "Word Count" menu item
+msgid "Show word count"
+msgstr "显示字数统计"
+
+#. TRANSLATORS: Menu item label to show the document info dialog
+msgid "Document &Info\tCtrl+I"
+msgstr "文档信息(&I)\tCtrl+I"
+
+#. TRANSLATORS: Status bar help text for the "Document Info" menu item
+msgid "Show document information"
+msgstr "显示文档信息"
+
+#. TRANSLATORS: Menu item label to show the table of contents dialog
+msgid "&Table of Contents\tCtrl+T"
+msgstr "目录(&T)\tCtrl+T"
+
+#. TRANSLATORS: Status bar help text for the "Table of Contents" menu item
+msgid "Show table of contents"
+msgstr "显示目录"
+
+#. TRANSLATORS: Menu item label to show the elements list dialog
+msgid "&Elements List...\tF7"
+msgstr "元素列表(&E)...\tF7"
+
+#. TRANSLATORS: Status bar help text for the "Elements List" menu item
+msgid "Show elements list"
+msgstr "显示元素列表"
+
+#. TRANSLATORS: Menu item label to reveal the document file in the system file manager
+#, fuzzy
+msgid "Reveal &File in Folder\tCtrl+Shift+C"
+msgstr "显示并存入文件夹    Ctrl+Shift+C"
+
+#. TRANSLATORS: Status bar help text for the "Reveal File in Folder" menu item
+#, fuzzy
+msgid "Reveal document in the file manager"
+msgstr "在文件管理器中显示文档"
+
+#. TRANSLATORS: Menu item label to open the document in the web view
+msgid "Open in &Web View\tCtrl+Shift+V"
+msgstr "在网页视图中打开(&W)\tCtrl+Shift+V"
+
+#. TRANSLATORS: Status bar help text for the "Open in Web View" menu item
+msgid "Open document in web view"
+msgstr "在网页视图中打开文档"
+
+#. TRANSLATORS: Menu item label to open the document's raw source in a new tab
+#, fuzzy
+msgid "View &Source\tCtrl+U"
+msgstr "查看源代码    Ctrl+U"
+
+#. TRANSLATORS: Status bar help text for the "View Source" menu item
+#, fuzzy
+msgid "Open the document source in a new tab"
+msgstr "在新标签页中打开文档源文件"
+
+#. TRANSLATORS: Submenu label containing import/export commands
+msgid "I&mport/Export"
+msgstr "导入/导出(&M)"
+
+#. TRANSLATORS: Status bar help text for the "Import/Export" submenu
+msgid "Import and export options"
+msgstr "导入和导出选项"
+
+#. TRANSLATORS: Menu item label to toggle a bookmark at the current position
+msgid "Toggle &Bookmark\tCtrl+Shift+B"
+msgstr "切换书签(&B)\tCtrl+Shift+B"
+
+#. TRANSLATORS: Menu item label to add a bookmark with an attached note
+msgid "Bookmark with &Note\tCtrl+Shift+N"
+msgstr "带笔记的书签(&N)\tCtrl+Shift+N"
+
+#. TRANSLATORS: Checkable menu item label to toggle word wrap
+#, fuzzy
+msgid "Word w&rap\tCtrl+Alt+W"
+msgstr "自动换行    Ctrl+Alt+W"
+
+#. TRANSLATORS: Status bar help text for the "Word wrap" menu item
+#, fuzzy
+msgid "Toggle word wrap"
+msgstr "切换自动换行"
+
+#. TRANSLATORS: Menu item label to open the application options/preferences dialog
+msgid "&Options\tCtrl+,"
+msgstr "选项(&O)\tCtrl+,"
+
+#. TRANSLATORS: Menu item label to open the sleep timer dialog
+msgid "&Sleep Timer...\tCtrl+Shift+S"
+msgstr "睡眠定时器(&S)...\tCtrl+Shift+S"
+
+#. TRANSLATORS: Menu item label to open the About dialog
+msgid "&About Paperback\tCtrl+F1"
+msgstr "关于 Paperback(&A)\tCtrl+F1"
+
+#. TRANSLATORS: Status bar help text for the "About" menu item
+msgid "About this application"
+msgstr "关于此应用程序"
+
+#. TRANSLATORS: Menu item label to open the help documentation in a web browser
+msgid "View Help in &Browser\tF1"
+msgstr "在浏览器中查看帮助(&B)\tF1"
+
+#. TRANSLATORS: Status bar help text for the "View Help in Browser" menu item
+msgid "View help in default browser"
+msgstr "在默认浏览器中查看帮助"
+
+#. TRANSLATORS: Menu item label to open the help documentation inside Paperback itself
+msgid "View Help in &Paperback\tShift+F1"
+msgstr "在 Paperback 中查看帮助(&P)\tShift+F1"
+
+#. TRANSLATORS: Status bar help text for the "View Help in Paperback" menu item
+msgid "View help in Paperback"
+msgstr "在 Paperback 中查看帮助"
+
+#. TRANSLATORS: Menu item label to check for application updates
+msgid "Check for &Updates\tCtrl+Shift+U"
+msgstr "检查更新(&U)\tCtrl+Shift+U"
+
+#. TRANSLATORS: Status bar help text for the "Check for Updates" menu item
+msgid "Check for updates"
+msgstr "检查更新"
+
+#. TRANSLATORS: Menu item label to open the donation page
+msgid "&Donate\tCtrl+D"
+msgstr "捐赠(&D)\tCtrl+D"
+
+#. TRANSLATORS: Status bar help text for the "Donate" menu item
+msgid "Support Paperback development"
+msgstr "支持 Paperback 开发"
+
+#. TRANSLATORS: Placeholder menu item shown in the Recent Documents submenu when there are none
+msgid "(No recent documents)"
+msgstr "（无最近文档）"
+
+#. TRANSLATORS: Menu item label to open the full recent-documents list dialog
+msgid "Show All...\tCtrl+R"
+msgstr "显示全部...\tCtrl+R"
+
+#. TRANSLATORS: Announced when the document has no sections to navigate
+msgid "No sections."
+msgstr "没有章节。"
+
+#. TRANSLATORS: Announced when there is no next section from the current position
+msgid "No next section"
+msgstr "没有下一章节"
+
+#. TRANSLATORS: Announced when there is no previous section from the current position
+msgid "No previous section"
+msgstr "没有上一章节"
+
+#. TRANSLATORS: Announced when the document has no headings at the given level; %d is the heading level number
+#, c-format
+msgid "No headings at level %d."
+msgstr "没有级别为 %d 的标题。"
+
+#. TRANSLATORS: Announced when there is no next heading at the given level; %d is the heading level number
+#, c-format
+msgid "No next heading at level %d."
+msgstr "没有级别为 %d 的下一个标题。"
+
+#. TRANSLATORS: Announced when there is no previous heading at the given level; %d is the heading level number
+#, c-format
+msgid "No previous heading at level %d."
+msgstr "没有级别为 %d 的上一个标题。"
+
+#. TRANSLATORS: Announced when the document has no headings at all (no level filter applied)
+msgid "No headings."
+msgstr "没有标题。"
+
+#. TRANSLATORS: Announced when there is no next heading (no level filter applied)
+msgid "No next heading."
+msgstr "没有下一个标题。"
+
+#. TRANSLATORS: Announced when there is no previous heading (no level filter applied)
+msgid "No previous heading."
+msgstr "没有上一个标题。"
+
+#. TRANSLATORS: Announced when there is no next page from the current position
+msgid "No next page."
+msgstr "没有下一页。"
+
+#. TRANSLATORS: Announced when there is no previous page from the current position
+msgid "No previous page."
+msgstr "没有上一页。"
+
+#. TRANSLATORS: Announced when the document has no links to navigate
+msgid "No links."
+msgstr "没有链接。"
+
+#. TRANSLATORS: Announced when there is no next link from the current position
+msgid "No next link."
+msgstr "没有下一个链接。"
+
+#. TRANSLATORS: Announced when there is no previous link from the current position
+msgid "No previous link."
+msgstr "没有上一个链接。"
+
+#. TRANSLATORS: Announced when the document has no lists to navigate
+msgid "No lists."
+msgstr "没有列表。"
+
+#. TRANSLATORS: Announced when there is no next list from the current position
+msgid "No next list."
+msgstr "没有下一个列表。"
+
+#. TRANSLATORS: Announced when there is no previous list from the current position
+msgid "No previous list."
+msgstr "没有上一个列表。"
+
+#. TRANSLATORS: Announced when the document has no list items to navigate
+msgid "No list items."
+msgstr "没有列表项。"
+
+#. TRANSLATORS: Announced when there is no next list item from the current position
+msgid "No next list item."
+msgstr "没有下一个列表项。"
+
+#. TRANSLATORS: Announced when there is no previous list item from the current position
+msgid "No previous list item."
+msgstr "没有上一个列表项。"
+
+#. TRANSLATORS: Announced when the document has no tables to navigate
+msgid "No tables."
+msgstr "没有表格。"
+
+#. TRANSLATORS: Announced when there is no next table from the current position
+msgid "No next table."
+msgstr "没有下一个表格。"
+
+#. TRANSLATORS: Announced when there is no previous table from the current position
+msgid "No previous table."
+msgstr "没有上一个表格。"
+
+#. TRANSLATORS: Announced when the document has no separators to navigate
+msgid "No separators."
+msgstr "没有分隔符。"
+
+#. TRANSLATORS: Announced when there is no next separator from the current position
+msgid "No next separator."
+msgstr "没有下一个分隔符。"
+
+#. TRANSLATORS: Announced when there is no previous separator from the current position
+msgid "No previous separator."
+msgstr "没有上一个分隔符。"
+
+#. TRANSLATORS: Announced when the document has no images to navigate
+msgid "No images."
+msgstr "没有图片。"
+
+#. TRANSLATORS: Announced when there is no next image from the current position
+msgid "No next image."
+msgstr "没有下一张图片。"
+
+#. TRANSLATORS: Announced when there is no previous image from the current position
+msgid "No previous image."
+msgstr "没有上一张图片。"
+
+#. TRANSLATORS: Announced when the document has no figures to navigate
+msgid "No figures."
+msgstr "没有图表。"
+
+#. TRANSLATORS: Announced when there is no next figure from the current position
+msgid "No next figure."
+msgstr "没有下一个图表。"
+
+#. TRANSLATORS: Announced when there is no previous figure from the current position
+msgid "No previous figure."
+msgstr "没有上一个图表。"
+
+#. TRANSLATORS: Prefix announced when navigation wraps around past the end/start of the document; the trailing space is significant
+msgid "Wrapping to start. "
+msgstr "循环到开头。"
+
+msgid "Wrapping to end. "
+msgstr "循环到结尾。"
+
+#. TRANSLATORS: Announcement when landing on a heading; %s is the heading text, %d is the heading level number
+#, c-format
+msgid "%s Heading level %d"
+msgstr "%s 标题级别 %d"
+
+#. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
+#, c-format
+msgid "Page %d: %s"
+msgstr "第 %d 页：%s"
+
+#. TRANSLATORS: Suffix appended after a link's text when announcing navigation to a link; the leading space is significant
+msgid " link"
+msgstr " 链接"
+
+#. TRANSLATORS: Announced when moving forward/backward through the caret position history
+msgid "Navigated to next position."
+msgstr "已导航到下一个位置。"
+
+msgid "Navigated to previous position."
+msgstr "已导航到上一个位置。"
+
+#. TRANSLATORS: Announced when there is no next/previous position in the caret position history
+msgid "No next position."
+msgstr "没有下一个位置。"
+
+msgid "No previous position."
+msgstr "没有上一个位置。"
+
+#. TRANSLATORS: Announced when the document has no containers (lists/tables) to navigate
+#, fuzzy
+msgid "No containers."
+msgstr "没有容器。"
+
+#. TRANSLATORS: Announced when the caret is not currently inside a container (list/table)
+#, fuzzy
+msgid "Not in a container."
+msgstr "不在容器中。"
+
+#. TRANSLATORS: Announced when jumping to the start/end of the container (list/table) the caret is inside, and the target line is blank
+#, fuzzy
+msgid "Past end of container."
+msgstr "超出容器末端。"
+
+#, fuzzy
+msgid "Start of container."
+msgstr "容器开始。"
+
+#. TRANSLATORS: Announcement when landing on a bookmark; %s is the bookmark/line text, %d is the bookmark's 1-based index
+#, c-format
+msgid "%s - Bookmark %d"
+msgstr "%s - 书签 %d"
+
+#. TRANSLATORS: Announced when there are no bookmarks/notes at all to navigate to
+msgid "No notes."
+msgstr "没有笔记。"
+
+msgid "No bookmarks."
+msgstr "没有书签。"
+
+#. TRANSLATORS: Announced when there is no next bookmark/note from the current position
+msgid "No next note."
+msgstr "没有下一个笔记。"
+
+msgid "No next bookmark."
+msgstr "没有下一个书签。"
+
+#. TRANSLATORS: Announced when there is no previous note from the current position
+msgid "No previous note."
+msgstr "没有上一个笔记。"
+
+#. TRANSLATORS: Announced when there is no previous bookmark from the current position
+msgid "No previous bookmark."
+msgstr "没有上一个书签。"
+
+#. TRANSLATORS: Fallback announcement when viewing a bookmark that has no note text or line snippet
+msgid "Bookmark."
+msgstr "书签。"
+
+#. TRANSLATORS: Announced after toggling a bookmark at the current selection off/on
+msgid "Bookmark removed."
+msgstr "书签已移除。"
+
+msgid "Bookmark added."
+msgstr "书签已添加。"
+
+msgid "Enter bookmark note:"
+msgstr "输入书签笔记："
+
+#. TRANSLATORS: Announced after saving a bookmark's note text
+msgid "Bookmark saved."
+msgstr "书签已保存。"
+
+#. TRANSLATORS: Message shown when trying to view a bookmark note but the current position has none
+msgid "No note at the current position."
+msgstr "当前位置没有笔记。"
+
+#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Reading 45%"
+msgid "Line"
+msgstr "行"
+
+#. TRANSLATORS: Status bar label for the current character offset within the line
+msgid "Character"
+msgstr "字符"
+
+#. TRANSLATORS: Status bar label prefixed before the remaining sleep timer countdown, e.g. "Sleep timer: 04:32"
+msgid "Sleep timer"
+msgstr "睡眠定时器"
+
+#. TRANSLATORS: System tray menu item to restore the main window from the tray
+msgid "&Restore"
+msgstr "恢复(&R)"
+
+#. TRANSLATORS: Status bar help text for the tray menu's "Restore" item
+msgid "Restore Paperback"
+msgstr "恢复 Paperback"
+
+#. TRANSLATORS: System tray menu item to quit the application
+msgid "E&xit"
+msgstr "退出(&X)"
+
+#. TRANSLATORS: Status bar help text for the tray menu's "Exit" item
+msgid "Exit Paperback"
+msgstr "退出 Paperback"
+
+#. TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
+#, fuzzy
+msgid "Failed to convert DTBook XML to text"
+msgstr "无法将 DTBook XML 转换为文本"
+
+#. TRANSLATORS: Error shown when a ZIP file is not a recognizable DAISY 3 or DAISY 2.02 book
+#, fuzzy
+msgid "ZIP archive does not appear to be a valid DAISY 3 or DAISY 2.02 book"
+msgstr "该 ZIP 压缩包似乎不是有效的 DAISY 3 或 DAISY 2.02 电子书"
+
+#. TRANSLATORS: Error shown when a DAISY .opf file is invalid or its DTBook XML can't be located
+#, fuzzy
+msgid "Invalid DAISY .opf file or could not find DTBook XML in manifest"
+msgstr "DAISY .opf 文件无效，或无法在清单中找到 DTBook XML 文件"
+
+#. TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
+#, fuzzy
+msgid "OPF package element missing"
+msgstr "缺少 OPF 包元素"
+
+#. TRANSLATORS: Reason given when an EPUB has no spine items that could be read
+#, fuzzy
+msgid "no readable spine items"
+msgstr "没有可识别的书脊信息"
+
+#. TRANSLATORS: Reason given when EPUB spine items failed to convert; {} is a comma-separated list of underlying errors
+#, fuzzy
+msgid "failed to convert spine items: {}"
+msgstr "无法转换书脊条目：{}"
+
+#. TRANSLATORS: Error shown when an EPUB has no readable content; {} is the specific reason (see the two messages above)
+#, fuzzy
+msgid "EPUB has no readable content ({})"
+msgstr "EPUB 文件中没有可读内容（{}）"
+
+#. TRANSLATORS: Error shown when an EPUB's container.xml is missing its rootfile reference
+#, fuzzy
+msgid "rootfile not found in container.xml"
+msgstr "在 container.xml 中未找到 rootfile"
+
+#. TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
+#, fuzzy
+msgid "unsupported content"
+msgstr "不支持的内容"
+
+#. TRANSLATORS: Error shown when an FB2 (FictionBook) file's XML fails to convert to plain text
+#, fuzzy
+msgid "Failed to convert FB2 XML to text"
+msgstr "无法将 FB2 XML 转换为文本"
+
+#. TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
+#, fuzzy
+msgid "HTML file is empty: {}"
+msgstr "HTML 文件为空：{}"
+
+#. TRANSLATORS: Error shown when an HTML file fails to convert to plain text; {} is the file path
+#, fuzzy
+msgid "Failed to convert HTML to text: {}"
+msgstr "无法将 HTML 转换为文本：{}"
+
+#. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
+msgid "Figure"
+msgstr "图表"
+
+msgid "Image"
+msgstr "图片"
+
+#. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
+#, fuzzy
+msgid "Failed to convert Markdown to text: {}"
+msgstr "无法将 Markdown 转换为文本：{}"
+
+#. TRANSLATORS: Error shown when a MOBI file is too small to contain a valid header
+#, fuzzy
+msgid "File too short"
+msgstr "文件太短"
+
+#. TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
+#, fuzzy
+msgid "Invalid record offsets"
+msgstr "无效的记录偏移量"
+
+#. TRANSLATORS: Error shown when a MOBI file has no records
+#, fuzzy
+msgid "No records found"
+msgstr "未找到相关记录"
+
+#. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
+#, fuzzy
+msgid "Invalid Record 0 offsets"
+msgstr "无效记录 0 个偏移量"
+
+#. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
+#, fuzzy
+msgid "Invalid Record 0"
+msgstr "无效记录 0"
+
+#. TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
+#, fuzzy
+msgid "No MOBI header"
+msgstr "没有 MOBI 头部"
+
+#. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
+#, fuzzy
+msgid "Invalid MOBI identifier"
+msgstr "MOBI标识符无效"
+
+#. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
+#, fuzzy
+msgid "Invalid content record range"
+msgstr "内容记录范围无效"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
+#, fuzzy
+msgid "Invalid HUFF/CDIC records"
+msgstr "无效的 HUFF/CDIC 记录"
+
+#. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
+#, fuzzy
+msgid "Missing HUFF parameters in header"
+msgstr "头文件中缺少 HUFF 参数"
+
+#. TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
+#, fuzzy
+msgid "Unsupported compression mode ({})"
+msgstr "不支持的压缩模式（{}）"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman compression record is too small to be valid
+#, fuzzy
+msgid "Invalid HUFF record"
+msgstr "无效的HUFF记录"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman compression record has the wrong signature
+#, fuzzy
+msgid "Invalid HUFF header"
+msgstr "HUFF 头信息无效"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman cache table offset is out of bounds
+#, fuzzy
+msgid "Invalid HUFF cache offset"
+msgstr "HUFF缓存偏移量无效"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman code length is invalid
+#, fuzzy
+msgid "Code len out of bounds"
+msgstr "代码长度超出范围"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman table has an invalid terminal-code entry
+#, fuzzy
+msgid "Bad term"
+msgstr "不恰当的术语"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman base table offset is out of bounds
+#, fuzzy
+msgid "Invalid HUFF base offset"
+msgstr "HUFF 基址偏移量无效"
+
+#. TRANSLATORS: Error shown when a MOBI file's compressed dictionary record has the wrong signature
+#, fuzzy
+msgid "Invalid CDIC header"
+msgstr "CDIC 头信息无效"
+
+#. TRANSLATORS: Error shown when a MOBI file's compressed dictionary offset table is out of bounds
+#, fuzzy
+msgid "Invalid CDIC offsets"
+msgstr "CDIC偏移量无效"
+
+#. TRANSLATORS: Error shown when a MOBI file's compressed dictionary phrase offset is out of bounds
+#, fuzzy
+msgid "Invalid CDIC phrase offset"
+msgstr "CDIC短语偏移量无效"
+
+#. TRANSLATORS: Error shown when a MOBI file's compressed dictionary phrase length is out of bounds
+#, fuzzy
+msgid "Invalid CDIC phrase length"
+msgstr "CDIC短语长度无效"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman code length is out of range; {} is the invalid length value
+#, fuzzy
+msgid "Invalid code_len {}"
+msgstr "code_len 无效{}"
+
+#. TRANSLATORS: Error shown when a MOBI file's Huffman decoder recurses too deeply (likely corrupt data)
+#, fuzzy
+msgid "Decode stack overflow"
+msgstr "解析栈溢出"
+
+#. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
+#, fuzzy
+msgid "ODP file does not contain any pages"
+msgstr "ODP 文件中不包含任何页面"
+
+#. TRANSLATORS: Error shown when a flat-XML ODP presentation file has no pages/slides
+#, fuzzy
+msgid "FODP file does not contain any pages"
+msgstr "FODP 文件中不包含任何页面"
+
+#. TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
+msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."
+msgstr "此 PDF 仅包含图像，没有可提取的文本。您可能需要使用 OCR 软件来读取其内容。"
+
+#. TRANSLATORS: Error detail shown when a PDF's password is missing or wrong (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "Password required or incorrect"
+msgstr "需要输入密码或密码错误"
+
+#. TRANSLATORS: Error shown when a PDF fails to open for a reason other than a password; {} is the underlying error detail
+#, fuzzy
+msgid "Failed to open PDF document: {}"
+msgstr "无法打开 PDF 文档：{}"
+
+#. TRANSLATORS: Error shown when a PPTX presentation file has no slides
+#, fuzzy
+msgid "PPTX file contains no slides"
+msgstr "PPTX 文件中没有幻灯片"
+
+#, fuzzy
+msgid "Password-protected PPT files are not currently supported. Try saving the file as PPTX and opening that instead."
+msgstr "目前不支持受密码保护的 PPT 文件。请尝试将文件另存为 PPTX 格式，然后打开该文件。"
+
+#. TRANSLATORS: Error shown when a legacy PPT presentation file has no slides
+#, fuzzy
+msgid "PPT file contains no slides"
+msgstr "该PPT文件中没有幻灯片"
+
+#. TRANSLATORS: Error shown when a legacy PPT file's OLE container has no PowerPoint Document stream
+#, fuzzy
+msgid "PowerPoint Document stream not found"
+msgstr "未找到 PowerPoint 文档流"
+
+#. TRANSLATORS: Error shown when an RTF document's tokens fail to parse; {} is the underlying lexer error
+#, fuzzy
+msgid "Failed to parse RTF document: {}"
+msgstr "无法解析 RTF 文档：{}"
+
+#. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
+#, fuzzy
+msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
+msgstr "旧版 DOC 解析失败：{}。OOXML 备用方案失败：{}"
+
+#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
+#, fuzzy
+msgid "No readable content found in the ZIP archive"
+msgstr "在 ZIP 压缩包中未找到可读内容"
+
+#. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
+#, fuzzy
+msgid "DOC file is missing required FIB fields"
+msgstr "DOC 文件缺少必需的 FIB 字段"
+
+#. TRANSLATORS: Error shown when a legacy DOC file's header signature is invalid
+#, fuzzy
+msgid "Not a valid DOC file (invalid FIB magic)"
+msgstr "不是有效的 DOC 文件（FIB 魔数无效）"
+
+#. TRANSLATORS: Error detail shown when an encrypted legacy DOC file needs a password (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "DOC file is encrypted and requires a password"
+msgstr "DOC 文件已加密，需要密码"
+
+#. TRANSLATORS: Error detail shown when decrypting a legacy DOC file fails (the internal sentinel prefix before it is not translated); {} is the underlying error
+#, fuzzy
+msgid "DOC decryption failed (wrong password?): {}"
+msgstr "DOC 解密失败（密码错误？）：{}"
+
+#. TRANSLATORS: Error shown when a DOC file's fallback content doesn't look like plain text
+#, fuzzy
+msgid "File content does not look like plain text"
+msgstr "文件内容看起来不像纯文本"
+
+#. TRANSLATORS: Error shown when a DOC file's fallback content has no readable text
+#, fuzzy
+msgid "No readable text content found"
+msgstr "未找到可读的文本内容"
+
+#. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "File is encrypted and requires a password"
+msgstr "该文件已加密，需要密码"
+
+#. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
+#, fuzzy
+msgid "Decryption failed (wrong password?): {}"
+msgstr "解密失败（密码错误？）：{}"
+
+#. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
+#, fuzzy
+msgid "No file extension found for: {}"
+msgstr "未找到以下文件的文件扩展名：{}"
+
+#. TRANSLATORS: Error shown when no parser supports a file's extension; {} is the extension (without the leading dot)
+#, fuzzy
+msgid "No parser found for extension: .{}"
+msgstr "未找到扩展名 .{} 的解析器"
+
+#. TRANSLATORS: Error shown when every parser for a file's extension failed; {} is the extension (without the leading dot)
+#, fuzzy
+msgid "All parsers failed for extension: .{}"
+msgstr "所有解析器均无法处理扩展名：.{}"
+
+#. TRANSLATORS: Error detail shown when a password-protected ZIP-based document needs a password (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "Password required"
+msgstr "需要密码"
+
+#. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
+#, fuzzy
+msgid "Password incorrect"
+msgstr "密码错误"
+
+msgid "Update to %s"
+msgstr "更新到 %s"
+
+#, fuzzy
+msgid "A new version of %s is available. Here's what's new:"
+msgstr "%s 的新版本现已发布。以下是更新内容："
+
+#, fuzzy
+msgid "No release notes provided."
+msgstr "未提供版本说明。"
+
+#, fuzzy
+msgid "%s Update"
+msgstr "%s 更新"
 
 msgid "Downloading update..."
 msgstr "正在下载更新..."
@@ -427,18 +2250,33 @@ msgstr "正在下载更新..."
 msgid "No updates available."
 msgstr "没有可用更新。"
 
-msgid "No updates available. Latest version: {}"
-msgstr "没有可用更新。最新版本：{}"
+#, fuzzy
+msgid "No updates available. Latest version: %s"
+msgstr "没有可用更新。最新版本：%s"
 
 msgid "Info"
 msgstr "信息"
 
-#, c-format
-msgid "Failed to check for updates. HTTP status: %d"
-msgstr "检查更新失败。HTTP 状态：%d"
+#, fuzzy
+msgid "Security verification failed. The update might have been tampered with: %s"
+msgstr "安全验证失败。该更新可能已被篡改：%s"
 
-msgid "Error checking for updates."
-msgstr "检查更新时出错。"
+#, fuzzy
+msgid "Security Error"
+msgstr "安全错误"
+
+msgid "Update failed"
+msgstr "更新失败"
+
+#, fuzzy
+msgid ""
+"Update downloaded to: %s\n"
+"Please install it manually."
+msgstr "更新已下载至：%s\n请手动安装。"
+
+#, fuzzy
+msgid "Update Ready"
+msgstr "已准备好更新"
 
 msgid "Failed to get current exe path"
 msgstr "获取当前可执行文件路径失败"
@@ -452,702 +2290,664 @@ msgstr "启动更新脚本失败"
 msgid "Unknown update file format."
 msgstr "未知的更新文件格式。"
 
-msgid "Update failed"
-msgstr "更新失败"
+#, fuzzy
+msgid "Go To…"
+msgstr "转到…"
 
-msgid "Unsupported format selected."
-msgstr "选择了不支持的格式。"
+#, fuzzy
+msgid "Recent Documents"
+msgstr "最近的文档"
 
-msgid "Paperback"
-msgstr "Paperback"
+#, fuzzy
+msgid "Switch to TTS Mode"
+msgstr "切换到TTS模式"
 
-msgid "Paperback - {}"
-msgstr "Paperback - {}"
+#, fuzzy
+msgid "Switch to Text Mode"
+msgstr "切换到文本模式"
 
-msgid "{} chars"
-msgstr "{} 个字符"
+#, fuzzy
+msgid "Sleep Timer (active)"
+msgstr "睡眠定时器（已启用）"
 
-msgid "Open Document"
+#, fuzzy
+msgid "Settings"
+msgstr "设置"
+
+#, fuzzy
+msgid "More options"
+msgstr "更多选项"
+
+#, fuzzy
+msgid "No document open"
+msgstr "未打开任何文档"
+
+#, fuzzy
+msgid "Recent"
+msgstr "最近"
+
+#, fuzzy
+msgid "Screen dimmed by sleep timer. Tap to wake."
+msgstr "屏幕因睡眠定时器而变暗。轻触即可唤醒。"
+
+#, fuzzy
+msgid "Open Error"
+msgstr "打开错误"
+
+#, fuzzy
+msgid "Open document"
 msgstr "打开文档"
 
-msgid "No pages."
-msgstr "没有页面。"
-
-msgid "document"
-msgstr "文档"
-
-msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
-msgstr "纯文本文件 (*.txt)|*.txt|所有文件 (*.*)|*.*"
-
-msgid "Export document to plain text"
-msgstr "将文档导出为纯文本"
-
-msgid "Failed to export document."
-msgstr "导出文档失败。"
-
-msgid "Paperback files (*.paperback)|*.paperback"
-msgstr "Paperback 文件 (*.paperback)|*.paperback"
-
-msgid "Export notes and bookmarks"
-msgstr "导出笔记和书签"
-
-msgid "Notes and bookmarks exported successfully."
-msgstr "笔记和书签导出成功。"
-
-msgid "Export Successful"
-msgstr "导出成功"
-
-msgid "Import notes and bookmarks"
-msgstr "导入笔记和书签"
-
-msgid "Notes and bookmarks imported successfully."
-msgstr "笔记和书签导入成功。"
-
-msgid "Import Successful"
-msgstr "导入成功"
-
-msgid "The document contains {} words."
-msgstr "该文档包含 {} 个字。"
-
-msgid "Word count"
-msgstr "字数统计"
-
-msgid "No table of contents."
-msgstr "没有目录。"
-
-msgid "Web View"
-msgstr "网页视图"
-
-msgid "Could not determine content to display in Web View."
-msgstr "无法确定要在网页视图中显示的内容。"
-
-msgid "Sleep timer cancelled."
-msgstr "睡眠定时器已取消。"
-
-msgid "Sleep timer set for 1 minute."
-msgstr "睡眠定时器已设置为 1 分钟。"
-
-#, c-format
-msgid "Sleep timer set for %d minutes."
-msgstr "睡眠定时器已设置为 %d 分钟。"
-
-msgid "No recent documents."
-msgstr "没有最近文档。"
-
-msgid "Previous Section\t["
-msgstr "上一章节\t["
-
-msgid "Go to previous section"
-msgstr "跳转到上一章节"
-
-msgid "Next Section\t]"
-msgstr "下一章节\t]"
-
-msgid "Go to next section"
-msgstr "跳转到下一章节"
-
-msgid "Go to &Page\tCtrl+P"
-msgstr "跳转到页(&P)\tCtrl+P"
-
-msgid "Previous Pa&ge\tShift+P"
-msgstr "上一页(&G)\tShift+P"
-
-msgid "Next Pag&e\tP"
-msgstr "下一页(&E)\tP"
-
-msgid "Previous Lin&k\tShift+K"
-msgstr "上一个链接(&K)\tShift+K"
-
-msgid "Next Lin&k\tK"
-msgstr "下一个链接(&K)\tK"
-
-msgid "Previous Ima&ge\tShift+G"
-msgstr "上一张图片(&G)\tShift+G"
-
-msgid "Next Ima&ge\tG"
-msgstr "下一张图片(&G)\tG"
-
-msgid "Previous Figu&re\tShift+F"
-msgstr "上一个图表(&R)\tShift+F"
-
-msgid "Next Figu&re\tF"
-msgstr "下一个图表(&R)\tF"
-
-msgid "Previous &Table\tShift+T"
-msgstr "上一个表格(&T)\tShift+T"
-
-msgid "Next &Table\tT"
-msgstr "下一个表格(&T)\tT"
-
-msgid "Previous Se&parator\tShift+S"
-msgstr "上一个分隔符(&P)\tShift+S"
-
-msgid "Next Se&parator\tS"
-msgstr "下一个分隔符(&P)\tS"
-
-msgid "Previous L&ist\tShift+L"
-msgstr "上一个列表(&I)\tShift+L"
-
-msgid "Next L&ist\tL"
-msgstr "下一个列表(&I)\tL"
-
-msgid "Previous List &Item\tShift+I"
-msgstr "上一个列表项(&I)\tShift+I"
-
-msgid "Next List I&tem\tI"
-msgstr "下一个列表项(&T)\tI"
-
-msgid "Next Heading Level 1\t1"
-msgstr "下一级标题 1\t1"
-
-msgid "Previous Heading Level &2\tShift+2"
-msgstr "上一级标题 2(&2)\tShift+2"
-
-msgid "Next Heading Level 2\t2"
-msgstr "下一级标题 2\t2"
-
-msgid "Previous Heading Level &3\tShift+3"
-msgstr "上一级标题 3(&3)\tShift+3"
-
-msgid "Next Heading Level 3\t3"
-msgstr "下一级标题 3\t3"
-
-msgid "Previous Heading Level &4\tShift+4"
-msgstr "上一级标题 4(&4)\tShift+4"
-
-msgid "Next Heading Level 4\t4"
-msgstr "下一级标题 4\t4"
-
-msgid "Previous Heading Level &5\tShift+5"
-msgstr "上一级标题 5(&5)\tShift+5"
-
-msgid "Next Heading Level 5\t5"
-msgstr "下一级标题 5\t5"
-
-msgid "Previous Heading Level &6\tShift+6"
-msgstr "上一级标题 6(&6)\tShift+6"
-
-msgid "Next Heading Level 6\t6"
-msgstr "下一级标题 6\t6"
-
-msgid "&Previous Heading\tShift+H"
-msgstr "上一个标题(&P)\tShift+H"
-
-msgid "Go to previous heading"
-msgstr "跳转到上一个标题"
-
-msgid "&Next Heading\tH"
-msgstr "下一个标题(&N)\tH"
-
-msgid "Go to next heading"
-msgstr "跳转到下一个标题"
-
-msgid "Previous Heading Level &1\tShift+1"
-msgstr "上一级标题 1(&1)\tShift+1"
-
-msgid "&Previous Bookmark\tShift+B"
-msgstr "上一个书签(&P)\tShift+B"
-
-msgid "Go to previous bookmark"
-msgstr "跳转到上一个书签"
-
-msgid "&Next Bookmark\tB"
-msgstr "下一个书签(&N)\tB"
-
-msgid "Go to next bookmark"
-msgstr "跳转到下一个书签"
-
-msgid "Previous &Note\tShift+N"
-msgstr "上一个笔记(&N)\tShift+N"
-
-msgid "Go to previous note"
-msgstr "跳转到上一个笔记"
-
-msgid "Next N&ote\tN"
-msgstr "下一个笔记(&O)\tN"
-
-msgid "Go to next note"
-msgstr "跳转到下一个笔记"
-
-msgid "Jump to &All...\tCtrl+B"
-msgstr "跳转到全部(&A)...\tCtrl+B"
-
-msgid "Show all bookmarks and notes"
-msgstr "显示所有书签和笔记"
-
-msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
-msgstr "仅跳转到书签(&B)...\tCtrl+Alt+B"
-
-msgid "Show bookmarks only"
-msgstr "仅显示书签"
-
-msgid "Jump to Notes &Only...\tCtrl+Alt+M"
-msgstr "仅跳转到笔记(&O)...\tCtrl+Alt+M"
-
-msgid "Show notes only"
-msgstr "仅显示笔记"
-
-msgid "&View Note Text\tRawCtrl+Shift+W"
-msgstr "查看笔记文本(&V)\tRawCtrl+Shift+W"
-
-msgid "&View Note Text\tCtrl+Shift+W"
-msgstr "查看笔记文本(&V)\tCtrl+Shift+W"
-
-msgid "View the note at current position"
-msgstr "查看当前位置的笔记"
-
-msgid "&File"
-msgstr "文件(&F)"
-
-msgid "&Go"
-msgstr "转到(&G)"
-
-msgid "&Tools"
-msgstr "工具(&T)"
-
-msgid "&Help"
-msgstr "帮助(&H)"
-
-msgid "&Open...\tCtrl+O"
-msgstr "打开(&O)...\tCtrl+O"
-
-msgid "Open a document"
-msgstr "打开文档"
-
-msgid "&Close\tCtrl+W"
-msgstr "关闭(&C)\tCtrl+W"
-
-msgid "&Close\tCtrl+F4"
-msgstr "关闭(&C)\tCtrl+F4"
-
-msgid "Close the current document"
-msgstr "关闭当前文档"
-
-msgid "Close &All\tCtrl+Shift+W"
-msgstr "全部关闭(&A)\tCtrl+Shift+W"
-
-msgid "Close &All\tCtrl+Shift+F4"
-msgstr "全部关闭(&A)\tCtrl+Shift+F4"
-
-msgid "Close all documents"
-msgstr "关闭所有文档"
-
-msgid "Reopen &Last Closed\tCtrl+Shift+T"
-msgstr "重新打开上次关闭的(&L)\tCtrl+Shift+T"
-
-msgid "Reopen the last closed document"
-msgstr "重新打开上次关闭的文档"
-
-msgid "&Recent Documents"
-msgstr "最近文档(&R)"
-
-msgid "Open a recent document"
-msgstr "打开最近文档"
-
-msgid "E&xit\tCtrl+Q"
-msgstr "退出(&X)\tCtrl+Q"
-
-msgid "Exit the application"
-msgstr "退出应用程序"
-
-msgid "&Find...\tCtrl+F"
-msgstr "查找(&F)...\tCtrl+F"
-
-msgid "Find text in the document"
-msgstr "在文档中查找文本"
-
-msgid "Find &Next\tF3"
-msgstr "查找下一个(&N)\tF3"
-
-msgid "Find next occurrence"
-msgstr "查找下一个出现位置"
-
-msgid "Find &Previous\tShift+F3"
-msgstr "查找上一个(&P)\tShift+F3"
-
-msgid "Find previous occurrence"
-msgstr "查找上一个出现位置"
-
-msgid "Go to &line...\tCtrl+G"
-msgstr "跳转到行(&L)...\tCtrl+G"
-
-msgid "Go to a specific line"
-msgstr "跳转到指定行"
-
-msgid "Go to &percent...\tCtrl+Shift+G"
-msgstr "跳转到百分比(&P)...\tCtrl+Shift+G"
-
-msgid "Go to a percentage of the document"
-msgstr "跳转到文档的百分比位置"
-
-msgid "Go &Back\tAlt+Left"
-msgstr "后退(&B)\tAlt+Left"
-
-msgid "Go back in history"
-msgstr "在历史记录中后退"
-
-msgid "Go &Forward\tAlt+Right"
-msgstr "前进(&F)\tAlt+Right"
-
-msgid "Go forward in history"
-msgstr "在历史记录中前进"
-
-msgid "&Sections"
-msgstr "章节(&S)"
-
-msgid "Navigate by sections"
-msgstr "按章节导航"
-
-msgid "&Headings"
-msgstr "标题(&H)"
-
-msgid "Navigate by headings"
-msgstr "按标题导航"
-
-msgid "&Pages"
-msgstr "页(&P)"
-
-msgid "Navigate by pages"
-msgstr "按页导航"
-
-msgid "&Bookmarks"
-msgstr "书签(&B)"
-
-msgid "Navigate by bookmarks"
-msgstr "按书签导航"
-
-msgid "&Links"
-msgstr "链接(&L)"
-
-msgid "Navigate by links"
-msgstr "按链接导航"
-
-msgid "&Images"
-msgstr "图片(&I)"
-
-msgid "Navigate by images"
-msgstr "按图片导航"
-
-msgid "&Figures"
-msgstr "图表(&F)"
-
-msgid "Navigate by figures"
-msgstr "按图表导航"
-
-msgid "&Tables"
-msgstr "表格(&T)"
-
-msgid "Navigate by tables"
-msgstr "按表格导航"
-
-msgid "&Separators"
-msgstr "分隔符(&S)"
-
-msgid "Navigate by separators"
-msgstr "按分隔符导航"
-
-msgid "&Lists"
-msgstr "列表(&L)"
-
-msgid "Navigate by lists"
-msgstr "按列表导航"
-
-msgid "&Import Document Data...\tCtrl+Shift+I"
-msgstr "导入文档数据(&I)...\tCtrl+Shift+I"
-
-msgid "Import bookmarks and position"
-msgstr "导入书签和位置"
-
-msgid "&Export Document Data...\tCtrl+Shift+E"
-msgstr "导出文档数据(&E)...\tCtrl+Shift+E"
-
-msgid "Export bookmarks and position"
-msgstr "导出书签和位置"
-
-msgid "Export to &Plain Text...\tCtrl+E"
-msgstr "导出为纯文本(&P)...\tCtrl+E"
-
-msgid "Export document as plain text"
-msgstr "将文档导出为纯文本"
-
-msgid "&Word Count\tRawCtrl+W"
-msgstr "字数统计(&W)\tRawCtrl+W"
-
-msgid "&Word Count\tCtrl+W"
-msgstr "字数统计(&W)\tCtrl+W"
-
-msgid "Show word count"
-msgstr "显示字数统计"
-
-msgid "Document &Info\tCtrl+I"
-msgstr "文档信息(&I)\tCtrl+I"
-
-msgid "Show document information"
-msgstr "显示文档信息"
-
-msgid "&Table of Contents\tCtrl+T"
-msgstr "目录(&T)\tCtrl+T"
-
-msgid "Show table of contents"
-msgstr "显示目录"
-
-msgid "&Elements List...\tF7"
-msgstr "元素列表(&E)...\tF7"
-
-msgid "Show elements list"
-msgstr "显示元素列表"
-
-msgid "Open &Containing Folder\tCtrl+Shift+C"
-msgstr "打开所在文件夹(&C)\tCtrl+Shift+C"
-
-msgid "Open folder containing the document"
-msgstr "打开包含文档的文件夹"
-
-msgid "Open in &Web View\tCtrl+Shift+V"
-msgstr "在网页视图中打开(&W)\tCtrl+Shift+V"
-
-msgid "Open document in web view"
-msgstr "在网页视图中打开文档"
-
-msgid "I&mport/Export"
-msgstr "导入/导出(&M)"
-
-msgid "Import and export options"
-msgstr "导入和导出选项"
-
-msgid "Toggle &Bookmark\tCtrl+Shift+B"
-msgstr "切换书签(&B)\tCtrl+Shift+B"
-
-msgid "Bookmark with &Note\tCtrl+Shift+N"
-msgstr "带笔记的书签(&N)\tCtrl+Shift+N"
-
-msgid "&Options\tCtrl+,"
-msgstr "选项(&O)\tCtrl+,"
-
-msgid "&Sleep Timer...\tCtrl+Shift+S"
-msgstr "睡眠定时器(&S)...\tCtrl+Shift+S"
-
-msgid "&About Paperback\tCtrl+F1"
-msgstr "关于 Paperback(&A)\tCtrl+F1"
-
-msgid "About this application"
-msgstr "关于此应用程序"
-
-msgid "View Help in &Browser\tF1"
-msgstr "在浏览器中查看帮助(&B)\tF1"
-
-msgid "View help in default browser"
-msgstr "在默认浏览器中查看帮助"
-
-msgid "View Help in &Paperback\tShift+F1"
-msgstr "在 Paperback 中查看帮助(&P)\tShift+F1"
-
-msgid "View help in Paperback"
-msgstr "在 Paperback 中查看帮助"
-
-msgid "Check for &Updates\tCtrl+Shift+U"
-msgstr "检查更新(&U)\tCtrl+Shift+U"
-
-msgid "Check for updates"
-msgstr "检查更新"
-
-msgid "&Donate\tCtrl+D"
-msgstr "捐赠(&D)\tCtrl+D"
-
-msgid "Support Paperback development"
-msgstr "支持 Paperback 开发"
-
-msgid "(No recent documents)"
-msgstr "（无最近文档）"
-
-msgid "Show All...\tCtrl+R"
-msgstr "显示全部...\tCtrl+R"
-
-msgid "No sections."
-msgstr "没有章节。"
-
-msgid "No next section"
-msgstr "没有下一章节"
-
-msgid "No previous section"
-msgstr "没有上一章节"
-
-#, c-format
-msgid "No headings at level %d."
-msgstr "没有级别为 %d 的标题。"
-
-#, c-format
-msgid "No next heading at level %d."
-msgstr "没有级别为 %d 的下一个标题。"
-
-#, c-format
-msgid "No previous heading at level %d."
-msgstr "没有级别为 %d 的上一个标题。"
-
-msgid "No headings."
-msgstr "没有标题。"
-
-msgid "No next heading."
-msgstr "没有下一个标题。"
-
-msgid "No previous heading."
-msgstr "没有上一个标题。"
-
-msgid "No next page."
-msgstr "没有下一页。"
-
-msgid "No previous page."
-msgstr "没有上一页。"
-
-msgid "No links."
-msgstr "没有链接。"
-
-msgid "No next link."
-msgstr "没有下一个链接。"
-
-msgid "No previous link."
-msgstr "没有上一个链接。"
-
-msgid "No lists."
-msgstr "没有列表。"
-
-msgid "No next list."
-msgstr "没有下一个列表。"
-
-msgid "No previous list."
-msgstr "没有上一个列表。"
-
-msgid "No list items."
-msgstr "没有列表项。"
-
-msgid "No next list item."
-msgstr "没有下一个列表项。"
-
-msgid "No previous list item."
-msgstr "没有上一个列表项。"
-
-msgid "No tables."
-msgstr "没有表格。"
-
-msgid "No next table."
-msgstr "没有下一个表格。"
-
-msgid "No previous table."
-msgstr "没有上一个表格。"
-
-msgid "No separators."
-msgstr "没有分隔符。"
-
-msgid "No next separator."
-msgstr "没有下一个分隔符。"
-
-msgid "No previous separator."
-msgstr "没有上一个分隔符。"
-
-msgid "No images."
-msgstr "没有图片。"
-
-msgid "No next image."
-msgstr "没有下一张图片。"
-
-msgid "No previous image."
-msgstr "没有上一张图片。"
-
-msgid "No figures."
-msgstr "没有图表。"
-
-msgid "No next figure."
-msgstr "没有下一个图表。"
-
-msgid "No previous figure."
-msgstr "没有上一个图表。"
-
-msgid "Wrapping to start. "
-msgstr "循环到开头。"
-
-msgid "Wrapping to end. "
-msgstr "循环到结尾。"
-
-#, c-format
-msgid "%s Heading level %d"
-msgstr "%s 标题级别 %d"
-
-#, c-format
-msgid "Page %d: %s"
-msgstr "第 %d 页：%s"
-
-msgid " link"
-msgstr " 链接"
-
-msgid "Navigated to next position."
-msgstr "已导航到下一个位置。"
-
-msgid "Navigated to previous position."
-msgstr "已导航到上一个位置。"
-
-msgid "No next position."
-msgstr "没有下一个位置。"
-
-msgid "No previous position."
-msgstr "没有上一个位置。"
-
-#, c-format
-msgid "%s - Bookmark %d"
-msgstr "%s - 书签 %d"
-
-msgid "No notes."
-msgstr "没有笔记。"
-
-msgid "No bookmarks."
-msgstr "没有书签。"
-
-msgid "No next note."
-msgstr "没有下一个笔记。"
-
-msgid "No next bookmark."
-msgstr "没有下一个书签。"
-
-msgid "No previous note."
-msgstr "没有上一个笔记。"
-
-msgid "No previous bookmark."
-msgstr "没有上一个书签。"
-
-msgid "Bookmark."
-msgstr "书签。"
-
-msgid "Bookmark removed."
-msgstr "书签已移除。"
-
-msgid "Bookmark added."
-msgstr "书签已添加。"
-
-msgid "Enter bookmark note:"
-msgstr "输入书签笔记："
-
-msgid "Bookmark saved."
-msgstr "书签已保存。"
-
-msgid "No note at the current position."
-msgstr "当前位置没有笔记。"
-
-msgid "Line"
+#, fuzzy
+msgid "Title"
+msgstr "标题"
+
+#, fuzzy
+msgid "Author"
+msgstr "作者"
+
+#, fuzzy
+msgid "File"
+msgstr "文件"
+
+#, fuzzy
+msgid "Words"
+msgstr "词语"
+
+#, fuzzy
+msgid "Lines"
 msgstr "行"
 
-msgid "Character"
-msgstr "字符"
+#, fuzzy
+msgid "Characters"
+msgstr "角色"
 
-msgid "Sleep timer"
-msgstr "睡眠定时器"
+#, fuzzy
+msgid "Characters (excluding spaces)"
+msgstr "字符（不包括空格）"
 
-msgid "&Restore"
-msgstr "恢复(&R)"
+#, fuzzy
+msgid "Type"
+msgstr "类型"
 
-msgid "Restore Paperback"
-msgstr "恢复 Paperback"
+#, fuzzy
+msgid "Done"
+msgstr "完成"
 
-msgid "E&xit"
-msgstr "退出(&X)"
+#, fuzzy
+msgid "No Elements"
+msgstr "无元素"
 
-msgid "Exit Paperback"
-msgstr "退出 Paperback"
+#, fuzzy
+msgid "Headings, images, and other elements will appear here."
+msgstr "标题、图片和其他元素将显示在此处。"
+
+#, fuzzy
+msgid "Search…"
+msgstr "搜索……"
+
+#, fuzzy
+msgid "Match Case"
+msgstr "区分大小写"
+
+#, fuzzy
+msgid "Whole Word"
+msgstr "整个单词"
+
+#, fuzzy
+msgid "Regular Expression"
+msgstr "正则表达式"
+
+#, fuzzy
+msgid "Previous result"
+msgstr "上一次结果"
+
+#, fuzzy
+msgid "Next result"
+msgstr "下一个结果"
+
+#, fuzzy
+msgid "Search"
+msgstr "搜索"
+
+#, fuzzy
+msgid "Mode"
+msgstr "模式"
+
+#, fuzzy
+msgid "Page"
+msgstr "页面"
+
+#, fuzzy
+msgid "Percent"
+msgstr "百分比"
+
+#, fuzzy
+msgid "Line number"
+msgstr "行号"
+
+#, fuzzy
+msgid "Page number"
+msgstr "页码"
+
+#, fuzzy
+msgid "Percentage"
+msgstr "百分比"
+
+#, fuzzy
+msgid "Go To"
+msgstr "转到"
+
+#, fuzzy
+msgid "Password"
+msgstr "密码"
+
+#, fuzzy
+msgid "Enter password for {}"
+msgstr "请输入{}的密码"
+
+#, fuzzy
+msgid "Password Required"
+msgstr "需要密码"
+
+#, fuzzy
+msgid "No Recent Documents"
+msgstr "没有最近的文档"
+
+#, fuzzy
+msgid "Documents you open will appear here."
+msgstr "您打开的文档将显示在此处。"
+
+#, fuzzy
+msgid "Remove"
+msgstr "删除"
+
+#, fuzzy
+msgid "Rule"
+msgstr "规则"
+
+#, fuzzy
+msgid "Scope"
+msgstr "范围"
+
+#, fuzzy
+msgid "Word"
+msgstr "Word"
+
+#, fuzzy
+msgid "Paragraph"
+msgstr "段落"
+
+#, fuzzy
+msgid "Pattern & Replacement"
+msgstr "模板与替换"
+
+#, fuzzy
+msgid "Pattern"
+msgstr "图案"
+
+#, fuzzy
+msgid "Replacement"
+msgstr "替换"
+
+#, fuzzy
+msgid "Whole word only"
+msgstr "仅限完整单词"
+
+#, fuzzy
+msgid "Regular expression (\\1 = first capture group)"
+msgstr "正则表达式（\\1 = 第一个捕获组）"
+
+#, fuzzy
+msgid "Enabled"
+msgstr "已启用"
+
+#, fuzzy
+msgid "Apply to"
+msgstr "申请"
+
+#, fuzzy
+msgid "Voices"
+msgstr "声音"
+
+#, fuzzy
+msgid "New Rule"
+msgstr "新规定"
+
+#, fuzzy
+msgid "Edit Rule"
+msgstr "编辑规则"
+
+#, fuzzy
+msgid "Save"
+msgstr "保存"
+
+#, fuzzy
+msgid "All voices"
+msgstr "所有声音"
+
+#, fuzzy
+msgid "Apply To"
+msgstr "申请"
+
+#, fuzzy
+msgid "Text to Speech"
+msgstr "文本转语音"
+
+#, fuzzy
+msgid "Voice"
+msgstr "语音"
+
+#, fuzzy
+msgid "Rate"
+msgstr "评分"
+
+#, fuzzy
+msgid "Speech Rate"
+msgstr "语速"
+
+#, fuzzy
+msgid "Pitch"
+msgstr "提案"
+
+#, fuzzy
+msgid "Speech Dictionary"
+msgstr "语音词典"
+
+#, fuzzy
+msgid "Play Sample"
+msgstr "试听样本"
+
+#, fuzzy
+msgid "Behavior"
+msgstr "行为"
+
+#, fuzzy
+msgid "Restore last open documents"
+msgstr "恢复上次打开的文档"
+
+#, fuzzy
+msgid "Swipe up moves forward"
+msgstr "向上滑动即可前进"
+
+#, fuzzy
+msgid "Active"
+msgstr "有效"
+
+#, fuzzy
+msgid "Time remaining"
+msgstr "剩余时间"
+
+#, fuzzy
+msgid "Cancel Timer"
+msgstr "取消计时器"
+
+#, fuzzy
+msgid "Set timer"
+msgstr "设置计时器"
+
+#, fuzzy
+msgid "Edit"
+msgstr "编辑"
+
+#, fuzzy
+msgid "Add Rule"
+msgstr "添加规则"
+
+#, fuzzy
+msgid "No Rules"
+msgstr "没有规则"
+
+#, fuzzy
+msgid "Contents"
+msgstr "目录"
+
+#, fuzzy
+msgid "No Table of Contents"
+msgstr "无目录"
+
+#, fuzzy
+msgid "This document has no table of contents."
+msgstr "本文件没有目录。"
+
+#, fuzzy
+msgid "Tabs"
+msgstr "标签页"
+
+#, fuzzy
+msgid "Navigation unit"
+msgstr "导航单元"
+
+#, fuzzy
+msgid "Previous {}"
+msgstr "上一篇 {}"
+
+#, fuzzy
+msgid "Pause"
+msgstr "暂停"
+
+#, fuzzy
+msgid "Play"
+msgstr "播放"
+
+#, fuzzy
+msgid "End of document"
+msgstr "文档结束"
+
+#, fuzzy
+msgid "Beginning of document"
+msgstr "文档开头"
+
+#, fuzzy
+msgid "Next {}"
+msgstr "下一篇 {}"
+
+#, fuzzy
+msgid "Press play to start listening."
+msgstr "点击“播放”开始收听。"
+
+#, fuzzy
+msgid "Locate"
+msgstr "定位"
+
+#, fuzzy
+msgid "File Missing"
+msgstr "文件缺失"
+
+#, fuzzy
+msgid "Currently Open"
+msgstr "当前开放"
+
+#, fuzzy
+msgid "Document Information"
+msgstr "文档信息"
+
+#, fuzzy
+msgid "Expanded"
+msgstr "展开"
+
+#, fuzzy
+msgid "Collapsed"
+msgstr "折叠"
+
+#, fuzzy
+msgid "Collapse"
+msgstr "折叠"
+
+#, fuzzy
+msgid "Expand"
+msgstr "展开"
+
+#, fuzzy
+msgid "Untitled Link"
+msgstr "未命名的链接"
+
+#, fuzzy
+msgid "No supported books or folders found here."
+msgstr "此处未找到任何受支持的书籍或文件夹。"
+
+#, fuzzy
+msgid "Folder"
+msgstr "文件夹"
+
+#, fuzzy
+msgid "Internal Storage"
+msgstr "内部存储"
+
+#, fuzzy
+msgid "Search Term"
+msgstr "搜索词"
+
+#, fuzzy
+msgid "Search History"
+msgstr "搜索记录"
+
+#, fuzzy
+msgid "Find Next"
+msgstr "查找下一项"
+
+#, fuzzy
+msgid "Password:"
+msgstr "密码："
+
+#, fuzzy
+msgid "All Files Access Required"
+msgstr "需要访问所有文件"
+
+#, fuzzy
+msgid "Paperback requires the 'All Files Access' permission to enable the custom in-app file browser."
+msgstr "Paperback 需要“访问所有文件”权限才能启用自定义的应用内文件浏览器。"
+
+#, fuzzy
+msgid "Why we need this:"
+msgstr "为什么我们需要这个："
+
+#, fuzzy
+msgid "• To provide a fast, fully screen-reader accessible file manager inside the app."
+msgstr "• 在应用内提供一个快速且完全支持屏幕阅读器的文件管理器。"
+
+#, fuzzy
+msgid "• To load large files instantly without needing to copy them into the app's cache."
+msgstr "• 无需将大文件复制到应用缓存中，即可即时加载。"
+
+#, fuzzy
+msgid "• To display the exact local file paths of your documents."
+msgstr "• 显示文档的确切本地文件路径。"
+
+#, fuzzy
+msgid "If you deny this permission, you can still use the Android System File Picker to open your books by turning off the custom file browser setting."
+msgstr "如果您拒绝此权限，仍可通过关闭“自定义文件浏览器”设置，使用 Android 系统文件选择器来打开您的书籍。"
+
+#, fuzzy
+msgid "Grant"
+msgstr "格兰特"
+
+#, fuzzy
+msgid "Not Now"
+msgstr "现在不行"
+
+#, fuzzy
+msgid "Restore last open book"
+msgstr "恢复上次打开的书"
+
+#, fuzzy
+msgid "Use in-app file browser (requires All Files permission)"
+msgstr "使用应用内文件浏览器（需要“所有文件”权限）"
+
+#, fuzzy
+msgid "Text-to-Speech"
+msgstr "文本转语音"
+
+#, fuzzy
+msgid "System Default"
+msgstr "系统默认值"
+
+#, fuzzy
+msgid "Custom Timer"
+msgstr "自定义计时器"
+
+#, fuzzy
+msgid "Minutes"
+msgstr "会议纪要"
+
+#, fuzzy
+msgid "Back"
+msgstr "返回"
+
+#, fuzzy
+msgid "Start"
+msgstr "开始"
+
+#, fuzzy
+msgid "Change to:"
+msgstr "修改为："
+
+#, fuzzy
+msgid "Custom time..."
+msgstr "自定义时间..."
+
+#, fuzzy
+msgid "Find Previous"
+msgstr "查找上一条"
+
+#, fuzzy
+msgid "Close Search"
+msgstr "关闭搜索"
+
+#, fuzzy
+msgid "Settings imported"
+msgstr "已导入设置"
+
+#, fuzzy
+msgid "Failed to import settings"
+msgstr "导入设置失败"
+
+#, fuzzy
+msgid "Settings exported"
+msgstr "已导出设置"
+
+#, fuzzy
+msgid "Failed to export settings"
+msgstr "导出设置失败"
+
+#, fuzzy
+msgid "No document open. Please open a book."
+msgstr "没有打开任何文档。请打开一本书。"
+
+#, fuzzy
+msgid "No Documents"
+msgstr "无文档"
+
+#, fuzzy
+msgid "Show All"
+msgstr "显示全部"
+
+#, fuzzy
+msgid "Sleep timer: {}"
+msgstr "睡眠定时器：{}"
+
+#, fuzzy
+msgid "Cancel sleep timer"
+msgstr "取消睡眠定时器"
+
+#, fuzzy
+msgid "Import"
+msgstr "导入"
+
+#, fuzzy
+msgid "Import Document Data"
+msgstr "导入文档数据"
+
+#, fuzzy
+msgid "Export Document Data"
+msgstr "导出文档数据"
+
+#, fuzzy
+msgid "Open Book"
+msgstr "《敞开的书》"
+
+#, fuzzy
+msgid "Elements List"
+msgstr "元素列表"
+
+#, fuzzy
+msgid "Show Document"
+msgstr "显示文档"
+
+#, fuzzy
+msgid "Show Text"
+msgstr "显示文本"
+
+#, fuzzy
+msgid "Pause Read Aloud"
+msgstr "暂停朗读"
+
+#, fuzzy
+msgid "Read Aloud"
+msgstr "朗读"
+
+#, fuzzy
+msgid "Help"
+msgstr "帮助"
+
+#, fuzzy
+msgid "More Options"
+msgstr "更多选项"
+
+#, fuzzy
+msgid "Heading"
+msgstr "标题"
+
+#, fuzzy
+msgid "Link"
+msgstr "链接"
+
+#, fuzzy
+msgid "Section"
+msgstr "章节"
+
+#, fuzzy
+msgid "List"
+msgstr "列表"
+
+#, fuzzy
+msgid "List Item"
+msgstr "列表项"
+
+#, fuzzy
+msgid "Table"
+msgstr "表格"
+
+#, fuzzy
+msgid "Separator"
+msgstr "分隔符"
+
+#, fuzzy
+msgid "Document Data"
+msgstr "文档数据"
+
+#, fuzzy
+msgid "Sleep timer running, {} remaining"
+msgstr "睡眠定时器正在运行，剩余时间：{}"
+
+#, fuzzy
+msgid "Custom"
+msgstr "自定义"
+
+#, fuzzy
+msgid "Custom: {} minutes"
+msgstr "自定义：{}分钟"
+
+#, fuzzy
+msgid "Duration"
+msgstr "时长"
+
+#, fuzzy
+msgid "Stop Timer"
+msgstr "停止计时器"
+
+#, fuzzy
+msgid "Start Timer"
+msgstr "开始计时"
+
+#~ msgid "Root"
+#~ msgstr "根目录"
+
+#~ msgid "Are you sure you want to remove this document from the list? This will also remove its reading position."
+#~ msgstr "您确定要从列表中移除此文档吗？这也会删除其阅读位置。"
+
+#~ msgid "Are you sure you want to remove these {} documents from the list? This will also remove their reading positions."
+#~ msgstr "您确定要从列表中删除这些｛｝文档吗？这也将删除他们的阅读位置。"
+
+#~ msgid "Paperback Update"
+#~ msgstr "Paperback 更新"
+
+#, c-format
+#~ msgid "Failed to check for updates. HTTP status: %d"
+#~ msgstr "检查更新失败。HTTP 状态：%d"
+
+#~ msgid "Error checking for updates."
+#~ msgstr "检查更新时出错。"
+
+#~ msgid "Open folder containing the document"
+#~ msgstr "打开包含文档的文件夹"
