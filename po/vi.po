@@ -264,7 +264,7 @@ msgid "Go to page"
 msgstr "Đi đến trang"
 
 #. TRANSLATORS: Label/prompt template for the page selection dialog. The %d placeholders represent current_page and max_pages respectively.
-#, fuzzy
+#, fuzzy, c-format
 msgid "Go to page (%d/%d):"
 msgstr "Truy cập trang (%d / %d):"
 
@@ -289,7 +289,9 @@ msgstr "Mở dưới dạng"
 msgid ""
 "No suitable parser was found for {}.\n"
 "How would you like to open this file?"
-msgstr "Không tìm thấy trình phân tích cú pháp phù hợp cho tệp {}.\nBạn muốn mở tệp này bằng cách nào?"
+msgstr ""
+"Không tìm thấy trình phân tích cú pháp phù hợp cho tệp {}.\n"
+"Bạn muốn mở tệp này bằng cách nào?"
 
 #. TRANSLATORS: Label for the format selection dropdown
 msgid "Open &as:"
@@ -995,7 +997,7 @@ msgid "Sleep timer set for 1 minute."
 msgstr "Đã cài đặt hẹn giờ tắt sau 1 phút."
 
 #. TRANSLATORS: Announcement when the sleep timer is set; %d is the number of minutes (always 2 or more)
-#, fuzzy
+#, fuzzy, c-format
 msgid "Sleep timer set for %d minutes."
 msgstr "Đã cài đặt hẹn giờ tắt tự động sau%dphút."
 
@@ -1833,17 +1835,17 @@ msgid "No previous section"
 msgstr "Không có phần phía trước"
 
 #. TRANSLATORS: Announced when the document has no headings at the given level; %d is the heading level number
-#, fuzzy
+#, fuzzy, c-format
 msgid "No headings at level %d."
 msgstr "Không có tiêu đề ở cấp độ %d."
 
 #. TRANSLATORS: Announced when there is no next heading at the given level; %d is the heading level number
-#, fuzzy
+#, fuzzy, c-format
 msgid "No next heading at level %d."
 msgstr "Không có tiêu đề tiếp theo ở cấp độ %d."
 
 #. TRANSLATORS: Announced when there is no previous heading at the given level; %d is the heading level number
-#, fuzzy
+#, fuzzy, c-format
 msgid "No previous heading at level %d."
 msgstr "Không có tiêu đề nào trước đó ở cấp độ %d."
 
@@ -2468,7 +2470,9 @@ msgstr "Cập nhật không thành công"
 msgid ""
 "Update downloaded to: %s\n"
 "Please install it manually."
-msgstr "Bản cập nhật đã được tải xuống tại:%s\n. Vui lòng cài đặt thủ công."
+msgstr ""
+"Bản cập nhật đã được tải xuống tại:%s\n"
+". Vui lòng cài đặt thủ công."
 
 #, fuzzy
 msgid "Update Ready"
