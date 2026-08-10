@@ -6,7 +6,10 @@ use std::{
 use crate::{
 	document::{DocumentHandle, MarkerType},
 	parser::is_external_url,
-	util::text::{ch_width, display_len},
+	util::{
+		html::{escape, escape_attr, push_escaped},
+		text::{ch_width, display_len},
+	},
 };
 
 #[must_use]
@@ -379,27 +382,6 @@ fn resolve_fragment(id_positions: &HashMap<String, usize>, fragment: &str, scope
 		}
 	}
 	id_positions.get(fragment).copied()
-}
-
-fn push_escaped(ch: char, out: &mut String) {
-	match ch {
-		'&' => out.push_str("&amp;"),
-		'<' => out.push_str("&lt;"),
-		'>' => out.push_str("&gt;"),
-		c => out.push(c),
-	}
-}
-
-fn escape(s: &str) -> String {
-	let mut out = String::with_capacity(s.len());
-	for ch in s.chars() {
-		push_escaped(ch, &mut out);
-	}
-	out
-}
-
-fn escape_attr(s: &str) -> String {
-	s.replace('&', "&amp;").replace('"', "&quot;")
 }
 
 #[cfg(test)]

@@ -16,7 +16,7 @@ use crate::{
 		ConverterOutput, Parser, add_converter_markers_excluding_links,
 		html_to_text::{HtmlSourceMode, HtmlToText},
 		is_external_url,
-		util::path::extract_title_from_path,
+		util::{path::extract_title_from_path, xml::collect_element_text},
 		xml_to_text::XmlToText,
 	},
 	t,
@@ -535,25 +535,8 @@ fn parse_nav_item(
 }
 
 fn extract_link_text(link: Node<'_, '_>) -> String {
-	let mut text = String::new();
-	collect_text(link, &mut text);
+	let text = collect_element_text(link);
 	trim_string(&collapse_whitespace(&text))
-}
-
-fn collect_text(node: Node<'_, '_>, buffer: &mut String) {
-	match node.node_type() {
-		NodeType::Text => {
-			if let Some(value) = node.text() {
-				buffer.push_str(value);
-			}
-		}
-		NodeType::Element => {
-			for child in node.children() {
-				collect_text(child, buffer);
-			}
-		}
-		_ => {}
-	}
 }
 
 fn compute_nav_offset(reference: &str, sections: &[SectionMeta], id_positions: &HashMap<String, usize>) -> usize {
