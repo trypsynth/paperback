@@ -2119,7 +2119,11 @@ mod tests {
 			.unwrap();
 
 		writer.start_file("OEBPS/Images/cover.jpg", opts).unwrap();
-		writer.write_all(b"\xFF\xD8\xFF\xE0fake-jpeg-bytes").unwrap();
+		// The filler text intentionally avoids starting with a hex digit right after the
+		// \xNN escapes above: `gen-pot`'s xgettext pass parses this file in C mode, where
+		// \x escapes are greedy and would otherwise swallow leading hex-looking characters
+		// (e.g. "fake" starting with a valid hex digit) into a wildly out-of-range escape.
+		writer.write_all(b"\xFF\xD8\xFF\xE0placeholder-jpeg-bytes").unwrap();
 
 		writer.finish().unwrap();
 		epub_path
