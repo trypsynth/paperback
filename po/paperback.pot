@@ -332,6 +332,10 @@ msgstr ""
 msgid "Check for &updates on startup"
 msgstr ""
 
+#. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
+msgid "&Automatically reload changed documents"
+msgstr ""
+
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 msgid "Customize &Window Hotkey..."
 msgstr ""
@@ -744,6 +748,10 @@ msgstr ""
 
 #. TRANSLATORS: Main window title when no document is open
 msgid "Paperback"
+msgstr ""
+
+#. TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
+msgid "Document reloaded."
 msgstr ""
 
 #. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open

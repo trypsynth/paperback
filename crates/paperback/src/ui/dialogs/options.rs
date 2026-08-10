@@ -28,6 +28,7 @@ pub struct OptionsDialogResult {
 	pub navigation_wrap: bool,
 	pub check_for_updates_on_startup: bool,
 	pub bookmark_sounds: bool,
+	pub auto_reload_documents: bool,
 	pub recent_documents_to_show: i32,
 	pub reading_speed_wpm: i32,
 	pub language: String,
@@ -53,6 +54,7 @@ struct OptionsDialogUi {
 	navigation_wrap_check: CheckBox,
 	check_for_updates_check: CheckBox,
 	bookmark_sounds_check: CheckBox,
+	auto_reload_check: CheckBox,
 	recent_docs_ctrl: SpinCtrl,
 	reading_speed_ctrl: SpinCtrl,
 	language_combo: Choice,
@@ -97,6 +99,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		navigation_wrap: ui.navigation_wrap_check.is_checked(),
 		check_for_updates_on_startup: ui.check_for_updates_check.is_checked(),
 		bookmark_sounds: ui.bookmark_sounds_check.is_checked(),
+		auto_reload_documents: ui.auto_reload_check.is_checked(),
 		recent_documents_to_show: ui.recent_docs_ctrl.value(),
 		reading_speed_wpm: ui.reading_speed_ctrl.value(),
 		language,
@@ -143,10 +146,14 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let check_for_updates_check =
 		// TRANSLATORS: Option to check for app updates automatically on startup
 		CheckBox::builder(&general_panel).with_label(&t("Check for &updates on startup")).build();
+	let auto_reload_check =
+		// TRANSLATORS: Option to automatically reload an open document when its file changes on disk
+		CheckBox::builder(&general_panel).with_label(&t("&Automatically reload changed documents")).build();
 	// TRANSLATORS: Button label to open the hotkey customization dialog
 	let hotkey_button = Button::builder(&general_panel).with_label(&t("Customize &Window Hotkey...")).build();
 	let option_padding = 5;
 	general_sizer.add(&restore_docs_check, 0, SizerFlag::All, option_padding);
+	general_sizer.add(&auto_reload_check, 0, SizerFlag::All, option_padding);
 	general_sizer.add(&start_maximized_check, 0, SizerFlag::All, option_padding);
 	#[cfg(not(target_os = "macos"))]
 	general_sizer.add(&minimize_to_tray_check, 0, SizerFlag::All, option_padding);
@@ -344,6 +351,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	compact_go_menu_check.set_value(config.get_app_bool("compact_go_menu", true));
 	navigation_wrap_check.set_value(config.get_app_bool("navigation_wrap", false));
 	bookmark_sounds_check.set_value(config.get_app_bool("bookmark_sounds", true));
+	auto_reload_check.set_value(config.get_app_bool("auto_reload_documents", true));
 	check_for_updates_check.set_value(config.get_app_bool("check_for_updates_on_startup", true));
 	recent_docs_ctrl.set_value(config.get_app_int("recent_documents_to_show", 25).clamp(0, max_recent_docs));
 	reading_speed_ctrl.set_value(config.get_app_int("reading_speed_wpm", 150).clamp(1, 2000));
@@ -448,6 +456,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		navigation_wrap_check,
 		check_for_updates_check,
 		bookmark_sounds_check,
+		auto_reload_check,
 		recent_docs_ctrl,
 		reading_speed_ctrl,
 		language_combo,
