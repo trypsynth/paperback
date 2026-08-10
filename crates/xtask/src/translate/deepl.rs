@@ -112,6 +112,49 @@ impl DeepLClient {
 			})
 			.collect())
 	}
+
+	/// Translates a single HTML fragment to `target_lang`. Unlike [`Self::translate_batch`]
+	/// (many short strings, `<x>`-tag placeholder protection), this is one long document:
+	/// `tag_handling=html` lets `DeepL` parse real HTML structure directly, and
+	/// `ignore_tags=["code","pre"]` keeps file extensions/command names/code samples out of
+	/// translation entirely rather than needing round-trip protection.
+	pub fn translate_html(&self, html: &str, target_lang: &str) -> Result<String, Box<dyn Error>> {
+		#[derive(Serialize)]
+		struct Req<'a> {
+			text: [&'a str; 1],
+			target_lang: &'a str,
+			source_lang: &'a str,
+			tag_handling: &'a str,
+			ignore_tags: &'a [&'a str],
+		}
+		#[derive(Deserialize)]
+		struct TranslationItem {
+			text: String,
+		}
+		#[derive(Deserialize)]
+		struct Resp {
+			translations: Vec<TranslationItem>,
+		}
+
+		let url = format!("{}/v2/translate", self.base_url);
+		let req =
+			Req { text: [html], target_lang, source_lang: "EN", tag_handling: "html", ignore_tags: &["code", "pre"] };
+		let body = ureq::post(&url)
+			.config()
+			.http_status_as_error(false)
+			.build()
+			.header("Authorization", &format!("DeepL-Auth-Key {}", self.api_key))
+			.send_json(&req)
+			.map_err(|e| format!("DeepL translate (html) request failed: {e}"))?;
+		let body_text = read_body_or_error("translate-html", body)?;
+		let resp: Resp = serde_json::from_str(&body_text)
+			.map_err(|e| format!("DeepL translate (html) response was not valid JSON: {e} (body: {body_text})"))?;
+		resp.translations
+			.into_iter()
+			.next()
+			.map(|t| t.text)
+			.ok_or_else(|| "DeepL returned no translation for the readme".into())
+	}
 }
 
 /// Counts of `%s`/`%d`/`{}` tokens, used to check a translation kept exactly the ones the

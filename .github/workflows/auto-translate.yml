@@ -8,6 +8,7 @@ on:
       - 'android/app/src/main/kotlin/**/*.kt'
       - 'ios/Paperback/**/*.swift'
       - 'po/**/*.po'
+      - 'doc/readme.md'
   workflow_dispatch:
 permissions:
   contents: write
@@ -27,18 +28,18 @@ jobs:
           toolchain: stable
       - name: Cache Rust build artifacts
         uses: Swatinem/rust-cache@v2
-      - name: Install gettext
-        run: sudo apt-get update && sudo apt-get install -y gettext
+      - name: Install gettext and pandoc
+        run: sudo apt-get update && sudo apt-get install -y gettext pandoc
       - name: Translate
         env:
           DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
         run: cargo run -p xtask --release -- translate
       - name: Commit and push if anything changed
         run: |
-          if git status --porcelain -- po/ | grep -q .; then
+          if git status --porcelain -- po/ doc/ | grep -q .; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add po/
+            git add po/ doc/
             git commit -m "chore: machine-translate missing strings via DeepL"
             git push
           else

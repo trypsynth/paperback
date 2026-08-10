@@ -205,14 +205,15 @@ final class AppViewModel: ObservableObject {
 		}
 	}
 
-	// TRANSLATORS: Locale codes with a translated in-app help document; keep in sync with doc/readme-<lang>.md
-	private static let helpLocalizedLanguages: Set<String> = ["bs", "cs", "fi", "nl", "pl", "sr"]
-
 	func openHelpDocument() {
 		let preferred = Bundle.main.preferredLocalizations.first ?? "en"
 		let lang = preferred.split(separator: "-").first.map(String.init) ?? preferred
-		let resourceName = Self.helpLocalizedLanguages.contains(lang) ? "readme-\(lang)" : "readme"
-		guard let url = Bundle.main.url(forResource: resourceName, withExtension: "html", subdirectory: "Readmes") else {
+		// Try the localized doc first, falling back to English rather than checking a
+		// hardcoded language list against a hand-maintained set of resource names — that
+		// list drifts out of sync with which readme-<lang>.html files actually exist.
+		let localizedURL = Bundle.main.url(forResource: "readme-\(lang)", withExtension: "html", subdirectory: "Readmes")
+		let fallbackURL = Bundle.main.url(forResource: "readme", withExtension: "html", subdirectory: "Readmes")
+		guard let url = localizedURL ?? fallbackURL else {
 			// TRANSLATORS: Shown when the bundled Help document fails to load
 			debugMessage = t("Failed to load document.")
 			return

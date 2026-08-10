@@ -2,6 +2,7 @@ use std::{collections::HashSet, env, error::Error, fs, path::PathBuf, process::C
 
 mod deepl;
 mod po;
+mod readme;
 
 use crate::project_root;
 
@@ -11,7 +12,9 @@ use crate::project_root;
 /// Writes back only when something genuinely changed — `msgmerge` regenerates the
 /// `POT-Creation-Date`/`PO-Revision-Date` header lines on every run regardless of real
 /// content changes, so those are ignored when deciding whether to touch a file, to avoid
-/// committing pure timestamp churn.
+/// committing pure timestamp churn. Finally does the same for `doc/readme.md`, machine-
+/// translating it into `doc/readme-<lang>.md` for the same set of languages (see
+/// `readme::sync_readmes`).
 pub fn translate() -> Result<(), Box<dyn Error>> {
 	let mut dry_run = false;
 	for arg in env::args().skip(2) {
@@ -62,10 +65,15 @@ pub fn translate() -> Result<(), Box<dyn Error>> {
 		.filter(|p| p.extension().and_then(|e| e.to_str()) == Some("po"))
 		.collect();
 	po_files.sort();
+	let langs: Vec<String> =
+		po_files.iter().filter_map(|p| p.file_stem().and_then(|s| s.to_str()).map(str::to_string)).collect();
 
-	for po_path in po_files {
-		translate_one(&po_path, &pot_path, dry_run, client_and_supported.as_ref())?;
+	for po_path in &po_files {
+		translate_one(po_path, &pot_path, dry_run, client_and_supported.as_ref())?;
 	}
+
+	readme::sync_readmes(&root, &langs, client_and_supported.as_ref(), dry_run)?;
+
 	Ok(())
 }
 
