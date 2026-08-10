@@ -34,6 +34,7 @@ pub(crate) fn print_help() {
 	println!("	  --debug            Build APK using gradlew assembleDebug");
 	println!("	  --install-release  Install release APK using gradlew installRelease");
 	println!("	  --install-debug    Install debug APK using gradlew installDebug");
+	println!("	  --build-aab        Build a release App Bundle (.aab) for Play Store upload");
 	println!("	ios           Generate Swift bindings and build XCFramework for iOS");
 	println!("	  --release          Build in release mode (default is debug)");
 	println!("	ios-release   Archive and export a release IPA for App Store Connect");

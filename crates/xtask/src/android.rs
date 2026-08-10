@@ -20,6 +20,7 @@ const PDFIUM_ANDROID_ARM_URL: &str =
 pub fn android() -> Result<(), Box<dyn Error>> {
 	let args = env::args().skip(2);
 	let mut gradle_tasks = Vec::new();
+	let mut build_aab = false;
 
 	for arg in args {
 		match arg.as_str() {
@@ -27,6 +28,7 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 			"--debug" => gradle_tasks.push("assembleDebug"),
 			"--installrelease" | "--install-release" => gradle_tasks.push("installRelease"),
 			"--installdebug" | "--install-debug" => gradle_tasks.push("installDebug"),
+			"--build-aab" => build_aab = true,
 			_ => {
 				print_help();
 				return Err(format!("Unknown argument for android: {arg}").into());
@@ -137,26 +139,43 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 		}
 	}
 
-	if gradle_tasks.is_empty() {
+	if gradle_tasks.is_empty() && !build_aab {
 		println!("Open android/ in Android Studio to build the APK.");
 	} else {
-		println!("Running gradlew with tasks: {gradle_tasks:?}");
-		let android_dir = project_root().join("android");
-		let mut cmd = if cfg!(windows) {
-			let mut c = Command::new("cmd");
-			c.arg("/C").arg("gradlew.bat");
-			c
-		} else {
-			Command::new("./gradlew")
-		};
-		cmd.current_dir(&android_dir).args(&gradle_tasks);
-		let status = cmd.status()?;
-		if !status.success() {
-			return Err("gradlew failed".into());
+		if !gradle_tasks.is_empty() {
+			run_gradle(&gradle_tasks)?;
+			println!("Gradle tasks complete.");
 		}
-		println!("Gradle tasks complete.");
+		if build_aab {
+			// Always its own gradle invocation, never combined with the assemble*/install*
+			// tasks above: android/app/build.gradle.kts disables per-ABI APK splitting
+			// whenever any task in the *same* gradle invocation contains "bundle" (bundle
+			// builds handle per-ABI delivery themselves), which would silently rename the
+			// assembleRelease outputs CI expects (app-arm64-v8a-release.apk etc.) if the
+			// two ran together.
+			run_gradle(&["bundleRelease"])?;
+			println!("App Bundle built: android/app/build/outputs/bundle/release/app-release.aab");
+		}
 	}
 
+	Ok(())
+}
+
+fn run_gradle(tasks: &[&str]) -> Result<(), Box<dyn Error>> {
+	println!("Running gradlew with tasks: {tasks:?}");
+	let android_dir = project_root().join("android");
+	let mut cmd = if cfg!(windows) {
+		let mut c = Command::new("cmd");
+		c.arg("/C").arg("gradlew.bat");
+		c
+	} else {
+		Command::new("./gradlew")
+	};
+	cmd.current_dir(&android_dir).args(tasks);
+	let status = cmd.status()?;
+	if !status.success() {
+		return Err(format!("gradlew failed for tasks: {tasks:?}").into());
+	}
 	Ok(())
 }
 
