@@ -317,7 +317,7 @@ jobs:
         retention-days: 30
 
   release:
-    needs: [build-windows, build-windows-arm64, build-macos]
+    needs: [build-windows, build-windows-arm64, build-android, build-macos]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
     steps:
@@ -345,6 +345,11 @@ jobs:
       with:
         name: paperback-windows-arm64-signatures
         path: windows-arm64-build
+    - name: Download Android APK
+      uses: actions/download-artifact@v8
+      with:
+        name: paperback-android
+        path: android-build
     - name: Download macOS artifact
       uses: actions/download-artifact@v8
       with:
@@ -398,6 +403,8 @@ jobs:
           windows-arm64-build/paperback-arm64.zip.minisig
           windows-arm64-build/paperback_setup-arm64.exe
           windows-arm64-build/paperback_setup-arm64.exe.minisig
+          android-build/paperback-android-arm64.apk
+          android-build/paperback-android-arm.apk
           macos-build/paperback.dmg
         prerelease: true
       env:
