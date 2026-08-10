@@ -33,7 +33,6 @@ const PDFIUM_MAC_ARM64_URL: &str =
 fn main() {
 	track_packaging_inputs();
 	build_translations();
-	copy_sounds();
 	copy_pdfium_dll();
 	build_docs();
 	configure_installer();
@@ -140,42 +139,6 @@ fn build_translations() {
 		println!("cargo:warning=Failed to extend paperback.pot from Kotlin sources: {e}");
 	}
 	patois_build::compile_translations("../../po", "locale");
-}
-
-fn copy_sounds() {
-	let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap_or_default());
-	let workspace_dir = manifest_dir.parent().unwrap().parent().unwrap();
-	let sounds_src = workspace_dir.join("sounds");
-	println!("cargo:rerun-if-changed={}", sounds_src.display());
-	if !sounds_src.exists() {
-		return;
-	}
-	let Some(target_dir) = target_profile_dir() else {
-		println!("cargo:warning=Could not determine target output directory for sounds.");
-		return;
-	};
-	let sounds_dst = target_dir.join("sounds");
-	if let Err(err) = fs::create_dir_all(&sounds_dst) {
-		println!("cargo:warning=Failed to create sounds directory: {err}");
-		return;
-	}
-	let entries = match fs::read_dir(&sounds_src) {
-		Ok(entries) => entries,
-		Err(err) => {
-			println!("cargo:warning=Failed to read sounds directory: {err}");
-			return;
-		}
-	};
-	for entry in entries {
-		let Ok(entry) = entry else { continue };
-		let path = entry.path();
-		if path.is_file() {
-			let dest = sounds_dst.join(entry.file_name());
-			if let Err(err) = fs::copy(&path, &dest) {
-				println!("cargo:warning=Failed to copy sound file: {err}");
-			}
-		}
-	}
 }
 
 fn copy_pdfium_dylib() {

@@ -4,6 +4,7 @@ use std::{env, error::Error, path::Path, process::Command};
 #[cfg(not(target_os = "macos"))]
 use std::{fs::File, io};
 
+#[cfg(target_os = "macos")]
 use walkdir::WalkDir;
 #[cfg(not(target_os = "macos"))]
 use zip::{CompressionMethod, ZipWriter, write::SimpleFileOptions};
@@ -28,13 +29,12 @@ pub fn release() -> Result<(), Box<dyn Error>> {
 		let pb_exe_name = if cfg!(windows) { "pb.exe" } else { "pb" };
 		let exe_path = target_dir.join(exe_name);
 		let pb_exe_path = target_dir.join(pb_exe_name);
-		let sounds_path = target_dir.join("sounds");
 		let pdfium_dll_path = target_dir.join("pdfium.dll");
 		if !exe_path.exists() {
 			return Err("Executable not found".into());
 		}
-		println!("Packaging binary and sounds...");
-		build_zip_package(&target_dir, &exe_path, &pb_exe_path, &sounds_path, &pdfium_dll_path)?;
+		println!("Packaging binary...");
+		build_zip_package(&target_dir, &exe_path, &pb_exe_path, &pdfium_dll_path)?;
 		if cfg!(windows) {
 			build_windows_installer(&target_dir)?;
 		}
@@ -66,14 +66,6 @@ fn build_mac_dmg(target_dir: &Path) -> Result<(), Box<dyn Error>> {
 		fs::copy(&dylib_src, macos_dir.join("libpdfium.dylib"))?;
 	} else {
 		println!("Warning: libpdfium.dylib not found in target directory; PDF support will be unavailable.");
-	}
-
-	// Copy sounds into the bundle's Resources so the app can find them.
-	let sounds_src = target_dir.join("sounds");
-	if sounds_src.exists() {
-		copy_dir_all(&sounds_src, &resources_dir.join("sounds"))?;
-	} else {
-		println!("Warning: sounds directory not found, skipping.");
 	}
 
 	println!("Built app: {}", bundle_dir.display());
@@ -179,7 +171,6 @@ fn build_zip_package(
 	target_dir: &Path,
 	exe_path: &Path,
 	pb_exe_path: &Path,
-	sounds_dir: &Path,
 	pdfium_dll_path: &Path,
 ) -> Result<(), Box<dyn Error>> {
 	let package_path = target_dir.join("paperback.zip");
@@ -202,19 +193,6 @@ fn build_zip_package(
 			);
 		}
 		add_file_to_zip(&mut zip, options, pdfium_dll_path, "pdfium.dll")?;
-	}
-	if sounds_dir.exists() {
-		for entry in WalkDir::new(sounds_dir) {
-			let entry = entry?;
-			let path = entry.path();
-			if path.is_file() {
-				let relative_path = path.strip_prefix(target_dir)?;
-				let name = relative_path.to_string_lossy().replace('\\', "/");
-				add_file_to_zip(&mut zip, options, path, &name)?;
-			}
-		}
-	} else {
-		println!("Warning: sounds directory not found, skipping sounds.");
 	}
 	println!("Created zip: {}", package_path.display());
 	Ok(())
