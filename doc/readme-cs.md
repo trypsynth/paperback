@@ -1,389 +1,779 @@
-# Paperback - verze 0.8.5
+<!-- machine-translated from doc/readme.md (source-hash: fd39958ee63d8b14); please review and edit as needed -->
 
-## Představení
+# Brožovaná kniha -- verze 0.8.5 {#paperback---version-0.8.5}
 
-Paperback je nenáročná, rychlá a přístupná čtečka e-knih a dokumentů určená komukoli, od příležitostných čtenářů až po náročné pokročilé uživatele. Je navržen pro maximální podporu odečítačů obrazovky, rychlou odezvu a uživatelský zážitek bez rušivých prvků.
+## Úvod {#introduction}
 
-## Systémové požadavky
+Paperback je lehký, rychlý a přístupný čtečka elektronických knih a
+dokumentů pro všechny, od příležitostných čtenářů až po náročné
+uživatele. Je navržen s ohledem na přístupnost pro čtečky obrazovky,
+vysokou rychlost a plynulý zážitek bez zbytečných prvků.
 
-Paperback v současnosti funguje na Windows 10 a 11. Podpora macOS a Linuxu je v plánu.
+## Systémové požadavky {#system-requirements}
 
-## Funkce
+Paperback v současné době běží na Windows, macOS, iOS a Androidu.
 
-* Kompletně soběstačný program, který nevyžaduje mít v počítači nainstalovaný žádný další software k tomu, abyste mohli prostě začít číst.
-* Neuvěřitelně rychlý, dokonce i na starém hardwaru.
-* Jednoduché vícepanelové rozhraní, takže si můžete vedle sebe otevřít, kolik dokumentů chcete.
-* Ukládá místo, kde jste přestali, v každém dokumentu, který otevřete.
-* Volitelně si pamatuje, které dokumenty jste měli při zavření programu otevřené, a při příštím spuštění je znovu načte.
-* Navržen uživatelem odečítače pro ostatní uživatele odečítačů.
-* Obsahuje funkce rychlé navigace, podobné režimu procházení webu ve většině odečítačů, pro rychlý a snadný pohyb v dokumentech.
-* Obsahuje robustní dialog pro vyhledávání, včetně funkcí, jako je historie nebo podpora regulárních výrazů.
-* Lze spouštět v přenosné verzi nebo nainstalovat i s automatickým nastavením přidružených typů souborů.
+## Funkce {#features}
 
-## Aktuálně podporované typy souborů
+-   Zcela samostatná aplikace, která k zahájení čtení nevyžaduje
+    instalaci žádného softwaru do počítače.
+-   Neuvěřitelně rychlý, a to i na starším hardwaru.
+-   Jednoduché rozhraní s kartami, které vám umožňuje otevřít libovolný
+    počet dokumentů vedle sebe.
+-   Ukládá přesnou pozici čtení ve všech dokumentech, které otevřete.
+-   Volitelně si pamatuje, které dokumenty jste měli otevřené při
+    zavření programu, a obnoví je při příštím spuštění.
+-   Obsahuje navigační funkce podobné těm, které najdete v režimu
+    prohlížení webových stránek u mnoha čteček obrazovky, pro rychlou a
+    snadnou navigaci v dokumentech.
+-   Obsahuje robustní dialogové okno pro vyhledávání, včetně funkcí,
+    jako je historie a podpora regulárních výrazů.
+-   Lze spustit zcela přenosně nebo nainstalovat s automaticky
+    nastavenými přidruženími souborů.
+-   Podporuje širokou škálu běžných formátů souborů.
+
+## Kompatibilita se čtečkami obrazovky {#screen-reader-compatibility}
+
+Paperback dobře funguje se všemi hlavními čtečkami obrazovky. Existuje
+však jeden známý problém pro uživatele programu JAWS.
+
+### JAWS a braillské displeje {#jaws-and-braille-displays}
+
+Pokud používáte JAWS s braillovým displejem, můžete zjistit, že dlouhé
+odstavce jsou zkráceny při posunu vpřed pomocí navigačních kláves vašeho
+displeje. Ovlivněn je také příkaz pro čtení aktuálního odstavce. Jedná
+se o chybu ve zpracování textového ovládacího prvku RICHEDIT50W
+programem JAWS, nikoli o problém v samotném programu Paperback, a trvalo
+poměrně dlouho, než se objevila oprava, a to i přes nadšení společnosti
+Vispero reagovat na problémy s open source softwarem.
+
+Dočasné řešení, které se nakonec po měsících čekání objevilo v diskusní
+skupině programu JAWS, spočívá v úpravě `paperback.jcf` a nastavit
+položku „Zobrazení a posun v Braillově písmu" na „Vždy použít DOM, je-li
+k dispozici". Dále je třeba povolit možnost „Posun textu po odstavcích",
+jinak se váš displej zastaví na aktivním odstavci, místo aby pokračoval
+dál. S oběma nastaveními by posun měl fungovat správně.
+
+## V současné době podporované typy souborů {#currently-supported-file-types}
 
 Paperback podporuje následující formáty a přípony:
 
-* CHM soubory nápovědy (`.chm`)
-* E-knihy ve formátu EPUB (`.epub`)
-* E-knihy ve formátu FB2 (`.fb2`)
-* HTML dokumenty (`.htm`, `.html`, `.xhtml`)
-* Dokumenty ve formátu Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
-* Dokumenty Microsoft Wordu (`.docx`, `.docm`)
-* OpenDocument prezentace (`.odp`, `.fodp`)
-* OpenDocument textové soubory (`.odt`, `.fodt`)
-* PDF dokumenty (`.pdf`)
-* PowerPointové prezentace (`.pptx`, `.pptm`)
-* RTF dokumenty (`.rtf`)
-* Soubory v prostém textu a log soubory (`.txt`, `.log`)
-* XML dokumenty (`.xml`)
+-   Nápovědové soubory CHM (`.chm`)
+-   knihy ve formátu DAISY (`.opf`, `.zip`)
+-   knihy ve formátu EPUB (`.epub`)
+-   elektronické knihy ve formátu FB2 (`.fb2`)
+-   HTML dokumenty (`.htm`, `.html`, `.xhtml`)
+-   Dokumenty ve formátu Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`,
+    `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
+-   Dokumenty Microsoft Word (`.docx`, `.docm`, `.doc`)
+-   Knihy ve formátu MOBI/Kindle (`.mobi`, `.azw`, `.azw3`)
+-   Prezentace ve formátu OpenDocument (`.odp`, `.fodp`)
+-   Textové soubory OpenDocument (`.odt`, `.fodt`)
+-   Dokumenty ve formátu PDF (`.pdf`)
+-   Prezentace v PowerPointu (`.pptx`, `.pptm`, `.ppt`)
+-   Dokumenty RTF (`.rtf`)
+-   Soubory s prostým textem a soubory protokolů (`.txt`, `.log`)
 
-## Klávesové zkratky
+## Klávesové zkratky {#keyboard-shortcuts}
 
-Paperback je navržen především pro použití s klávesnicí a s odečítačem obrazovky. Toto jsou aktuální klávesové zkratky:
+Aplikace Paperback je navržena pro ovládání především pomocí klávesnice.
+Zde jsou aktuální klávesové zkratky.
 
-### Nabídka Soubor
+Níže uvedené klávesové zkratky platí pro Windows. Tam, kde se liší od
+macOS, je ekvivalent uveden v závorkách --- hlavně proto, že kombinace
+Ctrl+G, Ctrl+W a Alt+Šipka vlevo/vpravo jsou na této platformě již
+obsazeny jinými systémovými nebo aplikačními konvencemi. V nabídce
 
-* `Ctrl+O`: Otevření dokumentu.
-* `Ctrl+F4`: Zavření aktuálního dokumentu.
-* `Ctrl+Shift+F4`: Zavření všech otevřených dokumentů.
-* `Ctrl+R`: Zobrazení dialogu "Všechny dokumenty" (z nabídky Nedávné dokumenty).
+### Nabídka Soubor {#file-menu}
 
-### Nabídka Přejít
+-   `Ctrl+O`: Otevřít dokument.
+-   `Ctrl+F4` (macOS: `Cmd+W`): Zavře aktuální dokument.
+-   `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Zavřít všechny otevřené
+    dokumenty.
+-   `Ctrl+Shift+T`: Znovu otevřít naposledy zavřený dokument.
+-   `Ctrl+R`: Zobrazí dialogové okno „Všechny dokumenty" (z nabídky
+    Poslední dokumenty).
+-   `Ctrl+Q`: Ukončit (pouze Windows; v systému macOS se tato volba
+    nachází v nabídce aplikace).
 
-* `Ctrl+F`: Zobrazení dialogu Najít.
-* `F3`: Najít další.
-* `Shift+F3`: Najít předchozí.
-* `Ctrl+G`: Přejít na řádek.
-* `Ctrl+Shift+G`: Přejít na procenta.
-* `Ctrl+P`: Přejít na stránku (pokud je podporováno v aktuálním dokumentu).
-* `Alt+Left`: Posun zpět v historii navigace.
-* `Alt+Right`: Posun vpřed v historii navigace.
-* `[`: Předchozí oddíl.
-* `]`: Další oddíl.
-* `Shift+H`: Předchozí nadpis.
-* `H`: Další nadpis.
-* `Shift+1` až `Shift+6`: Předchozí nadpis úrovně 1 až 6.
-* `1` až `6`: Další nadpis úrovně 1 až 6.
-* `Shift+P`: Předchozí stránka.
-* `P`: Další stránka.
-* `Shift+B`: Předchozí záložka.
-* `B`: Další záložka.
-* `Shift+N`: Předchozí poznámka.
-* `N`: Další poznámka.
-* `Ctrl+B`: Zobrazení všech záložek a poznámek.
-* `Ctrl+Alt+B`: Zobrazení pouze záložek.
-* `Ctrl+Alt+M`: Zobrazení pouze poznámek.
-* `Ctrl+Shift+W`: Zobrazení textu poznámky na aktuální pozici.
-* `Shift+K`: Předchozí odkaz.
-* `K`: Další odkaz.
-* `Shift+T`: Předchozí tabulka.
-* `T`: Další tabulka.
-* `Shift+S`: Předchozí oddělovač.
-* `S`: Další oddělovač.
-* `Shift+L`: Předchozí seznam.
-* `L`: Další seznam.
-* `Shift+I`: Předchozí položka seznamu.
-* `I`: Další položka seznamu.
+### Nabídka Přejít {#go-menu}
 
-### Nabídka Nástroje
+-   `Ctrl+F`: Zobrazit dialogové okno „Najít".
+-   `F3` (macOS: `Cmd+G`): Najít další.
+-   `Shift+F3` (macOS: `Cmd+Shift+G`): Najít předchozí.
+-   `Ctrl+G` (macOS: `Cmd+L`): Přejít na řádek.
+-   `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Přejít na procento.
+-   `Ctrl+P`: Přejít na stránku (pokud to aktuální dokument podporuje).
+-   `Alt+Left` (macOS: `Cmd+[`): Vrátit se zpět v historii navigace.
+-   `Alt+Right` (macOS: `Cmd+]`): Přejít vpřed v historii navigace.
+-   `[`: Předchozí část.
+-   `]`: Další část.
+-   `Shift+H`: Předchozí nadpis.
+-   `H`: Další nadpis.
+-   `Shift+1` až po `Shift+6`: Předchozí nadpis na úrovni 1--6.
+-   `1` až po `6`: Další nadpis na úrovni 1--6.
+-   `Shift+P`: Předchozí stránka.
+-   `P`: Další stránka.
+-   `Shift+B`: Předchozí záložka.
+-   `B`: Další záložka.
+-   `Shift+N`: Předchozí poznámka.
+-   `N`: Další poznámka.
+-   `Ctrl+B`: Přejít na všechny záložky a poznámky.
+-   `Ctrl+Alt+B`: Přejít pouze na záložky.
+-   `Ctrl+Alt+M`: Přejít pouze k poznámkám.
+-   `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, tj. fyzická klávesa
+    Control namísto Cmd): Zobrazit text poznámky na aktuální pozici.
+-   `Shift+K`: Předchozí odkaz.
+-   `K`: Další odkaz.
+-   `Shift+G`: Předchozí obrázek.
+-   `G`: Další obrázek.
+-   `Shift+F`: Předchozí obrázek.
+-   `F`: Další obrázek.
+-   `Shift+T`: Předchozí tabulka.
+-   `T`: Další tabulka.
+-   `Shift+S`: Předchozí oddělovač.
+-   `S`: Další oddělovač.
+-   `Shift+L`: Předchozí seznam.
+-   `L`: Další seznam.
+-   `Shift+I`: Předchozí položka seznamu.
+-   `I`: Další položka seznamu.
+-   `Shift+,`: Přejít na začátek aktuálního kontejneru (seznamu nebo
+    tabulky).
+-   `,`: Přejít za konec aktuálního kontejneru (seznamu nebo tabulky).
 
-* `Ctrl+W`: Zobrazení počtu slov v aktuálním dokumentu.
-* `Ctrl+I`: Zobrazení informací o dokumentu.
-* `Ctrl+T`: Zobrazení obsahu (osnovy) dokumentu.
-* `F7`: Zobrazení seznamu prvků.
-* `Ctrl+Shift+C`: Otevření nadřazené složky (kde je aktuální dokument uložen).
-* `Ctrl+Shift+V`: Otevření aktuálního dokumentu ve webovém zobrazení.
-* `Ctrl+Shift+E`: Export dat dokumentu (`.paperback`).
-* `Ctrl+Shift+I`: Import dat dokumentu (`.paperback`).
-* `Ctrl+E`: Export aktuálního dokumentu do prostého textu.
-* `Ctrl+Shift+B`: Přepnutí záložky v aktuálním výběru / na aktuální pozici.
-* `Ctrl+Shift+N`: Přidání nebo úpravy poznámky k záložce v aktuálním výběru / na aktuální pozici.
-* `Ctrl+,`: Otevření dialogu Možnosti.
-* `Ctrl+Shift+S`: Přepnutí časovače spánku.
+### Nabídka Nástroje {#tools-menu}
 
-### Nabídka Nápověda
+-   `Ctrl+W` (macOS: `RawCtrl+W`, tj. fyzická klávesa Control namísto
+    Cmd): Zobrazit počet slov v aktuálním dokumentu.
+-   `Ctrl+I`: Zobrazit informace o dokumentu.
+-   `Ctrl+T`: Zobrazit obsah.
+-   `F7`: Zobrazit seznam prvků.
+-   `Ctrl+Shift+C`: Otevřít obsahovou složku.
+-   `Ctrl+Shift+V`: Otevřít aktuální obsah ve Web View.
+-   `Ctrl+U`: Zobrazit zdrojový kód dokumentu v nové záložce.
+-   `Ctrl+Shift+E`: Exportovat data dokumentu (`.paperback`).
+-   `Ctrl+Shift+I`: Importovat data dokumentu (`.paperback`).
+-   `Ctrl+E`: Exportovat aktuální dokument jako prostý text.
+-   `Ctrl+Shift+B`: Přepnout záložku na aktuální výběr/pozici kurzoru.
+-   `Ctrl+Shift+N`: Přidat nebo upravit poznámku k záložce na místě
+    aktuálního výběru/kurzoru.
+-   `Ctrl+Alt+W`: Zapnout/vypnout zalomení řádků.
+-   `Ctrl+,`: Otevřít možnosti (macOS: Předvolby, v nabídce aplikace ).
+-   `Ctrl+Shift+S`: Zapnout/vypnout časovač uspání.
 
-* `Ctrl+F1`: Zobrazení dialogu O Paperbacku.
-* `F1`: Zobrazení této nápovědy ve výchozím webovém prohlížeči.
-* `Shift+F1`: Zobrazení této nápovědy přímo v Paperbacku.
-* `Ctrl+Shift+U`: Vyhledání aktualizací.
-* `Ctrl+D`: Otevření stránky podpory ve výchozím webovém prohlížeči.
+### Nabídka Nápověda {#help-menu}
 
-### Další zkratky v zobrazení dokumentu
+-   `Ctrl+F1`: Zobrazit dialogové okno „O aplikaci".
+-   `F1`: Zobrazit nápovědu ve výchozím prohlížeči.
+-   `Shift+F1`: Zobrazit nápovědu v aplikaci Paperback.
+-   `Ctrl+Shift+U`: Zkontrolovat dostupnost aktualizací.
+-   `Ctrl+D`: Otevřít stránku pro dary ve vašem výchozím prohlížeči.
 
-* `Delete` / `Numpad Delete` na seznamu záložek: Zavření záložky (panelu) vybraného dokumentu.
-* `Enter` v textu dokumentu: Aktivuje odkaz pod kurzorem nebo otevře zobrazení tabulky, pokud se kurzor nachází na značce tabulky.
-* `Shift+F10` v textu dokumentu: Otevření kontextové nabídky.
+### Další klávesové zkratky pro prohlížení dokumentů {#additional-document-view-keys}
 
-## Podporované jazyky
+-   `Delete` / `Numpad Delete` na ovládacím panelu karet: Zavřít
+    vybranou kartu dokumentu.
+-   `Enter` nebo `Space` v textu dokumentu: Aktivujte odkaz v místě
+    kurzoru nebo otevřete zobrazení tabulky, pokud se kurzor nachází na
+    značce tabulky.
+-   `Shift+F10` nebo klávesa Menu/Aplikace v textu dokumentu : Otevře
+    kontextové menu.
 
-Paperback je přeložen do mnoha různých jazyků a další neustále přibývají. Následuje kompletní výčet:
+## Podporované jazyky {#supported-languages}
 
-* Bosenština
-* Čeština
-* Francouzština
-* Němčina
-* Japonština
-* Ruština
-* Zjednodušená čínština
-* Srbština
-* Španělština
-* Vietnamština
+Aplikace Paperback je přeložena do mnoha různých jazyků a další se
+neustále přidávají. Kompletní seznam najdete níže.
 
-## Poděkování
-### Vývoj
-* Quin Gillespie: Primární vývojář a zakladatel projektu.
-* Aryan Choudhary: primární přispěvatel.
+Chcete-li se dozvědět, jak přispět, přečtěte si prosím naši [Příručku
+pro překlad](translating.md).
 
-### Podpora
-Následující lidé podpořili další vývoj Paperbacku finančním příspěvkem. Pokud přispějete i vy, vaše jméno se zde automaticky neobjeví. Uvádím pouze lidi, kteří si přáli svůj příspěvek zveřejnit.
+-   Bosenský
+-   Čeština
+-   nizozemština
+-   Finský
+-   Francouzština
+-   němčina
+-   japonsky
+-   polština
+-   portugalština (Brazílie)
+-   ruština
+-   Zjednodušená čínština
+-   Srbština
+-   španělština
+-   Vietnamština
 
-Upozornění: Veřejné sponzory na GitHubu automaticky považuji za určené ke zveřejnění.
+## Zásluhy {#credits}
 
-* Alex Hall
-* Brandon McGinty
-* Brian Hartgen
-* Debbie Yuille
-* Devin Prater
-* Felix Steindorff
-* Hamish Mackenzie
-* James Scholes
-* Jayson Smith
-* Jonathan Rodriguez
-* Jonathan Schuster
-* Keao Wright
-* Pratik Patel
-* Roberto Perez
-* Sean Randall
-* Timothy Wynn
-* Tyler Rodick
+### Vývoj {#development}
 
-## Historie změn
+-   Quin Gillespie: hlavní vývojář a zakladatel projektu.
+-   Aryan Choudhary: hlavní přispěvatel.
 
-### Verze 0.8.5
-* Přidána podpora tagovaných PDF souborů!
-* Přidána podpora stránek pro knihy ve formátu epub.
-* Přidána podpora PowerPointových prezentací ve starém formátu (*.ppt)!
-* Přidána podpora starého formátu dokumentů Microsoft Wordu (*.doc)!
-* Přidána podpora knih ve formátu mobi a AZW3!
-* Přidána podpora šifrovaných dokumentů Microsoft Office. Aktuálně jsou podporovány formáty starého Wordu, moderního Wordu a moderního PowerPointu. Starý PowerPoint je plánován do budoucna.
-* Přidána klávesová zkratka ctrl+q pro ukončení aplikace.
-* Přidána podpora zazipovaných knih z Bookshare (DAISY i Word)!
-* U obrázků v dokumentech by se nyní měl správně zobrazovat alt text.
-* Soubory CHM nyní správně podporují navigaci po vnitřních odkazech.
-* Opravena chyba, kdy se zvuky záložek přehrávaly na začátku odstavce místo na skutečné pozici záložky.
-* Opravena chyba, kdy přechod na konkrétní číslo stránky byl posunutý o 1.
-* Opravena chyba, kdy se dialog Otevřít jako nedal zavřít klávesou escape.
-* Opravena chyba, kdy se kontextové menu ve čtečce nezobrazovalo při kliknutí pravým tlačítkem myši nebo stisknutí shift+F10.
-* Opravena chyba, kdy se při otevírání dokumentů z příkazové řádky někdy fokusoval nesprávný dokument.
-* PDF, která jsou pouze obrázková, jsou nyní znovu správně detekována a upozorní vás na tuto skutečnost.
-* Nyní je možné navigovat po obrázcích a ilustracích pomocí zkratek G/shift+G a F/shift+F.
-* Paperback bude nyní respektovat vaše nastavení tmavého režimu pro aplikace.
-* Odstraněna podpora DAISY XML, protože už není potřeba.
-* Ve stromovém zobrazení obsahu dokumentu jsem přešel zpátky na nativní Win32 navigaci prvními písmeny.
-* Dialog o chybě při spuštění nyní zobrazuje podrobnější chybové hlášky.
-* Webové zobrazení se nyní bude načítat mnohem rychleji a hladčeji.
+### Dary {#donations}
 
-### Verze 0.8.2
-* Přidána podpora stránek pro RTF dokumenty!
-* Opravena chyba, kdy se při otevření EPUB dokumentu ve webovém zobrazení automaticky aktivovaly odkazy, pokud je dokument obsahoval.
-* Opravena chyba, kdy RTF parser ve vzácných případech nevkládal mezery mezi slova.
-* Opraveno rozdělování odstavců v některých PDF dokumentech na několik krátkých řádků. [#101](https://github.com/trypsynth/paperback/issues/101), [#355](https://github.com/trypsynth/paperback/pull/355).
-* PDF dokumenty teď mají základní podporu pro pohyb po odkazech a po nadpisech! [#291](https://github.com/trypsynth/paperback/issues/291), [#353](https://github.com/trypsynth/paperback/pull/353), [#354](https://github.com/trypsynth/paperback/pull/354).
-* RTF tabulátory a konce řádků se teď vykreslují přesně tak, jak se v dokumentu vyskytují.
-* Přešel jsem zpátky na vyzkoušenou a osvědčenou knihovnu pdfium pro parsování PDF souborů, takže je jejich renderování opět výrazně spolehlivější.
+Následující osoby poskytly dary v určité výši na vývoj projektu
+Paperback. Pokud poskytnete dar, vaše jméno sem nebude automaticky
+přidáno; přidávám pouze ty, kteří si přejí, aby jejich dar byl
+zveřejněn.
 
-### Verze 0.8.1
-* Přidána klávesová zkratka Ctrl+Shift+T pro znovuotevření naposledy zavřeného dokumentu. [#343](https://github.com/trypsynth/paperback/issues/343).
-* Dialog Všechny dokumenty teď podporuje výběr více dokumentů, které se mají otevřít najednou. [#344](https://github.com/trypsynth/paperback/issues/344).
-* Opraveno několik chyb v RTF parseru. [#345](https://github.com/trypsynth/paperback/issues/345).
-* Opravena chyba, kdy cesty k souborům obsahující jiné než ascii znaky (například bosenské š, č, ć, ž) přestaly fungovat při otevření stejného souboru ve druhé instanci Paperbacku. [#346](https://github.com/trypsynth/paperback/issues/346).
-* Opraveno čtení textu z PDF v nesprávném pořadí a chybové vkládání mezer okolo slov s velkými písmeny. [#44](https://github.com/trypsynth/paperback/issues/44).
-* Opraveno pomalé načítání dokumentů při otevírání velkých souborů.
-* Opravena lokalizace tlačítek Ano a Ne v potvrzovacích dialozích. [#285](https://github.com/trypsynth/paperback/issues/285).
+Poznámka: Veřejný status sponzora na GitHubu považuji za důvod pro
+automatické zařazení do tohoto seznamu.
 
-### Verze 0.8.0
-* Přidány lokalizace pro japonštinu, vietnamštinu a zjednodušenou čínštinu! [#300](https://github.com/trypsynth/paperback/pull/300), [#326](https://github.com/trypsynth/paperback/pull/326), [#335](https://github.com/trypsynth/paperback/pull/335).
-* Přidán automatický updater, který nyní nahradí aktuálně nainstalovanou verzi Paperbacku, místo aby jenom stáhnul novou verzi! [#323](https://github.com/trypsynth/paperback/pull/323).
-* Přidána volitelná zvuková odezva pro přesun na záložku nebo poznámku (za zvuky děkuji Andre Louisovi)! [#110](https://github.com/trypsynth/paperback/issues/110).
-* Přidána podpora RTF dokumentů! [#26](https://github.com/trypsynth/paperback/issues/26).
-* Přidána podpora dokumentů ve formátu DAISY XML. [#136](https://github.com/trypsynth/paperback/issues/136).
-* Přidána podpora textových souborů Flat Open Document Text!
-* Přidána podpora Flat Open Document prezentací!
-* Přidána podpora oddělovačů a zkratky S a shift+S. [#294](https://github.com/trypsynth/paperback/issues/294).
-* Každý posun o víc než 300 znaků se nyní automaticky přidá do historie navigace. [#179](https://github.com/trypsynth/paperback/issues/179).
-* Opraveno obnovování okna Paperbacku ze systémové lišty. [#284](https://github.com/trypsynth/paperback/issues/284).
-* Opravena chyba, kdy se ve webovém zobrazení pro dokumenty v Markdownu zobrazoval původní text místo renderovaného HTML.
-* Opraveno nesprávné renderování tabulek v Markdown souborech. [#303](https://github.com/trypsynth/paperback/issues/303).
-* PDF, která jsou pouze obrázková, vás na tuto skutečnost nyní upozorní, když se takový soubor pokusíte načíst. [#89](https://github.com/trypsynth/paperback/issues/89).
-* Při kontrole aktualizací je nyní možné vyhledávat kromě stabilních verzí i vývojové verze. [#333](https://github.com/trypsynth/paperback/pull/333).
-* Ve spustitelném souboru Paperbacku jsou správně uvedeny informace o verzi. [#204](https://github.com/trypsynth/paperback/issues/204).
-* Dialog Možnosti byl rozdělen do záložek pro snadnější používání a pohodlnější navigaci.
-* Přešel jsem na knihovnu Hayro pro parsování souborů PDF, což vede k větší spolehlivosti, rychlejší odezvě a menšímu počtu DLL knihoven.
-* Přepsal jsem celou aplikaci do Rustu. Nový kód je bezpečnější, načítá dokumenty rychleji a je ho jednodušší udržovat a rozšiřovat.
-* Kontextová nabídka na textovém prvku s obsahem dokumentu teď obsahuje příkazy specifické pro čtečku a ne obecné příkazy jako Vyjmout nebo Vložit. [#114](https://github.com/trypsynth/paperback/issues/114).
+-   Alex Hall
+-   Brandon McGinty
+-   Brian Hartgen
+-   Debbie Yuille
+-   Devin Prater
+-   Felix Steindorff
+-   Hamish Mackenzie
+-   James Scholes
+-   Jayson Smith
+-   Jonathan Rodriguez
+-   Jonathan Schuster
+-   Keao Wright
+-   Michael Marshall
+-   Pratik Patel
+-   Roberto Perez
+-   Sean Randall
+-   Timothy Wynn
+-   Tyler Rodick
 
-### Verze 0.7.0
-* Přidána podpora tabulek pro dokumenty založené na HTML a XHTML! Mezi tabulkami se můžete pohybovat pomocí T a Shift+T a stisknutím Enteru si některou zobrazit ve webovém zobrazení. [#81](https://github.com/trypsynth/paperback/issues/81), [#98](https://github.com/trypsynth/paperback/pull/98), [#226](https://github.com/trypsynth/paperback/pull/226), [#228](https://github.com/trypsynth/paperback/pull/228).
-* Přidány základy funkce webového vykreslování! Stisknutím Ctrl+Shift+V otevřete aktuální část dokumentu ve webovém zobrazení. Může se to hodit zejména u obsahu, jako je složité formátování nebo ukázky kódu. [#188](https://github.com/trypsynth/paperback/issues/188), [#239](https://github.com/trypsynth/paperback/pull/239).
-* Přidán ruský překlad (díky Ruslanu Gulmagomedovovi)! [#211](https://github.com/trypsynth/paperback/pull/211), [#212](https://github.com/trypsynth/paperback/pull/212).
-* Do dialogu Všechny dokumenty přidáno tlačítko Vymazat vše. [#217](https://github.com/trypsynth/paperback/issues/217).
-* Kontrola aktualizací nyní při dostupnosti nové verze zobrazuje poznámky k vydání. [#210](https://github.com/trypsynth/paperback/pull/210).
-* Aktualizován srbský překlad. [#219](https://github.com/trypsynth/paperback/pull/219), [#229](https://github.com/trypsynth/paperback/pull/229).
-* Aktualizován bosenský překlad. [#218](https://github.com/trypsynth/paperback/pull/218), [#225](https://github.com/trypsynth/paperback/pull/225).
-* Opraveno obnovování okna ze systémové lišty. [#284](https://github.com/trypsynth/paperback/issues/284).
-* Opraveny překlady tlačítek Ano/Ne v potvrzovacích dialozích. [#285](https://github.com/trypsynth/paperback/issues/285).
-* Opraveno načítání konfigurace při spuštění jako správce. [#201](https://github.com/trypsynth/paperback/issues/201).
-* Opraveno zpracování komentářů v dokumentech XML a HTML. [#198](https://github.com/trypsynth/paperback/issues/198).
-* Opraveno parsování obsahu v knihách Epub 2. [#192](https://github.com/trypsynth/paperback/pull/192).
-* Opraven přechod na další položku se stejným písmenem v obsahu. [#191](https://github.com/trypsynth/paperback/pull/191).
-* Opravena chyba, kdy se dialog Hledat při použití tlačítek další/předchozí neskrýval správně.
-* Opravena chyba, kdy vás obsah v epub dokumentech občas přesunul na nesprávnou položku.
-* Opraveny různé problémy se zpracováním bílých znaků v XML, HTML a značkách pre.
-* Opraven posun o jeden odkaz mimo při navigaci po odkazech.
-* Opravena chyba, kdy některé knihy měly na konci řádků nadbytečné bílé znaky.
-* Opraveny různé problémy parseru. [#208](https://github.com/trypsynth/paperback/pull/208).
-* Položky nabídky související se záložkami jsou nyní správně zakázány, když není otevřen žádný dokument. [#196](https://github.com/trypsynth/paperback/pull/196).
-* Seznam prvků je nyní správně zakázán, když není otevřen žádný dokument. [#194](https://github.com/trypsynth/paperback/issues/194).
-* Vylepšeno zpracování seznamů v různých formátech dokumentů. [#213](https://github.com/trypsynth/paperback/pull/213).
-* Vylepšen pracovní postup pro překladatele. [#270](https://github.com/trypsynth/paperback/issues/270).
-* Mnoho interních refaktorizací, při nichž byla většina aplikační logiky přesunuta z C++ do Rustu kvůli vyššímu výkonu a lepší udržitelnosti.
+## Seznam změn {#changelog}
 
-### Verze 0.6.1
+### Verze 0.9.0 (nevydaná) {#version-0.9.0-unreleased}
 
-* Přidána podpora PDF chráněných heslem! [#169](https://github.com/trypsynth/paperback/issues/169).
-* Přidána velmi základní funkce pro přesun na předchozí/další pozici. Pokud stisknete Enter na vnitřním odkazu a kurzor se přesune, tato pozice se nyní zapamatuje a lze se na ni vracet pomocí Alt+šipka vlevo/vpravo. [#115](https://github.com/trypsynth/paperback/issues/115), [#174](https://github.com/trypsynth/paperback/pull/174).
-* Přidán seznam prvků! Momentálně zobrazuje jen strom všech nadpisů v dokumentu nebo seznam odkazů, ale do budoucna počítám s jeho rozšířením. [#173](https://github.com/trypsynth/paperback/issues/173), [#177](https://github.com/trypsynth/paperback/pull/177).
-* Přidána možnost spouštět Paperback ve výchozím nastavení maximalizovaný. [#164](https://github.com/trypsynth/paperback/issues/164), [#172](https://github.com/trypsynth/paperback/pull/172).
-* Opravena chyba, kdy odkazy v některých dokumentech Epub nefungovaly správně. [#167](https://github.com/trypsynth/paperback/issues/167), [#171](https://github.com/trypsynth/paperback/pull/171), [#178](https://github.com/trypsynth/paperback/issues/178), [#180](https://github.com/trypsynth/paperback/pull/180).
-* Opraveno parsování obsahu v Epub souborech obsahujících relativní cesty. [#187](https://github.com/trypsynth/paperback/issues/187).
-* Opravena chyba, kdy se u některých epub dokumentů nezobrazoval název nebo autor. [#175](https://github.com/trypsynth/paperback/issues/175).
-* Opravena chyba, kdy se názvy některých kapitol v epub dokumentech v dialogu obsahu nezobrazovaly správně. [#176](https://github.com/trypsynth/paperback/pull/176).
-* Opravena chyba, kdy v dialogu obsahu nebylo možné aktivovat tlačítka OK/Zrušit mezerníkem. [#170](https://github.com/trypsynth/paperback/issues/170).
-* Vylepšeno zpracování nadpisů v dokumentech Microsoft Wordu. [#183](https://github.com/trypsynth/paperback/pull/183).
-* Pokud se pokusíte vyvolat dialog Nedávné dokumenty a seznam bude prázdný, dostanete nyní hlasovou odezvu. [#185](https://github.com/trypsynth/paperback/issues/185).
+-   Do dialogového okna s probíhající aktualizací bylo přidáno tlačítko
+    pro zrušení.
+-   Byl přidán nástroj CLI s názvem pb, který umožňuje rychle převést
+    jakýkoli z formátů podporovaných aplikací Paperback do formátu HTML,
+    Markdown nebo prostého textu.
+-   Přidána konfigurovatelná klávesová zkratka pro obnovení aplikace
+    Paperback z oblasti oznamovacího panelu.
+-   Do dialogového okna „Všechny dokumenty" bylo přidáno tlačítko pro
+    vyhledání chybějících knih, u kterých došlo ke změně cesty.
+-   Do dialogového okna „Možnosti" byla přidána záložka „Čitelnost" s
+    následujícími možnostmi:
+    -   Zalamování textu (přesunuto z části „Obecné");
+    -   Zobrazení tabulek v textu (novinka v této verzi, viz níže);
+    -   Písmo;
+    -   Barva pozadí;
+    -   Řádkování;
+    -   Mezery mezi odstavci;
+    -   Mezery mezi písmeny;
+    -   Zarovnání textu.
+-   Bylo přidáno přepínací tlačítko pro nastavení způsobu zobrazení
+    tabulek a bylo sjednoceno zobrazení tabulek napříč dokumenty.
+-   Byla přidána možnost „Zobrazit zdroj", která otevírá zdrojový kód
+    dokumentu v nové záložce, což je užitečné například při úpravách
+    Markdownu.
+-   Do dialogového okna pro počítání slov byla přidána odhadovaná doba
+    čtení, stejně jako možnost nastavit svou rychlost čtení, aby byla
+    tato metrika skutečně užitečná.
+-   Přidána podpora ARM64 pro Windows!
+-   Přidána podpora pro Android!
+-   Přidána podpora pro iOS!
+-   Přidána podpora pro macOS!
+-   Přidány nové jazyky: nizozemština, finština a polština.
+-   Přidána podpora navigace podle kontejnerů.
+-   Přidána podpora seznamů, položek seznamů, obrázků a fotografií v
+    dokumentech CHM .
+-   Přidána položka nabídky pro zalomení textu a příslušná klávesová
+    zkratka.
+-   Zvuky záložek a poznámek by se nyní měly správně přehrávat výhradně
+    při pohybu kurzoru nad slovem, které je obsahuje.
+-   Dokumenty kódované ve starších kódováních CJK, jako jsou GBK, Big5 a
+    Shift_JIS, se nyní budou správně zobrazovat namísto zobrazení jako
+    nesrozumitelné znaky.
+-   Rozšířena položka nabídky „Exportovat", která nyní kromě prostého
+    textu umožňuje export do formátů HTML a Markdown.
+-   Opravena chyba, kdy přepnutí na zalomení řádků přesunulo kurzor na
+    začátek dokumentu.
+-   Opravena chyba, kvůli které knihy ve formátu Daisy zobrazovaly
+    nesprávné informace ve stavovém řádku.
+-   Opraveno, že prvky dl, dt a dd nevytvářely konce řádků v dokumentech
+    XHTML .
+-   Opravena chyba, kdy klávesa Escape nezavírala dialogová okna
+    „Informace o dokumentu" a „Všechny dokumenty". Opravena chyba, kdy
+    kotvy filepos v knihách ve formátu Mobi rozdělovaly HTML tagy a
+    vkládaly
+-   Opraveno, že kotvy filepos v knihách ve formátu Mobi rozdělovaly
+    HTML tagy a vkládaly nesmyslné znaky do textu knihy.
+-   Opraveno zpoždění při přibližování se ke konci textového pole ve
+    velkých dokumentech.
+-   Opraveny odkazy ve starších knihách ve formátu Mobi.
+-   Opraveno načítání knih ve formátu DAISY s nesprávnými deklaracemi
+    kódování.
+-   Opraveno hlášení nesprávného textu řádku při navigaci mezi stránkami
+    v některých situacích.
+-   Opraveno parsování dokumentů RTF obsahujících nelatinské znaky.
+-   Opravena funkce „Znovu otevřít naposledy zavřený", která se
+    pokoušela znovu otevřít přiložený soubor readme.
+-   Opraveno neaktualizování záhlaví po zavření dokumentu z dialogového
+    okna „Všechny dokumenty".
+-   Opraveno, že dialogové okno webového prohlížeče nebylo možné změnit
+    a objevovalo se ve velmi malé počáteční velikosti.
+-   Opraveno nesprávné vykreslování nadpisů v dokumentech Word s názvy
+    stylů specifickými pro dané národní prostředí.
+-   Opravena chyba, kdy se vybraná záložka po restartování aplikace
+    Paperback správně nezvýraznila.
+-   Pokud je při otevření dialogového okna pro počítání slov aktivní
+    výběr, nyní se zobrazí počet slov, které jste vybrali.
+-   Obrázky by se nyní měly správně zobrazovat ve vloženém webovém
+    prohlížeči.
+-   Vylepšeno zpracování souborů aplikací Paperback na síťových discích
+    systému Windows: stisknutím tlačítka „Zobrazit soubor ve složce" se
+    nyní správně zaostří na soubor v síťovém úložišti a cesty již
+    neobsahují podivné znaky.
+-   Výrazně vylepšeno parsování formátu AZW3.
+-   Přešli jsme z knihovny chmlib na náš vlastní čtečku souborů CHM
+    napsanou čistě v jazyce Rust.
+-   Na počítači již nebudou soubory .paperback při obnově dokumentu
+    násilně načítány. Místo toho budete požádáni o potvrzení, jakmile
+    bude soubor nalezen.
+-   Paperback nyní u nesprávně označených souborů PDF používá jako
+    záložní řešení extrakci prostého textu.
+-   Funkce „Otevřít obsahovou složku" nyní v Průzkumníku zvýrazní daný
+    soubor.
+-   Při otevření souboru readme se nyní zohlední vámi vybraný jazyk.
+-   Dokumenty PowerPoint nyní podporují tabulky.
+-   Při otevření nápovědy v aplikaci Paperback se správně aktualizuje
+    nabídka a zaměří se na textové pole.
+-   Soubor „Readme.html" již nebude přidán do seznamu všech dokumentů,
+    pokud je otevřen pomocí klávesové zkratky Shift+F1.
+-   Odstranění dokumentů z dialogového okna „Nedávné" nyní také zavře
+    jejich aktivní kartu.
+-   Ve Windows jsme přešli na mnohem bezpečnější metodu IPC.
+-   Při přepínání mezi kartami se nyní načte název aktivního dokumentu.
+-   Aktualizační program nyní správně zobrazuje obsah značek kódu
+    Markdown v poznámkách k vydání.
+-   Aktualizační program nyní ověřuje, zda stažený soubor nebyl
+    manipulován.
+-   Webový prohlížeč se nyní otevírá na vaší aktuální pozici ve čtení.
+-   Váš vyhledávací filtr v dialogovém okně „Všechny dokumenty" se nyní
+    zachová i po odstranění dokumentu.
 
-### Verze 0.6.0
+### Verze 0.8.5 {#version-0.8.5}
 
-* Do dialogu Možnosti přidána nová volba, která zobrazuje nabídku Přejít v mnohem kompaktnější podobě; ve výchozím stavu je zapnutá.
-* Přidána možnost cyklické rychlé navigace po strukturních prvcích. [#116](https://github.com/trypsynth/paperback/pull/116).
-* Do nabídky Nástroje byla přidána možnost otevřít složku obsahující právě fokusovaný dokument. [#142](https://github.com/trypsynth/paperback/pull/142).
-* Přidán poměrně jednoduchý, ale velmi účinný systém aktualizací. [#28](https://github.com/trypsynth/paperback/issues/28).
-* Přidána základní funkce časovače spánku, dostupná pomocí Ctrl+Shift+S. [#117](https://github.com/trypsynth/paperback/issues/117), [#118](https://github.com/trypsynth/paperback/pull/118).
-* Přidána podpora parsování e-knih ve formátu FB2! [#30](https://github.com/trypsynth/paperback/issues/30), [#107](https://github.com/trypsynth/paperback/pull/107).
-* Přidána podpora parsování OpenDocument prezentací! [#105](https://github.com/trypsynth/paperback/issues/105), [#106](https://github.com/trypsynth/paperback/pull/106).
-* Přidána podpora parsování OpenDocument textových souborů! [#29](https://github.com/trypsynth/paperback/issues/29), [#90](https://github.com/trypsynth/paperback/pull/90).
-* Záložky nyní mohou označovat celý řádek nebo jen vybranou část textu. Pokud při vytvoření záložky nemáte nic označeno, chová se to stejně jako před verzí 0.6 a označí se celý řádek. Pokud ale nějaký text vyberete, bude do záložky zahrnut pouze tento text. [#99](https://github.com/trypsynth/paperback/issues/99).
-* K záložkám lze nyní připojit volitelné textové poznámky! Mezi záložkami obsahujícími poznámky se můžete pohybovat pomocí N a Shift+N, případně můžete vyvolat dialog záložek se zobrazením všech záložek, jen poznámek nebo jen záložek bez poznámek pomocí konkrétních klávesových zkratek. [#68](https://github.com/trypsynth/paperback/issues/68), [#128](https://github.com/trypsynth/paperback/issues/128), [#156](https://github.com/trypsynth/paperback/issues/156), [#157](https://github.com/trypsynth/paperback/issues/157), [#158](https://github.com/trypsynth/paperback/pull/158), [#159](https://github.com/trypsynth/paperback/issues/159), [#161](https://github.com/trypsynth/paperback/pull/161).
-* Záložky v dialogu Záložky už nebudou mít obtěžující předponu „záložka x“. [#86](https://github.com/trypsynth/paperback/issues/86).
-* Knihy Epub obsahující HTML kód, který se tváří jako XML, budou nyní zpracovávány správně. [#96](https://github.com/trypsynth/paperback/issues/96).
-* Opraveno načítání velkých dokumentů Markdown. [#97](https://github.com/trypsynth/paperback/issues/97).
-* Opravena chyba, kdy stisknutí mezerníku ve stromovém zobrazení obsahu aktivovalo tlačítko OK. [#121](https://github.com/trypsynth/paperback/issues/121), [#123](https://github.com/trypsynth/paperback/pull/123).
-* Opraveno zpracování bílých znaků na začátku značek pre v dokumentech HTML i XHTML.
-* Opravena chyba, kdy textové pole někdy po návratu do okna Paperbacku znovu nezískalo fokus. [#138](https://github.com/trypsynth/paperback/issues/138).
-* Opravena chyba, kdy textové pole v dialogu Přejít na procenta neaktualizovalo hodnotu posuvníku.
-* Opraveno vykreslování vlastních HTML ID v dokumentech Markdown. [#113](https://github.com/trypsynth/paperback/issues/113).
-* HTML uvnitř bloků kódu v Markdownu se nyní bude vykreslovat správně. [#79](https://github.com/trypsynth/paperback/issues/79).
-* Při načítání knihy pomocí parametru příkazového řádku za běhu již existující instance Paperbacku už nedostanete chybu, pokud načtení dokumentu trvá déle než 5 sekund.
-* Pokud Paperback spouštíte jako správce, konfigurace se nyní bude správně načítat i ukládat. [#148](https://github.com/trypsynth/paperback/issues/148), [#149](https://github.com/trypsynth/paperback/pull/149).
-* Nyní je možné smazat záložku přímo z dialogu Záložky. [#100](https://github.com/trypsynth/paperback/issues/100), [#103](https://github.com/trypsynth/paperback/pull/103).
-* Nyní je možné importovat a exportovat vaše záložky a pozici čtení pro konkrétní dokument. Vygenerovaný soubor se pojmenuje podle daného souboru s příponou .paperback. Pokud se takový soubor při načítání najde ve stejné složce jako dokument, načte se automaticky. Jinak ho můžete importovat ručně pomocí položky v nabídce Nástroje. [#146](https://github.com/trypsynth/paperback/issues/146), [#147](https://github.com/trypsynth/paperback/pull/147).
-* Odkazy uvnitř dokumentů jsou nyní plně podporovány! Pomocí K a Shift+K se mezi nimi můžete pohybovat vpřed a vzad a stisknutím Enteru některý otevřít nebo aktivovat. [#74](https://github.com/trypsynth/paperback/issues/74), [#87](https://github.com/trypsynth/paperback/pull/87), [#126](https://github.com/trypsynth/paperback/issues/126), [#129](https://github.com/trypsynth/paperback/issues/129), [#130](https://github.com/trypsynth/paperback/issues/130).
-* Mnoho interních refaktorizací, díky nimž je aplikace rychlejší a binární soubor menší.
-* Obsah v Markdownu se nyní před vykreslením předzpracovává tak, aby odpovídal CommonMarku.
-* Navigace po seznamech a jejich položkách je nyní plně podporována! Pomocí L a Shift+L přecházíte po samotných seznamech a pomocí I a Shift+I po položkách seznamu. [#119](https://github.com/trypsynth/paperback/issues/119), [#124](https://github.com/trypsynth/paperback/pull/124).
-* Kromě běžné klávesy Delete nyní také funguje klávesa Delete na numerické klávesnici pro odstraňování dokumentů ze seznamu záložek.
-* Paperback se nyní může volitelně minimalizovat do systémové lišty! Tato volba je ve výchozím stavu vypnutá, ale po jejím zapnutí přesune možnost minimalizace v systémové nabídce Paperback do lišty, odkud jej bude možné obnovit kliknutím na vytvořenou ikonu. [#49](https://github.com/trypsynth/paperback/issues/49), [#85](https://github.com/trypsynth/paperback/pull/85).
-* Paperback je nyní plně přeložitelný! Seznam podporovaných jazyků je zatím poměrně malý, ale neustále roste! [#75](https://github.com/trypsynth/paperback/issues/75), [#92](https://github.com/trypsynth/paperback/pull/92), [#95](https://github.com/trypsynth/paperback/pull/95), [#134](https://github.com/trypsynth/paperback/pull/134), [#137](https://github.com/trypsynth/paperback/pull/137), [#141](https://github.com/trypsynth/paperback/pull/141), [#152](https://github.com/trypsynth/paperback/pull/152).
-* Paperback má nyní oficiální web na adrese [paperback.dev](https://paperback.dev)!
-* Dokumenty PPTX nyní budou zobrazovat základní obsah všech slidů. [#122](https://github.com/trypsynth/paperback/issues/122).
-* V dialogu s informacemi o dokumentu se nyní bude zobrazovat úplná cesta k otevřenému dokumentu. [#139](https://github.com/trypsynth/paperback/issues/139), [#140](https://github.com/trypsynth/paperback/pull/140).
-* Instalační program nyní obsahuje možnost po instalaci zobrazit readme v prohlížeči.
-* Seznam nedávných dokumentů byl výrazně rozšířen! Místo pouhého zobrazení posledních 10 otevřených dokumentů nyní zobrazí nastavitelný počet a ostatní dokumenty, které jste kdy otevřeli, budou dostupné přes malý dialog. [#78](https://github.com/trypsynth/paperback/issues/78), [#80](https://github.com/trypsynth/paperback/pull/80), [#84](https://github.com/trypsynth/paperback/pull/84), [#135](https://github.com/trypsynth/paperback/pull/135).
-* Různá drobná vylepšení parserů napříč aplikací, včetně vložení prázdného řádku mezi slidy v prezentacích PPTX, opravy zpracování nových řádků uvnitř odstavců v dokumentech Wordu a přidání odrážek k položkám seznamů.
+-   Přidána podpora stránek pro knihy ve formátu EPUB.
+-   Přidána podpora šifrovaných dokumentů Microsoft Office. V současné
+    době jsou podporovány starší verze Wordu, moderní Word a moderní
+    PowerPoint, přičemž podpora starších verzí PowerPointu je plánována
+    na budoucnost.
+-   Přidána podpora starších dokumentů Microsoft Word (\*.doc)!
+-   Přidána podpora starších prezentací v Powerpointu (\*.ppt)!
+-   Přidána podpora knih ve formátech mobi a AZW3!
+-   Přidána podpora pro PDF soubory s tagy!
+-   Přidána klávesová zkratka Ctrl+Q pro ukončení aplikace.
+-   Přidána podpora pro knihy ve formátu ZIP z Bookshare (jak DAISY, tak
+    Word)!
+-   Alternativní text pro vložené obrázky by se nyní měl správně
+    zobrazovat.
+-   Dokumenty CHM nyní správně podporují navigaci pomocí interních
+    odkazů.
+-   Opraveno spouštění zvuků záložek na začátku odstavce namísto pozice
+    záložky.
+-   Opraveno posunutí funkce „Přejít na stránku" o 1.
+-   Opravena nefunkčnost klávesy Esc při zavírání dialogového okna
+    „Otevřít jako".
+-   Opraveno nezobrazování kontextového menu čtečky při kliknutí pravým
+    tlačítkem myši nebo stisknutí klávesy „Aplikace".
+-   Opraveno, že při otevírání dokumentů z příkazového řádku byl někdy
+    aktivován nesprávný dokument.
+-   PDF soubory obsahující pouze obrázky jsou opět detekovány a uživatel
+    je na jejich existenci upozorněn.
+-   Nyní je možné procházet obrázky a grafy pomocí klávesových zkratek
+    g/Shift+g a f/Shift+f.
+-   Aplikace Paperback nyní respektuje nastavení tmavého režimu vaší
+    aplikace.
+-   Byla odstraněna podpora formátu DAISY XML, protože již není
+    potřebná.
+-   V stromu obsahu jsme se vrátili k nativní navigaci podle prvního
+    písmene v prostředí Win32.
+-   Dialogové okno s chybou při načítání nyní zobrazuje podrobnější
+    chybové zprávy.
+-   Webový prohlížeč se nyní otevírá mnohem rychleji a plynuleji.
 
-### Verze 0.5.0
+### Verze 0.8.2 {#version-0.8.2}
 
-* Přidána podpora dokumentů Microsoft Wordu! [#27](https://github.com/trypsynth/paperback/issues/27).
-* Přidána podpora PowerPointových prezentací! [#25](https://github.com/trypsynth/paperback/issues/25).
-* Opravena chyba, kdy některé položky nabídky nebyly zakázány, když nebyl otevřen žádný dokument.
-* Opravena orientace posuvníku v dialogu Přejít na procenta. [#70](https://github.com/trypsynth/paperback/issues/70).
-* Opraven obsah v knihách Epub s URL-kódovanými cestami k souborům a/nebo ID fragmentů.
-* Opraveno podivné odstraňování bílých znaků z nadpisů XHTML.
-* Opraveno zpracování bílých znaků uvnitř vnořených značek pre v dokumentech HTML.
-* Dokumenty HTML a Markdown nyní podporují funkci obsahu! Když načtete dokument HTML/Markdown, Paperback sestaví vlastní obsah ze struktury nadpisů v dokumentu a zobrazí vám ho v dialogu Ctrl+T.
-* Dokumenty HTML nyní budou mít název nastavený podle značky title, pokud existuje. Jinak se nadále použije název souboru bez přípony.
-* Místo UniversalSpeech se nově používá live region pro oznamování řeči. To znamená, že se spolu s programem už nedodávají žádné DLL soubory pro odečítače obrazovky a bude nyní podporováno více odečítačů, například Microsoft Narrator.
-* Změněny ZIP knihovny, aby bylo možné otevírat širší škálu knih Epub. [#73](https://github.com/trypsynth/paperback/issues/73).
-* Dialog, který se vás ptá, zda chcete dokument otevřít jako prostý text, byl úplně přepracován a nyní umožňuje otevřít dokument jako prostý text, HTML nebo Markdown.
-* Dialog Přejít na procenta nyní obsahuje textové pole, do něhož lze ručně zadat procento, na které se má přeskočit. [#66](https://github.com/trypsynth/paperback/issues/66).
-* HTML parser nyní rozpozná dd, dt a dl jako prvky seznamu.
-* Obsah v knihách Epub bude opět zachován přesně.
-* Unicode nezalomitelná mezera se nyní bere v úvahu při odstraňování prázdných řádků. [#71](https://github.com/trypsynth/paperback/issues/71).
-* Program se vás už nebude ptát, jak chcete otevřít nerozpoznaný soubor, při každém otevření, ale jen při prvním.
+-   Do dokumentů RTF byla přidána podpora stránek!
+-   Opravena chyba, kvůli které se při otevření webového prohlížeče v
+    souborech ePub obsahujících externí odkazy tyto odkazy automaticky
+    aktivovaly.
+-   Opravena chyba, kvůli které analyzátor RTF v ojedinělých případech
+    nevkládal mezeru mezi slova .
+-   Opraveno rozdělování odstavců na několik krátkých řádků v některých
+    PDF dokumentech.
+-   Dokumenty PDF nyní podporují základní navigaci pomocí odkazů a
+    nadpisů !
+-   Zarážky a konce řádků v RTF se nyní vykreslují přesně tak, jak se
+    objevují v dokumentu.
+-   Pro analýzu souborů PDF jsme se vrátili k osvědčené knihovně pdfium,
+    díky čemuž je vykreslování PDF opět mnohem spolehlivější.
 
-### Verze 0.4.1
+### Verze 0.8.1 {#version-0.8.1}
 
-* Do instalátoru byla přidána volitelná ikona v nabídce Start.
-* Zobrazování obsahu by nyní mělo být v některých případech čistší; například pokud máte podřízenou i nadřazenou položku se stejným textem na stejné pozici, uvidíte nyní jen nadřazenou položku.
-* Opraven obsah u některých dokumentů CHM.
-* Opraven obsah v knihách Epub 3, které obsahovaly absolutní cesty. [#67](https://github.com/trypsynth/paperback/issues/67).
-* Dokumenty CHM by nyní měly zobrazovat název nastavený v souboru metadat.
+-   Přidána klávesová zkratka Ctrl+Shift+T pro opětovné otevření
+    posledního zavřeného dokumentu.
+-   Dialogové okno „Všechny dokumenty" nyní podporuje výběr více
+    dokumentů k současnému otevření.
+-   Bylo opraveno několik chyb v analyzátoru RTF.
+-   Opravena chyba, při které se při otevírání souboru prostřednictvím
+    druhé instance aplikace Paperback poškozovaly cesty k souborům
+    obsahující znaky mimo znakovou sadu ASCII (například bosenské š, č,
+    ć, ž).
+-   Opraveno nesprávné pořadí čtení textu v souborech PDF a nesprávné
+    mezery kolem slov s velkými počátečními písmeny.
+-   Opraveno pomalé načítání dokumentů při otevírání velkých souborů.
+-   Opravena lokalizace tlačítek „Ano"/„Ne" v potvrzovacích dialogových
+    oknech.
 
-### Verze 0.4.0
+### Verze 0.8.0 {#version-0.8.0}
 
-* Přidána podpora souborů CHM! [#23](https://github.com/trypsynth/paperback/issues/23).
-* Přidána podpora záložek! Můžete jich mít libovolné množství v libovolném počtu dokumentů. Můžete mezi nimi skákat vpřed a vzad pomocí B a Shift+B, nastavovat je pomocí Ctrl+Shift+B a vyvolat dialog pro skok na konkrétní záložku pomocí Ctrl+B. [#13](https://github.com/trypsynth/paperback/issues/13).
-* Kromě portable ZIP souboru byl přidán i instalátor! Ten nainstaluje Paperback do adresáře Program Files a automaticky za vás nastaví asociace souborů. [#33](https://github.com/trypsynth/paperback/issues/33).
-* Textové soubory se značkou BOM by se nyní měly dekódovat správně a BOM se už nebude zobrazovat ani na začátku textu.
-* Do stavového řádku bylo přidáno mnohem více informací. Nyní se v něm zobrazí aktuální řádek, znak a procento přečtení. [#51](https://github.com/trypsynth/paperback/issues/51).
-* HTML komentáře ani obsah značek script a style se už v textovém výstupu nebudou zobrazovat.
-* Pokud Paperbacku na příkazové řádce předáte relativní cestu, nyní ji správně vyhodnotí.
-* Pohyb po procentech je nyní řešen vlastním dialogem s posuvníkem, dostupným pomocí Ctrl+Shift+G. [#57](https://github.com/trypsynth/paperback/issues/57).
-* Dokumenty bez známého názvu nebo autora budou nyní vždy mít výchozí hodnotu.
-* Logika ukládání pozice je nyní mnohem chytřejší a na disk by měla zapisovat jen tehdy, když je to opravdu nutné.
-* Dokument, který jste měli aktivní při zavření Paperbacku, se nyní znovu otevře po restartu aplikace.
-* Vstup v dialozích Přejít na řádek a Přejít na stránku by nyní měl být přísněji čištěn.
-* Opravena navigace v obsahu v knihách Epub 3 s relativními cestami v manifestech.
+-   Přidány překlady do japonštiny, zjednodušené čínštiny a vietnamštiny
+    !
+-   Přidán automatický aktualizační modul, který nyní nahradí vaši
+    aktuálně nainstalovanou verzi aplikace Paperback, namísto pouhého
+    stažení nové verze!
+-   Přidána volitelná zvuková zpětná vazba při dosažení záložky nebo
+    poznámky, děkujeme Andre Louisovi za zvuky!
+-   Přidána podpora dokumentů RTF!
+-   Přidána podpora dokumentů DAISY XML.
+-   Přidána podpora textových souborů Flat Open Document!
+-   Přidána podpora prezentací ve formátu Flat Open Document!
+-   Přidána podpora oddělovačů pomocí kláves s a Shift+s.
+-   Jakýkoli posun o více než 300 znaků se nyní automaticky přidá do
+    vaší historie navigace.
+-   Opravena obnova okna aplikace Paperback z oznamovací oblasti.
+-   Opravena chyba, kvůli které se dokumenty Markdown zobrazovaly ve Web
+    View jako nezpracovaný text namísto vykresleného HTML. Opraveno
+    nesprávné vykreslování tabulek v souborech Markdown.
+-   Opraveno nesprávné vykreslování tabulek v souborech Markdown.
+-   PDF soubory obsahující pouze obrázky vás nyní upozorní na svou
+    existenci, když se pokusíte některý z nich načíst.
+-   Při kontrole aktualizací je nyní možné vyhledávat nové vývojové
+    verze namísto stabilních verzí.
+-   Informace o verzi jsou nyní správně vloženy do spustitelného souboru
+    aplikace Paperback.
+-   Rozdělili jsme dialogové okno s nastavením na záložky pro snadnější
+    používání a orientaci.
+-   Pro analýzu souborů PDF jsme přešli na Hayro, což přineslo vyšší
+    spolehlivost, rychlost a menší počet DLL souborů.
+-   Celá aplikace byla přepsána v jazyce Rust. Nový kód je bezpečnější,
+    načítá dokumenty rychleji a je snazší jej udržovat a rozšiřovat.
+-   Kontextové menu textového ovládacího prvku nyní obsahuje akce
+    specifické pro daný čtečku namísto obecných položek, jako je vyjmout
+    a vložit.
 
-### Verze 0.3.0
+### Verze 0.7.0 {#version-0.7.0}
 
-* Opraven obsah v knihách Epub s URL-kódovanými manifesty. [#34](https://github.com/trypsynth/paperback/issues/34).
-* Opravena navigace po nadpisech v dokumentech HTML obsahujících vícebajtové znaky Unicode. [#42](https://github.com/trypsynth/paperback/issues/42), [#59](https://github.com/trypsynth/paperback/issues/59), [#61](https://github.com/trypsynth/paperback/issues/61).
-* Opraveno vysoké využití CPU u dokumentů s dlouhými názvy kvůli regresi ve wxWidgets. [#60](https://github.com/trypsynth/paperback/issues/60).
-* Opraveno načítání textových souborů UTF-8.
-* Opravena chyba, kdy vnořené položky obsahu v knihách Epub umisťovaly kurzor na nesprávnou pozici.
-* V některých případech opraven pád při ukončení aplikace. [#45](https://github.com/trypsynth/paperback/issues/45).
-* Do dialogu Možnosti bylo přidáno zaškrtávací políčko pro zapnutí nebo vypnutí zalamování řádků!
-* Nyní je možné přispět na vývoj Paperbacku, a to buď přes novou položku Přispět v nabídce Nápověda, nebo přes odkaz sponsor this project ve spodní části hlavní stránky repozitáře na GitHubu.
-* Dokumenty Markdown nyní budou mít vždy název a Paperback by nyní měl zvládnout načíst prakticky jakýkoli soubor Markdown. [#52](https://github.com/trypsynth/paperback/issues/52).
-* Dokumenty PDF nyní budou mít vždy název, i když metadata chybějí. [#56](https://github.com/trypsynth/paperback/issues/56).
-* Pro PDF byla nasazena knihovna používaná v Chromiu, což vede k výrazně spolehlivějšímu parsování PDF napříč aplikací. [#41](https://github.com/trypsynth/paperback/issues/41).
-* Nyní může být spuštěna vždy jen jedna instance Paperbacku. Spuštění paperback.exe s názvem souboru ve chvíli, kdy už Paperback běží, otevře tento dokument v již běžící instanci.
-* Na libovolném dokumentu v seznamu záložek nyní můžete stisknout Delete a zavřít jej.
+-   Přidána podpora tabulek pro dokumenty založené na HTML a XHTML! Mezi
+    tabulkami se můžete pohybovat pomocí kláves T a Shift+T a stisknutím
+    klávesy Enter je můžete zobrazit ve webovém prohlížeči.
+-   Přidána základní funkce vykreslování webového obsahu! Stisknutím
+    kláves Ctrl+Shift+V otevřete aktuální část dokumentu ve webovém
+    prohlížeči, což je užitečné pro obsah, jako je složité formátování
+    nebo ukázky kódu.
+-   Přidán ruský překlad, děkujeme Ruslanu Gulmagomedovovi!
+-   Do dialogového okna „Všechny dokumenty" bylo přidáno tlačítko
+    „Vymazat vše".
+-   Kontrola aktualizací nyní zobrazuje poznámky k verzi, pokud je k
+    dispozici nová verze .
+-   Opraveno obnovení okna z systémové lišty.
+-   Opraveny překlady tlačítek „Ano"/„Ne" v potvrzovacích dialogových
+    oknech.
+-   Opraveno načítání konfigurací při spuštění jako správce.
+-   Opraveno zpracování komentářů v dokumentech XML a HTML.
+-   Opraveno parsování obsahu v knihách ve formátu Epub 2.
+-   Opravena navigace na další položku se stejným písmenem v obsahu .
+-   Opraveno nesprávné skrytí dialogového okna pro vyhledávání při
+    použití tlačítek „další" a „předchozí".
+-   Opraveny chyby v obsahu formátu ePub, které občas přesměrovaly na
+    nesprávnou položku.
+-   Opraveny různé problémy se zpracováním mezer v XML, HTML a značkách
+    pre.
+-   Opravena chyba „off-by-one" při navigaci pomocí odkazů.
+-   Opraveny některé knihy, které měly na konci řádků zbývající mezery.
+-   Opraveny různé problémy s parsováním.
+-   Položky nabídky související se záložkami i seznam prvků jsou nyní
+    správně deaktivovány, pokud není otevřen žádný dokument.
+-   Vylepšena práce se seznamy v různých formátech dokumentů.
+-   Vylepšen pracovní postup překladu pro přispěvatele.
+-   Provedlo se mnoho interních refaktorizací, přičemž většina obchodní
+    logiky aplikace byla přesunuta z C++ do Rustu za účelem zlepšení
+    výkonu a udržovatelnosti.
 
-### Verze 0.2.1
+### Verze 0.6.1 {#version-0.6.1}
 
-* Do popisku stránky v dialogu Přejít na stránku byl přidán celkový počet stránek. [#46](https://github.com/trypsynth/paperback/issues/46).
-* Umožněn přesun tabulátorem z obsahu dokumentu na seznam otevřených dokumentů. [#19](https://github.com/trypsynth/paperback/issues/19).
-* Opravena chyba, kdy klávesy pro pohyb po nadpisech někdy otevíraly poslední dokumenty, pokud jich bylo dostatek. [#47](https://github.com/trypsynth/paperback/issues/47).
-* Paperback nyní z textového výstupu odstraňuje zbytečné měkké pomlčky.
-* Opravena chyba, kdy navigace po nadpisech někdy umístila kurzor na nesprávný znak.
+-   Přidána podpora PDF chráněných heslem!
+-   Přidána velmi základní funkce přechodu na předchozí/následující
+    pozici. Pokud stisknete klávesu Enter na interním odkazu a kurzor se
+    posune, tato pozice si nyní bude zapamatována a lze k ní přejít
+    pomocí kláves Alt + šipky vlevo/vpravo.
+-   Přidán seznam prvků! V současné době zobrazuje pouze strom všech
+    nadpisů ve vašem dokumentu nebo seznam odkazů, ale v budoucnu se
+    plánuje jeho rozšíření.
+-   Přidána možnost spustit Paperback ve výchozím nastavení v
+    maximalizovaném režimu.
+-   Opraveny odkazy v některých dokumentech ve formátu ePub, které
+    nefungovaly správně.
+-   Opraveno parsování obsahu (TOC) dokumentů ePub obsahujících
+    relativní cesty.
+-   Opraveno, že některé dokumenty ve formátu ePub nezobrazovaly název
+    ani autora.
+-   Opraveno nesprávné zobrazení názvů některých kapitol v souborech
+    ePub v dialogovém okně obsahu.
+-   Opravena chyba, kvůli které nebylo možné použít mezerník k aktivaci
+    tlačítek OK/Zrušit v dialogovém okně obsahu.
+-   Bylo vylepšeno zpracování nadpisů v dokumentech Word.
+-   Nyní uslyšíte hlasovou zpětnou vazbu, pokud je seznam posledních
+    dokumentů prázdný při pokusu o otevření dialogového okna.
 
-### Verze 0.2.0
+### Verze 0.6.0 {#version-0.6.0}
 
-* Přidána podpora dokumentů Markdown! [#22](https://github.com/trypsynth/paperback/issues/22).
-* Přidána podpora dokumentů PDF, včetně možnosti pohybovat se po stránkách! [#12](https://github.com/trypsynth/paperback/issues/12), [#37](https://github.com/trypsynth/paperback/issues/37).
-* Přidány klávesové zkratky pro navigaci po nadpisech v HTML obsahu, včetně knih Epub a dokumentů Markdown. Tyto klávesové zkratky byly navrženy tak, aby fungovaly podobně jako u odečítačů obrazovky. [#3](https://github.com/trypsynth/paperback/issues/3).
-* Opraveno načítání Epubů s URL-kódovanými názvy souborů v manifestech. [#20](https://github.com/trypsynth/paperback/issues/20).
-* Opraveno načítání knih Epub 3 s vloženým obsahem XHTML. [#35](https://github.com/trypsynth/paperback/issues/35).
-* Pokud dokument nepodporuje obsah nebo oddíly, je nyní místo zakázání příslušných položek nabídky přečtena odpovídající zpráva. [#39](https://github.com/trypsynth/paperback/issues/39).
-* Přidána nabídka nedávných dokumentů! Momentálně ukládá posledních 10 otevřených dokumentů a stisknutí Enteru na některém z nich jej otevře pro čtení. [#32](https://github.com/trypsynth/paperback/issues/32).
-* Dialog Hledat byl kompletně přepsán, takže je teď mnohem jednodušší na používání, a zároveň byla přidána historie posledních 25 hledání a podpora regulárních výrazů! [#21](https://github.com/trypsynth/paperback/issues/21).
-* Dříve otevřené dokumenty nyní zůstanou zapamatovány i po restartu aplikace. Toto chování lze nastavit pomocí nové položky Možnosti v nabídce Nástroje. [#18](https://github.com/trypsynth/paperback/issues/18).
-* Přidána klávesová zkratka Shift+F1 pro otevření readme přímo v Paperbacku.
+-   Do dialogového okna s nastavením byla přidána nová možnost zobrazit
+    nabídku „Přejít" v mnohem kompaktnější podobě, která je ve výchozím
+    nastavení zaškrtnuta.
+-   Byla přidána možnost, aby se navigace podle strukturálních prvků
+    automaticky zalomila.
+-   Do nabídky „Nástroje" byla přidána možnost otevřít nadřazenou složku
+    aktuálně vybraného dokumentu.
+-   Byl přidán poměrně jednoduchý, ale velmi účinný systém aktualizace.
+-   Přidána základní funkce časovače uspání, přístupná pomocí klávesové
+    zkratky Ctrl+Shift+S.
+-   Byla přidána podpora pro analýzu elektronických knih ve formátu FB2!
+-   Přidána podpora pro analýzu prezentací ve formátu OpenDocument!
+-   Přidána podpora pro analýzu textových souborů OpenDocument!
+-   Záložky lze nyní vytvářet tak, aby označovaly celý řádek, nebo aby
+    označovaly pouze určitý zadaný text. Pokud při vkládání záložky
+    nemáte aktivní žádný výběr, chování je stejné jako před verzí 0.6 a
+    bude označen celý řádek. Pokud však vyberete nějaký text, do záložky
+    bude zahrnut pouze tento text.
+-   K záložkám lze nyní připojit volitelné textové poznámky! Mezi
+    záložkami obsahujícími poznámky můžete přecházet pomocí kláves N a
+    Shift+N, nebo můžete otevřít dialogové okno se záložkami, kde jsou
+    vybrány všechny záložky, pouze poznámky nebo pouze záložky bez
+    poznámek, a to pomocí konkrétních klávesových zkratek.
+-   Záložky v dialogovém okně záložek již nebudou mít otravnou předponu
+    „záložka x".
+-   Knihy ve formátu Epub obsahující HTML obsah vydávající se za XML
+    budou nyní správně zpracovány.
+-   Opraveno načítání velkých dokumentů ve formátu Markdown.
+-   Opraveno stisknutí mezerníku ve stromovém zobrazení obsahu, které
+    aktivovalo tlačítko OK.
+-   Opraveno zpracování mezer na začátku značek pre v dokumentech HTML i
+    XHTML.
+-   Opraveno, že textové pole někdy nezískalo zpět fokus při návratu do
+    okna aplikace Paperback.
+-   Opravena chyba, kdy textové pole v dialogovém okně „Přejít na %"
+    neaktualizovalo hodnotu posuvníku.
+-   Opraveno vykreslování vlastních HTML ID v dokumentech Markdown.
+-   HTML uvnitř bloků kódu Markdown se nyní bude vykreslovat správně.
+-   Při načítání knihy s parametrem příkazového řádku, zatímco je
+    spuštěna stávající instance aplikace Paperback, již nedojde k chybě,
+    pokud načítání dokumentu trvá déle než 5 sekund.
+-   Při spuštění aplikace Paperback jako správce se nyní konfigurace
+    správně načte a uloží.
+-   Nyní je možné odstranit záložku přímo z dialogového okna záložek.
+-   Nyní je možné importovat a exportovat záložky a pozici čtení pro
+    konkrétní dokument. Vygenerovaný soubor nese název souboru s
+    příponou .paperback. Pokud je takový soubor nalezen ve stejném
+    adresáři jako načítaný soubor, bude automaticky načten. V opačném
+    případě je můžete importovat ručně pomocí položky v nabídce
+    Nástroje.
+-   Odkazy uvnitř dokumentů jsou nyní plně podporovány! Pomocí kláves k
+    a Shift+k se můžete mezi nimi pohybovat dopředu a dozadu a
+    stisknutím klávesy Enter je můžete otevřít/aktivovat .
+-   Bylo provedeno mnoho interních refaktorizací, díky nimž je aplikace
+    rychlejší a binární soubor menší.
+-   Obsah ve formátu Markdown je nyní před vykreslením předzpracován
+    tak, aby byl v souladu se standardem CommonMark .
+-   Navigace podle seznamů a jejich položek je nyní plně podporována!
+    Pomocí kláves L a Shift+L se můžete pohybovat po samotných seznamech
+    a pomocí kláves I a Shift+I procházet položky seznamu.
+-   Klávesa Delete na numerické klávesnici nyní slouží k odstranění
+    dokumentů z lišty záložek, kromě běžného mazání.
+-   Paperback lze nyní volitelně minimalizovat do systémové lišty! Tato
+    možnost je ve výchozím nastavení vypnutá, ale její zapnutí způsobí,
+    že volba minimalizace v systémovém menu umístí Paperback do
+    systémové lišty, odkud jej lze obnovit kliknutím na zobrazenou
+    ikonu.
+-   Paperback je nyní plně přeložitelný! Seznam jazyků, které podporuje,
+    je zatím poměrně malý, ale neustále se rozšiřuje!
+-   Paperback má nyní oficiální webovou stránku na adrese
+    [paperback.dev](https://paperback.dev)!
+-   Dokumenty PPTX nyní zobrazují základní obsah obsahující všechny
+    snímky.
+-   V dialogovém okně s informacemi o dokumentu se nyní zobrazí úplná
+    cesta k otevřenému dokumentu.
+-   Instalační program nyní obsahuje možnost zobrazit soubor readme ve
+    vašem prohlížeči po instalaci.
+-   Seznam naposledy otevřených dokumentů byl výrazně rozšířen! Místo
+    prostého zobrazení posledních 10 dokumentů, které jste otevřeli, vám
+    nyní zobrazí nastavitelný počet, přičemž zbytek dokumentů, které
+    jste kdy otevřeli, je přístupný prostřednictvím malého dialogového
+    okna.
+-   Různá drobná vylepšení parserů napříč aplikacemi, včetně vkládání
+    prázdného řádku mezi snímky v prezentacích PPTX, opravy zpracování
+    nových řádků uvnitř odstavců v dokumentech Word a přidání odrážek k
+    položkám seznamu.
 
-### Verze 0.1.0
+### Verze 0.5.0 {#version-0.5.0}
 
-* První vydaná verze.
+-   Přidána podpora dokumentů Microsoft Word!
+-   Přidána podpora prezentací PowerPoint!
+-   Opravena chyba, kdy některé položky nabídky nebyly deaktivovány,
+    pokud nebyly otevřeny žádné dokumenty.
+-   Opravena orientace posuvníku pro přechod na určité procento.
+-   Opraven obsah v knihách ve formátu Epub s URL-kódovanými cestami k
+    souborům a/nebo ID fragmentů.
+-   Opravena podivná ztráta mezer v nadpisech XHTML .
+-   Opraveno zpracování mezer uvnitř vnořených značek \`pre\` v HTML
+    dokumentech.
+-   Dokumenty HTML a Markdown nyní podporují funkci obsahu ! Když
+    načtete dokument HTML/Markdown, Paperback vytvoří vlastní obsah na
+    základě struktury nadpisů ve vašem dokumentu a zobrazí vám jej v
+    dialogovém okně ctrl+t.
+-   HTML dokumenty budou nyní mít název nastavený v tagu title, pokud
+    existuje. V opačném případě budou i nadále používat název souboru
+    bez přípony.
+-   Přešli jsme z UniversalSpeech na použití živé oblasti pro přečtení
+    textu. To znamená, že s programem již nejsou dodávány žádné DLL
+    soubory pro čtečky obrazovky a nyní bude podporováno více čteček,
+    jako je například Microsoft Narrator.
+-   Byly změněny knihovny ZIP, aby bylo možné otevírat širší škálu knih
+    ve formátu EPUB .
+-   Dialogové okno s dotazem, zda chcete dokument otevřít jako prostý
+    text, bylo kompletně přepracováno a nyní umožňuje otevřít dokument
+    jako prostý text, HTML nebo Markdown.
+-   Dialogové okno „Přejít na procentuální pozici" nyní obsahuje textové
+    pole, do kterého můžete ručně zadat procentuální pozici, na kterou
+    chcete přejít.
+-   HTML parser nyní rozpozná dd, dt a dl jako prvky seznamu. Obsah v
+    knihách ve formátu ePub bude opět zachován
+-   Obsah v knihách ve formátu ePub bude opět zachován přesně.
+-   Při odstraňování prázdných řádků se nyní bere v úvahu nerozdělitelná
+    mezera Unicode.
+-   Už nebudete pokaždé při načtení neznámého souboru dotazováni, jak
+    jej chcete otevřít, ale pouze při prvním načtení.
+
+### Verze 0.4.1 {#version-0.4.1}
+
+-   Do instalačního programu byla přidána volitelná ikona v nabídce
+    Start.
+-   Obsah by nyní měl být v některých případech přehlednější, například
+    pokud máte podřízenou a nadřazenou položku se stejným textem na
+    stejné pozici, uvidíte nyní pouze nadřazenou položku.
+-   Opraven obsah v některých dokumentech CHM.
+-   Opraven obsah v knihách ve formátu Epub 3, které obsahují absolutní
+    cesty. Dokumenty ve formátu
+-   Dokumenty CHM by nyní měly zobrazovat název tak, jak je nastaven v
+    souboru metadat .
+
+### Verze 0.4.0 {#version-0.4.0}
+
+-   Přidána podpora souborů CHM!
+-   Přidána podpora záložek! Můžete mít libovolný počet záložek v
+    libovolném počtu dokumentů. Mezi nimi můžete přeskakovat dopředu a
+    dozadu pomocí kláves b a Shift+b, záložku vytvoříte pomocí
+    Ctrl+Shift+b a pomocí Ctrl+b otevřete dialogové okno pro přeskočení
+    na konkrétní záložku.
+-   K přenosnému souboru ZIP byl přidán instalační program! Instalační
+    program nainstaluje Paperback do adresáře Program Files a
+    automaticky za vás nastaví přiřazení souborů.
+-   Textové soubory s BOM by nyní měly být správně dekódovány a BOM se
+    již nebude zobrazovat na začátku textu.
+-   Do stavového řádku bylo přidáno mnohem více informací. Nyní vám
+    ukáže aktuální řádek, znak a procento přečteného textu.
+-   HTML komentáře, stejně jako obsah tagů skriptů a stylů, se již
+    nebudou zobrazovat v textovém výstupu.
+-   Pokud zadáte relativní cestu k programu Paperback v příkazovém
+    řádku, bude nyní správně vyhodnocena.
+-   Posun o určité procento se nyní ovládá pomocí vlastního dialogového
+    okna s posuvníkem, které lze otevřít klávesovou zkratkou
+    Ctrl+Shift+G.
+-   Dokumenty bez známého názvu nebo autora budou nyní vždy mít výchozí
+    hodnotu.
+-   Logika ukládání pozice je nyní mnohem chytřejší a měla by zapisovat
+    na disk pouze v případě, že je to nezbytně nutné.
+-   Dokument, na kterém jste měli aktivní fokus při zavření aplikace
+    Paperback, je nyní zapamatován i po restartu aplikace.
+-   Zadávané údaje v dialozích „Přejít na řádek" a „Přejít na stránku"
+    by nyní měly být přísněji ověřovány.
+-   Opravena navigace v obsahu knih ve formátu ePub 3 s relativními
+    cestami v jejich manifestech.
+
+### Verze 0.3.0 {#version-0.3.0}
+
+-   Opraven obsah v knihách ve formátu ePub s manifesty s URL kódováním.
+    Opravena navigace v nadpisech v HTML dokumentech obsahujících
+    vícejbytové
+-   Opravena navigace v nadpisech v HTML dokumentech obsahujících
+    vícejbytové znaky Unicode.
+-   Opraveno vysoké zatížení procesoru v dokumentech s dlouhými názvy
+    způsobené regresí ve wxWidgets.
+-   Opraveno načítání textových souborů v kódování UTF-8.
+-   Opraveno vnoření položek obsahu v knihách ve formátu ePub, které
+    způsobovalo umístění kurzoru na nesprávnou pozici.
+-   Opraven pád aplikace při ukončení v určitých případech.
+-   Do dialogového okna s nastavením bylo přidáno zaškrtávací políčko
+    pro zapnutí nebo vypnutí zalomení řádků!
+-   Nyní je možné přispět na vývoj aplikace Paperback, a to buď
+    prostřednictvím nové položky „Přispět" v nabídce Nápověda, nebo
+    prostřednictvím odkazu „Sponzorovat tento projekt" v dolní části
+    hlavní stránky repozitáře GitHub.
+-   Dokumenty ve formátu Markdown budou nyní vždy mít název a aplikace
+    Paperback by nyní měla být schopna načíst prakticky jakýkoli soubor
+    ve formátu Markdown.
+-   Dokumenty PDF budou nyní vždy obsahovat název, i když metadata
+    chybí.
+-   Byla provedena změna knihovny PDF na tu, která se používá v Chromiu,
+    což vede k mnohem spolehlivějšímu parsování PDF v celém programu.
+-   Nyní můžete mít spuštěnou pouze jednu instanci aplikace Paperback
+    najednou. Spuštění souboru paperback.exe s názvem souboru, zatímco
+    je aplikace již spuštěna, otevře daný dokument v již spuštěné
+    instanci.
+-   Nyní můžete stisknout klávesu Delete na dokumentu v ovládacím prvku
+    záložek, abyste jej zavřeli.
+
+### Verze 0.2.1 {#version-0.2.1}
+
+-   Do popisku stránky v dialogovém okně „Přejít na stránku" byl přidán
+    celkový počet stránek.
+-   Umožňuje přechod pomocí klávesy Tab z obsahu dokumentu do seznamu
+    otevřených dokumentů.
+-   Opravena chyba, kdy klávesové zkratky pro záhlaví někdy otevíraly
+    nedávno otevřené dokumenty, pokud jich bylo dostatek.
+-   Paperback nyní odstraní z výstupního textu zbytečné měkké pomlčky .
+-   Opravena chyba, kvůli které vás navigace podle nadpisů někdy
+    přesunula na nesprávný znak.
+
+### Verze 0.2.0 {#version-0.2.0}
+
+-   Přidána podpora dokumentů ve formátu Markdown!
+-   Přidána podpora dokumentů PDF, včetně možnosti navigace mezi
+    stránkami!
+-   Přidány klávesové zkratky pro navigaci podle nadpisů v obsahu HTML,
+    včetně knih ve formátu epub a dokumentů v Markdownu. Tyto klávesové
+    zkratky byly navrženy tak, aby fungovaly podobně jako čtečka
+    obrazovky.
+-   Opraveno načítání souborů ePub s názvy souborů kódovanými pomocí URL
+    v jejich manifestech.
+-   Opraveno načítání knih ve formátu EPUB 3 s vloženým XHTML.
+-   Pokud dokument nepodporuje obsah nebo oddíly, je nyní přečtena
+    hlasová zpráva, namísto toho, aby byly položky nabídky deaktivovány.
+-   Přidáno menu s nedávno otevřenými dokumenty! V současné době ukládá
+    vašich posledních 10 otevřených dokumentů a stisknutím klávesy Enter
+    na některém z nich jej otevřete ke čtení.
+-   Zcela jsme přepracovali dialogové okno „Najít", díky čemuž je jeho
+    používání mnohem jednodušší, a zároveň jsme přidali historii
+    posledních 25 vyhledávání a podporu regulárních výrazů!
+-   Dříve otevřené dokumenty se nyní pamatují i po restartu aplikace.
+    Tuto funkci lze nastavit prostřednictvím nové položky v nabídce
+    Nástroje. Přidána klávesová zkratka Shift+F1 pro otevření souboru
+    readme přímo v aplikaci Paperback.
+-   Přidána klávesová zkratka Shift+F1 pro otevření souboru Readme přímo
+    v aplikaci Paperback.
+
+### Verze 0.1.0 {#version-0.1.0}
+
+-   První vydání.
