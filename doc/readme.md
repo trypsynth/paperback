@@ -182,6 +182,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Jonathan Rodriguez
 * Jonathan Schuster
 * Keao Wright
+* Michael Marshall
 * Pratik Patel
 * Roberto Perez
 * Sean Randall
