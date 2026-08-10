@@ -7,6 +7,14 @@ pub struct PoEntryLoc {
 	pub msgid: String,
 	pub msgstr: String,
 	pub is_fuzzy: bool,
+	/// Whether this entry carries a `#|` "previous msgid" comment — `msgmerge` writes one
+	/// exactly when *it* just fuzzy-matched this entry against a changed source string.
+	/// An entry can also be fuzzy without one: that's how our own `apply_all` leaves an
+	/// entry after machine-translating it (flagged for human review, but with nothing
+	/// left to compare against). Distinguishing the two matters for
+	/// [`PoDocument::needs_translation`] — otherwise a machine-translated entry would look
+	/// exactly like a freshly-changed one and get re-translated every single run forever.
+	pub has_prev_msgid: bool,
 	/// Range of `#,`/`#|` lines immediately preceding `msgid` (empty range at the msgid
 	/// line itself when there's no existing flag/prev-msgid block to replace — inserting
 	/// into an empty range is just an insert, not a removal).
@@ -78,6 +86,7 @@ impl PoDocument {
 					msgid,
 					msgstr,
 					is_fuzzy,
+					has_prev_msgid: prev_msgid_range.is_some(),
 					flag_block: flag_block_start..msgid_start,
 					msgstr_range: msgstr_start..i,
 				});
@@ -88,15 +97,18 @@ impl PoDocument {
 		Self { lines, entries }
 	}
 
-	/// Entries that still need a translation: blank `msgstr`, or flagged `#, fuzzy`
-	/// (msgmerge marks an entry fuzzy when the source string changed but a similar old
-	/// translation exists — that translation is stale, not just missing). The header
-	/// entry (`msgid ""`) is never a candidate.
+	/// Entries that still need a translation: blank `msgstr`, or fuzzy *because `msgmerge`
+	/// just changed it* (has a `#|` previous-msgid comment — see
+	/// [`PoEntryLoc::has_prev_msgid`]). A fuzzy entry with no `#|` is one we already
+	/// machine-translated on a prior run and left flagged for human review; treating that
+	/// as a candidate too would re-translate the same unchanged text via the API on every
+	/// single future run, forever, for no benefit. The header entry (`msgid ""`) is never
+	/// a candidate.
 	pub fn needs_translation(&self) -> impl Iterator<Item = (usize, &str)> {
 		self.entries
 			.iter()
 			.enumerate()
-			.filter(|(_, e)| !e.msgid.is_empty() && (e.msgstr.is_empty() || e.is_fuzzy))
+			.filter(|(_, e)| !e.msgid.is_empty() && (e.msgstr.is_empty() || (e.is_fuzzy && e.has_prev_msgid)))
 			.map(|(i, e)| (i, e.msgid.as_str()))
 	}
 
@@ -212,9 +224,24 @@ mod tests {
 		let mut doc = PoDocument::parse(src);
 		let entry = find(&doc, "No images.");
 		assert!(entry.is_fuzzy);
+		assert!(entry.has_prev_msgid, "msgmerge-authored fuzzy match must carry a #| comment");
+		assert_eq!(doc.needs_translation().count(), 1, "a genuinely stale fuzzy match is a candidate");
 		let idx = doc.entries.iter().position(|e| e.msgid == "No images.").unwrap();
 		doc.apply_all(&[(idx, "Sem imagens.".to_string())]);
 		assert_eq!(doc.render(), "#, fuzzy\nmsgid \"No images.\"\nmsgstr \"Sem imagens.\"\n");
+	}
+
+	/// After `apply_all` translates an entry it's left `#, fuzzy` with no `#|` comment
+	/// (see the test above). A later run must not treat that as a fresh candidate — that
+	/// would re-translate the same unchanged text via the API forever.
+	#[test]
+	fn fuzzy_entry_without_prev_msgid_comment_is_not_retranslated() {
+		let src = "#, fuzzy\nmsgid \"No images.\"\nmsgstr \"Sem imagens.\"\n";
+		let doc = PoDocument::parse(src);
+		let entry = find(&doc, "No images.");
+		assert!(entry.is_fuzzy);
+		assert!(!entry.has_prev_msgid);
+		assert_eq!(doc.needs_translation().count(), 0);
 	}
 
 	#[test]
