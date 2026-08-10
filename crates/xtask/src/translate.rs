@@ -126,10 +126,22 @@ fn translate_one(
 			Some(target_lang) => {
 				let texts: Vec<String> = candidates.iter().map(|(_, t)| t.clone()).collect();
 				let results = client.translate_batch(&texts, &target_lang)?;
-				let translations: Vec<(usize, String)> = candidates.iter().map(|(i, _)| *i).zip(results).collect();
+				let translations: Vec<(usize, String)> = candidates
+					.iter()
+					.map(|(i, _)| *i)
+					.zip(results)
+					.filter_map(|(i, result)| result.map(|text| (i, text)))
+					.collect();
 				let count = translations.len();
+				let skipped = candidates.len() - count;
 				doc.apply_all(&translations);
-				println!("{lang} ({target_lang}): translated {count} entries");
+				if skipped > 0 {
+					println!(
+						"{lang} ({target_lang}): translated {count} entries, skipped {skipped} (placeholder mismatch, will retry next run)"
+					);
+				} else {
+					println!("{lang} ({target_lang}): translated {count} entries");
+				}
 				doc.render()
 			}
 		}

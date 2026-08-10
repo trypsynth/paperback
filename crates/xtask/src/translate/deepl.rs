@@ -43,8 +43,12 @@ impl DeepLClient {
 	}
 
 	/// Translates `texts` (English source) to `target_lang`, batching in groups of
-	/// [`BATCH_LIMIT`]. Returns translations in the same order as `texts`.
-	pub fn translate_batch(&self, texts: &[String], target_lang: &str) -> Result<Vec<String>, Box<dyn Error>> {
+	/// [`BATCH_LIMIT`]. Returns one result per input, in order: `None` where the
+	/// placeholder-protection tag came back with the wrong count of `%s`/`%d`/`{}` tokens
+	/// (a known, occasional `DeepL` behavior — it can drop a tag it decides a sentence
+	/// doesn't need, especially for short/generic content like `{}`), so callers don't
+	/// apply a translation that silently swallows a template variable.
+	pub fn translate_batch(&self, texts: &[String], target_lang: &str) -> Result<Vec<Option<String>>, Box<dyn Error>> {
 		let mut out = Vec::with_capacity(texts.len());
 		for chunk in texts.chunks(BATCH_LIMIT) {
 			out.extend(self.translate_chunk(chunk, target_lang)?);
@@ -52,7 +56,7 @@ impl DeepLClient {
 		Ok(out)
 	}
 
-	fn translate_chunk(&self, texts: &[String], target_lang: &str) -> Result<Vec<String>, Box<dyn Error>> {
+	fn translate_chunk(&self, texts: &[String], target_lang: &str) -> Result<Vec<Option<String>>, Box<dyn Error>> {
 		#[derive(Serialize)]
 		struct Req<'a> {
 			text: Vec<String>,
@@ -99,8 +103,22 @@ impl DeepLClient {
 			)
 			.into());
 		}
-		Ok(resp.translations.into_iter().map(|t| unprotect_placeholders(&t.text)).collect())
+		Ok(texts
+			.iter()
+			.zip(resp.translations)
+			.map(|(original, item)| {
+				let translated = unprotect_placeholders(&item.text);
+				(placeholder_counts(original) == placeholder_counts(&translated)).then_some(translated)
+			})
+			.collect())
 	}
+}
+
+/// Counts of `%s`/`%d`/`{}` tokens, used to check a translation kept exactly the ones the
+/// source had (`DeepL` doesn't guarantee it keeps every `ignore_tags` tag — see
+/// [`DeepLClient::translate_batch`]).
+fn placeholder_counts(s: &str) -> (usize, usize, usize) {
+	(s.matches("%s").count(), s.matches("%d").count(), s.matches("{}").count())
 }
 
 /// Reads the response body as text regardless of status (requests are sent with
@@ -121,10 +139,11 @@ fn read_body_or_error(
 
 /// Maps a `po/<lang>.po` filename stem to the `DeepL` target language code(s) it could
 /// resolve to, most-preferred first, then picks the first one `DeepL`'s own
-/// `/v2/languages?type=target` response actually lists. Returns `None` when nothing
-/// matches (e.g. `bs`/`sr`/`vi` — `DeepL` doesn't cover them as of writing) so those
-/// languages are simply skipped rather than needing a hardcoded exclusion list that goes
-/// stale if `DeepL` adds coverage later.
+/// `/v2/languages?type=target` response actually lists. Returns `None` for a language
+/// `DeepL` doesn't cover, checked dynamically against that live response rather than a
+/// hardcoded list so it can't go stale either way (as of writing every `po/*.po` language
+/// this project ships resolves, including `bs`/`sr`/`vi`, which some older `DeepL` docs
+/// don't mention).
 #[must_use]
 pub fn resolve_target_lang(po_lang: &str, supported: &HashSet<String>) -> Option<String> {
 	let candidates: Vec<String> = match po_lang {
@@ -210,5 +229,22 @@ mod tests {
 		let original = "A & B <tag>";
 		let protected = protect_placeholders(original);
 		assert_eq!(unprotect_placeholders(&protected), original);
+	}
+
+	#[test]
+	fn placeholder_counts_matches_when_all_tokens_survive() {
+		assert_eq!(placeholder_counts("%s Heading level %d"), placeholder_counts("Ebene %d von %s"));
+		assert_eq!(
+			placeholder_counts("Remove the {} selected documents?"),
+			placeholder_counts("Suppression de {} documents sélectionnés ?")
+		);
+	}
+
+	#[test]
+	fn placeholder_counts_catches_a_dropped_token() {
+		assert_ne!(
+			placeholder_counts("Remove the {} selected documents?"),
+			placeholder_counts("Sollen die gewählten Dokumente wirklich entfernt werden?")
+		);
 	}
 }
