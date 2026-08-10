@@ -162,6 +162,19 @@ fn copy_dir_all(src: &Path, dst: &Path) -> Result<(), Box<dyn Error>> {
 }
 
 #[cfg(not(target_os = "macos"))]
+fn add_file_to_zip(
+	zip: &mut ZipWriter<File>,
+	options: SimpleFileOptions,
+	path: &Path,
+	name: &str,
+) -> Result<(), Box<dyn Error>> {
+	zip.start_file(name, options)?;
+	let mut f = File::open(path)?;
+	io::copy(&mut f, zip)?;
+	Ok(())
+}
+
+#[cfg(not(target_os = "macos"))]
 fn build_zip_package(
 	target_dir: &Path,
 	exe_path: &Path,
@@ -173,15 +186,11 @@ fn build_zip_package(
 	let file = File::create(&package_path)?;
 	let mut zip = ZipWriter::new(file);
 	let options = SimpleFileOptions::default().compression_method(CompressionMethod::Deflated);
-	let exe_filename = exe_path.file_name().unwrap();
-	zip.start_file(exe_filename.to_string_lossy(), options)?;
-	let mut f = File::open(exe_path)?;
-	io::copy(&mut f, &mut zip)?;
+	let exe_filename = exe_path.file_name().unwrap().to_string_lossy().into_owned();
+	add_file_to_zip(&mut zip, options, exe_path, &exe_filename)?;
 	if pb_exe_path.exists() {
-		let pb_filename = pb_exe_path.file_name().unwrap();
-		zip.start_file(pb_filename.to_string_lossy(), options)?;
-		let mut f = File::open(pb_exe_path)?;
-		io::copy(&mut f, &mut zip)?;
+		let pb_filename = pb_exe_path.file_name().unwrap().to_string_lossy().into_owned();
+		add_file_to_zip(&mut zip, options, pb_exe_path, &pb_filename)?;
 	} else {
 		println!("Warning: pb binary not found, skipping.");
 	}
@@ -192,9 +201,7 @@ fn build_zip_package(
 					.into(),
 			);
 		}
-		zip.start_file("pdfium.dll", options)?;
-		let mut f = File::open(pdfium_dll_path)?;
-		io::copy(&mut f, &mut zip)?;
+		add_file_to_zip(&mut zip, options, pdfium_dll_path, "pdfium.dll")?;
 	}
 	if sounds_dir.exists() {
 		for entry in WalkDir::new(sounds_dir) {
@@ -203,9 +210,7 @@ fn build_zip_package(
 			if path.is_file() {
 				let relative_path = path.strip_prefix(target_dir)?;
 				let name = relative_path.to_string_lossy().replace('\\', "/");
-				zip.start_file(name, options)?;
-				let mut f = File::open(path)?;
-				io::copy(&mut f, &mut zip)?;
+				add_file_to_zip(&mut zip, options, path, &name)?;
 			}
 		}
 	} else {
