@@ -199,21 +199,26 @@ fn collect_cells(node: ego_tree::NodeRef<'_, Node>, cells: &mut Vec<String>) {
 /// replaced by a single space. Nested tables contribute only their text (no grid structure).
 fn cell_text(cell: ego_tree::NodeRef<'_, Node>) -> String {
 	let mut raw = String::new();
-	collect_cell_text(cell, &mut raw);
+	collect_dom_text(cell, &mut raw, true);
 	let collapsed = collapse_whitespace(&raw);
 	let trimmed = trim_string(&collapsed);
 	trimmed.replace(['\t', '\n'], " ")
 }
 
-fn collect_cell_text(node: ego_tree::NodeRef<'_, Node>, buffer: &mut String) {
+/// Recursively concatenates the descendant text nodes of `node` into `buffer`. When
+/// `br_as_space` is true, a `<br>` element contributes a single space instead of nothing,
+/// keeping content on either side of a line break from gluing together. Shared by
+/// `cell_text` above (`br_as_space: true`) and by `HtmlToText`'s title/heading/list-item/
+/// figcaption text extraction (`br_as_space: false`, its existing behavior).
+pub(crate) fn collect_dom_text(node: ego_tree::NodeRef<'_, Node>, buffer: &mut String, br_as_space: bool) {
 	match node.value() {
 		Node::Text(text) => buffer.push_str(&text.text),
 		Node::Element(element) => {
-			if element.name() == "br" {
+			if br_as_space && element.name() == "br" {
 				buffer.push(' ');
 			}
 			for child in node.children() {
-				collect_cell_text(child, buffer);
+				collect_dom_text(child, buffer, br_as_space);
 			}
 		}
 		_ => {}

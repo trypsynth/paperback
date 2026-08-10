@@ -45,12 +45,7 @@ private struct TabChip: View {
 					.padding(.leading, 10)
 					.padding(.trailing, 26)
 					.padding(.vertical, 5)
-					.background(
-						RoundedRectangle(cornerRadius: 7)
-							.fill(isActive
-								? Color(.systemBackground)
-								: Color(.secondarySystemFill))
-					)
+					.modifier(TabChipBackground(isActive: isActive))
 			}
 			.foregroundStyle(isActive ? .primary : .secondary)
 			.accessibilityLabel(tab.title)
@@ -65,6 +60,25 @@ private struct TabChip: View {
 					.padding(.vertical, 10)
 			}
 			.accessibilityHidden(true)
+		}
+	}
+}
+
+// The active tab gets a Liquid Glass background on iOS 26+ instead of a flat fill, matching
+// Safari's tab-chip look; earlier versions keep the plain filled pill.
+private struct TabChipBackground: ViewModifier {
+	let isActive: Bool
+
+	func body(content: Content) -> some View {
+		if #available(iOS 26, *), isActive {
+			content.glassEffect(.regular, in: RoundedRectangle(cornerRadius: 14))
+		} else {
+			content.background(
+				RoundedRectangle(cornerRadius: 14)
+					.fill(isActive
+						? Color(.systemBackground)
+						: Color(.secondarySystemFill))
+			)
 		}
 	}
 }

@@ -2,7 +2,10 @@ pub mod epub_direct;
 pub mod html;
 pub mod markdown;
 
-use crate::document::DocumentHandle;
+use crate::{
+	document::{DocumentHandle, Marker},
+	util::text::display_len,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ExportFormat {
@@ -18,6 +21,18 @@ pub fn render(doc: &DocumentHandle, format: ExportFormat) -> String {
 		ExportFormat::Html => html::render(doc),
 		ExportFormat::Markdown => markdown::render(doc.document()),
 	}
+}
+
+/// Recovers the end position of a Link marker's implied span. Link markers store no
+/// explicit length; both the HTML and Markdown renderers infer it from the display width
+/// of `marker.text` after collapsing embedded whitespace runs to single spaces, matching
+/// how the text was originally written into the content when the link was parsed. Returns
+/// `None` when the recovered span is empty, in which case the marker has nothing to link
+/// and the caller should skip it entirely.
+fn link_span_end(marker: &Marker) -> Option<usize> {
+	let text: String = marker.text.split_whitespace().collect::<Vec<_>>().join(" ");
+	let implied_len = if marker.length > 0 { marker.length } else { display_len(&text) };
+	if implied_len == 0 { None } else { Some(marker.position + implied_len) }
 }
 
 #[cfg(test)]

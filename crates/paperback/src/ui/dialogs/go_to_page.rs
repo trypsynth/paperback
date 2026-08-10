@@ -1,7 +1,7 @@
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::DIALOG_PADDING;
+use super::{DIALOG_PADDING, add_ok_cancel_footer, bind_enter_confirms};
 
 pub fn show_go_to_page_dialog(parent: &Frame, current_page: i32, max_page: i32) -> Option<i32> {
 	let max_page = max_page.max(1);
@@ -22,11 +22,7 @@ pub fn show_go_to_page_dialog(parent: &Frame, current_page: i32, max_page: i32) 
 		.with_style(SpinCtrlStyle::Default | SpinCtrlStyle::ProcessEnter)
 		.build();
 	page_ctrl.set_value(current);
-	let dialog_for_enter = dialog;
-	page_ctrl.bind_internal(EventType::TEXT_ENTER, move |event| {
-		event.skip(false);
-		dialog_for_enter.end_modal(ID_OK);
-	});
+	bind_enter_confirms(dialog, page_ctrl);
 	let label_for_update = label;
 	let label_template_for_update = label_template;
 	page_ctrl.on_value_changed(move |event| {
@@ -48,11 +44,7 @@ pub fn show_go_to_page_dialog(parent: &Frame, current_page: i32, max_page: i32) 
 	dialog.set_affirmative_id(ID_OK);
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add_sizer(&page_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
-	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&ok_button, 0, SizerFlag::All, DIALOG_PADDING);
-	button_sizer.add(&cancel_button, 0, SizerFlag::All, DIALOG_PADDING);
-	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
+	add_ok_cancel_footer(content_sizer, ok_button, cancel_button);
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
 	page_ctrl.set_focus();

@@ -20,6 +20,7 @@ anyhow = { workspace = true }
 base64 = { workspace = true }
 bitflags = { workspace = true }
 cfb = "0.14.0"
+chardetng = "1.0.0"
 ego-tree = "0.11.0"
 encoding_rs = "0.8.35"
 icu_properties = { version = "2.2.0", features = ["unicode_bidi"] }
@@ -38,7 +39,7 @@ rtf-parser = "0.4.3"
 scraper = "0.27.0"
 serde = { version = "1.0.229", default-features = false, features = ["derive", "std"] }
 sha1 = "0.11.0"
-thiserror = "2.0.19"
+thiserror = "2.0.20"
 toml = { workspace = true }
 unicode-bidi = "0.3.18"
 uniffi = { version = "0.32.0", features = ["cli"], optional = true }

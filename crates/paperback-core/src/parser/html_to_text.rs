@@ -7,7 +7,7 @@ use scraper::{ElementRef, Html, Node, node};
 use crate::{
 	parser::{
 		ConverterOutput,
-		table_text::{push_finalized_line, table_render_bundle},
+		table_text::{collect_dom_text, push_finalized_line, table_render_bundle},
 	},
 	t,
 	types::{FormatInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
@@ -582,16 +582,8 @@ impl HtmlToText {
 
 	fn collect_text(node: NodeRef<'_, Node>) -> String {
 		let mut buffer = String::new();
-		Self::collect_text_into(node, &mut buffer);
+		collect_dom_text(node, &mut buffer, false);
 		buffer
-	}
-
-	fn collect_text_into(node: NodeRef<'_, Node>, buffer: &mut String) {
-		match node.value() {
-			Node::Text(text) => buffer.push_str(&text.text),
-			Node::Element(_) => node.children().for_each(|child| Self::collect_text_into(child, buffer)),
-			_ => {}
-		}
 	}
 
 	fn serialize_node(node: NodeRef<'_, Node>, _document: &Html) -> String {

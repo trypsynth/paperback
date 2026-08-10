@@ -6,18 +6,27 @@ permalink: /
 
 # Paperback
 
-Paperback is a fully accessible, fast, and native ebook and document reader for Windows and Linux.
+Paperback is a fully accessible, fast, and native ebook and document reader for Windows and macOS, with Android and iOS apps in development.
+
+## Platforms
+
+- **Windows** &ndash; installer and portable builds, for x64 and ARM64
+- **macOS** &ndash; signed and notarized, so it just works with no security warnings
+- **Android** &ndash; in development, coming to Google Play, with read-aloud and background playback
+- **iOS** &ndash; in development, coming to the App Store
 
 ## Supported formats
 
 - CHM (Compiled HTML Help)
+- DAISY
 - DOCX and DOC (Microsoft Word)
 - EPUB
 - FB2
 - HTML
 - Markdown
-- ODP (OpenDocument Presentations)
-- ODT (OpenDocument Text)
+- MOBI, AZW, and AZW3 (Kindle)
+- ODP and FODP (OpenDocument Presentations)
+- ODT and FODT (OpenDocument Text)
 - PDF
 - PPTX and PPT (PowerPoint)
 - RTF
@@ -44,6 +53,7 @@ Paperback is translated into multiple languages by contributors around the world
 - Bosnian
 - Chinese (Simplified)
 - Czech
+- Dutch
 - Finnish
 - French
 - German

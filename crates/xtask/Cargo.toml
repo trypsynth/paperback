@@ -7,7 +7,7 @@ edition = "2024"
 flate2 = "1.1.9"
 patois-build = "0.1.4"
 tar = "0.4.46"
-ureq = "3.3.0"
+ureq = "3.4.0"
 walkdir = "2.5.0"
 zip = { version = "8.6.0", default-features = false, features = ["deflate"] }
 

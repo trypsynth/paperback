@@ -6,7 +6,10 @@ use std::{
 use crate::{
 	document::{DocumentHandle, MarkerType},
 	parser::is_external_url,
-	util::text::{ch_width, display_len},
+	util::{
+		html::{escape, escape_attr, push_escaped},
+		text::ch_width,
+	},
 };
 
 #[must_use]
@@ -115,14 +118,7 @@ pub fn render(doc: &DocumentHandle) -> String {
 				events.push(Ev { pos: end, kind: Ek::BlockClose("</h6>") });
 			}
 			MarkerType::Link => {
-				// Link length is not stored; recover it from the link text written into
-				// the content (collapse_whitespace was applied when the text was stored).
-				let text: String = marker.text.split_whitespace().collect::<Vec<_>>().join(" ");
-				let implied_len = if marker.length > 0 { marker.length } else { display_len(&text) };
-				if implied_len == 0 {
-					continue;
-				}
-				let end = pos + implied_len;
+				let Some(end) = super::link_span_end(marker) else { continue };
 				let open = if marker.reference.is_empty() {
 					"<a>".to_string()
 				} else {
@@ -379,27 +375,6 @@ fn resolve_fragment(id_positions: &HashMap<String, usize>, fragment: &str, scope
 		}
 	}
 	id_positions.get(fragment).copied()
-}
-
-fn push_escaped(ch: char, out: &mut String) {
-	match ch {
-		'&' => out.push_str("&amp;"),
-		'<' => out.push_str("&lt;"),
-		'>' => out.push_str("&gt;"),
-		c => out.push(c),
-	}
-}
-
-fn escape(s: &str) -> String {
-	let mut out = String::with_capacity(s.len());
-	for ch in s.chars() {
-		push_escaped(ch, &mut out);
-	}
-	out
-}
-
-fn escape_attr(s: &str) -> String {
-	s.replace('&', "&amp;").replace('"', "&quot;")
 }
 
 #[cfg(test)]

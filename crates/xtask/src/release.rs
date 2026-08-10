@@ -78,6 +78,8 @@ fn build_mac_dmg(target_dir: &Path) -> Result<(), Box<dyn Error>> {
 
 	println!("Built app: {}", bundle_dir.display());
 
+	sign_mac_bundle(&bundle_dir, &macos_dir)?;
+
 	// Build a DMG: staging folder contains the .app plus an /Applications symlink
 	// so users get the standard drag-to-install experience.
 	let staging = target_dir.join("dmg-staging");
@@ -107,6 +109,41 @@ fn build_mac_dmg(target_dir: &Path) -> Result<(), Box<dyn Error>> {
 	Ok(())
 }
 
+/// Signs the bundle with the Developer ID Application identity named by the
+/// MACOS_SIGN_IDENTITY env var, so the shipped DMG can be notarized and doesn't trip
+/// Gatekeeper's "app is damaged" check. A no-op when that var isn't set (i.e. local dev
+/// builds from contributors without a signing certificate) — everything signs deepest
+/// first: the third-party dylib, then the executable, then the bundle as a whole, which
+/// is what Apple's docs recommend over a single `--deep` sign.
+#[cfg(target_os = "macos")]
+fn sign_mac_bundle(bundle_dir: &Path, macos_dir: &Path) -> Result<(), Box<dyn Error>> {
+	let Ok(identity) = env::var("MACOS_SIGN_IDENTITY") else {
+		println!("MACOS_SIGN_IDENTITY not set; skipping code signing.");
+		return Ok(());
+	};
+
+	let dylib = macos_dir.join("libpdfium.dylib");
+	if dylib.exists() {
+		codesign(&dylib, &identity)?;
+	}
+	codesign(&macos_dir.join("paperback"), &identity)?;
+	codesign(bundle_dir, &identity)?;
+	println!("Signed {}", bundle_dir.display());
+	Ok(())
+}
+
+#[cfg(target_os = "macos")]
+fn codesign(path: &Path, identity: &str) -> Result<(), Box<dyn Error>> {
+	let status = Command::new("codesign")
+		.args(["--force", "--timestamp", "--options", "runtime", "--sign", identity])
+		.arg(path)
+		.status()?;
+	if !status.success() {
+		return Err(format!("codesign failed for {}", path.display()).into());
+	}
+	Ok(())
+}
+
 #[cfg(target_os = "macos")]
 fn copy_dir_all(src: &Path, dst: &Path) -> Result<(), Box<dyn Error>> {
 	fs::create_dir_all(dst)?;
@@ -125,6 +162,19 @@ fn copy_dir_all(src: &Path, dst: &Path) -> Result<(), Box<dyn Error>> {
 }
 
 #[cfg(not(target_os = "macos"))]
+fn add_file_to_zip(
+	zip: &mut ZipWriter<File>,
+	options: SimpleFileOptions,
+	path: &Path,
+	name: &str,
+) -> Result<(), Box<dyn Error>> {
+	zip.start_file(name, options)?;
+	let mut f = File::open(path)?;
+	io::copy(&mut f, zip)?;
+	Ok(())
+}
+
+#[cfg(not(target_os = "macos"))]
 fn build_zip_package(
 	target_dir: &Path,
 	exe_path: &Path,
@@ -136,15 +186,11 @@ fn build_zip_package(
 	let file = File::create(&package_path)?;
 	let mut zip = ZipWriter::new(file);
 	let options = SimpleFileOptions::default().compression_method(CompressionMethod::Deflated);
-	let exe_filename = exe_path.file_name().unwrap();
-	zip.start_file(exe_filename.to_string_lossy(), options)?;
-	let mut f = File::open(exe_path)?;
-	io::copy(&mut f, &mut zip)?;
+	let exe_filename = exe_path.file_name().unwrap().to_string_lossy().into_owned();
+	add_file_to_zip(&mut zip, options, exe_path, &exe_filename)?;
 	if pb_exe_path.exists() {
-		let pb_filename = pb_exe_path.file_name().unwrap();
-		zip.start_file(pb_filename.to_string_lossy(), options)?;
-		let mut f = File::open(pb_exe_path)?;
-		io::copy(&mut f, &mut zip)?;
+		let pb_filename = pb_exe_path.file_name().unwrap().to_string_lossy().into_owned();
+		add_file_to_zip(&mut zip, options, pb_exe_path, &pb_filename)?;
 	} else {
 		println!("Warning: pb binary not found, skipping.");
 	}
@@ -155,9 +201,7 @@ fn build_zip_package(
 					.into(),
 			);
 		}
-		zip.start_file("pdfium.dll", options)?;
-		let mut f = File::open(pdfium_dll_path)?;
-		io::copy(&mut f, &mut zip)?;
+		add_file_to_zip(&mut zip, options, pdfium_dll_path, "pdfium.dll")?;
 	}
 	if sounds_dir.exists() {
 		for entry in WalkDir::new(sounds_dir) {
@@ -166,9 +210,7 @@ fn build_zip_package(
 			if path.is_file() {
 				let relative_path = path.strip_prefix(target_dir)?;
 				let name = relative_path.to_string_lossy().replace('\\', "/");
-				zip.start_file(name, options)?;
-				let mut f = File::open(path)?;
-				io::copy(&mut f, &mut zip)?;
+				add_file_to_zip(&mut zip, options, path, &name)?;
 			}
 		}
 	} else {

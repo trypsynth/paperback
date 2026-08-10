@@ -263,11 +263,7 @@ mod tests {
 		let dir = TempDir::new("odp-parser");
 		let path = dir.write_str("deck.odp", cursor.into_inner());
 		let doc = OdpParser.parse(&ParserContext::new(path)).expect("parse odp document");
-		assert_eq!(
-			doc.buffer.content,
-			"Zipped slide
-"
-		);
+		assert_eq!(doc.buffer.content, "Zipped slide\n");
 	}
 
 	#[test]

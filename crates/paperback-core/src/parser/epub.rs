@@ -2,7 +2,7 @@ use std::{
 	collections::HashMap,
 	fs::File,
 	io::{BufReader, Read, Seek},
-	path::{Component, Path, PathBuf},
+	path::Path,
 };
 
 use anyhow::{Context, Result};
@@ -16,7 +16,10 @@ use crate::{
 		ConverterOutput, Parser, add_converter_markers_excluding_links,
 		html_to_text::{HtmlSourceMode, HtmlToText},
 		is_external_url,
-		util::path::extract_title_from_path,
+		util::{
+			path::{extract_title_from_path, resolve_relative_path},
+			xml::collect_element_text,
+		},
 		xml_to_text::XmlToText,
 	},
 	t,
@@ -109,7 +112,7 @@ impl Parser for EpubParser {
 			.with_context(|| format!("Failed to read EPUB as zip '{}'", context.file_path))?;
 		let container_path = find_container_path(&mut archive)?;
 		let opf_content = read_zip_entry_by_name(&mut archive, &container_path)?;
-		let opf_dir = Path::new(&container_path).parent().unwrap_or_else(|| Path::new("")).to_path_buf();
+		let opf_dir = container_path.rfind('/').map_or(String::new(), |i| container_path[..i].to_string());
 		let opf_doc = XmlDocument::parse_with_options(
 			&opf_content,
 			ParsingOptions { allow_dtd: true, ..ParsingOptions::default() },
@@ -281,7 +284,7 @@ struct PackageMetadata {
 
 type PackageParts = (HashMap<String, ManifestItem>, Vec<String>, Option<String>, Option<String>, PackageMetadata);
 
-fn parse_package(package: Node<'_, '_>, opf_dir: &Path) -> PackageParts {
+fn parse_package(package: Node<'_, '_>, opf_dir: &str) -> PackageParts {
 	let mut manifest = HashMap::new();
 	let mut spine = Vec::new();
 	let mut nav_path = None;
@@ -313,7 +316,7 @@ fn parse_package(package: Node<'_, '_>, opf_dir: &Path) -> PackageParts {
 					let properties = item
 						.attribute("properties")
 						.map_or_else(Vec::new, |v| v.split_whitespace().map(ToString::to_string).collect());
-					let resolved = normalize_path(&opf_dir.join(url_decode(href)));
+					let resolved = resolve_relative_path(opf_dir, &url_decode(href));
 					let manifest_item =
 						ManifestItem { id: id.to_string(), path: resolved.clone(), media_type, properties };
 					if manifest_item.properties.iter().any(|p| p == "nav") {
@@ -397,14 +400,8 @@ fn resolve_href(current_path: &str, target: &str) -> String {
 	let resolved = if path_part.is_empty() {
 		current_path.to_string()
 	} else {
-		let mut base = PathBuf::from(current_path);
-		base.pop();
-		let joined = if path_part.starts_with('/') {
-			PathBuf::from(path_part.trim_start_matches('/'))
-		} else {
-			base.join(path_part)
-		};
-		normalize_path(&joined)
+		let current_dir = current_path.rfind('/').map_or("", |i| &current_path[..i]);
+		resolve_relative_path(current_dir, &path_part)
 	};
 	if let Some(frag) = fragment {
 		if frag.is_empty() { resolved } else { format!("{resolved}#{frag}") }
@@ -421,20 +418,6 @@ fn split_href(input: &str) -> (String, Option<String>) {
 	} else {
 		(trimmed.to_string(), None)
 	}
-}
-
-fn normalize_path(path: &Path) -> String {
-	let mut components = Vec::new();
-	for component in path.components() {
-		match component {
-			Component::ParentDir => {
-				components.pop();
-			}
-			Component::Normal(part) => components.push(part.to_string_lossy().to_string()),
-			_ => {}
-		}
-	}
-	components.join("/")
 }
 
 fn build_toc_from_nav_document<R: Read + Seek>(
@@ -535,25 +518,8 @@ fn parse_nav_item(
 }
 
 fn extract_link_text(link: Node<'_, '_>) -> String {
-	let mut text = String::new();
-	collect_text(link, &mut text);
+	let text = collect_element_text(link);
 	trim_string(&collapse_whitespace(&text))
-}
-
-fn collect_text(node: Node<'_, '_>, buffer: &mut String) {
-	match node.node_type() {
-		NodeType::Text => {
-			if let Some(value) = node.text() {
-				buffer.push_str(value);
-			}
-		}
-		NodeType::Element => {
-			for child in node.children() {
-				collect_text(child, buffer);
-			}
-		}
-		_ => {}
-	}
 }
 
 fn compute_nav_offset(reference: &str, sections: &[SectionMeta], id_positions: &HashMap<String, usize>) -> usize {

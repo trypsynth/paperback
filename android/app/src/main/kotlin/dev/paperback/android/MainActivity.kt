@@ -176,15 +176,15 @@ class MainActivity : ComponentActivity() {
 		if (event.isCtrlPressed) {
 			return when (event.keyCode) {
 				KeyEvent.KEYCODE_F -> {
-					vm.openFindDialog()
+					vm.findDialog.open()
 					true
 				}
 				KeyEvent.KEYCODE_COMMA -> {
-					vm.openSettingsDialog()
+					vm.settingsDialog.open()
 					true
 				}
 				KeyEvent.KEYCODE_T -> {
-					vm.openTocDialog()
+					vm.tocDialog.open()
 					true
 				}
 				KeyEvent.KEYCODE_P -> {
@@ -200,16 +200,16 @@ class MainActivity : ComponentActivity() {
 					true
 				}
 				KeyEvent.KEYCODE_W -> {
-					vm.openWordCountDialog()
+					vm.wordCountDialog.open()
 					true
 				}
 				KeyEvent.KEYCODE_I -> {
-					vm.openDocumentInfoDialog()
+					vm.documentInfoDialog.open()
 					true
 				}
 				KeyEvent.KEYCODE_S -> {
 					if (event.isShiftPressed) {
-						vm.openSleepTimerDialog()
+						vm.sleepTimerDialog.open()
 						true
 					} else {
 						super.dispatchKeyEvent(event)

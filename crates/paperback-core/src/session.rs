@@ -1024,10 +1024,14 @@ impl DocumentSession {
 		nearest_fragment_before(&self.handle, pos).map(|id| encode_url_fragment(&id))
 	}
 
+	fn is_epub(&self) -> bool {
+		self.file_path.to_lowercase().ends_with(".epub")
+	}
+
 	/// Returns true when the document's underlying source can be shown as text.
 	#[must_use]
 	pub fn source_view_available(&self) -> bool {
-		if self.file_path.to_lowercase().ends_with(".epub") {
+		if self.is_epub() {
 			return true;
 		}
 		let ext = Path::new(&self.file_path).extension().map(|ext| ext.to_string_lossy().to_ascii_lowercase());
@@ -1058,7 +1062,7 @@ impl DocumentSession {
 	/// `position`. The caret is mapped into the returned source text.
 	fn source_content_for_position(&self, position: i64) -> Option<(String, usize, String)> {
 		let pos = usize::try_from(position.max(0)).unwrap_or(0);
-		if self.file_path.to_lowercase().ends_with(".epub") {
+		if self.is_epub() {
 			let section_path = self.get_current_section_path(position).filter(|path| !path.is_empty())?;
 			let file = File::open(&self.file_path).ok()?;
 			let mut archive = ZipArchive::new(BufReader::new(file)).ok()?;
@@ -1109,7 +1113,7 @@ impl DocumentSession {
 	/// extracting every chapter in the book just to view one. Runs at most once
 	/// per `doc_temp_dir`; subsequent calls are a no-op.
 	fn ensure_epub_resources_extracted(&self, doc_temp_dir: &Path) -> anyhow::Result<()> {
-		if !self.file_path.to_lowercase().ends_with(".epub") {
+		if !self.is_epub() {
 			return Ok(());
 		}
 		let marker = doc_temp_dir.join(".resources_extracted");
@@ -1132,7 +1136,7 @@ impl DocumentSession {
 	///
 	/// Returns an error if the EPUB cannot be opened or the resource cannot be written.
 	pub fn extract_resource(&self, resource_path: &str, output_path: &str) -> anyhow::Result<bool> {
-		if self.file_path.to_lowercase().ends_with(".epub") {
+		if self.is_epub() {
 			let file = File::open(&self.file_path)?;
 			let mut archive = ZipArchive::new(BufReader::new(file))?;
 			zip_utils::extract_zip_entry_to_file(&mut archive, resource_path, Path::new(output_path))?;
@@ -2119,7 +2123,11 @@ mod tests {
 			.unwrap();
 
 		writer.start_file("OEBPS/Images/cover.jpg", opts).unwrap();
-		writer.write_all(b"\xFF\xD8\xFF\xE0fake-jpeg-bytes").unwrap();
+		// The filler text intentionally avoids starting with a hex digit right after the
+		// \xNN escapes above: `gen-pot`'s xgettext pass parses this file in C mode, where
+		// \x escapes are greedy and would otherwise swallow leading hex-looking characters
+		// (e.g. "fake" starting with a valid hex digit) into a wildly out-of-range escape.
+		writer.write_all(b"\xFF\xD8\xFF\xE0placeholder-jpeg-bytes").unwrap();
 
 		writer.finish().unwrap();
 		epub_path

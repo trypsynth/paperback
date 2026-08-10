@@ -240,10 +240,17 @@ fn pdfium_dylib_download_url_for_target() -> Option<&'static str> {
 }
 
 fn download_pdfium_dylib(url: &str, dest_dylib: &Path) -> io::Result<()> {
-	if let Some(parent) = dest_dylib.parent() {
+	download_and_extract_from_tgz(url, dest_dylib, "libpdfium.dylib")
+}
+
+/// Downloads a `.tgz` archive from `url` and unpacks the single entry named
+/// `wanted_filename` to `dest`, replacing anything already there. Used to fetch the
+/// prebuilt pdfium binary for whichever platform/architecture is currently building.
+fn download_and_extract_from_tgz(url: &str, dest: &Path, wanted_filename: &str) -> io::Result<()> {
+	if let Some(parent) = dest.parent() {
 		fs::create_dir_all(parent)?;
 	}
-	println!("cargo:warning=Downloading libpdfium.dylib from {url}");
+	println!("cargo:warning=Downloading {wanted_filename} from {url}");
 	let response = ureq::get(url).call().map_err(|err| io::Error::other(format!("request failed: {err}")))?;
 	let mut body = response.into_body();
 	let mut archive_bytes = Vec::new();
@@ -255,17 +262,21 @@ fn download_pdfium_dylib(url: &str, dest_dylib: &Path) -> io::Result<()> {
 	for entry in archive.entries()? {
 		let mut entry = entry?;
 		let path = entry.path()?;
-		if path.file_name().and_then(|name| name.to_str()) == Some("libpdfium.dylib") {
-			let temp_path = dest_dylib.with_extension("dylib.tmp");
+		if path.file_name().and_then(|name| name.to_str()) == Some(wanted_filename) {
+			let temp_ext = match dest.extension() {
+				Some(ext) => format!("{}.tmp", ext.to_string_lossy()),
+				None => "tmp".to_string(),
+			};
+			let temp_path = dest.with_extension(temp_ext);
 			entry.unpack(&temp_path)?;
-			if dest_dylib.exists() {
-				fs::remove_file(dest_dylib)?;
+			if dest.exists() {
+				fs::remove_file(dest)?;
 			}
-			fs::rename(temp_path, dest_dylib)?;
+			fs::rename(temp_path, dest)?;
 			return Ok(());
 		}
 	}
-	Err(io::Error::other("libpdfium.dylib not found inside downloaded archive"))
+	Err(io::Error::other(format!("{wanted_filename} not found inside downloaded archive")))
 }
 
 fn copy_pdfium_dll() {
@@ -344,32 +355,7 @@ fn pdfium_download_url_for_target() -> Option<&'static str> {
 }
 
 fn download_pdfium_dll(url: &str, dest_dll: &Path) -> io::Result<()> {
-	if let Some(parent) = dest_dll.parent() {
-		fs::create_dir_all(parent)?;
-	}
-	println!("cargo:warning=Downloading pdfium.dll from {url}");
-	let response = ureq::get(url).call().map_err(|err| io::Error::other(format!("request failed: {err}")))?;
-	let mut body = response.into_body();
-	let mut archive_bytes = Vec::new();
-	body.as_reader()
-		.read_to_end(&mut archive_bytes)
-		.map_err(|err| io::Error::other(format!("failed to read response body: {err}")))?;
-	let decoder = GzDecoder::new(Cursor::new(archive_bytes));
-	let mut archive = Archive::new(decoder);
-	for entry in archive.entries()? {
-		let mut entry = entry?;
-		let path = entry.path()?;
-		if path.file_name().and_then(|name| name.to_str()) == Some("pdfium.dll") {
-			let temp_path = dest_dll.with_extension("dll.tmp");
-			entry.unpack(&temp_path)?;
-			if dest_dll.exists() {
-				fs::remove_file(dest_dll)?;
-			}
-			fs::rename(temp_path, dest_dll)?;
-			return Ok(());
-		}
-	}
-	Err(io::Error::other("pdfium.dll not found inside downloaded archive"))
+	download_and_extract_from_tgz(url, dest_dll, "pdfium.dll")
 }
 
 fn push_dll_candidates_from_path(candidates: &mut Vec<PathBuf>, path: PathBuf) {

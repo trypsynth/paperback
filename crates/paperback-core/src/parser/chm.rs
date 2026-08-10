@@ -10,7 +10,7 @@ use crate::{
 		Parser, add_converter_markers_excluding_links,
 		html_to_text::{HtmlSourceMode, HtmlToText},
 		is_external_url,
-		util::path::extract_title_from_path,
+		util::path::{extract_title_from_path, resolve_relative_path},
 	},
 	util::encoding::convert_to_utf8,
 };
@@ -275,21 +275,7 @@ fn resolve_chm_href(current_file: &str, href: &str) -> String {
 		let current_normalized = normalize_path(current_file);
 		let current_dir = current_normalized.rfind('/').map_or("", |i| &current_normalized[..i]);
 		let path_normalized = path_part.replace('\\', "/");
-		let mut parts: Vec<&str> = if path_part.starts_with('/') {
-			Vec::new()
-		} else {
-			current_dir.split('/').filter(|s| !s.is_empty()).collect()
-		};
-		for part in path_normalized.split('/') {
-			match part {
-				".." => {
-					parts.pop();
-				}
-				"." | "" => {}
-				p => parts.push(p),
-			}
-		}
-		format!("/{}", parts.join("/")).to_lowercase()
+		format!("/{}", resolve_relative_path(current_dir, &path_normalized)).to_lowercase()
 	};
 	match fragment {
 		Some(frag) if !frag.is_empty() => format!("{resolved_path}#{frag}"),

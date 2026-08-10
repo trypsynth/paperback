@@ -16,6 +16,31 @@ pub fn extract_title_from_path(path: &str) -> String {
 	Path::new(trimmed).file_stem().and_then(|s| s.to_str()).unwrap_or("Untitled").to_string()
 }
 
+/// Resolves a `/`-separated `path` against a `/`-separated `base_dir`, collapsing `.` and
+/// `..` segments. An absolute `path` (leading `/`) ignores `base_dir` entirely. Used to
+/// resolve hrefs against their containing document's location inside an archive (EPUB,
+/// CHM), where paths are always archive-internal and `/`-separated regardless of host
+/// platform — deliberately implemented with plain string splitting rather than
+/// [`std::path::Path`], since `Path` treats `\` as a separator on Windows and would
+/// otherwise resolve a literal backslash in an href differently depending on the platform
+/// the code is compiled for. Case-folding and URL-decoding are the caller's job, since
+/// those differ per format (CHM paths are case-insensitive, EPUB paths aren't).
+#[must_use]
+pub fn resolve_relative_path(base_dir: &str, path: &str) -> String {
+	let mut parts: Vec<&str> =
+		if path.starts_with('/') { Vec::new() } else { base_dir.split('/').filter(|s| !s.is_empty()).collect() };
+	for part in path.split('/') {
+		match part {
+			".." => {
+				parts.pop();
+			}
+			"." | "" => {}
+			p => parts.push(p),
+		}
+	}
+	parts.join("/")
+}
+
 #[cfg(test)]
 mod tests {
 	use rstest::rstest;
@@ -52,5 +77,17 @@ mod tests {
 	#[case("trailing\\", "trailing\\")]
 	fn backslash_is_a_filename_character_on_unix(#[case] input: &str, #[case] expected: &str) {
 		assert_eq!(extract_title_from_path(input), expected);
+	}
+
+	#[rstest]
+	#[case("OEBPS", "chapter1.xhtml", "OEBPS/chapter1.xhtml")]
+	#[case("OEBPS/text", "../images/cover.png", "OEBPS/images/cover.png")]
+	#[case("OEBPS", "/OEBPS/toc.ncx", "OEBPS/toc.ncx")]
+	#[case("OEBPS/text", "./chapter2.xhtml", "OEBPS/text/chapter2.xhtml")]
+	#[case("", "chapter1.xhtml", "chapter1.xhtml")]
+	#[case("OEBPS/deep/nested", "../../chapter1.xhtml", "OEBPS/chapter1.xhtml")]
+	#[case("OEBPS", "../../../escape.xhtml", "escape.xhtml")]
+	fn resolves_relative_paths(#[case] base_dir: &str, #[case] path: &str, #[case] expected: &str) {
+		assert_eq!(resolve_relative_path(base_dir, path), expected);
 	}
 }

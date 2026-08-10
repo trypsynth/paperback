@@ -1,16 +1,11 @@
 package dev.paperback.android.ui.dialogs
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,12 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.semantics.CustomAccessibilityAction
-import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -76,33 +66,26 @@ fun ElementsDialog(
 				if (selectedTabIndex == 0) {
 					val items = headings?.items ?: emptyList()
 					val levels = remember(items) { items.map { calculateDepth(items, it.parentIndex) } }
-					val visibleHeadings = remember(items, expandedHeadingIndices) {
-						val result = mutableListOf<Pair<Int, uniffi.paperback.HeadingTreeItemFfi>>()
-						var skipLevelGreaterThan = Int.MAX_VALUE
-						for (index in items.indices) {
-							val item = items[index]
-							val level = levels[index]
-							if (level > skipLevelGreaterThan) {
-								continue
-							} else {
-								skipLevelGreaterThan = Int.MAX_VALUE
-							}
-							result.add(index to item)
-							val hasChildren = index + 1 < items.size && levels[index + 1] > level
-							if (hasChildren && !expandedHeadingIndices.contains(index)) {
-								skipLevelGreaterThan = level
-							}
-						}
-						result
+					val levelAt = remember(levels) { { index: Int -> levels[index] } }
+					val visibleHeadingIndices = remember(items, expandedHeadingIndices) {
+						flattenVisibleTreeIndices(items.size, levelAt, expandedHeadingIndices)
 					}
 
 					LazyColumn(modifier = Modifier.fillMaxSize()) {
-						items(visibleHeadings.size) { i ->
-							val (originalIndex, item) = visibleHeadings[i]
-							val level = levels[originalIndex]
-							val hasChildren = originalIndex + 1 < items.size && levels[originalIndex + 1] > level
+						items(visibleHeadingIndices.size) { i ->
+							val originalIndex = visibleHeadingIndices[i]
+							val item = items[originalIndex]
+							val level = levelAt(originalIndex)
+							val hasChildren = hasTreeChildren(items.size, levelAt, originalIndex)
 							val isExpanded = expandedHeadingIndices.contains(originalIndex)
 							val paddingLeft = (16 + (level * 16)).dp
+							val toggleExpanded = {
+								expandedHeadingIndices = if (isExpanded) {
+									expandedHeadingIndices - originalIndex
+								} else {
+									expandedHeadingIndices + originalIndex
+								}
+							}
 
 							Row(
 								modifier = Modifier
@@ -111,51 +94,11 @@ fun ElementsDialog(
 										onNavigate(item.offset)
 										onDismiss()
 									}.semantics(mergeDescendants = true) {
-										if (hasChildren) {
-											// TRANSLATORS: TalkBack state description for a heading row announcing whether its children are shown
-											stateDescription = if (isExpanded) t("Expanded") else t("Collapsed")
-											customActions = listOf(
-												CustomAccessibilityAction(
-													// TRANSLATORS: TalkBack custom action toggling whether a heading's children are shown
-													label = if (isExpanded) t("Collapse") else t("Expand"),
-													action = {
-														expandedHeadingIndices = if (isExpanded) {
-															expandedHeadingIndices - originalIndex
-														} else {
-															expandedHeadingIndices + originalIndex
-														}
-														true
-													}
-												)
-											)
-										}
+										applyTreeExpandSemantics(hasChildren, isExpanded, toggleExpanded)
 									}.padding(start = paddingLeft, top = 8.dp, bottom = 8.dp, end = 16.dp),
 								verticalAlignment = Alignment.CenterVertically
 							) {
-								if (hasChildren) {
-									Box(
-										modifier = Modifier
-											.size(36.dp)
-											.pointerInput(Unit) {
-												detectTapGestures(onTap = {
-													expandedHeadingIndices = if (isExpanded) {
-														expandedHeadingIndices - originalIndex
-													} else {
-														expandedHeadingIndices + originalIndex
-													}
-												})
-											},
-										contentAlignment = Alignment.Center
-									) {
-										Text(
-											text = if (isExpanded) "▼" else "▶",
-											style = MaterialTheme.typography.bodyMedium,
-											modifier = Modifier.clearAndSetSemantics { }
-										)
-									}
-								} else {
-									Spacer(modifier = Modifier.width(36.dp))
-								}
+								TreeExpandChevron(hasChildren, isExpanded, toggleExpanded)
 								Text(
 									// TRANSLATORS: Fallback label for a heading in the Elements dialog when the document gave it no text
 									text = "${item.text.ifBlank { t("Untitled") }}, Level ${level + 1}",

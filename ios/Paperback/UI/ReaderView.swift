@@ -29,18 +29,11 @@ struct ReaderView: View {
 		.onReceive(viewModel.$sleepTimerRemaining) { remaining in
 			if remaining == 0 { isScreenDimmed = true }
 		}
-		.onChange(of: viewModel.isTextMode) { entering in
-			if entering {
-				viewModel.enterTextMode()
-			} else {
-				viewModel.exitTextMode()
-			}
+		.navigationDestination(isPresented: $viewModel.showToc) {
+			TocView().environmentObject(viewModel)
 		}
-		.sheet(isPresented: $viewModel.showToc) {
-			TocSheet().environmentObject(viewModel)
-		}
-		.sheet(isPresented: $viewModel.showFind) {
-			FindSheet().environmentObject(viewModel)
+		.navigationDestination(isPresented: $viewModel.showFind) {
+			FindView().environmentObject(viewModel)
 		}
 		.sheet(isPresented: $viewModel.showGoTo) {
 			GoToSheet().environmentObject(viewModel)
@@ -63,8 +56,8 @@ struct ReaderView: View {
 		.sheet(isPresented: $viewModel.showDocumentInfo) {
 			DocumentInfoSheet().environmentObject(viewModel)
 		}
-		.sheet(isPresented: $viewModel.showSleepTimer) {
-			SleepTimerSheet().environmentObject(viewModel)
+		.navigationDestination(isPresented: $viewModel.showSleepTimer) {
+			SleepTimerView().environmentObject(viewModel)
 		}
 		.navigationDestination(isPresented: $viewModel.showElements) {
 			ElementsView().environmentObject(viewModel)
@@ -117,13 +110,23 @@ struct ReaderView: View {
 	@ViewBuilder
 	private var bottomBar: some View {
 		if !viewModel.isTextMode, viewModel.activeTab != nil {
-			TtsControlBar()
-				.environmentObject(viewModel)
-				.background {
-					Rectangle()
-						.fill(.bar)
-						.ignoresSafeArea(edges: .bottom)
-				}
+			if #available(iOS 26, *) {
+				// Floats as a Liquid Glass pill inset from the edges, matching Safari's bottom
+				// toolbar, instead of a flat bar spanning the full width.
+				TtsControlBar()
+					.environmentObject(viewModel)
+					.glassEffect(.regular, in: RoundedRectangle(cornerRadius: 26))
+					.padding(.horizontal, 12)
+					.padding(.bottom, 8)
+			} else {
+				TtsControlBar()
+					.environmentObject(viewModel)
+					.background {
+						Rectangle()
+							.fill(.bar)
+							.ignoresSafeArea(edges: .bottom)
+					}
+			}
 		}
 	}
 

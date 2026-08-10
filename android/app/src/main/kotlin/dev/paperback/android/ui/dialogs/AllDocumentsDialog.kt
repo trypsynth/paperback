@@ -4,15 +4,20 @@ import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.*
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextOverflow
 import dev.paperback.android.t
 import dev.paperback.android.ui.RecentDocumentItem
-import androidx.compose.foundation.lazy.items as lazyItems
+import androidx.compose.foundation.lazy.itemsIndexed as lazyItemsIndexed
 
 @Composable
 fun AllDocumentsDialog(
@@ -31,7 +36,7 @@ fun AllDocumentsDialog(
 			LazyColumn(
 				modifier = Modifier.fillMaxWidth()
 			) {
-				lazyItems(recentDocuments) { recentDoc ->
+				lazyItemsIndexed(recentDocuments) { index, recentDoc ->
 					RecentDocumentItemRow(
 						item = recentDoc,
 						onOpen = {
@@ -41,6 +46,9 @@ fun AllDocumentsDialog(
 						onRemove = { onRemoveDocument(recentDoc.uri) },
 						onLocate = { onLocateDocument(recentDoc.uri) }
 					)
+					if (index < recentDocuments.lastIndex) {
+						HorizontalDivider()
+					}
 				}
 			}
 		},
@@ -60,11 +68,20 @@ fun RecentDocumentItemRow(
 	onRemove: () -> Unit,
 	onLocate: (() -> Unit)? = null
 ) {
-	Row(
+	val statusText = when {
+		item.isMissing ->
+			// TRANSLATORS: Status label for a recent document: its file can't be found, it's open in a tab right now, or it's just closed
+			t("File Missing")
+		item.isOpen -> t("Currently Open")
+		showClosedStatus -> t("Closed")
+		else -> null
+	}
+
+	ListItem(
 		modifier = Modifier
-			.fillMaxWidth()
 			.clickable(
 				onClickLabel = "open",
+				role = Role.Button,
 				onClick = { if (!item.isMissing) onOpen() }
 			).semantics {
 				customActions = mutableListOf<CustomAccessibilityAction>().apply {
@@ -85,56 +102,58 @@ fun RecentDocumentItemRow(
 						}
 					)
 				}
-			}.padding(vertical = 12.dp, horizontal = 8.dp),
-		verticalAlignment = Alignment.CenterVertically
-	) {
-		Column(modifier = Modifier.weight(1f)) {
+			},
+		leadingContent = {
+			Icon(
+				imageVector = if (item.isMissing) Icons.Filled.ErrorOutline else Icons.AutoMirrored.Filled.InsertDriveFile,
+				contentDescription = null,
+				tint = if (item.isMissing) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+			)
+		},
+		headlineContent = {
 			Text(
 				text = item.displayName,
-				style = MaterialTheme.typography.bodyLarge,
-				color = if (item.isMissing) {
-					MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-				} else {
-					MaterialTheme.colorScheme.onSurface
-				}
+				color = if (item.isMissing) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f) else Color.Unspecified
 			)
-			if (!item.uri.startsWith("content://")) {
-				Text(
-					text = item.uri.removePrefix("file://"),
-					style = MaterialTheme.typography.bodySmall,
-					color = MaterialTheme.colorScheme.onSurfaceVariant,
-					maxLines = 2,
-					overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-				)
+		},
+		supportingContent = if (!item.uri.startsWith("content://") || statusText != null) {
+			{
+				Column {
+					if (!item.uri.startsWith("content://")) {
+						Text(
+							text = item.uri.removePrefix("file://"),
+							maxLines = 2,
+							overflow = TextOverflow.Ellipsis
+						)
+					}
+					if (statusText != null) {
+						Text(
+							text = statusText,
+							color = if (item.isMissing) MaterialTheme.colorScheme.error else Color.Unspecified
+						)
+					}
+				}
 			}
-			if (item.isMissing || item.isOpen || showClosedStatus) {
-				Text(
-					text = if (item.isMissing) {
-						// TRANSLATORS: Status label for a recent document: its file can't be found, it's open in a tab right now, or it's just closed
-						t("File Missing")
-					} else if (item.isOpen) {
-						t("Currently Open")
-					} else {
-						t("Closed")
-					},
-					style = MaterialTheme.typography.bodySmall,
-					color = if (item.isMissing) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
-				)
+		} else {
+			null
+		},
+		trailingContent = {
+			Row {
+				if (item.isMissing && onLocate != null) {
+					IconButton(
+						onClick = onLocate,
+						modifier = Modifier.clearAndSetSemantics { }
+					) {
+						Icon(Icons.Filled.Search, contentDescription = null)
+					}
+				}
+				IconButton(
+					onClick = onRemove,
+					modifier = Modifier.clearAndSetSemantics { }
+				) {
+					Icon(Icons.Filled.Delete, contentDescription = null)
+				}
 			}
 		}
-		if (item.isMissing && onLocate != null) {
-			TextButton(
-				onClick = onLocate,
-				modifier = Modifier.clearAndSetSemantics { }
-			) {
-				Text(t("Locate"))
-			}
-		}
-		TextButton(
-			onClick = onRemove,
-			modifier = Modifier.clearAndSetSemantics { }
-		) {
-			Text(t("Remove"))
-		}
-	}
+	)
 }

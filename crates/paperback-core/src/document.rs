@@ -5,6 +5,7 @@ use std::collections::HashMap;
 pub use paperback_formats::ParserFlags;
 
 use crate::{
+	audio::AudioTimeline,
 	types::HeadingInfo,
 	util::text::{display_len, is_space_like},
 };
@@ -268,6 +269,8 @@ pub struct Document {
 	pub spine_items: Vec<String>,
 	pub manifest_items: HashMap<String, String>,
 	pub stats: DocumentStats,
+	/// Recorded audio for this document, when it has any.
+	pub audio: Option<AudioTimeline>,
 }
 
 impl Document {
@@ -282,6 +285,7 @@ impl Document {
 			spine_items: Vec::new(),
 			manifest_items: HashMap::new(),
 			stats: DocumentStats::default(),
+			audio: None,
 		}
 	}
 
@@ -299,6 +303,10 @@ impl Document {
 
 	pub fn set_buffer(&mut self, buffer: DocumentBuffer) {
 		self.buffer = buffer;
+	}
+
+	pub fn set_audio(&mut self, audio: AudioTimeline) {
+		self.audio = Some(audio);
 	}
 
 	pub fn compute_stats(&mut self) {

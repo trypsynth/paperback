@@ -61,7 +61,7 @@ final class AppViewModel: ObservableObject {
 	private var cancellables = Set<AnyCancellable>()
 
 	init() {
-		setPdfiumLibraryPath(path: Bundle.main.bundlePath + "/Frameworks")
+		setPdfiumLibraryPath(path: Bundle.main.bundlePath + "/Frameworks/libpdfium.framework")
 
 		let configPath = configFilePath()
 		_ = configManager.initialize(configPath: configPath)
@@ -424,9 +424,16 @@ final class AppViewModel: ObservableObject {
 		guard let session = activeSession else { return }
 		let type = continuousPlaybackSegmentType()
 		let next = session.getTextSegment(position: position, segmentType: type, direction: .next)
+		var upcoming: [String] = []
 		if !next.text.isEmpty {
-			ttsManager.prefetch(next.text)
+			upcoming.append(next.text)
+			let nextNext = session.getTextSegment(position: next.startPos, segmentType: type, direction: .next)
+			if !nextNext.text.isEmpty {
+				upcoming.append(nextNext.text)
+			}
 		}
+		ttsManager.prefetch(upcoming: upcoming)
+
 		let prev = session.getTextSegment(position: position, segmentType: type, direction: .previous)
 		if !prev.text.isEmpty {
 			ttsManager.prefetchPrev(prev.text)
@@ -480,14 +487,17 @@ final class AppViewModel: ObservableObject {
 
 	// MARK: - Search
 
-	func startSearch(query: String, options: SearchOptions) {
+	// Starts (or re-runs) a search and immediately jumps to the first match in the given
+	// direction, matching desktop/Android: there's no separate "start search" step, pressing
+	// Find Previous/Next both sets the active query and jumps in one action.
+	func startSearch(query: String, options: SearchOptions, forward: Bool) {
 		activeSearchQuery = query
 		searchOptions = options
-		findNext(fromQuery: query, options: options)
-	}
-
-	func clearSearch() {
-		activeSearchQuery = nil
+		if forward {
+			findNext(fromQuery: query, options: options)
+		} else {
+			findPrev(fromQuery: query, options: options)
+		}
 	}
 
 	func findNext(fromQuery: String? = nil, options: SearchOptions? = nil) {
@@ -511,16 +521,17 @@ final class AppViewModel: ObservableObject {
 		}
 	}
 
-	func findPrev() {
+	func findPrev(fromQuery: String? = nil, options: SearchOptions? = nil) {
 		guard let session = activeSession else { return }
-		let q = activeSearchQuery ?? ""
+		let q = fromQuery ?? activeSearchQuery ?? ""
+		let opts = options ?? searchOptions
 		let result = session.searchFfi(
 			query: q,
 			startPosition: ttsPosition,
 			options: SearchOptionsFfi(
-				matchCase: searchOptions.matchCase,
-				wholeWord: searchOptions.wholeWord,
-				regex: searchOptions.regex,
+				matchCase: opts.matchCase,
+				wholeWord: opts.wholeWord,
+				regex: opts.regex,
 				forward: false
 			)
 		)
@@ -615,7 +626,23 @@ final class AppViewModel: ObservableObject {
 		configManager.setDocumentPosition(path: path, position: position)
 	}
 
-	func enterTextMode() {
+	// Computes and stores the text-mode scroll position BEFORE flipping isTextMode, rather than
+	// reacting to the flag afterward: TextModeView's initial scroll only runs once, on its own
+	// .onAppear, when it first mounts. If isTextMode flipped first, it would mount and scroll
+	// using the still-default (0) lineScrollIndex before this had a chance to update it, and
+	// that one-shot scroll wouldn't re-run once the real position was computed a moment later —
+	// landing the user at the start of the book instead of where they were reading.
+	func toggleTextMode() {
+		if isTextMode {
+			exitTextMode()
+			isTextMode = false
+		} else {
+			enterTextMode()
+			isTextMode = true
+		}
+	}
+
+	private func enterTextMode() {
 		guard let session = activeSession,
 		      let id = activeTabId,
 		      let idx = tabs.firstIndex(where: { $0.id == id }) else { return }
@@ -625,7 +652,7 @@ final class AppViewModel: ObservableObject {
 		textModeFirstLine = scrollIdx
 	}
 
-	func exitTextMode() {
+	private func exitTextMode() {
 		guard let session = activeSession else { return }
 		let pos = session.positionFromLine(line: Int64(textModeFirstLine + 1))
 		ttsPosition = pos

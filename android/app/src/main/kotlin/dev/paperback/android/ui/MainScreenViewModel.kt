@@ -77,29 +77,33 @@ class MainScreenViewModel(
 	private val _supportedMimeTypes = MutableStateFlow<Array<String>>(arrayOf("*/*"))
 	val supportedMimeTypes: StateFlow<Array<String>> = _supportedMimeTypes.asStateFlow()
 
-	private val _showElementsDialog = MutableStateFlow(false)
-	val showElementsDialog: StateFlow<Boolean> = _showElementsDialog.asStateFlow()
+	private val elementsDialogState = DialogState()
+	val showElementsDialog: StateFlow<Boolean> = elementsDialogState.isOpen
 
-	private val _showFindDialog = MutableStateFlow(false)
-	val showFindDialog: StateFlow<Boolean> = _showFindDialog.asStateFlow()
+	val findDialog = DialogState()
 
-	private val _showSettingsDialog = MutableStateFlow(false)
-	val showSettingsDialog: StateFlow<Boolean> = _showSettingsDialog.asStateFlow()
+	val settingsDialog = DialogState()
 
-	private val _showTocDialog = MutableStateFlow(false)
-	val showTocDialog: StateFlow<Boolean> = _showTocDialog.asStateFlow()
+	private val _restorePreviousDocuments = MutableStateFlow(config.getAppBool("restore_previous_documents", true))
+	val restorePreviousDocuments: StateFlow<Boolean> = _restorePreviousDocuments.asStateFlow()
 
-	private val _showGoToDialog = MutableStateFlow(false)
-	val showGoToDialog: StateFlow<Boolean> = _showGoToDialog.asStateFlow()
+	private val _useInAppFileBrowser = MutableStateFlow(config.getAppBool("use_in_app_file_browser", false))
+	val useInAppFileBrowser: StateFlow<Boolean> = _useInAppFileBrowser.asStateFlow()
+
+	private val _swipeUpMovesForward = MutableStateFlow(config.getAppBool("swipe_up_moves_forward", true))
+	val swipeUpMovesForward: StateFlow<Boolean> = _swipeUpMovesForward.asStateFlow()
+
+	val tocDialog = DialogState()
+
+	private val goToDialogState = DialogState()
+	val showGoToDialog: StateFlow<Boolean> = goToDialogState.isOpen
 
 	private val _goToInitialMode = MutableStateFlow("Line")
 	val goToInitialMode: StateFlow<String> = _goToInitialMode.asStateFlow()
 
-	private val _showWordCountDialog = MutableStateFlow(false)
-	val showWordCountDialog: StateFlow<Boolean> = _showWordCountDialog.asStateFlow()
+	val wordCountDialog = DialogState()
 
-	private val _showDocumentInfoDialog = MutableStateFlow(false)
-	val showDocumentInfoDialog: StateFlow<Boolean> = _showDocumentInfoDialog.asStateFlow()
+	val documentInfoDialog = DialogState()
 
 	private val _activeSearchQuery = MutableStateFlow<String?>(null)
 	val activeSearchQuery: StateFlow<String?> = _activeSearchQuery.asStateFlow()
@@ -131,8 +135,7 @@ class MainScreenViewModel(
 		_performSearchEvent.tryEmit(false)
 	}
 
-	private val _showSleepTimerDialog = MutableStateFlow(false)
-	val showSleepTimerDialog: StateFlow<Boolean> = _showSleepTimerDialog.asStateFlow()
+	val sleepTimerDialog = DialogState()
 
 	private val _currentHeadings = MutableStateFlow<HeadingTreeFfi?>(null)
 	val currentHeadings: StateFlow<HeadingTreeFfi?> = _currentHeadings.asStateFlow()
@@ -143,8 +146,7 @@ class MainScreenViewModel(
 	private val _passwordPromptUri = MutableStateFlow<Uri?>(null)
 	val passwordPromptUri = _passwordPromptUri.asStateFlow()
 
-	private val _showPermissionRationale = MutableStateFlow(false)
-	val showPermissionRationale = _showPermissionRationale.asStateFlow()
+	val permissionRationaleDialog = DialogState()
 
 	private val _importPromptPath = MutableStateFlow<String?>(null)
 	val importPromptPath: StateFlow<String?> = _importPromptPath.asStateFlow()
@@ -512,7 +514,7 @@ class MainScreenViewModel(
 		if (tabState == null) {
 			withContext(Dispatchers.Main) {
 				if (uri.scheme == "file" && needsAllFilesAccessPermission()) {
-					setShowPermissionRationale(true)
+					permissionRationaleDialog.open()
 				} else {
 					_uiState.value = MainScreenUiState.Error("Failed to open file")
 				}
@@ -913,39 +915,33 @@ class MainScreenViewModel(
 			withContext(Dispatchers.Main) {
 				_currentHeadings.value = headings
 				_currentLinks.value = links
-				_showElementsDialog.value = true
+				elementsDialogState.open()
 			}
 		}
 	}
 
 	fun closeElementsDialog() {
-		_showElementsDialog.value = false
+		elementsDialogState.close()
 		_currentHeadings.value = null
 		_currentLinks.value = null
 	}
 
-	fun openFindDialog() {
-		_showFindDialog.value = true
+	fun setRestorePreviousDocuments(value: Boolean) {
+		_restorePreviousDocuments.value = value
+		config.setAppBool("restore_previous_documents", value)
+		config.flush()
 	}
 
-	fun closeFindDialog() {
-		_showFindDialog.value = false
+	fun setUseInAppFileBrowser(value: Boolean) {
+		_useInAppFileBrowser.value = value
+		config.setAppBool("use_in_app_file_browser", value)
+		config.flush()
 	}
 
-	fun openSettingsDialog() {
-		_showSettingsDialog.value = true
-	}
-
-	fun closeSettingsDialog() {
-		_showSettingsDialog.value = false
-	}
-
-	fun openTocDialog() {
-		_showTocDialog.value = true
-	}
-
-	fun closeTocDialog() {
-		_showTocDialog.value = false
+	fun setSwipeUpMovesForward(value: Boolean) {
+		_swipeUpMovesForward.value = value
+		config.setAppBool("swipe_up_moves_forward", value)
+		config.flush()
 	}
 
 	private val _accessibilityAnnouncement = MutableSharedFlow<String>(extraBufferCapacity = 1)
@@ -965,35 +961,11 @@ class MainScreenViewModel(
 			}
 		}
 		_goToInitialMode.value = initialMode
-		_showGoToDialog.value = true
+		goToDialogState.open()
 	}
 
 	fun closeGoToDialog() {
-		_showGoToDialog.value = false
-	}
-
-	fun openWordCountDialog() {
-		_showWordCountDialog.value = true
-	}
-
-	fun closeWordCountDialog() {
-		_showWordCountDialog.value = false
-	}
-
-	fun openDocumentInfoDialog() {
-		_showDocumentInfoDialog.value = true
-	}
-
-	fun closeDocumentInfoDialog() {
-		_showDocumentInfoDialog.value = false
-	}
-
-	fun openSleepTimerDialog() {
-		_showSleepTimerDialog.value = true
-	}
-
-	fun closeSleepTimerDialog() {
-		_showSleepTimerDialog.value = false
+		goToDialogState.close()
 	}
 
 	fun submitPassword(password: String) {
@@ -1057,10 +1029,6 @@ class MainScreenViewModel(
 				emitTabsState()
 			}
 		}
-	}
-
-	fun setShowPermissionRationale(show: Boolean) {
-		_showPermissionRationale.value = show
 	}
 
 	fun openHelpDocument() {
