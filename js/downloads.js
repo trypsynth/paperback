@@ -15,11 +15,12 @@
 
   const fmtCount = n => `downloaded ${n} ${n === 1 ? "time" : "times"}`;
 
-  const render = (release, label, subtitle = "", showMac = false) => {
+  const render = (release, label, subtitle = "", showApk = false, showMac = false) => {
     const assets = release.assets ?? [];
     const exes = assets.filter(a => a.name.toLowerCase().endsWith(".exe"));
     const winZips = assets.filter(a => a.name.toLowerCase().endsWith(".zip"));
     const macDmg = assets.find(a => a.name.toLowerCase().endsWith(".dmg"));
+    const apks = showApk ? assets.filter(a => a.name.toLowerCase().endsWith(".apk")) : [];
     const version = release.tag_name.replace(/^v/, "");
     const winArchLabel = name => name.toLowerCase().includes("arm64") ? " (ARM64)" : name.toLowerCase().includes("x64") ? " (x64)" : "";
     const winArchOrder = name => name.toLowerCase().includes("arm64") ? 1 : 0;
@@ -30,6 +31,10 @@
         ${exes.sort((a, b) => winArchOrder(a.name) - winArchOrder(b.name)).map(exe => `<p><a href="${exe.browser_download_url}">Windows Installer${winArchLabel(exe.name)} (.exe)</a> - ${fmtCount(exe.download_count)}</p>`).join("")}
         ${winZips.sort((a, b) => winArchOrder(a.name) - winArchOrder(b.name)).map(zip => `<p><a href="${zip.browser_download_url}">Windows Portable${winArchLabel(zip.name)} (.zip)</a> - ${fmtCount(zip.download_count)}</p>`).join("")}
         ${showMac && macDmg ? `<p><a href="${macDmg.browser_download_url}">macOS (.dmg)</a> - ${fmtCount(macDmg.download_count)}</p>` : ""}
+        ${apks.map(a => {
+          const apkLabel = a.name.includes("arm64") ? "Android APK (arm64-v8a)" : a.name.includes("arm") ? "Android APK (armeabi-v7a)" : "Android APK";
+          return `<p><a href="${a.browser_download_url}">${apkLabel}</a> - ${fmtCount(a.download_count)}</p>`;
+        }).join("")}
         <p><a href="${release.html_url}">View on GitHub</a></p>
       </div>
     `.trim();
@@ -43,7 +48,7 @@
     const dev = releases.find(r => r.tag_name === "latest");
     const previousStable = releases.filter(isStable).slice(1);
     stableEl.innerHTML = stable ? render(stable, "Stable Version", "Recommended for most users") : "No stable release found.";
-    devEl.innerHTML = dev ? render(dev, "Master Build", "Includes experimental features, may be unstable", true) : "No development builds found.";
+    devEl.innerHTML = dev ? render(dev, "Master Build", "Includes experimental features, may be unstable", true, true) : "No development builds found.";
     if (previousStable.length > 0) {
       const blocks = previousStable.map(r => render(r, "Stable Version")).join("");
       historyEl.innerHTML = `
