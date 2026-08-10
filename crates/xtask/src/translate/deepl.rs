@@ -28,14 +28,17 @@ impl DeepLClient {
 			language: String,
 		}
 		let url = format!("{}/v2/languages", self.base_url);
-		let langs: Vec<Lang> = ureq::get(&url)
+		let body = ureq::get(&url)
+			.config()
+			.http_status_as_error(false)
+			.build()
 			.header("Authorization", &format!("DeepL-Auth-Key {}", self.api_key))
 			.query("type", "target")
 			.call()
-			.map_err(|e| format!("DeepL languages request failed: {e}"))?
-			.body_mut()
-			.read_json()
-			.map_err(|e| format!("DeepL languages response was not valid JSON: {e}"))?;
+			.map_err(|e| format!("DeepL languages request failed: {e}"))?;
+		let body_text = read_body_or_error("languages", body)?;
+		let langs: Vec<Lang> = serde_json::from_str(&body_text)
+			.map_err(|e| format!("DeepL languages response was not valid JSON: {e} (body: {body_text})"))?;
 		Ok(langs.into_iter().map(|l| l.language.to_uppercase()).collect())
 	}
 
@@ -78,13 +81,16 @@ impl DeepLClient {
 			ignore_tags: &["x"],
 			preserve_formatting: 1,
 		};
-		let resp: Resp = ureq::post(&url)
+		let body = ureq::post(&url)
+			.config()
+			.http_status_as_error(false)
+			.build()
 			.header("Authorization", &format!("DeepL-Auth-Key {}", self.api_key))
 			.send_json(&req)
-			.map_err(|e| format!("DeepL translate request failed: {e}"))?
-			.body_mut()
-			.read_json()
-			.map_err(|e| format!("DeepL translate response was not valid JSON: {e}"))?;
+			.map_err(|e| format!("DeepL translate request failed: {e}"))?;
+		let body_text = read_body_or_error("translate", body)?;
+		let resp: Resp = serde_json::from_str(&body_text)
+			.map_err(|e| format!("DeepL translate response was not valid JSON: {e} (body: {body_text})"))?;
 		if resp.translations.len() != texts.len() {
 			return Err(format!(
 				"DeepL returned {} translations for {} input strings",
@@ -95,6 +101,22 @@ impl DeepLClient {
 		}
 		Ok(resp.translations.into_iter().map(|t| unprotect_placeholders(&t.text)).collect())
 	}
+}
+
+/// Reads the response body as text regardless of status (requests are sent with
+/// `http_status_as_error(false)` for exactly this), surfacing `DeepL`'s own error message
+/// on a non-2xx status instead of just a bare status code — `DeepL`'s error bodies say
+/// things like which field was invalid, which is otherwise invisible.
+fn read_body_or_error(
+	endpoint: &str,
+	mut response: ureq::http::Response<ureq::Body>,
+) -> Result<String, Box<dyn Error>> {
+	let status = response.status();
+	let text = response.body_mut().read_to_string().unwrap_or_default();
+	if !status.is_success() {
+		return Err(format!("DeepL {endpoint} request returned HTTP {status}: {text}").into());
+	}
+	Ok(text)
 }
 
 /// Maps a `po/<lang>.po` filename stem to the `DeepL` target language code(s) it could
