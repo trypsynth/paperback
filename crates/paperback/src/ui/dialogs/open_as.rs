@@ -3,7 +3,7 @@ use std::path::Path;
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::DIALOG_PADDING;
+use super::{DIALOG_PADDING, add_ok_cancel_footer};
 
 pub fn show_open_as_dialog(parent: &Frame, path: &Path) -> Option<String> {
 	// TRANSLATORS: Title of the Open As dialog
@@ -46,11 +46,7 @@ pub fn show_open_as_dialog(parent: &Frame, path: &Path) -> Option<String> {
 	format_sizer.add(&format_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	format_sizer.add(&format_combo, 1, SizerFlag::Expand, 0);
 	content_sizer.add_sizer(&format_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING / 2);
-	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&ok_button, 0, SizerFlag::All, DIALOG_PADDING);
-	button_sizer.add(&cancel_button, 0, SizerFlag::All, DIALOG_PADDING);
-	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
+	add_ok_cancel_footer(content_sizer, ok_button, cancel_button);
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
 	format_combo.set_focus();

@@ -11,7 +11,7 @@ use patois::{t, ui::populate_language_choice};
 use wxdragon::accessible::AccRole;
 use wxdragon::prelude::*;
 
-use super::DIALOG_PADDING;
+use super::{DIALOG_PADDING, add_ok_cancel_footer};
 use crate::{
 	config_ext::{UpdateChannel, get_update_channel},
 	translation_manager::TranslationManager,
@@ -467,13 +467,9 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 }
 
 fn finalize_options_dialog_layout(ui: &OptionsDialogUi) {
-	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&ui.ok_button, 0, SizerFlag::All, DIALOG_PADDING);
-	button_sizer.add(&ui.cancel_button, 0, SizerFlag::All, DIALOG_PADDING);
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add(&ui.notebook, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
-	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
+	add_ok_cancel_footer(content_sizer, ui.ok_button, ui.cancel_button);
 	ui.dialog.set_sizer_and_fit(content_sizer, true);
 	ui.dialog.centre();
 }

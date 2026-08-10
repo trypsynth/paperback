@@ -13,11 +13,7 @@ use paperback_core::{
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::show_note_entry_dialog;
-
-const DIALOG_PADDING: i32 = 10;
-const KEY_DELETE: i32 = 127;
-const KEY_NUMPAD_DELETE: i32 = 330;
+use super::{DIALOG_PADDING, KEY_DELETE, KEY_NUMPAD_DELETE, show_note_entry_dialog};
 
 pub struct BookmarkDialogResult {
 	pub start: i64,

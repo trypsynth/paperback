@@ -492,11 +492,7 @@ fn build_elements_buttons(dialog: Dialog) -> (Button, Button) {
 }
 
 fn finalize_elements_layout(dialog: Dialog, content_sizer: BoxSizer, ok_button: Button, cancel_button: Button) {
-	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&ok_button, 0, SizerFlag::All, super::DIALOG_PADDING);
-	button_sizer.add(&cancel_button, 0, SizerFlag::All, super::DIALOG_PADDING);
-	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
+	super::add_ok_cancel_footer(content_sizer, ok_button, cancel_button);
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
 }
