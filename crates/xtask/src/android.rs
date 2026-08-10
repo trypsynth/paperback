@@ -166,7 +166,10 @@ fn run_gradle(tasks: &[&str]) -> Result<(), Box<dyn Error>> {
 	let android_dir = project_root().join("android");
 	let mut cmd = if cfg!(windows) {
 		let mut c = Command::new("cmd");
-		c.arg("/C").arg("gradlew.bat");
+		// The leading .\ matters: some Windows configs (NoDefaultCurrentDirectoryInExePath)
+		// stop cmd /C from finding a bare "gradlew.bat" in the working directory at all,
+		// failing with "'gradlew.bat' is not recognized..." even though it's right there.
+		c.arg("/C").arg(".\\gradlew.bat");
 		c
 	} else {
 		Command::new("./gradlew")
