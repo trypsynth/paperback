@@ -26,6 +26,7 @@ pub struct OptionsDialogResult {
 	pub start_maximized: bool,
 	pub compact_go_menu: bool,
 	pub navigation_wrap: bool,
+	pub line_start_navigation: bool,
 	pub check_for_updates_on_startup: bool,
 	pub bookmark_sounds: bool,
 	pub recent_documents_to_show: i32,
@@ -51,6 +52,7 @@ struct OptionsDialogUi {
 	start_maximized_check: CheckBox,
 	compact_go_menu_check: CheckBox,
 	navigation_wrap_check: CheckBox,
+	line_start_nav_check: CheckBox,
 	check_for_updates_check: CheckBox,
 	bookmark_sounds_check: CheckBox,
 	recent_docs_ctrl: SpinCtrl,
@@ -95,6 +97,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		start_maximized: ui.start_maximized_check.is_checked(),
 		compact_go_menu: ui.compact_go_menu_check.is_checked(),
 		navigation_wrap: ui.navigation_wrap_check.is_checked(),
+		line_start_navigation: ui.line_start_nav_check.is_checked(),
 		check_for_updates_on_startup: ui.check_for_updates_check.is_checked(),
 		bookmark_sounds: ui.bookmark_sounds_check.is_checked(),
 		recent_documents_to_show: ui.recent_docs_ctrl.value(),
@@ -137,6 +140,9 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let compact_go_menu_check = CheckBox::builder(&reading_panel).with_label(&t("Show compact &go menu")).build();
 	// TRANSLATORS: Option to wrap navigation around to the beginning/end when navigating elements
 	let navigation_wrap_check = CheckBox::builder(&reading_panel).with_label(&t("&Wrap navigation")).build();
+	let line_start_nav_check =
+		// TRANSLATORS: Option to move the caret to the start of the line when navigating up or down
+		CheckBox::builder(&reading_panel).with_label(&t("Move to &start of line")).build();
 	let bookmark_sounds_check =
 		// TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 		CheckBox::builder(&reading_panel).with_label(&t("Play &sounds on bookmarks and notes")).build();
@@ -152,7 +158,10 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	general_sizer.add(&minimize_to_tray_check, 0, SizerFlag::All, option_padding);
 	general_sizer.add(&check_for_updates_check, 0, SizerFlag::All, option_padding);
 	general_sizer.add(&hotkey_button, 0, SizerFlag::All, option_padding);
-	for check in [&navigation_wrap_check, &compact_go_menu_check, &bookmark_sounds_check] {
+	reading_sizer.add(&navigation_wrap_check, 0, SizerFlag::All, option_padding);
+	#[cfg(target_os = "windows")]
+	reading_sizer.add(&line_start_nav_check, 0, SizerFlag::All, option_padding);
+	for check in [&compact_go_menu_check, &bookmark_sounds_check] {
 		reading_sizer.add(check, 0, SizerFlag::All, option_padding);
 	}
 	let reading_speed_label =
@@ -343,6 +352,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	start_maximized_check.set_value(config.get_app_bool("start_maximized", false));
 	compact_go_menu_check.set_value(config.get_app_bool("compact_go_menu", true));
 	navigation_wrap_check.set_value(config.get_app_bool("navigation_wrap", false));
+	line_start_nav_check.set_value(config.get_app_bool("line_start_navigation", false));
 	bookmark_sounds_check.set_value(config.get_app_bool("bookmark_sounds", true));
 	check_for_updates_check.set_value(config.get_app_bool("check_for_updates_on_startup", true));
 	recent_docs_ctrl.set_value(config.get_app_int("recent_documents_to_show", 25).clamp(0, max_recent_docs));
@@ -446,6 +456,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		start_maximized_check,
 		compact_go_menu_check,
 		navigation_wrap_check,
+		line_start_nav_check,
 		check_for_updates_check,
 		bookmark_sounds_check,
 		recent_docs_ctrl,
