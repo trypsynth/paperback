@@ -519,6 +519,9 @@ documents.</li>
 <li>Added a word wrap menu item and subsequent hotkey.</li>
 <li>Bookmark/note sounds should now properly play exclusively when you
 navigate over a word containing one.</li>
+<li>Documents encoded in legacy CJK encodings, such as GBK, Big5, and
+Shift_JIS, will now render properly instead of as a bunch of
+mojibake.</li>
 <li>Expanded the export menu item to allow exporting to HTML and
 Markdown in addition to plain text.</li>
 <li>Fixed applying word wrap shooting you to the start of your
@@ -534,7 +537,11 @@ garbage in the book text.</li>
 documents.</li>
 <li>Fixed links in legacy mobi books.</li>
 <li>Fixed loading DAISY books with bogus encoding declarations.</li>
+<li>Fixed page navigation announcing incorrect line text in some
+situations.</li>
 <li>Fixed parsing RTF documents with non-Latin characters in them.</li>
+<li>Fixed “Reopen last closed” attempting to reopen the bundled
+readme.</li>
 <li>Fixed the title bar not updating after closing a document from the
 all documents dialog.</li>
 <li>Fix the webview dialog not being resizable and popping up at a very
@@ -545,6 +552,7 @@ their headings properly.</li>
 restarting Paperback.</li>
 <li>If a selection is active when you open the word count dialog, how
 many words you have selected will now be shown.</li>
+<li>Images should now properly display in the embedded webview.</li>
 <li>Improved Paperback’s handling of files on Windows network drives:
 pressing show file in folder now properly focuses the file on the
 network storage, and the paths no longer contain strange
