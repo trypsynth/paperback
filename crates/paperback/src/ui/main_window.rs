@@ -1546,6 +1546,7 @@ impl MainWindow {
 					cfg.set_app_bool("start_maximized", options.start_maximized);
 					cfg.set_app_bool("compact_go_menu", options.compact_go_menu);
 					cfg.set_app_bool("navigation_wrap", options.navigation_wrap);
+					cfg.set_app_bool("line_start_navigation", options.line_start_navigation);
 					cfg.set_app_bool("check_for_updates_on_startup", options.check_for_updates_on_startup);
 					cfg.set_app_bool("bookmark_sounds", options.bookmark_sounds);
 					cfg.set_app_bool("auto_reload_documents", options.auto_reload_documents);

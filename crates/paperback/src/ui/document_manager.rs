@@ -818,7 +818,13 @@ impl DocumentManager {
 				if (key == WXK_DOWN || key == WXK_UP) && !kbd.shift_down() && !kbd.control_down() {
 					let going_down = key == WXK_DOWN;
 					let nav_result = dm_for_nav.try_lock().ok().and_then(|dm| {
-						navigate_line_by_column(text_ctrl_for_menu, going_down, dm.preferred_column.get())
+						let start_of_line = dm.config.lock().unwrap().get_app_bool("line_start_navigation", false);
+						navigate_line_by_column(
+							text_ctrl_for_menu,
+							going_down,
+							dm.preferred_column.get(),
+							start_of_line,
+						)
 					});
 					if let Some((new_pos, new_col)) = nav_result {
 						kbd.event.skip(false);
@@ -849,11 +855,17 @@ impl DocumentManager {
 	}
 }
 
-/// Returns (`new_position`, `preferred_column`) for character-column-based vertical navigation.
-/// Uses wxdragon `PositionToXY`, `XYToPosition`, and `GetLineLength` so the cursor lands on the same
-/// character column (not pixel column) on the target visual line.
+/// Returns (`new_position`, `preferred_column`) for vertical navigation.
+/// With `start_of_line` set, the caret lands at the start of the target visual line. Otherwise it
+/// uses character-column-based navigation (`pref_col` or the current column), so the cursor lands on
+/// the same character column (not pixel column) on the target visual line.
 #[cfg(target_os = "windows")]
-fn navigate_line_by_column(text_ctrl: TextCtrl, going_down: bool, pref_col: Option<i64>) -> Option<(i64, i64)> {
+fn navigate_line_by_column(
+	text_ctrl: TextCtrl,
+	going_down: bool,
+	pref_col: Option<i64>,
+	start_of_line: bool,
+) -> Option<(i64, i64)> {
 	let current_pos = text_ctrl.get_insertion_point().max(0);
 	let (current_col, current_line) = text_ctrl.position_to_xy(current_pos)?;
 	let col = pref_col.unwrap_or(current_col);
@@ -864,6 +876,9 @@ fn navigate_line_by_column(text_ctrl: TextCtrl, going_down: bool, pref_col: Opti
 	let target_line_start = text_ctrl.xy_to_position(0, target_line);
 	if target_line_start < 0 {
 		return None;
+	}
+	if start_of_line {
+		return Some((target_line_start, 0));
 	}
 	let target_line_len = i64::from(text_ctrl.get_line_length(target_line));
 	let new_pos = target_line_start + col.min(target_line_len);
