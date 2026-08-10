@@ -8,7 +8,7 @@ use crate::{
 	parser::is_external_url,
 	util::{
 		html::{escape, escape_attr, push_escaped},
-		text::{ch_width, display_len},
+		text::ch_width,
 	},
 };
 
@@ -118,14 +118,7 @@ pub fn render(doc: &DocumentHandle) -> String {
 				events.push(Ev { pos: end, kind: Ek::BlockClose("</h6>") });
 			}
 			MarkerType::Link => {
-				// Link length is not stored; recover it from the link text written into
-				// the content (collapse_whitespace was applied when the text was stored).
-				let text: String = marker.text.split_whitespace().collect::<Vec<_>>().join(" ");
-				let implied_len = if marker.length > 0 { marker.length } else { display_len(&text) };
-				if implied_len == 0 {
-					continue;
-				}
-				let end = pos + implied_len;
+				let Some(end) = super::link_span_end(marker) else { continue };
 				let open = if marker.reference.is_empty() {
 					"<a>".to_string()
 				} else {
