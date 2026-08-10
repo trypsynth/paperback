@@ -3736,6 +3736,8 @@ version = "0.1.0"
 dependencies = [
  "flate2",
  "patois-build",
+ "serde",
+ "serde_json",
  "tar",
  "ureq",
  "walkdir",

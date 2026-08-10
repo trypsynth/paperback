@@ -1,0 +1,46 @@
+name: Auto-translate strings
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'crates/**/*.rs'
+      - 'android/app/src/main/kotlin/**/*.kt'
+      - 'ios/Paperback/**/*.swift'
+      - 'po/**/*.po'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  translate:
+    # Guards against the bot's own push (made with this workflow's token) re-triggering
+    # itself: github.actor on that push event is github-actions[bot], so this run gets
+    # skipped. One "settle" run still fires after a real commit; it just finds nothing
+    # left to translate and exits without pushing.
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+      - name: Cache Rust build artifacts
+        uses: Swatinem/rust-cache@v2
+      - name: Install gettext
+        run: sudo apt-get update && sudo apt-get install -y gettext
+      - name: Translate
+        env:
+          DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
+        run: cargo run -p xtask --release -- translate
+      - name: Commit and push if anything changed
+        run: |
+          if git status --porcelain -- po/ | grep -q .; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add po/
+            git commit -m "chore: machine-translate missing strings via DeepL"
+            git push
+          else
+            echo "Nothing to translate."
+          fi

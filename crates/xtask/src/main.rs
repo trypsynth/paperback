@@ -9,6 +9,7 @@ mod android;
 mod ios;
 mod release;
 mod sanitize_rust;
+mod translate;
 
 fn main() -> Result<(), Box<dyn Error>> {
 	let task = env::args().nth(1);
@@ -18,6 +19,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 		Some("ios") => ios::ios()?,
 		Some("ios-release") => ios::ios_release()?,
 		Some("gen-pot") => gen_pot()?,
+		Some("translate") => translate::translate()?,
 		_ => print_help(),
 	}
 	Ok(())
@@ -36,6 +38,9 @@ pub(crate) fn print_help() {
 	println!("	  --release          Build in release mode (default is debug)");
 	println!("	ios-release   Archive and export a release IPA for App Store Connect");
 	println!("	  --upload           Upload directly to App Store Connect via altool");
+	println!("	translate     Regenerate the pot, sync po/*.po via msgmerge, and fill blank/fuzzy");
+	println!("	              entries via the DeepL API (needs DEEPL_API_KEY)");
+	println!("	  --dry-run          Report what would change; no API calls, no writes");
 }
 
 pub(crate) fn project_root() -> PathBuf {
