@@ -60,7 +60,7 @@ impl DeepLClient {
 			source_lang: &'a str,
 			tag_handling: &'a str,
 			ignore_tags: &'a [&'a str],
-			preserve_formatting: u8,
+			preserve_formatting: bool,
 		}
 		#[derive(Deserialize)]
 		struct TranslationItem {
@@ -79,7 +79,7 @@ impl DeepLClient {
 			source_lang: "EN",
 			tag_handling: "xml",
 			ignore_tags: &["x"],
-			preserve_formatting: 1,
+			preserve_formatting: true,
 		};
 		let body = ureq::post(&url)
 			.config()
