@@ -1994,7 +1994,7 @@ msgstr "O arquivo HTML está vazio: {}"
 #. TRANSLATORS: Error shown when an HTML file fails to convert to plain text; {} is the file path
 #, fuzzy
 msgid "Failed to convert HTML to text: {}"
-msgstr "Falha na conversão de HTML para texto: {}"
+msgstr "Falha ao converter HTML para texto: {}"
 
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 msgid "Figure"
@@ -2673,7 +2673,7 @@ msgstr "Arquivo ausente"
 
 #, fuzzy
 msgid "Currently Open"
-msgstr "Vagas em aberto"
+msgstr "Vagas disponíveis no momento"
 
 #, fuzzy
 msgid "Document Information"
@@ -2749,7 +2749,7 @@ msgstr "• Para carregar arquivos grandes instantaneamente, sem precisar copiá
 
 #, fuzzy
 msgid "• To display the exact local file paths of your documents."
-msgstr "• Para exibir os caminhos locais exatos dos seus documentos."
+msgstr "• Para exibir os caminhos exatos dos arquivos locais dos seus documentos."
 
 #, fuzzy
 msgid "If you deny this permission, you can still use the Android System File Picker to open your books by turning off the custom file browser setting."

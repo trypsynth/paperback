@@ -2065,7 +2065,7 @@ msgstr "Soubor FODP neobsahuje žádné stránky"
 #. TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
 #, fuzzy
 msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."
-msgstr "Tento soubor PDF obsahuje pouze obrázky a žádný text, který by bylo možné extrahovat. K přečtení jeho obsahu bude možná nutné použít software pro optické rozpoznávání znaků (OCR)."
+msgstr "Tento soubor PDF obsahuje pouze obrázky a žádný text, který by bylo možné extrahovat. Abyste si mohli přečíst jeho obsah, bude možná nutné jej zpracovat pomocí softwaru pro optické rozpoznávání znaků (OCR)."
 
 #. TRANSLATORS: Error detail shown when a PDF's password is missing or wrong (the internal sentinel prefix before it is not translated)
 #, fuzzy

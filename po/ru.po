@@ -894,7 +894,7 @@ msgstr "Источник:"
 #. TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
 #, fuzzy
 msgid "Source view is not available for this document format."
-msgstr "Для данного формата документа режим просмотра исходного текста недоступен."
+msgstr "Для данного формата документа режим просмотра исходного кода недоступен."
 
 #. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
 #, fuzzy
@@ -1462,7 +1462,7 @@ msgstr "Экспорт в формат HTML..."
 #. TRANSLATORS: Status bar help text for the "Export to HTML" menu item
 #, fuzzy
 msgid "Export document as HTML"
-msgstr "Экспорт документа в формате HTML"
+msgstr "Экспорт документа в формат HTML"
 
 #. TRANSLATORS: Menu item label to export the document as Markdown
 #, fuzzy
@@ -2159,7 +2159,7 @@ msgstr "Не найдено читаемого текстового содерж
 #. TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
 #, fuzzy
 msgid "File is encrypted and requires a password"
-msgstr "Файл зашифрован и требует ввода пароля"
+msgstr "Файл зашифрован и для его открытия требуется пароль"
 
 #. TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error
 #, fuzzy
@@ -2196,7 +2196,7 @@ msgstr "Обновить до %s"
 
 #, fuzzy
 msgid "A new version of %s is available. Here's what's new:"
-msgstr "Вышла новая версия программы «%s». Вот что нового:"
+msgstr "Вышла новая версия программы «%s». Вот что в ней нового:"
 
 #, fuzzy
 msgid "No release notes provided."
@@ -2290,7 +2290,7 @@ msgstr "Последние"
 
 #, fuzzy
 msgid "Screen dimmed by sleep timer. Tap to wake."
-msgstr "Экран отключился по таймеру сна. Нажмите, чтобы вывести экран из спящего режима."
+msgstr "Экран потемнел из-за таймера сна. Нажмите, чтобы вывести экран из спящего режима."
 
 #, fuzzy
 msgid "Open Error"
@@ -2870,7 +2870,7 @@ msgstr "Данные документа"
 
 #, fuzzy
 msgid "Sleep timer running, {} remaining"
-msgstr "Включен таймер отключения, осталось {}"
+msgstr "Включен таймер выключения, осталось {}"
 
 #, fuzzy
 msgid "Custom"

@@ -83,7 +83,7 @@ msgstr "Czy na pewno chcesz usunąć zaznaczony dokument? Spowoduje to również
 
 #, fuzzy
 msgid "Are you sure you want to remove the {} selected documents? This will also remove their reading positions and bookmarks."
-msgstr "Czy na pewno chcesz usunąć wybrane dokumenty z listy „{}”? Spowoduje to również usunięcie pozycji, w których przerywałeś czytanie, oraz zakładek."
+msgstr "Czy na pewno chcesz usunąć wybrane dokumenty z listy „{}”? Spowoduje to również usunięcie ich pozycji czytania i zakładek."
 
 #. TRANSLATORS: Title of the confirmation dialog
 msgid "Confirm"
@@ -878,7 +878,7 @@ msgstr "Źródło:"
 #. TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
 #, fuzzy
 msgid "Source view is not available for this document format."
-msgstr "W tym formacie dokumentu nie jest dostępny widok źródła."
+msgstr "W tym formacie dokumentu nie jest dostępny widok źródłowy."
 
 #. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
 #, fuzzy
@@ -2008,7 +2008,7 @@ msgstr "Nieprawidłowy offset pamięci podręcznej HUFF"
 #. TRANSLATORS: Error shown when a MOBI file's Huffman code length is invalid
 #, fuzzy
 msgid "Code len out of bounds"
-msgstr "Długość kodu poza zakresem"
+msgstr "Długość kodu wykracza poza dopuszczalny zakres"
 
 #. TRANSLATORS: Error shown when a MOBI file's Huffman table has an invalid terminal-code entry
 #, fuzzy
@@ -2243,7 +2243,7 @@ msgstr "Przełącz na tryb TTS"
 
 #, fuzzy
 msgid "Switch to Text Mode"
-msgstr "Przełącz na tryb tekstowy"
+msgstr "Przejdź do trybu tekstowego"
 
 #, fuzzy
 msgid "Sleep Timer (active)"
@@ -2663,7 +2663,7 @@ msgstr "Dlaczego jest to nam potrzebne:"
 
 #, fuzzy
 msgid "• To provide a fast, fully screen-reader accessible file manager inside the app."
-msgstr "• Zapewnienie w aplikacji szybkiego menedżera plików, w pełni dostosowanego do potrzeb użytkowników korzystających z czytników ekranu."
+msgstr "• Zapewnienie w ramach aplikacji szybkiego menedżera plików, w pełni dostępnego dla czytników ekranu."
 
 #, fuzzy
 msgid "• To load large files instantly without needing to copy them into the app's cache."
@@ -2675,7 +2675,7 @@ msgstr "• Aby wyświetlić dokładne lokalne ścieżki dostępu do dokumentów
 
 #, fuzzy
 msgid "If you deny this permission, you can still use the Android System File Picker to open your books by turning off the custom file browser setting."
-msgstr "Jeśli nie udzielisz tego uprawnienia, nadal będziesz mógł korzystać z systemowego selektora plików systemu Android do otwierania swoich książek, wyłączając opcję korzystania z niestandardowej przeglądarki plików."
+msgstr "Jeśli nie udzielisz tego uprawnienia, nadal będziesz mógł korzystać z systemowego selektora plików systemu Android do otwierania swoich książek, wyłączając opcję niestandardowej przeglądarki plików."
 
 #, fuzzy
 msgid "Grant"
@@ -2735,7 +2735,7 @@ msgstr "Zamknij wyszukiwanie"
 
 #, fuzzy
 msgid "Settings imported"
-msgstr "Ustawienia zostały zaimportowane"
+msgstr "Ustawienia zaimportowano"
 
 #, fuzzy
 msgid "Failed to import settings"

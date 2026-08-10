@@ -1947,7 +1947,7 @@ msgstr "没有可识别的书脊信息"
 #. TRANSLATORS: Reason given when EPUB spine items failed to convert; {} is a comma-separated list of underlying errors
 #, fuzzy
 msgid "failed to convert spine items: {}"
-msgstr "无法转换书脊条目：{}"
+msgstr "无法转换 spine 项：{}"
 
 #. TRANSLATORS: Error shown when an EPUB has no readable content; {} is the specific reason (see the two messages above)
 #, fuzzy
@@ -2099,7 +2099,7 @@ msgstr "CDIC短语长度无效"
 #. TRANSLATORS: Error shown when a MOBI file's Huffman code length is out of range; {} is the invalid length value
 #, fuzzy
 msgid "Invalid code_len {}"
-msgstr "code_len 无效{}"
+msgstr "code_len 无效 {}"
 
 #. TRANSLATORS: Error shown when a MOBI file's Huffman decoder recurses too deeply (likely corrupt data)
 #, fuzzy
@@ -2556,7 +2556,7 @@ msgstr "语音词典"
 
 #, fuzzy
 msgid "Play Sample"
-msgstr "试听样本"
+msgstr "试听"
 
 #, fuzzy
 msgid "Behavior"

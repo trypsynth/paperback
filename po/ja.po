@@ -1014,7 +1014,7 @@ msgstr "過去のコンテナ＆終了    ,"
 #. TRANSLATORS: Status bar help text for the "Past Container End" menu item
 #, fuzzy
 msgid "Go past the end of the current list or table"
-msgstr "現在のリストまたは表の最後を過ぎる"
+msgstr "現在のリストまたは表の最後を過ぎて先へ進む"
 
 #. TRANSLATORS: Menu item label to go to the next level-1 heading
 msgid "Next Heading Level 1\t1"
@@ -1894,7 +1894,7 @@ msgstr "OPFパッケージ要素が見つかりません"
 #. TRANSLATORS: Reason given when an EPUB has no spine items that could be read
 #, fuzzy
 msgid "no readable spine items"
-msgstr "読み取り可能な背表紙項目はありません"
+msgstr "読み取れる背表紙項目はありません"
 
 #. TRANSLATORS: Reason given when EPUB spine items failed to convert; {} is a comma-separated list of underlying errors
 #, fuzzy
@@ -2352,7 +2352,7 @@ msgstr "前回の結果"
 
 #, fuzzy
 msgid "Next result"
-msgstr "次の結果"
+msgstr "次の検索結果"
 
 #, fuzzy
 msgid "Search"

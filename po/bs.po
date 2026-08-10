@@ -89,11 +89,11 @@ msgstr "Zatvori"
 
 #, fuzzy
 msgid "Are you sure you want to remove the selected document? This will also remove its reading position and bookmarks."
-msgstr "Jeste li sigurni da želite ukloniti odabrani dokument? Time će se ukloniti i pozicija čitanja te oznake."
+msgstr "Jeste li sigurni da želite ukloniti odabrani dokument? Time će se također ukloniti i pozicija čitanja te oznake."
 
 #, fuzzy
 msgid "Are you sure you want to remove the {} selected documents? This will also remove their reading positions and bookmarks."
-msgstr "Jeste li sigurni da želite ukloniti odabrane dokumente iz {}? Time će se također ukloniti njihove pozicije čitanja i oznake."
+msgstr "Jeste li sigurni da želite ukloniti odabrane dokumente iz {}? Time će se također ukloniti i njihove pozicije čitanja i oznake."
 
 #. TRANSLATORS: Title of the confirmation dialog
 msgid "Confirm"
@@ -770,7 +770,7 @@ msgstr "Paperback"
 #. TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
 #, fuzzy
 msgid "Document reloaded."
-msgstr "Dokument je ponovo učitana."
+msgstr "Dokument je ponovo učitano."
 
 #. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
 msgid "Paperback cannot perform any actions while Web View is open."
@@ -1848,7 +1848,7 @@ msgstr "Neispravna DAISY .opf datoteka ili nije moguće pronaći DTBook XML u ma
 #. TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
 #, fuzzy
 msgid "OPF package element missing"
-msgstr "Fali element paketa OPF"
+msgstr "Falta element paketa OPF"
 
 #. TRANSLATORS: Reason given when an EPUB has no spine items that could be read
 #, fuzzy
@@ -1858,7 +1858,7 @@ msgstr "Nema čitljivih stavki na leđima"
 #. TRANSLATORS: Reason given when EPUB spine items failed to convert; {} is a comma-separated list of underlying errors
 #, fuzzy
 msgid "failed to convert spine items: {}"
-msgstr "Neuspjelo konvertiranje stavki spine: {}"
+msgstr "Neuspjelo konvertovanje stavki spine: {}"
 
 #. TRANSLATORS: Error shown when an EPUB has no readable content; {} is the specific reason (see the two messages above)
 #, fuzzy
@@ -1873,7 +1873,7 @@ msgstr "Datoteka korijena nije pronađena u container.xml"
 #. TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
 #, fuzzy
 msgid "unsupported content"
-msgstr "Nesupotrtani sadržaj"
+msgstr "Nesuportani sadržaj"
 
 #. TRANSLATORS: Error shown when an FB2 (FictionBook) file's XML fails to convert to plain text
 #, fuzzy
@@ -2034,7 +2034,7 @@ msgstr "Ovaj PDF sadržava samo slike s tekstom koji se ne može izdvojiti. Pokr
 #. TRANSLATORS: Error detail shown when a PDF's password is missing or wrong (the internal sentinel prefix before it is not translated)
 #, fuzzy
 msgid "Password required or incorrect"
-msgstr "Potrebna je lozinka ili lozinka nije ispravna"
+msgstr "Potrebna je lozinka ili lozinka je netačna"
 
 #. TRANSLATORS: Error shown when a PDF fails to open for a reason other than a password; {} is the underlying error detail
 #, fuzzy
@@ -2083,7 +2083,7 @@ msgstr "DOC datoteka nedostaju potrebna FIB polja"
 #. TRANSLATORS: Error shown when a legacy DOC file's header signature is invalid
 #, fuzzy
 msgid "Not a valid DOC file (invalid FIB magic)"
-msgstr "Nedostaje važeća DOC datoteka (neispravna FIB magija)"
+msgstr "Nevažeća DOC datoteka (neispravna FIB magija)"
 
 #. TRANSLATORS: Error detail shown when an encrypted legacy DOC file needs a password (the internal sentinel prefix before it is not translated)
 #, fuzzy
@@ -2138,7 +2138,7 @@ msgstr "Potrebna je lozinka"
 #. TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
 #, fuzzy
 msgid "Password incorrect"
-msgstr "Lozinka nije ispravna"
+msgstr "Lozinka je netačna"
 
 msgid "Update to %s"
 msgstr "Ažuriraj na %s"

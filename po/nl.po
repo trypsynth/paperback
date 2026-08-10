@@ -2650,7 +2650,7 @@ msgstr "• Om de exacte lokale bestandspaden van uw documenten weer te geven."
 
 #, fuzzy
 msgid "If you deny this permission, you can still use the Android System File Picker to open your books by turning off the custom file browser setting."
-msgstr "Als je deze toestemming weigert, kun je de Android-bestandskeuzelijst nog steeds gebruiken om je boeken te openen door de instelling voor de aangepaste bestandsbrowser uit te schakelen."
+msgstr "Als je deze toestemming weigert, kun je de Android-bestandskeuzer toch gebruiken om je boeken te openen door de instelling voor de aangepaste bestandsbrowser uit te schakelen."
 
 #, fuzzy
 msgid "Grant"

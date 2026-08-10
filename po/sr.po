@@ -88,7 +88,7 @@ msgstr "Zatvori"
 
 #, fuzzy
 msgid "Are you sure you want to remove the selected document? This will also remove its reading position and bookmarks."
-msgstr "Да ли сте сигурни да желите да уклоните изабрани документ? Ово ће такође уклонити његову позицију читања и обележиваче."
+msgstr "Да ли сте сигурни да желите да уклоните изабрани документ? Ово ће такође уклонити позицију читања и обележиваче."
 
 #, fuzzy
 msgid "Are you sure you want to remove the {} selected documents? This will also remove their reading positions and bookmarks."
@@ -1832,7 +1832,7 @@ msgstr "Zatvori Paperback"
 #. TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
 #, fuzzy
 msgid "Failed to convert DTBook XML to text"
-msgstr "Покушај конвертовања DTBook XML-а у текст је неуспео."
+msgstr "Није успело конвертовање DTBook XML у текст"
 
 #. TRANSLATORS: Error shown when a ZIP file is not a recognizable DAISY 3 or DAISY 2.02 book
 #, fuzzy
@@ -1847,22 +1847,22 @@ msgstr "Неважећа DAISY .opf датотека или није могућ�
 #. TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
 #, fuzzy
 msgid "OPF package element missing"
-msgstr "Недостаје елемент пакета ОПФ"
+msgstr "Недостаје елемент ОПФ пакета"
 
 #. TRANSLATORS: Reason given when an EPUB has no spine items that could be read
 #, fuzzy
 msgid "no readable spine items"
-msgstr "Нема читљивих ставки у леђима"
+msgstr "Нема читљивих ставки у кичми"
 
 #. TRANSLATORS: Reason given when EPUB spine items failed to convert; {} is a comma-separated list of underlying errors
 #, fuzzy
 msgid "failed to convert spine items: {}"
-msgstr "није успео да конвертује spine ставке: {}"
+msgstr "није успело да конвертује ставке спина: {}"
 
 #. TRANSLATORS: Error shown when an EPUB has no readable content; {} is the specific reason (see the two messages above)
 #, fuzzy
 msgid "EPUB has no readable content ({})"
-msgstr "EPUB нема чијивљив садржај ({})"
+msgstr "EPUB нема чињив садржај ({})"
 
 #. TRANSLATORS: Error shown when an EPUB's container.xml is missing its rootfile reference
 #, fuzzy
@@ -1877,7 +1877,7 @@ msgstr "неподржани садржај"
 #. TRANSLATORS: Error shown when an FB2 (FictionBook) file's XML fails to convert to plain text
 #, fuzzy
 msgid "Failed to convert FB2 XML to text"
-msgstr "Није успело конвертовање FB2 XML у текст"
+msgstr "Није успело да конвертује FB2 XML у текст"
 
 #. TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
 #, fuzzy
@@ -1887,7 +1887,7 @@ msgstr "HTML фајл је празан: {}"
 #. TRANSLATORS: Error shown when an HTML file fails to convert to plain text; {} is the file path
 #, fuzzy
 msgid "Failed to convert HTML to text: {}"
-msgstr "Није успело конвертовање HTML-а у текст: {}"
+msgstr "Неуспело конвертовање HTML-а у текст: {}"
 
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 msgid "Figure"
@@ -1919,7 +1919,7 @@ msgstr "Није пронађен ниједан запис"
 #. TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
 #, fuzzy
 msgid "Invalid Record 0 offsets"
-msgstr "Неважећи запис 0 офсета"
+msgstr "Неважећи запис 0 померања"
 
 #. TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
 #, fuzzy
@@ -1944,7 +1944,7 @@ msgstr "Неважећи опсег записа садржаја"
 #. TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
 #, fuzzy
 msgid "Invalid HUFF/CDIC records"
-msgstr "Неважећи HUFF/CDIC записи"
+msgstr "Неважећи записи HUFF/CDIC"
 
 #. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
 #, fuzzy
@@ -2024,7 +2024,7 @@ msgstr "ODP фајл не садржи ниједну страницу."
 #. TRANSLATORS: Error shown when a flat-XML ODP presentation file has no pages/slides
 #, fuzzy
 msgid "FODP file does not contain any pages"
-msgstr "ФОДП фајл не садржи ниједну страницу."
+msgstr "Файл FODP не садржи ниједну страницу."
 
 #. TRANSLATORS: Notice inserted into the extracted text when a PDF has images but no text layer at all
 msgid "This PDF contains images only, with no extractable text. You may need to run it through OCR software to read its contents."
@@ -2057,7 +2057,7 @@ msgstr "PPT фајл не садржи слајдове"
 #. TRANSLATORS: Error shown when a legacy PPT file's OLE container has no PowerPoint Document stream
 #, fuzzy
 msgid "PowerPoint Document stream not found"
-msgstr "Ток докумената PowerPoint-а није пронађен"
+msgstr "Потока докумената PowerPoint није пронађен"
 
 #. TRANSLATORS: Error shown when an RTF document's tokens fail to parse; {} is the underlying lexer error
 #, fuzzy
@@ -2067,7 +2067,7 @@ msgstr "Покушај парсирања RTF документа није усп
 #. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
 #, fuzzy
 msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
-msgstr "Претходна DOC обрада је неуспела: {}. OOXML резервно решење је неуспело: {}"
+msgstr "Legacy DOC парсирање је неуспело: {}. OOXML резервно решење је неуспело: {}"
 
 #. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
 #, fuzzy

@@ -1171,7 +1171,7 @@ msgstr "Cấp độ tiêu đề trước đó &5    Shift+5"
 #. TRANSLATORS: Menu item label to go to the next level-5 heading
 #, fuzzy
 msgid "Next Heading Level 5\t5"
-msgstr "Tiêu đề tiếp theo Cấp 5    5"
+msgstr "Tiêu đề tiếp theo Cấp độ 5    5"
 
 #. TRANSLATORS: Menu item label to go to the previous level-6 heading
 #, fuzzy
@@ -1792,7 +1792,7 @@ msgstr "Xem Trợ giúp trong &Paperback    Shift+F1"
 #. TRANSLATORS: Status bar help text for the "View Help in Paperback" menu item
 #, fuzzy
 msgid "View help in Paperback"
-msgstr "Xem hướng dẫn trong phiên bản bìa mềm"
+msgstr "Xem phần trợ giúp trong phiên bản bìa mềm"
 
 #. TRANSLATORS: Menu item label to check for application updates
 msgid "Check for &Updates\tCtrl+Shift+U"
@@ -2107,7 +2107,7 @@ msgstr "&Thoát"
 #. TRANSLATORS: Status bar help text for the tray menu's "Exit" item
 #, fuzzy
 msgid "Exit Paperback"
-msgstr "Bản bìa mềm “Exit”"
+msgstr "Bản bìa mềm \"Exit\""
 
 #. TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
 #, fuzzy
@@ -2350,7 +2350,7 @@ msgstr "Không thể phân tích cú pháp tài liệu RTF: {}"
 #. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
 #, fuzzy
 msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
-msgstr "Lỗi phân tích cú pháp DOC phiên bản cũ: {}. Lỗi chuyển sang định dạng OOXML: {}"
+msgstr "Lỗi phân tích cú pháp DOC cũ: {}. Lỗi chuyển sang định dạng OOXML dự phòng: {}"
 
 #. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
 #, fuzzy

@@ -1809,7 +1809,7 @@ msgstr "No hay siguiente figura."
 #. TRANSLATORS: Announced when there is no previous figure from the current position
 #, fuzzy
 msgid "No previous figure."
-msgstr "No hay datos anteriores."
+msgstr "No hay dato anterior."
 
 #. TRANSLATORS: Prefix announced when navigation wraps around past the end/start of the document; the trailing space is significant
 msgid "Wrapping to start. "
@@ -1854,7 +1854,7 @@ msgstr "No se admiten envases."
 #. TRANSLATORS: Announced when the caret is not currently inside a container (list/table)
 #, fuzzy
 msgid "Not in a container."
-msgstr "No en un recipiente."
+msgstr "No está en un recipiente."
 
 #. TRANSLATORS: Announced when jumping to the start/end of the container (list/table) the caret is inside, and the target line is blank
 #, fuzzy
@@ -2182,7 +2182,7 @@ msgstr "No se ha podido analizar el documento RTF: {}"
 #. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
 #, fuzzy
 msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
-msgstr "Error al analizar el DOC heredado: {}. Error en la conversión a OOXML: {}"
+msgstr "Error al analizar el documento DOC heredado: {}. Error al utilizar el formato OOXML como alternativa: {}"
 
 #. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
 #, fuzzy
