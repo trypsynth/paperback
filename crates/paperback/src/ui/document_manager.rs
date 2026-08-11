@@ -73,6 +73,7 @@ const WXK_WINDOWS_MENU: i32 = 395;
 const WXK_UP: i32 = 315;
 #[cfg(target_os = "windows")]
 const WXK_DOWN: i32 = 317;
+const KEY_EQUALS: i32 = 61;
 
 pub struct DocumentManager {
 	frame: Frame,
@@ -515,6 +516,15 @@ impl DocumentManager {
 		}
 	}
 
+	/// Announces the current caret position as a percentage of the document via the live region.
+	fn announce_current_percent(&self) {
+		let Some(tab) = self.active_tab() else {
+			return;
+		};
+		let percent = tab.session.get_status_info(tab.text_ctrl.get_insertion_point()).percentage;
+		live_region::announce(self.live_region_label, &format!("{percent}%"));
+	}
+
 	pub fn reset_sound_line(&self) {
 		self.last_sound_position.set(None);
 	}
@@ -791,6 +801,7 @@ impl DocumentManager {
 			}
 		});
 		let text_ctrl_for_menu = text_ctrl;
+		let dm_for_announce = Rc::clone(self_rc);
 		#[cfg(target_os = "windows")]
 		let dm_for_nav = Rc::clone(self_rc);
 		#[cfg(target_os = "linux")]
@@ -804,6 +815,13 @@ impl DocumentManager {
 				if (key == WXK_F10 && kbd.shift_down()) || key == WXK_WINDOWS_MENU {
 					kbd.event.skip(false);
 					show_reader_context_menu(text_ctrl_for_menu);
+					return;
+				}
+				if key == KEY_EQUALS && !kbd.shift_down() && !kbd.control_down() && !kbd.alt_down() {
+					kbd.event.skip(false);
+					if let Ok(dm) = dm_for_announce.try_lock() {
+						dm.announce_current_percent();
+					}
 					return;
 				}
 				#[cfg(target_os = "linux")]
