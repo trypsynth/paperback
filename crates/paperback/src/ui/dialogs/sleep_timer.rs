@@ -1,7 +1,7 @@
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{DIALOG_PADDING, add_ok_cancel_footer, bind_enter_confirms};
+use super::{DIALOG_PADDING, add_ok_cancel_footer, bind_enter_confirms, build_ok_cancel_buttons};
 
 pub fn show_sleep_timer_dialog(parent: &Frame, initial_duration: i32) -> Option<i32> {
 	// TRANSLATORS: Title of the Sleep Timer dialog
@@ -17,12 +17,7 @@ pub fn show_sleep_timer_dialog(parent: &Frame, initial_duration: i32) -> Option<
 	let input_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	input_sizer.add(&label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 5);
 	input_sizer.add(&input_ctrl, 1, SizerFlag::Expand, 0);
-	// TRANSLATORS: Label for the confirmation button
-	let ok_button = Button::builder(&dialog).with_id(ID_OK).with_label(&t("OK")).build();
-	// TRANSLATORS: Label for the cancellation button
-	let cancel_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
-	dialog.set_escape_id(ID_CANCEL);
-	ok_button.set_default();
+	let (ok_button, cancel_button) = build_ok_cancel_buttons(dialog, &t("OK"));
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add_sizer(&input_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
 	add_ok_cancel_footer(content_sizer, ok_button, cancel_button);

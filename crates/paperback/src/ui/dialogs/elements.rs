@@ -483,12 +483,7 @@ fn bind_elements_ok_action(
 
 fn build_elements_buttons(dialog: Dialog) -> (Button, Button) {
 	// TRANSLATORS: Label for the confirmation button
-	let ok_button = Button::builder(&dialog).with_id(ID_OK).with_label(&t("OK")).build();
-	// TRANSLATORS: Label for the cancellation button
-	let cancel_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
-	dialog.set_escape_id(ID_CANCEL);
-	ok_button.set_default();
-	(ok_button, cancel_button)
+	super::build_ok_cancel_buttons(dialog, &t("OK"))
 }
 
 fn finalize_elements_layout(dialog: Dialog, content_sizer: BoxSizer, ok_button: Button, cancel_button: Button) {

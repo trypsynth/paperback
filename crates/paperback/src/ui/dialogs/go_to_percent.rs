@@ -1,7 +1,9 @@
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{DIALOG_PADDING, KEY_NUMPAD_ENTER, KEY_RETURN, add_ok_cancel_footer, bind_enter_confirms};
+use super::{
+	DIALOG_PADDING, KEY_NUMPAD_ENTER, KEY_RETURN, add_ok_cancel_footer, bind_enter_confirms, build_ok_cancel_buttons,
+};
 
 const WXK_END: i32 = 312;
 const WXK_HOME: i32 = 313;
@@ -77,12 +79,7 @@ pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32) -> Option
 	content_sizer.add(&input_label, 0, SizerFlag::Left, 5);
 	content_sizer.add(&input_ctrl, 0, SizerFlag::Expand, 0);
 	// TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
-	let ok_button = Button::builder(&dialog).with_id(ID_OK).with_label(&t("Go")).build();
-	ok_button.set_default();
-	// TRANSLATORS: Label for the cancellation button
-	let cancel_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
-	dialog.set_escape_id(ID_CANCEL);
-	dialog.set_affirmative_id(ID_OK);
+	let (ok_button, cancel_button) = build_ok_cancel_buttons(dialog, &t("Go"));
 	let main_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	main_sizer.add_sizer(&content_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
 	add_ok_cancel_footer(main_sizer, ok_button, cancel_button);

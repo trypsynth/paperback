@@ -1,3 +1,4 @@
+use patois::t;
 use wxdragon::prelude::*;
 
 // Shared constants used by sub-modules that import via `use super::`.
@@ -15,6 +16,29 @@ pub(super) fn bind_enter_confirms<W: WxEvtHandler>(dialog: Dialog, ctrl: W) {
 		event.skip(false);
 		dialog.end_modal(ID_OK);
 	});
+}
+
+/// Builds a standard OK/Cancel button pair, both parented to `dialog` with the stock
+/// `ID_OK`/`ID_CANCEL` IDs (so a plain click ends the modal without extra wiring,
+/// unless the caller attaches its own `on_click` to override that — as `elements.rs`
+/// does to validate a selection first). Also wires `dialog`'s Escape key and
+/// affirmative (Enter-default) behavior to Cancel/OK, and makes OK the visual
+/// default button. `ok_label` lets callers use "OK" or a verb like "Go" where that
+/// reads better.
+///
+/// Not a fit for every dialog: `toc.rs` deliberately gives its OK button a
+/// non-stock ID so a custom handler can block ending the modal until a selection is
+/// made, and `options.rs`'s `prompt_for_hotkey` parents its buttons to a `Panel`
+/// (with an extra "Clear" button) rather than the dialog directly. Both build their
+/// buttons by hand instead of calling this.
+pub(super) fn build_ok_cancel_buttons(dialog: Dialog, ok_label: &str) -> (Button, Button) {
+	let ok_button = Button::builder(&dialog).with_id(ID_OK).with_label(ok_label).build();
+	// TRANSLATORS: Label for the cancellation button
+	let cancel_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
+	dialog.set_escape_id(ID_CANCEL);
+	dialog.set_affirmative_id(ID_OK);
+	ok_button.set_default();
+	(ok_button, cancel_button)
 }
 
 /// Appends a right-aligned OK/Cancel button row to `content_sizer`: a stretch spacer,

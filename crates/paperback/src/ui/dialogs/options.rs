@@ -11,7 +11,7 @@ use patois::{t, ui::populate_language_choice};
 use wxdragon::accessible::AccRole;
 use wxdragon::prelude::*;
 
-use super::{DIALOG_PADDING, add_ok_cancel_footer};
+use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
 use crate::{
 	config_ext::{UpdateChannel, get_update_channel},
 	translation_manager::TranslationManager,
@@ -450,10 +450,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		bg_label_reset.set_label(&color_description(-1));
 	});
 	// TRANSLATORS: Label for the confirmation button
-	let ok_button = Button::builder(&dialog_ref).with_id(ID_OK).with_label(&t("OK")).build();
-	// TRANSLATORS: Label for the cancellation button
-	let cancel_button = Button::builder(&dialog_ref).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
-	ok_button.set_default();
+	let (ok_button, cancel_button) = build_ok_cancel_buttons(dialog_ref, &t("OK"));
 	OptionsDialogUi {
 		dialog: dialog_ref,
 		notebook,

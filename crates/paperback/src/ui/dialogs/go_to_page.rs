@@ -1,7 +1,7 @@
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{DIALOG_PADDING, add_ok_cancel_footer, bind_enter_confirms};
+use super::{DIALOG_PADDING, add_ok_cancel_footer, bind_enter_confirms, build_ok_cancel_buttons};
 
 pub fn show_go_to_page_dialog(parent: &Frame, current_page: i32, max_page: i32) -> Option<i32> {
 	let max_page = max_page.max(1);
@@ -37,11 +37,7 @@ pub fn show_go_to_page_dialog(parent: &Frame, current_page: i32, max_page: i32) 
 	page_sizer.add(&label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 5);
 	page_sizer.add(&page_ctrl, 1, SizerFlag::Expand, 0);
 	// TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
-	let ok_button = Button::builder(&dialog).with_id(ID_OK).with_label(&t("Go")).build();
-	// TRANSLATORS: Label for the cancellation button
-	let cancel_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
-	dialog.set_escape_id(ID_CANCEL);
-	dialog.set_affirmative_id(ID_OK);
+	let (ok_button, cancel_button) = build_ok_cancel_buttons(dialog, &t("Go"));
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add_sizer(&page_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
 	add_ok_cancel_footer(content_sizer, ok_button, cancel_button);

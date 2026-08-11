@@ -3,7 +3,7 @@ use std::path::Path;
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{DIALOG_PADDING, add_ok_cancel_footer};
+use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
 
 pub fn show_open_as_dialog(parent: &Frame, path: &Path) -> Option<String> {
 	// TRANSLATORS: Title of the Open As dialog
@@ -26,21 +26,7 @@ pub fn show_open_as_dialog(parent: &Frame, path: &Path) -> Option<String> {
 	format_combo.set_selection(0);
 	#[cfg(target_os = "macos")]
 	format_combo.set_accessibility_label(format_label_text.replace('&', "").trim_end_matches(':').trim());
-	// TRANSLATORS: Label for the confirmation button
-	let ok_label = t("OK");
-	let ok_button = Button::builder(&dialog).with_label(&ok_label).build();
-	// TRANSLATORS: Label for the cancellation button
-	let cancel_label = t("Cancel");
-	let cancel_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&cancel_label).build();
-	let dialog_for_ok = dialog;
-	ok_button.on_click(move |_| {
-		dialog_for_ok.end_modal(ID_OK);
-	});
-	let dialog_for_cancel = dialog;
-	cancel_button.on_click(move |_| {
-		dialog_for_cancel.end_modal(ID_CANCEL);
-	});
-	dialog.set_escape_id(ID_CANCEL);
+	let (ok_button, cancel_button) = build_ok_cancel_buttons(dialog, &t("OK"));
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add(&label, 0, SizerFlag::All, DIALOG_PADDING / 2);
 	let format_sizer = BoxSizer::builder(Orientation::Horizontal).build();

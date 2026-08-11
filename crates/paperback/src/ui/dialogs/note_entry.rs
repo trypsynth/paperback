@@ -1,7 +1,7 @@
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{DIALOG_PADDING, KEY_RETURN, add_ok_cancel_footer};
+use super::{DIALOG_PADDING, KEY_RETURN, add_ok_cancel_footer, build_ok_cancel_buttons};
 
 pub fn show_note_entry_dialog(
 	parent: &dyn WxWidget,
@@ -16,20 +16,7 @@ pub fn show_note_entry_dialog(
 		.with_style(TextCtrlStyle::MultiLine)
 		.with_size(Size::new(400, 200))
 		.build();
-	// TRANSLATORS: Label for the confirmation button
-	let ok_button = Button::builder(&dialog).with_id(ID_OK).with_label(&t("OK")).build();
-	// TRANSLATORS: Label for the cancellation button
-	let cancel_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
-	dialog.set_escape_id(ID_CANCEL);
-	dialog.set_affirmative_id(ID_OK);
-	let dialog_for_ok = dialog;
-	ok_button.on_click(move |_| {
-		dialog_for_ok.end_modal(ID_OK);
-	});
-	let dialog_for_cancel = dialog;
-	cancel_button.on_click(move |_| {
-		dialog_for_cancel.end_modal(ID_CANCEL);
-	});
+	let (ok_button, cancel_button) = build_ok_cancel_buttons(dialog, &t("OK"));
 	let dialog_for_key = dialog;
 	note_ctrl.bind_internal(EventType::KEY_DOWN, move |event| {
 		if let Some(key) = event.get_key_code()
