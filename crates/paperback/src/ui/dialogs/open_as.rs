@@ -40,6 +40,7 @@ pub fn show_open_as_dialog(parent: &Frame, path: &Path) -> Option<String> {
 	cancel_button.on_click(move |_| {
 		dialog_for_cancel.end_modal(ID_CANCEL);
 	});
+	dialog.set_escape_id(ID_CANCEL);
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add(&label, 0, SizerFlag::All, DIALOG_PADDING / 2);
 	let format_sizer = BoxSizer::builder(Orientation::Horizontal).build();

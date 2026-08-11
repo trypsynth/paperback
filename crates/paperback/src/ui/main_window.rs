@@ -25,7 +25,7 @@ use wxdragon::{prelude::*, timer::Timer};
 use super::tray;
 use super::{
 	dialogs,
-	document_manager::{DocumentManager, build_font_from_readability, display_title},
+	document_manager::{DocumentManager, DocumentTab, build_font_from_readability, display_title},
 	find::{self, FindDialogState},
 	help::{self, MAIN_WINDOW_PTR},
 	menu, menu_ids,
@@ -527,6 +527,43 @@ impl MainWindow {
 			menu::update_reopen_state(&frame, false);
 			dm_ref.restore_focus();
 		});
+	}
+
+	/// Prompts for a save path and exports `tab`'s document as `format`, showing a
+	/// generic failure dialog on error. Shared by the `EXPORT_TO_PLAIN_TEXT` /
+	/// `EXPORT_TO_HTML` / `EXPORT_TO_MARKDOWN` menu handlers, which differ only in
+	/// `format`, the default file `extension`, the file-picker `wildcard`, and the
+	/// file-picker `dialog_title`.
+	fn export_document_as(
+		frame: &Frame,
+		tab: &DocumentTab,
+		format: paperback_core::export::ExportFormat,
+		extension: &str,
+		wildcard: &str,
+		dialog_title: &str,
+	) {
+		let default_name =
+			// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+			tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
+		let default_file = format!("{default_name}.{extension}");
+		let dialog = FileDialog::builder(frame)
+			.with_message(dialog_title)
+			.with_default_file(&default_file)
+			.with_wildcard(wildcard)
+			.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
+			.build();
+		if dialog.show_modal() == ID_OK
+			&& let Some(path) = dialog.get_path()
+			&& let Err(e) = tab.session.export_as(&path, format)
+		{
+			tracing::error!(path = %path, error = %e, format = ?format, "failed to export document");
+			let dialog =
+				// TRANSLATORS: Error dialog shown when exporting a document to another format fails
+				MessageDialog::builder(frame, &t("Failed to export document."), &t("Error"))
+					.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
+					.build();
+			dialog.show_modal();
+		}
 	}
 
 	fn handle_open(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) {
@@ -1118,34 +1155,16 @@ impl MainWindow {
 					let Some(tab) = dm_ref.active_tab() else {
 						return;
 					};
-					let default_name =
-						// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-						tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
-					let default_file = format!("{default_name}.txt");
-					// TRANSLATORS: File filter shown in the "Export to plain text" save dialog
-					let wildcard = t("Plain text files (*.txt)|*.txt|All files (*.*)|*.*");
-					let dialog = FileDialog::builder(&frame_copy)
+					Self::export_document_as(
+						&frame_copy,
+						tab,
+						paperback_core::export::ExportFormat::Text,
+						"txt",
+						// TRANSLATORS: File filter shown in the "Export to plain text" save dialog
+						&t("Plain text files (*.txt)|*.txt|All files (*.*)|*.*"),
 						// TRANSLATORS: Title of the file save dialog when exporting a document to plain text
-						.with_message(&t("Export document to plain text"))
-						.with_default_file(&default_file)
-						.with_wildcard(&wildcard)
-						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
-						.build();
-					if dialog.show_modal() == ID_OK
-						&& let Some(path) = dialog.get_path()
-						&& let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Text)
-					{
-						tracing::error!(path = %path, error = %e, "failed to export document as text");
-						let dialog =
-									// TRANSLATORS: Error dialog shown when exporting a document to another format fails
-									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
-										.with_style(
-											MessageDialogStyle::OK
-												| MessageDialogStyle::IconError | MessageDialogStyle::Centre,
-										)
-										.build();
-						dialog.show_modal();
-					}
+						&t("Export document to plain text"),
+					);
 				}
 				menu_ids::EXPORT_TO_HTML => {
 					let Ok(dm_ref) = dm.try_lock() else {
@@ -1154,34 +1173,16 @@ impl MainWindow {
 					let Some(tab) = dm_ref.active_tab() else {
 						return;
 					};
-					let default_name =
-						// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-						tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
-					let default_file = format!("{default_name}.html");
-					// TRANSLATORS: File filter shown in the "Export to HTML" save dialog
-					let wildcard = t("HTML files (*.html)|*.html|All files (*.*)|*.*");
-					let dialog = FileDialog::builder(&frame_copy)
+					Self::export_document_as(
+						&frame_copy,
+						tab,
+						paperback_core::export::ExportFormat::Html,
+						"html",
+						// TRANSLATORS: File filter shown in the "Export to HTML" save dialog
+						&t("HTML files (*.html)|*.html|All files (*.*)|*.*"),
 						// TRANSLATORS: Title of the file save dialog when exporting a document to HTML
-						.with_message(&t("Export document to HTML"))
-						.with_default_file(&default_file)
-						.with_wildcard(&wildcard)
-						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
-						.build();
-					if dialog.show_modal() == ID_OK
-						&& let Some(path) = dialog.get_path()
-						&& let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Html)
-					{
-						tracing::error!(path = %path, error = %e, "failed to export document as HTML");
-						let dialog =
-									// TRANSLATORS: Error dialog shown when exporting a document to another format fails
-									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
-										.with_style(
-											MessageDialogStyle::OK
-												| MessageDialogStyle::IconError | MessageDialogStyle::Centre,
-										)
-										.build();
-						dialog.show_modal();
-					}
+						&t("Export document to HTML"),
+					);
 				}
 				menu_ids::EXPORT_TO_MARKDOWN => {
 					let Ok(dm_ref) = dm.try_lock() else {
@@ -1190,34 +1191,16 @@ impl MainWindow {
 					let Some(tab) = dm_ref.active_tab() else {
 						return;
 					};
-					let default_name =
-						// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-						tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
-					let default_file = format!("{default_name}.md");
-					// TRANSLATORS: File filter shown in the "Export to Markdown" save dialog
-					let wildcard = t("Markdown files (*.md)|*.md|All files (*.*)|*.*");
-					let dialog = FileDialog::builder(&frame_copy)
+					Self::export_document_as(
+						&frame_copy,
+						tab,
+						paperback_core::export::ExportFormat::Markdown,
+						"md",
+						// TRANSLATORS: File filter shown in the "Export to Markdown" save dialog
+						&t("Markdown files (*.md)|*.md|All files (*.*)|*.*"),
 						// TRANSLATORS: Title of the file save dialog when exporting a document to Markdown
-						.with_message(&t("Export document to Markdown"))
-						.with_default_file(&default_file)
-						.with_wildcard(&wildcard)
-						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
-						.build();
-					if dialog.show_modal() == ID_OK
-						&& let Some(path) = dialog.get_path()
-						&& let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Markdown)
-					{
-						tracing::error!(path = %path, error = %e, "failed to export document as Markdown");
-						let dialog =
-									// TRANSLATORS: Error dialog shown when exporting a document to another format fails
-									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
-										.with_style(
-											MessageDialogStyle::OK
-												| MessageDialogStyle::IconError | MessageDialogStyle::Centre,
-										)
-										.build();
-						dialog.show_modal();
-					}
+						&t("Export document to Markdown"),
+					);
 				}
 				menu_ids::EXPORT_DOCUMENT_DATA => {
 					let Ok(dm_ref) = dm.try_lock() else {
