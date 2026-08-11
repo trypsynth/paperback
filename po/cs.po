@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 19:57+0000\n"
+"POT-Creation-Date: 2026-08-11 20:06+0000\n"
 "PO-Revision-Date: 2026-06-12 00:53+0200\n"
 "Last-Translator: 4Sense Gaming <lukas@4sensegaming.cz>\n"
 "Language-Team: Lukáš Hosnedl <lukas@4sensegaming.cz>\n"
@@ -228,10 +228,6 @@ msgstr "Bez názvu"
 #. TRANSLATORS: Label for the confirmation button
 msgid "OK"
 msgstr "OK"
-
-#. TRANSLATORS: Label for the cancellation button
-msgid "Cancel"
-msgstr "Zrušit"
 
 #. TRANSLATORS: Title of the Go to Line dialog
 msgid "Go to Line"
@@ -532,6 +528,10 @@ msgstr "&Klávesa:"
 #, fuzzy
 msgid "Clear"
 msgstr "Vymazat"
+
+#. TRANSLATORS: Label for the cancellation button
+msgid "Cancel"
+msgstr "Zrušit"
 
 #. TRANSLATORS: Representation of the Spacebar key
 msgid "Space"

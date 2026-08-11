@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 19:57+0000\n"
+"POT-Creation-Date: 2026-08-11 20:06+0000\n"
 "PO-Revision-Date: 2026-02-28 00:00-0700\n"
 "Last-Translator: Quin Gillespie <trypsynth@gmail.com>\n"
 "Language-Team: Español <es@example.com>\n"
@@ -234,10 +234,6 @@ msgstr "Sin título"
 #. TRANSLATORS: Label for the confirmation button
 msgid "OK"
 msgstr "Aceptar"
-
-#. TRANSLATORS: Label for the cancellation button
-msgid "Cancel"
-msgstr "Cancelar"
 
 #. TRANSLATORS: Title of the Go to Line dialog
 msgid "Go to Line"
@@ -574,6 +570,10 @@ msgstr "&Clave:"
 #, fuzzy
 msgid "Clear"
 msgstr "Borrar"
+
+#. TRANSLATORS: Label for the cancellation button
+msgid "Cancel"
+msgstr "Cancelar"
 
 #. TRANSLATORS: Representation of the Spacebar key
 #, fuzzy

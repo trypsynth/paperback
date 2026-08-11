@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 19:57+0000\n"
+"POT-Creation-Date: 2026-08-11 20:06+0000\n"
 "PO-Revision-Date: 2026-07-30 06:25+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
@@ -224,10 +224,6 @@ msgstr "Nimetön"
 #. TRANSLATORS: Label for the confirmation button
 msgid "OK"
 msgstr "OK"
-
-#. TRANSLATORS: Label for the cancellation button
-msgid "Cancel"
-msgstr "Peruuta"
 
 #. TRANSLATORS: Title of the Go to Line dialog
 msgid "Go to Line"
@@ -523,6 +519,10 @@ msgstr "&Näppäin:"
 #. TRANSLATORS: Button label to clear the current hotkey selection
 msgid "Clear"
 msgstr "Tyhjennä"
+
+#. TRANSLATORS: Label for the cancellation button
+msgid "Cancel"
+msgstr "Peruuta"
 
 #. TRANSLATORS: Representation of the Spacebar key
 msgid "Space"

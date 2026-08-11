@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 19:57+0000\n"
+"POT-Creation-Date: 2026-08-11 20:06+0000\n"
 "PO-Revision-Date: 2026-07-01 15:36+0200\n"
 "Last-Translator: Nikola Jović <wwenikola123@gmail.com>\n"
 "Language-Team: \n"
@@ -234,10 +234,6 @@ msgstr "Nenaslovljeno"
 #. TRANSLATORS: Label for the confirmation button
 msgid "OK"
 msgstr "U redu"
-
-#. TRANSLATORS: Label for the cancellation button
-msgid "Cancel"
-msgstr "Otkaži"
 
 #. TRANSLATORS: Title of the Go to Line dialog
 msgid "Go to Line"
@@ -535,6 +531,10 @@ msgstr "&Taster:"
 #. TRANSLATORS: Button label to clear the current hotkey selection
 msgid "Clear"
 msgstr "Očisti"
+
+#. TRANSLATORS: Label for the cancellation button
+msgid "Cancel"
+msgstr "Otkaži"
 
 #. TRANSLATORS: Representation of the Spacebar key
 msgid "Space"

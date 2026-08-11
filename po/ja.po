@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 19:57+0000\n"
+"POT-Creation-Date: 2026-08-11 20:06+0000\n"
 "PO-Revision-Date: 2026-06-25 21:58+0900\n"
 "Last-Translator: Kazto Kitabatake <contact@kitabatake1013.jp>\n"
 "Language-Team: \n"
@@ -228,10 +228,6 @@ msgstr "無題"
 #. TRANSLATORS: Label for the confirmation button
 msgid "OK"
 msgstr "OK"
-
-#. TRANSLATORS: Label for the cancellation button
-msgid "Cancel"
-msgstr "キャンセル"
 
 #. TRANSLATORS: Title of the Go to Line dialog
 msgid "Go to Line"
@@ -540,6 +536,10 @@ msgstr "キー(&K):"
 #, fuzzy
 msgid "Clear"
 msgstr "クリア"
+
+#. TRANSLATORS: Label for the cancellation button
+msgid "Cancel"
+msgstr "キャンセル"
 
 #. TRANSLATORS: Representation of the Spacebar key
 msgid "Space"

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 19:57+0000\n"
+"POT-Creation-Date: 2026-08-11 20:06+0000\n"
 "PO-Revision-Date: 2026-03-22 21:37+0800\n"
 "Last-Translator: Yongquan Yang <qt06.com@gmail.com>\n"
 "Language-Team: \n"
@@ -228,10 +228,6 @@ msgstr "无标题"
 #. TRANSLATORS: Label for the confirmation button
 msgid "OK"
 msgstr "确定"
-
-#. TRANSLATORS: Label for the cancellation button
-msgid "Cancel"
-msgstr "取消"
 
 #. TRANSLATORS: Title of the Go to Line dialog
 msgid "Go to Line"
@@ -568,6 +564,10 @@ msgstr "&Key:"
 #, fuzzy
 msgid "Clear"
 msgstr "清除"
+
+#. TRANSLATORS: Label for the cancellation button
+msgid "Cancel"
+msgstr "取消"
 
 #. TRANSLATORS: Representation of the Spacebar key
 #, fuzzy

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 19:57+0000\n"
+"POT-Creation-Date: 2026-08-11 20:06+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -227,10 +227,6 @@ msgstr ""
 
 #. TRANSLATORS: Label for the confirmation button
 msgid "OK"
-msgstr ""
-
-#. TRANSLATORS: Label for the cancellation button
-msgid "Cancel"
 msgstr ""
 
 #. TRANSLATORS: Title of the Go to Line dialog
@@ -522,6 +518,10 @@ msgstr ""
 
 #. TRANSLATORS: Button label to clear the current hotkey selection
 msgid "Clear"
+msgstr ""
+
+#. TRANSLATORS: Label for the cancellation button
+msgid "Cancel"
 msgstr ""
 
 #. TRANSLATORS: Representation of the Spacebar key
