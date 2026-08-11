@@ -827,7 +827,7 @@ class MainScreenViewModel(
 	fun exportDocumentToUri(
 		context: Context,
 		destUri: Uri,
-		format: uniffi.paperback.ExportFormatFfi
+		format: uniffi.paperback.ExportFormat
 	): Boolean {
 		val state = uiState.value as? MainScreenUiState.Success ?: return false
 		val tab = state.activeTab ?: return false

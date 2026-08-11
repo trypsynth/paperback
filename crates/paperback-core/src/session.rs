@@ -165,23 +165,6 @@ impl From<String> for DocumentError {
 	}
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ExportFormatFfi {
-	Text,
-	Html,
-	Markdown,
-}
-
-impl From<ExportFormatFfi> for ExportFormat {
-	fn from(f: ExportFormatFfi) -> Self {
-		match f {
-			ExportFormatFfi::Text => Self::Text,
-			ExportFormatFfi::Html => Self::Html,
-			ExportFormatFfi::Markdown => Self::Markdown,
-		}
-	}
-}
-
 impl LinkActivationResult {
 	const fn not_found() -> Self {
 		Self { found: false, action: LinkAction::NotFound, offset: 0, url: String::new() }
@@ -213,58 +196,9 @@ pub struct TocEntry {
 	pub level: i32,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum MarkerTypeFfi {
-	Heading1,
-	Heading2,
-	Heading3,
-	Heading4,
-	Heading5,
-	Heading6,
-	PageBreak,
-	SectionBreak,
-	TocItem,
-	Link,
-	List,
-	ListItem,
-	Table,
-	Separator,
-	Image,
-	Figure,
-	Bold,
-	Italic,
-	Underline,
-}
-
-impl From<MarkerType> for MarkerTypeFfi {
-	fn from(m: MarkerType) -> Self {
-		match m {
-			MarkerType::Heading1 => Self::Heading1,
-			MarkerType::Heading2 => Self::Heading2,
-			MarkerType::Heading3 => Self::Heading3,
-			MarkerType::Heading4 => Self::Heading4,
-			MarkerType::Heading5 => Self::Heading5,
-			MarkerType::Heading6 => Self::Heading6,
-			MarkerType::PageBreak => Self::PageBreak,
-			MarkerType::SectionBreak => Self::SectionBreak,
-			MarkerType::TocItem => Self::TocItem,
-			MarkerType::Link => Self::Link,
-			MarkerType::List => Self::List,
-			MarkerType::ListItem => Self::ListItem,
-			MarkerType::Table => Self::Table,
-			MarkerType::Separator => Self::Separator,
-			MarkerType::Image => Self::Image,
-			MarkerType::Figure => Self::Figure,
-			MarkerType::Bold => Self::Bold,
-			MarkerType::Italic => Self::Italic,
-			MarkerType::Underline => Self::Underline,
-		}
-	}
-}
-
 #[derive(Debug, Clone)]
 pub struct LineMarker {
-	pub mtype: MarkerTypeFfi,
+	pub mtype: MarkerType,
 	pub position: i64,
 	pub text: String,
 	pub reference: String,
@@ -657,7 +591,7 @@ impl DocumentSession {
 			.iter()
 			.filter(|m| matches!(m.mtype, MarkerType::Bold | MarkerType::Italic | MarkerType::Underline))
 			.map(|m| LineMarker {
-				mtype: m.mtype.into(),
+				mtype: m.mtype,
 				position: i64::try_from(m.position).unwrap_or(0),
 				text: String::new(),
 				reference: String::new(),
@@ -1160,13 +1094,13 @@ impl DocumentSession {
 	}
 
 	#[must_use]
-	pub fn get_supported_export_formats_ffi(&self) -> Vec<ExportFormatFfi> {
-		vec![ExportFormatFfi::Text, ExportFormatFfi::Html, ExportFormatFfi::Markdown]
+	pub fn get_supported_export_formats_ffi(&self) -> Vec<ExportFormat> {
+		vec![ExportFormat::Text, ExportFormat::Html, ExportFormat::Markdown]
 	}
 
 	#[must_use]
-	pub fn render_export_ffi(&self, format: ExportFormatFfi) -> String {
-		render(&self.handle, format.into())
+	pub fn render_export_ffi(&self, format: ExportFormat) -> String {
+		render(&self.handle, format)
 	}
 
 	#[must_use]
@@ -1421,7 +1355,7 @@ impl DocumentSession {
 		for marker in &self.handle.document().buffer.markers {
 			if marker.position >= start_usize && marker.position < end_usize {
 				res.push(LineMarker {
-					mtype: MarkerTypeFfi::from(marker.mtype),
+					mtype: marker.mtype,
 					position: i64::try_from(marker.position).unwrap_or(0),
 					text: marker.text.clone(),
 					reference: marker.reference.clone(),
@@ -1666,13 +1600,13 @@ mod tests {
 		let markers = session.get_formatting_markers();
 
 		assert_eq!(markers.len(), 3);
-		assert_eq!(markers[0].mtype, MarkerTypeFfi::Bold);
+		assert_eq!(markers[0].mtype, MarkerType::Bold);
 		assert_eq!(markers[0].position, 0);
 		assert_eq!(markers[0].length, 5);
-		assert_eq!(markers[1].mtype, MarkerTypeFfi::Italic);
+		assert_eq!(markers[1].mtype, MarkerType::Italic);
 		assert_eq!(markers[1].position, 6);
 		assert_eq!(markers[1].length, 5);
-		assert_eq!(markers[2].mtype, MarkerTypeFfi::Underline);
+		assert_eq!(markers[2].mtype, MarkerType::Underline);
 		assert_eq!(markers[2].position, 12);
 		assert_eq!(markers[2].length, 5);
 	}

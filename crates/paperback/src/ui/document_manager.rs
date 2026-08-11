@@ -1369,7 +1369,7 @@ pub struct FormatSegment {
 /// of the naive O(n^2) "rescan every marker at every boundary" approach, which
 /// took several seconds on books with tens of thousands of formatting spans.
 pub fn merge_formatting_markers(markers: &[paperback_core::session::LineMarker]) -> Vec<FormatSegment> {
-	use paperback_core::session::MarkerTypeFfi;
+	use paperback_core::document::MarkerType;
 
 	#[derive(Clone, Copy)]
 	struct Event {
@@ -1384,9 +1384,9 @@ pub fn merge_formatting_markers(markers: &[paperback_core::session::LineMarker])
 			continue;
 		}
 		let style_idx = match m.mtype {
-			MarkerTypeFfi::Bold => 0,
-			MarkerTypeFfi::Italic => 1,
-			MarkerTypeFfi::Underline => 2,
+			MarkerType::Bold => 0,
+			MarkerType::Italic => 1,
+			MarkerType::Underline => 2,
 			_ => continue,
 		};
 		events.push(Event { position: m.position, delta: 1, style_idx });
@@ -1556,7 +1556,7 @@ fn parse_single_key_shortcut(label: &str) -> Option<(i32, bool)> {
 mod tests {
 	use std::{env, fs, path::PathBuf, process};
 
-	use paperback_core::session::{LineMarker, MarkerTypeFfi};
+	use paperback_core::{document::MarkerType, session::LineMarker};
 
 	use super::{FormatSegment, merge_formatting_markers, read_fingerprint};
 
@@ -1602,7 +1602,7 @@ mod tests {
 		assert_ne!(before, after);
 	}
 
-	fn marker(mtype: MarkerTypeFfi, position: i64, length: i64) -> LineMarker {
+	fn marker(mtype: MarkerType, position: i64, length: i64) -> LineMarker {
 		LineMarker { mtype, position, text: String::new(), reference: String::new(), level: 0, length }
 	}
 
@@ -1613,19 +1613,19 @@ mod tests {
 
 	#[test]
 	fn zero_length_markers_are_ignored() {
-		let markers = [marker(MarkerTypeFfi::Bold, 5, 0)];
+		let markers = [marker(MarkerType::Bold, 5, 0)];
 		assert_eq!(merge_formatting_markers(&markers), Vec::new());
 	}
 
 	#[test]
 	fn non_format_markers_are_ignored() {
-		let markers = [marker(MarkerTypeFfi::Heading1, 0, 10), marker(MarkerTypeFfi::Link, 2, 3)];
+		let markers = [marker(MarkerType::Heading1, 0, 10), marker(MarkerType::Link, 2, 3)];
 		assert_eq!(merge_formatting_markers(&markers), Vec::new());
 	}
 
 	#[test]
 	fn single_bold_marker_produces_one_segment() {
-		let markers = [marker(MarkerTypeFfi::Bold, 0, 4)];
+		let markers = [marker(MarkerType::Bold, 0, 4)];
 		assert_eq!(
 			merge_formatting_markers(&markers),
 			vec![FormatSegment { start: 0, end: 4, bold: true, italic: false, underline: false }]
@@ -1635,7 +1635,7 @@ mod tests {
 	#[test]
 	fn overlapping_bold_and_italic_keep_both_on_the_intersection() {
 		// Bold over [0,10), italic over [4,7): the middle run must carry both.
-		let markers = [marker(MarkerTypeFfi::Bold, 0, 10), marker(MarkerTypeFfi::Italic, 4, 3)];
+		let markers = [marker(MarkerType::Bold, 0, 10), marker(MarkerType::Italic, 4, 3)];
 		assert_eq!(
 			merge_formatting_markers(&markers),
 			vec![
@@ -1648,7 +1648,7 @@ mod tests {
 
 	#[test]
 	fn adjacent_identical_segments_are_coalesced() {
-		let markers = [marker(MarkerTypeFfi::Bold, 0, 4), marker(MarkerTypeFfi::Bold, 4, 4)];
+		let markers = [marker(MarkerType::Bold, 0, 4), marker(MarkerType::Bold, 4, 4)];
 		assert_eq!(
 			merge_formatting_markers(&markers),
 			vec![FormatSegment { start: 0, end: 8, bold: true, italic: false, underline: false }]
@@ -1657,11 +1657,8 @@ mod tests {
 
 	#[test]
 	fn all_three_styles_can_stack() {
-		let markers = [
-			marker(MarkerTypeFfi::Bold, 0, 6),
-			marker(MarkerTypeFfi::Italic, 0, 6),
-			marker(MarkerTypeFfi::Underline, 0, 6),
-		];
+		let markers =
+			[marker(MarkerType::Bold, 0, 6), marker(MarkerType::Italic, 0, 6), marker(MarkerType::Underline, 0, 6)];
 		assert_eq!(
 			merge_formatting_markers(&markers),
 			vec![FormatSegment { start: 0, end: 6, bold: true, italic: true, underline: true }]

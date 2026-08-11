@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import dev.paperback.android.t
 import kotlinx.coroutines.launch
 import uniffi.paperback.LinkAction
-import uniffi.paperback.MarkerTypeFfi
+import uniffi.paperback.MarkerType
 import uniffi.paperback.SearchOptionsFfi
 
 @Composable
@@ -76,31 +76,31 @@ fun DocumentTextView(
 					val sortedMarkers = markers.sortedBy { it.position }
 					sortedMarkers.forEach { marker ->
 						when (marker.mtype) {
-							MarkerTypeFfi.HEADING1 -> {
+							MarkerType.HEADING1 -> {
 								isHeading = true
 								headingLevel = 1
 							}
-							MarkerTypeFfi.HEADING2 -> {
+							MarkerType.HEADING2 -> {
 								isHeading = true
 								headingLevel = 2
 							}
-							MarkerTypeFfi.HEADING3 -> {
+							MarkerType.HEADING3 -> {
 								isHeading = true
 								headingLevel = 3
 							}
-							MarkerTypeFfi.HEADING4 -> {
+							MarkerType.HEADING4 -> {
 								isHeading = true
 								headingLevel = 4
 							}
-							MarkerTypeFfi.HEADING5 -> {
+							MarkerType.HEADING5 -> {
 								isHeading = true
 								headingLevel = 5
 							}
-							MarkerTypeFfi.HEADING6 -> {
+							MarkerType.HEADING6 -> {
 								isHeading = true
 								headingLevel = 6
 							}
-							MarkerTypeFfi.LINK -> {
+							MarkerType.LINK -> {
 								val markerStartInLine = (marker.position - pos).toInt().coerceAtLeast(0)
 								val markerTextLength = marker.text.length
 								if (markerStartInLine > currentIdx) {

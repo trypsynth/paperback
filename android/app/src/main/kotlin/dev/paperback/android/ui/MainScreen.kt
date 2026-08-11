@@ -79,7 +79,7 @@ fun MainScreen(
 	val tocSheetOpen by viewModel.tocDialog.isOpen.collectAsStateWithLifecycle()
 	var recentsDialogOpen by remember { mutableStateOf(false) }
 	var exportDocumentDialogOpen by remember { mutableStateOf(false) }
-	var selectedExportFormat by remember { mutableStateOf<uniffi.paperback.ExportFormatFfi?>(null) }
+	var selectedExportFormat by remember { mutableStateOf<uniffi.paperback.ExportFormat?>(null) }
 	val wordCountDialogOpen by viewModel.wordCountDialog.isOpen.collectAsStateWithLifecycle()
 	val documentInfoDialogOpen by viewModel.documentInfoDialog.isOpen.collectAsStateWithLifecycle()
 	val goToDialogOpen by viewModel.showGoToDialog.collectAsStateWithLifecycle()
@@ -725,9 +725,9 @@ fun MainScreen(
 										selectedExportFormat = format
 										exportDocumentDialogOpen = false
 										val extension = when (format) {
-											uniffi.paperback.ExportFormatFfi.TEXT -> "txt"
-											uniffi.paperback.ExportFormatFfi.HTML -> "html"
-											uniffi.paperback.ExportFormatFfi.MARKDOWN -> "md"
+											uniffi.paperback.ExportFormat.TEXT -> "txt"
+											uniffi.paperback.ExportFormat.HTML -> "html"
+											uniffi.paperback.ExportFormat.MARKDOWN -> "md"
 										}
 										val baseName = docState.fileName.substringBeforeLast(".")
 										exportDocumentLauncher.launch("$baseName.$extension")
