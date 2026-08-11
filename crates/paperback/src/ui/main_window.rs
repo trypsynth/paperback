@@ -708,27 +708,19 @@ impl MainWindow {
 						(current_line, max_lines)
 					};
 					if let Some(line) = dialogs::show_go_to_line_dialog(&frame_copy, current_line, max_lines) {
-						let (history, history_index, path_str) = {
+						let update = {
 							let mut dm_guard = dm.lock().unwrap();
-							let (history, history_index, path_str) = {
+							let update = {
 								let Some(tab) = dm_guard.active_tab_mut() else {
 									return;
 								};
 								let target_pos = tab.session.position_from_line(i64::from(line));
-								tab.text_ctrl.set_focus();
-								tab.text_ctrl.set_insertion_point(target_pos);
-								tab.text_ctrl.show_position(target_pos);
-								tab.session.check_and_record_history(target_pos);
-								let (history, history_index) = tab.session.get_history();
-								let history = history.to_vec();
-								let path_str = tab.file_path.to_string_lossy().to_string();
-								(history, history_index, path_str)
+								navigation::move_to_offset_and_record_history(tab, target_pos)
 							};
 							drop(dm_guard);
-							(history, history_index, path_str)
+							update
 						};
-						let cfg = config.lock().unwrap();
-						cfg.set_navigation_history(&path_str, &history, history_index);
+						navigation::persist_navigation_history(&config, Some(&update));
 					}
 				}
 				menu_ids::GO_TO_PAGE => {
@@ -753,27 +745,19 @@ impl MainWindow {
 						(current_page, max_page)
 					};
 					if let Some(page) = dialogs::show_go_to_page_dialog(&frame_copy, current_page, max_page) {
-						let (history, history_index, path_str) = {
+						let update = {
 							let mut dm_guard = dm.lock().unwrap();
-							let (history, history_index, path_str) = {
+							let update = {
 								let Some(tab) = dm_guard.active_tab_mut() else {
 									return;
 								};
 								let target_pos = tab.session.page_offset(page);
-								tab.text_ctrl.set_focus();
-								tab.text_ctrl.set_insertion_point(target_pos);
-								tab.text_ctrl.show_position(target_pos);
-								tab.session.check_and_record_history(target_pos);
-								let (history, history_index) = tab.session.get_history();
-								let history = history.to_vec();
-								let path_str = tab.file_path.to_string_lossy().to_string();
-								(history, history_index, path_str)
+								navigation::move_to_offset_and_record_history(tab, target_pos)
 							};
 							drop(dm_guard);
-							(history, history_index, path_str)
+							update
 						};
-						let cfg = config.lock().unwrap();
-						cfg.set_navigation_history(&path_str, &history, history_index);
+						navigation::persist_navigation_history(&config, Some(&update));
 					}
 				}
 				menu_ids::GO_TO_PERCENT => {
@@ -791,27 +775,19 @@ impl MainWindow {
 						current_percent
 					};
 					if let Some(percent) = dialogs::show_go_to_percent_dialog(&frame_copy, current_percent) {
-						let (history, history_index, path_str) = {
+						let update = {
 							let mut dm_guard = dm.lock().unwrap();
-							let (history, history_index, path_str) = {
+							let update = {
 								let Some(tab) = dm_guard.active_tab_mut() else {
 									return;
 								};
 								let target_pos = tab.session.position_from_percent(percent);
-								tab.text_ctrl.set_focus();
-								tab.text_ctrl.set_insertion_point(target_pos);
-								tab.text_ctrl.show_position(target_pos);
-								tab.session.check_and_record_history(target_pos);
-								let (history, history_index) = tab.session.get_history();
-								let history = history.to_vec();
-								let path_str = tab.file_path.to_string_lossy().to_string();
-								(history, history_index, path_str)
+								navigation::move_to_offset_and_record_history(tab, target_pos)
 							};
 							drop(dm_guard);
-							(history, history_index, path_str)
+							update
 						};
-						let cfg = config.lock().unwrap();
-						cfg.set_navigation_history(&path_str, &history, history_index);
+						navigation::persist_navigation_history(&config, Some(&update));
 					}
 				}
 				menu_ids::GO_BACK => {
@@ -1370,14 +1346,8 @@ impl MainWindow {
 							toc_items,
 							i32::try_from(current_toc_offset).unwrap_or(i32::MAX),
 						) {
-							tab.text_ctrl.set_focus();
-							tab.text_ctrl.set_insertion_point(i64::from(offset));
-							tab.text_ctrl.show_position(i64::from(offset));
-							tab.session.check_and_record_history(i64::from(offset));
-							let (history, history_index) = tab.session.get_history();
-							let path_str = tab.file_path.to_string_lossy();
-							let cfg = config.lock().unwrap();
-							cfg.set_navigation_history(&path_str, history, history_index);
+							let update = navigation::move_to_offset_and_record_history(tab, i64::from(offset));
+							navigation::persist_navigation_history(&config, Some(&update));
 						}
 					}
 				}
@@ -1386,14 +1356,8 @@ impl MainWindow {
 					if let Some(tab) = dm_guard.active_tab_mut() {
 						let current_pos = tab.text_ctrl.get_insertion_point();
 						if let Some(offset) = dialogs::show_elements_dialog(&frame_copy, &tab.session, current_pos) {
-							tab.text_ctrl.set_focus();
-							tab.text_ctrl.set_insertion_point(offset);
-							tab.text_ctrl.show_position(offset);
-							tab.session.check_and_record_history(offset);
-							let (history, history_index) = tab.session.get_history();
-							let path_str = tab.file_path.to_string_lossy();
-							let cfg = config.lock().unwrap();
-							cfg.set_navigation_history(&path_str, history, history_index);
+							let update = navigation::move_to_offset_and_record_history(tab, offset);
+							navigation::persist_navigation_history(&config, Some(&update));
 						}
 					}
 				}

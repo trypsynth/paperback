@@ -4,7 +4,60 @@ use paperback_core::{config::ConfigManager, reader_core, session::NavigationResu
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{dialogs, document_manager::DocumentManager};
+use super::{
+	dialogs,
+	document_manager::{DocumentManager, DocumentTab},
+};
+
+/// `(file_path, history_positions, history_index)` snapshot to persist via
+/// [`persist_navigation_history`]. Kept as an owned tuple (rather than borrowing
+/// from the tab) so it can outlive the `DocumentManager` lock: callers build it
+/// while a tab is borrowed, drop the lock, then persist it against `config`.
+type HistoryUpdate = (String, Vec<i64>, usize);
+
+/// Snapshots `tab`'s current position history as a [`HistoryUpdate`], if `tab.track`
+/// is set. Use this when the caller has already updated the history itself (e.g. via
+/// `history_go_forward`/`history_go_back`, which navigate *within* existing history
+/// rather than recording a new entry) — for the common "record a new position, then
+/// snapshot" case, use [`record_history`] or [`move_to_offset_and_record_history`]
+/// instead.
+fn tracked_history_update(tab: &DocumentTab) -> Option<HistoryUpdate> {
+	if !tab.track {
+		return None;
+	}
+	let (history, history_index) = tab.session.get_history();
+	Some((tab.file_path.to_string_lossy().to_string(), history.to_vec(), history_index))
+}
+
+/// Records `offset` as a new entry in `tab`'s position history and returns the
+/// resulting snapshot unconditionally. Callers that should only persist it when
+/// `tab.track` is set (most callers) should gate with `tab.track.then_some(update)`.
+fn record_history(tab: &mut DocumentTab, offset: i64) -> HistoryUpdate {
+	tab.session.check_and_record_history(offset);
+	let (history, history_index) = tab.session.get_history();
+	(tab.file_path.to_string_lossy().to_string(), history.to_vec(), history_index)
+}
+
+/// Moves the caret to `offset`, focuses the document, shows the position, and
+/// records the jump in the session's position history. Returns the resulting
+/// history snapshot unconditionally — gate on `tab.track` at the call site if the
+/// update should only be persisted when history tracking is enabled for this tab.
+pub fn move_to_offset_and_record_history(tab: &mut DocumentTab, offset: i64) -> HistoryUpdate {
+	tab.text_ctrl.set_focus();
+	tab.text_ctrl.set_insertion_point(offset);
+	tab.text_ctrl.show_position(offset);
+	record_history(tab, offset)
+}
+
+/// Persists a [`HistoryUpdate`] built by [`move_to_offset_and_record_history`] (or
+/// similar) to `config`. No-op if `update` is `None`, so callers can pass the gated
+/// result directly.
+pub fn persist_navigation_history(config: &Rc<Mutex<ConfigManager>>, update: Option<&HistoryUpdate>) {
+	if let Some((path_str, history, history_index)) = update {
+		let cfg = config.lock().unwrap();
+		cfg.set_navigation_history(path_str, history, *history_index);
+	}
+}
 
 #[derive(Clone, Copy)]
 pub enum MarkerNavTarget {
@@ -185,7 +238,7 @@ fn format_nav_found_message(
 }
 
 fn apply_navigation_result(
-	tab: &super::document_manager::DocumentTab,
+	tab: &DocumentTab,
 	result: &NavigationResult,
 	target: MarkerNavTarget,
 	next: bool,
@@ -247,13 +300,7 @@ pub fn handle_history_navigation(
 			tab.text_ctrl.set_insertion_point(result.offset);
 			tab.text_ctrl.show_position(result.offset);
 			tab.session.set_stable_position(result.offset);
-			let history_update = if tab.track {
-				let (history, history_index) = tab.session.get_history();
-				let path_str = tab.file_path.to_string_lossy().to_string();
-				Some((path_str, history.to_vec(), history_index))
-			} else {
-				None
-			};
+			let history_update = tracked_history_update(tab);
 			(message, history_update)
 		} else {
 			// TRANSLATORS: Announced when there is no next/previous position in the caret position history
@@ -263,10 +310,7 @@ pub fn handle_history_navigation(
 	};
 	drop(dm);
 	live_region::announce(live_region_label, &message);
-	if let Some((path_str, history, history_index)) = history_update {
-		let cfg = config.lock().unwrap();
-		cfg.set_navigation_history(&path_str, &history, history_index);
-	}
+	persist_navigation_history(config, history_update.as_ref());
 }
 
 pub fn handle_marker_navigation(
@@ -297,23 +341,14 @@ pub fn handle_marker_navigation(
 		};
 		let target_offset = result.offset;
 		if apply_navigation_result(tab, &result, target, next, live_region_label) {
-			tab.session.check_and_record_history(target_offset);
-			if tab.track {
-				let (history, history_index) = tab.session.get_history();
-				let path_str = tab.file_path.to_string_lossy().to_string();
-				Some((path_str, history.to_vec(), history_index))
-			} else {
-				None
-			}
+			let update = record_history(tab, target_offset);
+			tab.track.then_some(update)
 		} else {
 			None
 		}
 	};
 	drop(dm);
-	if let Some((path_str, history, history_index)) = history_update {
-		let cfg = config.lock().unwrap();
-		cfg.set_navigation_history(&path_str, &history, history_index);
-	}
+	persist_navigation_history(config, history_update.as_ref());
 }
 
 /// Navigate relative to the container (list/table) the caret is currently inside: `to_end` jumps
@@ -350,24 +385,12 @@ pub fn handle_container_navigation(
 				line
 			};
 			live_region::announce(live_region_label, &message);
-			tab.text_ctrl.set_focus();
-			tab.text_ctrl.set_insertion_point(offset);
-			tab.text_ctrl.show_position(offset);
-			tab.session.check_and_record_history(offset);
-			if tab.track {
-				let (history, history_index) = tab.session.get_history();
-				let path_str = tab.file_path.to_string_lossy().to_string();
-				Some((path_str, history.to_vec(), history_index))
-			} else {
-				None
-			}
+			let update = move_to_offset_and_record_history(tab, offset);
+			tab.track.then_some(update)
 		}
 	};
 	drop(dm);
-	if let Some((path_str, history, history_index)) = history_update {
-		let cfg = config.lock().unwrap();
-		cfg.set_navigation_history(&path_str, &history, history_index);
-	}
+	persist_navigation_history(config, history_update.as_ref());
 }
 
 pub fn selected_range(text_ctrl: TextCtrl) -> (i64, i64) {
@@ -411,10 +434,7 @@ pub fn handle_bookmark_navigation(
 			(result, has_items)
 		};
 		if result.found {
-			tab.text_ctrl.set_focus();
-			tab.text_ctrl.set_insertion_point(result.offset);
-			tab.text_ctrl.show_position(result.offset);
-			tab.session.check_and_record_history(result.offset);
+			let update = move_to_offset_and_record_history(tab, result.offset);
 			if config.lock().unwrap().get_app_bool("bookmark_sounds", true) {
 				super::sounds::play_bookmark_sound(!result.marker_text.is_empty());
 			}
@@ -434,12 +454,7 @@ pub fn handle_bookmark_navigation(
 				1,
 			);
 			let message = format!("{wrap_prefix}{bookmark_text}");
-			let history_update = if tab.track {
-				let (history, history_index) = tab.session.get_history();
-				Some((path_str, history.to_vec(), history_index))
-			} else {
-				None
-			};
+			let history_update = tab.track.then_some(update);
 			(message, history_update)
 		} else {
 			let message = if !has_items {
@@ -460,10 +475,7 @@ pub fn handle_bookmark_navigation(
 	};
 	drop(dm);
 	live_region::announce(live_region_label, &message);
-	if let Some((path_str, history, history_index)) = history_update {
-		let cfg = config.lock().unwrap();
-		cfg.set_navigation_history(&path_str, &history, history_index);
-	}
+	persist_navigation_history(config, history_update.as_ref());
 }
 
 pub fn handle_bookmark_dialog(
@@ -483,10 +495,7 @@ pub fn handle_bookmark_dialog(
 		let Some(selection) = selection else {
 			return;
 		};
-		tab.text_ctrl.set_focus();
-		tab.text_ctrl.set_insertion_point(selection.start);
-		tab.text_ctrl.show_position(selection.start);
-		tab.session.check_and_record_history(selection.start);
+		let update = move_to_offset_and_record_history(tab, selection.start);
 		let info = {
 			let cfg = config.lock().unwrap();
 			tab.session.bookmark_display_at_position(&cfg, selection.start)
@@ -502,21 +511,12 @@ pub fn handle_bookmark_dialog(
 			// TRANSLATORS: Fallback announcement when viewing a bookmark that has no note text or line snippet
 			t("Bookmark.")
 		};
-		let history_update = if tab.track {
-			let (history, history_index) = tab.session.get_history();
-			let path_str = tab.file_path.to_string_lossy().to_string();
-			Some((path_str, history.to_vec(), history_index))
-		} else {
-			None
-		};
+		let history_update = tab.track.then_some(update);
 		(message, history_update)
 	};
 	drop(dm);
 	live_region::announce(live_region_label, &message);
-	if let Some((path_str, history, history_index)) = history_update {
-		let cfg = config.lock().unwrap();
-		cfg.set_navigation_history(&path_str, &history, history_index);
-	}
+	persist_navigation_history(config, history_update.as_ref());
 }
 
 pub fn handle_toggle_bookmark(
