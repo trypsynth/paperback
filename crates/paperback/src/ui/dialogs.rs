@@ -52,6 +52,17 @@ pub(super) fn add_ok_cancel_footer(content_sizer: BoxSizer, ok_button: Button, c
 	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
 }
 
+/// Appends a right-aligned single-button row (e.g. "Close") to `content_sizer`: a
+/// stretch spacer then `button`, padded by [`DIALOG_PADDING`] on all sides. The
+/// single-button counterpart to [`add_ok_cancel_footer`], for dialogs (Document
+/// Info, View Note) that only need a dismiss action.
+pub(super) fn add_single_button_footer(content_sizer: BoxSizer, button: Button) {
+	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	button_sizer.add_stretch_spacer(1);
+	button_sizer.add(&button, 0, SizerFlag::All, DIALOG_PADDING);
+	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
+}
+
 mod about;
 pub use about::show_about_dialog;
 mod all_documents;
