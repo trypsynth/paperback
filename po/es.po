@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-10 19:58+0000\n"
+"POT-Creation-Date: 2026-08-11 19:57+0000\n"
 "PO-Revision-Date: 2026-02-28 00:00-0700\n"
 "Last-Translator: Quin Gillespie <trypsynth@gmail.com>\n"
 "Language-Team: Español <es@example.com>\n"
@@ -837,6 +837,14 @@ msgstr "Paperback - {}"
 msgid "{} chars"
 msgstr "{} caracteres"
 
+#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+msgid "document"
+msgstr "documento"
+
+#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
+msgid "Failed to export document."
+msgstr "No se pudo exportar el documento."
+
 #. TRANSLATORS: Title of the file picker dialog shown when opening a document
 msgid "Open Document"
 msgstr "Abrir documento"
@@ -854,10 +862,6 @@ msgstr "Ajustar a la línea activado."
 msgid "Word wrap off."
 msgstr "Desactivar el ajuste de línea."
 
-#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-msgid "document"
-msgstr "documento"
-
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgstr "Archivos de texto (*.txt)|*.txt|Todos los archivos (*.*)|*.*"
@@ -865,10 +869,6 @@ msgstr "Archivos de texto (*.txt)|*.txt|Todos los archivos (*.*)|*.*"
 #. TRANSLATORS: Title of the file save dialog when exporting a document to plain text
 msgid "Export document to plain text"
 msgstr "Exportar documento a texto plano"
-
-#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
-msgid "Failed to export document."
-msgstr "No se pudo exportar el documento."
 
 #. TRANSLATORS: File filter shown in the "Export to HTML" save dialog
 #, fuzzy
@@ -2297,7 +2297,9 @@ msgstr "Error de actualización"
 msgid ""
 "Update downloaded to: %s\n"
 "Please install it manually."
-msgstr "La actualización se ha descargado en:%s\n. Instálala manualmente."
+msgstr ""
+"La actualización se ha descargado en:%s\n"
+". Instálala manualmente."
 
 #, fuzzy
 msgid "Update Ready"

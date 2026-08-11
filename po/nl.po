@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-10 19:58+0000\n"
+"POT-Creation-Date: 2026-08-11 19:57+0000\n"
 "PO-Revision-Date: 2026-06-08 22:23+0200\n"
 "Last-Translator: Leonard de Ruijter <alderuijter@gmail.com>\n"
 "Language-Team: Leonard de Ruijter <alderuijter@gmail.com>\n"
@@ -779,6 +779,14 @@ msgstr "Paperback - {}"
 msgid "{} chars"
 msgstr "{} tekens"
 
+#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+msgid "document"
+msgstr "document"
+
+#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
+msgid "Failed to export document."
+msgstr "Document exporteren mislukt."
+
 #. TRANSLATORS: Title of the file picker dialog shown when opening a document
 msgid "Open Document"
 msgstr "Document openen"
@@ -794,10 +802,6 @@ msgstr "Automatische terugloop aan."
 msgid "Word wrap off."
 msgstr "Automatische terugloop uit."
 
-#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-msgid "document"
-msgstr "document"
-
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgstr "Platte-tekstbestanden (*.txt)|*.txt|Alle bestanden (*.*)|*.*"
@@ -805,10 +809,6 @@ msgstr "Platte-tekstbestanden (*.txt)|*.txt|Alle bestanden (*.*)|*.*"
 #. TRANSLATORS: Title of the file save dialog when exporting a document to plain text
 msgid "Export document to plain text"
 msgstr "Document exporteren naar platte tekst"
-
-#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
-msgid "Failed to export document."
-msgstr "Document exporteren mislukt."
 
 #. TRANSLATORS: File filter shown in the "Export to HTML" save dialog
 msgid "HTML files (*.html)|*.html|All files (*.*)|*.*"

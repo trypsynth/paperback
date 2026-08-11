@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-10 19:58+0000\n"
+"POT-Creation-Date: 2026-08-11 19:57+0000\n"
 "PO-Revision-Date: 2026-06-25 21:58+0900\n"
 "Last-Translator: Kazto Kitabatake <contact@kitabatake1013.jp>\n"
 "Language-Team: \n"
@@ -791,6 +791,14 @@ msgstr "Paperback - {}"
 msgid "{} chars"
 msgstr "{}文字"
 
+#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+msgid "document"
+msgstr "文書"
+
+#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
+msgid "Failed to export document."
+msgstr "文書のエクスポートに失敗しました。"
+
 #. TRANSLATORS: Title of the file picker dialog shown when opening a document
 msgid "Open Document"
 msgstr "文書を開く"
@@ -808,10 +816,6 @@ msgstr "行末自動改行を有効にする。"
 msgid "Word wrap off."
 msgstr "行末自動改行をオフにする。"
 
-#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-msgid "document"
-msgstr "文書"
-
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgstr "プレーンテキストファイル(*.txt)|*.txt|すべてのファイル(*.*)|*.*"
@@ -819,10 +823,6 @@ msgstr "プレーンテキストファイル(*.txt)|*.txt|すべてのファイ�
 #. TRANSLATORS: Title of the file save dialog when exporting a document to plain text
 msgid "Export document to plain text"
 msgstr "文書をプレーンテキストにエクスポート"
-
-#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
-msgid "Failed to export document."
-msgstr "文書のエクスポートに失敗しました。"
 
 #. TRANSLATORS: File filter shown in the "Export to HTML" save dialog
 msgid "HTML files (*.html)|*.html|All files (*.*)|*.*"

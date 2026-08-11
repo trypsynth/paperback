@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-10 19:58+0000\n"
+"POT-Creation-Date: 2026-08-11 19:57+0000\n"
 "PO-Revision-Date: 2026-06-12 00:53+0200\n"
 "Last-Translator: 4Sense Gaming <lukas@4sensegaming.cz>\n"
 "Language-Team: Lukáš Hosnedl <lukas@4sensegaming.cz>\n"
@@ -783,6 +783,14 @@ msgstr "Paperback - {}"
 msgid "{} chars"
 msgstr "{} znaků"
 
+#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+msgid "document"
+msgstr "dokument"
+
+#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
+msgid "Failed to export document."
+msgstr "Export dokumentu selhal."
+
 #. TRANSLATORS: Title of the file picker dialog shown when opening a document
 msgid "Open Document"
 msgstr "Otevřít dokument"
@@ -800,10 +808,6 @@ msgstr "Zapnuto zalomení řádků."
 msgid "Word wrap off."
 msgstr "Zakázat zalomení textu."
 
-#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-msgid "document"
-msgstr "dokument"
-
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgstr "Soubory v prostém textu (*.txt)|*.txt|Všechny soubory (*.*)|*.*"
@@ -811,10 +815,6 @@ msgstr "Soubory v prostém textu (*.txt)|*.txt|Všechny soubory (*.*)|*.*"
 #. TRANSLATORS: Title of the file save dialog when exporting a document to plain text
 msgid "Export document to plain text"
 msgstr "Exportovat dokument do prostého textu"
-
-#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
-msgid "Failed to export document."
-msgstr "Export dokumentu selhal."
 
 #. TRANSLATORS: File filter shown in the "Export to HTML" save dialog
 msgid "HTML files (*.html)|*.html|All files (*.*)|*.*"

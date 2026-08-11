@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-10 19:58+0000\n"
+"POT-Creation-Date: 2026-08-11 19:57+0000\n"
 "PO-Revision-Date: 2026-03-22 21:37+0800\n"
 "Last-Translator: Yongquan Yang <qt06.com@gmail.com>\n"
 "Language-Team: \n"
@@ -831,6 +831,14 @@ msgstr "Paperback - {}"
 msgid "{} chars"
 msgstr "{} 个字符"
 
+#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+msgid "document"
+msgstr "文档"
+
+#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
+msgid "Failed to export document."
+msgstr "导出文档失败。"
+
 #. TRANSLATORS: Title of the file picker dialog shown when opening a document
 msgid "Open Document"
 msgstr "打开文档"
@@ -848,10 +856,6 @@ msgstr "启用自动换行。"
 msgid "Word wrap off."
 msgstr "关闭自动换行。"
 
-#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-msgid "document"
-msgstr "文档"
-
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgstr "纯文本文件 (*.txt)|*.txt|所有文件 (*.*)|*.*"
@@ -859,10 +863,6 @@ msgstr "纯文本文件 (*.txt)|*.txt|所有文件 (*.*)|*.*"
 #. TRANSLATORS: Title of the file save dialog when exporting a document to plain text
 msgid "Export document to plain text"
 msgstr "将文档导出为纯文本"
-
-#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
-msgid "Failed to export document."
-msgstr "导出文档失败。"
 
 #. TRANSLATORS: File filter shown in the "Export to HTML" save dialog
 #, fuzzy
@@ -2272,7 +2272,9 @@ msgstr "更新失败"
 msgid ""
 "Update downloaded to: %s\n"
 "Please install it manually."
-msgstr "更新已下载至：%s\n请手动安装。"
+msgstr ""
+"更新已下载至：%s\n"
+"请手动安装。"
 
 #, fuzzy
 msgid "Update Ready"

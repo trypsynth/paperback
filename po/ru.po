@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-10 19:58+0000\n"
+"POT-Creation-Date: 2026-08-11 19:57+0000\n"
 "PO-Revision-Date: 2025-12-04 08:13+0300\n"
 "Last-Translator: <gulmagomedovruslan77@gmail.com>\n"
 "Language-Team: Russian\n"
@@ -793,6 +793,14 @@ msgstr "Paperback - {}"
 msgid "{} chars"
 msgstr "Символы"
 
+#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+msgid "document"
+msgstr "Документы"
+
+#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
+msgid "Failed to export document."
+msgstr "Не удалось экспортировать документ."
+
 #. TRANSLATORS: Title of the file picker dialog shown when opening a document
 msgid "Open Document"
 msgstr "Открыть документ"
@@ -810,10 +818,6 @@ msgstr "Включить перенос слов."
 msgid "Word wrap off."
 msgstr "Перенос слов отключен."
 
-#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-msgid "document"
-msgstr "Документы"
-
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgstr "Текстовые файлы (*.txt)|*.txt|Все файлы (*.*)|*.*"
@@ -821,10 +825,6 @@ msgstr "Текстовые файлы (*.txt)|*.txt|Все файлы (*.*)|*.*"
 #. TRANSLATORS: Title of the file save dialog when exporting a document to plain text
 msgid "Export document to plain text"
 msgstr "Экспорт документа в в обычный текст...\tCtrl+E"
-
-#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
-msgid "Failed to export document."
-msgstr "Не удалось экспортировать документ."
 
 #. TRANSLATORS: File filter shown in the "Export to HTML" save dialog
 #, fuzzy
@@ -2234,7 +2234,9 @@ msgstr "Ошибка обновления"
 msgid ""
 "Update downloaded to: %s\n"
 "Please install it manually."
-msgstr "Обновление загружено по адресу:%s\n. Пожалуйста, установите его вручную."
+msgstr ""
+"Обновление загружено по адресу:%s\n"
+". Пожалуйста, установите его вручную."
 
 #, fuzzy
 msgid "Update Ready"
