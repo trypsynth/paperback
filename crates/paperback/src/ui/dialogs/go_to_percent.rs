@@ -1,7 +1,9 @@
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{DIALOG_PADDING, KEY_NUMPAD_ENTER, KEY_RETURN};
+use super::{
+	DIALOG_PADDING, KEY_NUMPAD_ENTER, KEY_RETURN, add_ok_cancel_footer, bind_enter_confirms, build_ok_cancel_buttons,
+};
 
 const WXK_END: i32 = 312;
 const WXK_HOME: i32 = 313;
@@ -36,11 +38,7 @@ pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32) -> Option
 	input_ctrl.on_value_changed(move |event| {
 		percent_slider_for_spin.set_value(event.get_value());
 	});
-	let dialog_for_enter = dialog;
-	input_ctrl.bind_internal(EventType::TEXT_ENTER, move |event| {
-		event.skip(false);
-		dialog_for_enter.end_modal(ID_OK);
-	});
+	bind_enter_confirms(dialog, input_ctrl);
 	let dialog_for_slider_enter = dialog;
 	percent_slider.bind_internal(EventType::KEY_DOWN, move |event| {
 		let key = event.get_key_code().unwrap_or(0);
@@ -81,19 +79,10 @@ pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32) -> Option
 	content_sizer.add(&input_label, 0, SizerFlag::Left, 5);
 	content_sizer.add(&input_ctrl, 0, SizerFlag::Expand, 0);
 	// TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
-	let ok_button = Button::builder(&dialog).with_id(ID_OK).with_label(&t("Go")).build();
-	ok_button.set_default();
-	// TRANSLATORS: Label for the cancellation button
-	let cancel_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
-	dialog.set_escape_id(ID_CANCEL);
-	dialog.set_affirmative_id(ID_OK);
+	let (ok_button, cancel_button) = build_ok_cancel_buttons(dialog, &t("Go"));
 	let main_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	main_sizer.add_sizer(&content_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
-	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&ok_button, 0, SizerFlag::All, DIALOG_PADDING);
-	button_sizer.add(&cancel_button, 0, SizerFlag::All, DIALOG_PADDING);
-	main_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
+	add_ok_cancel_footer(main_sizer, ok_button, cancel_button);
 	dialog.set_sizer_and_fit(main_sizer, true);
 	dialog.centre();
 	percent_slider.set_focus();

@@ -4,16 +4,13 @@ use paperback_core::{config::ConfigManager, parser::build_file_filter_string, ty
 use patois::t;
 use wxdragon::prelude::*;
 
-const DIALOG_PADDING: i32 = 10;
+use super::{DIALOG_PADDING, KEY_DELETE, KEY_NUMPAD_DELETE, KEY_NUMPAD_ENTER, KEY_RETURN};
+
 const RECENT_DOCS_LIST_WIDTH: i32 = 800;
 const RECENT_DOCS_LIST_HEIGHT: i32 = 600;
 const RECENT_DOCS_FILENAME_WIDTH: i32 = 250;
 const RECENT_DOCS_STATUS_WIDTH: i32 = 100;
 const RECENT_DOCS_PATH_WIDTH: i32 = 450;
-const KEY_DELETE: i32 = 127;
-const KEY_NUMPAD_DELETE: i32 = 330;
-const KEY_RETURN: i32 = 13;
-const KEY_NUMPAD_ENTER: i32 = 370;
 
 pub struct AllDocumentsResult {
 	pub open: Option<String>,

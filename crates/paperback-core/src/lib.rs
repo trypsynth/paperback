@@ -11,11 +11,13 @@ pub mod util;
 pub mod version;
 
 pub use crate::{
+	document::MarkerType,
+	export::ExportFormat,
 	ffi_config::ConfigManagerFfi,
 	session::{
-		DocumentError, DocumentSession, DocumentStatsFfi, ExportFormatFfi, HeadingTreeFfi, HeadingTreeItemFfi,
-		LineMarker, LinkAction, LinkActivationResult, LinkListFfi, LinkListItemFfi, MarkerTypeFfi, SearchOptionsFfi,
-		SearchResultFfi, SegmentDirectionFfi, SegmentTypeFfi, StatusInfo, TextSegmentFfi, TocEntry,
+		DocumentError, DocumentSession, DocumentStatsFfi, HeadingTreeFfi, HeadingTreeItemFfi, LineMarker, LinkAction,
+		LinkActivationResult, LinkListFfi, LinkListItemFfi, SearchOptionsFfi, SearchResultFfi, SegmentDirectionFfi,
+		SegmentTypeFfi, StatusInfo, TextSegmentFfi, TocEntry,
 	},
 };
 

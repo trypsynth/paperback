@@ -10,7 +10,11 @@ use anyhow::{Context, Result};
 use roxmltree::{Document as XmlDoc, NodeType, ParsingOptions};
 use zip::ZipArchive;
 
-use crate::util::{text::url_decode, zip::read_zip_entry_by_name};
+use crate::util::{
+	html::{escape as escape_html, escape_attr},
+	text::url_decode,
+	zip::read_zip_entry_by_name,
+};
 
 /// Render an EPUB directly to HTML by stitching spine-item bodies.
 ///
@@ -205,21 +209,4 @@ fn normalize_epub_path(path: &str) -> String {
 
 fn path_to_id(path: &str) -> String {
 	path.chars().map(|c| if c.is_ascii_alphanumeric() || c == '-' { c } else { '-' }).collect()
-}
-
-fn escape_html(s: &str) -> String {
-	let mut out = String::with_capacity(s.len());
-	for ch in s.chars() {
-		match ch {
-			'&' => out.push_str("&amp;"),
-			'<' => out.push_str("&lt;"),
-			'>' => out.push_str("&gt;"),
-			c => out.push(c),
-		}
-	}
-	out
-}
-
-fn escape_attr(s: &str) -> String {
-	s.replace('&', "&amp;").replace('"', "&quot;")
 }

@@ -11,7 +11,7 @@ use patois::{t, ui::populate_language_choice};
 use wxdragon::accessible::AccRole;
 use wxdragon::prelude::*;
 
-use super::DIALOG_PADDING;
+use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
 use crate::{
 	config_ext::{UpdateChannel, get_update_channel},
 	translation_manager::TranslationManager,
@@ -26,8 +26,10 @@ pub struct OptionsDialogResult {
 	pub start_maximized: bool,
 	pub compact_go_menu: bool,
 	pub navigation_wrap: bool,
+	pub line_start_navigation: bool,
 	pub check_for_updates_on_startup: bool,
 	pub bookmark_sounds: bool,
+	pub auto_reload_documents: bool,
 	pub recent_documents_to_show: i32,
 	pub reading_speed_wpm: i32,
 	pub language: String,
@@ -51,8 +53,10 @@ struct OptionsDialogUi {
 	start_maximized_check: CheckBox,
 	compact_go_menu_check: CheckBox,
 	navigation_wrap_check: CheckBox,
+	line_start_nav_check: CheckBox,
 	check_for_updates_check: CheckBox,
 	bookmark_sounds_check: CheckBox,
+	auto_reload_check: CheckBox,
 	recent_docs_ctrl: SpinCtrl,
 	reading_speed_ctrl: SpinCtrl,
 	language_combo: Choice,
@@ -95,8 +99,10 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		start_maximized: ui.start_maximized_check.is_checked(),
 		compact_go_menu: ui.compact_go_menu_check.is_checked(),
 		navigation_wrap: ui.navigation_wrap_check.is_checked(),
+		line_start_navigation: ui.line_start_nav_check.is_checked(),
 		check_for_updates_on_startup: ui.check_for_updates_check.is_checked(),
 		bookmark_sounds: ui.bookmark_sounds_check.is_checked(),
+		auto_reload_documents: ui.auto_reload_check.is_checked(),
 		recent_documents_to_show: ui.recent_docs_ctrl.value(),
 		reading_speed_wpm: ui.reading_speed_ctrl.value(),
 		language,
@@ -137,22 +143,32 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let compact_go_menu_check = CheckBox::builder(&reading_panel).with_label(&t("Show compact &go menu")).build();
 	// TRANSLATORS: Option to wrap navigation around to the beginning/end when navigating elements
 	let navigation_wrap_check = CheckBox::builder(&reading_panel).with_label(&t("&Wrap navigation")).build();
+	let line_start_nav_check =
+		// TRANSLATORS: Option to move the caret to the start of the line when navigating up or down
+		CheckBox::builder(&reading_panel).with_label(&t("Move to &start of line")).build();
 	let bookmark_sounds_check =
 		// TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 		CheckBox::builder(&reading_panel).with_label(&t("Play &sounds on bookmarks and notes")).build();
 	let check_for_updates_check =
 		// TRANSLATORS: Option to check for app updates automatically on startup
 		CheckBox::builder(&general_panel).with_label(&t("Check for &updates on startup")).build();
+	let auto_reload_check =
+		// TRANSLATORS: Option to automatically reload an open document when its file changes on disk
+		CheckBox::builder(&general_panel).with_label(&t("&Automatically reload changed documents")).build();
 	// TRANSLATORS: Button label to open the hotkey customization dialog
 	let hotkey_button = Button::builder(&general_panel).with_label(&t("Customize &Window Hotkey...")).build();
 	let option_padding = 5;
 	general_sizer.add(&restore_docs_check, 0, SizerFlag::All, option_padding);
+	general_sizer.add(&auto_reload_check, 0, SizerFlag::All, option_padding);
 	general_sizer.add(&start_maximized_check, 0, SizerFlag::All, option_padding);
 	#[cfg(not(target_os = "macos"))]
 	general_sizer.add(&minimize_to_tray_check, 0, SizerFlag::All, option_padding);
 	general_sizer.add(&check_for_updates_check, 0, SizerFlag::All, option_padding);
 	general_sizer.add(&hotkey_button, 0, SizerFlag::All, option_padding);
-	for check in [&navigation_wrap_check, &compact_go_menu_check, &bookmark_sounds_check] {
+	reading_sizer.add(&navigation_wrap_check, 0, SizerFlag::All, option_padding);
+	#[cfg(target_os = "windows")]
+	reading_sizer.add(&line_start_nav_check, 0, SizerFlag::All, option_padding);
+	for check in [&compact_go_menu_check, &bookmark_sounds_check] {
 		reading_sizer.add(check, 0, SizerFlag::All, option_padding);
 	}
 	let reading_speed_label =
@@ -343,7 +359,9 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	start_maximized_check.set_value(config.get_app_bool("start_maximized", false));
 	compact_go_menu_check.set_value(config.get_app_bool("compact_go_menu", true));
 	navigation_wrap_check.set_value(config.get_app_bool("navigation_wrap", false));
+	line_start_nav_check.set_value(config.get_app_bool("line_start_navigation", false));
 	bookmark_sounds_check.set_value(config.get_app_bool("bookmark_sounds", true));
+	auto_reload_check.set_value(config.get_app_bool("auto_reload_documents", true));
 	check_for_updates_check.set_value(config.get_app_bool("check_for_updates_on_startup", true));
 	recent_docs_ctrl.set_value(config.get_app_int("recent_documents_to_show", 25).clamp(0, max_recent_docs));
 	reading_speed_ctrl.set_value(config.get_app_int("reading_speed_wpm", 150).clamp(1, 2000));
@@ -432,10 +450,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		bg_label_reset.set_label(&color_description(-1));
 	});
 	// TRANSLATORS: Label for the confirmation button
-	let ok_button = Button::builder(&dialog_ref).with_id(ID_OK).with_label(&t("OK")).build();
-	// TRANSLATORS: Label for the cancellation button
-	let cancel_button = Button::builder(&dialog_ref).with_id(ID_CANCEL).with_label(&t("Cancel")).build();
-	ok_button.set_default();
+	let (ok_button, cancel_button) = build_ok_cancel_buttons(dialog_ref, &t("OK"));
 	OptionsDialogUi {
 		dialog: dialog_ref,
 		notebook,
@@ -446,8 +461,10 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		start_maximized_check,
 		compact_go_menu_check,
 		navigation_wrap_check,
+		line_start_nav_check,
 		check_for_updates_check,
 		bookmark_sounds_check,
+		auto_reload_check,
 		recent_docs_ctrl,
 		reading_speed_ctrl,
 		language_combo,
@@ -467,13 +484,9 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 }
 
 fn finalize_options_dialog_layout(ui: &OptionsDialogUi) {
-	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&ui.ok_button, 0, SizerFlag::All, DIALOG_PADDING);
-	button_sizer.add(&ui.cancel_button, 0, SizerFlag::All, DIALOG_PADDING);
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add(&ui.notebook, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
-	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
+	add_ok_cancel_footer(content_sizer, ui.ok_button, ui.cancel_button);
 	ui.dialog.set_sizer_and_fit(content_sizer, true);
 	ui.dialog.centre();
 }

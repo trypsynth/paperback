@@ -13,7 +13,7 @@ dictionary TocEntry {
 	i32 level;
 };
 
-enum MarkerTypeFfi {
+enum MarkerType {
 	"Heading1", "Heading2", "Heading3", "Heading4", "Heading5", "Heading6",
 	"PageBreak", "SectionBreak", "TocItem", "Link",
 	"List", "ListItem", "Table", "Separator", "Image", "Figure",
@@ -21,7 +21,7 @@ enum MarkerTypeFfi {
 };
 
 dictionary LineMarker {
-	MarkerTypeFfi mtype;
+	MarkerType mtype;
 	i64 position;
 	string text;
 	string reference;
@@ -136,11 +136,11 @@ interface DocumentSession {
 
 	SearchResultFfi search_ffi(string query, i64 start_position, SearchOptionsFfi options);
 
-	sequence<ExportFormatFfi> get_supported_export_formats_ffi();
-	string render_export_ffi(ExportFormatFfi format);
+	sequence<ExportFormat> get_supported_export_formats_ffi();
+	string render_export_ffi(ExportFormat format);
 };
 
-enum ExportFormatFfi {
+enum ExportFormat {
 	"Text",
 	"Html",
 	"Markdown"

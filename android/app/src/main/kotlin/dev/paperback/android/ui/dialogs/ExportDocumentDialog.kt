@@ -20,12 +20,12 @@ import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import dev.paperback.android.t
-import uniffi.paperback.ExportFormatFfi
+import uniffi.paperback.ExportFormat
 
 @Composable
 fun ExportDocumentDialog(
-	supportedFormats: List<ExportFormatFfi>,
-	onFormatSelected: (ExportFormatFfi) -> Unit,
+	supportedFormats: List<ExportFormat>,
+	onFormatSelected: (ExportFormat) -> Unit,
 	onDismiss: () -> Unit
 ) {
 	AlertDialog(
@@ -40,9 +40,9 @@ fun ExportDocumentDialog(
 				)
 				supportedFormats.forEachIndexed { index, format ->
 					val (label, icon) = when (format) {
-						ExportFormatFfi.TEXT -> t("Plain Text (.txt)") to Icons.Filled.Description
-						ExportFormatFfi.HTML -> t("HTML (.html)") to Icons.Filled.Code
-						ExportFormatFfi.MARKDOWN -> t("Markdown (.md)") to Icons.AutoMirrored.Filled.Article
+						ExportFormat.TEXT -> t("Plain Text (.txt)") to Icons.Filled.Description
+						ExportFormat.HTML -> t("HTML (.html)") to Icons.Filled.Code
+						ExportFormat.MARKDOWN -> t("Markdown (.md)") to Icons.AutoMirrored.Filled.Article
 					}
 					ListItem(
 						headlineContent = { Text(label) },

@@ -30,6 +30,7 @@ import uniffi.paperback.SegmentDirectionFfi
 import uniffi.paperback.SegmentTypeFfi
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import java.util.Locale
 import java.util.UUID
 
@@ -826,7 +827,7 @@ class MainScreenViewModel(
 	fun exportDocumentToUri(
 		context: Context,
 		destUri: Uri,
-		format: uniffi.paperback.ExportFormatFfi
+		format: uniffi.paperback.ExportFormat
 	): Boolean {
 		val state = uiState.value as? MainScreenUiState.Success ?: return false
 		val tab = state.activeTab ?: return false
@@ -1033,14 +1034,19 @@ class MainScreenViewModel(
 
 	fun openHelpDocument() {
 		val lang = Locale.getDefault().language
-		val assetName = when (lang) {
-			"bs", "cs", "fi", "nl", "pl", "sr" -> "readmes/readme-$lang.html"
-			else -> "readmes/readme.html"
-		}
 		viewModelScope.launch(Dispatchers.IO) {
 			try {
+				// Try the localized doc first, falling back to English rather than checking
+				// a hardcoded language list against a hand-maintained set of asset names --
+				// that list drifts out of sync with which readme-$lang.html files actually
+				// exist in assets/readmes/.
+				val assetStream = try {
+					context.assets.open("readmes/readme-$lang.html")
+				} catch (_: IOException) {
+					context.assets.open("readmes/readme.html")
+				}
 				val tempFile = File(context.cacheDir, "readme-$lang.html")
-				context.assets.open(assetName).use { input ->
+				assetStream.use { input ->
 					FileOutputStream(tempFile).use { output ->
 						input.copyTo(output)
 					}

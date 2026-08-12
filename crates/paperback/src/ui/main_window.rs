@@ -25,7 +25,7 @@ use wxdragon::{prelude::*, timer::Timer};
 use super::tray;
 use super::{
 	dialogs,
-	document_manager::{DocumentManager, build_font_from_readability, display_title},
+	document_manager::{DocumentManager, DocumentTab, build_font_from_readability, display_title},
 	find::{self, FindDialogState},
 	help::{self, MAIN_WINDOW_PTR},
 	menu, menu_ids,
@@ -118,13 +118,46 @@ impl MainWindow {
 				live_region::announce(live_region_label, &display_title(tab));
 			}
 		});
+		let reload_guard = Rc::new(Cell::new(false));
 		let dm = Rc::clone(&doc_manager);
+		let page_reload_guard = Rc::clone(&reload_guard);
 		notebook.on_page_changed(move |_event| {
-			let Ok(dm_ref) = dm.try_lock() else {
+			let Ok(mut dm_ref) = dm.try_lock() else {
 				return;
 			};
+			if !page_reload_guard.get() {
+				page_reload_guard.set(true);
+				if let Some(index) = dm_ref.active_tab_index()
+					&& dm_ref.reload_tab_if_changed(index)
+				{
+					// TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
+					live_region::announce(live_region_label, &t("Document reloaded."));
+				}
+				page_reload_guard.set(false);
+			}
 			update_title_from_manager(&frame_copy, &dm_ref);
 			dm_ref.reset_sound_line();
+		});
+		let dm_for_activate = Rc::clone(&doc_manager);
+		let activate_reload_guard = Rc::clone(&reload_guard);
+		let frame_for_activate = frame;
+		frame.on_activate(move |event| {
+			event.skip(true);
+			if let WindowEventData::Activate(activate) = &event
+				&& activate.is_active()
+				&& !activate_reload_guard.get()
+				&& let Ok(mut dm_ref) = dm_for_activate.try_lock()
+				&& let Some(index) = dm_ref.active_tab_index()
+			{
+				activate_reload_guard.set(true);
+				if dm_ref.reload_tab_if_changed(index) {
+					update_title_from_manager(&frame_for_activate, &dm_ref);
+					dm_ref.update_status_bar();
+					// TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
+					live_region::announce(live_region_label, &t("Document reloaded."));
+				}
+				activate_reload_guard.set(false);
+			}
 		});
 		let dm = Rc::clone(&doc_manager);
 		let frame_copy = frame;
@@ -496,6 +529,43 @@ impl MainWindow {
 		});
 	}
 
+	/// Prompts for a save path and exports `tab`'s document as `format`, showing a
+	/// generic failure dialog on error. Shared by the `EXPORT_TO_PLAIN_TEXT` /
+	/// `EXPORT_TO_HTML` / `EXPORT_TO_MARKDOWN` menu handlers, which differ only in
+	/// `format`, the default file `extension`, the file-picker `wildcard`, and the
+	/// file-picker `dialog_title`.
+	fn export_document_as(
+		frame: &Frame,
+		tab: &DocumentTab,
+		format: paperback_core::export::ExportFormat,
+		extension: &str,
+		wildcard: &str,
+		dialog_title: &str,
+	) {
+		let default_name =
+			// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+			tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
+		let default_file = format!("{default_name}.{extension}");
+		let dialog = FileDialog::builder(frame)
+			.with_message(dialog_title)
+			.with_default_file(&default_file)
+			.with_wildcard(wildcard)
+			.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
+			.build();
+		if dialog.show_modal() == ID_OK
+			&& let Some(path) = dialog.get_path()
+			&& let Err(e) = tab.session.export_as(&path, format)
+		{
+			tracing::error!(path = %path, error = %e, format = ?format, "failed to export document");
+			let dialog =
+				// TRANSLATORS: Error dialog shown when exporting a document to another format fails
+				MessageDialog::builder(frame, &t("Failed to export document."), &t("Error"))
+					.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
+					.build();
+			dialog.show_modal();
+		}
+	}
+
 	fn handle_open(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) {
 		let wildcard = build_file_filter_string();
 		// TRANSLATORS: Title of the file picker dialog shown when opening a document
@@ -675,27 +745,19 @@ impl MainWindow {
 						(current_line, max_lines)
 					};
 					if let Some(line) = dialogs::show_go_to_line_dialog(&frame_copy, current_line, max_lines) {
-						let (history, history_index, path_str) = {
+						let update = {
 							let mut dm_guard = dm.lock().unwrap();
-							let (history, history_index, path_str) = {
+							let update = {
 								let Some(tab) = dm_guard.active_tab_mut() else {
 									return;
 								};
 								let target_pos = tab.session.position_from_line(i64::from(line));
-								tab.text_ctrl.set_focus();
-								tab.text_ctrl.set_insertion_point(target_pos);
-								tab.text_ctrl.show_position(target_pos);
-								tab.session.check_and_record_history(target_pos);
-								let (history, history_index) = tab.session.get_history();
-								let history = history.to_vec();
-								let path_str = tab.file_path.to_string_lossy().to_string();
-								(history, history_index, path_str)
+								navigation::move_to_offset_and_record_history(tab, target_pos)
 							};
 							drop(dm_guard);
-							(history, history_index, path_str)
+							update
 						};
-						let cfg = config.lock().unwrap();
-						cfg.set_navigation_history(&path_str, &history, history_index);
+						navigation::persist_navigation_history(&config, Some(&update));
 					}
 				}
 				menu_ids::GO_TO_PAGE => {
@@ -720,27 +782,19 @@ impl MainWindow {
 						(current_page, max_page)
 					};
 					if let Some(page) = dialogs::show_go_to_page_dialog(&frame_copy, current_page, max_page) {
-						let (history, history_index, path_str) = {
+						let update = {
 							let mut dm_guard = dm.lock().unwrap();
-							let (history, history_index, path_str) = {
+							let update = {
 								let Some(tab) = dm_guard.active_tab_mut() else {
 									return;
 								};
 								let target_pos = tab.session.page_offset(page);
-								tab.text_ctrl.set_focus();
-								tab.text_ctrl.set_insertion_point(target_pos);
-								tab.text_ctrl.show_position(target_pos);
-								tab.session.check_and_record_history(target_pos);
-								let (history, history_index) = tab.session.get_history();
-								let history = history.to_vec();
-								let path_str = tab.file_path.to_string_lossy().to_string();
-								(history, history_index, path_str)
+								navigation::move_to_offset_and_record_history(tab, target_pos)
 							};
 							drop(dm_guard);
-							(history, history_index, path_str)
+							update
 						};
-						let cfg = config.lock().unwrap();
-						cfg.set_navigation_history(&path_str, &history, history_index);
+						navigation::persist_navigation_history(&config, Some(&update));
 					}
 				}
 				menu_ids::GO_TO_PERCENT => {
@@ -758,27 +812,19 @@ impl MainWindow {
 						current_percent
 					};
 					if let Some(percent) = dialogs::show_go_to_percent_dialog(&frame_copy, current_percent) {
-						let (history, history_index, path_str) = {
+						let update = {
 							let mut dm_guard = dm.lock().unwrap();
-							let (history, history_index, path_str) = {
+							let update = {
 								let Some(tab) = dm_guard.active_tab_mut() else {
 									return;
 								};
 								let target_pos = tab.session.position_from_percent(percent);
-								tab.text_ctrl.set_focus();
-								tab.text_ctrl.set_insertion_point(target_pos);
-								tab.text_ctrl.show_position(target_pos);
-								tab.session.check_and_record_history(target_pos);
-								let (history, history_index) = tab.session.get_history();
-								let history = history.to_vec();
-								let path_str = tab.file_path.to_string_lossy().to_string();
-								(history, history_index, path_str)
+								navigation::move_to_offset_and_record_history(tab, target_pos)
 							};
 							drop(dm_guard);
-							(history, history_index, path_str)
+							update
 						};
-						let cfg = config.lock().unwrap();
-						cfg.set_navigation_history(&path_str, &history, history_index);
+						navigation::persist_navigation_history(&config, Some(&update));
 					}
 				}
 				menu_ids::GO_BACK => {
@@ -1109,34 +1155,16 @@ impl MainWindow {
 					let Some(tab) = dm_ref.active_tab() else {
 						return;
 					};
-					let default_name =
-						// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-						tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
-					let default_file = format!("{default_name}.txt");
-					// TRANSLATORS: File filter shown in the "Export to plain text" save dialog
-					let wildcard = t("Plain text files (*.txt)|*.txt|All files (*.*)|*.*");
-					let dialog = FileDialog::builder(&frame_copy)
+					Self::export_document_as(
+						&frame_copy,
+						tab,
+						paperback_core::export::ExportFormat::Text,
+						"txt",
+						// TRANSLATORS: File filter shown in the "Export to plain text" save dialog
+						&t("Plain text files (*.txt)|*.txt|All files (*.*)|*.*"),
 						// TRANSLATORS: Title of the file save dialog when exporting a document to plain text
-						.with_message(&t("Export document to plain text"))
-						.with_default_file(&default_file)
-						.with_wildcard(&wildcard)
-						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
-						.build();
-					if dialog.show_modal() == ID_OK
-						&& let Some(path) = dialog.get_path()
-						&& let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Text)
-					{
-						tracing::error!(path = %path, error = %e, "failed to export document as text");
-						let dialog =
-									// TRANSLATORS: Error dialog shown when exporting a document to another format fails
-									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
-										.with_style(
-											MessageDialogStyle::OK
-												| MessageDialogStyle::IconError | MessageDialogStyle::Centre,
-										)
-										.build();
-						dialog.show_modal();
-					}
+						&t("Export document to plain text"),
+					);
 				}
 				menu_ids::EXPORT_TO_HTML => {
 					let Ok(dm_ref) = dm.try_lock() else {
@@ -1145,34 +1173,16 @@ impl MainWindow {
 					let Some(tab) = dm_ref.active_tab() else {
 						return;
 					};
-					let default_name =
-						// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-						tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
-					let default_file = format!("{default_name}.html");
-					// TRANSLATORS: File filter shown in the "Export to HTML" save dialog
-					let wildcard = t("HTML files (*.html)|*.html|All files (*.*)|*.*");
-					let dialog = FileDialog::builder(&frame_copy)
+					Self::export_document_as(
+						&frame_copy,
+						tab,
+						paperback_core::export::ExportFormat::Html,
+						"html",
+						// TRANSLATORS: File filter shown in the "Export to HTML" save dialog
+						&t("HTML files (*.html)|*.html|All files (*.*)|*.*"),
 						// TRANSLATORS: Title of the file save dialog when exporting a document to HTML
-						.with_message(&t("Export document to HTML"))
-						.with_default_file(&default_file)
-						.with_wildcard(&wildcard)
-						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
-						.build();
-					if dialog.show_modal() == ID_OK
-						&& let Some(path) = dialog.get_path()
-						&& let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Html)
-					{
-						tracing::error!(path = %path, error = %e, "failed to export document as HTML");
-						let dialog =
-									// TRANSLATORS: Error dialog shown when exporting a document to another format fails
-									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
-										.with_style(
-											MessageDialogStyle::OK
-												| MessageDialogStyle::IconError | MessageDialogStyle::Centre,
-										)
-										.build();
-						dialog.show_modal();
-					}
+						&t("Export document to HTML"),
+					);
 				}
 				menu_ids::EXPORT_TO_MARKDOWN => {
 					let Ok(dm_ref) = dm.try_lock() else {
@@ -1181,34 +1191,16 @@ impl MainWindow {
 					let Some(tab) = dm_ref.active_tab() else {
 						return;
 					};
-					let default_name =
-						// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-						tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
-					let default_file = format!("{default_name}.md");
-					// TRANSLATORS: File filter shown in the "Export to Markdown" save dialog
-					let wildcard = t("Markdown files (*.md)|*.md|All files (*.*)|*.*");
-					let dialog = FileDialog::builder(&frame_copy)
+					Self::export_document_as(
+						&frame_copy,
+						tab,
+						paperback_core::export::ExportFormat::Markdown,
+						"md",
+						// TRANSLATORS: File filter shown in the "Export to Markdown" save dialog
+						&t("Markdown files (*.md)|*.md|All files (*.*)|*.*"),
 						// TRANSLATORS: Title of the file save dialog when exporting a document to Markdown
-						.with_message(&t("Export document to Markdown"))
-						.with_default_file(&default_file)
-						.with_wildcard(&wildcard)
-						.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
-						.build();
-					if dialog.show_modal() == ID_OK
-						&& let Some(path) = dialog.get_path()
-						&& let Err(e) = tab.session.export_as(&path, paperback_core::export::ExportFormat::Markdown)
-					{
-						tracing::error!(path = %path, error = %e, "failed to export document as Markdown");
-						let dialog =
-									// TRANSLATORS: Error dialog shown when exporting a document to another format fails
-									MessageDialog::builder(&frame_copy, &t("Failed to export document."), &t("Error"))
-										.with_style(
-											MessageDialogStyle::OK
-												| MessageDialogStyle::IconError | MessageDialogStyle::Centre,
-										)
-										.build();
-						dialog.show_modal();
-					}
+						&t("Export document to Markdown"),
+					);
 				}
 				menu_ids::EXPORT_DOCUMENT_DATA => {
 					let Ok(dm_ref) = dm.try_lock() else {
@@ -1337,14 +1329,8 @@ impl MainWindow {
 							toc_items,
 							i32::try_from(current_toc_offset).unwrap_or(i32::MAX),
 						) {
-							tab.text_ctrl.set_focus();
-							tab.text_ctrl.set_insertion_point(i64::from(offset));
-							tab.text_ctrl.show_position(i64::from(offset));
-							tab.session.check_and_record_history(i64::from(offset));
-							let (history, history_index) = tab.session.get_history();
-							let path_str = tab.file_path.to_string_lossy();
-							let cfg = config.lock().unwrap();
-							cfg.set_navigation_history(&path_str, history, history_index);
+							let update = navigation::move_to_offset_and_record_history(tab, i64::from(offset));
+							navigation::persist_navigation_history(&config, Some(&update));
 						}
 					}
 				}
@@ -1353,14 +1339,8 @@ impl MainWindow {
 					if let Some(tab) = dm_guard.active_tab_mut() {
 						let current_pos = tab.text_ctrl.get_insertion_point();
 						if let Some(offset) = dialogs::show_elements_dialog(&frame_copy, &tab.session, current_pos) {
-							tab.text_ctrl.set_focus();
-							tab.text_ctrl.set_insertion_point(offset);
-							tab.text_ctrl.show_position(offset);
-							tab.session.check_and_record_history(offset);
-							let (history, history_index) = tab.session.get_history();
-							let path_str = tab.file_path.to_string_lossy();
-							let cfg = config.lock().unwrap();
-							cfg.set_navigation_history(&path_str, history, history_index);
+							let update = navigation::move_to_offset_and_record_history(tab, offset);
+							navigation::persist_navigation_history(&config, Some(&update));
 						}
 					}
 				}
@@ -1513,8 +1493,10 @@ impl MainWindow {
 					cfg.set_app_bool("start_maximized", options.start_maximized);
 					cfg.set_app_bool("compact_go_menu", options.compact_go_menu);
 					cfg.set_app_bool("navigation_wrap", options.navigation_wrap);
+					cfg.set_app_bool("line_start_navigation", options.line_start_navigation);
 					cfg.set_app_bool("check_for_updates_on_startup", options.check_for_updates_on_startup);
 					cfg.set_app_bool("bookmark_sounds", options.bookmark_sounds);
+					cfg.set_app_bool("auto_reload_documents", options.auto_reload_documents);
 					cfg.set_app_int("recent_documents_to_show", options.recent_documents_to_show);
 					cfg.set_app_int("reading_speed_wpm", options.reading_speed_wpm);
 					cfg.set_app_string("language", &options.language);

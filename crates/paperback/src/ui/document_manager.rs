@@ -4,10 +4,11 @@ use std::collections::HashMap;
 use std::ptr::{addr_of_mut, copy_nonoverlapping};
 use std::{
 	cell::Cell,
+	fs,
 	path::{Path, PathBuf},
 	rc::Rc,
 	sync::{Mutex, atomic::Ordering},
-	time::Instant,
+	time::{Instant, SystemTime},
 };
 
 use paperback_core::{
@@ -35,6 +36,22 @@ pub struct DocumentTab {
 	pub session: DocumentSession,
 	pub file_path: PathBuf,
 	pub track: bool,
+	disk_fingerprint: Option<FileFingerprint>,
+}
+
+/// Change-detection stamp for an open document's file, compared on every frame activation and
+/// tab switch. Metadata-only on purpose: `config::compute_document_hash` would read up to 2 MiB
+/// from disk per check and still miss mid-file edits in files larger than that (it hashes only
+/// head, tail and size), whereas a single `fs::metadata` call catches any completed write.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct FileFingerprint {
+	modified: SystemTime,
+	len: u64,
+}
+
+fn read_fingerprint(path: &Path) -> Option<FileFingerprint> {
+	let meta = fs::metadata(path).ok()?;
+	Some(FileFingerprint { modified: meta.modified().ok()?, len: meta.len() })
 }
 
 pub fn title_or_filename(title: String, path: &Path) -> String {
@@ -56,6 +73,7 @@ const WXK_WINDOWS_MENU: i32 = 395;
 const WXK_UP: i32 = 315;
 #[cfg(target_os = "windows")]
 const WXK_DOWN: i32 = 317;
+const KEY_EQUALS: i32 = 61;
 
 pub struct DocumentManager {
 	frame: Frame,
@@ -234,7 +252,14 @@ impl DocumentManager {
 		let path_str = path.to_string_lossy();
 		let nav_history = config.get_navigation_history(&path_str);
 		session.set_history(&nav_history.positions, nav_history.index);
-		self.tabs.push(DocumentTab { panel, text_ctrl, session, file_path: path.to_path_buf(), track });
+		self.tabs.push(DocumentTab {
+			panel,
+			text_ctrl,
+			session,
+			file_path: path.to_path_buf(),
+			track,
+			disk_fingerprint: read_fingerprint(path),
+		});
 		if !password.is_empty() {
 			config.set_document_password(&path_str, password);
 		}
@@ -491,6 +516,15 @@ impl DocumentManager {
 		}
 	}
 
+	/// Announces the current caret position as a percentage of the document via the live region.
+	fn announce_current_percent(&self) {
+		let Some(tab) = self.active_tab() else {
+			return;
+		};
+		let percent = tab.session.get_status_info(tab.text_ctrl.get_insertion_point()).percentage;
+		live_region::announce(self.live_region_label, &format!("{percent}%"));
+	}
+
 	pub fn reset_sound_line(&self) {
 		self.last_sound_position.set(None);
 	}
@@ -598,7 +632,7 @@ impl DocumentManager {
 	pub fn apply_render_tables_inline(&mut self, render_tables_inline: bool) {
 		// Read readability settings and collect each tab's parse inputs (path, password, forced
 		// format) under a single config lock, so we don't re-lock per tab while mutating the tabs.
-		let (rf, line_spacing, bg_color, text_alignment, letter_spacing, paragraph_spacing, parse_inputs) = {
+		let (style, parse_inputs) = {
 			let cfg = self.config.lock().unwrap();
 			let parse_inputs: Vec<(String, String, String)> = self
 				.tabs
@@ -610,73 +644,106 @@ impl DocumentManager {
 					(path_str, password, forced_extension)
 				})
 				.collect();
-			(
-				cfg.get_readability_font(),
-				cfg.get_line_spacing(),
-				cfg.get_bg_color(),
-				cfg.get_text_alignment(),
-				cfg.get_letter_spacing(),
-				cfg.get_paragraph_spacing(),
-				parse_inputs,
-			)
+			(readability_style(&cfg), parse_inputs)
 		};
 		for (tab, (path_str, password, forced_extension)) in self.tabs.iter_mut().zip(parse_inputs) {
-			let current_pos = tab.text_ctrl.get_insertion_point();
-			let pos = usize::try_from(current_pos.max(0)).unwrap_or(0);
+			let _ = reparse_tab_in_place(tab, &path_str, &password, &forced_extension, render_tables_inline, &style);
+		}
+	}
 
-			// Find the nearest anchor at-or-before the cursor using the full id_positions key
-			// (unlike nearest_fragment_before, which strips the "path#" prefix for epub keys
-			// making the subsequent lookup fail). Record the within-block offset so the cursor
-			// lands at the same structural position after reparsing. Fallback: percentage-based
-			// position for formats with no anchors.
-			let stable_anchor = {
-				let id_positions = &tab.session.handle().document().id_positions;
-				id_positions
-					.iter()
-					.filter(|&(_, &off)| off <= pos)
-					.max_by_key(|&(_, &off)| off)
-					.map(|(key, &anchor_off)| (key.clone(), pos.saturating_sub(anchor_off)))
-			};
-			let fallback_percent = tab.session.get_status_info(current_pos).percentage;
-
-			let new_session = match DocumentSession::new(&path_str, &password, &forced_extension, render_tables_inline)
-			{
-				Ok(session) => session,
-				Err(err) => {
-					tracing::error!(path = %path_str, error = %err, "failed to re-parse document for render_tables_inline toggle");
-					continue;
+	/// Reloads the tab at `index` if its file changed on disk since it was last parsed. Returns
+	/// true only when the tab content was actually replaced. If the stored password no longer
+	/// decrypts the file, prompts for a new one and retries once. Uses `try_lock` on the config:
+	/// the caller may be a frame-activation handler running inside a nested modal event loop
+	/// whose opener already holds the lock.
+	pub fn reload_tab_if_changed(&mut self, index: usize) -> bool {
+		let Some(tab) = self.tabs.get(index) else {
+			return false;
+		};
+		if !tab.track {
+			return false;
+		}
+		let Some(current) = read_fingerprint(&tab.file_path) else {
+			return false;
+		};
+		if tab.disk_fingerprint == Some(current) {
+			return false;
+		}
+		let path_str = tab.file_path.to_string_lossy().to_string();
+		let Ok(cfg) = self.config.try_lock() else {
+			return false;
+		};
+		if !cfg.get_app_bool("auto_reload_documents", true) {
+			return false;
+		}
+		let password = cfg.get_document_password(&path_str);
+		let forced_extension = cfg.get_document_format(&path_str);
+		let render_tables_inline = cfg.get_app_bool("render_tables_inline", true);
+		let style = readability_style(&cfg);
+		drop(cfg);
+		let tab = &mut self.tabs[index];
+		let (positions, history_index) = tab.session.get_history();
+		let positions = positions.to_vec();
+		let reloaded =
+			match reparse_tab_in_place(tab, &path_str, &password, &forced_extension, render_tables_inline, &style) {
+				Ok(()) => true,
+				Err(err) if err.starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) => {
+					// Recorded before the prompt so a re-entrant call during its modal
+					// event loop sees the file as unchanged and skips a second prompt.
+					tab.disk_fingerprint = Some(current);
+					self.reprompt_password_and_reparse(
+						index,
+						&path_str,
+						&forced_extension,
+						render_tables_inline,
+						&style,
+					)
 				}
+				Err(_) => false,
 			};
-			tab.session = new_session;
-			let content = tab.session.content();
-			fill_text_ctrl_with_formatting(tab.text_ctrl, &tab.session, &content);
-			if let Some(font) = build_font_from_readability(&rf) {
-				tab.text_ctrl.set_font(&font);
+		let tab = &mut self.tabs[index];
+		if reloaded {
+			tab.session.set_history(&positions, history_index);
+			tracing::info!(path = %path_str, "document reloaded after on-disk change");
+		} else {
+			tab.disk_fingerprint = Some(current);
+		}
+		reloaded
+	}
+
+	/// Asks for a fresh password after a reload attempt failed to decrypt the file, then retries
+	/// the re-parse once. Dismissing the prompt keeps the old tab content without an error: the
+	/// reload was not user-initiated, so there is nothing to recover from. A wrong password shows
+	/// the same load-error dialog as the open flow.
+	fn reprompt_password_and_reparse(
+		&mut self,
+		index: usize,
+		path_str: &str,
+		forced_extension: &str,
+		render_tables_inline: bool,
+		style: &ReadabilityStyle,
+	) -> bool {
+		if let Ok(cfg) = self.config.try_lock() {
+			cfg.set_document_password(path_str, "");
+		}
+		let Some(password) = prompt_for_password(&self.notebook) else {
+			return false;
+		};
+		let tab = &mut self.tabs[index];
+		match reparse_tab_in_place(tab, path_str, &password, forced_extension, render_tables_inline, style) {
+			Ok(()) => {
+				if !password.is_empty()
+					&& let Ok(cfg) = self.config.try_lock()
+				{
+					cfg.set_document_password(path_str, &password);
+				}
+				true
 			}
-			apply_foreground_color_to_ctrl(tab.text_ctrl, rf.color);
-			apply_bg_color_to_ctrl(tab.text_ctrl, bg_color);
-			apply_readability_format_to_ctrl(
-				tab.text_ctrl,
-				line_spacing,
-				paragraph_spacing,
-				letter_spacing,
-				text_alignment,
-			);
-			tab.panel.layout();
-			let max_pos = tab.text_ctrl.get_last_position();
-
-			let restored_pos = if let Some((ref key, within)) = stable_anchor {
-				match tab.session.handle().document().id_positions.get(key) {
-					Some(&new_anchor_off) => i64::try_from(new_anchor_off + within).unwrap_or(0).clamp(0, max_pos),
-					None => tab.session.position_from_percent(fallback_percent).clamp(0, max_pos),
-				}
-			} else {
-				tab.session.position_from_percent(fallback_percent).clamp(0, max_pos)
-			};
-
-			tab.text_ctrl.set_insertion_point(restored_pos);
-			tab.text_ctrl.show_position(restored_pos);
-			tab.session.set_stable_position(restored_pos);
+			Err(err) => {
+				let message = build_document_load_error_message(&self.tabs[index].file_path, &err);
+				show_error_dialog(&self.notebook, &message, &t("Error"));
+				false
+			}
 		}
 	}
 
@@ -734,6 +801,7 @@ impl DocumentManager {
 			}
 		});
 		let text_ctrl_for_menu = text_ctrl;
+		let dm_for_announce = Rc::clone(self_rc);
 		#[cfg(target_os = "windows")]
 		let dm_for_nav = Rc::clone(self_rc);
 		#[cfg(target_os = "linux")]
@@ -749,6 +817,13 @@ impl DocumentManager {
 					show_reader_context_menu(text_ctrl_for_menu);
 					return;
 				}
+				if key == KEY_EQUALS && !kbd.shift_down() && !kbd.control_down() && !kbd.alt_down() {
+					kbd.event.skip(false);
+					if let Ok(dm) = dm_for_announce.try_lock() {
+						dm.announce_current_percent();
+					}
+					return;
+				}
 				#[cfg(target_os = "linux")]
 				if !kbd.control_down() && !kbd.alt_down() {
 					if let Some(&menu_id) = key_map.get(&(key, kbd.shift_down())) {
@@ -761,7 +836,13 @@ impl DocumentManager {
 				if (key == WXK_DOWN || key == WXK_UP) && !kbd.shift_down() && !kbd.control_down() {
 					let going_down = key == WXK_DOWN;
 					let nav_result = dm_for_nav.try_lock().ok().and_then(|dm| {
-						navigate_line_by_column(text_ctrl_for_menu, going_down, dm.preferred_column.get())
+						let start_of_line = dm.config.lock().unwrap().get_app_bool("line_start_navigation", false);
+						navigate_line_by_column(
+							text_ctrl_for_menu,
+							going_down,
+							dm.preferred_column.get(),
+							start_of_line,
+						)
 					});
 					if let Some((new_pos, new_col)) = nav_result {
 						kbd.event.skip(false);
@@ -792,11 +873,17 @@ impl DocumentManager {
 	}
 }
 
-/// Returns (`new_position`, `preferred_column`) for character-column-based vertical navigation.
-/// Uses wxdragon `PositionToXY`, `XYToPosition`, and `GetLineLength` so the cursor lands on the same
-/// character column (not pixel column) on the target visual line.
+/// Returns (`new_position`, `preferred_column`) for vertical navigation.
+/// With `start_of_line` set, the caret lands at the start of the target visual line. Otherwise it
+/// uses character-column-based navigation (`pref_col` or the current column), so the cursor lands on
+/// the same character column (not pixel column) on the target visual line.
 #[cfg(target_os = "windows")]
-fn navigate_line_by_column(text_ctrl: TextCtrl, going_down: bool, pref_col: Option<i64>) -> Option<(i64, i64)> {
+fn navigate_line_by_column(
+	text_ctrl: TextCtrl,
+	going_down: bool,
+	pref_col: Option<i64>,
+	start_of_line: bool,
+) -> Option<(i64, i64)> {
 	let current_pos = text_ctrl.get_insertion_point().max(0);
 	let (current_col, current_line) = text_ctrl.position_to_xy(current_pos)?;
 	let col = pref_col.unwrap_or(current_col);
@@ -807,6 +894,9 @@ fn navigate_line_by_column(text_ctrl: TextCtrl, going_down: bool, pref_col: Opti
 	let target_line_start = text_ctrl.xy_to_position(0, target_line);
 	if target_line_start < 0 {
 		return None;
+	}
+	if start_of_line {
+		return Some((target_line_start, 0));
 	}
 	let target_line_len = i64::from(text_ctrl.get_line_length(target_line));
 	let new_pos = target_line_start + col.min(target_line_len);
@@ -857,6 +947,96 @@ fn build_document_load_error_message(path: &Path, error: &str) -> String {
 
 fn fill_text_ctrl(text_ctrl: TextCtrl, content: &str) {
 	text_ctrl.set_value(content);
+}
+
+struct ReadabilityStyle {
+	rf: ReadabilityFont,
+	line_spacing: i32,
+	bg_color: i32,
+	text_alignment: i32,
+	letter_spacing: i32,
+	paragraph_spacing: i32,
+}
+
+fn readability_style(cfg: &ConfigManager) -> ReadabilityStyle {
+	ReadabilityStyle {
+		rf: cfg.get_readability_font(),
+		line_spacing: cfg.get_line_spacing(),
+		bg_color: cfg.get_bg_color(),
+		text_alignment: cfg.get_text_alignment(),
+		letter_spacing: cfg.get_letter_spacing(),
+		paragraph_spacing: cfg.get_paragraph_spacing(),
+	}
+}
+
+/// Builds a fresh session for `tab`'s file and refills its text control, restoring the reading
+/// position. Returns the parse error and leaves the tab unchanged if the re-parse fails.
+fn reparse_tab_in_place(
+	tab: &mut DocumentTab,
+	path_str: &str,
+	password: &str,
+	forced_extension: &str,
+	render_tables_inline: bool,
+	style: &ReadabilityStyle,
+) -> Result<(), String> {
+	let new_fingerprint = read_fingerprint(&tab.file_path);
+	let current_pos = tab.text_ctrl.get_insertion_point();
+	let pos = usize::try_from(current_pos.max(0)).unwrap_or(0);
+
+	// Find the nearest anchor at-or-before the cursor using the full id_positions key
+	// (unlike nearest_fragment_before, which strips the "path#" prefix for epub keys
+	// making the subsequent lookup fail). Record the within-block offset so the cursor
+	// lands at the same structural position after reparsing. Fallback: percentage-based
+	// position for formats with no anchors.
+	let stable_anchor = {
+		let id_positions = &tab.session.handle().document().id_positions;
+		id_positions
+			.iter()
+			.filter(|&(_, &off)| off <= pos)
+			.max_by_key(|&(_, &off)| off)
+			.map(|(key, &anchor_off)| (key.clone(), pos.saturating_sub(anchor_off)))
+	};
+	let fallback_percent = tab.session.get_status_info(current_pos).percentage;
+
+	let new_session = match DocumentSession::new(path_str, password, forced_extension, render_tables_inline) {
+		Ok(session) => session,
+		Err(err) => {
+			tracing::error!(path = %path_str, error = %err, "failed to re-parse document");
+			return Err(err);
+		}
+	};
+	tab.session = new_session;
+	let content = tab.session.content();
+	fill_text_ctrl_with_formatting(tab.text_ctrl, &tab.session, &content);
+	if let Some(font) = build_font_from_readability(&style.rf) {
+		tab.text_ctrl.set_font(&font);
+	}
+	apply_foreground_color_to_ctrl(tab.text_ctrl, style.rf.color);
+	apply_bg_color_to_ctrl(tab.text_ctrl, style.bg_color);
+	apply_readability_format_to_ctrl(
+		tab.text_ctrl,
+		style.line_spacing,
+		style.paragraph_spacing,
+		style.letter_spacing,
+		style.text_alignment,
+	);
+	tab.panel.layout();
+	let max_pos = tab.text_ctrl.get_last_position();
+
+	let restored_pos = if let Some((ref key, within)) = stable_anchor {
+		match tab.session.handle().document().id_positions.get(key) {
+			Some(&new_anchor_off) => i64::try_from(new_anchor_off + within).unwrap_or(0).clamp(0, max_pos),
+			None => tab.session.position_from_percent(fallback_percent).clamp(0, max_pos),
+		}
+	} else {
+		tab.session.position_from_percent(fallback_percent).clamp(0, max_pos)
+	};
+
+	tab.text_ctrl.set_insertion_point(restored_pos);
+	tab.text_ctrl.show_position(restored_pos);
+	tab.session.set_stable_position(restored_pos);
+	tab.disk_fingerprint = new_fingerprint;
+	Ok(())
 }
 
 /// Sets `content` on `text_ctrl` and applies its bold/italic/underline markers.
@@ -1207,7 +1387,7 @@ pub struct FormatSegment {
 /// of the naive O(n^2) "rescan every marker at every boundary" approach, which
 /// took several seconds on books with tens of thousands of formatting spans.
 pub fn merge_formatting_markers(markers: &[paperback_core::session::LineMarker]) -> Vec<FormatSegment> {
-	use paperback_core::session::MarkerTypeFfi;
+	use paperback_core::document::MarkerType;
 
 	#[derive(Clone, Copy)]
 	struct Event {
@@ -1222,9 +1402,9 @@ pub fn merge_formatting_markers(markers: &[paperback_core::session::LineMarker])
 			continue;
 		}
 		let style_idx = match m.mtype {
-			MarkerTypeFfi::Bold => 0,
-			MarkerTypeFfi::Italic => 1,
-			MarkerTypeFfi::Underline => 2,
+			MarkerType::Bold => 0,
+			MarkerType::Italic => 1,
+			MarkerType::Underline => 2,
 			_ => continue,
 		};
 		events.push(Event { position: m.position, delta: 1, style_idx });
@@ -1392,11 +1572,55 @@ fn parse_single_key_shortcut(label: &str) -> Option<(i32, bool)> {
 
 #[cfg(test)]
 mod tests {
-	use paperback_core::session::{LineMarker, MarkerTypeFfi};
+	use std::{env, fs, path::PathBuf, process};
 
-	use super::{FormatSegment, merge_formatting_markers};
+	use paperback_core::{document::MarkerType, session::LineMarker};
 
-	fn marker(mtype: MarkerTypeFfi, position: i64, length: i64) -> LineMarker {
+	use super::{FormatSegment, merge_formatting_markers, read_fingerprint};
+
+	struct TempFile {
+		path: PathBuf,
+	}
+
+	impl TempFile {
+		fn with_content(name: &str, content: &[u8]) -> Self {
+			let path = env::temp_dir().join(format!("paperback-fingerprint-{}-{name}", process::id()));
+			fs::write(&path, content).unwrap();
+			Self { path }
+		}
+	}
+
+	impl Drop for TempFile {
+		fn drop(&mut self) {
+			let _ = fs::remove_file(&self.path);
+		}
+	}
+
+	#[test]
+	fn fingerprint_of_missing_path_is_none() {
+		let path = env::temp_dir().join(format!("paperback-fingerprint-{}-does-not-exist", process::id()));
+		assert_eq!(read_fingerprint(&path), None);
+	}
+
+	#[test]
+	fn unchanged_file_keeps_the_same_fingerprint() {
+		let file = TempFile::with_content("unchanged", b"stable content");
+		let first = read_fingerprint(&file.path);
+		assert!(first.is_some());
+		assert_eq!(first, read_fingerprint(&file.path));
+	}
+
+	#[test]
+	fn rewriting_with_a_different_length_changes_the_fingerprint() {
+		let file = TempFile::with_content("grows", b"short");
+		let before = read_fingerprint(&file.path);
+		fs::write(&file.path, b"content that is clearly longer").unwrap();
+		let after = read_fingerprint(&file.path);
+		assert!(before.is_some() && after.is_some());
+		assert_ne!(before, after);
+	}
+
+	fn marker(mtype: MarkerType, position: i64, length: i64) -> LineMarker {
 		LineMarker { mtype, position, text: String::new(), reference: String::new(), level: 0, length }
 	}
 
@@ -1407,19 +1631,19 @@ mod tests {
 
 	#[test]
 	fn zero_length_markers_are_ignored() {
-		let markers = [marker(MarkerTypeFfi::Bold, 5, 0)];
+		let markers = [marker(MarkerType::Bold, 5, 0)];
 		assert_eq!(merge_formatting_markers(&markers), Vec::new());
 	}
 
 	#[test]
 	fn non_format_markers_are_ignored() {
-		let markers = [marker(MarkerTypeFfi::Heading1, 0, 10), marker(MarkerTypeFfi::Link, 2, 3)];
+		let markers = [marker(MarkerType::Heading1, 0, 10), marker(MarkerType::Link, 2, 3)];
 		assert_eq!(merge_formatting_markers(&markers), Vec::new());
 	}
 
 	#[test]
 	fn single_bold_marker_produces_one_segment() {
-		let markers = [marker(MarkerTypeFfi::Bold, 0, 4)];
+		let markers = [marker(MarkerType::Bold, 0, 4)];
 		assert_eq!(
 			merge_formatting_markers(&markers),
 			vec![FormatSegment { start: 0, end: 4, bold: true, italic: false, underline: false }]
@@ -1429,7 +1653,7 @@ mod tests {
 	#[test]
 	fn overlapping_bold_and_italic_keep_both_on_the_intersection() {
 		// Bold over [0,10), italic over [4,7): the middle run must carry both.
-		let markers = [marker(MarkerTypeFfi::Bold, 0, 10), marker(MarkerTypeFfi::Italic, 4, 3)];
+		let markers = [marker(MarkerType::Bold, 0, 10), marker(MarkerType::Italic, 4, 3)];
 		assert_eq!(
 			merge_formatting_markers(&markers),
 			vec![
@@ -1442,7 +1666,7 @@ mod tests {
 
 	#[test]
 	fn adjacent_identical_segments_are_coalesced() {
-		let markers = [marker(MarkerTypeFfi::Bold, 0, 4), marker(MarkerTypeFfi::Bold, 4, 4)];
+		let markers = [marker(MarkerType::Bold, 0, 4), marker(MarkerType::Bold, 4, 4)];
 		assert_eq!(
 			merge_formatting_markers(&markers),
 			vec![FormatSegment { start: 0, end: 8, bold: true, italic: false, underline: false }]
@@ -1451,11 +1675,8 @@ mod tests {
 
 	#[test]
 	fn all_three_styles_can_stack() {
-		let markers = [
-			marker(MarkerTypeFfi::Bold, 0, 6),
-			marker(MarkerTypeFfi::Italic, 0, 6),
-			marker(MarkerTypeFfi::Underline, 0, 6),
-		];
+		let markers =
+			[marker(MarkerType::Bold, 0, 6), marker(MarkerType::Italic, 0, 6), marker(MarkerType::Underline, 0, 6)];
 		assert_eq!(
 			merge_formatting_markers(&markers),
 			vec![FormatSegment { start: 0, end: 6, bold: true, italic: true, underline: true }]

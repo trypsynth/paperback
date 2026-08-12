@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: paperback 0.8.5\n"
+"Project-Id-Version: paperback 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-24 10:48-0600\n"
+"POT-Creation-Date: 2026-08-11 20:06+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -229,10 +229,6 @@ msgstr ""
 msgid "OK"
 msgstr ""
 
-#. TRANSLATORS: Label for the cancellation button
-msgid "Cancel"
-msgstr ""
-
 #. TRANSLATORS: Title of the Go to Line dialog
 msgid "Go to Line"
 msgstr ""
@@ -324,12 +320,20 @@ msgstr ""
 msgid "&Wrap navigation"
 msgstr ""
 
+#. TRANSLATORS: Option to move the caret to the start of the line when navigating up or down
+msgid "Move to &start of line"
+msgstr ""
+
 #. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 msgid "Play &sounds on bookmarks and notes"
 msgstr ""
 
 #. TRANSLATORS: Option to check for app updates automatically on startup
 msgid "Check for &updates on startup"
+msgstr ""
+
+#. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
+msgid "&Automatically reload changed documents"
 msgstr ""
 
 #. TRANSLATORS: Button label to open the hotkey customization dialog
@@ -514,6 +518,10 @@ msgstr ""
 
 #. TRANSLATORS: Button label to clear the current hotkey selection
 msgid "Clear"
+msgstr ""
+
+#. TRANSLATORS: Label for the cancellation button
+msgid "Cancel"
 msgstr ""
 
 #. TRANSLATORS: Representation of the Spacebar key
@@ -746,6 +754,10 @@ msgstr ""
 msgid "Paperback"
 msgstr ""
 
+#. TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
+msgid "Document reloaded."
+msgstr ""
+
 #. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr ""
@@ -756,6 +768,14 @@ msgstr ""
 
 #. TRANSLATORS: Status bar character count; {} is the number of characters
 msgid "{} chars"
+msgstr ""
+
+#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+msgid "document"
+msgstr ""
+
+#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
+msgid "Failed to export document."
 msgstr ""
 
 #. TRANSLATORS: Title of the file picker dialog shown when opening a document
@@ -773,20 +793,12 @@ msgstr ""
 msgid "Word wrap off."
 msgstr ""
 
-#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-msgid "document"
-msgstr ""
-
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgstr ""
 
 #. TRANSLATORS: Title of the file save dialog when exporting a document to plain text
 msgid "Export document to plain text"
-msgstr ""
-
-#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
-msgid "Failed to export document."
 msgstr ""
 
 #. TRANSLATORS: File filter shown in the "Export to HTML" save dialog
@@ -2058,18 +2070,15 @@ msgstr ""
 msgid "Password incorrect"
 msgstr ""
 
-#, c-format
 msgid "Update to %s"
 msgstr ""
 
-#, c-format
 msgid "A new version of %s is available. Here's what's new:"
 msgstr ""
 
 msgid "No release notes provided."
 msgstr ""
 
-#, c-format
 msgid "%s Update"
 msgstr ""
 
@@ -2079,16 +2088,13 @@ msgstr ""
 msgid "No updates available."
 msgstr ""
 
-#, c-format
 msgid "No updates available. Latest version: %s"
 msgstr ""
 
 msgid "Info"
 msgstr ""
 
-#, c-format
-msgid ""
-"Security verification failed. The update might have been tampered with: %s"
+msgid "Security verification failed. The update might have been tampered with: %s"
 msgstr ""
 
 msgid "Security Error"
@@ -2097,10 +2103,7 @@ msgstr ""
 msgid "Update failed"
 msgstr ""
 
-#, c-format
-msgid ""
-"Update downloaded to: %s\n"
-"Please install it manually."
+msgid "Update downloaded to: %s\nPlease install it manually."
 msgstr ""
 
 msgid "Update Ready"
@@ -2578,4 +2581,22 @@ msgid "Separator"
 msgstr ""
 
 msgid "Document Data"
+msgstr ""
+
+msgid "Sleep timer running, {} remaining"
+msgstr ""
+
+msgid "Custom"
+msgstr ""
+
+msgid "Custom: {} minutes"
+msgstr ""
+
+msgid "Duration"
+msgstr ""
+
+msgid "Stop Timer"
+msgstr ""
+
+msgid "Start Timer"
 msgstr ""
