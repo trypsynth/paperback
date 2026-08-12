@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 20:06+0000\n"
+"POT-Creation-Date: 2026-08-12 17:39+0000\n"
 "PO-Revision-Date: 2026-02-28 00:00-0700\n"
 "Last-Translator: Quin Gillespie <trypsynth@gmail.com>\n"
 "Language-Team: Español <es@example.com>\n"
@@ -679,6 +679,21 @@ msgstr "Navegó a un enlace interno."
 #. TRANSLATORS: Default status bar text when no document is open
 msgid "Ready"
 msgstr "Listo"
+
+#. TRANSLATORS: Announced after setting a temporary bookmark at the current position
+#, fuzzy
+msgid "Temporary bookmark set."
+msgstr "Sin marcadores."
+
+#. TRANSLATORS: Announced when jumping to a temporary bookmark but none has been set
+#, fuzzy
+msgid "No temporary bookmark."
+msgstr "No hay siguiente marcador."
+
+#. TRANSLATORS: Fallback announcement when jumping to a temporary bookmark on a blank line
+#, fuzzy
+msgid "Temporary bookmark."
+msgstr "Sin marcadores."
 
 #. TRANSLATORS: Title of the dialog showing a table rendered as HTML when activated with Enter/Space
 msgid "Table View"

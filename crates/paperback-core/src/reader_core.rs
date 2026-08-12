@@ -58,7 +58,15 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 					return build_nav_result(false, wrapped, 0, 0, String::new());
 				};
 				let offset = doc.marker_position(idx_i32).unwrap_or(0);
-				let text = doc.document().buffer.markers.get(idx).map(|m| m.text.clone()).unwrap_or_default();
+				// Section markers only carry a synthetic "Section N" label, not the chapter's real
+				// title, so leave the text empty here; the UI falls back to the text of the line at
+				// `offset`, which is the section's actual heading. Page markers carry a meaningful
+				// label (the page number/name) that should be announced as-is.
+				let text = if req.target == NavTarget::Page {
+					doc.document().buffer.markers.get(idx).map(|m| m.text.clone()).unwrap_or_default()
+				} else {
+					String::new()
+				};
 				return build_nav_result(true, wrapped, offset, 0, text);
 			}
 			build_nav_result(false, wrapped, 0, 0, String::new())

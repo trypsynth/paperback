@@ -213,6 +213,8 @@ pub struct DocumentConfig {
 	pub navigation_history_index: usize,
 	#[serde(default)]
 	pub bookmarks: Vec<StoredBookmark>,
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub temporary_bookmark: Option<i64>,
 	#[serde(default, skip_serializing_if = "String::is_empty")]
 	pub format: String,
 	#[serde(default, skip_serializing_if = "String::is_empty")]
@@ -229,6 +231,8 @@ struct SidecarData {
 	format: Option<String>,
 	#[serde(default, skip_serializing_if = "Vec::is_empty")]
 	bookmarks: Vec<StoredBookmark>,
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	temporary_bookmark: Option<i64>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -757,6 +761,28 @@ impl ConfigManager {
 		if saved > 0 && saved <= max_position { saved } else { -1 }
 	}
 
+	/// Sets the single per-document temporary bookmark position (`None` clears it).
+	pub fn set_temporary_bookmark(&self, path: &str, position: Option<i64>) {
+		if !self.initialized {
+			return;
+		}
+		{
+			let key = self.get_doc_key(path);
+			let mut data = self.data.borrow_mut();
+			Self::doc_entry_mut(&mut data, key, path).temporary_bookmark = position;
+		}
+		self.dirty.set(true);
+	}
+
+	#[must_use]
+	pub fn get_temporary_bookmark(&self, path: &str) -> Option<i64> {
+		if !self.initialized {
+			return None;
+		}
+		let key = self.get_doc_key(path);
+		self.data.borrow().documents.get(&key).and_then(|d| d.temporary_bookmark)
+	}
+
 	pub fn set_navigation_history(&self, path: &str, history: &[i64], history_index: usize) {
 		if !self.initialized {
 			return;
@@ -975,6 +1001,9 @@ impl ConfigManager {
 		if let Some(format) = sidecar.format {
 			self.set_document_format(doc_path, &format);
 		}
+		if let Some(position) = sidecar.temporary_bookmark {
+			self.set_temporary_bookmark(doc_path, Some(position));
+		}
 		if !sidecar.bookmarks.is_empty() {
 			let key = self.get_doc_key(doc_path);
 			let mut data = self.data.borrow_mut();
@@ -995,6 +1024,7 @@ impl ConfigManager {
 			last_position: doc.map(|d| d.last_position).filter(|&p| p > 0),
 			format: doc.and_then(|d| if d.format.is_empty() { None } else { Some(d.format.clone()) }),
 			bookmarks: doc.map(|d| d.bookmarks.clone()).unwrap_or_default(),
+			temporary_bookmark: doc.and_then(|d| d.temporary_bookmark),
 		};
 		if let Ok(s) = toml::to_string_pretty(&sidecar) {
 			let _ = fs::write(export_path, s);
@@ -1146,5 +1176,35 @@ mod tests {
 		assert!(!config.get_app_bool("render_tables_inline", true));
 		config.set_app_bool("render_tables_inline", true);
 		assert!(config.get_app_bool("render_tables_inline", true));
+	}
+
+	#[test]
+	fn temporary_bookmark_set_get_overwrite_clear() {
+		let mut config = ConfigManager::new();
+		config.initialized = true;
+		let path = "book.epub";
+		assert_eq!(config.get_temporary_bookmark(path), None);
+		config.set_temporary_bookmark(path, Some(42_000));
+		assert_eq!(config.get_temporary_bookmark(path), Some(42_000));
+		config.set_temporary_bookmark(path, Some(43_000));
+		assert_eq!(config.get_temporary_bookmark(path), Some(43_000));
+		config.set_temporary_bookmark(path, None);
+		assert_eq!(config.get_temporary_bookmark(path), None);
+	}
+
+	#[test]
+	fn temporary_bookmark_serializes_and_loads() {
+		let doc =
+			DocumentConfig { path: "book.epub".into(), temporary_bookmark: Some(12_345), ..DocumentConfig::default() };
+		let serialized = toml::to_string(&doc).unwrap();
+		let parsed: DocumentConfig = toml::from_str(&serialized).unwrap();
+		assert_eq!(parsed.temporary_bookmark, Some(12_345));
+	}
+
+	#[test]
+	fn temporary_bookmark_defaults_to_none_when_missing() {
+		// Old config files without the field must load as None.
+		let parsed: DocumentConfig = toml::from_str("path = \"book.epub\"\n").unwrap();
+		assert_eq!(parsed.temporary_bookmark, None);
 	}
 }
