@@ -27,7 +27,9 @@ use wxdragon::{
 use super::rtf_write::{self, RtfFontInfo};
 use super::{
 	main_window::{SLEEP_TIMER_DURATION_MINUTES, SLEEP_TIMER_START_MS},
-	menu_ids, status,
+	menu_ids,
+	navigation::{move_to_offset_and_record_history, persist_navigation_history},
+	status,
 };
 
 pub struct DocumentTab {
@@ -74,6 +76,8 @@ const WXK_UP: i32 = 315;
 #[cfg(target_os = "windows")]
 const WXK_DOWN: i32 = 317;
 const KEY_EQUALS: i32 = 61;
+const KEY_SLASH: i32 = 47;
+const KEY_BACKSLASH: i32 = 92;
 
 pub struct DocumentManager {
 	frame: Frame,
@@ -529,6 +533,56 @@ impl DocumentManager {
 		self.last_sound_position.set(None);
 	}
 
+	/// Sets the temporary bookmark at the current caret position and announces it.
+	fn set_temporary_bookmark(&self) {
+		let Some(tab) = self.active_tab() else {
+			return;
+		};
+		let position = tab.text_ctrl.get_insertion_point();
+		let path_str = tab.file_path.to_string_lossy().to_string();
+		let config = self.config.lock().unwrap();
+		config.set_temporary_bookmark(&path_str, Some(position));
+		config.flush();
+		drop(config);
+		// TRANSLATORS: Announced after setting a temporary bookmark at the current position
+		live_region::announce(self.live_region_label, &t("Temporary bookmark set."));
+	}
+
+	/// Jumps to the temporary bookmark, announcing the line text there, or "No temporary bookmark."
+	/// if none has been set.
+	fn jump_to_temporary_bookmark(&mut self) {
+		let path_str = {
+			let Some(tab) = self.active_tab() else {
+				return;
+			};
+			tab.file_path.to_string_lossy().to_string()
+		};
+		let position = {
+			let config = self.config.lock().unwrap();
+			config.get_temporary_bookmark(&path_str)
+		};
+		let Some(position) = position else {
+			// TRANSLATORS: Announced when jumping to a temporary bookmark but none has been set
+			live_region::announce(self.live_region_label, &t("No temporary bookmark."));
+			return;
+		};
+		let (message, track, update) = {
+			let tab = self.active_tab_mut().unwrap();
+			let position = position.min(tab.text_ctrl.get_last_position().max(0));
+			let line_text = tab.session.get_line_text(position);
+			let message = if line_text.trim().is_empty() {
+				// TRANSLATORS: Fallback announcement when jumping to a temporary bookmark on a blank line
+				t("Temporary bookmark.")
+			} else {
+				line_text
+			};
+			let update = move_to_offset_and_record_history(tab, position);
+			(message, tab.track, update)
+		};
+		live_region::announce(self.live_region_label, &message);
+		persist_navigation_history(&self.config, track.then_some(&update));
+	}
+
 	pub fn apply_font(&self, font: &Font) {
 		for tab in &self.tabs {
 			tab.text_ctrl.set_font(font);
@@ -821,6 +875,20 @@ impl DocumentManager {
 					kbd.event.skip(false);
 					if let Ok(dm) = dm_for_announce.try_lock() {
 						dm.announce_current_percent();
+					}
+					return;
+				}
+				if key == KEY_SLASH && !kbd.shift_down() && !kbd.control_down() && !kbd.alt_down() {
+					kbd.event.skip(false);
+					if let Ok(dm) = dm_for_announce.try_lock() {
+						dm.set_temporary_bookmark();
+					}
+					return;
+				}
+				if key == KEY_BACKSLASH && !kbd.shift_down() && !kbd.control_down() && !kbd.alt_down() {
+					kbd.event.skip(false);
+					if let Ok(mut dm) = dm_for_announce.try_lock() {
+						dm.jump_to_temporary_bookmark();
 					}
 					return;
 				}
