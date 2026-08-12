@@ -1,4 +1,11 @@
-use std::{collections::HashSet, env, error::Error, fs, path::PathBuf, process::Command};
+use std::{
+	collections::HashSet,
+	env,
+	error::Error,
+	fs,
+	path::{Path, PathBuf},
+	process::Command,
+};
 
 mod deepl;
 mod po;
@@ -9,12 +16,16 @@ use crate::project_root;
 /// Regenerates `po/paperback.pot`, syncs every `po/<lang>.po` against it via `msgmerge`
 /// (adds blank entries for new strings, flags changed-but-similar entries `#, fuzzy`),
 /// then fills any blank/fuzzy entry via the `DeepL` API for languages `DeepL` supports.
-/// Writes back only when something genuinely changed — `msgmerge` regenerates the
+/// Writes back only when something genuinely changed: `msgmerge` regenerates the
 /// `POT-Creation-Date`/`PO-Revision-Date` header lines on every run regardless of real
 /// content changes, so those are ignored when deciding whether to touch a file, to avoid
 /// committing pure timestamp churn. Finally does the same for `doc/readme.md`, machine-
 /// translating it into `doc/readme-<lang>.md` for the same set of languages (see
 /// `readme::sync_readmes`).
+///
+/// Locales listed in `po/human-maintained-locales.txt` are skipped entirely, for both the
+/// po-string sync and the README sync. See that file and
+/// <https://github.com/trypsynth/paperback/issues/638>.
 pub fn translate() -> Result<(), Box<dyn Error>> {
 	let mut dry_run = false;
 	for arg in env::args().skip(2) {
@@ -68,13 +79,41 @@ pub fn translate() -> Result<(), Box<dyn Error>> {
 	let langs: Vec<String> =
 		po_files.iter().filter_map(|p| p.file_stem().and_then(|s| s.to_str()).map(str::to_string)).collect();
 
+	let human_maintained = load_human_maintained_locales(&root)?;
+
 	for po_path in &po_files {
+		let lang = po_path.file_stem().and_then(|s| s.to_str()).unwrap_or_default();
+		if human_maintained.contains(lang) {
+			println!("{lang}: human-maintained, skipping");
+			continue;
+		}
 		translate_one(po_path, &pot_path, dry_run, client_and_supported.as_ref())?;
 	}
 
-	readme::sync_readmes(&root, &langs, client_and_supported.as_ref(), dry_run)?;
+	let auto_langs: Vec<String> = langs.into_iter().filter(|l| !human_maintained.contains(l.as_str())).collect();
+	readme::sync_readmes(&root, &auto_langs, client_and_supported.as_ref(), dry_run)?;
 
 	Ok(())
+}
+
+/// Locale codes listed in `po/human-maintained-locales.txt`, one per line (`#` starts a
+/// comment; blank lines ignored). These are skipped entirely by both the po-string sync
+/// and the README sync. See that file for why.
+fn load_human_maintained_locales(root: &Path) -> Result<HashSet<String>, Box<dyn Error>> {
+	let path = root.join("po").join("human-maintained-locales.txt");
+	let Ok(content) = fs::read_to_string(&path) else {
+		return Ok(HashSet::new());
+	};
+	Ok(parse_human_maintained_locales(&content))
+}
+
+fn parse_human_maintained_locales(content: &str) -> HashSet<String> {
+	content
+		.lines()
+		.map(|line| line.split('#').next().unwrap_or("").trim())
+		.filter(|line| !line.is_empty())
+		.map(str::to_string)
+		.collect()
 }
 
 fn translate_one(
@@ -192,5 +231,25 @@ mod tests {
 		let a = "msgid \"Cancel\"\nmsgstr \"\"\n";
 		let b = "msgid \"Cancel\"\nmsgstr \"Abbrechen\"\n";
 		assert_ne!(content_without_volatile_headers(a), content_without_volatile_headers(b));
+	}
+
+	#[test]
+	fn human_maintained_locales_parses_one_per_line() {
+		let content = "bs\nfi\nsr\n";
+		let locales = parse_human_maintained_locales(content);
+		assert_eq!(locales, HashSet::from(["bs".to_string(), "fi".to_string(), "sr".to_string()]));
+	}
+
+	#[test]
+	fn human_maintained_locales_ignores_comments_and_blank_lines() {
+		let content = "# comment\n\nfi   # Jani Kinnunen\n\n  sr  \n";
+		let locales = parse_human_maintained_locales(content);
+		assert_eq!(locales, HashSet::from(["fi".to_string(), "sr".to_string()]));
+	}
+
+	#[test]
+	fn human_maintained_locales_empty_when_only_comments() {
+		let content = "# nothing here yet\n";
+		assert!(parse_human_maintained_locales(content).is_empty());
 	}
 }

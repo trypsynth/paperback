@@ -1,0 +1,16 @@
+# Locales listed here are actively maintained by human translators.
+# `cargo xtask translate` skips them entirely: it will never touch this
+# locale's po/<lang>.po strings or doc/readme-<lang>.md, even to fill in a
+# blank or fuzzy entry. Add your locale code on its own line to opt out of
+# machine translation; remove it if you'd like automatic fallback translation
+# again. One locale code per line; '#' starts a comment.
+#
+# See https://github.com/trypsynth/paperback/issues/638
+
+bs
+cs
+de
+fi
+nl
+pl
+sr
