@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 20:06+0000\n"
+"POT-Creation-Date: 2026-08-12 17:39+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -615,6 +615,18 @@ msgstr ""
 
 #. TRANSLATORS: Default status bar text when no document is open
 msgid "Ready"
+msgstr ""
+
+#. TRANSLATORS: Announced after setting a temporary bookmark at the current position
+msgid "Temporary bookmark set."
+msgstr ""
+
+#. TRANSLATORS: Announced when jumping to a temporary bookmark but none has been set
+msgid "No temporary bookmark."
+msgstr ""
+
+#. TRANSLATORS: Fallback announcement when jumping to a temporary bookmark on a blank line
+msgid "Temporary bookmark."
 msgstr ""
 
 #. TRANSLATORS: Title of the dialog showing a table rendered as HTML when activated with Enter/Space
