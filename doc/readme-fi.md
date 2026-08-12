@@ -14,7 +14,7 @@ Paperback toimii Windowsissa, macOS:ssä, iOS:ssä ja Androidissa.
 * Toimii erittäin nopeasti myös vanhalla laitteistolla.
 * Yksinkertainen välilehtikäyttöliittymä, jonka avulla voit avata rajattoman määrän asiakirjoja.
 * Tallentaa tarkan lukukohdan jokaisessa avaamassasi asiakirjassa.
-* Muistaa valinnaisesti, mitkä asiakirjat olivat avoinna ohjelmaa suljettaessa, ja avaa ne uudelleen seuraavalla käynnistyskerralla.
+* Muistaa valinnaisesti, mitkä asiakirjat olivat avoinna ohjelmaa suljettaessa, ja avaa ne seuraavalla käynnistyskerralla.
 * Sisältää ruudunlukijoista tuttua verkkoselaustilaa muistuttavan navigointitoiminnon, jonka avulla voit liikkua asiakirjoissa nopeasti ja vaivattomasti.
 * Sisältää tehokkaan etsintävalintaikkunan, jossa on muun muassa historia ja sääntölausekkeiden tuki.
 * Voidaan käyttää massamuistiversiona tai asentaa siten, että tiedostokytkennät määritetään automaattisesti.
@@ -182,6 +182,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Jonathan Rodriguez
 * Jonathan Schuster
 * Keao Wright
+* Michael Marshall
 * Pratik Patel
 * Roberto Perez
 * Sean Randall
@@ -211,35 +212,39 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Android-tuki lisätty.
 * iOS-tuki lisätty.
 * macOS-tuki lisätty.
-* Lisätty hollannin-, suomen- ja puolankieliset käännökset.
+* Lisätty hollannin-, puolan- ja suomenkieliset käännökset.
 * Lisätty tuki säilöittäin navigoimiselle.
 * Lisätty CHM-asiakirjoihin luetteloiden, luettelokohteiden, kuvitusten ja kuvien tuki.
 * Lisätty Rivitys-valikkokohde ja vastaava pikanäppäin.
 * Merkkiääni toistuu nyt vain sellaisten sanojen kohdalla, joihin on lisätty kirjanmerkki tai muistiinpano.
-* Laajennettu vientitoimintoa siten, että se mahdollistaa viennin pelkän tekstin lisäksi myös HTML- ja Markdown-muotoihin.
-* Korjattu virhe, jossa tekstin rivityksen käyttöönotto aiheutti kohdistuksen siirtymistä suoraan asiakirjan alkuun.
-* Korjattu virhe, jossa DAISY-kirjoista näytettiin tilarivillä virheellisiä tietoja.
-* Korjattu virhe, jossa dl-, dt- ja dd-elementit eivät aiheuttaneet rivinvaihtoja XHTML-asiakirjoissa.
-* Korjattu virhe, jossa Esc-näppäimen painaminen ei sulkenut Asiakirjan tiedot- ja Kaikki asiakirjat -valintaikkunoita.
-* Korjattu virhe, jossa Mobi-kirjojen filepos-ankkurit rikkoivat HTML-elementtejä ja aiheuttivat merkkisotkua kirjan tekstiin.
-* Korjattu suurten asiakirjojen tekstikentän loppua lähestyttäessä ilmennyt hidastelu.
-* Korjattu vanhojen Mobi-kirjojen linkit.
+* Vanhoilla CJK-merkistöillä (kuten GBK, Big5 ja Shift_JIS) koodattuja asiakirjoja ei näytetä enää pelkkänä merkkisotkuna.
+* Vientitoimintoa on laajennettu siten, että se mahdollistaa viennin pelkän tekstin lisäksi myös HTML- ja Markdown-muotoihin.
+* Korjattu ongelma, jonka vuoksi tekstin rivityksen käyttöönotto siirsi kohdistuksen asiakirjan alkuun.
+* Korjattu ongelma, jonka vuoksi DAISY-kirjoista näytettiin tilarivillä virheellisiä tietoja.
+* Korjattu ongelma, jonka vuoksi XHTML-asiakirjojen dl-, dt- ja dd-elementtien kohdalle ei lisätty rivinvaihtoja.
+* Korjattu ongelma, jonka vuoksi Asiakirjan tiedot- ja Kaikki asiakirjat -valintaikkunat eivät sulkeutuneet Esc-näppäimellä.
+* Korjattu ongelma, jonka vuoksi Mobi-kirjojen filepos-ankkurit rikkoivat HTML-elementtejä ja aiheuttivat merkkisotkua kirjan tekstiin.
+* Korjattu suurten asiakirjojen loppupuolella esiintynyt lukunäkymän hidastelu.
+* Vanhojen Mobi-kirjojen linkit korjattu.
 * Korjattu ongelma virheellisen koodausmäärityksen sisältävien DAISY-kirjojen lataamisessa.
-* Korjattu muita kuin latinalaisia kirjaimia sisältävien RTF-asiakirjojen jäsennys.
-* Korjattu virhe, jossa otsikkopalkki ei päivittynyt, kun dokumentti suljettiin Kaikki asiakirjat -valintaikkunasta.
+* Korjattu ongelma, jonka vuoksi ruudunlukija puhui joissakin tilanteissa väärän rivin tekstin asiakirjaa luettaessa.
+* Korjattu muita kuin latinalaisia kirjaimia sisältävien RTF-asiakirjojen jäsentäminen.
+* Korjattu ongelma, jonka vuoksi Avaa viimeksi suljettu -toiminto yritti avata sovelluksen mukana toimitettavan readme-tiedoston.
+* Korjattu ongelma, jonka vuoksi otsikkopalkki ei päivittynyt, kun dokumentti suljettiin Kaikki asiakirjat -valintaikkunasta.
 * Selainnäkymävalintaikkunan kokoa voi nyt muuttaa, eikä se avaudu enää aivan liian pienenä.
-* Korjattu virhe, jossa Word-asiakirjojen otsikoita ei näytetty oikein, jos niissä käytettiin kielikohtaisia tyylinimiä.
-* Korjattu virhe, jossa kohdistus ei siirtynyt oikein valitulle välilehdelle Paperbackin uudelleenkäynnistyksen jälkeen.
+* Korjattu ongelma, jonka vuoksi eri kielisiä tyylinimiä sisältävien Word-asiakirjojen otsikoita ei näytetty oikein.
+* Korjattu ongelma, jonka vuoksi kohdistus ei siirtynyt oikein valitulle välilehdelle Paperbackin uudelleenkäynnistyksen jälkeen.
 * Jos tekstiä on valittuna Sanamäärä-valintaikkunaa avattaessa, näkymässä näytetään nyt valittujen sanojen määrä.
-* Paperbackin tiedostonkäsittelyä on parannettu Windows-verkkolevyillä: "Avaa asiakirjan kansio" -toiminto siirtää nyt kohdistuksen asianmukaisesti verkkolevyllä olevan tiedoston kohdalle, eikä tiedostopoluissa enää ole outoja merkkejä.
-* Parannettu huomattavasti AZW3-kirjojen jäsennystä.
-* Luovuttu chmlib-kirjaston käytöstä ja siirrytty omaan, täysin Rust-pohjaiseen CHM-tiedostonlukijaan.
-* .paperback-tiedostoja ei enää ladata työpöytäversiossa pakotetusti asiakirjojen palautuksen yhteydessä. Käyttäjältä pyydetään sen sijaan vahvistus tiedoston löytyessä.
-* Paperback käyttää nyt varavaihtoehtona pelkän tekstin poimimista sellaisista PDF-tiedostoista, , joiden tagit on merkitty virheellisesti.
-* Avaa tiedoston kansio -toiminto siirtää nyt kohdistuksen kyseisen tiedoston kohdalle suoraan tiedostonhallinnassa.
+* Kuvat näytetään nyt oikein selainnäkymässä.
+* Verkkolevyillä sijaitsevien tiedostojen käsittelyä on parannettu: Avaa asiakirjan kansio -toiminto siirtää nyt kohdistuksen asianmukaisesti verkkolevyllä olevan tiedoston kohdalle, eikä tiedostopoluissa ole enää outoja merkkejä.
+* AZW3-kirjojen jäsentämistä on parannettu huomattavasti.
+* Chmlib-kirjasto on vaihdettu täysin Rust-ohjelmointikielellä kirjoitettuun CHM-lukijaan.
+* Työpöytäversiossa .paperback-tiedostoja ei enää avata automaattisesti asiakirjoja palautettaessa, vaan tiedoston löytyessä pyydetään vahvistus.
+* Paperback käyttää nyt virheellisesti merkityille PDF-tiedostoille varavaihtoehtona pelkän tekstin poimimista.
+* Avaa asiakirjan kansio -toiminto siirtää nyt kohdistuksen kyseisen tiedoston kohdalle Resurssienhallinnassa.
 * Käytössä oleva kieli otetaan nyt huomioon Readme-tiedostoa avattaessa.
 * PowerPoint-esitykset tukevat nyt taulukoita.
-* Valikko päivittyy nyt oikein ja kohdistus siirtyy tekstikenttään, kun ohje avataan Paperbackissa.
+* Valikko päivittyy nyt oikein ja kohdistus siirtyy asiakirjan tekstiin, kun ohje avataan Paperbackissa.
 * Readme.html-tiedostoa ei enää lisätä Kaikki asiakirjat -luetteloon, kun se avataan Shift+F1-pikanäppäimellä.
 * Asiakirjojen poistaminen Viimeisimmät asiakirjat -valintaikkunasta sulkee nyt myös niiden aktiiviset välilehdet.
 * Windowsissa on otettu käyttöön huomattavasti turvallisempi prosessien välinen viestintämenetelmä.

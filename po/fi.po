@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-24 10:48-0600\n"
-"PO-Revision-Date: 2026-07-30 06:25+0300\n"
+"POT-Creation-Date: 2026-08-11 20:06+0000\n"
+"PO-Revision-Date: 2026-08-13 01:45+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -237,10 +237,6 @@ msgstr "Nimetön"
 msgid "OK"
 msgstr "OK"
 
-#. TRANSLATORS: Label for the cancellation button
-msgid "Cancel"
-msgstr "Peruuta"
-
 #. TRANSLATORS: Title of the Go to Line dialog
 msgid "Go to Line"
 msgstr "Siirry riville"
@@ -334,6 +330,11 @@ msgstr "Näytä tiivis &Siirry-valikko"
 msgid "&Wrap navigation"
 msgstr "Siirry a&lkuun asiakirjan lopussa"
 
+#. TRANSLATORS: Option to move the caret to the start of the line when navigating up or down
+#| msgid "Go to &line"
+msgid "Move to &start of line"
+msgstr "Siirry rivin &alkuun"
+
 #. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 msgid "Play &sounds on bookmarks and notes"
 msgstr "Ilmaise kirjanmerkit ja muistiinpanot merkkiäänellä"
@@ -341,6 +342,10 @@ msgstr "Ilmaise kirjanmerkit ja muistiinpanot merkkiäänellä"
 #. TRANSLATORS: Option to check for app updates automatically on startup
 msgid "Check for &updates on startup"
 msgstr "Tarkista &päivitykset käynnistettäessä"
+
+#. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
+msgid "&Automatically reload changed documents"
+msgstr "&Päivitä muuttuneeet asiakirjat automaattisesti"
 
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 msgid "Customize &Window Hotkey..."
@@ -525,6 +530,10 @@ msgstr "&Näppäin:"
 #. TRANSLATORS: Button label to clear the current hotkey selection
 msgid "Clear"
 msgstr "Tyhjennä"
+
+#. TRANSLATORS: Label for the cancellation button
+msgid "Cancel"
+msgstr "Peruuta"
 
 #. TRANSLATORS: Representation of the Spacebar key
 msgid "Space"
@@ -758,6 +767,11 @@ msgstr "Valittua tiedostomuotoa ei tueta."
 msgid "Paperback"
 msgstr "Paperback"
 
+#. TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
+#| msgid "Document Info"
+msgid "Document reloaded."
+msgstr "Asiakirja päivitetty."
+
 #. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Paperback ei voi suorittaa toimintoja selainnäkymän ollessa avoinna."
@@ -769,6 +783,14 @@ msgstr "Paperback - {}"
 #. TRANSLATORS: Status bar character count; {} is the number of characters
 msgid "{} chars"
 msgstr "{} merkkiä"
+
+#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+msgid "document"
+msgstr "asiakirja"
+
+#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
+msgid "Failed to export document."
+msgstr "Asiakirjan vienti epäonnistui."
 
 #. TRANSLATORS: Title of the file picker dialog shown when opening a document
 msgid "Open Document"
@@ -785,10 +807,6 @@ msgstr "Rivitys käytössä."
 msgid "Word wrap off."
 msgstr "Rivitys pois."
 
-#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-msgid "document"
-msgstr "asiakirja"
-
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgstr "Tekstitiedostot (*.txt)|*.txt|Kaikki tiedostot (*.*)|*.*"
@@ -796,10 +814,6 @@ msgstr "Tekstitiedostot (*.txt)|*.txt|Kaikki tiedostot (*.*)|*.*"
 #. TRANSLATORS: Title of the file save dialog when exporting a document to plain text
 msgid "Export document to plain text"
 msgstr "Vie asiakirja tekstimuotoon"
-
-#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
-msgid "Failed to export document."
-msgstr "Asiakirjan vienti epäonnistui."
 
 #. TRANSLATORS: File filter shown in the "Export to HTML" save dialog
 msgid "HTML files (*.html)|*.html|All files (*.*)|*.*"
@@ -1170,11 +1184,11 @@ msgstr "Sulje kaikki asiakirjat"
 
 #. TRANSLATORS: Menu item label to reopen the most recently closed document
 msgid "Reopen &Last Closed\tCtrl+Shift+T"
-msgstr "Avaa &viimeksi suljettu uudelleen\tCtrl+Shift+T"
+msgstr "Avaa &viimeksi suljettu\tCtrl+Shift+T"
 
 #. TRANSLATORS: Status bar help text for the "Reopen Last Closed" menu item
 msgid "Reopen the last closed document"
-msgstr "Avaa viimeksi suljettu asiakirja uudelleen"
+msgstr "Avaa viimeksi suljettu asiakirja"
 
 #. TRANSLATORS: Submenu label listing recently opened documents
 msgid "&Recent Documents"
@@ -2078,18 +2092,15 @@ msgstr "Tarvitaan salasana"
 msgid "Password incorrect"
 msgstr "Virheellinen salasana"
 
-#, c-format
 msgid "Update to %s"
 msgstr "Päivitä versioon %s"
 
-#, c-format
 msgid "A new version of %s is available. Here's what's new:"
 msgstr "%sista on saatavilla uusi versio. Sen uusia ominaisuuksia ovat:"
 
 msgid "No release notes provided."
 msgstr "Julkaisutietoja ei saatavilla."
 
-#, c-format
 msgid "%s Update"
 msgstr "%sin päivitys"
 
@@ -2099,14 +2110,12 @@ msgstr "Päivitystä ladataan..."
 msgid "No updates available."
 msgstr "Päivityksiä ei saatavilla."
 
-#, c-format
 msgid "No updates available. Latest version: %s"
 msgstr "Päivityksiä ei saatavilla. Uusin versio: %s"
 
 msgid "Info"
 msgstr "Tiedot"
 
-#, c-format
 msgid ""
 "Security verification failed. The update might have been tampered with: %s"
 msgstr "Tietoturvatarkistus epäonnistui. Päivitystä on saatettu peukaloida: %s"
@@ -2117,7 +2126,6 @@ msgstr "Suojausvirhe"
 msgid "Update failed"
 msgstr "Päivitys epäonnistui"
 
-#, c-format
 msgid ""
 "Update downloaded to: %s\n"
 "Please install it manually."
@@ -2618,6 +2626,25 @@ msgstr "Taulukko"
 msgid "Separator"
 msgstr "Erotin"
 
-#| msgid "Import Document Data"
 msgid "Document Data"
 msgstr "Asiakirjan tiedot"
+
+msgid "Sleep timer running, {} remaining"
+msgstr "Uniajastin käynnissä, jäljellä {}"
+
+#| msgid "Custom Timer"
+msgid "Custom"
+msgstr "Oma"
+
+#| msgid "Custom Timer"
+msgid "Custom: {} minutes"
+msgstr "Oma: {} minuuttia"
+
+msgid "Duration"
+msgstr "Kesto"
+
+msgid "Stop Timer"
+msgstr "Pysäytä ajastin"
+
+msgid "Start Timer"
+msgstr "Käynnistä ajastin"
