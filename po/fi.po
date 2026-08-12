@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 20:06+0000\n"
-"PO-Revision-Date: 2026-08-13 01:45+0300\n"
+"POT-Creation-Date: 2026-08-12 17:39+0000\n"
+"PO-Revision-Date: 2026-08-13 02:52+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -331,7 +331,6 @@ msgid "&Wrap navigation"
 msgstr "Siirry a&lkuun asiakirjan lopussa"
 
 #. TRANSLATORS: Option to move the caret to the start of the line when navigating up or down
-#| msgid "Go to &line"
 msgid "Move to &start of line"
 msgstr "Siirry rivin &alkuun"
 
@@ -628,6 +627,20 @@ msgstr "Siirrytty sisäiseen linkkiin."
 msgid "Ready"
 msgstr "Valmis"
 
+#. TRANSLATORS: Announced after setting a temporary bookmark at the current position
+#| msgid "No bookmarks."
+msgid "Temporary bookmark set."
+msgstr "Tilapäinen kirjanmerkki lisätty."
+
+#. TRANSLATORS: Announced when jumping to a temporary bookmark but none has been set
+msgid "No temporary bookmark."
+msgstr "Ei tilapäistä kirjanmerkkiä."
+
+#. TRANSLATORS: Fallback announcement when jumping to a temporary bookmark on a blank line
+#| msgid "No bookmarks."
+msgid "Temporary bookmark."
+msgstr "Tilapäinen kirjanmerkki."
+
 #. TRANSLATORS: Title of the dialog showing a table rendered as HTML when activated with Enter/Space
 msgid "Table View"
 msgstr "Taulukkonäkymä"
@@ -768,7 +781,6 @@ msgid "Paperback"
 msgstr "Paperback"
 
 #. TRANSLATORS: Announced by screen readers after a document was automatically reloaded because its file changed on disk
-#| msgid "Document Info"
 msgid "Document reloaded."
 msgstr "Asiakirja päivitetty."
 
@@ -2632,11 +2644,9 @@ msgstr "Asiakirjan tiedot"
 msgid "Sleep timer running, {} remaining"
 msgstr "Uniajastin käynnissä, jäljellä {}"
 
-#| msgid "Custom Timer"
 msgid "Custom"
 msgstr "Oma"
 
-#| msgid "Custom Timer"
 msgid "Custom: {} minutes"
 msgstr "Oma: {} minuuttia"
 
