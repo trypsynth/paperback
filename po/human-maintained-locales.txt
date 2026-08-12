@@ -8,5 +8,9 @@
 # See https://github.com/trypsynth/paperback/issues/638
 
 bs
+cs
+de
 fi
+nl
+pl
 sr
