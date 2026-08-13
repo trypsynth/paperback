@@ -46,7 +46,16 @@ pub fn move_to_offset_and_record_history(tab: &mut DocumentTab, offset: i64) -> 
 	tab.text_ctrl.set_focus();
 	tab.text_ctrl.set_insertion_point(offset);
 	tab.text_ctrl.show_position(offset);
+	seek_audio_to_position(tab, offset);
 	record_history(tab, offset)
+}
+
+/// Keeps a document's audio in step with the caret, called after every jump that moves the
+/// insertion point. A no-op for documents with no recorded audio.
+fn seek_audio_to_position(tab: &mut DocumentTab, offset: i64) {
+	if let Some(player) = tab.audio_player.as_mut() {
+		player.seek_to_position(usize::try_from(offset).unwrap_or(0));
+	}
 }
 
 /// Persists a [`HistoryUpdate`] built by [`move_to_offset_and_record_history`] (or
@@ -238,7 +247,7 @@ fn format_nav_found_message(
 }
 
 fn apply_navigation_result(
-	tab: &DocumentTab,
+	tab: &mut DocumentTab,
 	result: &NavigationResult,
 	target: MarkerNavTarget,
 	next: bool,
@@ -273,6 +282,7 @@ fn apply_navigation_result(
 	tab.text_ctrl.set_focus();
 	tab.text_ctrl.set_insertion_point(offset);
 	tab.text_ctrl.show_position(offset);
+	seek_audio_to_position(tab, offset);
 	true
 }
 
@@ -299,6 +309,7 @@ pub fn handle_history_navigation(
 			tab.text_ctrl.set_focus();
 			tab.text_ctrl.set_insertion_point(result.offset);
 			tab.text_ctrl.show_position(result.offset);
+			seek_audio_to_position(tab, result.offset);
 			tab.session.set_stable_position(result.offset);
 			let history_update = tracked_history_update(tab);
 			(message, history_update)
@@ -545,6 +556,24 @@ pub fn handle_toggle_bookmark(
 	// TRANSLATORS: Announced after toggling a bookmark at the current selection off/on
 	let message = if existed { t("Bookmark removed.") } else { t("Bookmark added.") };
 	live_region::announce(live_region_label, &message);
+}
+
+pub fn handle_toggle_play_pause_audio(doc_manager: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText) {
+	let mut dm = doc_manager.lock().unwrap();
+	let has_audio = {
+		let Some(tab) = dm.active_tab_mut() else { return };
+		if let Some(player) = tab.audio_player.as_mut() {
+			player.toggle();
+			true
+		} else {
+			false
+		}
+	};
+	drop(dm);
+	if !has_audio {
+		// TRANSLATORS: Announced when trying to play/pause audio on a document that has none
+		live_region::announce(live_region_label, &t("This document has no audio."));
+	}
 }
 
 pub fn handle_bookmark_with_note(

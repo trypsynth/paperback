@@ -196,7 +196,7 @@ impl MainWindow {
 			#[cfg(target_os = "windows")]
 			let hotkey_for_close = Rc::clone(&hotkey_handle);
 			frame.on_close(move |event| {
-				let dm = dm_for_close.lock().unwrap();
+				let mut dm = dm_for_close.lock().unwrap();
 				if let Some(tab) = dm.active_tab() {
 					let path = tab.file_path.to_string_lossy();
 					let cfg = config_for_close.lock().unwrap();
@@ -204,6 +204,10 @@ impl MainWindow {
 					cfg.flush();
 				}
 				dm.save_all_positions();
+				// Stop audio and move focus off the per-tab child controls (the hidden audio
+				// control included) before the frame tears its children down.
+				dm.stop_all_audio();
+				frame.set_focus();
 				#[cfg(target_os = "macos")]
 				if let WindowEventData::General(ref ev) = event {
 					if ev.can_veto() {
@@ -659,6 +663,14 @@ impl MainWindow {
 			);
 		});
 		status_update_timer.start(1000, false);
+		let audio_sync_timer = Rc::new(Timer::new(frame));
+		let dm_for_audio_sync = Rc::clone(doc_manager);
+		audio_sync_timer.on_tick(move |_| {
+			if let Ok(mut dm) = dm_for_audio_sync.try_lock() {
+				dm.pump_audio();
+			}
+		});
+		audio_sync_timer.start(250, false);
 		let sleep_timer_for_menu = Rc::clone(&sleep_timer);
 		let sleep_timer_running_for_menu = Rc::clone(&sleep_timer_running);
 		let sleep_timer_start_for_menu = Rc::clone(&sleep_timer_start_time);
@@ -1048,6 +1060,9 @@ impl MainWindow {
 					let msg = if new_state { t("Word wrap on.") } else { t("Word wrap off.") };
 					live_region::announce(live_region_label, &msg);
 					dm.lock().unwrap().restore_focus();
+				}
+				menu_ids::PLAY_PAUSE_AUDIO => {
+					navigation::handle_toggle_play_pause_audio(&dm, live_region_label);
 				}
 				menu_ids::VIEW_NOTE_TEXT => {
 					navigation::handle_view_note_text(&frame_copy, &dm, &config);
@@ -1496,6 +1511,7 @@ impl MainWindow {
 					cfg.set_app_bool("line_start_navigation", options.line_start_navigation);
 					cfg.set_app_bool("check_for_updates_on_startup", options.check_for_updates_on_startup);
 					cfg.set_app_bool("bookmark_sounds", options.bookmark_sounds);
+					cfg.set_app_bool("sync_caret_to_audio", options.sync_caret_to_audio);
 					cfg.set_app_bool("auto_reload_documents", options.auto_reload_documents);
 					cfg.set_app_int("recent_documents_to_show", options.recent_documents_to_show);
 					cfg.set_app_int("reading_speed_wpm", options.reading_speed_wpm);

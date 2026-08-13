@@ -8,6 +8,7 @@ use base64::Engine;
 use zip::ZipArchive;
 
 use crate::{
+	audio::AudioTimeline,
 	config::{ConfigManager, compute_document_hash},
 	document::{self, DocumentHandle, MarkerType, ParserContext, ParserFlags},
 	export::{ExportFormat, render},
@@ -284,6 +285,13 @@ impl DocumentSession {
 	#[must_use]
 	pub const fn handle(&self) -> &DocumentHandle {
 		&self.handle
+	}
+
+	/// This document's recorded audio, when it has any (DAISY audiobooks; text-only
+	/// documents have none).
+	#[must_use]
+	pub fn audio(&self) -> Option<&AudioTimeline> {
+		self.handle.document().audio.as_ref()
 	}
 
 	#[must_use]

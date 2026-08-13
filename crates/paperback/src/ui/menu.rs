@@ -813,6 +813,12 @@ pub fn create_tools_menu(config: &ConfigManager) -> Menu {
 	menu.append(menu_ids::TOGGLE_WORD_WRAP, &word_wrap_label, &word_wrap_help, ItemKind::Check);
 	menu.check_item(menu_ids::TOGGLE_WORD_WRAP, config.get_app_bool("word_wrap", false));
 	menu.append_separator();
+	// TRANSLATORS: Menu item label to play or pause audio narration
+	let play_pause_label = t("&Play/Pause Audio\tCtrl+Space");
+	// TRANSLATORS: Status bar help text for the "Play/Pause Audio" menu item
+	let play_pause_help = t("Play or pause this document's audio narration");
+	menu.append(menu_ids::PLAY_PAUSE_AUDIO, &play_pause_label, &play_pause_help, ItemKind::Normal);
+	menu.append_separator();
 	// TRANSLATORS: Menu item label to open the application options/preferences dialog
 	let options_label = t("&Options\tCtrl+,");
 	// TRANSLATORS: Menu item label to open the sleep timer dialog

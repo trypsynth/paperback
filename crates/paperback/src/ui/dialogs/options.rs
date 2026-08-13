@@ -29,6 +29,7 @@ pub struct OptionsDialogResult {
 	pub line_start_navigation: bool,
 	pub check_for_updates_on_startup: bool,
 	pub bookmark_sounds: bool,
+	pub sync_caret_to_audio: bool,
 	pub auto_reload_documents: bool,
 	pub recent_documents_to_show: i32,
 	pub reading_speed_wpm: i32,
@@ -56,6 +57,7 @@ struct OptionsDialogUi {
 	line_start_nav_check: CheckBox,
 	check_for_updates_check: CheckBox,
 	bookmark_sounds_check: CheckBox,
+	sync_caret_to_audio_check: CheckBox,
 	auto_reload_check: CheckBox,
 	recent_docs_ctrl: SpinCtrl,
 	reading_speed_ctrl: SpinCtrl,
@@ -102,6 +104,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		line_start_navigation: ui.line_start_nav_check.is_checked(),
 		check_for_updates_on_startup: ui.check_for_updates_check.is_checked(),
 		bookmark_sounds: ui.bookmark_sounds_check.is_checked(),
+		sync_caret_to_audio: ui.sync_caret_to_audio_check.is_checked(),
 		auto_reload_documents: ui.auto_reload_check.is_checked(),
 		recent_documents_to_show: ui.recent_docs_ctrl.value(),
 		reading_speed_wpm: ui.reading_speed_ctrl.value(),
@@ -149,6 +152,9 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let bookmark_sounds_check =
 		// TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 		CheckBox::builder(&reading_panel).with_label(&t("Play &sounds on bookmarks and notes")).build();
+	let sync_caret_to_audio_check =
+		// TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
+		CheckBox::builder(&reading_panel).with_label(&t("&Sync caret to audio playback")).build();
 	let check_for_updates_check =
 		// TRANSLATORS: Option to check for app updates automatically on startup
 		CheckBox::builder(&general_panel).with_label(&t("Check for &updates on startup")).build();
@@ -168,7 +174,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	reading_sizer.add(&navigation_wrap_check, 0, SizerFlag::All, option_padding);
 	#[cfg(target_os = "windows")]
 	reading_sizer.add(&line_start_nav_check, 0, SizerFlag::All, option_padding);
-	for check in [&compact_go_menu_check, &bookmark_sounds_check] {
+	for check in [&compact_go_menu_check, &bookmark_sounds_check, &sync_caret_to_audio_check] {
 		reading_sizer.add(check, 0, SizerFlag::All, option_padding);
 	}
 	let reading_speed_label =
@@ -361,6 +367,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	navigation_wrap_check.set_value(config.get_app_bool("navigation_wrap", false));
 	line_start_nav_check.set_value(config.get_app_bool("line_start_navigation", false));
 	bookmark_sounds_check.set_value(config.get_app_bool("bookmark_sounds", true));
+	sync_caret_to_audio_check.set_value(config.get_app_bool("sync_caret_to_audio", false));
 	auto_reload_check.set_value(config.get_app_bool("auto_reload_documents", true));
 	check_for_updates_check.set_value(config.get_app_bool("check_for_updates_on_startup", true));
 	recent_docs_ctrl.set_value(config.get_app_int("recent_documents_to_show", 25).clamp(0, max_recent_docs));
@@ -464,6 +471,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		line_start_nav_check,
 		check_for_updates_check,
 		bookmark_sounds_check,
+		sync_caret_to_audio_check,
 		auto_reload_check,
 		recent_docs_ctrl,
 		reading_speed_ctrl,

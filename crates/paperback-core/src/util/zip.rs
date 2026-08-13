@@ -45,6 +45,15 @@ pub fn read_zip_entry_by_name_with_password<R: Read + Seek>(
 	Ok(convert_to_utf8(&contents))
 }
 
+/// Reads a zip entry's raw bytes, unlike `read_zip_entry_by_name` which assumes text and
+/// converts it to UTF-8. For binary payloads such as audio clips.
+pub fn read_zip_entry_bytes<R: Read + Seek>(archive: &mut ZipArchive<R>, name: &str) -> Result<Vec<u8>> {
+	let mut entry = archive.by_name(name).with_context(|| format!("Failed to get entry '{name}'"))?;
+	let mut contents = Vec::new();
+	entry.read_to_end(&mut contents).with_context(|| format!("Failed to read entry '{name}'"))?;
+	Ok(contents)
+}
+
 pub fn extract_zip_entry_to_file<R: Read + Seek>(
 	archive: &mut ZipArchive<R>,
 	name: &str,
@@ -127,6 +136,19 @@ mod tests {
 	fn read_zip_entry_by_name_reports_missing_entry() {
 		let mut archive = build_test_archive();
 		assert!(read_zip_entry_by_name(&mut archive, "missing.txt").is_err());
+	}
+
+	#[test]
+	fn read_zip_entry_bytes_reads_raw_contents() {
+		let mut archive = build_test_archive();
+		let contents = read_zip_entry_bytes(&mut archive, "foo.txt").expect("read entry");
+		assert_eq!(contents, b"hello world");
+	}
+
+	#[test]
+	fn read_zip_entry_bytes_reports_missing_entry() {
+		let mut archive = build_test_archive();
+		assert!(read_zip_entry_bytes(&mut archive, "missing.txt").is_err());
 	}
 
 	#[test]

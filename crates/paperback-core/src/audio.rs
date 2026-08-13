@@ -173,6 +173,26 @@ impl AudioTimeline {
 		Some(TimelinePoint::new(self.clips[index].start, self.elapsed_ms[index]))
 	}
 
+	/// The document-wide elapsed time corresponding to `raw_ms` within `source`'s own audio
+	/// file — the reverse of `resolve`, used to translate a decoder's reported position back
+	/// into document coordinates. Falls back to the nearest preceding clip's end when
+	/// `raw_ms` lands in an unrecorded gap.
+	#[must_use]
+	pub fn elapsed_for_source_position(&self, source: usize, raw_ms: u64) -> Option<u64> {
+		let mut nearest_preceding: Option<u64> = None;
+		for (index, clip) in self.clips.iter().enumerate() {
+			if clip.source != source || clip.clip_begin_ms > raw_ms {
+				continue;
+			}
+			if raw_ms < clip.clip_end_ms {
+				return Some(self.elapsed_ms[index] + (raw_ms - clip.clip_begin_ms));
+			}
+			let end_elapsed = self.elapsed_ms[index] + clip.duration_ms();
+			nearest_preceding = Some(nearest_preceding.map_or(end_elapsed, |best| best.max(end_elapsed)));
+		}
+		nearest_preceding
+	}
+
 	/// How far through the recording `point` is, in `0.0..=1.0`. Audio documents
 	/// should prefer this to a character-count percentage, which measures only
 	/// the text spine — a few chapter headings, for an audiobook.
@@ -349,6 +369,38 @@ mod tests {
 		let point = timeline.point_for_position(100).unwrap();
 		let cursor = timeline.resolve(point).unwrap();
 		assert_eq!(timeline.clip(cursor.clip).unwrap().start, point.position);
+	}
+
+	#[test]
+	fn elapsed_for_source_position_maps_raw_file_position_back_to_document_time() {
+		let timeline = narrated_timeline();
+		// The source's single file holds all three clips back to back.
+		assert_eq!(timeline.elapsed_for_source_position(0, 0), Some(0));
+		assert_eq!(timeline.elapsed_for_source_position(0, 3500), Some(3500));
+		assert_eq!(timeline.elapsed_for_source_position(0, 7000), Some(7000));
+	}
+
+	#[test]
+	fn elapsed_for_source_position_falls_back_to_nearest_preceding_clip_in_a_gap() {
+		let mut builder = AudioTimelineBuilder::new();
+		let source = builder.add_source(AudioLocation::File("a.mp3".to_string()), None);
+		builder.add_clip(source, 0, 1000, 0, 10);
+		builder.add_clip(source, 2000, 3000, 10, 20);
+		let timeline = builder.build();
+		// 1500ms falls between the two clips' raw ranges; nearest preceding clip ended at 1000ms.
+		assert_eq!(timeline.elapsed_for_source_position(0, 1500), Some(1000));
+	}
+
+	#[test]
+	fn elapsed_for_source_position_is_none_for_an_unknown_source() {
+		let timeline = narrated_timeline();
+		assert_eq!(timeline.elapsed_for_source_position(9, 0), None);
+	}
+
+	#[test]
+	fn elapsed_for_source_position_distinguishes_sources_sharing_a_text_anchor() {
+		let timeline = audiobook_timeline();
+		assert_eq!(timeline.elapsed_for_source_position(1, 50_000), Some(650_000));
 	}
 
 	#[test]
