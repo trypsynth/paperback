@@ -117,8 +117,12 @@ impl Parser for DaisyParser {
 						&& let Ok(ncx_content) =
 							read_zip_entry_by_name_with_password(&mut archive, &ncx_name, context.password.as_deref())
 						&& !ncx_content.is_empty()
-						&& let Some(ncx_toc) = parse_daisy_ncx(&ncx_content, converter.get_id_positions())
-						&& !ncx_toc.is_empty()
+						&& let Some(ncx_toc) = parse_daisy_ncx(
+							&ncx_content,
+							&dir_of(&ncx_name),
+							converter.get_id_positions(),
+							&HashMap::new(),
+						) && !ncx_toc.is_empty()
 					{
 						toc_items = Some(ncx_toc);
 					}
@@ -227,7 +231,8 @@ impl Parser for DaisyParser {
 						if path.is_file()
 							&& path.extension().is_some_and(|e| e.eq_ignore_ascii_case("ncx"))
 							&& let Some(ncx_content) = fs::read(&path).ok().map(|b| convert_to_utf8(&b))
-							&& let Some(ncx_toc) = parse_daisy_ncx(&ncx_content, converter.get_id_positions())
+							&& let Some(ncx_toc) =
+								parse_daisy_ncx(&ncx_content, "", converter.get_id_positions(), &HashMap::new())
 							&& !ncx_toc.is_empty()
 						{
 							toc_items = Some(ncx_toc);
@@ -397,6 +402,47 @@ fn convert_dtbook_file(
 	Ok(())
 }
 
+/// One SMIL `<par>`'s audio, before its text span is known. `end_ms` is `None` while the
+/// par's `clipEnd` was absent, i.e. it plays to the end of its file.
+struct PendingClip {
+	source: usize,
+	begin_ms: u64,
+	end_ms: Option<u64>,
+	start: usize,
+}
+
+/// A clip with a known text position and a known end time, ready for the timeline.
+struct ResolvedClip {
+	source: usize,
+	begin_ms: u64,
+	end_ms: u64,
+	start: usize,
+}
+
+/// Gives every clip a concrete end time and sorts the result by text position. A par with no
+/// `clipEnd` runs "to the end of the media" per SMIL 2.0, which in a DAISY book means up to
+/// whatever plays next from the same audio file — so it is bounded by the next clip against
+/// that source, searched across the whole book rather than just its own SMIL. A trailing
+/// open-ended clip has nothing after it to measure against and would need the file's real
+/// duration, which the parser doesn't decode, so it is dropped.
+fn bound_open_ended_clips(pending: &[PendingClip]) -> Vec<ResolvedClip> {
+	let mut resolved: Vec<ResolvedClip> = pending
+		.iter()
+		.filter_map(|clip| {
+			let end_ms = clip.end_ms.or_else(|| {
+				pending
+					.iter()
+					.filter(|other| other.source == clip.source && other.begin_ms > clip.begin_ms)
+					.map(|other| other.begin_ms)
+					.min()
+			})?;
+			Some(ResolvedClip { source: clip.source, begin_ms: clip.begin_ms, end_ms, start: clip.start })
+		})
+		.collect();
+	resolved.sort_by_key(|clip| clip.start);
+	resolved
+}
+
 /// Builds a multi-file DAISY 3 document by walking the OPF spine, converting each `DTBook`
 /// XML section (directly, or via a SMIL file's `<text>` references) into the shared buffer
 /// and turning every SMIL `<par>` into an `AudioClip` anchored at that text's position.
@@ -419,7 +465,10 @@ fn build_daisy_document(
 	let mut file_ids: HashMap<String, HashMap<String, usize>> = HashMap::new();
 	let mut source_indices: HashMap<String, usize> = HashMap::new();
 	let mut audio_builder = AudioTimelineBuilder::new();
-	let mut pending_clips: Vec<(usize, u64, u64, usize)> = Vec::new();
+	let mut pending_clips: Vec<PendingClip> = Vec::new();
+	// Where each id *inside the SMIL files* lands in the text, which is what a DAISY 3 NCX
+	// points at. Keyed both bare and path-qualified, first occurrence winning.
+	let mut smil_anchors: HashMap<String, usize> = HashMap::new();
 	let mut converted_any = false;
 
 	for idref in &package.spine {
@@ -484,11 +533,21 @@ fn build_daisy_document(
 			else {
 				continue;
 			};
+			let position = base + local_pos;
+			for anchor in &par.anchor_ids {
+				smil_anchors.entry(anchor.clone()).or_insert(position);
+				smil_anchors.entry(format!("{}#{anchor}", item.href)).or_insert(position);
+			}
 			let audio_href = resolve_relative_path(&smil_dir, &par.audio_src);
 			let source = *source_indices
 				.entry(audio_href.clone())
 				.or_insert_with(|| audio_builder.add_source(resolve_audio(&audio_href), None));
-			pending_clips.push((source, par.clip_begin_ms, par.clip_end_ms, base + local_pos));
+			pending_clips.push(PendingClip {
+				source,
+				begin_ms: par.clip_begin_ms,
+				end_ms: par.clip_end_ms,
+				start: position,
+			});
 		}
 	}
 
@@ -501,19 +560,19 @@ fn build_daisy_document(
 		item.media_type == "application/x-dtbncx+xml" || item.href.to_ascii_lowercase().ends_with(".ncx")
 	}) && let Ok(ncx_content) = read_text(&ncx_item.href)
 		&& !ncx_content.is_empty()
-		&& let Some(ncx_toc) = parse_daisy_ncx(&ncx_content, &id_positions)
+		&& let Some(ncx_toc) = parse_daisy_ncx(&ncx_content, &dir_of(&ncx_item.href), &id_positions, &smil_anchors)
 		&& !ncx_toc.is_empty()
 	{
 		toc_items = Some(ncx_toc);
 	}
 	let toc_items = toc_items.unwrap_or_else(|| build_toc_from_buffer(&buffer));
 
-	pending_clips.sort_by_key(|clip| clip.3);
+	let resolved_clips = bound_open_ended_clips(&pending_clips);
 	let doc_end = buffer.current_position();
-	for index in 0..pending_clips.len() {
-		let (source, begin_ms, end_ms, start) = pending_clips[index];
-		let end = pending_clips.get(index + 1).map_or(doc_end, |next| next.3);
-		audio_builder.add_clip(source, begin_ms, end_ms, start, end);
+	for index in 0..resolved_clips.len() {
+		let clip = &resolved_clips[index];
+		let end = resolved_clips.get(index + 1).map_or(doc_end, |next| next.start);
+		audio_builder.add_clip(clip.source, clip.begin_ms, clip.end_ms, clip.start, end);
 	}
 	let audio = audio_builder.build();
 
@@ -543,25 +602,63 @@ fn extract_daisy2_links(ncc_content: &str) -> Vec<String> {
 	links
 }
 
-fn parse_daisy_ncx(ncx_content: &str, id_positions: &HashMap<String, usize>) -> Option<Vec<TocItem>> {
+/// Parses an NCX `navMap` into TOC items. `smil_anchors` maps ids *within the SMIL files* to
+/// text positions: in an audio DAISY 3 book a navPoint's `content/@src` points into the SMIL,
+/// not into the `DTBook`, so resolving it against `id_positions` alone would silently strand
+/// every entry at the start of the book. Text-only books, whose navPoints do point at
+/// `DTBook` ids, pass an empty map. Returns `None` when nothing resolved at all, letting the
+/// caller fall back to a TOC built from the text itself rather than serve a uniformly wrong one.
+fn parse_daisy_ncx(
+	ncx_content: &str,
+	ncx_dir: &str,
+	id_positions: &HashMap<String, usize>,
+	smil_anchors: &HashMap<String, usize>,
+) -> Option<Vec<TocItem>> {
 	let ncx_doc =
 		XmlDocument::parse_with_options(ncx_content, ParsingOptions { allow_dtd: true, ..ParsingOptions::default() })
 			.ok()?;
 	let nav_map =
 		ncx_doc.descendants().find(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "navMap")?;
 	let mut items = Vec::new();
+	let mut resolved_any = false;
 	for navpoint in nav_map.children() {
 		if navpoint.node_type() == NodeType::Element
 			&& navpoint.tag_name().name() == "navPoint"
-			&& let Some(item) = convert_daisy_navpoint(navpoint, id_positions)
+			&& let Some(item) = convert_daisy_navpoint(navpoint, ncx_dir, id_positions, smil_anchors, &mut resolved_any)
 		{
 			items.push(item);
 		}
 	}
-	if items.is_empty() { None } else { Some(items) }
+	if items.is_empty() || !resolved_any { None } else { Some(items) }
 }
 
-fn convert_daisy_navpoint(nav: Node, id_positions: &HashMap<String, usize>) -> Option<TocItem> {
+/// The text position a navPoint's `content/@src` names, looked up path-qualified first (which
+/// can't collide across files) and then bare. `resolved_any` records whether any navPoint in
+/// the whole map found a real target.
+fn resolve_navpoint_offset(
+	content_src: &str,
+	ncx_dir: &str,
+	id_positions: &HashMap<String, usize>,
+	smil_anchors: &HashMap<String, usize>,
+) -> Option<usize> {
+	let (file_part, fragment) = content_src.split_once('#')?;
+	let qualified =
+		(!file_part.is_empty()).then(|| format!("{}#{fragment}", resolve_relative_path(ncx_dir, file_part)));
+	qualified
+		.as_ref()
+		.and_then(|key| smil_anchors.get(key).or_else(|| id_positions.get(key)))
+		.or_else(|| smil_anchors.get(fragment))
+		.or_else(|| id_positions.get(fragment))
+		.copied()
+}
+
+fn convert_daisy_navpoint(
+	nav: Node,
+	ncx_dir: &str,
+	id_positions: &HashMap<String, usize>,
+	smil_anchors: &HashMap<String, usize>,
+	resolved_any: &mut bool,
+) -> Option<TocItem> {
 	let label = nav
 		.children()
 		.find(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "navLabel")
@@ -582,16 +679,15 @@ fn convert_daisy_navpoint(nav: Node, id_positions: &HashMap<String, usize>) -> O
 	}
 	let target_id =
 		content_src.find('#').map_or_else(|| nav.attribute("id").unwrap_or(content_src), |idx| &content_src[idx + 1..]);
-	let offset = id_positions
-		.get(target_id)
-		.or_else(|| nav.attribute("id").and_then(|id| id_positions.get(id)))
-		.copied()
-		.unwrap_or(0);
-	let mut item = TocItem::new(label, target_id.to_string(), offset);
+	let offset = resolve_navpoint_offset(content_src, ncx_dir, id_positions, smil_anchors)
+		.or_else(|| id_positions.get(target_id).copied())
+		.or_else(|| nav.attribute("id").and_then(|id| id_positions.get(id)).copied());
+	*resolved_any |= offset.is_some();
+	let mut item = TocItem::new(label, target_id.to_string(), offset.unwrap_or(0));
 	for child in nav.children() {
 		if child.node_type() == NodeType::Element
 			&& child.tag_name().name() == "navPoint"
-			&& let Some(child_item) = convert_daisy_navpoint(child, id_positions)
+			&& let Some(child_item) = convert_daisy_navpoint(child, ncx_dir, id_positions, smil_anchors, resolved_any)
 		{
 			item.children.push(child_item);
 		}
@@ -854,6 +950,153 @@ mod tests {
 		let p2_pos = document.buffer.content.find("Second sentence.").unwrap();
 		let clip_index = audio.clip_index_at_position(p2_pos).expect("second sentence should be narrated");
 		assert_eq!(audio.clip_start_ms(clip_index), Some(2000));
+	}
+
+	/// A DAISY 3 NCX points `content/@src` at SMIL ids, not `DTBook` ids. Here the SMIL par
+	/// ids are deliberately unrelated to the `DTBook` ids (as producers other than Bookshare
+	/// number them), so resolving against `DTBook` ids alone would strand every entry at 0.
+	#[test]
+	fn ncx_targets_resolve_through_smil_par_ids() {
+		let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://openebook.org/namespaces/oeb-package/1.0/" unique-identifier="bookid">
+  <metadata><dc-metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:Title>Smil Ncx Book</dc:Title></dc-metadata></metadata>
+  <manifest>
+    <item id="xml1" href="book1.xml" media-type="application/x-dtbook+xml" />
+    <item id="ncx" href="book.ncx" media-type="application/x-dtbncx+xml" />
+    <item id="audio1" href="book1.mp3" media-type="audio/mpeg" />
+    <item id="smil1" href="section1.smil" media-type="application/smil" />
+  </manifest>
+  <spine><itemref idref="smil1" /></spine>
+</package>"#;
+		let book1 = br#"<?xml version="1.0" encoding="UTF-8"?>
+<dtbook><book><bodymatter>
+<h1 id="h1">Chapter One</h1>
+<p id="p1">First paragraph.</p>
+<h1 id="h2">Chapter Two</h1>
+</bodymatter></book></dtbook>"#;
+		let smil1 = br#"<smil xmlns="http://www.w3.org/2001/SMIL20/"><body><seq id="baseseq">
+<par id="tcp00001"><text src="book1.xml#h1" /><audio src="book1.mp3" clipBegin="0s" clipEnd="2s" /></par>
+<par id="tcp00002"><text src="book1.xml#p1" /><audio src="book1.mp3" clipBegin="2s" clipEnd="5s" /></par>
+<par id="tcp00003"><text src="book1.xml#h2" /><audio src="book1.mp3" clipBegin="5s" clipEnd="7s" /></par>
+</seq></body></smil>"#;
+		let ncx = br#"<?xml version="1.0" encoding="UTF-8"?>
+<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/"><navMap>
+<navPoint id="np1"><navLabel><text>Chapter One</text></navLabel><content src="section1.smil#tcp00001" /></navPoint>
+<navPoint id="np2"><navLabel><text>Chapter Two</text></navLabel><content src="section1.smil#tcp00003" /></navPoint>
+</navMap></ncx>"#;
+
+		let zip_bytes = write_zip(&[
+			("book.opf", opf.as_slice()),
+			("book1.xml", book1.as_slice()),
+			("book.ncx", ncx.as_slice()),
+			("section1.smil", smil1.as_slice()),
+			("book1.mp3", b"fake-mp3"),
+		]);
+		let dir = TempDir::new("daisy_smil_ncx");
+		let zip_path = dir.path().join("book.zip");
+		fs::write(&zip_path, &zip_bytes).expect("write zip");
+
+		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
+		let document = DaisyParser.parse(&context).expect("DAISY parse should succeed");
+
+		assert_eq!(document.toc_items.len(), 2);
+		let chapter_two = document.buffer.content.find("Chapter Two").unwrap();
+		assert_eq!(document.toc_items[0].offset, document.buffer.content.find("Chapter One").unwrap());
+		assert_eq!(document.toc_items[1].offset, chapter_two, "second entry must not be stranded at 0");
+	}
+
+	/// An NCX naming a `<seq>` rather than a `<par>` resolves to where that `<seq>` begins.
+	#[test]
+	fn ncx_targets_resolve_through_smil_seq_ids() {
+		let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://openebook.org/namespaces/oeb-package/1.0/" unique-identifier="bookid">
+  <metadata><dc-metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:Title>Seq Ncx Book</dc:Title></dc-metadata></metadata>
+  <manifest>
+    <item id="xml1" href="book1.xml" media-type="application/x-dtbook+xml" />
+    <item id="ncx" href="book.ncx" media-type="application/x-dtbncx+xml" />
+    <item id="audio1" href="book1.mp3" media-type="audio/mpeg" />
+    <item id="smil1" href="section1.smil" media-type="application/smil" />
+  </manifest>
+  <spine><itemref idref="smil1" /></spine>
+</package>"#;
+		let book1 = br#"<?xml version="1.0" encoding="UTF-8"?>
+<dtbook><book><bodymatter>
+<h1 id="h1">Chapter One</h1>
+<h1 id="h2">Chapter Two</h1>
+</bodymatter></book></dtbook>"#;
+		let smil1 = br#"<smil xmlns="http://www.w3.org/2001/SMIL20/"><body><seq id="baseseq">
+<seq id="chapter1"><par id="p_a"><text src="book1.xml#h1" /><audio src="book1.mp3" clipBegin="0s" clipEnd="2s" /></par></seq>
+<seq id="chapter2"><par id="p_b"><text src="book1.xml#h2" /><audio src="book1.mp3" clipBegin="2s" clipEnd="4s" /></par></seq>
+</seq></body></smil>"#;
+		let ncx = br#"<?xml version="1.0" encoding="UTF-8"?>
+<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/"><navMap>
+<navPoint id="np2"><navLabel><text>Chapter Two</text></navLabel><content src="section1.smil#chapter2" /></navPoint>
+</navMap></ncx>"#;
+
+		let zip_bytes = write_zip(&[
+			("book.opf", opf.as_slice()),
+			("book1.xml", book1.as_slice()),
+			("book.ncx", ncx.as_slice()),
+			("section1.smil", smil1.as_slice()),
+			("book1.mp3", b"fake-mp3"),
+		]);
+		let dir = TempDir::new("daisy_seq_ncx");
+		let zip_path = dir.path().join("book.zip");
+		fs::write(&zip_path, &zip_bytes).expect("write zip");
+
+		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
+		let document = DaisyParser.parse(&context).expect("DAISY parse should succeed");
+
+		assert_eq!(document.toc_items.len(), 1);
+		assert_eq!(document.toc_items[0].offset, document.buffer.content.find("Chapter Two").unwrap());
+	}
+
+	/// `clipEnd` is optional in SMIL 2.0 and means "to the end of the media". Such a par must
+	/// keep its audio, bounded by whatever plays next from the same file.
+	#[test]
+	fn par_without_clip_end_is_bounded_by_the_next_clip_on_the_same_source() {
+		let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://openebook.org/namespaces/oeb-package/1.0/" unique-identifier="bookid">
+  <metadata><dc-metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:Title>Open Clip Book</dc:Title></dc-metadata></metadata>
+  <manifest>
+    <item id="xml1" href="book1.xml" media-type="application/x-dtbook+xml" />
+    <item id="audio1" href="book1.mp3" media-type="audio/mpeg" />
+    <item id="smil1" href="section1.smil" media-type="application/smil" />
+  </manifest>
+  <spine><itemref idref="smil1" /></spine>
+</package>"#;
+		let book1 = br#"<?xml version="1.0" encoding="UTF-8"?>
+<dtbook><book><bodymatter>
+<p id="p1">First sentence.</p>
+<p id="p2">Second sentence.</p>
+<p id="p3">Third sentence.</p>
+</bodymatter></book></dtbook>"#;
+		// p1 has no clipEnd and must be bounded by p2's clipBegin; p3 is the trailing
+		// open-ended clip, which has nothing to measure against.
+		let smil1 = br#"<smil xmlns="http://www.w3.org/2001/SMIL20/"><body><seq id="s">
+<par id="par1"><text src="book1.xml#p1" /><audio src="book1.mp3" clipBegin="0s" /></par>
+<par id="par2"><text src="book1.xml#p2" /><audio src="book1.mp3" clipBegin="3s" clipEnd="5s" /></par>
+<par id="par3"><text src="book1.xml#p3" /><audio src="book1.mp3" clipBegin="5s" /></par>
+</seq></body></smil>"#;
+
+		let zip_bytes = write_zip(&[
+			("book.opf", opf.as_slice()),
+			("book1.xml", book1.as_slice()),
+			("section1.smil", smil1.as_slice()),
+			("book1.mp3", b"fake-mp3"),
+		]);
+		let dir = TempDir::new("daisy_open_clip");
+		let zip_path = dir.path().join("book.zip");
+		fs::write(&zip_path, &zip_bytes).expect("write zip");
+
+		let context = ParserContext::new(zip_path.to_string_lossy().to_string());
+		let document = DaisyParser.parse(&context).expect("DAISY parse should succeed");
+
+		let audio = document.audio.expect("audio timeline should be populated");
+		assert_eq!(audio.clips().len(), 2, "the open-ended first par must survive; only the trailing one is dropped");
+		assert_eq!(audio.clips()[0].clip_begin_ms, 0);
+		assert_eq!(audio.clips()[0].clip_end_ms, 3000, "bounded by the next clip against the same source");
+		assert_eq!(audio.total_duration_ms(), 3000 + 2000);
 	}
 
 	/// One unparseable chapter shouldn't cost the reader the rest of the book.

@@ -245,6 +245,26 @@ impl XmlToText {
 		}
 	}
 
+	/// Records every id *inside* `node` at `position`. `<a>` and `<table>` emit their text
+	/// through a helper and skip recursing into their children, so without this the ids on
+	/// those children are never seen at all — and a DAISY SMIL `<par>` anchored to one (a
+	/// narrated `<em>` inside a link, say) loses its audio clip entirely. `position` is the
+	/// containing element's own start, since the skipped subtree's text is emitted as one
+	/// run with no per-descendant offsets to attribute; for the common case of an element
+	/// wrapping the whole link that is exactly right.
+	fn record_descendant_ids(&mut self, node: Node<'_, '_>, position: usize) {
+		if !self.in_body {
+			return;
+		}
+		for descendant in node.descendants().skip(1) {
+			if descendant.is_element()
+				&& let Some(id) = descendant.attribute("id").or_else(|| descendant.attribute("name"))
+			{
+				self.id_positions.entry(id.to_string()).or_insert(position);
+			}
+		}
+	}
+
 	fn handle_element_opening_xml(&mut self, tag_name: &str, node: Node<'_, '_>) -> bool {
 		let mut skip_children = false;
 		// Recorded before the tag-specific handling below, which (notably for `<a>`) can push
@@ -284,6 +304,7 @@ impl XmlToText {
 				let link_offset = self.get_current_text_position();
 				self.current_line.push_str(&processed_link_text);
 				self.links.push(LinkInfo { offset: link_offset, text: processed_link_text, reference: href });
+				self.record_descendant_ids(node, link_offset);
 				skip_children = true;
 			}
 		} else if Self::tag_is(tag_name, "body")
@@ -354,6 +375,7 @@ impl XmlToText {
 		let table_xml = node.document().input_text()[node.range()].to_string();
 		let start_offset = self.get_current_text_position();
 		self.resync_id_position(node, start_offset);
+		self.record_descendant_ids(node, start_offset);
 		// Emit the table's on-screen text via the shared helper instead of recursing children to
 		// emit one cell per line. The helper output may contain tabs and span multiple lines; push
 		// each line verbatim so tab separators and empty cells survive whitespace collapsing.
@@ -750,6 +772,30 @@ mod tests {
 		let heading_offset = headings[0].offset;
 		assert_eq!(converter.get_id_positions().get("hdr1").copied(), Some(heading_offset));
 		assert_eq!(&converter.get_text()[heading_offset..heading_offset + "Chapter One".len()], "Chapter One");
+	}
+
+	// `<a>` emits its text in one go and skips its children, so ids on elements inside a link
+	// were never recorded — losing the audio clip of any DAISY SMIL par anchored to one.
+	#[test]
+	fn ids_inside_a_link_are_recorded_at_the_links_start() {
+		let xml = r##"<root><body><p>Before. <a href="#x"><em id="em1">Title Page</em></a></p></body></root>"##;
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(xml));
+		let link_offset = converter.get_links()[0].offset;
+		assert_eq!(converter.get_id_positions().get("em1").copied(), Some(link_offset));
+		assert_eq!(&converter.get_text()[link_offset..link_offset + "Title Page".len()], "Title Page");
+	}
+
+	// Same skipped-subtree problem for tables, which emit their text through a helper.
+	#[test]
+	fn ids_inside_a_table_are_recorded_at_the_tables_start() {
+		let xml =
+			r#"<root><body><p>Before.</p><table id="t1"><tr><td id="cell1">Value</td></tr></table></body></root>"#;
+		let mut converter = XmlToText::new();
+		assert!(converter.convert(xml));
+		let table_offset = converter.get_id_positions().get("t1").copied().expect("table id recorded");
+		assert_eq!(converter.get_id_positions().get("cell1").copied(), Some(table_offset));
+		assert_ne!(table_offset, 0, "table should start after the preceding paragraph");
 	}
 
 	// Same off-by-one-line bug as headings/list items/tables/`<hr>`, which
