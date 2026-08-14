@@ -244,6 +244,16 @@ impl AudioPlayer {
 		};
 		state.timeline.elapsed_for_source_position(source, raw_ms)
 	}
+
+	/// Where playback would resume right now, for saving as this document's audio position.
+	/// Falls back to a seek that was deferred because it arrived while paused (see
+	/// `pending_target_ms`), so browsing a paused book still records where it would pick up.
+	/// `None` means nothing has established a position yet, and callers must not treat that
+	/// as "the start" — it would wipe a perfectly good stored position.
+	#[must_use]
+	pub fn resume_point_ms(&self) -> Option<u64> {
+		self.elapsed_ms().or_else(|| self.state.borrow().pending_target_ms)
+	}
 }
 
 fn apply_seek(media: MediaCtrl, state: &Rc<RefCell<PlayerState>>, source_index: usize, seek_ms: u64, playing: bool) {

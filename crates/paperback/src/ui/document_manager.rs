@@ -292,8 +292,20 @@ impl DocumentManager {
 			0
 		};
 		self.tabs[tab_index].session.set_stable_position(initial_pos);
+		// Resume the narration from the time that was actually reached, not from the caret.
+		// Deriving it from the caret only lands on the start of whichever clip contains that
+		// position, so it loses however much of that clip had already played — and loses
+		// everything since the last explicit jump if the caret wasn't following the audio.
+		let saved_audio_time = config.get_document_audio_time(&path_str);
 		if let Some(player) = self.tabs[tab_index].audio_player.as_mut() {
-			player.seek_to_position(usize::try_from(initial_pos).unwrap_or(0));
+			match saved_audio_time {
+				Some(time_ms) => {
+					player.seek_to_ms(time_ms);
+				}
+				None => {
+					player.seek_to_position(usize::try_from(initial_pos).unwrap_or(0));
+				}
+			}
 		}
 		if track {
 			config.add_recent_document(&path_str);
@@ -319,6 +331,10 @@ impl DocumentManager {
 			if save_state && tab.track {
 				let position = tab.text_ctrl.get_insertion_point();
 				config.set_document_position(&path_str, position);
+				config.set_document_audio_time(
+					&path_str,
+					tab.audio_player.as_ref().and_then(AudioPlayer::resume_point_ms),
+				);
 				let (history, history_index) = tab.session.get_history();
 				config.set_navigation_history(&path_str, history, history_index);
 				config.set_document_opened(&path_str, false);
@@ -366,6 +382,7 @@ impl DocumentManager {
 			let position = tab.text_ctrl.get_insertion_point();
 			let path_str = tab.file_path.to_string_lossy();
 			config.set_document_position(&path_str, position);
+			config.set_document_audio_time(&path_str, tab.audio_player.as_ref().and_then(AudioPlayer::resume_point_ms));
 			let (history, history_index) = tab.session.get_history();
 			config.set_navigation_history(&path_str, history, history_index);
 		}
@@ -396,6 +413,7 @@ impl DocumentManager {
 			let path_str = tab.file_path.to_string_lossy();
 			let config = self.config.lock().unwrap();
 			config.set_document_position(&path_str, position);
+			config.set_document_audio_time(&path_str, tab.audio_player.as_ref().and_then(AudioPlayer::resume_point_ms));
 			config.flush();
 		}
 		self.last_position_save.set(Some(now));
