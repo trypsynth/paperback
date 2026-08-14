@@ -1343,6 +1343,32 @@ impl DocumentSession {
 		buf.content[start_byte..line_end_byte].to_string()
 	}
 
+	/// Returns the first non-blank line of real content at or after `position`, skipping blank
+	/// lines and bare page-number headers (e.g. "27" or "Page 27"). Returns an empty string if
+	/// no such line exists. Used for page-navigation announcements so the page number isn't
+	/// announced twice (the page marker's own text is a "Page N" label).
+	#[must_use]
+	pub fn first_content_line_after(&self, position: i64) -> String {
+		let buf = &self.handle.document().buffer;
+		let total_chars = buf.char_count();
+		let mut pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
+		let newlines = buf.newline_positions();
+		loop {
+			let idx = newlines.partition_point(|&p| p < pos);
+			let line_start = if idx == 0 { 0 } else { newlines[idx - 1] + 1 };
+			let line_end = newlines.get(idx).copied().unwrap_or(total_chars);
+			let line =
+				self.get_text_range(i64::try_from(line_start).unwrap_or(0), i64::try_from(line_end).unwrap_or(0));
+			if is_content_line(line.trim()) {
+				return line;
+			}
+			if line_end >= total_chars {
+				return String::new();
+			}
+			pos = line_end + 1;
+		}
+	}
+
 	#[must_use]
 	pub fn get_line_markers(&self, line: i64) -> Vec<LineMarker> {
 		let start_pos = self.position_from_line(line);
@@ -1409,6 +1435,17 @@ impl DocumentSession {
 	}
 }
 
+/// Whether a trimmed line looks like real page content rather than a blank line, a bare page
+/// number ("27", "27 / 300"), or a "Page N" header.
+fn is_content_line(trimmed: &str) -> bool {
+	if trimmed.is_empty() {
+		return false;
+	}
+	let lower = trimmed.to_ascii_lowercase();
+	let body = lower.strip_prefix("page ").unwrap_or(&lower);
+	body.chars().any(|c| c.is_alphabetic())
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -1444,6 +1481,38 @@ mod tests {
 			parser_flags,
 			last_stable_position: None,
 		}
+	}
+
+	fn session_with_content(content: &str) -> DocumentSession {
+		let mut buffer = DocumentBuffer::with_content(content.to_string());
+		let mut doc = Document::new().with_title("Title".to_string()).with_author("Author".to_string());
+		doc.set_buffer(buffer);
+		DocumentSession {
+			handle: DocumentHandle::new(doc),
+			file_path: "book.epub".to_string(),
+			history: Vec::new(),
+			history_index: 0,
+			parser_flags: ParserFlags::empty(),
+			last_stable_position: None,
+		}
+	}
+
+	#[test]
+	fn first_content_line_after_skips_headers_and_blank_lines() {
+		let session = session_with_content("27\n\nChapter One\nThe old house stood at the end of the lane.\n");
+		assert_eq!(session.first_content_line_after(0), "Chapter One");
+	}
+
+	#[test]
+	fn first_content_line_after_skips_bare_page_number_header() {
+		let session = session_with_content("27\n\nThe old house stood at the end of the lane.\n");
+		assert_eq!(session.first_content_line_after(0), "The old house stood at the end of the lane.");
+	}
+
+	#[test]
+	fn first_content_line_after_returns_empty_without_content() {
+		let session = session_with_content("27\n\n");
+		assert_eq!(session.first_content_line_after(0), "");
 	}
 
 	#[test]
