@@ -41,26 +41,27 @@ pub(super) fn build_ok_cancel_buttons(dialog: Dialog, ok_label: &str) -> (Button
 	(ok_button, cancel_button)
 }
 
-/// Appends a right-aligned OK/Cancel button row to `content_sizer`: a stretch spacer,
-/// then `ok_button`, then `cancel_button`, each padded by [`DIALOG_PADDING`] on all
-/// sides. The shape shared by most of this module's simpler dialogs.
+/// Appends an OK/Cancel button row to `content_sizer` using a native
+/// `wxStdDialogButtonSizer`, which reorders the buttons and applies spacing to match
+/// the platform HIG (Cancel/OK on macOS, OK/Cancel on Windows). The shape shared by
+/// most of this module's simpler dialogs.
 pub(super) fn add_ok_cancel_footer(content_sizer: BoxSizer, ok_button: Button, cancel_button: Button) {
-	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&ok_button, 0, SizerFlag::All, DIALOG_PADDING);
-	button_sizer.add(&cancel_button, 0, SizerFlag::All, DIALOG_PADDING);
-	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
+	let button_sizer = StdDialogButtonSizerBuilder::new().build();
+	button_sizer.add_button(&ok_button);
+	button_sizer.add_button(&cancel_button);
+	button_sizer.realize();
+	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
 }
 
-/// Appends a right-aligned single-button row (e.g. "Close") to `content_sizer`: a
-/// stretch spacer then `button`, padded by [`DIALOG_PADDING`] on all sides. The
-/// single-button counterpart to [`add_ok_cancel_footer`], for dialogs (Document
-/// Info, View Note) that only need a dismiss action.
+/// Appends a single-button row (e.g. "Close") to `content_sizer` via a native
+/// `wxStdDialogButtonSizer`. The single-button counterpart to
+/// [`add_ok_cancel_footer`], for dialogs (Document Info, View Note) that only need a
+/// dismiss action.
 pub(super) fn add_single_button_footer(content_sizer: BoxSizer, button: Button) {
-	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&button, 0, SizerFlag::All, DIALOG_PADDING);
-	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand, 0);
+	let button_sizer = StdDialogButtonSizerBuilder::new().build();
+	button_sizer.add_button(&button);
+	button_sizer.realize();
+	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
 }
 
 mod about;
