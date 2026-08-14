@@ -3,28 +3,34 @@ use std::{
 	path::{Path, PathBuf},
 	process::Command,
 	rc::Rc,
-	sync::{
-		Arc, Mutex,
-		atomic::{AtomicUsize, Ordering},
-	},
+	sync::{Mutex, atomic::AtomicUsize},
 };
+#[cfg(not(target_os = "macos"))]
+use std::sync::{Arc, atomic::Ordering};
 
 mod lang_readmes {
 	include!(concat!(env!("OUT_DIR"), "/lang_readmes.rs"));
 }
 
-use paperback_core::{config::ConfigManager, parser, version};
+use paperback_core::{config::ConfigManager, parser};
+#[cfg(not(target_os = "macos"))]
+use paperback_core::version;
 use patois::t;
+#[cfg(not(target_os = "macos"))]
 use ship_shape::{UpdateChannel as ShipChannel, UpdaterConfig};
 use wx_utils::show_error;
 use wxdragon::prelude::*;
 
 use super::{dialogs, document_manager::DocumentManager};
-use crate::{config_ext::UpdateChannel, translation_manager::TranslationManager};
+#[cfg(not(target_os = "macos"))]
+use crate::config_ext::UpdateChannel;
+use crate::translation_manager::TranslationManager;
 
 pub static MAIN_WINDOW_PTR: AtomicUsize = AtomicUsize::new(0);
 
+#[cfg(not(target_os = "macos"))]
 const PAPERBACK_GITHUB_REPO: &str = "trypsynth/paperback";
+#[cfg(not(target_os = "macos"))]
 const PAPERBACK_MINISIGN_KEY: &str = "RWQasnbWXwK2dhno9ThUm8HONEIo85iiDBZvw3jlNs574QJHEkoRiGX7";
 
 // Matches the `-x64`/`-arm64` suffixes the release workflow appends to Windows asset names
@@ -34,9 +40,10 @@ const PAPERBACK_MINISIGN_KEY: &str = "RWQasnbWXwK2dhno9ThUm8HONEIo85iiDBZvw3jlNs
 const UPDATE_ASSET_SUFFIX: &str = "-x64";
 #[cfg(all(target_os = "windows", target_arch = "aarch64"))]
 const UPDATE_ASSET_SUFFIX: &str = "-arm64";
-#[cfg(not(target_os = "windows"))]
+#[cfg(not(any(target_os = "windows", target_os = "macos")))]
 const UPDATE_ASSET_SUFFIX: &str = "";
 
+#[cfg(not(target_os = "macos"))]
 pub fn run_update_check(silent: bool, channel: UpdateChannel) {
 	tracing::info!(channel = %channel, silent, "checking for updates");
 	let config = Arc::new(
@@ -64,6 +71,7 @@ pub fn run_update_check(silent: bool, channel: UpdateChannel) {
 	);
 }
 
+#[cfg(not(target_os = "macos"))]
 pub fn is_installer_distribution() -> bool {
 	let Ok(exe_path) = env::current_exe() else {
 		return false;

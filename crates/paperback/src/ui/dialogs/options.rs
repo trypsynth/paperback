@@ -163,7 +163,9 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	general_sizer.add(&start_maximized_check, 0, SizerFlag::All, option_padding);
 	#[cfg(not(target_os = "macos"))]
 	general_sizer.add(&minimize_to_tray_check, 0, SizerFlag::All, option_padding);
+	#[cfg(not(target_os = "macos"))]
 	general_sizer.add(&check_for_updates_check, 0, SizerFlag::All, option_padding);
+	#[cfg(not(target_os = "macos"))]
 	general_sizer.add(&hotkey_button, 0, SizerFlag::All, option_padding);
 	reading_sizer.add(&navigation_wrap_check, 0, SizerFlag::All, option_padding);
 	#[cfg(target_os = "windows")]
@@ -209,12 +211,11 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	update_channel_combo.append(&t("Stable"));
 	// TRANSLATORS: Developer/development update channel option
 	update_channel_combo.append(&t("Dev"));
-	#[cfg(target_os = "macos")]
-	update_channel_combo.set_accessibility_label(channel_label_text.trim_end_matches(':').trim());
 
 	let channel_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	channel_sizer.add(&channel_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	channel_sizer.add(&update_channel_combo, 0, SizerFlag::AlignCenterVertical, 0);
+	#[cfg(not(target_os = "macos"))]
 	general_sizer.add_sizer(&channel_sizer, 0, SizerFlag::All, option_padding);
 	// TRANSLATORS: Label/header for the Font options section
 	let font_group_box = StaticBox::builder(&readability_panel).with_label(&t("Font")).build();
