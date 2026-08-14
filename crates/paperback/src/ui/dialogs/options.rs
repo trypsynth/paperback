@@ -367,7 +367,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	navigation_wrap_check.set_value(config.get_app_bool("navigation_wrap", false));
 	line_start_nav_check.set_value(config.get_app_bool("line_start_navigation", false));
 	bookmark_sounds_check.set_value(config.get_app_bool("bookmark_sounds", true));
-	sync_caret_to_audio_check.set_value(config.get_app_bool("sync_caret_to_audio", false));
+	sync_caret_to_audio_check.set_value(config.get_app_bool("sync_caret_to_audio", true));
 	auto_reload_check.set_value(config.get_app_bool("auto_reload_documents", true));
 	check_for_updates_check.set_value(config.get_app_bool("check_for_updates_on_startup", true));
 	recent_docs_ctrl.set_value(config.get_app_int("recent_documents_to_show", 25).clamp(0, max_recent_docs));

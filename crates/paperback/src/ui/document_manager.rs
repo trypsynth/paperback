@@ -592,7 +592,7 @@ impl DocumentManager {
 	/// When "sync caret to audio" is on, moves the caret to follow playback. Called from a
 	/// recurring timer; a no-op for documents with no audio.
 	pub fn pump_audio(&mut self) {
-		let sync_enabled = self.config.lock().unwrap().get_app_bool("sync_caret_to_audio", false);
+		let sync_enabled = self.config.lock().unwrap().get_app_bool("sync_caret_to_audio", true);
 		let Some(tab) = self.active_tab_mut() else {
 			return;
 		};
