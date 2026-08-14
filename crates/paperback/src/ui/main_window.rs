@@ -61,6 +61,10 @@ pub struct MainWindow {
 	_find_dialog: Rc<Mutex<Option<FindDialogState>>>,
 	#[cfg(target_os = "windows")]
 	_hotkey_handle: Rc<RefCell<Option<HotkeyHandle>>>,
+	/// Recurring timers, held for the window's lifetime. `Timer`'s `Drop` destroys the
+	/// underlying `wxTimer`, which stops it, so a timer that is only started and then dropped
+	/// at the end of the function that set it up never fires again.
+	_timers: Vec<Rc<Timer<Frame>>>,
 }
 
 #[cfg(target_os = "windows")]
@@ -94,7 +98,7 @@ impl MainWindow {
 		let find_dialog = Rc::new(Mutex::new(None));
 		#[cfg(target_os = "windows")]
 		let hotkey_handle = Rc::new(RefCell::new(start_hotkey_listener(&config.lock().unwrap().get_hotkey())));
-		Self::bind_menu_events(
+		let timers = Self::bind_menu_events(
 			&frame,
 			&doc_manager,
 			&config,
@@ -256,6 +260,7 @@ impl MainWindow {
 			_find_dialog: find_dialog,
 			#[cfg(target_os = "windows")]
 			_hotkey_handle: hotkey_handle,
+			_timers: timers,
 		}
 	}
 
@@ -606,7 +611,7 @@ impl MainWindow {
 		find_dialog: &Rc<Mutex<Option<FindDialogState>>>,
 		live_region_label: StaticText,
 		#[cfg(target_os = "windows")] hotkey_handle: &Rc<RefCell<Option<HotkeyHandle>>>,
-	) {
+	) -> Vec<Rc<Timer<Frame>>> {
 		let frame_copy = *frame;
 		let dm = Rc::clone(doc_manager);
 		let config = Rc::clone(config);
@@ -619,10 +624,31 @@ impl MainWindow {
 		let sleep_timer_duration_minutes = Rc::new(Cell::new(0i32));
 		let sleep_timer_for_tick = Rc::clone(&sleep_timer);
 		let sleep_timer_running_for_tick = Rc::clone(&sleep_timer_running);
+		let sleep_timer_start_for_tick = Rc::clone(&sleep_timer_start_time);
+		let sleep_timer_duration_for_tick = Rc::clone(&sleep_timer_duration_minutes);
 		let frame_for_timer = *frame;
 		let dm_for_timer = Rc::clone(doc_manager);
 		let config_for_timer = Rc::clone(&config);
 		sleep_timer.on_tick(move |_| {
+			// `Timer::on_tick` binds `EventType::TIMER` on the *owner*, not on the timer, and
+			// wxdragon gives its timers no distinguishing id — so every timer parented to this
+			// frame delivers its ticks to every handler bound here. This one shuts the app down,
+			// so it has to confirm the deadline really passed rather than trust that being
+			// called means its own timer fired.
+			if !sleep_timer_running_for_tick.get() {
+				return;
+			}
+			let now_ms = SystemTime::now()
+				.duration_since(UNIX_EPOCH)
+				.ok()
+				.and_then(|d| i64::try_from(d.as_millis()).ok())
+				.unwrap_or(0);
+			let deadline_ms = sleep_timer_start_for_tick
+				.get()
+				.saturating_add(i64::from(sleep_timer_duration_for_tick.get()) * 60_000);
+			if now_ms < deadline_ms {
+				return;
+			}
 			tracing::info!("sleep timer fired, closing application");
 			sleep_timer_running_for_tick.set(false);
 			sleep_timer_for_tick.stop();
@@ -1760,6 +1786,7 @@ impl MainWindow {
 				}
 			}
 		});
+		vec![sleep_timer, status_update_timer, audio_sync_timer]
 	}
 }
 
