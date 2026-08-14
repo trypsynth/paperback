@@ -855,13 +855,9 @@ pub fn create_help_menu() -> Menu {
 		.append_separator();
 	#[cfg(not(target_os = "macos"))]
 	{
-		builder = builder
-			.append_item(menu_ids::CHECK_FOR_UPDATES, &updates_label, &updates_help)
-			.append_separator();
+		builder = builder.append_item(menu_ids::CHECK_FOR_UPDATES, &updates_label, &updates_help).append_separator();
 	}
-	builder
-		.append_item(menu_ids::DONATE, &donate_label, &donate_help)
-		.build()
+	builder.append_item(menu_ids::DONATE, &donate_label, &donate_help).build()
 }
 
 pub fn populate_recent_documents_menu(menu: &Menu, config: &ConfigManager) {

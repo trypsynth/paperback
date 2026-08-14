@@ -32,10 +32,10 @@ use super::{
 	navigation::{self, MarkerNavTarget},
 	status,
 };
-#[cfg(any(target_os = "linux", target_os = "windows"))]
-use crate::ipc::IpcCommand;
 #[cfg(not(target_os = "macos"))]
 use crate::config_ext::{UpdateChannel, get_update_channel};
+#[cfg(any(target_os = "linux", target_os = "windows"))]
+use crate::ipc::IpcCommand;
 use crate::{config_ext::set_update_channel, translation_manager::TranslationManager};
 
 const KEY_DELETE: i32 = 127;

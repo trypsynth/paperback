@@ -1,3 +1,5 @@
+#[cfg(not(target_os = "macos"))]
+use std::sync::{Arc, atomic::Ordering};
 use std::{
 	env, fs,
 	path::{Path, PathBuf},
@@ -5,16 +7,14 @@ use std::{
 	rc::Rc,
 	sync::{Mutex, atomic::AtomicUsize},
 };
-#[cfg(not(target_os = "macos"))]
-use std::sync::{Arc, atomic::Ordering};
 
 mod lang_readmes {
 	include!(concat!(env!("OUT_DIR"), "/lang_readmes.rs"));
 }
 
-use paperback_core::{config::ConfigManager, parser};
 #[cfg(not(target_os = "macos"))]
 use paperback_core::version;
+use paperback_core::{config::ConfigManager, parser};
 use patois::t;
 #[cfg(not(target_os = "macos"))]
 use ship_shape::{UpdateChannel as ShipChannel, UpdaterConfig};

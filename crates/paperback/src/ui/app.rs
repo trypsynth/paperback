@@ -13,10 +13,10 @@ use paperback_core::config::ConfigManager;
 use wxdragon::prelude::*;
 
 use super::MainWindow;
-#[cfg(any(target_os = "linux", target_os = "windows", test))]
-use crate::ipc::IPC_COMMAND_TOGGLE_VISIBILITY;
 #[cfg(not(target_os = "macos"))]
 use crate::config_ext::get_update_channel;
+#[cfg(any(target_os = "linux", target_os = "windows", test))]
+use crate::ipc::IPC_COMMAND_TOGGLE_VISIBILITY;
 use crate::{
 	config_ext::config_toml_path,
 	ipc::{IPC_COMMAND_ACTIVATE, IpcCommand, SINGLE_INSTANCE_NAME, normalize_cli_path},
