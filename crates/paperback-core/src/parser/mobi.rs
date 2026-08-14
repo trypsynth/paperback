@@ -978,17 +978,6 @@ fn parse_ncx(
 		return Vec::new();
 	}
 
-	let num_entries = (indx_rec.len() - idxt_start - 4) / 2;
-	let mut offsets = Vec::new();
-	for i in 0..num_entries {
-		let p = idxt_start + 4 + i * 2;
-		if p + 2 > indx_rec.len() {
-			break;
-		}
-		let off = u16::from_be_bytes(indx_rec[p..p + 2].try_into().unwrap()) as usize;
-		offsets.push(off);
-	}
-
 	let mut entries = Vec::new();
 	for i in 0..=count {
 		let rec_idx = ncx_index + i;

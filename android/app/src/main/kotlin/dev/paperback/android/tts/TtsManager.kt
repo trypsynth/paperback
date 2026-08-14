@@ -20,6 +20,7 @@ import dev.paperback.android.MainActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -643,5 +644,10 @@ class TtsManager(
 		// handling decides when it's actually safe for the service to go away.
 		serviceConnection?.let { context.unbindService(it) }
 		serviceConnection = null
+
+		// Last, so nothing torn down above can leave work queued: a late onDone callback
+		// would otherwise launch on this scope after shutdown and build a MediaPlayer for a
+		// temp file that no longer exists, with nothing left to release it.
+		ttsScope.cancel()
 	}
 }
