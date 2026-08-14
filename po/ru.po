@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-12 17:39+0000\n"
+"POT-Creation-Date: 2026-08-14 13:10+0000\n"
 "PO-Revision-Date: 2025-12-04 08:13+0300\n"
 "Last-Translator: <gulmagomedovruslan77@gmail.com>\n"
 "Language-Team: Russian\n"
@@ -1776,6 +1776,11 @@ msgstr "Конец раздела. "
 #, c-format
 msgid "%s Heading level %d"
 msgstr "%s уровень заголовка %d"
+
+#. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
+#, fuzzy, c-format
+msgid "Page %d"
+msgstr "Страница %d: %s"
 
 #. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
 #, c-format

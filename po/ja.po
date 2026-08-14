@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-12 17:39+0000\n"
+"POT-Creation-Date: 2026-08-14 13:10+0000\n"
 "PO-Revision-Date: 2026-06-25 21:58+0900\n"
 "Last-Translator: Kazto Kitabatake <contact@kitabatake1013.jp>\n"
 "Language-Team: \n"
@@ -1766,6 +1766,11 @@ msgstr "最後に戻ります。"
 #, c-format
 msgid "%s Heading level %d"
 msgstr "%s 見出しレベル%d"
+
+#. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
+#, fuzzy, c-format
+msgid "Page %d"
+msgstr "ページ%d: %s"
 
 #. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
 #, c-format

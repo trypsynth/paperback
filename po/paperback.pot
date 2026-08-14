@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-12 17:39+0000\n"
+"POT-Creation-Date: 2026-08-14 13:10+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1711,6 +1711,11 @@ msgstr ""
 #. TRANSLATORS: Announcement when landing on a heading; %s is the heading text, %d is the heading level number
 #, c-format
 msgid "%s Heading level %d"
+msgstr ""
+
+#. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
+#, c-format
+msgid "Page %d"
 msgstr ""
 
 #. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
