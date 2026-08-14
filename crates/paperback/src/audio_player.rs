@@ -248,13 +248,38 @@ impl AudioPlayer {
 
 fn apply_seek(media: MediaCtrl, state: &Rc<RefCell<PlayerState>>, source_index: usize, seek_ms: u64, playing: bool) {
 	state.borrow_mut().last_seek_target = Some((source_index, seek_ms));
-	let seek_result = media.seek(i64::try_from(seek_ms).unwrap_or(0), SeekMode::FromStart);
-	tracing::debug!(seek_ms, playing, seek_result, "audio: apply_seek");
+	let native_seek_ms = native_seek_target_ms(&media, seek_ms);
+	let seek_result = media.seek(i64::try_from(native_seek_ms).unwrap_or(0), SeekMode::FromStart);
+	tracing::debug!(seek_ms, native_seek_ms, playing, seek_result, "audio: apply_seek");
 	if playing {
 		media.play()
 	} else {
 		media.pause()
 	};
+}
+
+/// `wxWMP10MediaBackend::SetPosition` — the only Windows backend that reliably plays
+/// audio-only DAISY sources, see `AudioPlayer::new` — subtracts a full video frame's
+/// worth of time (`1000 / playback_rate` ms) from every seek target before applying it.
+/// It's a workaround upstream added so video controls redraw the correct frame after a
+/// seek (`src/msw/mediactrl_wmp10.cpp`, `SetPosition`), fired unconditionally even for
+/// audio-only media. Left uncompensated, every jump lands about a second before the
+/// intended clip — audible as the tail of the *previous* line instead of the one just
+/// navigated to (e.g. hearing "...District Twelve" instead of "End of Book Two"). Adding
+/// the same amount back before handing the target to the backend cancels it out. Other
+/// platforms' backends don't carry this bug, so the compensation is Windows-only.
+#[cfg(target_os = "windows")]
+fn native_seek_target_ms(media: &MediaCtrl, seek_ms: u64) -> u64 {
+	let rate = media.get_playback_rate();
+	let bias_ms = if rate > 0.0 { (1000.0 / rate).round() as u64 } else { 1000 };
+	let compensated = seek_ms.saturating_add(bias_ms);
+	let length_ms = u64::try_from(media.length().max(0)).unwrap_or(0);
+	if length_ms > 0 { compensated.min(length_ms) } else { compensated }
+}
+
+#[cfg(not(target_os = "windows"))]
+fn native_seek_target_ms(_media: &MediaCtrl, seek_ms: u64) -> u64 {
+	seek_ms
 }
 
 /// Entry point for switching to `source_index`: starts loading it immediately, unless a
