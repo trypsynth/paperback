@@ -497,6 +497,15 @@ class TtsManager(
 		}
 	}
 
+	/** Reflects a non-TTS playback engine's (e.g. DaisyAudioPlayer) play/pause state into
+	 * isSpeaking/isPaused and the MediaSession, so the UI, notification, and lock-screen
+	 * controls behave the same regardless of which engine is narrating. */
+	fun setExternalPlaybackState(isPlaying: Boolean) {
+		_isSpeaking.value = isPlaying
+		_isPaused.value = !isPlaying
+		updatePlaybackState(isPlaying)
+	}
+
 	fun resume() {
 		if (_isPaused.value) {
 			_isPaused.value = false

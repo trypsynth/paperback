@@ -53,6 +53,19 @@ impl ConfigManagerFfi {
 		self.inner.lock().unwrap().get_document_position(&path)
 	}
 
+	/// Persists the elapsed-audio-time resume point for a DAISY audiobook. `time_ms < 0`
+	/// leaves any stored value alone (see `ConfigManager::set_document_audio_time`) — a
+	/// document that hasn't started playing can't wipe a previously saved position.
+	pub fn set_document_audio_time_ffi(&self, path: String, time_ms: i64) {
+		let time_ms = u64::try_from(time_ms).ok();
+		self.inner.lock().unwrap().set_document_audio_time(&path, time_ms);
+	}
+
+	/// `-1` when no audio resume point has been stored for this document.
+	pub fn get_document_audio_time_ffi(&self, path: String) -> i64 {
+		self.inner.lock().unwrap().get_document_audio_time(&path).and_then(|ms| i64::try_from(ms).ok()).unwrap_or(-1)
+	}
+
 	pub fn set_document_password(&self, path: String, password: String) {
 		self.inner.lock().unwrap().set_document_password(&path, &password);
 	}

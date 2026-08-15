@@ -203,6 +203,28 @@ impl AudioTimeline {
 		}
 		(point.time_ms.min(self.total_duration_ms) as f64) / (self.total_duration_ms as f64)
 	}
+
+	/// Finds whichever source's narration picks up where `current`'s leaves off, for
+	/// auto-advancing playback across a chapter boundary (each DAISY chapter is typically
+	/// its own audio source file).
+	#[must_use]
+	pub fn next_source_after(&self, current: usize) -> Option<usize> {
+		let last_end_ms = self
+			.clips
+			.iter()
+			.enumerate()
+			.filter(|(_, clip)| clip.source == current)
+			.filter_map(|(index, clip)| Some(self.clip_start_ms(index)? + clip.duration_ms()))
+			.max()?;
+		self.clips
+			.iter()
+			.enumerate()
+			.filter(|(index, clip)| {
+				clip.source != current && self.clip_start_ms(*index).is_some_and(|start| start >= last_end_ms)
+			})
+			.min_by_key(|(index, _)| self.clip_start_ms(*index).unwrap_or(u64::MAX))
+			.map(|(_, clip)| clip.source)
+	}
 }
 
 #[derive(Debug, Clone, Default)]
@@ -401,6 +423,25 @@ mod tests {
 	fn elapsed_for_source_position_distinguishes_sources_sharing_a_text_anchor() {
 		let timeline = audiobook_timeline();
 		assert_eq!(timeline.elapsed_for_source_position(1, 50_000), Some(650_000));
+	}
+
+	#[test]
+	fn next_source_after_finds_the_source_that_continues_the_narration() {
+		let timeline = audiobook_timeline();
+		// part1 (source 0) ends where part2 (source 1) begins.
+		assert_eq!(timeline.next_source_after(0), Some(1));
+	}
+
+	#[test]
+	fn next_source_after_is_none_for_the_last_source() {
+		let timeline = audiobook_timeline();
+		assert_eq!(timeline.next_source_after(1), None);
+	}
+
+	#[test]
+	fn next_source_after_is_none_for_an_unknown_source() {
+		let timeline = narrated_timeline();
+		assert_eq!(timeline.next_source_after(9), None);
 	}
 
 	#[test]

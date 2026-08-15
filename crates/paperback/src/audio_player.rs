@@ -117,7 +117,7 @@ impl AudioPlayer {
 		media.on_finished(move |_| {
 			let next = {
 				let state = finished_state.borrow();
-				state.current_source.and_then(|current| next_source_after(&state.timeline, current))
+				state.current_source.and_then(|current| state.timeline.next_source_after(current))
 			};
 			tracing::debug!(?next, "audio: on_finished");
 			match next {
@@ -331,26 +331,6 @@ fn start_load(media: MediaCtrl, state: &Rc<RefCell<PlayerState>>, source_index: 
 	state.load_in_flight = true;
 	state.last_seek_target = Some((source_index, seek_ms));
 	true
-}
-
-/// Finds whichever source's narration picks up where `current`'s leaves off.
-fn next_source_after(timeline: &AudioTimeline, current: usize) -> Option<usize> {
-	let last_end_ms = timeline
-		.clips()
-		.iter()
-		.enumerate()
-		.filter(|(_, clip)| clip.source == current)
-		.filter_map(|(index, clip)| Some(timeline.clip_start_ms(index)? + clip.duration_ms()))
-		.max()?;
-	timeline
-		.clips()
-		.iter()
-		.enumerate()
-		.filter(|(index, clip)| {
-			clip.source != current && timeline.clip_start_ms(*index).is_some_and(|start| start >= last_end_ms)
-		})
-		.min_by_key(|(index, _)| timeline.clip_start_ms(*index).unwrap_or(u64::MAX))
-		.map(|(_, clip)| clip.source)
 }
 
 /// Resolves an `AudioLocation` to a real file path `MediaCtrl` can load. Zip-embedded

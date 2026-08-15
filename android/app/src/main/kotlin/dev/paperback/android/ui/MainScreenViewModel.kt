@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import dev.paperback.android.t
+import dev.paperback.android.tts.DaisyAudioPlayer
 import dev.paperback.android.tts.TtsManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -43,6 +44,14 @@ class MainScreenViewModel(
 	val configManager: ConfigManagerFfi get() = config
 
 	val ttsManager = TtsManager(application, config)
+
+	// Narrates DAISY audiobooks' recorded audio in place of synthesized TTS (see
+	// DocumentTabState.hasAudio). A single instance re-attached to whichever tab is active.
+	private val daisyAudioPlayer = DaisyAudioPlayer(application)
+
+	// The document URI daisyAudioPlayer is currently attached to.
+	private var daisyAttachedDocumentUri: String? = null
+
 	private val _currentSegmentType = MutableStateFlow(SegmentTypeFfi.PARAGRAPH)
 	val currentSegmentType: StateFlow<SegmentTypeFfi> = _currentSegmentType.asStateFlow()
 
@@ -181,6 +190,18 @@ class MainScreenViewModel(
 		ttsManager.onPauseCommand = { pauseTts() }
 		ttsManager.onNextCommand = { playNextSegment() }
 		ttsManager.onPrevCommand = { playPrevSegment() }
+		daisyAudioPlayer.onPlaybackStateChanged = { isPlaying ->
+			ttsManager.setExternalPlaybackState(isPlaying)
+			if (!isPlaying) persistDaisyAudioPosition()
+		}
+		daisyAudioPlayer.onClipChanged = { position ->
+			_ttsPosition.value = position
+			refreshSegmentPreview()
+			saveTtsPositionToConfig(position)
+			// Unlike desktop's on-close save, Android can kill this process with no lifecycle
+			// callback at all, so persist on every clip change rather than only on pause/stop.
+			persistDaisyAudioPosition()
+		}
 		viewModelScope.launch(Dispatchers.IO) {
 			config.initialize(context.filesDir.absolutePath + "/config.toml")
 			withContext(Dispatchers.Main) {
@@ -406,13 +427,15 @@ class MainScreenViewModel(
 			config.setDocumentPosition(documentUri, position)
 			config.flush()
 		}
-		if (ttsManager.isPaused.value) {
+		if (daisyAttachedDocumentUri != documentUri && ttsManager.isPaused.value) {
 			ttsManager.stop()
 		}
 	}
 
 	override fun onCleared() {
 		super.onCleared()
+		detachDaisyAudio()
+		daisyAudioPlayer.shutdown()
 		ttsManager.shutdown()
 		Thread {
 			try {
@@ -490,7 +513,8 @@ class MainScreenViewModel(
 					documentUri = uriString,
 					docKey = docKey,
 					initialScrollIndex = initialScrollIndex,
-					savedPosition = savedPosition
+					savedPosition = savedPosition,
+					hasAudio = session.hasAudioFfi()
 				)
 			} catch (e: Exception) {
 				val msg = e.message ?: ""
@@ -572,6 +596,11 @@ class MainScreenViewModel(
 	}
 
 	fun togglePlayPause() {
+		val tab = (uiState.value as? MainScreenUiState.Success)?.activeTab
+		if (tab != null && tab.hasAudio) {
+			daisyAudioPlayer.toggle()
+			return
+		}
 		if (ttsManager.isSpeaking.value) {
 			pauseTts()
 		} else if (ttsManager.isPaused.value) {
@@ -631,6 +660,15 @@ class MainScreenViewModel(
 				_ttsPosition.value = segment.startPos
 				_currentSegmentText.value = segment.text
 				saveTtsPositionToConfig(segment.startPos)
+				if (tab.hasAudio) {
+					daisyAudioPlayer.seekToPosition(segment.startPos)
+					if (speak) {
+						daisyAudioPlayer.play()
+					} else if (announce) {
+						announceNavigationCue(segment.text)
+					}
+					return
+				}
 				if (speak) {
 					ttsManager.speak(segment.text)
 					precacheNextContinuousSegment()
@@ -712,6 +750,15 @@ class MainScreenViewModel(
 				_ttsPosition.value = segment.startPos
 				_currentSegmentText.value = segment.text
 				saveTtsPositionToConfig(segment.startPos)
+				if (tab.hasAudio) {
+					daisyAudioPlayer.seekToPosition(segment.startPos)
+					if (speak) {
+						daisyAudioPlayer.play()
+					} else if (announce) {
+						announceNavigationCue(segment.text)
+					}
+					return
+				}
 				if (speak) {
 					ttsManager.speak(segment.text)
 					precacheNextContinuousSegment()
@@ -728,6 +775,11 @@ class MainScreenViewModel(
 	}
 
 	fun pauseTts() {
+		val tab = (uiState.value as? MainScreenUiState.Success)?.activeTab
+		if (tab != null && tab.hasAudio) {
+			daisyAudioPlayer.pause()
+			return
+		}
 		ttsManager.pause()
 	}
 
@@ -764,6 +816,11 @@ class MainScreenViewModel(
 			_ttsPosition.value = segment.startPos
 			_currentSegmentText.value = segment.text
 			saveTtsPositionToConfig(segment.startPos)
+			if (tab.hasAudio) {
+				daisyAudioPlayer.seekToPosition(segment.startPos)
+				daisyAudioPlayer.play()
+				return
+			}
 			ttsManager.stop()
 			ttsManager.speak(segment.text)
 			precacheNextContinuousSegment()
@@ -771,6 +828,11 @@ class MainScreenViewModel(
 	}
 
 	fun resumeTts() {
+		val tab = (uiState.value as? MainScreenUiState.Success)?.activeTab
+		if (tab != null && tab.hasAudio) {
+			daisyAudioPlayer.play()
+			return
+		}
 		if (ttsManager.isPaused.value) {
 			ttsManager.resume()
 		} else {
@@ -882,9 +944,44 @@ class MainScreenViewModel(
 			val tab = currentTabs[currentActiveIndex]
 			ttsManager.currentDocumentTitle = tab.title.ifBlank { tab.fileName }
 			ttsManager.currentDocumentAuthor = tab.author.ifBlank { "Unknown Author" }
+			attachDaisyAudioForActiveTab(tab)
 		} else {
 			ttsManager.currentDocumentTitle = "Paperback"
 			ttsManager.currentDocumentAuthor = "Unknown"
+			detachDaisyAudio()
+		}
+	}
+
+	/** Switches daisyAudioPlayer to narrate `tab`, resuming from its saved audio position (or
+	 * saved text position, absent that). No-op if `tab` has no audio or is already attached. */
+	private fun attachDaisyAudioForActiveTab(tab: DocumentTabState) {
+		if (daisyAttachedDocumentUri == tab.documentUri) return
+		detachDaisyAudio()
+		if (!tab.hasAudio) return
+		daisyAudioPlayer.attach(tab.session, tab.docKey)
+		daisyAttachedDocumentUri = tab.documentUri
+		val savedAudioMs = config.getDocumentAudioTimeFfi(tab.documentUri)
+		if (savedAudioMs >= 0) {
+			daisyAudioPlayer.seekToMs(savedAudioMs)
+		} else {
+			daisyAudioPlayer.seekToPosition(tab.savedPosition)
+		}
+	}
+
+	/** Persists wherever daisyAudioPlayer currently is (if it's attached to anything) and
+	 * detaches it, ahead of switching to a different document or the app going away. */
+	private fun detachDaisyAudio() {
+		persistDaisyAudioPosition()
+		daisyAudioPlayer.detach()
+		daisyAttachedDocumentUri = null
+	}
+
+	private fun persistDaisyAudioPosition() {
+		val uri = daisyAttachedDocumentUri ?: return
+		val ms = daisyAudioPlayer.resumePointMs() ?: return
+		viewModelScope.launch(Dispatchers.IO) {
+			config.setDocumentAudioTimeFfi(uri, ms)
+			config.flush()
 		}
 	}
 
@@ -892,6 +989,11 @@ class MainScreenViewModel(
 		_ttsPosition.value = pos
 		refreshSegmentPreview()
 		saveTtsPositionToConfig(pos)
+		val tab = (uiState.value as? MainScreenUiState.Success)?.activeTab
+		if (tab != null && tab.hasAudio) {
+			daisyAudioPlayer.seekToPosition(pos)
+			return
+		}
 		if (ttsManager.isSpeaking.value) {
 			speakCurrentSegment()
 		} else if (ttsManager.isPaused.value) {

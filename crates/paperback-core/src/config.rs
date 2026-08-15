@@ -773,8 +773,7 @@ impl ConfigManager {
 			return None;
 		}
 		let key = self.get_doc_key(path);
-		let audio_time = self.data.borrow().documents.get(&key).and_then(|d| d.audio_time_ms);
-		audio_time
+		self.data.borrow().documents.get(&key).and_then(|d| d.audio_time_ms)
 	}
 
 	#[must_use]

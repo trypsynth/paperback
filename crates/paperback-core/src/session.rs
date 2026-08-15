@@ -8,7 +8,7 @@ use base64::Engine;
 use zip::ZipArchive;
 
 use crate::{
-	audio::AudioTimeline,
+	audio::{AudioLocation, AudioTimeline},
 	config::{ConfigManager, compute_document_hash},
 	document::{self, DocumentHandle, MarkerType, ParserContext, ParserFlags},
 	export::{ExportFormat, render},
@@ -152,6 +152,34 @@ pub struct TextSegmentFfi {
 	pub text: String,
 	pub start_pos: i64,
 	pub end_pos: i64,
+}
+
+/// `found` is `false` (other fields zeroed) when the lookup misses, e.g. an out-of-range clip
+/// index. Mirrors `AudioClip` from `AudioTimeline` for platforms driving their own player.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct AudioClipFfi {
+	pub found: bool,
+	pub source: i32,
+	pub clip_begin_ms: i64,
+	pub clip_end_ms: i64,
+	pub start: i64,
+	pub end: i64,
+}
+
+/// See `AudioTimeline::cursor_at_elapsed`.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct AudioCursorFfi {
+	pub found: bool,
+	pub clip_index: i32,
+	pub seek_ms: i64,
+}
+
+/// See `AudioTimeline::point_for_position`.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct AudioPointFfi {
+	pub found: bool,
+	pub position: i64,
+	pub time_ms: i64,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -1415,6 +1443,116 @@ impl DocumentSession {
 		flatten(&self.handle.document().toc_items, 0, &mut flat);
 		flat
 	}
+
+	#[must_use]
+	pub fn has_audio_ffi(&self) -> bool {
+		self.audio().is_some_and(|timeline| !timeline.is_empty())
+	}
+
+	#[must_use]
+	pub fn audio_source_count_ffi(&self) -> i32 {
+		self.audio().map_or(0, |timeline| i32::try_from(timeline.sources().len()).unwrap_or(0))
+	}
+
+	/// Empty for a zip-embedded source, an out-of-range index, or a document with no audio —
+	/// otherwise callers can play the path directly without `audio_extract_source_ffi`.
+	#[must_use]
+	pub fn audio_source_direct_path_ffi(&self, index: i32) -> String {
+		let Some(timeline) = self.audio() else { return String::new() };
+		let Ok(index) = usize::try_from(index) else { return String::new() };
+		match timeline.source(index).map(|source| &source.location) {
+			Some(AudioLocation::File(path)) => path.clone(),
+			_ => String::new(),
+		}
+	}
+
+	/// Writes source `index`'s audio bytes to `output_path`: extracted from its archive when
+	/// zip-embedded, copied otherwise — for platforms whose player needs a real local path.
+	#[must_use]
+	pub fn audio_extract_source_ffi(&self, index: i32, output_path: String) -> bool {
+		let Some(timeline) = self.audio() else { return false };
+		let Ok(index) = usize::try_from(index) else { return false };
+		let Some(source) = timeline.source(index) else { return false };
+		match &source.location {
+			AudioLocation::File(path) => fs::copy(path, &output_path).is_ok(),
+			AudioLocation::ZipEntry { archive, entry } => Self::extract_zip_audio_entry(archive, entry, &output_path),
+		}
+	}
+
+	fn extract_zip_audio_entry(archive: &str, entry: &str, output_path: &str) -> bool {
+		let Ok(file) = File::open(archive) else { return false };
+		let Ok(mut zip) = ZipArchive::new(BufReader::new(file)) else { return false };
+		zip_utils::extract_zip_entry_to_file(&mut zip, entry, Path::new(output_path)).is_ok()
+	}
+
+	#[must_use]
+	pub fn audio_clip_count_ffi(&self) -> i32 {
+		self.audio().map_or(0, |timeline| i32::try_from(timeline.clips().len()).unwrap_or(0))
+	}
+
+	#[must_use]
+	pub fn audio_clip_ffi(&self, index: i32) -> AudioClipFfi {
+		let Some(timeline) = self.audio() else { return AudioClipFfi::default() };
+		let Ok(index) = usize::try_from(index) else { return AudioClipFfi::default() };
+		let Some(clip) = timeline.clip(index) else { return AudioClipFfi::default() };
+		AudioClipFfi {
+			found: true,
+			source: i32::try_from(clip.source).unwrap_or(0),
+			clip_begin_ms: i64::try_from(clip.clip_begin_ms).unwrap_or(0),
+			clip_end_ms: i64::try_from(clip.clip_end_ms).unwrap_or(0),
+			start: i64::try_from(clip.start).unwrap_or(0),
+			end: i64::try_from(clip.end).unwrap_or(0),
+		}
+	}
+
+	#[must_use]
+	pub fn audio_total_duration_ms_ffi(&self) -> i64 {
+		self.audio().map_or(0, |timeline| i64::try_from(timeline.total_duration_ms()).unwrap_or(0))
+	}
+
+	/// See `AudioTimeline::cursor_at_elapsed`.
+	#[must_use]
+	pub fn audio_cursor_at_elapsed_ffi(&self, elapsed_ms: i64) -> AudioCursorFfi {
+		let Some(timeline) = self.audio() else { return AudioCursorFfi::default() };
+		let Ok(elapsed_ms) = u64::try_from(elapsed_ms) else { return AudioCursorFfi::default() };
+		let Some(cursor) = timeline.cursor_at_elapsed(elapsed_ms) else { return AudioCursorFfi::default() };
+		AudioCursorFfi {
+			found: true,
+			clip_index: i32::try_from(cursor.clip).unwrap_or(0),
+			seek_ms: i64::try_from(cursor.seek_ms).unwrap_or(0),
+		}
+	}
+
+	/// See `AudioTimeline::point_for_position`.
+	#[must_use]
+	pub fn audio_point_for_position_ffi(&self, position: i64) -> AudioPointFfi {
+		let Some(timeline) = self.audio() else { return AudioPointFfi::default() };
+		let position = usize::try_from(position.max(0)).unwrap_or(0);
+		let Some(point) = timeline.point_for_position(position) else { return AudioPointFfi::default() };
+		AudioPointFfi {
+			found: true,
+			position: i64::try_from(point.position).unwrap_or(0),
+			time_ms: i64::try_from(point.time_ms).unwrap_or(0),
+		}
+	}
+
+	/// `-1` when the source is unknown or the position falls before any recorded clip. See
+	/// `AudioTimeline::elapsed_for_source_position`.
+	#[must_use]
+	pub fn audio_elapsed_for_source_position_ffi(&self, source: i32, raw_ms: i64) -> i64 {
+		let Some(timeline) = self.audio() else { return -1 };
+		let Ok(source) = usize::try_from(source) else { return -1 };
+		let Ok(raw_ms) = u64::try_from(raw_ms) else { return -1 };
+		timeline.elapsed_for_source_position(source, raw_ms).and_then(|ms| i64::try_from(ms).ok()).unwrap_or(-1)
+	}
+
+	/// `-1` at the end of the book. See `AudioTimeline::next_source_after`.
+	#[must_use]
+	pub fn audio_next_source_after_ffi(&self, current_source: i32) -> i32 {
+		let Some(timeline) = self.audio() else { return -1 };
+		let Ok(current_source) = usize::try_from(current_source) else { return -1 };
+		timeline.next_source_after(current_source).and_then(|source| i32::try_from(source).ok()).unwrap_or(-1)
+	}
 }
 
 #[cfg(test)]
@@ -2096,5 +2234,156 @@ mod tests {
 		assert!(image_path.exists(), "expected image extracted at {}", image_path.display());
 
 		fs::remove_dir_all(&temp_root).ok();
+	}
+
+	fn session_with_audio(timeline: AudioTimeline) -> DocumentSession {
+		let buffer = DocumentBuffer::with_content("line1\nline2\nline3".to_string());
+		let mut doc = Document::new().with_title("Title".to_string()).with_author("Author".to_string());
+		doc.set_buffer(buffer);
+		doc.set_audio(timeline);
+		DocumentSession {
+			handle: DocumentHandle::new(doc),
+			file_path: "book.zip".to_string(),
+			history: Vec::new(),
+			history_index: 0,
+			parser_flags: ParserFlags::empty(),
+			last_stable_position: None,
+		}
+	}
+
+	fn two_source_timeline() -> AudioTimeline {
+		let mut builder = crate::audio::AudioTimelineBuilder::new();
+		let source0 = builder.add_source(AudioLocation::File("chapter1.mp3".to_string()), Some(9000));
+		let source1 = builder.add_source(AudioLocation::File("chapter2.mp3".to_string()), Some(4000));
+		builder.add_clip(source0, 0, 9000, 0, 10);
+		builder.add_clip(source1, 0, 4000, 10, 17);
+		builder.build()
+	}
+
+	#[test]
+	fn has_audio_ffi_is_false_without_a_timeline() {
+		let session = sample_session(ParserFlags::empty());
+		assert!(!session.has_audio_ffi());
+	}
+
+	#[test]
+	fn has_audio_ffi_is_true_with_a_non_empty_timeline() {
+		let session = session_with_audio(two_source_timeline());
+		assert!(session.has_audio_ffi());
+		assert_eq!(session.audio_source_count_ffi(), 2);
+		assert_eq!(session.audio_clip_count_ffi(), 2);
+	}
+
+	#[test]
+	fn audio_clip_ffi_reports_found_and_its_fields() {
+		let session = session_with_audio(two_source_timeline());
+		let clip = session.audio_clip_ffi(1);
+		assert!(clip.found);
+		assert_eq!(clip.source, 1);
+		assert_eq!(clip.clip_begin_ms, 0);
+		assert_eq!(clip.clip_end_ms, 4000);
+		assert_eq!(clip.start, 10);
+		assert_eq!(clip.end, 17);
+	}
+
+	#[test]
+	fn audio_clip_ffi_is_not_found_out_of_range() {
+		let session = session_with_audio(two_source_timeline());
+		assert!(!session.audio_clip_ffi(99).found);
+		assert!(!sample_session(ParserFlags::empty()).audio_clip_ffi(0).found);
+	}
+
+	#[test]
+	fn audio_cursor_at_elapsed_ffi_resolves_the_containing_clip() {
+		let session = session_with_audio(two_source_timeline());
+		let cursor = session.audio_cursor_at_elapsed_ffi(9500);
+		assert!(cursor.found);
+		assert_eq!(cursor.clip_index, 1);
+		assert_eq!(cursor.seek_ms, 500);
+	}
+
+	#[test]
+	fn audio_point_for_position_ffi_anchors_to_the_clip_start() {
+		let session = session_with_audio(two_source_timeline());
+		let point = session.audio_point_for_position_ffi(15);
+		assert!(point.found);
+		assert_eq!(point.position, 10);
+		assert_eq!(point.time_ms, 9000);
+	}
+
+	#[test]
+	fn audio_point_for_position_ffi_is_not_found_in_a_gap() {
+		let session = session_with_audio(two_source_timeline());
+		assert!(!session.audio_point_for_position_ffi(30).found);
+	}
+
+	#[test]
+	fn audio_elapsed_for_source_position_ffi_round_trips_and_has_a_sentinel() {
+		let session = session_with_audio(two_source_timeline());
+		assert_eq!(session.audio_elapsed_for_source_position_ffi(1, 500), 9500);
+		assert_eq!(session.audio_elapsed_for_source_position_ffi(9, 0), -1);
+	}
+
+	#[test]
+	fn audio_next_source_after_ffi_advances_and_has_a_sentinel_at_the_end() {
+		let session = session_with_audio(two_source_timeline());
+		assert_eq!(session.audio_next_source_after_ffi(0), 1);
+		assert_eq!(session.audio_next_source_after_ffi(1), -1);
+	}
+
+	#[test]
+	fn audio_source_direct_path_ffi_returns_the_path_for_a_file_source_only() {
+		let session = session_with_audio(two_source_timeline());
+		assert_eq!(session.audio_source_direct_path_ffi(0), "chapter1.mp3");
+		assert_eq!(session.audio_source_direct_path_ffi(99), "");
+	}
+
+	#[test]
+	fn audio_extract_source_ffi_copies_a_file_source() {
+		let dir = std::env::temp_dir().join("paperback-session-audio-extract-test");
+		fs::create_dir_all(&dir).unwrap();
+		let source_path = dir.join("chapter1.mp3");
+		fs::write(&source_path, b"chapter-one-bytes").unwrap();
+		let mut builder = crate::audio::AudioTimelineBuilder::new();
+		let source = builder.add_source(AudioLocation::File(source_path.to_string_lossy().to_string()), None);
+		builder.add_clip(source, 0, 1000, 0, 10);
+		let session = session_with_audio(builder.build());
+
+		let output_path = dir.join("out.mp3");
+		assert!(session.audio_extract_source_ffi(0, output_path.to_string_lossy().to_string()));
+		assert_eq!(fs::read(&output_path).unwrap(), b"chapter-one-bytes");
+	}
+
+	#[test]
+	fn audio_extract_source_ffi_extracts_a_zip_entry_source() {
+		use std::io::Write;
+
+		use zip::{ZipWriter, write::FileOptions};
+
+		let dir = std::env::temp_dir().join("paperback-session-audio-extract-zip-test");
+		fs::create_dir_all(&dir).unwrap();
+		let zip_path = dir.join("book.zip");
+		{
+			let file = File::create(&zip_path).unwrap();
+			let mut writer = ZipWriter::new(file);
+			writer.start_file("chapter1.mp3", FileOptions::<()>::default()).unwrap();
+			writer.write_all(b"zipped-chapter-bytes").unwrap();
+			writer.finish().unwrap();
+		}
+		let mut builder = crate::audio::AudioTimelineBuilder::new();
+		let source = builder.add_source(
+			AudioLocation::ZipEntry {
+				archive: zip_path.to_string_lossy().to_string(),
+				entry: "chapter1.mp3".to_string(),
+			},
+			None,
+		);
+		builder.add_clip(source, 0, 1000, 0, 10);
+		let session = session_with_audio(builder.build());
+
+		let output_path = dir.join("out.mp3");
+		assert!(session.audio_extract_source_ffi(0, output_path.to_string_lossy().to_string()));
+		assert_eq!(fs::read(&output_path).unwrap(), b"zipped-chapter-bytes");
+		assert_eq!(session.audio_source_direct_path_ffi(0), "");
 	}
 }
