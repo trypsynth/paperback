@@ -51,3 +51,9 @@ opt-level = "z"
 lto = true
 panic = "abort"
 codegen-units = 1
+
+# Temporary: pull wxdragon straight from GitHub main until a release with our
+# full screen support (ShowFullScreen/IsFullScreen) lands on crates.io.
+[patch.crates-io]
+wxdragon = { git = "https://github.com/AllenDang/wxDragon", branch = "main" }
+wxdragon-sys = { git = "https://github.com/AllenDang/wxDragon", branch = "main" }
