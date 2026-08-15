@@ -1049,6 +1049,16 @@ impl MainWindow {
 					live_region::announce(live_region_label, &msg);
 					dm.lock().unwrap().restore_focus();
 				}
+				menu_ids::TOGGLE_FULL_SCREEN => {
+					let new_state = !frame_copy.is_full_screen();
+					frame_copy.show_full_screen(new_state);
+					if let Some(menu_bar) = frame_copy.get_menu_bar() {
+						menu_bar.check_item(menu_ids::TOGGLE_FULL_SCREEN, new_state);
+					}
+					// TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
+					let msg = if new_state { t("Full screen on.") } else { t("Full screen off.") };
+					live_region::announce(live_region_label, &msg);
+				}
 				menu_ids::VIEW_NOTE_TEXT => {
 					navigation::handle_view_note_text(&frame_copy, &dm, &config);
 				}

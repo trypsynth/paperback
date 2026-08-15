@@ -812,6 +812,18 @@ pub fn create_tools_menu(config: &ConfigManager) -> Menu {
 	let word_wrap_help = t("Toggle word wrap");
 	menu.append(menu_ids::TOGGLE_WORD_WRAP, &word_wrap_label, &word_wrap_help, ItemKind::Check);
 	menu.check_item(menu_ids::TOGGLE_WORD_WRAP, config.get_app_bool("word_wrap", false));
+	// On macOS the conventional shortcut is Control+Command+F; RawCtrl forces the
+	// physical Control key while plain Ctrl auto-translates to Command on mac.
+	let full_screen_label = if cfg!(target_os = "macos") {
+		// TRANSLATORS: Checkable menu item label to toggle full screen mode
+		t("&Full Screen\tRawCtrl+Ctrl+F")
+	} else {
+		// TRANSLATORS: Checkable menu item label to toggle full screen mode
+		t("&Full Screen\tF11")
+	};
+	// TRANSLATORS: Status bar help text for the "Full Screen" menu item
+	let full_screen_help = t("Toggle full screen");
+	menu.append(menu_ids::TOGGLE_FULL_SCREEN, &full_screen_label, &full_screen_help, ItemKind::Check);
 	menu.append_separator();
 	// TRANSLATORS: Menu item label to open the application options/preferences dialog
 	let options_label = t("&Options\tCtrl+,");
