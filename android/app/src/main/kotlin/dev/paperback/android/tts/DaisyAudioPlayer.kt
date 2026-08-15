@@ -12,6 +12,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import uniffi.paperback.DocumentSession
 import java.io.File
 
@@ -253,7 +254,6 @@ class DaisyAudioPlayer(
 		seekMs: Long
 	) {
 		val session = session ?: return
-		val path = resolveSourcePath(session, sourceIndex) ?: return
 		lastSeekTarget = sourceIndex to seekMs
 		currentSource = sourceIndex
 		stopPolling()
@@ -266,6 +266,21 @@ class DaisyAudioPlayer(
 			oldPlayer?.release()
 		} catch (_: Exception) {
 		}
+		// resolveSourcePath can extract a zip-embedded source to disk, so it runs off the
+		// main thread; the generation check on return discards a superseded load.
+		scope.launch {
+			val path = withContext(Dispatchers.IO) { resolveSourcePath(session, sourceIndex) }
+			if (path == null || myGeneration != loadGeneration) return@launch
+			startPlayer(path, sourceIndex, seekMs, myGeneration)
+		}
+	}
+
+	private fun startPlayer(
+		path: String,
+		sourceIndex: Int,
+		seekMs: Long,
+		myGeneration: Int
+	) {
 		val player = MediaPlayer()
 		try {
 			player.setAudioAttributes(speechAudioAttributes())
