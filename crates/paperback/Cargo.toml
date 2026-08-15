@@ -23,7 +23,7 @@ tracing-appender = "0.2.5"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 ship-shape = "0.1.6"
 toml = { workspace = true }
-wx-utils = "0.1.1"
+wx-utils = "0.1.2"
 wxdragon = { version = "0.9.18", features = ["webview"] }
 
 [target.'cfg(windows)'.dependencies]
