@@ -155,6 +155,9 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let auto_reload_check =
 		// TRANSLATORS: Option to automatically reload an open document when its file changes on disk
 		CheckBox::builder(&general_panel).with_label(&t("&Automatically reload changed documents")).build();
+	// Global window hotkeys are a Windows-only concept (see start_hotkey_listener in
+	// main_window.rs); macOS has no equivalent, so this button isn't built there.
+	#[cfg(not(target_os = "macos"))]
 	// TRANSLATORS: Button label to open the hotkey customization dialog
 	let hotkey_button = Button::builder(&general_panel).with_label(&t("Customize &Window Hotkey...")).build();
 	let option_padding = 5;
@@ -163,8 +166,12 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	general_sizer.add(&start_maximized_check, 0, SizerFlag::All, option_padding);
 	#[cfg(not(target_os = "macos"))]
 	general_sizer.add(&minimize_to_tray_check, 0, SizerFlag::All, option_padding);
+	#[cfg(target_os = "macos")]
+	minimize_to_tray_check.show(false);
 	#[cfg(not(target_os = "macos"))]
 	general_sizer.add(&check_for_updates_check, 0, SizerFlag::All, option_padding);
+	#[cfg(target_os = "macos")]
+	check_for_updates_check.show(false);
 	#[cfg(not(target_os = "macos"))]
 	general_sizer.add(&hotkey_button, 0, SizerFlag::All, option_padding);
 	reading_sizer.add(&navigation_wrap_check, 0, SizerFlag::All, option_padding);
@@ -217,6 +224,11 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	channel_sizer.add(&update_channel_combo, 0, SizerFlag::AlignCenterVertical, 0);
 	#[cfg(not(target_os = "macos"))]
 	general_sizer.add_sizer(&channel_sizer, 0, SizerFlag::All, option_padding);
+	#[cfg(target_os = "macos")]
+	{
+		channel_label.show(false);
+		update_channel_combo.show(false);
+	}
 	// TRANSLATORS: Label/header for the Font options section
 	let font_group_box = StaticBox::builder(&readability_panel).with_label(&t("Font")).build();
 	let font_group_sizer = StaticBoxSizerBuilder::new_with_box(&font_group_box, Orientation::Vertical).build();
@@ -382,14 +394,17 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	};
 	update_channel_combo.set_selection(channel_index);
 	let current_hotkey = Rc::new(RefCell::new(config.get_hotkey()));
-	let hotkey_state = Rc::clone(&current_hotkey);
-	let hotkey_dialog_parent = dialog;
-	hotkey_button.on_click(move |_| {
-		let initial = hotkey_state.borrow().clone();
-		if let Some(updated) = prompt_for_hotkey(&hotkey_dialog_parent, &initial) {
-			*hotkey_state.borrow_mut() = updated;
-		}
-	});
+	#[cfg(not(target_os = "macos"))]
+	{
+		let hotkey_state = Rc::clone(&current_hotkey);
+		let hotkey_dialog_parent = dialog;
+		hotkey_button.on_click(move |_| {
+			let initial = hotkey_state.borrow().clone();
+			if let Some(updated) = prompt_for_hotkey(&hotkey_dialog_parent, &initial) {
+				*hotkey_state.borrow_mut() = updated;
+			}
+		});
+	}
 	let initial_font = config.get_readability_font();
 	font_preview_label.set_label(&font_description(&initial_font));
 	let readability_font = Rc::new(RefCell::new(initial_font));
@@ -601,6 +616,7 @@ fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Option<Readabi
 	})
 }
 
+#[cfg(not(target_os = "macos"))]
 fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<HotkeyConfig> {
 	// TRANSLATORS: Title of the hotkey customization dialog
 	let dialog = Dialog::builder(parent, &t("Window Hotkey")).with_size(300, 230).build();
@@ -686,6 +702,7 @@ fn prompt_for_hotkey(parent: &dyn WxWidget, initial: &HotkeyConfig) -> Option<Ho
 	})
 }
 
+#[cfg(not(target_os = "macos"))]
 fn hotkey_key_display_name(key: char) -> String {
 	match key {
 		'\0' => String::new(),
@@ -696,6 +713,7 @@ fn hotkey_key_display_name(key: char) -> String {
 	}
 }
 
+#[cfg(not(target_os = "macos"))]
 fn parse_hotkey_key(input: &str) -> Option<char> {
 	let trimmed = input.trim();
 	if trimmed.eq_ignore_ascii_case("space") {
