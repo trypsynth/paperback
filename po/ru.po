@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-14 13:10+0000\n"
+"POT-Creation-Date: 2026-08-15 17:21+0000\n"
 "PO-Revision-Date: 2025-12-04 08:13+0300\n"
 "Last-Translator: <gulmagomedovruslan77@gmail.com>\n"
 "Language-Team: Russian\n"
@@ -833,6 +833,15 @@ msgstr "Включить перенос слов."
 msgid "Word wrap off."
 msgstr "Перенос слов отключен."
 
+#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
+#, fuzzy
+msgid "Full screen on."
+msgstr "Включить полноэкранный режим."
+
+#, fuzzy
+msgid "Full screen off."
+msgstr "Полный экран выключен."
+
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgstr "Текстовые файлы (*.txt)|*.txt|Все файлы (*.*)|*.*"
@@ -1577,6 +1586,21 @@ msgstr "Перенос слов    Ctrl+Alt+W"
 #, fuzzy
 msgid "Toggle word wrap"
 msgstr "Включить/выключить перенос слов"
+
+#. TRANSLATORS: Checkable menu item label to toggle full screen mode
+#, fuzzy
+msgid "&Full Screen\tRawCtrl+Ctrl+F"
+msgstr "&Полный экран    RawCtrl+Ctrl+F"
+
+#. TRANSLATORS: Checkable menu item label to toggle full screen mode
+#, fuzzy
+msgid "&Full Screen\tF11"
+msgstr "&Полноэкранный режим    F11"
+
+#. TRANSLATORS: Status bar help text for the "Full Screen" menu item
+#, fuzzy
+msgid "Toggle full screen"
+msgstr "Переключить в полноэкранный режим"
 
 #. TRANSLATORS: Menu item label to open the application options/preferences dialog
 msgid "&Options\tCtrl+,"

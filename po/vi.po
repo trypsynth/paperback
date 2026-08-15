@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-14 13:10+0000\n"
+"POT-Creation-Date: 2026-08-15 17:21+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -914,6 +914,15 @@ msgstr "Bật tính năng tự động xuống dòng."
 msgid "Word wrap off."
 msgstr "Tắt tính năng tự động xuống dòng."
 
+#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
+#, fuzzy
+msgid "Full screen on."
+msgstr "Bật chế độ toàn màn hình."
+
+#, fuzzy
+msgid "Full screen off."
+msgstr "Tắt chế độ toàn màn hình."
+
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 #, fuzzy
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
@@ -1772,6 +1781,21 @@ msgstr "Tự động xuống dòng    Ctrl+Alt+W"
 #, fuzzy
 msgid "Toggle word wrap"
 msgstr "Bật/tắt tính năng tự động xuống dòng"
+
+#. TRANSLATORS: Checkable menu item label to toggle full screen mode
+#, fuzzy
+msgid "&Full Screen\tRawCtrl+Ctrl+F"
+msgstr "&Toàn màn hình    RawCtrl+Ctrl+F"
+
+#. TRANSLATORS: Checkable menu item label to toggle full screen mode
+#, fuzzy
+msgid "&Full Screen\tF11"
+msgstr "&Toàn màn hình    F11"
+
+#. TRANSLATORS: Status bar help text for the "Full Screen" menu item
+#, fuzzy
+msgid "Toggle full screen"
+msgstr "Chuyển sang chế độ toàn màn hình"
 
 #. TRANSLATORS: Menu item label to open the application options/preferences dialog
 msgid "&Options\tCtrl+,"

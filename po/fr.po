@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-14 13:10+0000\n"
+"POT-Creation-Date: 2026-08-15 17:21+0000\n"
 "PO-Revision-Date: 2026-02-26 00:00+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -880,6 +880,15 @@ msgstr "Retour à la ligne automatique activé."
 msgid "Word wrap off."
 msgstr "Retour à la ligne désactivé."
 
+#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
+#, fuzzy
+msgid "Full screen on."
+msgstr "Mode plein écran activé."
+
+#, fuzzy
+msgid "Full screen off."
+msgstr "Mode plein écran désactivé."
+
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgstr "Fichiers texte (*.txt)|*.txt|Tous les fichiers (*.*)|*.*"
@@ -1635,6 +1644,21 @@ msgstr "Retour à la ligne automatique    Ctrl+Alt+W"
 #, fuzzy
 msgid "Toggle word wrap"
 msgstr "Activer/désactiver le retour à la ligne automatique"
+
+#. TRANSLATORS: Checkable menu item label to toggle full screen mode
+#, fuzzy
+msgid "&Full Screen\tRawCtrl+Ctrl+F"
+msgstr "&Plein écran    RawCtrl+Ctrl+F"
+
+#. TRANSLATORS: Checkable menu item label to toggle full screen mode
+#, fuzzy
+msgid "&Full Screen\tF11"
+msgstr "&Plein écran    F11"
+
+#. TRANSLATORS: Status bar help text for the "Full Screen" menu item
+#, fuzzy
+msgid "Toggle full screen"
+msgstr "Passer en mode plein écran"
 
 #. TRANSLATORS: Menu item label to open the application options/preferences dialog
 msgid "&Options\tCtrl+,"

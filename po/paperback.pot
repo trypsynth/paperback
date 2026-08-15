@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-15 17:08+0000\n"
+"POT-Creation-Date: 2026-08-15 17:21+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -805,6 +805,13 @@ msgstr ""
 msgid "Word wrap off."
 msgstr ""
 
+#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
+msgid "Full screen on."
+msgstr ""
+
+msgid "Full screen off."
+msgstr ""
+
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgstr ""
@@ -1512,6 +1519,18 @@ msgstr ""
 
 #. TRANSLATORS: Status bar help text for the "Word wrap" menu item
 msgid "Toggle word wrap"
+msgstr ""
+
+#. TRANSLATORS: Checkable menu item label to toggle full screen mode
+msgid "&Full Screen\tRawCtrl+Ctrl+F"
+msgstr ""
+
+#. TRANSLATORS: Checkable menu item label to toggle full screen mode
+msgid "&Full Screen\tF11"
+msgstr ""
+
+#. TRANSLATORS: Status bar help text for the "Full Screen" menu item
+msgid "Toggle full screen"
 msgstr ""
 
 #. TRANSLATORS: Menu item label to open the application options/preferences dialog

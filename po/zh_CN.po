@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-14 13:10+0000\n"
+"POT-Creation-Date: 2026-08-15 17:21+0000\n"
 "PO-Revision-Date: 2026-03-22 21:37+0800\n"
 "Last-Translator: Yongquan Yang <qt06.com@gmail.com>\n"
 "Language-Team: \n"
@@ -871,6 +871,15 @@ msgstr "启用自动换行。"
 msgid "Word wrap off."
 msgstr "关闭自动换行。"
 
+#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
+#, fuzzy
+msgid "Full screen on."
+msgstr "全屏模式已开启。"
+
+#, fuzzy
+msgid "Full screen off."
+msgstr "全屏关闭。"
+
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgstr "纯文本文件 (*.txt)|*.txt|所有文件 (*.*)|*.*"
@@ -1615,6 +1624,21 @@ msgstr "自动换行    Ctrl+Alt+W"
 #, fuzzy
 msgid "Toggle word wrap"
 msgstr "切换自动换行"
+
+#. TRANSLATORS: Checkable menu item label to toggle full screen mode
+#, fuzzy
+msgid "&Full Screen\tRawCtrl+Ctrl+F"
+msgstr "&全屏    RawCtrl+Ctrl+F"
+
+#. TRANSLATORS: Checkable menu item label to toggle full screen mode
+#, fuzzy
+msgid "&Full Screen\tF11"
+msgstr "&全屏    F11"
+
+#. TRANSLATORS: Status bar help text for the "Full Screen" menu item
+#, fuzzy
+msgid "Toggle full screen"
+msgstr "切换全屏模式"
 
 #. TRANSLATORS: Menu item label to open the application options/preferences dialog
 msgid "&Options\tCtrl+,"
