@@ -837,23 +837,27 @@ pub fn create_help_menu() -> Menu {
 	let help_paperback_label = t("View Help in &Paperback\tShift+F1");
 	// TRANSLATORS: Status bar help text for the "View Help in Paperback" menu item
 	let help_paperback_help = t("View help in Paperback");
+	#[cfg(not(target_os = "macos"))]
 	// TRANSLATORS: Menu item label to check for application updates
 	let updates_label = t("Check for &Updates\tCtrl+Shift+U");
+	#[cfg(not(target_os = "macos"))]
 	// TRANSLATORS: Status bar help text for the "Check for Updates" menu item
 	let updates_help = t("Check for updates");
 	// TRANSLATORS: Menu item label to open the donation page
 	let donate_label = t("&Donate\tCtrl+D");
 	// TRANSLATORS: Status bar help text for the "Donate" menu item
 	let donate_help = t("Support Paperback development");
-	Menu::builder()
+	#[cfg_attr(target_os = "macos", allow(unused_mut))]
+	let mut builder = Menu::builder()
 		.append_item(menu_ids::ABOUT, &about_label, &about_help)
 		.append_item(menu_ids::VIEW_HELP_BROWSER, &help_browser_label, &help_browser_help)
 		.append_item(menu_ids::VIEW_HELP_PAPERBACK, &help_paperback_label, &help_paperback_help)
-		.append_separator()
-		.append_item(menu_ids::CHECK_FOR_UPDATES, &updates_label, &updates_help)
-		.append_separator()
-		.append_item(menu_ids::DONATE, &donate_label, &donate_help)
-		.build()
+		.append_separator();
+	#[cfg(not(target_os = "macos"))]
+	{
+		builder = builder.append_item(menu_ids::CHECK_FOR_UPDATES, &updates_label, &updates_help).append_separator();
+	}
+	builder.append_item(menu_ids::DONATE, &donate_label, &donate_help).build()
 }
 
 pub fn populate_recent_documents_menu(menu: &Menu, config: &ConfigManager) {

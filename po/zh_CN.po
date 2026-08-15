@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-12 17:39+0000\n"
+"POT-Creation-Date: 2026-08-14 13:10+0000\n"
 "PO-Revision-Date: 2026-03-22 21:37+0800\n"
 "Last-Translator: Yongquan Yang <qt06.com@gmail.com>\n"
 "Language-Team: \n"
@@ -1814,6 +1814,11 @@ msgstr "循环到结尾。"
 #, c-format
 msgid "%s Heading level %d"
 msgstr "%s 标题级别 %d"
+
+#. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
+#, fuzzy, c-format
+msgid "Page %d"
+msgstr "第 %d 页：%s"
 
 #. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
 #, c-format

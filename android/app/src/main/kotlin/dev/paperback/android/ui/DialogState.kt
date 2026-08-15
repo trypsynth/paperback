@@ -9,7 +9,9 @@ import kotlinx.coroutines.flow.asStateFlow
  * MutableStateFlow<Boolean> + asStateFlow() + open()/close() pattern that used to be
  * hand-copied per dialog in MainScreenViewModel.
  */
-class DialogState(initiallyOpen: Boolean = false) {
+class DialogState(
+	initiallyOpen: Boolean = false
+) {
 	private val _isOpen = MutableStateFlow(initiallyOpen)
 	val isOpen: StateFlow<Boolean> = _isOpen.asStateFlow()
 

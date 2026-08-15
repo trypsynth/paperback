@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-12 17:39+0000\n"
+"POT-Creation-Date: 2026-08-14 13:10+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1993,6 +1993,11 @@ msgstr "Quay lại cuối trang. "
 #, c-format
 msgid "%s Heading level %d"
 msgstr "%s tiêu đề mục cấp %d"
+
+#. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
+#, fuzzy, c-format
+msgid "Page %d"
+msgstr "Trang %d: %s"
 
 #. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
 #, c-format

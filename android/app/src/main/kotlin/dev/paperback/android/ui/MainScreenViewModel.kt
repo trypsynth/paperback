@@ -31,8 +31,8 @@ import uniffi.paperback.SegmentTypeFfi
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.security.MessageDigest
 import java.util.Locale
-import java.util.UUID
 
 class MainScreenViewModel(
 	application: Application
@@ -183,6 +183,7 @@ class MainScreenViewModel(
 		ttsManager.onPrevCommand = { playPrevSegment() }
 		viewModelScope.launch(Dispatchers.IO) {
 			config.initialize(context.filesDir.absolutePath + "/config.toml")
+			purgeLegacyDocumentCache()
 			withContext(Dispatchers.Main) {
 				ttsManager.loadConfigAndInit()
 			}
@@ -360,6 +361,7 @@ class MainScreenViewModel(
 				config.removeOpenedDocument(closedTab.documentUri)
 				config.setDocumentOpened(closedTab.documentUri, false)
 				config.flush()
+				documentCacheDir(closedTab.documentUri).deleteRecursively()
 				updateRecentDocuments()
 				withContext(Dispatchers.Main) {
 					currentActiveIndex = if (currentTabs.isEmpty()) -1 else currentActiveIndex.coerceIn(0, currentTabs.size - 1)
@@ -422,6 +424,29 @@ class MainScreenViewModel(
 		}.start()
 	}
 
+	/**
+	 * Extraction directory for [uriString], stable across opens. Naming it with a fresh UUID
+	 * meant every pick -- and every tab restore at launch -- left behind another full copy of
+	 * the document, with nothing that ever deleted it.
+	 */
+	private fun documentCacheDir(uriString: String): File {
+		val digest = MessageDigest.getInstance("SHA-256").digest(uriString.toByteArray())
+		val name = digest.take(16).joinToString("") { "%02x".format(it) }
+		return File(context.cacheDir, "$DOCUMENT_CACHE_DIR/$name")
+	}
+
+	/** Clears extraction directories left by builds that named them with a raw UUID. */
+	private fun purgeLegacyDocumentCache() {
+		try {
+			context.cacheDir.listFiles()?.forEach {
+				if (it.isDirectory && UUID_DIR_REGEX.matches(it.name)) {
+					it.deleteRecursively()
+				}
+			}
+		} catch (_: Exception) {
+		}
+	}
+
 	private suspend fun prepareDocumentTabIO(
 		uri: Uri,
 		providedPassword: String? = null,
@@ -445,7 +470,8 @@ class MainScreenViewModel(
 					}
 					displayName = name
 					val ext = displayName.substringAfterLast('.', "epub").lowercase()
-					val tempDir = File(context.cacheDir, UUID.randomUUID().toString())
+					val tempDir = documentCacheDir(uriString)
+					tempDir.deleteRecursively()
 					tempDir.mkdirs()
 					val tempFile = File(tempDir, displayName.ifBlank { "document.$ext" })
 					FileOutputStream(tempFile).use { inputStream.copyTo(it) }
@@ -1065,5 +1091,7 @@ class MainScreenViewModel(
 
 	companion object {
 		private val WHITESPACE_REGEX = "\\s+".toRegex()
+		private const val DOCUMENT_CACHE_DIR = "documents"
+		private val UUID_DIR_REGEX = Regex("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
 	}
 }

@@ -31,12 +31,13 @@ private data class MenuAction(
 	val onClick: () -> Unit
 )
 
-private fun List<MenuAction>.toCustomActions(): List<CustomAccessibilityAction> = map { action ->
-	CustomAccessibilityAction(action.label) {
-		action.onClick()
-		true
+private fun List<MenuAction>.toCustomActions(): List<CustomAccessibilityAction> =
+	map { action ->
+		CustomAccessibilityAction(action.label) {
+			action.onClick()
+			true
+		}
 	}
-}
 
 @Composable
 private fun MenuActionItems(
