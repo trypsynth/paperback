@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-12 17:39+0000\n"
-"PO-Revision-Date: 2026-08-13 02:52+0300\n"
+"POT-Creation-Date: 2026-08-14 20:29+0000\n"
+"PO-Revision-Date: 2026-08-15 12:29+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -628,7 +628,6 @@ msgid "Ready"
 msgstr "Valmis"
 
 #. TRANSLATORS: Announced after setting a temporary bookmark at the current position
-#| msgid "No bookmarks."
 msgid "Temporary bookmark set."
 msgstr "Tilapäinen kirjanmerkki lisätty."
 
@@ -637,7 +636,6 @@ msgid "No temporary bookmark."
 msgstr "Ei tilapäistä kirjanmerkkiä."
 
 #. TRANSLATORS: Fallback announcement when jumping to a temporary bookmark on a blank line
-#| msgid "No bookmarks."
 msgid "Temporary bookmark."
 msgstr "Tilapäinen kirjanmerkki."
 
@@ -1726,6 +1724,12 @@ msgstr "Siirrytään loppuun. "
 #, c-format
 msgid "%s Heading level %d"
 msgstr "%s - otsikkotaso %d"
+
+#. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
+#, c-format
+#| msgid "Page %d: %s"
+msgid "Page %d"
+msgstr "Sivu %d"
 
 #. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
 #, c-format
