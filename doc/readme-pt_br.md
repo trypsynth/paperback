@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: fd39958ee63d8b14); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 197dbd0c570ba62e); please review and edit as needed -->
 
 # Brochura - versão 0.8.5 {#paperback---version-0.8.5}
 
@@ -83,7 +83,7 @@ atalhos atuais.
 
 Os atalhos abaixo são para o Windows. Nos casos em que o macOS difere, o
 equivalente é indicado entre parênteses --- principalmente porque
-Ctrl+G, Ctrl+W e Alt+Seta para a esquerda/direita já são utilizados por
+Ctrl+G, Ctrl+W e Alt+Seta para a Esquerda/Direita já são utilizados por
 outras convenções do sistema ou de aplicativos nessa plataforma.
 
 ### Menu Arquivo {#file-menu}
@@ -125,7 +125,7 @@ outras convenções do sistema ou de aplicativos nessa plataforma.
 -   `Ctrl+Alt+B`: Ir apenas para os marcadores.
 -   `Ctrl+Alt+M`: Ir diretamente para as notas.
 -   `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, ou seja, a tecla Control
-    física em vez da tecla Cmd): Exibir o texto da nota na posição
+    física, em vez da tecla Cmd): Exibir o texto da nota na posição
     atual.
 -   `Shift+K`: Link anterior.
 -   `K`: Link seguinte.
@@ -186,8 +186,8 @@ outras convenções do sistema ou de aplicativos nessa plataforma.
 
 ## Idiomas suportados {#supported-languages}
 
-O Paperback está traduzido para diversos idiomas, com mais sendo
-adicionados constantemente. Segue abaixo a lista completa.
+O Paperback está traduzido para vários idiomas diferentes, com mais
+sendo adicionados constantemente. Segue abaixo uma lista completa.
 
 Para saber como contribuir, leia nosso [Guia de
 Tradução](translating.md).
@@ -221,7 +221,7 @@ desenvolvimento do Paperback. Se você fizer uma doação, seu nome não
 será automaticamente adicionado aqui; eu só incluo pessoas que desejam
 que sua doação seja divulgada publicamente.
 
-Observação: considero um patrocínio público no GitHub motivo para
+Observação: considero um patrocinador público no GitHub motivo para
 inclusão automática nesta lista.
 
 -   Alex Hall
@@ -257,7 +257,12 @@ inclusão automática nesta lista.
 -   Adicionado um botão "Localizar" à caixa de diálogo "Todos os
     documentos" para localizar livros ausentes cujo caminho tenha sido
     alterado recentemente.
--   Adicionada uma guia "Legibilidade" à caixa de diálogo de opções, com
+-   Adicionada a tecla = para verificar a porcentagem atual de leitura
+    de um livro.
+-   Adicionada uma opção para mover o cursor de texto para o início da
+    linha ao navegar, semelhante ao modo de navegação em alguns leitores
+    de tela.
+-   Adicionada uma aba "Legibilidade" à caixa de diálogo de opções, com
     as seguintes opções:
     -   Quebra automática de linha (transferida da seção "Geral");
     -   Exibir tabelas em linha (novidade nesta versão, veja abaixo);
@@ -270,9 +275,11 @@ inclusão automática nesta lista.
 -   Adicionamos um botão para definir como você deseja que as tabelas
     sejam exibidas e unificamos a forma como as tabelas são exibidas em
     todos os documentos.
--   Adicionamos uma opção "Exibir código-fonte" para abrir o
-    código-fonte de um documento em uma nova aba, útil para editar
-    Markdown, por exemplo.
+-   Adicionada a opção "Exibir código-fonte" para abrir o código-fonte
+    de um documento em uma nova aba, útil para editar Markdown, por
+    exemplo.
+-   Adicionado um item de menu para quebra automática de linha e a
+    respectiva tecla de atalho.
 -   Adicionado o tempo estimado de leitura à caixa de diálogo de
     contagem de palavras, bem como a possibilidade de definir sua
     velocidade de leitura para tornar essa métrica realmente útil.
@@ -284,28 +291,30 @@ inclusão automática nesta lista.
 -   Adicionado suporte para navegação por contêiner.
 -   Adicionado suporte para listas, itens de lista, figuras e imagens em
     documentos CHM .
--   Adicionado um item de menu para quebra automática de linha e a
-    respectiva tecla de atalho.
+-   Adicionados marcadores temporários: pressione a barra para definir
+    um, e a barra invertida para saltar para ele.
 -   Os sons de marcadores/notas agora devem ser reproduzidos
     corretamente e exclusivamente quando você navegar sobre uma palavra
-    que contenha um deles.
+    que contenha um.
 -   Documentos codificados em codificações CJK legadas, como GBK, Big5 e
     Shift_JIS, agora serão exibidos corretamente, em vez de aparecerem
     como um monte de caracteres ilegíveis.
--   Expandimos o item de menu de exportação para permitir a exportação
+-   Documentos cujo conteúdo seja alterado no disco agora podem,
+    opcionalmente, ser recarregados automaticamente com o novo conteúdo.
+-   Expandimos o item do menu de exportação para permitir a exportação
     para HTML e Markdown, além de texto simples.
 -   Corrigimos o problema em que a aplicação do quebra automático de
-    linha levava você de volta ao início do documento.
+    linha levava você para o início do documento.
 -   Corrigido o problema de livros em formato Daisy exibirem informações
     incorretas na barra de status.
 -   Corrigido o problema em que os elementos dl, dt e dd não geravam
     quebras de linha em documentos XHTML .
 -   Corrigido o problema em que a tecla Escape não fechava as caixas de
     diálogo "Informações do Documento" e "Todos os Documentos".
-    Corrigido o problema em que as âncoras filepos em livros Mobi
+    Corrigido o problema em que as âncoras \`filepos\` em livros Mobi
     dividiam tags HTML e inseriam
 -   Corrigido o problema em que âncoras filepos em livros Mobi dividiam
-    tags HTML e inseriam caracteres indesejados no texto do livro.
+    tags HTML e inseriam dados indesejados no texto do livro.
 -   Corrigido o atraso ao chegar perto do final do campo de texto em
     documentos grandes .
 -   Corrigidos os links em livros Mobi antigos.
@@ -313,8 +322,8 @@ inclusão automática nesta lista.
     codificação incorretas.
 -   Corrigida a navegação por páginas que anunciava texto de linha
     incorreto em algumas situações.
--   Corrigida a análise de documentos RTF contendo caracteres não
-    latinos.
+-   Corrigida a análise de documentos RTF com caracteres não latinos e
+    escapes Unicode "?" neles.
 -   Corrigida a função "Reabrir o último fechado", que tentava reabrir o
     arquivo readme incluído.
 -   Corrigida a falha na atualização da barra de título após o
@@ -322,10 +331,10 @@ inclusão automática nesta lista.
     documentos".
 -   Corrigida a falha na qual a caixa de diálogo do WebView não era
     redimensionável e aparecia com um tamanho inicial muito pequeno.
--   Corrigida a exibição incorreta de títulos em documentos do Word com
-    nomes de estilos específicos da localidade. Corrigido o problema em
-    que a guia selecionada não recebia o foco corretamente após
--   Corrigido o problema em que a guia selecionada não recebia o foco
+-   Corrigida a renderização incorreta de títulos em documentos do Word
+    com nomes de estilos específicos da localidade. Corrigida a falha na
+    exibição correta dos títulos.
+-   Corrigido o problema em que a aba selecionada não recebia o foco
     corretamente após reiniciar o Paperback.
 -   Se uma seleção estiver ativa ao abrir a caixa de diálogo de contagem
     de palavras, o número de palavras selecionadas agora será exibido.
@@ -568,8 +577,8 @@ inclusão automática nesta lista.
 -   Agora é possível anexar notas de texto opcionais aos marcadores!
     Navegue entre marcadores que contenham notas com N e Shift+N, ou
     abra a caixa de diálogo de marcadores com todos os marcadores,
-    apenas notas ou apenas os que não forem notas selecionados por meio
-    de teclas de atalho específicas.
+    apenas notas ou apenas marcadores sem notas selecionados por meio de
+    teclas de atalho específicas.
 -   Os marcadores na caixa de diálogo de marcadores não terão mais o
     incômodo prefixo "marcador x".
 -   Livros em Epub que contêm conteúdo HTML disfarçado de XML agora
@@ -641,8 +650,8 @@ inclusão automática nesta lista.
 
 -   Adicionado suporte a documentos do Microsoft Word!
 -   Adicionado suporte para apresentações do PowerPoint!
--   Corrigimos o problema de certos itens do menu não serem desativados
-    quando não há documentos abertos.
+-   Corrigimos o problema em que certos itens do menu não eram
+    desativados quando não havia documentos abertos.
 -   Corrigida a orientação do controle deslizante de porcentagem "Ir
     para".
 -   Corrigido o índice em livros EPUB com caminhos de arquivo
@@ -728,7 +737,7 @@ inclusão automática nesta lista.
 ### Versão 0.3.0 {#version-0.3.0}
 
 -   Corrigido o índice em livros ePub com manifestos codificados por
-    URL. Corrigida a navegação por títulos em documentos HTML que contêm
+    URL. Corrigida a navegação por títulos em documentos HTML contendo
     caracteres Unicode multibyte.
 -   Corrigida a navegação por títulos em documentos HTML contendo
     caracteres Unicode multibyte.
@@ -736,7 +745,7 @@ inclusão automática nesta lista.
     devido a uma regressão no wxWidgets.
 -   Corrigido o carregamento de arquivos de texto UTF-8.
 -   Corrigido o problema em que itens aninhados do índice em livros ePub
-    colocavam o cursor na posição errada.
+    posicionavam o cursor na posição errada.
 -   Corrigida uma falha ao encerrar o aplicativo em certos casos.
 -   Adicionada uma caixa de seleção na caixa de diálogo de opções para
     ativar ou desativar o quebra automático de linha!

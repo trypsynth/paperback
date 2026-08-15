@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: fd39958ee63d8b14); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 197dbd0c570ba62e); please review and edit as needed -->
 
 # Bản bìa mềm - phiên bản 0.8.5 {#paperback---version-0.8.5}
 
@@ -22,7 +22,7 @@ Paperback hiện chạy trên Windows, macOS, iOS và Android.
     hiển thị song song.
 -   Lưu chính xác vị trí đọc của bạn trên mọi tài liệu mà bạn mở.
 -   Tùy chọn ghi nhớ các tài liệu bạn đã mở khi đóng chương trình và
-    khôi phục chúng khi khởi động lại lần sau.
+    khôi phục chúng khi khởi động lại.
 -   Bao gồm chức năng điều hướng tương tự như trong chế độ duyệt web của
     nhiều trình đọc màn hình để điều hướng nhanh chóng và dễ dàng qua
     các tài liệu.
@@ -51,9 +51,8 @@ Giải pháp tạm thời, cuối cùng được đề xuất qua nhóm thảo l
 nhiều tháng chờ đợi, là chỉnh sửa `paperback.jcf` và thiết lập "Hiển thị
 và di chuyển Braille" thành "Luôn sử dụng DOM nếu có sẵn". Bạn cũng nên
 bật tùy chọn "Di chuyển văn bản theo đoạn", nếu không màn hình sẽ dừng
-lại ở đoạn văn bản đang hoạt động thay vì chuyển sang đoạn tiếp theo.
-Khi cả hai thiết lập này được áp dụng, chức năng di chuyển sẽ hoạt động
-chính xác.
+lại ở đoạn văn bản đang hoạt động thay vì di chuyển tiếp. Khi cả hai
+thiết lập này được áp dụng, chức năng di chuyển sẽ hoạt động chính xác.
 
 ## Các định dạng tệp hiện được hỗ trợ {#currently-supported-file-types}
 
@@ -171,7 +170,7 @@ yếu là do Ctrl+G, Ctrl+W và Alt+Trái/Phải đã được sử dụng cho c
 -   `Ctrl+Shift+U`: Kiểm tra các bản cập nhật.
 -   `Ctrl+D`: Mở trang quyên góp trong trình duyệt mặc định của bạn.
 
-### Các phím điều khiển tài liệu bổ sung {#additional-document-view-keys}
+### Các phím điều khiển xem tài liệu bổ sung {#additional-document-view-keys}
 
 -   `Delete` / `Numpad Delete` trên thanh điều khiển tab: Đóng tab tài
     liệu đã chọn.
@@ -250,8 +249,11 @@ Lưu ý: Tôi coi việc trở thành nhà tài trợ công khai trên GitHub l�
     Markdown hoặc văn bản thuần túy.
 -   Đã thêm phím tắt có thể tùy chỉnh để khôi phục Paperback từ khay hệ
     thống.
--   Đã thêm nút \"Tìm kiếm\" vào hộp thoại \"Tất cả tài liệu\" để tìm
-    các cuốn sách bị thiếu do vừa thay đổi đường dẫn.
+-   Đã thêm nút \"Tìm\" vào hộp thoại \"Tất cả tài liệu\" để tìm các
+    cuốn sách bị thiếu do vừa thay đổi đường dẫn.
+-   Đã thêm phím = để xem tỷ lệ phần trăm đã đọc của cuốn sách hiện tại.
+-   Đã thêm tùy chọn di chuyển con trỏ văn bản đến đầu dòng khi điều
+    hướng, tương tự như chế độ duyệt trong một số trình đọc màn hình.
 -   Đã thêm tab \"Độ dễ đọc\" vào hộp thoại tùy chọn, với các tùy chọn
     sau:
     -   Tự động xuống dòng (được chuyển từ phần \"Chung\");
@@ -267,10 +269,11 @@ Lưu ý: Tôi coi việc trở thành nhà tài trợ công khai trên GitHub l�
     nhất cách hiển thị bảng trên các tài liệu.
 -   đã thêm tùy chọn \"Xem Nguồn\" để mở mã nguồn của tài liệu trong một
     tab mới, rất hữu ích khi chỉnh sửa Markdown chẳng hạn.
+-   Đã thêm mục menu \"Tự động xuống dòng\" và phím tắt tương ứng.
 -   Đã thêm thời gian đọc ước tính vào hộp thoại đếm từ, cũng như khả
     năng thiết lập tốc độ đọc của bạn để chỉ số này thực sự hữu ích.
 -   Đã thêm hỗ trợ ARM64 cho Windows!
--   Đã thêm hỗ trợ Android!
+-   Đã thêm hỗ trợ cho Android!
 -   Đã thêm hỗ trợ iOS!
 -   Đã thêm hỗ trợ macOS!
 -   Đã thêm các ngôn ngữ mới: tiếng Hà Lan, tiếng Phần Lan và tiếng Ba
@@ -278,23 +281,26 @@ Lưu ý: Tôi coi việc trở thành nhà tài trợ công khai trên GitHub l�
 -   Đã thêm hỗ trợ điều hướng theo container.
 -   Đã thêm hỗ trợ cho danh sách, mục danh sách, hình vẽ và hình ảnh
     trong các tài liệu CHM .
--   Đã thêm mục menu \"Chuyển dòng tự động\" và phím tắt tương ứng.
--   Âm thanh dấu trang/ghi chú giờ đây sẽ phát chính xác khi bạn di
-    chuyển con trỏ qua một từ chứa dấu trang hoặc ghi chú.
+-   Đã thêm dấu trang tạm thời: nhấn dấu gạch chéo (/) để đặt dấu trang,
+    dấu gạch chéo ngược (\\) để chuyển đến dấu trang đó.
+-   Âm thanh dấu trang/ghi chú giờ đây sẽ phát đúng cách và chỉ khi bạn
+    di chuyển qua một từ chứa dấu trang hoặc ghi chú đó.
 -   Các tài liệu được mã hóa bằng các bộ mã hóa CJK cũ, chẳng hạn như
     GBK, Big5 và Shift_JIS, giờ đây sẽ hiển thị đúng thay vì chỉ là một
-    đống ký tự lộn xộn.
+    loạt các ký tự bị lỗi.
+-   Các tài liệu có nội dung thay đổi trên đĩa giờ đây có thể được tự
+    động tải lại với nội dung mới (tùy chọn).
 -   Mở rộng mục menu xuất để cho phép xuất sang HTML và Markdown ngoài
     định dạng văn bản thuần túy.
--   Đã khắc phục lỗi khiến việc áp dụng tính năng tự động xuống dòng đưa
-    bạn trở lại đầu tài liệu.
+-   Đã khắc phục lỗi khi áp dụng tính năng tự động xuống dòng khiến bạn
+    bị chuyển về đầu tài liệu.
 -   Đã khắc phục lỗi sách daisy hiển thị thông tin không chính xác trên
     thanh trạng thái.
--   Đã khắc phục lỗi các thẻ dl, dt và dd không tạo ra dấu ngắt dòng
+-   Đã khắc phục lỗi các phần tử dl, dt và dd không tạo ra dấu ngắt dòng
     trong các tài liệu XHTML.
 -   Đã khắc phục lỗi phím Escape không đóng được các hộp thoại Thông tin
-    Tài liệu và Tất cả Tài liệu. Đã khắc phục lỗi phím Escape không đóng
-    được các hộp thoại Thông tin Tài liệu và Tất cả Tài liệu.
+    Tài liệu và Tất cả Tài liệu. Đã khắc phục lỗi các neo filepos trong
+    sách Mobi làm tách các thẻ HTML và đưa
 -   Đã khắc phục lỗi các điểm neo filepos trong sách Mobi làm tách các
     thẻ HTML và chèn dữ liệu rác vào nội dung sách.
 -   Đã khắc phục tình trạng giật lag khi di chuyển gần cuối trường văn
@@ -303,16 +309,16 @@ Lưu ý: Tôi coi việc trở thành nhà tài trợ công khai trên GitHub l�
 -   Đã khắc phục lỗi tải sách DAISY có khai báo mã hóa không hợp lệ.
 -   Đã khắc phục lỗi điều hướng trang thông báo sai dòng văn bản trong
     một số trường hợp.
--   Đã khắc phục lỗi phân tích cú pháp các tài liệu RTF có chứa các ký
-    tự không phải chữ La-tinh.
+-   Đã khắc phục lỗi phân tích tài liệu RTF có chứa ký tự không phải chữ
+    La-tinh và các ký tự thoát Unicode dạng "?" trong đó.
 -   Đã khắc phục lỗi "Mở lại tài liệu vừa đóng" cố gắng mở lại tệp
     readme đi kèm.
 -   Đã khắc phục lỗi thanh tiêu đề không được cập nhật sau khi đóng tài
     liệu từ hộp thoại "Tất cả tài liệu".
--   Đã khắc phục lỗi hộp thoại webview không thể thay đổi kích thước và
-    bật lên với kích thước ban đầu rất nhỏ.
+-   Đã khắc phục lỗi hộp thoại WebView không thể thay đổi kích thước và
+    xuất hiện với kích thước ban đầu rất nhỏ.
 -   Đã khắc phục lỗi hiển thị tiêu đề không đúng trong các tài liệu Word
-    có tên kiểu định dạng phụ thuộc vào vùng ngôn ngữ.
+    có tên kiểu định dạng phụ thuộc vào vùng địa phương.
 -   Đã khắc phục lỗi tab đã chọn không được lấy tiêu điểm đúng cách sau
     khi khởi động lại Paperback.
 -   Nếu vùng chọn đang hoạt động khi bạn mở hộp thoại đếm từ, số lượng
@@ -373,7 +379,7 @@ Lưu ý: Tôi coi việc trở thành nhà tài trợ công khai trên GitHub l�
     cách.
 -   Đã khắc phục lỗi âm thanh dấu trang phát ra khi bắt đầu đoạn văn
     thay vì tại vị trí của dấu trang.
--   Đã khắc phục lỗi chức năng \"đi đến trang\" bị lệch 1 trang.
+-   Đã khắc phục lỗi chức năng \"Đi đến trang\" bị lệch 1 trang.
 -   Đã khắc phục lỗi phím Esc không hoạt động khi đóng hộp thoại \"Mở
     dưới dạng\".
 -   Đã khắc phục lỗi menu ngữ cảnh của trình đọc không hiển thị khi nhấp
@@ -411,7 +417,7 @@ Lưu ý: Tôi coi việc trở thành nhà tài trợ công khai trên GitHub l�
 
 ### Phiên bản 0.8.1 {#version-0.8.1}
 
--   Đã thêm phím tắt Ctrl+Shift+T để mở lại tài liệu vừa đóng.
+-   Đã thêm phím tắt Ctrl+Shift+T để mở lại tài liệu vừa đóng gần nhất.
 -   Hộp thoại \"Tất cả tài liệu\" hiện hỗ trợ chọn nhiều tài liệu để mở
     cùng lúc.
 -   Đã khắc phục một số lỗi liên quan đến trình phân tích cú pháp RTF.
@@ -508,8 +514,8 @@ Lưu ý: Tôi coi việc trở thành nhà tài trợ công khai trên GitHub l�
     bạn, vị trí đó giờ đây sẽ được ghi nhớ và bạn có thể điều hướng đến
     đó bằng phím Alt + mũi tên trái/phải.
 -   Đã thêm danh sách các phần tử! Hiện tại, danh sách này chỉ hiển thị
-    cây các tiêu đề trong tài liệu của bạn hoặc danh sách các liên kết,
-    nhưng có kế hoạch mở rộng nó trong tương lai.
+    cây phân cấp của tất cả các tiêu đề trong tài liệu của bạn hoặc danh
+    sách các liên kết, nhưng có kế hoạch mở rộng nó trong tương lai.
 -   Đã thêm tùy chọn khởi động Paperback ở chế độ toàn màn hình theo mặc
     định.
 -   Đã khắc phục lỗi liên kết trong một số tài liệu Epub không hoạt động
@@ -624,7 +630,7 @@ Lưu ý: Tôi coi việc trở thành nhà tài trợ công khai trên GitHub l�
 -   Đã khắc phục lỗi mục lục trong sách Epub có đường dẫn tệp được mã
     hóa URL và/hoặc ID đoạn.
 -   Đã khắc phục lỗi khoảng trắng bị loại bỏ khỏi các tiêu đề XHTML theo
-    những cách kỳ lạ.
+    những cách bất thường.
 -   Đã khắc phục việc xử lý khoảng trắng bên trong các thẻ pre lồng nhau
     trong tài liệu HTML.
 -   Các tài liệu HTML và Markdown giờ đây đã hỗ trợ tính năng mục lục !
@@ -636,10 +642,10 @@ Lưu ý: Tôi coi việc trở thành nhà tài trợ công khai trên GitHub l�
     không có phần mở rộng.
 -   Đã chuyển từ UniversalSpeech sang sử dụng vùng trực tiếp để báo cáo
     lời nói. Điều này có nghĩa là các DLL trình đọc màn hình sẽ không
-    còn được phân phối cùng với chương trình nữa, và giờ đây sẽ hỗ trợ
+    còn được cung cấp cùng với chương trình nữa, và giờ đây sẽ hỗ trợ
     nhiều trình đọc màn hình hơn, chẳng hạn như Microsoft Narrator.
--   Đã chuyển sang các thư viện zip để cho phép mở nhiều loại sách epub
-    hơn.
+-   Đã chuyển sang các thư viện nén zip để cho phép mở nhiều loại sách
+    epub hơn.
 -   Hộp thoại hỏi bạn có muốn mở tài liệu dưới dạng văn bản thuần túy
     hay không đã được thiết kế lại hoàn toàn, và giờ đây nó cho phép bạn
     mở tài liệu dưới dạng văn bản thuần túy, HTML hoặc Markdown.
@@ -647,15 +653,15 @@ Lưu ý: Tôi coi việc trở thành nhà tài trợ công khai trên GitHub l�
     phép bạn nhập thủ công tỷ lệ phần trăm để chuyển đến.
 -   Trình phân tích cú pháp HTML giờ đây sẽ nhận diện dd, dt và dl là
     các thành phần danh sách.
--   Mục lục trong sách EPUB sẽ một lần nữa được giữ nguyên chính xác.
--   Khoảng trắng không phân tách Unicode giờ đây được tính đến khi loại
-    bỏ các dòng trống.
+-   Mục lục trong sách EPUB giờ đây sẽ được giữ nguyên chính xác.
+-   Khoảng trắng không phân tách Unicode hiện được tính đến khi loại bỏ
+    các dòng trống.
 -   Bạn sẽ không còn bị hỏi cách mở tệp không được nhận diện mỗi lần tải
     tệp đó nữa, mà chỉ lần đầu tiên thôi.
 
 ### Phiên bản 0.4.1 {#version-0.4.1}
 
--   Đã thêm biểu tượng menu bắt đầu tùy chọn vào trình cài đặt.
+-   Đã thêm biểu tượng menu khởi động tùy chọn vào trình cài đặt.
 -   Mục lục giờ đây sẽ gọn gàng hơn trong một số trường hợp, ví dụ nếu
     bạn có một mục con và mục cha có cùng văn bản ở cùng vị trí, giờ đây
     bạn sẽ chỉ thấy mục cha.
@@ -690,7 +696,7 @@ Lưu ý: Tôi coi việc trở thành nhà tài trợ công khai trên GitHub l�
     Control+Shift+G.
 -   Các tài liệu không có tiêu đề hoặc tác giả đã biết giờ đây sẽ luôn
     có giá trị mặc định.
--   Cơ chế lưu vị trí hiện đã thông minh hơn nhiều và chỉ ghi vào đĩa
+-   Cơ chế lưu vị trí hiện đã thông minh hơn nhiều và chỉ ghi lên đĩa
     khi thực sự cần thiết.
 -   Tài liệu mà bạn đang tập trung khi đóng Paperback giờ đây sẽ được
     ghi nhớ ngay cả khi khởi động lại ứng dụng.
@@ -702,15 +708,15 @@ Lưu ý: Tôi coi việc trở thành nhà tài trợ công khai trên GitHub l�
 ### Phiên bản 0.3.0 {#version-0.3.0}
 
 -   Đã khắc phục lỗi mục lục trong các sách epub có tệp manifest được mã
-    hóa theo định dạng URL. Đã khắc phục lỗi điều hướng tiêu đề trong
-    các tài liệu HTML chứa các ký tự Unicode nhiều byte.
+    hóa theo URL. Đã khắc phục lỗi điều hướng tiêu đề trong các tài liệu
+    HTML chứa các ký tự Unicode nhiều byte.
 -   Đã khắc phục sự cố điều hướng tiêu đề trong các tài liệu HTML chứa
     các ký tự Unicode đa byte.
 -   Đã khắc phục tình trạng sử dụng CPU cao trong các tài liệu có tiêu
     đề dài do sự thoái lui trong wxWidgets.
 -   Đã khắc phục lỗi tải tệp văn bản UTF-8.
 -   Đã khắc phục lỗi các mục mục lục lồng nhau trong sách EPUB khiến con
-    trỏ chuột nằm ở vị trí sai.
+    trỏ chuột đặt sai vị trí.
 -   Đã khắc phục sự cố ứng dụng bị treo khi thoát trong một số trường
     hợp nhất định.
 -   Đã thêm hộp kiểm trong hộp thoại tùy chọn để bật hoặc tắt tính năng
@@ -753,7 +759,7 @@ Lưu ý: Tôi coi việc trở thành nhà tài trợ công khai trên GitHub l�
     thiết kế để hoạt động tương tự như trình đọc màn hình.
 -   Đã khắc phục lỗi tải sách epub có tên tệp được mã hóa theo URL trong
     tệp manifest.
--   Đã khắc phục lỗi khi tải sách epub 3 có XHTML nhúng bên trong.
+-   Đã khắc phục lỗi tải sách epub 3 có XHTML nhúng bên trong.
 -   Giờ đây, một thông báo sẽ được đọc lên nếu tài liệu không hỗ trợ mục
     lục hoặc các phần, thay vì các mục menu bị vô hiệu hóa.
 -   Đã thêm menu tài liệu gần đây! Hiện tại, menu này lưu trữ 10 tài
