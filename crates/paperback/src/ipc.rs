@@ -3,11 +3,14 @@ use std::{
 	path::{Path, PathBuf},
 };
 
+#[cfg(any(target_os = "linux", target_os = "windows", test))]
 pub const IPC_COMMAND_ACTIVATE: &str = "ACTIVATE";
 #[cfg(any(target_os = "linux", target_os = "windows", test))]
 pub const IPC_COMMAND_TOGGLE_VISIBILITY: &str = "TOGGLE";
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 pub const SINGLE_INSTANCE_NAME: &str = "paperback_running";
 
+#[cfg(any(target_os = "linux", target_os = "windows", test))]
 #[derive(Debug, Clone)]
 pub enum IpcCommand {
 	Activate,
