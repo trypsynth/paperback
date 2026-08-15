@@ -1,9 +1,10 @@
+#[cfg(any(target_os = "macos", target_os = "windows", test))]
+use std::process::Command;
 #[cfg(not(target_os = "macos"))]
 use std::sync::{Arc, atomic::Ordering};
 use std::{
 	env, fs,
 	path::{Path, PathBuf},
-	process::Command,
 	rc::Rc,
 	sync::{Mutex, atomic::AtomicUsize},
 };
@@ -115,7 +116,11 @@ pub fn handle_reveal_file_in_folder(frame: &Frame, doc_manager: &Rc<Mutex<Docume
 			show_error(frame, t("Failed to reveal file in folder."), &t("Error"));
 		}
 	}
-	#[cfg(not(target_os = "windows"))]
+	#[cfg(target_os = "macos")]
+	if finder_reveal_command(&file_path).spawn().is_err() {
+		show_error(frame, t("Failed to reveal file in folder."), &t("Error"));
+	}
+	#[cfg(not(any(target_os = "macos", target_os = "windows")))]
 	{
 		if let Some(dir) = file_path.parent() {
 			let url = format!("file://{}", dir.to_string_lossy());
@@ -124,6 +129,13 @@ pub fn handle_reveal_file_in_folder(frame: &Frame, doc_manager: &Rc<Mutex<Docume
 			}
 		}
 	}
+}
+
+#[cfg(any(target_os = "macos", test))]
+fn finder_reveal_command(file_path: &Path) -> Command {
+	let mut command = Command::new("/usr/bin/open");
+	command.arg("-R").arg(file_path);
+	command
 }
 
 pub fn handle_view_help_browser(frame: &Frame) {
@@ -203,4 +215,20 @@ fn ensure_parser_for_unknown_file(parent: &Frame, path: &Path, config: &ConfigMa
 	}
 	config.set_document_format(&path_str, &format);
 	true
+}
+
+#[cfg(test)]
+mod tests {
+	use std::{ffi::OsStr, path::Path};
+
+	use super::finder_reveal_command;
+
+	#[test]
+	fn finder_reveal_command_preserves_paths_with_spaces() {
+		let file_path = Path::new("/Users/reader/Fics in progress/story.epub");
+		let command = finder_reveal_command(file_path);
+
+		assert_eq!(command.get_program(), OsStr::new("/usr/bin/open"));
+		assert_eq!(command.get_args().collect::<Vec<_>>(), [OsStr::new("-R"), file_path.as_os_str()]);
+	}
 }
