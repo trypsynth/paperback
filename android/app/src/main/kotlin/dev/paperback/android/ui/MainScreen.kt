@@ -33,6 +33,7 @@ import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -68,8 +69,8 @@ internal fun needsNotificationPermission(context: Context): Boolean =
 @OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
 @Composable
 fun MainScreen(
-	onItemClick: (NavKey) -> Unit = {},
 	modifier: Modifier = Modifier,
+	onItemClick: (NavKey) -> Unit = {},
 	viewModel: MainScreenViewModel = viewModel()
 ) {
 	val context = LocalContext.current
@@ -493,7 +494,7 @@ fun MainScreen(
 											RecentDocumentItemRow(
 												item = recentDoc,
 												showClosedStatus = false,
-												onOpen = { viewModel.openDocument(Uri.parse(recentDoc.uri)) },
+												onOpen = { viewModel.openDocument(recentDoc.uri.toUri()) },
 												onRemove = { viewModel.removeRecentDocument(recentDoc.uri) },
 												onLocate = { onLocateRecentDocument(recentDoc.uri) }
 											)
@@ -839,7 +840,7 @@ fun MainScreen(
 				onGrantClick = {
 					viewModel.permissionRationaleDialog.close()
 					val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-					intent.data = Uri.parse("package:${context.packageName}")
+					intent.data = "package:${context.packageName}".toUri()
 					context.startActivity(intent)
 				},
 				onDismiss = {
@@ -919,7 +920,7 @@ fun MainScreen(
 				allFilesAccessGranted = allFilesAccessGranted,
 				onEnableAllFilesAccess = {
 					val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-					intent.data = Uri.parse("package:${context.packageName}")
+					intent.data = "package:${context.packageName}".toUri()
 					context.startActivity(intent)
 				},
 				onContinue = {

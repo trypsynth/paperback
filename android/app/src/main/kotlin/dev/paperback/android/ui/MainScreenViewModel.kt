@@ -7,6 +7,7 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import android.widget.Toast
+import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import dev.paperback.android.t
@@ -194,7 +195,7 @@ class MainScreenViewModel(
 			if (openedUris.isNotEmpty()) {
 				val restoredTabs = mutableListOf<DocumentTabState>()
 				for (uriString in openedUris) {
-					val tab = prepareDocumentTabIO(Uri.parse(uriString), isRestore = true)
+					val tab = prepareDocumentTabIO(uriString.toUri(), isRestore = true)
 					if (tab != null) {
 						restoredTabs.add(tab)
 					}
@@ -276,7 +277,7 @@ class MainScreenViewModel(
 			val recents = config.getRecentDocuments()
 			val opened = config.getOpenedDocuments().toSet()
 			recents.map { uriString ->
-				val uri = Uri.parse(uriString)
+				val uri = uriString.toUri()
 				var displayName = uri.lastPathSegment ?: uriString
 				var isMissing = false
 
@@ -414,7 +415,6 @@ class MainScreenViewModel(
 	}
 
 	override fun onCleared() {
-		super.onCleared()
 		ttsManager.shutdown()
 		Thread {
 			try {
@@ -809,7 +809,7 @@ class MainScreenViewModel(
 		val tab = state.activeTab ?: return false
 		val docUri = tab.documentUri
 		if (docUri.startsWith("content://")) return false
-		val absolutePath = Uri.parse(docUri).path ?: docUri
+		val absolutePath = docUri.toUri().path ?: docUri
 		val file = File(absolutePath)
 		val nameWithoutExtension = file.nameWithoutExtension
 		val paperbackPath = File(file.parentFile, "$nameWithoutExtension.paperback").absolutePath
@@ -831,7 +831,7 @@ class MainScreenViewModel(
 		val absolutePath = if (docUri.startsWith("content://")) {
 			docUri
 		} else {
-			Uri.parse(docUri).path ?: docUri
+			docUri.toUri().path ?: docUri
 		}
 
 		val tempFile = File(context.cacheDir, "temp_export.paperback")
@@ -879,7 +879,7 @@ class MainScreenViewModel(
 		val absolutePath = if (docUri.startsWith("content://")) {
 			docUri
 		} else {
-			Uri.parse(docUri).path ?: docUri
+			docUri.toUri().path ?: docUri
 		}
 
 		val tempFile = File(context.cacheDir, "temp_import.paperback")

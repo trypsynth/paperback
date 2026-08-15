@@ -136,7 +136,7 @@ mod tests {
 		assert_eq!(convert_to_utf8(input), expected);
 	}
 
-	/// https://github.com/trypsynth/paperback/issues/632 — GBK-encoded Chinese text
+	/// <https://github.com/trypsynth/paperback/issues/632> — GBK-encoded Chinese text
 	/// (no BOM, not valid UTF-8) was falling through to the Windows-1252 fallback and
 	/// coming out as mojibake instead of being detected.
 	#[test]
