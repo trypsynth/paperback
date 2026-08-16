@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-16 15:52+0000\n"
+"POT-Creation-Date: 2026-08-16 12:22-0600\n"
 "PO-Revision-Date: 2026-03-22 21:37+0800\n"
 "Last-Translator: Yongquan Yang <qt06.com@gmail.com>\n"
 "Language-Team: \n"
@@ -246,7 +246,6 @@ msgid "Go to page"
 msgstr "跳转到页"
 
 #. TRANSLATORS: Label/prompt template for the page selection dialog. The %d placeholders represent current_page and max_pages respectively.
-#, c-format
 msgid "Go to page (%d/%d):"
 msgstr "跳转到页（%d/%d）："
 
@@ -1018,7 +1017,6 @@ msgid "Sleep timer set for 1 minute."
 msgstr "睡眠定时器已设置为 1 分钟。"
 
 #. TRANSLATORS: Announcement when the sleep timer is set; %d is the number of minutes (always 2 or more)
-#, c-format
 msgid "Sleep timer set for %d minutes."
 msgstr "睡眠定时器已设置为 %d 分钟。"
 
@@ -1613,17 +1611,14 @@ msgid "No previous section"
 msgstr "没有上一章节"
 
 #. TRANSLATORS: Announced when the document has no headings at the given level; %d is the heading level number
-#, c-format
 msgid "No headings at level %d."
 msgstr "没有级别为 %d 的标题。"
 
 #. TRANSLATORS: Announced when there is no next heading at the given level; %d is the heading level number
-#, c-format
 msgid "No next heading at level %d."
 msgstr "没有级别为 %d 的下一个标题。"
 
 #. TRANSLATORS: Announced when there is no previous heading at the given level; %d is the heading level number
-#, c-format
 msgid "No previous heading at level %d."
 msgstr "没有级别为 %d 的上一个标题。"
 
@@ -1739,17 +1734,15 @@ msgid "Wrapping to end. "
 msgstr "循环到结尾。"
 
 #. TRANSLATORS: Announcement when landing on a heading; %s is the heading text, %d is the heading level number
-#, c-format
 msgid "%s Heading level %d"
 msgstr "%s 标题级别 %d"
 
 #. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
-#, fuzzy, c-format
+#, fuzzy
 msgid "Page %d"
 msgstr "第 %d 页：%s"
 
 #. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
-#, c-format
 msgid "Page %d: %s"
 msgstr "第 %d 页：%s"
 
@@ -1791,7 +1784,6 @@ msgid "Start of container."
 msgstr "容器开始。"
 
 #. TRANSLATORS: Announcement when landing on a bookmark; %s is the bookmark/line text, %d is the bookmark's 1-based index
-#, c-format
 msgid "%s - Bookmark %d"
 msgstr "%s - 书签 %d"
 

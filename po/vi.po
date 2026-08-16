@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-16 15:52+0000\n"
+"POT-Creation-Date: 2026-08-16 12:22-0600\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -259,7 +259,7 @@ msgid "Go to page"
 msgstr "Đi đến trang"
 
 #. TRANSLATORS: Label/prompt template for the page selection dialog. The %d placeholders represent current_page and max_pages respectively.
-#, fuzzy, c-format
+#, fuzzy
 msgid "Go to page (%d/%d):"
 msgstr "Truy cập trang (%d / %d):"
 
@@ -1067,7 +1067,7 @@ msgid "Sleep timer set for 1 minute."
 msgstr "Đã cài đặt hẹn giờ tắt sau 1 phút."
 
 #. TRANSLATORS: Announcement when the sleep timer is set; %d is the number of minutes (always 2 or more)
-#, fuzzy, c-format
+#, fuzzy
 msgid "Sleep timer set for %d minutes."
 msgstr "Đã cài đặt hẹn giờ tắt tự động sau%dphút."
 
@@ -1716,17 +1716,17 @@ msgid "No previous section"
 msgstr "Không có phần phía trước"
 
 #. TRANSLATORS: Announced when the document has no headings at the given level; %d is the heading level number
-#, fuzzy, c-format
+#, fuzzy
 msgid "No headings at level %d."
 msgstr "Không có tiêu đề ở cấp độ %d."
 
 #. TRANSLATORS: Announced when there is no next heading at the given level; %d is the heading level number
-#, fuzzy, c-format
+#, fuzzy
 msgid "No next heading at level %d."
 msgstr "Không có tiêu đề tiếp theo ở cấp độ %d."
 
 #. TRANSLATORS: Announced when there is no previous heading at the given level; %d is the heading level number
-#, fuzzy, c-format
+#, fuzzy
 msgid "No previous heading at level %d."
 msgstr "Không có tiêu đề nào trước đó ở cấp độ %d."
 
@@ -1856,17 +1856,15 @@ msgid "Wrapping to end. "
 msgstr "Quay lại cuối trang. "
 
 #. TRANSLATORS: Announcement when landing on a heading; %s is the heading text, %d is the heading level number
-#, c-format
 msgid "%s Heading level %d"
 msgstr "%s tiêu đề mục cấp %d"
 
 #. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
-#, fuzzy, c-format
+#, fuzzy
 msgid "Page %d"
 msgstr "Trang %d: %s"
 
 #. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
-#, c-format
 msgid "Page %d: %s"
 msgstr "Trang %d: %s"
 
@@ -1908,7 +1906,6 @@ msgid "Start of container."
 msgstr "Đầu container."
 
 #. TRANSLATORS: Announcement when landing on a bookmark; %s is the bookmark/line text, %d is the bookmark's 1-based index
-#, c-format
 msgid "%s - Bookmark %d"
 msgstr "%s - Dấu trang %d"
 

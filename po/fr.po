@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-16 15:52+0000\n"
+"POT-Creation-Date: 2026-08-16 12:22-0600\n"
 "PO-Revision-Date: 2026-02-26 00:00+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -255,7 +255,6 @@ msgid "Go to page"
 msgstr "Aller à la page"
 
 #. TRANSLATORS: Label/prompt template for the page selection dialog. The %d placeholders represent current_page and max_pages respectively.
-#, c-format
 msgid "Go to page (%d/%d):"
 msgstr "Aller à la page (%d/%d) :"
 
@@ -1027,7 +1026,6 @@ msgid "Sleep timer set for 1 minute."
 msgstr "Minuterie de veille réglée sur 1 minute."
 
 #. TRANSLATORS: Announcement when the sleep timer is set; %d is the number of minutes (always 2 or more)
-#, c-format
 msgid "Sleep timer set for %d minutes."
 msgstr "Minuterie de veille réglée sur %d minutes."
 
@@ -1627,17 +1625,14 @@ msgid "No previous section"
 msgstr "Aucune section précédente"
 
 #. TRANSLATORS: Announced when the document has no headings at the given level; %d is the heading level number
-#, c-format
 msgid "No headings at level %d."
 msgstr "Aucun titre au niveau %d."
 
 #. TRANSLATORS: Announced when there is no next heading at the given level; %d is the heading level number
-#, c-format
 msgid "No next heading at level %d."
 msgstr "Aucun titre suivant au niveau %d."
 
 #. TRANSLATORS: Announced when there is no previous heading at the given level; %d is the heading level number
-#, c-format
 msgid "No previous heading at level %d."
 msgstr "Aucun titre précédent au niveau %d."
 
@@ -1759,17 +1754,15 @@ msgid "Wrapping to end. "
 msgstr "Retour à la fin. "
 
 #. TRANSLATORS: Announcement when landing on a heading; %s is the heading text, %d is the heading level number
-#, c-format
 msgid "%s Heading level %d"
 msgstr "%s Titre niveau %d"
 
 #. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
-#, fuzzy, c-format
+#, fuzzy
 msgid "Page %d"
 msgstr "Page %d : %s"
 
 #. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
-#, c-format
 msgid "Page %d: %s"
 msgstr "Page %d : %s"
 
@@ -1811,7 +1804,6 @@ msgid "Start of container."
 msgstr "Début du conteneur."
 
 #. TRANSLATORS: Announcement when landing on a bookmark; %s is the bookmark/line text, %d is the bookmark's 1-based index
-#, c-format
 msgid "%s - Bookmark %d"
 msgstr "%s - Signet %d"
 

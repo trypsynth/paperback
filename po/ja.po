@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-16 15:52+0000\n"
+"POT-Creation-Date: 2026-08-16 12:22-0600\n"
 "PO-Revision-Date: 2026-06-25 21:58+0900\n"
 "Last-Translator: Kazto Kitabatake <contact@kitabatake1013.jp>\n"
 "Language-Team: \n"
@@ -246,7 +246,6 @@ msgid "Go to page"
 msgstr "指定ページへ移動"
 
 #. TRANSLATORS: Label/prompt template for the page selection dialog. The %d placeholders represent current_page and max_pages respectively.
-#, c-format
 msgid "Go to page (%d/%d):"
 msgstr "ページ数(%d/%d):"
 
@@ -974,7 +973,6 @@ msgid "Sleep timer set for 1 minute."
 msgstr "スリープタイマーを1分に設定しました。"
 
 #. TRANSLATORS: Announcement when the sleep timer is set; %d is the number of minutes (always 2 or more)
-#, c-format
 msgid "Sleep timer set for %d minutes."
 msgstr "スリープタイマーを%d分に設定しました。"
 
@@ -1565,17 +1563,14 @@ msgid "No previous section"
 msgstr "前のセクションがありません"
 
 #. TRANSLATORS: Announced when the document has no headings at the given level; %d is the heading level number
-#, c-format
 msgid "No headings at level %d."
 msgstr "レベル%dの見出しがありません。"
 
 #. TRANSLATORS: Announced when there is no next heading at the given level; %d is the heading level number
-#, c-format
 msgid "No next heading at level %d."
 msgstr "次の見出しレベル%dがありません。"
 
 #. TRANSLATORS: Announced when there is no previous heading at the given level; %d is the heading level number
-#, c-format
 msgid "No previous heading at level %d."
 msgstr "前の見出しレベル%dがありません。"
 
@@ -1691,17 +1686,15 @@ msgid "Wrapping to end. "
 msgstr "最後に戻ります。"
 
 #. TRANSLATORS: Announcement when landing on a heading; %s is the heading text, %d is the heading level number
-#, c-format
 msgid "%s Heading level %d"
 msgstr "%s 見出しレベル%d"
 
 #. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
-#, fuzzy, c-format
+#, fuzzy
 msgid "Page %d"
 msgstr "ページ%d: %s"
 
 #. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
-#, c-format
 msgid "Page %d: %s"
 msgstr "ページ%d: %s"
 
@@ -1743,7 +1736,6 @@ msgid "Start of container."
 msgstr "コンテナの開始。"
 
 #. TRANSLATORS: Announcement when landing on a bookmark; %s is the bookmark/line text, %d is the bookmark's 1-based index
-#, c-format
 msgid "%s - Bookmark %d"
 msgstr "%s - しおり%d"
 
