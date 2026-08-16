@@ -196,8 +196,8 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Added a CLI tool, called pb, to quickly convert any of Paperback's supported formats to HTML, Markdown, or plain text.
 * Added a Configurable keyboard shortcut to Restore Paperback from the system tray.
 * Added a locate button to the all documents dialog to locate missing books that just changed their path.
-* Added the = key to read your current percentage through a book.
-* Added an option to move your text cursor to the start of the line when navigating, similar to browse mode in some screen readers.
+* Added a status filter and status bar to the all documents dialog, so you can filter by document status and see how many documents are shown and selected.
+* Added the `Ctrl+Shift+A` shortcut to deselect all documents in the all documents dialog.
 * Added a readability tab to the options dialog, with the following options:
     * Word wrap (moved from general);
     * Render tables inline (new in this release, see below);
@@ -209,7 +209,6 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
     * Text alignment.
 * Added a toggle to determine how you want tables displayed, and unified how tables are displayed across documents.
 * added a View Source option to open a document's source in a new tab, useful for editing Markdown for example.
-* Added a word wrap menu item and subsequent hotkey.
 * Added estimated reading time to the word count dialog, as well as the ability to set your reading speed to make this metric actually useful.
 * Added ARM64 Windows support!
 * Added Android support!
@@ -218,10 +217,9 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Added new languages: Dutch, Finish, and Polish.
 * Added support for navigating by container.
 * Added support for lists, list items, figures, and images in CHM documents.
-* Added temperary bookmarks: press slash to set one, backslash to jump to it.
+* Added a word wrap menu item and subsequent hotkey.
 * Bookmark/note sounds should now properly play exclusively when you navigate over a word containing one.
 * Documents encoded in legacy CJK encodings, such as GBK, Big5, and Shift_JIS, will now render properly instead of as a bunch of mojibake.
-* Documents who's contents change on disk can now optionally be automagically reloaded with the new content.
 * Expanded the export menu item to allow exporting to HTML and Markdown in addition to plain text.
 * Fixed applying word wrap shooting you to the start of your document.
 * Fix daisy books showing incorrect  info in the status bar.
@@ -232,7 +230,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Fixed links in legacy mobi books.
 * Fixed loading DAISY books with bogus encoding declarations.
 * Fixed page navigation announcing incorrect line text in some situations.
-* Fixed parsing RTF documents with non-Latin characters and \uN? unicode escapes in them.
+* Fixed parsing RTF documents with non-Latin characters in them.
 * Fixed "Reopen last closed" attempting to reopen the bundled readme.
 * Fixed the title bar not updating after closing a document from the all documents dialog.
 * Fix the webview dialog not being resizable and popping up at a very small initial size.
