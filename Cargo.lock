@@ -727,7 +727,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -1614,7 +1614,7 @@ dependencies = [
  "objc",
  "paperback-core",
  "paperback-formats",
- "patois 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "patois 0.2.0",
  "patois-build",
  "rstest",
  "ship-shape",
@@ -1645,7 +1645,7 @@ dependencies = [
  "libchm",
  "office-crypto",
  "paperback-formats",
- "patois 0.2.0 (git+https://github.com/trypsynth/patois.git)",
+ "patois 0.2.1",
  "pdfium",
  "percent-encoding",
  "pulldown-cmark",
@@ -1727,8 +1727,8 @@ dependencies = [
 
 [[package]]
 name = "patois"
-version = "0.2.0"
-source = "git+https://github.com/trypsynth/patois.git#55dfc64b804522462729dd188cdf1cfb7610e243"
+version = "0.2.1"
+source = "git+https://github.com/trypsynth/patois.git#157b9661ff633a6240b2661eef6317523ab049f9"
 dependencies = [
  "inventory",
  "patois-macros 0.2.0 (git+https://github.com/trypsynth/patois.git)",
@@ -1737,8 +1737,8 @@ dependencies = [
 
 [[package]]
 name = "patois-build"
-version = "0.1.4"
-source = "git+https://github.com/trypsynth/patois.git#55dfc64b804522462729dd188cdf1cfb7610e243"
+version = "0.1.5"
+source = "git+https://github.com/trypsynth/patois.git#157b9661ff633a6240b2661eef6317523ab049f9"
 dependencies = [
  "serde_json",
 ]
@@ -1768,7 +1768,7 @@ dependencies = [
 [[package]]
 name = "patois-macros"
 version = "0.2.0"
-source = "git+https://github.com/trypsynth/patois.git#55dfc64b804522462729dd188cdf1cfb7610e243"
+source = "git+https://github.com/trypsynth/patois.git#157b9661ff633a6240b2661eef6317523ab049f9"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2220,7 +2220,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -2709,7 +2709,7 @@ dependencies = [
  "getrandom 0.4.3",
  "once_cell",
  "rustix",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -3434,7 +3434,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -3668,7 +3668,7 @@ version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "eca8f45a9d19892be9147c5944b6e6862951a5f40f23bdc614d9fecf069224e9"
 dependencies = [
- "patois 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "patois 0.2.0",
  "wxdragon",
 ]
 
