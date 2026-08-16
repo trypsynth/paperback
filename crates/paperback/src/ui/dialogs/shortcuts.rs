@@ -7,9 +7,11 @@ use paperback_core::config::{ActionId, KeyChord, ShortcutCategory, ShortcutsConf
 use patois::t;
 use wxdragon::prelude::*;
 
+type RefreshCallbacks = Rc<RefCell<Vec<Box<dyn Fn()>>>>;
+
 pub fn prompt_for_shortcuts(parent: &dyn WxWidget, initial: &ShortcutsConfig) -> Option<ShortcutsConfig> {
 	let config_state = Rc::new(RefCell::new(initial.clone()));
-	let refresh_all_callbacks: Rc<RefCell<Vec<Box<dyn Fn()>>>> = Rc::new(RefCell::new(Vec::new()));
+	let refresh_all_callbacks: RefreshCallbacks = Rc::new(RefCell::new(Vec::new()));
 
 	let dialog = Dialog::builder(parent, &t("Customize Keyboard Shortcuts")).with_size(600, 560).build();
 	let panel = Panel::builder(&dialog).build();
@@ -55,7 +57,7 @@ fn build_category_tab(
 	config_state: Rc<RefCell<ShortcutsConfig>>,
 	category: ShortcutCategory,
 	parent_dialog: &Dialog,
-	refresh_all_callbacks: Rc<RefCell<Vec<Box<dyn Fn()>>>>,
+	refresh_all_callbacks: RefreshCallbacks,
 ) -> Panel {
 	let panel = Panel::builder(notebook).with_style(PanelStyle::TabTraversal).build();
 	let sizer = BoxSizer::builder(Orientation::Vertical).build();
@@ -90,12 +92,11 @@ fn build_category_tab(
 
 	let refresh_this_tab = {
 		let config_state = config_state.clone();
-		let list_box = list_box;
 		let actions = actions.clone();
 		move || {
 			for (idx, &action) in actions.iter().enumerate() {
 				let item_text = format_list_item(&config_state.borrow(), action);
-				list_box.set_string(idx as u32, &item_text);
+				list_box.set_string(u32::try_from(idx).unwrap_or(u32::MAX), &item_text);
 			}
 		}
 	};
@@ -112,7 +113,6 @@ fn build_category_tab(
 
 	let trigger_set_shortcut = {
 		let config_state = config_state.clone();
-		let list_box = list_box;
 		let actions = actions.clone();
 		let parent = *parent_dialog;
 		let refresh_all = refresh_all.clone();
@@ -284,86 +284,61 @@ fn prompt_for_key_chord(
 	let preview_label = StaticText::builder(&panel).with_label("Detected: (none)").build();
 	main_sizer.add(&preview_label, 0, SizerFlag::Expand | SizerFlag::All, 8);
 
-	let current_shortcut_text = {
-		let ctrl_cb = ctrl_cb;
-		let alt_cb = alt_cb;
-		let shift_cb = shift_cb;
-		let key_text_ctrl = key_text_ctrl;
-		move || {
-			let key = key_text_ctrl.get_value();
-			let trimmed = key.trim().to_string();
-			if trimmed.is_empty() {
-				None
-			} else {
-				let chord = KeyChord::new(ctrl_cb.get_value(), alt_cb.get_value(), shift_cb.get_value(), &trimmed);
-				Some(chord.to_shortcut_string())
-			}
+	let current_shortcut_text = move || {
+		let key = key_text_ctrl.get_value();
+		let trimmed = key.trim().to_string();
+		if trimmed.is_empty() {
+			None
+		} else {
+			let chord = KeyChord::new(ctrl_cb.get_value(), alt_cb.get_value(), shift_cb.get_value(), &trimmed);
+			Some(chord.to_shortcut_string())
 		}
 	};
 
-	let refresh_preview_label = {
-		let current_shortcut_text = current_shortcut_text.clone();
-		let preview_label = preview_label;
-		move || {
-			let text =
-				current_shortcut_text().map_or_else(|| "Detected: (none)".to_string(), |s| format!("Detected: {s}"));
-			preview_label.set_label(&text);
-		}
+	let refresh_preview_label = move || {
+		let text = current_shortcut_text().map_or_else(|| "Detected: (none)".to_string(), |s| format!("Detected: {s}"));
+		preview_label.set_label(&text);
 	};
 	refresh_preview_label();
 
-	let update_preview = {
-		let current_shortcut_text = current_shortcut_text;
-		let refresh_preview_label = refresh_preview_label.clone();
-		let live_region_label = live_region_label;
-		move || {
-			refresh_preview_label();
-			let announce_text =
-				current_shortcut_text().map_or_else(|| "No key detected".to_string(), |s| format!("Detected: {s}"));
-			live_region::announce(live_region_label, &announce_text);
-		}
+	let update_preview = move || {
+		refresh_preview_label();
+		let announce_text =
+			current_shortcut_text().map_or_else(|| "No key detected".to_string(), |s| format!("Detected: {s}"));
+		live_region::announce(live_region_label, &announce_text);
 	};
 
-	let ctrl_cb_cap = ctrl_cb;
-	let alt_cb_cap = alt_cb;
-	let shift_cb_cap = shift_cb;
-	let key_text_cap = key_text_ctrl;
-	let update_preview_key = update_preview.clone();
+	let update_preview_key = update_preview;
 	let raw_ctrl_key = raw_ctrl.clone();
 	key_text_ctrl.on_key_down(move |event| {
-		if let WindowEventData::Keyboard(ref key_event) = event {
-			if let Some(k) = key_event.get_key_code() {
-				if k != 9 && k != 27 && !matches!(k, 314 | 315 | 316 | 317 | 378 | 380 | 382 | 383) {
-					if let Some(parsed) = KeyChord::from_key_code(
-						k,
-						key_event.control_down(),
-						key_event.alt_down(),
-						key_event.shift_down(),
-					) {
-						raw_ctrl_key.set(false);
-						ctrl_cb_cap.set_value(parsed.ctrl);
-						alt_cb_cap.set_value(parsed.alt);
-						shift_cb_cap.set_value(parsed.shift);
-						key_text_cap.set_value(&parsed.key);
-						update_preview_key();
-						event.skip(false);
-						return;
-					}
-				}
-			}
+		if let WindowEventData::Keyboard(ref key_event) = event
+			&& let Some(k) = key_event.get_key_code()
+			&& k != 9 && k != 27
+			&& !matches!(k, 314 | 315 | 316 | 317 | 378 | 380 | 382 | 383)
+			&& let Some(parsed) =
+				KeyChord::from_key_code(k, key_event.control_down(), key_event.alt_down(), key_event.shift_down())
+		{
+			raw_ctrl_key.set(false);
+			ctrl_cb.set_value(parsed.ctrl);
+			alt_cb.set_value(parsed.alt);
+			shift_cb.set_value(parsed.shift);
+			key_text_ctrl.set_value(&parsed.key);
+			update_preview_key();
+			event.skip(false);
+			return;
 		}
 		event.skip(true);
 	});
 
-	let update_preview_ctrl = update_preview.clone();
+	let update_preview_ctrl = update_preview;
 	let raw_ctrl_toggle = raw_ctrl.clone();
 	ctrl_cb.on_toggled(move |_| {
 		raw_ctrl_toggle.set(false);
 		update_preview_ctrl();
 	});
-	let update_preview_alt = update_preview.clone();
+	let update_preview_alt = update_preview;
 	alt_cb.on_toggled(move |_| update_preview_alt());
-	let update_preview_shift = update_preview.clone();
+	let update_preview_shift = update_preview;
 	shift_cb.on_toggled(move |_| update_preview_shift());
 
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();

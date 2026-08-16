@@ -906,11 +906,10 @@ impl DocumentManager {
 						}
 						_ => {
 							if !kbd.control_down() && !kbd.alt_down() || cfg!(target_os = "linux") {
-								if let Some(menu_id) = menu_ids::action_to_menu_id(act) {
-									kbd.event.skip(false);
-									frame_for_keys.process_menu_command(menu_id);
-									return;
-								}
+								let menu_id = menu_ids::action_to_menu_id(act);
+								kbd.event.skip(false);
+								frame_for_keys.process_menu_command(menu_id);
+								return;
 							}
 						}
 					}
