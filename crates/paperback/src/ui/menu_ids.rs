@@ -40,7 +40,7 @@ pub const RECENT_DOCUMENT_BASE: i32 = BASE + 100;
 pub const RECENT_DOCUMENT_MAX: i32 = BASE + 199;
 
 // Go menu: Find (BASE + 200..209)
-seq_ids!(BASE + 200 => FIND, FIND_NEXT, FIND_PREVIOUS);
+seq_ids!(BASE + 200 => FIND, FIND_NEXT, FIND_PREVIOUS, ANNOUNCE_PERCENT, SET_TEMPORARY_BOOKMARK, JUMP_TO_TEMPORARY_BOOKMARK);
 
 // Go menu: Go to (BASE + 210..219)
 seq_ids!(BASE + 210 => GO_TO_LINE, GO_TO_PERCENT, GO_TO_PAGE);
@@ -100,7 +100,7 @@ seq_ids!(BASE + 410 => IMPORT_DOCUMENT_DATA, EXPORT_DOCUMENT_DATA, EXPORT_TO_PLA
 seq_ids!(BASE + 420 => TOGGLE_BOOKMARK, BOOKMARK_WITH_NOTE);
 
 // Tools menu: Settings (BASE + 430..439)
-seq_ids!(BASE + 430 => OPTIONS, SLEEP_TIMER);
+seq_ids!(BASE + 430 => OPTIONS, SLEEP_TIMER, CUSTOMIZE_SHORTCUTS);
 
 // Tools menu: View toggles (BASE + 440..449)
 seq_ids!(BASE + 440 => TOGGLE_WORD_WRAP, TOGGLE_FULL_SCREEN);
@@ -110,3 +110,92 @@ seq_ids!(BASE + 500 => VIEW_HELP_BROWSER, VIEW_HELP_PAPERBACK, CHECK_FOR_UPDATES
 
 // System tray (BASE + 900..999)
 seq_ids!(BASE + 900 => RESTORE);
+
+pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> Option<i32> {
+	use paperback_core::config::ActionId;
+	match action {
+		ActionId::Open => Some(OPEN),
+		ActionId::Close => Some(CLOSE),
+		ActionId::CloseAll => Some(CLOSE_ALL),
+		ActionId::ReopenLastClosed => Some(REOPEN_LAST_CLOSED),
+		ActionId::ShowAllRecentDocuments => Some(SHOW_ALL_DOCUMENTS),
+		ActionId::Exit => Some(EXIT),
+		ActionId::Find => Some(FIND),
+		ActionId::FindNext => Some(FIND_NEXT),
+		ActionId::FindPrevious => Some(FIND_PREVIOUS),
+		ActionId::GoToLine => Some(GO_TO_LINE),
+		ActionId::GoToPercent => Some(GO_TO_PERCENT),
+		ActionId::GoToPage => Some(GO_TO_PAGE),
+		ActionId::GoBack => Some(GO_BACK),
+		ActionId::GoForward => Some(GO_FORWARD),
+		ActionId::AnnouncePercent => Some(ANNOUNCE_PERCENT),
+		ActionId::SetTemporaryBookmark => Some(SET_TEMPORARY_BOOKMARK),
+		ActionId::JumpToTemporaryBookmark => Some(JUMP_TO_TEMPORARY_BOOKMARK),
+		ActionId::PreviousSection => Some(PREVIOUS_SECTION),
+		ActionId::NextSection => Some(NEXT_SECTION),
+		ActionId::PreviousHeading => Some(PREVIOUS_HEADING),
+		ActionId::NextHeading => Some(NEXT_HEADING),
+		ActionId::PreviousHeading1 => Some(PREVIOUS_HEADING_1),
+		ActionId::NextHeading1 => Some(NEXT_HEADING_1),
+		ActionId::PreviousHeading2 => Some(PREVIOUS_HEADING_2),
+		ActionId::NextHeading2 => Some(NEXT_HEADING_2),
+		ActionId::PreviousHeading3 => Some(PREVIOUS_HEADING_3),
+		ActionId::NextHeading3 => Some(NEXT_HEADING_3),
+		ActionId::PreviousHeading4 => Some(PREVIOUS_HEADING_4),
+		ActionId::NextHeading4 => Some(NEXT_HEADING_4),
+		ActionId::PreviousHeading5 => Some(PREVIOUS_HEADING_5),
+		ActionId::NextHeading5 => Some(NEXT_HEADING_5),
+		ActionId::PreviousHeading6 => Some(PREVIOUS_HEADING_6),
+		ActionId::NextHeading6 => Some(NEXT_HEADING_6),
+		ActionId::PreviousPage => Some(PREVIOUS_PAGE),
+		ActionId::NextPage => Some(NEXT_PAGE),
+		ActionId::PreviousBookmark => Some(PREVIOUS_BOOKMARK),
+		ActionId::NextBookmark => Some(NEXT_BOOKMARK),
+		ActionId::PreviousNote => Some(PREVIOUS_NOTE),
+		ActionId::NextNote => Some(NEXT_NOTE),
+		ActionId::JumpToAllBookmarks => Some(JUMP_TO_ALL_BOOKMARKS),
+		ActionId::JumpToBookmarksOnly => Some(JUMP_TO_BOOKMARKS_ONLY),
+		ActionId::JumpToNotesOnly => Some(JUMP_TO_NOTES_ONLY),
+		ActionId::ViewNoteText => Some(VIEW_NOTE_TEXT),
+		ActionId::PreviousLink => Some(PREVIOUS_LINK),
+		ActionId::NextLink => Some(NEXT_LINK),
+		ActionId::PreviousImage => Some(PREVIOUS_IMAGE),
+		ActionId::NextImage => Some(NEXT_IMAGE),
+		ActionId::PreviousFigure => Some(PREVIOUS_FIGURE),
+		ActionId::NextFigure => Some(NEXT_FIGURE),
+		ActionId::PreviousTable => Some(PREVIOUS_TABLE),
+		ActionId::NextTable => Some(NEXT_TABLE),
+		ActionId::PreviousSeparator => Some(PREVIOUS_SEPARATOR),
+		ActionId::NextSeparator => Some(NEXT_SEPARATOR),
+		ActionId::PreviousList => Some(PREVIOUS_LIST),
+		ActionId::NextList => Some(NEXT_LIST),
+		ActionId::PreviousListItem => Some(PREVIOUS_LIST_ITEM),
+		ActionId::NextListItem => Some(NEXT_LIST_ITEM),
+		ActionId::ContainerStart => Some(CONTAINER_START),
+		ActionId::ContainerEnd => Some(CONTAINER_END),
+		ActionId::WordCount => Some(WORD_COUNT),
+		ActionId::DocumentInfo => Some(DOCUMENT_INFO),
+		ActionId::TableOfContents => Some(TABLE_OF_CONTENTS),
+		ActionId::ElementsList => Some(ELEMENTS_LIST),
+		ActionId::RevealFileInFolder => Some(REVEAL_FILE_IN_FOLDER),
+		ActionId::OpenInWebView => Some(OPEN_IN_WEB_VIEW),
+		ActionId::ViewSource => Some(VIEW_SOURCE),
+		ActionId::ToggleBookmark => Some(TOGGLE_BOOKMARK),
+		ActionId::BookmarkWithNote => Some(BOOKMARK_WITH_NOTE),
+		ActionId::ToggleWordWrap => Some(TOGGLE_WORD_WRAP),
+		ActionId::ToggleFullScreen => Some(TOGGLE_FULL_SCREEN),
+		ActionId::Options => Some(OPTIONS),
+		ActionId::SleepTimer => Some(SLEEP_TIMER),
+		ActionId::CustomizeShortcuts => Some(CUSTOMIZE_SHORTCUTS),
+		ActionId::ImportDocumentData => Some(IMPORT_DOCUMENT_DATA),
+		ActionId::ExportDocumentData => Some(EXPORT_DOCUMENT_DATA),
+		ActionId::ExportToPlainText => Some(EXPORT_TO_PLAIN_TEXT),
+		ActionId::ExportToHtml => Some(EXPORT_TO_HTML),
+		ActionId::ExportToMarkdown => Some(EXPORT_TO_MARKDOWN),
+		ActionId::About => Some(ABOUT),
+		ActionId::ViewHelpBrowser => Some(VIEW_HELP_BROWSER),
+		ActionId::ViewHelpPaperback => Some(VIEW_HELP_PAPERBACK),
+		ActionId::CheckForUpdates => Some(CHECK_FOR_UPDATES),
+		ActionId::Donate => Some(DONATE),
+	}
+}

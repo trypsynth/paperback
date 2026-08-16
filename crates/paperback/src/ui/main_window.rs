@@ -725,6 +725,21 @@ impl MainWindow {
 				menu_ids::FIND_PREVIOUS => {
 					find::handle_find_action(&frame_copy, &dm, &config, &find_dialog, live_region_label, false);
 				}
+				menu_ids::ANNOUNCE_PERCENT => {
+					if let Ok(dm_ref) = dm.try_lock() {
+						dm_ref.announce_current_percent();
+					}
+				}
+				menu_ids::SET_TEMPORARY_BOOKMARK => {
+					if let Ok(dm_ref) = dm.try_lock() {
+						dm_ref.set_temporary_bookmark();
+					}
+				}
+				menu_ids::JUMP_TO_TEMPORARY_BOOKMARK => {
+					if let Ok(mut dm_ref) = dm.try_lock() {
+						dm_ref.jump_to_temporary_bookmark();
+					}
+				}
 				menu_ids::GO_TO_LINE => {
 					let (current_line, max_lines) = {
 						let mut dm_guard = dm.lock().unwrap();
@@ -1512,6 +1527,7 @@ impl MainWindow {
 					cfg.set_app_string("language", &options.language);
 					set_update_channel(&cfg, options.update_channel);
 					cfg.set_hotkey(&options.hotkey);
+					cfg.set_shortcuts(&options.shortcuts);
 					cfg.set_readability_font(&options.readability_font);
 					cfg.set_line_spacing(options.line_spacing);
 					cfg.set_bg_color(options.bg_color);
@@ -1587,6 +1603,24 @@ impl MainWindow {
 					drop(dm_ref);
 					menu::update_menu_item_states(&frame_copy, has_docs);
 					menu::update_reopen_state(&frame_copy, has_reopen);
+				}
+				menu_ids::CUSTOMIZE_SHORTCUTS => {
+					let initial_shortcuts = config.lock().unwrap().get_shortcuts();
+					if let Some(updated) = dialogs::prompt_for_shortcuts(&frame_copy, &initial_shortcuts) {
+						{
+							let cfg = config.lock().unwrap();
+							cfg.set_shortcuts(&updated);
+							cfg.flush();
+						}
+						let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
+						frame_copy.set_menu_bar(menu_bar);
+						let dm_ref = dm.lock().unwrap();
+						let has_docs = dm_ref.tab_count() > 0;
+						let has_reopen = dm_ref.has_recently_closed();
+						drop(dm_ref);
+						menu::update_menu_item_states(&frame_copy, has_docs);
+						menu::update_reopen_state(&frame_copy, has_reopen);
+					}
 				}
 				menu_ids::SLEEP_TIMER => {
 					if sleep_timer_running_for_menu.get() {

@@ -41,6 +41,8 @@ mod open_as;
 pub use open_as::show_open_as_dialog;
 mod options;
 pub use options::show_options_dialog;
+mod shortcuts;
+pub use shortcuts::prompt_for_shortcuts;
 mod sleep_timer;
 pub use sleep_timer::show_sleep_timer_dialog;
 mod toc;

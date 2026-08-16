@@ -5,7 +5,7 @@ use std::{
 	rc::Rc,
 };
 
-use paperback_core::config::{ConfigManager, HotkeyConfig, ReadabilityFont};
+use paperback_core::config::{ConfigManager, HotkeyConfig, ReadabilityFont, ShortcutsConfig};
 use patois::{t, ui::populate_language_choice};
 #[cfg(target_os = "windows")]
 use wxdragon::accessible::AccRole;
@@ -35,6 +35,7 @@ pub struct OptionsDialogResult {
 	pub language: String,
 	pub update_channel: UpdateChannel,
 	pub hotkey: HotkeyConfig,
+	pub shortcuts: ShortcutsConfig,
 	pub readability_font: ReadabilityFont,
 	pub line_spacing: i32,
 	pub bg_color: i32,
@@ -66,6 +67,7 @@ struct OptionsDialogUi {
 	ok_button: Button,
 	cancel_button: Button,
 	hotkey: Rc<RefCell<HotkeyConfig>>,
+	shortcuts: Rc<RefCell<ShortcutsConfig>>,
 	readability_font: Rc<RefCell<ReadabilityFont>>,
 	line_spacing_ctrl: Choice,
 	bg_color: Rc<Cell<i32>>,
@@ -108,6 +110,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		language,
 		update_channel,
 		hotkey: ui.hotkey.borrow().clone(),
+		shortcuts: ui.shortcuts.borrow().clone(),
 		readability_font,
 		line_spacing,
 		bg_color,
@@ -160,6 +163,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	#[cfg(not(target_os = "macos"))]
 	// TRANSLATORS: Button label to open the hotkey customization dialog
 	let hotkey_button = Button::builder(&general_panel).with_label(&t("Customize &Window Hotkey...")).build();
+	let shortcuts_button = Button::builder(&general_panel).with_label(&t("Customize &Keyboard Shortcuts...")).build();
 	let option_padding = 5;
 	general_sizer.add(&restore_docs_check, 0, SizerFlag::All, option_padding);
 	general_sizer.add(&auto_reload_check, 0, SizerFlag::All, option_padding);
@@ -174,6 +178,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	check_for_updates_check.show(false);
 	#[cfg(not(target_os = "macos"))]
 	general_sizer.add(&hotkey_button, 0, SizerFlag::All, option_padding);
+	general_sizer.add(&shortcuts_button, 0, SizerFlag::All, option_padding);
 	reading_sizer.add(&navigation_wrap_check, 0, SizerFlag::All, option_padding);
 	#[cfg(target_os = "windows")]
 	reading_sizer.add(&line_start_nav_check, 0, SizerFlag::All, option_padding);
@@ -405,6 +410,15 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 			}
 		});
 	}
+	let current_shortcuts = Rc::new(RefCell::new(config.get_shortcuts()));
+	let shortcuts_state = Rc::clone(&current_shortcuts);
+	let shortcuts_dialog_parent = dialog;
+	shortcuts_button.on_click(move |_| {
+		let initial = shortcuts_state.borrow().clone();
+		if let Some(updated) = super::prompt_for_shortcuts(&shortcuts_dialog_parent, &initial) {
+			*shortcuts_state.borrow_mut() = updated;
+		}
+	});
 	let initial_font = config.get_readability_font();
 	font_preview_label.set_label(&font_description(&initial_font));
 	let readability_font = Rc::new(RefCell::new(initial_font));
@@ -490,6 +504,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		ok_button,
 		cancel_button,
 		hotkey: current_hotkey,
+		shortcuts: current_shortcuts,
 		readability_font,
 		line_spacing_ctrl,
 		bg_color,
