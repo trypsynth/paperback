@@ -1728,7 +1728,7 @@ dependencies = [
 [[package]]
 name = "patois"
 version = "0.2.1"
-source = "git+https://github.com/trypsynth/patois.git#157b9661ff633a6240b2661eef6317523ab049f9"
+source = "git+https://github.com/trypsynth/patois.git#929634542f023c6e9b9e3569f99069d8f54ad95b"
 dependencies = [
  "inventory",
  "patois-macros 0.2.0 (git+https://github.com/trypsynth/patois.git)",
@@ -1738,7 +1738,7 @@ dependencies = [
 [[package]]
 name = "patois-build"
 version = "0.1.5"
-source = "git+https://github.com/trypsynth/patois.git#157b9661ff633a6240b2661eef6317523ab049f9"
+source = "git+https://github.com/trypsynth/patois.git#929634542f023c6e9b9e3569f99069d8f54ad95b"
 dependencies = [
  "serde_json",
 ]
@@ -1768,7 +1768,7 @@ dependencies = [
 [[package]]
 name = "patois-macros"
 version = "0.2.0"
-source = "git+https://github.com/trypsynth/patois.git#157b9661ff633a6240b2661eef6317523ab049f9"
+source = "git+https://github.com/trypsynth/patois.git#929634542f023c6e9b9e3569f99069d8f54ad95b"
 dependencies = [
  "proc-macro2",
  "quote",

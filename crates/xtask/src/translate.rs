@@ -8,8 +8,9 @@ use std::{
 };
 
 mod deepl;
-mod po;
 mod readme;
+
+use patois_build::po::PoDocument;
 
 use crate::project_root;
 
@@ -144,7 +145,7 @@ fn translate_one(
 	let merged = fs::read_to_string(&tmp)?;
 	let _ = fs::remove_file(&tmp);
 
-	let mut doc = po::PoDocument::parse(&merged);
+	let mut doc = PoDocument::parse(&merged);
 	let candidates: Vec<(usize, String)> = doc.needs_translation().map(|(i, m)| (i, m.to_string())).collect();
 
 	if dry_run {
