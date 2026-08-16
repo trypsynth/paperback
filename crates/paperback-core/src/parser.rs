@@ -181,21 +181,25 @@ pub fn parse_document(context: &ParserContext) -> Result<Document> {
 		// TRANSLATORS: Error shown when no parser supports a file's extension; {} is the extension (without the leading dot)
 		return Err(anyhow::anyhow!(t("No parser found for extension: .{}").replace("{}", extension)));
 	}
+	tracing::debug!(path = %context.file_path, extension, candidates = parsers.len(), "parsing document");
 	let mut last_error = None;
 	for parser in parsers {
 		match parser.parse(context) {
 			Ok(mut doc) => {
 				doc.compute_stats();
+				tracing::debug!(path = %context.file_path, parser = parser.name(), "parsed document");
 				return Ok(doc);
 			}
 			Err(e) => {
 				if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
 					return Err(e);
 				}
+				tracing::warn!(path = %context.file_path, parser = parser.name(), error = %e, "parser failed, trying next");
 				last_error = Some(e);
 			}
 		}
 	}
+	tracing::warn!(path = %context.file_path, extension, "all parsers failed");
 	Err(last_error.unwrap_or_else(|| {
 		// TRANSLATORS: Error shown when every parser for a file's extension failed; {} is the extension (without the leading dot)
 		anyhow::anyhow!(t("All parsers failed for extension: .{}").replace("{}", extension))

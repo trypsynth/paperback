@@ -29,7 +29,8 @@ pub fn init(log_dir: &Path) -> Option<WorkerGuard> {
 		}
 	};
 	let (writer, guard) = non_blocking(file);
-	let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"));
+	let filter = EnvFilter::try_from_default_env()
+		.unwrap_or_else(|_| EnvFilter::new("info,paperback=debug,paperback_core=debug"));
 	fmt().with_writer(writer).with_env_filter(filter).with_ansi(false).init();
 	Some(guard)
 }

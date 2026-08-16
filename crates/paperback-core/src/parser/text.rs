@@ -12,13 +12,16 @@ pub struct TextParser;
 
 impl Parser for TextParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		tracing::debug!(path = %context.file_path, "parsing text file");
 		let bytes = fs::read(&context.file_path)
 			.with_context(|| format!("Failed to open text file '{}'", context.file_path))?;
 		let utf8_content = convert_to_utf8(&bytes);
 		let processed = remove_soft_hyphens(&utf8_content);
 		let title = extract_title_from_path(&context.file_path);
 		let mut doc = Document::new().with_title(title);
+		let char_len = processed.chars().count();
 		doc.set_buffer(DocumentBuffer::with_content(processed));
+		tracing::debug!(path = %context.file_path, bytes = bytes.len(), chars = char_len, "parsed text file");
 		Ok(doc)
 	}
 }

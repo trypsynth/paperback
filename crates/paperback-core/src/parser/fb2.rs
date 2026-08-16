@@ -19,6 +19,7 @@ pub struct Fb2Parser;
 
 impl Parser for Fb2Parser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		tracing::debug!(path = %context.file_path, "parsing fb2 file");
 		const CLOSING_TAG: &str = "</FictionBook>";
 		let mut xml_content = fs::read_to_string(&context.file_path)
 			.with_context(|| format!("Failed to read FB2 file '{}'", context.file_path))?;
@@ -26,11 +27,16 @@ impl Parser for Fb2Parser {
 			xml_content.truncate(pos + CLOSING_TAG.len());
 		}
 		let (xml_content, (title, author)) = clean_fb2(&xml_content).unwrap_or_else(|| {
+			tracing::warn!(
+				path = %context.file_path,
+				"roxmltree failed to parse fb2 xml, falling back to unstripped xml which may include base64 binary blobs"
+			);
 			let (title, author) = extract_metadata(&xml_content);
 			(xml_content, (title, author))
 		});
 		let mut converter = XmlToText::with_render_tables_inline(context.render_tables_inline);
 		if !converter.convert(&xml_content) {
+			tracing::warn!(path = %context.file_path, "failed to convert fb2 xml to text");
 			// TRANSLATORS: Error shown when an FB2 (FictionBook) file's XML fails to convert to plain text
 			anyhow::bail!(t("Failed to convert FB2 XML to text"));
 		}
@@ -44,6 +50,7 @@ impl Parser for Fb2Parser {
 		let mut document = Document::new().with_title(title).with_author(author);
 		document.set_buffer(buffer);
 		document.id_positions = id_positions;
+		tracing::debug!(path = %context.file_path, "parsed fb2 file successfully");
 		Ok(document)
 	}
 }
@@ -130,8 +137,13 @@ fn escape_xml(s: &str) -> String {
 }
 
 fn extract_metadata(xml_content: &str) -> Metadata {
-	XmlDocument::parse(xml_content)
-		.map_or_else(|_| (String::new(), String::new()), |doc| extract_metadata_from_doc(&doc))
+	XmlDocument::parse(xml_content).map_or_else(
+		|e| {
+			tracing::warn!(error = %e, "failed to parse fb2 xml for metadata, title and author will be empty");
+			(String::new(), String::new())
+		},
+		|doc| extract_metadata_from_doc(&doc),
+	)
 }
 
 fn extract_metadata_from_doc(doc: &XmlDocument<'_>) -> Metadata {

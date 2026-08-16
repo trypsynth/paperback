@@ -1660,6 +1660,7 @@ dependencies = [
  "sha1 0.11.0",
  "thiserror",
  "toml 1.1.4+spec-1.1.0",
+ "tracing",
  "unicode-bidi",
  "uniffi",
  "zip",
@@ -1783,6 +1784,7 @@ dependencies = [
  "clap",
  "paperback-core",
  "rpassword",
+ "tracing-subscriber",
 ]
 
 [[package]]

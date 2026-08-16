@@ -52,25 +52,31 @@ impl Parser for WordParser {
 			|ext| ext.to_ascii_lowercase(),
 		);
 		let render_tables_inline = context.render_tables_inline;
+		tracing::debug!(path = %context.file_path, extension = %extension, "resolved word parser branch");
 		if extension == "zip" {
+			tracing::debug!(path = %context.file_path, "treating file as a batch zip of embedded docx documents");
 			return parse_word_zip(context, render_tables_inline);
 		}
 		if extension == "doc" {
 			match parse_legacy_doc(context) {
 				Ok(document) => return Ok(document),
-				Err(legacy_err) => match parse_ooxml_doc(context, render_tables_inline) {
-					Ok(document) => return Ok(document),
-					Err(ooxml_err) => {
-						if let Ok(document) = parse_text_like_doc(context) {
-							return Ok(document);
+				Err(legacy_err) => {
+					tracing::warn!(path = %context.file_path, error = %legacy_err, "legacy doc parsing failed, falling back to ooxml parsing");
+					match parse_ooxml_doc(context, render_tables_inline) {
+						Ok(document) => return Ok(document),
+						Err(ooxml_err) => {
+							tracing::warn!(path = %context.file_path, error = %ooxml_err, "ooxml fallback parsing failed, falling back to text-like parsing");
+							if let Ok(document) = parse_text_like_doc(context) {
+								return Ok(document);
+							}
+							// TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
+							let msg = t("Legacy DOC parse failed: {}. OOXML fallback failed: {}")
+								.replacen("{}", &legacy_err.to_string(), 1)
+								.replacen("{}", &ooxml_err.to_string(), 1);
+							return Err(anyhow::anyhow!(msg));
 						}
-						// TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
-						let msg = t("Legacy DOC parse failed: {}. OOXML fallback failed: {}")
-							.replacen("{}", &legacy_err.to_string(), 1)
-							.replacen("{}", &ooxml_err.to_string(), 1);
-						return Err(anyhow::anyhow!(msg));
 					}
-				},
+				}
 			}
 		}
 		parse_ooxml_doc(context, render_tables_inline)
@@ -83,10 +89,13 @@ fn parse_word_zip(context: &ParserContext, render_tables_inline: bool) -> Result
 	let mut archive = ZipArchive::new(BufReader::new(file))
 		.with_context(|| format!("Failed to read ZIP archive '{}'", context.file_path))?;
 
+	tracing::debug!(path = %context.file_path, entries = archive.len(), "scanning zip archive for embedded docx entries");
+
 	let mut docx_names: Vec<String> =
 		archive.file_names().filter(|name| name.to_ascii_lowercase().ends_with(".docx")).map(String::from).collect();
 
 	if docx_names.is_empty() {
+		tracing::warn!(path = %context.file_path, "no docx entries found in zip archive");
 		// TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
 		anyhow::bail!(t("No readable content found in the ZIP archive"));
 	}
@@ -127,10 +136,12 @@ fn parse_word_zip(context: &ParserContext, render_tables_inline: bool) -> Result
 	document.set_buffer(buffer);
 	document.id_positions = id_positions;
 	document.toc_items = toc_items;
+	tracing::debug!(path = %context.file_path, documents = docx_names.len(), "extracted docx documents from zip batch");
 	Ok(document)
 }
 
 fn parse_ooxml_doc(context: &ParserContext, render_tables_inline: bool) -> Result<Document> {
+	tracing::debug!(path = %context.file_path, "parsing ooxml document");
 	let bytes = load_ooxml_bytes(&context.file_path, context.password.as_deref())?;
 	let mut archive = ZipArchive::new(Cursor::new(bytes))
 		.with_context(|| format!("Failed to read DOCX as zip '{}'", context.file_path))?;
@@ -144,6 +155,7 @@ fn parse_ooxml_doc(context: &ParserContext, render_tables_inline: bool) -> Resul
 	document.set_buffer(buffer);
 	document.id_positions = id_positions;
 	document.toc_items = toc_items;
+	tracing::debug!(path = %context.file_path, "parsed ooxml document successfully");
 	Ok(document)
 }
 
@@ -174,9 +186,11 @@ pub fn parse_ooxml_from_archive<R: Read + Seek>(
 fn build_style_heading_map<R: Read + Seek>(archive: &mut ZipArchive<R>) -> HashMap<String, i32> {
 	let mut map = HashMap::new();
 	let Ok(content) = read_zip_entry_by_name(archive, "word/styles.xml") else {
+		tracing::debug!("word/styles.xml not present, skipping style based heading detection");
 		return map;
 	};
 	let Ok(xml) = XmlDocument::parse(&content) else {
+		tracing::warn!("word/styles.xml present but failed to parse, skipping style based heading detection");
 		return map;
 	};
 	for node in xml.root().descendants() {
@@ -231,21 +245,25 @@ fn parse_legacy_doc(context: &ParserContext) -> Result<Document> {
 	let word_document =
 		read_stream(&mut compound, "WordDocument").or_else(|_| read_stream(&mut compound, "/WordDocument"))?;
 	if word_document.len() < FIB_LCBCLX_OFFSET + 4 {
+		tracing::warn!(path = %context.file_path, "doc file is missing required fib fields");
 		// TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 		anyhow::bail!(t("DOC file is missing required FIB fields"));
 	}
 	let fib_magic = read_u16_le(&word_document, 0);
 	if fib_magic != FIB_MAGIC_DOC && fib_magic != FIB_MAGIC_DOC_OLD {
+		tracing::warn!(path = %context.file_path, magic = fib_magic, "doc file has an invalid fib magic number");
 		// TRANSLATORS: Error shown when a legacy DOC file's header signature is invalid
 		anyhow::bail!(t("Not a valid DOC file (invalid FIB magic)"));
 	}
 	let fib_flags = read_u16_le(&word_document, FIB_FLAGS_OFFSET);
 	if (fib_flags & FIB_FLAG_ENCRYPTED) != 0 {
 		let Some(password) = context.password.as_deref() else {
+			tracing::debug!(path = %context.file_path, "encrypted doc file requires a password");
 			// TRANSLATORS: Error detail shown when an encrypted legacy DOC file needs a password (the internal sentinel prefix before it is not translated)
 			anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX} {}", t("DOC file is encrypted and requires a password"));
 		};
 		let decrypted = decrypt_from_file(&context.file_path, password).map_err(|e| {
+			tracing::warn!(path = %context.file_path, error = %e, "doc decryption failed");
 			// TRANSLATORS: Error detail shown when decrypting a legacy DOC file fails (the internal sentinel prefix before it is not translated); {} is the underlying error
 			let msg = t("DOC decryption failed (wrong password?): {}").replace("{}", &e.to_string());
 			anyhow::anyhow!("{PASSWORD_REQUIRED_ERROR_PREFIX} {msg}")
@@ -258,9 +276,13 @@ fn parse_legacy_doc(context: &ParserContext) -> Result<Document> {
 		let table_stream_name2 = if (fib_flags2 & FIB_FLAG_USE_1_TABLE) != 0 { "1Table" } else { "0Table" };
 		let table_stream2 = read_stream(&mut dec_compound, table_stream_name2)
 			.or_else(|_| read_stream(&mut dec_compound, &format!("/{table_stream_name2}")))?;
-		let mut text = extract_doc_text_from_piece_table(&word_document, &table_stream2)
-			.unwrap_or_else(|| extract_doc_text_simple(&word_document));
+		let piece_table_text = extract_doc_text_from_piece_table(&word_document, &table_stream2);
+		if piece_table_text.is_none() {
+			tracing::warn!(path = %context.file_path, "piece table extraction failed, using simple fallback extraction");
+		}
+		let mut text = piece_table_text.unwrap_or_else(|| extract_doc_text_simple(&word_document));
 		if text.trim().is_empty() {
+			tracing::warn!(path = %context.file_path, "doc text extraction produced no content, simple fallback extraction also found nothing");
 			text = extract_doc_text_simple(&word_document);
 		}
 		let normalized = normalize_doc_text(&text);
@@ -280,9 +302,13 @@ fn parse_legacy_doc(context: &ParserContext) -> Result<Document> {
 	let table_stream = read_stream(&mut compound, table_stream_name)
 		.or_else(|_| read_stream(&mut compound, &format!("/{table_stream_name}")))
 		.with_context(|| format!("Failed to open DOC table stream '{table_stream_name}'"))?;
-	let mut text = extract_doc_text_from_piece_table(&word_document, &table_stream)
-		.unwrap_or_else(|| extract_doc_text_simple(&word_document));
+	let piece_table_text = extract_doc_text_from_piece_table(&word_document, &table_stream);
+	if piece_table_text.is_none() {
+		tracing::warn!(path = %context.file_path, "piece table extraction failed, using simple fallback extraction");
+	}
+	let mut text = piece_table_text.unwrap_or_else(|| extract_doc_text_simple(&word_document));
 	if text.trim().is_empty() {
+		tracing::warn!(path = %context.file_path, "doc text extraction produced no content, simple fallback extraction also found nothing");
 		text = extract_doc_text_simple(&word_document);
 	}
 	let normalized = normalize_doc_text(&text);
@@ -466,11 +492,13 @@ fn parse_text_like_doc(context: &ParserContext) -> Result<Document> {
 		.with_context(|| format!("Failed to read potential text DOC '{}'", context.file_path))?;
 	let decoded = convert_to_utf8(&bytes);
 	if !looks_like_text_content(&decoded) {
+		tracing::warn!(path = %context.file_path, "doc fallback content does not look like plain text");
 		// TRANSLATORS: Error shown when a DOC file's fallback content doesn't look like plain text
 		anyhow::bail!(t("File content does not look like plain text"));
 	}
 	let normalized = normalize_doc_text(&decoded);
 	if normalized.trim().is_empty() {
+		tracing::warn!(path = %context.file_path, "doc fallback text-like content normalized to empty text");
 		// TRANSLATORS: Error shown when a DOC file's fallback content has no readable text
 		anyhow::bail!(t("No readable text content found"));
 	}
