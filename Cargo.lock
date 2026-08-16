@@ -1728,7 +1728,7 @@ dependencies = [
 [[package]]
 name = "patois"
 version = "0.2.0"
-source = "git+https://github.com/trypsynth/patois.git#0d77f011249fd93e2a8b1c2ad51acace2585774d"
+source = "git+https://github.com/trypsynth/patois.git#55dfc64b804522462729dd188cdf1cfb7610e243"
 dependencies = [
  "inventory",
  "patois-macros 0.2.0 (git+https://github.com/trypsynth/patois.git)",
@@ -1738,8 +1738,7 @@ dependencies = [
 [[package]]
 name = "patois-build"
 version = "0.1.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b25a0ba527c43de5fadcda66285585abff78edbb2838908a8f3cc84db701f8f"
+source = "git+https://github.com/trypsynth/patois.git#55dfc64b804522462729dd188cdf1cfb7610e243"
 dependencies = [
  "serde_json",
 ]
@@ -1769,7 +1768,7 @@ dependencies = [
 [[package]]
 name = "patois-macros"
 version = "0.2.0"
-source = "git+https://github.com/trypsynth/patois.git#0d77f011249fd93e2a8b1c2ad51acace2585774d"
+source = "git+https://github.com/trypsynth/patois.git#55dfc64b804522462729dd188cdf1cfb7610e243"
 dependencies = [
  "proc-macro2",
  "quote",
