@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 197dbd0c570ba62e); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 88d5313cd5871ed4); please review and edit as needed -->
 
 # Edición en rústica - versión 0.8.5 {#paperback---version-0.8.5}
 
@@ -22,7 +22,7 @@ Actualmente, Paperback funciona en Windows, macOS, iOS y Android.
 -   Interfaz sencilla con pestañas, que te permite abrir tantos
     documentos como quieras en paralelo.
 -   Guarda tu posición exacta de lectura en todos los documentos que
-    abrís.
+    abrás.
 -   Opcionalmente, recuerda qué documentos tenías abiertos cuando
     cerraste el programa y los restaura la próxima vez que lo inicies.
 -   Incluye una funcionalidad de navegación similar a la que se
@@ -43,7 +43,7 @@ Sin embargo, existe un problema conocido para los usuarios de JAWS.
 
 Si utilizas JAWS con un display braille, es posible que observes que los
 párrafos largos se truncan al desplazarte hacia adelante con las teclas
-de navegación de tu display. El comando «leer párrafo actual» también se
+de navegación del display. El comando «leer párrafo actual» también se
 ve afectado. Se trata de un error en la gestión que hace JAWS del
 control de texto RICHEDIT50W, no de algo propio de Paperback, y para el
 que tardó bastante tiempo en aparecer una solución, dado el entusiasmo
@@ -82,11 +82,11 @@ Paperback es compatible con los siguientes formatos y extensiones:
 Paperback está diseñado para utilizarse principalmente con el teclado. A
 continuación se indican los atajos actuales.
 
-Los atajos que aparecen a continuación son para Windows. Cuando hay
+Los atajos que aparecen a continuación son para Windows. Cuando haya
 diferencias con macOS, el equivalente se indica entre paréntesis,
 principalmente porque Ctrl+G, Ctrl+W y Alt+Izquierda/Derecha ya están
-ocupados por otras convenciones del sistema o de las aplicaciones en esa
-plataforma.
+ocupados por otras convenciones del sistema o de otras aplicaciones en
+esa plataforma.
 
 ### Menú «Archivo» {#file-menu}
 
@@ -182,7 +182,7 @@ plataforma.
 -   `Delete` / `Numpad Delete` en el control de pestañas: Cierra la
     pestaña del documento seleccionado.
 -   `Enter` o `Space` en el texto del documento: Activar el enlace
-    situado en el cursor o abrir una vista de tabla cuando se encuentre
+    situado en el cursor, o abrir una vista de tabla cuando se encuentre
     sobre un marcador de tabla .
 -   `Shift+F10` o la tecla Menú/Aplicación en el texto del documento :
     abre el menú contextual.
@@ -258,17 +258,18 @@ inclusión automática en esta lista.
 -   Se ha añadido un atajo de teclado configurable para restaurar
     Paperback desde la bandeja del sistema.
 -   Se ha añadido un botón «Buscar» al cuadro de diálogo «Todos los
-    documentos» para localizar los libros que faltan y cuya ruta acaba
-    de cambiar.
--   Se ha añadido la tecla = para ver el porcentaje del libro que has
-    leído hasta el momento.
--   Se ha añadido una opción para mover el cursor de texto al principio
-    de la línea al navegar, de forma similar al modo de navegación de
-    algunos lectores de pantalla.
+    documentos» para localizar libros que faltan y cuya ruta acaba de
+    cambiar.
+-   Se ha añadido un filtro de estado y una barra de estado al cuadro de
+    diálogo «Todos los documentos», de modo que puedes filtrar por
+    estado del documento y ver cuántos documentos se muestran y están
+    seleccionados.
+-   Se ha añadido el `Ctrl+Shift+A` acceso directo para deseleccionar
+    todos los documentos en el cuadro de diálogo «Todos los documentos».
 -   Se ha añadido una pestaña de «Legibilidad» al cuadro de diálogo de
     opciones, con las siguientes opciones:
     -   Ajustar al ancho de línea (trasladado desde «General»);
-    -   Mostrar tablas en línea (novedad de esta versión, ver más
+    -   Representar tablas en línea (novedad de esta versión, ver más
         abajo);
     -   Fuente;
     -   Color de fondo;
@@ -282,8 +283,6 @@ inclusión automática en esta lista.
 -   Se ha añadido la opción «Ver código fuente» para abrir el código
     fuente de un documento en una nueva pestaña, lo cual resulta útil,
     por ejemplo, para editar Markdown.
--   Se ha añadido una opción de menú para el ajuste de línea y la
-    correspondiente tecla de acceso rápido.
 -   Se ha añadido el tiempo estimado de lectura al cuadro de diálogo de
     recuento de palabras, así como la posibilidad de configurar tu
     velocidad de lectura para que esta métrica resulte realmente útil.
@@ -295,16 +294,14 @@ inclusión automática en esta lista.
 -   Se ha añadido compatibilidad con la navegación por contenedores.
 -   Se ha añadido compatibilidad con listas, elementos de lista, figuras
     e imágenes en documentos CHM .
--   Se han añadido marcadores temporales: pulsa la barra para crear uno
-    y la barra invertida para saltar a él.
+-   Se ha añadido una opción de menú para el ajuste de línea y la tecla
+    de acceso rápido correspondiente.
 -   Los sonidos de marcadores y notas ahora deberían reproducirse
-    correctamente y de forma exclusiva cuando navegues sobre una palabra
-    que contenga uno.
+    correctamente y de forma exclusiva al navegar sobre una palabra que
+    contenga uno.
 -   Los documentos codificados en codificaciones CJK heredadas, como
     GBK, Big5 y Shift_JIS, ahora se mostrarán correctamente en lugar de
     aparecer como un montón de caracteres ilegibles.
--   Los documentos cuyo contenido cambie en el disco ahora pueden, de
-    forma opcional, recargarse automáticamente con el nuevo contenido.
 -   Se ha ampliado la opción del menú de exportación para permitir la
     exportación a HTML y Markdown, además de a texto sin formato.
 -   Se ha corregido el error por el que al aplicar el ajuste de línea se
@@ -312,7 +309,7 @@ inclusión automática en esta lista.
 -   Se ha corregido el error por el que los libros «Daisy» mostraban
     información incorrecta en la barra de estado.
 -   Se ha corregido el error por el que los elementos dl, dt y dd no
-    generaban saltos de línea en los documentos XHTML .
+    generaban saltos de línea en documentos XHTML .
 -   Se ha corregido el error por el que la tecla Escape no cerraba los
     cuadros de diálogo «Información del documento» y «Todos los
     documentos». Se ha corregido el error por el que los enlaces
@@ -327,11 +324,12 @@ inclusión automática en esta lista.
 -   Se ha corregido la carga de libros DAISY con declaraciones de
     codificación erróneas.
 -   Se ha corregido un error por el que la navegación por páginas
-    mostraba texto de línea incorrecto en algunas situaciones.
--   Se ha corregido el análisis de documentos RTF con caracteres no
-    latinos y caracteres de escape Unicode «?» en su interior.
--   Se ha corregido el error por el que la opción «Reabrir el último
-    cerrado» intentaba reabrir el archivo «readme» incluido.
+    anunciaba texto de línea incorrecto en algunas situaciones.
+-   Se ha corregido el análisis de documentos RTF que contienen
+    caracteres no latinos.
+-   Se ha corregido el error por el que la opción «Volver a abrir el
+    último documento cerrado» intentaba reabrir el archivo «readme»
+    incluido.
 -   Se ha corregido el error por el que la barra de título no se
     actualizaba tras cerrar un documento desde el cuadro de diálogo
     «Todos los documentos».
@@ -541,14 +539,14 @@ inclusión automática en esta lista.
     no se ocultaba correctamente al utilizar los botones «Siguiente» y
     «Anterior».
 -   Se ha corregido el problema por el que, en ocasiones, las tablas de
-    contenido de los libros EPUB llevaban al elemento equivocado.
+    contenido de los archivos ePub llevaban al elemento incorrecto.
 -   Se han corregido varios problemas relacionados con el manejo de los
     espacios en blanco en las etiquetas XML, HTML y pre .
 -   Se ha corregido un error de «off-by-one» en la navegación por
     enlaces.
 -   Se ha corregido el problema por el que algunos libros presentaban
     espacios en blanco al final de las líneas.
--   Se han corregido varios problemas del analizador sintáctico.
+-   Se han corregido diversos problemas del analizador sintáctico.
 -   Los elementos del menú relacionados con los marcadores, así como la
     lista de elementos, ahora se desactivan correctamente cuando no hay
     ningún documento abierto.
@@ -577,7 +575,7 @@ inclusión automática en esta lista.
     documentos EPUB no funcionaban correctamente.
 -   Se ha corregido el análisis de las tablas de contenido de los
     archivos EPUB que contienen rutas relativas.
--   Se ha corregido el error por el que algunos documentos EPUB no
+-   Se ha corregido el problema por el que algunos documentos EPUB no
     mostraban el título ni el autor.
 -   Se ha corregido un error por el que los títulos de algunos capítulos
     de EPUB no se mostraban correctamente en el cuadro de diálogo de la
@@ -598,7 +596,7 @@ inclusión automática en esta lista.
 -   Se ha añadido una opción para que la navegación por elementos
     estructurales se ajuste a la línea.
 -   Se ha añadido una opción al menú «Herramientas» para abrir la
-    carpeta que contiene el documento actualmente seleccionado.
+    carpeta que contiene el documento seleccionado actualmente.
 -   Se ha añadido un sistema de actualización bastante sencillo, pero
     muy eficaz.
 -   Se ha añadido una función básica de temporizador de suspensión,
@@ -764,14 +762,14 @@ inclusión automática en esta lista.
 -   Los archivos de texto con BOM ahora deberían descodificarse
     correctamente, y el BOM ya no se mostrará al principio del texto.
 -   Se ha añadido mucha más información a la barra de estado. Ahora te
-    mostrará la línea actual, el carácter y el porcentaje leído.
+    mostrará la línea actual, el carácter y el porcentaje de lectura.
 -   Los comentarios HTML, así como el contenido de las etiquetas de
     script y style, ya no se mostrarán en la salida de texto.
 -   Si se pasa una ruta relativa a Paperback en la línea de comandos,
-    ahora la resolverá correctamente.
+    ahora se resolverá correctamente.
 -   El desplazamiento porcentual se gestiona ahora mediante su propio
-    cuadro de diálogo basado en un control deslizante, al que se accede
-    con Control+Mayús+G.
+    cuadro de diálogo con control deslizante, al que se accede con
+    Control+Mayús+G.
 -   Los documentos sin título ni autor conocidos tendrán ahora siempre
     un valor por defecto.
 -   La lógica de guardado de la posición es ahora mucho más inteligente
@@ -801,7 +799,7 @@ inclusión automática en esta lista.
     opciones para activar o desactivar el ajuste de línea.
 -   Ahora es posible hacer donaciones para el desarrollo de Paperback,
     ya sea a través de la nueva opción «Donar» del menú de ayuda o
-    mediante el enlace «Patrocina este proyecto» situado en la parte
+    mediante el enlace «Patrocina este proyecto» que aparece en la parte
     inferior de la página principal del repositorio de GitHub.
 -   Los documentos Markdown ahora siempre tendrán un título, y Paperback
     debería poder cargar prácticamente cualquier archivo Markdown.
@@ -821,7 +819,7 @@ inclusión automática en esta lista.
 ### Versión 0.2.1 {#version-0.2.1}
 
 -   Se ha añadido el número total de páginas a la etiqueta de página en
-    el cuadro de diálogo «Ir a la página».
+    el cuadro de diálogo «Ir a la página». Se ha
 -   Ahora se puede navegar con la tecla Tab desde el contenido del
     documento hasta la lista de documentos abiertos.
 -   Se ha corregido el error por el que, en ocasiones, al pulsar las

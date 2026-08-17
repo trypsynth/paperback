@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-16 12:22-0600\n"
+"POT-Creation-Date: 2026-08-17 02:47+0000\n"
 "PO-Revision-Date: 2025-12-04 08:13+0300\n"
 "Last-Translator: <gulmagomedovruslan77@gmail.com>\n"
 "Language-Team: Russian\n"
@@ -58,6 +58,28 @@ msgstr "Состояние"
 msgid "Path"
 msgstr "Путь"
 
+#. TRANSLATORS: Label for the status filter dropdown in the All Documents dialog
+#, fuzzy
+msgid "&Status:"
+msgstr "Состояние"
+
+#. TRANSLATORS: Option in the All Documents status filter to show documents of every status
+#. TRANSLATORS: Option in the filter dropdown to show all entries
+msgid "All"
+msgstr "Всё"
+
+#. TRANSLATORS: Status of a document that is currently open in a tab
+msgid "Open"
+msgstr "Открыто"
+
+#. TRANSLATORS: Status of a document that was previously opened but is currently closed
+msgid "Closed"
+msgstr "Закрыто"
+
+#. TRANSLATORS: Status of a document whose file could not be found on disk
+msgid "Missing"
+msgstr "Отсутствует"
+
 #. TRANSLATORS: Button label to open the selected document
 msgid "&Open"
 msgstr "Открыть"
@@ -95,17 +117,35 @@ msgstr "Подтверждение"
 msgid "Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks."
 msgstr "Вы уверены, что хотите удалить все документы из списка? Это так же удалит все позиции чтения и закладок."
 
-#. TRANSLATORS: Status of a document that is currently open in a tab
-msgid "Open"
-msgstr "Открыто"
+#. TRANSLATORS: Status bar text in the All Documents dialog when the list is empty
+#, fuzzy
+msgid "No documents."
+msgstr "Документов нет"
 
-#. TRANSLATORS: Status of a document that was previously opened but is currently closed
-msgid "Closed"
-msgstr "Закрыто"
+#. TRANSLATORS: Status bar text in the All Documents dialog when the list contains exactly one document and none are selected
+#, fuzzy
+msgid "1 document."
+msgstr "Документы"
 
-#. TRANSLATORS: Status of a document whose file could not be found on disk
-msgid "Missing"
-msgstr "Отсутствует"
+#. TRANSLATORS: Status bar text in the All Documents dialog showing the total number of documents in the list. The %d placeholder is replaced with the count.
+#, fuzzy
+msgid "%d documents."
+msgstr "Документы"
+
+#. TRANSLATORS: Status bar text in the All Documents dialog when the single document in the list is selected
+#, fuzzy
+msgid "1 of 1 document selected."
+msgstr "Документ перезагружен."
+
+#. TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count.
+#, fuzzy
+msgid "All %d documents selected."
+msgstr "Все документы"
+
+#. TRANSLATORS: Status bar text in the All Documents dialog showing how many of the total documents are selected. The first %d is the selected count, the second %d is the total count.
+#, fuzzy
+msgid "%d of %d documents selected."
+msgstr "Конец документа"
 
 #. TRANSLATORS: Message/prompt shown in the file picker dialog to locate a missing book
 #, fuzzy
@@ -119,10 +159,6 @@ msgstr "Переход к закладком"
 #. TRANSLATORS: Label for the bookmark filter dropdown
 msgid "&Filter:"
 msgstr "Фильтр"
-
-#. TRANSLATORS: Option in the filter dropdown to show all entries
-msgid "All"
-msgstr "Всё"
 
 #. TRANSLATORS: Option in the filter dropdown to show bookmarks only
 msgid "Bookmarks"

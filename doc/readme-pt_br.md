@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 197dbd0c570ba62e); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 88d5313cd5871ed4); please review and edit as needed -->
 
 # Brochura - versão 0.8.5 {#paperback---version-0.8.5}
 
@@ -44,14 +44,14 @@ Se você usa o JAWS com um visor Braille, poderá perceber que parágrafos
 longos são truncados ao avançar com as teclas de navegação do seu visor.
 O comando "ler o parágrafo atual" também é afetado. Trata-se de um bug
 no tratamento do controle de texto RICHEDIT50W pelo JAWS, e não de algo
-no próprio Paperback, e que demorou bastante tempo para ter uma correção
-disponível, dado o entusiasmo da Vispero em responder a problemas
-relacionados a software de código aberto.
+no próprio Paperback, e que demorou bastante tempo para que uma correção
+fosse disponibilizada, considerando o entusiasmo da Vispero em responder
+a problemas relacionados a software de código aberto.
 
 A solução alternativa, que finalmente surgiu no grupo de discussão do
 JAWS após meses de espera, é editar `paperback.jcf` e definir
 "Apresentação e deslocamento em braille" como "Sempre usar DOM, se
-disponível". Você também deve habilitar "Deslocar texto por parágrafo";
+disponível". Você também deve ativar "Deslocar texto por parágrafo";
 caso contrário, seu monitor permanecerá no parágrafo ativo em vez de
 avançar. Com ambas as configurações ativadas, o deslocamento deve
 funcionar corretamente.
@@ -125,7 +125,7 @@ outras convenções do sistema ou de aplicativos nessa plataforma.
 -   `Ctrl+Alt+B`: Ir apenas para os marcadores.
 -   `Ctrl+Alt+M`: Ir diretamente para as notas.
 -   `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, ou seja, a tecla Control
-    física, em vez da tecla Cmd): Exibir o texto da nota na posição
+    física em vez da tecla Cmd): Exibir o texto da nota na posição
     atual.
 -   `Shift+K`: Link anterior.
 -   `K`: Link seguinte.
@@ -172,7 +172,7 @@ outras convenções do sistema ou de aplicativos nessa plataforma.
 -   `F1`: Visualizar a ajuda no seu navegador padrão.
 -   `Shift+F1`: Visualizar a ajuda no Paperback.
 -   `Ctrl+Shift+U`: Verificar se há atualizações.
--   `Ctrl+D`: Abrir a página de doações no seu navegador padrão.
+-   `Ctrl+D`: Abrir a página de doações no seu navegador padrão .
 
 ### Teclas adicionais para visualização de documentos {#additional-document-view-keys}
 
@@ -186,8 +186,8 @@ outras convenções do sistema ou de aplicativos nessa plataforma.
 
 ## Idiomas suportados {#supported-languages}
 
-O Paperback está traduzido para vários idiomas diferentes, com mais
-sendo adicionados constantemente. Segue abaixo uma lista completa.
+O Paperback está traduzido para diversos idiomas, com mais sendo
+adicionados constantemente. Segue abaixo a lista completa.
 
 Para saber como contribuir, leia nosso [Guia de
 Tradução](translating.md).
@@ -221,7 +221,7 @@ desenvolvimento do Paperback. Se você fizer uma doação, seu nome não
 será automaticamente adicionado aqui; eu só incluo pessoas que desejam
 que sua doação seja divulgada publicamente.
 
-Observação: considero um patrocinador público no GitHub motivo para
+Observação: considero um patrocínio público no GitHub motivo para
 inclusão automática nesta lista.
 
 -   Alex Hall
@@ -257,12 +257,13 @@ inclusão automática nesta lista.
 -   Adicionado um botão "Localizar" à caixa de diálogo "Todos os
     documentos" para localizar livros ausentes cujo caminho tenha sido
     alterado recentemente.
--   Adicionada a tecla = para verificar a porcentagem atual de leitura
-    de um livro.
--   Adicionada uma opção para mover o cursor de texto para o início da
-    linha ao navegar, semelhante ao modo de navegação em alguns leitores
-    de tela.
--   Adicionada uma aba "Legibilidade" à caixa de diálogo de opções, com
+-   Adicionado um filtro de status e uma barra de status à caixa de
+    diálogo "Todos os documentos", para que você possa filtrar por
+    status do documento e ver quantos documentos estão sendo exibidos e
+    selecionados.
+-   Adicionado o `Ctrl+Shift+A` atalho para desmarcar todos os
+    documentos na caixa de diálogo "Todos os documentos".
+-   Adicionada uma guia "Legibilidade" à caixa de diálogo "Opções", com
     as seguintes opções:
     -   Quebra automática de linha (transferida da seção "Geral");
     -   Exibir tabelas em linha (novidade nesta versão, veja abaixo);
@@ -278,8 +279,6 @@ inclusão automática nesta lista.
 -   Adicionada a opção "Exibir código-fonte" para abrir o código-fonte
     de um documento em uma nova aba, útil para editar Markdown, por
     exemplo.
--   Adicionado um item de menu para quebra automática de linha e a
-    respectiva tecla de atalho.
 -   Adicionado o tempo estimado de leitura à caixa de diálogo de
     contagem de palavras, bem como a possibilidade de definir sua
     velocidade de leitura para tornar essa métrica realmente útil.
@@ -291,20 +290,18 @@ inclusão automática nesta lista.
 -   Adicionado suporte para navegação por contêiner.
 -   Adicionado suporte para listas, itens de lista, figuras e imagens em
     documentos CHM .
--   Adicionados marcadores temporários: pressione a barra para definir
-    um, e a barra invertida para saltar para ele.
+-   Adicionado um item de menu para quebra automática de linha e a
+    respectiva tecla de atalho.
 -   Os sons de marcadores/notas agora devem ser reproduzidos
     corretamente e exclusivamente quando você navegar sobre uma palavra
-    que contenha um.
+    que contenha um deles.
 -   Documentos codificados em codificações CJK legadas, como GBK, Big5 e
     Shift_JIS, agora serão exibidos corretamente, em vez de aparecerem
     como um monte de caracteres ilegíveis.
--   Documentos cujo conteúdo seja alterado no disco agora podem,
-    opcionalmente, ser recarregados automaticamente com o novo conteúdo.
--   Expandimos o item do menu de exportação para permitir a exportação
+-   Expandimos o item de menu de exportação para permitir a exportação
     para HTML e Markdown, além de texto simples.
 -   Corrigimos o problema em que a aplicação do quebra automático de
-    linha levava você para o início do documento.
+    linha levava você de volta ao início do documento.
 -   Corrigido o problema de livros em formato Daisy exibirem informações
     incorretas na barra de status.
 -   Corrigido o problema em que os elementos dl, dt e dd não geravam
@@ -314,7 +311,7 @@ inclusão automática nesta lista.
     Corrigido o problema em que as âncoras \`filepos\` em livros Mobi
     dividiam tags HTML e inseriam
 -   Corrigido o problema em que âncoras filepos em livros Mobi dividiam
-    tags HTML e inseriam dados indesejados no texto do livro.
+    tags HTML e inseriam caracteres indesejados no texto do livro.
 -   Corrigido o atraso ao chegar perto do final do campo de texto em
     documentos grandes .
 -   Corrigidos os links em livros Mobi antigos.
@@ -322,8 +319,8 @@ inclusão automática nesta lista.
     codificação incorretas.
 -   Corrigida a navegação por páginas que anunciava texto de linha
     incorreto em algumas situações.
--   Corrigida a análise de documentos RTF com caracteres não latinos e
-    escapes Unicode "?" neles.
+-   Corrigida a análise de documentos RTF contendo caracteres não
+    latinos.
 -   Corrigida a função "Reabrir o último fechado", que tentava reabrir o
     arquivo readme incluído.
 -   Corrigida a falha na atualização da barra de título após o
@@ -331,19 +328,20 @@ inclusão automática nesta lista.
     documentos".
 -   Corrigida a falha na qual a caixa de diálogo do WebView não era
     redimensionável e aparecia com um tamanho inicial muito pequeno.
--   Corrigida a renderização incorreta de títulos em documentos do Word
-    com nomes de estilos específicos da localidade. Corrigida a falha na
-    exibição correta dos títulos.
--   Corrigido o problema em que a aba selecionada não recebia o foco
+-   Corrigida a exibição incorreta de títulos em documentos do Word com
+    nomes de estilos específicos da localidade. Corrigido o problema em
+    que a guia selecionada não recebia o foco corretamente após
+-   Corrigido o problema em que a guia selecionada não recebia o foco
     corretamente após reiniciar o Paperback.
 -   Se uma seleção estiver ativa ao abrir a caixa de diálogo de contagem
     de palavras, o número de palavras selecionadas agora será exibido.
 -   As imagens agora devem ser exibidas corretamente na visualização da
     web incorporada.
--   Melhorou o tratamento do Paperback em relação a arquivos em unidades
-    de rede do Windows: ao pressionar "Mostrar arquivo na pasta", o foco
-    agora é direcionado corretamente para o arquivo no armazenamento de
-    rede, e os caminhos não contêm mais caracteres estranhos.
+-   Melhoramos o tratamento do Paperback em relação a arquivos em
+    unidades de rede do Windows: ao pressionar "Mostrar arquivo na
+    pasta", o foco agora é direcionado corretamente para o arquivo no
+    armazenamento de rede, e os caminhos não contêm mais caracteres
+    estranhos.
 -   A análise de AZW3 foi significativamente aprimorada.
 -   Migramos do chmlib para nosso próprio leitor de arquivos CHM em Rust
     puro.
@@ -542,9 +540,9 @@ inclusão automática nesta lista.
 -   Corrigimos o problema de links em alguns documentos EPUB que não
     funcionavam corretamente.
 -   Corrigida a análise de índices de EPUB contendo caminhos relativos.
--   Corrigido o problema de alguns documentos EPUB não exibirem título
+-   Corrigido o problema de alguns documentos ePub não exibirem título
     ou autor.
--   Corrigido o problema de os títulos de alguns capítulos de ePub não
+-   Corrigido o problema de alguns títulos de capítulos de ePub não
     aparecerem corretamente na caixa de diálogo do índice.
 -   Corrigida a impossibilidade de usar a barra de espaço para ativar os
     botões OK/Cancelar na caixa de diálogo do índice.
@@ -637,9 +635,10 @@ inclusão automática nesta lista.
 -   O instalador agora inclui uma opção para visualizar o arquivo
     "Leia-me" no seu navegador após a instalação.
 -   A lista de documentos recentes foi ampliada significativamente! Em
-    vez de apenas mostrar os últimos 10 documentos abertos, ela agora
-    exibe um número personalizável, com o restante dos documentos que
-    você já abriu disponíveis por meio de uma pequena caixa de diálogo.
+    vez de simplesmente mostrar os últimos 10 documentos abertos, ela
+    agora exibe um número personalizável, com o restante dos documentos
+    que você já abriu disponíveis por meio de uma pequena caixa de
+    diálogo.
 -   Várias pequenas melhorias nos analisadores em geral, incluindo a
     inserção de uma linha em branco entre os slides em apresentações
     PPTX, a correção do tratamento de quebras de linha dentro de
@@ -685,7 +684,7 @@ inclusão automática nesta lista.
 -   O espaço não separável Unicode agora é levado em consideração ao
     remover linhas em branco.
 -   Você não será mais questionado sobre como deseja abrir um arquivo
-    não reconhecido toda vez que carregá-lo, apenas na primeira vez.
+    não reconhecido toda vez que o carregar, apenas na primeira vez.
 
 ### Versão 0.4.1 {#version-0.4.1}
 
@@ -737,7 +736,7 @@ inclusão automática nesta lista.
 ### Versão 0.3.0 {#version-0.3.0}
 
 -   Corrigido o índice em livros ePub com manifestos codificados por
-    URL. Corrigida a navegação por títulos em documentos HTML contendo
+    URL. Corrigida a navegação por títulos em documentos HTML que contêm
     caracteres Unicode multibyte.
 -   Corrigida a navegação por títulos em documentos HTML contendo
     caracteres Unicode multibyte.
@@ -754,7 +753,7 @@ inclusão automática nesta lista.
     "Patrocine este projeto" na parte inferior da página principal do
     repositório do GitHub.
 -   Documentos em Markdown agora sempre terão um título, e o Paperback
-    deve agora ser capaz de carregar praticamente qualquer arquivo em
+    deve agora ser capaz de carregar praticamente qualquer arquivo
     Markdown.
 -   Os documentos PDF agora sempre terão um título, mesmo que os
     metadados estejam ausentes.
@@ -801,7 +800,7 @@ inclusão automática nesta lista.
     abrirá para leitura.
 -   A caixa de diálogo "Localizar" foi totalmente reescrita, tornando-a
     muito mais simples de usar, ao mesmo tempo em que adicionou um
-    histórico das suas últimas 25 buscas e suporte a expressões
+    histórico das suas últimas 25 pesquisas e suporte a expressões
     regulares!
 -   Os documentos abertos anteriormente agora são lembrados mesmo após o
     reinício do aplicativo. Isso pode ser configurado por meio do novo

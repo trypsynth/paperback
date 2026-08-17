@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-16 12:22-0600\n"
+"POT-Creation-Date: 2026-08-17 02:47+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -61,6 +61,28 @@ msgstr "Trạng thái"
 msgid "Path"
 msgstr "Đường dẫn"
 
+#. TRANSLATORS: Label for the status filter dropdown in the All Documents dialog
+#, fuzzy
+msgid "&Status:"
+msgstr "Trạng thái"
+
+#. TRANSLATORS: Option in the All Documents status filter to show documents of every status
+#. TRANSLATORS: Option in the filter dropdown to show all entries
+msgid "All"
+msgstr "Tất cả"
+
+#. TRANSLATORS: Status of a document that is currently open in a tab
+msgid "Open"
+msgstr "Mở"
+
+#. TRANSLATORS: Status of a document that was previously opened but is currently closed
+msgid "Closed"
+msgstr "Đã đóng"
+
+#. TRANSLATORS: Status of a document whose file could not be found on disk
+msgid "Missing"
+msgstr "Thất lạc"
+
 #. TRANSLATORS: Button label to open the selected document
 msgid "&Open"
 msgstr "&Mở"
@@ -100,17 +122,35 @@ msgstr "Xác nhận"
 msgid "Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks."
 msgstr "Bạn có chắc chắn muốn xóa tất cả các tài liệu khỏi danh sách không? Thao tác này cũng sẽ xóa tất cả các vị trí đang đọc và dấu trang."
 
-#. TRANSLATORS: Status of a document that is currently open in a tab
-msgid "Open"
-msgstr "Mở"
+#. TRANSLATORS: Status bar text in the All Documents dialog when the list is empty
+#, fuzzy
+msgid "No documents."
+msgstr "Không có tài liệu"
 
-#. TRANSLATORS: Status of a document that was previously opened but is currently closed
-msgid "Closed"
-msgstr "Đã đóng"
+#. TRANSLATORS: Status bar text in the All Documents dialog when the list contains exactly one document and none are selected
+#, fuzzy
+msgid "1 document."
+msgstr "tài liệu"
 
-#. TRANSLATORS: Status of a document whose file could not be found on disk
-msgid "Missing"
-msgstr "Thất lạc"
+#. TRANSLATORS: Status bar text in the All Documents dialog showing the total number of documents in the list. The %d placeholder is replaced with the count.
+#, fuzzy
+msgid "%d documents."
+msgstr "tài liệu"
+
+#. TRANSLATORS: Status bar text in the All Documents dialog when the single document in the list is selected
+#, fuzzy
+msgid "1 of 1 document selected."
+msgstr "Tài liệu đã được tải lại."
+
+#. TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count.
+#, fuzzy
+msgid "All %d documents selected."
+msgstr "Tất cả tài liệu"
+
+#. TRANSLATORS: Status bar text in the All Documents dialog showing how many of the total documents are selected. The first %d is the selected count, the second %d is the total count.
+#, fuzzy
+msgid "%d of %d documents selected."
+msgstr "Hết tài liệu"
 
 #. TRANSLATORS: Message/prompt shown in the file picker dialog to locate a missing book
 #, fuzzy
@@ -124,10 +164,6 @@ msgstr "Nhảy đến dấu trang"
 #. TRANSLATORS: Label for the bookmark filter dropdown
 msgid "&Filter:"
 msgstr "&Bộ lọc:"
-
-#. TRANSLATORS: Option in the filter dropdown to show all entries
-msgid "All"
-msgstr "Tất cả"
 
 #. TRANSLATORS: Option in the filter dropdown to show bookmarks only
 msgid "Bookmarks"
