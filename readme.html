@@ -489,9 +489,11 @@ supported formats to HTML, Markdown, or plain text.</li>
 system tray.</li>
 <li>Added a locate button to the all documents dialog to locate missing
 books that just changed their path.</li>
-<li>Added the = key to read your current percentage through a book.</li>
-<li>Added an option to move your text cursor to the start of the line
-when navigating, similar to browse mode in some screen readers.</li>
+<li>Added a status filter and status bar to the all documents dialog, so
+you can filter by document status and see how many documents are shown
+and selected.</li>
+<li>Added the <code>Ctrl+Shift+A</code> shortcut to deselect all
+documents in the all documents dialog.</li>
 <li>Added a readability tab to the options dialog, with the following
 options:
 <ul>
@@ -508,7 +510,6 @@ options:
 unified how tables are displayed across documents.</li>
 <li>added a View Source option to open a document’s source in a new tab,
 useful for editing Markdown for example.</li>
-<li>Added a word wrap menu item and subsequent hotkey.</li>
 <li>Added estimated reading time to the word count dialog, as well as
 the ability to set your reading speed to make this metric actually
 useful.</li>
@@ -520,15 +521,12 @@ useful.</li>
 <li>Added support for navigating by container.</li>
 <li>Added support for lists, list items, figures, and images in CHM
 documents.</li>
-<li>Added temperary bookmarks: press slash to set one, backslash to jump
-to it.</li>
+<li>Added a word wrap menu item and subsequent hotkey.</li>
 <li>Bookmark/note sounds should now properly play exclusively when you
 navigate over a word containing one.</li>
 <li>Documents encoded in legacy CJK encodings, such as GBK, Big5, and
 Shift_JIS, will now render properly instead of as a bunch of
 mojibake.</li>
-<li>Documents who’s contents change on disk can now optionally be
-automagically reloaded with the new content.</li>
 <li>Expanded the export menu item to allow exporting to HTML and
 Markdown in addition to plain text.</li>
 <li>Fixed applying word wrap shooting you to the start of your
@@ -546,8 +544,7 @@ documents.</li>
 <li>Fixed loading DAISY books with bogus encoding declarations.</li>
 <li>Fixed page navigation announcing incorrect line text in some
 situations.</li>
-<li>Fixed parsing RTF documents with non-Latin characters and ? unicode
-escapes in them.</li>
+<li>Fixed parsing RTF documents with non-Latin characters in them.</li>
 <li>Fixed “Reopen last closed” attempting to reopen the bundled
 readme.</li>
 <li>Fixed the title bar not updating after closing a document from the
