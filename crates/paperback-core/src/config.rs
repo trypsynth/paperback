@@ -10,7 +10,7 @@ use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use serde::{Deserialize, Serialize};
 use sha1::{Digest, Sha1};
 
-use crate::types::DocumentListItem;
+use crate::types::{DocumentListItem, DocumentListStatus};
 
 const CONFIG_VERSION: u32 = 4;
 const DEFAULT_RECENT_DOCUMENTS_TO_SHOW: i64 = 25;
@@ -1923,9 +1923,12 @@ impl Drop for ConfigManager {
 	}
 }
 
-pub fn get_sorted_document_list(config: &ConfigManager, open_paths: &[String], filter: &str) -> Vec<DocumentListItem> {
-	use crate::types::{DocumentListItem, DocumentListStatus};
-
+pub fn get_sorted_document_list(
+	config: &ConfigManager,
+	open_paths: &[String],
+	filter: &str,
+	status_filter: Option<DocumentListStatus>,
+) -> Vec<DocumentListItem> {
 	let recent_docs = config.get_recent_documents();
 	let all_docs = config.get_all_documents();
 	let mut doc_paths: Vec<String> = Vec::new();
@@ -1963,6 +1966,9 @@ pub fn get_sorted_document_list(config: &ConfigManager, open_paths: &[String], f
 			} else {
 				DocumentListStatus::Closed
 			};
+			if status_filter.is_some_and(|wanted| wanted != status) {
+				return None;
+			}
 			Some(DocumentListItem { path, filename, status })
 		})
 		.collect()
@@ -2131,5 +2137,33 @@ mod tests {
 			total_actions += actions.len();
 		}
 		assert_eq!(total_actions, ActionId::all().len());
+	}
+
+	#[test]
+	fn get_sorted_document_list_filters_by_status() {
+		use crate::util::test_support::TempDir;
+
+		let dir = TempDir::new("document-list-status-filter");
+		let open_path = dir.write_str("open.txt", "content");
+		let closed_path = dir.write_str("closed.txt", "content");
+		let missing_path = dir.join_str("missing.txt");
+		let mut config = ConfigManager::new();
+		config.initialized = true;
+		for path in [&open_path, &closed_path, &missing_path] {
+			config.add_recent_document(path);
+		}
+		let open_paths = vec![open_path.clone()];
+
+		let all = get_sorted_document_list(&config, &open_paths, "", None);
+		assert_eq!(all.len(), 3);
+
+		let open_only = get_sorted_document_list(&config, &open_paths, "", Some(DocumentListStatus::Open));
+		assert_eq!(open_only.iter().map(|item| &item.path).collect::<Vec<_>>(), vec![&open_path]);
+
+		let closed_only = get_sorted_document_list(&config, &open_paths, "", Some(DocumentListStatus::Closed));
+		assert_eq!(closed_only.iter().map(|item| &item.path).collect::<Vec<_>>(), vec![&closed_path]);
+
+		let missing_only = get_sorted_document_list(&config, &open_paths, "", Some(DocumentListStatus::Missing));
+		assert_eq!(missing_only.iter().map(|item| &item.path).collect::<Vec<_>>(), vec![&missing_path]);
 	}
 }
