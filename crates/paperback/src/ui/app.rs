@@ -68,6 +68,11 @@ impl PaperbackApp {
 		let pipe_server = start_pipe_server(&Rc::clone(&main_window));
 		main_window.show();
 		#[cfg(target_os = "macos")]
+		_app.on_should_terminate(|| {
+			tracing::debug!("allowing native macOS termination request");
+			true
+		});
+		#[cfg(target_os = "macos")]
 		_app.on_reopen_app(|| {
 			if let Some(window) = main_window_from_ptr() {
 				window.show_from_dock();

@@ -204,13 +204,13 @@ impl MainWindow {
 				}
 				dm.save_all_positions();
 				#[cfg(target_os = "macos")]
-				if let WindowEventData::General(ref ev) = event {
-					if ev.can_veto() {
-						drop(dm);
-						ev.veto();
-						frame.show(false);
-						return;
-					}
+				if let WindowEventData::General(ref ev) = event
+					&& ev.can_veto()
+				{
+					drop(dm);
+					ev.veto();
+					frame.show(false);
+					return;
 				}
 				#[cfg(target_os = "windows")]
 				if let Some(state) = tray_for_close.lock().unwrap().as_ref() {
