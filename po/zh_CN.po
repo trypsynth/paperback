@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-17 02:47+0000\n"
+"POT-Creation-Date: 2026-08-18 16:53+0000\n"
 "PO-Revision-Date: 2026-03-22 21:37+0800\n"
 "Last-Translator: Yongquan Yang <qt06.com@gmail.com>\n"
 "Language-Team: \n"
@@ -1061,6 +1061,78 @@ msgid "No recent documents."
 msgstr "没有最近文档。"
 
 #, fuzzy
+msgid "&Undo\tCtrl+Z"
+msgstr "&撤销    Ctrl+Z"
+
+#, fuzzy
+msgid "&Redo\tCtrl+Shift+Z"
+msgstr "&重做    Ctrl+Shift+Z"
+
+#, fuzzy
+msgid "Cu&t\tCtrl+X"
+msgstr "Cu&t    Ctrl+X"
+
+#, fuzzy
+msgid "&Copy\tCtrl+C"
+msgstr "&复制    Ctrl+C"
+
+#, fuzzy
+msgid "&Paste\tCtrl+V"
+msgstr "&粘贴    Ctrl+V"
+
+#, fuzzy
+msgid "Select &All\tCtrl+A"
+msgstr "全选    Ctrl+A"
+
+#, fuzzy
+msgid "&Open..."
+msgstr "打开(&O)"
+
+msgid "Open a document"
+msgstr "打开文档"
+
+#, fuzzy
+msgid "&Close"
+msgstr "关闭"
+
+msgid "Close the current document"
+msgstr "关闭当前文档"
+
+#, fuzzy
+msgid "Close &All"
+msgstr "关闭"
+
+msgid "Close all documents"
+msgstr "关闭所有文档"
+
+#, fuzzy
+msgid "Reopen &Last Closed"
+msgstr "重新打开上次关闭的(&L)\tCtrl+Shift+T"
+
+msgid "Reopen the last closed document"
+msgstr "重新打开上次关闭的文档"
+
+msgid "&Recent Documents"
+msgstr "最近文档(&R)"
+
+msgid "Open a recent document"
+msgstr "打开最近文档"
+
+#. TRANSLATORS: System tray menu item to quit the application
+msgid "E&xit"
+msgstr "退出(&X)"
+
+msgid "Exit the application"
+msgstr "退出应用程序"
+
+msgid "(No recent documents)"
+msgstr "（无最近文档）"
+
+#, fuzzy
+msgid "Show All..."
+msgstr "显示全部"
+
+#, fuzzy
 msgid "Previous Section"
 msgstr "上一章节\t["
 
@@ -1276,87 +1348,6 @@ msgstr "查看笔记"
 msgid "View the note at current position"
 msgstr "查看当前位置的笔记"
 
-msgid "&File"
-msgstr "文件(&F)"
-
-msgid "&Go"
-msgstr "转到(&G)"
-
-msgid "&Tools"
-msgstr "工具(&T)"
-
-msgid "&Help"
-msgstr "帮助(&H)"
-
-#, fuzzy
-msgid "&Edit"
-msgstr "&编辑"
-
-#, fuzzy
-msgid "&Open..."
-msgstr "打开(&O)"
-
-msgid "Open a document"
-msgstr "打开文档"
-
-#, fuzzy
-msgid "&Close"
-msgstr "关闭"
-
-msgid "Close the current document"
-msgstr "关闭当前文档"
-
-#, fuzzy
-msgid "Close &All"
-msgstr "关闭"
-
-msgid "Close all documents"
-msgstr "关闭所有文档"
-
-#, fuzzy
-msgid "Reopen &Last Closed"
-msgstr "重新打开上次关闭的(&L)\tCtrl+Shift+T"
-
-msgid "Reopen the last closed document"
-msgstr "重新打开上次关闭的文档"
-
-msgid "&Recent Documents"
-msgstr "最近文档(&R)"
-
-msgid "Open a recent document"
-msgstr "打开最近文档"
-
-#. TRANSLATORS: System tray menu item to quit the application
-msgid "E&xit"
-msgstr "退出(&X)"
-
-msgid "Exit the application"
-msgstr "退出应用程序"
-
-#, fuzzy
-msgid "&Undo\tCtrl+Z"
-msgstr "&撤销    Ctrl+Z"
-
-#, fuzzy
-msgid "&Redo\tCtrl+Shift+Z"
-msgstr "&重做    Ctrl+Shift+Z"
-
-#, fuzzy
-msgid "Cu&t\tCtrl+X"
-msgstr "Cu&t    Ctrl+X"
-
-#, fuzzy
-msgid "&Copy\tCtrl+C"
-msgstr "&复制    Ctrl+C"
-
-#, fuzzy
-msgid "&Paste\tCtrl+V"
-msgstr "&粘贴    Ctrl+V"
-
-#, fuzzy
-msgid "Select &All\tCtrl+A"
-msgstr "全选    Ctrl+A"
-
 #, fuzzy
 msgid "&Find..."
 msgstr "查找(&F)"
@@ -1465,6 +1456,41 @@ msgstr "&容器"
 #, fuzzy
 msgid "Navigate by containers"
 msgstr "按容器导航"
+
+#, fuzzy
+msgid "&About Paperback"
+msgstr "关于 Paperback(&A)\tCtrl+F1"
+
+msgid "About this application"
+msgstr "关于此应用程序"
+
+#, fuzzy
+msgid "View Help in &Browser"
+msgstr "在浏览器中查看帮助(&B)\tF1"
+
+msgid "View help in default browser"
+msgstr "在默认浏览器中查看帮助"
+
+#, fuzzy
+msgid "View Help in &Paperback"
+msgstr "在 Paperback 中查看帮助"
+
+msgid "View help in Paperback"
+msgstr "在 Paperback 中查看帮助"
+
+#, fuzzy
+msgid "Check for &Updates"
+msgstr "检查更新"
+
+msgid "Check for updates"
+msgstr "检查更新"
+
+#, fuzzy
+msgid "&Donate"
+msgstr "捐赠(&D)\tCtrl+D"
+
+msgid "Support Paperback development"
+msgstr "支持 Paperback 开发"
 
 #, fuzzy
 msgid "&Import Document Data..."
@@ -1592,47 +1618,21 @@ msgstr "选项"
 msgid "&Sleep Timer..."
 msgstr "睡眠定时器"
 
-#, fuzzy
-msgid "&About Paperback"
-msgstr "关于 Paperback(&A)\tCtrl+F1"
+msgid "&File"
+msgstr "文件(&F)"
 
-msgid "About this application"
-msgstr "关于此应用程序"
+msgid "&Go"
+msgstr "转到(&G)"
 
-#, fuzzy
-msgid "View Help in &Browser"
-msgstr "在浏览器中查看帮助(&B)\tF1"
+msgid "&Tools"
+msgstr "工具(&T)"
 
-msgid "View help in default browser"
-msgstr "在默认浏览器中查看帮助"
+msgid "&Help"
+msgstr "帮助(&H)"
 
 #, fuzzy
-msgid "View Help in &Paperback"
-msgstr "在 Paperback 中查看帮助"
-
-msgid "View help in Paperback"
-msgstr "在 Paperback 中查看帮助"
-
-#, fuzzy
-msgid "Check for &Updates"
-msgstr "检查更新"
-
-msgid "Check for updates"
-msgstr "检查更新"
-
-#, fuzzy
-msgid "&Donate"
-msgstr "捐赠(&D)\tCtrl+D"
-
-msgid "Support Paperback development"
-msgstr "支持 Paperback 开发"
-
-msgid "(No recent documents)"
-msgstr "（无最近文档）"
-
-#, fuzzy
-msgid "Show All..."
-msgstr "显示全部"
+msgid "&Edit"
+msgstr "&编辑"
 
 #. TRANSLATORS: Announced when the document has no sections to navigate
 msgid "No sections."

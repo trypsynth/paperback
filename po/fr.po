@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-17 02:47+0000\n"
+"POT-Creation-Date: 2026-08-18 16:53+0000\n"
 "PO-Revision-Date: 2026-02-26 00:00+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1070,6 +1070,79 @@ msgid "No recent documents."
 msgstr "Aucun document récent."
 
 #, fuzzy
+msgid "&Undo\tCtrl+Z"
+msgstr "&Annuler    Ctrl+Z"
+
+#, fuzzy
+msgid "&Redo\tCtrl+Shift+Z"
+msgstr "&Rétablir    Ctrl+Maj+Z"
+
+#, fuzzy
+msgid "Cu&t\tCtrl+X"
+msgstr "Ctrl+X"
+
+#, fuzzy
+msgid "&Copy\tCtrl+C"
+msgstr "&Copier    Ctrl+C"
+
+#, fuzzy
+msgid "&Paste\tCtrl+V"
+msgstr "&Coller    Ctrl+V"
+
+#, fuzzy
+msgid "Select &All\tCtrl+A"
+msgstr "Sélectionner « Tout »    Ctrl+A"
+
+#, fuzzy
+msgid "&Open..."
+msgstr "&Ouvrir"
+
+msgid "Open a document"
+msgstr "Ouvrir un document"
+
+#, fuzzy
+msgid "&Close"
+msgstr "Fermer"
+
+msgid "Close the current document"
+msgstr "Fermer le document actuel"
+
+#, fuzzy
+msgid "Close &All"
+msgstr "Fermer"
+
+msgid "Close all documents"
+msgstr "Fermer tous les documents"
+
+#, fuzzy
+msgid "Reopen &Last Closed"
+msgstr "Rouvrir & Dernière fermeture    Ctrl+Maj+T"
+
+#, fuzzy
+msgid "Reopen the last closed document"
+msgstr "Rouvrir le dernier document fermé"
+
+msgid "&Recent Documents"
+msgstr "Documents &récents"
+
+msgid "Open a recent document"
+msgstr "Ouvrir un document récent"
+
+#. TRANSLATORS: System tray menu item to quit the application
+msgid "E&xit"
+msgstr "&Quitter"
+
+msgid "Exit the application"
+msgstr "Quitter l'application"
+
+msgid "(No recent documents)"
+msgstr "(Aucun document récent)"
+
+#, fuzzy
+msgid "Show All..."
+msgstr "Tout afficher"
+
+#, fuzzy
 msgid "Previous Section"
 msgstr "Section précédente\t["
 
@@ -1285,88 +1358,6 @@ msgstr "Afficher la note"
 msgid "View the note at current position"
 msgstr "Afficher la note à la position actuelle"
 
-msgid "&File"
-msgstr "&Fichier"
-
-msgid "&Go"
-msgstr "&Aller"
-
-msgid "&Tools"
-msgstr "&Outils"
-
-msgid "&Help"
-msgstr "&Aide"
-
-#, fuzzy
-msgid "&Edit"
-msgstr "&Modifier"
-
-#, fuzzy
-msgid "&Open..."
-msgstr "&Ouvrir"
-
-msgid "Open a document"
-msgstr "Ouvrir un document"
-
-#, fuzzy
-msgid "&Close"
-msgstr "Fermer"
-
-msgid "Close the current document"
-msgstr "Fermer le document actuel"
-
-#, fuzzy
-msgid "Close &All"
-msgstr "Fermer"
-
-msgid "Close all documents"
-msgstr "Fermer tous les documents"
-
-#, fuzzy
-msgid "Reopen &Last Closed"
-msgstr "Rouvrir & Dernière fermeture    Ctrl+Maj+T"
-
-#, fuzzy
-msgid "Reopen the last closed document"
-msgstr "Rouvrir le dernier document fermé"
-
-msgid "&Recent Documents"
-msgstr "Documents &récents"
-
-msgid "Open a recent document"
-msgstr "Ouvrir un document récent"
-
-#. TRANSLATORS: System tray menu item to quit the application
-msgid "E&xit"
-msgstr "&Quitter"
-
-msgid "Exit the application"
-msgstr "Quitter l'application"
-
-#, fuzzy
-msgid "&Undo\tCtrl+Z"
-msgstr "&Annuler    Ctrl+Z"
-
-#, fuzzy
-msgid "&Redo\tCtrl+Shift+Z"
-msgstr "&Rétablir    Ctrl+Maj+Z"
-
-#, fuzzy
-msgid "Cu&t\tCtrl+X"
-msgstr "Ctrl+X"
-
-#, fuzzy
-msgid "&Copy\tCtrl+C"
-msgstr "&Copier    Ctrl+C"
-
-#, fuzzy
-msgid "&Paste\tCtrl+V"
-msgstr "&Coller    Ctrl+V"
-
-#, fuzzy
-msgid "Select &All\tCtrl+A"
-msgstr "Sélectionner « Tout »    Ctrl+A"
-
 #, fuzzy
 msgid "&Find..."
 msgstr "&Rechercher"
@@ -1479,6 +1470,41 @@ msgstr "&Conteneurs"
 #, fuzzy
 msgid "Navigate by containers"
 msgstr "Navigation par conteneurs"
+
+#, fuzzy
+msgid "&About Paperback"
+msgstr "À &propos de Paperback\tCtrl+F1"
+
+msgid "About this application"
+msgstr "À propos de cette application"
+
+#, fuzzy
+msgid "View Help in &Browser"
+msgstr "Afficher l'aide dans le &navigateur\tF1"
+
+msgid "View help in default browser"
+msgstr "Afficher l'aide dans le navigateur par défaut"
+
+#, fuzzy
+msgid "View Help in &Paperback"
+msgstr "Afficher l'aide dans Paperback"
+
+msgid "View help in Paperback"
+msgstr "Afficher l'aide dans Paperback"
+
+#, fuzzy
+msgid "Check for &Updates"
+msgstr "Rechercher des mises à jour"
+
+msgid "Check for updates"
+msgstr "Rechercher des mises à jour"
+
+#, fuzzy
+msgid "&Donate"
+msgstr "Faire un &don\tCtrl+D"
+
+msgid "Support Paperback development"
+msgstr "Soutenir le développement de Paperback"
 
 #, fuzzy
 msgid "&Import Document Data..."
@@ -1606,47 +1632,21 @@ msgstr "Options"
 msgid "&Sleep Timer..."
 msgstr "Minuterie de veille"
 
-#, fuzzy
-msgid "&About Paperback"
-msgstr "À &propos de Paperback\tCtrl+F1"
+msgid "&File"
+msgstr "&Fichier"
 
-msgid "About this application"
-msgstr "À propos de cette application"
+msgid "&Go"
+msgstr "&Aller"
 
-#, fuzzy
-msgid "View Help in &Browser"
-msgstr "Afficher l'aide dans le &navigateur\tF1"
+msgid "&Tools"
+msgstr "&Outils"
 
-msgid "View help in default browser"
-msgstr "Afficher l'aide dans le navigateur par défaut"
+msgid "&Help"
+msgstr "&Aide"
 
 #, fuzzy
-msgid "View Help in &Paperback"
-msgstr "Afficher l'aide dans Paperback"
-
-msgid "View help in Paperback"
-msgstr "Afficher l'aide dans Paperback"
-
-#, fuzzy
-msgid "Check for &Updates"
-msgstr "Rechercher des mises à jour"
-
-msgid "Check for updates"
-msgstr "Rechercher des mises à jour"
-
-#, fuzzy
-msgid "&Donate"
-msgstr "Faire un &don\tCtrl+D"
-
-msgid "Support Paperback development"
-msgstr "Soutenir le développement de Paperback"
-
-msgid "(No recent documents)"
-msgstr "(Aucun document récent)"
-
-#, fuzzy
-msgid "Show All..."
-msgstr "Tout afficher"
+msgid "&Edit"
+msgstr "&Modifier"
 
 #. TRANSLATORS: Announced when the document has no sections to navigate
 msgid "No sections."

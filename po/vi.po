@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-17 02:47+0000\n"
+"POT-Creation-Date: 2026-08-18 16:53+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1112,6 +1112,84 @@ msgid "No recent documents."
 msgstr "Không có tài liệu gần đây."
 
 #, fuzzy
+msgid "&Undo\tCtrl+Z"
+msgstr "&Hoàn tác    Ctrl+Z"
+
+#, fuzzy
+msgid "&Redo\tCtrl+Shift+Z"
+msgstr "&Làm lại    Ctrl+Shift+Z"
+
+#, fuzzy
+msgid "Cu&t\tCtrl+X"
+msgstr "Cắt    Ctrl+X"
+
+#, fuzzy
+msgid "&Copy\tCtrl+C"
+msgstr "&Sao chép    Ctrl+C"
+
+#, fuzzy
+msgid "&Paste\tCtrl+V"
+msgstr "&Dán    Ctrl+V"
+
+#, fuzzy
+msgid "Select &All\tCtrl+A"
+msgstr "Chọn Tất cả    Ctrl+A"
+
+#, fuzzy
+msgid "&Open..."
+msgstr "&Mở"
+
+#, fuzzy
+msgid "Open a document"
+msgstr "Mở một tài liệu"
+
+#, fuzzy
+msgid "&Close"
+msgstr "Đóng"
+
+#, fuzzy
+msgid "Close the current document"
+msgstr "Đóng tài liệu hiện tại"
+
+#, fuzzy
+msgid "Close &All"
+msgstr "Đóng"
+
+#, fuzzy
+msgid "Close all documents"
+msgstr "Đóng tất cả các tài liệu"
+
+#, fuzzy
+msgid "Reopen &Last Closed"
+msgstr "Mở lại & Lần đóng gần nhất    Ctrl+Shift+T"
+
+#, fuzzy
+msgid "Reopen the last closed document"
+msgstr "Mở lại tài liệu vừa đóng"
+
+msgid "&Recent Documents"
+msgstr "Tài liệu &gần đây"
+
+#, fuzzy
+msgid "Open a recent document"
+msgstr "Mở một tài liệu gần đây"
+
+#. TRANSLATORS: System tray menu item to quit the application
+msgid "E&xit"
+msgstr "&Thoát"
+
+#, fuzzy
+msgid "Exit the application"
+msgstr "Thoát khỏi ứng dụng"
+
+msgid "(No recent documents)"
+msgstr "(Không có tài liệu gần đây)"
+
+#, fuzzy
+msgid "Show All..."
+msgstr "Hiển thị tất cả"
+
+#, fuzzy
 msgid "Previous Section"
 msgstr "Phần trước    ["
 
@@ -1339,93 +1417,6 @@ msgstr "Xem ghi chú"
 msgid "View the note at current position"
 msgstr "Xem ghi chú tại vị trí hiện tại"
 
-msgid "&File"
-msgstr "&Tệp"
-
-msgid "&Go"
-msgstr "&Điều hướng"
-
-msgid "&Tools"
-msgstr "&Công cụ"
-
-msgid "&Help"
-msgstr "&Trợ giúp"
-
-#, fuzzy
-msgid "&Edit"
-msgstr "&Chỉnh sửa"
-
-#, fuzzy
-msgid "&Open..."
-msgstr "&Mở"
-
-#, fuzzy
-msgid "Open a document"
-msgstr "Mở một tài liệu"
-
-#, fuzzy
-msgid "&Close"
-msgstr "Đóng"
-
-#, fuzzy
-msgid "Close the current document"
-msgstr "Đóng tài liệu hiện tại"
-
-#, fuzzy
-msgid "Close &All"
-msgstr "Đóng"
-
-#, fuzzy
-msgid "Close all documents"
-msgstr "Đóng tất cả các tài liệu"
-
-#, fuzzy
-msgid "Reopen &Last Closed"
-msgstr "Mở lại & Lần đóng gần nhất    Ctrl+Shift+T"
-
-#, fuzzy
-msgid "Reopen the last closed document"
-msgstr "Mở lại tài liệu vừa đóng"
-
-msgid "&Recent Documents"
-msgstr "Tài liệu &gần đây"
-
-#, fuzzy
-msgid "Open a recent document"
-msgstr "Mở một tài liệu gần đây"
-
-#. TRANSLATORS: System tray menu item to quit the application
-msgid "E&xit"
-msgstr "&Thoát"
-
-#, fuzzy
-msgid "Exit the application"
-msgstr "Thoát khỏi ứng dụng"
-
-#, fuzzy
-msgid "&Undo\tCtrl+Z"
-msgstr "&Hoàn tác    Ctrl+Z"
-
-#, fuzzy
-msgid "&Redo\tCtrl+Shift+Z"
-msgstr "&Làm lại    Ctrl+Shift+Z"
-
-#, fuzzy
-msgid "Cu&t\tCtrl+X"
-msgstr "Cắt    Ctrl+X"
-
-#, fuzzy
-msgid "&Copy\tCtrl+C"
-msgstr "&Sao chép    Ctrl+C"
-
-#, fuzzy
-msgid "&Paste\tCtrl+V"
-msgstr "&Dán    Ctrl+V"
-
-#, fuzzy
-msgid "Select &All\tCtrl+A"
-msgstr "Chọn Tất cả    Ctrl+A"
-
 #, fuzzy
 msgid "&Find..."
 msgstr "&Tìm"
@@ -1555,6 +1546,46 @@ msgstr "&Thùng chứa"
 #, fuzzy
 msgid "Navigate by containers"
 msgstr "Điều hướng theo container"
+
+#, fuzzy
+msgid "&About Paperback"
+msgstr "&Giới thiệu về bản bìa mềm    Ctrl+F1"
+
+#, fuzzy
+msgid "About this application"
+msgstr "Giới thiệu về ứng dụng này"
+
+#, fuzzy
+msgid "View Help in &Browser"
+msgstr "Xem Trợ giúp trong &Browser    F1"
+
+#, fuzzy
+msgid "View help in default browser"
+msgstr "Xem hướng dẫn trong trình duyệt mặc định"
+
+#, fuzzy
+msgid "View Help in &Paperback"
+msgstr "Xem phần trợ giúp trong phiên bản bìa mềm"
+
+#, fuzzy
+msgid "View help in Paperback"
+msgstr "Xem phần trợ giúp trong phiên bản bìa mềm"
+
+#, fuzzy
+msgid "Check for &Updates"
+msgstr "Kiểm tra các bản cập nhật"
+
+#, fuzzy
+msgid "Check for updates"
+msgstr "Kiểm tra các bản cập nhật"
+
+#, fuzzy
+msgid "&Donate"
+msgstr "&Ủng hộ\tCtrl+D"
+
+#, fuzzy
+msgid "Support Paperback development"
+msgstr "Hỗ trợ phát triển phiên bản bìa mềm"
 
 #, fuzzy
 msgid "&Import Document Data..."
@@ -1692,52 +1723,21 @@ msgstr "Tùy chọn"
 msgid "&Sleep Timer..."
 msgstr "Hẹn giờ ngủ"
 
-#, fuzzy
-msgid "&About Paperback"
-msgstr "&Giới thiệu về bản bìa mềm    Ctrl+F1"
+msgid "&File"
+msgstr "&Tệp"
+
+msgid "&Go"
+msgstr "&Điều hướng"
+
+msgid "&Tools"
+msgstr "&Công cụ"
+
+msgid "&Help"
+msgstr "&Trợ giúp"
 
 #, fuzzy
-msgid "About this application"
-msgstr "Giới thiệu về ứng dụng này"
-
-#, fuzzy
-msgid "View Help in &Browser"
-msgstr "Xem Trợ giúp trong &Browser    F1"
-
-#, fuzzy
-msgid "View help in default browser"
-msgstr "Xem hướng dẫn trong trình duyệt mặc định"
-
-#, fuzzy
-msgid "View Help in &Paperback"
-msgstr "Xem phần trợ giúp trong phiên bản bìa mềm"
-
-#, fuzzy
-msgid "View help in Paperback"
-msgstr "Xem phần trợ giúp trong phiên bản bìa mềm"
-
-#, fuzzy
-msgid "Check for &Updates"
-msgstr "Kiểm tra các bản cập nhật"
-
-#, fuzzy
-msgid "Check for updates"
-msgstr "Kiểm tra các bản cập nhật"
-
-#, fuzzy
-msgid "&Donate"
-msgstr "&Ủng hộ\tCtrl+D"
-
-#, fuzzy
-msgid "Support Paperback development"
-msgstr "Hỗ trợ phát triển phiên bản bìa mềm"
-
-msgid "(No recent documents)"
-msgstr "(Không có tài liệu gần đây)"
-
-#, fuzzy
-msgid "Show All..."
-msgstr "Hiển thị tất cả"
+msgid "&Edit"
+msgstr "&Chỉnh sửa"
 
 #. TRANSLATORS: Announced when the document has no sections to navigate
 msgid "No sections."
