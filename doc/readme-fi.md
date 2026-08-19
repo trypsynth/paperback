@@ -194,8 +194,10 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 ### Versio 0.9.0 (ei vielä julkaistu)
 * Lisätty Peruuta-painike käynnissä olevan päivityksen valintaikkunaan.
 * Lisätty pb-komentorivityökalu, jolla voi muuntaa nopeasti minkä tahansa Paperbackin tukeman tiedostomuodon HTML-, Markdown- tai pelkkä teksti -muotoon.
-* Lisätty mukautettava pikanäppäin Paperbackin palauttamiseen ilmoitusalueelta.
+* Lisätty muokattava pikanäppäin Paperbackin palauttamiseen ilmoitusalueelta.
 * Lisätty Etsi kirja -painike Kaikki asiakirjat -valintaikkunaan sellaisten puuttuvien kirjojen löytämiseksi, joiden tiedostopolku on muuttunut.
+* Kaikki asiakirjat -valintaikkunaan on lisätty tilasuodatin ja tilarivi, joiden avulla asiakirjoja voi suodattaa tilan perusteella sekä nähdä näytettävien ja valittujen asiakirjojen määrän.
+* Lisätty `Ctrl+Shift+A`-pikanäppäin, jolla voi Kaikki asiakirjat -valintaikkunassa poistaa kaikkien asiakirjojen valinnan.
 * Lisätty Asetukset-valintaikkunaan Luettavuus-välilehti, jossa on seuraavat asetukset:
     * Tekstin rivitys (siirretty Yleiset-välilehdeltä)
     * Näytä taulukot tekstin osana (uusi tässä versiossa, katso jäljempää)
@@ -206,18 +208,18 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
     * Kirjainväli
     * Tekstin tasaus
 * Lisätty asetus taulukoiden näyttötavan määrittämiseksi sekä yhtenäistetty taulukoiden esitystapa kaikille asiakirjoille.
-* Lisätty Näytä lähdekoodi -vaihtoehto, joka avaa asiakirjan lähdekoodin uuteen välilehteen (hyödyllinen esimerkiksi Markdown-muokkauksessa).
-* Lisätty Sanamäärä-valintaikkunaan arvioitu lukuaika sekä mahdollisuus oman lukunopeuden määrittämiseen, jotta tästä tiedosta on oikeasti hyötyä.
-* ARM64-pohjaisen Windowsin tuki lisätty.
-* Android-tuki lisätty.
-* iOS-tuki lisätty.
-* macOS-tuki lisätty.
+* Lisätty Näytä lähdekoodi -vaihtoehto, joka avaa asiakirjan lähdekoodin uuteen välilehteen, josta on hyötyä esimerkiksi Markdown-tiedostojen muokkauksessa.
+* Sanamäärä-valintaikkunaan on lisätty arvioitu lukuaika sekä mahdollisuus oman lukunopeuden määrittämiseen, jotta tästä tiedosta on oikeasti hyötyä.
+* ARM64-pohjaisen Windowsin tuki on lisätty.
+* Android-tuki on lisätty.
+* iOS-tuki on lisätty.
+* macOS-tuki on lisätty.
 * Lisätty hollannin-, puolan- ja suomenkieliset käännökset.
 * Lisätty tuki säilöittäin navigoimiselle.
 * Lisätty CHM-asiakirjoihin luetteloiden, luettelokohteiden, kuvitusten ja kuvien tuki.
-* Lisätty Rivitys-valikkokohde ja vastaava pikanäppäin.
-* Merkkiääni toistuu nyt vain sellaisten sanojen kohdalla, joihin on lisätty kirjanmerkki tai muistiinpano.
-* Vanhoilla CJK-merkistöillä (kuten GBK, Big5 ja Shift_JIS) koodattuja asiakirjoja ei näytetä enää pelkkänä merkkisotkuna.
+* Lisätty Rivitys-vaihtoehto ja sille vastaava pikanäppäin.
+* Merkkiääni toistetaan nyt vain sellaisten sanojen kohdalla, joihin on lisätty kirjanmerkki tai muistiinpano.
+	* Vanhoilla CJK-merkistöillä (kuten GBK, Big5 ja Shift_JIS) koodattuja asiakirjoja ei näytetä enää pelkkänä merkkisotkuna.
 * Vientitoimintoa on laajennettu siten, että se mahdollistaa viennin pelkän tekstin lisäksi myös HTML- ja Markdown-muotoihin.
 * Korjattu ongelma, jonka vuoksi tekstin rivityksen käyttöönotto siirsi kohdistuksen asiakirjan alkuun.
 * Korjattu ongelma, jonka vuoksi DAISY-kirjoista näytettiin tilarivillä virheellisiä tietoja.
@@ -227,7 +229,7 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Korjattu suurten asiakirjojen loppupuolella esiintynyt lukunäkymän hidastelu.
 * Vanhojen Mobi-kirjojen linkit korjattu.
 * Korjattu ongelma virheellisen koodausmäärityksen sisältävien DAISY-kirjojen lataamisessa.
-* Korjattu ongelma, jonka vuoksi ruudunlukija puhui joissakin tilanteissa väärän rivin tekstin asiakirjaa luettaessa.
+* Korjattu ongelma, jonka vuoksi ruudunlukija puhui joissakin tilanteissa väärän rivin asiakirjassa liikuttaessa.
 * Korjattu muita kuin latinalaisia kirjaimia sisältävien RTF-asiakirjojen jäsentäminen.
 * Korjattu ongelma, jonka vuoksi Avaa viimeksi suljettu -toiminto yritti avata sovelluksen mukana toimitettavan readme-tiedoston.
 * Korjattu ongelma, jonka vuoksi otsikkopalkki ei päivittynyt, kun dokumentti suljettiin Kaikki asiakirjat -valintaikkunasta.
