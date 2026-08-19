@@ -583,7 +583,11 @@ fn map_load_error(err: PdfiumError) -> anyhow::Error {
 }
 
 fn metadata_value(document: &PdfiumDocument, key: &str) -> Option<String> {
-	document.metadata_value(key).ok().map(|value| trim_string(&value)).filter(|value| !value.is_empty())
+	document
+		.metadata_value(key)
+		.ok()
+		.map(|value| trim_string(&sanitize_pdf_text(&value)))
+		.filter(|value| !value.is_empty())
 }
 
 fn extract_toc(
@@ -610,7 +614,7 @@ fn extract_toc(
 			skipped_count += 1;
 			continue;
 		};
-		let title = trim_string(&collapse_whitespace(&raw_title));
+		let title = trim_string(&collapse_whitespace(&sanitize_pdf_text(&raw_title)));
 		if title.is_empty() {
 			skipped_count += 1;
 			continue;
