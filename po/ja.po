@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-14 13:10+0000\n"
+"POT-Creation-Date: 2026-08-18 16:53+0000\n"
 "PO-Revision-Date: 2026-06-25 21:58+0900\n"
 "Last-Translator: Kazto Kitabatake <contact@kitabatake1013.jp>\n"
 "Language-Team: \n"
@@ -58,6 +58,28 @@ msgstr "状態"
 msgid "Path"
 msgstr "パス"
 
+#. TRANSLATORS: Label for the status filter dropdown in the All Documents dialog
+#, fuzzy
+msgid "&Status:"
+msgstr "状態"
+
+#. TRANSLATORS: Option in the All Documents status filter to show documents of every status
+#. TRANSLATORS: Option in the filter dropdown to show all entries
+msgid "All"
+msgstr "すべて"
+
+#. TRANSLATORS: Status of a document that is currently open in a tab
+msgid "Open"
+msgstr "オープン"
+
+#. TRANSLATORS: Status of a document that was previously opened but is currently closed
+msgid "Closed"
+msgstr "クローズ"
+
+#. TRANSLATORS: Status of a document whose file could not be found on disk
+msgid "Missing"
+msgstr "見つかりません"
+
 #. TRANSLATORS: Button label to open the selected document
 msgid "&Open"
 msgstr "開く(&O)"
@@ -95,17 +117,35 @@ msgstr "確認"
 msgid "Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks."
 msgstr "リストからすべての文書を削除しますか？これにより、すべての文書の読み上げ位置としおりも削除されます。"
 
-#. TRANSLATORS: Status of a document that is currently open in a tab
-msgid "Open"
-msgstr "オープン"
+#. TRANSLATORS: Status bar text in the All Documents dialog when the list is empty
+#, fuzzy
+msgid "No documents."
+msgstr "書類なし"
 
-#. TRANSLATORS: Status of a document that was previously opened but is currently closed
-msgid "Closed"
-msgstr "クローズ"
+#. TRANSLATORS: Status bar text in the All Documents dialog when the list contains exactly one document and none are selected
+#, fuzzy
+msgid "1 document."
+msgstr "文書"
 
-#. TRANSLATORS: Status of a document whose file could not be found on disk
-msgid "Missing"
-msgstr "見つかりません"
+#. TRANSLATORS: Status bar text in the All Documents dialog showing the total number of documents in the list. The %d placeholder is replaced with the count.
+#, fuzzy
+msgid "%d documents."
+msgstr "文書"
+
+#. TRANSLATORS: Status bar text in the All Documents dialog when the single document in the list is selected
+#, fuzzy
+msgid "1 of 1 document selected."
+msgstr "ドキュメントが再読み込みされました。"
+
+#. TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count.
+#, fuzzy
+msgid "All %d documents selected."
+msgstr "すべての文書"
+
+#. TRANSLATORS: Status bar text in the All Documents dialog showing how many of the total documents are selected. The first %d is the selected count, the second %d is the total count.
+#, fuzzy
+msgid "%d of %d documents selected."
+msgstr "文書の終わり"
 
 #. TRANSLATORS: Message/prompt shown in the file picker dialog to locate a missing book
 #, fuzzy
@@ -119,10 +159,6 @@ msgstr "しおりへ移動"
 #. TRANSLATORS: Label for the bookmark filter dropdown
 msgid "&Filter:"
 msgstr "フィルター(&F):"
-
-#. TRANSLATORS: Option in the filter dropdown to show all entries
-msgid "All"
-msgstr "すべて"
 
 #. TRANSLATORS: Option in the filter dropdown to show bookmarks only
 msgid "Bookmarks"
@@ -141,7 +177,6 @@ msgstr "&ブックマーク："
 msgid "&Edit Note"
 msgstr "メモの編集(&E)"
 
-#. TRANSLATORS: Standard "Delete" edit menu item label
 msgid "&Delete"
 msgstr "削除(&D)"
 
@@ -247,7 +282,6 @@ msgid "Go to page"
 msgstr "指定ページへ移動"
 
 #. TRANSLATORS: Label/prompt template for the page selection dialog. The %d placeholders represent current_page and max_pages respectively.
-#, c-format
 msgid "Go to page (%d/%d):"
 msgstr "ページ数(%d/%d):"
 
@@ -344,6 +378,10 @@ msgstr "&変更されたドキュメントを自動的に再読み込みする"
 
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 msgid "Customize &Window Hotkey..."
+msgstr "ウィンドウを開くホットキーの変更(&W)..."
+
+#, fuzzy
+msgid "Customize &Keyboard Shortcuts..."
 msgstr "ウィンドウを開くホットキーの変更(&W)..."
 
 #. TRANSLATORS: Label for the reading speed input field (Words Per Minute)
@@ -545,6 +583,50 @@ msgstr "キャンセル"
 msgid "Space"
 msgstr "Space"
 
+#, fuzzy
+msgid "Customize Keyboard Shortcuts"
+msgstr "キーボードショートカットのカスタマイズ"
+
+#, fuzzy
+msgid "&Shortcuts:"
+msgstr "&ショートカット："
+
+#, fuzzy
+msgid "&Set Shortcut..."
+msgstr "&ショートカットを設定..."
+
+#, fuzzy
+msgid "&Clear Shortcut"
+msgstr "&ショートカットをクリア"
+
+#, fuzzy
+msgid "&Reset to Default"
+msgstr "既定のフォントに戻す(&R)"
+
+#, fuzzy
+msgid "Reset &All to Defaults"
+msgstr "既定のフォントに戻す(&R)"
+
+#, fuzzy
+msgid "Shortcut Conflict"
+msgstr "ショートカットの競合"
+
+#, fuzzy
+msgid "Reset all shortcuts to their default values?"
+msgstr "すべてのショートカットをデフォルト値にリセットしますか？"
+
+#, fuzzy
+msgid "Reset Shortcuts"
+msgstr "ショートカットのリセット"
+
+#, fuzzy
+msgid "Tip: click in the key field and press the key combination you want."
+msgstr "ヒント：キー欄をクリックして、使用したいキーの組み合わせを押してください。"
+
+#, fuzzy
+msgid "&Clear"
+msgstr "クリア"
+
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
 msgstr "スリープタイマー"
@@ -649,7 +731,6 @@ msgstr "次のしおりがありません。"
 msgid "Temporary bookmark."
 msgstr "しおりがありません。"
 
-#. TRANSLATORS: Title of the dialog showing a table rendered as HTML when activated with Enter/Space
 msgid "Table View"
 msgstr "テーブルビュー"
 
@@ -831,6 +912,15 @@ msgstr "行末自動改行を有効にする。"
 msgid "Word wrap off."
 msgstr "行末自動改行をオフにする。"
 
+#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
+#, fuzzy
+msgid "Full screen on."
+msgstr "全画面表示をオンにします。"
+
+#, fuzzy
+msgid "Full screen off."
+msgstr "全画面表示をオフにします。"
+
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgstr "プレーンテキストファイル(*.txt)|*.txt|すべてのファイル(*.*)|*.*"
@@ -919,7 +1009,6 @@ msgid "Sleep timer set for 1 minute."
 msgstr "スリープタイマーを1分に設定しました。"
 
 #. TRANSLATORS: Announcement when the sleep timer is set; %d is the number of minutes (always 2 or more)
-#, c-format
 msgid "Sleep timer set for %d minutes."
 msgstr "スリープタイマーを%d分に設定しました。"
 
@@ -927,702 +1016,575 @@ msgstr "スリープタイマーを%d分に設定しました。"
 msgid "No recent documents."
 msgstr "最近開いた文書はありません。"
 
-#. TRANSLATORS: Menu item label to go to the previous section
-msgid "Previous Section\t["
-msgstr "前のセクション\t["
-
-#. TRANSLATORS: Status bar help text for the "Previous Section" menu item
-msgid "Go to previous section"
-msgstr "前のセクションへ移動"
-
-#. TRANSLATORS: Menu item label to go to the next section
-msgid "Next Section\t]"
-msgstr "次のセクション\t]"
-
-#. TRANSLATORS: Status bar help text for the "Next Section" menu item
-msgid "Go to next section"
-msgstr "次のセクションへ移動"
-
-#. TRANSLATORS: Menu item label to open the "go to page" dialog
-msgid "Go to &Page\tCtrl+P"
-msgstr "指定ページへ移動(&P)\tCtrl+P"
-
-#. TRANSLATORS: Menu item label to go to the previous page
-msgid "Previous Pa&ge\tShift+P"
-msgstr "前のページ(&g)\tShift+P"
-
-#. TRANSLATORS: Menu item label to go to the next page
-msgid "Next Pag&e\tP"
-msgstr "次のページ(&e)\tP"
-
-#. TRANSLATORS: Menu item label to go to the previous link
-msgid "Previous Lin&k\tShift+K"
-msgstr "前のリンク(&k)\tShift+K"
-
-#. TRANSLATORS: Menu item label to go to the next link
-msgid "Next Lin&k\tK"
-msgstr "次のリンク(&k)\tK"
-
-#. TRANSLATORS: Menu item label to go to the previous image
-msgid "Previous Ima&ge\tShift+G"
-msgstr "前の画像(&G)\tShift+G"
-
-#. TRANSLATORS: Menu item label to go to the next image
-msgid "Next Ima&ge\tG"
-msgstr "次の画像(&G)\tG"
-
-#. TRANSLATORS: Menu item label to go to the previous figure
-msgid "Previous Figu&re\tShift+F"
-msgstr "前の図(&R)\tShift+F"
-
-#. TRANSLATORS: Menu item label to go to the next figure
-msgid "Next Figu&re\tF"
-msgstr "次の図(&R)\tF"
-
-#. TRANSLATORS: Menu item label to go to the previous table
-msgid "Previous &Table\tShift+T"
-msgstr "前のテーブル(&T)\tShift+T"
-
-#. TRANSLATORS: Menu item label to go to the next table
-msgid "Next &Table\tT"
-msgstr "次のテーブル(&T)\tT"
-
-#. TRANSLATORS: Menu item label to go to the previous separator element
-msgid "Previous Se&parator\tShift+S"
-msgstr "前の区切り線(&p)\tShift+S"
-
-#. TRANSLATORS: Menu item label to go to the next separator element
-msgid "Next Se&parator\tS"
-msgstr "次の区切り線(&p)\tS"
-
-#. TRANSLATORS: Menu item label to go to the previous list
-msgid "Previous L&ist\tShift+L"
-msgstr "前のリスト(&i)\tShift+L"
-
-#. TRANSLATORS: Menu item label to go to the next list
-msgid "Next L&ist\tL"
-msgstr "次のリスト(&i)\tL"
-
-#. TRANSLATORS: Menu item label to go to the previous list item
-msgid "Previous List &Item\tShift+I"
-msgstr "前のリスト項目(&I)\tShift+I"
-
-#. TRANSLATORS: Menu item label to go to the next list item
-msgid "Next List I&tem\tI"
-msgstr "次のリスト項目(&t)\tI"
-
-#. TRANSLATORS: Menu item label to go to the start of the enclosing list/table
-#, fuzzy
-msgid "Container &Start\tShift+,"
-msgstr "コンテナ＆スタート    Shift+,"
-
-#. TRANSLATORS: Status bar help text for the "Container Start" menu item
-#, fuzzy
-msgid "Go to the start of the current list or table"
-msgstr "現在のリストまたは表の先頭へ移動する"
-
-#. TRANSLATORS: Menu item label to go past the end of the enclosing list/table
-#, fuzzy
-msgid "Past Container &End\t,"
-msgstr "過去のコンテナ＆終了    ,"
-
-#. TRANSLATORS: Status bar help text for the "Past Container End" menu item
-#, fuzzy
-msgid "Go past the end of the current list or table"
-msgstr "現在のリストまたは表の最後を過ぎて先へ進む"
-
-#. TRANSLATORS: Menu item label to go to the next level-1 heading
-msgid "Next Heading Level 1\t1"
-msgstr "次の見出しレベル1\t1"
-
-#. TRANSLATORS: Menu item label to go to the previous level-2 heading
-msgid "Previous Heading Level &2\tShift+2"
-msgstr "前の見出しレベル&2\tShift+2"
-
-#. TRANSLATORS: Menu item label to go to the next level-2 heading
-msgid "Next Heading Level 2\t2"
-msgstr "次の見出しレベル2\t2"
-
-#. TRANSLATORS: Menu item label to go to the previous level-3 heading
-msgid "Previous Heading Level &3\tShift+3"
-msgstr "前の見出しレベル&3\tShift+3"
-
-#. TRANSLATORS: Menu item label to go to the next level-3 heading
-msgid "Next Heading Level 3\t3"
-msgstr "次の見出しレベル3\t3"
-
-#. TRANSLATORS: Menu item label to go to the previous level-4 heading
-msgid "Previous Heading Level &4\tShift+4"
-msgstr "前の見出しレベル&4\tShift+4"
-
-#. TRANSLATORS: Menu item label to go to the next level-4 heading
-msgid "Next Heading Level 4\t4"
-msgstr "次の見出しレベル4\t4"
-
-#. TRANSLATORS: Menu item label to go to the previous level-5 heading
-msgid "Previous Heading Level &5\tShift+5"
-msgstr "前の見出しレベル&5\tShift+5"
-
-#. TRANSLATORS: Menu item label to go to the next level-5 heading
-msgid "Next Heading Level 5\t5"
-msgstr "次の見出しレベル5\t5"
-
-#. TRANSLATORS: Menu item label to go to the previous level-6 heading
-msgid "Previous Heading Level &6\tShift+6"
-msgstr "前の見出しレベル&6\tShift+6"
-
-#. TRANSLATORS: Menu item label to go to the next level-6 heading
-msgid "Next Heading Level 6\t6"
-msgstr "次の見出しレベル6\t6"
-
-#. TRANSLATORS: Menu item label to go to the previous heading of any level
-msgid "&Previous Heading\tShift+H"
-msgstr "前の見出し(&P)\tShift+H"
-
-#. TRANSLATORS: Status bar help text for the "Previous Heading" menu item
-msgid "Go to previous heading"
-msgstr "前の見出しへ移動します"
-
-#. TRANSLATORS: Menu item label to go to the next heading of any level
-msgid "&Next Heading\tH"
-msgstr "次の見出し(&N)\tH"
-
-#. TRANSLATORS: Status bar help text for the "Next Heading" menu item
-msgid "Go to next heading"
-msgstr "次の見出しへ移動します"
-
-#. TRANSLATORS: Menu item label to go to the previous level-1 heading
-msgid "Previous Heading Level &1\tShift+1"
-msgstr "前の見出しレベル&1\tShift+1"
-
-#. TRANSLATORS: Menu item label to go to the previous bookmark
-msgid "&Previous Bookmark\tShift+B"
-msgstr "前のしおり(&P)\tShift+B"
-
-#. TRANSLATORS: Status bar help text for the "Previous Bookmark" menu item
-msgid "Go to previous bookmark"
-msgstr "前のしおりへ移動します"
-
-#. TRANSLATORS: Menu item label to go to the next bookmark
-msgid "&Next Bookmark\tB"
-msgstr "次のしおり(&N)\tB"
-
-#. TRANSLATORS: Status bar help text for the "Next Bookmark" menu item
-msgid "Go to next bookmark"
-msgstr "次のしおりへ移動します"
-
-#. TRANSLATORS: Menu item label to go to the previous note
-msgid "Previous &Note\tShift+N"
-msgstr "前のメモ(&N)\tShift+N"
-
-#. TRANSLATORS: Status bar help text for the "Previous Note" menu item
-msgid "Go to previous note"
-msgstr "前のメモへ移動します"
-
-#. TRANSLATORS: Menu item label to go to the next note
-msgid "Next N&ote\tN"
-msgstr "次のメモ(&o)\tN"
-
-#. TRANSLATORS: Status bar help text for the "Next Note" menu item
-msgid "Go to next note"
-msgstr "次のメモへ移動します"
-
-#. TRANSLATORS: Menu item label to open the bookmark/note picker showing all entries
-msgid "Jump to &All...\tCtrl+B"
-msgstr "しおりまたはメモへ移動(&A)...\tCtrl+B"
-
-#. TRANSLATORS: Status bar help text for the "Jump to All" menu item
-msgid "Show all bookmarks and notes"
-msgstr "すべてのしおりとメモを表示します"
-
-#. TRANSLATORS: Menu item label to open the bookmark/note picker filtered to bookmarks only
-msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
-msgstr "しおりへ移動(&B)...\tCtrl+Alt+B"
-
-#. TRANSLATORS: Status bar help text for the "Jump to Bookmarks Only" menu item
-msgid "Show bookmarks only"
-msgstr "すべてのしおりを表示します"
-
-#. TRANSLATORS: Menu item label to open the bookmark/note picker filtered to notes only
-msgid "Jump to Notes &Only...\tCtrl+Alt+M"
-msgstr "メモへ移動(&O)...\tCtrl+Alt+M"
-
-#. TRANSLATORS: Status bar help text for the "Jump to Notes Only" menu item
-msgid "Show notes only"
-msgstr "すべてのメモを表示します"
-
-#. TRANSLATORS: Menu item label to view the note at the cursor position (macOS variant)
-msgid "&View Note Text\tRawCtrl+Shift+W"
-msgstr "メモの内容を表示(&V)\tRawCtrl+Shift+W"
-
-#. TRANSLATORS: Menu item label to view the note at the cursor position
-msgid "&View Note Text\tCtrl+Shift+W"
-msgstr "メモの内容を表示(&V)\tCtrl+Shift+W"
-
-#. TRANSLATORS: Status bar help text for the "View Note Text" menu item
-msgid "View the note at current position"
-msgstr "現在位置のメモを表示します"
-
-#. TRANSLATORS: Top-level "File" menu bar label
-msgid "&File"
-msgstr "ファイル(&F)"
-
-#. TRANSLATORS: Top-level "Go" menu bar label
-msgid "&Go"
-msgstr "移動(&G)"
-
-#. TRANSLATORS: Top-level "Tools" menu bar label
-msgid "&Tools"
-msgstr "ツール(&T)"
-
-#. TRANSLATORS: Top-level "Help" menu bar label
-msgid "&Help"
-msgstr "ヘルプ(&H)"
-
-#. TRANSLATORS: Top-level "Edit" menu bar label (macOS only)
-#, fuzzy
-msgid "&Edit"
-msgstr "&編集"
-
-#. TRANSLATORS: Menu item label to open a document
-msgid "&Open...\tCtrl+O"
-msgstr "開く(&O)...\tCtrl+O"
-
-#. TRANSLATORS: Status bar help text for the "Open" menu item
-msgid "Open a document"
-msgstr "文書を開きます"
-
-#. TRANSLATORS: Menu item label to close the current document
-msgid "&Close\tCtrl+W"
-msgstr "閉じる(&C)\tCtrl+W"
-
-msgid "&Close\tCtrl+F4"
-msgstr "閉じる(&C)\tCtrl+F4"
-
-#. TRANSLATORS: Status bar help text for the "Close" menu item
-msgid "Close the current document"
-msgstr "現在の文書を閉じます"
-
-#. TRANSLATORS: Menu item label to close all open documents
-msgid "Close &All\tCtrl+Shift+W"
-msgstr "すべて閉じる(&A)\tCtrl+Shift+W"
-
-msgid "Close &All\tCtrl+Shift+F4"
-msgstr "すべて閉じる(&A)\tCtrl+Shift+F4"
-
-#. TRANSLATORS: Status bar help text for the "Close All" menu item
-msgid "Close all documents"
-msgstr "すべての文書を閉じます"
-
-#. TRANSLATORS: Menu item label to reopen the most recently closed document
-msgid "Reopen &Last Closed\tCtrl+Shift+T"
-msgstr "最後に閉じた文書を開く(&L)\tCtrl+Shift+T"
-
-#. TRANSLATORS: Status bar help text for the "Reopen Last Closed" menu item
-msgid "Reopen the last closed document"
-msgstr "最後に閉じた文書を開きます"
-
-#. TRANSLATORS: Submenu label listing recently opened documents
-msgid "&Recent Documents"
-msgstr "最近開いた文書(&R)"
-
-#. TRANSLATORS: Status bar help text for the "Recent Documents" submenu
-msgid "Open a recent document"
-msgstr "最近開いた文書を開きます"
-
-#. TRANSLATORS: Menu item label to exit the application
-msgid "E&xit\tCtrl+Q"
-msgstr "終了(&X)\tCtrl+Q"
-
-#. TRANSLATORS: Status bar help text for the "Exit" menu item
-msgid "Exit the application"
-msgstr "アプリケーションを終了します"
-
-#. TRANSLATORS: Standard "Undo" edit menu item label
 #, fuzzy
 msgid "&Undo\tCtrl+Z"
 msgstr "&元に戻す    Ctrl+Z"
 
-#. TRANSLATORS: Standard "Redo" edit menu item label
 #, fuzzy
 msgid "&Redo\tCtrl+Shift+Z"
 msgstr "&やり直し    Ctrl+Shift+Z"
 
-#. TRANSLATORS: Standard "Cut" edit menu item label
 #, fuzzy
 msgid "Cu&t\tCtrl+X"
 msgstr "Cu&t    Ctrl+X"
 
-#. TRANSLATORS: Standard "Copy" edit menu item label
 #, fuzzy
 msgid "&Copy\tCtrl+C"
 msgstr "&コピー    Ctrl+C"
 
-#. TRANSLATORS: Standard "Paste" edit menu item label
 #, fuzzy
 msgid "&Paste\tCtrl+V"
 msgstr "&貼り付け    Ctrl+V"
 
-#. TRANSLATORS: Standard "Select All" edit menu item label
 #, fuzzy
 msgid "Select &All\tCtrl+A"
 msgstr "「すべて選択」    Ctrl+A"
 
-#. TRANSLATORS: Menu item label to open the find dialog
-msgid "&Find...\tCtrl+F"
-msgstr "検索(&F)...\tCtrl+F"
+#, fuzzy
+msgid "&Open..."
+msgstr "開く(&O)"
 
-#. TRANSLATORS: Status bar help text for the "Find" menu item
+msgid "Open a document"
+msgstr "文書を開きます"
+
+#, fuzzy
+msgid "&Close"
+msgstr "閉じる"
+
+msgid "Close the current document"
+msgstr "現在の文書を閉じます"
+
+#, fuzzy
+msgid "Close &All"
+msgstr "閉じる"
+
+msgid "Close all documents"
+msgstr "すべての文書を閉じます"
+
+#, fuzzy
+msgid "Reopen &Last Closed"
+msgstr "最後に閉じた文書を開く(&L)\tCtrl+Shift+T"
+
+msgid "Reopen the last closed document"
+msgstr "最後に閉じた文書を開きます"
+
+msgid "&Recent Documents"
+msgstr "最近開いた文書(&R)"
+
+msgid "Open a recent document"
+msgstr "最近開いた文書を開きます"
+
+#. TRANSLATORS: System tray menu item to quit the application
+msgid "E&xit"
+msgstr "終了(&x)"
+
+msgid "Exit the application"
+msgstr "アプリケーションを終了します"
+
+msgid "(No recent documents)"
+msgstr "(最近開いた文書なし)"
+
+#, fuzzy
+msgid "Show All..."
+msgstr "すべて表示"
+
+#, fuzzy
+msgid "Previous Section"
+msgstr "前のセクション\t["
+
+msgid "Go to previous section"
+msgstr "前のセクションへ移動"
+
+#, fuzzy
+msgid "Next Section"
+msgstr "次のセクション\t]"
+
+msgid "Go to next section"
+msgstr "次のセクションへ移動"
+
+#, fuzzy
+msgid "Go to &Page"
+msgstr "指定ページへ移動(&P)"
+
+#, fuzzy
+msgid "Previous Pa&ge"
+msgstr "前のページ(&g)\tShift+P"
+
+#, fuzzy
+msgid "Next Pag&e"
+msgstr "次のページ(&e)\tP"
+
+#, fuzzy
+msgid "Previous Lin&k"
+msgstr "前のリンク(&k)\tShift+K"
+
+#, fuzzy
+msgid "Next Lin&k"
+msgstr "次のリンク(&k)\tK"
+
+#, fuzzy
+msgid "Previous Ima&ge"
+msgstr "前の画像(&G)\tShift+G"
+
+#, fuzzy
+msgid "Next Ima&ge"
+msgstr "次の画像(&G)\tG"
+
+#, fuzzy
+msgid "Previous Figu&re"
+msgstr "前の図(&R)\tShift+F"
+
+#, fuzzy
+msgid "Next Figu&re"
+msgstr "次の図(&R)\tF"
+
+#, fuzzy
+msgid "Previous &Table"
+msgstr "前のテーブル(&T)\tShift+T"
+
+#, fuzzy
+msgid "Next &Table"
+msgstr "次のテーブル(&T)\tT"
+
+#, fuzzy
+msgid "Previous Se&parator"
+msgstr "前の区切り線(&p)\tShift+S"
+
+#, fuzzy
+msgid "Next Se&parator"
+msgstr "次の区切り線(&p)\tS"
+
+#, fuzzy
+msgid "Previous L&ist"
+msgstr "前のリスト(&i)\tShift+L"
+
+#, fuzzy
+msgid "Next L&ist"
+msgstr "次のリスト(&i)\tL"
+
+#, fuzzy
+msgid "Previous List &Item"
+msgstr "前のリスト項目(&I)\tShift+I"
+
+#, fuzzy
+msgid "Next List I&tem"
+msgstr "次のリスト項目(&t)\tI"
+
+#, fuzzy
+msgid "Container &Start"
+msgstr "コンテナ＆スタート    Shift+,"
+
+#, fuzzy
+msgid "Go to the start of the current list or table"
+msgstr "現在のリストまたは表の先頭へ移動する"
+
+#, fuzzy
+msgid "Past Container &End"
+msgstr "過去のコンテナ＆終了    ,"
+
+#, fuzzy
+msgid "Go past the end of the current list or table"
+msgstr "現在のリストまたは表の最後を過ぎて先へ進む"
+
+#, fuzzy
+msgid "&Previous Heading"
+msgstr "前の見出し(&P)\tShift+H"
+
+msgid "Go to previous heading"
+msgstr "前の見出しへ移動します"
+
+#, fuzzy
+msgid "&Next Heading"
+msgstr "次の見出し(&N)\tH"
+
+msgid "Go to next heading"
+msgstr "次の見出しへ移動します"
+
+#, fuzzy
+msgid "Previous Heading Level &1"
+msgstr "前の見出しレベル&1\tShift+1"
+
+#, fuzzy
+msgid "Next Heading Level 1"
+msgstr "次の見出しレベル1\t1"
+
+#, fuzzy
+msgid "Previous Heading Level &2"
+msgstr "前の見出しレベル&2\tShift+2"
+
+#, fuzzy
+msgid "Next Heading Level 2"
+msgstr "次の見出しレベル2\t2"
+
+#, fuzzy
+msgid "Previous Heading Level &3"
+msgstr "前の見出しレベル&3\tShift+3"
+
+#, fuzzy
+msgid "Next Heading Level 3"
+msgstr "次の見出しレベル3\t3"
+
+#, fuzzy
+msgid "Previous Heading Level &4"
+msgstr "前の見出しレベル&4\tShift+4"
+
+#, fuzzy
+msgid "Next Heading Level 4"
+msgstr "次の見出しレベル4\t4"
+
+#, fuzzy
+msgid "Previous Heading Level &5"
+msgstr "前の見出しレベル&5\tShift+5"
+
+#, fuzzy
+msgid "Next Heading Level 5"
+msgstr "次の見出しレベル5\t5"
+
+#, fuzzy
+msgid "Previous Heading Level &6"
+msgstr "前の見出しレベル&6\tShift+6"
+
+#, fuzzy
+msgid "Next Heading Level 6"
+msgstr "次の見出しレベル6\t6"
+
+#, fuzzy
+msgid "&Previous Bookmark"
+msgstr "前のしおり(&P)\tShift+B"
+
+msgid "Go to previous bookmark"
+msgstr "前のしおりへ移動します"
+
+#, fuzzy
+msgid "&Next Bookmark"
+msgstr "次のしおり(&N)\tB"
+
+msgid "Go to next bookmark"
+msgstr "次のしおりへ移動します"
+
+#, fuzzy
+msgid "Previous &Note"
+msgstr "前のメモ(&N)\tShift+N"
+
+msgid "Go to previous note"
+msgstr "前のメモへ移動します"
+
+#, fuzzy
+msgid "Next N&ote"
+msgstr "次のメモ(&o)\tN"
+
+msgid "Go to next note"
+msgstr "次のメモへ移動します"
+
+#, fuzzy
+msgid "Jump to &All..."
+msgstr "しおりまたはメモへ移動(&A)...\tCtrl+B"
+
+msgid "Show all bookmarks and notes"
+msgstr "すべてのしおりとメモを表示します"
+
+#, fuzzy
+msgid "Jump to &Bookmarks Only..."
+msgstr "しおりへ移動(&B)...\tCtrl+Alt+B"
+
+msgid "Show bookmarks only"
+msgstr "すべてのしおりを表示します"
+
+#, fuzzy
+msgid "Jump to Notes &Only..."
+msgstr "メモへ移動(&O)...\tCtrl+Alt+M"
+
+msgid "Show notes only"
+msgstr "すべてのメモを表示します"
+
+#, fuzzy
+msgid "&View Note Text"
+msgstr "メモの表示"
+
+msgid "View the note at current position"
+msgstr "現在位置のメモを表示します"
+
+#, fuzzy
+msgid "&Find..."
+msgstr "検索(&F)"
+
 msgid "Find text in the document"
 msgstr "文書内のテキストを検索します"
 
-#. TRANSLATORS: Menu item label to find the next match
-#, fuzzy
-msgid "Find &Next\tCtrl+G"
-msgstr "検索＆次へ    Ctrl+G"
-
-msgid "Find &Next\tF3"
-msgstr "次を検索(&N)\tF3"
-
-#. TRANSLATORS: Status bar help text for the "Find Next" menu item
 msgid "Find next occurrence"
 msgstr "次のテキストを検索します"
 
-#. TRANSLATORS: Menu item label to find the previous match
-#, fuzzy
-msgid "Find &Previous\tCtrl+Shift+G"
-msgstr "検索＆前へ    Ctrl+Shift+G"
-
-msgid "Find &Previous\tShift+F3"
-msgstr "前を検索(&P)\tShift+F3"
-
-#. TRANSLATORS: Status bar help text for the "Find Previous" menu item
 msgid "Find previous occurrence"
 msgstr "前のテキストを検索します"
 
-#. TRANSLATORS: Menu item label to open the "go to line" dialog
 #, fuzzy
-msgid "Go to &line...\tCtrl+L"
-msgstr "&line... に移動    Ctrl+L"
+msgid "Go to &line..."
+msgstr "指定行へ移動(&L)"
 
-msgid "Go to &line...\tCtrl+G"
-msgstr "指定行へ移動(&l)...\tCtrl+G"
-
-#. TRANSLATORS: Status bar help text for the "Go to line" menu item
 msgid "Go to a specific line"
 msgstr "指定した行へ移動します"
 
-#. TRANSLATORS: Menu item label to open the "go to percent" dialog (macOS variant)
 #, fuzzy
-msgid "Go to &percent...\tCtrl+Shift+L"
-msgstr "&percent... に移動    Ctrl+Shift+L"
+msgid "Go to &percent..."
+msgstr "パーセント移動(&P)"
 
-#. TRANSLATORS: Menu item label to open the "go to percent" dialog
-msgid "Go to &percent...\tCtrl+Shift+G"
-msgstr "パーセント移動(&p)...\tCtrl+Shift+G"
-
-#. TRANSLATORS: Status bar help text for the "Go to percent" menu item
 msgid "Go to a percentage of the document"
 msgstr "文書内のパーセンテージを指定して移動します"
 
-#. TRANSLATORS: Menu item label to go back in navigation history
 #, fuzzy
-msgid "Go &Back\tCtrl+["
+msgid "Go &Back"
 msgstr "進む・戻る    Ctrl+["
 
-msgid "Go &Back\tAlt+Left"
-msgstr "戻る(&B)\tAlt+Left"
-
-#. TRANSLATORS: Status bar help text for the "Go Back" menu item
 msgid "Go back in history"
 msgstr "履歴を戻ります"
 
-#. TRANSLATORS: Menu item label to go forward in navigation history
 #, fuzzy
-msgid "Go &Forward\tCtrl+]"
+msgid "Go &Forward"
 msgstr "Go &Forward    Ctrl+]"
 
-msgid "Go &Forward\tAlt+Right"
-msgstr "進む(&F)\tAlt+Right"
-
-#. TRANSLATORS: Status bar help text for the "Go Forward" menu item
 msgid "Go forward in history"
 msgstr "履歴を進みます"
 
-#. TRANSLATORS: Submenu label containing section navigation commands
 msgid "&Sections"
 msgstr "セクション(&S)"
 
-#. TRANSLATORS: Status bar help text for the "Sections" submenu
 msgid "Navigate by sections"
 msgstr "セクション単位で移動します"
 
-#. TRANSLATORS: Submenu label containing heading navigation commands
 msgid "&Headings"
 msgstr "見出し(&H)"
 
-#. TRANSLATORS: Status bar help text for the "Headings" submenu
 msgid "Navigate by headings"
 msgstr "見出し単位で移動します"
 
-#. TRANSLATORS: Submenu label containing page navigation commands
 msgid "&Pages"
 msgstr "ページ(&P)"
 
-#. TRANSLATORS: Status bar help text for the "Pages" submenu
 msgid "Navigate by pages"
 msgstr "ページ単位で移動します"
 
-#. TRANSLATORS: Submenu label containing bookmark/note navigation commands
 msgid "&Bookmarks"
 msgstr "しおり(&B)"
 
-#. TRANSLATORS: Status bar help text for the "Bookmarks" submenu
 msgid "Navigate by bookmarks"
 msgstr "しおり単位で移動します"
 
-#. TRANSLATORS: Submenu label containing link navigation commands
 msgid "&Links"
 msgstr "リンク(&L)"
 
-#. TRANSLATORS: Status bar help text for the "Links" submenu
 msgid "Navigate by links"
 msgstr "リンク単位で移動します"
 
-#. TRANSLATORS: Submenu label containing image navigation commands
 msgid "&Images"
 msgstr "画像(&I)"
 
-#. TRANSLATORS: Status bar help text for the "Images" submenu
 msgid "Navigate by images"
 msgstr "画像単位で移動します"
 
-#. TRANSLATORS: Submenu label containing figure navigation commands
 msgid "&Figures"
 msgstr "図(&F)"
 
-#. TRANSLATORS: Status bar help text for the "Figures" submenu
 msgid "Navigate by figures"
 msgstr "図単位で移動します"
 
-#. TRANSLATORS: Submenu label containing table navigation commands
 msgid "&Tables"
 msgstr "テーブル(&T)"
 
-#. TRANSLATORS: Status bar help text for the "Tables" submenu
 msgid "Navigate by tables"
 msgstr "テーブル単位で移動します"
 
-#. TRANSLATORS: Submenu label containing separator-element navigation commands
 msgid "&Separators"
 msgstr "区切り線(&S)"
 
-#. TRANSLATORS: Status bar help text for the "Separators" submenu
 msgid "Navigate by separators"
 msgstr "区切り線単位で移動します"
 
-#. TRANSLATORS: Submenu label containing list navigation commands
 msgid "&Lists"
 msgstr "リスト(&L)"
 
-#. TRANSLATORS: Status bar help text for the "Lists" submenu
 msgid "Navigate by lists"
 msgstr "リスト単位で移動します"
 
-#. TRANSLATORS: Submenu label containing container (list/table) navigation commands
 #, fuzzy
 msgid "&Containers"
 msgstr "&コンテナ"
 
-#. TRANSLATORS: Status bar help text for the "Containers" submenu
 #, fuzzy
 msgid "Navigate by containers"
 msgstr "コンテナ別に閲覧する"
 
-#. TRANSLATORS: Menu item label to import bookmark/position data for the document
-msgid "&Import Document Data...\tCtrl+Shift+I"
-msgstr "文書データのインポート(&I)...\tCtrl+Shift+I"
+#, fuzzy
+msgid "&About Paperback"
+msgstr "Paperbackについて(&A)\tCtrl+F1"
 
-#. TRANSLATORS: Status bar help text for the "Import Document Data" menu item
+msgid "About this application"
+msgstr "このアプリケーションについて"
+
+#, fuzzy
+msgid "View Help in &Browser"
+msgstr "ブラウザーでヘルプを表示(&B)\tF1"
+
+msgid "View help in default browser"
+msgstr "既定のブラウザーでヘルプを表示します"
+
+#, fuzzy
+msgid "View Help in &Paperback"
+msgstr "Paperbackでヘルプを表示します"
+
+msgid "View help in Paperback"
+msgstr "Paperbackでヘルプを表示します"
+
+#, fuzzy
+msgid "Check for &Updates"
+msgstr "更新を確認します"
+
+msgid "Check for updates"
+msgstr "更新を確認します"
+
+#, fuzzy
+msgid "&Donate"
+msgstr "寄付(&D)\tCtrl+D"
+
+msgid "Support Paperback development"
+msgstr "Paperbackの開発を支援します"
+
+#, fuzzy
+msgid "&Import Document Data..."
+msgstr "ドキュメントデータのインポート"
+
 msgid "Import bookmarks and position"
 msgstr "しおりと位置情報をインポートします"
 
-#. TRANSLATORS: Menu item label to export bookmark/position data for the document
-msgid "&Export Document Data...\tCtrl+Shift+E"
-msgstr "文書データのエクスポート(&E)...\tCtrl+Shift+E"
+#, fuzzy
+msgid "&Export Document Data..."
+msgstr "ドキュメントデータのエクスポート"
 
-#. TRANSLATORS: Status bar help text for the "Export Document Data" menu item
 msgid "Export bookmarks and position"
 msgstr "しおりと位置情報をエクスポートします"
 
-#. TRANSLATORS: Menu item label to export the document as plain text
-msgid "Export to &Plain Text...\tCtrl+E"
+#, fuzzy
+msgid "Export to &Plain Text..."
 msgstr "プレーンテキストにエクスポート(&P)...\tCtrl+E"
 
-#. TRANSLATORS: Status bar help text for the "Export to Plain Text" menu item
 msgid "Export document as plain text"
 msgstr "文書をプレーンテキストにエクスポートします"
 
-#. TRANSLATORS: Menu item label to export the document as HTML
 msgid "Export to &HTML..."
 msgstr "&HTMLにエクスポート..."
 
-#. TRANSLATORS: Status bar help text for the "Export to HTML" menu item
 msgid "Export document as HTML"
 msgstr "文書をHTMLにエクスポートします"
 
-#. TRANSLATORS: Menu item label to export the document as Markdown
 msgid "Export to &Markdown..."
 msgstr "&Markdownにエクスポート..."
 
-#. TRANSLATORS: Status bar help text for the "Export to Markdown" menu item
 msgid "Export document as Markdown"
 msgstr "文書をMarkdownにエクスポートします"
 
-#. TRANSLATORS: Menu item label to show the word count dialog
-msgid "&Word Count\tRawCtrl+W"
-msgstr "単語数の確認(&W)\tRawCtrl+W"
+#, fuzzy
+msgid "&Word Count"
+msgstr "単語数"
 
-msgid "&Word Count\tCtrl+W"
-msgstr "単語数の確認(&W)\tCtrl+W"
-
-#. TRANSLATORS: Status bar help text for the "Word Count" menu item
 msgid "Show word count"
 msgstr "単語数を表示します"
 
-#. TRANSLATORS: Menu item label to show the document info dialog
-msgid "Document &Info\tCtrl+I"
-msgstr "文書情報(&I)\tCtrl+I"
+#, fuzzy
+msgid "Document &Info"
+msgstr "文書情報"
 
-#. TRANSLATORS: Status bar help text for the "Document Info" menu item
 msgid "Show document information"
 msgstr "文書の情報を表示します"
 
-#. TRANSLATORS: Menu item label to show the table of contents dialog
-msgid "&Table of Contents\tCtrl+T"
-msgstr "目次(&T)\tCtrl+T"
+#, fuzzy
+msgid "&Table of Contents"
+msgstr "目次"
 
-#. TRANSLATORS: Status bar help text for the "Table of Contents" menu item
 msgid "Show table of contents"
 msgstr "目次を表示します"
 
-#. TRANSLATORS: Menu item label to show the elements list dialog
-msgid "&Elements List...\tF7"
+#, fuzzy
+msgid "&Elements List..."
 msgstr "要素リスト(&E)...\tF7"
 
-#. TRANSLATORS: Status bar help text for the "Elements List" menu item
 msgid "Show elements list"
 msgstr "要素リストを表示します"
 
-#. TRANSLATORS: Menu item label to reveal the document file in the system file manager
 #, fuzzy
-msgid "Reveal &File in Folder\tCtrl+Shift+C"
+msgid "Reveal &File in Folder"
 msgstr "フォルダ内のファイルを表示・保存    Ctrl+Shift+C"
 
-#. TRANSLATORS: Status bar help text for the "Reveal File in Folder" menu item
 #, fuzzy
 msgid "Reveal document in the file manager"
 msgstr "ファイルマネージャーでドキュメントを表示する"
 
-#. TRANSLATORS: Menu item label to open the document in the web view
-msgid "Open in &Web View\tCtrl+Shift+V"
+#, fuzzy
+msgid "Open in &Web View"
 msgstr "&Webビューで開く\tCtrl+Shift+V"
 
-#. TRANSLATORS: Status bar help text for the "Open in Web View" menu item
 msgid "Open document in web view"
 msgstr "文書をWebビューで開きます"
 
-#. TRANSLATORS: Menu item label to open the document's raw source in a new tab
 #, fuzzy
-msgid "View &Source\tCtrl+U"
+msgid "View &Source"
 msgstr "表示とソース    Ctrl+U"
 
-#. TRANSLATORS: Status bar help text for the "View Source" menu item
 #, fuzzy
 msgid "Open the document source in a new tab"
 msgstr "ドキュメントのソースを新しいタブで開く"
 
-#. TRANSLATORS: Submenu label containing import/export commands
 msgid "I&mport/Export"
 msgstr "インポート/エクスポート(&M)"
 
-#. TRANSLATORS: Status bar help text for the "Import/Export" submenu
 msgid "Import and export options"
 msgstr "インポート/エクスポートオプション"
 
-#. TRANSLATORS: Menu item label to toggle a bookmark at the current position
-msgid "Toggle &Bookmark\tCtrl+Shift+B"
+#, fuzzy
+msgid "Toggle &Bookmark"
 msgstr "しおりの切り替え(&B)\tCtrl+Shift+B"
 
-#. TRANSLATORS: Menu item label to add a bookmark with an attached note
-msgid "Bookmark with &Note\tCtrl+Shift+N"
-msgstr "メモ付きのしおりを設定(&N)\tCtrl+Shift+N"
-
-#. TRANSLATORS: Checkable menu item label to toggle word wrap
 #, fuzzy
-msgid "Word w&rap\tCtrl+Alt+W"
-msgstr "Wordの改行    Ctrl+Alt+W"
+msgid "Bookmark with &Note"
+msgstr "メモ付きのしおりを作成(&N)"
 
-#. TRANSLATORS: Status bar help text for the "Word wrap" menu item
+#, fuzzy
+msgid "Word w&rap"
+msgstr "折り返し(&W)"
+
 #, fuzzy
 msgid "Toggle word wrap"
 msgstr "行の折り返しを切り替える"
 
-#. TRANSLATORS: Menu item label to open the application options/preferences dialog
-msgid "&Options\tCtrl+,"
-msgstr "オプション(&O)\tCtrl+,"
+#, fuzzy
+msgid "&Full Screen"
+msgstr "&全画面表示    F11"
 
-#. TRANSLATORS: Menu item label to open the sleep timer dialog
-msgid "&Sleep Timer...\tCtrl+Shift+S"
-msgstr "スリープタイマー(&S)...\tCtrl+Shift+S"
+#, fuzzy
+msgid "Toggle full screen"
+msgstr "全画面表示を切り替える"
 
-#. TRANSLATORS: Menu item label to open the About dialog
-msgid "&About Paperback\tCtrl+F1"
-msgstr "Paperbackについて(&A)\tCtrl+F1"
+#, fuzzy
+msgid "&Options"
+msgstr "オプション"
 
-#. TRANSLATORS: Status bar help text for the "About" menu item
-msgid "About this application"
-msgstr "このアプリケーションについて"
+#, fuzzy
+msgid "&Sleep Timer..."
+msgstr "スリープタイマー"
 
-#. TRANSLATORS: Menu item label to open the help documentation in a web browser
-msgid "View Help in &Browser\tF1"
-msgstr "ブラウザーでヘルプを表示(&B)\tF1"
+msgid "&File"
+msgstr "ファイル(&F)"
 
-#. TRANSLATORS: Status bar help text for the "View Help in Browser" menu item
-msgid "View help in default browser"
-msgstr "既定のブラウザーでヘルプを表示します"
+msgid "&Go"
+msgstr "移動(&G)"
 
-#. TRANSLATORS: Menu item label to open the help documentation inside Paperback itself
-msgid "View Help in &Paperback\tShift+F1"
-msgstr "&Paperbackでヘルプを表示\tShift+F1"
+msgid "&Tools"
+msgstr "ツール(&T)"
 
-#. TRANSLATORS: Status bar help text for the "View Help in Paperback" menu item
-msgid "View help in Paperback"
-msgstr "Paperbackでヘルプを表示します"
+msgid "&Help"
+msgstr "ヘルプ(&H)"
 
-#. TRANSLATORS: Menu item label to check for application updates
-msgid "Check for &Updates\tCtrl+Shift+U"
-msgstr "更新の確認(&U)\tCtrl+Shift+U"
-
-#. TRANSLATORS: Status bar help text for the "Check for Updates" menu item
-msgid "Check for updates"
-msgstr "更新を確認します"
-
-#. TRANSLATORS: Menu item label to open the donation page
-msgid "&Donate\tCtrl+D"
-msgstr "寄付(&D)\tCtrl+D"
-
-#. TRANSLATORS: Status bar help text for the "Donate" menu item
-msgid "Support Paperback development"
-msgstr "Paperbackの開発を支援します"
-
-#. TRANSLATORS: Placeholder menu item shown in the Recent Documents submenu when there are none
-msgid "(No recent documents)"
-msgstr "(最近開いた文書なし)"
-
-#. TRANSLATORS: Menu item label to open the full recent-documents list dialog
-msgid "Show All...\tCtrl+R"
-msgstr "すべて表示...\tCtrl+R"
+#, fuzzy
+msgid "&Edit"
+msgstr "&編集"
 
 #. TRANSLATORS: Announced when the document has no sections to navigate
 msgid "No sections."
@@ -1637,17 +1599,14 @@ msgid "No previous section"
 msgstr "前のセクションがありません"
 
 #. TRANSLATORS: Announced when the document has no headings at the given level; %d is the heading level number
-#, c-format
 msgid "No headings at level %d."
 msgstr "レベル%dの見出しがありません。"
 
 #. TRANSLATORS: Announced when there is no next heading at the given level; %d is the heading level number
-#, c-format
 msgid "No next heading at level %d."
 msgstr "次の見出しレベル%dがありません。"
 
 #. TRANSLATORS: Announced when there is no previous heading at the given level; %d is the heading level number
-#, c-format
 msgid "No previous heading at level %d."
 msgstr "前の見出しレベル%dがありません。"
 
@@ -1763,17 +1722,15 @@ msgid "Wrapping to end. "
 msgstr "最後に戻ります。"
 
 #. TRANSLATORS: Announcement when landing on a heading; %s is the heading text, %d is the heading level number
-#, c-format
 msgid "%s Heading level %d"
 msgstr "%s 見出しレベル%d"
 
 #. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
-#, fuzzy, c-format
+#, fuzzy
 msgid "Page %d"
 msgstr "ページ%d: %s"
 
 #. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
-#, c-format
 msgid "Page %d: %s"
 msgstr "ページ%d: %s"
 
@@ -1815,7 +1772,6 @@ msgid "Start of container."
 msgstr "コンテナの開始。"
 
 #. TRANSLATORS: Announcement when landing on a bookmark; %s is the bookmark/line text, %d is the bookmark's 1-based index
-#, c-format
 msgid "%s - Bookmark %d"
 msgstr "%s - しおり%d"
 
@@ -1882,10 +1838,6 @@ msgstr "再表示(&R)"
 #. TRANSLATORS: Status bar help text for the tray menu's "Restore" item
 msgid "Restore Paperback"
 msgstr "Paperbackを再度表示します"
-
-#. TRANSLATORS: System tray menu item to quit the application
-msgid "E&xit"
-msgstr "終了(&x)"
 
 #. TRANSLATORS: Status bar help text for the tray menu's "Exit" item
 msgid "Exit Paperback"
@@ -2257,6 +2209,291 @@ msgstr "更新スクリプトを起動できません"
 
 msgid "Unknown update file format."
 msgstr "更新ファイルが不明な形式です。"
+
+#, fuzzy
+msgid "&Play/Pause Audio"
+msgstr "&音声の再生／一時停止"
+
+#, fuzzy
+msgid "Play or pause this document's audio narration"
+msgstr "このドキュメントの音声ナレーションを再生または一時停止する"
+
+msgid "Previous Section\t["
+msgstr "前のセクション\t["
+
+msgid "Next Section\t]"
+msgstr "次のセクション\t]"
+
+msgid "Go to &Page\tCtrl+P"
+msgstr "指定ページへ移動(&P)\tCtrl+P"
+
+msgid "Previous Pa&ge\tShift+P"
+msgstr "前のページ(&g)\tShift+P"
+
+msgid "Next Pag&e\tP"
+msgstr "次のページ(&e)\tP"
+
+msgid "Previous Lin&k\tShift+K"
+msgstr "前のリンク(&k)\tShift+K"
+
+msgid "Next Lin&k\tK"
+msgstr "次のリンク(&k)\tK"
+
+msgid "Previous Ima&ge\tShift+G"
+msgstr "前の画像(&G)\tShift+G"
+
+msgid "Next Ima&ge\tG"
+msgstr "次の画像(&G)\tG"
+
+msgid "Previous Figu&re\tShift+F"
+msgstr "前の図(&R)\tShift+F"
+
+msgid "Next Figu&re\tF"
+msgstr "次の図(&R)\tF"
+
+msgid "Previous &Table\tShift+T"
+msgstr "前のテーブル(&T)\tShift+T"
+
+msgid "Next &Table\tT"
+msgstr "次のテーブル(&T)\tT"
+
+msgid "Previous Se&parator\tShift+S"
+msgstr "前の区切り線(&p)\tShift+S"
+
+msgid "Next Se&parator\tS"
+msgstr "次の区切り線(&p)\tS"
+
+msgid "Previous L&ist\tShift+L"
+msgstr "前のリスト(&i)\tShift+L"
+
+msgid "Next L&ist\tL"
+msgstr "次のリスト(&i)\tL"
+
+msgid "Previous List &Item\tShift+I"
+msgstr "前のリスト項目(&I)\tShift+I"
+
+msgid "Next List I&tem\tI"
+msgstr "次のリスト項目(&t)\tI"
+
+#, fuzzy
+msgid "Container &Start\tShift+,"
+msgstr "コンテナ＆スタート    Shift+,"
+
+#, fuzzy
+msgid "Past Container &End\t,"
+msgstr "過去のコンテナ＆終了    ,"
+
+msgid "Next Heading Level 1\t1"
+msgstr "次の見出しレベル1\t1"
+
+msgid "Previous Heading Level &2\tShift+2"
+msgstr "前の見出しレベル&2\tShift+2"
+
+msgid "Next Heading Level 2\t2"
+msgstr "次の見出しレベル2\t2"
+
+msgid "Previous Heading Level &3\tShift+3"
+msgstr "前の見出しレベル&3\tShift+3"
+
+msgid "Next Heading Level 3\t3"
+msgstr "次の見出しレベル3\t3"
+
+msgid "Previous Heading Level &4\tShift+4"
+msgstr "前の見出しレベル&4\tShift+4"
+
+msgid "Next Heading Level 4\t4"
+msgstr "次の見出しレベル4\t4"
+
+msgid "Previous Heading Level &5\tShift+5"
+msgstr "前の見出しレベル&5\tShift+5"
+
+msgid "Next Heading Level 5\t5"
+msgstr "次の見出しレベル5\t5"
+
+msgid "Previous Heading Level &6\tShift+6"
+msgstr "前の見出しレベル&6\tShift+6"
+
+msgid "Next Heading Level 6\t6"
+msgstr "次の見出しレベル6\t6"
+
+msgid "&Previous Heading\tShift+H"
+msgstr "前の見出し(&P)\tShift+H"
+
+msgid "&Next Heading\tH"
+msgstr "次の見出し(&N)\tH"
+
+msgid "Previous Heading Level &1\tShift+1"
+msgstr "前の見出しレベル&1\tShift+1"
+
+msgid "&Previous Bookmark\tShift+B"
+msgstr "前のしおり(&P)\tShift+B"
+
+msgid "&Next Bookmark\tB"
+msgstr "次のしおり(&N)\tB"
+
+msgid "Previous &Note\tShift+N"
+msgstr "前のメモ(&N)\tShift+N"
+
+msgid "Next N&ote\tN"
+msgstr "次のメモ(&o)\tN"
+
+msgid "Jump to &All...\tCtrl+B"
+msgstr "しおりまたはメモへ移動(&A)...\tCtrl+B"
+
+msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
+msgstr "しおりへ移動(&B)...\tCtrl+Alt+B"
+
+msgid "Jump to Notes &Only...\tCtrl+Alt+M"
+msgstr "メモへ移動(&O)...\tCtrl+Alt+M"
+
+msgid "&View Note Text\tRawCtrl+Shift+W"
+msgstr "メモの内容を表示(&V)\tRawCtrl+Shift+W"
+
+msgid "&View Note Text\tCtrl+Shift+W"
+msgstr "メモの内容を表示(&V)\tCtrl+Shift+W"
+
+msgid "&Open...\tCtrl+O"
+msgstr "開く(&O)...\tCtrl+O"
+
+msgid "&Close\tCtrl+W"
+msgstr "閉じる(&C)\tCtrl+W"
+
+msgid "&Close\tCtrl+F4"
+msgstr "閉じる(&C)\tCtrl+F4"
+
+msgid "Close &All\tCtrl+Shift+W"
+msgstr "すべて閉じる(&A)\tCtrl+Shift+W"
+
+msgid "Close &All\tCtrl+Shift+F4"
+msgstr "すべて閉じる(&A)\tCtrl+Shift+F4"
+
+msgid "Reopen &Last Closed\tCtrl+Shift+T"
+msgstr "最後に閉じた文書を開く(&L)\tCtrl+Shift+T"
+
+msgid "E&xit\tCtrl+Q"
+msgstr "終了(&X)\tCtrl+Q"
+
+msgid "&Find...\tCtrl+F"
+msgstr "検索(&F)...\tCtrl+F"
+
+#, fuzzy
+msgid "Find &Next\tCtrl+G"
+msgstr "検索＆次へ    Ctrl+G"
+
+msgid "Find &Next\tF3"
+msgstr "次を検索(&N)\tF3"
+
+#, fuzzy
+msgid "Find &Previous\tCtrl+Shift+G"
+msgstr "検索＆前へ    Ctrl+Shift+G"
+
+msgid "Find &Previous\tShift+F3"
+msgstr "前を検索(&P)\tShift+F3"
+
+#, fuzzy
+msgid "Go to &line...\tCtrl+L"
+msgstr "&line... に移動    Ctrl+L"
+
+msgid "Go to &line...\tCtrl+G"
+msgstr "指定行へ移動(&l)...\tCtrl+G"
+
+#, fuzzy
+msgid "Go to &percent...\tCtrl+Shift+L"
+msgstr "&percent... に移動    Ctrl+Shift+L"
+
+msgid "Go to &percent...\tCtrl+Shift+G"
+msgstr "パーセント移動(&p)...\tCtrl+Shift+G"
+
+#, fuzzy
+msgid "Go &Back\tCtrl+["
+msgstr "進む・戻る    Ctrl+["
+
+msgid "Go &Back\tAlt+Left"
+msgstr "戻る(&B)\tAlt+Left"
+
+#, fuzzy
+msgid "Go &Forward\tCtrl+]"
+msgstr "Go &Forward    Ctrl+]"
+
+msgid "Go &Forward\tAlt+Right"
+msgstr "進む(&F)\tAlt+Right"
+
+msgid "&Import Document Data...\tCtrl+Shift+I"
+msgstr "文書データのインポート(&I)...\tCtrl+Shift+I"
+
+msgid "&Export Document Data...\tCtrl+Shift+E"
+msgstr "文書データのエクスポート(&E)...\tCtrl+Shift+E"
+
+msgid "Export to &Plain Text...\tCtrl+E"
+msgstr "プレーンテキストにエクスポート(&P)...\tCtrl+E"
+
+msgid "&Word Count\tRawCtrl+W"
+msgstr "単語数の確認(&W)\tRawCtrl+W"
+
+msgid "&Word Count\tCtrl+W"
+msgstr "単語数の確認(&W)\tCtrl+W"
+
+msgid "Document &Info\tCtrl+I"
+msgstr "文書情報(&I)\tCtrl+I"
+
+msgid "&Table of Contents\tCtrl+T"
+msgstr "目次(&T)\tCtrl+T"
+
+msgid "&Elements List...\tF7"
+msgstr "要素リスト(&E)...\tF7"
+
+#, fuzzy
+msgid "Reveal &File in Folder\tCtrl+Shift+C"
+msgstr "フォルダ内のファイルを表示・保存    Ctrl+Shift+C"
+
+msgid "Open in &Web View\tCtrl+Shift+V"
+msgstr "&Webビューで開く\tCtrl+Shift+V"
+
+#, fuzzy
+msgid "View &Source\tCtrl+U"
+msgstr "表示とソース    Ctrl+U"
+
+msgid "Toggle &Bookmark\tCtrl+Shift+B"
+msgstr "しおりの切り替え(&B)\tCtrl+Shift+B"
+
+msgid "Bookmark with &Note\tCtrl+Shift+N"
+msgstr "メモ付きのしおりを設定(&N)\tCtrl+Shift+N"
+
+#, fuzzy
+msgid "Word w&rap\tCtrl+Alt+W"
+msgstr "Wordの改行    Ctrl+Alt+W"
+
+#, fuzzy
+msgid "&Full Screen\tRawCtrl+Ctrl+F"
+msgstr "&全画面表示    RawCtrl+Ctrl+F"
+
+#, fuzzy
+msgid "&Full Screen\tF11"
+msgstr "&全画面表示    F11"
+
+msgid "&Options\tCtrl+,"
+msgstr "オプション(&O)\tCtrl+,"
+
+msgid "&Sleep Timer...\tCtrl+Shift+S"
+msgstr "スリープタイマー(&S)...\tCtrl+Shift+S"
+
+msgid "&About Paperback\tCtrl+F1"
+msgstr "Paperbackについて(&A)\tCtrl+F1"
+
+msgid "View Help in &Browser\tF1"
+msgstr "ブラウザーでヘルプを表示(&B)\tF1"
+
+msgid "View Help in &Paperback\tShift+F1"
+msgstr "&Paperbackでヘルプを表示\tShift+F1"
+
+msgid "Check for &Updates\tCtrl+Shift+U"
+msgstr "更新の確認(&U)\tCtrl+Shift+U"
+
+msgid "&Donate\tCtrl+D"
+msgstr "寄付(&D)\tCtrl+D"
+
+msgid "Show All...\tCtrl+R"
+msgstr "すべて表示...\tCtrl+R"
 
 #, fuzzy
 msgid "Go To…"

@@ -244,7 +244,7 @@ fn build_bookmark_repopulate(params: BookmarkRepopulateParams) -> Rc<dyn Fn(i64)
 			let line_start =
 				content.chars().take(pos).collect::<Vec<_>>().iter().rposition(|&c| c == '\n').map_or(0, |idx| idx + 1);
 			let chars_after_start: String = content.chars().skip(line_start).collect();
-			let line_end = chars_after_start.find('\n').map_or(chars_after_start.len(), |idx| idx);
+			let line_end = chars_after_start.find('\n').unwrap_or(chars_after_start.len());
 			chars_after_start.chars().take(line_end).collect()
 		};
 		let previous_selected = selected_start.get();

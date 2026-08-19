@@ -29,22 +29,34 @@ impl Parser for DaisyParser {
 		let mut title = extract_title_from_path(&context.file_path);
 		let mut author = String::new();
 		let mut buffer;
-		let is_zip = path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("zip"))
-			|| File::open(path)
-				.and_then(|f| {
-					let mut header = [0; 4];
-					let mut reader = BufReader::new(f);
-					reader.read_exact(&mut header)?;
-					Ok(header == [0x50, 0x4b, 0x03, 0x04])
-				})
-				.unwrap_or(false);
+		let ext_is_zip = path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("zip"));
+		let is_zip = ext_is_zip || {
+			let magic_result = File::open(path).and_then(|f| {
+				let mut header = [0; 4];
+				let mut reader = BufReader::new(f);
+				reader.read_exact(&mut header)?;
+				Ok(header == [0x50, 0x4b, 0x03, 0x04])
+			});
+			if let Err(ref e) = magic_result {
+				tracing::warn!(path = %path.display(), error = %e, "failed to read file header while checking for zip magic bytes");
+			}
+			magic_result.unwrap_or(false)
+		};
+		if ext_is_zip {
+			tracing::debug!(path = %path.display(), "detected zip via file extension");
+		} else if is_zip {
+			tracing::debug!(path = %path.display(), "detected zip via magic bytes");
+		}
+		tracing::debug!(path = %path.display(), is_zip, "starting daisy parse");
 		if is_zip {
+			tracing::debug!("taking zip archive parse path");
 			let file = File::open(path).context("Failed to open zip file")?;
 			let mut archive = ZipArchive::new(BufReader::new(file)).context("Failed to read zip archive")?;
 			let opf_path = archive
 				.file_names()
 				.find(|n| Path::new(n).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("opf")))
 				.map(String::from);
+			let opf_found = opf_path.is_some();
 			if let Some(opf_name) = opf_path {
 				let (manifest_xml, metadata) = {
 					let opf_content =
@@ -96,16 +108,28 @@ impl Parser for DaisyParser {
 						.file_names()
 						.find(|n| Path::new(n).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("ncx")))
 						.map(String::from);
-					if let Some(ncx_name) = ncx_path
-						&& let Ok(ncx_content) =
-							read_zip_entry_by_name_with_password(&mut archive, &ncx_name, context.password.as_deref())
-						&& !ncx_content.is_empty()
-						&& let Some(ncx_toc) = parse_daisy_ncx(&ncx_content, converter.get_id_positions())
-						&& !ncx_toc.is_empty()
-					{
-						toc_items = Some(ncx_toc);
+					if let Some(ncx_name) = ncx_path {
+						match read_zip_entry_by_name_with_password(&mut archive, &ncx_name, context.password.as_deref())
+						{
+							Ok(ncx_content) if !ncx_content.is_empty() => {
+								if let Some(ncx_toc) = parse_daisy_ncx(&ncx_content, converter.get_id_positions())
+									&& !ncx_toc.is_empty()
+								{
+									toc_items = Some(ncx_toc);
+								}
+							}
+							Ok(_) => {
+								tracing::debug!(ncx_name = %ncx_name, "ncx file is empty, using heading-derived toc");
+							}
+							Err(e) => {
+								tracing::warn!(ncx_name = %ncx_name, error = %e, "ncx file present but failed to read, using heading-derived toc");
+							}
+						}
+					} else {
+						tracing::debug!("no ncx file found in zip archive, using heading-derived toc");
 					}
 					let toc_items = toc_items.unwrap_or_else(|| build_toc_from_headings(converter.get_headings()));
+					tracing::debug!(path = %path.display(), "parsed daisy book as daisy 3 (opf and dtbook xml) from zip archive");
 					return Ok(Document {
 						title,
 						author,
@@ -115,9 +139,11 @@ impl Parser for DaisyParser {
 						..Document::default()
 					});
 				}
+				tracing::warn!(opf_name = %opf_name, "opf found but no dtbook manifest item, trying daisy 2.02");
 			}
 			let ncc_path =
 				archive.file_names().find(|n| n.ends_with("ncc.html") || n.ends_with("NCC.html")).map(String::from);
+			let ncc_found = ncc_path.is_some();
 			if let Some(ncc_name) = ncc_path {
 				let ncc_content =
 					read_zip_entry_by_name_with_password(&mut archive, &ncc_name, context.password.as_deref())
@@ -137,11 +163,14 @@ impl Parser for DaisyParser {
 					} else {
 						base_dir.join(&link).to_string_lossy().to_string().replace('\\', "/")
 					};
-					if let Ok(c) =
-						read_zip_entry_by_name_with_password(&mut archive, &link_path, context.password.as_deref())
-					{
-						combined_html.push_str(&c);
-						combined_html.push_str("\n\n");
+					match read_zip_entry_by_name_with_password(&mut archive, &link_path, context.password.as_deref()) {
+						Ok(c) => {
+							combined_html.push_str(&c);
+							combined_html.push_str("\n\n");
+						}
+						Err(e) => {
+							tracing::warn!(link = %link_path, error = %e, "failed to read linked content page, skipping");
+						}
 					}
 				}
 				let mut converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
@@ -149,6 +178,7 @@ impl Parser for DaisyParser {
 					buffer = DocumentBuffer::with_content(converter.get_text());
 					add_converter_markers(&mut buffer, &converter, 0);
 					let toc_items = build_toc_from_headings(converter.get_headings());
+					tracing::debug!(path = %path.display(), "parsed daisy book as daisy 2.02 (ncc.html) from zip archive");
 					return Ok(Document {
 						title,
 						author,
@@ -158,10 +188,14 @@ impl Parser for DaisyParser {
 						..Document::default()
 					});
 				}
+				// currently unreachable since HtmlToText::convert always returns true today
+				tracing::warn!("html to text conversion reported failure for daisy 2.02 book");
 			}
+			tracing::warn!(opf_found, ncc_found, "exhausted daisy 3 and daisy 2.02 detection attempts in zip archive");
 			// TRANSLATORS: Error shown when a ZIP file is not a recognizable DAISY 3 or DAISY 2.02 book
 			anyhow::bail!(t("ZIP archive does not appear to be a valid DAISY 3 or DAISY 2.02 book"));
 		}
+		tracing::debug!(path = %path.display(), "taking loose files parse path");
 		let file_content = convert_to_utf8(&fs::read(path)?);
 		let (manifest_xml, metadata) = parse_opf_metadata_and_manifest(&file_content)?;
 		if let Some(t) = metadata.0 {
@@ -170,6 +204,7 @@ impl Parser for DaisyParser {
 		if let Some(a) = metadata.1 {
 			author = a;
 		}
+		let dtbook_found = manifest_xml.is_some();
 		if let Some(dtbook_path) = manifest_xml {
 			let base_dir = path.parent().unwrap_or_else(|| Path::new(""));
 			let xml_full_path = base_dir.join(&dtbook_path);
@@ -185,21 +220,38 @@ impl Parser for DaisyParser {
 					buffer.add_marker(Marker::new(MarkerType::PageBreak, pb.offset).with_text(pb.text.clone()));
 				}
 				let mut toc_items = None;
+				let mut ncx_found = false;
 				if let Ok(entries) = fs::read_dir(base_dir) {
 					for entry in entries.flatten() {
 						let path = entry.path();
-						if path.is_file()
-							&& path.extension().is_some_and(|e| e.eq_ignore_ascii_case("ncx"))
-							&& let Some(ncx_content) = fs::read(&path).ok().map(|b| convert_to_utf8(&b))
-							&& let Some(ncx_toc) = parse_daisy_ncx(&ncx_content, converter.get_id_positions())
-							&& !ncx_toc.is_empty()
-						{
-							toc_items = Some(ncx_toc);
-							break;
+						if path.is_file() && path.extension().is_some_and(|e| e.eq_ignore_ascii_case("ncx")) {
+							ncx_found = true;
+							match fs::read(&path) {
+								Ok(bytes) => {
+									let ncx_content = convert_to_utf8(&bytes);
+									if let Some(ncx_toc) = parse_daisy_ncx(&ncx_content, converter.get_id_positions())
+										&& !ncx_toc.is_empty()
+									{
+										toc_items = Some(ncx_toc);
+										break;
+									}
+								}
+								Err(e) => {
+									tracing::warn!(path = %path.display(), error = %e, "ncx file present but failed to read, using heading-derived toc");
+								}
+							}
 						}
 					}
 				}
+				if toc_items.is_none() {
+					if ncx_found {
+						tracing::debug!("ncx file found but did not yield toc items, using heading-derived toc");
+					} else {
+						tracing::debug!("no ncx file found in directory, using heading-derived toc");
+					}
+				}
 				let toc_items = toc_items.unwrap_or_else(|| build_toc_from_headings(converter.get_headings()));
+				tracing::debug!(path = %path.display(), "parsed daisy book as daisy 3 (opf and dtbook xml) from loose files");
 				return Ok(Document {
 					title,
 					author,
@@ -210,6 +262,7 @@ impl Parser for DaisyParser {
 				});
 			}
 		}
+		tracing::warn!(dtbook_found, "could not parse daisy opf file or locate dtbook xml in manifest");
 		// TRANSLATORS: Error shown when a DAISY .opf file is invalid or its DTBook XML can't be located
 		anyhow::bail!(t("Invalid DAISY .opf file or could not find DTBook XML in manifest"));
 	}

@@ -69,12 +69,15 @@ pub struct MarkdownParser;
 
 impl Parser for MarkdownParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		tracing::debug!(path = %context.file_path, "parsing markdown file");
 		let bytes = fs::read(&context.file_path)
 			.with_context(|| format!("Failed to open Markdown file '{}'", context.file_path))?;
 		let markdown_content = convert_to_utf8(&bytes);
 		let html_content = markdown_to_html(&markdown_content);
 		let mut converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
 		if !converter.convert(&html_content, HtmlSourceMode::Markdown) {
+			// currently unreachable, HtmlToText::convert never returns false today
+			tracing::warn!(path = %context.file_path, "failed to convert markdown to text");
 			// TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
 			anyhow::bail!(t("Failed to convert Markdown to text: {}").replace("{}", &context.file_path));
 		}
@@ -88,6 +91,7 @@ impl Parser for MarkdownParser {
 		doc.set_buffer(buffer);
 		doc.toc_items = toc_items;
 		doc.id_positions = id_positions;
+		tracing::debug!(path = %context.file_path, chars = doc.buffer.content.chars().count(), "parsed markdown file");
 		Ok(doc)
 	}
 }

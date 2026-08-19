@@ -196,6 +196,8 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Added a CLI tool, called pb, to quickly convert any of Paperback's supported formats to HTML, Markdown, or plain text.
 * Added a Configurable keyboard shortcut to Restore Paperback from the system tray.
 * Added a locate button to the all documents dialog to locate missing books that just changed their path.
+* Added a status filter and status bar to the all documents dialog, so you can filter by document status and see how many documents are shown and selected.
+* Added the `Ctrl+Shift+A` shortcut to deselect all documents in the all documents dialog.
 * Added a readability tab to the options dialog, with the following options:
     * Word wrap (moved from general);
     * Render tables inline (new in this release, see below);

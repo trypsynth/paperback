@@ -183,6 +183,10 @@ class MainActivity : ComponentActivity() {
 		headsethookClickCount = 0
 	}
 
+	// ComponentActivity.dispatchKeyEvent is marked @RestrictTo(LIBRARY_GROUP_PREFIX) by AndroidX,
+	// which makes lint flag every super call here even though overriding it and delegating is the
+	// documented way to intercept key events on an Activity.
+	@Suppress("RestrictedApi")
 	override fun dispatchKeyEvent(event: KeyEvent): Boolean {
 		if (event.action != KeyEvent.ACTION_DOWN) return super.dispatchKeyEvent(event)
 		// Don't intercept when a text field has focus (e.g. Find or Go-To dialogs).

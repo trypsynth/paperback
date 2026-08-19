@@ -75,8 +75,8 @@ fun TtsBottomBar(
 	currentSegmentType: SegmentTypeFfi,
 	supportedSegmentTypes: List<SegmentTypeFfi>,
 	onSegmentTypeChange: (SegmentTypeFfi) -> Unit,
-	swipeUpMovesForward: Boolean = true,
-	modifier: Modifier = Modifier
+	modifier: Modifier = Modifier,
+	swipeUpMovesForward: Boolean = true
 ) {
 	var dropdownExpanded by remember { mutableStateOf(false) }
 	val types = supportedSegmentTypes

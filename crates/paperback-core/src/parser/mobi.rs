@@ -23,10 +23,12 @@ pub struct MobiParser;
 
 impl Parser for MobiParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		tracing::debug!(path = %context.file_path, "parsing mobi file");
 		let mut file = File::open(&context.file_path)?;
 		let mut data = Vec::new();
 		file.read_to_end(&mut data)?;
 		if data.len() < 78 {
+			tracing::warn!(len = data.len(), "mobi file too short to contain a valid header");
 			// TRANSLATORS: Error shown when a MOBI file is too small to contain a valid header
 			anyhow::bail!(t("File too short"));
 		}
@@ -36,6 +38,7 @@ impl Parser for MobiParser {
 		for i in 0..num_records {
 			let start = 78 + i * 8;
 			if start + 4 > data.len() {
+				tracing::warn!(record_index = i, "mobi record offset table is truncated");
 				// TRANSLATORS: Error shown when a MOBI file's record offset table is truncated/corrupt
 				anyhow::bail!(t("Invalid record offsets"));
 			}
@@ -43,27 +46,33 @@ impl Parser for MobiParser {
 			record_offsets.push(offset);
 		}
 		if record_offsets.is_empty() {
+			tracing::warn!("mobi file has no records");
 			// TRANSLATORS: Error shown when a MOBI file has no records
 			anyhow::bail!(t("No records found"));
 		}
 		let rec0_offset = record_offsets[0];
 		let rec1_offset = if record_offsets.len() > 1 { record_offsets[1] } else { data.len() };
 		if rec1_offset <= rec0_offset || rec1_offset > data.len() {
+			tracing::warn!(rec0_offset, rec1_offset, "mobi record 0 has an invalid offset range");
 			// TRANSLATORS: Error shown when a MOBI file's first record has an invalid offset range
 			anyhow::bail!(t("Invalid Record 0 offsets"));
 		}
 		let rec0 = &data[rec0_offset..rec1_offset];
 		if rec0.len() < 16 {
+			tracing::warn!(len = rec0.len(), "mobi record 0 is too small to be valid");
 			// TRANSLATORS: Error shown when a MOBI file's first record is too small to be valid
 			anyhow::bail!(t("Invalid Record 0"));
 		}
 		let compression = u16::from_be_bytes([rec0[0], rec0[1]]);
+		tracing::debug!(compression, "detected mobi compression mode");
 		let mobi_header_offset = 16;
 		if mobi_header_offset + 8 > rec0.len() {
+			tracing::warn!("mobi record 0 is missing the mobi header");
 			// TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
 			anyhow::bail!(t("No MOBI header"));
 		}
 		if &rec0[mobi_header_offset..mobi_header_offset + 4] != b"MOBI" {
+			tracing::warn!("mobi header signature does not match the expected identifier");
 			// TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
 			anyhow::bail!(t("Invalid MOBI identifier"));
 		}
@@ -104,12 +113,20 @@ impl Parser for MobiParser {
 			}
 		}
 		if last_content_record >= num_records || first_content_record > last_content_record {
+			tracing::warn!(
+				first_content_record,
+				last_content_record,
+				num_records,
+				"mobi content record range is invalid"
+			);
 			// TRANSLATORS: Error shown when a MOBI file's content record range is invalid
 			anyhow::bail!(t("Invalid content record range"));
 		}
 		let mut document_title = if name_offset > 0 && name_length > 0 && name_offset + name_length <= rec0.len() {
+			tracing::debug!("using exth name offset for document title");
 			String::from_utf8_lossy(&rec0[name_offset..name_offset + name_length]).into_owned()
 		} else {
+			tracing::debug!("using raw header title field for document title");
 			String::from_utf8_lossy(title_bytes).into_owned()
 		};
 		document_title = document_title.replace('\0', "").trim().replace('_', " ");
@@ -175,10 +192,12 @@ impl Parser for MobiParser {
 					}
 					huff_decoder = Some(HuffmanDecoder::init(&huffs)?);
 				} else {
+					tracing::warn!("mobi huff/cdic records are invalid");
 					// TRANSLATORS: Error shown when a MOBI file's Huffman/CDIC compression records are invalid
 					anyhow::bail!(t("Invalid HUFF/CDIC records"));
 				}
 			} else {
+				tracing::warn!("mobi header is missing huff compression parameters");
 				// TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
 				anyhow::bail!(t("Missing HUFF parameters in header"));
 			}
@@ -188,9 +207,11 @@ impl Parser for MobiParser {
 		if mobi_header.len() >= 24 {
 			let mobi_version = u32::from_be_bytes([mobi_header[20], mobi_header[21], mobi_header[22], mobi_header[23]]);
 			if mobi_version == 8 && mobi_header.len() >= 244 {
+				tracing::debug!("using kf8 extra data flags offset");
 				extra_data_flags =
 					u32::from_be_bytes([mobi_header[224], mobi_header[225], mobi_header[226], mobi_header[227]]);
 			} else {
+				tracing::debug!("using legacy extra data flags offset");
 				extra_data_flags = u32::from(u16::from_be_bytes([mobi_header[242], mobi_header[243]]));
 			}
 			if extra_data_flags == 0xFFFFFFFF {
@@ -210,12 +231,20 @@ impl Parser for MobiParser {
 						let html_flow_end =
 							u32::from_be_bytes([fdst_rec[16], fdst_rec[17], fdst_rec[18], fdst_rec[19]]) as usize;
 						fdst_html_end = Some(html_flow_end);
+					} else {
+						tracing::debug!("fdst record does not start with fdst signature, skipping html end truncation");
 					}
+				} else {
+					tracing::debug!("fdst record offset is out of range, skipping html end truncation");
 				}
+			} else if fdst_idx != 0xFFFFFFFF {
+				tracing::debug!(fdst_idx, num_records, "fdst index is out of range, skipping html end truncation");
 			}
 		}
 
 		let mut content = Vec::new();
+		let mut trailing_entry_fallback_count = 0usize;
+		let mut huff_decoder_missing_count = 0usize;
 		for i in first_content_record..=last_content_record {
 			let start = record_offsets[i];
 			let end = if i + 1 < num_records { record_offsets[i + 1] } else { data.len() };
@@ -240,6 +269,7 @@ impl Parser for MobiParser {
 				}
 				if !valid {
 					stripped_len = record_data.len();
+					trailing_entry_fallback_count += 1;
 				}
 			}
 			if extra_data_flags & 1 != 0 && stripped_len > 0 {
@@ -256,11 +286,28 @@ impl Parser for MobiParser {
 					if let Some(ref mut decoder) = huff_decoder {
 						let decoded = decoder.decode(record_data)?;
 						content.extend_from_slice(&decoded);
+					} else {
+						huff_decoder_missing_count += 1;
 					}
 				}
-				// TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
-				other => anyhow::bail!(t("Unsupported compression mode ({})").replace("{}", &other.to_string())),
+				other => {
+					tracing::warn!(mode = other, "unsupported mobi compression mode");
+					// TRANSLATORS: Error shown when a MOBI file uses an unrecognized compression mode; {} is the numeric mode value
+					anyhow::bail!(t("Unsupported compression mode ({})").replace("{}", &other.to_string()))
+				}
 			}
+		}
+		if trailing_entry_fallback_count > 0 {
+			tracing::warn!(
+				count = trailing_entry_fallback_count,
+				"records fell back to untrimmed data due to invalid trailing entry sizes"
+			);
+		}
+		if huff_decoder_missing_count > 0 {
+			tracing::warn!(
+				count = huff_decoder_missing_count,
+				"huffman decoder unexpectedly missing, dropped record content"
+			);
 		}
 
 		if let Some(html_end) = fdst_html_end
@@ -271,11 +318,18 @@ impl Parser for MobiParser {
 
 		const MAX_MOBI_TEXT_BYTES: usize = 20 * 1024 * 1024;
 		if content.len() > MAX_MOBI_TEXT_BYTES {
+			tracing::warn!(
+				original_len = content.len(),
+				cap = MAX_MOBI_TEXT_BYTES,
+				"mobi content exceeded max text size, truncating"
+			);
 			content.truncate(MAX_MOBI_TEXT_BYTES);
 		}
 		let text = if text_encoding == 65001 {
+			tracing::debug!("decoding mobi content as utf-8");
 			String::from_utf8_lossy(&content).into_owned()
 		} else {
+			tracing::debug!(text_encoding, "decoding mobi content as windows-1252");
 			WINDOWS_1252.decode(&content).0.into_owned()
 		};
 
@@ -290,6 +344,7 @@ impl Parser for MobiParser {
 			};
 			mobi_version == 8
 		};
+		tracing::debug!(is_kf8, "detected mobi format version");
 		let mut ncx_toc = parse_ncx(&data, &record_offsets, mobi_header, &exth_map, is_kf8, &frag_offsets);
 
 		fn extract_targets(items: &[TocItem], targets: &mut BTreeSet<usize>) {
@@ -348,11 +403,27 @@ impl Parser for MobiParser {
 		document.set_buffer(buffer);
 		document.id_positions = html_converter.get_id_positions().clone();
 		let mut toc_items = build_toc_from_headings(html_converter.get_headings());
+		let toc_source = if !toc_items.is_empty() {
+			"headings"
+		} else if !ncx_toc.is_empty() {
+			"ncx"
+		} else {
+			"none"
+		};
 		if toc_items.is_empty() && !ncx_toc.is_empty() {
 			resolve_ncx_offsets(&mut ncx_toc, &document.id_positions);
 			toc_items = ncx_toc;
 		}
 		document.toc_items = toc_items;
+		tracing::debug!(
+			path = %context.file_path,
+			compression,
+			is_kf8,
+			text_encoding,
+			num_records,
+			toc_source,
+			"parsed mobi file"
+		);
 		Ok(document)
 	}
 }
@@ -379,8 +450,10 @@ fn resolve_ncx_offsets(items: &mut [TocItem], id_positions: &HashMap<String, usi
 fn rewrite_font_size_headings(html: &str) -> String {
 	static RE_H1_6: LazyLock<regex::Regex> = LazyLock::new(|| regex::Regex::new(r"(?i)<h[1-6]\b").unwrap());
 	if RE_H1_6.is_match(html) {
+		tracing::debug!("existing heading tags found, skipping font size heading heuristic");
 		return html.to_string();
 	}
+	tracing::debug!("no existing heading tags found, applying font size heading heuristic");
 	let mut result = html.to_string();
 	for (size, level) in [(7u8, 1u8), (6, 2), (5, 3), (4, 4)] {
 		let Ok(re) = regex::Regex::new(&format!(r#"(?is)<font\b[^>]*\bsize=["']?{size}["']?[^>]*>(.*?)</font>"#))

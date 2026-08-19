@@ -40,7 +40,7 @@ pub const RECENT_DOCUMENT_BASE: i32 = BASE + 100;
 pub const RECENT_DOCUMENT_MAX: i32 = BASE + 199;
 
 // Go menu: Find (BASE + 200..209)
-seq_ids!(BASE + 200 => FIND, FIND_NEXT, FIND_PREVIOUS);
+seq_ids!(BASE + 200 => FIND, FIND_NEXT, FIND_PREVIOUS, ANNOUNCE_PERCENT, SET_TEMPORARY_BOOKMARK, JUMP_TO_TEMPORARY_BOOKMARK);
 
 // Go menu: Go to (BASE + 210..219)
 seq_ids!(BASE + 210 => GO_TO_LINE, GO_TO_PERCENT, GO_TO_PAGE);
@@ -100,13 +100,102 @@ seq_ids!(BASE + 410 => IMPORT_DOCUMENT_DATA, EXPORT_DOCUMENT_DATA, EXPORT_TO_PLA
 seq_ids!(BASE + 420 => TOGGLE_BOOKMARK, BOOKMARK_WITH_NOTE);
 
 // Tools menu: Settings (BASE + 430..439)
-seq_ids!(BASE + 430 => OPTIONS, SLEEP_TIMER);
+seq_ids!(BASE + 430 => OPTIONS, SLEEP_TIMER, CUSTOMIZE_SHORTCUTS);
 
 // Tools menu: View toggles (BASE + 440..449)
-seq_ids!(BASE + 440 => TOGGLE_WORD_WRAP);
+seq_ids!(BASE + 440 => TOGGLE_WORD_WRAP, TOGGLE_FULL_SCREEN);
 
 // Help menu (BASE + 500..599)
 seq_ids!(BASE + 500 => VIEW_HELP_BROWSER, VIEW_HELP_PAPERBACK, CHECK_FOR_UPDATES, DONATE);
 
 // System tray (BASE + 900..999)
 seq_ids!(BASE + 900 => RESTORE);
+
+pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 {
+	use paperback_core::config::ActionId;
+	match action {
+		ActionId::Open => OPEN,
+		ActionId::Close => CLOSE,
+		ActionId::CloseAll => CLOSE_ALL,
+		ActionId::ReopenLastClosed => REOPEN_LAST_CLOSED,
+		ActionId::ShowAllRecentDocuments => SHOW_ALL_DOCUMENTS,
+		ActionId::Exit => EXIT,
+		ActionId::Find => FIND,
+		ActionId::FindNext => FIND_NEXT,
+		ActionId::FindPrevious => FIND_PREVIOUS,
+		ActionId::GoToLine => GO_TO_LINE,
+		ActionId::GoToPercent => GO_TO_PERCENT,
+		ActionId::GoToPage => GO_TO_PAGE,
+		ActionId::GoBack => GO_BACK,
+		ActionId::GoForward => GO_FORWARD,
+		ActionId::AnnouncePercent => ANNOUNCE_PERCENT,
+		ActionId::SetTemporaryBookmark => SET_TEMPORARY_BOOKMARK,
+		ActionId::JumpToTemporaryBookmark => JUMP_TO_TEMPORARY_BOOKMARK,
+		ActionId::PreviousSection => PREVIOUS_SECTION,
+		ActionId::NextSection => NEXT_SECTION,
+		ActionId::PreviousHeading => PREVIOUS_HEADING,
+		ActionId::NextHeading => NEXT_HEADING,
+		ActionId::PreviousHeading1 => PREVIOUS_HEADING_1,
+		ActionId::NextHeading1 => NEXT_HEADING_1,
+		ActionId::PreviousHeading2 => PREVIOUS_HEADING_2,
+		ActionId::NextHeading2 => NEXT_HEADING_2,
+		ActionId::PreviousHeading3 => PREVIOUS_HEADING_3,
+		ActionId::NextHeading3 => NEXT_HEADING_3,
+		ActionId::PreviousHeading4 => PREVIOUS_HEADING_4,
+		ActionId::NextHeading4 => NEXT_HEADING_4,
+		ActionId::PreviousHeading5 => PREVIOUS_HEADING_5,
+		ActionId::NextHeading5 => NEXT_HEADING_5,
+		ActionId::PreviousHeading6 => PREVIOUS_HEADING_6,
+		ActionId::NextHeading6 => NEXT_HEADING_6,
+		ActionId::PreviousPage => PREVIOUS_PAGE,
+		ActionId::NextPage => NEXT_PAGE,
+		ActionId::PreviousBookmark => PREVIOUS_BOOKMARK,
+		ActionId::NextBookmark => NEXT_BOOKMARK,
+		ActionId::PreviousNote => PREVIOUS_NOTE,
+		ActionId::NextNote => NEXT_NOTE,
+		ActionId::JumpToAllBookmarks => JUMP_TO_ALL_BOOKMARKS,
+		ActionId::JumpToBookmarksOnly => JUMP_TO_BOOKMARKS_ONLY,
+		ActionId::JumpToNotesOnly => JUMP_TO_NOTES_ONLY,
+		ActionId::ViewNoteText => VIEW_NOTE_TEXT,
+		ActionId::PreviousLink => PREVIOUS_LINK,
+		ActionId::NextLink => NEXT_LINK,
+		ActionId::PreviousImage => PREVIOUS_IMAGE,
+		ActionId::NextImage => NEXT_IMAGE,
+		ActionId::PreviousFigure => PREVIOUS_FIGURE,
+		ActionId::NextFigure => NEXT_FIGURE,
+		ActionId::PreviousTable => PREVIOUS_TABLE,
+		ActionId::NextTable => NEXT_TABLE,
+		ActionId::PreviousSeparator => PREVIOUS_SEPARATOR,
+		ActionId::NextSeparator => NEXT_SEPARATOR,
+		ActionId::PreviousList => PREVIOUS_LIST,
+		ActionId::NextList => NEXT_LIST,
+		ActionId::PreviousListItem => PREVIOUS_LIST_ITEM,
+		ActionId::NextListItem => NEXT_LIST_ITEM,
+		ActionId::ContainerStart => CONTAINER_START,
+		ActionId::ContainerEnd => CONTAINER_END,
+		ActionId::WordCount => WORD_COUNT,
+		ActionId::DocumentInfo => DOCUMENT_INFO,
+		ActionId::TableOfContents => TABLE_OF_CONTENTS,
+		ActionId::ElementsList => ELEMENTS_LIST,
+		ActionId::RevealFileInFolder => REVEAL_FILE_IN_FOLDER,
+		ActionId::OpenInWebView => OPEN_IN_WEB_VIEW,
+		ActionId::ViewSource => VIEW_SOURCE,
+		ActionId::ToggleBookmark => TOGGLE_BOOKMARK,
+		ActionId::BookmarkWithNote => BOOKMARK_WITH_NOTE,
+		ActionId::ToggleWordWrap => TOGGLE_WORD_WRAP,
+		ActionId::ToggleFullScreen => TOGGLE_FULL_SCREEN,
+		ActionId::Options => OPTIONS,
+		ActionId::SleepTimer => SLEEP_TIMER,
+		ActionId::CustomizeShortcuts => CUSTOMIZE_SHORTCUTS,
+		ActionId::ImportDocumentData => IMPORT_DOCUMENT_DATA,
+		ActionId::ExportDocumentData => EXPORT_DOCUMENT_DATA,
+		ActionId::ExportToPlainText => EXPORT_TO_PLAIN_TEXT,
+		ActionId::ExportToHtml => EXPORT_TO_HTML,
+		ActionId::ExportToMarkdown => EXPORT_TO_MARKDOWN,
+		ActionId::About => ABOUT,
+		ActionId::ViewHelpBrowser => VIEW_HELP_BROWSER,
+		ActionId::ViewHelpPaperback => VIEW_HELP_PAPERBACK,
+		ActionId::CheckForUpdates => CHECK_FOR_UPDATES,
+		ActionId::Donate => DONATE,
+	}
+}

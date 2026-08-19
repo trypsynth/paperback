@@ -1,7 +1,8 @@
+#[cfg(any(target_os = "linux", target_os = "windows"))]
+use std::process;
 use std::{
 	env,
 	path::Path,
-	process,
 	rc::Rc,
 	sync::{
 		Mutex,
@@ -15,12 +16,12 @@ use wxdragon::prelude::*;
 use super::MainWindow;
 #[cfg(not(target_os = "macos"))]
 use crate::config_ext::get_update_channel;
-#[cfg(any(target_os = "linux", target_os = "windows", test))]
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 use crate::ipc::IPC_COMMAND_TOGGLE_VISIBILITY;
+#[cfg(any(target_os = "linux", target_os = "windows"))]
+use crate::ipc::{IPC_COMMAND_ACTIVATE, IpcCommand, SINGLE_INSTANCE_NAME};
 use crate::{
-	config_ext::config_toml_path,
-	ipc::{IPC_COMMAND_ACTIVATE, IpcCommand, SINGLE_INSTANCE_NAME, normalize_cli_path},
-	legacy_config::migrate_if_needed,
+	config_ext::config_toml_path, ipc::normalize_cli_path, legacy_config::migrate_if_needed,
 	translation_manager::TranslationManager,
 };
 
@@ -28,6 +29,7 @@ pub struct PaperbackApp {
 	_config: Rc<Mutex<ConfigManager>>,
 	_main_window: Rc<MainWindow>,
 	_pipe_server: PipeServer,
+	#[cfg(any(target_os = "linux", target_os = "windows"))]
 	_single_instance_checker: Option<SingleInstanceChecker>,
 }
 
@@ -47,20 +49,29 @@ impl PaperbackApp {
 			}
 		}
 		let config = Rc::new(Mutex::new(config));
-		let single_instance_checker = SingleInstanceChecker::new(SINGLE_INSTANCE_NAME, None);
-		if let Some(checker) = single_instance_checker.as_ref()
-			&& checker.is_another_running()
-		{
-			let cmd = ipc_command_from_cli();
-			tracing::info!(command = ?cmd, "another instance is running, forwarding command and exiting");
-			send_ipc_command(&cmd);
-			process::exit(0);
-		}
+		#[cfg(any(target_os = "linux", target_os = "windows"))]
+		let single_instance_checker = {
+			let checker = SingleInstanceChecker::new(SINGLE_INSTANCE_NAME, None);
+			if let Some(checker) = checker.as_ref()
+				&& checker.is_another_running()
+			{
+				let cmd = ipc_command_from_cli();
+				tracing::info!(command = ?cmd, "another instance is running, forwarding command and exiting");
+				send_ipc_command(&cmd);
+				process::exit(0);
+			}
+			checker
+		};
 		let main_window = Rc::new(MainWindow::new(Rc::clone(&config)));
 		MAIN_WINDOW_PTR.store(Rc::as_ptr(&main_window) as usize, Ordering::SeqCst);
 		set_top_window(main_window.frame());
 		let pipe_server = start_pipe_server(&Rc::clone(&main_window));
 		main_window.show();
+		#[cfg(target_os = "macos")]
+		_app.on_should_terminate(|| {
+			tracing::debug!("allowing native macOS termination request");
+			true
+		});
 		#[cfg(target_os = "macos")]
 		_app.on_reopen_app(|| {
 			if let Some(window) = main_window_from_ptr() {
@@ -94,6 +105,7 @@ impl PaperbackApp {
 			_config: config,
 			_main_window: main_window,
 			_pipe_server: pipe_server,
+			#[cfg(any(target_os = "linux", target_os = "windows"))]
 			_single_instance_checker: single_instance_checker,
 		}
 	}
@@ -115,6 +127,7 @@ pub fn main_window_from_ptr() -> Option<&'static MainWindow> {
 	unsafe { (ptr as *const MainWindow).as_ref() }
 }
 
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 fn ipc_command_from_cli() -> IpcCommand {
 	if let Some(path) = env::args().nth(1) {
 		let normalized = normalize_cli_path(Path::new(&path));
@@ -328,6 +341,7 @@ fn start_pipe_server(main_window: &Rc<MainWindow>) -> PipeServer {
 	PipeServer {}
 }
 
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 fn send_ipc_command(command: &IpcCommand) {
 	tracing::debug!(?command, "sending IPC command to existing instance");
 	let payload = match command {
@@ -346,6 +360,4 @@ fn send_ipc_command(command: &IpcCommand) {
 	}
 	#[cfg(target_os = "linux")]
 	pipe_unix::send(&payload);
-	#[cfg(not(any(windows, target_os = "linux")))]
-	let _ = payload;
 }

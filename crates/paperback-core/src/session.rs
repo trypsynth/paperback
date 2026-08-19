@@ -1443,7 +1443,7 @@ fn is_content_line(trimmed: &str) -> bool {
 	}
 	let lower = trimmed.to_ascii_lowercase();
 	let body = lower.strip_prefix("page ").unwrap_or(&lower);
-	body.chars().any(|c| c.is_alphabetic())
+	body.chars().any(char::is_alphabetic)
 }
 
 #[cfg(test)]
@@ -1484,7 +1484,7 @@ mod tests {
 	}
 
 	fn session_with_content(content: &str) -> DocumentSession {
-		let mut buffer = DocumentBuffer::with_content(content.to_string());
+		let buffer = DocumentBuffer::with_content(content.to_string());
 		let mut doc = Document::new().with_title("Title".to_string()).with_author("Author".to_string());
 		doc.set_buffer(buffer);
 		DocumentSession {

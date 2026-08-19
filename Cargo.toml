@@ -18,8 +18,9 @@ rstest = "0.26.1"
 toml = "1.1.4"
 
 # Lint policy for every crate in the workspace; each member opts in with `[lints] workspace = true`.
-# `clippy::all` is denied so CI fails on it, while the pedantic and nursery groups stay warnings:
-# they hold a long tail of style suggestions we haven't worked through and don't want blocking a build.
+# `clippy::all` is denied so CI fails on it. The pedantic and nursery groups are warnings we're
+# driving to zero so CI can gate on them too; the allows further down are the lints from those
+# groups we've decided not to enforce, each with its reason.
 [workspace.lints.rust]
 # `objc`'s `msg_send!` macro (used by the desktop crate on macOS) expands to a
 # `cfg(feature = "cargo-clippy")` check. No crate here defines that feature, so the compiler
@@ -30,6 +31,19 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("cargo-cli
 all = { level = "deny", priority = -1 }
 pedantic = { level = "warn", priority = -1 }
 nursery = { level = "warn", priority = -1 }
+# Paperback ships as an application, not a published library, so there's no downstream caller to
+# write `# Panics`/`# Errors` sections for; they'd be write-only documentation.
+missing_panics_doc = "allow"
+missing_errors_doc = "allow"
+# Format parsers are long by nature. Splitting a header walk into arbitrary chunks to satisfy a
+# line count makes it harder to follow, not easier.
+too_many_lines = "allow"
+# Options and config structs legitimately carry a lot of independent flags.
+struct_excessive_bools = "allow"
+# Formatting preferences that fight how this code is already written, with no correctness angle.
+items_after_statements = "allow"
+too_long_first_doc_paragraph = "allow"
+similar_names = "allow"
 
 [profile.release]
 strip = true
@@ -37,3 +51,9 @@ opt-level = "z"
 lto = true
 panic = "abort"
 codegen-units = 1
+
+# Temporary: pull wxdragon straight from GitHub main until a release with our
+# full screen support (ShowFullScreen/IsFullScreen) lands on crates.io.
+[patch.crates-io]
+wxdragon = { git = "https://github.com/AllenDang/wxDragon", branch = "main" }
+wxdragon-sys = { git = "https://github.com/AllenDang/wxDragon", branch = "main" }

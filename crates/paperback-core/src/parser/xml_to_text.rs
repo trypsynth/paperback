@@ -82,13 +82,18 @@ impl XmlToText {
 	pub fn convert(&mut self, xml_content: &str) -> bool {
 		self.clear();
 		let options = ParsingOptions { allow_dtd: true, ..ParsingOptions::default() };
-		let Ok(doc) = Document::parse_with_options(xml_content, options) else {
-			return false;
+		let doc = match Document::parse_with_options(xml_content, options) {
+			Ok(doc) => doc,
+			Err(e) => {
+				tracing::warn!(error = %e, "failed to parse xml document");
+				return false;
+			}
 		};
 		for child in doc.root().children() {
 			self.process_node(child);
 		}
 		self.finalize_current_line();
+		tracing::debug!(bytes = xml_content.len(), lines = self.lines.len(), "converted xml document to text");
 		true
 	}
 

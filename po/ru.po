@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-14 13:10+0000\n"
+"POT-Creation-Date: 2026-08-18 16:53+0000\n"
 "PO-Revision-Date: 2025-12-04 08:13+0300\n"
 "Last-Translator: <gulmagomedovruslan77@gmail.com>\n"
 "Language-Team: Russian\n"
@@ -58,6 +58,28 @@ msgstr "Состояние"
 msgid "Path"
 msgstr "Путь"
 
+#. TRANSLATORS: Label for the status filter dropdown in the All Documents dialog
+#, fuzzy
+msgid "&Status:"
+msgstr "Состояние"
+
+#. TRANSLATORS: Option in the All Documents status filter to show documents of every status
+#. TRANSLATORS: Option in the filter dropdown to show all entries
+msgid "All"
+msgstr "Всё"
+
+#. TRANSLATORS: Status of a document that is currently open in a tab
+msgid "Open"
+msgstr "Открыто"
+
+#. TRANSLATORS: Status of a document that was previously opened but is currently closed
+msgid "Closed"
+msgstr "Закрыто"
+
+#. TRANSLATORS: Status of a document whose file could not be found on disk
+msgid "Missing"
+msgstr "Отсутствует"
+
 #. TRANSLATORS: Button label to open the selected document
 msgid "&Open"
 msgstr "Открыть"
@@ -95,17 +117,35 @@ msgstr "Подтверждение"
 msgid "Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks."
 msgstr "Вы уверены, что хотите удалить все документы из списка? Это так же удалит все позиции чтения и закладок."
 
-#. TRANSLATORS: Status of a document that is currently open in a tab
-msgid "Open"
-msgstr "Открыто"
+#. TRANSLATORS: Status bar text in the All Documents dialog when the list is empty
+#, fuzzy
+msgid "No documents."
+msgstr "Документов нет"
 
-#. TRANSLATORS: Status of a document that was previously opened but is currently closed
-msgid "Closed"
-msgstr "Закрыто"
+#. TRANSLATORS: Status bar text in the All Documents dialog when the list contains exactly one document and none are selected
+#, fuzzy
+msgid "1 document."
+msgstr "Документы"
 
-#. TRANSLATORS: Status of a document whose file could not be found on disk
-msgid "Missing"
-msgstr "Отсутствует"
+#. TRANSLATORS: Status bar text in the All Documents dialog showing the total number of documents in the list. The %d placeholder is replaced with the count.
+#, fuzzy
+msgid "%d documents."
+msgstr "Документы"
+
+#. TRANSLATORS: Status bar text in the All Documents dialog when the single document in the list is selected
+#, fuzzy
+msgid "1 of 1 document selected."
+msgstr "Документ перезагружен."
+
+#. TRANSLATORS: Status bar text in the All Documents dialog when every document in the list is selected. The %d placeholder is replaced with the total count.
+#, fuzzy
+msgid "All %d documents selected."
+msgstr "Все документы"
+
+#. TRANSLATORS: Status bar text in the All Documents dialog showing how many of the total documents are selected. The first %d is the selected count, the second %d is the total count.
+#, fuzzy
+msgid "%d of %d documents selected."
+msgstr "Конец документа"
 
 #. TRANSLATORS: Message/prompt shown in the file picker dialog to locate a missing book
 #, fuzzy
@@ -119,10 +159,6 @@ msgstr "Переход к закладком"
 #. TRANSLATORS: Label for the bookmark filter dropdown
 msgid "&Filter:"
 msgstr "Фильтр"
-
-#. TRANSLATORS: Option in the filter dropdown to show all entries
-msgid "All"
-msgstr "Всё"
 
 #. TRANSLATORS: Option in the filter dropdown to show bookmarks only
 msgid "Bookmarks"
@@ -141,7 +177,6 @@ msgstr "&Закладки:"
 msgid "&Edit Note"
 msgstr "Редактировать заметку"
 
-#. TRANSLATORS: Standard "Delete" edit menu item label
 msgid "&Delete"
 msgstr "Удалить"
 
@@ -247,7 +282,6 @@ msgid "Go to page"
 msgstr "Перейти к странице"
 
 #. TRANSLATORS: Label/prompt template for the page selection dialog. The %d placeholders represent current_page and max_pages respectively.
-#, c-format
 msgid "Go to page (%d/%d):"
 msgstr "Перейти к страници (%d/%d):"
 
@@ -345,6 +379,10 @@ msgstr "&Автоматическая перезагрузка измененн�
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 #, fuzzy
 msgid "Customize &Window Hotkey..."
+msgstr "Настройка горячей клавиши &Window..."
+
+#, fuzzy
+msgid "Customize &Keyboard Shortcuts..."
 msgstr "Настройка горячей клавиши &Window..."
 
 #. TRANSLATORS: Label for the reading speed input field (Words Per Minute)
@@ -545,6 +583,50 @@ msgstr "Отменить"
 msgid "Space"
 msgstr "Космос"
 
+#, fuzzy
+msgid "Customize Keyboard Shortcuts"
+msgstr "Настройка сочетаний клавиш"
+
+#, fuzzy
+msgid "&Shortcuts:"
+msgstr "&Сокращения:"
+
+#, fuzzy
+msgid "&Set Shortcut..."
+msgstr "&Установить ярлык..."
+
+#, fuzzy
+msgid "&Clear Shortcut"
+msgstr "&Очистить ярлык"
+
+#, fuzzy
+msgid "&Reset to Default"
+msgstr "Зброс к шрифту поумолчанию"
+
+#, fuzzy
+msgid "Reset &All to Defaults"
+msgstr "Зброс к шрифту поумолчанию"
+
+#, fuzzy
+msgid "Shortcut Conflict"
+msgstr "Конфликт ярлыков"
+
+#, fuzzy
+msgid "Reset all shortcuts to their default values?"
+msgstr "Сбросить все ярлыки до значений по умолчанию?"
+
+#, fuzzy
+msgid "Reset Shortcuts"
+msgstr "Сброс сочетаний клавиш"
+
+#, fuzzy
+msgid "Tip: click in the key field and press the key combination you want."
+msgstr "Совет: щелкните в поле «Клавиша» и нажмите нужную комбинацию клавиш."
+
+#, fuzzy
+msgid "&Clear"
+msgstr "Очистить"
+
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
 msgstr "Таймер сна"
@@ -651,7 +733,6 @@ msgstr "Нет следующей закладки."
 msgid "Temporary bookmark."
 msgstr "Нет закладок."
 
-#. TRANSLATORS: Title of the dialog showing a table rendered as HTML when activated with Enter/Space
 msgid "Table View"
 msgstr "Просмотр таблицы"
 
@@ -833,6 +914,15 @@ msgstr "Включить перенос слов."
 msgid "Word wrap off."
 msgstr "Перенос слов отключен."
 
+#. TRANSLATORS: Announced when toggling full screen mode; the message reflects the new state
+#, fuzzy
+msgid "Full screen on."
+msgstr "Включить полноэкранный режим."
+
+#, fuzzy
+msgid "Full screen off."
+msgstr "Полный экран выключен."
+
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgstr "Текстовые файлы (*.txt)|*.txt|Все файлы (*.*)|*.*"
@@ -925,7 +1015,6 @@ msgid "Sleep timer set for 1 minute."
 msgstr "Таймер сна установлен на 1 минуту."
 
 #. TRANSLATORS: Announcement when the sleep timer is set; %d is the number of minutes (always 2 or more)
-#, c-format
 msgid "Sleep timer set for %d minutes."
 msgstr "Таймер сна установлен на %d минут."
 
@@ -933,706 +1022,579 @@ msgstr "Таймер сна установлен на %d минут."
 msgid "No recent documents."
 msgstr "Нет последних документов."
 
-#. TRANSLATORS: Menu item label to go to the previous section
-msgid "Previous Section\t["
-msgstr "Предыдущей раздел\t["
-
-#. TRANSLATORS: Status bar help text for the "Previous Section" menu item
-msgid "Go to previous section"
-msgstr "Нет предыдущего раздела"
-
-#. TRANSLATORS: Menu item label to go to the next section
-msgid "Next Section\t]"
-msgstr "Следующей раздел\t]"
-
-#. TRANSLATORS: Status bar help text for the "Next Section" menu item
-msgid "Go to next section"
-msgstr "Нет следующего раздела"
-
-#. TRANSLATORS: Menu item label to open the "go to page" dialog
-msgid "Go to &Page\tCtrl+P"
-msgstr "Перейти к страницы...\tCtrl+P"
-
-#. TRANSLATORS: Menu item label to go to the previous page
-msgid "Previous Pa&ge\tShift+P"
-msgstr "Предыдущая страница\tShift+P"
-
-#. TRANSLATORS: Menu item label to go to the next page
-msgid "Next Pag&e\tP"
-msgstr "Следующая страница\tP"
-
-#. TRANSLATORS: Menu item label to go to the previous link
-msgid "Previous Lin&k\tShift+K"
-msgstr "Предыдущая ссылка\tShift+K"
-
-#. TRANSLATORS: Menu item label to go to the next link
-msgid "Next Lin&k\tK"
-msgstr "Следующая ссылка\tK"
-
-#. TRANSLATORS: Menu item label to go to the previous image
-msgid "Previous Ima&ge\tShift+G"
-msgstr "Предыдущее изображение\tShift+G"
-
-#. TRANSLATORS: Menu item label to go to the next image
-msgid "Next Ima&ge\tG"
-msgstr "Следующее изображение\tG"
-
-#. TRANSLATORS: Menu item label to go to the previous figure
-msgid "Previous Figu&re\tShift+F"
-msgstr "Предыдущая фигура\tShift+F"
-
-#. TRANSLATORS: Menu item label to go to the next figure
-msgid "Next Figu&re\tF"
-msgstr "Следующая фигура\tF"
-
-#. TRANSLATORS: Menu item label to go to the previous table
-msgid "Previous &Table\tShift+T"
-msgstr "Предыдущая таблица\tShift+T"
-
-#. TRANSLATORS: Menu item label to go to the next table
-msgid "Next &Table\tT"
-msgstr "Следующая таблица\tT"
-
-#. TRANSLATORS: Menu item label to go to the previous separator element
-msgid "Previous Se&parator\tShift+S"
-msgstr "Предыдущей разделитель\tShift+S"
-
-#. TRANSLATORS: Menu item label to go to the next separator element
-msgid "Next Se&parator\tS"
-msgstr "Следующей разделитель\tS"
-
-#. TRANSLATORS: Menu item label to go to the previous list
-msgid "Previous L&ist\tShift+L"
-msgstr "Предыдущей список\tShift+L"
-
-#. TRANSLATORS: Menu item label to go to the next list
-msgid "Next L&ist\tL"
-msgstr "Следующей список\tL"
-
-#. TRANSLATORS: Menu item label to go to the previous list item
-msgid "Previous List &Item\tShift+I"
-msgstr "Предыдущей элемент списка\tShift+I"
-
-#. TRANSLATORS: Menu item label to go to the next list item
-msgid "Next List I&tem\tI"
-msgstr "Следующей элемент списка\tI"
-
-#. TRANSLATORS: Menu item label to go to the start of the enclosing list/table
-#, fuzzy
-msgid "Container &Start\tShift+,"
-msgstr "Контейнер и запуск    Shift+,"
-
-#. TRANSLATORS: Status bar help text for the "Container Start" menu item
-#, fuzzy
-msgid "Go to the start of the current list or table"
-msgstr "Перейти к началу текущего списка или таблицы"
-
-#. TRANSLATORS: Menu item label to go past the end of the enclosing list/table
-#, fuzzy
-msgid "Past Container &End\t,"
-msgstr "Пропустить «Container &End»    ,"
-
-#. TRANSLATORS: Status bar help text for the "Past Container End" menu item
-#, fuzzy
-msgid "Go past the end of the current list or table"
-msgstr "Перейти за конец текущего списка или таблицы"
-
-#. TRANSLATORS: Menu item label to go to the next level-1 heading
-msgid "Next Heading Level 1\t1"
-msgstr "Следующей уровень заголовка 1\t1"
-
-#. TRANSLATORS: Menu item label to go to the previous level-2 heading
-msgid "Previous Heading Level &2\tShift+2"
-msgstr "Предыдущей уровень заголовка 2\tShift+2"
-
-#. TRANSLATORS: Menu item label to go to the next level-2 heading
-msgid "Next Heading Level 2\t2"
-msgstr "Следующей уровень заголовка 2\t2"
-
-#. TRANSLATORS: Menu item label to go to the previous level-3 heading
-msgid "Previous Heading Level &3\tShift+3"
-msgstr "Предыдущей уровень заголовка 3\tShift+%d"
-
-#. TRANSLATORS: Menu item label to go to the next level-3 heading
-msgid "Next Heading Level 3\t3"
-msgstr "Следующей уровень заголовка 3\t3"
-
-#. TRANSLATORS: Menu item label to go to the previous level-4 heading
-msgid "Previous Heading Level &4\tShift+4"
-msgstr "Предыдущей уровень заголовка 4\tShift+%d"
-
-#. TRANSLATORS: Menu item label to go to the next level-4 heading
-msgid "Next Heading Level 4\t4"
-msgstr "Следующей уровень заголовка 4\t4"
-
-#. TRANSLATORS: Menu item label to go to the previous level-5 heading
-msgid "Previous Heading Level &5\tShift+5"
-msgstr "Предыдущей уровень заголовка 5\tShift+%d"
-
-#. TRANSLATORS: Menu item label to go to the next level-5 heading
-msgid "Next Heading Level 5\t5"
-msgstr "Следующей уровень заголовка 5\t5"
-
-#. TRANSLATORS: Menu item label to go to the previous level-6 heading
-msgid "Previous Heading Level &6\tShift+6"
-msgstr "Предыдущей уровень заголовка 6\tShift+%d"
-
-#. TRANSLATORS: Menu item label to go to the next level-6 heading
-msgid "Next Heading Level 6\t6"
-msgstr "Следующей уровень заголовка 6\t6"
-
-#. TRANSLATORS: Menu item label to go to the previous heading of any level
-msgid "&Previous Heading\tShift+H"
-msgstr "Предыдущей заголовок\tShift+H"
-
-#. TRANSLATORS: Status bar help text for the "Previous Heading" menu item
-msgid "Go to previous heading"
-msgstr "Переход к  предыдущему заголовку"
-
-#. TRANSLATORS: Menu item label to go to the next heading of any level
-msgid "&Next Heading\tH"
-msgstr "Следующей заголовок\tH"
-
-#. TRANSLATORS: Status bar help text for the "Next Heading" menu item
-msgid "Go to next heading"
-msgstr "Переход к следующему заголовку\tH"
-
-#. TRANSLATORS: Menu item label to go to the previous level-1 heading
-msgid "Previous Heading Level &1\tShift+1"
-msgstr "Предыдущей уровень заголовка 1\tShift+1"
-
-#. TRANSLATORS: Menu item label to go to the previous bookmark
-msgid "&Previous Bookmark\tShift+B"
-msgstr "Предыдущая закладка\tShift+B"
-
-#. TRANSLATORS: Status bar help text for the "Previous Bookmark" menu item
-msgid "Go to previous bookmark"
-msgstr "Нет предыдущей закладки"
-
-#. TRANSLATORS: Menu item label to go to the next bookmark
-msgid "&Next Bookmark\tB"
-msgstr "Следующая закладка\tB"
-
-#. TRANSLATORS: Status bar help text for the "Next Bookmark" menu item
-msgid "Go to next bookmark"
-msgstr "Нет следующей закладки"
-
-#. TRANSLATORS: Menu item label to go to the previous note
-msgid "Previous &Note\tShift+N"
-msgstr "Предыдущая заметка\tShift+N"
-
-#. TRANSLATORS: Status bar help text for the "Previous Note" menu item
-msgid "Go to previous note"
-msgstr "Переход  предыдущей заметки"
-
-#. TRANSLATORS: Menu item label to go to the next note
-msgid "Next N&ote\tN"
-msgstr "Следующая заметка\tN"
-
-#. TRANSLATORS: Status bar help text for the "Next Note" menu item
-msgid "Go to next note"
-msgstr "Переход к  следующей заметки"
-
-#. TRANSLATORS: Menu item label to open the bookmark/note picker showing all entries
-msgid "Jump to &All...\tCtrl+B"
-msgstr "Перейти ко всем...\tCtrl+B"
-
-#. TRANSLATORS: Status bar help text for the "Jump to All" menu item
-msgid "Show all bookmarks and notes"
-msgstr "Показать все закладки и заметки"
-
-#. TRANSLATORS: Menu item label to open the bookmark/note picker filtered to bookmarks only
-msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
-msgstr "Перейти только  к закладком...\tCtrl+Alt+B"
-
-#. TRANSLATORS: Status bar help text for the "Jump to Bookmarks Only" menu item
-msgid "Show bookmarks only"
-msgstr "Показать только закладки"
-
-#. TRANSLATORS: Menu item label to open the bookmark/note picker filtered to notes only
-msgid "Jump to Notes &Only...\tCtrl+Alt+M"
-msgstr "Перейти только к заметком...\tCtrl+Alt+M"
-
-#. TRANSLATORS: Status bar help text for the "Jump to Notes Only" menu item
-msgid "Show notes only"
-msgstr "Показать только заметки"
-
-#. TRANSLATORS: Menu item label to view the note at the cursor position (macOS variant)
-msgid "&View Note Text\tRawCtrl+Shift+W"
-msgstr "Просмотреть текст заметки\tCtrl+Shift+W"
-
-#. TRANSLATORS: Menu item label to view the note at the cursor position
-msgid "&View Note Text\tCtrl+Shift+W"
-msgstr "Просмотреть текст заметки\tCtrl+Shift+W"
-
-#. TRANSLATORS: Status bar help text for the "View Note Text" menu item
-msgid "View the note at current position"
-msgstr "просмотр заметки  в текущей позиции"
-
-#. TRANSLATORS: Top-level "File" menu bar label
-msgid "&File"
-msgstr "Файл"
-
-#. TRANSLATORS: Top-level "Go" menu bar label
-msgid "&Go"
-msgstr "Переход"
-
-#. TRANSLATORS: Top-level "Tools" menu bar label
-msgid "&Tools"
-msgstr "Инструменты"
-
-#. TRANSLATORS: Top-level "Help" menu bar label
-msgid "&Help"
-msgstr "Справка"
-
-#. TRANSLATORS: Top-level "Edit" menu bar label (macOS only)
-#, fuzzy
-msgid "&Edit"
-msgstr "&Редактировать"
-
-#. TRANSLATORS: Menu item label to open a document
-msgid "&Open...\tCtrl+O"
-msgstr "Открыть...\tCtrl+O"
-
-#. TRANSLATORS: Status bar help text for the "Open" menu item
-msgid "Open a document"
-msgstr "Открыть документ"
-
-#. TRANSLATORS: Menu item label to close the current document
-msgid "&Close\tCtrl+W"
-msgstr "Закрыть\tCtrl+W"
-
-msgid "&Close\tCtrl+F4"
-msgstr "Закрыть\tCtrl+F4"
-
-#. TRANSLATORS: Status bar help text for the "Close" menu item
-msgid "Close the current document"
-msgstr "Закрыть текущий документ"
-
-#. TRANSLATORS: Menu item label to close all open documents
-msgid "Close &All\tCtrl+Shift+W"
-msgstr "Закрыть всё\tCtrl+Shift+W"
-
-msgid "Close &All\tCtrl+Shift+F4"
-msgstr "Закрыть всё\tCtrl+Shift+F4"
-
-#. TRANSLATORS: Status bar help text for the "Close All" menu item
-msgid "Close all documents"
-msgstr "Закрыть все документы"
-
-#. TRANSLATORS: Menu item label to reopen the most recently closed document
-msgid "Reopen &Last Closed\tCtrl+Shift+T"
-msgstr "Повторно открыть последние закрытое\tCtrl+Shift+T"
-
-#. TRANSLATORS: Status bar help text for the "Reopen Last Closed" menu item
-msgid "Reopen the last closed document"
-msgstr "Повторно открыть последний закрытый документ"
-
-#. TRANSLATORS: Submenu label listing recently opened documents
-msgid "&Recent Documents"
-msgstr "Последние документы"
-
-#. TRANSLATORS: Status bar help text for the "Recent Documents" submenu
-msgid "Open a recent document"
-msgstr "Открыть недавний документ"
-
-#. TRANSLATORS: Menu item label to exit the application
-msgid "E&xit\tCtrl+Q"
-msgstr "Выход\tCtrl+Q"
-
-#. TRANSLATORS: Status bar help text for the "Exit" menu item
-msgid "Exit the application"
-msgstr "Выход из приложения"
-
-#. TRANSLATORS: Standard "Undo" edit menu item label
 #, fuzzy
 msgid "&Undo\tCtrl+Z"
 msgstr "&Отменить    Ctrl+Z"
 
-#. TRANSLATORS: Standard "Redo" edit menu item label
 #, fuzzy
 msgid "&Redo\tCtrl+Shift+Z"
 msgstr "&Повторить    Ctrl+Shift+Z"
 
-#. TRANSLATORS: Standard "Cut" edit menu item label
 #, fuzzy
 msgid "Cu&t\tCtrl+X"
 msgstr "Cu&t    Ctrl+X"
 
-#. TRANSLATORS: Standard "Copy" edit menu item label
 #, fuzzy
 msgid "&Copy\tCtrl+C"
 msgstr "&Копировать    Ctrl+C"
 
-#. TRANSLATORS: Standard "Paste" edit menu item label
 #, fuzzy
 msgid "&Paste\tCtrl+V"
 msgstr "&Вставить    Ctrl+V"
 
-#. TRANSLATORS: Standard "Select All" edit menu item label
 #, fuzzy
 msgid "Select &All\tCtrl+A"
 msgstr "Выбрать «Все»    Ctrl+A"
 
-#. TRANSLATORS: Menu item label to open the find dialog
-msgid "&Find...\tCtrl+F"
-msgstr "Найти...\tCtrl+F"
+#, fuzzy
+msgid "&Open..."
+msgstr "Открыть"
 
-#. TRANSLATORS: Status bar help text for the "Find" menu item
+msgid "Open a document"
+msgstr "Открыть документ"
+
+#, fuzzy
+msgid "&Close"
+msgstr "Закрыть"
+
+msgid "Close the current document"
+msgstr "Закрыть текущий документ"
+
+#, fuzzy
+msgid "Close &All"
+msgstr "Закрыть"
+
+msgid "Close all documents"
+msgstr "Закрыть все документы"
+
+#, fuzzy
+msgid "Reopen &Last Closed"
+msgstr "Повторно открыть последние закрытое\tCtrl+Shift+T"
+
+msgid "Reopen the last closed document"
+msgstr "Повторно открыть последний закрытый документ"
+
+msgid "&Recent Documents"
+msgstr "Последние документы"
+
+msgid "Open a recent document"
+msgstr "Открыть недавний документ"
+
+#. TRANSLATORS: System tray menu item to quit the application
+msgid "E&xit"
+msgstr "Выход"
+
+msgid "Exit the application"
+msgstr "Выход из приложения"
+
+msgid "(No recent documents)"
+msgstr "(Нет последних документов)"
+
+#, fuzzy
+msgid "Show All..."
+msgstr "Показать всё"
+
+#, fuzzy
+msgid "Previous Section"
+msgstr "Предыдущей раздел\t["
+
+msgid "Go to previous section"
+msgstr "Нет предыдущего раздела"
+
+#, fuzzy
+msgid "Next Section"
+msgstr "Следующей раздел\t]"
+
+msgid "Go to next section"
+msgstr "Нет следующего раздела"
+
+#, fuzzy
+msgid "Go to &Page"
+msgstr "Перейти к странице"
+
+#, fuzzy
+msgid "Previous Pa&ge"
+msgstr "Предыдущая страница\tShift+P"
+
+#, fuzzy
+msgid "Next Pag&e"
+msgstr "Следующая страница\tP"
+
+#, fuzzy
+msgid "Previous Lin&k"
+msgstr "Предыдущая ссылка\tShift+K"
+
+#, fuzzy
+msgid "Next Lin&k"
+msgstr "Следующая ссылка\tK"
+
+#, fuzzy
+msgid "Previous Ima&ge"
+msgstr "Предыдущее изображение\tShift+G"
+
+#, fuzzy
+msgid "Next Ima&ge"
+msgstr "Следующее изображение\tG"
+
+#, fuzzy
+msgid "Previous Figu&re"
+msgstr "Предыдущая фигура\tShift+F"
+
+#, fuzzy
+msgid "Next Figu&re"
+msgstr "Следующая фигура\tF"
+
+#, fuzzy
+msgid "Previous &Table"
+msgstr "Предыдущая таблица\tShift+T"
+
+#, fuzzy
+msgid "Next &Table"
+msgstr "Следующая таблица\tT"
+
+#, fuzzy
+msgid "Previous Se&parator"
+msgstr "Предыдущей разделитель\tShift+S"
+
+#, fuzzy
+msgid "Next Se&parator"
+msgstr "Следующей разделитель\tS"
+
+#, fuzzy
+msgid "Previous L&ist"
+msgstr "Предыдущей список\tShift+L"
+
+#, fuzzy
+msgid "Next L&ist"
+msgstr "Следующей список\tL"
+
+#, fuzzy
+msgid "Previous List &Item"
+msgstr "Предыдущей элемент списка\tShift+I"
+
+#, fuzzy
+msgid "Next List I&tem"
+msgstr "Следующей элемент списка\tI"
+
+#, fuzzy
+msgid "Container &Start"
+msgstr "Контейнер и запуск    Shift+,"
+
+#, fuzzy
+msgid "Go to the start of the current list or table"
+msgstr "Перейти к началу текущего списка или таблицы"
+
+#, fuzzy
+msgid "Past Container &End"
+msgstr "Пропустить «Container &End»    ,"
+
+#, fuzzy
+msgid "Go past the end of the current list or table"
+msgstr "Перейти за конец текущего списка или таблицы"
+
+#, fuzzy
+msgid "&Previous Heading"
+msgstr "Предыдущей заголовок\tShift+H"
+
+msgid "Go to previous heading"
+msgstr "Переход к  предыдущему заголовку"
+
+#, fuzzy
+msgid "&Next Heading"
+msgstr "Следующей заголовок\tH"
+
+msgid "Go to next heading"
+msgstr "Переход к следующему заголовку\tH"
+
+#, fuzzy
+msgid "Previous Heading Level &1"
+msgstr "Предыдущей уровень заголовка 1\tShift+1"
+
+#, fuzzy
+msgid "Next Heading Level 1"
+msgstr "Следующей уровень заголовка 1\t1"
+
+#, fuzzy
+msgid "Previous Heading Level &2"
+msgstr "Предыдущей уровень заголовка 2\tShift+2"
+
+#, fuzzy
+msgid "Next Heading Level 2"
+msgstr "Следующей уровень заголовка 2\t2"
+
+#, fuzzy
+msgid "Previous Heading Level &3"
+msgstr "Предыдущей уровень заголовка 3\tShift+%d"
+
+#, fuzzy
+msgid "Next Heading Level 3"
+msgstr "Следующей уровень заголовка 3\t3"
+
+#, fuzzy
+msgid "Previous Heading Level &4"
+msgstr "Предыдущей уровень заголовка 4\tShift+%d"
+
+#, fuzzy
+msgid "Next Heading Level 4"
+msgstr "Следующей уровень заголовка 4\t4"
+
+#, fuzzy
+msgid "Previous Heading Level &5"
+msgstr "Предыдущей уровень заголовка 5\tShift+%d"
+
+#, fuzzy
+msgid "Next Heading Level 5"
+msgstr "Следующей уровень заголовка 5\t5"
+
+#, fuzzy
+msgid "Previous Heading Level &6"
+msgstr "Предыдущей уровень заголовка 6\tShift+%d"
+
+#, fuzzy
+msgid "Next Heading Level 6"
+msgstr "Следующей уровень заголовка 6\t6"
+
+#, fuzzy
+msgid "&Previous Bookmark"
+msgstr "Предыдущая закладка\tShift+B"
+
+msgid "Go to previous bookmark"
+msgstr "Нет предыдущей закладки"
+
+#, fuzzy
+msgid "&Next Bookmark"
+msgstr "Следующая закладка\tB"
+
+msgid "Go to next bookmark"
+msgstr "Нет следующей закладки"
+
+#, fuzzy
+msgid "Previous &Note"
+msgstr "Предыдущая заметка\tShift+N"
+
+msgid "Go to previous note"
+msgstr "Переход  предыдущей заметки"
+
+#, fuzzy
+msgid "Next N&ote"
+msgstr "Следующая заметка\tN"
+
+msgid "Go to next note"
+msgstr "Переход к  следующей заметки"
+
+#, fuzzy
+msgid "Jump to &All..."
+msgstr "Перейти ко всем...\tCtrl+B"
+
+msgid "Show all bookmarks and notes"
+msgstr "Показать все закладки и заметки"
+
+#, fuzzy
+msgid "Jump to &Bookmarks Only..."
+msgstr "Перейти только  к закладком...\tCtrl+Alt+B"
+
+msgid "Show bookmarks only"
+msgstr "Показать только закладки"
+
+#, fuzzy
+msgid "Jump to Notes &Only..."
+msgstr "Перейти только к заметком...\tCtrl+Alt+M"
+
+msgid "Show notes only"
+msgstr "Показать только заметки"
+
+#, fuzzy
+msgid "&View Note Text"
+msgstr "Просмотр заметки"
+
+msgid "View the note at current position"
+msgstr "просмотр заметки  в текущей позиции"
+
+#, fuzzy
+msgid "&Find..."
+msgstr "Найти"
+
 msgid "Find text in the document"
 msgstr "Найти текст в документе"
 
-#. TRANSLATORS: Menu item label to find the next match
-#, fuzzy
-msgid "Find &Next\tCtrl+G"
-msgstr "Найти &Далее    Ctrl+G"
-
-msgid "Find &Next\tF3"
-msgstr "Найти следующее\tF3"
-
-#. TRANSLATORS: Status bar help text for the "Find Next" menu item
 msgid "Find next occurrence"
 msgstr "Найти следующее символы"
 
-#. TRANSLATORS: Menu item label to find the previous match
-#, fuzzy
-msgid "Find &Previous\tCtrl+Shift+G"
-msgstr "Найти и предыдущее    Ctrl+Shift+G"
-
-msgid "Find &Previous\tShift+F3"
-msgstr "Найти предыдущее\tShift+F3"
-
-#. TRANSLATORS: Status bar help text for the "Find Previous" menu item
 msgid "Find previous occurrence"
 msgstr "Найти предыдущее символы"
 
-#. TRANSLATORS: Menu item label to open the "go to line" dialog
 #, fuzzy
-msgid "Go to &line...\tCtrl+L"
-msgstr "Перейти к строке...    Ctrl+L"
+msgid "Go to &line..."
+msgstr "Перейти к строке"
 
-msgid "Go to &line...\tCtrl+G"
-msgstr "Перейти к строке...\tCtrl+G"
-
-#. TRANSLATORS: Status bar help text for the "Go to line" menu item
 msgid "Go to a specific line"
 msgstr "Переход к определенной строке"
 
-#. TRANSLATORS: Menu item label to open the "go to percent" dialog (macOS variant)
 #, fuzzy
-msgid "Go to &percent...\tCtrl+Shift+L"
-msgstr "Перейти к &percent...    Ctrl+Shift+L"
+msgid "Go to &percent..."
+msgstr "Перейти к проценту"
 
-#. TRANSLATORS: Menu item label to open the "go to percent" dialog
-msgid "Go to &percent...\tCtrl+Shift+G"
-msgstr "Перейти к проценту...\tCtrl+Shift+G"
-
-#. TRANSLATORS: Status bar help text for the "Go to percent" menu item
 msgid "Go to a percentage of the document"
 msgstr "Переход к проценту документа"
 
-#. TRANSLATORS: Menu item label to go back in navigation history
 #, fuzzy
-msgid "Go &Back\tCtrl+["
+msgid "Go &Back"
 msgstr "Вперед и Назад    Ctrl+["
 
-msgid "Go &Back\tAlt+Left"
-msgstr "Перейти назад\tAlt+Left"
-
-#. TRANSLATORS: Status bar help text for the "Go Back" menu item
 msgid "Go back in history"
 msgstr "Переход назад по истории"
 
-#. TRANSLATORS: Menu item label to go forward in navigation history
 #, fuzzy
-msgid "Go &Forward\tCtrl+]"
+msgid "Go &Forward"
 msgstr "Перейти вперед    Ctrl+]"
 
-msgid "Go &Forward\tAlt+Right"
-msgstr "Перейти вперёд\tAlt+Right"
-
-#. TRANSLATORS: Status bar help text for the "Go Forward" menu item
 msgid "Go forward in history"
 msgstr "Переход вперёд по истории"
 
-#. TRANSLATORS: Submenu label containing section navigation commands
 msgid "&Sections"
 msgstr "Разделы"
 
-#. TRANSLATORS: Status bar help text for the "Sections" submenu
 msgid "Navigate by sections"
 msgstr "Навигация по разделам"
 
-#. TRANSLATORS: Submenu label containing heading navigation commands
 msgid "&Headings"
 msgstr "Заголовки"
 
-#. TRANSLATORS: Status bar help text for the "Headings" submenu
 msgid "Navigate by headings"
 msgstr "Навигация по заголовкам"
 
-#. TRANSLATORS: Submenu label containing page navigation commands
 msgid "&Pages"
 msgstr "Страницы"
 
-#. TRANSLATORS: Status bar help text for the "Pages" submenu
 msgid "Navigate by pages"
 msgstr "Навигация по страницам"
 
-#. TRANSLATORS: Submenu label containing bookmark/note navigation commands
 msgid "&Bookmarks"
 msgstr "Закладки"
 
-#. TRANSLATORS: Status bar help text for the "Bookmarks" submenu
 msgid "Navigate by bookmarks"
 msgstr "Навигация по закладкам"
 
-#. TRANSLATORS: Submenu label containing link navigation commands
 msgid "&Links"
 msgstr "Ссылки"
 
-#. TRANSLATORS: Status bar help text for the "Links" submenu
 msgid "Navigate by links"
 msgstr "Навигация по ссылкам."
 
-#. TRANSLATORS: Submenu label containing image navigation commands
 msgid "&Images"
 msgstr "Изображения"
 
-#. TRANSLATORS: Status bar help text for the "Images" submenu
 msgid "Navigate by images"
 msgstr "Навигация по изображениям"
 
-#. TRANSLATORS: Submenu label containing figure navigation commands
 msgid "&Figures"
 msgstr "Фигуры"
 
-#. TRANSLATORS: Status bar help text for the "Figures" submenu
 msgid "Navigate by figures"
 msgstr "Навигация по фигуром"
 
-#. TRANSLATORS: Submenu label containing table navigation commands
 msgid "&Tables"
 msgstr "Таблицы"
 
-#. TRANSLATORS: Status bar help text for the "Tables" submenu
 msgid "Navigate by tables"
 msgstr "Навигация по таблицам"
 
-#. TRANSLATORS: Submenu label containing separator-element navigation commands
 msgid "&Separators"
 msgstr "Разделители"
 
-#. TRANSLATORS: Status bar help text for the "Separators" submenu
 msgid "Navigate by separators"
 msgstr "Навигация по разделителям"
 
-#. TRANSLATORS: Submenu label containing list navigation commands
 msgid "&Lists"
 msgstr "Списки"
 
-#. TRANSLATORS: Status bar help text for the "Lists" submenu
 msgid "Navigate by lists"
 msgstr "Навигация по спискам"
 
-#. TRANSLATORS: Submenu label containing container (list/table) navigation commands
 #, fuzzy
 msgid "&Containers"
 msgstr "&Контейнеры"
 
-#. TRANSLATORS: Status bar help text for the "Containers" submenu
 #, fuzzy
 msgid "Navigate by containers"
 msgstr "Навигация по контейнерам"
 
-#. TRANSLATORS: Menu item label to import bookmark/position data for the document
-msgid "&Import Document Data...\tCtrl+Shift+I"
-msgstr "Импортировать данные документа...\tCtrl+Shift+I"
+#, fuzzy
+msgid "&About Paperback"
+msgstr "О Paperback\tCtrl+F1"
 
-#. TRANSLATORS: Status bar help text for the "Import Document Data" menu item
+msgid "About this application"
+msgstr "Об этом приложение"
+
+#, fuzzy
+msgid "View Help in &Browser"
+msgstr "Просмотреть справку в браузере\tF1"
+
+msgid "View help in default browser"
+msgstr "Просмотреть справку в браузере по умолчанию\tF1"
+
+#, fuzzy
+msgid "View Help in &Paperback"
+msgstr "Просмотр справки в Paperback"
+
+msgid "View help in Paperback"
+msgstr "Просмотр справки в Paperback"
+
+#, fuzzy
+msgid "Check for &Updates"
+msgstr "Проверить обновления"
+
+msgid "Check for updates"
+msgstr "Проверить обновления"
+
+#, fuzzy
+msgid "&Donate"
+msgstr "Пожертвование\tCtrl+D"
+
+msgid "Support Paperback development"
+msgstr "Поддержка разработки Paperback"
+
+#, fuzzy
+msgid "&Import Document Data..."
+msgstr "Импорт данных из документа"
+
 msgid "Import bookmarks and position"
 msgstr "Импорт закладок и их позиции"
 
-#. TRANSLATORS: Menu item label to export bookmark/position data for the document
-msgid "&Export Document Data...\tCtrl+Shift+E"
-msgstr "Экспортировать данные документа...\tCtrl+Shift+E"
+#, fuzzy
+msgid "&Export Document Data..."
+msgstr "Экспорт данных документа"
 
-#. TRANSLATORS: Status bar help text for the "Export Document Data" menu item
 msgid "Export bookmarks and position"
 msgstr "Экспорт закладок и их позиции"
 
-#. TRANSLATORS: Menu item label to export the document as plain text
-msgid "Export to &Plain Text...\tCtrl+E"
+#, fuzzy
+msgid "Export to &Plain Text..."
 msgstr "Экспортировать в обычный текст...\tCtrl+E"
 
-#. TRANSLATORS: Status bar help text for the "Export to Plain Text" menu item
 msgid "Export document as plain text"
 msgstr "Экспортировать документ виде  обычного текста...\tCtrl+E"
 
-#. TRANSLATORS: Menu item label to export the document as HTML
 #, fuzzy
 msgid "Export to &HTML..."
 msgstr "Экспорт в формат HTML..."
 
-#. TRANSLATORS: Status bar help text for the "Export to HTML" menu item
 #, fuzzy
 msgid "Export document as HTML"
 msgstr "Экспорт документа в формат HTML"
 
-#. TRANSLATORS: Menu item label to export the document as Markdown
 #, fuzzy
 msgid "Export to &Markdown..."
 msgstr "Экспорт в формат &Markdown..."
 
-#. TRANSLATORS: Status bar help text for the "Export to Markdown" menu item
 #, fuzzy
 msgid "Export document as Markdown"
 msgstr "Экспорт документа в формате Markdown"
 
-#. TRANSLATORS: Menu item label to show the word count dialog
-msgid "&Word Count\tRawCtrl+W"
-msgstr "Количество слов\tCtrl+W"
+#, fuzzy
+msgid "&Word Count"
+msgstr "Количество слов"
 
-msgid "&Word Count\tCtrl+W"
-msgstr "Каличество слов\tCtrl+W"
-
-#. TRANSLATORS: Status bar help text for the "Word Count" menu item
 msgid "Show word count"
 msgstr "Показать каличество  слов"
 
-#. TRANSLATORS: Menu item label to show the document info dialog
-msgid "Document &Info\tCtrl+I"
-msgstr "Информация о документе\tCtrl+I"
+#, fuzzy
+msgid "Document &Info"
+msgstr "Информация о документе"
 
-#. TRANSLATORS: Status bar help text for the "Document Info" menu item
 msgid "Show document information"
 msgstr "Показать информацию о документе"
 
-#. TRANSLATORS: Menu item label to show the table of contents dialog
-msgid "&Table of Contents\tCtrl+T"
-msgstr "Оглавления\tCtrl+T"
+#, fuzzy
+msgid "&Table of Contents"
+msgstr "Оглавление"
 
-#. TRANSLATORS: Status bar help text for the "Table of Contents" menu item
 msgid "Show table of contents"
 msgstr "Показать оглавления"
 
-#. TRANSLATORS: Menu item label to show the elements list dialog
-msgid "&Elements List...\tF7"
+#, fuzzy
+msgid "&Elements List..."
 msgstr "Список элементов\tF7"
 
-#. TRANSLATORS: Status bar help text for the "Elements List" menu item
 msgid "Show elements list"
 msgstr "Показать список элементов"
 
-#. TRANSLATORS: Menu item label to reveal the document file in the system file manager
 #, fuzzy
-msgid "Reveal &File in Folder\tCtrl+Shift+C"
+msgid "Reveal &File in Folder"
 msgstr "Показать и сохранить в папке    Ctrl+Shift+C"
 
-#. TRANSLATORS: Status bar help text for the "Reveal File in Folder" menu item
 #, fuzzy
 msgid "Reveal document in the file manager"
 msgstr "Открыть документ в файловом менеджере"
 
-#. TRANSLATORS: Menu item label to open the document in the web view
-msgid "Open in &Web View\tCtrl+Shift+V"
+#, fuzzy
+msgid "Open in &Web View"
 msgstr "Открыть веб представлении\tCtrl+Shift+V"
 
-#. TRANSLATORS: Status bar help text for the "Open in Web View" menu item
 msgid "Open document in web view"
 msgstr "Открытие документа в веб представление"
 
-#. TRANSLATORS: Menu item label to open the document's raw source in a new tab
 #, fuzzy
-msgid "View &Source\tCtrl+U"
+msgid "View &Source"
 msgstr "Просмотр и исходный код    Ctrl+U"
 
-#. TRANSLATORS: Status bar help text for the "View Source" menu item
 #, fuzzy
 msgid "Open the document source in a new tab"
 msgstr "Откройте исходный текст документа в новой вкладке"
 
-#. TRANSLATORS: Submenu label containing import/export commands
 msgid "I&mport/Export"
 msgstr "Импорт/Экспорт"
 
-#. TRANSLATORS: Status bar help text for the "Import/Export" submenu
 msgid "Import and export options"
 msgstr "Параметры импорта и экспорта"
 
-#. TRANSLATORS: Menu item label to toggle a bookmark at the current position
-msgid "Toggle &Bookmark\tCtrl+Shift+B"
+#, fuzzy
+msgid "Toggle &Bookmark"
 msgstr "Переключить закладку\tCtrl+Shift+B"
 
-#. TRANSLATORS: Menu item label to add a bookmark with an attached note
-msgid "Bookmark with &Note\tCtrl+Shift+N"
-msgstr "Закладка с заметкой\tCtrl+Shift+N"
-
-#. TRANSLATORS: Checkable menu item label to toggle word wrap
 #, fuzzy
-msgid "Word w&rap\tCtrl+Alt+W"
-msgstr "Перенос слов    Ctrl+Alt+W"
+msgid "Bookmark with &Note"
+msgstr "Закладка с заметкой"
 
-#. TRANSLATORS: Status bar help text for the "Word wrap" menu item
+#, fuzzy
+msgid "Word w&rap"
+msgstr "Переносить слова"
+
 #, fuzzy
 msgid "Toggle word wrap"
 msgstr "Включить/выключить перенос слов"
 
-#. TRANSLATORS: Menu item label to open the application options/preferences dialog
-msgid "&Options\tCtrl+,"
-msgstr "Параметры\tCtrl+,"
+#, fuzzy
+msgid "&Full Screen"
+msgstr "&Полноэкранный режим    F11"
 
-#. TRANSLATORS: Menu item label to open the sleep timer dialog
-msgid "&Sleep Timer...\tCtrl+Shift+S"
-msgstr "Таймер сна...\tCtrl+Shift+S"
+#, fuzzy
+msgid "Toggle full screen"
+msgstr "Переключить в полноэкранный режим"
 
-#. TRANSLATORS: Menu item label to open the About dialog
-msgid "&About Paperback\tCtrl+F1"
-msgstr "О Paperback\tCtrl+F1"
+#, fuzzy
+msgid "&Options"
+msgstr "Параметры"
 
-#. TRANSLATORS: Status bar help text for the "About" menu item
-msgid "About this application"
-msgstr "Об этом приложение"
+#, fuzzy
+msgid "&Sleep Timer..."
+msgstr "Таймер сна"
 
-#. TRANSLATORS: Menu item label to open the help documentation in a web browser
-msgid "View Help in &Browser\tF1"
-msgstr "Просмотреть справку в браузере\tF1"
+msgid "&File"
+msgstr "Файл"
 
-#. TRANSLATORS: Status bar help text for the "View Help in Browser" menu item
-msgid "View help in default browser"
-msgstr "Просмотреть справку в браузере по умолчанию\tF1"
+msgid "&Go"
+msgstr "Переход"
 
-#. TRANSLATORS: Menu item label to open the help documentation inside Paperback itself
-msgid "View Help in &Paperback\tShift+F1"
-msgstr "Просмотреть справку в Paperback\tShift+F1"
+msgid "&Tools"
+msgstr "Инструменты"
 
-#. TRANSLATORS: Status bar help text for the "View Help in Paperback" menu item
-msgid "View help in Paperback"
-msgstr "Просмотр справки в Paperback"
+msgid "&Help"
+msgstr "Справка"
 
-#. TRANSLATORS: Menu item label to check for application updates
-msgid "Check for &Updates\tCtrl+Shift+U"
-msgstr "Проверить наличие обновлений\tCtrl+Shift+U"
-
-#. TRANSLATORS: Status bar help text for the "Check for Updates" menu item
-msgid "Check for updates"
-msgstr "Проверить обновления"
-
-#. TRANSLATORS: Menu item label to open the donation page
-msgid "&Donate\tCtrl+D"
-msgstr "Пожертвование\tCtrl+D"
-
-#. TRANSLATORS: Status bar help text for the "Donate" menu item
-msgid "Support Paperback development"
-msgstr "Поддержка разработки Paperback"
-
-#. TRANSLATORS: Placeholder menu item shown in the Recent Documents submenu when there are none
-msgid "(No recent documents)"
-msgstr "(Нет последних документов)"
-
-#. TRANSLATORS: Menu item label to open the full recent-documents list dialog
-msgid "Show All...\tCtrl+R"
-msgstr "Показать всё...\tCtrl+R"
+#, fuzzy
+msgid "&Edit"
+msgstr "&Редактировать"
 
 #. TRANSLATORS: Announced when the document has no sections to navigate
 msgid "No sections."
@@ -1647,17 +1609,14 @@ msgid "No previous section"
 msgstr "Нет предыдущего раздела"
 
 #. TRANSLATORS: Announced when the document has no headings at the given level; %d is the heading level number
-#, c-format
 msgid "No headings at level %d."
 msgstr "Нет заголовков на уровне %d."
 
 #. TRANSLATORS: Announced when there is no next heading at the given level; %d is the heading level number
-#, c-format
 msgid "No next heading at level %d."
 msgstr "Нет следующего  заголовка на уровне %d."
 
 #. TRANSLATORS: Announced when there is no previous heading at the given level; %d is the heading level number
-#, c-format
 msgid "No previous heading at level %d."
 msgstr "Нет предыдущего заголовка на уровне %d."
 
@@ -1773,17 +1732,15 @@ msgid "Wrapping to end. "
 msgstr "Конец раздела. "
 
 #. TRANSLATORS: Announcement when landing on a heading; %s is the heading text, %d is the heading level number
-#, c-format
 msgid "%s Heading level %d"
 msgstr "%s уровень заголовка %d"
 
 #. TRANSLATORS: Announcement when landing on a page with no extractable text; %d is the page number
-#, fuzzy, c-format
+#, fuzzy
 msgid "Page %d"
 msgstr "Страница %d: %s"
 
 #. TRANSLATORS: Announcement when landing on a page; %d is the page number, %s is the page text
-#, c-format
 msgid "Page %d: %s"
 msgstr "Страница %d: %s"
 
@@ -1825,7 +1782,6 @@ msgid "Start of container."
 msgstr "Начало контейнера."
 
 #. TRANSLATORS: Announcement when landing on a bookmark; %s is the bookmark/line text, %d is the bookmark's 1-based index
-#, c-format
 msgid "%s - Bookmark %d"
 msgstr "%s - Закладка %d"
 
@@ -1892,10 +1848,6 @@ msgstr "Восстановить"
 #. TRANSLATORS: Status bar help text for the tray menu's "Restore" item
 msgid "Restore Paperback"
 msgstr "Восстановление Paperback"
-
-#. TRANSLATORS: System tray menu item to quit the application
-msgid "E&xit"
-msgstr "Выход"
 
 #. TRANSLATORS: Status bar help text for the tray menu's "Exit" item
 msgid "Exit Paperback"
@@ -2273,6 +2225,291 @@ msgstr "Не удалось запустить  скрипт обновлени�
 
 msgid "Unknown update file format."
 msgstr "Неизвестный формат файла обновления"
+
+#, fuzzy
+msgid "&Play/Pause Audio"
+msgstr "&Воспроизведение/пауза аудио"
+
+#, fuzzy
+msgid "Play or pause this document's audio narration"
+msgstr "Воспроизвести или приостановить аудиосопровождение этого документа"
+
+msgid "Previous Section\t["
+msgstr "Предыдущей раздел\t["
+
+msgid "Next Section\t]"
+msgstr "Следующей раздел\t]"
+
+msgid "Go to &Page\tCtrl+P"
+msgstr "Перейти к страницы...\tCtrl+P"
+
+msgid "Previous Pa&ge\tShift+P"
+msgstr "Предыдущая страница\tShift+P"
+
+msgid "Next Pag&e\tP"
+msgstr "Следующая страница\tP"
+
+msgid "Previous Lin&k\tShift+K"
+msgstr "Предыдущая ссылка\tShift+K"
+
+msgid "Next Lin&k\tK"
+msgstr "Следующая ссылка\tK"
+
+msgid "Previous Ima&ge\tShift+G"
+msgstr "Предыдущее изображение\tShift+G"
+
+msgid "Next Ima&ge\tG"
+msgstr "Следующее изображение\tG"
+
+msgid "Previous Figu&re\tShift+F"
+msgstr "Предыдущая фигура\tShift+F"
+
+msgid "Next Figu&re\tF"
+msgstr "Следующая фигура\tF"
+
+msgid "Previous &Table\tShift+T"
+msgstr "Предыдущая таблица\tShift+T"
+
+msgid "Next &Table\tT"
+msgstr "Следующая таблица\tT"
+
+msgid "Previous Se&parator\tShift+S"
+msgstr "Предыдущей разделитель\tShift+S"
+
+msgid "Next Se&parator\tS"
+msgstr "Следующей разделитель\tS"
+
+msgid "Previous L&ist\tShift+L"
+msgstr "Предыдущей список\tShift+L"
+
+msgid "Next L&ist\tL"
+msgstr "Следующей список\tL"
+
+msgid "Previous List &Item\tShift+I"
+msgstr "Предыдущей элемент списка\tShift+I"
+
+msgid "Next List I&tem\tI"
+msgstr "Следующей элемент списка\tI"
+
+#, fuzzy
+msgid "Container &Start\tShift+,"
+msgstr "Контейнер и запуск    Shift+,"
+
+#, fuzzy
+msgid "Past Container &End\t,"
+msgstr "Пропустить «Container &End»    ,"
+
+msgid "Next Heading Level 1\t1"
+msgstr "Следующей уровень заголовка 1\t1"
+
+msgid "Previous Heading Level &2\tShift+2"
+msgstr "Предыдущей уровень заголовка 2\tShift+2"
+
+msgid "Next Heading Level 2\t2"
+msgstr "Следующей уровень заголовка 2\t2"
+
+msgid "Previous Heading Level &3\tShift+3"
+msgstr "Предыдущей уровень заголовка 3\tShift+%d"
+
+msgid "Next Heading Level 3\t3"
+msgstr "Следующей уровень заголовка 3\t3"
+
+msgid "Previous Heading Level &4\tShift+4"
+msgstr "Предыдущей уровень заголовка 4\tShift+%d"
+
+msgid "Next Heading Level 4\t4"
+msgstr "Следующей уровень заголовка 4\t4"
+
+msgid "Previous Heading Level &5\tShift+5"
+msgstr "Предыдущей уровень заголовка 5\tShift+%d"
+
+msgid "Next Heading Level 5\t5"
+msgstr "Следующей уровень заголовка 5\t5"
+
+msgid "Previous Heading Level &6\tShift+6"
+msgstr "Предыдущей уровень заголовка 6\tShift+%d"
+
+msgid "Next Heading Level 6\t6"
+msgstr "Следующей уровень заголовка 6\t6"
+
+msgid "&Previous Heading\tShift+H"
+msgstr "Предыдущей заголовок\tShift+H"
+
+msgid "&Next Heading\tH"
+msgstr "Следующей заголовок\tH"
+
+msgid "Previous Heading Level &1\tShift+1"
+msgstr "Предыдущей уровень заголовка 1\tShift+1"
+
+msgid "&Previous Bookmark\tShift+B"
+msgstr "Предыдущая закладка\tShift+B"
+
+msgid "&Next Bookmark\tB"
+msgstr "Следующая закладка\tB"
+
+msgid "Previous &Note\tShift+N"
+msgstr "Предыдущая заметка\tShift+N"
+
+msgid "Next N&ote\tN"
+msgstr "Следующая заметка\tN"
+
+msgid "Jump to &All...\tCtrl+B"
+msgstr "Перейти ко всем...\tCtrl+B"
+
+msgid "Jump to &Bookmarks Only...\tCtrl+Alt+B"
+msgstr "Перейти только  к закладком...\tCtrl+Alt+B"
+
+msgid "Jump to Notes &Only...\tCtrl+Alt+M"
+msgstr "Перейти только к заметком...\tCtrl+Alt+M"
+
+msgid "&View Note Text\tRawCtrl+Shift+W"
+msgstr "Просмотреть текст заметки\tCtrl+Shift+W"
+
+msgid "&View Note Text\tCtrl+Shift+W"
+msgstr "Просмотреть текст заметки\tCtrl+Shift+W"
+
+msgid "&Open...\tCtrl+O"
+msgstr "Открыть...\tCtrl+O"
+
+msgid "&Close\tCtrl+W"
+msgstr "Закрыть\tCtrl+W"
+
+msgid "&Close\tCtrl+F4"
+msgstr "Закрыть\tCtrl+F4"
+
+msgid "Close &All\tCtrl+Shift+W"
+msgstr "Закрыть всё\tCtrl+Shift+W"
+
+msgid "Close &All\tCtrl+Shift+F4"
+msgstr "Закрыть всё\tCtrl+Shift+F4"
+
+msgid "Reopen &Last Closed\tCtrl+Shift+T"
+msgstr "Повторно открыть последние закрытое\tCtrl+Shift+T"
+
+msgid "E&xit\tCtrl+Q"
+msgstr "Выход\tCtrl+Q"
+
+msgid "&Find...\tCtrl+F"
+msgstr "Найти...\tCtrl+F"
+
+#, fuzzy
+msgid "Find &Next\tCtrl+G"
+msgstr "Найти &Далее    Ctrl+G"
+
+msgid "Find &Next\tF3"
+msgstr "Найти следующее\tF3"
+
+#, fuzzy
+msgid "Find &Previous\tCtrl+Shift+G"
+msgstr "Найти и предыдущее    Ctrl+Shift+G"
+
+msgid "Find &Previous\tShift+F3"
+msgstr "Найти предыдущее\tShift+F3"
+
+#, fuzzy
+msgid "Go to &line...\tCtrl+L"
+msgstr "Перейти к строке...    Ctrl+L"
+
+msgid "Go to &line...\tCtrl+G"
+msgstr "Перейти к строке...\tCtrl+G"
+
+#, fuzzy
+msgid "Go to &percent...\tCtrl+Shift+L"
+msgstr "Перейти к &percent...    Ctrl+Shift+L"
+
+msgid "Go to &percent...\tCtrl+Shift+G"
+msgstr "Перейти к проценту...\tCtrl+Shift+G"
+
+#, fuzzy
+msgid "Go &Back\tCtrl+["
+msgstr "Вперед и Назад    Ctrl+["
+
+msgid "Go &Back\tAlt+Left"
+msgstr "Перейти назад\tAlt+Left"
+
+#, fuzzy
+msgid "Go &Forward\tCtrl+]"
+msgstr "Перейти вперед    Ctrl+]"
+
+msgid "Go &Forward\tAlt+Right"
+msgstr "Перейти вперёд\tAlt+Right"
+
+msgid "&Import Document Data...\tCtrl+Shift+I"
+msgstr "Импортировать данные документа...\tCtrl+Shift+I"
+
+msgid "&Export Document Data...\tCtrl+Shift+E"
+msgstr "Экспортировать данные документа...\tCtrl+Shift+E"
+
+msgid "Export to &Plain Text...\tCtrl+E"
+msgstr "Экспортировать в обычный текст...\tCtrl+E"
+
+msgid "&Word Count\tRawCtrl+W"
+msgstr "Количество слов\tCtrl+W"
+
+msgid "&Word Count\tCtrl+W"
+msgstr "Каличество слов\tCtrl+W"
+
+msgid "Document &Info\tCtrl+I"
+msgstr "Информация о документе\tCtrl+I"
+
+msgid "&Table of Contents\tCtrl+T"
+msgstr "Оглавления\tCtrl+T"
+
+msgid "&Elements List...\tF7"
+msgstr "Список элементов\tF7"
+
+#, fuzzy
+msgid "Reveal &File in Folder\tCtrl+Shift+C"
+msgstr "Показать и сохранить в папке    Ctrl+Shift+C"
+
+msgid "Open in &Web View\tCtrl+Shift+V"
+msgstr "Открыть веб представлении\tCtrl+Shift+V"
+
+#, fuzzy
+msgid "View &Source\tCtrl+U"
+msgstr "Просмотр и исходный код    Ctrl+U"
+
+msgid "Toggle &Bookmark\tCtrl+Shift+B"
+msgstr "Переключить закладку\tCtrl+Shift+B"
+
+msgid "Bookmark with &Note\tCtrl+Shift+N"
+msgstr "Закладка с заметкой\tCtrl+Shift+N"
+
+#, fuzzy
+msgid "Word w&rap\tCtrl+Alt+W"
+msgstr "Перенос слов    Ctrl+Alt+W"
+
+#, fuzzy
+msgid "&Full Screen\tRawCtrl+Ctrl+F"
+msgstr "&Полный экран    RawCtrl+Ctrl+F"
+
+#, fuzzy
+msgid "&Full Screen\tF11"
+msgstr "&Полноэкранный режим    F11"
+
+msgid "&Options\tCtrl+,"
+msgstr "Параметры\tCtrl+,"
+
+msgid "&Sleep Timer...\tCtrl+Shift+S"
+msgstr "Таймер сна...\tCtrl+Shift+S"
+
+msgid "&About Paperback\tCtrl+F1"
+msgstr "О Paperback\tCtrl+F1"
+
+msgid "View Help in &Browser\tF1"
+msgstr "Просмотреть справку в браузере\tF1"
+
+msgid "View Help in &Paperback\tShift+F1"
+msgstr "Просмотреть справку в Paperback\tShift+F1"
+
+msgid "Check for &Updates\tCtrl+Shift+U"
+msgstr "Проверить наличие обновлений\tCtrl+Shift+U"
+
+msgid "&Donate\tCtrl+D"
+msgstr "Пожертвование\tCtrl+D"
+
+msgid "Show All...\tCtrl+R"
+msgstr "Показать всё...\tCtrl+R"
 
 #, fuzzy
 msgid "Go To…"

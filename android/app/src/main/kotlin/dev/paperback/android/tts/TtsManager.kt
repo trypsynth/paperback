@@ -15,6 +15,8 @@ import android.os.IBinder
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
 import dev.paperback.android.MainActivity
 import kotlinx.coroutines.CoroutineScope
@@ -249,9 +251,7 @@ class TtsManager(
 		} else {
 			TextToSpeech(context, this)
 		}
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-			tts?.setAudioAttributes(speechAudioAttributes())
-		}
+		tts?.setAudioAttributes(speechAudioAttributes())
 	}
 
 	override fun onInit(status: Int) {
@@ -630,6 +630,7 @@ class TtsManager(
 
 	fun getCurrentVoice(): Voice? = _currentVoice.value
 
+	@OptIn(UnstableApi::class)
 	fun shutdown() {
 		stop()
 		tts?.shutdown()

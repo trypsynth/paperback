@@ -117,27 +117,13 @@ fn track_packaging_inputs() {
 	println!("cargo:rerun-if-changed=paperback.iss.in");
 }
 
+// Only compiles the already-committed po/*.po files into .mo files for runtime loading.
+// Regenerating paperback.pot itself is deliberately NOT done here: it used to run on every
+// `cargo build`, fighting with `cargo xtask translate`/the auto-translate CI job (which
+// regenerate it carefully, suppressing pure timestamp/wrapping churn) and touching the
+// tracked .pot file mid-build. Run `cargo xtask translate` (or `--dry-run` to preview)
+// to regenerate it instead.
 fn build_translations() {
-	let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap_or_default());
-	let workspace_dir = manifest_dir.parent().unwrap().parent().unwrap();
-	let po_dir = workspace_dir.join("po");
-	let pot_file = po_dir.join("paperback.pot");
-	println!("cargo:rerun-if-changed={}", workspace_dir.join("ios/Paperback").display());
-	println!(
-		"cargo:rerun-if-changed={}",
-		workspace_dir.join("android/app/src/main/kotlin/dev/paperback/mobile").display()
-	);
-	if let Err(e) = patois_build::gen_pot(workspace_dir, &po_dir, "paperback") {
-		println!("cargo:warning=Failed to regenerate paperback.pot from Rust sources: {e}");
-	}
-	let ios_src = workspace_dir.join("ios/Paperback");
-	if let Err(e) = patois_build::extend_pot_from_source_dirs(&[&ios_src], "swift", &pot_file) {
-		println!("cargo:warning=Failed to extend paperback.pot from Swift sources: {e}");
-	}
-	let kt_src = workspace_dir.join("android/app/src/main/kotlin/dev/paperback/mobile");
-	if let Err(e) = patois_build::extend_pot_from_source_dirs(&[&kt_src], "kt", &pot_file) {
-		println!("cargo:warning=Failed to extend paperback.pot from Kotlin sources: {e}");
-	}
 	patois_build::compile_translations("../../po", "locale");
 }
 
