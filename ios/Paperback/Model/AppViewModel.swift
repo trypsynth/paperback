@@ -7,7 +7,15 @@ import MediaPlayer
 final class AppViewModel: ObservableObject {
 	// MARK: - Tabs
 	@Published var tabs: [DocumentTab] = []
-	@Published var activeTabId: UUID? = nil
+	// Stops TTS whenever the active document changes so a paused/playing utterance from the
+	// previous book can never bleed into the next one (its buffer stays scheduled on the audio
+	// node across pause() until something clears it — see TtsManager.pause()).
+	@Published var activeTabId: UUID? = nil {
+		didSet {
+			guard activeTabId != oldValue else { return }
+			ttsManager.stop()
+		}
+	}
 
 	var activeTab: DocumentTab? {
 		guard let id = activeTabId else { return nil }
@@ -272,7 +280,6 @@ final class AppViewModel: ObservableObject {
 	}
 
 	func setActiveTab(_ tab: DocumentTab) {
-		ttsManager.stop()
 		activeTabId = tab.id
 		if let t = activeTab {
 			loadSegment(for: t)
