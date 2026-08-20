@@ -396,7 +396,7 @@ final class AppViewModel: ObservableObject {
 		ttsPosition = seg.startPos
 		currentSegmentText = seg.text
 		updateTabPosition(seg.startPos)
-		ttsManager.speak(seg.text)
+		ttsManager.speak(seg.text, isAutoAdvance: true)
 		prefetchAdjacentSegments(around: seg.startPos)
 	}
 
