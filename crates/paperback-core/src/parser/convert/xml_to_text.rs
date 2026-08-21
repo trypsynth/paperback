@@ -2,12 +2,9 @@ use std::{collections::HashMap, mem};
 
 use roxmltree::{Document, Node, NodeType, ParsingOptions};
 
+use super::table_text::{push_finalized_line, table_render_bundle};
 use crate::{
-	parser::{
-		ConverterOutput,
-		table_text::{push_finalized_line, table_render_bundle},
-		util::xml::collect_element_text,
-	},
+	parser::{ConverterOutput, util::xml::collect_element_text},
 	t,
 	types::{
 		FormatInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, PageBreakInfo, SeparatorInfo, TableInfo,

@@ -945,7 +945,8 @@ impl DocumentSession {
 		let section_start = self.handle.document().buffer.markers.get(section_index)?.position;
 		let relative = pos.checked_sub(section_start)?;
 		let content = convert_to_utf8(&fs::read(file_path).ok()?);
-		let injected = parser::xml_to_text::inject_anchor_at_position(&content, relative, READING_POS_ANCHOR_ID)?;
+		let injected =
+			parser::convert::xml_to_text::inject_anchor_at_position(&content, relative, READING_POS_ANCHOR_ID)?;
 		fs::write(file_path, injected.as_bytes()).ok()?;
 		Some(READING_POS_ANCHOR_ID.to_string())
 	}
@@ -1022,7 +1023,7 @@ impl DocumentSession {
 	/// Maps a rendered character position to a caret offset in XML/HTML source
 	/// via the byte offset of the element at that position.
 	fn xml_caret(content: &str, relative: usize) -> usize {
-		parser::xml_to_text::XmlToText::new()
+		parser::convert::xml_to_text::XmlToText::new()
 			.find_anchor_byte_offset(content, relative)
 			.and_then(|byte| Some(content.get(..byte)?.chars().count()))
 			.unwrap_or(0)

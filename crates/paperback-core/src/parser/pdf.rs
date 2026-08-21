@@ -11,7 +11,7 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
 		PASSWORD_REQUIRED_ERROR_PREFIX, Parser,
-		table_text::{display_lines_and_length, html_table_to_display},
+		convert::table_text::{display_lines_and_length, html_table_to_display},
 		util::{bidi, path::extract_title_from_path},
 	},
 	t,
@@ -898,7 +898,7 @@ fn html_escape(s: &str) -> String {
 }
 
 /// Append a PDF table's on-screen text to the buffer and add the Table marker. The text is produced
-/// by [`crate::parser::table_text::html_table_to_display`]: the full tab-separated rendering when
+/// by [`crate::parser::convert::table_text::html_table_to_display`]: the full tab-separated rendering when
 /// `render_tables_inline` is set, otherwise a `"[Table]: <first row>"` placeholder. The helper
 /// output may span multiple lines (one per table row); each line is recorded as its own
 /// `current_lines_info` / `page_display_text` line, mirroring the rest of the PDF line tracking.

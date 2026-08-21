@@ -13,9 +13,11 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
 		PASSWORD_REQUIRED_ERROR_PREFIX, Parser, add_converter_markers,
-		html_to_text::{HtmlSourceMode, HtmlToText},
+		convert::{
+			html_to_text::{HtmlSourceMode, HtmlToText},
+			xml_to_text::XmlToText,
+		},
 		util::{path::extract_title_from_path, toc::build_toc_from_headings},
-		xml_to_text::XmlToText,
 	},
 	t,
 	util::{encoding::convert_to_utf8, zip::read_zip_entry_by_name_with_password},

@@ -16,7 +16,7 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, format_marker_types},
 	parser::{
 		PASSWORD_REQUIRED_ERROR_PREFIX, Parser,
-		table_text::{build_html_table_from_grid, html_table_to_display, table_caption_from_html},
+		convert::table_text::{build_html_table_from_grid, html_table_to_display, table_caption_from_html},
 		util::{
 			ooxml::{collect_ooxml_run_text, read_ooxml_relationships},
 			path::extract_title_from_path,

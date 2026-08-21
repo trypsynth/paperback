@@ -15,11 +15,11 @@ use crate::{
 };
 
 pub mod chm;
+pub mod convert;
 pub mod daisy;
 pub mod epub;
 pub mod fb2;
 pub mod html;
-pub mod html_to_text;
 pub mod markdown;
 pub mod mobi;
 pub mod odp;
@@ -27,11 +27,9 @@ pub mod odt;
 pub mod pdf;
 pub mod powerpoint;
 pub mod rtf;
-pub mod table_text;
 pub mod text;
 pub mod util;
 pub mod word;
-pub mod xml_to_text;
 
 pub const PASSWORD_REQUIRED_ERROR_PREFIX: &str = "[password_required]";
 
