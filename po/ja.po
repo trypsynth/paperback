@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-18 16:53+0000\n"
+"POT-Creation-Date: 2026-08-21 23:33+0000\n"
 "PO-Revision-Date: 2026-06-25 21:58+0900\n"
 "Last-Translator: Kazto Kitabatake <contact@kitabatake1013.jp>\n"
 "Language-Team: \n"
@@ -1843,6 +1843,15 @@ msgstr "Paperbackを再度表示します"
 msgid "Exit Paperback"
 msgstr "Paperbackの終了"
 
+#. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
+#, fuzzy
+msgid "Figure"
+msgstr "図"
+
+#, fuzzy
+msgid "Image"
+msgstr "画像"
+
 #. TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
 #, fuzzy
 msgid "Failed to convert DTBook XML to text"
@@ -1902,15 +1911,6 @@ msgstr "HTMLファイルが空です：{}"
 #, fuzzy
 msgid "Failed to convert HTML to text: {}"
 msgstr "HTMLからテキストへの変換に失敗しました：{}"
-
-#. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
-#, fuzzy
-msgid "Figure"
-msgstr "図"
-
-#, fuzzy
-msgid "Image"
-msgstr "画像"
 
 #. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
 #, fuzzy

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-18 16:53+0000\n"
+"POT-Creation-Date: 2026-08-21 23:33+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -2026,6 +2026,15 @@ msgstr "Phiên bản bìa mềm tái bản"
 msgid "Exit Paperback"
 msgstr "Bản bìa mềm \"Exit\""
 
+#. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
+#, fuzzy
+msgid "Figure"
+msgstr "Hình"
+
+#, fuzzy
+msgid "Image"
+msgstr "Hình ảnh"
+
 #. TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
 #, fuzzy
 msgid "Failed to convert DTBook XML to text"
@@ -2085,15 +2094,6 @@ msgstr "Tệp HTML trống: {}"
 #, fuzzy
 msgid "Failed to convert HTML to text: {}"
 msgstr "Không thể chuyển đổi HTML sang văn bản: {}"
-
-#. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
-#, fuzzy
-msgid "Figure"
-msgstr "Hình"
-
-#, fuzzy
-msgid "Image"
-msgstr "Hình ảnh"
 
 #. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
 #, fuzzy
