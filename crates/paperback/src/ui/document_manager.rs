@@ -1,5 +1,5 @@
 #[cfg(target_os = "windows")]
-use std::ptr::{addr_of_mut, copy_nonoverlapping};
+use std::ptr::addr_of_mut;
 use std::{
 	cell::Cell,
 	fs,
@@ -22,7 +22,10 @@ use wxdragon::{
 };
 
 #[cfg(target_os = "windows")]
-use super::rtf_write::{self, RtfFontInfo};
+use super::rtf::{
+	stream::stream_rtf_into_ctrl,
+	write::{self, RtfFontInfo},
+};
 use super::{
 	main_window::{SLEEP_TIMER_DURATION_MINUTES, SLEEP_TIMER_START_MS},
 	menu_ids,
@@ -1095,13 +1098,13 @@ fn reparse_tab_in_place(
 /// Sets `content` on `text_ctrl` and applies its bold/italic/underline markers.
 ///
 /// On Windows this streams a single RTF blob into the native `RichEdit` control
-/// via `EM_STREAMIN` (see `stream_rtf_into_ctrl`) instead of issuing one
-/// `SetStyle` call per formatting span, which is far cheaper on documents with
-/// thousands of spans. `wxTextCtrl::SetValue` can't be used for this — it does
-/// not forward to the native `WM_SETTEXT` handler that auto-detects a `{\rtf`
-/// prefix, so it would just store the markup as literal text. If streaming
-/// doesn't round-trip back to the original content, this falls back to the
-/// plain-text + per-segment path used on every other platform.
+/// via `EM_STREAMIN` (see `rtf::stream::stream_rtf_into_ctrl`) instead of issuing
+/// one `SetStyle` call per formatting span, which is far cheaper on documents
+/// with thousands of spans. `wxTextCtrl::SetValue` can't be used for this — it
+/// does not forward to the native `WM_SETTEXT` handler that auto-detects a
+/// `{\rtf` prefix, so it would just store the markup as literal text. If
+/// streaming doesn't round-trip back to the original content, this falls back
+/// to the plain-text + per-segment path used on every other platform.
 fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, session: &DocumentSession, content: &str) {
 	let markers = session.get_formatting_markers();
 	let segments = merge_formatting_markers(&markers);
@@ -1110,7 +1113,7 @@ fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, session: &DocumentSession
 	if !segments.is_empty()
 		&& let Some(font) = text_ctrl.get_font()
 	{
-		let rtf = rtf_write::build_rtf(
+		let rtf = write::build_rtf(
 			content,
 			&segments,
 			&RtfFontInfo { face_name: font.get_face_name(), point_size: font.get_point_size() },
@@ -1138,70 +1141,6 @@ fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, session: &DocumentSession
 
 	fill_text_ctrl(text_ctrl, content);
 	apply_formatting_markers_to_ctrl_from_segments(text_ctrl, &segments);
-}
-
-#[cfg(target_os = "windows")]
-struct RtfStreamCursor<'a> {
-	data: &'a [u8],
-	pos: usize,
-}
-
-/// `EDITSTREAMCALLBACK` for `EM_STREAMIN`: `RichEdit` calls this repeatedly,
-/// asking for up to `cb` bytes each time, until we report 0 bytes written
-/// (end of stream) or return a nonzero error code. Called synchronously
-/// within `SendMessageW` on the same thread, so the `RtfStreamCursor` borrow
-/// in `stream_rtf_into_ctrl` stays valid for every call.
-#[cfg(target_os = "windows")]
-unsafe extern "system" fn rtf_stream_read_callback(dwcookie: usize, pbbuff: *mut u8, cb: i32, pcb: *mut i32) -> u32 {
-	if pbbuff.is_null() || pcb.is_null() || dwcookie == 0 {
-		return 1;
-	}
-	let cursor = unsafe { &mut *(dwcookie as *mut RtfStreamCursor<'_>) };
-	let remaining = cursor.data.len() - cursor.pos;
-	let to_copy = remaining.min(usize::try_from(cb.max(0)).unwrap_or(0));
-	if to_copy > 0 {
-		unsafe { copy_nonoverlapping(cursor.data[cursor.pos..].as_ptr(), pbbuff, to_copy) };
-		cursor.pos += to_copy;
-	}
-	unsafe { *pcb = i32::try_from(to_copy).unwrap_or(i32::MAX) };
-	0
-}
-
-/// Feeds `rtf` into the native `RichEdit` control behind `text_ctrl` via the
-/// Win32 `EM_STREAMIN` message. `wxTextCtrl::SetValue` cannot be used for this:
-/// it does not forward to the native `WM_SETTEXT` handler that auto-detects a
-/// `{\rtf` prefix, so it just stores the markup as literal text (confirmed by
-/// a round-trip mismatch where `GetValue()` returned the raw RTF source
-/// unchanged). `EM_STREAMIN` is the documented, explicit way to load RTF into
-/// a `RichEdit` control, and is why this needs a raw `SendMessageW` call rather
-/// than a wx-level API — the same pattern already used for letter-spacing
-/// (`EM_SETCHARFORMAT`) in `apply_readability_format_to_ctrl`.
-///
-/// Returns `false` if the control has no native handle yet or the stream
-/// didn't fully complete, in which case callers should fall back to the
-/// plain-text + segment-loop path rather than trust partial content.
-#[cfg(target_os = "windows")]
-fn stream_rtf_into_ctrl(text_ctrl: TextCtrl, rtf: &str) -> bool {
-	use windows::Win32::{
-		Foundation::{HWND, LPARAM, WPARAM},
-		UI::{
-			Controls::RichEdit::{EDITSTREAM, EM_STREAMIN, SF_RTF},
-			WindowsAndMessaging::SendMessageW,
-		},
-	};
-
-	let hwnd_ptr = text_ctrl.get_handle();
-	if hwnd_ptr.is_null() {
-		return false;
-	}
-	let hwnd = HWND(hwnd_ptr);
-	let mut cursor = RtfStreamCursor { data: rtf.as_bytes(), pos: 0 };
-	let mut stream =
-		EDITSTREAM { dwCookie: addr_of_mut!(cursor) as usize, dwError: 0, pfnCallback: Some(rtf_stream_read_callback) };
-	unsafe {
-		SendMessageW(hwnd, EM_STREAMIN, Some(WPARAM(SF_RTF as usize)), Some(LPARAM(addr_of_mut!(stream) as isize)));
-	}
-	stream.dwError == 0 && cursor.pos == cursor.data.len()
 }
 
 pub fn apply_line_spacing_to_ctrl(text_ctrl: TextCtrl, line_spacing: i32) {
